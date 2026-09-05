@@ -1662,6 +1662,21 @@ namespace WindowsFormsApplication1
         public const string SP_BETRIEBSART_GRAUSTROM = "Graustrom";
 
         // =====================================================================
+        // Stromspeicher - Zelltechnologie
+        //   Tab_Stromspeicher_STAMM.Typ (Freitext)
+        //
+        //   iU9-W14a.0f (Befund W14-B41): Der Wert stand als Literal
+        //   "Lithium-Ionen" in Form_AdminStromspeicher.btn_Neu_Click (Z. 253) - ein
+        //   PERSISTENZWERT in einer Maske und damit ein Verstoss gegen die
+        //   Drei-Schichten-Regel. Er ist die Vorbelegung eines neuen Katalogsatzes;
+        //   die Spalte selbst nimmt weiterhin jeden Text an (der Bestand fuehrt auch
+        //   "Lithium-Eisen-Phosphat" und "Lithium-Ionen-Akkus").
+        // =====================================================================
+
+        /// <summary>Vorbelegung der Zelltechnologie eines neuen Speicher-Katalogsatzes.</summary>
+        public const string SP_TYP_LITHIUM_IONEN = "Lithium-Ionen";
+
+        // =====================================================================
         // Stromspeicher — Berechnungsart
         //   Tab_StromspeicherVariante.Berechnungsart
         //   (Fachkonzept Stromspeicher 6.1-6.5)

@@ -53,13 +53,8 @@ namespace WindowsFormsApplication1
             Button energie = Knopf(T("KDLG_KNOPF_ENERGIE", "Energiekosten…"), 8 + 316);
             energie.Click += (s, e) =>
             {
-                using (var dlg = new Form_Energietraeger())
-                {
-                    dlg.SetControls(projektId());
-                    int? traeger = carrierId != null ? carrierId() : null;
-                    if (traeger.HasValue) dlg.WaehleTraeger(traeger.Value);
-                    dlg.ShowDialog(eigner);
-                }
+                int? traeger = carrierId != null ? carrierId() : null;
+                EnergietraegerHuelle.Oeffnen(eigner, projektId(), traeger ?? 0);
             };
             leiste.Controls.Add(energie);
 
@@ -99,20 +94,12 @@ namespace WindowsFormsApplication1
             {
                 // KD6a: Der Projektkontext läuft über den NEUEN Kostendialog; die
                 // Leselogik der Altmaske steht seit iU9-W0 in KostenSummenCtrl.
-                using (var dlg = new Form_KostenKomponente())
-                {
-                    dlg.SetProjekt(projektId, ProjektName(projektId), komponente, betrieb);
-                    dlg.ShowDialog(eigner);
-                }
+                KostenKomponenteHuelle.OeffnenProjekt(eigner, projektId,
+                                                      ProjektName(projektId), komponente, betrieb);
             }
             else
             {
-                using (var dlg = new Form_KostenKomponente())
-                {
-                    dlg.SetControls(komponente);
-                    if (betrieb) dlg.WaehleBetrieb();
-                    dlg.ShowDialog(eigner);
-                }
+                KostenKomponenteHuelle.Oeffnen(eigner, komponente, betrieb);
             }
         }
 

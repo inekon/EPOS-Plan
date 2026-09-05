@@ -29,13 +29,94 @@ namespace WindowsFormsApplication1
             rows = 0;
         }
 
+        /// <summary>
+        /// Liest den Einstellungssatz EINES Projekts — die eine Wahrheit dieser
+        /// Abfrage (iU9-W10b.0b und iU9-W11a.2, Befund W11-B24).
+        ///
+        /// <para><b>Warum es diese Methode gibt.</b> Die Zeile
+        /// <c>"select * from Tab_Einstellungen where ID_Projekt=" + id</c> stand ACHTMAL
+        /// im Bestand — sechsmal in <c>Form_Simulation_Detail</c>, einmal in
+        /// <c>Form_Start</c> und einmal im <see cref="SimulationRunner"/>: die
+        /// Projektnummer als Zeichenkette in die Anweisung geklebt, also gegen die
+        /// Hausregel „Datenzugriff ausschliesslich ueber <c>DataRepository</c> mit
+        /// <c>new DbParam(…)</c>". Der Weg ueber einen <see cref="DbParam"/> steht jetzt
+        /// an EINER Stelle; an der Ordinalkette der Zeilenauswertung
+        /// (<see cref="ZeileUebernehmen"/>) aendert sich nichts.</para>
+        ///
+        /// <para><b>Zwei Wellen, eine Methode.</b> W10b (Konfigurationsseite) und W11a
+        /// (Ergebnisseite) haben sie gleichzeitig gebraucht und unabhaengig gebaut. Beim
+        /// Zusammenfuehren ist die Signatur die des Kerns geblieben; wer ein
+        /// STEUEROBJEKT fuellen will statt ein frisches Modell zu bekommen, nimmt
+        /// <see cref="ProjektLesen"/>.</para>
+        ///
+        /// <para>Rueckgabe <c>null</c> = kein Satz zum Projekt (neues Projekt). Der
+        /// Aufrufer legt dann selbst einen leeren an — genau das taten die
+        /// Aufrufstellen bisher ueber <c>rows == 0</c>.</para>
+        /// </summary>
+        public static KonfigurationModel LiesProjekt(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+
+            KonfigurationModel m = new KonfigurationModel();
+            return ZeileUebernehmen(TabelleJeProjekt(idProjekt), m) ? m : null;
+        }
+
+        /// <summary>
+        /// Dasselbe fuer ein STEUEROBJEKT: fuellt <see cref="model"/> an Ort und Stelle
+        /// und setzt <see cref="rows"/> — der wortgleiche Ersatz fuer
+        /// <c>ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + id)</c>.
+        ///
+        /// <para>Bewusst AN ORT UND STELLE und nicht mit einem frischen Modell: Die
+        /// Aufrufer reichen <c>ctrl.model</c> weiter (<c>SimulationControl.ctrl_konfig</c>
+        /// haelt das Steuerobjekt und liest es waehrend des Laufs). Und bewusst mit
+        /// derselben Feldregel wie <see cref="ReadSingle"/>: Ein DBNull laesst den
+        /// bisherigen Wert stehen.</para>
+        /// </summary>
+        public bool ProjektLesen(int idProjekt)
+        {
+            rows = 0;
+            if (idProjekt <= 0) return false;
+            if (!ZeileUebernehmen(TabelleJeProjekt(idProjekt), model)) return false;
+            rows = 1;
+            return true;
+        }
+
+        /// <summary>Die eine Abfrage — parametrisiert, nicht konkateniert.</summary>
+        private static DataTable TabelleJeProjekt(int idProjekt)
+        {
+            return DataRepository.GetDataTable(
+                "SELECT * FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                new DbParam("?", idProjekt));
+        }
+
+        /// <summary>
+        /// Wie <see cref="ReadSingle(string)"/>, aber mit Parametern statt zusammen-
+        /// gesetztem Text (iU9-W10b.0b).
+        /// </summary>
+        public void ReadSingle(string sql, params DbParam[] parameter)
+        {
+            ReadZeile(DataRepository.GetDataTable(sql, parameter));
+        }
+
         public void ReadSingle(string sql)
+        {
+            ReadZeile(DataRepository.GetDataTable(sql));
+        }
+
+        private void ReadZeile(DataTable dt)
         {
             rows = 0;
 
-            // Nutzt dein DataRepository (intern OLEDB) statt ODBC
-            DataTable dt = DataRepository.GetDataTable(sql);
+            if (ZeileUebernehmen(dt, model)) rows = 1;
+        }
 
+        /// <summary>
+        /// Uebernimmt die erste Zeile einer gelesenen Tabelle in ein Modell — die
+        /// Abbildung, die <see cref="ReadSingle"/> und <see cref="LiesProjekt"/> teilen.
+        /// Rueckgabe <c>false</c>, wenn nichts zu uebernehmen war.
+        /// </summary>
+        private static bool ZeileUebernehmen(DataTable dt, KonfigurationModel model)
+        {
             if (dt != null && dt.Rows.Count > 0)
             {
                 DataRow row = dt.Rows[0];
@@ -123,8 +204,10 @@ namespace WindowsFormsApplication1
                         ? row[SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE]
                         : null);
 
-                rows = 1;
+                return true;
             }
+
+            return false;
         }
 
         // =====================================================================

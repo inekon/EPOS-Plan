@@ -17,7 +17,7 @@
         <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
                type="text" inputmode="numeric" value="@_text"
                aria-invalid="@(Fehlerhaft ? "true" : null)"
-               @oninput="BeiEingabe" />
+               disabled="@(!Aktiv)" @oninput="BeiEingabe" />
         @if (!string.IsNullOrEmpty(Einheit))
         {
             <span class="epos-einheit">@Einheit</span>
@@ -44,10 +44,35 @@
     /// <summary>Groesster zulaessiger Wert; <c>null</c> = keine Obergrenze.</summary>
     [Parameter] public int? Max { get; set; }
 
+    /// <summary>
+    /// Bedienbar? <c>false</c> sperrt das Feld — Gegenstueck zu
+    /// <see cref="Zahlenfeld.Aktiv"/> (iU9-W2.3). Der Tarifdialog sperrt damit
+    /// die HT-Grenzen, sobald das Rollenmodell gilt: Dort gibt es kein HT/NT
+    /// (Leitentscheidung L10), die Zahlen bleiben aber stehen.
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Name des Feldes fuer die Sammelmeldung des Dialogs (iU9-W6.1) - Gegenstueck zu
+    /// <see cref="Zahlenfeld.Feldname"/>, dort steht die Begruendung.
+    /// </summary>
+    [Parameter] public string Feldname { get; set; } = "";
+
+    /// <summary>Meldet jede AENDERUNG des Fehlerzustands; ohne <see cref="Feldname"/> nichts.</summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
     private string _text = "";
 
     /// <summary>Der Text im Feld ist gerade keine ganze Zahl (Pruefhilfe fuer Tests).</summary>
     public bool Fehlerhaft { get; private set; }
+
+    /// <summary>Setzt den Fehlerzustand und meldet ihn, wenn er sich geaendert hat.</summary>
+    private async Task FehlerSetzen(bool fehlerhaft)
+    {
+        if (Fehlerhaft == fehlerhaft) return;
+        Fehlerhaft = fehlerhaft;
+        if (Feldname.Length > 0) await FehlerZustand.InvokeAsync((Feldname, fehlerhaft));
+    }
 
     protected override void OnParametersSet()
     {
@@ -64,7 +89,7 @@
 
         if (_text.Trim().Length == 0)
         {
-            Fehlerhaft = false;
+            await FehlerSetzen(false);
             Wert = null;
             await WertChanged.InvokeAsync(null);
             return;
@@ -72,13 +97,13 @@
 
         if (Zahlen.GanzzahlParsen(_text, out int nWert) && ImBereich(nWert))
         {
-            Fehlerhaft = false;
+            await FehlerSetzen(false);
             Wert = nWert;
             await WertChanged.InvokeAsync(nWert);
             return;
         }
 
-        Fehlerhaft = true;
+        await FehlerSetzen(true);
     }
 
     private bool ImBereich(int nWert)

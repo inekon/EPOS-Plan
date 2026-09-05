@@ -1,5 +1,4 @@
-/* ==========================================================================
-   epos-ui.css - Thema und Bausteingestaltung der Oberflaechenbibliothek
+﻿/* ===================================================================   epos-ui.css - Thema und Bausteingestaltung der Oberflaechenbibliothek
    EPOS.UI (Umsetzungskonzept iOS, Paket iU8).
 
    Diese Datei wird als statisches Web-Asset ausgeliefert und von der Huelle
@@ -49,8 +48,20 @@
     --epos-warn-flaeche: rgb(255, 246, 224);/* WARN_FLAECHE                 */
     --epos-warn-text: rgb(138, 91, 0);      /* WARN_TEXT                    */
 
+    /* Die beiden Kantenfarben des Hydraulikschemas (SchemaAnsicht:481/495).
+       Blau, Koralle und Amber stehen schon oben; Gruen und Violett gab es nur
+       dort. */
+    --epos-schema-versorgung: #1D9E75;      /* FARBE_VERSORGUNG             */
+    --epos-schema-prozess: #7E57A6;         /* FARBE_PROZESS (Paket E1)     */
+
     /* Program.FarbeFehleingabe - Feld, dessen Text gerade keine Zahl ist. */
     --epos-fehleingabe: rgb(255, 235, 235);
+
+    /* Die zwei Farben des Ganglinien-Pruefprotokolls (iU9-W12.0c). Sie standen
+       woertlich in GanglinienProtokollText.StufeFarbe; im Kern gibt es
+       System.Drawing nicht mehr, dort heisst die Aussage jetzt StufeKlasse. */
+    --epos-stufe-fehler: rgb(176, 0, 32);
+    --epos-stufe-warnung: rgb(160, 96, 0);
 
     /* ---- Einstiegs-/Aktionskarten (KartenStil, zweiter Block) --------- */
     --epos-karte-rahmen: #D1D5DB;           /* KARTE_RAHMEN                 */
@@ -78,6 +89,86 @@
 
     /* Mindestgroesse eines Beruehrungsziels (M2, Touchbetrieb). */
     --epos-touchziel: 44px;
+
+    /* Hoehe eines LISTENRAHMENS (Windows-Abnahme 05.09.2026, Befund W9-B-2:
+       "Liste zu lang"). Jede Rasterliste des Hauses steht in einem festen
+       Rahmen und rollt darin - 22 rem sind rund neun Zeilen samt Spaltenkopf
+       und passen in jedes Dialogmass des Bestands (kleinstes 520 x 360).
+       Es ist eine HOECHSTHOEHE: Eine Liste mit drei Zeilen bleibt drei Zeilen
+       hoch. Wer sie je Wirt anders will, setzt das Token am Wirt. */
+    --epos-listenhoehe: 22rem;
+
+    /* Die Projekt/Datenbank-Auswahl (Anwenderentscheid #76, 05.09.2026).
+       Breite der Mittelspalte mit den zwei Richtungsknoepfen - im Bestand
+       63 px (Form_Gebaeude) bis 88 px (Form_Heizkessel), hier etwas mehr,
+       weil die Knoepfe seit Befund W9-B-3 ihre Aufgabe im Klartext tragen
+       und nicht nur ein Dreieck.
+       Die UMBRUCHBREITE steht daneben auch in der Medienabfrage des
+       Blocks "Zweispaltenauswahl" - eine Medienabfrage kann kein Token
+       lesen. ZweispaltenauswahlTests haelt die zwei Werte gegeneinander. */
+    --epos-zweispalten-mitte: 10rem;
+    --epos-zweispalten-umbruch: 900px;
+
+    /* Das Titelband der Startseite - Form_Start.label20 stand WEISS auf
+       Color.FromArgb(104, 118, 223) (Designer :1085). Dieselbe Farbfamilie
+       tragen die Sinnbilder der 21 Kacheln, die aus derselben Zeit stammen. */
+    --epos-marke-flaeche: #6876df;
+    --epos-marke-text: #ffffff;
+
+    /* ---- Kopfband und Menue des Hauptfensters (Anwenderwunsch 05.09.2026,
+       W16c-E-5) ----------------------------------------------------------
+       Fuenf Werte, die bisher nur als RUECKFALL in der jeweiligen Regel
+       standen - var(--epos-marke, #005aa0). Ein Rueckfall ist keine
+       Farbwahrheit: Er steht so oft da, wie er benutzt wird, und laesst sich
+       nicht an einer Stelle aendern. Die Werte selbst sind unveraendert die
+       des Vorlaeufers MDIMainForm.InitMarke. */
+    --epos-marke: #005aa0;              /* InitMarke :227/236 Akzent + Name  */
+    --epos-marke-untertitel: #70777e;   /* InitMarke :245 Gattung und Claim  */
+    --epos-marke-trennlinie: #dee3e8;   /* InitMarke :224 Linie unter dem Band */
+    --epos-menue-flaeche: #f0f8ff;      /* menuToolbar.BackColor = AliceBlue */
+    --epos-menue-marke: #d9e8f7;        /* die aufgeschlagene Ebene darin    */
+
+    /* ---- Flaeche und Abstand, ebenfalls bisher nur Rueckfall ---------- */
+    --epos-flaeche-hell: #ffffff;       /* Form_Start.BackColor = White      */
+    --epos-flaeche-gedaempft: #efefef;  /* das linke Band des Assistenten    */
+    --epos-abstand: 12px;
+
+    /* ---- NUR DIE STARTSEITE (Anwenderwunsch 05.09.2026, W16b-E-5) ------
+       Sieben Token, die ausschliesslich Seiten/Start/* benutzen darf. Sie
+       tragen die Anmutung von Form_Start, und die galt im Haus nirgends
+       sonst: Die Startmaske hatte eine EIGENE Handschrift - groessere
+       Schrift, kuehlere Rahmen, eine gefuellte Reiterzunge, graue Knoepfe.
+       Wer das ueber den gemeinsamen Farbsatz durchreichte, faerbte sechzig
+       Dialoge mit um. Deshalb ein eigener, sprechender Satz, statt einen
+       gemeinsamen zu kippen. */
+    --epos-start-kasten-rahmen: #b4becd;     /* panelKlima/panelVariante_Paint,
+                                                Pen(180,190,205)             */
+    --epos-start-leiste-flaeche: #f0f0f0;    /* SystemColors.Control - der
+                                                Grund unter den Reiterzungen */
+    --epos-start-reiter-aktiv: #005aa0;      /* die gefuellte Zunge          */
+    --epos-start-reiter-aktiv-text: #ffffff; /* Form_Start :136 weisser Text */
+    --epos-start-text-leise: #696969;        /* Color.DimGray - jede
+                                                Erlaeuterung der Startmaske  */
+    --epos-start-knopf-flaeche: #d3d3d3;     /* Color.LightGray - Form_Start
+                                                :85-88 (Weiter/Zurueck/SimKonfig) */
+    --epos-start-zusammenfassung: #f9fafc;   /* der Kasten auf Reiter 5,
+                                                Designer :903 (249,250,252)  */
+
+    /* ---- Gespraechsverlauf des KI-Assistenten (iU9-W15b.0h) ----------
+       Die acht Farben und zwei Schriftschnitte, die Form_KiChat.SchreibeZeile
+       je vergeben hat (Vermessung § 6.l) - sie werden im Baustein
+       Gespraechsverlauf zu zehn ROLLEN. Drei der acht gab es schon: die zwei
+       Ganglinienstufen aus W12 und die Warnschrift; sie werden hier nur unter
+       ihrem neuen Namen weitergereicht, damit der Baustein nicht wissen muss,
+       woher eine Farbe stammt. Fuenf sind neu. */
+    --epos-verlauf-anwender: #006400;       /* "Sie: ..." - gruen, fett     */
+    --epos-verlauf-assistent: var(--epos-text);  /* Antworttext - schwarz   */
+    --epos-verlauf-kopf: #005AA0;           /* "Assistent:", Zwischentitel  */
+    --epos-verlauf-leise: var(--epos-text-leise);   /* Quellen, Zaehler     */
+    --epos-verlauf-erfolg: #007800;         /* ausgefuehrt, erteilt         */
+    --epos-verlauf-warnung: var(--epos-stufe-warnung);  /* Hinweis, Verfall */
+    --epos-verlauf-fehler: var(--epos-stufe-fehler);    /* Fehler, abgelehnt*/
+    --epos-verlauf-bestaetigung: var(--epos-warn-text); /* Blocktitel, fett */
 }
 
 /* ==========================================================================
@@ -210,6 +301,76 @@ body {
     color: var(--epos-senke-text);
 }
 
+/* Erfolg (iU9-W10a.4): dasselbe Waldgruen, mit dem die Statuszeile des Bestands
+   "hat geklappt" sagt (Color.ForestGreen in Form_PufferSp_Projekt.Status und
+   Form_Simulation_Config.ShowStatus). */
+.epos-warnbanner--erfolg {
+    border-color: rgb(34, 139, 34);
+    background: rgb(240, 250, 240);
+    color: rgb(24, 98, 24);
+}
+
+/* ==========================================================================
+   Baustein: Fehlerschranke (Befund W13-B-1, Windows-Abnahme 05.09.2026)
+   ==========================================================================
+
+   Der Kasten, der statt der Maske steht, wenn eine Komponente wirft. Er
+   traegt denselben Fehlerklang wie das Warnbanner - der Anwender soll ihn
+   ohne Nachdenken als "hier ist etwas schiefgegangen" lesen -, ist aber
+   ein BLOCK und kein Streifen: Er ersetzt den Inhalt, er begleitet ihn
+   nicht.
+
+   Der Wortlaut steht in einem readonly <textarea> und nicht in einem <p>:
+   Nur so laesst er sich mit der Tastatur markieren und kopieren, und nur so
+   rollt ein langer Aufrufstapel in seinem eigenen Rahmen statt die Seite zu
+   dehnen. Dieselbe Ueberlegung wie bei der markierbaren TextBox der
+   WebViewWache. */
+
+.epos-fehlerschranke {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    margin: var(--epos-abstand);
+    padding: var(--epos-abstand);
+    border: 1px solid var(--epos-senke-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-fehleingabe);
+    color: var(--epos-senke-text);
+}
+
+.epos-fehlerschranke-kopf {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+.epos-fehlerschranke-symbol {
+    flex: 0 0 auto;
+    font-weight: 700;
+}
+
+.epos-fehlerschranke-titel {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+}
+
+.epos-fehlerschranke-satz {
+    margin: 0;
+}
+
+.epos-fehlerschranke-wortlaut {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: ui-monospace, "Consolas", "Courier New", monospace;
+    font-size: var(--epos-schriftgroesse);
+    white-space: pre-wrap;
+    resize: vertical;
+    border: 1px solid var(--epos-senke-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+}
+
 /* ==========================================================================
    Baustein: SpeichernLeiste (Vorbild Allgemein/SpeichernLeiste.cs)
    ========================================================================== */
@@ -315,14 +476,79 @@ body {
     cursor: pointer;
 }
 
-.epos-kachel:hover {
+.epos-kachel:hover:enabled {
     background: var(--epos-karte-flaeche-hover);
     border-color: var(--epos-karte-rahmen-hover);
+}
+
+/* Nicht bedienbar (Kachel.Aktiv = false, iU9-W16a.2): Die Kachel sieht aus wie
+   bisher und zeigt ihren Bestand weiter - sie verspricht nur keine Aktion mehr.
+   Ersatz fuer die vierzehn Zeilen Cursors.Default in AktionsKarte. */
+.epos-kachel:disabled {
+    cursor: default;
+    color: var(--epos-karte-text);
 }
 
 .epos-kachel-bild {
     align-self: flex-start;
     max-height: 48px;
+}
+
+/* ---- Die Sinnbilder der Startseite (Anwenderwunsch 05.09.2026) ---------
+
+   HERKUNFT. Es sind DIESELBEN Dateien wie im Vorlaeufer, unveraendert nach
+   wwwroot/bilder/start/ umgezogen; die Zuordnung Kachel -> Datei steht in
+   Seiten/Start/Kachelbilder.cs. JPG bleibt JPG, PNG bleibt PNG - zugeschnitten
+   wird hier.
+
+   WARUM EIN AUSSCHNITT. Die fuenfzehn Kachel-JPG sind die GANZE Kachel des
+   Vorlaeufers: eine weisse Karte von rund 554 x 260 mit dem Sinnbild oben links,
+   ueber die Form_Start seine Beschriftungen legte (label_pBox_* und
+   label2_pBox_*). Hier traegt die Kachel ihren Text selbst - gezeigt wird also
+   nur das Sinnbild. object-fit: none zeigt das Bild in seiner natuerlichen
+   Groesse, object-position schiebt den Ausschnitt auf das Sinnbild.
+
+   DIE ZAHLEN SIND GEMESSEN, nicht geschaetzt: In allen dreizehn hohen Kacheln
+   sitzt das Sinnbild als Block von 75 x 75 zwischen (42,42) und (122,120); das
+   Fenster 84 x 84 ab (40,40) fasst jedes davon mit Rand. Die zwei FLACHEN
+   Kacheln (554 x 117, pBox_Stromspeicher und pBox_Pufferspeicher standen im
+   Bestand halbhoch nebeneinander) tragen es 22 px hoeher: (39,21) bis (114,97).
+
+   Die fuenf *_Symbol.png der Aktionskarten sind bereits zugeschnitten (79-95 px,
+   ausgeschnitten aus denselben JPG) und brauchen kein Fenster. */
+
+.epos-kachel-bild--symbol {
+    width: auto;
+    height: 84px;
+    max-height: none;
+}
+
+.epos-kachel-bild--ausschnitt {
+    width: 84px;
+    height: 84px;
+    max-height: none;
+    object-fit: none;
+    object-position: -40px -40px;
+}
+
+.epos-kachel-bild--ausschnitt-flach {
+    width: 84px;
+    height: 84px;
+    max-height: none;
+    object-fit: none;
+    object-position: -36px -18px;
+}
+
+/* Dasselbe Sinnbild auf einem gewoehnlichen Knopf ("Simulation
+   Konfiguration...", die 21. Kachel): Es soll den Knopf nicht sprengen. */
+.epos-kachel-bild--knopf {
+    zoom: 0.45;
+}
+
+.epos-knopf--mit-bild {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .epos-kachel-titel {
@@ -349,6 +575,65 @@ body {
     height: var(--epos-karte-statuspunkt);
     background: var(--epos-karte-status);
     border-radius: 50%;
+}
+
+/* Zustand "Aus" (iU9-W16a.2): grauer Punkt statt gruenem - woertlich
+   KartenStil.KARTE_RAHMEN aus Wizard_Komponenten.KachelZeichnen (:160). */
+.epos-kachel-statuspunkt--aus {
+    background: var(--epos-karte-rahmen);
+}
+
+/* ==========================================================================
+   Baustein: Assistent (Vorbild Views/Wizard/WizardParent.cs, iU9-W16a.5)
+
+   DREI TEILE STATT DREI PANEL. pnlLeft (linkes Band), pnlContent
+   (Inhaltsflaeche) und pnlBottom (Fussleiste) werden ein Raster mit zwei
+   Spalten und zwei Zeilen; ohne Band nimmt der Inhalt beide Spalten.
+   LoadNewForm - 32 Zeilen gerechnete Fenstergroesse - entfaellt.
+   ========================================================================== */
+
+.epos-assistent {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 0;
+    min-height: 100%;
+}
+
+.epos-assistent-band {
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 280px;
+    padding: var(--epos-karte-rand);
+    background: var(--epos-flaeche-gedaempft);
+    border-right: 1px solid var(--epos-karte-rahmen);
+    overflow: auto;
+}
+
+.epos-assistent-inhalt {
+    grid-column: 2;
+    padding: var(--epos-karte-rand);
+    overflow: auto;
+}
+
+/* Ohne Band beginnt der Inhalt in Spalte 1. */
+.epos-assistent > .epos-assistent-inhalt:first-child {
+    grid-column: 1 / 3;
+}
+
+.epos-assistent-fuss {
+    grid-column: 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-karte-rahmen);
+}
+
+.epos-assistent > .epos-assistent-inhalt:first-child ~ .epos-assistent-fuss {
+    grid-column: 1 / 3;
 }
 
 /* ==========================================================================
@@ -453,6 +738,18 @@ body {
     flex: 1 1 auto;
 }
 
+/* Untertitel INNERHALB einer Gruppe - der fette Label, mit dem die
+   programmatisch gebauten Masken ihre Bloecke gliederten
+   (Form_Tarifstruktur.Gruppe, Form_WirtschaftlichkeitParameter.Gruppe). Kein
+   zweiter Gruppenkopf: Ein Balken im Balken waere eine Hierarchie, die es
+   fachlich nicht gibt. */
+.epos-untergruppe {
+    margin: 8px 0 0 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 700;
+    color: var(--epos-text);
+}
+
 /* Kontextzeile unter dem Dialogkopf: „‹Komponente› · ‹Kategorie›" - sie sagt,
    worauf sich der Dialog bezieht (Vorbild lblKontext in
    Form_VorlagenUebernahme, fett). */
@@ -498,15 +795,71 @@ body {
     color: var(--epos-text-sehr-leise);
 }
 
+/* Die Erlaeuterung unter einer Option (iU9-W10a.1). Sie steht eingerueckt unter
+   dem Wahlknopf, leise wie eine Herleitungszeile, und behaelt ihre Umbrueche:
+   Der Vorlaeufer setzte sie mit "\n" von Hand (SIM_BM_TEXT_*). */
+.epos-option-beschreibung {
+    margin: -4px 0 8px 28px;
+    color: var(--epos-text-leise);
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
+
 /* ==========================================================================
    Standards: Raster und Chartbild
    ========================================================================== */
 
 /* Die Huelle rollt breite Tabellen waagerecht, damit nie die Seite selbst
-   rollt (Befund 03.09.2026, BHKW-Wirtschaftlichkeit in 914 px Breite). */
+   rollt (Befund 03.09.2026, BHKW-Wirtschaftlichkeit in 914 px Breite).
+
+   UND SENKRECHT (Windows-Abnahme 05.09.2026, Befund W9-B-2 "Liste zu lang").
+   Bis dahin wuchs jede Rasterliste mit ihrem Bestand: Die Liste "Gebaeude in
+   DB" schob die Filter, den Detailblock und die Schlussleiste meterweit nach
+   unten, und der Anwender musste die ganze SEITE rollen, um an OK zu kommen.
+   Der Anwender hat die Hausregel dazu gegeben: LISTEN STEHEN IN EINEM FESTEN
+   RAHMEN MIT ROLLBALKEN. Das ist eine HOECHSTHOEHE - eine kurze Liste wird
+   davon nicht kuenstlich hoch -, und sie steht hier an der EINEN Stelle, die
+   alle Listen des Hauses tragen: die handgeschriebenen Tabellen der
+   Projekt/DB-Dialoge, das QuickGrid des Bausteins Raster und die
+   ProjektListe. Wer eine Liste ausdruecklich ungebremst will, setzt
+   .epos-raster-huelle--frei. */
 .epos-raster-huelle {
     width: 100%;
-    overflow-x: auto;
+    overflow: auto;
+    max-height: var(--epos-listenhoehe);
+}
+
+/* Der Spaltenkopf bleibt beim Rollen stehen - ohne ihn ist eine gerollte
+   Liste nicht mehr zuzuordnen. Dieselbe Regel wie bei --hoch, nur fuer alle. */
+.epos-raster-huelle .epos-raster thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--epos-flaeche);
+}
+
+/* Ausdruecklich UNGEBREMST - fuer eine Liste, die als Ganzes gelesen oder
+   gedruckt wird (Berichtstabellen). Kein Wirt setzt sie heute; sie ist der
+   benannte Rueckweg, damit niemand die Hausregel oben aufweicht. */
+.epos-raster-huelle--frei {
+    max-height: none;
+}
+
+/* Virtualisierte Liste (iU9-W13.0l): QuickGrid virtualisiert nur, wenn es
+   einen Behaelter mit FESTER Hoehe zum Rollen gibt - sonst waechst die Tabelle
+   und es bleibt nichts auszulassen. 20 746 CEC-Zeilen brauchen das. */
+.epos-raster-huelle--hoch {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+/* Der Spaltenkopf bleibt beim Rollen stehen - bei 20 000 Zeilen ist das kein
+   Komfort, sondern die Voraussetzung, die Spalten noch zuzuordnen. */
+.epos-raster-huelle--hoch .epos-raster thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--epos-flaeche);
 }
 
 .epos-raster {
@@ -533,12 +886,208 @@ body {
     line-height: 1;
 }
 
+/* Dieselbe Wahl als BREITE ZEILE (iU9-W4): kein Rasterfeld, sondern eine
+   Listenzeile, die ihren Namen selbst traegt. Das Zeichen bleibt vorn, der
+   Text steht linksbuendig daneben und bricht nicht (die Spalte ist 260 px
+   breit und blaettert notfalls). Die Hoehe kommt weiter aus .epos-knopf und
+   ist damit >= --epos-touchziel. */
+.epos-zeilenwahl--breit {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+    line-height: 1.2;
+}
+
+.epos-zeilenwahl--breit > .epos-zeilenwahl-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .epos-raster th {
     background: var(--epos-flaeche);
     color: var(--epos-text);
 }
 
+/* Bearbeitbares Raster (iU9-W3.0): In den Zellen stehen Bausteine, keine
+   Texte. Die senkrechte Polsterung faellt weg - sonst kaeme sie zu den 44 px
+   des Feldes hinzu und die Zeile waere 60 px hoch -, und die Felder fuellen
+   ihre Spalte. Vorbild: die editierbaren Spalten der DataGridViews
+   (Form_Emissionskatalog.dgvArten, ucFuelSettings). */
+.epos-raster--bearbeitbar td {
+    padding: 0 8px;
+}
+
+.epos-raster--bearbeitbar td .epos-feld,
+.epos-raster--bearbeitbar td .epos-feld-zeile {
+    width: 100%;
+}
+
+/* Ein Schalter in der Zelle steht mittig unter seinem Spaltenkopf und traegt
+   dort keine Beschriftung - die steht im Kopf. */
+.epos-raster--bearbeitbar td .epos-schalter {
+    justify-content: center;
+}
+
+/* Dateiwahl: Das Pfadfeld waechst, der Knopf bleibt so breit, wie er sein
+   muss (dieselbe Aufteilung wie epos-neuzeile). */
+.epos-dateiwahl > .epos-knopf {
+    flex: 0 0 auto;
+}
+
+/* Feld an Feld in Spalten - die Wertegitter der Preismasken (12 Monatssaetze
+   der Leistungspreis-Reihe, 12 Monats- und 24 Stundenwerte des
+   Kostenprofils). In WinForms waren das gerechnete Pixelspalten
+   (MonatsRasterBauen: m / 6 und m % 6); hier bestimmt die Fensterbreite, wie
+   viele Spalten Platz haben - unter 320 px steht eine, sonst so viele wie
+   passen. */
+.epos-zahlenraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 6px 16px;
+}
+
+/* Mehrzeiliges Textfeld - Protokolle. Die Schrift ist dieselbe wie im
+   uebrigen Dialog; nur der Zeilenumbruch bleibt, wie er geliefert wurde,
+   damit ein Protokoll seine Spalten behaelt. */
+.epos-eingabe--mehrzeilig {
+    min-height: 0;
+    padding: 6px 8px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    resize: vertical;
+}
+
+/* Eingerueckter Bearbeitungsblock statt eines zweiten Fensters (iU9-W3.3,
+   Vorbild: die beiden zur Laufzeit gebauten Unterdialoge des
+   Emissionskatalogs). Der Rahmen sagt, dass hier gerade etwas anderes gilt;
+   solange er steht, ruht der Rest des Dialogs. */
+.epos-editorblock {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 8px 0 0 0;
+    padding: var(--epos-karte-rand);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen-hover);
+    border-radius: var(--epos-ecke);
+}
+
+/* Der geltende Wert der Werteliste - im DataGridView war er fett. */
+.epos-wert-geltend {
+    font-weight: 700;
+}
+
+/* Ein Protokoll baut seine Spalten aus Leerzeichen - es braucht eine Schrift
+   fester Zeichenbreite (Vorbild: _tbProtokoll in Consolas 9 pt). Die Liste
+   nennt die ueblichen Schriften der drei Plattformen und endet bei der
+   generischen Familie. */
+.epos-eingabe--festbreite {
+    font-family: Consolas, "DejaVu Sans Mono", "SF Mono", Menlo, monospace;
+}
+
+/* ==========================================================================
+   DIAGRAMM (Windows-Abnahme 05.09.2026, Befund A-1)
+
+   Der Rahmen, in dem JEDES Renderer-Bild steht. Er traegt drei Dinge:
+   den Zuschnitt (overflow: hidden - das vergroesserte Bild darf nie ueber
+   seinen Platz hinauslaufen und die Nachbartabelle ueberdecken), die
+   Zeigerhoheit (touch-action: none - sonst nimmt der Browser den Finger fuer
+   seinen eigenen Bildlauf, und das Kneifen kommt nie an) und die Leiste mit
+   Zoomstufe, "Bereich" und "1:1".
+
+   DIE MINDESTHOEHE ist der zweite Teil des Befundes W11b-B-2: Ein Bild in
+   einer schmalen Spalte wurde briefmarkengross. Es fuellt jetzt die Breite
+   (width: 100 % statt max-width), und der Rahmen faellt nie unter 280 px -
+   darunter ist keine Legende mehr zu lesen.
+   ========================================================================== */
+
+.epos-diagramm {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+}
+
+.epos-diagramm-leiste {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Die Zoomstufe, z. B. "x2,5". Ziffern in fester Breite, damit die Leiste
+   beim Drehen am Rad nicht springt. */
+.epos-diagramm-stufe {
+    color: var(--epos-text-leise);
+    font-variant-numeric: tabular-nums;
+    min-width: 42px;
+}
+
+.epos-diagramm-knopf {
+    min-height: 26px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--epos-text);
+    padding: 2px 10px;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+}
+
+/* Der Umschalter "Bereich" bleibt sichtbar gedrueckt, solange er an ist. */
+.epos-diagramm-knopf[aria-pressed="true"] {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-karte-rahmen-hover);
+}
+
+.epos-diagramm-flaeche {
+    position: relative;
+    overflow: hidden;
+    min-height: 280px;
+    min-width: 0;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: #fff;
+    touch-action: none;
+    cursor: grab;
+}
+
+.epos-diagramm-flaeche:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 1px;
+}
+
+/* Der verschiebbare Teil. transform-origin oben links, weil das Modul
+   Verschiebung und Vergroesserung getrennt rechnet. */
+.epos-diagramm-inhalt {
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
+/* Waehrend eines Zuges wechselt der Zeiger - sonst sieht man nicht, dass
+   gerade geschoben wird. */
+.epos-diagramm--zieht { cursor: grabbing; }
+
+/* Im Bereichsmodus wird aufgezogen, nicht geschoben. */
+.epos-diagramm--bereich { cursor: crosshair; }
+
+/* Das aufgezogene Rechteck. */
+.epos-diagramm-gummi {
+    position: absolute;
+    border: 1px dashed var(--epos-quelle-text);
+    background: rgba(55, 138, 221, 0.15);
+    pointer-events: none;
+}
+
 .epos-chartbild {
+    display: block;
+    width: 100%;
     max-width: 100%;
     height: auto;
 }
@@ -634,6 +1183,12 @@ body {
         color: rgb(153, 60, 29);
     }
 
+    .epos-warnbanner--erfolg {
+        border-color: rgb(34, 139, 34);
+        background: rgb(240, 250, 240);
+        color: rgb(24, 98, 24);
+    }
+
     .epos-fehleingabe {
         forced-color-adjust: none;
         background: rgb(255, 235, 235);
@@ -646,6 +1201,11 @@ body {
         background: rgb(0, 160, 0);
     }
 
+    .epos-kachel-statuspunkt--aus {
+        forced-color-adjust: none;
+        background: rgb(140, 140, 140);
+    }
+
     .epos-knopf,
     .epos-kachel {
         border: 1px solid ButtonBorder;
@@ -655,4 +1215,4042 @@ body {
         forced-color-adjust: none;
         color: rgb(138, 91, 0);
     }
+}
+
+/* ==========================================================================
+   Ueberlagerung, Rueckfrage und Zeilenraster (iU9-W4.0)
+
+   Bis Welle 4 wich ein Blazor-Dialog, der einen zweiten braucht, auf einen
+   eingerueckten Block aus (epos-editorblock) oder reichte die Frage an die
+   WinForms-Huelle weiter. Beides ersetzt die Ueberlagerung: ein modaler
+   Bereich IM Fenster, damit keine zweite WebView entsteht (Risiko R2 des
+   Wellenplans iU9) und damit es die Bauform auf iOS ueberhaupt gibt.
+   ========================================================================== */
+
+.epos-ueberlagerung-hintergrund {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(15, 31, 61, 0.45);
+}
+
+.epos-ueberlagerung {
+    position: fixed;
+    z-index: 41;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    width: min(92vw, 900px);
+    max-height: 90vh;
+    overflow: auto;
+    padding: var(--epos-karte-rand);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen-hover);
+    border-radius: var(--epos-ecke);
+    box-shadow: 0 8px 32px rgba(15, 31, 61, 0.35);
+}
+
+.epos-ueberlagerung-kopf {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+.epos-ueberlagerung-titel {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+/* Das Kreuz ist quadratisch - die Mindestbreite der Knoepfe wuerde es zu
+   einem Balken machen. */
+.epos-ueberlagerung-zu {
+    min-width: var(--epos-touchziel);
+    padding: 0;
+}
+
+/* Der Inhalt ist ueblich ein vollstaendiger Dialog. Sein eigener Rand wuerde
+   sich mit dem der Ueberlagerung addieren. */
+.epos-ueberlagerung-inhalt > .epos-dialog {
+    padding: 0;
+    background: transparent;
+}
+
+/* Die beiden Fokusfallen sind unsichtbar, aber erreichbar - sie duerfen
+   deshalb NICHT display:none tragen (das nimmt ihnen den Tabulator). */
+.epos-fokusfalle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.epos-rueckfrage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+}
+
+.epos-rueckfrage-text {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* --------------------------------------------------------------------------
+   Zeilenraster: Spaltenkopf, Zeilen, Abschlusszeile, Summenfuss.
+
+   Die Zeilen sind eigene Komponenten. epos-zr-zeile setzt display:contents,
+   damit ihre Zellen zu Zellen DIESES Rasters werden und die Spalten ueber
+   alle Zeilen fluchten, ohne dass eine Zeile ihre Breiten kennt.
+   -------------------------------------------------------------------------- */
+
+.epos-zeilenraster {
+    display: grid;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 2px;
+    margin-top: var(--epos-rand);
+}
+
+.epos-zr-kopf,
+.epos-zr-zeile,
+.epos-zr-summe {
+    display: contents;
+}
+
+.epos-zr-kopfzelle {
+    padding: 4px 2px;
+    font-weight: 700;
+    color: var(--epos-text-leise);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    white-space: nowrap;
+}
+
+.epos-zr-zelle {
+    min-width: 0;
+    padding: 2px 0;
+}
+
+/* Eine Zelle ohne eigenes Bedienelement (Kette, Einheit, Betragsspiegel). */
+.epos-zr-text {
+    color: var(--epos-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.epos-zr-summenzelle {
+    grid-column: 1 / -1;
+    padding-top: 6px;
+    color: var(--epos-text);
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-zr-summenzelle--stark {
+    font-weight: 700;
+}
+
+/* Die Abschlusszeile ist die gestrichelte "+ Neue Position"-Zeile der Mockups
+   (FK2). Sie sieht anders aus als eine gepflegte Zeile, damit niemand sie fuer
+   einen Datensatz haelt. */
+.epos-zr-neuzeile {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    padding: 4px;
+    border: 1px dashed var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+@media (forced-colors: active) {
+    .epos-ueberlagerung {
+        border: 2px solid ButtonBorder;
+    }
+
+    .epos-ueberlagerung-hintergrund {
+        forced-color-adjust: none;
+        background: rgba(0, 0, 0, 0.6);
+    }
+}
+
+
+/* --------------------------------------------------------------------------
+   Positionszeile der Kostenverwaltung (iU9-W4.1) und der Abschnitt
+   "Ertrag/Bonus".
+   -------------------------------------------------------------------------- */
+
+/* Ein Feld in einer Rasterzelle traegt keine eigene Beschriftung - die steht
+   im Spaltenkopf. Ohne diese Regel bliebe der Platz des Beschriftungstextes
+   als Luecke ueber dem Feld stehen. */
+.epos-zr-zelle .epos-feld {
+    margin: 0;
+}
+
+.epos-zr-aktionen {
+    display: flex;
+    gap: 4px;
+}
+
+/* Die Zeilenknoepfe tragen ein Zeichen, keinen Text - die Mindestbreite der
+   Knoepfe wuerde die Aktionsspalte auf 180 px treiben. */
+.epos-zr-knopf {
+    min-width: var(--epos-touchziel);
+    padding: 0;
+}
+
+.epos-zr-kette {
+    margin-right: 4px;
+    color: var(--epos-text-leise);
+}
+
+.epos-zr-betrag {
+    font-variant-numeric: tabular-nums;
+}
+
+.epos-ertragbonus {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+}
+
+/* Die Tranchentabelle des KWKG-Zuschlags baut ihre Spalten aus Leerzeichen -
+   dieselbe Begruendung wie beim Protokollfeld (epos-eingabe--festbreite). */
+.epos-ertrag-tabelle {
+    margin: 0;
+    font-family: Consolas, "DejaVu Sans Mono", "SF Mono", Menlo, monospace;
+    white-space: pre-wrap;
+}
+
+.epos-ertrag-absatz {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+
+/* --------------------------------------------------------------------------
+   Kostenverwaltung (iU9-W4.2): Kontextleiste und Hinweisbanner mit Kreuz.
+   -------------------------------------------------------------------------- */
+
+.epos-kontextleiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-rand);
+}
+
+/* Der Netto-Hinweis des Bestands (pnlBanner) trug ein Kreuz zum Ausblenden. */
+.epos-bannerzeile {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.epos-bannerzeile > :first-child {
+    flex: 1 1 auto;
+}
+
+/* Die Abschlusszeile spannt sich ueber alle Spalten (epos-zr-neuzeile) und
+   traegt darin ein eigenes Raster mit denselben Spuren - sonst floehen ihre
+   Zellen aus der Reihe der gepflegten Zeilen. */
+.epos-zr-neuraster {
+    display: grid;
+    align-items: center;
+    column-gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Preisbloecke des Energietraegers (iU9-W4.3): Aufschlaege (Strom) und
+   Preisbestandteile (Brennstoff). Beide bauen dieselbe Zeile - Schalter,
+   Wertfeld, optional Schnellwahlknoepfe.
+   -------------------------------------------------------------------------- */
+
+.epos-preisblock {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.epos-preiszeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+/* Der Schalter traegt die Beschriftung der Zeile und bekommt deshalb die
+   Breite einer Spalte; im Bestand waren es 228 px. */
+.epos-preiszeile > :first-child {
+    flex: 0 0 240px;
+}
+
+.epos-preisblock-summe {
+    margin: 6px 0 0 0;
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-preisblock-rest {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+/* Ein negativer Rest heisst: Die ausgewiesenen Bestandteile sind zusammen
+   teurer als der Preis. Im Bestand stand er in Firebrick. */
+.epos-preisblock-rest--negativ {
+    color: var(--epos-senke-text);
+    font-weight: 700;
+}
+
+.epos-schnellwahl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.epos-schnellwahl-knopf {
+    min-width: 0;
+    padding: 0 10px;
+}
+
+/* Der Satz, der zur Unternehmensart des Projekts passt, steht fett (BW4).
+   Bewusst nicht farbig: Firebrick ist im selben Block schon fuer den
+   negativen Rest belegt. */
+.epos-schnellwahl-knopf--empfohlen {
+    font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Energietraegerverwaltung (iU9-W4.4): Liste links, Traegerkarte rechts.
+   -------------------------------------------------------------------------- */
+
+.epos-traeger-flaeche {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-karte-rand);
+    align-items: flex-start;
+}
+
+.epos-traeger-liste {
+    flex: 0 0 260px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+}
+
+/* Seit iU9-W4 (Anwenderwunsch 04.09.2026) stehen ueber der Liste ein Suchfeld
+   und unter ihr die Knopfleiste; gerollt wird deshalb NUR der Eintragsblock -
+   sonst wandert das Suchfeld beim Blaettern aus dem Bild. */
+.epos-traeger-eintraege {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 50vh;
+    overflow: auto;
+}
+
+.epos-traeger-inhalt {
+    flex: 1 1 520px;
+    min-width: 0;
+}
+
+/* Ein Gruppenkopf ist nicht waehlbar - im Bestand sprang die Liste vom Kopf
+   auf den naechsten Traeger weiter. Hier ist er schlicht kein Knopf. */
+.epos-traeger-gruppenkopf {
+    margin: 8px 0 2px 0;
+    font-weight: 700;
+    color: var(--epos-text-leise);
+}
+
+/* Die Traegereintraege stehen linksbuendig und fuellen die Spalte - eine
+   Liste, kein Knopfraster. Die Einrueckung stellt sie unter ihren Gruppenkopf. */
+.epos-traeger-eintrag {
+    padding-left: 20px;
+}
+
+/* Filtert die Suche alles weg, sagt die Liste das - eine leere Flaeche liest
+   sich wie ein Fehler. */
+.epos-traeger-leer {
+    margin: 4px 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-traegerkarte {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+}
+
+.epos-traeger-name {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+.epos-traeger-gruppe {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-feldpaar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-rand);
+}
+
+.epos-kachelreihe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-rand);
+}
+
+.epos-mehrfachauswahl {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.epos-mehrfachauswahl-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 48vh;
+    overflow: auto;
+}
+
+/* ==================================================================== */
+/* KOSTENLEISTE (iU9-W6.0f)                                             */
+/*                                                                      */
+/* Vorbild Views/Kosten/KostenKnoepfe.Leiste: drei Knoepfe nebeneinander */
+/* in einem 40 px hohen Panel, rechts daneben der rote FK8-Kurzhinweis.  */
+/* Hier umbricht die Reihe, statt bei 480 px abgeschnitten zu werden -   */
+/* dieselbe Regel wie bei jeder anderen Reihe der Bibliothek (M2).       */
+/* ==================================================================== */
+
+.epos-kostenleiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--epos-rand);
+    margin-top: var(--epos-rand);
+    padding-top: var(--epos-rand);
+    border-top: 1px solid var(--epos-rahmen);
+}
+
+.epos-kostenleiste-hinweis {
+    color: var(--epos-senke-text);          /* Color.Firebrick des Vorlaeufers */
+    font-size: var(--epos-schriftgroesse);
+}
+
+/* ==================================================================== */
+/* AUSWAHLPAAR (iU9-W6.3)                                               */
+/*                                                                      */
+/* Zwei gleichrangige Spalten nebeneinander, die auf schmalem Schirm     */
+/* umbrechen. Bis zum Anwenderentscheid #76 (05.09.2026) trug das auch   */
+/* die Projekt/Datenbank-Dialoge; die stehen seither in                  */
+/* .epos-zweispalten (Baustein Zweispaltenauswahl), weil dort die        */
+/* Pfeilrichtung am Umbruch haengt und ein flex-wrap davon nichts weiss. */
+/*                                                                      */
+/* Geblieben sind die Masken OHNE Pfeile, bei denen der Umbruch          */
+/* folgenlos ist: GebaeudetypDialog, TypProfilDialog,                    */
+/* KennlinienEditorDialog, WaermepumpeAnlageDialog,                      */
+/* WaermepumpeStammDialog.                                               */
+/* ==================================================================== */
+
+.epos-auswahlpaar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--epos-rand);
+    margin-top: var(--epos-rand);
+}
+
+.epos-auswahlspalte {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 260px;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+}
+
+/* ==================================================================== */
+/* ZWEISPALTENAUSWAHL - Anwenderentscheid #76 vom 05.09.2026             */
+/*                                                                      */
+/* Der EINE Aufbau aller Projekt/Datenbank-Dialoge: links die Liste des  */
+/* Projekts, rechts der Katalog, dazwischen eine SCHMALE Spalte mit den  */
+/* zwei Richtungsknoepfen. So stand es im BHKW-PLAN (Form_Gebaeude:      */
+/* Liste 252 px, Knoepfe 63 px, Katalog 436 px; Form_Heizkessel:         */
+/* 316 / 88 / 313), und so hat es der Anwender nach der Windows-Abnahme  */
+/* wieder bestellt.                                                      */
+/*                                                                      */
+/* AUF SCHMALEM SCHIRM BRICHT DAS PAAR UM: Projektliste oben, Pfeile     */
+/* dazwischen, Katalog unten - das Schema, das der Gebaeudedialog seit   */
+/* W9 hatte. Der Umbruch ist KEIN flex-wrap, sondern eine Medienabfrage: */
+/* Nur so weiss das Blatt, welches Pfeilzeichen gilt (◀▶ nebeneinander,  */
+/* ▲▼ untereinander). Bei flex-wrap kaeme die Reihe um, ohne dass eine   */
+/* Regel es merkt, und die Pfeile zeigten ins Leere.                     */
+/*                                                                      */
+/* DIE UMBRUCHBREITE STEHT ZWEIMAL: als Token --epos-zweispalten-umbruch */
+/* und in der Medienabfrage darunter. Eine Medienabfrage kann kein Token */
+/* lesen (das Bedingungsfeld wird vor der Kaskade ausgewertet). Damit    */
+/* die zwei Werte nicht auseinanderlaufen, haelt                         */
+/* ZweispaltenauswahlTests.Die_Umbruchbreite_steht_als_Token sie         */
+/* gegeneinander.                                                        */
+/* ==================================================================== */
+
+.epos-zweispalten {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--epos-rand);
+    margin-top: var(--epos-rand);
+}
+
+.epos-zweispalten-spalte {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 0;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+}
+
+.epos-zweispalten-titel {
+    margin-top: 0;
+}
+
+.epos-zweispalten-mitte {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    flex: 0 0 var(--epos-zweispalten-mitte);
+    width: var(--epos-zweispalten-mitte);
+}
+
+/* Zeichen ueber Wort - so bleibt die Mittelspalte schmal und der Knopf
+   sagt trotzdem, was er tut (Befund W9-B-3). */
+.epos-zweispalten-knopf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    min-width: 0;
+    padding: 6px 8px;
+    text-align: center;
+}
+
+.epos-zweispalten-pfeil {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.epos-zweispalten-knopftext {
+    font-size: var(--epos-schriftgroesse);
+    line-height: 1.2;
+}
+
+/* Nebeneinander gilt ◀▶; das senkrechte Paar bleibt im Markup stehen und
+   wird erst nach dem Umbruch sichtbar. */
+.epos-zweispalten-pfeil--schmal {
+    display: none;
+}
+
+@media (max-width: 900px) {
+
+    .epos-zweispalten {
+        flex-direction: column;
+    }
+
+    .epos-zweispalten-mitte {
+        flex: 0 0 auto;
+        width: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .epos-zweispalten-knopf {
+        flex-direction: row;
+        gap: 6px;
+        width: auto;
+        padding: 0 12px;
+    }
+
+    .epos-zweispalten-pfeil--breit {
+        display: none;
+    }
+
+    .epos-zweispalten-pfeil--schmal {
+        display: inline;
+    }
+}
+
+/* Mehrzeiliger Zellinhalt (iU9-W6.4). Die Spalte "Eigenschaften" der
+   BHKW-Katalogliste trug im DataGridView vier Zeilen in EINER Zelle (Firma,
+   Brennstoff, Ptherm, Pel); die Zeilenumbrueche stehen im Text. Ohne diese
+   Regel schluckt HTML sie, und aus vier Zeilen wird eine lange. */
+.epos-mehrzeilig {
+    white-space: pre-line;
+}
+/* --------------------------------------------------------------------------
+   Reiterleiste (iU9-W5.0) - der Ersatz fuer TabControl/TabPage. Die Knoepfe
+   sind Beruehrungsziele (44 px) und tragen ihren Zustand ueber die Farbe UND
+   ueber den Unterstrich: Im Hochkontrastmodus faellt die Flaeche weg, der
+   Rahmen bleibt.
+   -------------------------------------------------------------------------- */
+.epos-reiter {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+.epos-reiter-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    border-bottom: 1px solid var(--epos-rahmen);
+    margin-bottom: var(--epos-rand);
+}
+
+.epos-reiter-knopf {
+    min-height: var(--epos-touchziel);
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: var(--epos-text-leise);
+    font: inherit;
+    cursor: pointer;
+}
+
+.epos-reiter-knopf:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-text);
+}
+
+/* ZWEI BAUARTEN, EIN BILD (W16b-E-6). Ein hart gesperrter Knopf traegt
+   disabled, ein weich gesperrter aria-disabled - er bleibt anklickbar, weil er
+   den Grund nennen soll. Aussehen darf er deswegen nicht anders: Ein Anwender
+   unterscheidet "geht nicht" nicht nach der Bauart. Deshalb EINE Regel mit
+   zwei Selektoren und nicht zwei Regeln mit denselben Werten. */
+.epos-reiter-knopf:disabled,
+.epos-reiter-knopf[aria-disabled="true"] {
+    color: var(--epos-text-sehr-leise);
+    cursor: default;
+}
+
+.epos-reiter-knopf--aktiv {
+    color: var(--epos-quelle-text);
+    border-bottom-color: var(--epos-quelle-rahmen);
+    font-weight: 600;
+}
+
+/* Das Blatt fuellt den Rest und rollt fuer sich - so bleibt die Leiste beim
+   Blaettern eines langen Inhalts stehen. */
+.epos-reiter-blatt {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+}
+
+.epos-reiter-blatt:focus-visible {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+/* --------------------------------------------------------------------------
+   Kachelraster und Kennzahlkachel (iU9-W5.0). Statt der gerechneten
+   Prozentspalten der TableLayoutPanels (UcBkKosten.pnlKacheln,
+   UcWirtschaftlichkeit.KachelnBauen) legt das Raster so viele Karten
+   nebeneinander, wie bei --epos-kachel-min Platz haben.
+   -------------------------------------------------------------------------- */
+/* min(..., 100%) statt der blossen Mindestbreite: Ist das Fenster schmaler als
+   eine Kachel, schrumpft die Spalte mit, statt waagerecht ueber den Rand zu
+   laufen. Das faellt erst auf, seit die Startseite mit 404 px die Kachelbreite
+   des Vorlaeufers verlangt (Anwenderwunsch 05.09.2026). */
+.epos-kachelraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--epos-kachel-min, 220px), 100%), 1fr));
+    gap: var(--epos-rand);
+}
+
+/* FESTES MASS STATT DEHNUNG (Kachelraster.Hoechstbreite) - Anwenderbefund
+   W16b-E-7 der Windows-Abnahme vom 05.09.2026: "Kacheln sollten aehnlich wie
+   zuvor angeordnet sein - sind jetzt zu gross."
+
+   WAS VORHER GESCHAH. Die Spalten waren 1fr, also "was uebrig bleibt, zu
+   gleichen Teilen". Passten nur zwei Spalten von 404 px in die Zeile - bei
+   150 % Bildschirmskalierung ist ein Full-HD-Schirm rund 1 280 CSS-px breit,
+   das Reiterblatt darin rund 1 200 -, blieb das Raster nicht bei 404 stehen,
+   sondern verteilte die ganze Breite auf die zwei: jede Kachel rund 590 px,
+   waehrend Sinnbild (84 px) und Titel (16 px) blieben, wo sie waren. Die
+   Kachel wuchs ins Leere, und genau das sah der Anwender.
+
+   WAS JETZT GILT - die Anordnung des Vorlaeufers. Form_Start stellte seine
+   Kacheln in DREI Spalten zu je 404 x 185 auf eine Reiterseite von 1 265 px:
+   karte_ProjektNeu/-Oeffnen/-Zuletzt bei x = 18 / 422 / 834, die Bildkacheln
+   der uebrigen Reiter bei 23 / 435 / 847 - also 8 px Fuge quer; die zweite
+   Zeile begann 191 px tiefer (y = 134 und 325), das sind 6 px hoch. Rechts
+   neben der dritten Spalte liess der Vorlaeufer Luft.
+
+   DREI FESTE SPALTEN, HOECHSTENS --epos-kachel-max breit, LINKSBUENDIG. Was
+   rechts uebrig bleibt, bleibt leer - auf einem breiten Schirm waechst die
+   Kachel nicht mit. minmax(0, ...) laesst die Spalte auf einem SCHMALEREN
+   Fenster mitgehen (aus 404 werden dort rund 396), damit die drei Kacheln
+   nicht ueber den Rand laufen; breiter als das Vorbild wird sie nie. */
+.epos-kachelraster--fest {
+    grid-template-columns: repeat(3, minmax(0, var(--epos-kachel-max, 404px)));
+    justify-content: start;
+    gap: 6px 8px;
+}
+
+/* ZWEI SPALTEN, sobald drei nur noch schmaler als rund 350 px nebeneinander
+   passten - iPad quer (1 024) und jedes Fenster darunter. Die Hoechstbreite
+   gilt weiter: Zwei Kacheln fuellen die Zeile nicht auf. */
+@media (max-width: 1150px) {
+    .epos-kachelraster--fest {
+        grid-template-columns: repeat(2, minmax(0, var(--epos-kachel-max, 404px)));
+    }
+}
+
+/* EINE SPALTE auf dem iPad hochkant (768) und auf dem Telefon. */
+@media (max-width: 720px) {
+    .epos-kachelraster--fest {
+        grid-template-columns: minmax(0, var(--epos-kachel-max, 404px));
+    }
+}
+
+.epos-kennzahlkachel {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 10px;
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    background: #f4f6fa;
+}
+
+.epos-kennzahlkachel-titel {
+    font-weight: 600;
+    color: #333333;
+}
+
+.epos-kennzahlkachel-wert {
+    font-size: 19px;
+    color: #0073aa;
+}
+
+.epos-kennzahlkachel-quelle {
+    color: var(--epos-text-leise);
+}
+
+/* --------------------------------------------------------------------------
+   Seiten des Reiters "Berichte & Kosten" (iU9-W5).
+
+   Der Bestand rechnete seine Flaechen mit TableLayoutPanels und
+   Prozentspalten (UcBkKosten.tl 30/70, UcBkUebersicht.tl mit 222 px
+   Absolutspalte, UcBerichteKosten mit 208 px Navigation). Hier machen das
+   Flex und Grid: Zwei Spalten nebeneinander, solange Platz ist, sonst
+   untereinander.
+   -------------------------------------------------------------------------- */
+.epos-seite-spalten {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--epos-rand);
+    align-items: start;
+}
+
+.epos-seite-spalte {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-seite-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-rand);
+    align-items: flex-end;
+}
+
+/* Ein Simulationsstand, der fehlt oder veraltet ist. Der Vorlaeufer faerbte
+   die ganze Listenzeile ziegelrot (ForeColor = Color.Firebrick); hier traegt
+   die Zelle die Farbe - sie ist die Aussage, nicht die Zeile. */
+.epos-veraltet {
+    color: var(--epos-senke-text);
+    font-weight: 600;
+}
+
+/* Der Fortschritt eines langen Laufs. Der Baustein Fortschritt kommt mit
+   Welle 11; bis dahin traegt das HTML-Element <progress> die ProgressBar der
+   Feldkarte. */
+.epos-fortschritt {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+}
+
+.epos-fortschritt-balken {
+    flex: 1 1 auto;
+    height: 14px;
+}
+
+/* Die linke Navigation des Reiters (UcBerichteKosten.lvNav, 208 px, dunkel).
+   Die Farben sind die der Detailsimulation - dieselbe Palette wie dort, damit
+   die zwei senkrechten Menues der Anwendung gleich aussehen. */
+.epos-navigation {
+    display: flex;
+    min-height: 100%;
+    align-items: stretch;
+}
+
+.epos-navigation-liste {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 208px;
+    background: #23282d;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.epos-navigation-knopf {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    background: transparent;
+    color: #eeeeee;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-navigation-knopf:hover:not(:disabled) {
+    background: #191e23;
+    color: #00b9eb;
+}
+
+.epos-navigation-knopf--aktiv {
+    background: #0073aa;
+    color: #ffffff;
+}
+
+.epos-navigation-symbol {
+    flex: 0 0 auto;
+    width: 22px;
+    text-align: center;
+}
+
+/* Die Inhaltsflaeche rechts der Navigation rollt fuer sich. */
+.epos-navigation-inhalt {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: auto;
+}
+
+/* Die Kopfzeile des Reiters (UcBerichteKosten.lblKopf, 30 px hoch). */
+.epos-navigation-kopf {
+    display: flex;
+    align-items: center;
+    gap: var(--epos-rand);
+    padding: 6px var(--epos-karte-rand);
+    font-weight: 700;
+    color: #1f4e79;
+}
+
+/* Der Rueckweg der Seite "Berichte & Kosten", wenn sie als eigene ANSICHT
+   steht statt als sechstes Reiterblatt (Anwenderentscheid W16c-E-3). Er
+   waechst nicht mit der Kopfzeile mit und traegt das Touchziel des Hauses. */
+.epos-navigation-zurueck {
+    flex: 0 0 auto;
+    min-height: var(--epos-touchziel);
+    font-weight: 400;
+}
+
+/* Die Vergleichsmatrix der Wirtschaftlichkeitsseite (iU9-W5.3). Ihre Spalten
+   entstehen zur Laufzeit - eine je Version -, deshalb ist sie eine
+   gewoehnliche Tabelle mit der Hausklasse epos-raster. Der Zeilentitel steht
+   fett (Vorbild UcWirtschaftlichkeit.Zeile), die Werte rechts. */
+.epos-matrix {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.epos-matrix-titel {
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.epos-matrix-zelle {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Die beiden Tabellen der Kostenseite (iU9-W5.4). Sie tragen Zeilenfarben,
+   Kurztexte je Zelle und eine Summenzeile - die Farben sind die des
+   Vorlaeufers (UcBkKosten: FFE6E6 rosa, FFF4CC gelb).
+   -------------------------------------------------------------------------- */
+.epos-kostentabelle,
+.epos-traegertabelle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Zehn Spalten passen bei keiner Fensterbreite in ihre Mindestbreiten; die
+   Koepfe brechen deshalb um (dieselbe Entscheidung wie WrapMode = True im
+   Vorlaeufer), und die Tabelle blaettert notfalls waagerecht. */
+.epos-traegertabelle th {
+    white-space: normal;
+}
+
+.epos-zahl {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* BEFUND W5-B-1 (Windows-Abnahme 04.09.2026): Die Aktionsspalte der
+   Kostenseite war auf dem Bildschirm nicht zu sehen - weder die Zeilenwahl
+   noch der Papierkorb. Die Regel setzte display:flex auf das <td> SELBST.
+   Damit ist die Zelle KEINE Tabellenzelle mehr (CSS 2.1, 17.2.1 "Anonymous
+   table objects"): Der Browser schiebt eine ANONYME table-cell darunter, die
+   Spaltenbreite haengt nicht mehr an diesem <td>, und jede Zellenregel des
+   Hausblatts (.epos-raster td: Polsterung, Trennlinie) wie die Zeilenfarbe
+   (.epos-zeile--lose > td) trifft einen Kasten, der die Zelle nicht mehr ist.
+   In der Kostentabelle kam dazu, dass ihr erster <th> LEER ist - die Spalte
+   hatte damit ueberhaupt nichts, woraus sie ihre Breite nehmen konnte, waehrend
+   alle anderen Spalten mit white-space:nowrap ihre volle Breite forderten.
+   (Die Uebersichtstabelle traegt dieselbe Klasse, aber einen BESCHRIFTETEN
+   Spaltenkopf - dort fiel es nicht auf.)
+
+   Die Zelle bleibt jetzt Zelle; der Flexkasten steht DARIN
+   (.epos-zellenaktionen-inhalt), und width:1% gibt der Spalte genau die
+   Breite ihrer Knoepfe - nie weniger. */
+.epos-zellenaktionen {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.epos-zellenaktionen-inhalt {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+/* Ein verbautes Gewerk ohne Kostenposition bzw. ein verwendeter Traeger ohne
+   Zuordnung: eine FEHLENDE EINGABE, kein Nullbetrag. */
+.epos-zeile--fehlt > td {
+    background: #ffe6e6;
+}
+
+/* Positionen ohne (gueltige) Anlagenzuordnung - sie rechnen mit. Seit
+   W5-O3 (Anwenderentscheid 04.09.2026) loescht ein DOPPELKLICK auf diese
+   Zeile ihre Positionen - wie im Vorlaeufer (AE21). Deshalb markiert ein
+   Doppelklick hier keinen Text; der Knopf in der Zeile bleibt der erste Weg. */
+.epos-zeile--lose > td {
+    background: #fff4cc;
+    user-select: none;
+}
+
+.epos-zeile--summe > td {
+    font-weight: 700;
+}
+
+.epos-zeile--hinweis > td {
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+/* Ä19: Die gewaehlte Anlage kennzeichnet ihren Energietraeger rechts. */
+.epos-zeile--markiert > td {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+.epos-kostenkopf {
+    justify-content: flex-end;
+}
+
+/* --------------------------------------------------------------------------
+   Die Uebersichtsseite (iU9-W5.5).
+   -------------------------------------------------------------------------- */
+.epos-vergleichstabelle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* --------------------------------------------------------------------------
+   Anwenderwunsch 05.09.2026 (W5-E-1): "Variantenprojekte-Auswahl als Dropdown,
+   damit weniger Platz verwendet wird."
+
+   Vorher stand die Gruppe als Tabelle da - Wahlknopf, Art, Bezeichner,
+   Projektname, Simulation - und daneben in einer zweiten Spalte das
+   Bezeichnerfeld mit den drei Knoepfen. Fuer eine Angabe, die in eine Zeile
+   passt, kostete das vier bis fuenf Zeilen Hoehe, und zwar genau die Hoehe,
+   die der Unterschiedstabelle darunter fehlte. Jetzt: EINE Zeile aus
+   Auswahlfeld, Bezeichnerfeld und den drei Knoepfen, darunter der
+   Simulationsstand als leiser Satz.
+   -------------------------------------------------------------------------- */
+
+/* Das Auswahlfeld darf wachsen (es traegt "Bezeichner - Projektname"), das
+   Bezeichnerfeld bleibt schmal, die Knoepfe stehen rechts daneben. Umbrochen
+   wird ueber das flex-wrap von .epos-seite-zeile - auf schmalem Schirm rutschen
+   die Knoepfe unter die Felder. */
+.epos-variantenzeile > .epos-feld {
+    flex: 0 1 14rem;
+}
+
+.epos-variantenzeile > .epos-feld:first-child {
+    flex: 1 1 20rem;
+    max-width: 34rem;
+}
+
+/* Der Simulationsstand der gewaehlten Version - das, was die Spalte
+   "Simulation" der Tabelle sagte. Leise, weil er begleitet und nicht meldet
+   (Staffelung W16b-E-6); das "⚠" darin traegt weiter .epos-veraltet. */
+.epos-simstand {
+    margin: 4px 0 0 0;
+    min-height: 1.4em;
+    color: var(--epos-text-leise);
+}
+
+.epos-simstand .epos-veraltet {
+    margin-left: 6px;
+}
+
+/* Die Unterschiedstabelle bekommt die frei gewordene Hoehe. Hausregel W9-B-2
+   bleibt: fester Rahmen, innerer Rollbalken, stehender Spaltenkopf - nur die
+   HOECHSTHOEHE ist eine andere, denn sie ist der Inhalt dieser Seite und nicht
+   eine Liste neben ihm. Der Wert haengt an --epos-listenhoehe, damit er mit
+   der Schriftgroesse und mit der Hausregel mitwaechst. */
+.epos-raster-huelle--vergleich {
+    max-height: calc(var(--epos-listenhoehe) * 1.6);
+}
+
+/* Das Gewerk steht nur in der ersten Zeile seines Blocks - und dort fett
+   (Vorbild UcBkUebersicht.SchreibeVergleichsZeile). */
+.epos-vergleich-gewerk {
+    text-align: left;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich
+   mit Begruendung im Kurztext. */
+.epos-gesperrt {
+    color: var(--epos-text-sehr-leise);
+}
+
+/* Der Anlagenblock des PV-Dialogs (iU9-W6.5). Der Vorlaeufer zog um dieses
+   Panel einen GESTRICHELTEN Rahmen von Hand (Form_PV_Paint, vier
+   DrawLine-Aufrufe mit DashPattern 5/2). Hier macht es CSS - und weil der
+   Block ohnehin nur bei gewaehlter Projektzeile erscheint, sagt der Rahmen
+   dasselbe wie dort: "diese Werte gehoeren zur markierten Anlage". */
+.epos-anlagenblock {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-rand);
+    padding: var(--epos-rand);
+    border: 1px dashed var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+/* ==========================================================================
+   Bildkarte (iU9-W10a.0e) - ein Bild mit Klickflaechen.
+
+   Das SVG liegt DECKUNGSGLEICH ueber dem Bild; beide teilen sich den
+   Koordinatenraum der viewBox, aus der das Bild gerendert wurde. Deshalb
+   genuegt "gleiche Groesse, gleicher Ursprung" - eine Umrechnung wie im
+   WinForms-Vorlaeufer (Massstab + Zentrierung von Hand) gibt es nicht.
+
+   Farben und Strichbreiten woertlich aus KlimazonenKarte.OnPaint:239-283:
+   Hover ARGB(70,30,80,160) mit Rand rgb(30,80,160) 2 px, Auswahl
+   ARGB(60,178,34,34) mit Rand firebrick 3 px.
+   ========================================================================== */
+.epos-bildkarte {
+    position: relative;
+    display: block;
+    width: 100%;
+    line-height: 0;                 /* kein Zeilenabstand unter dem Bild */
+}
+
+.epos-bildkarte-bild {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.epos-bildkarte-flaechen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.epos-bildkarte-flaeche {
+    fill: transparent;
+    stroke: none;
+    cursor: pointer;
+    outline: none;
+}
+
+.epos-bildkarte-flaeche:hover {
+    fill: rgba(30, 80, 160, .27);
+    stroke: rgb(30, 80, 160);
+    stroke-width: 2;
+}
+
+/* Der Tastaturweg ist neu (ein GraphicsPath kannte keinen Fokus) und muss
+   deshalb sichtbar sein - sonst waere er nur fuer die Sprachausgabe da. */
+.epos-bildkarte-flaeche:focus-visible {
+    fill: rgba(30, 80, 160, .27);
+    stroke: rgb(30, 80, 160);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+}
+
+.epos-bildkarte-flaeche--gewaehlt,
+.epos-bildkarte-flaeche--gewaehlt:hover {
+    fill: rgba(178, 34, 34, .24);
+    stroke: firebrick;
+    stroke-width: 3;
+    stroke-dasharray: none;
+}
+
+/* Ohne Flaechen bleibt das Bild stehen und darueber der Hinweis - genau so
+   verhielt sich der Vorlaeufer, wenn die Zuordnung nicht zustande kam. */
+.epos-bildkarte-ladefehler {
+    position: absolute;
+    inset: auto 0 0 0;
+    margin: 0;
+    padding: var(--epos-rand);
+    line-height: 1.4;
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+    border-top: 1px solid var(--epos-warn-rahmen);
+}
+
+@media (forced-colors: active) {
+    .epos-bildkarte-flaeche:hover,
+    .epos-bildkarte-flaeche:focus-visible,
+    .epos-bildkarte-flaeche--gewaehlt {
+        fill: Highlight;
+        fill-opacity: .3;
+        stroke: Highlight;
+    }
+}
+
+/* Kleine Abfrage EINER Zahl (WertAbfrage, iU9-W10a.0f) - derselbe Aufbau wie
+   die Rueckfrage: Inhalt untereinander, Knopfleiste darunter. */
+.epos-wertabfrage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 320px;
+}
+
+/* Die Statuszeile unter der Klimazonenkarte (iU9-W10a.2). Sie sagt, welche Zone
+   gewaehlt ist - im Vorlaeufer ein Label unter dem Kartencontrol. */
+.epos-kartenauswahl {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+/* ===================================================================
+   Fortschritt (iU9-W11a.7) - Balken, Text und Abbrechen einer laufenden
+   Rechnung. Vorbild: Form_SpeicherOptimierung (bar_Fortschritt, lbl_Status,
+   btn_Abbruch), die einzige nebenlaeufige Rechnung des Bestands.
+   =================================================================== */
+.epos-fortschritt {
+    display: flex;
+    gap: var(--epos-rand);
+    align-items: center;
+}
+
+.epos-fortschritt-balken {
+    flex: 0 0 auto;
+    width: 280px;
+    height: 20px;
+}
+
+/* Unbestimmt: Ein <progress> ohne value laeuft in jedem heutigen Browser von
+   selbst. Die Ersatzanimation ist fuer Umgebungen, die das nicht tun - und sie
+   haelt sich an prefers-reduced-motion. */
+@keyframes epos-fortschritt-lauf {
+    from { background-position: 0 0; }
+    to   { background-position: 40px 0; }
+}
+
+.epos-fortschritt-balken--unbestimmt {
+    background-image: linear-gradient(
+        135deg,
+        var(--epos-karte-flaeche-hover) 25%, transparent 25%,
+        transparent 50%, var(--epos-karte-flaeche-hover) 50%,
+        var(--epos-karte-flaeche-hover) 75%, transparent 75%, transparent);
+    background-size: 40px 40px;
+    animation: epos-fortschritt-lauf 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .epos-fortschritt-balken--unbestimmt { animation: none; }
+}
+
+.epos-fortschritt-text {
+    flex: 1 1 auto;
+    color: var(--epos-text-leise);
+}
+
+.epos-fortschritt-abbruch {
+    flex: 0 0 auto;
+}
+
+@media (forced-colors: active) {
+    .epos-fortschritt-balken--unbestimmt {
+        background-image: none;
+        border: 1px solid CanvasText;
+    }
+}
+=======
+/* =====================================================================
+   Das Hydraulikschema als SVG (Baustein Schema, iU9-W10b.0c)
+
+   Herkunft jeder Farbe: Views/Simulation/SchemaAnsicht.cs (GDI+) ueber
+   Allgemein/GrafikTools/KartenStil.cs. Hier steht KEIN neuer Farbwert -
+   nur die beiden Kantenfarben oben, die es im Kartenstil nicht gab.
+   ===================================================================== */
+
+.epos-schema {
+    overflow: auto;
+    background: #ffffff;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-schema-bild {
+    display: block;
+    max-width: none;                 /* das Bild scrollt, es schrumpft nicht */
+}
+
+.epos-schema-leer {
+    margin: 0;
+    padding: 44px var(--epos-rand);
+    color: var(--epos-text-leise);
+}
+
+/* ---- Spaltenkoepfe und Texte --------------------------------------- */
+
+.epos-schema-spaltenkopf,
+.epos-schema-zeile,
+.epos-schema-legendetext {
+    font-size: 11px;
+    fill: var(--epos-text-leise);
+}
+
+.epos-schema-titel,
+.epos-schema-bandkopf {
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--epos-text);
+}
+
+.epos-schema-rang {
+    font-size: 13px;
+    font-weight: 600;
+    fill: var(--epos-text-leise);
+}
+
+.epos-schema-prioziffer,
+.epos-schema-pillentext {
+    font-size: 11px;
+    fill: var(--epos-text);
+}
+
+/* ---- Kaesten -------------------------------------------------------- */
+
+.epos-schema-knoten { cursor: pointer; }
+
+.epos-schema-kasten {
+    fill: #ffffff;
+    stroke: var(--epos-rahmen);
+    stroke-width: 1;
+}
+
+/* Quelle: Flaeche wie die Karten, Rahmen leise - blau nur bei der Waermepumpe. */
+.epos-schema-knoten--quelle .epos-schema-kasten {
+    fill: var(--epos-flaeche);
+    stroke: var(--epos-rahmen-leise);
+}
+
+.epos-schema-knoten--quelle-wp .epos-schema-kasten { stroke: var(--epos-quelle-rahmen); }
+
+.epos-schema-knoten--speicher .epos-schema-kasten { stroke: var(--epos-rahmen-speicher); }
+
+.epos-schema-knoten--abnehmer .epos-schema-kasten { fill: var(--epos-flaeche); }
+
+/* Ein Erzeuger MIT Kaskadenbezug traegt den blauen Rahmen (Mockup „Spitzenkessel"). */
+.epos-schema-knoten--kaskade .epos-schema-kasten { stroke: var(--epos-quelle-rahmen); }
+
+/* Eine Kaskaden-QUELLE ist zusaetzlich gestrichelt. */
+.epos-schema-knoten--gestrichelt .epos-schema-kasten { stroke-dasharray: 4 3; }
+
+/* Die Warnung ueberschreibt jede Rahmenfarbe (SchemaAnsicht:595). */
+.epos-schema-knoten--warnung .epos-schema-kasten { stroke: var(--epos-warn-rahmen); }
+
+/* Auswahl: Halo in der Quellfarbe (Deckung 70/255 = 0,27) plus staerkerer Rahmen. */
+.epos-schema-halo {
+    fill: none;
+    stroke: rgba(55, 138, 221, .27);
+    stroke-width: 5;
+}
+
+.epos-schema-knoten--gewaehlt .epos-schema-kasten { stroke-width: 2; }
+
+.epos-schema-knoten:focus-visible { outline: none; }
+.epos-schema-knoten:focus-visible .epos-schema-kasten {
+    stroke: var(--epos-quelle-rahmen);
+    stroke-width: 2;
+}
+
+/* ---- Badges und Warnzeile im Kasten --------------------------------- */
+
+.epos-schema-badge { fill: var(--epos-badge-flaeche); }
+.epos-schema-badgetext { font-size: 11px; fill: var(--epos-badge-text); }
+
+.epos-schema-warnflaeche { fill: var(--epos-warn-flaeche); }
+.epos-schema-warntext { font-size: 11px; fill: var(--epos-warn-text); }
+
+/* ---- Leitungen ------------------------------------------------------ */
+
+.epos-schema-kante {
+    stroke-width: 1.8;
+    fill: none;
+}
+
+.epos-schema-kante--hervor { stroke-width: 2.6; }
+
+.epos-schema--quelle { stroke: var(--epos-quelle-rahmen); fill: var(--epos-quelle-rahmen); }
+.epos-schema--kaskade { stroke: var(--epos-quelle-rahmen); fill: var(--epos-quelle-rahmen); }
+.epos-schema--ladung { stroke: var(--epos-senke-rahmen); fill: var(--epos-senke-rahmen); }
+.epos-schema--versorgung { stroke: var(--epos-schema-versorgung); fill: var(--epos-schema-versorgung); }
+.epos-schema--prozess { stroke: var(--epos-schema-prozess); fill: var(--epos-schema-prozess); }
+
+/* Die Kaskadenkante ist gestrichelt - dieselbe Aussage wie beim Quellchip. */
+.epos-schema-kante.epos-schema--kaskade { stroke-dasharray: 6 4; }
+
+.epos-schema-pfeil { stroke: none; }
+
+/* Der Prioritaetskreis auf der Kurvenmitte: weiss gefuellt, Rand in der
+   Senkenfarbe (SchemaAnsicht:544-545). */
+.epos-schema-priokreis {
+    fill: #ffffff;
+    stroke: var(--epos-senke-rahmen);
+    stroke-width: 1;
+}
+
+/* ---- Kaskadenband --------------------------------------------------- */
+
+.epos-schema-band { cursor: pointer; }
+
+.epos-schema-pille {
+    fill: #ffffff;
+    stroke: var(--epos-rahmen);
+    stroke-width: 1;
+}
+
+.epos-schema-band--speicher .epos-schema-pille { stroke: var(--epos-rahmen-speicher); }
+.epos-schema-band--quelle .epos-schema-pille { stroke: var(--epos-quelle-rahmen); }
+.epos-schema-band--gewaehlt .epos-schema-pille { stroke-width: 2; }
+
+.epos-schema-band:focus-visible { outline: none; }
+.epos-schema-band:focus-visible .epos-schema-pille {
+    stroke: var(--epos-quelle-rahmen);
+    stroke-width: 2;
+}
+
+.epos-schema-bandpfeil { stroke-width: 1.8; }
+
+/* ---- Legende -------------------------------------------------------- */
+
+.epos-schema-legendelinie { stroke-width: 2; }
+.epos-schema-legendelinie--gestrichelt { stroke-dasharray: 6 4; }
+
+/* Hochkontrast: Farbe allein traegt dort nicht - Rahmen und Linien nehmen die
+   Systemfarben, die Auswahl bleibt ueber die Strichstaerke erkennbar. */
+@media (forced-colors: active) {
+    .epos-schema-kasten,
+    .epos-schema-pille {
+        fill: Canvas;
+        stroke: CanvasText;
+    }
+
+    .epos-schema-knoten--gewaehlt .epos-schema-kasten,
+    .epos-schema-band--gewaehlt .epos-schema-pille { stroke: Highlight; }
+
+    .epos-schema-kante,
+    .epos-schema-legendelinie,
+    .epos-schema-bandpfeil { stroke: CanvasText; }
+
+    .epos-schema-halo { stroke: Highlight; }
+}
+
+/* =====================================================================
+   Die beiden Kacheln der Simulationskonfiguration (iU9-W10b.0d)
+
+   Herkunft: Views/Simulation/ErzeugerKarte.cs und SpeicherKarte.cs. Die
+   gesamte Pixelarithmetik der Vorlaeufer (Neuordnen, Innenbreite,
+   HoeheNachfuehren) ersetzt hier Flexbox mit Umbruch.
+   ===================================================================== */
+
+/* ---- Chips (KartenChip:25-72) --------------------------------------- */
+
+.epos-chip {
+    display: inline-block;
+    padding: 3px 8px;
+    margin: 0 6px 4px 0;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: transparent;
+    color: var(--epos-text);
+    font-size: var(--epos-schriftgroesse);
+    line-height: 1.3;
+}
+
+.epos-chip--quelle { border-color: var(--epos-quelle-rahmen); color: var(--epos-quelle-text); }
+.epos-chip--gestrichelt { border-style: dashed; }
+.epos-chip--senke { border-color: var(--epos-senke-rahmen); color: var(--epos-senke-text); }
+
+/* „Flaeche": nur Fuellung, kein Rahmen (Temperaturpaar, Modulausweis). */
+.epos-chip--flaeche { border-color: transparent; background: var(--epos-flaeche); }
+
+.epos-chip--warnung {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+/* Das Badge der Speicherkachel - Fuellung ohne Rahmen, eigene Textfarbe. */
+.epos-chip--badge {
+    border-color: transparent;
+    background: var(--epos-badge-flaeche);
+    color: var(--epos-badge-text);
+}
+
+/* Ein Chip MIT Editorziel ist ein Knopf: Handzeiger, Tastatur, Sprachausgabe. */
+.epos-chip--ziel { cursor: pointer; }
+.epos-chip--ziel:focus-visible { outline: 2px solid var(--epos-quelle-rahmen); outline-offset: 1px; }
+
+/* ---- Erzeugerkachel -------------------------------------------------- */
+
+.epos-erzeugerkachel {
+    padding: var(--epos-rand);
+    margin-bottom: 8px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: #ffffff;
+    cursor: default;
+}
+
+/* Nicht aufgenommene Komponenten stehen gestrichelt und in der Flaechenfarbe
+   da - dieselbe Sprache wie beim Kaskaden-Quellchip. */
+.epos-erzeugerkachel--verfuegbar {
+    border-style: dashed;
+    border-color: var(--epos-rahmen-leise);
+    background: var(--epos-flaeche);
+}
+
+.epos-erzeugerkachel--verfuegbar .epos-erzeugerkachel-titel { color: var(--epos-text-leise); }
+
+/* Hervorhebung = das im Schema markierte Element (Auswahl-Synchronisation). */
+.epos-erzeugerkachel--hervor { border-color: var(--epos-quelle-rahmen); border-width: 2px; padding: 9px; }
+
+.epos-erzeugerkachel-kopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-erzeugerkachel-rang { font-weight: 600; color: var(--epos-text-leise); }
+
+.epos-erzeugerkachel-titel {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+    color: var(--epos-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epos-erzeugerkachel-schalter { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+
+.epos-erzeugerkachel-glyphe,
+.epos-erzeugerkachel-pfeil,
+.epos-speicherkachel-glyphe,
+.epos-speicherkachel-pfeil {
+    border: 0;
+    background: transparent;
+    color: var(--epos-text-sehr-leise);
+    cursor: pointer;
+    font-size: var(--epos-schriftgroesse);
+    line-height: 1;
+    padding: 4px 6px;
+    min-width: 24px;
+}
+
+.epos-erzeugerkachel-glyphe:hover,
+.epos-erzeugerkachel-pfeil:hover,
+.epos-speicherkachel-glyphe:hover,
+.epos-speicherkachel-pfeil:hover { color: var(--epos-quelle-text); }
+
+/* ▲▼ bleiben SICHTBAR, wenn sie nicht moeglich sind - nur ausgegraut. Sonst
+   rutschte die Kopfzeile bei jedem Verschieben um eine Schalterbreite. */
+.epos-erzeugerkachel-glyphe:disabled { color: var(--epos-rahmen-leise); cursor: default; }
+
+.epos-erzeugerkachel-aufnehmen {
+    border: 0;
+    background: transparent;
+    color: var(--epos-quelle-text);
+    cursor: pointer;
+    font-size: var(--epos-schriftgroesse);
+    padding: 4px 6px;
+}
+
+.epos-erzeugerkachel-chips,
+.epos-erzeugerkachel-detail {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+/* ---- Speicherkachel -------------------------------------------------- */
+
+.epos-speicherkachel {
+    padding: 8px var(--epos-rand);
+    margin-bottom: 6px;
+    border: 1px solid var(--epos-rahmen-speicher);
+    border-radius: var(--epos-ecke);
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.epos-speicherkachel--hervor { border-color: var(--epos-quelle-rahmen); border-width: 2px; padding: 7px 9px; }
+
+.epos-speicherkachel-kopf {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.epos-speicherkachel-name { font-weight: 600; color: var(--epos-text); }
+
+.epos-speicherkachel-bilanz {
+    margin-left: auto;
+    color: var(--epos-text-leise);
+    white-space: nowrap;
+}
+
+.epos-speicherkachel-detail { margin-top: 6px; }
+
+.epos-speicherkachel-zeile {
+    margin: 0 0 3px 0;
+    color: var(--epos-text-leise);
+}
+
+/* Das Schwellenband: eine Bahn 0…100 % mit drei Marken. */
+.epos-speicherkachel-band {
+    display: block;
+    width: 100%;
+    height: 12px;
+    margin: 4px 0;
+}
+
+.epos-speicherkachel-bahn { fill: var(--epos-flaeche); }
+.epos-speicherkachel-reserve { fill: var(--epos-badge-flaeche); }
+.epos-speicherkachel-bahnrand { fill: none; stroke: var(--epos-rahmen-leise); stroke-width: 1; }
+
+.epos-speicherkachel-marke { stroke-width: 2; }
+.epos-speicherkachel-marke--ein { stroke: var(--epos-quelle-rahmen); }
+.epos-speicherkachel-marke--nachrang { stroke: var(--epos-text-sehr-leise); }
+.epos-speicherkachel-marke--aus { stroke: var(--epos-senke-rahmen); }
+
+@media (forced-colors: active) {
+    .epos-chip--warnung,
+    .epos-chip--badge,
+    .epos-chip--flaeche { border: 1px solid CanvasText; }
+
+    .epos-erzeugerkachel--hervor,
+    .epos-speicherkachel--hervor { border-color: Highlight; }
+
+    .epos-speicherkachel-marke { stroke: CanvasText; }
+}
+
+/* =====================================================================
+   Die Seite „Simulationskonfiguration" (iU9-W10b.1)
+
+   Der Vorlaeufer rechnete Kopfzeile, Spaltenverhaeltnis 61,5/38,5,
+   Fusszeilenhoehe 82 px und die Lage jedes Schalters von Hand aus. Hier
+   macht das ein Raster mit zwei Spalten und eine Flexbox darunter.
+   ===================================================================== */
+
+.epos-simkonfig {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    padding: var(--epos-karte-rand);
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.epos-simkonfig-kopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-simkonfig-titel { font-weight: 600; color: var(--epos-text); }
+
+.epos-simkonfig-ansicht {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.epos-simkonfig-ansichtlabel { color: var(--epos-text-leise); }
+
+.epos-simkonfig-ansichtknopf {
+    border: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text-leise);
+    padding: 5px 14px;
+    min-height: 32px;
+    cursor: pointer;
+    font-size: var(--epos-schriftgroesse);
+}
+
+.epos-simkonfig-schalter--aktiv {
+    background: var(--epos-flaeche);
+    border-color: var(--epos-rahmen);
+    color: var(--epos-text);
+    font-weight: 600;
+}
+
+/* Der Sperrzustand (ADR-001): alles gesperrt, die Seite bleibt schliessbar -
+   deshalb sitzt das fieldset UM den Inhalt und nicht um die Fusszeile. */
+.epos-simkonfig-bereich {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+/* Spaltenverhaeltnis 61,5 % / 38,5 % - dieselben Zahlen wie im
+   TableLayoutPanel des Vorlaeufers. Unter 900 px stehen die Spalten
+   untereinander; der Vorlaeufer konnte das nicht. */
+.epos-simkonfig-spalten {
+    display: grid;
+    grid-template-columns: 61.5fr 38.5fr;
+    gap: var(--epos-karte-rand);
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .epos-simkonfig-spalten { grid-template-columns: 1fr; }
+}
+
+.epos-simkonfig-erzeuger,
+.epos-simkonfig-speicher {
+    background: var(--epos-flaeche);
+    padding: 8px;
+    border-radius: var(--epos-ecke);
+    min-width: 0;
+}
+
+.epos-simkonfig-gruppe {
+    margin: 10px 0 4px 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+.epos-simkonfig-hinweis {
+    margin: 2px 0 6px 0;
+    color: var(--epos-text-leise);
+}
+
+/* Der Textschalter am Spaltenende (Abnahmebefund 1) - im Vorlaeufer ein
+   Label in der Quellfarbe mit Handzeiger. */
+.epos-simkonfig-verfuegbar {
+    border: 0;
+    background: transparent;
+    color: var(--epos-quelle-text);
+    cursor: pointer;
+    padding: 8px 0 4px 0;
+    font-size: var(--epos-schriftgroesse);
+    text-align: left;
+}
+
+.epos-simkonfig-fuss {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    padding-top: 8px;
+}
+
+.epos-simkonfig-schalter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-karte-rand);
+}
+
+/* Die Auswahlueberlagerung der Waermequelle: ein Knopf je Zweig statt der
+   aufklappenden Liste des Vorlaeufers (die im Browser kein Gegenstueck hat). */
+.epos-simkonfig-quellenwahl {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 280px;
+}
+
+.epos-simkonfig-quellenwahl .epos-knopf { text-align: left; }
+
+/* ===================================================================
+   Die ERGEBNISSEITE der Simulation (iU9-W11b.1) - der Ersatz fuer
+   Form_Simulation_Detail (7 629 Z.) und ihre fuenf Nebenmasken.
+
+   Was hier NICHT steht, ist der Grossteil des Vorlaeufers: 99 Zeilen
+   Geometrie der Kesselseite, 75 der Autarkiekachel, die Ankerarithmetik
+   der Uebersichtszeilen und die Steuerelement-Ausleihe. Ein CSS-Raster
+   ordnet, was dort gerechnet wurde.
+   ========================================================================== */
+
+.epos-simerg {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-karte-rand);
+    font-family: var(--epos-schrift);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text);
+}
+
+.epos-simerg-kopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.epos-simerg-titel {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+}
+
+.epos-simerg-fuss {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    padding-top: 8px;
+}
+
+/* Ein Feldblock: Beschriftung links, Wert rechts - der Ersatz fuer die
+   Label/TextBox/Einheit-Zeilen des Entwurfs. */
+.epos-simerg-felder {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 640px;
+}
+
+.epos-simerg-werte {
+    display: grid;
+    grid-template-columns: minmax(180px, max-content) max-content max-content;
+    gap: 2px 10px;
+    align-items: baseline;
+}
+
+.epos-simerg-werte dt { color: var(--epos-text-leise); }
+.epos-simerg-werte dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
+.epos-simerg-werte .epos-simerg-einheit { color: var(--epos-text-sehr-leise); }
+
+.epos-simerg-block { display: flex; flex-direction: column; gap: 6px; }
+
+.epos-simerg-spalten {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--epos-karte-rand);
+    align-items: start;
+}
+
+/* min-width: 0 hebt die Vorgabe min-width: auto der Rasterfelder auf. Ohne das
+   kann ein breiter Inhalt (eine Tabelle, ein 1 240 Bildpunkte breites Diagramm)
+   die Spalte AUFBLASEN, statt sich zu fuegen - das Bild lief dann rechts aus
+   dem Fenster und ueber die Nachbartabelle (Windows-Abnahme 05.09.2026). */
+.epos-simerg-spalten > * { min-width: 0; }
+
+/* EIN DIAGRAMM STEHT UEBER ALLE SPALTEN (Windows-Abnahme 05.09.2026, Befund
+   W11b-B-2: „Charts der Detaillierten Simulation zu klein"). In einer halben
+   Rasterspalte kam eine Jahresganglinie mit 1 240 Bildpunkten Breite auf
+   etwa 480 an - die Legende war dort 8 Bildpunkte hoch und nicht mehr zu lesen.
+   Diese EINE Regel gilt fuer alle Reiter der Ergebnisseite; die Zahlenbloecke
+   bleiben nebeneinander, das Diagramm bekommt die volle Breite darunter. */
+.epos-simerg-diagrammzeile {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.epos-simerg-schalter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.epos-simerg-hinweis {
+    margin: 2px 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+}
+
+.epos-simerg-info {
+    margin: 6px 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+    max-width: 640px;
+}
+
+.epos-simerg-status { margin: 4px 0; font-weight: 600; }
+.epos-simerg-warn { color: var(--epos-warn-text); }
+.epos-simerg-aequivalent { color: var(--epos-text-sehr-leise); }
+
+.epos-simerg-knopf { /* nimmt die Hausform des Knopfes auf */ }
+.epos-simerg-knopf,
+.epos-simerg-fuss button {
+    min-height: var(--epos-touchziel);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--epos-text);
+    padding: 6px 14px;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+}
+
+.epos-simerg-knopf:disabled,
+.epos-simerg-fuss button:disabled { opacity: .55; cursor: default; }
+
+.epos-simerg-speicherparameter { display: flex; flex-direction: column; gap: 8px; }
+
+/* Die Kennzahlenliste des Stromspeichers: drei Gruppen, vier Spalten, die
+   Vergleichsspalte nur mit Vergleichslauf. Die Warnstufe faerbt die Zeile -
+   dieselben vier Werte wie SpWarnfarbe im Vorlaeufer. */
+.epos-simerg-kennzahlen { width: 100%; border-collapse: collapse; }
+.epos-simerg-kennzahlen th,
+.epos-simerg-kennzahlen td { padding: 3px 8px; text-align: left; }
+.epos-simerg-kennzahlen td.epos-simerg-zahl { text-align: right; font-variant-numeric: tabular-nums; }
+.epos-simerg-kennzahlen tr.epos-stufe-ok { background: rgb(215, 245, 215); }
+.epos-simerg-kennzahlen tr.epos-stufe-knapp { background: rgb(255, 240, 190); }
+.epos-simerg-kennzahlen tr.epos-stufe-ueberschritten { background: rgb(255, 205, 205); }
+.epos-simerg-kennzahlen tr.epos-stufe-unbestimmt { background: rgb(240, 240, 240); }
+.epos-simerg-kennzahlen tbody th { font-weight: 600; padding-top: 10px; }
+
+/* Der Variantenvergleich: beste Zeile gruen hinterlegt (FARBE_BESTE
+   ARGB(222,241,222)), aktive fett, Fehlerzeile in Firebrick. */
+.epos-simerg-vergleich { width: 100%; border-collapse: collapse; }
+.epos-simerg-vergleich th,
+.epos-simerg-vergleich td { padding: 3px 8px; text-align: left; white-space: nowrap; }
+.epos-simerg-vergleich td.epos-simerg-zahl { text-align: right; font-variant-numeric: tabular-nums; }
+.epos-simerg-vergleich tr.epos-simerg-beste { background: rgb(222, 241, 222); }
+.epos-simerg-vergleich tr.epos-simerg-aktiv { font-weight: 700; }
+.epos-simerg-vergleich tr.epos-simerg-fehler { color: firebrick; }
+
+/* ------------------------------------------------------------------ */
+/* Pruefprotokoll des Lastgangimports (iU9-W12.1)                      */
+/*                                                                     */
+/* Die Stufe faerbt den Text der Zeile, nicht ihre Flaeche - genau wie  */
+/* die ListView des Vorlaeufers (item.ForeColor). "Info" bleibt in der  */
+/* Vorgabefarbe; eine eigene Regel braucht sie nicht, sie steht nur     */
+/* damit jede Zeile eine Klasse traegt.                                */
+/* ------------------------------------------------------------------ */
+.epos-protokoll-kopf { margin: 0 0 8px; }
+.epos-protokoll-stufe { white-space: nowrap; }
+
+.epos-stufe--fehler { color: var(--epos-stufe-fehler); }
+.epos-stufe--warnung { color: var(--epos-stufe-warnung); }
+.epos-stufe--info { color: inherit; }
+
+@media (forced-colors: active) {
+    .epos-stufe--fehler,
+    .epos-stufe--warnung { color: LinkText; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Format und Vorschau des Lastgangimports (iU9-W12.2)                 */
+/*                                                                     */
+/* Die acht Auswahllisten standen im Vorlaeufer in einer GroupBox mit   */
+/* fester Pixelgeometrie; hier ist es ein Raster, das umbricht, sobald  */
+/* das Fenster schmal wird. Die graue erste Vorschauzeile ist der       */
+/* SystemColors.GrayText des Vorlaeufers.                              */
+/* ------------------------------------------------------------------ */
+.epos-importoptionen-datei { margin: 0 0 8px; font-weight: 600; }
+
+.epos-importoptionen-raster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 4px 16px;
+}
+
+.epos-vorschau-kopf { color: var(--epos-text-leise, GrayText); }
+
+/* ------------------------------------------------------------------ */
+/* Konfliktdialog des Imports (iU9-W12.3)                              */
+/*                                                                     */
+/* Die Befundspalte umbricht - sie kann bis zu drei Zusatzzeilen        */
+/* tragen (WrapMode der DataGridView-Spalte des Vorlaeufers). Die       */
+/* beanstandete Zeile wird hervorgehoben, statt wie frueher den Fokus   */
+/* in eine Zelle zu setzen.                                            */
+/* ------------------------------------------------------------------ */
+.epos-konflikt-kopf { margin: 0 0 8px; }
+.epos-konflikt-befund { white-space: normal; }
+.epos-konflikt-beanstandet { color: var(--epos-stufe-fehler); font-weight: 600; }
+.epos-leiste-fueller { flex: 1 1 auto; }
+
+/* ------------------------------------------------------------------ */
+/* Lastspitzenkappung (iU9-W12.6)                                      */
+/*                                                                     */
+/* Der Rechenknopf steht fuer sich zwischen Parametern und Ergebnis -  */
+/* im Vorlaeufer ein einzelner Knopf ueber dem Reiterblock.            */
+/*                                                                     */
+/* Negative Betraege stehen rot: "Hausmuster ZahlFaerben: negative     */
+/* Betraege rot, damit der Blick sie findet" (Form_PeakShaving         */
+/* :617-619, Color.FromArgb(176, 0, 0)). Der Kern liefert dafuer das   */
+/* Kennzeichen Zeile.Negativ, nicht die Farbe.                         */
+/*                                                                     */
+/* Die Trennzeile zwischen zwei Kennzahlgruppen war im Vorlaeufer ein  */
+/* leeres ListViewItem; hier ist sie eine flache Zeile mit einer       */
+/* Trennlinie - sichtbar auch ohne Zeilenhoehe.                        */
+/* ------------------------------------------------------------------ */
+.epos-peakshaving-rechnen { justify-content: flex-end; }
+
+.epos-wert--negativ { color: var(--epos-stufe-fehler); }
+
+.epos-zeile--trenner > td {
+    height: 8px;
+    padding: 0;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+@media (forced-colors: active) {
+    .epos-wert--negativ { color: LinkText; }
+}
+
+/* ------------------------------------------------------------------ */
+/* KATALOGIMPORT VDI 3805 (iU9-W13.1)                                  */
+/*                                                                     */
+/* Die vier Vorlaeufer legten Filterzeile und Detailblock mit festen   */
+/* Location/Size-Werten aus; ihre en-US.resx trug dafuer eine ZWEITE   */
+/* Geometrie (Form_WP_einlesen: 13 Size, 14 Location, eigene           */
+/* ClientSize - Befund W13-B36). Hier fliesst beides: Die Filterzeile  */
+/* ist eine Reihe, die umbricht, der Detailblock ein Raster aus zwei   */
+/* Spalten, das bei schmalem Fenster auf eine faellt. Damit entfaellt  */
+/* die zweite Geometrie ersatzlos.                                     */
+/* ------------------------------------------------------------------ */
+.epos-katalogimport-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin: 8px 0;
+}
+
+.epos-katalogimport-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 4px 16px;
+    margin-top: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/* PV-MODULIMPORT CEC / PAN (iU9-W13.3)                                */
+/*                                                                     */
+/* Der Vorlaeufer baute sein Kopfband als HeaderGradientPanel mit      */
+/* LinearGradientBrush von (30,87,153) nach (16,52,110), seine Knoepfe */
+/* mit MakeSmoothButton ueber GraphicsPath und seinen Gitterkopf mit   */
+/* einer eigenen Faerbung. Alle vier waren WinForms-Ersatz fuer das,   */
+/* was CSS ohnehin kann - hier bleibt die Filterzeile, die umbricht,   */
+/* und der Detailblock, der bei schmalem Fenster auf eine Spalte       */
+/* faellt. Der Farbverlauf entfaellt ersatzlos: Die Hausfarben sind    */
+/* die des uebrigen Programms.                                         */
+/* ------------------------------------------------------------------ */
+.epos-pvimport-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin: 8px 0;
+}
+
+.epos-pvimport-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 4px 16px;
+}
+
+/* Die Statuszeile des Vorlaeufers (statusStrip1) - jetzt rechts in der
+   Quellenleiste, leise. */
+.epos-pvimport-status {
+    color: var(--epos-text-leise);
+    font-size: 12px;
+    align-self: center;
+}
+
+/* ====================================================================
+   Baumansicht (iU9-W14c.4) - der Ersatz fuer den einzigen TreeView des
+   Bestands. Die Einrueckung laeuft ueber padding-inline-start, NICHT ueber
+   &nbsp;-Ketten: Eine Sprachausgabe laese die Leerzeichen sonst mit.
+   ==================================================================== */
+
+.epos-baum {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 380px;
+    overflow: auto;
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: 6px;
+    background: var(--epos-karte-flaeche);
+}
+
+.epos-baum ul[role="group"] {
+    list-style: none;
+    margin: 0;
+    padding-inline-start: 20px;
+}
+
+.epos-baum-knoten {
+    outline-offset: -2px;
+}
+
+.epos-baum-zeile {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: var(--epos-touchziel);
+}
+
+/* Das Dreieck ist ein EIGENES Klickziel und waehlt nicht. Der Platzhalter am
+   Blatt ist gleich breit, damit die Texte einer Ebene buendig stehen. */
+.epos-baum-schalter {
+    flex: none;
+    width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    border: none;
+    background: transparent;
+    color: var(--epos-text-leise);
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.epos-baum-schalter--leer {
+    display: inline-block;
+    cursor: default;
+}
+
+.epos-baum-text {
+    flex: 1 1 auto;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.epos-baum-knoten--gewaehlt > .epos-baum-zeile > .epos-baum-text {
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-quelle-text);
+    font-weight: 600;
+}
+
+.epos-baum-kennzeichen {
+    margin-inline-start: 8px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-text-leise);
+    font-size: 12px;
+}
+
+.epos-baum-leer {
+    margin: 8px 0;
+    color: var(--epos-text-leise);
+}
+
+@media (forced-colors: active) {
+    /* Die Auswahl ueber einen Rahmen statt ueber die Flaeche, das Kennzeichen
+       ebenso - Hintergrundfarben werden im Hochkontrastbetrieb ersetzt. */
+    .epos-baum-knoten--gewaehlt > .epos-baum-zeile > .epos-baum-text {
+        outline: 2px solid Highlight;
+        background: Canvas;
+    }
+
+    .epos-baum-kennzeichen {
+        border: 1px solid CanvasText;
+        background: Canvas;
+    }
+}
+
+/* Die Mitte der Dublettensuche: links der Baum (450 px im Vorlaeufer), rechts
+   die Gegenueberstellung (518 px). Unter 900 px stehen sie untereinander. */
+.epos-dubletten-mitte {
+    display: grid;
+    grid-template-columns: minmax(320px, 45fr) minmax(320px, 55fr);
+    gap: 12px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .epos-dubletten-mitte {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Die Rubrikenliste der Einstellungen IST eine Reiterleiste, nur SENKRECHT
+   (iU9-W14c.6, A-16): links die vier Rubriken, rechts das Blatt. Der Vorlaeufer
+   loeste das mit einem SplitContainer und vier gestapelten Dock.Fill-Panels. */
+.epos-reiter--senkrecht > .epos-reiter {
+    display: grid;
+    grid-template-columns: minmax(160px, 200px) 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.epos-reiter--senkrecht .epos-reiter-leiste {
+    flex-direction: column;
+    align-items: stretch;
+    border-bottom: none;
+    border-inline-end: 1px solid var(--epos-karte-rahmen);
+}
+
+.epos-reiter--senkrecht .epos-reiter-knopf {
+    text-align: start;
+    border-bottom: 1px solid transparent;
+    border-inline-end: 3px solid transparent;
+}
+
+.epos-reiter--senkrecht .epos-reiter-knopf--aktiv {
+    border-bottom-color: transparent;
+    border-inline-end-color: var(--epos-quelle-rahmen);
+}
+
+@media (max-width: 700px) {
+    .epos-reiter--senkrecht > .epos-reiter {
+        grid-template-columns: 1fr;
+    }
+
+    .epos-reiter--senkrecht .epos-reiter-leiste {
+        flex-direction: row;
+        flex-wrap: wrap;
+        border-inline-end: none;
+        border-bottom: 1px solid var(--epos-karte-rahmen);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Die EINE Projektliste (iU9-W15a.1).
+
+   Vier Listen des Bestands werden hier eine (Befund W15a-B52). Der Baustein
+   zeichnet eine gewoehnliche Tabelle mit der Hausklasse epos-raster - seine
+   Spaltenzahl haengt am Spaltensatz und entsteht zur Laufzeit.
+
+   Der Spaltenkopf ist ein KNOPF, weil ein Klick sortiert; er sieht aus wie ein
+   Text, ist aber ein Fokusziel und traegt sein Sortierzeichen selbst.
+   -------------------------------------------------------------------------- */
+.epos-projektliste {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+}
+
+.epos-projektliste-suche {
+    max-width: 22rem;
+}
+
+.epos-projektliste .epos-raster-huelle {
+    overflow: auto;
+}
+
+.epos-projektliste-raster {
+    width: 100%;
+}
+
+.epos-projektliste-wahl {
+    width: 56px;
+    text-align: center;
+}
+
+.epos-raster-kopf {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    font-weight: inherit;
+    cursor: pointer;
+    text-align: inherit;
+}
+
+.epos-raster-kopf:focus-visible {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: 2px;
+}
+
+.epos-projektliste-anzahl {
+    margin: 0;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+/* ---- Die drei Spalten der Auswahl (Windows-Abnahme 05.09.2026, Befund
+   W15a-B-1: "Geaendert Datum nicht ersichtlich") ------------------------
+
+   Die Hausregel .epos-raster td { white-space: nowrap } haelt Namen in EINER
+   Zeile - richtig fuer ein Raster mit kurzen Bezeichnern, falsch fuer eine
+   Liste mit Projektnamen: Ein langer Name macht die Tabelle breiter als die
+   Spalte des Wirtes, und in "Speichern unter" (940 px Fenster, davon 3/5 fuer
+   die Liste) lag die dritte Spalte hinter dem waagerechten Rollbalken. Der
+   Anwender sah sie nicht - und suchte auch keinen Rollbalken, denn die Tabelle
+   sah vollstaendig aus.
+
+   Also: Name und Kunde BRECHEN UM statt die Tabelle zu treiben; das Datum
+   bleibt einzeilig und bekommt eine feste Breite - es ist die kuerzeste Spalte
+   und die einzige, deren Umbruch nichts braechte.
+
+   NACHTRAG 05.09.2026 (W15a-E-1): Die Regel stand seit W15a-B-1 im Blatt und
+   WIRKTE NICHT. ".epos-raster td" ist (0,1,1), ".epos-projektliste-name" nur
+   (0,1,0) - die Hausregel gewann, der Name blieb einzeilig, und im 280 px
+   breiten Assistentenband schnitt ihn der waagerechte Rollbalken ab. Genau
+   dieser abgeschnittene Teil traegt bei einer Variante die Unterscheidung
+   ("<Stamm> - <Bezeichner>"), weshalb drei Zeilen "Booster-Kette mit
+   Kombi-Spe..." gleich aussahen. Der Tabellenselektor davor hebt die Regel auf
+   (0,2,0) - eine Klasse mehr, keine Wichtigkeitsmarke. */
+.epos-projektliste-raster .epos-projektliste-name,
+.epos-projektliste-raster .epos-projektliste-kunde {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.epos-projektliste-raster .epos-projektliste-geaendert {
+    white-space: nowrap;
+    width: 7.5rem;
+}
+
+/* ---- Varianten in der Liste (Anwenderwunsch 05.09.2026, W15a-E-1) --------
+
+   "Es sollte wie zuvor kenntlich sein, welches Variantenprojekte sind."
+   Zuvor sagte es der NAME; sobald er abgeschnitten wird, sagt ihn niemand mehr.
+   Drei Mittel, alle drei aus dem Vorbild:
+
+     * die Gruppe steht beieinander (das ordnet die Komponente, nicht das Blatt);
+     * die Variante ist EINGERUECKT und traegt eine senkrechte Linie zum Stamm
+       hin - dieselbe Lesart wie die Einrueckung der Baumansicht;
+     * unter dem Namen steht leise, von wem sie abstammt, wo es keine Artspalte
+       gibt (Assistentenband, iOS-Einstieg).
+
+   Die Artspalte selbst bleibt schmal und bricht nicht: "Stamm" und "Variante"
+   sind kurz, der Bezeichner darunter darf umbrechen. */
+.epos-projektliste-eintrag {
+    display: block;
+}
+
+.epos-projektliste-titel {
+    display: block;
+}
+
+.epos-projektliste-eintrag--variante {
+    padding-inline-start: 14px;
+    border-inline-start: 2px solid var(--epos-rahmen-leise);
+}
+
+.epos-projektliste-herkunft {
+    display: block;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-projektliste-raster .epos-projektliste-artspalte {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    width: 9rem;
+}
+
+.epos-projektliste-art {
+    display: block;
+}
+
+.epos-projektliste-bezeichner {
+    display: block;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+@media (forced-colors: active) {
+    .epos-raster-kopf {
+        color: LinkText;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   „Projekt Speichern unter" (iU9-W15a.4).
+
+   Zwei Spalten: links die Quellliste, rechts die vier Eingabefelder. Der
+   Vorlaeufer stellte sie nebeneinander in ein 544 x 622 grosses Fenster, das
+   WAEHREND des Kopierens wuchs (Befund W15a-B12); hier bleibt das Fenster, und
+   der Fortschrittsbereich blendet sich unter dem Raster ein (A-3).
+   -------------------------------------------------------------------------- */
+.epos-projektkopie-raster {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 16px;
+    align-items: start;
+    min-height: 0;
+}
+
+.epos-projektkopie-quelle,
+.epos-projektkopie-felder {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* DER UMBRUCH KOMMT FRUEHER (Windows-Abnahme 05.09.2026, Befund W15a-B-1).
+   Bei 780 px stand das Formular bis hinunter zum Fenstermass 940 x 660 NEBEN
+   der Liste und liess ihr 3/5 der Breite - rund 535 px fuer vier Spalten samt
+   Wahlspalte. Das reicht fuer Projektname, Kunde UND Datum nicht. Ab hier
+   steht die Liste ueber die volle Breite und das Formular darunter: bei
+   1 024 px Fensterbreite, im 940-px-Dialog und auf dem iPad hochkant
+   (768 x 1024) gleichermassen. Auf einem breiten Schirm bleiben die zwei
+   Spalten, dort ist der Platz da. */
+@media (max-width: 1100px) {
+    .epos-projektkopie-raster {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Die erste Assistentenseite (iU9-W15a.6).
+
+   Zwei Spalten fuer die sechs kurzen Felder, die Beschreibung darunter ueber die
+   volle Breite - dieselbe Anordnung wie im Vorlaeufer (631 x 558), nur ohne feste
+   Pixelpositionen.
+   -------------------------------------------------------------------------- */
+.epos-projektkopf-raster {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+}
+
+@media (max-width: 700px) {
+    .epos-projektkopf-raster {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Gespraechsverlauf des KI-Assistenten (iU9-W15b.6, Bausteinluecke 17).
+
+   Vorbild ist Form_KiChat._verlaufAnzeige: eine RichTextBox, ReadOnly, weisser
+   Grund, beide Bildlaufleisten. Die acht Farben und zwei Schriftschnitte, die
+   SchreibeZeile je vergeben hat, stehen als Rollenklassen darunter.
+
+   pre-line statt pre: Die Umbrueche INNERHALB einer Zeile bleiben erhalten (der
+   Antworttext des Modells ist mehrzeilig), aber es entsteht kein Waagerecht-
+   Bildlauf - overflow-wrap: anywhere bricht auch ein ueberlanges Wort (G-10).
+   -------------------------------------------------------------------------- */
+.epos-verlauf {
+    flex: 1 1 auto;
+    min-height: 160px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    background: var(--epos-flaeche, #ffffff);
+    border: 1px solid var(--epos-rahmen, #d1d5db);
+    border-radius: var(--epos-ecke);
+    padding: 8px 10px 16px 10px;
+}
+
+.epos-verlauf:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: -2px;
+}
+
+.epos-verlauf-zeile {
+    margin: 0 0 2px 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    color: var(--epos-verlauf-assistent);
+}
+
+.epos-verlauf-zeile--anwender      { color: var(--epos-verlauf-anwender); font-weight: 600; }
+.epos-verlauf-zeile--assistent     { color: var(--epos-verlauf-assistent); }
+.epos-verlauf-zeile--assistentkopf { color: var(--epos-verlauf-kopf); font-weight: 600; }
+.epos-verlauf-zeile--ueberschrift  { color: var(--epos-verlauf-kopf); font-weight: 600; }
+.epos-verlauf-zeile--leise         { color: var(--epos-verlauf-leise); }
+.epos-verlauf-zeile--erfolg        { color: var(--epos-verlauf-erfolg); }
+.epos-verlauf-zeile--warnung       { color: var(--epos-verlauf-warnung); }
+.epos-verlauf-zeile--fehler        { color: var(--epos-verlauf-fehler); }
+.epos-verlauf-zeile--bestaetigung  { color: var(--epos-verlauf-bestaetigung); font-weight: 600; }
+
+/* Der Absatztrenner traegt keinen Text und braucht trotzdem Hoehe. */
+.epos-verlauf-zeile--leerzeile {
+    min-height: 0.6em;
+}
+
+/* Ein Verweis ist ein KNOPF, kein <a>: Die Komponente oeffnet nichts selbst,
+   sie meldet die Adresse (G-6). Damit gibt es auch kein href, das ein
+   Rechtsklick kopieren und ein Kontextmenue oeffnen koennte. 44 px
+   Beruehrungsziel (M2) ueber die Zeilenhoehe, nicht ueber Polsterung - sonst
+   risse jede Quellenzeile den Verlauf auseinander. */
+.epos-verlauf-verweis {
+    display: inline;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--epos-verlauf-kopf);
+    text-decoration: underline;
+    text-align: left;
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-verlauf-verweis:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+/* Die drei wandernden Punkte des Beschaeftigt-Zustands. Kein Bild, keine
+   Schriftart - drei Zeichen und eine Blende. */
+.epos-verlauf-punkte::after {
+    content: "\2022\2022\2022";
+    letter-spacing: 2px;
+    margin-right: 6px;
+    animation: epos-verlauf-blenden 1.2s ease-in-out infinite;
+}
+
+@keyframes epos-verlauf-blenden {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .epos-verlauf-punkte::after { animation: none; opacity: 0.6; }
+}
+
+/* Der Fussbereich liegt IM Bildlauf, direkt nach der letzten Zeile (E-3). */
+.epos-verlauf-fuss {
+    margin-top: 8px;
+}
+
+.epos-verlauf-kopieren {
+    align-self: flex-start;
+    margin-top: 4px;
+    min-height: var(--epos-touchziel);
+}
+
+@media (forced-colors: active) {
+    /* Im Hochkontrastbetrieb traegt die FARBE keine Bedeutung mehr - das System
+       setzt sie. Was bleibt, ist der Schriftschnitt und der Rahmen. */
+    .epos-verlauf { border: 1px solid CanvasText; }
+    .epos-verlauf-verweis { color: LinkText; }
+}
+
+/* --------------------------------------------------------------------------
+   Nur-Lese-Textanzeige (iU9-W15b.2) - Aktionsprotokoll und Sendevorschau des
+   Assistenten. Der Vorlaeufer war ein zweites modales Fenster mit fest
+   gerechneten Massen (900 x 480 bzw. 720 x 520); hier zaehlt die Zeilenzahl des
+   Feldes, den Rest macht das Raster der Ueberlagerung.
+   -------------------------------------------------------------------------- */
+.epos-textanzeige {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* Die graue Hinweiszeile der Vorschau - im Vorlaeufer ein 66 px hohes Label in
+   DimGray. Umbrueche im Text bleiben erhalten (sie nennt Modell und Endpunkt in
+   getrennten Zeilen). */
+.epos-textanzeige-kopf {
+    margin: 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+}
+
+.epos-textanzeige-fuss {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* --------------------------------------------------------------------------
+   Rechtshinweis zur Datenuebertragung (iU9-W15b.3).
+
+   Der Vorlaeufer setzte vier Schriftrollen in einer RichTextBox: Ueberschrift
+   12 pt bzw. 9,5 pt fett in #005AA0, Absatz 9,5 pt schwarz, Grau 8,5 pt
+   DimGray, Leerzeile 5 pt. Hier sind es Elemente und Klassen; die Leerzeile
+   ist der Abstand zwischen zwei Absaetzen.
+
+   pre-line bleibt WICHTIG: Die Ressourcen tragen ihre Zeilenumbrueche als \n
+   (der Vorlaeufer musste sie eigens in Environment.NewLine uebersetzen). Gehen
+   sie verloren, steht der Rechtshinweis als Textwurst da.
+   -------------------------------------------------------------------------- */
+.epos-kihinweis {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.epos-kihinweis-text {
+    max-height: 62vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--epos-flaeche, #ffffff);
+    padding: 4px 12px 4px 0;
+}
+
+.epos-kihinweis-text:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+.epos-kihinweis-titel {
+    margin: 0 0 2px 0;
+    font-size: 16px;                        /* 12 pt fett */
+    color: var(--epos-verlauf-kopf);
+}
+
+.epos-kihinweis-ueberschrift {
+    margin: 14px 0 2px 0;
+    font-size: var(--epos-schriftgroesse);  /* 9,5 pt fett */
+    color: var(--epos-verlauf-kopf);
+}
+
+.epos-kihinweis-fassung {
+    margin: 0 0 12px 0;
+    font-size: 11px;                        /* 8,5 pt */
+    color: var(--epos-text-leise);
+}
+
+.epos-kihinweis-absatz {
+    margin: 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kihinweis-fuss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+.epos-kihinweis-stand {
+    color: var(--epos-text-leise);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-kihinweis-knoepfe {
+    display: flex;
+    gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Einstellungen des KI-Assistenten (iU9-W15b.4).
+
+   Der Vorlaeufer war ein FixedDialog mit fest gerechneten Pixelpositionen
+   (500 x 358, AutoScaleMode.None, weil die Anwendung DpiUnaware laeuft). Hier
+   fliesst das Ganze; das Schluesselfeld nimmt die Breite, der Knopf "Modell neu
+   erkennen" steht daneben und rutscht auf schmalen Flaechen darunter.
+   -------------------------------------------------------------------------- */
+.epos-kieinst {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.epos-kieinst-schluesselzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.epos-kieinst-schluessel {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.epos-kieinst-modellneu {
+    flex: 0 0 auto;
+}
+
+.epos-kieinst-limit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+}
+
+/* Der Limitwert ist ANZEIGE, kein Feld - er steht bewusst im Code und ist auf
+   keinem Weg zu aendern (Befund W15b-B26). Grau wie im Vorlaeufer (DimGray). */
+.epos-kieinst-limitwert {
+    color: var(--epos-text-leise);
+}
+
+/* Der dreiteilige Hinweis: Modellzeile, Datenschutz, Kontingent - drei
+   Absaetze, wie im Katalog. Im Vorlaeufer ein einziges Label 470 x 154. */
+.epos-kieinst-hinweis {
+    color: var(--epos-text-leise);
+}
+
+.epos-kieinst-hinweis p {
+    margin: 0 0 8px 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kieinst-hinweis p:last-child {
+    margin-bottom: 0;
+}
+
+.epos-kieinst-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Das Chatfenster des KI-Assistenten (iU9-W15b.7).
+
+   Der Vorlaeufer dockte acht Bereiche in einem 720 x 580-Fenster (Docking, keine
+   absoluten Koordinaten). Hier ist es eine Spalte: Kontext, Feldsicherung,
+   Verlauf (der WAECHST), Schalterzeile, Eingabe, Hinweiszeile, Fussleiste.
+   -------------------------------------------------------------------------- */
+.epos-kichat {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+}
+
+/* Die Kontextzeile - im Vorlaeufer ein 26 px hohes Label in #005AA0. */
+.epos-kichat-kontext {
+    margin: 0;
+    color: var(--epos-verlauf-kopf);
+    overflow-wrap: anywhere;
+}
+
+.epos-kichat-schalter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.epos-kichat-hinweiszeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+/* Die Fussleiste: Links links, Status in der Mitte, Knoepfe rechts. */
+.epos-kichat-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+.epos-kichat-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.epos-kichat-status {
+    flex: 1 1 auto;
+    text-align: center;
+    color: var(--epos-text-leise);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-kichat-knoepfe {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Ein Verweis ist ein KNOPF - die Komponente oeffnet nichts selbst, sie meldet.
+   Dieselbe Ueberlegung wie im Gespraechsverlauf (G-6). */
+.epos-kichat-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--epos-verlauf-kopf);
+    text-decoration: underline;
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-kichat-link:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Die Eingabezeile (Feld + zwei Knoepfe).
+   -------------------------------------------------------------------------- */
+.epos-kieingabe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.epos-kieingabe-feld {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.epos-kieingabe-knoepfe {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   Der Bestaetigungsblock - gedaempftes Gelb wie im Vorlaeufer (255,249,226).
+   -------------------------------------------------------------------------- */
+.epos-kibest {
+    background: rgb(255, 249, 226);
+    border: 1px solid var(--epos-warn-text);
+    border-radius: var(--epos-ecke);
+    padding: 8px 10px;
+}
+
+.epos-kibest-titel {
+    margin: 0 0 6px 0;
+    color: var(--epos-verlauf-bestaetigung);
+    font-weight: 600;
+}
+
+.epos-kibest-text {
+    margin: 0 0 8px 0;
+    background: var(--epos-flaeche, #ffffff);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    padding: 6px 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kibest-fuss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-kibest-verfall {
+    color: var(--epos-verlauf-warnung);
+}
+
+@media (forced-colors: active) {
+    .epos-kibest { border: 2px solid CanvasText; }
+}
+
+/* --------------------------------------------------------------------------
+   Die Werkzeugliste (Ueberlagerung): links die Aktionen, rechts Beschreibung
+   und Parameterfelder - im Vorlaeufer 240 px Liste in einem 780 x 520-Fenster.
+   -------------------------------------------------------------------------- */
+.epos-kiwerkzeuge {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.epos-kiwerkzeuge-raster {
+    display: grid;
+    grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+    gap: 12px;
+}
+
+@media (max-width: 720px) {
+    .epos-kiwerkzeuge-raster { grid-template-columns: 1fr; }
+}
+
+.epos-kiwerkzeuge-liste {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 42vh;
+    overflow-y: auto;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche, #ffffff);
+}
+
+.epos-kiwerkzeuge-eintrag {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--epos-text);
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-kiwerkzeuge-eintrag--gewaehlt {
+    background: var(--epos-karte-flaeche-hover);
+    font-weight: 600;
+}
+
+.epos-kiwerkzeuge-eintrag:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: -2px;
+}
+
+.epos-kiwerkzeuge-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-kiwerkzeuge-felder {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 30vh;
+    overflow-y: auto;
+}
+
+.epos-kiwerkzeuge-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@media (forced-colors: active) {
+    .epos-kiwerkzeuge-eintrag--gewaehlt {
+        background: Highlight;
+        color: HighlightText;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Der KI-Einstieg aus einer Maske (iU9-W15b.5).
+
+   Der Vorlaeufer KiAufrufKnopf war ein 24-40 px breiter Knopf oben rechts,
+   LINKS neben dem Infoknopf (Kollisionsregel InfoKnopf.cs:99). In einer
+   Knopfleiste genuegt die Reihenfolge; die Hoehe haelt er mit dem Infoknopf
+   gleich, damit beide auf einer Linie sitzen.
+   -------------------------------------------------------------------------- */
+.epos-kiknopf {
+    height: var(--epos-infoknopf);
+    min-width: var(--epos-infoknopf);
+    padding: 0 8px;
+    font: inherit;
+    color: var(--epos-verlauf-kopf);
+    background: transparent;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+
+.epos-kiknopf:hover {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-karte-rahmen-hover);
+}
+
+/* Er ist NICHT tabulierbar (tabindex="-1", wie TabStop = false im Vorlaeufer) -
+   ein Umrandungsring bei :focus-visible waere damit irrefuehrend. Ein
+   Mausklick zieht den Fokus ohnehin nicht aus dem bearbeiteten Feld. */
+.epos-kiknopf:focus {
+    outline: none;
+}
+
+@media (forced-colors: active) {
+    .epos-kiknopf { border: 1px solid CanvasText; }
+}
+
+/* --------------------------------------------------------------------------
+   Lizenzverwaltung (iU9-W15c.5).
+
+   Der Vorlaeufer war ein FixedDialog mit drei GroupBox und fest gerechneten
+   Pixelpositionen (560 x 486, AutoScaleMode.None). Hier fliesst das Ganze; die
+   drei Gruppen sind <section> mit Ueberschrift, die Eingabefelder nehmen die
+   Breite, und der Knopf "Lizenzdatei (.lic)..." rutscht auf schmalen Flaechen
+   unter das Schluesselfeld.
+   -------------------------------------------------------------------------- */
+.epos-lizverw {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.epos-lizverw-gruppe {
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    padding: 10px 12px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-lizverw-kopf {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+/* Die drei Statusfarben sind BITGLEICH aus Form_LizenzVerwaltung.cs:134-137
+   uebernommen: gruen 0/128/60 (Gueltig), orange 190/120/0 (Kulanz und
+   Nachpruefung), rot 190/40/40 (nicht aktiviert, Lesemodus, Uhr). Sie sind die
+   einzige Stelle des Bestands, die Lizenzzustaende sichtbar unterscheidet. */
+.epos-lizverw-status {
+    margin: 0;
+    font-weight: 600;
+}
+
+.epos-lizverw-status--gut       { color: rgb(0, 128, 60); }
+.epos-lizverw-status--warn      { color: rgb(190, 120, 0); }
+.epos-lizverw-status--schlecht  { color: rgb(190, 40, 40); }
+
+.epos-lizverw-detail {
+    margin: 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+}
+
+.epos-lizverw-portal {
+    margin: 0;
+}
+
+.epos-lizverw-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: 0;
+}
+
+.epos-lizverw-schluessel { flex: 1 1 280px; min-width: 0; }
+.epos-lizverw-email      { flex: 1 1 280px; min-width: 0; }
+.epos-lizverw-lic        { flex: 0 0 auto; }
+
+/* CharacterCasing = Upper des Vorlaeufers (Designer:112). Die Anzeige macht
+   text-transform, den WERT macht ToUpperInvariant() beim Uebergeben - CSS
+   allein aendert ihn nicht. */
+.epos-lizverw-grossschrift {
+    text-transform: uppercase;
+}
+
+.epos-lizverw-hinweis {
+    margin: 0;
+    color: var(--epos-text-sehr-leise);
+    white-space: pre-line;
+}
+
+.epos-lizverw-fuss {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+@media (forced-colors: active) {
+    .epos-lizverw-status--gut,
+    .epos-lizverw-status--warn,
+    .epos-lizverw-status--schlecht { color: CanvasText; }
+    .epos-lizverw-gruppe { border: 1px solid CanvasText; }
+}
+
+/* --------------------------------------------------------------------------
+   Der Erststart-Assistent (iU9-W15c.7).
+
+   Der Vorlaeufer war ein Sizable-Fenster mit fest angedockten Baendern
+   (Kopf 158 px, Status 24 px, Marquee 16 px, Protokoll Fill, Fuss 46 px). Hier
+   fliesst es: Der Kopftext behaelt seine Umbrueche, das Protokoll nimmt den
+   Platz, der Fuss bleibt unten.
+   -------------------------------------------------------------------------- */
+.epos-erststart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Der neunzeilige Ablauftext kommt als EIN Text mit Umbruechen - pre-line
+   haelt sie, ohne dass die Huelle neun Absaetze bauen muesste. */
+.epos-erststart-kopf {
+    margin: 0;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-erststart-status {
+    margin: 0;
+    color: var(--epos-text-leise);
+    overflow-wrap: anywhere;
+}
+
+.epos-erststart-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Lizenz und rechtliche Hinweise (iU9-W15c.11).
+
+   Der Vorlaeufer war 920 x 700 mit einer weissen Kopfzeile (58 px), einem
+   TabControl und einer Fusszeile (68 px). Hier fliesst es; die Kopfzeile behaelt
+   ihren Klang, der Rechtstext liest sich in einer angenehmen Zeilenlaenge.
+   -------------------------------------------------------------------------- */
+.epos-lizenz {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.epos-lizenz-kopf {
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    padding-bottom: 8px;
+}
+
+.epos-lizenz-titel {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--epos-quelle-text);
+}
+
+.epos-lizenz-untertitel {
+    margin: 2px 0 0 0;
+    font-size: 11px;
+    color: var(--epos-text-sehr-leise);
+}
+
+.epos-lizenz-werkzeuge {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+/* Der Sprachhinweis (E-7): auf Deutsch leer, auf Englisch "Binding version in
+   German." - verbindlich ist allein die deutsche Fassung. */
+.epos-lizenz-sprachhinweis {
+    margin: 0 0 10px 0;
+    font-style: italic;
+    color: var(--epos-text-leise);
+}
+
+/* 13 Ueberschriften und 14 Absaetze. Im Vorlaeufer Segoe UI Semibold +1,5 pt in
+   #005AA0 bzw. Segoe UI in #282C30 - dieselbe Aussage, hier ueber die
+   Themafarben. */
+.epos-lizenz-ueberschrift {
+    margin: 14px 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--epos-quelle-text);
+}
+
+.epos-lizenz-ueberschrift:first-child {
+    margin-top: 0;
+}
+
+.epos-lizenz-absatz {
+    margin: 0 0 8px 0;
+    max-width: 78ch;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-lizenz-fuss {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+.epos-lizenz-herkunft {
+    display: flex;
+    flex-direction: column;
+    color: var(--epos-text-leise);
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* RightToLeft des Vorlaeufers: zuerst hinzugefuegt = ganz rechts. In der
+   Markup-Reihenfolge steht deshalb [Aktivieren] [Speichern] [Drucken] ...
+   [Zustimmen] - von rechts gelesen ist es die Reihenfolge des Bestands
+   (Entscheid E-14). */
+.epos-lizenz-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Der Druck (Entscheid E-2): window.print() statt PrintDocument. Gedruckt wird
+   der Rechtstext, nicht die Bedienung; Kopf- und Fusszeile setzt der Browser
+   aus @page.
+   -------------------------------------------------------------------------- */
+@media print {
+    .epos-lizenz-werkzeuge,
+    .epos-lizenz-knoepfe,
+    .epos-reiter-leiste {
+        display: none !important;
+    }
+
+    .epos-lizenz-absatz {
+        max-width: none;
+    }
+
+    .epos-lizenz {
+        gap: 6px;
+    }
+}
+
+/* ==========================================================================
+   Seite: Startseite (Vorbild Views/Hauptformular/Form_Start.cs, iU9-W16b.2)
+
+   DER GANZE ANSTRICH IST CSS. Der Vorlaeufer zeichnete dreizehn Statuspunkte
+   mit je ~45 Zeilen GraphicsPath und Halbdeckkraft, malte den Rahmen der
+   beiden Kopfkaesten in panelKlima_Paint/panelVariante_Paint selbst und
+   rechnete die Rechtsbuendigkeit der Zusammenfassung in drei Left-Zuweisungen
+   aus. Hier steht dafuer nichts als Layout.
+
+   OHNE FESTE PIXEL. Die Designer-Flaeche mass 1620 x 932 und brauchte deshalb
+   AutoScroll; das Raster hier bricht um, sobald es eng wird (iF21: nach W16
+   gibt es keine fest gerechneten Koordinaten mehr, und genau das ist die
+   Voraussetzung fuer "Per Monitor V2").
+   ========================================================================== */
+
+.epos-startseite {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-abstand);
+    padding: var(--epos-abstand);
+}
+
+/* ---- Kopfband ---------------------------------------------------------- */
+
+/* ZWEI ZEILEN, nicht eine (Anwenderwunsch 05.09.2026). Der Vorlaeufer legte
+   das Titelband pictureBox2 (1 273 x 93 ab (23,12)) UEBER die zwei Kopfkaesten
+   (y=119); nebeneinander standen nur die Kaesten. */
+.epos-startseite-kopf {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-startseite-marke {
+    min-width: 0;
+}
+
+/* label20: Segoe UI Semibold 26 pt fett, WEISS auf #6876DF - das Titelband des
+   Vorlaeufers. Es steht nur ohne Kopfleiste darueber (W16b-E-4), also auf iOS;
+   unter Windows nennt das Kopfband des Hauptfensters dieselbe Gattung. */
+.epos-startseite-gattung {
+    display: block;
+    padding: 6px 14px;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--epos-marke-text);
+    background: var(--epos-marke-flaeche);
+    border-radius: var(--epos-ecke);
+}
+
+/* Die zwei Kaesten nebeneinander: Klima links (panelKlima, 677 breit), Projekt
+   rechts (panelVariante, 489 breit) - das Verhaeltnis des Designers. */
+.epos-startseite-kaesten {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+/* Die zwei Kaesten des Vorlaeufers (panelVariante, panelKlima). Ihre Kontur
+   zeichneten panelKlima_Paint/panelVariante_Paint mit EINEM Stift:
+   Pen(Color.FromArgb(180, 190, 205), 1.5f) auf ein Rundeck von 8 px Radius
+   (Form_Start :2273-2292). Das ist ein KUEHLES Blaugrau; --epos-rahmen-leise
+   (#d9d7cf) ist ein warmes Beigegrau und liess die zwei Kaesten neben den
+   blaugrauen Kacheln fremd aussehen (Anwenderwunsch 05.09.2026, W16b-E-5).
+   Die Strichbreite bleibt bei 1 px - 1,5 px waeren auf einem Bildschirm ohne
+   Skalierung ein unscharfer Strich, und der Farbeindruck haengt an der
+   Farbe. */
+.epos-startseite-projekt,
+.epos-startseite-klima {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--epos-start-kasten-rahmen);
+    border-radius: 8px;
+}
+
+.epos-startseite-klima {
+    flex: 1 1 460px;
+}
+
+.epos-startseite-projekt {
+    flex: 0 1 380px;
+    margin-left: auto;
+}
+
+/* label12 ("Klimaregion auswaehlen:") und label11 ("Projekt:") trugen Segoe UI
+   12 pt - also 16 px und nicht die 13 px der Dialogschrift. Der KOPF der
+   Startmaske war sichtbar groesser als ein Dialog, und genau das macht sie als
+   Startseite kenntlich (W16b-E-5).
+
+   NICHT UEBERNOMMEN ist die Flaeche von label11: Es stand WEISS auf #6876df
+   (Designer :1078). Weiss auf #6876df traegt 3,76:1 - genug fuer die
+   26-px-Gattungszeile (grosse Schrift, 3:1), zu wenig fuer eine Beschriftung
+   in 16 px (4,5:1). Die Marke bleibt deshalb dem Titelband vorbehalten. */
+.epos-startseite-projekt > label,
+.epos-startseite-klima > label {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+.epos-startseite-projekt .epos-eingabe,
+.epos-startseite-klima .epos-eingabe {
+    flex: 0 1 260px;
+    min-width: 160px;
+}
+
+/* pictureBox4 (globe1) stand als 65 x 37 ganz links im Klimakasten. */
+.epos-startseite-globus {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+}
+
+/* label22: Segoe UI 8,25 pt, also die kleinste Schrift der Maske - sie stand
+   RECHTS neben dem Speichernknopf, nicht in einer eigenen Zeile. */
+.epos-startseite-klimahinweis {
+    flex: 1 1 140px;
+    font-size: 11px;
+    color: var(--epos-text-leise);
+}
+
+/* label_ProjektStatus: gruener Haken bei offenem Projekt, rotes Warnzeichen
+   sonst (Form_Start :188-189 und :1211-1212, Color.Green / 192,0,0). Es trug
+   Microsoft Sans Serif 18 pt (= 24 px) und war damit das groesste Zeichen des
+   Kopfes - ein Statuszeichen, das man ueber die ganze Breite sieht. 20 px
+   halten das, ohne die Kopfzeile hoeher zu machen als die Auswahlfelder. */
+.epos-startseite-status {
+    font-size: 20px;
+    line-height: 1;
+    font-weight: 700;
+}
+
+.epos-startseite-status--offen {
+    color: rgb(0, 128, 0);
+}
+
+.epos-startseite-status--keins {
+    color: rgb(192, 0, 0);
+}
+
+/* ---- Ein Reiterblatt --------------------------------------------------- */
+
+/* DIE REITERLEISTE DER STARTMASKE WAR EIN ECHTES TABCONTROL, und sie sah auch
+   so aus (Anwenderwunsch 05.09.2026, W16b-E-5):
+
+     - Schrift Segoe UI Semibold 12 pt FETT (= 16 px), deutlich groesser als
+       die Dialogschrift (tabControl_Wizard.Font, .resx :3275);
+     - der GRUND unter den Zungen SystemColors.Control (#f0f0f0), das Blatt
+       darunter weiss - die Zungen standen also auf einer eigenen Flaeche;
+     - die AKTIVE Zunge GEFUELLT mit weisser Schrift, die uebrigen mit
+       schwarzer: tabControl_Wizard_DrawItem zeichnete den Text der gewaehlten
+       Seite in 0xffffff und den der uebrigen in 0x000000 (Form_Start
+       :127-141), und die Flaeche darunter kam von e.DrawBackground(), das fuer
+       das gewaehlte Stueck SystemColors.Highlight nimmt.
+
+   STATT SystemColors.Highlight steht hier --epos-start-reiter-aktiv (#005aa0),
+   der Markenton des Kopfbandes: Weiss auf dem Windows-Blau #0078d7 traegt
+   4,50:1 und liegt damit auf der Schwelle - ein Nutzer mit einem anderen
+   Akzentfarbton faellt darunter, und eine Systemfarbe kann die Oberflaeche auf
+   iOS ohnehin nicht nachbilden. #005aa0 traegt 7,1:1 und ist derselbe Ton, mit
+   dem das Kopfband den Produktnamen setzt.
+
+   Der 3-px-Fuss der Hausleiste BLEIBT - im erzwungenen Farbmodus ersetzt das
+   System jede Flaeche, und dann ist der Rahmen das Einzige, was die aktive
+   Zunge noch traegt. Er bekommt nur denselben Ton wie die Fuellung, damit die
+   Zunge im Normalbetrieb EIN Block ist.
+
+   Nur die Startseite. Die uebrigen Reiter des Hauses (Kosten, Wirtschaft-
+   lichkeit, Klima) bleiben bei der leisen Leiste aus W5. */
+.epos-startseite > .epos-reiter > .epos-reiter-leiste {
+    gap: 2px;
+    margin-bottom: 0;
+    padding: 4px 4px 0 4px;
+    background: var(--epos-start-leiste-flaeche);
+    border-bottom-color: var(--epos-start-kasten-rahmen);
+}
+
+.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+    color: var(--epos-text);
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+}
+
+.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf--aktiv {
+    color: var(--epos-start-reiter-aktiv-text);
+    background: var(--epos-start-reiter-aktiv);
+    border-bottom-color: var(--epos-start-reiter-aktiv);
+}
+
+/* Ein gesperrter Reiter (kein Projekt offen) bleibt gesperrt: Die Regel oben
+   traegt vier Klassen und schluege die zweistufige Hausregel sonst. Seit
+   W16b-E-6 sperrt die Startseite WEICH (aria-disabled statt disabled, damit
+   der Knopf seinen Grund nennen kann) - beide Bauarten stehen deshalb in
+   EINER Regel, sonst waere die Farbe zweimal festgelegt. */
+.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf:disabled,
+.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf[aria-disabled="true"] {
+    color: var(--epos-text-sehr-leise);
+}
+
+/* Das Blatt ist der KOERPER des Reiterwerks - weiss, mit dem Rahmen der
+   Leiste ringsum und ohne Fuge nach oben. Ohne ihn stuende die graue Leiste
+   frei in der Flaeche, und das Reiterwerk waere kein Reiterwerk mehr. */
+.epos-startseite > .epos-reiter > .epos-reiter-blatt {
+    padding: var(--epos-rand);
+    background: var(--epos-flaeche-hell);
+    border: 1px solid var(--epos-start-kasten-rahmen);
+    border-top: 0;
+}
+
+.epos-startreiter {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.epos-startreiter-kopf {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.epos-startreiter-titel {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+    color: var(--epos-karte-titel);
+}
+
+/* Die UEBERSCHRIFT eines Reiters war groesser als ein Kacheltitel: label25/27/29
+   trugen Segoe UI Semibold 16 pt fett (= 21 px), die Erlaeuterung darunter
+   (label24/26/28) 12 pt in DimGray. Der Kasten der Projektzusammenfassung
+   behaelt die Kacheltitelgroesse - er ist keine Reiterueberschrift. */
+.epos-startreiter-kopf .epos-startreiter-titel {
+    font-size: 21px;
+}
+
+/* label24/26/28/30: Segoe UI Semibold 12 pt FETT in Color.DimGray. Der
+   Halbfettschnitt und das kuehle Grau sind der Grund, warum die Erlaeuterung
+   im Bestand nicht wie Fliesstext aussah (W16b-E-5). */
+.epos-startreiter-text {
+    margin: 2px 0 0 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
+}
+
+/* DER EINSTIEGSHINWEIS des Projektreiters (Anwenderwunsch W16b-E-6,
+   05.09.2026) - der Nachfolger des dauerhaften Warnbanners.
+
+   Er ist mit Absicht KEIN Kasten: keine Flaeche, kein Rahmen, kein Symbolkreis.
+   Eine dritte Stufe unter Ueberschrift (21 px fett) und Erlaeuterung (16 px
+   halbfett DimGray) - dieselbe Farbe, dieselbe Halbfette, aber die
+   Normalgroesse der Seite. So liest sich die Kopfzeile von oben nach unten
+   leiser und der Hinweis als Nachsatz, nicht als zweite Erlaeuterung.
+
+   Das ⚠ davor kommt aus der Regel des Kopfbandes (.epos-startseite-status--
+   keins) und hat damit dieselbe Farbe wie das Statuszeichen im Projektkasten -
+   EINE Farbwahrheit fuer beide. Nur seine Groesse wird auf die Zeile
+   zurueckgenommen; 20 px waeren hier ein Ausrufezeichen. */
+.epos-startreiter-hinweis {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 8px 0 0 0;
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
+}
+
+.epos-startreiter-hinweis .epos-startseite-status {
+    font-size: inherit;
+}
+
+.epos-startreiter-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ---- Die Kachelzeile der Startseite ------------------------------------
+
+   DIE ZEILENHOEHE DES VORLAEUFERS (Anwenderbefund W16b-E-7, 05.09.2026). Jede
+   Kachel von Form_Start war 185 px hoch (pBox_* und karte_*.Size = 404, 185;
+   Ausnahmen nur pBox_Heizkessel mit 156 und die zwei halbhohen Speicherkacheln
+   mit 112). Ohne Untergrenze richtet sich die Zeile allein nach dem laengsten
+   Erlaeuterungstext, und eine Kachel mit einer Zeile Text - der ganze Reiter
+   "Projekt" - saehe neben ihren Nachbarn wie ein Streifen aus.
+
+   Die Regel steht an der ZEILE und nicht an der Kachel: Die Solarthermiekachel
+   sitzt in einem Wirt (.epos-startkachel-mit-wahl), und eine Mindesthoehe an
+   der Kachel darin kaeme zur Weiche noch hinzu. minmax(185px, auto) heisst
+   "mindestens das Vorbildmass, mehr wenn der Text es braucht" - abgeschnitten
+   wird nie. Die BREITE steht beim Raster (.epos-kachelraster--fest). */
+.epos-startreiter .epos-kachelraster {
+    grid-auto-rows: minmax(185px, auto);
+}
+
+/* ---- Eine Kachel der Startseite ---------------------------------------
+
+   SINNBILD LINKS, TITEL DANEBEN, ERLAEUTERUNG DARUNTER - die Anordnung des
+   Vorlaeufers (Anwenderwunsch 05.09.2026). Gemessen an pBox_Gebaude
+   (404 x 185 ab (23,174)): das Sinnbild sass oben links, label_pBox_Gebaude
+   136 px weiter rechts auf halber Bildhoehe, label2_pBox_Gebaude darunter ueber
+   die ganze Breite. Der Reihenumbruch macht das ohne zusaetzliches Markup: Das
+   Bild und der Titel teilen sich die erste Zeile, Erlaeuterung und Statuszeile
+   nehmen je eine volle. */
+.epos-startreiter .epos-kachel {
+    flex-flow: row wrap;
+    align-items: flex-start;
+    column-gap: 16px;
+    row-gap: 6px;
+}
+
+.epos-startreiter .epos-kachel-titel {
+    flex: 1 1 auto;
+    align-self: center;
+}
+
+.epos-startreiter .epos-kachel-beschreibung,
+.epos-startreiter .epos-kachel-status {
+    flex: 1 1 100%;
+}
+
+/* label2_pBox_*: die Erlaeuterung UNTER dem Kacheltitel erbte die Schrift der
+   Reiterseite (Segoe UI Semibold 12 pt fett = 16 px) und stand in
+   Color.DimGray auf Weiss - jede der sechzehn Bildkacheln (Designer :315,
+   :331, :345, :360 und fort). Dieselbe Behandlung wie die Reitererlaeuterung,
+   und derselbe Grund (W16b-E-5). */
+.epos-startreiter .epos-kachel-beschreibung {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
+}
+
+/* Die Weiche der Solarthermiekachel (radioButton_KollektorProfil /
+   radioButton_Ganglinie). Sie betrifft NUR diese eine Kachel.
+
+   SIE STEHT IN DER KARTE, NICHT DARUNTER (Windows-Abnahme 05.09.2026, Befund
+   W16a-B-1): "Optionen Profil und Ganglinie sollte eher im Solarthermie Feld
+   sein." Bis dahin stand die Optionsgruppe als eigener Kasten UNTER der Karte
+   im Kachelraster - zwischen zwei gerahmten Nachbarkacheln sah sie aus wie ein
+   Zusatz zum ganzen Reiter, nicht wie die Weiche DIESER Kachel.
+
+   Warum ueber den Rahmen und nicht ueber das Markup: Eine Kachel IST ein
+   <button> (damit sie Tastatur, Enter und Sprachausgabe von selbst kann), und
+   ein <button> darf keine Auswahlknoepfe enthalten - ein Klick darauf loeste
+   sonst die Kachel aus. Der Rahmen wandert deshalb auf den Wirt, und die
+   Kachel darin wird rahmen- und flaechenlos: Beides zusammen liest sich als
+   EINE Karte, das Klickziel bleibt aber genau der Kachelteil. */
+.epos-startkachel-mit-wahl {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+/* Die Kachel IM Rahmen gibt ihren eigenen ab. Ihre Hoverfarbe behaelt sie -
+   sie ist das Klickziel, die Optionen darunter sind es nicht. */
+.epos-startkachel-mit-wahl > .epos-kachel {
+    background: none;
+    border: 0;
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+    padding-bottom: 8px;
+}
+
+/* Die Optionen sitzen buendig unter dem Kacheltext; die Trennlinie laeuft
+   ueber die Kartenbreite abzueglich des Kartenrandes. */
+.epos-startkachel-wahl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 2px 0 6px;
+    margin: 0 var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-startkachel-wahl > label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--epos-touchziel);
+}
+
+/* ---- Projektzusammenfassung (Reiter Simulation) ------------------------
+
+   DER KASTEN HATTE EINE EIGENE FLAECHE: label70 und die vier Beschriftungen
+   trugen BackColor 249,250,252 (Designer :903, :911, :919, :927, :935) - ein
+   Hauch kuehler als Weiss, gerade genug, damit der Block sich vom Blatt
+   abhebt. Die Beschriftungen standen in DimGray (Segoe UI Semibold 13 pt
+   fett), die Werte daneben in Segoe UI 12,75 pt fett.
+
+   NICHT UEBERNOMMEN ist die FARBE der Werte: label_Name/_WBedarf/_Strom/
+   _Komponenten standen in Color.FromArgb(128, 128, 255) - hell-violettblau,
+   auf 249,250,252 sind das 3,12:1 und damit unter der Hausschwelle von 4,5:1.
+   Die Werte nehmen deshalb den Markenton --epos-marke (#005aa0, 6,9:1) - die
+   gleiche Aussage ("das kommt aus dem Projekt") in derselben Farbfamilie,
+   nur lesbar (W16b-E-5). */
+
+.epos-startzusammenfassung {
+    padding: 12px;
+    background: var(--epos-start-zusammenfassung);
+    border: 1px solid var(--epos-start-kasten-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-startzusammenfassung-liste {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    margin: 8px 0 0 0;
+}
+
+.epos-startzusammenfassung-liste > dt {
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
+}
+
+.epos-startzusammenfassung-liste > dd {
+    margin: 0;
+    font-weight: 700;
+    color: var(--epos-marke);
+}
+
+/* ---- Fussleiste -------------------------------------------------------- */
+
+.epos-startseite-fuss {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+/* btn_Zurueck und btn_Weiter waren 132 x 35 und trugen Segoe UI Semibold 12 pt
+   fett - zwei gleich breite Knoepfe am rechten Rand. Ihre FLAECHE setzte
+   Form_Start_Load zur Laufzeit auf Color.LightGray (:85-86), das Rundeck kam
+   aus MakeSmoothButton(6); denselben Anstrich bekam der Knopf "Simulation
+   Konfiguration..." (:88). Das ist der auffaelligste Unterschied zum
+   Hausknopf, der auf der warmen Flaeche #f5f4ef sitzt (W16b-E-5). */
+.epos-startseite-fuss .epos-knopf,
+.epos-startreiter-leiste .epos-knopf {
+    min-width: 132px;
+    font-weight: 700;
+    background: var(--epos-start-knopf-flaeche);
+    border-color: var(--epos-start-kasten-rahmen);
+}
+
+/* "Zurueck" auf dem ersten und "Weiter" auf dem letzten Reiter sind gesperrt.
+   Ein gesperrter Knopf darf nicht wie ein bedienbarer aussehen - er faellt
+   deshalb auf die leise Hausflaeche zurueck. */
+.epos-startseite-fuss .epos-knopf:disabled {
+    background: var(--epos-flaeche);
+    border-color: var(--epos-rahmen-leise);
+}
+
+/* ==========================================================================
+   MENUEBAND (iU9-W16c.1) - die Windows-Schale des Hauptfensters.
+
+   Vorbild: Hauptfensterrahmen.menuToolbar, ein MenuStrip in AliceBlue mit 54 Punkten
+   in drei Ebenen. Hier steht dafuer Layout und Farbe aus dem Farbsatz; die
+   acht Bildchen sind dieselben PNG (wwwroot/bilder/menue/), damit der
+   Wiedererkennungswert bleibt.
+
+   OHNE FESTE PIXEL - iF21: Nach W16 hat die Oberflaeche keine gerechneten
+   Koordinaten mehr, und genau das ist die Voraussetzung fuer "Per Monitor V2".
+   ========================================================================== */
+
+/* menuToolbar.BackColor war AliceBlue (#f0f8ff) und die Leiste 29 px hoch mit
+   Padding 7,2,0,2 (Designer :90, .resx). Der Ton steht seit W16c-E-5 als
+   Token; die HOEHE bleibt beim Beruehrungsziel von 44 px (Hausregel M2/iL4) -
+   dieselbe Wurzel traegt auf dem iPad ein Menue, das mit dem Finger bedient
+   wird. */
+.epos-menueband {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 2px;
+    padding: 2px 6px;
+    background: var(--epos-menue-flaeche);
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+}
+
+/* Die vier KOEPFE trugen Segoe UI 12 pt (= 16 px), nicht die Dialogschrift
+   (Projekte/Administration/Help/Sprache, .resx MDIMainForm). Die Zeilen der
+   aufgeschlagenen Ebene bleiben bei 13 px - dort standen im Bestand
+   ebenfalls kleinere Eintraege. */
+.epos-menueband > .epos-menueband-punkt > .epos-menueband-knopf,
+.epos-menueband > .epos-menueband-knopf {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+}
+
+.epos-menueband-punkt {
+    position: relative;
+}
+
+/* GANZ RECHTS (Anwenderwunsch 05.09.2026, W16c-E-4). Im Bestand sassen
+   "Deutsch" und "Englisch" als letzte Eintraege des MenuStrip rechtsbuendig am
+   Rand; der Kopf "Sprache" aus W16c-E-2 hat ihre Stelle geerbt. Es verschiebt
+   sich NUR die Optik: Der Punkt bleibt an seiner Stelle im Markup, damit
+   Tastaturweg (← → ueber die vier Koepfe, Ende = "Sprache"), Sprachausgabe und
+   der Nachweis N4 unveraendert bleiben. */
+.epos-menueband-punkt--rechts,
+.epos-menueband-knopf--rechts {
+    margin-left: auto;
+}
+
+.epos-menueband-knopf,
+.epos-menueband-zeile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--epos-touchziel);
+    padding: 0 12px;
+    background: transparent;
+    border: 0;
+    border-radius: var(--epos-ecke);
+    font: inherit;
+    color: var(--epos-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-menueband-zeile {
+    width: 100%;
+    white-space: nowrap;
+}
+
+.epos-menueband-knopf:hover,
+.epos-menueband-zeile:hover,
+.epos-menueband-knopf:focus-visible,
+.epos-menueband-zeile:focus-visible {
+    background: var(--epos-menue-marke);
+    outline: none;
+}
+
+.epos-menueband-knopf[aria-expanded="true"] {
+    background: var(--epos-menue-marke);
+}
+
+.epos-menueband-bild {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+}
+
+.epos-menueband-text {
+    flex: 1 1 auto;
+}
+
+.epos-menueband-kuerzel {
+    flex: 0 0 auto;
+    padding-left: 24px;
+    color: var(--epos-text-leise);
+}
+
+.epos-menueband-pfeil {
+    flex: 0 0 auto;
+    padding-left: 12px;
+    color: var(--epos-text-leise);
+}
+
+/* Die aufgeklappte Liste. Sie liegt UEBER dem Inhalt, nicht daneben - ein
+   Menue, das die Seite verschoebe, waere bei jedem Aufklappen ein Sprung. */
+.epos-menueband-klappe {
+    position: absolute;
+    z-index: 40;
+    top: 100%;
+    left: 0;
+    min-width: 220px;
+    padding: 4px;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+/* Die dritte Ebene klappt seitlich auf - so, wie es das ToolStrip tat. */
+.epos-menueband-klappe--tief {
+    position: static;
+    margin: 2px 0 2px 16px;
+    box-shadow: none;
+}
+
+.epos-menueband-strich {
+    height: 1px;
+    margin: 4px 8px;
+    background: var(--epos-rahmen-leise);
+}
+
+.epos-menueband-trenner {
+    width: 1px;
+    margin: 6px 4px;
+    background: var(--epos-rahmen-leise);
+}
+
+@media (forced-colors: active) {
+    .epos-menueband-knopf[aria-expanded="true"],
+    .epos-menueband-knopf:hover,
+    .epos-menueband-zeile:hover {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+}
+
+/* DIE SCHLIESSFLAECHE (Befund W16c-B13, Windows-Abnahme 05.09.2026).
+
+   Bis dahin schloss das Band ueber @onfocusout am <nav>. Das war doppelt
+   falsch: focusout blast nach oben und feuert AUCH bei einem Fokuswechsel
+   INNERHALB des Bandes - der Zeigerdruck auf eine Untermenuezeile raeumte die
+   Klappe weg, bevor der Klick ankam -, und auf dem iPad setzt eine Beruehrung
+   ueberhaupt keinen Fokus. Jetzt liegt, solange ein Menue offen ist, ein
+   durchsichtiger Deckel ueber der ganzen Ansicht; ein Klick oder Tipp NEBEN
+   das Menue trifft ihn und schliesst.
+
+   DIE DREI Z-EBENEN. Das Band bekommt einen eigenen Stapelkontext (41) und
+   liegt damit ueber dem Deckel (39); die Klappe (40) steht IM Band und also
+   ebenfalls darueber. Nur so bleibt ein Menuepunkt anklickbar, waehrend der
+   Deckel alles andere abfaengt. */
+.epos-menueband {
+    position: relative;
+    z-index: 41;
+}
+
+.epos-menueband-schliessflaeche {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: transparent;
+    cursor: default;
+}
+
+/* ==========================================================================
+   HAUPTFENSTER (iU9-W16c.2) - Menueband, Kopfband, Inhalt.
+
+   Vorbild: InitMarke (MDIMainForm.cs:217-294) - ein Panel von 52 px mit zwei
+   Labels, einem FlowLayoutPanel, einem Versionslabel, einem ToolTip und einem
+   eigenen Paint-Handler (feine Trennlinie unten, 4 px Farbakzent links). Hier
+   ist es dieselbe Anmutung aus dem Farbsatz.
+   ========================================================================== */
+
+.epos-hauptfenster {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+/* Das Band war weiss, 52 px hoch, mit Padding 16 links und 6 oben, und unten
+   eine Haarlinie in 222,227,232 (InitMarke :215-228). Der Ton steht seit
+   W16c-E-5 als --epos-marke-trennlinie und nicht mehr als warmes
+   --epos-rahmen-leise (#d9d7cf): Das Kopfband ist kuehl, die Kacheln
+   darunter sind es auch. */
+.epos-hauptfenster-marke {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 18px 8px 18px;
+    background: var(--epos-flaeche-hell);
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+}
+
+/* Der 4-px-Farbakzent links, den InitMarke mit einem SolidBrush zeichnete. */
+.epos-hauptfenster-marke-links {
+    display: flex;
+    flex-direction: column;
+    padding-left: 12px;
+    border-left: 4px solid var(--epos-marke);
+}
+
+/* Der Name trug Segoe UI Semibold 14 pt fett (= rund 19 px) - er war das
+   groesste Stueck des Kopfbandes und nicht so gross wie ein Kacheltitel
+   (16 px), wie es bis W16c aussah. */
+.epos-hauptfenster-name {
+    font-size: 19px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: var(--epos-marke);
+}
+
+/* Gattung und Claim standen in Segoe UI 8,25 pt (= 11 px) und in 112,119,126 -
+   auffaellig kleiner als der Name und ein kuehleres Grau als das warme
+   --epos-text-leise. Auf Weiss traegt der Ton 4,54:1. */
+.epos-hauptfenster-untertitel {
+    font-size: 11px;
+    color: var(--epos-marke-untertitel);
+}
+
+.epos-hauptfenster-rechts {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Die Version stand ebenfalls in 8,25 pt. NICHT uebernommen ist ihre Farbe
+   150,156,162: Auf Weiss sind das 2,77:1 und damit deutlich unter der
+   Hausschwelle von 4,5:1. Sie bleibt beim leisen Hausgrau (6,5:1) und wird
+   nur kleiner - klein genug, um nicht mit dem Namen zu konkurrieren. */
+.epos-hauptfenster-version {
+    font-size: 11px;
+    color: var(--epos-text-leise);
+}
+
+/* ==================================================================== */
+/* KATALOGDIALOGE - Anwenderwunsch 05.09.2026                           */
+/*                                                                      */
+/* "Admin-Menues sind nicht an Groesse Bildschirm angepasst." Der        */
+/* Katalogdialog "Administration Solarkollektoren" zeigte uebereinander: */
+/* Ueberschrift, Balken "Auswahl in DB:", eine Liste in ihrem eigenen    */
+/* kleinen Rollrahmen und darunter - nur ueber den SEITENrollbalken zu   */
+/* erreichen - den Balken "Eingabe der Solarkollektoren" mit den         */
+/* Feldern. Das Fenster nutzte weder Breite noch Hoehe des Schirms.      */
+/*                                                                      */
+/* ZWEI SEITEN EINER SACHE. Die eine ist die HUELLE: BlazorDialogForm    */
+/* oeffnet eine Fachmaske seither im Anteil des Arbeitsbereichs          */
+/* (85 % x 90 %, Rechnung in EPOS.UI/Dienste/Fenstermass.cs). Die andere */
+/* steht hier: Der Dialog muss die gewonnene Hoehe auch BENUTZEN.        */
+/*                                                                      */
+/* DIE VORBILDER STANDEN NEBENEINANDER: Form_Heizkessel_Admin            */
+/* (726 x 383, Liste 302 x 157 links), Form_BHKWAdmin (856 x 517,        */
+/* Liste 403 x 369 links, Gruppe 405 x 421 rechts),                      */
+/* Form_SolarKollektorenAdmin (825 x 494, Liste 359 x 302 links),        */
+/* Form_PufferSp_Admin (721 x 330), Form_AdminPV (607 x 489),            */
+/* Form_AdminStromspeicher (614 x 367). Wo das Vorbild gestapelt war     */
+/* (Form_AdminWaermeeinlesen 676 x 433), bleibt es gestapelt.            */
+/*                                                                      */
+/* DIE UMBRUCHBREITE IST 900 px UND NICHT 1100. Der Inhalt der WebView   */
+/* rechnet in CSS-Pixeln, das Fenstermass in Geraetepixeln: Bei 150 %    */
+/* Skalierung sind 1632 Geraetepixel nur 1088 CSS-Pixel. Ein Umbruch bei */
+/* 1100 px liesse genau den Anwender, der den Befund gemeldet hat,       */
+/* wieder untereinander stehen. 900 px ist ausserdem die Breite, bei der */
+/* schon der Baustein Zweispaltenauswahl und der Dublettenbaum           */
+/* umbrechen (--epos-zweispalten-umbruch); die Vorbilder waren           */
+/* 607 bis 856 px breit und standen dabei nebeneinander.                 */
+/* ==================================================================== */
+
+/* Die Wurzel eines Katalogdialogs. Sie nimmt .epos-dialog zwei Dinge:
+   die Breitenbremse (max-width 1160px - eine Liste neben einem
+   Eingabeblock ist keine Bandwurmzeile) und die freie Hoehe. Statt der
+   Seite rollen die Abschnitte darin.
+
+   overflow: auto und nicht hidden: Im Normalfall rollt hier nichts -
+   die Abschnitte darin schrumpfen. Wird das Fenster aber bis auf das
+   Kleinstmass zusammengezogen (520 x 360 Geraetepixel, bei 150 % rund
+   347 x 240 CSS-Pixel), reicht die Hoehe irgendwann nicht einmal mehr
+   fuer Kopf, Mindestliste und Schlussleiste. Dann ist ein Rollbalken
+   die ehrliche Antwort; hidden schnitte die Knoepfe ab. */
+.epos-katalog-dialog {
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    overflow: auto;
+}
+
+/* Der Abschnitt, der die uebrige Hoehe nimmt - genau EINER je Dialog.
+   min-height: 0 ist Pflicht: Ohne sie waechst ein Flex-Kind nie unter
+   seinen Inhalt und der Rollbalken landet an der Seite statt in der
+   Liste. */
+.epos-katalog-fuellend {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Liste und Eingabeblock nebeneinander. Das Verhaeltnis 45:55 folgt den
+   Vorbildern (BHKW 403 zu 405 px zuzueglich Beschriftungsspalte,
+   Solarkollektoren 359 zu 410) und ist dasselbe wie beim Dublettenbaum. */
+.epos-katalog-paar {
+    display: grid;
+    grid-template-columns: minmax(280px, 45fr) minmax(320px, 55fr);
+    gap: var(--epos-rand);
+    align-items: stretch;
+}
+
+/* Fuer die Masken, deren Vorbild schon gestapelt war. */
+.epos-katalog-paar--gestapelt {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.epos-katalog-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+    min-height: 0;
+}
+
+/* Der Eingabeblock steht IMMER im Bild; ist er zu hoch, rollt er selbst -
+   nie die Seite. Das war der Kern des Befunds. Deshalb steht er als eigene
+   Regel und nicht neben der Liste: Nur er rollt. */
+.epos-katalog-eingabe {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* HIER faellt die Hoechsthoehe aus W9-B-2. Sie war die Antwort auf eine
+   Liste, die den Detailblock und die Schlussleiste nach unten schob; in
+   diesem Rahmen schiebt nichts mehr, weil der Eingabeblock daneben steht
+   und die Schlussleiste ausserhalb. Ueberall sonst gilt sie weiter. */
+.epos-katalog-liste .epos-raster-huelle {
+    flex: 1 1 auto;
+    max-height: none;
+    min-height: 9rem;
+}
+
+/* Alles ANDERE in den zwei Spalten behaelt seine Hoehe: Ueberschrift,
+   Filterzeile, Hinweis, Fortschrittsbalken. Nur die Liste waechst. Ohne
+   diese Zeile teilte sich der Rest die Hoehe mit ihr und ein
+   Gruppenkopf wuerde zusammengestaucht. */
+.epos-katalog-liste > *,
+.epos-katalog-eingabe > * {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+
+    .epos-katalog-paar {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) auto;
+    }
+}
+
+/* Projektdialoge (Nutzerauftrag 02.09.2026, Merge 5): Haekchen der Mehrfachauswahl,
+   Hinweis unter den Pflichtfeldern des Projektkopfs. Kein Nesting (Hausregel). */
+.epos-projektliste-haken {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    cursor: pointer;
+}
+
+.epos-projektwahl-mehrfach {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.epos-projektwahl-zaehler {
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-projektkopf-pflicht {
+    margin: 0;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-projektkopf-hinweis {
+    margin: 0.25rem 0 0;
+    color: #b00020;
+    font-size: 0.95em;
+}
+
+/* Merge 5: Die Rueckfrage der Mehrfachloeschung listet die Namen zeilenweise. */
+.epos-rueckfrage-text {
+    white-space: pre-line;
 }

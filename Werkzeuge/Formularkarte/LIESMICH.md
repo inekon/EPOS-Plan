@@ -1,4 +1,4 @@
-# Formularkarte — der Formular-Generator
+﻿# Formularkarte — der Formular-Generator
 
 Konsolenwerkzeug (`net10.0`, Roslyn) zum Umsetzungskonzept iOS, **Paket iU8‑12**, Grundlage A7 /
 iF7. Es liest eine WinForms-Designer-Datei des Bestands und schreibt daraus
@@ -132,7 +132,7 @@ Ein Knopf gilt als Schließknopf, wenn sein Name nach dem Abstreifen der Vorsilb
 Vorbild ist der erste fertige Dialog `EPOS.UI/Dialoge/Kosten/EnergietraegerVarianteDialog.razor`:
 
 * `@namespace EPOS.UI.Dialoge.<Fachbereich>` — der Ordnername der Designer-Datei, Umlaute
-  umschrieben (`Wärmepumpe` → `Waermepumpe`). Masken außerhalb eines Fachordners (`MDIMainForm`,
+  umschrieben (`Wärmepumpe` → `Waermepumpe`). Masken außerhalb eines Fachordners (`Hauptfensterrahmen`,
   `Form_StromTest`) bekommen `Allgemein`;
 * Wurzel-`div` mit `tabindex="-1"`, `@ref` und `@onkeydown` — Enter und Esc beantwortet die
   Komponente selbst, denn eine `BlazorWebView` sieht `AcceptButton` und `CancelButton` nicht;
@@ -157,8 +157,9 @@ Der Dateiname bestimmt den Komponentennamen; er bekommt deshalb einen großen An
 * **Zahlenfelder erkennt es nur an der Prüfung.** Ein numerisches Feld ohne `Program.Zahl*`
   (z. B. `Form_KostenfaktorItem.textBox_Wert`, das der Aufrufer mit `Convert.ToDouble` liest) landet
   als `Textfeld` in der Karte. Das ist beabsichtigt: Der Leser rät nicht, er zeigt den Bestand.
-* **Zur Laufzeit erzeugte Steuerelemente fehlen.** `Form_Kostenprofil` legt 36 Textfelder in der
-  `Form_X.cs` an — im Designer stehen sie nicht, also auch nicht in der Karte.
+* **Zur Laufzeit erzeugte Steuerelemente fehlen.** `Form_Kostenprofil` (seit iU9‑W3.4 Prüfmuster)
+  legt 36 Textfelder in der `Form_X.cs` an — im Designer stehen sie nicht, also auch nicht in der
+  Karte. Beim Port waren sie deshalb von Hand nachzutragen (Regel F1 des Wellenplans).
 * **Die Abschnitte im Skelett stehen flach nebeneinander**, auch wenn die Maske sie schachtelt; die
   Schachtelung steht in der Karte (Überschriftenebene) und in der Spalte `Elter`.
 * **Optionsgruppen** (`RadioButton`) werden feldweise ausgegeben; sie zu **einem** `Auswahlfeld`
@@ -187,7 +188,7 @@ Stilllegungsliste **K6**. Der Befund vom 03.09.2026 liegt als
 ### Knoten, Kanten, Wurzeln
 
 **Knoten** sind die Masken: Klassen, die von `Form`, `UserControl` oder `BaseForm` abstammen —
-über beliebig viele Stufen. Das sind mehr als die 105 Designer-Masken; die Reiter, Kacheln und
+über beliebig viele Stufen. Das sind mehr als die 98 Designer-Masken; die Reiter, Kacheln und
 Navigatoren des Hauptfensters (`Views/BerichteKosten/UcBk*`, `Views/Simulation/Navigator*`,
 `Views/Hauptformular/*`) sind Zwischenknoten und tragen den Weg mit.
 
@@ -210,7 +211,7 @@ Menüpunkte selbst an). Feldinitialisierer laufen mit, sobald irgendein Mitglied
 nur so werden die dreizehn Assistentenseiten gefunden, die in `AssistentSeiten` als statisches
 Erzeugerfeld stehen.
 
-**Wurzeln** sind `MDIMainForm` und `Form_Start`. Erst wenn von dort nichts mehr zu holen ist,
+**Wurzeln** sind `Hauptfensterrahmen` und `Form_Start`. Erst wenn von dort nichts mehr zu holen ist,
 kommt die Einsprungklasse `Program` dazu — sie zeigt den Erststart-Dialog, bevor es ein Fenster
 gibt. Die Reihenfolge ist Absicht: So nennt der Pfad den Weg, den der Anwender geht, und nicht
 den Umweg über `Program.Main`.
@@ -285,7 +286,61 @@ Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/
     Form_KostenfaktorItem.Designer.cs   Stand 16b106a^, unverändert (iU9‑W0)
     Form_KostenfaktorItem.cs            dito
     Form_KostenfaktorItem.resx          dito
+    Form_Kostenprofil.Designer.cs       Stand cb700f0^, unverändert (iU9‑W3.4)
+    Form_Kostenprofil.cs                dito
+    Form_Kostenprofil.resx              dito
+    Form_KostenKomponente.Designer.cs   Stand vor iU9‑W4.2, unverändert
+    Form_KostenKomponente.cs            dito
+    Form_KostenKomponente.resx          dito
+    ucVorlagenZeile.Designer.cs         Stand vor iU9‑W4.2, unverändert — ohne .resx
+    ucVorlagenZeile.cs                  dito
+
+Werkzeuge/Formularkarte.Tests/Pruefmuster/Bericht/
+    UcBericht.Designer.cs               Stand vor iU9‑W5.6, unverändert — ohne .resx
+    UcBericht.cs                        dito
+
+Werkzeuge/Formularkarte.Tests/Pruefmuster/Stromspeicher/
+    Form_StromspeicherItemNeu.Designer.cs   Stand f9b5016^, unverändert (iU9‑W2.1)
+    Form_StromspeicherItemNeu.cs            dito
+    Form_StromspeicherItemNeu.resx          dito
+    Form_StromspeicherItemNeu.de-DE.resx    dito — der lokalisierte Weg braucht alle drei
+    Form_StromspeicherItemNeu.en-US.resx    dito
 ```
+
+Das **achte** Muster (`UcBericht`, mit **iU9‑W5.6** durch
+`EPOS.UI/Seiten/Berichte/BerichtSeite.razor` ersetzt) ist der **einzige Beleg für die
+`CheckedListBox`** — mit dem Löschen der Maske fällt der Typ aus der Typtabelle des
+Stapellaufs. Sie wandert wie `ucVorlagenZeile` mit **zwei** Dateien: Ein `UserControl`,
+dessen Texte vollständig im Code stehen, führt keine `.resx`.
+
+Das **siebte** Muster (`ucVorlagenZeile`, mit **iU9‑W4.2** durch
+`EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor` ersetzt) ist die **einzige
+kleingeschriebene Maske**, die der Bestand je geführt hat — und damit der einzige Beleg
+dafür, dass der Razor-Schreiber den Anfangsbuchstaben groß zieht (Razor lässt
+kleingeschriebene Komponentennamen nicht zu, RZ10011). Sie wandert ausnahmsweise mit **zwei**
+Dateien statt drei: Ein `UserControl`, dessen Texte vollständig im Code stehen, führt keine
+`.resx`.
+
+Das **sechste** Muster (`Form_KostenKomponente`, mit **iU9‑W4.2** durch
+`EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor` ersetzt) war bis Welle 3 der **Anker des
+Stapellauf-Tests** — acht Testbezüge hingen an ihr. Sie ist der Beleg für ein `TabControl`, das
+eine Reiterseite ZUR LAUFZEIT entfernt (`ErtragReiterSteuern`), und für die große Schreibweise
+`.Designer.cs` in derselben Ablage wie `Form_BHKWEing.designer.cs`.
+
+Das **fünfte** Muster (`Form_Kostenprofil`, mit **iU9‑W3.4** durch
+`EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor` ersetzt) ist der Beleg für die
+**Abschnittsbildung**: ein `TabControl` mit drei Reitern, darin ein `Chart`, eine `ListBox`
+mit eigenem Label und Beschriftungen, die nur innerhalb ihres Abschnitts wirken. Neun
+Testbezüge hängen daran (`AbschnittTests` fünf, `FeldkarteSchreiberTests` einer,
+`RazorSchreiberTests` einer, dazu zwei in Kommentaren).
+
+Das vierte Muster (`Form_StromspeicherItemNeu`, mit **iU9‑W2.1** durch
+`EPOS.UI/Dialoge/Allgemein/NamensDialog.razor` ersetzt) ist der Beleg für den **lokalisierten
+Weg**: Im Designer steht zu ihren Feldern keine einzige Zahl — Koordinaten, Größen und
+`TabIndex` kommen aus der `.resx`, die Übersetzungen aus den beiden Satellitendateien, und ihr
+Klassenname (`Form_Sp_ItemNeu`) weicht vom Dateinamen ab. Sechs Tests hängen daran
+(`ResxLeserTests` fünf, `FeldkarteSchreiberTests` einer); eine lebende Maske mit derselben
+Häufung gibt es nicht. Deshalb wandern hier ausnahmsweise **fünf** Dateien mit statt drei.
 
 Das dritte Muster (`Form_KostenfaktorItem`) ist der einzige **stillgelegte** Fall: Die Maske ist mit
 **iU9‑W0** nicht umgestellt, sondern gelöscht worden (Anwenderentscheid iF29) — eine Blazor-Nachfolge
@@ -340,7 +395,7 @@ Wenn die nächste Maske umgestellt oder stillgelegt und ihre WinForms-Fassung ge
    `Form_Kosten_VarAuswahl`, die zeichengleiche Schwester; die ist mit **iU9-1** selbst gelöscht,
    seither steht dort `Form_KostenKomponente`. **Nimm dafür eine Maske, deren Öffner erreichbar
    ist** — sonst hängt der Test an der nächsten Löschung wieder; die Spalte „Öffner erreichbar"
-   sagt es. `Form_KostenKomponente` erfüllt das (`UcBkKosten.btnVerwaltung_Click`, `MDIMainForm`,
+   sagt es. `Form_KostenKomponente` erfüllt das (`UcBkKosten.btnVerwaltung_Click`, `Hauptfensterrahmen`,
    `KostenKnoepfe`, `Wizard_WPItem`); `Form_KostenfaktorItem` läge im selben Ordner, steht aber
    selbst auf „nein" — es hängt am einstiegslosen `Form_Kosten`.
 5. `PruefmusterTests` um die neue Maske ergänzen — `Muster` für eine umgestellte Maske (mit
@@ -349,10 +404,10 @@ Wenn die nächste Maske umgestellt oder stillgelegt und ihre WinForms-Fassung ge
 ## Nachweis
 
 `dotnet build Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → 0 Fehler, 0 Warnungen.
-`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **119 Tests grün** (101 vor
+`dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **122 Tests grün** (101 vor
 iU8‑12f, 16 dazu für den Erreichbarkeitsgraphen, 2 mit iU9‑W1: `PruefmusterTests` prüft als
-`Theory` **zwei** Muster, und die Zählprobe „Prüfmuster zählen nicht zum Bestand" steht als eigener
-Test daneben). Mit **iU9‑W0** bleibt die Zahl: Drei Tests, die den einstiegslosen `Form_Kosten`, die
+`Theory` inzwischen **drei** Muster, und die Zählprobe „Prüfmuster zählen nicht zum Bestand" steht
+als eigener Test daneben; das dritte Muster kommt mit iU9‑W2.1). Mit **iU9‑W0** bleibt die Zahl: Drei Tests, die den einstiegslosen `Form_Kosten`, die
 Variantenprobe und die verwaiste Kurzansicht festhielten, sind entfallen — an ihre Stelle treten die
 Abnahme „keine Maske mehr auf nein oder verwaist", die Probe „die stillgelegten Masken kennt der
 Graph nicht mehr" und die zweite `Theory` über die stillgelegten Muster. Die Tests laufen gegen die
@@ -394,20 +449,37 @@ ohne Beschriftung; über `--alle WindowsFormsApplication1 --erreichbarkeit` eben
 (104 mit erreichbarem Öffner, 4 unerreichbar, 1 verwaist, 2 unklar). Die sieben Dateien der beiden
 Prüfmuster sind darin **nicht** enthalten.
 
-**Nachgemessen nach iU9‑W0** (sechs Designer-Masken stillgelegt: `Form_Kosten`,
-`Form_KostenfaktorItem`, `ucKostenItem`, `Form_Variantentest`, `Form_Simulation_Kurz`,
-`Form_KwkgModule`): **108** Designer-Dateien, **105** Masken, 3 ohne `InitializeComponent`,
-0 nicht lesbar, **61** lokalisiert, 2231 Kartenzeilen, 168 Felder ohne Beschriftung; über
-`--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **105** Masken (103 mit erreichbarem
-Öffner, **0** unerreichbar, **0** verwaist, 2 unklar). Die zehn Dateien der drei Prüfmuster sind
-darin **nicht** enthalten.
+**Nachgemessen nach iU9‑W2** (drei weitere Designer-Masken umgestellt und gelöscht:
+`Form_StromspeicherItemNeu`, `Form_GebaeudetypNeu`, `Form_PhotovoltaikVerguetung` — die drei
+K4-Masken der Welle hatten nie eine Designer-Datei): **105** Designer-Dateien, **102** Masken,
+3 ohne `InitializeComponent`, 0 nicht lesbar, **59** lokalisiert, 2188 Kartenzeilen, 168 Felder
+ohne Beschriftung; über `--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **102**
+Masken (100 mit erreichbarem Öffner, **0** unerreichbar, **0** verwaist, 2 unklar). Die fünfzehn
+Dateien der vier Prüfmuster sind darin **nicht** enthalten.
 
-**Erreichbarkeit, gemessen am 03.09.2026 nach iU9‑W0** über
-`--alle WindowsFormsApplication1` — **105** Masken:
+**Nachgemessen nach iU9‑W3** (vier weitere Designer-Masken umgestellt und gelöscht:
+`Form_LeistungspreisReihe`, `Form_SpotpreisImport`, `Form_Emissionskatalog`,
+`Form_Kostenprofil`): **101** Designer-Dateien, **98** Masken, 3 ohne
+`InitializeComponent`, 0 nicht lesbar, **59** lokalisiert, 2128 Kartenzeilen, 165 Felder ohne
+Beschriftung; über `--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **98** Masken
+(96 mit erreichbarem Öffner, 0 unerreichbar, 0 verwaist, 2 unklar).
+
+**Nachgemessen nach iU9‑W4** (sieben weitere Designer-Masken umgestellt und gelöscht:
+`Form_KostenKomponente`, `Form_Energietraeger`, `ucFuelSettings`,
+`ucBrennstoffBestandteile`, `ucStromAufschlaege`, `ucVorlagenZeile`, `ucErtragBonus`):
+**92** Designer-Dateien, **91** Masken, **1** ohne `InitializeComponent`, 0 nicht lesbar,
+**59** lokalisiert, 1994 Kartenzeilen, 151 Felder ohne Beschriftung; über
+`--alle WindowsFormsApplication1 --erreichbarkeit` ebenfalls **91** Masken (**89** mit
+erreichbarem Öffner, 0 unerreichbar, 0 verwaist, 2 unklar). Die zwanzig Dateien der sieben
+Prüfmuster sind darin **nicht** enthalten. `Views/Kosten` führt seither **keine**
+Designer-Maske mehr — der Stapellauf-Test läuft deshalb über `Views/Heizkessel`.
+
+**Erreichbarkeit, gemessen am 03.09.2026 nach iU9‑W4** über
+`--alle WindowsFormsApplication1` — **91** Masken:
 
 | Öffner erreichbar | Masken |
 |---|---|
-| ja | 103 |
+| ja | 89 |
 | nein | 0 (die vier von iU8‑12f sind mit iU9‑W0 stillgelegt — Anwenderentscheid iF29) |
 | verwaist | 0 (`Form_Simulation_Kurz` ist gelöscht, mit ihr die `Compile Remove`-Liste) |
 | unklar | 2 (`Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten` — beide bleiben, siehe iF29) |
@@ -425,7 +497,8 @@ Zielkomponenten über alle 2377 Zeilen: Text 671, `Textfeld` 584, eigener Knopf 
 Optionsgruppe 45, `Ganzzahlfeld` 37, `InfoKnopf` 33, `ChartBild` 27, `Datumsfeld` 4.
 
 Unbekannte Typen — und damit die einzigen echten Lücken der Tabelle — sind die vier
-selbstgebauten Steuerelemente des Hauses: `AktionsKarte` (2 Masken), `ProjektAuswahl` (2),
+selbstgebauten Steuerelemente des Hauses: `AktionsKarte` (2 Masken), `ProjektAuswahl` (1 — seit iU9‑W15a; die Hüllform ist gefallen,
+es bleibt der Assistent),
 `HeaderGradientPanel` (1), `KlimazonenKarte` (1). Sie stehen in der Karte als „sonstig" mit ihrem
 Typnamen und als „prüfen".
 

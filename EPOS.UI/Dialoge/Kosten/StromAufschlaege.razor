@@ -1,0 +1,136 @@
+﻿@* Aufschlagsblock und Verguetungssaetze des STROM-Traegers (iU9-W4.3).
+
+   Vorbild: Views/Kosten/ucStromAufschlaege.cs (705 Z.) und .Designer.cs —
+   Fachkonzept Stromspeicher 4.2/4.3, Arbeitspaket AP4, Etappe B4.
+
+   ZWEI MODI (Fachkonzept 4.2). „Aufgeschluesselt" pflegt fuenf Komponenten
+   (Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe, Vertrieb), jede mit
+   ihrem Schalter; „Gesamtwert" setzt stattdessen einen Override. Im
+   Override-Modus bleiben die Komponenten SICHTBAR und lesbar — „die
+   Komponentenliste bleibt sichtbar und informativ" —, sie steuern den
+   Rechenweg nur nicht mehr.
+
+   DIE SCHNELLWAHL LIEST DEN KATALOG (Etappe B4, Befund A7). Die beiden
+   Stromsteuerknoepfe tragen den Jahressatz aus Tab_Gesetzesparameter; welcher
+   von beiden zur Unternehmensart des Projekts passt, steht FETT (BW4, Befund
+   B3). Eingetragen wird der Satz erst auf Knopfdruck (Regel BF4). Beide Saetze
+   ermittelt die Huelle — hier stehen nur Beschriftung, Herkunft und Wert.
+
+   GERECHNET WIRD IN DER ENGINE. Summen- und Restzeile kommen als fertiger
+   Text aus der Huelle (StromAufschlagCtrl.AlsAufschlagssatz); die Komponente
+   meldet nur, dass sich etwas geaendert hat. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<Gruppenkopf Titel="@TitelAufschlag">
+    <KindInhalt>
+        <Optionsgruppe Eintraege="@MODI" Auswahl="@(Stand.Aufgeschluesselt ? 1 : 0)"
+                       AuswahlChanged="BeiModus" />
+
+        <div class="epos-preisblock">
+            @Komponente(LabelNetzentgelt, Stand.Netzentgelt, w => Stand.Netzentgelt = w,
+                        Stand.NetzentgeltAktiv, w => Stand.NetzentgeltAktiv = w, null)
+            @Komponente(LabelUmlagen, Stand.Umlagen, w => Stand.Umlagen = w,
+                        Stand.UmlagenAktiv, w => Stand.UmlagenAktiv = w, null)
+            @Komponente(LabelStromsteuer, Stand.Stromsteuer, w => Stand.Stromsteuer = w,
+                        Stand.StromsteuerAktiv, w => Stand.StromsteuerAktiv = w, Steuerknoepfe)
+            @Komponente(LabelKonzession, Stand.Konzession, w => Stand.Konzession = w,
+                        Stand.KonzessionAktiv, w => Stand.KonzessionAktiv = w, null)
+            @Komponente(LabelVertrieb, Stand.Vertrieb, w => Stand.Vertrieb = w,
+                        Stand.VertriebAktiv, w => Stand.VertriebAktiv = w, null)
+        </div>
+
+        <Zahlenfeld Bezeichnung="@LabelGesamtaufschlag" Einheit="@Einheit"
+                    Wert="@Stand.Override" Aktiv="@(!Stand.Aufgeschluesselt)"
+                    WertChanged="@(w => Setzen(() => Stand.Override = w ?? Stand.Override))" />
+
+        <p class="epos-preisblock-summe">@Anzeige.SummeText</p>
+        <p class="@(Anzeige.RestNegativ ? "epos-preisblock-rest epos-preisblock-rest--negativ"
+                                        : "epos-preisblock-rest")">@Anzeige.RestText</p>
+    </KindInhalt>
+</Gruppenkopf>
+
+<Gruppenkopf Titel="@TitelVerguetung">
+    <KindInhalt>
+        <Zahlenfeld Bezeichnung="@LabelVerguetungPv" Einheit="@Einheit"
+                    Wert="@Stand.VerguetungPv"
+                    WertChanged="@(w => Stand.VerguetungPv = w ?? Stand.VerguetungPv)" />
+        <Zahlenfeld Bezeichnung="@LabelVerguetungBhkw" Einheit="@Einheit"
+                    Wert="@Stand.VerguetungBhkw"
+                    WertChanged="@(w => Stand.VerguetungBhkw = w ?? Stand.VerguetungBhkw)" />
+    </KindInhalt>
+</Gruppenkopf>
+
+@code {
+    /// <summary>Der Bearbeitungsstand — die Komponente schreibt hinein (siehe Datenklasse).</summary>
+    [Parameter] public StromAufschlaegeStand Stand { get; set; } = new();
+
+    /// <summary>Summen- und Restzeile, von der Hülle gerechnet.</summary>
+    [Parameter] public PreisblockAnzeige Anzeige { get; set; } = new("", "", false);
+
+    /// <summary>Der Stand hat sich geändert — die Hülle rechnet neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Stromsteuer im Regelfall (§ 3 StromStG), Satz des Bilanzjahres.</summary>
+    [Parameter] public Schnellwahlsatz? SatzRegelfall { get; set; }
+
+    /// <summary>Reduzierter Satz energieintensiver Unternehmen (§ 9b StromStG).</summary>
+    [Parameter] public Schnellwahlsatz? SatzReduziert { get; set; }
+
+    [Parameter] public string TitelAufschlag { get; set; } = "Aufschläge auf den Strombezugspreis";
+    [Parameter] public string TitelVerguetung { get; set; } = "Vergütung für eingespeisten Strom";
+    [Parameter] public string ModusAufgeschluesselt { get; set; } = "aufgeschlüsselt";
+    [Parameter] public string ModusGesamtwert { get; set; } = "Gesamtwert (Override)";
+    [Parameter] public string LabelNetzentgelt { get; set; } = "Netzentgelt Arbeit";
+    [Parameter] public string LabelUmlagen { get; set; } = "Umlagen (Summe)";
+    [Parameter] public string LabelStromsteuer { get; set; } = "Stromsteuer";
+    [Parameter] public string LabelKonzession { get; set; } = "Konzessionsabgabe";
+    [Parameter] public string LabelVertrieb { get; set; } = "Vertrieb";
+    [Parameter] public string LabelGesamtaufschlag { get; set; } = "Gesamtaufschlag";
+    [Parameter] public string LabelVerguetungPv { get; set; } = "Photovoltaik v_pv";
+    [Parameter] public string LabelVerguetungBhkw { get; set; } = "BHKW v_bhkw";
+    [Parameter] public string Einheit { get; set; } = "ct/kWh";
+
+    private (int Id, string Text)[] MODI
+        => new[] { (0, ModusGesamtwert), (1, ModusAufgeschluesselt) };
+
+    private async Task BeiModus(int? id)
+    {
+        Stand.Aufgeschluesselt = id == 1;
+        await Geaendert.InvokeAsync();
+    }
+
+    private void Setzen(Action aendern)
+    {
+        aendern();
+        Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Eine Komponentenzeile: Schalter, Wertfeld, Einheit, optional Knöpfe.</summary>
+    private RenderFragment Komponente(string beschriftung, double wert, Action<double> setzen,
+                                      bool aktiv, Action<bool> setzenAktiv,
+                                      RenderFragment? knoepfe) => @<div class="epos-preiszeile">
+        <Schalter Bezeichnung="@beschriftung" Wert="@aktiv"
+                  Aktiv="@Stand.Aufgeschluesselt"
+                  WertChanged="@(w => Setzen(() => setzenAktiv(w)))" />
+        <Zahlenfeld Wert="@wert" Einheit="@Einheit" Aktiv="@Stand.Aufgeschluesselt"
+                    WertChanged="@(w => Setzen(() => setzen(w ?? wert)))" />
+        @knoepfe
+    </div>;
+
+    /// <summary>Die beiden Stromsteuer-Schnellwahlknöpfe (Etappe B4).</summary>
+    private RenderFragment Steuerknoepfe => @<span class="epos-schnellwahl">
+        @Schnellwahlknopf(SatzRegelfall, w => Stand.Stromsteuer = w)
+        @Schnellwahlknopf(SatzReduziert, w => Stand.Stromsteuer = w)
+    </span>;
+
+    private RenderFragment Schnellwahlknopf(Schnellwahlsatz? satz, Action<double> setzen)
+    {
+        if (satz is null) return @<text></text>;
+        return @<button type="button"
+                        class="@(satz.Empfohlen ? "epos-knopf epos-schnellwahl-knopf epos-schnellwahl-knopf--empfohlen"
+                                                : "epos-knopf epos-schnellwahl-knopf")"
+                        title="@satz.Herkunft" disabled="@(!satz.CtKwh.HasValue || !Stand.Aufgeschluesselt)"
+                        @onclick="@(() => Setzen(() => { setzen(satz.CtKwh!.Value); Stand.StromsteuerAktiv = true; }))">@satz.Beschriftung</button>;
+    }
+}

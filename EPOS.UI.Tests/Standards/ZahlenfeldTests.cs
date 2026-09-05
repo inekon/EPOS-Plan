@@ -112,4 +112,26 @@ public class ZahlenfeldTests : BunitContext
 
         Assert.Equal("kWh", cut.Find(".epos-einheit").TextContent);
     }
+    [Fact]
+    public void Ohne_Angabe_ist_das_Feld_bedienbar()
+    {
+        var cut = Render<Zahlenfeld>();
+
+        Assert.False(cut.Find("input").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Aktiv_false_sperrt_das_Feld_laesst_den_Wert_aber_lesbar()
+    {
+        // iU9-W2.3: Der Tarifdialog sperrt den Block des nicht gewaehlten
+        // Rechenmodells, statt ihn auszublenden - die Werte des anderen Modells
+        // bleiben lesbar und erhalten (Form_Tarifstruktur.ModusUebernehmen).
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.Wert, 0.2345)
+            .Add(x => x.Nachkommastellen, 4)
+            .Add(x => x.Aktiv, false));
+
+        Assert.True(cut.Find("input").HasAttribute("disabled"));
+        Assert.Equal("0,2345", cut.Find("input").GetAttribute("value"));
+    }
 }

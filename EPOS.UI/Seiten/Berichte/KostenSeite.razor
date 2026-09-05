@@ -1,0 +1,401 @@
+﻿@* Die SEITE "Kosten" des Reiters "Berichte & Kosten" (iU9-W5.4).
+
+   Vorbild: Views/BerichteKosten/UcBkKosten.cs (1 311 Z., K4 - ohne
+   Designer-Datei; die Oberflaeche stand in InitializeComponent im Code).
+
+   AUFBAU. Kopfzeile mit Projektnamen und den zwei Einstiegen
+   ("Energietraegerverwaltung...", "Kostenverwaltung oeffnen..."), darunter
+   drei Kategorie-Karten (Investition, Betrieb, Energie) und die beiden
+   Detailtabellen: links die Anlagen mit Investitions- und Betriebssumme,
+   rechts die Energietraeger des Projekts mit zehn Spalten. Unten die
+   Fusszeile mit allen Befunden.
+
+   "—" STATT 0,00 - die Hausregel dieser Seite (Nutzerentscheidung 4 vom
+   18.08.2026): Keine einzige Kostenposition heisst NICHT "das Projekt kostet
+   nichts". Die Werte kommen fertig formatiert aus der Huelle; die Seite
+   rechnet nicht.
+
+   BEIDE TABELLEN SIND GEWOEHNLICHE TABELLEN, KEIN RASTER. Sie tragen
+   Zeilenfarben (rosa = Gewerk ohne Position, gelb = Positionen ohne
+   Anlagenzuordnung), Kurztexte je Zelle und eine Summenzeile - was ein
+   QuickGrid nur ueber Vorlagenspalten je Zelle koennte. Die Hausklasse
+   epos-raster gibt beiden dieselbe Optik.
+
+   DIE AKTIONSSPALTE DER ANLAGENTABELLE traegt die Zeilenwahl und - auf der
+   gelben Zeile - den Papierkorb. Sie ist BESCHRIFTET ("Aktionen") und
+   heisst .epos-zellenaktionen; ihr Inhalt steht in einem eigenen Flexkasten
+   .epos-zellenaktionen-inhalt. Beides ist der Befund W5-B-1 der
+   Windows-Abnahme vom 04.09.2026: Die Spalte war nicht zu sehen, weil das
+   Stilblatt display:flex auf das <td> selbst setzte (die Zelle ist damit
+   keine Tabellenzelle mehr) und ihr Kopf leer war (die Spalte hatte nichts,
+   woraus sie ihre Breite nehmen konnte). Die Knoepfe sind OHNE Hover
+   sichtbar - Beruehrung kennt kein Hover (iL4).
+
+   DIE ZWEI EINSTIEGE STEHEN IN EINER UEBERLAGERUNG. Die Kostenverwaltung und
+   die Energietraegerverwaltung sind seit Welle 4 Razor-Komponenten; als
+   zweites Fenster waeren sie eine zweite WebView (Risiko R2). *@
+
+@namespace EPOS.UI.Seiten.Berichte
+@using EPOS.UI.Dialoge.Kosten
+
+<div class="epos-seite" tabindex="-1" @ref="_wurzel">
+
+    @* ------------------------------------------------------- Kopfzeile *@
+    <div class="epos-seite-kopf">
+        <span class="epos-seite-titel">@_stand.Projektzeile</span>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <div class="epos-leiste epos-kostenkopf">
+        @if (TraegerGaben is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!_stand.Bedienbar)"
+                    @onclick="TraegerOeffnen">@TraegerText</button>
+        }
+        @if (VerwaltungGaben is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!_stand.Bedienbar)"
+                    @onclick="VerwaltungOeffnen">@VerwaltungText</button>
+        }
+    </div>
+
+    @* ---------------------------------------------------- Kategorie-Karten *@
+    <Kachelraster Mindestbreite="240">
+        <KindInhalt>
+            @foreach (KachelZeile k in _stand.Kacheln)
+            {
+                <Kennzahlkachel Titel="@k.Titel" Wert="@k.Wert" Quelle="@k.Quelle" />
+            }
+        </KindInhalt>
+    </Kachelraster>
+
+    @* -------------------------------------------------------- Tabellen *@
+    <div class="epos-seite-spalten">
+
+        <section class="epos-seite-spalte">
+            <p class="epos-untergruppe">@LabelKomponenten</p>
+
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-kostentabelle">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="epos-zellenaktionen">@SpalteAktionen</th>
+                            <th scope="col">@SpalteAnlage</th>
+                            <th scope="col" class="epos-zahl">@SpalteSumme</th>
+                            <th scope="col" class="epos-zahl">@SpalteBetrieb</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (KostenZeile z in _stand.Komponenten)
+                        {
+                            KostenZeile zeile = z;
+                            @* Der DOPPELKLICK ist der zweite Weg zum Loeschen (W5-O3,
+                               Anwenderentscheid 04.09.2026) - der Griff, den AE21 im
+                               Vorlaeufer hatte. Er haengt an JEDER Zeile und wird in
+                               LoeschenFragen entschieden: Wo Loeschbar nicht gilt,
+                               passiert nichts. So steht die Bedingung EINMAL, und beide
+                               Wege gehen durch dieselbe Rueckfrage. *@
+                            <tr class="@Zeilenklasse(zeile.Art)" title="@zeile.Kurztext"
+                                @ondblclick="@(() => LoeschenFragen(zeile))">
+                                <td class="epos-zellenaktionen">
+                                    @* Der Flexkasten steht IN der Zelle, nicht auf ihr:
+                                       display:flex auf einem <td> nimmt ihm die Rolle als
+                                       Tabellenzelle (Befund W5-B-1). *@
+                                    <div class="epos-zellenaktionen-inhalt">
+                                        @if (zeile.Art != ZeilenArt.Summe && zeile.Art != ZeilenArt.Hinweis)
+                                        {
+                                            <Zeilenwahl Gewaehlt="@(_anlage == zeile.Schluessel)"
+                                                        Kurztext="@WahlKurztext"
+                                                        Gewaehltwerden="@(() => AnlageWaehlen(zeile))" />
+                                        }
+                                        @if (zeile.Loeschbar && LoeschFrage is not null)
+                                        {
+                                            <button type="button" class="epos-knopf epos-zr-knopf"
+                                                    title="@LoeschenKurztext"
+                                                    @onclick="@(() => LoeschenFragen(zeile))">🗑️</button>
+                                        }
+                                    </div>
+                                </td>
+                                <td>@zeile.Anzeige</td>
+                                <td class="epos-zahl">@zeile.Summe</td>
+                                <td class="epos-zahl">@zeile.Betrieb</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="epos-seite-spalte">
+            <p class="epos-untergruppe">@LabelTraeger</p>
+
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-traegertabelle">
+                    <thead>
+                        <tr>
+                            @foreach (string kopf in _stand.TraegerSpalten)
+                            {
+                                <th scope="col">@kopf</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (TraegerZeile t in _stand.Traeger)
+                        {
+                            TraegerZeile zeile = t;
+                            <tr class="@(Zeilenklasse(zeile.Art) + (Markiert(zeile) ? " epos-zeile--markiert" : ""))"
+                                title="@zeile.Kurztext">
+                                @for (int i = 0; i < zeile.Zellen.Count; i++)
+                                {
+                                    int spalte = i;
+                                    <td class="@(spalte == 0 ? "" : "epos-zahl")"
+                                        title="@(spalte >= 7 ? zeile.EmissionKurztext : zeile.Kurztext)">@zeile.Zellen[spalte]</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_status))
+    {
+        <p class="epos-status">@_status</p>
+    }
+
+    @* --------------------------------------------------- Unterdialoge *@
+    <Ueberlagerung Offen="@(_offen == Unterdialog.Verwaltung)" Schliessbar="false"
+                   Titel="@VerwaltungText" Geschlossen="() => Fertig(false)">
+        <KindInhalt>
+            @if (_gaben is not null)
+            {
+                <KostenKomponenteDialog @attributes="_gaben"
+                    Geschlossen="@((bool ok) => Fertig(ok))" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_offen == Unterdialog.Traeger)" Schliessbar="false"
+                   Titel="@TraegerText" Geschlossen="() => Fertig(false)">
+        <KindInhalt>
+            @if (_gaben is not null)
+            {
+                <EnergietraegerDialog @attributes="_gaben"
+                    Geschlossen="@((bool ok) => Fertig(ok))" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@(_loeschzeile is not null)" Frage="@_loeschfrage"
+                TitelText="@LoeschenTitel" Beantwortet="LoeschenBeantwortet"
+                JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    /// <summary>Die zwei Einstiege der Kostenseite.</summary>
+    public enum Unterdialog
+    {
+        /// <summary>Kein Bereich offen.</summary>
+        Keins,
+        /// <summary>Die Kostenverwaltung (<c>KostenKomponenteDialog</c>).</summary>
+        Verwaltung,
+        /// <summary>Die Energieträgerverwaltung (<c>EnergietraegerDialog</c>).</summary>
+        Traeger
+    }
+
+    // =====================================================================
+    // Datenseite
+    // =====================================================================
+
+    /// <summary>Liefert den Anzeigestand (Vorbild <c>Aktualisiere</c>).</summary>
+    [Parameter] public Func<KostenStand>? Laden { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Kostenverwaltung. Die gewählte Anlagenzeile geht
+    /// mit — der Vorläufer wählte damit die Komponente vor (Ä19); <c>null</c>
+    /// heißt „geht gerade nicht".
+    /// </summary>
+    [Parameter] public Func<KostenZeile?, IReadOnlyDictionary<string, object>?>? VerwaltungGaben { get; set; }
+
+    /// <summary>Der Parametersatz der Energieträgerverwaltung.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? TraegerGaben { get; set; }
+
+    /// <summary>
+    /// Die Frage vor dem Löschen der losen Positionen einer Zeile; leer =
+    /// nicht möglich (dann bleibt der Knopf ohne Wirkung).
+    /// </summary>
+    [Parameter] public Func<KostenZeile, string>? LoeschFrage { get; set; }
+
+    /// <summary>Löscht die losen Positionen und liefert die Meldung.</summary>
+    [Parameter] public Func<KostenZeile, string>? Loeschen { get; set; }
+
+    /// <summary>Hilfeschlüssel — der der alten Maske.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "UcBkKosten.btn_Help";
+
+    // ---- Texte ----------------------------------------------------------
+
+    [Parameter] public string LabelKomponenten { get; set; }
+        = "Investitionskosten je Anlage:";
+    [Parameter] public string LabelTraeger { get; set; } = "Energieträger des Projekts:";
+    [Parameter] public string SpalteAktionen { get; set; } = "Aktionen";
+    [Parameter] public string SpalteAnlage { get; set; } = "Anlage / Komponente";
+    [Parameter] public string SpalteSumme { get; set; } = "Summe [€]";
+    [Parameter] public string SpalteBetrieb { get; set; } = "Betrieb [€/a]";
+    [Parameter] public string VerwaltungText { get; set; } = "Kostenverwaltung öffnen…";
+    [Parameter] public string TraegerText { get; set; } = "Energieträgerverwaltung…";
+    [Parameter] public string WahlKurztext { get; set; } = "Anlage wählen";
+    [Parameter] public string LoeschenKurztext { get; set; }
+        = "Positionen ohne Anlagenzuordnung löschen";
+    [Parameter] public string LoeschenTitel { get; set; } = "Positionen ohne Anlagenzuordnung";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private KostenStand _stand = new();
+    private int _anlage = -1;
+    private int _traegerMarke;
+    private string _status = "";
+
+    private Unterdialog _offen = Unterdialog.Keins;
+    private IReadOnlyDictionary<string, object>? _gaben;
+
+    private KostenZeile? _loeschzeile;
+    private string _loeschfrage = "";
+
+    /// <summary>Statuszeile (Prüfhilfe).</summary>
+    public string Status => _status;
+
+    /// <summary>Der offene Bereich (Prüfhilfe).</summary>
+    public Unterdialog OffenerUnterdialog => _offen;
+
+    /// <summary>Die gewählte Anlagenzeile (Prüfhilfe; -1 = keine).</summary>
+    public int GewaehlteAnlage => _anlage;
+
+    protected override void OnInitialized() => Auffrischen();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>Liest alle angezeigten Werte neu (nach der Pflege, nach Simulation).</summary>
+    public void Auffrischen()
+    {
+        _stand = Laden?.Invoke() ?? new KostenStand();
+        _status = _stand.Statuszeile ?? "";
+
+        // Die Markierung gilt nur, solange die Zeile noch da ist.
+        bool nochDa = false;
+        foreach (KostenZeile z in _stand.Komponenten)
+            if (z.Schluessel == _anlage) { nochDa = true; break; }
+        if (!nochDa) { _anlage = -1; _traegerMarke = 0; }
+
+        StateHasChanged();
+    }
+
+    // =====================================================================
+    // Auswahl
+    // =====================================================================
+
+    /// <summary>
+    /// Ä19: Die Auswahl einer Anlage kennzeichnet rechts ihren Energieträger.
+    /// </summary>
+    private void AnlageWaehlen(KostenZeile z)
+    {
+        _anlage = z.Schluessel;
+        _traegerMarke = z.TraegerId;
+    }
+
+    private bool Markiert(TraegerZeile t)
+        => _traegerMarke > 0 && t.TraegerId == _traegerMarke;
+
+    private static string Zeilenklasse(ZeilenArt art) => art switch
+    {
+        ZeilenArt.OhnePosition => "epos-zeile--fehlt",
+        ZeilenArt.OhneZuordnung => "epos-zeile--lose",
+        ZeilenArt.Summe => "epos-zeile--summe",
+        ZeilenArt.Hinweis => "epos-zeile--hinweis",
+        _ => ""
+    };
+
+    // =====================================================================
+    // Die zwei Einstiege
+    // =====================================================================
+
+    private void VerwaltungOeffnen()
+    {
+        if (!_stand.Bedienbar || VerwaltungGaben is null) return;
+
+        KostenZeile? gewaehlt = null;
+        foreach (KostenZeile z in _stand.Komponenten)
+            if (z.Schluessel == _anlage) { gewaehlt = z; break; }
+
+        IReadOnlyDictionary<string, object>? gaben = VerwaltungGaben(gewaehlt);
+        if (gaben is null) return;
+        _gaben = gaben;
+        _offen = Unterdialog.Verwaltung;
+    }
+
+    private void TraegerOeffnen()
+    {
+        if (!_stand.Bedienbar || TraegerGaben is null) return;
+
+        IReadOnlyDictionary<string, object>? gaben = TraegerGaben();
+        if (gaben is null) return;
+        _gaben = gaben;
+        _offen = Unterdialog.Traeger;
+    }
+
+    private void Fertig(bool ok)
+    {
+        _offen = Unterdialog.Keins;
+        _gaben = null;
+
+        // Der Vorlaeufer frischte nach JEDEM der beiden Dialoge auf - auch
+        // nach einem Abbruch, weil die Unterdialoge selbst schon schreiben
+        // konnten (Aktualisiere() steht hinter dem ShowDialog, nicht im
+        // OK-Zweig).
+        Auffrischen();
+    }
+
+    // =====================================================================
+    // Lose Positionen löschen — ZWEI Wege auf dieselbe Rückfrage:
+    // der Papierkorb in der Zeile (A‑3) und der Doppelklick auf die gelbe
+    // Zeile (W5‑O3, wie im Vorläufer Ä21). Der Knopf ist der Weg, den
+    // Berührung und Tastatur erreichen (iL4); der Doppelklick ist der
+    // gewohnte Griff der Maus.
+    // =====================================================================
+
+    private void LoeschenFragen(KostenZeile z)
+    {
+        // Die EINE Bedingung beider Wege: Nur die lose Zeile lässt sich
+        // löschen. Der Knopf steht nur dort — der Doppelklick hängt an jeder
+        // Zeile und endet hier.
+        if (!z.Loeschbar || LoeschFrage is null) return;
+        string frage = LoeschFrage(z);
+        if (string.IsNullOrEmpty(frage)) return;
+        _loeschzeile = z;
+        _loeschfrage = frage;
+    }
+
+    private void LoeschenBeantwortet(bool? antwort)
+    {
+        KostenZeile? zeile = _loeschzeile;
+        _loeschzeile = null;
+
+        if (antwort != true || zeile is null || Loeschen is null) return;
+
+        string meldung = Loeschen(zeile);
+        Auffrischen();
+        if (!string.IsNullOrEmpty(meldung)) _status = meldung;
+    }
+}

@@ -1,4 +1,4 @@
-# Umsetzungskonzept: EPOS-Plan auf iOS
+﻿# Umsetzungskonzept: EPOS-Plan auf iOS
 
 **Rev. 2.2 — 03.09.2026 — Stand nach der Kette iU4…iU8**
 
@@ -269,7 +269,7 @@ Das Architekturbild (Modell C: ein Kern, eine UI-Bibliothek, zwei Hüllen) steht
 | `SpeicherEngine.Tests`, `KiKern.Tests` | xUnit | `net10.0` | AnyCPU | ihre Engine | ✔ **angehoben** (iU1) — 337 bzw. 450 Tests |
 | `WindowsFormsApplication1` | WinExe | `net10.0-windows` | x64 | alles Obige (COM ist mit iU1-P1.1 entfallen) | **bleibt** — schrumpft über iU9; `ProjectReference` auf `EPOS.Kern` **und** `EPOS.UI`, SDK seit iU8-6 `Microsoft.NET.Sdk.Razor`. Von 585 `.cs` sind **356** übrig; unter `Allgemein/` und `Controller/` noch **62** von 133 |
 | `Referenzlauf` | Konsole | `net10.0-windows` | x64 | WinForms-App | **bleibt**, bis iU9 abgeschlossen ist |
-| `EPOS.iOS` | MAUI-App (Blazor Hybrid, `Microsoft.NET.Sdk.Razor`) | `net10.0-ios`, `SupportedOSPlatformVersion` 17.0 | ARM64 (`iossimulator-arm64`, `ios-arm64`) | `EPOS.Kern`, `EPOS.UI` | **angelegt** (iU10-3…7) — 19 `.cs` (davon 12 Dienstadapter), **eigene `EPOS.iOS.sln`**, nicht in `WP-Plan.sln` und nicht im Filter (sonst NETSDK1147 auf ubuntu/windows). Simulator-Nachweis über CI-Job `ios.yml`, **per Hand auszulösen** |
+| `EPOS.iOS` | MAUI-App (Blazor Hybrid, `Microsoft.NET.Sdk.Razor`) | `net10.0-ios`, `SupportedOSPlatformVersion` 17.0 | ARM64 (`iossimulator-arm64`, `ios-arm64`) | `EPOS.Kern`, `EPOS.UI` | **angelegt** (iU10-3…7) — 19 `.cs` (davon 12 Dienstadapter), **eigene `EPOS.iOS.sln`**, nicht in `WP-Plan.sln` und nicht im Filter (sonst NETSDK1147 auf ubuntu/windows). Simulator-Nachweis über CI-Job `ios.yml` **geführt** (Lauf 33748736894, 03.09.2026: Projekt 1030 **byte-gleich**), per Hand auszulösen |
 | `EposSqliteMigrator.Kern` | Klassenbibliothek | `net10.0` | AnyCPU | — | **vorhanden** (seit `6486c36`); bleibt Windows-Werkzeug (liest `.accdb` über OleDb), nicht Teil des iOS-Pfads |
 | `CSExeCOMServer` | — | — | — | — | ~~stilllegen (iU0)~~ — **erledigt** (`c3a8233`), aus dem Repo entfernt |
 | `Werkzeuge/Formularkarte` (+ `.Tests`) | Konsole + xUnit | `net10.0` | AnyCPU | Roslyn | **neu** (iU8-12) — **eigene `.sln`**, seit dem Schritt „Formularkarte-Tests" in `kern.yml` auf `ubuntu-latest` mitgeprüft. **101 Tests, alle grün** seit iU8-12e (`4aa6b15`): die mit iZ5 gelöschte Maske liegt als eingefrorenes **Prüfmuster** unter `Formularkarte.Tests/Pruefmuster/Kosten/`, der Stapellauf hängt seit iU9-1 an der lebenden **und erreichbaren** `Form_KostenKomponente` |
@@ -624,7 +624,7 @@ Plattformen ist es der sichere Weg in eine unbemerkte Kerndrift (M8).
 |---|---|---|---|
 | `kern.yml` | `ubuntu-latest` **und** `macos-latest` | `dotnet build` + `dotnet test` über `WP-Plan.Kern.slnf` (Kern, UI, SpeicherEngine, KiKern und ihre Tests); seit iU7-7 die **ChartProben** mit den neun PNG als Artefakt; seit iU8-12 die **Formularkarte-Tests** (nur `ubuntu-latest` — das Werkzeug ist plattformfrei); Kern-Referenzlauf 1030/1007/1017 gegen die eingecheckte Testdatenbank und Vergleich gegen die Referenzbasis | jeder Push, jeder PR |
 | `windows.yml` | `windows-latest` | vollständige Solution mit VS-MSBuild (bis Schritt 5 abgeschlossen ist), danach `dotnet`; Referenzlauf-Vergleich gegen die eingefrorene Basis | Push auf Hauptzweige, nächtlich |
-| `ios.yml` | **`macos-26`** (nicht `-latest`: das Label wandert) | Workload-Set `10.0.400.1` + `DEVELOPER_DIR=/Applications/Xcode_26.6.app`; `EPOS.iOS` für `iossimulator-arm64` bauen (ohne Signatur), im Simulator starten, Startmarken prüfen (`EPOS.iOS bereit: Projekte=n`, `SQLite …`, `STRICT=114`), Prüflauf 1030 und Toleranzvergleich gegen `2026-08-30_B3-Kaskade`; Artefakte: Startprotokoll, CSV, Bildschirmabzug, `.app` | **`workflow_dispatch`** und Pushes, die `EPOS.iOS/**`, `ios.yml` oder `Directory.Packages.props` berühren (seit iU10-6) |
+| `ios.yml` | **`macos-26`** (nicht `-latest`: das Label wandert) | Workload-Set `10.0.400.1` + `DEVELOPER_DIR=/Applications/Xcode_26.6.app`; `EPOS.iOS` für `iossimulator-arm64` bauen (ohne Signatur), im Simulator starten, Startmarken prüfen (`EPOS.iOS bereit: Projekte=n`, `SQLite …`, `STRICT=114`), Prüflauf 1030 und Toleranzvergleich gegen `2026-08-30_B3-Kaskade`; Artefakte: Startprotokoll, CSV, Bildschirmabzug, `.app` | **nur `workflow_dispatch`** — kein Push-Auslöser (Anwenderregel 03.09.2026: macOS-Läufer nur nach Rückfrage; bis Migrationsende pauschal freigegeben). Simulator-Bau in **Debug** (Release lief 40 min in der Mono-AOT-Übersetzung) |
 
 **Der ungelöste Punkt: die Testdatenbank.** `.gitignore` schließt `*.accdb` aus — „Änderungen an der
 Datenbank landen nie in einem Commit". Eine CI ohne Datenbank kann den Kern nicht rechnen lassen.
@@ -721,10 +721,11 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU4** `EPOS.Kern` herauslösen | ✔ hier erreicht 03.09. | `4a0a4e2`..`18f515f` | Vollreferenzlauf **332/332** (iZ4), VS 2026 öffnet 12 Projekte |
 | **iU5** Statics kappen, Dienste | ✔ hier erreicht 03.09. (iZ5a) | `35be81f`..`c477523`; zweiter Umzug `a546af9`..`a9e5c16`, Doku `f95fc34` | Bedienprobe: Bericht, Katalogimport, Lizenzaktivierung, KI-Chat, 12 Gewerke, Sprachumschaltung |
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
-| **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23) |
-| **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
-| **iU9** Masken in Wellen | 🔄 W0 und W1 umgesetzt | `43452a7` | 105 von 111 Masken offen; Stilllegung nach iF29 abgeschlossen |
-| **iU10**–**iU13** | ⏳ nicht begonnen | — | — |
+| **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23)  Zoom seit 05.09.2026 über den Baustein `Diagramm` (Nachtrag im W11b-Block) |
+| **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK. Anwenderwunsch **iU8‑E‑1** (05.09.2026, `ddf4d00`): Fachdialoge öffnen im Anteil des Arbeitsbereichs (85 % × 90 %, Deckel 92 %; `EPOS.UI/Dienste/Fenstermass.cs`), fünf kleine Masken als `Dialogart.Klein`; Abnahme je 100/125/150 % offen |
+| **iU9** Masken in Wellen | ✔ **W0 bis W16 umgesetzt, M9 abgeschlossen** 04.09. | `ab3aea8` | **1** Designer-Maske offen (`Form_HelpPopup`, bis iU11; 2 nach W16b, 7 nach W16a, 11 nach W15c, 12 nach W15b, 13 nach W15a, 17 nach W14c, 21 nach W14a, 28 nach W14b, 32 nach W13, 38 nach W12, 43 nach W11b, 49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht; seit W12 die **AP5-Importkette als ein Kern-Ablauf** (`GanglinienImportAblauf` mit zwölf bitgleichen Proben), `StromganglinieDialog`, `StromganglinieAdminDialog`, `PeakShavingDialog` (nebenläufig) und der gemeinsame `ImportKonflikteDialog`; seit W13 die **Katalog-Importe** — `KatalogImportDialog` mit vier Ausprägungen (`KatalogImportProfil`/`KatalogImportAblauf` im Kern, transaktional), `WaermebedarfAdminDialog`, `PvModulImportDialog` (CEC/PAN), die Mehrfachmarkierung im `Raster` und zwanzig eingefrorene Importproben; die `ImportKonflikteHuelle` und die Sprungbrücke `WaermebedarfExternAdmin` sind gefallen; seit W14b die **Bedarfs-Admin** — `BedarfAdminDialog` mit drei Ausprägungen über `BedarfsArt` (`BedarfsVorschauCtrl` im Kern) und `SolarganglinieAdminDialog` (Sprungziel → Überlagerung), `ToolsClass` gefallen; dazu der Anwenderentscheid **Energieeinheit MWh/kWh wählbar** (W8‑O‑5/W9‑O‑3); seit W14a die **Erzeuger-Admin** — `KatalogBrowserDialog` mit vier Ausprägungen (`KatalogBrowserProfil`), `PufferSpKatalogDialog` (der vierte Katalogeditor), `ModulKatalogDialog` (PV, Stromspeicher), die Heizkessel-Brennstoffkette im Kern berichtigt, die letzten fünf ablösbaren Sprungziele → Überlagerungen, `SpeichernLeiste`/`KiAufrufKnopf`/`PufferSpFilter` gefallen; **der Erreichbarkeitsbefund steht auf 0 nein / 0 verwaist / 0 unklar**; seit W14c die **Verwaltung** — `GesetzeskatalogDialog` (Zeilendialog als Überlagerung), `KatalogDublettenDialog` mit dem Baustein `Baumansicht`, `EinstellungenDialog` (`EinstellungenCtrl` im Kern), `KlimadatenDialog` (`KlimaregionStammCtrl` und `KlimaImportAblauf` im Kern, zwei Klimabilder im Renderer → 32 Proben); die **letzten zwei ablösbaren Sprungziele** → Überlagerungen, `ChartManager` (die MS-Chart-Bindung) und `RoundedPanel` gefallen, **WFO1000 6 → 0**, Warnungen der Mappe 12 → 6; **Anwenderentscheide W14c E‑3/E‑5/E‑6/E‑7 vom 04.09.2026 umgesetzt** (`a0e6707`: Komponente wieder `KlimadatenDialog`, feste Pfade ohne Ordnerwähler nur lesend, **Altbereinigung der Klimadaten-Waisen als Schema-Schritt 62** — `ZIEL_VERSION` 62, neu `FREEZE_VERSION` 61 —, keine Ortsliste in der Auslieferung); seit W15a das **Projekt** — Baustein `ProjektListe` (vier Projektlisten des Bestands werden eine), `ProjektWahlDialog` (Öffnen und Löschen), `ProjektKopieDialog`, `ProjektTransferDialog` (`ProjektExportImportCtrl` im Kern, `SchemaStand.Zielversion`; **der Projektimport war seit der SQLite-Umstellung kaputt, B55 — von den Proben gefunden und behoben**), `ProjektKopfSeite` (die erste Assistentenseite als Razor, über `BlazorAssistentSeite`); `ProjektAuswahl` (uc) bleibt bis W16; seit W15b **Hilfe und KI** — `KiChatService` (1 751 Z.) im Kern hinter der Naht `IKiAusfuehrung`, die Bausteine `Gespraechsverlauf` (Bausteinlücke 17) und `KiKnopf`, `Warnbanner.Verfaellt`, `TextAnzeige`, `KiHinweisDialog`, `KiEinstellungenDialog`, `KiChatDialog` in vier Kindern (kein Streaming, kein Markdown, Schlüssel nie durchgereicht, Riegel vor dem `Modellkanal`); `Form_HelpPopup` (E‑2, fällt in iU11) und `Form_Hinweis` (E‑1b, fällt mit W16) bleiben bewusst; seit W15c **Lizenz und Erststart** — `LizenzVerwaltungDialog`, `ErststartDialog` (besitzerlose Hülle mit vier Zusätzen an `BlazorDialogForm`) und `LizenzDialog` (drei Reiterblätter, Zustimmungsmodus, Browserdruck), im Kern `LizenzManager.Bewerten`, `LizenzCtrl`, `LizenzTextCtrl`, `ZustimmungCtrl`; **die ersten Lizenztests überhaupt** (+79 Kern-, +67 bunit-Fälle); **E‑8 Weg 2: `Program.Main` prüft die WebView2-Laufzeit und endet mit Meldung, wenn sie fehlt**; iF30 (Lesemodus-Durchsetzung) nach W16; seit W16a **der Assistent** — `KomponentenBestandCtrl` im Kern mit **Nachweis N6** (Bitmaske bitgleich für alle 13 Referenzprojekte), `AssistentCtrl` und `WizardCtrl` im Kern, Baustein `Assistent`, Seite `AssistentSeite` (13 Seiten in Bestandsreihenfolge), `KomponentenauswahlDialog`, `Kachel.Zustand`; `WizardParent`, `Wizard_Komponenten`, `Wizard_Stromlastgang`, `ProjektAuswahl` (uc) und `BlazorAssistentSeite` gefallen (26 Dateien); `Views/Wizard` und `Views/Projekt` führen keine Designer-Maske mehr; seit W16b **die Startseite** — Seite `Startseite` (`EPOS.UI/Seiten/Start/`, Kopfband, sechs Reiter mit 21 Kacheln in fünf Reiterkomponenten, Reiter 6 = `BerichteKostenSeite`), im Kern `ProjektKontextCtrl` (**Nachweis N7**), `StartseiteCtrl` und `BedarfsZustand`, `StartseiteHuelle` im `MDIMainForm_Load`, `Dienste.Projekt` über den Kern; **E‑5** (Simulationskonfiguration als freie Ansicht, Ergebnis als `Ueberlagerung` — **R‑W10b‑1 und R‑W11‑1 eingelöst**), **E‑7** (`FormMain`, `Form_StromTest`, `StromTestClass` und zwölf `*KontextMenuCtrl` ohne Nachfolge gefallen), **E‑9** (`Form_Start`-Designer als Prüfmuster eingefroren); `Form_Start` (+`.bak`), `AktionsKarte`, `Form_Hinweis`, `FormStartProjektKontext` gefallen — **34 Dateien, 13 019 gegen 5 549 Zeilen**; `Program.startfrm` weg; `WindowsFormsApplication1` führt noch `MDIMainForm` und `Form_HelpPopup` und **null Inline-SQL** (B34); seit W16c **das Hauptfenster** — Baustein `Menueband` mit der aus dem Designer erzeugten `Menuetabelle` (54 Punkte, **Nachweis N4**), Seite `Hauptfenster` hinter `HauptfensterHuelle`, `Seitenschluessel` als die eine Schlüsseltabelle beider Plattformen (K7), `AppWurzel` als gemeinsame Wurzel (E‑1); `MDIMainForm` auf die Hülle zurückgebaut (873 → 129 Zeilen, Designer und drei `.resx` als Prüfmuster, E‑9) und in `Hauptfensterrahmen` umbenannt (E‑10), **Per Monitor V2 statt `DpiInsel` (E‑6, iF21)**, Zeugen und Schwellen der Formularkarte auf N1/N2; **die Mischphase (M9) ist zu Ende** — `WindowsFormsApplication1` führt eine Designer-Maske (`Form_HelpPopup`, bis iU11), null Inline-SQL und die `Sprungbruecke` mit einem Zweig (iF22) |
+| **iU10** iOS-Hülle `EPOS.iOS` | ✔ hier erreicht 03.09., seither je Welle im CI geprüft | `ios.yml`-Läufe 15–22 grün (außer 18), zuletzt 33898599945 auf `c8fbd77` | Gerätebefunde (iU13), siehe `Umsetzung_iU10_Nachweise.md` |
+| **iU11**–**iU13** | ⏳ nicht begonnen | — | — |
 
 **Die Reihenfolge auf dem Zweig ist nicht die Reihenfolge der Planung.** iU5 bis iU8 sind in
 eigenen Worktrees entstanden und per Cherry-Pick übernommen worden; die SHAs sind dabei neu
@@ -1211,8 +1212,9 @@ byte-gleich); die Windows-Punkte stehen im Statusblock.
 > jetzt die **Zeichnung** *und* die **Ausgabe** — `WordBerichtGenerator`,
 > `ExcelBerichtGenerator`, `Bausteine/`, `BerichtsKonfiguration`, `ZeitreihenExtraktor`,
 > `IBerichtsBaustein` (verschoben im zweiten Umzug, siehe iU5-Statusblock). In der Anwendung
-> geblieben sind nur `ChartRendererGdi` — der Gegenpart des Windows-Bildvergleichs aus
-> iU7-1 — und `BerichtsDatenSammler`, weil er `EnergieMengen` aus `Views/Varianten/` ruft.
+> geblieben ist nur `BerichtsDatenSammler`, weil er `EnergieMengen` aus `Views/Varianten/` ruft;
+> `ChartRendererGdi` (Gegenpart des Windows-Bildvergleichs aus iU7-1) ist mit iF23 am
+> 03.09.2026 gelöscht.
 >
 > **Damit steht die Vorlage für iF16.** Der Kern liefert PNG-Bytes, die Oberfläche zeigt
 > sie an — genau der Weg, den `EPOS.UI/Standards/ChartBild` (iU8-4) schon annimmt. Ein
@@ -1254,8 +1256,10 @@ Kern-Renderer; ScottPlot bleibt nur dort, wo im Chart wirklich bedient wird (iF2
 
 **Abnahme:** Berichtsbilder aus dem neuen Renderer sind gegen die alten sichtgeprüft; Berichtsdatei
 zeilengleich. **Hier erreicht, soweit ohne Windows möglich** (ChartProben 9/9, drei Renderer-Tests,
-`kern.yml` auf ubuntu und macos); der Bildvergleich alt/neu läuft nur unter Windows und ist die
-Vorbedingung dafür, `ChartRendererGdi.cs` zu löschen (→ iF23).
+`kern.yml` auf ubuntu und macos). Der Bildvergleich alt/neu lief nur unter Windows und wurde
+nie gefahren: Der Anwender hat am 03.09.2026 die Löschung von `ChartRendererGdi.cs` und des
+Modus `bildvergleich` ohne ihn angeordnet (→ iF23); der Nachweis der Bildgleichheit ist seither
+der Sichtvergleich der Berichte am Gerät.
 
 ### iU8 — `EPOS.UI` und der erste Blazor-Dialog unter Windows · L · Windows
 
@@ -1403,6 +1407,1506 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 
 **Abnahme je Welle:** Feldkartenabgleich vollständig, beide Sprachen, Maus und Finger.
 
+> **Statusblock iU9 — Teilwelle 16c umgesetzt, Welle 16 und Meilenstein M9 abgeschlossen (04.09.2026, Basis `c8fbd77` nach W16b, zusammengeführt mit `97b048c` nach dem zweiundzwanzigsten iOS-Lauf)**
+>
+> **Das Hauptfenster ist Razor, und `WindowsFormsApplication1` führt keine Fachmaske mehr — die Mischphase (M9) ist zu
+> Ende.** `MDIMainForm.cs` 873 → **129** Zeilen (die Hülle: `Form` + `Application.Run`, eine `BlazorWebView` mit
+> `Hauptfenster.razor`, Besitzer der `BlazorDialogForm<T>`, F1, `Application.Restart()` beim Sprachwechsel,
+> `LizenzManager.NachpruefungImHintergrund()`), `MDIMainForm.Designer.cs` (493 Z., 45 `ToolStripMenuItem`) und die drei
+> `.resx` (4 000 Z.) **vor dem Rückbau** als Prüfmuster `Pruefmuster/Hauptformular/` eingefroren (E‑9), die acht `Init*`
+> und 34 `MenuItem_*`-Handler gefallen, `MenueCtrl` 347 → 257 Z. (26 → 6 Methoden), `WinFormsNavigation` 269 → 256,
+> `BlazorDialogForm` 386 → 301 (die `DpiInsel` samt zwei `ShowDialog`-Überladungen weg). Neu in `EPOS.UI`: Baustein
+> **`Menueband`** (`Menuepunkt`, **`Menuetabelle` per Skript aus dem Designer erzeugt, nicht abgetippt** — R‑W16‑8; **54**
+> Punkte und 8 Trenner, nicht 45: die acht `Init*` hängten neun Punkte programmatisch ein, B2; vier `.resx`-Leichen und
+> sieben fehlende englische Beschriftungen bereinigt, B3/B4; die toten Handler `MenuItem_PV_Import_PAN`/`MenuItem_PV_Import`
+> gefallen, W16‑B24; der KI-Assistent eine Tabellenzeile statt einer Suche über den Anzeigetext, W16‑B23), Seite
+> **`Hauptfenster`** (Menüband + Kopfband PRODUKTNAME/GATTUNG/CLAIM/Version + Inhaltsfläche, `Springe(schluessel)` als
+> einziger Handler) hinter **`HauptfensterHuelle`**, **`Seitenschluessel` als die eine Schlüsseltabelle beider Plattformen**
+> (K7, E‑1/E‑2: 34 Werte, die übernommenen `Masken`-Werte sind Verweise, `INavigation.OeffneMaske` bleibt; `Masken.PvImport`
+> fehlte seit W13 im ASCII-Zeugen, B1) und **`AppWurzel` als gemeinsame Wurzel** (eine Wurzel, zwei Schalen: `Kopfleiste` als
+> `RenderFragment` trägt unter Windows das Menüband, auf iOS nichts; `Startansicht` ist die Ansicht beim Aufmachen und das
+> Ziel des Rückwegs). **E‑6/iF21 eingelöst:** `app.manifest` Per Monitor V2, `Program.Main` `HighDpiMode.PerMonitorV2` — der
+> Gerätebefund bei 100/125/150 % steht aus (`Umsetzung_iU9_Nachweise.md` § 12.1). Fensterhilfe im Kopfband
+> (`Hauptfenster.btn_Help`, W16b‑O‑4), `HilfeKontext`, `help_mapping.txt`, vier `CLAUDE.md` und
+> `Konzept_iOS-Portierung_EPOS-Plan.md` (M9 ✔) nachgezogen. Sieben Sachcommits, Protokoll, Merge und Gate-Nachtrag
+> (`915e0a7` … `54b7c96`), auf `ios_migration` als `ab3aea8`; **`WindowsFormsApplication1` führt noch EINE Designer-Maske**
+> (`Form_HelpPopup`, bis iU11, W15b‑E‑2), die Hülle `MDIMainForm` ohne Designer, **null Inline-SQL** und die `Sprungbruecke`
+> mit einem Zweig (`Form_SpeicherOptimierung`, iF22). `EPOS.iOS` ist unberührt — die drei neuen Schnittstellenglieder
+> (`StartseiteGaben`, `BerichteKostenGaben`, `AdresseOeffnen`) haben Standardumsetzungen, die `AppWurzel` sagt es im Banner.
+>
+> **Neun Angleichungen** (A‑1…A‑9: das Menü klappt beim Klick auf, nicht beim Überfahren; `&&` → `&` in vier Menütexten;
+> die nie lesbare Ladeanzeige `label_OnlineDoku` entfällt; der Titel ist von Anfang an „EPOS-Plan", W16‑B22; „Über" über
+> `Dienste.Dialog`; Browserstart über `Dienste.Datei.AdresseOeffnen` statt `Process.Start`, B8; die 21 einzeiligen
+> `MenueCtrl`-Methoden entfallen; die Fensterhilfe sitzt im Kopfband; sieben stille `Console.WriteLine` entfallen) und die
+> Befunde W16c‑B1…B10, darunter: **die N1-Sollwerte „0/0" gehen nicht auf** — sie sind vom Stand vor W15b gerechnet,
+> geprüft wird die starke Form „genau eine Maske, und zwar `Form_HelpPopup`" (B7); `Program.cs` brauchte keine
+> Bereinigung (B9); `AppWurzel.ZurueckZurListe` räumte `_simErgebnis` nicht ab (B10, behoben). **R‑W16‑10 eingelöst**
+> (`Form_HelpPopup` meldet „ja", `MDIMainForm` bleibt als Klasse Wurzel des Graphen, ist aber keine Maske mehr),
+> **W16b‑O‑1 erledigt** (der Maskenschlüssel-Zeuge ist über einen Sprungtabellen-Auszug im Prüfmuster zurück).
+> **Anwenderentscheide 04.09.2026:** E‑1, E‑2, E‑6, E‑8a, E‑9 bestätigt; W16c‑E‑1 (das Menü klappt beim Klick auf)
+> bestätigt; **W16c‑E‑2: Untermenü „Sprache"** und **W16c‑E‑3: Ansichtswechsel** umgesetzt (`a9797d1`: die zwei Sprachpunkte
+> sind Untereinträge des Kopfes „Sprache", N4 jetzt 55 Punkte / 8 Trenner / 4 Köpfe, W16c‑O‑3 erledigt; „Varianten und
+> Bericht…" wechselt die Ansicht der `AppWurzel` auf `BERICHTE_KOSTEN` wie auf iOS, Windows liefert die
+> `BerichteKostenGaben` aus derselben Hülle wie das sechste Reiterblatt, Rückweg über `ZurueckZurListe`; dabei Befund
+> W16c‑B11: `IProjektQuelle` fehlte im Windows-Dienstverzeichnis, `KeineProjekte` eingetragen — Abnahmepunkt W16c‑O‑6;
+> Gate auf dem gemergten Stand: 0 Fehler / 6 Warnungen, **4 012** Tests auch unter `en_US`, Formularkarte 122, Referenzlauf
+> byte-gleich). **E‑10 entschieden 04.09.2026: `MDIMainForm` → `Hauptfensterrahmen`** (umgesetzt `c7f989b`, W16c‑O‑1 erledigt;
+> nicht `Hauptfenster`, das ist die Razor-Seite); **W16a‑E‑1/W16b‑O‑5 entschieden 04.09.2026: der Assistent wird in
+> iU11 zusammen mit der Transaktion W16a‑O‑1 eine freie Ansicht der `AppWurzel`**, bis dahin modal; **W16b‑E‑1 und
+> W16b‑E‑2 bestätigt 04.09.2026**; **iF30 entschieden 04.09.2026** (streng über die Schreibnaht im Kern, eigene Welle
+> nach der Windows-Abnahme, siehe Register). **Was iU11 erbt:** `Form_HelpPopup` (fällt mit
+> `HelpCatalog`/`HelpExtender`, Ersatz `IHilfeDienst` steht), die `Sprungbruecke` mit einem Zweig, E‑10, W16b‑O‑3 erledigt
+> (`bd0592a`, eine Wahrheit im Kern), die drei iOS-Standardumsetzungen, die DPI-Abnahme (W16c‑O‑2),
+> `Seitenschluessel` mit 34 Werten in einer Klasse (W16c‑O‑4, Teilung entlang Ansicht/Maske/Weg), keine Menüfreischaltung
+> nach Projektzustand wie im Bestand (W16c‑O‑5); die `WFO1000`-Herabstufung kann mit `Form_HelpPopup` entfallen.
+>
+> **Nachweise** (auf dem gemergten Stand `ab3aea8`, Linux): Build → 0 Fehler, **6** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **4 002** grün (3 968 nach W16b; N4 `MenuebandTests` 15 Fälle — 54 Punkte, 8 Trenner,
+> 5 Köpfe, jeder Klick ein bekannter `Seitenschluessel`, jede Beschriftung de und en aus `MyResource`, 11 Bilder; dazu
+> `HauptfensterTests`, `AppWurzelTests`, `SeitenschluesselTests`), **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte
+> **122** grün (+1: der zurückgeholte Maskenschlüssel-Zeuge; **N1** `Masken == 1` = `Form_HelpPopup` mit Namen,
+> `Erreichbar(Ja) == 1`; **N2** das Prüfmuster liefert weiter Karten, Skelette und Erreichbarkeit) · Stapellauf **1** Maske /
+> 2 Designer (**Sollwert exakt getroffen**), 0 lokalisiert, **1 erreichbar / 0 nein / 0 verwaist / 0 unklar** · SQL-Prüfer
+> 1 200 Texte, 0 Fundstellen · ChartProben 32 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich**
+> (815 043 Werte; der Startweg Erststart → Lizenz → `NachpruefungImHintergrund` ist inhaltlich unverändert) · beide
+> Wächter leer.
+>
+> **Protokoll** mit der Feldkarte (eine Kartenzeile), der erzeugten Menütabelle (§ 4), den neun Angleichungen, den
+> Befunden, den Zeugen der Formularkarte (§ 8), der Löschliste mit `git grep`-Nachweis und der **Vollabnahme N1–N10 in
+> sechzehn Punkten**: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W16c_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme 04.09.2026, erster Befund W16c‑B12 (Startabsturz):** `BlazorSeite<T>` gibt jedem Parametersatz
+> einen `SeitenZustand` unter dem Schlüssel `Zustand` mit; seit W16c ist die Wurzel `BlazorSeite<Hauptfenster>`, und
+> `Hauptfenster.razor` führte den Parameter nicht — Blazor warf beim ersten Rendern, verpackt als
+> `TargetInvocationException` bei `Application.Run`. Behoben in `1429712`: `Hauptfenster` und `AppWurzel` nehmen den
+> Zustand (die Hüllen der Startseite und der Berichte behalten ihre eigenen), `BlazorSeite` prüft per Reflexion und
+> meldet lesbar, `HauptfensterTests` rendern über `AddMultipleAttributes` wie die Hülle (Gegenprobe mit unbekanntem
+> Schlüssel rot); die bunit-Tests sahen es nicht, weil sie mit getippten Parametern rendern (B12a, Parallele zu B11).
+> Abnahmepunkt 0 „Start" bleibt bis zum Gerät offen (W16c‑O‑7). **Windows-Abnahme
+> steht aus** — Erststart mit Lizenz, 54 Menüpunkte in drei Ebenen mit Tastatur und F1, Kopfband, 21 Kacheln, Assistent,
+> Simulation, Bericht, Sprachwechsel, **DPI 100/125/150 %** mit `Form_HelpPopup` und `Form_SpeicherOptimierung` als
+> Kandidaten für eine echte Abweichung, Monitorwechsel, Setup mit WebView2. Der vierundzwanzigste iOS-Lauf
+> (33904433007) auf diesem Stand ist grün — erstmals mit `Hauptfenster`, `Menueband` und der `AppWurzel` als gemeinsamer
+> Wurzel (N9; Lauf 23 war eine abgebrochene Dublette).
+> **Windows-Abnahme 05.09.2026, W16c‑E‑4 („Sprache sollte oben rechts sein") umgesetzt (`4bcd981`):** der Kopf
+> „Sprache" steht am **rechten Rand** des Menübands — `Menuepunkt.RechtsBuendig` aus der erzeugten `Menuetabelle`,
+> das `Menueband` hängt `epos-menueband-punkt--rechts` (`margin-left: auto`) an. **Nur die Optik wandert**:
+> Markup-Reihenfolge, Tastaturweg (Ende = „Sprache"), Sprachausgabe und N4 bleiben unverändert; fünf bunit-Fälle.
+> Der Abnahmepunkt 3a „Wo ‚Sprache' steht" ist neu in der Liste, die Sichtprüfung bleibt beim Anwender.
+> **Anwenderwunsch W16c‑E‑5 vom 05.09.2026 (Farbgebung wie vor W16), umgesetzt (`04d5ac6`):** Menüband und
+> Kopfband folgen `menuToolbar` und `MDIMainForm.InitMarke` — AliceBlue #f0f8ff, vier Köpfe in 16 px, kühle
+> Trennlinie #dee3e8, Produktname 19 px, Gattung und Claim 11 px in #70777e. Fünf Werte, die bisher nur als
+> Rückfall in der Regel standen (`--epos-marke`, `--epos-marke-untertitel`, `--epos-marke-trennlinie`,
+> `--epos-menue-flaeche`, `--epos-flaeche-hell`), sind jetzt Token in `:root`; die Menühöhe bleibt beim
+> Berührungsziel 44 px, die Versionsfarbe des Bestands ist wegen 2,77:1 nicht übernommen. Abnahmepunkt 7a.
+> **Windows-Abnahme 05.09.2026 (PDF des Anwenders, S. 3), Befund W16c‑B13 (`78f32a7`):** die verschachtelten
+> Untermenüs des Menübands („Administration → Wärmebedarf & Heizung ▸ …") ließen sich nicht aufklappen. Drei
+> Ursachen: `@onfocusout` am `<nav>` schloss die Klappe schon beim Zeigerdruck, weil `focusout` auch bei einem
+> Fokuswechsel **im Band selbst** feuert und die gedrückte Zeile beim Loslassen aus dem DOM war (kein `click` mehr;
+> `FocusEventArgs` kennt kein `relatedTarget`, auf dem iPad setzt eine Berührung gar keinen Fokus); die zweite
+> Ebene führte keinen eigenen Offen-Zustand (ein Feld für oben, ein flaches Namens-Set darunter, kein Ausschluss
+> unter Geschwistern); und die Tastatur kannte weder → noch ← noch ein Wandern in der offenen Klappe. Behoben: der
+> Offen-Zustand ist ein **Pfad über alle drei Ebenen**, eine Schließfläche (`position: fixed; inset: 0`) ersetzt
+> `focusout`, `→ ← ↑ ↓` wandern in der Klappe mit rovendem `tabindex`, `OpenRegion` je Kind und Verweisfang je
+> Zeile (ein bedingter `AddElementReferenceCapture` brach Blazors Abgleich). 14 hüllengleiche Wachen mit der
+> echten `Menuetabelle`, darunter die Gegenprobe zur Ursache; Abnahmepunkte 4a (Maus/Berührung) und 5a
+> (Tastatur); drei Hausregeln in `EPOS.UI/CLAUDE.md`.
+
+> **Statusblock iU9 — Teilwelle 16b umgesetzt (04.09.2026, Basis `84d7c16` nach W16a, zusammengeführt mit `d4a7632` nach dem einundzwanzigsten iOS-Lauf)**
+>
+> **Die Wurzel der Anwendung aus Anwendersicht ist Razor, und der Altzweig ist weg — 34 Dateien, 13 019 gelöschte gegen
+> 5 549 neue Zeilen:** `Form_Start` (2 339 Z. `.cs` + 1 864 `.bak`, 1 381 Designer, 4 900 `.resx`) → Seite **`Startseite`**
+> (`EPOS.UI/Seiten/Start/`: Kopfband mit Projektauswahl, Statuszeichen und Klimafeld, sechs `Reiter` mit 21 Kacheln in den
+> fünf Reiterkomponenten `ProjektReiter`, `WaermebedarfReiter`, `StrombedarfReiter`, `ErzeugerReiter`, `SimulationReiter`,
+> Reiter 6 = `BerichteKostenSeite` aus W5; Kachelzustand aus `KomponentenBestandCtrl`, Reitersperre und die drei
+> `Form_Hinweis`-Aufrufe über `Warnbanner.Verfaellt`) hinter **`StartseiteHuelle`** (`BlazorSeite<Startseite>` im
+> `MDIMainForm_Load`); `FormMain` mit `Form_StromTest`, `StromTestClass` und den zwölf `*KontextMenuCtrl` (E‑7, Altzweig
+> K6‑a, 6 682 Z.) **ohne Nachfolge**; `AktionsKarte` → `Kachel`; `Form_Hinweis` → `Warnbanner.Verfaellt`;
+> `FormStartProjektKontext` → **`ProjektKontextCtrl`** im Kern (K2, **Nachweis N7 zuerst**: der Wechsel zieht Id, Name und
+> Klimazone zugleich nach, ein unbekannter Name lässt den Kontext stehen, `Uebernehmen` schreibt „zuletzt geöffnet",
+> `Setzen` nicht), dazu **`StartseiteCtrl`** (K4, die vier SQL mit `DbParam`) und **`BedarfsZustand`** (E‑5: die zwei
+> Bedarfsobjekte gehören dem Projekt, nicht mehr einem Fenster). **E‑5 umgesetzt:** die Simulationskonfiguration löst
+> die Startseite in derselben WebView ab, das Ergebnis liegt als `Ueberlagerung` darüber, die zwei modalen Hüllen sind
+> gefallen — **R‑W10b‑1 und R‑W11‑1 damit eingelöst** (in den Blöcken W10b/W11b nachgetragen). `Dienste.Projekt` läuft
+> über `ProjektKontextCtrl`, `Program.startfrm` gibt es nicht mehr, `IProjektQuelle.Startkacheln(int)` (K6) mit
+> Standardumsetzung. 78 neue Texte de/en, darunter erstmals englisch die drei Literale aus dem Code (B1).
+> `Form_Start.Designer.cs` und drei `.resx` als Prüfmuster `Pruefmuster/Hauptformular/` eingefroren (E‑9), alle elf
+> Typzeugen hängen am Prüfmuster. Sieben Sachcommits, Protokoll, Merge und Gate-Nachtrag (`b10cfc1` … `666fe4f`), auf
+> `ios_migration` als `ff60252`; **`WindowsFormsApplication1` führt noch zwei Masken** (`MDIMainForm`, `Form_HelpPopup`) **und
+> null Inline-SQL** (B34 eingelöst).
+>
+> **Zehn Angleichungen** (A‑1…A‑10: 13 `Paint`-Handler → CSS, drei Bindemuster → ein `@onclick` je Kachel,
+> `UpdateWizardSymbole` → `KomponentenBestandCtrl`, der Hinweis der Reitersperre steht vorher statt nach dem Klickversuch,
+> `Form_Hinweis` → Banner 3 s, fünf `MessageBox` des Klimaspeicherwegs → ein Banner, die Statusfarbe der Solar-Radiobuttons
+> entfällt, `IProjektKontext.Vorhanden = true` wie auf iOS, „Öffnen…"/„zuletzt geöffnet" setzen das Projekt aktiv statt
+> ein Detailformular zu zeigen, gerechnete Rechtsbündigkeit → CSS) und die Befunde W16b‑B1…B8, darunter:
+> **`IosProjektKontext` liest die Klimazone anders** (Stammname statt Projektkopie) — der Kern übernimmt den Windows-Weg,
+> **W16b‑O‑3 entschieden 04.09.2026 („iOS-Lösung"): die Messung zeigte, dass die iOS-Abfrage den falschen
+> Schlüsselraum las — `ID_Klimaregion` ist die Id der Projektkopie, der Stammname war auf iOS immer leer; umgesetzt als
+> EINE Wahrheit im Kern (`StartseiteCtrl.ProjektKlimazone` liest die Projektkopie, die Stammabfrage fällt),
+> `IosProjektKontext` läuft über `ProjektKontextCtrl`, N7 15 Fälle, `bd0592a`** (B2); `ProjektTransferDialogTests` flatterhaft, nicht von dieser Welle (B7,
+> W16b‑O‑2); die Stapellauf-Sollzahl „1/2" der Anweisung ist die von nach W16c, gemessen 2 Masken / 3 Designer (B8).
+> **Anwenderfragen:** **E‑7 umgesetzt** — verloren gehen die Gewerksübersicht in Listenform und das Drag & Drop
+> zwischen den zwölf Listen; an ihrer Stelle dieselben zwölf Gewerke als Kacheln mit Statuspunkt, jede führt in
+> denselben Dialog wie das Kontextmenü; **nicht ersetzt** ist das Verschieben eines Katalogeintrags per Maus; **E‑5
+> umgesetzt**; E‑1/E‑2 vorbereitet (K7 ist W16c); E‑9 umgesetzt; **W16a‑E‑1 bleibt offen** (der Assistent bleibt modal,
+> an ihm hängt ein Schreibweg — technisch wäre die freie Ansicht jetzt möglich, W16b‑O‑5); **neu W16b‑E‑1** (der Reiter
+> „Simulation" springt ohne Klimaregion sichtbar auf Reiter 1 zurück, die Meldung steht als Banner oben statt als
+> `MessageBox` — bestätigt 04.09.2026) und **W16b‑E‑2** (der Reiter „Berichte & Kosten" wird von Anfang an gehalten, ein
+> Ladevorgang mehr beim ersten Variantenwechsel — bestätigt 04.09.2026). **Was W16c erbt:** `MDIMainForm` nur an vier Stellen angefasst
+> (`MDIMainForm_Load`, `MenuItem_Neu`/`_ProjektBearbeiten` → `projektkontext.Setzen`, `_AlsVariante` → `Dienste.Projekt`,
+> `_VariantenBericht` → `StartseiteHuelle.Aktuelle`), Menü, `Init*`, Kopfband, F1 und Sprachwechsel unberührt; der
+> „ja"-Zeuge steht an `MDIMainForm` und ist beim Rückbau umzuhängen, der Maskenschlüssel-Zeuge ist gestrichen (W16b‑O‑1,
+> rückholbar über einen Sprungtabellen-Auszug im Prüfmuster); `Erreichbarkeit.Wurzelmasken` = nur `MDIMainForm`
+> (W16‑B3 erledigt); `AppWurzel` unberührt, `Seitenschluessel.STARTSEITE` ist K7; `Form_Start.btn_Help` (die Fensterhilfe)
+> wandert ans Hauptfenster (W16b‑O‑4).
+>
+> **Nachweise** (auf dem gemergten Stand `ff60252`, Linux): Build → 0 Fehler, **6** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 968** grün (3 923 nach W16a; N7 `ProjektKontextCtrlTests` 12 Fälle, N3
+> `StartseiteTests` 21 Fälle — sechs Reiter, 21 Kacheln 5/4/3/7/2, Kachelzustand aus der Bitmaske, Reitersperre,
+> Projektwechsel über `SeitenZustand`, die E‑5-Ansichten), **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte
+> **121** grün (T1 gestrichen) · Stapellauf **2** Masken / 3 Designer (B8), **2 erreichbar / 0 nein / 0 verwaist /
+> 0 unklar** · SQL-Prüfer 1 200 Texte, 0 Fundstellen · ChartProben 32 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017
+> **PASS, byte-gleich** (815 043 Werte) · **Referenzlauf mit Projektwechsel** (§ 16.3, R‑W16‑4): 1030→1007 und 1007→1030
+> byte-gleich zur Basis und untereinander, dazu der Kern-Fall 1030→1007→1030 · beide Wächter leer.
+>
+> **Protokoll** mit dem Feldkartenabgleich der 108 Kartenzeilen, den zehn Angleichungen, den Befunden, der Löschliste mit
+> `git grep`-Nachweis und **sechzehn Abnahmepunkten**:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W16b_Blazor_Port_Protokoll.md`. **Windows-Abnahme steht aus**,
+> darunter alle 21 Kacheln, der Projektwechsel im Kopfband, die Konfiguration als Ansicht, das Ergebnis als Überlagerung
+> und **DPI 100/125/150 %** (die Seite sitzt bis iF21/W16c in der DpiUnaware-`MDIMainForm`, R‑W16‑2 — die Abnahme hält
+> fest, wie unscharf es ist). Der zweiundzwanzigste iOS-Lauf (33898599945) auf diesem Stand ist grün — erstmals mit der
+> Razor-Startseite und `IProjektQuelle.Startkacheln` im gemeinsamen `EPOS.UI` (N9; iOS setzt die Startkacheln noch nicht
+> um, der Zweig in der `AppWurzel` kommt mit K7 in W16c).
+> **Windows-Abnahme 05.09.2026 (erstes Bildschirmfoto der gestylten Startseite — „Icons fehlen … Design ähnlich
+> WinForms"), W16b‑E‑3 und W16b‑E‑4 umgesetzt (`4bcd981`):** die **21 Kachelbilder und Symbole** von `Form_Start`
+> wandern per `git mv` unverändert nach `EPOS.UI/wwwroot/bilder/start` (Zuordnung Kachel → Datei in
+> `Seiten/Start/Kachelbilder.cs`, der Ausschnitt 84 × 84 im Stilblatt über `object-fit`, aus `Properties/Resources`
+> samt drei Leichen ausgetragen; `PHeizkessel.jpg` lag nur eingebettet in `Form_Start.resx`, Bytes nachgemessen;
+> die Konfigurationskachel hatte im Vorläufer kein Bild und bekommt `PSchnellSim.jpg`, das einzige Kachelbild ohne eigene Kachel). Die
+> **Gattungszeile** der Startseite steht nur noch **ohne Kopfleiste** (`Startseite.KopfbandZeigen`, von der
+> `AppWurzel` nach dem Parametersatz gesetzt: Windows nennt die Gattung schon im Markenkopf, iOS behält die Zeile).
+> Die **Anordnung** folgt `Form_Start.Designer.cs` ohne feste Pixelkoordinaten: Kopfband über den zwei Kästen, Klima
+> links und Projekt rechts (Seh- und Tabreihenfolge), Statuszeichen vor der Beschriftung, Globus im Klimakasten,
+> Schriftgrade des Markenbands, der Reiter und der Überschriften, **drei Kachelspalten** (Mindestbreite 404, das
+> Raster läuft schmal nicht mehr über), Sinnbild links vom Titel, Erläuterung darunter, Zurück/Weiter 132 px fett.
+> Nicht angeglichen: der Bildknopf „Speichern" bleibt beschriftet, der Infoknopf beim Haus-Token 28 px, keine
+> feste Kachelhöhe. 18 neue bunit-Fälle; die Sichtprüfung (Abnahmepunkte 1, 2a, 2b) bleibt beim Anwender.
+> **Anwenderwunsch W16b‑E‑5 vom 05.09.2026 („Design und Farbgebung … angelehnt an winforms Version vor‑W16"),
+> umgesetzt (`04d5ac6`):** die Startseite trägt wieder die Anmutung von `Form_Start` (erhoben aus Designer,
+> drei `.resx` und den zwei `*_Paint` des Standes `84d7c16`) — Reiterleiste auf eigenem Grund mit **gefüllter
+> aktiver Zunge** in #005aa0 und weißer Schrift, weißes Reiterblatt mit kühlem Rahmen, die zwei Kopfkästen in
+> #b4becd mit 8 px Rundung und 16‑px‑Beschriftungen, jede Erläuterung halbfett in DimGray, der
+> Zusammenfassungskasten auf #f9fafc, die Knöpfe in LightGray. Sieben neue Token `--epos-start-*` gelten **nur**
+> für `Seiten/Start`, damit der gemeinsame Farbsatz der Dialoge nicht kippt; drei Farben des Vorläufers sind
+> wegen des Hauskontrasts 4,5:1 bewusst in derselben Familie ersetzt (weiß auf #6876df bei 16 px, 128,128,255 auf
+> #f9fafc, die Versionsfarbe 150,156,162). Nur Stilblatt, kein Markup, keine feste Pixelkoordinate; Wache
+> `StartseiteAnmutungTests` (30 Fälle: Token, tragende Regeln, Kontrast nach WCAG 2.1 aus den Stilblattwerten
+> nachgerechnet); Abnahmepunkte 2c–2g für die Sichtprüfung. Nicht angeglichen: Statusanstrich der ganzen
+> Kachel (A‑1), Kachelbeschriftung mittig (W16b‑E‑3), 29‑px‑Menühöhe und 65‑px‑Kopfkästen (Berührungsziel
+> 44 px, M2/iL4), 1,5‑px‑Rahmen.
+> **Windows-Abnahme 05.09.2026, Befund W16b‑B‑1 („die Dialoge auf der Startseite sind leer"), `f889e9e`:** Das
+> modale Fenster zeigte die Hüllenfläche #F5F4EF, die zweite WebView2 zeichnete nichts. Als Ursache **ausgeschlossen**:
+> Parametersatz (61 Hüllenstellen und 13 Assistentenseiten gegen die `[Parameter]` geprüft, 0 Treffer), Ausnahme
+> beim ersten Zeichnen (alle 21 Kachelziele rendern ohne Gaben), Stilblatt (die Dialogwurzeln stehen vor Z. 1386 und
+> waren nie abgeschaltet), Faden, WebView2-Laufzeit. Übrig bleibt der **Weg selbst**: Seit Startseite und Hauptfenster
+> Razor sind (W16b.2/W16c.2), öffnet jeder Kachelklick und Menüpunkt ein modales Fenster mit einer ZWEITEN WebView2
+> aus dem `WebMessageReceived`-Rückruf der ersten heraus — genau das, was `Sprungbruecke` seit W2.2 als Risiko R2
+> ausschließt; die Belege vom 04.09. (W4‑B‑1, W5‑B‑1) hingen noch an WinForms-Klicks. `Blazorsprung` lässt das
+> Ereignis zu Ende laufen und fährt den Sprung eine Nachricht später (`BeginInvoke`, Wiedereintrittssperre) — an den
+> **zwei** Verteilern `StartseiteHuelle.Kachelweg` und `HauptfensterHuelle.Weg`, nicht in 21/55 Aufrufern; der
+> synchrone Vertrag von `Weg` bleibt. `WebViewWache` hängt sich an `CoreWebView2InitializationCompleted` und
+> `BlazorWebViewInitialized` (der WinForms-`BlazorWebView` 10.0.100 führt kein `UnhandledException`) und zeigt nach
+> 10 s einen markierbaren Text statt der leeren Fläche; `Parametersatzwache` in beiden Hüllen. Dauerhafte Wachen auf
+> Linux: `ParametersatzTests` (liest die Hüllenquellen, Reflexion über `EPOS.UI`), `StartkachelDialogeTests`
+> (21 Ziele + Assistent mit Hüllensatz, Gegenprobe), `StartseiteTests` (+2). **Ursache wahrscheinlich, nicht
+> bewiesen** — die Abnahme am Gerät (Protokoll W16b § 12.3, A1–A7) entscheidet; bleibt eine Fläche leer, steht nach
+> 10 s der Grund darin. **Befund W16b‑B‑2 (Reiter gesperrt):** die Sperre ist vorbildgetreu (`Form_Start_Load`), und
+> Projektname im Kopfband und gesperrte Reiter schließen einander aus (beides hängt an `ProjektId()`); Erklärung ist
+> die Farbe (**W16b‑B‑2b**: frei #5f5e5a gegen gesperrt #888780, das Vorbild zeichnete frei schwarz) — behoben mit
+> W16b‑E‑5 (`1a72cd5`), Wache in `StartseiteTests`. Offene Frage ans Gerät: stand das Banner „Bitte zuerst ein
+> Projekt auswählen!" über der Leiste? **Antwort des Anwenders: ja** — Befund W16b‑B‑2 damit geschlossen (kein
+> Projekt offen, Sperre und Banner vorbildgetreu).
+> **Anwenderwunsch W16b‑E‑6 vom 05.09.2026 („ja, oder anderen Hinweis geben der elegant ist"), umgesetzt
+> (`2981c1a`):** Das dauerhafte Warnbanner der Reitersperre ist gefallen. An seine Stelle treten eine **leise
+> Einstiegszeile** im Reiter „Projekt" (mit dem ⚠ des Kopfbands, verschwindet mit dem offenen Projekt — Name und ✔
+> stehen darüber im Kopfband, wie bei der Gattungszeile W16b‑E‑4), der Grund als **Tooltip** am nun **weich**
+> gesperrten Reiterknopf (`Reiterblatt.Sperrgrund` → `aria-disabled` statt `disabled`, weil ein `disabled`-Knopf
+> keine Zeigerereignisse annimmt und keinen Tooltip zeigt; neues Ereignis `Reiter.Verweigert`, die Pfeiltasten
+> überspringen beide Bauarten) und das bisherige Banner **flüchtig für drei Sekunden nach dem Versuch** — auf eine
+> gesperrte Zunge wie über „Weiter ▶", den Weg der Tastatur; das ist `tabControl_Wizard_Selecting` samt der
+> Lebensdauer von `Form_Hinweis`, nur ohne Wegklicken. Sperre und Farbgebung (W16b‑E‑5) bleiben. Zwei Texte
+> `START_EINSTIEG` und `START_SPERRE_TIPP` in beiden Sprachen, ortsneutral („oben"/„unten") für die Schale ohne
+> Kopfleiste. Wachen `ReiterTests` +2, `StartseiteTests` +5; Abnahmepunkte 1/1a–1c/3/14/16 im Protokoll. Der
+> Windows-CI-Lauf 128 auf `e65d3a9` fiel an **einem** Test: der Suchhelfer `Stilblock` in `StartseiteTests` las
+> das Stilblatt ohne Zeilenenden-Angleichung, und auf dem Windows-Läufer liegt es nach `text=auto` mit CRLF —
+> ein zweizeiliger Selektor traf nicht mehr. Angeglichen an `StartseiteAnmutungTests`/`StilblattTests`
+> (`\r\n` → `\n`), Gegenprobe mit CRLF-Stilblatt grün; Kern-Lauf 133 war grün.
+>
+> **Anwenderwunsch W16b‑E‑7 vom 05.09.2026 („Kacheln sollten ähnlich wie zuvor angeordnet sein – sind jetzt zu
+> groß"; Bildschirmfoto: zwei Kacheln je Zeile, jede rund die halbe Fensterbreite), umgesetzt in `436dfbc`:** Ursache
+> war die **Mindest**breite 404 px an einem Raster mit `1fr`-Spalten — bei 150 % Skalierung misst das Reiterblatt
+> eines Full-HD-Schirms rund 1 200 CSS‑px, die drei Kacheln brauchen 1 228; also blieben zwei Spalten, und `1fr`
+> verteilte die ganze Breite auf sie, während Sinnbild (84 px) und Titel (16 px) blieben. `Kachelraster` führt
+> deshalb eine **`Hoechstbreite`** (0 = dehnend wie bisher): drei feste Spalten von höchstens `--epos-kachel-max`,
+> linksbündig, `gap: 6px 8px` (die Fugen des Designers aus `Form_Start.resx`: x = 18/422/834, y = 134/325),
+> dazu `grid-auto-rows: minmax(185px, auto)` als Zeilenhöhe des Vorläufers (Kachel 404 × 185); auf schmalem Schirm
+> zwei Spalten (< 1 150 px) und eine (< 720 px). Alle fünf Reiter mit ihren 21 Kacheln setzen `Hoechstbreite="404"`,
+> die Kennzahlreihen der Kosten- und der Wirtschaftlichkeitsseite dehnen unverändert; Farben, Schriften und die
+> sieben `--epos-start-*`-Token aus W16b‑E‑5 sind unberührt. Wachen: `StartseiteTests.Jeder_Reiter_stellt_seine_
+> Kacheln_im_Vorbildmass` (alle fünf Reiter) und drei Fälle in `StartseiteAnmutungTests` am Stilblatt; der Fall
+> `Das_Kachelraster_nimmt_die_Kachelbreite_des_Vorlaeufers` aus W16b‑E‑3 entfällt, weil er genau die Mindestbreite
+> festschrieb, die den Befund verursacht hat. Ein erster Agentenlauf zu diesem Wunsch wurde um 16:45 UTC durch eine
+> Unterbrechung abgebrochen; sein Teilstand (`FestesMass`, `auto-fill`, geschrumpfte Seitenränder) ist geprüft und
+> verworfen — er hätte beim Anwender weiterhin zwei Spalten ergeben.
+>
+> **Nachtrag zu W13‑B‑1 (`4fd8cc7`):** § 12 ist um die **Fehlerschranke** ergänzt — die dritte Wache neben
+> `Parametersatzwache` (falscher Schlüssel vor dem ersten Zeichnen) und `WebViewWache` (WebView2 kommt nicht hoch):
+> `Fehlerschranke.razor` + `Wurzel<T>`, gemountet von `BlazorDialogForm`, `BlazorSeite` und `EPOS.iOS/HauptSeite`;
+> der Parametersatz geht unverändert durch, die Wachen prüfen weiter gegen `T`. Regel (c) ist erweitert: aus „kein
+> `ShowDialog` aus einem Blazor-Ereignis" wird **„kein modales Systemfenster im WebView-Rückruf"** — mit zwei
+> Werkzeugen, `Blazorsprung` ohne Rückgabewert und `Blazornachlauf` mit.
+
+> **Statusblock iU9 — Teilwelle 16a umgesetzt (04.09.2026, Basis `975ead5` = Tag `vor-W16`, zusammengeführt mit `3c7e0d6` nach den W15c-Entscheiden)**
+>
+> **Der ganze Projektassistent bis auf seine Daten ist verschwunden — vier Masken, 1 694 Zeilen `.cs`, 988 Designer,
+> 2 `MessageBox`, 26 Dateien:** `Wizard_Stromlastgang` (keine neue Komponente — die Assistentenseite 6 ist der
+> `StromganglinieDialog` aus W12, W12‑O‑3), `Wizard_Komponenten` → `KomponentenauswahlDialog` (13 Kacheln über
+> `Kachelraster`, die Rückfrage beim Abwählen einer belegten Komponente wortgleich mit `VorgabeNein`), `WizardParent` →
+> Baustein **`Assistent`** (`Seiten` mit Titel/Inhalt/`Aktiv`, `NaechsteAktive(richtung)` statt `Next`/`Back`, „Weiter"
+> wird auf der letzten aktiven Seite „Speichern") und Seite **`AssistentSeite`** (13 Seiten als `RenderFragment` in
+> Bestandsreihenfolge, linkes Band nur in Betriebsart BEARBEITEN auf Schritt 0 mit der Razor-Projektliste aus W15a) hinter
+> `AssistentHuelle` mit Gaben und Delegaten, `ProjektAuswahl` (uc) → der Baustein `ProjektListe` (die iZ5-Ausnahme aus
+> W15a ist eingelöst). Dazu gelöscht: `WizardSeite`, `AssistentSeiten`, die zwei `IAssistent*Seite`, `IAssistentRahmen`
+> und `BlazorAssistentSeite` (kein WinForms-Rahmen mehr). Im Kern: **`KomponentenBestandCtrl`** (unverändert verschoben,
+> **Nachweis N6 zuerst**: `Bitmaske(id)` gegen den eingefrorenen `Form_Start.status`-Wert für **alle 13**
+> Referenzprojekte — keine Abweichung, E‑3 damit erzwungen statt behauptet), **`AssistentCtrl`** (die sechs `Load*FromDB`,
+> `SpeichernAusfuehren` beide Zweige mit der bitgleichen Reihenfolge der 21 Controlleraufrufe, Seitenschaltung) und
+> `WizardCtrl` gleich mit (Befund W16a‑B2: seine einzige WinForms-Kante war ein totes Feld), `Kachel.Zustand`/`Aktiv`
+> (B7), `IProjektQuelle.AssistentGaben(betriebsart, id)` mit Standardumsetzung. Sechs Sachcommits, Protokoll, Merge und
+> Gate-Nachtrag (`d10b7b9` … `654bd66`), auf `ios_migration` als `81052cc`; `Views/Wizard` und `Views/Projekt` führen keine
+> Designer-Maske mehr.
+>
+> **Acht Angleichungen** (A‑1…A‑8) und die Befunde W16a‑B1…B8, darunter: `WizardCtrl` in den Kern (B2), auch `LoadZGeb`
+> ließ sein `RecordSet` offen (B3, behoben), K5 gegenstandslos (B5), **`AktionsKarte` fällt nicht mit W16a** — sechs
+> Instanzen in `Form_Start`, sie geht mit W16b (B6). **Anwenderfragen:** E‑3 belegt (N6), **E‑4 halb** — die eine
+> Meldung statt 17 stiller `return` ist da (`AssistentErgebnis` nennt den fehlgeschlagenen Schritt, der Assistent bleibt
+> stehen), die **Transaktion nicht**: sie verlangte den Umbau aller 23 Schreibmethoden von `WizardCtrl` auf einen
+> hereingereichten `DbVorgang`, was R‑W16‑6 ohne Windows-Feldvergleich untersagt — offen; E‑9 für den
+> Kleinschreibungs-Zeugen umgesetzt (`Wizard_Komponenten` als Prüfmuster `Pruefmuster/Wizard/`); **neu W16a‑E‑1** (der
+> Assistent bleibt unter Windows modal, Begründung wie R‑W10b‑1 — mit W16b/W16c könnte er eine freie Ansicht in derselben
+> WebView werden: soll er? — **entschieden 04.09.2026: ja, in iU11 mit der Transaktion W16a‑O‑1**) und **W16a‑E‑2** (der NEU-Zweig schließt bei einem `Add_Projekt`-Fehlschlag nicht mehr
+> kommentarlos, die Eingaben bleiben erhalten — bestätigen?). **Was W16b erbt:** der Rückweg der Hülle an
+> `Program.startfrm.HinweisProjektGeoeffnet()` wird ein Rückruf an die Razor-Startseite, `IosProjektQuelle` setzt
+> `AssistentGaben` noch nicht um, `Form_Start.UpdateWizardSymbole` ist ersatzlos zu löschen (N6 belegt die Gleichheit),
+> `AktionsKarte` (3) und `Form_Hinweis` (3) fallen dort.
+>
+> **Nachweise** (auf dem gemergten Stand `81052cc`, Linux): Build → 0 Fehler, **6** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 923** grün (3 833 nach W15c; N6 16 Fälle, N5 `AssistentTests` 28, R‑W16‑6
+> `AssistentCtrlTests` 26 — Bearbeiten- und Neu-Lauf lassen Zählstand, Bitmaske, Anlagenbezeichner und Kopffelder gleich),
+> **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün (ein Zeuge ins Prüfmuster umgezogen) · Stapellauf
+> **7** Masken / 8 Designer (**Sollwert exakt getroffen**), **7 erreichbar / 0 nein / 0 verwaist / 0 unklar** · SQL-Prüfer
+> 1 234 Texte, 0 Fundstellen · ChartProben 32 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich**
+> (815 043 Werte) · beide Wächter leer.
+>
+> **Protokoll** mit den sechzehn geprüften Annahmen, dem Feldkartenabgleich, N5/N6, dem zweiten R‑W16‑6-Nachweis, acht
+> Abweichungen, den Befunden, der Löschliste mit `git grep`-Nachweis und **elf Abnahmepunkten**:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W16a_Blazor_Port_Protokoll.md`. **Windows-Abnahme steht aus**,
+> darunter der `projekt`-CSV-Vergleich eines neu angelegten und eines bearbeiteten Projekts Feld für Feld gegen den Stand
+> `vor-W16` (R‑W16‑6, nur auf Windows). Der einundzwanzigste iOS-Lauf (33890882150) auf diesem Stand ist grün — erstmals
+> mit dem Assistenten hinter `AssistentGaben` in der `AppWurzel` (N9; iOS setzt die Gaben noch nicht um, W16a‑O‑4).
+> **Windows-Abnahme 05.09.2026 (PDF S. 6), zwei Befunde (`974c198`, Protokoll § 12):** **W16a‑B‑1** — die Weiche
+> „Profil/Ganglinie" stand als eigener Kasten unter der Solarthermiekarte des Erzeugerreiters; sie sitzt jetzt in
+> deren Rahmen, weil nur noch diese Kachel den Wirt bekommt und der den Kartenrahmen trägt (über das Markup ginge es
+> nicht — eine Kachel ist ein `<button>`, der keine Optionsfelder enthalten darf), Klickziel und Tastaturweg
+> unverändert. **W16a‑B‑2** — der Parametersatz einer Assistentenseite wird beim Betreten geholt und nicht mehr bei
+> jedem Neuzeichnen (Herleitung im W9-Protokoll § 12.1, Befund W9‑B‑1).
+>
+> **Zum Anwenderwunsch W15a‑E‑1 vom 05.09.2026 (`325a275`), gemeldet an dieser Maske (Assistent, Seite 0, linkes
+> Band):** Der Projektname bricht jetzt um, statt abgeschnitten zu werden; Varianten stehen eingerückt unter ihrem
+> Stamm und tragen darunter leise „Variante von ‹Stamm›" — eine Artspalte hat in 280 px keinen Platz. `AssistentSeite`
+> reicht dafür zwei Texte durch, `AssistentHuelle` füllt sie aus `PRJ_LIST_ART_VARIANTE`/`PRJ_LIST_VARIANTE_VON`.
+> Herleitung im W15a-Protokoll § 14, hier § 13, Abnahmepunkt A‑W16a‑E‑1.
+
+> **Statusblock iU9 — Welle 15c umgesetzt (04.09.2026, Basis `f71853b` nach W15b, zusammengeführt mit `5a73fd6` nach den W15b-Entscheiden)**
+>
+> **Drei Masken — 1 588 Zeilen `.cs`, 246 Designer, 119 `.resx`, 16 `MessageBox` und drei Meldungen im Startweg — sind
+> drei Razor-Komponenten, sechs Kern- und Hüllenvorarbeiten und vier Hüllenwege:** `LizenzVerwaltungDialog`
+> (`EPOS.UI/Dialoge/Lizenz/`, Zustand als Zeichenkette, Aktivieren/Lesen/Trial/Freigeben/Auffrischen als Delegaten, das
+> Schlüsselfeld nach Erfolg leer — S4; **auch als Überlagerung im Lizenzdialog**, A‑4), `ErststartDialog` (unbestimmter
+> `Fortschritt` ohne Abbruch, Protokoll als `Textfeld`, **besitzerlose Hülle** mit den vier neuen Zusätzen an
+> `BlazorDialogForm<T>` — `ImTaskbar`, `AufBildschirmMittig`, `SchliessenGesperrt`, `Mindestmass` — und dem Rückkanal
+> `LaufAktiv`; für die 40 bestehenden Aufrufer ändert sich nichts) und `LizenzDialog` (drei `Reiterblatt`
+> Lizenzvereinbarung / Rechtliche Hinweise / Komponenten, Zustimmungsmodus als Parameter, „Drucken" über den Browserdruck,
+> „Speichern unter…" als Text, Verweise nur aus dem eigenen Ressourcentext und nie als `MarkupString`) hinter zwei
+> Hüllenwegen (Menü Hilfe und der besitzerlose `ZustimmungSicherstellen`-Weg aus `Program.cs`). **Kein neuer Baustein**
+> (B12). Im Kern: **`LizenzManager.Bewerten`** — die reine Zustandsrechnung aus `Pruefe()` herausgezogen, `Pruefe()` bleibt
+> Fassade (E‑10, Verhalten unverändert) —, `LizenzCtrl` mit `LizenzGaben`, `EmailGueltig` und `LicDateiLesen` (liest nur,
+> prüft nicht — S3), `LizenzTextCtrl` (die Online-Quelle ist **eine Zeile**, heute bitgleich die AGB-Seite — E‑17),
+> `ZustimmungCtrl` (`catch → true` wortgleich, E‑15), `StatusText`/`TypText` über neun `MyResource`-Schlüssel;
+> `ErststartCtrl` bleibt in der Windows-Anwendung, weil `ErststartMigration` OleDb mitbringt (Wächter). **Der
+> Wellennachweis ist eine Erstanlage:** bis hierher prüfte kein einziger Test den 659-Zeilen-Lizenzkern (B1) — jetzt
+> **+79 Kern-Fälle** (`LizenzZustandTests` 19: Ränder Kulanz und Karenz ±1 Tag, Uhrtoleranz, Laufzeit sticht Leine,
+> Schreibrecht je Zustand — **kein Fall fasst die Ablage an**; `LizenzTokenTests` 10 mit einem im Test erzeugten
+> Schlüsselpaar, **kein Server-Token im Repository**; `LizenzTexteTests` 12; `LizenzCtrlTests` 21; `LizenzTextCtrlTests` 17)
+> und **+67 bunit-Fälle** (28 / 26 / 13), alle vor der ersten Maske. **E‑8, Weg 2:** `Program.Main` prüft nach der
+> Sprachwahl und vor dem ersten besitzerlosen Dialog die WebView2-Laufzeit; fehlt sie, erscheint eine native `MessageBox`
+> mit der Bezugsquelle (zweisprachig, Wortlaut nach dem Setup) und das Programm endet — keine WinForms-Rückfallmasken;
+> die Zusage in `Umsetzung_iU8_Nachweise.md` („startet, nur der Dialog bleibt leer") ist berichtigt. **E‑7:** die
+> 27 Rechtstexte stehen **deutsch in beiden Sprachzweigen** mit dem Zusatz „Binding version in German." (A‑9);
+> **maschinell umgezogen und zurückverglichen: 26 von 27 zeichengleich, einer berichtigt** (O‑1 — .NET 10, SQLite und
+> WebView2 statt .NET 8 und ACE). Zwölf Sachcommits, Protokoll, Merge und Gate-Nachtrag (`bb805d3` … `7cb03d1`), auf
+> `ios_migration` als `2369f52`; 63 Texte des Lizenzdialogs zweisprachig.
+>
+> **Neun Angleichungen** (A‑1…A‑9): Suchleiste und A+/A− entfallen (die WebView zoomt selbst), keine RTF-Anzeige
+> (`.rtf`/`.docx` zeigen denselben Hinweistext), Browserdruck statt `PrintDocument` (der einzige Nutzer des Bestands
+> fällt), Verwaltung als Überlagerung, keine geratenen Verweise, Speichern als Text, Online-Fassung wird abgewartet statt
+> aus `async void` geschrieben, `Mindestmass` statt einer verdeckten `MinimumSize`, der englische Zusatz einmal statt
+> 27-mal. **Befunde** B1…B28 eingetreten — außer B26 (der Typzeuge stand seit W14a/W14c schon auf „Bestand ODER
+> Prüfmuster", `GroupBox` liegt im eingefrorenen Muster); neu **B29** (E‑6 gegenstandslos: der „ja"-Zeuge liegt seit
+> W14c auf `MDIMainForm`, der Wurzel) und **B30** (der Erststart überschreibt seinen Zustandstext mit der Schlussmeldung —
+> bitgleich, mit Zeugen). **Anwenderfragen:** E‑8 Weg 2 (oben), E‑7 (oben — eine andere Entscheidung kostet 27 Werte im
+> englischen Zweig), **E‑9 → iF30** (Register: Lesemodus-Durchsetzung nach W16 — `DarfSchreiben()` hat genau einen Leser),
+> E‑2 (Druckknopf bleibt), E‑4 (kein iOS-Einstieg in die Lizenzverwaltung, iU11), E‑12 (Suchleiste entfallen), E‑17
+> (Vertragsendpunkt `epos/v1/vertrag` später — eine Zeile). **Entschieden am 04.09.2026 (Empfehlungen angenommen):**
+> W15c‑O‑1 — der Vertragsendpunkt löst die AGB-Seite ab, sobald der Lizenzserver 1.4.0 im Betrieb ist (eine Zeile und ihr
+> Zeuge); W15c‑O‑2 — das `LizenzTexte`-Bündel für die zwei großen Komponenten **ist umgesetzt** (04.09.2026, `2281ece`:
+> gemessen 18 bzw. 29 Einzelparameter, nicht 25/20, werden **einer**; `LizenzDialog` 449 → 349 und `LizenzVerwaltungDialog`
+> 451 → 347 Zeilen; `LizenzTexte` füllt sich selbst aus `MyResource` in de und en, ein leerer Katalogeintrag bleibt leer (E‑7);
+> die 54 Dialogfälle bleiben, ein neuer Fall prüft die Selbstfüllung aller Texte; Regel in `EPOS.UI/CLAUDE.md`: ab etwa
+> zehn Anzeigetexten ein Bündel, `*Texte` = Beschriftungen, `*Gaben` = Zustand). **Offen:** W15c‑O‑3
+> (Textsuche im Vertragstext), W15c‑O‑4 (Lizenzeinstieg auf iOS, iU11), W15c‑O‑5 (`Form_HelpPopup` fällt weder mit W15c
+> noch mit W16).
+>
+> **Nachweise** (auf dem gemergten Stand `2369f52`, Linux): Build → 0 Fehler, **6** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 833** grün (3 687 nach den W15b-Entscheiden), **identisch unter
+> `LC_ALL=en_US.UTF-8`** · Formularkarte **124** grün · Stapellauf **11** Masken (12 − 1; zwei der drei Masken waren
+> Code-Formen ohne Designer), 14 Designer, **11 erreichbar / 0 nein / 0 verwaist / 0 unklar**, Lokalisierungszähler
+> unverändert 7 · SQL-Prüfer 1 235 Texte, 0 Fundstellen · ChartProben 32 Bilder, 0 Verstöße · Referenzlauf
+> 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · beide Wächter leer, S1/S2-`git diff` leer.
+>
+> **Protokoll** mit Feldkartenabgleich (zwei Karten von Hand), den 146 neuen Fällen, neun Abweichungen, den Befunden
+> B1…B30, der Sicherheit S1…S4, den vier Hüllenzusätzen und **22 Abnahmepunkten**:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W15c_Blazor_Port_Protokoll.md`. **Windows-Abnahme steht aus**, und
+> zwei Punkte sind nur dort führbar: **der Erststart auf einem echten `.accdb`-Bestand** mit Fehlschlag-Variante
+> (Rückfallstand `git show 3ae6847:WindowsFormsApplication1/Views/Admin/Form_Erststart.cs`) und **die Windows-Sandbox
+> ohne WebView2** (Meldung und Programmende statt leerer Dialoge); dazu Aktivieren/Lesen/Trial/Freigeben, die Zustimmung
+> beim Erststart, Drucken, Speichern unter, de/en, 125 %. Der zwanzigste iOS-Lauf (33883210632) auf diesem Stand ist grün.
+>
+> **Rückweg-Anker für W16 (R‑W16‑12): `975ead5`** — der Statusblock-Commit dieser Welle, der letzte Stand vor W16a. Der
+> Git-Tag `vor-W16` ließ sich aus der CI-Umgebung nicht pushen (der Push-Zugang der Umgebung erlaubt nur den Zweig
+> `ios_migration`, Tag-Refs werden mit HTTP 403 abgewiesen); **der Anwender hat ihn am 04.09.2026 vom Arbeitsplatz aus
+> gesetzt** — `refs/tags/vor-W16` zeigt auf `975ead5`.
+
+> **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
+>
+> **Vier Masken — 2 243 Zeilen `.cs`, 191 Designer, die eine `MessageBox` der Welle — sind fünf Razor-Komponenten,
+> zwei Bausteine, ein Nachtrag und zwei Hüllen:** `TextAnzeige` (`EPOS.UI/Dialoge/Hilfe/`, Überlagerung), `KiHinweisDialog`
+> mit `KiHinweisHuelle` (die Einwilligung aus `Program.cs` läuft jetzt **asynchron** über `KiEinwilligung.Nachfragen`, alle
+> drei Aufrufer in einem Schritt), `KiEinstellungenDialog` (Schlüssel nur als Vorbelegung, `type="password"`, nie
+> durchgereicht — S‑1/S‑2) und **`KiChatDialog` in vier Kindern** (Rahmen, `KiBestaetigungBlock` als Fußbereich des Verlaufs,
+> `KiWerkzeugliste` mit der Kulturregel, `KiEingabezeile` mit Enter/Shift+Enter; keine `.razor` über 400 Zeilen), dahinter
+> `KiChatHuelle` **nicht-modal mit Besitzer** (E‑6, holt ein offenes Fenster nach vorn). Neu: der Baustein
+> **`Gespraechsverlauf`** (Bausteinlücke 17 — zehn Rollen, kein Streaming, kein Markdown, keine Link-Erkennung, Autoscroll nur
+> unten, nichts in `localStorage`; 29 Fälle), der Baustein **`KiKnopf`** (der KI-Einstieg aus einer Maske, über
+> `Seitenschluessel.KiAssistent` ohne `Masken.*`-Zwilling — E‑10) und `Warnbanner.Verfaellt`. Im Kern: **`KiChatService`
+> (1 751 Z.) per `git mv`** — Befund B31: kein reines Verschieben, der Dienst ruft zehnmal `KiAusfuehrer`, deshalb die Naht
+> `IKiAusfuehrung`/`KiAusfuehrungsweg` mit stiller Standardfassung (Bauart `Dienste.*`, **der Einwilligungsriegel bleibt
+> davor** — S‑4), `Kurzbeschreibung.Umbrechen`, `KiAusfuehrer.AufOberflaeche` statt `Control`-Anker (E‑8), `KiChatKontext`
+> (Positivliste der 24 Bereiche, Ermittlung in der Hülle — E‑9), `KiVerlaufstexte` (zwei getrennte Listen Anzeige/Prompt).
+> **Zwei Masken bleiben bewusst:** `Form_HelpPopup` (E‑2, ihr Ersatz `IHilfeDienst` steht auf beiden Plattformen; fällt
+> mit `HelpCatalog` in iU11) und `Form_Hinweis` (E‑1b, drei Aufrufer in `Form_Start`; fällt mit W16 — der Nachfolger
+> `Warnbanner.Verfaellt` ist gebaut und geprüft). 16 Sachcommits, ein Merge und ein Gate-Nachtrag (`ab25d75` … `34047de`),
+> auf `ios_migration` als `fa9d17f`; 21 Textschlüssel de/en (419 `KI_*` beidseitig), acht CSS-Variablen.
+>
+> **Die neun Zeugen entstanden vor den Masken** (T‑1…T‑9, 129 Fälle; **kein Netz in einem einzigen Fall**, Modellaufrufe
+> nur über den Prüfkanal `Modellkanal`): Einwilligungsriegel P‑1 (ohne `Nachfragen` kein Modellaufruf, Abschalter,
+> Fassung 1 < 2), Werkzeugrunde und die vier Ausgänge der Bestätigung P‑2/P‑3. **Zehn Angleichungen** (A‑1…A‑10): keine
+> Maßparameter, Bestätigungsblock unten im Verlauf, keine Positionsrechnung, kein `DetectUrls`, Autoscroll nur unten, die
+> eine MessageBox wird ein Warnbanner, die 400‑ms-Sperruhr und der Flackerschutz entfallen. **Befunde** B1…B30 eingetreten,
+> vier neu (B31 Naht, B32 20 statt 17 Texte, B33, B34 `Schalter` hält seinen Zustand selbst — `@key` im Chat).
+> **Anwenderfragen:** E‑1b und E‑6 wie vorläufig entschieden, E‑8/E‑9/E‑10 umgesetzt; **entschieden am 04.09.2026
+> (Empfehlungen angenommen, `13835f2`/`aaaacce`, gemerged als `4775213`):** W15b‑O‑1 — der Schnitt der Naht
+> `IKiAusfuehrung` ist bestätigt; die iOS-Hülle nutzt denselben Kern und läuft bis zu ihrer eigenen Fassung (O‑4) auf der
+> stillen Standardfassung `KeineAusfuehrung` (fragen und suchen ja, ausführen nein); W15b‑O‑2 — der Tooltip der
+> Semantikzeile ist als `title` zurück (wortgleich der alte Schlüssel `KI_SEMANTIK_HERKUNFT`, zwei Zeugen); **offen:** W15b‑O‑3 (`Standards/Schalter`-Rücksetzer, 20 Nutzer, eigene Welle), W15b‑O‑4
+> (iOS bedient `KiAssistentGaben` noch nicht, Handprobe in iU11), W15b‑O‑5 (`Form_HelpPopup` ist die einzige Maske, die
+> weder mit W15c noch mit W16 fällt).
+>
+> **Nachweise** (auf dem gemergten Stand `fa9d17f`, Linux): Build → 0 Fehler, **6** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 685** grün (3 524 nach den W15a-Entscheiden), **identisch unter
+> `LC_ALL=en_US.UTF-8`** · Formularkarte **124** grün · Stapellauf **12** Masken (13 − 1; drei der vier Masken waren
+> Code-Formen ohne Designer), 15 Designer, **12 erreichbar / 0 nein / 0 verwaist / 0 unklar** · SQL-Prüfer 1 235 Texte,
+> 0 Fundstellen · ChartProben 32 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) ·
+> beide Wächter leer.
+>
+> **Protokoll** mit Feldkartenabgleich (drei Karten von Hand), den neun Zeugen, zehn Abweichungen, den Befunden B1…B34,
+> der Sicherheit S‑1…S‑4 und 17 Abnahmepunkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W15b_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: Menü und F1, zweites Öffnen holt nach vorn, eine Frage mit Modell einmal echt, Nur-suchen
+> ohne Modell, Werkzeugliste mit Kulturregel, die vier Ausgänge der Bestätigung, Rechtshinweis aus dem Chat und beim
+> Erststart, „Modell neu erkennen" über Abbrechen hinweg, Kopieren, de/en, Esc je Ebene; **bekannter Schönheitsfehler
+> (Punkt 16):** die DPI-Insel greift nur im modalen Lauf, der nicht-modale Chat ist ab 125 % bitmapskaliert (iF21, W16c).
+> Der achtzehnte iOS-Lauf (33876284942) auf diesem Stand war **rot** — CS0103 im iOS-Hilfedienst aus W15b.0g, den nur der
+> macOS-Läufer übersetzt; behoben in `f0e23a4`, der neunzehnte Lauf (33878903371) darauf ist grün.
+
+> **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
+>
+> **Sechs Bauteile — 1 254 Zeilen `.cs`, 683 Designer, fünf Formen und ein UserControl — sind ein Baustein, drei Dialoge,
+> eine Assistentenseite und vier Hüllen:** der Baustein **`ProjektListe`** (`EPOS.UI/Bausteine/`; der Bestand führte **vier
+> Projektlisten nebeneinander**, die fünfte lag fertig als iOS-Seite — „Eine Projektauswahl für alle" aus
+> `Konzept_Projektdialoge_Vereinheitlichung.md` ist eingelöst, `Seiten/Projektliste` baut darauf und ihre fünf Tests sind
+> unverändert grün), `ProjektWahlDialog` (`EPOS.UI/Dialoge/Projekt/`, Zweck Öffnen oder Löschen — zwei Masken in einer
+> Komponente), `ProjektKopieDialog` („Speichern unter", Duplizierlauf mit Fortschritt und **Abbruch über
+> `CancellationToken` mit Rollback**), `ProjektTransferDialog` (Export/Import, erstmals englisch) und `ProjektKopfSeite`
+> (`EPOS.UI/Seiten/Assistent/`, die erste Assistentenseite als Razor über `BlazorAssistentSeite`, Weg (a) ohne Umbau am
+> Rahmen). **`ProjektAuswahl` (uc) bleibt bis W16** — bewusste iZ5-Ausnahme, weil `WizardParent` es hostet; nur die Hüllform
+> fällt. Im Kern: **`ProjektExportImportCtrl` (1 278 Z.) per `git mv`** — die einzige Kante war `SchemaMigration.ZIEL_VERSION`,
+> jetzt `SchemaStand.Zielversion` (62) —, `ProjektAngaben`, `ProjektCtrl.IdVonName`/`NamenListe`/`LoeschenMitVorarbeiten`/
+> `Kopf`, `ProjektDuplizierenCtrl.PruefeNamen`/`VerwaltungsfelderSetzen`, `KlimaregionStammCtrl.IdVonName`/
+> `NameZuProjektregion`, `IProjektQuelle.TransferDaten()` mit Standardumsetzung; 83 Textschlüssel de/en. **Die Proben
+> entstanden zuerst — und fanden Befund B55: der Projektimport war seit der SQLite-Umstellung kaputt** (benannte
+> Platzhalter `@id`/`@k0`/`@c0` im SQL-Text, die Zugriffsschicht bindet nach Position; jeder Import brach mit „Must add values
+> for the following parameters"). Vier Stellen auf `?`, P1–P5 danach grün, vor und nach dem Umzug. Elf Sachcommits, ein Merge
+> und ein Gate-Nachtrag (`7d8c93a` … `b612775`), auf `ios_migration` als `e759eaf`.
+>
+> **Zwölf Angleichungen** (A‑1…A‑12): kein Emoji auf „Abbrechen", Duplizieren abbrechbar, Fenster wächst nicht, **die
+> Dublettenprüfung wird richtig** (`PruefeNamen` statt Präfixsuche — „Muster" neben „Musterprojekt" wird angenommen),
+> Doppelklick markiert nur, Löschdialog mit Esc, Transferdialog übersetzt, Datum folgt der Programmsprache, Sicherung und
+> Importbericht über Delegaten (Windows-Vorgabe unverändert), eine Projektliste mit Suche auch in „Löschen"; **A‑12 gilt
+> nicht für „Export"** — der Transferdialog behält sein Auswahlfeld (Platz unter der Variantenliste; W15a‑O‑2). **B56 widerlegt
+> B25:** „Projekt → Öffnen…" ist im MDI-Menü vorhanden und verdrahtet, E‑6 ist gegenstandslos. **Anwenderfragen
+> entschieden:** E‑1 nein, E‑2 ja, E‑3 nur markieren, E‑4 Programmsprache, E‑5 „Löschen" ja / „Export" nein. **Offen:**
+> W15a‑O‑1 (P6, Referenzlauf auf ein importiertes Projekt, nicht gelaufen — Ersatz Abnahmepunkt 4). **Entschieden am
+> 04.09.2026:** W15a‑O‑2 (Empfehlung angenommen — der Transferdialog behält sein Auswahlfeld, keine volle Projektliste im
+> Export) und W15a‑O‑3 („Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem Fall": Namen sind über den
+> eindeutigen Index `Projektname` eindeutig, das Löschen über den Namen bleibt; trifft ein Name mehrere Projekte, fragt das
+> Programm mit Vorgabe „Nein" nach statt still beide zu löschen — umgesetzt in `ba806b7`, gemerged als `fe07e82`:
+> `LoeschStand.Mehrdeutig` mit Anzahl in `ProjektCtrl.LoeschenMitVorarbeiten`, zweite `Rueckfrage` im `ProjektWahlDialog`,
+> sieben Tests, darunter zwei auf einer Arbeitskopie ohne den Index). **W15a‑O‑4 (entschieden 04.09.2026, Empfehlung
+> angenommen):** `VariantenCtrl.LoescheVariante` rief `ProjektCtrl.Delete(name)` direkt — jetzt dieselbe Vorprüfung
+> (`LoeschBefund` statt `bool`, `Mehrdeutig` mit Anzahl) und dieselbe zweite Rückfrage in der `UebersichtSeite`, sechs
+> Tests; umgesetzt in `5104ea3`, gemerged als `1c49f38`.
+> **Testanker:** der Maskenschlüssel-Zeuge steht jetzt auf `FormMain`/`Masken.ProjektDetail`, zwei W16-Aufträge (T1, T2)
+> stehen in den Tests und im Protokoll.
+>
+> **Nachweise** (auf dem gemergten Stand `e759eaf`, Linux): Build → 0 Fehler, **6** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 511** grün (3 436 nach den W14c-Entscheiden; P1–P5, P7–P9, 14 Fälle `ProjektListe`,
+> 45 Fälle der drei Dialoge und der Seite), **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte **124** grün ·
+> Stapellauf **13** Masken (17 − 4; `Form_ProjektExportImport` war eine Code-Form ohne Designer), 14 Designer,
+> **13 erreichbar / 0 nein / 0 verwaist / 0 unklar** · SQL-Prüfer 1 234 Texte, 0 Fundstellen · ChartProben 32 Bilder,
+> 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · beide Wächter leer.
+>
+> **Protokoll** mit Feldkartenabgleich je Maske (Transfermaske von Hand), den Proben, zwölf Abweichungen, den Befunden
+> B1…B56 und der Windows-Abnahme: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W15a_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: Projektwechsel über alle vier Wege mit offenen Blazor-Seiten, Löschen mit Kaskade,
+> Speichern unter (Fortschritt, Abbrechen, Dublette „Muster" neben „Musterprojekt"), **Export→Import-Rundreise mit
+> Variantenpaket und Sicherung samt Kennzahlenvergleich** (der Import war bis hierher unbenutzbar), Assistent vor und
+> zurück, de/en, 125 %. Der siebzehnte iOS-Lauf (33867643966) auf diesem Stand ist grün.
+> **Windows-Abnahme 05.09.2026 (PDF S. 4), Befund W15a‑B‑1 (`974c198`, Protokoll § 13):** in „Speichern unter"
+> lag die Spalte „Geändert" hinter dem waagerechten Rollbalken — der Umbruch der zwei Spalten kam erst bei 780 px,
+> und die Hausregel `white-space: nowrap` trieb die Tabelle über die Spaltenbreite. Der Umbruch kommt jetzt bei
+> 1 100 px (Liste über die volle Breite, Formular darunter), Name und Kunde brechen um, das Datum bleibt einzeilig
+> mit fester Breite und kulturabhängigem Kurzformat. `ProjektWahlDialog` war nicht betroffen, `ProjektTransferDialog`
+> führt keine Projektliste (W15a‑O‑2).
+>
+> **Anwenderwunsch W15a‑E‑1 vom 05.09.2026 (zwei Bildschirmfotos: „Projekt öffnen: Es sollte wie zuvor kenntlich
+> sein, welches Variantenprojekte sind"), umgesetzt in `325a275`:** Als eigene Spalte gab es die Variante im Vorbild
+> nie — weder `ProjektAuswahl` (418 Z.) noch `Form_ProjektAuswahl` (99 Z.) führten das Wort; kenntlich war sie **am
+> Namen** (`VariantenCtrl.AnlegenAusStamm` bildet „‹Stamm› - ‹Bezeichner›", `Form_Start.FuelleVariantenCombo` zeigte
+> genau das, die Ordnung kam aus `VariantenCtrl.LadeGruppe`: Stamm zuerst, dann Varianten `ORDER BY Variantenname`).
+> Das trug nicht mehr, weil das Assistentenband 280 px breit ist und ausgerechnet der Teil abgeschnitten wurde, der
+> die Variante ausmacht. Jetzt trägt `ProjektKopfZeile` Stamm-Id, Bezeichner und Stammnamen (`IstVariante`) aus
+> **einer** Abfrage mit zwei LEFT JOINs in `ProjektCtrl.NamenListe` (fehlt `Tab_Variante`, läuft die alte Abfrage —
+> ein LEFT JOIN auf eine fehlende Tabelle hätte die ganze Liste geleert); der Baustein `ProjektListe` gruppiert
+> Stamm → Varianten nach Bezeichner wie `LadeGruppe` (auch unter Datumssortierung, Stamm-Ausfall und Ringketten
+> abgesichert), zeigt die Spalte „Art" **nur, wenn die Liste eine Variante führt**, sonst die leise Zeile „Variante
+> von …" mit Einrückung, und die Suche greift über den Bezeichner. Aufrufer: `ProjektWahlDialog`, `ProjektKopieDialog`,
+> `AssistentSeite` und die drei Hüllen, vier neue Textschlüssel de/en; `Startseite.Varianten` war schon gekennzeichnet
+> und bleibt, `ProjektTransferDialog` führt keine `ProjektListe`. Dabei ist der Befund **W15a‑B‑1** erst wirklich
+> behoben: Die Umbruchregel stand im Blatt und **wirkte nicht** — `.epos-raster td` (0,1,1) schlug
+> `.epos-projektliste-name` (0,1,0); sie trägt jetzt den Tabellenselektor davor. Elf neue bunit-Fälle, ein Kern-Fall
+> gegen `Tab_Variante`; Protokoll § 14, Abnahmepunkt A‑W15a‑E‑1.
+
+> **Statusblock iU9 — Welle 14c umgesetzt (04.09.2026, Basis `4e77221` nach W14a/W14b, zusammengeführt mit `809fe41`)**
+>
+> **Fünf Masken — 2 198 Zeilen `.cs`, 1 425 Designer, 26 `MessageBox` + 2 indirekte — sind fünf Razor-Komponenten in
+> vier Fenstern:** `GesetzeskatalogDialog` mit `GesetzeskatalogZeileDialog` als Überlagerung (`EPOS.UI/Dialoge/Admin/`;
+> aus dem Kostendialog und dem Wirtschaftlichkeits-Parameterdialog erscheint der Katalog jetzt IM Dialog, E‑1),
+> `KatalogDublettenDialog` über dem neuen Baustein **`Baumansicht`** (der einzige `TreeView` des Bestands; 14 bunit-Fälle:
+> Rollen und Ebenen, Dreieck klappt ohne zu wählen, ein `tabindex`, die vier Pfeiltasten, Auswahl überlebt den Neuaufbau),
+> `EinstellungenDialog` (`EinstellungenCtrl` im Kern über `Dienste.Pfade`/`Dienste.Einstellungen`, vier Rubriken als
+> `Reiter`) und `KlimadatenDialog` (seit E‑3 wieder so benannt; `KlimaregionStammCtrl` in den Kern gezogen, `KlimaImportAblauf` mit Abbruch, die zwei
+> Klimabilder im Renderer → **32 Proben**). **Vier der fünf Fachteile lagen schon im Kern** (`GesetzKatalog`,
+> `DublettenPruefung`/`KatalogBereinigung`/`KatalogRegistry`, `SolarPVGISCalculator`) — die Vorarbeit war Zuschnitt, kein
+> neuer Rechenweg; der Nachweis (`KatalogpflegeTests`, 104 Fälle über eine Arbeitskopie) entstand vor der ersten Maske,
+> weil es für acht Kern-Klassen **keinen einzigen Test** gab (B62). Mit der Welle fallen die **letzten zwei ablösbaren
+> `Sprungziel`-Zweige** (`Sprungbruecke` führt nur noch `SpeicherOptimierung`, bis W16 — R‑W14c‑11), `ChartManager`
+> (560 Z., **die MS-Chart-Bindung endet**), `RoundedPanel` und **alle sechs WFO1000** der Mappe (Warnungen 12 → 6, Rest
+> Altbestand). Neun Sachcommits, ein Merge und ein Gate-Nachtrag (`8ee59d7` … `c1b049e`), auf `ios_migration` als
+> `f7e2758`; 80 Textschlüssel de/en für zwei nie lokalisierte Masken.
+>
+> **17 Angleichungen, zwei hingenommene Abweichungen** (A‑1…A‑17): `Rueckfrage.VorgabeNein` für sechs Löschfragen,
+> der Klimaimport lässt sich abbrechen, Klimaregion löschen fragt **und räumt die 8 760 + 365 Datenzeilen ab** (der alte
+> Weg ließ Waisen), die Dublettenprüfung des Imports fragt die Datenbank statt der Präfixsuche, **ein** PVGIS-Abruf statt
+> vier (kein gespeichertes Byte ändert sich), „Standardwerte" setzt den Datenbanknamen ins richtige Feld (B53, der einzige
+> Rechenfehler), Dublettenscan im Hintergrund mit Fortschritt; hingenommen: Legende in den Klimabildern, kein Mausrad-Zoom.
+> Sechs Befunde wörtlich trotz Befund (B3, B5, B8, B16, B30, B39). **Anwenderfragen (entschieden am 04.09.2026, umgesetzt in
+> `e86eff6`/`766f349`/`1fbffd2`/`24c8912`, gemerged als `a0e6707`):** E‑3 (Klimaregion = die deutschen Regionen der
+> Klimazonenkarte, Klimadaten = der weltweite TMY-Download: die Komponente heißt wieder `KlimadatenDialog`, der Menütext
+> bleibt „Klimadaten"), E‑5 (ohne Ordnerwähler sind die fünf Pfade fest und **nur lesend**, Hinweistext de/en — die
+> iOS-Sandbox), E‑6 („Altbereinigung ausführen": **Schema-Schritt 62** räumt Waisen in `Tab_Solar_STAMM` und
+> `Tab_Klimadaten_STAMM` ab, `ZIEL_VERSION` 62 und neu `FREEZE_VERSION` 61, weil Freeze- und Zielstand bis dahin dieselbe
+> Konstante waren; auf `Kenndaten_Test.sqlite` ein Leerlauf — 32 Regionen × 8 760 und × 365 exakt; Projektpakete mit
+> Schemastand 61 werden nach Regel B2 abgewiesen; die Datenblöcke tragen ohnehin `ON DELETE CASCADE`, der Schritt ist ein
+> Netz für Altbestände), E‑7 (keine Ortsliste in der Auslieferung; Katalognamen scheiden als Vorschlag aus, weil der
+> Ortsname zugleich der Regionsname wird und A‑9 vergebene Namen abweist — Variante (c) bleibt), E‑8 (Hinweis:
+> ohne WebView2-Laufzeit bleiben die letzten vier Admin-Masken leer). **Testanker:** `Form_Klimadaten` als Prüfmuster
+> `Pruefmuster/Klimadaten/` (fünf Anker und der `Chart`-Typzeuge), drei Anker auf `MDIMainForm` (fällt als letzte, W16);
+> Schwellen 20 / 17 / 11 / 17. Abweichung von der Vermessung benannt: der Test zählt 20 Designer-Dateien repoweit
+> (18 + 2 generierte des Kerns).
+>
+> **Nachweise** (auf dem gemergten Stand `f7e2758`, Linux): Build → 0 Fehler, **6** Warnungen (12 nach W14a) ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 430** grün (3 227 nach W14a), **identisch unter `LC_ALL=en_US.UTF-8`** ·
+> Formularkarte **124** grün · Stapellauf **17** Masken (21 − 4; `Form_KatalogDubletten` war eine Code-Form ohne
+> Designer), 18 Designer, 17 erreichbar, **0 nein / 0 verwaist / 0 unklar** · SQL-Prüfer 1 232 Texte, 0 Fundstellen ·
+> ChartProben **32** Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · beide
+> Wächter leer.
+>
+> **Protokoll** mit Feldkartenabgleich je Maske, der WFO1000-Bilanz, 17 Abweichungen, den Befunden B1…B64, der Zählung
+> zu E‑6 und 13 Abnahmepunkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: Katalog aus beiden Razor-Aufrufern mit Esc-Ebenen, Klimaimport einmal echt gegen PVGIS
+> vorher/nachher zahlengleich, Abbrechen, die zwei Bilder gegen den Bestand, Löschen mit Kaskade (`SELECT COUNT(*)`),
+> Dublettenscan mit Fortschritt und Baum per Tastatur, Einstellungen speichern/zurücksetzen, KI-Schalter mit
+> Maschinenriegel, Reihenfolge des Administrationsmenüs (B63), de/en, 125 %, fehlende Ortsliste. Der sechzehnte
+> iOS-Lauf (33861268537) auf diesem Stand ist grün.
+>
+>
+> **Anwenderwunsch W14c‑E‑9 vom 05.09.2026 (Admin-Dialoge an die Bildschirmgröße) mit Befund W14c‑B‑16, umgesetzt in
+> `ddf4d00`:** Die drei Hüllklassen `epos-klimaregion-*` des `KlimadatenDialog` standen nie im Stilblatt — die
+> „zwei Spalten" lagen deshalb untereinander; ersetzt durch den `Katalograhmen` (Liste links, Diagramme und Import
+> rechts). Der `GesetzeskatalogDialog` gibt seiner einen Liste die volle Höhe (`epos-katalog-fuellend`, wie die
+> ListView 916×424 in `Form_Gesetzesparameter`), der Zeileneditor bleibt Überlagerung; Dubletten und Einstellungen
+> gewinnen allein durch das größere Fenster. Protokoll ergänzt.
+
+> **Statusblock iU9 — Welle 14a umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `c9855b1` nach W14b)**
+>
+> **Sieben Masken — 2 387 Zeilen `.cs`, 2 369 Designer, 39 `MessageBox` + 32 indirekte — sind drei Razor-Komponenten:**
+> `KatalogBrowserDialog` (`EPOS.UI/Dialoge/Erzeuger/`) mit **vier Ausprägungen** über `KatalogBrowserProfil` (Heizkessel,
+> BHKW, Solarkollektoren, Pufferspeicher mit `NurLesen`) — vier Masken waren Behälter um Editoren, die seit W6/W7 Razor
+> sind —, `PufferSpKatalogDialog` (**der fehlende vierte Katalogeditor**, als Überlagerung im Browser) und
+> `ModulKatalogDialog` mit zwei Ausprägungen (Stromspeicher als Vorbild, Photovoltaik bekommt dessen gepflegte Bauart).
+> Im Kern: `KatalogZeilen`/`KatalogsatzAnzeige`/`SpeichernAus` je Katalog, die Speichertyp-Abbildung, `ModulKatalogProfil`,
+> `DbWerte.SP_TYP_LITHIUM_IONEN`, `StromspeicherModel.C_VER_VORGABE` — und **`HeizkesselStammCtrl.Filtern` berichtigt**
+> (W14‑B2: der Kern trug die Brennstoffkette der mit W6.3 gelöschten Maske; Fernwärme, Sonstige Energieträger und
+> Wasserstoff filterten in **beiden** Heizkesseldialogen nicht — Vorher/Nachher-Zählung je Gruppe im Protokoll). Mit der
+> Welle fallen die **letzten fünf ablösbaren `Sprungziel`-Zweige** (ihre Aufrufer sind Razor → Überlagerungen),
+> `Views/Pufferspeicher/PufferSpFilter.cs`, `Allgemein/SpeichernLeiste.cs` und `Allgemein/KI/KiAufrufKnopf.cs` (E‑10:
+> der KI-Einstieg aus einer Maske kommt mit W15b zurück). **Der Erreichbarkeitsbefund steht erstmals auf 0 nein /
+> 0 verwaist / 0 unklar** — `Form_PufferSp_Bearbeiten` und `Form_SolarKollektorenAdmin` sind als Prüfmuster eingefroren
+> (der „unklar"-Zeuge und der `DataGridView`-Typzeuge). Elf Sachcommits und ein Merge (`5fdbb4b` … `e5f387c`), auf
+> `ios_migration` als `4e77221`. Der Nachweis (50 eingefrorene Fälle `KatalogVerwaltungTests`) entstand vor der ersten
+> Maske; 97 Textschlüssel de/en für zwei nie lokalisierte Masken.
+>
+> **16 Abweichungen** (A‑1…A‑16), u. a.: „OK" liefert OK, ein Löschtext mit Namen, die achte BHKW-Leistungsstufe trifft
+> (79 statt 8 Treffer vorher), `Exists`-Vorabtest überall, Löschen mit Rückfrage auch bei PV, der echte Löschgrund statt
+> „Projektzuordnung", keine modale Prüfung beim Feldverlassen, der Kontextmenüweg des Stromspeichers öffnet den Katalog,
+> Hersteller- und Speicherlisten sortiert. **Anwenderfragen:** E‑2 (Aperturfläche im Feld „Kollektorfläche" — wörtlich),
+> E‑9 (je zwei Menüpunkte für Heizkessel und Pufferspeicher — beide behalten), **E‑11 neu** (die Solarkollektoren-Verwaltung
+> hat zwei Flächenfelder, „Kollektorfläche" wird nirgends gefüllt — Modulfläche zeigen oder Feld streichen?).
+>
+> **Nachweise** (auf dem gemergten Stand `4e77221`, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 227** grün (3 087 nach W14b), **identisch unter `LC_ALL=en_US.UTF-8`** ·
+> Formularkarte **124** grün · Stapellauf **21** Masken (28 − 7), 21 erreichbar, **0 nein / 0 verwaist / 0 unklar** ·
+> SQL-Prüfer 1 232 Texte, 0 Fundstellen · ChartProben 30 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017
+> **PASS, byte-gleich** (815 043 Werte).
+>
+> **Protokoll** mit Feldkartenabgleich je Ausprägung, der Brennstoffzählung, 16 Abweichungen, den Befunden B1…B79 und
+> 13 Abnahmepunkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W14a_Blazor_Port_Protokoll.md`. **Windows-Abnahme
+> steht aus**: die Brennstoffkette in beiden Heizkesseldialogen, die achte BHKW-Stufe, Löschrückfrage PV, `NurLesen` des
+> Pufferspeicherbrowsers, Kontextmenüweg Stromspeicher, die Überlagerungen statt Sprüngen, de/en, 125 %. Der fünfzehnte
+> iOS-Lauf (33852944072) auf diesem Stand ist grün.
+> **Zum Anwenderentscheid #76 vom 05.09.2026 geprüft und nicht betroffen (`b6fd863`):** der
+> `KatalogBrowserDialog` (vier Ausprägungen) führt eine Liste plus Detailblock, kein Projekt↔DB-Paar; die vier
+> Projektdialoge, die er als Sprungziel bedient, sind über Welle 6 auf `Zweispaltenauswahl` umgestellt.
+>
+>
+> **Anwenderwunsch W14a‑E‑6 vom 05.09.2026 (Bildschirmfoto „Administration Solarkollektoren": Fenster klein, Liste
+> und Eingabe untereinander mit Seitenrollbalken, Kopfzeile „Name | Name"), umgesetzt in `ddf4d00`:**
+> `KatalogBrowserDialog` (vier Ausprägungen) und `ModulKatalogDialog` (zwei) stellen Liste und Eingabe wieder
+> nebeneinander wie ihre sechs Vorbilder (`Form_Heizkessel_Admin` 726×383 bis `Form_BHKWAdmin` 856×517) — über den
+> neuen Baustein `EPOS.UI/Bausteine/Katalograhmen.razor` (Liste links mit Filter, Detailblock rechts, Umbruch
+> untereinander unter 900 CSS‑px = `--epos-zweispalten-umbruch`, die Liste rollt in sich; die Höchsthöhe aus W9‑B‑2
+> fällt nur im Rahmen). Die Hülle `BlazorDialogForm` öffnet jeden `Fachdialog` im Anteil des Arbeitsbereichs
+> (85 % × 90 %, gedeckelt auf 92 %; Rechnung plattformfrei in `EPOS.UI/Dienste/Fenstermass.cs`, `FenstermassTests`
+> 11 Fälle); fünf kleine Masken tragen `Dialogart.Klein` und bleiben, wie sie waren. Die Wahlspalte heißt wieder
+> „Wahl" — Ursache waren die zwei Hüllen (`KatalogBrowserHuelle` gab `SpalteName`, `ModulKatalogHuelle`
+> `Listenbeschriftung`), beide lesen jetzt `KFAK_SP_WAHL`. Die Katalogwurzel rollt, statt die Schlussleiste
+> abzuschneiden. 34 neue bunit-Fälle (`KatalograhmenTests`, `KatalogdialogTests`, `FenstermassTests`); Protokoll
+> ergänzt.
+
+> **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
+>
+> **Vier Masken — 670 Zeilen `.cs`, 937 Designer, 11 `MessageBox` — sind zwei Razor-Komponenten:** `BedarfAdminDialog`
+> (`EPOS.UI/Dialoge/Bedarf/`) mit **drei Ausprägungen** über `BedarfsArt` (Brauchwasser, Prozesswärme, Stromverbraucher —
+> die drei Drillinge waren bis auf die Bezeichner zeichengleich; fünf ihrer sieben Knöpfe riefen schon die Razor-Dialoge
+> aus W8) und `SolarganglinieAdminDialog` (`EPOS.UI/Dialoge/Solarthermie/`, Zwilling der Ganglinien-Verwaltungen aus W12
+> und W13, Einlesen über `GanglinienTextDatei.Lies(pfad, mitKopfzeile: true)` mit `Fortschritt`). Im Kern:
+> `BedarfStammCtrl.Bezeichner`/`Kopf`/`Loeschen`, **`BedarfsVorschauCtrl`** (die drei Vorrechnungen als ein Weg),
+> `SolarganglinieStammCtrl.Exists`/`HatProjektzuordnung` (die Präfixsuche `FindString` war die einzige Dublettenprüfung,
+> B70). Mit der Welle fallen `EPOS.Kern/Allgemein/ToolsClass.cs` (letzter Nutzer), das Sprungziel `SolarganglinieAdmin`
+> (`SolarganglinieDialog` zeigt die Verwaltung als Überlagerung) und der Kleinschreibungs-Zeuge der Formularkarte wandert
+> auf `WizardParent.designer.cs`. **Elf Sachcommits und zwei Merges** (`2a53d36` … `8b855ce`), auf `ios_migration`
+> als `c9855b1`. Der Nachweis (27 Kern-Fälle + Probe `solarganglinie_8760.txt`) entstand vor der ersten Maske.
+>
+> **Sieben Abweichungen** (A‑1…A‑7): Leerprüfung vor dem Löschen auch beim Brauchwasser, ein Löschsatz mit Platzhalter
+> statt dreier Schreibweisen, Fehlschlag und ReadOnly-Sperre als Warnbanner, Rückfrage vor dem Löschen der Solarganglinie,
+> der Ganglinienordner sichtbar (stand auf `Visible = False`, B79), „OK" liefert OK. **Zwei neue Befunde:** B78 — der
+> Knopf „Ergebnisse" stand in allen drei Drillingen im Code, aber in keinem Designer: er war seit jeher tot, die
+> Anwenderfragen E‑7/E‑8 der Vermessung sind damit gegenstandslos; B79 (s. o.). **E‑6 (B49, Brauchwasser ohne Teiler)
+> ist durch den Anwenderentscheid W8‑O‑5/W9‑O‑3 erledigt** — `Energieeinheit`/`BedarfEinheitWahl` im Kern, MWh als
+> Vorgabe, kWh wählbar, konsistent in allen Bedarfsansichten; die Prozesswärme im W9-Weg rechnet ebenfalls über die
+> Einheitenklasse (`SimulationWaermebedarf.ProzesssummeUebernehmen`, W9‑O‑3b). Offen: **W14b‑O‑1** (Jahressumme in
+> drei Formaten — Anwenderfrage, Empfehlung `F2`), W14b‑O‑2 (`Rechenstand` des W9-Wegs und `BedarfsVorschauCtrl`
+> zusammenführen), W14b‑O‑3 (gleichnamige Datei im Ablageordner wird weiterverwendet), **W8‑O‑5b** (Simulation →
+> „Wärmebedarf-Details" teilt ein bereits in MWh stehendes Brauchwasser ein zweites Mal — Anwenderentscheid).
+>
+> **Nachweise** (auf dem gemergten Stand `c9855b1`, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **3 087** grün (3 012 vor dem Merge), **identisch unter `LC_ALL=en_US.UTF-8`** ·
+> Formularkarte **123** grün · Stapellauf **28** Masken (32 − 4), 27 erreichbar, 0 × „nein", 1 „unklar" (fällt mit
+> W14a) · SQL-Prüfer 1 240 Texte, 0 Fundstellen · ChartProben 30 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017
+> **PASS, byte-gleich** (815 043 Werte).
+>
+> **Protokoll** mit Feldkartenabgleich je Ausprägung, sieben Abweichungen, den Befunden B48…B79 und 25 Abnahmepunkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W14b_Blazor_Port_Protokoll.md`. **Windows-Abnahme steht aus**:
+> die sieben Knöpfe je Ausprägung, die drei Jahressummen-Formate, Löschen leer/mit Rückfrage/schreibgeschützt, „Grafik"
+> als Überlagerung mit Einheitenwahl, Solarganglinie (Ordner, Kopie, Einlesen mit Kopfzeile, Projektzuordnungssperre,
+> Überlagerung aus dem Projektdialog), de/en, 125 %. Der fünfzehnte iOS-Lauf folgt nach dem Merge von W14a.
+>
+>
+> **Anwenderwunsch W14b‑E‑9 vom 05.09.2026 (Admin-Dialoge an die Bildschirmgröße), umgesetzt in `ddf4d00`:**
+> `SolarganglinieAdminDialog` steht nebeneinander wie `Form_Solarganglinie_Admin` (681×344, Liste links nach
+> Hausanordnung); `BedarfAdminDialog` (drei Ausprägungen) und `WaermebedarfAdminDialog` bleiben gestapelt wie ihre
+> Vorbilder (`Form_Stromverbraucher_Admin` 542×489, `Form_AdminWaermeeinlesen` 676×433), nehmen aber die Höhe des
+> größeren Fensters (`Katalograhmen Gestapelt`). Protokoll ergänzt.
+
+> **Statusblock iU9 — Welle 13 umgesetzt (04.09.2026, Basis `08c489a` nach W12, zusammengeführt mit `4101740`)**
+>
+> **Sechs Masken — 2 396 Zeilen `.cs`, 2 621 Designer, 32 `MessageBox` — sind drei Razor-Komponenten:**
+> `KatalogImportDialog` (`EPOS.UI/Dialoge/Import/`) mit **vier Ausprägungen** für die VDI-3805-Blätter Heizkessel,
+> Pufferspeicher, Solarkollektoren und Wärmepumpen (`KatalogImportProfil` als Satz je Katalog, `KatalogImportAblauf`
+> als EIN Kern-Ablauf Lesen → Vorprüfen → Konfliktdialog → Ausführen, transaktional), `WaermebedarfAdminDialog`
+> (Zwilling der Stromganglinien-Verwaltung aus W12, `GanglinienTextDatei.Lies(pfad, mitKopfzeile)` bereits mit dem
+> Kopfzeilenschalter für W14b) und `PvModulImportDialog` (CEC-Katalog und `.pan`-Dateien, erstmals lokalisiert). Die
+> eine Bausteinlücke — **Mehrfachmarkierung im `Raster`** — ist gebaut. Mit der Welle fallen die
+> `ImportKonflikteHuelle` aus W12 (alle Aufrufer sind Razor) und die Sprungbrücke `WaermebedarfExternAdmin`
+> (`WaermebedarfExternDialog` zeigt die Verwaltung als Überlagerung). **Alle sechs Masken sind im selben Commit wie
+> ihr Nachfolger gelöscht** (Regel M1, ohne Nachzügler). Acht Sachcommits und ein Merge (`0711916` … `a59cbd5`),
+> auf `ios_migration` als `01c9933`.
+>
+> **Der Nachweis der Welle sind die Importproben.** Für die fünf Parser, `DublettenPruefung` und `VdiAuswahlFilter`
+> gab es keinen Test (W13‑B1); **zwanzig Probendateien** unter `Referenzlaeufe/Importproben/` (188 KB, CP1252 und
+> CRLF per `.gitattributes` eingefroren) mit aus dem Bestand eingefrorenen Erwartungswerten entstanden **vor** der
+> ersten Maske — Vaillant/Buderus-Heizkessel mit Wirkungsgrad-Rückfall, Pufferspeicher mit dem fehlenden zehnten Block
+> (B23, wörtlich behalten), Solar mit allen vier Bauarten, Hoval-Wärmepumpen mit Voll-/Teillast-Trennung, 50
+> CEC-Module, vier `.pan`, 8 760 Wärmebedarfswerte mit drei Gegenproben. 27 Abweichungen (A‑1…A‑27) mit je einem
+> Windows-Abnahmepunkt, u. a.: Solar bekommt Dublettenprüfung und Konfliktdialog, alle vier Importe schreiben
+> transaktional, die Übernahme liest aus den Detailfeldern, Wärmepumpen-Ordner `VDI_Waermepumpe` mit Rückfall.
+> Drei neue Befunde: B56 (Wärmebedarf-Beschriftung nannte Komma, der Parser liest invariant), B57 (Trina-PAN ohne
+> `Bifacial`-Schlüssel), B58 (`CEC Modules.csv` ist eine Semikolon-Fassung — unlesbar für den Dienst, die Probe stammt
+> aus `_UTC`).
+>
+> **Nachweise** (auf dem gemergten Stand `01c9933`, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **2 972** grün (2 807 nach W12), **identisch unter `LC_ALL=en_US.UTF-8`** ·
+> Formularkarte **123** grün · Stapellauf **32** Masken (38 − 6) · SQL-Prüfer 1 241 Texte, 0 Fundstellen ·
+> ChartProben 30 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte).
+>
+> **Protokoll** mit Feldkartenabgleich je Ausprägung, den Importproben, 27 Abweichungen und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md`. **Anwenderfragen:** W13‑O‑2 (PAN
+> ohne Temperaturkoeffizienten, B44), W13‑O‑3 (zwei Leistungsbegriffe, B40), W13‑O‑4 (fehlende Nachlaufblöcke, B23),
+> W13‑O‑5 (Kühlleistung an Zuheizung gekoppelt, B32), W13‑O‑6 (zwei PV-Menüpunkte, eine Maske). **Windows-Abnahme
+> steht aus** (§ 10 des Protokolls, zwölf Punkte). Der vierzehnte iOS-Lauf (33844935661) auf diesem Stand ist grün.
+>
+> **Windows-Abnahme 05.09.2026, Befund W13‑B‑1 („Admin: vdi3805 Datei import: Absturz bei Datei laden, teilweise
+> Absturz auch bei Dateiauswahl-Dialog"), behoben in `4fd8cc7`:** Zwei Ursachen. Der modale Dateiwähler lief
+> **synchron im `WebMessageReceived`-Rückruf** derselben WebView2 — `KatalogImportHuelle.DateiWaehlen` gab
+> `Task.FromResult(Dienste.Datei.DateiOeffnen(…))` heraus, ein schon erfüllter Task, der `OpenFileDialog` pumpte seine
+> Nachrichtenschleife also in der WebView, die gerade zeichnet (wortgleich das Muster von W16b‑B‑1, eine Ebene tiefer;
+> elf Hüllen hatten dieselbe Zeile, ob es gutgeht, hing an der Zeitlage — daher das „teilweise"). Und eine Ausnahme
+> aus einem Blazor-Ereignis hatte **kein Netz** — der WinForms-`BlazorWebView` 10.0.100 führt kein
+> `UnhandledException`. Behebung: `IDateiDienst`/`IDialogDienst` führen wartbare Zwillinge mit Standardfassung
+> (`DateiOeffnenAsync`, `DateiSpeichernAsync`, `OrdnerWaehlenAsync`, `MeldungAsync`, `WarnungAsync`, `FrageAsync`);
+> die Windows-Fassungen posten sie über `Allgemein/Blazor/Blazornachlauf.cs` — der Bruder von `Blazorsprung` für den
+> Fall **mit** Rückgabewert — eine Nachricht später; `Dateiwahl.razor` und `KatalogImportDialog` brauchten keine Zeile,
+> sie warteten von jeher. Dazu die **Fehlerschranke** (`EPOS.UI/Bausteine/Fehlerschranke.razor` auf `ErrorBoundaryBase`,
+> `Wurzel<T>`), die alle drei Hüllen und die iOS-Seite statt `T` mounten. Der Kern ist als Ursache ausgeschlossen: neun
+> neue Fälle fahren alle vier Ausprägungen gegen sechs Bauarten kaputter Dateien, `Lesen` macht daraus eine
+> `IMP_KAT_PROT_LESEFEHLER`-Meldung. Auf iOS war derselbe Befund ein anderer Fehler: `IosDateiDienst.AufDemHauptfaden`
+> lieferte vom Hauptfaden `default`, der Wähler ging nie auf — mit den `…Async`-Fassungen behoben. Protokoll § 13,
+> Abnahmepunkte B1–B7 (Wähler geht auf, kaputte Datei → Warnbanner, Fehlerkasten mit rotem Rand statt Absturz).
+
+> **Statusblock iU9 — Welle 12 umgesetzt (04.09.2026, Basis `73a4338` nach W11b, zusammengeführt mit `fe22915`)**
+>
+> **Sechs Masken — 2 134 Zeilen `.cs`, 1 409 Designer, 10 `MessageBox` + 13 indirekte — sind sechs
+> Razor-Komponenten:** `GanglinieProtokollDialog`, `GanglinieImportOptionenDialog`,
+> `ImportKonflikteDialog`, `StromganglinieAdminDialog`, `StromganglinieDialog` und
+> `PeakShavingDialog`. **Der rote Faden ist die AP5-Importkette**, die zweimal wörtlich im Bestand
+> stand (mit Ablage in der Stammdatenverwaltung, ohne in der Lastspitzenkappung) und jetzt EIN
+> Kern-Ablauf `GanglinienImportAblauf` mit drei Rückrufen ist; die drei Zwischenmasken erscheinen
+> als `Ueberlagerung` desselben Fensters, jeder Rückruf wartet auf eine `TaskCompletionSource`.
+> **`ImportKonflikteDialog` ist Blatt vor Host MIT Hülle** (Entscheid § 8.3 der Vermessung): Vier
+> seiner fünf Aufrufer bleiben bis W13 WinForms, und die `Sprungbruecke` kann keine Nutzlast
+> zurückgeben — die Hülle kostet 80 Zeilen und lebt eine Welle. **Acht Dateien in den Kern:**
+> `GanglinienImportAblauf`, `GanglinienOptionenModell`, `GanglinienProtokollText`,
+> `ImportKonfliktModell`, `PeakShavingCtrl` (Umzug), `PeakShavingKennzahlenBlock`,
+> `PeakShavingEingaben`, `PeakShavingBild`. **Bilanz 80 Dateien, +9 742 / −5 422 Zeilen** (ohne die
+> 3,4 MB Probendateien). Sechzehn Sachcommits und ein Merge (`72dd8ba` … `34e2095`), auf `ios_migration` als `08c489a`.
+>
+> **Der Nachweis der Welle ist der bitgleiche Ganglinien-Import.** Dafür gab es KEINEN Test
+> (Befund W12‑B14); die zwölf Proben — Trennzeichen `;`/`,`/Tab/einspaltig × Dezimaltrenner ×
+> Kopfzeile × 8 760/35 040/525 600 × Schaltjahr × beide Sommerzeitfälle × `.xlsx` — entstehen
+> deshalb ZUERST, mit aus dem Bestand eingefrorenen Erwartungswerten. Sie laufen danach durch den
+> neuen Kern-Ablauf und liefern dieselben Zahlen. **Befund W12‑B27 dabei gefunden und behoben:**
+> Der Excel-Zweig war überhaupt nicht benutzbar (drei Leseschleifen liefen um eine Zeile über das
+> Feld hinaus, jeder `.xlsx`-Import endete in `IMPORT_PROT_LESEFEHLER`) — damit ist der offene
+> Nachweispunkt `Umsetzung_iU0_iU1_Nachweise.md:136` erklärt und abgehakt.
+>
+> **Zwei Entscheidungen:** (1) **Kein neuer Renderer** für das Vorher/Nachher-Bild —
+> `ChartRenderer.ErzeugerStapel` trägt seit W11a eine Sekundärachse und rechnet die
+> Jahresstundenmarken über die Reihenlänge um; die ChartProben bleiben bei 30. (2) **Der Anker des
+> Erreichbarkeitstests hängt jetzt an `Form_AdminSettings`** (`MDIMainForm → MenuItem_Einstellungen`):
+> Von den zwölf Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13/W14 (Befund W12‑B26),
+> der Test kann seine Form „über die Startseite" nicht behalten. **Der Rechenlauf der
+> Lastspitzenkappung läuft nebenher** (`Task.Run` + `Fortschritt`, Befund W12‑B22) — die dritte
+> nebenläufige Rechnung der Anwendung.
+>
+> **Nachweise** (auf dem gemergten Stand, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **2 807** grün (2 614 nach W11b), **identisch unter
+> `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün · Stapellauf **38** Masken (43 − 5),
+> 37 erreichbar, 0 × „nein" · SQL-Prüfer 1 231 Texte, 0 Fundstellen · ChartProben 30 Bilder,
+> 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) ·
+> **Import-Proben byte-gleich**.
+>
+> **Protokoll** mit Feldkartenabgleich, 19 Abweichungen (A‑1…A‑19), den wörtlich übernommenen
+> Befunden und fünf offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W12_Blazor_Port_Protokoll.md`.
+> **Anwenderfrage W12‑O‑1:** Befund B5 — derselbe Katalogeintrag lässt sich einem Projekt beliebig
+> oft zuordnen (heute wie früher). Soll das so bleiben? **Windows-Abnahme steht aus**: Verwaltung
+> mit Einlesen (CSV `;`/`,`, `.xlsx`) samt Optionen/Protokoll/Konflikt, Startbild → Strom-Messdaten
+> mit ◀/▶ und „Bearbeiten…", Lastspitzenkappung mit Balken, minimaler Schwelle, drei Reitern und
+> CSV — auch ohne geöffnetes Projekt —, die vier W13-Importmasken über die Konflikthülle, de/en,
+> 125 %, Esc je Ebene.
+> **Anwenderentscheid #76 vom 05.09.2026 („#76: Empfehlung"), umgesetzt in `b6fd863`:** `StromganglinieDialog` steht im Baustein `Zweispaltenauswahl`; die zwei
+> Glyphen-Parameter samt `STROMGL_BTN_HINZUFUEGEN`/`_ENTFERNEN` sind ohne Nutzer und gefallen.
+
+> **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
+>
+> Der zweite Lauf der Welle 11: **`Form_Simulation_Detail` (7 766 Zeilen + 3 082 Designer), `DashboardForm`,
+> `NavigatorUebersicht`, `NavigatorStrom`, `NavigatorWaerme` und `Form_SpeicherVariantenVergleich` → eine
+> Razor-Seite `SimulationErgebnisSeite`** (`EPOS.UI/Seiten/Simulation/`) mit **zehn** Blättern (R3 „Simulation“
+> war nur der Behälter der Menüliste, A‑1), dem Ergebnis-Blatt mit Autarkie-Analyse, den Ganglinien-Navigatoren
+> Wärme/Strom und dem Variantenvergleich als Überlagerung; `TabNavigationManager`, `TabListMapper`,
+> `DonutChartDrawer`/`Kacheln` gelöscht (`ChartManager` bleibt für Klimadaten und Peak-Shaving, A‑12).
+> **Hosting-Entscheid R‑W11‑1:** Seite mit `SeitenZustand` (iOS erreicht sie über `AppWurzel`), auf Windows
+> bis W16 in der modalen Dialoghülle, weil die Bedarfsobjekte der Startmaske gehören (**eingelöst mit W16b, E‑5,
+> 04.09.2026:** das Ergebnis ist eine `Ueberlagerung` der Razor-Startseite, die Bedarfsobjekte gehören dem Projekt,
+> `BedarfsZustand`; der Automatikstart beim Öffnen bleibt). Die Hülle fährt
+> `SimulationLaufCtrl.Laufen` in `Task.Run` mit `Fortschritt` und Abbrechen; der Automatikstart beim Öffnen
+> bleibt, Endlage Übersicht. **Sprungbrücke `SpeicherOptimierung`** (bleibt WinForms, iF22) mit Rückgabe
+> `AuslegungUebernommen`; `SimulationKonfigSeite` (W10b) als Überlagerung — `SeitenZustand` wird **nicht**
+> doppelt gebraucht. **Bilanz 78 Dateien, +11 159 / −27 103 Zeilen.** Vierzehn Sachcommits und ein Merge
+> (`5ac1703` … `2c47cf0`), auf `ios_migration` als `73a4338`.
+>
+> **Der Ertrag ist eine WebView für das ganze Simulationsergebnis** — drei Navigationen und ~130
+> Laufzeit-Steuerelemente sind ein `Reiter`; die 17 Zeichenflächen laufen über die sieben W11a-Bilder.
+> **Anwenderentscheid W11a‑O‑1 umgesetzt (A‑19):** „Wärme gesamt“ ist die Summe der **Deckung** je Erzeuger,
+> die Restwärme ist **eine** Zahl (`sim.Restwaerme`) und kann rechnerisch nicht negativ werden — 1030
+> 6 137,56 − 6 137,56 = 0,00, 1007 6,04, 1017 0,00; Bedarf − Deckung trifft die Bilanzgröße in allen drei
+> Projekten. Zehn Befunde in W11b behoben (u. a. zwei Fülllogiken für `chart2`, Heizstab in beiden
+> Zweigen derselbe Anteil, Stromgang mit Sortiertumschalter, BHKW-Strom eigene Farbe, die elf Reitertitel
+> erstmals englisch), 19 entfallen mit den Masken. Offen: W11b‑O‑1 (14 stille `Console.WriteLine`),
+> O‑2 (17 Flächen ohne Foto des Bestands — Sichtabnahme am Gerät), O‑3 (erstes Blatt des Ergebnis-Reiters
+> doppelt zur Übersicht?), O‑4 (`Form_SpeicherOptimierung` modal über der WebView), O‑5 (`IosProjektQuelle`
+> liefert den Satz noch nicht).
+>
+> **Nachweise** (auf dem gemergten Stand `73a4338`, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **2 614** grün (2 502 nach W11a), **identisch unter `LC_ALL=en_US.UTF-8`** ·
+> Formularkarte **123** grün · Stapellauf **43** Masken (49 − 6), 42 erreichbar, 0 × „nein“ · SQL-Prüfer
+> 1 233 Texte, 0 Fundstellen · ChartProben 30 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS,
+> byte-gleich** (815 043 Werte).
+>
+> **Protokoll** mit Feldkartenabgleich je Reiter, 19 Abweichungen (A‑1…A‑19), 17 Windows-Abnahmewegen und
+> sechs offenen Punkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W11b_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: Automatikstart mit Balken und bedienbarem Fenster, Abbrechen, Endlage
+> Übersicht, die 17 Flächen gegen ein Foto des Bestands, Konfiguration als Überlagerung mit Rücksprung,
+> Variantenvergleich mit echtem Fortschritt, Optimierung modal über der WebView, die sechs CSV-Exporte, de/en,
+> 125 %. Der zwölfte iOS-Lauf (33832613617) auf diesem Stand ist grün.
+> **Windows-Abnahme 05.09.2026 („Allgemein bei Charts: das Zoomen funktioniert nicht"; PDF S. 8–9), drei
+> Diagrammbefunde behoben (`db35a7b`, Protokoll § 10a):** **A‑1** nimmt den in A‑7 aufgegebenen Zoom zurück (Risiko
+> R‑W11‑5 geschlossen): Jedes Renderer-Bild steht im neuen Baustein **`Diagramm`** (`Diagramm.razor` +
+> `epos-diagramm.js`, über `ChartBild` für alle **34** Bilder, auch Kuchen, Ringe und Kennlinien) — Mausrad zoomt
+> um den Zeiger, Ziehen verschiebt, Doppelklick/Taste 0 zurück, +/−, Pinch, Stufenanzeige „×2,5", Knopf „1:1",
+> ganz im Browser ohne Neuzeichnen; **Datenzoom** für die Jahresganglinien (Bedarf, Wärmegang, Stromgang) über
+> ein Rechteck (Umschalt+Ziehen oder Knopf „Bereich") → der Kern zeichnet mit einem `Achsenfenster` neu, die
+> x-Achse trägt die wirklichen Jahresstunden in runden Schritten; ohne Fenster zeichnet jedes Bild byte-genau
+> wie zuvor (iU7-Renderer unverändert PNG, `ChartProben` prüft jetzt 34 Bilder und 2 Gegenproben, die 30
+> Bestandsbilder byte-gleich). JS über `import()` wie `epos-verlauf.js`, die `index.html` beider Wirte
+> unverändert; WKWebView-Punkte (`wheel`+`ctrlKey`, `gesturestart` unterdrückt, `touch-action: none`) sind
+> vorbereitet. **W11b‑B‑2** stellt die Diagramme der Ergebnisseite über die volle Rasterbreite (eine Regel
+> `.epos-simerg-diagrammzeile` statt acht Sonderfälle, `min-height` 280 px). **W11b‑B‑3**: die Streuwolke B4
+> „Leistung über Außentemperatur" hatte richtige Serien und Achsentitel, aber fünf gleichmäßig verteilte Marken
+> (−18,2 … −5,3 … 7,7) — jetzt runde Teilung (1/2/2,5/5 × 10^k), aufgerundete Bereiche, Ränder für Legende und
+> Titel. Abnahmepunkte 18–24; Punkt 22 (iPad-Pinch, Seite zoomt nicht mit) bleibt bis zur Geräteprüfung offen.
+> Bewusste Vereinfachungen: die Null bleibt unten, B1 nimmt nur den Zeitausschnitt, „1:1" verwirft Bild- und
+> Datenzoom, Doppelklick nur den Bildzoom.
+
+> **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
+>
+> Die Welle 11 des Wellenplans (Simulationsergebnis: `Form_Simulation_Detail` mit elf Reitern,
+> Dashboard, drei Navigatoren, Variantenvergleich — 11 031 Zeilen, 17 Zeichenflächen) läuft in zwei
+> Läufen. **W11a** verlegt alles, was ohne Oberfläche geht, in den Kern und hängt die WinForms-Masken
+> schon daran — **ohne eine Maske zu löschen**; W11b baut danach die Ergebnisseite in einem Schritt.
+> Vermessung `iU9_W11_Vermessung.md` (1 734 Zeilen, 50 Befunde), Arbeitsanweisung
+> `iU9_W11a_Arbeitsanweisung.md`. Acht Sachcommits und zwei Merges:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `d0b64b9` `fd1e750` | **W11a.1/2** `ErgebnisPraesenz` (public) und `Ganglinie` (Dauerlinie) im Kern; **elf** inline-SQL-Stellen der Welle als Controller-Methoden (`KonfigurationCtrl.LiesProjekt`, `HeizkesselStammCtrl.BrennstoffartenJeProjekt`, `WErzeugerCtrl.AnlagenJeTyp`, `StromspeicherStammCtrl.KapazitaetJeProjekt` …) |
+> | `a2665db` `5ebecdf` | **W11a.3/5** `SimulationErgebnisCtrl` — die Reiterzahlen als **sieben DTOs**, die vier Eigenanteil-Rechnungen mit dem `SimulationRunner` geteilt (**eine Wahrheit**), `SpeicherKennzahlenBlock` (39 Zeilen); `SpeicherAnzeigeCtrl` (vier Kopien der Anzeigetexte → eine), CO₂-Faktoren in `EmissionsVorgaben`, Speicherkapazität über Controller |
+> | `88fceb5` | **W11a.4** `SimulationLaufCtrl` (Vorprüfen, Bedarf, Bestücken, Laufen, Abbruchgrund, Speichern); `SimulationControl.Do_Simulation` mit `IProgress<LaufFortschritt>` (fünf Phasen) und `CancellationToken` — **die Detailansicht rechnet nebenläufig**, mit Balken und Abbrechen, statt das Fenster einzufrieren (W11‑B48); kein Lesevorgang musste vorgezogen werden (R‑W10a‑2 gilt) |
+> | `52f76ae` `35a8d76` | **W11a.6/7** sieben Ergebnisbilder im `ChartRenderer` — `GanglinieNormiert`, `ErzeugerStapel` (mit zweiter Achse; trägt sechs der siebzehn Flächen), `Streuwolke`, `Ring`, `MonatsStapel`, `Temperaturverlauf` — **16 → 30 Proben**; Baustein **`Fortschritt`** |
+> | `b8dfd01` `9f00c91` `c3c75c5` `8c9ecbe` | Merge W6–W10a-Nachweise; Protokoll und drei CLAUDE.md; Merge W10b (sieben Konflikte, u. a. beide Wellen hatten `LiesProjekt` — eine Fassung); Merge auf `ios_migration` |
+>
+> **Der Ertrag ist der Zahlenabzug.** 95 Kennzahlen je Projekt vor und nach dem Umbau verglichen:
+> **92 unverändert**, drei geändert und begründet — die Restwärme rechnet jetzt wie der
+> `SimulationRunner` (BHKW mitgezählt: Projekt 1030 Gesamtwärme 5 403 → 6 139 MWh, Restwärme
+> 734 → −1,76 MWh; W11‑B35), der PV-Deckungsgrad ohne Strombedarf ist 0 statt `NaN` (B22).
+> **Entscheid für den Anwender (W11a‑O‑1):** Restwärme auf ≥ 0 klemmen? Dazu W11a‑O‑2 (CO₂-Faktoren
+> 0,42/0,20 wörtlich, `EmissionsVorgaben` hatte kein Gegenstück), O‑3 (Zusammenführung der vier
+> Berichtsbilder mit den neuen), O‑5 (`KonfigurationCtrl` liest zwei Modelle — Netzverluste faktisch 0 %,
+> Referenzstand wörtlich). Nebenbefund behoben: `TestDatenbank` kopierte 77 MB je Testfall.
+>
+> **Nachweise** (auf dem gemergten Stand `8c9ecbe`, Linux): Build → 0 Fehler, **12** Warnungen ·
+> `dotnet test WP-Plan.Kern.slnf` → **2 502** grün (2 379 nach W10b), **identisch unter
+> `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün · Stapellauf **49** Masken (unverändert, keine
+> Maske gelöscht) · SQL-Prüfer 1 233 Texte, 0 Fundstellen · **ChartProben 30 Bilder**, 0 Verstöße ·
+> Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) — nach jedem Teilschritt geprüft.
+>
+> **Protokoll**: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md` (Zahlenabzug
+> je DTO, Fadenprüfung, 30 Proben, § 11 Merge-Nachtrag). **Windows-Abnahme steht aus** (acht Punkte):
+> nebenläufiger Start mit Balken, Abbrechen, Reiterlage nach dem Automatikstart, die drei geänderten
+> Zahlen, 39 Kennzahlzeilen mit Ampelfarben, Variantenvergleich/Optimierung, Autarkie-Kachel, beide Sprachen.
+
+> **Statusblock iU9 — Welle 10b umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `cd849f8`)**
+>
+> Der zweite Lauf der Welle 10: **`Form_Simulation_Config` mit ihren vier Teildateien
+> (4 558 Zeilen), den drei Steuerelement-Klassen `ErzeugerKarte`/`SpeicherKarte`/`SchemaAnsicht`
+> (2 121 Zeilen) und dem Zeichenmodell → eine Razor-Seite `SimulationKonfigSeite`** mit den
+> Bausteinen **`Schema`** (das Hydraulikbild als SVG), **`ErzeugerKachel`** und **`SpeicherKachel`**;
+> `SchemaModell` unverändert in den Kern, dazu `SchemaLayout` (die Anordnung headless prüfbar) und
+> `Kaskade` (Platzlogik der `Tool_1…6`). Die sieben W10a-Dialoge hängen als Überlagerungen an der
+> Seite; ihre Hüllen verlieren den Fensterweg. **Hosting-Entscheid R‑W10b‑1:** die Komponente ist
+> eine Seite (`SeitenZustand`, Eintrag für `AppWurzel`), auf Windows bis W16 in der modalen
+> Dialoghülle, weil beide Aufrufer (Startbild, Detailansicht) die modale Rückkehr brauchen.
+> **Eingelöst mit W16b (E‑5, 04.09.2026):** die Konfiguration löst die Razor-Startseite in derselben WebView ab, die
+> modale Hülle ist gefallen; die zwei Bedarfsobjekte gehören dem Projekt (`BedarfsZustand`), nicht mehr einem Fenster.
+> Arbeitsanweisung `iU9_W10b_Arbeitsanweisung.md`. Acht Sachcommits und ein Merge:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `2e75393` `93bd88f` | **W10b.0a/b** `SchemaModell` in den Kern, `SchemaLayout` neu; fünf inline-SQL in vier Controller, `Kaskade` und Quellenwahl im Kern, `KonfigurationCtrl.LiesProjekt` |
+> | `cac6eb4` `4caee3f` | **W10b.0c/d** Baustein `Schema` (Knoten, Bézier-Kanten, Kaskadenband, Legende, Klick/Doppelklick, Tastatur), Bausteine `ErzeugerKachel`/`SpeicherKachel` (Chips mit sechs Stilen und sechs Zielen, Schwellenband als Inline-SVG) |
+> | `dd132ff` | **W10b.1** die Seite: zwei Kartenspalten, Umschalter Liste/Schema mit erhaltener Auswahl, zwei eigene Überlagerungsebenen (Betriebsmodus, WP-Priorität, Quellenwahl, Wärmesenke, Pufferverwaltung; Quelle Pufferspeicher, Quellprofil, Erdreich), Fußzeile mit Sofortschaltern — vier Teildateien und drei Controls gelöscht |
+> | `d75908c` `6bea64e` `a91ba2a` | **W10b.2–4** Befund W10b‑B42 (`DatenzugriffTests` ohne Sammlungsmarke riss DB-Tests mit), Formularkarte, Protokoll, vier CLAUDE.md, iOS-Einstieg (`IProjektQuelle.SimulationKonfigGaben` mit Standardumsetzung) |
+>
+> **Der Ertrag ist eine WebView für die ganze Konfiguration.** Drei Navigationen und ~9 000 Zeilen
+> WinForms sind eine Seite mit **einem** `Neuladen()` (statt neun Auffrischungsstellen, W10‑B40);
+> die Kette Seite → Quelle/Senke → Pufferverwaltung → Klimazonenkarte läuft in **einem** Fenster,
+> Esc schließt je Ebene; `SeitenZustand` wird genau einmal gebraucht. Alle Befunde W10‑B33…B40
+> erledigt, dazu W10b‑B41 (`listErzeuger` ohne Leser) und B42. Ein Entscheid für den Anwender:
+> soll „Speichern“ erst nach einer Änderung aktiv werden (W10b‑O‑3)? Das Schema ist ohne
+> Bildvergleich portiert (W10b‑O‑1) — Sichtabnahme gegen ein Foto des Bestands.
+>
+> **Nachweise** (auf dem gemergten Stand `a91ba2a`, Linux): Build → 0 Fehler, **12** Warnungen
+> (17 nach W10a; fünf WFO1000 der gelöschten Karten) · `dotnet test WP-Plan.Kern.slnf` → **2 379**
+> grün (2 284 nach W10a), **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün ·
+> Stapellauf **49** Masken (50 − 1), 48 erreichbar, 0 × „nein“ · SQL-Prüfer 1 239 Texte,
+> 0 Fundstellen · ChartProben 16 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS,
+> byte-gleich** (815 043 Werte) · `dotnet publish` mit `wwwroot` samt neuer CSS.
+>
+> **Protokoll** mit 13 Abweichungen (A‑1…A‑13), 16 Windows-Abnahmewegen und sieben offenen
+> Punkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W10b_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: eine WebView für alles, Chipfolge je Anlagentyp, Schema gegen das
+> Foto des Bestands, synchrone Auswahl in beiden Ansichten, drei Überlagerungsebenen mit Esc je
+> Ebene, Rücksprung aus `Form_Simulation_Detail`, de/en. Der elfte iOS-Lauf (33826084944) auf
+> diesem Stand ist grün.
+
+> **Statusblock iU9 — Welle 10a umgesetzt (03.09.2026, Basis `04fc474` nach W9, zusammengeführt mit `b6a72b0`)**
+>
+> Die Welle 10 des Wellenplans (Simulationskonfiguration, 12 361 Zeilen) ist die größte des Pakets
+> und läuft deshalb in zwei Läufen. **W10a** portiert die **sieben Dialoge**, die aus
+> `Form_Simulation_Config` heraus geöffnet werden: Betriebsmodus, Klimazonenkarte, Quelle Erdreich,
+> Pufferverwaltung, Quelle Pufferspeicher, Quellprofil und Wärmesenke → **sieben Razor-Komponenten**
+> in `EPOS.UI/Dialoge/Simulation/`, jede WinForms-Fassung gelöscht (Regel M1), 7 803 Zeilen
+> Oberflächencode, 30 `MessageBox`. `Form_Simulation_Config` bleibt bis W10b WinForms und ruft die
+> Dialoge über Hüllen. Arbeitsanweisung `iU9_W10a_Arbeitsanweisung.md`, Vermessung
+> `iU9_W10_Vermessung.md` (1 887 Zeilen, 40 Befunde). Fünfzehn Sachcommits und ein Merge:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `352f349` `cbfccb1` `7aae643` | **W10a.0a–c** `SenkeAnzeige`/`IstPufferZiel` in den Kern (sonst bräche der Bau beim Löschen der Senkenmaske); Kapazitätsformel, Katalog-SQL, Sondenmeter, Ergebniszuordnung und Profilparser im Kern; Sprungziel `PufferSpAdminNurLesen` |
+> | `ef513e6` `53240c4` `6fe8656` | **W10a.0d–f** `ChartRenderer.Jahresgang` (zweireihig, Monatsachse) mit Probe; Baustein **`Bildkarte`** (PNG mit SVG-Klickflächen) samt `KlimazonenPfade` (15 Zonen, zur Bauzeit erzeugt) und dem Kartenbild unter `EPOS.UI/wwwroot/bilder/`; `WertAbfrage` |
+> | `18ac6e1` `b34a6d3` `033d0b9` | **W10a.1–3** `BetriebsmodusDialog`, `KlimazonenkarteDialog` (Überlagerung), `QuelleErdreichDialog` (Kollektor/Sonde, VDI-4640-Prüfung, **asynchroner** Simulationslauf aus dem Dialog) |
+> | `781e463` `a6d15e5` `82aad99` `97ff674` | **W10a.4–7** `PufferSpProjektDialog` (Klassen-Set, Schwellen, Schichtung, Ladereihenfolge — das Blatt aller drei Absprünge), `QuellePufferspeicherDialog`, `QuellprofilDialog` (virtualisiertes 8 760-Zeilen-Raster), `WaermesenkeDialog` (Senkenliste mit Rang, Parallelverbund, Ladeverhalten) |
+> | `630a56b` `e69df40` `427fd59` | **W10a.8–11** Ressourcen, Formularkarte, Protokoll, drei CLAUDE.md, Nachweise auf dem gemergten Stand |
+>
+> **Der Ertrag ist die Klickkarte, die zum ersten Mal funktioniert.** Die WinForms-Klimazonenkarte
+> konnte ihre ausgelieferte SVG **nie** lesen (W10a‑B41: der Parser erwartete den Pfadbefehl getrennt
+> von der ersten Koordinate, `float.Parse("M315.30")` warf, ein leerer `catch` verschluckte es) — die
+> Maske zeigte immer nur ihre Ladefehlerzeile. Die Blazor-Fassung stellt die Zonenwahl per Klick her.
+> Zwei Proben haben die Bauweise bestimmt: `SimulationRunner.Simuliere` läuft in `Task.Run` fehlerfrei
+> gegen die Testdatenbank (R‑W10a‑2, deshalb rechnet der Erdreichdialog asynchron mit Wartezustand),
+> und das Kartenbild misst 1,29 MiB (R‑W10a‑3, nicht verkleinert). 18 Befunde behoben, 8 wörtlich
+> übernommen und als Entscheid für den Anwender notiert (W10a‑O‑1…O‑7), dazu ein nicht
+> reproduzierter Einzelausfall der Testsuite unter `en_US` (W10a‑O‑8, Frist der `WaitForAssertion`).
+>
+> **Nachweise** (auf dem gemergten Stand `427fd59`, Linux): Build → 0 Fehler, **17** Warnungen
+> (20 nach W9; drei WFO1000 gingen mit den Designern) · `dotnet test WP-Plan.Kern.slnf` → **2 284**
+> grün (2 066 nach W9), **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün ·
+> Stapellauf **50** Masken (55 − 5; Quellprofil und Wärmesenke hatten keinen Designer), 49 erreichbar,
+> 0 × „nein“ · SQL-Prüfer 1 240 Texte, 0 Fundstellen · **ChartProben 16 Bilder**, 0 Verstöße ·
+> Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · `dotnet publish` mit `wwwroot`
+> samt Kartenbild.
+>
+> **Protokoll** mit Feldkartenabgleich (7 Masken), 17 Abweichungen (A‑1…A‑17), 20 Windows-Abnahmewegen
+> und acht offenen Punkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W10a_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: das Kartenbild in der veröffentlichten `wwwroot`, der asynchrone
+> Simulationslauf bei einem großen Projekt, die Pufferverwaltung ohne Abbrechen, der Kesselzweig, der
+> die WP-Vorgaben unberührt lässt, die englische Oberfläche mit unübersetzten Steuerwerten.
+
+> **Statusblock iU9 — Welle 9 umgesetzt (03.09.2026, Basis `8995d3e` nach W8, zusammengeführt mit `1cf3dbf`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W9, Arbeitsanweisung
+> `iU9_W9_Arbeitsanweisung.md` (Scratchpad der Sitzung): **acht Masken der Bedarfskacheln des
+> Startbilds → fünf Razor-Komponenten** in `EPOS.UI/Dialoge/Bedarf/` — Gebäudekatalog auf zwei
+> Reitern (`Form_Gebaeude1` + `Form_Gebaeude2`), Gebäudeverwaltung mit Admin-Modus, Wohnflächendialog,
+> externer Wärmebedarf mit Kanalwahl und **ein** Dialog `BedarfsProfileDialog` für die Drillinge
+> Prozesswärme, Stromverbraucher und Brauchwasser; jede WinForms-Fassung gelöscht (Regel M1),
+> 3 289 Zeilen Oberflächencode, 42 `MessageBox`. Mit den Assistentenseiten 2 bis 5 laufen **zehn der
+> dreizehn Assistentenseiten** als Razor-Komponenten; alle elf Kacheln des Startbilds sind Blazor.
+> Fünfzehn Sachcommits und ein Merge:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `b24e5da` | **W9.0a** Assistentenseiten mit beliebigem Listentyp (`IAssistentListenSeite<T>`, vier Listentypen statt nur `WErzeugerModel`) |
+> | `53aa3f1` `af4dba5` `fd97501` `01701c6` `04ce2ba` | **W9.0b–f** Katalogfilter, Baualtersklassen und Bauart-Ableitung der Gebäudemasken im Kern; **`Ferienzeit`** (Jahrestag ↔ Tag/Monat, vier Prüfregeln); die fünf Projektlisten der Bedarfsgewerke als Controller-Methoden statt inline-JOINs in Startbild und Kontextmenüs; **ein** Suchmuster im Haus (Wildcard-Filter aus W7 verallgemeinert); Sprungziel `WaermebedarfExternAdmin` |
+> | `e384853` `7f59398` `f960151` | **W9.3/W9.1/W9.2** `GebaeudeWohnflaecheDialog`, `GebaeudeKatalogDialog` (zwei Reiter, drei Modi, 78 Felder), `GebaeudeDialog` (Host mit Wohn-/Nichtwohn-Umschalter, vier Filterzweigen, Wildcard-Suche, Admin-Modus, Assistentenseite 2) |
+> | `ae1c097` `3c89b6c` `59d984d` | **W9.4/W9.5** `WaermebedarfExternDialog` (Kanal je Zuordnung, Assistentenseite 3), `BedarfsProfileDialog` (Ausprägung `BedarfsArt`, Simulation in der Hülle, W8-Blätter als Überlagerungen, Assistentenseiten 4 und 5), Brauchwasser-Überlagerung im Gebäudekatalog |
+> | `ecbbdc0` `6c174e3` `d04a056` | **W9.6–W9.8** 207 Textschlüssel de/en, Formularkarte-Tests (Anker auf `Form_Stromganglinie` und `Form_PufferSp_Bearbeiten` umgehängt), Protokoll, drei CLAUDE.md, STAND.md |
+> | `04fc474` | Merge `origin/ios_migration` (Statusblock W8, de-DE-Festlegung der Kurvennamen-Tests) |
+>
+> **Der Ertrag sind die Projektlisten im Kern und die generische Assistentenseite.** Fünf
+> inline-JOINs, die in Startbild, Kontextmenü und Gebäudekatalog je dreimal wortgleich standen,
+> sind fünf Controller-Methoden; die Assistentenschnittstelle aus W6 trägt jetzt jeden Listentyp.
+> **Vier Befunde behoben:** die Checkbox „Dezentrale Warmwasserbereitung“ wurde gezeigt und nie
+> gespeichert (W9‑B3, stiller Datenverlust, A‑2); zwei ungesicherte `Double.Parse` (B4); in
+> englischer Oberfläche lief der Verwendungsfilter ins Leere, weil der Steuerwert übersetzt wurde
+> (B8); „Überschreiben“ traf nach Umbenennen keine Zeile (B9). **Drei wörtlich übernommen, Entscheid
+> beim Anwender** (W9‑O‑1…O‑3): der Filterzweig ohne Verwendung, die Bauweise am Index der
+> Gebäudeart-Liste, kWh gegen MWh in derselben Meldung. Dazu W9‑O‑4 (darf „Überschreiben“
+> umbenennen?), W9‑O‑5 (Admin-Modus des Katalogeditors hat keinen Aufrufer) und W9‑O‑7
+> (Speicherbedarf von zehn WebViews im Assistenten).
+>
+> **Windows-Läufer seit W8 mit en-US:** Drei Kern-Tests der Welle 8 verglichen deutsche
+> Ressourcentexte und fielen auf dem Windows-Läufer (Lauf 33801244655); seit `1cf3dbf` legt jeder
+> Texttest die Oberflächensprache fest, und die Wellen laufen zusätzlich unter `en_US` durch.
+>
+> **Nachweise** (auf dem gemergten Stand `04fc474`, Linux): Build → 0 Fehler, **20**
+> Warnungen · `dotnet test WP-Plan.Kern.slnf` → **2 066** grün (1 906 nach W8; +98 bunit,
+> +62 Kern), **identisch unter `LC_ALL=en_US.UTF-8`** · Formularkarte **123** grün · Stapellauf
+> **55** Masken (63 − 8), 54 erreichbar, 0 × „nein“ · SQL-Prüfer 1 241 Texte, 0 Fundstellen ·
+> ChartProben 15 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 **PASS, byte-gleich**
+> (815 043 Werte) · `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (8 Masken, Drillinge je Ausprägung), 15 Abweichungen
+> (A‑1…A‑15), Windows-Abnahmeliste mit 14 Aufrufwegen und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W9_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: die vier Filterkombinationen und die Wildcard-Suche, „Ändern“
+> schreibt vier Werte zurück, der Katalogeditor über zwei Reiter mit Ferienregeln, „Brauchwasser…“
+> als Überlagerung, Gebäudeverwaltung ohne Projektteil, Kanalwahl beim externen Wärmebedarf, die
+> drei Bedarfsblätter mit Simulation → Ergebnis → DB ändern/neu → Typ ändern, **Assistent Seiten 2–5
+> mit Speichermessung** (zehn WebViews), de/en, 125 %, Finger/Maus, Esc/Tab.
+> **Windows-Abnahme 05.09.2026 (PDF des Anwenders, S. 4–5), Befunde W9‑B‑4 (Prozesswärme) und W9‑B‑5
+> (Standardlastprofil), behoben in `490c48e`:** „Simulation bringt Ergebnis 0 (monatlicher Verlauf), Grafik
+> bleibt leer". **Nicht** die Einheit — der Regressionsverdacht auf W8‑O‑5/W9‑O‑3b ist ausgeschlossen
+> (`Energieeinheit.MWh.AusMWh` ist die Identität, kein DTO-Feld vertauscht) — sondern die **Namensauflösung**: die
+> Zuordnungen des Projekts tragen die Namen der **Projektkopien** (`Tab_*.Bezeichner`, in der Testdatenbank acht
+> mit Zusatz „(P‹Projekt›)"), die Vorschau des Bedarfsprofil-Dialogs schlug sie aber ausschließlich im
+> `_STAMM`-Katalog nach (Modus aus `list == null ? Projektrechnung : Katalogvorschau`, so seit V0‑4, kein
+> W8/W9-Regress) und übergeht Unbekanntes still — zwölf Nullmonate. `ProfilBedarf.Vorschaumodus(namen, idProjekt)`
+> hält die Regel einmal fest: ohne Liste Projektrechnung, mit Liste ohne Projekt Katalogvorschau, mit Liste **und**
+> Projekt die neue **Projektvorschau** — Katalog zuerst (jede heute richtige Zahl bleibt zeichengleich), Projektkopie
+> als Rückfall mit Kopf und Typprofil. Messung Projekt 1017: Vorschau 0 → 672 000,4 kWh. Zeuge zuerst rot, fünf
+> Wachen in `BedarfsProfilVorschauTests`, Referenzlauf byte-gleich (alle elf rechenbaren Basisprojekte). **Offener
+> Anwenderentscheid W9‑O‑3c:** eine im Projekt geänderte Kopie wird in der Vorschau weiter mit der Katalogverteilung
+> gezeigt (Brauchwasser 1007: Januar 1,900 statt 0,552 MWh bei gleicher Jahressumme); Kopie zuerst brächte Vorschau
+> und Lauf zur Deckung, ändert aber angezeigte Zahlen — bewusst nicht nebenbei entschieden.
+> **Windows-Abnahme 05.09.2026 (PDF S. 1–2), drei Befunde behoben (`974c198`, Protokoll § 12):** **W9‑B‑1** — das
+> im Projekt gespeicherte Gebäude stand unmarkiert in der Liste, weil `AssistentSeite` den Parametersatz der
+> stehenden Seite bei **jedem Neuzeichnen** neu zog (die Hüllen bauen dabei eine neue Anzeigeliste — der lebenden
+> Komponente wurde die Liste unter den Füßen getauscht) und `GebaeudeDialog` seine Markierung an der
+> Objektgleichheit festmachte; der Seiteninhalt wird jetzt beim **Betreten** geholt und gemerkt (wie
+> `WizardParent.Next/Back`), die Markierung läuft über die `IdZ` und wird bei einem Listenwechsel nachgezogen.
+> **W9‑B‑2** — „Liste zu lang": jede Rasterliste steht seither in einem festen Rahmen mit Rollbalken
+> (`--epos-listenhoehe` 22 rem an `.epos-raster-huelle`, stehender Spaltenkopf, Parameter `Begrenzt`, Rückweg
+> `--frei`); Anwenderregel, in `EPOS.UI/CLAUDE.md` festgehalten, gilt für Gebäude, Wärmebedarf extern,
+> Bedarfsprofile, Gebäudetyp, Stromganglinien, Solarkollektoren, Wärmepumpe, die vier Katalogverwaltungen und die
+> Projektdialoge. **W9‑B‑3** — die zwei Richtungsknöpfe des Gebäude-Dialogs tragen Beschriftung und Kurztext in
+> beiden Sprachen, das Zeichen zeigt in die Wanderrichtung; das Anordnungsschema selbst ist der Anwenderentscheid
+> **#76 („Empfehlung": altes Schema nebeneinander, Umbruch auf schmalem Schirm)** und folgt als eigene Welle, die
+> zwei Geschwisterdialoge stehen als W9‑O‑8 offen. 21 bunit-Wachen; Abnahmepunkte A‑W9‑B‑1…B‑3.
+> **W9‑O‑3c entschieden (05.09.2026, „W9‑O‑3c: Empfehlung", `ab60806`):** Die Projektvorschau des
+> Bedarfsprofil-Dialogs liest die **Projektkopie zuerst** und den `_STAMM`-Katalog nur noch als Rückfall für die
+> noch nicht gespeicherte Zeile — Vorschau und Lauf zeigen überall dieselben Zahlen (Brauchwasser 1007: Januar
+> 1,900 → **0,552 MWh** bei unveränderter Jahressumme 4 059,7 kWh; Prozesswärme 1041 und Stromverbraucher 1024
+> zeichengleich). Projektrechnung und Katalogvorschau unberührt; die eingefrorene Wache „Katalog bleibt erste
+> Quelle" ist auf den Entscheid umgestellt, sieben Fälle in `BedarfsProfilVorschauTests`, Referenzlauf über alle
+> elf rechenbaren Projekte byte-gleich. Abnahmepunkt A‑W9‑O‑3c.
+> **Anwenderentscheid #76 vom 05.09.2026 („#76: Empfehlung"), umgesetzt in `b6fd863`:** `GebaeudeDialog`, `WaermebedarfExternDialog` und
+> `BedarfsProfileDialog` stehen wieder **nebeneinander wie im BHKW-PLAN** (Vorbild `Form_Gebaeude` 252/63/436 px:
+> Filterblock rechts über der Katalogliste, Detailblock unter dem Paar, Kanalklappliste links bei der Projektzeile)
+> und brechen erst unter 900 px untereinander um; die Listen bleiben höhenbegrenzt (W9‑B‑2). Das Pfeilzeichen ist aus
+> `GEB_BTN_UEBERNEHMEN`/`_ENTFERNEN` entfernt und hängt jetzt an der Anordnung; „übernehmen" zeigt wie im Vorbild
+> zur Projektliste (◀). **W9‑O‑8 damit geschlossen.** Wache `ZweispaltenauswahlTests` (14) mit Medienabfrage gegen
+> Token, drei Anordnungsfälle, Selektoren in zwölf Testklassen nachgezogen.
+>
+> **Anwenderwunsch W9‑E‑2 vom 05.09.2026 (zwei Bildschirmfotos: „der Wärmebedarf vom Gebäude sollte aus diesem
+> Dialog (mit Button Simulation) aufgerufen werden können – analog wie aus dem Simulationsbereich", ohne
+> Brauchwasser und ohne Gesamt), umgesetzt als **W9.8** in `7811b5d`:** Der Gebäudedialog zeigt über den neuen
+> Knopf „Simulation…" (neben „Ändern", frei bei markiertem Projektgebäude, nicht in der Katalogverwaltung) den
+> Wärmebedarf **eines** Gebäudes als vierte Überlagerung — Heizung allein, ohne Brauchwasser und ohne Gesamtsumme:
+> Wärmebedarf [MWh/kWh wählbar, W8‑O‑5], maximale Wärmelast [kW], Vollbenutzungsstunden, die Jahresganglinie als
+> `ChartRenderer.GanglinieNormiert` (dasselbe Bild B1 wie auf der Ergebnisseite, nur mit einer Reihe) im Baustein
+> `Diagramm` mit „sortiert", Bild- und Datenzoom, dazu die Monatsübersicht. Ein Vorbild gab es nicht — `Form_Gebaeude`
+> trug nur `btn_Aendern`, `Form_Simulation_Kurz` (iF29) rechnete den ganzen Lauf; **neu ist die Auskunft, nicht die
+> Rechnung.** Gerechnet wird im Kern (`EPOS.Kern/Controller/GebaeudeBedarfCtrl`) mit **denselben** Methoden wie der
+> Lauf: `SimulationWaermebedarf.KlimakalenderLesen` und `…HeizwaermeEinesGebaeudes` sind Anweisung für Anweisung aus
+> `Waermebedarf_berechnen` herausgezogen, die Schleife des Laufs ruft sie; Schlüssel ist `Z_ProjektGebaeude.ID`
+> (eine neue Abfrage `SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?`), die Jahressumme rechnet wie der
+> Lauf in float. Der Referenzlauf bleibt byte-gleich, bei einem Ein-Gebäude-Projekt (1007) ist die Zahl des Dialogs
+> bitgleich zu `Waermebedarf_Gebaeude_Gesamt`. Ohne Zahl (ungespeicherte Zeile, Projekt ohne Klimaregion) meldet der
+> Dialog. 13 Kern- und 20 bunit-Fälle (eine Wache: kein Brauchwasser, kein „Gesamt"), acht Texte de/en; auf iOS ist
+> der Dialog nur als Assistentenseite erreichbar, `BedarfGaben` ist dort mitzudenken, wenn der Assistent in iU11
+> verdrahtet wird. Protokoll W9.8.
+
+> **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeilen W8a/W8b, Arbeitsanweisung
+> `iU9_W8_Arbeitsanweisung.md` (Scratchpad der Sitzung): **zehn Masken der Bedarfstypen → vier
+> Razor-Komponenten** in `EPOS.UI/Dialoge/Bedarf/` — die drei Ergebnismasken, die drei
+> Stammkopfmasken und die drei Typprofilmasken der Drillinge Prozesswärme, Stromverbraucher und
+> Brauchwasser werden **je eine** Komponente mit der Ausprägung `BedarfsArt`, dazu der Gebäudetyp;
+> jede WinForms-Fassung gelöscht (Regel M1), 41 `MessageBox`. Die vier Komponenten sind die
+> Blätter, die Welle 9 (Bedarfsmasken vom Startbild) als Überlagerungen einhängt. Elf Sachcommits
+> und ein Merge:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `e9d7ad6` `fec0a20` `b1d8a4b` | **W8.0a/b/d** `ProzesswaermeStammCtrl` auf den Schnitt seiner Zwillinge; `BedarfsArt`, `BedarfStammCtrl` und `TypProfilCtrl` im Kern (eine Datenseite für drei Kataloge); `TagVCtrl` trägt die Gebäudetyp-Verwaltung |
+> | `c046c07` | **W8.0c** drei Bedarfsbilder im `ChartRenderer` (**Monatssäulen**, **Stundenprofil**, **Jahresverlauf**) mit drei Proben |
+> | `34e69ff` `1e9c8fc` `6b65f2e` `2119e18` | **W8.1–W8.4** `BedarfErgebnisDialog` (eingefrorenes Rechenobjekt als DTO), `TypStammDialog`, `TypProfilDialog` (Tag kopieren/einfügen wirkt jetzt, Befund B1), `GebaeudetypDialog` — zehn Masken gelöscht |
+> | `cbb358e` `04dd413` `51c806d` | **W8.5–W8.7** 143 Textschlüssel de/en, Formularkarte-Tests, Protokoll, drei CLAUDE.md, STAND.md |
+> | `8995d3e` | Merge `origin/ios_migration` (Statusblock W7) |
+>
+> **Der Ertrag ist die eine Datenseite für drei Kataloge.** Drei Zwillingsdialoge je Blatt mit je
+> eigenem Aufbaucode sind eine Komponente mit Ausprägung, die Schreibwege laufen in **einer**
+> Transaktion (A‑9), die drei Charts sind drei Renderer-Bilder mit Proben. Zwei Befunde des
+> Bestands sind behoben (Tag kopieren/einfügen ohne Wirkung, „Novmember“), einer bleibt als
+> **Frage an den Anwender**: `Form_Brauchwasser_Admin` öffnet die **Prozess**-Ansicht des
+> Ergebnisdialogs (W8‑O‑3, wörtlich übernommen), und im Brauchwasser-Ergebnis steht ein Teiler
+> 1000, den die beiden Zwillinge nicht haben — **eine der Anzeigen ist um den Faktor 1000
+> daneben** (W8‑O‑5).
+>
+> **Nachweise** (auf dem gemergten Stand `8995d3e`, Linux): Build → 0 Fehler, **20**
+> Warnungen · `dotnet test WP-Plan.Kern.slnf` → **1 906** grün (1 820 nach W7; +66 bunit,
+> +20 Kern) · Formularkarte **123** grün · Stapellauf **63** Masken (73 − 10), 61 erreichbar,
+> 0 × „nein“ · SQL-Prüfer 1 254 Texte, 0 Fundstellen · **ChartProben 15 Bilder**, 0 Verstöße
+> · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · `dotnet publish` mit
+> vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich je Ausprägung, 14 Abweichungen (A‑1…A‑14),
+> Windows-Abnahmeliste mit 13 Punkten und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W8_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: Startreiter und Sicht des Brauchwasser-Ergebnisdialogs,
+> „Überschreiben“ nach „Speichern unter“, Tagwechsel im Typprofil verwirft nicht übernommene
+> Eingaben, stiller Kurvenübertrag im Gebäudetyp, fünf bzw. acht Kurvennamen nach Kurvenzahl,
+> de/en, 125 %, Finger/Maus, Esc/Enter je Dialog.
+> **Windows-Abnahme 05.09.2026, Befund W8‑B‑1 (`490c48e`):** Ergebnisdialog, Einheitenwahl und ChartRenderer
+> sind **entlastet** — die Nullreihe hinter „Prozesswärme/Standardlastprofil bringt 0, Grafik leer" entstand in der
+> Vorschau der Welle 9 (W9‑B‑4/B‑5, Namensauflösung der Projektkopien); die leeren Achsen 0–5 sind das korrekte
+> Bild einer Nullreihe (`MonatsSaeulen` mit `maxWert = 0`). Renderer unverändert, ChartProben 32/0.
+
+> **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W7, Arbeitsanweisung
+> `iU9_W7_Arbeitsanweisung.md` (Scratchpad der Sitzung): **acht Masken der Gewerke
+> Wärmepumpe (5) und Solarthermie (3) → acht Razor-Komponenten** in
+> `EPOS.UI/Dialoge/Waermepumpe/` und `EPOS.UI/Dialoge/Solarthermie/`, jede WinForms-Fassung
+> gelöscht (Regel M1) — 3 065 Zeilen Oberflächencode, 43 `MessageBox`. Zwei davon sind die
+> Assistentenseiten 7 und 8; damit laufen **sechs der dreizehn Assistentenseiten** als
+> Razor-Komponenten. Sechzehn Sachcommits:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `2cd898a` | **W7.0a** `WPCtrl` (Projektgeräte `Tab_WP`) aus der Anwendung in den Kern; `FillListBox` entfällt |
+> | `0872196` `7fc9419` `0d1e6e4` `7da4f33` `808837b` | **W7.0b–f** Katalogzeile und Katalogfilter im Kern (die Filterlogik des Wärmepumpen-Katalogs, testbar ohne Oberfläche), **`ChartRenderer.Kennlinien`** mit zwei Proben (COP und Leistung über der Außentemperatur, eine Reihe je Vorlauf), `KenndatenCtrl.Abgleichen` (Kennlinien-Rückschreiben in **einer** Transaktion statt RowState-Schleife), sieben Datenwege in Kern-Controller, Sprungziel `SolarganglinieAdmin` |
+> | `29a1bf3` `555e770` | **W7.1/W7.2** die Blätter `WaermepumpenKatalogDialog` (Filterleiste mit Wildcard-Suche) und `KennlinienEditorDialog` (Stützstellen je Vorlauf) — beide nur als Überlagerung |
+> | `5e71c49` | **W7.6** `SolarkollektorKatalogDialog` |
+> | `b30f6bd` `b98cf35` `a371328` | **W7.3–W7.5** `WaermepumpeStammDialog` (zwei Kennlinienbilder, Wärme/Kühlung), `WaermepumpeAnlageDialog` (47 Felder, Bivalenzlogik, Kostenzeile) und `WaermepumpenDialog` (Host mit **vier Ebenen** Überlagerung: Verwaltung → Anlage → Stammdialog → Kennlinien-Editor) |
+> | `0ad0a59` `3655bce` | **W7.7/W7.8** `SolarkollektorenDialog` (Assistentenseite 8) und `SolarganglinieDialog` |
+> | `35188f7` `0077533` `e5114e1` | **W7.9–W7.11** 157 Textschlüssel de/en, Formularkarte-Tests (Prüfmuster `Wizard_WPItem`, Sprungtabellen-Test auf `Form_AdminStromspeicher`), Protokoll, drei CLAUDE.md, STAND.md |
+>
+> **Der Ertrag ist die Kennlinie im Kern.** Vier WinForms-Charts mit je eigenem
+> Aufbaucode sind **eine** Renderer-Methode mit zwei Proben; Wärme und Kühlung
+> (`Tab_Kenndaten_STAMM`, `Tab_Kenndaten_Kuehlung_STAMM` mit `MAX(Last)`) laufen über
+> dieselbe Datenseite. Der Projektgeräte-Controller `WPCtrl` liegt jetzt im Kern — bis W7 der
+> letzte Erzeuger-Controller in der Anwendung.
+>
+> **Ein echter Befund (W7‑O‑4, behoben):** „Bearbeiten" im Kontextmenü der WP-Liste schrieb
+> `Regelung = Leistungsstufen`, und `Leistungsstufen` wird im ganzen Bestand nie gesetzt —
+> jedes Bearbeiten aus dem Kontextmenü **löschte die Leistungsstufen** des Geräts. Dazu
+> zwei Entscheide für den Anwender: die Baujahrliste (2024 doppelt, 2022 fehlte; mit A‑15
+> lückenlos) und die nie greifende Vorlauf-/Rücklaufprüfung der Solarkollektoren (W7‑O‑5).
+>
+> **Nachweise** (auf dem gemergten Stand `e5114e1`, Linux): Build → 0 Fehler, **20**
+> Warnungen · `dotnet test WP-Plan.Kern.slnf` → **1 820** grün (1 636 nach W6; +155 bunit,
+> +29 Kern) · Formularkarte **123** grün · Stapellauf **73** Masken (81 − 8), 71 erreichbar,
+> 0 × „nein" · SQL-Prüfer 1 272 Texte, 0 Fundstellen · **ChartProben 12 Bilder**, 0 Verstöße
+> · Referenzlauf 1030/1007/1017 **PASS, byte-gleich** (815 043 Werte) · `dotnet publish` mit
+> vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (8 Masken), 30 Abweichungen (A‑1…A‑30),
+> Windows-Abnahmeliste mit 13 Punkten und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W7_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: die vier Überlagerungsebenen mit Esc und Fokusfalle je
+> Ebene, die Kennlinienbilder gegen die alten Charts (der Bildvergleich ist mit iF23 gelöscht),
+> Wärme/Kühlung, „Kosten bearbeiten…" als zweites Fenster, Assistentenseiten 7 und 8 (jetzt
+> sechs WebViews im Assistenten), beide Solarthermie-Zweige, W7‑O‑4 auf einer Anlage mit
+> gepflegter Regelung.
+> **Anwenderentscheid #76 vom 05.09.2026 („#76: Empfehlung"), umgesetzt in `b6fd863`:** `SolarkollektorenDialog` und `SolarganglinieDialog` stehen im
+> Baustein `Zweispaltenauswahl` (Anordnung unverändert, Klartext-Knöpfe, Umbruch unter 900 px). Die drei
+> Wärmepumpenmasken bleiben auf `epos-auswahlpaar`, weil sie keine Projekt↔DB-Auswahl sind — geprüft und im
+> Protokoll begründet.
+>
+>
+> **Anwenderwunsch W7‑E‑1 vom 05.09.2026 („Admin-Menüs sind nicht an Größe Bildschirm angepasst"), umgesetzt in
+> `ddf4d00`:** Die sechs Fenster der Welle öffnen im Anteil des Arbeitsbereichs (Hüllenregel iU8‑E‑1, 85 % × 90 %,
+> gedeckelt auf 92 %); `SolarganglinieAdminDialog` stellt Liste und Eingabe nebeneinander (Baustein `Katalograhmen`).
+> Die drei Katalogeditoren bleiben Überlagerung ohne volle Höhe, `WaermepumpenKatalogDialog` bleibt unverändert.
+
+> **Statusblock iU9 — Welle 6 umgesetzt (03.09.2026, Basis `740c73e`, zusammengeführt mit W5 `ddaea70` und iF22–iF28 `f7fefdf`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W6, Arbeitsanweisung
+> `iU9_W6_Arbeitsanweisung.md` (Scratchpad der Sitzung): **sieben Masken der
+> Erzeugerkacheln → sieben Razor-Komponenten** in `EPOS.UI/Dialoge/Erzeuger/`, jede
+> WinForms-Fassung gelöscht (Regel M1) — 4 202 Zeilen Oberflächencode, 55 `MessageBox`.
+> **Vier davon sind zugleich Assistentenseiten** (PV, Stromspeicher, Heizkessel, BHKW),
+> die ersten Razor-Komponenten im Assistentenrahmen. Vierzehn Sachcommits:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `c825649` | **W6.0a/b** `EnergietraegerVarianteCtrl.Anlegen` (die 185 Zeilen Trägeranlage aus Heizkessel und BHKW, zweimal wortgleich, jetzt **einmal** im Kern, eine Transaktion), `VariantenDerGruppe`, `TraegerUmhaengen` |
+> | `68f3634` | **W6.0c** Katalogfilter und Detailblöcke der fünf Projektdialoge in die Stamm-Controller (Heizkessel, BHKW, Photovoltaik, Pufferspeicher); `PufferSpFilter` aus der App in den Kern |
+> | `9991259` | **W6.0d** vier Sprungziele (`HeizkesselAdmin`, `StromspeicherAdmin`, `PvAdmin`, `PufferSpAdmin`) — die Katalogverwaltungen bleiben WinForms bis W14a |
+> | `ca73a39` | **W6.0f** `KostenKnoepfeLeiste.razor` — der KD6-Kostenblock als Razor-Teilstück; die Ziele sind selbst Blazor-Hüllen und öffnen als **zweites Fenster** (A‑1, wie W4‑O3) |
+> | `8fc101e` | **W6.0e** `BlazorAssistentSeite<T>` + `IAssistentErzeugerSeite`: eine randlose, `TopLevel=false`-taugliche Hüllenform mit einer verzögert gebauten WebView; `WizardParent` bedient die vier Seiten über **einen** Zweig statt vier |
+> | `bd9151f` `dd11c2b` | **W6.1/W6.2** die Katalogeditoren `HeizkesselKatalogDialog` (42 Felder, 3 Speicherwege) und `BhkwKatalogDialog` (58 Felder, abgeleitete Investition, Katalogsatz-Rückfrage) |
+> | `448d4c5` `1bb2c19` `ef28099` | **W6.3/W6.4** die Hosts `HeizkesselDialog` und `BhkwDialog` — Trägerwahl, Katalogeditor und Namensdialog als Überlagerungen im selben Fenster; `ErzeugerAuswahlDaten.cs` als gemeinsame Datenform (`Schluessel` ≠ `GeraetId`: zwei gleiche Kessel teilen eine Projektkopie) |
+> | `329a1be` `fa670fc` `6e2a2f5` | **W6.5–W6.7** `PhotovoltaikDialog`, `StromspeicherDialog`, `PufferspeicherDialog` (Eindeutigkeitsrückfrage als `Rueckfrage`-Baustein statt `Dienste.Dialog`) |
+> | `18a3eb9` | **W6.8/W6.10** Ressourcen-Sammelnachtrag, Protokoll, drei CLAUDE.md, STAND.md |
+>
+> **Der Ertrag ist die Assistentenseite.** Bis W5 saß jede Razor-Komponente in einem
+> modalen Fenster oder in einer `BlazorSeite` einer bestehenden Maske. Der Assistent
+> hält seine 13 Seiten als `Func<Form>` und zeigt sie randlos in seinem Panel — dafür
+> brauchte es eine **Form**, die eine WebView trägt und erst beim Anzeigen baut
+> (Risiko R5: vier WebViews im Voraus). `AssistentSeiten.ERZEUGER[9..12]` zeigen jetzt
+> auf `BlazorAssistentSeite<…>`; Welle 7 hängt Wärmepumpe und Solar auf demselben Weg ein.
+>
+> **Zwei Befunde für den Anwender** (W6‑O‑1, W6‑O‑2, wörtlich übernommen nach Regel F3):
+> die Gruppen→`Brennstoff`-Ketten von Heizkessel und BHKW sind uneinheitlich („Sonstige"
+> trifft beim Heizkessel nie, ist auf `23` = Fernwärme abgebildet; Fernwärme und
+> Wasserstoff fehlen der Kesselkette), und die Filterstufe „Alle" (`Ptherm Like '%'`)
+> lässt Katalogsätze ohne Ptherm herausfallen. Vorschlag: künftig über
+> `Tab_Brennstoff_Stamm.ID_Kategorie` filtern, dann gibt es die Ketten nicht mehr.
+>
+> **Nachweise** (auf dem gemergten Stand `198506f`, Linux): `dotnet build WP-Plan.sln
+> -c Release -p:Platform=x64` → 0 Fehler, **20** Warnungen · `dotnet test
+> WP-Plan.Kern.slnf` → **1 636** grün (1 485 nach W5; +91 bunit, +27 Kern-Tests für die
+> neuen Controller-Methoden gegen `Kenndaten_Test.sqlite`) · Formularkarte **123** grün
+> (Anker von Heizkessel/BHKWEing auf Klimadaten, Gebäude und Brauchwasser umgehängt) ·
+> Stapellauf **81** Masken (88 − 7), 79 erreichbar, 0 × „nein", 0 × „verwaist" ·
+> SQL-Prüfer 1 283 Texte, 0 Fundstellen (Prüfer: lokale Variablen werden nicht mehr gegen
+> fremde Konstanten aufgelöst, W6‑O‑4) · ChartProben 10 Bilder, 0 Verstöße ·
+> Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` **PASS, byte-gleich**
+> (815 043 Werte) · `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (7 Masken), 20 Abweichungen (A‑1…A‑20),
+> Windows-Abnahmeliste mit zehn Aufrufwegen und sechs offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W6_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus**: die fünf Startkacheln, das Kontextmenü der
+> Übersichtslisten (auch REF-Liste), Assistentenseiten 9–12 (Wechsel unter 1 s, kein
+> Aufblitzen, Speicher der Browserprozesse), Heizkessel-/BHKW-Admin → Bearbeiten/Neu,
+> die Sprungbrücke in die vier Katalogverwaltungen (W2‑7) und die Kostenleiste als
+> zweites Fenster.
+> **Windows-Abnahme 04./05.09.2026, Befund W6‑B‑1 (Hauptfenster als ungestyltes HTML):** Der Regel
+> `.epos-mehrzeilig { white-space: pre-line;` fehlte das schließende `}`. Es ging **nicht** in W6.4a
+> (`1bb2c19`, dort heil und letzte Regel des Blatts) verloren, sondern im Merge **`7e8e341`** (Welle 5 in
+> Welle 6, 03.09.2026): beide Zweige hatten an dasselbe Dateiende angebaut, beim Auflösen blieb die eine
+> Zeile liegen. Chromium las die 414 Blöcke dahinter (Reiter, Kachelraster, Zellenaktionen, Startseite,
+> Menüband) als **verschachtelte** Regeln unter `.epos-mehrzeilig` — gültiges CSS, keine Meldung; die 155
+> Blöcke davor (Dialoge, Knöpfe, Felder, Raster) waren nie betroffen, darum sahen die Dialoge der Wellen 6
+> bis 15 in der Abnahme richtig aus und erst das Hauptfenster (W16c) fiel um. Auch der Stilblattteil von
+> W5‑B‑1 war bis dahin wirkungslos. Klammer gesetzt (`aa98738`, Bilanz 619/619); Wache
+> **`EPOS.UI.Tests/StilblattTests.cs`** (`5c9d95c`): eigener Strukturparser über jedes `.css` unter
+> `EPOS.UI/wwwroot` — Klammerbilanz, keine Stilregel in einer Stilregel, kein `&`-Selektor, Zeile und
+> Selektor in der Meldung, Gegenprobe mit entfernter Klammer; Bestandsaufnahme ohne weiteren Befund.
+> Hausregel in `EPOS.UI/CLAUDE.md`, Herleitung in Protokoll W6 § 12.
+> **Anwenderentscheid #76 vom 05.09.2026 („#76: Empfehlung"), umgesetzt in `b6fd863`:** die fünf Erzeugerdialoge (Heizkessel, BHKW,
+> Photovoltaik, Pufferspeicher, Stromspeicher) stehen im neuen Baustein **`Zweispaltenauswahl`** — Anordnung
+> unverändert nebeneinander wie `Form_Heizkessel` (316/88/313 px), neu sind der Klartext mit Kurztext auf den zwei
+> Knöpfen (beide Sprachen, `AUSWAHL_BTN_*`) und der Umbruch untereinander unter 900 px (Token
+> `--epos-zweispalten-umbruch`, Glyphen ◀▶/▲▼ je Breite). Protokollabschnitt „Anwenderentscheid #76", Abnahmepunkte
+> A‑#76 (breit nebeneinander, schmal untereinander, Listen begrenzt, Knöpfe beschriftet und gesperrt ohne Markierung).
+
+> **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W5: **sechs Masken →
+> sechs Razor-Komponenten**, jede WinForms-Fassung gelöscht (Regel M1). Es ist die
+> **erste Welle mit Seiten statt Dialogen** — der ganze Reiter „Berichte & Kosten"
+> der Startmaske ist jetzt Blazor, in **einer** WebView. Zehn Commits:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `d95283c` | **W5.0** Bausteinlücken 9–11: `Allgemein/Blazor/BlazorSeite.cs` (nicht-modale Hülle), `EPOS.UI/Dienste/SeitenZustand.cs` (Projektwechsel ohne Neuaufbau der WebView), `Bausteine/Reiter.razor` + `Reiterblatt.razor`, `Kachelraster.razor`, `Kennzahlkachel.razor`; dazu der Nachzug von **A‑17 (W3)** und **A‑2 (W4)** — Kostenprofil, Kostenverwaltung und Trägerkarte bekommen ihre Reiterform zurück |
+> | `a39fe13` | **W5.1** `Form_BkUebernahme` → `Dialoge/Berichte/BkUebernahmeDialog.razor` (ein Dialog, zwei Füllungen — Wertgegenüberstellung oder Klartext) |
+> | `cd4213d` | **W5.2** `UcBericht` (508 Z.) → `Seiten/Berichte/BerichtSeite.razor` |
+> | `bf38fa6` | **W5.3** `UcWirtschaftlichkeit` (831 Z.) → `Seiten/Berichte/WirtschaftlichkeitSeite.razor`; die **fünf Unterdialoge** stehen jetzt in Überlagerungen desselben Fensters (W4‑O3 erledigt) |
+> | `47ea9e3` | **W5.4** `UcBkKosten` (1 311 Z., K4) → `Seiten/Berichte/KostenSeite.razor` |
+> | `8ea1e2e` | **W5.5** `UcBkUebersicht` (1 552 Z., K4) → `Seiten/Berichte/UebersichtSeite.razor` |
+> | `f59aed1` | **W5.6a** Sieben Hüllen liefern ihren Parametersatz (`Gaben`) — Voraussetzung dafür, dass ein Blazor-**Wirt** seine Unterdialoge ohne zweite WebView zeigt |
+> | `ff4e6f7` | **W5.6** `UcBerichteKosten` (810 Z., K4) → `Seiten/Berichte/BerichteKostenSeite.razor`; `Form_Start.tabPage6` trägt eine `BlazorSeite<T>`; sechs Masken gelöscht, fünf Windows-Datenseiten neu |
+> | `f5d660f` | **W5.7** Ressourcen-Sammelnachtrag: 34 Schlüssel (`BKS_*`, `WIRT_*`) in `Resource.resx` und `Resource.en-US.resx`; `help_mapping.txt` |
+> | `f39b4a3` | **W5.8** Formularkarte: Zähler 91 → 88, achtes Prüfmuster (`UcBericht` — einziger Beleg für die `CheckedListBox`) |
+>
+> **Die Seiten-Hülle ist der Ertrag.** `BlazorDialogForm<T>` ist ein eigenes modales
+> Fenster; eine SEITE sitzt in einer vorhandenen Maske und bleibt. `BlazorSeite<T>`
+> ist deshalb ein `UserControl` mit denselben `CreationProperties` — insbesondere
+> demselben `UserDataFolder`, also **einem gemeinsamen Browserprozess**. Die vier
+> Seiten laufen in **einer** WebView (Risiko **R5**); umgeschaltet wird in der
+> Komponente. Der Projektwechsel läuft über `SeitenZustand`: ein Objekt mit
+> Änderungsereignis, damit die WebView **nicht** neu gebaut wird.
+>
+> **DPI bleibt offen (Risiko R4, Entscheid iF21).** Die `DpiInsel` der Dialoghülle
+> wirkt nur für einen modalen Lauf mit eigenem Fenster. Eine eingebettete Seite
+> sitzt im Fenster der DpiUnaware-`Form_Start` und wird bei 125–200 % bitmapskaliert;
+> ein Fenster kann seinen DPI-Kontext nachträglich nicht wechseln. `BlazorSeite`
+> versucht es deshalb **gar nicht erst**, dokumentiert den Befund und setzt
+> `DefaultBackgroundColor` gegen das weiße Aufblitzen. **Die Schärfe der Seiten ist
+> damit ein Abnahmepunkt, keine Zusage** — und der eigentliche Entscheid der Welle
+> (W5‑O1).
+>
+> **H11 entfällt.** Die 110 Zeilen Messcode, mit denen `UcBerichteKosten` den
+> Infoknopf jeder eingebetteten Seite von der Kopfzeile abrückte, sind ersatzlos
+> weg: Die Kopfzeile trägt den Knopf des Behälters, jede Seite ihren eigenen im
+> Fluss ihres Inhalts.
+>
+> **Kein neuer Kern-Controller.** Alle vier Seiten riefen schon vorher ausschließlich
+> Kern-Controller (Hausmuster Ä9); die vier SQL-Anweisungen der Kostenseite sind
+> wortgleich in die Windows-Datenseite gewandert.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental`
+> → 0 Fehler, **20** Warnungen (Basis 22; WFO1000 16 → 14) · `dotnet test
+> WP-Plan.Kern.slnf` → **1 485** grün (1 352 vorher; 133 neue bunit-Tests) ·
+> Formularkarte **123** grün · Stapellauf **88** Masken, 0 × „nein", 0 × „verwaist" ·
+> SQL-Prüfer 1 301 Texte, 0 Fundstellen · ChartProben 10 Bilder, 0 Verstöße ·
+> Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` **PASS/PASS/PASS**,
+> `diff -rq` ohne Unterschied · `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (6 Masken), 18 Abweichungen (A‑1…A‑18),
+> Windows-Abnahmeliste mit 25 Punkten und acht offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W5_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+> **Windows-Abnahme 04.09.2026, erster Befund (Kosten-Seite):** die Aktionsspalte der Anlagentabelle war unsichtbar
+> (`display:flex` direkt am `<td>` nahm der Zelle ihre Tabellenrolle, der Spaltenkopf war leer — W5‑B‑1) und der
+> Doppelklick auf der losen Position fehlte. **W5‑O3 entschieden: der Doppelklick ist als zweiter Weg zurück, der
+> Knopf bleibt**; Aktionsspalte als gewöhnliche Zelle mit beschriftetem Kopf (`5f153f1`, sechs bunit-Fälle, darunter eine
+> Wache auf das Stilblatt; Regel in `EPOS.UI/CLAUDE.md`: kein `display:flex` auf `<td>`/`<th>`, Aktionsknöpfe ohne
+> Hover sichtbar). Die Sichtprüfung in der WebView2 bleibt beim Anwender.
+> **Anwenderwunsch W5‑E‑1 vom 05.09.2026 („Variantenprojekte-Auswahl als Dropdown, damit weniger Platz verwendet
+> wird"), umgesetzt in `06332f2`:** Die Variantenwahl der Übersichtsseite ist ein `Auswahlfeld` „Variante:" (Stamm
+> zuerst, dann „Bezeichner — Projektname", Id = `Tab_Projekt.ID`) statt einer Tabelle; Bezeichnerfeld und die drei
+> Knöpfe stehen mit ihm in einer Zeile (Umbruch auf schmalem Fenster), der Simulationsstand darunter als leise
+> `aria-live`-Zeile „Simulation: ‹Datum›" bzw. „noch nicht simuliert" mit dem ⚠ als eigenem Element und dem Grund
+> im Kurztext (`BerichtsDatenSammler.ErmittleStatus`: kein Ergebnis oder Ergebnis älter als das Änderungsdatum), und
+> die Unterschiedstabelle bekommt die frei gewordene Höhe (`epos-raster-huelle--vergleich`, 35,2 rem; Hausregel
+> W9‑B‑2 bleibt). Neu dafür `VarianteZeile.SimZeitpunkt` und `Auswahlfeld.Kurzname`; die Parameter
+> `SpalteArt`/`SpalteBezeichner`/`SpalteProjektname` entfallen. Protokoll Abschnitt 13, zehn neue bunit-Fälle.
+
+> **Statusblock iU9 — Welle 4 umgesetzt (03.09.2026, Basis `ae1af82`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W4: **sieben Masken →
+> sieben Razor-Komponenten**, jede WinForms-Fassung im selben Schritt gelöscht (Regel M1).
+> Es ist die größte Welle bisher — die beiden **Hosts** der Kostenseite fallen mit ihren
+> fünf Unterbausteinen auf einmal, zusammen 5 216 Zeilen WinForms. Acht Commits, einer je
+> Nummer:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `6c3cbc5` | **W4.0** Bausteinlücken 6–8: `Bausteine/Ueberlagerung.razor` (modaler Bereich IN der Komponente, Fokusfalle ohne JS), `Bausteine/Rueckfrage.razor` (Ja/Nein/Abbrechen), `Bausteine/Zeilenraster.razor` (Spaltenkopf, Zeilen, Abschlusszeile, Summenfuß); dazu der Nachzug von **A‑10 aus Welle 3** — die Untereditoren des Emissionskatalogs stehen jetzt in einer Überlagerung |
+> | `3db98e0` | **W4.1** `ucVorlagenZeile` → `Dialoge/Kosten/VorlagenZeile.razor`, `ucErtragBonus` → `Dialoge/Kosten/ErtragBonus.razor` mit `ErtragBonusGaben`; erster Aufrufer der Sprungbrücke aus W2.2 (W2‑O6 erledigt) |
+> | `e0b63be` | **W4.2** `Form_KostenKomponente` (918 Z.) → `Dialoge/Kosten/KostenKomponenteDialog.razor` + `KostenKomponenteHuelle`; die **fünf Unterdialoge der Welle 1** stehen jetzt in Überlagerungen desselben Fensters statt in je einer zweiten WebView (R2) |
+> | `4527d66` | **W4.3** `ucStromAufschlaege` und `ucBrennstoffBestandteile` → `Dialoge/Kosten/StromAufschlaege.razor` und `BrennstoffBestandteile.razor`; Summen, Restzeilen und Schnellwahlsätze kommen als fertiger Text aus der Hülle |
+> | `b43e8fd` | **W4.4** `Form_Energietraeger` (535 Z.) und `ucFuelSettings` (2 103 Z.) → `Dialoge/Kosten/EnergietraegerDialog.razor` + `EnergietraegerEinstellungen.razor` + `EnergietraegerHuelle`; **neu im Kern:** `EnergietraegerPreisCtrl` mit den neun SQL-Anweisungen der Maske; neuer Baustein `Mehrfachauswahl` (Bausteinlücke 11) |
+> | `09ecd37` | **W4.5** Ressourcen-Sammelnachtrag: 50 Schlüssel (`KKOMP_*`, `ETV_*`, `KDLG_EM_*`, `KDLG_ANLAGE_*`) in `Resource.resx`, `Resource.en-US.resx` und — von Hand — `Resource.Designer.cs` |
+> | `45246be` | **W4.6** Formularkarte-Tests: sechstes und siebtes Prüfmuster (`Form_KostenKomponente`, `ucVorlagenZeile`), Anker auf `Form_Heizkessel` umgehängt, Stapellauf-Zähler 98 → 91 |
+> | *dieses Paket* | **W4.7** Protokoll, Statusblock, `CLAUDE.md` ×2 |
+>
+> **Die Überlagerung ist der eigentliche Gewinn.** Bis Welle 3 wich jeder Blazor-Dialog,
+> der einen zweiten braucht, aus — der Kostenfaktor-Katalog legt inline an (W1.5, A‑13),
+> der Emissionskatalog zeigt seine Untereditoren als eingerückte Blöcke (W3.3, A‑10).
+> Grund war immer Risiko **R2**: ein zweites Fenster hieße eine zweite `BlazorWebView`.
+> Seit W4.0 gibt es dafür einen Baustein, und **neun Unterdialoge** stehen im selben
+> Fenster wie ihr Wirt: Worst/Best, Zeileneditor, Namensabfrage, Übernahme,
+> Kostenfaktor-Katalog, Kostenprofil, Spotpreis-Import, saisonale Sätze und der
+> Emissionskatalog. Die sechs Hüllen der Wellen 1 bis 3 liefern dafür statt eines
+> Fensters ihren **Parametersatz** (`Gaben`). Auf iOS ist diese Bauform ohnehin die
+> einzige (iL5).
+>
+> **Neun SQL-Anweisungen gehen in den Kern.** `ucFuelSettings` las und schrieb selbst;
+> `EPOS.Kern/Controller/EnergietraegerPreisCtrl.cs` trägt sie wortgleich — dieselben
+> Spalten, dieselbe Rundung, dieselbe Reihenfolge. Zwei Änderungen an der Bauform: Der
+> `dynamic`-Rückgabewert ist ein benannter Typ geworden, und die eine
+> `RecordSet`-Abfrage mit Zeichenkettenverkettung hat einen Parameter bekommen — sie ist
+> damit erstmals für den SQL-Dialektprüfer sichtbar.
+>
+> **`Views/Kosten` führt keine Designer-Maske mehr.** Mit den sieben Masken fallen die
+> zwei nutzerlos gewordenen Karten-Controls `EinstiegsKarte` und `SectionPanel`; ihre
+> Nachfolger heißen `Kachel` und `Gruppenkopf`. Der Stapellauf-Test des Werkzeugs läuft
+> deshalb über `Views/Heizkessel`.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` →
+> 0 Fehler, **22** Warnungen (Basis 26; WFO1000 20 → 16) · `dotnet test WP-Plan.Kern.slnf` →
+> **1 352** grün (1 217 vorher; 135 neue bunit-Tests) · Formularkarte **122** grün, Build
+> 0/0 · Stapellauf **91** Masken, 0 × „nein", 0 × „verwaist" · SQL-Prüfer 1 301 Texte,
+> 0 Fundstellen · ChartProben 10 Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017 gegen
+> `2026-08-30_B3-Kaskade` **PASS/PASS/PASS**, `diff -rq` ohne Unterschied ·
+> `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (7 Masken, alle vollständig, dazu 28
+> Laufzeitfelder), 20 Abweichungen (A‑1…A‑20), Windows-Abnahmeliste mit achtzehn
+> fachlichen Proben und acht offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W4_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+> **Windows-Abnahme 04.09.2026, Anwenderwunsch W4‑E‑1 (Energieträgerverwaltung):** Suche und Filter in der
+> Trägerauswahl wie in den Importdialogen — Filterfeld über der Liste mit demselben Kernbaustein `VdiAuswahlFilter`
+> (Teilzeichenkette, Groß-/Kleinschreibung egal, mehrere Begriffe UND-verknüpft, Bezeichnung und Gruppe), Gruppenköpfe
+> nur über Treffern, der gewählte Träger übersteht den Filterwechsel, Pfeiltasten wandern über die Treffer; der Baustein
+> `Zeilenwahl` um `Beschriftung`/`Zusatzklasse` erweitert, die 19 Bestandsaufrufe unverändert (`80e73c7`, neun bunit-Fälle,
+> Abnahmeprobe W4‑19).
+> **Windows-Abnahme 04.09.2026, Befund W4‑B‑1 (Preisbasis doppelt oder leer):** die Hülle baute die Preisbasen aus der
+> Zieleinheit jeder Umrechnungsregel ohne Dublettenprüfung (Nm³→Nm³ und m³→Nm³ ergaben Nm³ doppelt, 8 der 27 Träger),
+> ohne Regeln blieb das Feld leer (5 Träger), ohne Treffer fiel die Wahl still auf Index 0 — wortgleich vom Vorläufer
+> `ucFuelSettings` übernommen. Der Listenaufbau liegt jetzt datenbankfrei im Kern (`EnergietraegerPreisCtrl.Preisbasen`:
+> Abrechnungseinheit zuerst, Zieleinheiten in Regelreihenfolge, jede genau einmal, normalisiert verglichen; die Id
+> indiziert die bereinigte Liste); m³ ist bewusst keine Preisbasis (nur Quelle des z-Faktors, L4). 14 Kern-Fälle, ein
+> bunit-Fall, Referenzlauf byte-gleich, keine Datenzeile berührt (`cac4a1d`, W4-Protokoll § 9a).
+
+> **Statusblock iU9 — Welle 3 umgesetzt (03.09.2026, Basis `95cf8be`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W3: **vier Masken →
+> vier Razor-Komponenten**, jede WinForms-Fassung im selben Schritt gelöscht (Regel M1).
+> Alle vier hängen am Energieträger — `Form_Energietraeger` öffnet zwei direkt,
+> `ucFuelSettings` die anderen beiden. Acht Commits, einer je Nummer:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `afd599d` | **W3.0** Bausteinlücken 4–6: `Standards/Dateiwahl.razor` (Pfad + Knopf, Wähler als Delegat), `Bausteine/Zeilenwahl.razor` (der Wahlknopf, der bisher zweimal wortgleich im Markup stand), `Textfeld` + `Mehrzeilig`/`Zeilen`/`NurLesen`, `Raster` + `Bearbeitbar` |
+> | `624ce28` | **W3.1** `Form_LeistungspreisReihe` → `Dialoge/Kosten/LeistungspreisReiheDialog.razor` + Hülle; zwölf Monatssätze im mitwachsenden Gitter, Ebenenregel Projekt-/Stammreihe unverändert |
+> | `b2a9511` | **W3.2** `Form_SpotpreisImport` → `Dialoge/Kosten/SpotpreisImportDialog.razor` + Hülle; Dateiwahl über `Dienste.Datei`, Prüfen und Schreiben in `Task.Run`, Protokoll mehrzeilig und festbreit |
+> | `15417a8` | **W3.3** `Form_Emissionskatalog` (767 Z., zwei Raster) → `Dialoge/Kosten/EmissionskatalogDialog.razor` + Hülle; die beiden zur Laufzeit gebauten Unterdialoge werden **eingerückte Blöcke** statt zweiter WebViews (R2) |
+> | `cb700f0` | **W3.4** `Form_Kostenprofil` (36 Laufzeitfelder + Chart) → `Dialoge/Kosten/KostenprofilDialog.razor` + Hülle; **neu im Kern:** `ChartRenderer.Kostenprofil` samt `C_PROFIL` |
+> | `5a25c1d` | **W3.5** Ressourcen-Sammelnachtrag: 67 Schlüssel (`LPR_*`, `SPOT_*`, `EMK_*`, `KPROF_*`) in `Resource.resx`, `Resource.en-US.resx` und — von Hand — `Resource.Designer.cs` |
+> | `4ea688c` | **W3.6** Formularkarte-Tests: fünftes Prüfmuster (`Form_Kostenprofil`, neun Testbezüge), Stapellauf-Zähler 102 → 98 |
+> | *dieses Paket* | **W3.7** Protokoll, Statusblock, `CLAUDE.md` ×3 |
+>
+> **Die Renderer-Erweiterung ist der eigentliche Gewinn.** `ChartRenderer.Kostenprofil` ist die
+> erste neue Methode seit der SkiaSharp-Portierung (iU7) — der Nachweis, dass der Weg
+> „Diagramm im Kern zeichnen, in der Oberfläche nur das PNG zeigen" auch für **Eingabemasken**
+> trägt, nicht nur für den Bericht. Bildmaß 1296 × 780 (doppelte Zielauflösung des abgelösten
+> WinForms-Chart), Linienfarbe wörtlich übernommen, y-Achse vorzeichenfähig. Die Probe
+> `Proben/ChartProben` prüft es als zehntes Bild.
+>
+> **Bausteinsatz.** Zwei neue Bausteine (`Dateiwahl`, `Zeilenwahl`), drei erweiterte Standards
+> (`Textfeld`, `Raster`, dazu `Zahlenfeld` unverändert) und sieben CSS-Klassen. Damit sind die
+> Bausteinlücken 4, 5 und 6 des Wellenplans geschlossen; `Dateiwahl` bedient ab Welle 13 die
+> sechs Importmasken.
+>
+> **Kein neuer Controller, keine neue SQL-Zeile.** Alle vier Masken riefen schon vorher
+> ausschließlich Kern-Controller (`PreisreiheCtrl`, `SpotpreisImportCtrl`,
+> `EmissionskatalogCtrl`/`EmissionenCtrl`, `KostenprofilCtrl`) — Hausmuster Ä9.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` →
+> 0 Fehler, **26** Warnungen (Basis 28; WFO1000 22 → 20) · `dotnet test WP-Plan.Kern.slnf` →
+> **1 217** grün (1 110 vorher; 105 neue bunit- und 2 neue Kern-Tests) · Formularkarte **121**
+> grün, Build 0/0 · Stapellauf **98** Masken, 0 × „nein", 0 × „verwaist" · SQL-Prüfer 1 303
+> Texte, 0 Fundstellen · ChartProben **10** Bilder, 0 Verstöße · Referenzlauf 1030/1007/1017
+> gegen `2026-08-30_B3-Kaskade` **PASS/PASS/PASS**, `diff -rq` ohne Unterschied ·
+> `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (4 Masken, alle vollständig, dazu die 36
+> Laufzeitfelder und die beiden Untereditoren), 22 Abweichungen (A‑1…A‑22),
+> Windows-Abnahmeliste mit vierzehn fachlichen Proben und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W3_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+
+> **Statusblock iU9 — Welle 2 umgesetzt (03.09.2026, Basis `b0d3d86`)**
+>
+> Die Welle stammt aus dem Wellenplan iU9, Abschnitt C Zeile W2: **sechs Masken →
+> vier Razor-Komponenten** (drei neue, eine erweiterte), jede WinForms-Fassung im selben
+> Schritt gelöscht (Regel M1). Acht Commits, einer je Nummer:
+>
+> | Commit | Inhalt |
+> |---|---|
+> | `f9b5016` | **W2.1** `Form_StromspeicherItemNeu` (28 Aufrufer), `Form_GebaeudetypNeu` und `Form_AlsVariante` → **eine** erweiterte `Dialoge/Allgemein/NamensDialog.razor`; der Variantenablauf steht als `Views/Varianten/AlsVarianteHuelle.cs` |
+> | `41db247` | **W2.2** **Sprungbrücke** — `Dialoge/Allgemein/Sprungziel.cs` (Schlüssel) + `Allgemein/Blazor/Sprungbruecke.cs` (Schlüssel → `Form`, modal aus dem Rückruf). Entscheid zu B5b‑O1 |
+> | `938947a` | **W2.3** `Form_Tarifstruktur` (K4, 588 Z.) → `Dialoge/Wirtschaftlichkeit/TarifstrukturDialog.razor` + `TarifstrukturHuelle`; `Zahlenfeld`/`Ganzzahlfeld` bekommen `Aktiv` |
+> | `a684fcd` | **W2.4** `Form_PhotovoltaikVerguetung` → `Dialoge/Wirtschaftlichkeit/PhotovoltaikVerguetungDialog.razor` + `PhotovoltaikVerguetungHuelle` |
+> | `8ef5b60` | **W2.5** `Form_WirtschaftlichkeitParameter` (K4, 740 Z.) → `Dialoge/Wirtschaftlichkeit/WirtschaftlichkeitParameterDialog.razor` + Hülle; **Ersteinsatz der Sprungbrücke** (Gesetzeskatalog) |
+> | `a2b3bd2` | **W2.6** Ressourcen-Sammelnachtrag: 78 Schlüssel (`NAMD_*`, `TARIF_*`, `PVV_*`, `WPAR_*`) in `Resource.resx`, `Resource.en-US.resx` und — von Hand — `Resource.Designer.cs` |
+> | `3fd320e` | **W2.7** Formularkarte-Tests: viertes Prüfmuster (`Form_StromspeicherItemNeu`, sechs Testbezüge), Stapellauf-Zähler 105 → 102 |
+> | *dieses Paket* | **W2.8** Protokoll, Statusblock, `CLAUDE.md` |
+>
+> **Die Sprungbrücke ist der eigentliche Gewinn.** Bis W2 konnte ein Blazor-Dialog nur
+> *nachgelagert* weiterführen (schließen → Ziel → wieder öffnen, B5b‑O1). Jetzt zeigt ein
+> Delegat mit sprachneutralem Schlüssel ein **WinForms**-Ziel modal über dem Dialog — dieselbe
+> verschachtelte Nachrichtenschleife wie ein `OpenFileDialog` im Click. Für Ziele, die selbst
+> Blazor-Hüllen sind, bleibt es beim nachgelagerten Sprung (Risiko R2), bis Welle 4 den
+> Baustein `Ueberlagerung` bringt. **Ob die Schleife am Gerät trägt, ist Abnahmepunkt W2‑7.**
+>
+> **Bausteinsatz.** Kein neuer Baustein — `Zahlenfeld` und `Ganzzahlfeld` bekommen nur den
+> Parameter `Aktiv` (additiv), dazu die CSS-Klasse `epos-untergruppe`. Der Namensdialog aus
+> W1 trägt jetzt fünf Masken statt zwei.
+>
+> **Nachweise.** `dotnet build WP-Plan.sln -c Release -p:Platform=x64 --no-incremental` →
+> 0 Fehler, **28** Warnungen (Basis 28, unverändert) · `dotnet test WP-Plan.Kern.slnf` →
+> **1 110** grün (1 036 vorher; 74 neue bunit-Tests) · Formularkarte **120** grün, Build 0/0 ·
+> Stapellauf **102** Masken, 0 × „nein", 0 × „verwaist" · SQL-Prüfer 1 303 Texte, 0
+> Fundstellen · Referenzlauf 1030/1007/1017 gegen `2026-08-30_B3-Kaskade` **PASS/PASS/PASS**,
+> `diff -rq` ohne Unterschied · `dotnet publish` mit vollständigem `wwwroot`.
+>
+> **Protokoll** mit Feldkartenabgleich (6 Masken, alle vollständig), 18 Abweichungen
+> (A‑1…A‑18), Windows-Abnahmeliste mit elf fachlichen Proben und sieben offenen Punkten:
+> `WindowsFormsApplication1/Allgemein/Reporting/iU9_W2_Blazor_Port_Protokoll.md`.
+> **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+
 > **Statusblock iU9 — Welle 1 umgesetzt (03.09.2026, Basis `aef9509`)**
 >
 > Die Welle stammt aus dem Wellenplan iU9, Abschnitt D: **sieben Masken der Kostenvorlagen und der
@@ -1494,6 +2998,7 @@ Windows-Basis; Bericht zeilengleich.
 | **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
 | **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
+| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün · **Zwanzigster Lauf** (33883210632, 04.09.2026, 10 min 14 s) auf `975ead5` nach W15c: grün · **Einundzwanzigster Lauf** (33890882150, 04.09.2026, 8 min 03 s) auf `84d7c16` nach W16a: grün · **Zweiundzwanzigster Lauf** (33898599945, 04.09.2026, 7 min 56 s) auf `c8fbd77` nach W16b: grün · **Vierundzwanzigster Lauf** (33904433007, 04.09.2026, 8 min 43 s) auf `555ef11` nach W16c: grün (Nr. 23 war eine abgebrochene Dublette) · **Fünfundzwanzigster Lauf** (33913313694, 04.09.2026, 6 min 29 s) auf `853b8c6` nach den W16-Nachträgen (E‑2/E‑3, LizenzTexte, W16b‑O‑3): grün · **Sechsundzwanzigster Lauf** (33975880961, 05.09.2026, 6 min 14 s) auf `7bec4ad` nach den Abnahmebefunden vom 05.09. (Baustein `Diagramm`, `epos-diagramm.js` über `import()`): grün · **Siebenundzwanzigster Lauf** (33982889724, 05.09.2026, 10 min 51 s) auf `c563a40` nach den sechs Nachmittagsbefunden vom 05.09. (W13‑B‑1: `…Async`-Zwillinge in `IDateiDienst`/`IDialogDienst`, Fehlerschranke `Wurzel<T>` in `EPOS.iOS/HauptSeite`; W9.8, W15a‑E‑1, W16b‑E‑7, iU8‑E‑1): grün |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
 
 **Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):
@@ -1677,7 +3182,7 @@ Repowurzel für den Setup-Bau (`.gitignore` schließt die Datei aus, `e3d1e5b`).
 | **iR9** | **Nur ein Rechner, nur ein Mensch.** Tags, Referenzbasen und die einzige Buildumgebung hängen heute an einem Arbeitsplatz (`letzter-x86-stand` ist bis heute nicht gepusht) | Ausfallrisiko für das gesamte Vorhaben | Die CI ist zugleich die Antwort darauf: Sie macht den Build reproduzierbar und vom Einzelrechner unabhängig |
 | **iR10** | **`Form_Simulation_Detail`** wächst schneller als die Umstellung (6.200 → 7.773 Zeilen in vier Monaten) | Das größte Einzelstück wird nie fertig konvertiert | In iU9 nicht konvertieren, sondern zerlegen — und dafür einen eigenen Termin setzen, bevor es weiter wächst |
 | **iR11** | **DPI.** Die Anwendung ist `DpiUnaware`; nur die Blazor-Hülle stellt sich für die Dauer des modalen Laufs auf `PER_MONITOR_AWARE_V2` (`DpiInsel`, iU8-6) | Greift die Insel nicht, ist der Dialoginhalt bei 125–200 % bitmapskaliert und sichtbar unschärfer als der Rest — oder Fenstergröße und Elternfenster passen nicht zusammen | Am Gerät prüfen (125 %, 150 %, zweiter Monitor mit anderer Skalierung) und den Befund festhalten; auf Windows vor 10/1803 ist das Bitmapskalieren zulässig. → **iF21** |
-| **iR12** | **WebView2 offline.** Das Setup nimmt heute den **Online**-Bootstrapper mit (iU8-10). Ein Kunde ohne Internet bekommt die Laufzeit nicht | Die Installation läuft durch, die Anwendung startet — aber jeder Blazor-Dialog bleibt leer. Mit jeder umgestellten Maske wächst der Schaden | Anwenderentscheid **iF20**: Standalone-Installer (~150 MB) beilegen oder Fixed Version verteilen. Das Setup meldet den Fehlschlag bereits (`WebView2Fehlt`) und bricht nicht ab |
+| **iR12** | **WebView2 offline.** Das Setup nimmt heute den **Online**-Bootstrapper mit (iU8-10). Ein Kunde ohne Internet bekommt die Laufzeit nicht | **Seit iU9-W15c ist der Schaden nicht mehr graduell, sondern absolut:** Erststart und Lizenzzustimmung laufen über eine Blazor-Hülle, beide enden bei „false“ — **die Anwendung startet gar nicht mehr** (Befund W15c-B10). Bis dahin blieben nur die Dialoge leer | Anwenderentscheid **iF20**: Standalone-Installer (~150 MB) beilegen oder Fixed Version verteilen. Das Setup meldet den Fehlschlag bereits (`WebView2Fehlt`) und bricht nicht ab. **Seit iU9-W15c.6a prüft `Program.Main` die Laufzeit selbst** (`CoreWebView2Environment.GetAvailableBrowserVersionString()` in `try/catch`) und meldet ihr Fehlen mit der Bezugsquelle, statt den Anwender vor einem leeren Fenster stehen zu lassen — Entscheid W15c-E-8, Weg 2 |
 | **iR13** | **VS-2026-Designer unter dem Razor-SDK.** `WindowsFormsApplication1.csproj` steht seit iU8-6 auf `Microsoft.NET.Sdk.Razor`; ob der WinForms-Designer damit umgeht, ist **nicht geprüft** | Fällt der Designer aus, sind die verbleibenden ~120 Masken nur noch von Hand zu pflegen — mitten in iU9 | Erster Punkt der Windows-Abnahme (`Umsetzung_iU8_Nachweise.md`, `4369fdb`). Das offizielle WinForms-Blazor-Template geht denselben Weg; der Rückweg wäre die Auslagerung der Web-Anteile in ein eigenes Hüllenprojekt |
 | **iR14** | **Kultur der CI-Läufer.** `macos-latest` und `windows-latest` laufen mit **en-US**-UI-Kultur, `ubuntu-latest` und der Arbeitsplatz zufällig deutsch | Jeder Test, der Anzeigetext vergleicht, ist auf zwei von drei Läufern rot — und der Fehler sieht aus wie ein Fachfehler. Belegt mit `f5fb05c` (2 von 64 rot) | Jeder solche Test setzt seine UI-Kultur selbst (`de-DE` im Konstruktor, Rückstellung in `Dispose`). Gegenprobe hier mit `LANG=en_US.UTF-8`, bevor etwas gepusht wird |
 
@@ -1726,10 +3231,11 @@ setzen sie voraus:**
 | **iF17** | Wird iU1 (Fundament, .NET 10, CI, COM-Entfernung) **unabhängig vom iOS-Beschluss** beauftragt? | **Ja.** Die Support-Frist läuft am 10.11.2026 ab; das Paket ist auch ohne iOS vollständig gerechtfertigt und die einzige Antwort auf iR9 |
 | **iF18** | **Welche VS-2026-Edition?** VS 2022 kann `net10.0` nicht targeten, der Umstieg ist zwingend. Heute läuft **Community 2022** | **Community 2026**, sofern INEKON unter den Enterprise-Schwellen bleibt (≤ 250 PCs/Nutzer **und** ≤ 1 Mio. USD Umsatz) und höchstens 5 Entwickler daran arbeiten — dann kostenneutral. Sonst Professional (Abo oder neue Standalone-Lizenz; die 2022er-Dauerlizenz gilt nicht weiter). Vor iU1 einordnen |
 | **iF19** | Schrift der Berichts-Charts nach der SkiaSharp-Portierung: mitgelieferte Schrift oder Systemschrift? | **Systemschrift, flexibel** — beschieden 02.09.2026. Umgesetzt mit einer Zwischenstufe, die die Vorgabe nicht kannte: Calibri → **Carlito, Liberation Sans, DejaVu Sans** → Helvetica/Arial → Systemschrift. Ohne sie liefert SkiaSharp unter Linux eine **Serifen**schrift |
-| **iF20** | **WebView2-Verteilung:** Online-Bootstrapper (heute), Standalone-Installer (~150 MB) oder Fixed Version? | Bootstrapper, solange kein Kunde ohne Internet installiert. **Anwenderentscheid, offen** — S10 im Setup-Konzept § 5.5 |
-| **iF21** | **DPI:** bleibt die Blazor-Hülle eine DPI-Insel in einer `DpiUnaware`-Anwendung? | **Insel** — gebaut mit iU8-6 (`DpiInsel`). Der Windows-Befund bei 125 % und 150 % steht aus; die Umstellung der ganzen Anwendung wäre ein eigenes Vorhaben mit Layoutwirkung auf 120 Masken |
+| **iF20** | **WebView2-Verteilung:** Online-Bootstrapper (heute), Standalone-Installer (~150 MB) oder Fixed Version? | **Bootstrapper** — entschieden 03.09.2026; der Standalone-Installer kommt erst dazu, wenn ein Kunde ohne Internet installiert (S10 geschlossen) |
+| **iF21** | **DPI:** bleibt die Blazor-Hülle eine DPI-Insel in einer `DpiUnaware`-Anwendung? | **Insel jetzt, Anwendung DPI-fähig mit W16** — entschieden 03.09.2026 (Empfehlung angenommen). Die `DpiInsel` (iU8-6) deckt die modalen Dialoge; eingebettete Seiten bleiben bis W16 bitmapskaliert (W5‑O1). Der Windows-Befund bei 125 % und 150 % steht aus |
 | **iF22** | **Wie viele Chart-Stacks trägt das Haus?** | **eine Bibliothek (SkiaSharp), zwei Nutzungsarten.** Bericht und Blazor bekommen ein Bild aus dem Kern-Renderer; die interaktiven Bildschirmmasken bleiben bei ScottPlot — heute genau **eine**, `Form_SpeicherOptimierung`. ScottPlot 5 rendert selbst über SkiaSharp |
-| **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** | **ersatzlos löschen**, sobald `Referenzlauf.exe bildvergleich` unter Windows PASS meldet. Bis dahin ist die Datei eine zweite, nicht gepflegte Fassung desselben Renderers |
+| **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** | **ersatzlos gelöscht am 03.09.2026** auf Anweisung des Anwenders — samt `Referenzlauf/Bildvergleich.cs` und dem Modus `bildvergleich`, ohne vorherigen Windows-Bildvergleich. Wächter sind die Renderer-Tests im Kern und `ChartProben` |
+| **iF30** | **Lesemodus-Durchsetzung:** `LizenzManager.DarfSchreiben()` hat bis heute genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7); weder Simulation noch Projektanlage noch ein Speicherweg fragt den Lizenzzustand. Wann und wo wird der Lesemodus durchgesetzt? | **Nach W16** — angelegt 04.09.2026 mit W15c (E‑9): dann sind alle Speicherwege Razor und ihre Zahl steht fest; dazu die Warnstufen 30/14/7 Tage vor Ablauf (Lizenzkonzept § 6). Bis dahin ist der Zustand **sichtbar** (sechs Zustände, drei Stufen, Detailzeile) und **prüfbar** (19 Kern-Fälle `LizenzZustandTests`), aber nicht durchgesetzt. **Entschieden 04.09.2026 (Empfehlung angenommen): streng — alle Schreibwege und der Simulationslauf werden über die eine Schreibnaht im Kern gesperrt, Ansehen und Berichte bleiben frei, Banner in der `AppWurzel`, Warnstufen 30/14/7 Tage vor Ablauf; Ausnahmen Erststart-Migration, Lizenzaktivierung, Einstellungen; eigene kleine Welle nach der Windows-Abnahme** |
 
 ---
 
@@ -1744,7 +3250,7 @@ setzen sie voraus:**
 | Rechenkern | `EPOS.Kern/Allgemein/BhkwPlan.cs` (410 Z., seit iU4-5 dort) |
 | Datenzugriff | `EPOS.Kern/Allgemein/DataRepository.cs` (Fassade seit iU6-T4), `IDatenzugriff.cs`, `SqliteDatenzugriff.cs`, `DbParam.cs`, `RecordSet.cs` (ohne `DBCommand`, iU6-T1) |
 | Schemapflege | `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` (13.589 Z., 61 Schritte, `ZIEL_VERSION` Z. 112); `SchemaKatalog.cs` (3.461 Z.) |
-| Chart-Renderer | `EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs` (SkiaSharp seit iU7-2, im Kern seit iU7-5); der eingefrorene GDI+-Gegenpart `WindowsFormsApplication1/Allgemein/Bericht/ChartRendererGdi.cs` (→ iF23) |
+| Chart-Renderer | `EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs` (SkiaSharp seit iU7-2, im Kern seit iU7-5) — die einzige Fassung; der GDI+-Gegenpart ist mit iF23 gelöscht |
 | Excel-COM | `WindowsFormsApplication1/Allgemein/ToolsClass.cs`, `Allgemein/Import/GanglinienDatei.cs` |
 | Lizenz | `WindowsFormsApplication1/Allgemein/Lizenz/` (`LizenzToken.cs`, `GeraeteId.cs`, `LizenzServerClient.cs`, `LizenzManager.cs`); `Lizenzserver/` (PHP) |
 | Größtes Einzelstück | `WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail.cs` (7.773 Z.) |

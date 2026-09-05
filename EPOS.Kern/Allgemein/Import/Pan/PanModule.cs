@@ -29,6 +29,22 @@ namespace WindowsFormsApplication1
         // ── Technologie ───────────────────────────────────────────────────
         public string Technol { get; set; } = "";    // z.B. mtSiMono, mtSiPolyHE, etc.
         public string Technology => MapTechnology(Technol);
+
+        /// <summary>
+        /// <b>Die geschaetzte PTC-Leistung</b> (iU9-W13.0j, Befund W13-B43).
+        ///
+        /// <para>Eine PAN-Datei fuehrt keinen PTC-Wert; der CEC-Katalog schon. Um
+        /// beide nebeneinander zeigen zu koennen, rechnete
+        /// <c>Form_CECImport.ShowDetail</c> :431-437 ihn aus der Nennleistung und
+        /// dem Leistungs-Temperaturkoeffizienten hoch — PTC-Bedingungen nehmen
+        /// 45 °C Zelltemperatur gegen 25 °C bei STC, also 20 K Unterschied:</para>
+        /// <code>
+        /// PTC ≈ PNom · (1 + muPmpReq/100 · (45 − 25))
+        /// </code>
+        /// <para>Das ist FACHWISSEN und kein Anzeigecode. Es steht deshalb hier,
+        /// wo auch <c>muPmpReq</c> steht, und nicht in einer Maske.</para>
+        /// </summary>
+        public double PtcGeschaetzt => PNom * (1 + (muPmpReq / 100.0) * (45 - 25));
         public int NCelS { get; set; }          // Zellen in Reihe
         public int NCelP { get; set; }          // Stränge parallel
         public string SubModuleLayout { get; set; } = "";    // z.B. slTwinHalfCells

@@ -17,6 +17,47 @@ namespace WindowsFormsApplication1
         {
         }
 
+        /// <summary>
+        /// Die EXTERNEN WAERMEBEDARFS-GANGLINIEN eines Projekts (iU9-W9.0d) — derselbe
+        /// JOIN, der in <c>Form_Start.pBox_WBedarfDaten_Click</c> (:264-283) und in
+        /// <c>WaermebedarfExternKontextMenuCtrl.ContextMenuItemNeu_Click</c> wortgleich
+        /// stand.
+        ///
+        /// <para><b>Der Kanal wird gleich mitgeladen.</b> Beide Vorlaeufer bauten die Liste
+        /// OHNE ihn und liessen den Dialog ihn ueber <c>KanaeleNachladen</c> nachtragen —
+        /// der Speicherweg der Zuordnung ist Loeschen + Neuanlegen, ohne das Nachladen
+        /// fiele jede Ganglinie auf Heizung zurueck (Schritt 48, F18). Hier steht beides
+        /// an EINER Stelle; <see cref="KanaeleNachladen"/> bleibt fuer die Wege, die ihre
+        /// Liste anders aufbauen.</para>
+        /// </summary>
+        public static List<Z_ProjWaermebedarfModel> LiesProjekt(int idProjekt)
+        {
+            var liste = new List<Z_ProjWaermebedarfModel>();
+
+            const string sql =
+                "SELECT Z_ProjektWaermebedarf.ID_Z, Z_ProjektWaermebedarf.ID_Projekt, " +
+                "Z_ProjektWaermebedarf.ID_Ganglinie, Tab_Waermebedarf.Bezeichner " +
+                "FROM Z_ProjektWaermebedarf INNER JOIN Tab_Waermebedarf ON " +
+                "Z_ProjektWaermebedarf.ID_Ganglinie = Tab_Waermebedarf.ID " +
+                "WHERE Z_ProjektWaermebedarf.ID_Projekt = ?";
+
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                var item = new Z_ProjWaermebedarfModel();
+                item.m_ID_Z = Convert.ToInt32(row["ID_Z"]);
+                item.m_ID_Projekt = idProjekt;
+                item.m_ID_Ganglinie = Convert.ToInt32(row["ID_Ganglinie"]);
+                item.m_szBezeichner = row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString();
+                liste.Add(item);
+            }
+
+            KanaeleNachladen(idProjekt, liste);
+            return liste;
+        }
+
         public void ReadAll(string sql)
         {
             // Abfrage über das zentrale DataRepository laden

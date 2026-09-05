@@ -1,4 +1,4 @@
-# Nachweisliste iU10 — die iOS-Hülle
+﻿# Nachweisliste iU10 — die iOS-Hülle
 
 **Stand 03.09.2026 · Branch `ios_migration` · ab `d4d5e20` (Basis `6f67a32`) —
 sieben Schritte iU10-1…iU10-7, dazu die Doku iU10-8**
@@ -165,11 +165,36 @@ BhkwDaten(0)=null
 
 ---
 
-## Nachweise, die nur die CI führen kann — offen
+## Nachweise, die nur die CI führen kann — **geführt, achter Lauf grün**
+
+**Lauf 33748736894 (`ios.yml`, `macos-26`, 03.09.2026, 11:16–11:21 UTC, 5 min 44 s)** auf `7f89425`:
+
+| Schritt | Ergebnis |
+|---|---|
+| Workload `maui-ios` Set `10.0.400.1` | installiert in 23 s (iOS 26.5.10315, MAUI 10.0.20/10.0.100) |
+| Bau `EPOS.iOS` Simulator (**Debug**, JIT, kein Linker) | 57 s |
+| Simulator (iPad, iOS 26.x) gestartet, App installiert | ja |
+| Erststart | Datenbank aus dem Paket kopiert, 73 MB |
+| Startmarken | `SQLite 3.53.3` · `STRICT=114` · `EPOS.iOS bereit: Projekte=23` |
+| Prüfmodus Projekt 1030 | Simulation in 5 s, 22 CSV, 150 Skalare, `fertig.txt` |
+| **iZ6-Vergleich gegen `2026-08-30_B3-Kaskade`** | **GESAMT: PASS, 236 670 Werte; `diff -rq`: BYTE-GLEICH (iOS-Simulator arm64)** |
+| Artefakte | `ios-simulator` (Startprotokoll, CSV, Bildschirmabzug, 1,1 MB), `ios-app` (86 MB) |
+
+Der Weg dorthin, acht Läufe: (1) Workload-Set in CLI-Schreibweise `10.0.400.1`; (2) `Microsoft.Maui.Controls`
+ausdrücklich referenzieren; (3) `INavigation` gegen MAUI qualifizieren; (4/5) Release-Bau lief 40 min in
+der Mono-AOT-Übersetzung → Simulator-Bau in Debug; (6/7) Startmarken hinter Zeitstempel und `\r` der
+pty-Ausgabe. Verbrauch aller Läufe zusammen ≈ 65 macOS-Minuten.
+
+**Damit belegt:** Der Kern rechnet auf iOS byte-gleich zur Windows-Basis (iZ6-Vorstufe im Simulator),
+die mitgelieferte SQLite ist auf allen vier Plattformen dieselbe (iF27 bestätigt), der Datenbankweg auf dem
+Gerät funktioniert. Offen bleibt der Gerätebau (iU13).
+
+### Ursprüngliche Liste (zur Nachvollziehbarkeit)
 
 Abzuhaken nach dem ersten grünen Lauf von **Actions → iOS → Run workflow**.
 
 - [x] **Die Workload installiert sich** — bestätigt im zweiten Lauf (33734332715, 03.09.2026, 20 s): Set `10.0.400.1`, Manifest iOS 26.5.10315, MAUI 10.0.20; Restore, Kern und `EPOS.UI` bauen für `net10.0-ios`. Der Lauf brach danach in der Hülle ab (CS0234 `Microsoft.Maui`): `Microsoft.Maui.Controls` muss seit .NET 8 ausdrücklich referenziert werden — behoben, dritter Lauf nach Freigabe des Anwenders.
+- [x] **Die Hülle übersetzt für `net10.0-ios`** — bestätigt im fünften Lauf (33740727778, 03.09.2026): `EPOS.iOS.dll` nach 47 s. Danach lief der Release-Bau 40 min in der Mono-AOT-Übersetzung (LLVM) und wurde abgebrochen; der Simulator-Bau läuft seither in **Debug** (JIT, kein Linker). Dritter/vierter Lauf davor: `Microsoft.Maui.Controls`-Referenz und `INavigation`-Mehrdeutigkeit behoben.
 - [ ] **Die Workload installiert sich.** `dotnet workload install maui-ios --version 10.0.400.1`
       läuft durch, `dotnet workload list` zeigt `maui-ios`.
 - [ ] **Xcode passt zur Workload.** Kein Fehler „requires Xcode …"; `xcodebuild -version` meldet
@@ -198,9 +223,202 @@ Abzuhaken nach dem ersten grünen Lauf von **Actions → iOS → Run workflow**.
 
 ---
 
+**Neunter Lauf 33785012663 (`ios.yml`, `macos-26`, 03.09.2026, 17:31–17:41 UTC, 9 min 52 s)** auf
+`f1d387b` — der Stand **nach den Wellen 5 und 6**: grün. Derselbe Weg wie im achten Lauf;
+EPOS.UI mit den Berichtsseiten (W5), den sieben Erzeugerdialogen und der Assistentenseite (W6)
+sowie der Kern mit den neuen Controller-Methoden bauen für `net10.0-ios`, der Prüfmodus rechnet
+Projekt 1030 im Simulator und der iZ6-Vergleich meldet PASS (der Job wäre sonst rot). Die
+längere Dauer kommt aus dem gewachsenen Bau (785 statt 528 bunit-Tests werden nicht gebaut,
+wohl aber die neuen Razor-Komponenten). Ausgelöst per `workflow_dispatch` unter der pauschalen
+Freigabe bis Migrationsende.
+
+**Zehnter Lauf 33809247370 (`ios.yml`, `macos-26`, 03.09.2026, 21:41–21:46 UTC, 4 min 53 s)** auf
+`21ab680` — der Stand **nach den Wellen 7, 8 und 9**: grün. Derselbe Weg; EPOS.UI trägt jetzt
+alle elf Kacheln des Startbilds, zehn Assistentenseiten und die Bedarfstyp-Dialoge, der Kern die
+drei Bedarfsbilder des Renderers, `WPCtrl`, `Ferienzeit` und die Projektlisten der Bedarfsgewerke.
+Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Der Lauf
+war mit knapp fünf Minuten halb so lang wie der neunte, weil der Läufer den Workload aus dem
+Cache zog. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
+**Elfter Lauf 33826084944 (`ios.yml`, `macos-26`, 04.09.2026, 01:31–01:40 UTC, 8 min 50 s)** auf
+`a398c9a` — der Stand **nach den Wellen 10a und 10b**: grün. Erstmals mit der Simulationskonfiguration
+als Razor-**Seite** (`SimulationKonfigSeite`, Eintrag in `Seitenschluessel`/`AppWurzel`), dem
+SVG-Schema, den drei neuen Bausteinen und dem Kartenbild (1,29 MiB) unter `wwwroot/bilder/`; die
+`IosProjektQuelle` trägt für `SimulationKonfigGaben` noch die Standardumsetzung, die Seite ist am
+Gerät also noch nicht erreichbar (iU11). Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus
+1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
+**Zwölfter Lauf 33832613617 (`ios.yml`, `macos-26`, 04.09.2026, 03:16–03:25 UTC, 9 min 02 s)** auf
+`43fb9c3` — der Stand **nach den Wellen 11a und 11b**: grün. Erstmals mit der Ergebnisseite der
+Simulation als zweiter Razor-**Seite** in `Seitenschluessel`/`AppWurzel` (`SimulationErgebnisSeite`,
+zehn Blätter, sieben Renderer-Bilder aus W11a, Baustein `Fortschritt`) und ohne `Form_Simulation_Detail`;
+die `IosProjektQuelle` liefert den Parametersatz der Seite noch nicht (W11b‑O‑5, iU11), die Seite ist
+am Gerät also noch nicht erreichbar. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030
+und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
+**Dreizehnter Lauf 33838762108 (`ios.yml`, `macos-26`, 04.09.2026, 04:58–05:04 UTC, 6 min 30 s)** auf
+`62b3457` — der Stand **nach der Welle 12**: grün. Erstmals mit `GanglinienImportAblauf` und den zwölf
+Ganglinien-Proben im Kern, den sechs neuen Razor-Dialogen (Stromganglinie, Ganglinien-Verwaltung,
+Importprotokoll, Importoptionen, Konfliktdialog, Lastspitzenkappung) und ohne `Form_Stromganglinie`,
+`Form_Stromganglinie_Admin`, `Form_PeakShaving`, `Form_GanglinieProtokoll`, `Form_GanglinieImportOptionen`.
+Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per
+`workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
+**Vierzehnter Lauf 33844935661 (`ios.yml`, `macos-26`, 04.09.2026, 06:34–06:44 UTC, 10 min 04 s)** auf
+`29aecbc` — der Stand **nach der Welle 13**: grün. Erstmals mit `KatalogImportAblauf`/`KatalogImportProfil`
+und den zwanzig Importproben im Kern, den drei Import-Komponenten (`KatalogImportDialog` mit vier Ausprägungen,
+`WaermebedarfAdminDialog`, `PvModulImportDialog`), der Mehrfachmarkierung im `Raster` und ohne die sechs
+Importmasken; die Sprungbrücke `WaermebedarfExternAdmin` ist gefallen. Bau, Simulatorstart, Erststart mit
+Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen
+Freigabe bis Migrationsende.
+
+**Fünfzehnter Lauf 33852944072 (`ios.yml`, `macos-26`, 04.09.2026, 08:20–08:27 UTC, 7 min 24 s)** auf
+`ecd6cfe` — der Stand **nach den Wellen 14a und 14b**: grün. Erstmals mit den Katalogbrowsern
+(`KatalogBrowserDialog`, `PufferSpKatalogDialog`, `ModulKatalogDialog`), der Bedarfs-Admin (`BedarfAdminDialog`,
+`SolarganglinieAdminDialog`), der Energieeinheiten-Wahl MWh/kWh im Kern, der berichtigten Heizkessel-Brennstoffkette
+und ohne elf Admin-Masken, `ToolsClass`, `SpeichernLeiste`, `KiAufrufKnopf`; die Sprungbrücke trägt nur noch die
+Zweige `Gesetzesparameter`, `GesetzesparameterCo2` (W14c) und `SpeicherOptimierung` (iF22). Bau, Simulatorstart,
+Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der
+pauschalen Freigabe bis Migrationsende.
+
+**Sechzehnter Lauf 33861268537 (`ios.yml`, `macos-26`, 04.09.2026, 10:02–10:11 UTC, 9 min 28 s)** auf
+`0cc1495` — der Stand **nach der Welle 14c**: grün. Erstmals mit dem Gesetzeskatalog (`GesetzeskatalogDialog` mit
+Zeilendialog als Überlagerung), der Katalog-Dublettensuche über dem Baustein `Baumansicht`, dem Einstellungsdialog
+(`EinstellungenCtrl` im Kern über `Dienste.Pfade`/`Dienste.Einstellungen`) und den Klimaregionen (`KlimaregionStammCtrl`
+und `KlimaImportAblauf` im Kern, zwei Klimabilder im Renderer); ohne `ChartManager` (die MS-Chart-Bindung ist beendet),
+ohne `RoundedPanel`, und die Sprungbrücke trägt nur noch den Zweig `SpeicherOptimierung`. Bau, Simulatorstart, Erststart
+mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe
+bis Migrationsende.
+
+**Siebzehnter Lauf 33867643966 (`ios.yml`, `macos-26`, 04.09.2026, 11:22–11:33 UTC, 10 min 30 s)** auf
+`c11f13d` — der Stand **nach der Welle 15a und den W14c-Entscheiden**: grün. Erstmals mit dem Baustein
+`ProjektListe` unter der iOS-Projektliste (`Seiten/Projektliste` baut darauf, die fünf Fälle unverändert), den
+Projektdialogen (`ProjektWahlDialog`, `ProjektKopieDialog`, `ProjektTransferDialog` — `ProjektExportImportCtrl` im Kern,
+`IProjektQuelle.TransferDaten()` mit Standardumsetzung, damit `IosProjektQuelle` unverändert bleibt), der Assistentenseite
+`ProjektKopfSeite`, dem Schema-Schritt 62 (`SchemaStand.Zielversion` 62 im Kern; die Seed-Kopie trägt keine Waisen) und
+den festen Pfaden des Einstellungsdialogs ohne Ordnerwähler (E‑5). Bau, Simulatorstart, Erststart mit Seed-Kopie,
+Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
+**Achtzehnter Lauf 33876284942 (`ios.yml`, `macos-26`, 04.09.2026, 13:07–13:09 UTC, 2 min 26 s)** auf
+`f71853b` — der Stand **nach der Welle 15b**: **rot**, Bau der iOS-Hülle mit CS0103: `IosHilfeDienst.cs(67)` schrieb
+`MyResource.Resource.HILFE_IOS_BESCHREIBUNG` (Auflage H‑2 aus W15b.0g — der einzige deutsche Satz der iOS-Hülle wurde in
+die Ressourcen gehoben), aber die Ressourcenklasse liegt in `WindowsFormsApplication1.MyResource`, und das `using` auf
+`WindowsFormsApplication1` macht den Unter-Namensraum in `EPOS.iOS` nicht sichtbar. Im Kern löst sich derselbe Ausdruck
+relativ zum umgebenden Namensraum auf, deshalb fiel es auf Linux und Windows nicht auf — **die iOS-Hülle wird nur vom
+macOS-Läufer übersetzt**, das ist der Sinn des Laufs. Behoben mit `f0e23a4` (voll qualifiziert; kein weiterer Treffer in
+`EPOS.iOS`).
+
+**Neunzehnter Lauf 33878903371 (`ios.yml`, `macos-26`, 04.09.2026, 13:35–13:41 UTC, 6 min 27 s)** auf `f0e23a4`: grün.
+Erstmals mit `KiChatService` im Kern hinter `IKiAusfuehrung` (auf iOS die stille Standardfassung `KeineAusfuehrung`),
+dem Baustein `Gespraechsverlauf`, den KI-Dialogen, `Seitenschluessel.KiAssistent` in der `AppWurzel`, dem Tooltip-Schlüssel
+und den Rückfragen bei mehrdeutigem Projekt- und Variantennamen (O‑3/O‑4). Bau, Simulatorstart, Erststart mit Seed-Kopie,
+Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
+**Zwanzigster Lauf 33883210632 (`ios.yml`, `macos-26`, 04.09.2026, 14:20–14:31 UTC, 10 min 14 s)** auf
+`975ead5` — der Stand **nach der Welle 15c** (Rückweg-Anker `vor-W16`): grün. Erstmals mit `LizenzManager.Bewerten`
+und den ersten Lizenztests im Kern, `LizenzCtrl`/`LizenzTextCtrl`/`ZustimmungCtrl`, den vier Hüllenzusätzen an
+`BlazorDialogForm<T>` und den Lizenz- und Erststartkomponenten in `EPOS.UI`; der WebView2-Riegel aus `Program.Main`
+(E‑8) betrifft nur die Windows-Anwendung, die iOS-Hülle startet unverändert über `AppWurzel`. Bau, Simulatorstart,
+Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen
+Freigabe bis Migrationsende.
+
+**Einundzwanzigster Lauf 33890882150 (`ios.yml`, `macos-26`, 04.09.2026, 15:41–15:49 UTC, 8 min 03 s)** auf
+`84d7c16` — der Stand **nach der Teilwelle 16a**: grün. Erstmals mit dem Assistenten hinter
+`IProjektQuelle.AssistentGaben` in der `AppWurzel` (N9 — `IosProjektQuelle` setzt die Gaben noch nicht um, der Assistent
+ist auf iOS angekündigt, aber nicht bedienbar, W16a‑O‑4), mit `KomponentenBestandCtrl` und `AssistentCtrl` im Kern und
+ohne `BlazorAssistentSeite`, `WizardParent` und `ProjektAuswahl`. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus
+1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
+**Zweiundzwanzigster Lauf 33898599945 (`ios.yml`, `macos-26`, 04.09.2026, 17:04–17:12 UTC, 7 min 56 s)** auf
+`c8fbd77` — der Stand **nach der Teilwelle 16b**: grün. Erstmals mit der Razor-Startseite und
+`IProjektQuelle.Startkacheln` im gemeinsamen `EPOS.UI` (N9 — `IosProjektQuelle` setzt die Startkacheln noch nicht um, der
+Zweig in der `AppWurzel` kommt mit K7 in W16c), mit `ProjektKontextCtrl`, `StartseiteCtrl` und `BedarfsZustand` im Kern
+und ohne `Form_Start`, `FormMain` und die zwölf `*KontextMenuCtrl`. Bau, Simulatorstart, Erststart mit Seed-Kopie,
+Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende. Der Lauf Nr. 23 (33898901613) auf demselben Stand war eine versehentliche Dublette (der erste Aufruf
+ging vor einem Neustart des Sitzungsprozesses durch, seine Bestätigung ging verloren) und wurde nach 100 Sekunden
+abgebrochen; der nächste echte Lauf trägt die Nummer 24.
+
+**Vierundzwanzigster Lauf 33904433007 (`ios.yml`, `macos-26`, 04.09.2026, 18:10–18:18 UTC, 8 min 43 s)** auf
+`555ef11` — der Stand **nach der Teilwelle 16c, dem Ende der Mischphase (M9)**: grün. Erstmals mit `Hauptfenster`,
+`Menueband` und der `AppWurzel` als gemeinsamer Wurzel beider Plattformen (N9 — die `Kopfleiste` ist auf iOS leer,
+`StartseiteGaben`, `BerichteKostenGaben` und `AdresseOeffnen` laufen in die Standardumsetzung, die `AppWurzel` sagt es im
+Banner; die Adapter sind iU11), mit `Seitenschluessel` als der einen Schlüsseltabelle (K7) und ohne den Designer der
+`MDIMainForm`. `EPOS.iOS` selbst ist in W16c nicht angefasst worden. Bau, Simulatorstart, Erststart mit Seed-Kopie,
+Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
+**Fünfundzwanzigster Lauf 33913313694 (`ios.yml`, `macos-26`, 04.09.2026, 19:51–19:58 UTC, 6 min 29 s)** auf
+`853b8c6` — der Stand **nach den Nachträgen zu Welle 16** (W16c‑E‑2 Untermenü „Sprache", W16c‑E‑3 Ansichtswechsel auf
+`BERICHTE_KOSTEN`, W15c‑O‑2 `LizenzTexte`-Bündel, W16b‑O‑3 Klimazone als eine Wahrheit im Kern): grün. Erstmals mit
+dem Ansichtswechsel der `AppWurzel` auf die Berichte-Seite über den Menüweg (auf iOS der einzige Weg dorthin, die
+`Kopfleiste` bleibt leer) und mit `IosProjektKontext` als dünner Weiterleitung auf `ProjektKontextCtrl` — die
+Klimazone kommt jetzt aus dem Kern, die eigene Stammabfrage der Hülle ist gefallen. Bau, Simulatorstart, Erststart mit
+Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
+**Sechsundzwanzigster Lauf 33975880961 (`ios.yml`, `macos-26`, 05.09.2026, 15:47–15:53 UTC, 6 min 14 s)** auf
+`7bec4ad` — der Stand **nach den Befunden der Windows-Abnahme vom 05.09.2026** (W16c‑B13 Untermenüs, W9‑B‑1…B‑5,
+W15a‑B‑1, W16a‑B‑1/B‑2, W11b‑B‑2/B‑3 und A‑1): grün. Erstmals mit dem Baustein `Diagramm` und dem Modul
+`epos-diagramm.js`, das wie `epos-verlauf.js` über `import()` geladen wird — die `index.html` der iOS-Hülle blieb
+unverändert; ob Pinch und Ein-Finger-Verschieben in der WKWebView die Seite nicht mitzoomen (`gesturestart`,
+`touch-action: none`), bleibt Abnahmepunkt 22 am Gerät. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030
+und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
+**Siebenundzwanzigster Lauf 33982889724 (`ios.yml`, `macos-26`, 05.09.2026, 18:04–18:14 UTC, 10 min 51 s)** auf
+`c563a40` — der Stand **nach den sechs Befunden und Wünschen des Nachmittags der Windows-Abnahme vom 05.09.2026**
+(W16b‑E‑7 Kachelmaß, W9‑E‑2 Gebäude-Simulation, W15a‑E‑1 Variantenprojekte, W5‑E‑1 Übersicht-Auswahlfeld, iU8‑E‑1
+Admin-Dialoge, W13‑B‑1 Importabsturz): grün. Für die iOS-Hülle zählt vor allem W13‑B‑1: `IDateiDienst` und
+`IDialogDienst` führen wartbare Zwillinge (`…Async`) mit Standardfassung, `IosDateiDienst.AufDemHauptfaden` lieferte
+vom Hauptfaden bisher `default` (der Wähler ging nie auf) und ist über die `…Async`-Fassungen behoben, und
+`EPOS.iOS/HauptSeite` mountet `Wurzel<AppWurzel>` — die Fehlerschranke, die eine Komponentenausnahme als Fehlerkasten
+zeigt statt den Prozess zu beenden. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich
+PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
+
+**iF24 — entschieden am 03.09.2026: Konto beschaffen.** Gemeint ist die **Mitgliedschaft im
+Apple Developer Program** (99 US-Dollar/Jahr), nicht die kostenlose Apple ID: Die Apple ID ist
+nur das Benutzerkonto, an das die Mitgliedschaft gebunden wird. Ohne Mitgliedschaft signiert
+Xcode höchstens für eigene Geräte („Personal Team“, Signatur läuft nach 7 Tagen ab, 3 Apps);
+TestFlight, App Store Connect, Bundle-ID-Registrierung, Distribution-Zertifikat und Apple
+Business Manager gibt es erst mit dem Programm. Das Enterprise Program (299 US-Dollar) ist für
+rein interne Apps und für den Verkauf an Kunden ungeeignet. Die Schritte, die nur der Anwender
+gehen kann (die CI übernimmt danach die Signierkette, iE9):
+
+1. Apple ID der Firma mit Zwei-Faktor-Anmeldung anlegen (nicht die private ID eines
+   Mitarbeiters — das Konto trägt später die App).
+2. Im Apple Developer Program als **Organisation** einschreiben (99 US-Dollar/Jahr). Dafür
+   verlangt Apple eine **D-U-N-S-Nummer** der INEKON; Prüfung durch Dun & Bradstreet dauert
+   Tage bis Wochen, die Einschreibung selbst nochmals einige Tage. Eine Einzelperson-Einschreibung
+   ginge schneller, kann aber später nicht in eine Organisation umgewandelt werden.
+3. Nach der Freischaltung in App Store Connect die **Bundle-ID `de.inekon.eposplan`** (aus
+   `EPOS.iOS/EPOS.iOS.csproj`) registrieren und einen App-Eintrag anlegen.
+4. Ein **Apple-Distribution-Zertifikat** (`.p12` mit Kennwort) und ein
+   **Provisioning-Profil** für TestFlight erzeugen.
+5. Beides als Repository-Geheimnisse hinterlegen (`IOS_P12_BASE64`, `IOS_P12_PASSWORD`,
+   `IOS_PROFILE_BASE64`); `ios.yml` bekommt in iU13 den Signierschritt. Geheimnisse gehören
+   nie in einen Commit.
+6. Für einen späteren Vertrieb außerhalb des Stores: **Apple Business Manager** prüfen
+   (Custom Apps, § 3.4 des Umsetzungskonzepts; entschärft die Provisionsfrage iR7).
+
+**iF25 — entschieden am 03.09.2026: E1 für die CI, E2 für TestFlight.** Die CI baut weiter mit der
+Testdatenbank (`-p:SeedDb`, 77 MB). Vor iU13 misst der Anwender unter Windows, wie groß der
+Produktivstand als Seed wird — die Produktivdatenbank liegt nicht im Repo:
+
+```
+sqlite3 Kenndaten.sqlite "VACUUM INTO 'Kenndaten_seed.sqlite'"
+dir Kenndaten_seed.sqlite
+```
+
+Die so erzeugte Datei wird in iU13 per `-p:SeedDb=<Pfad>` gebaut. Liegt sie deutlich über
+150 MB, ist vor dem Store-Weg zu prüfen, welche Massendatentabellen (Klima- und Solardaten)
+sich beim Erststart nachladen lassen (E3). E4 (Volldownload beim Erststart) nur bei Store-Vorgaben.
 
 - [ ] **AOT statt JIT.** Der Simulator führt JIT aus, das Gerät nicht. Zu prüfen sind die
       Stellen, die Reflection oder Startzeitmagie benutzen: der `[ModuleInitializer]` in
@@ -221,9 +439,37 @@ Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iP
 
 ---
 
+## Nachtrag iU9-W10b (04.09.2026) — die erste FACHSEITE im iOS-Einstieg
+
+Bis hierher kannte `AppWurzel` drei Ansichten: die Projektliste und zwei Dialoge. Mit
+**iU9-W10b** kommt die **Simulationskonfiguration** als vierte dazu —
+`Seitenschluessel.SimulationKonfiguration` und ein Zweig in `AppWurzel.Zeige`, gebaut nach
+dem Muster `BhkwWirtschaftlichkeit`. Sie ist die erste **Fachseite** (kein Dialog), die die
+Wurzel zeigt, und damit der erste Beleg dafür, dass eine Seite mit Überlagerungen auf dem
+iPad genauso läuft wie unter Windows: Die sieben Dialoge der Welle 10a erscheinen darin als
+Überlagerung, ohne zweites Fenster.
+
+- [x] `dotnet build EPOS.UI -c Release` → **0 Fehler, 0 Warnungen**.
+- [x] `dotnet test WP-Plan.Kern.slnf -c Release` → **2 379/2 379**, darunter 26 bunit-Fälle
+      für die Seite und 7 für `AppWurzel` (unverändert).
+- [ ] **`IProjektQuelle` ist gewachsen** — `SimulationKonfigGaben(int idProjekt)` liefert den
+      Parametersatz. Die Methode hat eine **Standardumsetzung** (`=> null`), damit
+      `EPOS.iOS/Dienste/IosProjektQuelle` durch die Erweiterung **nicht bricht**: `EPOS.iOS`
+      steht bewusst weder in `WP-Plan.sln` noch im Solution-Filter, ein Pflichtmitglied hätte
+      den iOS-Job stumm gebrochen. **Offen:** Solange `IosProjektQuelle` die Methode nicht
+      umsetzt, meldet die Wurzel „Zu diesem Projekt lässt sich die Simulationskonfiguration
+      nicht öffnen" — die Seite ist auf dem Gerät also noch nicht erreichbar. Das Nachziehen
+      der Quelle (Controller, Delegatensatz, Texte) ist ein eigener Schritt in **iU11**.
+- [ ] **iOS-Job einmal laufen lassen** (`Actions → iOS → Run workflow`, bis Migrationsende
+      pauschal freigegeben). Er baut `EPOS.iOS` gegen die erweiterte Schnittstelle; die
+      Standardumsetzung muss ihn tragen, ohne dass die Hülle angefasst wurde.
+
+---
+
 ## Was iU10 bewusst **nicht** tut
 
-- **Kein Wizard.** `AppWurzel` ist eine Zustandsmaschine mit drei Ansichten, kein Router. Der
+- **Kein Wizard.** `AppWurzel` ist eine Zustandsmaschine mit VIER Ansichten (seit iU9-W10b),
+  kein Router. Der
   iL5-Wizard (Projekt → Bedarf → Erzeuger → Simulation → Bericht) ist **iU10-9**.
 - **Kein Anlegen einer Energieträger-Variante.** Der Schreibweg steht bis heute in
   `Views/Kosten/Form_Kosten.CreateNewEnergyCarrier` und hängt dort am Typ `EnergyCarrier` und an

@@ -1,0 +1,226 @@
+@* Der BEDARFS-Reiter der Ergebnisseite (R4, iU9-W11b.3).
+
+   VORBILD. tabPage_Bedarf mit chart1 (Waermelast, normiert) und chart2
+   (Strombedarf, Viertelstunden), den drei Kanalzeilen aus Paket E1/E2, zwei
+   „Details…"-Knoepfen in die Bedarfsergebnisdialoge (W8) und dem CSV-Export.
+
+   EINE FUELLLOGIK STATT ZWEIER (Befund W11-B14, A-Zeile). Der Vorlaeufer fuellte
+   chart2 auf ZWEI Wegen: beim Lauf ueber ConfigureXAxisWithHours2 mit
+   Schrittweite 4 bzw. 10, beim Umschalten ueber ConfigureXAxisWithHours mit
+   Schrittweite 1 - DIESELBE Schalterstellung ergab zwei verschiedene Bilder.
+   Hier gibt es EINEN Weg: ein Bildauftrag mit der Schalterstellung, gerendert
+   von ChartRenderer.GanglinieNormiert (B1). Der Renderer zeichnet ueber die
+   Laenge der Reihe und untertastet selbst.
+
+   WAS ENTFAELLT. Die beiden Maus-ToolTips (Befund W11-B13: der Y-Wert stand in
+   der FORMATZEICHENKETTE von DateTime.ToString, und .ToString() auf einem
+   string ist wirkungslos - beide Handler waren zeichengleich fehlerhaft), Zoom
+   und Cursor aus init_Chart, und die Einpassung der Kanalbeschriftungen
+   (BedarfKanalBeschriftungEinpassen, BedarfMaximalzeilenEntzerren,
+   ZeileUnterBeschriftung - 90 Zeilen Geometrie). *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    <div class="epos-simerg-spalten">
+
+        @* ---- Waerme ---- *@
+        <section class="epos-simerg-block">
+            <dl class="epos-simerg-werte">
+                @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF_NETZ, Daten.WaermebedarfGesamtMwh, MWH)
+                @Wertzeile(Resource.SIMERG_LBL_MAX_WAERMELAST, Daten.WaermelastMaxKw, "kW")
+                @Wertzeile(Resource.SIMERG_LBL_GESAMT_WAERMEBEDARF, Daten.WaermebedarfGesamtMwh, "MWh")
+            </dl>
+
+            @* PAKET E1: die drei Bedarfskanaele unter der Summe - nur die, die
+               der Lauf fuehrt. *@
+            @if (KanalzeilenDa)
+            {
+                <Gruppenkopf Titel="@Resource.SIM_LABEL_BEDARF_JE_KANAL" />
+                <dl class="epos-simerg-werte">
+                    @for (int k = 0; k < Daten.KanalMwh.Count; k++)
+                    {
+                        if (!Da(k)) { continue; }
+                        @Wertzeile(Kanalname(k), Daten.KanalMwh[k], MWH)
+                    }
+                </dl>
+            }
+
+            <div class="epos-simerg-schalter">
+                <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_waermeSortiert"
+                          WertChanged="WaermeSortiertGesetzt" />
+
+                @* PAKET E2: „Gesamt" plus je vorhandenem Kanal ein Schalter. *@
+                <Schalter Bezeichnung="@Resource.CHART_LEGENDE_GESAMT" Wert="@_gesamtAn"
+                          WertChanged="GesamtGesetzt" />
+                @for (int k = 0; k < Daten.KanalMwh.Count; k++)
+                {
+                    if (!Da(k)) { continue; }
+                    int index = k;
+                    <Schalter Bezeichnung="@Kanalname(index)" Wert="@KanalAn(index)"
+                              WertChanged="@(w => KanalGesetzt(index, w))" />
+                }
+            </div>
+
+        </section>
+
+        @* ---- Strom ---- *@
+        <section class="epos-simerg-block">
+            <dl class="epos-simerg-werte">
+                @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Daten.StrombedarfGesamtMwh, MWH)
+                @Wertzeile(Resource.SIMERG_LBL_MAX_STROMBEDARF, Daten.StrombedarfMaxKw, "kW")
+                @Wertzeile(Resource.SIMERG_LBL_GESAMT_STROMBEDARF, Daten.StrombedarfGesamtMwh, "MWh")
+            </dl>
+
+            <div class="epos-simerg-schalter">
+                <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_stromSortiert"
+                          WertChanged="StromSortiertGesetzt" />
+            </div>
+
+        </section>
+
+        @* ---- Die beiden Ganglinien, jede ueber die volle Breite ----
+
+           Befund W11b-B-2 der Windows-Abnahme 05.09.2026: In der halben
+           Rasterspalte kam ein 1 240 Bildpunkte breites Diagramm auf etwa 480 an -
+           „briefmarkengross", die Legende nicht mehr zu lesen. Die Zahlenbloecke
+           bleiben nebeneinander, die Diagramme stehen darunter ueber beide Spalten
+           (.epos-simerg-diagrammzeile).
+
+           BereichGewaehlt gibt den Achsenzoom des WinForms-Vorbilds zurueck
+           (Befund A-1): Ein aufgezogenes Rechteck laesst den Kern das Bild mit
+           diesem Zeitausschnitt neu zeichnen; „1:1" holt das ganze Jahr zurueck. *@
+        <section class="epos-simerg-block epos-simerg-diagrammzeile">
+            <ChartBild Png="@BildWaerme" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                       BereichGewaehlt="WaermeBereichGewaehlt"
+                       Zurueckgesetzt="@(() => _waermeBereich = null)" />
+
+            @if (WaermeDetails.HasDelegate)
+            {
+                <button type="button" class="epos-simerg-knopf" @onclick="WaermeDetails">
+                    @Resource.SIMERG_BTN_DETAILS
+                </button>
+            }
+        </section>
+
+        <section class="epos-simerg-block epos-simerg-diagrammzeile">
+            <ChartBild Png="@BildStrom" Alt="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
+                       BereichGewaehlt="StromBereichGewaehlt"
+                       Zurueckgesetzt="@(() => _stromBereich = null)" />
+
+            @if (StromDetails.HasDelegate)
+            {
+                <button type="button" class="epos-simerg-knopf" @onclick="StromDetails">
+                    @Resource.SIMERG_BTN_DETAILS
+                </button>
+            }
+        </section>
+
+    </div>
+
+    @if (Csv.HasDelegate)
+    {
+        <button type="button" class="epos-simerg-knopf" @onclick="Csv"
+                title="@Resource.SIM_TOOLTIP_CSV_BEDARF">@Resource.SIM_BTN_CSV_EXPORT</button>
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    /// <summary>Die vier Zahlen und die drei Kanaele.</summary>
+    [Parameter] public BedarfDaten Daten { get; set; } = new BedarfDaten();
+
+    /// <summary>Liefert ein Bild zur aktuellen Schalterstellung; ohne ihn bleibt es leer.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>„Details…" der Waermeseite (BedarfErgebnisDialog, W8).</summary>
+    [Parameter] public EventCallback WaermeDetails { get; set; }
+
+    /// <summary>„Details…" der Stromseite.</summary>
+    [Parameter] public EventCallback StromDetails { get; set; }
+
+    /// <summary>Der CSV-Export; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>Die gewaehlten Kanalschluessel (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Reihen();
+
+    /// <summary>Der aufgezogene Zeitausschnitt des Waermebildes; <c>null</c> = ganzes Jahr.</summary>
+    public Diagrammbereich? WaermeBereich => _waermeBereich;
+
+    /// <summary>Derselbe Ausschnitt fuer das Strombild (Pruefhilfe).</summary>
+    public Diagrammbereich? StromBereich => _stromBereich;
+
+    private bool _waermeSortiert;
+    private bool _stromSortiert;
+    private bool _gesamtAn = true;
+    private readonly HashSet<int> _kanaele = new HashSet<int>();
+    private Diagrammbereich? _waermeBereich;
+    private Diagrammbereich? _stromBereich;
+
+    private bool KanalzeilenDa
+    {
+        get
+        {
+            for (int k = 0; k < Daten.KanalMwh.Count; k++) if (Da(k)) return true;
+            return false;
+        }
+    }
+
+    private bool Da(int k) => k < Daten.KanalDa.Count && Daten.KanalDa[k];
+
+    private string Kanalname(int k) => k < Daten.Kanalnamen.Count ? Daten.Kanalnamen[k] : "";
+
+    private bool KanalAn(int k) => _kanaele.Contains(k);
+
+    private void WaermeSortiertGesetzt(bool wert) => _waermeSortiert = wert;
+
+    private void StromSortiertGesetzt(bool wert) => _stromSortiert = wert;
+
+    private void GesamtGesetzt(bool wert) => _gesamtAn = wert;
+
+    private void KanalGesetzt(int k, bool wert)
+    {
+        if (wert) _kanaele.Add(k); else _kanaele.Remove(k);
+    }
+
+    /// <summary>
+    /// Die Serienschluessel des Waermebildes: „Gesamt" und je angehaktem Kanal
+    /// einer. Sprachneutral — die Beschriftung setzt der Renderer.
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string>();
+        if (_gesamtAn) liste.Add("GESAMT");
+        for (int k = 0; k < Daten.KanalMwh.Count; k++)
+            if (Da(k) && KanalAn(k)) liste.Add("KANAL_" + k);
+        return liste;
+    }
+
+    /// <summary>
+    /// Der Anwender hat im Waermebild einen Bereich aufgezogen. Der Ausschnitt geht
+    /// unveraendert in den Bildauftrag; was daraus fuer ein Achsenbereich wird, weiss
+    /// nur der Renderer, der das Bild gezeichnet hat.
+    /// </summary>
+    private void WaermeBereichGewaehlt(Diagrammbereich bereich) => _waermeBereich = bereich;
+
+    /// <summary>Dasselbe fuer das Strombild.</summary>
+    private void StromBereichGewaehlt(Diagrammbereich bereich) => _stromBereich = bereich;
+
+    private byte[]? BildWaerme =>
+        Bild?.Invoke(new Bildauftrag(Bilder.BedarfWaerme, _waermeSortiert, -1, Reihen(),
+                                     0.0, _waermeBereich));
+
+    private byte[]? BildStrom =>
+        Bild?.Invoke(new Bildauftrag(Bilder.BedarfStrom, _stromSortiert, -1, null,
+                                     0.0, _stromBereich));
+
+    private RenderFragment Wertzeile(string text, double wert, string einheit) => @<text>
+        <dt>@text</dt>
+        <dd>@wert.ToString("F2", System.Globalization.CultureInfo.CurrentCulture)</dd>
+        <dd class="epos-simerg-einheit">@einheit</dd>
+    </text>;
+}

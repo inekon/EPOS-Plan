@@ -1,9 +1,9 @@
-# STAND.md — datierte Stände des Anwendungsprojekts
+﻿# STAND.md — datierte Stände des Anwendungsprojekts
 
 Hier steht, was altert: Schemanummern, Etappen, Zahlen, Basen. Wer etwas hieraus verwendet, prüft
 das Datum. Die Regeln stehen in [`CLAUDE.md`](CLAUDE.md); diese Datei wird nur bei Bedarf gelesen.
 
-**Stand 02.09.2026**, Branch `ios_migration` (HEAD `d46e200`).
+**Stand 03.09.2026**, Branch `ios_migration` (nach iU9 Welle 9).
 
 ## Datenhaltung
 
@@ -36,6 +36,32 @@ das Datum. Die Regeln stehen in [`CLAUDE.md`](CLAUDE.md); diese Datei wird nur b
   432 Altaufrufe unter `Views/` lauffähig bis iU9. `RecordSet` hat 47 echte Nutzer (iR8).
 - Die Altkopien `..\WindowsFormsApplication1 - Kopie` und `..\mit_Puffer_KI_Lösungsversuch` sind
   seit 29.08.2026 entsorgt.
+- **Maskenumstellung nach Blazor (Paket iU9), Stand nach Welle 9 (03.09.2026):** Der Stapellauf
+  der Formularkarte zählt **55 Masken** (63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5,
+  91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0, 111 nach W1, 118 davor), davon
+  **29 lokalisiert** und **54 von 55 über einen Öffner erreichbar** — 0 × „nein",
+  0 × „verwaist", 1 × „unklar" (`Form_PufferSp_Bearbeiten`, Welle 14a). Die Warnzahl der
+  Mappe steht unverändert bei **20** (14 WFO1000, 2 CS0108, 2 CS0109, 1 WFO0003, 1 CA2255).
+  Welle 7 hat die acht Masken der Gewerke **Wärmepumpe und Solarthermie** umgestellt
+  (3 065 Zeilen, 43 MessageBox) samt zwei Assistentenseiten; Welle 8 die zehn Masken der
+  drei **Bedarfsblätter** und der Gebäudetypen-Verwaltung (2 569 Zeilen, 41 MessageBox);
+  Welle 9 die acht Masken der vier **Bedarfskacheln des Startbilds** (3 289 Zeilen,
+  42 MessageBox). **Acht Masken wurden FÜNF Komponenten**: `Form_Gebaeude1` und
+  `Form_Gebaeude2` bearbeiteten denselben Katalogsatz und werden zwei Reiter; die drei
+  Bedarfsblätter sind Drillinge wie in Welle 8. **Zehn der dreizehn Assistentenseiten
+  laufen seither als Razor-Komponente** — die Schnittstelle trägt seit W9.0a jeden
+  Listentyp (`IAssistentListenSeite<T>`). Neu im Kern: `Allgemein/Ferienzeit.cs`,
+  `Allgemein/Suchmuster.cs`, die Listen und der Katalogfilter in `GebaeudeStammCtrl`,
+  fünf `LiesProjekt`-Wege, `WaermebedarfStammCtrl.HatProjektzuordnung`,
+  `ProjektCtrl.Existiert`, `BedarfStammCtrl.Jahressumme`. Portprotokolle
+  `Allgemein/Reporting/iU9_W6_…` bis `…/iU9_W9_Blazor_Port_Protokoll.md`.
+- **Testzahl `WP-Plan.Kern.slnf` nach Welle 9: 2 066** (1 906 nach W8, 1 820 nach W7,
+  1 636 nach W6) — KiKern 450, SpeicherEngine 337, EPOS.UI 1 104, EPOS.Kern 175.
+  Formularkarte-Tests: 123. SQL-Dialektprüfer: 1 241 Texte, 0 Fundstellen.
+  ChartProben: 15 Bilder, unverändert.
+  Referenzlauf 1030/1007/1017 gegen `Referenzlaeufe/2026-08-30_B3-Kaskade`
+  **byte-gleich** (815 043 Werte).
+  Ressourcenkatalog: **3 818 de = 3 818 en** (207 Schlüssel aus Welle 9).
 
 ## Simulation (`Allgemein/Simulation/`)
 

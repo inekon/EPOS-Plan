@@ -1,0 +1,95 @@
+@* Die Eingabezeile des Chats: Frage tippen, "Fragen" oder "Nur suchen"
+   (iU9-W15b.7, Vorbild Form_KiChat._eingabe + _btnSenden + _btnSuchen).
+
+   ENTER SENDET, UMSCHALT+ENTER MACHT EINE NEUE ZEILE (Bestand :954-966). Das ist
+   die Bedienregel des Chatfensters und bleibt woertlich: Wer eine mehrzeilige
+   Frage tippen will, kommt mit Umschalt weiter; wer fertig ist, drueckt Enter.
+
+   IM HILFE-BETRIEB gibt es nur einen Knopf. "Nur suchen" grenzt die kostenlose
+   Suche gegen "Fragen" ab - ist die KI abgeschaltet, gibt es nichts abzugrenzen,
+   und der Knopf heisst schlicht "Suchen" (KI_HILFEBETRIEB_SUCHEN_BTN). Diese
+   Komponente bekommt beide Beschriftungen fertig herein.
+
+   SIE SENDET NICHTS. Sie meldet "der Anwender moechte fragen" bzw. "... suchen"
+   und leert danach das Feld - genau wie der Bestand (:996). *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+
+<div class="epos-kieingabe">
+    <textarea class="epos-eingabe epos-eingabe--mehrzeilig epos-kieingabe-feld"
+              rows="3" aria-label="@Bezeichnung" placeholder="@Platzhalter"
+              disabled="@Gesperrt" value="@_text"
+              @oninput="BeiEingabe" @onkeydown="BeiTaste" @onkeydown:preventDefault="_abfangen"></textarea>
+
+    <div class="epos-kieingabe-knoepfe">
+        @if (MitModell)
+        {
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    disabled="@Gesperrt" @onclick="() => Senden(true)">@FragenText</button>
+        }
+        <button type="button" class="epos-knopf"
+                disabled="@Gesperrt" @onclick="() => Senden(false)">@SuchenText</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Beschriftung des Feldes fuer Sprachausgaben.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Grauer Hinweistext im leeren Feld.</summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>
+    /// Steht der Knopf „Fragen" (Modellbetrieb)? Im Hilfe-Betrieb <c>false</c> —
+    /// dann gibt es nur die lokale Suche.
+    /// </summary>
+    [Parameter] public bool MitModell { get; set; } = true;
+
+    /// <summary>Beschriftung „Fragen" (<c>KI_CHAT_BTN_FRAGEN</c>).</summary>
+    [Parameter] public string FragenText { get; set; } = "";
+
+    /// <summary>
+    /// Beschriftung der Suche — im Regelbetrieb „Nur suchen"
+    /// (<c>KI_CHAT_BTN_SUCHEN</c>), im Hilfe-Betrieb „Suchen"
+    /// (<c>KI_HILFEBETRIEB_SUCHEN_BTN</c>).
+    /// </summary>
+    [Parameter] public string SuchenText { get; set; } = "";
+
+    /// <summary>Es läuft etwas — Feld und Knöpfe sind gesperrt.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>
+    /// Der Anwender will fragen. <c>true</c> = mit Modell, <c>false</c> = nur suchen.
+    /// Der Text kommt über <see cref="Frage"/> mit.
+    /// </summary>
+    [Parameter] public EventCallback<(string Frage, bool MitKi)> Abgeschickt { get; set; }
+
+    private string _text = "";
+    private bool _abfangen;
+
+    /// <summary>Der aktuelle Feldinhalt — für den Wirt, der ihn zurücksetzen darf.</summary>
+    public string Frage => _text;
+
+    private void BeiEingabe(ChangeEventArgs e) => _text = e.Value?.ToString() ?? "";
+
+    /// <summary>
+    /// Enter sendet, Umschalt+Enter macht eine neue Zeile (Bestand <c>:954-966</c>).
+    /// Der Standard wird nur beim sendenden Enter abgefangen — sonst bekäme das Feld
+    /// den Zeilenumbruch nicht, den der Anwender gerade wollte.
+    /// </summary>
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        _abfangen = e.Key == "Enter" && !e.ShiftKey;
+        if (!_abfangen) return;
+        await Senden(MitModell);
+    }
+
+    private async Task Senden(bool mitKi)
+    {
+        string frage = (_text ?? "").Trim();
+        if (frage.Length == 0 || Gesperrt) return;
+
+        _text = "";
+        await Abgeschickt.InvokeAsync((frage, mitKi));
+    }
+}

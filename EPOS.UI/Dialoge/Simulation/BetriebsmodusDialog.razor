@@ -1,0 +1,192 @@
+﻿@* Auswahl der LEISTUNGSSTEUERUNG einer Waermepumpe (BM_Typ) - Konzept 4.1,
+   iU9-W10a.1.
+
+   VORBILD. Views/Simulation/Form_Betriebsmodus (144 Z., Designer 151 Z.,
+   520 x 300, neun Steuerelemente, KEINE MessageBox, keine .resx). Er ist der
+   kleinste Dialog der Welle und deshalb ihr Muster: Der Dialog ENTSCHEIDET nur.
+
+   WAS BEIM AUFRUFER BLEIBT - und zwar bewusst:
+     * die Vorpruefung "nur fuer Waermepumpen" samt Meldung SIM_MSG_MODUS_NUR_WP
+       (Uebersicht.cs:608-615) - sie ist der Schutz der METHODE, nicht der Maske,
+     * das Schreiben von BM_Typ (WaermequelleClass.WertSchreiben :627),
+     * der PV-Hinweis, wenn PV gewaehlt wurde, aber keine PV-Anlage in der
+       Simulation steht (:629-634),
+     * das Auffrischen der Erzeugeruebersicht (:636).
+   Diese vier Stellen bleiben in Form_Simulation_Config, bis W10b sie mitnimmt.
+
+   DREI MODI, EINE RUECKFALLREGEL. ModusVorwaehlen:134-142 kannte einen switch
+   mit "default -> Laufzeit": Ein leerer oder unbekannter BM_Typ bedeutet
+   laufzeitoptimiert. Dieselbe Reihenfolge stand im Lesen (GewaehlterModus:44-52
+   prueft Leistung, dann PV, sonst Laufzeit) - beides ist hier eine einzige
+   Zuordnung, und der Rueckfall steht an genau einer Stelle.
+
+   DIE ERLAEUTERUNGEN GEHOEREN ZUR AUSWAHL. Unter jedem Wahlknopf stand im
+   Vorlaeufer ein eigenes Label mit zwei bis drei Zeilen (SIM_BM_TEXT_*). Ohne
+   sie waere die Wahl eine Ratefrage; sie kommen deshalb als Beschreibungen an
+   die Optionsgruppe (Baustein um diese Moeglichkeit erweitert).
+
+   ABWEICHUNG A-1 (Befund W10-B2): Der Vorlaeufer hatte KEINEN Hilfeeinstieg -
+   anders als Erdreich (:206), Quellprofil (:148), Waermesenke (:275) und
+   PufferSp_Projekt (:170), die alle InfoKnopf.Anbringen rufen. Die Komponente
+   traegt einen; ein Dialog ohne Hilfe ist in dieser Reihe die Ausnahme, nicht
+   die Regel.
+
+   TASTATUR: Esc bricht ab (Ergebnis null). Enter ist BELEGT - der Dialog
+   entscheidet nur und schreibt nichts; die Hausregel laesst Enter in reinen
+   OK-Dialogen zu, und AcceptButton war im Vorlaeufer gesetzt. *@
+
+@namespace EPOS.UI.Dialoge.Simulation
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Optionsgruppe Bezeichnung="@KopfText" Eintraege="@Eintraege"
+                   Beschreibungen="@Beschreibungen"
+                   Auswahl="@_auswahl" AuswahlChanged="w => _auswahl = w" />
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // --- Die drei Steuerwerte ---------------------------------------------------
+    //
+    // Sie sind ASCII-Schluessel der Persistenz (DbWerte ueber
+    // WaermequelleClass.MODUS_*) und duerfen NIE ein Anzeigetext sein
+    // (Drei-Schichten-Regel). Die Komponente kennt die Kernklassen nicht; die
+    // Huelle reicht die Werte als Parameter herein, hier stehen nur die
+    // Listenplaetze 0/1/2.
+
+    /// <summary>Listenplatz „laufzeitoptimiert" — zugleich der Rückfall.</summary>
+    public const int LAUFZEIT = 0;
+
+    /// <summary>Listenplatz „leistungsoptimiert".</summary>
+    public const int LEISTUNG = 1;
+
+    /// <summary>Listenplatz „PV-optimiert".</summary>
+    public const int PV = 2;
+
+    // --- Was hereinkommt --------------------------------------------------------
+
+    /// <summary>Der Anlagenname; er steht im Titel an der Stelle <c>{0}</c>.</summary>
+    [Parameter] public string Bezeichner { get; set; } = "";
+
+    /// <summary>
+    /// Der gespeicherte <c>BM_Typ</c>. Alles, was weder
+    /// <see cref="SteuerwertLeistung"/> noch <see cref="SteuerwertPv"/> ist — auch
+    /// leer —, bedeutet laufzeitoptimiert (<c>ModusVorwaehlen</c>, default-Zweig).
+    /// </summary>
+    [Parameter] public string AktuellerModus { get; set; } = "";
+
+    /// <summary>Der Steuerwert für „laufzeitoptimiert" (<c>WaermequelleClass.MODUS_LAUFZEIT</c>).</summary>
+    [Parameter] public string SteuerwertLaufzeit { get; set; } = "Laufzeit";
+
+    /// <summary>Der Steuerwert für „leistungsoptimiert" (<c>MODUS_LEISTUNG</c>).</summary>
+    [Parameter] public string SteuerwertLeistung { get; set; } = "Leistung";
+
+    /// <summary>Der Steuerwert für „PV-optimiert" (<c>MODUS_PV</c>).</summary>
+    [Parameter] public string SteuerwertPv { get; set; } = "PV";
+
+    /// <summary>
+    /// Das Ergebnis: der gewählte <c>BM_Typ</c>, <c>null</c> bei Abbruch oder Esc.
+    /// </summary>
+    [Parameter] public EventCallback<string?> Geschlossen { get; set; }
+
+    // --- Texte ------------------------------------------------------------------
+
+    /// <summary>Fenstertitel mit <c>{0}</c> für den Anlagennamen.</summary>
+    [Parameter] public string TitelText { get; set; } = "Betriebsmodus - {0}";
+
+    /// <summary>Die Kopfzeile über der Auswahl (im Vorläufer FETT).</summary>
+    [Parameter] public string KopfText { get; set; } = "Leistungssteuerung der Wärmepumpe:";
+
+    [Parameter] public string RbLaufzeit { get; set; } = "Laufzeitoptimiert - maximale Leistung";
+    [Parameter] public string TextLaufzeit { get; set; } =
+        "Die Wärmepumpe fährt volle Leistung; die über den Bedarf hinaus\n" +
+        "erzeugte Wärme lädt den Pufferspeicher. Lange Laufzeiten, wenig Takten.";
+
+    [Parameter] public string RbLeistung { get; set; } = "Leistungsoptimiert - nur den Bedarf decken";
+    [Parameter] public string TextLeistung { get; set; } =
+        "Die Wärmepumpe moduliert exakt auf den Wärmebedarf und erzeugt\n" +
+        "keinen Überschuss. Der Speicher wird nicht gezielt beladen.";
+
+    [Parameter] public string RbPv { get; set; } = "PV-optimiert - Überschuss nur mit PV-Strom";
+    [Parameter] public string TextPv { get; set; } =
+        "Bei verfügbarem PV-Strom fährt die Wärmepumpe erhöhte Leistung\n" +
+        "(begrenzt auf den PV-Überschuss) und lädt den Speicher; sonst\n" +
+        "arbeitet sie leistungsoptimiert.";
+
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Betriebsmodus.btn_Help";
+
+    // --- Stand ------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private int? _auswahl;
+
+    /// <summary>Der gewählte Listenplatz. Prüfhilfe für die Tests.</summary>
+    public int? Auswahl => _auswahl;
+
+    /// <summary>Der Titel mit eingesetztem Anlagennamen.</summary>
+    public string Titel => string.Format(TitelText, Bezeichner ?? "");
+
+    private IReadOnlyList<(int Id, string Text)> Eintraege => new[]
+    {
+        (LAUFZEIT, RbLaufzeit),
+        (LEISTUNG, RbLeistung),
+        (PV, RbPv)
+    };
+
+    private IReadOnlyDictionary<int, string> Beschreibungen => new Dictionary<int, string>
+    {
+        [LAUFZEIT] = TextLaufzeit,
+        [LEISTUNG] = TextLeistung,
+        [PV] = TextPv
+    };
+
+    protected override void OnInitialized()
+    {
+        // ModusVorwaehlen:134-142 - Leistung, PV, sonst (auch leer) Laufzeit.
+        if (string.Equals(AktuellerModus, SteuerwertLeistung, StringComparison.Ordinal))
+            _auswahl = LEISTUNG;
+        else if (string.Equals(AktuellerModus, SteuerwertPv, StringComparison.Ordinal))
+            _auswahl = PV;
+        else
+            _auswahl = LAUFZEIT;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>Der Steuerwert zum gewählten Listenplatz — <c>GewaehlterModus</c>:44-52.</summary>
+    private string Steuerwert() => _auswahl switch
+    {
+        LEISTUNG => SteuerwertLeistung,
+        PV => SteuerwertPv,
+        _ => SteuerwertLaufzeit
+    };
+
+    private Task BeiErgebnis(bool ok)
+        => Geschlossen.InvokeAsync(ok ? Steuerwert() : null);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Escape" => Geschlossen.InvokeAsync(null),
+        // Enter ist belegt: Der Dialog entscheidet nur und schreibt nichts
+        // (AcceptButton war im Vorlaeufer gesetzt).
+        "Enter" => Geschlossen.InvokeAsync(Steuerwert()),
+        _ => Task.CompletedTask
+    };
+}

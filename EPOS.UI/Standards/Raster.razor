@@ -9,12 +9,46 @@
        <Raster TZeile="Zeile" Zeilen="@meineZeilen">
            <PropertyColumn Property="@(z => z.Bezeichner)" Title="Bezeichnung" />
        </Raster>
-*@
+
+   BEARBEITBARE ZELLEN (iU9-W3.0). Ein DataGridView des Bestands konnte
+   Haekchen und Zahlen unmittelbar in der Zelle aendern
+   (Form_Emissionskatalog.dgvArten, ucFuelSettings). QuickGrid kann das nicht
+   von sich aus; die Zelle bekommt stattdessen ueber eine TemplateColumn einen
+   richtigen Baustein:
+
+       <TemplateColumn TGridItem="Zeile" Title="aktiv">
+           <Schalter Wert="@context.Aktiv" WertChanged="..." />
+       </TemplateColumn>
+       <TemplateColumn TGridItem="Zeile" Title="Wert">
+           <Zahlenfeld Wert="@context.Wert" WertChanged="..." />
+       </TemplateColumn>
+
+   Bearbeitbar="true" setzt dazu die Klasse epos-raster--bearbeitbar: Sie
+   nimmt den Zellen die senkrechte Polsterung, damit ein 44 px hohes
+   Eingabefeld die Zeile nicht auf 60 px treibt, und laesst die Felder die
+   Spaltenbreite fuellen. Am Verhalten aendert sie nichts - eine Zelle ist
+   bearbeitbar, weil ein Bedienelement darin steht, nicht wegen der Klasse.
+
+   LANGE LISTEN (iU9-W13.0l). Ein IQueryable allein virtualisiert NICHTS -
+   QuickGrid zeichnet ohne Virtualize jede Zeile. Fuer die 20 746 Zeilen der
+   CEC-Modulliste und die knapp 200 Saetze eines VDI-Katalogs setzt der Wirt
+   Virtualisiert="true"; QuickGrid haelt dann nur den sichtbaren Ausschnitt im
+   Baum. Zeilenhoehe ist das Mass, mit dem es rechnet, bevor es gemessen hat -
+   44 px ist die Hausgroesse eines Beruehrungsziels. Eine virtualisierte Liste
+   braucht einen Behaelter mit fester Hoehe (epos-raster-huelle--hoch), sonst
+   waechst sie und es gibt nichts zu virtualisieren.
+
+   JEDE LISTE STEHT IN EINEM RAHMEN (Windows-Abnahme 05.09.2026, Befund
+   W9-B-2 "Liste zu lang"). Die Hoechsthoehe --epos-listenhoehe steht im
+   Stilblatt an .epos-raster-huelle und gilt damit fuer ALLE Listen des
+   Hauses; eine kurze Liste bleibt kurz. Begrenzt="false" nimmt den Rahmen
+   ausdruecklich weg - fuer eine Tabelle, die als GANZES gelesen wird. *@
 
 @typeparam TZeile
 
-<div class="epos-raster-huelle">
-    <QuickGrid Items="@Zeilen" Class="epos-raster">
+<div class="@HuellenKlasse">
+    <QuickGrid Items="@Zeilen" Class="@Klasse"
+               Virtualize="@Virtualisiert" ItemSize="@Zeilenhoehe">
         @KindInhalt
     </QuickGrid>
 </div>
@@ -25,4 +59,42 @@
 
     /// <summary>Die Spaltendefinitionen (QuickGrid-Spalten).</summary>
     [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>
+    /// Stehen Bedienelemente in den Zellen? Dann sitzen die Felder eng in der
+    /// Zeile statt mit der Polsterung einer Textzelle (iU9-W3.0).
+    /// </summary>
+    [Parameter] public bool Bearbeitbar { get; set; }
+
+    /// <summary>
+    /// Nur den sichtbaren Ausschnitt zeichnen (iU9-W13.0l). Fuer Listen ab
+    /// einigen hundert Zeilen; darunter kostet es mehr, als es bringt.
+    /// </summary>
+    [Parameter] public bool Virtualisiert { get; set; }
+
+    /// <summary>
+    /// Angenommene Zeilenhoehe in Pixeln fuer die Virtualisierung — die
+    /// Hausgroesse eines Beruehrungsziels.
+    /// </summary>
+    [Parameter] public float Zeilenhoehe { get; set; } = 44f;
+
+    /// <summary>
+    /// Steht die Liste in einem festen Rahmen mit Rollbalken? Vorgabe <c>true</c> —
+    /// die Hausregel seit der Windows-Abnahme vom 05.09.2026 (Befund W9‑B‑2
+    /// „Liste zu lang"). Die Höchsthöhe ist das Token <c>--epos-listenhoehe</c>;
+    /// eine kurze Liste wird davon nicht künstlich hoch. <c>false</c> nimmt den
+    /// Rahmen ausdrücklich weg.
+    /// </summary>
+    [Parameter] public bool Begrenzt { get; set; } = true;
+
+    private string Klasse => Bearbeitbar ? "epos-raster epos-raster--bearbeitbar" : "epos-raster";
+
+    private string HuellenKlasse
+    {
+        get
+        {
+            if (Virtualisiert) return "epos-raster-huelle epos-raster-huelle--hoch";
+            return Begrenzt ? "epos-raster-huelle" : "epos-raster-huelle epos-raster-huelle--frei";
+        }
+    }
 }

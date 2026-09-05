@@ -420,5 +420,58 @@ namespace WindowsFormsApplication1
         }
 
         #endregion
+
+        // =================================================================================
+        // W6.0c - der Detailblock des Projektdialogs
+        // =================================================================================
+
+        /// <summary>
+        /// Die fuenf Anzeigefelder eines BHKW - der Detailblock von
+        /// <c>Form_BHKWEing.FillDetailControls</c> (Z. 350-359).
+        /// </summary>
+        public sealed record BhkwDetail(string Bezeichner, string Firma, string Beschreibung,
+                                        double Ptherm, double Pel);
+
+        /// <summary>
+        /// Die Anzeigefelder der PROJEKTKOPIE ueber Bezeichner und Projekt; <c>null</c>,
+        /// wenn es sie nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// Aus <c>FillDetailsFromProjekt</c> (Z. 330-346). Die Weiche „kein Projekt ->
+        /// Stammdaten" bleibt beim Aufrufer: Sie ist eine Entscheidung des Dialogs
+        /// (Assistentenbetrieb), nicht der Datenbank.
+        /// </remarks>
+        public static BhkwDetail ProjektDetail(string szName, int idProjekt)
+        {
+            return AusZeile(DataRepository.GetDataTable(
+                "SELECT Bezeichner, Firma, Beschreibung, Ptherm, Pel FROM Tab_BHKW " +
+                "WHERE Bezeichner = ? AND ID_Projekt = ?",
+                new DbParam("@name", szName ?? ""),
+                new DbParam("@idProj", idProjekt)));
+        }
+
+        /// <summary>
+        /// Dieselben Felder aus dem KATALOG ueber den Bezeichner - die Pickliste des
+        /// Projektdialogs (<c>FillDetailsFromStamm</c>, Z. 322-328).
+        /// </summary>
+        public static BhkwDetail StammDetail(string szName)
+        {
+            return AusZeile(DataRepository.GetDataTable(
+                "SELECT Bezeichner, Firma, Beschreibung, Ptherm, Pel FROM " + BHKWStammCtrl.TABLE +
+                " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@name", szName ?? "")));
+        }
+
+        private static BhkwDetail AusZeile(DataTable dt)
+        {
+            if (dt == null || dt.Rows.Count == 0) return null;
+            DataRow r = dt.Rows[0];
+            return new BhkwDetail(
+                r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString(),
+                r["Firma"] == DBNull.Value ? "" : r["Firma"].ToString(),
+                r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString(),
+                r["Ptherm"] == DBNull.Value ? 0 : Convert.ToDouble(r["Ptherm"]),
+                r["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(r["Pel"]));
+        }
     }
 }

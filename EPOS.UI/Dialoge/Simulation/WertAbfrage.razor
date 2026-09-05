@@ -1,0 +1,86 @@
+﻿@* Kleine Abfrage EINER Zahl - der Ersatz fuer Views/Simulation/Eingabefrage
+   (iU9-W10a.0f).
+
+   VORBILD. Eingabefrage.Fragen (49 Z.): ein modales Fenster 340 x 140 mit
+   Beschriftung, einem Textfeld, OK und Abbrechen. Der Quellprofil-Dialog ruft
+   es fuer "alle Werte gleich setzen" (btnAlleWerte_Click:917-935); die
+   Simulationskonfiguration ruft es fuer die WP-Prioritaet und die konstante
+   Quelltemperatur.
+
+   WARUM KEIN ALLGEMEINER BAUSTEIN. Von den drei Aufrufern wird in dieser Welle
+   genau EINER zur Razor-Komponente - Uebersicht.cs bleibt bis W10b WinForms und
+   ruft Eingabefrage weiter. Ein Baustein in Bausteine/ waere die Behauptung,
+   dass hier ein allgemeines Muster steht; er kann in W10b dorthin wandern,
+   wenn der zweite und dritte Aufrufer dazukommen.
+
+   EINE ZAHL, KEIN TEXT. Der Vorlaeufer gab eine Zeichenkette zurueck, die jeder
+   Aufrufer selbst durch ZahlParsen schickte - und bei Misserfolg unterschiedlich
+   behandelte (Befund W10-B18). Hier kommt ein Zahlenfeld herein: Es faerbt bei
+   Unsinn waehrend der Eingabe, und OK bleibt gesperrt, solange keine Zahl
+   dasteht. Der Wirt bekommt damit nur gueltige Werte oder null (Abbruch).
+
+   ENTER IST NICHT BELEGT (Hausregel): Der Wert wird sofort auf ALLE Zeilen
+   geschrieben; ein versehentliches Enter waere dort kein Bestaetigen. *@
+
+@namespace EPOS.UI.Dialoge.Simulation
+@using EPOS.UI.Bausteine
+@using EPOS.UI.Standards
+
+<Ueberlagerung Offen="@Offen" Titel="@TitelText" Schliessbar="false"
+               Geoeffnet="BeimOeffnen" Geschlossen="Abbrechen">
+    <KindInhalt>
+        <div class="epos-wertabfrage">
+            <Zahlenfeld Bezeichnung="@Beschriftung" Einheit="@Einheit"
+                        Wert="@_wert" WertChanged="w => _wert = w" />
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        disabled="@(_wert is null)" @onclick="Uebernehmen">@OkText</button>
+                <button type="button" class="epos-knopf"
+                        @onclick="Abbrechen">@AbbrechenText</button>
+            </div>
+        </div>
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    /// <summary>Steht die Abfrage?</summary>
+    [Parameter] public bool Offen { get; set; }
+
+    /// <summary>Überschrift des Bereichs (der Vorläufer trug sie als Fenstertitel).</summary>
+    [Parameter] public string TitelText { get; set; } = "";
+
+    /// <summary>Die Frage über dem Feld.</summary>
+    [Parameter] public string Beschriftung { get; set; } = "";
+
+    /// <summary>Einheit hinter dem Feld; leer = keine.</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>Der Wert, mit dem das Feld beim Öffnen steht.</summary>
+    [Parameter] public double? Vorgabe { get; set; }
+
+    /// <summary>
+    /// Das Ergebnis: die Zahl bei „OK", <c>null</c> bei Abbrechen oder Esc.
+    /// </summary>
+    [Parameter] public EventCallback<double?> Beantwortet { get; set; }
+
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    private double? _wert;
+
+    /// <summary>Der Stand des Feldes — Prüfhilfe für die Tests.</summary>
+    public double? Wert => _wert;
+
+    /// <summary>
+    /// Die Vorgabe wird beim ÖFFNEN gesetzt, nicht bei jedem Aufbau: Der Wirt hält die
+    /// Überlagerung über <c>Offen</c>, und das Feld soll nicht zurückspringen, während
+    /// der Anwender tippt.
+    /// </summary>
+    private void BeimOeffnen() => _wert = Vorgabe;
+
+    private Task Uebernehmen()
+        => _wert is null ? Task.CompletedTask : Beantwortet.InvokeAsync(_wert);
+
+    private Task Abbrechen() => Beantwortet.InvokeAsync(null);
+}

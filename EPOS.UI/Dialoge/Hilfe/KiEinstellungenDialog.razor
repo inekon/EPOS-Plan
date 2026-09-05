@@ -1,0 +1,178 @@
+@* Einstellungen des KI-Assistenten: Schluessel, Tageslimit, Modell, Weg B
+   (iU9-W15b.4, Ersatz fuer Views/Help/Form_KiEinstellungen.cs, 149 Z. + 191
+   Designer).
+
+   VIER DINGE, GENAU WIE IM VORLAEUFER: den API-Schluessel eintragen, das feste
+   Tageslimit ansehen, das Modell neu erkennen lassen und "Rueckfallweg B
+   erzwingen" schalten.
+
+   DER DIALOG SPEICHERT NICHTS (Klassenkopf des Vorlaeufers, :21-29): "Er liest
+   seine Anfangswerte aus KiChatService und gibt die Eingaben ueber ApiSchluessel
+   und WegBErzwingen zurueck; das Schreiben nach OK und die Rueckmeldung im
+   Chatfenster bleiben unveraendert beim Aufrufer."
+
+   DIE EINE AUSNAHME - BITGLEICH MITGENOMMEN (Entscheid E-5, Befund W15b-B11).
+   "Modell neu erkennen" uebernimmt den Schluessel SOFORT, vor OK; sonst koennte
+   die Modellabfrage gar nicht laufen. Ein anschliessendes "Abbrechen" nimmt das
+   NICHT zurueck. Das ist die einzige Stelle der Welle, an der ein Abbrechen
+   nicht alles zurueckdreht - der Vorlaeufer nennt es "bewusst mitgezogen", und
+   dabei bleibt es.
+
+   SICHERHEIT (Regeln S-1 und S-2, § 9.4 der Vermessung):
+     S-1  Der Schluessel wird NIE durchgereicht, nur gesetzt. Schluessel ist
+          Vorbelegung; hinaus geht er ueber Uebernehmen und Geschlossen. Das
+          Lesen bleibt bei KiChatService.
+     S-2  type="password", autocomplete="off", spellcheck="off" - die
+          Entsprechung zu UseSystemPasswordChar im Designer (:88).
+     S-3  Nichts in localStorage. Diese Komponente legt ueberhaupt nichts ab.
+
+   DAS TAGESLIMIT IST ANZEIGE, KEIN FELD (Befund W15b-B26). Es steht bewusst im
+   Code und ist auf keinem Weg zu aendern: "Eine Grenze, die der Begrenzte selbst
+   hochsetzen kann, ist keine."
+
+   DER DREITEILIGE HINWEIS steht als DREI Absaetze da. Im Vorlaeufer hing die
+   Modellzeile am Anfang eines langen Literals, und "Modell neu erkennen"
+   tauschte sie ueber Substring(IndexOf("\n\n")) aus; mit Ressourcentexten war
+   das eine Falle (mehrzeilige Werte liefern zur Laufzeit CRLF). Hier sind es
+   drei Parameter und drei <p>. *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+
+<div class="epos-kieinst">
+
+    <div class="epos-kieinst-schluesselzeile">
+        <label class="epos-feld epos-kieinst-schluessel">
+            <span class="epos-feld-text">@SchluesselText</span>
+            <span class="epos-feld-zeile">
+                @* S-2: Der Wert ist maskiert, wird nicht vorgeschlagen und nicht
+                   rechtschreibgeprueft. Ein Rechtschreibpruefer schickt Text an
+                   den Dienst des Browsers - bei einem Zugangsschluessel waere das
+                   genau das Falsche. *@
+                <input class="epos-eingabe" type="password" value="@_schluessel"
+                       autocomplete="off" spellcheck="false" @oninput="SchluesselGeaendert" />
+            </span>
+        </label>
+
+        <button type="button" class="epos-knopf epos-kieinst-modellneu" @onclick="ModellNeu">
+            @ModellNeuText
+        </button>
+    </div>
+
+    <p class="epos-kieinst-limit">
+        <span>@TageslimitText</span>
+        <span class="epos-kieinst-limitwert" title="@TageslimitTipp">@LimitWert</span>
+    </p>
+
+    <div class="epos-kieinst-hinweis">
+        <p>@_modellzeile</p>
+        <p>@HinweisDaten</p>
+        <p>@HinweisKontingent</p>
+    </div>
+
+    <Schalter Bezeichnung="@WegBText" Wert="@_wegB" WertChanged="WegBGeaendert" />
+
+    <div class="epos-kieinst-fuss">
+        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Ok">@OkText</button>
+        <button type="button" class="epos-knopf" @onclick="Abbrechen">@AbbrechenText</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// VORBELEGUNG des Schluesselfeldes (Regel S-1). Die Komponente gibt ihn nur
+    /// ueber <see cref="Geschlossen"/> bzw. <see cref="ModellNeuErkennen"/> heraus
+    /// und legt ihn nirgends ab.
+    /// </summary>
+    [Parameter] public string Schluessel { get; set; } = "";
+
+    /// <summary>Das feste Tageslimit - reine Anzeige.</summary>
+    [Parameter] public int Tageslimit { get; set; }
+
+    /// <summary>Die Modellzeile des Hinweises, fertig formatiert.</summary>
+    [Parameter] public string Modellzeile { get; set; } = "";
+
+    /// <summary>Steht „Rueckfallweg B erzwingen"?</summary>
+    [Parameter] public bool WegB { get; set; }
+
+    /// <summary>
+    /// „Modell neu erkennen": nimmt den EINGETIPPTEN Schluessel entgegen, setzt ihn
+    /// (Seiteneffekt, E-5), laesst das Modell neu ermitteln und liefert die neue
+    /// Modellzeile zurueck.
+    /// </summary>
+    /// <remarks>
+    /// Der Delegat bekommt den Schluessel, weil die Abfrage ihn braucht - er ist
+    /// KEIN Zustand dieser Seite und wird auch nicht zurueckgegeben.
+    /// </remarks>
+    [Parameter] public Func<string, Task<string>>? ModellNeuErkennen { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist zu. <c>null</c> = abgebrochen; sonst der neue Zustand.
+    /// </summary>
+    [Parameter] public EventCallback<KiEinstellungenErgebnis?> Geschlossen { get; set; }
+
+    // ---- Texte (die Huelle setzt sie aus MyResource) ---------------------
+
+    /// <summary>Beschriftung des Schluesselfeldes (<c>KI_EINST_LBL_SCHLUESSEL</c>).</summary>
+    [Parameter] public string SchluesselText { get; set; } = "";
+
+    /// <summary>Beschriftung „Modell neu erkennen" (<c>KI_EINST_BTN_MODELL</c>).</summary>
+    [Parameter] public string ModellNeuText { get; set; } = "";
+
+    /// <summary>Beschriftung „Tageslimit je Arbeitsplatz:" (<c>KI_EINST_LBL_TAGESLIMIT</c>).</summary>
+    [Parameter] public string TageslimitText { get; set; } = "";
+
+    /// <summary>Formatvorlage „{0} (fest vorgegeben)" (<c>KI_EINST_LIMIT_FEST</c>).</summary>
+    [Parameter] public string TageslimitFormat { get; set; } = "{0}";
+
+    /// <summary>Kurztext am Limitwert (<c>KI_EINST_TIP_TAGESLIMIT</c>).</summary>
+    [Parameter] public string TageslimitTipp { get; set; } = "";
+
+    /// <summary>Datenschutzabsatz des Hinweises (<c>KI_EINST_HINWEIS_DATEN</c>).</summary>
+    [Parameter] public string HinweisDaten { get; set; } = "";
+
+    /// <summary>Kontingentabsatz des Hinweises (<c>KI_EINST_HINWEIS_KONTINGENT</c>).</summary>
+    [Parameter] public string HinweisKontingent { get; set; } = "";
+
+    /// <summary>Beschriftung des Weg-B-Schalters (<c>KI_AKT_WEGB_EINSTELLUNG</c>).</summary>
+    [Parameter] public string WegBText { get; set; } = "";
+
+    /// <summary>Beschriftung „OK" (<c>KI_EINST_BTN_OK</c>).</summary>
+    [Parameter] public string OkText { get; set; } = "";
+
+    /// <summary>Beschriftung „Abbrechen" (<c>KI_EINST_BTN_ABBRECHEN</c>).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "";
+
+    private string _schluessel = "";
+    private bool _wegB;
+    private string _modellzeile = "";
+
+    private string LimitWert => string.Format(TageslimitFormat, Tageslimit);
+
+    protected override void OnParametersSet()
+    {
+        _schluessel = Schluessel ?? "";
+        _wegB = WegB;
+        _modellzeile = Modellzeile ?? "";
+    }
+
+    private void SchluesselGeaendert(ChangeEventArgs e)
+        => _schluessel = e.Value?.ToString() ?? "";
+
+    private void WegBGeaendert(bool wert) => _wegB = wert;
+
+    /// <summary>
+    /// Der SEITENEFFEKT vor OK (E-5): Der Delegat setzt den Schluessel und laesst
+    /// das Modell neu ermitteln; zurueck kommt die neue Modellzeile. Ein
+    /// anschliessendes „Abbrechen" nimmt das nicht zurueck - genau wie im Bestand.
+    /// </summary>
+    private async Task ModellNeu()
+    {
+        if (ModellNeuErkennen is null) return;
+        _modellzeile = await ModellNeuErkennen(_schluessel.Trim()) ?? "";
+    }
+
+    private Task Ok()
+        => Geschlossen.InvokeAsync(new KiEinstellungenErgebnis(_schluessel.Trim(), _wegB));
+
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+}

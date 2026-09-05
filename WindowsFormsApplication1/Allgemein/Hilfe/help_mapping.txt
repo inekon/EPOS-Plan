@@ -87,6 +87,18 @@
 # Strombedarf / ...). Es ist die Hilfe zum Formular als Ganzem, also zum
 # Ablauf des Programms - nicht zur Klimaregion (dafuer Form_Klimadaten) und
 # nicht zur Kurzanleitung (dafuer btn_Help_Kurzanleitung auf Reiter 1).
+# iU9-W16b.3: Die Startmaske ist die Razor-Seite EPOS.UI/Seiten/Start/Startseite.
+# Ihre fuenf Infoknoepfe tragen die Schluessel des Vorlaeufers WOERTLICH weiter
+# (InfoKnopf Schluessel="Form_Start.btn_Help_*"), damit die Hilfeziele stehen
+# bleiben. "Form_Start.btn_Help" war der Knopf des FENSTERS.
+#
+# iU9-W16c.6 (offener Punkt W16b-O-4): Er ist umgehaengt. Die Fensterhilfe sitzt
+# jetzt im Kopfband von EPOS.UI/Seiten/Hauptfenster.razor und heisst
+# "Hauptfenster.btn_Help"; das ZIEL ist unveraendert "Programmablauf". Die alte
+# Zeile bleibt daneben stehen: Ein Anwender, der eine aeltere help_cache.json
+# mitbringt, findet damit weiterhin dieselbe Seite, und der Schluessel kostet
+# nichts.
+Hauptfenster.btn_Help             = Programmablauf
 Form_Start.btn_Help               = Programmablauf
 
 # Reiter "Projekt": Einstieg in die Bedienung.
@@ -144,10 +156,11 @@ Form_Simulation_Config.btn_Help     = Simulation
 
 # --- Wirtschaftlichkeit ---------------------------------------------------
 #
-# Das Praefix ist das UserControl, nicht das Formular: UcWirtschaftlichkeit
-# haengt im Reiter "Berichte & Kosten". Ueber den UserControl-Namen gilt die
-# Zeile dort (HilfeAutomatik, UnterPraefixeAnwenden). Die Dialoghuelle
-# Form_Wirtschaftlichkeit ist mit iU9-W0 entfallen.
+# Das Praefix war das UserControl, nicht das Formular: UcWirtschaftlichkeit
+# hing im Reiter "Berichte & Kosten". Die Dialoghuelle Form_Wirtschaftlichkeit
+# ist mit iU9-W0 entfallen, das UserControl mit iU9-W5.6; den Schluessel
+# traegt seither die Razor-Komponente WirtschaftlichkeitSeite (ihr Infoknopf
+# fragt IHilfeDienst mit genau diesem Text).
 UcWirtschaftlichkeit.btn_Help       = Wirtschaftlichkeit
 
 # --- Projekt --------------------------------------------------------------
@@ -159,6 +172,12 @@ Form_ProjektSpeichernUnter.btn_Help = Projektverwaltung
 # Duplizieren daneben.
 Form_ProjektAuswahl.btn_Help        = Projektverwaltung
 
+# iU9-W15a: "Projekt loeschen" hatte als einzige der drei Projektdialoge keinen
+# Hilfeknopf (Befund W15a-B8), obwohl der Loeschweg in denselben Wikibereich
+# fuehrt. Seit dem Port ist es dieselbe Komponente wie "Projekt oeffnen" - sie
+# traegt den Knopf, also braucht sie ein Ziel.
+Form_ProjektDelete.btn_Help         = Projektverwaltung
+
 # --- Import ---------------------------------------------------------------
 #
 # Der Konfliktdialog gehoert zum Uebernehmen fremder Projekte, also zur
@@ -169,7 +188,7 @@ Form_ImportKonflikte.btn_Help       = Projektverwaltung#konfliktliste
 #
 # Der Assistent fuehrt Schritt fuer Schritt durch ein neues Projekt - das ist
 # genau der Stoff der Kurzanleitung.
-WizardParent.btn_Help               = Kurzanleitung
+AssistentSeite.btn_Help             = Kurzanleitung
 
 # --- Admin ----------------------------------------------------------------
 Form_AdminSettings.btn_Help         = Einstellungen
@@ -232,10 +251,16 @@ Main_PV_Test.btn_Help = Photovoltaik
 # Export/Import hat seit 30.08.2026 einen eigenen Abschnitt samt Anker auf der
 # Rubrikseite; der Konfliktdialog springt auf seinen eigenen Anker.
 Form_ProjektExportImport.btn_Help = Projektverwaltung#export-import
-FormMain.btn_Help = Projektverwaltung
+# iU9-W16b.1 (E-7, K6-a): FormMain.btn_Help ist entfallen - das Detailformular
+# "Konfiguration Projekt" ist geloescht.
 Form_EingProzTyp.btn_Help = Prozesswärme
 Form_Prozesswaerme_Admin.btn_Help = Prozesswärme
 Form_PufferSp_Admin.btn_Help = Pufferspeicher
+# iU9-W14a.2 (Befund W14-B23): Der Katalogeditor der Pufferspeicher hatte als
+# EINZIGE Maske des Gewerks keine Zeile - der Vorlaeufer haengte KiAufrufKnopf
+# statt InfoKnopf an und hatte deshalb gar keinen Hilfeknopf. Die Razor-Fassung
+# PufferSpKatalogDialog hat einen; hier ist sein Ziel.
+Form_PufferSp_Bearbeiten.btn_Help = Pufferspeicher
 Form_PufferSp_Projekt.btn_Help = Pufferspeicher
 Form_PufferSp_einlesen.btn_Help = Pufferspeicher
 Form_Quellprofil.btn_Help = Simulation
@@ -258,6 +283,10 @@ Form_ErgStromverbraucher.btn_Help = Stromverbraucher
 Form_Stromverbraucher_Admin.btn_Help = Stromverbraucher
 UcBkUebersicht.btn_Help = Varianten
 UcBkKosten.btn_Help = Kosten
+# iU9-W5.1: Der Uebernahmedialog der Uebersichtsseite ist seither die
+# Razor-Komponente BkUebernahmeDialog. Sie fuehrt einen Infoknopf (die
+# WinForms-Fassung hatte keinen) und traegt den Schluessel der alten Maske.
+Form_BkUebernahme.btn_Help = Varianten
 Form_AdminWaermeeinlesen.btn_Help = Wärmebedarf
 Form_ErgProzesswaerme.btn_Help = Wärmebedarf
 Wizard_WPItem.btn_Help = Wärmepumpe
@@ -270,6 +299,15 @@ Form_WirtschaftlichkeitVerlauf.btn_Help = Wirtschaftlichkeit
 UcBericht.btn_Help = Bericht
 Form_Simulation_Detail.btn_Help = Simulationsergebnisse
 Form_QuelleErdreich.btn_Help = Wärmequelle Erdreich
+# iU9-W10a.1 (Befund W10-B2, Abweichung A-1): Der Betriebsmodus-Dialog hatte als
+# einziger der Simulationsdialoge keinen Hilfeeinstieg. Die Razor-Fassung traegt
+# einen; die Zeile hier ist sein Ziel.
+Form_Betriebsmodus.btn_Help = Simulation
+# iU9-W10a.2 (Befund W10-B2): dasselbe fuer die Klimazonenkarte.
+Form_Klimazonenkarte.btn_Help = Wärmequelle Erdreich
+# iU9-W10a.5 (Befund W10-B13): Der Quellendialog "Pufferspeicher" hatte einen
+# HilfeKontext-Eintrag, aber keine Zeile hier - der Infoknopf lief ins Leere.
+Form_QuellePufferspeicher.btn_Help = Simulation
 Form_Lizenz.btn_Help = Lizenz
 Form_LizenzVerwaltung.btn_Help = Lizenz
 Form_Gesetzesparameter.btn_Help = Gesetzesparameter
@@ -298,9 +336,9 @@ Form_Emissionskatalog.btn_Help = Emissionen
 #    Eingabefeld selbst.
 #
 # 3. NUR SICHTBARE Steuerelemente. Stillgelegtes bleibt aussen vor -
-#    Form_Simulation_Config.groupBox_Tools/groupBox_PufferSp/label12/label21
-#    (AltSteuerelementeStilllegen), Wizard_WPItem.groupBox1 und die entfernten
-#    Modulkostenfelder.
+#    Wizard_WPItem.groupBox1 und die entfernten Modulkostenfelder. (Die vier
+#    stillgelegten Steuerelemente von Form_Simulation_Config sind mit der Maske
+#    selbst gefallen - iU9-W10b.1.)
 #
 # 4. EIN Anker darf mehrfach vorkommen. Drei Schwellenbeschriftungen zeigen
 #    bewusst auf denselben Stichpunkt; zwei Ferien-Gruppen ebenso.
@@ -316,19 +354,17 @@ Form_Emissionskatalog.btn_Help = Emissionen
 # ---------------------------------------------------------------------------
 
 # --- Simulation: Form_Simulation_Config -----------------------------------
-# label11 ist die einzige sichtbare Ueberschrift der Maske; die beiden
-# Kartenspalten flow_Erzeuger/flow_Speicher sind die eigentliche Bedienflaeche
-# (D2-Umbau). Quellprofil, Waermequelle und Betriebsmodus sitzen auf den
-# ErzeugerKarten - die sind UserControls OHNE Namen und damit heute nicht
-# ansprechbar (Befund, siehe H12-Protokoll).
-Form_Simulation_Config.label11        = Simulation#erzeuger-und-speicher
-Form_Simulation_Config.flow_Erzeuger  = Simulation#erzeugerliste
-Form_Simulation_Config.flow_Speicher  = Simulation#puffer-zuordnung
-Form_Simulation_Config.label_Ansicht  = Simulation#ansicht
-# panel_Schema (SchemaAnsicht) BEWUSST NICHT: die Zeichenflaeche ist bedienbar -
-# Klick waehlt einen Knoten, Ueberfahren zeigt einen eigenen Knotenhinweis und
-# wechselt den Zeiger (SchemaAnsicht.OnMouseDown/OnMouseMove). Ein angeheftetes
-# Hilfepopup laege der Bedienung im Weg. Regel 2 dieses Blocks.
+#
+# iU9-W10b.1: DIE VIER FELDZEILEN SIND ENTFALLEN. Sie sprachen label11,
+# flow_Erzeuger, flow_Speicher und label_Ansicht an - WinForms-Steuerelemente
+# einer Maske, die es nicht mehr gibt; der HelpExtender haengt sich an
+# Control.Name und findet in einer WebView keinen. Die Seite traegt ihren
+# Infoknopf im Fluss ihres Inhalts (Baustein InfoKnopf) und zeigt damit
+# dieselbe Wikiseite wie btn_Help oben.
+#
+# Die Zeile Form_Simulation_Config.btn_Help (oben) BLEIBT: Der Schluessel
+# benennt die Wikiseite, nicht die Formularklasse - dieselbe Regel wie bei den
+# sieben Dialogen der Welle 10a.
 
 # --- Simulation: Form_Waermesenke -----------------------------------------
 # Die Maske baut ihre Oberflaeche im Code auf und vergab bisher keine Namen;
@@ -418,19 +454,27 @@ Form_Stromverbraucher.Label19   = Stromverbraucher#summe
 Form_Stromverbraucher.groupBox1 = Stromverbraucher#verbrauch-aendern
 
 # --- Bericht: UcBericht ---------------------------------------------------
-# Das UserControl haengt im Reiter "Berichte & Kosten"; die Zeilen gelten ueber
-# sein eigenes Praefix. Die Dialoghuelle Form_Bericht ist mit iU9-W0 entfallen.
-# Es fuehrt keine GroupBox; die Bereiche werden ueber ihre Leitbeschriftung
-# angesprochen.
+# Das UserControl hing im Reiter "Berichte & Kosten"; die Zeilen galten ueber
+# sein eigenes Praefix. Die Dialoghuelle Form_Bericht ist mit iU9-W0 entfallen,
+# das UserControl selbst mit iU9-W5.6 (Nachfolge: die Razor-Komponente
+# BerichtSeite).
+#
+# DIE VIER FELDZEILEN SIND SEITHER OHNE ANSCHRIFT. Der HelpExtender haengt
+# seine Anker an WinForms-Steuerelemente; eine Razor-Seite fuehrt EINEN
+# Infoknopf (UcBericht.btn_Help, oben) statt vier Feldanker. Die Zeilen bleiben
+# stehen, weil sie die Wikiabschnitte benennen - sie werden wieder gebraucht,
+# sobald die Seite je Abschnitt einen eigenen Infoknopf bekommt.
 UcBericht.lblVarianten = Bericht#varianten
 UcBericht.lblBausteine = Bericht#bausteine
 UcBericht.lblAusgabe   = Bericht#ausgabeformat
 UcBericht.lblZiel      = Bericht#zielordner
 
 # --- Nicht aufgenommen (Befunde, siehe H12-Protokoll) ---------------------
-# UcBkKosten            baut seine Oberflaeche im Code auf und setzt an KEINEM
-#                       Kind einen Namen - ohne Control.Name gibt es keine
-#                       Anschrift. Waere mit einem Namensnachtrag nachzuholen.
+# UcBkKosten            baute seine Oberflaeche im Code auf und setzte an
+#                       KEINEM Kind einen Namen - ohne Control.Name gab es
+#                       keine Anschrift. Mit iU9-W5.6 ist die Maske geloescht;
+#                       die Nachfolge KostenSeite traegt EINEN Infoknopf
+#                       (UcBkKosten.btn_Help).
 # ErzeugerKarte /       UserControls ohne Namen. Sie sind zugleich die Grenze
 # SpeicherKarte         der Tiefensuche - erst ein (ID-abhaengiger) Name macht
 #                       Quellprofil, Waermequelle und Betriebsmodus feldgenau

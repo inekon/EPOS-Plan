@@ -1,0 +1,304 @@
+﻿@* Solarthermieganglinien eines Projekts (iU9-W7.8).
+
+   VORBILD. Views/Solarthermie/Form_Solarganglinie (132 Z., lokalisiert de/en,
+   9 Kartenzeilen, 0 MessageBox). Die schmalste Maske der Welle: links die
+   Ganglinien des Projekts, rechts der Katalog, dazwischen ◀ und ▶, darunter
+   Name und Beschreibung als Anzeige.
+
+   DIESELBE DATENFORM WIE DIE ERZEUGER. ErzeugerZeile traegt Schluessel und
+   GeraetId getrennt - hier die Zuordnungs-Id (Z_ProjektSolarganglinie.ID) und
+   die Ganglinien-Id (Tab_Solarganglinie.ID). Genau diese Trennung braucht die
+   Maske: Dieselbe Ganglinie darf mehrfach zugeordnet sein, und "▶" muss dann
+   die ZEILE treffen, nicht den ersten Namensvetter.
+
+   DIE VERWALTUNG IST SEIT WELLE 14b EINE UEBERLAGERUNG. "Bearbeiten..." zeigte
+   bis dahin Form_Solarganglinie_Admin ueber die Sprungbruecke
+   (Sprungziel.SolarganglinieAdmin, W7.0f); seit W14b.2 ist das Ziel selbst
+   Blazor, und damit wird der Sprung eine Ueberlagerung im selben Fenster - kein
+   zweiter WebView (Risiko R2). Ohne Parametersatz kein Knopf.
+
+   TASTATUR: Esc schliesst, aber erst, wenn die Verwaltung zu ist. Enter ist
+   nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
+   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
+
+@namespace EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Erzeuger
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+
+        <Links>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ErzeugerZeile zeile in Zeilen)
+                        {
+                            ErzeugerZeile z = zeile;
+                            <tr class="@(z == _projektZeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(z == _projektZeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => ProjektZeileWaehlen(z)" />
+                                </td>
+                                <td>@z.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </Links>
+
+        <Rechts>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (KatalogZeile zeile in _katalog)
+                        {
+                            KatalogZeile k = zeile;
+                            <tr class="@(k == _katalogZeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(k == _katalogZeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => KatalogZeileWaehlen(k)" />
+                                </td>
+                                <td>@k.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (VerwaltungGaben is not null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                </div>
+            }
+        </Rechts>
+
+    </Zweispaltenauswahl>
+
+    <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+              Mehrzeilig="true" Zeilen="3" />
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+
+    @* --- Die Ganglinienverwaltung als UEBERLAGERUNG (iU9-W14b.2) -----------
+       Bis Welle 14b war das ein SPRUNG ueber die Sprungbruecke in ein
+       WinForms-Fenster (Sprungziel.SolarganglinieAdmin). Ist das Ziel selbst
+       Blazor, wird daraus eine Ueberlagerung im selben Fenster - kein zweiter
+       WebView (Risiko R2), dasselbe Muster wie WaermebedarfExternDialog aus
+       W13. Nebenbei behoben ist damit Befund W14-B73: Der Sprung rief
+       SetControls() NICHT, wer aus diesem Dialog sprang, sah eine LEERE Liste. *@
+    <Ueberlagerung Offen="@_verwaltungOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_verwaltungOffen)
+            {
+                <SolarganglinieAdminDialog @attributes="@VerwaltungGaben"
+                                           Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>
+    /// Die Ganglinien des Projekts. <c>Schluessel</c> ist die Zuordnungs-Id
+    /// (<c>Z_ProjektSolarganglinie.ID</c>), <c>GeraetId</c> die Ganglinien-Id
+    /// (<c>Tab_Solarganglinie.ID</c>). Die Liste gehört der Hülle und wird an Ort und
+    /// Stelle bearbeitet.
+    /// </summary>
+    [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
+
+    /// <summary>
+    /// Der Ganglinienkatalog (<c>SolarganglinieStammCtrl.ReadAll</c>).
+    /// <c>Eigenschaften</c> trägt die Beschreibung.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<KatalogZeile>>? Katalog { get; set; }
+
+    /// <summary>Nimmt die Ganglinie in das Projekt auf („◀").</summary>
+    [Parameter] public Func<int, ErzeugerZeile?>? Aufnehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste („▶").</summary>
+    [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary>
+    /// Der PARAMETERSATZ der Ganglinienverwaltung
+    /// (<c>SolarganglinieAdminHuelle.Gaben</c>, iU9-W14b.2). Sie erscheint als
+    /// Überlagerung im selben Fenster; bis Welle 14b war es ein Sprung in ein
+    /// WinForms-Fenster. Ohne den Satz bleibt der Knopf „Bearbeiten…" weg.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? VerwaltungGaben { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Solarthermieganglinien";
+    [Parameter] public string LabelProjektliste { get; set; } = "Ausgewählt im Projekt";
+    [Parameter] public string LabelKatalogliste { get; set; } = "Solarthermieganglinie aus DB";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Solarganglinie.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private ErzeugerZeile? _projektZeile;
+    private KatalogZeile? _katalogZeile;
+    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private string _name = "";
+    private string _beschreibung = "";
+
+    /// <summary>Steht die Ganglinienverwaltung als Ueberlagerung offen? (iU9-W14b.2)</summary>
+    private bool _verwaltungOffen;
+
+    /// <summary>Steht die Verwaltung offen? — Prüfhilfe für die Tests.</summary>
+    public bool VerwaltungOffen => _verwaltungOffen;
+
+    /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
+    public ErzeugerZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
+    public KatalogZeile? Katalogzeile => _katalogZeile;
+
+    protected override void OnInitialized() => KatalogNeuLaden();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void KatalogNeuLaden()
+    {
+        _katalog = Katalog?.Invoke() ?? Array.Empty<KatalogZeile>();
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+    }
+
+    /// <summary>
+    /// Die Wahl zeigt Name UND Beschreibung. Der Vorläufer setzte nur den Namen —
+    /// sein Beschreibungsfeld blieb in jedem Zustand leer, obwohl der Katalogsatz
+    /// (<c>SolarganglinieModel.m_szBeschreibung</c>) sie führt (Abweichung A-27).
+    /// </summary>
+    private void ProjektZeileWaehlen(ErzeugerZeile zeile)
+    {
+        _projektZeile = zeile;
+        _katalogZeile = null;
+        _name = zeile.Bezeichner;
+        _beschreibung = BeschreibungZu(zeile.Bezeichner);
+    }
+
+    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    {
+        _katalogZeile = zeile;
+        _projektZeile = null;
+        _name = zeile.Bezeichner;
+        _beschreibung = zeile.Eigenschaften;
+    }
+
+    private string BeschreibungZu(string bezeichner)
+    {
+        foreach (KatalogZeile k in _katalog)
+            if (string.Equals(k.Bezeichner, bezeichner, StringComparison.Ordinal)) return k.Eigenschaften;
+        return "";
+    }
+
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null || Aufnehmen is null) return;
+
+        ErzeugerZeile? neu = Aufnehmen(_katalogZeile.Id);
+        if (neu is null) return;
+
+        Zeilen.Add(neu);
+        ProjektZeileWaehlen(neu);
+    }
+
+    /// <summary>
+    /// „▶": Die GEWÄHLTE Zeile geht. Der Vorläufer suchte die erste Zeile mit
+    /// demselben Namen (<c>btn_Entfernen_Click</c>:89) — bei zwei Zuordnungen
+    /// derselben Ganglinie also nicht zwingend die markierte.
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_projektZeile is null) return;
+
+        ErzeugerZeile zeile = _projektZeile;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+
+        _projektZeile = null;
+        _name = "";
+        _beschreibung = "";
+    }
+
+    /// <summary>
+    /// „Bearbeiten…": die Ganglinienverwaltung als Überlagerung (iU9-W14b.2). Bis
+    /// dahin war es ein Sprung in ein WinForms-Fenster.
+    /// </summary>
+    private void BeiBearbeiten()
+    {
+        if (VerwaltungGaben is null) return;
+
+        _projektZeile = null;
+        _katalogZeile = null;
+        _verwaltungOffen = true;
+    }
+
+    /// <summary>
+    /// Die Verwaltung ist zu. Der Katalog wird IMMER neu gezogen — der Vorläufer tat
+    /// dasselbe (<c>btn_Bearbeiten_Click</c>:117).
+    /// </summary>
+    private void VerwaltungFertig(bool _)
+    {
+        _verwaltungOffen = false;
+        KatalogNeuLaden();
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _verwaltungOffen) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

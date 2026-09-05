@@ -245,5 +245,98 @@ namespace WindowsFormsApplication1
 
         #endregion
 
+        #region Simulationskonfiguration (iU9-W10b.0b)
+
+        /// <summary>
+        /// Die AUSSENTEMPERATUR der Projekt-Klimaregion, 8760 Stundenwerte; <c>null</c>,
+        /// wenn dem Projekt keine Klimaregion zugeordnet ist oder keine 8760 Werte
+        /// vorliegen (Vorlaeufer <c>Form_Simulation_Config.Uebersicht.AussentemperaturLaden</c>
+        /// :521-552, Befund W10-B35).
+        ///
+        /// <para>Es ist derselbe Vektor, den die Simulation ueber
+        /// <c>SimulationWaermebedarf.Stundentemperatur</c> verwendet
+        /// (<c>Tab_Solar.Temperatur</c> der Klimaregion). Der Erdreichdialog zeigt ihn
+        /// als zweite Reihe seines Jahresgangs.</para>
+        ///
+        /// <para><b>Zwischenspeichern ist Sache des Aufrufers.</b> Der Vorlaeufer hielt
+        /// den Vektor je Formularsitzung; die Seite tut dasselbe in ihrer Huelle. Hier
+        /// steht nur der Weg zur Datenbank.</para>
+        /// </summary>
+        public static float[] Aussentemperatur(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+
+            try
+            {
+                int idRegion = StilleDb.Zahl(StilleDb.Scalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)));
+                if (idRegion <= 0) return null;
+
+                System.Data.DataTable dt = StilleDb.Tabelle(
+                    "SELECT Temperatur FROM Tab_Solar WHERE ID_Klimaregion = ? ORDER BY ID",
+                    StilleDb.Par("@reg", DbParamTyp.Integer, idRegion));
+                if (dt == null || dt.Rows.Count < 8760) return null;
+
+                float[] temp = new float[8760];
+                for (int i = 0; i < 8760; i++)
+                    temp[i] = (float)StilleDb.Kommazahl(StilleDb.Feld(dt.Rows[i], "Temperatur"));
+
+                return temp;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Aussentemperatur konnte nicht geladen werden: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Die DIN-4710-Klimazone der KLIMAREGION eines Projekts; 0 = nicht zugeordnet
+        /// (Vorlaeufer <c>KlimazoneDesProjekts</c>:555-565).
+        ///
+        /// <para>Die Zone ist eine Eigenschaft der REGION, nicht der Anlage
+        /// (Konzept 13.1) — deshalb der Umweg ueber <c>Tab_Projekt.ID_Klimaregion</c>.</para>
+        /// </summary>
+        public static int KlimazoneJeProjekt(int idProjekt)
+        {
+            if (idProjekt <= 0) return 0;
+
+            try
+            {
+                int idRegion = StilleDb.Zahl(StilleDb.Scalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)));
+                return idRegion > 0 ? GetKlimazone(idRegion) : 0;
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// Schreibt die DIN-4710-Klimazone an die Klimaregion eines Projekts
+        /// (Vorlaeufer <c>KlimazoneSpeichern</c>:568-581). Ohne Region geschieht nichts.
+        /// </summary>
+        public static bool KlimazoneJeProjektSchreiben(int idProjekt, int zone)
+        {
+            if (idProjekt <= 0) return false;
+
+            try
+            {
+                int idRegion = StilleDb.Zahl(StilleDb.Scalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)));
+                if (idRegion <= 0) return false;
+
+                return SetKlimazone(idRegion, zone);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Klimazone konnte nicht gespeichert werden: " + ex.Message);
+                return false;
+            }
+        }
+
+        #endregion
+
     }
 }

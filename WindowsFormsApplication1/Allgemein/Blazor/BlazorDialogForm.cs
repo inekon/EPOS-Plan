@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Web.WebView2.WinForms;
 
@@ -58,14 +59,19 @@ namespace WindowsFormsApplication1
         /// erst mit der Handle-Erzeugung, also beim <c>ShowDialog</c>.
         /// </summary>
         /// <param name="titel">Fenstertitel - derselbe Text wie in der Komponente.</param>
-        /// <param name="groesse">Gewuenschtes Innenmass beim Oeffnen. Die Huelle klemmt es
-        /// auf den Arbeitsbereich des Bildschirms (Befund 03.09.2026: ein Fachdialog mit
-        /// 914 px Breite war auf dem Anwenderrechner zusammengequetscht und liess sich
-        /// nicht anpassen). Der Anwender kann das Fenster danach ziehen und maximieren;
-        /// das Layout innerhalb der Komponente ist fluessig (M2).</param>
+        /// <param name="groesse">WUNSCHMASS beim Oeffnen. Es ist eine Untergrenze, keine
+        /// Vorschrift: Eine Fachmaske oeffnet mindestens im Anteil des Arbeitsbereichs
+        /// (85 % x 90 %) und hoechstens auf 92 % davon - die Rechnung steht in
+        /// <see cref="Fenstermass.Vorgabe"/> (Anwenderwunsch 05.09.2026: „Admin-Menues
+        /// sind nicht an Groesse Bildschirm angepasst"; Befund 03.09.2026: ein Fachdialog
+        /// mit 914 px Breite war auf dem Anwenderrechner zusammengequetscht). Der Anwender
+        /// kann das Fenster danach ziehen und maximieren; das Layout innerhalb der
+        /// Komponente ist fluessig (M2).</param>
         /// <param name="parameter">Die Parameter der Komponente, Name -&gt; Wert.</param>
-        public BlazorDialogForm(string titel, Size groesse, IDictionary<string, object> parameter)
-            : this(titel, groesse, parameter, BlazorDienste.Erzeugen())
+        /// <param name="art">Fachmaske (Vorgabe) oder kleine Maske, die NICHT mitwaechst.</param>
+        public BlazorDialogForm(string titel, Size groesse, IDictionary<string, object> parameter,
+                                Dialogart art = Dialogart.Fachdialog)
+            : this(titel, groesse, parameter, BlazorDienste.Erzeugen(), art)
         {
         }
 
@@ -74,16 +80,25 @@ namespace WindowsFormsApplication1
         /// die einen anderen Hilfedienst einlegen wollen.
         /// </summary>
         public BlazorDialogForm(string titel, Size groesse, IDictionary<string, object> parameter,
-                                IServiceProvider dienste)
+                                IServiceProvider dienste, Dialogart art = Dialogart.Fachdialog)
         {
+            // WACHE (Befund W16b-B-1, 05.09.2026): Ein Schluessel ohne passenden
+            // [Parameter] laesst die Komponente beim ERSTEN Zeichnen brechen -
+            // im Blazor-Verteiler, also ohne Namen und ohne Ort. Eine Zeile
+            // Reflexion beim Bauen der Huelle sagt dasselbe Nein frueher und
+            // nennt den Schluessel. Muster: ZustandParameterPruefen in
+            // BlazorSeite (Befund W16c-B12), nur fuer den ganzen Satz.
+            Parametersatzwache.Pruefen(typeof(TKomponente), parameter,
+                                       "BlazorDialogForm<" + typeof(TKomponente).Name + ">");
+
             Text = titel;
             FormBorderStyle = FormBorderStyle.Sizable;
             MaximizeBox = true;
             MinimizeBox = false;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;
-            MinimumSize = new Size(MIN_BREITE, MIN_HOEHE);
-            ClientSize = AnBildschirmGeklemmt(groesse);
+            MinimumSize = new Size(Fenstermass.MindestBreite, Fenstermass.MindestHoehe);
+            ClientSize = Vorgabemass(groesse, art);
             BackColor = Themaflaeche;
 
             _web = new BlazorWebView
@@ -111,20 +126,160 @@ namespace WindowsFormsApplication1
                 Language = Sprache.Englisch ? "en-US" : "de-DE"
             };
 
-            _web.RootComponents.Add<TKomponente>("#app", parameter);
+            // Auch die Flaeche der WebView2 selbst traegt die Themafarbe - sonst
+            // blitzt beim ersten Zeichnen ihr eigenes Weiss durch. Dieselbe Zeile
+            // wie in BlazorSeite; sie fehlte hier bis W16b-B-1.
+            try { _web.WebView.DefaultBackgroundColor = Themaflaeche; }
+            catch { /* aeltere WebView2-Laufzeit: Schoenheitsfehler, kein Fehlschlag */ }
+
+            // FEHLERSCHRANKE (Befund W13-B-1, 05.09.2026): Gemountet wird nicht
+            // die Komponente selbst, sondern EPOS.UI.Bausteine.Wurzel<T> - eine
+            // ErrorBoundary mit T darin. Eine ErrorBoundary faengt die Ausnahmen
+            // ihrer NACHFAHREN, sie muss also ueber T stehen; eine Wurzel hat
+            // aber nichts ueber sich. Ohne dieses Zwischenglied beendet eine
+            // Ausnahme aus einem Ereignis oder aus dem Lebenszyklus von T den
+            // PROZESS, weil der WinForms-BlazorWebView (10.0.100) kein
+            // UnhandledException-Ereignis fuehrt (dieselbe Luecke, die
+            // WebViewWache im Klassenkopf als ihre Grenze nennt).
+            //
+            // Der Parametersatz geht UNVERAENDERT durch (Wurzel.Gaben faengt ihn
+            // mit CaptureUnmatchedValues), und die Parametersatzwache oben prueft
+            // weiterhin gegen T - nicht gegen die Verpackung.
+            _web.RootComponents.Add<EPOS.UI.Bausteine.Wurzel<TKomponente>>("#app", parameter);
             Controls.Add(_web);
+
+            // WACHE (Befund W16b-B-1): Bleibt die Flaeche beige, sagt sie warum.
+            // Der WinForms-BlazorWebView fuehrt kein UnhandledException-Ereignis
+            // (10.0.100) - ohne diese Wache bleibt eine gescheiterte
+            // WebView2-Initialisierung vollstaendig still.
+            WebViewWache.Anhaengen(_web, this, typeof(TKomponente).Name);
         }
 
-        /// <summary>Kleinste sinnvolle Aussenmasse: darunter passt kein Dialogkopf mehr.</summary>
-        private const int MIN_BREITE = 520;
-        private const int MIN_HOEHE = 360;
+        // Die zwei Kleinstmasse stehen seit dem 05.09.2026 als
+        // Fenstermass.MindestBreite / .MindestHoehe in EPOS.UI - dort, wo auch
+        // die Rechnung steht, die sie braucht. Eine zweite Fassung hier waere
+        // die eine Zahl, die irgendwann auseinanderlaeuft.
+
+        // ==================================================================
+        //  Die vier Zusaetze fuer den BESITZERLOSEN Lauf (iU9-W15c.6)
+        // ==================================================================
+        //
+        // Bis W15c wurde jeder Blazor-Dialog aus einem offenen Fenster heraus
+        // gezeigt. Der Erststart und die Lizenzzustimmung laufen dagegen in
+        // Program.Main, VOR Application.Run - es gibt kein Besitzerfenster, weil es
+        // noch keines gibt. Form_Erststart (die Maske, die dabei faellt) weicht in
+        // genau vier Punkten von dieser Huelle ab; die vier stehen hier als Schalter
+        // mit dem HEUTIGEN Vorgabewert. Fuer die vorhandenen Aufrufer aendert sich
+        // dadurch nichts (Befund W15c-B8).
 
         /// <summary>
-        /// Klemmt das gewuenschte Innenmass auf 92 % des Arbeitsbereichs des Bildschirms,
-        /// auf dem der Dialog erscheint (Bildschirm des aktiven Fensters, sonst der
-        /// Hauptbildschirm). Kleinere Wuensche bleiben unveraendert.
+        /// Eintrag in der Taskleiste. Vorgabe <c>false</c> wie bisher; der
+        /// besitzerlose Erststart braucht <c>true</c> — ein minutenlanger Lauf ohne
+        /// Elternfenster und ohne Taskleisteneintrag ist nicht wiederzufinden, sobald
+        /// er einmal hinter einem anderen Fenster liegt.
         /// </summary>
-        private static Size AnBildschirmGeklemmt(Size gewuenscht)
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool ImTaskbar
+        {
+            get => ShowInTaskbar;
+            set => ShowInTaskbar = value;
+        }
+
+        /// <summary>
+        /// Zentriert auf dem BILDSCHIRM statt auf dem Besitzer. Vorgabe <c>false</c>
+        /// (also <see cref="FormStartPosition.CenterParent"/> wie bisher).
+        /// </summary>
+        /// <remarks>
+        /// Ohne Besitzer verhält sich <c>CenterParent</c> bereits wie
+        /// <c>CenterScreen</c>; der Schalter macht die Absicht sichtbar und wählt bei
+        /// mehreren Schirmen ausdrücklich den, auf dem das Fenster erscheint.
+        /// </remarks>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool AufBildschirmMittig
+        {
+            get => StartPosition == FormStartPosition.CenterScreen;
+            set => StartPosition = value ? FormStartPosition.CenterScreen
+                                         : FormStartPosition.CenterParent;
+        }
+
+        /// <summary>
+        /// Sperrt Kreuz, Alt+F4 und Esc, solange ein Lauf nicht zu Ende ist —
+        /// dieselbe Absicherung wie <c>Form_Erststart:195-200</c> und <c>:212/:263</c>:
+        /// <c>ControlBox</c> aus UND ein Riegel in <see cref="Form.OnFormClosing"/>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum beides.</b> <c>ControlBox = false</c> nimmt das Kreuz weg, nicht
+        /// aber Alt+F4 und nicht den Weg über <c>Schliessen()</c> aus der Komponente.
+        /// Der Riegel fängt nur <see cref="CloseReason.UserClosing"/> — ein
+        /// Herunterfahren des Rechners oder ein <c>Application.Exit</c> bleibt
+        /// möglich, genau wie im Vorläufer. <b>Der Schalter gehört der KOMPONENTE</b>:
+        /// Sie weiß, wann der Lauf beginnt und endet, und meldet es über einen
+        /// <c>EventCallback&lt;bool&gt;</c> an die Hülle.
+        /// </remarks>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool SchliessenGesperrt
+        {
+            get => _schliessenGesperrt;
+            set
+            {
+                if (InvokeRequired)
+                {
+                    // Der Rueckkanal kommt aus dem Blazor-Verteiler, nicht zwingend
+                    // vom Oberflaechenfaden - dieselbe Weiche wie in Schliessen().
+                    BeginInvoke(new Action<bool>(v => SchliessenGesperrt = v), value);
+                    return;
+                }
+                _schliessenGesperrt = value;
+                if (!IsDisposed) ControlBox = !value;
+            }
+        }
+
+        private bool _schliessenGesperrt;
+
+        /// <summary>
+        /// Das Kleinstmaß des Fensters. Vorgabe 520 × 360 wie bisher; der
+        /// Erststart braucht 600 × 400, sonst wird sein Protokollfenster unlesbar.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst KEIN <c>new MinimumSize</c>: Eine geerbte Eigenschaft zu verdecken
+        /// ist eine Falle — wer die Hülle je über eine <see cref="Form"/>-Variable
+        /// hielte, setzte die andere. Dieser Name sagt, was gemeint ist, und schreibt
+        /// dieselbe Eigenschaft.
+        /// </remarks>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Size Mindestmass
+        {
+            get => MinimumSize;
+            set => MinimumSize = value;
+        }
+
+        /// <inheritdoc />
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            // Waehrend eines Laufs gibt es kein Zurueck - weder ueber das Kreuz noch
+            // ueber Alt+F4. Woertlich aus Form_Erststart:196-200.
+            if (_schliessenGesperrt && e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                return;
+            }
+            base.OnFormClosing(e);
+        }
+
+        /// <summary>
+        /// Das Innenmass, mit dem der Dialog oeffnet - Wunschmass und Arbeitsbereich
+        /// des Bildschirms, auf dem er erscheint (Bildschirm des aktiven Fensters,
+        /// sonst der Hauptbildschirm).
+        /// </summary>
+        /// <remarks>
+        /// <b>Diese Methode rechnet nichts.</b> Sie besorgt nur den Arbeitsbereich und
+        /// reicht ihn an <see cref="Fenstermass.Vorgabe"/> in <c>EPOS.UI</c> weiter -
+        /// dort steht die Regel, und dort ist sie ohne Windows pruefbar
+        /// (<c>EPOS.UI.Tests/FenstermassTests</c>). Beide Masse sind Geraetepixel
+        /// desselben Schirms; unter „Per Monitor V2" (E-6 / iF21) brauchen sie keine
+        /// Umrechnung.
+        /// </remarks>
+        private static Size Vorgabemass(Size gewuenscht, Dialogart art)
         {
             Rectangle arbeit;
             try
@@ -136,9 +291,10 @@ namespace WindowsFormsApplication1
             {
                 arbeit = Screen.PrimaryScreen.WorkingArea;
             }
-            int maxBreite = Math.Max(MIN_BREITE, (int)(arbeit.Width * 0.92));
-            int maxHoehe = Math.Max(MIN_HOEHE, (int)(arbeit.Height * 0.92) - 40);   // Rahmen + Titelleiste
-            return new Size(Math.Min(gewuenscht.Width, maxBreite), Math.Min(gewuenscht.Height, maxHoehe));
+
+            (int breite, int hoehe) = Fenstermass.Vorgabe(
+                gewuenscht.Width, gewuenscht.Height, arbeit.Width, arbeit.Height, art);
+            return new Size(breite, hoehe);
         }
 
         /// <summary>
@@ -161,43 +317,19 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        /// <summary>
-        /// Zeigt den Dialog modal - mit der DPI-Insel aus <see cref="DpiInsel"/>.
-        /// </summary>
-        /// <remarks>
-        /// Die Methode VERDECKT <see cref="Form.ShowDialog()"/> bewusst (<c>new</c>).
-        /// <see cref="Form.ShowDialog()"/> ist nicht ueberschreibbar, die Insel muss
-        /// aber den gesamten modalen Lauf umschliessen: Nur dann entstehen sowohl das
-        /// Fenster als auch das Fenster der WebView2 im gewuenschten DPI-Kontext.
-        /// Aufrufer halten die Huelle immer unter ihrem eigenen Typ; der Weg ueber
-        /// eine <see cref="Form"/>-Variable kommt nicht vor.
-        /// </remarks>
-        public new DialogResult ShowDialog()
-        {
-            IntPtr vorher = DpiInsel.Betreten();
-            try
-            {
-                return base.ShowDialog();
-            }
-            finally
-            {
-                DpiInsel.Verlassen(vorher);
-            }
-        }
-
-        /// <summary>Wie <see cref="ShowDialog()"/>, mit ausdruecklichem Besitzerfenster.</summary>
-        public new DialogResult ShowDialog(IWin32Window eltern)
-        {
-            IntPtr vorher = DpiInsel.Betreten();
-            try
-            {
-                return base.ShowDialog(eltern);
-            }
-            finally
-            {
-                DpiInsel.Verlassen(vorher);
-            }
-        }
+        // iU9-W16c.4 (Anwenderentscheid E-6 / iF21): DIE DPI-INSEL IST WEG.
+        //
+        // Bis hierher verdeckten zwei ShowDialog-Ueberladungen die von Form
+        // (new), um den Faden fuer die Dauer des modalen Laufs auf
+        // "Per Monitor V2" zu stellen und danach zurueck. Der Grund war, dass die
+        // ANWENDUNG DpiUnaware lief: Ein bitmapskalierter WebView2-Inhalt ist bei
+        // 125-200 % sichtbar unscharf, und die Insel war der einzige Weg, einzelne
+        // Fenster davon auszunehmen.
+        //
+        // Seit W16c.4 laeuft die ganze Anwendung Per Monitor V2 (app.manifest und
+        // Program.Main); der Sonderweg hat keinen Gegenstand mehr. Aufrufer
+        // brauchen nichts zu aendern - sie riefen ShowDialog() und rufen weiter
+        // ShowDialog(), jetzt das der Basisklasse.
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
@@ -207,73 +339,13 @@ namespace WindowsFormsApplication1
         }
     }
 
-    /// <summary>
-    /// DPI-INSEL fuer die Blazor-Huelle (Risiko G1 der iU8-Vermessung).
-    ///
-    /// <para><b>Der Befund.</b> EPOS-Plan laeuft insgesamt DPI-unbewusst:
-    /// <c>app.manifest</c> setzt <c>dpiAware=false</c>, <c>Program.Main</c>
-    /// <c>HighDpiMode.DpiUnaware</c>. Windows skaliert die Fenster deshalb als
-    /// Bitmap. Fuer die gewachsenen WinForms-Masken mit ihren festen
-    /// Pixelkoordinaten ist das die einzige Fassung, die ueberall gleich aussieht -
-    /// eine Umstellung der ganzen Anwendung ist ein eigenes Paket.</para>
-    ///
-    /// <para><b>Warum die Insel.</b> Ein bitmapskalierter WebView2-Inhalt ist bei
-    /// 125-200 % sichtbar unscharf, und ausgerechnet der erste Blazor-Dialog waere
-    /// davon betroffen. Windows 10 ab 1803 erlaubt es, EINZELNE Fenster in einem
-    /// anderen DPI-Kontext zu erzeugen als den Rest des Prozesses. Genau das
-    /// geschieht hier: Der Faden wird fuer die Dauer des modalen Laufs auf
-    /// "Per Monitor V2" gestellt und danach exakt zurueckgesetzt. Die WinForms-Masken
-    /// dahinter bleiben unberuehrt.</para>
-    ///
-    /// <para><b>Wenn es nicht geht, geht es ohne.</b> Auf einem aelteren Windows
-    /// liefert der Aufruf <c>IntPtr.Zero</c>; dann laeuft der Dialog wie bisher
-    /// bitmapskaliert. Das ist ein Schoenheitsfehler, kein Fehlschlag - deshalb wird
-    /// hier nichts gemeldet und nichts geworfen. Ob die Insel wirklich greift, ist
-    /// ein Windows-Pruefpunkt (Umsetzung_iU8_Nachweise.md, 125 % und 150 %).</para>
-    /// </summary>
-    internal static class DpiInsel
-    {
-        /// <summary>
-        /// <c>DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2</c> - als Pseudo-Handle
-        /// definiert (winuser.h: <c>((DPI_AWARENESS_CONTEXT)-4)</c>).
-        /// </summary>
-        private static readonly IntPtr PerMonitorV2 = new IntPtr(-4);
-
-        [DllImport("user32.dll", SetLastError = false)]
-        private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
-
-        /// <summary>
-        /// Stellt den Faden auf "Per Monitor V2" und liefert den vorherigen Kontext
-        /// zurueck. <c>IntPtr.Zero</c> heisst: nicht moeglich - dann ist auch nichts
-        /// zurueckzusetzen.
-        /// </summary>
-        internal static IntPtr Betreten()
-        {
-            try
-            {
-                return SetThreadDpiAwarenessContext(PerMonitorV2);
-            }
-            catch (EntryPointNotFoundException)
-            {
-                return IntPtr.Zero;   // Windows aelter als 10 (1803)
-            }
-            catch (DllNotFoundException)
-            {
-                return IntPtr.Zero;
-            }
-        }
-
-        /// <summary>Setzt den Kontext aus <see cref="Betreten"/> wieder ein.</summary>
-        internal static void Verlassen(IntPtr vorher)
-        {
-            if (vorher == IntPtr.Zero) return;
-
-            try
-            {
-                SetThreadDpiAwarenessContext(vorher);
-            }
-            catch (EntryPointNotFoundException) { /* nach einem erfolgreichen Betreten() unmoeglich */ }
-            catch (DllNotFoundException) { }
-        }
-    }
+    // iU9-W16c.4: Hier stand die Klasse DpiInsel (Risiko G1 der iU8-Vermessung) -
+    // ein P/Invoke auf SetThreadDpiAwarenessContext samt Betreten/Verlassen. Sie
+    // war die Antwort auf einen Befund, den es nicht mehr gibt: "EPOS-Plan laeuft
+    // insgesamt DPI-unbewusst". Seit W16c.4 laeuft es Per Monitor V2, und ein
+    // Fenster, das ohnehin im richtigen Kontext entsteht, braucht keine Insel.
+    //
+    // Der Weg zurueck steht in der Versionsgeschichte: Wer die Anwendung je
+    // wieder DpiUnaware machen muesste, holt die Klasse aus dem Stand vor diesem
+    // Commit.
 }

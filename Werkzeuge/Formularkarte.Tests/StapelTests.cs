@@ -16,21 +16,121 @@ public sealed class StapelTests
     [Fact]
     public void FindetAlleDesignerDateienUnabhaengigVonDerSchreibweise()
     {
-        // Der Bestand schreibt beides: Form_KostenKomponente.Designer.cs und
-        // Form_BHKWEing.designer.cs. Wer nur die grosse Schreibweise sucht,
-        // uebersieht ueber ein Drittel der Masken.
+        // Der Bestand schreibt beides: gross (.Designer.cs) und klein
+        // (.designer.cs). Wer nur die grosse Schreibweise sucht, uebersieht ueber
+        // ein Drittel der Masken.
         //
-        // iU9-1 (03.09.2026): Bis dahin stand hier Form_Kosten_VarAuswahl. Die Maske
-        // ist mit iU9-1 geloescht (Regel M1); der Zeuge fuer die grosse Schreibweise
-        // ist jetzt Form_KostenKomponente - dieselbe Ablage, und im Gegensatz zur
-        // Vorgaengerin ueber UcBkKosten.btnVerwaltung_Click auch erreichbar.
+        // iU9-W6 (03.09.2026): Beide Zeugen waren damals neu. Bis dahin standen
+        // hier Form_Heizkessel (gross; davor Form_KostenKomponente, davor
+        // Form_Kosten_VarAuswahl) und Form_BHKWEing (klein) - beide sind mit
+        // iU9-W6.3 bzw. W6.4 geloescht (Regel M1).
+        //
+        // iU9-W14b (04.09.2026): Der KLEINSCHREIBUNGS-Zeuge wandert von
+        // Form_Brauchwasser_Admin auf WizardParent - die Bedarfsverwaltung ist
+        // mit dieser Welle gefallen. Nach W14a und W14b bleiben genau ZWEI
+        // kleingeschriebene Designer im Bestand, WizardParent und
+        // Wizard_Komponenten, und beide kommen erst mit Welle 16 an die Reihe;
+        // der Zeuge haelt damit so lange wie moeglich.
+        //
+        // iU9-W14c (04.09.2026): Der GROSSschreibungs-Zeuge wandert von
+        // Form_Klimadaten auf Hauptfensterrahmen. Form_Klimadaten ist mit dieser Welle
+        // gefallen und liegt seither im PRUEFMUSTER - der Stapellauf uebergeht
+        // den Ordner, der Zeuge muesste also ohnehin umziehen. Hauptfensterrahmen faellt
+        // als ALLERLETZTE Maske ueberhaupt (Welle 16) und ist die Wurzel des
+        // Erreichbarkeitsgraphen: Ein Lauf, der sie nicht findet, ist kaputt.
         var dateien = Stapel.Dateien(Repowurzel.Pfad);
 
-        Assert.Contains(dateien, d => d.EndsWith("Form_KostenKomponente.Designer.cs", StringComparison.Ordinal));
-        Assert.Contains(dateien, d => d.EndsWith("Form_BHKWEing.designer.cs", StringComparison.Ordinal));
-        // Gemessener Stand 03.09.2026 nach iU9-W0: 108 Dateien (114 nach iU9-W1,
-        // sechs Designer-Masken stillgelegt).
-        Assert.True(dateien.Count >= 107, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
+        //
+        // iU9-W15b (04.09.2026): Die Welle nimmt GENAU EINEN Designer mit -
+        // Form_KiEinstellungen (15). Ihre fuenf Geschwister zaehlten hier nie mit
+        // oder bleiben: Form_TextAnzeige, Form_KiHinweis und Form_KiChat haben
+        // keinen Designer (Befund W15b-B2), Form_HelpPopup BLEIBT (Entscheid E-2:
+        // sein Ersatz ist IHilfeDienst mit Windows- und iOS-Fassung, nicht eine
+        // Razor-Fassung; die Maske faellt mit HelpCatalog/HelpExtender in iU11),
+        // und Form_Hinweis bleibt bis Welle 16 (Entscheid E-1b): Seine drei
+        // Aufrufer liegen saemtlich in Form_Start, und die ist bis dahin WinForms.
+        //
+        // iU9-W16c.3 (Entscheid E-9): Der GROSSSCHREIBUNGS-Zeuge steht seither
+        // ebenfalls im PRUEFMUSTER. Mit dem Rueckbau von Hauptfensterrahmen auf die
+        // Huelle faellt ihr Designer; im Bestand bleibt als einzige
+        // grossgeschriebene Designer-Datei einer MASKE noch Form_HelpPopup
+        // (bis iU11, Entscheid W15b-E-2), dazu die drei erzeugten Ressourcen-
+        // und Einstellungsdateien. Beide Schreibweisen-Zeugen liegen damit im
+        // Muster, und der Bestandslauf prueft nur noch, DASS er liest.
+        Assert.Contains(dateien, d => d.EndsWith("Form_HelpPopup.Designer.cs", StringComparison.Ordinal));
+
+        // iU9-W16a.5 (Entscheid E-9): Der KLEINSCHREIBUNGS-Zeuge steht seither im
+        // PRUEFMUSTER. Nach dieser Teilwelle fuehrt WindowsFormsApplication1 KEINE
+        // kleingeschriebene Designer-Datei mehr - die letzten beiden waren
+        // WizardParent (W16a.5) und Wizard_Komponenten (W16a.3); letztere ist
+        // eingefroren nach Pruefmuster/Wizard/ gewandert und traegt den Zeugen
+        // weiter. Der Stapellauf uebergeht den Ordner (Stapel.Uebergangen), deshalb
+        // wird er hier ausdruecklich VON DORT AUS gezaehlt.
+        var muster = Stapel.Dateien(Repowurzel.PruefmusterWurzel);
+        Assert.Contains(muster, d => d.EndsWith("Wizard_Komponenten.designer.cs", StringComparison.Ordinal));
+        Assert.Contains(muster, d => d.EndsWith("MDIMainForm.Designer.cs", StringComparison.Ordinal));
+        // Gemessener Stand nach Welle 10a: 53 Dateien (58 nach W9, 66 nach W8,
+        // 76 nach W7, 82 nach W6, 89 nach W5, 92 nach iU9-W4, 101 nach iU9-W3,
+        // 105 nach iU9-W2, 108 nach iU9-W0). Jede umgestellte Maske senkt die
+        // Zahl (Regel M1); Welle 10a nimmt FUENF Designer-Dateien mit -
+        // Form_Betriebsmodus, Form_Klimazonenkarte, Form_QuelleErdreich,
+        // Form_QuellePufferspeicher und Form_PufferSp_Projekt. Ihre beiden
+        // Geschwister Form_Quellprofil und Form_Waermesenke hatten nie einen
+        // Designer (Befund W10-B38) und zaehlen hier deshalb nicht mit.
+        // Welle 10b nimmt die letzte dieser Reihe mit: Form_Simulation_Config,
+        // den Wirt der sieben Dialoge (50). Welle 11b nimmt SECHS auf einmal -
+        // Form_Simulation_Detail, DashboardForm, die drei Navigatoren und
+        // Form_SpeicherVariantenVergleich (44); sie werden EINE Razor-Seite.
+        // Welle 12 nimmt FUENF mit (39): Form_GanglinieProtokoll,
+        // Form_GanglinieImportOptionen, Form_Stromganglinie_Admin,
+        // Form_Stromganglinie und Form_PeakShaving. Form_ImportKonflikte faellt
+        // in derselben Welle, zaehlte hier aber nie mit - sie hatte keinen
+        // Designer (Befund W12-B21). Welle 13 nimmt SECHS mit (33): die vier
+        // VDI-3805-Einlesemasken, die Waermebedarfsverwaltung und den
+        // CEC-Modulimport. Der Designer der Waermepumpe ist dabei nicht
+        // geloescht, sondern nach Pruefmuster/Wärmepumpe/ VERSCHOBEN - er ist
+        // der Zeuge des Umlaut-Tests (RazorSchreiberTests) und liegt damit
+        // ausserhalb dieses Stapellaufs. Welle 14b nimmt VIER mit (29): die drei
+        // Bedarfs-Katalogverwaltungen (EINE Komponente mit drei Auspraegungen)
+        // und die Solarganglinien-Verwaltung. Nach BEIDEN Wellen bleiben 24.
+        // Welle 14c nimmt VIER mit (20): Form_GesetzparameterZeile,
+        // Form_Gesetzesparameter, Form_AdminSettings und Form_Klimadaten. Der
+        // Designer der Klimadaten ist dabei nicht geloescht, sondern nach
+        // Pruefmuster/Klimadaten/ VERSCHOBEN - er traegt fuenf Testanker und liegt
+        // damit ausserhalb dieser Zaehlung (der Stapellauf uebergeht den Ordner).
+        // Welle 15a nimmt VIER mit (16): Form_ProjektAuswahl, Form_ProjektDelete,
+        // Form_ProjektSpeichernUnter und Wizard_Projekt. Das UserControl
+        // ProjektAuswahl BLEIBT bis Welle 16 - es lebt in zwei Wirten, und der
+        // zweite (WizardParent.pnlLeft) faellt erst dort (Entscheid R-W15a-1,
+        // ausdrueckliche Ausnahme von der Arbeitsregel iZ5).
+        // Gezaehlt wird ueber die REPOWURZEL: 14 unter WindowsFormsApplication1
+        // plus die zwei generierten des Kerns (Resource, Settings).
+        //
+        // iU9-W15c (04.09.2026): Die Welle nimmt GENAU EINEN Designer mit -
+        // Form_LizenzVerwaltung (14). Ihre zwei Geschwister zaehlten hier nie mit:
+        // Form_Lizenz und Form_Erststart bauen ihre Oberflaeche im Code auf und
+        // haben keinen Designer (Befund W15c-B2).
+        //
+        // iU9-W16a.1 (04.09.2026): Die Teilwelle nimmt GENAU EINEN Designer mit -
+        // Wizard_Stromlastgang (13). Die Assistentenseite 6 ist seither DIESELBE
+        // Razor-Komponente wie der Dialog der Startkachel (StromganglinieDialog aus
+        // W12, Befund W12-O-3). W16a.3 nimmt Wizard_Komponenten mit (12), W16a.5
+        // den Rahmen WizardParent und das UserControl ProjektAuswahl (10).
+        //
+        // iU9-W16b (04.09.2026): Die Teilwelle nimmt FUENF Designer-Masken mit -
+        // FormMain und Form_StromTest mit dem Anwenderentscheid E-7 (K6-a, W16b.1),
+        // AktionsKarte und Form_Hinweis mit der Razor-Startseite (W16b.2) und
+        // Form_Start selbst (W16b.5). Danach fuehrt WindowsFormsApplication1 genau
+        // ZWEI Masken: Hauptfensterrahmen (die Huelle, faellt in W16c auf 120-160 Zeilen
+        // zurueck) und Form_HelpPopup (bleibt bis iU11, Entscheid W15b-E-2).
+        //
+        // iU9-W16c.3: Die Teilwelle nimmt den LETZTEN Designer einer Fachmaske mit
+        // (Hauptfensterrahmen). Ueber die Repowurzel gezaehlt bleiben VIER Dateien: zwei
+        // unter WindowsFormsApplication1 (Form_HelpPopup.Designer.cs und das
+        // erzeugte Properties/Resources.Designer.cs) und zwei erzeugte des Kerns
+        // (Resource, Settings). NACHWEIS N1 (Vermessung § 11.8) - siehe
+        // JedeMaskeLiefertEineKarte.
+        Assert.True(dateien.Count >= 4, "Es wurden nur " + dateien.Count + " Designer-Dateien gefunden.");
     }
 
     [Fact]
@@ -53,10 +153,63 @@ public sealed class StapelTests
     [Fact]
     public void JedeMaskeLiefertEineKarte()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W0: 105 Masken (111 nach iU9-W1;
-        // Form_Kosten, Form_KostenfaktorItem, ucKostenItem, Form_Variantentest,
-        // Form_Simulation_Kurz und Form_KwkgModule sind stillgelegt - iF29).
-        Assert.True(Lauf.Value.Masken >= 105, "Nur " + Lauf.Value.Masken + " Masken gelesen.");
+        // Gemessener Stand nach Welle 10a: 50 Masken (55 nach W9, 63 nach W8,
+        // 73 nach W7, 81 nach W6, 88 nach W5, 91 nach iU9-W4, 98 nach iU9-W3,
+        // 102 nach iU9-W2, 105 nach iU9-W0, 111 nach iU9-W1). Welle 10a stellt
+        // SIEBEN Masken um, aber nur FUENF davon hatte die Karte je gesehen:
+        // Form_Quellprofil und Form_Waermesenke bauen ihre Oberflaeche im Code
+        // auf und haben keinen Designer (Befund W10-B38). Welle 10b nimmt EINE
+        // weitere mit - Form_Simulation_Config, den Wirt der sieben (49). Welle 11b
+        // nimmt SECHS auf einmal (43): die Ergebnisansicht und ihre fuenf
+        // Nebenmasken werden EINE Seite (Regel R-W11-2: maskenweise, nicht
+        // reiterweise - sonst zwei WebViews in einem Fenster). Welle 12 nimmt
+        // FUENF mit (38): die vier Glieder der AP5-Importkette und die
+        // Lastspitzenkappung. Welle 13 nimmt SECHS mit (32): die vier
+        // VDI-3805-Einlesemasken werden EINE Komponente mit vier Auspraegungen,
+        // dazu die Waermebedarfsverwaltung und der CEC-Modulimport. Welle 14a nimmt
+        // SIEBEN mit (25): vier Katalogbrowser werden EINE Komponente, zwei
+        // Modulkataloge eine zweite, dazu der fehlende vierte Katalogeditor.
+        // Welle 14b nimmt VIER mit: die drei Bedarfs-Katalogverwaltungen werden
+        // EINE Komponente mit drei Auspraegungen, dazu die
+        // Solarganglinien-Verwaltung. Nach BEIDEN Wellen bleiben 21.
+        // Welle 14c nimmt VIER mit (17): die zwei Gesetzesmasken, die
+        // Einstellungen und die Klimadaten. Form_KatalogDubletten faellt in
+        // derselben Welle, zaehlte hier aber nie mit - sie hatte keinen Designer
+        // (Befund W14c-B61). Welle 15a nimmt VIER mit (13): die zwei Projektwahl-
+        // masken werden EINE Komponente mit zwei Zwecken, dazu "Speichern unter"
+        // und die erste Assistentenseite. Form_ProjektExportImport faellt in
+        // derselben Welle, zaehlte hier aber nie mit - auch sie hatte keinen
+        // Designer (Befund W15a-B24).
+        // Welle 15c nimmt EINE mit (11): Form_LizenzVerwaltung. Form_Lizenz und
+        // Form_Erststart fallen in derselben Welle, zaehlten hier aber nie mit -
+        // beide bauen ihre Oberflaeche im Code auf (Befund W15c-B2).
+        // Welle 16a.1 nimmt EINE mit (10): Wizard_Stromlastgang, die
+        // Assistentenseite 6 - sie ist seither DIESELBE Razor-Komponente wie der
+        // Dialog der Startkachel (StromganglinieDialog aus W12). Welle 16a.3 nimmt
+        // Wizard_Komponenten mit (9), die Assistentenseite 0. Welle 16a.5 nimmt den
+        // RAHMEN WizardParent und das UserControl ProjektAuswahl mit (7) - letzteres
+        // hatte seit W15a nur noch einen Wirt, und der war der Rahmen.
+        //
+        // iU9-W16b (04.09.2026): Die Teilwelle nimmt FUENF Designer-Masken mit -
+        // FormMain und Form_StromTest mit dem Anwenderentscheid E-7 (K6-a, W16b.1),
+        // AktionsKarte und Form_Hinweis mit der Razor-Startseite (W16b.2) und
+        // Form_Start selbst (W16b.5). Danach fuehrt WindowsFormsApplication1 genau
+        // ZWEI Masken: Hauptfensterrahmen (die Huelle, faellt in W16c auf 120-160 Zeilen
+        // zurueck) und Form_HelpPopup (bleibt bis iU11, Entscheid W15b-E-2).
+        //
+        // iU9-W16c.3 - NACHWEIS N1 (Vermessung § 11.8, "Der Bestand ist leer"):
+        // Mit dem Rueckbau von Hauptfensterrahmen auf die Huelle faellt der letzte
+        // Designer einer FACHMASKE. Es bleibt GENAU EINE Maske, und sie ist keine
+        // Fachmaske: Form_HelpPopup, das Hilfe-Sprechblasenfenster, das mit
+        // HelpCatalog/HelpExtender in iU11 faellt (Entscheid W15b-E-2).
+        //
+        // Die Anweisung nennt fuer N1 "Masken == 0". Der Sollwert der VERMESSUNG
+        // ist vom Stand vor W15b gerechnet, als Form_HelpPopup noch als
+        // umzustellend galt; mit Entscheid W15b-E-2 bleibt sie. Nachgerechnet vom
+        // heutigen Stand ist die Zahl 1 (Befund W16c-B7). Geprueft wird deshalb
+        // die STARKE Form: genau eine, und zwar diese.
+        Assert.Equal(1, Lauf.Value.Masken);
+        Assert.Single(Lauf.Value.Zeilen, z => z.Bezeichner == "Form_HelpPopup");
         Assert.All(Lauf.Value.Zeilen, z => Assert.True(z.Gelesen));
         Assert.All(Lauf.Value.Zeilen, z => Assert.False(string.IsNullOrWhiteSpace(z.Bezeichner)));
     }
@@ -64,24 +217,116 @@ public sealed class StapelTests
     [Fact]
     public void DieHaelfteDerMaskenIstLokalisiert()
     {
-        // Gemessener Stand 03.09.2026 nach iU9-W0: 61 von 105 (Form_Simulation_Kurz war
-        // die eine lokalisierte Maske der Stilllegung). Der Leser muss also beide Wege
-        // koennen, nicht nur den Designer.
-        Assert.True(Lauf.Value.Lokalisierte >= 60,
-                    "Nur " + Lauf.Value.Lokalisierte + " lokalisierte Masken erkannt.");
+        // Bis Welle 5 stand der Zaehler unveraendert bei 59: Keine der Masken der
+        // Wellen 2 bis 5 war lokalisiert, sie alle setzten ihre Texte im Code.
+        // Welle 6 stellt erstmals wieder LOKALISIERTE Masken um (54), Welle 7
+        // sieben weitere (47), Welle 8 alle zehn (37) - auch die drei
+        // Brauchwassermasken zeichnen ueber ApplyResources, obwohl ihre Texte
+        // deutsche Literale in der neutralen .resx sind. Welle 9 nimmt acht
+        // weitere mit (29); nur Form_Brauchwasser war unlokalisiert. Welle 10b
+        // nimmt die EINZIGE lokalisierte Maske ihrer Welle mit - die sieben
+        // Dialoge der Welle 10a hatten keine eigene .resx, ihr Wirt
+        // Form_Simulation_Config schon (28). Welle 11b nimmt ebenfalls genau EINE
+        // lokalisierte mit - Form_Simulation_Detail mit ihren 3 049 neutralen und
+        // 248 englischen Eintraegen; die fuenf Nebenmasken hatten keine eigene
+        // .resx (27). Welle 12 nimmt ZWEI lokalisierte mit -
+        // Form_Stromganglinie und Form_Stromganglinie_Admin; die drei anderen
+        // Masken der Welle setzten ihre Texte im Code (25). Welle 13 nimmt VIER
+        // lokalisierte mit (21) - Form_Heizkessel_einlesen, Form_PufferSp_einlesen,
+        // Form_WP_einlesen und Form_AdminWaermeeinlesen; Form_SolarKollektoren_
+        // einlesen hatte weder de-DE noch en-US (Befund W13-B27) und
+        // Form_CECImport eine LEERE .resx (B54). Welle 14a nimmt SECHS lokalisierte
+        // mit (14) - Form_Heizkessel_Admin, Form_SolarKollektorenAdmin,
+        // Form_PufferSp_Admin, Form_PufferSp_Bearbeiten, Form_AdminPV und
+        // Form_AdminStromspeicher; Form_BHKWAdmin war als einzige der sieben gar nicht
+        // lokalisiert (Befund W14-B11). Gemessen OHNE die Git-Nebenbaeume
+        // unter .claude/worktrees (die der Stapellauf seit dem 04.09.2026 uebergeht)
+        // sind es 20: Der Lauf im W13-Worktree hatte eine Kopie des Bestands auf
+        // einem aelteren Stand mitgezaehlt. Welle 14b nimmt DREI lokalisierte mit
+        // (17) - Form_Prozesswaerme_Admin, Form_Stromverbraucher_Admin und
+        // Form_Solarganglinie_Admin; Form_Brauchwasser_Admin war als einzige der
+        // vier gar nicht lokalisiert (Befund W14-B54). Welle 14c nimmt KEINE
+        // lokalisierte mit: Von ihren fuenf Masken traegt keine ein
+        // ApplyResources - die vier .resx des Wellenumfangs sind leere
+        // 119-Zeilen-Ruempfe (Befunde W14c-B2/B36/B58). Die Zahl bleibt damit
+        // bei 11. Welle 15a nimmt VIER lokalisierte mit (7): Ihre vier
+        // Designer-Masken melden ALLE "lokalisiert: ja" - die umgekehrte Lage zu
+        // Welle 14c und der eigentliche Aufwandstreiber dieser Welle (461
+        // .resx-Eintraege, aber nur sechs MyResource-Zugriffe).
+        // Welle 15b nimmt KEINE lokalisierte mit - die einzige Welle des Pakets,
+        // in der der Zaehler stehen bleibt (Befund W15b-B13): Von ihren sechs
+        // Bauteilen meldet keines "lokalisiert: ja", es gibt in der ganzen Welle
+        // keine einzige de-DE.resx und keine einzige en-US.resx. Alle sichtbaren
+        // Texte werden im Code gesetzt, und zwar zu 93 % aus MyResource.Resource.KI_*.
+        // Der ANTEIL bleibt bei rund der Haelfte: Der Leser muss weiterhin
+        // beide Wege koennen, nicht nur den Designer.
+        // Welle 16a.1 nimmt EINE lokalisierte mit (6): Wizard_Stromlastgang war in
+        // beiden Satelliten vollstaendig gepflegt (7 .Text je Sprache). W16a.3 nimmt
+        // Wizard_Komponenten mit (5) - 11 .Text und 13 .Titel je Sprache. W16a.5
+        // nimmt WizardParent und ProjektAuswahl mit (3).
+        // iU9-W16b: Von den fuenf Masken der Teilwelle sind ZWEI lokalisiert
+        // (FormMain und Form_Start); Form_StromTest, Form_Hinweis und AktionsKarte
+        // haben keine Satelliten. Es bleibt EINE von ZWEI - der Anteil steht damit
+        // weiterhin bei der Haelfte.
+        // iU9-W16c.3: Hauptfensterrahmen war die LETZTE lokalisierte Maske des Bestands
+        // (44 de-DE- und 40 en-US-Eintraege); mit ihrem Designer ist der Zaehler
+        // auf NULL - Form_HelpPopup traegt kein ApplyResources. Damit ist auch
+        // dieser Zeuge im PRUEFMUSTER: Pruefmuster/Hauptformular/ und
+        // Pruefmuster/Wärmepumpe/ fuehren lokalisierte Masken, und der Leser muss
+        // beide Wege weiterhin koennen (NACHWEIS N2).
+        Assert.Equal(0, Lauf.Value.Lokalisierte);
+
+        var musterlauf = Stapel.Laufen(Repowurzel.PruefmusterWurzel, ziel: null,
+                                       erreichbarkeit: false);
+        Assert.True(musterlauf.Lokalisierte >= 1,
+                    "Im Pruefmuster wurden nur " + musterlauf.Lokalisierte +
+                    " lokalisierte Masken erkannt.");
     }
 
     [Fact]
     public void DieHaeufigstenTypenSindAbgedeckt()
     {
-        var typen = Lauf.Value.Typen;
+        // Der Bestand schrumpft mit jeder Welle von iU9, und mit Welle 16b ist er
+        // leer: Was noch steht, sind Hauptfensterrahmen (die Huelle, ein Kartenzeile) und
+        // Form_HelpPopup. ALLE elf Typzeugen haengen deshalb seither am eingefrorenen
+        // PRUEFMUSTER (Entscheid E-9) - es ist die einzige Stelle, an der der Leser
+        // einen Typ nach dem Rueckbau noch vorfindet.
+        //
+        // Der Weg dahin, Welle fuer Welle: NumericUpDown mit W13, DataGridView mit
+        // W14a, Chart mit W14c, CheckBox mit W15b, GroupBox mit W15c, ListBox mit
+        // W16a.1 - und mit W16b.3 die letzten fuenf (Label, TextBox, Button,
+        // ComboBox, TabPage), die saemtlich auf Form_Start standen. Ihr Zeuge ist
+        // seither Pruefmuster/Hauptformular/Form_Start.Designer.cs: 108 Kartenzeilen,
+        // die groesste Maske, die der Bestand je hatte.
+        //
+        // GEPRUEFT WIRD WEITER DASSELBE: dass der Leser alle elf Typen kennt UND sie
+        // an einer lesbaren Maske findet. Nur der Fundort ist ein anderer.
+        var bestand = Lauf.Value.Typen;
+        var muster = PruefmusterTypen();
+
+        foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "TabPage",
+                                    "GroupBox", "CheckBox", "NumericUpDown", "DataGridView",
+                                    "Chart", "ListBox" })
+            Assert.True(bestand.ContainsKey(typ) || muster.Contains(typ),
+                        "Typ " + typ + " kam weder im Stapellauf noch im Pruefmuster vor.");
 
         foreach (var typ in new[] { "Label", "TextBox", "Button", "ComboBox", "GroupBox", "TabPage",
                                     "CheckBox", "NumericUpDown", "ListBox", "DataGridView", "Chart" })
-        {
-            Assert.True(typen.ContainsKey(typ), "Typ " + typ + " kam im Stapellauf nicht vor.");
             Assert.True(Typtabelle.Bekannt(typ), "Typ " + typ + " ist dem Leser unbekannt.");
+    }
+
+    /// <summary>Alle Steuerelementtypen der eingefrorenen Pruefmuster (der Stapellauf uebergeht den Ordner).</summary>
+    private static HashSet<string> PruefmusterTypen()
+    {
+        var typen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var datei in Directory.EnumerateFiles(Repowurzel.PruefmusterWurzel, "*.cs", SearchOption.AllDirectories)
+                     .Where(d => d.EndsWith(".Designer.cs", StringComparison.OrdinalIgnoreCase)))
+        {
+            var maske = Kartenbau.Vollstaendig(datei, null, Repowurzel.PruefmusterWurzel);
+            if (maske is null) continue;
+            foreach (var typ in Kartenbau.Typzaehlung(maske).Keys) typen.Add(typ);
         }
+        return typen;
     }
 
     [Fact]
@@ -90,6 +335,11 @@ public sealed class StapelTests
         // Alles, was der Leser nicht kennt, landet als "sonstig" in der Karte -
         // sichtbar, nicht geraten. Es duerfen nur die selbstgebauten Controls
         // des Bestands sein.
+        //
+        // iU9-W16b: Der Bestand fuehrt seit dieser Teilwelle KEINES mehr -
+        // AktionsKarte faellt mit Form_Start, ProjektAuswahl fiel mit W16a.5,
+        // KlimazonenKarte mit W10a.3. Die Liste bleibt stehen: Sie sagt, was
+        // zulaessig WAERE, und ein neues Haus-Steuerelement soll hier auffallen.
         Assert.All(Lauf.Value.Unbekannt.Keys,
                    typ => Assert.Contains(typ, new[] { "AktionsKarte", "ProjektAuswahl",
                                                        "HeaderGradientPanel", "KlimazonenKarte" }));
@@ -103,7 +353,14 @@ public sealed class StapelTests
         Assert.Contains("# Stapellauf Formularkarte", uebersicht, StringComparison.Ordinal);
         Assert.Contains("| davon Masken (mit InitializeComponent) | " + Lauf.Value.Masken + " |",
                         uebersicht, StringComparison.Ordinal);
-        Assert.Contains("Form_KostenKomponente", uebersicht, StringComparison.Ordinal);
+
+        // iU9-W14c.9: Bis dahin stand hier Form_Klimadaten; sie ist mit dieser
+        // Welle gefallen. Der Zeuge braucht nur IRGENDEINEN Maskennamen aus der
+        // Uebersicht.
+        //
+        // iU9-W16c.3: Hauptfensterrahmen ist die Huelle und hat keinen Designer mehr;
+        // die einzige Maske des Bestands ist Form_HelpPopup (bis iU11).
+        Assert.Contains("Form_HelpPopup", uebersicht, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -112,15 +369,23 @@ public sealed class StapelTests
         var ziel = Path.Combine(Path.GetTempPath(), "formularkarte-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var ergebnis = Stapel.Laufen(Repowurzel.Designer("Kosten"), ziel);
+            // iU9-W6: Views/Heizkessel fuehrt seit Welle 6 nur noch zwei
+            // Designer-Masken (Form_Heizkessel und der Katalogeditor sind
+            // umgestellt). Der Stapellauf lief danach ueber Views/Klimadaten.
+            //
+            // iU9-W14c.9: Der ORDNER Views/Klimadaten ist mit dieser Welle leer
+            // und geloescht; die Maske liegt als PRUEFMUSTER. Der Fall braucht
+            // einen Ordner mit GENAU EINER Designer-Maske - und im Pruefmuster
+            // steht sie unveraendert, samt ihrem btn_Help im Designer.
+            var ergebnis = Stapel.Laufen(Repowurzel.Pruefmuster("Klimadaten"), ziel,
+                                         suchwurzel: Repowurzel.PruefmusterWurzel);
 
             Assert.Empty(ergebnis.Fehler);
-            Assert.True(File.Exists(Path.Combine(ziel, "Form_KostenKomponente.karte.md")));
-            Assert.True(File.Exists(Path.Combine(ziel, "Form_KostenKomponente.razor")));
-            Assert.True(File.Exists(Path.Combine(ziel, "UcVorlagenZeile.razor")));
+            Assert.True(File.Exists(Path.Combine(ziel, "Form_Klimadaten.karte.md")));
+            Assert.True(File.Exists(Path.Combine(ziel, "Form_Klimadaten.razor")));
 
             // UTF-8 mit BOM - Hausregel fuer neue Dateien.
-            var kopf = File.ReadAllBytes(Path.Combine(ziel, "Form_KostenKomponente.razor"))[..3];
+            var kopf = File.ReadAllBytes(Path.Combine(ziel, "Form_Klimadaten.razor"))[..3];
             Assert.Equal(new byte[] { 0xEF, 0xBB, 0xBF }, kopf);
         }
         finally

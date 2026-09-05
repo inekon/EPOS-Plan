@@ -27,13 +27,15 @@ namespace WindowsFormsApplication1
     /// <c>WirtschaftlichkeitCtrl.SpeichereParameter</c>.</para>
     ///
     /// <para><b>Der Sprung in die Tarifstruktur laeuft nachgelagert.</b> Die beiden
-    /// Sprungknoepfe der Stromsteuergruppe fuehren in <c>Form_Tarifstruktur</c> —
-    /// einen WinForms-Dialog. Ein Muster, mit dem eine Razor-Komponente ein zweites
-    /// MODALES Fenster ueber sich oeffnet, hat das Haus (Stand iU8) nicht; die
-    /// einzige Bruecke ist <c>IHilfeDienst</c>, und die zeigt ein modeloses
-    /// Hilfefenster. Die Komponente meldet den Wunsch deshalb im Ergebnis, diese
-    /// Huelle schliesst den Dialog, oeffnet das Ziel und bringt den Dialog danach
-    /// mit frisch geladenen Daten zurueck. <b>Designfrage fuer B6</b> (siehe
+    /// Sprungknoepfe der Stromsteuergruppe fuehren in den Tarifdialog. Zu B5b war
+    /// das eine WinForms-Maske ohne Weg, sie aus einem Blazor-Dialog heraus zu
+    /// oeffnen; seit iU9-W2.2 gibt es dafuer die <see cref="Sprungbruecke"/> —
+    /// nur ist der Tarifdialog mit iU9-W2.3 SELBST eine Blazor-Huelle geworden
+    /// (<see cref="TarifstrukturHuelle"/>), und zwei WebViews uebereinander sind
+    /// Risiko R2. Die Komponente meldet den Wunsch deshalb weiter im Ergebnis,
+    /// diese Huelle schliesst den Dialog, oeffnet das Ziel und bringt den Dialog
+    /// danach mit frisch geladenen Daten zurueck. <b>Aufloesung mit dem Baustein
+    /// Ueberlagerung, Welle 4</b> (siehe
     /// <c>Allgemein/Reporting/B5b_Blazor_Port_Protokoll.md</c>).</para>
     /// </summary>
     internal static class BhkwWirtschaftlichkeitHuelle
@@ -78,6 +80,43 @@ namespace WindowsFormsApplication1
         private static BhkwWirtschaftlichkeitErgebnis EinmalZeigen(
             IWin32Window besitzer, int idStamm, List<WirtschaftlichkeitErgebnis> ergebnisseAusLauf)
         {
+            BhkwWirtschaftlichkeitErgebnis ergebnis = null;
+            BlazorDialogForm<BhkwWirtschaftlichkeitDialog> dlg = null;
+
+            string titel;
+            var werte = new Dictionary<string, object>(
+                Gaben(idStamm, ergebnisseAusLauf, out titel))
+            {
+                ["Geschlossen"] = EventCallback.Factory
+                    .Create<BhkwWirtschaftlichkeitErgebnis>(new object(), e =>
+                    {
+                        ergebnis = e;
+                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
+                    })
+            };
+
+            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
+            dlg = new BlazorDialogForm<BhkwWirtschaftlichkeitDialog>(
+                titel, new Size(FENSTER_BREITE, hoehe), werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
+        /// Wirtschaftlichkeitsseite selbst eine Razor-Komponente ist, erscheint
+        /// er in einer <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe
+        /// WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt; den Sprung in
+        /// die Tarifsicht wertet er selbst aus (<c>BhkwSprung</c>).
+        /// </summary>
+        /// <param name="titel">Der Fenster- bzw. Bereichstitel.</param>
+        internal static IReadOnlyDictionary<string, object> Gaben(
+            int idStamm, List<WirtschaftlichkeitErgebnis> ergebnisseAusLauf, out string titel)
+        {
             var ctrl = new WirtschaftlichkeitCtrl();
             var anlagenCtrl = new KwkgAnlagenCtrl();
             var katalog = new GesetzKatalog();
@@ -98,10 +137,9 @@ namespace WindowsFormsApplication1
             try { doppelpflege.AddRange(KohaerenzPruefung.Pruefe(idStamm, null)); }
             catch { }
 
-            BhkwWirtschaftlichkeitErgebnis ergebnis = null;
-            BlazorDialogForm<BhkwWirtschaftlichkeitDialog> dlg = null;
+            titel = Titel(stammName);
 
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["IdStamm"] = idStamm,
                 ["StammName"] = stammName,
@@ -126,25 +164,8 @@ namespace WindowsFormsApplication1
 
                 // Der Schreibweg. Rueckgabe = Zahl der gescheiterten Saetze; die
                 // Komponente macht daraus ihre Statuszeile bzw. ihr Warnbanner.
-                ["Speichern"] = new Func<int>(() => Speichern(anlagenCtrl, ctrl, anlagen, parameter)),
-
-                ["Geschlossen"] = EventCallback.Factory
-                    .Create<BhkwWirtschaftlichkeitErgebnis>(new object(), e =>
-                    {
-                        ergebnis = e;
-                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
-                    })
+                ["Speichern"] = new Func<int>(() => Speichern(anlagenCtrl, ctrl, anlagen, parameter))
             };
-
-            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
-            dlg = new BlazorDialogForm<BhkwWirtschaftlichkeitDialog>(
-                Titel(stammName), new Size(FENSTER_BREITE, hoehe), werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
         }
 
         /// <summary>
@@ -178,10 +199,13 @@ namespace WindowsFormsApplication1
                              ? TarifSicht.Bhkw : TarifSicht.Strombezug;
             try
             {
-                using (var dlg = new Form_Tarifstruktur(idStamm, sicht))
-                {
-                    if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-                }
+                // iU9-W2.3: Das Ziel ist seit dem Port SELBST eine Blazor-Huelle.
+                // Der Sprung bleibt deshalb NACHGELAGERT (schliessen -> Ziel ->
+                // wieder oeffnen): Zwei WebViews uebereinander waeren Risiko R2,
+                // und die Sprungbruecke (iU9-W2.2) fuehrt ausdruecklich nur
+                // WinForms-Masken. Erst der Baustein Ueberlagerung (Welle 4)
+                // macht daraus ein Fenster.
+                TarifstrukturHuelle.Oeffnen(besitzer, idStamm, sicht);
             }
             catch (Exception ex)
             {

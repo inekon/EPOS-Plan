@@ -230,8 +230,11 @@ beide Sprachen je `CustomMessage`, kein `}` in einem Pascal-Kommentar, kein `^` 
 - [ ] **Windows Sandbox ohne WebView2**: Setup installiert die Laufzeit still, die Anwendung
       startet, der Dialog öffnet
 - [ ] **Windows Sandbox ohne Internet**: Der Bootstrapper schlägt fehl, die Meldung
-      `WebView2Fehlt` erscheint, **die Installation läuft weiter**, die Anwendung startet, nur der
-      Blazor-Dialog bleibt leer
+      `WebView2Fehlt` erscheint, **die Installation läuft weiter** — die Anwendung startet
+      seit **iU9‑W15c** allerdings NICHT mehr: Erststart und Lizenzzustimmung laufen über eine
+      Blazor-Hülle (Befund W15c‑B10). Statt eines leeren Fensters erscheint seither die Meldung
+      `START_WEBVIEW2_FEHLT` mit der Bezugsquelle, dann endet das Programm (Entscheid
+      W15c‑E‑8, Weg 2). **Dieser Sandbox-Nachweis ist mit W15c zu wiederholen.**
 - [ ] Rechner **mit** vorhandener Laufzeit: Der Bootstrapper wird gar nicht erst mitgenommen
       (`Check: not WebView2Vorhanden`)
 - [x] ~~`.gitignore` um `/MicrosoftEdgeWebview2Setup.exe` ergänzen, bevor `GitHub_Sync.bat` das
@@ -283,3 +286,77 @@ bleiben davon unberührt. **Offen bleibt nur die Aufnahme in die CI** — sie is
 | Fenster öffnet **gar nicht**, Ausnahme beim Start | Profilordner nicht anlegbar | `UserDataFolder` in `BlazorDialogForm`; Rechte an `%LOCALAPPDATA%\WP-Plan` |
 | Inhalt **unscharf** bei 125 % | DPI-Insel greift nicht | Windows-Fassung (10/1803 oder neuer?); der Rest der Anwendung ist absichtlich DpiUnaware |
 | Infoknopf **ohne Wirkung** | Zuordnung oder Katalog fehlt | Zeile `Form_Kosten_Auswahl.btn_Help = Kosten` in `help_mapping.txt`; Debug-Ausgabe `[Help] WARNUNG: …` |
+
+---
+
+## Anwenderwunsch 05.09.2026 (**iU8‑E‑1**) — ein Fachdialog öffnet im Anteil des Bildschirms
+
+**Der Befund.** Bildschirmfoto „Administration Solarkollektoren" nach der
+Windows-Abnahme: *„Admin-Menüs sind nicht an Größe Bildschirm angepasst."* Das modale
+Fenster nutzte weder die Breite noch die Höhe des Schirms — die Liste war klein, der
+Eingabeblock lag unter dem Seitenrollbalken.
+
+**Die Ursache lag in der Hülle.** `BlazorDialogForm` nahm bis dahin das Wunschmaß der
+Hülle (`MASS`, hier `SolarkollektorHuelle.KATALOG_MASS = 760 × 640`) und klemmte es auf
+92 % des Arbeitsbereichs. Der Deckel half nur nach **oben** — er war die Antwort auf den
+Befund vom 03.09.2026 (ein Fachdialog mit 914 px Breite war auf dem Anwenderrechner
+zusammengequetscht). Nach unten geschah nichts: Ein Dialog mit dem Wunsch 760 × 640
+blieb auch auf einem 1920er Schirm genau 760 × 640 groß.
+
+**Die neue Regel.** Das Vorgabemaß ist das **Maximum aus Wunschmaß und einem Anteil des
+Arbeitsbereichs** (85 % Breite, 90 % Höhe minus Rahmen und Titelleiste), wieder auf den
+Deckel von 92 % geklemmt. Der Anteil ist eine **Untergrenze**: Wer mehr wünscht — der
+Assistent 1264 × 900, das Simulationsergebnis 1474 × 821 —, behält seinen Wunsch. Das
+Fenster bleibt `Sizable`, zentriert und maximierbar.
+
+| Arbeitsbereich | Wunsch | vorher | seit 05.09.2026 |
+|---|---|---|---|
+| 1920 × 1040 | 760 × 640 (Solarkollektor-Katalog) | 760 × 640 | **1632 × 896** |
+| 1920 × 1040 | 900 × 700 (Katalogbrowser) | 900 × 700 | **1632 × 896** |
+| 1920 × 1040 | 1474 × 821 (Simulationsergebnis) | 1474 × 821 | **1632 × 896** |
+| 1366 × 728 | 760 × 640 | 760 × 640 | **1161 × 615** |
+
+**Die Rechnung steht plattformfrei in `EPOS.UI/Dienste/Fenstermass.cs`**, nicht in der
+Hülle: Sie ist Arithmetik auf vier ganzen Zahlen — kein WinForms, kein `System.Drawing`,
+kein Bildschirm — und damit auf jedem Betriebssystem prüfbar
+(`EPOS.UI.Tests/FenstermassTests`, 11 Fälle). Die Hülle besorgt nur noch den
+Arbeitsbereich des Schirms, auf dem das Besitzerfenster steht, und legt das Ergebnis als
+`ClientSize` an. Denselben Schnitt macht `ParametersatzTests`. Auch die zwei
+Kleinstmaße (520 × 360) stehen seither dort statt zweimal.
+
+**Einheit und DPI.** Beide Maße sind **Gerätepixel** desselben Bildschirms; unter „Per
+Monitor V2" (Entscheid E‑6 / iF21) stehen `Screen.WorkingArea` und `Form.ClientSize` im
+selben Raum, deshalb steht in der Rechnung kein Skalierungsfaktor. Was die WebView
+daraus an CSS-Pixeln macht, ist Gerätepixel geteilt durch die Skalierung — auf einem
+1920er Schirm also **1632 / 1305 / 1088** bei 100 / 125 / 150 %.
+
+**Nicht alles wächst mit.** `Dialogart.Klein` ist die zweite Bauart; sie nimmt nur den
+Deckel, also genau das, was vorher für alle galt. Fünf Hüllen tragen sie — ein Fenster
+mit vier Feldern über den halben Bildschirm zu ziehen macht es nicht besser, sondern nur
+leerer:
+
+| Hülle | Maß | warum klein |
+|---|---|---|
+| `Allgemein/Blazor/NamensDialogHuelle` | 520 × 360 | Namensabfrage, ein Eingabefeld |
+| `Views/Help/KiEinstellungenHuelle` | 620 × 480 | vier Felder, keine Liste |
+| `Views/Help/KiHinweisHuelle` | 700 × 600 | Rückfrage mit Hinweistext |
+| `Views/Admin/ErststartHuelle` | 760 × 560 | Protokollfenster, keine Liste |
+| `Views/Help/LizenzHuelle` | 980 × 760 | Lesetext, keine Verwaltung |
+
+Alle übrigen Hüllen sind `Dialogart.Fachdialog` — die **Vorgabe**, damit eine neue Hülle
+nichts bestellen muss.
+
+**Nicht umgesetzt: die letzte Größe je Dialogtyp merken.** Der Wunsch nennt es als
+Zusatz („optional"). Er ist bewusst weggelassen: Das Vorgabemaß richtet sich schon nach
+dem Schirm, auf dem der Dialog gerade erscheint; eine gemerkte Größe würde genau das
+wieder aushebeln, sobald der Anwender den Bildschirm oder die Skalierung wechselt.
+
+**Abnahmepunkte am Gerät** (100 / 125 / 150 %, je einmal):
+
+1. „Administration Solarkollektoren" öffnet und füllt rund 85 % der Bildschirmbreite und
+   90 % der Höhe; das Fenster lässt sich weiterhin ziehen und maximieren.
+2. Der Assistent (Wunsch 1264 × 900) wird nicht kleiner als vorher.
+3. „Neu…" (Namensabfrage) bleibt klein und mittig über dem Besitzerfenster.
+4. Der Erststart auf einer frischen Datenbank bleibt bei seinen 760 × 560.
+5. Auf einem zweiten, kleineren Bildschirm öffnet derselbe Dialog kleiner — gemessen
+   wird der Schirm, auf dem das Besitzerfenster steht.

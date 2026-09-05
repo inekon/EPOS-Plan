@@ -1,0 +1,123 @@
+﻿@* Wahlknopf einer Rasterzeile - das runde Ziel, mit dem eine Zeile markiert
+   wird.
+
+   WARUM ES DEN BAUSTEIN GIBT. Eine ListView und ein DataGridView markieren
+   die gewaehlte Zeile selbst; ein Raster (QuickGrid) kennt keine
+   Zeilenmarkierung. Seit B5b (Dialog "BHKW-Wirtschaftlichkeit", A-6) und
+   iU9-W1.5 (Kostenfaktor-Katalog) stand derselbe Knopf deshalb zweimal
+   wortgleich im Markup zweier Dialoge; der Emissionskatalog (iU9-W3.3)
+   waere der dritte und vierte gewesen. Hier steht er einmal.
+
+   Die Optik bleibt unveraendert (epos-anlagenwahl, 44 px rund): gewaehlt
+   traegt der Knopf zusaetzlich epos-knopf--primaer und aria-pressed="true",
+   damit ihn auch eine Sprachausgabe und der Hochkontrastmodus
+   auseinanderhalten.
+
+   MEHRFACHMODUS (iU9-W13.0l). Vier Einlesemasken der Welle 13 fuehren eine
+   ListBox mit SelectionMode.MultiExtended - mehrere Katalogsaetze in einem
+   Vorgang. Mit Mehrfach="true" wird aus dem Optionsknopf ein
+   KONTROLLKAESTCHEN (role="checkbox", aria-checked, Haken statt Kreis), und
+   der Klick meldet ueber Tastenwahl mit, ob Strg oder Umschalt gedrueckt war.
+   Was daraus folgt, entscheidet der Baustein Zeilenmarkierung - die Regel steht
+   dort einmal statt in jedem Wirt.
+
+   Wer Tastenwahl nicht belegt, bekommt weiterhin nur Gewaehltwerden; beide
+   Rueckrufe laufen, wenn beide belegt sind.
+
+   BREITE ZEILE MIT BESCHRIFTUNG (iU9-W4, Anwenderwunsch 04.09.2026). Die
+   Traegerliste der Energietraegerverwaltung ist keine Tabelle, sondern eine
+   schmale Spalte: Dort traegt die WAHL selbst den Namen, statt neben einer
+   Namensspalte zu stehen. Mit Beschriftung wird aus dem runden 44-px-Ziel eine
+   volle, linksbuendige Zeile (epos-zeilenwahl--breit) mit dem Zeichen vorn -
+   EIN Klickziel und EIN Tabulatorhalt je Zeile statt zweier. Ohne Beschriftung
+   bleibt das Markup Zeichen fuer Zeichen wie bisher; Zusatzklasse haengt eine
+   Klasse des Wirtes an (Einrueckung, Breite) an, ohne dass er den Knopf
+   nachbaut. *@
+
+@namespace EPOS.UI.Bausteine
+
+<button type="button" class="@Klasse"
+        role="@(Mehrfach ? "checkbox" : null)"
+        aria-checked="@(Mehrfach ? (Gewaehlt ? "true" : "false") : null)"
+        aria-pressed="@(Mehrfach ? null : (Gewaehlt ? "true" : "false"))"
+        title="@Kurztext" disabled="@(!Aktiv)" @onclick="BeiKlick">@Zeichen@Etikett</button>
+
+@code {
+    /// <summary>Ist die Zeile die gewaehlte?</summary>
+    [Parameter] public bool Gewaehlt { get; set; }
+
+    /// <summary>Meldet den Klick - der Dialog merkt sich, welche Zeile das war.</summary>
+    [Parameter] public EventCallback Gewaehltwerden { get; set; }
+
+    /// <summary>Kurztext des Knopfes; ueblich der Kopf der Wahlspalte.</summary>
+    [Parameter] public string Kurztext { get; set; } = "Wahl";
+
+    /// <summary>
+    /// Beschriftung IM Knopf. Leer (Vorgabe) = das runde Wahlziel einer
+    /// Rasterzelle; gesetzt = eine breite, linksbuendige Zeile, die ihren Namen
+    /// selbst traegt (iU9-W4, Traegerliste der Energietraegerverwaltung).
+    /// </summary>
+    [Parameter] public string Beschriftung { get; set; } = "";
+
+    /// <summary>
+    /// Zusaetzliche CSS-Klasse des Wirtes (Einrueckung, Breite) - haengt hinten
+    /// an, die Hausklassen bleiben.
+    /// </summary>
+    [Parameter] public string Zusatzklasse { get; set; } = "";
+
+    /// <summary>Bedienbar? <c>false</c> sperrt den Knopf, laesst ihn aber sichtbar.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Kontrollkaestchen statt Optionsknopf: In der Liste duerfen MEHRERE Zeilen
+    /// gleichzeitig markiert sein (iU9-W13.0l).
+    /// </summary>
+    [Parameter] public bool Mehrfach { get; set; }
+
+    /// <summary>
+    /// Meldet den Klick MIT den Zusatztasten - <c>Strg</c> nimmt eine Zeile dazu
+    /// oder weg, <c>Umschalt</c> waehlt den Bereich ab dem Anker. Nur im
+    /// Mehrfachmodus sinnvoll; der Wirt reicht das an
+    /// <see cref="Zeilenmarkierung.Anklicken"/> weiter.
+    /// </summary>
+    [Parameter] public EventCallback<Zeilenklick> Tastenwahl { get; set; }
+
+    private string Zeichen => Mehrfach ? (Gewaehlt ? "☑" : "☐") : (Gewaehlt ? "●" : "○");
+
+    /// <summary>Traegt der Knopf eine Beschriftung, ist er die breite Zeile.</summary>
+    private bool Breit => !string.IsNullOrEmpty(Beschriftung);
+
+    /// <summary>
+    /// Der Text im Knopf - als Fragment, damit das Markup OHNE Beschriftung
+    /// Zeichen fuer Zeichen das alte bleibt (ein null-Fragment zeichnet nichts).
+    /// </summary>
+    private RenderFragment? Etikett => !Breit ? null : builder =>
+    {
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, "class", "epos-zeilenwahl-text");
+        builder.AddContent(2, Beschriftung);
+        builder.CloseElement();
+    };
+
+    private string Klasse
+    {
+        get
+        {
+            string k = Breit ? "epos-knopf epos-zeilenwahl--breit" : "epos-knopf epos-anlagenwahl";
+            if (Gewaehlt) k += " epos-knopf--primaer";
+            if (!string.IsNullOrEmpty(Zusatzklasse)) k += " " + Zusatzklasse;
+            return k;
+        }
+    }
+
+    private async Task BeiKlick(MouseEventArgs e)
+    {
+        if (Tastenwahl.HasDelegate)
+            await Tastenwahl.InvokeAsync(new Zeilenklick(e.CtrlKey, e.ShiftKey));
+        if (Gewaehltwerden.HasDelegate)
+            await Gewaehltwerden.InvokeAsync();
+    }
+
+    /// <summary>Ein Klick auf eine Wahlzelle samt der gedrueckten Zusatztasten.</summary>
+    public readonly record struct Zeilenklick(bool Strg, bool Umschalt);
+}

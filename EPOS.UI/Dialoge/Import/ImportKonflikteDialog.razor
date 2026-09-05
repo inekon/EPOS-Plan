@@ -1,0 +1,280 @@
+﻿@* Der gemeinsame Konfliktdialog aller Importpfade (iU9-W12.3).
+
+   Vorbild: Views/Import/Form_ImportKonflikte.cs (441 Z., reine Code-Form ohne
+   Designer), Konzept Dublettenpruefung 4.1.
+
+   WOZU. EIN Dialog fuer die ganze Auswahl statt einer Meldung je Satz. Je Zeile
+   der Befund und die waehlbare Aktion; beim Umbenennen wird die Namenszelle
+   editierbar und bekommt einen Vorschlag.
+
+   DIE AKTION IST EIN WERT, KEIN TEXT (Befund W12-B19). Der Vorlaeufer las die
+   gewaehlte Aktion aus dem ANZEIGETEXT der Zelle zurueck; ein Sprachwechsel zur
+   Laufzeit haette die Zuordnung zerrissen. Hier fuehrt die Zeile eine
+   KonfliktAktion, und das Auswahlfeld traegt nur die Beschriftung dazu.
+
+   ALLE REGELN STEHEN IM KERN. Welche Aktionen erlaubt sind, welcher Befundtext
+   gilt, welcher Name vorgeschlagen wird und was OK prueft - das alles ist seit
+   W12.0b ImportKonfliktModell. Hier steht die Bedienung.
+
+   DIE RUECKGABE ENTHAELT ALLE ZEILEN, auch die konfliktfreien: Die drei
+   Sammelimporte zaehlen daraus "uebersprungen". Abbrechen liefert null - dann
+   wird gar nichts importiert.
+
+   TASTATUR: Esc schliesst (= Abbrechen). Enter ist NICHT belegt - "Uebernehmen"
+   startet einen Schreibvorgang. *@
+
+@namespace EPOS.UI.Dialoge.Import
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-importkonflikte" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-konflikt-kopf" role="status">@Kopftext</p>
+
+    @if (_beanstandet is not null)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_beanstandetText" />
+    }
+
+    <Raster TZeile="Zeile" Zeilen="@Zeilen" Bearbeitbar="true">
+        <KindInhalt>
+            <TemplateColumn TGridItem="Zeile" Title="@SpalteName">
+                @if (context.Aktion == KonfliktAktion.Umbenennen)
+                {
+                    <Textfeld Wert="@context.Name" WertChanged="@(w => NameGeaendert(context, w))"
+                              Bezeichnung="" />
+                }
+                else
+                {
+                    <span class="@(context == _beanstandet ? "epos-konflikt-beanstandet" : "")">@context.Name</span>
+                }
+            </TemplateColumn>
+
+            <TemplateColumn TGridItem="Zeile" Title="@SpalteBefund" Class="epos-konflikt-befund">
+                @foreach (string teil in context.BefundZeilen)
+                {
+                    <div>@teil</div>
+                }
+            </TemplateColumn>
+
+            <TemplateColumn TGridItem="Zeile" Title="@SpalteAktion">
+                <Auswahlfeld Bezeichnung="" Eintraege="@context.Auswahl"
+                             Auswahl="@context.AktionPlatz"
+                             AuswahlChanged="@(i => AktionGeaendert(context, i))" />
+            </TemplateColumn>
+        </KindInhalt>
+    </Raster>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiAlleAuslassen">@AlleAuslassenText</button>
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="BeiOk">@OkText</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Eingaben
+    // =====================================================================
+
+    /// <summary>Das Ergebnis von <c>DublettenPruefung.PruefeKandidaten</c>.</summary>
+    [Parameter] public IReadOnlyList<ImportPruefung>? Pruefungen { get; set; }
+
+    /// <summary>Die normalisierten Bestandsnamen (<c>DublettenPruefung.VergebeneNamen</c>).</summary>
+    [Parameter] public IReadOnlyCollection<string>? VergebeneNamen { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist zu Ende: je Pruefung eine Entscheidung — auch fuer die
+    /// konfliktfreien Zeilen —, oder <c>null</c> bei Abbruch.
+    /// </summary>
+    [Parameter] public EventCallback<List<KonfliktEntscheidung>?> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte (IMP_KONFLIKT_*)
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.IMP_KONFLIKT_TITEL;
+    [Parameter] public string SpalteName { get; set; } = Resource.IMP_KONFLIKT_SPALTE_NAME;
+    [Parameter] public string SpalteBefund { get; set; } = Resource.IMP_KONFLIKT_SPALTE_BEFUND;
+    [Parameter] public string SpalteAktion { get; set; } = Resource.IMP_KONFLIKT_SPALTE_AKTION;
+    [Parameter] public string AlleAuslassenText { get; set; } = Resource.IMP_KONFLIKT_ALLE_AUSLASSEN;
+    [Parameter] public string OkText { get; set; } = Resource.IMP_KONFLIKT_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.IMP_KONFLIKT_ABBRECHEN;
+
+    /// <summary>
+    /// Ziel des Infoknopfes. <c>help_mapping.txt:167</c> fuehrt
+    /// <c>Form_ImportKonflikte.btn_Help = Projektverwaltung#konfliktliste</c> —
+    /// die Zeile bleibt, der Knopf zeigt weiter dorthin.
+    /// </summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_ImportKonflikte.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private List<Zeile> _zeilen = new();
+    private Zeile? _beanstandet;
+    private string _beanstandetText = "";
+
+    /// <summary>
+    /// Eine Zeile des Konfliktrasters. Sie fuehrt die AKTION als Wert; der
+    /// Anzeigetext steht nur in <see cref="Auswahl"/>.
+    /// </summary>
+    public sealed class Zeile
+    {
+        /// <summary>Der Pruefsatz, zu dem diese Zeile gehoert.</summary>
+        public ImportPruefung Pruefung = default!;
+
+        /// <summary>Der Zielname — beim Umbenennen aenderbar.</summary>
+        public string Name = "";
+
+        /// <summary>Die gewaehlte Aktion.</summary>
+        public KonfliktAktion Aktion;
+
+        /// <summary>Die erlaubten Aktionen in Anzeigereihenfolge.</summary>
+        public List<KonfliktAktion> Erlaubt = new();
+
+        /// <summary>Beschriftungen zu <see cref="Erlaubt"/>, gleiche Reihenfolge.</summary>
+        public IReadOnlyList<(int Id, string Text)> Auswahl = Array.Empty<(int, string)>();
+
+        /// <summary>Der Befundtext, in seine Zeilen zerlegt (er kann Zusatzzeilen tragen).</summary>
+        public string[] BefundZeilen = Array.Empty<string>();
+
+        /// <summary>Platz der gewaehlten Aktion in <see cref="Erlaubt"/>.</summary>
+        public int AktionPlatz => Math.Max(0, Erlaubt.IndexOf(Aktion));
+
+        /// <summary>Ist diese Zeile ein Konflikt? Nur solche setzt „Alle auslassen".</summary>
+        public bool IstKonflikt => ImportKonfliktModell.IstKonflikt(Pruefung);
+    }
+
+    private IQueryable<Zeile> Zeilen => _zeilen.AsQueryable();
+
+    private string Kopftext => ImportKonfliktModell.KopfText(
+        _zeilen.Count, ImportKonfliktModell.Konflikte(Pruefungen ?? Array.Empty<ImportPruefung>()));
+
+    /// <summary>Die aktuellen Entscheidungen — auch die konfliktfreien Zeilen.</summary>
+    public List<KonfliktEntscheidung> Entscheidungen()
+        => _zeilen.Select(z => new KonfliktEntscheidung
+        {
+            Pruefung = z.Pruefung,
+            Aktion = z.Aktion,
+            NeuerName = z.Aktion == KonfliktAktion.Umbenennen ? (z.Name ?? "").Trim() : null
+        }).ToList();
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnParametersSet()
+    {
+        if (_zeilen.Count > 0) return;      // schon aufgebaut
+        foreach (ImportPruefung p in Pruefungen ?? Array.Empty<ImportPruefung>())
+        {
+            List<KonfliktAktion> erlaubt = ImportKonfliktModell.ErlaubteAktionen(p, out KonfliktAktion vorbelegung);
+            List<(int, string)> auswahl = new();
+            for (int i = 0; i < erlaubt.Count; i++)
+                auswahl.Add((i, ImportKonfliktModell.AktionText(erlaubt[i])));
+
+            _zeilen.Add(new Zeile
+            {
+                Pruefung = p,
+                Name = p.Kandidat?.Name ?? "",
+                Aktion = vorbelegung,
+                Erlaubt = erlaubt,
+                Auswahl = auswahl,
+                BefundZeilen = ImportKonfliktModell.BefundText(p)
+                                                   .Split(Environment.NewLine)
+            });
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Bedienung
+    // =====================================================================
+
+    /// <summary>
+    /// Wechsel der Aktion. Steht die Zeile danach auf „Umbenennen" UND traegt noch
+    /// den Originalnamen, bekommt sie einen Vorschlag; sonst kehrt der Originalname
+    /// zurueck (<c>Grid_CellValueChanged</c> des Vorlaeufers).
+    /// </summary>
+    private void AktionGeaendert(Zeile zeile, int? platz)
+    {
+        if (platz is null || platz < 0 || platz >= zeile.Erlaubt.Count) return;
+        zeile.Aktion = zeile.Erlaubt[platz.Value];
+        _beanstandet = null;
+
+        string original = zeile.Pruefung.Kandidat?.Name ?? "";
+        if (zeile.Aktion == KonfliktAktion.Umbenennen)
+        {
+            if (string.Equals(zeile.Name, original, StringComparison.Ordinal))
+                zeile.Name = ImportKonfliktModell.NamensVorschlag(original, Namen());
+        }
+        else
+        {
+            zeile.Name = original;
+        }
+    }
+
+    private void NameGeaendert(Zeile zeile, string wert)
+    {
+        zeile.Name = wert;
+        _beanstandet = null;
+    }
+
+    /// <summary>Setzt NUR die Konfliktzeilen auf „Auslassen" und stellt ihren Namen zurueck.</summary>
+    private void BeiAlleAuslassen()
+    {
+        foreach (Zeile z in _zeilen)
+        {
+            if (!z.IstKonflikt) continue;
+            z.Aktion = KonfliktAktion.Auslassen;
+            z.Name = z.Pruefung.Kandidat?.Name ?? "";
+        }
+        _beanstandet = null;
+    }
+
+    private async Task BeiOk()
+    {
+        List<KonfliktEntscheidung> entscheidungen = Entscheidungen();
+        ImportKonfliktModell.Beanstandung? befund =
+            ImportKonfliktModell.Pruefe(entscheidungen, Namen());
+
+        if (befund is not null)
+        {
+            // Der Vorlaeufer zeigte eine MessageBox und setzte die Zelle in den
+            // Fokus; hier steht die Meldung als Warnbanner ueber dem Raster, und
+            // die Zeile wird hervorgehoben.
+            _beanstandet = _zeilen[befund.Zeile];
+            _beanstandetText = ImportKonfliktModell.BeanstandungsText(befund);
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(entscheidungen);
+    }
+
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(null);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Escape" => BeiAbbrechen(),
+        _ => Task.CompletedTask
+    };
+
+    private ICollection<string> Namen()
+        => VergebeneNamen as ICollection<string>
+           ?? new HashSet<string>(VergebeneNamen ?? Array.Empty<string>(), StringComparer.Ordinal);
+}

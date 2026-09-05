@@ -1,0 +1,452 @@
+﻿@* Verwaltung Photovoltaik Module - der PROJEKTDIALOG (iU9-W6.5).
+
+   VORBILD. Views/Photovoltaik/Form_PV (338 Z., NICHT lokalisiert, 22
+   Kartenzeilen, 2 MessageBox). Dasselbe Muster wie Heizkessel und BHKW, aber
+   deutlich einfacher: KEINE Traegervariante, KEINE Projektkopie. Ein Modul
+   wird mit seiner STAMM-Id in die Liste gelegt (ID_PV), und die Projektzeile
+   traegt zusaetzlich drei eigene Werte - Neigung, Azimut und Anzahl Module.
+
+   DIE ANLAGENEIGENSCHAFTEN GELTEN NUR FUER EINE PROJEKTZEILE. Der Vorlaeufer
+   blendete das Panel dafuer ein und aus (panel1.Visible) und zog um es einen
+   gestrichelten Rahmen (Form_PV_Paint). Hier ist es ein eigener Abschnitt, der
+   nur bei gewaehlter Projektzeile erscheint; den Rahmen macht CSS.
+
+   DIE GESAMTLEISTUNG ist die Summe aus Anzahl Module mal Modulleistung ueber
+   alle Zeilen (UpdateGesamtleistung, Z. 314). Die Komponente rechnet sie
+   NICHT - sie kennt die Modulleistungen nicht und erfragt die fertige Zahl.
+
+   BEFUND UND ABWEICHUNG (A-5). btn_Entfernen_Click entfernte ueber
+   list_pvmodel.RemoveAt(listBox_Auswahl.SelectedIndex). Im Assistenten fuehrt
+   dieselbe Liste ALLE Erzeugertypen, die ListBox aber nur die PV-Zeilen - der
+   Index passte dort nicht, und entfernt wurde eine fremde Anlage (dieselbe
+   Fehlerklasse wie "Befund 4" beim Pufferspeicher). Hier geht die ZEILE selbst
+   hinaus, nicht ihr Index.
+
+   TASTATUR wie in den uebrigen Erzeugerdialogen: Esc schliesst, Enter ist
+   nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
+   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+
+        <Links>
+            <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_projektZeile == context)" Kurztext="@SpalteWahl"
+                                    Gewaehltwerden="() => ProjektZeileWaehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@LabelProjektliste" />
+                </KindInhalt>
+            </Raster>
+        </Links>
+
+        <Rechts>
+            <Auswahlfeld Bezeichnung="@LabelFilterHersteller" Eintraege="@_herstellerEintraege"
+                         Auswahl="@_hersteller" AuswahlChanged="BeiHersteller" />
+
+            <Raster TZeile="KatalogZeile" Zeilen="@_katalog.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="KatalogZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_katalogZeile == context)" Kurztext="@SpalteWahl"
+                                    Gewaehltwerden="() => KatalogZeileWaehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="KatalogZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@LabelKatalogliste" />
+                </KindInhalt>
+            </Raster>
+
+            <div class="epos-leiste">
+                @if (VerwaltungGaben is not null)
+                {
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                }
+                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                        @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
+            </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
+
+    @* Eigenschaften der PV-ANLAGE - nur bei gewaehlter Projektzeile (panel1.Visible). *@
+    @if (_projektZeile is not null)
+    {
+        <Gruppenkopf Titel="@GruppeAnlage">
+            <KindInhalt>
+                <div class="epos-anlagenblock">
+                    <Ganzzahlfeld Bezeichnung="@LabelNeigung" Wert="@_projektZeile.Neigung"
+                                  WertChanged="BeiNeigung" />
+                    <Ganzzahlfeld Bezeichnung="@LabelAzimut" Wert="@_projektZeile.Azimut"
+                                  WertChanged="BeiAzimut" />
+                    <Zahlenfeld Bezeichnung="@LabelAnzahl" Wert="@_projektZeile.AnzahlModule"
+                                WertChanged="BeiAnzahl" />
+                </div>
+                @* Paket A/B des PV-Ertragsmodells (Merge 5): Rechenmodell, Wechselrichter-
+                   Wirkungsgrad, Systemverluste und die Wechselrichterdaten (Ueberlagerung). *@
+                <PvModellFelder Zeile="@_projektZeile" KwpAnlage="@KwpDer(_projektZeile)"
+                                Geaendert="@(() => Uebernehmen?.Invoke(_projektZeile!))" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @* Eigenschaften des MODULS - immer sichtbar (panel2). *@
+    <Gruppenkopf Titel="@GruppeModul">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
+            @foreach (var feld in _detail.Felder)
+            {
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+            }
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detail.Beschreibung"
+                      NurLesen="true" Mehrzeilig="true" Zeilen="2" />
+            <Textfeld Bezeichnung="@LabelGesamtleistung" Wert="@_gesamtleistung" NurLesen="true" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+
+    @* --- Ueberlagerung: die Katalogverwaltung (iU9-W14a.4) ------------------- *@
+    @* Der Knopf "Bearbeiten" oeffnete bis hierher Form_AdminPV ueber die Sprungbruecke; das Ziel ist jetzt selbst Blazor. *@
+    <Ueberlagerung Offen="@(_verwaltungGaben is not null)" Schliessbar="false"
+                   Titel="" Geschlossen="() => VerwaltungFertig(null)">
+        <KindInhalt>
+            @if (_verwaltungGaben is not null)
+            {
+                <ModulKatalogDialog @attributes="_verwaltungGaben" Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
+                Frage="@FrageLoeschen" Beantwortet="BeiLoeschfrage" />
+</div>
+
+@code {
+    /// <summary>Die Zeilen der linken Liste — sie gehört der Hülle und wird in place bearbeitet.</summary>
+    [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
+
+    /// <summary>Die Hersteller des Katalogs, „Alle" voran (Index 0).</summary>
+    [Parameter] public IReadOnlyList<string> Hersteller { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die Katalogliste zum Hersteller (<c>PhotovoltaikStammCtrl.Filtern</c>).</summary>
+    [Parameter] public Func<string, IReadOnlyList<KatalogZeile>>? Filtern { get; set; }
+
+    /// <summary>Der Detailblock zu einem Modul — für beide Listen dieselbe Quelle (Stamm).</summary>
+    [Parameter] public Func<string, ErzeugerDetail?>? Detail { get; set; }
+
+    /// <summary>
+    /// Nimmt das Modul auf. Anders als bei Heizkessel und BHKW gibt es keine
+    /// Trägervariante und keine Projektkopie — die Zeile trägt die STAMM-Id.
+    /// </summary>
+    [Parameter] public Func<int, AufnahmeErgebnis>? Aufnehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste.</summary>
+    [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary>Übernimmt Neigung, Azimut und Anzahl Module ins Modell.</summary>
+    [Parameter] public Action<ErzeugerZeile>? Uebernehmen { get; set; }
+
+    /// <summary>
+    /// Die Gesamtleistung [kW], fertig formatiert: Summe aus Anzahl Module mal
+    /// Modulleistung über alle Zeilen. Die Komponente rechnet sie nicht.
+    /// </summary>
+    [Parameter] public Func<string>? Gesamtleistung { get; set; }
+
+    /// <summary>
+    /// kWp einer Projektzeile (Modulleistung mal Anzahl) fuer die DC/AC-Anzeige des
+    /// Wechselrichterdialogs (Paket B, Merge 5). Ohne Delegat: 0 = unbekannt.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, double>? AnlagenKwp { get; set; }
+
+    /// <summary>Löscht einen KATALOGsatz; <c>true</c> = gelöscht.</summary>
+    [Parameter] public Func<int, bool>? KatalogLoeschen { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der MODULVERWALTUNG. Sie erscheint seit iU9-W14a als
+    /// <c>Ueberlagerung</c> im selben Fenster statt als zweites Fenster über die
+    /// Sprungbrücke (Risiko R2) — ihr Ziel ist jetzt selbst Blazor. Ohne Delegat
+    /// kein Knopf.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Verwaltung Photovoltaik Module";
+    [Parameter] public string KopfbandText { get; set; } = "Eingabe der Photovoltaik Anlagendaten";
+    [Parameter] public string LabelProjektliste { get; set; } = "ausgewählte Module";
+    [Parameter] public string LabelKatalogliste { get; set; } = "Module aus Datenbank";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string LabelFilterHersteller { get; set; } = "Filtern nach Hersteller:";
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Modul Bearbeiten...";
+    [Parameter] public string BtnLoeschenText { get; set; } = "Modul Löschen";
+    [Parameter] public string GruppeAnlage { get; set; } = "PV Anlage Eigenschaften:";
+    [Parameter] public string LabelNeigung { get; set; } = "Neigung [°]:";
+    [Parameter] public string LabelAzimut { get; set; } = "Azimut [°]:";
+    [Parameter] public string LabelAnzahl { get; set; } = "Anzahl Module:";
+    [Parameter] public string GruppeModul { get; set; } = "Modul Eigenschaften:";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string LabelGesamtleistung { get; set; } = "Gesamtleistung [KW]:";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string FrageLoeschen { get; set; } = "Wollen Sie wirklich das Modul löschen?";
+    [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
+
+    /// <summary>Meldung, wenn das Löschen abgelehnt wurde.</summary>
+    [Parameter] public string MeldungLoeschFehler { get; set; } =
+        "Der Katalogeintrag konnte nicht gelöscht werden.";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_PV.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private ErzeugerZeile? _projektZeile;
+    private KatalogZeile? _katalogZeile;
+    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
+    private IReadOnlyList<(int Id, string Text)> _herstellerEintraege = Array.Empty<(int, string)>();
+
+    private int? _hersteller = 0;
+    private string _gesamtleistung = "0";
+    private bool _loeschfrage;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Die gewaehlte Projektzeile (Pruefhilfe fuer Tests).</summary>
+    public ErzeugerZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewaehlte Katalogzeile (Pruefhilfe fuer Tests).</summary>
+    public KatalogZeile? Katalogzeile => _katalogZeile;
+
+    /// <summary>Die angezeigte Gesamtleistung (Pruefhilfe fuer Tests).</summary>
+    public string Gesamt => _gesamtleistung;
+
+    /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    protected override void OnParametersSet()
+    {
+        var liste = new List<(int, string)>();
+        for (int i = 0; i < Hersteller.Count; i++) liste.Add((i, Hersteller[i]));
+        _herstellerEintraege = liste;
+    }
+
+    protected override void OnInitialized()
+    {
+        KatalogNeuLaden();
+        GesamtNeu();
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void GesamtNeu() { if (Gesamtleistung is not null) _gesamtleistung = Gesamtleistung(); }
+
+    private double KwpDer(ErzeugerZeile? zeile)
+        => zeile is null || AnlagenKwp is null ? 0.0 : AnlagenKwp(zeile);
+
+    // =================================================================================
+    // Filter und Listen
+    // =================================================================================
+
+    private void KatalogNeuLaden()
+    {
+        if (Filtern is null) return;
+
+        string hersteller = (_hersteller.HasValue && _hersteller.Value < Hersteller.Count)
+                          ? Hersteller[_hersteller.Value] : "";
+        _katalog = Filtern(hersteller);
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+    }
+
+    private void BeiHersteller(int? id) { _hersteller = id ?? 0; KatalogNeuLaden(); }
+
+    /// <summary>
+    /// Beide Listen holen ihr Detail aus DEMSELBEN Katalogsatz - der Vorlaeufer las in
+    /// beiden Faellen <c>Tab_PV_STAMM</c> ueber den Bezeichner. Nur das
+    /// Anlagen-Panel unterscheidet sie.
+    /// </summary>
+    private void ProjektZeileWaehlen(ErzeugerZeile zeile)
+    {
+        _projektZeile = zeile;
+        _katalogZeile = null;
+        _detail = (Detail is not null ? Detail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+    }
+
+    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    {
+        _katalogZeile = zeile;
+        _projektZeile = null;
+        _detail = (Detail is not null ? Detail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+    }
+
+    private static ErzeugerDetail Leer(string name)
+        => new(name, "", Array.Empty<(string, string)>());
+
+    // =================================================================================
+    // Hinzufuegen und Entfernen
+    // =================================================================================
+
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null || Aufnehmen is null) return;
+
+        AufnahmeErgebnis aufnahme = Aufnehmen(_katalogZeile.Id);
+        if (!string.IsNullOrEmpty(aufnahme.Meldung)) Melden(aufnahme.Meldung, aufnahme.Fehler);
+        if (aufnahme.Zeile is null) return;
+
+        Zeilen.Add(aufnahme.Zeile);
+        ProjektZeileWaehlen(aufnahme.Zeile);
+        GesamtNeu();
+    }
+
+    /// <summary>A-5: Es geht die ZEILE hinaus, nicht ihr Listenindex.</summary>
+    private void BeiEntfernen()
+    {
+        if (_projektZeile is null) return;
+
+        ErzeugerZeile zeile = _projektZeile;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+
+        _projektZeile = null;
+        _detail = Leer("");
+        GesamtNeu();
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+    }
+
+    // =================================================================================
+    // Anlageneigenschaften
+    // =================================================================================
+
+    private void BeiNeigung(int? wert)
+    {
+        if (_projektZeile is null) return;
+        _projektZeile.Neigung = wert;
+        Uebernehmen?.Invoke(_projektZeile);
+    }
+
+    private void BeiAzimut(int? wert)
+    {
+        if (_projektZeile is null) return;
+        _projektZeile.Azimut = wert;
+        Uebernehmen?.Invoke(_projektZeile);
+    }
+
+    /// <summary>
+    /// Die Anzahl Module ist im Modell ein <c>double</c> (<c>PV_Leistung</c>) - der Name
+    /// des Feldes taeuscht, der Inhalt ist eine Stueckzahl. Sie geht in die
+    /// Gesamtleistung ein, die deshalb sofort neu erfragt wird.
+    /// </summary>
+    private void BeiAnzahl(double? wert)
+    {
+        if (_projektZeile is null) return;
+        _projektZeile.AnzahlModule = wert;
+        Uebernehmen?.Invoke(_projektZeile);
+        GesamtNeu();
+    }
+
+    // =================================================================================
+    // Katalogpflege
+    // =================================================================================
+    /// <summary>Der Parametersatz der offenen Katalogverwaltung; <c>null</c> = zu.</summary>
+    private IReadOnlyDictionary<string, object>? _verwaltungGaben;
+
+    /// <summary>Steht die Katalogverwaltung? (Prüfhilfe für Tests.)</summary>
+    public bool VerwaltungOffen => _verwaltungGaben is not null;
+
+    /// <summary>
+    /// Nach der Verwaltung die Katalogliste neu ziehen — genau das tat der Vorläufer
+    /// nach der Rückkehr aus dem zweiten Fenster.
+    /// </summary>
+    private void VerwaltungFertig(ModulErgebnis? ergebnis)
+    {
+        _verwaltungGaben = null;
+        KatalogNeuLaden();
+    }
+
+
+    private async Task BeiBearbeiten()
+    {
+        if (VerwaltungGaben is null) return;
+        _verwaltungGaben = VerwaltungGaben();
+        await Task.CompletedTask;
+    }
+
+    private void BeiLoeschfrage(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
+
+        if (!KatalogLoeschen(_katalogZeile.Id)) { Melden(MeldungLoeschFehler, true); return; }
+
+        _katalogZeile = null;
+        _detail = Leer("");
+        KatalogNeuLaden();
+    }
+
+    // =================================================================================
+    // Abschluss
+    // =================================================================================
+
+    private void Melden(string text, bool fehler)
+    {
+        _meldung = text;
+        _meldungStufe = fehler ? WarnStufe.Warnung : WarnStufe.Hinweis;
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _loeschfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

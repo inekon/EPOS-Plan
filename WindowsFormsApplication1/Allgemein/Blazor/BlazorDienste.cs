@@ -55,6 +55,16 @@ namespace WindowsFormsApplication1
                     // (Allgemein\Hilfe\WindowsHilfeDienst.cs, iU8-7).
                     sammlung.AddSingleton<IHilfeDienst, WindowsHilfeDienst>();
 
+                    // Die PROJEKTQUELLE, die AppWurzel per @inject anfordert.
+                    // Unter Windows liefert sie NICHTS: Jede Ansicht bekommt
+                    // ihren Parametersatz von der Hülle als Parameter
+                    // (StartseiteHuelle, seit dem Anwenderentscheid W16c-E-3
+                    // auch BerichteKostenGaben) — die Quelle ist der iOS-Weg.
+                    // Sie muss trotzdem eingetragen sein: Ein fehlendes
+                    // @inject-Ziel wirft beim Aufbau der Komponente, und
+                    // AppWurzel steht seit W16c.2 in JEDEM Windows-Start.
+                    sammlung.AddSingleton<IProjektQuelle>(new KeineProjekte());
+
                     _dienste = sammlung.BuildServiceProvider();
                 }
 

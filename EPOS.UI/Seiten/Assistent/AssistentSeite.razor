@@ -1,0 +1,443 @@
+﻿@* Der PROJEKTASSISTENT (iU9-W16a.5) - dreizehn Schritte in einer Komponente.
+
+   Vorbild: Views/Wizard/WizardParent.cs (962 Z., davon rund 340 Datenseite) und
+   .designer.cs (162 Z., 7 Kartenzeilen). Die Datenseite steht seit W16a.4 in
+   EPOS.Kern/Controller/AssistentCtrl, der Rahmen in Bausteine/Assistent.razor;
+   hier stehen die dreizehn Seiten und ihre Reihenfolge.
+
+   DIE REIHENFOLGE IST BITGLEICH die des Bestands (AssistentSeiten.ERZEUGER) und
+   zugleich der Nummernkatalog WizardItemClass: 0 Komponenten, 1 Projektkopf,
+   2 Gebaeude, 3 Waermebedarf extern, 4 Prozesswaerme, 5 Standard-Stromlastprofil,
+   6 Stromlastgang, 7 Waermepumpe, 8 Solarthermie, 9 Photovoltaik,
+   10 Stromspeicher, 11 Spitzenkessel, 12 BHKW. Der Rahmen spricht die Liste
+   ausschliesslich ueber diese Nummern an - hier darf nichts umsortiert werden.
+   (PUFFER_ITEM = 13 ist bis heute eine Konstante ohne Seite.)
+
+   KEINE DATENBANK (Hausregel EPOS.UI). Je Seite kommt ein fertiger
+   Parametersatz herein - dasselbe Woerterbuch, das die WinForms-Huelle bisher an
+   BlazorAssistentSeite gab. Es wird bei JEDEM Betreten neu erfragt, damit ein
+   Wiederbesuch den inzwischen geaenderten Listenstand zeigt (das tat
+   BlazorAssistentSeite.Bestuecken ebenso).
+
+   BEIM BETRETEN - UND SONST NIE (Befund W9-B-1 der Windows-Abnahme vom
+   05.09.2026). Bis dahin zog SchritteBauen den Parametersatz der STEHENDEN Seite
+   bei jedem OnParametersSet neu, also bei jedem Neuzeichnen des Wirtes. Die
+   Huellen bauen darin aber jedesmal eine NEUE Anzeigeliste aus ihrer Fachliste
+   (GebaeudeHuelle.Gaben :113-114 und die zehn Geschwister). Der lebenden
+   Komponente wurde damit die Liste unter den Fuessen ausgetauscht: Ihre
+   Markierung zeigte danach auf ein Objekt, das in der neuen Liste nicht mehr
+   steht - im Gebaeudedialog stand das gespeicherte Gebaeude da, aber keine Zeile
+   war markiert und der Detailblock hing an einem toten Satz. Der Inhalt wird
+   deshalb GEMERKT (_inhalt/_inhaltSchritt) und nur neu erfragt, wenn der Schritt
+   wechselt, ein anderes Projekt markiert wird oder der Wirt einen anderen
+   Gabendelegaten hereinreicht.
+
+   DAS LINKE BAND steht nur in Betriebsart BEARBEITEN und nur auf Schritt 0 -
+   woertlich WizardParent.Next (:305-312): ucProjektAuswahl, das Label und
+   "Projekt oeffnen" werden vor jedem Seitenwechsel ausgeblendet und nur auf dem
+   Komponentenschritt wieder eingeblendet.
+
+   ERSATZLOS WEG: LoadNewForm (32 Z. Fenstergroessenrechnung), die typisierte
+   Rahmenanmeldung WizardParent.Aktiver samt IAssistentRahmen (eine Razor-Seite
+   reicht ihren Zustand hinein, statt dass die Seiten ihn sich holen) und die
+   dreizehn aktiv-Zuweisungen des Konstruktors (sie stehen im AssistentCtrl). *@
+
+@namespace EPOS.UI.Seiten.Assistent
+
+@using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Strom
+@using EPOS.UI.Dialoge.Waermepumpe
+@using WindowsFormsApplication1
+
+<div class="epos-seite epos-assistentseite">
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        @* Der Baustein kennt keinen eigenen Titel; die MessageBox des Vorlaeufers
+           trug ihn als FENSTERtitel. Er steht deshalb dem Satz voran - eine
+           Meldung, ein Banner (Entscheid E-4). *@
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@Meldungssatz" />
+    }
+
+    <Assistent Seiten="@_schritte"
+               Schritt="@_schritt"
+               SchrittChanged="BeiSchritt"
+               Seitenband="@Band"
+               WeiterFrei="@WeiterFrei"
+               Abgebrochen="BeiAbbrechen"
+               Gespeichert="BeiSpeichern"
+               AbbrechenText="@AbbrechenText"
+               ZurueckText="@ZurueckText"
+               WeiterText="@WeiterText"
+               SpeichernText="@SpeichernText" />
+</div>
+
+@code {
+    // =====================================================================
+    // Eingaben und Delegaten (Vermessung § 12.8)
+    // =====================================================================
+
+    /// <summary>
+    /// Betriebsart: 0 = neues Projekt, 1 = vorhandenes bearbeiten
+    /// (<c>AssistentCtrl.BETRIEBSART_NEU</c> / <c>…_BEARBEITEN</c>).
+    /// </summary>
+    [Parameter] public int Betriebsart { get; set; }
+
+    /// <summary>
+    /// Der PARAMETERSATZ einer Seite — wird bei jedem Betreten neu erfragt.
+    /// <c>null</c> = die Seite hat nichts anzuzeigen.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? SeiteGaben { get; set; }
+
+    /// <summary>Ist die Seite freigeschaltet? (<c>AssistentCtrl.SeiteAktiv</c>)</summary>
+    [Parameter] public Func<int, bool>? SeiteAktiv { get; set; }
+
+    /// <summary>
+    /// Der Schritt wird VERLASSEN — der Wirt übernimmt hier den Projektkopf und
+    /// lädt beim ersten Durchgang die sechs Listen (<c>WizardParent.Next</c>
+    /// :275-283).
+    /// </summary>
+    [Parameter] public Action<int>? SeiteVerlassen { get; set; }
+
+    /// <summary>
+    /// Prueft eine Seite, BEVOR sie vorwaerts verlassen wird (Nutzerauftrag 02.09.2026,
+    /// mit Merge 5 aus WizardParent.Next): liefert den Grund, der den Wechsel verbietet,
+    /// oder null. Zurueck geht immer.
+    /// </summary>
+    [Parameter] public Func<int, string?>? SeitePruefen { get; set; }
+
+    /// <summary>Die Projekte für das linke Band (Betriebsart BEARBEITEN).</summary>
+    [Parameter] public IReadOnlyList<ProjektKopfZeile> Projekte { get; set; } =
+        Array.Empty<ProjektKopfZeile>();
+
+    /// <summary>
+    /// Ein anderes Projekt wurde im linken Band markiert: Der Wirt liest den
+    /// Komponentenbestand neu und schaltet die Seiten danach.
+    /// </summary>
+    [Parameter] public Action<int, string>? ProjektMarkiert { get; set; }
+
+    /// <summary>
+    /// „Projekt öffnen" bzw. Doppelklick in der Liste — macht das markierte Projekt
+    /// zum aktiven und schließt den Assistenten (Nutzerwunsch 30.08.2026).
+    /// </summary>
+    [Parameter] public Action<int, string>? ProjektOeffnen { get; set; }
+
+    /// <summary>
+    /// Speichern. Liefert <c>null</c> bei Erfolg, sonst Text und Titel der EINEN
+    /// Meldung (<c>AssistentCtrl.Meldungstext</c>/<c>…titel</c>).
+    /// </summary>
+    [Parameter] public Func<(string Text, string Titel)?>? Speichern { get; set; }
+
+    /// <summary>Der Lauf ist zu Ende — abgebrochen (<c>false</c>) oder gespeichert (<c>true</c>).</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string ZurueckText { get; set; } = "◀ Zurück";
+    [Parameter] public string WeiterText { get; set; } = "Weiter ▶";
+    [Parameter] public string SpeichernText { get; set; } = "Speichern";
+    [Parameter] public string ProjektLabelText { get; set; } = "Bestehendes Projekt auswählen";
+    [Parameter] public string ProjektOeffnenText { get; set; } = "Projekt öffnen";
+
+    /// <summary>Eine Variante in der Projektliste (<c>PRJ_LIST_ART_VARIANTE</c>, W15a‑E‑1).</summary>
+    [Parameter] public string ArtVarianteText { get; set; } = "Variante";
+
+    /// <summary>Die leise Herkunftszeile (<c>PRJ_LIST_VARIANTE_VON</c>); <c>{0}</c> = Stammname.</summary>
+    [Parameter] public string VarianteVonFormat { get; set; } = "Variante von {0}";
+    [Parameter] public string HilfeSchluessel { get; set; } = "AssistentSeite.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    /// <summary>Betriebsart „vorhandenes Projekt bearbeiten".</summary>
+    public const int BEARBEITEN = 1;
+
+    /// <summary>Zahl der Assistentenseiten.</summary>
+    public const int SEITEN = 13;
+
+    private int _schritt;
+    private int _markiertId;
+    private string _markiertName = "";
+    private string _meldung = "";
+    private string _meldungTitel = "";
+
+    /// <summary>Titel und Text der EINEN Meldung in einem Satz.</summary>
+    private string Meldungssatz
+        => string.IsNullOrEmpty(_meldungTitel) ? _meldung : _meldungTitel + ": " + _meldung;
+
+    private readonly List<AssistentSchritt> _schritte = new();
+
+    /// <summary>
+    /// Der gemerkte Inhalt der STEHENDEN Seite und die Schrittnummer, zu der er
+    /// gehört (Befund W9‑B‑1). <c>-1</c> heißt „noch nichts geholt".
+    /// </summary>
+    private RenderFragment? _inhalt;
+    private int _inhaltSchritt = -1;
+
+    /// <summary>
+    /// Der Gabendelegat, mit dem <see cref="_inhalt"/> geholt wurde. Reicht der Wirt
+    /// einen anderen herein, gilt der gemerkte Inhalt nicht mehr.
+    /// </summary>
+    private Func<int, IReadOnlyDictionary<string, object>?>? _inhaltQuelle;
+
+    /// <summary>Der aktuelle Schritt (Prüfhilfe für die Tests).</summary>
+    public int Schritt => _schritt;
+
+    protected override void OnParametersSet()
+    {
+        SchritteBauen();
+    }
+
+    /// <summary>
+    /// Verwirft den gemerkten Seiteninhalt — der nächste Aufbau erfragt ihn neu.
+    /// Gerufen beim Schrittwechsel und bei einem Projektwechsel im linken Band.
+    /// </summary>
+    private void InhaltVerwerfen()
+    {
+        _inhalt = null;
+        _inhaltSchritt = -1;
+    }
+
+    /// <summary>
+    /// Im Bearbeiten-Modus bleibt „Weiter" gesperrt, solange kein Projekt markiert
+    /// ist — wörtlich <c>WizardParent.Next</c> (:269-271).
+    /// </summary>
+    private bool WeiterFrei
+        => Betriebsart != BEARBEITEN || _markiertId > 0 || _schritt != 0;
+
+    // =====================================================================
+    // Die dreizehn Seiten
+    // =====================================================================
+
+    private void SchritteBauen()
+    {
+        _schritte.Clear();
+        for (int i = 0; i < SEITEN; i++)
+        {
+            int nr = i;
+            _schritte.Add(new AssistentSchritt
+            {
+                Titel = Titel(nr),
+                Aktiv = SeiteAktiv is null || SeiteAktiv(nr),
+                Inhalt = nr == _schritt ? Seiteninhalt(nr) : null
+            });
+        }
+    }
+
+    private static string Titel(int nr) => nr switch
+    {
+        0 => "Komponenten",
+        1 => "Projekt",
+        2 => "Gebäude",
+        3 => "Wärmebedarf",
+        4 => "Prozesswärme",
+        5 => "Stromlastprofil",
+        6 => "Stromlastgang",
+        7 => "Wärmepumpe",
+        8 => "Solarthermie",
+        9 => "Photovoltaik",
+        10 => "Stromspeicher",
+        11 => "Spitzenkessel",
+        _ => "BHKW"
+    };
+
+    /// <summary>
+    /// Der Inhalt EINES Schrittes. Die Zuordnung Nummer → Komponente ist die
+    /// bitgleiche Übernahme von <c>AssistentSeiten.ERZEUGER</c>.
+    ///
+    /// <para><b>Der Parametersatz wird beim BETRETEN geholt und dann gemerkt</b>
+    /// (Befund W9‑B‑1). Ein zweiter Zug für dieselbe Seite legte der lebenden
+    /// Komponente eine neue Anzeigeliste unter und nahm ihr damit die Markierung;
+    /// die Hüllen bauen die Liste bei jedem <c>Gaben</c>-Aufruf neu auf.</para>
+    /// </summary>
+    private RenderFragment? Seiteninhalt(int nr)
+    {
+        if (_inhaltSchritt == nr && ReferenceEquals(_inhaltQuelle, SeiteGaben)) return _inhalt;
+
+        IReadOnlyDictionary<string, object>? gaben = SeiteGaben?.Invoke(nr);
+
+        _inhaltSchritt = nr;
+        _inhaltQuelle = SeiteGaben;
+        _inhalt = gaben is null
+            ? null
+            : builder =>
+            {
+                builder.OpenComponent(0, Seitentyp(nr));
+                builder.AddMultipleAttributes(1, gaben!);
+                builder.CloseComponent();
+            };
+
+        return _inhalt;
+    }
+
+    /// <summary>
+    /// Die dreizehn Seitentypen in ihrer festen Reihenfolge — der Nachfolger von
+    /// <c>AssistentSeiten.Seitentypen</c>.
+    /// </summary>
+    public static Type Seitentyp(int nr) => nr switch
+    {
+        0 => typeof(KomponentenauswahlDialog),
+        1 => typeof(ProjektKopfSeite),
+        2 => typeof(GebaeudeDialog),
+        3 => typeof(WaermebedarfExternDialog),
+        4 => typeof(BedarfsProfileDialog),
+        5 => typeof(BedarfsProfileDialog),
+        6 => typeof(StromganglinieDialog),
+        7 => typeof(WaermepumpenDialog),
+        8 => typeof(SolarkollektorenDialog),
+        9 => typeof(PhotovoltaikDialog),
+        10 => typeof(StromspeicherDialog),
+        11 => typeof(HeizkesselDialog),
+        _ => typeof(BhkwDialog)
+    };
+
+    // =====================================================================
+    // Das linke Band - nur in BEARBEITEN und nur auf Schritt 0
+    // =====================================================================
+
+    private RenderFragment? Band
+        => Betriebsart == BEARBEITEN && _schritt == 0 ? BandInhalt : null;
+
+    private RenderFragment BandInhalt => builder =>
+    {
+        int i = 0;
+
+        builder.OpenElement(i++, "div");
+        builder.AddAttribute(i++, "class", "epos-assistent-bandkopf");
+        builder.OpenComponent<InfoKnopf>(i++);
+        builder.AddComponentParameter(i++, nameof(InfoKnopf.Schluessel), HilfeSchluessel);
+        builder.CloseComponent();
+        builder.CloseElement();
+
+        builder.OpenElement(i++, "h2");
+        builder.AddAttribute(i++, "class", "epos-untergruppe");
+        builder.AddContent(i++, ProjektLabelText);
+        builder.CloseElement();
+
+        builder.OpenComponent<ProjektListe>(i++);
+        builder.AddComponentParameter(i++, nameof(ProjektListe.Zeilen), Projekte);
+        builder.AddComponentParameter(i++, nameof(ProjektListe.NurName), true);
+        builder.AddComponentParameter(i++, nameof(ProjektListe.AutoVorauswahl), false);
+        builder.AddComponentParameter(i++, nameof(ProjektListe.Markiert), _markiertId);
+        builder.AddComponentParameter(i++, nameof(ProjektListe.MarkiertChanged),
+            EventCallback.Factory.Create<ProjektKopfZeile?>(this, BeiMarkierung));
+        builder.AddComponentParameter(i++, nameof(ProjektListe.Gewaehlt),
+            EventCallback.Factory.Create<ProjektKopfZeile>(this, BeiDoppelklick));
+
+        // W15a-E-1: Das Band ist 280 px breit und zeigt nur den Namen - fuer eine
+        // Artspalte ist dort kein Platz. Die Herkunft steht deshalb als leise Zeile
+        // unter dem Namen; die Liste setzt sie von selbst, sie braucht nur die
+        // uebersetzten Worte.
+        builder.AddComponentParameter(i++, nameof(ProjektListe.ArtVarianteText), ArtVarianteText);
+        builder.AddComponentParameter(i++, nameof(ProjektListe.VarianteVonFormat), VarianteVonFormat);
+        builder.CloseComponent();
+
+        builder.OpenElement(i++, "div");
+        builder.AddAttribute(i++, "class", "epos-leiste");
+        builder.OpenElement(i++, "button");
+        builder.AddAttribute(i++, "type", "button");
+        builder.AddAttribute(i++, "class", "epos-knopf");
+        builder.AddAttribute(i++, "disabled", _markiertId <= 0);
+        builder.AddAttribute(i++, "onclick",
+            EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(
+                this, () => BeiProjektOeffnen()));
+        builder.AddContent(i++, ProjektOeffnenText);
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+
+    private void BeiMarkierung(ProjektKopfZeile? zeile)
+    {
+        _markiertId = zeile?.Id ?? 0;
+        _markiertName = zeile?.Name ?? "";
+
+        // Woertlich ucProjektAuswahl_MarkierungGeaendert (:552-566): nur auf dem
+        // Komponentenschritt, und ohne Markierung passiert nichts weiter.
+        if (_schritt != 0 || _markiertId <= 0) return;
+
+        ProjektMarkiert?.Invoke(_markiertId, _markiertName);
+
+        // Ein anderes Projekt heisst ein anderer Bestand - der gemerkte
+        // Seiteninhalt gilt nicht mehr (Befund W9-B-1).
+        InhaltVerwerfen();
+        SchritteBauen();
+    }
+
+    private void BeiDoppelklick(ProjektKopfZeile zeile)
+    {
+        if (_schritt != 0) return;
+        _markiertId = zeile.Id;
+        _markiertName = zeile.Name;
+        BeiProjektOeffnen();
+    }
+
+    private void BeiProjektOeffnen()
+    {
+        if (_markiertId <= 0 || string.IsNullOrWhiteSpace(_markiertName)) return;
+        ProjektOeffnen?.Invoke(_markiertId, _markiertName);
+    }
+
+    // =====================================================================
+    // Ablauf
+    // =====================================================================
+
+    private void BeiSchritt(int neu)
+    {
+        // Vorwaerts erst, wenn die Seite es erlaubt (Pflichtfelder, Namensdoppel). Der
+        // Rahmen hat seinen Schritt schon gesetzt; ohne Wechsel hier bekommt er beim
+        // naechsten Zeichnen den alten Schritt zurueck.
+        if (neu > _schritt)
+        {
+            string? grund = SeitePruefen?.Invoke(_schritt);
+            if (!string.IsNullOrEmpty(grund))
+            {
+                _meldung = grund;
+                _meldungTitel = "";
+                SchritteBauen();
+                return;
+            }
+        }
+        // Der Rahmen hat schon entschieden, WOHIN es geht; der Wirt bekommt vorher
+        // den verlassenen Schritt gemeldet (Projektkopf uebernehmen, Listen laden).
+        SeiteVerlassen?.Invoke(_schritt);
+        _schritt = neu;
+        _meldung = "";
+
+        // Der neue Schritt wird BETRETEN - sein Parametersatz wird frisch geholt,
+        // der der verlassenen Seite faellt weg (Befund W9-B-1).
+        InhaltVerwerfen();
+        SchritteBauen();
+    }
+
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+
+    private async Task BeiSpeichern()
+    {
+        string? grund = SeitePruefen?.Invoke(_schritt);
+        if (!string.IsNullOrEmpty(grund))
+        {
+            _meldung = grund;
+            _meldungTitel = "";
+            return;
+        }
+        SeiteVerlassen?.Invoke(_schritt);
+
+        (string Text, string Titel)? fehler = Speichern?.Invoke();
+        if (fehler is not null)
+        {
+            // EINE Meldung statt siebzehn stiller return (Entscheid E-4). Der
+            // Assistent bleibt stehen - die Eingaben gehen nicht verloren.
+            _meldung = fehler.Value.Text;
+            _meldungTitel = fehler.Value.Titel;
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(true);
+    }
+}

@@ -1,0 +1,312 @@
+﻿@* Waermepumpen Verwaltung - der HOST des Gewerks (iU9-W7.5).
+
+   VORBILD. Views/Waermepumpe/Form_WPAuswahl (341 Z., lokalisiert de/en, 8
+   Kartenzeilen, ListView mit fuenf Spalten, 5 MessageBox). Die Maske haelt
+   die Waermepumpen EINES Projekts und oeffnet fuer jede die Detailansicht.
+
+   DREI ABLAEUFE, EINE UEBERLAGERUNG. "Neu.." zeigt erst den Katalog, dann
+   die Detailansicht; "Aendern.." zeigt sie unmittelbar; "Ansicht" ebenfalls,
+   aber nur lesend. Alle drei laufen IM selben Fenster (Risiko R2) - der
+   Vorlaeufer oeffnete dafuer zwei Fenster uebereinander.
+
+   DIE ZEILE IST DER SCHLUESSEL, nicht ihr Index. btn_Loeschen_Click nahm
+   list_werzmodel.RemoveAt(listView.SelectedIndex) - im Assistenten fuehrt
+   dieselbe Liste ALLE Erzeugertypen, die Anzeige aber nur die Waermepumpen.
+   Der Index passte dort nicht, und entfernt wurde eine fremde Anlage
+   (dieselbe Fehlerklasse wie W6 A-5).
+
+   DER DOPPELKLICK WIRD EIN KNOPF. Er las die Anlage per BEZEICHNER aus der
+   Datenbank - projektuebergreifend mehrdeutig, und eine noch nicht
+   gespeicherte Zeile fand er gar nicht. "Ansicht" nimmt die Zeile, die
+   dasteht (A-22).
+
+   TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
+   Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    <div class="epos-raster-huelle">
+        <table class="epos-raster">
+            <thead>
+                <tr>
+                    <th>@SpalteWahl</th>
+                    <th>@SpalteName</th>
+                    <th>@SpalteLeistung</th>
+                    <th>@SpalteVorlauf</th>
+                    <th>@SpalteRuecklauf</th>
+                    <th>@SpalteBetriebsart</th>
+                    <th>@SpalteAktion</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (WaermepumpeAnlageDaten zeile in Zeilen)
+                {
+                    WaermepumpeAnlageDaten z = zeile;
+                    <tr class="@(z == _gewaehlt ? "epos-zeile--markiert" : null)">
+                        <td>
+                            <Zeilenwahl Gewaehlt="@(z == _gewaehlt)" Kurztext="@SpalteWahl"
+                                        Gewaehltwerden="() => _gewaehlt = z" />
+                        </td>
+                        <td>@z.Bezeichner</td>
+                        <td>@z.Nennleistung</td>
+                        <td>@z.Vorlauf</td>
+                        <td>@z.Ruecklauf</td>
+                        <td>@z.Betriebsart</td>
+                        <td>
+                            <button type="button" class="epos-knopf"
+                                    @onclick="() => Ansehen(z)">@BtnAnsichtText</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                @onclick="BeiAendern">@BtnAendernText</button>
+        <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                @onclick="BeiLoeschen">@BtnLoeschenText</button>
+    </div>
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+
+    @* --- Ueberlagerung 1: der Modulkatalog (nur im Weg "Neu..") ------------- *@
+    <Ueberlagerung Offen="@_katalogOffen" Schliessbar="false"
+                   Titel="@BtnKatalogText" Geschlossen="() => _katalogOffen = false">
+        <KindInhalt>
+            @if (_katalogOffen)
+            {
+                <WaermepumpenKatalogDialog Zeilen="@_katalog" Geschlossen="KatalogFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 2: die Detailansicht --------------------------------- *@
+    <Ueberlagerung Offen="@(_anlageGaben is not null)" Schliessbar="false"
+                   Titel="@TitelDetail" Geschlossen="AnlageAbbrechen">
+        <KindInhalt>
+            @if (_anlageGaben is not null)
+            {
+                <WaermepumpeAnlageDialog @attributes="_anlageGaben" NurLesen="@_nurAnsehen"
+                                         Geschlossen="AnlageFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>
+    /// Die Wärmepumpen des Projekts — die Liste gehört der Hülle und wird AN ORT UND
+    /// STELLE bearbeitet, wie in den fünf Erzeugerdialogen der Welle 6.
+    /// </summary>
+    [Parameter] public List<WaermepumpeAnlageDaten> Zeilen { get; set; } = new();
+
+    /// <summary>Der Katalog für den Weg „Neu..".</summary>
+    [Parameter] public Func<IReadOnlyList<WaermepumpenKatalogZeile>>? Katalog { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Detailansicht zu einer Zeile. Die Hülle baut ihn samt der
+    /// Delegaten, die dort hängen (Kennlinien, Kosten, Stammdialog).
+    /// </summary>
+    [Parameter] public Func<WaermepumpeAnlageDaten, IReadOnlyDictionary<string, object>>? AnlageGaben { get; set; }
+
+    /// <summary>
+    /// Legt eine neue Zeile zu einem Katalogbezeichner an — die Hülle holt die Stamm-Id
+    /// und die Stammfelder. <c>null</c> = nichts angelegt.
+    /// </summary>
+    [Parameter] public Func<string, WaermepumpeAnlageDaten?>? Anlegen { get; set; }
+
+    /// <summary>Übernimmt den bearbeiteten Stand in das Modell der Hülle.</summary>
+    [Parameter] public Action<WaermepumpeAnlageDaten>? Uebernehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste.</summary>
+    [Parameter] public Action<WaermepumpeAnlageDaten>? Entfernen { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Wärmepumpen Verwaltung";
+    [Parameter] public string KopfbandText { get; set; } = "Geben Sie die Daten der Wärmepumpe ein";
+    [Parameter] public string TitelDetail { get; set; } = "Detailansicht";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string SpalteLeistung { get; set; } = "Leistung [kW]";
+    [Parameter] public string SpalteVorlauf { get; set; } = "Vorlauf [°C]";
+    [Parameter] public string SpalteRuecklauf { get; set; } = "Rücklauf [°C]";
+    [Parameter] public string SpalteBetriebsart { get; set; } = "Betriebsart";
+    [Parameter] public string SpalteAktion { get; set; } = "Aktion";
+    [Parameter] public string BtnNeuText { get; set; } = "➕ Neu..";
+    [Parameter] public string BtnAendernText { get; set; } = "✏️ Ändern..";
+    [Parameter] public string BtnLoeschenText { get; set; } = "🗑️ Löschen";
+    [Parameter] public string BtnAnsichtText { get; set; } = "Ansicht";
+    [Parameter] public string BtnKatalogText { get; set; } = "📋  Modul-Katalog...";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "❌Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_WPAuswahl.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private WaermepumpeAnlageDaten? _gewaehlt;
+    private IReadOnlyList<WaermepumpenKatalogZeile> _katalog = Array.Empty<WaermepumpenKatalogZeile>();
+    private bool _katalogOffen;
+
+    private IReadOnlyDictionary<string, object>? _anlageGaben;
+    private WaermepumpeAnlageDaten? _inArbeit;
+    private bool _nurAnsehen;
+    private bool _istNeu;
+    private string _meldung = "";
+
+    /// <summary>Die gewählte Zeile — Prüfhilfe für die Tests.</summary>
+    public WaermepumpeAnlageDaten? Gewaehlt => _gewaehlt;
+
+    /// <summary>Steht die Detailansicht? Prüfhilfe für die Tests.</summary>
+    public bool DetailOffen => _anlageGaben is not null;
+
+    /// <summary>Steht der Katalog? Prüfhilfe für die Tests.</summary>
+    public bool KatalogOffen => _katalogOffen;
+
+    protected override void OnInitialized()
+    {
+        if (Zeilen.Count > 0) _gewaehlt = Zeilen[0];
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =================================================================================
+    // Neu: erst der Katalog, dann die Detailansicht
+    // =================================================================================
+
+    private void BeiNeu()
+    {
+        _meldung = "";
+        _katalog = Katalog?.Invoke() ?? Array.Empty<WaermepumpenKatalogZeile>();
+        _katalogOffen = true;
+    }
+
+    private void KatalogFertig(string? bezeichner)
+    {
+        _katalogOffen = false;
+        if (bezeichner is null || Anlegen is null || AnlageGaben is null) return;
+
+        WaermepumpeAnlageDaten? neu = Anlegen(bezeichner);
+        if (neu is null) return;
+
+        _istNeu = true;
+        _nurAnsehen = false;
+        _inArbeit = neu;
+        _anlageGaben = AnlageGaben(neu);
+    }
+
+    // =================================================================================
+    // Aendern und Ansehen
+    // =================================================================================
+
+    private void BeiAendern()
+    {
+        if (_gewaehlt is null || AnlageGaben is null) return;
+
+        _meldung = "";
+        _istNeu = false;
+        _nurAnsehen = false;
+        _inArbeit = _gewaehlt;
+        _anlageGaben = AnlageGaben(_gewaehlt);
+    }
+
+    /// <summary>
+    /// „Ansicht" — der frühere Doppelklick. Er nimmt die Zeile, die dasteht, statt
+    /// die Datenbank nach ihrem Bezeichner zu durchsuchen (A-22).
+    /// </summary>
+    private void Ansehen(WaermepumpeAnlageDaten zeile)
+    {
+        if (AnlageGaben is null) return;
+
+        _gewaehlt = zeile;
+        _meldung = "";
+        _istNeu = false;
+        _nurAnsehen = true;
+        _inArbeit = zeile;
+        _anlageGaben = AnlageGaben(zeile);
+    }
+
+    private void AnlageAbbrechen() => AnlageFertig(false);
+
+    private void AnlageFertig(bool ok)
+    {
+        WaermepumpeAnlageDaten? bearbeitet = _inArbeit;
+        bool neu = _istNeu;
+
+        _anlageGaben = null;
+        _inArbeit = null;
+        _istNeu = false;
+        _nurAnsehen = false;
+
+        if (!ok || bearbeitet is null) return;
+
+        Uebernehmen?.Invoke(bearbeitet);
+        if (neu) Zeilen.Add(bearbeitet);
+        _gewaehlt = bearbeitet;
+    }
+
+    // =================================================================================
+    // Loeschen
+    // =================================================================================
+
+    /// <summary>
+    /// Entfernt GENAU die gewählte Zeile. Der Vorläufer nahm den Index der ANZEIGE und
+    /// entfernte ihn aus der Gesamtliste — im Assistenten führt dieselbe Liste alle
+    /// Erzeugertypen, und der Index traf dort eine fremde Anlage.
+    /// </summary>
+    private void BeiLoeschen()
+    {
+        if (_gewaehlt is null) return;
+
+        WaermepumpeAnlageDaten zeile = _gewaehlt;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+
+        _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
+        _meldung = "";
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _katalogOffen || _anlageGaben is not null) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

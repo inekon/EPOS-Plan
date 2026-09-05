@@ -19,6 +19,61 @@ namespace WindowsFormsApplication1
             model = new Z_ProjGebModel();
         }
 
+        /// <summary>
+        /// Die GEBAEUDEZUORDNUNGEN eines Projekts (iU9-W9.0d) — der JOIN, der bis Welle 9
+        /// DREIMAL wortgleich im Oberflaechencode stand: <c>Form_Start.pBox_Gebaude_Click</c>
+        /// (:312-338), <c>GebaeudeKontextMenuCtrl.ContextMenuItemBearbeiten_Click</c>
+        /// (:87-117) und <c>WizardParent.LoadZGeb</c>.
+        ///
+        /// <para><b>Zwei Fassungen des JOIN, eine hier.</b> Das Startbild las
+        /// <c>ID_Gebaeude</c> aus der Spalte <c>Z_ProjektGebaeude.ID</c> (also aus derselben
+        /// Zahl wie <c>ID_Z</c>), das Kontextmenue aus <c>Tab_Gebaeude.ID_ProjektGebaeude</c>.
+        /// Beide zeigen auf dieselbe Zeile — <c>ID_ProjektGebaeude</c> IST der Verweis auf
+        /// <c>Z_ProjektGebaeude.ID</c> —, das Kontextmenue nennt sie nur beim Namen.
+        /// Uebernommen ist die Fassung des Kontextmenues.</para>
+        /// </summary>
+        public static List<Z_ProjGebModel> LiesProjekt(int idProjekt)
+        {
+            var liste = new List<Z_ProjGebModel>();
+
+            const string sql =
+                "SELECT Z_ProjektGebaeude.ID, Z_ProjektGebaeude.[ID_Projekt], " +
+                "[Tab_Gebaeude].ID_ProjektGebaeude, [Tab_Gebaeude].Gebaeudename, " +
+                "[Tab_Gebaeude].Baualtersklasse, Z_ProjektGebaeude.Wohnflaeche_Waermebedarf, " +
+                "Einheit_Waermebedarf_Wohnflaeche, Jahresnutzungsgrad, dezWarmwasserbereitung, " +
+                "Gebaeudeart, Beschreibung FROM [Tab_Gebaeude] " +
+                "INNER JOIN Z_ProjektGebaeude ON [Tab_Gebaeude].ID_ProjektGebaeude = Z_ProjektGebaeude.ID " +
+                "WHERE Z_ProjektGebaeude.ID_Projekt = ?";
+
+            DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idProjekt));
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                var item = new Z_ProjGebModel();
+                item.ID_Z = Convert.ToInt32(row["ID"]);
+                item.ID_Projekt = idProjekt;
+                item.ID_Gebaeude = Convert.ToInt32(row["ID_ProjektGebaeude"]);
+                item.Gebaeudename = Text(row, "Gebaeudename");
+                item.Wohnflaeche = Zahl(row, "Wohnflaeche_Waermebedarf");
+                item.Einheit = Text(row, "Einheit_Waermebedarf_Wohnflaeche");
+                item.Jahresnutzungsgrad = Zahl(row, "Jahresnutzungsgrad");
+                item.DezentralWarmwasser = row["dezWarmwasserbereitung"] != DBNull.Value &&
+                                           Convert.ToBoolean(row["dezWarmwasserbereitung"]);
+                item.Gebaeudeart = Text(row, "Gebaeudeart");
+                item.Beschreibung = Text(row, "Beschreibung");
+                item.Baualtersklasse = Text(row, "Baualtersklasse");
+                liste.Add(item);
+            }
+            return liste;
+        }
+
+        private static string Text(DataRow row, string spalte)
+            => row[spalte] == DBNull.Value ? "" : row[spalte].ToString();
+
+        private static double Zahl(DataRow row, string spalte)
+            => row[spalte] == DBNull.Value ? 0.0 : Convert.ToDouble(row[spalte]);
+
         public void ReadAll(string sql)
         {
             // Abfrage über das zentrale DataRepository holen

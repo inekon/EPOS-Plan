@@ -27,59 +27,45 @@ namespace WindowsFormsApplication1
         //  Positivliste der Bereichsbezeichnungen
         // ------------------------------------------------------------------
 
+        // ------------------------------------------------------------------
+        //  iU9-W15b.0f: Die Positivliste und die Freigabeschranke stehen seit
+        //  dieser Welle im Kern (KiChatKontext) - sie sind reine Zeichenarbeit
+        //  und werden auf iOS ebenso gebraucht (Befund W15b-B19, Entscheid E-9).
+        //  Hier stehen nur noch die Kurznamen, damit die drei Nachschlagetabellen
+        //  unten unveraendert lesbar bleiben. EINE Liste, EIN Ort.
+        // ------------------------------------------------------------------
+
         /// <summary>Ersatzwert, wenn sich der Bereich nicht sicher zuordnen laesst.</summary>
-        public const string BEREICH_UNBEKANNT = "Unbekannter Bereich";
+        public const string BEREICH_UNBEKANNT = KiChatKontext.BEREICH_UNBEKANNT;
 
-        private const string B_ADMIN = "Administration";
-        // E5 (Projektdialoge, 29.08.2026): der Bereich heisst wie das Fenster
-        // "Projektassistent". Der Wert ist zugleich Schluessel in
-        // WikiWissen.SEITE_JE_BEREICH - beide Stellen nur gemeinsam aendern.
-        private const string B_ASSISTENT = "Projektassistent";
-        private const string B_BERICHT = "Bericht";
-        private const string B_BHKW = "BHKW";
-        private const string B_BRAUCHWASSER = "Brauchwasser";
-        private const string B_GEBAEUDE = "Gebäude";
-        private const string B_HAUPTFENSTER = "Hauptfenster";
-        private const string B_HEIZKESSEL = "Heizkessel";
-        private const string B_HILFE = "Hilfe";
-        private const string B_KLIMADATEN = "Klimadaten";
-        private const string B_KOSTEN = "Kosten und Preise";
-        private const string B_LIZENZ = "Lizenz";
-        private const string B_PHOTOVOLTAIK = "Photovoltaik";
-        private const string B_PROJEKT = "Projektverwaltung";
-        private const string B_PROZESSWAERME = "Prozesswärme";
-        private const string B_PUFFERSPEICHER = "Pufferspeicher";
-        private const string B_SIMULATION = "Simulation";
-        private const string B_SOLARTHERMIE = "Solarthermie";
-        private const string B_STROMSPEICHER = "Stromspeicher";
-        private const string B_STROMVERBRAUCHER = "Stromverbraucher";
-        private const string B_VARIANTEN = "Varianten";
-        private const string B_WAERMEBEDARF = "Wärmebedarf";
-        private const string B_WAERMEPUMPE = "Wärmepumpe";
-        private const string B_WIRTSCHAFT = "Wirtschaftlichkeit";
+        private const string B_ADMIN = KiChatKontext.B_ADMIN;
+        private const string B_ASSISTENT = KiChatKontext.B_ASSISTENT;
+        private const string B_BERICHT = KiChatKontext.B_BERICHT;
+        private const string B_BHKW = KiChatKontext.B_BHKW;
+        private const string B_BRAUCHWASSER = KiChatKontext.B_BRAUCHWASSER;
+        private const string B_GEBAEUDE = KiChatKontext.B_GEBAEUDE;
+        private const string B_HAUPTFENSTER = KiChatKontext.B_HAUPTFENSTER;
+        private const string B_HEIZKESSEL = KiChatKontext.B_HEIZKESSEL;
+        private const string B_HILFE = KiChatKontext.B_HILFE;
+        private const string B_KLIMADATEN = KiChatKontext.B_KLIMADATEN;
+        private const string B_KOSTEN = KiChatKontext.B_KOSTEN;
+        private const string B_LIZENZ = KiChatKontext.B_LIZENZ;
+        private const string B_PHOTOVOLTAIK = KiChatKontext.B_PHOTOVOLTAIK;
+        private const string B_PROJEKT = KiChatKontext.B_PROJEKT;
+        private const string B_PROZESSWAERME = KiChatKontext.B_PROZESSWAERME;
+        private const string B_PUFFERSPEICHER = KiChatKontext.B_PUFFERSPEICHER;
+        private const string B_SIMULATION = KiChatKontext.B_SIMULATION;
+        private const string B_SOLARTHERMIE = KiChatKontext.B_SOLARTHERMIE;
+        private const string B_STROMSPEICHER = KiChatKontext.B_STROMSPEICHER;
+        private const string B_STROMVERBRAUCHER = KiChatKontext.B_STROMVERBRAUCHER;
+        private const string B_VARIANTEN = KiChatKontext.B_VARIANTEN;
+        private const string B_WAERMEBEDARF = KiChatKontext.B_WAERMEBEDARF;
+        private const string B_WAERMEPUMPE = KiChatKontext.B_WAERMEPUMPE;
+        private const string B_WIRTSCHAFT = KiChatKontext.B_WIRTSCHAFT;
 
-        // Von Masken ueber SetzeBereich() gesetzte, bewusst feinere Bezeichnungen.
-        // Sie enthalten nur Fach- und Bedienbegriffe, keine Projektdaten.
-        private const string B_QUELLE_ERDREICH =
-            "Wärmequelle Erdreich (Quellsystem, Bodentyp, Auslegungsprüfung VDI 4640)";
-        private const string B_SIM_KONFIG =
-            "Simulation Konfiguration (Erzeuger definieren, Pufferspeicher zuordnen)";
-        private const string B_SIM_DETAIL = "Detaillierte Simulation";
-
-        /// <summary>
-        /// Alle Zeichenketten, die als Bereichsangabe den Rechner verlassen duerfen.
-        /// Was hier nicht steht, wird zu <see cref="BEREICH_UNBEKANNT"/>.
-        /// </summary>
-        private static readonly HashSet<string> POSITIVLISTE = new HashSet<string>(StringComparer.Ordinal)
-        {
-            BEREICH_UNBEKANNT,
-            B_ADMIN, B_ASSISTENT, B_BERICHT, B_BHKW, B_BRAUCHWASSER, B_GEBAEUDE,
-            B_HAUPTFENSTER, B_HEIZKESSEL, B_HILFE, B_KLIMADATEN, B_KOSTEN, B_LIZENZ,
-            B_PHOTOVOLTAIK, B_PROJEKT, B_PROZESSWAERME, B_PUFFERSPEICHER, B_SIMULATION,
-            B_SOLARTHERMIE, B_STROMSPEICHER, B_STROMVERBRAUCHER, B_VARIANTEN,
-            B_WAERMEBEDARF, B_WAERMEPUMPE, B_WIRTSCHAFT,
-            B_QUELLE_ERDREICH, B_SIM_KONFIG, B_SIM_DETAIL
-        };
+        private const string B_QUELLE_ERDREICH = KiChatKontext.B_QUELLE_ERDREICH;
+        private const string B_SIM_KONFIG = KiChatKontext.B_SIM_KONFIG;
+        private const string B_SIM_DETAIL = KiChatKontext.B_SIM_DETAIL;
 
         /// <summary>
         /// Detailangaben, die ueber ErgaenzeDetail() mitgesendet werden duerfen.
@@ -92,73 +78,85 @@ namespace WindowsFormsApplication1
         private static readonly Dictionary<string, string> BEREICH_JE_TYP =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "MDIMainForm",                 B_HAUPTFENSTER },
-            { "FormMain",                    B_HAUPTFENSTER },
-            { "Form_Start",                  B_HAUPTFENSTER },
+            // iU9-W16c.3: Der Rahmen ist nur noch die HUELLE - ein Fenster mit
+            // einer WebView. Der Eintrag bleibt trotzdem: Er ist der Schluessel,
+            // unter dem HilfeAutomatik das offene Fenster erkennt, und das
+            // Fenster gibt es weiter.
+            //
+            // Anwenderentscheid E-10 (04.09.2026): Der Typ hiess bis dahin
+            // "MDIMainForm". Der SCHLUESSEL ist der Typname des offenen
+            // Fensters, also zieht er mit um; das ZIEL (B_HAUPTFENSTER) bleibt
+            // dasselbe. help_mapping.txt fuehrt keinen Schluessel dieses
+            // Fensters mehr - die Fensterhilfe sitzt seit W16c.6 als
+            // "Hauptfenster.btn_Help" im Kopfband der Razor-Seite.
+            { "Hauptfensterrahmen",          B_HAUPTFENSTER },
+            // iU9-W16c.2: Die Oberflaeche des Fensters ist die Razor-Seite
+            // "Hauptfenster" (EPOS.UI/Seiten/Hauptfenster.razor) - Menueband,
+            // Kopfband und die Ansicht darunter.
+            { "Hauptfenster",                B_HAUPTFENSTER },
+            // iU9-W16b.1 (E-7, K6-a): "FormMain" (das Detailformular
+            // "Konfiguration Projekt") ist geloescht - sein Bereich entfaellt.
+            // iU9-W16b.3: Die Startmaske ist die Razor-Seite "Startseite"
+            // (EPOS.UI/Seiten/Start/Startseite.razor); der Bereich bleibt derselbe.
+            { "Startseite",                  B_HAUPTFENSTER },
 
             { "Form_AdminSettings",          B_ADMIN },
             { "Form_Gesetzesparameter",      B_ADMIN },
             { "Form_GesetzparameterZeile",   B_ADMIN },
             { "Form_KatalogDubletten",       B_ADMIN },
+            // iU9-W15c: Beide Lizenzmasken sind Razor-Komponenten. Die
+            // Klassennamen bleiben hier stehen - sie sind der Schluessel, unter dem
+            // HilfeAutomatik ein geoeffnetes Fenster erkennt -, und die zwei
+            // Komponenten kommen daneben. Dieselbe Praxis wie bei KiChatDialog
+            // (W15b.7) und BedarfAdminDialog (W14b.1).
             { "Form_LizenzVerwaltung",       B_LIZENZ },
             { "Form_Lizenz",                 B_LIZENZ },
+            { "LizenzVerwaltungDialog",      B_LIZENZ },
+            { "LizenzDialog",                B_LIZENZ },
 
-            { "UcBericht",                   B_BERICHT },
-            { "Form_BkUebernahme",           B_BERICHT },
-            { "UcBerichteKosten",            B_BERICHT },
-            { "UcBkKosten",                  B_BERICHT },
-            { "UcBkUebersicht",              B_BERICHT },
-
+            // iU9-W14a.1: Die vier Erzeuger-Katalogbrowser sind EINE Razor-Komponente
+            // (KatalogBrowserDialog) mit vier Auspraegungen. Die Maskennamen bleiben
+            // hier stehen: Sie sind der Schluessel, unter dem HilfeAutomatik ein
+            // geoeffnetes Fenster erkennt, und die Blazor-Huelle traegt weiterhin den
+            // Titel der Auspraegung. Ein EINZIGER Eintrag fuer die Komponente ginge
+            // nicht - sie bedient vier verschiedene Bereiche.
             { "Form_BHKWAdmin",              B_BHKW },
-            { "Form_BHKWEing",               B_BHKW },
-            { "Form_DBBHKW",                 B_BHKW },
 
-            { "Form_Brauchwasser",           B_BRAUCHWASSER },
-            { "Form_Brauchwasser_Admin",     B_BRAUCHWASSER },
-            { "Form_EingBrauchwasserTyp",    B_BRAUCHWASSER },
-            { "Form_EingDBBrauchwasser",     B_BRAUCHWASSER },
-            { "Form_ErgBrauchwasserwaerme",  B_BRAUCHWASSER },
+            // iU9-W14b.1: Die DREI Bedarfs-Katalogverwaltungen sind EINE
+            // Razor-Komponente mit drei Auspraegungen (BedarfAdminDialog). Der
+            // Bereich haengt damit nicht mehr am Klassennamen - er kaeme fuer alle
+            // drei gleich heraus; eingetragen ist der haeufigste Wirt. Die
+            // Schluessel des InfoKnopfes in help_mapping.txt heissen weiter nach
+            // den drei Masken, denn sie sind die Adresse des HILFETEXTES und nicht
+            // der Klasse (Praxis seit W12).
+            { "BedarfAdminDialog",           B_BRAUCHWASSER },
 
-            { "Form_EingGebTyp",             B_GEBAEUDE },
-            { "Form_GebWohnflaeche",         B_GEBAEUDE },
-            { "Form_Gebaeude",               B_GEBAEUDE },
-            { "Form_Gebaeude1",              B_GEBAEUDE },
-            { "Form_Gebaeude2",              B_GEBAEUDE },
-            { "Form_GebaeudetypNeu",         B_GEBAEUDE },
 
-            { "Form_Heizkessel",             B_HEIZKESSEL },
             { "Form_Heizkessel_Admin",       B_HEIZKESSEL },
-            { "Form_Heizkessel_Bearbeiten",  B_HEIZKESSEL },
-            { "Form_Heizkessel_einlesen",    B_HEIZKESSEL },
 
             { "Form_HelpPopup",              B_HILFE },
             { "Form_KiChat",                 B_HILFE },
+            // iU9-W15b.7: Der Chat ist eine Razor-Komponente. Der Klassenname bleibt
+            // hier stehen - er ist der Schluessel, unter dem HilfeAutomatik ein
+            // geoeffnetes Fenster erkennt -, und die Komponente kommt daneben. Der
+            // Titelweg (BEREICH_JE_TITELANFANG, "Hilfe-Assistent") traegt den
+            // Windows-Fall ohnehin; auf iOS bildet KiChatKontext den Seitenschluessel
+            // KI_ASSISTENT auf denselben Bereich ab (Praxis seit W12).
+            { "KiChatDialog",                B_HILFE },
 
             { "Form_Klimadaten",             B_KLIMADATEN },
 
             { "Form_Kosten_Auswahl",         B_KOSTEN },
-            { "Form_KostenKomponente",       B_KOSTEN },
-            { "Form_Kostenprofil",           B_KOSTEN },
-            { "Form_SpotpreisImport",        B_KOSTEN },
-            { "Form_Energietraeger",         B_KOSTEN },
-            { "Form_LeistungspreisReihe",    B_KOSTEN },
-            { "Form_PhotovoltaikVerguetung", B_KOSTEN },
-            { "Form_Tarifstruktur",          B_KOSTEN },
 
             { "Form_AdminPV",                B_PHOTOVOLTAIK },
-            { "Form_PV",                     B_PHOTOVOLTAIK },
-            { "Form_CECImport",              B_PHOTOVOLTAIK },
 
-            // Paket B des PV-Ertragsmodells (Stufe E2): der Wechselrichterdialog einer
-            // PV-Anlage, aufgerufen ueber den Knopf "Wechselrichter…" in Form_PV.
-            { "Form_PVModell",               B_PHOTOVOLTAIK },
-
-            // Nachgetragen mit H7: Die Datei heisst Form_CECImport.cs, die KLASSE
-            // aber Main_PV_Test - nachgeschlagen wird der Typname, der Eintrag
-            // darueber griff also nie. Er bleibt stehen, falls die Klasse einmal
-            // wie ihre Datei heisst.
-            { "Main_PV_Test",                B_PHOTOVOLTAIK },
-
+            // iU9-W13.3: Der PV-Modulimport ist die Razor-Komponente
+            // PvModulImportDialog. Damit fallen ZWEI Eintraege weg: der tote
+            // "Form_CECImport" (der Dateiname, nachgeschlagen wird der TYPNAME -
+            // Befund W13-B37) und der wirksame "Main_PV_Test". Der Bereich bleibt
+            // derselbe; die Zeile in help_mapping.txt heisst weiter nach der
+            // Maske, denn sie ist die Adresse des HILFETEXTES (Praxis seit W12).
+            { "PvModulImportDialog",         B_PHOTOVOLTAIK },
             // P6 nachgetragen: die Huellform "Projekt oeffnen" aus Paket P3. Ohne
             // Eintrag griff erst die Kennungsstufe ("projekt" im Typnamen) - das
             // Ergebnis war zwar dasselbe, aber unbeabsichtigt.
@@ -166,82 +164,89 @@ namespace WindowsFormsApplication1
             { "Form_ProjektDelete",          B_PROJEKT },
             { "Form_ProjektSpeichernUnter",  B_PROJEKT },
 
-            { "Form_EingDBProzess",          B_PROZESSWAERME },
-            { "Form_EingProzTyp",            B_PROZESSWAERME },
-            { "Form_ErgProzesswaerme",       B_PROZESSWAERME },
-            { "Form_Prozesswaerme",          B_PROZESSWAERME },
-            { "Form_Prozesswaerme_Admin",    B_PROZESSWAERME },
+            // iU9-W14b.1: Form_Prozesswaerme_Admin ist geloescht - sie ist eine
+            // Auspraegung von BedarfAdminDialog (Eintrag oben bei B_BRAUCHWASSER).
 
-            { "Form_PufferSp",               B_PUFFERSPEICHER },
             { "Form_PufferSp_Admin",         B_PUFFERSPEICHER },
             { "Form_PufferSp_Bearbeiten",    B_PUFFERSPEICHER },
-            { "Form_PufferSp_Projekt",       B_PUFFERSPEICHER },
-            { "Form_PufferSp_einlesen",      B_PUFFERSPEICHER },
+            // iU9-W14a.2: derselbe Bereich fuer die Razor-Fassung des Katalogeditors.
+            { "PufferSpKatalogDialog",       B_PUFFERSPEICHER },
+            // iU9-W10a.4: Form_PufferSp_Projekt ist geloescht (Razor-Komponente).
 
-            { "DashboardForm",               B_SIMULATION },
             { "ErzeugerKarte",               B_SIMULATION },
             { "SpeicherKarte",               B_SIMULATION },
-            { "NavigatorStrom",              B_SIMULATION },
-            { "NavigatorUebersicht",         B_SIMULATION },
-            { "NavigatorWaerme",             B_SIMULATION },
-            { "Form_QuelleErdreich",         B_QUELLE_ERDREICH },
-            { "Form_QuellePufferspeicher",   B_SIMULATION },
-            { "Form_Quellprofil",            B_SIMULATION },
-            { "Form_Simulation_Config",      B_SIM_KONFIG },
-            { "Form_Simulation_Detail",      B_SIM_DETAIL },
-            { "Form_Waermesenke",            B_SIMULATION },
+            // iU9-W10a.3: Form_QuelleErdreich ist geloescht. Der Bereich
+            // B_QUELLE_ERDREICH bleibt - die HUELLE QuelleErdreichHuelle setzt ihn
+            // ueber SetzeBereich, solange der Blazor-Dialog steht, und nimmt ihn
+            // danach mit Zuruecksetzen wieder weg.
+            // iU9-W10a.5: Form_QuellePufferspeicher ist geloescht (Razor-Komponente).
+            // iU9-W10a.6: Form_Quellprofil ist geloescht (Razor-Komponente).
+            // iU9-W10b.1: Form_Simulation_Config ist geloescht (Razor-Seite). Den
+            // Bereich meldet jetzt SimulationKonfigHuelle beim Aktivieren des
+            // Fensters - derselbe Text, nur ohne Formularklasse dahinter.
+            // iU9-W10a.7: Form_Waermesenke ist geloescht (Razor-Komponente).
+            // iU9-W11b.13: Form_Simulation_Detail, DashboardForm, NavigatorUebersicht,
+            // NavigatorStrom, NavigatorWaerme und Form_SpeicherVariantenVergleich sind
+            // geloescht (Razor-Seite SimulationErgebnisSeite). Den Bereich
+            // B_SIM_DETAIL meldet jetzt SimulationErgebnisHuelle beim Aktivieren des
+            // Fensters - derselbe Text, nur ohne Formularklasse dahinter; die fuenf
+            // Nebenmasken sind Reiter derselben Seite und brauchen keinen eigenen
+            // Eintrag mehr.
 
-            { "Form_SolarDB",                B_SOLARTHERMIE },
-            { "Form_SolarKollektoren",       B_SOLARTHERMIE },
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
-            { "Form_SolarKollektoren_einlesen", B_SOLARTHERMIE },
-            { "Form_Solarganglinie",         B_SOLARTHERMIE },
-            { "Form_Solarganglinie_Admin",   B_SOLARTHERMIE },
+            // iU9-W14b.2: Die Verwaltung der Solarthermieganglinien ist die
+            // Razor-Komponente SolarganglinieAdminDialog; der Bereich bleibt.
+            { "SolarganglinieAdminDialog",   B_SOLARTHERMIE },
+            { "SolarganglinieDialog",        B_SOLARTHERMIE },
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },
-            { "Form_PeakShaving",            B_STROMSPEICHER },
-            { "Form_Sp_ItemNeu",             B_STROMSPEICHER },
-            { "Form_StromspeicherItemNeu",   B_STROMSPEICHER },
+            // iU9-W12.6: Form_PeakShaving ist die Razor-Komponente
+            // PeakShavingDialog; der Bereich bleibt derselbe.
+            { "PeakShavingDialog",           B_STROMSPEICHER },
             { "Form_SpeicherOptimierung",    B_STROMSPEICHER },
-            { "Form_SpeicherVariantenVergleich", B_STROMSPEICHER },
-            { "Form_Stromspeicher",          B_STROMSPEICHER },
 
-            // Nachgetragen mit H7: Entwicklermaske hinter dem unbeschrifteten Knopf
-            // "SP" auf FormMain - sie ordnet dem Projekt einen Stromspeicher zu.
-            { "Form_StromTest",              B_STROMSPEICHER },
+            // iU9-W16b.1 (E-7, K6-a): "Form_StromTest" - die Entwicklermaske hinter
+            // dem unbeschrifteten Knopf "SP" des Detailformulars - ist geloescht
+            // (Befund W16-B31: ein Pruefstand im Auslieferungsstand).
 
-            { "Form_EingDBStromverbraucher", B_STROMVERBRAUCHER },
-            { "Form_EingStromTyp",           B_STROMVERBRAUCHER },
-            { "Form_ErgStromverbraucher",    B_STROMVERBRAUCHER },
-            { "Form_GanglinieImportOptionen",B_STROMVERBRAUCHER },
-            { "Form_GanglinieProtokoll",     B_STROMVERBRAUCHER },
-            { "Form_Stromganglinie",         B_STROMVERBRAUCHER },
-            { "Form_Stromganglinie_Admin",   B_STROMVERBRAUCHER },
-            { "Form_Stromverbraucher",       B_STROMVERBRAUCHER },
-            { "Form_Stromverbraucher_Admin", B_STROMVERBRAUCHER },
+            // BEFUND W12-B20, nachgetragen (iU9-W12.3): Der Konfliktdialog hatte als
+            // einzige der sechs Masken der Welle 12 KEINEN Bereich, obwohl
+            // help_mapping.txt seit H1/H2 eine Zeile fuer ihn fuehrt. Er gehoert zum
+            // Uebernehmen fremder Projekte - dasselbe Ziel wie dort.
+            { "ImportKonflikteDialog",       B_PROJEKT },
 
-            { "Form_AlsVariante",            B_VARIANTEN },   // H7 nachgetragen
+            // iU9-W12.1/W12.2/W12.4/W12.5: Die vier Ganglinienmasken sind
+            // Razor-Komponenten; der Bereich bleibt derselbe. Die Schluessel des
+            // InfoKnopfes in help_mapping.txt heissen weiter nach den Masken -
+            // sie sind die Adresse des HILFETEXTES, nicht der Klasse.
+            { "GanglinieImportOptionenDialog", B_STROMVERBRAUCHER },
+            { "GanglinieProtokollDialog",    B_STROMVERBRAUCHER },
+            { "StromganglinieDialog",        B_STROMVERBRAUCHER },
+            { "StromganglinieAdminDialog",   B_STROMVERBRAUCHER },
 
-            { "Form_AdminWaermeeinlesen",    B_WAERMEBEDARF },   // H7 nachgetragen
-            { "Form_Waermebedarf",           B_WAERMEBEDARF },
+            // iU9-W13.2: Die Verwaltung der externen Waermebedarfsganglinien ist
+            // die Razor-Komponente WaermebedarfAdminDialog; der Bereich bleibt.
+            { "WaermebedarfAdminDialog",     B_WAERMEBEDARF },
 
-            // Kenndaten ist das Kennfeld EINER Waermepumpe (Stuetzstellen
-            // Vorlauftemperatur / Ptherm / COP), aufgerufen aus Form_WP - der
-            // Klassenname sagt das nicht, deshalb der Eintrag (H7).
-            { "Kenndaten",                   B_WAERMEPUMPE },
-            { "Form_WP",                     B_WAERMEPUMPE },
-            { "Form_WPAuswahl",              B_WAERMEPUMPE },
-            { "Form_WpFilterAuswahl",        B_WAERMEPUMPE },
-            { "Form_WP_einlesen",            B_WAERMEPUMPE },
+            // iU9-W13.1: Die VIER VDI-3805-Einlesemasken sind EINE Razor-Komponente
+            // mit vier Auspraegungen (KatalogImportDialog). Der Bereich haengt
+            // damit nicht mehr am Klassennamen - er kaeme fuer alle vier gleich
+            // heraus. Nachgeschlagen wird deshalb der Bereich des WIRTES; die
+            // Schluessel des InfoKnopfes in help_mapping.txt heissen weiter nach
+            // den vier Masken, denn sie sind die Adresse des HILFETEXTES und
+            // nicht der Klasse (Praxis seit W12).
+            { "KatalogImportDialog",         B_HEIZKESSEL },
 
-            { "Form_WirtschaftlichkeitParameter",  B_WIRTSCHAFT },
-            { "UcWirtschaftlichkeit",              B_WIRTSCHAFT },
 
-            { "WizardParent",                B_ASSISTENT },
-            { "Wizard_Projekt",              B_ASSISTENT },
-            { "Wizard_Komponenten",          B_ASSISTENT },
-            { "Wizard_Stromlastgang",        B_ASSISTENT },
-            { "Wizard_WPItem",               B_ASSISTENT }
+            // iU9-W16a.1/.3/.5: Wizard_Stromlastgang, Wizard_Komponenten und der
+            // Rahmen WizardParent sind gefallen. Die Stromlastgangseite ist seither DIESELBE Komponente wie
+            // der Dialog der Startkachel (StromganglinieDialog, :207, Bereich
+            // Stromverbraucher); der Komponentenschritt ist KomponentenauswahlDialog
+            // und gehoert zum Assistenten. Wizard_Projekt (W15a.6) steht hier
+            // ebenfalls nicht mehr; ihr Nachfolger ProjektKopfSeite laeuft im Rahmen
+            // und wird ueber dessen Fenstertyp nachgeschlagen.
+            { "AssistentSeite",              B_ASSISTENT },
+            { "KomponentenauswahlDialog",    B_ASSISTENT }
         };
 
         /// <summary>
@@ -352,6 +357,22 @@ namespace WindowsFormsApplication1
                 return;
             }
             if (!_details.Contains(d)) _details.Add(d);
+        }
+
+        /// <summary>
+        /// Meldet die Windows-Ermittlung des Bereichs beim Kern an (iU9-W15b.0f).
+        /// Aufruf einmalig beim Programmstart (<c>Program.Main</c>).
+        /// </summary>
+        /// <remarks>
+        /// Ohne diesen Aufruf bleibt <c>KiChatKontext.AktuellerBereich()</c> bei
+        /// „Unbekannter Bereich" - genau der Zustand, in dem der Aktionsharnisch, die
+        /// Konsolenwerkzeuge und (bis iU11) die iOS-Huelle laufen. Der Assistent
+        /// antwortet dann ohne Bereichsangabe: unschaerfer, aber nicht falsch.
+        /// </remarks>
+        public static void Einhaengen()
+        {
+            KiChatKontext.AktiverBereich =
+                () => !string.IsNullOrEmpty(_bereich) ? _bereich : AktivesFenster();
         }
 
         /// <summary>Loescht den gesetzten Kontext (z. B. beim Schliessen einer Maske).</summary>
@@ -473,9 +494,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string Freigegeben(string bereich)
         {
-            if (string.IsNullOrWhiteSpace(bereich)) return BEREICH_UNBEKANNT;
-            string b = bereich.Trim();
-            return POSITIVLISTE.Contains(b) ? b : BEREICH_UNBEKANNT;
+            return KiChatKontext.Freigegeben(bereich);
         }
 
         /// <summary>

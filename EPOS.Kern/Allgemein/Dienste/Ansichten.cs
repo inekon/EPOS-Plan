@@ -12,8 +12,5 @@
 
         /// <summary>Der Reiter „Berichte &amp; Kosten" der Startmaske.</summary>
         public const string BerichteKosten = "BERICHTE_KOSTEN";
-
-        /// <summary>Der Projektname im Kopf des Detailformulars.</summary>
-        public const string ProjektDetail = "PROJEKT_DETAIL";
     }
 }

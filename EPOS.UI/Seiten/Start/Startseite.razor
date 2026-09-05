@@ -1,0 +1,818 @@
+﻿@* DIE STARTSEITE (iU9-W16b.2, S1 der Vermessung) — die Wurzel der Anwendung aus
+   Anwendersicht.
+
+   Vorbild: Views/Hauptformular/Form_Start.cs (2 300 Z.) und .Designer.cs
+   (1 381 Z., 108 Kartenzeilen, 78 Ereignisverdrahtungen, 22 Felder ohne
+   Beschriftung, 7 MessageBox, 12 Inline-SQL).
+
+   AUFBAU (Vermessung § 12.5):
+     Kopfband  Projekt/Varianten · Statuszeichen · Klimaregion · Produktgattung
+     Reiter    Projekt · Waermebedarf · Strombedarf · Energieerzeuger ·
+               Simulation · Berichte & Kosten (die Seite aus W5)
+     Fussleiste  [◀ Zurueck] [Weiter ▶]
+
+   WAS ERSATZLOS ENTFAELLT (rund 700 der 2 300 Zeilen):
+     - die 13 Paint-Handler des Statusanstrichs (je ~45 Z. GraphicsPath,
+       Halbdeckkraft, farbiger Balken) -> eine CSS-Klasse am Statuspunkt;
+     - die 14 einzeiligen Weiterleitungshandler label46_Click … label74_Click und
+       das Woerterbuch _clickEvents mit 24 Eintraegen samt CentralControl_Click
+       (Befund W16-B19) -> eine Kachel ist EIN <button> mit EINEM @@onclick;
+     - tabControl_Wizard_DrawItem (eigenes Reiterzeichnen), SetzeDropDownBreite,
+       ProjektkopfAufbauen, KopfNameZeigen/KopfNameWaehlen/KopfEinzeltextZeigen,
+       panelKlima_Paint/panelVariante_Paint, RundesRechteck, InfoKnopf.Anbringen
+       und OptimierungskachelVerbergen -> CSS bzw. Markup;
+     - UpdateWizardSymbole (13 Bits, 7 Inline-SQL, 6 ReadAllFilter) -> die EINE
+       Bitmaske im Kern (KomponentenBestandCtrl, Entscheid E-3, Nachweis N6).
+
+   DIE REITERSPERRE. Form_Start_Load sperrte die Reiter 2-6, bis ein Projekt
+   offen war (:80), und tabControl_Wizard_Selecting zeigte sonst einen
+   Form_Hinweis (:1171-1181). Hier ist es <Reiterblatt Bedienbar="@ProjektOffen">
+   - die Sperre selbst ist unveraendert vorbildgetreu.
+
+   DER HINWEIS DAZU IST SEIT W16b-E-6 DREITEILIG (Anwenderwunsch 05.09.2026,
+   "ja, oder anderen Hinweis geben der elegant ist"). Bis dahin stand ueber der
+   Reiterleiste ein DAUERHAFTES Warnbanner mit den zwei Saetzen der MessageBox.
+   Es war richtig gemeint und trotzdem falsch: Eine Warnflaeche ueber der ganzen
+   Seite meldet einen FEHLER, hier fehlt aber nur der Anfang - und sie stand
+   ausgerechnet in dem Augenblick da, in dem der Anwender das Programm zum
+   ersten Mal sieht. An seine Stelle treten:
+
+     1. der leise EINSTIEGSHINWEIS im Reiter "Projekt" (ProjektReiter.
+        HinweisText) - eine Zeile mit dem ⚠ des Kopfbandes, dort wo der
+        Anwender ohnehin hinsieht;
+     2. der GRUND am gesperrten Reiterknopf - Reiterblatt.Sperrgrund macht aus
+        der harten eine WEICHE Sperre: aria-disabled statt disabled, der Grund
+        als title;
+     3. das FLUECHTIGE Banner beim Versuch - wer einen gesperrten Reiter oder
+        "Weiter ▶" anklickt, bekommt fuer drei Sekunden genau die zwei Saetze
+        des Vorlaeufers und danach wieder Ruhe. Das ist das Verhalten von
+        tabControl_Wizard_Selecting, nur ohne Wegklicken: der Form_Hinweis
+        lebte ebenfalls drei Sekunden.
+
+   Damit steht der Hinweis wieder DANACH, so wie im Vorbild - und vorher steht
+   die leise Zeile, die den Versuch ueberfluessig macht.
+
+   FORM_HINWEIS IST ABGELOEST (Entscheid W15b-E-1b). Seine drei Aufrufer lagen
+   saemtlich hier: :817 (Projekt geoeffnet - jetzt ein Warnbanner mit
+   Verfaellt=3 s, genau die Lebensdauer des Vorlaeufers), :1174 (Reitersperre -
+   seit W16b-E-6 wieder ein Banner mit DERSELBEN Frist, ausgeloest vom
+   Versuch) und :1459 (Projektdetails - mit der Kachel und dem
+   Anwenderentscheid E-7 entfallen). Die drei PointToScreen-Rechnungen
+   fallen ersatzlos: Ein Banner steht IN der Seite und braucht keinen
+   Bildschirmpunkt.
+
+   KEINE DATENBANK (Hausregel EPOS.UI). Alles kommt ueber Delegaten aus der
+   Huelle: StartseiteHuelle unter Windows, IProjektQuelle.Startkacheln auf iOS.
+   Der PROJEKTWECHSEL laeuft ueber den SeitenZustand - dieselbe Bauart wie in
+   BerichteKostenSeite (W5.6): Wer im Kopfband umschaltet, loest Geaendert aus,
+   und die Seite holt ihre Gaben neu, OHNE dass die WebView neu gebaut wuerde. *@
+
+@namespace EPOS.UI.Seiten.Start
+@implements IDisposable
+
+@if (_konfig is not null)
+{
+    @* E-5: Die SIMULATIONSKONFIGURATION ist eine FREIE ANSICHT - sie loest die
+       Startseite in derselben WebView ab, statt ein zweites Fenster zu oeffnen
+       (Entscheid R-W10b-1 ist damit geschlossen). Auf iOS macht AppWurzel
+       dasselbe; es ist derselbe Weg fuer beide Plattformen. *@
+    <EPOS.UI.Seiten.Simulation.SimulationKonfigSeite @attributes="_konfig"
+                                                     Geschlossen="KonfigSchliessen" />
+}
+else
+{
+<div class="epos-startseite">
+
+    @* ================= Kopfband ================= *@
+    <header class="epos-startseite-kopf">
+
+        @* DIE GATTUNGSZEILE steht nur, wenn KEINE Kopfleiste darueber liegt
+           (Anwenderwunsch 05.09.2026, W16b-E-4). Unter Windows nennt das
+           Kopfband des Hauptfensters "EPOS-Plan - Energieplanungs-Software -
+           Energie · Planung · Optimierung · Simulation"; dieselbe Gattung ein
+           zweites Mal neben dem Projektfeld war eine Wiederholung, kein
+           Hinweis. Auf iOS ist die Kopfleiste leer - dort ist diese Zeile die
+           EINZIGE Nennung des Produkts und bleibt stehen.
+           Im Bestand war sie label20 (Segoe UI Semibold 26 pt fett) auf dem
+           Titelband pictureBox2, also eine EIGENE Zeile ueber den zwei
+           Kopfkaesten - nicht neben ihnen. *@
+        @if (KopfbandZeigen)
+        {
+            <div class="epos-startseite-marke">
+                <span class="epos-startseite-gattung">@GattungText</span>
+            </div>
+        }
+
+        @* DIE ZWEI KOPFKAESTEN stehen NEBENEINANDER, Klima links und Projekt
+           rechts - so wie panelKlima (677 x 65 ab x=79) und panelVariante
+           (489 x 65 ab x=776) auf der Flaeche von 1 273 (Designer). Auch die
+           Tabulatorreihenfolge ist die des Bestands: comboBox_Klima trug
+           TabIndex 1, comboBox_Varianten 113. *@
+        <div class="epos-startseite-kaesten">
+
+            <div class="epos-startseite-klima">
+                @* pictureBox4 (globe1, 65 x 37) stand ganz links im Kasten. *@
+                <img class="epos-startseite-globus" alt=""
+                     src="_content/EPOS.UI/bilder/start/globe.png" />
+                <label for="epos-start-klima">@KlimaLabelText</label>
+                <select id="epos-start-klima" class="epos-eingabe"
+                        value="@_klimaregion" @onchange="BeiKlima">
+                    <option value="">@(ProjektOffen ? KlimaRegionText : KlimaPlatzhalterText)</option>
+                    @foreach (string region in _klimaregionen)
+                    {
+                        <option value="@region">@region</option>
+                    }
+                </select>
+                <button type="button" class="epos-knopf" disabled="@(!ProjektOffen)"
+                        @onclick="KlimaSpeichernJetzt">@KlimaSpeichernText</button>
+                <span class="epos-startseite-klimahinweis">@KlimaHinweisText</span>
+            </div>
+
+            <div class="epos-startseite-projekt">
+                @* label_ProjektStatus stand LINKS vor der Beschriftung (x=13
+                   gegen x=53), nicht hinter dem Feld. *@
+                <span class="@Statusklasse" aria-label="@ProjektLabelText">@Statuszeichen</span>
+                <label for="epos-start-variante">@ProjektLabelText</label>
+                <select id="epos-start-variante" class="epos-eingabe"
+                        value="@_varianteGewaehlt.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                        @onchange="BeiVariante">
+                    @if (_varianten.Count == 0)
+                    {
+                        <option value="0">@PlatzhalterText</option>
+                    }
+                    @foreach ((int Id, string Name) eintrag in _varianten)
+                    {
+                        <option value="@eintrag.Id.ToString(System.Globalization.CultureInfo.InvariantCulture)">@eintrag.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </header>
+
+    @* ================= Meldungen =================
+
+       EIN Banner, und es steht nur, wenn es etwas zu sagen gibt (W16b-E-6).
+       Der Hinweis der Reitersperre kommt hier ebenfalls durch - als
+       fluechtige Meldung nach dem Versuch, nicht als Dauerzustand. *@
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungsstufe" Text="@_meldung"
+                    Verfaellt="@_meldungsfrist" Uhr="@Uhr"
+                    Verfallen="MeldungVergessen" />
+    }
+
+    @* ================= Die sechs Reiter ================= *@
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@ReiterBezeichnung"
+            Verweigert="BeiSperre">
+        <KindInhalt>
+
+            <Reiterblatt Schluessel="@Reiterschluessel.Projekt" Titel="@ReiterProjektText">
+                <KindInhalt>
+                    <ProjektReiter Kacheln="@KachelnVon(Reiterschluessel.Projekt)"
+                                   Geklickt="BeiKachel"
+                                   KopfText="@ProjektKopfText" Text="@ProjektText"
+                                   HinweisText="@Einstiegszeile" HinweisZeichen="@StatusKeinsText" />
+                </KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="@Reiterschluessel.Waermebedarf" Titel="@ReiterWaermeText"
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund">
+                <KindInhalt>
+                    <WaermebedarfReiter Kacheln="@KachelnVon(Reiterschluessel.Waermebedarf)"
+                                        Geklickt="BeiKachel"
+                                        KopfText="@WaermeKopfText" Text="@WaermeText"
+                                        HinweisTitelText="@WaermeHinweisTitelText"
+                                        HinweisText="@WaermeHinweisText" />
+                </KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="@Reiterschluessel.Strombedarf" Titel="@ReiterStromText"
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund">
+                <KindInhalt>
+                    <StrombedarfReiter Kacheln="@KachelnVon(Reiterschluessel.Strombedarf)"
+                                       Geklickt="BeiKachel"
+                                       KopfText="@StromKopfText" Text="@StromText" />
+                </KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="@Reiterschluessel.Erzeuger" Titel="@ReiterErzeugerText"
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund">
+                <KindInhalt>
+                    <ErzeugerReiter Kacheln="@KachelnVon(Reiterschluessel.Erzeuger)"
+                                    Geklickt="BeiKachel"
+                                    Ganglinie="@_solarGanglinie"
+                                    GanglinieChanged="BeiSolarart"
+                                    KopfText="@ErzeugerKopfText" Text="@ErzeugerText"
+                                    TippTitelText="@ErzeugerTippTitelText" TippText="@ErzeugerTippText"
+                                    ProfilText="@SolarProfilText" GanglinieText="@SolarGanglinieText" />
+                </KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="@Reiterschluessel.Simulation" Titel="@ReiterSimulationText"
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund"
+                         Betreten="BeiSimulationBetreten">
+                <KindInhalt>
+                    <SimulationReiter Kacheln="@KachelnVon(Reiterschluessel.Simulation)"
+                                      Geklickt="BeiKachel"
+                                      Bericht="@_bericht"
+                                      KopfText="@SimulationKopfText" Text="@SimulationText"
+                                      KonfigText="@SimulationKonfigText"
+                                      ZusammenfassungTitelText="@ZusammenfassungTitelText"
+                                      ProjektnameText="@ZusammenfassungProjektnameText"
+                                      WaermebedarfText="@ZusammenfassungWaermebedarfText"
+                                      StrombedarfText="@ZusammenfassungStrombedarfText"
+                                      KomponentenText="@ZusammenfassungKomponentenText" />
+                </KindInhalt>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="@Reiterschluessel.BerichteKosten" Titel="@ReiterBerichteText"
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund">
+                <KindInhalt>
+                    @if (BerichteGaben is not null)
+                    {
+                        <EPOS.UI.Seiten.Berichte.BerichteKostenSeite @attributes="BerichteGaben" />
+                    }
+                </KindInhalt>
+            </Reiterblatt>
+
+        </KindInhalt>
+    </Reiter>
+
+    @* ================= Fussleiste ================= *@
+    <footer class="epos-startseite-fuss">
+        <button type="button" class="epos-knopf" disabled="@(!KannZurueck)"
+                @onclick="Zurueck">@ZurueckText</button>
+        @* "Weiter ▶" bleibt ohne Projekt ANKLICKBAR und meldet den Grund
+           (W16b-E-6) - er ist der Weg der Tastatur zu derselben Auskunft, die
+           der Zeiger am gesperrten Reiterknopf als Tooltip bekommt. Gesperrt
+           ist er nur da, wo es wirklich nicht weitergeht: auf dem letzten
+           Reiter (btn_Weiter_Click :1568). *@
+        <button type="button" class="epos-knopf" disabled="@(!GibtNaechsten)"
+                aria-disabled="@(WeiterGesperrt ? "true" : null)"
+                title="@(WeiterGesperrt ? SperreTippText : null)"
+                @onclick="Weiter">@WeiterText</button>
+    </footer>
+
+    @* E-5: Das SIMULATIONSERGEBNIS ist eine UEBERLAGERUNG - modal, aber in
+       derselben WebView (Risiko R2; Entscheid R-W11-1 ist damit geschlossen).
+       Modal bleibt es, weil der Lauf beim Oeffnen von selbst startet und die
+       beiden Bedarfsrechnungen des Projekts dabei fortgeschrieben werden
+       (BedarfsZustand, Befund W16-B29). *@
+    <Ueberlagerung Offen="@(_ergebnis is not null)" Titel="@ErgebnisTitelText"
+                   Geschlossen="ErgebnisSchliessen">
+        <KindInhalt>
+            @if (_ergebnis is not null)
+            {
+                <EPOS.UI.Seiten.Simulation.SimulationErgebnisSeite @attributes="_ergebnis"
+                                                                   Geschlossen="ErgebnisSchliessen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+}
+
+@code {
+    // =====================================================================
+    //  Datenseite - alles ueber Delegaten (Hausregel EPOS.UI)
+    // =====================================================================
+
+    /// <summary>
+    /// Der geteilte Zustand der Hülle: Projektwechsel und Auffrischen. Die Seite
+    /// hängt sich an sein Änderungsereignis, statt die WebView neu bauen zu
+    /// lassen (Muster <c>BerichteKostenSeite</c>, W5.6).
+    /// </summary>
+    [Parameter] public SeitenZustand? Zustand { get; set; }
+
+    /// <summary>
+    /// Die 21 Kacheln mit ihrem aktuellen Bestand. Wird bei jedem
+    /// Projektwechsel und nach jedem Kachelklick neu abgerufen — genau die
+    /// Stellen, an denen der Vorläufer <c>Invalidate()</c> rief.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<StartKachel>>? Kacheln { get; set; }
+
+    /// <summary>Eine Kachel wurde angeklickt; übergeben wird ihr Schlüssel.</summary>
+    [Parameter] public Action<string>? Geklickt { get; set; }
+
+    /// <summary>Die Variantengruppe des offenen Projekts (Stamm zuerst).</summary>
+    [Parameter] public Func<IReadOnlyList<(int Id, string Name)>>? Varianten { get; set; }
+
+    /// <summary>Die Id des offenen Projekts; <c>0</c> = keins.</summary>
+    [Parameter] public Func<int>? ProjektId { get; set; }
+
+    /// <summary>Im Kopfband wurde eine andere Variante gewählt.</summary>
+    [Parameter] public Action<int>? VarianteGewaehlt { get; set; }
+
+    /// <summary>Die wählbaren Klimaregionen des Katalogs.</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Klimaregionen { get; set; }
+
+    /// <summary>Die Klimaregion des offenen Projekts.</summary>
+    [Parameter] public Func<string>? Klimaregion { get; set; }
+
+    /// <summary>
+    /// Speichert die gewählte Klimaregion und meldet den Ausgang: Text der
+    /// Meldung und ob sie ein Fehler ist. Die fünf <c>MessageBox</c> des
+    /// Vorläufers (<c>btn_Speichern_Click</c>) werden damit EIN Banner.
+    /// </summary>
+    [Parameter] public Func<string, (bool Fehler, string Text)>? KlimaSpeichern { get; set; }
+
+    /// <summary>
+    /// Die vier Zeilen der Projektzusammenfassung des Reiters „Simulation";
+    /// <c>null</c> = geht nicht (keine Klimaregion gesetzt) — dann springt die
+    /// Seite auf Reiter 1 zurück und meldet, wörtlich wie <c>tabPage5_Enter</c>.
+    /// </summary>
+    [Parameter] public Func<Zusammenfassung?>? Bericht { get; set; }
+
+    /// <summary>Die Weiche der Solarthermiekachel wurde umgestellt.</summary>
+    [Parameter] public Action<bool>? SolarartGewaehlt { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des sechsten Reiters (<c>BerichteKostenSeite</c> aus
+    /// W5.6); <c>null</c> = der Reiter bleibt leer.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? BerichteGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der SIMULATIONSKONFIGURATION (E-5); <c>null</c> = die
+    /// Hülle bietet sie nicht an — dann geht der Kachelklick den gewöhnlichen Weg
+    /// über <see cref="Geklickt"/>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? SimulationKonfigGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des SIMULATIONSERGEBNISSES (E-5); dieselbe Regel.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? SimulationErgebnisGaben { get; set; }
+
+    /// <summary>
+    /// Ein einmaliger KURZHINWEIS der Hülle, abgefragt bei jeder Änderung des
+    /// Zustands; leer = keiner. So kommt der Rückweg „Projekt öffnen" aus dem
+    /// Assistenten an seine Meldung, ohne dass die Hülle die Komponente kennen
+    /// müsste (Muster <c>BerichteKostenSeite.Seitenwunsch</c>). Der Vorläufer
+    /// öffnete dafür ein <c>Form_Hinweis</c> über der auslösenden Kachel.
+    /// </summary>
+    [Parameter] public Func<string>? Kurzhinweis { get; set; }
+
+    /// <summary>
+    /// Die Uhr des Selbstverfalls — im Betrieb <c>Task.Delay</c>, im Prüfstand
+    /// eine gesteuerte Fassung (dieselbe Bauart wie <c>Warnbanner.Uhr</c>).
+    /// </summary>
+    [Parameter] public Func<TimeSpan, CancellationToken, Task>? Uhr { get; set; }
+
+    // =====================================================================
+    //  Texte - deutscher Rueckfall wie in jeder Seite dieser Bibliothek
+    // =====================================================================
+
+    /// <summary>Produktgattung im Kopfband (<c>label20</c>).</summary>
+    [Parameter] public string GattungText { get; set; } = "Energieplanungs-Software";
+
+    /// <summary>
+    /// Zeigt die Seite ihre eigene GATTUNGSZEILE? (Anwenderwunsch 05.09.2026,
+    /// <b>W16b‑E‑4</b>.)
+    ///
+    /// <para>Vorgabe <c>true</c> — die Seite steht dann für sich, so wie auf
+    /// iOS: Dort ist die <c>Kopfleiste</c> der <c>AppWurzel</c> leer, und diese
+    /// Zeile ist die einzige Nennung des Produkts. Unter Windows liegt darüber
+    /// das Kopfband des Hauptfensters mit PRODUKTNAME, GATTUNG und CLAIM; die
+    /// Wurzel setzt den Parameter deshalb auf <c>false</c>, sobald sie eine
+    /// Kopfleiste gezeichnet hat — sonst stünde „Energieplanungs-Software"
+    /// zweimal untereinander.</para>
+    /// </summary>
+    [Parameter] public bool KopfbandZeigen { get; set; } = true;
+
+    /// <summary>Beschriftung des Projektfeldes (<c>label11</c>).</summary>
+    [Parameter] public string ProjektLabelText { get; set; } = "Projekt:";
+
+    /// <summary>Platzhalter ohne offenes Projekt (<c>Text_Select</c>).</summary>
+    [Parameter] public string PlatzhalterText { get; set; } = "Bitte auswählen!";
+
+    /// <summary>Beschriftung des Klimafeldes (<c>label12</c>).</summary>
+    [Parameter] public string KlimaLabelText { get; set; } = "Klimaregion auswählen:";
+
+    /// <summary>Leereintrag des Klimafeldes bei offenem Projekt (<c>label21</c>).</summary>
+    [Parameter] public string KlimaRegionText { get; set; } = "Region auswählen";
+
+    /// <summary>
+    /// Leereintrag des Klimafeldes ohne Projekt — im Bestand ein deutsches
+    /// LITERAL im Code (<c>comboBox_Klima.SetPlaceholder</c>, Befund W16b-B1).
+    /// </summary>
+    [Parameter] public string KlimaPlatzhalterText { get; set; } = "Bitte zuerst ein Projekt auswählen.";
+
+    /// <summary>Hinweis unter dem Klimafeld (<c>label22</c>).</summary>
+    [Parameter] public string KlimaHinweisText { get; set; } = "Gilt für alle Berechnungen im Projekt";
+
+    /// <summary>Beschriftung des Speicherknopfes der Klimaregion.</summary>
+    [Parameter] public string KlimaSpeichernText { get; set; } = "Speichern";
+
+    /// <summary>Statuszeichen „Projekt offen" (<c>label_ProjektStatus</c>, grün).</summary>
+    [Parameter] public string StatusOffenText { get; set; } = "✔";
+
+    /// <summary>Statuszeichen „kein Projekt" (<c>label_ProjektStatus</c>, rot).</summary>
+    [Parameter] public string StatusKeinsText { get; set; } = "⚠";
+
+    /// <summary>Erster Satz der Reitersperre (<c>Text_Form_Start_MessageBox1</c>).</summary>
+    [Parameter] public string SperreText1 { get; set; } = "Bitte zuerst ein Projekt auswählen!";
+
+    /// <summary>Zweiter Satz der Reitersperre (<c>Text_Form_Start_MessageBox2</c>).</summary>
+    [Parameter] public string SperreText2 { get; set; } = "Projekt öffnen oder zuletzt geöffnet";
+
+    /// <summary>
+    /// Der leise EINSTIEGSHINWEIS im Reiter „Projekt" (<b>W16b‑E‑6</b>,
+    /// <c>START_EINSTIEG</c>) — er tritt an die Stelle des dauerhaften Banners.
+    /// </summary>
+    [Parameter] public string EinstiegText { get; set; }
+        = "Wählen Sie oben ein Projekt aus oder legen Sie unten ein neues an — die übrigen Bereiche öffnen sich danach.";
+
+    /// <summary>
+    /// Der Grund am gesperrten Reiterknopf und am Knopf „Weiter ▶"
+    /// (<b>W16b‑E‑6</b>, <c>START_SPERRE_TIPP</c>) — Tooltip für den Zeiger und
+    /// Beschreibung für die Sprachausgabe.
+    /// </summary>
+    [Parameter] public string SperreTippText { get; set; } = "Erst nach der Projektwahl";
+
+    /// <summary>Beschriftung der Reiterleiste für die Sprachausgabe.</summary>
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Arbeitsschritte";
+
+    [Parameter] public string ReiterProjektText { get; set; } = "Projekt";
+    [Parameter] public string ReiterWaermeText { get; set; } = "Wärmebedarf";
+    [Parameter] public string ReiterStromText { get; set; } = "Strombedarf";
+    [Parameter] public string ReiterErzeugerText { get; set; } = "Energieerzeuger";
+    [Parameter] public string ReiterSimulationText { get; set; } = "Simulation";
+    [Parameter] public string ReiterBerichteText { get; set; } = "Berichte & Kosten";
+
+    [Parameter] public string ProjektKopfText { get; set; } = "Projekt einrichten";
+    [Parameter] public string ProjektText { get; set; }
+        = "Erstellen Sie ein neues Projekt oder öffnen Sie ein bestehendes.";
+
+    [Parameter] public string WaermeKopfText { get; set; } = "Wärmebedarf definieren";
+    [Parameter] public string WaermeText { get; set; } = "Erfassen Sie den Wärmebedarf Ihres Projekts.";
+    [Parameter] public string WaermeHinweisTitelText { get; set; } = "Hinweis";
+    [Parameter] public string WaermeHinweisText { get; set; }
+        = "Sie können Gebäudedaten manuell eingeben oder aus einer Datei importieren.";
+
+    [Parameter] public string StromKopfText { get; set; } = "Strombedarf definieren";
+    [Parameter] public string StromText { get; set; } = "Erfassen Sie den elektrischen Energiebedarf";
+
+    [Parameter] public string ErzeugerKopfText { get; set; } = "Energieerzeuger auswählen";
+    [Parameter] public string ErzeugerText { get; set; }
+        = "Wählen Sie die Energieerzeugungstechnologien für Ihr System.";
+    [Parameter] public string ErzeugerTippTitelText { get; set; } = "Tipp";
+    [Parameter] public string ErzeugerTippText { get; set; }
+        = "Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus.";
+    [Parameter] public string SolarProfilText { get; set; } = "Profil";
+    [Parameter] public string SolarGanglinieText { get; set; } = "Ganglinie";
+
+    [Parameter] public string SimulationKopfText { get; set; } = "Simulation durchführen";
+    [Parameter] public string SimulationText { get; set; }
+        = "Berechnen Sie die Energieflüsse und Systemleistung.";
+    [Parameter] public string SimulationKonfigText { get; set; } = "Simulation Konfiguration...";
+    [Parameter] public string ZusammenfassungTitelText { get; set; } = "Projektzusammenfassung";
+    [Parameter] public string ZusammenfassungProjektnameText { get; set; } = "Projektname:";
+    [Parameter] public string ZusammenfassungWaermebedarfText { get; set; } = "Wärmebedarf:";
+    [Parameter] public string ZusammenfassungStrombedarfText { get; set; } = "Strombedarf:";
+    [Parameter] public string ZusammenfassungKomponentenText { get; set; } = "Ausgewählte Technologien:";
+
+    /// <summary>Meldung, wenn die Klimaregion des Projekts fehlt (Reiter „Simulation").</summary>
+    [Parameter] public string KeineKlimaregionText { get; set; }
+        = "Die Klimaregion ist nicht gesetzt! Bitte setzen Sie die Klimaregion im Projekt!";
+
+    /// <summary>Titel der Ergebnis-Überlagerung (<c>SIMERG_TITEL</c>).</summary>
+    [Parameter] public string ErgebnisTitelText { get; set; } = "Detaillierte Simulation";
+
+    [Parameter] public string ZurueckText { get; set; } = "◀ Zurück";
+    [Parameter] public string WeiterText { get; set; } = "Weiter ▶";
+
+    // =====================================================================
+    //  Zustand
+    // =====================================================================
+
+    private string _reiter = Reiterschluessel.Projekt;
+    private IReadOnlyList<StartKachel> _kacheln = Array.Empty<StartKachel>();
+    private IReadOnlyList<(int Id, string Name)> _varianten = Array.Empty<(int, string)>();
+    private IReadOnlyList<string> _klimaregionen = Array.Empty<string>();
+    private int _varianteGewaehlt;
+    private string _klimaregion = "";
+    private Zusammenfassung? _bericht;
+    private bool _solarGanglinie;
+
+    private IReadOnlyDictionary<string, object>? _konfig;
+    private IReadOnlyDictionary<string, object>? _ergebnis;
+
+    private string _meldung = "";
+    private WarnStufe _meldungsstufe = WarnStufe.Hinweis;
+    private TimeSpan? _meldungsfrist;
+
+    /// <summary>Ist ein Projekt offen? Die Reiter 2 bis 6 hängen daran (<c>:80</c>).</summary>
+    public bool ProjektOffen => (ProjektId?.Invoke() ?? 0) > 0;
+
+    /// <summary>Der sichtbare Reiter — Prüfhilfe und Wirt.</summary>
+    public string AktiverReiter => _reiter;
+
+    private string Statuszeichen => ProjektOffen ? StatusOffenText : StatusKeinsText;
+
+    private string Statusklasse => ProjektOffen
+        ? "epos-startseite-status epos-startseite-status--offen"
+        : "epos-startseite-status epos-startseite-status--keins";
+
+    private int Reiterindex
+    {
+        get
+        {
+            for (int i = 0; i < Reiterschluessel.Alle.Length; i++)
+                if (Reiterschluessel.Alle[i] == _reiter) return i;
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Gibt es überhaupt einen nächsten Reiter? — wörtlich
+    /// <c>btn_Weiter_Click</c> (<c>:1568</c>:
+    /// <c>if (SelectedIndex >= TabCount - 1) return;</c>). Das ist die einzige
+    /// Bedingung, die den Knopf HART sperrt.
+    /// </summary>
+    private bool GibtNaechsten => Reiterindex < Reiterschluessel.Alle.Length - 1;
+
+    /// <summary>
+    /// Geht „Weiter" wirklich? Ohne offenes Projekt ist der nächste Reiter
+    /// gesperrt — der Knopf bleibt seit <b>W16b‑E‑6</b> trotzdem anklickbar und
+    /// sagt dann, warum es noch nicht geht.
+    /// </summary>
+    private bool KannWeiter => GibtNaechsten && ProjektOffen;
+
+    /// <summary>
+    /// „Weiter ▶" führt zwar irgendwohin, aber noch nicht — der Knopf bleibt
+    /// anklickbar und sagt warum (<b>W16b‑E‑6</b>). Auf dem LETZTEN Reiter ist
+    /// er dagegen hart gesperrt: Dort gibt es nichts zu erklären.
+    /// </summary>
+    private bool WeiterGesperrt => GibtNaechsten && !ProjektOffen;
+
+    /// <summary>
+    /// Der Sperrgrund der fünf Reiter — leer, sobald ein Projekt offen ist.
+    /// Leer heißt für <see cref="Reiterblatt"/> „keine weiche Sperre"; da die
+    /// Blätter dann ohnehin bedienbar sind, ist es derselbe Zustand.
+    /// </summary>
+    private string Sperrgrund => ProjektOffen ? "" : SperreTippText;
+
+    /// <summary>
+    /// Der Einstiegshinweis des Projektreiters — nur ohne offenes Projekt.
+    ///
+    /// <para>Mit Projekt verschwindet die Zeile ganz, statt zu „Projekt … ist
+    /// geöffnet" zu werden: Das stünde als dritte Zeile unter Überschrift und
+    /// Erläuterung und wiederholte nur, was einen Zentimeter darüber im
+    /// Kopfband steht — Name des Projekts und grünes ✔. Dieselbe Überlegung wie
+    /// bei der Gattungszeile (W16b‑E‑4): Was schon dasteht, wird nicht noch
+    /// einmal gesagt.</para>
+    /// </summary>
+    private string Einstiegszeile => ProjektOffen ? "" : EinstiegText;
+
+    /// <summary>„Zurück" ebenso (<c>btn_Zurueck_Click</c> :1641).</summary>
+    private bool KannZurueck => Reiterindex > 0;
+
+    /// <summary>
+    /// Die Kacheln EINES Reiters.
+    ///
+    /// <para><b>Ohne den Konfigurationsknopf.</b> „Simulation Konfiguration…" ist
+    /// im Bestand ein <c>Button</c> und keine Bildkachel (<c>btn_SimKonfig</c>);
+    /// er zählt zu den 21 Kacheln der Startseite und steht deshalb in der Liste,
+    /// gezeichnet wird er aber von <c>SimulationReiter</c> als Knopf. Ohne diese
+    /// Ausnahme stünde er zweimal da.</para>
+    /// </summary>
+    private IReadOnlyList<StartKachel> KachelnVon(string reiter)
+    {
+        List<StartKachel> liste = new List<StartKachel>();
+        foreach (StartKachel k in _kacheln)
+        {
+            if (k.Reiter != reiter) continue;
+            if (k.Schluessel == Kachelschluessel.SimulationKonfiguration) continue;
+            liste.Add(k);
+        }
+        return liste;
+    }
+
+    // =====================================================================
+    //  Lebenslauf
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        if (Zustand is not null) Zustand.Geaendert += BeiZustand;
+        Laden();
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
+    }
+
+    private void BeiZustand()
+    {
+        // Der Zustand kommt vom Oberflaechenfaden der Huelle; gezeichnet wird
+        // ausschliesslich auf dem Renderfaden (Muster AppWurzel.OeffneMaske).
+        _ = InvokeAsync(() =>
+        {
+            Laden();
+
+            string satz = Kurzhinweis?.Invoke() ?? "";
+            if (!string.IsNullOrEmpty(satz)) HinweisProjektGeoeffnet(satz);
+
+            StateHasChanged();
+        });
+    }
+
+    /// <summary>
+    /// Liest alles neu, was am offenen Projekt hängt — Kacheln, Varianten,
+    /// Klimaregion. Das ist der Nachzug, den <c>ProjektKontextUebernehmen</c>
+    /// im Vorläufer an EINER Stelle machte (Befund 3 der Startmaske).
+    /// </summary>
+    public void Laden()
+    {
+        _kacheln = Kacheln?.Invoke() ?? Array.Empty<StartKachel>();
+        _varianten = Varianten?.Invoke() ?? Array.Empty<(int, string)>();
+        _klimaregionen = Klimaregionen?.Invoke() ?? Array.Empty<string>();
+        _klimaregion = Klimaregion?.Invoke() ?? "";
+        _varianteGewaehlt = ProjektId?.Invoke() ?? 0;
+
+        // Ohne offenes Projekt gibt es keine Zusammenfassung und keinen Reiter
+        // ausser dem ersten - genau der Anfangszustand von Form_Start_Load.
+        if (!ProjektOffen)
+        {
+            _bericht = null;
+            _reiter = Reiterschluessel.Projekt;
+        }
+    }
+
+    // =====================================================================
+    //  Kopfband
+    // =====================================================================
+
+    private void BeiVariante(ChangeEventArgs e)
+    {
+        string wert = e.Value?.ToString() ?? "";
+        if (!int.TryParse(wert, System.Globalization.NumberStyles.Integer,
+                          System.Globalization.CultureInfo.InvariantCulture, out int id)) return;
+        if (id <= 0 || id == (ProjektId?.Invoke() ?? 0)) return;
+
+        // Woertlich comboBox_Varianten_SelectedIndexChanged (:2260-2271): Der
+        // Wechsel geht ueber den Projektkontext, die Anzeige zieht danach nach.
+        VarianteGewaehlt?.Invoke(id);
+        Laden();
+    }
+
+    private void BeiKlima(ChangeEventArgs e)
+    {
+        _klimaregion = e.Value?.ToString() ?? "";
+    }
+
+    private void KlimaSpeichernJetzt()
+    {
+        if (KlimaSpeichern is null) return;
+
+        (bool Fehler, string Text) ergebnis = KlimaSpeichern(_klimaregion);
+        Melden(ergebnis.Text, ergebnis.Fehler ? WarnStufe.Fehler : WarnStufe.Erfolg, null);
+        Laden();
+    }
+
+    // =====================================================================
+    //  Die Kacheln
+    // =====================================================================
+
+    private void BeiKachel(string schluessel)
+    {
+        if (string.IsNullOrEmpty(schluessel)) return;
+
+        // E-5: Die zwei Simulationswege bleiben IN dieser WebView - die
+        // Konfiguration als freie Ansicht, das Ergebnis als Ueberlagerung. Nur
+        // wenn die Huelle sie nicht anbietet (iOS bis iU11), geht der Klick den
+        // gewoehnlichen Weg.
+        if (schluessel == Kachelschluessel.SimulationKonfiguration
+            && SimulationKonfigGaben is not null)
+        {
+            _konfig = SimulationKonfigGaben();
+            if (_konfig is not null) return;
+        }
+
+        if (schluessel == Kachelschluessel.SimulationErgebnis
+            && SimulationErgebnisGaben is not null)
+        {
+            _ergebnis = SimulationErgebnisGaben();
+            if (_ergebnis is not null) return;
+        }
+
+        Geklickt?.Invoke(schluessel);
+
+        // Der Vorlaeufer rief nach jedem Kachelweg Invalidate() auf genau der
+        // einen Kachel; hier wird der ganze Bestand neu gelesen - er kommt aus
+        // EINER Abfrage (KomponentenBestandCtrl.Lesen).
+        Laden();
+    }
+
+    /// <summary>
+    /// Die Konfigurationsansicht ist zu Ende — die Startseite steht wieder da und
+    /// liest ihren Bestand neu (die Konfiguration kann Anlagen angelegt haben).
+    /// </summary>
+    private void KonfigSchliessen()
+    {
+        _konfig = null;
+        Laden();
+    }
+
+    /// <summary>Die Ergebnis-Überlagerung ist zu Ende — dieselbe Regel.</summary>
+    private void ErgebnisSchliessen()
+    {
+        _ergebnis = null;
+        Laden();
+    }
+
+    private void BeiSolarart(bool ganglinie)
+    {
+        _solarGanglinie = ganglinie;
+        SolarartGewaehlt?.Invoke(ganglinie);
+    }
+
+    // =====================================================================
+    //  Reiter "Simulation" - die Zusammenfassung
+    // =====================================================================
+
+    /// <summary>
+    /// Wörtlich <c>tabPage5_Enter</c> (:1062-1093): Ohne gesetzte Klimaregion
+    /// springt die Seite auf Reiter 1 zurück und meldet; sonst steht die
+    /// Zusammenfassung.
+    /// </summary>
+    private void BeiSimulationBetreten()
+    {
+        _bericht = Bericht?.Invoke();
+        if (_bericht is not null) return;
+
+        _reiter = Reiterschluessel.Projekt;
+        Melden(KeineKlimaregionText, WarnStufe.Warnung, null);
+    }
+
+    // =====================================================================
+    //  Fussleiste
+    // =====================================================================
+
+    private void Weiter()
+    {
+        if (!GibtNaechsten) return;
+
+        // Ohne Projekt fuehrt der Knopf nicht weiter, sondern sagt warum -
+        // genau das tat tabControl_Wizard_Selecting beim Reiterwechsel.
+        if (!ProjektOffen) { SperreMelden(); return; }
+
+        _reiter = Reiterschluessel.Alle[Reiterindex + 1];
+    }
+
+    /// <summary>
+    /// Ein gesperrter Reiterknopf wurde angeklickt (<see cref="Reiter.Verweigert"/>).
+    /// Der Schlüssel ist gleichgültig — der Grund ist für alle fünf derselbe.
+    /// </summary>
+    private void BeiSperre(string schluessel) => SperreMelden();
+
+    /// <summary>
+    /// Die zwei Sätze der Reitersperre für DREI SEKUNDEN — wörtlich
+    /// <c>tabControl_Wizard_Selecting</c> (<c>:1175 f.</c>) samt der Lebensdauer
+    /// des dort geöffneten <c>Form_Hinweis</c> (<b>W16b‑E‑6</b>).
+    /// </summary>
+    private void SperreMelden()
+        => Melden(SperreText1 + " " + SperreText2, WarnStufe.Hinweis, TimeSpan.FromSeconds(3));
+
+    private void Zurueck()
+    {
+        if (!KannZurueck) return;
+        _reiter = Reiterschluessel.Alle[Reiterindex - 1];
+    }
+
+    // =====================================================================
+    //  Meldungen - der Ersatz fuer Form_Hinweis und die sieben MessageBox
+    // =====================================================================
+
+    /// <summary>
+    /// Zeigt eine Meldung im Banner. <paramref name="frist"/> setzt den
+    /// Selbstverfall — <c>TimeSpan.FromSeconds(3)</c> ist die Lebensdauer des
+    /// abgelösten <c>Form_Hinweis</c>.
+    /// </summary>
+    public void Melden(string text, WarnStufe stufe, TimeSpan? frist)
+    {
+        _meldung = text ?? "";
+        _meldungsstufe = stufe;
+        _meldungsfrist = frist;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Der Kurzhinweis „Projekt &lt;Name&gt; geöffnet!" — der Ersatz für
+    /// <c>Form_Start.HinweisProjektGeoeffnet</c> (:816-830). Drei Sekunden,
+    /// genau die Lebensdauer des Vorläufers; die Hülle ruft ihn nach dem
+    /// Rückweg „Projekt öffnen" aus dem Assistenten.
+    /// </summary>
+    public void HinweisProjektGeoeffnet(string satz)
+    {
+        Melden(satz, WarnStufe.Erfolg, TimeSpan.FromSeconds(3));
+    }
+
+    private void MeldungVergessen()
+    {
+        _meldung = "";
+        _meldungsfrist = null;
+    }
+}

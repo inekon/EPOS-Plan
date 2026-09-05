@@ -345,5 +345,397 @@ namespace WindowsFormsApplication1
         }
 
         #endregion
+
+        // =================================================================================
+        // W6.0c - der KATALOGFILTER des Projektdialogs
+        // =================================================================================
+
+        /// <summary>
+        /// Eine Zeile der Katalogliste. Der Vorlaeufer <c>Form_BHKWEing</c> zeigte sie in
+        /// einem <c>DataGridView</c> mit zwei Spalten: „Name" und ein Mehrzeiler
+        /// „Eigenschaften" aus Firma, Brennstoff, Ptherm und Pel.
+        /// </summary>
+        /// <param name="Id">Primaerschluessel - er ersetzt die Namenssuche des Vorlaeufers.</param>
+        /// <param name="Bezeichner">Spalte „Name".</param>
+        /// <param name="Firma">Erste Zeile der Spalte „Eigenschaften".</param>
+        /// <param name="Brennstoff">
+        /// Anzeigename des Brennstoffs aus <see cref="Brennstoffart"/>; leer, wenn die
+        /// gespeicherte Nummer ausserhalb der Liste liegt - Bestandsverhalten.
+        /// </param>
+        /// <param name="Ptherm">Thermische Leistung [kW].</param>
+        /// <param name="Pel">Elektrische Leistung [kW].</param>
+        public sealed record KatalogZeile(int Id, string Bezeichner, string Firma,
+                                          string Brennstoff, double Ptherm, double Pel);
+
+        /// <summary>
+        /// Die Katalogliste des Projektdialogs, eingeengt auf Brennstoffgruppe und
+        /// Leistungsstufe.
+        /// </summary>
+        /// <param name="gruppe">
+        /// Eintrag aus <see cref="Brennstoffart_Gruppe"/>. Leer, <c>null</c>, „Alle" und
+        /// jeder unbekannte Wert heben die Einengung auf - Bestandsverhalten.
+        /// </param>
+        /// <param name="leistungsstufe">
+        /// Index in <see cref="LeistungFilterText"/>: 0 = „Alle", 1..8 die acht Stufen aus
+        /// <see cref="LeistungText"/>. Alles ausserhalb gilt als 0.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// Die Gruppenkette ist WORTGLEICH aus <c>Form_BHKWEing.BuildFilter</c> (Z. 168-186)
+        /// uebernommen, samt der doppelten Zeile fuer „Tierische Fette" (die zweite war
+        /// schon dort unerreichbar). Anders als die Heizkesselkette bildet sie alle zwoelf
+        /// Gruppen von <c>Tab_BrennstoffKategorien</c> ab; der Unterschied zwischen beiden
+        /// ist Befund W6-O-1 des Protokolls.
+        /// </para>
+        /// <para>
+        /// <b>Abweichung mit Grund (A-6).</b> Die Leistungsstufe kommt jetzt ueber den
+        /// INDEX aus <see cref="LeistungFilterText"/> statt ueber einen Textvergleich. Im
+        /// Bestand fuellte <c>SetControls</c> die Liste aus <see cref="LeistungText"/> -
+        /// letzter Eintrag „größer 1200 kW" -, waehrend <c>BuildFilter</c> gegen
+        /// „über 1.200 kW" verglich: Die achte Stufe traf NIE und zeigte still alle
+        /// Leistungen. Ueber den Index ist sie erreichbar. Dieselbe Umstellung wie in
+        /// Paket 9 fuer den Pufferspeicher (B0-10).
+        /// </para>
+        /// </remarks>
+        public IReadOnlyList<KatalogZeile> Filtern(string gruppe, int leistungsstufe)
+        {
+            if (leistungsstufe < 0 || leistungsstufe >= LeistungFilterText.Length) leistungsstufe = 0;
+            string szFilterLeistung = LeistungFilterText[leistungsstufe];
+
+            string szFilter = "";
+            string g = gruppe ?? "";
+            if (g == "Gas") szFilter = "(Brennstoff >=1 and Brennstoff <=5) or Brennstoff=14";
+            else if (g == "Öl") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
+            else if (g == "Koks") szFilter = "Brennstoff=10";
+            else if (g == "Kohle") szFilter = "Brennstoff=11";
+            else if (g == "Holz") szFilter = "Brennstoff=12";
+            else if (g == "Tierische Fette") szFilter = "Brennstoff=17";
+            else if (g == "Strom") szFilter = "Brennstoff=13";
+            else if (g == "Pellets") szFilter = "Brennstoff=15";
+            else if (g == "Rapsöl") szFilter = "Brennstoff=16";
+            else if (g == "Fernwärme") szFilter = "Brennstoff=23";
+            else if (g == "Sonstige Energieträger") szFilter = "Brennstoff=24";
+            else if (g == "Wasserstoff") szFilter = "Brennstoff=25";
+            else if (g == "Alle") szFilter = "Brennstoff Like '%'";
+
+            string szWhere = szFilter == "" ? szFilterLeistung
+                                            : "(" + szFilter + ") and " + szFilterLeistung;
+            string sql = "SELECT * FROM " + TABLE + " WHERE " + szWhere + " ORDER BY Bezeichner";
+
+            var liste = new List<KatalogZeile>();
+            DataTable dt = DataRepository.GetDataTable(sql);
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["ID"] == null || row["ID"] == DBNull.Value) continue;
+
+                int brennIdx = row["Brennstoff"] != DBNull.Value ? Convert.ToInt32(row["Brennstoff"]) : 0;
+                string brennText = (brennIdx >= 1 && brennIdx <= Brennstoffart.Count)
+                                 ? Brennstoffart[brennIdx - 1] : "";
+
+                liste.Add(new KatalogZeile(
+                    Convert.ToInt32(row["ID"]),
+                    row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString(),
+                    row["Firma"] == DBNull.Value ? "" : row["Firma"].ToString(),
+                    brennText,
+                    row["Ptherm"] == DBNull.Value ? 0 : Convert.ToDouble(row["Ptherm"]),
+                    row["Pel"] == DBNull.Value ? 0 : Convert.ToDouble(row["Pel"])));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Der Primaerschluessel zum Bezeichner, 0 wenn es keinen gibt - Ersatz fuer
+        /// <c>DataRepository.GetIdByName</c> in den Aufrufern.
+        /// </summary>
+        public static int IdZu(string szBezeichner)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@nam", szBezeichner ?? ""));
+            return (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
+        }
+
+        // =================================================================================
+        // W6.2 - die beiden Schreibeinstiege des Katalogeditors
+        // =================================================================================
+
+        /// <summary>
+        /// Was ein Speicherversuch des Katalogeditors ergeben hat - Gegenstueck zu
+        /// <c>HeizkesselStammCtrl.SpeicherErgebnis</c>.
+        /// </summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">Der Grund im Klartext, bereits lokalisiert.</param>
+        /// <param name="Name">Der Bezeichner, unter dem der Satz jetzt steht.</param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Schreibt den geladenen Katalogsatz zurueck - der Weg des Knopfes
+        /// „Überschreiben" (<c>Form_DBBHKW.btn_Überschreiben_Click</c>, Z. 255).
+        /// </summary>
+        /// <param name="daten">Der Feldsatz aus der Maske.</param>
+        /// <param name="schreibschutzUebergehen">
+        /// <c>true</c> hebt den ReadOnly-Schutz fuer GENAU diesen Schreibvorgang auf. Der
+        /// Vorlaeufer setzte das nach einer ausdruecklichen Ja/Nein-Rueckfrage; die
+        /// Rueckfrage selbst steht jetzt in der Komponente (<c>Rueckfrage</c>-Baustein),
+        /// die Antwort kommt hier an.
+        /// </param>
+        public static SpeicherErgebnis Ueberschreiben(BHKWStammModel daten, bool schreibschutzUebergehen)
+        {
+            if (daten == null)
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+
+            try
+            {
+                var ctrl = new BHKWStammCtrl { model = daten, SchreibschutzUebergehen = schreibschutzUebergehen };
+
+                // Ohne diese Freigabe prueft Update() selbst erneut auf ReadOnly. Es
+                // meldet den Grund ueber Meldung.* - hier zaehlt nur, ob geschrieben
+                // wurde; die Oberflaeche sagt es danach.
+                if (!ctrl.Update())
+                    return new SpeicherErgebnis(false, Text("BHKWK_MSG_NICHT_GESCHRIEBEN",
+                        "Der Datensatz konnte nicht überschrieben werden."), "");
+
+                return new SpeicherErgebnis(true,
+                    Text("BHKWK_MSG_GESPEICHERT", "Datensatz gespeichert"), daten.m_szBezeichner);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
+
+        /// <summary>
+        /// Legt einen neuen Katalogsatz an - der Weg der Knoepfe „Speichern" (Modus NEU)
+        /// und „Speichern unter".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Transaktion, ein Ort.</b> Der Vorlaeufer trug die Anlage ZWEIMAL:
+        /// <c>btn_Speichern_Unter_Click</c> (Z. 403, Existenzpruefung ueber ein
+        /// zusammengesetztes <c>RecordSet</c>-SQL) und <c>btn_Speichern_Click</c>
+        /// (Z. 483, dieselbe Pruefung als parametrisiertes <c>COUNT(*)</c>). Beide
+        /// legten den Satz mit <c>INSERT INTO Tab_BHKW_STAMM (Bezeichner, ReadOnly)</c>
+        /// an und fuellten ihn dann ueber <see cref="Update"/> im selben
+        /// <see cref="DbVorgang"/>. Hier steht das einmal - mit der parametrisierten
+        /// Pruefung, die auch einen Namen mit Hochkomma vertraegt.
+        /// </para>
+        /// <para>
+        /// <c>ReadOnly = false</c> ist Pflicht: Die Spalte ist NOT NULL, und ein neu
+        /// angelegter Satz gehoert nie zur Auslieferung.
+        /// </para>
+        /// </remarks>
+        public static SpeicherErgebnis Anlegen(BHKWStammModel daten, string name)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(name))
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_NAME_FEHLT",
+                    "Bitte einen gültigen Namen eingeben!"), "");
+
+            string bezeichner = name.Trim();
+
+            try
+            {
+                // 1./2. ARBEITSPAKET S4e: Verbindung UND Transaktion sind EIN
+                // Datenbankvorgang. Ohne Commit rollt sein Dispose beim Verlassen zurueck.
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    // Existenzpruefung IM Vorgang, damit sie die noch nicht
+                    // festgeschriebenen Zeilen sieht.
+                    int vorhanden = Convert.ToInt32(v.Skalar(
+                        "SELECT COUNT(*) FROM " + TABLE + " WHERE Bezeichner = ?",
+                        new DbParam("@nam", bezeichner)));
+                    if (vorhanden > 0)
+                    {
+                        v.Rollback();
+                        return new SpeicherErgebnis(false, Text("BHKWK_MSG_NAME_BELEGT",
+                            "Name existiert bereits!"), "");
+                    }
+
+                    // INSERT inkl. ReadOnly = false (Feld ist NOT NULL).
+                    v.Ausfuehren("INSERT INTO " + TABLE + " (Bezeichner, ReadOnly) VALUES (?, ?)",
+                                 new DbParam("@nam", bezeichner),
+                                 new DbParam("@ro", false));
+
+                    daten.m_szBezeichner = bezeichner;
+                    var ctrl = new BHKWStammCtrl { model = daten, Vorgang = v };
+
+                    if (!ctrl.Update())
+                    {
+                        v.Rollback();
+                        return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER_ANLEGEN",
+                            "Fehler beim Speichern des Datensatzes!"), "");
+                    }
+
+                    v.Commit();
+                    return new SpeicherErgebnis(true,
+                        Text("BHKWK_MSG_GESPEICHERT", "Datensatz gespeichert"), bezeichner);
+                }
+            }
+            catch
+            {
+                // Zurueckgerollt hat bereits DbVorgang.Dispose beim Verlassen des using.
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER_ANLEGEN",
+                    "Fehler beim Speichern des Datensatzes!"), "");
+            }
+        }
+
+        /// <summary>
+        /// Alle Katalognamen in Anzeigereihenfolge - die Auswahlliste
+        /// <c>comboBox_Name</c> des Editors (<c>FillComboBox</c>).
+        /// </summary>
+        public static IReadOnlyList<string> Namen()
+        {
+            var liste = new List<string>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Bezeichner FROM " + TABLE + " ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+                liste.Add(row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString());
+            return liste;
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        // =================================================================================
+        // W14a.0c - der Detailblock des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Die acht Anzeigefelder eines Katalogsatzes, bereits als Text — der Detailblock
+        /// von <c>Form_BHKWAdmin.FillDetails</c> (Z. 111-138). <c>null</c>, wenn es den
+        /// Bezeichner nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// Der Vorlaeufer war als einziger der vier Browser bereits parametrisiert
+        /// (<c>DbParam</c>, Z. 113-115); der Wortlaut ist unveraendert uebernommen,
+        /// einschliesslich der ROHEN Zahlenanzeige ohne Format (Z. 126-130) — anders als
+        /// beim Heizkessel, der <c>F2</c> nimmt. Die Schluessel sind die Feldschluessel
+        /// aus <see cref="KatalogBrowserProfil"/>.
+        /// </remarks>
+        public static IReadOnlyDictionary<string, string> KatalogsatzAnzeige(string szName)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@name", szName ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow r = dt.Rows[0];
+            var werte = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            werte[KatalogBrowserProfil.FeldBezeichner] = Feld(r, "Bezeichner");
+            werte[KatalogBrowserProfil.FeldFirma] = Feld(r, "Firma");
+            werte[KatalogBrowserProfil.FeldBeschreibung] = Feld(r, "Beschreibung");
+            werte[KatalogBrowserProfil.FeldPtherm] = Feld(r, "Ptherm");
+            werte[KatalogBrowserProfil.FeldPel] = Feld(r, "Pel");
+            werte[KatalogBrowserProfil.FeldGrenzleistung] = Feld(r, "Grenzleistung");
+            werte[KatalogBrowserProfil.FeldVorlauf] = Feld(r, "Vorlauf");
+            werte[KatalogBrowserProfil.FeldRuecklauf] = Feld(r, "Ruecklauf");
+
+            return werte;
+        }
+
+        /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
+        private static string Feld(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return "";
+            object v = row[spalte];
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
+
+        /// <summary>
+        /// Traegt der Katalogsatz den Schreibschutz der Auslieferung? Der Katalogbrowser
+        /// fragt danach, bevor er ueberschreibt — in der Auslieferungsdatenbank sind ALLE
+        /// Saetze von <c>Tab_BHKW_STAMM</c> geschuetzt, die Rueckfrage ist dort also der
+        /// Regelfall (<c>Form_BHKWAdmin.cs:413-417</c>).
+        /// </summary>
+        public static bool IstSchreibgeschuetzt(string szBezeichner)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ReadOnly FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@bez", szBezeichner ?? ""));
+            return v != null && v != DBNull.Value && Convert.ToBoolean(v);
+        }
+
+        // =================================================================================
+        // W14a.0c - der Speicherweg des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Die SECHS Felder, die der Katalogbrowser zurueckschreibt
+        /// (<c>Form_BHKWAdmin.Speicherfelder</c> Z. 338-345).
+        /// </summary>
+        public sealed record AnzeigefelderBhkw(string Firma, double Ptherm, double Pel,
+                                               double Grenzleistung, int Vorlauf, int Ruecklauf);
+
+        /// <summary>
+        /// Schreibt die sechs Anzeigefelder in den Katalogsatz zurueck — der Weg des
+        /// Knopfes „Speichern" im Browser.
+        /// </summary>
+        /// <remarks>
+        /// <para>Woertlich aus <c>Form_BHKWAdmin.SpeichereStammsatz</c> (Z. 385-438): Der
+        /// Satz wird VOLLSTAENDIG gelesen und nur in den angezeigten Feldern geaendert,
+        /// weil <see cref="Update"/> alle Spalten schreibt und ein halb gefuelltes Modell
+        /// Kosten, Emissionen und Wirkungsgrad nullen wuerde.</para>
+        /// <para><paramref name="schreibschutzUebergehen"/> ist die Antwort auf die
+        /// Rueckfrage <c>ADM_SCHUTZ_FRAGE</c>, die der Aufrufer stellt, wenn
+        /// <see cref="IstSchreibgeschuetzt"/> zutrifft. Der Schutz wird nur fuer genau
+        /// diesen Schreibvorgang aufgehoben — dieselbe Regel wie beim Knopf
+        /// „Überschreiben" des Katalogeditors.</para>
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreiben(string bezeichner,
+                                                              AnzeigefelderBhkw felder,
+                                                              bool schreibschutzUebergehen)
+        {
+            if (string.IsNullOrEmpty(bezeichner) || felder == null)
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+
+            try
+            {
+                var leser = new BHKWStammCtrl();
+                BHKWStammModel m = leser.ReadModel(bezeichner);
+                if (m == null)
+                    return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                        "Fehler beim Überschreiben des Datensatzes!"), "");
+
+                m.m_szFirma = felder.Firma ?? "";
+                m.m_Ptherm = felder.Ptherm;
+                m.m_Pel = felder.Pel;
+                m.m_Grenzleistung = felder.Grenzleistung;
+                m.m_Vorlauf = felder.Vorlauf;
+                m.m_Ruecklauf = felder.Ruecklauf;
+
+                var schreiber = new BHKWStammCtrl { model = m };
+                if (m.m_bReadOnly)
+                {
+                    if (!schreibschutzUebergehen)
+                        return new SpeicherErgebnis(false, Text("BHKWK_MSG_SCHUTZ",
+                            "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
+                    schreiber.SchreibschutzUebergehen = true;
+                }
+
+                if (!schreiber.Update())
+                    return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                        "Fehler beim Überschreiben des Datensatzes!"), "");
+
+                return new SpeicherErgebnis(true,
+                    Text("BHKWK_MSG_GESPEICHERT", "Datensatz gespeichert"), bezeichner);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
     }
 }

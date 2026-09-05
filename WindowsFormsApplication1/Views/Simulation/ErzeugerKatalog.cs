@@ -1,29 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace WindowsFormsApplication1
 {
-    /// <summary>
-    /// Ein Eintrag der Erzeugerauswahl: <b>Anzeigename</b> (lokalisiert) und
-    /// <b>DB-Wert</b> (deutsch, eingefroren — siehe <see cref="DbWerte"/>).
-    ///
-    /// Bis Paket 9 / L4 war dieser Typ als <c>Form_Simulation_Config.LanguageItem</c>
-    /// im Formular verschachtelt. Er liegt jetzt hier, weil ihn der gemeinsame
-    /// <see cref="ErzeugerKatalog"/> erzeugt; Name und Eigenschaften sind unverändert,
-    /// damit die <c>DisplayMember</c>/<c>ValueMember</c>-Bindung der ComboBoxen
-    /// weiterhin greift.
-    /// </summary>
-    public class LanguageItem
-    {
-        /// <summary>Das, was der Anwender sieht (übersetzt).</summary>
-        public string DisplayName { get; set; }
-
-        /// <summary>Das, was in die Datenbank kommt (Persistenzwert, deutsch).</summary>
-        public string DbValue { get; set; }
-
-        public override string ToString() { return DisplayName; }
-    }
-
     /// <summary>
     /// Die EINE Quelle der Zuordnung „Erzeuger-DB-Wert ↔ Anzeigename" (Paket 9 / L4).
     ///
@@ -130,17 +108,17 @@ namespace WindowsFormsApplication1
             return anzeige;
         }
 
-        /// <summary>
-        /// Baut die Auswahlliste einer ComboBox — je Eintrag DB-Wert und der dazu
-        /// aktuell gültige Anzeigename. Bewusst eine <b>neue</b> Liste je Aufruf:
-        /// Die vier Wärmeerzeuger-ComboBoxen sollen unabhängig voneinander selektieren,
-        /// und die Anzeigenamen werden erst beim Aufruf aufgelöst (Sprachumschaltung).
-        /// </summary>
-        public static List<LanguageItem> Liste(params string[] dbWerte)
-        {
-            return dbWerte
-                .Select(w => new LanguageItem { DisplayName = Anzeige(w), DbValue = w })
-                .ToList();
-        }
+        // iU9-W10b.1: Liste(params string[]) ist ERSATZLOS ENTFALLEN. Sie baute die
+        // LanguageItem-Auswahllisten der sechs unsichtbaren ComboBoxen von
+        // Form_Simulation_Config - des Persistenzmodells von Tab_Einstellungen.Tool_1..6.
+        // Dieses Modell ist mit der Maske gegangen: Die Kaskade rechnet seither
+        // unmittelbar auf dem KonfigurationModel (EPOS.Kern/Allgemein/Simulation/Kaskade.cs),
+        // und die Kacheln der Seite zeigen Anzeige(dbWert) direkt. Mit der Methode faellt
+        // der Typ LanguageItem: Sein einziger Zweck waren DisplayMember/ValueMember einer
+        // ComboBox.
+        //
+        // Was BLEIBT, ist der Kern dieser Klasse: die drei Katalogfelder und die beiden
+        // Uebergaenge Anzeige(dbWert) und DbWert(anzeige) - die EINE Quelle der Zuordnung
+        // "Erzeuger-DB-Wert <-> Anzeigename" (Paket 9 / L4).
     }
 }

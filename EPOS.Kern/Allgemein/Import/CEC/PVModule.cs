@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.RegularExpressions;
 
 namespace WindowsFormsApplication1
@@ -40,6 +40,17 @@ namespace WindowsFormsApplication1
         public int    Date         { get; set; }
 
         public double Efficiency   => A_c > 0 ? STC / (A_c * 1000.0) * 100.0 : 0.0;
+
+        /// <summary>
+        /// Beidseitig? Die Auswertung des Rohwerts der Spalte <c>Bifacial</c>
+        /// (iU9-W13.0j): <c>"1"</c> oder <c>"true"</c> heisst ja, alles andere nein.
+        /// Sie stand bis dahin als deutscher Anzeigetext in
+        /// <see cref="UnifiedModule"/> und in <c>PanDataService.AddPVModul</c>
+        /// (Befund W13-B50).
+        /// </summary>
+        public bool Bifazial =>
+            Bifacial == "1" ||
+            string.Equals(Bifacial, "true", StringComparison.OrdinalIgnoreCase);
 
         private static string ExtractManufacturer(string name)
         {

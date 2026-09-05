@@ -93,16 +93,19 @@ public sealed class RazorSchreiberTests
     public void OhneHilfeknopfImDesignerKeinInfoKnopf()
     {
         Assert.DoesNotContain("<InfoKnopf", Musterskelett("Kosten/Form_Kosten_Auswahl.Designer.cs"), StringComparison.Ordinal);
+
+        // iU9-W14c.9: Form_Klimadaten ist mit Welle 14c gefallen und liegt als
+        // PRUEFMUSTER - sie war die einzige Maske, deren btn_Help im Designer stand.
         Assert.Contains("<InfoKnopf Schluessel=\"@HilfeSchluessel\" />",
-                        Skelett("Klimadaten/Form_Klimadaten.Designer.cs"), StringComparison.Ordinal);
+                        Musterskelett("Klimadaten/Form_Klimadaten.Designer.cs"), StringComparison.Ordinal);
         Assert.Contains("HilfeSchluessel { get; set; } = \"Form_Klimadaten.btn_Help\"",
-                        Skelett("Klimadaten/Form_Klimadaten.Designer.cs"), StringComparison.Ordinal);
+                        Musterskelett("Klimadaten/Form_Klimadaten.Designer.cs"), StringComparison.Ordinal);
     }
 
     [Fact]
     public void AbschnitteWerdenZuGruppenkoepfen()
     {
-        var razor = Skelett("Kosten/Form_Kostenprofil.Designer.cs");
+        var razor = Musterskelett("Kosten/Form_Kostenprofil.Designer.cs");
 
         Assert.Contains("<Gruppenkopf Titel=\"@MonatTitel\">", razor, StringComparison.Ordinal);
         // Gruppenkopf nimmt seinen Inhalt nicht als ChildContent, sondern als
@@ -118,9 +121,12 @@ public sealed class RazorSchreiberTests
         //
         // iU9-W0 (03.09.2026): Bis dahin stand hier ucKostenItem. Die Maske haengt am
         // einstiegslosen Form_Kosten und ist mit ihm stillgelegt (Anwenderentscheid
-        // iF29); der Zeuge ist jetzt ucVorlagenZeile - dieselbe Ablage, und ueber
-        // Form_KostenKomponente auch erreichbar.
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Kosten/ucVorlagenZeile.Designer.cs"));
+        // iF29); der Zeuge wurde ucVorlagenZeile.
+        //
+        // iU9-W4.2: Auch ucVorlagenZeile ist umgestellt und geloescht (Regel M1).
+        // Sie bleibt der Zeuge - als eingefrorenes Pruefmuster, denn sie ist die
+        // EINZIGE kleingeschriebene Maske, die der Bestand je gefuehrt hat.
+        var maske = Kartenbau.Vollstaendig(Repowurzel.Pruefmuster("Kosten/ucVorlagenZeile.Designer.cs"));
 
         Assert.Equal("UcVorlagenZeile.razor", RazorSchreiber.Dateiname(maske));
         Assert.Contains("public sealed record UcVorlagenZeileWerte", RazorSchreiber.Schreiben(maske),
@@ -130,7 +136,19 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void UmlauteImOrdnernamenWerdenUmschrieben()
     {
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Wärmepumpe/Form_WPFilterAuswahl.Designer.cs"));
+        // Der Zeuge stand bis iU9-W7.10 auf Form_WPFilterAuswahl, danach auf
+        // Form_WP_einlesen im selben Ordner mit Umlaut.
+        //
+        // iU9-W13.6: Auch Form_WP_einlesen ist umgestellt und geloescht (Regel M1).
+        // Ihr Designer bleibt der Zeuge - als eingefrorenes PRUEFMUSTER im Ordner
+        // Pruefmuster/Wärmepumpe/, genau wie W7 es mit Wizard_WPItem und W4 mit
+        // ucVorlagenZeile gemacht hat. Das ist die stabile Loesung: Der
+        // Umlaut-Ordner IST die Pruefsache, nicht die Maske - ein eingefrorenes
+        // Muster kann keine Welle mehr wegnehmen. Die Umschreibregel (ä -> ae)
+        // bleibt in Kraft, solange EPOS.UI/Dialoge/Waermepumpe/ so heisst.
+        var maske = Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster("Wärmepumpe/Form_WP_einlesen.designer.cs"),
+            null, Repowurzel.PruefmusterWurzel);
 
         Assert.Equal("EPOS.UI.Dialoge.Waermepumpe", RazorSchreiber.Namensraum(maske));
     }
@@ -138,11 +156,34 @@ public sealed class RazorSchreiberTests
     [Fact]
     public void MaskenAusserhalbEinesFachordnersLandenInAllgemein()
     {
-        // MDIMainForm liegt in der Projektwurzel; hiesse der Namensraum
+        // Hauptfensterrahmen lag in der PROJEKTWURZEL; hiesse der Namensraum
         // "EPOS.UI.Dialoge.WindowsFormsApplication1", verdeckte er das
         // @using WindowsFormsApplication1.MyResource aus _Imports.razor.
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Datei("WindowsFormsApplication1/MDIMainForm.Designer.cs"));
+        //
+        // iU9-W16c.5: Hauptfensterrahmen ist mit dem Rueckbau der Huelle ohne Designer
+        // (er steht eingefroren unter Pruefmuster/Hauptformular/, Entscheid E-9),
+        // und im PROJEKTORDNER selbst liegt danach keine Designer-Datei mehr. Der
+        // Zeuge wandert deshalb auf den ZWEITEN Zweig derselben Regel
+        // (DesignerLeser.Fachbereich:122-128): Ein Ordner namens "Views" oder
+        // "Properties" ist ebenfalls kein Fachbereich. Properties/Resources.Designer.cs
+        // ist die erzeugte Ressourcendatei jedes WinForms-Projekts - sie kann
+        // keine Welle mehr wegnehmen.
+        // Beide Zweige der Regel, unmittelbar an ihrer Quelle:
+        Assert.Equal("Allgemein", DesignerLeser.Fachbereich(
+            Repowurzel.Datei("WindowsFormsApplication1/Properties/Resources.Designer.cs")));
 
-        Assert.Equal("EPOS.UI.Dialoge.Allgemein", RazorSchreiber.Namensraum(maske));
+        // ... und der PROJEKTORDNER selbst, in dem MDIMainForm.Designer.cs bis
+        // iU9-W16c.3 lag - erkannt an der .csproj daneben.
+        Assert.Equal("Allgemein", DesignerLeser.Fachbereich(
+            Repowurzel.Datei("WindowsFormsApplication1/Program.cs")));
+
+        // Und der Gegenbeweis am eingefrorenen Muster: Dieselbe Maske in einem
+        // Ordner MIT Namen bekommt diesen Namen - samt der Umsetzung in den
+        // Namensraum, um die es hier geht.
+        var imMuster = Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster("Hauptformular/MDIMainForm.Designer.cs"),
+            null, Repowurzel.PruefmusterWurzel);
+
+        Assert.Equal("EPOS.UI.Dialoge.Hauptformular", RazorSchreiber.Namensraum(imMuster));
     }
 }

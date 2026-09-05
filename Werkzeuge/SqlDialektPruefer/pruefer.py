@@ -372,13 +372,13 @@ def sammle_konstanten(dateien):
     return kat
 
 
-def _verkette(teile, kat, klasse, tief=False):
+def _verkette(teile, kat, klasse, tief=False, lokal=None):
     out = []
     for art, txt in teile:
         if art == "lit":
             out.append(txt)
         else:
-            w = _konstante(txt, kat, klasse)
+            w = _konstante(txt, kat, klasse, lokal)
             if w is None:
                 if tief:
                     return None
@@ -391,12 +391,24 @@ def _verkette(teile, kat, klasse, tief=False):
 NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 
 
-def _konstante(ausdruck, kat, klasse):
-    """Loest einen Ausdruck zu einem Konstantentext auf - oder gibt None."""
+def _konstante(ausdruck, kat, klasse, lokal=None):
+    """Loest einen Ausdruck zu einem Konstantentext auf - oder gibt None.
+
+    ``lokal`` sind die Namen, die IN DIESER DATEI als gewoehnliche Variable
+    vereinbart sind (``string felder = ...``). Sie duerfen nicht ueber den
+    Kurznamen aus einer fremden Klasse aufgeloest werden: Was hier ``felder``
+    heisst, ist der Inhalt der lokalen Variablen und nicht die gleichnamige
+    Konstante irgendwo sonst im Bestand (Befund iU9-W6.7 - zwei falsche
+    Fundstellen in WirtschaftlichkeitCtrl, sobald die zweite Vereinbarung des
+    Namens mit einer geloeschten Maske verschwand und der Kurzname damit
+    "eindeutig" wurde).
+    """
     a = ausdruck.strip()
     if NAME_RE.match(a):
         teile = a.split(".")
         if len(teile) == 1:
+            if lokal and teile[0] in lokal:
+                return None
             # Bezug innerhalb der eigenen Klasse geht vor.
             if klasse and ("%s.%s" % (klasse, teile[0])) in kat.lang:
                 return kat.lang["%s.%s" % (klasse, teile[0])]
@@ -457,9 +469,10 @@ def ziehe_sql(pfad, kat):
     karte = klassen_karte(toks)
     n = len(toks)
     konst_rhs = _konstanten_rhs(toks)
+    lokal = _lokale_namen(toks)
 
     def aufloesen(teile, start):
-        return _verkette(teile, kat, karte[start] if start < n else "")
+        return _verkette(teile, kat, karte[start] if start < n else "", lokal=lokal)
 
     ketten = {}          # startindex -> (teile, ende, zeile, text)
     verboten = set()
@@ -523,6 +536,26 @@ def ziehe_sql(pfad, kat):
 
 
 FORMATLOCH = re.compile(r"\{\d+(?::[^}]*)?\}")
+
+
+def _lokale_namen(toks):
+    """Namen, die in dieser Datei als gewoehnliche `string`-Variable vereinbart sind.
+
+    Erfasst `string x = ...` und `var x = ...` OHNE `const`/`readonly` davor - also
+    genau die Faelle, in denen der Name fuer diese Datei etwas anderes bedeutet als
+    eine gleichnamige Konstante anderswo.
+    """
+    raus = set()
+    n = len(toks)
+    for i in range(n - 3):
+        if toks[i][0] != "ident" or toks[i][1] not in ("string", "var"):
+            continue
+        if i > 0 and toks[i - 1][0] == "ident" and toks[i - 1][1] in ("const", "readonly"):
+            continue
+        if toks[i + 1][0] == "ident" and toks[i + 2][0] == "op" and toks[i + 2][1] == "=" \
+                and not (i + 3 < n and toks[i + 3][0] == "op" and toks[i + 3][1] == "="):
+            raus.add(toks[i + 1][1])
+    return raus
 
 
 def _konstanten_rhs(toks):

@@ -1,0 +1,152 @@
+@* Der HEIZKESSEL-Reiter der Ergebnisseite (R6, iU9-W11b.5).
+
+   VORBILD. tabPage_Heizkessel mit 18 Feldern, dem Brennstoffblock, der
+   Modultabelle (listView_SimSPK), dem programmatischen chart_Kessel samt
+   Umschalter „sortiert" und dem CSV-Export.
+
+   DIE PRAESENZREGEL DES BRENNSTOFFBLOCKS BLEIBT WOERTLICH
+   (KesselBrennstoffZeilenAnpassen :1134-1195): Sichtbar ist eine Zeile, wenn
+   ihr JAHRESWERT > 0 ist ODER ein Kessel des Projekts diesen Brennstoff fuehrt
+   - so bleibt der vorhandene Gaskessel mit 0-Ergebnis sichtbar (die Antwort auf
+   „warum verbraucht mein Kessel nichts?"), und Nichtvorhandenes verschwindet.
+   Die Datenbankauskunft dazu holt die Huelle
+   (HeizkesselStammCtrl.BrennstoffartenJeProjekt, seit W11a im Kern).
+
+   WAS ENTFAELLT. KesselSeiteAnordnen, GruppeVerschieben, FreieZeile,
+   NachbarZeile und die Ankerarithmetik - 99 Zeilen reine Geometrie, die es
+   brauchte, weil die Steuerelemente zur Laufzeit in ein schmaleres Panel
+   ausgeliehen wurden.
+
+   BEFUND W11-B19 (tb_Koks zweimal mit demselben Wert gesetzt) entfaellt mit dem
+   DTO: Ein Feld gibt es einmal. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @if (Daten is null)
+    {
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_HEIZKESSEL</p>
+    }
+    else
+    {
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <dl class="epos-simerg-werte">
+                    @* Ohne Projektbedarf steht hier „0" und nicht „NaN" - woertlich
+                       aus :4530. *@
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
+                               BedarfVorhanden ? Zahl(Daten.DeckungProzent) : "0", "%")
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_KESSEL, Zahl(Daten.MaxKesselleistungKw), "kW")
+                    @Wertzeile(Resource.SIMERG_LBL_MAX_GASBEZUG, Zahl(Daten.GasspitzeKw), "kW")
+
+                    @* ETAPPE D4: Die Quellwaerme der Kaskade. Ohne Quellbezug steht dort
+                       0,00 - die Zeile bleibt sichtbar, denn „der Kessel bezieht nichts
+                       aus einem Puffer" ist die Antwort auf genau diese Frage. *@
+                    @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh),
+                               Resource.SIM_KESSEL_QUELLWAERME_EINHEIT)
+                </dl>
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK" />
+                <dl class="epos-simerg-werte">
+                    @foreach (Brennstoffzeile b in Brennstoffe)
+                    {
+                        if (!b.Sichtbar) { continue; }
+                        @Wertzeile(b.Bezeichnung, Zahl(b.Wert), MWH)
+                    }
+                </dl>
+            </section>
+
+        </div>
+
+        @if (Daten.Module.Count > 0)
+        {
+            <Gruppenkopf Titel="@Resource.SIMERG_LBL_WAERMEPRODUKTION_MODULE_SPK" />
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.SIM_ERZEUGERNAME_HEIZKESSEL</th>
+                        <th scope="col">@Resource.SIM_SPALTE_NAME</th>
+                        <th scope="col">@Resource.SIM_SPALTE_BRENNSTOFFE</th>
+                        <th scope="col">@Resource.SIM_SPALTE_OEL</th>
+                        <th scope="col">@Resource.SIM_SPALTE_JAHRESNUTZUNGSGRAD</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Daten.Module.Count; i++)
+                    {
+                        var m = Daten.Module[i];
+                        <tr>
+                            <td class="epos-simerg-zahl">@(i + 1)</td>
+                            <td>@m.Name</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.GasMwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.OelMwh)</td>
+                            <td class="epos-simerg-zahl">@m.JahresnutzungsgradProzent.ToString("F1", Kultur)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        <div class="epos-simerg-schalter">
+            <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                      WertChanged="@(w => _sortiert = w)" />
+        </div>
+
+        <ChartBild Png="@BildKessel" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
+
+        @if (Csv.HasDelegate)
+        {
+            <button type="button" class="epos-simerg-knopf" @onclick="Csv"
+                    title="@Resource.SIM_TOOLTIP_CSV_HEIZKESSEL">@Resource.SIM_BTN_CSV_EXPORT</button>
+        }
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    private static System.Globalization.CultureInfo Kultur
+        => System.Globalization.CultureInfo.CurrentCulture;
+
+    /// <summary>Die Zahlen aus dem Kern; <c>null</c> = der Lauf fuehrte keinen Kessel.</summary>
+    [Parameter]
+    public WindowsFormsApplication1.SimulationErgebnisCtrl.HeizkesselErgebnis? Daten { get; set; }
+
+    /// <summary>Die zehn Brennstoffzeilen samt Praesenzregel; die Huelle stellt sie zusammen.</summary>
+    [Parameter] public IReadOnlyList<Brennstoffzeile> Brennstoffe { get; set; }
+        = Array.Empty<Brennstoffzeile>();
+
+    /// <summary>Fuehrt das Projekt einen Waermebedarf? Ohne ihn steht „0" statt einer Quote.</summary>
+    [Parameter] public bool BedarfVorhanden { get; set; } = true;
+
+    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>Der CSV-Export; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
+    private bool _sortiert;
+
+    private byte[]? BildKessel => Bild?.Invoke(new Bildauftrag(Bilder.Heizkessel, _sortiert));
+
+    private static string Zahl(double wert) => wert.ToString("F2", Kultur);
+
+    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
+        <dt>@text</dt>
+        <dd>@wert</dd>
+        <dd class="epos-simerg-einheit">@einheit</dd>
+    </text>;
+}

@@ -505,12 +505,18 @@ namespace ZugriffsschichtProben
         ///
         ///   a) Stand 0   -> false, Bericht nennt die fehlende Schemaversion, gesperrt
         ///   b) Stand 60  -> false, Bericht nennt den Freeze-Stand 61, gesperrt
-        ///   c) Stand 61  -> true,  keine Fehlerzeile, Stand bleibt 61, NICHT gesperrt
+        ///   c) Stand 61  -> true,  keine Fehlerzeile, Schritte 62 bis ZIEL laufen, Stand ZIEL,
+        ///                          NICHT gesperrt
         ///
         /// Der eigentliche Nachweis steckt in (c): Der Bericht darf KEINE Spur eines
-        /// Access-Schritts tragen - kein "Bootstrap", kein "Schritt n", keine
-        /// Abschlusspruefung. Alles davon liefe ueber Lauf.Conn, und die ist im
-        /// SQLite-Zweig gar nicht erst offen.
+        /// ACCESS-Schritts tragen - kein "Bootstrap", keine Abschlusspruefung. Alles
+        /// davon liefe ueber Lauf.Conn, und die ist im SQLite-Zweig gar nicht erst offen.
+        ///
+        /// iU9-W14c (Entscheid E-6): SCHRITTE_SQLITE ist nicht mehr leer - Schritt 62
+        /// raeumt die verwaisten Klimadaten ab. Auf der Testdatenbank ist er ein No-op
+        /// (0 Waisen), er hebt aber den Marker: aus "Stand bleibt 61" wird "Stand 62".
+        /// Der Freeze-Stand bleibt 61; er und der Zielstand sind seither zweierlei
+        /// (SchemaMigration.FREEZE_VERSION gegen ZIEL_VERSION).
         /// </summary>
         private static void Fall13SqliteZweig(string quelle, string arbeitsordner)
         {
@@ -550,14 +556,14 @@ namespace ZugriffsschichtProben
                               "Stand 60: die Simulation ist NICHT gesperrt");
 
                     // --- c) auf Freeze-Stand ----------------------------------------
-                    // Ab hier laeuft der SQLite-Zweig seine EIGENEN Schritte (ab 62,
-                    // erster Eintrag: die PV-Anlagenparameter des Pakets A). Die
+                    // Ab hier laeuft der SQLite-Zweig seine EIGENEN Schritte (62 die
+                    // Klimadaten-Waisen, 63 und 64 das PV-Ertragsmodell - Merge 5). Die
                     // Erwartung ist deshalb nicht mehr "Stand bleibt 61", sondern
                     // "Stand steht danach auf ZIEL_VERSION" - relativiert, damit der
                     // Fall den naechsten Schritt ueberlebt.
-                    SchemaVersionSetzen(SchemaMigration.FREEZE_VERSION_ACCESS);
+                    SchemaVersionSetzen(SchemaMigration.FREEZE_VERSION);
                     fall.Muss(SchemaMigration.Ausfuehren(out bericht),
-                              "Stand " + SchemaMigration.FREEZE_VERSION_ACCESS +
+                              "Stand " + SchemaMigration.FREEZE_VERSION +
                               " lief NICHT durch. Bericht: " + Erste(bericht));
 
                     fall.Muss(bericht.IndexOf("FEHLGESCHLAGEN", StringComparison.Ordinal) < 0,
@@ -568,27 +574,47 @@ namespace ZugriffsschichtProben
                     // Kein Access-Schritt gefahren - das ist der Kern dieses Falls.
                     fall.Muss(bericht.IndexOf("Bootstrap", StringComparison.OrdinalIgnoreCase) < 0,
                               "der Bericht nennt den Bootstrap des Access-Zweigs");
-                    // Frueher: "gar kein Schritt" - das ging, solange SCHRITTE_SQLITE leer
-                    // war. Der Access-Zweig listet JEDEN seiner Schritte auf (mindestens
-                    // als "bereits erledigt"); "Schritt 61" ist deshalb der Nachweis, dass
-                    // er NICHT gelaufen ist - die SQLite-Liste beginnt bei 62.
                     fall.Muss(bericht.IndexOf("Schritt 61", StringComparison.Ordinal) < 0,
-                              "der Bericht nennt einen Schritt des Access-Zweigs");
+                              "der Bericht nennt einen ACCESS-Schritt (61) - der Zweig lief mit");
                     fall.Muss(bericht.IndexOf("Abschlusspr", StringComparison.OrdinalIgnoreCase) < 0,
                               "der Bericht nennt eine Abschlusspruefung des Access-Zweigs");
+
+                    // iU9-W14c: Schritt 62 (Klimadaten-Waisen) - auf der Testdatenbank ein
+                    // No-op, aber er muss GENANNT sein und seine Zaehlung melden.
+                    fall.Muss(bericht.IndexOf("Schritt 62", StringComparison.Ordinal) >= 0,
+                              "der Bericht nennt Schritt 62 (Klimadaten-Waisen) nicht: " + Erste(bericht));
+                    fall.Muss(bericht.IndexOf("Waisen vorher 0, nachher 0", StringComparison.Ordinal) >= 0,
+                              "Schritt 62 meldet die Waisenzahlen nicht - auf der Testdatenbank " +
+                              "sind es 0 vorher und 0 nachher: " + Erste(bericht));
+
+                    // Merge 5 (05.09.2026): danach die PV-Schritte 63 und 64 (Paket A/B des
+                    // PV-Ertragsmodells, umnummeriert von 62/63). Das Ziel bleibt RELATIV
+                    // (ZIEL_VERSION), damit der Fall den naechsten Schritt ueberlebt.
+                    fall.Muss(bericht.IndexOf("Schritt " + SchemaMigration.SCHRITT_63_PV_ANLAGENPARAMETER,
+                                              StringComparison.Ordinal) >= 0,
+                              "der Bericht nennt Schritt 63 (PV-Anlagenparameter) nicht: " + Erste(bericht));
+                    fall.Muss(bericht.IndexOf("Schritt " + SchemaMigration.SCHRITT_64_PV_MODELLWAHL,
+                                              StringComparison.Ordinal) >= 0,
+                              "der Bericht nennt Schritt 64 (PV-Modellwahl) nicht: " + Erste(bericht));
 
                     fall.Muss(bericht.IndexOf("Schemastand nachher: " + SchemaMigration.ZIEL_VERSION,
                                               StringComparison.Ordinal) >= 0,
                               "der Bericht meldet nicht den Schemastand " +
                               SchemaMigration.ZIEL_VERSION + ": " + Erste(bericht));
 
-                    Gleich(fall, "StandVorher", SchemaMigration.FREEZE_VERSION_ACCESS, SchemaMigration.StandVorher);
+                    Gleich(fall, "StandVorher", SchemaMigration.FREEZE_VERSION, SchemaMigration.StandVorher);
                     Gleich(fall, "StandNachher", SchemaMigration.ZIEL_VERSION, SchemaMigration.StandNachher);
                     Gleich(fall, "SchemaVersion in der Datei", SchemaMigration.ZIEL_VERSION, SchemaVersionLesen());
 
                     fall.Muss(!SchemaMigration.SimulationGesperrt(out grund),
                               "die Simulation ist auf Zielstand gesperrt: " + grund);
-                }
+
+                    // --- d) zweiter Lauf: alle SQLite-Schritte sind idempotent ----------
+                    fall.Muss(SchemaMigration.Ausfuehren(out bericht),
+                              "der zweite Lauf lief NICHT durch. Bericht: " + Erste(bericht));
+                    fall.Muss(bericht.IndexOf("bereits erledigt", StringComparison.Ordinal) >= 0,
+                              "zweiter Lauf: die Schritte wurden nicht als \"bereits erledigt\" gemeldet");
+                    Gleich(fall, "zweiter Lauf StandNachher", SchemaMigration.ZIEL_VERSION, SchemaMigration.StandNachher);                }
                 finally
                 {
                     DataRepository.PfadUeberschreibung = sicherung;
@@ -601,17 +627,18 @@ namespace ZugriffsschichtProben
         ///
         /// Der Seam (SchemaMigration.ProbeSchritt*, per Reflexion befuellt - Muster wie
         /// Fall 11) haengt einen Wegwerf-Schritt ein, der ueber den DDL-Rueckruf - und
-        /// damit ueber SqliteDdl - eine Spalte anlegt.
+        /// damit ueber SqliteDdl - eine Spalte anlegt. Er zeigt, was Schritt 62 (reines
+        /// DML) nicht zeigen kann: dass ein SQLite-Schritt eine SCHEMAAENDERUNG traegt.
         ///
         ///   Lauf 1: Schritt laeuft, Spalte da, Marker auf ZIEL_VERSION + 1
         ///   Lauf 2: "bereits erledigt", nichts passiert, Marker bleibt stehen
         ///
-        /// DIE NUMMER IST RELATIV (ZIEL_VERSION + 1), nicht fest 62. Seit Paket A des
-        /// PV-Ertragsmodells ist 62 ein ECHTER Schritt; eine feste 62 im Seam waere nach
-        /// dessen Lauf "bereits erledigt" und der Wegwerf-Schritt liefe nie. Die Probe
-        /// setzt den Marker deshalb auf ZIEL_VERSION (alle echten Schritte erledigt) und
-        /// haengt ihren Schritt eine Nummer darueber ein.
-        ///
+        /// DIE NUMMER IST RELATIV (ZIEL_VERSION + 1), nicht fest. Seit iU9-W14c ist 62 ein
+        /// ECHTER Schritt (Klimadaten-Waisen), seit Merge 5 (05.09.2026) sind 63 und 64
+        /// dazugekommen (PV-Ertragsmodell); eine feste Nummer im Seam waere nach deren
+        /// Lauf "bereits erledigt" und der Wegwerf-Schritt liefe nie. Die Probe setzt den
+        /// Marker deshalb auf ZIEL_VERSION (alle echten Schritte erledigt) und haengt
+        /// ihren Schritt eine Nummer darueber ein.        ///
         /// Der Seam wird danach wieder geleert; im Programmbetrieb ist er unbesetzt.
         /// </summary>
         private static void Fall14SqliteSchritt(string quelle, string arbeitsordner)
@@ -619,8 +646,7 @@ namespace ZugriffsschichtProben
             int probeNr = SchemaMigration.ZIEL_VERSION + 1;
 
             Fuehre("14 synthetischer SQLite-Schritt " + probeNr +
-                   " ueber SqliteDdl (Marker + Idempotenz)", fall =>
-            {
+                   " ueber SqliteDdl (Marker + Idempotenz)", fall =>            {
                 string kopie = KopieAnlegen(quelle, Path.Combine(arbeitsordner, "fall14"),
                                             "Kenndaten_S6_Fall14.sqlite");
                 string sicherung = DataRepository.PfadUeberschreibung;
@@ -633,8 +659,7 @@ namespace ZugriffsschichtProben
                     SchemaVersionSetzen(SchemaMigration.ZIEL_VERSION);
 
                     bool gesetzt = SeamSetzen(
-                        probeNr,
-                        "Wegwerfspalte " + PROBE_SPALTE + " (S6-Probe)",
+                        probeNr,                        "Wegwerfspalte " + PROBE_SPALTE + " (S6-Probe)",
                         ddl => ddl("ALTER TABLE [Tab_Applikation] ADD COLUMN [" + PROBE_SPALTE +
                                    "] INTEGER DEFAULT 0",
                                    "Tab_Applikation." + PROBE_SPALTE));
@@ -651,22 +676,19 @@ namespace ZugriffsschichtProben
                               "Lauf 1: der Bericht nennt " + schrittWort + " nicht");
                     fall.Muss(bericht1.IndexOf(schrittWort, StringComparison.Ordinal) >= 0 &&
                               bericht1.IndexOf(": OK", StringComparison.Ordinal) >= 0,
-                              "Lauf 1: " + schrittWort + " wurde nicht als OK gemeldet");
-                    fall.Muss(bericht1.IndexOf("angelegt", StringComparison.Ordinal) >= 0,
+                              "Lauf 1: " + schrittWort + " wurde nicht als OK gemeldet");                    fall.Muss(bericht1.IndexOf("angelegt", StringComparison.Ordinal) >= 0,
                               "Lauf 1: SqliteDdl notierte kein \"angelegt\"");
 
                     fall.Muss(DataRepository.SpalteVorhanden("Tab_Applikation", PROBE_SPALTE),
                               "Lauf 1: die Testspalte wurde nicht angelegt");
                     Gleich(fall, "Lauf 1 SchemaVersion", probeNr, SchemaVersionLesen());
                     Gleich(fall, "Lauf 1 StandNachher", probeNr, SchemaMigration.StandNachher);
-
                     // --- Lauf 2 (idempotent) ----------------------------------------
                     string bericht2;
                     fall.Muss(SchemaMigration.Ausfuehren(out bericht2),
                               "Lauf 2 lief nicht durch. Bericht: " + Erste(bericht2));
                     fall.Muss(bericht2.IndexOf("bereits erledigt", StringComparison.Ordinal) >= 0,
-                              "Lauf 2: " + schrittWort + " wurde nicht als \"bereits erledigt\" gemeldet");
-                    fall.Muss(bericht2.IndexOf("angelegt", StringComparison.Ordinal) < 0,
+                              "Lauf 2: " + schrittWort + " wurde nicht als \"bereits erledigt\" gemeldet");                    fall.Muss(bericht2.IndexOf("angelegt", StringComparison.Ordinal) < 0,
                               "Lauf 2: es wurde erneut DDL gefahren");
                     fall.Muss(bericht2.IndexOf("FEHLGESCHLAGEN", StringComparison.Ordinal) < 0,
                               "Lauf 2: der Bericht enthaelt eine Fehlerzeile");
@@ -674,7 +696,6 @@ namespace ZugriffsschichtProben
                     Gleich(fall, "Lauf 2 SchemaVersion", probeNr, SchemaVersionLesen());
                     Gleich(fall, "Lauf 2 StandVorher", probeNr, SchemaMigration.StandVorher);
                     Gleich(fall, "Lauf 2 StandNachher", probeNr, SchemaMigration.StandNachher);
-
                     // Die Spalte genau EINMAL - eine zweite haette SQLite ohnehin
                     // abgelehnt, aber der Nachweis gehoert hierher.
                     int spalten = 0;

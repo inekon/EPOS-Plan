@@ -1,0 +1,224 @@
+﻿@* Reiterleiste - der Ersatz fuer TabControl/TabPage des Bestands
+   (iU9-W5.0, Bausteinluecke 10).
+
+   WOZU. Der Bestand fuehrt 21 TabControl mit 74 TabPage. Bis Welle 4 wich
+   jeder umgestellte Dialog aus und stellte seine Reiterinhalte UNTEREINANDER
+   (Kostenprofil W3.4/A-17, Kostenverwaltung W4.2/A-2, Traegerkarte W4.4/A-12).
+   Das war die richtige Zwischenloesung - ein modaler Bereich ist kein Reiter -,
+   machte die drei Dialoge aber lang. Hier steht der Baustein, mit dem sie ihre
+   Reiterform zurueckbekommen.
+
+   WARUM ER IN WELLE 5 KOMMT. Die vier Seiten des Reiters "Berichte & Kosten"
+   laufen in EINER WebView (Risiko R5 des Wellenplans: eine WebView je
+   Fenster). Was der Bestand ueber vier UserControls in einem Panel loeste,
+   loest die Blazor-Fassung ueber Reiter innerhalb einer Komponente.
+
+   BAUWEISE.
+   - Die Blaetter melden sich SELBST an: <Reiterblatt> registriert sich beim
+     umgebenden <Reiter> (CascadingValue). Der Aufrufer schreibt damit nur
+     seine Inhalte hin und pflegt keine zweite Liste der Reitertitel - zwei
+     Listen waeren zwei Wahrheiten.
+   - Die Leiste traegt role="tablist", jeder Knopf role="tab" samt
+     aria-selected und aria-controls; das Blatt traegt role="tabpanel".
+     Damit liest eine Sprachausgabe dieselbe Struktur, die das TabControl
+     unter Windows meldet.
+   - TASTATUR: Pfeil links/rechts wandern zum vorherigen bzw. naechsten
+     bedienbaren Blatt und waehlen es sofort aus (ARIA "automatic activation"
+     - dasselbe Verhalten wie Strg+Tab im TabControl); Pos1 und Ende springen
+     an die Enden. Nur der aktive Knopf steht im Tabulatorzyklus (tabindex 0
+     bzw. -1) - so verlaesst Tab die Leiste nach EINEM Druck und landet im
+     Blatt.
+   - BERUEHRUNG: Die Knoepfe sind 44 px hoch (epos-reiter-knopf) - dieselbe
+     Mindestgroesse wie die uebrigen Bedienelemente (M2/iL4).
+   - ZWEI BAUARTEN DER SPERRE (Anwenderwunsch W16b-E-6, 05.09.2026). Bedienbar
+     = false sperrt HART: <button disabled>, so wie seit W5.0. Nennt das Blatt
+     dazu einen Sperrgrund, sperrt es WEICH: Der Knopf bleibt ein Knopf, traegt
+     aria-disabled und den Grund als title, und der Versuch meldet sich beim
+     Wirt als Verweigert. Der Unterschied ist nicht Kosmetik - ein
+     disabled-Knopf nimmt keine Zeigerereignisse an, zeigt deshalb auch keinen
+     Tooltip und laesst die Sprachausgabe "nicht verfuegbar" ohne Grund sagen.
+     Wer erklaeren will, warum etwas noch nicht geht, braucht die weiche Sperre.
+
+   DER ZUSTAND GEHOERT DEM WIRT. Aktiv/AktivChanged sind ein Bindepaar; ohne
+   Vorgabe steht das erste angemeldete Blatt vorn. So kann der Wirt den Reiter
+   von aussen umstellen (Sprung auf eine Seite) und den Stand ueber einen
+   Neuaufbau hinweg halten. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-reiter">
+    <div class="epos-reiter-leiste" role="tablist" aria-label="@Bezeichnung"
+         @onkeydown="BeiTaste">
+        @foreach (Reiterblatt blatt in _blaetter)
+        {
+            Reiterblatt b = blatt;
+            <button type="button" role="tab" class="@Knopfklasse(b)"
+                    id="@("reiter-" + b.Schluessel)"
+                    aria-selected="@(IstAktiv(b.Schluessel) ? "true" : "false")"
+                    aria-controls="@("blatt-" + b.Schluessel)"
+                    tabindex="@(IstAktiv(b.Schluessel) ? 0 : -1)"
+                    disabled="@HartGesperrt(b)"
+                    aria-disabled="@AriaGesperrt(b)"
+                    title="@Sperrtipp(b)"
+                    @onclick="@(() => Waehlen(b.Schluessel))">@b.Titel</button>
+        }
+    </div>
+
+    <CascadingValue Value="this" IsFixed="true">
+        @KindInhalt
+    </CascadingValue>
+</div>
+
+@code {
+    private readonly List<Reiterblatt> _blaetter = new();
+    private bool _neuAngemeldet;
+    private string _gemeldet = "";
+
+    /// <summary>Schluessel des sichtbaren Blattes; leer = das erste angemeldete.</summary>
+    [Parameter] public string Aktiv { get; set; } = "";
+
+    /// <summary>Meldet den Wechsel - fuer <c>@@bind-Aktiv</c>.</summary>
+    [Parameter] public EventCallback<string> AktivChanged { get; set; }
+
+    /// <summary>Die Blaetter als <c>&lt;Reiterblatt&gt;</c>-Kinder.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>Beschriftung der Leiste fuer die Sprachausgabe.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "Reiter";
+
+    /// <summary>
+    /// Der VERSUCH, ein WEICH gesperrtes Blatt zu betreten - uebergeben wird
+    /// sein Schluessel (Anwenderwunsch <b>W16b-E-6</b>, 05.09.2026).
+    ///
+    /// <para>Weich gesperrt ist ein Blatt, das einen
+    /// <see cref="Reiterblatt.Sperrgrund"/> nennt; nur dann gibt es ueberhaupt
+    /// ein Ereignis. Ein hart gesperrter Knopf (<c>disabled</c>) feuert nicht
+    /// - das ist der Grund, warum es die zweite Bauart gibt.</para>
+    /// </summary>
+    [Parameter] public EventCallback<string> Verweigert { get; set; }
+
+    /// <summary>Der tatsaechlich sichtbare Schluessel - Vorgabe oder erstes Blatt.</summary>
+    public string AktiverSchluessel
+    {
+        get
+        {
+            foreach (Reiterblatt b in _blaetter)
+                if (string.Equals(b.Schluessel, Aktiv, StringComparison.Ordinal)) return b.Schluessel;
+            return _blaetter.Count > 0 ? _blaetter[0].Schluessel : "";
+        }
+    }
+
+    /// <summary>Ist dieser Schluessel der sichtbare?</summary>
+    public bool IstAktiv(string schluessel)
+        => string.Equals(AktiverSchluessel, schluessel, StringComparison.Ordinal);
+
+    /// <summary>Ein Blatt meldet sich an (gerufen aus <see cref="Reiterblatt"/>).</summary>
+    internal void Anmelden(Reiterblatt blatt)
+    {
+        if (_blaetter.Contains(blatt)) return;
+        _blaetter.Add(blatt);
+        _neuAngemeldet = true;
+    }
+
+    /// <summary>Ein Blatt verschwindet wieder.</summary>
+    internal void Abmelden(Reiterblatt blatt)
+    {
+        if (!_blaetter.Remove(blatt)) return;
+        _neuAngemeldet = true;
+    }
+
+    /// <summary>Ein Blatt hat Titel, Bedienbarkeit oder Sperrgrund geaendert.</summary>
+    internal void Aufgefrischt() => _neuAngemeldet = true;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Die Leiste entsteht aus den angemeldeten Blaettern; angemeldet wird
+        // erst, waehrend der Inhalt gezeichnet wird. Der zweite Durchgang holt
+        // die Leiste nach - danach steht sie, und es wird nichts mehr
+        // angestossen (kein Dauerlauf).
+        if (_neuAngemeldet)
+        {
+            _neuAngemeldet = false;
+            StateHasChanged();
+            return;
+        }
+
+        // Das Betreten meldet der REITER, nicht das Blatt: Er weiss als
+        // einziger sicher, welches Blatt gerade vorn steht, und er zeichnet
+        // bei jedem Wechsel ohnehin neu. Ein Blatt, das sein Betreten selbst
+        // meldete, haenge davon ab, ob der Verteiler es diesmal ueberhaupt
+        // neu gezeichnet hat.
+        string jetzt = AktiverSchluessel;
+        if (string.Equals(jetzt, _gemeldet, StringComparison.Ordinal)) return;
+        _gemeldet = jetzt;
+
+        Reiterblatt? blatt = _blaetter.Find(b => string.Equals(b.Schluessel, jetzt, StringComparison.Ordinal));
+        if (blatt is not null) _ = blatt.Betretend();
+    }
+
+    private string Knopfklasse(Reiterblatt b)
+        => IstAktiv(b.Schluessel)
+            ? "epos-reiter-knopf epos-reiter-knopf--aktiv"
+            : "epos-reiter-knopf";
+
+    /// <summary>
+    /// HART gesperrt heisst <c>&lt;button disabled&gt;</c> - der Stand seit
+    /// W5.0 und die Vorgabe. Nennt das Blatt einen Sperrgrund, bleibt der Knopf
+    /// ein Knopf (weiche Sperre, W16b-E-6).
+    /// </summary>
+    private static bool HartGesperrt(Reiterblatt b)
+        => !b.Bedienbar && string.IsNullOrEmpty(b.Sperrgrund);
+
+    /// <summary>Die weiche Sperre traegt sie als ARIA-Zustand; die harte sagt <c>disabled</c>.</summary>
+    private static string? AriaGesperrt(Reiterblatt b)
+        => HartGesperrt(b) || b.Bedienbar ? null : "true";
+
+    /// <summary>
+    /// Der Grund am Knopf. Er ist zugleich die BESCHREIBUNG fuer die
+    /// Sprachausgabe: Ohne <c>aria-describedby</c> liest sie den <c>title</c>
+    /// als Beschreibung vor - ein Satz, EINE Wahrheit, kein zweites,
+    /// verstecktes Element im Markup.
+    /// </summary>
+    private static string? Sperrtipp(Reiterblatt b)
+        => b.Bedienbar || string.IsNullOrEmpty(b.Sperrgrund) ? null : b.Sperrgrund;
+
+    private async Task Waehlen(string schluessel)
+    {
+        // Weich gesperrt: Der Versuch ist ein EREIGNIS, kein Wechsel. Hart
+        // gesperrt kommt hier nie an - ein disabled-Knopf feuert nicht.
+        Reiterblatt? blatt = _blaetter.Find(
+            b => string.Equals(b.Schluessel, schluessel, StringComparison.Ordinal));
+        if (blatt is not null && !blatt.Bedienbar)
+        {
+            await Verweigert.InvokeAsync(schluessel);
+            return;
+        }
+
+        if (IstAktiv(schluessel)) return;
+        Aktiv = schluessel;
+        await AktivChanged.InvokeAsync(schluessel);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        List<Reiterblatt> bedienbar = _blaetter.FindAll(b => b.Bedienbar);
+        if (bedienbar.Count == 0) return Task.CompletedTask;
+
+        int jetzt = bedienbar.FindIndex(b => IstAktiv(b.Schluessel));
+        if (jetzt < 0) jetzt = 0;
+
+        switch (e.Key)
+        {
+            case "ArrowLeft":
+                return Waehlen(bedienbar[(jetzt - 1 + bedienbar.Count) % bedienbar.Count].Schluessel);
+            case "ArrowRight":
+                return Waehlen(bedienbar[(jetzt + 1) % bedienbar.Count].Schluessel);
+            case "Home":
+                return Waehlen(bedienbar[0].Schluessel);
+            case "End":
+                return Waehlen(bedienbar[bedienbar.Count - 1].Schluessel);
+            default:
+                return Task.CompletedTask;
+        }
+    }
+}

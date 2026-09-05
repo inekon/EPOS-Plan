@@ -1,4 +1,20 @@
-﻿@* Die Wurzelkomponente der iOS-Huelle (Umsetzungskonzept iOS, iU10-2).
+﻿@* DIE GEMEINSAME WURZEL BEIDER PLATTFORMEN (iU9-W16c.2, Entscheid E-1).
+
+   Bis W16b war das die Wurzelkomponente der iOS-Huelle allein; Windows hatte
+   mit Hauptfensterrahmen einen eigenen Rahmen. Seit W16c ist es EINE Wurzel und ZWEI
+   SCHALEN (Vermessung § 9.3): Die Zustandsmaschine hier kennt die Ansichten,
+   und darueber steht je Plattform eine Schale - unter Windows das Menueband
+   (als Kopfleiste hereingereicht), auf dem iPad nichts weiter. iL5 sagt
+   ausdruecklich "kein MDI, keine modalen Ketten"; eine Menueleiste mit 55
+   Punkten waere auf Touch unbedienbar, ein zweiter Navigationsbaum aber
+   ebenso falsch. Deshalb ist die Schale ein RenderFragment und kein zweiter
+   Baum.
+
+   Mit W16c kommen die drei Ansichten des Rahmens dazu (K7): STARTSEITE,
+   ASSISTENT (steht seit W16a.5) und BERICHTE_KOSTEN - das fuenfte der fuenf
+   Stuecke, die § 9.2 der Vermessung an AppWurzel vermisst hat.
+
+   Die Wurzelkomponente der iOS-Huelle (Umsetzungskonzept iOS, iU10-2).
 
    SIE IST NOCH KEIN ROUTER. Was hier steht, ist eine Zustandsmaschine mit drei
    Zustaenden - Liste, Dialog A, Dialog B - und genau das, was iU10 braucht: Die
@@ -23,7 +39,36 @@
 
 @inject IProjektQuelle Quelle
 
-@if (_ansicht == Seitenschluessel.Energietraeger)
+@Kopfleiste
+
+@if (_ansicht == Seitenschluessel.Startseite && _startseite is not null)
+{
+    @* DIE STARTSEITE (iU9-W16b.2). Unter Windows reicht Hauptfenster den
+       Parametersatz von StartseiteHuelle herein; auf iOS kommt er aus
+       IProjektQuelle.StartseiteGaben.
+
+       KopfbandZeigen steht NACH dem Parametersatz und gewinnt deshalb gegen
+       ihn (Anwenderwunsch 05.09.2026, W16b-E-4): Wer eine Kopfleiste
+       mitgebracht hat - unter Windows das Menueband samt Markenkopf -, nennt
+       die Produktgattung schon dort; die Seite laesst ihre eigene
+       Gattungszeile dann weg. Auf iOS ist die Kopfleiste leer, und die Zeile
+       bleibt die einzige Nennung des Produkts. *@
+    <EPOS.UI.Seiten.Start.Startseite @attributes="_startseite"
+                                     KopfbandZeigen="@(Kopfleiste is null)" />
+}
+else if (_ansicht == Seitenschluessel.BerichteKosten && _berichteKosten is not null)
+{
+    @* „Berichte & Kosten" (W5) als eigene Ansicht - seit dem Anwenderentscheid
+       W16c-E-3 (04.09.2026) der Weg BEIDER Plattformen: Der Menuepunkt
+       „Varianten und Bericht…" wechselt hierher, statt unter Windows den
+       sechsten Reiter der Startseite nach vorn zu holen. Das Reiterblatt
+       bleibt bestehen - es ist die Kachelfassung derselben Seite -, nur der
+       MENUEWEG fuehrt jetzt in die Ansicht. Der Rueckweg ist derselbe wie bei
+       den zwei Simulationsansichten. *@
+    <EPOS.UI.Seiten.Berichte.BerichteKostenSeite @attributes="_berichteKosten"
+                                                 Geschlossen="ZurueckZurListe" />
+}
+else if (_ansicht == Seitenschluessel.Energietraeger)
 {
     <EPOS.UI.Dialoge.Kosten.EnergietraegerVarianteDialog
         Energietraeger="@_energietraeger"
@@ -43,6 +88,33 @@ else if (_ansicht == Seitenschluessel.BhkwWirtschaftlichkeit && _bhkw is not nul
         Speichern="@_bhkw.Speichern"
         Geschlossen="BeiBhkwFertig" />
 }
+else if (_ansicht == Seitenschluessel.SimulationKonfiguration && _simKonfig is not null)
+{
+    <EPOS.UI.Seiten.Simulation.SimulationKonfigSeite @attributes="_simKonfig"
+                                                     Geschlossen="ZurueckZurListe" />
+}
+else if (_ansicht == Seitenschluessel.SimulationErgebnis && _simErgebnis is not null)
+{
+    <EPOS.UI.Seiten.Simulation.SimulationErgebnisSeite @attributes="_simErgebnis"
+                                                       Geschlossen="ZurueckZurListe" />
+}
+else if (_ansicht == Seitenschluessel.Assistent && _assistent is not null)
+{
+    @* Der Projektassistent (iU9-W16a.5). Unter Windows steht dieselbe Komponente
+       in einer MODALEN Huelle (AssistentHuelle) - beide Aufrufer werten aus, ob
+       gespeichert wurde; hier loest sie die Ansicht ab, weil es auf dem iPad kein
+       zweites Fenster gibt. *@
+    <EPOS.UI.Seiten.Assistent.AssistentSeite @attributes="_assistent"
+                                             Geschlossen="BeiAssistentFertig" />
+}
+else if (_ansicht == Seitenschluessel.KiAssistent && _kiAssistent is not null)
+{
+    @* Der KI-Hilfe-Assistent (iU9-W15b.7, Entscheid E-10). Unter Windows steht
+       dieselbe Komponente NICHT-MODAL mit Besitzer (KiChatHuelle, E-6); hier
+       loest sie die Ansicht ab, weil es auf dem iPad kein zweites Fenster gibt. *@
+    <EPOS.UI.Dialoge.Hilfe.KiChatDialog @attributes="_kiAssistent"
+                                        Geschlossen="ZurueckZurListe" />
+}
 else
 {
     @if (!string.IsNullOrEmpty(_statuszeile))
@@ -58,12 +130,76 @@ else
     // Zustand - drei Ansichten, ein offenes Projekt
     // =====================================================================
 
-    private string _ansicht = Seitenschluessel.Projektliste;
+    private string _ansicht = "";
     private IReadOnlyList<ProjektZeile> _projekte = Array.Empty<ProjektZeile>();
     private IReadOnlyList<(int Id, string Name)> _energietraeger = Array.Empty<(int, string)>();
     private BhkwDialogDaten? _bhkw;
+    private IReadOnlyDictionary<string, object>? _simKonfig;
+    private IReadOnlyDictionary<string, object>? _simErgebnis;
+    private IReadOnlyDictionary<string, object>? _kiAssistent;
+    private IReadOnlyDictionary<string, object>? _assistent;
+    private IReadOnlyDictionary<string, object>? _startseite;
+    private IReadOnlyDictionary<string, object>? _berichteKosten;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
+
+    // =====================================================================
+    // Die zwei Gaben der Schale (iU9-W16c.2)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Schale der Plattform — unter Windows das <c>Menueband</c> samt
+    /// Markenkopf, auf iOS nichts (Entscheid E-1: eine Wurzel, zwei Schalen).
+    /// Sie steht ueber JEDER Ansicht, weil das Menue unter Windows nie
+    /// verschwindet.
+    /// </summary>
+    [Parameter] public RenderFragment? Kopfleiste { get; set; }
+
+    /// <summary>
+    /// Der geteilte Zustand der SEITENHUELLE (Befund W16c‑B12, 04.09.2026).
+    /// Unter Windows reicht ihn <c>BlazorSeite&lt;Hauptfenster&gt;</c> ueber
+    /// <c>Hauptfenster.Zustand</c> herein; auf iOS gibt es keine Seitenhuelle
+    /// und damit keinen.
+    ///
+    /// <para><b>Wozu.</b> <c>BlazorSeite.ProjektSetzen</c> stellt die Seite auf
+    /// ein anderes Projekt ein, OHNE die WebView neu zu bauen — die Wurzel
+    /// haengt sich dafuer an <see cref="SeitenZustand.Geaendert"/> und zeichnet
+    /// neu.</para>
+    ///
+    /// <para><b>Er ueberschreibt nichts.</b> Die Ansichten bekommen ihren
+    /// eigenen Zustand aus dem Parametersatz der Huelle
+    /// (<c>StartseiteHuelle</c> und <c>BerichteKostenHuelle</c> fuehren je
+    /// einen und melden darueber den Projektwechsel). Nur wo ein Parametersatz
+    /// KEINEN traegt, legt <see cref="MitZustand"/> diesen hier bei — sonst
+    /// gaebe es zwei Zustaende fuer dieselbe Ansicht.</para>
+    /// </summary>
+    [Parameter] public SeitenZustand? Zustand { get; set; }
+
+    /// <summary>
+    /// Die Ansicht, mit der die Wurzel aufmacht, und das Ziel des Rueckwegs.
+    /// Vorgabe ist die Projektliste (der iOS-Einstieg); Windows setzt
+    /// <c>STARTSEITE</c>.
+    /// </summary>
+    [Parameter] public string Startansicht { get; set; } = Seitenschluessel.Projektliste;
+
+    /// <summary>
+    /// Der Parametersatz der STARTSEITE, wenn ihn die Huelle stellt (Windows:
+    /// <c>StartseiteHuelle.Gaben()</c>). Ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.StartseiteGaben</c> — der iOS-Weg.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? StartseiteGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz von „Berichte &amp; Kosten", wenn ihn die Huelle
+    /// stellt. Ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.BerichteKostenGaben</c>.
+    ///
+    /// <para>Seit dem Anwenderentscheid W16c-E-3 (04.09.2026) setzt ihn AUCH
+    /// die Windows-Huelle (<c>HauptfensterHuelle.Gaben</c>, aus derselben
+    /// <c>BerichteKostenHuelle</c> wie das sechste Reiterblatt der
+    /// Startseite) — vorher wurde die Ansicht unter Windows nie gezeigt.</para>
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? BerichteKostenGaben { get; set; }
 
     /// <summary>
     /// Die zuletzt gezeichnete Wurzel meldet sich als Navigationsziel an. Der
@@ -74,13 +210,51 @@ else
     protected override void OnInitialized()
     {
         Navigationsziel.Aktuell = this;
+        if (Zustand is not null) Zustand.Geaendert += BeiZustand;
+        // Die Startansicht wird ueber DENSELBEN Weg gesetzt wie jeder spaetere
+        // Wechsel - sonst gaebe es zwei Stellen, an denen eine Ansicht entsteht.
+        if (!Zeige(Startansicht)) _ansicht = Seitenschluessel.Projektliste;
         Laden();
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
+        if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
         if (ReferenceEquals(Navigationsziel.Aktuell, this)) Navigationsziel.Aktuell = null;
+    }
+
+    /// <summary>
+    /// Die Huelle hat das Projekt gewechselt oder um Auffrischen gebeten.
+    /// Geschrieben wird aus dem Oberflaechenfaden von WinForms, gezeichnet
+    /// ausschliesslich auf dem Renderfaden — dasselbe Muster wie
+    /// <see cref="OeffneMaske"/>.
+    /// </summary>
+    private void BeiZustand()
+    {
+        _ = InvokeAsync(() =>
+        {
+            Laden();
+            StateHasChanged();
+        });
+    }
+
+    /// <summary>
+    /// Legt <see cref="Zustand"/> einem Parametersatz bei, der KEINEN fuehrt.
+    /// Ein mitgelieferter Zustand hat Vorrang: Unter Windows meldet
+    /// <c>StartseiteHuelle</c> den Projektwechsel ueber IHREN, und zwei
+    /// Zustaende fuer dieselbe Ansicht waeren zwei Wahrheiten.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? MitZustand(
+        IReadOnlyDictionary<string, object>? gaben)
+    {
+        if (gaben is null || Zustand is null) return gaben;
+        if (gaben.ContainsKey(SeitenZustand.PARAMETER)) return gaben;
+
+        var kopie = new Dictionary<string, object>(StringComparer.Ordinal);
+        foreach (KeyValuePair<string, object> paar in gaben) kopie[paar.Key] = paar.Value;
+        kopie[SeitenZustand.PARAMETER] = Zustand;
+        return kopie;
     }
 
     // =====================================================================
@@ -108,6 +282,33 @@ else
 
     private bool Zeige(string maske)
     {
+        if (maske == Seitenschluessel.Startseite)
+        {
+            // Der Parametersatz der Huelle hat Vorrang: Unter Windows haelt
+            // StartseiteHuelle den Projektkontext, die zwei Bedarfsobjekte und
+            // die 21 Kachelwege - eine Projektquelle koennte das nicht.
+            _startseite = MitZustand(StartseiteGaben ?? Quelle.StartseiteGaben(_projekt?.Id ?? 0));
+            if (_startseite is null)
+            {
+                _statuszeile = KeineStartseiteText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.BerichteKosten)
+        {
+            _berichteKosten = MitZustand(BerichteKostenGaben ?? Quelle.BerichteKostenGaben(_projekt?.Id ?? 0));
+            if (_berichteKosten is null)
+            {
+                _statuszeile = KeineBerichteText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.Energietraeger)
         {
             _energietraeger = Quelle.Energietraeger();
@@ -129,6 +330,67 @@ else
             return true;
         }
 
+        if (maske == Seitenschluessel.SimulationKonfiguration)
+        {
+            _simKonfig = Quelle.SimulationKonfigGaben(_projekt?.Id ?? 0);
+            if (_simKonfig is null)
+            {
+                // Kein Projekt, keine Datenbank: Die Liste bleibt stehen und sagt
+                // warum - der Windows-Zustand „Seite geht nicht auf".
+                _statuszeile = KeineSimKonfigText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.SimulationErgebnis)
+        {
+            _simErgebnis = Quelle.SimulationErgebnisGaben(_projekt?.Id ?? 0);
+            if (_simErgebnis is null)
+            {
+                // Kein Projekt, keine Datenbank: Die Liste bleibt stehen und sagt
+                // warum - der Windows-Zustand „Seite geht nicht auf".
+                _statuszeile = KeinSimErgebnisText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.Assistent)
+        {
+            // Betriebsart BEARBEITEN, wenn ein Projekt gewaehlt ist - sonst NEU;
+            // dieselbe Unterscheidung wie MenueCtrl.ProjektNeu/ProjektBearbeiten.
+            int betriebsart = (_projekt?.Id ?? 0) > 0 ? 1 : 0;
+            _assistent = Quelle.AssistentGaben(betriebsart, _projekt?.Id ?? 0);
+            if (_assistent is null)
+            {
+                // Solange die iOS-Huelle den Assistenten nicht bedient (iU11), bleibt
+                // die Liste stehen und sagt warum - der Windows-Zustand "Fenster geht
+                // nicht auf".
+                _statuszeile = KeinProjektassistentText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.KiAssistent)
+        {
+            _kiAssistent = Quelle.KiAssistentGaben(_projekt?.Id ?? 0);
+            if (_kiAssistent is null)
+            {
+                // Solange die iOS-Huelle den Assistenten nicht bedient (iU11), bleibt
+                // die Liste stehen und sagt warum - der Windows-Zustand "Fenster geht
+                // nicht auf".
+                _statuszeile = KeinAssistentText;
+                return false;
+            }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.Projektliste)
         {
             _ansicht = maske;
@@ -138,10 +400,21 @@ else
         return false;
     }
 
+    /// <summary>
+    /// Der Rueckweg. Er fuehrt zur <see cref="Startansicht"/> - auf iOS die
+    /// Projektliste, unter Windows die Startseite. Laesst sie sich nicht
+    /// aufbauen, bleibt die Liste; sie steht auf beiden Plattformen.
+    /// </summary>
     private void ZurueckZurListe()
     {
-        _ansicht = Seitenschluessel.Projektliste;
         _bhkw = null;
+        _simKonfig = null;
+        _simErgebnis = null;
+        _kiAssistent = null;
+        _assistent = null;
+        _berichteKosten = null;   // W16c-E-3: auch diese Ansicht wird verlassen
+
+        if (!Zeige(Startansicht)) _ansicht = Seitenschluessel.Projektliste;
         Laden();
     }
 
@@ -164,6 +437,17 @@ else
         ZurueckZurListe();
     }
 
+    /// <summary>
+    /// Der Assistent ist zu Ende — gespeichert (<c>true</c>) oder abgebrochen.
+    /// Danach steht die Projektliste wieder, und sie wird neu geladen: Ein
+    /// gespeicherter Lauf hat ein Projekt angelegt oder fortgeschrieben.
+    /// </summary>
+    private void BeiAssistentFertig(bool gespeichert)
+    {
+        _statuszeile = gespeichert ? MeldungGespeichert : "";
+        ZurueckZurListe();
+    }
+
     private void BeiBhkwFertig(EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitErgebnis ergebnis)
     {
         _statuszeile = ergebnis is { Gespeichert: true } ? MeldungGespeichert : "";
@@ -181,6 +465,12 @@ else
         // wird ausschliesslich auf dem Renderfaden.
         bool bekannt = maske == Seitenschluessel.Energietraeger
                     || maske == Seitenschluessel.BhkwWirtschaftlichkeit
+                    || maske == Seitenschluessel.SimulationKonfiguration
+                    || maske == Seitenschluessel.SimulationErgebnis
+                    || maske == Seitenschluessel.KiAssistent
+                    || maske == Seitenschluessel.Assistent
+                    || maske == Seitenschluessel.Startseite
+                    || maske == Seitenschluessel.BerichteKosten
                     || maske == Seitenschluessel.Projektliste;
 
         if (!bekannt) return false;
@@ -219,4 +509,39 @@ else
     /// <summary>Meldung, wenn zum Projekt kein BHKW-Parametersatz zu laden ist.</summary>
     [Parameter] public string KeinBhkwText { get; set; } =
         "Zu diesem Projekt gibt es keine BHKW-Vergleichsgruppe.";
+
+    /// <summary>Meldung, wenn die Simulationskonfiguration nicht zu laden ist.</summary>
+    [Parameter] public string KeineSimKonfigText { get; set; } =
+        "Zu diesem Projekt lässt sich die Simulationskonfiguration nicht öffnen.";
+
+    /// <summary>Meldung, wenn das Simulationsergebnis nicht zu laden ist.</summary>
+    [Parameter] public string KeinSimErgebnisText { get; set; } =
+        "Zu diesem Projekt lässt sich das Simulationsergebnis nicht öffnen.";
+
+    /// <summary>
+    /// Meldung, wenn der KI-Assistent nicht zu öffnen ist — der Zustand, solange die
+    /// iOS-Hülle ihn nicht bedient (iU11).
+    /// </summary>
+    [Parameter] public string KeinAssistentText { get; set; } =
+        "Der Hilfe-Assistent steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>
+    /// Meldung, wenn der Projektassistent nicht zu öffnen ist — der Zustand,
+    /// solange die iOS-Hülle ihn nicht bedient (iU11).
+    /// </summary>
+    [Parameter] public string KeinProjektassistentText { get; set; } =
+        "Der Projektassistent steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>
+    /// Meldung, wenn die Startseite nicht aufzubauen ist — der Zustand, solange
+    /// die iOS-Hülle sie nicht bedient (iU11).
+    /// </summary>
+    [Parameter] public string KeineStartseiteText { get; set; } =
+        "Die Startseite steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>
+    /// Meldung, wenn „Berichte &amp; Kosten" nicht aufzubauen ist.
+    /// </summary>
+    [Parameter] public string KeineBerichteText { get; set; } =
+        "Berichte und Kosten stehen auf diesem Gerät noch nicht zur Verfügung.";
 }

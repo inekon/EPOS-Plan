@@ -1,0 +1,977 @@
+﻿@* Die WAERMESENKEN einer Erzeugeranlage (iU9-W10a.7, Konzept 5.1/5.3, Paket S1).
+
+   VORBILD. Views/Simulation/Form_Waermesenke (2 050 Z., OHNE Designer und ohne
+   .resx, 620 x 618, 35 Steuerelemente, fuenf MessageBox, 63
+   Ressourcenschluessel) - die zweitgroesste Maske der Welle.
+
+   VIER GRUPPEN wie im Vorlaeufer: die SENKENLISTE (Rang fuer Rang, jede kWh geht
+   genau einmal in eine Direktsenke oder in einen Puffer), die SENKENZEILE
+   (Ziel, Speicher, Bedarfsart), der PARALLELVERBUND und das LADEVERHALTEN.
+
+   DER DIALOG SPEICHERT SELBST (btnOk_Click:1890) - Senkenliste und
+   Verbundmitglieder in einem Zug; der Aufrufer erfaehrt nur, ob es geklappt hat.
+
+   ABWEICHUNG A-9 (Befund W10-B24): DIE ERSATZWERTE -1/-2/-3 SIND WEG. Der
+   Vorlaeufer kodierte Eingabefehler in DATENfeldern des Modells (Ladegrenze -1 =
+   unlesbar, -2 = ausserhalb; bei der Einspeisehoehe begann dieselbe Reihe erst
+   bei -2, weil -1 schon "nicht gesetzt" hiess). Hier ist "nicht gesetzt" ein
+   null, und der Eingabefehler bleibt im Formularzustand - gemeldet wird er beim
+   OK, mit demselben Wortlaut und derselben Nennung des Rangs.
+
+   WOERTLICH TROTZ BEFUND:
+     W10-B25 - der Parallelverbund haengt konstruktiv an RANG 1
+       (Z_AnlagePufferVerbund fuehrt keine ID_Senke). Dokumentierter Zustand.
+     W10-B26 - das Speicher-Dropdown zeigt ALLE Projektpuffer (Paket S2), die
+       Verbundliste filtert dagegen nach Verwendung. Beabsichtigt, aber
+       erklaerungsbeduerftig; deshalb steht darueber eine Herleitungszeile.
+
+   DIE PV-SONDERPRIORITAET wandert beim Tauschen NICHT mit: Sie gibt es nur auf
+   Rang 1 (Ladeordnung.cs:270-273), und stehen zu lassen, was nicht mehr gilt,
+   waere der Anfang einer stillen Falschrechnung (Tauschen:1272).
+
+   FELDER, DIE NICHT ZUM ZIEL PASSEN, WERDEN GELOESCHT (ZeileAusOberflaeche
+   :1082-1107): Eine Ladeprioritaet an einer Direktsenke ist kein harmloser Rest,
+   sie stuende in der Ladeordnung und wuerde beim naechsten Zielwechsel unbemerkt
+   wieder wirksam.
+
+   TASTATUR: Esc bricht ab - erst die Rueckfrage bzw. die Pufferverwaltung, dann
+   der Dialog. Enter ist NICHT belegt: OK SPEICHERT. *@
+
+@namespace EPOS.UI.Dialoge.Simulation
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Die Senkenliste ---------------------------------------------------- *@
+    <Gruppenkopf Titel="@GruppeSenkenliste">
+        <KindInhalt>
+            <Zeilenraster Bezeichnung="@GruppeSenkenliste"
+                          Spaltenmass="44px 40px 2fr 2fr 1.2fr 1fr 1fr"
+                          Spalten="@Listenspalten">
+                <KindInhalt>
+                    @for (int i = 0; i < _zeilen.Count; i++)
+                    {
+                        int index = i;
+                        SenkenzeileDaten z = _zeilen[index];
+                        <div class="epos-zr-zeile">
+                            <div class="epos-zr-zelle">
+                                <Zeilenwahl Gewaehlt="@(index == _index)" Kurztext="@SpalteRang"
+                                            Gewaehltwerden="() => ZeileWaehlen(index)" />
+                            </div>
+                            <div class="epos-zr-zelle">@(index + 1)</div>
+                            <div class="epos-zr-zelle">@Zielname(z.Ziel)</div>
+                            <div class="epos-zr-zelle">@Speichername(z)</div>
+                            <div class="epos-zr-zelle">@Bedarfsartname(z)</div>
+                            <div class="epos-zr-zelle">@Ladespalte(z)</div>
+                            <div class="epos-zr-zelle">@Hoehenspalte(z)</div>
+                        </div>
+                    }
+                </KindInhalt>
+            </Zeilenraster>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" @onclick="Hinzufuegen">@BtnHinzu</button>
+                <button type="button" class="epos-knopf" @onclick="EntfernenStarten">@BtnEntfernen</button>
+                <button type="button" class="epos-knopf" disabled="@(_index <= 0)"
+                        @onclick="() => Tauschen(-1)">@BtnRauf</button>
+                <button type="button" class="epos-knopf"
+                        disabled="@(_index < 0 || _index >= _zeilen.Count - 1)"
+                        @onclick="() => Tauschen(+1)">@BtnRunter</button>
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Die gewählte Zeile ------------------------------------------------- *@
+    @if (Aktuell is not null)
+    {
+        <Gruppenkopf Titel="@GruppeSenkenzeile">
+            <KindInhalt>
+                <Auswahlfeld Bezeichnung="@LabelZiel" Eintraege="@Zieleintraege"
+                             Auswahl="@_zielIndex" AuswahlChanged="ZielWaehlen" />
+
+                @if (IstPuffer(Aktuell.Ziel))
+                {
+                    <Auswahlfeld Bezeichnung="@LabelSpeicher" Eintraege="@Speichereintraege"
+                                 Auswahl="@Aktuell.IdPuffer" AuswahlChanged="SpeicherWaehlen" />
+                    <Herleitungszeile Text="@HerleitungSpeicherliste" />
+                }
+
+                @if (IstHeizkreis(Aktuell.Ziel))
+                {
+                    <Auswahlfeld Bezeichnung="@LabelBedarfsart" Eintraege="@Bedarfsarteintraege"
+                                 Auswahl="@_bedarfsartIndex" AuswahlChanged="BedarfsartWaehlen" />
+                    <Herleitungszeile Text="@HinweisBedarf" />
+                }
+
+                @if (VerwaltungGaben is not null)
+                {
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf"
+                                @onclick="() => VerwaltungOeffnen()">@BtnPufferAnlegen</button>
+                    </div>
+                }
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @* --- Parallelverbund (nur Rang 1 mit Puffer) ---------------------------- *@
+    @if (VerbundMoeglich)
+    {
+        <Gruppenkopf Titel="@GruppeVerbund">
+            <KindInhalt>
+                <Mehrfachauswahl Bezeichnung="@GruppeVerbund" Eintraege="@Verbundeintraege"
+                                 Gewaehlt="@_verbund" GewaehltChanged="VerbundSetzen"
+                                 MitSammelknoepfen="false" />
+                <Herleitungszeile Text="@Verbundsumme" />
+                <Herleitungszeile Text="@HerleitungVerbundliste" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @* --- Ladeverhalten ------------------------------------------------------ *@
+    @if (Aktuell is not null && IstPuffer(Aktuell.Ziel))
+    {
+        <Gruppenkopf Titel="@GruppeLadeverhalten">
+            <KindInhalt>
+                <Auswahlfeld Bezeichnung="@LabelLadeprio" Eintraege="@Prioritaeten"
+                             Auswahl="@Aktuell.Ladeprio" AuswahlChanged="LadeprioWaehlen" />
+                <Herleitungszeile Text="@_position" />
+
+                <Schalter Bezeichnung="@LabelLadegrenze" Wert="@_ladegrenzeAktiv"
+                          WertChanged="LadegrenzeUmschalten" />
+                @if (_ladegrenzeAktiv)
+                {
+                    <Zahlenfeld Bezeichnung="@LabelLadegrenze" Einheit="%"
+                                Feldname="@LabelLadegrenze" Wert="@_ladegrenze"
+                                WertChanged="w => { _ladegrenze = w; ZeileZurueckschreiben(); }" />
+                }
+
+                @if (Daten.PvModus && _index == 0)
+                {
+                    <Auswahlfeld Bezeichnung="@LabelLadeprioPv" Eintraege="@PrioritaetenPv"
+                                 Auswahl="@Aktuell.LadeprioPv" AuswahlChanged="LadeprioPvWaehlen" />
+                }
+
+                <Schalter Bezeichnung="@LabelEinspeisehoehe" Wert="@_hoeheAktiv"
+                          WertChanged="EinspeisehoeheUmschalten" />
+                @if (_hoeheAktiv)
+                {
+                    <Zahlenfeld Bezeichnung="@LabelEinspeisehoehe" Feldname="@LabelEinspeisehoehe"
+                                Wert="@_hoehe"
+                                WertChanged="w => { _hoehe = w; ZeileZurueckschreiben(); }" />
+                    <Herleitungszeile Text="@TipEinspeisehoehe" />
+                }
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    <Herleitungszeile Text="@HinweisPuffer" />
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+
+    @* --- Rückfrage „jetzt einen Pufferspeicher anlegen?" -------------------- *@
+    <Rueckfrage Offen="@_frageOffen" Frage="@_fragetext" TitelText="@TitelPufferFehlt"
+                Beantwortet="FrageBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+
+    @* --- Die Pufferverwaltung als ÜBERLAGERUNG ------------------------------ *@
+    @if (VerwaltungGaben is not null && _verwaltungGaben is not null)
+    {
+        <Ueberlagerung Offen="@_verwaltungOffen" Titel="@VerwaltungTitel"
+                       Geschlossen="() => _verwaltungOffen = false">
+            <KindInhalt>
+                <PufferSpProjektDialog @attributes="_verwaltungGaben"
+                                       Geschlossen="VerwaltungGeschlossen" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+</div>
+
+@code {
+    // --- Was hereinkommt --------------------------------------------------------
+
+    /// <summary>Der Satz Übergabefelder (Vermessung §6 b).</summary>
+    [Parameter] public WaermesenkeDaten Daten { get; set; } = new();
+
+    /// <summary>Die Datenseite — ohne sie zeigt der Dialog nur eine leere Liste.</summary>
+    [Parameter] public WaermesenkeDienste? Dienste { get; set; }
+
+    /// <summary>
+    /// Die sechs Ziele in KONZEPTREIHENFOLGE: Heizkreis, Prozesswärme, dann die vier
+    /// Ladeziele (<c>ZielListeFuellen</c>:797-831). Die Steuerwerte kommen von der
+    /// Hülle — die Komponente kennt <c>DbWerte</c> nicht.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string> Ziele { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die Anzeigetexte zu <see cref="Ziele"/>.</summary>
+    [Parameter] public IReadOnlyList<string> Zieltexte { get; set; } = Array.Empty<string>();
+
+    /// <summary>Welche der <see cref="Ziele"/> Ladeziele sind (der Rest ist Direktsenke).</summary>
+    [Parameter] public IReadOnlyList<string> Pufferziele { get; set; } = Array.Empty<string>();
+
+    /// <summary>Der Steuerwert des Heizkreises — nur dort wirkt die Bedarfsart.</summary>
+    [Parameter] public string ZielHeizkreis { get; set; } = "Heizkreis";
+
+    /// <summary>Der Steuerwert des Heizungspuffers — die Vorbelegung von „Hinzufügen".</summary>
+    [Parameter] public string ZielPufferHeizung { get; set; } = "PufferHeizung";
+
+    /// <summary>Die drei Bedarfsarten (Steuerwerte) und ihre Texte.</summary>
+    [Parameter] public IReadOnlyList<string> Bedarfsarten { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die Anzeigetexte zu <see cref="Bedarfsarten"/>.</summary>
+    [Parameter] public IReadOnlyList<string> Bedarfsarttexte { get; set; } = Array.Empty<string>();
+
+    /// <summary>Kleinste wählbare Ladepriorität.</summary>
+    [Parameter] public int PrioMin { get; set; } = 1;
+
+    /// <summary>Größte wählbare Ladepriorität.</summary>
+    [Parameter] public int PrioMax { get; set; } = 9;
+
+    /// <summary>
+    /// Der Parametersatz der Pufferverwaltung, je gewünschter Verwendung. Ohne ihn
+    /// fehlt der Knopf „Pufferspeicher anlegen…" — Hausregel.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
+
+    /// <summary>Die Verwendung, die der Absprung je Ziel mitgibt (<c>:1799-1804</c>).</summary>
+    [Parameter] public Func<string, string>? VerwendungZuZiel { get; set; }
+
+    /// <summary>Das Ergebnis; <c>null</c> bei Abbruch oder Esc (dann wurde nichts geschrieben).</summary>
+    [Parameter] public EventCallback<WaermesenkeErgebnis?> Geschlossen { get; set; }
+
+    // --- Texte ------------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Wärmesenken";
+    [Parameter] public string TitelMitAnlage { get; set; } = "Wärmesenken — {0}";
+    [Parameter] public string GruppeSenkenliste { get; set; } = "Senkenliste";
+    [Parameter] public string GruppeSenkenzeile { get; set; } = "Gewählte Senke";
+    [Parameter] public string GruppeVerbund { get; set; } = "Parallelverbund";
+    [Parameter] public string GruppeLadeverhalten { get; set; } = "Ladeverhalten";
+    [Parameter] public string SpalteRang { get; set; } = "Rang";
+    [Parameter] public string SpalteZiel { get; set; } = "Ziel";
+    [Parameter] public string SpalteSpeicher { get; set; } = "Speicher";
+    [Parameter] public string SpalteBedarfsart { get; set; } = "Bedarfsart";
+    [Parameter] public string SpalteLaden { get; set; } = "Laden";
+    [Parameter] public string SpalteEinspeisehoehe { get; set; } = "Höhe";
+    [Parameter] public string BtnHinzu { get; set; } = "Senke hinzufügen";
+    [Parameter] public string BtnEntfernen { get; set; } = "Entfernen";
+    [Parameter] public string BtnRauf { get; set; } = "▲ nach oben";
+    [Parameter] public string BtnRunter { get; set; } = "▼ nach unten";
+    [Parameter] public string BtnPufferAnlegen { get; set; } = "Pufferspeicher anlegen…";
+    [Parameter] public string VerwaltungTitel { get; set; } = "Pufferspeicher im Projekt";
+    [Parameter] public string LabelZiel { get; set; } = "Ziel:";
+    [Parameter] public string LabelSpeicher { get; set; } = "Speicher:";
+    [Parameter] public string LabelBedarfsart { get; set; } = "Bedarfsart:";
+    [Parameter] public string LabelLadeprio { get; set; } = "Ladepriorität:";
+    [Parameter] public string LabelLadeprioPv { get; set; } = "PV-Sonderpriorität:";
+    [Parameter] public string LabelLadegrenze { get; set; } = "Eigene Ladeobergrenze";
+    [Parameter] public string LabelEinspeisehoehe { get; set; } = "Eigene Einspeisehöhe";
+    /// <summary>
+    /// Der Eintrag 0 der Ladeprioritäten. Er nennt die Vorgabe und den Erzeugernamen
+    /// (<c>SIM_PRIO_VORGABE</c>) — die Hülle setzt beides ein.
+    /// </summary>
+    [Parameter] public string PrioNachVorgabe { get; set; } = "nach Vorgabe";
+
+    /// <summary>Derselbe Eintrag in der PV-Liste: dort heißt 0 „unverändert".</summary>
+    [Parameter] public string PrioPvUnveraendert { get; set; } = "unverändert";
+    [Parameter] public string HinweisBedarf { get; set; } = "";
+    [Parameter] public string HinweisPuffer { get; set; } = "";
+    [Parameter] public string TipEinspeisehoehe { get; set; } = "";
+    [Parameter] public string VerbundSumme { get; set; }
+        = "Verbund: {0} Speicher · Q_max gesamt {1} kWh";
+    [Parameter] public string VerbundKeinVerbund { get; set; } = "Kein Verbund gewählt.";
+    [Parameter] public string PositionLaedtAls { get; set; } = "Lädt als {0}. von {1}";
+    [Parameter] public string Leer { get; set; } = "–";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Erklärt, warum das Speicher-Dropdown ALLE Puffer zeigt (Befund W10‑B26).</summary>
+    [Parameter] public string HerleitungSpeicherliste { get; set; }
+        = "Zur Wahl stehen alle Pufferspeicher des Projekts. Führt das Klassen-Set eines " +
+          "Speichers den Kanal dieses Ziels nicht, wird die Zuordnung gespeichert und als " +
+          "unplausibel gemeldet.";
+
+    /// <summary>Erklärt, warum die Verbundliste kürzer ist.</summary>
+    [Parameter] public string HerleitungVerbundliste { get; set; }
+        = "Für den Verbund kommen nur Speicher derselben Verwendung in Frage — er rechnet " +
+          "als EIN Wärmevorrat.";
+
+    // Die sieben Regeln aus ListePruefen:1945-2000, wörtlich.
+    [Parameter] public string MsgLetzteZeile { get; set; }
+        = "Jede Anlage braucht mindestens eine Wärmesenke. Die letzte Zeile lässt sich " +
+          "deshalb nicht entfernen.";
+    [Parameter] public string MsgLadegrenzeZahl { get; set; }
+        = "Die Ladeobergrenze der {0} muss eine Zahl sein.";
+    [Parameter] public string MsgLadegrenzeBereich { get; set; }
+        = "Die Ladeobergrenze der {0} muss zwischen 0 und 100 % liegen.";
+    [Parameter] public string MsgEinspeisehoeheZahl { get; set; }
+        = "Die Einspeisehöhe der {0} muss eine Zahl sein.";
+    [Parameter] public string MsgEinspeisehoeheBereich { get; set; }
+        = "Die Einspeisehöhe der {0} muss zwischen 0 und 1 liegen.";
+    [Parameter] public string MsgPufferFehlt { get; set; }
+        = "Rang {0}: Für das Ziel „{1}“ ist kein Pufferspeicher gewählt.";
+    [Parameter] public string MsgDoppelt { get; set; }
+        = "Der Pufferspeicher „{0}“ steht mehr als einmal in der Senkenliste. Jeder " +
+          "Speicher darf nur einmal Ziel dieser Anlage sein.";
+    [Parameter] public string RolleRang { get; set; } = "Senke auf Rang {0}";
+    [Parameter] public string MsgPufferAnlegenFrage { get; set; }
+        = "{0}\n\nJetzt einen Pufferspeicher im Projekt anlegen?";
+    [Parameter] public string TitelPufferFehlt { get; set; } = "Pufferspeicher fehlt";
+    [Parameter] public string WarnKopf { get; set; }
+        = "Die Zuordnung ist zulässig und wird gespeichert, gilt aber als unplausibel:";
+
+    /// <summary>Schlüssel des Hilfeknopfes.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Waermesenke.btn_Help";
+
+    // --- Stand ------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private readonly List<SenkenzeileDaten> _zeilen = new();
+    private int _index;
+    private IReadOnlyList<int> _verbund = Array.Empty<int>();
+
+    private int? _zielIndex;
+    private int? _bedarfsartIndex;
+    private bool _ladegrenzeAktiv;
+    private double? _ladegrenze;
+    private bool _hoeheAktiv;
+    private double? _hoehe;
+
+    private string _position = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    private bool _frageOffen;
+    private string _fragetext = "";
+    private bool _verwaltungOffen;
+    private IReadOnlyDictionary<string, object>? _verwaltungGaben;
+
+    // --- Prüfhilfen für die Tests -----------------------------------------------
+
+    /// <summary>Die Senkenliste in Rangfolge.</summary>
+    public IReadOnlyList<SenkenzeileDaten> Zeilen => _zeilen;
+
+    /// <summary>Der gewählte Rang (0-basiert).</summary>
+    public int Index => _index;
+
+    /// <summary>Die gehakten Verbundmitglieder.</summary>
+    public IReadOnlyList<int> Verbund => _verbund;
+
+    /// <summary>Die stehende Meldung.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht die Rückfrage „Pufferspeicher anlegen?"</summary>
+    public bool FrageSteht => _frageOffen;
+
+    /// <summary>Steht die Pufferverwaltung?</summary>
+    public bool VerwaltungOffen => _verwaltungOffen;
+
+    /// <summary>Die Zeile, die gerade bearbeitet wird.</summary>
+    public SenkenzeileDaten? Aktuell
+        => (_index >= 0 && _index < _zeilen.Count) ? _zeilen[_index] : null;
+
+    /// <summary>Die Positionszeile „lädt als n. von m".</summary>
+    public string Position => _position;
+
+    // --- Listen und Texte -------------------------------------------------------
+
+    public string Titel => string.IsNullOrEmpty(Daten.AnlagenName)
+        ? TitelText : string.Format(TitelMitAnlage, Daten.AnlagenName);
+
+    private IReadOnlyList<string> Listenspalten => new[]
+    {
+        "", SpalteRang, SpalteZiel, SpalteSpeicher, SpalteBedarfsart,
+        SpalteLaden, SpalteEinspeisehoehe
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Zieleintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < Ziele.Count; i++)
+                l.Add((i, i < Zieltexte.Count ? Zieltexte[i] : Ziele[i]));
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Bedarfsarteintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < Bedarfsarten.Count; i++)
+                l.Add((i, i < Bedarfsarttexte.Count ? Bedarfsarttexte[i] : Bedarfsarten[i]));
+            return l;
+        }
+    }
+
+    /// <summary>
+    /// Das Speicher-Dropdown mit GRUPPENKÖPFEN je Klassen-Set — aber nur, wenn mehr
+    /// als EIN Set vorkommt (<c>MaskenAnzahl</c>:1565-1576). Der Kopf ist ein
+    /// gesperrter Eintrag; die Optionsliste kennt keine Gruppen.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Speichereintraege
+    {
+        get
+        {
+            IReadOnlyList<SenkenPuffer> liste = Dienste?.Puffer() ?? Array.Empty<SenkenPuffer>();
+            var l = new List<(int, string)>();
+
+            var masken = new List<int>();
+            foreach (SenkenPuffer p in liste) if (!masken.Contains(p.Maske)) masken.Add(p.Maske);
+            bool mitKoepfen = masken.Count > 1;
+
+            int letzte = -1;
+            foreach (SenkenPuffer p in liste)
+            {
+                if (mitKoepfen && p.Maske != letzte)
+                {
+                    // Der Kopf traegt eine negative Id - er ist nie eine gueltige Wahl.
+                    l.Add((-1 - l.Count, "— " + p.SetAnzeige + " —"));
+                    letzte = p.Maske;
+                }
+                l.Add((p.Id, p.Anzeige));
+            }
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Verbundeintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            foreach (SenkenPuffer p in Verbundkandidaten) l.Add((p.Id, p.Anzeige));
+            return l;
+        }
+    }
+
+    /// <summary>
+    /// Die Kandidaten des Verbunds: die GEFILTERTE Liste zum Ziel auf Rang 1, ohne den
+    /// Leitspeicher selbst und ohne jeden Puffer, der ab Rang 2 schon Ziel ist
+    /// (<c>VerbundListeFuellen</c>:1303-1325).
+    /// </summary>
+    private IReadOnlyList<SenkenPuffer> Verbundkandidaten
+    {
+        get
+        {
+            if (Dienste is null || _zeilen.Count == 0) return Array.Empty<SenkenPuffer>();
+
+            int idLeit = Leitspeicher;
+            var l = new List<SenkenPuffer>();
+            foreach (SenkenPuffer p in Dienste.VerbundKandidaten(_zeilen[0].Ziel))
+            {
+                if (p.Id == idLeit) continue;
+                if (AndereSenkeBelegt(p.Id)) continue;
+                l.Add(p);
+            }
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Prioritaeten => Prioliste(PrioNachVorgabe);
+
+    /// <summary>
+    /// Die PV-Liste hat denselben Zahlenbereich, aber einen anderen Eintrag 0:
+    /// „unverändert" statt „nach Vorgabe" (<c>PrioListeFuellen</c>:1590-1608).
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> PrioritaetenPv => Prioliste(PrioPvUnveraendert);
+
+    private IReadOnlyList<(int Id, string Text)> Prioliste(string nullText)
+    {
+        var l = new List<(int, string)> { (0, nullText) };
+        for (int p = PrioMin; p <= PrioMax; p++)
+            l.Add((p, p.ToString(System.Globalization.CultureInfo.CurrentCulture)));
+        return l;
+    }
+
+    /// <summary>
+    /// Der Parallelverbund hängt konstruktiv an RANG 1 (Befund W10‑B25) und braucht
+    /// dort ein Ladeziel mit gewähltem Speicher.
+    /// </summary>
+    public bool VerbundMoeglich
+        => _zeilen.Count > 0 && IstPuffer(_zeilen[0].Ziel) && _zeilen[0].IdPuffer > 0;
+
+    /// <summary>Leitspeicher des Verbunds — der Puffer auf Rang 1.</summary>
+    private int Leitspeicher
+        => (_zeilen.Count > 0 && IstPuffer(_zeilen[0].Ziel)) ? _zeilen[0].IdPuffer : 0;
+
+    /// <summary>Die Summenzeile des Verbunds (<c>VerbundSummeAnzeigen</c>:1391-1405).</summary>
+    public string Verbundsumme
+    {
+        get
+        {
+            int idLeit = Leitspeicher;
+            if (idLeit <= 0 || _verbund.Count == 0) return idLeit > 0 ? VerbundKeinVerbund : "";
+
+            double q = Dienste?.VerbundKapazitaet(idLeit, _verbund) ?? 0;
+            return string.Format(VerbundSumme, _verbund.Count + 1,
+                q.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture));
+        }
+    }
+
+    private bool IstPuffer(string ziel) => Pufferziele.Contains(ziel);
+
+    private bool IstHeizkreis(string ziel)
+        => string.Equals(ziel, ZielHeizkreis, StringComparison.Ordinal);
+
+    private string Zielname(string ziel)
+    {
+        for (int i = 0; i < Ziele.Count; i++)
+            if (string.Equals(Ziele[i], ziel, StringComparison.Ordinal))
+                return i < Zieltexte.Count ? Zieltexte[i] : ziel;
+        return ziel;
+    }
+
+    private string Speichername(SenkenzeileDaten z)
+    {
+        if (!IstPuffer(z.Ziel) || z.IdPuffer <= 0) return Leer;
+        foreach (SenkenPuffer p in Dienste?.Puffer() ?? Array.Empty<SenkenPuffer>())
+            if (p.Id == z.IdPuffer) return p.Anzeige;
+        return Leer;
+    }
+
+    private string Bedarfsartname(SenkenzeileDaten z)
+    {
+        if (!IstHeizkreis(z.Ziel)) return Leer;
+        for (int i = 0; i < Bedarfsarten.Count; i++)
+            if (string.Equals(Bedarfsarten[i], z.Bedarfsart, StringComparison.Ordinal))
+                return i < Bedarfsarttexte.Count ? Bedarfsarttexte[i] : z.Bedarfsart;
+        return Bedarfsarttexte.Count > 0 ? Bedarfsarttexte[0] : Leer;
+    }
+
+    /// <summary>
+    /// Spalte „Laden": Ladepriorität und Obergrenze in Kurzform
+    /// (<c>LadespalteText</c>:999-1007). Ohne Ladeziel und ohne eigene Werte steht dort
+    /// der Gedankenstrich — „nach Vorgabe" ist die Regel, nicht die Ausnahme.
+    /// </summary>
+    private string Ladespalte(SenkenzeileDaten z)
+    {
+        if (!IstPuffer(z.Ziel)) return Leer;
+
+        var ci = System.Globalization.CultureInfo.CurrentCulture;
+        string s = z.Ladeprio > 0 ? z.Ladeprio.ToString(ci) : Leer;
+        if (z.Ladegrenze is > 0) s += " · " + z.Ladegrenze.Value.ToString("0.#", ci) + " %";
+        return s;
+    }
+
+    /// <summary>
+    /// Spalte „Höhe" (<c>HoehenspalteText</c>:978-984): „nicht gesetzt" ist der
+    /// Regelfall und heißt „oben"; dort eine 1 hinzuschreiben behauptete eine Pflege,
+    /// die es nicht gibt.
+    /// </summary>
+    private string Hoehenspalte(SenkenzeileDaten z)
+    {
+        if (!IstPuffer(z.Ziel) || z.Anschlusshoehe is null) return Leer;
+        double h = z.Anschlusshoehe.Value;
+        if (h < 0 || h > 1) return Leer;
+        return h.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
+    }
+
+    // --- Aufbau -----------------------------------------------------------------
+
+    protected override void OnInitialized()
+    {
+        // ZeilenLaden:887-901 - leer heisst die Rang-1-Invariante: eine Heizkreis-Zeile.
+        _zeilen.Clear();
+        foreach (SenkenzeileDaten z in Dienste?.Zeilen() ?? Array.Empty<SenkenzeileDaten>())
+            _zeilen.Add(z);
+        if (_zeilen.Count == 0) _zeilen.Add(NeueZeile(ZielHeizkreis));
+
+        _verbund = Daten.VerbundMitglieder ?? Array.Empty<int>();
+        ZeileWaehlen(0);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private SenkenzeileDaten NeueZeile(string ziel) => new()
+    {
+        Ziel = string.IsNullOrEmpty(ziel) ? ZielHeizkreis : ziel,
+        Bedarfsart = Bedarfsarten.Count > 0 ? Bedarfsarten[0] : ""
+    };
+
+    /// <summary>Überträgt eine Modellzeile in die Bedienelemente (<c>ZeileInOberflaeche</c>).</summary>
+    private void ZeileWaehlen(int index)
+    {
+        _index = index;
+        SenkenzeileDaten? z = Aktuell;
+        if (z is null) return;
+
+        _zielIndex = 0;
+        for (int i = 0; i < Ziele.Count; i++)
+            if (string.Equals(Ziele[i], z.Ziel, StringComparison.Ordinal)) { _zielIndex = i; break; }
+
+        _bedarfsartIndex = 0;
+        for (int i = 0; i < Bedarfsarten.Count; i++)
+            if (string.Equals(Bedarfsarten[i], z.Bedarfsart, StringComparison.Ordinal))
+            { _bedarfsartIndex = i; break; }
+
+        _ladegrenzeAktiv = z.Ladegrenze is not null;
+        _ladegrenze = z.Ladegrenze;
+
+        // 0 ist eine GUELTIGE Einspeisehoehe ("ganz unten") - deshalb null als "nicht
+        // gesetzt" und nicht der Wert 0 (ZeileInOberflaeche:1063).
+        _hoeheAktiv = z.Anschlusshoehe is not null;
+        _hoehe = z.Anschlusshoehe;
+
+        PositionAktualisieren();
+    }
+
+    private void PositionAktualisieren()
+    {
+        SenkenzeileDaten? z = Aktuell;
+        _position = (z is null || Dienste is null || !IstPuffer(z.Ziel) || z.IdPuffer <= 0)
+            ? ""
+            : Dienste.Position(z, _index > 0);
+    }
+
+    /// <summary>
+    /// Schreibt die Bedienelemente in die gewählte Zeile zurück. FELDER, DIE NICHT ZUM
+    /// ZIEL PASSEN, WERDEN GELÖSCHT (<c>ZeileAusOberflaeche</c>:1082-1107).
+    /// </summary>
+    private void ZeileZurueckschreiben()
+    {
+        if (_index < 0 || _index >= _zeilen.Count) return;
+
+        SenkenzeileDaten alt = _zeilen[_index];
+        string ziel = (_zielIndex is int zi && zi >= 0 && zi < Ziele.Count) ? Ziele[zi] : alt.Ziel;
+        bool puffer = IstPuffer(ziel);
+
+        _zeilen[_index] = alt with
+        {
+            Ziel = ziel,
+            IdPuffer = puffer ? alt.IdPuffer : 0,
+            Ladeprio = puffer ? alt.Ladeprio : 0,
+            Ladegrenze = puffer && _ladegrenzeAktiv ? _ladegrenze : null,
+            // Die PV-Sonderprioritaet gibt es nur auf Rang 1 (Konzept 5.1).
+            LadeprioPv = (puffer && _index == 0 && Daten.PvModus) ? alt.LadeprioPv : 0,
+            Anschlusshoehe = puffer && _hoeheAktiv ? _hoehe : null,
+            Bedarfsart = IstHeizkreis(ziel)
+                ? ((_bedarfsartIndex is int bi && bi >= 0 && bi < Bedarfsarten.Count)
+                    ? Bedarfsarten[bi] : alt.Bedarfsart)
+                : (Bedarfsarten.Count > 0 ? Bedarfsarten[0] : alt.Bedarfsart)
+        };
+
+        VerbundAufraeumen();
+        PositionAktualisieren();
+    }
+
+    private void ZielWaehlen(int? index)
+    {
+        _zielIndex = index;
+        ZeileZurueckschreiben();
+    }
+
+    private void SpeicherWaehlen(int? id)
+    {
+        // Ein GRUPPENKOPF (negative Id) ist nie eine gueltige Wahl - er wird ueberlesen
+        // (Puffer_Ausgewaehlt:1589-1610).
+        if (id is null || id.Value <= 0) return;
+        if (_index < 0 || _index >= _zeilen.Count) return;
+
+        _zeilen[_index] = _zeilen[_index] with { IdPuffer = id.Value };
+        VerbundAufraeumen();
+        PositionAktualisieren();
+    }
+
+    private void BedarfsartWaehlen(int? index)
+    {
+        _bedarfsartIndex = index;
+        ZeileZurueckschreiben();
+    }
+
+    private void LadeprioWaehlen(int? prio)
+    {
+        if (_index < 0 || _index >= _zeilen.Count) return;
+        _zeilen[_index] = _zeilen[_index] with { Ladeprio = prio ?? 0 };
+        PositionAktualisieren();
+    }
+
+    private void LadeprioPvWaehlen(int? prio)
+    {
+        if (_index < 0 || _index >= _zeilen.Count) return;
+        _zeilen[_index] = _zeilen[_index] with { LadeprioPv = prio ?? 0 };
+        PositionAktualisieren();
+    }
+
+    private void LadegrenzeUmschalten(bool an)
+    {
+        _ladegrenzeAktiv = an;
+        // Vorbelegung "70" beim Einschalten (BaueOberflaeche:620).
+        if (an && _ladegrenze is null) _ladegrenze = 70;
+        ZeileZurueckschreiben();
+    }
+
+    private void EinspeisehoeheUmschalten(bool an)
+    {
+        _hoeheAktiv = an;
+        // Vorbelegung "1" beim Einschalten (BaueOberflaeche:664).
+        if (an && _hoehe is null) _hoehe = 1;
+        ZeileZurueckschreiben();
+    }
+
+    // --- Liste bearbeiten -------------------------------------------------------
+
+    /// <summary>
+    /// <c>btnHinzu_Click</c>:1186-1203 — Vorbelegung „Rest in den Heizungspuffer": der
+    /// erste FREIE Heizungspuffer, sonst der Heizkreis. So erzeugt „Hinzufügen" keine
+    /// Zeile, die die Doppelbelegungsprüfung sofort wieder abweist.
+    /// </summary>
+    private void Hinzufuegen()
+    {
+        int frei = ErsterFreierPuffer();
+        _zeilen.Add(frei > 0
+            ? NeueZeile(ZielPufferHeizung) with { IdPuffer = frei }
+            : NeueZeile(ZielHeizkreis));
+
+        ZeileWaehlen(_zeilen.Count - 1);
+        VerbundAufraeumen();
+    }
+
+    private int ErsterFreierPuffer()
+    {
+        if (Dienste is null) return 0;
+
+        foreach (SenkenPuffer p in Dienste.VerbundKandidaten(ZielPufferHeizung))
+        {
+            bool belegt = false;
+            foreach (SenkenzeileDaten z in _zeilen) if (z.IdPuffer == p.Id) { belegt = true; break; }
+            if (!belegt) return p.Id;
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// Die INVARIANTE „Rang 1 ist Pflicht" (Konzept 5.1): Findet die Engine keine Zeile,
+    /// rechnet sie Heizkreis/Beides mit Protokollwarnung — eine Anlage ohne jede Senke
+    /// ist also keine gültige Einstellung, sondern eine, die stillschweigend ersetzt
+    /// würde.
+    /// </summary>
+    private void EntfernenStarten()
+    {
+        if (_index < 0) return;
+
+        if (_zeilen.Count <= 1) { Melden(MsgLetzteZeile, WarnStufe.Hinweis); return; }
+
+        _zeilen.RemoveAt(_index);
+        ZeileWaehlen(Math.Min(_index, _zeilen.Count - 1));
+        VerbundAufraeumen();
+    }
+
+    /// <summary>
+    /// <c>Tauschen</c>:1258-1276 — nach dem Tausch verliert JEDER Rang über 1 seine
+    /// PV-Sonderpriorität: Sie wandert nicht mit.
+    /// </summary>
+    private void Tauschen(int richtung)
+    {
+        int ziel = _index + richtung;
+        if (_index < 0 || ziel < 0 || ziel >= _zeilen.Count) return;
+
+        (_zeilen[_index], _zeilen[ziel]) = (_zeilen[ziel], _zeilen[_index]);
+
+        for (int i = 1; i < _zeilen.Count; i++)
+            if (_zeilen[i].LadeprioPv != 0) _zeilen[i] = _zeilen[i] with { LadeprioPv = 0 };
+
+        ZeileWaehlen(ziel);
+        VerbundAufraeumen();
+    }
+
+    /// <summary>true, wenn der Puffer Ziel einer Senke ab Rang 2 ist.</summary>
+    private bool AndereSenkeBelegt(int idPuffer)
+    {
+        if (idPuffer <= 0) return false;
+        for (int i = 1; i < _zeilen.Count; i++) if (_zeilen[i].IdPuffer == idPuffer) return true;
+        return false;
+    }
+
+    private void VerbundSetzen(IReadOnlyList<int> mitglieder) => _verbund = mitglieder;
+
+    /// <summary>
+    /// Nach jedem Struktur- oder Zielwechsel: Haken, die keine Kandidaten mehr sind,
+    /// fallen weg — die Liste zog eine vorherige Auswahl im Vorläufer ebenso nach
+    /// (<c>VerbundListeFuellen</c>:1265-1284).
+    /// </summary>
+    private void VerbundAufraeumen()
+    {
+        var kandidaten = new List<int>();
+        foreach (SenkenPuffer p in Verbundkandidaten) kandidaten.Add(p.Id);
+
+        var neu = new List<int>();
+        foreach (int id in _verbund) if (kandidaten.Contains(id)) neu.Add(id);
+        _verbund = neu;
+    }
+
+    // --- Pufferverwaltung -------------------------------------------------------
+
+    private void VerwaltungOeffnen()
+    {
+        if (VerwaltungGaben is null) return;
+
+        // Vorbelegung der Verwendung passend zur gerade gewaehlten Senke
+        // (btnPufferAnlegen_Click:1799-1804).
+        string ziel = Aktuell?.Ziel ?? ZielPufferHeizung;
+        string verwendung = VerwendungZuZiel?.Invoke(ziel) ?? "";
+
+        _verwaltungGaben = VerwaltungGaben(verwendung);
+        _verwaltungOffen = true;
+    }
+
+    /// <summary>
+    /// Die Verwaltung schreibt SOFORT — die Listen werden deshalb unabhängig davon neu
+    /// gelesen, wie sie verlassen wurde; ein neu angelegter Puffer wird gewählt.
+    /// </summary>
+    private void VerwaltungGeschlossen(int neuerPuffer)
+    {
+        _verwaltungOffen = false;
+
+        if (neuerPuffer > 0 && _index >= 0 && _index < _zeilen.Count &&
+            IstPuffer(_zeilen[_index].Ziel))
+        {
+            _zeilen[_index] = _zeilen[_index] with { IdPuffer = neuerPuffer };
+        }
+
+        VerbundAufraeumen();
+        PositionAktualisieren();
+    }
+
+    // --- Prüfung und Speichern --------------------------------------------------
+
+    /// <summary>
+    /// <c>ListePruefen</c>:1945-2000 — die sieben Regeln, in derselben Reihenfolge und
+    /// mit demselben Wortlaut. <c>null</c> = in Ordnung.
+    /// </summary>
+    public string? ListePruefen()
+    {
+        if (_zeilen.Count == 0) return MsgLetzteZeile;
+
+        var gesehen = new List<int>();
+
+        for (int i = 0; i < _zeilen.Count; i++)
+        {
+            SenkenzeileDaten z = _zeilen[i];
+            string rolle = string.Format(RolleRang, i + 1);
+
+            // ABWEICHUNG A-9: Der Fehler steht im FORMULARZUSTAND, nicht als -1/-2 im
+            // Modell. Gemeldet wird er hier, mit demselben Wortlaut wie im Vorlaeufer.
+            if (i == _index && _ladegrenzeAktiv)
+            {
+                if (_ladegrenze is null) return string.Format(MsgLadegrenzeZahl, rolle);
+                if (_ladegrenze.Value <= 0 || _ladegrenze.Value > 100)
+                    return string.Format(MsgLadegrenzeBereich, rolle);
+            }
+
+            if (i == _index && _hoeheAktiv)
+            {
+                if (_hoehe is null) return string.Format(MsgEinspeisehoeheZahl, rolle);
+                if (_hoehe.Value < 0 || _hoehe.Value > 1)
+                    return string.Format(MsgEinspeisehoeheBereich, rolle);
+            }
+
+            if (!IstPuffer(z.Ziel)) continue;
+
+            if (z.IdPuffer <= 0)
+                return string.Format(MsgPufferFehlt, i + 1,
+                                     Dienste?.ZielAnzeige(z.Ziel) ?? Zielname(z.Ziel));
+
+            // Ein Behaelter kann nicht zweimal Ziel derselben Anlage sein - er hat EINEN
+            // Fuellstand, und zwei Ladeauftraege darauf verplanten denselben Raum doppelt.
+            if (gesehen.Contains(z.IdPuffer))
+                return string.Format(MsgDoppelt, Dienste?.PufferName(z.IdPuffer) ?? "");
+            gesehen.Add(z.IdPuffer);
+        }
+
+        return Dienste?.HarterBefund(_zeilen);
+    }
+
+    /// <summary>
+    /// <c>btnOk_Click</c>:1843-1917 — prüfen, dann die Bestandsprüfung, dann SCHREIBEN,
+    /// dann die weichen Befunde in EINEM Banner.
+    /// </summary>
+    private Task BeiErgebnis(bool ok)
+    {
+        if (!ok) return Geschlossen.InvokeAsync(null);
+        if (Dienste is null) return Task.CompletedTask;
+
+        string? fehler = ListePruefen();
+        if (fehler is not null) return Meldet(fehler);
+
+        SenkenPruefung erg = Dienste.Pruefen(_zeilen, _verbund);
+        if (!erg.Ok)
+        {
+            if (erg.AbsprungPufferVerwaltung && VerwaltungGaben is not null)
+            {
+                _fragetext = string.Format(MsgPufferAnlegenFrage, erg.Fehler);
+                _frageOffen = true;
+                return Task.CompletedTask;
+            }
+
+            return Meldet(erg.Fehler);
+        }
+
+        // ERST JETZT schreiben.
+        bool geschrieben = Dienste.Schreiben(_zeilen, _verbund);
+
+        // Nach dem Speichern: der Hinweis der Pruefung und die WEICHEN Befunde in EINEM
+        // Banner - sie blockieren nicht, sie begruenden nur.
+        var hinweise = new List<string>();
+        if (!string.IsNullOrEmpty(erg.Warnung)) hinweise.Add(erg.Warnung);
+
+        IReadOnlyList<string> weiche = Dienste.WeicheBefunde(_zeilen);
+        if (weiche.Count > 0) hinweise.Add(WarnKopf + "\n  • " + string.Join("\n  • ", weiche));
+
+        if (hinweise.Count > 0)
+            Melden(string.Join("\n\n", hinweise),
+                   weiche.Count > 0 ? WarnStufe.Warnung : WarnStufe.Hinweis);
+        else
+            _meldung = "";
+
+        return Geschlossen.InvokeAsync(
+            new WaermesenkeErgebnis(geschrieben, new List<SenkenzeileDaten>(_zeilen),
+                                    new List<int>(_verbund)));
+    }
+
+    private void FrageBeantwortet(bool? ja)
+    {
+        _frageOffen = false;
+        if (ja == true) VerwaltungOeffnen();
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private Task Meldet(string text)
+    {
+        Melden(text, WarnStufe.Warnung);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Esc: erst die Rückfrage, dann die Verwaltung, dann der Dialog.</summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_frageOffen) { _frageOffen = false; return Task.CompletedTask; }
+        if (_verwaltungOffen) { _verwaltungOffen = false; return Task.CompletedTask; }
+        return Geschlossen.InvokeAsync(null);
+    }
+}

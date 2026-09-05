@@ -5,11 +5,11 @@ using WindowsFormsApplication1;
 namespace EPOS.iOS;
 
 /// <summary>
-/// Die iOS-Fassung von <see cref="INavigation"/>: Sie reicht die
+/// Die iOS-Fassung von <see cref="WindowsFormsApplication1.INavigation"/>: Sie reicht die
 /// Maskenschluessel des Kerns an die gerade gezeichnete Blazor-Wurzel weiter.
 ///
 /// <para><b>Die Aufrufrichtung.</b> Der Kern kennt nur einen SCHLUESSEL
-/// (<c>Masken.*</c>, <c>Gewerke.*</c>) und ueberlaesst das Bauen der
+/// (<c>Masken.*</c>) und ueberlaesst das Bauen der
 /// Oberflaeche. Unter Windows beantwortet <c>WinFormsNavigation</c> das mit
 /// einem <c>ShowDialog</c>. Auf iOS gibt es kein zweites Fenster: Der
 /// Schluessel geht an <c>EPOS.UI.Dienste.Navigationsziel.Aktuell</c>, also an
@@ -19,23 +19,15 @@ namespace EPOS.iOS;
 /// und laesst sich deshalb ohne Mac uebersetzen und pruefen.</para>
 ///
 /// <para><b>Was iU10 kann und was nicht.</b> Bekannt sind die zwei
-/// umgestellten Dialoge und die Projektliste. <see cref="OeffneGewerk"/> und
-/// <see cref="AnsichtAktualisieren"/> schreiben eine Protokollzeile und tun
-/// sonst nichts: Die Gewerkslisten des Detailformulars gibt es auf iOS noch
-/// gar nicht. Ein unbekannter Schluessel liefert <c>false</c> - derselbe
+/// umgestellten Dialoge und die Projektliste. <see cref="AnsichtAktualisieren"/>
+/// schreibt eine Protokollzeile und tut sonst nichts. Ein unbekannter
+/// Schluessel liefert <c>false</c> - derselbe
 /// Ausgang wie <see cref="KeineNavigation"/>, und der Aufrufer wertet ihn wie
 /// „Abbrechen". Mit dem Assistenten (iU10-9, iL5) kommen die uebrigen
 /// Schluessel dazu.</para>
 /// </summary>
-public sealed class IosNavigation : INavigation
+public sealed class IosNavigation : WindowsFormsApplication1.INavigation   // voll qualifiziert: MAUI fuehrt Microsoft.Maui.Controls.INavigation als globales using (CS0104, dritter CI-Lauf 03.09.2026)
 {
-    /// <inheritdoc/>
-    public void OeffneGewerk(string gewerk, int idProjekt, string projektname)
-    {
-        Protokoll("Navigation: Gewerk '" + (gewerk ?? "") + "' fuer Projekt " + idProjekt +
-                  " - auf iOS noch ohne Ansicht (iU10-9).");
-    }
-
     /// <inheritdoc/>
     public bool OeffneMaske(string maske, params object[] argumente)
     {
@@ -73,10 +65,13 @@ public sealed class IosNavigation : INavigation
     {
         if (string.IsNullOrEmpty(maske)) return "";
 
-        // In iU10 gibt es genau eine Zuordnung: Das Detailformular des
-        // Projekts entspricht der Projektliste. Die uebrigen Masken haben auf
-        // iOS noch kein Gegenstueck.
-        if (maske == Masken.ProjektDetail || maske == Masken.ProjektAuswahl)
+        // In iU10 gibt es genau eine Zuordnung: Die Projektauswahl entspricht der
+        // Projektliste. Die uebrigen Masken haben auf iOS noch kein Gegenstueck.
+        //
+        // iU9-W16b.1 (E-7, K6-a): Masken.ProjektDetail stand hier daneben - das
+        // Detailformular des Projekts, das auf iOS ohnehin nie gebaut wurde. Es ist
+        // unter Windows geloescht, der Schluessel gibt es nicht mehr.
+        if (maske == Masken.ProjektAuswahl)
             return Seitenschluessel.Projektliste;
 
         return maske;

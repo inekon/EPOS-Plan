@@ -1,0 +1,495 @@
+﻿@* DAS MENUEBAND (iU9-W16c.1) — die Windows-Schale des Hauptfensters.
+
+   VORBILD. Hauptfensterrahmen.menuToolbar: ein MenuStrip mit 45 ToolStripMenuItem und
+   sechs ToolStripSeparator im Designer, dazu neun Punkte und zwei Trenner, die
+   die acht Init*-Methoden programmatisch einhaengten. Zusammen 54 Punkte in
+   drei Ebenen; mit dem Kopf "Sprache" des Anwenderentscheids W16c-E-2
+   (04.09.2026) sind es 55 in VIER Koepfen der obersten Ebene.
+
+   ES IST DIE SCHALE, NICHT DIE WURZEL (Entscheid E-1, Vermessung § 9.3). Die
+   Wurzel beider Plattformen ist AppWurzel; darueber steht je Plattform eine
+   Schale. Unter Windows ist das dieses Band, auf dem iPad nichts weiter — iL5
+   sagt ausdruecklich "kein MDI, keine modalen Ketten", und eine Menueleiste mit
+   55 Punkten ist auf Touch unbedienbar. Deshalb ist das Band ein Baustein und
+   kein Teil der Wurzel.
+
+   DIE TABELLE IST DATEN. Eintraege kommt aus Menuetabelle (erzeugt aus dem
+   Designer, Auflage R-W16-8). Das Band kennt weder eine Maske noch einen
+   Delegaten: Es meldet den Seitenschluessel des angeklickten Punktes ueber
+   Gewaehlt, und der Wirt entscheidet. Damit gibt es EINEN Handler statt der 34
+   Ereignishandler und neun Lambdas des Vorlaeufers.
+
+   JEDE EBENE FUEHRT IHREN EIGENEN OFFEN-ZUSTAND — und zwar als EIN PFAD
+   (_pfad). _pfad[0] ist der aufgeklappte Kopf, _pfad[1] der aufgeklappte Punkt
+   darin, _pfad[2] der der dritten Ebene. Daraus folgt beides, was ein Menue
+   ausmacht: Ein Punkt ist offen, wenn er auf SEINER Ebene im Pfad steht
+   (Offen(p, ebene)), und Geschwister schliessen einander aus, weil eine Ebene
+   nur EINEN Eintrag traegt. Bis zum Befund W16c-B13 stand die zweite Ebene in
+   einem flachen HashSet ueber NAMEN neben einem Feld _offen fuer die oberste —
+   zwei Geschwister konnten gleichzeitig offen sein.
+
+   DER ZEIGER _zeile IST DER TASTATURWEG. Er nennt den Punkt der TIEFSTEN
+   offenen Klappe, der den Fokus traegt; nur er steht dort im Tabulatorzyklus
+   (roving tabindex, dieselbe Regel wie im Baustein Reiter), und OnAfterRender
+   zieht den Fokus nach. Damit waehlt Enter/Leertaste ohne eigenen Handler —
+   es ist ein <button>, der den Fokus wirklich hat.
+
+   BEFUND W16c-B13 (Windows-Abnahme 05.09.2026): DAS BAND HAENGT NICHT AM FOKUS.
+   Bis dahin schloss @onfocusout am <nav> das Menue. focusout BLAST aber nach
+   oben, und es feuert AUCH, wenn der Fokus INNERHALB des Bandes wandert: Der
+   Zeigerdruck auf eine Untermenuezeile nimmt dem Kopfknopf den Fokus, focusout
+   steigt zum <nav> auf, Schliessen() raeumt die Klappe weg — und weil die
+   gedrueckte Zeile damit aus dem DOM ist, kommt beim Loslassen gar kein click
+   mehr an. Der Anwender sah ein Menue, das seine Eintraege zeigte und auf
+   keinen davon reagierte. FocusEventArgs kennt kein relatedTarget, ein sicheres
+   "ist der neue Fokus noch im Band?" gibt es also nicht — und auf dem iPad gibt
+   es ueberhaupt keinen Fokus, den eine Beruehrung setzte. Deshalb schliesst
+   jetzt eine SCHLIESSFLAECHE (ein durchsichtiger Deckel ueber der ganzen
+   Ansicht, unter dem Band), dazu Esc und der Tabulator. Das ist auf Maus,
+   Finger und Tastatur dasselbe Verhalten und braucht kein JavaScript.
+
+   BEDIENUNG.
+   - role="menubar" / "menuitem" / "menu"; ein aufklappbarer Punkt traegt
+     aria-haspopup und aria-expanded, ein Trenner role="separator".
+   - Tastatur: ← → wandern in der obersten Ebene, ↓ oeffnet das Untermenue,
+     ↑ ↓ wandern darin, → oeffnet ein Untermenue der naechsten Ebene, ←
+     schliesst es wieder, Esc schliesst alles, Enter/Leertaste waehlen.
+   - 44 px Mindesthoehe je Zeile (--epos-touchziel), auch wenn dieses Band
+     unter Windows mit der Maus bedient wird.
+
+   KEIN ANZEIGETEXT ALS SCHLUESSEL. InitKiHilfe suchte das Hilfemenue, indem es
+   den ANZEIGETEXT jedes Punktes mit "Hilfe" bzw. "Help" verglich (Befund
+   W16-B23, die einzige solche Stelle des Bestands). Hier ist der KI-Assistent
+   eine Zeile der Tabelle mit dem Ziel KI_ASSISTENT. *@
+
+@namespace EPOS.UI.Bausteine
+@implements IDisposable
+
+<nav class="epos-menueband" role="menubar" aria-label="@Bezeichnung"
+     @onkeydown="BeiTaste">
+    @foreach (Menuepunkt punkt in Eintraege)
+    {
+        Menuepunkt p = punkt;
+
+        @if (p.Trenner)
+        {
+            <span class="epos-menueband-trenner" role="separator"></span>
+        }
+        else if (p.Klappt)
+        {
+            <div class="@Punktklasse(p)">
+                <button type="button" role="menuitem" class="epos-menueband-knopf"
+                        id="@Kennung(p)"
+                        aria-haspopup="true"
+                        aria-expanded="@(Offen(p, 0) ? "true" : "false")"
+                        tabindex="@(Vorn(p) ? 0 : -1)"
+                        @onclick="@(() => Umschalten(p, 0))">
+                    @Bild(p)<span class="epos-menueband-text">@p.Text</span>
+                </button>
+
+                @if (Offen(p, 0))
+                {
+                    <div class="epos-menueband-klappe" role="menu"
+                         aria-labelledby="@Kennung(p)">
+                        @Untermenue(p, 1)
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            @* Ein Punkt der obersten Ebene, der unmittelbar handelt. Seit dem
+               Anwenderentscheid W16c-E-2 hat die Menuetabelle keinen solchen
+               mehr (die zwei Sprachpunkte sind unter den Kopf "Sprache"
+               gewandert); der Zweig bleibt, weil Eintraege ein Parameter ist. *@
+            <button type="button" role="menuitem" class="@Knopfklasse(p)"
+                    id="@Kennung(p)"
+                    tabindex="@(Vorn(p) ? 0 : -1)"
+                    @onclick="@(() => Waehlen(p))">
+                @Bild(p)<span class="epos-menueband-text">@p.Text</span>
+            </button>
+        }
+    }
+</nav>
+
+@if (_pfad.Count > 0)
+{
+    @* DIE SCHLIESSFLAECHE (Befund W16c-B13). Der durchsichtige Deckel ueber der
+       ganzen Ansicht faengt den Klick NEBEN das Menue — auf Maus wie auf dem
+       Finger, ohne Fokus und ohne JavaScript. Das Band selbst liegt darueber
+       (z-index im Stilblatt), ein Klick auf einen Menuepunkt erreicht ihn also
+       weiterhin. Es ist reine Mechanik: aria-hidden und kein Tabulatorhalt. *@
+    <div class="epos-menueband-schliessflaeche" aria-hidden="true"
+         @onclick="Schliessen"></div>
+}
+
+@code {
+    /// <summary>Die Punkte der obersten Ebene.</summary>
+    [Parameter] public IReadOnlyList<Menuepunkt> Eintraege { get; set; } = Array.Empty<Menuepunkt>();
+
+    /// <summary>Ein Punkt wurde gewaehlt; gemeldet wird sein <c>Ziel</c>.</summary>
+    [Parameter] public EventCallback<Menuepunkt> Gewaehlt { get; set; }
+
+    /// <summary>Beschriftung der Leiste fuer die Sprachausgabe.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "Hauptmenü";
+
+    /// <summary>
+    /// Der offene PFAD: <c>_pfad[0]</c> der aufgeklappte Kopf, <c>_pfad[1]</c>
+    /// der aufgeklappte Punkt darin, und so fort. Leer = alles zu. Eine Ebene
+    /// traegt genau EINEN Eintrag — daher schliessen Geschwister einander aus.
+    /// </summary>
+    private readonly List<Menuepunkt> _pfad = new();
+
+    /// <summary>Der Punkt der obersten Ebene, der im Tabulatorzyklus steht.</summary>
+    private Menuepunkt? _vorn;
+
+    /// <summary>Der Punkt der tiefsten offenen Klappe, der den Fokus traegt.</summary>
+    private Menuepunkt? _zeile;
+
+    /// <summary>
+    /// Die Stellen der gezeichneten Zeilen im DOM, ueber
+    /// <see cref="Menuepunkt.Name"/> — daraus holt <c>OnAfterRenderAsync</c> die
+    /// des Zeigers. Es sind ALLE Zeilen und nicht nur die eine: Ein
+    /// Verweisfang, den es mal gibt und mal nicht, ist eine Rahmenart, die
+    /// Blazor beim Abgleich nicht entfernen kann
+    /// ("Unexpected frame type during RemoveOldFrame").
+    /// </summary>
+    private readonly Dictionary<string, ElementReference> _stellen = new(StringComparer.Ordinal);
+
+    /// <summary>Nach dem naechsten Zeichnen den Fokus auf <see cref="_zeile"/> ziehen.</summary>
+    private bool _fokusNachziehen;
+
+    private IReadOnlyList<Menuepunkt> Bedienbar =>
+        Eintraege.Where(p => !p.Trenner).ToList();
+
+    /// <summary>Steht <paramref name="p"/> auf SEINER Ebene im offenen Pfad?</summary>
+    private bool Offen(Menuepunkt p, int ebene) =>
+        _pfad.Count > ebene && ReferenceEquals(_pfad[ebene], p);
+
+    /// <summary>Die bedienbaren Punkte der tiefsten offenen Klappe.</summary>
+    private IReadOnlyList<Menuepunkt> Klappenliste() =>
+        _pfad.Count == 0
+            ? Array.Empty<Menuepunkt>()
+            : _pfad[_pfad.Count - 1].Untereintraege.Where(p => !p.Trenner).ToList();
+
+    /// <summary>Kuerzt den Pfad auf <paramref name="ebene"/> Eintraege.</summary>
+    private void BisEbene(int ebene)
+    {
+        while (_pfad.Count > ebene) _pfad.RemoveAt(_pfad.Count - 1);
+    }
+
+    private bool Vorn(Menuepunkt p)
+    {
+        if (_vorn is not null) return ReferenceEquals(_vorn, p);
+        IReadOnlyList<Menuepunkt> liste = Bedienbar;
+        return liste.Count > 0 && ReferenceEquals(liste[0], p);
+    }
+
+    private static string Kennung(Menuepunkt p) => "menue-" + p.Name;
+
+    /// <summary>
+    /// Die Klasse des aufklappenden Kopfes. Ein Punkt mit
+    /// <see cref="Menuepunkt.RechtsBuendig"/> bekommt zusaetzlich
+    /// <c>epos-menueband-punkt--rechts</c> (margin-left: auto) und rutscht damit
+    /// an den rechten Rand der Leiste, OHNE seine Stelle im Markup zu wechseln —
+    /// Tastaturweg und Sprachausgabe bleiben unveraendert (W16c-E-4).
+    /// </summary>
+    private static string Punktklasse(Menuepunkt p)
+        => p.RechtsBuendig
+            ? "epos-menueband-punkt epos-menueband-punkt--rechts"
+            : "epos-menueband-punkt";
+
+    /// <summary>Dasselbe fuer einen Kopf ohne Untermenue.</summary>
+    private static string Knopfklasse(Menuepunkt p)
+        => p.RechtsBuendig
+            ? "epos-menueband-knopf epos-menueband-knopf--rechts"
+            : "epos-menueband-knopf";
+
+    // =====================================================================
+    //  Zeichnen
+    // =====================================================================
+
+    private RenderFragment? Bild(Menuepunkt p)
+    {
+        if (string.IsNullOrEmpty(p.Bild)) return null;
+
+        return builder =>
+        {
+            builder.OpenElement(0, "img");
+            builder.AddAttribute(1, "class", "epos-menueband-bild");
+            builder.AddAttribute(2, "src", "_content/EPOS.UI/bilder/menue/" + p.Bild + ".png");
+            builder.AddAttribute(3, "alt", "");
+            builder.AddAttribute(4, "aria-hidden", "true");
+            builder.CloseElement();
+        };
+    }
+
+    /// <summary>
+    /// Die Zeilen EINER Klappe. <paramref name="ebene"/> ist die Ebene der
+    /// Kinder (1 = die Klappe eines Kopfes, 2 = die dritte Ebene) und geht in
+    /// <see cref="Offen(Menuepunkt, int)"/> und
+    /// <see cref="Umschalten(Menuepunkt, int)"/> ein — ohne sie wuesste eine
+    /// Zeile nicht, welche Stelle des Pfades sie meint (Befund W16c-B13).
+    ///
+    /// <para>Jedes Kind steht in einer eigenen REGION. Ein durchlaufender
+    /// Zaehler als Folgenummer waere hier falsch: Sobald eine Klappe der
+    /// naechsten Ebene aufgeht, verschoeben sich alle folgenden Nummern, und
+    /// Blazor baute den Rest der Liste neu auf — samt Fokus.</para>
+    /// </summary>
+    private RenderFragment Untermenue(Menuepunkt eltern, int ebene) => builder =>
+    {
+        int nummer = 0;
+
+        foreach (Menuepunkt kind in eltern.Untereintraege)
+        {
+            Menuepunkt k = kind;
+            builder.OpenRegion(nummer++);
+
+            if (k.Trenner)
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "epos-menueband-strich");
+                builder.AddAttribute(2, "role", "separator");
+                builder.CloseElement();
+                builder.CloseRegion();
+                continue;
+            }
+
+            bool aufgeklappt = k.Klappt && Offen(k, ebene);
+
+            builder.OpenElement(3, "button");
+            builder.AddAttribute(4, "type", "button");
+            builder.AddAttribute(5, "role", "menuitem");
+            builder.AddAttribute(6, "class", "epos-menueband-zeile");
+            builder.AddAttribute(7, "id", Kennung(k));
+            builder.AddAttribute(8, "tabindex", ReferenceEquals(_zeile, k) ? "0" : "-1");
+
+            if (k.Klappt)
+            {
+                builder.AddAttribute(9, "aria-haspopup", "true");
+                builder.AddAttribute(10, "aria-expanded", aufgeklappt ? "true" : "false");
+                builder.AddAttribute(11, "onclick",
+                    EventCallback.Factory.Create<MouseEventArgs>(this, () => Umschalten(k, ebene)));
+            }
+            else
+            {
+                builder.AddAttribute(12, "onclick",
+                    EventCallback.Factory.Create<MouseEventArgs>(this, () => Waehlen(k)));
+            }
+
+            builder.AddElementReferenceCapture(13, r => _stellen[k.Name] = r);
+
+            if (!string.IsNullOrEmpty(k.Bild))
+            {
+                builder.OpenElement(14, "img");
+                builder.AddAttribute(15, "class", "epos-menueband-bild");
+                builder.AddAttribute(16, "src", "_content/EPOS.UI/bilder/menue/" + k.Bild + ".png");
+                builder.AddAttribute(17, "alt", "");
+                builder.AddAttribute(18, "aria-hidden", "true");
+                builder.CloseElement();
+            }
+
+            builder.OpenElement(19, "span");
+            builder.AddAttribute(20, "class", "epos-menueband-text");
+            builder.AddContent(21, k.Text);
+            builder.CloseElement();
+
+            if (!string.IsNullOrEmpty(k.Kuerzel))
+            {
+                builder.OpenElement(22, "span");
+                builder.AddAttribute(23, "class", "epos-menueband-kuerzel");
+                builder.AddContent(24, k.Kuerzel);
+                builder.CloseElement();
+            }
+
+            if (k.Klappt)
+            {
+                builder.OpenElement(25, "span");
+                builder.AddAttribute(26, "class", "epos-menueband-pfeil");
+                builder.AddAttribute(27, "aria-hidden", "true");
+                builder.AddContent(28, "▸");
+                builder.CloseElement();
+            }
+
+            builder.CloseElement();   // button
+
+            if (aufgeklappt)
+            {
+                builder.OpenElement(29, "div");
+                builder.AddAttribute(30, "class", "epos-menueband-klappe epos-menueband-klappe--tief");
+                builder.AddAttribute(31, "role", "menu");
+                builder.AddAttribute(32, "aria-labelledby", Kennung(k));
+                builder.AddContent(33, Untermenue(k, ebene + 1));
+                builder.CloseElement();
+            }
+
+            builder.CloseRegion();
+        }
+    };
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool ersteAnzeige)
+    {
+        if (!_fokusNachziehen) return;
+
+        _fokusNachziehen = false;
+        if (_zeile is not null && _stellen.TryGetValue(_zeile.Name, out ElementReference stelle))
+            await stelle.FocusAsync();
+    }
+
+    // =====================================================================
+    //  Bedienung
+    // =====================================================================
+
+    /// <summary>
+    /// Klappt <paramref name="p"/> auf SEINER Ebene auf oder zu. Der Pfad wird
+    /// dabei bis zu dieser Ebene gekuerzt — damit schliesst ein Geschwister das
+    /// andere, und mit einem Kopf faellt sein ganzes Untermenue.
+    /// </summary>
+    private void Umschalten(Menuepunkt p, int ebene)
+    {
+        bool warOffen = Offen(p, ebene);
+
+        BisEbene(ebene);
+        if (!warOffen) _pfad.Add(p);
+
+        if (ebene == 0) _vorn = p;
+
+        // Der Zeiger folgt dem Zeigergeraet, damit die Tastatur dort
+        // weitermacht, wo die Maus stehen geblieben ist; auf der obersten
+        // Ebene steht er auf dem Kopf selbst und also auf keiner Zeile.
+        _zeile = ebene == 0 ? null : p;
+    }
+
+    private async Task Waehlen(Menuepunkt p)
+    {
+        // Erst schliessen, dann melden: Der Wirt zeigt womoeglich einen modalen
+        // Dialog, und das Band soll nicht offen dahinter stehen bleiben.
+        Schliessen();
+        if (!string.IsNullOrEmpty(p.Ziel)) await Gewaehlt.InvokeAsync(p);
+    }
+
+    /// <summary>Klappt alles zu — auch von aussen, wenn der Wirt die Ansicht wechselt.</summary>
+    public void Schliessen()
+    {
+        _pfad.Clear();
+        _zeile = null;
+        _stellen.Clear();
+        _fokusNachziehen = false;
+    }
+
+    private void BeiTaste(KeyboardEventArgs e)
+    {
+        IReadOnlyList<Menuepunkt> koepfe = Bedienbar;
+        if (koepfe.Count == 0) return;
+
+        int jetzt = _vorn is null ? 0 : Suchen(koepfe, _vorn);
+        if (jetzt < 0) jetzt = 0;
+
+        switch (e.Key)
+        {
+            case "Escape":
+                Schliessen();
+                break;
+
+            case "Tab":
+                // Der Tabulator fuehrt aus dem Band heraus. Frueher besorgte das
+                // focusout; seit W16c-B13 sagt es die Taste selbst — der
+                // Tabulatorsprung selbst bleibt unberuehrt.
+                Schliessen();
+                break;
+
+            case "ArrowLeft":
+                // Eine Ebene zurueck, solange es eine gibt; sonst der Kopf links.
+                if (_pfad.Count > 1) EbeneZurueck();
+                else Kopfwechsel(koepfe[(jetzt - 1 + koepfe.Count) % koepfe.Count]);
+                break;
+
+            case "ArrowRight":
+                // Ein Untermenue auf, wenn der Zeiger auf einem steht; sonst der
+                // Kopf rechts.
+                if (_pfad.Count > 0 && _zeile is { Klappt: true }) Aufklappen(_zeile, _pfad.Count);
+                else Kopfwechsel(koepfe[(jetzt + 1) % koepfe.Count]);
+                break;
+
+            case "ArrowDown":
+                if (_pfad.Count == 0)
+                {
+                    if (_vorn is { Klappt: true }) Aufklappen(_vorn, 0);
+                }
+                else Wandern(1);
+                break;
+
+            case "ArrowUp":
+                if (_pfad.Count > 0) Wandern(-1);
+                break;
+
+            case "Home":
+                // Pos1/Ende meinen die KOEPFE, auf welcher Ebene der Zeiger auch
+                // stehe — so war es seit W16c.1, und der Nachweis N4 haelt es fest.
+                _vorn = koepfe[0];
+                break;
+
+            case "End":
+                _vorn = koepfe[koepfe.Count - 1];
+                break;
+        }
+    }
+
+    /// <summary>Klappt <paramref name="p"/> auf und stellt den Zeiger auf seinen ersten Punkt.</summary>
+    private void Aufklappen(Menuepunkt p, int ebene)
+    {
+        BisEbene(ebene);
+        _pfad.Add(p);
+        _zeile = Klappenliste().FirstOrDefault();
+        _fokusNachziehen = _zeile is not null;
+    }
+
+    /// <summary>Schliesst die tiefste Klappe; der Zeiger steht danach auf ihrem Kopf.</summary>
+    private void EbeneZurueck()
+    {
+        _zeile = _pfad[_pfad.Count - 1];
+        _pfad.RemoveAt(_pfad.Count - 1);
+        _fokusNachziehen = true;
+    }
+
+    /// <summary>Wandert mit dem Zeiger durch die tiefste offene Klappe.</summary>
+    private void Wandern(int schritt)
+    {
+        IReadOnlyList<Menuepunkt> liste = Klappenliste();
+        if (liste.Count == 0) return;
+
+        int jetzt = _zeile is null ? -1 : Suchen(liste, _zeile);
+        int neu = jetzt < 0
+            ? (schritt > 0 ? 0 : liste.Count - 1)
+            : (jetzt + schritt + liste.Count) % liste.Count;
+
+        _zeile = liste[neu];
+        _fokusNachziehen = true;
+    }
+
+    /// <summary>
+    /// Wechselt den Kopf der obersten Ebene. Stand ein Menue offen, wandert es
+    /// mit — so wie es eine Menueleiste tut, wenn man mit ← → durch sie geht.
+    /// </summary>
+    private void Kopfwechsel(Menuepunkt neu)
+    {
+        bool warOffen = _pfad.Count > 0;
+
+        _vorn = neu;
+        _pfad.Clear();
+        _zeile = null;
+
+        if (warOffen && neu.Klappt) _pfad.Add(neu);
+    }
+
+    private static int Suchen(IReadOnlyList<Menuepunkt> liste, Menuepunkt gesucht)
+    {
+        for (int i = 0; i < liste.Count; i++)
+            if (ReferenceEquals(liste[i], gesucht)) return i;
+        return -1;
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => Schliessen();
+}

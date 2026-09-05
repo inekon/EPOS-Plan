@@ -1181,7 +1181,7 @@ namespace WindowsFormsApplication1
         public const string SPALTE_EA_PV_SYSTEMVERLUSTE = "PV_Systemverluste";
 
         /// <summary>
-        /// Schritt 62 der Migration — die beiden PV-Anlagenparameter an
+        /// Schritt 63 der Migration — die beiden PV-Anlagenparameter an
         /// <c>Tab_Energieanlagen</c> (Konzept PV-Ertragsmodell, Stufe E1.3).
         ///
         /// <b>KEIN DML, und das ist die Ergebnisneutralität.</b> Beide Spalten bleiben
@@ -1201,7 +1201,7 @@ namespace WindowsFormsApplication1
         /// namensbasiert gelesen; das Anhängen ist gefahrlos (dieselbe Begründung wie bei
         /// Schritt 61).
         /// </summary>
-        public static readonly SchemaSpalte[] Schritt62_PvAnlagenparameter =
+        public static readonly SchemaSpalte[] Schritt63_PvAnlagenparameter =
         {
             new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WR_WIRKUNGSGRAD, "DOUBLE"),
             new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_SYSTEMVERLUSTE,  "DOUBLE"),
@@ -1262,7 +1262,7 @@ namespace WindowsFormsApplication1
         public const string SPALTE_PPV_DEGRADATION = "Degradation";
 
         /// <summary>
-        /// Schritt 63 der Migration, ERSTER TEIL: die Spalten, die der RECHENKERN liest
+        /// Schritt 64 der Migration, ERSTER TEIL: die Spalten, die der RECHENKERN liest
         /// (Konzept PV-Ertragsmodell, Nachtrag 2 - Paket B).
         ///
         /// <b>KEIN DML, und das ist wieder die Ergebnisneutralitaet.</b> Alle sechs
@@ -1273,18 +1273,18 @@ namespace WindowsFormsApplication1
         /// zentrale Abnahmekriterium des Pakets (Konzept N2.5, Kriterium 1).
         ///
         /// <b>Warum in <see cref="Alle"/>.</b> Dasselbe Kriterium wie bei
-        /// <see cref="Schritt62_PvAnlagenparameter"/>: der LESER. <c>SimulationPV</c>
+        /// <see cref="Schritt63_PvAnlagenparameter"/>: der LESER. <c>SimulationPV</c>
         /// liest die fuenf Anlagenspalten und - ueber <c>PhotovoltaikCtrl</c> - die
         /// Technologie der PROJEKTKOPIE <c>Tab_PV</c>. Die Stammtabelle und die
         /// Degradation stehen deshalb im zweiten Teil
-        /// (<see cref="Schritt63_PvStammUndDegradation"/>) und NICHT in
+        /// (<see cref="Schritt64_PvStammUndDegradation"/>) und NICHT in
         /// <see cref="Alle"/>.
         ///
         /// <b>Ordinalposition.</b> Beide Tabellen werden namensbasiert gelesen
         /// (<c>WErzeugerCtrl.AusZeile</c>, <c>PhotovoltaikCtrl.ReadSingle</c> pruefen
         /// <c>Columns.Contains</c>); das Anhaengen ist gefahrlos.
         /// </summary>
-        public static readonly SchemaSpalte[] Schritt63_PvModellwahl =
+        public static readonly SchemaSpalte[] Schritt64_PvModellwahl =
         {
             new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_MODELL,          "TEXT(20)"),
             new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WR_NENNLEISTUNG, "DOUBLE"),
@@ -1295,7 +1295,7 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// Schritt 63, ZWEITER TEIL: die Spalten, die der Rechenkern NICHT liest -
+        /// Schritt 64, ZWEITER TEIL: die Spalten, die der Rechenkern NICHT liest -
         /// die Technologie des STAMMkatalogs (Quelle der Projektkopie, gepflegt ueber
         /// <c>Form_AdminPV</c> und die Importe) und die Degradation der
         /// Wirtschaftlichkeit (<c>PvErloesRechner</c>).
@@ -1306,7 +1306,7 @@ namespace WindowsFormsApplication1
         /// und die Rueckfallebene laeuft bei jedem Simulationsstart, wo diese beiden
         /// Spalten nichts zu suchen haben.
         /// </summary>
-        public static readonly SchemaSpalte[] Schritt63_PvStammUndDegradation =
+        public static readonly SchemaSpalte[] Schritt64_PvStammUndDegradation =
         {
             new SchemaSpalte(TAB_PV_STAMM,            SPALTE_PV_TECHNOLOGIE,   "TEXT(30)"),
             new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_DEGRADATION,  "DOUBLE"),
@@ -3619,24 +3619,24 @@ namespace WindowsFormsApplication1
         /// Vorsorge unmittelbar vor dem Schreiben
         /// (<c>ErgebnisCtrl.StelleModulSpaltenSicher</c>).
         ///
-        /// <see cref="Schritt62_PvAnlagenparameter"/> ist dagegen AUFGEFÜHRT, obwohl seine
+        /// <see cref="Schritt63_PvAnlagenparameter"/> ist dagegen AUFGEFÜHRT, obwohl seine
         /// Spalten wie die des Schritts 61 an <c>Tab_Energieanlagen</c> hängen — weil hier
         /// das Kriterium erfüllt ist, an dem Schritt 61 scheitert: <b>Der Rechenkern liest
         /// die Spalten</b> (<c>SimulationPV.Berechnung</c> holt Wechselrichter-Wirkungsgrad
         /// und Systemverluste je Anlagenzeile). Damit gilt dieselbe Linie wie bei
         /// <see cref="Schritt13_Mindestfuellstand"/>.
         ///
-        /// <see cref="Schritt63_PvModellwahl"/> ist aus demselben Grund aufgeführt: Der
+        /// <see cref="Schritt64_PvModellwahl"/> ist aus demselben Grund aufgeführt: Der
         /// Rechenkern liest die Modellwahl, die drei Kennlinienpunkte, die
         /// AC-Nennleistung und die Technologie der PROJEKTKOPIE <c>Tab_PV</c>.
-        /// <see cref="Schritt63_PvStammUndDegradation"/> dagegen NICHT — die
+        /// <see cref="Schritt64_PvStammUndDegradation"/> dagegen NICHT — die
         /// Stammtabelle des Katalogs und die Degradation der Wirtschaftlichkeit liest
         /// der Rechenkern nirgends.
         ///
         /// <b>Reihenfolge:</b> Die Rückfallebene liest das Tabellenschema neu, sobald
         /// der Tabellenname wechselt (<c>WaermequelleClass.SchemaSicherstellen</c>).
-        /// Einträge derselben Tabelle stehen deshalb beieinander — Schritt 63 beginnt
-        /// mit <c>Tab_Energieanlagen</c> und schließt damit unmittelbar an Schritt 62 an.
+        /// Einträge derselben Tabelle stehen deshalb beieinander — Schritt 64 beginnt
+        /// mit <c>Tab_Energieanlagen</c> und schließt damit unmittelbar an Schritt 63 an.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
@@ -3649,8 +3649,8 @@ namespace WindowsFormsApplication1
                 foreach (SchemaSpalte s in Schritt8_Energietraeger) yield return s;
                 foreach (SchemaSpalte s in Schritt11_Stromspeicher) yield return s;
                 foreach (SchemaSpalte s in Schritt13_Mindestfuellstand) yield return s;
-                foreach (SchemaSpalte s in Schritt62_PvAnlagenparameter) yield return s;
-                foreach (SchemaSpalte s in Schritt63_PvModellwahl) yield return s;
+                foreach (SchemaSpalte s in Schritt63_PvAnlagenparameter) yield return s;
+                foreach (SchemaSpalte s in Schritt64_PvModellwahl) yield return s;
             }
         }
     }

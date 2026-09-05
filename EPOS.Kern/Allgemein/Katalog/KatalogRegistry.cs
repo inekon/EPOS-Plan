@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
@@ -307,6 +307,15 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "WAERMEBEDARF",
                 Tabelle = "Tab_Waermebedarf_STAMM",
+                // LEERES Array und nicht null (iU9-W13.0g): null heisst "dieser
+                // Katalog hat keinen Dateiimport" (:66-70) - und genau daran lag es,
+                // dass die Waermebedarfsverwaltung als einzige Importmaske des
+                // Bestands ohne Dublettenpruefung auskam (Befund W13-B2). Der
+                // Kopfsatz traegt ausser dem Bezeichner nichts, was sich
+                // vergleichen liesse; die 8 760 Werte stehen im Datenblock. Ein
+                // leeres Array sagt deshalb genau das Richtige: pruefe den NAMEN,
+                // vergleiche keinen Inhalt (Dublettenkonzept 4.4).
+                ImportSpalten = new string[0],
                 Datenbloecke = new[]
                 {
                     new KatalogDatenblock
@@ -344,6 +353,42 @@ namespace WindowsFormsApplication1
 
         /// <summary>Alle Kataloge des Admin-Menues (Entscheidung 9.5 des Konzepts).</summary>
         public static IReadOnlyList<KatalogDefinition> Alle => _alle;
+
+        /// <summary>
+        /// Der lokalisierte Anzeigename eines Katalogs; ein unbekannter Schluessel
+        /// zeigt sich selbst (iU9-W14c.0h).
+        ///
+        /// <para><b>Warum das hier steht</b> (Befund W14c-B40): Die neunzehn Kataloge
+        /// standen an ZWEI Orten - als <see cref="KatalogDefinition"/> hier und als
+        /// neunzehn <c>case</c> in <c>Form_KatalogDubletten.KatalogAnzeige</c>. Ein
+        /// neuer Katalog brauchte beide Stellen. Jetzt steht die Liste einmal da.</para>
+        /// </summary>
+        public static string Anzeige(string schluessel)
+        {
+            switch (schluessel)
+            {
+                case "WP": return MyResource.Resource.ADM_KATALOG_WP;
+                case "HEIZKESSEL": return MyResource.Resource.ADM_KATALOG_HEIZKESSEL;
+                case "PUFFERSPEICHER": return MyResource.Resource.ADM_KATALOG_PUFFERSPEICHER;
+                case "SOLARKOLLEKTOREN": return MyResource.Resource.ADM_KATALOG_SOLARKOLLEKTOREN;
+                case "PV": return MyResource.Resource.ADM_KATALOG_PV;
+                case "BHKW": return MyResource.Resource.ADM_KATALOG_BHKW;
+                case "STROMSPEICHER": return MyResource.Resource.ADM_KATALOG_STROMSPEICHER;
+                case "GEBAEUDE": return MyResource.Resource.ADM_KATALOG_GEBAEUDE;
+                case "KLIMAREGION": return MyResource.Resource.ADM_KATALOG_KLIMAREGION;
+                case "BRAUCHWASSER": return MyResource.Resource.ADM_KATALOG_BRAUCHWASSER;
+                case "BRAUCHWASSERTYP": return MyResource.Resource.ADM_KATALOG_BRAUCHWASSERTYP;
+                case "STROMVERBRAUCHER": return MyResource.Resource.ADM_KATALOG_STROMVERBRAUCHER;
+                case "STROMVERBRAUCHERTYP": return MyResource.Resource.ADM_KATALOG_STROMVERBRAUCHERTYP;
+                case "PROZESSWAERME": return MyResource.Resource.ADM_KATALOG_PROZESSWAERME;
+                case "PROZESSTYP": return MyResource.Resource.ADM_KATALOG_PROZESSTYP;
+                case "STROMGANGLINIE": return MyResource.Resource.ADM_KATALOG_STROMGANGLINIE;
+                case "SOLARGANGLINIE": return MyResource.Resource.ADM_KATALOG_SOLARGANGLINIE;
+                case "WAERMEBEDARF": return MyResource.Resource.ADM_KATALOG_WAERMEBEDARF;
+                case "GEBAEUDETYP": return MyResource.Resource.ADM_KATALOG_GEBAEUDETYP;
+                default: return schluessel ?? "";
+            }
+        }
 
         /// <summary>Definition zu einem sprachneutralen Schluessel, sonst null.</summary>
         public static KatalogDefinition Finde(string schluessel)

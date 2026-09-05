@@ -1,0 +1,349 @@
+﻿@* Bedarfs-Stammkopf bearbeiten oder anlegen (iU9-W8.1).
+
+   VORBILD. DREI zeichengleiche Masken, alle 659 x 426 und alle mit 31
+   Kartenzeilen: Views/Stromverbraucher/Form_EingDBStromverbraucher (146 Z.),
+   Views/Prozesswaerme/Form_EingDBProzess (174 Z.) und
+   Views/Brauchwasser/Form_EingDBBrauchwasser (139 Z.). Name, Typ,
+   Beschreibung, zwoelf Monatswerte, vier Knoepfe - sie unterscheiden sich in
+   Titel, Typbeschriftung und Zieltabelle, also ist die Auspraegung ein
+   Parameter (BedarfsArt) und keine dritte Fassung.
+
+   DREI SPEICHERWEGE, ZWEI ZUSTAENDE - woertlich aus SetControls:
+   * Modus Bearbeiten: "Speichern" ist gesperrt, "Ueberschreiben" und
+     "Speichern unter" sind frei.
+   * Modus Neu: nur "Speichern" ist frei.
+   Der vierte Knopf "Beenden" schliesst, ohne etwas zu melden.
+
+   "UEBERSCHREIBEN" TRIFFT DEN URSPRUNGSNAMEN. Der Vorlaeufer schrieb dafuer
+   m_szStromname zurueck - das Feld, mit dem der Aufrufer den Dialog belegt
+   hatte -, nicht den Inhalt des Namensfeldes. Nach einem "Speichern unter"
+   zeigt das Feld den NEUEN Namen, "Ueberschreiben" meint aber weiterhin den
+   alten Satz. Genau so steht es hier.
+
+   DER DIALOG BLEIBT NACH DEM SPEICHERN OFFEN und meldet "Daten gespeichert!"
+   bzw. "Daten aktualisiert!" - auch das ist Bestand: Die Vorlaeufer zeigten
+   eine MessageBox und liessen die Maske stehen. Aus der MessageBox wird ein
+   Warnbanner der Stufe Hinweis.
+
+   DIE NAMENSABFRAGE von "Speichern unter" steht in einer Ueberlagerung statt
+   in einem zweiten Fenster (Risiko R2) - dieselbe NamensDialog-Komponente, die
+   der Vorlaeufer ueber NamensDialogHuelle als eigenes Fenster zeigte.
+
+   TASTATUR: Esc schliesst. Enter ist nicht belegt - drei der vier Knoepfe
+   schreiben sofort. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Erzeuger
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Gruppenkopf Titel="@GruppeKopf">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name" NurLesen="true" />
+            <Auswahlfeld Bezeichnung="@LabelTyp" Eintraege="@Typeintraege"
+                         Auswahl="@Typindex" AuswahlChanged="TypWaehlen" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
+                      WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <Gruppenkopf Titel="@GruppeMonate">
+        <KindInhalt>
+            @for (int m = 0; m < 12; m++)
+            {
+                int monat = m;
+                <Zahlenfeld Bezeichnung="@Monatsname(monat)" Einheit="@EinheitMonat"
+                            Feldname="@Feldname(monat)" Nachkommastellen="4"
+                            Wert="@Daten.Monat[monat]" WertChanged="w => Daten.Monat[monat] = w" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
+                @onclick="BeiUeberschreiben">@BtnUeberschreibenText</button>
+        <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
+                @onclick="() => _namensfrage = true">@BtnSpeichernUnterText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(Modus != KatalogModus.Neu)"
+                @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        <button type="button" class="epos-knopf"
+                @onclick="() => Geschlossen.InvokeAsync(true)">@BtnBeendenText</button>
+    </div>
+
+    @* "Speichern unter": Namensabfrage im SELBEN Fenster (Risiko R2). *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnSpeichernUnterText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnSpeichernUnterText" FrageText="@LabelName"
+                          Vorbelegung="@Daten.Name" MeldungLeer="@MeldungNameFehlt"
+                          OkText="@OkText" AbbrechenText="@AbbrechenText"
+                          Geschlossen="BeiSpeichernUnter" />
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Der Feldsatz. Die Hülle lädt ihn und nimmt ihn beim Speichern entgegen.</summary>
+    [Parameter] public TypStammDaten Daten { get; set; } = new();
+
+    /// <summary>Welche der drei Speicherwege angeboten werden.</summary>
+    [Parameter] public KatalogModus Modus { get; set; } = KatalogModus.Bearbeiten;
+
+    /// <summary>Die Typliste der Klappliste (der Konstruktor des Vorläufers).</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Typen { get; set; }
+
+    /// <summary>Gibt es den Bezeichner schon? („Name existiert bereits!")</summary>
+    [Parameter] public Func<string, bool>? Exists { get; set; }
+
+    /// <summary>
+    /// Schreibt den Kopf. Zweiter Parameter: <c>true</c> = anlegen, <c>false</c> =
+    /// überschreiben. Dritter Parameter: der Bezeichner, unter dem geschrieben wird.
+    /// </summary>
+    [Parameter] public Func<TypStammDaten, bool, string, KatalogSpeicherErgebnis>? Speichern { get; set; }
+
+    /// <summary>Der Dialog wurde geschlossen („Beenden"/Esc) — immer <c>true</c>.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Eingabe Stromverbraucher";
+    [Parameter] public string GruppeKopf { get; set; } = "Bezeichnung";
+    [Parameter] public string GruppeMonate { get; set; } = "Monatswerte";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string LabelTyp { get; set; } = "Verbrauchertyp:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string EinheitMonat { get; set; } = "MWh";
+
+    [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
+    [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string BtnBeendenText { get; set; } = "Beenden";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Die zwölf Beschriftungen der Monatsfelder (aus dem Designer).</summary>
+    [Parameter]
+    public IReadOnlyList<string> Monatsnamen { get; set; } = new[]
+    {
+        "Januar:", "Februar:", "März:", "April:", "Mai:", "Juni:",
+        "Juli:", "August:", "September:", "Oktober:", "November:", "Dezember"
+    };
+
+    /// <summary>
+    /// Die zwölf Namen, die in die Fehlermeldung gehen. Sie sind NICHT dieselben wie die
+    /// Beschriftungen und auch nicht zwischen den drei Ausprägungen gleich: Der
+    /// Stromverbraucher meldet „Monatswert Januar", die beiden anderen „Monat 1"
+    /// (<c>MonatswertePruefen</c> der jeweiligen Maske) — wörtlich übernommen, Befund
+    /// W8‑O‑1 im Protokoll.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<string> Feldnamen { get; set; } = new[]
+    {
+        "Monatswert Januar", "Monatswert Februar", "Monatswert März", "Monatswert April",
+        "Monatswert Mai", "Monatswert Juni", "Monatswert Juli", "Monatswert August",
+        "Monatswert September", "Monatswert Oktober", "Monatswert November", "Monatswert Dezember"
+    };
+
+    /// <summary>Meldung bei fehlender Pflichtzahl; <c>{0}</c> ist der Feldname.</summary>
+    [Parameter] public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
+
+    /// <summary>„Verbrauchertyp auswählen!" / „Prozesstyp auswählen!" / „Brauchwassertyp auswählen!"</summary>
+    [Parameter] public string MeldungTypFehlt { get; set; } = "Verbrauchertyp auswählen!";
+
+    /// <summary>„Name existiert bereits!" (alle drei Masken wortgleich).</summary>
+    [Parameter] public string MeldungNameBelegt { get; set; } = "Name existiert bereits!";
+
+    /// <summary>Meldung des Namensdialogs bei leerer Eingabe.</summary>
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen Namen eingeben!";
+
+    /// <summary>„Daten gespeichert!" — der Dialog bleibt danach offen.</summary>
+    [Parameter] public string MeldungGespeichert { get; set; } = "Daten gespeichert!";
+
+    /// <summary>„Daten aktualisiert!" — der Dialog bleibt danach offen.</summary>
+    [Parameter] public string MeldungAktualisiert { get; set; } = "Daten aktualisiert!";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_EingDBStromverbraucher.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _namensfrage;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+    private IReadOnlyList<string> _typliste = Array.Empty<string>();
+
+    /// <summary>
+    /// Der Name, den „Überschreiben" trifft — der Stand beim Öffnen. Siehe Kopf.
+    /// </summary>
+    private string _ursprungsname = "";
+
+    /// <summary>Steht die Namensabfrage? Prüfhilfe für die Tests.</summary>
+    public bool Namensfrage => _namensfrage;
+
+    /// <summary>Die stehende Meldung. Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Der Name, den „Überschreiben" trifft. Prüfhilfe für die Tests.</summary>
+    public string Ursprungsname => _ursprungsname;
+
+    /// <summary>Die Typliste — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<string> Typliste => _typliste;
+
+    /// <summary>
+    /// Die Klapplisteneinträge. Ein BESTANDSWERT, den der Katalog nicht (mehr) führt, wird
+    /// vorangestellt — die <c>ComboBox</c> des Vorläufers war frei beschreibbar und zeigte
+    /// ihn, ein geschlossenes <c>select</c> würde ihn still verwerfen (A-16 aus Welle 7).
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Typeintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            if (!string.IsNullOrEmpty(Daten.Typ) && !_typliste.Contains(Daten.Typ))
+                l.Add((-1, Daten.Typ));
+            for (int i = 0; i < _typliste.Count; i++) l.Add((i, _typliste[i]));
+            return l;
+        }
+    }
+
+    private int? Typindex
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Daten.Typ)) return null;
+            for (int i = 0; i < _typliste.Count; i++)
+                if (string.Equals(_typliste[i], Daten.Typ, StringComparison.Ordinal)) return i;
+            return -1;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        _typliste = Typen?.Invoke() ?? Array.Empty<string>();
+        _ursprungsname = Daten.Name ?? "";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private string Monatsname(int m)
+        => (Monatsnamen is not null && Monatsnamen.Count > m) ? Monatsnamen[m] : "";
+
+    private string Feldname(int m)
+        => (Feldnamen is not null && Feldnamen.Count > m) ? Feldnamen[m] : "";
+
+    private void TypWaehlen(int? index)
+    {
+        if (index is null) { Daten.Typ = ""; return; }
+        if (index.Value < 0) return;                       // der vorangestellte Bestandswert
+        if (index.Value < _typliste.Count) Daten.Typ = _typliste[index.Value];
+    }
+
+    /// <summary>
+    /// Die zwölf Monatswerte sind PFLICHT: <c>MonatswertePruefen</c> ruft
+    /// <c>ZahlPruefen</c> ohne <c>leerErlaubt</c>, und die Meldung nennt das erste
+    /// Feld, an dem es hängt.
+    /// </summary>
+    private bool MonatswerteStehen()
+    {
+        for (int m = 0; m < 12; m++)
+            if (Daten.Monat[m] is null)
+            {
+                _meldung = string.Format(MeldungZahlFehlt, Feldname(m));
+                _meldungStufe = WarnStufe.Warnung;
+                return false;
+            }
+        return true;
+    }
+
+    /// <summary>„Überschreiben": Zahlen prüfen, dann den URSPRUNGSNAMEN zurückschreiben.</summary>
+    private void BeiUeberschreiben()
+    {
+        _meldung = "";
+        if (Speichern is null || !MonatswerteStehen()) return;
+        Auswerten(Speichern(Daten, false, _ursprungsname), MeldungAktualisiert);
+    }
+
+    /// <summary>
+    /// „Speichern" (nur im Modus Neu): erst der Typ, dann die Zahlen — genau diese
+    /// Reihenfolge hat <c>btn_Speichern_Click</c> in allen drei Masken.
+    /// </summary>
+    private void BeiSpeichern()
+    {
+        _meldung = "";
+        if (Speichern is null) return;
+
+        if (string.IsNullOrEmpty(Daten.Typ))
+        {
+            _meldung = MeldungTypFehlt;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+        if (!MonatswerteStehen()) return;
+
+        Auswerten(Speichern(Daten, true, Daten.Name), MeldungGespeichert);
+    }
+
+    /// <summary>
+    /// „Speichern unter": Die Zahlen werden VOR der Namensabfrage geprüft (so steht es
+    /// in allen drei Masken, Kommentar „Zahlen zuerst pruefen"), der belegte Name danach.
+    /// Erst dann übernimmt das Namensfeld den neuen Wert — wie im Vorläufer.
+    /// </summary>
+    private void BeiSpeichernUnter(string? name)
+    {
+        _namensfrage = false;
+        if (name is null || Speichern is null) return;
+
+        _meldung = "";
+        if (!MonatswerteStehen()) return;
+
+        if (Exists is not null && Exists(name))
+        {
+            _meldung = MeldungNameBelegt;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        Daten.Name = name;
+        Auswerten(Speichern(Daten, true, name), MeldungGespeichert);
+    }
+
+    /// <summary>
+    /// Erfolg meldet und lässt den Dialog OFFEN (Bestandsverhalten: die Vorläufer zeigten
+    /// eine MessageBox und blieben stehen); eine Ablehnung bleibt als Warnung stehen.
+    /// </summary>
+    private void Auswerten(KatalogSpeicherErgebnis ergebnis, string erfolgstext)
+    {
+        if (ergebnis.Ok)
+        {
+            _meldung = erfolgstext;
+            _meldungStufe = WarnStufe.Hinweis;
+            return;
+        }
+        _meldung = ergebnis.Meldung;
+        _meldungStufe = WarnStufe.Warnung;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Die Ueberlagerung wertet Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _namensfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(true);
+    }
+}

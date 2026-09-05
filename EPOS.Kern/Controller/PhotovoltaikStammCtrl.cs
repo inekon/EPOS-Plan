@@ -408,5 +408,250 @@ namespace WindowsFormsApplication1
             FillFromRow(m, row);
             return m;
         }
+
+        // =================================================================================
+        // W6.0c - Herstellerfilter des Projektdialogs
+        // =================================================================================
+
+        /// <summary>Eine Zeile der Katalogliste: Primaerschluessel und Bezeichner.</summary>
+        public sealed record KatalogZeile(int Id, string Bezeichner);
+
+        /// <summary>
+        /// Die Hersteller des Katalogs in Anzeigereihenfolge - die Auswahlliste
+        /// <c>comboBox_Hersteller</c>.
+        /// </summary>
+        /// <remarks>
+        /// Zeichengleich <c>Form_PV_Load</c> (Z. 69):
+        /// <c>SELECT Firma FROM Tab_PV_STAMM GROUP BY Firma ORDER BY Firma</c>. Das
+        /// <c>GROUP BY</c> statt <c>DISTINCT</c> ist Bestand und bleibt - es tut hier
+        /// dasselbe.
+        /// </remarks>
+        public static IReadOnlyList<string> Hersteller()
+        {
+            var liste = new List<string>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Firma FROM " + TABLE + " GROUP BY Firma ORDER BY Firma");
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+                liste.Add(row["Firma"] == DBNull.Value ? "" : row["Firma"].ToString());
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Katalogliste, eingeengt auf einen Hersteller.
+        /// </summary>
+        /// <param name="hersteller">
+        /// Eintrag aus <see cref="Hersteller"/>. Leer, <c>null</c> und „Alle" heben die
+        /// Einengung auf.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// Aus <c>Form_PV.SetFilter</c> (Z. 215-233). Zwei Dinge aendern sich, beide
+        /// notwendig:
+        /// </para>
+        /// <list type="bullet">
+        /// <item>Der Herstellername kommt als <see cref="DbParam"/> statt als eingesetzter
+        /// Text. Der Bestand baute <c>Firma='…'</c> zusammen, ohne das Hochkomma zu
+        /// verdoppeln - ein Herstellername mit Apostroph zerriss das Praedikat
+        /// (der Pufferspeicherfilter verdoppelte es wenigstens).</item>
+        /// <item><c>ORDER BY Bezeichner</c> steht jetzt da. Der Bestand sortierte hier
+        /// NICHT, waehrend die Erstbefuellung ueber <see cref="ReadAll"/> sortiert kam -
+        /// die Liste sprang beim ersten Filtern in eine andere Reihenfolge.</item>
+        /// </list>
+        /// </remarks>
+        public IReadOnlyList<KatalogZeile> Filtern(string hersteller)
+        {
+            string h = (hersteller ?? "").Trim();
+            bool alle = h.Length == 0 || h == "Alle";
+
+            string sql = alle
+                ? "SELECT ID, Bezeichner FROM " + TABLE + " ORDER BY Bezeichner"
+                : "SELECT ID, Bezeichner FROM " + TABLE + " WHERE Firma = ? ORDER BY Bezeichner";
+
+            var liste = new List<KatalogZeile>();
+            DataTable dt = alle
+                ? DataRepository.GetDataTable(sql)
+                : DataRepository.GetDataTable(sql, new DbParam("@firma", h));
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["ID"] == null || row["ID"] == DBNull.Value) continue;
+                liste.Add(new KatalogZeile(Convert.ToInt32(row["ID"]),
+                                           row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString()));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Anzeigefelder eines Katalogmoduls - der Detailblock des Projektdialogs.
+        /// </summary>
+        /// <param name="Bezeichner">Modulname.</param>
+        /// <param name="Beschreibung">Freitext.</param>
+        /// <param name="Firma">Hersteller.</param>
+        /// <param name="Leistung">Leistung EINES Moduls [kW].</param>
+        public sealed record ModulDetail(string Bezeichner, string Beschreibung,
+                                         string Firma, double Leistung);
+
+        /// <summary>
+        /// Die vier Anzeigefelder zum Bezeichner; <c>null</c>, wenn es keinen Satz gibt.
+        /// </summary>
+        /// <remarks>
+        /// Fasst die drei zeichengleichen <c>RecordSet</c>-Bloecke von
+        /// <c>listBox_Auswahl_SelectedIndexChanged</c> (Z. 163),
+        /// <c>listBox_DB_SelectedIndexChanged</c> (Z. 191) und
+        /// <c>UpdateGesamtleistung</c> (Z. 314) zusammen. <c>ORDER BY ID</c> macht die Wahl
+        /// bei einem doppelt vergebenen Bezeichner benennbar.
+        /// </remarks>
+        public static ModulDetail Detail(string szName)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Bezeichner, Beschreibung, Firma, Leistung FROM " + TABLE +
+                " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@nam", szName ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow r = dt.Rows[0];
+            return new ModulDetail(
+                r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString(),
+                r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString(),
+                r["Firma"] == DBNull.Value ? "" : r["Firma"].ToString(),
+                r["Leistung"] == DBNull.Value ? 0 : Convert.ToDouble(r["Leistung"]));
+        }
+
+        /// <summary>
+        /// Der Bezeichner eines Katalogmoduls ueber seinen Primaerschluessel; leer, wenn
+        /// es ihn nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// Der Vorlaeufer <c>Form_PV.btn_Hinzu_Click</c> nahm den Namen aus der ListBox
+        /// und suchte damit den Satz; die Zeile fuehrt seit iU9-W6.5 ihre Id, und die
+        /// ist eindeutig - der Katalog kann gleichnamige Module fuehren.
+        /// </remarks>
+        public static string BezeichnerZu(int id)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM " + TABLE + " WHERE ID = ?", new DbParam("@id", id));
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
+
+        // =================================================================================
+        // W14a.0e - der EINE Schreibeinstieg des Modulkatalogs
+        // =================================================================================
+
+        /// <summary>
+        /// Was ein Speicherversuch des Modulkatalogs ergeben hat — dieselbe Form wie
+        /// <c>HeizkesselStammCtrl.SpeicherErgebnis</c> (W6.0).
+        /// </summary>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Schreibt den Modulsatz — der Weg des Knopfes „Speichern"
+        /// (<c>Form_AdminPV.btn_Speichern_Click</c> Z. 58-134).
+        /// </summary>
+        /// <param name="daten">Die dreizehn Felder der Maske.</param>
+        /// <param name="neu">
+        /// <c>true</c> nach „Neu…": anlegen statt aendern (Bestandsfeld <c>m_Neu</c>).
+        /// </param>
+        /// <param name="schluessel">
+        /// Der urspruengliche Bezeichner — der WHERE-Schluessel des UPDATE. Der Bestand
+        /// nahm dafuer <c>listBox_PV.Text</c> (Z. 118).
+        /// </param>
+        /// <remarks>
+        /// <para><b>Befund W14-B33 behoben.</b> Der Vorlaeufer meldete den Erfolg des
+        /// UPDATE, hatte aber KEINEN <c>else</c>-Zweig: Ein fehlgeschlagenes Update
+        /// schwieg. Jetzt kommt in beiden Faellen ein Ergebnis mit Text zurueck.</para>
+        /// <para>Der <c>Exists</c>-Vorabtest beim Anlegen ist woertlich uebernommen
+        /// (Z. 104), einschliesslich seiner Meldung.</para>
+        /// </remarks>
+        public static SpeicherErgebnis SpeichernAus(PhotovoltaikModel daten, bool neu, string schluessel)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(daten.m_szName))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                var ctrl = new PhotovoltaikStammCtrl();
+
+                if (neu)
+                {
+                    if (ctrl.Exists(daten.m_szName))
+                        return new SpeicherErgebnis(false,
+                            MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT, "");
+
+                    if (!ctrl.InsertFrom(daten))
+                        return new SpeicherErgebnis(false,
+                            MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                    return new SpeicherErgebnis(true,
+                        MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, daten.m_szName);
+                }
+
+                // PV-Katalog-Koeffizienten (mit Merge 5 aus Form_AdminPV nachgezogen): Die
+                // Katalogmaske fuehrt alpha_SC und beta_OC nicht. Ein Update aus ihr traegt
+                // deshalb die GESPEICHERTEN Koeffizienten weiter, statt sie mit 0 zu
+                // ueberschreiben - genau das loeschte bis dahin bei jedem Speichern eines
+                // CEC-Moduls seine Temperaturkoeffizienten.
+                var bestand = new PhotovoltaikStammCtrl();
+                bestand.ReadSingle(schluessel ?? daten.m_szName);
+                if (bestand.rows > 0)
+                {
+                    if (daten.m_alpha_SC == 0.0) daten.m_alpha_SC = bestand.items[0].m_alpha_SC;
+                    if (daten.m_beta_OC == 0.0) daten.m_beta_OC = bestand.items[0].m_beta_OC;
+                }
+
+                if (!ctrl.UpdateFrom(daten, schluessel ?? daten.m_szName))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                return new SpeicherErgebnis(true,
+                    MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, daten.m_szName);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        /// <summary>
+        /// Loescht ein Katalogmodul und sagt, warum es nicht ging.
+        /// </summary>
+        /// <remarks>
+        /// Der Vorlaeufer (<c>Form_AdminPV.btn_Loeschen_Click</c> Z. 221-242) loeschte
+        /// OHNE Rueckfrage (Befund W14-B35) und schluckte jede Ausnahme still (Z. 239).
+        /// Die Rueckfrage stellt jetzt die Oberflaeche, der Grund kommt von hier.
+        /// </remarks>
+        public static SpeicherErgebnis Loeschen(string szName)
+        {
+            if (string.IsNullOrWhiteSpace(szName))
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                var ctrl = new PhotovoltaikStammCtrl();
+                if (!ctrl.Delete(szName))
+                    return new SpeicherErgebnis(false, Text("KBROW_MSG_LOESCHEN_FEHLER",
+                        "Der Datensatz konnte nicht gelöscht werden."), "");
+
+                return new SpeicherErgebnis(true, "", szName);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
     }
 }

@@ -134,4 +134,33 @@ public class OptionsgruppeTests : BunitContext
         knoepfe[0].Change(true);
         Assert.Null(erhalten);
     }
+
+    /// <summary>
+    /// Erlaeuterung unter einer Option (iU9-W10a.1). Vorbild sind die drei Labels
+    /// unter den Wahlknoepfen von Form_Betriebsmodus; ohne sie waere die Wahl
+    /// zwischen "laufzeitoptimiert" und "PV-optimiert" eine Ratefrage.
+    /// </summary>
+    [Fact]
+    public void Eine_Erlaeuterung_steht_unter_ihrer_Option()
+    {
+        var cut = Render<Optionsgruppe>(p => p
+            .Add(x => x.Eintraege, Quellen)
+            .Add(x => x.Beschreibungen, new Dictionary<int, string>
+            {
+                [1] = "Erklärung zur zweiten Möglichkeit"
+            }));
+
+        var texte = cut.FindAll("p.epos-option-beschreibung");
+        Assert.Single(texte);
+        Assert.Equal("Erklärung zur zweiten Möglichkeit", texte[0].TextContent);
+    }
+
+    /// <summary>Ohne Beschreibungen steht kein einziger Erlaeuterungsabsatz da.</summary>
+    [Fact]
+    public void Ohne_Beschreibungen_steht_keine_Erlaeuterung()
+    {
+        var cut = Render<Optionsgruppe>(p => p.Add(x => x.Eintraege, Quellen));
+
+        Assert.Empty(cut.FindAll("p.epos-option-beschreibung"));
+    }
 }

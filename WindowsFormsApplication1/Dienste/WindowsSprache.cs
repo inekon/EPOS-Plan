@@ -8,7 +8,7 @@ namespace WindowsFormsApplication1
     /// Programmstart liest.
     ///
     /// <para><b>Der Registry-Pfad steht hier ZEICHENGLEICH zum Bestand</b> — mit dem
-    /// doppelten Gegenschrägstrich, den <c>Program.Main</c> und <c>MDIMainForm</c> seit
+    /// doppelten Gegenschrägstrich, den <c>Program.Main</c> und <c>Hauptfensterrahmen</c> seit
     /// jeher schreiben. Die Registry-Klasse von .NET fasst mehrfache Trennzeichen
     /// zusammen, der Wert liegt also im selben Schlüssel wie alle übrigen Einstellungen;
     /// verlassen wird sich darauf trotzdem nicht: Der Sprachwert wird mit genau der
@@ -23,7 +23,7 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// Der Registry-Zweig der Sprache — zeichengleich zu <c>Program.Main</c> und
-        /// <c>MDIMainForm</c>, siehe den Klassenkommentar.
+        /// <c>Hauptfensterrahmen</c>, siehe den Klassenkommentar.
         /// </summary>
         private const string RegistryPfad = @"Software\\wp-plan";
 

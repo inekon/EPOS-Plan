@@ -1,4 +1,4 @@
-# WP-Plan / EPOS-Plan — Projektkontext
+﻿# WP-Plan / EPOS-Plan — Projektkontext
 
 Windows-Desktop-Anwendung zur Planung und Simulation von Energie- und Wärmeversorgungskonzepten
 (Wärmebedarf, Brauchwasser, Prozesswärme, Heizkessel, BHKW, Wärmepumpe, Solarthermie, Photovoltaik,
@@ -10,10 +10,10 @@ Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
 Der **Rechenkern liegt seit dem 03.09.2026 (Paket iU4) in einem eigenen Projekt**
-[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **271 `.cs`-Dateien**, `net10.0` **ohne**
+[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **337 `.cs`-Dateien**, `net10.0` **ohne**
 WinForms und **ohne `System.Data.OleDb`**: Simulation, Wirtschaftlichkeit, Modelle,
 Zugriffsschicht (`IDatenzugriff`/`SqliteDatenzugriff`), Bericht mit Ausgabe **und**
-Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 82 Controller. Die
+Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 107 Controller. Die
 Windows-Anwendung referenziert das Projekt und übersetzt diese Dateien nicht mehr. **Eine
 Fachänderung am Rechenkern wird dort gemacht, nicht in `WindowsFormsApplication1/`.**
 
@@ -26,6 +26,30 @@ Kern verboten**; zwei Wächter (in `EPOS.Kern/CLAUDE.md`) müssen leer bleiben.
 Die **Oberfläche wächst seit dem 03.09.2026 (Paket iU8) in [`EPOS.UI`](EPOS.UI/)**, einer
 Razor-Klassenbibliothek ohne Windows-Bindung; die WinForms-Anwendung stellt nur noch die Hülle
 (`WindowsFormsApplication1/Allgemein/Blazor/`, ein `BlazorWebView` in einem modalen Fenster).
+Seit dem 04.09.2026 (Welle iU9‑W10b) ist die **Simulationskonfiguration** eine Razor-SEITE —
+die erste Fachseite, die auch die iOS-Wurzel `AppWurzel` erreicht. **Seit iU9‑W16b ist auch die
+STARTSEITE eine Razor-Seite** (`EPOS.UI/Seiten/Start/Startseite.razor`): Kopfband, sechs Reiter
+mit 21 Kacheln, Fußleiste; der `Hauptfensterrahmen` hängt sie als `BlazorSeite<Startseite>` ein, das offene
+Projekt führt `EPOS.Kern/Controller/ProjektKontextCtrl`. Damit sind auch die zwei
+Simulationsseiten aus ihren modalen Hüllen heraus — die Konfiguration als freie Ansicht, das
+Ergebnis als `Ueberlagerung` derselben WebView (Entscheid E‑5; R‑W10b‑1 und R‑W11‑1 geschlossen).
+**Seit iU9‑W16c ist auch das HAUPTFENSTER eine Razor-Seite**
+(`EPOS.UI/Seiten/Hauptfenster.razor`): Menüband mit 55 Punkten in **vier Köpfen** aus der
+erzeugten `Menuetabelle`, Kopfband PRODUKTNAME/GATTUNG/CLAIM/Version und darunter
+`AppWurzel` — **die gemeinsame Wurzel von Windows und iOS** (Entscheid E‑1: eine Wurzel,
+zwei Schalen). Zwei Anwenderentscheide vom 04.09.2026 stecken darin: die zwei Sprachpunkte
+hängen unter einem Kopf **„Sprache"** (W16c‑E‑2), und **„Varianten und Bericht…" wechselt
+die Ansicht** auf `BERICHTE_KOSTEN`, statt den sechsten Reiter der Startseite nach vorn zu
+holen (W16c‑E‑3) — das Reiterblatt bleibt, nur der Menüweg führt in die Ansicht.
+Die WinForms-Seite ist seither die **Hülle ohne Designer** (129 Zeilen) und heißt seit dem
+Anwenderentscheid **E‑10** vom 04.09.2026 `Hauptfensterrahmen`
+(`WindowsFormsApplication1/Views/Hauptformular/Hauptfensterrahmen.cs`, vorher `MDIMainForm` —
+`IsMdiContainer` stand seit jeher auf `false`): **drei Namen, drei Dinge** — der RAHMEN ist das
+Fenster mit `Application.Run`, dem `BlazorWebView`, F1 und dem Sprachwechsel, `Hauptfenster` die
+Razor-SEITE darin, `HauptfensterHuelle` deren Blazor-Hülle. Die Anwendung läuft
+„Per Monitor V2" (E‑6 / iF21), die `DpiInsel` ist gefallen. `WindowsFormsApplication1` führt
+damit **eine** Maske (`Form_HelpPopup`, bleibt bis iU11), **keine Fachmaske** und **null**
+Inline-SQL — die Mischphase ist zu Ende (M9).
 **Arbeitsregel seit dem Stichtag iZ5: Jeder neue und jeder ohnehin anzufassende Dialog entsteht
 als Razor-Komponente in `EPOS.UI`, seine WinForms-Fassung wird im selben Schritt gelöscht** —
 nie zwei Fassungen derselben Maske. Die Datenbankseite gehört dabei in einen Controller im Kern,
@@ -58,9 +82,9 @@ Migrationsschritte"); danach wird jeder Aufruf vorher mit dem Anwender abgestimm
 | Werkzeug | Wofür | Aufruf |
 |---|---|---|
 | `Werkzeuge/Formularkarte` | Feldkarte einer WinForms-Maske aus `InitializeComponent` und `.resx` — Name, Typ, Beschriftung beider Sprachen, Wertebereiche, Tab-Reihenfolge, Ereignishandler; dazu ein Razor-Sektionsskelett. **Vor jeder Maskenumstellung ziehen**, von Hand vergisst man ein Feld | `dotnet run --project Werkzeuge/Formularkarte -- <Designer.cs>`, Stapellauf mit `--alle` |
-| `Proben/ChartProben` | zeichnet die neun Berichtsbilder aus synthetischen Reihen und prüft Maße, Farben und Determinismus — ohne Datenbank, ohne Oberfläche. Fällt rot aus, sobald der Renderer eine Windows-API braucht oder sich ein Bild ändert | `dotnet run --project Proben/ChartProben -c Release` |
+| `Proben/ChartProben` | zeichnet die **34** Bilder (Bericht, Eingabemasken, seit iU9‑W11a die Ergebnisseite, seit iU9‑W14c die zwei Klimadiagramme und seit der Windows-Abnahme 05.09.2026 die zwei Bilder des Datenzooms) aus synthetischen Reihen und prüft Maße, Farben und Determinismus — dazu **zwei Gegenproben**, die belegen, dass ein Achsenausschnitt das Bild wirklich ändert; ohne Datenbank, ohne Oberfläche. Fällt rot aus, sobald der Renderer eine Windows-API braucht oder sich ein Bild ändert | `dotnet run --project Proben/ChartProben -c Release` |
 | `EPOS.Referenzlauf` | der plattformfreie Rechennachweis gegen die eingefrorene Basis; läuft auf Linux, macOS und in der CI | `dotnet run --project EPOS.Referenzlauf -- lauf …` bzw. `… vergleich <ref> <neu>` |
-| `Referenzlauf` (Windows) | die vollständige Suite mit den Modi `lauf`, `projekt`, `vergleich`, `pruefen`, `bildvergleich` (dazu `liste` und `migration`). `bildvergleich` stellt die neuen SkiaSharp-Bilder den alten GDI+-Bildern gegenüber — nur unter Windows | `Referenzlauf.exe <modus> …` |
+| `Referenzlauf` (Windows) | die vollständige Suite mit den Modi `lauf`, `projekt`, `vergleich`, `pruefen` (dazu `liste` und `migration`). Der frühere Modus `bildvergleich` ist mit iF23 (03.09.2026) samt dem GDI+-Renderer gelöscht | `Referenzlauf.exe <modus> …` |
 | `Werkzeuge/SqlDialektPruefer` | hält **jeden** SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Access-Verbotsliste (`UPDATE … JOIN`, `Nz`, `TOP n`, `LIKE '*'`, `&`, Umlaut-Schreibweise). **Nach jeder neuen oder geänderten SQL-Anweisung ziehen** — der Referenzlauf deckt nur den Rechenweg ab, nicht die Dialog- und Pflegepfade. Regeln in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) Abschnitt 6 | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
 
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
@@ -134,3 +158,32 @@ Bearbeiten der `.accdb` ohne Access und die offene Migrationsbaustelle — steht
 Nehme aktuelle .md Dateien jeweils zur bearbeteten Thematik. Teilweise gibt es ältere .MD Dateien, die nur teilweise noch Gültigkeit haben.
 Lizenzierungskonzept als
 `EPOS-Plan_Konzept_Lizenzierung.md` in der Wurzel.
+
+
+## Compact instructions
+
+Beim Verdichten des Gesprächs (`/compact` wie automatische Verdichtung) bleibt erhalten:
+
+- **Auftrag und Stand**: der Arbeitsauftrag im Wortlaut, der Zweig, der zuletzt zusammengeführte
+  und der zuletzt gepushte Commit (SHA), die laufende Welle bzw. der laufende Schritt und was
+  davon noch offen ist.
+- **Laufende Arbeiten**: Kennungen und Worktree-Pfade laufender Agenten samt Auftrag, armierte
+  Check-ins (Trigger-Kennung, Uhrzeit), laufende CI- und iOS-Läufe (Run-Kennung, Commit).
+- **Entscheide des Anwenders**: jeder in der Sitzung getroffene Entscheid mit Kennung
+  (z. B. W15a‑O‑3), Inhalt und Umsetzungsstand; jede noch offene Anwenderfrage mit Kennung.
+- **Arbeitsregeln der Sitzung**: Git-Regeln (Zweig, Attribution-Trailer, kein Pull Request, kein
+  Tag-Push), die Reihenfolge Merge → Gate → Statusblock → Push → iOS-Lauf → Nachweis, die Regeln an
+  Agenten (Modellwahl, Kultur pinnen, eigener Worktree, kein Push, kein CI-Aufruf, Aufräumen).
+- **Fehler und Behebung**: jede gefundene Fehlerursache und der Commit, der sie behebt.
+- **Dateien und Muster**: Pfade der Scratchpad-Skripte und Arbeitsanweisungen sowie die Muster,
+  nach denen Dokumente fortgeschrieben werden (Aufbau eines Statusblocks, Anker im
+  Nachweisdokument, Übersichtszeile im Konzept).
+
+Weglassen darf die Verdichtung: vollständige Dateiinhalte, Build- und Testausgaben, die bereits in
+ein grünes Gate oder einen Commit gemündet sind, und die Zwischenschritte erledigter Wellen jenseits
+von Commit und Ergebnis.
+
+Während der iOS-Migration (Zweig `ios_migration`) gilt zusätzlich: Der dauerhafte Stand steht in den
+Statusblöcken von [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md) und in
+[`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md). Nach einer Verdichtung wird der
+Wellenstand von dort und aus `git log origin/ios_migration` nachgelesen, nicht aus dem Gedächtnis.

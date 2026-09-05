@@ -50,3 +50,23 @@
 *.accdb filter=lfs diff=lfs merge=lfs -text
 Kenndaten.accdb filter=lfs diff=lfs merge=lfs -text
 Kenndaten_Backup.accdb filter=lfs diff=lfs merge=lfs -text
+
+###############################################################################
+# Ganglinien-Proben der Welle iU9-W12 (Schritt W12.0i)
+#
+# Diese Dateien sind der bitgleiche Nachweis des Lastgang-Imports. Sie werden
+# BYTEWEISE eingefroren - "text=auto" wuerde ihre CRLF-Zeilenenden beim naechsten
+# Auschecken auf LF normalisieren und damit genau das aendern, was hier bewiesen
+# werden soll.
+###############################################################################
+EPOS.Kern.Tests/Proben/Ganglinien/** -text
+
+###############################################################################
+# Import-Proben der Welle iU9-W13 (Schritt W13.0i)
+#
+# Dieselbe Begruendung wie oben: Die Ausschnitte aus den VDI-3805-Katalogen
+# tragen die Kodierung des Originals (Windows-1252) und CRLF; die CEC- und
+# PAN-Proben ihre eigene. "text=auto" wuerde sie beim naechsten Auschecken
+# umschreiben und damit genau das aendern, was hier bewiesen werden soll.
+###############################################################################
+Referenzlaeufe/Importproben/** -text

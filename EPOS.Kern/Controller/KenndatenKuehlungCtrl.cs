@@ -85,6 +85,58 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die KÜHL-Kennlinien eines Stammgeräts für den Renderer (iU9-W7.0c): je
+        /// Vorlauftemperatur eine COP- und eine Pkuehl-Reihe über der Außentemperatur.
+        ///
+        /// <para><b>Nur die höchste Laststufe.</b> <c>Tab_Kenndaten_Kuehlung_STAMM</c>
+        /// führt die Kennlinien je Teillast; <c>Form_WP.InitChart</c> holt sich mit
+        /// <c>SELECT MAX(Last)</c> die größte und zeigt allein deren Zeilen (Z. 256-271).
+        /// Gibt es keine Laststufe — <c>MAX</c> liefert dann <c>NULL</c> oder gar keine
+        /// Zeile —, werden ALLE Zeilen genommen. Beides ist woertlich uebernommen.</para>
+        /// </summary>
+        public static KennlinienSatz Reihen(int idWp)
+        {
+            object maxLast = DataRepository.ExecuteScalar(
+                "SELECT MAX([Last]) FROM " + WPStammCtrl.CURVE_K + " WHERE ID_WP = ?",
+                new DbParam("@id", idWp));
+
+            var vorlaeufe = new List<int>();
+            DataTable dtv = DataRepository.GetDataTable(
+                "SELECT Vorlauf, ID_WP FROM " + WPStammCtrl.CURVE_K + " GROUP BY Vorlauf, ID_WP HAVING ID_WP = ?",
+                new DbParam("@id", idWp));
+            if (dtv != null)
+                foreach (DataRow r in dtv.Rows)
+                    vorlaeufe.Add(r["Vorlauf"] != DBNull.Value ? Convert.ToInt32(r["Vorlauf"]) : 0);
+
+            DataTable dt;
+            if (maxLast != null && maxLast != DBNull.Value)
+                dt = DataRepository.GetDataTable(
+                    "SELECT Vorlauf, Temperatur, COP, Pkuehl FROM " + WPStammCtrl.CURVE_K +
+                    " WHERE ID_WP = ? AND [Last] = ? ORDER BY Temperatur ASC",
+                    new DbParam("@id", idWp), new DbParam("@last", Convert.ToInt32(maxLast)));
+            else
+                dt = DataRepository.GetDataTable(
+                    "SELECT Vorlauf, Temperatur, COP, Pkuehl FROM " + WPStammCtrl.CURVE_K +
+                    " WHERE ID_WP = ? ORDER BY Temperatur ASC",
+                    new DbParam("@id", idWp));
+
+            return KennlinienSatz.Bauen(vorlaeufe, dt, "Pkuehl");
+        }
+
+        /// <summary>
+        /// Gibt es zu diesem Stammgerät überhaupt Kühl-Kenndaten? Das entscheidet, ob
+        /// <c>Form_WP</c> den Umschalter „Wärme / Kühlung" zeigt
+        /// (<c>HatKuehlKenndaten</c>, Z. 177).
+        /// </summary>
+        public static bool HatKenndaten(int idWp)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM " + WPStammCtrl.CURVE_K + " WHERE ID_WP = ?",
+                new DbParam("@id", idWp));
+            return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
+        }
+
         #endregion
 
         #region --- DATABASE WRITE OPERATIONS ---

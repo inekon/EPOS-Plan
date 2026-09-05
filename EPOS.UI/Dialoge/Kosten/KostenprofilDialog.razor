@@ -1,0 +1,489 @@
+﻿@* Kostenprofil-Editor (iU9-W3.4).
+
+   Vorbild: Views/Kosten/Form_Kostenprofil.cs (483 Z.) und .Designer.cs
+   (Fachkonzept Stromspeicher 4.1 b, Arbeitspaket AP4). Zwoelf Monatsniveaus
+   [ct/kWh], je Wochentag 24 Stundenabweichungen und die Vorschau des daraus
+   konstruierten Jahresprofils:
+
+       Preis(h) = Monatswert(Monat) + Wochenwert(Wochentag, Stunde)
+
+   DIE 36 LAUFZEITFELDER. Der Vorlaeufer baute die zwoelf Monats- und die 24
+   Stundenfelder in Schleifen zur Laufzeit (MonatsRasterBauen,
+   StundenRasterBauen) - in keiner Feldkarte stehen sie deshalb. Hier sind es
+   36 Zahlenfelder in zwei mitwachsenden Gittern.
+
+   DREI REITER - WIE IM VORLAEUFER (iU9-W5.0, Nachzug von A-17). Welle 3
+   stellte Monat, Woche und Grafik als drei Gruppen untereinander, weil es
+   den Baustein Reiter noch nicht gab; mit 36 Feldern und Diagramm wurde das
+   ein langes Fenster (offener Punkt W3-O3). Seit Welle 5 steht der Baustein,
+   und die Maske hat ihre Reiterform zurueck.
+
+   DIE VORSCHAU RECHNET DIE HUELLE. Sie ruft dieselbe Engine-Methode wie die
+   Simulation (PreisModell.AusMonatsUndWochenwerten) und laesst den
+   Kern-Renderer daraus ein PNG zeichnen (ChartRenderer.Kostenprofil). Die
+   Komponente zeigt nur das Bild - EPOS.UI kennt weder Engine noch
+   Zeichenbibliothek.
+
+   TASTATUR: Esc schliesst. Enter ist NICHT belegt - "OK" speichert. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Herleitungszeile Text="@InfoText" />
+
+    <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+              WertChanged="@(w => _bezeichner = w)" />
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@ReiterBezeichnung">
+        <KindInhalt>
+
+        @* ========================================================= Monatswerte *@
+        <Reiterblatt Schluessel="MONAT" Titel="@KopfMonat">
+            <KindInhalt>
+                <div class="epos-zahlenraster">
+                    @for (int i = 0; i < 12; i++)
+                    {
+                        int m = i;
+                        <Zahlenfeld Bezeichnung="@Monatsname(m)" Einheit="@Einheit"
+                                    Wert="@_monat[m]" WertChanged="@(w => BeiMonat(m, w))" />
+                    }
+                </div>
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf"
+                            @onclick="AlleMonate">@AlleMonateText</button>
+                </div>
+            </KindInhalt>
+        </Reiterblatt>
+
+        @* ========================================================= Wochenwerte *@
+        <Reiterblatt Schluessel="WOCHE" Titel="@KopfWoche">
+            <KindInhalt>
+                <Auswahlfeld Bezeichnung="@LabelWochentag" Eintraege="@Wochentage"
+                             Auswahl="@_tag" AuswahlChanged="BeiTagwechsel" />
+
+                <div class="epos-zahlenraster">
+                    @{ int tagJetzt = _tag ?? 0; }
+                    @for (int i = 0; i < 24; i++)
+                    {
+                        int h = i;
+                        <Zahlenfeld Bezeichnung="@Stundenname(h)" Einheit="@Einheit"
+                                    Wert="@_woche[tagJetzt, h]" WertChanged="@(w => BeiStunde(h, w))" />
+                    }
+                </div>
+
+                <Herleitungszeile Text="@HinweisAbweichung" />
+
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf"
+                            @onclick="TagKopieren">@TagKopierenText</button>
+                    <button type="button" class="epos-knopf" disabled="@(_tagKopie is null)"
+                            @onclick="TagEinfuegen">@TagEinfuegenText</button>
+                    <button type="button" class="epos-knopf"
+                            @onclick="AlleTage">@AlleTageText</button>
+                    <button type="button" class="epos-knopf"
+                            @onclick="TagUebernehmen">@TagUebernehmenText</button>
+                </div>
+            </KindInhalt>
+        </Reiterblatt>
+
+        @* ============================================================== Grafik *@
+        <Reiterblatt Schluessel="GRAFIK" Titel="@KopfGrafik" Betreten="VorschauZeichnen">
+            <KindInhalt>
+                <ChartBild Png="@_bild" Alt="@BildAlt" PlatzhalterText="@PlatzhalterText" />
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" disabled="@_zeichnet"
+                            @onclick="VorschauZeichnen">@AktualisierenText</button>
+                </div>
+            </KindInhalt>
+        </Reiterblatt>
+
+        </KindInhalt>
+    </Reiter>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiOk">@OkText</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Vorbelegung
+    // =====================================================================
+
+    /// <summary>Bezeichner des Profils.</summary>
+    [Parameter] public string Bezeichner { get; set; } = "";
+
+    /// <summary>Die zwoelf Monatsniveaus [ct/kWh]; weniger Werte fuellen den Anfang.</summary>
+    [Parameter] public IReadOnlyList<double> Monatswerte { get; set; } = Array.Empty<double>();
+
+    /// <summary>Die 168 Wochenwerte (Montag 0 Uhr bis Sonntag 23 Uhr).</summary>
+    [Parameter] public IReadOnlyList<double> Wochenwerte { get; set; } = Array.Empty<double>();
+
+    /// <summary>Die zwoelf Monatsnamen; Vorgabe: die der laufenden Kultur.</summary>
+    [Parameter] public IReadOnlyList<string> Monatsnamen { get; set; } = KulturMonate();
+
+    /// <summary>Die sieben Wochentage ab Montag (Id = Index).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Wochentage { get; set; }
+        = KulturWochentage();
+
+    // =====================================================================
+    // Delegaten - Rechnung und Datenseite liegen in der Huelle
+    // =====================================================================
+
+    /// <summary>
+    /// Zeichnet die Vorschau: zwoelf Monats- und 168 Wochenwerte hinein, ein
+    /// PNG heraus. Die Huelle rechnet mit derselben Engine-Methode wie die
+    /// Simulation und laesst den Lauf auf einem eigenen Faden laufen.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<double>, IReadOnlyList<double>, Task<byte[]?>>? Vorschau { get; set; }
+
+    /// <summary>
+    /// Speichert das Profil (Bezeichner, zwoelf Monats-, 168 Wochenwerte).
+    /// <c>false</c> = nicht geschrieben; der Dialog bleibt dann offen.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<double>, IReadOnlyList<double>, bool>? Speichern { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende. <c>true</c> = gespeichert.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte (Huelle setzt sie auf PREIS_PROFIL_* bzw. KPROF_*)
+    // =====================================================================
+
+    /// <summary>Fenstertitel (PREIS_PROFIL_TITEL).</summary>
+    [Parameter] public string TitelText { get; set; } = "Kostenprofil";
+
+    /// <summary>Die Zeile unter dem Kopf (PREIS_PROFIL_INFO).</summary>
+    [Parameter] public string InfoText { get; set; }
+        = "Preisniveau je Monat und Tagesgang je Woche [ct/kWh].";
+
+    /// <summary>Beschriftung des Bezeichnerfeldes (PREIS_PROFIL_LABEL_BEZEICHNER).</summary>
+    [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";
+
+    /// <summary>Titel der Monatsgruppe (PREIS_PROFIL_KOPF_MONAT).</summary>
+    [Parameter] public string KopfMonat { get; set; } = "Preisniveau je Monat [ct/kWh]";
+
+    /// <summary>Titel der Wochengruppe (PREIS_PROFIL_KOPF_WOCHE).</summary>
+    [Parameter] public string KopfWoche { get; set; } = "Abweichung je Wochentag und Stunde";
+
+    /// <summary>Titel der Grafikgruppe (PREIS_PROFIL_TAB_GRAFIK).</summary>
+    [Parameter] public string KopfGrafik { get; set; } = "Grafik";
+
+    /// <summary>Beschriftung der Reiterleiste fuer die Sprachausgabe.</summary>
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Kostenprofil";
+
+    /// <summary>Einheit hinter jedem Zahlenfeld.</summary>
+    [Parameter] public string Einheit { get; set; } = "ct/kWh";
+
+    /// <summary>Beschriftung der Wochentagswahl (PREIS_PROFIL_LBL_WOCHENTAG).</summary>
+    [Parameter] public string LabelWochentag { get; set; } = "Wochentag:";
+
+    /// <summary>Der leise Satz unter den Stundenfeldern (PREIS_PROFIL_HINWEIS_ABWEICHUNG).</summary>
+    [Parameter] public string HinweisAbweichung { get; set; }
+        = "Die Abweichung wird zum Monatswert addiert.";
+
+    /// <summary>Beschriftung von btnAlleMonate (PREIS_PROFIL_BTN_ALLE_MONATE).</summary>
+    [Parameter] public string AlleMonateText { get; set; } = "Januar-Wert für alle Monate übernehmen";
+
+    /// <summary>Beschriftung von btnTagKopieren (PREIS_PROFIL_BTN_TAG_KOPIEREN).</summary>
+    [Parameter] public string TagKopierenText { get; set; } = "Tag kopieren";
+
+    /// <summary>Beschriftung von btnTagEinfuegen (PREIS_PROFIL_BTN_TAG_EINFUEGEN).</summary>
+    [Parameter] public string TagEinfuegenText { get; set; } = "Tag einfügen";
+
+    /// <summary>Beschriftung von btnAlleTage (PREIS_PROFIL_BTN_ALLE_TAGE).</summary>
+    [Parameter] public string AlleTageText { get; set; } = "Für alle Tage";
+
+    /// <summary>Beschriftung von btnTagUebernehmen (PREIS_PROFIL_BTN_UEBERNEHMEN).</summary>
+    [Parameter] public string TagUebernehmenText { get; set; }
+        = "Stundenwerte für diesen Tag übernehmen";
+
+    /// <summary>Beschriftung des Vorschauknopfes (KPROF_BTN_VORSCHAU).</summary>
+    [Parameter] public string AktualisierenText { get; set; } = "Vorschau aktualisieren";
+
+    /// <summary>Was das Diagramm zeigt — fuer Sprachausgabe und fehlendes Bild.</summary>
+    [Parameter] public string BildAlt { get; set; }
+        = "Jahresprofil der Strompreise über 8760 Stunden";
+
+    /// <summary>Text, solange es noch kein Bild gibt.</summary>
+    [Parameter] public string PlatzhalterText { get; set; } = "Noch kein Diagramm";
+
+    /// <summary>Meldung nach „Für alle Tage" (PREIS_PROFIL_MSG_ALLE_TAGE).</summary>
+    [Parameter] public string MeldungAlleTage { get; set; }
+        = "Die Stundenwerte gelten jetzt für alle Wochentage.";
+
+    /// <summary>Meldung, wenn noch kein Tag kopiert wurde (PREIS_PROFIL_MSG_ERST_KOPIEREN).</summary>
+    [Parameter] public string MeldungErstKopieren { get; set; }
+        = "Bitte zuerst einen Tag kopieren.";
+
+    /// <summary>Meldung, wenn das Speichern scheitert (PREIS_PROFIL_MSG_NICHT_GESPEICHERT).</summary>
+    [Parameter] public string MeldungNichtGespeichert { get; set; }
+        = "Das Kostenprofil konnte nicht gespeichert werden.";
+
+    /// <summary>Beschriftung des OK-Knopfes (SIM_BTN_OK).</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Beschriftung des Abbrechen-Knopfes (SIM_BTN_ABBRECHEN).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schluessel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Kostenprofil.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private string _reiter = "MONAT";
+    private string _bezeichner = "";
+    private readonly double?[] _monat = new double?[12];
+    private readonly double?[,] _woche = new double?[7, 24];
+    private double[]? _tagKopie;
+    private int? _tag = 0;
+
+    private byte[]? _bild;
+    private bool _zeichnet;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Die zwoelf Monatsfelder (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<double?> Monatsfelder => _monat;
+
+    /// <summary>Der Wert einer Wochenstunde (Pruefhilfe fuer Tests).</summary>
+    public double? Wochenwert(int tag, int stunde) => _woche[tag, stunde];
+
+    /// <summary>Der gewaehlte Wochentag (Pruefhilfe fuer Tests).</summary>
+    public int GewaehlterTag => _tag ?? 0;
+
+    /// <summary>Die stehende Meldung (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Das gezeichnete Bild (Pruefhilfe fuer Tests).</summary>
+    public byte[]? Bild => _bild;
+
+    protected override void OnInitialized()
+    {
+        _bezeichner = Bezeichner ?? "";
+
+        for (int m = 0; m < 12; m++)
+            _monat[m] = m < Monatswerte.Count ? Monatswerte[m] : 0.0;
+
+        for (int t = 0; t < 7; t++)
+            for (int h = 0; h < 24; h++)
+            {
+                int i = t * 24 + h;
+                _woche[t, h] = i < Wochenwerte.Count ? Wochenwerte[i] : 0.0;
+            }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+
+        // SetControls zeichnete die Vorschau beim Oeffnen.
+        await VorschauZeichnen();
+    }
+
+    // =====================================================================
+    // Felder
+    // =====================================================================
+
+    private string Monatsname(int m)
+        => (m < Monatsnamen.Count ? Monatsnamen[m] : (m + 1).ToString()) + ":";
+
+    /// <summary>Die Stundenbeschriftung des Vorlaeufers: 1 bis 24.</summary>
+    private static string Stundenname(int h) => (h + 1).ToString() + ".";
+
+    /// <summary>A-7 aus Welle 2: Ein geleertes Feld behaelt seinen Wert.</summary>
+    private void BeiMonat(int m, double? wert)
+    {
+        _monat[m] = wert ?? _monat[m];
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    private void BeiStunde(int h, double? wert)
+    {
+        int t = _tag ?? 0;
+        _woche[t, h] = wert ?? _woche[t, h];
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// Wie <c>lbTag_SelectedIndexChanged</c>: Der Wechsel uebernimmt den alten Tag
+    /// und zeigt den neuen. Uebernommen ist hier nichts mehr zu tun — die
+    /// Zahlenfelder schreiben unmittelbar in die Wochenmatrix.
+    /// </summary>
+    private void BeiTagwechsel(int? id)
+    {
+        _tag = id ?? 0;
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    // =====================================================================
+    // Knoepfe
+    // =====================================================================
+
+    /// <summary>Wie <c>btnAlleMonate_Click</c>: der Januarwert in alle zwoelf Felder.</summary>
+    private void AlleMonate()
+    {
+        double januar = _monat[0] ?? 0.0;
+        for (int m = 0; m < 12; m++) _monat[m] = januar;
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    /// <summary>Wie <c>btnTagKopieren_Click</c>.</summary>
+    private void TagKopieren()
+    {
+        int t = _tag ?? 0;
+        _tagKopie = new double[24];
+        for (int h = 0; h < 24; h++) _tagKopie[h] = _woche[t, h] ?? 0.0;
+        Melden("", WarnStufe.Hinweis);
+    }
+
+    /// <summary>Wie <c>btnTagEinfuegen_Click</c> samt Meldung, wenn nichts kopiert wurde.</summary>
+    private async Task TagEinfuegen()
+    {
+        if (_tagKopie is null) { Melden(MeldungErstKopieren, WarnStufe.Hinweis); return; }
+
+        int t = _tag ?? 0;
+        for (int h = 0; h < 24; h++) _woche[t, h] = _tagKopie[h];
+        Melden("", WarnStufe.Hinweis);
+        await VorschauZeichnen();
+    }
+
+    /// <summary>Wie <c>btnAlleTage_Click</c>: der gezeigte Tag auf alle sieben.</summary>
+    private async Task AlleTage()
+    {
+        int t = _tag ?? 0;
+        for (int tag = 0; tag < 7; tag++)
+            for (int h = 0; h < 24; h++)
+                _woche[tag, h] = _woche[t, h];
+
+        Melden(MeldungAlleTage, WarnStufe.Hinweis);
+        await VorschauZeichnen();
+    }
+
+    /// <summary>
+    /// Wie <c>btnTagUebernehmen_Click</c>. Die Werte stehen bereits in der Matrix
+    /// (jedes Zahlenfeld meldet seine Eingabe sofort); der Knopf zeichnet die
+    /// Vorschau damit neu.
+    /// </summary>
+    private Task TagUebernehmen() => VorschauZeichnen();
+
+    // =====================================================================
+    // Vorschau
+    // =====================================================================
+
+    /// <summary>
+    /// Zeichnet die Vorschau — ueber dieselbe Engine-Methode, mit der auch die
+    /// Simulation rechnet (das erledigt die Huelle).
+    /// </summary>
+    private async Task VorschauZeichnen()
+    {
+        if (Vorschau is null || _zeichnet) return;
+
+        _zeichnet = true;
+        StateHasChanged();                 // der Knopf sperrt, solange gerechnet wird
+        try
+        {
+            _bild = await Vorschau(Monatsliste(), Wochenliste());
+        }
+        finally
+        {
+            _zeichnet = false;
+
+            // Der erste Lauf kommt aus OnAfterRenderAsync - danach zeichnet
+            // Blazor nicht von sich aus neu.
+            StateHasChanged();
+        }
+    }
+
+    private double[] Monatsliste()
+    {
+        var w = new double[12];
+        for (int m = 0; m < 12; m++) w[m] = _monat[m] ?? 0.0;
+        return w;
+    }
+
+    private double[] Wochenliste()
+    {
+        var w = new double[168];
+        for (int t = 0; t < 7; t++)
+            for (int h = 0; h < 24; h++)
+                w[t * 24 + h] = _woche[t, h] ?? 0.0;
+        return w;
+    }
+
+    // =====================================================================
+    // Abschluss
+    // =====================================================================
+
+    /// <summary>Wie <c>btnOk_Click</c>: erst speichern, dann schliessen.</summary>
+    private async Task BeiOk()
+    {
+        if (Speichern is null) { await Geschlossen.InvokeAsync(false); return; }
+
+        if (!Speichern(_bezeichner.Trim(), Monatsliste(), Wochenliste()))
+        {
+            Melden(MeldungNichtGespeichert, WarnStufe.Fehler);
+            return;
+        }
+
+        await Geschlossen.InvokeAsync(true);
+    }
+
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        // Enter ist NICHT belegt: OK speichert (A-7 aus B5b).
+        "Escape" => BeiAbbrechen(),
+        _ => Task.CompletedTask
+    };
+
+    // =====================================================================
+    // Namen aus der Kultur - wie im Vorlaeufer
+    // =====================================================================
+
+    private static string[] KulturMonate()
+    {
+        string[] namen = System.Globalization.CultureInfo.CurrentUICulture
+                             .DateTimeFormat.MonthNames;
+        var zwoelf = new string[12];
+        for (int m = 0; m < 12; m++) zwoelf[m] = m < namen.Length ? namen[m] : "";
+        return zwoelf;
+    }
+
+    /// <summary>Die sieben Wochentage ab MONTAG — dieselbe Drehung wie im Vorlaeufer.</summary>
+    private static (int Id, string Text)[] KulturWochentage()
+    {
+        string[] tage = System.Globalization.CultureInfo.CurrentUICulture
+                            .DateTimeFormat.DayNames;
+        var abMontag = new (int, string)[7];
+        for (int t = 0; t < 7; t++) abMontag[t] = (t, tage[(t + 1) % 7]);
+        return abMontag;
+    }
+}

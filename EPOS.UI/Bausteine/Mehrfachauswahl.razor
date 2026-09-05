@@ -1,0 +1,93 @@
+﻿@* Liste mit Haken - der Ersatz fuer die CheckedListBox des Bestands
+   (iU9-W4.4, Bausteinluecke 11).
+
+   WOZU. Wo mehrere Eintraege GLEICHZEITIG gelten duerfen, taugt weder eine
+   Klappliste (eine Wahl) noch eine Optionsgruppe (eine Wahl). Der Bestand
+   nimmt dafuer eine CheckedListBox — etwa die Uebernahme aus dem
+   Energietraegerkatalog (Form_Energietraeger.KatalogUebernahme), die die noch
+   nicht zugeordneten Traeger zur Auswahl stellt.
+
+   BAUWEISE. Je Eintrag ein Schalter; sie stehen in einem rollenden Bereich,
+   damit eine lange Liste den Dialog nicht sprengt. Alles auswaehlen bzw.
+   nichts auswaehlen sind zwei Knoepfe — die CheckedListBox konnte das nicht,
+   und bei zwanzig Traegern ist es der Unterschied zwischen einem Klick und
+   zwanzig.
+
+   Die Auswahl gehoert dem Aufrufer: Gewaehlt kommt herein, GewaehltChanged
+   meldet jede Aenderung. Der Baustein haelt keinen eigenen Zustand. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-mehrfachauswahl">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <p class="epos-untergruppe">@Bezeichnung</p>
+    }
+
+    @if (MitSammelknoepfen && Eintraege.Count > 1)
+    {
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf" @onclick="AlleWaehlen">@AlleText</button>
+            <button type="button" class="epos-knopf" @onclick="KeineWaehlen">@KeineText</button>
+        </div>
+    }
+
+    <div class="epos-mehrfachauswahl-liste" role="group" aria-label="@Bezeichnung">
+        @foreach ((int id, string text) in Eintraege)
+        {
+            int eintragId = id;
+            <Schalter Bezeichnung="@text" Wert="@Gewaehlt.Contains(eintragId)"
+                      Aktiv="@Aktiv"
+                      WertChanged="@(w => Umschalten(eintragId, w))" />
+        }
+    </div>
+
+    @if (Eintraege.Count == 0)
+    {
+        <Herleitungszeile Text="@LeerText" />
+    }
+</div>
+
+@code {
+    /// <summary>Ueberschrift ueber der Liste; leer = ohne.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Die waehlbaren Eintraege in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Die Ids der gewaehlten Eintraege.</summary>
+    [Parameter] public IReadOnlyList<int> Gewaehlt { get; set; } = Array.Empty<int>();
+
+    /// <summary>Meldet die neue Auswahl.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<int>> GewaehltChanged { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c> sperrt die ganze Liste.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Zeigt „Alle" und „Keine" ueber der Liste.</summary>
+    [Parameter] public bool MitSammelknoepfen { get; set; } = true;
+
+    [Parameter] public string AlleText { get; set; } = "Alle";
+    [Parameter] public string KeineText { get; set; } = "Keine";
+
+    /// <summary>Satz, wenn es nichts zu waehlen gibt.</summary>
+    [Parameter] public string LeerText { get; set; } = "Keine Einträge zur Auswahl.";
+
+    private Task Umschalten(int id, bool an)
+    {
+        var neu = new List<int>(Gewaehlt);
+        if (an) { if (!neu.Contains(id)) neu.Add(id); }
+        else neu.Remove(id);
+        return GewaehltChanged.InvokeAsync(neu);
+    }
+
+    private Task AlleWaehlen()
+    {
+        var neu = new List<int>();
+        foreach ((int id, _) in Eintraege) neu.Add(id);
+        return GewaehltChanged.InvokeAsync(neu);
+    }
+
+    private Task KeineWaehlen() => GewaehltChanged.InvokeAsync(Array.Empty<int>());
+}

@@ -1,0 +1,679 @@
+﻿@* Die EINE Projektliste des Hauses (iU9-W15a.1).
+
+   WARUM ES DEN BAUSTEIN GIBT. Der Bestand fuehrte VIER Projektlisten
+   nebeneinander (Befund W15a-B52): das UserControl ProjektAuswahl (ListView,
+   drei Spalten, Suche, Sortierung, 408 Zeilen), das zweispaltige listView_Projekt
+   in "Speichern unter", die comboBox_Projekte in "Loeschen" (ueber die
+   Erweiterungsmethode ControllerListen.FillComboBox) und die eigene Schleife
+   cbProjekt in "Export/Import". Dazu als fuenfte die Razor-Seite Projektliste
+   (iOS-Einstieg). Das Konzept "Projektdialoge vereinheitlichen" fordert seit dem
+   29.08.2026 ausdruecklich "Eine Projektauswahl fuer alle" (:177) - hier ist sie.
+
+   VIER EIGENSCHAFTEN, DIE MITGENOMMEN SEIN WOLLEN, weil sie sonst still
+   verschwinden:
+     * Die SUCHE greift ueber Projektname, Kunde UND BESCHREIBUNG - und die
+       Beschreibung ist in der Liste gar nicht sichtbar (W15a-B22). Wer sie
+       vergisst, dem "findet die Suche nichts mehr".
+     * Der GLEICHSTAND wird immer ueber den Namen aufgeloest (ProjektAuswahl:332),
+       "damit die Reihenfolge bei gleichem Datum (Massenimport!) nicht bei jedem
+       Aufbau springt".
+     * Die ZAEHLZEILE ist ein Formatstring ("{0} von {1} Projekten"), der im
+       Vorlaeufer als Entwurfstext eines Labels getarnt war (W15a-B20). Hier ist
+       er ein Parameter.
+     * NurName und AutoVorauswahl sind die zwei Designer-Eigenschaften, mit denen
+       sich die zwei Wirte des UserControls unterschieden - der Assistent zeigt
+       nur die Namensspalte (rund 270 px) und will KEINE Vorauswahl, "damit
+       'Weiter' erst wirkt, wenn der Anwender ein Projekt ausdruecklich gewaehlt
+       hat".
+
+   WAS ERSATZLOS ENTFAELLT: das Feld _markiert des Vorlaeufers (W15a-B21). Es war
+   ein reiner WinForms-Umweg - ListView.SelectedItems bleibt leer, solange das
+   Steuerelement kein Fensterhandle hat.
+
+   VARIANTEN SIND KENNTLICH (Anwenderwunsch 05.09.2026, W15a-E-1: "Projekt
+   oeffnen: Es sollte wie zuvor kenntlich sein, welches Variantenprojekte sind").
+
+   WIE ES ZUVOR WAR: gar nicht als Spalte. Weder ucProjektAuswahl noch
+   Form_ProjektAuswahl kannten das Wort "Variante" - kenntlich war eine Variante
+   AM NAMEN, den VariantenCtrl.AnlegenAusStamm als "<Stamm> - <Bezeichner>"
+   bildet (VariantenCtrl.cs:124). Form_Start.FuelleVariantenCombo (:2087-2143)
+   zeigte dieselbe Zeichenkette und ordnete die Gruppe wie VariantenCtrl.LadeGruppe:
+   der Stamm zuerst, dann seine Varianten nach Bezeichner.
+
+   WARUM DAS NICHT MEHR TRAEGT: Die schmale Assistentenspalte (280 px) schnitt den
+   Namen ab - und abgeschnitten wird ausgerechnet der Teil, der die Variante
+   ausmacht. Drei Zeilen "Booster-Kette mit Kombi-Spe..." waren nicht mehr zu
+   unterscheiden. Also drei Mittel, keines davon neu erfunden:
+     * der Name BRICHT UM statt abzuschneiden (die Regel dazu ist W15a-B-1; sie
+       stand im Blatt, verlor aber gegen .epos-raster td);
+     * die Gruppe steht wie im Vorbild beieinander - Stamm, darunter EINGERUECKT
+       seine Varianten nach Bezeichner;
+     * die Spalte "Art" nennt Stamm bzw. Variante samt Bezeichner. Sie erscheint
+       NUR, wenn die Liste ueberhaupt eine Variante fuehrt, und nur dort, wo Platz
+       ist; wo sie fehlt (Assistent, iOS-Einstieg), traegt eine leise Zeile
+       "Variante von <Stamm>" dieselbe Auskunft.
+
+   EINE GEWOEHNLICHE TABELLE, KEIN Raster: Die Spaltenzahl haengt am Spaltensatz
+   und entsteht zur Laufzeit; ein QuickGrid braucht seine Spalten zur
+   Uebersetzungszeit (Hausregel EPOS.UI, "Eine Seite ist kein Dialog").
+
+   KEINE DATENBANK: Die Zeilen kommen fertig als [Parameter] aus
+   ProjektCtrl.NamenListe. *@
+
+@namespace EPOS.UI.Bausteine
+
+@using WindowsFormsApplication1
+
+<div class="epos-projektliste">
+
+    @if (MitSuche)
+    {
+        <div class="epos-projektliste-suche">
+            <Textfeld Bezeichnung="@SucheText" Wert="@Suche" WertChanged="SucheUebernehmen" />
+        </div>
+    }
+
+    @if (Sicht.Count == 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@LeerText" />
+    }
+    else
+    {
+        <div class="@Huellenklasse">
+            <table class="epos-raster epos-projektliste-raster">
+                <thead>
+                    <tr>
+                        @if (MitAuswahl)
+                        {
+                            <th scope="col" class="epos-projektliste-wahl">@WahlText</th>
+                        }
+                        @foreach (Spaltenkopf kopf in Koepfe)
+                        {
+                            int nummer = kopf.Nummer;
+                            <th scope="col" class="@Spaltenklasse(nummer)">
+                                @if (MitSortierung && kopf.Sortierbar)
+                                {
+                                    <button type="button" class="epos-raster-kopf"
+                                            aria-label="@kopf.Titel"
+                                            @onclick="@(() => SortierenNach(nummer))">@kopf.Titel@Pfeil(nummer)</button>
+                                }
+                                else
+                                {
+                                    @kopf.Titel
+                                }
+                            </th>
+                        }
+                        @if (Zeilenaktionen is not null)
+                        {
+                            <th scope="col">@AktionenText</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (ProjektKopfZeile zeile in Sicht)
+                    {
+                        ProjektKopfZeile z = zeile;
+                        <tr class="@Zeilenklasse(z)"
+                            title="@(string.IsNullOrEmpty(z.Beschreibung) ? null : z.Beschreibung)"
+                            @ondblclick="@(() => Uebernehmen(z))">
+                            @if (MitAuswahl && Mehrfach)
+                            {
+                                @* Haekchen statt Einzelwahl (Loeschen mit Mehrfachauswahl,
+                                   Nutzerauftrag 02.09.2026 - mit Merge 5 aus ProjektAuswahl.cs). *@
+                                <td class="epos-projektliste-wahl">
+                                    <input type="checkbox" class="epos-projektliste-haken" aria-label="@WahlText"
+                                           checked="@Ist(z.Id)" @onchange="@(e => Haken(z, e))" />
+                                </td>
+                            }
+                            else if (MitAuswahl)
+                            {
+                                <td class="epos-projektliste-wahl">
+                                    <Zeilenwahl Gewaehlt="@(z.Id == Markiert)" Kurztext="@WahlText"
+                                                Gewaehltwerden="@(() => Markieren(z))" />
+                                </td>
+                            }
+                            @foreach (Spaltenkopf kopf in Koepfe)
+                            {
+                                int spalte = kopf.Nummer;
+                                <td class="@Spaltenklasse(spalte)">
+                                    @if (spalte == SPALTE_NAME)
+                                    {
+                                        <span class="@Eintragsklasse(z)">
+                                            <span class="epos-projektliste-titel">@(z.Name ?? "")</span>
+                                            @if (ZeigtHerkunft(z))
+                                            {
+                                                <span class="epos-projektliste-herkunft">@Herkunft(z)</span>
+                                            }
+                                        </span>
+                                    }
+                                    else if (spalte == SPALTE_ART)
+                                    {
+                                        @if (z.IstVariante)
+                                        {
+                                            <span class="epos-projektliste-art">@ArtVarianteText</span>
+                                            @if (!string.IsNullOrEmpty(z.Bezeichner))
+                                            {
+                                                <span class="epos-projektliste-bezeichner">@z.Bezeichner</span>
+                                            }
+                                        }
+                                        else if (IstStamm(z))
+                                        {
+                                            <span class="epos-projektliste-art">@ArtStammText</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @Zelle(z, spalte)
+                                    }
+                                </td>
+                            }
+                            @if (Zeilenaktionen is not null)
+                            {
+                                <td>@Zeilenaktionen(z)</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (MitZaehler)
+    {
+        <p class="epos-projektliste-anzahl">@Anzahlzeile</p>
+    }
+</div>
+
+@code {
+    /// <summary>Die Spalte „Projektname" (auch der Sortierschluessel des Gleichstands).</summary>
+    public const int SPALTE_NAME = 0;
+
+    /// <summary>Die Spalte „Kunde".</summary>
+    public const int SPALTE_KUNDE = 1;
+
+    /// <summary>Die Spalte „Geändert".</summary>
+    public const int SPALTE_GEAENDERT = 2;
+
+    /// <summary>Die Spalte „Nr." (nur im Spaltensatz des Einstiegs).</summary>
+    public const int SPALTE_NUMMER = 3;
+
+    /// <summary>Die Spalte „Klimaregion" (nur im Spaltensatz des Einstiegs).</summary>
+    public const int SPALTE_KLIMA = 4;
+
+    /// <summary>Die Spalte „Ausstattung" (nur im Spaltensatz des Einstiegs).</summary>
+    public const int SPALTE_AUSSTATTUNG = 5;
+
+    /// <summary>
+    /// Die Spalte „Art" — Stamm oder Variante (Anwenderwunsch 05.09.2026, W15a‑E‑1).
+    /// Sie wird nicht sortiert: Die Gruppe steht ohnehin beieinander.
+    /// </summary>
+    public const int SPALTE_ART = 6;
+
+    /// <summary>Welche Spalten die Liste zeigt.</summary>
+    public enum Spaltensatz
+    {
+        /// <summary>Projektname, Kunde, Geändert — die drei Spalten der Projektdialoge.</summary>
+        Auswahl = 0,
+
+        /// <summary>Nr., Projekt, Klimaregion, Ausstattung — der iOS-Einstieg.</summary>
+        Einstieg
+    }
+
+    /// <summary>Die anzuzeigenden Projekte, fertig geladen (<c>ProjektCtrl.NamenListe</c>).</summary>
+    [Parameter] public IReadOnlyList<ProjektKopfZeile> Zeilen { get; set; } = Array.Empty<ProjektKopfZeile>();
+
+    /// <summary>Der Suchtext. Bindbar über @@bind-Suche.</summary>
+    [Parameter] public string Suche { get; set; } = "";
+
+    /// <summary>Meldet jeden neuen Suchtext.</summary>
+    [Parameter] public EventCallback<string> SucheChanged { get; set; }
+
+    /// <summary>Nach welcher Spalte sortiert wird (<see cref="SPALTE_NAME"/> …).</summary>
+    [Parameter] public int SortSpalte { get; set; } = SPALTE_NAME;
+
+    /// <summary>Absteigend sortieren?</summary>
+    [Parameter] public bool SortAbsteigend { get; set; }
+
+    /// <summary>Die Id der markierten Zeile; 0 = keine. Bindbar über @@bind-Markiert.</summary>
+    [Parameter] public int Markiert { get; set; }
+
+    /// <summary>Meldet die neue Markierung (Id und Name, damit der Wirt beides hat).</summary>
+    [Parameter] public EventCallback<ProjektKopfZeile?> MarkiertChanged { get; set; }
+
+    /// <summary>Doppelklick auf eine Zeile — im Vorläufer „ProjektGewaehlt".</summary>
+    [Parameter] public EventCallback<ProjektKopfZeile> Gewaehlt { get; set; }
+
+    /// <summary>
+    /// Schmale Sicht: NUR die Spalte „Projektname". Vorbild
+    /// <c>ProjektAuswahl.NurNamensspalte</c> — die linke Spalte des Assistenten ist
+    /// rund 270 px breit, drei Spalten passten dort nicht hinein.
+    /// </summary>
+    [Parameter] public bool NurName { get; set; }
+
+    /// <summary>
+    /// Markiert die erste Zeile von selbst, wenn nichts markiert ist. Vorbild
+    /// <c>ProjektAuswahl.AutomatischeVorauswahl</c>; der Assistent setzt sie auf
+    /// <c>false</c>.
+    /// </summary>
+    [Parameter] public bool AutoVorauswahl { get; set; } = true;
+
+    /// <summary>Welche Spalten gezeigt werden.</summary>
+    [Parameter] public Spaltensatz Spalten { get; set; } = Spaltensatz.Auswahl;
+
+    /// <summary>Zeigt das Suchfeld.</summary>
+    [Parameter] public bool MitSuche { get; set; } = true;
+
+    /// <summary>Zeigt die Zählzeile unter der Liste.</summary>
+    [Parameter] public bool MitZaehler { get; set; } = true;
+
+    /// <summary>Zeigt die Wahlspalte und markiert Zeilen.</summary>
+    [Parameter] public bool MitAuswahl { get; set; } = true;
+
+    /// <summary>Sortiert die Liste. <c>false</c> = die übergebene Reihenfolge bleibt.</summary>
+    [Parameter] public bool MitSortierung { get; set; } = true;
+
+    // --- Mehrfachauswahl (Nutzerauftrag 02.09.2026, Merge 5) -------------------------
+    /// <summary>Haekchen statt Einzelwahl; ein Stamm nimmt seine Varianten mit.</summary>
+    [Parameter] public bool Mehrfach { get; set; }
+
+    /// <summary>Die angehakten Ids. Bindbar ueber @@bind-Angehakt.</summary>
+    [Parameter] public IReadOnlyCollection<int> Angehakt { get; set; } = Array.Empty<int>();
+
+    [Parameter] public EventCallback<IReadOnlyCollection<int>> AngehaktChanged { get; set; }
+
+    /// <summary>
+    /// Darf die Spalte „Art" erscheinen? (Anwenderwunsch 05.09.2026, W15a‑E‑1.)
+    ///
+    /// <para>Sie erscheint nur, wenn sie auch etwas zu sagen hat: im Spaltensatz
+    /// <see cref="Spaltensatz.Auswahl"/>, nicht in der schmalen Namenssicht des
+    /// Assistenten — und nur, wenn die Liste ÜBERHAUPT eine Variante führt. Eine
+    /// Spalte, die in allen 24 Zeilen leer bliebe, nimmt dem Namen Platz weg und
+    /// sagt nichts.</para>
+    /// </summary>
+    [Parameter] public bool MitArt { get; set; } = true;
+
+    /// <summary>Zusätzliche Zelle je Zeile (der iOS-Einstieg hängt dort seine zwei Knöpfe hinein).</summary>
+    [Parameter] public RenderFragment<ProjektKopfZeile>? Zeilenaktionen { get; set; }
+
+    /// <summary>
+    /// Steht die Liste in einem festen Rahmen mit Rollbalken? Vorgabe <c>true</c> —
+    /// die Hausregel seit der Windows-Abnahme vom 05.09.2026 (Befund W9‑B‑2
+    /// „Liste zu lang"). Die Höchsthöhe ist das Token <c>--epos-listenhoehe</c>;
+    /// eine kurze Liste wird davon nicht künstlich hoch.
+    /// </summary>
+    [Parameter] public bool Begrenzt { get; set; } = true;
+
+    private string Huellenklasse
+        => Begrenzt ? "epos-raster-huelle" : "epos-raster-huelle epos-raster-huelle--frei";
+
+    /// <summary>
+    /// Der Satzbau der Zählzeile: <c>{0}</c> = gezeigte, <c>{1}</c> = vorhandene Projekte
+    /// (Befund W15a-B20).
+    /// </summary>
+    [Parameter] public string AnzahlFormat { get; set; } = "{0} von {1} Projekten";
+
+    [Parameter] public string SpalteName { get; set; } = "Projektname";
+    [Parameter] public string SpalteKunde { get; set; } = "Kunde";
+    [Parameter] public string SpalteGeaendert { get; set; } = "Geändert";
+    [Parameter] public string SpalteNummer { get; set; } = "Nr.";
+    [Parameter] public string SpalteKlima { get; set; } = "Klimaregion";
+    [Parameter] public string SpalteAusstattung { get; set; } = "Ausstattung";
+    [Parameter] public string SucheText { get; set; } = "Suchen:";
+    [Parameter] public string WahlText { get; set; } = "Wahl";
+    [Parameter] public string AktionenText { get; set; } = "Öffnen";
+
+    /// <summary>Kopf der Artspalte (<c>PRJ_LIST_SP_ART</c>).</summary>
+    [Parameter] public string SpalteArt { get; set; } = "Art";
+
+    /// <summary>Ein Projekt, an dem Varianten hängen (<c>PRJ_LIST_ART_STAMM</c>).</summary>
+    [Parameter] public string ArtStammText { get; set; } = "Stamm";
+
+    /// <summary>Eine Variante (<c>PRJ_LIST_ART_VARIANTE</c>).</summary>
+    [Parameter] public string ArtVarianteText { get; set; } = "Variante";
+
+    /// <summary>
+    /// Die leise Zeile unter dem Namen, wo es keine Artspalte gibt
+    /// (<c>PRJ_LIST_VARIANTE_VON</c>); <c>{0}</c> = Name des Stammprojekts.
+    /// </summary>
+    [Parameter] public string VarianteVonFormat { get; set; } = "Variante von {0}";
+
+    /// <summary>Satz, wenn die Liste (nach Filter) leer ist.</summary>
+    [Parameter] public string LeerText { get; set; } = "Es ist noch kein Projekt angelegt.";
+
+    /// <summary>Ein Spaltenkopf: Nummer (der Sortierschlüssel), Titel, sortierbar.</summary>
+    private readonly record struct Spaltenkopf(int Nummer, string Titel, bool Sortierbar);
+
+    private IReadOnlyList<Spaltenkopf> Koepfe
+    {
+        get
+        {
+            if (Spalten == Spaltensatz.Einstieg)
+                return new[]
+                {
+                    new Spaltenkopf(SPALTE_NUMMER, SpalteNummer, false),
+                    new Spaltenkopf(SPALTE_NAME, SpalteName, true),
+                    new Spaltenkopf(SPALTE_KLIMA, SpalteKlima, false),
+                    new Spaltenkopf(SPALTE_AUSSTATTUNG, SpalteAusstattung, false)
+                };
+
+            if (NurName)
+                return new[] { new Spaltenkopf(SPALTE_NAME, SpalteName, true) };
+
+            if (ZeigtArt)
+                return new[]
+                {
+                    new Spaltenkopf(SPALTE_NAME, SpalteName, true),
+                    new Spaltenkopf(SPALTE_ART, SpalteArt, false),
+                    new Spaltenkopf(SPALTE_KUNDE, SpalteKunde, true),
+                    new Spaltenkopf(SPALTE_GEAENDERT, SpalteGeaendert, true)
+                };
+
+            return new[]
+            {
+                new Spaltenkopf(SPALTE_NAME, SpalteName, true),
+                new Spaltenkopf(SPALTE_KUNDE, SpalteKunde, true),
+                new Spaltenkopf(SPALTE_GEAENDERT, SpalteGeaendert, true)
+            };
+        }
+    }
+
+    /// <summary>
+    /// Steht die Spalte „Art"? Nur im Spaltensatz der Projektdialoge, nur mit
+    /// <see cref="MitArt"/> — und nur, wenn die Liste ueberhaupt eine Variante
+    /// fuehrt. Eine in allen Zeilen leere Spalte nimmt dem Namen Platz und sagt
+    /// nichts.
+    /// </summary>
+    private bool ZeigtArt
+        => MitArt && !NurName && Spalten == Spaltensatz.Auswahl && _hatVarianten;
+
+    /// <summary>Fuehrt die Liste ueberhaupt eine Variante? (Aus <see cref="Zeilen"/>.)</summary>
+    private bool _hatVarianten;
+
+    /// <summary>
+    /// Die Ids aller Projekte, an denen eine Variante haengt — sie tragen in der
+    /// Artspalte „Stamm". Ein Projekt ohne Varianten traegt dort NICHTS: Es ist
+    /// weder Stamm noch Variante, und ein Wort dafuer hatte der Bestand nicht.
+    /// </summary>
+    private readonly HashSet<int> _staemme = new();
+
+    private bool IstStamm(ProjektKopfZeile z) => _staemme.Contains(z.Id);
+
+    /// <summary>Die gefilterte und sortierte Sicht auf <see cref="Zeilen"/>.</summary>
+    private IReadOnlyList<ProjektKopfZeile> Sicht
+    {
+        get
+        {
+            var sicht = new List<ProjektKopfZeile>();
+            foreach (ProjektKopfZeile z in Zeilen)
+                if (Passt(z)) sicht.Add(z);
+
+            return MitSortierung ? Gruppiert(sicht) : sicht;
+        }
+    }
+
+    /// <summary>
+    /// Sortiert die Sicht und haengt jede Variante unter IHREN Stamm
+    /// (Anwenderwunsch 05.09.2026, W15a‑E‑1).
+    ///
+    /// <para><b>Die Ordnung ist die des Vorbilds.</b>
+    /// <c>VariantenCtrl.LadeGruppe</c> lieferte den Stamm als erste Zeile und
+    /// danach seine Varianten <c>ORDER BY Variantenname</c>; genau so ordnete
+    /// <c>Form_Start.FuelleVariantenCombo</c> seine Klappliste. Die gewaehlte
+    /// Sortierspalte ordnet deshalb die STAEMME; innerhalb einer Gruppe gilt
+    /// immer der Bezeichner — auch absteigend, denn eine Gruppe ist keine
+    /// Reihenfolge, sondern eine Zugehoerigkeit.</para>
+    ///
+    /// <para><b>Faellt der Stamm durch den Filter, steht die Variante selbst
+    /// oben.</b> Sonst waere sie nach einer Suche unauffindbar — sie haette
+    /// keinen Platz, unter den sie gehoerte.</para>
+    /// </summary>
+    private List<ProjektKopfZeile> Gruppiert(List<ProjektKopfZeile> sicht)
+    {
+        var vorhanden = new HashSet<int>();
+        foreach (ProjektKopfZeile z in sicht) vorhanden.Add(z.Id);
+
+        var wurzeln = new List<ProjektKopfZeile>();
+        var kinder = new Dictionary<int, List<ProjektKopfZeile>>();
+
+        foreach (ProjektKopfZeile z in sicht)
+        {
+            if (z.IstVariante && z.StammId != z.Id && vorhanden.Contains(z.StammId))
+            {
+                if (!kinder.TryGetValue(z.StammId, out List<ProjektKopfZeile>? gruppe))
+                    kinder[z.StammId] = gruppe = new List<ProjektKopfZeile>();
+                gruppe.Add(z);
+            }
+            else wurzeln.Add(z);
+        }
+
+        wurzeln.Sort(Vergleiche);
+
+        var geordnet = new List<ProjektKopfZeile>(sicht.Count);
+        var gesetzt = new HashSet<int>();
+        foreach (ProjektKopfZeile w in wurzeln) Anhaengen(w, geordnet, gesetzt, kinder);
+
+        // Sicherheitsnetz: Was eine ringfoermige Verweiskette (Variante einer
+        // Variante ihrer selbst) sonst verschluckte, kommt hier hinterher. Eine
+        // Liste darf eine Zeile nicht VERLIEREN, auch nicht bei kaputten Daten.
+        foreach (ProjektKopfZeile z in sicht)
+            if (gesetzt.Add(z.Id)) geordnet.Add(z);
+
+        return geordnet;
+    }
+
+    private static void Anhaengen(ProjektKopfZeile w, List<ProjektKopfZeile> ziel,
+                                  HashSet<int> gesetzt,
+                                  Dictionary<int, List<ProjektKopfZeile>> kinder)
+    {
+        if (!gesetzt.Add(w.Id)) return;
+        ziel.Add(w);
+
+        if (!kinder.TryGetValue(w.Id, out List<ProjektKopfZeile>? gruppe)) return;
+        gruppe.Sort(NachBezeichner);
+        foreach (ProjektKopfZeile k in gruppe) Anhaengen(k, ziel, gesetzt, kinder);
+    }
+
+    /// <summary>Wie <c>LadeGruppe</c>: nach Bezeichner, Gleichstand ueber den Namen.</summary>
+    private static int NachBezeichner(ProjektKopfZeile a, ProjektKopfZeile b)
+    {
+        int v = string.Compare(a.Bezeichner ?? "", b.Bezeichner ?? "",
+                               StringComparison.CurrentCultureIgnoreCase);
+        return v != 0 ? v
+             : string.Compare(a.Name ?? "", b.Name ?? "", StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    private string Anzahlzeile => string.Format(AnzahlFormat, Sicht.Count, Zeilen.Count);
+
+    /// <summary>
+    /// Die Suche greift ueber Projektname, Kunde UND Beschreibung — die letzte ist in
+    /// der Liste nicht sichtbar (Befund W15a-B22).
+    /// </summary>
+    private bool Passt(ProjektKopfZeile z)
+    {
+        string suche = (Suche ?? "").Trim();
+        if (suche.Length == 0) return true;
+        return Enthaelt(z.Name, suche) || Enthaelt(z.Kunde, suche) || Enthaelt(z.Beschreibung, suche)
+               || Enthaelt(z.Bezeichner, suche);
+    }
+
+    private static bool Enthaelt(string wert, string suche)
+        => !string.IsNullOrEmpty(wert)
+           && wert.IndexOf(suche, StringComparison.CurrentCultureIgnoreCase) >= 0;
+
+    private int Vergleiche(ProjektKopfZeile a, ProjektKopfZeile b)
+    {
+        int v = SortSpalte switch
+        {
+            SPALTE_KUNDE => string.Compare(a.Kunde ?? "", b.Kunde ?? "", StringComparison.CurrentCultureIgnoreCase),
+            SPALTE_GEAENDERT => Nullable.Compare(a.Geaendert, b.Geaendert),
+            _ => string.Compare(a.Name ?? "", b.Name ?? "", StringComparison.CurrentCultureIgnoreCase)
+        };
+
+        // Gleichstand immer ueber den Namen aufloesen, damit die Reihenfolge
+        // bei gleichem Datum (Massenimport!) nicht bei jedem Aufbau springt.
+        if (v == 0 && SortSpalte != SPALTE_NAME)
+            v = string.Compare(a.Name ?? "", b.Name ?? "", StringComparison.CurrentCultureIgnoreCase);
+
+        return SortAbsteigend ? -v : v;
+    }
+
+    private string Zelle(ProjektKopfZeile z, int spalte) => spalte switch
+    {
+        SPALTE_KUNDE => z.Kunde ?? "",
+        SPALTE_GEAENDERT => z.Geaendert.HasValue ? z.Geaendert.Value.ToShortDateString() : "",
+        SPALTE_NUMMER => z.Id.ToString(),
+        SPALTE_KLIMA => z.Klimazone ?? "",
+        SPALTE_AUSSTATTUNG => z.Ausstattung ?? "",
+        _ => z.Name ?? ""
+    };
+
+    /// <summary>
+    /// Die Stilklasse einer Spalte — <b>Befund W15a‑B‑1</b> der Windows-Abnahme vom
+    /// 05.09.2026: „Geändert Datum nicht ersichtlich".
+    ///
+    /// <para>Die Hausregel <c>.epos-raster td { white-space: nowrap }</c> lässt einen
+    /// langen Projektnamen die Tabelle breiter machen, als die Spalte des Wirtes ist;
+    /// in „Speichern unter" quetschte das Formular rechts die Liste auf rund 535 px,
+    /// und die dritte Spalte lag hinter dem waagerechten Rollbalken. Projektname und
+    /// Kunde brechen deshalb um, das <b>Datum</b> bleibt einzeilig und bekommt eine
+    /// feste Breite — es ist die kürzeste und die einzige Spalte, deren Umbruch nichts
+    /// brächte.</para>
+    /// </summary>
+    private static string? Spaltenklasse(int spalte) => spalte switch
+    {
+        SPALTE_NAME => "epos-projektliste-name",
+        SPALTE_KUNDE => "epos-projektliste-kunde",
+        SPALTE_GEAENDERT => "epos-projektliste-geaendert",
+        SPALTE_ART => "epos-projektliste-artspalte",
+        _ => null
+    };
+
+    /// <summary>Die Zeile: markiert und/oder Variante.</summary>
+    private string? Zeilenklasse(ProjektKopfZeile z)
+    {
+        bool markiert = z.Id == Markiert;
+        if (markiert && z.IstVariante) return "epos-zeile--markiert epos-projektliste-zeile--variante";
+        if (markiert) return "epos-zeile--markiert";
+        return z.IstVariante ? "epos-projektliste-zeile--variante" : null;
+    }
+
+    /// <summary>Der Namenseintrag einer Zeile — eingerueckt, wenn es eine Variante ist.</summary>
+    private static string Eintragsklasse(ProjektKopfZeile z)
+        => z.IstVariante ? "epos-projektliste-eintrag epos-projektliste-eintrag--variante"
+                         : "epos-projektliste-eintrag";
+
+    /// <summary>
+    /// Steht unter dem Namen die leise Herkunftszeile? Nur dort, wo es KEINE
+    /// Artspalte gibt — im Assistentenband und im iOS-Einstieg. Wo die Spalte
+    /// steht, sagt sie dasselbe, und zweimal derselbe Satz ist einer zu viel.
+    /// </summary>
+    private bool ZeigtHerkunft(ProjektKopfZeile z) => z.IstVariante && !ZeigtArt;
+
+    /// <summary>
+    /// „Variante von &lt;Stamm&gt;". Ohne Stammnamen — der Stamm ist geloescht oder
+    /// die Datenbank kennt <c>Tab_Variante</c> nicht — bleibt das blosse Wort:
+    /// Ein „Variante von " ohne Namen waere ein angefangener Satz.
+    /// </summary>
+    private string Herkunft(ProjektKopfZeile z)
+        => string.IsNullOrEmpty(z.StammName)
+            ? ArtVarianteText
+            : string.Format(VarianteVonFormat, z.StammName);
+
+    private string Pfeil(int spalte)
+        => (MitSortierung && spalte == SortSpalte) ? (SortAbsteigend ? " ▼" : " ▲") : "";
+
+    private Task SortierenNach(int spalte)
+    {
+        if (spalte == SortSpalte) SortAbsteigend = !SortAbsteigend;
+        else { SortSpalte = spalte; SortAbsteigend = false; }
+        return Task.CompletedTask;
+    }
+
+    private async Task SucheUebernehmen(string neu)
+    {
+        Suche = neu ?? "";
+        await SucheChanged.InvokeAsync(Suche);
+
+        // Faellt das markierte Projekt durch den Filter heraus, muss der Wirt das
+        // erfahren - im Vorlaeufer die Sonderbehandlung am Ende von ListeAufbauen.
+        if (Markiert != 0 && !Sicht.Any(z => z.Id == Markiert))
+        {
+            Markiert = 0;
+            await MarkiertChanged.InvokeAsync(null);
+        }
+        await Vorauswaehlen();
+    }
+
+    // --- Mehrfachauswahl (Nutzerauftrag 02.09.2026, Merge 5) -------------------------
+    private bool Ist(int id) => Angehakt.Contains(id);
+
+    private Task Haken(ProjektKopfZeile z, ChangeEventArgs e) => Setzen(z, e.Value is bool b && b);
+
+    /// <summary>Doppelklick im Mehrfachmodus: den Haken der Zeile umschalten (wie der Vorlaeufer).</summary>
+    public Task Umschalten(ProjektKopfZeile z) => Setzen(z, !Ist(z.Id));
+
+    private Task Setzen(ProjektKopfZeile z, bool an)
+    {
+        var menge = new HashSet<int>(Angehakt);
+        // Ein Stamm nimmt seine Varianten mit - beim Setzen wie beim Loesen.
+        if (an) menge.Add(z.Id); else menge.Remove(z.Id);
+        foreach (ProjektKopfZeile v in Zeilen)
+            if (v.StammId == z.Id) { if (an) menge.Add(v.Id); else menge.Remove(v.Id); }
+        return AngehaktChanged.InvokeAsync(menge);
+    }
+
+    /// <summary>Alle SICHTBAREN Zeilen anhaken bzw. alle Haken loesen ("Alle"/"Keine").</summary>
+    public Task AlleSichtbaren(bool an)
+    {
+        var menge = new HashSet<int>(an ? Angehakt : Array.Empty<int>());
+        if (an) foreach (ProjektKopfZeile z in Sicht) menge.Add(z.Id);
+        return AngehaktChanged.InvokeAsync(menge);
+    }
+
+    private async Task Markieren(ProjektKopfZeile z)
+    {
+        Markiert = z.Id;
+        await MarkiertChanged.InvokeAsync(z);
+    }
+
+    private async Task Uebernehmen(ProjektKopfZeile z)
+    {
+        await Markieren(z);
+        await Gewaehlt.InvokeAsync(z);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Staemme();
+        await Vorauswaehlen();
+    }
+
+    /// <summary>
+    /// Sammelt EINMAL je Parametersatz, welche Projekte Varianten fuehren. Die
+    /// Frage haengt an <see cref="Zeilen"/>, nicht an Suche oder Sortierung — ein
+    /// Stamm bleibt ein Stamm, auch wenn seine Varianten gerade weggefiltert sind.
+    /// </summary>
+    private void Staemme()
+    {
+        _staemme.Clear();
+        _hatVarianten = false;
+
+        foreach (ProjektKopfZeile z in Zeilen)
+        {
+            if (!z.IstVariante) continue;
+            _hatVarianten = true;
+            _staemme.Add(z.StammId);
+        }
+    }
+
+    private async Task Vorauswaehlen()
+    {
+        if (!AutoVorauswahl || !MitAuswahl || Markiert != 0) return;
+
+        IReadOnlyList<ProjektKopfZeile> sicht = Sicht;
+        if (sicht.Count == 0) return;
+
+        Markiert = sicht[0].Id;
+        await MarkiertChanged.InvokeAsync(sicht[0]);
+    }
+}
