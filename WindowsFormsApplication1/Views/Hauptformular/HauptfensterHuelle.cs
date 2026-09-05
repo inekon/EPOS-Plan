@@ -119,113 +119,138 @@ namespace WindowsFormsApplication1
         /// öffnete ein Fenster; nur was dort nicht stand, wechselte die Ansicht.
         /// Der Rückgabewert der geöffneten Maske wird bewusst NICHT
         /// weitergereicht — „abgebrochen" ist nicht „nicht behandelt".
+        ///
+        /// <para><b>Die Antwort kommt sofort, das Fenster eine Nachricht
+        /// später</b> (Befund W16b‑B‑1, 05.09.2026). Ob dieser Weg den Schlüssel
+        /// behandelt, steht in der Schlüsseltabelle und hängt an keinem
+        /// Fenster — das beantwortet <see cref="Weg"/> unverändert synchron,
+        /// und die <c>AppWurzel</c> wechselt die Ansicht wie bisher nur bei
+        /// <c>false</c>. Das ÖFFNEN dagegen läuft über
+        /// <see cref="Blazorsprung"/>: Ein <c>ShowDialog</c> aus dem
+        /// <c>WebMessageReceived</c>-Rückruf der WebView2 heraus baut seine
+        /// verschachtelte Nachrichtenschleife samt zweiter WebView2 INNERHALB
+        /// dieses Rückrufs auf; die Begründung steht bei
+        /// <see cref="Blazorsprung"/>.</para>
         /// </remarks>
         internal Task<bool> Weg(string ziel, string argument)
         {
             if (string.IsNullOrEmpty(ziel)) return Task.FromResult(false);
 
-            IWin32Window wirt = _besitzer?.Invoke();
+            // Die 25 Maskenschluessel gehen unmittelbar an Dienste.Navigation -
+            // ob dieser Weg zustaendig ist, sagt die Tabelle, nicht das Fenster.
+            if (Maskenschluessel.Contains(ziel))
+            {
+                Blazorsprung.Verzoegert(_besitzer?.Invoke(), () => MaskeOeffnen(ziel, argument));
+                return Task.FromResult(true);
+            }
 
+            Action ablauf = Ablauf(ziel);
+            if (ablauf == null) return Task.FromResult(false);
+
+            Blazorsprung.Verzoegert(_besitzer?.Invoke(), ablauf);
+            return Task.FromResult(true);
+        }
+
+        /// <summary>
+        /// Der EINE Ablauf zu einem Schlüssel — oder <c>null</c>, wenn dieser
+        /// Weg ihn nicht führt.
+        ///
+        /// <para><b>Warum ein Delegat und kein zweiter <c>switch</c>.</b>
+        /// <see cref="Weg"/> muss seit Befund W16b‑B‑1 zwei Fragen trennen:
+        /// „behandle ich das?" (sofort, sonst wechselt die <c>AppWurzel</c> die
+        /// Ansicht) und „tu es" (eine Nachricht später, siehe
+        /// <see cref="Blazorsprung"/>). Eine Liste der zuständigen Schlüssel
+        /// neben der Liste der Abläufe wären zwei Wahrheiten; hier beantwortet
+        /// DERSELBE <c>switch</c> beides — er liefert die Antwort als Tat.</para>
+        ///
+        /// <para>Der Besitzer wird bewusst IM Delegaten geholt: Er wird erst
+        /// gebraucht, wenn der Sprung läuft.</para>
+        /// </summary>
+        private Action Ablauf(string ziel)
+        {
             switch (ziel)
             {
                 // ---- Menü „Projekt" -----------------------------------------
                 case Seitenschluessel.ProjektNeu:
-                    ProjektAssistent(neu: true);
-                    return Task.FromResult(true);
+                    return () => ProjektAssistent(neu: true);
 
                 case Seitenschluessel.ProjektBearbeiten:
-                    ProjektAssistent(neu: false);
-                    return Task.FromResult(true);
+                    return () => ProjektAssistent(neu: false);
 
                 case Seitenschluessel.ProjektOeffnen:
-                    new MenueCtrl().ProjektOeffnen();
-                    return Task.FromResult(true);
+                    return () => new MenueCtrl().ProjektOeffnen();
 
                 case Seitenschluessel.ProjektZuletzt:
-                    new MenueCtrl().ProjektOeffnen(true);
-                    return Task.FromResult(true);
+                    return () => new MenueCtrl().ProjektOeffnen(true);
 
                 case Seitenschluessel.ProjektLoeschen:
-                    new MenueCtrl().ProjektDelete();
-                    return Task.FromResult(true);
+                    return () => new MenueCtrl().ProjektDelete();
 
                 case Seitenschluessel.ProjektTransfer:
-                    ProjektTransferHuelle.Oeffnen(wirt);
-                    return Task.FromResult(true);
+                    return () => ProjektTransferHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.ProjektAlsVariante:
                     // iU9-W16b.3: Das offene Projekt kommt aus dem Kern.
-                    AlsVarianteHuelle.Zeige(wirt, Dienste.Projekt.Id, Dienste.Projekt.Name);
-                    return Task.FromResult(true);
+                    return () => AlsVarianteHuelle.Zeige(_besitzer?.Invoke(),
+                                                         Dienste.Projekt.Id, Dienste.Projekt.Name);
 
                 // ANWENDERENTSCHEID W16c-E-3 (04.09.2026): Seitenschluessel
-                // .BerichteKosten hat hier KEINEN Fall mehr. Bis dahin holte der
+                // .BerichteKosten hat hier KEINEN Fall. Bis dahin holte der
                 // Menüpunkt „Varianten und Bericht…" den sechsten Reiter der
                 // Startseite nach vorn (wörtlich MenuItem_VariantenBericht_Click
                 // → StartseiteHuelle.ZeigeBerichteKosten); jetzt fällt er durch,
-                // MaskeOeffnen meldet false — „BERICHTE_KOSTEN" steht in
+                // dieser Weg meldet false — „BERICHTE_KOSTEN" steht in
                 // Ansichten, nicht in Masken —, und Hauptfenster.Springe lässt
                 // die AppWurzel auf die ANSICHT wechseln. Das ist derselbe Weg
                 // wie auf iOS; der Parametersatz dafür steht in Gaben().
 
                 // ---- Menü „Administration" ----------------------------------
                 case Seitenschluessel.Klimadaten:
-                    KlimadatenHuelle.Oeffnen(wirt);
-                    return Task.FromResult(true);
+                    return () => KlimadatenHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.Kostenverwaltung:
-                    KostenKomponenteHuelle.Oeffnen(wirt);
-                    return Task.FromResult(true);
+                    return () => KostenKomponenteHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.EnergietraegerVerwaltung:
-                    EnergietraegerHuelle.Oeffnen(wirt, 0);
-                    return Task.FromResult(true);
+                    return () => EnergietraegerHuelle.Oeffnen(_besitzer?.Invoke(), 0);
 
                 case Seitenschluessel.Einstellungen:
-                    EinstellungenHuelle.Oeffnen(wirt);
-                    return Task.FromResult(true);
+                    return () => EinstellungenHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.Gesetzeskatalog:
-                    GesetzeskatalogHuelle.Oeffnen(wirt);
-                    return Task.FromResult(true);
+                    return () => GesetzeskatalogHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.KatalogDubletten:
-                    KatalogDublettenHuelle.Oeffnen(wirt);
-                    return Task.FromResult(true);
+                    return () => KatalogDublettenHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.LizenzVerwaltung:
-                    LizenzVerwaltungHuelle.Oeffnen(wirt);
-                    return Task.FromResult(true);
+                    return () => LizenzVerwaltungHuelle.Oeffnen(_besitzer?.Invoke());
 
                 // ---- Menü „Hilfe" -------------------------------------------
                 case Seitenschluessel.Lizenztext:
-                    LizenzHuelle.Anzeigen(wirt);
-                    return Task.FromResult(true);
+                    return () => LizenzHuelle.Anzeigen(_besitzer?.Invoke());
 
                 case Seitenschluessel.KiAssistent:
-                    KiChatHuelle.Oeffnen(wirt);
-                    return Task.FromResult(true);
+                    return () => KiChatHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.Version:
-                    Versionsmeldung();
-                    return Task.FromResult(true);
+                    return Versionsmeldung;
 
                 case Seitenschluessel.Dokumentation:
-                    Dokumentation();
-                    return Task.FromResult(true);
+                    return Dokumentation;
 
                 // ---- Sprache ------------------------------------------------
                 case Seitenschluessel.SpracheDeutsch:
-                    SpracheSetzen("de", englisch: false);
-                    return Task.FromResult(true);
+                    return () => SpracheSetzen("de", englisch: false);
 
                 case Seitenschluessel.SpracheEnglisch:
-                    SpracheSetzen("en", englisch: true);
-                    return Task.FromResult(true);
+                    return () => SpracheSetzen("en", englisch: true);
 
                 // ---- Die 25 Maskenschlüssel ---------------------------------
+                // Sie kommen hier nicht an: Weg() erkennt sie an der
+                // Schlüsseltabelle und schickt sie an MaskeOeffnen.
                 default:
-                    return Task.FromResult(MaskeOeffnen(ziel, argument));
+                    return null;
             }
         }
 
@@ -233,9 +258,9 @@ namespace WindowsFormsApplication1
         /// Ein Maskenschlüssel geht unmittelbar an <c>Dienste.Navigation</c> —
         /// die 21 einzeiligen <c>MenueCtrl</c>-Methoden dazwischen entfallen.
         /// </summary>
-        private static bool MaskeOeffnen(string ziel, string argument)
+        private static void MaskeOeffnen(string ziel, string argument)
         {
-            if (!Maskenschluessel.Contains(ziel)) return false;
+            if (!Maskenschluessel.Contains(ziel)) return;
 
             // Zwei Schlüssel brauchen ein Argument. Der PV-Import bekommt seine
             // Quelle aus der Menütabelle ("CEC"), die Lastspitzenkappung das
@@ -246,8 +271,6 @@ namespace WindowsFormsApplication1
                 Dienste.Navigation.OeffneMaske(ziel, argument);
             else
                 Dienste.Navigation.OeffneMaske(ziel);
-
-            return true;
         }
 
         // =====================================================================
