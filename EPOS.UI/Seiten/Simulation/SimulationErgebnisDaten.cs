@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EPOS.UI.Bausteine;
 
 namespace EPOS.UI.Seiten.Simulation;
 
@@ -414,13 +415,19 @@ public sealed class SimulationErgebnisDaten
 /// <param name="Kanal">Bedarfsart des Wärmegangs; −1 = Produktion.</param>
 /// <param name="Reihen">Die gewaehlten Serienschluessel; leer = alle.</param>
 /// <param name="Zahl">Freier Zahlenparameter (Was-wäre-wenn-Kapazitaet der Autarkie).</param>
+/// <param name="Bereich">DATENZOOM (Windows-Abnahme 05.09.2026): das Rechteck, das der
+/// Anwender im Bild aufgezogen hat, in Bildanteilen; <c>null</c> = die volle Ansicht.
+/// Die Hülle lässt den Kern daraus einen Achsenbereich machen — nur die
+/// Jahresganglinien werten ihn aus, alle übrigen Bilder übergehen ihn.</param>
 public sealed record Bildauftrag(string Bild, bool Sortiert = false, int Kanal = -1,
-                                 IReadOnlyList<string>? Reihen = null, double Zahl = 0.0)
+                                 IReadOnlyList<string>? Reihen = null, double Zahl = 0.0,
+                                 Diagrammbereich? Bereich = null)
 {
     /// <summary>Der Zwischenspeicherschluessel — er trennt zwei Schalterstellungen.</summary>
     public string Schluessel =>
         Bild + "|" + (Sortiert ? "1" : "0") + "|" + Kanal + "|" + Zahl.ToString("R") + "|" +
-        (Reihen is null ? "" : string.Join(",", Reihen));
+        (Reihen is null ? "" : string.Join(",", Reihen)) +
+        (Bereich is null ? "" : "|" + Bereich);
 }
 
 /// <summary>Die sprachneutralen Bildschluessel der Ergebnisseite.</summary>

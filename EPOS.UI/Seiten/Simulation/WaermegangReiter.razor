@@ -53,7 +53,12 @@
         }
     </div>
 
-    <ChartBild Png="@BildGang" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
+    @* DATENZOOM (Windows-Abnahme 05.09.2026, Befund A-1): Ein aufgezogenes Rechteck
+       laesst den Kern das Bild mit diesem Achsenbereich neu zeichnen - der Achsenzoom
+       des WinForms-Vorbilds. „1:1" holt das ganze Jahr zurueck. *@
+    <ChartBild Png="@BildGang" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+               BereichGewaehlt="@(b => _bereich = b)"
+               Zurueckgesetzt="@(() => _bereich = null)" />
 
     @if (Csv.HasDelegate)
     {
@@ -87,8 +92,12 @@
     /// <summary>Die gewaehlten Speicherschluessel (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteSpeicher => Schluessel(Vorhandene(Daten.Speicher), _speicher);
 
+    /// <summary>Der aufgezogene Achsenbereich; <c>null</c> = das ganze Jahr (Pruefhilfe).</summary>
+    public Diagrammbereich? Bereich => _bereich;
+
     private int? _bedarfsart = -1;
     private bool _sortiert;
+    private Diagrammbereich? _bereich;
     private bool _bedarfslinie;
     private IReadOnlyList<int> _erzeuger = Array.Empty<int>();
     private IReadOnlyList<int> _speicher = Array.Empty<int>();
@@ -144,7 +153,8 @@
     }
 
     private byte[]? BildGang =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Waermegang, _sortiert, Bedarfsart, Reihen()));
+        Bild?.Invoke(new Bildauftrag(Bilder.Waermegang, _sortiert, Bedarfsart, Reihen(),
+                                     0.0, _bereich));
 
     private Task CsvGewuenscht()
         => Csv.InvokeAsync((Bedarfsart, GewaehlteErzeuger, GewaehlteSpeicher));
