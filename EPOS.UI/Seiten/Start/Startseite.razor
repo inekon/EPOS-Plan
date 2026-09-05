@@ -64,9 +64,22 @@ else
     @* ================= Kopfband ================= *@
     <header class="epos-startseite-kopf">
 
-        <div class="epos-startseite-marke">
-            <span class="epos-startseite-gattung">@GattungText</span>
-        </div>
+        @* DIE GATTUNGSZEILE steht nur, wenn KEINE Kopfleiste darueber liegt
+           (Anwenderwunsch 05.09.2026, W16b-E-4). Unter Windows nennt das
+           Kopfband des Hauptfensters "EPOS-Plan - Energieplanungs-Software -
+           Energie · Planung · Optimierung · Simulation"; dieselbe Gattung ein
+           zweites Mal neben dem Projektfeld war eine Wiederholung, kein
+           Hinweis. Auf iOS ist die Kopfleiste leer - dort ist diese Zeile die
+           EINZIGE Nennung des Produkts und bleibt stehen.
+           Im Bestand war sie label20 (Segoe UI Semibold 26 pt fett) auf dem
+           Titelband pictureBox2, also eine EIGENE Zeile ueber den zwei
+           Kopfkaesten - nicht neben ihnen. *@
+        @if (KopfbandZeigen)
+        {
+            <div class="epos-startseite-marke">
+                <span class="epos-startseite-gattung">@GattungText</span>
+            </div>
+        }
 
         <div class="epos-startseite-projekt">
             <label for="epos-start-variante">@ProjektLabelText</label>
@@ -309,6 +322,20 @@ else
 
     /// <summary>Produktgattung im Kopfband (<c>label20</c>).</summary>
     [Parameter] public string GattungText { get; set; } = "Energieplanungs-Software";
+
+    /// <summary>
+    /// Zeigt die Seite ihre eigene GATTUNGSZEILE? (Anwenderwunsch 05.09.2026,
+    /// <b>W16b‑E‑4</b>.)
+    ///
+    /// <para>Vorgabe <c>true</c> — die Seite steht dann für sich, so wie auf
+    /// iOS: Dort ist die <c>Kopfleiste</c> der <c>AppWurzel</c> leer, und diese
+    /// Zeile ist die einzige Nennung des Produkts. Unter Windows liegt darüber
+    /// das Kopfband des Hauptfensters mit PRODUKTNAME, GATTUNG und CLAIM; die
+    /// Wurzel setzt den Parameter deshalb auf <c>false</c>, sobald sie eine
+    /// Kopfleiste gezeichnet hat — sonst stünde „Energieplanungs-Software"
+    /// zweimal untereinander.</para>
+    /// </summary>
+    [Parameter] public bool KopfbandZeigen { get; set; } = true;
 
     /// <summary>Beschriftung des Projektfeldes (<c>label11</c>).</summary>
     [Parameter] public string ProjektLabelText { get; set; } = "Projekt:";

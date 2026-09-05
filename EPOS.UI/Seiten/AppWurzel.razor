@@ -45,8 +45,16 @@
 {
     @* DIE STARTSEITE (iU9-W16b.2). Unter Windows reicht Hauptfenster den
        Parametersatz von StartseiteHuelle herein; auf iOS kommt er aus
-       IProjektQuelle.StartseiteGaben. *@
-    <EPOS.UI.Seiten.Start.Startseite @attributes="_startseite" />
+       IProjektQuelle.StartseiteGaben.
+
+       KopfbandZeigen steht NACH dem Parametersatz und gewinnt deshalb gegen
+       ihn (Anwenderwunsch 05.09.2026, W16b-E-4): Wer eine Kopfleiste
+       mitgebracht hat - unter Windows das Menueband samt Markenkopf -, nennt
+       die Produktgattung schon dort; die Seite laesst ihre eigene
+       Gattungszeile dann weg. Auf iOS ist die Kopfleiste leer, und die Zeile
+       bleibt die einzige Nennung des Produkts. *@
+    <EPOS.UI.Seiten.Start.Startseite @attributes="_startseite"
+                                     KopfbandZeigen="@(Kopfleiste is null)" />
 }
 else if (_ansicht == Seitenschluessel.BerichteKosten && _berichteKosten is not null)
 {
