@@ -88,8 +88,10 @@ namespace WindowsFormsApplication1
                 })
             };
 
+            // KLEIN (Anwenderwunsch 05.09.2026): eine Rueckfrage mit Hinweistext.
             dlg = new BlazorDialogForm<KiHinweisDialog>(
-                MyResource.Resource.KI_HINWEIS_FENSTER, MASS, werte);
+                MyResource.Resource.KI_HINWEIS_FENSTER, MASS, werte,
+                EPOS.UI.Dienste.Dialogart.Klein);
 
             using (dlg)
             {

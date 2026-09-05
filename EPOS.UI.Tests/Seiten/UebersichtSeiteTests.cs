@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO;
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dienste;
@@ -12,10 +13,16 @@ namespace EPOS.UI.Tests.Seiten;
 /// Die Seite „Übersicht" (iU9-W5.5), Vorbild
 /// <c>Views/BerichteKosten/UcBkUebersicht</c> (1 552 Z., K4).
 ///
-/// <para>Soll: Stammprojekt-Auswahl und Filter, die Liste mit vier Spalten
-/// und Zeilenmarkierung, Bezeichnerfeld und die drei Knöpfe, der
+/// <para>Soll: Stammprojekt-Auswahl und Filter, die VERSIONSWAHL als
+/// Auswahlfeld samt Simulationszeile, Bezeichnerfeld und die drei Knöpfe, der
 /// Komponentenbereich in beiden Ansichten (Gegenüberstellung ohne, Unterschiede
 /// mit Aktionsspalte) und die Statuszeile.</para>
+///
+/// <para><b>Anwenderwunsch 05.09.2026 (W5‑E‑1)</b> — „Variantenprojekte-Auswahl
+/// als Dropdown, damit weniger Platz verwendet wird": Die Variantentabelle mit
+/// Wahlknopf, Art, Bezeichner, Projektname und Simulationsspalte ist einem
+/// <c>Auswahlfeld</c> gewichen; der Simulationsstand steht als leise Zeile
+/// darunter, die Unterschiedstabelle bekommt die frei gewordene Höhe.</para>
 /// </summary>
 public class UebersichtSeiteTests : BunitContext
 {
@@ -48,10 +55,11 @@ public class UebersichtSeiteTests : BunitContext
     private static VarianteZeile[] Zeilen() => new[]
     {
         new VarianteZeile { IdProjekt = 1030, Art = "Stamm", Bezeichner = "(Stammprojekt)",
-                            Projektname = "Musterhaus", SimStand = "02.09.2026 10:00",
-                            IstStamm = true },
+                            Projektname = "Musterhaus", SimStand = "02.09.26 10:00",
+                            SimZeitpunkt = "02.09.26 10:00", IstStamm = true },
         new VarianteZeile { IdProjekt = 1031, Art = "Variante", Bezeichner = "WP klein",
-                            Projektname = "Musterhaus", SimStand = "", Auffaellig = true }
+                            Projektname = "Musterhaus", SimStand = "— (fehlt) ⚠",
+                            SimZeitpunkt = "", Auffaellig = true }
     };
 
     /// <summary>Die Gegenüberstellung (Stammzeile markiert) — ohne Aktionsspalte.</summary>
@@ -118,31 +126,53 @@ public class UebersichtSeiteTests : BunitContext
     private static IReadOnlyDictionary<string, object> LeererSatz()
         => new Dictionary<string, object>();
 
-    private static IReadOnlyList<IElement> Listenzeilen(IRenderedComponent<UebersichtSeite> cut)
-        => cut.Find(".epos-variantentabelle tbody").QuerySelectorAll("tr");
+    /// <summary>Das Auswahlfeld der Versionen (seit W5‑E‑1 statt der Tabelle).</summary>
+    private static IElement Versionswahl(IRenderedComponent<UebersichtSeite> cut)
+        => cut.Find(".epos-variantenzeile select");
+
+    private static IReadOnlyList<IElement> Versionseintraege(IRenderedComponent<UebersichtSeite> cut)
+        => Versionswahl(cut).QuerySelectorAll("option");
+
+    private static IElement Simulationszeile(IRenderedComponent<UebersichtSeite> cut)
+        => cut.Find(".epos-simstand");
 
     private static IReadOnlyList<IElement> Vergleichszeilen(IRenderedComponent<UebersichtSeite> cut)
         => cut.Find(".epos-vergleichstabelle tbody").QuerySelectorAll("tr");
 
     private static IReadOnlyList<IElement> Pflegeknoepfe(IRenderedComponent<UebersichtSeite> cut)
-        => cut.Find(".epos-variantenpflege").QuerySelectorAll("button");
+        => cut.Find(".epos-variantenzeile").QuerySelectorAll("button");
 
     // =====================================================================
     // Feldbestand
     // =====================================================================
 
     [Fact]
-    public void Die_Seite_zeigt_Auswahl_Filter_Liste_Pflege_und_Vergleich()
+    public void Die_Seite_zeigt_Auswahl_Filter_Versionswahl_Pflege_und_Vergleich()
     {
         var cut = Zeige();
 
-        Assert.Single(cut.FindAll("select"));                           // Stammprojekt
-        Assert.Single(cut.FindAll(".epos-seite-zeile input[type=checkbox]"));  // nur Stämme
-        Assert.Equal(5, cut.FindAll(".epos-variantentabelle thead th").Count);
-        Assert.Equal(2, Listenzeilen(cut).Count);
+        Assert.Equal(2, cut.FindAll("select").Count);                   // Stammprojekt, Version
+        Assert.Single(cut.FindAll(".epos-stammzeile input[type=checkbox]"));  // nur Stämme
+        Assert.Equal(2, Versionseintraege(cut).Count);
+        Assert.Single(cut.FindAll(".epos-variantenzeile input[type=text]"));  // Bezeichner
         Assert.Equal(3, Pflegeknoepfe(cut).Count);                      // Anlegen, Löschen, Simulieren
         Assert.Contains("im Vergleich", cut.Find(".epos-untergruppe").TextContent);
         Assert.Contains("2 Zeile(n)", cut.Find(".epos-status").TextContent);
+    }
+
+    /// <summary>
+    /// W5‑E‑1: Die Variantentabelle ist WEG — mit ihr die fünf Spaltenköpfe, die
+    /// zwei Wahlknöpfe und die vier Zeilenzellen je Version. Ein Rest von ihr wäre
+    /// genau der Platz, den der Anwender zurückhaben wollte.
+    /// </summary>
+    [Fact]
+    public void Die_Variantentabelle_gibt_es_nicht_mehr()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-variantentabelle"));
+        Assert.Empty(cut.FindAll(".epos-variantenpflege"));
+        Assert.Empty(cut.FindAll(".epos-anlagenwahl"));      // die Zeilenwahl der Liste
     }
 
     [Fact]
@@ -205,21 +235,144 @@ public class UebersichtSeiteTests : BunitContext
         Assert.Equal("Hersteller: B", zellen[2].GetAttribute("title"));
     }
 
+    // =====================================================================
+    //  Die Versionswahl (Anwenderwunsch 05.09.2026, W5‑E‑1)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Stamm steht zuerst, dann die Varianten; der Text ist
+    /// „Bezeichner — Projektname" — die zwei Spalten, die die Tabelle bis W5‑E‑1
+    /// nebeneinander führte. Die Ids sind die Projekt-Ids (stabil über einen
+    /// Neuaufbau, dublettenfrei — die Bedingung der Hausregel für den Wirt eines
+    /// <c>Auswahlfeld</c>).
+    /// </summary>
     [Fact]
-    public void Ein_fehlender_Simulationsstand_wird_hervorgehoben()
+    public void Das_Auswahlfeld_fuehrt_Stamm_und_Varianten_in_der_Reihenfolge_der_Gruppe()
     {
         var cut = Zeige();
 
-        Assert.Single(cut.FindAll(".epos-veraltet"));
+        IReadOnlyList<IElement> eintraege = Versionseintraege(cut);
+        Assert.Equal(2, eintraege.Count);
+
+        Assert.Equal("1030", eintraege[0].GetAttribute("value"));
+        Assert.Equal("(Stammprojekt) — Musterhaus", eintraege[0].TextContent);
+
+        Assert.Equal("1031", eintraege[1].GetAttribute("value"));
+        Assert.Equal("WP klein — Musterhaus", eintraege[1].TextContent);
     }
 
+    /// <summary>Gewählt ist, was der Stand als markiert meldet.</summary>
     [Fact]
-    public void Die_markierte_Zeile_ist_hervorgehoben()
+    public void Das_Auswahlfeld_zeigt_die_markierte_Version()
+    {
+        Assert.Equal("1030", Versionswahl(Zeige()).GetAttribute("value"));
+        Assert.Equal("1031", Versionswahl(Zeige(stand: Unterschiedsansicht())).GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Ein Auswahlfeld ohne Eintrag zu seinem Wert zeigt NICHTS an (Hausregel).
+    /// Ohne Gruppe gibt es beides nicht — und die Seite zeichnet trotzdem.
+    /// </summary>
+    [Fact]
+    public void Ohne_Gruppe_bleibt_das_Auswahlfeld_leer_und_die_Seite_steht()
+    {
+        var cut = Zeige(stand: new UebersichtStand());
+
+        Assert.Empty(Versionseintraege(cut));
+        Assert.Equal("", Versionswahl(cut).GetAttribute("value"));
+        Assert.Equal("", Simulationszeile(cut).TextContent.Trim());
+    }
+
+    /// <summary>Für die Sprachausgabe trägt das Feld einen ausgeschriebenen Namen.</summary>
+    [Fact]
+    public void Das_Auswahlfeld_traegt_einen_Namen_fuer_die_Sprachausgabe()
     {
         var cut = Zeige();
 
-        Assert.Contains("epos-zeile--markiert", Listenzeilen(cut)[0].ClassName);
-        Assert.DoesNotContain("epos-zeile--markiert", Listenzeilen(cut)[1].ClassName);
+        Assert.Equal("Version wählen", Versionswahl(cut).GetAttribute("aria-label"));
+        Assert.Contains("Variante:", cut.Find(".epos-variantenzeile .epos-feld-text").TextContent);
+    }
+
+    // =====================================================================
+    //  Die Statuszeile des Simulationsstands
+    // =====================================================================
+
+    /// <summary>
+    /// Ein gerechneter, aktueller Stand: „Simulation: 02.09.26 10:00" — ohne „⚠".
+    /// Die Zeile meldet sich der Sprachausgabe von selbst (<c>aria-live</c>), denn
+    /// sie wechselt mit der Version, ohne dass der Anwender hinsieht.
+    /// </summary>
+    [Fact]
+    public void Die_Statuszeile_nennt_den_Simulationsstand_der_gewaehlten_Version()
+    {
+        var cut = Zeige();
+
+        IElement zeile = Simulationszeile(cut);
+        Assert.Equal("polite", zeile.GetAttribute("aria-live"));
+        Assert.Contains("Simulation: 02.09.26 10:00", zeile.TextContent);
+        Assert.Empty(zeile.QuerySelectorAll(".epos-veraltet"));
+    }
+
+    /// <summary>Ohne Ergebnis: „noch nicht simuliert" samt „⚠" und Grund im Kurztext.</summary>
+    [Fact]
+    public void Ohne_Ergebnis_sagt_die_Statuszeile_es_und_traegt_das_Warnzeichen()
+    {
+        var cut = Zeige(stand: Unterschiedsansicht());
+
+        IElement zeile = Simulationszeile(cut);
+        Assert.Contains("noch nicht simuliert", zeile.TextContent);
+
+        IElement warn = zeile.QuerySelector(".epos-veraltet")!;
+        Assert.Equal("⚠", warn.TextContent);
+        Assert.Contains("kein Simulationsergebnis", warn.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// Das „⚠" hat ZWEI Bedeutungen — kein Ergebnis, oder ein Ergebnis, das älter
+    /// ist als die letzte Änderung am Projekt (<c>SimStand &lt; Aenderungsdatum</c>
+    /// in <c>BerichtsDatenSammler.ErmittleStatus</c>). Der Kurztext sagt, welche
+    /// gerade gilt; bis W5‑E‑1 sagte es nichts.
+    /// </summary>
+    [Fact]
+    public void Ein_veralteter_Stand_zeigt_Zeitpunkt_Warnzeichen_und_den_zweiten_Grund()
+    {
+        UebersichtStand stand = Vergleichsansicht();
+        stand.Zeilen = new[]
+        {
+            new VarianteZeile { IdProjekt = 1030, Bezeichner = "(Stammprojekt)",
+                                Projektname = "Musterhaus", SimStand = "02.09.26 10:00 ⚠",
+                                SimZeitpunkt = "02.09.26 10:00", IstStamm = true,
+                                Auffaellig = true }
+        };
+        var cut = Zeige(stand: stand);
+
+        IElement zeile = Simulationszeile(cut);
+        Assert.Contains("Simulation: 02.09.26 10:00", zeile.TextContent);
+
+        IElement warn = zeile.QuerySelector(".epos-veraltet")!;
+        Assert.Equal("⚠", warn.TextContent);
+        Assert.Contains("älter als die letzte Änderung", warn.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// Die Unterschiedstabelle steht weiter im Rahmen der Hausregel W9‑B‑2 —
+    /// nur mit der größeren Höchsthöhe, die die Variantentabelle frei gemacht hat.
+    /// Geprüft wird beides: das Markup UND die Regel im Stilblatt (eine bunit-Probe
+    /// allein sieht eine Stilregel nicht, Lehre W6‑B‑1).
+    /// </summary>
+    [Fact]
+    public void Die_Unterschiedstabelle_steht_im_hoeheren_Rahmen()
+    {
+        var cut = Zeige();
+
+        string klasse = cut.Find(".epos-vergleichstabelle").ParentElement!.ClassName ?? "";
+        Assert.Contains("epos-raster-huelle", klasse);
+        Assert.Contains("epos-raster-huelle--vergleich", klasse);
+        Assert.DoesNotContain("epos-raster-huelle--frei", klasse);
+
+        string regel = Stilblock(".epos-raster-huelle--vergleich {");
+        Assert.Contains("max-height:", regel);
+        Assert.Contains("--epos-listenhoehe", regel);
     }
 
     // =====================================================================
@@ -232,7 +385,7 @@ public class UebersichtSeiteTests : BunitContext
         int gemeldet = 0;
         var cut = Zeige(p => p.Add(x => x.StammGewechselt, (int id) => gemeldet = id));
 
-        cut.Find("select").Change("1040");
+        cut.Find(".epos-stammzeile select").Change("1040");
 
         Assert.Equal(1040, gemeldet);
         Assert.Equal(2, _geladen);
@@ -244,22 +397,51 @@ public class UebersichtSeiteTests : BunitContext
         bool? gemeldet = null;
         var cut = Zeige(p => p.Add(x => x.FilterGewechselt, (bool an) => gemeldet = an));
 
-        cut.Find(".epos-seite-zeile input[type=checkbox]").Change(true);
+        cut.Find(".epos-stammzeile input[type=checkbox]").Change(true);
 
         Assert.True(gemeldet);
         Assert.Equal(2, _geladen);
     }
 
+    /// <summary>
+    /// W5‑E‑1: Die Wahl im Auswahlfeld treibt genau das, was bis dahin die
+    /// Zeilenwahl der Tabelle trieb — dieselbe Meldung, dasselbe Auffrischen.
+    /// </summary>
     [Fact]
-    public void Eine_Zeilenmarkierung_wird_gemeldet_und_laedt_neu()
+    public void Eine_Versionswahl_wird_gemeldet_und_laedt_neu()
     {
         int gemeldet = 0;
         var cut = Zeige(p => p.Add(x => x.ZeileMarkiert, (int id) => gemeldet = id));
 
-        Listenzeilen(cut)[1].QuerySelector(".epos-anlagenwahl")!.Click();
+        Versionswahl(cut).Change("1031");
 
         Assert.Equal(1031, gemeldet);
         Assert.Equal(2, _geladen);
+    }
+
+    /// <summary>
+    /// Und sie treibt die ANSICHT: Auf dem Stamm steht die Gegenüberstellung ohne
+    /// Aktionsspalte, auf einer Variante deren Unterschiede mit ihr — dazu die
+    /// Löschsperre und die Statuszeile des neuen Stands.
+    /// </summary>
+    [Fact]
+    public void Eine_Versionswahl_treibt_MarkierteId_Unterschiede_und_Knoepfe()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.ZeileMarkiert, (int _) => _stand = Unterschiedsansicht())
+            .Add(x => x.UebernahmeGaben, (VergleichZeile _) => LeererSatz()));
+
+        Assert.Equal(1030, cut.Instance.MarkierteId);
+        Assert.False(cut.Instance.MitAktionsspalte);
+        Assert.True(Pflegeknoepfe(cut)[1].HasAttribute("disabled"));      // Stamm: nicht löschbar
+
+        Versionswahl(cut).Change("1031");
+
+        Assert.Equal(1031, cut.Instance.MarkierteId);
+        Assert.True(cut.Instance.MitAktionsspalte);
+        Assert.Contains("WP klein", cut.Find(".epos-untergruppe").TextContent);
+        Assert.False(Pflegeknoepfe(cut)[1].HasAttribute("disabled"));     // Variante: löschbar
+        Assert.Contains("noch nicht simuliert", Simulationszeile(cut).TextContent);
     }
 
     // =====================================================================
@@ -276,7 +458,7 @@ public class UebersichtSeiteTests : BunitContext
             return "Variante „Kessel groß“ wurde angelegt.";
         }));
 
-        cut.Find(".epos-variantenpflege input[type=text]").Input("Kessel groß");
+        cut.Find(".epos-variantenzeile input[type=text]").Input("Kessel groß");
         Pflegeknoepfe(cut)[0].Click();
 
         Assert.Equal("Kessel groß", bezeichner);
@@ -497,5 +679,29 @@ public class UebersichtSeiteTests : BunitContext
         var cut = Zeige();
 
         Assert.Equal("UcBkUebersicht.btn_Help", cut.Instance.HilfeSchluessel);
+    }
+
+    // =====================================================================
+    //  Hilfen
+    // =====================================================================
+
+    /// <summary>
+    /// Liest den Rumpf einer Regel aus <c>EPOS.UI/wwwroot/epos-ui.css</c> —
+    /// derselbe Weg wie in <c>ListenrahmenTests</c>.
+    /// </summary>
+    private static string Stilblock(string selektor)
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+        int a = css.IndexOf(selektor, StringComparison.Ordinal);
+        Assert.True(a >= 0, $"Regel {selektor} steht nicht im Stilblatt");
+        int e = css.IndexOf('}', a);
+        Assert.True(e > a);
+        return css.Substring(a + selektor.Length, e - a - selektor.Length);
     }
 }
