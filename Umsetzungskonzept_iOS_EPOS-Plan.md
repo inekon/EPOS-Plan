@@ -1592,6 +1592,27 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > nachgerechnet); Abnahmepunkte 2c–2g für die Sichtprüfung. Nicht angeglichen: Statusanstrich der ganzen
 > Kachel (A‑1), Kachelbeschriftung mittig (W16b‑E‑3), 29‑px‑Menühöhe und 65‑px‑Kopfkästen (Berührungsziel
 > 44 px, M2/iL4), 1,5‑px‑Rahmen.
+> **Windows-Abnahme 05.09.2026, Befund W16b‑B‑1 („die Dialoge auf der Startseite sind leer"), `f889e9e`:** Das
+> modale Fenster zeigte die Hüllenfläche #F5F4EF, die zweite WebView2 zeichnete nichts. Als Ursache **ausgeschlossen**:
+> Parametersatz (61 Hüllenstellen und 13 Assistentenseiten gegen die `[Parameter]` geprüft, 0 Treffer), Ausnahme
+> beim ersten Zeichnen (alle 21 Kachelziele rendern ohne Gaben), Stilblatt (die Dialogwurzeln stehen vor Z. 1386 und
+> waren nie abgeschaltet), Faden, WebView2-Laufzeit. Übrig bleibt der **Weg selbst**: Seit Startseite und Hauptfenster
+> Razor sind (W16b.2/W16c.2), öffnet jeder Kachelklick und Menüpunkt ein modales Fenster mit einer ZWEITEN WebView2
+> aus dem `WebMessageReceived`-Rückruf der ersten heraus — genau das, was `Sprungbruecke` seit W2.2 als Risiko R2
+> ausschließt; die Belege vom 04.09. (W4‑B‑1, W5‑B‑1) hingen noch an WinForms-Klicks. `Blazorsprung` lässt das
+> Ereignis zu Ende laufen und fährt den Sprung eine Nachricht später (`BeginInvoke`, Wiedereintrittssperre) — an den
+> **zwei** Verteilern `StartseiteHuelle.Kachelweg` und `HauptfensterHuelle.Weg`, nicht in 21/55 Aufrufern; der
+> synchrone Vertrag von `Weg` bleibt. `WebViewWache` hängt sich an `CoreWebView2InitializationCompleted` und
+> `BlazorWebViewInitialized` (der WinForms-`BlazorWebView` 10.0.100 führt kein `UnhandledException`) und zeigt nach
+> 10 s einen markierbaren Text statt der leeren Fläche; `Parametersatzwache` in beiden Hüllen. Dauerhafte Wachen auf
+> Linux: `ParametersatzTests` (liest die Hüllenquellen, Reflexion über `EPOS.UI`), `StartkachelDialogeTests`
+> (21 Ziele + Assistent mit Hüllensatz, Gegenprobe), `StartseiteTests` (+2). **Ursache wahrscheinlich, nicht
+> bewiesen** — die Abnahme am Gerät (Protokoll W16b § 12.3, A1–A7) entscheidet; bleibt eine Fläche leer, steht nach
+> 10 s der Grund darin. **Befund W16b‑B‑2 (Reiter gesperrt):** die Sperre ist vorbildgetreu (`Form_Start_Load`), und
+> Projektname im Kopfband und gesperrte Reiter schließen einander aus (beides hängt an `ProjektId()`); Erklärung ist
+> die Farbe (**W16b‑B‑2b**: frei #5f5e5a gegen gesperrt #888780, das Vorbild zeichnete frei schwarz) — behoben mit
+> W16b‑E‑5 (`1a72cd5`), Wache in `StartseiteTests`. Offene Frage ans Gerät: stand das Banner „Bitte zuerst ein
+> Projekt auswählen!" über der Leiste?
 
 > **Statusblock iU9 — Teilwelle 16a umgesetzt (04.09.2026, Basis `975ead5` = Tag `vor-W16`, zusammengeführt mit `3c7e0d6` nach den W15c-Entscheiden)**
 >
