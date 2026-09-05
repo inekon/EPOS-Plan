@@ -579,3 +579,79 @@ Pfeilspalte noch selbst). Eine bunit-Probe sieht eine Stilregel nicht — Lehre 
 4. **Knöpfe**: Beide tragen ihren Satz im Klartext — auf Deutsch **und** auf Englisch —
    und einen Kurztext, der die Herkunft der Zeile nennt. Jeder bleibt gesperrt, solange
    in der jeweils anderen Liste nichts markiert ist.
+
+---
+
+## Anwenderwunsch 05.09.2026 (**W14a‑E‑6**) — Katalogbrowser und Modulkatalog nutzen die Fläche
+
+**Der Befund.** Bildschirmfoto „Administration Solarkollektoren" (`KatalogBrowserDialog`
+in der Ausprägung `Solarkollektoren`): *„Admin-Menüs sind nicht an Größe Bildschirm
+angepasst."* Zu sehen waren untereinander die Überschrift, der Balken „Auswahl in DB:",
+eine Liste in ihrem **eigenen** kleinen Rollrahmen — und darunter, nur über den
+**Seiten**rollbalken erreichbar, der Balken „Eingabe der Solarkollektoren" mit den
+Feldern. Dazu eine Kopfzeile, die **„Name | Name | Eigenschaften"** las.
+
+**Die Vorbilder standen NEBENEINANDER.** Nachgemessen an den Designern und `.resx` der
+sechs gelöschten Masken (`git show 0afe8ad^:…`, `git show 1b2e2f4^:…`):
+
+| Ausprägung | Vorbild | Fenster | Liste | Eingabe |
+|---|---|---|---|---|
+| `Heizkessel` | `Form_Heizkessel_Admin` | 726 × 383 | `listBox_Kessel_DB` (12, 30) 302 × 157 **links** | Felder ab x 448 **rechts** |
+| `Bhkw` | `Form_BHKWAdmin` | 856 × 517 | `dataGridView1` (12, 25) 403 × 369 **links** | `groupBox2` (438, 28) 405 × 421 **rechts** |
+| `Solarkollektoren` | `Form_SolarKollektorenAdmin` | 825 × 494 | `dataGridView1` (26, 59) 359 × 302 **links** | Felder ab x 402 **rechts** |
+| `Pufferspeicher` | `Form_PufferSp_Admin` | 721 × 330 | `listBox_PufferSp_DB` (13, 30) 299 × 191 **links** | Felder ab x 346 **rechts** |
+| `Photovoltaik` | `Form_AdminPV` | 607 × 489 | `listBox_PV` (12, 9) 211 × 259 **links** | Felder ab x 253 **rechts** |
+| `Stromspeicher` | `Form_AdminStromspeicher` | 614 × 367 | `listBox_Stromspeicher` (22, 22) 201 × 293 **links** | Felder ab x 240 **rechts** |
+
+**Die Umsetzung — ein Baustein, kein CSS je Dialog.**
+`EPOS.UI/Bausteine/Katalograhmen.razor` trägt zwei benannte Bereiche, `Liste` und
+`Eingabe`, dazu `Gestapelt` für die Masken, deren Vorbild schon untereinander stand.
+`KatalogBrowserDialog` und `ModulKatalogDialog` füllen ihn; ihre Wurzel trägt zusätzlich
+`epos-katalog-dialog`. Der Stilblock „Katalogdialoge" in `EPOS.UI/wwwroot/epos-ui.css`
+steht am Ende des Blattes und hält drei Regeln:
+
+* **Die Wurzel nutzt die Höhe** — `max-width: none` (die 1160‑px‑Bremse von
+  `.epos-dialog` ist für eine Liste neben einem Feldblock falsch) und `height: 100dvh`.
+* **Die Liste nimmt die verbleibende Höhe** — `flex: 1 1 auto; max-height: none;
+  min-height: 9rem`. **Hier und nur hier** fällt die Höchsthöhe aus Befund W9‑B‑2:
+  Sie war die Antwort auf eine Liste, die den Detailblock nach unten schob; im
+  Katalograhmen schiebt nichts mehr, weil der Eingabeblock **daneben** steht und die
+  Schlussleiste außerhalb. Überall sonst gilt `--epos-listenhoehe` unverändert weiter
+  (Wache: `ListenrahmenTests`).
+* **Der Eingabeblock rollt selbst**, nie die Seite (`overflow-y: auto`).
+
+**Die Filter stehen in der Listenspalte.** Im Vorbild saßen `comboBox_Brennstoffart` und
+`comboBox_Leistung` **unter** der Liste (Heizkessel: Liste bis y 187, Klapplisten bei
+y 214). Hier stehen sie darüber — die Hausregel aus Anwenderentscheid #76 („Filter
+gehören über die Katalogliste, dort steht die Liste, auf die sie wirken") und ohne der
+Liste Höhe zu nehmen.
+
+**Die Umbruchbreite ist 900 px, nicht 1100.** Der Inhalt der WebView rechnet in
+CSS-Pixeln, das Fenstermaß (iU8‑E‑1) in Gerätepixeln: Bei 150 % Skalierung sind
+1632 Gerätepixel nur **1088** CSS-Pixel. Ein Umbruch bei 1100 px träfe genau den
+Anwender, der den Befund gemeldet hat. 900 px ist außerdem der Wert, bei dem schon der
+Baustein `Zweispaltenauswahl` (`--epos-zweispalten-umbruch`) und der Dublettenbaum
+umbrechen — und die Vorbilder waren 607 bis 856 px breit und standen dabei
+nebeneinander.
+
+**Die Kopfzeile heißt wieder „Wahl".** Die Ursache saß in den **zwei Hüllen**, nicht in
+den Komponenten: `KatalogBrowserHuelle:93` gab `["SpalteWahlText"] = profil.SpalteName`
+und `ModulKatalogHuelle:72` `= profil.Listenbeschriftung` — beide Male die Beschriftung
+der **Nachbarspalte**. Beide lesen jetzt `Resource.KFAK_SP_WAHL` (de „Wahl", en
+„Select"), denselben Schlüssel wie die acht übrigen Katalogdialoge. Kein neuer Text.
+
+**Wachen.** `EPOS.UI.Tests/Bausteine/KatalograhmenTests` (Markup **und** Stilblatt —
+Lehre W6‑B‑1) und `EPOS.UI.Tests/KatalogdialogTests` (Wurzelklasse, Rahmen,
+Eingabeblock im DOM, Kopfzeile „Wahl" in allen sechs Ausprägungen).
+
+**Abnahmepunkte am Gerät** (100 / 125 / 150 %):
+
+1. „Administration Solarkollektoren" füllt rund 85 % der Breite und 90 % der Höhe.
+2. Liste **links**, Eingabeblock **rechts**; beide ohne Seitenrollbalken sichtbar.
+3. Die Liste ist so hoch wie das Fenster es zulässt und rollt **in sich**.
+4. Das Fenster schmal ziehen (< 900 CSS-px): Liste oben, Eingabe unten — nichts
+   verschwindet.
+5. Die Kopfzeile der Liste liest „Wahl | Name | Eigenschaften" (Solarkollektoren, BHKW)
+   bzw. „Wahl | Name" (Heizkessel, Pufferspeicher, PV, Stromspeicher).
+6. Dasselbe für „BHKW Verwaltung", „Administration Heizkessel", „Administration
+   Pufferspeicher", „Administration PV-Module" und „Administration Stromspeicher".

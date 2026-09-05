@@ -53,7 +53,8 @@
 @namespace EPOS.UI.Dialoge.Klimadaten
 @using WindowsFormsApplication1
 
-<div class="epos-dialog epos-klimaregion" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog epos-klimaregion" tabindex="-1"
+     @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
@@ -67,10 +68,15 @@
 
     <Herleitungszeile Text="@KopfText" />
 
-    <div class="epos-klimaregion-mitte">
-
-        @* ---- links: die Liste der importierten Regionen ------------------- *@
-        <div class="epos-klimaregion-liste">
+    @* --- Liste LINKS, Bilder und Import RECHTS (Anwenderwunsch 05.09.2026)
+           Das Vorbild Form_Klimadaten (757 x 641) hatte die Regionsliste
+           (201 x 282) links und die Anzeige rechts. Die beiden Huellklassen
+           epos-klimaregion-mitte/-liste/-bilder waren dabei NIE im Stilblatt
+           angekommen - die zwei Spalten standen deshalb untereinander, und
+           der Importblock lag noch darunter (derselbe Befund wie beim
+           Katalogbrowser). Sie sind durch den Katalograhmen ersetzt. *@
+    <Katalograhmen>
+        <Liste>
             <Gruppenkopf Titel="@GruppeListeText" />
 
             <Raster TZeile="Regionszeile" Zeilen="@Regionszeilen">
@@ -88,10 +94,10 @@
                 <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
                         @onclick="BeiLoeschen">@LoeschenText</button>
             </div>
-        </div>
+        </Liste>
 
-        @* ---- rechts: die zwei Diagramme in zwei Reitern -------------------- *@
-        <div class="epos-klimaregion-bilder">
+        <Eingabe>
+            @* ---- die zwei Diagramme in zwei Reitern ---------------------- *@
             <Reiter Bezeichnung="@TitelText" Aktiv="@_reiter" AktivChanged="@(s => _reiter = s)">
                 <KindInhalt>
                     <Reiterblatt Schluessel="TEMPERATUR" Titel="@ReiterTemperaturText">
@@ -111,40 +117,40 @@
 
             <Textfeld Bezeichnung="@LabelDetails" Wert="@_details"
                       Mehrzeilig="true" Zeilen="3" NurLesen="true" />
-        </div>
-    </div>
 
-    @* ---- der Import --------------------------------------------------- *@
-    <Gruppenkopf Titel="@GruppeStandortText" />
+            @* ---- der Import ---------------------------------------------- *@
+            <Gruppenkopf Titel="@GruppeStandortText" />
 
-    <div class="epos-klimaregion-eingabe">
-        @* comboBox_Ort: DropDownStyle.DropDown - Vorschlaege UND freie Eingabe.
-           Entscheid E-7: Fehlt die Ortsliste, bleibt die Vorschlagsliste leer. *@
-        <label class="epos-feld">
-            <span class="epos-feld-beschriftung">@LabelOrtText</span>
-            <input type="text" class="epos-eingabe" list="epos-klimaregion-orte"
-                   value="@_ortsname" @oninput="BeiOrtsname" disabled="@_laeuft" />
-        </label>
-        <datalist id="epos-klimaregion-orte">
-            @foreach (string ort in Ortsvorschlaege)
-            {
-                <option value="@ort"></option>
-            }
-        </datalist>
+            <div class="epos-klimaregion-eingabe">
+                @* comboBox_Ort: DropDownStyle.DropDown - Vorschlaege UND freie Eingabe.
+                   Entscheid E-7: Fehlt die Ortsliste, bleibt die Vorschlagsliste leer. *@
+                <label class="epos-feld">
+                    <span class="epos-feld-beschriftung">@LabelOrtText</span>
+                    <input type="text" class="epos-eingabe" list="epos-klimaregion-orte"
+                           value="@_ortsname" @oninput="BeiOrtsname" disabled="@_laeuft" />
+                </label>
+                <datalist id="epos-klimaregion-orte">
+                    @foreach (string ort in Ortsvorschlaege)
+                    {
+                        <option value="@ort"></option>
+                    }
+                </datalist>
 
-        <span class="epos-klimaregion-oder">@OderText</span>
+                <span class="epos-klimaregion-oder">@OderText</span>
 
-        <Zahlenfeld Bezeichnung="@LabelLongitudeText" Wert="@_longitude"
-                    WertChanged="@(w => { _longitude = w; _meldung = ""; })"
-                    Feldname="@FeldLongitudeText" FehlerZustand="BeiFehler"
-                    Aktiv="@(!_laeuft)" />
-        <Zahlenfeld Bezeichnung="@LabelLatitudeText" Wert="@_latitude"
-                    WertChanged="@(w => { _latitude = w; _meldung = ""; })"
-                    Feldname="@FeldLatitudeText" FehlerZustand="BeiFehler"
-                    Aktiv="@(!_laeuft)" />
-        <Textfeld Bezeichnung="@LabelBezeichnungText" Wert="@_bezeichnung"
-                  WertChanged="@(t => { _bezeichnung = t; _meldung = ""; })" />
-    </div>
+                <Zahlenfeld Bezeichnung="@LabelLongitudeText" Wert="@_longitude"
+                            WertChanged="@(w => { _longitude = w; _meldung = ""; })"
+                            Feldname="@FeldLongitudeText" FehlerZustand="BeiFehler"
+                            Aktiv="@(!_laeuft)" />
+                <Zahlenfeld Bezeichnung="@LabelLatitudeText" Wert="@_latitude"
+                            WertChanged="@(w => { _latitude = w; _meldung = ""; })"
+                            Feldname="@FeldLatitudeText" FehlerZustand="BeiFehler"
+                            Aktiv="@(!_laeuft)" />
+                <Textfeld Bezeichnung="@LabelBezeichnungText" Wert="@_bezeichnung"
+                          WertChanged="@(t => { _bezeichnung = t; _meldung = ""; })" />
+            </div>
+        </Eingabe>
+    </Katalograhmen>
 
     <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
                  Abbrechen="@(Abbrechen is null ? null : EventCallback.Factory.Create(this, BeiAbbrechen))"
