@@ -172,28 +172,7 @@ namespace WindowsFormsApplication1
             double[] probe = new double[8760];
 
             //  if (!DBGelesen)
-            {
-                KlimadatenCtrl ctrl_klima = new KlimadatenCtrl();
-                ctrl_klima.ReadAll(ID_Klimaregion);
-                for (int i = 0; i < ctrl_klima.rows; i++)
-                {
-                    Sol_N[i] = (float)ctrl_klima.items[i].m_Sol_Nord;
-                    Sol_w[i] = (float)ctrl_klima.items[i].m_Sol_West;
-                    Sol_O[i] = (float)ctrl_klima.items[i].m_Sol_Ost;
-                    Sol_S[i] = (float)ctrl_klima.items[i].m_Sol_Sued;
-                    A_Temp[i] = (float)ctrl_klima.items[i].m_nTemperatur;
-                    WE[i] = (bool)ctrl_klima.items[i].m_WE;
-                    TagTyp_W[i] = (int)ctrl_klima.items[i].m_TagTyp_W;
-                    TagTyp_NW[i] = (int)ctrl_klima.items[i].m_TagTyp_NW;
-                }
-                Stundentemperatur_aus_DB(ID_Klimaregion);
-                DBGelesen = true;
-            }
-
-            // F3 (Konzept 4.2): Der Klimadaten-Kalender ist ab Paket K1 für ALLE
-            // Bedarfsarten führend. Die Profilkachelung startet damit mit dem
-            // tatsächlichen Wochentag des 1. Januar statt fest mit Sonntag.
-            WochentagJan1 = ProfilBedarf.WochentagJan1AusWE(WE);
+            KlimakalenderLesen(ID_Klimaregion);
 
             ProjektGebaeudeCtrl ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(ID_Projekt);
@@ -210,48 +189,12 @@ namespace WindowsFormsApplication1
 
             for (int i = 0; i < ctrl.rows; i++)
             {
-
-                // wenn die Einheit nicht als "Wohnfläche [m²]" angegeben ist...Wohnfläche und Anzahl Bewohner berechnen
-                if (ctrl.items[i].Einheit == "Wohnfläche [m²]")
-                {
-                    ctrl.items[i].Bewohner = ctrl.items[i].Z_AuswahlWohnflaeche / ctrl.items[i].Flaeche_Nutzer;
-                }
-                else
-                {
-                    Bewohner_und_Flaeche_berechnen(ctrl.items[i], i);
-                }
-                Anzahl_Bewohner = (int)ctrl.items[i].Bewohner;
-                Wohnflaeche = ctrl.items[i].Z_AuswahlWohnflaeche;
-
-                // Tagesverteilung berechnen
-                Berechnung_Gebaeude_Tageswerte(ctrl.items[i], i);
-
-                bool tagv_found = false;
-                TagesVerteilung = DBTagesVeteilung(ctrl.items[i].Typ, ctrl.items[i].ID_Gebaeude, ref tagv_found);
-                // PAKET 8 (Konzept 13.4): Warnung im Protokollkanal statt MessageBox. Der
-                // ABBRUCH der Bedarfsrechnung bleibt unverändert (return an derselben
-                // Stelle) — die im Konzept genannte Ersatzlösung „Standardprofil
-                // verwenden“ wäre eine Rechenänderung und gehört nicht in ein
-                // Infrastrukturpaket (siehe Paket-8-Protokoll, offene Punkte).
-                if (!tagv_found)
-                {
-                    SimulationProtokoll.Aktuell.Warnung(string.Format(
-                        MyResource.Resource.SIMENG_TAGESVERTEILUNG_FEHLT, ctrl.items[i].Typ));
-                    return;
-                }
-
-                // V0-1: Einzelpuffer je Durchlauf nullen - StdWerte addiert auf.
-                WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf_EinGebaeude);
-
-                // Stundenwerte Wärmebedarf je nach Gebäudetyp und Tagtyp aus Klimaregion
-                if (ctrl.items[i].Typ == "Wohngebaeude  VDI 2067")
-                {
-                    //com.I_StdWerte(ref Waermebedarf_Gebaeude, TagTyp_W, TagesVerteilung, Heizlast);
-                    WPPlan.Core.BhkwPlan.StdWerte(Waermebedarf_EinGebaeude, TagTyp_W, TagesVerteilung, Heizlast);
-                }
-                else
-                    //com.I_StdWerte(ref Waermebedarf_Gebaeude, TagTyp_NW, TagesVerteilung, Heizlast);
-                    WPPlan.Core.BhkwPlan.StdWerte(Waermebedarf_EinGebaeude, TagTyp_NW, TagesVerteilung, Heizlast);
+                // iU9-W9.8: Der Rumpf bis einschliesslich StdWerte steht seit dem
+                // Anwenderwunsch W9-E-2 in HeizwaermeEinesGebaeudes - Anweisung fuer
+                // Anweisung derselbe Text, damit der Gebaeudedialog GENAU DIESE Rechnung
+                // fuer EIN Gebaeude fahren kann. false = die Tagesverteilung fehlt, und
+                // der Abbruch der Bedarfsrechnung bleibt an derselben Stelle wie bisher.
+                if (!HeizwaermeEinesGebaeudes(ctrl.items[i], i, Waermebedarf_EinGebaeude)) return;
 
                 //com.CSharp_I_vectoren_addieren(Waermebedarf_Gebaeude, Waermebedarf);
                 // K1: Gebäudewärme geht in den HEIZKANAL statt in den Summenvektor.
@@ -550,6 +493,119 @@ namespace WindowsFormsApplication1
         // der Bedarf gebildet wird (KanaeleDrei). Mit Paket S1 ist sie gelöscht:
         // Prozesswärme ist ein eigener Kanal mit eigenen Senken, und eine Abbildung, die
         // sie wieder in den Heizkanal faltet, wäre ab hier schlicht falsch.
+
+        /// <summary>
+        /// <b>Der KLIMAKALENDER eines Laufs</b> (iU9-W9.8, Anwenderwunsch W9-E-2) — die
+        /// 365 Tagessätze der Klimaregion, die 8 760 Stundentemperaturen und der daraus
+        /// abgeleitete Wochentag des 1. Januar.
+        ///
+        /// <para><b>Unverändert verschoben</b> aus <see cref="Waermebedarf_berechnen"/>
+        /// (der Block <c>// if (!DBGelesen)</c> samt der Zeile <c>WochentagJan1 =
+        /// ProfilBedarf.WochentagJan1AusWE(WE)</c>) — Anweisung für Anweisung derselbe
+        /// Text, damit der Gebäudedialog dieselbe Vorbereitung fahren kann wie der Lauf.
+        /// Ohne sie stünden <c>Sol_*</c>, <c>A_Temp</c>, <c>WE</c> und <c>TagTyp_*</c> auf
+        /// null, und jede Tagesheizlast käme als 0 heraus.</para>
+        /// </summary>
+        /// <param name="ID_Klimaregion">Die Klimaregion des Projekts.</param>
+        internal void KlimakalenderLesen(int ID_Klimaregion)
+        {
+            KlimadatenCtrl ctrl_klima = new KlimadatenCtrl();
+            ctrl_klima.ReadAll(ID_Klimaregion);
+            for (int i = 0; i < ctrl_klima.rows; i++)
+            {
+                Sol_N[i] = (float)ctrl_klima.items[i].m_Sol_Nord;
+                Sol_w[i] = (float)ctrl_klima.items[i].m_Sol_West;
+                Sol_O[i] = (float)ctrl_klima.items[i].m_Sol_Ost;
+                Sol_S[i] = (float)ctrl_klima.items[i].m_Sol_Sued;
+                A_Temp[i] = (float)ctrl_klima.items[i].m_nTemperatur;
+                WE[i] = (bool)ctrl_klima.items[i].m_WE;
+                TagTyp_W[i] = (int)ctrl_klima.items[i].m_TagTyp_W;
+                TagTyp_NW[i] = (int)ctrl_klima.items[i].m_TagTyp_NW;
+            }
+            Stundentemperatur_aus_DB(ID_Klimaregion);
+            DBGelesen = true;
+
+            // F3 (Konzept 4.2): Der Klimadaten-Kalender ist ab Paket K1 für ALLE
+            // Bedarfsarten führend. Die Profilkachelung startet damit mit dem
+            // tatsächlichen Wochentag des 1. Januar statt fest mit Sonntag.
+            WochentagJan1 = ProfilBedarf.WochentagJan1AusWE(WE);
+        }
+
+        /// <summary>
+        /// <b>Die HEIZWÄRME EINES Gebäudes</b> (iU9-W9.8, Anwenderwunsch W9-E-2) — der
+        /// Rumpf der Gebäudeschleife aus <see cref="Waermebedarf_berechnen"/> bis
+        /// einschließlich <c>StdWerte</c>, Anweisung für Anweisung.
+        ///
+        /// <para><b>Warum es die Methode gibt.</b> Der Gebäudedialog zeigt seit dem
+        /// Anwenderwunsch W9-E-2 den Wärmebedarf GENAU EINES Gebäudes. Diese Zahl muss
+        /// dieselbe sein wie die des Laufs — also darf sie nicht ein zweites Mal
+        /// gerechnet werden, sondern nur ein zweites Mal AUFGERUFEN. Der Lauf ruft sie in
+        /// seiner Schleife, der Dialog für sein eines Gebäude; der Referenzlauf ist damit
+        /// unberührt.</para>
+        ///
+        /// <para><b>Der Index ist ein Merkplatz, kein Rang.</b> <paramref name="index"/>
+        /// trägt allein <c>HeizwaermebedarfGeb[index]</c> — den Jahreswert, den
+        /// <see cref="Bewohner_und_Flaeche_berechnen"/> für die Flächenrückrechnung
+        /// braucht. Eine Rechnung für EIN Gebäude nimmt deshalb 0 und bekommt bitgleich
+        /// dasselbe Ergebnis wie dieses Gebäude im Lauf.</para>
+        ///
+        /// <para><b>Das Ziel wird GENULLT</b> (<c>VectorInit</c>): <c>StdWerte</c>
+        /// addiert auf den vorhandenen Inhalt (V0-1).</para>
+        /// </summary>
+        /// <param name="item">Die Zeile aus <c>Abfrage_Projektgebaeude</c>. Sie wird
+        /// GESCHRIEBEN — <c>Bewohner</c> und <c>Z_AuswahlWohnflaeche</c> werden
+        /// nachgerechnet, wie im Lauf.</param>
+        /// <param name="index">Der Merkplatz in <c>HeizwaermebedarfGeb</c> (0 … 99).</param>
+        /// <param name="ziel">Die 8 760 Stundenwerte in WATT; die Umrechnung nach kW
+        /// macht der Aufrufer.</param>
+        /// <returns><c>false</c>, wenn zum Gebäudetyp keine Tagesverteilung hinterlegt
+        /// ist — der Lauf bricht dann ab, wie bisher.</returns>
+        internal bool HeizwaermeEinesGebaeudes(ProjektGebaeudeModel item, int index, float[] ziel)
+        {
+            // wenn die Einheit nicht als "Wohnfläche [m²]" angegeben ist...Wohnfläche und Anzahl Bewohner berechnen
+            if (item.Einheit == "Wohnfläche [m²]")
+            {
+                item.Bewohner = item.Z_AuswahlWohnflaeche / item.Flaeche_Nutzer;
+            }
+            else
+            {
+                Bewohner_und_Flaeche_berechnen(item, index);
+            }
+            Anzahl_Bewohner = (int)item.Bewohner;
+            Wohnflaeche = item.Z_AuswahlWohnflaeche;
+
+            // Tagesverteilung berechnen
+            Berechnung_Gebaeude_Tageswerte(item, index);
+
+            bool tagv_found = false;
+            TagesVerteilung = DBTagesVeteilung(item.Typ, item.ID_Gebaeude, ref tagv_found);
+            // PAKET 8 (Konzept 13.4): Warnung im Protokollkanal statt MessageBox. Der
+            // ABBRUCH der Bedarfsrechnung bleibt unverändert (return an derselben
+            // Stelle) — die im Konzept genannte Ersatzlösung „Standardprofil
+            // verwenden“ wäre eine Rechenänderung und gehört nicht in ein
+            // Infrastrukturpaket (siehe Paket-8-Protokoll, offene Punkte).
+            if (!tagv_found)
+            {
+                SimulationProtokoll.Aktuell.Warnung(string.Format(
+                    MyResource.Resource.SIMENG_TAGESVERTEILUNG_FEHLT, item.Typ));
+                return false;
+            }
+
+            // V0-1: Einzelpuffer je Durchlauf nullen - StdWerte addiert auf.
+            WPPlan.Core.BhkwPlan.VectorInit(ziel);
+
+            // Stundenwerte Wärmebedarf je nach Gebäudetyp und Tagtyp aus Klimaregion
+            if (item.Typ == "Wohngebaeude  VDI 2067")
+            {
+                //com.I_StdWerte(ref Waermebedarf_Gebaeude, TagTyp_W, TagesVerteilung, Heizlast);
+                WPPlan.Core.BhkwPlan.StdWerte(ziel, TagTyp_W, TagesVerteilung, Heizlast);
+            }
+            else
+                //com.I_StdWerte(ref Waermebedarf_Gebaeude, TagTyp_NW, TagesVerteilung, Heizlast);
+                WPPlan.Core.BhkwPlan.StdWerte(ziel, TagTyp_NW, TagesVerteilung, Heizlast);
+
+            return true;
+        }
 
         private void Bewohner_und_Flaeche_berechnen(ProjektGebaeudeModel item, int index)
         {
