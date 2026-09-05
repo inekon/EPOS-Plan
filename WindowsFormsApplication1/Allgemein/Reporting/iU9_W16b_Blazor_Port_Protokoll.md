@@ -204,6 +204,7 @@ Variantenwechsel sich NICHT als „zuletzt geöffnet" merkt.
 | **W16b‑E‑3 (neu, 05.09.2026)** | **Bilder der Kacheln und Symbole der Aktionskarten wie im Vorläufer** — Anwenderwunsch 05.09.2026 („Icons fehlen", zum ersten Bildschirmfoto der gestylten Startseite) | **Umgesetzt.** Die 21 Kacheln tragen wieder ihr Sinnbild aus `Form_Start`: die fünf Aktionskarten ihr `*_Symbol.png` (Herkunft `karte_*.KartenBild`, Designer :238–273), die sechzehn Bildkacheln das JPG ihrer `pictureBox` (Herkunft `pBox_*.BackgroundImage`). Die 20 Dateien sind **dieselben** und unverändert (`git mv`) nach `EPOS.UI/wwwroot/bilder/start/` gewandert und aus `Properties/Resources.resx`/`.Designer.cs` ausgetragen — sie hatten seit W16b keinen Nutzer mehr. Die Zuordnung steht als Tabelle `EPOS.UI/Seiten/Start/Kachelbilder.cs`, nicht in `StartKachel`: Das Bild hängt am SCHLÜSSEL, nicht an den Daten, sonst müssten es die Windows-Hülle und der iOS-Weg getrennt setzen. Zugeschnitten wird im **Stilblatt** (`object-fit: none` + `object-position`), nicht in der Datei — die Kachel-JPG sind die GANZE Kachel des Vorläufers, eine weiße Karte von rund 554 × 260 mit dem Sinnbild oben links. **Zwei Abweichungen**, beide in der Tabelle begründet: `pBox_Heizkessel` trug sein Bild eingebettet in `Form_Start.resx` (die Bytes sind Byte für Byte `PHeizkessel.jpg`, 8 066 B, 551 × 215 — nachgemessen, nicht geraten), und `btn_SimKonfig` war ein Knopf OHNE Bild; als 21. Kachel bekommt er `PSchnellSim.jpg`, das einzige Kachelbild des Bestands ohne eigene Kachel |
 | **W16b‑E‑4 (neu, 05.09.2026)** | **Die Gattungszeile der Startseite steht nur ohne Kopfleiste** | **Umgesetzt.** „Energieplanungs-Software" stand ein zweites Mal frei links neben dem Projektfeld — unter dem Kopfband des Hauptfensters, das PRODUKTNAME, GATTUNG und CLAIM ohnehin nennt. Die Seite führt dafür `KopfbandZeigen` (Vorgabe `true`); `AppWurzel` setzt es auf `false`, sobald sie eine `Kopfleiste` gezeichnet hat — das Attribut steht nach dem Parametersatz und gewinnt deshalb gegen ihn. **Auf iOS ist die Kopfleiste leer** — dort bleibt die Zeile die einzige Nennung des Produkts und steht unverändert. Im Bestand war sie `label20` (Segoe UI Semibold 26 pt fett, weiß auf `#6876DF`) auf dem Titelband `pictureBox2`, also eine EIGENE Zeile über den zwei Kopfkästen und nicht neben ihnen |
 | **W16b‑E‑5 (neu, 05.09.2026)** | **Design und Farbgebung an die WinForms-Fassung vor W16 anlehnen** — Anwenderwunsch 05.09.2026 („Design und Farbgebung kann verbessert werden, angelehnt an winforms Version vor-W16"), zum zweiten Bildschirmfoto nach W16b‑E‑3 | **Umgesetzt — ausschließlich im Stilblatt.** W16b‑E‑3 hat die BILDER zurückgeholt und die Anordnung angeglichen; was fehlte, war die FARBE. Erhoben wurden alle Farb-, Schrift- und Flächenwerte von `Form_Start` aus `84d7c16` (Designer, die drei `.resx` und die Laufzeitfarben in `Form_Start.cs`); die vollständige Gegenüberstellung steht unten als Tabelle „Vorbild → Umsetzung". Die Angleichung läuft über **sieben neue Token** in `:root`, die NUR `Seiten/Start/*` benutzen darf (`--epos-start-*`): Die Startmaske hatte eine eigene Handschrift — größere Schrift, kühlere Rahmen, eine gefüllte Reiterzunge, graue Knöpfe —, und wer die über den gemeinsamen Farbsatz durchreichte, färbte sechzig Dialoge mit um. Das Sichtbarste sind vier Stücke: die **Reiterleiste** steht wieder auf ihrem eigenen grauen Grund und die aktive Zunge ist **gefüllt mit weißer Schrift**, die zwei **Kopfkästen** tragen das kühle Blaugrau des Vorläufers statt des warmen Hausbeige, jede **Erläuterung** (Reiter wie Kachel) steht in DimGray halbfett statt in Fließtextgrau, und die zwei **Fußknöpfe** sind hellgrau wie im Bestand. **Kein Markup ist geändert**, keine feste Pixelkoordinate hinzugekommen. **Drei Farben des Vorläufers sind bewusst NICHT übernommen** — sie tragen den Hauskontrast von 4,5:1 nicht (Tabelle unten, Spalte „warum nicht"); die Rechnung dazu steht als Fall in `StartseiteAnmutungTests` und fällt rot aus, sobald jemand ein Token aufhellt |
+| **W16b‑E‑6 (neu, 05.09.2026)** | **Der Hinweis „Bitte zuerst ein Projekt auswählen!" wird elegant** — Anwenderwunsch 05.09.2026 zur Reitersperre („ja, oder anderen Hinweis geben der elegant ist"), zum dauerhaften Banner der Startseite | **Umgesetzt.** Das **dauerhafte Warnbanner fällt**. Es stand über der ganzen Seite, in genau dem Augenblick, in dem der Anwender das Programm zum ersten Mal sieht, und meldete als Warnfläche einen FEHLER, wo nur der Anfang fehlt. An seine Stelle treten **drei leisere Stücke**: **(1)** der **Einstiegshinweis** im Reiter „Projekt" (`START_EINSTIEG`) — eine Zeile unter der Erläuterung, DimGray halbfett in Normalgröße, also die dritte und leiseste Stufe der Kopfzeile, mit **demselben ⚠ wie im Kopfband** davor (die Farbe kommt aus derselben Regel `.epos-startseite-status--keins`, nicht aus einer zweiten). Ist ein Projekt offen, **verschwindet die Zeile ganz** statt zu „Projekt … ist geöffnet" zu werden: Das stünde einen Zentimeter unter Projektname und grünem ✔ im Kopfband und wiederholte sie nur — dieselbe Überlegung wie bei der Gattungszeile (W16b‑E‑4). **(2)** der **Grund am gesperrten Reiterknopf** (`START_SPERRE_TIPP`, „Erst nach der Projektwahl"): `Reiterblatt` bekommt dafür **`Sperrgrund`** und damit eine ZWEITE Bauart der Sperre — ohne Grund hart wie seit W5.0 (`<button disabled>`), mit Grund **weich**: `aria-disabled` statt `disabled`, der Grund als `title`. Das ist keine Kosmetik: Ein `disabled`-Knopf nimmt keine Zeigerereignisse an, zeigt deshalb **keinen Tooltip** und lässt die Sprachausgabe „nicht verfügbar" **ohne Grund** sagen. Auf `aria-describedby` ist bewusst verzichtet — es bräuchte ein zweites, verstecktes Element im Markup, während der `title` ohnehin als Beschreibung vorgelesen wird (ein Satz, EINE Wahrheit). **(3)** das **flüchtige Banner beim Versuch**: `Reiter` meldet den Klick auf ein weich gesperrtes Blatt als neues Ereignis **`Verweigert`**, und die Startseite zeigt daraufhin **für drei Sekunden** genau die zwei Sätze des Vorläufers. Damit ist `tabControl_Wizard_Selecting` (:1171–1181) wieder da, samt der Lebensdauer des dort geöffneten `Form_Hinweis` — nur ohne Wegklicken. Denselben Weg nimmt **„Weiter ▶"**: Ohne Projekt bleibt der Knopf anklickbar und sagt den Grund, statt stumm gesperrt zu sein — er ist der Weg der **Tastatur** zu derselben Auskunft, denn ein gesperrter Reiterknopf steht nicht im Tabulatorzyklus und wird von den Pfeiltasten übersprungen (unverändert). Hart gesperrt bleibt er nur auf dem letzten Reiter, wo es nichts zu erklären gibt. **Die Sperre selbst ist unberührt** (W16b‑B‑2), die Farbe der freien Reiter die aus W16b‑E‑5; harte und weiche Sperre stehen im Stilblatt in **einer** Regel mit zwei Selektoren, denn zwei Regeln mit denselben Werten wären eine zweite Farbwahrheit |
 
 
 ### Die Farb- und Schrifttabelle zu W16b‑E‑5 (Vorbild → Umsetzung)
@@ -358,6 +359,15 @@ Die **17 vorhandenen `MyResource`-Schlüssel** von `Form_Start` sind wörtlich
 übernommen: `Text_Select`, `Text_Hinweis`, `Text_Projekt`, `Text_Geoeffnet`, die
 sieben `Text_Form_Start_*` und die fünf `SIM_*`.
 
+**Nachtrag W16b‑E‑6 (05.09.2026) — zwei neue Schlüssel.** `START_EINSTIEG` (der leise
+Einstiegshinweis des Projektreiters) und `START_SPERRE_TIPP` („Erst nach der
+Projektwahl" — der Grund am gesperrten Reiterknopf und am Knopf „Weiter ▶"). Beide tragen
+die Vorsilbe `START_` wie die 78 Schlüssel aus W16b.2 und nicht das alte
+`Text_Form_Start_*`; die zwei Sätze der Sperre selbst bleiben unverändert
+`Text_Form_Start_MessageBox1/2`. **Kein Feldkartenabgleich nötig:** Die beiden Texte haben
+kein Vorbild in `Form_Start` — der Vorläufer sagte an dieser Stelle gar nichts, bis der
+Anwender klickte.
+
 ---
 
 ## 8 — Gate
@@ -386,6 +396,22 @@ ChartProben **32**, Referenzlauf **byte-gleich in allen drei Projekten** (815 04
 Werte), beide Wächter leer. **Der Merge lief ohne Konflikt** — die andere Seite hat
 nur Konzept- und Nachweisdateien angefasst, keine Quelldatei.
 
+### Gate zu W16b‑E‑6 (05.09.2026)
+
+| Prüfung | Sollwert | Ergebnis |
+|---|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler, ≤ 6 Warnungen | **0 / 6** (Vollneubau; 0 / 0 im Folgebau) |
+| `dotnet test EPOS.UI.Tests -c Release` | Basis 2 310 + neue | **2 317** (+7: zwei in `ReiterTests`, fünf netto in `StartseiteTests`) |
+| dieselben Tests unter `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` | gleich | **grün, 2 317** |
+| `StilblattTests`, `StartseiteAnmutungTests`, `ParametersatzTests` | grün | **grün** (in den 2 317 enthalten) |
+| Ressourcennahe Kern-Tests (`Resource`/`Texte`/`Lokalisier`) | grün | **38 grün** |
+| Beide Wächter im Kern | leer | **leer** |
+
+Nicht gelaufen und nicht nötig: Referenzlauf, `ChartProben` und `SqlDialektPruefer` — die
+Änderung berührt weder Rechenweg noch Renderer noch eine SQL-Anweisung. Der
+Feldkartenabgleich bleibt ebenfalls unberührt: Die zwei neuen Texte haben kein Vorbild in
+`Form_Start` (§ 7, Nachtrag).
+
 ### R‑W16‑4 — der Projektwechsel
 
 Der Nachweis läuft **zweigleisig**, weil der Referenzlauf allein die Frage nicht
@@ -408,7 +434,10 @@ beantwortet: Er RECHNET einen bestehenden Projektstand nach, er wechselt kein Pr
 
 | # | Was | Erwartung |
 |---|---|---|
-| 1 | Programm starten | Die Startseite steht in der Hauptfläche: Kopfband mit dem Klimakasten **links** und dem Projektkasten **rechts** — Projektauswahl (Platzhalter „Bitte auswählen!") mit rotem ⚠ **davor**, Klimafeld mit dem Globussinnbild davor; darunter das Hinweisbanner „Bitte zuerst ein Projekt auswählen! Projekt öffnen oder zuletzt geöffnet"; sechs Reiter, davon fünf gesperrt. **Die Zeile „Energieplanungs-Software" steht NICHT mehr in der Startseite** (W16b‑E‑4) — sie steht einmal, im Kopfband des Hauptfensters |
+| 1 | Programm starten | Die Startseite steht in der Hauptfläche: Kopfband mit dem Klimakasten **links** und dem Projektkasten **rechts** — Projektauswahl (Platzhalter „Bitte auswählen!") mit rotem ⚠ **davor**, Klimafeld mit dem Globussinnbild davor; sechs Reiter, davon fünf gesperrt. **Über der Reiterleiste steht KEIN Banner mehr** (W16b‑E‑6). **Die Zeile „Energieplanungs-Software" steht NICHT mehr in der Startseite** (W16b‑E‑4) — sie steht einmal, im Kopfband des Hauptfensters |
+| 1a | **Der Einstiegshinweis** (W16b‑E‑6) | Im Reiter „Projekt" steht unter der Erläuterung EINE leise Zeile mit rotem ⚠ davor: „Wählen Sie oben ein Projekt aus oder legen Sie unten ein neues an — die übrigen Bereiche öffnen sich danach." Sie ist **kleiner** als die Erläuterung darüber, grau und halbfett — kein Kasten, keine Fläche, kein Rahmen |
+| 1b | **Der Grund am gesperrten Reiter** (W16b‑E‑6) | Mauszeiger über „Wärmebedarf" (ohne Projekt): Nach kurzem Verweilen erscheint der Tooltip „Erst nach der Projektwahl". Dasselbe am Knopf „Weiter ▶" |
+| 1c | **Das flüchtige Banner** (W16b‑E‑6) | Klick auf einen gesperrten Reiter ODER auf „Weiter ▶" (ohne Projekt): Oben erscheint für **drei Sekunden** „Bitte zuerst ein Projekt auswählen! Projekt öffnen oder zuletzt geöffnet" und verschwindet dann von selbst. Der Reiter wechselt dabei NICHT |
 | 2 | **Alle 21 Kacheln durchklicken** | Reiter 1 fünf, Reiter 2 vier, Reiter 3 drei, Reiter 4 sieben, Reiter 5 ein Knopf und eine Kachel. Jede führt in denselben Dialog wie vorher |
 | 2a | **Die 21 Sinnbilder** (W16b‑E‑3) | JEDE Kachel zeigt links ihr Sinnbild, den Titel daneben und die Erläuterung darunter — dieselben Bilder wie im Vorläufer. Keine Kachel bleibt leer, kein Bild ist verrutscht (der Ausschnitt ist CSS): auf Reiter 1 die fünf Logo-Quadrate der Aktionskarten, auf Reiter 4 sieben Erzeuger-Sinnbilder, davon **Stromspeicher und Pufferspeicher aus den zwei flachen JPG**. Auf Reiter 5 trägt auch der Knopf „Simulation Konfiguration…" ein (kleines) Sinnbild |
 | 2b | **Drei Kacheln je Reihe** | Das Raster legt bei voller Fensterbreite drei Kacheln nebeneinander (404 px, die Kachelbreite des Designers); auf einem schmalen Fenster bricht es um, ohne waagerecht überzulaufen |
@@ -417,7 +446,7 @@ beantwortet: Er RECHNET einen bestehenden Projektstand nach, er wechselt kein Pr
 | 2e | **Die Erläuterungen** (W16b‑E‑5) | Jede Erläuterung — unter der Reiterüberschrift **und** unter jedem Kacheltitel — steht in **halbfettem Grau** (DimGray) und in derselben Größe wie die Überschriftenzeile; sie sieht nicht mehr wie Fließtext aus |
 | 2f | **Die Knöpfe** (W16b‑E‑5) | „◀ Zurück", „Weiter ▶" und „Simulation Konfiguration…" sind **hellgrau gefüllt** wie im Bestand. Ein gesperrter Knopf („Zurück" auf Reiter 1) ist an der Fläche als gesperrt zu erkennen, nicht nur an der Schrift |
 | 2g | **Reiter „Simulation": der Zusammenfassungskasten** (W16b‑E‑5) | Er steht auf einer **eigenen, fast weißen Fläche** (#f9fafc) mit demselben blaugrauen Rahmen; die vier Beschriftungen sind grau, die vier Werte **blau** (#005aa0) |
-| 3 | Ein Projekt öffnen („Zuletzt geöffnet") | Grünes ✔, Klimaregion gefüllt, alle sechs Reiter frei, das Hinweisbanner verschwindet, ein Erfolgsbanner „Projekt … geöffnet!" steht **drei Sekunden** |
+| 3 | Ein Projekt öffnen („Zuletzt geöffnet") | Grünes ✔, Klimaregion gefüllt, alle sechs Reiter frei, **die Einstiegszeile im Reiter „Projekt" ist weg** (W16b‑E‑6 — sie wird NICHT zu „Projekt … ist geöffnet", das steht schon im Kopfband), ein Erfolgsbanner „Projekt … geöffnet!" steht **drei Sekunden** |
 | 4 | **Projektwechsel im Kopfband** | Auswahlfeld auf eine andere Variante: Statuspunkte, Klimaregion, Zusammenfassung und der Reiter „Berichte & Kosten" folgen; „zuletzt geöffnet" ändert sich dabei NICHT |
 | 5 | Reiter „Energieerzeuger" | Sieben Kacheln mit Statuspunkt; unter der Solarthermiekachel die zwei Auswahlknöpfe. „Profil" öffnet den Kollektordialog, „Ganglinie" den Gangliniendialog |
 | 6 | Klimaregion wählen und speichern | EIN grünes Banner „Klimaregion gespeichert."; ohne Projekt oder ohne Region ein rotes mit dem jeweiligen Satz |
@@ -428,9 +457,9 @@ beantwortet: Er RECHNET einen bestehenden Projektstand nach, er wechselt kein Pr
 | 11 | Menü „Projekt → Öffnen…" und „→ zuletzt geöffnet" | Das Projekt wird AKTIV (kein Detailformular mehr) |
 | 12 | Menü „Projekte → Varianten und Bericht…" | Der Reiter „Berichte & Kosten" kommt nach vorn, Seite „Übersicht" |
 | 13 | Assistent → „Projekt öffnen" | Der Assistent schließt, das Projekt ist aktiv, die Startseite meldet es drei Sekunden lang |
-| 14 | Sprachwechsel auf Englisch | Alle 78 neuen Texte englisch, einschließlich der drei bisherigen Literale (B1) |
+| 14 | Sprachwechsel auf Englisch | Alle 80 neuen Texte englisch, einschließlich der drei bisherigen Literale (B1) und der zwei aus W16b‑E‑6 (Einstiegshinweis und Tooltip der Sperre) |
 | 15 | **DPI 100 / 125 / 150 %** | Die Startseite sitzt in der DpiUnaware-`MDIMainForm` und wird ab 125 % **bitmapskaliert** — das ist der bekannte Stand (Risiko R‑W16‑2). iF21 kommt mit W16c; die Abnahme hier hält fest, WIE unscharf es ist |
-| 16 | Ein Projekt löschen, das gerade offen ist | Statuszeichen zurück auf ⚠, Auswahlfeld auf den Platzhalter, Klimafeld leer, Reiter 2–6 wieder gesperrt |
+| 16 | Ein Projekt löschen, das gerade offen ist | Statuszeichen zurück auf ⚠, Auswahlfeld auf den Platzhalter, Klimafeld leer, Reiter 2–6 wieder gesperrt, **die Einstiegszeile steht wieder da** (W16b‑E‑6) |
 
 ---
 
