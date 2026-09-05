@@ -15,6 +15,7 @@
     }
     <span class="epos-feld-zeile">
         <select class="epos-eingabe" value="@(Auswahl?.ToString() ?? "")"
+                aria-label="@(string.IsNullOrEmpty(Kurzname) ? null : Kurzname)"
                 disabled="@(!Aktiv)" @onchange="BeiAuswahl">
             @if (Platzhalter is not null)
             {
@@ -46,6 +47,18 @@
     /// <c>null</c> = keine leere Zeile.
     /// </summary>
     [Parameter] public string? Platzhalter { get; set; }
+
+    /// <summary>
+    /// Ein ausfuehrlicherer Name fuer die Sprachausgabe (<c>aria-label</c>); leer =
+    /// keiner, dann benennt das umschliessende <c>&lt;label&gt;</c> das Feld wie
+    /// bisher.
+    ///
+    /// <para>Gebraucht wird er dort, wo die sichtbare Beschriftung aus Platzgruenden
+    /// nur ein Wort ist, die Liste aber mehr meint: Die Uebersichtsseite beschriftet
+    /// ihre Variantenwahl mit "Variante:" und nennt der Sprachausgabe
+    /// "Version waehlen" (Anwenderwunsch 05.09.2026, W5-E-1).</para>
+    /// </summary>
+    [Parameter] public string Kurzname { get; set; } = "";
 
     /// <summary>
     /// Bedienbar? <c>false</c> sperrt die Liste - dieselbe Eigenschaft, die
