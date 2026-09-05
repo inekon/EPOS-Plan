@@ -4442,6 +4442,33 @@ body {
     }
 }
 
+/* DIE SCHLIESSFLAECHE (Befund W16c-B13, Windows-Abnahme 05.09.2026).
+
+   Bis dahin schloss das Band ueber @onfocusout am <nav>. Das war doppelt
+   falsch: focusout blast nach oben und feuert AUCH bei einem Fokuswechsel
+   INNERHALB des Bandes - der Zeigerdruck auf eine Untermenuezeile raeumte die
+   Klappe weg, bevor der Klick ankam -, und auf dem iPad setzt eine Beruehrung
+   ueberhaupt keinen Fokus. Jetzt liegt, solange ein Menue offen ist, ein
+   durchsichtiger Deckel ueber der ganzen Ansicht; ein Klick oder Tipp NEBEN
+   das Menue trifft ihn und schliesst.
+
+   DIE DREI Z-EBENEN. Das Band bekommt einen eigenen Stapelkontext (41) und
+   liegt damit ueber dem Deckel (39); die Klappe (40) steht IM Band und also
+   ebenfalls darueber. Nur so bleibt ein Menuepunkt anklickbar, waehrend der
+   Deckel alles andere abfaengt. */
+.epos-menueband {
+    position: relative;
+    z-index: 41;
+}
+
+.epos-menueband-schliessflaeche {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: transparent;
+    cursor: default;
+}
+
 /* ==========================================================================
    HAUPTFENSTER (iU9-W16c.2) - Menueband, Kopfband, Inhalt.
 
