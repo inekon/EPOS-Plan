@@ -18,6 +18,13 @@ die neue Struktur um, in der **`WindowsFormsApplication1` keine Fachmaske mehr f
 * **Sicherungsreferenz:** Branch `sicherung/vor-merge5-2026-09-05` auf `9810d5b`, Bundle
   `Documents\WP-Plan_Git-Sicherungen\ios_migration_vor-merge5_2026-09-05_9810d5b0.bundle`
 * **Nachweisanker:** Branch `merge5/ios-2026-09-05`
+* **Nachzug:** Der Merge-Commit `8823317` trug fünf Dateien der ersten Portierungsstufe **nicht**
+  (`KlimaregionCtrl.cs`, `PhotovoltaikVerguetungDaten.cs`, `PhotovoltaikVerguetungDialog.razor`,
+  `SimulationKonfigHuelle.cs`, `PvModulImportDaten.cs`) — das Skript `port1.py` bricht planmäßig
+  vor dem Schreiben seiner Dateiliste ab, und die Kopierliste speiste sich aus den Listen. Der
+  Export des Merge-Commits baute deshalb mit vier Fehlern (`PvVorpruefung.Gesperrt`); der
+  unmittelbar folgende Nachzug-Commit stellt den geprüften Sandbox-Stand her (Nachweis: `diff -rq`
+  Sandbox gegen Export ohne Unterschied, Build und Tests des Exports grün, Abschnitt 5).
 * Kein Push.
 
 ---

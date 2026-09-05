@@ -579,3 +579,23 @@ sinkt sie. Die maximale Einstrahlung steigt in beiden Läufen von 1 058,9 auf 1 
 5. **Basiswechsel**, sobald eine Anlage produktiv auf ERWEITERT steht —
    `2026-09-03_PB1_nach-PaketB` gilt nur, solange alle Anlagen EINFACH rechnen.
 6. **Neue Migrationsschritte beginnen bei 64.**
+
+## Nachtrag 5 (05.09.2026) — Merge 5: Schritte 63/64, Dialogfelder nach Razor
+
+Mit dem fünften Merge von `origin/ios_migration` (Protokoll
+`WindowsFormsApplication1/Allgemein/Simulation/Merge5_ios_2026-09-05_Protokoll.md`) sind die
+Schemaschritte dieses Konzepts **umnummeriert**: Paket A ist Schritt **63**
+(`SCHRITT_63_PV_ANLAGENPARAMETER`, Katalog `Schritt63_PvAnlagenparameter`), Paket B Schritt **64**
+(`SCHRITT_64_PV_MODELLWAHL`, Kataloge `Schritt64_PvModellwahl`, `Schritt64_PvStammUndDegradation`).
+Schritt 62 gehört seit iU9‑W14c der Altbereinigung der Klimadaten-Waisen; die Zielversion steht
+als `SchemaStand.Zielversion = 64` im Kern, der Freeze-Stand heißt `FREEZE_VERSION` (61). Keine
+Anwenderdatenbank hatte die alten Nummern gefahren. **Neue Schritte ab 65.**
+
+Die WinForms-Dialogfelder der Pakete (`Form_PV`, `Form_PVModell`, `Form_AdminPV`, `Form_CECImport`,
+`Form_PhotovoltaikVerguetung`, Karten der Simulationskonfiguration) sind mit den iU9-Stilllegungen
+auf die Razor-Dialoge umgezogen: Baustein `PvModellFelder` (Rechenmodell, WR-Wirkungsgrad,
+Systemverluste, Wechselrichterdaten als Überlagerung) im `PhotovoltaikDialog`; Modulkatalog mit
+NOCT und Zelltechnologie (Feldart Auswahl), Erhalt von alpha_SC/beta_OC beim Speichern; Import mit
+PAN-Koeffizienten, Technologie und Plausibilitätsprüfung; Degradation im Vergütungsdialog;
+Modell-Chip auf der Simulationskarte; Erdreich-Temperaturleser (B1) im Kern. Referenzlauf M5
+355/355 byte-gleich zu M4 (Modell EINFACH unverändert). Offen: Sichtabnahme der Razor-Felder.

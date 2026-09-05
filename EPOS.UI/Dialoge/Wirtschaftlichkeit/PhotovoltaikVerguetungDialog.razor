@@ -55,6 +55,14 @@
             <Datumsfeld Bezeichnung="@_t.Ibn" Wert="@Ibn"
                         WertChanged="@IbnGeaendert" />
 
+            @* Degradation (Paket B, Stufe E2.4 - mit Merge 5 aus Form_PhotovoltaikVerguetung
+               nachgezogen): wirkt allein in der Erloesreihe, nicht in der Stundensimulation. *@
+            <div title="@_t.DegradationTip">
+                <Zahlenfeld Bezeichnung="@_t.Degradation" Wert="@(Modell.Degradation ?? 0)"
+                            WertChanged="@DegradationGeaendert"
+                            Min="0" Max="20" Nachkommastellen="2" />
+            </div>
+
             <Optionsgruppe Bezeichnung="@_t.GEinspeiseart" Eintraege="@_einspeisearten"
                            Auswahl="@EinspeiseartNr" AuswahlChanged="EinspeiseartGewaehlt" />
 
@@ -422,6 +430,12 @@
         ZulaessigkeitPruefen();
     }
 
+    /// <summary>Degradation: 0 heisst „keine" und wird als NULL gefuehrt (E2.4).</summary>
+    private void DegradationGeaendert(double? wert)
+    {
+        Modell.Degradation = wert > 0 ? wert : null;
+    }
+
     private void IbnGeaendert(DateOnly? datum)
     {
         Ibn = datum;
@@ -464,9 +478,12 @@
     // Vorschau
     // =====================================================================
 
+    // Merge 5 (PB1c): Eigenverbrauch des Basisjahres und Strompreis gehen wie in der
+    // WinForms-Vorschau mit - sonst fehlte der Vorschau der vermiedene Bezug.
     private PvErloesErgebnis Erloes => PvErloesRechner.Rechne(
         Modell, KwpRechnerisch, EinspeisungMWh, null, null, 20,
-        Katalog, Jahresmarktwert ?? (jahr => null), Kultur);
+        Katalog, Jahresmarktwert ?? (jahr => null), Kultur,
+        Math.Max(0.0, (ErzeugungMWh - EinspeisungMWh) * 1000.0), StrompreisEurKwh ?? 0.0);
 
     /// <summary>Die Vorschauzeile (Pruefhilfe fuer Tests).</summary>
     public string VorschauText
