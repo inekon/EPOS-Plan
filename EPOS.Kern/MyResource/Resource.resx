@@ -13303,6 +13303,18 @@ Ihre Stunden- und Tageswerte werden mit gelöscht.</value>
   <data name="PRJ_LIST_SP_GEAENDERT" xml:space="preserve">
     <value>Geändert</value>
   </data>
+  <data name="PRJ_LIST_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="PRJ_LIST_ART_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="PRJ_LIST_ART_VARIANTE" xml:space="preserve">
+    <value>Variante</value>
+  </data>
+  <data name="PRJ_LIST_VARIANTE_VON" xml:space="preserve">
+    <value>Variante von {0}</value>
+  </data>
   <data name="PRJ_LIST_LBL_SUCHE" xml:space="preserve">
     <value>Suchen:</value>
   </data>

@@ -59,7 +59,9 @@
                           Gewaehlt="BeiDoppelklick"
                           AnzahlFormat="@AnzahlFormat"
                           SpalteName="@SpalteName" SpalteKunde="@SpalteKunde"
-                          SpalteGeaendert="@SpalteGeaendert" SucheText="@SucheText"
+                          SpalteGeaendert="@SpalteGeaendert" SpalteArt="@SpalteArt"
+                          ArtStammText="@ArtStammText" ArtVarianteText="@ArtVarianteText"
+                          VarianteVonFormat="@VarianteVonFormat" SucheText="@SucheText"
                           WahlText="@WahlText" LeerText="@LeerText" />
         </section>
 
@@ -160,6 +162,18 @@
     [Parameter] public string SpalteName { get; set; } = "Projektname";
     [Parameter] public string SpalteKunde { get; set; } = "Kunde";
     [Parameter] public string SpalteGeaendert { get; set; } = "Geändert";
+
+    /// <summary>Kopf der Artspalte der Projektliste (<c>PRJ_LIST_SP_ART</c>, W15a‑E‑1).</summary>
+    [Parameter] public string SpalteArt { get; set; } = "Art";
+
+    /// <summary>Ein Projekt mit Varianten (<c>PRJ_LIST_ART_STAMM</c>).</summary>
+    [Parameter] public string ArtStammText { get; set; } = "Stamm";
+
+    /// <summary>Eine Variante (<c>PRJ_LIST_ART_VARIANTE</c>).</summary>
+    [Parameter] public string ArtVarianteText { get; set; } = "Variante";
+
+    /// <summary>Die leise Herkunftszeile (<c>PRJ_LIST_VARIANTE_VON</c>); <c>{0}</c> = Stammname.</summary>
+    [Parameter] public string VarianteVonFormat { get; set; } = "Variante von {0}";
     [Parameter] public string SucheText { get; set; } = "Suchen:";
     [Parameter] public string WahlText { get; set; } = "Wahl";
     [Parameter] public string LeerText { get; set; } = "Es ist noch kein Projekt angelegt.";
