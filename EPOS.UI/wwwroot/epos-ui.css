@@ -4296,41 +4296,136 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Lizenz und rechtliche Hinweise (iU9-W15c.11).
+   Lizenz und rechtliche Hinweise (iU9-W15c.11), neu gesetzt zur Windows-
+   Abnahme vom 05.09.2026 (Befunde W15c-B-1 und W15c-E-1).
 
    Der Vorlaeufer war 920 x 700 mit einer weissen Kopfzeile (58 px), einem
-   TabControl und einer Fusszeile (68 px). Hier fliesst es; die Kopfzeile behaelt
-   ihren Klang, der Rechtstext liest sich in einer angenehmen Zeilenlaenge.
+   TabControl und einer Fusszeile (68 px). Hier fliesst es; die Kopfzeile
+   behaelt ihren Klang, der Rechtstext liest sich in einer angenehmen
+   Zeilenlaenge.
+
+   W15c-B-1 - DIE WURZEL HAT EINEN RAND UND ROLLT NIE WAAGERECHT. Der Anwender
+   fand am 05.09.2026 in "Hilfe -> Lizenz" jede Zeile links angeschnitten:
+   Ueberschrift ("izenz und rechtliche Hinweise"), Untertitel, Reiterleiste,
+   Feldbeschriftung und beide Fusszeilen begannen links vom sichtbaren Rand.
+   Die Fundstelle ist diese hier. ZWEIUNDSIEBZIG der Dialoge haengen unter
+   .epos-dialog und bekommen von dort padding: var(--epos-karte-rand) samt
+   max-width und margin: 0 auto. Die drei Wurzeln der Welle 15c -
+   .epos-lizenz, .epos-lizverw und .epos-erststart - tun das nicht: Sie trugen
+   nur display, flex-direction, gap und min-width. body traegt margin: 0 und
+   #app traegt nichts - also klebte das erste Zeichen jeder Zeile bei x = 0 an
+   der Kante der WebView, und bei 125-150 % schneidet sie es weg. Und weil
+   weder die Wurzel noch body ein overflow-x fuehrten, verschob jeder
+   Waagerecht-Ueberlauf die GANZE Seite, statt in seinem eigenen Rahmen zu
+   rollen. (Dieselbe Form haben die VIER Wurzeln der Welle 15b - .epos-kichat,
+   .epos-kihinweis, .epos-kieinst und .epos-textanzeige; sie sind derselbe
+   Fall und stehen als offener Punkt W15c-O-6 im Wellenprotokoll - hier nicht
+   mitgeaendert, weil eine andere Welle sie verantwortet.)
+
+   Beides steht deshalb an EINER Stelle und fuer alle drei Wurzeln.
+   overflow-x: clip und nicht hidden: hidden zwaenge die zweite Achse mit zum
+   Rollrahmen (CSS Overflow 3 - ist ein Wert nicht sichtbar, wird der andere zu
+   auto), clip laesst die senkrechte Achse sichtbar. box-sizing steht
+   ausdruecklich dabei, damit der Rand die Wurzel nie breiter macht als das
+   Fenster. Breiter Inhalt rollt in SEINEM Rahmen: .epos-lizenz-lesebereich.
    -------------------------------------------------------------------------- */
+.epos-lizenz,
+.epos-lizverw,
+.epos-erststart {
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: var(--epos-karte-rand);
+    overflow-x: clip;
+}
+
+/* Die Verwaltung erscheint AUCH als Ueberlagerung im Lizenzdialog (E-11), und
+   die bringt ihren Rand schon mit - dieselbe Angleichung, die
+   .epos-ueberlagerung-inhalt > .epos-dialog bekommt. */
+.epos-ueberlagerung-inhalt > .epos-lizverw {
+    padding: 0;
+}
+
+/* Der Lizenzdialog fuellt sein Fenster: Kopf, Reiterleiste und Fusszeile
+   stehen, der Lesebereich dazwischen nimmt den Rest. Ohne die Mindesthoehe
+   waere seine Hoehe die seines Textes - der Ladehinweis stuende dann in einem
+   Rahmen von drei Zeilen, und der Vertragstext schoebe die Knopfleiste aus
+   dem Fenster. */
 .epos-lizenz {
     display: flex;
     flex-direction: column;
     gap: 12px;
     min-width: 0;
+    min-height: 100vh;
 }
 
+/* Kopfzeile: Titel und Untertitel links, der Hilfeknopf rechts - dieselbe Lage
+   wie .epos-dialog-kopf und wie InfoKnopf.Anbringen sie in WinForms erzeugt.
+   Bis zur Abnahme stand er als letztes Element der Knopfleiste hinter
+   "Schliessen" (W15c-E-1). */
 .epos-lizenz-kopf {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--epos-rand);
     border-bottom: 1px solid var(--epos-rahmen-leise);
     padding-bottom: 8px;
 }
 
+.epos-lizenz-kopftext {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Die Schriftgroessen kommen aus den Token und nicht aus Pixeln (W15c-E-1):
+   17 px und 11 px standen frueher hier und gehoerten keiner Stufe des Hauses
+   an. Der Untertitel traegt jetzt --epos-text-leise statt
+   --epos-text-sehr-leise - #888780 auf Weiss haelt nur 3,3:1, und die
+   Hausregel verlangt 4,5:1. */
 .epos-lizenz-titel {
     margin: 0;
-    font-size: 17px;
+    font-size: var(--epos-schriftgroesse-kartentitel);
     font-weight: 600;
     color: var(--epos-quelle-text);
+    overflow-wrap: anywhere;
 }
 
 .epos-lizenz-untertitel {
     margin: 2px 0 0 0;
-    font-size: 11px;
-    color: var(--epos-text-sehr-leise);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text-leise);
+    overflow-wrap: anywhere;
 }
 
-.epos-lizenz-werkzeuge {
+/* W15c-E-1 - DER LESEBEREICH. Bis zur Abnahme stand der Vertragstext in einem
+   <textarea>: ein FORMULARfeld mit Groessenanfasser, eigener Schriftflaeche
+   und eigenem Rollbalken fuer einen Text, den niemand bearbeitet. Jetzt ist es
+   ein Lesebereich - dieselbe Bauart wie der Gespraechsverlauf des
+   KI-Assistenten (.epos-verlauf, W15b): senkrecht rollt er, waagerecht gar
+   nicht, weil overflow-wrap im Absatz auch eine ueberlange Adresse bricht.
+   Alle drei Karten benutzen ihn, damit der Reiterwechsel das Bild nicht
+   springen laesst. */
+.epos-lizenz-lesebereich {
+    flex: 1 1 auto;
+    min-height: 12rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 14px 14px;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-lizenz-lesebereich:focus-visible {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+/* Der Lesebereich soll die freie Hoehe des Blattes bekommen; ein Block gaebe
+   sie nicht weiter ("die Hoehe fuellen" bedeutet dort nichts). Nur im
+   Lizenzdialog - das Blatt des Hauses bleibt, was es ist. */
+.epos-lizenz .epos-reiter-blatt {
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 8px;
+    flex-direction: column;
 }
 
 /* Der Sprachhinweis (E-7): auf Deutsch leer, auf Englisch "Binding version in
@@ -4341,12 +4436,14 @@ body {
     color: var(--epos-text-leise);
 }
 
-/* 13 Ueberschriften und 14 Absaetze. Im Vorlaeufer Segoe UI Semibold +1,5 pt in
-   #005AA0 bzw. Segoe UI in #282C30 - dieselbe Aussage, hier ueber die
-   Themafarben. */
+/* 13 Ueberschriften und 14 Absaetze, dazu die Paragrafenueberschriften des
+   Vertragstextes ("§ 1 ..."), die Vertragsabschnitte aus dem Fliesstext holt.
+   Im Vorlaeufer Segoe UI Semibold +1,5 pt in #005AA0 bzw. Segoe UI in #282C30
+   - dieselbe Aussage, hier ueber die Themafarben und die Schriftstufe des
+   Abschnittsbalkens. */
 .epos-lizenz-ueberschrift {
     margin: 14px 0 4px 0;
-    font-size: 14px;
+    font-size: var(--epos-schriftgroesse-gruppenkopf);
     font-weight: 600;
     color: var(--epos-quelle-text);
 }
@@ -4362,12 +4459,14 @@ body {
     overflow-wrap: anywhere;
 }
 
+/* Die Fusszeile: links LEISE die Herkunft (Lizenzstand, Quelle und Stand),
+   rechts die Knopfleiste. Beide brechen um, wenn das Fenster schmal wird. */
 .epos-lizenz-fuss {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: var(--epos-rand);
     border-top: 1px solid var(--epos-rahmen);
     padding-top: 8px;
 }
@@ -4375,32 +4474,45 @@ body {
 .epos-lizenz-herkunft {
     display: flex;
     flex-direction: column;
-    color: var(--epos-text-leise);
+    flex: 1 1 16rem;
     min-width: 0;
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text-leise);
     overflow-wrap: anywhere;
 }
 
-/* RightToLeft des Vorlaeufers: zuerst hinzugefuegt = ganz rechts. In der
+/* Die Knopfleiste ist die des Hauses (.epos-leiste - sie bricht um, und jeder
+   Knopf bemisst sich an seiner Beschriftung, W12-B-1). Ihr margin-top gilt
+   unter einer Liste; hier steht sie IN der Fusszeile und rueckt nach rechts.
+
+   RightToLeft des Vorlaeufers: zuerst hinzugefuegt = ganz rechts. In der
    Markup-Reihenfolge steht deshalb [Aktivieren] [Speichern] [Drucken] ...
    [Zustimmen] - von rechts gelesen ist es die Reihenfolge des Bestands
    (Entscheid E-14). */
 .epos-lizenz-knoepfe {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
+    margin-top: 0;
+    justify-content: flex-end;
 }
 
 /* --------------------------------------------------------------------------
    Der Druck (Entscheid E-2): window.print() statt PrintDocument. Gedruckt wird
    der Rechtstext, nicht die Bedienung; Kopf- und Fusszeile setzt der Browser
-   aus @page.
+   aus @page. Der Lesebereich gibt dafuer seinen Rahmen und seine Hoehe ab -
+   sonst kaeme nur der sichtbare Ausschnitt aufs Papier.
    -------------------------------------------------------------------------- */
 @media print {
-    .epos-lizenz-werkzeuge,
     .epos-lizenz-knoepfe,
+    .epos-lizenz-kopf .epos-infoknopf,
     .epos-reiter-leiste {
         display: none !important;
+    }
+
+    .epos-lizenz-lesebereich {
+        overflow: visible;
+        min-height: 0;
+        padding: 0;
+        border: 0;
+        background: none;
     }
 
     .epos-lizenz-absatz {
@@ -4409,6 +4521,8 @@ body {
 
     .epos-lizenz {
         gap: 6px;
+        min-height: 0;
+        padding: 0;
     }
 }
 
