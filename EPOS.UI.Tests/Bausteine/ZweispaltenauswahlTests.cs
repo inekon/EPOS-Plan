@@ -274,6 +274,128 @@ public class ZweispaltenauswahlTests : BunitContext
     }
 
     // =====================================================================
+    // Die Knopfleiste unter der Katalogliste (Befund W12-B-1)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Regel zu Befund W12‑B‑1.</b> Die Knopfleiste bricht um, und ein
+    /// Knopf bemisst sich an seiner Beschriftung — beides steht EINMAL im Blatt
+    /// (<c>.epos-leiste</c> / <c>.epos-knopf</c>) und gilt damit für alle elf
+    /// Projekt/DB-Dialoge wie für die Katalogverwaltungen.
+    ///
+    /// <para>Vier Dinge dürfen NICHT wiederkommen: eine Reihe ohne Umbruch
+    /// (dann schrumpfen die Knöpfe unter ihren Text), <c>white-space: nowrap</c>
+    /// am Knopf (dann kann der Text im Knopf nicht umbrechen),
+    /// <c>overflow: hidden</c> (das schneidet die Beschriftung ab, statt sie zu
+    /// zeigen) und eine feste <c>width</c> (dann bemisst sich der Knopf nicht
+    /// mehr an seiner Beschriftung — <c>min-width</c> bleibt erlaubt, es ist
+    /// ein Mindestmaß).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Knopfleiste_bricht_um_statt_die_Beschriftung_abzuschneiden()
+    {
+        string leiste = Stilblock(".epos-leiste {");
+        Assert.Contains("flex-wrap: wrap", leiste);
+        Assert.Contains("gap:", leiste);            // Abstand ueber gap, nicht margin
+
+        string knopf = Stilblock(".epos-knopf {");
+        Assert.Contains("flex: 0 1 auto", knopf);   // bemisst sich am Text
+        Assert.Contains("white-space: normal", knopf);
+        Assert.Contains("overflow-wrap: break-word", knopf);
+
+        Assert.DoesNotContain("white-space: nowrap", knopf);
+        Assert.DoesNotContain("overflow: hidden", knopf);
+
+        // min-width und max-width bleiben erlaubt; eine blanke width nicht.
+        Assert.False(Regex.IsMatch(knopf, @"(?<![\w-])width\s*:"),
+                     "Der Hausknopf traegt eine feste Breite - er soll sich an "
+                     + "seiner Beschriftung bemessen (Befund W12-B-1).");
+    }
+
+    /// <summary>
+    /// <b>Befund W12‑B‑1</b> vom 05.09.2026 (Windows-Abnahme, Dialog „Standard
+    /// Stromprofil"): „Beschriftung der Buttons nicht zur Umrandung passen."
+    /// Unter der rechten Liste stehen dort VIER Knöpfe — „Stromverbraucher
+    /// ändern…", „… neu…", „… löschen", „Typ in DB ändern…" — in einer Spalte,
+    /// die nur die halbe Dialogbreite hat. Der Text lief über den Rahmen in den
+    /// Nachbarknopf, die Umrandung lag mitten im Wort.
+    ///
+    /// <para>Diese Probe hält das MARKUP fest: Die Knöpfe, die ein Aufrufer
+    /// unter seine Katalogliste setzt, landen in der rechten Spalte des
+    /// Bausteins und stehen dort in <c>.epos-leiste</c> — genau der Klasse, an
+    /// der die Umbruchregel hängt. Die Regel selbst prüft
+    /// <see cref="Die_Knopfleiste_bricht_um_statt_die_Beschriftung_abzuschneiden"/>;
+    /// eine bunit-Probe sieht ein Stilblatt nicht (Lehre W6‑B‑1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Knopfleiste_unter_der_Katalogliste_traegt_die_Leistenklasse()
+    {
+        string[] beschriftungen =
+        {
+            "Stromverbraucher ändern...",
+            "Stromverbraucher neu...",
+            "Stromverbraucher löschen",
+            "Typ in DB ändern...",
+        };
+
+        var cut = Render<Zweispaltenauswahl>(p => p
+            .Add(x => x.LinksTitel, "Projekt Strombedarf:")
+            .Add(x => x.RechtsTitel, "Datenbank Strombedarf:")
+            .Add(x => x.Rechts, (RenderFragment)(b =>
+            {
+                b.OpenElement(0, "div");
+                b.AddAttribute(1, "class", "epos-leiste");
+                int schluessel = 2;
+                foreach (string text in beschriftungen)
+                {
+                    b.OpenElement(schluessel++, "button");
+                    b.AddAttribute(schluessel++, "type", "button");
+                    b.AddAttribute(schluessel++, "class", "epos-knopf");
+                    b.AddContent(schluessel++, text);
+                    b.CloseElement();
+                }
+                b.CloseElement();
+            })));
+
+        // Die Leiste steht IN der rechten Spalte - nicht daneben, nicht im Wirt.
+        IElement leiste = cut.Find(".epos-zweispalten-spalte--rechts > .epos-leiste");
+
+        // ... und alle vier Knöpfe stehen in dieser einen Leiste.
+        var knoepfe = leiste.QuerySelectorAll("button.epos-knopf");
+        Assert.Equal(beschriftungen.Length, knoepfe.Length);
+        Assert.Equal(beschriftungen, knoepfe.Select(k => k.TextContent).ToArray());
+
+        // Kein Knopf trägt eine Breite am Element - die Bemessung gehört ins
+        // Stilblatt, und ein Inline-Stil wäre gegen die Hausregel.
+        Assert.All(knoepfe, k => Assert.Null(k.GetAttribute("style")));
+    }
+
+    /// <summary>
+    /// Dieselbe Leiste in allen elf Projekt/DB-Dialogen: Wer Katalogknöpfe unter
+    /// seine rechte Liste setzt, nimmt <c>.epos-leiste</c>. Sonst gäbe es eine
+    /// zweite Knopfleiste, und die bekäme den Umbruch aus W12‑B‑1 nicht mit.
+    /// </summary>
+    [Fact]
+    public void Jeder_Dialog_setzt_seine_Katalogknoepfe_in_eine_epos_leiste()
+    {
+        foreach (string d in Dialoge)
+        {
+            string quelle = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", d))
+                                .Replace("\r\n", "\n");
+
+            int a = quelle.IndexOf("<Rechts>", StringComparison.Ordinal);
+            int e = quelle.IndexOf("</Rechts>", StringComparison.Ordinal);
+            Assert.True(a >= 0 && e > a, d + ": kein <Rechts>-Block");
+
+            string rechts = quelle.Substring(a, e - a);
+            if (!rechts.Contains("epos-knopf", StringComparison.Ordinal))
+                continue;                       // Dialog ohne Katalogknoepfe
+
+            Assert.Contains("class=\"epos-leiste\"", rechts, StringComparison.Ordinal);
+        }
+    }
+
+    // =====================================================================
     // Der Bestand - kein Dialog baut das Muster noch selbst
     // =====================================================================
 
@@ -336,11 +458,19 @@ public class ZweispaltenauswahlTests : BunitContext
         return d!.FullName;
     }
 
+    /// <summary>
+    /// Das Hausblatt mit angeglichenen Zeilenenden: Auf Windows liegt es nach
+    /// dem Auschecken mit CRLF (.gitattributes: text=auto), ein zweizeiliger
+    /// Selektor traegt hier aber "\n" - dieselbe Angleichung wie in
+    /// StartseiteTests und StilblattTests.
+    /// </summary>
     private static string Stilblatt()
-        => File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-ui.css"));
+        => File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-ui.css"))
+               .Replace("\r\n", "\n");
 
     /// <summary>Liest den Rumpf einer Regel aus dem Stilblatt.</summary>
-    private static string Stilblock(string selektor) => Block(Stilblatt(), selektor);
+    private static string Stilblock(string selektor)
+        => Block(Stilblatt(), selektor.Replace("\r\n", "\n"));
 
     /// <summary>
     /// Liest den Rumpf einer Regel aus der Medienabfrage des Blocks
