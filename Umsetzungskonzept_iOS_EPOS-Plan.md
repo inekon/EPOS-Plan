@@ -2484,6 +2484,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > und Auslegungsprüfung bleiben am Diagramm), `QuellprofilDialog` (die 24 Stundenwerte zu zweit je Zeile; Werteseite
 > bleibt Tabelle), `WaermesenkeDialog` (Klasse B: beide Blöcke einspaltig, weil jeder Schalter das Feld unter sich
 > freigibt; die Senkenliste bleibt Zeilenraster).
+>
+> **Anwenderbefund W10b‑B‑1 vom 05.09.2026 („Simulation → Simulation-Konfiguration → Ansicht Schema: Die Pfeile sind
+> teilweise zu dick und falsch dargestellt"), behoben in `4e39d4a`:** Drei Sachen, drei Ursachen, keine im Rechenweg.
+> Die Farbregel des Stilblatts setzte neben dem Strich auch die **Füllung** und schlug dabei das `fill="none"` am
+> Element — der offene Bézierbogen wurde als Fläche ausgemalt (die „riesige blaue Fläche mit gezacktem Rand"); und
+> `markerUnits="strokeWidth"` machte aus der 9×7-Spitze bei 1,8 px Strich 16×13 px. Die Füllung gehört jetzt allein
+> der Pfeilspitze, die Spitze misst feste 10×8 Nutzereinheiten, die Strichstärke steht gedeckelt im Kern (2 px,
+> hervorgehoben 3, Grenzen 2–6) als Attribut am Element — eine Breite aus Leistung oder Volumen gab es nie und wird
+> bewusst nicht eingeführt. Die Wegführung in `SchemaLayout` ist von Bézierbögen auf **Spaltenbahnen** umgestellt:
+> waagerecht aus dem Kasten, senkrecht in der Gasse, waagerecht in den Zielkasten; jede Leitung mit eigener Senkrechte
+> (`GassenBelegen`), übersprungene Spalten auf einer kastenfreien Bahn gequert (`FreieBahn`), mehrere Ansätze an
+> derselben Kastenseite über die Kastenhöhe verteilt (`AnkerVerteilen`) — keine Leitung kreuzt mehr einen Kasten, für
+> sechs echte Projekte Strecke für Strecke nachgeprüft. Der Widerspruch „Quelle: Puffer 3000Ltr · Kaskade" gegen
+> „Keine Kaskade im Projekt" entstand, weil der Satz am leeren Kaskadenband hing und das Band nur bei einem Lader auf
+> Rang 1 entstand — Projekt 1042 lädt seinen Quellpuffer auf Rang 2. `SchemaModell.HatKaskade` trägt die Tatsache
+> seither selbst, die Kettensuche geht über alle Ränge, es gilt `HatKaskade ⇔ Band`. Nebenbefund: 1030 „B3-Kaskade"
+> trägt trotz Namens keinen Quellpuffer; die echten Kaskadenprojekte der Testdatenbank sind 1042, 1043, 1044.
+> Nachweise: `SchemaLayoutTests` 19, `SchemaModellTests` neu 10 gegen die Testdatenbank, `SchemaTests` 16; Kern 1 190
+> und UI 2 648 grün in beiden Kulturen, Kern-Wächter leer, kein Referenzlauf nötig (das Schema rechnet nichts). Sechs
+> Abnahmepunkte im W10b-Protokoll.
 
 > **Statusblock iU9 — Welle 10a umgesetzt (03.09.2026, Basis `04fc474` nach W9, zusammengeführt mit `b6a72b0`)**
 >
