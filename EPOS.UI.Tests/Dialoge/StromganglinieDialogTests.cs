@@ -453,29 +453,42 @@ public class StromganglinieDialogTests : BunitContext
 
     /// <summary>
     /// <b>Der Formathinweis</b> — der Anwender soll nicht erst am Prüfprotokoll
-    /// erfahren, welche Datei gemeint war. Geprüft wird, dass er die sechs Angaben
-    /// wirklich nennt, die die Kette auswertet.
+    /// erfahren, welche Datei gemeint war.
+    ///
+    /// <para><b>Seit W12‑E‑2 ist die sichtbare Zeile EINZEILIG</b>: Dateiart,
+    /// Wertzahl, ein Wert je Zeile, Verweis auf den Infoknopf. Die neun Zeilen
+    /// standen genau dort, wo jetzt die Grafik steht. Die sechs Angaben, die die
+    /// Kette wirklich auswertet, hängen unverändert AM INFOKNOPF — geprüft wird
+    /// deshalb beides: die kurze Zeile und der vollständige Kurztext.</para>
     /// </summary>
     [Fact]
-    public void Der_Formathinweis_nennt_Trennzeichen_Kopfzeile_Dezimaltrenner_Einheit_und_Anzahl()
+    public void Der_Formathinweis_ist_einzeilig_und_der_Infoknopf_traegt_den_vollen_Wortlaut()
     {
         var cut = ZeigeMitKatalogpflege();
 
         IElement hinweis = Spalte(cut, 1).QuerySelector(".epos-formathinweis")!;
-        string text = hinweis.QuerySelector(".epos-herleitung-text")!.TextContent;
+        string kurz = hinweis.QuerySelector(".epos-herleitung-text")!.TextContent;
 
-        Assert.Contains("CSV", text, StringComparison.Ordinal);
-        Assert.Contains("8.760", text, StringComparison.Ordinal);
-        Assert.Contains("35.040", text, StringComparison.Ordinal);
-        Assert.Contains("Semikolon", text, StringComparison.Ordinal);
-        Assert.Contains("Kopfzeile", text, StringComparison.Ordinal);
-        Assert.Contains("Dezimaltrennzeichen", text, StringComparison.Ordinal);
-        Assert.Contains("kW", text, StringComparison.Ordinal);
-        Assert.Contains("Dateiname ohne Erweiterung", text, StringComparison.Ordinal);
+        // Die sichtbare Zeile: kurz, aber vollständig genug, um zu wissen, was
+        // gemeint ist. 160 Zeichen sind rund eine Zeile in Dialogbreite.
+        Assert.True(kurz.Length <= 160, "Der Formathinweis ist nicht mehr einzeilig: " + kurz);
+        Assert.Contains("CSV", kurz, StringComparison.Ordinal);
+        Assert.Contains("8.760", kurz, StringComparison.Ordinal);
+        Assert.Contains("35.040", kurz, StringComparison.Ordinal);
+        Assert.Contains("Infoknopf", kurz, StringComparison.Ordinal);
 
-        // Der Infoknopf steht daneben und trägt denselben Wortlaut als Kurztext.
+        // Und ausgerechnet die Angaben, die nicht mehr dastehen, sind auch nicht
+        // verschwunden - sie hängen am Infoknopf.
+        Assert.DoesNotContain("Semikolon", kurz, StringComparison.Ordinal);
+
         IElement info = hinweis.QuerySelector(".epos-infoknopf")!;
-        Assert.Equal(text, info.GetAttribute("title"));
+        string lang = info.GetAttribute("title")!;
+
+        Assert.Contains("Semikolon", lang, StringComparison.Ordinal);
+        Assert.Contains("Kopfzeile", lang, StringComparison.Ordinal);
+        Assert.Contains("Dezimaltrennzeichen", lang, StringComparison.Ordinal);
+        Assert.Contains("kW", lang, StringComparison.Ordinal);
+        Assert.Contains("Dateiname ohne Erweiterung", lang, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -744,6 +757,276 @@ public class StromganglinieDialogTests : BunitContext
         Assert.Equal(0, kopiert);
         Assert.Empty(cut.FindComponents<EPOS.UI.Dialoge.Allgemein.NamensDialog>());
         Assert.Equal("", cut.Instance.Meldung);
+    }
+
+    // =====================================================================
+    // Die Grafik der gewaehlten Ganglinie (W12-E-2)
+    // =====================================================================
+
+    /// <summary>Ein Bildauftrag, wie ihn die Grafik stellt.</summary>
+    private sealed record Auftrag(GanglinienWahl Wahl, bool Sortiert, Diagrammbereich? Bereich);
+
+    /// <summary>
+    /// Der Dialog MIT der Grafikseite (W12‑E‑2). Die Kennzahlen kommen aus einem
+    /// Wörterbuch je Bezeichner — so lässt sich prüfen, dass wirklich die MARKIERTE
+    /// Ganglinie gezeigt wird und nicht irgendeine.
+    /// </summary>
+    private IRenderedComponent<StromganglinieDialog> ZeigeMitGrafik(
+        List<GanglinienProjektZeile>? zeilen = null,
+        List<Auftrag>? auftraege = null,
+        Dictionary<string, GanglinienKennzahlen?>? kennzahlen = null,
+        Energieeinheit? einheit = null,
+        Action<Energieeinheit>? einheitGewaehlt = null)
+    {
+        List<Auftrag> liste = auftraege ?? new List<Auftrag>();
+        Dictionary<string, GanglinienKennzahlen?> zahlen = kennzahlen ?? new()
+        {
+            ["Werk Nord"] = new GanglinienKennzahlen(4790.086, 2070.0, 2314.0512077294684),
+            ["Auslieferung"] = new GanglinienKennzahlen(1000.0, 500.0, 2000.0)
+        };
+
+        return Render<StromganglinieDialog>(p => p
+            .Add(x => x.Zeilen, zeilen ?? new List<GanglinienProjektZeile>())
+            .Add(x => x.Katalog, () => Task.FromResult(Katalog()))
+            .Add(x => x.Kennzahlen, (GanglinienWahl w) =>
+                Task.FromResult(zahlen.TryGetValue(w.Bezeichner, out GanglinienKennzahlen? k)
+                                ? k : null))
+            .Add(x => x.Bildauftrag, (GanglinienWahl w, bool sortiert, Diagrammbereich? bereich) =>
+            {
+                liste.Add(new Auftrag(w, sortiert, bereich));
+                return new byte[] { 1, 2, 3 };
+            })
+            .Add(x => x.Einheit, einheit ?? Energieeinheit.MWh)
+            .Add(x => x.EinheitGewaehlt, einheitGewaehlt));
+    }
+
+    /// <summary>
+    /// <b>Ohne Markierung keine Grafik.</b> Beim Aufbau ist nichts gewählt — dann
+    /// stünde eine Kennzahlenzeile ohne Bezug da.
+    /// </summary>
+    [Fact]
+    public void Ohne_Wahl_steht_keine_Grafik()
+    {
+        var cut = ZeigeMitGrafik();
+
+        Assert.Empty(cut.FindAll(".epos-ganglinie-grafik"));
+        Assert.Empty(cut.FindAll("img.epos-chartbild"));
+        Assert.Null(cut.Instance.Grafikkennzahlen);
+    }
+
+    /// <summary>
+    /// <b>Ohne Delegaten keine Grafik</b> — dieselbe Regel wie bei den vier Knöpfen.
+    /// Eine markierte Zeile allein reicht nicht.
+    /// </summary>
+    [Fact]
+    public void Ohne_Kennzahlen_Delegat_bleibt_die_Grafik_weg()
+    {
+        var cut = Zeige();
+        Waehle(cut, 1, 0);
+
+        Assert.Empty(cut.FindAll(".epos-ganglinie-grafik"));
+    }
+
+    /// <summary>
+    /// <b>Eine markierte KATALOGzeile bringt Bild und Kennzahlen.</b> Geprüft werden
+    /// alle drei Zahlen in deutscher Anzeige (MWh, kW, h/a) und der Bildauftrag, der
+    /// die gewählte Ganglinie nennt.
+    /// </summary>
+    [Fact]
+    public void Mit_gewaehlter_Katalogzeile_stehen_Bild_und_Kennzahlen()
+    {
+        var auftraege = new List<Auftrag>();
+        var cut = ZeigeMitGrafik(auftraege: auftraege);
+
+        Waehle(cut, 1, 0);      // "Werk Nord"
+
+        Assert.Single(cut.FindAll(".epos-ganglinie-grafik"));
+        Assert.NotNull(cut.Find("img.epos-chartbild"));
+        Assert.Contains("Werk Nord", cut.Find(".epos-ganglinie-grafik .epos-kontextzeile").TextContent);
+
+        Assert.Equal(3, cut.FindAll(".epos-ganglinie-kennzahl").Count);
+        Assert.Contains("Jahresarbeit:", cut.Markup);
+        Assert.Contains("Spitzenlast:", cut.Markup);
+        Assert.Contains("Vollbenutzungsstunden:", cut.Markup);
+
+        Assert.Contains("4790,09", cut.Markup);     // MWh, deutsche Anzeige
+        Assert.Contains("2070,00", cut.Markup);     // kW
+        Assert.Contains("2314,05", cut.Markup);     // h/a
+
+        // Der Bildauftrag kennt die Wahl: rechte Spalte, also der Katalog.
+        Assert.Contains(auftraege, a => a.Wahl.AusKatalog && a.Wahl.Bezeichner == "Werk Nord"
+                                        && !a.Sortiert && a.Bereich is null);
+    }
+
+    /// <summary>
+    /// <b>Auch die linke Spalte zeigt ihre Ganglinie.</b> Eine Projektzeile trägt die
+    /// Id der PROJEKTKOPIE mit; eine eben erst zugeordnete Zeile hat noch keine
+    /// (<c>GanglinieId</c> = 0) und wird über ihren Bezeichner gefunden.
+    /// </summary>
+    [Fact]
+    public void Mit_gewaehlter_Projektzeile_steht_die_Grafik_dieser_Zeile()
+    {
+        var auftraege = new List<Auftrag>();
+        var zeilen = new List<GanglinienProjektZeile>
+        {
+            new GanglinienProjektZeile(7, 4711, "Werk Nord")
+        };
+
+        var cut = ZeigeMitGrafik(zeilen: zeilen, auftraege: auftraege);
+        Waehle(cut, 0, 0);
+
+        Assert.Single(cut.FindAll(".epos-ganglinie-grafik"));
+        Assert.Contains(auftraege, a => !a.Wahl.AusKatalog && a.Wahl.GanglinieId == 4711);
+    }
+
+    /// <summary>
+    /// Zu einer Ganglinie OHNE brauchbare Reihe (der Kern liefert <c>null</c>) bleibt
+    /// die Grafik weg — statt einen leeren Rahmen mit Nullen zu zeigen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Kennzahlen_zu_dieser_Ganglinie_bleibt_die_Grafik_weg()
+    {
+        var cut = ZeigeMitGrafik(kennzahlen: new Dictionary<string, GanglinienKennzahlen?>
+        {
+            ["Werk Nord"] = null
+        });
+
+        Waehle(cut, 1, 0);
+
+        Assert.Empty(cut.FindAll(".epos-ganglinie-grafik"));
+        Assert.Null(cut.Instance.Grafikkennzahlen);
+    }
+
+    /// <summary>
+    /// <b>Der Schalter „sortiert" wechselt die Reihe</b> — aus der Jahresganglinie
+    /// wird die Dauerlinie; der zweite Bildauftrag trägt <c>Sortiert = true</c>.
+    /// Dieselbe Umschaltung wie im Bedarfsreiter der Ergebnisseite.
+    /// </summary>
+    [Fact]
+    public void Der_Schalter_sortiert_laesst_neu_zeichnen()
+    {
+        var auftraege = new List<Auftrag>();
+        var cut = ZeigeMitGrafik(auftraege: auftraege);
+
+        Waehle(cut, 1, 0);
+        Assert.Contains(auftraege, a => !a.Sortiert);
+
+        GanglinienGrafik grafik = cut.FindComponent<GanglinienGrafik>().Instance;
+        Assert.False(grafik.Sortiert);
+
+        cut.Find(".epos-ganglinie-leiste input[type=checkbox]").Change(true);
+
+        Assert.True(grafik.Sortiert);
+        Assert.Contains(auftraege, a => a.Sortiert);
+    }
+
+    /// <summary>
+    /// Der Datenzoom (Befund A‑1): Ein aufgezogenes Rechteck geht UNVERÄNDERT in den
+    /// Bildauftrag, und ein Schalterwechsel verwirft ihn wieder.
+    /// </summary>
+    [Fact]
+    public async Task Ein_aufgezogener_Bereich_geht_in_den_Bildauftrag()
+    {
+        var auftraege = new List<Auftrag>();
+        var cut = ZeigeMitGrafik(auftraege: auftraege);
+        Waehle(cut, 1, 0);
+
+        Diagramm diagramm = cut.FindComponent<Diagramm>().Instance;
+        await cut.InvokeAsync(() => diagramm.BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+
+        GanglinienGrafik grafik = cut.FindComponent<GanglinienGrafik>().Instance;
+        Assert.NotNull(grafik.Bereich);
+        Assert.Contains(auftraege, a => a.Bereich is not null && a.Bereich.XBis == 0.5);
+
+        cut.Find(".epos-ganglinie-leiste input[type=checkbox]").Change(true);
+        Assert.Null(grafik.Bereich);
+    }
+
+    /// <summary>
+    /// <b>Die Einheit (Anwenderentscheid W8‑O‑5):</b> MWh ist die Vorgabe, kWh ist
+    /// wählbar, und die Wahl geht an die Hülle zurück, damit sie gemerkt wird. Nur
+    /// die Jahresarbeit folgt ihr — die Spitze bleibt kW.
+    /// </summary>
+    [Fact]
+    public void Die_Einheit_ist_waehlbar_und_gilt_nur_fuer_die_Jahresarbeit()
+    {
+        Energieeinheit? gemeldet = null;
+        var cut = ZeigeMitGrafik(einheitGewaehlt: e => gemeldet = e);
+
+        Waehle(cut, 1, 0);
+        Assert.Contains("MWh", cut.Find(".epos-ganglinie-kennzahlen").TextContent);
+        Assert.Contains("4790,09", cut.Markup);
+
+        IElement wahl = cut.Find(".epos-ganglinie-leiste select");
+        wahl.Change("1");                       // kWh
+
+        Assert.Equal(Energieeinheit.KWh, gemeldet);
+        Assert.Contains("kWh", cut.Find(".epos-ganglinie-kennzahlen").TextContent);
+
+        // 4 790,086 MWh = 4 790 086 kWh, ohne Nachkommastellen (F0 der Einheit -
+        // und F0 setzt keine Tausendertrennzeichen).
+        Assert.Contains("4790086", cut.Markup);
+
+        // Die Leistung bleibt kW und behaelt ihre zwei Stellen.
+        Assert.Contains("2070,00", cut.Markup);
+    }
+
+    /// <summary>
+    /// Ohne Höchstlast gibt es keine Vollbenutzungsstunden, sondern „—" — dieselbe
+    /// Regel wie im Gebäudebedarfsdialog.
+    /// </summary>
+    [Fact]
+    public void Ohne_Spitze_steht_ein_Strich_statt_der_Vollbenutzungsstunden()
+    {
+        var cut = ZeigeMitGrafik(kennzahlen: new Dictionary<string, GanglinienKennzahlen?>
+        {
+            ["Werk Nord"] = new GanglinienKennzahlen(0, 0, null)
+        });
+
+        Waehle(cut, 1, 0);
+
+        Assert.Contains("—", cut.Find(".epos-ganglinie-kennzahlen").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Grafik gehört zur MARKIERTEN Zeile.</b> Wer die Markierung wechselt,
+    /// sieht die andere Ganglinie — und nicht das zwischengespeicherte Bild der
+    /// vorigen.
+    /// </summary>
+    [Fact]
+    public void Ein_Wechsel_der_Markierung_wechselt_die_Grafik()
+    {
+        var auftraege = new List<Auftrag>();
+        var cut = ZeigeMitGrafik(auftraege: auftraege);
+
+        Waehle(cut, 1, 0);
+        Assert.Contains("Werk Nord", cut.Find(".epos-ganglinie-grafik .epos-kontextzeile").TextContent);
+
+        Waehle(cut, 1, 1);
+        Assert.Contains("Auslieferung", cut.Find(".epos-ganglinie-grafik .epos-kontextzeile").TextContent);
+        Assert.Contains("1000,00", cut.Markup);
+        Assert.Contains(auftraege, a => a.Wahl.Bezeichner == "Auslieferung");
+    }
+
+    /// <summary>
+    /// Wird die markierte Zuordnung entfernt, geht ihre Grafik mit: Zahlen zu einer
+    /// Zeile, die nicht mehr dasteht, sind schlimmer als keine Zahlen.
+    /// </summary>
+    [Fact]
+    public void Das_Entfernen_der_Zeile_nimmt_ihre_Grafik_mit()
+    {
+        var zeilen = new List<GanglinienProjektZeile>
+        {
+            new GanglinienProjektZeile(7, 4711, "Werk Nord")
+        };
+        var cut = ZeigeMitGrafik(zeilen: zeilen);
+
+        Waehle(cut, 0, 0);
+        Assert.Single(cut.FindAll(".epos-ganglinie-grafik"));
+
+        Entfernen(cut).Click();
+
+        Assert.Empty(cut.FindAll(".epos-ganglinie-grafik"));
     }
 
     // --- Esc schliesst immer nur die oberste Ebene -----------------------
