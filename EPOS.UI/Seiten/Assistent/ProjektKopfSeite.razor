@@ -38,32 +38,39 @@
 
     <Herleitungszeile Text="@HinweisText" />
 
-    <div class="epos-projektkopf-raster">
+    @* Formularraster (iU8-E-2, Paket P3): Der handgebaute Zweispalter
+       epos-projektkopf-raster entfaellt - der Hausraster stellt dieselben
+       zwei Spalten und rueckt zusaetzlich die Beschriftung neben das Feld. *@
+    <Formularraster>
+        <KindInhalt>
+    <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name"
+              WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)" />
 
-        <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name"
-                  WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)" />
+    <Auswahlfeld Bezeichnung="@LabelKlima" Eintraege="@Klimaregionen"
+                 Auswahl="@KlimaAuswahl" AuswahlChanged="KlimaGewaehlt" />
 
-        <Auswahlfeld Bezeichnung="@LabelKlima" Eintraege="@Klimaregionen"
-                     Auswahl="@KlimaAuswahl" AuswahlChanged="KlimaGewaehlt" />
+    <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
+              WertChanged="@(w => Daten.Kunde = w)" />
 
-        <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
-                  WertChanged="@(w => Daten.Kunde = w)" />
+    <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@Daten.Bearbeiter"
+              WertChanged="@(w => Daten.Bearbeiter = w)" />
 
-        <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@Daten.Bearbeiter"
-                  WertChanged="@(w => Daten.Bearbeiter = w)" />
+    @* Beide Datumsfelder sind GESPERRT - wie im Vorlaeufer (textBox_*.Enabled
+       = false). Sie zeigen, was das Programm gespeichert hat; geaendert wird
+       daran nichts. *@
+    <Textfeld Bezeichnung="@LabelAenderung" Wert="@Datumstext(Daten.Aenderungsdatum)"
+              NurLesen="true" />
 
-        @* Beide Datumsfelder sind GESPERRT - wie im Vorlaeufer (textBox_*.Enabled
-           = false). Sie zeigen, was das Programm gespeichert hat; geaendert wird
-           daran nichts. *@
-        <Textfeld Bezeichnung="@LabelAenderung" Wert="@Datumstext(Daten.Aenderungsdatum)"
-                  NurLesen="true" />
+    <Textfeld Bezeichnung="@LabelErstellt" Wert="@Datumstext(Daten.Erstelldatum)"
+              NurLesen="true" />
 
-        <Textfeld Bezeichnung="@LabelErstellt" Wert="@Datumstext(Daten.Erstelldatum)"
-                  NurLesen="true" />
-    </div>
-
+    @* Die Beschreibung meldet sich als BREITES Feld (Mehrzeilig) und spannt
+       damit von selbst ueber beide Spalten - der eigene Kasten dafuer
+       entfaellt. *@
     <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" Mehrzeilig="true"
               Zeilen="5" WertChanged="@(w => Daten.Beschreibung = w)" />
+        </KindInhalt>
+    </Formularraster>
 </div>
 
 @code {

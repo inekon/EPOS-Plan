@@ -95,6 +95,11 @@
     {
         <Gruppenkopf Titel="@GruppeSenkenzeile">
             <KindInhalt>
+                @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Das Ziel schaltet
+                   das Feld darunter frei - eine Reihenfolge, und jede Wahl traegt
+                   ihre Herleitungszeile unter sich. *@
+                <Formularraster Einspaltig="true">
+                    <KindInhalt>
                 <Auswahlfeld Bezeichnung="@LabelZiel" Eintraege="@Zieleintraege"
                              Auswahl="@_zielIndex" AuswahlChanged="ZielWaehlen" />
 
@@ -111,6 +116,8 @@
                                  Auswahl="@_bedarfsartIndex" AuswahlChanged="BedarfsartWaehlen" />
                     <Herleitungszeile Text="@HinweisBedarf" />
                 }
+                    </KindInhalt>
+                </Formularraster>
 
                 @if (VerwaltungGaben is not null)
                 {
@@ -142,6 +149,11 @@
     {
         <Gruppenkopf Titel="@GruppeLadeverhalten">
             <KindInhalt>
+                @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Jeder Schalter
+                   gibt das Feld UNTER sich frei (Ladegrenze, Einspeisehoehe) -
+                   nebeneinander verloere das Paar seinen Zusammenhang. *@
+                <Formularraster Einspaltig="true">
+                    <KindInhalt>
                 <Auswahlfeld Bezeichnung="@LabelLadeprio" Eintraege="@Prioritaeten"
                              Auswahl="@Aktuell.Ladeprio" AuswahlChanged="LadeprioWaehlen" />
                 <Herleitungszeile Text="@_position" />
@@ -170,6 +182,8 @@
                                 WertChanged="w => { _hoehe = w; ZeileZurueckschreiben(); }" />
                     <Herleitungszeile Text="@TipEinspeisehoehe" />
                 }
+                    </KindInhalt>
+                </Formularraster>
             </KindInhalt>
         </Gruppenkopf>
     }

@@ -836,3 +836,32 @@ unberührt; die Sonderstellung des Brauchwassers in kWh (W8‑O‑5b) bleibt off
 6. Prozesswärme und Brauchwasser: dieselbe Gliederung (max. Wärmelast oben,
    Gesamter Wärmebedarf unten), Grafikreiter **unverändert** — kein Umschalter,
    Sichtwahl und „Jahresverlauf" wie bisher.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Bedarf/BedarfsProfileDialog.razor` | 7 | 2 | nein | Klasse A. Infoblock und „Jahresverbrauch" in den Raster; der Knopf „Übernehmen" ist **kein** Feld und bleibt darunter stehen. Die zwei Listen der `Zweispaltenauswahl` bleiben Listen. |
+| `Dialoge/Bedarf/TypStammDialog.razor` | 4 | 2 | nein | Klasse A. Kopfblock und die **zwölf Monatswerte**; im Vorbild (659 × 426) standen die Monate in zwei Spalten zu sechs — genau das stellt der Raster jetzt von selbst her. |
+
+**Nicht angefasst** (heute mit W8‑E‑1 bzw. W8‑E‑2 abgenommen):
+`TypProfilDialog` und `BedarfErgebnisDialog`.
+
+**Probe.** In beiden Testklassen je ein Fall
+(`Infoblock_und_Jahresverbrauch_stehen_im_Formularraster`,
+`Kopf_und_Monatswerte_stehen_im_Formularraster`): Der Block trägt
+`epos-formularraster`, die zwölf Monate sind **kurze** Felder.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.

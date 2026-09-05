@@ -352,11 +352,11 @@ public class PvModulImportDialogTests : BunitContext
         Assert.NotNull(cut.Instance.Gewaehlt);
         Assert.Equal("Ablytek 6MN6A270", cut.Instance.Gewaehlt!.Name);
 
-        string uebersicht = cut.Find(".epos-pvimport-details").TextContent;
+        string uebersicht = cut.Find(".epos-formularraster").TextContent;
         Assert.Contains("Modulname:", uebersicht);
         Assert.Contains("Fläche [m²]:", uebersicht);
 
-        var felder = cut.FindAll(".epos-pvimport-details input");
+        var felder = cut.FindAll(".epos-formularraster input");
         Assert.Equal("Ablytek 6MN6A270", felder[0].GetAttribute("value"));
         Assert.Equal("Ablytek", felder[1].GetAttribute("value"));
         Assert.Equal("1,63", felder[6].GetAttribute("value"));    // Flaeche A_c
@@ -377,7 +377,7 @@ public class PvModulImportDialogTests : BunitContext
         // Reiter "Elektrisch" oeffnen
         cut.FindAll("[role='tab']")[1].Click();
 
-        var felder = cut.FindAll(".epos-pvimport-details input");
+        var felder = cut.FindAll(".epos-formularraster input");
         Assert.Equal("-", felder[5].GetAttribute("value"));    // alpha_Isc
         Assert.Equal("-", felder[6].GetAttribute("value"));    // beta_Voc
         Assert.Equal("-0,3400", felder[7].GetAttribute("value"));  // gamma_pmp = muPmpReq
@@ -385,7 +385,7 @@ public class PvModulImportDialogTests : BunitContext
         Assert.Equal("605,80", felder[9].GetAttribute("value"));   // PTC geschaetzt
 
         cut.FindAll("[role='tab']")[2].Click();
-        Assert.Equal("-", cut.FindAll(".epos-pvimport-details input")[0].GetAttribute("value"));
+        Assert.Equal("-", cut.FindAll(".epos-formularraster input")[0].GetAttribute("value"));
     }
 
     /// <summary>
@@ -400,7 +400,7 @@ public class PvModulImportDialogTests : BunitContext
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
 
         Assert.Contains("Nein", cut.Find("tbody").TextContent);
-        var felder = cut.FindAll(".epos-pvimport-details input");
+        var felder = cut.FindAll(".epos-formularraster input");
         Assert.Equal("Nein", felder[5].GetAttribute("value"));
     }
 
@@ -565,5 +565,30 @@ public class PvModulImportDialogTests : BunitContext
                         : new KatalogSatz { Id = 5, Name = "Ablytek 6MN6A270" } }
         };
         return new PvVorpruefung(befund, pruefungen, new[] { "ablytek 6mn6a270" });
+    }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die drei Detailreiter stehen im Formularraster; der handgebaute Kasten <c>epos-pvimport-details</c> ist fort. Die zwei FILTERLEISTEN ueber dem Gitter bleiben Leisten - sie sind kein Formularblock.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Detailfelder_stehen_im_Formularraster()
+    {
+        var cut = Bauen(DreiModule());
+
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+
+        // Die Filterleiste ist KEIN Raster geworden.
+        Assert.NotEmpty(cut.FindAll(".epos-pvimport-filter"));
+        Assert.Empty(cut.FindAll(".epos-pvimport-filter .epos-formularraster"));
     }
 }

@@ -561,4 +561,31 @@ public class GebaeudeKatalogDialogTests : BunitContext
 
         Assert.True(gerufen);
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die drei Bloecke des ersten Reiters - Kopfdaten, Flaechen und U-Werte - stehen im Formularraster. 41 Felder standen dort untereinander ueber die ganze Breite, die Beschriftung ueber dem Feld; jetzt stehen sie neben ihrer Beschriftung und auf breitem Schirm zu zweit in einer Zeile.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Bloecke_des_Gebaeudekatalogs_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 3,
+                    "der erste Reiter traegt weniger als drei Raster");
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+
+        // Wohnflaeche, Waermegewinne, Raumhoehe: kurzes Feld, Einheit dahinter.
+        Assert.NotEmpty(cut.FindAll(
+            ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
+    }
 }

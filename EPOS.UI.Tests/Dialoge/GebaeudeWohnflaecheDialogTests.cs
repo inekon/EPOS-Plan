@@ -239,4 +239,28 @@ public class GebaeudeWohnflaecheDialogTests : BunitContext
         Assert.True(gerufen);
         Assert.Null(ergebnis);
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Beide Bloecke - die Gebaeudeangaben und die Eingabe - stehen im Formularraster; der Verbrauch ist ein kurzes Feld mit seiner Einheit dahinter.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Beide_Bloecke_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen();
+
+        Assert.Equal(2, cut.FindAll(".epos-formularraster").Count);
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+        Assert.NotEmpty(cut.FindAll(
+            ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
+    }
 }
