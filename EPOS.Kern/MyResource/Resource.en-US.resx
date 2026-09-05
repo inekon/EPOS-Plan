@@ -14445,4 +14445,16 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="AUSWAHL_GRP_PFEILE" xml:space="preserve">
     <value>Move between project and database</value>
   </data>
+  <data name="FEHLERSCHRANKE_TITEL" xml:space="preserve">
+    <value>An error occurred in this view</value>
+  </data>
+  <data name="FEHLERSCHRANKE_SATZ" xml:space="preserve">
+    <value>The application keeps running. Please copy or photograph the text below and report it together with what you did last.</value>
+  </data>
+  <data name="FEHLERSCHRANKE_BTN_WEITER" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="FEHLERSCHRANKE_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
 </root>

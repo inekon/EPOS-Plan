@@ -311,6 +311,67 @@ body {
 }
 
 /* ==========================================================================
+   Baustein: Fehlerschranke (Befund W13-B-1, Windows-Abnahme 05.09.2026)
+   ==========================================================================
+
+   Der Kasten, der statt der Maske steht, wenn eine Komponente wirft. Er
+   traegt denselben Fehlerklang wie das Warnbanner - der Anwender soll ihn
+   ohne Nachdenken als "hier ist etwas schiefgegangen" lesen -, ist aber
+   ein BLOCK und kein Streifen: Er ersetzt den Inhalt, er begleitet ihn
+   nicht.
+
+   Der Wortlaut steht in einem readonly <textarea> und nicht in einem <p>:
+   Nur so laesst er sich mit der Tastatur markieren und kopieren, und nur so
+   rollt ein langer Aufrufstapel in seinem eigenen Rahmen statt die Seite zu
+   dehnen. Dieselbe Ueberlegung wie bei der markierbaren TextBox der
+   WebViewWache. */
+
+.epos-fehlerschranke {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    margin: var(--epos-abstand);
+    padding: var(--epos-abstand);
+    border: 1px solid var(--epos-senke-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-fehleingabe);
+    color: var(--epos-senke-text);
+}
+
+.epos-fehlerschranke-kopf {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+.epos-fehlerschranke-symbol {
+    flex: 0 0 auto;
+    font-weight: 700;
+}
+
+.epos-fehlerschranke-titel {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+}
+
+.epos-fehlerschranke-satz {
+    margin: 0;
+}
+
+.epos-fehlerschranke-wortlaut {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: ui-monospace, "Consolas", "Courier New", monospace;
+    font-size: var(--epos-schriftgroesse);
+    white-space: pre-wrap;
+    resize: vertical;
+    border: 1px solid var(--epos-senke-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+}
+
+/* ==========================================================================
    Baustein: SpeichernLeiste (Vorbild Allgemein/SpeichernLeiste.cs)
    ========================================================================== */
 

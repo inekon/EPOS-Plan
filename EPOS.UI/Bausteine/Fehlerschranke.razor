@@ -1,0 +1,162 @@
+﻿@* Fehlerschranke - das Sicherheitsnetz um eine Wurzelkomponente
+   (Befund W13-B-1, Windows-Abnahme 05.09.2026).
+
+   DER BEFUND. Der Anwender meldete zum VDI-3805-Import "Absturz bei Datei
+   laden". Der Rechenkern war es nicht (EPOS.Kern.Tests: keine der vier
+   Auspraegungen wirft, auch nicht bei einer kaputten Datei), aber der Weg
+   dorthin hatte KEIN Netz: Eine Ausnahme aus einem Blazor-Ereignis oder aus
+   einer Lebenszyklusmethode geht an den Renderer, und der WinForms-
+   BlazorWebView (10.0.100) fuehrt kein UnhandledException-Ereignis - die
+   Ausnahme kommt am Bedienfaden wieder heraus und beendet den Prozess.
+   Genau das steht als Grenze in WebViewWache: "Was danach kommt - eine
+   Ausnahme beim Zeichnen der Komponente - sieht diese Wache nicht."
+
+   WAS DIESE KOMPONENTE TUT. Sie ist eine Blazor-ErrorBoundary: Wirft eine
+   Kindkomponente, faengt der Renderer die Ausnahme hier ab und zeichnet
+   statt des Inhalts einen LESBAREN Kasten - Typ, Wortlaut, innerste
+   Ausnahme, dazu die zwei Knoepfe "Weiter" (noch einmal versuchen) und
+   "Schliessen" (den Kasten wegnehmen). Der Prozess laeuft weiter.
+
+   WARUM EIN MARKIERBARER TEXT UND KEINE MELDUNG. Dieselbe Ueberlegung wie
+   in WebViewWache: Der Anwender soll den Wortlaut abschreiben oder
+   ablichten koennen. Derselbe Satz geht zusaetzlich nach Debug und Trace -
+   dort liest ihn DebugView oder ein angehaengter Debugger mit.
+
+   WARUM NICHT DIE FERTIGE ErrorBoundary. Die Fassung aus
+   Microsoft.AspNetCore.Components.Web spritzt einen IErrorBoundaryLogger
+   ein und zeigt im Fehlerfall eine leere <div class="blazor-error-boundary">
+   - also wieder eine stumme Flaeche, und das ist der Befund selbst.
+   ErrorBoundaryBase leistet das Fangen ohne jede Abhaengigkeit; was zu
+   zeigen und zu protokollieren ist, gehoert ins Haus.
+
+   MaximumErrorCount: Nach so vielen gefangenen Ausnahmen gibt die Schranke
+   auf und laesst die naechste durch - der Schutz vor einer Komponente, die
+   bei JEDEM Zeichnen wirft und die Schranke in eine Endlosschleife zoege.
+   Die Vorgabe der Basisklasse (100) bleibt. *@
+
+@namespace EPOS.UI.Bausteine
+@inherits Microsoft.AspNetCore.Components.ErrorBoundaryBase
+
+@if (CurrentException is null)
+{
+    @ChildContent
+}
+else if (ErrorContent is not null)
+{
+    @ErrorContent(CurrentException)
+}
+else
+{
+    <div class="epos-fehlerschranke" role="alert">
+        <div class="epos-fehlerschranke-kopf">
+            <span class="epos-fehlerschranke-symbol" aria-hidden="true">!</span>
+            <span class="epos-fehlerschranke-titel">@TitelText</span>
+        </div>
+
+        <p class="epos-fehlerschranke-satz">@SatzText</p>
+
+        <textarea class="epos-fehlerschranke-wortlaut" readonly rows="6"
+                  aria-label="@TitelText">@Wortlaut(CurrentException)</textarea>
+
+        <div class="epos-leiste">
+            <span class="epos-leiste-fueller"></span>
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    @onclick="Weiter">@WeiterText</button>
+            <button type="button" class="epos-knopf"
+                    @onclick="Schliessen">@SchliessenText</button>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Was hier steht, fuer Protokoll und Ueberschrift - in der Regel der
+    /// Typname der Wurzelkomponente. Die Huelle reicht ihn herein.
+    /// </summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Ueberschrift des Kastens.</summary>
+    [Parameter] public string TitelVorgabe { get; set; } = "";
+
+    /// <summary>Der erklaerende Satz unter der Ueberschrift.</summary>
+    [Parameter] public string SatzVorgabe { get; set; } = "";
+
+    /// <summary>Beschriftung des Knopfes, der es noch einmal versucht.</summary>
+    [Parameter] public string WeiterText { get; set; } = Resource.FEHLERSCHRANKE_BTN_WEITER;
+
+    /// <summary>Beschriftung des Knopfes, der den Kasten wegnimmt.</summary>
+    [Parameter] public string SchliessenText { get; set; } = Resource.FEHLERSCHRANKE_BTN_SCHLIESSEN;
+
+    /// <summary>
+    /// Meldet jede gefangene Ausnahme an den Wirt - fuer Huellen, die mehr
+    /// tun wollen als protokollieren. Ohne Empfaenger folgenlos.
+    /// </summary>
+    [Parameter] public EventCallback<Exception> Gefangen { get; set; }
+
+    private string TitelText => string.IsNullOrEmpty(TitelVorgabe)
+        ? Resource.FEHLERSCHRANKE_TITEL : TitelVorgabe;
+
+    private string SatzText => string.IsNullOrEmpty(SatzVorgabe)
+        ? Resource.FEHLERSCHRANKE_SATZ : SatzVorgabe;
+
+    /// <summary>
+    /// Der Rueckruf des Renderers. Er protokolliert und meldet weiter; das
+    /// Zeichnen des Kastens besorgt die Basisklasse ueber
+    /// <c>CurrentException</c>.
+    /// </summary>
+    protected override async Task OnErrorAsync(Exception ausnahme)
+    {
+        Protokoll(Wortlaut(ausnahme));
+
+        if (Gefangen.HasDelegate)
+        {
+            try { await Gefangen.InvokeAsync(ausnahme); }
+            catch (Exception ex)
+            {
+                // Eine Schranke, die am Melden scheitert, waere schlimmer als
+                // der Fehler, den sie meldet.
+                Protokoll("Der Wirt konnte den Fehler nicht entgegennehmen: " + ex.Message);
+            }
+        }
+    }
+
+    /// <summary>„Weiter": noch einmal zeichnen, als waere nichts gewesen.</summary>
+    private void Weiter() => Recover();
+
+    /// <summary>
+    /// „Schliessen": dasselbe. Die zwei Knoepfe unterscheiden sich in der
+    /// ABSICHT, nicht in der Wirkung - mehr kann eine Schranke nicht, sie
+    /// besitzt das Fenster nicht. Wer den Dialog wirklich zumachen will,
+    /// nimmt danach dessen eigenen Schliessknopf; steht der Inhalt wieder,
+    /// ist er auch wieder da.
+    /// </summary>
+    private void Schliessen() => Recover();
+
+    /// <summary>Typ, Wortlaut und innerste Ausnahme - mehr braucht die Suche nicht.</summary>
+    private string Wortlaut(Exception fehler)
+    {
+        if (fehler is null) return "";
+
+        Exception innerste = fehler;
+        while (innerste.InnerException is not null) innerste = innerste.InnerException;
+
+        string kopf = string.IsNullOrEmpty(Bezeichnung) ? "" : Bezeichnung + ": ";
+        string satz = kopf + fehler.GetType().FullName + ": " + fehler.Message;
+
+        if (!ReferenceEquals(innerste, fehler))
+            satz += Environment.NewLine + "  → " + innerste.GetType().FullName
+                  + ": " + innerste.Message;
+
+        return satz;
+    }
+
+    private static void Protokoll(string satz)
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("[Fehlerschranke] " + satz);
+            System.Diagnostics.Trace.WriteLine("[Fehlerschranke] " + satz);
+        }
+        catch { /* ein Protokoll darf nie der Grund eines Fehlers sein */ }
+    }
+}
