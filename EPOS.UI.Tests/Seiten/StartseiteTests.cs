@@ -858,15 +858,17 @@ public class StartseiteTests : BunitContext
     public void Ein_freier_Reiter_der_Startseite_traegt_die_Textfarbe()
     {
         string block = Stilblock(
-            ".epos-startseite > .epos-reiter > .epos-reiter-leiste\n" +
-            "> .epos-reiter-knopf:not(:disabled):not(.epos-reiter-knopf--aktiv) {");
+            ".epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf {");
 
         Assert.Contains("color: var(--epos-text)", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("--epos-text-leise", block, StringComparison.Ordinal);
 
         // Der gesperrte Knopf bleibt sehr leise - sonst waere der Unterschied
         // wieder weg, nur andersherum.
         Assert.Contains("var(--epos-text-sehr-leise)",
-                        Stilblock(".epos-reiter-knopf:disabled {"), StringComparison.Ordinal);
+                        Stilblock(".epos-startseite > .epos-reiter > .epos-reiter-leiste "
+                                  + "> .epos-reiter-knopf:disabled {"),
+                        StringComparison.Ordinal);
     }
 
     /// <summary>Liest den Rumpf einer Regel aus <c>EPOS.UI/wwwroot/epos-ui.css</c>.</summary>
