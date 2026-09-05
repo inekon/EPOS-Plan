@@ -69,10 +69,18 @@
             @* --- Die Felder, Gruppe 0 ------------------------------------ *@
             <Gruppenkopf Titel="@Profil.GruppeBestand">
                 <KindInhalt>
-                    @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 0))
-                    {
-                        @Feldmarkup(feld)
-                    }
+                    @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung NEBEN dem
+                       Feld, Zahlenfelder kurz mit der Einheit dahinter, zwei
+                       Feldpaare je Zeile, sobald die Spalte breit genug ist.
+                       Der Block war zuvor doppelt so hoch wie der Dialog. *@
+                    <Formularraster>
+                        <KindInhalt>
+                            @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 0))
+                            {
+                                @Feldmarkup(feld)
+                            }
+                        </KindInhalt>
+                    </Formularraster>
                 </KindInhalt>
             </Gruppenkopf>
 
@@ -81,10 +89,14 @@
             {
                 <Gruppenkopf Titel="@Profil.GruppeZwei">
                     <KindInhalt>
-                        @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 1))
-                        {
-                            @Feldmarkup(feld)
-                        }
+                        <Formularraster>
+                            <KindInhalt>
+                                @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 1))
+                                {
+                                    @Feldmarkup(feld)
+                                }
+                            </KindInhalt>
+                        </Formularraster>
                     </KindInhalt>
                 </Gruppenkopf>
             }

@@ -655,3 +655,149 @@ Eingabeblock im DOM, Kopfzeile „Wahl" in allen sechs Ausprägungen).
    bzw. „Wahl | Name" (Heizkessel, Pufferspeicher, PV, Stromspeicher).
 6. Dasselbe für „BHKW Verwaltung", „Administration Heizkessel", „Administration
    Pufferspeicher", „Administration PV-Module" und „Administration Stromspeicher".
+
+## Windows-Abnahme 05.09.2026 — Kompaktes Formularraster (iU8‑E‑2, W14a‑E‑7)
+
+**Der Wortlaut.** „Verbessere die Darstellung der Dialoge, insbesondere der Parameter auf der
+rechten Seite: kompakter, übersichtlicher, …" — dazu die Erweiterung desselben Tages:
+„Genauso für andere Dialoge prüfen." Das Bildschirmfoto zeigt
+`EPOS.UI/Dialoge/Erzeuger/ModulKatalogDialog.razor` in der Ausprägung PV, im `Katalograhmen`
+aus **W14a‑E‑6** vom Nachmittag: links die Liste „Module in Datenbank", rechts der Block
+„Moduldaten".
+
+**Der Befund, gemessen am Bild.** Jedes Feld nahm die **volle Breite**, die Beschriftung stand
+**darüber**, die Zahlenfelder waren so breit wie die Textfelder, und die Einheit stand am
+**rechten Rand des Blocks** — bei „Nennleistung (Pmax)" rund 40 Zeichen vom Wert entfernt. Der
+Block war damit doppelt so hoch wie der Dialog und rollte, obwohl daneben eine halbe Fensterbreite
+leer stand.
+
+**Die Vorbilder taten es anders — gemessen, nicht geschätzt.** Aus `Form_AdminPV.resx`
+(607 × 489, gelöscht mit iU9‑W14a.3, aus der Historie gezogen):
+
+| Was | Vorbild | Neu |
+|---|---|---|
+| Beschriftungsspalte | Label bei x = 253, Feld bei x = 431 → **178 px** | `--epos-beschriftung-breite: 12rem` (192 px) |
+| Zahlenfeld | **62 px** (`textBox_Leistung`, `_Wirkungsgrad`, `_UMpp`, `_ULeerlauf`, `_IMpp`, `_IKurzschluss`, `_TempKoeff`, `_Laenge`, `_Breite`), Modulkosten 85 px | `--epos-kurzfeld-breite: 8em` (104 px bei 13 px Schrift — das Feld hält weiter `--epos-touchziel`) |
+| Einheit | Feldende x = 493, Einheit bei x = 497/498 → **4 px dahinter** | in derselben `.epos-feld-zeile`, Abstand 6 px |
+| Textfeld | 250 px (`textBox_Bezeichner`, `_Firma`) | die Feldspalte |
+| Beschreibung | 250 × **48 px** — zwei Zeilen | `Mehrzeilig`, über beide Spalten |
+
+Dieselben Verhältnisse in `Form_Heizkessel_Admin` (726 × 383), `Form_BHKWAdmin` (856 × 517),
+`Form_AdminStromspeicher` (614 × 367) und `Form_PufferSp_Admin` (721 × 330).
+
+**Die Regel in drei Sätzen.** Ein Parameterblock steht im Baustein **`Formularraster`**; darin
+steht die Beschriftung **neben** dem Feld in einer festen Spalte von 12 rem, und die Felder ordnen
+sich über `repeat(auto-fill, minmax(--epos-formularspalte, 1fr))` von selbst in **eine oder zwei
+Spalten** — gemessen an der Breite des Rasters, nicht des Fensters, weshalb die rechte Spalte eines
+`Katalograhmen` genauso richtig liegt wie ein freistehender Dialog. Ein Feld sagt **selbst**, wie
+lang es ist: `Zahlenfeld` und `Ganzzahlfeld` tragen `epos-feld--kurz` (kurze Breite, Einheit
+unmittelbar dahinter), ein mehrzeiliges `Textfeld` trägt `epos-feld--breit` (über beide Spalten) —
+deshalb braucht **kein Dialog eine eigene Regel**, er hängt seine vorhandenen Feldbausteine nur in
+den Raster. Unter 900 CSS-Pixeln (`--epos-zweispalten-umbruch`, dieselbe Breite wie
+`Zweispaltenauswahl` und `Katalograhmen`) fällt die Beschriftung wieder über das Feld und der
+Raster auf eine Spalte.
+
+**Was NICHT passiert ist.** Kein Token wurde umgefärbt, keine Schriftgröße geändert,
+`--epos-touchziel` (44 px) bleibt die Mindesthöhe jedes Feldes — die Kompaktheit kommt aus der
+**Anordnung**, nicht aus kleineren Bedienelementen. Und die Regel greift **nur** innerhalb von
+`.epos-formularraster`: Ein Feld irgendwo sonst im Haus behält seine Form (Beschriftung darüber).
+Ohne diese Grenze hätte die Umstellung eines Bausteins die 92 Dateien mit Feldern auf einmal
+verschoben — dieselbe Vorsicht wie bei den sieben `--epos-start-*`-Token (W16b‑E‑5).
+
+**Zwei neue Bausteine.** `Bausteine/Formularraster.razor` (das Raster, `Einspaltig` als benannter
+Rückweg für Blöcke, die eine Reihenfolge tragen oder neben einem Diagramm stehen) und
+`Bausteine/Formulargruppe.razor` (die leise Zwischenüberschrift; ihr Wirt trägt
+`display: contents`, damit die Felder **direkte** Rasterkinder bleiben — ein zwischengeschobener
+Kasten hätte alle Felder einer Gruppe in EINE Rasterzelle gesetzt und die Beschriftungsspalten
+zweier Gruppen auseinanderlaufen lassen). Die Gruppen kommen aus den Dialogen; der Baustein
+liefert nur das Raster.
+
+**Umgestellt (8 Dateien).**
+
+| Datei | Welle | Felder | Wie |
+|---|---|---|---|
+| `Dialoge/Erzeuger/ModulKatalogDialog.razor` | W14a | 13 (PV) / 11 (Stromspeicher), über `Feldmarkup` | beide Gruppen im Raster — **der gemeldete Dialog** |
+| `Dialoge/Erzeuger/KatalogBrowserDialog.razor` | W14a | je Profil (Heizkessel, BHKW, Solarkollektoren, Pufferspeicher) | Detailblock im Raster |
+| `Dialoge/Erzeuger/PufferSpKatalogDialog.razor` | W6 | 6 | drei Gruppenköpfe, je ein Raster; das handgebaute `epos-feldpaar` entfällt |
+| `Dialoge/Bedarf/BedarfAdminDialog.razor` | W8 | 4 | Anzeigeblock im Raster |
+| `Dialoge/Bedarf/WaermebedarfAdminDialog.razor` | W8 | 2 | Einleseblock im Raster (`Einspaltig` — ein Pfadfeld braucht die Breite) |
+| `Dialoge/Erzeuger/HeizkesselDialog.razor` | W6 | 9 | **Stichprobe**: Detailblock im Raster, `epos-feldpaar` entfällt |
+| `Dialoge/Bedarf/GebaeudeDialog.razor` | W9 | 8 | **Stichprobe**: Detailblock im Raster |
+| `Dialoge/Admin/EinstellungenDialog.razor` | W14c | 10 | **Stichprobe**: Reiter „Datenbank" und „Web" im Raster (`Einspaltig`) |
+
+Die drei Stichproben belegen die Absicht: Es war **je eine Zeile** — `<Formularraster>` um den
+vorhandenen Feldlauf, kein Feld angefasst, kein Text geändert, keine Regel je Dialog.
+
+### Bestandsaufnahme aller Dialoge und Seiten mit Parameterblöcken
+
+Maschinell gezählt (`Zahlenfeld`, `Ganzzahlfeld`, `Textfeld`, `Auswahlfeld`, `Datumsfeld`,
+`Schalter`, `Dateiwahl`) über `EPOS.UI/Dialoge/**` und `EPOS.UI/Seiten/**`:
+**92 Dateien, 624 Feldbausteine**, davon **8 Dateien im Formularraster**. Die restlichen **84**
+teilen sich in zwei Klassen:
+
+**A — durch reines Einhängen umstellbar** (Feldlauf in einem `Gruppenkopf`/`KindInhalt`, ggf. mit
+`epos-feldpaar`, das dabei entfällt). **41 Dateien**, die dicksten zuerst:
+`GebaeudeKatalogDialog` (41 Felder, W9), `BhkwKatalogDialog` (27, W6),
+`TarifstrukturDialog` (27, W2), `HeizkesselKatalogDialog` (21, W6),
+`PeakShavingDialog` (19, W12), `SolarkollektorKatalogDialog` (14, W7),
+`PhotovoltaikVerguetungDialog` (13, W3), `WirtschaftlichkeitParameterDialog` (13, W3),
+`WaermepumpeStammDialog` (10, W7), `GebaeudeWohnflaecheDialog` (9, W9),
+`SolarkollektorenDialog` (8, W7), `BedarfsProfileDialog` (7, W8),
+`GesetzeskatalogZeileDialog` (7, W3), `QuelleErdreichDialog` (7, W10b),
+`QuellprofilDialog` (7, W10b), `ProjektKopfSeite` (7, W16a),
+`CaseEingabeDialog` (6, W5), `StromAufschlaege` (5, W4),
+`VorlagenPositionDialog` (5, W5), `ProjektTransferDialog` (5, W15a),
+`TypStammDialog` (4, W8), `SpotpreisImportDialog` (4, W4),
+`VorlagenUebernahmeDialog` (4, W5), `ProjektKopieDialog` (4, W15a),
+`KostenprofilDialog` (4, W4), `VorlagenZeile` (4, W5) und 15 weitere mit 1–3 Feldern.
+
+**B — Handarbeit nötig** (eigene Anordnung: Felder in Tabellenzellen, in einem `Zeilenraster`, in
+einer `TemplateColumn`, an einem Diagramm oder in einem gerechneten Reiterband). **43 Dateien**,
+darunter `BhkwWirtschaftlichkeitDialog` (29, Zeilenraster), `PvModulImportDialog` (28, Raster und
+Reiter), `ParameterReiter` (23, Simulationsseite mit eigenem CSS), `PufferSpProjektDialog` (20),
+`EnergietraegerEinstellungen` (18), `WaermepumpeAnlageDialog` (17),
+`WaermepumpenKatalogDialog` (12), `BhkwDialog` (10), `EmissionskatalogDialog` (10),
+`WaermesenkeDialog` (9), `GanglinieImportOptionenDialog` (9), `KennlinienEditorDialog` (7).
+Bei ihnen ist zuerst zu entscheiden, ob der Block **überhaupt** ein Formularblock ist — eine
+Bearbeitungszeile in einer Tabelle ist keiner, und der Raster darf dort nicht hinein.
+
+**Vorschlag für die Restumstellung — drei Pakete** (Aufgabe #91):
+
+| Paket | Umfang | Inhalt |
+|---|---|---|
+| **P1 — Erzeuger und Kataloge (W6/W7/W14a)** | 8 Dateien, ~110 Felder | `BhkwKatalogDialog`, `HeizkesselKatalogDialog`, `SolarkollektorKatalogDialog`, `WaermepumpeStammDialog`, `SolarkollektorenDialog`, `PufferspeicherDialog`, `StromspeicherDialog`, `PhotovoltaikDialog` — dieselbe Bauart wie die schon umgestellten Katalogdialoge, überwiegend Klasse A |
+| **P2 — Kosten und Wirtschaftlichkeit (W1–W5)** | 12 Dateien, ~100 Felder | `TarifstrukturDialog`, `PhotovoltaikVerguetungDialog`, `WirtschaftlichkeitParameterDialog`, `GesetzeskatalogZeileDialog`, `CaseEingabeDialog`, `StromAufschlaege`, `VorlagenPositionDialog`, `VorlagenUebernahmeDialog`, `KostenprofilDialog`, `SpotpreisImportDialog`, `EnergietraegerDialog`, `ErtragBonus` — reine Parameterblöcke, aber **mit** den programmatisch gebauten Untergruppen des Vorläufers (`Form_Tarifstruktur.Gruppe`); hier wird `Formulargruppe` zum ersten Mal wirklich gebraucht |
+| **P3 — Bedarf, Simulation und Projekt (W8–W12, W15a, W16a)** | 10 Dateien, ~130 Felder | `GebaeudeKatalogDialog`, `GebaeudeWohnflaecheDialog`, `BedarfsProfileDialog`, `TypStammDialog`, `PeakShavingDialog`, `QuelleErdreichDialog`, `QuellprofilDialog`, `ProjektKopfSeite`, `ProjektTransferDialog`, `ProjektKopieDialog` — teils Klasse B (Reiterbänder, Tabellen), je Datei zuerst entscheiden, welche Blöcke Formularblöcke sind |
+
+**Wachen.** `EPOS.UI.Tests/Bausteine/FormularrasterTests` — 14 Fälle: Markup von Raster und
+Gruppe, die Selbstmeldung der Felder (kurz / breit / weder-noch, samt der Gegenprobe, dass ein
+`Datumsfeld` **nicht** kurz ist — ein `input type="date"` schneidet unter rund 130 px sein
+Kalendersymbol ab), und fünf Stilblattfälle nach dem Muster `StartseiteTests.Stilblock`
+(Beschriftungsspalte, Kurzfeld, Zwei-Spalten-Regel ohne Prozente, durchsichtige Gruppe, Umbruch
+bei 900 px). Dazu ein Fall, der **jede Selektorzeile** des neuen Blocks daraufhin liest, dass sie
+`.epos-formularraster` nennt — die Grenze der Regel ist damit selbst bewacht. In
+`EPOS.UI.Tests/KatalogdialogTests` zwei weitere Fälle: der Eingabeblock der vier Katalogdialoge
+trägt den Raster, und die Zahlenfelder des Modulkatalogs sind kurze Felder mit der Einheit in
+ihrer Feldzeile.
+
+**Testzahlen.** `EPOS.UI.Tests` **2530** grün (de‑DE und `LANG=en_US.UTF-8`),
+`Werkzeuge/Formularkarte` **122** grün. `StilblattTests`, `ParametersatzTests`,
+`KatalograhmenTests` und `KatalogdialogTests` unverändert grün.
+
+**Abnahmepunkte am Gerät** (100 / 125 / 150 %):
+
+1. „Administration Photovoltaik Module" öffnen: Im Block „Moduldaten" steht jede Beschriftung
+   **links neben** ihrem Feld, nicht darüber.
+2. „Nennleistung (Pmax)", „Wirkungsgrad", „Spannung im MPP": Das Eingabefeld ist **kurz**, und
+   das „W" / „%" / „V" steht **unmittelbar dahinter**.
+3. Der Block „Moduldaten" ist **ohne Rollen** ganz zu sehen; bei breitem Fenster stehen **zwei**
+   Feldpaare nebeneinander.
+4. „Beschreibung" ist zweizeilig und geht über **beide** Spalten.
+5. Das Fenster schmal ziehen (< 900 CSS-px): Die Beschriftung fällt wieder **über** das Feld,
+   nichts wird abgeschnitten.
+6. Dasselbe in „Administration Stromspeicher", „Administration Heizkessel", „BHKW Verwaltung",
+   „Administration Solarkollektoren", „Administration Pufferspeicher".
+7. Die drei Stichproben: Heizkessel-Projektdialog (Detailblock unter der Zweispaltenauswahl),
+   „Gebäude" (Detailblock „Verbrauch"), „Einstellungen" (Reiter „Datenbank" und „Web").
+8. Ein Feld **außerhalb** eines Katalogdialogs — z. B. „Tarifstruktur" — sieht **unverändert**
+   aus; dort steht die Beschriftung weiter über dem Feld, bis Paket P2 läuft.
