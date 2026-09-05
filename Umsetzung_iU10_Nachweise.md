@@ -215,7 +215,8 @@ Abzuhaken nach dem ersten grünen Lauf von **Actions → iOS → Run workflow**.
       `…/Documents`) — **nicht** `~/.config`.
 - [ ] **Der Prüflauf endet.** `Documents/pruefung/fertig.txt` entsteht innerhalb von fünf Minuten.
 - [ ] **Der iZ6-Vergleich besteht.** `EPOS.Referenzlauf vergleich` meldet **GESAMT: PASS** gegen
-      `Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1030` (Toleranz rel. 1e-4 / abs. 0,01, iF15).
+      `Referenzlaeufe/2026-09-05_R2_Zeitbasis/Projekt_1030` (Toleranz rel. 1e-4 / abs. 0,01, iF15;
+      bis 05.09.2026 gegen `2026-08-30_B3-Kaskade`, Basiswechsel nach Paket A der Rechner-2-Linie).
 - [ ] **Der Byte-Diff wird protokolliert** — er ist nur Information: Auf ARM64 sind
       Gleitkommaabweichungen im Rahmen der Toleranz erwartbar.
 - [ ] **Die Bundle-Größe steht fest.** `.app`-Artefakt wiegen — Grundlage für die Entscheidung
