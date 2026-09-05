@@ -519,7 +519,7 @@ Beschnitt, der Name bleibt der Schlüssel) und acht bunit-Fälle zur Liste.
 
 | Suite | neue Fälle dieser Behebung | Gesamtstand nach dem Merge |
 |---|---|---|
-| `EPOS.UI.Tests` | 25 | **2 554** |
+| `EPOS.UI.Tests` | 25 | **2 571** |
 | `EPOS.Kern.Tests` | 76 | **1 165** |
 | `KiKern.Tests` | 19 | **469** |
 

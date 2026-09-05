@@ -100,6 +100,11 @@
         <Eingabe>
             <Gruppenkopf Titel="@Profil.Detailueberschrift">
                 <KindInhalt>
+                @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
+                   Zahlenfelder kurz mit der Einheit dahinter, zwei Feldpaare je
+                   Zeile, sobald die Spalte breit genug ist. *@
+                <Formularraster>
+                    <KindInhalt>
                     @foreach (BrowserFeldwert feld in _felder)
                     {
                         @if (feld.Art == BrowserFeldArt.Schalter)
@@ -130,6 +135,8 @@
                                       Mehrzeilig="@(feld.Art == BrowserFeldArt.Mehrzeilig)" Zeilen="2" />
                         }
                     }
+                    </KindInhalt>
+                </Formularraster>
                 </KindInhalt>
             </Gruppenkopf>
         </Eingabe>

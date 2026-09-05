@@ -87,6 +87,11 @@
 
                 <Reiterblatt Schluessel="DATENBANK" Titel="@RubrikDatenbankText">
                     <KindInhalt>
+                    @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem
+                       Feld. Einspaltig, weil ein Pfadfeld die ganze Breite
+                       braucht - der Raster ordnet, er quetscht nicht. *@
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
                         <Dateiwahl Bezeichnung="@LabelDbExport" Pfad="@_satz.DbExportPfad"
                                    PfadChanged="@(p => _satz.DbExportPfad = p)"
                                    Waehlen="@OrdnerWaehler" KnopfText="@DurchsuchenText"
@@ -101,18 +106,24 @@
                                    NurLesen="@PfadeFest" />
                         <Textfeld Bezeichnung="@LabelDbName" Wert="@_satz.DbName"
                                   WertChanged="@(t => _satz.DbName = t)" />
+                        </KindInhalt>
+                    </Formularraster>
                         <Herleitungszeile Text="@NeustartText" />
                     </KindInhalt>
                 </Reiterblatt>
 
                 <Reiterblatt Schluessel="WEB" Titel="@RubrikWebText">
                     <KindInhalt>
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
                         <Textfeld Bezeichnung="@LabelPvgis" Wert="@_satz.PvgisUrl"
                                   WertChanged="@(t => _satz.PvgisUrl = t)" />
                         <Textfeld Bezeichnung="@LabelWiki" Wert="@_satz.WikiUrl"
                                   WertChanged="@(t => _satz.WikiUrl = t)" />
                         <Textfeld Bezeichnung="@LabelGeokodierung" Wert="@_satz.GeokodierungUrl"
                                   WertChanged="@(t => _satz.GeokodierungUrl = t)" />
+                        </KindInhalt>
+                    </Formularraster>
                     </KindInhalt>
                 </Reiterblatt>
 

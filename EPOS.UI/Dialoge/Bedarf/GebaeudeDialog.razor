@@ -152,12 +152,18 @@
     @* --------------------------------------------- Detailblock ------------ *@
     <Gruppenkopf Titel="@GruppeVerbrauch">
         <KindInhalt>
+        @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
+           zwei Feldpaare je Zeile, die Beschreibung ueber beide Spalten. *@
+        <Formularraster>
+            <KindInhalt>
             <Textfeld Bezeichnung="@LabelGebaeudename" Wert="@_detailName" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelGebaeudeart" Wert="@_detailArt" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detailBeschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="3" />
             <Textfeld Bezeichnung="@LabelWohnflaeche" Wert="@_detailWohnflaeche" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelEinheit" Wert="@_detailEinheit" NurLesen="true" />
+            </KindInhalt>
+        </Formularraster>
 
             @if (!Admin)
             {

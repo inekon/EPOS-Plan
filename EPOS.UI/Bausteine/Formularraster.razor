@@ -1,0 +1,60 @@
+﻿@* Das FORMULARRASTER - die eine Anordnung, in der jeder Parameterblock des
+   Hauses steht (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026).
+
+   DER BEFUND. Bildschirmfoto "Administration Photovoltaik Module": Im
+   Katalograhmen stand rechts der Block "Moduldaten" - Bezeichner, Hersteller,
+   Beschreibung, Nennleistung, Wirkungsgrad, Spannung im MPP, ... - und JEDES
+   Feld nahm die volle Breite, die Beschriftung stand DARUEBER, die Zahlenfelder
+   waren so breit wie die Textfelder und die Einheit stand ganz rechts, meterweit
+   vom Wert. Der Block war doppelt so hoch wie der Dialog und rollte.
+
+   DAS VORBILD TAT ES ANDERS (Form_AdminPV, 607 x 489, gemessen aus der .resx):
+     Beschriftung NEBEN dem Feld  - Label bei x = 253, Feld bei x = 431,
+                                    also eine Beschriftungsspalte von 178 px
+     Zahlenfeld                   - 62 px breit (Modulkosten 85 px)
+     Textfeld                     - 250 px breit
+     Beschreibung                 - 250 x 48 px, also zwei Zeilen hoch
+     Einheit DIREKT hinter dem Feld - Feldende 493, Einheit bei 497/498
+   Dieselben Verhaeltnisse in Form_Heizkessel_Admin, Form_BHKWAdmin,
+   Form_AdminStromspeicher: Beschriftungsspalte, kurzes Zahlenfeld, Einheit
+   dahinter.
+
+   WAS DER RASTER TUT - und was NICHT. Er ist ein CSS-Raster und sonst nichts:
+     * Er ordnet seine Kinder in SPALTEN (auto-fill/minmax): auf breitem Schirm
+       zwei Feldpaare nebeneinander, auf schmalem eines. Die Spaltenzahl haengt
+       an der Breite DES RASTERS, nicht an der des Fensters - genau richtig fuer
+       die rechte Spalte eines Katalograhmens.
+     * Er stellt in jedem Feld die Beschriftung NEBEN das Feld
+       (--epos-beschriftung-breite) und laesst sie unter 900 px wieder
+       darueberfallen - dieselbe Umbruchbreite wie Zweispaltenauswahl und
+       Katalograhmen.
+     * Er macht Zahlen- und Datumsfelder KURZ (--epos-kurzfeld-breite), sodass
+       die Einheit unmittelbar hinter dem Wert steht.
+   Er kennt kein Feld, keine Gruppe, keine Fachlichkeit. Wer die vorhandenen
+   Feldbausteine benutzt (Zahlenfeld, Ganzzahlfeld, Textfeld, Auswahlfeld,
+   Datumsfeld, Schalter, Dateiwahl), bekommt die kompakte Form allein dadurch,
+   dass seine Felder HIER hineinstehen - kein CSS je Dialog, keine Sonderregel.
+
+   DIE GRUPPEN KOMMEN AUS DEM DIALOG. Welche Felder zusammengehoeren, weiss nur
+   die Fachseite; der Raster liefert nur die leise Zwischenueberschrift
+   (Formulargruppe). Die erste Gruppe bleibt ueblicherweise ohne Titel - ihr
+   Titel steht schon im Gruppenkopf darueber. *@
+
+<div class="epos-formularraster@(Einspaltig ? " epos-formularraster--einspaltig" : "")">
+    @KindInhalt
+</div>
+
+@code {
+    /// <summary>Die Felder und <see cref="Formulargruppe"/>n des Blocks.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>
+    /// <c>true</c> = immer EINE Spalte, auch auf breitem Schirm.
+    ///
+    /// <para>Fuer Bloecke, deren Felder eine Reihenfolge tragen (ein Rechenweg
+    /// von oben nach unten) oder die neben einem Diagramm stehen und dort nur
+    /// wenig Breite haben. Die Beschriftung steht auch dann noch neben dem
+    /// Feld - einspaltig heisst nicht "wie vorher".</para>
+    /// </summary>
+    [Parameter] public bool Einspaltig { get; set; }
+}
