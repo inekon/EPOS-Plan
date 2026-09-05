@@ -365,6 +365,94 @@ namespace EPOS.Kern.Tests
                              WindowsFormsApplication1.MyResource.Resource.PVD_AUFKLAPP_PARAMETER));
         }
 
+        // =================================================================================
+        // 5 - W6-O-5: „Gesamtleistung in kW"
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Anwenderentscheid W6‑O‑5 vom 05.09.2026.</b> Der Projektdialog zeigte
+        /// „Gesamtleistung [KW]" über einer Zahl in WATT: <c>Tab_PV.Leistung</c> ist die
+        /// Modulleistung in Watt (der Katalogdialog nennt sie „Nennleistung (Pmax)" mit
+        /// der Einheit W), und der Dialog zeigte Anzahl mal Leistung roh an. Zehn Module
+        /// des Anwenderfotos ergaben so „2751,912" unter der Beschriftung „KW".
+        ///
+        /// <para>Seither wandelt <c>PhotovoltaikCtrl.GesamtleistungText</c> — dieselbe
+        /// Wandlung wie <c>KwpSumme</c> (Summe / 1000), drei Nachkommastellen.</para>
+        /// </summary>
+        [Fact]
+        public void Zehn_Module_ergeben_zwei_Komma_sieben_fuenf_zwei_kW()
+        {
+            MitSprache("de-DE", () =>
+            {
+                // 10 x 275,1912 W = 2751,912 W = 2,752 kW.
+                Assert.Equal("2,752", PhotovoltaikCtrl.GesamtleistungText(10 * 275.1912));
+
+                // Und mit dem gerundeten Katalogwert der Anzeige dasselbe Bild.
+                Assert.Equal("2,752", PhotovoltaikCtrl.GesamtleistungText(10 * 275.19));
+            });
+        }
+
+        /// <summary>
+        /// Die Zahl folgt der Kultur des Anwenders — Punkt statt Komma, und der
+        /// Tausenderpunkt wird zum Tausenderkomma. Drei Nachkommastellen bleiben.
+        /// </summary>
+        [Fact]
+        public void Die_Gesamtleistung_folgt_der_Kultur()
+        {
+            MitSprache("en-US", () =>
+            {
+                Assert.Equal("2.752", PhotovoltaikCtrl.GesamtleistungText(10 * 275.1912));
+                Assert.Equal("1,200.000", PhotovoltaikCtrl.GesamtleistungText(1200000.0));
+            });
+
+            MitSprache("de-DE", () =>
+            {
+                Assert.Equal("1.200,000", PhotovoltaikCtrl.GesamtleistungText(1200000.0));
+                Assert.Equal("0,000", PhotovoltaikCtrl.GesamtleistungText(0.0));
+            });
+        }
+
+        /// <summary>
+        /// <b>Die zwei Beschriftungen tragen ihre wahre Einheit</b> (W6‑O‑5): die
+        /// Modulleistung Watt, die Gesamtleistung Kilowatt — in beiden Sprachkatalogen.
+        /// Der englische Text der Gesamtleistung sagte „[kW]" schon immer; er hat als
+        /// einziger nichts zu ändern gehabt.
+        /// </summary>
+        [Fact]
+        public void Die_zwei_Leistungsbeschriftungen_tragen_W_und_kW()
+        {
+            MitSprache("de-DE", () =>
+            {
+                Assert.Equal("Modul Leistung [W]:",
+                             WindowsFormsApplication1.MyResource.Resource.PVD_LBL_LEISTUNG);
+                Assert.Equal("Gesamtleistung [kW]:",
+                             WindowsFormsApplication1.MyResource.Resource.PVD_LBL_GESAMTLEISTUNG);
+            });
+
+            MitSprache("en-US", () =>
+            {
+                Assert.Equal("Module power [W]:",
+                             WindowsFormsApplication1.MyResource.Resource.PVD_LBL_LEISTUNG);
+                Assert.Equal("Total power [kW]:",
+                             WindowsFormsApplication1.MyResource.Resource.PVD_LBL_GESAMTLEISTUNG);
+            });
+        }
+
+        /// <summary>
+        /// <b>Die Modulleistung selbst bleibt ROH.</b> Nur die Beschriftung hat sich
+        /// geändert: Der Katalogsatz führt Watt, und genau die Zahl steht im Feld — der
+        /// Wert ist derselbe wie im Katalogdialog (Anwenderentscheid W6‑O‑5, Punkt 2).
+        /// </summary>
+        [Fact]
+        public void Die_Modulleistung_bleibt_der_rohe_Wattwert()
+        {
+            if (!_db.Vorhanden) return;
+
+            PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(MODUL);
+            Assert.NotNull(d);
+            Assert.Equal(275.1912, d.Leistung, 6);
+        }
+
         private static string Uebersetzt(string schluessel)
         {
             string t = null;

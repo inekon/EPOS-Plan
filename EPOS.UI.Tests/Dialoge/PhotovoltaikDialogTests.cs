@@ -38,7 +38,7 @@ public class PhotovoltaikDialogTests : BunitContext
 
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung",
-        new[] { ("Hersteller:", "Musterwerk"), ("Modul Leistung [KW]:", "0,40") },
+        new[] { ("Hersteller:", "Musterwerk"), ("Modul Leistung [W]:", "275,19") },
         null, Parameter(name));
 
     /// <summary>
@@ -258,6 +258,82 @@ public class PhotovoltaikDialogTests : BunitContext
     {
         var cut = Aufbauen(gesamt: () => "12,50");
         Assert.Equal("12,50", cut.Instance.Gesamt);
+    }
+
+    // =====================================================================
+    //  Anwenderentscheid W6‑O‑5 (05.09.2026) — „Gesamtleistung in kW"
+    // =====================================================================
+
+    /// <summary>
+    /// <b>W6‑O‑5:</b> Der Block „Modul Eigenschaften" zeigte zwei Leistungen mit
+    /// falscher Einheit — die Katalogspalte <c>Leistung</c> führt WATT je Modul, und
+    /// über beiden stand „[KW]". Seither heißt das Modulfeld „[W]" und die
+    /// Gesamtleistung „[kW]".
+    ///
+    /// <para>Zehn Module à 275,19 W sind 2,752 kW. Gerechnet und formatiert wird das
+    /// im Kern (<c>PhotovoltaikCtrl.GesamtleistungText</c>, Nachweis
+    /// <c>EPOS.Kern.Tests/PvModulparameterTests</c>); hier steht, dass die Komponente
+    /// die fertige Zahl unter der richtigen Beschriftung zeigt. Die Einheit steht in
+    /// der BESCHRIFTUNG und nicht im Wert — so wie bei jedem anderen Feld des Blocks.</para>
+    /// </summary>
+    [Fact]
+    public void Zehn_Module_stehen_als_zwei_Komma_sieben_fuenf_zwei_kW_da()
+    {
+        // Zehn Module in der Projektzeile - die Zahl selbst rechnet die Huelle.
+        var zeilen = new List<ErzeugerZeile>
+        {
+            new() { Schluessel = 1, Bezeichner = "Modul 400", GeraetId = 31,
+                    Neigung = 30, Azimut = 180, AnzahlModule = 10 }
+        };
+        var cut = Aufbauen(zeilen, gesamt: () => "2,752");
+
+        var block = cut.FindAll(".epos-gruppenkopf")
+                       .First(e => e.TextContent.Contains("Modul Eigenschaften:"));
+
+        var texte = block.QuerySelectorAll(".epos-feld-text").Select(e => e.TextContent).ToList();
+        Assert.Contains("Modul Leistung [W]:", texte);
+        Assert.Contains("Gesamtleistung [kW]:", texte);
+
+        // Und das Feld dahinter zeigt genau die Zahl, die hereinkam.
+        Assert.Equal("2,752", cut.Instance.Gesamt);
+        Assert.Contains("2,752",
+            block.QuerySelectorAll("input").Select(e => e.GetAttribute("value")));
+    }
+
+    /// <summary>
+    /// Die englische Beschriftung heißt „Total power [kW]" — sie sagte die Einheit
+    /// schon vor W6‑O‑5 richtig; geändert hat sich dort nur „Module power [W]".
+    /// Die Komponente übersetzt nichts, sie zeigt, was die Hülle hereingibt.
+    /// </summary>
+    [Fact]
+    public void Auf_englisch_heissen_die_zwei_Felder_W_und_kW()
+    {
+        CultureInfo.CurrentCulture = new CultureInfo("en-US");
+        CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+
+        var cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
+            .Add(x => x.Hersteller, Hersteller)
+            .Add(x => x.Filtern, _ => Katalog)
+            .Add(x => x.Detail, n => new ErzeugerDetail(
+                n, "", new[] { ("Module power [W]:", "275.19") }))
+            .Add(x => x.LabelGesamtleistung, "Total power [kW]:")
+            .Add(x => x.Gesamtleistung, () => "2.752"));
+
+        var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
+        Assert.Contains("Module power [W]:", texte);
+        Assert.Contains("Total power [kW]:", texte);
+        Assert.Equal("2.752", cut.Instance.Gesamt);
+    }
+
+    /// <summary>
+    /// Die VORGABE der Komponente trägt die neue Einheit — eine Hülle, die den
+    /// Ressourcenschlüssel nicht setzt, zeigt nicht wieder „[KW]".
+    /// </summary>
+    [Fact]
+    public void Die_Vorgabe_der_Beschriftung_sagt_kW()
+    {
+        Assert.Equal("Gesamtleistung [kW]:", new PhotovoltaikDialog().LabelGesamtleistung);
     }
 
     // =================================================================================

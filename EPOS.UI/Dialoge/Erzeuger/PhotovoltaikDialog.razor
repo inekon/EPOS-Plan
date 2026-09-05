@@ -15,6 +15,13 @@
    alle Zeilen (UpdateGesamtleistung, Z. 314). Die Komponente rechnet sie
    NICHT - sie kennt die Modulleistungen nicht und erfragt die fertige Zahl.
 
+   ANWENDERENTSCHEID W6-O-5 (05.09.2026): "Gesamtleistung in kW". Die
+   Katalogspalte Leistung fuehrt WATT je Modul - der Vorlaeufer zeigte das
+   Produkt roh unter der Beschriftung "[KW]" an, also Watt. Seither traegt
+   "Modul Leistung" die Einheit [W] und die Gesamtleistung kommt in kW herein
+   (PhotovoltaikCtrl.GesamtleistungText, drei Nachkommastellen). Die Komponente
+   aendert daran nichts - sie zeigt weiter, was die Huelle hereingibt.
+
    BEFUND UND ABWEICHUNG (A-5). btn_Entfernen_Click entfernte ueber
    list_pvmodel.RemoveAt(listBox_Auswahl.SelectedIndex). Im Assistenten fuehrt
    dieselbe Liste ALLE Erzeugertypen, die ListBox aber nur die PV-Zeilen - der
@@ -240,7 +247,8 @@
 
     /// <summary>
     /// Die Gesamtleistung [kW], fertig formatiert: Summe aus Anzahl Module mal
-    /// Modulleistung über alle Zeilen. Die Komponente rechnet sie nicht.
+    /// Modulleistung [W] über alle Zeilen, durch 1000 (W6‑O‑5). Die Komponente
+    /// rechnet und formatiert sie nicht.
     /// </summary>
     [Parameter] public Func<string>? Gesamtleistung { get; set; }
 
@@ -286,7 +294,11 @@
     [Parameter] public string GruppeModul { get; set; } = "Modul Eigenschaften:";
     [Parameter] public string LabelName { get; set; } = "Name:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
-    [Parameter] public string LabelGesamtleistung { get; set; } = "Gesamtleistung [KW]:";
+    /// <summary>
+    /// Beschriftung der Gesamtleistung. <b>W6‑O‑5</b> (Anwenderentscheid 05.09.2026):
+    /// „Gesamtleistung in kW" — der Bestand schrieb „[KW]" über eine Zahl in Watt.
+    /// </summary>
+    [Parameter] public string LabelGesamtleistung { get; set; } = "Gesamtleistung [kW]:";
 
     /// <summary>Beschriftung des Aufklappers über den Modulparametern (W6‑E‑1).</summary>
     [Parameter] public string LabelAlleParameter { get; set; } = "Alle Modulparameter anzeigen";
