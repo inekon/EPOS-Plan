@@ -722,7 +722,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU5** Statics kappen, Dienste | ✔ hier erreicht 03.09. (iZ5a) | `35be81f`..`c477523`; zweiter Umzug `a546af9`..`a9e5c16`, Doku `f95fc34` | Bedienprobe: Bericht, Katalogimport, Lizenzaktivierung, KI-Chat, 12 Gewerke, Sprachumschaltung |
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23)  Zoom seit 05.09.2026 über den Baustein `Diagramm` (Nachtrag im W11b-Block) |
-| **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK |
+| **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK. Anwenderwunsch **iU8‑E‑1** (05.09.2026, `ddf4d00`): Fachdialoge öffnen im Anteil des Arbeitsbereichs (85 % × 90 %, Deckel 92 %; `EPOS.UI/Dienste/Fenstermass.cs`), fünf kleine Masken als `Dialogart.Klein`; Abnahme je 100/125/150 % offen |
 | **iU9** Masken in Wellen | ✔ **W0 bis W16 umgesetzt, M9 abgeschlossen** 04.09. | `ab3aea8` | **1** Designer-Maske offen (`Form_HelpPopup`, bis iU11; 2 nach W16b, 7 nach W16a, 11 nach W15c, 12 nach W15b, 13 nach W15a, 17 nach W14c, 21 nach W14a, 28 nach W14b, 32 nach W13, 38 nach W12, 43 nach W11b, 49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht; seit W12 die **AP5-Importkette als ein Kern-Ablauf** (`GanglinienImportAblauf` mit zwölf bitgleichen Proben), `StromganglinieDialog`, `StromganglinieAdminDialog`, `PeakShavingDialog` (nebenläufig) und der gemeinsame `ImportKonflikteDialog`; seit W13 die **Katalog-Importe** — `KatalogImportDialog` mit vier Ausprägungen (`KatalogImportProfil`/`KatalogImportAblauf` im Kern, transaktional), `WaermebedarfAdminDialog`, `PvModulImportDialog` (CEC/PAN), die Mehrfachmarkierung im `Raster` und zwanzig eingefrorene Importproben; die `ImportKonflikteHuelle` und die Sprungbrücke `WaermebedarfExternAdmin` sind gefallen; seit W14b die **Bedarfs-Admin** — `BedarfAdminDialog` mit drei Ausprägungen über `BedarfsArt` (`BedarfsVorschauCtrl` im Kern) und `SolarganglinieAdminDialog` (Sprungziel → Überlagerung), `ToolsClass` gefallen; dazu der Anwenderentscheid **Energieeinheit MWh/kWh wählbar** (W8‑O‑5/W9‑O‑3); seit W14a die **Erzeuger-Admin** — `KatalogBrowserDialog` mit vier Ausprägungen (`KatalogBrowserProfil`), `PufferSpKatalogDialog` (der vierte Katalogeditor), `ModulKatalogDialog` (PV, Stromspeicher), die Heizkessel-Brennstoffkette im Kern berichtigt, die letzten fünf ablösbaren Sprungziele → Überlagerungen, `SpeichernLeiste`/`KiAufrufKnopf`/`PufferSpFilter` gefallen; **der Erreichbarkeitsbefund steht auf 0 nein / 0 verwaist / 0 unklar**; seit W14c die **Verwaltung** — `GesetzeskatalogDialog` (Zeilendialog als Überlagerung), `KatalogDublettenDialog` mit dem Baustein `Baumansicht`, `EinstellungenDialog` (`EinstellungenCtrl` im Kern), `KlimadatenDialog` (`KlimaregionStammCtrl` und `KlimaImportAblauf` im Kern, zwei Klimabilder im Renderer → 32 Proben); die **letzten zwei ablösbaren Sprungziele** → Überlagerungen, `ChartManager` (die MS-Chart-Bindung) und `RoundedPanel` gefallen, **WFO1000 6 → 0**, Warnungen der Mappe 12 → 6; **Anwenderentscheide W14c E‑3/E‑5/E‑6/E‑7 vom 04.09.2026 umgesetzt** (`a0e6707`: Komponente wieder `KlimadatenDialog`, feste Pfade ohne Ordnerwähler nur lesend, **Altbereinigung der Klimadaten-Waisen als Schema-Schritt 62** — `ZIEL_VERSION` 62, neu `FREEZE_VERSION` 61 —, keine Ortsliste in der Auslieferung); seit W15a das **Projekt** — Baustein `ProjektListe` (vier Projektlisten des Bestands werden eine), `ProjektWahlDialog` (Öffnen und Löschen), `ProjektKopieDialog`, `ProjektTransferDialog` (`ProjektExportImportCtrl` im Kern, `SchemaStand.Zielversion`; **der Projektimport war seit der SQLite-Umstellung kaputt, B55 — von den Proben gefunden und behoben**), `ProjektKopfSeite` (die erste Assistentenseite als Razor, über `BlazorAssistentSeite`); `ProjektAuswahl` (uc) bleibt bis W16; seit W15b **Hilfe und KI** — `KiChatService` (1 751 Z.) im Kern hinter der Naht `IKiAusfuehrung`, die Bausteine `Gespraechsverlauf` (Bausteinlücke 17) und `KiKnopf`, `Warnbanner.Verfaellt`, `TextAnzeige`, `KiHinweisDialog`, `KiEinstellungenDialog`, `KiChatDialog` in vier Kindern (kein Streaming, kein Markdown, Schlüssel nie durchgereicht, Riegel vor dem `Modellkanal`); `Form_HelpPopup` (E‑2, fällt in iU11) und `Form_Hinweis` (E‑1b, fällt mit W16) bleiben bewusst; seit W15c **Lizenz und Erststart** — `LizenzVerwaltungDialog`, `ErststartDialog` (besitzerlose Hülle mit vier Zusätzen an `BlazorDialogForm`) und `LizenzDialog` (drei Reiterblätter, Zustimmungsmodus, Browserdruck), im Kern `LizenzManager.Bewerten`, `LizenzCtrl`, `LizenzTextCtrl`, `ZustimmungCtrl`; **die ersten Lizenztests überhaupt** (+79 Kern-, +67 bunit-Fälle); **E‑8 Weg 2: `Program.Main` prüft die WebView2-Laufzeit und endet mit Meldung, wenn sie fehlt**; iF30 (Lesemodus-Durchsetzung) nach W16; seit W16a **der Assistent** — `KomponentenBestandCtrl` im Kern mit **Nachweis N6** (Bitmaske bitgleich für alle 13 Referenzprojekte), `AssistentCtrl` und `WizardCtrl` im Kern, Baustein `Assistent`, Seite `AssistentSeite` (13 Seiten in Bestandsreihenfolge), `KomponentenauswahlDialog`, `Kachel.Zustand`; `WizardParent`, `Wizard_Komponenten`, `Wizard_Stromlastgang`, `ProjektAuswahl` (uc) und `BlazorAssistentSeite` gefallen (26 Dateien); `Views/Wizard` und `Views/Projekt` führen keine Designer-Maske mehr; seit W16b **die Startseite** — Seite `Startseite` (`EPOS.UI/Seiten/Start/`, Kopfband, sechs Reiter mit 21 Kacheln in fünf Reiterkomponenten, Reiter 6 = `BerichteKostenSeite`), im Kern `ProjektKontextCtrl` (**Nachweis N7**), `StartseiteCtrl` und `BedarfsZustand`, `StartseiteHuelle` im `MDIMainForm_Load`, `Dienste.Projekt` über den Kern; **E‑5** (Simulationskonfiguration als freie Ansicht, Ergebnis als `Ueberlagerung` — **R‑W10b‑1 und R‑W11‑1 eingelöst**), **E‑7** (`FormMain`, `Form_StromTest`, `StromTestClass` und zwölf `*KontextMenuCtrl` ohne Nachfolge gefallen), **E‑9** (`Form_Start`-Designer als Prüfmuster eingefroren); `Form_Start` (+`.bak`), `AktionsKarte`, `Form_Hinweis`, `FormStartProjektKontext` gefallen — **34 Dateien, 13 019 gegen 5 549 Zeilen**; `Program.startfrm` weg; `WindowsFormsApplication1` führt noch `MDIMainForm` und `Form_HelpPopup` und **null Inline-SQL** (B34); seit W16c **das Hauptfenster** — Baustein `Menueband` mit der aus dem Designer erzeugten `Menuetabelle` (54 Punkte, **Nachweis N4**), Seite `Hauptfenster` hinter `HauptfensterHuelle`, `Seitenschluessel` als die eine Schlüsseltabelle beider Plattformen (K7), `AppWurzel` als gemeinsame Wurzel (E‑1); `MDIMainForm` auf die Hülle zurückgebaut (873 → 129 Zeilen, Designer und drei `.resx` als Prüfmuster, E‑9) und in `Hauptfensterrahmen` umbenannt (E‑10), **Per Monitor V2 statt `DpiInsel` (E‑6, iF21)**, Zeugen und Schwellen der Formularkarte auf N1/N2; **die Mischphase (M9) ist zu Ende** — `WindowsFormsApplication1` führt eine Designer-Maske (`Form_HelpPopup`, bis iU11), null Inline-SQL und die `Sprungbruecke` mit einem Zweig (iF22) |
 | **iU10** iOS-Hülle `EPOS.iOS` | ✔ hier erreicht 03.09., seither je Welle im CI geprüft | `ios.yml`-Läufe 15–22 grün (außer 18), zuletzt 33898599945 auf `c8fbd77` | Gerätebefunde (iU13), siehe `Umsetzung_iU10_Nachweise.md` |
 | **iU11**–**iU13** | ⏳ nicht begonnen | — | — |
@@ -1930,6 +1930,14 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Dublettenscan mit Fortschritt und Baum per Tastatur, Einstellungen speichern/zurücksetzen, KI-Schalter mit
 > Maschinenriegel, Reihenfolge des Administrationsmenüs (B63), de/en, 125 %, fehlende Ortsliste. Der sechzehnte
 > iOS-Lauf (33861268537) auf diesem Stand ist grün.
+>
+>
+> **Anwenderwunsch W14c‑E‑9 vom 05.09.2026 (Admin-Dialoge an die Bildschirmgröße) mit Befund W14c‑B‑16, umgesetzt in
+> `ddf4d00`:** Die drei Hüllklassen `epos-klimaregion-*` des `KlimadatenDialog` standen nie im Stilblatt — die
+> „zwei Spalten" lagen deshalb untereinander; ersetzt durch den `Katalograhmen` (Liste links, Diagramme und Import
+> rechts). Der `GesetzeskatalogDialog` gibt seiner einen Liste die volle Höhe (`epos-katalog-fuellend`, wie die
+> ListView 916×424 in `Form_Gesetzesparameter`), der Zeileneditor bleibt Überlagerung; Dubletten und Einstellungen
+> gewinnen allein durch das größere Fenster. Protokoll ergänzt.
 
 > **Statusblock iU9 — Welle 14a umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `c9855b1` nach W14b)**
 >
@@ -1971,6 +1979,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Zum Anwenderentscheid #76 vom 05.09.2026 geprüft und nicht betroffen (`b6fd863`):** der
 > `KatalogBrowserDialog` (vier Ausprägungen) führt eine Liste plus Detailblock, kein Projekt↔DB-Paar; die vier
 > Projektdialoge, die er als Sprungziel bedient, sind über Welle 6 auf `Zweispaltenauswahl` umgestellt.
+>
+>
+> **Anwenderwunsch W14a‑E‑6 vom 05.09.2026 (Bildschirmfoto „Administration Solarkollektoren": Fenster klein, Liste
+> und Eingabe untereinander mit Seitenrollbalken, Kopfzeile „Name | Name"), umgesetzt in `ddf4d00`:**
+> `KatalogBrowserDialog` (vier Ausprägungen) und `ModulKatalogDialog` (zwei) stellen Liste und Eingabe wieder
+> nebeneinander wie ihre sechs Vorbilder (`Form_Heizkessel_Admin` 726×383 bis `Form_BHKWAdmin` 856×517) — über den
+> neuen Baustein `EPOS.UI/Bausteine/Katalograhmen.razor` (Liste links mit Filter, Detailblock rechts, Umbruch
+> untereinander unter 900 CSS‑px = `--epos-zweispalten-umbruch`, die Liste rollt in sich; die Höchsthöhe aus W9‑B‑2
+> fällt nur im Rahmen). Die Hülle `BlazorDialogForm` öffnet jeden `Fachdialog` im Anteil des Arbeitsbereichs
+> (85 % × 90 %, gedeckelt auf 92 %; Rechnung plattformfrei in `EPOS.UI/Dienste/Fenstermass.cs`, `FenstermassTests`
+> 11 Fälle); fünf kleine Masken tragen `Dialogart.Klein` und bleiben, wie sie waren. Die Wahlspalte heißt wieder
+> „Wahl" — Ursache waren die zwei Hüllen (`KatalogBrowserHuelle` gab `SpalteName`, `ModulKatalogHuelle`
+> `Listenbeschriftung`), beide lesen jetzt `KFAK_SP_WAHL`. Die Katalogwurzel rollt, statt die Schlussleiste
+> abzuschneiden. 34 neue bunit-Fälle (`KatalograhmenTests`, `KatalogdialogTests`, `FenstermassTests`); Protokoll
+> ergänzt.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
@@ -2009,6 +2032,13 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > die sieben Knöpfe je Ausprägung, die drei Jahressummen-Formate, Löschen leer/mit Rückfrage/schreibgeschützt, „Grafik"
 > als Überlagerung mit Einheitenwahl, Solarganglinie (Ordner, Kopie, Einlesen mit Kopfzeile, Projektzuordnungssperre,
 > Überlagerung aus dem Projektdialog), de/en, 125 %. Der fünfzehnte iOS-Lauf folgt nach dem Merge von W14a.
+>
+>
+> **Anwenderwunsch W14b‑E‑9 vom 05.09.2026 (Admin-Dialoge an die Bildschirmgröße), umgesetzt in `ddf4d00`:**
+> `SolarganglinieAdminDialog` steht nebeneinander wie `Form_Solarganglinie_Admin` (681×344, Liste links nach
+> Hausanordnung); `BedarfAdminDialog` (drei Ausprägungen) und `WaermebedarfAdminDialog` bleiben gestapelt wie ihre
+> Vorbilder (`Form_Stromverbraucher_Admin` 542×489, `Form_AdminWaermeeinlesen` 676×433), nehmen aber die Höhe des
+> größeren Fensters (`Katalograhmen Gestapelt`). Protokoll ergänzt.
 
 > **Statusblock iU9 — Welle 13 umgesetzt (04.09.2026, Basis `08c489a` nach W12, zusammengeführt mit `4101740`)**
 >
@@ -2480,6 +2510,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Baustein `Zweispaltenauswahl` (Anordnung unverändert, Klartext-Knöpfe, Umbruch unter 900 px). Die drei
 > Wärmepumpenmasken bleiben auf `epos-auswahlpaar`, weil sie keine Projekt↔DB-Auswahl sind — geprüft und im
 > Protokoll begründet.
+>
+>
+> **Anwenderwunsch W7‑E‑1 vom 05.09.2026 („Admin-Menüs sind nicht an Größe Bildschirm angepasst"), umgesetzt in
+> `ddf4d00`:** Die sechs Fenster der Welle öffnen im Anteil des Arbeitsbereichs (Hüllenregel iU8‑E‑1, 85 % × 90 %,
+> gedeckelt auf 92 %); `SolarganglinieAdminDialog` stellt Liste und Eingabe nebeneinander (Baustein `Katalograhmen`).
+> Die drei Katalogeditoren bleiben Überlagerung ohne volle Höhe, `WaermepumpenKatalogDialog` bleibt unverändert.
 
 > **Statusblock iU9 — Welle 6 umgesetzt (03.09.2026, Basis `740c73e`, zusammengeführt mit W5 `ddaea70` und iF22–iF28 `f7fefdf`)**
 >
@@ -2619,6 +2655,15 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Knopf bleibt**; Aktionsspalte als gewöhnliche Zelle mit beschriftetem Kopf (`5f153f1`, sechs bunit-Fälle, darunter eine
 > Wache auf das Stilblatt; Regel in `EPOS.UI/CLAUDE.md`: kein `display:flex` auf `<td>`/`<th>`, Aktionsknöpfe ohne
 > Hover sichtbar). Die Sichtprüfung in der WebView2 bleibt beim Anwender.
+> **Anwenderwunsch W5‑E‑1 vom 05.09.2026 („Variantenprojekte-Auswahl als Dropdown, damit weniger Platz verwendet
+> wird"), umgesetzt in `06332f2`:** Die Variantenwahl der Übersichtsseite ist ein `Auswahlfeld` „Variante:" (Stamm
+> zuerst, dann „Bezeichner — Projektname", Id = `Tab_Projekt.ID`) statt einer Tabelle; Bezeichnerfeld und die drei
+> Knöpfe stehen mit ihm in einer Zeile (Umbruch auf schmalem Fenster), der Simulationsstand darunter als leise
+> `aria-live`-Zeile „Simulation: ‹Datum›" bzw. „noch nicht simuliert" mit dem ⚠ als eigenem Element und dem Grund
+> im Kurztext (`BerichtsDatenSammler.ErmittleStatus`: kein Ergebnis oder Ergebnis älter als das Änderungsdatum), und
+> die Unterschiedstabelle bekommt die frei gewordene Höhe (`epos-raster-huelle--vergleich`, 35,2 rem; Hausregel
+> W9‑B‑2 bleibt). Neu dafür `VarianteZeile.SimZeitpunkt` und `Auswahlfeld.Kurzname`; die Parameter
+> `SpalteArt`/`SpalteBezeichner`/`SpalteProjektname` entfallen. Protokoll Abschnitt 13, zehn neue bunit-Fälle.
 
 > **Statusblock iU9 — Welle 4 umgesetzt (03.09.2026, Basis `ae1af82`)**
 >
