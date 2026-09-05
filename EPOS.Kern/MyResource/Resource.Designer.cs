@@ -38876,6 +38876,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie oben ein Projekt aus oder legen Sie unten ein neues an — die übrigen Bereiche öffnen sich danach. ähnelt.
+        /// </summary>
+        public static string START_EINSTIEG {
+            get {
+                return ResourceManager.GetString("START_EINSTIEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst nach der Projektwahl ähnelt.
+        /// </summary>
+        public static string START_SPERRE_TIPP {
+            get {
+                return ResourceManager.GetString("START_SPERRE_TIPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Weiter ▶ ähnelt.
         /// </summary>
         public static string START_BTN_WEITER {

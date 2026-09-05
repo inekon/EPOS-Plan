@@ -157,8 +157,12 @@ public class StartseiteAnmutungTests : BunitContext
 
         // Ein gesperrter Reiter bleibt sichtbar gesperrt - die Regel oben
         // traegt vier Klassen und schluege die zweistufige Hausregel sonst.
+        // Seit W16b-E-6 sperrt die Startseite WEICH (aria-disabled statt
+        // disabled, damit der Knopf seinen Grund nennen kann); beide Bauarten
+        // muessen gleich aussehen und stehen deshalb in EINER Regel.
         string gesperrt = Stilblock(
-            ".epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf:disabled {");
+            ".epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf:disabled,\n"
+            + ".epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf[aria-disabled=\"true\"] {");
         Assert.Contains("color: var(--epos-text-sehr-leise)", gesperrt);
     }
 

@@ -25,6 +25,7 @@
 @code {
     private string _titel = "";
     private bool _bedienbar = true;
+    private string _sperrgrund = "";
 
     /// <summary>Der umgebende Reiter (von <see cref="Reiter"/> herabgereicht).</summary>
     [CascadingParameter] public Reiter? Eltern { get; set; }
@@ -37,6 +38,21 @@
 
     /// <summary>Bedienbar? <c>false</c> sperrt den Knopf, laesst ihn aber sichtbar.</summary>
     [Parameter] public bool Bedienbar { get; set; } = true;
+
+    /// <summary>
+    /// WARUM ist dieses Blatt gesperrt? Leer (Vorgabe) = die HARTE Sperre wie
+    /// bisher: <c>&lt;button disabled&gt;</c>, kein Klick, kein Ereignis.
+    ///
+    /// <para>Steht hier ein Satz, wird daraus eine WEICHE Sperre
+    /// (Anwenderwunsch <b>W16b-E-6</b>, 05.09.2026): Der Knopf bleibt ein
+    /// Knopf, traegt <c>aria-disabled</c> und den Satz als <c>title</c> — und
+    /// der Versuch, ihn zu betreten, meldet sich beim Wirt als
+    /// <see cref="Reiter.Verweigert"/>. Ein <c>disabled</c>-Knopf kann das
+    /// nicht: Er nimmt weder Zeigerereignisse an noch zeigt der Browser
+    /// seinen <c>title</c> an, und die Sprachausgabe hoert nur „nicht
+    /// verfuegbar" ohne den Grund.</para>
+    /// </summary>
+    [Parameter] public string Sperrgrund { get; set; } = "";
 
     /// <summary>Der Inhalt des Blattes.</summary>
     [Parameter] public RenderFragment? KindInhalt { get; set; }
@@ -52,16 +68,20 @@
         Eltern?.Anmelden(this);
         _titel = Titel;
         _bedienbar = Bedienbar;
+        _sperrgrund = Sperrgrund;
     }
 
     protected override void OnParametersSet()
     {
-        // Titel und Sperre stehen in der LEISTE, die der Reiter zeichnet -
-        // aendert eines der beiden sich, muss er neu zeichnen.
-        if (!string.Equals(_titel, Titel, StringComparison.Ordinal) || _bedienbar != Bedienbar)
+        // Titel, Sperre und Sperrgrund stehen in der LEISTE, die der Reiter
+        // zeichnet - aendert eines der drei sich, muss er neu zeichnen.
+        if (!string.Equals(_titel, Titel, StringComparison.Ordinal)
+            || _bedienbar != Bedienbar
+            || !string.Equals(_sperrgrund, Sperrgrund, StringComparison.Ordinal))
         {
             _titel = Titel;
             _bedienbar = Bedienbar;
+            _sperrgrund = Sperrgrund;
             Eltern?.Aufgefrischt();
         }
     }

@@ -1518,12 +1518,18 @@ body {
     cursor: pointer;
 }
 
-.epos-reiter-knopf:hover:not(:disabled) {
+.epos-reiter-knopf:hover:not(:disabled):not([aria-disabled="true"]) {
     background: var(--epos-karte-flaeche-hover);
     color: var(--epos-text);
 }
 
-.epos-reiter-knopf:disabled {
+/* ZWEI BAUARTEN, EIN BILD (W16b-E-6). Ein hart gesperrter Knopf traegt
+   disabled, ein weich gesperrter aria-disabled - er bleibt anklickbar, weil er
+   den Grund nennen soll. Aussehen darf er deswegen nicht anders: Ein Anwender
+   unterscheidet "geht nicht" nicht nach der Bauart. Deshalb EINE Regel mit
+   zwei Selektoren und nicht zwei Regeln mit denselben Werten. */
+.epos-reiter-knopf:disabled,
+.epos-reiter-knopf[aria-disabled="true"] {
     color: var(--epos-text-sehr-leise);
     cursor: default;
 }
@@ -4065,8 +4071,12 @@ body {
 }
 
 /* Ein gesperrter Reiter (kein Projekt offen) bleibt gesperrt: Die Regel oben
-   traegt vier Klassen und schluege die zweistufige Hausregel sonst. */
-.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf:disabled {
+   traegt vier Klassen und schluege die zweistufige Hausregel sonst. Seit
+   W16b-E-6 sperrt die Startseite WEICH (aria-disabled statt disabled, damit
+   der Knopf seinen Grund nennen kann) - beide Bauarten stehen deshalb in
+   EINER Regel, sonst waere die Farbe zweimal festgelegt. */
+.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf:disabled,
+.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf[aria-disabled="true"] {
     color: var(--epos-text-sehr-leise);
 }
 
@@ -4116,6 +4126,32 @@ body {
     font-size: var(--epos-schriftgroesse-kartentitel);
     font-weight: 600;
     color: var(--epos-start-text-leise);
+}
+
+/* DER EINSTIEGSHINWEIS des Projektreiters (Anwenderwunsch W16b-E-6,
+   05.09.2026) - der Nachfolger des dauerhaften Warnbanners.
+
+   Er ist mit Absicht KEIN Kasten: keine Flaeche, kein Rahmen, kein Symbolkreis.
+   Eine dritte Stufe unter Ueberschrift (21 px fett) und Erlaeuterung (16 px
+   halbfett DimGray) - dieselbe Farbe, dieselbe Halbfette, aber die
+   Normalgroesse der Seite. So liest sich die Kopfzeile von oben nach unten
+   leiser und der Hinweis als Nachsatz, nicht als zweite Erlaeuterung.
+
+   Das ⚠ davor kommt aus der Regel des Kopfbandes (.epos-startseite-status--
+   keins) und hat damit dieselbe Farbe wie das Statuszeichen im Projektkasten -
+   EINE Farbwahrheit fuer beide. Nur seine Groesse wird auf die Zeile
+   zurueckgenommen; 20 px waeren hier ein Ausrufezeichen. */
+.epos-startreiter-hinweis {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 8px 0 0 0;
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
+}
+
+.epos-startreiter-hinweis .epos-startseite-status {
+    font-size: inherit;
 }
 
 .epos-startreiter-leiste {

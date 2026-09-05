@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using AngleSharp.Dom;
+using Bunit;
 using EPOS.UI.Bausteine;
 using Microsoft.AspNetCore.Components;
 using Xunit;
@@ -14,7 +15,8 @@ namespace EPOS.UI.Tests.Bausteine;
 public class ReiterTests : BunitContext
 {
     /// <summary>Zwei Blaetter als Kindinhalt - der uebliche Aufbau.</summary>
-    private static RenderFragment ZweiBlaetter(bool zweitesBedienbar = true) => b =>
+    private static RenderFragment ZweiBlaetter(bool zweitesBedienbar = true,
+                                               string sperrgrund = "") => b =>
     {
         b.OpenComponent<Reiterblatt>(0);
         b.AddAttribute(1, "Schluessel", "EINS");
@@ -27,7 +29,8 @@ public class ReiterTests : BunitContext
         b.AddAttribute(5, "Schluessel", "ZWEI");
         b.AddAttribute(6, "Titel", "Zweites");
         b.AddAttribute(7, "Bedienbar", zweitesBedienbar);
-        b.AddAttribute(8, "KindInhalt",
+        b.AddAttribute(8, "Sperrgrund", sperrgrund);
+        b.AddAttribute(9, "KindInhalt",
             (RenderFragment)(x => x.AddMarkupContent(0, "<p id=\"i2\">Inhalt zwei</p>")));
         b.CloseComponent();
     };
@@ -184,6 +187,65 @@ public class ReiterTests : BunitContext
 
         // Nur EIN bedienbares Blatt: der Umlauf landet wieder dort, es wird
         // nichts gemeldet.
+        Assert.Equal("", gemeldet);
+
+        // Ohne Sperrgrund ist die Sperre HART - kein ARIA-Zustand, kein
+        // Tooltip, kein Ereignis (die Bauart seit W5.0).
+        IElement knopf = cut.FindAll(".epos-reiter-knopf")[1];
+        Assert.False(knopf.HasAttribute("aria-disabled"));
+        Assert.False(knopf.HasAttribute("title"));
+    }
+
+    /// <summary>
+    /// <b>Die WEICHE Sperre</b> (Anwenderwunsch <b>W16b‑E‑6</b>, 05.09.2026).
+    ///
+    /// <para>Nennt ein Blatt seinen <c>Sperrgrund</c>, bleibt sein Knopf ein
+    /// Knopf: <c>aria-disabled</c> statt <c>disabled</c>, der Grund als
+    /// <c>title</c> — und der Versuch meldet sich als <c>Verweigert</c>, ohne
+    /// dass das Blatt gewechselt würde. Genau das kann ein <c>disabled</c>-Knopf
+    /// nicht: Er nimmt keine Zeigerereignisse an, zeigt deshalb keinen Tooltip
+    /// und feuert nicht.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_weich_gesperrtes_Blatt_nennt_seinen_Grund_und_meldet_den_Versuch()
+    {
+        string gewechselt = "";
+        string verweigert = "";
+
+        var cut = Render<Reiter>(p => p
+            .Add(x => x.AktivChanged, (string s) => gewechselt = s)
+            .Add(x => x.Verweigert, (string s) => verweigert = s)
+            .Add(x => x.KindInhalt,
+                 ZweiBlaetter(zweitesBedienbar: false, sperrgrund: "Erst nach der Projektwahl")));
+
+        IElement knopf = cut.FindAll(".epos-reiter-knopf")[1];
+
+        Assert.False(knopf.HasAttribute("disabled"));          // sonst gaebe es kein Ereignis
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal("Erst nach der Projektwahl", knopf.GetAttribute("title"));
+
+        knopf.Click();
+
+        Assert.Equal("ZWEI", verweigert);
+        Assert.Equal("", gewechselt);                          // gewechselt wird NICHT
+        Assert.Equal("EINS", cut.Instance.AktiverSchluessel);
+    }
+
+    /// <summary>
+    /// Die Pfeiltasten überspringen auch ein WEICH gesperrtes Blatt — die
+    /// Sperre ist dieselbe, nur ihre Auskunft ist anders.
+    /// </summary>
+    [Fact]
+    public void Auch_ein_weich_gesperrtes_Blatt_wird_von_den_Pfeiltasten_uebersprungen()
+    {
+        string gemeldet = "";
+        var cut = Render<Reiter>(p => p
+            .Add(x => x.AktivChanged, (string s) => gemeldet = s)
+            .Add(x => x.KindInhalt,
+                 ZweiBlaetter(zweitesBedienbar: false, sperrgrund: "Erst nach der Projektwahl")));
+
+        cut.Find(".epos-reiter-leiste").KeyDown("ArrowRight");
+
         Assert.Equal("", gemeldet);
     }
 
