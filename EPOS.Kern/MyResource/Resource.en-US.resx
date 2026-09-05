@@ -14049,6 +14049,12 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="START_KLIMA_HINWEIS" xml:space="preserve">
     <value>Applies to all calculations in the project</value>
   </data>
+  <data name="START_EINSTIEG" xml:space="preserve">
+    <value>Select a project above or create a new one below — the remaining sections open afterwards.</value>
+  </data>
+  <data name="START_SPERRE_TIPP" xml:space="preserve">
+    <value>Available once a project is selected</value>
+  </data>
   <data name="START_BTN_WEITER" xml:space="preserve">
     <value>Next ▶</value>
   </data>

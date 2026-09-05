@@ -27,15 +27,37 @@
    DIE REITERSPERRE. Form_Start_Load sperrte die Reiter 2-6, bis ein Projekt
    offen war (:80), und tabControl_Wizard_Selecting zeigte sonst einen
    Form_Hinweis (:1171-1181). Hier ist es <Reiterblatt Bedienbar="@ProjektOffen">
-   und ein dauerhaftes Warnbanner mit DENSELBEN zwei Saetzen. Der Unterschied ist
-   Absicht: Ein gesperrter Reiterknopf laesst sich gar nicht erst anklicken, der
-   Hinweis muss also VORHER dastehen und nicht danach.
+   - die Sperre selbst ist unveraendert vorbildgetreu.
+
+   DER HINWEIS DAZU IST SEIT W16b-E-6 DREITEILIG (Anwenderwunsch 05.09.2026,
+   "ja, oder anderen Hinweis geben der elegant ist"). Bis dahin stand ueber der
+   Reiterleiste ein DAUERHAFTES Warnbanner mit den zwei Saetzen der MessageBox.
+   Es war richtig gemeint und trotzdem falsch: Eine Warnflaeche ueber der ganzen
+   Seite meldet einen FEHLER, hier fehlt aber nur der Anfang - und sie stand
+   ausgerechnet in dem Augenblick da, in dem der Anwender das Programm zum
+   ersten Mal sieht. An seine Stelle treten:
+
+     1. der leise EINSTIEGSHINWEIS im Reiter "Projekt" (ProjektReiter.
+        HinweisText) - eine Zeile mit dem ⚠ des Kopfbandes, dort wo der
+        Anwender ohnehin hinsieht;
+     2. der GRUND am gesperrten Reiterknopf - Reiterblatt.Sperrgrund macht aus
+        der harten eine WEICHE Sperre: aria-disabled statt disabled, der Grund
+        als title;
+     3. das FLUECHTIGE Banner beim Versuch - wer einen gesperrten Reiter oder
+        "Weiter ▶" anklickt, bekommt fuer drei Sekunden genau die zwei Saetze
+        des Vorlaeufers und danach wieder Ruhe. Das ist das Verhalten von
+        tabControl_Wizard_Selecting, nur ohne Wegklicken: der Form_Hinweis
+        lebte ebenfalls drei Sekunden.
+
+   Damit steht der Hinweis wieder DANACH, so wie im Vorbild - und vorher steht
+   die leise Zeile, die den Versuch ueberfluessig macht.
 
    FORM_HINWEIS IST ABGELOEST (Entscheid W15b-E-1b). Seine drei Aufrufer lagen
    saemtlich hier: :817 (Projekt geoeffnet - jetzt ein Warnbanner mit
    Verfaellt=3 s, genau die Lebensdauer des Vorlaeufers), :1174 (Reitersperre -
-   jetzt das dauerhafte Banner oben) und :1459 (Projektdetails - mit der Kachel
-   und dem Anwenderentscheid E-7 entfallen). Die drei PointToScreen-Rechnungen
+   seit W16b-E-6 wieder ein Banner mit DERSELBEN Frist, ausgeloest vom
+   Versuch) und :1459 (Projektdetails - mit der Kachel und dem
+   Anwenderentscheid E-7 entfallen). Die drei PointToScreen-Rechnungen
    fallen ersatzlos: Ein Banner steht IN der Seite und braucht keinen
    Bildschirmpunkt.
 
@@ -127,14 +149,11 @@ else
         </div>
     </header>
 
-    @* ================= Meldungen ================= *@
-    @if (!ProjektOffen)
-    {
-        @* Die Reitersperre - woertlich die zwei Saetze aus
-           tabControl_Wizard_Selecting (:1175-1176). *@
-        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@(SperreText1 + " " + SperreText2)" />
-    }
+    @* ================= Meldungen =================
 
+       EIN Banner, und es steht nur, wenn es etwas zu sagen gibt (W16b-E-6).
+       Der Hinweis der Reitersperre kommt hier ebenfalls durch - als
+       fluechtige Meldung nach dem Versuch, nicht als Dauerzustand. *@
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="@_meldungsstufe" Text="@_meldung"
@@ -143,19 +162,21 @@ else
     }
 
     @* ================= Die sechs Reiter ================= *@
-    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@ReiterBezeichnung">
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@ReiterBezeichnung"
+            Verweigert="BeiSperre">
         <KindInhalt>
 
             <Reiterblatt Schluessel="@Reiterschluessel.Projekt" Titel="@ReiterProjektText">
                 <KindInhalt>
                     <ProjektReiter Kacheln="@KachelnVon(Reiterschluessel.Projekt)"
                                    Geklickt="BeiKachel"
-                                   KopfText="@ProjektKopfText" Text="@ProjektText" />
+                                   KopfText="@ProjektKopfText" Text="@ProjektText"
+                                   HinweisText="@Einstiegszeile" HinweisZeichen="@StatusKeinsText" />
                 </KindInhalt>
             </Reiterblatt>
 
             <Reiterblatt Schluessel="@Reiterschluessel.Waermebedarf" Titel="@ReiterWaermeText"
-                         Bedienbar="@ProjektOffen">
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund">
                 <KindInhalt>
                     <WaermebedarfReiter Kacheln="@KachelnVon(Reiterschluessel.Waermebedarf)"
                                         Geklickt="BeiKachel"
@@ -166,7 +187,7 @@ else
             </Reiterblatt>
 
             <Reiterblatt Schluessel="@Reiterschluessel.Strombedarf" Titel="@ReiterStromText"
-                         Bedienbar="@ProjektOffen">
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund">
                 <KindInhalt>
                     <StrombedarfReiter Kacheln="@KachelnVon(Reiterschluessel.Strombedarf)"
                                        Geklickt="BeiKachel"
@@ -175,7 +196,7 @@ else
             </Reiterblatt>
 
             <Reiterblatt Schluessel="@Reiterschluessel.Erzeuger" Titel="@ReiterErzeugerText"
-                         Bedienbar="@ProjektOffen">
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund">
                 <KindInhalt>
                     <ErzeugerReiter Kacheln="@KachelnVon(Reiterschluessel.Erzeuger)"
                                     Geklickt="BeiKachel"
@@ -188,7 +209,8 @@ else
             </Reiterblatt>
 
             <Reiterblatt Schluessel="@Reiterschluessel.Simulation" Titel="@ReiterSimulationText"
-                         Bedienbar="@ProjektOffen" Betreten="BeiSimulationBetreten">
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund"
+                         Betreten="BeiSimulationBetreten">
                 <KindInhalt>
                     <SimulationReiter Kacheln="@KachelnVon(Reiterschluessel.Simulation)"
                                       Geklickt="BeiKachel"
@@ -204,7 +226,7 @@ else
             </Reiterblatt>
 
             <Reiterblatt Schluessel="@Reiterschluessel.BerichteKosten" Titel="@ReiterBerichteText"
-                         Bedienbar="@ProjektOffen">
+                         Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund">
                 <KindInhalt>
                     @if (BerichteGaben is not null)
                     {
@@ -220,7 +242,14 @@ else
     <footer class="epos-startseite-fuss">
         <button type="button" class="epos-knopf" disabled="@(!KannZurueck)"
                 @onclick="Zurueck">@ZurueckText</button>
-        <button type="button" class="epos-knopf" disabled="@(!KannWeiter)"
+        @* "Weiter ▶" bleibt ohne Projekt ANKLICKBAR und meldet den Grund
+           (W16b-E-6) - er ist der Weg der Tastatur zu derselben Auskunft, die
+           der Zeiger am gesperrten Reiterknopf als Tooltip bekommt. Gesperrt
+           ist er nur da, wo es wirklich nicht weitergeht: auf dem letzten
+           Reiter (btn_Weiter_Click :1568). *@
+        <button type="button" class="epos-knopf" disabled="@(!GibtNaechsten)"
+                aria-disabled="@(WeiterGesperrt ? "true" : null)"
+                title="@(WeiterGesperrt ? SperreTippText : null)"
                 @onclick="Weiter">@WeiterText</button>
     </footer>
 
@@ -386,6 +415,20 @@ else
     /// <summary>Zweiter Satz der Reitersperre (<c>Text_Form_Start_MessageBox2</c>).</summary>
     [Parameter] public string SperreText2 { get; set; } = "Projekt öffnen oder zuletzt geöffnet";
 
+    /// <summary>
+    /// Der leise EINSTIEGSHINWEIS im Reiter „Projekt" (<b>W16b‑E‑6</b>,
+    /// <c>START_EINSTIEG</c>) — er tritt an die Stelle des dauerhaften Banners.
+    /// </summary>
+    [Parameter] public string EinstiegText { get; set; }
+        = "Wählen Sie oben ein Projekt aus oder legen Sie unten ein neues an — die übrigen Bereiche öffnen sich danach.";
+
+    /// <summary>
+    /// Der Grund am gesperrten Reiterknopf und am Knopf „Weiter ▶"
+    /// (<b>W16b‑E‑6</b>, <c>START_SPERRE_TIPP</c>) — Tooltip für den Zeiger und
+    /// Beschreibung für die Sprachausgabe.
+    /// </summary>
+    [Parameter] public string SperreTippText { get; set; } = "Erst nach der Projektwahl";
+
     /// <summary>Beschriftung der Reiterleiste für die Sprachausgabe.</summary>
     [Parameter] public string ReiterBezeichnung { get; set; } = "Arbeitsschritte";
 
@@ -481,11 +524,45 @@ else
     }
 
     /// <summary>
-    /// „Weiter" geht bis zum letzten Reiter — wörtlich <c>btn_Weiter_Click</c>
-    /// (<c>:1568</c>: <c>if (SelectedIndex >= TabCount - 1) return;</c>). Ohne
-    /// offenes Projekt ist der nächste Reiter gesperrt, also geht es nicht.
+    /// Gibt es überhaupt einen nächsten Reiter? — wörtlich
+    /// <c>btn_Weiter_Click</c> (<c>:1568</c>:
+    /// <c>if (SelectedIndex >= TabCount - 1) return;</c>). Das ist die einzige
+    /// Bedingung, die den Knopf HART sperrt.
     /// </summary>
-    private bool KannWeiter => Reiterindex < Reiterschluessel.Alle.Length - 1 && ProjektOffen;
+    private bool GibtNaechsten => Reiterindex < Reiterschluessel.Alle.Length - 1;
+
+    /// <summary>
+    /// Geht „Weiter" wirklich? Ohne offenes Projekt ist der nächste Reiter
+    /// gesperrt — der Knopf bleibt seit <b>W16b‑E‑6</b> trotzdem anklickbar und
+    /// sagt dann, warum es noch nicht geht.
+    /// </summary>
+    private bool KannWeiter => GibtNaechsten && ProjektOffen;
+
+    /// <summary>
+    /// „Weiter ▶" führt zwar irgendwohin, aber noch nicht — der Knopf bleibt
+    /// anklickbar und sagt warum (<b>W16b‑E‑6</b>). Auf dem LETZTEN Reiter ist
+    /// er dagegen hart gesperrt: Dort gibt es nichts zu erklären.
+    /// </summary>
+    private bool WeiterGesperrt => GibtNaechsten && !ProjektOffen;
+
+    /// <summary>
+    /// Der Sperrgrund der fünf Reiter — leer, sobald ein Projekt offen ist.
+    /// Leer heißt für <see cref="Reiterblatt"/> „keine weiche Sperre"; da die
+    /// Blätter dann ohnehin bedienbar sind, ist es derselbe Zustand.
+    /// </summary>
+    private string Sperrgrund => ProjektOffen ? "" : SperreTippText;
+
+    /// <summary>
+    /// Der Einstiegshinweis des Projektreiters — nur ohne offenes Projekt.
+    ///
+    /// <para>Mit Projekt verschwindet die Zeile ganz, statt zu „Projekt … ist
+    /// geöffnet" zu werden: Das stünde als dritte Zeile unter Überschrift und
+    /// Erläuterung und wiederholte nur, was einen Zentimeter darüber im
+    /// Kopfband steht — Name des Projekts und grünes ✔. Dieselbe Überlegung wie
+    /// bei der Gattungszeile (W16b‑E‑4): Was schon dasteht, wird nicht noch
+    /// einmal gesagt.</para>
+    /// </summary>
+    private string Einstiegszeile => ProjektOffen ? "" : EinstiegText;
 
     /// <summary>„Zurück" ebenso (<c>btn_Zurueck_Click</c> :1641).</summary>
     private bool KannZurueck => Reiterindex > 0;
@@ -676,9 +753,28 @@ else
 
     private void Weiter()
     {
-        if (!KannWeiter) return;
+        if (!GibtNaechsten) return;
+
+        // Ohne Projekt fuehrt der Knopf nicht weiter, sondern sagt warum -
+        // genau das tat tabControl_Wizard_Selecting beim Reiterwechsel.
+        if (!ProjektOffen) { SperreMelden(); return; }
+
         _reiter = Reiterschluessel.Alle[Reiterindex + 1];
     }
+
+    /// <summary>
+    /// Ein gesperrter Reiterknopf wurde angeklickt (<see cref="Reiter.Verweigert"/>).
+    /// Der Schlüssel ist gleichgültig — der Grund ist für alle fünf derselbe.
+    /// </summary>
+    private void BeiSperre(string schluessel) => SperreMelden();
+
+    /// <summary>
+    /// Die zwei Sätze der Reitersperre für DREI SEKUNDEN — wörtlich
+    /// <c>tabControl_Wizard_Selecting</c> (<c>:1175 f.</c>) samt der Lebensdauer
+    /// des dort geöffneten <c>Form_Hinweis</c> (<b>W16b‑E‑6</b>).
+    /// </summary>
+    private void SperreMelden()
+        => Melden(SperreText1 + " " + SperreText2, WarnStufe.Hinweis, TimeSpan.FromSeconds(3));
 
     private void Zurueck()
     {

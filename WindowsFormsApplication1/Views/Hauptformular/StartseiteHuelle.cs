@@ -120,6 +120,11 @@ namespace WindowsFormsApplication1
                 ["SperreText1"] = MyResource.Resource.Text_Form_Start_MessageBox1,
                 ["SperreText2"] = MyResource.Resource.Text_Form_Start_MessageBox2,
 
+                // W16b-E-6: der leise Einstiegshinweis statt des dauerhaften
+                // Banners und der Grund am gesperrten Reiterknopf.
+                ["EinstiegText"] = MyResource.Resource.START_EINSTIEG,
+                ["SperreTippText"] = MyResource.Resource.START_SPERRE_TIPP,
+
                 ["ReiterProjektText"] = MyResource.Resource.START_REITER_PROJEKT,
                 ["ReiterWaermeText"] = MyResource.Resource.START_REITER_WAERME,
                 ["ReiterStromText"] = MyResource.Resource.START_REITER_STROM,
