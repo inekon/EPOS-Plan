@@ -111,14 +111,16 @@ namespace WindowsFormsApplication1
             return Task.Run(() => PeakShavingCtrl.LeseWerte(eintrag));
         }
 
-        /// <summary>Der Dateiwähler der Plattform.</summary>
+        /// <summary>
+        /// Der Dateiwähler der Plattform — HINTER dem Blazor-Ereignis
+        /// (Befund W13‑B‑1, siehe <c>IDateiDienst</c>).
+        /// </summary>
         private static Task<string> DateiWaehlen(string filter)
         {
-            string pfad = Dienste.Datei.DateiOeffnen(
+            return Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.PEAK_TITEL,
                 string.IsNullOrEmpty(filter) ? MyResource.Resource.IMPORT_DATEIFILTER : filter,
                 null);
-            return Task.FromResult(pfad ?? "");
         }
 
         /// <summary>

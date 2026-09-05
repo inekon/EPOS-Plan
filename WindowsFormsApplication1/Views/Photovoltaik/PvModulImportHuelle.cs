@@ -112,13 +112,15 @@ namespace WindowsFormsApplication1
             }, abbruch);
         }
 
-        /// <summary>Der Dateiwähler für eine <c>.pan</c>-Datei.</summary>
+        /// <summary>
+        /// Der Dateiwähler für eine <c>.pan</c>-Datei — HINTER dem Blazor-Ereignis
+        /// (Befund W13‑B‑1, siehe <c>IDateiDienst</c>).
+        /// </summary>
         private static Task<string> PanWaehlen()
         {
             string ordner = Path.Combine(Properties.Settings.Default.VDI3805Path ?? "", "PAN");
-            string pfad = Dienste.Datei.DateiOeffnen(
+            return Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.PVIMP_TITEL, "(*.pan)|*.pan", ordner);
-            return Task.FromResult(pfad ?? "");
         }
 
         /// <summary>

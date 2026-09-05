@@ -57,10 +57,11 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 // btnWaehlen_Click: derselbe Filter, dieselbe Prüfung auf Vorhandensein
-                // (Dienste.Datei liefert "" bei Abbruch).
-                ["Waehlen"] = new Func<string, Task<string>>(filter => Task.FromResult(
-                    Dienste.Datei.DateiOeffnen(MyResource.Resource.PREIS_IMPORT_TITEL,
-                                               filter, null))),
+                // (Dienste.Datei liefert "" bei Abbruch). Der Wähler läuft HINTER dem
+                // Blazor-Ereignis (Befund W13‑B‑1, siehe IDateiDienst).
+                ["Waehlen"] = new Func<string, Task<string>>(filter =>
+                    Dienste.Datei.DateiOeffnenAsync(MyResource.Resource.PREIS_IMPORT_TITEL,
+                                                    filter, null)),
 
                 ["Pruefen"] = new Func<string, Task<SpotpreisPruefung>>(pfad => Task.Run(() =>
                 {
