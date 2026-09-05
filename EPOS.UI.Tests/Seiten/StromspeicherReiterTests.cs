@@ -18,6 +18,11 @@ namespace EPOS.UI.Tests.Seiten;
 /// 39 Kennzahlzeilen in drei Gruppen mit ihrer Warnstufe, die Vergleichsspalte
 /// nur mit Vergleichslauf, die Ampel, die Warnzeile „ohne Erzeugung" und der
 /// Vergleichsknopf erst ab zwei Varianten.</para>
+/// <para>Der Selektor nennt seit der Windows-Abnahme 05.09.2026 die Klasse
+/// <c>epos-simerg-knopf</c>: Jedes Diagramm steht seither im Baustein
+/// <c>Diagramm</c> und bringt seine eigenen Knöpfe („1:1“, „Bereich“) mit.
+/// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
+/// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
 /// </summary>
 public class StromspeicherReiterTests : BunitContext
 {
@@ -110,7 +115,7 @@ public class StromspeicherReiterTests : BunitContext
         Assert.Contains("epos-simerg-warn", seite.Find("p.epos-simerg-status").ClassName);
         Assert.Empty(seite.FindAll("img"));
         Assert.Empty(seite.FindAll("table"));
-        Assert.Empty(seite.FindAll("button"));
+        Assert.Empty(seite.FindAll("button.epos-simerg-knopf"));
     }
 
     [Fact]
@@ -166,10 +171,10 @@ public class StromspeicherReiterTests : BunitContext
     public void Der_Vergleichsknopf_erscheint_erst_ab_zwei_Varianten()
     {
         var eine = Zeichnen(Daten(mehrere: false), csv: () => { }, vergleich: () => { });
-        Assert.Single(eine.FindAll("button"));
+        Assert.Single(eine.FindAll("button.epos-simerg-knopf"));
 
         var zwei = Zeichnen(Daten(), csv: () => { }, vergleich: () => { });
-        Assert.Equal(2, zwei.FindAll("button").Count);
+        Assert.Equal(2, zwei.FindAll("button.epos-simerg-knopf").Count);
     }
 
     /// <summary>Die Warnzeile eines Laufs ohne jede Erzeugung (Abnahmebefund 2).</summary>
@@ -187,7 +192,7 @@ public class StromspeicherReiterTests : BunitContext
         int csv = 0, vgl = 0;
         var seite = Zeichnen(Daten(), () => csv++, () => vgl++);
 
-        var knoepfe = seite.FindAll("button");
+        var knoepfe = seite.FindAll("button.epos-simerg-knopf");
         knoepfe[0].Click();
         knoepfe[1].Click();
 

@@ -63,14 +63,6 @@
                 }
             </div>
 
-            <ChartBild Png="@BildWaerme" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
-
-            @if (WaermeDetails.HasDelegate)
-            {
-                <button type="button" class="epos-simerg-knopf" @onclick="WaermeDetails">
-                    @Resource.SIMERG_BTN_DETAILS
-                </button>
-            }
         </section>
 
         @* ---- Strom ---- *@
@@ -86,7 +78,36 @@
                           WertChanged="StromSortiertGesetzt" />
             </div>
 
-            <ChartBild Png="@BildStrom" Alt="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE" />
+        </section>
+
+        @* ---- Die beiden Ganglinien, jede ueber die volle Breite ----
+
+           Befund W11b-B-2 der Windows-Abnahme 05.09.2026: In der halben
+           Rasterspalte kam ein 1 240 Bildpunkte breites Diagramm auf etwa 480 an -
+           „briefmarkengross", die Legende nicht mehr zu lesen. Die Zahlenbloecke
+           bleiben nebeneinander, die Diagramme stehen darunter ueber beide Spalten
+           (.epos-simerg-diagrammzeile).
+
+           BereichGewaehlt gibt den Achsenzoom des WinForms-Vorbilds zurueck
+           (Befund A-1): Ein aufgezogenes Rechteck laesst den Kern das Bild mit
+           diesem Zeitausschnitt neu zeichnen; „1:1" holt das ganze Jahr zurueck. *@
+        <section class="epos-simerg-block epos-simerg-diagrammzeile">
+            <ChartBild Png="@BildWaerme" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                       BereichGewaehlt="WaermeBereichGewaehlt"
+                       Zurueckgesetzt="@(() => _waermeBereich = null)" />
+
+            @if (WaermeDetails.HasDelegate)
+            {
+                <button type="button" class="epos-simerg-knopf" @onclick="WaermeDetails">
+                    @Resource.SIMERG_BTN_DETAILS
+                </button>
+            }
+        </section>
+
+        <section class="epos-simerg-block epos-simerg-diagrammzeile">
+            <ChartBild Png="@BildStrom" Alt="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
+                       BereichGewaehlt="StromBereichGewaehlt"
+                       Zurueckgesetzt="@(() => _stromBereich = null)" />
 
             @if (StromDetails.HasDelegate)
             {
@@ -127,10 +148,18 @@
     /// <summary>Die gewaehlten Kanalschluessel (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
+    /// <summary>Der aufgezogene Zeitausschnitt des Waermebildes; <c>null</c> = ganzes Jahr.</summary>
+    public Diagrammbereich? WaermeBereich => _waermeBereich;
+
+    /// <summary>Derselbe Ausschnitt fuer das Strombild (Pruefhilfe).</summary>
+    public Diagrammbereich? StromBereich => _stromBereich;
+
     private bool _waermeSortiert;
     private bool _stromSortiert;
     private bool _gesamtAn = true;
     private readonly HashSet<int> _kanaele = new HashSet<int>();
+    private Diagrammbereich? _waermeBereich;
+    private Diagrammbereich? _stromBereich;
 
     private bool KanalzeilenDa
     {
@@ -171,11 +200,23 @@
         return liste;
     }
 
+    /// <summary>
+    /// Der Anwender hat im Waermebild einen Bereich aufgezogen. Der Ausschnitt geht
+    /// unveraendert in den Bildauftrag; was daraus fuer ein Achsenbereich wird, weiss
+    /// nur der Renderer, der das Bild gezeichnet hat.
+    /// </summary>
+    private void WaermeBereichGewaehlt(Diagrammbereich bereich) => _waermeBereich = bereich;
+
+    /// <summary>Dasselbe fuer das Strombild.</summary>
+    private void StromBereichGewaehlt(Diagrammbereich bereich) => _stromBereich = bereich;
+
     private byte[]? BildWaerme =>
-        Bild?.Invoke(new Bildauftrag(Bilder.BedarfWaerme, _waermeSortiert, -1, Reihen()));
+        Bild?.Invoke(new Bildauftrag(Bilder.BedarfWaerme, _waermeSortiert, -1, Reihen(),
+                                     0.0, _waermeBereich));
 
     private byte[]? BildStrom =>
-        Bild?.Invoke(new Bildauftrag(Bilder.BedarfStrom, _stromSortiert));
+        Bild?.Invoke(new Bildauftrag(Bilder.BedarfStrom, _stromSortiert, -1, null,
+                                     0.0, _stromBereich));
 
     private RenderFragment Wertzeile(string text, double wert, string einheit) => @<text>
         <dt>@text</dt>

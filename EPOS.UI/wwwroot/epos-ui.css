@@ -917,7 +917,105 @@ body {
     font-family: Consolas, "DejaVu Sans Mono", "SF Mono", Menlo, monospace;
 }
 
+/* ==========================================================================
+   DIAGRAMM (Windows-Abnahme 05.09.2026, Befund A-1)
+
+   Der Rahmen, in dem JEDES Renderer-Bild steht. Er traegt drei Dinge:
+   den Zuschnitt (overflow: hidden - das vergroesserte Bild darf nie ueber
+   seinen Platz hinauslaufen und die Nachbartabelle ueberdecken), die
+   Zeigerhoheit (touch-action: none - sonst nimmt der Browser den Finger fuer
+   seinen eigenen Bildlauf, und das Kneifen kommt nie an) und die Leiste mit
+   Zoomstufe, "Bereich" und "1:1".
+
+   DIE MINDESTHOEHE ist der zweite Teil des Befundes W11b-B-2: Ein Bild in
+   einer schmalen Spalte wurde briefmarkengross. Es fuellt jetzt die Breite
+   (width: 100 % statt max-width), und der Rahmen faellt nie unter 280 px -
+   darunter ist keine Legende mehr zu lesen.
+   ========================================================================== */
+
+.epos-diagramm {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+}
+
+.epos-diagramm-leiste {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Die Zoomstufe, z. B. "x2,5". Ziffern in fester Breite, damit die Leiste
+   beim Drehen am Rad nicht springt. */
+.epos-diagramm-stufe {
+    color: var(--epos-text-leise);
+    font-variant-numeric: tabular-nums;
+    min-width: 42px;
+}
+
+.epos-diagramm-knopf {
+    min-height: 26px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--epos-text);
+    padding: 2px 10px;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+}
+
+/* Der Umschalter "Bereich" bleibt sichtbar gedrueckt, solange er an ist. */
+.epos-diagramm-knopf[aria-pressed="true"] {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-karte-rahmen-hover);
+}
+
+.epos-diagramm-flaeche {
+    position: relative;
+    overflow: hidden;
+    min-height: 280px;
+    min-width: 0;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: #fff;
+    touch-action: none;
+    cursor: grab;
+}
+
+.epos-diagramm-flaeche:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 1px;
+}
+
+/* Der verschiebbare Teil. transform-origin oben links, weil das Modul
+   Verschiebung und Vergroesserung getrennt rechnet. */
+.epos-diagramm-inhalt {
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
+/* Waehrend eines Zuges wechselt der Zeiger - sonst sieht man nicht, dass
+   gerade geschoben wird. */
+.epos-diagramm--zieht { cursor: grabbing; }
+
+/* Im Bereichsmodus wird aufgezogen, nicht geschoben. */
+.epos-diagramm--bereich { cursor: crosshair; }
+
+/* Das aufgezogene Rechteck. */
+.epos-diagramm-gummi {
+    position: absolute;
+    border: 1px dashed var(--epos-quelle-text);
+    background: rgba(55, 138, 221, 0.15);
+    pointer-events: none;
+}
+
 .epos-chartbild {
+    display: block;
+    width: 100%;
     max-width: 100%;
     height: auto;
 }
@@ -2636,6 +2734,23 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: var(--epos-karte-rand);
     align-items: start;
+}
+
+/* min-width: 0 hebt die Vorgabe min-width: auto der Rasterfelder auf. Ohne das
+   kann ein breiter Inhalt (eine Tabelle, ein 1 240 Bildpunkte breites Diagramm)
+   die Spalte AUFBLASEN, statt sich zu fuegen - das Bild lief dann rechts aus
+   dem Fenster und ueber die Nachbartabelle (Windows-Abnahme 05.09.2026). */
+.epos-simerg-spalten > * { min-width: 0; }
+
+/* EIN DIAGRAMM STEHT UEBER ALLE SPALTEN (Windows-Abnahme 05.09.2026, Befund
+   W11b-B-2: „Charts der Detaillierten Simulation zu klein"). In einer halben
+   Rasterspalte kam eine Jahresganglinie mit 1 240 Bildpunkten Breite auf
+   etwa 480 an - die Legende war dort 8 Bildpunkte hoch und nicht mehr zu lesen.
+   Diese EINE Regel gilt fuer alle Reiter der Ergebnisseite; die Zahlenbloecke
+   bleiben nebeneinander, das Diagramm bekommt die volle Breite darunter. */
+.epos-simerg-diagrammzeile {
+    grid-column: 1 / -1;
+    min-width: 0;
 }
 
 .epos-simerg-schalter {

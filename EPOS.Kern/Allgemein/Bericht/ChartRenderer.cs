@@ -1622,8 +1622,15 @@ namespace WindowsFormsApplication1
         /// <param name="achse">Monatsgrenzen oder Jahresstunden.</param>
         /// <param name="sortiert">Dauerlinie statt Ganglinie — jede Reihe FUER SICH
         /// absteigend sortiert (dieselbe Regel wie <see cref="Ganglinie.Dauerlinie"/>).</param>
+        /// <param name="fenster">DATENZOOM (Windows-Abnahme 05.09.2026): der Zeitausschnitt,
+        /// den der Anwender aufgezogen hat; <c>null</c> = das ganze Jahr. <b>Nur der
+        /// ZEITausschnitt gilt</b> — die Prozentachse dieses Bildes ist per Definition
+        /// 0…100 % des Jahreshöchstwerts, und der Bezugswert bleibt deshalb der der
+        /// GANZEN Reihe. Ein senkrechter Zoom höbe die Aussage „so viel Prozent der
+        /// Jahresspitze“ auf; dafür gibt es den Bildzoom des Bausteins.</param>
         public static byte[] GanglinieNormiert(string titel, IReadOnlyList<Reihe> reihen,
-                                               string yTitel, Achse achse, bool sortiert)
+                                               string yTitel, Achse achse, bool sortiert,
+                                               Achsenfenster fenster = null)
         {
             int W = 1240, H = 560;
             using (var flaeche = Start(W, H))
@@ -1632,7 +1639,10 @@ namespace WindowsFormsApplication1
                 Titel(g, titel ?? "", W);
                 var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
 
-                List<Reihe> gueltig = Brauchbare(reihen);
+                List<Reihe> ganz = Brauchbare(reihen);
+                List<Reihe> gueltig = fenster == null
+                    ? ganz
+                    : Brauchbare(Zugeschnitten(ganz, fenster));
                 if (gueltig.Count == 0)
                 {
                     Leerhinweis(g, rc);
@@ -1642,12 +1652,14 @@ namespace WindowsFormsApplication1
                 Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
                         100f, 66f, W - 30f);
 
-                // Der gemeinsame Bezugswert (siehe Kopf).
-                double bezug = gueltig.Max(r => r.Werte.Max());
+                // Der gemeinsame Bezugswert (siehe Kopf) — aus der GANZEN Reihe, damit
+                // 100 % im Ausschnitt dasselbe heisst wie in der Vollansicht.
+                double bezug = ganz.Max(r => r.Werte.Max());
                 if (bezug <= 0) bezug = 1;
 
                 ProzentRaster(g, rc);
-                XAchse(g, rc, achse, gueltig[0].Werte.Length);
+                if (fenster == null) XAchse(g, rc, achse, gueltig[0].Werte.Length);
+                else XAchseFenster(g, rc, fenster, ganz[0].Werte.Length);
                 using (var f = Schrift(15f))
                     Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
 
@@ -1704,16 +1716,33 @@ namespace WindowsFormsApplication1
         /// <param name="sortiert">Dauerlinie statt Ganglinie — dann ohne Stapel.</param>
         /// <param name="zweiteAchse">B3: eine Reihe mit eigener Skala rechts; <c>null</c> = keine.</param>
         /// <param name="y2Titel">Beschriftung der rechten y-Achse.</param>
+        /// <param name="fenster">DATENZOOM (Windows-Abnahme 05.09.2026): der Ausschnitt,
+        /// den der Anwender aufgezogen hat; <c>null</c> = das ganze Jahr. Zugeschnitten
+        /// wird ALLES — Stapel, Linien, Kontur und die Reihe der zweiten Achse —, und
+        /// zwar VOR jeder Rechnung: Höchstwert, Sortierung und Stapelsumme beziehen sich
+        /// dann auf den Ausschnitt, so wie es der Achsenzoom des Vorbilds tat.</param>
         public static byte[] ErzeugerStapel(string titel, IReadOnlyList<Reihe> stapel,
                                             IReadOnlyList<Reihe> linien, Reihe kontur,
                                             string yTitel, Achse achse, bool sortiert,
-                                            Reihe zweiteAchse = null, string y2Titel = null)
+                                            Reihe zweiteAchse = null, string y2Titel = null,
+                                            Achsenfenster fenster = null)
         {
             int W = 1240, H = 560;
             using (var flaeche = Start(W, H))
             {
                 SKCanvas g = flaeche.Canvas;
                 Titel(g, titel ?? "", W);
+
+                // Der Zuschnitt steht GANZ oben: Alles darunter rechnet dann mit dem
+                // Ausschnitt, ohne davon zu wissen.
+                int gesamt = Laenge(stapel, linien, kontur);
+                if (fenster != null)
+                {
+                    stapel = Zugeschnitten(stapel, fenster);
+                    linien = Zugeschnitten(linien, fenster);
+                    kontur = Zugeschnitten(kontur, fenster);
+                    zweiteAchse = Zugeschnitten(zweiteAchse, fenster);
+                }
 
                 bool mitY2 = Brauchbar(zweiteAchse);
                 var rc = SKRect.Create(100f, 110f, W - (mitY2 ? 190f : 140f), 360f);
@@ -1754,10 +1783,14 @@ namespace WindowsFormsApplication1
                 foreach (Reihe r in linienG) max = Math.Max(max, r.Werte.Max());
                 if (mitKontur) max = Math.Max(max, kontur.Werte.Max());
                 max = Nice(max);
+                // Der senkrechte Anteil des aufgezogenen Rechtecks: Die Null bleibt
+                // unten, die obere Kante wird die neue Obergrenze.
+                if (fenster != null && fenster.YAnteil > 0) max = Nice(max * fenster.YAnteil);
                 if (max <= 0) max = 1;
 
                 YRaster(g, rc, max);
-                XAchse(g, rc, achse, n);
+                if (fenster == null) XAchse(g, rc, achse, n);
+                else XAchseFenster(g, rc, fenster, gesamt);
                 using (var f = Schrift(15f))
                     Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
 
@@ -1879,6 +1912,19 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Die x-Achse kann ins Negative reichen</b> (Aussentemperatur) und
         /// bekommt deshalb eine vorzeichenfaehige Skala; y beginnt bei null.</para>
+        ///
+        /// <para><b>Windows-Abnahme 05.09.2026, Befund W11b-B-3 — RUNDE TEILUNG UND
+        /// PLATZ AN DEN RAENDERN.</b> Die x-Achse trug bis dahin fuenf Marken, die den
+        /// vorkommenden Bereich in vier gleiche Teile schnitten: Bei einem Jahr von
+        /// −18,2 °C bis 20,3 °C stand dort „−18,2 · −8,6 · 1,1 · 10,7 · 20,3“ — krumme
+        /// Zahlen, an denen sich nichts ablesen laesst. Jetzt laeuft die Achse von einer
+        /// RUNDEN Stufe zur naechsten (dieselbe Stufenfolge wie <see cref="Jahresgang"/>:
+        /// 1 / 2 / 2,5 / 5 × 10^k), und der Wertebereich wird auf diese Stufen
+        /// AUFGERUNDET — aus dem Beispiel wird „−20 · −15 · −10 · −5 · 0 · 5 · 10 · 15 ·
+        /// 20“. Dazu bekommt das Bild rechts Platz (die letzte Marke stand auf der
+        /// Kante), die Legende rueckt hoch und der y-Achsentitel darunter: Beide lagen
+        /// mit 66 und 86 Bildpunkten so dicht, dass die Schriftzeilen sich beruehrten.
+        /// Die Bildmasse bleiben 1 240 × 560.</para>
         /// </summary>
         public static byte[] Streuwolke(string titel, string xTitel, string yTitel,
                                         IReadOnlyList<Punktreihe> reihen)
@@ -1888,7 +1934,9 @@ namespace WindowsFormsApplication1
             {
                 SKCanvas g = flaeche.Canvas;
                 Titel(g, titel ?? "", W);
-                var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
+                // Rechts 90 statt 40 Bildpunkte: Dort steht die letzte x-Marke, und
+                // eine Marke wie "−20" ragt sonst ueber den Bildrand hinaus.
+                var rc = SKRect.Create(100f, 110f, W - 190f, 360f);
 
                 var gueltig = (reihen ?? new List<Punktreihe>())
                     .Where(r => r != null && r.Punkte != null && r.Punkte.Count > 0)
@@ -1900,31 +1948,44 @@ namespace WindowsFormsApplication1
                 }
 
                 Legende(g, gueltig.Select(r => new Segment(r.Name, 0, Undurchsichtig(r.Farbe))).ToList(),
-                        100f, 66f, W - 30f);
+                        100f, 56f, W - 30f);
 
-                double xMin = gueltig.Min(r => r.Punkte.Min(p => p.X));
-                double xMax = gueltig.Max(r => r.Punkte.Max(p => p.X));
-                if (xMax - xMin < 1e-9) { xMax = xMin + 1; }
+                double xRoh0 = gueltig.Min(r => r.Punkte.Min(p => p.X));
+                double xRoh1 = gueltig.Max(r => r.Punkte.Max(p => p.X));
+                if (xRoh1 - xRoh0 < 1e-9) { xRoh1 = xRoh0 + 1; }
+
+                // Runde Teilung: Schrittweite aus der Spanne, Bereich auf die Stufen
+                // aufgerundet. Fuenf bis acht Marken - genug zum Ablesen, wenig genug,
+                // dass sich die Beschriftungen nicht beruehren.
+                double xSchritt = RundeStufe((xRoh1 - xRoh0) / 6.0);
+                double xMin = Math.Floor(xRoh0 / xSchritt) * xSchritt;
+                double xMax = Math.Ceiling(xRoh1 / xSchritt) * xSchritt;
+                if (xMax - xMin < 1e-9) { xMax = xMin + xSchritt; }
+
                 double yMax = Nice(Math.Max(0, gueltig.Max(r => r.Punkte.Max(p => p.Y))));
                 if (yMax <= 0) yMax = 1;
 
                 YRaster(g, rc, yMax);
 
-                // x-Skala mit fuenf Marken ueber den vorkommenden Bereich.
+                // x-Skala: eine Marke je runder Stufe.
                 using (var raster = Strich(SKColors.Gainsboro, 1f))
                 using (var f = Schrift(15f))
-                    for (int i = 0; i <= 4; i++)
+                    for (double wert = xMin; wert <= xMax + xSchritt * 1e-6; wert += xSchritt)
                     {
-                        double wert = xMin + (xMax - xMin) * i / 4.0;
-                        float x = rc.Left + (float)i / 4f * rc.Width;
+                        float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
                         g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = wert.ToString("0.#", DE);
+                        // Die Null soll "0" heissen und nicht "-0" (Math.Floor auf
+                        // negativen Zahlen liefert bei ganzzahligen Schritten -0).
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("0.#", DE);
                         Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
                 using (var f = Schrift(15f))
                 {
-                    Text(g, xTitel ?? "", f, SKColors.DimGray, rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 30f);
-                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                    // Der x-Titel steht UNTER den Marken (34 statt 30 Bildpunkte), der
+                    // y-Titel ueber der Flaeche und UNTER der Legende.
+                    Text(g, xTitel ?? "", f, SKColors.DimGray,
+                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
                 }
 
                 foreach (Punktreihe r in gueltig)
@@ -2685,6 +2746,161 @@ namespace WindowsFormsApplication1
             return new KeyValuePair<int[], string[]>(
                 new[] { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
                 new[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" });
+        }
+
+        // =================================================================== Datenzoom
+        //
+        // WINDOWS-ABNAHME 05.09.2026, Befund A-1 („Allgemein bei Charts: das Zoomen
+        // funktioniert nicht“). Der Baustein Diagramm in EPOS.UI vergrößert JEDES
+        // Bild als Bild — für eine Ganglinie mit 8 760 Stützstellen auf 1 100
+        // Bildpunkten ist das aber zu grob: Dort liegen acht Stunden auf einem
+        // Bildpunkt, und vergrößerte Bildpunkte zeigen keine Stunde mehr. Deshalb
+        // zieht der Anwender ein Rechteck auf, und das Bild wird mit DIESEM
+        // Achsenbereich NEU gezeichnet — wie der Achsenzoom des WinForms-Vorbilds.
+        //
+        // ALLES HIER IST WAHLFREI. Ohne Fenster zeichnet jede Methode Bildpunkt für
+        // Bildpunkt dasselbe wie vorher; die ChartProben prüfen genau das.
+
+        /// <summary>
+        /// Der Achsenbereich, mit dem ein Ganglinienbild neu gezeichnet wird.
+        /// </summary>
+        /// <param name="Von">Erste Stützstelle (einschließlich).</param>
+        /// <param name="Bis">Letzte Stützstelle (ausschließlich).</param>
+        /// <param name="YAnteil">Neue Obergrenze der y-Achse als Anteil der
+        /// bisherigen; <c>0</c> = die Achse bleibt, wie sie war. <b>Die Null bleibt
+        /// immer unten</b> — alle Ganglinienbilder zählen von null aufwärts, und
+        /// ein Ausschnitt, der die Null verlöre, wäre als Leistungsbild nicht mehr
+        /// zu lesen.</param>
+        public sealed record Achsenfenster(int Von, int Bis, double YAnteil = 0);
+
+        /// <summary>
+        /// Das aufgezogene Rechteck als ANTEILE DES BILDES (0 links/oben bis 1
+        /// rechts/unten). So und nicht anders kann die Oberfläche messen: Sie sieht
+        /// ein PNG und weiß weder, wo die Zeichenfläche darin liegt, noch welche
+        /// Stunde an welcher Stelle steht.
+        /// </summary>
+        public sealed record Bildausschnitt(double XVon, double XBis, double YVon, double YBis);
+
+        // Die Zeichenflaeche der beiden Ganglinienbilder B1/B2 in Anteilen des Bildes:
+        // SKRect.Create(100, 110, 1240 - 140, 360) auf 1 240 x 560. Steht die zweite
+        // y-Achse mit im Bild (B3), ist die Flaeche 50 Bildpunkte schmaler; der Fehler
+        // von vier Prozent der Breite faellt beim Aufziehen eines Bereichs nicht auf.
+        private const double FLAECHE_LINKS = 100.0 / 1240.0;
+        private const double FLAECHE_RECHTS = 1200.0 / 1240.0;
+        private const double FLAECHE_OBEN = 110.0 / 560.0;
+        private const double FLAECHE_UNTEN = 470.0 / 560.0;
+
+        /// <summary>
+        /// Rechnet ein aufgezogenes Rechteck in ein <see cref="Achsenfenster"/> um.
+        /// Liefert <c>null</c>, wenn daraus kein sinnvoller Ausschnitt wird (zu
+        /// schmal, oder die Reihe ist zu kurz) — dann bleibt das Bild, wie es ist.
+        /// </summary>
+        /// <param name="a">Das Rechteck in Bildanteilen.</param>
+        /// <param name="laenge">Die Anzahl der Stützstellen der gezeigten Reihe.</param>
+        public static Achsenfenster FensterAusBild(Bildausschnitt a, int laenge)
+        {
+            if (a == null || laenge < 4) return null;
+
+            double x0 = Klemme((a.XVon - FLAECHE_LINKS) / (FLAECHE_RECHTS - FLAECHE_LINKS));
+            double x1 = Klemme((a.XBis - FLAECHE_LINKS) / (FLAECHE_RECHTS - FLAECHE_LINKS));
+            if (x1 - x0 < 1e-6) return null;
+
+            int von = (int)Math.Floor(x0 * (laenge - 1));
+            int bis = (int)Math.Ceiling(x1 * (laenge - 1)) + 1;
+            von = Math.Max(0, Math.Min(laenge - 2, von));
+            bis = Math.Max(von + 2, Math.Min(laenge, bis));
+            if (von == 0 && bis == laenge) return null;   // nichts zugeschnitten
+
+            // Die OBERE Kante des Rechtecks wird die neue Obergrenze; die Null bleibt
+            // unten. Ein Rechteck, das ohnehin fast bis oben reicht, laesst die Achse
+            // in Ruhe - sonst verschoebe sich die Skala bei jedem Zug ein wenig.
+            double anteil = 1.0 - Klemme((a.YVon - FLAECHE_OBEN) / (FLAECHE_UNTEN - FLAECHE_OBEN));
+            if (anteil > 0.98) anteil = 0;
+
+            return new Achsenfenster(von, bis, anteil);
+        }
+
+        private static double Klemme(double wert)
+            => wert < 0.0 ? 0.0 : wert > 1.0 ? 1.0 : wert;
+
+        /// <summary>Die Reihe auf das Fenster zugeschnitten; ohne Fenster unverändert.</summary>
+        private static Reihe Zugeschnitten(Reihe r, Achsenfenster f)
+        {
+            if (f == null || r == null || r.Werte == null) return r;
+            int von = Math.Max(0, Math.Min(r.Werte.Length, f.Von));
+            int bis = Math.Max(von, Math.Min(r.Werte.Length, f.Bis));
+            if (von == 0 && bis == r.Werte.Length) return r;
+
+            var werte = new double[bis - von];
+            Array.Copy(r.Werte, von, werte, 0, werte.Length);
+            return new Reihe(r.Name, werte, r.Farbe, r.Stapelgruppe, r.Gestrichelt, r.Breite);
+        }
+
+        /// <summary>Dieselbe Zuschneidung für eine ganze Liste.</summary>
+        private static List<Reihe> Zugeschnitten(IReadOnlyList<Reihe> reihen, Achsenfenster f)
+        {
+            var liste = new List<Reihe>();
+            if (reihen == null) return liste;
+            foreach (Reihe r in reihen) liste.Add(Zugeschnitten(r, f));
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Anzahl der Stützstellen, die ein Stapelbild führt — die erste Reihe,
+        /// die überhaupt eine hat. Sie wird VOR dem Zuschnitt genommen und sagt dem
+        /// Fenster, ob es Stunden oder Viertelstunden zählt.
+        /// </summary>
+        private static int Laenge(IReadOnlyList<Reihe> stapel, IReadOnlyList<Reihe> linien,
+                                  Reihe kontur)
+        {
+            foreach (Reihe r in Brauchbare(stapel)) return r.Werte.Length;
+            foreach (Reihe r in Brauchbare(linien)) return r.Werte.Length;
+            return Brauchbar(kontur) ? kontur.Werte.Length : 0;
+        }
+
+        /// <summary>
+        /// Die x-Achse eines ZUGESCHNITTENEN Bildes: runde Marken mit den WIRKLICHEN
+        /// Jahresstunden des Fensters. Die vier festen Marken 2000/4000/6000/8000 der
+        /// Vollansicht (<see cref="XAchse"/>) taugen hier nicht — in einem Fenster von
+        /// Stunde 3 100 bis 3 400 läge keine einzige davon.
+        ///
+        /// <para>Auch ein Monatsbild bekommt im Fenster Stundenmarken: Monatsgrenzen
+        /// sagen im Ausschnitt nichts mehr, die Stunde schon.</para>
+        /// </summary>
+        private static void XAchseFenster(SKCanvas g, SKRect rc, Achsenfenster f, int gesamt)
+        {
+            double stundenJeWert = gesamt > Kanalsatz.STUNDEN_JAHR ? 0.25 : 1.0;
+            double h0 = f.Von * stundenJeWert;
+            double h1 = (f.Bis - 1) * stundenJeWert;
+            if (h1 - h0 < 1e-9) return;
+
+            double schritt = RundeStufe((h1 - h0) / 5.0);
+            double erste = Math.Ceiling(h0 / schritt) * schritt;
+
+            using (var raster = Strich(SKColors.Gainsboro, 1f))
+            using (var schrift = Schrift(15f))
+                for (double h = erste; h <= h1 + 1e-9; h += schritt)
+                {
+                    float x = rc.Left + (float)((h - h0) / (h1 - h0)) * rc.Width;
+                    g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                    string lab = h.ToString("N0", DE);
+                    Text(g, lab, schrift, SKColors.DimGray,
+                         x - schrift.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                }
+        }
+
+        /// <summary>
+        /// Die nächstgrößere „runde“ Schrittweite (1 / 2 / 2,5 / 5 × 10^k) — dieselbe
+        /// Stufenfolge, die <see cref="Jahresgang"/> und <see cref="KapitalwertVerlauf"/>
+        /// von Hand rechnen.
+        /// </summary>
+        private static double RundeStufe(double roh)
+        {
+            if (roh <= 0 || double.IsNaN(roh) || double.IsInfinity(roh)) return 1;
+            double zehner = Math.Pow(10, Math.Floor(Math.Log10(roh)));
+            foreach (double f in new[] { 1.0, 2.0, 2.5, 5.0, 10.0 })
+                if (zehner * f >= roh) return zehner * f;
+            return zehner * 10.0;
         }
 
         // "Schöne" Achsen-Obergrenze (1/2/2,5/5 × 10^k).
