@@ -61,10 +61,15 @@ public sealed record SchemaKnoten(
     bool IstWaermepumpe);
 
 /// <summary>
-/// Eine Leitung samt fertigem Bezier-Pfad.
+/// Eine Leitung samt fertigem Streckenzug.
 /// </summary>
-/// <param name="Pfad">Die <c>d</c>-Angabe („M … C … …").</param>
-/// <param name="MitteX">Mitte der Kurve — dort sitzt der Prioritaetskreis.</param>
+/// <param name="Pfad">
+/// Die <c>d</c>-Angabe — ein Streckenzug aus lauter waagerechten und senkrechten
+/// Stuecken („M … L … L …"). Bis zum Anwenderbefund W10b-B-1 (05.09.2026) stand hier
+/// ein Bezierbogen; er lief quer durch die Kaesten und wurde von der Farbregel des
+/// Stilblatts als FLAECHE gefuellt.
+/// </param>
+/// <param name="MitteX">Mitte des Wegs — dort sitzt der Prioritaetskreis.</param>
 public sealed record SchemaKante(
     string Von,
     string Nach,
@@ -98,6 +103,17 @@ public sealed record SchemaLegendeeintrag(
 /// Die Huelle bildet <c>SchemaLayout</c> auf diesen Satz ab — eine Zuordnung ohne
 /// Rechnung.</para>
 /// </summary>
+/// <param name="LinienBreite">
+/// Breite JEDER Leitung [px] — der Kern deckelt sie (<c>SchemaLayout.LINIE_BREITE</c>).
+/// Sie steht hier und nicht im Stilblatt, weil sie eine Aussage des Bildes ist und weil
+/// erst dadurch nachweisbar wird, dass keine Leitung aus dem Ruder laeuft (W10b-B-1).
+/// </param>
+/// <param name="LinienBreiteHervor">Breite einer Leitung am GEWAEHLTEN Kasten [px].</param>
+/// <param name="HatKaskade">
+/// true, wenn im Projekt mindestens ein Erzeuger seine Waerme aus einem Puffer bezieht.
+/// NICHT dasselbe wie „das Band ist gefuellt": Der Satz „Keine Kaskade im Projekt" haengt
+/// an dieser Tatsache, nicht an der abgeleiteten Kette (W10b-B-1).
+/// </param>
 public sealed record SchemaBild(
     IReadOnlyList<SchemaKnoten> Knoten,
     IReadOnlyList<SchemaKante> Kanten,
@@ -112,11 +128,14 @@ public sealed record SchemaBild(
     int KopfHoehe,
     int BandOben,
     int LegendeOben,
+    int LinienBreite,
+    int LinienBreiteHervor,
+    bool HatKaskade,
     bool IstLeer)
 {
     /// <summary>Ein leeres Bild — der Zustand „noch keine Hydraulik konfiguriert".</summary>
     public static SchemaBild Leer { get; } = new SchemaBild(
         new List<SchemaKnoten>(), new List<SchemaKante>(), new List<SchemaBandglied>(),
         new List<SchemaLegendeeintrag>(), new List<string>(), new List<int>(), new List<int>(),
-        890, 200, 18, 26, 100, 140, true);
+        890, 200, 18, 26, 100, 140, 2, 3, false, true);
 }

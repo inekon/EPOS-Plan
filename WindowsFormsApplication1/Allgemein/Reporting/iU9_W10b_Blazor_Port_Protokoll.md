@@ -666,3 +666,173 @@ Fenster, Esc schließt die oberste Ebene, Infoknopf zeigt die Wikiseite.
 (W10b‑B42), `Werkzeuge/Formularkarte.Tests/StapelTests.cs`,
 `Werkzeuge/Formularkarte.Tests/ErreichbarkeitTests.cs`; dazu
 `Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md`.
+
+---
+
+## Windows-Abnahme 05.09.2026 — Schema-Pfeile (W10b‑B‑1)
+
+Der Anwender öffnete Simulation → Simulationskonfiguration → Ansicht „Schema" mit
+einem Projekt aus zwei Wärmepumpen, einem Heizkessel, zwei Puffern und den
+Abnehmern Heizkreis und Warmwasser (das ist Projekt **1042** der Testdatenbank)
+und schrieb: **„Die Pfeile sind teilweise zu dick und falsch dargestellt."** Aus
+dem Bildschirmfoto sind es drei Sachen, und sie haben drei verschiedene Ursachen.
+
+### 1. Die Leitungen waren FLÄCHEN, und die Pfeilspitze war 16 px breit
+
+**Zwei Ursachen, beide im Stilblatt bzw. im SVG, keine im Kern.**
+
+**(a) Die Farbregel füllte den Bogen.** `epos-ui.css` setzte die Kantenfarbe als
+Paar — `stroke` **und** `fill`:
+
+```css
+.epos-schema-kante { stroke-width: 1.8; fill: none; }          /* Spezifität 0,1,0 */
+…
+.epos-schema--versorgung { stroke: …; fill: var(--epos-schema-versorgung); }   /* 0,1,0 */
+```
+
+Beide Regeln haben dieselbe Spezifität, die Farbregel steht später — sie gewinnt.
+Und das `fill="none"` am `<path>` selbst hilft nicht: Ein
+Präsentationsattribut verliert gegen **jede** CSS-Regel. Der offene Bézierbogen
+einer Leitung wurde deshalb als **Fläche** ausgemalt: genau die „riesige blaue
+Fläche mit gezacktem Rand", die über die Erzeugerkästen ragte. Der gezackte Rand
+ist die Sehne des Bogens, nicht eine Pfeilspitze je Stützpunkt.
+
+*Behoben:* Die Farbregeln setzen nur noch `stroke`. Die **Füllung gehört allein
+der Pfeilspitze** und steht an der Klassenpaarung
+`.epos-schema-pfeil.epos-schema--<art>` (Spezifität 0,2,0). Im
+Hochkontrastblock bekommt `.epos-schema-pfeil` entsprechend `fill: CanvasText`.
+
+**(b) Die Pfeilspitze maß in Vielfachen der Strichstärke.** Der `<marker>` stand
+auf `markerUnits="strokeWidth"` (das ist auch der SVG-Standardwert) bei
+`markerWidth="9" markerHeight="7"`. Bei 1,8 px Strich sind das **16 × 13 px**,
+an einer hervorgehobenen Kante (2,6 px) **23 × 18 px** — die „breiten, spitz
+zulaufenden Flächen (10–20 px)" des Befunds.
+
+*Behoben:* `markerUnits="userSpaceOnUse"`, Spitze fest **10 × 8 px**,
+`refX="10"` (die Spitze sitzt auf dem Kastenrand).
+
+**(c) Die Breite selbst.** Sie hing an nichts aus der Fachrechnung — weder an
+einer Leistung noch an einem Volumen; die Vermutung des Befunds trifft hier
+nicht zu. Sie steht jetzt trotzdem **gedeckelt im Kern**, damit sie nachweisbar
+ist: `SchemaLayout.LINIE_BREITE` = 2 px, `LINIE_BREITE_HERVOR` = 3 px, Grenzen
+`LINIE_BREITE_MIN` = 2 und `LINIE_BREITE_MAX` = 6. Sie wird als
+`stroke-width`-Attribut geschrieben (das Stilblatt setzt sie nicht mehr), weil
+eine CSS-Angabe von einer bunit-Probe nicht lesbar wäre. **Eine breitenkodierte
+Menge wird bewusst NICHT eingeführt:** Das Schema sagt aus, wer mit wem
+verbunden ist; die Kästen stehen in festen Spalten und nicht maßstäblich, eine
+Breite nach Leistung würde eine Genauigkeit behaupten, die das Bild nicht hat.
+Wer eine Menge sehen will, liest die Kachel.
+
+### 2. Leitungen liefen durch Kästen — jetzt Spaltenbahnen
+
+**Ursache im Kern**, `SchemaLayout.KantenLegen`. Der Weg war ein kubischer
+Bézierbogen von Kastenrand zu Kastenrand mit waagerechten Kontrollpunkten, die
+Rückwärtskante der Kaskade tauchte `max(a.Y, b.Y) + 26` unter ihre **beiden
+Endkästen**. Zwei Fälle gehen dabei schief:
+
+* Eine Kante über **zwei** Spalten — Erzeuger → Abnehmer, wenn eine Anlage den
+  Heizkreis unmittelbar deckt — läuft mitten durch die Speicherspalte. Das ist
+  der grüne Pfeil vom „2 ecoTEC" diagonal durch den unteren Puffer.
+* Die Rückwärtskante taucht nur unter ihre zwei Enden; jeder dritte Kasten, der
+  tiefer steht, wird geschnitten. Das ist der blaue Pfeil quer durch den
+  allSTOR-Kasten.
+
+*Behoben:* Der Weg ist ein **Streckenzug in Spaltenbahnen** — waagerecht aus dem
+Kasten, senkrecht in der **Gasse** zwischen zwei Spalten (`SPALTE_ABSTAND` = 56 px
+ohne jeden Kasten), waagerecht in den Zielkasten. Dazu drei Regeln:
+
+* **Jede Leitung bekommt in jeder Gasse ihre eigene Senkrechte**
+  (`GassenBelegen`): *n* Leitungen teilen die Gassenbreite in *n* + 1 Abschnitte,
+  sortiert nach Einlaufhöhe. Zwei Leitungen liegen damit nie übereinander.
+* **Über eine übersprungene Spalte** wechselt die Leitung in der ersten Gasse auf
+  eine **freie Bahn** (`FreieBahn`) — eine Höhe, in der in den übersprungenen
+  Spalten kein Kasten steht (die Lücken zwischen den Kästen, über dem obersten,
+  unter dem untersten) —, quert dort und fällt in der letzten Gasse auf die
+  Zielhöhe.
+* **Ansatzpunkte an derselben Kastenseite werden verteilt**
+  (`AnkerVerteilen`): Am Puffer 3000 Ltr des Projekts 1042 hängen links drei
+  Leitungen — die Ladung des ersten Erzeugers und die zwei Kaskadenabgänge. Alle
+  drei setzten in der Kastenmitte an und lagen auf dem ersten Stück
+  übereinander; die gestrichelte Kaskade verschwand unter der Ladeleitung. Bei
+  genau einer Leitung ergibt die Formel wieder `MitteY` — der Regelfall ändert
+  sich nicht.
+
+Die Rückwärtskante der Kaskade läuft seither **in derselben Gasse**, in der auch
+die Ladeleitung läuft (Speicher links hinaus, Erzeuger rechts hinein), statt
+unter allen Kästen herum.
+
+`SchemaLayout.Kantenzug` trägt dafür `List<Punkt> Punkte` statt `A/C1/C2/B`, der
+Prioritätskreis sitzt bei halber **Weglänge** (`Wegmitte`) statt bei *t* = 0,5
+einer Kurve — bei einem Streckenzug dieselbe Aussage. `BezierPunkt` ist
+ersatzlos entfallen; die Hülle schreibt „M … L … L …" statt „M … C …".
+
+### 3. Der Widerspruch „Kaskade" ↔ „Keine Kaskade im Projekt"
+
+**Ursache im Kern**, `SchemaModell.KettenAbleiten`. Der Satz
+`SIM_SCHEMA_KEINE_KETTE` („Keine Kaskade im Projekt — kein Erzeuger bezieht seine
+Wärme aus einem Pufferspeicher") hing am **leeren Band**, also an der abgeleiteten
+Kette. Die entstand nur, wenn ein Erzeuger ohne Quellpuffer den Quellpuffer eines
+anderen auf **Rang 1** lud (`HauptsenkePuffer`).
+
+**Was das Projekt wirklich hat** (Testdatenbank, Projekt 1042, `Z_AnlageSenke`):
+Anlage 14817 (Wärmepumpe) lädt Puffer 1054196 auf **Rang 2** — Rang 1 ist der
+Heizkreis. Aus eben diesem Puffer beziehen 14818 (zweite Wärmepumpe) und 14854
+(Heizkessel) ihre Wärme, beide über `Tab_Energieanlagen.WQ_ID_Puffer`. Die
+Kaskade ist also da, der Kettenanfang wurde nur nicht gefunden. Ergebnis: zwei
+Erzeugerkästen mit „Quelle: Puffer 3000Ltr · Kaskade", darunter „Keine Kaskade
+im Projekt". *(Zum Vergleich: 1043 und 1044 führen ebenfalls Kaskaden — dort auf
+Rang 3 —, 1030 „B3-Kaskade" trägt trotz seines Namens keinen einzigen
+Quellpuffer und ist damit der Gegenfall.)*
+
+*Behoben, an drei Stellen:*
+
+* `SchemaModell.HatKaskade` ist die **Tatsache** — mindestens ein gezeichneter
+  Erzeuger bezieht aus einem Puffer. Sie kommt aus derselben Quelle wie
+  `Knoten.Kaskade` und die Kaskadenkanten, nicht aus dem Band.
+* `KettenPuffer` sucht den Puffer, an dem die Kaskade weitergeht, über **alle
+  Ränge** statt nur über Rang 1 — beim Kettenanfang und bei jeder Fortsetzung.
+  Findet sich zu einem Quellpuffer überhaupt kein kettenfähiger Lader (weil sein
+  Lader selbst aus einem Puffer speist oder als Art nicht aufgenommen ist),
+  beginnt die Kette beim **Speicher**. Damit gilt
+  `HatKaskade ⇔ Ketten.Count > 0`.
+* Der Baustein zeigt den Satz nur noch, wenn `!Bild.HatKaskade`.
+
+Die Kaskadenkante ist gestrichelt — das war sie im Stilblatt immer
+(`.epos-schema-kante.epos-schema--kaskade { stroke-dasharray: 6 4 }`); man sah es
+nur nicht, weil die Fläche aus Punkt 1 darüber lag. Legende, Kartenzeile und
+Zeichnung sagen jetzt dasselbe.
+
+### 4. Ladung (orange, Kreis mit Priorität)
+
+Unverändert — sie war der Maßstab: gleichmäßige Linie, eine Spitze am Ende. Sie
+sah als einzige richtig aus, weil ihre Kanten bei gleicher Ein- und Ausgangshöhe
+gerade Strecken sind; eine gerade Strecke hat keine Fläche zu füllen.
+
+### Nachweise
+
+| Probe | Was sie hält |
+|---|---|
+| `EPOS.Kern.Tests/SchemaLayoutTests` (19 Fälle) | Jedes Stück ist waagerecht oder senkrecht; **keine Leitung kreuzt einen Kasten** (jede Strecke gegen jedes Rechteck, Berühren am Rand erlaubt); zwei Leitungen teilen sich keine Senkrechte, und keine Senkrechte liegt in einer Spalte; Ansätze an derselben Kastenseite liegen auf verschiedenen Höhen; die Breite liegt zwischen MIN und MAX; der Prioritätspunkt sitzt auf halber Weglänge. Das Prüfmodell führt dafür neu die **Direktdeckung** Erzeuger → Abnehmer, die die Speicherspalte überspringt |
+| `EPOS.Kern.Tests/SchemaModellTests` (neu, 10 Fälle) | gegen die **Testdatenbank**: 1042 wird als Kaskade erkannt (und trägt einen Kaskadenkasten), 1030 nicht (keine Kaskadenkante, keine Kette); `HatKaskade ⇔ Ketten.Count > 0` für 1042, 1043, 1044, 1030, 1007; jede Kette führt über ein Speicherglied und `Pruefen()` bleibt leer; und für sechs echte Projekte (1042, 1043, 1044, 1030, 1007, 1017) kreuzt keine Leitung einen Kasten und jede trägt die gedeckelte Breite |
+| `EPOS.UI.Tests/Bausteine/SchemaTests` (16 Fälle) | jede Leitung ist ein `<path>` mit `stroke-width` **im erlaubten Bereich**, `fill="none"`, genau einem `marker-end` (kein `marker-start`/`-mid`), ohne `C`/`Q` im Pfad; kein `<polygon>` im Bild; jeder `<marker>` steht auf `userSpaceOnUse`; die Kaskade trägt ihre Klassenpaarung, das Stilblatt die Strichelung und die Füllung **nur** an `.epos-schema-pfeil.…`; und der Satz „Keine Kaskade im Projekt" steht nur bei `HatKaskade = false` |
+
+`dotnet test EPOS.Kern.Tests -c Release` **1 183 grün**,
+`dotnet test EPOS.UI.Tests -c Release` **2 600 grün**, beide auch unter
+`LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`. Beide Kern-Wächter (`Program.*` und
+Plattform) leer, `WindowsFormsApplication1` baut fehlerfrei. Ein Referenzlauf ist
+nicht nötig: Das Schema rechnet nichts, `SchemaModell`/`SchemaLayout` haben im
+Rechenweg keinen Aufrufer.
+
+### Geänderte Dateien
+
+**Kern** (2): `Allgemein/Simulation/SchemaLayout.cs` (Wegführung, Gassen, freie
+Bahn, Ankerverteilung, Linienbreiten), `Allgemein/Simulation/SchemaModell.cs`
+(`HatKaskade`, `KettenPuffer`, Kettenanfang am Speicher).
+**`EPOS.UI`** (3): `Bausteine/Schema.razor` (Marker, `stroke-width`,
+Kaskadensatz), `Bausteine/SchemaBild.cs` (drei neue Felder),
+`wwwroot/epos-ui.css` (Füllung nur an der Spitze, Strichstärke ans Element).
+**Anwendung** (1): `Views/Simulation/SimulationKonfigHuelle.cs` (`Streckenzug`
+statt `Bogen`, die drei neuen Felder).
+**Tests** (3): `EPOS.Kern.Tests/SchemaLayoutTests.cs`,
+`EPOS.Kern.Tests/SchemaModellTests.cs` (neu),
+`EPOS.UI.Tests/Bausteine/SchemaTests.cs`.

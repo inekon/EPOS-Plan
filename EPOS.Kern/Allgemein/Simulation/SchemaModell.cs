@@ -166,6 +166,22 @@ namespace WindowsFormsApplication1
         /// <summary>Projekt, aus dem das Modell stammt.</summary>
         public int ID_Projekt { get; private set; }
 
+        /// <summary>
+        /// true, wenn MINDESTENS EIN gezeichneter Erzeuger seine Wärme aus einem
+        /// Pufferspeicher bezieht — das Projekt führt also eine Kaskade.
+        ///
+        /// <para><b>Anwenderbefund W10b-B-1 (05.09.2026).</b> Bis hierher las die Anzeige
+        /// diese Aussage aus <see cref="Ketten"/>: leeres Band = „Keine Kaskade im
+        /// Projekt — kein Erzeuger bezieht seine Wärme aus einem Pufferspeicher". Das
+        /// Band ist aber die abgeleitete KETTE und nicht die Tatsache: Es entstand nur,
+        /// wenn ein Erzeuger OHNE Quellpuffer den Quellpuffer eines anderen auf RANG 1
+        /// lud. Projekt 1042 der Testdatenbank lädt ihn auf Rang 2 — zwei Erzeugerkästen
+        /// trugen „Quelle: Puffer 3000Ltr · Kaskade", und darunter stand, es gebe keine.
+        /// Die Tatsache steht deshalb hier, an derselben Stelle, aus der auch
+        /// <see cref="Knoten.Kaskade"/> und die Kaskadenkanten kommen.</para>
+        /// </summary>
+        public bool HatKaskade { get; private set; }
+
         // --- PAKET S2: die Senkenlisten und die Klassen-Sets --------------------------
         //
         // Bis S1 las das Schema die Senke einer Anlage aus WaermesenkeClass.SenkeDaten,
@@ -337,6 +353,10 @@ namespace WindowsFormsApplication1
                 int q = bild.QuellpufferAnzeige(a.ID, puffer);
                 if (q > 0 && pufferJeId.ContainsKey(q)) quellpuffer[a.ID] = q;
             }
+
+            // W10b-B-1: Die Kaskade ist eine Tatsache des Projekts, keine Ableitung aus
+            // dem Band — sie steht hier fest, bevor eine Kette gesucht wird.
+            m.HatKaskade = quellpuffer.Count > 0;
 
             m.SpeicherKnotenAnlegen(anlagen, puffer, quellpuffer, hatBrauchwasser, hatProzess);
             m.ErzeugerKnotenAnlegen(bild, anlagen, pufferJeId, quellpuffer, rangJeTyp);
@@ -793,11 +813,15 @@ namespace WindowsFormsApplication1
         /// Leitet die Kaskadenketten ab (Konzept Abschnitt 3, Mockup Abschnitt 2):
         /// „Erdsonde → WP 1 → Puffer 1 → WP 2 Booster → Puffer 2 → Warmwasser".
         ///
-        /// Eine Kette beginnt bei einem Erzeuger OHNE Quellpuffer, der einen Speicher lädt,
-        /// aus dem ein anderer Erzeuger seine Quellwärme bezieht; sie folgt dem Weg
-        /// Erzeuger → Speicher → Erzeuger → … bis zum letzten Speicher und endet beim
-        /// Abnehmer. Zwischen zwei Speichern steht damit immer ein Erzeuger — genau die
-        /// Darstellungsvorgabe der Invariante S-1.
+        /// Eine Kette beginnt bei einem Erzeuger OHNE Quellpuffer, der — auf IRGENDEINEM
+        /// Rang seiner Senkenkette — einen Speicher lädt, aus dem ein anderer Erzeuger
+        /// seine Quellwärme bezieht; sie folgt dem Weg Erzeuger → Speicher → Erzeuger → …
+        /// bis zum letzten Speicher und endet beim Abnehmer. Zwischen zwei Speichern steht
+        /// damit immer ein Erzeuger — genau die Darstellungsvorgabe der Invariante S-1.
+        ///
+        /// Findet sich zu einem Quellpuffer kein solcher Erzeuger, beginnt die Kette beim
+        /// SPEICHER. Damit gilt <c>HatKaskade ⇔ Ketten.Count &gt; 0</c>, und das Band sagt
+        /// dasselbe wie die Erzeugerkarten (Anwenderbefund W10b-B-1).
         ///
         /// Ohne Quellbezug im Projekt entsteht keine Kette (das ist der Regelfall).
         /// </summary>
@@ -819,11 +843,21 @@ namespace WindowsFormsApplication1
                 nutzer[q].Add(a);
             }
 
+            // W10b-B-1: Die Puffer, an denen schon eine Kette hängt.
+            HashSet<int> begonnen = new HashSet<int>();
+
             foreach (Hydraulikbild.AnlagenEintrag start in anlagen)
             {
                 if (quellpuffer.ContainsKey(start.ID)) continue;          // kein Kettenanfang
-                int idPuffer = HauptsenkePuffer(start);
-                if (idPuffer <= 0 || !nutzer.ContainsKey(idPuffer)) continue;
+
+                // W10b-B-1: ÜBER ALLE RÄNGE statt nur über Rang 1. Ein Erzeuger, der den
+                // Quellpuffer eines anderen auf Rang 2 lädt, ist genauso ein Kettenanfang
+                // wie einer, der ihn auf Rang 1 lädt — die Kaskade hängt am Quellbezug,
+                // nicht an der Ladeposition (Projekt 1042 der Testdatenbank).
+                int idPuffer = KettenPuffer(start, nutzer);
+                if (idPuffer <= 0) continue;
+
+                begonnen.Add(idPuffer);
 
                 List<Kettenglied> kette = new List<Kettenglied>();
 
@@ -840,6 +874,39 @@ namespace WindowsFormsApplication1
                 KetteFortsetzen(kette, idPuffer, nutzer, pufferJeId, quellpuffer,
                                 hatBrauchwasser, new HashSet<int>());
             }
+
+            // W10b-B-1: Ein Quellpuffer, den KEIN kettenfähiger Erzeuger lädt — weil sein
+            // Lader selbst aus einem Puffer speist oder weil er als Art gar nicht
+            // aufgenommen ist —, bekommt trotzdem seine Kette; sie beginnt dann beim
+            // Speicher. Erst damit gilt: Kaskade im Projekt ⇔ Band im Bild.
+            List<int> offen = new List<int>(nutzer.Keys);
+            offen.Sort();                        // damit zwei Läufe dieselbe Reihenfolge geben
+
+            foreach (int idPuffer in offen)
+            {
+                if (begonnen.Contains(idPuffer)) continue;
+
+                KetteFortsetzen(new List<Kettenglied>(), idPuffer, nutzer, pufferJeId,
+                                quellpuffer, hatBrauchwasser, new HashSet<int>());
+            }
+        }
+
+        /// <summary>
+        /// Der erste Puffer der Senkenkette einer Anlage, aus dem ein ANDERER Erzeuger
+        /// seine Wärme bezieht — der Puffer also, an dem die Kaskade weitergeht;
+        /// 0, wenn die Anlage keinen solchen lädt.
+        /// </summary>
+        private int KettenPuffer(Hydraulikbild.AnlagenEintrag a,
+                                 Dictionary<int, List<Hydraulikbild.AnlagenEintrag>> nutzer)
+        {
+            foreach (Z_AnlageSenkeModel z in Senken(a.ID))
+            {
+                if (z == null || z.ID_Puffer <= 0) continue;
+                if (!WaermesenkeClass.IstPufferZiel(z.Ziel)) continue;
+                if (nutzer.ContainsKey(z.ID_Puffer)) return z.ID_Puffer;
+            }
+
+            return 0;
         }
 
         private void KetteFortsetzen(List<Kettenglied> kette, int idPuffer,
@@ -880,7 +947,10 @@ namespace WindowsFormsApplication1
                 List<Kettenglied> zweig = new List<Kettenglied>(kette);
                 zweig.Add(Glied(b, Kantenart.Kaskade));
 
-                int weiter = HauptsenkePuffer(b);
+                // W10b-B-1: erst der Puffer, an dem die Kaskade WEITERGEHT (jeder Rang),
+                // sonst wie bisher die Hauptsenke — dort endet die Kette am Abnehmer.
+                int weiter = KettenPuffer(b, nutzer);
+                if (weiter <= 0) weiter = HauptsenkePuffer(b);
                 if (weiter > 0)
                     KetteFortsetzen(zweig, weiter, nutzer, pufferJeId, quellpuffer,
                                     hatBrauchwasser, new HashSet<int>(besucht));
