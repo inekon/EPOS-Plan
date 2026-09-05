@@ -942,6 +942,9 @@ oder — anwenderfreundlicher — eine Gesamtleistung in kW mit dem Teiler 1000.
 Fassung wäre eine Rechenänderung an einer Zahl, die der Anwender kennt. Vorschlag zur
 Entscheidung; bis dahin steht die Einheit unverändert da wie im Vorbild.
 
+> **Entschieden am 05.09.2026: „Gesamtleistung in kW."** Die Umsetzung steht im
+> Abschnitt „Anwenderentscheid W6‑O‑5" am Ende dieses Protokolls.
+
 ### 5. Nachweise
 
 | Nachweis | Ort | Zahl |
@@ -979,3 +982,99 @@ Der Referenzlauf ist unberührt — es ist keine Zeile des Rechenwegs angefasst.
    Dort steht **kein** Aufklapper — sie sehen unverändert aus.
 10. **A‑W6‑E‑1.10** Tastatur: Der Aufklapper ist mit Tab erreichbar, Leertaste/Enter
     schaltet ihn, der Fokusring ist sichtbar; Esc schließt weiterhin den Dialog.
+
+
+## Anwenderentscheid W6‑O‑5 (05.09.2026) — Gesamtleistung in kW
+
+Der Anwender hat den Vorschlag aus Abschnitt 4 der W6‑E‑1-Umsetzung entschieden:
+**„Gesamtleistung in kW."** Der Beobachtungsabschnitt oben bleibt stehen — er trägt den
+Befund; hier steht, was daraus geworden ist.
+
+### 1. Fundstellen
+
+| Was | Wo | Stand vorher |
+|---|---|---|
+| Beschriftung Modulleistung | `EPOS.Kern/MyResource/Resource.resx` → `PVD_LBL_LEISTUNG` | „Modul Leistung [KW]:" — über einem Wert in Watt |
+| dieselbe, englisch | `EPOS.Kern/MyResource/Resource.en-US.resx` | „Module power [kW]:" |
+| Beschriftung Gesamtleistung | `Resource.resx` → `PVD_LBL_GESAMTLEISTUNG` | „Gesamtleistung [KW]:" |
+| dieselbe, englisch | `Resource.en-US.resx` | „Total power [kW]:" — sagte die Einheit als **einziger** Text schon richtig |
+| Wert Modulleistung | `PhotovoltaikHuelle.DetailZu` | `d.Leistung.ToString("F2")`, roh aus `Tab_PV.Leistung` |
+| Wert Gesamtleistung | `PhotovoltaikHuelle`, Delegat `Gesamtleistung` | `Gesamtleistung(idType, modelle).ToString()` — Summe aus Modulanzahl × Modulleistung, also WATT |
+| Vorgabetext der Komponente | `EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor` → `LabelGesamtleistung` | „Gesamtleistung [KW]:" |
+
+**Die angezeigte Gesamtleistung ist reine ANZEIGE.** Der Parameter der Komponente ist
+`Func<string>` — eine fertige Zeichenkette, die in ein `Textfeld` mit `NurLesen="true"`
+geht; sie wird nirgends geparst, nirgends gebunden und nirgends zurückgeschrieben. Die
+vollständige Suche nach `Gesamtleistung` im Bestand nennt außer den Texten nur die Hülle,
+die Komponente und die Tests. Der Rechenweg hängt an anderen Stellen und ist **unberührt**:
+
+- `PhotovoltaikHuelle.AnlagenKwp` — kWp EINER Projektzeile für die DC/AC-Zeile des
+  Wechselrichterdialogs, teilt schon immer durch 1000;
+- `PhotovoltaikCtrl.KwpSumme`/`KwpDesProjekts` — die kWp-Wahrheit für Simulation,
+  Vergütungsdialog, EEG-Größenklassen und `TechnikPlanwertCtrl.BaugroesseSumme`, liest die
+  Datenbank und teilt ebenfalls durch 1000.
+
+Der Referenzlauf bleibt damit **bitgleich**; es ist keine Zeile des Rechenwegs angefasst.
+
+### 2. Umsetzung
+
+1. **„Gesamtleistung" zeigt kW.** Neu im Kern, unmittelbar neben `KwpSumme`:
+   `PhotovoltaikCtrl.GesamtleistungText(double summeWatt)` — Summe / 1000, formatiert mit
+   `KW_ANZEIGE_FORMAT = "N3"` in der Kultur des Anwenders. **Eine Wahrheit:** Die Wandlung
+   steht dort, wo die kWp-Rechnung des Hauses steht, nicht in der Windows-Hülle — so kann
+   sie ohne Windows geprüft werden, und eine zweite Schale bekommt sie geschenkt. Drei
+   Nachkommastellen, weil ein einzelnes Modul rund 0,275 kW ist und bei `N1` jede
+   Modulzahl-Änderung unter vier Modulen wirkungslos aussähe; „N" wie im übrigen Haus
+   (`PVM_DLG_DCAC` mit `N2`, `PVW_KWP_WERT` mit `N1`), also mit Tausenderpunkt.
+2. **Die Einheit steht in der BESCHRIFTUNG, nicht im Wert** — wie bei jedem anderen Feld
+   des Blocks. „Gesamtleistung [kW]:" (de) / „Total power [kW]:" (en, unverändert), der
+   Wert daneben „2,752".
+3. **„Modul Leistung" bekommt seine wahre Einheit [W]**, der Wert bleibt roh: „Modul
+   Leistung [W]:" (de) / „Module power [W]:" (en). Damit steht im Projektdialog dieselbe
+   Zahl mit derselben Einheit wie im Katalogdialog, der die Spalte
+   „Nennleistung (Pmax)" mit „W" führt.
+4. **Kein neuer Ressourcenschlüssel** — beide Schlüssel gibt es seit W6.5; geändert sind
+   nur ihre Werte. `Resource.Designer.cs` ist trotzdem angefasst: seine zwei
+   XML-Kommentarzeilen zitieren den deutschen Wortlaut, und genau das erzeugte eine
+   Neuerzeugung auch.
+5. **Zwei Dokumentationsfehler mitberichtigt**, weil sie denselben Irrtum tragen:
+   `PhotovoltaikStammCtrl.ModulDetail` sagte „Leistung EINES Moduls [kW]", und die private
+   Summe der Hülle hieß `Gesamtleistung`; sie heißt jetzt `GesamtleistungWatt` und sagt
+   damit selbst, was sie liefert.
+
+### 3. Was wo liegt
+
+| Ebene | Datei | Änderung |
+|---|---|---|
+| Kern | `EPOS.Kern/Controller/PhotovoltaikCtrl.cs` | neu: `KW_ANZEIGE_FORMAT`, `GesamtleistungText`; `using System.Globalization` |
+| Kern | `EPOS.Kern/Controller/PhotovoltaikStammCtrl.cs` | Doku: `ModulDetail.Leistung` ist WATT |
+| Kern | `EPOS.Kern/MyResource/Resource.resx`, `.en-US.resx`, `Resource.Designer.cs` | drei Werte: „[KW]" → „[W]" bzw. „[kW]" |
+| UI | `EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor` | Vorgabetext „Gesamtleistung [kW]:", Kopf- und Parameterkommentar |
+| Hülle | `WindowsFormsApplication1/Views/Photovoltaik/PhotovoltaikHuelle.cs` | Delegat über `PhotovoltaikCtrl.GesamtleistungText`, `Gesamtleistung` → `GesamtleistungWatt`, zwei Rückfalltexte |
+
+Kein SQL, kein CSS, keine Änderung an der Komponente außer dem Vorgabetext: Sie zeigt
+weiter, was die Hülle hereingibt.
+
+### 4. Nachweise
+
+| Nachweis | Ort | Zahl |
+|---|---|---|
+| Kern — 10 × 275,19 W = „2,752"; Kultur (en „2.752", Tausendertrenner, Null); beide Beschriftungen in de und en; Modulleistung bleibt der rohe Wattwert | `EPOS.Kern.Tests/PvModulparameterTests.cs` | **4** neue Fälle (1209 → 1213) |
+| UI — „[W]"/„[kW]" im Detailblock, Durchreichen der fertigen Zahl, englische Fassung, Vorgabetext der Komponente | `EPOS.UI.Tests/Dialoge/PhotovoltaikDialogTests.cs` | **3** neue Fälle (2656 → 2659) |
+| Windows-Bau | `dotnet build WindowsFormsApplication1 -c Release -p:Platform=x64` | **0 Fehler**, 6 Warnungen (Bestand) |
+| Kern-Wächter (iU5, Plattform) | `EPOS.Kern/CLAUDE.md` | beide **leer** |
+| Referenzlauf | — | unberührt, keine Zeile des Rechenwegs angefasst |
+
+Beide Testreihen laufen unter `LANG=de_DE.UTF-8` **und** `LANG=en_US.UTF-8` grün.
+
+### 5. Abnahmepunkte am Gerät — A‑W6‑O‑5
+
+1. **A‑W6‑O‑5.1** Maske „Verwaltung Photovoltaik Module" öffnen, ein Modul wählen: Im
+   Block „Modul Eigenschaften:" heißt das erste Leistungsfeld **„Modul Leistung [W]:"**
+   und zeigt unverändert die Zahl des Katalogs (z. B. 275,19).
+2. **A‑W6‑O‑5.2** Dasselbe Feld im Katalogdialog „Administration Photovoltaik Module"
+   nachschlagen („Nennleistung (Pmax)", Einheit W): **gleiche Zahl, gleiche Einheit**.
+3. **A‑W6‑O‑5.3** Anzahl Module auf **10** setzen: „Gesamtleistung [kW]:" zeigt
+   **2,752** — nicht mehr 2751,912. Anzahl ändern: Der Wert zieht sofort nach.
+4. **A‑W6‑O‑5.4** Auf Englisch umschalten: „Module power [W]:" und „Total power [kW]:",
+   die Zahl mit Punkt („2.752").

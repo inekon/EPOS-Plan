@@ -11384,10 +11384,10 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Hersteller:</value>
   </data>
   <data name="PVD_LBL_LEISTUNG" xml:space="preserve">
-    <value>Modul Leistung [KW]:</value>
+    <value>Modul Leistung [W]:</value>
   </data>
   <data name="PVD_LBL_GESAMTLEISTUNG" xml:space="preserve">
-    <value>Gesamtleistung [KW]:</value>
+    <value>Gesamtleistung [kW]:</value>
   </data>
   <data name="PVD_FRAGE_LOESCHEN" xml:space="preserve">
     <value>Wollen Sie wirklich das Modul löschen?</value>

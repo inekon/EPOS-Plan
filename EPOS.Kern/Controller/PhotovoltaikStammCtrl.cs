@@ -490,7 +490,9 @@ namespace WindowsFormsApplication1
         /// <param name="Bezeichner">Modulname.</param>
         /// <param name="Beschreibung">Freitext.</param>
         /// <param name="Firma">Hersteller.</param>
-        /// <param name="Leistung">Leistung EINES Moduls [kW].</param>
+        /// <param name="Leistung">Leistung EINES Moduls in WATT - die Katalogspalte
+        /// <c>Leistung</c>, die der Katalogdialog „Nennleistung (Pmax)" mit der
+        /// Einheit W nennt (W6-O-5).</param>
         /// <remarks>
         /// <para><b>Die dreizehn weiteren Felder kamen mit dem Anwenderwunsch W6-E-1</b>
         /// (Windows-Abnahme 05.09.2026: „optional sollten beim ausgewaehlten PV-Modul
