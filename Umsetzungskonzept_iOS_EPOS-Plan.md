@@ -2228,6 +2228,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Pufferspeicher/Photovoltaik/Wärmebedarf extern) und die der Katalogverwaltungen am `Katalograhmen`. Drei neue
 > Wachen in `ZweispaltenauswahlTests` (14 → 17: Markup, Bestand, Stilregel), Gegenprobe mit zurückgedrehtem Blatt
 > rot. Protokoll W12, Abnahmepunkte A‑W12‑B‑1.
+>
+> **Anwenderwunsch W12‑E‑1 vom 05.09.2026 (Bildschirmfoto „Stromganglinien": „csv-Datei Stromlastgang importieren
+> (mit Info zum Format) fehlt. Ebenfalls fehlt löschen und Speichern unter"), umgesetzt in `43f0581`:** Das Vorbild
+> `Form_Stromganglinie` (678 × 345) hatte keinen Import, kein Löschen und kein Speichern unter — der Wunsch ist eine
+> echte Erweiterung; „Datei Einlesen…" und „Ganglinie Löschen" lagen eine Maske weiter in `Form_Stromganglinie_Admin`,
+> „Speichern unter" gab es im ganzen Bestand nicht (der Eintrag „… - Kopie" der Testdatenbank ist ein zweiter Import
+> unter anderem Dateinamen). Der Dialog trägt unter der Katalogliste jetzt **vier** Knöpfe statt einem: „CSV-Datei
+> importieren…", „Speichern unter…", „Löschen", „Bearbeiten…". Der Import ist kein zweiter Weg, sondern derselbe: Die
+> Kette liegt seit W12.0d im Kern (`GanglinienImportAblauf`), ihre Oberflächenseite steht jetzt im Baustein
+> `GanglinienImportLauf.razor` (drei Überlagerungen, `Starten(pfad, raster)`), den auch die Verwaltung
+> `StromganglinieAdminDialog` einhängt (422 → 303 Zeilen) — die Überlagerungen gibt es einmal statt zweimal. Der
+> Formathinweis nennt sichtbar, was die Kette annimmt (8 760 bzw. 35 040 Werte, vier Feldtrennzeichen oder einspaltig,
+> erkannte Kopfzeile, Komma oder Punkt, kW oder kWh je Intervall, Bezeichner = Dateiname ohne Erweiterung) und steht
+> als Kurztext am Infoknopf. Löschen prüft zwei Sperren vor der Rückfrage und meldet beide Gründe — Projektzuordnung
+> (`StromganglinieStammCtrl.HatProjektzuordnung`, Muster W14b) und `ReadOnly` (Grund als `title` am Knopf).
+> „Speichern unter" ist die Kopie unter neuem Namen (`KopiereStamm`: Kopf und Werte in einer Transaktion, `ORDER BY
+> ID`, immer `ReadOnly = false`, Vorschlag „‹Name› - Kopie", Dublettenprüfung vor dem Einfügen in Maske und Kern).
+> Nebenbefund behoben: `ReadAll` warf `ReadOnly` weg — die Verwaltungshülle fragte je Zeile nach (N+1), der
+> Projektdialog konnte einen Auslieferungssatz nicht erkennen. Kern 1 086 (+10 `StromganglinieKatalogTests`), UI 2 509
+> (+16), SQL-Prüfer 1 204 / 0. Protokoll W12, zehn Abnahmepunkte.
 
 > **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
 >
