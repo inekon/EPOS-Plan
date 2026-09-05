@@ -11377,6 +11377,9 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="PVD_GRP_MODUL" xml:space="preserve">
     <value>Modul Eigenschaften:</value>
   </data>
+  <data name="PVD_AUFKLAPP_PARAMETER" xml:space="preserve">
+    <value>Alle Modulparameter anzeigen</value>
+  </data>
   <data name="PVD_LBL_HERSTELLER" xml:space="preserve">
     <value>Hersteller:</value>
   </data>

@@ -11370,6 +11370,9 @@ Overwrite it anyway?</value>
   <data name="PVD_GRP_MODUL" xml:space="preserve">
     <value>Module properties:</value>
   </data>
+  <data name="PVD_AUFKLAPP_PARAMETER" xml:space="preserve">
+    <value>Show all module parameters</value>
+  </data>
   <data name="PVD_LBL_HERSTELLER" xml:space="preserve">
     <value>Manufacturer:</value>
   </data>

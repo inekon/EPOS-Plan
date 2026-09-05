@@ -25,6 +25,16 @@
    TASTATUR wie in den uebrigen Erzeugerdialogen: Esc schliesst, Enter ist
    nicht belegt.
 
+   ANWENDERWUNSCH W6-E-1 (Windows-Abnahme 05.09.2026): "optional sollten beim
+   ausgewaehlten PV-Modul alle Eigenschaften/Parameter angezeigt werden." Der
+   Block "Modul Eigenschaften" zeigte vier der neunzehn Katalogspalten; die
+   uebrigen dreizehn stehen jetzt darunter hinter einem AUFKLAPPER - zugeklappt
+   als Vorgabe, nur lesend, Beschriftung und Einheit aus derselben Quelle wie
+   der Katalogdialog (ModulKatalogProfil, Auspraegung Photovoltaik) und der
+   Modulimport (die zwei Temperaturkoeffizienten, die der Katalog nicht fuehrt).
+   Die Werte kommen mit dem Detailsatz herein, also im selben Lesevorgang und
+   beim Modulwechsel von selbst neu.
+
    ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
    Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
    des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
@@ -142,6 +152,43 @@
                       Kurz="true" />
                 </KindInhalt>
             </Formularraster>
+
+            @* ALLE MODULPARAMETER - Anwenderwunsch W6-E-1 (Windows-Abnahme
+               05.09.2026): "optional sollten beim ausgewaehlten PV-Modul alle
+               Eigenschaften/Parameter angezeigt werden."
+
+               OPTIONAL heisst AUFKLAPPBAR: Zugeklappt ist die Vorgabe, damit der
+               Dialog aussieht wie bisher; wer die dreizehn Katalogwerte sehen will,
+               klappt sie auf, und der Zustand bleibt fuer die Dauer des Dialogs
+               stehen - auch ueber einen Modulwechsel hinweg. Er wird NICHT abgelegt.
+
+               Ein KNOPF und kein <details>: Nur so gehoert der Zustand dem Dialog,
+               und aria-expanded sagt ihn an. Bauart wie der Aufklapppfeil der
+               Simulationskacheln (SpeicherKachel, ErzeugerKachel). *@
+            @if (_detail.Parameterzeilen.Count > 0)
+            {
+                <div class="epos-modulparameter">
+                    <button type="button" class="epos-modulparameter-knopf"
+                            aria-expanded="@(_parameterOffen ? "true" : "false")"
+                            @onclick="() => _parameterOffen = !_parameterOffen">
+                        <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_parameterOffen ? "▾" : "▸")</span>
+                        <span>@LabelAlleParameter</span>
+                    </button>
+
+                    @if (_parameterOffen)
+                    {
+                        <Formularraster>
+                            <KindInhalt>
+                                @foreach (Modulparameter p in _detail.Parameterzeilen)
+                                {
+                                    <Textfeld Bezeichnung="@p.Feld" Wert="@p.Wert" Einheit="@p.Einheit"
+                                              NurLesen="true" Kurz="@Kurzfeld(p)" />
+                                }
+                            </KindInhalt>
+                        </Formularraster>
+                    }
+                </div>
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -240,6 +287,9 @@
     [Parameter] public string LabelName { get; set; } = "Name:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
     [Parameter] public string LabelGesamtleistung { get; set; } = "Gesamtleistung [KW]:";
+
+    /// <summary>Beschriftung des Aufklappers über den Modulparametern (W6‑E‑1).</summary>
+    [Parameter] public string LabelAlleParameter { get; set; } = "Alle Modulparameter anzeigen";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
@@ -267,6 +317,12 @@
     private string _gesamtleistung = "0";
     private bool _loeschfrage;
 
+    /// <summary>
+    /// Steht der Parameterblock offen? (W6‑E‑1.) Vorgabe zu; der Zustand gehört der
+    /// Dialogsitzung und überlebt den Modulwechsel, wird aber nirgends abgelegt.
+    /// </summary>
+    private bool _parameterOffen;
+
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
 
@@ -278,6 +334,18 @@
 
     /// <summary>Die angezeigte Gesamtleistung (Pruefhilfe fuer Tests).</summary>
     public string Gesamt => _gesamtleistung;
+
+    /// <summary>Steht der Parameterblock offen? (Pruefhilfe fuer Tests, W6‑E‑1.)</summary>
+    public bool ParameterOffen => _parameterOffen;
+
+    /// <summary>
+    /// Ein Parameterfeld ist KURZ, wenn es eine Einheit trägt oder sein Wert eine Zahl
+    /// ist — dann steht die Einheit unmittelbar hinter dem Wert (iU8‑E‑2). Die
+    /// Zelltechnologie ist ein langer Text und bleibt breit; ein „–" ohne Einheit
+    /// ebenfalls, es steht dann in der Spalte seines Nachbarn.
+    /// </summary>
+    private static bool Kurzfeld(Modulparameter p)
+        => p.Einheit.Length > 0 || ErzeugerDetail.IstZahl(p.Wert);
 
     /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
     public string Meldung => _meldung;
