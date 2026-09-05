@@ -12117,6 +12117,9 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BPRO_MSG_FEHLER" xml:space="preserve">
     <value>Speichern nicht möglich!</value>
   </data>
+  <data name="BPRO_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Ein Typ mit diesem Namen ist schon vorhanden</value>
+  </data>
   <data name="BPRO_FRAGE_LOESCHEN" xml:space="preserve">
     <value>Soll {0} wirklich gelöscht werden ?</value>
   </data>

@@ -12110,6 +12110,9 @@ Overwrite it anyway?</value>
   <data name="BPRO_MSG_FEHLER" xml:space="preserve">
     <value>Saving not possible!</value>
   </data>
+  <data name="BPRO_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>A type with this name already exists</value>
+  </data>
   <data name="BPRO_FRAGE_LOESCHEN" xml:space="preserve">
     <value>Do you really want to delete {0}?</value>
   </data>
