@@ -6037,6 +6037,47 @@ body {
 }
 
 /* ==================================================================== */
+/* ALLE MODULPARAMETER - der Aufklapper des PV-Projektdialogs            */
+/* (Anwenderwunsch W6-E-1, Windows-Abnahme 05.09.2026)                   */
+/*                                                                      */
+/* "optional sollten beim ausgewaehlten PV-Modul alle                    */
+/* Eigenschaften/Parameter angezeigt werden."                            */
+/*                                                                      */
+/* OPTIONAL heisst aufklappbar, und aufgeklappt wird mit einem KNOPF -   */
+/* nicht mit <details>: Nur so gehoert der Offen-Zustand dem Dialog      */
+/* (er ueberlebt den Modulwechsel), und aria-expanded sagt ihn an. Die   */
+/* Form ist die der Aufklapppfeile der Simulationskacheln: eine leise    */
+/* Zeile ohne Rahmen und ohne Flaeche, 44 px hoch (--epos-touchziel),    */
+/* Pfeil voran. Der Block darunter ist ein gewoehnliches Formularraster  */
+/* und braucht keine eigene Regel.                                      */
+/* ==================================================================== */
+.epos-modulparameter-knopf {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--epos-text-leise);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-modulparameter-knopf:focus-visible {
+    outline: 2px solid var(--epos-marke);
+    outline-offset: 2px;
+}
+
+/* Das Dreieck traegt keine Aussage - es steht als aria-hidden im Markup
+   und ist nur so gross, dass es die Zeile nicht dominiert. */
+.epos-modulparameter-pfeil {
+    font-size: 0.9em;
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

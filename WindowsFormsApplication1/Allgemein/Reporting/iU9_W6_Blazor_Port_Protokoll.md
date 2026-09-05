@@ -826,3 +826,156 @@ eine Zeile zu ziehen („2‑G Energietechnik GmbH · Stadtgas · 290 kWth / 250
 eigener Umbau in der WINDOWS-Hülle samt ihrem Feldkartenabgleich; er ist von hier aus auch
 nicht prüfbar, weil `EPOS.UI.Tests` das WinForms-Projekt nicht übersetzt. **Vermerkt, nicht
 gemacht.**
+
+## Windows-Abnahme 05.09.2026 — PV-Dialog: alle Modulparameter aufklappbar (W6‑E‑1)
+
+Der Anwender am 05.09.2026, mit Bildschirmfoto des Blocks „Modul Eigenschaften:" der Maske
+„Verwaltung Photovoltaik Module" (Name *Ablytek 6MN6A275*, Hersteller *Ablytek*, Modul
+Leistung [KW] *275,19*, Beschreibung leer, Gesamtleistung [KW] *2751,912*):
+**„optional sollten beim ausgewählten PV-Modul alle Eigenschaften/Parameter angezeigt
+werden."**
+
+### 1. Der Befund
+
+`Tab_PV_STAMM` führt **19 Spalten**; der Projektdialog zeigte davon **vier** — Bezeichner,
+Firma, Beschreibung, Leistung (`PhotovoltaikStammCtrl.Detail`, vier Spalten im `SELECT`).
+Die übrigen dreizehn Fachwerte standen ausschließlich im Katalogdialog
+(`ModulKatalogDialog`, Ausprägung Photovoltaik) — also dort, wo man sie **ändert**, nicht
+dort, wo man ein Modul **auswählt**. Wer beim Bestücken einer Anlage wissen wollte, welche
+Kennlinie hinter dem Namen steckt, musste die Maske wechseln.
+
+Zwei Werte führt der Katalogdialog seinerseits **nicht**: `alpha_SC` und `beta_OC`. Das ist
+Absicht und steht so in `PhotovoltaikStammCtrl.SpeichernAus` — die Maske kann sie nicht
+pflegen und trägt sie deshalb beim Speichern unverändert weiter, damit ein Speichern nicht
+die Temperaturkoeffizienten eines CEC-Moduls löscht. Beschriftet sind sie im **Modulimport**
+(W13): `PVIMP_LBL_ALPHA_ISC`, `PVIMP_LBL_BETA_VOC`.
+
+### 2. Die Umsetzung
+
+**Optional heißt aufklappbar.** Unter dem bisherigen Block steht ein Aufklapper
+„Alle Modulparameter anzeigen" (`PVD_AUFKLAPP_PARAMETER`, en „Show all module parameters").
+**Zugeklappt ist die Vorgabe** — die Maske sieht beim Öffnen aus wie bisher. Der Zustand
+gehört der Dialogsitzung, überlebt einen Modulwechsel und wird **nirgends abgelegt**.
+
+Es ist ein **Knopf mit `aria-expanded`** und kein `<details>`: Nur so gehört der
+Offen-Zustand dem Dialog (und übersteht den Wechsel des gewählten Moduls), und die
+Sprachausgabe sagt ihn an. Bauart und Pfeil (▸/▾) sind die der Aufklapppfeile der
+Simulationskacheln (`SpeicherKachel`, `ErzeugerKachel`).
+
+**Der Inhalt ist nur lesend und steht im `Formularraster`** (iU8‑E‑2): Beschriftung neben
+dem Feld, kurze Wertfelder, Einheit unmittelbar dahinter, zwei Spalten auf breitem Schirm.
+Dreizehn Zeilen in dieser Reihenfolge:
+
+| # | Feld | Beschriftung aus | Einheit |
+|---|---|---|---|
+| 1 | Wirkungsgrad | `MODK_LBL_WIRKUNGSGRAD` (Katalog) | % |
+| 2 | U_Mpp | `MODK_LBL_UMPP` (Katalog) | V |
+| 3 | U_Leerlauf | `MODK_LBL_ULEERLAUF` (Katalog) | V |
+| 4 | I_Mpp | `MODK_LBL_IMPP` (Katalog) | A |
+| 5 | I_Kurzschluss | `MODK_LBL_IKURZSCHLUSS` (Katalog) | A |
+| 6 | alpha_SC | `PVIMP_LBL_ALPHA_ISC` (Modulimport) | im Text: [A/°C] |
+| 7 | beta_OC | `PVIMP_LBL_BETA_VOC` (Modulimport) | im Text: [V/°C] |
+| 8 | gamma_PMP | `MODK_LBL_TEMPKOEFF` (Katalog) | %/K |
+| 9 | T_NOCT | `PV_MODUL_LABEL_TNOCT` (Katalog) | °C |
+| 10 | Laenge | `MODK_LBL_LAENGE` (Katalog) | m |
+| 11 | Breite | `MODK_LBL_BREITE` (Katalog) | m |
+| 12 | Modulkosten | `MODK_LBL_MODULKOSTEN_PV` (Katalog) | € |
+| 13 | Technologie | `PVM_MODUL_LABEL_TECHNOLOGIE` (Katalog), Werte `PVM_TECHNOLOGIE_*` | — |
+
+**Eine Wahrheit, kein zweiter Textsatz.** Beschriftung und Einheit der elf Katalogfelder
+kommen aus `ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik, …)` — derselben Quelle,
+aus der sie der Katalogdialog nimmt. Es ist **kein einziger neuer Anzeigetext** entstanden
+außer der Beschriftung des Aufklappers selbst.
+
+**Die Zahlen sehen aus wie im Katalogdialog:** der Wirkungsgrad mit zwei Nachkommastellen
+(wörtlich `PvAdminHuelle.Anzeige`), alles Übrige roh in der Kultur des Anwenders. Wer beide
+Masken nebeneinanderlegt, liest dieselben Ziffern.
+
+**Nicht gepflegt heißt „–", nicht 0.** Der Katalog führt beides — NULL (im Testbestand
+etwa `LG 320 N1K-A5`: `alpha_SC`, `beta_OC`, `T_NOCT`) und die 0 des Bestands
+(`ModulKatalogProfil`: „leer = 0 = nicht gepflegt") —, und beides ist dieselbe Aussage:
+Der Wert steht nicht in der Datenbank. Eine angezeigte 0 wäre eine Behauptung. Ein
+**unbekannter** Technologiecode wird dagegen GEZEIGT, nicht verschluckt: Er steht so in der
+Datenbank, und wer ihn sucht, muss ihn lesen können.
+
+**Kein zweiter SELECT.** `PhotovoltaikStammCtrl.Detail` liest seither alle Spalten, die der
+Block braucht (vorher vier, jetzt siebzehn) — ein Lesevorgang statt eines zweiten daneben.
+Weil der Dialog diesen Weg bei **jedem Wechsel der Modulwahl** ruft (`ProjektZeileWaehlen`,
+`KatalogZeileWaehlen`), aktualisiert sich der Block von selbst; es braucht dafür keine
+Zeile im Dialog. Der SQL-Text ist über `Werkzeuge/SqlDialektPruefer` geprüft.
+
+### 3. Was wo liegt
+
+| Schicht | Datei | Was |
+|---|---|---|
+| Kern | `EPOS.Kern/Controller/PhotovoltaikStammCtrl.cs` | `ModulDetail` um dreizehn `double?`/`string`-Felder erweitert; `Detail` liest sie mit; neu `ModulParameter`, `PARAMETER_LEER` und `Parameterzeilen(ModulDetail)` — die dreizehn Anzeigezeilen mit Beschriftung, Wert und Einheit |
+| Kern | `EPOS.Kern/MyResource/Resource[.en-US].resx`, `Resource.Designer.cs` | EIN neuer Schlüssel `PVD_AUFKLAPP_PARAMETER` |
+| UI | `EPOS.UI/Dialoge/Erzeuger/ErzeugerAuswahlDaten.cs` | neuer Satz `Modulparameter(Feld, Wert, Einheit)`; `ErzeugerDetail` bekommt das optionale Glied `Parameter` samt `Parameterzeilen` |
+| UI | `EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor` | der Aufklapper samt `_parameterOffen`, `LabelAlleParameter`, `Kurzfeld` |
+| UI | `EPOS.UI/Standards/Textfeld.razor` | `Einheit` — dieselbe Angabe und derselbe Platz im Markup wie bei `Zahlenfeld`/`Ganzzahlfeld`; ein Anzeigefeld braucht die Einheit hinter dem Wert, ein Zahlenfeld wäre hier falsch (es ist eine Eingabe) |
+| UI | `EPOS.UI/wwwroot/epos-ui.css` | ein eigener Block „ALLE MODULPARAMETER" **vor** dem Formularraster-Block (der bleibt der letzte, Wache `FormularrasterTests`): die leise Knopfzeile, 44 px, Pfeil |
+| Hülle | `WindowsFormsApplication1/Views/Photovoltaik/PhotovoltaikHuelle.cs` | `DetailZu` bildet die Kern-Zeilen ab; `LabelAlleParameter` im Parametersatz |
+
+Die vier übrigen Erzeuger-Projektdialoge (Heizkessel, BHKW, Stromspeicher,
+Pufferspeicher) zeichnen denselben `ErzeugerDetail`, geben aber keine `Parameter` herein —
+bei ihnen erscheint **kein** Aufklapper. Der Weg steht damit offen, ohne dass die vier
+Masken sich ändern.
+
+### 4. Beobachtung — die Einheit „[KW]" (W6‑O‑5, Vorschlag)
+
+Die zwei Beschriftungen des Blocks lauten „Modul Leistung [KW]:" und „Gesamtleistung
+[KW]:", die Werte des Anwenderfotos sind 275,19 und 2751,912. **Das ist kein
+Übertragungsfehler der Razor-Fassung:** Der WinForms-Vorläufer trug in
+`Form_PV.Designer.cs` wörtlich `label14.Text = "Modul Leistung [KW]:"` und
+`label5.Text = "Gesamtleistung [KW]:"` (Stand vor `329a1be`), und er las die Spalte
+`Leistung` genauso roh (`listBox_Auswahl_SelectedIndexChanged`: `kl.ToString("F2")`;
+`UpdateGesamtleistung`: `PV_Leistung * modulleistung`).
+
+**Die Einheit stimmt trotzdem nicht.** Der Katalog nennt dieselbe Spalte
+„Nennleistung (Pmax)" mit der Einheit **W** (`ModulKatalogProfil`, PV-Ausprägung), und die
+kWp-Rechnung des Wechselrichterdialogs teilt sie durch 1000
+(`PhotovoltaikHuelle`, `AnlagenKwp`). 275,19 ist also ein Modul mit **275 W**, und
+2751,912 sind **2,75 kW**. Richtig wären „Modul Leistung [W]:" und „Gesamtleistung [W]:"
+oder — anwenderfreundlicher — eine Gesamtleistung in kW mit dem Teiler 1000.
+
+**Nicht geändert.** Beides sind Anzeigetexte mit Bestandstreue-Anspruch, und die zweite
+Fassung wäre eine Rechenänderung an einer Zahl, die der Anwender kennt. Vorschlag zur
+Entscheidung; bis dahin steht die Einheit unverändert da wie im Vorbild.
+
+### 5. Nachweise
+
+| Nachweis | Ort | Zahl |
+|---|---|---|
+| Kern — Lesevorgang, Zeilen, Strich, Herkunft der Texte, Englisch | `EPOS.Kern.Tests/PvModulparameterTests.cs` | **12** neue Fälle (1175 → 1187) |
+| UI — zu/auf, dreizehn Felder mit Einheit und `readonly`, zweiter Druck, Modulwechsel, Strich, kein Aufklapper ohne Zeilen, en-Kultur | `EPOS.UI.Tests/Dialoge/PhotovoltaikDialogTests.cs` | **7** neue Fälle (2645 → 2652) |
+| SQL-Dialekt | `Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` | 1 207 Texte, **0 Fundstellen** |
+| Kern-Wächter (iU5, Plattform) | `EPOS.Kern/CLAUDE.md` | beide **leer** |
+| Stilblatt | `StilblattTests`, `FormularrasterTests` | grün; Klammerbilanz 819/819 |
+
+Beide Testreihen laufen unter `LANG=de_DE.UTF-8` **und** `LANG=en_US.UTF-8` grün.
+Der Referenzlauf ist unberührt — es ist keine Zeile des Rechenwegs angefasst.
+
+### 6. Abnahmepunkte am Gerät — A‑W6‑E‑1
+
+1. **A‑W6‑E‑1.1** Maske „Verwaltung Photovoltaik Module" öffnen: Der Block „Modul
+   Eigenschaften:" sieht aus wie bisher; darunter steht **eine** graue Zeile
+   „▸ Alle Modulparameter anzeigen".
+2. **A‑W6‑E‑1.2** Die Zeile anklicken: Der Pfeil wird ▾, darunter stehen **dreizehn**
+   Werte mit Beschriftung links, kurzem Feld und Einheit unmittelbar dahinter; auf breitem
+   Fenster zwei Paare je Zeile. Kein Feld nimmt eine Eingabe an.
+3. **A‑W6‑E‑1.3** Ein Modul mit gepflegten Koeffizienten wählen (z. B. ein CEC-Import) und
+   dieselben Werte im Katalogdialog „Administration Photovoltaik Module" nachschlagen:
+   **gleiche Beschriftung, gleiche Einheit, gleiche Ziffern**.
+4. **A‑W6‑E‑1.4** Ein Modul ohne Koeffizienten wählen: Bei α_Isc, β_Voc und T‑NOCT steht
+   ein **„–"**, keine 0.
+5. **A‑W6‑E‑1.5** Bei aufgeklapptem Block ein anderes Modul in einer der beiden Listen
+   wählen: Die Werte wechseln mit, der Block bleibt **offen**.
+6. **A‑W6‑E‑1.6** Dialog schließen und neu öffnen: Der Block ist wieder **zu**.
+7. **A‑W6‑E‑1.7** Auf Englisch umschalten: Die Zeile heißt „Show all module parameters",
+   die dreizehn Beschriftungen sind die englischen des Katalogdialogs.
+8. **A‑W6‑E‑1.8** Fenster schmal ziehen (< 900 CSS-px): Die Beschriftungen fallen wieder
+   über die Felder, nichts wird abgeschnitten.
+9. **A‑W6‑E‑1.9** Heizkessel-, BHKW-, Stromspeicher- und Pufferspeicher-Projektmaske:
+   Dort steht **kein** Aufklapper — sie sehen unverändert aus.
+10. **A‑W6‑E‑1.10** Tastatur: Der Aufklapper ist mit Tab erreichbar, Leertaste/Enter
+    schaltet ihn, der Fokusring ist sichtbar; Esc schließt weiterhin den Dialog.
