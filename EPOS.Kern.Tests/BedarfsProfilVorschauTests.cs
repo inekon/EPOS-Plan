@@ -242,6 +242,107 @@ namespace EPOS.Kern.Tests
             Assert.True(s.Erfolgreich);
             Assert.Equal(365.0, s.Strom.Strombedarf_Gebaeude_gesamt, 4);
         }
+
+        // ==================================================================
+        //  4 — W8‑B‑3: der Profilbedarf stand auf null
+        // ==================================================================
+
+        /// <summary>
+        /// <b>W8‑B‑3, der Befund der Windows-Abnahme vom 05.09.2026.</b> Der Weg
+        /// „Standard Stromprofil" → „Simulation" zeigte <c>max. Strombedarf 3,72 kW</c>
+        /// neben <c>Gesamter Strombedarf 0</c>, <c>Stromganglinie 0</c> und
+        /// <c>Strombedarf Gebäude 0</c> — bei 8 000 kWh Jahresbedarf im selben Dialog.
+        ///
+        /// <para><b>Die Ursache war eine fehlende Zeile in der ABSCHRIFT.</b> Die
+        /// Windows-Hülle (<c>BedarfsProfileHuelle.Rechenstand.Rechnen</c>) trug die
+        /// Vorschaurechnung ein zweites Mal, von Hand nachgezogen. Darin fehlte
+        /// <c>Strombedarf_Gebaeude_gesamt = reihe.Sum() / 1000</c> — das Feld blieb 0,
+        /// und die Zeile darunter überschrieb <c>Strombedarf_gesamt</c> mit eben dieser
+        /// 0. Der Spitzenwert stand daneben richtig da, weil er aus der Reihe kam und
+        /// nicht aus der Summe. Dieselbe Klasse Fehler wie W9‑B‑4/B‑5: eine zweite
+        /// Fassung derselben Rechnung, aus der etwas herausfällt.</para>
+        ///
+        /// <para><b>Die Behebung</b> ist
+        /// <see cref="SimulationStrombedarf.ProfilbedarfUebernehmen"/> im Kern; Katalog-
+        /// und Projektvorschau nehmen sie beide.</para>
+        /// </summary>
+        [Fact]
+        public void Der_Profilbedarf_steht_in_der_Projektvorschau()
+        {
+            if (!_db.Vorhanden) return;
+
+            List<string> namen = StromNamen(1017);
+            BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(
+                BedarfsArt.Stromverbraucher, 1017, namen);
+
+            Assert.True(v.Erfolgreich);
+            Assert.True(v.Strom.Strombedarf_Gebaeude_gesamt > 0,
+                        "Strombedarf aus Profil ist 0 (Befund W8-B-3).");
+            Assert.True(v.Strom.Strombedarf_gesamt > 0,
+                        "Gesamter Strombedarf ist 0 (Befund W8-B-3).");
+
+            // Die eingefrorene Zahl: die Stundenreihe des Projekts in MWh. Sie ist
+            // zeichengleich zu der, die der PROJEKTLAUF fuer dieselbe Reihe ausweist -
+            // 672 000 kWh im Jahr, verteilt auf das Standardlastprofil EFH_3_Pers.
+            Assert.Equal(672.000, v.Strom.Strombedarf_Gebaeude_gesamt, 3);
+
+            // Die Vorschau kennt keine Stromganglinie - sie rechnet die AUSGEWAEHLTEN
+            // Profile. Die Gesamtsumme ist deshalb die Summe beider Posten mit einem
+            // Summanden 0, nicht eine zweite, eigene Groesse.
+            Assert.Equal(0.0f, v.Strom.Stromganglinie_gesamt);
+            Assert.Equal(v.Strom.Strombedarf_Gebaeude_gesamt + v.Strom.Stromganglinie_gesamt,
+                         v.Strom.Strombedarf_gesamt, 6);
+
+            // Der Spitzenwert ist eine LEISTUNG in kW - er war nie 0 und bleibt es nicht.
+            Assert.True(v.Strom.Strombedarf_Max > 0);
+        }
+
+        /// <summary>
+        /// <b>Die Vorschau rechnet, was der LAUF rechnet.</b> Die Summe der Monatswerte
+        /// und die Gesamtsumme sind dieselbe Größe in derselben Einheit (MWh) — genau
+        /// die Probe, die den Befund W8‑B‑3 sofort gezeigt hätte.
+        /// </summary>
+        [Fact]
+        public void Gesamtsumme_und_Monatswerte_der_Vorschau_passen_zusammen()
+        {
+            if (!_db.Vorhanden) return;
+
+            BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(
+                BedarfsArt.Stromverbraucher, 1017, StromNamen(1017));
+            Assert.True(v.Erfolgreich);
+
+            double monatssumme = 0;
+            for (int m = 0; m < 12; m++) monatssumme += v.Strom.Strombedarf_monat[m];
+
+            Assert.Equal(monatssumme, v.Strom.Strombedarf_gesamt, 2);
+
+            // Und die Stuetzstellen sagen dem Bild, dass STUNDEN vorliegen - nicht
+            // Viertelstunden wie nach einem vollen Lauf.
+            Assert.Equal(8760, v.Strom.Stuetzstellen);
+        }
+
+        /// <summary>
+        /// <b>Die zwei Wärmewege dürfen sich nicht verschlechtern</b> (W9‑B‑4/B‑5,
+        /// W8‑O‑5): Die Projektvorschau der Prozesswärme führt ihre Summe in MWh, die
+        /// des Brauchwassers in kWh — beides unverändert, nur jetzt aus dem Kern.
+        /// </summary>
+        [Fact]
+        public void Die_beiden_Waermewege_der_Projektvorschau_bleiben_wie_sie_waren()
+        {
+            if (!_db.Vorhanden) return;
+
+            BedarfsVorschau p = BedarfsVorschauCtrl.ProjektVorschau(
+                BedarfsArt.Prozesswaerme, 1041, ProzessNamen(1041));
+            Assert.True(p.Erfolgreich);
+            Assert.Equal(30.0, p.Waerme.Waermebedarf_Prozess, 3);          // MWh
+            Assert.Equal(2.548, p.Waerme.Waermebedarf_Prozess_Monat[0], 3);
+
+            BedarfsVorschau b = BedarfsVorschauCtrl.ProjektVorschau(
+                BedarfsArt.Brauchwasser, 1007, BrauchwasserNamen(1007));
+            Assert.True(b.Erfolgreich);
+            Assert.Equal(4059.700, b.Waerme.Waermebedarf_Brauchwasser, 1); // kWh
+            Assert.Equal(0.552, b.Waerme.Waermebedarf_Brauchwasser_Monat[0], 3);
+        }
     }
 
     /// <summary>

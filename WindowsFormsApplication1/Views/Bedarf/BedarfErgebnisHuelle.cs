@@ -67,7 +67,24 @@ namespace WindowsFormsApplication1
                     "Form_ErgStromverbraucher.btn_Help");
         }
 
-        /// <summary>Der Feldsatz des Strombedarfs — seit iU9-W9.5 eigene Methode.</summary>
+        /// <summary>
+        /// Der Feldsatz des Strombedarfs — seit iU9-W9.5 eigene Methode.
+        ///
+        /// <para><b>DREI KATEGORIEN seit dem Anwenderwunsch W8‑E‑2</b> (Windows-Abnahme
+        /// 05.09.2026). Der Bestand reihte vier gleich aussehende Zeilen untereinander,
+        /// die erste davon eine LEISTUNG in kW mit der Beschriftung „max. Strombedarf" —
+        /// die klang wie ein vierter Summand und war doch gar keiner. Jetzt gilt:</para>
+        /// <list type="bullet">
+        ///   <item><b>Leistung</b> — „max. Leistung" [kW], eigener Block, NICHT in der
+        ///   Summe.</item>
+        ///   <item><b>Energie</b> — die Posten „Stromganglinie" und „Strombedarf aus
+        ///   Profil" (vormals „Strombedarf Gebäude"; die Zeile trägt den aus den Profilen
+        ///   gerechneten Bedarf und heißt jetzt so).</item>
+        ///   <item><b>Summe</b> — „Gesamter Strombedarf", abgesetzt am Fuß. Der Wert ist
+        ///   der des KERNS (<c>Strombedarf_gesamt</c>), nicht eine hier addierte Zahl:
+        ///   Die Anzeige rechnet nicht, sie zeigt.</item>
+        /// </list>
+        /// </summary>
         private static BedarfErgebnisDaten StromDaten(SimulationStrombedarf simulation,
                                                       int startReiter)
         {
@@ -78,22 +95,76 @@ namespace WindowsFormsApplication1
                 StartReiter = startReiter,
                 Kennzahlen = new[]
                 {
-                    // Reihenfolge und Beschriftungen aus dem Designer (Karte, tabPage1).
-                    // Die drei Energiemengen liegen in MWh (SimulationStrombedarf teilt
-                    // selbst durch 4000); der Spitzenwert ist eine LEISTUNG in kW.
-                    new ErgebnisKennzahl(Text_("BERG_LBL_MAX_STROM", "max. Strombedarf:"),
-                                 F2(simulation.Strombedarf_Max), EINHEIT_KW),
-                    Energie(Text_("BERG_LBL_STROM_GESAMT", "Gesamter Strombedarf:"),
-                            simulation.Strombedarf_gesamt, Energieeinheit.MWh),
+                    // Der Spitzenwert ist eine LEISTUNG in kW - deshalb "max. Leistung"
+                    // und ein eigener Block (W8-E-2). Die zwei Posten und die Summe
+                    // liegen in MWh (SimulationStrombedarf teilt selbst durch 4000
+                    // bzw. 1000).
+                    new ErgebnisKennzahl(Text_("BERG_LBL_MAX_LEISTUNG", "max. Leistung:"),
+                                 F2(simulation.Strombedarf_Max), EINHEIT_KW)
+                    { Art = Kennzahlart.Leistung },
                     Energie(Text_("BERG_LBL_STROMGANGLINIE", "Stromganglinie:"),
                             simulation.Stromganglinie_gesamt, Energieeinheit.MWh),
-                    Energie(Text_("BERG_LBL_STROM_GEBAEUDE", "Strombedarf Gebäude:"),
-                            simulation.Strombedarf_Gebaeude_gesamt, Energieeinheit.MWh)
+                    Energie(Text_("BERG_LBL_STROM_PROFIL", "Strombedarf aus Profil:"),
+                            simulation.Strombedarf_Gebaeude_gesamt, Energieeinheit.MWh),
+                    Energie(Text_("BERG_LBL_STROM_GESAMT", "Gesamter Strombedarf:"),
+                            simulation.Strombedarf_gesamt, Energieeinheit.MWh,
+                            Kennzahlart.Summe)
                 },
                 Sichten = new[]
                 {
                     Sicht(Text_("BERG_OPT_STROM", "Strombedarf"), simulation.Strombedarf_monat,
                           Text_("BERG_BILD_STROM", "Strombedarf Monatsübersicht"), FARBE_STROM)
+                },
+                Ganglinie = Gangquelle(simulation)
+            };
+        }
+
+        /// <summary>
+        /// Die Bildquelle der Zeitstufen WOCHE und TAG (Anwenderwunsch W8‑E‑2).
+        ///
+        /// <para><b>Auf Zuruf gezeichnet, nicht auf Vorrat.</b> 52 Wochen und 365 Tage
+        /// sind 417 Bilder; die Hülle gibt deshalb einen Delegaten hinein und zeichnet
+        /// erst, wenn der Anwender die Stufe wählt — dasselbe Muster wie beim
+        /// Stromgang-Reiter der Ergebnisseite (W11b).</para>
+        ///
+        /// <para><b>Kein neues Renderer-Bild.</b> Gezeichnet wird mit
+        /// <c>ChartRenderer.Jahresverlauf</c> und einem <c>Achsenfenster</c> — dem
+        /// Zuschnitt, den die Ergebnisseite für ihren Datenzoom schon benutzt.</para>
+        ///
+        /// <para><b>Das Raster kommt aus dem Rechenobjekt.</b>
+        /// <c>Strombedarf_viertelStundenwerte</c> trägt je nach Weg 8 760 Stunden- oder
+        /// 35 040 Viertelstundenwerte; <c>Stuetzstellen</c> sagt, welches von beidem
+        /// vorliegt. Ohne diese Angabe träfe „Woche 12" die falschen Stunden.</para>
+        /// </summary>
+        private static Ganglinienquelle Gangquelle(SimulationStrombedarf simulation)
+        {
+            if (simulation == null) return null;
+
+            float[] reihe = simulation.Strombedarf_viertelStundenwerte;
+            int belegt = Math.Min(simulation.Stuetzstellen, reihe == null ? 0 : reihe.Length);
+            if (belegt < 48) return null;
+
+            // Werte je Stunde: 1 im Vorschauraster, 4 nach einem vollen Lauf.
+            int jeStunde = belegt > 8760 ? 4 : 1;
+            double[] werte = new double[belegt];
+            for (int i = 0; i < belegt; i++) werte[i] = reihe[i];
+
+            string titel = Text_("BERG_BILD_STROM_GANG", "Strombedarf Ganglinie");
+            string yTitel = Text_("BERG_ACHSE_STROMBEDARF", "Strombedarf [kW]");
+
+            return new Ganglinienquelle
+            {
+                Wochen = Math.Max(1, belegt / (168 * jeStunde)),
+                Tage = Math.Max(1, belegt / (24 * jeStunde)),
+                Bild = (stufe, nummer) =>
+                {
+                    int schritt = (stufe == Gangstufe.Woche ? 168 : 24) * jeStunde;
+                    int von = nummer * schritt;
+                    if (von < 0 || von >= belegt) return null;
+                    int bis = Math.Min(belegt, von + schritt);
+
+                    return ChartRenderer.Jahresverlauf(titel, werte, yTitel, FARBE_STROM,
+                        new ChartRenderer.Achsenfenster(von, bis));
                 }
             };
         }
@@ -158,28 +229,35 @@ namespace WindowsFormsApplication1
                 JahresverlaufBild = jahresbild,
                 Kennzahlen = new[]
                 {
-                    // Reihenfolge und Beschriftungen aus dem Designer (Karte, tabPage1).
-                    // Fuenf Energiemengen in MWh, eine LEISTUNG in kW - und das
-                    // Brauchwasser in kWh: Es kommt aus brauchwasserwerte.Sum(), waehrend
-                    // SimulationWaermebedarf jede andere Groesse selbst durch 1000 teilt
-                    // (Befund W8-B4). Genau das war der Sonderteiler, den nur die
-                    // Brauchwasserfassung hatte; jetzt steht die Einheit am Wert.
+                    // DIESELBE GLIEDERUNG WIE BEIM STROM (Anwenderwunsch W8-E-2, hier
+                    // konsequent mitgezogen): die LEISTUNG "max. Waermelast" [kW] zuerst
+                    // und fuer sich, dann die Posten, und "Gesamter Waermebedarf" als
+                    // abgesetzte Summe am Fuss - er stand bisher als ZWEITE Zeile
+                    // mitten unter seinen eigenen Bestandteilen.
+                    //
+                    // Die Posten liegen in MWh - bis auf das Brauchwasser in kWh: Es
+                    // kommt aus brauchwasserwerte.Sum(), waehrend SimulationWaermebedarf
+                    // jede andere Groesse selbst durch 1000 teilt (Befund W8-B4). Genau
+                    // das war der Sonderteiler, den nur die Brauchwasserfassung hatte;
+                    // seit W8-O-5 steht die Einheit am Wert.
+                    new ErgebnisKennzahl(Text_("BERG_LBL_MAX_WAERMELAST", "max. Wärmelast:"),
+                                 F2(simulation.Waermebedarf_Max), EINHEIT_KW)
+                    { Art = Kennzahlart.Leistung },
                     Energie(Text_("BERG_LBL_NETZVERLUSTE", "Netzverluste:"),
                             simulation.Waermebedarf_Netzverluste, Energieeinheit.MWh),
-                    Energie(Text_("BERG_LBL_WAERME_GESAMT", "Gesamter Wärmebedarf:"),
-                            simulation.Waermebedarf_Gesamt, Energieeinheit.MWh),
                     Energie(Text_("BERG_LBL_WAERME_EXTERN", "Externer Wärmebedarf:"),
                             simulation.Waermebedarf_Extern_Gesamt, Energieeinheit.MWh),
                     Energie(Text_("BERG_LBL_WAERME_PROZESS", "Wärmebedarf Prozess:"),
                             simulation.Waermebedarf_Prozess, Energieeinheit.MWh),
                     Energie(Text_("BERG_LBL_WAERME_GEBAEUDE", "Wärmebedarf Gebäude:"),
                             simulation.Waermebedarf_Gebaeude_Gesamt, Energieeinheit.MWh),
-                    new ErgebnisKennzahl(Text_("BERG_LBL_MAX_WAERMELAST", "max. Wärmelast:"),
-                                 F2(simulation.Waermebedarf_Max), EINHEIT_KW),
                     Energie(mitBrauchwasser
                                 ? Text_("BERG_LBL_WAERME_BRAUCHWASSER", "Wärmebedarf Brauchwasser:")
                                 : Text_("BERG_LBL_DAVON_BRAUCHWASSER", "davon Brauchwasser:"),
-                            simulation.Waermebedarf_Brauchwasser, Energieeinheit.KWh)
+                            simulation.Waermebedarf_Brauchwasser, Energieeinheit.KWh),
+                    Energie(Text_("BERG_LBL_WAERME_GESAMT", "Gesamter Wärmebedarf:"),
+                            simulation.Waermebedarf_Gesamt, Energieeinheit.MWh,
+                            Kennzahlart.Summe)
                 },
                 Sichten = sichten
             };
@@ -195,14 +273,16 @@ namespace WindowsFormsApplication1
         /// — und dient der Komponente als Rückfall.
         /// </summary>
         private static ErgebnisKennzahl Energie(string bezeichnung, double wert,
-                                                Energieeinheit quelle)
+                                                Energieeinheit quelle,
+                                                Kennzahlart art = Kennzahlart.Energie)
         {
             return new ErgebnisKennzahl(bezeichnung,
                                         F2(Energieeinheit.MWh.Aus(quelle, wert)),
                                         Energieeinheit.MWh.Text)
             {
                 Energie = wert,
-                QuelleEinheit = quelle
+                QuelleEinheit = quelle,
+                Art = art
             };
         }
 
@@ -254,6 +334,13 @@ namespace WindowsFormsApplication1
                 ["Einheit"] = BedarfEinheitWahl.Lies(),
                 ["EinheitGewaehlt"] = new Action<Energieeinheit>(BedarfEinheitWahl.Schreib),
                 ["LabelJahresverlauf"] = Text_("BERG_SCH_JAHRESVERLAUF", "Jahresverlauf"),
+                // Die drei Kategorien und der Zeitnavigator (Anwenderwunsch W8-E-2).
+                ["GruppeLeistung"] = Text_("BERG_GRP_LEISTUNG", "Leistung"),
+                ["GruppeEnergie"] = Text_("BERG_GRP_ENERGIE", "Energie"),
+                ["StufeJahrText"] = Text_("BERG_STUFE_JAHR", "Jahr"),
+                ["StufeWocheText"] = Text_("BERG_STUFE_WOCHE", "Woche"),
+                ["StufeTagText"] = Text_("BERG_STUFE_TAG", "Tag"),
+                ["MarkeFormat"] = Text_("BERG_GANG_MARKE", "{2} {0} von {1}"),
                 ["Monatsnamen"] = Monatsnamen(),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["HilfeSchluessel"] = hilfeSchluessel

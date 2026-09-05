@@ -11897,6 +11897,36 @@ Overwrite it anyway?</value>
   <data name="BERG_LBL_STROM_GEBAEUDE" xml:space="preserve">
     <value>Electricity requirement building:</value>
   </data>
+  <data name="BERG_LBL_MAX_LEISTUNG" xml:space="preserve">
+    <value>Max. power:</value>
+  </data>
+  <data name="BERG_LBL_STROM_PROFIL" xml:space="preserve">
+    <value>Electricity requirement from profile:</value>
+  </data>
+  <data name="BERG_GRP_LEISTUNG" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="BERG_GRP_ENERGIE" xml:space="preserve">
+    <value>Energy</value>
+  </data>
+  <data name="BERG_STUFE_JAHR" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="BERG_STUFE_WOCHE" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="BERG_STUFE_TAG" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="BERG_GANG_MARKE" xml:space="preserve">
+    <value>{2} {0} of {1}</value>
+  </data>
+  <data name="BERG_BILD_STROM_GANG" xml:space="preserve">
+    <value>Electricity requirement load curve</value>
+  </data>
+  <data name="BERG_ACHSE_STROMBEDARF" xml:space="preserve">
+    <value>Electricity requirement [kW]</value>
+  </data>
   <data name="BERG_LBL_NETZVERLUSTE" xml:space="preserve">
     <value>Network losses:</value>
   </data>
