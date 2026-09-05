@@ -48,7 +48,8 @@
 @namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
 @using WindowsFormsApplication1
 
-<div class="epos-dialog epos-gesetzeskatalog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog epos-gesetzeskatalog" tabindex="-1"
+     @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
@@ -63,29 +64,38 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Auswahlfeld Bezeichnung="@LabelKlasse" Eintraege="@KlassenEintraege"
-                 Auswahl="@_klasseIndex" AuswahlChanged="BeiKlasse" />
+    @* --- Die Liste nimmt die HOEHE (Anwenderwunsch 05.09.2026) -----------
+           Das Vorbild Form_Gesetzesparameter war 940 x 560 gross, und die
+           ListView darin 916 x 424 - die Liste WAR die Maske. Hier hat sie
+           keinen Eingabeblock neben sich (der Zeileneditor ist eine
+           Ueberlagerung), deshalb kein Katalograhmen, sondern eine
+           Listenspalte ueber die volle Breite. *@
+    <div class="epos-katalog-liste epos-katalog-fuellend">
 
-    <Raster TZeile="Zeile" Zeilen="@Zeilenliste">
-        <KindInhalt>
-            <TemplateColumn TGridItem="Zeile" Title="@SpalteWahlText">
-                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Id)" Kurztext="@SpalteWahlText"
-                            Gewaehltwerden="() => Waehlen(context)" />
-            </TemplateColumn>
-            <PropertyColumn TGridItem="Zeile" TProp="string"
-                            Property="@(z => z.Schluessel)" Title="@SpalteSchluesselText" />
-            <PropertyColumn TGridItem="Zeile" TProp="int"
-                            Property="@(z => z.JahrVon)" Title="@SpalteJahrText" />
-            <PropertyColumn TGridItem="Zeile" TProp="string"
-                            Property="@(z => z.WertText)" Title="@SpalteWertText" />
-            <PropertyColumn TGridItem="Zeile" TProp="string"
-                            Property="@(z => z.Einheit)" Title="@SpalteEinheitText" />
-            <PropertyColumn TGridItem="Zeile" TProp="string"
-                            Property="@(z => z.Status)" Title="@SpalteStatusText" />
-            <PropertyColumn TGridItem="Zeile" TProp="string"
-                            Property="@(z => z.Quelle)" Title="@SpalteQuelleText" />
-        </KindInhalt>
-    </Raster>
+        <Auswahlfeld Bezeichnung="@LabelKlasse" Eintraege="@KlassenEintraege"
+                     Auswahl="@_klasseIndex" AuswahlChanged="BeiKlasse" />
+
+        <Raster TZeile="Zeile" Zeilen="@Zeilenliste">
+            <KindInhalt>
+                <TemplateColumn TGridItem="Zeile" Title="@SpalteWahlText">
+                    <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Id)" Kurztext="@SpalteWahlText"
+                                Gewaehltwerden="() => Waehlen(context)" />
+                </TemplateColumn>
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.Schluessel)" Title="@SpalteSchluesselText" />
+                <PropertyColumn TGridItem="Zeile" TProp="int"
+                                Property="@(z => z.JahrVon)" Title="@SpalteJahrText" />
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.WertText)" Title="@SpalteWertText" />
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.Einheit)" Title="@SpalteEinheitText" />
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.Status)" Title="@SpalteStatusText" />
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.Quelle)" Title="@SpalteQuelleText" />
+            </KindInhalt>
+        </Raster>
+    </div>
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@NeuText</button>

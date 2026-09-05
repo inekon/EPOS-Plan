@@ -579,3 +579,61 @@ exportieren. Das ist die stehende Regel jedes Schemaschritts, keine Besonderheit
 | zwei `Sprungziel`-Konstanten und -Zweige | ~22 | die Ziele sind selbst Blazor |
 | `GESETZ_BTN_UEBERNEHMEN` | 1 Schlüssel × 2 Sprachen | ohne Nutzer (B4) |
 | `Views/Klimadaten/` | — | der Ordner ist leer und weg |
+
+---
+
+## Anwenderwunsch 05.09.2026 (**W14c‑E‑9**) — Klimaregionen und Gesetzeskatalog nutzen die Fläche
+
+**Der Befund** (Bildschirmfoto „Administration Solarkollektoren"): *„Admin-Menüs sind
+nicht an Größe Bildschirm angepasst."* Er trifft die vier Masken dieser Welle
+unterschiedlich stark — und bei den Klimaregionen kam ein **zweiter** Befund dazu.
+
+### W14c‑B‑16 (neu) — die zwei Spalten der Klimaregionen gab es im Stilblatt nie
+
+`KlimadatenDialog` trug seit W14c.3 die Hüllklassen `epos-klimaregion-mitte`,
+`epos-klimaregion-liste` und `epos-klimaregion-bilder`, und der Kommentar im Markup sagt
+„links: die Liste der importierten Regionen" / „rechts: die zwei Diagramme". **Keine der
+drei Klassen stand im Stilblatt.** Die zwei „Spalten" standen deshalb schlicht
+untereinander, und der Importblock lag noch darunter — genau der Befund des Anwenders,
+nur mit einer anderen Ursache als beim Katalogbrowser. Das Vorbild `Form_Klimadaten`
+(757 × 641) hatte die Regionsliste `listBoxKlimreg` (10, 30) 201 × 282 **links** und die
+Anzeige rechts.
+
+**Umsetzung:** Die drei toten Klassen sind durch den Baustein
+`EPOS.UI/Bausteine/Katalograhmen.razor` (W14a‑E‑6) ersetzt — Regionsliste samt
+„Löschen"-Knopf links, Diagrammreiter, Detailzeile **und** der Importblock rechts. Der
+Importblock wandert damit **in** die rechte Spalte: Er rollt dort mit dem Eingabefeld
+statt die ganze Seite zu rollen. Die Wurzel trägt `epos-katalog-dialog`.
+
+### Der Gesetzeskatalog: eine Liste, keine zweite Spalte
+
+`Form_Gesetzesparameter` war 940 × 560 groß und die `lvZeilen` darin 916 × 424 — **die
+Liste war die Maske**. Ihr Zeileneditor ist seit W14c.1 eine Überlagerung, nicht eine
+zweite Spalte. `GesetzeskatalogDialog` bekommt deshalb **keinen** Katalograhmen, sondern
+eine Listenspalte über die volle Breite (`epos-katalog-liste epos-katalog-fuellend`) in
+einer Wurzel mit `epos-katalog-dialog`: Klassenwahl oben, Liste bis zur Schlussleiste,
+kein Seitenrollbalken.
+
+### Dublettensuche und Einstellungen — nur das größere Fenster
+
+`KatalogDublettenDialog` legt Baum und Detailfeld schon seit W14c.5 in ein echtes
+Zweispaltenraster (`.epos-dubletten-mitte`, `minmax(320px, 45fr) minmax(320px, 55fr)`,
+Umbruch bei 900 px); `EinstellungenDialog` ist eine senkrechte Reiterleiste ohne Liste.
+Beide sind unverändert und gewinnen allein durch das größere Fenster (iU8‑E‑1):
+`KatalogDublettenHuelle` 1040 × 700, `KlimadatenHuelle` 1180 × 780,
+`GesetzeskatalogHuelle` 940 × 560 und `EinstellungenHuelle` 760 × 560 öffnen auf einem
+1920 × 1040‑Arbeitsbereich alle mit **1632 × 896**.
+
+**Wache.** `EPOS.UI.Tests/KatalogdialogTests` — Wurzelklasse für beide, Rahmen und
+Eingabeblock bei den Klimaregionen, „Liste ohne Rahmen, aber füllend" beim
+Gesetzeskatalog.
+
+**Abnahmepunkte am Gerät** (100 / 125 / 150 %):
+
+1. „Klimaregionen" zeigt die Regionsliste **links**, Diagramme, Detailzeile und
+   Importblock **rechts**; kein Seitenrollbalken.
+2. Eine Region wählen: Das Diagramm wechselt, die Liste bleibt an ihrem Platz.
+3. „Gesetzesparameter" zeigt die Liste über die volle Breite und volle Höhe; „Neu…"
+   öffnet den Zeileneditor weiterhin als mittige Überlagerung.
+4. „Katalog-Dubletten" öffnet groß; Baum links, Details rechts wie bisher.
+5. Das Fenster schmal ziehen (< 900 CSS-px): Die Klimaregionen brechen untereinander um.

@@ -69,7 +69,9 @@ namespace WindowsFormsApplication1
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
                 ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
-                ["SpalteWahlText"] = profil.Listenbeschriftung,
+                // Die WAHLSPALTE heisst „Wahl", nicht wie die Liste
+                // (Anwenderwunsch 05.09.2026) - siehe KatalogBrowserHuelle.
+                ["SpalteWahlText"] = MyResource.Resource.KFAK_SP_WAHL,
 
                 // Angleichung E-3: Geloescht wird in BEIDEN Auspraegungen mit
                 // Rueckfrage - und mit demselben Text wie in den zehn anderen Masken.
