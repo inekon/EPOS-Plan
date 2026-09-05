@@ -14743,6 +14743,15 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="STROMGL_HINWEIS_FORMAT" xml:space="preserve">
     <value>File format: CSV or text file (Excel .xlsx/.xlsm/.xls as well) holding one year of load data — 8,760 hourly values or 35,040 quarter-hourly values, in chronological order starting on 1 January, one value per line. Semicolon, comma, tabulator and vertical bar are accepted as field separators; a single-column file needs none. A header line is allowed and is detected. Decimal separator comma or point, no thousands separator. Values as power in kW or as energy in kWh per interval — the unit is asked for before reading and converted to kW. A time stamp column is permitted but not required. The name of the load profile is the file name without its extension.</value>
   </data>
+  <data name="STROMGL_HINWEIS_FORMAT_KURZ" xml:space="preserve">
+    <value>CSV/text, 8,760 hourly or 35,040 quarter-hourly values, one value per line — details on the info button</value>
+  </data>
+  <data name="STROMGL_LBL_JAHRESARBEIT" xml:space="preserve">
+    <value>Annual energy:</value>
+  </data>
+  <data name="STROMGL_LBL_SPITZE" xml:space="preserve">
+    <value>Peak load:</value>
+  </data>
   <data name="STROMGL_TITEL_KOPIE" xml:space="preserve">
     <value>Save electricity load profile as</value>
   </data>

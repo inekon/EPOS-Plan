@@ -348,4 +348,60 @@ public class BhkwDialogTests : BunitContext
         Assert.Equal(1, rufe);
         Assert.False(gemeldet);
     }
+    // =====================================================================
+    //  Formularraster — Anwenderwunsch iU8‑E‑2, Paket P1 (05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>iU8‑E‑2, Paket P1:</b> „Darstellung der Dialoge kompakter und
+    /// übersichtlicher — Parameterblöcke rechts."
+    ///
+    /// <para>Der Detailblock des Projektdialogs steht seither im <c>Formularraster</c>: Die Beschriftung
+    /// fällt NEBEN das Feld, die Felder ordnen sich in eine oder zwei Spalten,
+    /// und ein Zahlenfeld ist kurz mit der Einheit unmittelbar dahinter. Zuvor
+    /// nahm jedes Feld die volle Breite und die Beschriftung stand darüber.</para>
+    ///
+    /// <para>Die Regeln dahinter hält <c>Bausteine/FormularrasterTests</c>;
+    /// hier steht nur, dass der Block ihn TRÄGT.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Detailblock_steht_im_Formularraster()
+    {
+        var cut = Aufbauen();
+
+        var raster = cut.FindAll(".epos-formularraster");
+        Assert.NotEmpty(raster);
+        Assert.Contains(raster, r => r.QuerySelectorAll(".epos-feld").Length > 0);
+    }
+
+    /// <summary>
+    /// <b>Anwenderfoto „Verwaltung BHKW" (05.09.2026):</b> „Stelle diesen
+    /// Dialog kompakter dar, insbesondere Daten zum BHKW-Modul unten."
+    ///
+    /// <para>So ist der Block seither aufgeteilt: Modulname und Hersteller
+    /// nehmen die Feldspalte, die beiden LEISTUNGEN sind kurze Felder und
+    /// stehen damit zu zweit in einer Zeile, die Beschreibung spannt über
+    /// beide Spalten, und Träger, Grenzleistung, Vor- und Rücklauf folgen als
+    /// Auswahlfeld und drei kurze Felder. Geprüft wird die Selbstmeldung, denn
+    /// die Breite selbst steht im Stilblatt (Lehre W6‑B‑1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Leistungen_des_Moduls_sind_kurze_Felder_die_Beschreibung_ist_breit()
+    {
+        var cut = Aufbauen();
+
+        var block = cut.FindAll(".epos-formularraster")[^1];
+
+        // Die zwei Leistungen sind Zahlen und melden sich als kurz; Hersteller
+        // und Modulname sind Text und bleiben in der Feldspalte.
+        var kurz = block.QuerySelectorAll(".epos-feld--kurz");
+        var kurzeTexte = kurz.Select(f => f.QuerySelector(".epos-feld-text")?.TextContent).ToList();
+
+        Assert.Contains("thermische Leistung [kWth]:", kurzeTexte);
+        Assert.Contains("elektrische Leistung [kWel]:", kurzeTexte);
+        Assert.DoesNotContain("Hersteller:", kurzeTexte);
+
+        // Die Beschreibung ist mehrzeilig und meldet sich als LANG.
+        Assert.NotEmpty(block.QuerySelectorAll(".epos-feld--breit textarea"));
+    }
 }

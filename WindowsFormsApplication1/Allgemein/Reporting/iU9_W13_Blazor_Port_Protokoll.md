@@ -828,3 +828,33 @@ Die elf umgestellten Hüllen: `Import/KatalogImportHuelle`,
   `async void`, ein unbeobachteter `Task` oder ein Wurf auf einem Arbeitsfaden ohne
   `await` geht weiterhin am Netz vorbei. Im Katalogimport gibt es keine solche Stelle
   (jedes `Task.Run` wird `await`et), aber die Regel gilt für neue Wege.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Photovoltaik/PvModulImportDialog.razor` | 21 von 28 | 3 | nein | **Klasse B, teilweise umgestellt.** Die **drei Detailreiter** (Übersicht, Elektrisch, Thermisch) sind Formularblöcke — der handgebaute Kasten `epos-pvimport-details` entfällt samt seiner Regel im Stilblatt; dieselbe Anordnung wie im Modulkatalog, in den die Zeile übernommen wird. **Nicht** umgestellt: die **zwei Filterleisten** über dem Gitter (Hersteller, Technologie, Suche, vier Grenzwerte, Rücksetzknopf) — eine Filterleiste ist eine Leiste über einer Tabelle und kein Parameterblock; sie bleibt `epos-pvimport-filter` (flex, umbrechend). Das Gitter mit 20 746 Zeilen ohnehin nicht. |
+
+**Drei bestehende Proben zogen nach.** `PvModulImportDialogTests` griff die
+Detailfelder über `.epos-pvimport-details`; der Anker heißt jetzt
+`.epos-formularraster`. Neu dazu:
+`Die_Detailfelder_stehen_im_Formularraster` — er prüft ausdrücklich die **Grenze**,
+dass in der Filterleiste **kein** Raster steht.
+
+> Diese Datei gehört zu Welle W13; der Dialog stand in der Pakettabelle von
+> Aufgabe #91 unter **P3**, deshalb steht der Nachtrag hier und nicht in einem
+> W8–W12‑Protokoll.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.

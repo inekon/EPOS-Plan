@@ -85,22 +85,24 @@
         <div class="epos-auswahlspalte">
             <Gruppenkopf Titel="@GruppeKenndaten">
                 <KindInhalt>
+                    @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
+                       Feldpaare je Zeile, sobald die Spalte breit genug ist
+                       (iU8-E-2, Paket P1). *@
+                    <Formularraster>
+                        <KindInhalt>
                     <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" NurLesen="true" />
-                    <div class="epos-feldpaar">
-                        <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma" NurLesen="true" />
-                        <Textfeld Bezeichnung="@LabelTyp" Wert="@Daten.Typ" NurLesen="true" />
-                    </div>
-                    <div class="epos-feldpaar">
-                        <Textfeld Bezeichnung="@LabelRegelung" Wert="@Daten.Regelung" NurLesen="true" />
-                        <Textfeld Bezeichnung="@LabelBaujahr" Wert="@Daten.Baujahr.ToString()" NurLesen="true" />
-                    </div>
-                    <div class="epos-feldpaar">
-                        <Textfeld Bezeichnung="@LabelNennleistung" Wert="@Daten.Nennleistung.ToString()"
-                                  NurLesen="true" />
-                        <Ganzzahlfeld Bezeichnung="@LabelPHeizstab" Einheit="@EinheitKw"
-                                      Feldname="@LabelPHeizstabKurz" Wert="@Daten.HeizstabLeistung"
-                                      WertChanged="w => Daten.HeizstabLeistung = w" Aktiv="@(!NurLesen)" />
-                    </div>
+                    <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma" NurLesen="true" />
+                    <Textfeld Bezeichnung="@LabelTyp" Wert="@Daten.Typ" NurLesen="true" />
+                    <Textfeld Bezeichnung="@LabelRegelung" Wert="@Daten.Regelung" NurLesen="true" />
+                    <Textfeld Bezeichnung="@LabelBaujahr" Wert="@Daten.Baujahr.ToString()" NurLesen="true"
+                              Kurz="true" />
+                    <Textfeld Bezeichnung="@LabelNennleistung" Wert="@Daten.Nennleistung.ToString()"
+                              NurLesen="true" Kurz="true" />
+                    <Ganzzahlfeld Bezeichnung="@LabelPHeizstab" Einheit="@EinheitKw"
+                                  Feldname="@LabelPHeizstabKurz" Wert="@Daten.HeizstabLeistung"
+                                  WertChanged="w => Daten.HeizstabLeistung = w" Aktiv="@(!NurLesen)" />
+                        </KindInhalt>
+                    </Formularraster>
 
                     @* --- Ä19: die Kostenzeile statt der Modulkosten ---------------- *@
                     <div class="epos-kostenleiste">
@@ -128,32 +130,40 @@
 
     <Gruppenkopf Titel="@GruppeAuslegung">
         <KindInhalt>
-            <div class="epos-feldpaar">
-                <Auswahlfeld Bezeichnung="@LabelVorlauf" Eintraege="@Vorlaufeintraege"
-                             Auswahl="@Daten.Vorlauf" AuswahlChanged="w => Daten.Vorlauf = w"
-                             Aktiv="@(!NurLesen)" />
-                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
-                              Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
-                              WertChanged="w => Daten.Ruecklauf = w" Aktiv="@(!NurLesen)" />
-            </div>
+            @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
+               Feldpaare je Zeile, sobald die Spalte breit genug ist
+               (iU8-E-2, Paket P1). *@
+            <Formularraster>
+                <KindInhalt>
+            <Auswahlfeld Bezeichnung="@LabelVorlauf" Eintraege="@Vorlaufeintraege"
+                         Auswahl="@Daten.Vorlauf" AuswahlChanged="w => Daten.Vorlauf = w"
+                         Aktiv="@(!NurLesen)" />
+            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
+                          Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
+                          WertChanged="w => Daten.Ruecklauf = w" Aktiv="@(!NurLesen)" />
             <Herleitungszeile Text="@RuecklaufVorschlagszeile" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     <Gruppenkopf Titel="@GruppeSpitzenlast">
         <KindInhalt>
+            @* Formularraster, EINSPALTIG (iU8-E-2, Paket P1): Der Block ist eine
+               Regel, die sich von oben nach unten aufblaettert; zwei Spalten
+               stellten den Schalter "Sperrzeit" neben den Schalter "Heizstab". *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
             <Herleitungszeile Text="@HinweisSpitzenlast" />
             <Schalter Bezeichnung="@LabelHeizstab" Wert="@Daten.Heizstab"
                       WertChanged="w => Daten.Heizstab = w" Aktiv="@(!NurLesen)" />
 
             <Schalter Bezeichnung="@LabelSperrzeit" Wert="@Daten.Sperrung"
                       WertChanged="w => Daten.Sperrung = w" Aktiv="@(!NurLesen)" />
-            <div class="epos-feldpaar">
-                <Ganzzahlfeld Bezeichnung="@LabelVon" Feldname="@LabelVon" Wert="@Daten.SperrzeitVon"
-                              WertChanged="w => Daten.SperrzeitVon = w" Aktiv="@(!NurLesen)" />
-                <Ganzzahlfeld Bezeichnung="@LabelBis" Feldname="@LabelBis" Wert="@Daten.SperrzeitBis"
-                              WertChanged="w => Daten.SperrzeitBis = w" Aktiv="@(!NurLesen)" />
-            </div>
+            <Ganzzahlfeld Bezeichnung="@LabelVon" Feldname="@LabelVon" Wert="@Daten.SperrzeitVon"
+                          WertChanged="w => Daten.SperrzeitVon = w" Aktiv="@(!NurLesen)" />
+            <Ganzzahlfeld Bezeichnung="@LabelBis" Feldname="@LabelBis" Wert="@Daten.SperrzeitBis"
+                          WertChanged="w => Daten.SperrzeitBis = w" Aktiv="@(!NurLesen)" />
             <Ganzzahlfeld Bezeichnung="@LabelNutzungszeit" Einheit="@EinheitStundeTag"
                           Feldname="@LabelNutzungszeit" Wert="@Daten.Nutzungszeit"
                           WertChanged="w => Daten.Nutzungszeit = w" Aktiv="@(!NurLesen)" />
@@ -176,6 +186,8 @@
                 }
                 <Herleitungszeile Text="@BetriebsartErlaeuterung" />
             }
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 

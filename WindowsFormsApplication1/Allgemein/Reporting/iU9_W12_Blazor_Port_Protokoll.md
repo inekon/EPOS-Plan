@@ -858,3 +858,181 @@ Namensdialog stehen. Die Klasse pinnt die Kultur seither vollständig
 ```
 
 Dateiname `Werk-Nord-2024.csv` → Bezeichner der Ganglinie `Werk-Nord-2024`.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Strom/PeakShavingDialog.razor` | 19 | 4 | Quelle: **ja** | Klasse A. „Quelle des Lastgangs" **einspaltig** — der Block trägt ein Pfadfeld (`Dateiwahl`), das die Breite braucht. „Speicher‑ und Bewertungsparameter" in drei Rastern, unterbrochen von den zwei Schaltern, die dort schon immer eine eigene Zeile hatten: Die **sieben** handgebauten `epos-feldpaar`‑Kästen entfallen ersatzlos. Der Knopf „minimale Schwelle" steht als zweites Rasterkind **neben** der Zielschwelle — wie im Vorbild (`Form_PeakShaving`, zwei GroupBoxen). **Nicht** umgestellt: die drei Ergebnisreiter (zwei Tabellen, ein Diagramm). |
+| `Dialoge/Strom/GanglinieImportOptionenDialog.razor` | 9 | 1 | nein | **Klasse B, umgestellt.** Die acht Formatlisten sind ein Formularblock; der handgebaute Kasten `epos-importoptionen-raster` bleibt als Anker der Proben stehen, seine Regel im Stilblatt ist gefallen — das Ordnen macht jetzt der Raster. **Nicht** umgestellt: der Schalter „Kopfzeile", die Hinweiszeile und das Vorschaugitter (eine `TemplateColumn` je Spalte). |
+
+**Nicht angefasst** (heute mit W12‑E‑1 abgenommen): `StromganglinieDialog` und
+`StromganglinieAdminDialog`.
+
+**Eine bestehende Probe zog nach.**
+`PeakShavingDialogTests.Die_minimale_Schwelle_landet_im_Feld_und_schaltet_adaptiv_aus`
+griff den Knopf über `.epos-feldpaar button`. Er steht jetzt als **direktes**
+Rasterkind da: `.epos-formularraster > button` — das Kindzeichen grenzt ihn gegen
+den Knopf der `Dateiwahl` ab, der in seinem Feld steckt.
+
+**Probe.** `Die_Parameter_stehen_im_Formularraster` prüft zusätzlich, dass **kein**
+`epos-feldpaar` mehr im Dialog steht; dazu
+`Die_Formatlisten_stehen_im_Formularraster`.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.
+---
+
+## Windows-Abnahme 05.09.2026 — Stromganglinie als Grafik (W12‑E‑2)
+
+**Der Wunsch, wörtlich:** „Stelle die importierte Stromganglinie als Grafik dar (wie bisher,
+zoombar, umschaltbar auf sortiert)."
+
+### „Wie bisher" gibt es nicht — die Fundstellen
+
+Der Bestand hat eine Stromganglinie **nirgends als Kurve gezeigt**. Nachgesehen wurde in der
+Git-Historie, jeweils im Stand VOR der Umstellung:
+
+| Maske | Stand | Was wirklich darin stand |
+|---|---|---|
+| `Form_Stromganglinie_Admin` (die Verwaltung) | `1c8c7c3^` | 664 × 316; `listBox_Extern` 335 × 174, vier Knöpfe, `groupBox1` mit `comboBox_Zeitinterval` — **kein Chart-Steuerelement**, ein `grep` auf „hart" bleibt leer |
+| `Form_Stromganglinie` (die Zuordnung) | `58d02f6^` | zwei ListBox, zwei Pfeile, „Bearbeiten…" — **kein Chart** |
+| `Wizard_Stromlastgang` (Assistentenseite 6) | `76f4279^` | **kein Chart** |
+| `Form_ErgStromverbraucher` | `34e69ff^` | `chart1` vorhanden, aber `chartArea1.AxisX.Title = "Monat"`, `AxisY.Title = "Strombedarf [MWh]"` — **Monatssäulen**, kein Jahresgang |
+| `Form_PeakShaving` | `1c8c7c3^` | `tabChart` „Lastgang vorher/nachher", Chart erst zur Laufzeit gebaut — der Lastgang des Peak-Shaving-**Ergebnisses**, nicht die Katalogganglinie |
+
+Als **Kurve** erschien der Strom im Bestand nur an einer Stelle: im Bedarfsreiter der
+Ergebnisseite (`SimulationErgebnisHuelle.BildBedarfStrom` → `ChartRenderer.GanglinieNormiert`,
+Titel `CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE`, 1 240 × 560, Schalter „sortiert").
+**Genau dieses Bild steht jetzt im Dialog** — in derselben Anordnung, die der
+`GebaeudeBedarfDialog` (W9.8) für die Wärme vormacht: Kennzahlen, darunter der Schalter, darunter
+das Bild im Baustein `Diagramm` mit Bild- und Datenzoom.
+
+### Was entstanden ist
+
+**Ein Baustein, kein Anbau am Dialog.** `EPOS.UI/Dialoge/Strom/GanglinienGrafik.razor` trägt die
+ganze Grafik: die Namenszeile, die drei Kennzahlen, die Leiste mit „sortiert" und der
+Einheitenwahl, das `ChartBild`. Der Dialog reicht nur Zahlen und einen Bildauftrag hinein. Grund:
+Die Grafik gehört zu **beiden** Listen — links die Projektzuordnungen, rechts der Katalog —, steht
+deshalb unter ihnen und nicht in einer Spalte, und `StromganglinieDialog` bleibt lesbar.
+
+**Sobald links oder rechts eine Zeile markiert ist**, steht sie da; ohne Markierung nicht (eine
+Kennzahlenzeile ohne Bezug sagt nichts). Ein Wechsel der Markierung verwirft Bildvorrat und
+Achsenausschnitt der vorigen Ganglinie; das Entfernen einer Zuordnung nimmt ihre Grafik mit.
+
+**Die Zahlen kommen aus dem Kern**, `EPOS.Kern/Controller/StromganglinieAuswertungCtrl.cs`:
+
+* Gelesen wird dieselbe Wertspalte wie im Lauf, `… WHERE ID_Ganglinie = ? ORDER BY ID`, aus
+  `Tab_StromganglinieDaten_STAMM` (Katalog) bzw. `Tab_StromganglinieDaten` (Projektkopie), und als
+  `float` — so, wie `SimulationStrombedarf` sie liest.
+* **35 040 Viertelstundenwerte werden mit DERSELBEN Methode verdichtet, die der Lauf benutzt:**
+  `SimulationControl.Viertelstunden_zu_Stundenwerte_Mittelwert`. Eine zweite Mittelwertschleife
+  entsteht nicht — sie liefe beim nächsten Schemawechsel auseinander.
+* Daraus fallen **Jahresarbeit** [MWh] = Σ der Stundenleistungen ÷ 1 000, **Spitze** [kW] = ihr
+  Höchstwert und **Vollbenutzungsstunden** [h/a] = Arbeit ÷ Spitze (ohne Spitze „—").
+* Die Spitze ist die der **gezeigten** Stundenreihe, also die 100 %-Linie des Bildes — nicht
+  `Strombedarf_Max` des Laufs (das ist die Viertelstundenspitze des ganzen Projekts). Bei der
+  Testganglinie `test` sind das 1 310,75 kW gegenüber 1 335 kW im Viertelstundenraster; der
+  Unterschied steht im Kopfkommentar des Controllers und hat einen eigenen Kern-Testfall.
+* Eine Projektzeile ohne Projektkopie (`GanglinieId` = 0, Zähler ab `StartIndex` = 100000) fällt
+  auf den Katalogsatz zurück, aus dem die Kopie entstehen wird — dieselben Werte.
+
+**Die Einheit** folgt dem Anwenderentscheid **W8‑O‑5**: MWh als Vorgabe, kWh wählbar, gemerkt in
+derselben Ablage wie in den Bedarfsansichten (`BedarfEinheitWahl`). Sie gilt nur für die
+Jahresarbeit; Spitze bleibt kW, Vollbenutzungsstunden bleiben Stunden, und das Bild zeigt Prozent
+des Jahreshöchstwertes.
+
+**Der Platz kommt vom Formathinweis.** Der neun Zeilen hohe Absatz aus W12‑E‑1 stand genau dort,
+wo jetzt die Grafik steht. Sichtbar ist seither **eine** Zeile (`STROMGL_HINWEIS_FORMAT_KURZ`,
+de/en neu): „CSV/Text, 8.760 Stunden- oder 35.040 Viertelstundenwerte, ein Wert je Zeile —
+Einzelheiten am Infoknopf". Der volle Wortlaut (`STROMGL_HINWEIS_FORMAT`, unverändert) hängt am
+`InfoKnopf` und in der Hilfe — kein Textschlüssel ist verlorengegangen.
+
+**Kein Inline-CSS.** Der Block „STROMGANGLINIE - GRAFIK" steht in `EPOS.UI/wwwroot/epos-ui.css`
+**vor** dem Block „FORMULARRASTER (Anwenderwunsch iU8-E-2" — Hausregel: der Formularraster-Block
+bleibt der letzte im Blatt, weil
+`FormularrasterTests.Ausserhalb_des_Rasters_bleibt_ein_Feld_unveraendert` von seiner Marke bis
+Dateiende liest. Unter 900 px (`--epos-zweispalten-umbruch`) stehen die drei Kennzahlen
+untereinander; die Grafik selbst rollt nie waagerecht (`min-width: 0` am Abschnitt,
+`overflow: hidden` an `.epos-diagramm-flaeche`).
+
+**Kein neues Renderer-Bild.** Es ist B1, `ChartRenderer.GanglinieNormiert` — `ChartProben` bleibt
+bei 36 + 4.
+
+### Geänderte und neue Dateien
+
+| Datei | Was |
+|---|---|
+| `EPOS.Kern/Controller/StromganglinieAuswertungCtrl.cs` | **neu** — Leseweg, Verdichtung, drei Kennzahlen |
+| `EPOS.UI/Dialoge/Strom/GanglinienGrafik.razor` | **neu** — die Grafik als Baustein |
+| `EPOS.UI/Dialoge/Strom/StromganglinieDaten.cs` | `GanglinienWahl`, `GanglinienKennzahlen` |
+| `EPOS.UI/Dialoge/Strom/StromganglinieDialog.razor` | Grafik unter den zwei Spalten, einzeiliger Formathinweis |
+| `EPOS.UI/wwwroot/epos-ui.css` | Block „STROMGANGLINIE - GRAFIK" vor dem Formularraster-Block |
+| `WindowsFormsApplication1/Views/Stromverbraucher/StromganglinieHuelle.cs` | `Kennzahlen`, `Bildauftrag`, `Einheit`, `EinheitGewaehlt`; `Grafikvorrat` (eine gelesene Reihe je Dialog) |
+| `EPOS.Kern/MyResource/Resource*.resx` + `Resource.Designer.cs` | `STROMGL_HINWEIS_FORMAT_KURZ`, `STROMGL_LBL_JAHRESARBEIT`, `STROMGL_LBL_SPITZE` (de/en) |
+| `EPOS.UI.Tests/Dialoge/StromganglinieDialogTests.cs` | 11 neue Fälle (30 → 41) |
+| `EPOS.Kern.Tests/StromganglinieAuswertungTests.cs` | **neu** — 7 Fälle, Kennzahlen eingefroren |
+
+### Nachweise
+
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet test EPOS.UI.Tests -c Release` | **2 557 grün** (2 546 + 11 neue), auch unter `LANG=en_US.UTF-8` |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 096 grün** (1 089 + 7 neue), auch unter `LANG=en_US.UTF-8` |
+| `dotnet run --project Proben/ChartProben -c Release` | 40 Bilder (36 + 4 Gegenproben), 0 Verstöße |
+| `SqlDialektPruefer` | 1 205 SQL-Texte, **0 Fundstellen** |
+| Kern-Wächter (`Program.*`, Plattform) | beide leer |
+| Referenzlauf | nicht nötig — der Rechenweg ist unberührt, gelesen wird nur |
+
+**Eingefrorene Kennzahlen** (`Referenzlaeufe/Kenndaten_Test.sqlite`):
+
+| Katalogsatz | Raster | Jahresarbeit | Spitze | Vollbenutzung |
+|---|---|---|---|---|
+| `Lastgang_Strom_NestleLB-05-2010-05-2011` | 8 760 Stundenwerte | 4 790,086 MWh | 2 070,00 kW | 2 314,05 h/a |
+| `test` | 35 040 Viertelstundenwerte → 8 760 | 4 788,929 MWh | 1 310,75 kW | 3 653,58 h/a |
+
+### Abnahmepunkte A‑W12‑E‑2
+
+1. **Ohne Markierung keine Grafik.** Startseite → Kachel „Stromlastgang" (oder Assistentenseite 6):
+   Beim Öffnen stehen nur die zwei Listen, die Knopfleiste und der jetzt **einzeilige**
+   Formathinweis. Unterhalb ist nichts.
+2. **Katalogzeile markieren.** Rechts eine Ganglinie anklicken: Darunter erscheint über die volle
+   Breite ihr Name, die Zeile „Jahresarbeit: … MWh | Spitzenlast: … kW | Vollbenutzungsstunden: …
+   h/a" und das Diagramm „Strombedarf Jahresganglinie" mit den Monatsgrenzen auf der x-Achse.
+3. **Projektzeile markieren.** Links eine zugeordnete Ganglinie anklicken: dieselbe Grafik für
+   diese Zeile. Eine eben erst mit „In das Projekt übernehmen" hinzugefügte Zeile zeigt schon vor
+   dem Speichern ihre Kurve (sie kommt dann aus dem Katalogsatz).
+4. **Umschalten auf sortiert.** Häkchen „sortiert": Aus der Ganglinie wird die **Dauerlinie**,
+   monoton fallend, und die x-Achse trägt die vier Stundenmarken statt der Monate. Häkchen wieder
+   weg: die Ganglinie steht wieder da.
+5. **Zoomen.** Mausrad über dem Bild vergrößert (Anzeige „×2,5", Knopf „1:1" setzt zurück);
+   Ziehen verschiebt; Doppelklick vergrößert. Knopf „Bereich" drücken und ein Rechteck aufziehen:
+   Das Bild wird mit **diesem Achsenausschnitt neu gezeichnet** (nicht nur vergrößert — die
+   x-Beschriftung nennt danach den Ausschnitt). „1:1" holt das ganze Jahr zurück. Ein Wechsel des
+   Schalters „sortiert" verwirft den Ausschnitt.
+6. **Einheit.** Auswahlfeld „Einheit:" von MWh auf kWh: Nur die Jahresarbeit wechselt (× 1 000,
+   ohne Nachkommastellen); Spitze bleibt kW, Vollbenutzungsstunden bleiben h/a. Die Wahl wird
+   gemerkt — der Wärmebedarfsdialog zeigt danach dieselbe Einheit.
+7. **Viertelstundenganglinie.** Eine Ganglinie mit Zeitschritt 4 (35 040 Werte) markieren: Die
+   Kurve hat 8 760 Punkte (Stundenmittel); die Jahresarbeit stimmt mit der der Simulation überein,
+   die Spitze ist erwartungsgemäß kleiner als die höchste Viertelstunde.
+8. **Der Formathinweis.** Unter der Knopfleiste steht **eine** Zeile mit dem Verweis auf den
+   Infoknopf; der Tooltip des Fragezeichens zeigt weiterhin den **vollen** Text (Trennzeichen,
+   Kopfzeile, Dezimaltrenner, Spalten, Einheit, Bezeichner), und der Klick öffnet die Wikiseite.
+9. **Schmales Fenster.** Das Fenster auf unter 900 px verkleinern: Die zwei Listen stehen
+   untereinander, die Grafik darunter, die drei Kennzahlen untereinander — und **nichts rollt
+   waagerecht**.
+10. **Nichts sonst hat sich bewegt.** Die vier Knöpfe aus W12‑E‑1, die zwei Pfeile, OK und
+    Abbrechen verhalten sich wie bisher; Esc schließt immer nur die oberste Ebene. Löschen einer
+    markierten Katalogzeile nimmt auch ihre Grafik weg.

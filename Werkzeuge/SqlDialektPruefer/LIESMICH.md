@@ -77,6 +77,15 @@ Syntax — der Text zählt als **dynamisch** und erscheint nur unter `--dynamisc
 SQLite dagegen einen Namen, der **wörtlich im Quelltext** steht, ist auch ein dynamischer
 Text falsch (so fiel `Tab_WP … WHERE WPName = …` auf).
 
+> **Eine Ausnahme davon** (05.09.2026): eine `SELECT`-**Spaltenliste ohne jedes `FROM`**.
+> Dort scheitert ohne Tabellenbezug *jeder* Spaltenname, auch der richtige — die Meldung
+> sagt etwas über den Ausschnitt, nicht über den Quelltext. Der Fall entsteht, wenn der
+> Rumpf in einer Schleife wächst und das `FROM` in einer **anderen** Anweisung dazukommt;
+> einziger Vertreter im Bestand ist `WizardCtrl.FachspaltenSelect`. `_spaltenliste_ohne_tabelle`
+> stuft solche Texte als *dynamisch* ein. Eng gehalten: nur bei fehlender **Spalte** und nur
+> ohne `FROM` — mit `FROM`, bei fehlender **Tabelle** und bei `UPDATE`/`INSERT` bleibt es
+> ein Fund.
+
 **5. Musterregeln**, unabhängig vom `EXPLAIN`, in zwei Klassen:
 
 * **leise** — SQLite nimmt es klaglos an und tut etwas anderes als Access:

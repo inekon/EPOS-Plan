@@ -712,3 +712,117 @@ Pfeilspalte noch selbst). Eine bunit-Probe sieht eine Stilregel nicht — Lehre 
 4. **Knöpfe**: Beide tragen ihren Satz im Klartext — auf Deutsch **und** auf Englisch —
    und einen Kurztext, der die Herkunft der Zeile nennt. Jeder bleibt gesperrt, solange
    in der jeweils anderen Liste nichts markiert ist.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P1 (iU8‑E‑2)
+
+Der Anwender am 05.09.2026: „Darstellung der Dialoge kompakter und übersichtlicher —
+Parameterblöcke rechts. Genauso für andere Dialoge prüfen." Die hausweite Regel dazu steht
+im Protokoll **W14a**, Abschnitt „Kompaktes Formularraster"; hier stehen nur die **sechs
+Dialoge dieser Welle**. Umgestellt wird durch **Einhängen**: `<Formularraster>` um den
+vorhandenen Feldlauf, kein Feld umbenannt, kein Text geändert, keine Regel je Dialog. Die
+von Hand gebauten `epos-feldpaar`-Wirte entfallen dabei — der Raster stellt zwei Feldpaare
+je Zeile selbst, sobald die Spalte breit genug ist. In `EPOS.UI/Dialoge/Erzeuger/` steht
+danach **kein** `epos-feldpaar` mehr.
+
+| Datei | Felder | Gruppen (Raster) | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Erzeuger/HeizkesselKatalogDialog.razor` (W6.1) | 21 | 4 — Bezeichnung, Technik, Kosten, Emissionen | nein | Klasse A, reines Einhängen |
+| `Dialoge/Erzeuger/BhkwKatalogDialog.razor` (W6.2) | 26 | 4 — Bezeichnung, Technik, Kosten, Emissionen | nein | Klasse A. Die **Herleitungszeile** zum abgeleiteten Wert je kWel steht MITTEN im Kostenraster und spannt über beide Spalten (neue Regel, s. u.) — sonst hätte die Gruppe in zwei Raster zerfallen müssen |
+| `Dialoge/Erzeuger/BhkwDialog.razor` (W6.4) | 7 | 1 — Detailblock | nein | **B:** Der Detailblock ist ein Formularblock (dieselbe Bauart wie im Heizkessel-Projektdialog) → Raster. Die zwei **Filterfelder** über der Katalogliste und die **Summenzeile** unter der Projektliste bleiben: Das sind Listenwerkzeuge, keine Parameter eines Geräts |
+| `Dialoge/Erzeuger/PhotovoltaikDialog.razor` (W6.5) | 7 | 2 — Anlagenblock, Detailblock | nein | **B:** Der **gestrichelte Rahmen** des Anlagenblocks BLEIBT — er sagt „diese Werte gehören zur markierten Anlage" (`Form_PV_Paint`, vier `DrawLine`-Aufrufe). Der Raster steht DARIN und ordnet nur die drei Felder. Der Herstellerfilter über der Katalogliste bleibt |
+| `Dialoge/Erzeuger/StromspeicherDialog.razor` (W6.6) | 2 | 1 — Detailblock | nein | Klasse A |
+| `Dialoge/Erzeuger/PufferspeicherDialog.razor` (W6.7) | 2 | 1 — Detailblock | nein | Klasse A. Die zwei Filter (Hersteller, Volumenstufe) über der Katalogliste bleiben |
+
+Die Feldzahl zählt Feldbausteine im Quelltext; die Detailblöcke der vier Projektdialoge
+zeichnen über `@foreach` mehr Zeilen, als hier stehen.
+
+**Eine Zeile im Stilblatt kam dazu** (Unterblock „Formularraster — Paket P1"):
+`.epos-formularraster > .epos-herleitung { grid-column: 1 / -1; }`. Eine Herleitungszeile
+ist kein Feld und darf nicht in einer Rasterzelle **neben** einem Feld landen. Ohne sie
+müsste jeder Dialog mit Zwischensatz seinen Block in zwei oder drei Raster zerlegen — und
+jede Zerlegung ist eine Stelle, an der die Beschriftungsspalten später auseinanderlaufen.
+Die Regel nennt `.epos-formularraster`, greift also nirgends sonst: Eine Herleitungszeile
+außerhalb eines Rasters bleibt unverändert.
+
+### Wachen
+
+Je Dialog ein bunit-Fall in der vorhandenen Testdatei (`Der_Eingabeblock_…` bzw.
+`Der_Detailblock_steht_im_Formularraster`): Der Block trägt `epos-formularraster` und es
+steht ein Feld darin; wo der Block ein Zahlenfeld mit Einheit führt, zusätzlich, dass es
+sich als **kurzes** Feld meldet und die Einheit in **derselben** Feldzeile steht.
+
+### Abnahmepunkte am Gerät (100 / 125 / 150 %)
+
+1. „Administration Heizkessel" und „BHKW Verwaltung": In jedem Block steht die Beschriftung
+   **links neben** ihrem Feld, das Zahlenfeld ist **kurz**, die Einheit **unmittelbar
+   dahinter**; bei breitem Fenster stehen zwei Feldpaare nebeneinander.
+2. „BHKW Verwaltung", Gruppe Kosten: Der Satz zum abgeleiteten Wert je kWel steht über die
+   **volle Breite** zwischen den Kostenposten und Raumbedarf/Wartung — nicht neben einem Feld.
+3. Photovoltaik (Projektmaske) mit markierter Anlage: Der **gestrichelte Rahmen** ist noch da,
+   die drei Werte darin stehen mit Beschriftung daneben.
+4. BHKW (Projektmaske): Der Detailblock unter der Zweispaltenauswahl ist kompakt; die zwei
+   Filter über der Katalogliste und die Summenzeile unter der Projektliste sehen aus wie
+   vorher.
+5. Fenster schmal ziehen (< 900 CSS-px): Die Beschriftung fällt in allen sechs Masken wieder
+   **über** das Feld, nichts wird abgeschnitten.
+
+### Nachtrag 05.09.2026 — der KOMPONENTENBLOCK (Anwenderfoto „Verwaltung BHKW")
+
+Der Anwender, mit Bildschirmfoto der Maske „Verwaltung BHKW": „Stelle diesen Dialog
+kompakter dar (insbesondere Daten zum BHKW-Modul unten). Prüfe das Gleiche mit anderen
+Komponenten zur Darstellung der Komponentendaten."
+
+**Der Befund.** Der Detailblock stand nach dem Einhängen schon mit Beschriftung neben dem
+Feld — aber jedes Anzeigefeld nahm die **volle Feldspalte**, auch „80" hinter „thermische
+Leistung [kWth]:". Der Block braucht damit fünf Zeilen, wo drei genügen. Der Grund ist die
+Datenform: Die Werte kommen als Paare (Beschriftung, Wert) aus der Hülle
+(`BhkwHuelle.DetailZu`) und werden als **nur lesbare `Textfeld`** gezeichnet — ein
+`Textfeld` meldete sich dem Raster bis dahin nie als kurz.
+
+**Die Lösung — zwei Zeilen, keine neue Datenform.** `Textfeld` bekommt `Kurz` (setzt
+`epos-feld--kurz`, die Gegenrichtung zu `Mehrzeilig` → `epos-feld--breit`), und **welches**
+Anzeigefeld kurz ist, entscheidet `ErzeugerDetail.IstZahl(wert)` — an EINER Stelle für
+alle sechs Erzeuger-Projektmasken, die denselben Detailblock zeichnen. Die Probe hängt am
+**Wert**, nicht an der Beschriftung: Die Feldnamen kommen je Erzeugerart anders herein,
+eine Zahl bleibt eine Zahl. Beide Kulturen werden gefragt; rät die Probe falsch, ändert
+sich nur die **Breite** eines Anzeigefeldes. Die Beschriftung führt die Einheit ohnehin
+schon („[kWth]"), es entsteht kein neuer Text.
+
+**So ist der Block „Modul" der Maske „Verwaltung BHKW" jetzt aufgeteilt** — zwei Spalten,
+sobald der Dialog breit genug ist:
+
+| Zeile | links | rechts |
+|---|---|---|
+| 1 | Modul-Name (Feldspalte) | Hersteller (Feldspalte) |
+| 2 | thermische Leistung **[kWth]** (kurz) | elektrische Leistung **[kWel]** (kurz) |
+| 3 | Beschreibung — **über beide Spalten**, zweizeilig | |
+| 4 | Brennstoff (Auswahlfeld) | Untere Grenzleistung **%** (kurz) |
+| 5 | Vorlauf **°C** (kurz) | Rücklauf **°C** (kurz) |
+
+Die Zeilen 4 und 5 stehen nur bei einer **Projektzeile**; bei einem Katalogsatz endet der
+Block nach der Beschreibung — das war schon vorher so. Die **Summenzeile** „Summe aller
+ausgewählten Module [kWth]" unter der linken Liste bleibt links (Regel #76) und steht
+jetzt in einem einspaltigen Raster mit `Kurz` — Beschriftung neben dem Wert, der Wert kurz.
+Der **Hinweisbalken** oben („Die Energieträgervariante … ist diesem Projekt bereits
+zugeordnet") ist ein `Warnbanner` und bleibt unverändert: eine Zeile, die nur erscheint,
+wenn es etwas zu sagen gibt.
+
+**Dieselbe Behandlung für die anderen Komponentendaten-Blöcke:**
+
+| Dialog | Der Komponentenblock jetzt |
+|---|---|
+| `HeizkesselDialog` (W6.3) | Name und die Detailfelder im Raster (seit dem Vorschritt); die **Zahlen** darunter jetzt kurz. Träger, Vorlauf, Rücklauf folgen als Auswahlfeld und zwei kurze Felder |
+| `PhotovoltaikDialog` (W6.5) | Name, die Detailfelder (Zahlen kurz), Beschreibung breit, **Gesamtleistung kurz**; der gestrichelte Anlagenrahmen darüber trägt Neigung, Azimut und Modulzahl in seinem eigenen Raster |
+| `StromspeicherDialog` (W6.6) | Name und die Detailfelder im Raster, Zahlen kurz |
+| `PufferspeicherDialog` (W6.7) | Name und die Detailfelder im Raster, Zahlen kurz |
+
+**Nicht angefasst — die Spalte „Eigenschaften" der rechten Katalogliste.** Sie bricht in
+vier Zeilen um (Hersteller / Brennstoff / Ptherm / Pel). Die Zeile kommt **nicht** aus dem
+Baustein `Zweispaltenauswahl` und auch nicht aus einem Listenprofil, sondern wird in
+`WindowsFormsApplication1/Views/BHKW/BhkwHuelle.KatalogZeilen` aus vier `\n`-getrennten
+Stücken zusammengesetzt und in `<span class="epos-mehrzeilig">` (`white-space: pre-line`)
+gezeichnet — ausdrücklich so gebaut, „genau wie im `DataGridView` des Vorläufers". Sie auf
+eine Zeile zu ziehen („2‑G Energietechnik GmbH · Stadtgas · 290 kWth / 250 kWel") ist ein
+eigener Umbau in der WINDOWS-Hülle samt ihrem Feldkartenabgleich; er ist von hier aus auch
+nicht prüfbar, weil `EPOS.UI.Tests` das WinForms-Projekt nicht übersetzt. **Vermerkt, nicht
+gemacht.**

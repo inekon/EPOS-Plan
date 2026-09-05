@@ -1,0 +1,237 @@
+﻿@* Die GRAFIK einer gewaehlten Stromganglinie (iU9-W12, Anwenderwunsch W12-E-2
+   der Windows-Abnahme vom 05.09.2026).
+
+   DER WUNSCH, woertlich: "Stelle die importierte Stromganglinie als Grafik dar
+   (wie bisher, zoombar, umschaltbar auf sortiert)."
+
+   "WIE BISHER" IST EINE FUNDSTELLE, DIE ES NICHT GIBT. Der Bestand zeigte eine
+   Stromganglinie NIRGENDS als Kurve: Form_Stromganglinie_Admin (664 x 316,
+   1c8c7c3^) fuehrte eine ListBox 335 x 174, vier Knoepfe und den Einlesekasten -
+   kein Chart-Steuerelement; Form_Stromganglinie (58d02f6^) und
+   Wizard_Stromlastgang (76f4279^) ebenso wenig; das einzige Chart der
+   Stromverbraucher-Masken, Form_ErgStromverbraucher.chart1 (34e69ff^), zeichnete
+   MONATSSAEULEN ("Monat" / "Strombedarf [MWh]"), keinen Jahresgang. Als Kurve
+   erschien der Strom nur auf der Ergebnisseite: BildBedarfStrom, also
+   ChartRenderer.GanglinieNormiert mit dem Schalter "sortiert". GENAU DIESES BILD
+   steht hier - dieselbe Anordnung wie im GebaeudeBedarfDialog (W9.8): Kennzahlen,
+   darunter der Schalter, darunter das Bild im Baustein Diagramm.
+
+   EIN EIGENER BAUSTEIN, WEIL ZWEI LISTEN DARAUF ZEIGEN. Der Dialog fuehrt links
+   die Projektzuordnungen und rechts den Katalog; die Grafik gehoert zu BEIDEN und
+   steht deshalb unter ihnen, nicht in einer Spalte. Sie hier
+   herauszuziehen haelt StromganglinieDialog lesbar und macht sie fuer die
+   Verwaltungsmaske nachnutzbar.
+
+   SIE RECHNET NICHTS UND ZEICHNET NICHTS. Die Kennzahlen kommen fertig herein
+   (StromganglinieAuswertungCtrl), das Bild holt ein Delegat aus dem Kern
+   (ChartRenderer.GanglinieNormiert) - Regel R-W8-2: keine Zeichenbibliothek in
+   dieser Bibliothek.
+
+   DIE EINHEIT (Anwenderentscheid W8-O-5): MWh als Vorgabe, kWh waehlbar, gemerkt
+   in derselben Ablage wie in den Bedarfsansichten (BedarfEinheitWahl). Sie gilt
+   NUR fuer die Jahresarbeit - die Spitze ist eine Leistung in kW, die
+   Vollbenutzungsstunden sind Stunden, und das Bild zeigt Prozent des
+   Jahreshoechstwertes. *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using WindowsFormsApplication1
+
+<section class="epos-ganglinie-grafik" aria-label="@Bildtext">
+
+    <p class="epos-kontextzeile">@Bezeichner</p>
+
+    <dl class="epos-ganglinie-kennzahlen">
+        <div class="epos-ganglinie-kennzahl">
+            <dt>@LabelJahresarbeit</dt>
+            <dd><span class="epos-ganglinie-wert">@Jahresarbeit</span> @_einheit.Text</dd>
+        </div>
+        <div class="epos-ganglinie-kennzahl">
+            <dt>@LabelSpitze</dt>
+            <dd><span class="epos-ganglinie-wert">@Zahl(Kennzahlen.SpitzeKw)</span> @EinheitKw</dd>
+        </div>
+        <div class="epos-ganglinie-kennzahl">
+            <dt>@LabelVollbenutzung</dt>
+            <dd><span class="epos-ganglinie-wert">@Vollbenutzung</span> @EinheitStunden</dd>
+        </div>
+    </dl>
+
+    <div class="epos-ganglinie-leiste">
+        <Schalter Bezeichnung="@LabelSortiert" Wert="@_sortiert" WertChanged="SortiertGesetzt" />
+        <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@Einheitenwahl"
+                     Auswahl="@EinheitIndex" AuswahlChanged="EinheitWaehlen" />
+    </div>
+
+    <ChartBild Png="@Bild" Alt="@Bildtext" PlatzhalterText="@PlatzhalterBild"
+               BereichGewaehlt="BereichGewaehlt"
+               Zurueckgesetzt="@(() => _bereich = null)" />
+
+</section>
+
+@code {
+    /// <summary>
+    /// Die IDENTITÄT der gezeigten Ganglinie. Ändert sie sich, fallen der
+    /// Bildvorrat und der Achsenausschnitt weg — sonst zeigte die zweite Ganglinie
+    /// das Bild der ersten.
+    /// </summary>
+    [Parameter] public string Schluessel { get; set; } = "";
+
+    /// <summary>Der Name über der Grafik.</summary>
+    [Parameter] public string Bezeichner { get; set; } = "";
+
+    /// <summary>Die drei Kennzahlen; die Jahresarbeit liegt in MWh vor.</summary>
+    [Parameter] public GanglinienKennzahlen Kennzahlen { get; set; } =
+        new GanglinienKennzahlen(0, 0, null);
+
+    /// <summary>
+    /// Liefert die Jahresganglinie als PNG — erster Parameter die Schalterstellung
+    /// „sortiert" (Dauerlinie), zweiter der aufgezogene Bildausschnitt (Datenzoom;
+    /// <c>null</c> = das ganze Jahr). Ohne Delegat bleibt der Platzhalter stehen.
+    /// </summary>
+    [Parameter] public Func<bool, Diagrammbereich?, byte[]?>? Bildauftrag { get; set; }
+
+    /// <summary>Die ANZEIGEEINHEIT beim Öffnen (Anwenderentscheid W8‑O‑5).</summary>
+    [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
+
+    /// <summary>Meldet der Hülle die neu gewählte Einheit, damit sie gemerkt wird.</summary>
+    [Parameter] public Action<Energieeinheit>? EinheitGewaehlt { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string LabelJahresarbeit { get; set; } = "Jahresarbeit:";
+    [Parameter] public string LabelSpitze { get; set; } = "Spitzenlast:";
+    [Parameter] public string LabelVollbenutzung { get; set; } = "Vollbenutzungsstunden:";
+    [Parameter] public string LabelSortiert { get; set; } = "sortiert";
+    [Parameter] public string LabelEinheit { get; set; } = "Einheit:";
+    [Parameter] public string EinheitKw { get; set; } = "kW";
+    [Parameter] public string EinheitStunden { get; set; } = "h/a";
+    [Parameter] public string Bildtext { get; set; } = "Strombedarf Jahresganglinie";
+    [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
+
+    /// <summary>Was statt eines fehlenden Wertes steht.</summary>
+    [Parameter] public string LeerText { get; set; } = "—";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private bool _sortiert;
+    private Diagrammbereich? _bereich;
+    private Energieeinheit _einheit = Energieeinheit.MWh;
+    private string _gezeigt = "";
+
+    /// <summary>Steht der Schalter „sortiert"? Prüfhilfe für die Tests.</summary>
+    public bool Sortiert => _sortiert;
+
+    /// <summary>Der aufgezogene Ausschnitt; <c>null</c> = ganzes Jahr. Prüfhilfe.</summary>
+    public Diagrammbereich? Bereich => _bereich;
+
+    /// <summary>Die gewählte Anzeigeeinheit — Prüfhilfe für die Tests.</summary>
+    public Energieeinheit Anzeigeeinheit => _einheit;
+
+    protected override void OnParametersSet()
+    {
+        _einheit = Einheit ?? Energieeinheit.Vorgabe;
+
+        if (_gezeigt == Schluessel) return;
+
+        // Eine ANDERE Ganglinie: Bildvorrat und Ausschnitt gehoeren zur alten.
+        _gezeigt = Schluessel;
+        _bilder.Clear();
+        _bereich = null;
+    }
+
+    // =================================================================================
+    // Einheit
+    // =================================================================================
+
+    private IReadOnlyList<(int Id, string Text)> Einheitenwahl
+    {
+        get
+        {
+            var liste = new List<(int, string)>();
+            for (int i = 0; i < Energieeinheit.Alle.Count; i++)
+                liste.Add((i, Energieeinheit.Alle[i].Text));
+            return liste;
+        }
+    }
+
+    private int EinheitIndex
+    {
+        get
+        {
+            for (int i = 0; i < Energieeinheit.Alle.Count; i++)
+                if (ReferenceEquals(Energieeinheit.Alle[i], _einheit)) return i;
+            return 0;
+        }
+    }
+
+    private void EinheitWaehlen(int? id)
+    {
+        int n = id ?? 0;
+        if (n < 0 || n >= Energieeinheit.Alle.Count) return;
+
+        Energieeinheit neu = Energieeinheit.Alle[n];
+        if (ReferenceEquals(neu, _einheit)) return;
+
+        _einheit = neu;
+        EinheitGewaehlt?.Invoke(neu);
+    }
+
+    // =================================================================================
+    // Zahlen
+    // =================================================================================
+
+    /// <summary>Die Jahresarbeit in der gewählten Einheit — sie liegt in MWh vor.</summary>
+    private string Jahresarbeit
+        => _einheit.Formatiere(_einheit.AusMWh(Kennzahlen.JahresarbeitMwh));
+
+    /// <summary>
+    /// Eine LEISTUNG bzw. eine Stundenzahl — sie folgt der Einheitenwahl NICHT, aber
+    /// der Anzeigekultur (zwei Nachkommastellen wie im Bestand).
+    /// </summary>
+    private string Zahl(double wert)
+        => wert.ToString("F2", System.Globalization.CultureInfo.CurrentCulture);
+
+    private string Vollbenutzung
+        => Kennzahlen.VollbenutzungsstundenH is null
+            ? LeerText
+            : Zahl(Kennzahlen.VollbenutzungsstundenH.Value);
+
+    // =================================================================================
+    // Bild
+    // =================================================================================
+
+    /// <summary>
+    /// Die gezeichneten Bilder, nach Schalterstellung und Ausschnitt getrennt. Ohne den
+    /// Zwischenspeicher zeichnete der Kern bei JEDEM Zeichendurchgang ein 1 240 × 560
+    /// grosses PNG neu — dasselbe Muster wie in <c>GebaeudeBedarfDialog</c>.
+    /// </summary>
+    private readonly Dictionary<string, byte[]?> _bilder = new Dictionary<string, byte[]?>();
+
+    private byte[]? Bild
+    {
+        get
+        {
+            if (Bildauftrag is null) return null;
+
+            string schluessel = (_sortiert ? "1|" : "0|") + (_bereich?.ToString() ?? "");
+            if (_bilder.TryGetValue(schluessel, out byte[]? vorhanden)) return vorhanden;
+
+            byte[]? neu = Bildauftrag(_sortiert, _bereich);
+            _bilder[schluessel] = neu;
+            return neu;
+        }
+    }
+
+    /// <summary>
+    /// Ein Schalterwechsel verwirft den Achsenausschnitt: Ganglinie und Dauerlinie
+    /// tragen an derselben Stelle des Bildes verschiedene Stunden, und ein
+    /// mitgeschleppter Ausschnitt zeigte danach etwas anderes, als der Anwender
+    /// aufgezogen hat (Regel aus <c>GebaeudeBedarfDialog</c>).
+    /// </summary>
+    private void SortiertGesetzt(bool wert)
+    {
+        _sortiert = wert;
+        _bereich = null;
+    }
+
+    private void BereichGewaehlt(Diagrammbereich bereich) => _bereich = bereich;
+}

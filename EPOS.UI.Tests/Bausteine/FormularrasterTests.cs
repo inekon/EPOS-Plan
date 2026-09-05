@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Bunit;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components;
 using Xunit;
@@ -347,5 +348,83 @@ public class FormularrasterTests : BunitContext
         int e = css.IndexOf('}', a);
         Assert.True(e > a);
         return css.Substring(a + selektor.Length, e - a - selektor.Length);
+    }
+
+    // =====================================================================
+    //  Das kurze ANZEIGEfeld — Paket P1 (Anwenderfoto „Verwaltung BHKW")
+    // =====================================================================
+
+    /// <summary>
+    /// <b>iU8‑E‑2, Paket P1</b> (Anwenderfoto „Verwaltung BHKW", 05.09.2026):
+    /// „Stelle diesen Dialog kompakter dar, insbesondere Daten zum BHKW-Modul
+    /// unten."
+    ///
+    /// <para>Der Komponentenblock der Erzeuger-Projektmasken zeigt seine Werte
+    /// als NUR LESBARE Textfelder — „290" hinter „thermische Leistung
+    /// [kWth]:". Das ist so kurz wie ein Zahlenfeld, und deshalb kann ein
+    /// Textfeld sich seit P1 ebenfalls als kurz melden.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_Textfeld_mit_Kurz_meldet_sich_als_kurzes_Feld()
+    {
+        var cut = Render<Textfeld>(p => p
+            .Add(x => x.Bezeichnung, "thermische Leistung [kWth]:")
+            .Add(x => x.Wert, "290")
+            .Add(x => x.NurLesen, true)
+            .Add(x => x.Kurz, true));
+
+        Assert.Contains("epos-feld--kurz", cut.Find("label.epos-feld").ClassList);
+    }
+
+    /// <summary>
+    /// Gegenprobe: OHNE <c>Kurz</c> bleibt das Textfeld, was es war — sonst
+    /// verschöbe der neue Parameter die 92 Dateien mit Feldern auf einmal.
+    /// </summary>
+    [Fact]
+    public void Ein_Textfeld_ohne_Kurz_bleibt_unveraendert()
+    {
+        var cut = Render<Textfeld>(p => p.Add(x => x.Bezeichnung, "Bezeichner"));
+
+        Assert.DoesNotContain("epos-feld--kurz", cut.Find("label.epos-feld").ClassList);
+    }
+
+    /// <summary>
+    /// Ein MEHRZEILIGES Textfeld bleibt LANG, auch wenn jemand <c>Kurz</c>
+    /// setzt: Die Beschreibung war im Vorbild 250 × 48 px und spannt im Raster
+    /// über beide Spalten. Zwei einander widersprechende Meldungen darf es
+    /// nicht geben — die Länge gewinnt, weil sie am Bauteil hängt und nicht am
+    /// Aufrufer.
+    /// </summary>
+    [Fact]
+    public void Ein_mehrzeiliges_Textfeld_bleibt_lang()
+    {
+        var cut = Render<Textfeld>(p => p
+            .Add(x => x.Mehrzeilig, true)
+            .Add(x => x.Kurz, true));
+
+        var feld = cut.Find("label.epos-feld");
+
+        Assert.Contains("epos-feld--breit", feld.ClassList);
+        Assert.DoesNotContain("epos-feld--kurz", feld.ClassList);
+    }
+
+    /// <summary>
+    /// Welches Anzeigefeld kurz ist, entscheidet <c>ErzeugerDetail.IstZahl</c>
+    /// — an EINER Stelle für alle sechs Erzeuger-Projektmasken. Die Probe hängt
+    /// am WERT und nicht an der Beschriftung: Die Feldnamen kommen je
+    /// Erzeugerart anders herein, eine Zahl bleibt eine Zahl.
+    /// </summary>
+    [Theory]
+    [InlineData("290", true)]
+    [InlineData("0,9", true)]
+    [InlineData("0.9", true)]
+    [InlineData("-12", true)]
+    [InlineData("2 G Energietechnik GmbH", false)]
+    [InlineData("Stadtgas", false)]
+    [InlineData("", false)]
+    [InlineData("   ", false)]
+    public void Ein_Anzeigewert_ist_genau_dann_kurz_wenn_er_eine_Zahl_ist(string wert, bool kurz)
+    {
+        Assert.Equal(kurz, ErzeugerDetail.IstZahl(wert));
     }
 }

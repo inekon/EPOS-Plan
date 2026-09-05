@@ -287,7 +287,10 @@ public class PeakShavingDialogTests : BunitContext
     {
         var cut = Zeige(minimal: (r, e) => Task.FromResult(321.5));
 
-        cut.FindAll(".epos-feldpaar button")[0].Click();     // btn_Minimal
+        // Der Knopf ist seit iU8-E-2 (Paket P3) ein DIREKTES Rasterkind und
+        // steht damit neben der Zielschwelle; das Kindzeichen grenzt ihn gegen
+        // den Knopf der Dateiwahl ab, der in seinem Feld steckt.
+        cut.FindAll(".epos-formularraster > button")[0].Click();   // btn_Minimal
 
         Assert.False(cut.FindAll("input[type=checkbox]")[0].HasAttribute("checked"));
         Assert.Equal("321,5", Feld(cut, 6).GetAttribute("value"));
@@ -395,5 +398,32 @@ public class PeakShavingDialogTests : BunitContext
         ergebnis = null;
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(ergebnis);
+    }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Quelle und Parameter stehen im Formularraster; die sieben handgebauten <c>epos-feldpaar</c>-Kaesten sind fort - der Raster stellt die zwei Feldpaare je Zeile selbst.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Parameter_stehen_im_Formularraster()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-feldpaar"));
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 4,
+                    "weniger Raster als Bloecke");
+
+        // Leistung [kW], Kapazitaet [kWh], SoC [%]: kurzes Feld, Einheit dahinter.
+        Assert.NotEmpty(cut.FindAll(
+            ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
     }
 }

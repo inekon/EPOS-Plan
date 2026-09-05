@@ -49,6 +49,26 @@ heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Wa
 > & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 
+### CI-Basis auf Linux: `2026-09-05_R2_Zeitbasis` (löst `2026-08-30_B3-Kaskade` ab)
+
+**`2026-09-05_R2_Zeitbasis/`** — **elf Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042), **282 CSV**, gerechnet mit dem plattformfreien `EPOS.Referenzlauf` auf Linux
+gegen `Kenndaten_Test.sqlite` (Schemastand 64) auf dem zusammengeführten Stand nach der
+Rechner-2-Linie (`12aa3a5` ff.). Die Projekte 1011 und 1021 der B3-Basis stehen nicht in der
+reduzierten Testdatenbank und fallen deshalb weg (Warnung im `protokoll.txt`). Gegen diese Basis
+halten `.github/workflows/kern.yml` (1030, 1007, 1017) und das Gate der Orchestrierung jeden Push.
+
+> **Anlass (Anwenderentscheid 05.09.2026: ja):** Die Zusammenführung der Rechner-2-Linie bringt
+> Paket A mit — die Solar-Zeitbasis der `Tab_Solar`-Leser wechselt von UTC auf Ortszeit. Damit
+> weicht der Linux-Lauf gewollt von `2026-08-30_B3-Kaskade` ab (1007: 16, 1008: 11, 1017: 2,
+> 1018: 2, 1023: 15, 1024: 15, 1030: 2, 1039: 13, 1040: 13, 1041: 7, 1042: 17 abweichende Dateien).
+> Zweiter Lauf byte-gleich (Determinismus geprüft). **Gegenprobe gegen M5** (die Windows-Basis oben,
+> `Referenzlauf.exe`, eigene Arbeitskopie): sechs der acht gemeinsamen Projekte (1007, 1008, 1017,
+> 1018, 1023, 1024) sind **byte-gleich**; 1030 (sieben BHKW-Dateien) und 1039 tragen die
+> Umgebungsdifferenz des zweiten Rechners, die schon zwischen B3 und PA0 bestand — nicht der
+> Rechenweg. Die Windows-Reihe M1–M5 und diese Linux-Basis bleiben zwei Reihen: M5 hält den
+> Rechner-2-Weg mit vierzehn Projekten, R2_Zeitbasis den plattformfreien CI-Weg.
+
 ### Vorgängerbasis: `2026-09-03_M4_nach-Merge4`
 
 **`2026-09-03_M4_nach-Merge4/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,

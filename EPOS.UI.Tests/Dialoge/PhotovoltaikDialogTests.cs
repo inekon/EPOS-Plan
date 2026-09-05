@@ -283,4 +283,29 @@ public class PhotovoltaikDialogTests : BunitContext
         Assert.Equal(1, rufe);
         Assert.False(gemeldet);
     }
+    // =====================================================================
+    //  Formularraster — Anwenderwunsch iU8‑E‑2, Paket P1 (05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>iU8‑E‑2, Paket P1:</b> „Darstellung der Dialoge kompakter und
+    /// übersichtlicher — Parameterblöcke rechts."
+    ///
+    /// <para>Der Detailblock des Projektdialogs steht seither im <c>Formularraster</c>: Die Beschriftung
+    /// fällt NEBEN das Feld, die Felder ordnen sich in eine oder zwei Spalten,
+    /// und ein Zahlenfeld ist kurz mit der Einheit unmittelbar dahinter. Zuvor
+    /// nahm jedes Feld die volle Breite und die Beschriftung stand darüber.</para>
+    ///
+    /// <para>Die Regeln dahinter hält <c>Bausteine/FormularrasterTests</c>;
+    /// hier steht nur, dass der Block ihn TRÄGT.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Detailblock_steht_im_Formularraster()
+    {
+        var cut = Aufbauen();
+
+        var raster = cut.FindAll(".epos-formularraster");
+        Assert.NotEmpty(raster);
+        Assert.Contains(raster, r => r.QuerySelectorAll(".epos-feld").Length > 0);
+    }
 }

@@ -72,6 +72,11 @@
          und laedt fuer die Projektliste ProjektCtrl - beides ist internal, genau wie in
          der Windows-Huelle. -->
     <InternalsVisibleTo Include="EPOS.iOS" />
+    <!-- Und fuer das Werkzeug, das Referenzlaeufe\Kenndaten_Test.sqlite auf den
+         Zielschemastand nachzieht (Aufgabe 92): Es faehrt bewusst DIESELBE
+         Typuebersetzung wie die Migration - StilleDb.SqliteSpaltenTyp -, statt
+         die DDL abzuschreiben. Ohne die Freigabe bliebe nur die Abschrift. -->
+    <InternalsVisibleTo Include="Testdatenbankschema" />
   </ItemGroup>
 
   <ItemGroup>

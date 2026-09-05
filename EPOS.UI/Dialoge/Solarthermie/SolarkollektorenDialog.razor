@@ -122,11 +122,19 @@
 
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P1): Der Detailblock stand zuvor als
+               eine Spalte voller Felder ueber die ganze Breite. *@
+            <Formularraster>
+                <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
             @foreach (var feld in _detail.Felder)
             {
-                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+                @* Eine Zahl bekommt die kurze Feldbreite (iU8-E-2, Paket P1). *@
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
+                          Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
             }
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -135,23 +143,25 @@
     {
         <Gruppenkopf Titel="@GruppeKollektor">
             <KindInhalt>
-                <div class="epos-feldpaar">
-                    <Ganzzahlfeld Bezeichnung="@LabelAnzahl" Feldname="@LabelAnzahl"
-                                  Wert="@_anzahl" WertChanged="w => { _anzahl = w; }" />
-                    <Textfeld Bezeichnung="@LabelAperturflaeche" Wert="@Gesamtflaeche" NurLesen="true" />
-                </div>
-                <div class="epos-feldpaar">
-                    <Ganzzahlfeld Bezeichnung="@LabelNeigung" Feldname="@LabelNeigung"
-                                  Wert="@_neigung" WertChanged="w => { _neigung = w; }" />
-                    <Ganzzahlfeld Bezeichnung="@LabelAzimut" Feldname="@LabelAzimut"
-                                  Wert="@_azimut" WertChanged="w => { _azimut = w; }" />
-                </div>
-                <div class="epos-feldpaar">
-                    <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad" Feldname="@LabelVorlauf"
-                                  Wert="@_vorlauf" WertChanged="w => { _vorlauf = w; }" />
-                    <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad" Feldname="@LabelRuecklauf"
-                                  Wert="@_ruecklauf" WertChanged="w => { _ruecklauf = w; }" />
-                </div>
+                @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
+                   Feldpaare je Zeile, sobald die Spalte breit genug ist
+                   (iU8-E-2, Paket P1). *@
+                <Formularraster>
+                    <KindInhalt>
+                <Ganzzahlfeld Bezeichnung="@LabelAnzahl" Feldname="@LabelAnzahl"
+                              Wert="@_anzahl" WertChanged="w => { _anzahl = w; }" />
+                <Textfeld Bezeichnung="@LabelAperturflaeche" Wert="@Gesamtflaeche" NurLesen="true"
+                          Kurz="true" />
+                <Ganzzahlfeld Bezeichnung="@LabelNeigung" Feldname="@LabelNeigung"
+                              Wert="@_neigung" WertChanged="w => { _neigung = w; }" />
+                <Ganzzahlfeld Bezeichnung="@LabelAzimut" Feldname="@LabelAzimut"
+                              Wert="@_azimut" WertChanged="w => { _azimut = w; }" />
+                <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad" Feldname="@LabelVorlauf"
+                              Wert="@_vorlauf" WertChanged="w => { _vorlauf = w; }" />
+                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad" Feldname="@LabelRuecklauf"
+                              Wert="@_ruecklauf" WertChanged="w => { _ruecklauf = w; }" />
+                    </KindInhalt>
+                </Formularraster>
                 <div class="epos-leiste">
                     <button type="button" class="epos-knopf" @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
                 </div>
