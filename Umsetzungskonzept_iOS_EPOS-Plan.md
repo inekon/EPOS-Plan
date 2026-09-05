@@ -3060,10 +3060,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Merkmalsübernahme; `AbweichungsErmittler` ist nicht angefasst, der Referenzlauf unberührt. Nachgezogen ist ein Text
 > (`BK_MSG_VERGLEICH_UMFANG`: „Komponentenzeile(n)" statt „Merkmalszeile(n)", de/en). Nachweis:
 > `KomponentenVergleichTests` (7 Fälle) und ein bunit-Fall in `UebersichtSeiteTests`; Kern 1 197 und UI 2 649 grün unter
-> de und en, SQL-Prüfer 0 Fundstellen, Kern-Wächter leer. **Offen W5‑O‑4 (Anwenderfrage):** Soll auch die
-> Unterschiedsansicht einer Variante die Anlagen- und Gebäudeparameter weglassen? Bewusst unangetastet, weil eine
-> Zeile dort eine tatsächliche Änderung ist und die Übernahme (z. B. einer geänderten Vorlauftemperatur) daran hängt.
-> Acht Abnahmepunkte A‑W5‑E‑2 im W5-Protokoll.
+> de und en, SQL-Prüfer 0 Fundstellen, Kern-Wächter leer. **W5‑O‑4 — Anwenderentscheid 05.09.2026: „soll bleiben".**
+> Die Unterschiedsansicht einer Variante zeigt weiterhin alle Abweichungen einschließlich der Anlagen- und
+> Gebäudeparameter, weil eine Zeile dort eine tatsächliche Änderung ist und die Übernahme (z. B. einer geänderten
+> Vorlauftemperatur) daran hängt. Acht Abnahmepunkte A‑W5‑E‑2 im W5-Protokoll.
 
 > **Statusblock iU9 — Welle 4 umgesetzt (03.09.2026, Basis `ae1af82`)**
 >
