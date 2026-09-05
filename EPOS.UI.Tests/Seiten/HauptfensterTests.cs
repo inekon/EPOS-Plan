@@ -467,4 +467,80 @@ public class HauptfensterTests : BunitContext
 
         Assert.Equal(Seitenschluessel.SpracheEnglisch, gemeldet);
     }
+
+    // =====================================================================
+    //  BEFUND W16c-B13 (Windows-Abnahme 05.09.2026) — der Menueweg ueber
+    //  drei Ebenen, gerendert wie die Huelle
+    // =====================================================================
+
+    [Fact]
+    public void Der_Menueweg_ueber_drei_Ebenen_klappt_im_Fenster_der_Huelle_auf()
+    {
+        // Der Weg, den der Anwender ging: Administration ▸ "Waermebedarf &
+        // Heizung ▸" - und dort blieb er stehen, weil die zweite Ebene sich
+        // nicht aufklappen liess. Geprueft wird ueber AusHuelle, also mit dem
+        // Parametersatz, den BlazorSeite<Hauptfenster> unter Windows uebergibt.
+        var cut = AusHuelle(Huellengaben(new SeitenZustand()));
+
+        cut.Find("#menue-Administration").Click();
+        Assert.Equal("true", cut.Find("#menue-Administration").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Brauchwasser"));
+
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+
+        Assert.Equal("true", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_Brauchwasser"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_WP"));
+
+        // Das Kopfband und die Ansicht darunter stehen unveraendert - das
+        // Menue legt sich darueber, es verschiebt nichts.
+        Assert.Single(cut.FindAll(".epos-hauptfenster-marke"));
+        Assert.Single(cut.FindAll(".epos-startseite"));
+    }
+
+    [Fact]
+    public async Task Ein_Punkt_der_dritten_Ebene_landet_im_selben_Handler()
+    {
+        // Der einzige dreistufige Weg des Bestands: Administration ▸
+        // Energiesysteme ▸ Photovoltaik ▸ "Bearbeiten...". Bis W16c-B13 war er
+        // unter Windows gar nicht erreichbar.
+        string? gemeldet = null;
+        var gaben = Huellengaben(new SeitenZustand());
+        gaben["Weg"] = new Func<string, string, Task<bool>>(
+            (ziel, _) => { gemeldet = ziel; return Task.FromResult(true); });
+
+        var cut = AusHuelle(gaben);
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_Energiesysteme").Click();
+        cut.Find("#menue-MenuItem_PV").Click();
+        cut.Find("#menue-MenuItem_PC_Bearbeiten").Click();
+
+        await Task.Yield();
+
+        Assert.Equal(Seitenschluessel.PvAdmin, gemeldet);
+
+        // Nach der Wahl steht das Band zu - samt seiner Schliessflaeche.
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+        Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
+    }
+
+    [Fact]
+    public void Der_Klick_neben_das_Menue_schliesst_es_im_Fenster()
+    {
+        // Der Ersatz fuer das gestrichene @onfocusout (W16c-B13): Solange ein
+        // Menue offen ist, liegt ein durchsichtiger Deckel ueber der Ansicht.
+        var cut = AusHuelle(Huellengaben(new SeitenZustand()));
+        Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_Energiesysteme").Click();
+        Assert.Single(cut.FindAll(".epos-menueband-schliessflaeche"));
+
+        cut.Find(".epos-menueband-schliessflaeche").Click();
+
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+        Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
+        Assert.Single(cut.FindAll(".epos-menueband"));
+    }
 }
