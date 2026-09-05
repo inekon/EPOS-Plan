@@ -19,6 +19,19 @@
    Wiederbesuch den inzwischen geaenderten Listenstand zeigt (das tat
    BlazorAssistentSeite.Bestuecken ebenso).
 
+   BEIM BETRETEN - UND SONST NIE (Befund W9-B-1 der Windows-Abnahme vom
+   05.09.2026). Bis dahin zog SchritteBauen den Parametersatz der STEHENDEN Seite
+   bei jedem OnParametersSet neu, also bei jedem Neuzeichnen des Wirtes. Die
+   Huellen bauen darin aber jedesmal eine NEUE Anzeigeliste aus ihrer Fachliste
+   (GebaeudeHuelle.Gaben :113-114 und die zehn Geschwister). Der lebenden
+   Komponente wurde damit die Liste unter den Fuessen ausgetauscht: Ihre
+   Markierung zeigte danach auf ein Objekt, das in der neuen Liste nicht mehr
+   steht - im Gebaeudedialog stand das gespeicherte Gebaeude da, aber keine Zeile
+   war markiert und der Detailblock hing an einem toten Satz. Der Inhalt wird
+   deshalb GEMERKT (_inhalt/_inhaltSchritt) und nur neu erfragt, wenn der Schritt
+   wechselt, ein anderes Projekt markiert wird oder der Wirt einen anderen
+   Gabendelegaten hereinreicht.
+
    DAS LINKE BAND steht nur in Betriebsart BEARBEITEN und nur auf Schritt 0 -
    woertlich WizardParent.Next (:305-312): ucProjektAuswahl, das Label und
    "Projekt oeffnen" werden vor jedem Seitenwechsel ausgeblendet und nur auf dem
@@ -147,12 +160,35 @@
 
     private readonly List<AssistentSchritt> _schritte = new();
 
+    /// <summary>
+    /// Der gemerkte Inhalt der STEHENDEN Seite und die Schrittnummer, zu der er
+    /// gehört (Befund W9‑B‑1). <c>-1</c> heißt „noch nichts geholt".
+    /// </summary>
+    private RenderFragment? _inhalt;
+    private int _inhaltSchritt = -1;
+
+    /// <summary>
+    /// Der Gabendelegat, mit dem <see cref="_inhalt"/> geholt wurde. Reicht der Wirt
+    /// einen anderen herein, gilt der gemerkte Inhalt nicht mehr.
+    /// </summary>
+    private Func<int, IReadOnlyDictionary<string, object>?>? _inhaltQuelle;
+
     /// <summary>Der aktuelle Schritt (Prüfhilfe für die Tests).</summary>
     public int Schritt => _schritt;
 
     protected override void OnParametersSet()
     {
         SchritteBauen();
+    }
+
+    /// <summary>
+    /// Verwirft den gemerkten Seiteninhalt — der nächste Aufbau erfragt ihn neu.
+    /// Gerufen beim Schrittwechsel und bei einem Projektwechsel im linken Band.
+    /// </summary>
+    private void InhaltVerwerfen()
+    {
+        _inhalt = null;
+        _inhaltSchritt = -1;
     }
 
     /// <summary>
@@ -201,18 +237,30 @@
     /// <summary>
     /// Der Inhalt EINES Schrittes. Die Zuordnung Nummer → Komponente ist die
     /// bitgleiche Übernahme von <c>AssistentSeiten.ERZEUGER</c>.
+    ///
+    /// <para><b>Der Parametersatz wird beim BETRETEN geholt und dann gemerkt</b>
+    /// (Befund W9‑B‑1). Ein zweiter Zug für dieselbe Seite legte der lebenden
+    /// Komponente eine neue Anzeigeliste unter und nahm ihr damit die Markierung;
+    /// die Hüllen bauen die Liste bei jedem <c>Gaben</c>-Aufruf neu auf.</para>
     /// </summary>
     private RenderFragment? Seiteninhalt(int nr)
     {
-        IReadOnlyDictionary<string, object>? gaben = SeiteGaben?.Invoke(nr);
-        if (gaben is null) return null;
+        if (_inhaltSchritt == nr && ReferenceEquals(_inhaltQuelle, SeiteGaben)) return _inhalt;
 
-        return builder =>
-        {
-            builder.OpenComponent(0, Seitentyp(nr));
-            builder.AddMultipleAttributes(1, gaben!);
-            builder.CloseComponent();
-        };
+        IReadOnlyDictionary<string, object>? gaben = SeiteGaben?.Invoke(nr);
+
+        _inhaltSchritt = nr;
+        _inhaltQuelle = SeiteGaben;
+        _inhalt = gaben is null
+            ? null
+            : builder =>
+            {
+                builder.OpenComponent(0, Seitentyp(nr));
+                builder.AddMultipleAttributes(1, gaben!);
+                builder.CloseComponent();
+            };
+
+        return _inhalt;
     }
 
     /// <summary>
@@ -294,6 +342,10 @@
         if (_schritt != 0 || _markiertId <= 0) return;
 
         ProjektMarkiert?.Invoke(_markiertId, _markiertName);
+
+        // Ein anderes Projekt heisst ein anderer Bestand - der gemerkte
+        // Seiteninhalt gilt nicht mehr (Befund W9-B-1).
+        InhaltVerwerfen();
         SchritteBauen();
     }
 
@@ -322,6 +374,10 @@
         SeiteVerlassen?.Invoke(_schritt);
         _schritt = neu;
         _meldung = "";
+
+        // Der neue Schritt wird BETRETEN - sein Parametersatz wird frisch geholt,
+        // der der verlassenen Seite faellt weg (Befund W9-B-1).
+        InhaltVerwerfen();
         SchritteBauen();
     }
 

@@ -435,3 +435,68 @@ dort vollständig zu sehen.
 | **W15a‑O‑3** | B49: `ProjektCtrl.Delete` löscht über den NAMEN; zwei Projekte gleichen Namens würden beide gelöscht. **Entschieden 04.09.2026** — der Anwender wörtlich: „Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem Fall." **Deutung:** Projektnamen SIND eindeutig — `Tab_Projekt` trägt seit der SQLite-Migration den eindeutigen Index `Projektname` (`CREATE UNIQUE INDEX "Projektname" ON "Tab_Projekt" ("Projektname")`, nachgesehen im `sqlite_master` von `Referenzlaeufe/Kenndaten_Test.sqlite`), und „Speichern unter" prüft über `ProjektDuplizierenCtrl.PruefeNamen`. **Das Löschen über den Namen bleibt deshalb bitgleich.** Für einen Altbestand OHNE diesen Index wird VOR dem Löschen nachgefragt, statt still beide Projekte mitzunehmen: `LoeschenMitVorarbeiten` zählt zuerst, meldet `LoeschStand.Mehrdeutig` mit der Anzahl und fasst nichts an; der Löschdialog stellt die Rückfrage mit Vorgabe „Nein" hinter der unveränderten Sicherheitsabfrage (A‑7), und erst `mehrdeutigZugelassen: true` lässt alle fallen. Proben: P9c/P9d in `ProjektpflegeTests` (Arbeitskopie ohne Index) und vier bunit-Fälle in `ProjektWahlDialogTests` |
 | **W15a‑O‑4** | `VariantenCtrl.LoescheVariante` rief `new ProjektCtrl().Delete(projektname)` direkt und kannte die Vorprüfung aus O‑3 nicht — der letzte ihrer drei Schritte läuft damit über den NAMEN. **Entschieden 04.09.2026 (Empfehlung angenommen): Die Variantenlöschung geht über dieselbe Vorprüfung und dieselbe Rückfrage.** Umsetzung wie O‑3, nur an der zweiten Stelle: `LoescheVariante` zählt vor dem ersten Schritt über `ProjektCtrl.AnzahlGleicherNamen`, meldet bei mehr als einem Treffer `LoeschStand.Mehrdeutig` mit der Anzahl und fasst nichts an; mit `mehrdeutigZugelassen: true` läuft sie bitgleich wie zuvor. Sie liefert dafür denselben `LoeschBefund` wie `LoeschenMitVorarbeiten` statt `bool` + `out fehler` (neu darin `KeineVariante` und `Loeschfehler`, die nur dieser Weg meldet). **Einziger Aufrufer** ist `UebersichtSeiteGaben` hinter der Razor-Seite `UebersichtSeite`; die stellt hinter der unveränderten Löschfrage die zweite Rückfrage mit Vorgabe „Nein" und **denselben Textschlüsseln** wie der `ProjektWahlDialog` (`PROJ_MSG_NAME_MEHRDEUTIG`, `PROJ_MSG_NAME_MEHRDEUTIG_TITEL`) — es ist dieselbe Frage, deshalb kein neuer Text. Proben: P9e/P9f/P9g in `ProjektpflegeTests` und drei bunit-Fälle in `UebersichtSeiteTests`. Commit `5104ea3` |
 | **W16** | `ProjektAuswahl` (uc) löschen (§ 7); T1 streichen oder auf ein Prüfmuster umziehen, T2 streichen (§ 8) |
+
+---
+
+## 13 — Windows-Abnahme 05.09.2026 (Befund W15a‑B‑1)
+
+### 13.1 Befund W15a‑B‑1 — „Geändert Datum nicht ersichtlich"
+
+**Beobachtung.** In „Projekt Speichern unter" (`ProjektKopieDialog`, Fenster
+940 × 660) zeigt die Projektliste links die Spalten **Wahl / Projektname / Kunde /
+Geändert**. Die dritte ist rechts abgeschnitten; der Anwender sieht das
+Änderungsdatum nicht.
+
+**Ursache — zwei Regeln, die sich gegenseitig aufheben.**
+
+1. Der Dialog stellt Liste und Formular **nebeneinander**:
+   `.epos-projektkopie-raster` ist ein Raster `minmax(0,3fr) minmax(0,2fr)`, und der
+   Umbruch auf eine Spalte kam erst bei **780 px**. Im 940‑px‑Fenster stand das
+   Formular (Neuer Projektname, Beschreibung, Kunde, Bearbeiter) also neben der
+   Liste und ließ ihr drei Fünftel — rund **535 px** für vier Spalten.
+2. Die Hausregel `.epos-raster td { white-space: nowrap }` hält jede Zelle in EINER
+   Zeile. Sie ist richtig für ein Raster mit kurzen Bezeichnern („Namen brechen
+   nicht in drei Zeilen") und falsch für eine Liste mit Projektnamen: Ein langer
+   Name macht die Tabelle breiter, als die Spalte ist. Die Hülle rollt dann
+   waagerecht (`overflow-x: auto`) — und die dritte Spalte liegt hinter dem
+   Rollbalken. Der Anwender suchte auch keinen: **Die Tabelle sah vollständig
+   aus.**
+
+**Behebung — an beiden Enden.**
+
+* **Der Umbruch kommt früher.** `@media (max-width: 780px)` wird
+  `@media (max-width: 1100px)`: Die Liste steht dann über die **volle Breite**, das
+  Formular darunter. Das trägt bei 1 024 px Fensterbreite, im 940‑px‑Dialog **und**
+  auf dem iPad hochkant (768 × 1024). Auf einem breiten Schirm bleiben die zwei
+  Spalten — dort ist der Platz da.
+* **Die Spalten brechen um, statt die Tabelle zu treiben.** Jede Spalte der
+  Auswahl trägt jetzt ihre Stilklasse: `epos-projektliste-name` und
+  `…-kunde` bekommen `white-space: normal` und `overflow-wrap: anywhere`,
+  `…-geaendert` bleibt `nowrap` mit fester Breite (7,5 rem). Das Datum ist die
+  kürzeste Spalte und die einzige, deren Umbruch nichts brächte.
+
+**Das Datumsformat bleibt, wie es war.** `Zelle(…, SPALTE_GEAENDERT)` liefert
+`ToShortDateString()` — auf Deutsch also bereits `dd.MM.yyyy` („01.03.2026"), auf
+Englisch die dortige Kurzform. Ein fest verdrahtetes `dd.MM.yyyy` wäre in der
+englischen Oberfläche falsch; der Fall
+`Das_Aenderungsdatum_steht_kurz_und_leer_wenn_keines_da_ist` hält die deutsche
+Schreibweise fest.
+
+**Die zwei Geschwister mitgeprüft.**
+
+| Dialog | Liste | Befund |
+|---|---|---|
+| `ProjektWahlDialog` (Öffnen / Löschen) | `ProjektListe` über die **volle** Fensterbreite (760 px), kein Formular daneben | war nicht betroffen; die Umbruchregeln machen lange Namen dort trotzdem lesbar, statt waagerecht zu rollen |
+| `ProjektTransferDialog` (Export / Import) | **keine** `ProjektListe` — ein `Auswahlfeld` mit den Projektnamen (Entscheid W15a‑O‑2, 04.09.2026) | nicht betroffen |
+
+**Wachen.** `EPOS.UI.Tests/Bausteine/ProjektListeTests`:
+`Jede_Spalte_der_Auswahl_traegt_ihre_Stilklasse` (Markup),
+`Name_und_Kunde_brechen_um_das_Datum_nicht` und
+`Speichern_unter_stapelt_Liste_und_Formular_bis_1100_Pixel` (die Regeln im
+Stilblatt — eine bunit-Probe sieht sie nicht, Lehre W6‑B‑1).
+
+**Abnahmepunkt A‑W15a‑B‑1.** „Projekt Speichern unter" im Vorgabemaß und bei
+1 024 px Breite: Projektname, Kunde **und** Geändert sind vollständig lesbar, die
+Liste rollt nicht waagerecht, das Formular steht darunter. Ein sehr langer
+Projektname bricht um, statt die Spalten zu verschieben. Dasselbe in „Projekt
+öffnen" und „Projekt löschen".

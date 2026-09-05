@@ -90,6 +90,14 @@
     /* Mindestgroesse eines Beruehrungsziels (M2, Touchbetrieb). */
     --epos-touchziel: 44px;
 
+    /* Hoehe eines LISTENRAHMENS (Windows-Abnahme 05.09.2026, Befund W9-B-2:
+       "Liste zu lang"). Jede Rasterliste des Hauses steht in einem festen
+       Rahmen und rollt darin - 22 rem sind rund neun Zeilen samt Spaltenkopf
+       und passen in jedes Dialogmass des Bestands (kleinstes 520 x 360).
+       Es ist eine HOECHSTHOEHE: Eine Liste mit drei Zeilen bleibt drei Zeilen
+       hoch. Wer sie je Wirt anders will, setzt das Token am Wirt. */
+    --epos-listenhoehe: 22rem;
+
     /* Das Titelband der Startseite - Form_Start.label20 stand WEISS auf
        Color.FromArgb(104, 118, 223) (Designer :1085). Dieselbe Farbfamilie
        tragen die Sinnbilder der 21 Kacheln, die aus derselben Zeit stammen. */
@@ -730,10 +738,39 @@ body {
    ========================================================================== */
 
 /* Die Huelle rollt breite Tabellen waagerecht, damit nie die Seite selbst
-   rollt (Befund 03.09.2026, BHKW-Wirtschaftlichkeit in 914 px Breite). */
+   rollt (Befund 03.09.2026, BHKW-Wirtschaftlichkeit in 914 px Breite).
+
+   UND SENKRECHT (Windows-Abnahme 05.09.2026, Befund W9-B-2 "Liste zu lang").
+   Bis dahin wuchs jede Rasterliste mit ihrem Bestand: Die Liste "Gebaeude in
+   DB" schob die Filter, den Detailblock und die Schlussleiste meterweit nach
+   unten, und der Anwender musste die ganze SEITE rollen, um an OK zu kommen.
+   Der Anwender hat die Hausregel dazu gegeben: LISTEN STEHEN IN EINEM FESTEN
+   RAHMEN MIT ROLLBALKEN. Das ist eine HOECHSTHOEHE - eine kurze Liste wird
+   davon nicht kuenstlich hoch -, und sie steht hier an der EINEN Stelle, die
+   alle Listen des Hauses tragen: die handgeschriebenen Tabellen der
+   Projekt/DB-Dialoge, das QuickGrid des Bausteins Raster und die
+   ProjektListe. Wer eine Liste ausdruecklich ungebremst will, setzt
+   .epos-raster-huelle--frei. */
 .epos-raster-huelle {
     width: 100%;
-    overflow-x: auto;
+    overflow: auto;
+    max-height: var(--epos-listenhoehe);
+}
+
+/* Der Spaltenkopf bleibt beim Rollen stehen - ohne ihn ist eine gerollte
+   Liste nicht mehr zuzuordnen. Dieselbe Regel wie bei --hoch, nur fuer alle. */
+.epos-raster-huelle .epos-raster thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--epos-flaeche);
+}
+
+/* Ausdruecklich UNGEBREMST - fuer eine Liste, die als Ganzes gelesen oder
+   gedruckt wird (Berichtstabellen). Kein Wirt setzt sie heute; sie ist der
+   benannte Rueckweg, damit niemand die Hausregel oben aufweicht. */
+.epos-raster-huelle--frei {
+    max-height: none;
 }
 
 /* Virtualisierte Liste (iU9-W13.0l): QuickGrid virtualisiert nur, wenn es
@@ -3014,6 +3051,31 @@ body {
     font-size: 0.9em;
 }
 
+/* ---- Die drei Spalten der Auswahl (Windows-Abnahme 05.09.2026, Befund
+   W15a-B-1: "Geaendert Datum nicht ersichtlich") ------------------------
+
+   Die Hausregel .epos-raster td { white-space: nowrap } haelt Namen in EINER
+   Zeile - richtig fuer ein Raster mit kurzen Bezeichnern, falsch fuer eine
+   Liste mit Projektnamen: Ein langer Name macht die Tabelle breiter als die
+   Spalte des Wirtes, und in "Speichern unter" (940 px Fenster, davon 3/5 fuer
+   die Liste) lag die dritte Spalte hinter dem waagerechten Rollbalken. Der
+   Anwender sah sie nicht - und suchte auch keinen Rollbalken, denn die Tabelle
+   sah vollstaendig aus.
+
+   Also: Name und Kunde BRECHEN UM statt die Tabelle zu treiben; das Datum
+   bleibt einzeilig und bekommt eine feste Breite - es ist die kuerzeste Spalte
+   und die einzige, deren Umbruch nichts braechte. */
+.epos-projektliste-name,
+.epos-projektliste-kunde {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.epos-projektliste-geaendert {
+    white-space: nowrap;
+    width: 7.5rem;
+}
+
 @media (forced-colors: active) {
     .epos-raster-kopf {
         color: LinkText;
@@ -3044,7 +3106,15 @@ body {
     min-width: 0;
 }
 
-@media (max-width: 780px) {
+/* DER UMBRUCH KOMMT FRUEHER (Windows-Abnahme 05.09.2026, Befund W15a-B-1).
+   Bei 780 px stand das Formular bis hinunter zum Fenstermass 940 x 660 NEBEN
+   der Liste und liess ihr 3/5 der Breite - rund 535 px fuer vier Spalten samt
+   Wahlspalte. Das reicht fuer Projektname, Kunde UND Datum nicht. Ab hier
+   steht die Liste ueber die volle Breite und das Formular darunter: bei
+   1 024 px Fensterbreite, im 940-px-Dialog und auf dem iPad hochkant
+   (768 x 1024) gleichermassen. Auf einem breiten Schirm bleiben die zwei
+   Spalten, dort ist der Platz da. */
+@media (max-width: 1100px) {
     .epos-projektkopie-raster {
         grid-template-columns: 1fr;
     }
@@ -4198,19 +4268,47 @@ body {
 }
 
 /* Die Weiche der Solarthermiekachel (radioButton_KollektorProfil /
-   radioButton_Ganglinie). Sie steht UNTER ihrer Kachel, weil sie nur diese
-   eine betrifft. */
+   radioButton_Ganglinie). Sie betrifft NUR diese eine Kachel.
+
+   SIE STEHT IN DER KARTE, NICHT DARUNTER (Windows-Abnahme 05.09.2026, Befund
+   W16a-B-1): "Optionen Profil und Ganglinie sollte eher im Solarthermie Feld
+   sein." Bis dahin stand die Optionsgruppe als eigener Kasten UNTER der Karte
+   im Kachelraster - zwischen zwei gerahmten Nachbarkacheln sah sie aus wie ein
+   Zusatz zum ganzen Reiter, nicht wie die Weiche DIESER Kachel.
+
+   Warum ueber den Rahmen und nicht ueber das Markup: Eine Kachel IST ein
+   <button> (damit sie Tastatur, Enter und Sprachausgabe von selbst kann), und
+   ein <button> darf keine Auswahlknoepfe enthalten - ein Klick darauf loeste
+   sonst die Kachel aus. Der Rahmen wandert deshalb auf den Wirt, und die
+   Kachel darin wird rahmen- und flaechenlos: Beides zusammen liest sich als
+   EINE Karte, das Klickziel bleibt aber genau der Kachelteil. */
 .epos-startkachel-mit-wahl {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
 }
 
+/* Die Kachel IM Rahmen gibt ihren eigenen ab. Ihre Hoverfarbe behaelt sie -
+   sie ist das Klickziel, die Optionen darunter sind es nicht. */
+.epos-startkachel-mit-wahl > .epos-kachel {
+    background: none;
+    border: 0;
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+    padding-bottom: 8px;
+}
+
+/* Die Optionen sitzen buendig unter dem Kacheltext; die Trennlinie laeuft
+   ueber die Kartenbreite abzueglich des Kartenrandes. */
 .epos-startkachel-wahl {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    padding-left: var(--epos-karte-rand);
+    padding: 2px 0 6px;
+    margin: 0 var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-rahmen-leise);
 }
 
 .epos-startkachel-wahl > label {

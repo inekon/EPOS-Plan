@@ -163,6 +163,22 @@ entgegen — sie ist damit austauschbar.
   Wörterbuch — jeder Delegat `null`, jede Liste leer, jeder Text der deutsche Rückfall. Das ist
   der härtere Fall und der Zeuge dafür, dass eine leere Fläche beim Anwender **nicht** aus
   dieser Bibliothek kommt (Befund **W16b‑B‑1**).
+- **Eine LISTE steht in einem festen Rahmen mit Rollbalken** (Anwenderregel 05.09.2026,
+  Befund **W9‑B‑2** „Liste zu lang"). Die Liste „Gebäude in DB" wuchs mit ihrem Bestand
+  ins Endlose und schob Filter, Detailblock und Schlussleiste meterweit nach unten — um
+  an „OK" zu kommen, musste der Anwender die ganze SEITE rollen. Die Regel steht an der
+  EINEN Stelle, die alle Listen des Hauses tragen: der Hüllenklasse
+  `.epos-raster-huelle` — sie umschließt die handgeschriebenen Tabellen der
+  Projekt/DB-Dialoge, das QuickGrid des Bausteins `Raster` und die `ProjektListe`.
+  Sie trägt `max-height: var(--epos-listenhoehe)` (22 rem, ein Token in `:root`, in
+  `rem` damit es mit der Schrift mitwächst), `overflow: auto` und einen **stehenden
+  Spaltenkopf**; der Tastaturfokus rollt die Zeile von selbst ins Bild, weil jede
+  Zeilenwahl ein `<button>` ist. Es ist eine **Höchsthöhe**: Eine Liste mit drei Zeilen
+  bleibt drei Zeilen hoch. Wer eine Liste ausdrücklich ungebremst braucht, setzt
+  `Begrenzt="false"` (`Raster`, `ProjektListe`) bzw. die Klasse
+  `epos-raster-huelle--frei` — der benannte Rückweg, damit niemand die Regel still
+  aufweicht. Wache: `EPOS.UI.Tests/ListenrahmenTests` (Regel **und** Markup — eine
+  bunit-Probe allein sieht eine Stilregel nicht, Lehre W6‑B‑1).
 - Bezeichner und Kommentare deutsch; neue `.razor`/`.cs` UTF-8 **mit** BOM, LF.
 - Jeder Baustein bekommt einen `bunit`-Test in `EPOS.UI.Tests` (Darstellung, Callback,
   Zustandsklasse).

@@ -521,6 +521,177 @@ vier Kontextmenü-Controller.
 
 ---
 
+## 12. Windows-Abnahme 05.09.2026 (Befunde W9‑B‑1 bis W9‑B‑3)
+
+Der Anwender hat den Stand `d3abd94` am Gerät gefahren und drei Dinge zum
+Gebäudedialog gemeldet. Alle drei sind Oberflächenbefunde; der Rechenweg ist
+unberührt (Referenzlauf nicht angefasst).
+
+### 12.1 Befund W9‑B‑1 — „Im Projekt gespeichertes Gebäude wird nicht angezeigt bzw. in der Liste selektiert"
+
+**Beobachtung.** Ein bestehendes Projekt im Assistenten öffnen
+(`AssistentHuelle.Oeffnen(…, BETRIEBSART_BEARBEITEN)`), im linken Band das Projekt
+markieren, zweimal „Weiter ▶" bis Seite 2 „Gebäude". Die Liste „ausgewählte Gebäude
+im Projekt" zeigt das gespeicherte Gebäude **nicht markiert**; der Detailblock
+„Gebäude: Verbrauch" steht auf einem Satz, der zu keiner sichtbaren Zeile gehört.
+
+**Ursache — zwei Hälften, die zusammen den Befund ergeben.**
+
+1. **`AssistentSeite.SchritteBauen` zog den Parametersatz der STEHENDEN Seite bei
+   jedem `OnParametersSet` neu**, also bei jedem Neuzeichnen des Wirtes (Statuszeile,
+   Sprachwechsel, der `AppWurzel`-Zweig auf iOS). Der Kopfkommentar der Seite sagt
+   „bei JEDEM Betreten neu erfragt" — gemeint war das Betreten, gebaut war jedes
+   Zeichnen. Die Hüllen bauen in `Gaben` aber jedesmal eine **neue** Anzeigeliste aus
+   ihrer Fachliste auf (`GebaeudeHuelle.Gaben` :113‑114, und ebenso die zehn
+   Geschwister). Der lebenden Komponente wurde die Liste damit unter den Füßen
+   ausgetauscht.
+2. **`GebaeudeDialog` machte seine Markierung an der OBJEKTGLEICHHEIT fest**
+   (`z == _gewaehlt`) und stellte sie **nur in `OnInitialized`** her. Nach einem
+   Austausch zeigte `_gewaehlt` auf ein Objekt, das in der neuen Liste nicht mehr
+   steht — keine Zeile trug `epos-zeile--markiert`, und `_gewaehlt` war trotzdem
+   nicht `null`: der Detailblock, „Ändern" und „▶" hingen an einer toten Zeile.
+   Dieselbe Stelle trägt die zweite Hälfte des Befundes: Kommt die Projektliste erst
+   **nach** dem ersten Zeichnen (der Ladeweg `AssistentCtrl.Laden` läuft im
+   `SeiteVerlassen` der Projektkopfseite), blieb der Dialog für immer ohne
+   Markierung.
+
+**Nachgestellt.** Ein bunit-Lauf über `AssistentSeite` mit den Seitengaben eines
+Projekts mit einem gespeicherten Gebäude: markieren, zweimal „Weiter", dann den Wirt
+neu zeichnen lassen. Vorher: `SeiteGaben(2)` zweimal gerufen, `epos-zeile--markiert`
+weg. Nachher: einmal gerufen, Markierung steht.
+
+**Behebung.**
+
+* `EPOS.UI/Seiten/Assistent/AssistentSeite.razor` merkt sich den Seiteninhalt
+  (`_inhalt` / `_inhaltSchritt` / `_inhaltQuelle`) und erfragt ihn nur noch, wenn der
+  **Schritt wechselt** (`BeiSchritt`), ein **anderes Projekt markiert** wird
+  (`BeiMarkierung`) oder der Wirt einen **anderen Gabendelegaten** hereinreicht. Das
+  ist genau das, was der Kopfkommentar seit W16a.5 behauptet — und was
+  `WizardParent.Next` tat, während `WizardParent.Back` die Seite gar nicht neu
+  bestückte.
+* `EPOS.UI/Dialoge/Bedarf/GebaeudeDialog.razor` vergleicht über die **`IdZ`**
+  (`Z_ProjektGebaeude.ID` — derselbe Schlüssel, an dem „▶" hängt, siehe § 4) und
+  zieht die Markierung in `OnParametersSet` nach: dieselbe Zuordnung, sonst die erste
+  Zeile, sonst keine. Steht der Anwender im **Katalog**, bleibt seine Wahl unberührt.
+
+**Wachen.**
+`EPOS.UI.Tests/Seiten/AssistentTests`:
+`Der_Parametersatz_einer_Seite_wird_beim_Betreten_geholt_und_nicht_beim_Neuzeichnen`,
+`Beim_Betreten_und_beim_Wiederbesuch_wird_der_Parametersatz_neu_geholt`,
+`Ein_Projektwechsel_erfragt_den_Parametersatz_neu`.
+`EPOS.UI.Tests/Dialoge/GebaeudeDialogTests`:
+`Die_Markierung_ueberlebt_einen_Austausch_der_Zeilenliste`,
+`Eine_spaeter_gefuellte_Projektliste_wird_markiert`,
+`Eine_Katalogwahl_wird_vom_Nachziehen_nicht_ueberschrieben`.
+
+**Abnahmepunkt A‑W9‑B‑1.** Bestehendes Projekt im Assistenten öffnen, Seite 2
+„Gebäude": Das gespeicherte Gebäude steht in der linken Liste **und ist markiert**,
+der Detailblock zeigt seine Werte. „▶" entfernt genau diese Zeile. Vor und zurück
+über die Seiten behält Liste und Markierung.
+
+### 12.2 Befund W9‑B‑2 — „Liste zu lang"
+
+**Beobachtung.** Die Liste „Gebäude in DB" läuft unbegrenzt in die Länge; die Seite
+wird meterlang. Filter, Detailblock „Gebäude: Verbrauch" und die Schlussleiste
+stehen erst weit unterhalb des Sichtfensters — um an „OK" zu kommen, muss der
+Anwender die ganze SEITE rollen. Dasselbe gilt für jede andere Katalogliste der
+Projekt↔DB-Dialoge.
+
+**Ursache.** Die Hüllenklasse `.epos-raster-huelle` rollte nur **waagerecht**
+(`overflow-x: auto`, Befund vom 03.09.2026, BHKW-Wirtschaftlichkeit in 914 px
+Breite). Senkrecht wuchs jede Tabelle mit ihrem Bestand. Eine Höhenbegrenzung gab
+es nur an `--hoch`, und die war ausdrücklich für die **virtualisierten** Listen
+gedacht (20 746 CEC-Zeilen, iU9‑W13.0l) — für alle anderen also nirgends.
+
+**Anwenderregel.** *Listen stehen in einem festen Rahmen mit Rollbalken.*
+
+**Behebung — an EINER Stelle, nicht in zwanzig Dialogen.** Die DB-Listen tragen
+weder `Zeilenwahl` noch `Zeilenraster` noch `ProjektListe`; sie stehen in drei
+Bauarten nebeneinander — handgeschriebene `<table class="epos-raster">` (Gebäude,
+Stromganglinie, Solarkollektoren, Wärmepumpe, Wärmebedarf extern, Bedarfsprofile,
+Gebäudetyp), das QuickGrid des Bausteins `Raster` (Heizkessel, BHKW, Photovoltaik,
+Stromspeicher, Pufferspeicher) und die `ProjektListe`. **Gemeinsam ist ihnen genau
+eines: die Hüllenklasse `.epos-raster-huelle`.** Dort steht die Regel jetzt:
+
+| Was | Wert | Warum |
+|---|---|---|
+| `max-height` | `var(--epos-listenhoehe)` = **22 rem** | rund neun Zeilen samt Kopf; passt in das kleinste Dialogmaß des Bestands (520 × 360). In `rem`, damit sie mit der Schriftgröße mitwächst |
+| `overflow` | `auto` | senkrecht **und** waagerecht — die waagerechte Rolle bleibt, wie sie war |
+| `thead th` | `position: sticky; top: 0` | eine gerollte Liste ohne stehenden Spaltenkopf ist nicht mehr zuzuordnen |
+| `--frei` | `max-height: none` | der **benannte Rückweg** für eine Tabelle, die als Ganzes gelesen wird. Heute setzt ihn kein Wirt |
+
+Es ist eine **Höchsthöhe**: Eine Liste mit drei Zeilen bleibt drei Zeilen hoch —
+kurze Listen werden nicht künstlich hoch. Der **Tastaturfokus** rollt die markierte
+Zeile von selbst ins Bild, weil jede Zeilenwahl ein `<button>` ist und der Browser
+ein fokussiertes Element in seinen Rollbehälter zieht; dafür braucht es kein
+JavaScript (und diese Bibliothek hat außer dem Gesprächsverlauf keines).
+
+Dazu **ein Parameter mit sinnvoller Vorgabe** an den zwei Bausteinen, die die Hülle
+selbst zeichnen: `Raster.Begrenzt` und `ProjektListe.Begrenzt`, beide `true`.
+
+**Wache.** `EPOS.UI.Tests/ListenrahmenTests` (8 Fälle) prüft **die Regel im
+Stilblatt** (Token in `:root`, Höchsthöhe, Rollbalken, stehender Kopf, `--frei`)
+**und das Markup**, das sie treffen muss (Raster, ProjektListe, beide Listen des
+Gebäudedialogs). Eine bunit-Probe allein sieht eine Stilregel nicht — Lehre
+W6‑B‑1.
+
+**Abnahmepunkt A‑W9‑B‑2.** Gebäudedialog mit einem vollen Katalog: Beide Listen
+stehen in einem Rahmen von rund 350 px, der Spaltenkopf bleibt beim Rollen stehen,
+Filter und Detailblock sind ohne Seitenrollen erreichbar. Eine Liste mit zwei
+Zeilen ist zwei Zeilen hoch. Dasselbe bei Stromganglinien, Solarkollektoren,
+Wärmepumpe, Heizkessel-/BHKW-/PV-/Speicherverwaltung und in den drei
+Projektdialogen.
+
+### 12.3 Befund W9‑B‑3 — „nicht so recht klar, auf was sich die oberen 2 Buttons beziehen"
+
+**Beobachtung.** Zwischen der Projektliste und der DB-Liste des Gebäudedialogs stehen
+zwei Knöpfe mit den blanken Zeichen **◀** und **▶**. Der Anwender kann ihnen nicht
+ansehen, worauf sie sich beziehen.
+
+**Ursache.** Die Zeichen sind aus `Form_Gebaeude` unverändert übernommen — und dort
+sagten sie die Wahrheit: Der Vorläufer stellte die beiden Listen **nebeneinander**
+(links „ausgewählte Gebäude im Projekt", rechts „Gebäude in DB", dazwischen die
+Pfeilspalte), und „nach links" hieß dann „in das Projekt". In der Razor-Fassung stehen
+die beiden Listen **untereinander**: Der Behälter des Dialogs heißt
+`epos-auswahlspalten`, und für diesen Klassennamen gibt es keine Stilregel — die zwei
+`epos-auswahlspalte`-Blöcke stapeln sich als gewöhnliche Blockelemente. (Die Reihe mit
+der Pfeilspalte ist `epos-auswahlpaar`/`epos-auswahlpfeile`, das Muster der fünf
+Erzeugerdialoge aus Welle 6.) Ein **waagerechter** Pfeil zeigt bei untereinander
+stehenden Listen ins Leere.
+
+**Behebung.** Beide Knöpfe tragen ihre Aufgabe im **Klartext** und dazu einen
+**Kurztext** (`title`), der die Herkunft der Zeile nennt; das Zeichen zeigt in die
+Richtung, in die die Zeile wandert.
+
+| Knopf | Beschriftung | Kurztext |
+|---|---|---|
+| übernehmen | `GEB_BTN_UEBERNEHMEN` — „▲ In das Projekt übernehmen" / „▲ Add to project" | `GEB_BTN_UEBERNEHMEN_HINWEIS` — „Das in „Gebäude in DB" markierte Gebäude in die Projektliste übernehmen" |
+| entfernen | `GEB_BTN_ENTFERNEN` — „▼ Aus dem Projekt entfernen" / „▼ Remove from project" | `GEB_BTN_ENTFERNEN_HINWEIS` — „Das in der Projektliste markierte Gebäude aus dem Projekt entfernen" |
+
+Vier Schlüssel in **beiden** Sprachkatalogen (`EPOS.Kern/MyResource/Resource.resx` und
+`…en-US.resx`, dazu die vier Eigenschaften im `Resource.Designer.cs`).
+
+**Was ausdrücklich NICHT geändert ist: das Anordnungsschema.** Ob die zwei Listen
+neben- oder untereinander stehen, ist ein **offener Anwenderentscheid (#76)**. Diese
+Änderung macht die Knöpfe nur bei der HEUTIGEN Anordnung verständlich; entscheidet der
+Anwender sich für nebeneinander, wechseln die zwei Zeichen wieder auf ◀/▶ — die zwei
+Ressourcenwerte, sonst nichts.
+
+**Die zwei Geschwister bleiben vorerst.** `WaermebedarfExternDialog` und
+`BedarfsProfileDialog` stehen in derselben Bauart (`epos-auswahlspalten` mit ◀/▶) und
+haben denselben Befund. Sie sind hier bewusst nicht angefasst: Der Anwenderentscheid
+#76 gilt für alle drei gemeinsam, und `BedarfsProfileHuelle` liegt in derselben
+Sitzung bei einem anderen Bearbeiter. **Offener Punkt W9‑O‑8.**
+
+**Wachen.** `EPOS.UI.Tests/Dialoge/GebaeudeDialogTests`:
+`Die_zwei_Richtungsknoepfe_sagen_was_sie_tun` (Klartext, ▲/▼, kein ◀/▶ mehr im Markup),
+`Die_zwei_Richtungsknoepfe_tragen_einen_Kurztext`.
+
+**Abnahmepunkt A‑W9‑B‑3.** Gebäudedialog auf Deutsch **und** auf Englisch: Beide
+Knöpfe tragen ihren Satz, das Zeichen passt zur Anordnung, der Kurztext erscheint beim
+Verweilen. Der Knopf bleibt gesperrt, solange in der jeweils anderen Liste nichts
+markiert ist.
+
 ## Windows-Abnahme 05.09.2026 — Bedarfsrechnung
 
 > Kennungen abgestimmt mit dem parallelen Port der Assistenten- und

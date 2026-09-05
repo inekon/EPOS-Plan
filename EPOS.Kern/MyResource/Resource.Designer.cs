@@ -37561,11 +37561,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ▼ Aus dem Projekt entfernen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das in der Projektliste markierte Gebäude aus dem Projekt entfernen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_ENTFERNEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_ENTFERNEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetyp in DB ändern... ähnelt.
         /// </summary>
         public static string GEB_BTN_GEBTYP {
             get {
                 return ResourceManager.GetString("GEB_BTN_GEBTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ▲ In das Projekt übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_UEBERNEHMEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_UEBERNEHMEN_HINWEIS", resourceCulture);
             }
         }
         

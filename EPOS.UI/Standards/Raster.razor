@@ -36,7 +36,13 @@
    Baum. Zeilenhoehe ist das Mass, mit dem es rechnet, bevor es gemessen hat -
    44 px ist die Hausgroesse eines Beruehrungsziels. Eine virtualisierte Liste
    braucht einen Behaelter mit fester Hoehe (epos-raster-huelle--hoch), sonst
-   waechst sie und es gibt nichts zu virtualisieren. *@
+   waechst sie und es gibt nichts zu virtualisieren.
+
+   JEDE LISTE STEHT IN EINEM RAHMEN (Windows-Abnahme 05.09.2026, Befund
+   W9-B-2 "Liste zu lang"). Die Hoechsthoehe --epos-listenhoehe steht im
+   Stilblatt an .epos-raster-huelle und gilt damit fuer ALLE Listen des
+   Hauses; eine kurze Liste bleibt kurz. Begrenzt="false" nimmt den Rahmen
+   ausdruecklich weg - fuer eine Tabelle, die als GANZES gelesen wird. *@
 
 @typeparam TZeile
 
@@ -72,9 +78,23 @@
     /// </summary>
     [Parameter] public float Zeilenhoehe { get; set; } = 44f;
 
+    /// <summary>
+    /// Steht die Liste in einem festen Rahmen mit Rollbalken? Vorgabe <c>true</c> —
+    /// die Hausregel seit der Windows-Abnahme vom 05.09.2026 (Befund W9‑B‑2
+    /// „Liste zu lang"). Die Höchsthöhe ist das Token <c>--epos-listenhoehe</c>;
+    /// eine kurze Liste wird davon nicht künstlich hoch. <c>false</c> nimmt den
+    /// Rahmen ausdrücklich weg.
+    /// </summary>
+    [Parameter] public bool Begrenzt { get; set; } = true;
+
     private string Klasse => Bearbeitbar ? "epos-raster epos-raster--bearbeitbar" : "epos-raster";
 
-    private string HuellenKlasse => Virtualisiert
-        ? "epos-raster-huelle epos-raster-huelle--hoch"
-        : "epos-raster-huelle";
+    private string HuellenKlasse
+    {
+        get
+        {
+            if (Virtualisiert) return "epos-raster-huelle epos-raster-huelle--hoch";
+            return Begrenzt ? "epos-raster-huelle" : "epos-raster-huelle epos-raster-huelle--frei";
+        }
+    }
 }
