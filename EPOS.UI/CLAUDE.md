@@ -48,6 +48,14 @@ entgegen — sie ist damit austauschbar.
   Aktionsspalte bekommt einen **beschrifteten** Kopf, sonst hat sie nichts, woraus sie ihre
   Breite nehmen kann. Beides ist Befund **W5‑B‑1** der Windows-Abnahme vom 04.09.2026 —
   die Spalte war schlicht nicht zu sehen. Wache: `KostenSeiteTests`.
+- **Jede Änderung am Stilblatt läuft durch `StilblattTests`** (`EPOS.UI.Tests`): Sie prüft alle
+  `.css` unter `wwwroot` auf Klammerbilanz, Verschachtelung und `&` — und meldet Zeile **und**
+  Selektor. **Kein CSS-Nesting im Haus:** Eine Regel in einer Regel ist nie Absicht, sondern eine
+  verlorene Klammer. Befund **W6‑B‑1** der Windows-Abnahme vom 04.09.2026 — dem fehlenden `}`
+  hinter `.epos-mehrzeilig { white-space: pre-line;` fielen **414 der 569 Blöcke** zum Opfer
+  (Chromium las alles Folgende als darin verschachtelt), das Hauptfenster erschien als ungestyltes
+  HTML. Der Browser meldet dabei nichts, und eine bunit-Probe sieht es nicht: Das Markup ist
+  richtig, nur das Blatt ist es nicht.
 - Bezeichner und Kommentare deutsch; neue `.razor`/`.cs` UTF-8 **mit** BOM, LF.
 - Jeder Baustein bekommt einen `bunit`-Test in `EPOS.UI.Tests` (Darstellung, Callback,
   Zustandsklasse).
