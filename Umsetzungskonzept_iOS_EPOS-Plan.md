@@ -1968,6 +1968,9 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > steht aus**: die Brennstoffkette in beiden Heizkesseldialogen, die achte BHKW-Stufe, Löschrückfrage PV, `NurLesen` des
 > Pufferspeicherbrowsers, Kontextmenüweg Stromspeicher, die Überlagerungen statt Sprüngen, de/en, 125 %. Der fünfzehnte
 > iOS-Lauf (33852944072) auf diesem Stand ist grün.
+> **Zum Anwenderentscheid #76 vom 05.09.2026 geprüft und nicht betroffen (`b6fd863`):** der
+> `KatalogBrowserDialog` (vier Ausprägungen) führt eine Liste plus Detailblock, kein Projekt↔DB-Paar; die vier
+> Projektdialoge, die er als Sprungziel bedient, sind über Welle 6 auf `Zweispaltenauswahl` umgestellt.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
@@ -2095,6 +2098,8 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > mit ◀/▶ und „Bearbeiten…", Lastspitzenkappung mit Balken, minimaler Schwelle, drei Reitern und
 > CSV — auch ohne geöffnetes Projekt —, die vier W13-Importmasken über die Konflikthülle, de/en,
 > 125 %, Esc je Ebene.
+> **Anwenderentscheid #76 vom 05.09.2026 („#76: Empfehlung"), umgesetzt in `b6fd863`:** `StromganglinieDialog` steht im Baustein `Zweispaltenauswahl`; die zwei
+> Glyphen-Parameter samt `STROMGL_BTN_HINZUFUEGEN`/`_ENTFERNEN` sind ohne Nutzer und gefallen.
 
 > **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
 >
@@ -2369,6 +2374,13 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > zeichengleich). Projektrechnung und Katalogvorschau unberührt; die eingefrorene Wache „Katalog bleibt erste
 > Quelle" ist auf den Entscheid umgestellt, sieben Fälle in `BedarfsProfilVorschauTests`, Referenzlauf über alle
 > elf rechenbaren Projekte byte-gleich. Abnahmepunkt A‑W9‑O‑3c.
+> **Anwenderentscheid #76 vom 05.09.2026 („#76: Empfehlung"), umgesetzt in `b6fd863`:** `GebaeudeDialog`, `WaermebedarfExternDialog` und
+> `BedarfsProfileDialog` stehen wieder **nebeneinander wie im BHKW-PLAN** (Vorbild `Form_Gebaeude` 252/63/436 px:
+> Filterblock rechts über der Katalogliste, Detailblock unter dem Paar, Kanalklappliste links bei der Projektzeile)
+> und brechen erst unter 900 px untereinander um; die Listen bleiben höhenbegrenzt (W9‑B‑2). Das Pfeilzeichen ist aus
+> `GEB_BTN_UEBERNEHMEN`/`_ENTFERNEN` entfernt und hängt jetzt an der Anordnung; „übernehmen" zeigt wie im Vorbild
+> zur Projektliste (◀). **W9‑O‑8 damit geschlossen.** Wache `ZweispaltenauswahlTests` (14) mit Medienabfrage gegen
+> Token, drei Anordnungsfälle, Selektoren in zwölf Testklassen nachgezogen.
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
@@ -2464,6 +2476,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Wärme/Kühlung, „Kosten bearbeiten…" als zweites Fenster, Assistentenseiten 7 und 8 (jetzt
 > sechs WebViews im Assistenten), beide Solarthermie-Zweige, W7‑O‑4 auf einer Anlage mit
 > gepflegter Regelung.
+> **Anwenderentscheid #76 vom 05.09.2026 („#76: Empfehlung"), umgesetzt in `b6fd863`:** `SolarkollektorenDialog` und `SolarganglinieDialog` stehen im
+> Baustein `Zweispaltenauswahl` (Anordnung unverändert, Klartext-Knöpfe, Umbruch unter 900 px). Die drei
+> Wärmepumpenmasken bleiben auf `epos-auswahlpaar`, weil sie keine Projekt↔DB-Auswahl sind — geprüft und im
+> Protokoll begründet.
 
 > **Statusblock iU9 — Welle 6 umgesetzt (03.09.2026, Basis `740c73e`, zusammengeführt mit W5 `ddaea70` und iF22–iF28 `f7fefdf`)**
 >
@@ -2532,6 +2548,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `EPOS.UI/wwwroot` — Klammerbilanz, keine Stilregel in einer Stilregel, kein `&`-Selektor, Zeile und
 > Selektor in der Meldung, Gegenprobe mit entfernter Klammer; Bestandsaufnahme ohne weiteren Befund.
 > Hausregel in `EPOS.UI/CLAUDE.md`, Herleitung in Protokoll W6 § 12.
+> **Anwenderentscheid #76 vom 05.09.2026 („#76: Empfehlung"), umgesetzt in `b6fd863`:** die fünf Erzeugerdialoge (Heizkessel, BHKW,
+> Photovoltaik, Pufferspeicher, Stromspeicher) stehen im neuen Baustein **`Zweispaltenauswahl`** — Anordnung
+> unverändert nebeneinander wie `Form_Heizkessel` (316/88/313 px), neu sind der Klartext mit Kurztext auf den zwei
+> Knöpfen (beide Sprachen, `AUSWAHL_BTN_*`) und der Umbruch untereinander unter 900 px (Token
+> `--epos-zweispalten-umbruch`, Glyphen ◀▶/▲▼ je Breite). Protokollabschnitt „Anwenderentscheid #76", Abnahmepunkte
+> A‑#76 (breit nebeneinander, schmal untereinander, Listen begrenzt, Knöpfe beschriftet und gesperrt ohne Markierung).
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
