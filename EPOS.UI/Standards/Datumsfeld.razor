@@ -8,6 +8,10 @@
    DateOnly statt DateTime: Es geht um Kalendertage (Inbetriebnahme,
    Preisstand, Bewilligungszeitraum), nicht um Zeitpunkte. *@
 
+@* KEIN epos-feld--kurz (iU8-E-2 / W14a-E-7): Ein <input type="date"> zeichnet
+   TT.MM.JJJJ UND das Kalendersymbol des Browsers; unter rund 130 px schneidet
+   Chromium das Symbol ab. Es nimmt im Formularraster also die Feldspalte, wie
+   ein Textfeld. Kurz sind nur Zahlen- und Ganzzahlfeld. *@
 <label class="epos-feld">
     @if (!string.IsNullOrEmpty(Bezeichnung))
     {

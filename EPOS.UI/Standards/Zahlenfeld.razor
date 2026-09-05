@@ -14,7 +14,13 @@
    type bleibt "text": type="number" wuerde je nach Browsersprache genau eines
    der beiden Trennzeichen verweigern. *@
 
-<label class="epos-feld">
+@* epos-feld--kurz meldet dem Formularraster (iU8-E-2 / W14a-E-7), dass der
+   Wert KURZ ist: Dort bekommt das Eingabefeld --epos-kurzfeld-breite statt
+   der vollen Feldspalte, und die Einheit steht unmittelbar dahinter statt am
+   rechten Rand des Blocks - so wie im Vorbild (Form_AdminPV: Feld 62 px,
+   Einheit 4 px dahinter). Ausserhalb eines Formularrasters aendert die Klasse
+   nichts. *@
+<label class="epos-feld epos-feld--kurz">
     @if (!string.IsNullOrEmpty(Bezeichnung))
     {
         <span class="epos-feld-text">@Bezeichnung</span>
