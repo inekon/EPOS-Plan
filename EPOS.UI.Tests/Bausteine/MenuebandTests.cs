@@ -7,6 +7,8 @@ using System.Threading;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Xunit;
 
 namespace EPOS.UI.Tests.Bausteine;
@@ -474,5 +476,305 @@ public class MenuebandTests : BunitContext
         Assert.Equal("germany", mitBild["Deutsch"]);
         Assert.Equal("usa", mitBild["Englisch"]);
         Assert.Equal("lizenzen_32", mitBild["MenuItem_LizenzVerwaltung"]);
+    }
+
+    // =====================================================================
+    //  BEFUND W16c-B13 (Windows-Abnahme 05.09.2026) — die verschachtelten
+    //  Untermenues liessen sich nicht aufklappen
+    // =====================================================================
+
+    /// <summary>
+    /// Rendert das Band so, wie das Hauptfenster es einhaengt: EIN Woerterbuch
+    /// ueber <c>AddMultipleAttributes</c> statt getippter Parameter — derselbe
+    /// Weg, den <c>HauptfensterTests.AusHuelle</c> geht (Lehre W16c-B12). Die
+    /// Eintraege sind die ECHTE <see cref="Menuetabelle"/>, nicht ein
+    /// zurechtgelegter Baum: Der Befund haengt an ihren drei Ebenen.
+    /// </summary>
+    private IRenderedComponent<Menueband> AusHuelle(Action<Menuepunkt>? gewaehlt = null)
+    {
+        var gaben = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["Eintraege"] = Menuetabelle.Eintraege,
+            ["Bezeichnung"] = "Hauptmenü",
+        };
+
+        if (gewaehlt is not null)
+            gaben["Gewaehlt"] = EventCallback.Factory.Create(this, gewaehlt);
+
+        return Render<Menueband>(b =>
+        {
+            b.OpenComponent<Menueband>(0);
+            b.AddMultipleAttributes(1, gaben);
+            b.CloseComponent();
+        });
+    }
+
+    /// <summary>
+    /// Das Stilblatt der Bibliothek — fuer die Regeln, die kein Markup zeigt.
+    /// Die ZEILENENDEN werden angeglichen: Auf dem Windows-Laeufer steht in der
+    /// Arbeitskopie CRLF, und ein Suchmuster mit "\n" fiele dort ins Leere
+    /// (derselbe Grund wie im Stilblock von <c>StartseiteTests</c>).
+    /// </summary>
+    private static string Stilblatt()
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        return File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))
+                   .Replace("\r\n", "\n", StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Ein_Punkt_der_zweiten_Ebene_klappt_beim_Klick_auf()
+    {
+        // DER BEFUND, wie ihn der Anwender meldete: "Administration" oeffnet
+        // und zeigt seine sieben aufklappenden Eintraege - aber "Waermebedarf
+        // & Heizung ▸" tat beim Klick nichts.
+        var cut = AusHuelle();
+
+        cut.Find("#menue-Administration").Click();
+        Assert.Equal("false", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Brauchwasser"));
+
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+
+        Assert.Equal("true", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
+        Assert.Single(cut.FindAll(".epos-menueband-klappe--tief"));
+
+        // Alle sechs Punkte stehen im DOM - nicht bloss die Klappe.
+        foreach (string name in new[]
+                 {
+                     "MenuItem_Brauchwasser", "MenuItem_Kessel", "MenuItem_Prozesswaerme",
+                     "MenuItem_PufferSp", "MenuItem_WaermebedarfExtern", "MenuItem_WP",
+                 })
+            Assert.Single(cut.FindAll("#menue-" + name));
+
+        // Der Kopf bleibt offen - das Untermenue haengt IN ihm.
+        Assert.Equal("true", cut.Find("#menue-Administration").GetAttribute("aria-expanded"));
+    }
+
+    [Fact]
+    public void Ein_zweiter_Klick_klappt_dasselbe_Untermenue_wieder_zu()
+    {
+        var cut = AusHuelle();
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+
+        Assert.Equal("false", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe--tief"));
+
+        // Nur die zweite Ebene faellt; der Kopf steht weiter offen.
+        Assert.Equal("true", cut.Find("#menue-Administration").GetAttribute("aria-expanded"));
+    }
+
+    [Fact]
+    public void Zwei_Untermenues_derselben_Ebene_schliessen_einander_aus()
+    {
+        // Bis W16c-B13 lag die zweite Ebene in einem flachen HashSet ueber
+        // NAMEN - zwei Geschwister konnten gleichzeitig offen stehen. Jetzt
+        // traegt jede Ebene des Pfades genau EINEN Eintrag.
+        var cut = AusHuelle();
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+        cut.Find("#menue-MenuItem_StromBedarfundSp").Click();
+
+        Assert.Equal("false", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.Find("#menue-MenuItem_StromBedarfundSp").GetAttribute("aria-expanded"));
+
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Brauchwasser"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_Stromverbraucher"));
+        Assert.Single(cut.FindAll(".epos-menueband-klappe--tief"));
+    }
+
+    [Fact]
+    public void Ein_Kopfwechsel_nimmt_das_ganze_Untermenue_mit()
+    {
+        var cut = AusHuelle();
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+        cut.Find("#menue-Projekte").Click();
+
+        Assert.Equal("false", cut.Find("#menue-Administration").GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.Find("#menue-Projekte").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe--tief"));
+    }
+
+    [Fact]
+    public void Ein_Punkt_der_dritten_Ebene_meldet_und_schliesst_das_ganze_Band()
+    {
+        // Der EINZIGE Weg des Bestands ueber drei Ebenen: Administration ▸
+        // Energiesysteme ▸ Photovoltaik ▸ "Bearbeiten...".
+        Menuepunkt? gemeldet = null;
+        var cut = AusHuelle(m => gemeldet = m);
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_Energiesysteme").Click();
+        cut.Find("#menue-MenuItem_PV").Click();
+
+        Assert.Equal("true", cut.Find("#menue-MenuItem_PV").GetAttribute("aria-expanded"));
+        Assert.Equal(2, cut.FindAll(".epos-menueband-klappe--tief").Count);
+
+        cut.Find("#menue-MenuItem_PC_Bearbeiten").Click();
+
+        Assert.NotNull(gemeldet);
+        Assert.Equal(Seitenschluessel.PvAdmin, gemeldet!.Ziel);
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+        Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
+    }
+
+    [Fact]
+    public void Das_offene_Menue_traegt_eine_Schliessflaeche_und_der_Klick_darauf_schliesst()
+    {
+        // Der Ersatz fuer das gestrichene @onfocusout: ein durchsichtiger
+        // Deckel ueber der Ansicht. Er faengt den Klick NEBEN das Menue - auf
+        // Maus wie auf dem Finger, und ohne Fokus.
+        var cut = AusHuelle();
+        Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
+
+        cut.Find("#menue-Administration").Click();
+        Assert.Single(cut.FindAll(".epos-menueband-schliessflaeche"));
+
+        cut.Find(".epos-menueband-schliessflaeche").Click();
+
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+        Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
+    }
+
+    [Fact]
+    public void Ein_Fokuswechsel_im_Band_schliesst_nichts_mehr()
+    {
+        // DIE URSACHE des Befundes W16c-B13: focusout blast nach oben und
+        // feuerte auch dann, wenn der Fokus INNERHALB des Bandes wanderte -
+        // der Zeigerdruck auf eine Untermenuezeile nahm dem Kopfknopf den
+        // Fokus, das Band raeumte die Klappe weg, und der Klick fand seine
+        // Zeile nicht mehr vor. Am Band haengt jetzt kein focusout mehr;
+        // bunit meldet das als fehlenden Handler.
+        var cut = AusHuelle();
+        cut.Find("#menue-Administration").Click();
+
+        Assert.Throws<MissingEventHandlerException>(
+            () => cut.Find(".epos-menueband").FocusOut());
+
+        Assert.Single(cut.FindAll(".epos-menueband-klappe"));
+    }
+
+    [Fact]
+    public void Der_Tastaturweg_oeffnet_und_schliesst_ein_Untermenue_der_zweiten_Ebene()
+    {
+        var cut = AusHuelle();
+        var band = cut.Find(".epos-menueband");
+
+        // Vom ersten Kopf nach rechts auf "Administration", dann ↓ hinein.
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.Equal("true", cut.Find("#menue-Administration").GetAttribute("aria-expanded"));
+
+        // Der Zeiger steht auf dem ersten Punkt der Klappe - nur er ist
+        // tabulierbar (roving tabindex, dieselbe Regel wie im Baustein Reiter).
+        Assert.Equal("0", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("tabindex"));
+        Assert.Equal("-1", cut.Find("#menue-MenuItem_StromBedarfundSp").GetAttribute("tabindex"));
+
+        // → klappt SEIN Untermenue auf und stellt den Zeiger auf dessen ersten Punkt.
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.Equal("true", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_Brauchwasser"));
+        Assert.Equal("0", cut.Find("#menue-MenuItem_Brauchwasser").GetAttribute("tabindex"));
+
+        // ↓ wandert darin weiter.
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        Assert.Equal("0", cut.Find("#menue-MenuItem_Kessel").GetAttribute("tabindex"));
+        Assert.Equal("-1", cut.Find("#menue-MenuItem_Brauchwasser").GetAttribute("tabindex"));
+
+        // ← schliesst NUR diese Ebene; der Zeiger steht danach auf ihrem Kopf.
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+        Assert.Equal("false", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Brauchwasser"));
+        Assert.Equal("0", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("tabindex"));
+        Assert.Equal("true", cut.Find("#menue-Administration").GetAttribute("aria-expanded"));
+
+        // Esc schliesst alles - auch die Schliessflaeche.
+        band.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+        Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
+    }
+
+    [Fact]
+    public void Der_Tastaturweg_reicht_bis_in_die_dritte_Ebene()
+    {
+        var cut = AusHuelle();
+        var band = cut.Find(".epos-menueband");
+
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Administration
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // hinein
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Strombedarf
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Energiesysteme
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // auf
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Photovoltaik auf
+
+        Assert.Equal("true", cut.Find("#menue-MenuItem_Energiesysteme").GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.Find("#menue-MenuItem_PV").GetAttribute("aria-expanded"));
+        Assert.Equal("0", cut.Find("#menue-MenuItem_PC_Bearbeiten").GetAttribute("tabindex"));
+
+        // Zweimal ← fuehrt Ebene um Ebene zurueck, nicht auf einen Schlag hinaus.
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+        Assert.Equal("false", cut.Find("#menue-MenuItem_PV").GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.Find("#menue-MenuItem_Energiesysteme").GetAttribute("aria-expanded"));
+
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+        Assert.Equal("false", cut.Find("#menue-MenuItem_Energiesysteme").GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.Find("#menue-Administration").GetAttribute("aria-expanded"));
+    }
+
+    [Fact]
+    public void Der_Tabulator_fuehrt_aus_dem_Band_und_schliesst_es()
+    {
+        var cut = AusHuelle();
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+
+        cut.Find(".epos-menueband").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+        Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
+    }
+
+    [Fact]
+    public void Die_Schliessflaeche_liegt_im_Stilblatt_unter_dem_Band()
+    {
+        // Eine bunit-Probe sieht nur die Klasse (Lehre W6-B-1). Dass der Deckel
+        // die ganze Ansicht abdeckt UND das Band darueber bleibt, steht allein
+        // im Stilblatt - stimmten die drei z-Ebenen nicht, faenge der Deckel den
+        // Klick auf den Menuepunkt selbst ab, und der Befund waere zurueck.
+        string css = Stilblatt();
+
+        int a = css.IndexOf(".epos-menueband-schliessflaeche {", StringComparison.Ordinal);
+        Assert.True(a >= 0, "Die Regel .epos-menueband-schliessflaeche fehlt im Stilblatt");
+        string deckel = css.Substring(a, css.IndexOf('}', a) - a);
+
+        Assert.Contains("position: fixed", deckel, StringComparison.Ordinal);
+        Assert.Contains("inset: 0", deckel, StringComparison.Ordinal);
+        Assert.Contains("z-index: 39", deckel, StringComparison.Ordinal);
+
+        // Das Band traegt seinen eigenen Stapelkontext ueber dem Deckel; die
+        // Klappe (40) steht darin und also ebenfalls darueber. Gesucht wird ab
+        // dem Anker des Befundes, damit die Regel des Bandes von weiter oben
+        // (Flexkasten, Farbe, Rahmen) nicht mitgezaehlt wird.
+        int anker = css.IndexOf("DIE SCHLIESSFLAECHE (Befund W16c-B13", StringComparison.Ordinal);
+        Assert.True(anker >= 0, "Der Block zum Befund W16c-B13 fehlt im Stilblatt");
+
+        int b = css.IndexOf(".epos-menueband {", anker, StringComparison.Ordinal);
+        Assert.True(b >= 0, "Das Band traegt keinen eigenen Stapelkontext");
+        string band = css.Substring(b, css.IndexOf('}', b) - b);
+
+        Assert.Contains("position: relative", band, StringComparison.Ordinal);
+        Assert.Contains("z-index: 41", band, StringComparison.Ordinal);
     }
 }
