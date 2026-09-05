@@ -2362,6 +2362,19 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Aufblitzen, Speicher der Browserprozesse), Heizkessel-/BHKW-Admin → Bearbeiten/Neu,
 > die Sprungbrücke in die vier Katalogverwaltungen (W2‑7) und die Kostenleiste als
 > zweites Fenster.
+> **Windows-Abnahme 04./05.09.2026, Befund W6‑B‑1 (Hauptfenster als ungestyltes HTML):** Der Regel
+> `.epos-mehrzeilig { white-space: pre-line;` fehlte das schließende `}`. Es ging **nicht** in W6.4a
+> (`1bb2c19`, dort heil und letzte Regel des Blatts) verloren, sondern im Merge **`7e8e341`** (Welle 5 in
+> Welle 6, 03.09.2026): beide Zweige hatten an dasselbe Dateiende angebaut, beim Auflösen blieb die eine
+> Zeile liegen. Chromium las die 414 Blöcke dahinter (Reiter, Kachelraster, Zellenaktionen, Startseite,
+> Menüband) als **verschachtelte** Regeln unter `.epos-mehrzeilig` — gültiges CSS, keine Meldung; die 155
+> Blöcke davor (Dialoge, Knöpfe, Felder, Raster) waren nie betroffen, darum sahen die Dialoge der Wellen 6
+> bis 15 in der Abnahme richtig aus und erst das Hauptfenster (W16c) fiel um. Auch der Stilblattteil von
+> W5‑B‑1 war bis dahin wirkungslos. Klammer gesetzt (`aa98738`, Bilanz 619/619); Wache
+> **`EPOS.UI.Tests/StilblattTests.cs`** (`5c9d95c`): eigener Strukturparser über jedes `.css` unter
+> `EPOS.UI/wwwroot` — Klammerbilanz, keine Stilregel in einer Stilregel, kein `&`-Selektor, Zeile und
+> Selektor in der Meldung, Gegenprobe mit entfernter Klammer; Bestandsaufnahme ohne weiteren Befund.
+> Hausregel in `EPOS.UI/CLAUDE.md`, Herleitung in Protokoll W6 § 12.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
