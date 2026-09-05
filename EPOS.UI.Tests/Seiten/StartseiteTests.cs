@@ -1047,7 +1047,14 @@ public class StartseiteTests : BunitContext
             d = d.Parent;
 
         Assert.NotNull(d);   // das Stilblatt muss im Baum stehen
-        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+        // Zeilenenden angleichen: Auf Windows liegt das Blatt nach dem Auschecken
+        // mit CRLF (.gitattributes: text=auto), ein zweizeiliger Selektor traegt
+        // hier aber "\n" - dieselbe Angleichung wie in StartseiteAnmutungTests
+        // und StilblattTests (Windows-CI 128 auf e65d3a9 fiel genau daran).
+        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))
+                         .Replace("\r\n", "\n");
+        selektor = selektor.Replace("\r\n", "\n");
 
         int a = css.IndexOf(selektor, StringComparison.Ordinal);
         Assert.True(a >= 0, "Regel " + selektor + " steht nicht im Stilblatt");
