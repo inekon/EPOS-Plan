@@ -63,6 +63,9 @@ public class KiChatDialogTests : BunitContext
     private static KiChatTexte Texte() => new()
     {
         Verlauf = "Hilfe-Assistent",
+        ErklaerungMehr = "Was der Assistent tut",
+        VerlaufLeer = "Noch keine Frage gestellt.",
+        EinstellungenTitel = "KI-Assistent - Einstellungen",
         KontextFormat = "Kontext: {0}",
         KontextLeer = "Kontext: (nicht erkannt)",
         Denkt = "Der Assistent denkt nach...",
@@ -77,7 +80,7 @@ public class KiChatDialogTests : BunitContext
         EinwilligungFehlt = "Ohne Einwilligung wird nichts übertragen.",
         Werkzeuge = "Werkzeuge...",
         WerkzeugeTitel = "Aktionen von Hand",
-        Beschreibung = "Beschreibung",
+        Werkzeugliste = Werkzeugtexte(),
         Ausfuehren = "Ausführen",
         AktionWaehlen = "Bitte zuerst eine Aktion wählen.",
         HinweisVorn = "Es werden nur Hilfetexte übertragen. ",
@@ -97,6 +100,28 @@ public class KiChatDialogTests : BunitContext
         BestaetigungTitel = "Bitte bestätigen",
         BestaetigungAusfuehren = "Ausführen",
         BestaetigungAbbrechen = "Abbrechen"
+    };
+
+    /// <summary>Die sechzehn Texte der Werkzeugliste (W15b-E-4).</summary>
+    private static KiWerkzeugTexte Werkzeugtexte() => new()
+    {
+        Liste = "Aktionen von Hand",
+        Hinweis = "Hier führen Sie eine Aktion von Hand aus.",
+        Suche = "Aktion suchen",
+        KeinTreffer = "Keine Aktion passt zu diesem Suchtext.",
+        GruppeLesend = "Aktionen, die nur lesen",
+        GruppeAendernd = "Aktionen, die Daten ändern",
+        MerkmalLesend = "Liest nur",
+        MerkmalAendernd = "Ändert Daten",
+        Beispiel = "So fragen Sie:",
+        Angaben = "Angaben",
+        KeineAngaben = "Diese Aktion braucht keine Angaben.",
+        Wirkung = "Danach:",
+        Pflicht = "Pflichtangabe",
+        LeerKopf = "Bitte links eine Aktion wählen.",
+        LeerText = "Ein Beispiel: Wählen Sie links Variante anlegen.",
+        Bestaetigungspflicht = "Verändernde Aktionen laufen erst nach Ihrer Bestätigung.",
+        AndockpunktFormat = "Technischer Andockpunkt: {0}"
     };
 
     private static KiAktion Aktion() => new(
@@ -120,7 +145,8 @@ public class KiChatDialogTests : BunitContext
         Action<ComponentParameterCollectionBuilder<KiChatDialog>>? mehr = null,
         KiChatTexte? texte = null,
         string kontext = "Bereich: Projektverwaltung",
-        bool hilfeBetrieb = false)
+        bool hilfeBetrieb = false,
+        IReadOnlyList<KiAktion>? aktionen = null)
     {
         return Render<KiChatDialog>(p =>
         {
@@ -130,8 +156,7 @@ public class KiChatDialogTests : BunitContext
              .Add(x => x.Eingerichtet, true)
              .Add(x => x.AnfragenHeute, 3)
              .Add(x => x.Tageslimit, 50)
-             .Add(x => x.Aktionen, new[] { Aktion() })
-             .Add(x => x.Beschreiben, a => "Beschreibung von " + a.Name);
+             .Add(x => x.Aktionen, aktionen ?? new[] { Aktion() });
             mehr?.Invoke(p);
         });
     }
@@ -188,9 +213,14 @@ public class KiChatDialogTests : BunitContext
         Assert.DoesNotContain("Rechtshinweis", text, StringComparison.Ordinal);
     }
 
-    /// <summary>Die Begrüßung kommt fertig aus dem Kern und steht im Verlauf.</summary>
+    /// <summary>
+    /// <b>Die Begrüßung steht im KOPF, nicht im Verlauf</b> (Anwenderbefund
+    /// <b>W15b‑E‑3</b> der Windows-Abnahme vom 05.09.2026). Der Kopfkasten trug vier
+    /// Zeilen Erklärung, und der Gesprächsverlauf darunter war „nicht zu sehen (leer,
+    /// ohne Rahmen)". Sichtbar bleibt der ERSTE Satz; der Verlauf beginnt leer.
+    /// </summary>
     [Fact]
-    public void Die_Begruessung_steht_im_Verlauf()
+    public void Die_Begruessung_steht_im_Kopf_und_nicht_im_Verlauf()
     {
         var cut = Zeigen(p => p.Add(x => x.Begruessung, new[]
         {
@@ -199,7 +229,91 @@ public class KiChatDialogTests : BunitContext
         }));
 
         Assert.Contains("Es ist noch kein API-Schlüssel hinterlegt.",
+                        cut.Find("p.epos-kichat-einleitung").TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("Es ist noch kein API-Schlüssel hinterlegt.",
+                              cut.Find("div.epos-verlauf").TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Die WEITEREN Erklärzeilen wandern hinter die Klappe — genau das, was der
+    /// Anwender an den vier Zeilen des Kopfkastens beanstandet hat.
+    /// </summary>
+    [Fact]
+    public void Die_lange_Erklaerung_steht_hinter_der_Klappe()
+    {
+        var cut = Zeigen(p => p.Add(x => x.Begruessung, new[]
+        {
+            new Gespraechszeile(Gespraechsrolle.AssistentKopf, "Hilfe-Assistent"),
+            new Gespraechszeile(Gespraechsrolle.Assistent, "Stellen Sie Ihre Frage."),
+            new Gespraechszeile(Gespraechsrolle.Leise, "Es werden nur Hilfetexte übertragen."),
+            new Gespraechszeile(Gespraechsrolle.Leise, "Lesende Aktionen laufen sofort.")
+        }));
+
+        Assert.Equal("Stellen Sie Ihre Frage.", cut.Find("p.epos-kichat-einleitung").TextContent);
+
+        var klappe = cut.Find("details.epos-kichat-erklaerung");
+        Assert.Contains("Es werden nur Hilfetexte übertragen.", klappe.TextContent,
+                        StringComparison.Ordinal);
+        Assert.Contains("Lesende Aktionen laufen sofort.", klappe.TextContent,
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Verlauf ist sichtbar und sagt, dass er leer ist</b> (W15b‑E‑3). Ohne
+    /// diese Zeile stand dort eine Fläche, die der Anwender nicht als Liste erkannte.
+    /// </summary>
+    [Fact]
+    public void Der_leere_Verlauf_sagt_dass_noch_keine_Frage_gestellt_wurde()
+    {
+        var cut = Zeigen();
+
+        Assert.Contains("Noch keine Frage gestellt.",
                         cut.Find("div.epos-verlauf").TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Zähler steht GENAU EINMAL</b> (W15b‑E‑3). Auf dem Bildschirmfoto stand
+    /// „Heute genutzt: 0 von 50" zweimal — in der Begrüßung und in der Fußleiste. Die
+    /// Begrüßung kommt seither ohne ihn (<c>KiVerlaufstexte.Begruessung
+    /// mitZaehler: false</c>); geprüft wird hier die ANSICHT: Was die Hülle nicht mehr
+    /// hineingibt, darf die Komponente auch nicht selbst erzeugen.
+    /// </summary>
+    [Fact]
+    public void Der_Tagesverbrauch_steht_genau_einmal()
+    {
+        var cut = Zeigen(p => p.Add(x => x.Begruessung, new[]
+        {
+            new Gespraechszeile(Gespraechsrolle.AssistentKopf, "Hilfe-Assistent"),
+            new Gespraechszeile(Gespraechsrolle.Assistent, "Stellen Sie Ihre Frage.")
+        }));
+
+        string ganz = cut.Find("div.epos-kichat").TextContent;
+        int erste = ganz.IndexOf("Heute genutzt:", StringComparison.Ordinal);
+
+        Assert.True(erste >= 0, "Der Zähler fehlt ganz.");
+        Assert.Equal(-1, ganz.IndexOf("Heute genutzt:", erste + 1, StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// <b>Die drei Knöpfe stehen in EINER Reihe</b> (W15b‑E‑3): Fragen, Nur suchen und
+    /// „Werkzeuge…" liegen im selben Elternelement, der Aktionsschalter daneben. Auf
+    /// dem Bildschirmfoto standen sie rechts gestapelt.
+    /// </summary>
+    [Fact]
+    public void Fragen_Suchen_und_Werkzeuge_stehen_in_einer_Reihe()
+    {
+        var cut = Zeigen();
+
+        var reihe = cut.Find("div.epos-kieingabe-knoepfe");
+        string[] beschriftungen = reihe.QuerySelectorAll("button")
+                                       .Select(b => b.TextContent.Trim())
+                                       .ToArray();
+
+        Assert.Contains("Fragen", beschriftungen);
+        Assert.Contains("Nur suchen", beschriftungen);
+        Assert.Contains("Werkzeuge...", beschriftungen);
+        // Der Aktionsschalter steht im selben Kasten, links vor den Knoepfen.
+        Assert.NotNull(reihe.QuerySelector("span.epos-kieingabe-vorspann input[type=checkbox]"));
     }
 
     /// <summary>Der Kontext steht oben; ohne Kontext der Ersatztext.</summary>
@@ -618,5 +732,359 @@ public class KiChatDialogTests : BunitContext
 
         Assert.Contains("Heute genutzt: 3 von 50", zeile.TextContent, StringComparison.Ordinal);
         Assert.False(zeile.HasAttribute("title"));
+    }
+
+    // ==================================================================
+    //  Die Werkzeugliste in Anwendersprache (Befund W15b-E-4)
+    // ==================================================================
+
+    /// <summary>Eine ändernde Aktion mit zwei Pflichtfeldern — der Fall des Befunds.</summary>
+    private static KiAktion Schreibaktion() => new(
+        name: "variante_anlegen",
+        zweck: "Legt zu einem Stammprojekt eine neue Variante an.",
+        stufe: Schutzstufe.Schreiben,
+        andockpunkt: "VariantenCtrl.AnlegenAusStamm",
+        parameter: new[]
+        {
+            new KiParameter("stammprojekt", KiParameterTyp.Text, "Name des Stammprojekts.",
+                            pflicht: true, anzeigename: "Stammprojekt"),
+            new KiParameter("bezeichner", KiParameterTyp.Text, "Name der neuen Variante.",
+                            pflicht: true, anzeigename: "Bezeichner", maxLaenge: 200)
+        },
+        ausfuehren: _ => KiErgebnis.Ok("ok"),
+        vorschau: _ => "Ich würde eine Variante anlegen.",
+        wirkung: "Danach gibt es ein zusätzliches Projekt in der Vergleichsgruppe.",
+        titel: "Variante anlegen",
+        beispiel: "Lege zum Projekt Musterhaus eine Variante Wärmepumpe statt Kessel an.");
+
+    private IRenderedComponent<KiChatDialog> MitWerkzeugliste(params KiAktion[] aktionen)
+    {
+        var cut = Zeigen(aktionen: aktionen);
+        cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Werkzeuge...").Click();
+        return cut;
+    }
+
+    /// <summary>
+    /// <b>Der Befund im Kern:</b> Links standen rohe Bezeichner
+    /// (<c>speichervariante_aktiv_setzen</c>). Jetzt steht dort der Titel, und der
+    /// Bezeichner steht NICHT mehr im sichtbaren Text.
+    /// </summary>
+    [Fact]
+    public void Die_Werkzeugliste_zeigt_Titel_statt_Bezeichner()
+    {
+        var cut = MitWerkzeugliste(Schreibaktion());
+
+        var eintrag = cut.Find("button.epos-kiwerkzeuge-eintrag");
+        Assert.Equal("Variante anlegen", eintrag.TextContent.Trim());
+        Assert.DoesNotContain("variante_anlegen",
+                              cut.Find("div.epos-kiwerkzeuge").TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Andockpunkt verschwindet aus der Anwendersicht</b> und bleibt nur als
+    /// Kurztext stehen — er gehört ins Protokoll, nicht in die Maske.
+    /// </summary>
+    [Fact]
+    public void Der_Andockpunkt_steht_nur_noch_im_Kurztext()
+    {
+        var cut = MitWerkzeugliste(Schreibaktion());
+        cut.Find("button.epos-kiwerkzeuge-eintrag").Click();
+
+        Assert.DoesNotContain("VariantenCtrl.AnlegenAusStamm",
+                              cut.Find("div.epos-kiwerkzeuge").TextContent, StringComparison.Ordinal);
+        Assert.Contains("VariantenCtrl.AnlegenAusStamm",
+                        cut.Find("h3.epos-kiwerkzeuge-titel").GetAttribute("title") ?? "",
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Lesend oder ändernd</b> — das Kennzeichen sagt es in zwei Wörtern, und die
+    /// Liste gruppiert danach. Eine ändernde Aktion nennt außerdem ihre Wirkung und
+    /// die Bestätigungspflicht.
+    /// </summary>
+    [Fact]
+    public void Die_Werkzeugliste_kennzeichnet_lesend_und_aendernd()
+    {
+        var cut = MitWerkzeugliste(Aktion(), Schreibaktion());
+
+        string liste = cut.Find("ul.epos-kiwerkzeuge-liste").TextContent;
+        Assert.Contains("Aktionen, die nur lesen", liste, StringComparison.Ordinal);
+        Assert.Contains("Aktionen, die Daten ändern", liste, StringComparison.Ordinal);
+
+        cut.FindAll("button.epos-kiwerkzeuge-eintrag")
+           .First(b => b.TextContent.Trim() == "Variante anlegen").Click();
+
+        Assert.Equal("Ändert Daten", cut.Find("span.epos-kiwerkzeuge-merkmal").TextContent.Trim());
+        Assert.Contains("Danach gibt es ein zusätzliches Projekt",
+                        cut.Find("p.epos-kiwerkzeuge-wirkung").TextContent, StringComparison.Ordinal);
+        Assert.Contains("Verändernde Aktionen laufen erst nach Ihrer Bestätigung.",
+                        cut.Find("p.epos-kiwerkzeuge-bestaetigung").TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Mindestens ein Beispiel — direkt im Dialog.</b> Im Leerzustand steht der
+    /// vollständige Fall, an einer gewählten Aktion ihr eigener Satz.
+    /// </summary>
+    [Fact]
+    public void Die_Werkzeugliste_zeigt_ein_Beispiel_im_Leerzustand_und_je_Aktion()
+    {
+        var cut = MitWerkzeugliste(Schreibaktion());
+
+        Assert.Contains("Ein Beispiel: Wählen Sie links Variante anlegen.",
+                        cut.Find("div.epos-kiwerkzeuge-leer").TextContent, StringComparison.Ordinal);
+
+        cut.Find("button.epos-kiwerkzeuge-eintrag").Click();
+
+        Assert.Contains("Lege zum Projekt Musterhaus eine Variante Wärmepumpe statt Kessel an.",
+                        cut.Find("p.epos-kiwerkzeuge-beispiel").TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Pflichtangaben sind gekennzeichnet</b> — Stern in der Beschriftung und der
+    /// Grund als Kurztext; die Erläuterung steht als Platzhalter im Feld.
+    /// </summary>
+    [Fact]
+    public void Pflichtangaben_tragen_ein_Kennzeichen_und_einen_Platzhalter()
+    {
+        var cut = MitWerkzeugliste(Schreibaktion());
+        cut.Find("button.epos-kiwerkzeuge-eintrag").Click();
+
+        var beschriftungen = cut.FindAll("div.epos-kiwerkzeuge-felder span.epos-feld-text");
+        Assert.Equal("Stammprojekt *", beschriftungen[0].TextContent.Trim());
+        Assert.Equal("Pflichtangabe", beschriftungen[0].GetAttribute("title"));
+
+        var felder = cut.FindAll("div.epos-kiwerkzeuge-felder input");
+        Assert.Equal("Name des Stammprojekts.", felder[0].GetAttribute("placeholder"));
+    }
+
+    /// <summary>
+    /// Bis zu acht Einträgen gibt es kein Suchfeld — bei neun schon. Der Bestand
+    /// führt 24 Aktionen.
+    /// </summary>
+    [Theory]
+    [InlineData(8, false)]
+    [InlineData(9, true)]
+    public void Ab_neun_Aktionen_bekommt_die_Liste_ein_Suchfeld(int anzahl, bool mitSuche)
+    {
+        KiAktion[] viele = Enumerable.Range(1, anzahl)
+            .Select(i => new KiAktion(
+                name: "aktion_" + i,
+                zweck: "Zweck " + i,
+                stufe: Schutzstufe.Lesen,
+                andockpunkt: "Ctrl.Weg",
+                titel: "Aktion " + i))
+            .ToArray();
+
+        var cut = MitWerkzeugliste(viele);
+
+        Assert.Equal(mitSuche, cut.FindAll("label.epos-kiwerkzeuge-suche").Count > 0);
+    }
+
+    /// <summary>Das Suchfeld filtert über Titel, Zweck und Beispiel.</summary>
+    [Fact]
+    public void Das_Suchfeld_filtert_die_Liste()
+    {
+        KiAktion[] viele = Enumerable.Range(1, 8)
+            .Select(i => new KiAktion(
+                name: "aktion_" + i, zweck: "Zweck " + i, stufe: Schutzstufe.Lesen,
+                andockpunkt: "Ctrl.Weg", titel: "Aktion " + i))
+            .Append(Schreibaktion())
+            .ToArray();
+
+        var cut = MitWerkzeugliste(viele);
+        cut.Find("label.epos-kiwerkzeuge-suche input").Input("Variante");
+
+        var eintraege = cut.FindAll("button.epos-kiwerkzeuge-eintrag");
+        Assert.Single(eintraege);
+        Assert.Equal("Variante anlegen", eintraege[0].TextContent.Trim());
+    }
+
+    /// <summary>Der Verlauf nennt nach dem Ausführen den TITEL, nicht den Bezeichner.</summary>
+    [Fact]
+    public void Der_Verlauf_nennt_den_Titel_der_ausgefuehrten_Aktion()
+    {
+        var cut = Zeigen(aktionen: new[] { Schreibaktion() }, mehr: p => p
+            .Add(x => x.Ausfuehren,
+                 (Func<string, IReadOnlyDictionary<string, object>, Task<IReadOnlyList<Gespraechszeile>>>)
+                 ((_, _) => Task.FromResult<IReadOnlyList<Gespraechszeile>>(Array.Empty<Gespraechszeile>()))));
+
+        cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Werkzeuge...").Click();
+        cut.Find("button.epos-kiwerkzeuge-eintrag").Click();
+        cut.Find("div.epos-kiwerkzeuge-fuss button.epos-knopf--primaer").Click();
+
+        string verlauf = cut.Find("div.epos-verlauf").TextContent;
+        Assert.Contains("Variante anlegen", verlauf, StringComparison.Ordinal);
+        Assert.DoesNotContain("variante_anlegen", verlauf, StringComparison.Ordinal);
+    }
+
+    // ==================================================================
+    //  Die Einstellungen als Ueberlagerung (Befund W15b-B-1)
+    // ==================================================================
+
+    /// <summary>
+    /// <b>„Einstellungen…" öffnet KEIN zweites Fenster mehr.</b> Anwenderbefund
+    /// <b>W15b‑B‑1</b> der Windows-Abnahme vom 05.09.2026: Der Knopf öffnete ein
+    /// leeres Fenster, dann stürzte die Anwendung ab — die Hülle gab
+    /// <c>Task.FromResult(KiEinstellungenHuelle.Oeffnen(…))</c> heraus und zog damit
+    /// eine zweite WebView2 synchron im Rückruf der ersten hoch. Liefert die Hülle
+    /// einen Inhalt, erscheint er als Überlagerung, und der Delegat bleibt
+    /// UNGERUFEN.
+    /// </summary>
+    [Fact]
+    public void Einstellungen_erscheinen_als_Ueberlagerung_und_rufen_den_Delegaten_nicht()
+    {
+        int delegatGerufen = 0;
+        EventCallback<bool> fertig = default;
+
+        RenderFragment<EventCallback<bool>> inhalt = rueckweg =>
+        {
+            fertig = rueckweg;
+            return b =>
+            {
+                b.OpenElement(0, "p");
+                b.AddAttribute(1, "class", "pruef-einstellungen");
+                b.AddContent(2, "Einstellungen");
+                b.CloseElement();
+            };
+        };
+
+        var cut = Zeigen(p => p
+            .Add(x => x.Einstellungen, (Func<Task<bool>>)(() =>
+            {
+                delegatGerufen++;
+                return Task.FromResult(true);
+            }))
+            .Add(x => x.Einstellungsinhalt, inhalt));
+
+        cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Einstellungen...").Click();
+
+        Assert.Equal(0, delegatGerufen);
+        Assert.NotEmpty(cut.FindAll("p.pruef-einstellungen"));
+        Assert.Contains("KI-Assistent - Einstellungen",
+                        cut.Find("div.epos-ueberlagerung").TextContent, StringComparison.Ordinal);
+
+        // Der Rueckweg schliesst die Ueberlagerung und vermerkt das Speichern.
+        cut.InvokeAsync(() => fertig.InvokeAsync(true));
+
+        Assert.Empty(cut.FindAll("p.pruef-einstellungen"));
+        Assert.Contains("Die Angaben wurden gespeichert.",
+                        cut.Find("div.epos-verlauf").TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Dasselbe für den Rechtshinweis: Er erscheint als Überlagerung, sein
+    /// Delegat — das zweite Fenster — bleibt ungerufen.
+    /// </summary>
+    [Fact]
+    public void Der_Rechtshinweis_erscheint_als_Ueberlagerung()
+    {
+        int delegatGerufen = 0;
+
+        RenderFragment<EventCallback<bool>> inhalt = _ => b =>
+        {
+            b.OpenElement(0, "p");
+            b.AddAttribute(1, "class", "pruef-hinweis");
+            b.AddContent(2, "Rechtshinweis");
+            b.CloseElement();
+        };
+
+        var cut = Zeigen(p => p
+            .Add(x => x.Rechtshinweis, (Func<Task>)(() =>
+            {
+                delegatGerufen++;
+                return Task.CompletedTask;
+            }))
+            .Add(x => x.Rechtshinweisinhalt, inhalt));
+
+        cut.FindAll("button.epos-kichat-link").First(b => b.TextContent.Trim() == "Rechtshinweis").Click();
+
+        Assert.Equal(0, delegatGerufen);
+        Assert.NotEmpty(cut.FindAll("p.pruef-hinweis"));
+    }
+
+    /// <summary>
+    /// <b>Ohne Inhalt bleibt der alte Weg</b> — eine Hülle, die keine Überlagerung
+    /// liefern kann (iOS vor iU11), ruft weiterhin den Delegaten.
+    /// </summary>
+    [Fact]
+    public void Ohne_Inhalt_gehen_die_Einstellungen_weiter_ueber_den_Delegaten()
+    {
+        int gerufen = 0;
+
+        var cut = Zeigen(p => p.Add(x => x.Einstellungen, (Func<Task<bool>>)(() =>
+        {
+            gerufen++;
+            return Task.FromResult(true);
+        })));
+
+        cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Einstellungen...").Click();
+
+        Assert.Equal(1, gerufen);
+        Assert.Contains("Die Angaben wurden gespeichert.",
+                        cut.Find("div.epos-verlauf").TextContent, StringComparison.Ordinal);
+    }
+
+    // ==================================================================
+    //  Enter sendet EINMAL (Befund W15b-B-2, zweiter Teil)
+    // ==================================================================
+
+    /// <summary>
+    /// <b>Der doppelte Block.</b> Auf dem Bildschirmfoto zu <b>W15b‑B‑2</b> stand der
+    /// ganze Block — Frage, Hinweis, Abschnitte, Quellen — ZWEIMAL untereinander im
+    /// Verlauf. Die Ursache liegt in der Eingabezeile: <c>@@onkeydown:preventDefault</c>
+    /// wird beim ZEICHNEN ausgewertet, nicht beim Ereignis. Beim sendenden Enter stand
+    /// die Marke deshalb noch auf <c>false</c>, der Browser trug seinen Zeilenumbruch
+    /// ein, und das nachfolgende <c>oninput</c> schrieb die Frage zurück ins Feld, das
+    /// <c>Senden</c> gerade geleert hatte. Der Anwender sah eine unveränderte Eingabe
+    /// und drückte noch einmal Enter.
+    /// </summary>
+    [Fact]
+    public void Enter_sendet_einmal_und_das_Feld_bleibt_danach_leer()
+    {
+        var fragen = new List<string>();
+
+        var cut = Zeigen(p => p.Add(x => x.Fragen,
+            (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)((f, _) =>
+            {
+                fragen.Add(f);
+                return Task.FromResult<IReadOnlyList<Gespraechszeile>>(
+                    new[] { new Gespraechszeile(Gespraechsrolle.Assistent, "Antwort auf " + f) });
+            })));
+
+        var feld = cut.Find("textarea.epos-kieingabe-feld");
+        feld.Input("wieviel varianten hat dieses projekt");
+        feld.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        // Der Browser traegt seinen Zeilenumbruch nach: dasselbe Ereignis, das die
+        // Frage bisher zurueckschrieb.
+        cut.Find("textarea.epos-kieingabe-feld").Input("wieviel varianten hat dieses projekt\n");
+
+        Assert.Equal("", cut.Find("textarea.epos-kieingabe-feld").GetAttribute("value"));
+
+        // Ein zweites Enter auf dem nun leeren Feld sendet nichts.
+        cut.Find("textarea.epos-kieingabe-feld").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.Single(fragen);
+    }
+
+    /// <summary>Umschalt+Enter sendet nicht — es bleibt der Zeilenumbruch.</summary>
+    [Fact]
+    public void Umschalt_und_Enter_sendet_nicht()
+    {
+        var fragen = new List<string>();
+
+        var cut = Zeigen(p => p.Add(x => x.Fragen,
+            (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)((f, _) =>
+            {
+                fragen.Add(f);
+                return Task.FromResult<IReadOnlyList<Gespraechszeile>>(Array.Empty<Gespraechszeile>());
+            })));
+
+        var feld = cut.Find("textarea.epos-kieingabe-feld");
+        feld.Input("erste Zeile");
+        feld.KeyDown(new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
+
+        Assert.Empty(fragen);
+        Assert.Equal("erste Zeile", cut.Find("textarea.epos-kieingabe-feld").GetAttribute("value"));
     }
 }

@@ -46,6 +46,13 @@ namespace KiKern
         /// Wirkt die Aktion in eine offene MASKE statt in die Datenbank (Stufe „2F",
         /// Fachkonzept 11.4)? Siehe <see cref="Formularaktion"/>.
         /// </param>
+        /// <param name="titel">
+        /// Kurzer Titel in Anwendersprache fuer die Werkzeugliste („Variante anlegen").
+        /// Leer = <paramref name="zweck"/>. Siehe <see cref="Titel"/>.
+        /// </param>
+        /// <param name="beispiel">
+        /// Ein Satz, wie der Anwender diese Aktion im Chat erfragt. Siehe <see cref="Beispiel"/>.
+        /// </param>
         /// <param name="datenbankwirksam">
         /// Kann diese Aktion den Datenbestand veraendern? Siehe
         /// <see cref="Datenbankwirksam"/>. Nur eine <paramref name="formularaktion"/> darf
@@ -62,7 +69,9 @@ namespace KiKern
                         string? wirkung = null,
                         bool umkehrbar = false,
                         bool formularaktion = false,
-                        bool datenbankwirksam = true)
+                        bool datenbankwirksam = true,
+                        string? titel = null,
+                        string? beispiel = null)
         {
             if (!KiName.IstGueltig(name))
                 throw new ArgumentException(
@@ -114,6 +123,8 @@ namespace KiKern
             Umkehrbar = umkehrbar;
             Formularaktion = formularaktion;
             Datenbankwirksam = datenbankwirksam;
+            Titel = string.IsNullOrWhiteSpace(titel) ? zweck : titel!.Trim();
+            Beispiel = (beispiel ?? "").Trim();
 
             var gesehen = new HashSet<string>(StringComparer.Ordinal);
             foreach (KiParameter p in Parameter)
@@ -124,6 +135,41 @@ namespace KiKern
 
         /// <summary>Sprachneutraler Schluessel der Aktion.</summary>
         public string Name { get; }
+
+        /// <summary>
+        /// Der Titel in ANWENDERSPRACHE - „Variante anlegen" statt
+        /// <c>variante_anlegen</c> (Anwenderbefund <b>W15b-E-4</b> der
+        /// Windows-Abnahme vom 05.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum das Feld noetig wurde.</b> Die Werkzeugliste zeigte bis dahin den
+        /// <see cref="Name"/> - einen ASCII-Schluessel, den es fuer das MODELL gibt
+        /// (Fachkonzept 3.2: a-z, 0-9, Unterstrich, hoechstens 64 Zeichen). Der Anwender
+        /// las <c>speichervariante_aktiv_setzen</c> und konnte nicht erkennen, was die
+        /// Aktion tut. Der Name bleibt, wo er hingehoert - im Schema, im Protokoll und in
+        /// der Bestaetigung -, aber die LISTE zeigt den Titel.
+        /// </para>
+        /// <para>
+        /// <b>Rueckfall ist der Zweck.</b> Eine Aktion ohne Titel zeigt ihren
+        /// <see cref="Zweck"/>, also einen ganzen Satz Klartext. Nie den Bezeichner:
+        /// Genau das war der Befund.
+        /// </para>
+        /// </remarks>
+        public string Titel { get; }
+
+        /// <summary>
+        /// Ein Satz, wie der Anwender diese Aktion im Chat erfragt - „Lege zum Projekt
+        /// Musterhaus eine Variante Waermepumpe an" (Anwenderbefund <b>W15b-E-4</b>).
+        /// Leer = kein Beispiel hinterlegt.
+        /// </summary>
+        /// <remarks>
+        /// Das Beispiel steht in der Werkzeugliste UND im eingebauten Hilfewissen
+        /// („Aktionen des Assistenten"). Es ist Anzeigetext und geht nicht an das
+        /// Modell - der Werkzeugkatalog fuehrt weiterhin <see cref="Zweck"/> und die
+        /// Parameterbeschreibungen.
+        /// </remarks>
+        public string Beispiel { get; }
 
         /// <summary>Eine Zeile Klartext, deutsch.</summary>
         public string Zweck { get; }

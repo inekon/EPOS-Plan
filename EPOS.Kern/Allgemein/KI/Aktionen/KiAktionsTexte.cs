@@ -80,6 +80,64 @@
         internal static string ZweckSpeichervarianteAktiv => MyResource.Resource.KI_REG_ZWECK_SPEICHERVARIANTE_AKTIV;
         internal static string ZweckKostenpositionSetzen => MyResource.Resource.KI_REG_ZWECK_KOSTENPOSITION_SETZEN;
 
+
+        // ============================ Titel und Beispiel (Befund W15b-E-4)
+        //
+        // Die Werkzeugliste zeigte bis zur Windows-Abnahme vom 05.09.2026 den
+        // ASCII-Bezeichner der Aktion ("speichervariante_aktiv_setzen"). Der gehoert
+        // dem MODELL - der Anwender braucht einen Titel in seiner Sprache und einen
+        // Satz, mit dem er dasselbe im Gespraech erreicht. Beides steht wie jeder
+        // andere Anzeigetext in MyResource und damit zweisprachig da.
+
+        internal static string TitelProjekteAuflisten => MyResource.Resource.KI_REG_TITEL_PROJEKTE_AUFLISTEN;
+        internal static string BeispielProjekteAuflisten => MyResource.Resource.KI_REG_BEISPIEL_PROJEKTE_AUFLISTEN;
+        internal static string TitelProjektAktiv => MyResource.Resource.KI_REG_TITEL_PROJEKT_AKTIV;
+        internal static string BeispielProjektAktiv => MyResource.Resource.KI_REG_BEISPIEL_PROJEKT_AKTIV;
+        internal static string TitelProjektSuchen => MyResource.Resource.KI_REG_TITEL_PROJEKT_SUCHEN;
+        internal static string BeispielProjektSuchen => MyResource.Resource.KI_REG_BEISPIEL_PROJEKT_SUCHEN;
+        internal static string TitelProjektLesen => MyResource.Resource.KI_REG_TITEL_PROJEKT_LESEN;
+        internal static string BeispielProjektLesen => MyResource.Resource.KI_REG_BEISPIEL_PROJEKT_LESEN;
+        internal static string TitelVariantenAuflisten => MyResource.Resource.KI_REG_TITEL_VARIANTEN_AUFLISTEN;
+        internal static string BeispielVariantenAuflisten => MyResource.Resource.KI_REG_BEISPIEL_VARIANTEN_AUFLISTEN;
+        internal static string TitelSpeichervariantenAuflisten => MyResource.Resource.KI_REG_TITEL_SPEICHERVARIANTEN_AUFLISTEN;
+        internal static string BeispielSpeichervariantenAuflisten => MyResource.Resource.KI_REG_BEISPIEL_SPEICHERVARIANTEN_AUFLISTEN;
+        internal static string TitelErgebnisseLesen => MyResource.Resource.KI_REG_TITEL_ERGEBNISSE_LESEN;
+        internal static string BeispielErgebnisseLesen => MyResource.Resource.KI_REG_BEISPIEL_ERGEBNISSE_LESEN;
+        internal static string TitelParameterLesen => MyResource.Resource.KI_REG_TITEL_PARAMETER_LESEN;
+        internal static string BeispielParameterLesen => MyResource.Resource.KI_REG_BEISPIEL_PARAMETER_LESEN;
+        internal static string TitelKostenlagePruefen => MyResource.Resource.KI_REG_TITEL_KOSTENLAGE_PRUEFEN;
+        internal static string BeispielKostenlagePruefen => MyResource.Resource.KI_REG_BEISPIEL_KOSTENLAGE_PRUEFEN;
+        internal static string TitelUebernahmeVorschau => MyResource.Resource.KI_REG_TITEL_UEBERNAHME_VORSCHAU;
+        internal static string BeispielUebernahmeVorschau => MyResource.Resource.KI_REG_BEISPIEL_UEBERNAHME_VORSCHAU;
+        internal static string TitelMerkmalVorschau => MyResource.Resource.KI_REG_TITEL_MERKMAL_VORSCHAU;
+        internal static string BeispielMerkmalVorschau => MyResource.Resource.KI_REG_BEISPIEL_MERKMAL_VORSCHAU;
+        internal static string TitelLastgangPruefen => MyResource.Resource.KI_REG_TITEL_LASTGANG_PRUEFEN;
+        internal static string BeispielLastgangPruefen => MyResource.Resource.KI_REG_BEISPIEL_LASTGANG_PRUEFEN;
+        internal static string TitelGanglinienAuflisten => MyResource.Resource.KI_REG_TITEL_GANGLINIEN_AUFLISTEN;
+        internal static string BeispielGanglinienAuflisten => MyResource.Resource.KI_REG_BEISPIEL_GANGLINIEN_AUFLISTEN;
+        internal static string TitelMinimaleSpitze => MyResource.Resource.KI_REG_TITEL_MINIMALE_SPITZE;
+        internal static string BeispielMinimaleSpitze => MyResource.Resource.KI_REG_BEISPIEL_MINIMALE_SPITZE;
+        internal static string TitelLetzteAktionen => MyResource.Resource.KI_REG_TITEL_LETZTE_AKTIONEN;
+        internal static string BeispielLetzteAktionen => MyResource.Resource.KI_REG_BEISPIEL_LETZTE_AKTIONEN;
+        internal static string TitelEnergietraegerPruefen => MyResource.Resource.KI_REG_TITEL_ENERGIETRAEGER_PRUEFEN;
+        internal static string BeispielEnergietraegerPruefen => MyResource.Resource.KI_REG_BEISPIEL_ENERGIETRAEGER_PRUEFEN;
+        internal static string TitelDialogLesen => MyResource.Resource.KI_REG_TITEL_DIALOG_LESEN;
+        internal static string BeispielDialogLesen => MyResource.Resource.KI_REG_BEISPIEL_DIALOG_LESEN;
+        internal static string TitelDialogErklaeren => MyResource.Resource.KI_REG_TITEL_DIALOG_ERKLAEREN;
+        internal static string BeispielDialogErklaeren => MyResource.Resource.KI_REG_BEISPIEL_DIALOG_ERKLAEREN;
+        internal static string TitelFeldSetzen => MyResource.Resource.KI_REG_TITEL_FELD_SETZEN;
+        internal static string BeispielFeldSetzen => MyResource.Resource.KI_REG_BEISPIEL_FELD_SETZEN;
+        internal static string TitelFormularAusfuellen => MyResource.Resource.KI_REG_TITEL_FORMULAR_AUSFUELLEN;
+        internal static string BeispielFormularAusfuellen => MyResource.Resource.KI_REG_BEISPIEL_FORMULAR_AUSFUELLEN;
+        internal static string TitelDialogAktion => MyResource.Resource.KI_REG_TITEL_DIALOG_AKTION;
+        internal static string BeispielDialogAktion => MyResource.Resource.KI_REG_BEISPIEL_DIALOG_AKTION;
+        internal static string TitelVarianteAnlegen => MyResource.Resource.KI_REG_TITEL_VARIANTE_ANLEGEN;
+        internal static string BeispielVarianteAnlegen => MyResource.Resource.KI_REG_BEISPIEL_VARIANTE_ANLEGEN;
+        internal static string TitelSpeichervarianteAktiv => MyResource.Resource.KI_REG_TITEL_SPEICHERVARIANTE_AKTIV;
+        internal static string BeispielSpeichervarianteAktiv => MyResource.Resource.KI_REG_BEISPIEL_SPEICHERVARIANTE_AKTIV;
+        internal static string TitelKostenpositionSetzen => MyResource.Resource.KI_REG_TITEL_KOSTENPOSITION_SETZEN;
+        internal static string BeispielKostenpositionSetzen => MyResource.Resource.KI_REG_BEISPIEL_KOSTENPOSITION_SETZEN;
+
         // ================================================================ Erlaeuterungen
 
         internal static string ErlVonProjekt => MyResource.Resource.KI_REG_ERL_VON_PROJEKT;
