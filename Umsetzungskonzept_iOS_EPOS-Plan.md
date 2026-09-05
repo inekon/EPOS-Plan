@@ -2960,10 +2960,19 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Auswahländerung ruft, zieht der Block von selbst nach. Nicht gepflegt heißt „–", nicht 0 — NULL und die 0 des
 > Bestands sind dieselbe Aussage; ein unbekannter Technologiecode bleibt sichtbar. `Textfeld` bekommt dafür `Einheit`
 > wie `Zahlenfeld`. Tests: `PvModulparameterTests` 12 neu, `PhotovoltaikDialogTests` 14 → 21, beide Reihen unter de
-> und en grün; SQL-Prüfer 0 Fundstellen, Kern-Wächter leer. **Offen als Vorschlag W6‑O‑5:** Die Einheit „[KW]" an
-> Modul- und Gesamtleistung ist bestandstreu aus `Form_PV` übernommen, sachlich aber Watt (der Katalog nennt denselben
-> Wert „Nennleistung (Pmax)" in W, `AnlagenKwp` teilt durch 1000) — Anwenderentscheid, ob „[W]" oder Gesamtleistung in
-> kW mit Teiler. Zehn Abnahmepunkte A‑W6‑E‑1 im W6-Protokoll.
+> und en grün; SQL-Prüfer 0 Fundstellen, Kern-Wächter leer. Beobachtung W6‑O‑5: Die Einheit „[KW]" an Modul- und
+> Gesamtleistung war bestandstreu aus `Form_PV` übernommen, sachlich aber Watt (der Katalog nennt denselben Wert
+> „Nennleistung (Pmax)" in W, `AnlagenKwp` teilt durch 1000). Zehn Abnahmepunkte A‑W6‑E‑1 im W6-Protokoll.
+>
+> **Anwenderentscheid W6‑O‑5 vom 05.09.2026 („Gesamtleistung in kW"), umgesetzt in `d534af4`:** Der PV-Projektdialog
+> zeigte zwei Leistungen unter der Beschriftung „[KW]", die beide Watt waren — `Tab_PV.Leistung` führt die
+> Modulleistung in Watt, und die Gesamtleistung war deren rohes Produkt mit der Modulanzahl; zehn Module ergaben
+> „2751,912 KW". Seither heißt das Modulfeld „Modul Leistung [W]" und die Gesamtleistung „Gesamtleistung [kW]" mit drei
+> Nachkommastellen („2,752"); der englische Text „Total power [kW]" sagte die Einheit als einziger schon richtig und
+> bleibt. Die Wandlung steht als `PhotovoltaikCtrl.GesamtleistungText` im Kern neben `KwpSumme` — eine kWp-Wahrheit,
+> ohne Windows nachweisbar — und ist reine Anzeige: Der Rechenweg (`AnlagenKwp`, `KwpSumme`, Simulation,
+> Wirtschaftlichkeit) ist unberührt, der Referenzlauf bitgleich. Nachweis: Kern 1 209 → 1 213, UI 2 656 → 2 659, beide
+> grün unter de und en; Windows-Bau 0 Fehler; Kern-Wächter leer. Vier Abnahmepunkte A‑W6‑O‑5 im W6-Protokoll.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
