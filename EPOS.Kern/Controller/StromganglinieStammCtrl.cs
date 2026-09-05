@@ -38,6 +38,10 @@ namespace WindowsFormsApplication1
                     item.m_szBezeichner = row["Bezeichner"].ToString();
                 if (dt.Columns.Contains("Zeitinterval") && row["Zeitinterval"] != DBNull.Value)
                     item.m_Zeitinterval = Convert.ToInt32(row["Zeitinterval"]);
+                // iU9-W12-E-1: Das Auslieferungskennzeichen kommt mit SELECT * ohnehin
+                // mit; bis hierher fiel es weg und jede Huelle fragte es einzeln nach.
+                if (dt.Columns.Contains("ReadOnly") && row["ReadOnly"] != DBNull.Value)
+                    item.m_bReadOnly = Convert.ToBoolean(row["ReadOnly"]);
                 _internalList.Add(item);
             }
         }
@@ -87,6 +91,42 @@ namespace WindowsFormsApplication1
             return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
         }
 
+        /// <summary>
+        /// Gibt es diesen Bezeichner schon im Katalog? (iU9-W12-E-1.)
+        ///
+        /// <para>Die Dublettenpruefung des Weges „Speichern unter" — sie laeuft VOR dem
+        /// Einfuegen, damit der Anwender ein Warnbanner sieht und nicht den
+        /// UNIQUE-Fehler von SQLite. Zwilling von
+        /// <c>SolarganglinieStammCtrl.Exists</c> (W14b.0d).</para>
+        /// </summary>
+        public bool Exists(string szName)
+        {
+            if (string.IsNullOrEmpty(szName)) return false;
+            return GetStammId(szName) > 0;
+        }
+
+        /// <summary>
+        /// Gibt es zu dieser Ganglinie eine PROJEKTZUORDNUNG? (iU9-W12-E-1) — die Sperre
+        /// vor dem Loeschen, Zwilling von <c>SolarganglinieStammCtrl.HatProjektzuordnung</c>
+        /// (W14b.0d) und <c>WaermebedarfStammCtrl</c> (W9.0d).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum ueber den Bezeichner und nicht ueber eine Id.</b>
+        /// <c>Z_ProjektStromganglinie.ID_Ganglinie</c> zeigt auf die PROJEKTKOPIE
+        /// (<c>Tab_Stromganglinie.ID</c>), nicht auf den Katalogsatz; einen Rueckweg
+        /// Kopie → Katalogsatz fuehrt das Schema nicht. Die Zuordnungstabelle traegt
+        /// aber den Bezeichner selbst mit, und genau ihn haelt diese Zaehlung dagegen —
+        /// dieselbe Bedingung, die die Solarfassung seit W14b prueft. Eine NEUE
+        /// Beziehung entsteht hier nicht; sie wird gelesen.</para>
+        /// </remarks>
+        public bool HatProjektzuordnung(string szName)
+        {
+            object anzahl = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Z_ProjektStromganglinie WHERE Bezeichner = ?",
+                new DbParam("@bez", szName ?? ""));
+            return anzahl != null && anzahl != DBNull.Value && Convert.ToInt32(anzahl) > 0;
+        }
+
         // Loescht eine Stamm-Ganglinie samt Daten, sofern nicht schreibgeschuetzt.
         public bool Delete(string szName)
         {
@@ -119,30 +159,7 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    int neueId = 1;
-                    {
-                        object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_STAMM);
-                        neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
-                    }
-
-                    {
-                        List<DbParam> p = new List<DbParam>();
-                        p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
-                        p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
-                        p.Add(new DbParam("@int", DbParamTyp.Integer) { Wert = zeitinterval });
-                        p.Add(new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
-                        v.Ausfuehren("INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, Zeitinterval, ReadOnly) VALUES (?, ?, ?, ?)", p.ToArray());
-                    }
-
-                    foreach (double w in werte)
-                    {
-                        v.Ausfuehren(
-                            "INSERT INTO " + DATA_STAMM + " (ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?)",
-                            new DbParam("@g", DbParamTyp.Integer) { Wert = neueId },
-                            new DbParam("@w", DbParamTyp.Double) { Wert = w },
-                            new DbParam("@r", DbParamTyp.Boolean) { Wert = false });
-                    }
-
+                    EinfuegenStamm(v, szBezeichner, zeitinterval, werte);
                     v.Commit();
                     return true;
                 }
@@ -151,6 +168,114 @@ namespace WindowsFormsApplication1
                     try { v.Rollback(); } catch { }
                     Meldung.Zeigen("Fehler beim Speichern der Ganglinie (Stammdaten): " + ex.Message);
                     return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Der EINE Schreibweg eines neuen Katalogsatzes: Kopf mit gerechneter Id
+        /// (<c>MAX(ID)+1</c>) und <c>ReadOnly = false</c>, danach die Werte in
+        /// Reihenfolge. Laeuft IM Vorgang des Aufrufers — er entscheidet ueber
+        /// Commit und Rollback.
+        /// </summary>
+        /// <remarks>
+        /// Herausgezogen mit iU9-W12-E-1, damit „Datei einlesen" und
+        /// „Speichern unter" denselben Satz Anweisungen benutzen. Der Rumpf ist
+        /// woertlich der von <see cref="ImportGanglinie"/>; zwei Fassungen dieses
+        /// INSERT liefen beim ersten Schemawechsel auseinander.
+        /// </remarks>
+        /// <returns>Die vergebene Kopf-Id.</returns>
+        private static int EinfuegenStamm(DbVorgang v, string szBezeichner, int zeitinterval,
+                                          IList<double> werte)
+        {
+            int neueId;
+            {
+                object m = v.Skalar("SELECT MAX(ID) FROM " + HEAD_STAMM);
+                neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+            }
+
+            {
+                List<DbParam> p = new List<DbParam>();
+                p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
+                p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
+                p.Add(new DbParam("@int", DbParamTyp.Integer) { Wert = zeitinterval });
+                p.Add(new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
+                v.Ausfuehren("INSERT INTO " + HEAD_STAMM + " (ID, Bezeichner, Zeitinterval, ReadOnly) VALUES (?, ?, ?, ?)", p.ToArray());
+            }
+
+            foreach (double w in werte)
+            {
+                v.Ausfuehren(
+                    "INSERT INTO " + DATA_STAMM + " (ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?)",
+                    new DbParam("@g", DbParamTyp.Integer) { Wert = neueId },
+                    new DbParam("@w", DbParamTyp.Double) { Wert = w },
+                    new DbParam("@r", DbParamTyp.Boolean) { Wert = false });
+            }
+
+            return neueId;
+        }
+
+        /// <summary>
+        /// <b>„Speichern unter" — eine Katalogganglinie unter neuem Namen</b>
+        /// (iU9-W12-E-1, Anwenderwunsch der Windows-Abnahme vom 05.09.2026).
+        ///
+        /// <para>Kopf UND Werte werden kopiert; die Kopie traegt immer
+        /// <c>ReadOnly = false</c>, auch wenn die Quelle zur Auslieferung gehoert —
+        /// eine Kopie ist Anwenderbestand. Die Werte gehen in Stamm-Reihenfolge
+        /// (<c>ORDER BY ID</c>) hinueber, damit die Zeitreihe erhalten bleibt;
+        /// dieselbe Regel wie in <c>CopyGanglinieToProjekt</c>.</para>
+        ///
+        /// <para><b>Die Dublettenpruefung steht VOR dem Einfuegen:</b> Ein Name, den es
+        /// schon gibt, ergibt <c>0</c> und keine Zeile — nicht einen UNIQUE-Fehler,
+        /// den der Anwender als Ausnahmetext saehe.</para>
+        /// </summary>
+        /// <param name="szQuelle">Bezeichner des zu kopierenden Katalogsatzes.</param>
+        /// <param name="szZiel">Name der Kopie; wird getrimmt.</param>
+        /// <returns>Die Kopf-Id der Kopie, oder <c>0</c>: Quelle fehlt, Name leer,
+        /// Name vergeben, Quelle ohne Werte oder Schreibfehler.</returns>
+        public int KopiereStamm(string szQuelle, string szZiel)
+        {
+            if (string.IsNullOrEmpty(szQuelle) || string.IsNullOrWhiteSpace(szZiel)) return 0;
+
+            string ziel = szZiel.Trim();
+            if (Exists(ziel)) return 0;      // Dublette: der Aufrufer meldet, wir werfen nicht
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    int quellId;
+                    int zeitinterval;
+                    {
+                        DataTable dtKopf = v.Lese(
+                            "SELECT ID, Zeitinterval FROM " + HEAD_STAMM + " WHERE Bezeichner = ?",
+                            new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szQuelle });
+                        if (dtKopf.Rows.Count == 0) { v.Rollback(); return 0; }
+                        DataRow r = dtKopf.Rows[0];
+                        quellId = Convert.ToInt32(r["ID"]);
+                        zeitinterval = r["Zeitinterval"] != DBNull.Value ? Convert.ToInt32(r["Zeitinterval"]) : 0;
+                    }
+
+                    List<double> werte = new List<double>();
+                    {
+                        DataTable dtWerte = v.Lese(
+                            "SELECT Wert FROM " + DATA_STAMM + " WHERE ID_Ganglinie = ? ORDER BY ID",
+                            new DbParam("@g", DbParamTyp.Integer) { Wert = quellId });
+                        foreach (DataRow r in dtWerte.Rows)
+                            werte.Add(r["Wert"] != DBNull.Value ? Convert.ToDouble(r["Wert"]) : 0);
+                    }
+
+                    if (werte.Count == 0) { v.Rollback(); return 0; }
+
+                    int neueId = EinfuegenStamm(v, ziel, zeitinterval, werte);
+                    v.Commit();
+                    return neueId;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    Meldung.Zeigen("Fehler beim Kopieren der Stromganglinie: " + ex.Message);
+                    return 0;
                 }
             }
         }
