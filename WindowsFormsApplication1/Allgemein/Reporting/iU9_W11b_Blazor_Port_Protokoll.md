@@ -575,6 +575,68 @@ Fenster, Esc schließt die oberste Ebene, Infoknopf zeigt die Wikiseite.
 
 ---
 
+## 10a. Nachtrag zur Windows-Abnahme vom 05.09.2026 — die drei Diagrammbefunde
+
+Der Anwender hat die Seite am Gerät gesehen. Drei Befunde betreffen die
+Diagramme; alle drei sind behoben.
+
+| # | Befund (Wortlaut / Fundstelle) | Ursache | Behebung |
+|---|---|---|---|
+| **A‑1** | „Allgemein bei Charts: das Zoomen funktioniert nicht" | **Kein Fehler, ein bewusster Verlust.** § 5, A‑7 dieses Protokolls hat ihn festgehalten: Zoom und Cursor hingen an `chart1`/`chart2` und entfielen mit dem Wechsel vom `Chart`-Steuerelement zum PNG (Risiko R‑W11‑5). Der Anwender vermisst ihn — und zwar bei **allen** Diagrammen, nicht nur bei den zweien, die ihn hatten | Neuer Baustein `EPOS.UI/Bausteine/Diagramm.razor` mit `wwwroot/epos-diagramm.js`. `ChartBild` setzt sein `<img>` seither in diesen Rahmen; damit ist **jedes** Renderer-Bild zoombar. Dazu der **Datenzoom** für die Jahresganglinien (unten) |
+| **W11b‑B‑2** | „Charts der Detaillierten Simulation zu klein" (S. 8): „Wärmelast Jahresganglinie" und „Strombedarf Jahresganglinie" sind briefmarkengroß, die Legende unleserlich | Die Bilder standen in einer **halben Spalte** von `.epos-simerg-spalten`. Ein 1 240 Bildpunkte breites Diagramm kam dort auf etwa 480 an — die Legende ist dann acht Bildpunkte hoch | **Eine** Stilblattregel: `.epos-simerg-diagrammzeile` spannt das Diagramm über ALLE Spalten des Rasters; die Zahlenblöcke bleiben nebeneinander. Angewandt auf Bedarf, Solarthermie, Photovoltaik, Stromspeicher, Übersicht und Wärmepumpe. Dazu `.epos-chartbild` auf `width: 100 %` statt `max-width` und `min-width: 0` auf den Rasterfeldern |
+| **W11b‑B‑3** | „Wärmepumpen-Chart nicht korrekt" (S. 9): die x-Achse trägt „−18,2 … −5,3 … 7,7", das Bild ist rechts beschnitten und überlappt die Modultabelle, Legende und Achsentitel kleben an der Kante | Zwei Ursachen. Im **Renderer** (`ChartRenderer.Streuwolke`, B4): fünf Marken, die den vorkommenden Wertebereich in vier gleiche Teile schnitten — daher die krummen Zahlen; rechts nur 40 Bildpunkte Rand, auf denen die letzte Marke steht; Legende bei y = 66 und y-Achsentitel bei y = 86, deren Schriftzeilen sich berühren. Im **Markup**: dieselbe halbe Spalte wie bei B‑2 | Renderer: **runde Achsenteilung** (1 / 2 / 2,5 / 5 × 10^k, dieselbe Stufenfolge wie `Jahresgang`), Wertebereich auf diese Stufen aufgerundet, rechter Rand 90 statt 40, Legende auf y = 56, y-Titel auf `rc.Top − 26`, x-Titel vier Bildpunkte tiefer. Markup: `epos-simerg-diagrammzeile`. **Die Serien selbst waren richtig** — x = Außentemperatur, y = Leistung, die drei halbtransparenten Reihen und beide Achsentitel (`CHART_ACHSE_TEMPERATUR`, `SIM_SPALTE_LEISTUNG`) sind unverändert die des Vorbilds `chart4` |
+
+### Der Zoom in zwei Stufen
+
+**BILDZOOM — für jedes der 36 Renderer-Bilder.** Mausrad zoomt um den Zeiger,
+Ziehen verschiebt, Doppelklick und Taste `0` stellen zurück, `+`/`−` zoomen über
+die Tastatur, zwei Finger kneifen (iPad). Die Zoomstufe steht als „×2,5" in der
+Leiste. Er läuft ganz im Browser — CSS-Transform, kein Neuzeichnen, kein
+Interop-Aufruf je Radrast.
+
+**DATENZOOM — für die Jahresganglinien.** Bei 8 760 Stunden auf 1 100
+Bildpunkten liegen acht Werte auf einem Bildpunkt, im Viertelstundenraster
+dreißig; ein vergrößerter Bildpunkt zeigt keine Stunde. Ein aufgezogenes
+Rechteck (Umschalt + Ziehen mit der Maus, sonst der Umschalter „Bereich") lässt
+den Kern das Bild mit **diesem Achsenbereich neu zeichnen** — der Achsenzoom des
+WinForms-Vorbilds. Er steht auf **Bedarf** (beide Ganglinien), **Wärmegang** und
+**Stromgang**; alle übrigen Bilder übergehen ihn, und der Knopf „Bereich"
+erscheint dort gar nicht erst.
+
+Zwei Festlegungen stehen im Kopf der Renderer-Methoden:
+
+* **Die Null bleibt unten.** Alle Ganglinienbilder zählen von null aufwärts. Die
+  obere Kante des Rechtecks wird die neue Obergrenze; der Nullpunkt bleibt. Ein
+  Ausschnitt ohne Null wäre als Leistungsbild nicht mehr zu lesen.
+* **B1 nimmt nur den Zeitausschnitt.** Seine Prozentachse ist per Definition
+  0 bis 100 % des **Jahreshöchstwerts**; der Bezugswert bleibt deshalb der der
+  ganzen Reihe. Sonst hieße „100 %" in jedem Ausschnitt etwas anderes.
+
+Der Weg des Rechtecks geht durch vier Schichten, und jede kennt nur, was sie
+wissen kann: Der Baustein meldet **Anteile des Bildes** (mehr lässt sich an
+einem PNG nicht messen), `Bildauftrag` trägt sie weiter (sein Schlüssel trennt
+zwei Ausschnitte im Zwischenspeicher), die Hülle ruft
+`ChartRenderer.FensterAusBild`, und erst der Renderer — der die Lage seiner
+Zeichenfläche kennt — macht daraus Stunden und Kilowatt.
+
+**Der Knopf „1:1" stellt BEIDES zurück**, Bildzoom und Achsenbereich.
+Doppelklick und Taste `0` stellen nur den Bildzoom zurück; sie laufen im
+Browser und sollen ohne Zeichenlauf auskommen.
+
+### Abnahmepunkte (Nachtrag zu § 10)
+
+| # | Aufrufweg | Was besonders zu prüfen ist |
+|---|---|---|
+| 18 | **Mausrad über einem beliebigen Diagramm** | Das Bild wird um den Zeiger größer, die Anzeige zählt mit („×2,5"), das Bild bleibt IM Rahmen und läuft nie über die Nachbartabelle. Gilt für jedes Bild — auch Kuchen, Ringe und Kennlinien |
+| 19 | **Ziehen im vergrößerten Bild** | Der Ausschnitt verschiebt sich, der Zeiger wechselt zur Faust, an den Rändern ist Schluss (kein weißer Streifen) |
+| 20 | **Doppelklick, Taste 0, Knopf „1:1"** | Alle drei stellen 1:1 her. Der KNOPF verwirft zusätzlich einen aufgezogenen Achsenbereich, Doppelklick und Taste nicht |
+| 21 | **Rechteck aufziehen** auf Bedarf, Wärmegang, Stromgang (Umschalt + Ziehen oder Knopf „Bereich") | Das Bild wird NEU gezeichnet: Die x-Achse trägt jetzt die wirklichen Jahresstunden des Ausschnitts in runden Schritten, die y-Achse endet an der Oberkante des Rechtecks und beginnt weiter bei null. Auf dem Bedarfsreiter bleibt die Prozentachse 0…100 % |
+| 22 | **iPad: Kneifen und Ein-Finger-Verschieben** | Zwei Finger vergrößern, einer verschiebt, und die SEITE zoomt dabei nicht mit. Nur am Gerät prüfbar — der Weg über `gesturestart` und `touch-action: none` lässt sich ohne WKWebView nicht nachweisen |
+| 23 | **Bedarfsreiter, Fenster in normaler Breite** | Beide Ganglinien füllen die Breite; die Legende ist lesbar. Dasselbe auf Solarthermie, Photovoltaik, Stromspeicher, Übersicht (Kuchen) und Wärmepumpe |
+| 24 | **Wärmepumpe → „Leistung über Außentemperatur"** | Runde x-Marken (z. B. −20 / −10 / 0 / 10 / 20), nichts ragt über den Bildrand, Legende und Achsentitel berühren sich nicht, das Bild liegt NICHT über der Modultabelle |
+
+---
+
 ## 11. Offene Punkte
 
 | # | Was | Vorschlag |
