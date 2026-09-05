@@ -261,8 +261,106 @@ public class ProjektListeTests : BunitContext
         Assert.Equal("", ohne[3].TextContent);
     }
 
+    // =====================================================================
+    //  Die drei Spalten - Windows-Abnahme 05.09.2026, Befund W15a-B-1
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Befund W15a‑B‑1:</b> „Geändert Datum nicht ersichtlich."
+    ///
+    /// <para>Die Hausregel <c>.epos-raster td { white-space: nowrap }</c> lässt einen
+    /// langen Projektnamen die Tabelle breiter machen, als die Spalte des Wirtes ist;
+    /// in „Speichern unter" quetschte das Formular rechts die Liste auf rund 535 px,
+    /// und die dritte Spalte lag hinter dem waagerechten Rollbalken. Jede Spalte trägt
+    /// deshalb ihre Stilklasse — Name und Kunde brechen um, das Datum bleibt einzeilig
+    /// mit fester Breite.</para>
+    /// </summary>
+    [Fact]
+    public void Jede_Spalte_der_Auswahl_traegt_ihre_Stilklasse()
+    {
+        var cut = Aufbauen();
+
+        var koepfe = cut.FindAll("thead th");
+        Assert.Equal("", koepfe[0].ClassName?.Replace("epos-projektliste-wahl", "").Trim());
+        Assert.Contains("epos-projektliste-name", koepfe[1].ClassName ?? "");
+        Assert.Contains("epos-projektliste-kunde", koepfe[2].ClassName ?? "");
+        Assert.Contains("epos-projektliste-geaendert", koepfe[3].ClassName ?? "");
+
+        var zellen = cut.FindAll("tbody tr")[0].QuerySelectorAll("td");
+        Assert.Contains("epos-projektliste-name", zellen[1].ClassName ?? "");
+        Assert.Contains("epos-projektliste-kunde", zellen[2].ClassName ?? "");
+        Assert.Contains("epos-projektliste-geaendert", zellen[3].ClassName ?? "");
+    }
+
+    /// <summary>
+    /// Die Regel dahinter — eine bunit-Probe sieht ein Stilblatt nicht (Lehre W6‑B‑1).
+    /// Name und Kunde brechen um, das Datum bleibt in EINER Zeile: Es ist die
+    /// kürzeste Spalte und die einzige, deren Umbruch nichts brächte.
+    /// </summary>
+    [Fact]
+    public void Name_und_Kunde_brechen_um_das_Datum_nicht()
+    {
+        string umbrechend = Stilblock(".epos-projektliste-name,\n.epos-projektliste-kunde {");
+        Assert.Contains("white-space: normal", umbrechend, StringComparison.Ordinal);
+        Assert.Contains("overflow-wrap: anywhere", umbrechend, StringComparison.Ordinal);
+
+        string datum = Stilblock(".epos-projektliste-geaendert {");
+        Assert.Contains("white-space: nowrap", datum, StringComparison.Ordinal);
+        Assert.Contains("width:", datum, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// „Speichern unter" stellt Liste und Formular nebeneinander. Bis zum Befund
+    /// brach das erst bei 780 px um — im 940‑px‑Fenster stand das Formular also
+    /// neben der Liste und ließ ihr drei Fünftel. Ab hier steht die Liste über die
+    /// volle Breite und das Formular darunter: bei 1 024 px, im 940‑px‑Dialog und
+    /// auf dem iPad hochkant.
+    /// </summary>
+    [Fact]
+    public void Speichern_unter_stapelt_Liste_und_Formular_bis_1100_Pixel()
+    {
+        string css = Stilblatt();
+
+        int a = css.IndexOf("@media (max-width: 1100px) {", StringComparison.Ordinal);
+        Assert.True(a >= 0, "Der Umbruch von \"Speichern unter\" steht nicht bei 1100 px");
+
+        int e = css.IndexOf("}\n}", a, StringComparison.Ordinal);
+        Assert.True(e > a);
+        Assert.Contains(".epos-projektkopie-raster", css.Substring(a, e - a), StringComparison.Ordinal);
+
+        // Und die frühere, zu späte Schwelle steht nicht mehr da.
+        Assert.DoesNotContain("@media (max-width: 780px)", css, StringComparison.Ordinal);
+    }
+
     private static string[] Namen(IRenderedComponent<ProjektListe> cut)
         => cut.FindAll("tbody tr")
               .Select(r => r.QuerySelectorAll("td")[1].TextContent)
               .ToArray();
+
+    /// <summary>Das Hausblatt, Zeilenenden angeglichen (Muster <c>StartseiteTests</c>).</summary>
+    private static string Stilblatt()
+    {
+        System.IO.DirectoryInfo? d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null &&
+               !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        return System.IO.File
+                     .ReadAllText(System.IO.Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))
+                     .Replace("\r\n", "\n");
+    }
+
+    /// <summary>Liest den Rumpf einer Regel aus dem Hausblatt.</summary>
+    private static string Stilblock(string selektor)
+    {
+        string css = Stilblatt();
+        selektor = selektor.Replace("\r\n", "\n");
+
+        int a = css.IndexOf(selektor, StringComparison.Ordinal);
+        Assert.True(a >= 0, "Regel " + selektor + " steht nicht im Stilblatt");
+        int e = css.IndexOf('}', a);
+        Assert.True(e > a);
+        return css.Substring(a + selektor.Length, e - a - selektor.Length);
+    }
 }
