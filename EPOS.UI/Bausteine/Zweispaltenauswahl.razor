@@ -1,0 +1,161 @@
+﻿@* Die EINE Projekt/Datenbank-Auswahl des Hauses - Anwenderentscheid #76 vom
+   05.09.2026.
+
+   DER ENTSCHEID. "Alle Dialoge, in denen links 'im Projekt ausgewaehlt' und
+   rechts 'aus der Datenbank/Katalog' mit Pfeilknoepfen dazwischen stehen,
+   folgen dem alten BHKW-PLAN-Schema NEBENEINANDER." Auf schmalem Schirm
+   (iPad hochkant, schmales Fenster) bricht das Paar untereinander um; dann
+   steht die Projektliste oben, der Katalog unten und die Pfeile dazwischen.
+
+   DAS VORBILD, NACHGEMESSEN. Form_Gebaeude.resx: Projektliste x=26 w=252,
+   btn_Hinzu "◀" bei x=284 w=63, btn_Entfernen "▶" bei x=293 w=63, Katalog
+   x=364 w=436. Form_Heizkessel.resx: Projektliste x=12 w=316, die zwei
+   Knoepfe bei x=342 w=88, Katalog x=443 w=313. Beide Male also: zwei
+   Listen, die sich den Platz teilen, und eine SCHMALE Mittelspalte - im
+   Bestand rund 63 bis 88 px. Daher --epos-zweispalten-mitte.
+
+   DIE PFEILRICHTUNG FOLGT DER ANORDNUNG, nicht dem Ressourcentext. Der
+   Bestand schrieb das Zeichen in die Beschriftung ("▲ In das Projekt
+   uebernehmen"); ein Zeichen im Text kann aber nicht wissen, ob die Listen
+   gerade neben- oder untereinander stehen. Deshalb tragen die Knoepfe
+   BEIDE Zeichen im Markup, und das Stilblatt zeigt je Breite genau eines:
+   nebeneinander ◀/▶ (die Zeile wandert nach links ins Projekt bzw. nach
+   rechts in den Katalog zurueck), untereinander ▲/▼. Kein JavaScript, kein
+   gerechneter Umbruch - eine Medienabfrage. Die Ressourcentexte tragen nur
+   noch WORTE.
+
+   BESCHRIFTUNG UND KURZTEXT (Befund W9-B-3). Der Vorlaeufer stellte blanke
+   Zeichen hin, und der Anwender meldete: "nicht so recht klar, auf was sich
+   die oberen 2 Buttons beziehen." Jeder Knopf traegt seither seine Aufgabe
+   im Klartext UND als Kurztext; das Zeichen sagt nur noch die Richtung.
+   Es steht deshalb als aria-hidden daneben - eine Sprachausgabe liest den
+   Satz, nicht das Dreieck.
+
+   NUR RECHTS. Der Gebaeudedialog kennt eine Verwaltungsbetriebsart, in der
+   es keine Projektliste gibt (Form_Gebaeude_Load:608-620). Dann faellt die
+   linke Spalte MIT den Pfeilen weg, und der Katalog nimmt die ganze Breite.
+
+   TASTATURWEG. Die drei Bereiche stehen in der Reihenfolge links - Mitte -
+   rechts im Markup; der Tabulator laeuft damit von der Projektliste ueber
+   die zwei Knoepfe in den Katalog. Jede Spalte traegt ihre Ueberschrift als
+   aria-label, damit eine Sprachausgabe beim Wechsel sagt, wo man ist. *@
+
+@namespace EPOS.UI.Bausteine
+@using WindowsFormsApplication1.MyResource
+
+<div class="epos-zweispalten @Zusatzklasse">
+
+    @if (!NurRechts)
+    {
+        @* ------------------------------------------ links: das Projekt ---- *@
+        <div class="epos-zweispalten-spalte epos-zweispalten-spalte--links"
+             role="group" aria-label="@LinksTitel">
+            <h2 class="epos-untergruppe epos-zweispalten-titel">@LinksTitel</h2>
+            @Links
+        </div>
+
+        @* ------------------------------------------ Mitte: die Pfeile ----- *@
+        <div class="epos-zweispalten-mitte" role="group" aria-label="@MitteTitel">
+            <button type="button" class="epos-knopf epos-zweispalten-knopf"
+                    title="@UebernehmenHinweis" disabled="@UebernehmenGesperrt"
+                    @onclick="Uebernehmen">
+                <span class="epos-zweispalten-pfeil epos-zweispalten-pfeil--breit"
+                      aria-hidden="true">◀</span>
+                <span class="epos-zweispalten-pfeil epos-zweispalten-pfeil--schmal"
+                      aria-hidden="true">▲</span>
+                <span class="epos-zweispalten-knopftext">@UebernehmenText</span>
+            </button>
+
+            <button type="button" class="epos-knopf epos-zweispalten-knopf"
+                    title="@EntfernenHinweis" disabled="@EntfernenGesperrt"
+                    @onclick="Entfernen">
+                <span class="epos-zweispalten-pfeil epos-zweispalten-pfeil--breit"
+                      aria-hidden="true">▶</span>
+                <span class="epos-zweispalten-pfeil epos-zweispalten-pfeil--schmal"
+                      aria-hidden="true">▼</span>
+                <span class="epos-zweispalten-knopftext">@EntfernenText</span>
+            </button>
+        </div>
+    }
+
+    @* ---------------------------------------------- rechts: der Katalog --- *@
+    <div class="epos-zweispalten-spalte epos-zweispalten-spalte--rechts"
+         role="group" aria-label="@RechtsTitel">
+        <h2 class="epos-untergruppe epos-zweispalten-titel">@RechtsTitel</h2>
+        @Rechts
+    </div>
+
+</div>
+
+@code {
+    // =====================================================================
+    // Die zwei Spalten
+    // =====================================================================
+
+    /// <summary>Ueberschrift der linken Spalte („ausgewaehlt im Projekt").</summary>
+    [Parameter] public string LinksTitel { get; set; } = "";
+
+    /// <summary>
+    /// Inhalt der linken Spalte: die Projektliste und, was unmittelbar zu ihr
+    /// gehoert (Summenzeile, Kanalwahl). Filter und Katalogknoepfe gehoeren
+    /// NACH RECHTS - dort steht die Liste, auf die sie wirken.
+    /// </summary>
+    [Parameter] public RenderFragment? Links { get; set; }
+
+    /// <summary>Ueberschrift der rechten Spalte („aus der Datenbank").</summary>
+    [Parameter] public string RechtsTitel { get; set; } = "";
+
+    /// <summary>
+    /// Inhalt der rechten Spalte: Filterbloecke UEBER der Katalogliste, die
+    /// Liste selbst und darunter die Katalogknoepfe („neu", „aendern",
+    /// „loeschen") - so wie im Vorbild.
+    /// </summary>
+    [Parameter] public RenderFragment? Rechts { get; set; }
+
+    /// <summary>
+    /// Verwaltungsbetriebsart: Nur der Katalog. Linke Spalte und Pfeile
+    /// entfallen, der Katalog nimmt die ganze Breite.
+    /// </summary>
+    [Parameter] public bool NurRechts { get; set; }
+
+    /// <summary>Zusaetzliche Klasse am Wirt, falls ein Dialog nachstellen muss.</summary>
+    [Parameter] public string? Zusatzklasse { get; set; }
+
+    // =====================================================================
+    // Die zwei Richtungsknoepfe
+    // =====================================================================
+
+    /// <summary>
+    /// Beschriftung des Uebernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN</c>.
+    /// OHNE Zeichen: das steuert das Stilblatt.
+    /// </summary>
+    [Parameter] public string UebernehmenText { get; set; } = Resource.AUSWAHL_BTN_UEBERNEHMEN;
+
+    /// <summary>Kurztext des Uebernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN_HINWEIS</c>.</summary>
+    [Parameter] public string UebernehmenHinweis { get; set; } =
+        Resource.AUSWAHL_BTN_UEBERNEHMEN_HINWEIS;
+
+    /// <summary>Gesperrt, solange im Katalog keine Zeile markiert ist.</summary>
+    [Parameter] public bool UebernehmenGesperrt { get; set; }
+
+    /// <summary>Der Klick auf „in das Projekt uebernehmen".</summary>
+    [Parameter] public EventCallback Uebernehmen { get; set; }
+
+    /// <summary>Beschriftung des Entfernenknopfes — <c>AUSWAHL_BTN_ENTFERNEN</c>.</summary>
+    [Parameter] public string EntfernenText { get; set; } = Resource.AUSWAHL_BTN_ENTFERNEN;
+
+    /// <summary>Kurztext des Entfernenknopfes — <c>AUSWAHL_BTN_ENTFERNEN_HINWEIS</c>.</summary>
+    [Parameter] public string EntfernenHinweis { get; set; } =
+        Resource.AUSWAHL_BTN_ENTFERNEN_HINWEIS;
+
+    /// <summary>Gesperrt, solange in der Projektliste keine Zeile markiert ist.</summary>
+    [Parameter] public bool EntfernenGesperrt { get; set; }
+
+    /// <summary>Der Klick auf „aus dem Projekt entfernen".</summary>
+    [Parameter] public EventCallback Entfernen { get; set; }
+
+    /// <summary>
+    /// Name der Knopfgruppe fuer die Sprachausgabe — <c>AUSWAHL_GRP_PFEILE</c>.
+    /// </summary>
+    [Parameter] public string MitteTitel { get; set; } = Resource.AUSWAHL_GRP_PFEILE;
+}

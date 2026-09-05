@@ -1052,6 +1052,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Projekt entfernen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den in der Projektliste markierten Eintrag aus dem Projekt entfernen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_ENTFERNEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_ENTFERNEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In das Projekt übernehmen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den in der Datenbankliste markierten Eintrag in die Projektliste übernehmen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_UEBERNEHMEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_UEBERNEHMEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwischen Projekt und Datenbank verschieben ähnelt.
+        /// </summary>
+        public static string AUSWAHL_GRP_PFEILE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_GRP_PFEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profil ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_AENDERN_BRAUCHWASSER {

@@ -14430,4 +14430,19 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="BHW_S_SPRUNG_HINWEIS" xml:space="preserve">
     <value>The jump closes this dialogue and reopens it afterwards — please save first.</value>
   </data>
+  <data name="AUSWAHL_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Add to project</value>
+  </data>
+  <data name="AUSWAHL_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
+    <value>Add the entry selected in the database list to the project list</value>
+  </data>
+  <data name="AUSWAHL_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove from project</value>
+  </data>
+  <data name="AUSWAHL_BTN_ENTFERNEN_HINWEIS" xml:space="preserve">
+    <value>Remove the entry selected in the project list from the project</value>
+  </data>
+  <data name="AUSWAHL_GRP_PFEILE" xml:space="preserve">
+    <value>Move between project and database</value>
+  </data>
 </root>

@@ -98,6 +98,17 @@
        hoch. Wer sie je Wirt anders will, setzt das Token am Wirt. */
     --epos-listenhoehe: 22rem;
 
+    /* Die Projekt/Datenbank-Auswahl (Anwenderentscheid #76, 05.09.2026).
+       Breite der Mittelspalte mit den zwei Richtungsknoepfen - im Bestand
+       63 px (Form_Gebaeude) bis 88 px (Form_Heizkessel), hier etwas mehr,
+       weil die Knoepfe seit Befund W9-B-3 ihre Aufgabe im Klartext tragen
+       und nicht nur ein Dreieck.
+       Die UMBRUCHBREITE steht daneben auch in der Medienabfrage des
+       Blocks "Zweispaltenauswahl" - eine Medienabfrage kann kein Token
+       lesen. ZweispaltenauswahlTests haelt die zwei Werte gegeneinander. */
+    --epos-zweispalten-mitte: 10rem;
+    --epos-zweispalten-umbruch: 900px;
+
     /* Das Titelband der Startseite - Form_Start.label20 stand WEISS auf
        Color.FromArgb(104, 118, 223) (Designer :1085). Dieselbe Farbfamilie
        tragen die Sinnbilder der 21 Kacheln, die aus derselben Zeit stammen. */
@@ -1481,15 +1492,16 @@ body {
 /* ==================================================================== */
 /* AUSWAHLPAAR (iU9-W6.3)                                               */
 /*                                                                      */
-/* Das Muster der fuenf Erzeugerdialoge: links "ausgewaehlt im Projekt", */
-/* rechts "aus Datenbank", dazwischen die beiden Pfeile ◀ und ▶. Im     */
-/* Bestand standen die drei Teile auf festen Pixelkoordinaten           */
-/* nebeneinander; hier teilen sich die beiden Listen den Platz und die   */
-/* Pfeilspalte bleibt so schmal, wie sie sein muss.                      */
+/* Zwei gleichrangige Spalten nebeneinander, die auf schmalem Schirm     */
+/* umbrechen. Bis zum Anwenderentscheid #76 (05.09.2026) trug das auch   */
+/* die Projekt/Datenbank-Dialoge; die stehen seither in                  */
+/* .epos-zweispalten (Baustein Zweispaltenauswahl), weil dort die        */
+/* Pfeilrichtung am Umbruch haengt und ein flex-wrap davon nichts weiss. */
 /*                                                                      */
-/* Auf schmalen Schirmen bricht die Reihe um: Dann stehen die Listen     */
-/* untereinander und die Pfeile dazwischen - sie zeigen dort in die      */
-/* falsche Richtung, aber ihr Kurztext sagt, was sie tun (M2).           */
+/* Geblieben sind die Masken OHNE Pfeile, bei denen der Umbruch          */
+/* folgenlos ist: GebaeudetypDialog, TypProfilDialog,                    */
+/* KennlinienEditorDialog, WaermepumpeAnlageDialog,                      */
+/* WaermepumpeStammDialog.                                               */
 /* ==================================================================== */
 
 .epos-auswahlpaar {
@@ -1508,12 +1520,118 @@ body {
     min-width: 0;                           /* laesst das Raster waagerecht rollen */
 }
 
-.epos-auswahlpfeile {
+/* ==================================================================== */
+/* ZWEISPALTENAUSWAHL - Anwenderentscheid #76 vom 05.09.2026             */
+/*                                                                      */
+/* Der EINE Aufbau aller Projekt/Datenbank-Dialoge: links die Liste des  */
+/* Projekts, rechts der Katalog, dazwischen eine SCHMALE Spalte mit den  */
+/* zwei Richtungsknoepfen. So stand es im BHKW-PLAN (Form_Gebaeude:      */
+/* Liste 252 px, Knoepfe 63 px, Katalog 436 px; Form_Heizkessel:         */
+/* 316 / 88 / 313), und so hat es der Anwender nach der Windows-Abnahme  */
+/* wieder bestellt.                                                      */
+/*                                                                      */
+/* AUF SCHMALEM SCHIRM BRICHT DAS PAAR UM: Projektliste oben, Pfeile     */
+/* dazwischen, Katalog unten - das Schema, das der Gebaeudedialog seit   */
+/* W9 hatte. Der Umbruch ist KEIN flex-wrap, sondern eine Medienabfrage: */
+/* Nur so weiss das Blatt, welches Pfeilzeichen gilt (◀▶ nebeneinander,  */
+/* ▲▼ untereinander). Bei flex-wrap kaeme die Reihe um, ohne dass eine   */
+/* Regel es merkt, und die Pfeile zeigten ins Leere.                     */
+/*                                                                      */
+/* DIE UMBRUCHBREITE STEHT ZWEIMAL: als Token --epos-zweispalten-umbruch */
+/* und in der Medienabfrage darunter. Eine Medienabfrage kann kein Token */
+/* lesen (das Bedingungsfeld wird vor der Kaskade ausgewertet). Damit    */
+/* die zwei Werte nicht auseinanderlaufen, haelt                         */
+/* ZweispaltenauswahlTests.Die_Umbruchbreite_steht_als_Token sie         */
+/* gegeneinander.                                                        */
+/* ==================================================================== */
+
+.epos-zweispalten {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--epos-rand);
+    margin-top: var(--epos-rand);
+}
+
+.epos-zweispalten-spalte {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1 1 0;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+}
+
+.epos-zweispalten-titel {
+    margin-top: 0;
+}
+
+.epos-zweispalten-mitte {
     display: flex;
     flex-direction: column;
     justify-content: center;
     gap: 8px;
-    flex: 0 0 auto;
+    flex: 0 0 var(--epos-zweispalten-mitte);
+    width: var(--epos-zweispalten-mitte);
+}
+
+/* Zeichen ueber Wort - so bleibt die Mittelspalte schmal und der Knopf
+   sagt trotzdem, was er tut (Befund W9-B-3). */
+.epos-zweispalten-knopf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    min-width: 0;
+    padding: 6px 8px;
+    text-align: center;
+}
+
+.epos-zweispalten-pfeil {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.epos-zweispalten-knopftext {
+    font-size: var(--epos-schriftgroesse);
+    line-height: 1.2;
+}
+
+/* Nebeneinander gilt ◀▶; das senkrechte Paar bleibt im Markup stehen und
+   wird erst nach dem Umbruch sichtbar. */
+.epos-zweispalten-pfeil--schmal {
+    display: none;
+}
+
+@media (max-width: 900px) {
+
+    .epos-zweispalten {
+        flex-direction: column;
+    }
+
+    .epos-zweispalten-mitte {
+        flex: 0 0 auto;
+        width: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .epos-zweispalten-knopf {
+        flex-direction: row;
+        gap: 6px;
+        width: auto;
+        padding: 0 12px;
+    }
+
+    .epos-zweispalten-pfeil--breit {
+        display: none;
+    }
+
+    .epos-zweispalten-pfeil--schmal {
+        display: inline;
+    }
 }
 
 /* Mehrzeiliger Zellinhalt (iU9-W6.4). Die Spalte "Eigenschaften" der
