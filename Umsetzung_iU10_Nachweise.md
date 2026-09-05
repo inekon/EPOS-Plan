@@ -368,6 +368,16 @@ unverändert; ob Pinch und Ein-Finger-Verschieben in der WKWebView die Seite nic
 `touch-action: none`), bleibt Abnahmepunkt 22 am Gerät. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030
 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Siebenundzwanzigster Lauf 33982889724 (`ios.yml`, `macos-26`, 05.09.2026, 18:04–18:14 UTC, 10 min 51 s)** auf
+`c563a40` — der Stand **nach den sechs Befunden und Wünschen des Nachmittags der Windows-Abnahme vom 05.09.2026**
+(W16b‑E‑7 Kachelmaß, W9‑E‑2 Gebäude-Simulation, W15a‑E‑1 Variantenprojekte, W5‑E‑1 Übersicht-Auswahlfeld, iU8‑E‑1
+Admin-Dialoge, W13‑B‑1 Importabsturz): grün. Für die iOS-Hülle zählt vor allem W13‑B‑1: `IDateiDienst` und
+`IDialogDienst` führen wartbare Zwillinge (`…Async`) mit Standardfassung, `IosDateiDienst.AufDemHauptfaden` lieferte
+vom Hauptfaden bisher `default` (der Wähler ging nie auf) und ist über die `…Async`-Fassungen behoben, und
+`EPOS.iOS/HauptSeite` mountet `Wurzel<AppWurzel>` — die Fehlerschranke, die eine Komponentenausnahme als Fehlerkasten
+zeigt statt den Prozess zu beenden. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich
+PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
