@@ -80,6 +80,66 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Vorschau AUS EINEM PROJEKT</b> — der Knopf „Simulation" des
+        /// Bedarfsprofildialogs (Windows-Abnahme 05.09.2026, Befund W8‑B‑3).
+        ///
+        /// <para><b>Warum sie hierher gehört.</b> Bis zu diesem Befund stand sie in der
+        /// Windows-Hülle (<c>BedarfsProfileHuelle.Rechenstand.Rechnen</c>) als zweite,
+        /// von Hand nachgezogene Abschrift derselben Rechnung — und in ihr fehlte beim
+        /// Strom die Zeile, die <c>Strombedarf_Gebaeude_gesamt</c> belegt. Die Anzeige
+        /// stand danach auf 0. Eine Vorschau ist keine zweite Rechnung; sie rechnet, was
+        /// der Lauf rechnet, nur auf einer Namensliste.</para>
+        ///
+        /// <para><b>Der Unterschied zur Katalogvorschau</b> ist die Namensliste: Hier
+        /// kommen MEHRERE Namen herein — die Zuordnungen des Projekts —, und sie sind
+        /// die der PROJEKTKOPIEN (W9‑O‑3c). Die Engine sucht daraufhin zuerst in der
+        /// Kopie und erst danach im Katalog.</para>
+        /// </summary>
+        /// <param name="art">Die Ausprägung.</param>
+        /// <param name="idProjekt">Das Projekt des Dialogs.</param>
+        /// <param name="namen">Die angezeigten Profilnamen; leer ergibt keine Rechnung.</param>
+        internal static BedarfsVorschau ProjektVorschau(BedarfsArt art, int idProjekt,
+                                                       IReadOnlyList<string> namen)
+        {
+            var ergebnis = new BedarfsVorschau { Art = art };
+            if (namen == null) return ergebnis;
+
+            var liste = new List<string>(namen);
+
+            if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste);
+
+            var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
+
+            if (art == BedarfsArt.Prozesswaerme)
+            {
+                sim.Prozesswaerme_berechnen(liste);
+
+                // W9-O-3 (04.09.2026): Die Prozesssumme geht ueber die EINHEITENKLASSE in
+                // die Einheit, die der Kern fuer Waermebedarf_Prozess fuehrt - MWh.
+                sim.ProzesssummeUebernehmen();
+                WPPlan.Core.BhkwPlan.MonatsSumme(sim.prozesswerte, sim.Waermebedarf_Prozess_Monat,
+                                                 sim.mo_anfang, sim.mo_ende);
+            }
+            else
+            {
+                // BEWUSST unveraendert und damit NICHT symmetrisch zum Zweig darueber:
+                // Waermebedarf_Brauchwasser liegt hier in kWh, und genau so nimmt die
+                // Ergebnishuelle es an (Energieeinheit.KWh, Entscheid W8-O-5). Die
+                // Unstimmigkeit ist als W8-O-5b notiert und braucht einen eigenen
+                // Anwenderentscheid.
+                sim.Brauchwasserwaerme_berechnen(liste);
+                sim.Waermebedarf_Brauchwasser = sim.brauchwasserwerte.Sum();
+                WPPlan.Core.BhkwPlan.MonatsSumme(sim.brauchwasserwerte,
+                                                 sim.Waermebedarf_Brauchwasser_Monat,
+                                                 sim.mo_anfang, sim.mo_ende);
+            }
+
+            ergebnis.Waerme = sim;
+            ergebnis.Erfolgreich = true;
+            return ergebnis;
+        }
+
+        /// <summary>
         /// Brauchwasser und Prozesswärme — beide über <see cref="SimulationWaermebedarf"/>,
         /// unterschieden allein durch Engine-Methode, Zielfeld und Teiler.
         /// </summary>
@@ -119,6 +179,13 @@ namespace WindowsFormsApplication1
         /// unbekannten Bezeichner zwar nicht — dann kommt eine leere Reihe zurück, keine
         /// <c>null</c> —, aber die Engine hat andere Wege, an denen sie es tut, und der
         /// Vorläufer stieg dort aus.</para>
+        ///
+        /// <para><b>Die sechs Zuweisungen stehen seit W8‑B‑3 im Kern</b>
+        /// (<see cref="SimulationStrombedarf.ProfilbedarfUebernehmen"/>) — die
+        /// Katalogvorschau hier und die Projektvorschau des Bedarfsprofildialogs teilen
+        /// sich damit EINE Fassung. Die eingefrorenen Zahlen der Katalogvorschau
+        /// (<c>BedarfVerwaltungTests</c>) bleiben davon unberührt: Die Rechnung ist
+        /// dieselbe, nur steht sie nicht mehr zweimal da.</para>
         /// </summary>
         private static BedarfsVorschau Strom(BedarfsVorschau ergebnis, int idProjekt,
                                              List<string> liste)
@@ -128,16 +195,7 @@ namespace WindowsFormsApplication1
             float[] reihe = sim.Stromprofil_Strombedarf_berechnen(liste);
             if (reihe == null) return ergebnis;
 
-            sim.Strombedarf_Gebaeude_gesamt = reihe.Sum() / 1000;
-
-            // Das Zielfeld hat 35 040 Plaetze (Viertelstunden); belegt werden die ersten
-            // 8 760. Woertlich wie im Vorlaeufer.
-            Array.Copy(reihe, sim.Strombedarf_viertelStundenwerte, reihe.Length);
-
-            WPPlan.Core.BhkwPlan.MonatsSumme(sim.Strombedarf_viertelStundenwerte, sim.Strombedarf_monat,
-                                             sim.mo_anfang, sim.mo_ende);
-            sim.Strombedarf_Max = sim.Maximaler_Strombedarf(sim.Strombedarf_viertelStundenwerte);
-            sim.Strombedarf_gesamt = sim.Strombedarf_Gebaeude_gesamt;
+            sim.ProfilbedarfUebernehmen(reihe);
 
             ergebnis.Strom = sim;
             ergebnis.Erfolgreich = true;
