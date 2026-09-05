@@ -360,6 +360,14 @@ Klimazone kommt jetzt aus dem Kern, die eigene Stammabfrage der Hülle ist gefal
 Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
 Migrationsende.
 
+**Sechsundzwanzigster Lauf 33975880961 (`ios.yml`, `macos-26`, 05.09.2026, 15:47–15:53 UTC, 6 min 14 s)** auf
+`7bec4ad` — der Stand **nach den Befunden der Windows-Abnahme vom 05.09.2026** (W16c‑B13 Untermenüs, W9‑B‑1…B‑5,
+W15a‑B‑1, W16a‑B‑1/B‑2, W11b‑B‑2/B‑3 und A‑1): grün. Erstmals mit dem Baustein `Diagramm` und dem Modul
+`epos-diagramm.js`, das wie `epos-verlauf.js` über `import()` geladen wird — die `index.html` der iOS-Hülle blieb
+unverändert; ob Pinch und Ein-Finger-Verschieben in der WKWebView die Seite nicht mitzoomen (`gesturestart`,
+`touch-action: none`), bleibt Abnahmepunkt 22 am Gerät. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030
+und iZ6-Vergleich PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
