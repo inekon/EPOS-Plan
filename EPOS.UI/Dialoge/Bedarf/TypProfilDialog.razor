@@ -3,10 +3,39 @@
    VORBILD. DREI zeichengleiche Masken, alle 607 x 544:
    Views/Stromverbraucher/Form_EingStromTyp (334 Z.),
    Views/Prozesswaerme/Form_EingProzTyp (366 Z.) und
-   Views/Brauchwasser/Form_EingBrauchwasserTyp (257 Z.). Links die Typliste,
-   darunter die Beschreibung, rechts zwei Reiter - "Wochenwerte" mit der
-   Wochentagsliste und 24 Stundenfeldern, "Grafik" mit dem 168-Stunden-Bild -
-   und darunter fuenf Knoepfe.
+   Views/Brauchwasser/Form_EingBrauchwasserTyp (257 Z.).
+
+   ANORDNUNG WIE DAS VORBILD (Befund W8-E-1 der Windows-Abnahme vom
+   05.09.2026: "so wie zuvor"). Die erste Fassung stellte alles
+   UNTEREINANDER - die Typen als hohe Wahlzeilen, die sieben Wochentage als
+   Optionsgruppe, die 24 Stundenwerte in EINER Spalte -, und der Dialog war
+   damit dreimal so hoch wie sein Vorbild und musste rollen. Die Maske ordnet
+   so (Masse aus Form_EingStromTyp.resx, 96 dpi):
+
+     Label1  "Liste der Typen in der DB:"        (14, 14)
+     listBox_Typname                             (17, 35)   197 x 157  ~9 Zeilen
+     Label2  "Beschreibung des ausgewaehlten..." (245, 24)
+     textBox_Beschreibung                        (248, 46)  343 x  73  mehrzeilig
+     tabControl1  "Wochenwerte" | "Grafik"       (17, 199)  578 x 297
+       label28 "Stundenwerte [KW, KWh oder %]"   (36, 10)
+       st1..st8   x=37  / Label3..10  x=16       y = 34, 58, 81 ... 199
+       st9..st16  x=147 / Label11..18 x=117      je Feld 70 x 22
+       st17..st24 x=258 / Label19..26 x=228
+       Label27 "Auswahl Wochentag"               (338, 26)
+       listBox_Tag                               (345, 52)  109 x 123  sieben Tage
+       btn_Tagkopieren                           (345, 185) 109 x  26
+       btn_Tageinfuegen                          (345, 217) 109 x  26
+       btn_WocheUebernehmen (mit Diskette)       (37, 230)  224 x  27
+       chart1 im zweiten Blatt                   (15, 16)   537 x 232
+     Fussleiste y = 507, Hoehe 31:
+       Speichern unter (9) | Speichern in DB (144) | Loeschen (271) |
+       Neu (373) | Schliessen (511)
+
+   Uebernommen sind ANORDNUNG und REIHENFOLGE, nicht die Pixel: Die zwei
+   Listen und die 24 Felder halten --epos-touchziel (44 px statt 17 bzw. 22),
+   und die drei Stundenspalten stehen als CSS-Raster nebeneinander. Im Markup
+   laufen die Felder weiter 1..24, damit der Tabulator die Reihenfolge der
+   Maske nimmt (TabIndex 119..165); spaltenweise fuellt das Raster.
 
    ZWEI STAENDE, NICHT EINER. "Werte" sind die UEBERNOMMENEN 7 x 24 Werte, die
    24 Felder sind der Arbeitsstand EINES Tages. "Aenderungen Uebernehmen"
@@ -29,6 +58,18 @@
    des Tages, "einfuegen" setzt sie in den gewaehlten Tag. Eingefuegt wird in
    die FELDER, nicht in die Werte - erst "Uebernehmen" schreibt sie fest.
 
+   EIN BELEGTER NAME MELDET SICH, ER WIRFT NICHT (Befund W8-B-2 derselben
+   Abnahme). "Neu" mit einem vorhandenen Namen lief bis dahin bis in das
+   INSERT und endete in einem modalen Kasten "Datenbankfehler: SQLite Error
+   19: UNIQUE constraint failed ..." - eine MessageBox aus einem
+   Blazor-Ereignis (Hausregel A-8) und dazu ein Wortlaut, der den Anwender
+   nichts angeht. Der Name wird jetzt VORHER geprueft: Existiert meldet den
+   belegten Namen, die Namensabfrage bleibt OFFEN und zeigt ihn als
+   Warnbanner ueber dem Feld (NamensDialog.Pruefung). Dasselbe gilt fuer
+   "Speichern unter". Die zweite Haelfte der Regel steht im Kern:
+   TypProfilCtrl fragt TypExists, bevor es schreibt, und gibt
+   TypAnlageErgebnis.NameBelegt zurueck, statt die Datenbank werfen zu lassen.
+
    TASTATUR: Esc schliesst. Enter ist nicht belegt - vier der fuenf Knoepfe
    schreiben sofort. *@
 
@@ -42,101 +83,137 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
+    @* Kopfzeile: links die Typliste, rechts die Beschreibung - Label1/listBox_Typname
+       neben Label2/textBox_Beschreibung, wie im Designer. *@
     <div class="epos-auswahlpaar">
 
-        <div class="epos-auswahlspalte">
+        <div class="epos-auswahlspalte epos-typprofil-typen">
             <h2 class="epos-untergruppe">@LabelTypliste</h2>
             <div class="epos-raster-huelle">
-                <table class="epos-raster">
+                <table class="epos-raster epos-raster--wahlliste">
                     <tbody>
                         @foreach (string typ in _typen)
                         {
                             string t = typ;
                             <tr class="@(t == Daten.Typ ? "epos-zeile--markiert" : null)">
                                 <td>
-                                    <Zeilenwahl Gewaehlt="@(t == Daten.Typ)" Kurztext="@LabelTypliste"
+                                    <Zeilenwahl Gewaehlt="@(t == Daten.Typ)" Beschriftung="@t"
+                                                Kurztext="@LabelTypliste"
                                                 Gewaehltwerden="() => TypWaehlen(t)" />
                                 </td>
-                                <td>@t</td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-
-            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
-                      WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
         </div>
 
-        <div class="epos-auswahlspalte">
-            <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
+        <div class="epos-auswahlspalte epos-typprofil-beschreibung">
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
+                      WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="4" />
+        </div>
+    </div>
+
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
+        <KindInhalt>
+
+            <Reiterblatt Schluessel="WOCHE" Titel="@ReiterWochenwerte">
                 <KindInhalt>
+                    <div class="epos-typprofil-woche">
 
-                    <Reiterblatt Schluessel="WOCHE" Titel="@ReiterWochenwerte">
-                        <KindInhalt>
-                            <Optionsgruppe Bezeichnung="@LabelWochentag" Eintraege="@Wochentagswahl"
-                                           Auswahl="@_tag" AuswahlChanged="TagWaehlen" />
+                        <div class="epos-typprofil-stunden">
+                            <h2 class="epos-untergruppe">@GruppeStunden</h2>
+                            <div class="epos-stundenraster">
+                                @for (int s = 0; s < TypProfilDaten.STUNDEN; s++)
+                                {
+                                    int stunde = s;
+                                    <Zahlenfeld Bezeichnung="@((stunde + 1).ToString())"
+                                                Feldname="@Feldname(stunde)"
+                                                Nachkommastellen="@Nachkommastellen"
+                                                Wert="@_felder[stunde]"
+                                                WertChanged="w => _felder[stunde] = w" />
+                                }
+                            </div>
+                        </div>
 
-                            <Gruppenkopf Titel="@GruppeStunden">
-                                <KindInhalt>
-                                    @for (int s = 0; s < 24; s++)
-                                    {
-                                        int stunde = s;
-                                        <Zahlenfeld Bezeichnung="@((stunde + 1).ToString())"
-                                                    Feldname="@Feldname(stunde)"
-                                                    Nachkommastellen="@Nachkommastellen"
-                                                    Wert="@_felder[stunde]"
-                                                    WertChanged="w => _felder[stunde] = w" />
-                                    }
-                                </KindInhalt>
-                            </Gruppenkopf>
+                        <div class="epos-typprofil-tage">
+                            <h2 class="epos-untergruppe">@LabelWochentag</h2>
+                            <div class="epos-raster-huelle">
+                                <table class="epos-raster epos-raster--wahlliste">
+                                    <tbody>
+                                        @for (int t = 0; t < TypProfilDaten.TAGE; t++)
+                                        {
+                                            int tag = t;
+                                            <tr class="@(tag == _tag ? "epos-zeile--markiert" : null)">
+                                                <td>
+                                                    <Zeilenwahl Gewaehlt="@(tag == _tag)"
+                                                                Beschriftung="@Tagesname(tag)"
+                                                                Kurztext="@LabelWochentag"
+                                                                Gewaehltwerden="() => TagWaehlen(tag)" />
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
 
                             <div class="epos-leiste">
-                                <button type="button" class="epos-knopf"
-                                        @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
                                 <button type="button" class="epos-knopf"
                                         @onclick="BeiTagKopieren">@BtnTagKopierenText</button>
                                 <button type="button" class="epos-knopf" disabled="@(_puffer is null)"
                                         @onclick="BeiTagEinfuegen">@BtnTagEinfuegenText</button>
                             </div>
-                        </KindInhalt>
-                    </Reiterblatt>
+                        </div>
+                    </div>
 
-                    <Reiterblatt Schluessel="GRAFIK" Titel="@ReiterGrafik">
-                        <KindInhalt>
-                            <ChartBild Png="@_bild" Alt="@GruppeStunden"
-                                       PlatzhalterText="@PlatzhalterBild" />
-                        </KindInhalt>
-                    </Reiterblatt>
-
+                    @* btn_WocheUebernehmen stand UNTER dem Stundenraster und trug das
+                       Diskettenbild der Vorlage (Properties.Resources.speichern). *@
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf epos-knopf--mit-bild"
+                                @onclick="BeiUebernehmen">
+                            <span aria-hidden="true">&#128190;</span>@BtnUebernehmenText
+                        </button>
+                    </div>
                 </KindInhalt>
-            </Reiter>
-        </div>
-    </div>
+            </Reiterblatt>
+
+            <Reiterblatt Schluessel="GRAFIK" Titel="@ReiterGrafik">
+                <KindInhalt>
+                    <ChartBild Png="@_bild" Alt="@GruppeStunden"
+                               PlatzhalterText="@PlatzhalterBild" />
+                </KindInhalt>
+            </Reiterblatt>
+
+        </KindInhalt>
+    </Reiter>
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* Die Fussleiste in der Reihenfolge des Designers (x = 9 / 144 / 271 / 373 / 511). *@
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf" @onclick="() => OeffneNamensfrage(false)">@BtnNeuText</button>
-        <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
-                @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
                 @onclick="() => OeffneNamensfrage(true)">@BtnSpeichernUnterText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!TypGewaehlt)"
                 @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
+                @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
+        <button type="button" class="epos-knopf"
+                @onclick="() => OeffneNamensfrage(false)">@BtnNeuText</button>
         <button type="button" class="epos-knopf"
                 @onclick="() => Geschlossen.InvokeAsync(true)">@BtnSchliessenText</button>
     </div>
 
-    @* "Neu" und "Speichern unter" fragen den Namen im SELBEN Fenster (Risiko R2). *@
+    @* "Neu" und "Speichern unter" fragen den Namen im SELBEN Fenster (Risiko R2).
+       Pruefung haelt die Abfrage bei einem belegten Namen OFFEN (Befund W8-B-2). *@
     <Ueberlagerung Offen="@_namensfrage" Titel="@(_alsKopie ? BtnSpeichernUnterText : BtnNeuText)"
                    Geschlossen="() => _namensfrage = false">
         <KindInhalt>
             <NamensDialog TitelText="@(_alsKopie ? BtnSpeichernUnterText : BtnNeuText)"
                           FrageText="@LabelName" MeldungLeer="@MeldungNameFehlt"
+                          Pruefung="NamePruefen"
                           OkText="@OkText" AbbrechenText="@AbbrechenText"
                           Geschlossen="BeiNamensfrage" />
         </KindInhalt>
@@ -171,6 +248,15 @@
 
     /// <summary>Ist der Typ Auslieferungsbestand?</summary>
     [Parameter] public Func<string, bool>? IstReadOnly { get; set; }
+
+    /// <summary>
+    /// Gibt es einen Typ dieses Namens schon? Die VORPRÜFUNG zu „Neu" und
+    /// „Speichern unter" (Befund W8‑B‑2): Ohne sie lief der belegte Name bis in das
+    /// <c>INSERT</c> und der Anwender bekam den SQLite-Wortlaut in einem modalen
+    /// Kasten zu sehen. Ohne Delegat wird nicht geprüft — dann entscheidet allein
+    /// die Rückgabe des Schreibwegs.
+    /// </summary>
+    [Parameter] public Func<string, bool>? Existiert { get; set; }
 
     /// <summary>Zeichnet die 168 Wochenwerte; ohne Delegat bleibt das Blatt leer.</summary>
     [Parameter] public Func<double[], byte[]>? Bild { get; set; }
@@ -219,6 +305,11 @@
 
     [Parameter] public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
     [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen Namen eingeben!";
+
+    /// <summary>Der Name ist schon vergeben (Befund W8‑B‑2) — er steht IN der Namensabfrage.</summary>
+    [Parameter] public string MeldungNameBelegt { get; set; }
+        = "Ein Typ mit diesem Namen ist schon vorhanden";
+
     [Parameter] public string MeldungReadOnly { get; set; }
         = "Dieser Typ ist schreibgeschützt und kann nicht geändert werden.";
     [Parameter] public string MeldungGespeichert { get; set; } = "Datensatz gespeichert!";
@@ -268,16 +359,9 @@
 
     private bool TypGewaehlt => !string.IsNullOrEmpty(Daten.Typ);
 
-    private IReadOnlyList<(int Id, string Text)> Wochentagswahl
-    {
-        get
-        {
-            var l = new List<(int, string)>();
-            for (int t = 0; t < TypProfilDaten.TAGE; t++)
-                l.Add((t, t < Wochentage.Count ? Wochentage[t] : (t + 1).ToString()));
-            return l;
-        }
-    }
+    /// <summary>Der Anzeigename eines Wochentages; ohne Text die Nummer.</summary>
+    private string Tagesname(int tag)
+        => tag < Wochentage.Count ? Wochentage[tag] : (tag + 1).ToString();
 
     private string Feldname(int stunde)
         => (Feldnamen is not null && Feldnamen.Count > stunde)
@@ -329,9 +413,9 @@
     /// Tagwahl: die 24 Felder zeigen den ÜBERNOMMENEN Stand dieses Tages. Nicht
     /// übernommene Eingaben gehen dabei verloren — wie in <c>Tagesdaten</c>.
     /// </summary>
-    private void TagWaehlen(int? tag)
+    private void TagWaehlen(int tag)
     {
-        _tag = tag ?? 0;
+        _tag = tag;
         double[] werte = Daten.Tag(_tag);
         for (int s = 0; s < TypProfilDaten.STUNDEN; s++) _felder[s] = werte[s];
     }
@@ -427,8 +511,17 @@
     }
 
     /// <summary>
+    /// Die Vorprüfung der Namensabfrage (Befund W8‑B‑2): Ein belegter Name meldet sich
+    /// IN der Abfrage, die damit offen bleibt — statt in einem Datenbankfehler zu enden.
+    /// <c>null</c> heißt „in Ordnung".
+    /// </summary>
+    private string? NamePruefen(string name)
+        => (Existiert is not null && Existiert(name)) ? MeldungNameBelegt : null;
+
+    /// <summary>
     /// „Neu" legt 168 Nullen an, „Speichern unter" die aktuellen Werte samt Beschreibung.
     /// Danach ist die Liste neu gezogen und der neue Typ gewählt — wie im Vorläufer.
+    /// Hierher kommt nur ein Name, den <see cref="NamePruefen"/> durchgelassen hat.
     /// </summary>
     private void BeiNamensfrage(string? name)
     {

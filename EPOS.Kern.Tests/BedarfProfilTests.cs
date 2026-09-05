@@ -162,7 +162,7 @@ namespace EPOS.Kern.Tests
             {
                 string name = "W8-Typ-" + Guid.NewGuid().ToString("N").Substring(0, 8);
 
-                Assert.True(TypProfilCtrl.Neu(art, name));
+                Assert.Equal(TypAnlageErgebnis.Angelegt, TypProfilCtrl.Neu(art, name));
                 Assert.Contains(name, TypProfilCtrl.Typen(art));
 
                 // "Neu" legt 168 Nullen und eine leere Beschreibung an.
@@ -205,7 +205,9 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(gelesen);
 
             string ziel = "W8-Kopie-" + Guid.NewGuid().ToString("N").Substring(0, 8);
-            Assert.True(TypProfilCtrl.SpeichernUnter(art, ziel, gelesen.Value.Werte, gelesen.Value.Beschreibung));
+            Assert.Equal(TypAnlageErgebnis.Angelegt,
+                         TypProfilCtrl.SpeichernUnter(art, ziel, gelesen.Value.Werte,
+                                                      gelesen.Value.Beschreibung));
 
             var kopie = TypProfilCtrl.Lies(art, ziel);
             Assert.NotNull(kopie);
@@ -231,7 +233,113 @@ namespace EPOS.Kern.Tests
             Assert.True(TypProfilCtrl.IstReadOnly(BedarfsArt.Brauchwasser, v.ToString()));
         }
 
+        // ============================================ Belegter Name (Befund W8-B-2)
+
+        /// <summary>
+        /// „Neu" und „Speichern unter" mit einem VORHANDENEN Namen: Der Controller
+        /// prüft ihn VOR dem Einfügen, meldet <see cref="TypAnlageErgebnis.NameBelegt"/>
+        /// und schreibt nichts.
+        ///
+        /// <para><b>Befund W8‑B‑2</b> der Windows-Abnahme vom 05.09.2026: Bis dahin lief
+        /// der Weg bis in das <c>INSERT</c>, die eindeutige Namensspalte warf, und
+        /// <c>DataRepository.FehlerMelden</c> stellte dem Anwender den Wortlaut
+        /// „Datenbankfehler: SQLite Error 19: 'UNIQUE constraint failed:
+        /// Tab_Stromverbrauchertyp_STAMM.Typname'" samt der Anweisung in einen modalen
+        /// Kasten — mitten aus einem Blazor-Ereignis heraus (Hausregel A‑8).</para>
+        ///
+        /// <para>Geprüft wird deshalb dreierlei: der WERT statt eines Wurfs, KEIN Dialog
+        /// (die Mitschrift bleibt leer) und KEIN zusätzlicher Datensatz.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_belegter_Name_meldet_sich_ohne_Dialog_und_schreibt_nichts()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IDialogDienst vorher = Dienste.Dialog;
+            var mitschrift = new MitschreibendeDialoge();
+
+            try
+            {
+                Dienste.Dialog = mitschrift;
+
+                foreach (BedarfsArt art in ALLE)
+                {
+                    string belegt = TypProfilCtrl.Typen(art).First();
+                    Assert.True(TypProfilCtrl.TypExists(art, belegt));
+
+                    int vorherAnzahl = TypProfilCtrl.Typen(art).Count;
+
+                    Assert.Equal(TypAnlageErgebnis.NameBelegt, TypProfilCtrl.Neu(art, belegt));
+                    Assert.Equal(TypAnlageErgebnis.NameBelegt,
+                                 TypProfilCtrl.SpeichernUnter(art, belegt, new double[7, 24], "Probe"));
+
+                    Assert.Equal(vorherAnzahl, TypProfilCtrl.Typen(art).Count);
+                }
+
+                // Kein modaler Kasten - genau das war der Befund.
+                Assert.Empty(mitschrift.Zeilen);
+            }
+            finally
+            {
+                Dienste.Dialog = vorher;
+            }
+        }
+
+        /// <summary>
+        /// Die Gegenprobe: Ein FREIER Name geht durch — sonst wäre die Vorprüfung eine,
+        /// die alles sperrt. Genommen ist der Stromverbraucher, weil er als einziger
+        /// seine Namensspalte <c>Typname</c> statt <c>Bezeichner</c> nennt.
+        /// </summary>
+        [Fact]
+        public void TypExists_laesst_einen_freien_Namen_durch_und_kennt_ihn_danach()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            const BedarfsArt art = BedarfsArt.Stromverbraucher;
+
+            string frei = "W8-Frei-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            Assert.False(TypProfilCtrl.TypExists(art, frei));
+            Assert.False(TypProfilCtrl.TypExists(art, ""));
+            Assert.False(TypProfilCtrl.TypExists(art, null));
+
+            Assert.Equal(TypAnlageErgebnis.Angelegt, TypProfilCtrl.Neu(art, frei));
+            Assert.True(TypProfilCtrl.TypExists(art, frei));
+
+            // Und beim ZWEITEN Mal ist derselbe Name belegt.
+            Assert.Equal(TypAnlageErgebnis.NameBelegt, TypProfilCtrl.Neu(art, frei));
+
+            Assert.True(TypProfilCtrl.Loeschen(art, frei));
+        }
+
         // =================================================================================
+
+        /// <summary>Ein Dialogdienst, der nichts zeigt, sondern mitschreibt.</summary>
+        private sealed class MitschreibendeDialoge : IDialogDienst
+        {
+            public readonly List<string> Zeilen = new List<string>();
+
+            public void Meldung(string text, string titel = null) { Zeilen.Add("Meldung|" + text); }
+            public void Warnung(string text, string titel = null) { Zeilen.Add("Warnung|" + text); }
+            public void Fehler(string text, string titel = null) { Zeilen.Add("Fehler|" + text); }
+
+            public bool Frage(string text, string titel = null, bool warnend = false,
+                              bool vorgabeNein = false)
+            {
+                Zeilen.Add("Frage|" + text);
+                return true;
+            }
+
+            public JaNeinAbbruch Wahl(string text, string titel = null)
+            {
+                Zeilen.Add("Wahl|" + text);
+                return JaNeinAbbruch.Ja;
+            }
+
+            // Warten ist kein Dialog - es faerbt nur den Zeiger und bleibt draussen.
+            public void Warten(bool an) { }
+        }
 
         private static string ErsterKopf(BedarfsArt art)
         {
