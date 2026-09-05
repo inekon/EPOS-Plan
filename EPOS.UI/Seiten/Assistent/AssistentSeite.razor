@@ -101,6 +101,13 @@
     /// </summary>
     [Parameter] public Action<int>? SeiteVerlassen { get; set; }
 
+    /// <summary>
+    /// Prueft eine Seite, BEVOR sie vorwaerts verlassen wird (Nutzerauftrag 02.09.2026,
+    /// mit Merge 5 aus WizardParent.Next): liefert den Grund, der den Wechsel verbietet,
+    /// oder null. Zurueck geht immer.
+    /// </summary>
+    [Parameter] public Func<int, string?>? SeitePruefen { get; set; }
+
     /// <summary>Die Projekte für das linke Band (Betriebsart BEARBEITEN).</summary>
     [Parameter] public IReadOnlyList<ProjektKopfZeile> Projekte { get; set; } =
         Array.Empty<ProjektKopfZeile>();
@@ -382,6 +389,20 @@
 
     private void BeiSchritt(int neu)
     {
+        // Vorwaerts erst, wenn die Seite es erlaubt (Pflichtfelder, Namensdoppel). Der
+        // Rahmen hat seinen Schritt schon gesetzt; ohne Wechsel hier bekommt er beim
+        // naechsten Zeichnen den alten Schritt zurueck.
+        if (neu > _schritt)
+        {
+            string? grund = SeitePruefen?.Invoke(_schritt);
+            if (!string.IsNullOrEmpty(grund))
+            {
+                _meldung = grund;
+                _meldungTitel = "";
+                SchritteBauen();
+                return;
+            }
+        }
         // Der Rahmen hat schon entschieden, WOHIN es geht; der Wirt bekommt vorher
         // den verlassenen Schritt gemeldet (Projektkopf uebernehmen, Listen laden).
         SeiteVerlassen?.Invoke(_schritt);
@@ -398,6 +419,13 @@
 
     private async Task BeiSpeichern()
     {
+        string? grund = SeitePruefen?.Invoke(_schritt);
+        if (!string.IsNullOrEmpty(grund))
+        {
+            _meldung = grund;
+            _meldungTitel = "";
+            return;
+        }
         SeiteVerlassen?.Invoke(_schritt);
 
         (string Text, string Titel)? fehler = Speichern?.Invoke();

@@ -172,4 +172,49 @@ public class ProjektKopfSeiteTests : BunitContext
                                  .Where(o => o.IsSelected),
                               o => o.Value == "12" || o.Value == "5");
     }
+
+    // =====================================================================
+    // Merge 5 (Nutzerauftrag 02.09.2026): Pflichtfelder und Namensdoppel
+    // =====================================================================
+
+    [Fact]
+    public void Leerer_und_vergebener_Name_bringen_den_Hinweis_ein_freier_Name_nimmt_ihn_weg()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.NameAenderbar = true;
+        daten.Name = "";
+        var cut = Render<ProjektKopfSeite>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Klimaregionen, REGIONEN)
+            .Add(x => x.VergebeneNamen, new[] { "Speicherhaus" })
+            .Add(x => x.PflichtMarke, " *"));
+
+        Assert.Equal(ProjektKopfBefund.NameLeer, cut.Instance.Befund);
+        Assert.Contains("Projektnamen", cut.Find(".epos-projektkopf-hinweis").TextContent);
+        Assert.Contains("Projektname *", cut.Markup);
+
+        cut.FindAll("input[type=text]:not([readonly])")[0].Input("speicherhaus");
+        Assert.Equal(ProjektKopfBefund.NameVorhanden, cut.Instance.Befund);
+        Assert.Contains("existiert bereits", cut.Find(".epos-projektkopf-hinweis").TextContent);
+
+        cut.FindAll("input[type=text]:not([readonly])")[0].Input("Neubau Ost");
+        Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
+        Assert.Empty(cut.FindAll(".epos-projektkopf-hinweis"));
+    }
+
+    [Fact]
+    public void Ohne_Klimaregion_bleibt_der_Hinweis_bis_eine_gewaehlt_ist()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.IdKlimaregion = 0;
+        daten.Klimaname = "";
+        var cut = Render<ProjektKopfSeite>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Klimaregionen, REGIONEN));
+
+        Assert.Equal(ProjektKopfBefund.KlimaLeer, cut.Instance.Befund);
+        cut.Find("select").Change("5");
+        Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
+        Assert.Empty(cut.FindAll(".epos-projektkopf-hinweis"));
+    }
 }

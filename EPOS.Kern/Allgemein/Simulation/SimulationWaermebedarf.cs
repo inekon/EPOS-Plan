@@ -884,21 +884,23 @@ namespace WindowsFormsApplication1
             return Waermebedarf_Max;
         }
 
+        /// <summary>
+        /// Die 8.760 Aussentemperaturen der Klimaregion.
+        ///
+        /// <para><b>B1 (Paket A): ueber den ORTSZEIT-Lesepfad.</b> Bis dahin las diese
+        /// Methode <c>Tab_Solar</c> selbst und damit im UTC-Raster. Die Stundentemperatur
+        /// speist den COP der Waermepumpe, die Erdreichrechnung und das Reporting — sie
+        /// lag also gegenueber dem Bedarf 1 h (Winter) bzw. 2 h (Sommer) zu frueh. Die
+        /// Jahres- und Monatsmittel bleiben davon unberuehrt, der Tagesgang nicht.</para>
+        /// </summary>
         private void Stundentemperatur_aus_DB(int ID_Klimaregion)
         {
-            RecordSet rs = new RecordSet();
-            try
-            {
-                rs.Open("select * from Tab_Solar where ID_Klimaregion=" + ID_Klimaregion + " order by ID ");
-                int i = 0;
-                double temp;
-                while (rs.Next())
-                {
-                    temp = (double)rs.Read("Temperatur");
-                    Stundentemperatur[i++] = (float)temp;
-                }
-            }
-            finally { rs.Close(); }
+            SolardatenCtrl ctrldat = new SolardatenCtrl();
+            ctrldat.ReadOrtszeit(ID_Klimaregion, m_ID_Projekt);
+
+            int stunden = Math.Min(ctrldat.rows, Stundentemperatur.Length);
+            for (int i = 0; i < stunden; i++)
+                Stundentemperatur[i] = (float)ctrldat.items[i].Außen_Temp;
         }
 
         /// <summary>

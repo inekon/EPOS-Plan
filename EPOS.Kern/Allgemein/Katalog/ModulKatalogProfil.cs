@@ -41,8 +41,10 @@ namespace WindowsFormsApplication1
         public ModulKatalogFeld(string schluessel, string bezeichnung, string einheit = "",
                                 BrowserFeldArt art = BrowserFeldArt.Zahl,
                                 bool leerErlaubt = true, int gruppe = 0,
-                                bool gesperrt = false, string vorgabe = "0")
+                                bool gesperrt = false, string vorgabe = "0",
+                                IReadOnlyList<(string Wert, string Text)> optionen = null)
         {
+            Optionen = optionen ?? Array.Empty<(string, string)>();
             Schluessel = schluessel;
             Bezeichnung = bezeichnung;
             Einheit = einheit ?? "";
@@ -82,6 +84,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Feldname, den eine Pruefmeldung nennt — die Beschriftung ohne „:".</summary>
         public string Feldname => (Bezeichnung ?? "").TrimEnd(' ', ':');
+
+        /// <summary>
+        /// Die Optionen eines <see cref="BrowserFeldArt.Auswahl"/>-Feldes: Wert = der Code in
+        /// der Datenbank (leer = NULL), Text = die uebersetzte Beschriftung. Leer bei allen
+        /// anderen Feldarten.
+        /// </summary>
+        public IReadOnlyList<(string Wert, string Text)> Optionen { get; }
     }
 
     /// <summary>
@@ -166,6 +175,9 @@ namespace WindowsFormsApplication1
         public const string FeldTempKoeff = "GAMMA_PMP";
         public const string FeldLaenge = "LAENGE";
         public const string FeldBreite = "BREITE";
+        /// <summary>Paket A/B des PV-Ertragsmodells (Merge 5): Zelltemperatur NOCT und Zelltechnologie.</summary>
+        public const string FeldTNoct = "T_NOCT";
+        public const string FeldTechnologie = "TECHNOLOGIE";
 
         // ==================================================================
         // Die zwei Auspraegungen
@@ -273,12 +285,37 @@ namespace WindowsFormsApplication1
                             new ModulKatalogFeld(FeldTempKoeff, t("MODK_LBL_TEMPKOEFF"), "%/K"),
                             new ModulKatalogFeld(FeldLaenge, t("MODK_LBL_LAENGE"), "m"),
                             new ModulKatalogFeld(FeldBreite, t("MODK_LBL_BREITE"), "m"),
-                            new ModulKatalogFeld(FeldModulkosten, t("MODK_LBL_MODULKOSTEN_PV"), "€")
+                            new ModulKatalogFeld(FeldModulkosten, t("MODK_LBL_MODULKOSTEN_PV"), "€"),
+                            // PAKET A/B des PV-Ertragsmodells (mit Merge 5 aus Form_AdminPV
+                            // nachgezogen): die NOCT-Zelltemperatur (leer = 0 = nicht gepflegt)
+                            // und die Zelltechnologie als Auswahl (leer = NULL).
+                            new ModulKatalogFeld(FeldTNoct, t("PV_MODUL_LABEL_TNOCT"), "°C"),
+                            new ModulKatalogFeld(FeldTechnologie, t("PVM_MODUL_LABEL_TECHNOLOGIE"), "",
+                                                 BrowserFeldArt.Auswahl, true, 0, false, vorgabe: "",
+                                                 optionen: Technologien(t))
                         }
                     };
             }
 
             throw new ArgumentOutOfRangeException(nameof(art));
+        }
+
+        /// <summary>
+        /// Die Optionen der Zelltechnologie (Paket B, Stufe E2.3): der Datenbankcode aus
+        /// <see cref="DbWerte"/> und die uebersetzte Beschriftung; der erste Eintrag ist
+        /// "nicht gepflegt" (leer = NULL). Reihenfolge wie in Form_AdminPV.TECHNOLOGIE_WERTE.
+        /// </summary>
+        public static IReadOnlyList<(string Wert, string Text)> Technologien(Func<string, string> t)
+        {
+            return new[]
+            {
+                ("", t("PVM_TECHNOLOGIE_LEER")),
+                (DbWerte.PV_TECHNOLOGIE_C_SI, t("PVM_TECHNOLOGIE_C_SI")),
+                (DbWerte.PV_TECHNOLOGIE_CIS, t("PVM_TECHNOLOGIE_CIS")),
+                (DbWerte.PV_TECHNOLOGIE_CDTE, t("PVM_TECHNOLOGIE_CDTE")),
+                (DbWerte.PV_TECHNOLOGIE_A_SI, t("PVM_TECHNOLOGIE_A_SI")),
+                (DbWerte.PV_TECHNOLOGIE_SONSTIGE, t("PVM_TECHNOLOGIE_SONSTIGE"))
+            };
         }
 
         /// <summary>Beide Auspraegungen — fuer Stapelpruefungen.</summary>

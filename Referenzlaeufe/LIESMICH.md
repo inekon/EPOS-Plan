@@ -12,8 +12,438 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
+**`2026-09-05_M5_nach-Merge5/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **64**.
+Der Stand **nach dem fünften Merge von `origin/ios_migration`** (`4cdc462`, **555** Commits:
+die iU9-Wellen W2 bis W16c, Entscheid #76 Zweispaltenauswahl, die Befunde der Windows-Abnahmen
+vom 04./05.09.2026) — und nach dem **Umzug der lokalen Arbeit auf die Razor-Struktur**: zwölf
+stillgelegte WinForms-Masken, ihre Deltas leben in `PhotovoltaikDialog` (`PvModellFelder`),
+`ModulKatalogDialog` (NOCT, Zelltechnologie), `PvModulImportDialog` (PAN-Koeffizienten,
+Plausibilität), `PhotovoltaikVerguetungDialog` (Degradation), `ProjektWahlDialog`/`ProjektListe`
+(Varianten, Mehrfachlöschen) und `ProjektKopfSeite` (Pflichtfelder). Die PV-Schritte 62/63
+heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Waisen; Ziel 64.
+
+> **Sie ist byte-gleich zu M4 — und genau das ist ihr Zweck.** 555 Remote-Commits tauschen
+> Oberfläche aus und räumen Waisen ab; die Portierung trägt Dialogfelder um, keinen Rechenweg.
+> **355/355 byte-/MD5-gleich gegen M4, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (`4cdc462`, ohne unsere
+> Pakete, Schemastand 62) ist **14/14 PASS zum THEIRS-Lauf von Merge 4** (`b0d3d86`). Beide
+> Achsen des Vergleichs sind exakt. THEIRS gegen MERGE weicht erwartet in den Temperaturreihen
+> ab (Ortszeit-Zeitbasis des Pakets A, wie PA0 → PA1).
+>
+> **Konflikte: 20** (zwölf Modify/Delete der stillgelegten Masken, acht Inhaltskonflikte), alle
+> vorab in der Sandbox aufgelöst und dort gebaut, getestet (`EPOS.UI.Tests` 2 491/2 491,
+> `EPOS.Kern.Tests` 1 077/1 077) und gefahren; die Arbeitskopie des Laufs migriert
+> **61 → 62 → 63 → 64**. Die produktive Datei blieb unberührt.
+>
+> **Merge 6 (05.09.2026, abends):** der Nachschub `ed71d73` (W12‑B‑1, nur Stilblatt, Wache und
+> Protokolle) ist konfliktfrei dazugekommen; der Lauf des Merge-6-Baums ist **355/355 byte-gleich**
+> zu dieser Basis — sie bleibt deshalb die aktuelle Basis (Protokoll Merge 5, Abschnitt 7).
+>
+> **Codestand:** Merge-Commit auf `ios_migration` (Eltern `9810d5b` lokal und `4cdc462` remote),
+> Protokoll `WindowsFormsApplication1/Allgemein/Simulation/Merge5_ios_2026-09-05_Protokoll.md`.
+>
+> ```powershell
+> & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M4_nach-Merge4`
+
+**`2026-09-03_M4_nach-Merge4/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem vierten Merge von `origin/ios_migration`** — nach **iU9 Welle 0**, der
+**Stilllegung** nach dem Anwenderentscheid **iF29**: neun Altmasken sind ersatzlos gelöscht
+(Kosteneditor `Form_Kosten` samt `ucKostenItem`, Betriebskostenpflege, Berichtsmaske,
+Kurzsimulation, Variantentest, KWKG-Module, Wirtschaftlichkeitsmaske), die Kostenstatics
+sind vorher nach `EPOS.Kern/Controller/KostenSummenCtrl.cs` gerettet. 25 Dateien weg,
+zwei neu — **90 Dateien, +860 / −10 877**.
+
+> **Sie ist byte-gleich zu M3 — und genau das ist ihr Zweck.** Welle 0 portiert nicht, sie
+> **löscht**; der einzige Code, der den Rechenweg berührt, ist die Rettung der Kostenstatics,
+> und die trägt `LiesKomponentenSummen`, `LiesAnlagenSummen` und `GetAllCarriers` unverändert
+> weiter.
+> **355/355 byte-/MD5-gleich gegen M3, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (`b0d3d86`, ohne
+> unsere Pakete, Schemastand 61) ist **355/355 byte-gleich zum THEIRS-Lauf von Merge 3**
+> (`908926a`). Beide Achsen des Vergleichs sind exakt; die Einordnungstabelle
+> „Datei | M3=MERGE? | THEIRS abweichend?" bleibt leer.
+>
+> **Konflikte: keine.** Die Berührungsfläche zwischen unseren 20 und Remotes acht Commits
+> umfasst **sechs** Dateien (`SchemaKatalog.cs`, `WirtschaftlichkeitCtrl.cs`,
+> `HilfeKontext.cs`, `SchemaMigration.cs`, `WizardCtrl.cs`,
+> `Form_PhotovoltaikVerguetung.cs`), alle sechs automatisch zusammengelegt. Der Nachweis ist
+> hier schärfer als bei den Vorgängern: Für **jede** der sechs ist das Merge-Delta gegen
+> unseren Vorstand **zeilengleich** mit Remotes Delta gegen seinen — der Merge hat an ihnen
+> genau Remotes Änderung getan und **nichts** an unserer Seite. Keine der neun gelöschten
+> Masken stand in unserer Änderungsmenge.
+>
+> **Die Nummernprobe am Schema ist negativ ausgefallen — und das war die Sorge.** Remote
+> steht mit Welle 0 **weiter auf `ZIEL_VERSION = 61`** und führt **keinen** SQLite-Schritt;
+> seine 13 Zeilen an `SchemaMigration.cs` sind ausnahmslos Doku. **Keine Kollision** mit
+> unseren Schritten 62 (PV-Anlagenparameter) und 63 (PV-Modellwahl). Der Merge-Stand trägt
+> unverändert `ZIEL_VERSION = 63`, `FREEZE_VERSION_ACCESS = 61` und beide Schritte in
+> `SCHRITTE_SQLITE`.
+>
+> **Die eine echte Codeänderung an einer unserer Dateien:** `Form_PhotovoltaikVerguetung`
+> liest ihre Kostensummen jetzt über `KostenSummenCtrl.*` statt `Form_Kosten.*` (drei
+> Stellen; die Konstanten sind im Kern wertgleich definiert). Unser Degradationsfeld
+> (Stufe E2.4) sitzt in derselben Datei und ist unversehrt — 18 Fundstellen
+> `numDegradation` / `DegradationsfeldAnlegen` / `PVM_DEGRADATION`, und Remotes Hunks
+> berühren unsere nicht.
+>
+> **Codestand:** Merge-Commit `f6acb04` (Branch `ios_migration`; Eltern `83498dc` lokal und
+> `b0d3d86` remote), gebaut aus einem `git archive`-Export außerhalb des Repos
+> (`P:\merge4\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** — nicht nur in den Zahlen (WFO1000 22, NU1510 4,
+> CS0108 2, CS0109 2, WFO0003 1, CA2255 1), sondern in allen **30** datei- und
+> zeilengenauen Meldungen. Der Unterschied zu Merge 3 (34 / 29) ist restlos die
+> Stilllegung: die beiden `AlsDialog`-Meldungen aus `UcBericht` und `UcWirtschaftlichkeit`
+> entfallen mit den gelöschten Masken, zwei Meldungen in `UcBkKosten.cs` rücken um eine
+> Zeile (1304/1310 → 1305/1311).
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1/M1/M2/M3
+> (`P:\pa0\Quelle\Kenndaten.sqlite`, MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die
+> Arbeitskopie migriert **61 → 63**; die produktive Datei blieb unberührt (Zeitstempel
+> 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
+> dieselben Zahlen wie bei den Merges 1–3. Weil Welle 0 `Form_PhotovoltaikVerguetung`
+> anfasst, sind die beiden Aussagen wieder eigens headless nachgemessen:
+> `PvErloesRechner.DegradationsFaktor(0.5, 20)` = **0.909156** (Konzept: 0,9092) und die
+> INEKON-Referenz „Schulung 01" mit **I3 −0,76 %** / **I4 −0,47 %**. Einzelheiten,
+> Berührungsfläche und das Inventar der Stilllegung im
+> [Merge-4-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge4_ios_2026-09-03_Protokoll.md).
+>
+> **Noch nicht gebaut: der Hauptbaum.** `bin\x64\Debug` ist bewusst nicht neu erzeugt worden
+> — Visual Studio war offen, mit ungespeicherten Designer-Änderungen. Der Nachweis hängt
+> nicht daran (drei Builds, 0 Fehler, zeilengleiches Profil), die lauffähigen Binärdateien
+> im Hauptbaum schon. **Nachholen, sobald VS zu ist.**
+>
+> **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
+> Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
+> vier Folgefehler eines fehlgeschlagenen `Speichern`, kein Befund am Code. Er braucht eine
+> Kopie im Stand **63**.
+>
+> **ACHTUNG `core.longpaths` beim Worktree auf einem subst-Pfad.** Der Schalter muss bis
+> **nach** dem `git merge` stehen bleiben, nicht nur für `git worktree add`: Der Merge liest
+> den Baum erneut ein und scheitert sonst an `VDI-3805-Daten/…` mit
+> „Filename too long" / `fatal: read-tree failed` — das sieht wie ein Merge-Fehler aus, ist
+> aber keiner.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M3_nach-Merge3`
+
+**`2026-09-03_M3_nach-Merge3/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem dritten Merge von `origin/ios_migration`** — nach **iU9 Welle 1**:
+sieben WinForms-Masken der Kosten- und Wirtschaftlichkeitsseite sind durch sechs
+Razor-Komponenten ersetzt und im selben Schritt gelöscht (Zeileneditor Vorlagenposition,
+Namensabfrage, Worst/Best Case, Übernahme ins Projekt, Kostenfaktor-Katalog,
+Kapitalwert-Verlauf).
+
+> **Sie ist byte-gleich zu M2 — und genau das ist ihr Zweck.** Die elf Remote-Commits
+> tauschen **Oberfläche** aus; der einzige neue Kern-Baustein (`KostenfaktorCtrl`) trägt die
+> drei SQL-Anweisungen aus `Form_KostenAdmin` zeichengleich weiter.
+> **355/355 byte-/MD5-gleich gegen M2, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (`908926a`, ohne
+> unsere Pakete, Schemastand 61) ist **355/355 byte-gleich zum THEIRS-Lauf von Merge 2**
+> (`71cde0c`). Beide Achsen des Vergleichs sind exakt; die Einordnungstabelle
+> „Datei | M2=MERGE? | THEIRS abweichend?" bleibt leer.
+>
+> **Konflikte: keine.** Die Berührungsfläche zwischen unseren 18 und Remotes elf Commits
+> umfasst **vier** Dateien (`Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs`,
+> `HilfeKontext.cs`), alle vier automatisch zusammengelegt und zeilenweise gegengeprüft.
+> Keine der sieben gelöschten Masken stand in unserer Änderungsmenge.
+>
+> **Codestand:** Merge-Commit `359b1cd` (Branch `ios_migration`; Eltern `533eb7b` lokal und
+> `908926a` remote), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\merge3\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** — nicht nur in den Zahlen (WFO1000 24, NU1510 4,
+> CS0109 2, CS0108 2, WFO0003 1, CA2255 1), sondern in allen **29** datei- und
+> zeilengenauen Meldungen, und diese 29 sind **zeilengleich zu Merge 2**.
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1/M1/M2 (`P:\pa0\Quelle\Kenndaten.sqlite`,
+> MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert **61 → 63**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
+> dieselben Zahlen wie bei Merge 1 und 2. Weil Welle 1 die Wirtschaftlichkeits-Dialoge
+> anfasst, sind zwei Aussagen eigens headless nachgemessen:
+> `PvErloesRechner.DegradationsFaktor(0.5, 20)` = **0.909156** (Konzept: 0,9092) und die
+> INEKON-Referenz „Schulung 01" mit **I3 −0,76 %** / **I4 −0,47 %**. Einzelheiten,
+> Berührungsfläche und die Liste der portierten Dialoge im
+> [Merge-3-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge3_ios_2026-09-03_Protokoll.md).
+>
+> **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
+> Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
+> vier Folgefehler eines fehlgeschlagenen `Speichern`, kein Befund am Code. Er braucht eine
+> Kopie im Stand **63**.
+>
+> **ACHTUNG `core.longpaths` beim Worktree auf einem subst-Pfad.** Der Schalter muss bis
+> **nach** dem `git merge` stehen bleiben, nicht nur für `git worktree add`: Der Merge liest
+> den Baum erneut ein und scheitert sonst an `VDI-3805-Daten/…` mit
+> „Filename too long" / `fatal: read-tree failed` — das sieht wie ein Merge-Fehler aus, ist
+> aber keiner.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M2_nach-Merge2`
+
+**`2026-09-03_M2_nach-Merge2/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem zweiten Merge von `origin/ios_migration`** — nach iU9 (Blazor-Dialoge),
+iU10 (iOS-Hülle `EPOS.iOS` als eigene Projektmappe), dem **SQL-Dialekt-Audit** und den
+Wirtschaftlichkeitspaketen FX2–FX5/B5.
+
+> **Sie ist byte-gleich zu M1 — und genau das ist ihr Zweck.** Die 38 Remote-Commits sind
+> Oberfläche, Plattform und Dialektpflege, keine Fachänderung am Rechenkern.
+> **355/355 byte-/MD5-gleich gegen M1, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben drei Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu — und diesmal trägt er mehr als beim ersten Mal.** Remote hat mit
+> dem SQL-Dialekt-Audit **elf SQL-Stellen in sieben Dateien umgeschrieben**. Ein Lauf des
+> **reinen** `origin/ios_migration` (`71cde0c`, ohne unsere Pakete, Schemastand 61) ist
+> trotzdem **355/355 byte-gleich zum THEIRS-Lauf von Merge 1** (`430a864`). Die
+> umgeschriebenen Stellen liegen sämtlich auf Pfaden, die der Referenzlauf nicht betritt —
+> Schreibwege ohne Aufrufer, Katalogpflege, Preisreihen-Rückfallebene. **Genau deshalb
+> müssen diese vier Pfade von Hand geprüft werden** (siehe Merge-2-Protokoll, offene
+> Punkte). Beide Achsen des Vergleichs sind exakt; die Einordnungstabelle
+> „Datei | M1=MERGE? | THEIRS abweichend?" bleibt leer.
+>
+> **Codestand:** Merge-Commit `c2c64cb` (Branch `ios_migration`; Eltern `884ce7a` lokal und
+> `71cde0c` remote), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\merge2\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** — nicht nur in den Zahlen (WFO1000 24, NU1510 4,
+> CS0109 2, CS0108 2, WFO0003 1, CA2255 1), sondern in allen **29** datei- und
+> zeilengenauen Meldungen. Aus unseren Dateien kommt keine neue Warnung.
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1/M1 (`P:\pa0\Quelle\Kenndaten.sqlite`,
+> MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert **61 → 63**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
+> dieselben Zahlen wie bei Merge 1. Einzelheiten, Konfliktliste und die Begründung des
+> Doppel-Fixes im
+> [Merge-2-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge2_ios_2026-09-03_Protokoll.md).
+>
+> **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
+> Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
+> vier Folgefehler eines fehlgeschlagenen `Speichern`, kein Befund am Code. Er braucht eine
+> Kopie im Stand **63**.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M1_nach-Merge`
+
+**`2026-09-03_M1_nach-Merge/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem Merge von `origin/ios_migration`** — also nach dem Umzug des
+Rechenkerns von `WindowsFormsApplication1/` nach **`EPOS.Kern/`** (und `EPOS.UI/`).
+
+> **Sie ist byte-gleich zu PB1 — und genau das ist ihr Zweck.** Der Umzug ist eine
+> Verlagerung, keine Fachänderung: Er verschiebt 237 Dateien, ersetzt `OleDbParameter`
+> durch den providerfreien `DbParam` (iU6), zieht die Anlagen-Einfügeanweisung nach
+> `AnlagenSql` (iU3) und die Maskensteuerung nach `Dienste.Navigation` (iU5).
+> **355/355 byte-/MD5-gleich gegen PB1, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben drei Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (ohne unsere
+> Pakete, Schemastand 61) ist seinerseits **355/355 byte-gleich zu
+> `2026-09-02_PA0_vor-PaketA`**. Die 81 Remote-Commits haben also keinen einzigen
+> gerechneten Wert verschoben — und weil MERGE = PB1 exakt gilt, hat auch die
+> Zusammenführung nichts verschoben. Beide Achsen sind exakt; die Einordnungstabelle
+> „Datei | PB1=MERGE? | THEIRS=PA0?" bleibt leer, weil es keine Abweichung gibt.
+>
+> **Codestand:** Merge-Commit `e428092` (Branch `ios_migration`; Eltern `b9c566f` lokal und
+> `430a864` remote), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\merge\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** (WFO1000 28, NU1510 4, CS0109 2, CS0108 2,
+> WFO0003 1, CA2255 1) — aus unseren Dateien kommt keine neue Warnung.
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1 (`P:\pa0\Quelle\Kenndaten.sqlite`,
+> MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert **61 → 63**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — durchgehend **0 FAIL**. Einzelheiten,
+> Konfliktliste und Entscheidungen im
+> [Merge-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge_ios_2026-09-03_Protokoll.md).
+>
+> **Neue Pfade.** Wer die Suite nachbaut: Der Rechenkern liegt jetzt in `EPOS.Kern.dll`
+> (`DataRepository`, `DbParam`, `SimulationPV`, `SolarZeitbasis`, `PvErweitertesModell`,
+> `SolardatenCtrl`), die Anwendung mit `SchemaMigration` weiterhin in `EPOS_Plan.dll`.
+> Die **Namensräume sind unverändert** (`WindowsFormsApplication1`). Das Werkzeug unter
+> `Referenzlauf/` baut ohne Änderung, weil es die Anwendung referenziert und die
+> ihrerseits `EPOS.Kern`. Proben-Harnesse brauchen eine zusätzliche Referenz auf
+> `EPOS.Kern.dll` und setzen den DB-Pfad über `DataRepository.PfadUeberschreibung`
+> statt per Reflexion auf `Properties.Settings`.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_PB1_nach-PaketB`
+
+**`2026-09-03_PB1_nach-PaketB/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach** Paket B desselben Konzepts (Stufe **E2**, Nachtrag 2: Modellwahl je
+Anlage, Hay-Davies, Huld-Schwachlichtmodell, Wechselrichter-Teillastkennlinie mit
+Clipping, Degradation).
+
+> **Sie ist byte-gleich zu PA1 — und genau das ist ihr Zweck.** Paket B fügt eine
+> ZWEITE Rechentiefe hinzu, ohne die erste anzutasten: Alle Bestandsanlagen stehen auf
+> `PV_Modell = NULL`, und NULL heißt EINFACH, also der Rechenweg aus Paket A.
+> **355/355 byte-/MD5-gleich, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**, keine
+> Datei nur auf einer Seite; `pruefen` plausibel mit denselben drei Bestandshinweisen.
+> Das ist Kriterium 1 der Abnahme (Konzept N2.5): „das vereinfachte Modell bleibt
+> zulässig".
+>
+> Der Nachweis deckt sechs Umbauten auf einmal ab, die alle den PV-Rechenweg berühren:
+> Migrationsschritt **63** (acht Spalten, kein DML), die **Modellweiche** in
+> `SimulationPV`, die Auslagerung der Sonnengeometrie in `SolarCalculator` (die
+> byte-gleichen CSV belegen, dass sie nicht einmal im letzten Bit etwas verschoben hat),
+> der **Degradationsfaktor** in `PvErloesRechner` (bei NULL exakt 1,0), fünf zusätzlich
+> gelesene und geschriebene Anlagenspalten und die neue Katalogspalte `Technologie`.
+>
+> **Codestand:** `36acbf1` (Branch `ios_migration`; Paketcommits `f1d16e3` → `4bd8752` →
+> `74f9acf` → `36acbf1`), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\pb1\src`; **0 Fehler**). Das Warnungsprofil ist zum PA1-Export identisch — beide
+> wurden dafür mit demselben Befehl neu gebaut (CS0108 2, CS0109 2, NU1510 4, WFO0003 1,
+> WFO1000 30). **Datenquelle:** derselbe Snapshot wie PA0/PA1
+> (`P:\pa0\Quelle\Kenndaten.sqlite`, MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die
+> Arbeitskopie migriert **61 → 63**; die produktive Datei blieb unberührt (Zeitstempel
+> 02.09.2026 22:07:36).
+>
+> **Dass das neue Modell auch rechnet**, zeigen zwei Smoke-Läufe auf präparierten
+> Kopien (Projekt 1026, 5,20 kWp): mit `Technologie = C_SI` und 4,16 kW
+> Wechselrichter-Nennleistung **−3,94 %** Jahresertrag, DC/AC 1,25, Clipping 40,1 kWh,
+> Eigenverbrauchsquote **64,68 → 66,20 %**; ohne Technologie und ohne
+> Wechselrichterdaten **+3,37 %** (reiner Hay-Davies-Gewinn) und EVQ **62,97 %**. Alle
+> Rückfallebenen melden sich im Protokoll. Die Smoke-Ordner sind bewusst **nicht**
+> abgelegt — sie sind Wirkprobe, keine Basis; ihre Zahlen stehen im
+> [Laufprotokoll der Basis](2026-09-03_PB1_nach-PaketB/lauf_protokoll.md) und im
+> [Paket-B-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/PaketB_E2_Modellwahl_Protokoll.md).
+>
+> **Wirtschaftlichkeit:** Die P6-Referenz „INEKON Schulung 01" (Prüfstand `kd1runner`,
+> Modus `pv6`) ist gegen den Paket-B-Build **28 PASS / 0 FAIL** und Zahl für Zahl
+> unverändert (I3 −0,76 %, I4 −0,47 %) — die Degradation steht auf NULL.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Diese Basis gilt, solange keine Anlage produktiv auf ERWEITERT steht.** Sobald der
+> Anwender das Modell umstellt, ist ein Basiswechsel fällig.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorvorgängerbasis: `2026-09-02_PA1_nach-PaketA`
+
+**`2026-09-02_PA1_nach-PaketA/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **62**.
+Der Stand **nach** Paket A des `Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`
+(Befund B1 Zeitbasis UTC→Ortszeit, Stufe E1 „Eine Wahrheit") — und **byte-gleich zu
+PB1**: Solange alle Anlagen im Modell EINFACH rechnen, sind beide Ordner austauschbar.
+
+> **Anlass: Paket A ändert den Rechenkern in ALLEN Projekten.** Die Solarreihe wird beim
+> Lesen von UTC auf Ortszeit verschoben (+1 h MEZ / +2 h MESZ,
+> `SolardatenCtrl.ReadOrtszeit`), und die Stundentemperatur speist COP, Erdreich und
+> Reporting — es gibt kein Projekt ohne Delta. Dazu E1.1 (P_STC statt Fläche×η), E1.2
+> (T_NOCT), E1.3 (Wechselrichter und Systemverluste als Anlagenparameter,
+> **Migrationsschritt 62**), E1.4 (1-basierter Tagindex) und E1.5.
+>
+> **Codestand:** `7c622b1` (Branch `ios_migration`; Paketcommits `36c5401` → `aced014` →
+> `7c622b1`), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\pa1\src`; **0 Fehler**, Warnungsprofil identisch zum Vorstand).
+> **Datenquelle:** derselbe Snapshot wie PA0 (`P:\pa0\Quelle\Kenndaten.sqlite`, MD5
+> `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert dabei **61 → 62**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36, SchemaVersion 61).
+> **Selbstvergleich 14/14 PASS (3 882 476 Werte), 355/355 byte-/MD5-gleich**; `pruefen`
+> plausibel.
+>
+> **Gegen `2026-09-02_PA0_vor-PaketA`: FAIL in allen 14 Projekten — und genau das ist das
+> erwartete Ergebnis.** 391 geänderte Skalare, jeder zugeordnet; kein Schlüssel neu oder
+> entfallen. Die vier Familien: (1) die Stundentemperatur selbst (Summe −8,85 K Stuttgart /
+> −4,48 K München = exakt die zwei Umstellstunden), (2) PV-Jahreserzeugung **+0,0013 bis
+> +0,0468 %** — höchstens der Katalogfaktor, (3) Eigenverbrauchsquote −0,95 bis +0,12 pp und
+> Speicherfüllstand bis −2,3 %, (4) temperaturabhängige Größen der Wärmeseite.
+> **1017, 1018, 1030 und 1039 ändern NUR die Temperaturreihen** — der Beweis, dass Paket A
+> außerhalb von PV, Solarthermie und Stundentemperatur nichts bewegt. Zahlen und Zuordnung im
+> [Laufprotokoll der Basis](2026-09-02_PA1_nach-PaketA/lauf_protokoll.md) und im
+> [Paket-A-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/PaketA_Zeitbasis_E1_Protokoll.md).
+>
+> **Diese Basis war die Bitgleichheits-Basis für Paket B** (Stufe E2): Das Modell
+> EINFACH musste gegen sie byte-gleich bleiben (Konzept N2.5, Kriterium 1) — **erfüllt,
+> 355/355** (siehe „Aktuelle Basis").
+>
+> **ACHTUNG Schemastand 62.** `.wpx`-Pakete mit Stand 61 werden von
+> `ProjektExportImportCtrl` abgewiesen — systemimmanent. Seit Paket B liegt der Zielstand
+> bei **63**.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Ausgangsbasis vor Paket A: `2026-09-02_PA0_vor-PaketA`
+
+**`2026-09-02_PA0_vor-PaketA/`** — dieselben **vierzehn Projekte**, **355 CSV**,
+Schemastand **61**, Codestand `d46e200` (Ablage `df90063`). Der Stand **vor** Paket A und
+damit die einzige Quelle der Ganglinien im UTC-Raster.
+
+> **Anlass des Basiswechsels von B3-Kaskade auf PA0** (02.09.2026): (1) Der Anwender hat
+> **1040, 1041, 1042 und 1044 gelöscht** — die B3-Liste war nicht mehr lauffähig. (2) Paket A
+> verlangt **vollständige PV-/Solarthermie-Abdeckung**; **1026, 1028, 1029 und 1043** sind
+> deshalb neu aufgenommen (1043 ersetzt das gelöschte 1042 als Booster-Projekt und deckt den
+> Randfall „Gewerk aktiviert, kein Modul" ab). (3) Die Datenhaltung ist seit dem 02.09.2026
+> **SQLite**; die Quelle wurde über die SQLite-Backup-API konsistent entnommen (die Anwendung
+> lief während der Entnahme). **Selbstvergleich 14/14 PASS, 355/355 byte-/MD5-gleich.** Gegen
+> `2026-08-30_B3-Kaskade` waren acht Projekte byte-gleich; die Abweichungen bei 1030 und 1039
+> sind Datenänderungen des Anwenders. Vollständige Begründung im
+> [Laufprotokoll der Basis](2026-09-02_PA0_vor-PaketA/lauf_protokoll.md).
+
+### Frühere Fassung: `2026-08-30_B3-Kaskade`
+
 **`2026-08-30_B3-Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1011, 1017, 1018,
-1021, 1023, 1024, 1030, 1039, 1040, 1041, 1042), **332 CSV**. **Die Datenbestände sind
+1021, 1023, 1024, 1030, 1039, 1040, 1041, 1042), **332 CSV**. **Seit dem 02.09.2026 nicht
+mehr lauffähig** — 1040 bis 1042 hat der Anwender gelöscht. Seinerzeit galt: **Die
+Datenbestände sind
 wieder zusammengeführt:** 1040–1042 stehen auf diesem Rechner wieder im Bestand, die
 Zweiteilung vom 29.08. (`Booster` für den Zweitstand, `E1E2` für diesen Stand) ist
 damit erledigt — es gilt wieder **eine** Basis.
@@ -277,12 +707,15 @@ EIN Stand.
 > „Aktuelle Basis"):
 >
 > ```powershell
-> # Vergleich gegen 2026-08-30_B3-Kaskade:
-> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> # Vergleich gegen 2026-09-02_PA1_nach-PaketA (und gegen PA0): vierzehn IDs
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 >
-> *(29.08.2026 bis 30.08.2026 galten zwei Listen je Datenbestand — 13 Projekte gegen
-> `Booster`, 10 Projekte gegen `E1E2`. Diese Zweiteilung ist aufgehoben.)*
+> *(Bis zum 02.09.2026 galten dreizehn IDs — 1040, 1041 und 1042 statt 1026, 1028, 1029
+> und 1043. Der Anwender hat 1040–1042 gelöscht; die Aufnahme der vier PV-/Booster-Projekte
+> war ein bewusster Basiswechsel für Paket A. 29.08.2026 bis 30.08.2026 galten zwei Listen
+> je Datenbestand — 13 Projekte gegen `Booster`, 10 gegen `E1E2`; diese Zweiteilung ist
+> aufgehoben.)*
 >
 > Ohne `--projekte` wählt die Suite datengetrieben — und diese Wahl **wandert mit dem
 > Projektbestand**. Mit den Beispielprojekten 1026–1029 zieht sie inzwischen 1012 und 1026
@@ -364,7 +797,19 @@ reproduzierbar.
 
 ## Frühere Stände
 
-`2026-08-29_Booster/` bleibt als **vorheriger Stand** liegen (Codestand `0787aec`,
+`2026-09-02_PA0_vor-PaketA/` bleibt als **vorheriger Stand** liegen (Codestand `d46e200`,
+Schemastand 61, vierzehn Projekte, 355 CSV) — der Stand **vor** Paket A und damit die
+**einzige Quelle der Ganglinien im UTC-Raster**. Wer die Wirkung der Zeitbasis-Korrektur
+nachvollziehen will, stellt PA1 gegen diesen Ordner. Begründung im Abschnitt
+„Vorgängerbasis" oben.
+
+`2026-08-30_B3-Kaskade/` bleibt als **älterer Stand** liegen (Codestand `bad41f8`,
+Schemastand 61, dreizehn Projekte, 332 CSV) — die letzte Basis der B3-Linie und die
+einzige Quelle der Ganglinien von 1040, 1041 und 1042, die der Anwender inzwischen
+gelöscht hat. **Nicht mehr lauffähig** (drei ihrer IDs existieren nicht mehr); gegen PA0
+sind acht der gemeinsamen Projekte byte-gleich.
+
+`2026-08-29_Booster/` bleibt als **älterer Stand** liegen (Codestand `0787aec`,
 Schemastand 55, dreizehn Projekte, 332 CSV) — die letzte Basis **vor** der
 Wiederherstellung der 1030-Kaskade und dem Neuaufbau von 1042 und damit die einzige
 Quelle der Ganglinien des früheren zweiten Kaskadenmoduls „Agenitor 306 (250 kw.el) Gas"

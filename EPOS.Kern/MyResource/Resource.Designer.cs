@@ -20045,6 +20045,333 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PSP_VOLLZYKLEN_KOMBI_TIP", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Systemverluste [%]: ähnelt.
+        /// </summary>
+        public static string PV_ANLAGE_LABEL_SYSTEMVERLUSTE {
+            get {
+                return ResourceManager.GetString("PV_ANLAGE_LABEL_SYSTEMVERLUSTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WR-Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string PV_ANLAGE_LABEL_WRWIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("PV_ANLAGE_LABEL_WRWIRKUNGSGRAD", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verluste der Anlage außerhalb des Moduls (Verschmutzung, Mismatch, DC-Verkabelung) in Prozent.
+        ///Leer bedeutet 0 % und ändert am Ergebnis nichts. ähnelt.
+        /// </summary>
+        public static string PV_ANLAGE_TIP_SYSTEMVERLUSTE {
+            get {
+                return ResourceManager.GetString("PV_ANLAGE_TIP_SYSTEMVERLUSTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad des Wechselrichters als Faktor zwischen 0 und 1.
+        ///Leer bedeutet 0,95 — der Wert, mit dem die Simulation bisher fest gerechnet hat. ähnelt.
+        /// </summary>
+        public static string PV_ANLAGE_TIP_WRWIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("PV_ANLAGE_TIP_WRWIRKUNGSGRAD", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelltemperatur NOCT ähnelt.
+        /// </summary>
+        public static string PV_MODUL_FELD_TNOCT {
+            get {
+                return ResourceManager.GetString("PV_MODUL_FELD_TNOCT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelltemperatur NOCT: ähnelt.
+        /// </summary>
+        public static string PV_MODUL_LABEL_TNOCT {
+            get {
+                return ResourceManager.GetString("PV_MODUL_LABEL_TNOCT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominal Operating Cell Temperature nach Datenblatt, üblich 42 bis 48 °C.
+        ///Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C. ähnelt.
+        /// </summary>
+        public static string PV_MODUL_TIP_TNOCT {
+            get {
+                return ResourceManager.GetString("PV_MODUL_TIP_TNOCT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter… ähnelt.
+        /// </summary>
+        public static string PVM_ANLAGE_BTN_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("PVM_ANLAGE_BTN_WECHSELRICHTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenmodell: ähnelt.
+        /// </summary>
+        public static string PVM_ANLAGE_LABEL_MODELL {
+            get {
+                return ResourceManager.GetString("PVM_ANLAGE_LABEL_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einfach = Rechenweg des Bestands (isotrope Einstrahlung, Modulformel mit gamma_PMP, fester Wechselrichter-Wirkungsgrad). Erweitert = Hay-Davies, Schwachlichtmodell nach Huld und Wechselrichter-Kennlinie mit Clipping. ähnelt.
+        /// </summary>
+        public static string PVM_ANLAGE_TIP_MODELL {
+            get {
+                return ResourceManager.GetString("PVM_ANLAGE_TIP_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AC-Nennleistung und Teillastkennlinie des Wechselrichters dieser Anlage. Nur im Modell Erweitert wirksam. ähnelt.
+        /// </summary>
+        public static string PVM_ANLAGE_TIP_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("PVM_ANLAGE_TIP_WECHSELRICHTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Degradation [%/a]: ähnelt.
+        /// </summary>
+        public static string PVM_DEGRADATION {
+            get {
+                return ResourceManager.GetString("PVM_DEGRADATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jährlicher Leistungsverlust der Module. Wirkt nur in der Erlösreihe, nicht in der Stundensimulation des Basisjahres. 0 = keine Degradation; typisch sind 0,3 bis 0,5 %/a. ähnelt.
+        /// </summary>
+        public static string PVM_DEGRADATION_TIP {
+            get {
+                return ResourceManager.GetString("PVM_DEGRADATION_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string PVM_DLG_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("PVM_DLG_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC: {0:N2} kWp auf {1:N2} kW = {2:N2} ähnelt.
+        /// </summary>
+        public static string PVM_DLG_DCAC {
+            get {
+                return ResourceManager.GetString("PVM_DLG_DCAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne AC-Nennleistung: kein Clipping, Auslastung bezogen auf die kWp der Anlage. ähnelt.
+        /// </summary>
+        public static string PVM_DLG_DCAC_OHNE {
+            get {
+                return ResourceManager.GetString("PVM_DLG_DCAC_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Punkt der Teillastkennlinie als Faktor zwischen 0 und 1. 0 bedeutet: nicht gepflegt, es gilt die Vorbelegung eines typischen String-Wechselrichters. ähnelt.
+        /// </summary>
+        public static string PVM_DLG_ETA_TIP {
+            get {
+                return ResourceManager.GetString("PVM_DLG_ETA_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 10 % Auslastung (0 = 0,94): ähnelt.
+        /// </summary>
+        public static string PVM_DLG_ETA10 {
+            get {
+                return ResourceManager.GetString("PVM_DLG_ETA10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 100 % Auslastung (0 = 0,97): ähnelt.
+        /// </summary>
+        public static string PVM_DLG_ETA100 {
+            get {
+                return ResourceManager.GetString("PVM_DLG_ETA100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 50 % Auslastung (0 = 0,975): ähnelt.
+        /// </summary>
+        public static string PVM_DLG_ETA50 {
+            get {
+                return ResourceManager.GetString("PVM_DLG_ETA50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage rechnet im Modell Einfach. Die Felder sind deshalb gesperrt - sie wirken erst im Modell Erweitert. ähnelt.
+        /// </summary>
+        public static string PVM_DLG_KOPF_EINFACH {
+            get {
+                return ResourceManager.GetString("PVM_DLG_KOPF_EINFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angaben zum Wechselrichter dieser Anlage. 0 heißt jeweils: nicht gepflegt. ähnelt.
+        /// </summary>
+        public static string PVM_DLG_KOPF_ERWEITERT {
+            get {
+                return ResourceManager.GetString("PVM_DLG_KOPF_ERWEITERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AC-Nennleistung [kW] (0 = kein Clipping): ähnelt.
+        /// </summary>
+        public static string PVM_DLG_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("PVM_DLG_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauerleistung des Wechselrichters auf der Wechselstromseite. Sie begrenzt die Einspeisung (Clipping) und ist die Bezugsgröße der Teillastkennlinie. ähnelt.
+        /// </summary>
+        public static string PVM_DLG_NENNLEISTUNG_TIP {
+            get {
+                return ResourceManager.GetString("PVM_DLG_NENNLEISTUNG_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string PVM_DLG_OK {
+            get {
+                return ResourceManager.GetString("PVM_DLG_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter — {0} ähnelt.
+        /// </summary>
+        public static string PVM_DLG_TITEL {
+            get {
+                return ResourceManager.GetString("PVM_DLG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einfach ähnelt.
+        /// </summary>
+        public static string PVM_MODELL_EINFACH {
+            get {
+                return ResourceManager.GetString("PVM_MODELL_EINFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erweitert ähnelt.
+        /// </summary>
+        public static string PVM_MODELL_ERWEITERT {
+            get {
+                return ResourceManager.GetString("PVM_MODELL_ERWEITERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelltechnologie: ähnelt.
+        /// </summary>
+        public static string PVM_MODUL_LABEL_TECHNOLOGIE {
+            get {
+                return ResourceManager.GetString("PVM_MODUL_LABEL_TECHNOLOGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelltechnologie des Moduls. Sie wählt im Modell Erweitert den Schwachlicht-Koeffizientensatz; für Dünnschicht und Sonstige gibt es keinen, dort gilt die Modulformel des einfachen Modells. ähnelt.
+        /// </summary>
+        public static string PVM_MODUL_TIP_TECHNOLOGIE {
+            get {
+                return ResourceManager.GetString("PVM_MODUL_TIP_TECHNOLOGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dünnschicht / a-Si ähnelt.
+        /// </summary>
+        public static string PVM_TECHNOLOGIE_A_SI {
+            get {
+                return ResourceManager.GetString("PVM_TECHNOLOGIE_A_SI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kristallines Silizium (mono/poly) ähnelt.
+        /// </summary>
+        public static string PVM_TECHNOLOGIE_C_SI {
+            get {
+                return ResourceManager.GetString("PVM_TECHNOLOGIE_C_SI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Cadmiumtellurid (CdTe) ähnelt.
+        /// </summary>
+        public static string PVM_TECHNOLOGIE_CDTE {
+            get {
+                return ResourceManager.GetString("PVM_TECHNOLOGIE_CDTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CIS / CIGS ähnelt.
+        /// </summary>
+        public static string PVM_TECHNOLOGIE_CIS {
+            get {
+                return ResourceManager.GetString("PVM_TECHNOLOGIE_CIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (nicht gepflegt) ähnelt.
+        /// </summary>
+        public static string PVM_TECHNOLOGIE_LEER {
+            get {
+                return ResourceManager.GetString("PVM_TECHNOLOGIE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonstige ähnelt.
+        /// </summary>
+        public static string PVM_TECHNOLOGIE_SONSTIGE {
+            get {
+                return ResourceManager.GetString("PVM_TECHNOLOGIE_SONSTIGE", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (alle) ähnelt.
@@ -21905,6 +22232,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_KARTE_PV_KWP {
             get {
                 return ResourceManager.GetString("SIM_KARTE_PV_KWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell erweitert · DC/AC {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_PV_MODELL_DCAC {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_PV_MODELL_DCAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell erweitert · ohne AC-Nennleistung ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_PV_MODELL_ERWEITERT {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_PV_MODELL_ERWEITERT", resourceCulture);
             }
         }
         

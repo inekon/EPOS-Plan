@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
     internal static class AnlagenSql
     {
         /// <summary>
-        /// VOLLSTAENDIGES INSERT der Anlagenzeile - alle 57 Spalten.
+        /// VOLLSTAENDIGES INSERT der Anlagenzeile - alle 63 Spalten (gezaehlt).
         ///
         /// <para>
         /// WARUM VOLLSTAENDIG. Der Speicherweg aller Erzeuger ist Loeschen + Neuanlegen
@@ -43,6 +43,30 @@ namespace WindowsFormsApplication1
         /// und dieselben Parameter - zwei Einfuegewege mit unterschiedlichem
         /// Spaltensatz waeren genau die Halbwahrheit, die diesen Fehler erzeugt hat.
         /// </para>
+        ///
+        /// <para>
+        /// PAKET A des PV-Ertragsmodells (Stufe E1.3) hat <c>PV_WrWirkungsgrad</c> und
+        /// <c>PV_Systemverluste</c> ergaenzt - Migrationsschritt 62; PAKET B (Stufe E2,
+        /// Schritt 63) <c>PV_Modell</c>, <c>PV_WrNennleistungKw</c> und die drei
+        /// Kennlinienpunkte <c>PV_WrEta10/50/100</c>. Sie stehen hier und nicht in einem
+        /// nachgelagerten UPDATE, weil genau das der Grund des Fehlers waere, den der
+        /// Absatz darueber beschreibt. Es sind MODELLspalten, keine Fachspalten: Der
+        /// Rechenkern liest sie, die PV-Anlagenmaske schreibt sie, und mit ihrer Aufnahme
+        /// hier verlassen sie automatisch die Rettungsmenge
+        /// <c>WizardCtrl.Fachspalten</c> (die ist als Komplement DIESER Anweisung
+        /// definiert - es gibt keine zweite Liste).
+        /// </para>
+        ///
+        /// <para>
+        /// NICHT VOLLSTAENDIG, MIT ABSICHT: Die FACHSPALTEN - KWKG je Anlage (Schritt 22),
+        /// Steuerwahl/Hilfsenergie je Anlage (Schritt 61), Quell-Entnahmehoehe, Quellprofil
+        /// und Temperaturmodus (Schritte 54/55) - fuehrt die Anweisung NICHT. Sie gehoeren
+        /// ihren Fachcontrollern, nicht dem Modell (SchemaKatalog: "der Grund ist der
+        /// LESER"). Damit sie beim Loeschen + Neuanlegen nicht still auf NULL fallen
+        /// (Befund 02.09.2026), rettet der Speicherweg sie als KOMPLEMENT dieser
+        /// Anweisung: <c>WizardCtrl.FachspaltenSichern</c> vor dem DELETE,
+        /// <c>WizardCtrl.FachspaltenWiederherstellen</c> nach dem Add (Block FS1).
+        /// </para>
         /// </summary>
         public const string SQL_ANLAGE_INSERT = @"INSERT INTO Tab_Energieanlagen
                         (ID_Projekt, Bezeichner, Betriebsart, Sperrung, Sperrzeit_von, Sperrzeit_bis,
@@ -55,11 +79,15 @@ namespace WindowsFormsApplication1
                          WQ_Spreizung, WQ_Regeneration, WQ_Unbegrenzt, WQ_Tiefe, WQ_Flaeche, WQ_Anzahl,
                          WQ_Bodentyp, WQ_Quellsystem,
                          WS_Typ, WS_Ziel, WS_ID_Puffer, WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV,
-                         WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2)
+                         WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2,
+                         PV_WrWirkungsgrad, PV_Systemverluste,
+                         PV_Modell, PV_WrNennleistungKw, PV_WrEta10, PV_WrEta50, PV_WrEta100)
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
-                                ?,?,?,?,?,?,?,?,?,?)";
+                                ?,?,?,?,?,?,?,?,?,?,
+                                ?,?,
+                                ?,?,?,?,?)";
 
         /// <summary>
         /// Parameter zu <see cref="SQL_ANLAGE_INSERT"/>, exakt in der Reihenfolge der
@@ -155,7 +183,25 @@ namespace WindowsFormsApplication1
                         ProjektPuffer.Par("@wsidpuf2",  DbParamTyp.Integer,
                             PufferFkOderNull(item.WS_ID_Puffer2, "WS_ID_Puffer2", item.Bezeichner, pufferCache)),
                         ProjektPuffer.Par("@wslprio2",  DbParamTyp.Integer,   Wert(item.WS_Ladeprio2)),
-                        ProjektPuffer.Par("@wslgrenz2", DbParamTyp.Double,    Wert(item.WS_Ladegrenze2))
+                        ProjektPuffer.Par("@wslgrenz2", DbParamTyp.Double,    Wert(item.WS_Ladegrenze2)),
+
+                        // --- PV-Anlagenparameter (Paket A, Stufe E1.3) ----------------
+                        // Ausdruecklicher Typ wie bei den 27 Spalten darueber: NULL ist
+                        // hier der Normalfall ("es gilt der Vorgabewert"), und aus DBNull
+                        // allein leitet der Provider keinen Spaltentyp ab.
+                        ProjektPuffer.Par("@pvwreta",   DbParamTyp.Double,    Wert(item.PV_WrWirkungsgrad)),
+                        ProjektPuffer.Par("@pvsysverl", DbParamTyp.Double,    Wert(item.PV_Systemverluste)),
+
+                        // --- PV-Modellwahl und Wechselrichter (Paket B, Stufe E2) ----
+                        // Ausdruecklicher Typ aus demselben Grund. Bei PV_Modell ist
+                        // NULL sogar der Regelfall des Bestands ("vereinfachtes
+                        // Modell"), und ein Leerstring waere davon nicht zu
+                        // unterscheiden - ProjektPuffer.Par schreibt fuer null DBNull.
+                        ProjektPuffer.Par("@pvmodell",  DbParamTyp.VarWChar,  item.PV_Modell),
+                        ProjektPuffer.Par("@pvwrnenn",  DbParamTyp.Double,    Wert(item.PV_WrNennleistungKw)),
+                        ProjektPuffer.Par("@pvwreta10", DbParamTyp.Double,    Wert(item.PV_WrEta10)),
+                        ProjektPuffer.Par("@pvwreta50", DbParamTyp.Double,    Wert(item.PV_WrEta50)),
+                        ProjektPuffer.Par("@pvwreta100",DbParamTyp.Double,    Wert(item.PV_WrEta100))
                     };
         }
 

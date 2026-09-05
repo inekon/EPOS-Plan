@@ -234,6 +234,15 @@
   <data name="CEC_MSG_LEER" xml:space="preserve">
     <value>CSV leer.</value>
   </data>
+  <data name="CEC_MSG_KOPFZEILE" xml:space="preserve">
+    <value>CEC-Kopfzeile unvollständig, fehlende Spalte(n): {0}</value>
+  </data>
+  <data name="PVIMP_PLAUSI_TITEL" xml:space="preserve">
+    <value>Hinweis zu den Modulwerten</value>
+  </data>
+  <data name="PVIMP_PLAUSI_FRAGE" xml:space="preserve">
+    <value>Trotzdem übernehmen?</value>
+  </data>
   <data name="CEC_PROT_CACHE_ALT" xml:space="preserve">
     <value>Verwende vorhandenen Cache…</value>
   </data>
@@ -994,6 +1003,99 @@
     <value>Kombispeicher: Heizung und Warmwasser werden aus EINEM Wärmevorrat gedeckt.
 Die Vollzyklen sind hier der Jahresdurchsatz bezogen auf die Kapazität —
 bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</value>
+  </data>
+  <data name="PVM_ANLAGE_BTN_WECHSELRICHTER" xml:space="preserve">
+    <value>Wechselrichter…</value>
+  </data>
+  <data name="PVM_ANLAGE_LABEL_MODELL" xml:space="preserve">
+    <value>Rechenmodell:</value>
+  </data>
+  <data name="PVM_ANLAGE_TIP_MODELL" xml:space="preserve">
+    <value>Einfach = Rechenweg des Bestands (isotrope Einstrahlung, Modulformel mit gamma_PMP, fester Wechselrichter-Wirkungsgrad). Erweitert = Hay-Davies, Schwachlichtmodell nach Huld und Wechselrichter-Kennlinie mit Clipping.</value>
+  </data>
+  <data name="PVM_ANLAGE_TIP_WECHSELRICHTER" xml:space="preserve">
+    <value>AC-Nennleistung und Teillastkennlinie des Wechselrichters dieser Anlage. Nur im Modell Erweitert wirksam.</value>
+  </data>
+  <data name="PVM_DEGRADATION" xml:space="preserve">
+    <value>Degradation [%/a]:</value>
+  </data>
+  <data name="PVM_DEGRADATION_TIP" xml:space="preserve">
+    <value>Jährlicher Leistungsverlust der Module. Wirkt nur in der Erlösreihe, nicht in der Stundensimulation des Basisjahres. 0 = keine Degradation; typisch sind 0,3 bis 0,5 %/a.</value>
+  </data>
+  <data name="PVM_DLG_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="PVM_DLG_DCAC" xml:space="preserve">
+    <value>DC/AC: {0:N2} kWp auf {1:N2} kW = {2:N2}</value>
+  </data>
+  <data name="PVM_DLG_DCAC_OHNE" xml:space="preserve">
+    <value>Ohne AC-Nennleistung: kein Clipping, Auslastung bezogen auf die kWp der Anlage.</value>
+  </data>
+  <data name="PVM_DLG_ETA_TIP" xml:space="preserve">
+    <value>Punkt der Teillastkennlinie als Faktor zwischen 0 und 1. 0 bedeutet: nicht gepflegt, es gilt die Vorbelegung eines typischen String-Wechselrichters.</value>
+  </data>
+  <data name="PVM_DLG_ETA10" xml:space="preserve">
+    <value>Wirkungsgrad bei 10 % Auslastung (0 = 0,94):</value>
+  </data>
+  <data name="PVM_DLG_ETA100" xml:space="preserve">
+    <value>Wirkungsgrad bei 100 % Auslastung (0 = 0,97):</value>
+  </data>
+  <data name="PVM_DLG_ETA50" xml:space="preserve">
+    <value>Wirkungsgrad bei 50 % Auslastung (0 = 0,975):</value>
+  </data>
+  <data name="PVM_DLG_KOPF_EINFACH" xml:space="preserve">
+    <value>Die Anlage rechnet im Modell Einfach. Die Felder sind deshalb gesperrt - sie wirken erst im Modell Erweitert.</value>
+  </data>
+  <data name="PVM_DLG_KOPF_ERWEITERT" xml:space="preserve">
+    <value>Angaben zum Wechselrichter dieser Anlage. 0 heißt jeweils: nicht gepflegt.</value>
+  </data>
+  <data name="PVM_DLG_NENNLEISTUNG" xml:space="preserve">
+    <value>AC-Nennleistung [kW] (0 = kein Clipping):</value>
+  </data>
+  <data name="PVM_DLG_NENNLEISTUNG_TIP" xml:space="preserve">
+    <value>Dauerleistung des Wechselrichters auf der Wechselstromseite. Sie begrenzt die Einspeisung (Clipping) und ist die Bezugsgröße der Teillastkennlinie.</value>
+  </data>
+  <data name="PVM_DLG_OK" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="PVM_DLG_TITEL" xml:space="preserve">
+    <value>Wechselrichter — {0}</value>
+  </data>
+  <data name="PVM_MODELL_EINFACH" xml:space="preserve">
+    <value>Einfach</value>
+  </data>
+  <data name="PVM_MODELL_ERWEITERT" xml:space="preserve">
+    <value>Erweitert</value>
+  </data>
+  <data name="PVM_MODUL_LABEL_TECHNOLOGIE" xml:space="preserve">
+    <value>Zelltechnologie:</value>
+  </data>
+  <data name="PVM_MODUL_TIP_TECHNOLOGIE" xml:space="preserve">
+    <value>Zelltechnologie des Moduls. Sie wählt im Modell Erweitert den Schwachlicht-Koeffizientensatz; für Dünnschicht und Sonstige gibt es keinen, dort gilt die Modulformel des einfachen Modells.</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_A_SI" xml:space="preserve">
+    <value>Dünnschicht / a-Si</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_C_SI" xml:space="preserve">
+    <value>Kristallines Silizium (mono/poly)</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_CDTE" xml:space="preserve">
+    <value>Cadmiumtellurid (CdTe)</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_CIS" xml:space="preserve">
+    <value>CIS / CIGS</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_LEER" xml:space="preserve">
+    <value>(nicht gepflegt)</value>
+  </data>
+  <data name="PVM_TECHNOLOGIE_SONSTIGE" xml:space="preserve">
+    <value>Sonstige</value>
+  </data>
+  <data name="SIM_KARTE_PV_MODELL_DCAC" xml:space="preserve">
+    <value>Modell erweitert · DC/AC {0}</value>
+  </data>
+  <data name="SIM_KARTE_PV_MODELL_ERWEITERT" xml:space="preserve">
+    <value>Modell erweitert · ohne AC-Nennleistung</value>
   </data>
   <data name="PVIMP_ALLE" xml:space="preserve">
     <value>(alle)</value>
@@ -9652,6 +9754,97 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   </data>
   <data name="SIM_KARTE_TIP_MODUL" xml:space="preserve">
     <value>Der Rang gilt dem Erzeugertyp. Dieses Projekt führt {0} Anlagen dieses Typs — jede hat ihre eigene Karte.</value>
+  </data>
+  <data name="PDLG_TITEL" xml:space="preserve">
+    <value>Projekte löschen</value>
+  </data>
+  <data name="PDLG_HINWEIS" xml:space="preserve">
+    <value>Wählen Sie die zu löschenden Projekte per Häkchen. Ein Stammprojekt nimmt seine Varianten mit. Das Löschen ist unwiderruflich.</value>
+  </data>
+  <data name="PDLG_ALLE" xml:space="preserve">
+    <value>Alle sichtbaren auswählen</value>
+  </data>
+  <data name="PDLG_KEINE" xml:space="preserve">
+    <value>Auswahl aufheben</value>
+  </data>
+  <data name="PDLG_SICHERUNG" xml:space="preserve">
+    <value>Sicherungskopie der Datenbank vor dem Löschen anlegen</value>
+  </data>
+  <data name="PDLG_LOESCHEN" xml:space="preserve">
+    <value>Löschen…</value>
+  </data>
+  <data name="PDLG_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="PDLG_VARIANTE" xml:space="preserve">
+    <value>Variante</value>
+  </data>
+  <data name="PDLG_WEITERE" xml:space="preserve">
+    <value>… und {0} weitere</value>
+  </data>
+  <data name="PDLG_RUECKFRAGE" xml:space="preserve">
+    <value>{0} Projekt(e) werden mit allen zugehörigen Daten unwiderruflich gelöscht:
+
+{1}
+Fortfahren?</value>
+  </data>
+  <data name="PDLG_ERFOLG" xml:space="preserve">
+    <value>{0} Projekt(e) gelöscht.</value>
+  </data>
+  <data name="PDLG_FEHLER" xml:space="preserve">
+    <value>Fehler bei:
+{0}</value>
+  </data>
+  <data name="PDLG_SICHERUNG_FEHLER" xml:space="preserve">
+    <value>Die Sicherungskopie konnte nicht angelegt werden:
+{0}
+
+Trotzdem löschen?</value>
+  </data>
+  <data name="PA_AUSGEWAEHLT" xml:space="preserve">
+    <value>{0} ausgewählt</value>
+  </data>
+  <data name="PA_VARIANTE_VON" xml:space="preserve">
+    <value>Variante von: {0}</value>
+  </data>
+  <data name="WZP_PFLICHT" xml:space="preserve">
+    <value>(* = Pflichtfeld)</value>
+  </data>
+  <data name="WZP_NAME_LEER" xml:space="preserve">
+    <value>Bitte einen Projektnamen eingeben.</value>
+  </data>
+  <data name="WZP_NAME_VORHANDEN" xml:space="preserve">
+    <value>Ein Projekt mit diesem Namen existiert bereits.</value>
+  </data>
+  <data name="WZP_KLIMA_LEER" xml:space="preserve">
+    <value>Bitte eine Klimaregion wählen.</value>
+  </data>
+  <data name="WZP_BESCHREIBUNG_HINT" xml:space="preserve">
+    <value>Kurzbeschreibung: Vorhaben, Standort, Besonderheiten …</value>
+  </data>
+  <data name="PV_ANLAGE_LABEL_SYSTEMVERLUSTE" xml:space="preserve">
+    <value>Systemverluste [%]:</value>
+  </data>
+  <data name="PV_ANLAGE_LABEL_WRWIRKUNGSGRAD" xml:space="preserve">
+    <value>WR-Wirkungsgrad:</value>
+  </data>
+  <data name="PV_ANLAGE_TIP_SYSTEMVERLUSTE" xml:space="preserve">
+    <value>Verluste der Anlage außerhalb des Moduls (Verschmutzung, Mismatch, DC-Verkabelung) in Prozent.
+Leer bedeutet 0 % und ändert am Ergebnis nichts.</value>
+  </data>
+  <data name="PV_ANLAGE_TIP_WRWIRKUNGSGRAD" xml:space="preserve">
+    <value>Wirkungsgrad des Wechselrichters als Faktor zwischen 0 und 1.
+Leer bedeutet 0,95 — der Wert, mit dem die Simulation bisher fest gerechnet hat.</value>
+  </data>
+  <data name="PV_MODUL_FELD_TNOCT" xml:space="preserve">
+    <value>Zelltemperatur NOCT</value>
+  </data>
+  <data name="PV_MODUL_LABEL_TNOCT" xml:space="preserve">
+    <value>Zelltemperatur NOCT:</value>
+  </data>
+  <data name="PV_MODUL_TIP_TNOCT" xml:space="preserve">
+    <value>Nominal Operating Cell Temperature nach Datenblatt, üblich 42 bis 48 °C.
+Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C.</value>
   </data>
   <data name="ALLG_BTN_ABBRECHEN" xml:space="preserve">
     <value>Abbrechen</value>

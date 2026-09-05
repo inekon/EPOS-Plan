@@ -116,6 +116,12 @@ namespace WindowsFormsApplication1
         public const string TAB_PV_STAMM = "Tab_PV_STAMM";
 
         /// <summary>
+        /// Die PROJEKTKOPIE des Modulkatalogs (<c>PhotovoltaikCtrl.CopyFromStamm</c>) -
+        /// die Tabelle, aus der <c>SimulationPV</c> die Modulwerte liest.
+        /// </summary>
+        public const string TAB_PV = "Tab_PV";
+
+        /// <summary>
         /// Die gespeicherte Access-Abfrage „Projektwert vor Katalogwert" für Heiz- und
         /// Brennwert (vier Lesestellen: <c>KostenEmissionRechner</c>,
         /// <c>WirtschaftlichkeitCtrl</c>, <c>UcBkKosten</c>, <c>EnergieMengen</c>).
@@ -1154,6 +1160,156 @@ namespace WindowsFormsApplication1
         {
             new SchemaSpalte(TAB_ERGEBNISBHKWMODUL,       SPALTE_MODUL_HILFSENERGIE, "DOUBLE"),
             new SchemaSpalte(TAB_ERGEBNISHEIZKESSELMODUL, SPALTE_MODUL_HILFSENERGIE, "DOUBLE"),
+        };
+
+        /// <summary>
+        /// Wechselrichter-Wirkungsgrad dieser PV-ANLAGE (0…1), Stufe E1.3 des
+        /// <c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c>.
+        ///
+        /// <b>NULL = 0,95</b> — genau der Faktor, den <c>SimulationPV.Berechnung</c> bis
+        /// Paket A fest verdrahtet hatte. Kein DDL-DEFAULT: Der Vorgabewert ist eine
+        /// Fachannahme und steht deshalb im Code (Hausregel „kein DDL-DEFAULT auf
+        /// Fachwerten"), nicht im Schema.
+        /// </summary>
+        public const string SPALTE_EA_PV_WR_WIRKUNGSGRAD = "PV_WrWirkungsgrad";
+
+        /// <summary>
+        /// Systemverluste dieser PV-ANLAGE [%] (Verschmutzung, Mismatch, DC-Verkabelung),
+        /// Stufe E1.3. <b>NULL = 0</b> — der Wert, der nichts ändert; eine
+        /// Bestandsdatenbank rechnet nach der Migration bitgleich weiter.
+        /// </summary>
+        public const string SPALTE_EA_PV_SYSTEMVERLUSTE = "PV_Systemverluste";
+
+        /// <summary>
+        /// Schritt 63 der Migration — die beiden PV-Anlagenparameter an
+        /// <c>Tab_Energieanlagen</c> (Konzept PV-Ertragsmodell, Stufe E1.3).
+        ///
+        /// <b>KEIN DML, und das ist die Ergebnisneutralität.</b> Beide Spalten bleiben
+        /// nach <c>ADD COLUMN</c> NULL, und NULL ist bei beiden der Wert, der nichts
+        /// ändert (0,95 bzw. 0 %) — der Rechenkern liefert danach dieselben Zahlen wie
+        /// vorher.
+        ///
+        /// <b>Anders als bei <see cref="Schritt61_SteuerJeAnlage"/> steht dieser Schritt
+        /// in <see cref="Alle"/>.</b> Das Kriterium ist der LESER, nicht die Tabelle: Der
+        /// RECHENKERN liest beide Spalten (<c>SimulationPV.Berechnung</c>). Fehlt eine
+        /// davon, rechnet der Lauf zwar weiter (der Leser ist tolerant, NULL und fehlende
+        /// Spalte sind derselbe Fall), aber die Rückfallebene soll sie genau deshalb
+        /// anlegen — sie ist für die Spalten der Eingabeseite da, die die Simulation
+        /// braucht.
+        ///
+        /// <b>Ordinalposition.</b> <c>Tab_Energieanlagen</c> wird ausschließlich
+        /// namensbasiert gelesen; das Anhängen ist gefahrlos (dieselbe Begründung wie bei
+        /// Schritt 61).
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt63_PvAnlagenparameter =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WR_WIRKUNGSGRAD, "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_SYSTEMVERLUSTE,  "DOUBLE"),
+        };
+
+        // =============================================================================
+        // PAKET B des PV-Ertragsmodells (Stufe E2) - Migrationsschritt 63
+        // =============================================================================
+
+        /// <summary>
+        /// Das RECHENMODELL dieser PV-Anlage (Konzept N2.1):
+        /// <see cref="DbWerte.PV_MODELL_EINFACH"/> oder
+        /// <see cref="DbWerte.PV_MODELL_ERWEITERT"/>.
+        ///
+        /// <b>NULL = EINFACH</b> - der Paket-A-Rechenweg, Zeichen fuer Zeichen. Genau
+        /// das ist die Zusage des Pakets B: Das vereinfachte Modell bleibt vollwertig
+        /// waehlbar, und eine Bestandsanlage rechnet nach der Migration bitgleich
+        /// weiter. Kein DDL-DEFAULT (Hausregel „kein DDL-DEFAULT auf Fachwerten").
+        /// </summary>
+        public const string SPALTE_EA_PV_MODELL = "PV_Modell";
+
+        /// <summary>
+        /// AC-Nennleistung des Wechselrichters dieser Anlage [kW] (E2.1).
+        /// <b>NULL = kein Clipping</b> - die Auslastung der Kennlinie bezieht sich dann
+        /// auf die DC-Nennleistung der Anlage.
+        /// </summary>
+        public const string SPALTE_EA_PV_WR_NENNLEISTUNG = "PV_WrNennleistungKw";
+
+        /// <summary>Wirkungsgrad des Wechselrichters bei 10 % AC-Nennleistung (0…1),
+        /// E2.2. <b>NULL = 0,94</b> (typischer Stringwechselrichter).</summary>
+        public const string SPALTE_EA_PV_WR_ETA10 = "PV_WrEta10";
+
+        /// <summary>Wirkungsgrad bei 50 % AC-Nennleistung; <b>NULL = 0,975</b>.</summary>
+        public const string SPALTE_EA_PV_WR_ETA50 = "PV_WrEta50";
+
+        /// <summary>Wirkungsgrad bei 100 % AC-Nennleistung; <b>NULL = 0,97</b>.</summary>
+        public const string SPALTE_EA_PV_WR_ETA100 = "PV_WrEta100";
+
+        /// <summary>
+        /// Zelltechnologie des Moduls (<c>Tab_PV</c> und <c>Tab_PV_STAMM</c>), Werte
+        /// <see cref="DbWerte.PV_TECHNOLOGIE_C_SI"/> und Geschwister (E2.3).
+        ///
+        /// <b>NULL = unbekannt</b> - das ERWEITERTE Modell faellt dann auf die
+        /// EINFACH-Modulformel zurueck und sagt es im Protokoll; fuer <c>A_SI</c> und
+        /// <c>SONSTIGE</c> gibt es keine Huld-Koeffizienten, dort gilt dieselbe
+        /// Rueckfallebene.
+        /// </summary>
+        public const string SPALTE_PV_TECHNOLOGIE = "Technologie";
+
+        /// <summary>
+        /// Jaehrliche Leistungsdegradation der PV-Anlagen des Projekts [%/a]
+        /// (<c>Tab_ProjektPhotovoltaik</c>, E2.4).
+        ///
+        /// <b>NULL = 0</b> - „der Vorgabewert ist der, der nichts aendert"; die
+        /// Erloesreihe bleibt damit identisch zum P6-Stand. Beim ANLEGEN einer neuen
+        /// Zeile belegt <c>ProjektPhotovoltaikCtrl</c> mit 0,5 vor (Muster N5/F5).
+        /// </summary>
+        public const string SPALTE_PPV_DEGRADATION = "Degradation";
+
+        /// <summary>
+        /// Schritt 64 der Migration, ERSTER TEIL: die Spalten, die der RECHENKERN liest
+        /// (Konzept PV-Ertragsmodell, Nachtrag 2 - Paket B).
+        ///
+        /// <b>KEIN DML, und das ist wieder die Ergebnisneutralitaet.</b> Alle sechs
+        /// Spalten bleiben nach <c>ADD COLUMN</c> NULL. NULL heisst bei
+        /// <see cref="SPALTE_EA_PV_MODELL"/> „Modell EINFACH", also der Paket-A-Weg,
+        /// und die uebrigen fuenf wirken ausschliesslich im Modell ERWEITERT. Eine
+        /// Bestandsdatenbank rechnet nach der Migration bitgleich weiter - das ist das
+        /// zentrale Abnahmekriterium des Pakets (Konzept N2.5, Kriterium 1).
+        ///
+        /// <b>Warum in <see cref="Alle"/>.</b> Dasselbe Kriterium wie bei
+        /// <see cref="Schritt63_PvAnlagenparameter"/>: der LESER. <c>SimulationPV</c>
+        /// liest die fuenf Anlagenspalten und - ueber <c>PhotovoltaikCtrl</c> - die
+        /// Technologie der PROJEKTKOPIE <c>Tab_PV</c>. Die Stammtabelle und die
+        /// Degradation stehen deshalb im zweiten Teil
+        /// (<see cref="Schritt64_PvStammUndDegradation"/>) und NICHT in
+        /// <see cref="Alle"/>.
+        ///
+        /// <b>Ordinalposition.</b> Beide Tabellen werden namensbasiert gelesen
+        /// (<c>WErzeugerCtrl.AusZeile</c>, <c>PhotovoltaikCtrl.ReadSingle</c> pruefen
+        /// <c>Columns.Contains</c>); das Anhaengen ist gefahrlos.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt64_PvModellwahl =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_MODELL,          "TEXT(20)"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WR_NENNLEISTUNG, "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WR_ETA10,        "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WR_ETA50,        "DOUBLE"),
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WR_ETA100,       "DOUBLE"),
+            new SchemaSpalte(TAB_PV,             SPALTE_PV_TECHNOLOGIE,        "TEXT(30)"),
+        };
+
+        /// <summary>
+        /// Schritt 64, ZWEITER TEIL: die Spalten, die der Rechenkern NICHT liest -
+        /// die Technologie des STAMMkatalogs (Quelle der Projektkopie, gepflegt ueber
+        /// <c>Form_AdminPV</c> und die Importe) und die Degradation der
+        /// Wirtschaftlichkeit (<c>PvErloesRechner</c>).
+        ///
+        /// Sie stehen bewusst NICHT in <see cref="Alle"/> - wortgleiche Begruendung wie
+        /// bei <see cref="Schritt61_SteuerJeAnlage"/>: „der Grund ist der LESER, nicht
+        /// die Tabelle". Beide Leser sind tolerant (fehlende Spalte = NULL = Vorgabe),
+        /// und die Rueckfallebene laeuft bei jedem Simulationsstart, wo diese beiden
+        /// Spalten nichts zu suchen haben.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt64_PvStammUndDegradation =
+        {
+            new SchemaSpalte(TAB_PV_STAMM,            SPALTE_PV_TECHNOLOGIE,   "TEXT(30)"),
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_DEGRADATION,  "DOUBLE"),
         };
 
         /// <summary>
@@ -3462,6 +3618,25 @@ namespace WindowsFormsApplication1
         /// Ergebnistabellen. Für die zwei Ergebnisspalten gibt es die eigene, tolerante
         /// Vorsorge unmittelbar vor dem Schreiben
         /// (<c>ErgebnisCtrl.StelleModulSpaltenSicher</c>).
+        ///
+        /// <see cref="Schritt63_PvAnlagenparameter"/> ist dagegen AUFGEFÜHRT, obwohl seine
+        /// Spalten wie die des Schritts 61 an <c>Tab_Energieanlagen</c> hängen — weil hier
+        /// das Kriterium erfüllt ist, an dem Schritt 61 scheitert: <b>Der Rechenkern liest
+        /// die Spalten</b> (<c>SimulationPV.Berechnung</c> holt Wechselrichter-Wirkungsgrad
+        /// und Systemverluste je Anlagenzeile). Damit gilt dieselbe Linie wie bei
+        /// <see cref="Schritt13_Mindestfuellstand"/>.
+        ///
+        /// <see cref="Schritt64_PvModellwahl"/> ist aus demselben Grund aufgeführt: Der
+        /// Rechenkern liest die Modellwahl, die drei Kennlinienpunkte, die
+        /// AC-Nennleistung und die Technologie der PROJEKTKOPIE <c>Tab_PV</c>.
+        /// <see cref="Schritt64_PvStammUndDegradation"/> dagegen NICHT — die
+        /// Stammtabelle des Katalogs und die Degradation der Wirtschaftlichkeit liest
+        /// der Rechenkern nirgends.
+        ///
+        /// <b>Reihenfolge:</b> Die Rückfallebene liest das Tabellenschema neu, sobald
+        /// der Tabellenname wechselt (<c>WaermequelleClass.SchemaSicherstellen</c>).
+        /// Einträge derselben Tabelle stehen deshalb beieinander — Schritt 64 beginnt
+        /// mit <c>Tab_Energieanlagen</c> und schließt damit unmittelbar an Schritt 63 an.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
@@ -3474,6 +3649,8 @@ namespace WindowsFormsApplication1
                 foreach (SchemaSpalte s in Schritt8_Energietraeger) yield return s;
                 foreach (SchemaSpalte s in Schritt11_Stromspeicher) yield return s;
                 foreach (SchemaSpalte s in Schritt13_Mindestfuellstand) yield return s;
+                foreach (SchemaSpalte s in Schritt63_PvAnlagenparameter) yield return s;
+                foreach (SchemaSpalte s in Schritt64_PvModellwahl) yield return s;
             }
         }
     }
