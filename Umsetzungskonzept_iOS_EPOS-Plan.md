@@ -1690,6 +1690,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > darunter der `projekt`-CSV-Vergleich eines neu angelegten und eines bearbeiteten Projekts Feld für Feld gegen den Stand
 > `vor-W16` (R‑W16‑6, nur auf Windows). Der einundzwanzigste iOS-Lauf (33890882150) auf diesem Stand ist grün — erstmals
 > mit dem Assistenten hinter `AssistentGaben` in der `AppWurzel` (N9; iOS setzt die Gaben noch nicht um, W16a‑O‑4).
+> **Windows-Abnahme 05.09.2026 (PDF S. 6), zwei Befunde (`974c198`, Protokoll § 12):** **W16a‑B‑1** — die Weiche
+> „Profil/Ganglinie" stand als eigener Kasten unter der Solarthermiekarte des Erzeugerreiters; sie sitzt jetzt in
+> deren Rahmen, weil nur noch diese Kachel den Wirt bekommt und der den Kartenrahmen trägt (über das Markup ginge es
+> nicht — eine Kachel ist ein `<button>`, der keine Optionsfelder enthalten darf), Klickziel und Tastaturweg
+> unverändert. **W16a‑B‑2** — der Parametersatz einer Assistentenseite wird beim Betreten geholt und nicht mehr bei
+> jedem Neuzeichnen (Herleitung im W9-Protokoll § 12.1, Befund W9‑B‑1).
 
 > **Statusblock iU9 — Welle 15c umgesetzt (04.09.2026, Basis `f71853b` nach W15b, zusammengeführt mit `5a73fd6` nach den W15b-Entscheiden)**
 >
@@ -1865,6 +1871,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Speichern unter (Fortschritt, Abbrechen, Dublette „Muster" neben „Musterprojekt"), **Export→Import-Rundreise mit
 > Variantenpaket und Sicherung samt Kennzahlenvergleich** (der Import war bis hierher unbenutzbar), Assistent vor und
 > zurück, de/en, 125 %. Der siebzehnte iOS-Lauf (33867643966) auf diesem Stand ist grün.
+> **Windows-Abnahme 05.09.2026 (PDF S. 4), Befund W15a‑B‑1 (`974c198`, Protokoll § 13):** in „Speichern unter"
+> lag die Spalte „Geändert" hinter dem waagerechten Rollbalken — der Umbruch der zwei Spalten kam erst bei 780 px,
+> und die Hausregel `white-space: nowrap` trieb die Tabelle über die Spaltenbreite. Der Umbruch kommt jetzt bei
+> 1 100 px (Liste über die volle Breite, Formular darunter), Name und Kunde brechen um, das Datum bleibt einzeilig
+> mit fester Breite und kulturabhängigem Kurzformat. `ProjektWahlDialog` war nicht betroffen, `ProjektTransferDialog`
+> führt keine Projektliste (W15a‑O‑2).
 
 > **Statusblock iU9 — Welle 14c umgesetzt (04.09.2026, Basis `4e77221` nach W14a/W14b, zusammengeführt mit `809fe41`)**
 >
@@ -2318,6 +2330,20 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Anwenderentscheid W9‑O‑3c:** eine im Projekt geänderte Kopie wird in der Vorschau weiter mit der Katalogverteilung
 > gezeigt (Brauchwasser 1007: Januar 1,900 statt 0,552 MWh bei gleicher Jahressumme); Kopie zuerst brächte Vorschau
 > und Lauf zur Deckung, ändert aber angezeigte Zahlen — bewusst nicht nebenbei entschieden.
+> **Windows-Abnahme 05.09.2026 (PDF S. 1–2), drei Befunde behoben (`974c198`, Protokoll § 12):** **W9‑B‑1** — das
+> im Projekt gespeicherte Gebäude stand unmarkiert in der Liste, weil `AssistentSeite` den Parametersatz der
+> stehenden Seite bei **jedem Neuzeichnen** neu zog (die Hüllen bauen dabei eine neue Anzeigeliste — der lebenden
+> Komponente wurde die Liste unter den Füßen getauscht) und `GebaeudeDialog` seine Markierung an der
+> Objektgleichheit festmachte; der Seiteninhalt wird jetzt beim **Betreten** geholt und gemerkt (wie
+> `WizardParent.Next/Back`), die Markierung läuft über die `IdZ` und wird bei einem Listenwechsel nachgezogen.
+> **W9‑B‑2** — „Liste zu lang": jede Rasterliste steht seither in einem festen Rahmen mit Rollbalken
+> (`--epos-listenhoehe` 22 rem an `.epos-raster-huelle`, stehender Spaltenkopf, Parameter `Begrenzt`, Rückweg
+> `--frei`); Anwenderregel, in `EPOS.UI/CLAUDE.md` festgehalten, gilt für Gebäude, Wärmebedarf extern,
+> Bedarfsprofile, Gebäudetyp, Stromganglinien, Solarkollektoren, Wärmepumpe, die vier Katalogverwaltungen und die
+> Projektdialoge. **W9‑B‑3** — die zwei Richtungsknöpfe des Gebäude-Dialogs tragen Beschriftung und Kurztext in
+> beiden Sprachen, das Zeichen zeigt in die Wanderrichtung; das Anordnungsschema selbst ist der Anwenderentscheid
+> **#76 („Empfehlung": altes Schema nebeneinander, Umbruch auf schmalem Schirm)** und folgt als eigene Welle, die
+> zwei Geschwisterdialoge stehen als W9‑O‑8 offen. 21 bunit-Wachen; Abnahmepunkte A‑W9‑B‑1…B‑3.
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
