@@ -30,6 +30,14 @@
      Blatt.
    - BERUEHRUNG: Die Knoepfe sind 44 px hoch (epos-reiter-knopf) - dieselbe
      Mindestgroesse wie die uebrigen Bedienelemente (M2/iL4).
+   - ZWEI BAUARTEN DER SPERRE (Anwenderwunsch W16b-E-6, 05.09.2026). Bedienbar
+     = false sperrt HART: <button disabled>, so wie seit W5.0. Nennt das Blatt
+     dazu einen Sperrgrund, sperrt es WEICH: Der Knopf bleibt ein Knopf, traegt
+     aria-disabled und den Grund als title, und der Versuch meldet sich beim
+     Wirt als Verweigert. Der Unterschied ist nicht Kosmetik - ein
+     disabled-Knopf nimmt keine Zeigerereignisse an, zeigt deshalb auch keinen
+     Tooltip und laesst die Sprachausgabe "nicht verfuegbar" ohne Grund sagen.
+     Wer erklaeren will, warum etwas noch nicht geht, braucht die weiche Sperre.
 
    DER ZUSTAND GEHOERT DEM WIRT. Aktiv/AktivChanged sind ein Bindepaar; ohne
    Vorgabe steht das erste angemeldete Blatt vorn. So kann der Wirt den Reiter
@@ -49,7 +57,9 @@
                     aria-selected="@(IstAktiv(b.Schluessel) ? "true" : "false")"
                     aria-controls="@("blatt-" + b.Schluessel)"
                     tabindex="@(IstAktiv(b.Schluessel) ? 0 : -1)"
-                    disabled="@(!b.Bedienbar)"
+                    disabled="@HartGesperrt(b)"
+                    aria-disabled="@AriaGesperrt(b)"
+                    title="@Sperrtipp(b)"
                     @onclick="@(() => Waehlen(b.Schluessel))">@b.Titel</button>
         }
     </div>
@@ -75,6 +85,17 @@
 
     /// <summary>Beschriftung der Leiste fuer die Sprachausgabe.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "Reiter";
+
+    /// <summary>
+    /// Der VERSUCH, ein WEICH gesperrtes Blatt zu betreten - uebergeben wird
+    /// sein Schluessel (Anwenderwunsch <b>W16b-E-6</b>, 05.09.2026).
+    ///
+    /// <para>Weich gesperrt ist ein Blatt, das einen
+    /// <see cref="Reiterblatt.Sperrgrund"/> nennt; nur dann gibt es ueberhaupt
+    /// ein Ereignis. Ein hart gesperrter Knopf (<c>disabled</c>) feuert nicht
+    /// - das ist der Grund, warum es die zweite Bauart gibt.</para>
+    /// </summary>
+    [Parameter] public EventCallback<string> Verweigert { get; set; }
 
     /// <summary>Der tatsaechlich sichtbare Schluessel - Vorgabe oder erstes Blatt.</summary>
     public string AktiverSchluessel
@@ -106,7 +127,7 @@
         _neuAngemeldet = true;
     }
 
-    /// <summary>Ein Blatt hat Titel oder Bedienbarkeit geaendert.</summary>
+    /// <summary>Ein Blatt hat Titel, Bedienbarkeit oder Sperrgrund geaendert.</summary>
     internal void Aufgefrischt() => _neuAngemeldet = true;
 
     protected override void OnAfterRender(bool firstRender)
@@ -140,8 +161,39 @@
             ? "epos-reiter-knopf epos-reiter-knopf--aktiv"
             : "epos-reiter-knopf";
 
+    /// <summary>
+    /// HART gesperrt heisst <c>&lt;button disabled&gt;</c> - der Stand seit
+    /// W5.0 und die Vorgabe. Nennt das Blatt einen Sperrgrund, bleibt der Knopf
+    /// ein Knopf (weiche Sperre, W16b-E-6).
+    /// </summary>
+    private static bool HartGesperrt(Reiterblatt b)
+        => !b.Bedienbar && string.IsNullOrEmpty(b.Sperrgrund);
+
+    /// <summary>Die weiche Sperre traegt sie als ARIA-Zustand; die harte sagt <c>disabled</c>.</summary>
+    private static string? AriaGesperrt(Reiterblatt b)
+        => HartGesperrt(b) || b.Bedienbar ? null : "true";
+
+    /// <summary>
+    /// Der Grund am Knopf. Er ist zugleich die BESCHREIBUNG fuer die
+    /// Sprachausgabe: Ohne <c>aria-describedby</c> liest sie den <c>title</c>
+    /// als Beschreibung vor - ein Satz, EINE Wahrheit, kein zweites,
+    /// verstecktes Element im Markup.
+    /// </summary>
+    private static string? Sperrtipp(Reiterblatt b)
+        => b.Bedienbar || string.IsNullOrEmpty(b.Sperrgrund) ? null : b.Sperrgrund;
+
     private async Task Waehlen(string schluessel)
     {
+        // Weich gesperrt: Der Versuch ist ein EREIGNIS, kein Wechsel. Hart
+        // gesperrt kommt hier nie an - ein disabled-Knopf feuert nicht.
+        Reiterblatt? blatt = _blaetter.Find(
+            b => string.Equals(b.Schluessel, schluessel, StringComparison.Ordinal));
+        if (blatt is not null && !blatt.Bedienbar)
+        {
+            await Verweigert.InvokeAsync(schluessel);
+            return;
+        }
+
         if (IstAktiv(schluessel)) return;
         Aktiv = schluessel;
         await AktivChanged.InvokeAsync(schluessel);

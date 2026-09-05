@@ -14056,6 +14056,12 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="START_KLIMA_HINWEIS" xml:space="preserve">
     <value>Gilt für alle Berechnungen im Projekt</value>
   </data>
+  <data name="START_EINSTIEG" xml:space="preserve">
+    <value>Wählen Sie oben ein Projekt aus oder legen Sie unten ein neues an — die übrigen Bereiche öffnen sich danach.</value>
+  </data>
+  <data name="START_SPERRE_TIPP" xml:space="preserve">
+    <value>Erst nach der Projektwahl</value>
+  </data>
   <data name="START_BTN_WEITER" xml:space="preserve">
     <value>Weiter ▶</value>
   </data>
