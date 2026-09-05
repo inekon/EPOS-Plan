@@ -2303,6 +2303,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > als Überlagerung, Gebäudeverwaltung ohne Projektteil, Kanalwahl beim externen Wärmebedarf, die
 > drei Bedarfsblätter mit Simulation → Ergebnis → DB ändern/neu → Typ ändern, **Assistent Seiten 2–5
 > mit Speichermessung** (zehn WebViews), de/en, 125 %, Finger/Maus, Esc/Tab.
+> **Windows-Abnahme 05.09.2026 (PDF des Anwenders, S. 4–5), Befunde W9‑B‑4 (Prozesswärme) und W9‑B‑5
+> (Standardlastprofil), behoben in `490c48e`:** „Simulation bringt Ergebnis 0 (monatlicher Verlauf), Grafik
+> bleibt leer". **Nicht** die Einheit — der Regressionsverdacht auf W8‑O‑5/W9‑O‑3b ist ausgeschlossen
+> (`Energieeinheit.MWh.AusMWh` ist die Identität, kein DTO-Feld vertauscht) — sondern die **Namensauflösung**: die
+> Zuordnungen des Projekts tragen die Namen der **Projektkopien** (`Tab_*.Bezeichner`, in der Testdatenbank acht
+> mit Zusatz „(P‹Projekt›)"), die Vorschau des Bedarfsprofil-Dialogs schlug sie aber ausschließlich im
+> `_STAMM`-Katalog nach (Modus aus `list == null ? Projektrechnung : Katalogvorschau`, so seit V0‑4, kein
+> W8/W9-Regress) und übergeht Unbekanntes still — zwölf Nullmonate. `ProfilBedarf.Vorschaumodus(namen, idProjekt)`
+> hält die Regel einmal fest: ohne Liste Projektrechnung, mit Liste ohne Projekt Katalogvorschau, mit Liste **und**
+> Projekt die neue **Projektvorschau** — Katalog zuerst (jede heute richtige Zahl bleibt zeichengleich), Projektkopie
+> als Rückfall mit Kopf und Typprofil. Messung Projekt 1017: Vorschau 0 → 672 000,4 kWh. Zeuge zuerst rot, fünf
+> Wachen in `BedarfsProfilVorschauTests`, Referenzlauf byte-gleich (alle elf rechenbaren Basisprojekte). **Offener
+> Anwenderentscheid W9‑O‑3c:** eine im Projekt geänderte Kopie wird in der Vorschau weiter mit der Katalogverteilung
+> gezeigt (Brauchwasser 1007: Januar 1,900 statt 0,552 MWh bei gleicher Jahressumme); Kopie zuerst brächte Vorschau
+> und Lauf zur Deckung, ändert aber angezeigte Zahlen — bewusst nicht nebenbei entschieden.
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
@@ -2346,6 +2361,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > „Überschreiben“ nach „Speichern unter“, Tagwechsel im Typprofil verwirft nicht übernommene
 > Eingaben, stiller Kurvenübertrag im Gebäudetyp, fünf bzw. acht Kurvennamen nach Kurvenzahl,
 > de/en, 125 %, Finger/Maus, Esc/Enter je Dialog.
+> **Windows-Abnahme 05.09.2026, Befund W8‑B‑1 (`490c48e`):** Ergebnisdialog, Einheitenwahl und ChartRenderer
+> sind **entlastet** — die Nullreihe hinter „Prozesswärme/Standardlastprofil bringt 0, Grafik leer" entstand in der
+> Vorschau der Welle 9 (W9‑B‑4/B‑5, Namensauflösung der Projektkopien); die leeren Achsen 0–5 sind das korrekte
+> Bild einer Nullreihe (`MonatsSaeulen` mit `maxWert = 0`). Renderer unverändert, ChartProben 32/0.
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >
