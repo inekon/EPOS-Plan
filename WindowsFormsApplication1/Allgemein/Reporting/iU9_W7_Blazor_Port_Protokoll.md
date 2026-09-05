@@ -696,3 +696,70 @@ weiter. Er gewinnt allein durch das größere Fenster.
    Überlagerungsfenster mit Rollbalken, **nicht** über die ganze Höhe.
 3. „Kollektorganglinien" (Verwaltung) zeigt Liste und Einleseblock nebeneinander
    (W14b‑E‑9).
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P1 (iU8‑E‑2)
+
+Der Anwender am 05.09.2026: „Darstellung der Dialoge kompakter und übersichtlicher —
+Parameterblöcke rechts. Genauso für andere Dialoge prüfen." Die hausweite Regel steht im
+Protokoll **W14a**, Abschnitt „Kompaktes Formularraster"; hier stehen die **sechs Dialoge
+dieser Welle**. Umgestellt wird durch **Einhängen**: `<Formularraster>` um den vorhandenen
+Feldlauf, kein Feld umbenannt, kein Text geändert, keine Regel je Dialog; die von Hand
+gebauten `epos-feldpaar`-Wirte entfallen.
+
+| Datei | Felder | Gruppen (Raster) | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Waermepumpe/WaermepumpenKatalogDialog.razor` (W7.1) | 12 | **0 — bleibt** | — | **B: kein Formularblock.** Der `epos-zahlenraster` über der Liste ist eine **Filterzeile** (sieben Auswahlfelder, vier Grenzen, ein Suchtext) mit „Filtern"/„Zurücksetzen" darunter — keine Parameter eines Geräts, sondern Werkzeuge der Liste. Eine 12‑rem‑Beschriftungsspalte je Filter machte das Band doppelt so breit und die Liste darunter kürzer. Dieselbe Begründung wie bei der Fenstergröße weiter oben: „EINE Liste mit Filterzeile und ohne Detailblock daneben" |
+| `Dialoge/Waermepumpe/KennlinienEditorDialog.razor` (W7.2) | 3 | 1 — „Neue Stützstelle" | nein | **B:** Nur die Eingabegruppe geht in den Raster. Der **`Zeilenraster`** der Stützstellen und die **Neuzeile** neben der Vorlaufliste bleiben: Das sind Bearbeitungszeilen einer Tabelle, kein Formularblock — der Raster darf dort nicht hinein |
+| `Dialoge/Waermepumpe/WaermepumpeStammDialog.razor` (W7.3) | 10 | 1 — Stammdaten | nein | Klasse A, reines Einhängen. Der Block steht in der rechten Hälfte eines `epos-auswahlpaar`; der Raster misst **seine eigene** Breite und fällt dort von selbst auf eine Spalte |
+| `Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor` (W7.4) | 17 | 3 — Kenndaten, Auslegung, Spitzenlast | **ja** (Spitzenlast) | **B:** Kenndaten und Auslegung sind Feldläufe → Raster; **Kostenleiste** und **Knopfleiste** bleiben außerhalb, sie sind kein Feld. **Spitzenlast ist EINSPALTIG**: Der Block ist eine Regel, die sich von oben nach unten aufblättert (Heizstab → Sperrzeit mit ihren Grenzen → bivalenter Betrieb mit Betriebsart und Abschaltpunkt); zwei Spalten stellten den Schalter „Sperrzeit" neben den Schalter „Heizstab" und rissen die Reihenfolge auseinander |
+| `Dialoge/Solarthermie/SolarkollektorKatalogDialog.razor` (W7.6) | 14 | 2 — Bezeichnung, Technik | nein | Klasse A, reines Einhängen |
+| `Dialoge/Solarthermie/SolarkollektorenDialog.razor` (W7.7) | 8 | 2 — Modul, Kollektor | nein | Klasse A. Der Knopf „Übernehmen" bleibt unter dem Raster — er ist kein Feld |
+
+Die Feldzahl zählt Feldbausteine im Quelltext; der Modulblock der Projektmaske zeichnet über
+`@foreach` mehr Zeilen, als hier stehen.
+
+**Der `Einspaltig`-Rückweg ist damit zum ersten Mal fachlich begründet in Gebrauch.** Er
+heißt nicht „wie vorher": Die Beschriftung steht auch einspaltig **neben** dem Feld, nur die
+zweite Spalte entfällt.
+
+### Wachen
+
+Je Dialog ein bunit-Fall in der vorhandenen Testdatei: Der Block trägt
+`epos-formularraster` und es steht ein Feld darin; wo der Block ein Zahlenfeld mit Einheit
+führt (Kollektorkatalog, Wärmepumpen-Stammdaten, Anlage, Kennlinieneditor), zusätzlich, dass
+es sich als **kurzes** Feld meldet und die Einheit in **derselben** Feldzeile steht.
+
+### Abnahmepunkte am Gerät (100 / 125 / 150 %)
+
+1. „Administration Solarkollektoren": Beschriftung **neben** dem Feld, Zahlenfeld **kurz**,
+   Einheit **unmittelbar dahinter**; bei breitem Fenster zwei Feldpaare je Zeile.
+2. „Wärmepumpe" (Anlage), Block „Spitzenlast": Die Felder stehen **untereinander** in der
+   Reihenfolge des Vorläufers — Heizstab, Sperrzeit, von/bis, Nutzungszeit, bivalent,
+   Betriebsart, Abschaltpunkt —, jeder Satz dazwischen über die volle Breite.
+3. „Wärmepumpe" (Anlage), Block „Auslegung": Der Rücklaufvorschlag steht über **beide**
+   Spalten unter den zwei Feldern, nicht daneben.
+4. „Wärmepumpen-Stammdaten": Der rechte Block ist ohne Rollen ganz zu sehen.
+5. Kennlinieneditor: Die Gruppe „Neue Stützstelle" ist kompakt; die **Stützstellentabelle**
+   darüber und die **Neuzeile** neben der Vorlaufliste sehen aus wie vorher.
+6. „Wärmepumpen-Verwaltung" (Katalog): Die Filterzeile sieht **unverändert** aus — hier
+   greift der Raster bewusst nicht.
+7. Fenster schmal ziehen (< 900 CSS-px): Die Beschriftung fällt wieder **über** das Feld.
+
+### Nachtrag 05.09.2026 — der KOMPONENTENBLOCK (Anwenderfoto „Verwaltung BHKW")
+
+Der Anwender verlangt dasselbe für **alle** Masken, die Komponentendaten zeigen: „Prüfe
+das Gleiche mit anderen Komponenten zur Darstellung der Komponentendaten." Die Regel steht
+im Protokoll **W6**, Abschnitt „der KOMPONENTENBLOCK": `Textfeld` meldet sich mit `Kurz`
+als kurzes Feld, und `ErzeugerDetail.IstZahl(wert)` entscheidet an EINER Stelle, welches
+Anzeigefeld das ist — die Probe hängt am Wert, nicht an der Beschriftung.
+
+| Dialog | Der Komponentenblock jetzt |
+|---|---|
+| `Solarthermie/SolarkollektorenDialog.razor` (W7.7) | **Modul:** Name und die Detailfelder im Raster, die **Zahlen kurz**. **Kollektor:** Modulanzahl (kurz), Gesamt-Aperturfläche als **kurzes Anzeigefeld**, Neigung, Azimut, Vorlauf °C, Rücklauf °C — sechs kurze Felder, also drei Zeilen zu zweit statt sechs untereinander; der Knopf „Übernehmen" bleibt darunter |
+| `Waermepumpe/WaermepumpeAnlageDialog.razor` (W7.4) | **Kenndaten:** Beschreibung (Feldspalte), Hersteller und Typ, Regelung und **Baujahr (kurz)**, **Nennleistung (kurz)** und Heizstabsleistung kW (kurz); darunter unverändert Kostenzeile und der Knopf zu den Stammdaten. **Auslegung:** Vorlauf (Auswahlfeld) und Rücklauf °C (kurz), darunter der Rücklaufvorschlag über beide Spalten. **Spitzenlast:** einspaltig, weil der Block eine Reihenfolge trägt |
+| `Waermepumpe/WaermepumpeStammDialog.razor` (W7.3) | unverändert aus dem Hauptabschnitt: zehn Felder im Raster, die vier Zahlenfelder kurz mit Einheit |
+| `Waermepumpe/KennlinienEditorDialog.razor` (W7.2) | unverändert: nur „Neue Stützstelle" im Raster (drei kurze Felder), Tabelle und Neuzeile bleiben |
+| `Solarthermie/SolarkollektorKatalogDialog.razor` (W7.6) | unverändert: Katalogeditor, alle vierzehn Felder im Raster |
+
+Der `WaermepumpenKatalogDialog` (W7.1) bleibt aus demselben Grund wie oben außen vor: Seine
+zwölf Felder sind eine **Filterzeile** über einer Liste, keine Komponentendaten.

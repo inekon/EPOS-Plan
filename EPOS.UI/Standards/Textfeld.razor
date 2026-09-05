@@ -13,7 +13,14 @@
    Feld LANG ist: Es spannt dort ueber beide Spalten, statt neben einem kurzen
    Zahlenfeld zu stehen. Im Vorbild war die Beschreibung 250 x 48 px - zwei
    Zeilen hoch und so breit wie der ganze Block (Form_AdminPV). Ausserhalb
-   eines Formularrasters aendert die Klasse nichts. *@
+   eines Formularrasters aendert die Klasse nichts.
+
+   epos-feld--kurz ist die Gegenrichtung (Kurz, iU8-E-2 Paket P1, Anwenderfoto
+   "Verwaltung BHKW" vom 05.09.2026): Ein NUR ANZEIGENDES Textfeld, in dem eine
+   Zahl steht - "290" hinter "thermische Leistung [kWth]:" - ist so kurz wie
+   ein Zahlenfeld und braucht keine halbe Blockbreite. Dasselbe Klassenpaar,
+   dieselbe Regel im Stilblatt; das Feld selbst bleibt ein Textfeld, weil der
+   Wert FERTIG FORMATIERT hereinkommt und hier nicht gerechnet wird. *@
 @if (Mehrzeilig)
 {
     <label class="epos-feld epos-feld--breit">
@@ -28,7 +35,7 @@
 }
 else
 {
-    <label class="epos-feld">
+    <label class="epos-feld@(Kurz ? " epos-feld--kurz" : "")">
         @if (!string.IsNullOrEmpty(Bezeichnung))
         {
             <span class="epos-feld-text">@Bezeichnung</span>
@@ -65,6 +72,15 @@ else
 
     /// <summary>Sichtbare Zeilen im mehrzeiligen Feld; ohne Wirkung sonst.</summary>
     [Parameter] public int Zeilen { get; set; } = 6;
+
+    /// <summary>
+    /// KURZES Feld: Im <c>Formularraster</c> bekommt die Eingabe die
+    /// Kurzfeldbreite und ein Nachbarfeld darf daneben stehen — für
+    /// Anzeigefelder, in denen eine Zahl steht (thermische Leistung,
+    /// Baujahr, Summe). Ohne Wirkung außerhalb eines Rasters und im
+    /// mehrzeiligen Feld, das sich als LANG meldet.
+    /// </summary>
+    [Parameter] public bool Kurz { get; set; }
 
     /// <summary>
     /// Feste Zeichenbreite (Schreibmaschinenschrift) im mehrzeiligen Feld -
