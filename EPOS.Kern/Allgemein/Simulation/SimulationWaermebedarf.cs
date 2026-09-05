@@ -865,13 +865,16 @@ namespace WindowsFormsApplication1
                 //com.I_vector_init(ref prozesswerte);
                 WPPlan.Core.BhkwPlan.VectorInit(prozesswerte);
 
-                ProfilQuellmodus modus = (list == null) ? ProfilQuellmodus.Projektrechnung
-                                                        : ProfilQuellmodus.Katalogvorschau;
+                ProfilQuellmodus modus = ProfilBedarf.Vorschaumodus(list, m_ID_Projekt);
 
                 // F3: Die Projektrechnung folgt dem Klimadaten-Kalender, die Katalog-
                 // vorschau der Altkonvention - sie kennt kein Projekt und keine
                 // Klimaregion, und ihre Kurven sollen zwischen zwei Katalogeinträgen
-                // vergleichbar bleiben.
+                // vergleichbar bleiben. Die Projektvorschau (W9-B-4/B-5) bleibt bei der
+                // Altkonvention: WochentagJan1 entsteht erst IN Waermebedarf_berechnen
+                // aus den geladenen Klimadaten, die der Dialog nie laedt - der Wert
+                // waere hier ohnehin die Altkonvention. Damit ist der Kalender dieses
+                // Weges unveraendert.
                 int wochentag = (modus == ProfilQuellmodus.Projektrechnung)
                                 ? WochentagJan1 : ProfilBedarf.WOCHENTAG_ALTKONVENTION;
 
@@ -921,8 +924,7 @@ namespace WindowsFormsApplication1
                 //com.I_vector_init(ref brauchwasserwerte);
                 WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
 
-                ProfilQuellmodus modus = (list == null) ? ProfilQuellmodus.Projektrechnung
-                                                        : ProfilQuellmodus.Katalogvorschau;
+                ProfilQuellmodus modus = ProfilBedarf.Vorschaumodus(list, m_ID_Projekt);
 
                 int wochentag = (modus == ProfilQuellmodus.Projektrechnung)
                                 ? WochentagJan1 : ProfilBedarf.WOCHENTAG_ALTKONVENTION;

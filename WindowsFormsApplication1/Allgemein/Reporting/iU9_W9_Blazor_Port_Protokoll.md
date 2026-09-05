@@ -518,3 +518,138 @@ vier Kontextmenü-Controller.
 `EPOS.Kern.Tests/FerienzeitTests.cs`,
 `EPOS.Kern.Tests/GebaeudeKatalogTests.cs`,
 `EPOS.Kern.Tests/ProjektlistenTests.cs`.
+
+---
+
+## Windows-Abnahme 05.09.2026 — Bedarfsrechnung
+
+> Kennungen abgestimmt mit dem parallelen Port der Assistenten- und
+> Projektdialoge, der **W9‑B‑1 … W9‑B‑3** führt. Beide Befunde dieses Abschnitts
+> haben **eine** Ursache und **eine** Behebung; sie stehen getrennt, weil der
+> Anwender sie an zwei Kacheln gesehen hat.
+
+### W9‑B‑4 — Prozesswärme: „Simulation bringt Ergebnis 0 (monatlicher Verlauf), Grafik bleibt leer"
+### W9‑B‑5 — Standardlastprofil: „gleich wie Prozesswärme"
+
+**Behoben mit `b8090b0`** (Kern), Zeuge `66c80b6`, auf dem Stand `d3abd94`.
+Der Ergebnisdialog selbst ist entlastet — siehe **W8‑B‑1** im Protokoll der
+Welle 8.
+
+**Meldung** (PDF „iOS_Migration_Probleme", S. 4–5). Kachel „Prozesswärme" →
+Dialog „Prozesswärme" → „Simulation…" → Überlagerung **Bedarfsergebnis**: Die
+zwölf Monatswerte stehen auf 0, das Bild „Prozesswärme [MWh]" zeigt leere Achsen
+0–5. Dasselbe an der Kachel **„Standardlastprofil"** (W9‑B‑5).
+
+**Nicht die Ursache: die Einheit.** Der Verdacht lag auf den beiden Nachträgen
+vom 04.09.2026 (W8‑O‑5 `e665c41`, W9‑O‑3 `a3906ca`) — eine doppelt angewandte
+Umrechnung kWh→MWh ergäbe 10⁻⁶ und damit gerundet 0. Sie ist es nicht:
+`ProzesssummeUebernehmen()` wird **genau einmal** gerufen
+(`BedarfsProfileHuelle`:398), `Energieeinheit.MWh.AusMWh` ist bitgleich die
+Identität, und der Prozesszweig rechnet mit dem Projekt 1041 der Testdatenbank
+korrekt 30 MWh und 2,548 MWh im Januar. Die Reihe ist nicht zu klein — **sie ist
+leer**.
+
+**Ursache: die Namensauflösung.** Der Dialog listet die Zuordnungen des Projekts,
+und ihre Namen kommen aus der **Projektkopie** — `Z_Projekt*Ctrl.LiesProjekt`
+liest `Tab_Prozesswaerme.Bezeichner` bzw. `Tab_Stromverbraucher.Bezeichner`, nicht
+`Z_Projekt_*.Bezeichner`. Eine Projektkopie heißt aber nicht zwingend wie ihr
+Katalogeintrag: In `Referenzlaeufe/Kenndaten_Test.sqlite` tragen **acht** von
+ihnen den Zusatz „ (P‹Projekt›)".
+
+Die Vorschau schlug diesen Namen bis hierher **ausschließlich im
+`_STAMM`-Katalog** nach. Der Grund ist die Ableitung, die in allen drei
+Bedarfszweigen stand:
+
+```csharp
+ProfilQuellmodus modus = (list == null) ? ProfilQuellmodus.Projektrechnung
+                                        : ProfilQuellmodus.Katalogvorschau;
+```
+
+Genau das nennt der Kopf von `ProfilQuellmodus` seit V0‑4 „zweierlei in einer
+Angabe": Ob eine **Namensliste** mitkommt, sagt nichts darüber, ob die Namen aus
+einem **Katalog** oder aus einem **Projekt** stammen. `KopfLesen` fand nichts, und
+weil die Katalogvorschau bewusst **still** übergeht („dort ist die Auswahl des
+Anwenders die Ursache, nicht die Projektdatenlage"), gab es nicht einmal eine
+Protokollwarnung. Übrig blieb eine Nullreihe — und an ihr hängen Kennzahl,
+Monatstabelle und Säulenbild gleichermaßen.
+
+Gemessen an Projekt 1017 (Zuordnung `EFH_3_Pers (P1017)`, W9‑B‑5):
+
+| Weg | Summe | Januar |
+|---|---|---|
+| Vorschau des Dialogs (Katalogvorschau) | **0** | **0,000** |
+| Projektlauf (`list == null`) | 672 000,4 kWh | 67,462 MWh |
+
+Eine Vorschau, die etwas anderes zeigt als der Lauf, ist keine.
+
+**Behebung.** Die Regel steht jetzt einmal, in
+`ProfilBedarf.Vorschaumodus(namen, idProjekt)`:
+
+| Aufruf | Modus | |
+|---|---|---|
+| ohne Liste | `Projektrechnung` | unverändert — hier hängt der Referenzlauf |
+| mit Liste, **ohne** Projekt | `Katalogvorschau` | unverändert — die drei Katalogverwaltungen |
+| mit Liste **und** Projekt | `Projektvorschau` | **neu** — der Bedarfsprofil-Dialog |
+
+`Projektvorschau` liest den **Katalog zuerst** und fällt für einen Namen, den der
+Katalog nicht kennt, auf die **Projektkopie** zurück (`ProfilQuelle.Rueckfall`).
+Beide Quellen sind nötig, weil die Liste des Dialogs **gemischt** ist: Eine
+gespeicherte Zuordnung trägt den Namen ihrer Projektkopie, eine eben erst
+aufgenommene Zeile den ihres Katalogeintrags — deren Kopie entsteht erst beim
+Speichern (`WizardCtrl.Add_Projekt_*` → `CopyFromStamm`).
+
+Der **Katalog kommt zuerst**, damit jede Zahl, die diese Vorschau heute zeigt,
+zeichengleich bleibt; der Rückfall greift nur dort, wo bisher eine Nullreihe
+stand. Wird er gezogen, liefert er **Kopf und Typprofil** — ihre Vermischung war
+der Befund V0‑4. Der Kalender bleibt bei der Altkonvention wie in der
+Katalogvorschau: `WochentagJan1` entsteht erst in `Waermebedarf_berechnen` aus
+den geladenen Klimadaten, die der Dialog nie lädt.
+
+**Die Grafik war nur die Folge.** `ChartRenderer.MonatsSaeulen` nimmt bei einer
+reinen Nullreihe `maxWert = 0`, bekommt daraus die Vorgabeskala 0–5 und zeichnet
+zwölf Säulen der Höhe 0 — genau das Bild des Bildschirmfotos. Der Renderer ist
+**unberührt** geblieben; `Proben/ChartProben` bleibt bei 32 Bildern und
+0 Verstößen.
+
+**Wache.** `EPOS.Kern.Tests/BedarfsProfilVorschauTests.cs`, fünf Fälle — drei auf
+dem Bestand rot (Projekt 1017 gegen den Projektlauf, seine zwölf Monatswerte, und
+dieselbe Ausprägung an der **Prozesswärme** über eine umbenannte Projektkopie),
+zwei als eingefrorene Wache: `Bekannte_Katalognamen_liefern_unveraenderte_Monatswerte`
+(Prozesswärme 1041, Brauchwasser 1007, Stromverbraucher 1024) und
+`Die_Katalogverwaltung_rechnet_unveraendert_ohne_Projekt`. Der schreibende Fall
+steht in einer eigenen Klasse — `TestDatenbank` gibt jeder Klasse ihre eigene
+Arbeitskopie.
+
+**Referenzlauf byte-gleich.** `EPOS.Referenzlauf lauf` + `vergleich` gegen
+`Referenzlaeufe/2026-08-30_B3-Kaskade`: **alle elf rechenbaren Projekte der Basis
+PASS** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042), dazu
+`diff -r` über die CSV-Ordner ohne Unterschied. 1011 und 1021 stehen nicht mehr in
+`Tab_Projekt` der Testdatenbank — das ist Bestand und unabhängig von dieser
+Änderung.
+
+**Abnahmepunkte (Windows).**
+
+| # | Weg | Erwartung |
+|---|---|---|
+| 1 | Projekt öffnen → Kachel **„Prozesswärme"** → Eintrag wählen → „Simulation…" | Reiter „Übersicht monatlich" zeigt **Werte ≠ 0**, Reiter „Grafik" zeigt eine **Säulenkurve** (W9‑B‑4) |
+| 2 | dort auf **kWh** umschalten und zurück auf **MWh** | Zahlen und Bild folgen der Wahl; MWh bleibt die Vorgabe |
+| 3 | Kachel **„Standardlastprofil"** → „Simulation…" | dito für den Strombedarf (W9‑B‑5) |
+| 4 | Kachel **„Brauchwasser"** → „Simulation…" | Zahlen **unverändert** gegenüber dem Stand vor der Behebung |
+| 5 | Menü **Administration** → die drei Katalogverwaltungen → „Grafik" | Zahlen **unverändert** — sie öffnen ohne Projekt |
+| 6 | einen Katalogeintrag neu aufnehmen und **vor** dem Speichern „Simulation…" | rechnet wie bisher aus dem Katalog |
+
+### Offener Punkt W9‑O‑3c (Anwenderentscheid)
+
+Eine im Projekt **geänderte** Kopie wird in dieser Vorschau weiterhin mit der
+**Katalogverteilung** angezeigt, weil der Katalog zuerst gelesen wird. Beispiel
+Brauchwasser, Projekt 1007 („Haushalt-3"): Katalog 1,900 MWh im Januar,
+Projektkopie 0,552 MWh — die Jahressumme ist in beiden Fällen dieselbe (4 059,7),
+nur die Verteilung über die Monate nicht. Der **Projektlauf** rechnet mit der
+Projektkopie.
+
+Die Reihenfolge umzudrehen (Projektkopie zuerst) würde die Vorschau überall mit
+dem Lauf zur Deckung bringen, **ändert aber angezeigte Zahlen** in jedem Projekt
+mit bearbeiteter Kopie. Das ist kein Fehlerfall, sondern eine Entscheidung —
+deshalb hier notiert und nicht nebenbei mitgetroffen. **Frage an den Anwender:**
+Soll die Vorschau des Bedarfsprofil-Dialogs die Projektkopie bevorzugen (dann
+zeigt sie immer, was der Lauf rechnet), oder soll sie beim Katalog bleiben?
