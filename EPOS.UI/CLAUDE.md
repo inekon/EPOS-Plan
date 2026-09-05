@@ -435,7 +435,8 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Bedarf/GebaeudetypDialog` | `Form_EingGebTyp` (iU9‑W8.4) | `Views/Bedarf/GebaeudetypHuelle.cs` → `TagVCtrl` |
 | `Bedarf/GebaeudeWohnflaecheDialog` | `Form_GebWohnflaeche` (iU9‑W9.3) | keine Datenseite; Ergebnis-Record |
 | `Bedarf/GebaeudeKatalogDialog` | **zwei** Masken: `Form_Gebaeude1`, `Form_Gebaeude2` (iU9‑W9.1) | `Views/Gebäude/GebaeudeKatalogHuelle.cs` → `GebaeudeStammCtrl`, `Ferienzeit` |
-| `Bedarf/GebaeudeDialog` | `Form_Gebaeude` (iU9‑W9.2) | `Views/Gebäude/GebaeudeHuelle.cs`; Assistentenseite 2, Admin-Modus, **drei** Überlagerungen |
+| `Bedarf/GebaeudeDialog` | `Form_Gebaeude` (iU9‑W9.2) | `Views/Gebäude/GebaeudeHuelle.cs`; Assistentenseite 2, Admin-Modus, **vier** Überlagerungen (seit W9.8 der Wärmebedarf) |
+| `Bedarf/GebaeudeBedarfDialog` | **keines** — der Bestand kannte den Knopf nicht (Anwenderwunsch **W9‑E‑2**, 05.09.2026, iU9‑W9.8): `Form_Gebaeude` trug im Detailblock nur „Ändern", und die einzige Maske mit einem Knopf „Simulation" war `Form_Simulation_Kurz` (mit iF29 stillgelegt) — die rechnete das GANZE Projekt. Neu ist die AUSKUNFT, nicht die Rechnung | dieselbe Hülle → `EPOS.Kern/Controller/GebaeudeBedarfCtrl`, `ChartRenderer.GanglinieNormiert` (dasselbe Bild wie B1 der Ergebnisseite); erscheint als Überlagerung im Gebäudedialog |
 | `Bedarf/WaermebedarfExternDialog` | `Form_Waermebedarf` (iU9‑W9.4) | `Views/Wärmebedarf/WaermebedarfExternHuelle.cs`; Assistentenseite 3, Sprungbrücke |
 | `Bedarf/BedarfsProfileDialog` | **drei** Masken: `Form_Prozesswaerme`, `Form_Stromverbraucher`, `Form_Brauchwasser` (iU9‑W9.5) | `Views/Bedarf/BedarfsProfileHuelle.cs`; Assistentenseiten 4 und 5, **vier** Überlagerungen aus Welle 8 |
 | `Simulation/WertAbfrage` | die Zahlenabfrage von `Form_Quellprofil` (iU9‑W10a.0f) | keine; Überlagerung im Wirt — ersetzt `Eingabefrage` für einen Aufrufer |
