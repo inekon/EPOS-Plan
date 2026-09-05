@@ -379,6 +379,23 @@ vom Hauptfaden bisher `default` (der Wähler ging nie auf) und ist über die `�
 zeigt statt den Prozess zu beenden. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus 1030 und iZ6-Vergleich
 PASS. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Achtundzwanzigster Lauf 33992594094 (`ios.yml`, `macos-26`, 05.09.2026, 21:17–21:24 UTC, 6 min 53 s)** auf
+`6eddd27` — der Stand **nach der Zusammenführung der Rechner-2-Linie** (PV-Ertragsmodell Paket A/B, Projektdialoge,
+Projektstammdaten, FS1), dem Hilfe-Assistenten (W15b), dem Formularraster P1–P3 (iU8‑E‑2), der Testdatenbank auf
+Schemastand 64 und der Stromganglinie als Grafik (W12‑E‑2): Bau, Simulatorstart, Erststart mit Seed-Kopie
+(Schemastand 64) und Prüfmodus 1030 grün, **der iZ6-Vergleich rot** — nicht wegen des Rechenwegs, sondern weil
+`ios.yml` noch gegen `2026-08-30_B3-Kaskade` hielt: 8 711 Abweichungen in 1030, exakt die Paket-A-Verschiebung der
+Solar-Zeitbasis von UTC auf Ortszeit, dieselbe Zahl wie der Linux-Läufer im Gate. Die CI-Basis war am selben Tag mit
+Anwenderentscheid auf `2026-09-05_R2_Zeitbasis` gewechselt (`37dfebb`, `kern.yml` und Gate), `ios.yml` fehlte in der
+Umstellung — behoben in `e3fd980`.
+
+**Neunundzwanzigster Lauf 33993379551 (`ios.yml`, `macos-26`, 05.09.2026, 21:33–21:40 UTC, 6 min 32 s)** auf
+`e3fd980` — derselbe Stand plus Schema-Pfeile (W10b‑B‑1: `SchemaLayout` in Spaltenbahnen, `HatKaskade` über alle
+Ränge) und der Workflow-Umstellung: Bau, Simulatorstart, Erststart, Prüfmodus 1030 und **iZ6-Vergleich gegen
+`2026-09-05_R2_Zeitbasis` PASS und byte-gleich (236 670 Werte, `diff -rq` leer; die Simulation meldet die Paket-A-Zeitbasis „Klimadaten: UTC → MEZ/MESZ, Referenzjahr 2025")**. Damit ist auch auf dem iOS-Simulator belegt, dass der zusammengeführte
+Rechenweg samt Paket A die neue Basis trifft. Beide Läufe ausgelöst per `workflow_dispatch` unter der pauschalen
+Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.

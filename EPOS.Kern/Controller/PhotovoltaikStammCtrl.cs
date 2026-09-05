@@ -490,24 +490,46 @@ namespace WindowsFormsApplication1
         /// <param name="Bezeichner">Modulname.</param>
         /// <param name="Beschreibung">Freitext.</param>
         /// <param name="Firma">Hersteller.</param>
-        /// <param name="Leistung">Leistung EINES Moduls [kW].</param>
+        /// <param name="Leistung">Leistung EINES Moduls in WATT - die Katalogspalte
+        /// <c>Leistung</c>, die der Katalogdialog „Nennleistung (Pmax)" mit der
+        /// Einheit W nennt (W6-O-5).</param>
+        /// <remarks>
+        /// <para><b>Die dreizehn weiteren Felder kamen mit dem Anwenderwunsch W6-E-1</b>
+        /// (Windows-Abnahme 05.09.2026: „optional sollten beim ausgewaehlten PV-Modul
+        /// alle Eigenschaften/Parameter angezeigt werden"). Sie sind <c>double?</c>, weil
+        /// <c>Tab_PV_STAMM</c> sie NULL fuehren darf - und weil eine NULL etwas anderes
+        /// ist als eine gemessene 0. Fuer die ANZEIGE fallen beide zusammen
+        /// (siehe <see cref="Parameterzeilen"/>), fuer die Rechnung nicht.</para>
+        /// </remarks>
         public sealed record ModulDetail(string Bezeichner, string Beschreibung,
-                                         string Firma, double Leistung);
+                                         string Firma, double Leistung,
+                                         double? Wirkungsgrad = null, double? UMpp = null,
+                                         double? ULeerlauf = null, double? IMpp = null,
+                                         double? IKurzschluss = null, double? AlphaSc = null,
+                                         double? BetaOc = null, double? GammaPmp = null,
+                                         double? TNoct = null, double? Laenge = null,
+                                         double? Breite = null, double? Modulkosten = null,
+                                         string Technologie = "");
 
         /// <summary>
-        /// Die vier Anzeigefelder zum Bezeichner; <c>null</c>, wenn es keinen Satz gibt.
+        /// Die Anzeigefelder zum Bezeichner; <c>null</c>, wenn es keinen Satz gibt.
         /// </summary>
         /// <remarks>
-        /// Fasst die drei zeichengleichen <c>RecordSet</c>-Bloecke von
+        /// <para>Fasst die drei zeichengleichen <c>RecordSet</c>-Bloecke von
         /// <c>listBox_Auswahl_SelectedIndexChanged</c> (Z. 163),
         /// <c>listBox_DB_SelectedIndexChanged</c> (Z. 191) und
         /// <c>UpdateGesamtleistung</c> (Z. 314) zusammen. <c>ORDER BY ID</c> macht die Wahl
-        /// bei einem doppelt vergebenen Bezeichner benennbar.
+        /// bei einem doppelt vergebenen Bezeichner benennbar.</para>
+        /// <para><b>W6-E-1:</b> Die Spaltenliste ist um die dreizehn uebrigen
+        /// Katalogfelder gewachsen - EIN Lesevorgang statt eines zweiten daneben. Der
+        /// Vorlaeufer las an dieser Stelle ohnehin <c>select *</c>.</para>
         /// </remarks>
         public static ModulDetail Detail(string szName)
         {
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT Bezeichner, Beschreibung, Firma, Leistung FROM " + TABLE +
+                "SELECT Bezeichner, Beschreibung, Firma, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf, " +
+                "I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, " +
+                "Modulkosten, Technologie FROM " + TABLE +
                 " WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@nam", szName ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
@@ -517,8 +539,128 @@ namespace WindowsFormsApplication1
                 r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString(),
                 r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString(),
                 r["Firma"] == DBNull.Value ? "" : r["Firma"].ToString(),
-                r["Leistung"] == DBNull.Value ? 0 : Convert.ToDouble(r["Leistung"]));
+                r["Leistung"] == DBNull.Value ? 0 : Convert.ToDouble(r["Leistung"]),
+                Wert(r, "Wirkungsgrad"), Wert(r, "U_Mpp"), Wert(r, "U_Leerlauf"),
+                Wert(r, "I_Mpp"), Wert(r, "I_Kurzschluss"), Wert(r, "alpha_SC"),
+                Wert(r, "beta_OC"), Wert(r, "gamma_PMP"), Wert(r, "T_NOCT"),
+                Wert(r, "Laenge"), Wert(r, "Breite"), Wert(r, "Modulkosten"),
+                r.Table.Columns.Contains("Technologie") && r["Technologie"] != DBNull.Value
+                    ? r["Technologie"].ToString() : "");
         }
+
+        /// <summary>Eine Zahl der Katalogzeile; <c>null</c> bei NULL oder fehlender Spalte.</summary>
+        private static double? Wert(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte) || row[spalte] == DBNull.Value) return null;
+            return Convert.ToDouble(row[spalte]);
+        }
+
+        // =================================================================================
+        // W6-E-1 - alle Modulparameter des gewaehlten Katalogsatzes
+        // =================================================================================
+
+        /// <summary>
+        /// Eine Zeile des Parameterblocks: sprachneutraler Schluessel, uebersetzte
+        /// Beschriftung, fertig formatierter Wert und die Einheit dahinter.
+        /// </summary>
+        public sealed record ModulParameter(string Schluessel, string Bezeichnung,
+                                            string Wert, string Einheit);
+
+        /// <summary>
+        /// Was ein nicht gepflegter Wert anzeigt. Der Katalog fuehrt „nicht gepflegt"
+        /// als 0 (<c>ModulKatalogProfil</c>: „leer = 0 = nicht gepflegt") und als NULL;
+        /// beides ist dasselbe und darf nicht als gemessene Null erscheinen.
+        /// </summary>
+        public const string PARAMETER_LEER = "–";
+
+        /// <summary>
+        /// <b>Alle Eigenschaften eines PV-Moduls als Anzeigezeilen</b> (Anwenderwunsch
+        /// W6-E-1, Windows-Abnahme 05.09.2026).
+        /// </summary>
+        /// <param name="d">Der Katalogsatz aus <see cref="Detail"/>; <c>null</c> = leere Liste.</param>
+        /// <remarks>
+        /// <para><b>Beschriftung und Einheit kommen aus DERSELBEN Quelle wie der
+        /// Katalogdialog</b> — <see cref="ModulKatalogProfil"/> in der Auspraegung
+        /// <see cref="ModulKatalogArt.Photovoltaik"/>. Es gibt fuer einen Modulwert genau
+        /// einen Text im Haus; ein zweiter liefe beim ersten Fachwechsel auseinander.
+        /// Die zwei Temperaturkoeffizienten <c>alpha_SC</c> und <c>beta_OC</c> fuehrt der
+        /// Katalogdialog NICHT (er kann sie nicht pflegen, siehe
+        /// <see cref="SpeichernAus"/>); ihre Beschriftungen stehen deshalb dort, wo sie
+        /// der Bestand fuehrt — im Modulimport (W13, <c>PVIMP_LBL_*</c>), samt Einheit
+        /// im Text.</para>
+        /// <para><b>Die Zahlen sehen aus wie im Katalogdialog:</b> der Wirkungsgrad mit
+        /// zwei Nachkommastellen (<c>PvAdminHuelle.Anzeige</c>), alles Uebrige roh in der
+        /// Kultur des Anwenders. Wer beide Masken nebeneinanderlegt, liest dieselben
+        /// Ziffern.</para>
+        /// </remarks>
+        public static IReadOnlyList<ModulParameter> Parameterzeilen(ModulDetail d)
+        {
+            var zeilen = new List<ModulParameter>();
+            if (d == null) return zeilen;
+
+            ModulKatalogProfil profil = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik, Uebersetzt);
+
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldWirkungsgrad, Zahl(d.Wirkungsgrad, "F2")));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldUMpp, Zahl(d.UMpp)));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldULeerlauf, Zahl(d.ULeerlauf)));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldIMpp, Zahl(d.IMpp)));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldIKurzschluss, Zahl(d.IKurzschluss)));
+
+            // Die zwei Koeffizienten des Imports - Einheit steht im Beschriftungstext.
+            zeilen.Add(new ModulParameter("ALPHA_SC", Text("PVIMP_LBL_ALPHA_ISC", "alpha_SC:"),
+                                          Zahl(d.AlphaSc), ""));
+            zeilen.Add(new ModulParameter("BETA_OC", Text("PVIMP_LBL_BETA_VOC", "beta_OC:"),
+                                          Zahl(d.BetaOc), ""));
+
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldTempKoeff, Zahl(d.GammaPmp)));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldTNoct, Zahl(d.TNoct)));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldLaenge, Zahl(d.Laenge)));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldBreite, Zahl(d.Breite)));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldModulkosten, Zahl(d.Modulkosten)));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldTechnologie, TechnologieText(d.Technologie)));
+
+            return zeilen;
+        }
+
+        /// <summary>Baut eine Zeile aus dem Katalogfeld gleichen Schluessels.</summary>
+        private static ModulParameter Aus(ModulKatalogProfil profil, string schluessel, string wert)
+        {
+            foreach (ModulKatalogFeld f in profil.Felder)
+                if (f.Schluessel == schluessel)
+                    return new ModulParameter(schluessel, f.Bezeichnung, wert, f.Einheit);
+
+            return new ModulParameter(schluessel, schluessel, wert, "");
+        }
+
+        /// <summary>
+        /// Der Anzeigetext einer Zahl; NULL und 0 heissen beide „nicht gepflegt".
+        /// </summary>
+        private static string Zahl(double? wert, string format = null)
+        {
+            if (!wert.HasValue || wert.Value == 0.0) return PARAMETER_LEER;
+
+            return format == null
+                ? wert.Value.ToString(System.Globalization.CultureInfo.CurrentCulture)
+                : wert.Value.ToString(format, System.Globalization.CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Die Zelltechnologie im Klartext — dieselben fuenf Texte wie im Katalogdialog.
+        /// Ein unbekannter Code wird GEZEIGT, nicht verschluckt: Er steht so in der
+        /// Datenbank, und wer ihn sucht, muss ihn lesen koennen.
+        /// </summary>
+        private static string TechnologieText(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return PARAMETER_LEER;
+
+            foreach (var o in ModulKatalogProfil.Technologien(Uebersetzt))
+                if (string.Equals(o.Wert, code, StringComparison.Ordinal)) return o.Text;
+
+            return code;
+        }
+
+        /// <summary>Uebersetzt einen Beschriftungsschluessel; unbekannt = der Schluessel selbst.</summary>
+        private static string Uebersetzt(string schluessel) => Text(schluessel, schluessel);
 
         /// <summary>
         /// Der Bezeichner eines Katalogmoduls ueber seinen Primaerschluessel; leer, wenn

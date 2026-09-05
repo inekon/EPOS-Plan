@@ -33415,6 +33415,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Modulparameter anzeigen ähnelt.
+        /// </summary>
+        public static string PVD_AUFKLAPP_PARAMETER {
+            get {
+                return ResourceManager.GetString("PVD_AUFKLAPP_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modul Bearbeiten... ähnelt.
         /// </summary>
         public static string PVD_BTN_BEARBEITEN {
@@ -33487,7 +33496,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modul Leistung [KW]: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul Leistung [W]: ähnelt.
         /// </summary>
         public static string PVD_LBL_LEISTUNG {
             get {
@@ -33496,7 +33505,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtleistung [KW]: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtleistung [kW]: ähnelt.
         /// </summary>
         public static string PVD_LBL_GESAMTLEISTUNG {
             get {
