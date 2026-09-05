@@ -32,6 +32,20 @@ namespace WindowsFormsApplication1
     /// <c>Dienste.Datei</c>, die Programmfassung über das Assembly, und der
     /// Parametersatz der Lizenzverwaltung für die Überlagerung (E-11). Die Komponente
     /// kennt weder <c>LizenzManager</c> noch <c>LizenzTextCtrl</c>.</para>
+    ///
+    /// <para><b>„Datei wählen…" ist mit der Windows-Abnahme vom 05.09.2026
+    /// gefallen</b> (Befund W15c-E-1, Anwender: „Wozu gibt es ‚Datei wählen'?
+    /// löschen."). Der Wähler ersetzte den LESBAREN Vertragstext durch den Zeiger
+    /// <c>LIZR_TEXT_DATEI</c> auf eine <c>.rtf</c>/<c>.docx</c>/<c>.pdf</c>, die die
+    /// WebView seit Entscheid E-1 gar nicht mehr anzeigt — er konnte also nur noch
+    /// WENIGER zeigen. Zusammenzuführen war nichts: Der Weg zur LIZENZdatei ist
+    /// allein „Lizenz aktivieren…" (<c>.lic</c>, <c>LizenzVerwaltungDialog</c>), und
+    /// eine vorhandene VERTRAGSdatei findet <see cref="TextLage"/> über
+    /// <c>LizenzTextCtrl.DateiSuchen</c> weiterhin von selbst — unter dem früher
+    /// gemerkten Pfad, im Programmordner samt sechs Ebenen darüber, in
+    /// <c>ProgramData</c> und im Benutzerordner. Ohne Leser sind damit
+    /// <c>LIZR_BTN_DATEI</c>, <c>LIZR_DLG_WAEHLEN_TITEL</c> und
+    /// <c>LIZR_DLG_WAEHLEN_FILTER</c>; sie bleiben im Sprachkatalog stehen.</para>
     /// </summary>
     internal static class LizenzHuelle
     {
@@ -135,7 +149,6 @@ namespace WindowsFormsApplication1
                 ["Hinweise"] = Hinweise(),
                 ["Komponenten"] = Komponenten(),
 
-                ["DateiWaehlen"] = (Func<Task<LizenzTextGaben>>)DateiWaehlen,
                 ["Speichern"] = (Func<string, string, Task<string>>)SpeichernUnter,
                 ["VerwaltungGaben"] = LizenzVerwaltungHuelle.Gaben(),
 
@@ -193,35 +206,6 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(text)) return null;
 
             return new LizenzTextGaben(text, LizenzTextCtrl.ONLINE_FASSUNG, stand ?? "");
-        }
-
-        /// <summary>
-        /// „Datei wählen…": Der Wähler gehört der Plattform, der gemerkte Pfad den
-        /// Einstellungen. <c>null</c> = abgebrochen.
-        /// </summary>
-        private static async Task<LizenzTextGaben> DateiWaehlen()
-        {
-            string start = null;
-            try
-            {
-                string bisher = LizenzTextCtrl.GewaehltenPfadLesen();
-                if (!string.IsNullOrEmpty(bisher) && File.Exists(bisher))
-                    start = Path.GetDirectoryName(bisher);
-            }
-            catch { }
-
-            // Der Wähler läuft HINTER dem Blazor-Ereignis (Befund W13‑B‑1,
-            // siehe IDateiDienst).
-            string pfad = await Dienste.Datei.DateiOeffnenAsync(
-                MyResource.Resource.LIZR_DLG_WAEHLEN_TITEL,
-                MyResource.Resource.LIZR_DLG_WAEHLEN_FILTER,
-                start);
-            if (string.IsNullOrEmpty(pfad)) return null;
-
-            LizenzTextCtrl.GewaehltenPfadSpeichern(pfad);
-
-            return new LizenzTextGaben(
-                string.Format(MyResource.Resource.LIZR_TEXT_DATEI, pfad), pfad, "");
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
@@ -72,7 +73,6 @@ public class LizenzDialogTests : BunitContext
         ReiterVertrag = "Lizenzvereinbarung",
         ReiterHinweise = "Rechtliche Hinweise",
         ReiterKomponenten = "Komponenten",
-        KnopfDatei = "Datei wählen...",
         KnopfDrucken = "Drucken...",
         KnopfSpeichern = "Speichern unter...",
         KnopfAktivieren = "Lizenz aktivieren...",
@@ -90,7 +90,6 @@ public class LizenzDialogTests : BunitContext
     private IRenderedComponent<LizenzDialog> Zeigen(
         bool zustimmungsmodus = false,
         LizenzTextGaben? text = null,
-        Func<Task<LizenzTextGaben?>>? dateiWaehlen = null,
         Func<Task<LizenzTextGaben?>>? onlineNachladen = null,
         Func<string, string, Task<string?>>? speichern = null,
         IReadOnlyDictionary<string, object>? verwaltung = null,
@@ -107,7 +106,6 @@ public class LizenzDialogTests : BunitContext
              .Add(x => x.Komponenten, KOMPONENTEN)
              .Add(x => x.Texte, Texte(sprachHinweis));
 
-            if (dateiWaehlen is not null) p.Add(x => x.DateiWaehlen, dateiWaehlen);
             if (onlineNachladen is not null) p.Add(x => x.OnlineNachladen, onlineNachladen);
             if (speichern is not null) p.Add(x => x.Speichern, speichern);
             if (verwaltung is not null) p.Add(x => x.VerwaltungGaben, verwaltung);
@@ -352,11 +350,12 @@ public class LizenzDialogTests : BunitContext
 
         var texte = cut.FindAll("div.epos-lizenz-knoepfe button")
                        .Select(b => b.TextContent.Trim())
-                       .Where(t => t.Length > 0)
                        .ToList();
 
+        // GENAU vier: der Infoknopf stand bis zur Abnahme als fuenftes Element
+        // hinter "Schliessen" und musste aus der Liste gefiltert werden.
         Assert.Equal(new[] { "Lizenz aktivieren...", "Speichern unter...", "Drucken...", "Schließen" },
-                     texte.Take(4));
+                     texte);
     }
 
     /// <summary>
@@ -370,37 +369,12 @@ public class LizenzDialogTests : BunitContext
 
         Assert.False(GibtKnopf(cut, "Speichern unter..."));
         Assert.False(GibtKnopf(cut, "Lizenz aktivieren..."));
-        Assert.False(GibtKnopf(cut, "Datei wählen..."));
         Assert.True(GibtKnopf(cut, "Drucken..."));
     }
 
     // ==================================================================
-    //  Datei wählen, speichern, nachladen
+    //  Speichern und nachladen
     // ==================================================================
-
-    /// <summary>Eine gewählte Datei ersetzt Text und Herkunft; ein Abbruch nicht.</summary>
-    [Fact]
-    public void Eine_gewaehlte_Datei_ersetzt_den_Text()
-    {
-        var cut = Zeigen(dateiWaehlen: () => Task.FromResult<LizenzTextGaben?>(
-            new LizenzTextGaben("Die Datei liegt vor.", @"C:\LIZENZ-INEKON.rtf", "")));
-
-        Knopf(cut, "Datei wählen...").Click();
-
-        cut.WaitForAssertion(() => Assert.Contains("Die Datei liegt vor.", cut.Markup, StringComparison.Ordinal));
-        Assert.Contains(@"Quelle: C:\LIZENZ-INEKON.rtf", cut.Markup, StringComparison.Ordinal);
-    }
-
-    /// <summary>Ein abgebrochener Wähler lässt alles, wie es war.</summary>
-    [Fact]
-    public void Ein_abgebrochener_Waehler_aendert_nichts()
-    {
-        var cut = Zeigen(dateiWaehlen: () => Task.FromResult<LizenzTextGaben?>(null));
-
-        Knopf(cut, "Datei wählen...").Click();
-
-        cut.WaitForAssertion(() => Assert.Contains("Der Vertragstext.", cut.Markup, StringComparison.Ordinal));
-    }
 
     /// <summary>
     /// Die Online-Fassung wird nachgeliefert und ersetzt den Ladehinweis — und zwar
@@ -511,5 +485,207 @@ public class LizenzDialogTests : BunitContext
         var cut = Zeigen();
         Assert.Equal("Form_Lizenz.btn_Help",
                      cut.FindComponent<EPOS.UI.Bausteine.InfoKnopf>().Instance.Schluessel);
+    }
+
+    // =====================================================================
+    //  Windows-Abnahme 05.09.2026 — W15c-B-1 und W15c-E-1
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Befund W15c‑E‑1 — LESEBEREICH statt Formularfeld.</b> Der Vertragstext
+    /// stand in einem <c>&lt;textarea&gt;</c>: ein Formularfeld mit
+    /// Größenanfasser, eigener Schriftfläche und eigenem Rollbalken für einen
+    /// Text, den niemand bearbeitet. Jetzt trägt <b>jede</b> der drei Karten
+    /// denselben Lesebereich.
+    /// </summary>
+    [Fact]
+    public void Der_Vertragstext_steht_in_einem_Lesebereich_und_nicht_im_Formularfeld()
+    {
+        var cut = Zeigen();
+
+        Assert.Empty(cut.FindAll("textarea"));
+        Assert.Single(cut.FindAll("div.epos-lizenz-lesebereich"));
+
+        var bereich = cut.Find("div.epos-lizenz-lesebereich");
+        Assert.Equal("region", bereich.GetAttribute("role"));
+        Assert.Equal("Lizenzvereinbarung", bereich.GetAttribute("aria-label"));
+        Assert.Equal("0", bereich.GetAttribute("tabindex"));
+
+        // Auch die zwei erzeugten Karten lesen sich im selben Rahmen.
+        cut.FindAll("[role=tab]")[1].Click();
+        Assert.Equal("Rechtliche Hinweise",
+                     cut.Find("div.epos-lizenz-lesebereich").GetAttribute("aria-label"));
+        Assert.Empty(cut.FindAll("textarea"));
+    }
+
+    /// <summary>
+    /// Der Vertragstext wird GESETZT: Eine Zeile, die mit „§" beginnt, ist eine
+    /// Überschrift, alles andere ein Absatz. <b>Am Wortlaut ändert sich nichts</b>.
+    /// </summary>
+    [Fact]
+    public void Der_Vertragstext_wird_in_Absaetze_und_Paragrafen_gesetzt()
+    {
+        var cut = Zeigen(text: new LizenzTextGaben(
+            "Vorbemerkung.\n\n§ 1 Geltungsbereich\nDiese Vereinbarung gilt.\n\n§ 2 Nutzung\nSie dürfen.",
+            "https://epos-plan.de/agb/", "13.08.2026"));
+
+        var koepfe = cut.FindAll("div.epos-lizenz-lesebereich h3.epos-lizenz-ueberschrift")
+                        .Select(h => h.TextContent.Trim()).ToList();
+        var absaetze = cut.FindAll("div.epos-lizenz-lesebereich p.epos-lizenz-absatz")
+                          .Select(a => a.TextContent.Trim()).ToList();
+
+        Assert.Equal(new[] { "§ 1 Geltungsbereich", "§ 2 Nutzung" }, koepfe);
+        Assert.Equal(new[] { "Vorbemerkung.", "Diese Vereinbarung gilt.", "Sie dürfen." }, absaetze);
+    }
+
+    /// <summary>Die Zerlegung des Vertragstextes — die REGEL, ohne den Dialog.</summary>
+    [Theory]
+    [InlineData("", 0, 0)]
+    [InlineData("   \n\n  ", 0, 0)]
+    [InlineData("Ein Satz.", 0, 1)]
+    [InlineData("Zeile eins\nZeile zwei", 0, 1)]
+    [InlineData("Eins.\n\nZwei.", 0, 2)]
+    [InlineData("§ 1 Zweck\nText.", 1, 1)]
+    [InlineData("Kopf.\n§ 1 Zweck\nText.\n§ 2 Ende\nSchluss.", 2, 3)]
+    public void Vertragsabschnitte_trennt_Paragrafen_von_Absaetzen(string text, int koepfe, int absaetze)
+    {
+        var abschnitte = LizenzDialog.Vertragsabschnitte(text);
+
+        Assert.Equal(koepfe, abschnitte.Count(a => a.IstUeberschrift));
+        Assert.Equal(absaetze, abschnitte.Count(a => !a.IstUeberschrift));
+    }
+
+    /// <summary>
+    /// <b>Im Vertragstext wird nichts verlinkt.</b> Er kommt von auswärts — von
+    /// <c>epos-plan.de</c> oder aus einer Datei —, und dort wird nichts geraten;
+    /// im ERZEUGTEN Rechtstext (unser eigener Ressourcentext) dagegen schon.
+    /// </summary>
+    [Fact]
+    public void Der_Vertragstext_bekommt_keine_Verweise()
+    {
+        var cut = Zeigen(text: new LizenzTextGaben(
+            "Die Fassung steht unter https://epos-plan.de/agb/ bereit.",
+            "https://epos-plan.de/agb/", ""));
+
+        Assert.Empty(cut.FindAll("div.epos-lizenz-lesebereich a"));
+        Assert.Contains("https://epos-plan.de/agb/",
+                        cut.Find("p.epos-lizenz-absatz").TextContent, StringComparison.Ordinal);
+
+        cut.FindAll("[role=tab]")[1].Click();
+        Assert.Single(cut.FindAll("div.epos-lizenz-lesebereich a"));
+    }
+
+    /// <summary>
+    /// <b>Anwender, 05.09.2026: „Wozu gibt es ‚Datei wählen'? löschen."</b> Den
+    /// Knopf gibt es nicht mehr — auch nicht als Parameter, den eine Hülle noch
+    /// setzen könnte.
+    /// </summary>
+    [Fact]
+    public void Es_gibt_keinen_Knopf_Datei_waehlen_mehr()
+    {
+        var cut = Zeigen(speichern: (r, i) => Task.FromResult<string?>(null),
+                         verwaltung: new Dictionary<string, object>());
+
+        Assert.False(GibtKnopf(cut, "Datei wählen..."));
+        Assert.DoesNotContain("Datei wählen", cut.Markup, StringComparison.Ordinal);
+        Assert.Empty(cut.FindAll("div.epos-lizenz-werkzeuge"));
+
+        Assert.Null(typeof(LizenzDialog).GetProperty("DateiWaehlen"));
+    }
+
+    /// <summary>
+    /// Der Hilfeknopf steht im KOPF und nicht hinter „Schließen" (W15c‑E‑1) —
+    /// dieselbe Lage wie in jedem anderen Dialog des Hauses.
+    /// </summary>
+    [Fact]
+    public void Der_Infoknopf_steht_im_Kopf_und_nicht_in_der_Knopfleiste()
+    {
+        var cut = Zeigen();
+
+        Assert.NotNull(cut.Find("header.epos-lizenz-kopf").QuerySelector("button.epos-infoknopf"));
+        Assert.Null(cut.Find("div.epos-lizenz-knoepfe").QuerySelector("button.epos-infoknopf"));
+    }
+
+    /// <summary>Die Knopfleiste ist die des Hauses — <c>epos-leiste</c>.</summary>
+    [Fact]
+    public void Die_Knopfleiste_ist_die_des_Hauses()
+    {
+        var leiste = Zeigen().Find("div.epos-lizenz-knoepfe");
+
+        Assert.Contains("epos-leiste", leiste.ClassName ?? "", StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Befund W15c‑B‑1 — die Seite rollt nie waagerecht, und sie hat einen
+    /// Rand.</b> Der Anwender fand jede Zeile links angeschnitten: Die drei
+    /// Wurzeln der Welle 15c hängen nicht unter <c>.epos-dialog</c> und trugen
+    /// deshalb keinen Seitenrand; ohne <c>overflow-x</c> verschob zudem jeder
+    /// Waagerecht-Überlauf die ganze Seite. Eine bunit-Probe sieht ein Stilblatt
+    /// nicht (Lehre W6‑B‑1) — geprüft wird die REGEL, wie in
+    /// <c>StartseiteTests</c>.
+    /// </summary>
+    [Fact]
+    public void Die_Wurzeln_der_Welle_tragen_Rand_und_rollen_nicht_waagerecht()
+    {
+        string block = Stilblock(".epos-lizenz,\n.epos-lizverw,\n.epos-erststart {");
+
+        Assert.Contains("box-sizing: border-box", block, StringComparison.Ordinal);
+        Assert.Contains("padding: var(--epos-karte-rand)", block, StringComparison.Ordinal);
+        Assert.Contains("max-width: 100%", block, StringComparison.Ordinal);
+        Assert.Contains("overflow-x: clip", block, StringComparison.Ordinal);
+
+        // Keine feste Breite - sie waere genau der Ueberlauf, den der Befund meldet.
+        Assert.DoesNotContain("width: 9", block, StringComparison.Ordinal);
+
+        // Die Ueberlagerung bringt ihren Rand mit; er darf sich nicht addieren.
+        Assert.Contains("padding: 0",
+                        Stilblock(".epos-ueberlagerung-inhalt > .epos-lizverw {"),
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Breiter Inhalt rollt in SEINEM Rahmen: Der Lesebereich rollt senkrecht,
+    /// waagerecht gar nicht — dieselbe Bauart wie <c>.epos-verlauf</c> (W15b).
+    /// </summary>
+    [Fact]
+    public void Der_Lesebereich_rollt_senkrecht_und_nie_waagerecht()
+    {
+        string block = Stilblock(".epos-lizenz-lesebereich {");
+
+        Assert.Contains("overflow-y: auto", block, StringComparison.Ordinal);
+        Assert.Contains("overflow-x: hidden", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("resize", block, StringComparison.Ordinal);
+
+        // Die Zeilenlaenge bleibt angenehm, und die Schriftstufen kommen aus den
+        // Token statt aus Pixeln (W15c-E-1).
+        Assert.Contains("max-width: 78ch", Stilblock(".epos-lizenz-absatz {"), StringComparison.Ordinal);
+        Assert.Contains("var(--epos-schriftgroesse-kartentitel)",
+                        Stilblock(".epos-lizenz-titel {"), StringComparison.Ordinal);
+        Assert.Contains("var(--epos-schriftgroesse-gruppenkopf)",
+                        Stilblock(".epos-lizenz-ueberschrift {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>Liest den Rumpf einer Regel aus <c>EPOS.UI/wwwroot/epos-ui.css</c>.</summary>
+    private static string Stilblock(string selektor)
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null &&
+               !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);   // das Stilblatt muss im Baum stehen
+
+        // Zeilenenden angleichen: Auf Windows liegt das Blatt nach dem Auschecken
+        // mit CRLF, ein mehrzeiliger Selektor traegt hier aber "\n" - dieselbe
+        // Angleichung wie in StartseiteTests und StilblattTests.
+        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))
+                         .Replace("\r\n", "\n");
+        selektor = selektor.Replace("\r\n", "\n");
+
+        int a = css.IndexOf(selektor, StringComparison.Ordinal);
+        Assert.True(a >= 0, "Regel " + selektor + " steht nicht im Stilblatt");
+        int e = css.IndexOf('}', a);
+        Assert.True(e > a);
+        return css.Substring(a + selektor.Length, e - a - selektor.Length);
     }
 }

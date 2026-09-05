@@ -73,9 +73,11 @@ public sealed class LizenzTexte
     /// <summary>Reiter „Komponenten" (<c>LIZR_REITER_KOMPONENTEN</c>).</summary>
     public string ReiterKomponenten { get; set; } = Katalog("LIZR_REITER_KOMPONENTEN", "Komponenten");
 
-    /// <summary>Knopf „Datei wählen..." (<c>LIZR_BTN_DATEI</c>).</summary>
-    public string KnopfDatei { get; set; } = Katalog("LIZR_BTN_DATEI", "Datei wählen...");
-
+    // „Datei wählen…" (LIZR_BTN_DATEI) ist mit der Windows-Abnahme vom
+    // 05.09.2026 gefallen (W15c-E-1): Der Knopf ersetzte den lesbaren
+    // Vertragstext durch den Zeiger auf eine Datei, die die WebView seit E-1
+    // ohnehin nicht anzeigt. Der Katalogeintrag bleibt im Sprachschatz stehen —
+    // gelesen wird er von niemandem mehr.
     /// <summary>Knopf „Drucken..." (<c>LIZR_BTN_DRUCKEN</c>).</summary>
     public string KnopfDrucken { get; set; } = Katalog("LIZR_BTN_DRUCKEN", "Drucken...");
 
