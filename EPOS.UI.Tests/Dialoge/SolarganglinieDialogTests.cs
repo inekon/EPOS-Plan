@@ -71,7 +71,7 @@ public class SolarganglinieDialogTests : BunitContext
         var cut = Aufbauen(verwaltungGaben: LEERER_SATZ);
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-auswahlpfeile button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-mitte button").Count);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("Ausgewählt im Projekt", ueberschriften);
@@ -160,7 +160,7 @@ public class SolarganglinieDialogTests : BunitContext
     public void Der_linke_Pfeil_ist_ohne_Katalogwahl_gesperrt()
     {
         var cut = Aufbauen();
-        Assert.True(cut.FindAll(".epos-auswahlpfeile button")[0].HasAttribute("disabled"));
+        Assert.True(cut.FindAll(".epos-zweispalten-mitte button")[0].HasAttribute("disabled"));
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class SolarganglinieDialogTests : BunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
 
         Assert.Equal(22, gerufen);
         Assert.Equal(2, zeilen.Count);
@@ -196,7 +196,7 @@ public class SolarganglinieDialogTests : BunitContext
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[1]
            .QuerySelector("button")!.Click();
-        cut.FindAll(".epos-auswahlpfeile button")[1].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
 
         Assert.Single(zeilen);
         Assert.Same(a, zeilen[0]);

@@ -23,7 +23,14 @@
    Ganglinie mit Projektzuordnung bleibt gesperrt und nennt den Grund.
 
    TASTATUR: Esc schliesst, aber erst, wenn die Rueckfrage weg ist. Enter ist
-   nicht belegt. *@
+   nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses: Projektliste links, Katalog rechts, die zwei Knoepfe in einer
+   schmalen Mittelspalte, auf schmalem Schirm untereinander. Die Knoepfe trugen
+   bis hierher nur "◀" und "▶"; das Zeichen setzt jetzt der Baustein je nach
+   Anordnung, die Beschriftung sagt im Klartext, was sie tun. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
@@ -42,11 +49,13 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <div class="epos-auswahlspalten">
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+                        UebernehmenText="@BtnHinzuText"
+                        UebernehmenGesperrt="@(_katalogname is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@BtnEntfernenText"
+                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
 
-        @* ------------------------------------------ links: Projektliste --- *@
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-abschnitt">@LabelProjektliste</h2>
+        <Links>
             <div class="epos-raster-huelle">
                 <table class="epos-raster">
                     <thead>
@@ -74,18 +83,9 @@
             <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
                          Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
                          Aktiv="@(_gewaehlt is not null)" />
+        </Links>
 
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf" disabled="@(_katalogname is null)"
-                        @onclick="BeiHinzu">@BtnHinzuText</button>
-                <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                        @onclick="BeiEntfernen">@BtnEntfernenText</button>
-            </div>
-        </div>
-
-        @* ------------------------------------------ rechts: Katalog ------- *@
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-abschnitt">@LabelKatalog</h2>
+        <Rechts>
             <div class="epos-raster-huelle">
                 <table class="epos-raster">
                     <thead>
@@ -119,8 +119,9 @@
                 <button type="button" class="epos-knopf" disabled="@(_katalogname is null)"
                         @onclick="BeiLoeschen">@BtnLoeschenText</button>
             </div>
-        </div>
-    </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {
@@ -195,8 +196,16 @@
     [Parameter] public string KanalBezeichnung { get; set; } = "Kanal";
     [Parameter] public string SpalteWahl { get; set; } = "Wahl";
     [Parameter] public string SpalteName { get; set; } = "Name";
-    [Parameter] public string BtnHinzuText { get; set; } = "◀";
-    [Parameter] public string BtnEntfernenText { get; set; } = "▶";
+    /// <summary>
+    /// Beschriftung des Übernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN</c>. Bis zum
+    /// Anwenderentscheid #76 vom 05.09.2026 stand hier das blanke Zeichen „◀"; das
+    /// setzt seither der Baustein <c>Zweispaltenauswahl</c> je nach Anordnung, und
+    /// der Knopf sagt im Klartext, was er tut (Befund W9‑B‑3).
+    /// </summary>
+    [Parameter] public string BtnHinzuText { get; set; } = Resource.AUSWAHL_BTN_UEBERNEHMEN;
+
+    /// <summary>Beschriftung des Entfernenknopfes — <c>AUSWAHL_BTN_ENTFERNEN</c>.</summary>
+    [Parameter] public string BtnEntfernenText { get; set; } = Resource.AUSWAHL_BTN_ENTFERNEN;
     [Parameter] public string BtnBearbeitenText { get; set; } = "Einlesen/Bearbeiten..";
     [Parameter] public string BtnLoeschenText { get; set; } = "DB Ganglinie löschen";
     [Parameter] public string OkText { get; set; } = "OK";

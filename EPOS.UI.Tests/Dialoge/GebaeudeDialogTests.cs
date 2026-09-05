@@ -114,13 +114,16 @@ public class GebaeudeDialogTests : BunitContext
     private static IElement Knopf(IRenderedComponent<GebaeudeDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
-    /// <summary>Der Uebernahmeknopf — seit Befund W9‑B‑3 mit Klartext statt „◀".</summary>
+    /// <summary>
+    /// Der Übernahmeknopf — seit Befund W9‑B‑3 mit Klartext, seit dem
+    /// Anwenderentscheid #76 in der Mittelspalte zwischen den beiden Listen.
+    /// </summary>
     private static IElement Uebernehmen(IRenderedComponent<GebaeudeDialog> cut)
-        => cut.FindAll(".epos-auswahlspalte .epos-leiste button")[0];
+        => cut.FindAll(".epos-zweispalten-mitte button")[0];
 
-    /// <summary>Der Entfernenknopf — seit Befund W9‑B‑3 mit Klartext statt „▶".</summary>
+    /// <summary>Der Entfernenknopf, ebendort.</summary>
     private static IElement Entfernen(IRenderedComponent<GebaeudeDialog> cut)
-        => cut.FindAll(".epos-auswahlspalte .epos-leiste button")[1];
+        => cut.FindAll(".epos-zweispalten-mitte button")[1];
 
     // =================================================================================
     // Feldbestand je Betriebsart
@@ -146,12 +149,15 @@ public class GebaeudeDialogTests : BunitContext
         Assert.Equal(4, cut.FindAll("input[type=text][readonly]").Count);
         Assert.Single(cut.FindAll("textarea[readonly]"));
 
-        foreach (string t in new[] { "▲ In das Projekt übernehmen",
-                                     "▼ Aus dem Projekt entfernen",
-                                     "Ändern", "Gebäude in DB ändern...",
+        foreach (string t in new[] { "Ändern", "Gebäude in DB ändern...",
                                      "Gebäude in DB neu...", "Gebäude in DB löschen",
                                      "OK", "Abbrechen" })
             Assert.NotNull(Knopf(cut, t));
+
+        // Die zwei Richtungsknoepfe tragen seit Entscheid #76 ihr Zeichen als eigenes
+        // Element neben dem Text; sie werden deshalb ueber die Mittelspalte gesucht.
+        Assert.Contains("In das Projekt übernehmen", Uebernehmen(cut).TextContent);
+        Assert.Contains("Aus dem Projekt entfernen", Entfernen(cut).TextContent);
     }
 
     [Fact]
@@ -439,12 +445,14 @@ public class GebaeudeDialogTests : BunitContext
     /// <b>Befund W9‑B‑3:</b> „nicht so recht klar, auf was sich die oberen 2 Buttons
     /// beziehen."
     ///
-    /// <para>Der Vorläufer trug hier die blanken Zeichen „◀" und „▶" — bei
-    /// NEBENEINANDER stehenden Listen sagten sie die Richtung. In der Razor-Fassung
-    /// stehen die beiden Listen UNTEREINANDER, und dann zeigt ein waagerechter Pfeil
-    /// ins Leere. Beide Knöpfe tragen ihre Aufgabe jetzt im Klartext, das Zeichen
-    /// zeigt in die Richtung, in die die Zeile wandert — nach oben in die
-    /// Projektliste, nach unten aus ihr heraus.</para>
+    /// <para>Der Vorläufer trug hier die blanken Zeichen „◀" und „▶". Beide Knöpfe
+    /// tragen ihre Aufgabe seither im Klartext.</para>
+    ///
+    /// <para><b>Anwenderentscheid #76</b> vom selben Tag hat das Anordnungsschema
+    /// nachgezogen: Die Listen stehen wieder nebeneinander und brechen erst auf
+    /// schmalem Schirm untereinander um. Das Zeichen steht deshalb nicht mehr IM
+    /// Text — es hängt an der Anordnung, und beide Zeichen stehen im Markup, damit
+    /// das Stilblatt je Breite eines zeigen kann.</para>
     /// </summary>
     [Fact]
     public void Die_zwei_Richtungsknoepfe_sagen_was_sie_tun()
@@ -454,14 +462,21 @@ public class GebaeudeDialogTests : BunitContext
         IElement hinzu = Uebernehmen(cut);
         IElement weg = Entfernen(cut);
 
-        Assert.Equal("▲ In das Projekt übernehmen", hinzu.TextContent.Trim());
-        Assert.Equal("▼ Aus dem Projekt entfernen", weg.TextContent.Trim());
+        Assert.Equal("In das Projekt übernehmen",
+                     hinzu.QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
+        Assert.Equal("Aus dem Projekt entfernen",
+                     weg.QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
 
-        // Die Richtung passt zur Anordnung: hinauf in die Projektliste, hinab heraus.
-        Assert.StartsWith("▲", hinzu.TextContent.Trim());
-        Assert.StartsWith("▼", weg.TextContent.Trim());
-        Assert.DoesNotContain("◀", cut.Markup);
-        Assert.DoesNotContain("▶", cut.Markup);
+        // Nebeneinander wandert die Zeile nach links ins Projekt und nach rechts
+        // heraus; untereinander nach oben und nach unten.
+        Assert.Equal("◀", hinzu.QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
+        Assert.Equal("▲", hinzu.QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
+        Assert.Equal("▶", weg.QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
+        Assert.Equal("▼", weg.QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
+
+        // Das Zeichen ist Beiwerk: Eine Sprachausgabe liest den Satz, nicht das Dreieck.
+        foreach (IElement p in hinzu.QuerySelectorAll(".epos-zweispalten-pfeil"))
+            Assert.Equal("true", p.GetAttribute("aria-hidden"));
     }
 
     /// <summary>Beschriftung UND Kurztext — der Kurztext nennt die Herkunft der Zeile.</summary>
@@ -548,4 +563,32 @@ public class GebaeudeDialogTests : BunitContext
         Assert.Null(cut.Instance.Gewaehlt);
         Assert.NotNull(cut.Instance.Katalogzeile);
     }
+
+    // =================================================================================
+    // Die Anordnung - Anwenderentscheid #76 vom 05.09.2026
+    // =================================================================================
+
+    /// <summary>
+    /// Der Anwender hat nach der Windows-Abnahme entschieden, dass auch dieser Dialog
+    /// dem BHKW-PLAN-Schema folgt: Projektliste LINKS, Katalog RECHTS, die zwei
+    /// Pfeilknöpfe in einer schmalen Mittelspalte dazwischen. Bis dahin standen die
+    /// beiden Listen untereinander und die Knöpfe unter der Projektliste.
+    /// </summary>
+    [Fact]
+    public void Projektliste_links_Katalog_rechts_Pfeile_dazwischen()
+    {
+        var cut = Aufbauen();
+
+        var bereiche = cut.FindAll(".epos-zweispalten > div")
+                          .Select(e => e.ClassName ?? "").ToList();
+
+        Assert.Equal(3, bereiche.Count);
+        Assert.Contains("epos-zweispalten-spalte--links", bereiche[0]);
+        Assert.Contains("epos-zweispalten-mitte", bereiche[1]);
+        Assert.Contains("epos-zweispalten-spalte--rechts", bereiche[2]);
+
+        // Beide Listen stehen weiterhin in ihrem Rahmen (Befund W9-B-2).
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
+    }
+
 }

@@ -175,7 +175,7 @@ public class ListenrahmenTests : BunitContext
             .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
             .Add(x => x.Baualtersklassen, new[] { "vor 1919" }));
 
-        Assert.Equal(2, cut.FindAll(".epos-auswahlspalte .epos-raster-huelle").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
     }
 
     // =====================================================================
