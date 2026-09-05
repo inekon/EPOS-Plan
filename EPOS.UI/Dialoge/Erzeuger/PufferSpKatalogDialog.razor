@@ -49,6 +49,10 @@
 
     <Gruppenkopf Titel="@GruppeBezeichnung">
         <KindInhalt>
+        @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
+           Zahlenfelder kurz mit der Einheit dahinter. *@
+        <Formularraster>
+            <KindInhalt>
             @* Der Name ist im Modus Bearbeiten NUR LESBAR - der Vorlaeufer hatte
                textBox_Name gesperrt (Designer). Umbenannt wird ueber
                "Speichern unter". *@
@@ -59,12 +63,18 @@
             <Auswahlfeld Bezeichnung="@LabelSpeichertyp" Eintraege="@Speichertypen"
                          Auswahl="@Daten.SpeichertypIndex"
                          AuswahlChanged="w => Daten.SpeichertypIndex = w" />
+            </KindInhalt>
+        </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     <Gruppenkopf Titel="@GruppeTechnik">
         <KindInhalt>
-            <div class="epos-feldpaar">
+            @* Das Feldpaar von Hand entfaellt - das Formularraster stellt zwei
+               Feldpaare je Zeile, sobald die Spalte breit genug ist
+               (iU8-E-2 / W14a-E-7). *@
+            <Formularraster>
+                <KindInhalt>
                 <Zahlenfeld Bezeichnung="@LabelVerluste" Einheit="kWh/d" Feldname="@FeldVerluste"
                             Wert="@Daten.Bereitschaftsverluste"
                             WertChanged="w => Daten.Bereitschaftsverluste = w"
@@ -73,16 +83,21 @@
                               Wert="@Daten.Gesamtvolumen"
                               WertChanged="w => Daten.Gesamtvolumen = w"
                               FehlerZustand="BeiFehlerZustand" />
-            </div>
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     <Gruppenkopf Titel="@GruppeKosten">
         <KindInhalt>
-            <Zahlenfeld Bezeichnung="@LabelInvest" Einheit="€" Feldname="@FeldInvest"
-                        Wert="@Daten.Investitionskosten"
-                        WertChanged="w => Daten.Investitionskosten = w"
-                        FehlerZustand="BeiFehlerZustand" />
+            <Formularraster>
+                <KindInhalt>
+                <Zahlenfeld Bezeichnung="@LabelInvest" Einheit="€" Feldname="@FeldInvest"
+                            Wert="@Daten.Investitionskosten"
+                            WertChanged="w => Daten.Investitionskosten = w"
+                            FehlerZustand="BeiFehlerZustand" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
