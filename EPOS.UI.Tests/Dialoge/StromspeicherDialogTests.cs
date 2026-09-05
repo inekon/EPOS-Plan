@@ -69,7 +69,7 @@ public class StromspeicherDialogTests : BunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-auswahlpfeile button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-mitte button").Count);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("ausgewählte Stromspeicher:", ueberschriften);
@@ -141,9 +141,9 @@ public class StromspeicherDialogTests : BunitContext
             new AufnahmeErgebnis(Zeile(naechster++, "Speicher 10", id)));
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
 
         Assert.Equal(2, zeilen.Count);
         Assert.NotEqual(zeilen[0].Schluessel, zeilen[1].Schluessel);
@@ -158,7 +158,7 @@ public class StromspeicherDialogTests : BunitContext
         var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z));
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[1].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
 
         Assert.Single(zeilen);
         Assert.Equal(1, zeilen[0].Schluessel);
@@ -172,7 +172,7 @@ public class StromspeicherDialogTests : BunitContext
         var zeilen = new List<ErzeugerZeile> { Zeile(1, "Speicher 10", 41) };
         var cut = Aufbauen(zeilen);
 
-        cut.FindAll(".epos-auswahlpfeile button")[1].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
 
         Assert.Empty(zeilen);
         Assert.Null(cut.Instance.Projektzeile);
@@ -210,7 +210,7 @@ public class StromspeicherDialogTests : BunitContext
         var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
 
         Assert.False(cut.Instance.VerwaltungOffen);
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
+        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
 
         Assert.True(cut.Instance.VerwaltungOffen);
         Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));

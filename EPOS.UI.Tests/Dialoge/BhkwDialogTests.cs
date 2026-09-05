@@ -95,7 +95,7 @@ public class BhkwDialogTests : BunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-auswahlpfeile button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-mitte button").Count);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("Ausgewählte Module:", ueberschriften);
@@ -179,7 +179,7 @@ public class BhkwDialogTests : BunitContext
         var cut = Aufbauen();
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
 
         Assert.True(cut.Instance.Traegerwahl);
     }
@@ -193,7 +193,7 @@ public class BhkwDialogTests : BunitContext
 
         int vorher = rufe;
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
         cut.Find(".epos-ueberlagerung input[type=text]").Input("Erdgas E Variante");
         cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
 
@@ -209,7 +209,7 @@ public class BhkwDialogTests : BunitContext
         var zeilen = new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) };
         var cut = Aufbauen(zeilen);
 
-        cut.FindAll(".epos-auswahlpfeile button")[1].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
 
         Assert.Empty(zeilen);
         Assert.Null(cut.Instance.Projektzeile);
@@ -225,7 +225,7 @@ public class BhkwDialogTests : BunitContext
         var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z));
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[1].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
 
         Assert.Single(zeilen);
         Assert.Equal(1, zeilen[0].Schluessel);
@@ -272,7 +272,7 @@ public class BhkwDialogTests : BunitContext
         var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return ""; });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[2].Click();
+        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[2].Click();
 
         Assert.Single(cut.FindAll(".epos-rueckfrage"));
         Assert.Empty(geloescht);
@@ -289,7 +289,7 @@ public class BhkwDialogTests : BunitContext
             "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.");
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[2].Click();
+        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[2].Click();
         cut.FindAll(".epos-rueckfrage button")[0].Click();
 
         Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
@@ -305,7 +305,7 @@ public class BhkwDialogTests : BunitContext
             return new Dictionary<string, object> { ["Daten"] = new BhkwKatalogDaten() };
         });
 
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[1].Click();
+        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[1].Click();
         cut.Find(".epos-ueberlagerung input[type=text]").Input("Neues Modul");
         cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
 
@@ -324,7 +324,7 @@ public class BhkwDialogTests : BunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
+        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
 
         Assert.Equal("Modul A", gefragt);
         Assert.True(cut.Instance.Katalogeditor);
