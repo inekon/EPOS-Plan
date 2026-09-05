@@ -616,4 +616,119 @@ public class StartseiteTests : BunitContext
         cut.FindAll(".epos-startkachel-wahl input")[0].Change(true);
         Assert.Equal(new[] { true, false }, gemeldet);
     }
+
+    // =====================================================================
+    //  Die Gattungszeile (Anwenderwunsch 05.09.2026, W16b-E-4)
+    // =====================================================================
+
+    /// <summary>
+    /// OHNE Kopfleiste darueber steht die Gattungszeile — das ist der Zustand
+    /// auf iOS, wo die <c>Kopfleiste</c> der <c>AppWurzel</c> leer ist und diese
+    /// Zeile die einzige Nennung des Produkts.
+    /// </summary>
+    [Fact]
+    public void Die_Gattungszeile_steht_ohne_Kopfleiste()
+    {
+        var cut = Zeige();
+
+        Assert.Single(cut.FindAll(".epos-startseite-gattung"));
+        Assert.Equal("Energieplanungs-Software",
+                     cut.Find(".epos-startseite-gattung").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// MIT Kopfleiste darueber faellt sie weg: Das Kopfband des Hauptfensters
+    /// nennt dieselbe Gattung schon, und zweimal untereinander ist sie eine
+    /// Wiederholung (Anwenderwunsch 05.09.2026).
+    /// </summary>
+    [Fact]
+    public void Die_Gattungszeile_faellt_weg_wenn_eine_Kopfleiste_darueber_steht()
+    {
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 1030)
+            .Add(x => x.KopfbandZeigen, false));
+
+        Assert.Empty(cut.FindAll(".epos-startseite-gattung"));
+        Assert.Empty(cut.FindAll(".epos-startseite-marke"));
+
+        // Das Kopfband selbst bleibt - nur die eine Zeile faellt.
+        Assert.Single(cut.FindAll(".epos-startseite-kopf"));
+        Assert.Single(cut.FindAll(".epos-startseite-projekt"));
+        Assert.Single(cut.FindAll(".epos-startseite-klima"));
+    }
+
+    // =====================================================================
+    //  Die Anordnung des Kopfbands (Anwenderwunsch 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die zwei Kopfkaesten stehen NEBENEINANDER in EINER Reihe, Klima links
+    /// und Projekt rechts — panelKlima sass im Designer bei x=79 (677 breit),
+    /// panelVariante bei x=776 (489 breit). Auch die Tabulatorreihenfolge ist
+    /// die des Bestands: <c>comboBox_Klima</c> trug TabIndex 1,
+    /// <c>comboBox_Varianten</c> 113.
+    /// </summary>
+    [Fact]
+    public void Der_Klimakasten_steht_links_vom_Projektkasten()
+    {
+        var cut = Zeige();
+
+        IElement reihe = cut.Find(".epos-startseite-kaesten");
+        var kaesten = reihe.QuerySelectorAll(":scope > div");
+
+        Assert.Equal(2, kaesten.Length);
+        Assert.Contains("epos-startseite-klima", kaesten[0].ClassName!);
+        Assert.Contains("epos-startseite-projekt", kaesten[1].ClassName!);
+
+        // Die Gattungszeile steht UEBER der Reihe, nicht darin.
+        Assert.Empty(reihe.QuerySelectorAll(".epos-startseite-gattung"));
+    }
+
+    /// <summary>
+    /// <c>label_ProjektStatus</c> stand LINKS vor der Beschriftung (x=13 gegen
+    /// x=53), nicht hinter dem Auswahlfeld.
+    /// </summary>
+    [Fact]
+    public void Das_Statuszeichen_steht_vor_der_Beschriftung()
+    {
+        var cut = Zeige();
+
+        var kinder = cut.Find(".epos-startseite-projekt").Children;
+
+        Assert.Contains("epos-startseite-status", kinder[0].ClassName!);
+        Assert.Equal("LABEL", kinder[1].TagName);
+        Assert.Equal("SELECT", kinder[2].TagName);
+    }
+
+    /// <summary>
+    /// <c>pictureBox4</c> (das Globussinnbild) stand ganz links im Klimakasten.
+    /// </summary>
+    [Fact]
+    public void Der_Klimakasten_traegt_das_Globussinnbild()
+    {
+        var cut = Zeige();
+
+        IElement globus = cut.Find(".epos-startseite-klima .epos-startseite-globus");
+
+        Assert.Equal("_content/EPOS.UI/bilder/start/globe.png", globus.GetAttribute("src"));
+        Assert.Equal("", globus.GetAttribute("alt"));
+        Assert.Contains("epos-startseite-globus",
+                        cut.Find(".epos-startseite-klima").Children[0].ClassName!,
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Das Kachelraster verlangt die Kachelbreite des Vorlaeufers: 404 px, also
+    /// drei Spalten auf der Designerflaeche von 1 265 px.
+    /// </summary>
+    [Fact]
+    public void Das_Kachelraster_nimmt_die_Kachelbreite_des_Vorlaeufers()
+    {
+        var cut = Zeige();
+
+        Assert.Contains("--epos-kachel-min: 404px",
+                        cut.Find(".epos-kachelraster").GetAttribute("style")!,
+                        StringComparison.Ordinal);
+    }
 }

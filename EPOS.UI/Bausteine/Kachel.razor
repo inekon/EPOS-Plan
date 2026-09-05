@@ -21,7 +21,7 @@
 <button type="button" class="epos-kachel" disabled="@(!Aktiv)" @onclick="Geklickt">
     @if (!string.IsNullOrEmpty(Bild))
     {
-        <img class="epos-kachel-bild" src="@Bild" alt="" />
+        <img class="@Bildklassen" src="@Bild" alt="" />
     }
     <span class="epos-kachel-titel">@Titel</span>
     @if (!string.IsNullOrEmpty(Beschreibung))
@@ -74,8 +74,22 @@
     /// </summary>
     [Parameter] public string? Bild { get; set; }
 
+    /// <summary>
+    /// Eine ZUSATZKLASSE am Bild - leer heisst "wie bisher".
+    ///
+    /// <para>Die Kachelbilder der Startseite sind die GANZEN Kacheln des
+    /// Vorlaeufers (eine weisse Karte mit dem Sinnbild oben links, Anwenderwunsch
+    /// 05.09.2026); gezeigt wird davon nur das Sinnbild, und den Ausschnitt macht
+    /// das Stilblatt. Die Kachel entscheidet das nicht - sie nimmt die Klasse
+    /// entgegen, die Kachelbilder.Klasse nennt.</para>
+    /// </summary>
+    [Parameter] public string? Bildklasse { get; set; }
+
     /// <summary>Die Kachel wurde angeklickt.</summary>
     [Parameter] public EventCallback Geklickt { get; set; }
+
+    private string Bildklassen
+        => string.IsNullOrEmpty(Bildklasse) ? "epos-kachel-bild" : "epos-kachel-bild " + Bildklasse;
 
     private bool PunktSichtbar => Zustand is not null || !string.IsNullOrEmpty(Status);
 

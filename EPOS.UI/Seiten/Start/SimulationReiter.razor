@@ -49,14 +49,21 @@
         </section>
     }
 
+    @* Der Knopf traegt seit dem Anwenderwunsch vom 05.09.2026 das Sinnbild
+       seiner Kachel (W16b-E-3). Er IST die 21. Kachel dieser Seite - im Bestand
+       ein btn_SimKonfig ohne Bild, aber mit demselben Rang wie die
+       Bildkacheln daneben; ein Knopf mit Bild ist in dieser Maske Hausform
+       (btn_Speichern, btn_Help). *@
     <div class="epos-startreiter-leiste">
-        <button type="button" class="epos-knopf"
+        <button type="button" class="epos-knopf epos-knopf--mit-bild"
                 @onclick="@(() => Geklickt.InvokeAsync(Kachelschluessel.SimulationKonfiguration))">
-            @KonfigText
+            <img class="epos-kachel-bild epos-kachel-bild--knopf @Kachelbilder.Klasse(Kachelschluessel.SimulationKonfiguration)"
+                 src="@Kachelbilder.Quelle(Kachelschluessel.SimulationKonfiguration)" alt="" />
+            <span>@KonfigText</span>
         </button>
     </div>
 
-    <Kachelraster Mindestbreite="320">
+    <Kachelraster Mindestbreite="404">
         <KindInhalt>
             @foreach (StartKachel kachel in Kacheln)
             {
@@ -64,6 +71,8 @@
                 <Kachel Titel="@k.Titel"
                         Beschreibung="@k.Beschreibung"
                         Zustand="@k.Zustand"
+                        Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                        Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
                         Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
             }
         </KindInhalt>
