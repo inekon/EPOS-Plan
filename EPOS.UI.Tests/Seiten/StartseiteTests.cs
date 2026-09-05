@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO;
 using System.Threading;
 using AngleSharp.Dom;
 using Bunit;
@@ -836,5 +837,53 @@ public class StartseiteTests : BunitContext
 
         Assert.DoesNotContain("Bitte zuerst ein Projekt auswählen!",
                               cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Ein freier Reiter ist nicht grau</b> — Befund W16b‑B‑2b.
+    ///
+    /// <para><c>tabControl_Wizard_DrawItem</c> zeichnete einen bedienbaren,
+    /// nicht gewählten Reiter SCHWARZ (<c>Color.FromArgb(0x000000)</c>,
+    /// <c>Form_Start.cs</c> :129‑141). Der Hausknopf trägt
+    /// <c>--epos-text-leise</c>, der gesperrte <c>--epos-text-sehr-leise</c> —
+    /// bei 16 px halbfett sieht beides gleich grau aus, und der Anwender liest
+    /// einen freien Reiter als gesperrten. Die Startseite setzt deshalb dort,
+    /// wo sie ohnehin ihre Schriftgröße setzt, die Textfarbe.</para>
+    ///
+    /// <para>Eine bunit-Probe sieht kein Stilblatt (Lehre W6‑B‑1) — geprüft
+    /// wird deshalb die REGEL, wie in
+    /// <c>KostenSeiteTests.Die_Aktionszelle_traegt_im_Stilblatt_kein_display_flex</c>.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_freier_Reiter_der_Startseite_traegt_die_Textfarbe()
+    {
+        string block = Stilblock(
+            ".epos-startseite > .epos-reiter > .epos-reiter-leiste\n" +
+            "> .epos-reiter-knopf:not(:disabled):not(.epos-reiter-knopf--aktiv) {");
+
+        Assert.Contains("color: var(--epos-text)", block, StringComparison.Ordinal);
+
+        // Der gesperrte Knopf bleibt sehr leise - sonst waere der Unterschied
+        // wieder weg, nur andersherum.
+        Assert.Contains("var(--epos-text-sehr-leise)",
+                        Stilblock(".epos-reiter-knopf:disabled {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>Liest den Rumpf einer Regel aus <c>EPOS.UI/wwwroot/epos-ui.css</c>.</summary>
+    private static string Stilblock(string selektor)
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null &&
+               !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);   // das Stilblatt muss im Baum stehen
+        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+        int a = css.IndexOf(selektor, StringComparison.Ordinal);
+        Assert.True(a >= 0, "Regel " + selektor + " steht nicht im Stilblatt");
+        int e = css.IndexOf('}', a);
+        Assert.True(e > a);
+        return css.Substring(a + selektor.Length, e - a - selektor.Length);
     }
 }

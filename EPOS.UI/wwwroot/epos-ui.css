@@ -3965,6 +3965,28 @@ body {
     font-weight: 600;
 }
 
+/* Befund W16b-B-2 der Windows-Abnahme vom 05.09.2026: "Die Auswahl der
+   anderen Bereiche ist ausgegraut."
+
+   Der Vorlaeufer zeichnete einen bedienbaren, nicht gewaehlten Reiter
+   SCHWARZ - tabControl_Wizard_DrawItem setzte Color.FromArgb(0x000000)
+   (Form_Start.cs:129-141, der gewaehlte in Weiss auf farbiger Flaeche).
+   .epos-reiter-knopf traegt dagegen --epos-text-leise (#5f5e5a), und der
+   gesperrte Knopf --epos-text-sehr-leise (#888780): 0x29 Unterschied je
+   Kanal - bei 16 px halbfett sehen beide gleich grau aus, und ein freier
+   Reiter liest sich als gesperrter.
+
+   Deshalb HIER, wo die Startseite ohnehin ihre Schriftgroesse setzt: Ein
+   bedienbarer, nicht gewaehlter Reiter traegt die Textfarbe. Gesperrt bleibt
+   --epos-text-sehr-leise, gewaehlt --epos-quelle-text; die :not()-Paare
+   halten die zwei Zustaende frei, weil dieser Selektor sonst ueber beide
+   gewaenne. Nur die Startseite - die uebrigen Reiterleisten des Hauses
+   stehen in Dialogen und bleiben, wie sie sind. */
+.epos-startseite > .epos-reiter > .epos-reiter-leiste
+> .epos-reiter-knopf:not(:disabled):not(.epos-reiter-knopf--aktiv) {
+    color: var(--epos-text);
+}
+
 .epos-startreiter {
     display: flex;
     flex-direction: column;
