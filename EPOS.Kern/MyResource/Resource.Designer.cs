@@ -37606,6 +37606,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
+        /// </summary>
+        public static string GEB_BTN_SIMULATION {
+            get {
+                return ResourceManager.GetString("GEB_BTN_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Wärmebedarf des in der Projektliste markierten Gebäudes berechnen und anzeigen ähnelt.
+        /// </summary>
+        public static string GEB_BTN_SIMULATION_HINWEIS {
+            get {
+                return ResourceManager.GetString("GEB_BTN_SIMULATION_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. Bitte das Projekt speichern und eine Klimaregion auswählen. ähnelt.
+        /// </summary>
+        public static string GEB_MSG_KEIN_BEDARF {
+            get {
+                return ResourceManager.GetString("GEB_MSG_KEIN_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Gebäude ähnelt.
+        /// </summary>
+        public static string GEBB_TITEL {
+            get {
+                return ResourceManager.GetString("GEBB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen ähnelt.
+        /// </summary>
+        public static string GEBB_GRP_KENNZAHLEN {
+            get {
+                return ResourceManager.GetString("GEBB_GRP_KENNZAHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Heizung: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_HEIZWAERME {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_HEIZWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_VOLLBENUTZUNG {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_VOLLBENUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die h/a ähnelt.
+        /// </summary>
+        public static string GEBB_EINHEIT_STUNDEN {
+            get {
+                return ResourceManager.GetString("GEBB_EINHEIT_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Projekt entfernen ähnelt.
         /// </summary>
         public static string GEB_BTN_ENTFERNEN {
