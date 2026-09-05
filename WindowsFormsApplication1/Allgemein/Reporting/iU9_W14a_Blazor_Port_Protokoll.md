@@ -780,9 +780,11 @@ bei 900 px). Dazu ein Fall, der **jede Selektorzeile** des neuen Blocks daraufhi
 trägt den Raster, und die Zahlenfelder des Modulkatalogs sind kurze Felder mit der Einheit in
 ihrer Feldzeile.
 
-**Testzahlen.** `EPOS.UI.Tests` **2530** grün (de‑DE und `LANG=en_US.UTF-8`),
+**Testzahlen.** `EPOS.UI.Tests` **2530** grün (de‑DE und `LANG=en_US.UTF-8`); nach dem Merge
+von `origin/ios_migration` (Stromganglinien-Import, W12) **2546** grün in beiden Sprachen.
 `Werkzeuge/Formularkarte` **122** grün. `StilblattTests`, `ParametersatzTests`,
-`KatalograhmenTests` und `KatalogdialogTests` unverändert grün.
+`KatalograhmenTests` und `KatalogdialogTests` unverändert grün — die Klammerbilanz des
+Stilblatts hält auch nach dem Merge, der 14 Zeilen in einen anderen Block geschrieben hat.
 
 **Abnahmepunkte am Gerät** (100 / 125 / 150 %):
 
