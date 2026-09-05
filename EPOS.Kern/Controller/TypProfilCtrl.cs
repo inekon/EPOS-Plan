@@ -5,6 +5,30 @@ using System.Data;
 namespace WindowsFormsApplication1
 {
     /// <summary>
+    /// Wie das Anlegen eines Typ-Profils ausgegangen ist (Befund W8-B-2, Windows-Abnahme
+    /// 05.09.2026).
+    ///
+    /// <para>Bis dahin kannte <see cref="TypProfilCtrl.Neu"/> nur <c>true</c>/<c>false</c>
+    /// und lief mit einem BELEGTEN Namen bis in das <c>INSERT</c>. Die Zugriffsschicht
+    /// meldete den Wurf dann ueber <c>DataRepository.FehlerMelden</c> — ein modaler
+    /// Kasten mit dem Wortlaut „Datenbankfehler: SQLite Error 19: 'UNIQUE constraint
+    /// failed: Tab_Stromverbrauchertyp_STAMM.Typname'" samt der Anweisung, mitten aus
+    /// einem Blazor-Ereignis heraus (Hausregel A-8). Der belegte Name ist jetzt ein WERT,
+    /// und der Dialog macht daraus ein Warnbanner in der offenen Namensabfrage.</para>
+    /// </summary>
+    internal enum TypAnlageErgebnis
+    {
+        /// <summary>Der Typ steht im Katalog.</summary>
+        Angelegt = 0,
+
+        /// <summary>Es gibt schon einen Typ dieses Namens — es wurde nichts geschrieben.</summary>
+        NameBelegt = 1,
+
+        /// <summary>Der Kopf oder die 168 Werte kamen nicht durch.</summary>
+        Fehlgeschlagen = 2
+    }
+
+    /// <summary>
     /// Die Wochen-Stundenprofile der drei Typkataloge (iU9-W8.0b) — Datenseite von
     /// <c>EPOS.UI/Dialoge/Bedarf/TypProfilDialog.razor</c>, das <c>Form_EingStromTyp</c>,
     /// <c>Form_EingProzTyp</c> und <c>Form_EingBrauchwasserTyp</c> abloest.
@@ -44,6 +68,27 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Typliste — dieselbe Reihenfolge wie im Vorlaeufer.</summary>
         internal static IReadOnlyList<string> Typen(BedarfsArt art) => BedarfStammCtrl.Typen(art);
+
+        /// <summary>
+        /// Gibt es einen Typ dieses Namens schon? Die VORPRUEFUNG zu <see cref="Neu"/> und
+        /// <see cref="SpeichernUnter"/> (Befund W8-B-2).
+        ///
+        /// <para>Die Namensspalte ist in allen drei Katalogen EINDEUTIG; ohne diese Frage
+        /// lief ein belegter Name in den Wurf der Datenbank und der Anwender bekam dessen
+        /// Wortlaut zu sehen. Sie fragt dieselbe Spalte, die auch der Schluessel ist
+        /// (<see cref="BedarfStammCtrl.TypKatalog"/>) — eine zweite Namensquelle liefe
+        /// beim ersten Katalog auseinander, der seine Spalte umbenennt.</para>
+        /// </summary>
+        internal static bool TypExists(BedarfsArt art, string name)
+        {
+            if (string.IsNullOrEmpty(name)) return false;
+
+            (string tabelle, string spalte) = BedarfStammCtrl.TypKatalog(art);
+            object v = DataRepository.ExecuteScalar(
+                "SELECT " + spalte + " FROM " + tabelle + " WHERE " + spalte + " = ?",
+                new DbParam("@typ", name));
+            return v != null && v != DBNull.Value;
+        }
 
         /// <summary>Ist das Typ-Profil Auslieferungsbestand (<c>ReadOnly</c>)?</summary>
         internal static bool IstReadOnly(BedarfsArt art, string typ)
@@ -110,17 +155,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// „Neu": Typkopf anlegen, dann 168 Nullen und eine leere Beschreibung. Rueckgabe
-        /// <c>false</c>, wenn der Kopf nicht entstand — der Vorlaeufer brach dann ebenfalls ab.
+        /// „Neu": Typkopf anlegen, dann 168 Nullen und eine leere Beschreibung.
+        /// <see cref="TypAnlageErgebnis.NameBelegt"/>, wenn es den Namen schon gibt;
+        /// <see cref="TypAnlageErgebnis.Fehlgeschlagen"/>, wenn der Kopf nicht entstand —
+        /// der Vorlaeufer brach dann ebenfalls ab.
         /// </summary>
-        internal static bool Neu(BedarfsArt art, string name)
+        internal static TypAnlageErgebnis Neu(BedarfsArt art, string name)
             => Anlegen(art, name, new double[TAGE, STUNDEN], "");
 
         /// <summary>
         /// „Speichern unter": Typkopf anlegen und die AKTUELLEN Werte samt Beschreibung
-        /// hineinschreiben.
+        /// hineinschreiben. Ein belegter Name meldet sich wie bei <see cref="Neu"/>.
         /// </summary>
-        internal static bool SpeichernUnter(BedarfsArt art, string name, double[,] werte, string beschreibung)
+        internal static TypAnlageErgebnis SpeichernUnter(BedarfsArt art, string name,
+                                                         double[,] werte, string beschreibung)
             => Anlegen(art, name, werte, beschreibung);
 
         /// <summary>Loescht ein Typ-Profil. Die ReadOnly-Sperre prueft der Aufrufer vorher.</summary>
@@ -136,10 +184,16 @@ namespace WindowsFormsApplication1
 
         // =================================================================================
 
-        private static bool Anlegen(BedarfsArt art, string name, double[,] werte, string beschreibung)
+        private static TypAnlageErgebnis Anlegen(BedarfsArt art, string name, double[,] werte,
+                                                 string beschreibung)
         {
-            if (string.IsNullOrEmpty(name)) return false;
-            if (werte == null || werte.GetLength(0) < TAGE || werte.GetLength(1) < STUNDEN) return false;
+            if (string.IsNullOrEmpty(name)) return TypAnlageErgebnis.Fehlgeschlagen;
+            if (werte == null || werte.GetLength(0) < TAGE || werte.GetLength(1) < STUNDEN)
+                return TypAnlageErgebnis.Fehlgeschlagen;
+
+            // VORPRUEFUNG statt Wurf (Befund W8-B-2): Die Namensspalte ist eindeutig, und
+            // ein doppelter Name endete bis dahin in einem modalen Datenbankfehler.
+            if (TypExists(art, name)) return TypAnlageErgebnis.NameBelegt;
 
             int id;
             switch (art)
@@ -148,21 +202,25 @@ namespace WindowsFormsApplication1
                 case BedarfsArt.Prozesswaerme:    id = ProzesswaermeStammCtrl.TypNew(name); break;
                 default:                          id = BrauchwasserStammCtrl.TypNew(name); break;
             }
-            if (id <= 0) return false;
+            if (id <= 0) return TypAnlageErgebnis.Fehlgeschlagen;
 
             try
             {
                 using (DbVorgang v = DataRepository.Vorgang())
                 {
-                    if (!Schreibe(v, art, name, werte, beschreibung)) { v.Rollback(); return false; }
+                    if (!Schreibe(v, art, name, werte, beschreibung))
+                    {
+                        v.Rollback();
+                        return TypAnlageErgebnis.Fehlgeschlagen;
+                    }
                     v.Commit();
-                    return true;
+                    return TypAnlageErgebnis.Angelegt;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Fehler beim Anlegen des Typ-Profils: " + ex.Message);
-                return false;
+                return TypAnlageErgebnis.Fehlgeschlagen;
             }
         }
 

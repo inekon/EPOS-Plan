@@ -35867,7 +35867,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BPRO_MSG_FEHLER", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Typ mit diesem Namen ist schon vorhanden ähnelt.
+        /// </summary>
+        public static string BPRO_MSG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("BPRO_MSG_NAME_BELEGT", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll {0} wirklich gelöscht werden ? ähnelt.
         /// </summary>
