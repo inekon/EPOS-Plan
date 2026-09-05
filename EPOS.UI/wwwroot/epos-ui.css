@@ -375,8 +375,23 @@ body {
    Baustein: SpeichernLeiste (Vorbild Allgemein/SpeichernLeiste.cs)
    ========================================================================== */
 
+/* Die Leiste BRICHT UM - Befund W12-B-1 (Anwender, 05.09.2026, Windows-
+   Abnahme): "Beschriftung der Buttons nicht zur Umrandung passen." Unter der
+   Katalogliste der Zweispaltenauswahl stehen bis zu VIER Knoepfe
+   ("Stromverbraucher aendern...", "... neu...", "... loeschen", "Typ in DB
+   aendern...") in einer Spalte, die nur die halbe Dialogbreite hat. Ohne
+   flex-wrap blieb die Reihe in EINER Zeile: Jeder Knopf schrumpfte auf seine
+   Mindestbreite von 88 px, waehrend "Stromverbraucher" als unteilbares Wort
+   breiter blieb - der Text lief ueber den Rahmen in den Nachbarknopf, die
+   Umrandung lag mitten im Wort.
+
+   Der Umbruch steht HIER und nicht je Dialog: .epos-leiste ist die eine
+   Knopfleiste des Hauses (110 Fundstellen), und alle elf Projekt/DB-Dialoge
+   wie auch die Katalogverwaltungen setzen genau sie unter ihre Liste.
+   gap traegt beide Achsen, der Zeilenabstand kommt also von selbst mit. */
 .epos-leiste {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 12px;                              /* SpeichernLeiste.ABSTAND      */
     margin-top: var(--epos-rand);
@@ -393,15 +408,30 @@ body {
     font-weight: 700;
 }
 
+/* Ein Knopf bemisst sich an seiner BESCHRIFTUNG (Befund W12-B-1): flex
+   0 1 auto statt einer festen Rasterspalte, min-width ist ein MINDESTmass
+   und keine Breite. Reicht der Platz auch nach dem Umbruch der Leiste nicht,
+   bricht der Text IM Knopf um, statt ueber den Rahmen zu laufen - dafuer
+   white-space: normal und overflow-wrap. Abschneiden (overflow: hidden)
+   waere derselbe Fehler in still und steht deshalb bewusst nicht hier.
+
+   Die Hoehe waechst dabei mit, weil sie als min-height gesetzt ist; die
+   4 px Innenabstand halten eine zweite Zeile vom Rahmen frei. Bei
+   einzeiliger Beschriftung - dem Normalfall - aendert sich nichts: Text
+   plus Innenabstand bleiben unter --epos-touchziel, und die Hoehe kommt
+   weiter aus dem Mindestmass. */
 .epos-knopf {
+    flex: 0 1 auto;
     min-height: var(--epos-touchziel);
     min-width: 88px;                        /* Knopfbreite der Designer     */
-    padding: 0 12px;
+    padding: 4px 12px;
     font: inherit;
     color: var(--epos-text);
     background: var(--epos-flaeche);
     border: 1px solid var(--epos-rahmen);
     border-radius: var(--epos-ecke);
+    white-space: normal;
+    overflow-wrap: break-word;
     cursor: pointer;
 }
 

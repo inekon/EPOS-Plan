@@ -593,7 +593,7 @@ Projekt↔DB-Auswahl.
 
 ### Wachen
 
-`EPOS.UI.Tests/Bausteine/ZweispaltenauswahlTests` (14 Fälle) prüft drei Ebenen: den
+`EPOS.UI.Tests/Bausteine/ZweispaltenauswahlTests` (17 Fälle) prüft drei Ebenen: den
 **Baustein** (Reihenfolge der drei Bereiche = Tastaturweg, `aria`-Beschriftungen, beide
 Zeichen je Knopf mit `aria-hidden`, Klartext, Kurztext, Sperrzustände, Rückrufe,
 `NurRechts`), die **Regel im Stilblatt** (nebeneinander ist die Vorgabe, kein
@@ -614,3 +614,76 @@ Pfeilspalte noch selbst). Eine bunit-Probe sieht eine Stilregel nicht — Lehre 
 4. **Knöpfe**: Beide tragen ihren Satz im Klartext — auf Deutsch **und** auf Englisch —
    und einen Kurztext, der die Herkunft der Zeile nennt. Jeder bleibt gesperrt, solange
    in der jeweils anderen Liste nichts markiert ist.
+
+
+## Befund W12‑B‑1 (05.09.2026) — die Knopfleiste bemisst sich am Text und bricht um
+
+**Der Befund.** Im Bildschirmfoto der Windows-Abnahme (Dialog „Standard Stromprofil",
+Full HD bei 125–150 % Skalierung) meldet der Anwender: *„Beschriftung der Buttons nicht
+zur Umrandung passen."* Unter der rechten Liste „Datenbank Strombedarf" stehen **vier**
+Knöpfe in einer Reihe — „Stromverbraucher ändern…", „Stromverbraucher neu…",
+„Stromverbraucher löschen", „Typ in DB ändern…". Sie waren schmaler als ihre
+Beschriftung: „Stromverbraucher" ragte in den Nachbarknopf, „Stromverbrauche neu…" war
+abgeschnitten, die Umrandung lag mitten im Wort.
+
+**Die Ursache — zwei Zeilen im Hausblatt, nicht der Baustein.** `.epos-leiste`
+(`EPOS.UI/wwwroot/epos-ui.css`, vor der Behebung Zeile 378, jetzt 392) war ein
+`display: flex` **ohne** `flex-wrap`, also eine Reihe, die nicht umbricht;
+`.epos-knopf` (vorher 396, jetzt 423) hatte `min-width: 88px` und die Vorgabe
+`flex-shrink: 1`. In der rechten Spalte der `Zweispaltenauswahl` — die sich die
+Dialogbreite mit der Projektliste teilt — forderten die vier Knöpfe zusammen mehr Platz,
+als die Zeile hatte. Sie schrumpften deshalb bis auf ihre 88 px, während
+„Stromverbraucher" als **unteilbares Wort** breiter blieb als der Innenraum: Der Text lief
+über den Rahmen. Der Baustein selbst war unbeteiligt — er reicht `Rechts` nur durch; die
+Knopfleiste setzen die Aufrufer.
+
+**Die Behebung — eine Stelle für das ganze Haus.** Kein Dialog wurde angefasst.
+`.epos-leiste` bekommt `flex-wrap: wrap` (der Abstand liegt schon auf `gap` und trägt
+damit beide Achsen), `.epos-knopf` bekommt `flex: 0 1 auto` (der Knopf bemisst sich an
+seiner Beschriftung, `min-width` bleibt ein **Mindest**maß), `white-space: normal` mit
+`overflow-wrap: break-word` (reicht der Platz auch nach dem Umbruch nicht, bricht der
+Text **im** Knopf um) und `padding: 4px 12px` statt `0 12px` (hält eine zweite Zeile vom
+Rahmen frei; bei einzeiliger Beschriftung ändert sich nichts, weil die Höhe weiter aus
+`min-height: var(--epos-touchziel)` kommt). **Kein `overflow: hidden`** — Abschneiden
+wäre derselbe Fehler in still.
+
+**Reichweite.** `.epos-leiste` ist die eine Knopfleiste des Hauses (110 Fundstellen in
+`EPOS.UI`). Direkt betroffen waren die Katalogleisten der elf Projekt↔DB-Dialoge, am
+stärksten die mit vier Knöpfen (`BedarfsProfileDialog` — der gemeldete „Standard
+Stromprofil" — und `GebaeudeDialog`), danach die mit drei (`BhkwDialog`,
+`HeizkesselDialog`, `SolarkollektorenDialog`) und die mit zwei
+(`PufferspeicherDialog`, `PhotovoltaikDialog`, `WaermebedarfExternDialog`). Mit
+behoben sind ohne eigenes Zutun die Leisten der Katalogverwaltungen am
+`Katalograhmen` (`WaermebedarfAdminDialog`, `BedarfAdminDialog`, `KlimadatenDialog`,
+`SolarganglinieAdminDialog`, `KatalogBrowserDialog`, `ModulKatalogDialog`) und jede
+weitere Leiste des Hauses — dieselbe Klemme hätte dort bei langer Beschriftung oder
+schmalem Fenster genauso zugeschlagen.
+
+**Wachen.** Drei neue Fälle in `EPOS.UI.Tests/Bausteine/ZweispaltenauswahlTests`
+(14 → 17): `Die_Knopfleiste_unter_der_Katalogliste_traegt_die_Leistenklasse` (Markup —
+die vier Knöpfe eines Aufrufers landen in der rechten Spalte des Bausteins und stehen
+dort in `.epos-leiste`, ohne Inline-Stil),
+`Jeder_Dialog_setzt_seine_Katalogknoepfe_in_eine_epos_leiste` (Bestand — kein Dialog
+erfindet eine zweite Knopfleiste, die den Umbruch nicht mitbekäme) und
+`Die_Knopfleiste_bricht_um_statt_die_Beschriftung_abzuschneiden` (Stilblatt —
+`flex-wrap: wrap`, `flex: 0 1 auto`, `white-space: normal`, `overflow-wrap`, und
+ausdrücklich **kein** `white-space: nowrap`, **kein** `overflow: hidden`, **keine**
+feste `width`). Eine bunit-Probe sieht eine Stilregel nicht — Lehre W6‑B‑1. Die
+Gegenprobe wurde gezogen: Mit zurückgedrehtem Stilblatt fällt der dritte Fall rot aus.
+
+### Abnahmepunkte A‑W12‑B‑1
+
+1. **Der gemeldete Dialog.** „Standard Stromprofil" bei 125 % und 150 % Skalierung
+   öffnen: Die vier Knöpfe unter „Datenbank Strombedarf" sind so breit wie ihre
+   Beschriftung; kein Text berührt oder überschreitet einen Rahmen, keiner ist
+   abgeschnitten.
+2. **Schmales Fenster.** Fenster unter 900 CSS‑px ziehen (die Zweispaltenauswahl bricht
+   dann untereinander um): Die Knopfleiste bricht in zwei Zeilen um, der Abstand
+   zwischen den Zeilen ist derselbe wie zwischen den Knöpfen. Reicht es auch dann
+   nicht, bricht der Text **innerhalb** des Knopfes um — der Knopf wird höher, nicht
+   der Text kürzer.
+3. **Die anderen Dialoge.** Gebäude, Heizkessel, BHKW und Solarkollektoren zeigen
+   dasselbe Bild; die Knöpfe stehen nicht mehr auf gleicher Breite, sondern jeder so
+   breit, wie sein Text ist.
+4. **Nichts sonst hat sich bewegt.** Einzeilige Knöpfe — „OK", „Abbrechen", die
+   Startseitenfußleiste — stehen unverändert in ihrer bisherigen Höhe und Breite.
