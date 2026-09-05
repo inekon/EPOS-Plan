@@ -13,7 +13,17 @@
    IM BESTAND TRUGEN SIE ZUSAETZLICH DEN STATUS: pBox_Solarthermie_Click faerbte
    beide Knoepfe gruen, wenn Kollektoren ODER Ganglinien vorhanden waren (:1313-1325).
    Das ist dieselbe Aussage wie der Statuspunkt der Kachel (Bit 512) und faellt
-   deshalb ersatzlos - eine Farbe an zwei Stellen ist eine Wahrheit zu viel. *@
+   deshalb ersatzlos - eine Farbe an zwei Stellen ist eine Wahrheit zu viel.
+
+   SIE STEHEN IN DER KARTE (Windows-Abnahme 05.09.2026, Befund W16a-B-1:
+   "Optionen Profil und Ganglinie sollte eher im Solarthermie Feld sein"). Bis
+   dahin trug JEDE der sieben Kacheln den Wirt epos-startkachel-mit-wahl, und
+   die Optionsgruppe stand als eigener Kasten UNTER der Solarthermiekarte -
+   zwischen zwei gerahmten Nachbarkacheln las sie sich wie ein Zusatz zum
+   ganzen Reiter. Jetzt bekommt NUR die Solarthermiekachel den Wirt, und der
+   traegt den Kartenrahmen; die Kachel darin gibt ihren eigenen ab (Stilblatt),
+   beides zusammen ist EINE Karte. Ueber das Markup ginge es nicht: Eine Kachel
+   IST ein <button>, und ein <button> darf keine Auswahlknoepfe enthalten. *@
 
 @namespace EPOS.UI.Seiten.Start
 
@@ -33,16 +43,23 @@
             {
                 StartKachel k = kachel;
 
-                <div class="epos-startkachel-mit-wahl">
-                    <Kachel Titel="@k.Titel"
-                            Beschreibung="@k.Beschreibung"
-                            Zustand="@k.Zustand"
-                            Bild="@Kachelbilder.Quelle(k.Schluessel)"
-                            Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
-                            Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+                @if (k.Schluessel == Kachelschluessel.Solarthermie)
+                {
+                    @* DIE EINZIGE Kachel mit einer Weiche. Der Kartenrahmen liegt
+                       hier am WIRT, nicht an der Kachel: Eine Kachel ist ein
+                       <button> und darf keine Auswahlknoepfe enthalten (ein Klick
+                       darauf loeste sonst die Kachel aus). Kachel und Optionen
+                       lesen sich trotzdem als EINE Karte, weil die Kachel darin
+                       ihren eigenen Rahmen abgibt - Befund W16a-B-1 der
+                       Windows-Abnahme vom 05.09.2026. *@
+                    <div class="epos-startkachel-mit-wahl">
+                        <Kachel Titel="@k.Titel"
+                                Beschreibung="@k.Beschreibung"
+                                Zustand="@k.Zustand"
+                                Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                                Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                                Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
 
-                    @if (k.Schluessel == Kachelschluessel.Solarthermie)
-                    {
                         <div class="epos-startkachel-wahl" role="radiogroup" aria-label="@k.Titel">
                             <label>
                                 <input type="radio" name="epos-solarart"
@@ -57,8 +74,17 @@
                                 @GanglinieText
                             </label>
                         </div>
-                    }
-                </div>
+                    </div>
+                }
+                else
+                {
+                    <Kachel Titel="@k.Titel"
+                            Beschreibung="@k.Beschreibung"
+                            Zustand="@k.Zustand"
+                            Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                            Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                            Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+                }
             }
         </KindInhalt>
     </Kachelraster>

@@ -1038,6 +1038,67 @@ public class StartseiteTests : BunitContext
                         StringComparison.Ordinal);
     }
 
+    // =====================================================================
+    //  Die Weiche IN der Karte - Windows-Abnahme 05.09.2026, Befund W16a-B-1
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Befund W16a‑B‑1:</b> „Optionen Profil und Ganglinie sollte eher im
+    /// Solarthermie Feld sein."
+    ///
+    /// <para>Die Optionsgruppe stand als eigener Kasten UNTER der Karte im
+    /// Kachelraster; zwischen zwei gerahmten Nachbarkacheln las sie sich wie ein
+    /// Zusatz zum ganzen Reiter statt wie die Weiche DIESER Kachel. Sie steht jetzt
+    /// im Rahmen der Solarthermiekarte — und zwar bei genau EINER Kachel.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Solarweiche_steht_im_Rahmen_ihrer_Karte()
+    {
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 1030));
+
+        cut.FindAll("[role='tab']")[3].Click();
+
+        // Genau eine Karte fuehrt die Weiche, und die Weiche steht IN ihr.
+        var karten = cut.FindAll(".epos-startkachel-mit-wahl");
+        Assert.Single(karten);
+        Assert.NotNull(karten[0].QuerySelector(".epos-kachel"));
+        Assert.NotNull(karten[0].QuerySelector(".epos-startkachel-wahl"));
+
+        // Die Weiche gehoert zur Solarthermiekachel - und zu keiner anderen.
+        Assert.Contains("Solarthermie", karten[0].QuerySelector(".epos-kachel")!.TextContent);
+        Assert.Equal("Solarthermie",
+                     karten[0].QuerySelector(".epos-startkachel-wahl")!.GetAttribute("aria-label"));
+
+        // Tastaturweg: erst die Kachel, dann die zwei Optionen - DOM-Reihenfolge.
+        Assert.Equal("BUTTON", karten[0].Children[0].TagName);
+        Assert.Equal(2, karten[0].QuerySelectorAll(".epos-startkachel-wahl input").Length);
+    }
+
+    /// <summary>
+    /// Der Rahmen liegt am WIRT, die Kachel darin gibt ihren eigenen ab — nur so
+    /// lesen sich Kachel und Optionen als EINE Karte. Eine bunit-Probe sieht das
+    /// nicht (Lehre W6‑B‑1), geprüft wird die Regel.
+    ///
+    /// <para>Über das Markup ginge es nicht: Eine Kachel IST ein <c>&lt;button&gt;</c>,
+    /// und ein <c>&lt;button&gt;</c> darf keine Auswahlknöpfe enthalten.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Kartenrahmen_der_Solarweiche_liegt_am_Wirt()
+    {
+        string wirt = Stilblock(".epos-startkachel-mit-wahl {");
+
+        Assert.Contains("border: 1px solid var(--epos-karte-rahmen)", wirt, StringComparison.Ordinal);
+        Assert.Contains("background: var(--epos-karte-flaeche)", wirt, StringComparison.Ordinal);
+        Assert.Contains("border-radius: var(--epos-ecke)", wirt, StringComparison.Ordinal);
+
+        string kachel = Stilblock(".epos-startkachel-mit-wahl > .epos-kachel {");
+
+        Assert.Contains("border: 0", kachel, StringComparison.Ordinal);
+        Assert.Contains("background: none", kachel, StringComparison.Ordinal);
+    }
+
     /// <summary>Liest den Rumpf einer Regel aus <c>EPOS.UI/wwwroot/epos-ui.css</c>.</summary>
     private static string Stilblock(string selektor)
     {

@@ -114,6 +114,14 @@ public class GebaeudeDialogTests : BunitContext
     private static IElement Knopf(IRenderedComponent<GebaeudeDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
+    /// <summary>Der Uebernahmeknopf — seit Befund W9‑B‑3 mit Klartext statt „◀".</summary>
+    private static IElement Uebernehmen(IRenderedComponent<GebaeudeDialog> cut)
+        => cut.FindAll(".epos-auswahlspalte .epos-leiste button")[0];
+
+    /// <summary>Der Entfernenknopf — seit Befund W9‑B‑3 mit Klartext statt „▶".</summary>
+    private static IElement Entfernen(IRenderedComponent<GebaeudeDialog> cut)
+        => cut.FindAll(".epos-auswahlspalte .epos-leiste button")[1];
+
     // =================================================================================
     // Feldbestand je Betriebsart
     // =================================================================================
@@ -138,7 +146,9 @@ public class GebaeudeDialogTests : BunitContext
         Assert.Equal(4, cut.FindAll("input[type=text][readonly]").Count);
         Assert.Single(cut.FindAll("textarea[readonly]"));
 
-        foreach (string t in new[] { "◀", "▶", "Ändern", "Gebäude in DB ändern...",
+        foreach (string t in new[] { "▲ In das Projekt übernehmen",
+                                     "▼ Aus dem Projekt entfernen",
+                                     "Ändern", "Gebäude in DB ändern...",
                                      "Gebäude in DB neu...", "Gebäude in DB löschen",
                                      "OK", "Abbrechen" })
             Assert.NotNull(Knopf(cut, t));
@@ -159,8 +169,8 @@ public class GebaeudeDialogTests : BunitContext
         var cut = Aufbauen(admin: true);
 
         Assert.DoesNotContain("ausgewählte Gebäude im Projekt:", cut.Markup);
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "◀");
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "▶");
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Contains("übernehmen"));
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Contains("entfernen"));
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Ändern");
         Assert.Contains("Gebäude in DB:", cut.Markup);
     }
@@ -249,14 +259,14 @@ public class GebaeudeDialogTests : BunitContext
     // =================================================================================
 
     [Fact]
-    public void Der_Pfeil_nach_links_legt_eine_Zeile_mit_den_Vorgaben_an()
+    public void Uebernehmen_legt_eine_Zeile_mit_den_Vorgaben_an()
     {
         bool gemeldet = false;
         var zeilen = new List<GebaeudeProjektZeile>();
         var cut = Aufbauen(zeilen: zeilen, geaendert: () => gemeldet = true);
 
         cut.FindAll("button.epos-anlagenwahl").Last().Click();   // eine Katalogzeile
-        Knopf(cut, "◀").Click();
+        Uebernehmen(cut).Click();
 
         Assert.Single(zeilen);
         Assert.Equal("Wohnfläche [m²]", zeilen[0].Einheit);
@@ -266,18 +276,18 @@ public class GebaeudeDialogTests : BunitContext
     }
 
     /// <summary>
-    /// „▶" trifft über die <c>IdZ</c>: Zwei gleiche Gebäude im Projekt teilen sich die
-    /// Stamm-Id (<c>btn_Entfernen_Click</c>:283-287).
+    /// „Aus dem Projekt entfernen" trifft über die <c>IdZ</c>: Zwei gleiche Gebäude im
+    /// Projekt teilen sich die Stamm-Id (<c>btn_Entfernen_Click</c>:283-287).
     /// </summary>
     [Fact]
-    public void Der_Pfeil_nach_rechts_trifft_die_Zeile_und_nicht_die_Stamm_Id()
+    public void Entfernen_trifft_die_Zeile_und_nicht_die_Stamm_Id()
     {
         var zeilen = new List<GebaeudeProjektZeile> { Zeile(11), Zeile(12) };
         var cut = Aufbauen(zeilen: zeilen);
 
         // Die zweite Projektzeile waehlen und entfernen.
         cut.FindAll("button.epos-anlagenwahl")[1].Click();
-        Knopf(cut, "▶").Click();
+        Entfernen(cut).Click();
 
         Assert.Single(zeilen);
         Assert.Equal(11, zeilen[0].IdZ);
@@ -419,5 +429,123 @@ public class GebaeudeDialogTests : BunitContext
         Knopf(cut, "OK").Click();
 
         Assert.True(ergebnis);
+    }
+
+    // =================================================================================
+    // Die zwei Richtungsknoepfe - Windows-Abnahme 05.09.2026, Befund W9-B-3
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Befund W9‑B‑3:</b> „nicht so recht klar, auf was sich die oberen 2 Buttons
+    /// beziehen."
+    ///
+    /// <para>Der Vorläufer trug hier die blanken Zeichen „◀" und „▶" — bei
+    /// NEBENEINANDER stehenden Listen sagten sie die Richtung. In der Razor-Fassung
+    /// stehen die beiden Listen UNTEREINANDER, und dann zeigt ein waagerechter Pfeil
+    /// ins Leere. Beide Knöpfe tragen ihre Aufgabe jetzt im Klartext, das Zeichen
+    /// zeigt in die Richtung, in die die Zeile wandert — nach oben in die
+    /// Projektliste, nach unten aus ihr heraus.</para>
+    /// </summary>
+    [Fact]
+    public void Die_zwei_Richtungsknoepfe_sagen_was_sie_tun()
+    {
+        var cut = Aufbauen();
+
+        IElement hinzu = Uebernehmen(cut);
+        IElement weg = Entfernen(cut);
+
+        Assert.Equal("▲ In das Projekt übernehmen", hinzu.TextContent.Trim());
+        Assert.Equal("▼ Aus dem Projekt entfernen", weg.TextContent.Trim());
+
+        // Die Richtung passt zur Anordnung: hinauf in die Projektliste, hinab heraus.
+        Assert.StartsWith("▲", hinzu.TextContent.Trim());
+        Assert.StartsWith("▼", weg.TextContent.Trim());
+        Assert.DoesNotContain("◀", cut.Markup);
+        Assert.DoesNotContain("▶", cut.Markup);
+    }
+
+    /// <summary>Beschriftung UND Kurztext — der Kurztext nennt die Herkunft der Zeile.</summary>
+    [Fact]
+    public void Die_zwei_Richtungsknoepfe_tragen_einen_Kurztext()
+    {
+        var cut = Aufbauen();
+
+        Assert.Contains("Gebäude in DB", Uebernehmen(cut).GetAttribute("title") ?? "");
+        Assert.Contains("Projektliste", Entfernen(cut).GetAttribute("title") ?? "");
+    }
+
+    // =================================================================================
+    // Die Markierung der Projektliste - Windows-Abnahme 05.09.2026, Befund W9-B-1
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Befund W9‑B‑1:</b> „Im Projekt gespeichertes Gebäude wird nicht angezeigt
+    /// bzw. in der Liste selektiert."
+    ///
+    /// <para>Der Wirt baut seine Anzeigeliste bei JEDEM <c>Gaben</c>-Aufruf neu aus
+    /// der Fachliste auf (<c>GebaeudeHuelle.Gaben</c> :113‑114) — die Zeilenobjekte
+    /// sind danach andere. Eine Markierung über die Objektgleichheit war damit beim
+    /// ersten Neuzeichnen des Wirtes weg: Das gespeicherte Gebäude stand in der Liste,
+    /// aber unmarkiert. Verglichen wird deshalb über die <c>IdZ</c>.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Markierung_ueberlebt_einen_Austausch_der_Zeilenliste()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(11, "Haus A"),
+                                                                    Zeile(12, "Haus B") });
+
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        Assert.Equal(12, cut.Instance.Gewaehlt?.IdZ);
+
+        // Derselbe Bestand, NEUE Objekte - genau das, was die Huelle liefert.
+        cut.Render(p => p.Add(x => x.Zeilen, new List<GebaeudeProjektZeile>
+        {
+            Zeile(11, "Haus A"), Zeile(12, "Haus B")
+        }));
+
+        Assert.Equal(12, cut.Instance.Gewaehlt?.IdZ);
+        Assert.Equal("Haus B",
+                     cut.Find(".epos-zeile--markiert td:last-child").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Die zweite Hälfte desselben Befundes: Kommt die Projektliste erst NACH dem
+    /// ersten Zeichnen (der Ladeweg des Assistenten läuft beim Verlassen der
+    /// Projektkopfseite), stand bis hierher für immer keine Markierung.
+    /// </summary>
+    [Fact]
+    public void Eine_spaeter_gefuellte_Projektliste_wird_markiert()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile>());
+
+        Assert.Null(cut.Instance.Gewaehlt);
+        Assert.Empty(cut.FindAll(".epos-zeile--markiert"));
+
+        cut.Render(p => p.Add(x => x.Zeilen,
+                              new List<GebaeudeProjektZeile> { Zeile(11, "Musterhaus") }));
+
+        Assert.Equal(11, cut.Instance.Gewaehlt?.IdZ);
+        Assert.Contains("Musterhaus", cut.Find(".epos-zeile--markiert").TextContent);
+    }
+
+    /// <summary>
+    /// Steht der Anwender im KATALOG, bleibt seine Wahl stehen — das Nachziehen
+    /// überschreibt sie nicht.
+    /// </summary>
+    [Fact]
+    public void Eine_Katalogwahl_wird_vom_Nachziehen_nicht_ueberschrieben()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(11, "Haus A") });
+
+        // Die erste Katalogzeile waehlen - das nimmt die Projektmarkierung weg.
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        Assert.Null(cut.Instance.Gewaehlt);
+        Assert.NotNull(cut.Instance.Katalogzeile);
+
+        cut.Render(p => p.Add(x => x.Zeilen,
+                              new List<GebaeudeProjektZeile> { Zeile(11, "Haus A") }));
+
+        Assert.Null(cut.Instance.Gewaehlt);
+        Assert.NotNull(cut.Instance.Katalogzeile);
     }
 }

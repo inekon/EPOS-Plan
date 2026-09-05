@@ -64,9 +64,9 @@
                             @foreach (GebaeudeProjektZeile zeile in Zeilen)
                             {
                                 GebaeudeProjektZeile z = zeile;
-                                <tr class="@(z == _gewaehlt ? "epos-zeile--markiert" : null)">
+                                <tr class="@(IstGewaehlt(z) ? "epos-zeile--markiert" : null)">
                                     <td>
-                                        <Zeilenwahl Gewaehlt="@(z == _gewaehlt)" Kurztext="@SpalteWahl"
+                                        <Zeilenwahl Gewaehlt="@IstGewaehlt(z)" Kurztext="@SpalteWahl"
                                                     Gewaehltwerden="() => ProjektzeileWaehlen(z)" />
                                     </td>
                                     <td>@z.Name</td>
@@ -76,11 +76,15 @@
                     </table>
                 </div>
 
+                @* Die zwei Richtungsknoepfe (Befund W9-B-3). Sie tragen ihre
+                   Aufgabe im Klartext UND als Kurztext; das Zeichen zeigt in die
+                   Richtung, in die die Zeile wandert - die Listen stehen
+                   UNTEREINANDER, also nach oben und nach unten. *@
                 <div class="epos-leiste">
                     <button type="button" class="epos-knopf" disabled="@(_katalogzeile is null)"
-                            @onclick="BeiHinzu">@BtnHinzuText</button>
+                            title="@BtnHinzuHinweis" @onclick="BeiHinzu">@BtnHinzuText</button>
                     <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                            @onclick="BeiEntfernen">@BtnEntfernenText</button>
+                            title="@BtnEntfernenHinweis" @onclick="BeiEntfernen">@BtnEntfernenText</button>
                 </div>
             </div>
         }
@@ -302,8 +306,30 @@
     [Parameter] public string TextWohngebaeude { get; set; } = "Wohngebäude";
     [Parameter] public string TextSonstige { get; set; } = "Gewerbe+Sonstige";
 
-    [Parameter] public string BtnHinzuText { get; set; } = "◀";
-    [Parameter] public string BtnEntfernenText { get; set; } = "▶";
+    /// <summary>
+    /// Beschriftung des Übernahmeknopfes — <c>GEB_BTN_UEBERNEHMEN</c>.
+    ///
+    /// <para><b>Befund W9‑B‑3</b> der Windows-Abnahme vom 05.09.2026: „nicht so recht
+    /// klar, auf was sich die oberen 2 Buttons beziehen." Der Vorläufer trug hier die
+    /// blanken Zeichen „◀" und „▶" — bei NEBENEINANDER stehenden Listen sagten sie die
+    /// Richtung, in der Razor-Fassung stehen die beiden Listen aber UNTEREINANDER, und
+    /// dann zeigt ein waagerechter Pfeil ins Leere. Beschriftung und Kurztext benennen
+    /// jetzt die Aufgabe; das Zeichen zeigt in die Richtung, in die die Zeile wandert.
+    /// Das Anordnungsschema selbst ist ein offener Anwenderentscheid und bleibt
+    /// unberührt.</para>
+    /// </summary>
+    [Parameter] public string BtnHinzuText { get; set; } = "▲ In das Projekt übernehmen";
+
+    /// <summary>Kurztext des Übernahmeknopfes — <c>GEB_BTN_UEBERNEHMEN_HINWEIS</c>.</summary>
+    [Parameter] public string BtnHinzuHinweis { get; set; } =
+        "Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen";
+
+    /// <summary>Beschriftung des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN</c>.</summary>
+    [Parameter] public string BtnEntfernenText { get; set; } = "▼ Aus dem Projekt entfernen";
+
+    /// <summary>Kurztext des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN_HINWEIS</c>.</summary>
+    [Parameter] public string BtnEntfernenHinweis { get; set; } =
+        "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen";
     [Parameter] public string BtnAendernText { get; set; } = "Ändern";
     [Parameter] public string BtnDbAendernText { get; set; } = "Gebäude in DB ändern...";
     [Parameter] public string BtnDbNeuText { get; set; } = "Gebäude in DB neu...";
@@ -381,9 +407,61 @@
     {
         ArtenLaden();
         KatalogLaden(ausBaujahrwahl: false);
-        if (!Admin && Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
-        else if (Admin && _katalog.Count > 0) KatalogzeileWaehlen(_katalog[0]);
+        if (!Admin) ProjektauswahlNachziehen();
+        else if (_katalog.Count > 0) KatalogzeileWaehlen(_katalog[0]);
     }
+
+    /// <summary>
+    /// Zieht die Markierung der Projektliste nach, sobald der Wirt eine ANDERE
+    /// Liste hereinreicht (Befund <b>W9‑B‑1</b> der Windows-Abnahme vom 05.09.2026).
+    ///
+    /// <para><b>Warum das nötig ist.</b> Die Hülle baut die Anzeigeliste bei jedem
+    /// <c>Gaben</c>-Aufruf NEU aus ihrer Fachliste (<c>GebaeudeHuelle.Gaben</c>
+    /// :113‑114); die Zeilenobjekte sind danach andere. Wer die Markierung an der
+    /// Objektgleichheit festmacht, verliert sie bei jedem solchen Austausch — der
+    /// Anwender sah sein gespeichertes Gebäude in der Liste stehen, aber unmarkiert,
+    /// und der Detailblock hing an einer Zeile, die es nicht mehr gab. Der Schlüssel
+    /// ist die <see cref="GebaeudeProjektZeile.IdZ"/> (<c>Z_ProjektGebaeude.ID</c>) —
+    /// dieselbe, an der „▶" hängt.</para>
+    ///
+    /// <para>Und der zweite Fall: Kommt die Liste erst NACH dem ersten Zeichnen
+    /// (der Ladeweg des Assistenten läuft im Verlassen der Projektkopfseite), stand
+    /// bis hierher für immer keine Markierung. Jetzt markiert die erste Zeile, sobald
+    /// eine da ist — wie <c>Form_Gebaeude_Load</c>.</para>
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        if (!Admin) ProjektauswahlNachziehen();
+    }
+
+    private void ProjektauswahlNachziehen()
+    {
+        if (_gewaehlt is not null)
+        {
+            // Dieselbe Zeile noch in der Liste? Dann ist nichts zu tun.
+            foreach (GebaeudeProjektZeile z in Zeilen)
+                if (ReferenceEquals(z, _gewaehlt)) return;
+
+            // Sonst dieselbe ZUORDNUNG suchen - die IdZ, nicht die Stamm-Id.
+            foreach (GebaeudeProjektZeile z in Zeilen)
+                if (z.IdZ == _gewaehlt.IdZ) { ProjektzeileWaehlen(z); return; }
+
+            _gewaehlt = null;
+        }
+
+        // Der Anwender steht im Katalog - seine Wahl wird nicht ueberschrieben.
+        if (_katalogzeile is not null) return;
+
+        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+    }
+
+    /// <summary>
+    /// Ist diese Zeile die markierte? Verglichen wird über die
+    /// <see cref="GebaeudeProjektZeile.IdZ"/>, nicht über die Objektgleichheit
+    /// (Befund W9‑B‑1).
+    /// </summary>
+    private bool IstGewaehlt(GebaeudeProjektZeile z)
+        => _gewaehlt is not null && (ReferenceEquals(z, _gewaehlt) || z.IdZ == _gewaehlt.IdZ);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
