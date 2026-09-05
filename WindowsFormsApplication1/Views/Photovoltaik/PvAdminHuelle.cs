@@ -95,7 +95,10 @@ namespace WindowsFormsApplication1
                 [ModulKatalogProfil.FeldTempKoeff] = m.m_Temp_Coeff_Pmax.ToString(),
                 [ModulKatalogProfil.FeldLaenge] = m.m_Laenge.ToString(),
                 [ModulKatalogProfil.FeldBreite] = m.m_Breite.ToString(),
-                [ModulKatalogProfil.FeldModulkosten] = m.m_Modulkosten.ToString()
+                [ModulKatalogProfil.FeldModulkosten] = m.m_Modulkosten.ToString(),
+                // Paket A/B des PV-Ertragsmodells (Merge 5)
+                [ModulKatalogProfil.FeldTNoct] = m.m_T_NOCT.ToString(),
+                [ModulKatalogProfil.FeldTechnologie] = m.m_Technologie ?? ""
             };
         }
 
@@ -116,13 +119,20 @@ namespace WindowsFormsApplication1
                 m_Temp_Coeff_Pmax = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldTempKoeff),
                 m_Laenge = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldLaenge),
                 m_Breite = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldBreite),
-                m_Modulkosten = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldModulkosten)
+                m_Modulkosten = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldModulkosten),
+                // Paket A/B des PV-Ertragsmodells (Merge 5): NOCT (0 = nicht gepflegt) und
+                // Zelltechnologie (leer = NULL, siehe PhotovoltaikStammCtrl.TechnologieParam).
+                m_T_NOCT = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldTNoct),
+                m_Technologie = LeerAlsNull(ModulKatalogHuelle.Wert(felder, ModulKatalogProfil.FeldTechnologie))
             };
 
             PhotovoltaikStammCtrl.SpeicherErgebnis e =
                 PhotovoltaikStammCtrl.SpeichernAus(m, neu, schluessel);
             return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
         }
+
+        private static string LeerAlsNull(string wert)
+            => string.IsNullOrWhiteSpace(wert) ? null : wert.Trim();
 
         private static KatalogSpeicherErgebnis Loeschen(string name)
         {

@@ -157,7 +157,6 @@ namespace WindowsFormsApplication1
             // derselbe; die Zeile in help_mapping.txt heisst weiter nach der
             // Maske, denn sie ist die Adresse des HILFETEXTES (Praxis seit W12).
             { "PvModulImportDialog",         B_PHOTOVOLTAIK },
-
             // P6 nachgetragen: die Huellform "Projekt oeffnen" aus Paket P3. Ohne
             // Eintrag griff erst die Kennungsstufe ("projekt" im Typnamen) - das
             // Ergebnis war zwar dasselbe, aber unbeabsichtigt.

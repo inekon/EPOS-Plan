@@ -165,9 +165,14 @@ namespace WindowsFormsApplication1
                 Schluessel = "PV",
                 Tabelle = SchemaKatalog.TAB_PV_STAMM,
                 AusschlussSpalten = new[] { "Modulkosten" },
+                // "Technologie" (Migrationsschritt 63, Stufe E2.3) gehoert in die
+                // Import-Schnittmenge: Beide Importe liefern sie (CEC "Technology",
+                // PAN "Technol"), und das erweiterte Rechenmodell waehlt daran den
+                // Huld-Koeffizientensatz. Ohne sie meldete die Dublettenpruefung zwei
+                // Katalogsaetze als inhaltsgleich, die sich rechnerisch unterscheiden.
                 ImportSpalten = new[] { "Firma", "Leistung", "Wirkungsgrad", "U_Mpp",
                     "U_Leerlauf", "I_Mpp", "I_Kurzschluss", "alpha_SC", "beta_OC",
-                    "gamma_PMP", "T_NOCT", "Laenge", "Breite" }
+                    "gamma_PMP", "T_NOCT", "Laenge", "Breite", "Technologie" }
             },
             new KatalogDefinition
             {

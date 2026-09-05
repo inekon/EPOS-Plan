@@ -857,19 +857,21 @@ namespace EPOS.Kern.Tests
         /// zweite Feldgruppe (AP3-Gerätetechnik).
         /// </summary>
         [Fact]
-        public void Modulkatalogprofil_kennt_zwei_Auspraegungen_mit_je_dreizehn_Feldern()
+        public void Modulkatalogprofil_kennt_zwei_Auspraegungen_mit_ihren_Feldern()
         {
             Assert.Equal(2, ModulKatalogProfil.AlleArten.Count());
 
             var sp = ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher);
             var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);
 
+            // Merge 5 (Paket A/B des PV-Ertragsmodells): die Photovoltaik traegt dazu die
+            // NOCT-Zelltemperatur und die Zelltechnologie (Auswahl) - fuenfzehn Felder.
             Assert.Equal(13, sp.Felder.Count);
-            Assert.Equal(13, pv.Felder.Count);
+            Assert.Equal(15, pv.Felder.Count);
 
             Assert.Equal(7, sp.Felder.Count(f => f.Gruppe == 0));
             Assert.Equal(6, sp.Felder.Count(f => f.Gruppe == 1));
-            Assert.Equal(13, pv.Felder.Count(f => f.Gruppe == 0));
+            Assert.Equal(15, pv.Felder.Count(f => f.Gruppe == 0));
             Assert.Equal("", pv.GruppeZwei);
 
             // Der Bezeichner ist in beiden der Schluessel und deshalb gesperrt.
@@ -888,10 +890,15 @@ namespace EPOS.Kern.Tests
         public void Modulkatalogprofil_haelt_die_leerErlaubt_Regel_je_Feld()
         {
             var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);
+            // Merge 5: elf Zahlfelder (dazu die NOCT-Zelltemperatur, leer erlaubt); die
+            // Zelltechnologie ist ein Auswahlfeld und zaehlt hier nicht mit.
             var zahlen = pv.Felder.Where(f => f.Art != BrowserFeldArt.Text &&
-                                              f.Art != BrowserFeldArt.Mehrzeilig).ToList();
-            Assert.Equal(10, zahlen.Count);
-            Assert.Equal(9, zahlen.Count(f => f.LeerErlaubt));
+                                              f.Art != BrowserFeldArt.Mehrzeilig &&
+                                              f.Art != BrowserFeldArt.Auswahl).ToList();
+            Assert.Equal(11, zahlen.Count);
+            Assert.Equal(10, zahlen.Count(f => f.LeerErlaubt));
+            Assert.True(pv.Felder.Single(f => f.Art == BrowserFeldArt.Auswahl).LeerErlaubt);
+            Assert.Equal(6, pv.Felder.Single(f => f.Art == BrowserFeldArt.Auswahl).Optionen.Count);
             Assert.False(pv.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldLeistung).LeerErlaubt);
 
             var sp = ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher);
@@ -924,7 +931,8 @@ namespace EPOS.Kern.Tests
             var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);
             Assert.Equal("", Vorgabe(pv, ModulKatalogProfil.FeldFirma));
             Assert.Equal("", Vorgabe(pv, ModulKatalogProfil.FeldBeschreibung));
-            Assert.Equal(10, pv.Felder.Count(f => f.Vorgabe == "0"));
+            Assert.Equal(11, pv.Felder.Count(f => f.Vorgabe == "0"));   // Merge 5: dazu NOCT
+            Assert.Equal("", Vorgabe(pv, ModulKatalogProfil.FeldTechnologie));   // Auswahl: leer = NULL
 
             static string Vorgabe(ModulKatalogProfil p, string schluessel) =>
                 p.Felder.First(f => f.Schluessel == schluessel).Vorgabe;

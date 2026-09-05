@@ -1049,6 +1049,22 @@ namespace WindowsFormsApplication1
                     Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_PV_KWP,
                                               (modul.m_Leistung * anzahl / 1000.0)
                                                   .ToString("N2", kultur)));
+
+                // PAKET B (Stufe E2, mit Merge 5 aus Form_Simulation_Config.Karten nachgezogen):
+                // Das Rechenmodell steht nur dann auf der Karte, wenn es vom Bestand ABWEICHT -
+                // das vereinfachte Modell ist der Regelfall und braucht keinen Chip. Das DC/AC-
+                // Verhaeltnis kommt dazu, sobald eine AC-Nennleistung gepflegt ist; ohne sie
+                // rechnet der Lauf ohne Clipping und sagt es im Protokoll.
+                if (SimulationPV.IstErweitert(anlage))
+                {
+                    double kwp = modul.m_Leistung * anzahl / 1000.0;
+                    double? nenn = anlage.PV_WrNennleistungKw;
+                    Chip(chips, (nenn.HasValue && nenn.Value > 0.0 && kwp > 0.0)
+                            ? string.Format(MyResource.Resource.SIM_KARTE_PV_MODELL_DCAC,
+                                            (kwp / nenn.Value).ToString("N2", kultur))
+                            : MyResource.Resource.SIM_KARTE_PV_MODELL_ERWEITERT,
+                         ChipStil.Quelle);
+                }
             }
 
             if (chips.Count == 0)

@@ -48,6 +48,15 @@
 <div class="epos-verlauf" role="log" aria-live="polite" aria-relevant="additions"
      aria-label="@Bezeichnung" tabindex="0" @ref="_liste">
 
+    @if (Zeilen.Count == 0 && !Beschaeftigt && !string.IsNullOrEmpty(LeerText))
+    {
+        @* Der LEERZUSTAND (Anwenderbefund W15b-E-3 der Windows-Abnahme vom
+           05.09.2026: "der Gespraechsverlauf ist nicht zu sehen"). Eine leere
+           Flaeche sagt nicht, dass sie eine Liste ist - eine leise Zeile schon.
+           Kein Text = kein Leerzustand, damit kein Wirt ungefragt einen bekommt. *@
+        <p class="epos-verlauf-zeile epos-verlauf-zeile--leise epos-verlauf-leer">@LeerText</p>
+    }
+
     @foreach (Gespraechszeile z in Zeilen)
     {
         <p @key="z.Kennung" class="epos-verlauf-zeile epos-verlauf-zeile--@Klasse(z.Rolle)">
@@ -92,6 +101,17 @@
 
     /// <summary>Es laeuft eine Anfrage - zeigt die drei wandernden Punkte.</summary>
     [Parameter] public bool Beschaeftigt { get; set; }
+
+    /// <summary>
+    /// Die leise Zeile, solange keine Zeile da ist („Noch keine Frage gestellt.");
+    /// leer = kein Leerzustand.
+    /// </summary>
+    /// <remarks>
+    /// Anwenderbefund <b>W15b-E-3</b> (Windows-Abnahme 05.09.2026): Der Verlauf war
+    /// „nicht zu sehen (leer, ohne Rahmen)". Rahmen und Hoehe stehen im Stilblatt;
+    /// die Zeile sagt, was der Rahmen ist.
+    /// </remarks>
+    [Parameter] public string LeerText { get; set; } = "";
 
     /// <summary>Text neben den Punkten, z. B. „Der Assistent denkt nach…".</summary>
     [Parameter] public string BeschaeftigtText { get; set; } = "";

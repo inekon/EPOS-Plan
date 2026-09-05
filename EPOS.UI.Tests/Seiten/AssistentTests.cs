@@ -483,4 +483,33 @@ public class AssistentTests : BunitContext
         cut.FindAll(".epos-assistent-band tbody tr button")[1].Click();
         Assert.Equal(3, zaehler.Von(0));
     }
+
+    // =====================================================================
+    // Merge 5 (Nutzerauftrag 02.09.2026): das Veto beim Verlassen einer Seite
+    // =====================================================================
+
+    /// <summary>
+    /// "Weiter" bleibt stehen und meldet, solange die Seitenpruefung einen Grund nennt;
+    /// faellt der Grund weg, geht es weiter und die Meldung ist fort.
+    /// </summary>
+    [Fact]
+    public void Weiter_bleibt_stehen_wenn_die_Seitenpruefung_einen_Grund_nennt_und_geht_danach()
+    {
+        string? grund = "Bitte einen Projektnamen eingeben.";
+        var cut = Render<AssistentSeite>(p => p
+            .Add(x => x.Betriebsart, 0)
+            .Add(x => x.SeiteGaben, new Func<int, IReadOnlyDictionary<string, object>?>(Gaben))
+            .Add(x => x.SeiteAktiv, nr => nr <= 1)
+            .Add(x => x.SeitePruefen, nr => nr == 0 ? grund : null));
+
+        Weiter(cut).Click();
+        Assert.Equal(0, cut.Instance.Schritt);
+        Assert.Single(cut.FindAll(".epos-warnbanner"));
+        Assert.Contains("Projektnamen", cut.Markup);
+
+        grund = null;
+        Weiter(cut).Click();
+        Assert.Equal(1, cut.Instance.Schritt);
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+    }
 }

@@ -60,6 +60,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "variante_anlegen",
                 zweck: KiAktionsTexte.ZweckVarianteAnlegen,
+                titel: KiAktionsTexte.TitelVarianteAnlegen,
+                beispiel: KiAktionsTexte.BeispielVarianteAnlegen,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "VariantenCtrl.AnlegenAusStamm",
                 parameter: new[]
@@ -183,6 +185,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "speichervariante_aktiv_setzen",
                 zweck: KiAktionsTexte.ZweckSpeichervarianteAktiv,
+                titel: KiAktionsTexte.TitelSpeichervarianteAktiv,
+                beispiel: KiAktionsTexte.BeispielSpeichervarianteAktiv,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "StromspeicherVarianteCtrl.SetzeAktiv",
                 parameter: new[]
@@ -373,6 +377,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "kostenposition_setzen",
                 zweck: KiAktionsTexte.ZweckKostenpositionSetzen,
+                titel: KiAktionsTexte.TitelKostenpositionSetzen,
+                beispiel: KiAktionsTexte.BeispielKostenpositionSetzen,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "KostenPositionCtrl.SetzeBetragNachId / LiesBetrag",
                 parameter: new[]

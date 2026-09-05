@@ -53,6 +53,20 @@ public sealed class ErzeugerZeile
 
     /// <summary>Anzahl Module — nur bei der Photovoltaik belegt (im Modell ein <c>double</c>).</summary>
     public double? AnzahlModule { get; set; }
+
+    // --- Photovoltaik, Paket A/B des PV-Ertragsmodells (Merge 5, aus Form_PV nachgezogen) ----
+    /// <summary>Wechselrichter-Wirkungsgrad als Faktor; NULL = 0,95 (Bestand). Nur Modell EINFACH.</summary>
+    public double? WrWirkungsgrad { get; set; }
+    /// <summary>Systemverluste in Prozent; NULL = 0.</summary>
+    public double? Systemverluste { get; set; }
+    /// <summary>Rechenmodell ERWEITERT gewaehlt (sonst EINFACH, der Rechenweg des Bestands).</summary>
+    public bool ModellErweitert { get; set; }
+    /// <summary>Wechselrichter (nur ERWEITERT): AC-Nennleistung in kW; NULL = ohne Clipping.</summary>
+    public double? WrNennleistungKw { get; set; }
+    /// <summary>Teillast-Kennlinie des Wechselrichters bei 10, 50 und 100 % Last; NULL = nicht bekannt.</summary>
+    public double? WrEta10 { get; set; }
+    public double? WrEta50 { get; set; }
+    public double? WrEta100 { get; set; }
 }
 
 /// <summary>

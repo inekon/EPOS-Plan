@@ -41,7 +41,13 @@
         }
     </div>
 
-    <ProjektListe Zeilen="@Zeilen"
+    @if (Mehrfach && !string.IsNullOrEmpty(HinweisText))
+    {
+        <p class="epos-kontextzeile">@HinweisText</p>
+    }
+
+    <ProjektListe @ref="_liste" Zeilen="@Zeilen"
+                  Mehrfach="@Mehrfach" Angehakt="@_angehakt" AngehaktChanged="@(s => _angehakt = s)"
                   Suche="@_suche" SucheChanged="@(s => _suche = s)"
                   SortSpalte="@SortSpalte" SortAbsteigend="@SortAbsteigend"
                   Markiert="@_markiert" MarkiertChanged="BeiMarkierung"
@@ -53,6 +59,24 @@
                   ArtStammText="@ArtStammText" ArtVarianteText="@ArtVarianteText"
                   VarianteVonFormat="@VarianteVonFormat" SucheText="@SucheText"
                   WahlText="@WahlText" LeerText="@LeerText" />
+
+    @if (Mehrfach)
+    {
+        @* Mehrfachauswahl (Nutzerauftrag 02.09.2026, aus Form_ProjektDelete portiert):
+           Alle/Keine, der Zaehler und die angebotene Sicherungskopie. *@
+        <div class="epos-leiste epos-projektwahl-mehrfach">
+            <button type="button" class="epos-knopf epos-projektwahl-alle"
+                    @onclick="() => _liste!.AlleSichtbaren(true)">@AlleText</button>
+            <button type="button" class="epos-knopf epos-projektwahl-keine"
+                    @onclick="() => _liste!.AlleSichtbaren(false)">@KeineText</button>
+            <span class="epos-projektwahl-zaehler">@string.Format(AusgewaehltFormat ?? "{0}", _angehakt.Count)</span>
+            <span class="epos-leiste-fueller"></span>
+            @if (SicherungAngeboten)
+            {
+                <Schalter Bezeichnung="@SicherungText" Wert="@_sicherung" WertChanged="@(w => _sicherung = w)" />
+            }
+        </div>
+    }
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
@@ -182,6 +206,24 @@
     /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "";
 
+    // --- Mehrfachauswahl (Nutzerauftrag 02.09.2026, Merge 5) -------------------------
+    /// <summary>Haekchenliste statt Einzelwahl - nur im Loeschmodus.</summary>
+    [Parameter] public bool Mehrfach { get; set; }
+    /// <summary>Wird eine Sicherungskopie der Datenbank angeboten? (Schalter, Vorgabe an.)</summary>
+    [Parameter] public bool SicherungAngeboten { get; set; }
+    [Parameter] public string HinweisText { get; set; } = "";
+    [Parameter] public string AlleText { get; set; } = "Alle sichtbaren auswählen";
+    [Parameter] public string KeineText { get; set; } = "Auswahl aufheben";
+    [Parameter] public string SicherungText { get; set; } = "Sicherungskopie der Datenbank vor dem Löschen anlegen";
+    [Parameter] public string AusgewaehltFormat { get; set; } = "{0} ausgewählt";
+    /// <summary>Rueckfrage der Mehrfachloeschung; {0} = Anzahl, danach die Namen (hoechstens zwoelf).</summary>
+    [Parameter] public string FrageMehrereFormat { get; set; } =
+        "{0} Projekt(e) werden mit allen zugehörigen Daten unwiderruflich gelöscht:";
+    [Parameter] public string VarianteText { get; set; } = "Variante";
+    [Parameter] public string WeitereFormat { get; set; } = "… und {0} weitere";
+    /// <summary>Der Loeschauftrag - Varianten VOR ihren Staemmen, samt Sicherungswunsch.</summary>
+    [Parameter] public EventCallback<ProjektLoeschauftrag> LoeschauftragErteilt { get; set; }
+
     private string _suche = "";
     private int _markiert;
     private ProjektKopfZeile? _gewaehlt;
@@ -189,6 +231,12 @@
     private bool _frageOffen;
     private bool _mehrdeutigOffen;
     private int _anzahlGleicher;
+    private ProjektListe? _liste;
+    private IReadOnlyCollection<int> _angehakt = Array.Empty<int>();
+    private bool _sicherung = true;
+
+    /// <summary>Die angehakten Ids der Mehrfachauswahl (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyCollection<int> Angehakt => _angehakt;
 
     /// <summary>Die gerade markierte Zeile (Prüfhilfe für Tests).</summary>
     public ProjektKopfZeile? Markiert => _gewaehlt;
@@ -199,7 +247,42 @@
     /// <summary>Steht die Mehrdeutigkeits-Rückfrage? (Prüfhilfe für Tests.)</summary>
     public bool MehrdeutigOffen => _mehrdeutigOffen;
 
-    private string Frage => string.Format(FrageFormat ?? "", _gewaehlt?.Name ?? "");
+    private string Frage => Mehrfach ? MehrereFrage : string.Format(FrageFormat ?? "", _gewaehlt?.Name ?? "");
+
+    /// <summary>Die Auswahl in Loeschreihenfolge: Varianten VOR ihren Staemmen (wie der Vorlaeufer).</summary>
+    private IReadOnlyList<ProjektKopfZeile> Auswahl
+    {
+        get
+        {
+            var liste = new List<ProjektKopfZeile>();
+            foreach (ProjektKopfZeile z in Zeilen) if (_angehakt.Contains(z.Id) && z.StammId > 0) liste.Add(z);
+            foreach (ProjektKopfZeile z in Zeilen) if (_angehakt.Contains(z.Id) && z.StammId <= 0) liste.Add(z);
+            return liste;
+        }
+    }
+
+    /// <summary>Rueckfrage mit Liste (hoechstens zwoelf Namen, Varianten gekennzeichnet).</summary>
+    private string MehrereFrage
+    {
+        get
+        {
+            IReadOnlyList<ProjektKopfZeile> liste = Auswahl;
+            var sb = new System.Text.StringBuilder();
+            sb.Append(string.Format(FrageMehrereFormat ?? "{0}", liste.Count));
+            int n = 0;
+            foreach (ProjektKopfZeile z in liste)
+            {
+                if (++n > 12)
+                {
+                    sb.Append('\n').Append(string.Format(WeitereFormat ?? "{0}", liste.Count - 12));
+                    break;
+                }
+                sb.Append('\n').Append(z.Name);
+                if (z.StammId > 0) sb.Append(" (").Append(VarianteText).Append(')');
+            }
+            return sb.ToString();
+        }
+    }
 
     private string MehrdeutigFrage
         => string.Format(MehrdeutigFormat ?? "", _gewaehlt?.Name ?? "", _anzahlGleicher);
@@ -231,6 +314,8 @@
     /// </summary>
     private Task BeiDoppelklick(ProjektKopfZeile z)
     {
+        // Mehrfachmodus: Doppelklick schaltet den Haken (Vorlaeufer), loescht nicht.
+        if (Mehrfach) return _liste is null ? Task.CompletedTask : _liste.Umschalten(z);
         BeiMarkierung(z);
         return BeiErgebnis(true);
     }
@@ -244,6 +329,15 @@
         }
 
         // btn_OK_Click: ohne Auswahl bleibt der Dialog offen und sagt, warum.
+        if (Mehrfach)
+        {
+            // Die Rueckfrage traegt die ganze Liste; ohne Haken gibt es nichts zu fragen.
+            if (_angehakt.Count == 0) { _meldung = MeldungKeineWahl; return; }
+            _meldung = "";
+            _frageOffen = true;
+            return;
+        }
+
         if (_gewaehlt is null || _gewaehlt.Id <= 0)
         {
             _meldung = MeldungKeineWahl;
@@ -278,6 +372,14 @@
     /// </summary>
     private async Task Uebernehmen()
     {
+        if (Mehrfach)
+        {
+            IReadOnlyList<ProjektKopfZeile> liste = Auswahl;
+            await LoeschauftragErteilt.InvokeAsync(new ProjektLoeschauftrag(liste, SicherungAngeboten && _sicherung));
+            await Geschlossen.InvokeAsync(liste.Count > 0 ? liste[0] : null);
+            return;
+        }
+
         if (Zweck == ProjektZweck.Loeschen && NamensAnzahl is not null
             && !string.IsNullOrEmpty(MehrdeutigFormat))
         {

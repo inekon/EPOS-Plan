@@ -56,6 +56,9 @@ namespace WindowsFormsApplication1
                     if (row.Table.Columns.Contains("Laenge") && row["Laenge"] != DBNull.Value) item.m_Laenge = Convert.ToDouble(row["Laenge"]);
                     if (row.Table.Columns.Contains("Breite") && row["Breite"] != DBNull.Value) item.m_Breite = Convert.ToDouble(row["Breite"]);
                     if (row.Table.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) item.m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
+                    // E2.3 (Migrationsschritt 63): fehlende Spalte und NULL sind
+                    // derselbe Fall - "Technologie unbekannt".
+                    if (row.Table.Columns.Contains("Technologie") && row["Technologie"] != DBNull.Value) item.m_Technologie = row["Technologie"].ToString();
 
                     _internalList.Add(item);
                 }
@@ -95,6 +98,9 @@ namespace WindowsFormsApplication1
                 if (row.Table.Columns.Contains("Laenge") && row["Laenge"] != DBNull.Value) m_Laenge = Convert.ToDouble(row["Laenge"]);
                 if (row.Table.Columns.Contains("Breite") && row["Breite"] != DBNull.Value) m_Breite = Convert.ToDouble(row["Breite"]);
                 if (row.Table.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
+                // E2.3 (Migrationsschritt 63) - die Groesse, an der das erweiterte
+                // Rechenmodell den Huld-Koeffizientensatz waehlt.
+                if (row.Table.Columns.Contains("Technologie") && row["Technologie"] != DBNull.Value) m_Technologie = row["Technologie"].ToString();
 
                 // Kopie in die interne Liste legen, damit rows auf 1 springt
                 _internalList.Add(this);
@@ -124,10 +130,11 @@ namespace WindowsFormsApplication1
                         beta_OC = ?, 
                         gamma_PMP = ?, 
                         T_NOCT = ?, 
-                        Laenge = ?, 
-                        Breite = ?, 
-                        Modulkosten = ? 
-                    WHERE 
+                        Laenge = ?,
+                        Breite = ?,
+                        Modulkosten = ?,
+                        Technologie = ?
+                    WHERE
                         Bezeichner = ?";
 
                 DbParam[] parameters = new DbParam[]
@@ -149,6 +156,9 @@ namespace WindowsFormsApplication1
                     new DbParam("?", model.m_Laenge),
                     new DbParam("?", model.m_Breite),
                     new DbParam("?", model.m_Modulkosten),
+                    // E2.3: leer bleibt NULL - "nicht gepflegt" ist keine Technologie.
+                    new DbParam("?", string.IsNullOrEmpty(model.m_Technologie)
+                                                ? DBNull.Value : (object)model.m_Technologie),
                     new DbParam("?", model.m_szName ?? (object)DBNull.Value)
                 };
 
@@ -275,10 +285,14 @@ namespace WindowsFormsApplication1
                 int neueId = DataRepository.GetMaxID("Tab_PV") + 1;
 
                 // ReadOnly wird NICHT uebernommen (existiert in der Projekt-Tabelle nicht).
+                // E2.3: Technologie MUSS mitkopiert werden - der Rechenkern liest sie aus
+                // der PROJEKTKOPIE, nicht aus dem Stamm. Ohne sie faende das erweiterte
+                // Modell nie einen Huld-Koeffizientensatz.
                 string sql = @"INSERT INTO Tab_PV
                     (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf,
-                     I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                     I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten,
+                     Technologie)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
@@ -298,7 +312,8 @@ namespace WindowsFormsApplication1
                     P("@noc", ColOrNull(s, "T_NOCT")),
                     P("@lae", ColOrNull(s, "Laenge")),
                     P("@bre", ColOrNull(s, "Breite")),
-                    P("@mod", ColOrNull(s, "Modulkosten"))
+                    P("@mod", ColOrNull(s, "Modulkosten")),
+                    P("@tec", ColOrNull(s, "Technologie"))
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);

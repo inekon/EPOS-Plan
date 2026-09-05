@@ -58,11 +58,28 @@ namespace WindowsFormsApplication1
                     kopf.Klimaname = gelesen.Klimaname;
                 }
             }
+            else if (string.IsNullOrEmpty(kopf.Name))
+            {
+                // Vorbelegung eines NEUEN Projekts (Nutzerauftrag 02.09.2026, mit Merge 5 aus
+                // Wizard_Projekt): Bearbeiter = angemeldeter Benutzer, Klimaregion = die des
+                // aktiven Projekts. Nur leere Felder werden belegt.
+                if (string.IsNullOrEmpty(kopf.Bearbeiter)) kopf.Bearbeiter = Environment.UserName;
+                if (kopf.IdKlimaregion <= 0) kopf.IdKlimaregion = ProjektCtrl.KlimaregionDesAktivenProjekts();
+            }
 
             return new Dictionary<string, object>
             {
                 ["Daten"] = kopf,
                 ["Klimaregionen"] = Klimaregionen(),
+                // Pflichtfelder und Namensdoppel (Nutzerauftrag 02.09.2026, Merge 5)
+                ["VergebeneNamen"] = VergebeneNamen(),
+                ["PflichtMarke"] = " *",
+                ["PflichtText"] = Text_("WZP_PFLICHT", "(* = Pflichtfeld)"),
+                ["TextNameLeer"] = Text_("WZP_NAME_LEER", "Bitte einen Projektnamen eingeben."),
+                ["TextNameVorhanden"] = Text_("WZP_NAME_VORHANDEN", "Ein Projekt mit diesem Namen existiert bereits."),
+                ["TextKlimaLeer"] = Text_("WZP_KLIMA_LEER", "Bitte eine Klimaregion wählen."),
+                ["PlatzhalterBeschreibung"] = Text_("WZP_BESCHREIBUNG_HINT",
+                    "Kurzbeschreibung: Vorhaben, Standort, Besonderheiten …"),
 
                 ["KopfText"] = Text_("PKOPF_KOPF", "Projektkonfiguration"),
                 ["HinweisText"] = Text_("PKOPF_HINWEIS",
@@ -83,6 +100,15 @@ namespace WindowsFormsApplication1
         /// Id danach mit einem VERKETTETEN SQL nach (Befund W15a-B31/B32); hier reisen
         /// beide Werte zusammen.
         /// </summary>
+        /// <summary>Alle vergebenen Projektnamen - fuer die Dublettenpruefung eines neuen Projekts.</summary>
+        internal static IReadOnlyCollection<string> VergebeneNamen()
+        {
+            var namen = new List<string>();
+            try { foreach (ProjektKopfZeile z in ProjektCtrl.NamenListe()) namen.Add(z.Name ?? ""); }
+            catch (Exception ex) { Console.WriteLine("Projektnamen konnten nicht gelesen werden: " + ex.Message); }
+            return namen;
+        }
+
         private static IReadOnlyList<(int Id, string Text)> Klimaregionen()
         {
             var liste = new List<(int, string)>();

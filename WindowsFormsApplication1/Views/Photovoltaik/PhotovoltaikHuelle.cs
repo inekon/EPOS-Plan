@@ -109,10 +109,31 @@ namespace WindowsFormsApplication1
                         m.m_Neigung = zeile.Neigung ?? 0;
                         m.m_Azimut = zeile.Azimut ?? 0;
                         m.PV_Leistung = zeile.AnzahlModule ?? 0;
+
+                        // Paket A/B des PV-Ertragsmodells (Merge 5, woertlich Form_PV.
+                        // UpdateProerties): Anlagenparameter, Wechselrichter, Modellwahl.
+                        // ERWEITERT wird ausdruecklich gesetzt; zurueck auf EINFACH nur, wenn
+                        // der Bestand erweitert war - NULL (nie gewaehlt) bleibt NULL.
+                        m.PV_WrWirkungsgrad = zeile.WrWirkungsgrad;
+                        m.PV_Systemverluste = zeile.Systemverluste;
+                        m.PV_WrNennleistungKw = zeile.WrNennleistungKw;
+                        m.PV_WrEta10 = zeile.WrEta10;
+                        m.PV_WrEta50 = zeile.WrEta50;
+                        m.PV_WrEta100 = zeile.WrEta100;
+                        m.PV_Modell = zeile.ModellErweitert
+                            ? DbWerte.PV_MODELL_ERWEITERT
+                            : (SimulationPV.IstErweitert(m) ? DbWerte.PV_MODELL_EINFACH : m.PV_Modell);
                     }),
 
                 ["Gesamtleistung"] = new Func<string>(
                     () => Gesamtleistung(idType, modelle).ToString()),
+                // Paket B (Merge 5): kWp der Anlage fuer die DC/AC-Anzeige des Wechselrichter-
+                // dialogs - Modulleistung (W) mal Anzahl, wie Form_PV.btn_Wechselrichter_Click.
+                ["AnlagenKwp"] = new Func<ErzeugerZeile, double>(zeile =>
+                {
+                    PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(zeile.Bezeichner);
+                    return d == null ? 0.0 : d.Leistung * (zeile.AnzahlModule ?? 0) / 1000.0;
+                }),
 
                 ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
 
@@ -216,7 +237,15 @@ namespace WindowsFormsApplication1
                 GeraetId = m.ID_PV,
                 Neigung = m.m_Neigung,
                 Azimut = m.m_Azimut,
-                AnzahlModule = m.PV_Leistung
+                AnzahlModule = m.PV_Leistung,
+                // Paket A/B des PV-Ertragsmodells (Merge 5)
+                WrWirkungsgrad = m.PV_WrWirkungsgrad,
+                Systemverluste = m.PV_Systemverluste,
+                ModellErweitert = SimulationPV.IstErweitert(m),
+                WrNennleistungKw = m.PV_WrNennleistungKw,
+                WrEta10 = m.PV_WrEta10,
+                WrEta50 = m.PV_WrEta50,
+                WrEta100 = m.PV_WrEta100
             };
         }
 

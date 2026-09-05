@@ -2056,6 +2056,69 @@ namespace WindowsFormsApplication1
         /// (dasselbe Muster wie <c>energy_conversion.faktor_name</c>).</summary>
         public const string PV_MARKTWERT_BEZEICHNER = "Marktwert Solar";
 
+        // =====================================================================
+        // PV-Ertragsmodell, Stufe E2 (Paket B, Konzept-Nachtrag 2)
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>
+        /// Rechenmodell einer PV-Anlage: das VEREINFACHTE Modell
+        /// (<c>Tab_Energieanlagen.PV_Modell</c>, Konzept N2.1).
+        ///
+        /// <para><b>Auch NULL bedeutet EINFACH</b>, und das ist keine Bequemlichkeit,
+        /// sondern die Zusage des Pakets B: Jede Bestandsanlage rechnet nach der
+        /// Migration bitgleich weiter wie nach Paket A. Isotrope Transposition,
+        /// Modulformel mit <c>gamma_PMP</c> und NOCT, konstanter
+        /// <c>PV_WrWirkungsgrad</c>, kein Clipping.</para>
+        /// </summary>
+        public const string PV_MODELL_EINFACH = "PV_MODELL_EINFACH";
+
+        /// <summary>
+        /// Rechenmodell einer PV-Anlage: das ERWEITERTE Modell (Stufe E2) —
+        /// Hay-Davies-Transposition, Huld-Schwachlichtmodell (technologieabhängig),
+        /// Wechselrichter-Teillastkennlinie und Clipping auf die AC-Nennleistung.
+        /// </summary>
+        public const string PV_MODELL_ERWEITERT = "PV_MODELL_ERWEITERT";
+
+        /// <summary>Zelltechnologie kristallines Silizium (mono und poly) —
+        /// <c>Tab_PV(_STAMM).Technologie</c>, Huld-Koeffizientensatz vorhanden.</summary>
+        public const string PV_TECHNOLOGIE_C_SI = "C_SI";
+
+        /// <summary>Zelltechnologie CIS/CIGS — Huld-Koeffizientensatz vorhanden.</summary>
+        public const string PV_TECHNOLOGIE_CIS = "CIS";
+
+        /// <summary>Zelltechnologie Cadmiumtellurid — Huld-Koeffizientensatz vorhanden.</summary>
+        public const string PV_TECHNOLOGIE_CDTE = "CDTE";
+
+        /// <summary>Zelltechnologie amorphes Silizium / Dünnschicht. <b>Kein
+        /// Huld-Koeffizientensatz</b> — das erweiterte Modell fällt hier auf die
+        /// EINFACH-Modulformel zurück und meldet es im Protokoll.</summary>
+        public const string PV_TECHNOLOGIE_A_SI = "A_SI";
+
+        /// <summary>Sonstige/unbekannte Zelltechnologie — wie
+        /// <see cref="PV_TECHNOLOGIE_A_SI"/> ohne Huld-Koeffizienten.</summary>
+        public const string PV_TECHNOLOGIE_SONSTIGE = "SONSTIGE";
+
+        /// <summary>
+        /// Referenzjahr für die Zeitbasis der Klimadatenreihe (Befund B1, Paket A des
+        /// PV-Ertragsmodell-Konzepts). Es bestimmt AUSSCHLIESSLICH die beiden
+        /// Sommerzeit-Umstelltage — der letzte Sonntag im März und im Oktober —, sonst
+        /// nichts.
+        ///
+        /// <para><b>Eine Konstante, kein <c>DateTime.Today</c>.</b> Der Lauf muss
+        /// reproduzierbar bleiben: Mit dem laufenden Kalenderjahr rechnete derselbe
+        /// Referenzlauf am Jahreswechsel andere Zahlen, weil die Umstelltage um ein bis
+        /// zwei Tage wandern. Aus demselben Grund kommt
+        /// <c>StromPreisCtrl.Stichtag</c> nicht in Frage — es liefert praktisch immer das
+        /// heutige Jahr.</para>
+        ///
+        /// <para><b>Nur der Rückfall.</b> Führt das Projekt eine Spotpreisreihe (aktive
+        /// Speichervariante → <c>Tab_StromspeicherVariante.ID_Preisreihe</c> →
+        /// <c>Tab_Preisreihe.Jahr</c>), gilt DEREN Jahr: Dann liegen Erzeugung und
+        /// Preisreihe auf denselben Umstelltagen. Erst ohne Reihe gilt dieser Wert.</para>
+        /// </summary>
+        public const int SOLAR_REFERENZJAHR_STANDARD = 2025;
+
         // --------------------------------------------------------------- Status
 
         /// <summary>Aus einer Primaerquelle belegt und in Kraft.</summary>

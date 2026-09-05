@@ -192,6 +192,10 @@
     </div>
 
     @* --- Der Konfliktdialog als Ueberlagerung ---------------------------- *@
+    @* Plausibilitaet der Modulwerte (Merge 5): Warnungen fragen zurueck, Fehler sperren. *@
+    <Rueckfrage Offen="@_plausiOffen" TitelText="@TextPlausiTitel" Frage="@_plausiText"
+                JaText="@TextJa" NeinText="@TextNein" Beantwortet="PlausiFertig" />
+
     <Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
         <KindInhalt>
             @if (_konflikteOffen)
@@ -322,6 +326,12 @@
     [Parameter] public string TextAktualisiert { get; set; } = Resource.PVIMP_MSG_AKTUALISIERT;
     [Parameter] public string TextSchreibfehler { get; set; } = Resource.PVIMP_MSG_SCHREIBFEHLER;
     [Parameter] public string TextBereitsEingelesen { get; set; } = Resource.IMP_KAT_MSG_BEREITS_EINGELESEN;
+
+    /// <summary>Titel der Rueckfrage bei Warnungen der Plausibilitaetspruefung (PVIMP_PLAUSI_TITEL, Merge 5).</summary>
+    [Parameter] public string TextPlausiTitel { get; set; } = "Hinweis zu den Modulwerten";
+
+    /// <summary>Nachsatz dieser Rueckfrage (PVIMP_PLAUSI_FRAGE).</summary>
+    [Parameter] public string TextPlausiFrage { get; set; } = "Trotzdem übernehmen?";
     [Parameter] public string HilfeSchluessel { get; set; } = "Main_PV_Test.btn_Help";
 
     // =====================================================================
@@ -636,6 +646,16 @@
         {
             PvVorpruefung vor = await Vorpruefen(modul);
 
+            // Plausibilitaet der Modulwerte (PV-Katalog-Koeffizienten, Merge 5): ein Fehler
+            // sperrt die Uebernahme, eine Warnung wird zurueckgefragt - der Anwender hat die
+            // Werte im Reiter "Elektrisch" vor sich.
+            if (vor.Gesperrt)
+            {
+                Melden(vor.Plausibilitaet, WarnStufe.Fehler);
+                return;
+            }
+            if (vor.Plausibilitaet.Length > 0 && !await PlausiFragen(vor.Plausibilitaet)) return;
+
             if (vor.Befund == ImportBefund.Neu)
             {
                 await Schreiben(modul, modul.Name ?? "", neu: true);
@@ -686,6 +706,29 @@
     }
 
     private bool _geschrieben;
+
+    // --- Rueckfrage der Plausibilitaetspruefung (Merge 5) ---------------------
+    private bool _plausiOffen;
+    private string _plausiText = "";
+    private TaskCompletionSource<bool>? _plausiWartet;
+
+    /// <summary>Steht die Plausibilitaets-Rueckfrage? (Pruefhilfe fuer Tests.)</summary>
+    public bool PlausiOffen => _plausiOffen;
+
+    private async Task<bool> PlausiFragen(string text)
+    {
+        _plausiText = text + " " + TextPlausiFrage;
+        _plausiOffen = true;
+        _plausiWartet = new TaskCompletionSource<bool>();
+        await InvokeAsync(StateHasChanged);
+        return await _plausiWartet.Task;
+    }
+
+    private void PlausiFertig(bool? antwort)
+    {
+        _plausiOffen = false;
+        _plausiWartet?.TrySetResult(antwort == true);
+    }
 
     private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
         IReadOnlyList<ImportPruefung> pruefungen, IReadOnlyCollection<string> namen)

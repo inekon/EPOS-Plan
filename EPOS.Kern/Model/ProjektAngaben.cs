@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
 {
@@ -122,6 +123,38 @@ namespace WindowsFormsApplication1
     /// Praefix-Semantik ein vorhandenes „Musterprojekt" und lehnt einen freien Namen ab
     /// (Befund W15a-B10). Eine Pruefregel, ein Ort.</para>
     /// </summary>
+    /// <summary>
+    /// Befund der Kopfpruefung (Nutzerauftrag 02.09.2026, mit Merge 5 aus
+    /// <c>Wizard_Projekt.Pruefe</c> in den Kern gezogen): Pflichtfelder und Namensdoppel.
+    /// </summary>
+    public enum ProjektKopfBefund
+    {
+        Ok = 0,
+        NameLeer,
+        NameVorhanden,
+        KlimaLeer
+    }
+
+    /// <summary>
+    /// Die Regeln des Projektkopfs - EINE Wahrheit fuer die Razor-Seite (Hinweis unter dem
+    /// Feld) und den Assistenten (Veto beim Verlassen der Seite): Der Name ist Pflicht und
+    /// darf bei einem NEUEN Projekt nicht vergeben sein (Vergleich ohne Gross/Klein), die
+    /// Klimaregion ist Pflicht (Id oder - bei Altprojekten - der Name).
+    /// </summary>
+    public static class ProjektKopfRegeln
+    {
+        public static ProjektKopfBefund Pruefe(ProjektKopfDaten daten, IEnumerable<string> vergebeneNamen)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(daten.Name)) return ProjektKopfBefund.NameLeer;
+            if (daten.NameAenderbar && vergebeneNamen != null)
+                foreach (string n in vergebeneNamen)
+                    if (string.Equals((n ?? "").Trim(), daten.Name.Trim(), StringComparison.CurrentCultureIgnoreCase))
+                        return ProjektKopfBefund.NameVorhanden;
+            if (daten.IdKlimaregion <= 0 && string.IsNullOrWhiteSpace(daten.Klimaname)) return ProjektKopfBefund.KlimaLeer;
+            return ProjektKopfBefund.Ok;
+        }
+    }
+
     public enum DuplizierBefund
     {
         /// <summary>Beide Namen tragfaehig, das Ziel ist frei.</summary>

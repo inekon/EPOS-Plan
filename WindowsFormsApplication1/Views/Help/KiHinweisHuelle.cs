@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -49,7 +49,18 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public static void Einhaengen()
         {
-            KiEinwilligung.Nachfragen = () => Task.FromResult(Einholen());
+            // W15b-B-1 (dritte Fundstelle): Die Einwilligung wird auch aus einem
+            // BLAZOR-EREIGNIS heraus gezogen - der Aktionsschalter des Chatfensters
+            // ruft KiEinwilligung.SicherstellenAsync, und das laeuft im
+            // WebMessageReceived-Rueckruf der WebView2. Ein ShowDialog dort ist
+            // dieselbe Lage wie bei den Einstellungen (Hausregel (d) aus W13-B-1):
+            // eine verschachtelte Nachrichtenschleife, waehrend die WebView zeichnet.
+            //
+            // Blazornachlauf.Nachgelagert laesst das Ereignis zu Ende laufen und
+            // fuehrt das Fenster eine gepostete Nachricht spaeter hoch; der Rueckgabewert
+            // bleibt erhalten, weil der Nachlauf einen Task liefert. Ohne Fenster
+            // (Programmstart) laeuft es unmittelbar - genau wie vorher.
+            KiEinwilligung.Nachfragen = () => Blazornachlauf.Nachgelagert(() => Einholen());
         }
 
         /// <summary>

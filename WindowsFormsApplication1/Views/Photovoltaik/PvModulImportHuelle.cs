@@ -84,6 +84,8 @@ namespace WindowsFormsApplication1
                     (melder, abbruch) => CecLaden(cec, melder, abbruch)),
                 ["PanWaehlen"] = new Func<Task<string>>(PanWaehlen),
                 ["PanLaden"] = new Func<string, Task<PvLeseErgebnis>>(pfad => PanLaden(pan, pfad)),
+                ["TextPlausiTitel"] = Text_("PVIMP_PLAUSI_TITEL", "Hinweis zu den Modulwerten"),
+                ["TextPlausiFrage"] = Text_("PVIMP_PLAUSI_FRAGE", "Trotzdem übernehmen?"),
                 ["Vorpruefen"] = new Func<UnifiedModule, Task<PvVorpruefung>>(Vorpruefen),
                 ["Anlegen"] = new Func<UnifiedModule, string, Task<bool>>(Anlegen),
                 ["Ueberschreiben"] = new Func<UnifiedModule, int, Task<bool>>(Ueberschreiben),
@@ -176,10 +178,16 @@ namespace WindowsFormsApplication1
                 List<ImportPruefung> pruefungen = DublettenPruefung.PruefeKandidaten(
                     katalog, new List<ImportKandidat> { kandidat });
 
+                // Plausibilitaet der Modulwerte (PV-Katalog-Koeffizienten, Merge 5): ein
+                // Fehler sperrt die Uebernahme, Warnungen fragt der Dialog zurueck - wie
+                // vorher die MessageBox in Form_CECImport.
+                PvModulPlausibilitaet.Befund plausi = PvModulPlausibilitaet.Pruefe(modul.NachModell());
                 return new PvVorpruefung(
                     pruefungen.Count > 0 ? pruefungen[0].Befund : ImportBefund.Neu,
                     pruefungen,
-                    DublettenPruefung.VergebeneNamen(katalog));
+                    DublettenPruefung.VergebeneNamen(katalog),
+                    plausi.Ok && plausi.Warnungen.Count == 0 ? "" : PvModulPlausibilitaet.Meldung(plausi),
+                    !plausi.Ok);
             });
         }
 
@@ -225,6 +233,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Übersetzt einen Meldungsschlüssel des CEC- bzw. PAN-Dienstes.</summary>
+        /// <summary>Anzeigetext aus dem Ressourcenkatalog; Rueckfall = der deutsche Satz.</summary>
+        private static string Text_(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
         internal static string Meldungstext(CecFortschritt meldung)
         {
             string vorlage = MyResource.Resource.ResourceManager.GetString(meldung.Schluessel ?? "");
