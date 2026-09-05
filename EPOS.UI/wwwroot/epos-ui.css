@@ -3445,16 +3445,74 @@ body {
 
    Also: Name und Kunde BRECHEN UM statt die Tabelle zu treiben; das Datum
    bleibt einzeilig und bekommt eine feste Breite - es ist die kuerzeste Spalte
-   und die einzige, deren Umbruch nichts braechte. */
-.epos-projektliste-name,
-.epos-projektliste-kunde {
+   und die einzige, deren Umbruch nichts braechte.
+
+   NACHTRAG 05.09.2026 (W15a-E-1): Die Regel stand seit W15a-B-1 im Blatt und
+   WIRKTE NICHT. ".epos-raster td" ist (0,1,1), ".epos-projektliste-name" nur
+   (0,1,0) - die Hausregel gewann, der Name blieb einzeilig, und im 280 px
+   breiten Assistentenband schnitt ihn der waagerechte Rollbalken ab. Genau
+   dieser abgeschnittene Teil traegt bei einer Variante die Unterscheidung
+   ("<Stamm> - <Bezeichner>"), weshalb drei Zeilen "Booster-Kette mit
+   Kombi-Spe..." gleich aussahen. Der Tabellenselektor davor hebt die Regel auf
+   (0,2,0) - eine Klasse mehr, keine Wichtigkeitsmarke. */
+.epos-projektliste-raster .epos-projektliste-name,
+.epos-projektliste-raster .epos-projektliste-kunde {
     white-space: normal;
     overflow-wrap: anywhere;
 }
 
-.epos-projektliste-geaendert {
+.epos-projektliste-raster .epos-projektliste-geaendert {
     white-space: nowrap;
     width: 7.5rem;
+}
+
+/* ---- Varianten in der Liste (Anwenderwunsch 05.09.2026, W15a-E-1) --------
+
+   "Es sollte wie zuvor kenntlich sein, welches Variantenprojekte sind."
+   Zuvor sagte es der NAME; sobald er abgeschnitten wird, sagt ihn niemand mehr.
+   Drei Mittel, alle drei aus dem Vorbild:
+
+     * die Gruppe steht beieinander (das ordnet die Komponente, nicht das Blatt);
+     * die Variante ist EINGERUECKT und traegt eine senkrechte Linie zum Stamm
+       hin - dieselbe Lesart wie die Einrueckung der Baumansicht;
+     * unter dem Namen steht leise, von wem sie abstammt, wo es keine Artspalte
+       gibt (Assistentenband, iOS-Einstieg).
+
+   Die Artspalte selbst bleibt schmal und bricht nicht: "Stamm" und "Variante"
+   sind kurz, der Bezeichner darunter darf umbrechen. */
+.epos-projektliste-eintrag {
+    display: block;
+}
+
+.epos-projektliste-titel {
+    display: block;
+}
+
+.epos-projektliste-eintrag--variante {
+    padding-inline-start: 14px;
+    border-inline-start: 2px solid var(--epos-rahmen-leise);
+}
+
+.epos-projektliste-herkunft {
+    display: block;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-projektliste-raster .epos-projektliste-artspalte {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    width: 9rem;
+}
+
+.epos-projektliste-art {
+    display: block;
+}
+
+.epos-projektliste-bezeichner {
+    display: block;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
 }
 
 @media (forced-colors: active) {

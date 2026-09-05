@@ -13332,6 +13332,18 @@ Its hourly and daily values will be deleted as well.</value>
   <data name="PRJ_LIST_SP_GEAENDERT" xml:space="preserve">
     <value>Modified</value>
   </data>
+  <data name="PRJ_LIST_SP_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="PRJ_LIST_ART_STAMM" xml:space="preserve">
+    <value>Base</value>
+  </data>
+  <data name="PRJ_LIST_ART_VARIANTE" xml:space="preserve">
+    <value>Variant</value>
+  </data>
+  <data name="PRJ_LIST_VARIANTE_VON" xml:space="preserve">
+    <value>Variant of {0}</value>
+  </data>
   <data name="PRJ_LIST_LBL_SUCHE" xml:space="preserve">
     <value>Search:</value>
   </data>

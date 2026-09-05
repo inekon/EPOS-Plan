@@ -500,3 +500,159 @@ Stilblatt — eine bunit-Probe sieht sie nicht, Lehre W6‑B‑1).
 Liste rollt nicht waagerecht, das Formular steht darunter. Ein sehr langer
 Projektname bricht um, statt die Spalten zu verschieben. Dasselbe in „Projekt
 öffnen" und „Projekt löschen".
+
+## 14 — Anwenderwunsch 05.09.2026 (W15a‑E‑1): Varianten in den Projektlisten
+
+> **„Projekt öffnen: Es sollte wie zuvor kenntlich sein, welches Variantenprojekte
+> sind."**
+
+### 14.1 Das Bildschirmfoto
+
+Projektassistent, Seite 0 in Betriebsart BEARBEITEN, linke Spalte „Bestehendes
+Projekt auswählen". Die Liste zeigt zwei Spalten — **Wahl** und **Projektname ▲** —,
+darunter „24 von 24 Projekten" und den Knopf „Projekt öffnen". Drei aufeinander
+folgende Zeilen lesen sich gleich:
+
+```
+Booster-Kette mit Kombi-Spe…
+Booster-Kette mit Kombi-Spe…
+Booster-Kette mit Kombi-Spe…
+```
+
+In `Referenzlaeufe/Kenndaten_Test.sqlite` sind das die Projekte 1042
+„Booster-Kette mit Kombi-Speicher", 1043 „… (2)" (eine Kopie aus „Speichern
+unter") und 1044 „… ‑ Schichtspeicher" (die **Variante** von 1042,
+`Tab_Variante`-Zeile 8). Unterscheidbar waren sie nur an dem Teil des Namens, den
+der waagerechte Rollbalken abschnitt.
+
+### 14.2 Das Vorbild — wie es „zuvor" war
+
+**Als eigene Spalte gab es die Variante nie.** Weder das gelöschte UserControl
+`ProjektAuswahl` (`git show d6e2433^:WindowsFormsApplication1/Views/Projekt/ProjektAuswahl.cs`,
+418 Zeilen) noch die gelöschte Maske `Form_ProjektAuswahl`
+(`git show 1b6d2be^:…/Form_ProjektAuswahl.cs`, 99 Zeilen) enthalten das Wort
+„Variante" auch nur einmal. Kenntlich war eine Variante **am NAMEN**:
+
+* `VariantenCtrl.AnlegenAusStamm` (`EPOS.Kern/Controller/VariantenCtrl.cs` :124)
+  bildet den Projektnamen der Kopie als **`"<Stamm> - <Bezeichner>"`**, bei
+  Namensgleichheit mit einem Zähler dahinter.
+* `Form_Start.FuelleVariantenCombo`
+  (`git show 428443f^:…/Views/Hauptformular/Form_Start.cs` :2087‑2143) zeigte in
+  der Klappliste des Projektkopfes **genau diese Zeichenkette** — ausdrücklich
+  „ohne Vorsatz »Stamm: «", weil das Feld an der Stelle des früheren blauen
+  Projekttextes steht „und deshalb genau dessen Format" trägt.
+* Die Reihenfolge dort kam aus `VariantenCtrl.LadeGruppe` (:40‑65): **der Stamm als
+  erste Zeile**, danach seine Varianten `ORDER BY Variantenname`.
+
+Das Vorbild ist also: *der volle Name*, und *die Gruppe beieinander, Stamm zuerst,
+Varianten nach Bezeichner.*
+
+### 14.3 Warum es nicht mehr trug
+
+Der Name allein trägt nur, solange man ihn ganz sieht. Das Assistentenband ist
+**280 px** breit (`.epos-assistent-band { width: 280px }`), und ausgerechnet der
+abgeschnittene Teil (` - <Bezeichner>`) ist der, der die Variante ausmacht.
+
+Dazu kommt ein zweiter, älterer Fehler: Die Umbruchregel aus **Befund W15a‑B‑1**
+(§ 13) stand seit dem Vormittag im Stilblatt und **wirkte nicht**.
+`.epos-raster td` hat die Spezifität (0,1,1), `.epos-projektliste-name` nur
+(0,1,0) — die Hausregel `white-space: nowrap` gewann jedes Mal. In „Speichern
+unter" fiel das nicht auf, weil dort § 13 zusätzlich den Umbruch des Rasters auf
+1 100 px vorzog und die Liste damit die volle Breite bekam; im 280‑px‑Band gab es
+diesen Ausweg nicht.
+
+### 14.4 Die Umsetzung
+
+**Kern — die Herkunft reist in der Zeile mit.**
+
+* `ProjektKopfZeile` (`EPOS.Kern/Model/ProjektAngaben.cs`) trägt drei Felder mehr:
+  `StammId` (0 = keine Variante), `Bezeichner` und `StammName`, dazu die
+  abgeleitete Frage `IstVariante`.
+* `ProjektCtrl.NamenListe` liest sie in **EINER** Abfrage mit zwei LEFT JOINs
+  (`Tab_Projekt` → `Tab_Variante` → `Tab_Projekt` als Stamm), nicht mit einer
+  zweiten Abfrage je Zeile: Die Liste wird bei jedem Suchtastendruck neu
+  gezeichnet. Die Klammerung im FROM ist die von `VariantenCtrl.EntferneWaisen`
+  (Jet verlangt sie bei zwei JOINs, SQLite nimmt sie klaglos an).
+* **Ohne `Tab_Variante` läuft die alte Abfrage.** Die Tabelle legt
+  `StelleVariantentabelleSicher` erst beim ersten Anlegen einer Variante an; ein
+  LEFT JOIN auf eine fehlende Tabelle bräche die **ganze** Abfrage, und der
+  Anwender sähe eine leere Projektliste. `VariantentabelleLesbar()` fragt vorher —
+  still über `StilleDb`, wie jede Selbstheilungsauskunft des Hauses.
+
+**Baustein `ProjektListe` — drei Mittel, alle drei aus dem Vorbild.**
+
+1. **Der Name bricht um.** Die Regel aus § 13 bekommt den Tabellenselektor davor
+   (`.epos-projektliste-raster .epos-projektliste-name`, (0,2,0)) und schlägt die
+   Hausregel damit — eine Klasse mehr, keine Wichtigkeitsmarke.
+2. **Die Gruppe steht beieinander.** `Gruppiert(…)` ordnet die **Stämme** nach der
+   gewählten Sortierspalte und hängt jede Variante unmittelbar unter ihren Stamm,
+   dort nach **Bezeichner** — die Ordnung von `LadeGruppe`. Auch absteigend, denn
+   eine Gruppe ist keine Reihenfolge, sondern eine Zugehörigkeit. Fällt der Stamm
+   durch den Suchfilter, steht die Variante selbst oben; sonst wäre sie nach einer
+   Suche unauffindbar. Ein Sicherheitsnetz hängt ans Ende, was eine ringförmige
+   Verweiskette sonst verschlucken würde — eine Liste darf eine Zeile nicht
+   **verlieren**, auch nicht bei kaputten Daten.
+3. **Die Auskunft steht da, wo Platz ist.** Im Spaltensatz `Auswahl` als Spalte
+   **„Art"** zwischen Name und Kunde (»Stamm« / »Variante« mit dem Bezeichner
+   darunter); in der schmalen Namenssicht des Assistenten und im iOS-Einstieg als
+   **leise Zeile** „Variante von &lt;Stamm&gt;" unter dem Namen. Beides zugleich
+   wäre dieselbe Auskunft zweimal, deshalb schließen sie einander aus.
+   Zusätzlich ist jede Variantenzeile **eingerückt** und trägt eine senkrechte
+   Linie zum Stamm hin — dieselbe Lesart wie die Einrückung der `Baumansicht`.
+
+**Drei Entscheidungen, die begründet sein wollen.**
+
+* **Die Artspalte erscheint nur, wenn die Liste überhaupt eine Variante führt.**
+  Eine in allen 24 Zeilen leere Spalte nimmt dem Namen Platz weg und sagt nichts.
+  Nebenwirkung: In einer Datenbank ohne Varianten sieht die Liste aus wie zuvor.
+* **Ein Projekt ohne Varianten trägt in der Artspalte NICHTS** — es ist weder Stamm
+  noch Variante, und ein Wort dafür hatte der Bestand nicht. »Stamm« steht nur an
+  einem Projekt, an dem wirklich eine Variante hängt.
+* **Die Suche greift über den Bezeichner.** Er hat nirgends eine eigene Spalte;
+  wer ihn nicht durchsucht, macht ihn unauffindbar — dieselbe Lehre wie die
+  unsichtbare Beschreibung (Befund W15a‑B22).
+
+**Texte.** Vier neue Schlüssel in beiden `MyResource`-Katalogen:
+`PRJ_LIST_SP_ART` (Art / Type), `PRJ_LIST_ART_STAMM` (Stamm / Base),
+`PRJ_LIST_ART_VARIANTE` (Variante / Variant), `PRJ_LIST_VARIANTE_VON`
+(„Variante von {0}" / „Variant of {0}"). Ohne Stammnamen — der Stamm ist gelöscht
+— bleibt das bloße Wort stehen: „Variante von " ohne Namen wäre ein angefangener
+Satz.
+
+### 14.5 Wo die Kennzeichnung überall gilt
+
+| Ort | Spaltensatz | Kennzeichnung |
+|---|---|---|
+| Assistent Seite 0, linkes Band (`AssistentSeite`) | `NurName` | Einrückung + leise Zeile „Variante von …" |
+| „Projekt öffnen" / „Projekt löschen" (`ProjektWahlDialog`) | `Auswahl` | Artspalte + Einrückung |
+| „Projekt Speichern unter" (`ProjektKopieDialog`) | `Auswahl` | Artspalte + Einrückung |
+| iOS-Einstieg (`Seiten/Projektliste`) | `Einstieg` | Einrückung + leise Zeile |
+| „Export / Import" (`ProjektTransferDialog`) | — | keine `ProjektListe`, ein `Auswahlfeld` (Entscheid W15a‑O‑2) — unverändert |
+| Startseite, Klappliste des Projektkopfes (`Startseite.Varianten`) | — | **schon gekennzeichnet und unverändert**: Sie führt nur die Gruppe des offenen Projekts, Stamm zuerst, und zeigt den vollen Namen „&lt;Stamm&gt; ‑ &lt;Bezeichner&gt;" — genau `FuelleVariantenCombo` |
+
+### 14.6 Wachen
+
+`EPOS.Kern.Tests/ProjektpflegeTests.Die_Namensliste_nennt_zu_jeder_Variante_ihren_Stamm`
+hält jede Zeile gegen `Tab_Variante` selbst (nur lesend).
+`EPOS.UI.Tests/Bausteine/ProjektListeTests` führt neun Fälle: Artspalte mit
+Bezeichner, leere Art am gewöhnlichen Projekt, keine Artspalte ohne Varianten,
+Gruppierung nach Bezeichner (auch unter Datumssortierung), Einrückung und leise
+Zeile im schmalen Band, kein Doppel aus Spalte und Zeile, Suche über den
+Bezeichner, Variante ohne ihren Stamm, Variante ohne Stammnamen — dazu
+`Die_Umbruchregel_schlaegt_die_Hausregel_des_Rasters` und
+`Die_Variantenzeile_ist_im_Stilblatt_eingerueckt`, die die **Regeln** prüfen (eine
+bunit-Probe sieht ein Stilblatt nicht, Lehre W6‑B‑1).
+
+### 14.7 Abnahmepunkt A‑W15a‑E‑1
+
+„Projekt öffnen": Über den drei „Booster-Kette…"-Zeilen steht die Spalte **Art**;
+1044 trägt dort »Variante« mit dem Bezeichner „Schichtspeicher", 1042 »Stamm«,
+1043 nichts. 1044 steht **unmittelbar unter** 1042 und ist eingerückt. Der
+Projektname ist in jeder Zeile **vollständig** lesbar, die Liste rollt nicht
+waagerecht. Die Suche nach „Schichtspeicher" findet 1044. Dasselbe in „Projekt
+löschen" und „Speichern unter".
+
+Assistent, Seite 0: In der 280 px breiten Spalte steht der volle Projektname
+(umgebrochen, nicht abgeschnitten); unter jeder Variante steht leise „Variante von
+Booster-Kette mit Kombi-Speicher", und die Zeile ist eingerückt. Dasselbe auf dem
+iPad hochkant.

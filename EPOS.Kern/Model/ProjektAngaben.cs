@@ -28,6 +28,11 @@ namespace WindowsFormsApplication1
     /// <param name="Geaendert">Aenderungsdatum; <c>null</c>, wenn keines gespeichert ist.</param>
     /// <param name="Klimazone">Nur iOS-Einstieg: Klimaregion des Projekts.</param>
     /// <param name="Ausstattung">Nur iOS-Einstieg: Kurzform der belegten Gewerke.</param>
+    /// <param name="StammId">Ist die Zeile eine VARIANTE, steht hier die Id ihres
+    /// Stammprojekts (<c>Tab_Variante.ID_ProjektRef</c>); sonst 0.</param>
+    /// <param name="Bezeichner">Der Variantenbezeichner (<c>Tab_Variante.Variantenname</c>) —
+    /// beim Stamm und bei einem gewoehnlichen Projekt leer.</param>
+    /// <param name="StammName">Der Projektname des Stammprojekts; leer, wenn es keines gibt.</param>
     public sealed record ProjektKopfZeile(
         int Id,
         string Name,
@@ -35,7 +40,25 @@ namespace WindowsFormsApplication1
         string Beschreibung = "",
         DateTime? Geaendert = null,
         string Klimazone = "",
-        string Ausstattung = "");
+        string Ausstattung = "",
+        int StammId = 0,
+        string Bezeichner = "",
+        string StammName = "")
+    {
+        /// <summary>
+        /// Ist die Zeile eine Variante eines anderen Projekts? (Anwenderwunsch vom
+        /// 05.09.2026, W15a-E-1.)
+        ///
+        /// <para><b>Warum die Frage ueberhaupt gestellt wird.</b> Eine Variante ist im
+        /// Bestand ein vollwertiges Kopie-Projekt; erkennbar war sie bisher AM NAMEN,
+        /// den <c>VariantenCtrl.AnlegenAusStamm</c> als „&lt;Stamm&gt; - &lt;Bezeichner&gt;"
+        /// bildet. Sobald eine schmale Liste den Namen abschneidet, ist dieses
+        /// Kennzeichen weg — drei Zeilen „Booster-Kette mit Kombi-Spe…" sind dann nicht
+        /// mehr zu unterscheiden. Deshalb reist die Herkunft seither als eigenes Feld
+        /// mit, statt im Namen zu stecken.</para>
+        /// </summary>
+        public bool IstVariante => StammId > 0;
+    }
 
     /// <summary>
     /// Die neun Felder der ersten Assistentenseite (iU9-W15a.0g) — der Ersatz fuer die
