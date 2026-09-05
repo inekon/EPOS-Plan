@@ -485,3 +485,128 @@ Ressourcendateien.
 **Neu in den Tests** (10): acht bunit-Klassen in `EPOS.UI.Tests/Dialoge/`,
 `EPOS.Kern.Tests/TestDatenbank.cs`, `EnergietraegerVarianteCtrlTests.cs`,
 `KatalogFilterTests.cs`.
+
+---
+
+## 12. Windows-Abnahme 04.09.2026 — Befund
+
+| # | Befund | Ursache | Behebung |
+|---|---|---|---|
+| **W6‑B‑1** | **Das Hauptfenster erscheint als ungestyltes HTML.** Die Menüköpfe stehen untereinander als Standardknöpfe des Browsers, Kopfband und Kacheln haben keine Gestaltung. Die Anwendung war damit unbenutzbar — nicht falsch gerechnet, sondern nicht angezogen. | **Eine fehlende geschweifte Klammer im Stilblatt.** Der Regel `.epos-mehrzeilig { white-space: pre-line;` (Z. 1384 f.) fehlte das schließende `}`. Chromium liest die folgenden Regeln dann nicht als Nachbarn, sondern als **verschachtelte** Regeln (CSS Nesting, in Chromium seit Version 112; ein Selektor, der wie `.epos-reiter` mit einem Punkt beginnt, braucht dafür kein `&`): Aus `.epos-reiter { … }` wird `.epos-mehrzeilig .epos-reiter { … }`. Sie greifen also weiter — nur eben ausschließlich **innerhalb** eines `.epos-mehrzeilig`-Elements, und das ist im Hauptfenster keines. Der Browser meldet dabei **nichts**: verschachteltes CSS ist gültiges CSS. Klammerbilanz 619 zu 618. | Die eine Zeile `}` nach `white-space: pre-line;` (Z. 1386). Bilanz wieder 619 zu 619. Wache: **`EPOS.UI.Tests/StilblattTests.cs`** (§ 12.3). |
+
+### 12.1 Woher die Klammer verschwand — nicht aus W6.4a
+
+Der naheliegende Verdacht trifft nicht zu. `1bb2c19` (**W6.4a**, 03.09.2026,
+16:45 UTC) hat die Regel eingeführt, und zwar **heil**: Sie war damals die
+**letzte** Regel des Blatts, das Blatt hatte 149 zu 149 Klammern, und der
+Strukturprüfer von § 12.3 findet an diesem Stand null Befunde.
+
+Verloren ging das `}` im Merge **`7e8e341`** („Merge iU9 Welle 5 (Berichte- und
+Kostenseiten) in Welle 6", 03.09.2026) — und der Weg dahin ist der klassische:
+
+| | Stand | Was am Dateiende steht |
+|---|---|---|
+| Basis | `740c73e` | 1 140 Zeilen, endet mit `overflow: auto;` `}` |
+| Elternteil 1 | `1bb2c19` (W6.4a) | hängt **daran** die Regel `.epos-mehrzeilig` samt `}` an |
+| Elternteil 2 | `ddaea70` (Welle 5) | hängt **an dieselbe Stelle** den Block „Reiterleiste" an |
+| Ergebnis | `7e8e341` | beide Anbauten hintereinander — **ohne** das `}` des ersten |
+
+Beide Zweige haben am selben Dateiende angebaut; beim Auflösen dieses
+Anbau/Anbau-Konflikts blieb die eine Zeile liegen. Ab `7e8e341` steht die
+Bilanz auf 193 zu 192 und wandert von dort unverändert durch **jeden**
+Folgestand bis `e1ed87b` — 619 zu 618.
+
+### 12.2 Wirkung, und warum es einen Tag lang niemandem auffiel
+
+**Was messbar ist.** Das Blatt führt bei `e1ed87b` **569** Blöcke der obersten
+Ebene. **155** davon stehen **vor** dem Bruch und waren nie betroffen; die
+übrigen **414** — alles ab Z. 1386 — waren nur noch innerhalb von
+`.epos-mehrzeilig` wirksam. Der Schnitt fällt genau zwischen zwei Bauarten:
+
+| Vor dem Bruch (wirksam) | Nach dem Bruch (tot) |
+|---|---|
+| `.epos-dialog` (Z. 135), `.epos-knopf` (Z. 271), `.epos-kachel` (Z. 338), `.epos-feld` (Z. 492), `.epos-raster` (Z. 632) | `.epos-reiter` (Z. 1393), `.epos-kachelraster` (Z. 1454), `.epos-zellenaktionen` (Z. 1672), `.epos-startseite` (Z. 3779), `.epos-menueband` (Z. 3958) |
+
+Das ist der Grund, warum die **Dialoge** der Wellen 6 bis 15 in der Abnahme
+richtig aussahen: Rahmen, Knopf, Feld, Kachel und Tabellenraster — alles, was
+ein modaler Dialog braucht — stammt aus dem heilen ersten Drittel. Was hinter
+dem Bruch liegt, ist fast durchweg **Seiten**gestaltung: Reiterleiste,
+Kachelraster, Startseite, Menüband. Und Seiten gibt es erst seit W10b, die
+Startseite seit W16b, das Hauptfenster seit W16c.
+
+Dazu ein zweiter belegbarer Punkt: Der Stilblattteil, mit dem **W5‑B‑1** am
+04.09.2026 behoben wurde (`acc19a3`, `.epos-zellenaktionen` und
+`.epos-zellenaktionen-inhalt`, Z. 1672 ff.), steht **selbst hinter dem Bruch**.
+Er war bis zur Klammerkorrektur ebenso wirkungslos wie die Regel, die er
+ersetzt hat — die Kostenseite hätte die Aktionsspalte also auch nach der
+Behebung nicht so gezeigt, wie § 12 der Welle 5 sie beschreibt. Ob das am Gerät
+nachgesehen wurde, geht aus den Protokollen nicht hervor.
+
+**Was Vermutung bleibt.** Warum in den gut 28 Stunden zwischen `7e8e341`
+(03.09., 16:49 UTC) und der Abnahme am Abend des 04.09. niemand eine Seite in
+WebView2 gesehen hat, lässt sich hier nicht
+belegen — in der Arbeitsumgebung ist kein Browser erreichbar (dieselbe Grenze,
+die schon § 12 der Welle 5 nennt), und die bunit-Fälle rechnen keine
+Stilblätter aus. Wahrscheinlich ist die einfache Erklärung: Die Abnahme vom
+04.09.2026 war der **erste** Lauf, in dem ein Gerät das Hauptfenster überhaupt
+gezeichnet hat. Der Start davor ist an **W16c‑B12** gescheitert (fehlender
+`[Parameter] Zustand`, `TargetInvocationException` an `Program.Main:332`); erst
+`73b6e58` hat ihn repariert. Der erste Blick auf das gezeichnete Fenster und
+der Befund fallen damit zusammen — was den Befund erklärt, aber nicht die
+vorangegangenen Wellen entlastet.
+
+### 12.3 Die Wache: `StilblattTests`
+
+Eine bunit-Probe kann diesen Fehler grundsätzlich nicht sehen — das Markup war
+die ganze Zeit richtig, und bunit rechnet kein CSS aus. Deshalb liest die Wache
+das Stilblatt selbst und prüft seine **Struktur**. Sie steht in
+`EPOS.UI.Tests/StilblattTests.cs` und geht denselben Weg zum Blatt wie die
+Regressionswache zu W5‑B‑1
+(`Seiten/KostenSeiteTests.Die_Aktionszelle_traegt_im_Stilblatt_kein_display_flex`),
+die den **Inhalt** einer einzelnen Regel prüft; die neue prüft den **Bau** des
+ganzen Blatts.
+
+Der Prüfer ist ein eigener kleiner Strukturparser (kein CSS-Verständnis, nur
+Blockzählung): Kommentare `/* … */`, Zeichenketten `"…"`/`'…'` und `url(…)`
+werden übersprungen, über die geöffneten Blöcke läuft ein Stapel mit
+**Zeilennummer und Selektor** mit — damit jede Meldung sagen kann, wo man
+nachzusehen hat.
+
+| Fall | Was er verlangt |
+|---|---|
+| `Jede_geoeffnete_Klammer_wird_geschlossen` | Jede `{` wird geschlossen, keine `}` ist überzählig. Die Meldung nennt Zeile **und** Selektor des offen gebliebenen Blocks |
+| `Keine_Stilregel_steht_in_einer_Stilregel` | Innerhalb eines Blocks, dessen Selektor nicht mit `@` beginnt, beginnt kein weiterer Block. Unter einer At-Regel (`@media`, `@supports`, `@keyframes`, `@font-face`, `@layer`) ist ein Block normal und erlaubt |
+| `Kein_kaufmaennisches_Und_als_Nesting_Selektor` | Kein `&` außerhalb von Kommentaren und Zeichenketten. **Das Haus benutzt kein CSS-Nesting** — wo verschachtelt aussieht, ist eine Klammer verlorengegangen |
+| `Die_Wache_findet_die_fehlende_Klammer_von_epos_mehrzeilig` | Die Gegenprobe: Sie entfernt die Klammer in einer Kopie des **echten** Blatts wieder und verlangt beide Meldungen — den offenen Block (Z. 1384, `.epos-mehrzeilig`) und die erste Regel, die dadurch in ihm landet (Z. 1392, `.epos-reiter`). Die Zeilennummern stehen **nicht fest** im Test, sie werden im Text gesucht; sonst bräche der Fall bei jeder Regel, die jemand weiter oben einfügt |
+| `Das_Hausblatt_liegt_unter_der_Wache` | Der Pfadweg greift nicht ins Leere. Ohne diesen Fall wären die drei Theorien bei einem misslungenen Aufstieg **leer und trotzdem grün** |
+
+Die ersten drei laufen als `[Theory]` über **alle** `.css` unter
+`EPOS.UI/wwwroot` — heute ist das eine Datei, ein zweites Blatt stünde ohne
+weiteres Zutun mit unter der Wache.
+
+### 12.4 Bestandsaufnahme
+
+Der Prüfer über `e1ed87b` (mit gesetzter Klammer) findet **keinen weiteren
+Fehler**:
+
+| Geprüft | Ergebnis |
+|---|---|
+| Stilblätter unter `EPOS.UI/wwwroot` | **eines** — `epos-ui.css` (4 123 Zeilen). Daneben liegen nur `epos-verlauf.js`, `help_icon.png` und `bilder/` |
+| Klammerbilanz | 619 zu 619, kein offener Block, keine überzählige `}` |
+| Verschachtelung | 569 Blöcke der obersten Ebene, **0** Stilregeln in Stilregeln; die 27 At-Regeln (25 `@media`, 2 `@keyframes`) sind richtig geschachtelt |
+| `&`-Selektoren | **0**. Das Zeichen kommt dreimal vor, jedes Mal in einem **Kommentar** (Z. 1485 und 1603 „Berichte & Kosten", Z. 2701 `&nbsp;`) — der Prüfer sieht Kommentare nicht |
+| `url(…)` | kommt im Blatt nicht vor; der Prüfer überspringt es trotzdem, damit ein späteres `url(data:…)` ihn nicht aus dem Tritt bringt |
+| Einbindung | `WindowsFormsApplication1/wwwroot/index.html` und `EPOS.iOS/wwwroot/index.html` verweisen **beide** auf `_content/EPOS.UI/epos-ui.css` und je ein gebündeltes `*.styles.css` des Wirts (`EPOS_Plan.styles.css` bzw. `EPOS.iOS.styles.css`). Dasselbe Blatt trägt also beide Schalen — ein Bruch darin trifft Windows und iOS gleichermaßen |
+
+### 12.5 Gate der Behebung
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | **0 Fehler**, 6 Warnungen (unverändert; keine aus der neuen Datei) |
+| `dotnet test EPOS.UI.Tests -c Release --no-build` | **2 233 grün** (2 228 + 5), auch unter `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` |
+| Gegenprobe am echten Blatt | Klammer entfernt → `Jede_geoeffnete_Klammer_wird_geschlossen` **rot** mit „Zeile 1384: Block nicht geschlossen — `.epos-mehrzeilig`", `Keine_Stilregel_steht_in_einer_Stilregel` **rot** mit 414 Meldungen. Klammer gesetzt → grün |
+
+**Grenze des Nachweises.** Dass das Fenster jetzt richtig aussieht, ist auf
+Linux nicht zu zeigen — kein WebView2, kein Browser. Belegt sind die
+**Struktur** des Blatts und die Wache dagegen; die Sichtprüfung bleibt beim
+Anwender und gehört zu Abnahmepunkt 0 der Welle 16c („Start").
