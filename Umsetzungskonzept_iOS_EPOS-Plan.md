@@ -1492,6 +1492,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > das `Menueband` hängt `epos-menueband-punkt--rechts` (`margin-left: auto`) an. **Nur die Optik wandert**:
 > Markup-Reihenfolge, Tastaturweg (Ende = „Sprache"), Sprachausgabe und N4 bleiben unverändert; fünf bunit-Fälle.
 > Der Abnahmepunkt 3a „Wo ‚Sprache' steht" ist neu in der Liste, die Sichtprüfung bleibt beim Anwender.
+> **Anwenderwunsch W16c‑E‑5 vom 05.09.2026 (Farbgebung wie vor W16), umgesetzt (`04d5ac6`):** Menüband und
+> Kopfband folgen `menuToolbar` und `MDIMainForm.InitMarke` — AliceBlue #f0f8ff, vier Köpfe in 16 px, kühle
+> Trennlinie #dee3e8, Produktname 19 px, Gattung und Claim 11 px in #70777e. Fünf Werte, die bisher nur als
+> Rückfall in der Regel standen (`--epos-marke`, `--epos-marke-untertitel`, `--epos-marke-trennlinie`,
+> `--epos-menue-flaeche`, `--epos-flaeche-hell`), sind jetzt Token in `:root`; die Menühöhe bleibt beim
+> Berührungsziel 44 px, die Versionsfarbe des Bestands ist wegen 2,77:1 nicht übernommen. Abnahmepunkt 7a.
 
 > **Statusblock iU9 — Teilwelle 16b umgesetzt (04.09.2026, Basis `84d7c16` nach W16a, zusammengeführt mit `d4a7632` nach dem einundzwanzigsten iOS-Lauf)**
 >
@@ -1573,6 +1579,19 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Raster läuft schmal nicht mehr über), Sinnbild links vom Titel, Erläuterung darunter, Zurück/Weiter 132 px fett.
 > Nicht angeglichen: der Bildknopf „Speichern" bleibt beschriftet, der Infoknopf beim Haus-Token 28 px, keine
 > feste Kachelhöhe. 18 neue bunit-Fälle; die Sichtprüfung (Abnahmepunkte 1, 2a, 2b) bleibt beim Anwender.
+> **Anwenderwunsch W16b‑E‑5 vom 05.09.2026 („Design und Farbgebung … angelehnt an winforms Version vor‑W16"),
+> umgesetzt (`04d5ac6`):** die Startseite trägt wieder die Anmutung von `Form_Start` (erhoben aus Designer,
+> drei `.resx` und den zwei `*_Paint` des Standes `84d7c16`) — Reiterleiste auf eigenem Grund mit **gefüllter
+> aktiver Zunge** in #005aa0 und weißer Schrift, weißes Reiterblatt mit kühlem Rahmen, die zwei Kopfkästen in
+> #b4becd mit 8 px Rundung und 16‑px‑Beschriftungen, jede Erläuterung halbfett in DimGray, der
+> Zusammenfassungskasten auf #f9fafc, die Knöpfe in LightGray. Sieben neue Token `--epos-start-*` gelten **nur**
+> für `Seiten/Start`, damit der gemeinsame Farbsatz der Dialoge nicht kippt; drei Farben des Vorläufers sind
+> wegen des Hauskontrasts 4,5:1 bewusst in derselben Familie ersetzt (weiß auf #6876df bei 16 px, 128,128,255 auf
+> #f9fafc, die Versionsfarbe 150,156,162). Nur Stilblatt, kein Markup, keine feste Pixelkoordinate; Wache
+> `StartseiteAnmutungTests` (30 Fälle: Token, tragende Regeln, Kontrast nach WCAG 2.1 aus den Stilblattwerten
+> nachgerechnet); Abnahmepunkte 2c–2g für die Sichtprüfung. Nicht angeglichen: Statusanstrich der ganzen
+> Kachel (A‑1), Kachelbeschriftung mittig (W16b‑E‑3), 29‑px‑Menühöhe und 65‑px‑Kopfkästen (Berührungsziel
+> 44 px, M2/iL4), 1,5‑px‑Rahmen.
 
 > **Statusblock iU9 — Teilwelle 16a umgesetzt (04.09.2026, Basis `975ead5` = Tag `vor-W16`, zusammengeführt mit `3c7e0d6` nach den W15c-Entscheiden)**
 >
