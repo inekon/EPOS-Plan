@@ -369,6 +369,63 @@ body {
     max-height: 48px;
 }
 
+/* ---- Die Sinnbilder der Startseite (Anwenderwunsch 05.09.2026) ---------
+
+   HERKUNFT. Es sind DIESELBEN Dateien wie im Vorlaeufer, unveraendert nach
+   wwwroot/bilder/start/ umgezogen; die Zuordnung Kachel -> Datei steht in
+   Seiten/Start/Kachelbilder.cs. JPG bleibt JPG, PNG bleibt PNG - zugeschnitten
+   wird hier.
+
+   WARUM EIN AUSSCHNITT. Die fuenfzehn Kachel-JPG sind die GANZE Kachel des
+   Vorlaeufers: eine weisse Karte von rund 554 x 260 mit dem Sinnbild oben links,
+   ueber die Form_Start seine Beschriftungen legte (label_pBox_* und
+   label2_pBox_*). Hier traegt die Kachel ihren Text selbst - gezeigt wird also
+   nur das Sinnbild. object-fit: none zeigt das Bild in seiner natuerlichen
+   Groesse, object-position schiebt den Ausschnitt auf das Sinnbild.
+
+   DIE ZAHLEN SIND GEMESSEN, nicht geschaetzt: In allen dreizehn hohen Kacheln
+   sitzt das Sinnbild als Block von 75 x 75 zwischen (42,42) und (122,120); das
+   Fenster 84 x 84 ab (40,40) fasst jedes davon mit Rand. Die zwei FLACHEN
+   Kacheln (554 x 117, pBox_Stromspeicher und pBox_Pufferspeicher standen im
+   Bestand halbhoch nebeneinander) tragen es 22 px hoeher: (39,21) bis (114,97).
+
+   Die fuenf *_Symbol.png der Aktionskarten sind bereits zugeschnitten (79-95 px,
+   ausgeschnitten aus denselben JPG) und brauchen kein Fenster. */
+
+.epos-kachel-bild--symbol {
+    width: auto;
+    height: 84px;
+    max-height: none;
+}
+
+.epos-kachel-bild--ausschnitt {
+    width: 84px;
+    height: 84px;
+    max-height: none;
+    object-fit: none;
+    object-position: -40px -40px;
+}
+
+.epos-kachel-bild--ausschnitt-flach {
+    width: 84px;
+    height: 84px;
+    max-height: none;
+    object-fit: none;
+    object-position: -36px -18px;
+}
+
+/* Dasselbe Sinnbild auf einem gewoehnlichen Knopf ("Simulation
+   Konfiguration...", die 21. Kachel): Es soll den Knopf nicht sprengen. */
+.epos-kachel-bild--knopf {
+    zoom: 0.45;
+}
+
+.epos-knopf--mit-bild {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .epos-kachel-titel {
     font-size: var(--epos-schriftgroesse-kartentitel);
     font-weight: 700;
