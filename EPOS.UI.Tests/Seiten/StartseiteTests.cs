@@ -731,4 +731,110 @@ public class StartseiteTests : BunitContext
                         cut.Find(".epos-kachelraster").GetAttribute("style")!,
                         StringComparison.Ordinal);
     }
+
+    // =====================================================================
+    //  Befund W16b-B-2 (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Aufbau, wie ihn <c>StartseiteHuelle.Gaben()</c> liefert: Die
+    /// Variantenliste hängt an der Projekt-Id, weil
+    /// <c>StartseiteCtrl.Varianten(0)</c> leer antwortet. <see cref="Zeige"/>
+    /// füllt sie unabhängig davon — für die Kopplung wäre das der falsche
+    /// Prüfstand.
+    /// </summary>
+    private IRenderedComponent<Startseite> WieDieHuelle(int idProjekt)
+        => Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln())
+            .Add(x => x.ProjektId, () => idProjekt)
+            .Add(x => x.Varianten, () => idProjekt > 0
+                ? new[] { (1030, "Referenzprojekt") }
+                : Array.Empty<(int, string)>())
+            .Add(x => x.Klimaregionen, () => new[] { "München" })
+            .Add(x => x.Klimaregion, () => "")
+            .Add(x => x.Bericht, Bereitschaft));
+
+
+    /// <summary>
+    /// <b>Der Projektname im Kopfband und gesperrte Reiter schliessen einander
+    /// AUS.</b>
+    ///
+    /// <para>Der Anwender meldete am 05.09.2026 beides zugleich: im Feld rechts
+    /// oben stand ein Projektname, die Reiter „Wärmebedarf", „Strombedarf" usw.
+    /// waren gesperrt. Das kann die Seite nicht: Beides hängt an DERSELBEN
+    /// Quelle — <c>ProjektId()</c> speist über <c>Laden()</c> die Variantenliste
+    /// UND über <c>ProjektOffen</c> die Reitersperre. Ohne Projekt gibt es keine
+    /// Variantenliste, also auch keinen Namen zum Anzeigen.</para>
+    ///
+    /// <para>Im Vorläufer war es EIN Schritt:
+    /// <c>Form_Start.ProjektKontextUebernehmen</c> (:182-190) setzte
+    /// <c>comboBox_Varianten.Text</c> und gab in derselben Methode die Reiter
+    /// frei. Der Fall hält diese Kopplung in beide Richtungen fest.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_Projektname_im_Kopfband_und_gesperrte_Reiter_schliessen_einander_aus()
+    {
+        // Mit Projekt: Name im Feld UND alle Reiter frei.
+        var mit = WieDieHuelle(1030);
+
+        Assert.Contains("Referenzprojekt", mit.Find("#epos-start-variante").TextContent,
+                        StringComparison.Ordinal);
+        foreach (IElement knopf in mit.FindAll("[role='tab']"))
+            Assert.False(knopf.HasAttribute("disabled"),
+                         "Reiter gesperrt, obwohl ein Projektname im Kopfband steht.");
+
+        // Ohne Projekt: KEIN Name im Feld, nur der Platzhalter - und die Sperre.
+        var ohne = WieDieHuelle(0);
+
+        var eintraege = ohne.FindAll("#epos-start-variante option");
+        Assert.Single(eintraege);
+        Assert.Equal("Bitte auswählen!", eintraege[0].TextContent.Trim());
+
+        var knoepfe = ohne.FindAll("[role='tab']");
+        for (int i = 1; i < knoepfe.Count; i++)
+            Assert.True(knoepfe[i].HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Die Reitersperre fällt, sobald die Hülle den Projektwechsel meldet — ohne
+    /// dass die WebView neu gebaut würde.
+    ///
+    /// <para>Das ist der Weg, den „Projekt öffnen", „Zuletzt geöffnet" und der
+    /// Variantenwechsel im Kopfband gehen:
+    /// <c>ProjektKontextCtrl.Setzen</c> → <c>Gewechselt</c> →
+    /// <c>StartseiteHuelle.ProjektGewechselt</c> →
+    /// <c>SeitenZustand.Auffrischen</c> → <c>Startseite.Laden</c>. Bliebe die
+    /// Sperre dabei stehen, sähe der Anwender genau das gemeldete Bild.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Projektwechsel_gibt_die_Reiter_frei()
+    {
+        int id = 0;
+        var zustand = new SeitenZustand();
+
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Zustand, zustand)
+            .Add(x => x.Kacheln, () => Kacheln())
+            .Add(x => x.ProjektId, () => id)
+            .Add(x => x.Varianten, () => id > 0
+                ? new[] { (1030, "Referenzprojekt") }
+                : Array.Empty<(int, string)>())
+            .Add(x => x.Klimaregionen, () => new[] { "München" })
+            .Add(x => x.Klimaregion, () => "")
+            .Add(x => x.Bericht, Bereitschaft));
+
+        Assert.True(cut.FindAll("[role='tab']")[1].HasAttribute("disabled"));
+
+        // Die Huelle meldet das nun offene Projekt.
+        id = 1030;
+        zustand.ProjektSetzen(1030, "Referenzprojekt");
+        zustand.Auffrischen();
+        cut.Render();
+
+        foreach (IElement knopf in cut.FindAll("[role='tab']"))
+            Assert.False(knopf.HasAttribute("disabled"));
+
+        Assert.DoesNotContain("Bitte zuerst ein Projekt auswählen!",
+                              cut.Markup, StringComparison.Ordinal);
+    }
 }
