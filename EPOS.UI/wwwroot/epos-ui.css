@@ -4026,6 +4026,17 @@ body {
     position: relative;
 }
 
+/* GANZ RECHTS (Anwenderwunsch 05.09.2026, W16c-E-4). Im Bestand sassen
+   "Deutsch" und "Englisch" als letzte Eintraege des MenuStrip rechtsbuendig am
+   Rand; der Kopf "Sprache" aus W16c-E-2 hat ihre Stelle geerbt. Es verschiebt
+   sich NUR die Optik: Der Punkt bleibt an seiner Stelle im Markup, damit
+   Tastaturweg (← → ueber die vier Koepfe, Ende = "Sprache"), Sprachausgabe und
+   der Nachweis N4 unveraendert bleiben. */
+.epos-menueband-punkt--rechts,
+.epos-menueband-knopf--rechts {
+    margin-left: auto;
+}
+
 .epos-menueband-knopf,
 .epos-menueband-zeile {
     display: flex;

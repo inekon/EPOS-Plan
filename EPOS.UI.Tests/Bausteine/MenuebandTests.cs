@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Bunit;
@@ -280,6 +281,50 @@ public class MenuebandTests : BunitContext
         string sichtbar = cut.Find(".epos-menueband").TextContent;
         Assert.DoesNotContain("Deutsch", sichtbar, StringComparison.Ordinal);
         Assert.DoesNotContain("Englisch", sichtbar, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Der_Kopf_Sprache_steht_rechtsbuendig()
+    {
+        // ANWENDERWUNSCH 05.09.2026 (W16c-E-4): "Sprache soll oben rechts sein"
+        // - so wie im Bestand die zwei Sprachpunkte, die als letzte Eintraege
+        // des MenuStrip rechtsbuendig am Rand sassen.
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+
+        // Genau EIN Kopf traegt das Kennzeichen, und es ist der letzte.
+        var rechts = cut.FindAll(".epos-menueband > .epos-menueband-punkt--rechts");
+        Assert.Single(rechts);
+        Assert.Equal("Sprache", rechts[0].QuerySelector(".epos-menueband-knopf")!.TextContent.Trim());
+
+        // Die DREI anderen Koepfe tragen es nicht - sie stehen links.
+        var koepfe = cut.FindAll(".epos-menueband > .epos-menueband-punkt");
+        Assert.Equal(4, koepfe.Count);
+        for (int i = 0; i < 3; i++)
+            Assert.DoesNotContain("--rechts", koepfe[i].ClassName!, StringComparison.Ordinal);
+
+        // Die REIHENFOLGE im Markup bleibt die des Bestands: Nur die Optik
+        // wandert (margin-left: auto), damit Tastaturweg und N4 unberuehrt sind.
+        Assert.Equal("menue-Sprache", koepfe[3].QuerySelector(".epos-menueband-knopf")!.Id);
+        Assert.True(Menuetabelle.Eintraege[^1].RechtsBuendig);
+        Assert.All(Menuetabelle.Eintraege.Take(3), p => Assert.False(p.RechtsBuendig));
+    }
+
+    [Fact]
+    public void Die_Rechtsbuendigkeit_steht_im_Stilblatt()
+    {
+        // Eine bunit-Probe sieht nur die Klasse; dass sie auch wirkt, steht im
+        // Stilblatt (Muster W5-B-1).
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+        int a = css.IndexOf(".epos-menueband-punkt--rechts,", StringComparison.Ordinal);
+        Assert.True(a >= 0, "Die Regel .epos-menueband-punkt--rechts fehlt im Stilblatt");
+        int e = css.IndexOf('}', a);
+        Assert.Contains("margin-left: auto", css.Substring(a, e - a));
     }
 
     [Fact]
