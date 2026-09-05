@@ -426,11 +426,11 @@ ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
 
 | Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
 |---|---|---|---|---|
-| `Seiten/Assistent/ProjektKopfSeite.razor` | 7 | 1 | nein | Klasse A. Der handgebaute Zweispalter `epos-projektkopf-raster` **entfällt** — samt seinem eigenen Umbruch bei 700 px; der Hausraster stellt dieselben zwei Spalten aus `auto-fill`, rückt zusätzlich die Beschriftung neben das Feld und bricht bei 900 px wie das ganze Haus. Die Beschreibung meldet sich als **breites** Feld (mehrzeilig) und spannt von selbst über beide Spalten — der eigene Kasten dafür ist damit überflüssig geworden. Die Hinweiszeile über dem Block bleibt außerhalb. |
+| `Seiten/Assistent/ProjektKopfSeite.razor` | 6 im Raster (7 auf der Seite) | 1 | nein | Klasse A. Der handgebaute Zweispalter `epos-projektkopf-raster` **entfällt** — samt seinem eigenen Umbruch bei 700 px; der Hausraster stellt dieselben zwei Spalten aus `auto-fill`, rückt zusätzlich die Beschriftung neben das Feld und bricht bei 900 px wie das ganze Haus. Die **Beschreibung** bleibt bewusst UNTER dem Raster: Zwischen ihr und den sechs kurzen Feldern steht seit Merge 5 (02.09.2026) der Pflichtfeldhinweis, und der gehört zu den Feldern darüber. Die Hinweiszeile und die Pflichtlegende über dem Block bleiben ebenfalls außerhalb. |
 
 **Probe.** `Die_Projektkopffelder_stehen_im_Formularraster`: kein
-`epos-projektkopf-raster` mehr, sieben Felder in **einem** Raster, davon genau
-eines breit.
+`epos-projektkopf-raster` mehr, **sechs** Felder in **einem** Raster, und das
+breite Feld (die mehrzeilige Beschreibung) steht **außerhalb**.
 
 **Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
 `epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
