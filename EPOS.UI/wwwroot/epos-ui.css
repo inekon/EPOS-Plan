@@ -5262,3 +5262,106 @@ body {
         grid-template-rows: minmax(0, 1fr) auto;
     }
 }
+
+/* ==================================================================== */
+/* WOCHEN-STUNDENPROFIL (Befund W8-E-1, Windows-Abnahme 05.09.2026)      */
+/*                                                                      */
+/* Der Anwender wollte den Dialog "so wie zuvor". Die erste Fassung      */
+/* stellte alles UNTEREINANDER - die Typliste als hohe Wahlzeilen, die   */
+/* sieben Wochentage als Optionsgruppe, die 24 Stundenwerte in EINER     */
+/* Spalte -, und der Dialog war damit rund dreimal so hoch wie sein      */
+/* Vorbild (Form_EingStromTyp, 607 x 544) und musste rollen.             */
+/*                                                                      */
+/* Zurueckgeholt ist die ANORDNUNG, nicht das Pixelmass: Die zwei        */
+/* Listen und die 24 Felder halten weiter --epos-touchziel (44 px statt  */
+/* der 17 bzw. 22 px des Designers). Was dadurch nicht mehr in die       */
+/* Hoehe passt, rollt in seinem eigenen Rahmen - nie die Seite.          */
+/* ==================================================================== */
+
+/* Kopfzeile: Typliste links, Beschreibung rechts. Das Verhaeltnis folgt */
+/* dem Designer (listBox_Typname 197 px, textBox_Beschreibung 343 px).   */
+.epos-typprofil-typen {
+    flex: 1 1 220px;
+}
+
+.epos-typprofil-beschreibung {
+    flex: 2 1 320px;
+}
+
+/* Der Reiter "Wochenwerte": das Stundenraster links, die Wochentage     */
+/* rechts daneben (Label27/listBox_Tag standen bei x = 338 bzw. 345,     */
+/* das Stundenraster endete bei x = 328). Auf schmalem Schirm bricht das */
+/* Paar um; hier ist der Umbruch folgenlos, deshalb flex-wrap und keine  */
+/* Medienabfrage (dieselbe Begruendung wie bei .epos-auswahlpaar).       */
+.epos-typprofil-woche {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--epos-rand);
+}
+
+.epos-typprofil-stunden {
+    flex: 1 1 440px;
+    min-width: 0;
+}
+
+.epos-typprofil-tage {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 0 1 15rem;
+    min-width: 0;
+}
+
+/* DIE 24 STUNDENFELDER STEHEN IN DREI SPALTEN ZU ACHT ZEILEN - 1..8,    */
+/* 9..16, 17..24, genau wie im Vorbild (st1..st8 bei x = 37, st9..st16   */
+/* bei x = 147, st17..st24 bei x = 258, je acht Zeilen ab y = 34).       */
+/*                                                                      */
+/* Im Markup laufen die Felder weiter 1..24, damit der Tabulator die     */
+/* Reihenfolge der Maske nimmt (TabIndex 119..165); grid-auto-flow:      */
+/* column fuellt daraus spaltenweise. Eine von Hand gebaute Dreiteilung  */
+/* haette die Markup-Reihenfolge zerrissen und den Tabulator mit ihr.    */
+.epos-stundenraster {
+    display: grid;
+    grid-template-rows: repeat(8, auto);
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 4px 12px;
+}
+
+/* Die Nummer steht VOR dem Feld, nicht darueber: Label3 lag bei x = 16  */
+/* und st1 bei x = 37 auf DERSELBEN Zeile. Uebereinander waere die       */
+/* Spalte doppelt so hoch - und genau das war der Befund.                */
+.epos-stundenraster .epos-feld {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-stundenraster .epos-feld-text {
+    flex: 0 0 auto;
+    min-width: 1.75rem;
+    text-align: right;
+    color: var(--epos-text-leise);
+}
+
+.epos-stundenraster .epos-feld-zeile {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* KOMPAKTE WAHLLISTE. Vorbild sind die zwei ListBox der Maske:          */
+/* listBox_Typname (197 x 157, neun sichtbare Zeilen) und listBox_Tag    */
+/* (109 x 123, alle sieben Wochentage). Die Zeile traegt dort ihren      */
+/* Namen selbst - hier ist sie deshalb eine breite Zeilenwahl            */
+/* (.epos-zeilenwahl--breit) und damit EIN Klickziel und EIN             */
+/* Tabulatorhalt, so wie eine ListBox-Zeile auch.                        */
+/*                                                                      */
+/* Die Zellenpolsterung faellt weg: Sie kaeme zu den 44 px des Knopfes   */
+/* hinzu, und im Rahmen (--epos-listenhoehe, 22 rem) stuenden dann sechs */
+/* Zeilen statt acht. Die Trennlinie faellt mit ihr - der Knopf hat      */
+/* seinen eigenen Rahmen, zwei uebereinander waeren ein Doppelstrich.    */
+.epos-raster--wahlliste td {
+    padding: 0;
+    border-bottom: 0;
+}
