@@ -67,11 +67,15 @@
      Verwaltung, wo der Baustein Dateiwahl in einem eigenen Einleseblock sitzt):
      In einer Knopfleiste unter der Liste haette es nichts anzuzeigen - der Pfad
      ist nach dem Lauf ohnehin wieder leer.
-   * DER FORMATHINWEIS steht als Text UNTER der Leiste, dazu der Infoknopf mit
-     demselben Wortlaut als Kurztext. Er nennt, was die Kette wirklich annimmt:
-     Trennzeichen, Kopfzeile, Dezimaltrenner, Spalten, Einheit und die 8.760
-     bzw. 35.040 Werte. Der Anwender soll nicht erst am Protokoll erfahren,
-     welche Datei gemeint war.
+   * DER FORMATHINWEIS steht als Text UNTER der Leiste, dazu der Infoknopf.
+     SEIT W12-E-2 IST ER EINZEILIG (STROMGL_HINWEIS_FORMAT_KURZ): Dateiart,
+     Wertzahl, ein Wert je Zeile - und der Verweis auf den Infoknopf. Die
+     ausfuehrliche Fassung (STROMGL_HINWEIS_FORMAT, neun Zeilen: Trennzeichen,
+     Kopfzeile, Dezimaltrenner, Spalten, Einheit, Bezeichner) haengt unveraendert
+     AM INFOKNOPF und in der Hilfe. Grund ist der Platz: Der neun Zeilen hohe
+     Absatz stand genau dort, wo seit W12-E-2 die Grafik steht. Der Anwender soll
+     nicht erst am Protokoll erfahren, welche Datei gemeint war - aber auch nicht
+     neun Zeilen lesen, bevor er seine Ganglinie sieht.
    * LOESCHEN prueft ZWEI Sperren, bevor die Rueckfrage kommt: eine
      Projektzuordnung (StromganglinieStammCtrl.HatProjektzuordnung, Muster der
      Solarganglinie W14b) und das Auslieferungskennzeichen ReadOnly. Beide
@@ -84,9 +88,30 @@
      liefert dann 0). Ein SQLite-UNIQUE-Fehler erreicht den Anwender damit
      nicht.
 
+   ANWENDERWUNSCH W12-E-2 (Windows-Abnahme 05.09.2026): "Stelle die importierte
+   Stromganglinie als Grafik dar (wie bisher, zoombar, umschaltbar auf sortiert)."
+   Sobald LINKS ODER RECHTS eine Zeile markiert ist, steht unter den beiden
+   Spalten - ueber die volle Breite, vor der Fussleiste - die Jahresganglinie im
+   Baustein GanglinienGrafik: Kennzahlen (Jahresarbeit, Spitze,
+   Vollbenutzungsstunden), der Schalter "sortiert" und das Bild B1
+   (ChartRenderer.GanglinieNormiert) im Baustein Diagramm mit Bild- und
+   Datenzoom. Auf schmalem Schirm rutschen die zwei Listen ohnehin untereinander;
+   die Grafik bleibt darunter und rollt nicht waagerecht.
+
+   "WIE BISHER" GIBT ES NICHT - der Bestand zeigte eine Stromganglinie NIRGENDS
+   als Kurve; die Fundstellen stehen in GanglinienGrafik.razor. Uebernommen ist
+   deshalb das einzige Vorbild, das es gibt: der Bedarfsreiter der Ergebnisseite
+   (BildBedarfStrom) und der daraus gebaute GebaeudeBedarfDialog (W9.8).
+
+   DIE ZAHLEN KOMMEN AUS DEM KERN, nicht aus einer zweiten Rechnung:
+   StromganglinieAuswertungCtrl liest dieselben Wertzeilen wie der Lauf und
+   verdichtet 35.040 Viertelstundenwerte mit DERSELBEN Methode
+   (SimulationControl.Viertelstunden_zu_Stundenwerte_Mittelwert).
+
    KEIN KNOPF OHNE DELEGATEN. Fehlt der jeweilige Rueckruf, bleibt der Knopf
    weg - dieselbe Regel wie bei Dateiwahl, Sprung und "Bearbeiten...". Ohne
-   jede Gabe zeichnet der Dialog nur die zwei Listen (Befund W16b-B1). *@
+   jede Gabe zeichnet der Dialog nur die zwei Listen (Befund W16b-B1); ohne
+   Kennzahlen-Delegat bleibt auch die Grafik weg. *@
 
 @namespace EPOS.UI.Dialoge.Strom
 @using EPOS.UI.Dialoge.Allgemein
@@ -190,16 +215,30 @@
             @if (ImportMoeglich)
             {
                 @* W12-E-1: Was fuer eine Datei erwartet wird - sichtbar, nicht erst
-                   im Protokoll. Der Infoknopf traegt denselben Wortlaut als Kurztext
-                   und fuehrt auf die Wikiseite. *@
+                   im Protokoll. Seit W12-E-2 steht hier EINE Zeile; der volle
+                   Wortlaut haengt am Infoknopf und fuehrt auf die Wikiseite. *@
                 <div class="epos-formathinweis">
                     <Herleitungszeile Text="@FormatHinweisText" />
-                    <InfoKnopf Schluessel="@HilfeSchluesselImport" StandardKurztext="@FormatHinweisText" />
+                    <InfoKnopf Schluessel="@HilfeSchluesselImport"
+                               StandardKurztext="@FormatHinweisLangText" />
                 </div>
             }
         </Rechts>
 
     </Zweispaltenauswahl>
+
+    @* --- Die Grafik der gewaehlten Ganglinie (W12-E-2) ------------------ *@
+    @if (_kennzahlen is not null)
+    {
+        <GanglinienGrafik Schluessel="@Grafikschluessel" Bezeichner="@GewaehlterName"
+                          Kennzahlen="@_kennzahlen" Bildauftrag="@Grafikbild"
+                          Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
+                          LabelJahresarbeit="@LabelJahresarbeit" LabelSpitze="@LabelSpitze"
+                          LabelVollbenutzung="@LabelVollbenutzung"
+                          LabelSortiert="@LabelSortiert" LabelEinheit="@LabelEinheit"
+                          EinheitKw="@EinheitKw" EinheitStunden="@EinheitStunden"
+                          Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild" />
+    }
 
     @if (!Wizard)
     {
@@ -298,6 +337,36 @@
     /// </summary>
     [Parameter] public Func<string, string, Task<bool>>? Kopieren { get; set; }
 
+    /// <summary>
+    /// <b>Die drei Kennzahlen der gewählten Ganglinie</b> (W12‑E‑2) —
+    /// <c>StromganglinieAuswertungCtrl</c> in der Hülle. <c>null</c> als Ergebnis
+    /// heißt „zu dieser Ganglinie gibt es keine brauchbare Reihe"; dann bleibt die
+    /// Grafik weg statt einen leeren Rahmen zu zeigen.
+    ///
+    /// <para>Ohne den Delegaten gibt es die Grafik gar nicht — dieselbe Regel wie
+    /// bei den vier Knöpfen (kein Delegat, kein Bedienelement).</para>
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? Kennzahlen { get; set; }
+
+    /// <summary>
+    /// Zeichnet die gewählte Ganglinie (W12‑E‑2): Wahl, Schalterstellung „sortiert"
+    /// und der aufgezogene Bildausschnitt (<c>null</c> = das ganze Jahr).
+    ///
+    /// <para>Gezeichnet wird im Kern (<c>ChartRenderer.GanglinieNormiert</c>) — diese
+    /// Bibliothek ruft keinen Renderer (Risiko R‑W8‑2). Ohne Delegat steht der
+    /// Platzhalter, die Kennzahlen stehen trotzdem.</para>
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, bool, Diagrammbereich?, byte[]?>? Bildauftrag { get; set; }
+
+    /// <summary>
+    /// Die ANZEIGEEINHEIT der Jahresarbeit — MWh (Vorgabe) oder kWh
+    /// (Anwenderentscheid W8‑O‑5).
+    /// </summary>
+    [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
+
+    /// <summary>Meldet der Hülle die neu gewählte Einheit, damit sie gemerkt wird.</summary>
+    [Parameter] public Action<Energieeinheit>? EinheitGewaehlt { get; set; }
+
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
@@ -339,8 +408,29 @@
     /// <summary>Beschriftung des Loeschknopfes (W12-E-1).</summary>
     [Parameter] public string LoeschenText { get; set; } = Resource.STROMGL_BTN_LOESCHEN;
 
-    /// <summary>Der Formathinweis neben dem Importknopf (W12-E-1).</summary>
-    [Parameter] public string FormatHinweisText { get; set; } = Resource.STROMGL_HINWEIS_FORMAT;
+    /// <summary>
+    /// Der Formathinweis neben dem Importknopf — seit W12‑E‑2 die EINZEILIGE
+    /// Fassung; der volle Wortlaut steht in <see cref="FormatHinweisLangText"/>.
+    /// </summary>
+    [Parameter] public string FormatHinweisText { get; set; } = Resource.STROMGL_HINWEIS_FORMAT_KURZ;
+
+    /// <summary>
+    /// Der AUSFÜHRLICHE Formathinweis (W12‑E‑1) — er hängt seit W12‑E‑2 nur noch am
+    /// Infoknopf. Derselbe Textschlüssel wie vorher, nur an anderer Stelle gezeigt.
+    /// </summary>
+    [Parameter] public string FormatHinweisLangText { get; set; } = Resource.STROMGL_HINWEIS_FORMAT;
+
+    // --- Die Grafik (W12-E-2) -------------------------------------------
+
+    [Parameter] public string LabelJahresarbeit { get; set; } = Resource.STROMGL_LBL_JAHRESARBEIT;
+    [Parameter] public string LabelSpitze { get; set; } = Resource.STROMGL_LBL_SPITZE;
+    [Parameter] public string LabelVollbenutzung { get; set; } = Resource.GEBB_LBL_VOLLBENUTZUNG;
+    [Parameter] public string LabelSortiert { get; set; } = Resource.SIM_CHK_SORTIERT;
+    [Parameter] public string LabelEinheit { get; set; } = Resource.ALLG_LBL_EINHEIT;
+    [Parameter] public string EinheitKw { get; set; } = "kW";
+    [Parameter] public string EinheitStunden { get; set; } = Resource.GEBB_EINHEIT_STUNDEN;
+    [Parameter] public string Bildtext { get; set; } = Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE;
+    [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
 
     /// <summary>Der Dateifilter, den der Waehler bekommt.</summary>
     [Parameter] public string Dateifilter { get; set; } = Resource.IMPORT_DATEIFILTER;
@@ -426,6 +516,16 @@
     private bool _kopieOffen;
     private string _kopieVorschlag = "";
 
+    /// <summary>
+    /// Die Kennzahlen der GERADE markierten Ganglinie (W12‑E‑2); <c>null</c> = es ist
+    /// nichts markiert, es gibt keinen Delegaten, oder die Ganglinie trägt keine
+    /// brauchbare Reihe. In allen drei Fällen bleibt die Grafik weg.
+    /// </summary>
+    private GanglinienKennzahlen? _kennzahlen;
+
+    /// <summary>Die Wahl, zu der <see cref="_kennzahlen"/> gehört.</summary>
+    private GanglinienWahl? _wahl;
+
     /// <summary>Die Katalogzeilen (Prüfhilfe für die Tests).</summary>
     public IReadOnlyList<GanglinienKatalogZeile> Katalogliste => _katalog;
 
@@ -437,6 +537,12 @@
 
     /// <summary>Der Text des Warnbanners (Prüfhilfe für die Tests).</summary>
     public string Meldung => _meldung;
+
+    /// <summary>Die Kennzahlen der Grafik; <c>null</c> = keine Grafik. Prüfhilfe.</summary>
+    public GanglinienKennzahlen? Grafikkennzahlen => _kennzahlen;
+
+    /// <summary>Die Wahl, zu der die Grafik gehört. Prüfhilfe für die Tests.</summary>
+    public GanglinienWahl? Grafikwahl => _wahl;
 
     // --- Wer darf was (kein Delegat, kein Knopf) -------------------------
 
@@ -468,21 +574,66 @@
     {
         if (Katalog is null) return;
         _katalog = await Katalog() ?? new List<GanglinienKatalogZeile>();
-        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile))
+        {
+            _katalogZeile = null;
+            GrafikVerwerfen();       // W12-E-2: die geloeschte Zeile nimmt ihre Grafik mit
+        }
     }
 
-    private void ProjektZeileWaehlen(GanglinienProjektZeile zeile)
+    private Task ProjektZeileWaehlen(GanglinienProjektZeile zeile)
     {
         _projektZeile = zeile;
         _katalogZeile = null;
+        return GrafikLaden(new GanglinienWahl(false, zeile.GanglinieId, zeile.Bezeichner));
     }
 
-    private void KatalogZeileWaehlen(GanglinienKatalogZeile zeile)
+    private Task KatalogZeileWaehlen(GanglinienKatalogZeile zeile)
     {
         _katalogZeile = zeile;
         _projektZeile = null;
         _meldung = "";
+        return GrafikLaden(new GanglinienWahl(true, 0, zeile.Bezeichner));
     }
+
+    // =====================================================================
+    // Die Grafik (W12-E-2)
+    // =====================================================================
+
+    /// <summary>
+    /// Holt die Kennzahlen zur neuen Wahl. <b>Einmal je Markierung</b>, nicht je
+    /// Zeichendurchgang: Dahinter liegen 8 760 Wertzeilen aus der Datenbank.
+    /// </summary>
+    private async Task GrafikLaden(GanglinienWahl wahl)
+    {
+        _wahl = wahl;
+        _kennzahlen = null;
+
+        if (Kennzahlen is null) return;
+        _kennzahlen = await Kennzahlen(wahl);
+    }
+
+    /// <summary>
+    /// Was gerade markiert ist — die Namenszeile über der Grafik. Leer, solange
+    /// nichts gewählt ist.
+    /// </summary>
+    private string GewaehlterName => _wahl?.Bezeichner ?? "";
+
+    /// <summary>
+    /// Die IDENTITÄT der gezeigten Ganglinie. Sie trennt die Projektzeile von dem
+    /// gleichnamigen Katalogsatz: Beide dürfen denselben Bezeichner tragen, zeigen
+    /// aber verschiedene Tabellen — ein gemeinsamer Schlüssel ließe den Bildvorrat
+    /// des einen für den anderen gelten.
+    /// </summary>
+    private string Grafikschluessel
+        => _wahl is null ? "" : (_wahl.AusKatalog ? "K|" : "P|") + _wahl.GanglinieId
+                                + "|" + _wahl.Bezeichner;
+
+    /// <summary>Der Bildauftrag der Grafik — die Wahl steckt schon darin.</summary>
+    private Func<bool, Diagrammbereich?, byte[]?>? Grafikbild
+        => (Bildauftrag is null || _wahl is null)
+            ? null
+            : (sortiert, bereich) => Bildauftrag(_wahl, sortiert, bereich);
 
     private void Melden(string text, WarnStufe stufe)
     {
@@ -506,7 +657,7 @@
     /// dieselbe Zeile schon beim Hinzufügen nach — mit einem konkatenierten
     /// <c>SELECT</c> (Befund W12-B4).</para>
     /// </summary>
-    private void BeiHinzu()
+    private async Task BeiHinzu()
     {
         if (_katalogZeile is null) return;
 
@@ -514,7 +665,7 @@
             new GanglinienProjektZeile(_naechsterSchluessel++, 0, _katalogZeile.Bezeichner);
 
         Zeilen.Add(neu);
-        ProjektZeileWaehlen(neu);
+        await ProjektZeileWaehlen(neu);
         Geaendert?.Invoke();
     }
 
@@ -528,7 +679,19 @@
         if (_projektZeile is null) return;
         Zeilen.Remove(_projektZeile);
         _projektZeile = null;
+        GrafikVerwerfen();
         Geaendert?.Invoke();
+    }
+
+    /// <summary>
+    /// Die Grafik fällt weg, sobald ihre Zeile weg ist — beim Entfernen und immer
+    /// dann, wenn der neu geladene Katalog die markierte Zeile nicht mehr führt.
+    /// Eine Grafik ohne Zeile zeigte Zahlen zu etwas, das nicht mehr dasteht.
+    /// </summary>
+    private void GrafikVerwerfen()
+    {
+        _wahl = null;
+        _kennzahlen = null;
     }
 
     // =====================================================================
@@ -640,6 +803,7 @@
     private void BeiBearbeiten()
     {
         _projektZeile = null;      // wie listBox_Auswahl.SelectedItems.Clear() (:112)
+        if (_katalogZeile is null) GrafikVerwerfen();
         _verwaltungOffen = true;
     }
 
