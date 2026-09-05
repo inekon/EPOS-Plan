@@ -135,7 +135,12 @@ namespace WindowsFormsApplication1
                 ["WeiterText"] = Text_("WIZ_BTN_WEITER", "Weiter ▶"),
                 ["SpeichernText"] = Text_("WIZ_BTN_SPEICHERN", "Speichern"),
                 ["ProjektLabelText"] = Text_("WIZ_LBL_PROJEKT", "Bestehendes Projekt auswählen"),
-                ["ProjektOeffnenText"] = Text_("WIZ_BTN_PROJEKT_OEFFNEN", "Projekt öffnen")
+                ["ProjektOeffnenText"] = Text_("WIZ_BTN_PROJEKT_OEFFNEN", "Projekt öffnen"),
+
+                // W15a-E-1: Das linke Band zeigt nur den Namen; die Variantenherkunft
+                // steht dort als leise Zeile darunter (keine Artspalte, kein Platz).
+                ["ArtVarianteText"] = Text_("PRJ_LIST_ART_VARIANTE", "Variante"),
+                ["VarianteVonFormat"] = Text_("PRJ_LIST_VARIANTE_VON", "Variante von {0}")
             };
         }
 

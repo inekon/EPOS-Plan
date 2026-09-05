@@ -136,6 +136,12 @@
     [Parameter] public string SpeichernText { get; set; } = "Speichern";
     [Parameter] public string ProjektLabelText { get; set; } = "Bestehendes Projekt auswählen";
     [Parameter] public string ProjektOeffnenText { get; set; } = "Projekt öffnen";
+
+    /// <summary>Eine Variante in der Projektliste (<c>PRJ_LIST_ART_VARIANTE</c>, W15a‑E‑1).</summary>
+    [Parameter] public string ArtVarianteText { get; set; } = "Variante";
+
+    /// <summary>Die leise Herkunftszeile (<c>PRJ_LIST_VARIANTE_VON</c>); <c>{0}</c> = Stammname.</summary>
+    [Parameter] public string VarianteVonFormat { get; set; } = "Variante von {0}";
     [Parameter] public string HilfeSchluessel { get; set; } = "AssistentSeite.btn_Help";
 
     // =====================================================================
@@ -316,6 +322,13 @@
             EventCallback.Factory.Create<ProjektKopfZeile?>(this, BeiMarkierung));
         builder.AddComponentParameter(i++, nameof(ProjektListe.Gewaehlt),
             EventCallback.Factory.Create<ProjektKopfZeile>(this, BeiDoppelklick));
+
+        // W15a-E-1: Das Band ist 280 px breit und zeigt nur den Namen - fuer eine
+        // Artspalte ist dort kein Platz. Die Herkunft steht deshalb als leise Zeile
+        // unter dem Namen; die Liste setzt sie von selbst, sie braucht nur die
+        // uebersetzten Worte.
+        builder.AddComponentParameter(i++, nameof(ProjektListe.ArtVarianteText), ArtVarianteText);
+        builder.AddComponentParameter(i++, nameof(ProjektListe.VarianteVonFormat), VarianteVonFormat);
         builder.CloseComponent();
 
         builder.OpenElement(i++, "div");
