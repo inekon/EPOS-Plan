@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -102,8 +102,11 @@ namespace WindowsFormsApplication1
 
         private static Task<string> OrdnerWaehlen(string start)
         {
-            return Task.FromResult(Dienste.Datei.OrdnerWaehlen(
-                MyResource.Resource.ADM_SET_BTN_DURCHSUCHEN, start ?? ""));
+            // Der Ordnerwaehler ist ein modales SYSTEMFENSTER und darf nicht
+            // synchron im WebView-Rueckruf aufgehen (Hausregel (d), Befund W13-B-1);
+            // die …Async-Form fuehrt ihn eine gepostete Nachricht spaeter hoch.
+            return Dienste.Datei.OrdnerWaehlenAsync(
+                MyResource.Resource.ADM_SET_BTN_DURCHSUCHEN, start ?? "");
         }
 
         /// <summary>

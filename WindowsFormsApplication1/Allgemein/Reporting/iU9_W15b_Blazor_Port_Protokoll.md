@@ -333,3 +333,224 @@ Handprobe:
 | **W15b‑O‑3** | `Standards/Schalter` hält seinen Zustand selbst (B34). Der saubere Ort für einen Rücksetzer wäre der Baustein — 20 Nutzer, eigene Welle. |
 | **W15b‑O‑4** | Die iOS-Hülle bedient `KiAssistentGaben` noch nicht; `AppWurzel` bleibt bis iU11 bei der Liste stehen und sagt warum. Der Chat ist auf dem Gerät nie geprüft worden (Risiko R‑W15b‑10) — die Handprobe gehört zu iU11. |
 | **W15b‑O‑5** | `Form_HelpPopup` ist damit die **letzte WinForms-Maske des Pakets**, die nicht mit W15c oder W16 fällt. Sie geht mit `HelpCatalog`/`HelpExtender` in iU11. |
+
+
+## Windows-Abnahme 05.09.2026 — Hilfe-Assistent (W15b‑B‑1, W15b‑B‑2, W15b‑E‑3, W15b‑E‑4)
+
+Vier Befunde des Anwenders am fertigen Assistenten. Zwei sind Abstürze bzw. Fehlfunktionen,
+zwei sind Darstellungswünsche; sie hängen zusammen, weil der eine Absturz den anderen Befund
+überhaupt erst hervorgerufen hat.
+
+### W15b‑B‑1 — „Einstellungen…" öffnet ein leeres Fenster, dann stürzt die Anwendung ab
+
+**Ursache, Fundstelle.** `Views/Help/KiChatHuelle.Gaben.cs:208` gab
+
+```csharp
+private Task<bool> EinstellungenAsync()
+    => Task.FromResult(KiEinstellungenHuelle.Oeffnen(_fenster));
+```
+
+heraus. `Task.FromResult` verspricht ein Warten und tut die Arbeit doch **sofort**: Ein zweites
+modales `BlazorDialogForm` mit einer **zweiten WebView2** ging synchron im
+`WebMessageReceived`-Rückruf der ersten auf — genau das Muster von **W16b‑B‑1** (leere
+Startkachel-Dialoge) und **W13‑B‑1** (Dateiwähler), und genau das, was `Sprungbruecke` seit
+iU9‑W2.2 als Risiko **R2** ausschließt. Dieselbe Zeile stand für den Rechtshinweis
+(`RechtshinweisAsync` → `KiHinweisHuelle.Anzeigen`) und — dritte Fundstelle — in
+`KiHinweisHuelle.Einhaengen`: `KiEinwilligung.Nachfragen = () => Task.FromResult(Einholen())`,
+und dieser Weg wird vom Aktionsschalter des Chatfensters gezogen, also ebenfalls aus einem
+Blazor-Ereignis.
+
+**Gewählter Weg: Überlagerung** (Entscheid **E‑5** des Hauses, „Überlagerung statt zweitem
+Fenster"), nicht `Blazornachlauf`. Drei Gründe:
+
+* Beide Hüllen hatten ihren Parametersatz **schon** dafür getrennt — `KiEinstellungenHuelle.Gaben()`
+  und `KiHinweisHuelle.Gaben(bool)` tragen seit W15b.3/.4 den Kommentar „So kann ihn auch das
+  Chatfenster verwenden, das … als ÜBERLAGERUNG zeigt statt als zweites Fenster (Risiko R2)".
+  Es war die vorgesehene Bauart, sie war nur nie verdrahtet.
+* Der Chat führte bereits **drei** Überlagerungen (Werkzeuge, Textanzeige, Rechtshinweis) —
+  die vierte fügt keine neue Bauart hinzu.
+* `Blazornachlauf` verhindert den Absturz, lässt aber die zweite WebView2 stehen (60–120 MB,
+  Fokusreihenfolge) und ist auf iOS gar nicht darstellbar.
+
+`KiChatDialog` bekommt dafür zwei `RenderFragment<EventCallback<bool>>` —
+`Einstellungsinhalt` und `Rechtshinweisinhalt`: Die Komponente reicht ihren Rückruf
+„fertig(gespeichert)" hinein, die Hülle hängt ihn an `Geschlossen` bzw. `Beantwortet`. Ohne
+Inhalt gilt weiter der Delegatweg (iOS vor iU11) — und **der** läuft jetzt über
+`Blazornachlauf.Nachgelagert`, ebenso die Einwilligung in `KiHinweisHuelle.Einhaengen`.
+
+**Zwei weitere Fundstellen derselben Art**, gefunden von der neuen Wache und mitbehoben:
+`BerichtSeiteGaben.cs:333` und `EinstellungenHuelle.cs:105` fuhren
+`Task.FromResult(Dienste.Datei.OrdnerWaehlen(…))`, `SimulationErgebnisHuelle.Wege.cs:575`
+`Task.FromResult(Dienste.Datei.DateiSpeichern(…))` — drei modale Systemfenster synchron im
+WebView-Rückruf. Alle drei rufen seither die `…Async`-Zwillinge.
+
+**Wache:** `EPOS.UI.Tests/HuellenwegTests` liest den Quelltext **aller** 63 Hüllen- und
+Gaben-Dateien und fällt rot aus, sobald `Task.FromResult(…)` ein modales Systemfenster
+umschließt (`*Huelle.Oeffnen/Anzeigen/Einholen`, `ShowDialog`, `DateiOeffnen`,
+`DateiSpeichern`, `OrdnerWaehlen`, `Dialog.Meldung/Warnung/Frage`) — mit Gegenprobe, damit der
+Leser nicht stumm wird. Dazu vier bunit-Fälle in `KiChatDialogTests` (Überlagerung statt
+Delegat, Rückweg schließt und vermerkt, Rechtshinweis ebenso, ohne Inhalt weiter über den
+Delegaten).
+
+### W15b‑B‑2 — „Hilfeassistent funktioniert nicht bei Fragen"
+
+Bildschirmfoto: Frage → roter Hinweis *„Die Anfrage konnte nicht beantwortet werden: HTTP 401 -
+Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or
+other valid authentication credential. See …/devconsole-project."*, danach der Rückfall
+„Passende Hilfeabschnitte" und „Quellen in der Online-Dokumentation" — **der ganze Block
+zweimal untereinander**.
+
+**Zwei getrennte Sachen, zwei Ursachen.**
+
+**(a) Der rohe Anbietertext.** `KiChatService` warf
+`new Exception("HTTP " + status + " - " + KurzFehler(body))`, und `KiVerlaufstexte.Antwort`
+setzte diesen Text unbesehen in den Verlauf. Damit gab es keinen Ort mehr, an dem sich
+Anwendersatz und Nachweis trennen ließen. **Neu:** `KiKern/KiDienstfehler.cs` mit
+`KiDienstAusnahme` — die Ausnahme trägt den **Anwendersatz** als `Message` und Kennzahl und
+**Rohtext** daneben; `KiChatService.Dienstabsage` ist die eine Stelle, an der aus einer
+HTTP-Kennzahl ein Fehler des Assistenten wird. Die Zuordnung: 400 → „Schlüssel nicht
+angenommen", 401/403 → „abgelehnt, prüfen Sie den Schlüssel unter Einstellungen…", 429 →
+„nimmt zurzeit keine weitere Anfrage an", 5xx → „nicht erreichbar", sonst → „nicht
+beantwortet, Einzelheiten unter Protokoll anzeigen". Der Rohtext geht in
+`KiChatService.Stoerungen` (20 Einträge, mit Zeitstempel) und erscheint unter „Protokoll
+anzeigen" **unter** dem Aktionsprotokoll — nicht darin: Das führt genau eine Zeile je
+Ausführungsversuch in festem Format (Fachkonzept 3.6), und eine Netzstörung ist kein
+Ausführungsversuch.
+
+**(b) Warum überhaupt 401.** Google beantwortet eine Anfrage **ohne** Schlüssel mit
+„Expected OAuth 2 access token" (ein *falscher* Schlüssel gäbe 400 API_KEY_INVALID). Der
+einzige Weg, einen Schlüssel einzutragen, ist „Einstellungen…" — und der stürzte ab
+(W15b‑B‑1). Der Riegel gegen diese Lage stand nur in `FrageAsync`/`FrageMitAktionenAsync`,
+**nicht** an der Stelle, durch die jede Anfrage geht. **Neu:** `KiChatService.SendenAsync`
+weist eine Anfrage ohne Schlüssel ab, bevor sie hinausgeht (Kennzahl 0 = „es ging keine
+Anfrage hinaus", Satz „Kein API-Schlüssel hinterlegt — bitte unter „Einstellungen…"
+eintragen"), und **wertet den Rückgabewert von `TryAddWithoutValidation` aus**: Der meldet
+einen unbrauchbaren Kopfzeilenwert mit `false` und sonst nichts — die Anfrage ginge dann ohne
+Kopfzeile hinaus und ergäbe dieselbe 401. Der Riegel steht damit an der EINEN Stelle, durch
+die auch die Modellabfrage und jede Werkzeugrunde läuft.
+
+**(c) Der doppelte Block.** Er kommt aus der Eingabezeile.
+`@onkeydown:preventDefault="_abfangen"` wird von Blazor **beim Zeichnen** ausgewertet und in
+die Ereignisanmeldung eingebacken. Beim sendenden Enter stand `_abfangen` noch auf `false`
+(die vorherige Taste war ein Buchstabe) — der Browser führte seine Standardaktion aus und trug
+einen Zeilenumbruch ein, und das nachfolgende `oninput` schrieb „alte Frage + \n" zurück in
+das Feld, das `Senden` gerade geleert hatte. Der Anwender sah eine **unveränderte Eingabe**,
+drückte noch einmal Enter, und dieselbe Frage ging ein zweites Mal hinaus. `preventDefault="true"`
+wäre die falsche Behebung (es nähme Umschalt+Enter den Zeilenumbruch); stattdessen verwirft
+`KiEingabezeile` das EINE nachlaufende Eingabeereignis nach einem sendenden Enter — die
+Merkstelle wird von jeder anderen Taste gelöscht und nur gesetzt, wenn wirklich etwas
+hinausging.
+
+**Wachen:** `KiKern.Tests/KiDienstfehlerTests` (10 Fälle: Kennzahl 0, Zugangsfehler,
+Überlast, unbekannt, Rohtext ungekürzt, Ausnahme trägt beides getrennt, Vorlage ohne
+Platzhalter), `EPOS.Kern.Tests/KiDienstriegelTests` (ohne Schlüssel geht keine Anfrage hinaus
+und die Störungsliste bleibt leer; eine Absage wird zum Anwendersatz), dazu zwei bunit-Fälle
+zur Eingabezeile (Enter sendet einmal und das Feld bleibt leer; Umschalt+Enter sendet nicht).
+
+### W15b‑E‑3 — Darstellung des Hilfe-Assistenten
+
+Der Anwender: „Darstellung kann verbessert werden." Vier Dinge standen schief, und zwei davon
+waren keine Geschmacksfrage:
+
+1. **Der Verlauf hatte keine Höhe.** `.epos-kichat` trug `height: 100%`, und die Höhenkette
+   darüber (html, body, `#app`) ist offen — eine prozentuale Höhe braucht einen Wirt mit
+   bestimmter Höhe (CSS 2.1, 10.5). Der Chat war damit nur so hoch wie sein Inhalt, und der
+   Gesprächsverlauf blieb bei seiner Mindesthöhe von 160 px **unter** dem Kopfkasten stehen —
+   für den Anwender „nicht zu sehen (leer, ohne Rahmen)". Der neue Block setzt `height: 100vh`;
+   das umgeht die Kette, statt sie zu reparieren, und ist zulässig, weil der Chat die einzige
+   Komponente seines Fensters ist.
+2. **Der Kopfkasten trug vier Zeilen Erklärung.** Das war die Begrüßung aus
+   `KiVerlaufstexte.Begruessung`, die IM Verlauf stand. Sie steht jetzt im **Kopf**: der erste
+   Satz sichtbar, der Rest hinter einer `<details>`-Klappe. Der Verlauf beginnt damit leer und
+   sagt das auch („Noch keine Frage gestellt.", neuer Parameter `Gespraechsverlauf.LeerText`).
+3. **Der Zähler stand zweimal** — in der Begrüßung und in der Fußleiste. Die Hülle ruft
+   `Begruessung(…, mitZaehler: false)`; die Fußleiste behält ihn, weil sie ihn nach jeder Frage
+   nachführt.
+4. **Die Knöpfe standen rechts gestapelt** (`flex-direction: column`), „Verlauf kopieren" lose
+   darüber. Jetzt: eine Reihe unter dem Eingabefeld — Aktionsschalter links (`Vorspann`),
+   dann Fragen (Hauptknopf), Nur suchen, „Werkzeuge…" (`Zusatzknoepfe`); der Datenschutzsatz
+   klein darunter; „Verlauf kopieren" gehört zu den drei Verweisen der **einen** Fußleiste,
+   und der `InfoKnopf` steht im Kopf.
+
+**Wachen:** `KiChatAnmutungTests` liest das Stilblatt und prüft die REGELN (Höhe, Verlauf
+füllend, Knopfreihe waagerecht, Block genau einmal) — eine bunit-Probe sieht eine Stilregel
+nicht (Lehre W6‑B‑1); dazu fünf bunit-Fälle (Begrüßung im Kopf, Klappe, Leerzustand, Zähler
+genau einmal, drei Knöpfe in einer Reihe).
+
+### W15b‑E‑4 — „Werkzeuge…" → „Aktionen von Hand ausführen"
+
+Der Anwender: „Es ist unklar, was ausgeführt werden kann und wie. Es sollte klarer
+strukturiert sein und mindestens ein Beispiel (direkt und auch in der Hilfe) geben."
+
+Die Liste zeigte den `KiAktion.Name` — einen ASCII-Schlüssel, den es **für das Modell** gibt
+(Fachkonzept 3.2: a‑z, 0‑9, Unterstrich); rechts stand ein Nur-Lese-Textfeld mit
+„Andockpunkt: VariantenCtrl.AnlegenAusStamm" und Hinweisen wie „(höchstens 200 Zeichen)".
+Beides ist für das Protokoll und für das Modell geschrieben.
+
+**Der Kern bekommt zwei Felder.** `KiAktion` führt seit dieser Behebung `Titel` und
+`Beispiel`; `Titel` fällt ohne Angabe auf den `Zweck` zurück — **nie** auf den Bezeichner.
+Beide Texte stehen zweisprachig in `MyResource` (`KI_REG_TITEL_*`, `KI_REG_BEISPIEL_*`) und
+werden über `KiAktionsTexte` zugeordnet; alle **24** Aktionen des Registers sind gefüllt.
+
+**Die Maske.** Links Titel statt Bezeichner, gruppiert nach „Aktionen, die nur lesen" und
+„Aktionen, die Daten ändern", mit Suchfeld ab neun Einträgen (der Bestand hat 24). Rechts:
+Titel, Kennzeichen „Liest nur"/„Ändert Daten", der Zweck als Satz, bei ändernden Aktionen die
+Wirkung und der Satz zur Bestätigungspflicht, das Beispiel („So fragen Sie: …") und die
+Parameter als **beschriftete Felder** mit Pflichtstern, Kurztext „Pflichtangabe" und der
+Erläuterung als Platzhalter. Der Andockpunkt steht nur noch als `title`. Im **Leerzustand**
+— dem ersten, was der Anwender sieht — steht ein vollständig durchgespieltes Beispiel. Die
+sechzehn Texte stehen als eigenes Bündel `KiWerkzeugTexte` (Hausregel „ab etwa zehn
+Anzeigetexten ein BÜNDEL").
+
+**In der Hilfe.** `HilfeWissen.Basiswissen()` bekommt den Abschnitt **„Aktionen des
+Assistenten"** — die zwei Wege (fragen oder von Hand), lesend gegen ändernd, Vorschau,
+Verfall, Sicherungspunkt, Protokoll und dasselbe Beispiel. Er steht im **eingebauten** Wissen
+und wird damit auch ohne Netz von derselben Suche gefunden, die „Nur suchen" benutzt; der
+`InfoKnopf` der Werkzeugliste zeigt über `help_mapping.txt`
+(`KiWerkzeugliste.btn_Help = Hilfe-Assistent#Aktionen des Assistenten`) auf denselben
+Abschnitt im Wiki.
+
+**Wachen:** `EPOS.Kern.Tests/KiWerkzeugkatalogTests` (je Aktion Titel und Beispiel, in beiden
+Sprachen, nicht leer, nie der Bezeichner, wirklich übersetzt, und die zwei Eigenschaften in
+`KiAktionsTexte` per Reflexion), `KiKern.Tests/KiAktionTitelTests` (Rückfall auf den Zweck,
+Beschnitt, der Name bleibt der Schlüssel) und acht bunit-Fälle zur Liste.
+
+### Prüfstand
+
+| Suite | vorher | nachher |
+|---|---|---|
+| `EPOS.UI.Tests` | 2 484 | **2 509** (25 neue Fälle) |
+| `EPOS.Kern.Tests` | 1 074 | **1 150** (76 neue Fälle) |
+| `KiKern.Tests` | 450 | **469** (19 neue Fälle) |
+
+Beide Kulturen (`de-DE` und `LANG=en_US.UTF-8`) grün; die zwei Kern-Wächter (iU5 und
+Plattform) leer. `WindowsFormsApplication1` übersetzt mit
+`-p:EnableWindowsTargeting=true` fehlerfrei — die Hüllenänderungen sind damit auch ohne
+Windows compile-geprüft. Kein Referenzlauf nötig (kein Rechenweg berührt), keine neue
+SQL-Anweisung.
+
+### Handprobe unter Windows
+
+| # | Was | Erwartung |
+|---|---|---|
+| 1 | Chat öffnen, **„Einstellungen…"** | Der Dialog erscheint als **Überlagerung** im selben Fenster — kein zweites Fenster, kein Absturz. Esc/„Abbrechen" schließt ihn, „OK" schließt ihn und schreibt „Die Angaben wurden gespeichert." in den Verlauf |
+| 2 | Darin einen gültigen API-Schlüssel eintragen, OK, dann fragen | Antwort im Verlauf; die Fußleiste zählt hoch |
+| 3 | Schlüssel wieder leeren, dann fragen | **Kein** HTTP-Fehler, sondern „Kein API-Schlüssel hinterlegt — bitte unter „Einstellungen…" eintragen." |
+| 4 | Mit falschem Schlüssel fragen | „Der KI-Dienst hat den Schlüssel nicht angenommen (400)…" bzw. „(401)…"; **kein** OAuth-Rohtext im Verlauf |
+| 5 | Danach „Protokoll anzeigen" | Unter dem Aktionsprotokoll steht „Störungen des KI-Dienstes (diese Sitzung):" mit Zeitstempel und dem **vollständigen** Anbietertext |
+| 6 | Eine Frage tippen und **Enter** drücken | Die Frage geht **einmal** hinaus, und das Eingabefeld ist danach **leer** |
+| 7 | Umschalt+Enter | Zeilenumbruch im Feld, nichts geht hinaus |
+| 8 | „Rechtshinweis" in der Hinweiszeile | Überlagerung, nicht Fenster; „Schließen" willigt nicht ein |
+| 9 | „Aktionen zulassen" beim ersten Mal | Der Rechtshinweis erscheint (weiter als eigenes Fenster, jetzt **hinter** dem Ereignis) und stürzt nicht ab |
+| 10 | Gesamtbild des Chats | Kopf mit Titel, Kontextzeile, EINEM Satz, Klappe und Infoknopf; der Verlauf füllt die Höhe und hat einen Rahmen; „Heute genutzt: n von 50" steht **genau einmal**, unten |
+| 11 | Leerer Chat | „Noch keine Frage gestellt." im Verlauf |
+| 12 | Knopfreihe | Fragen / Nur suchen / Werkzeuge… in EINER Reihe, Ankreuzfeld links daneben, Datenschutzsatz klein darunter |
+| 13 | „Werkzeuge…" öffnen | Links Titel in Klartext, gruppiert nach lesend/ändernd, mit Suchfeld; **kein** Bezeichner sichtbar |
+| 14 | Suchfeld „Variante" | Nur die passenden Einträge bleiben |
+| 15 | Ohne Auswahl rechts hinsehen | Der Leerzustand zeigt das vollständige Beispiel und den Satz zur Bestätigungspflicht |
+| 16 | „Variante anlegen" wählen | Kennzeichen „Ändert Daten", Zweck, „Danach: …", „So fragen Sie: …", zwei Pflichtfelder mit Stern und Platzhalter; **kein** Andockpunkt im Text (nur als Kurztext am Titel) |
+| 17 | Ausführen | Im Verlauf steht der **Titel**, nicht der Bezeichner; die Vorschau erscheint wie bisher |
+| 18 | Infoknopf der Werkzeugliste | Öffnet die Wikiseite „Hilfe-Assistent" beim Abschnitt „Aktionen des Assistenten" |
+| 19 | „Nur suchen" mit „Aktionen des Assistenten" | Der neue Hilfeabschnitt wird **ohne Netz** gefunden |
+| 20 | Sprache auf Englisch, Chat neu öffnen | Titel, Beispiele und die neuen Texte englisch |
+| 21 | Bericht → Zielordner wählen; Einstellungen → Ordner wählen; Ergebnisseite → Vergleich als CSV | Die drei Systemdialoge gehen auf, ohne die WebView zu stören (mitbehobene Fundstellen derselben Art) |

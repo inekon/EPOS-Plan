@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -297,6 +297,33 @@ namespace WindowsFormsApplication1
                     "Brauchwasser und den Netzverlusten. Der Strombedarf entsteht aus Stromprofilen und " +
                     "Stromganglinien und wird intern in Viertelstundenwerten geführt. Beide werden vor der " +
                     "Erzeuger-Simulation berechnet und im Bereich Energiebedarf als Jahresganglinie dargestellt."),
+
+                // Anwenderbefund W15b-E-4 (Windows-Abnahme 05.09.2026): "Es ist unklar,
+                // was ausgefuehrt werden kann und wie." Der Abschnitt steht im
+                // EINGEBAUTEN Wissen und nicht nur im Wiki - er wird damit auch ohne
+                // Netz gefunden, und zwar von derselben Suche, die "Nur suchen"
+                // benutzt. Die Werkzeugliste verweist mit ihrem Infoknopf hierher.
+                new WissensAbschnitt("Aktionen des Assistenten", "Hilfe-Assistent",
+                    "Der Assistent kann nicht nur antworten, sondern auch Aktionen im Programm ausführen. " +
+                    "Dafür muss im Chatfenster das Kästchen 'Aktionen zulassen' angehakt sein; ohne die einmalige " +
+                    "Einwilligung wird nichts übertragen und nichts ausgeführt. Es gibt zwei Wege: Sie fragen im " +
+                    "Klartext, oder Sie wählen die Aktion über 'Werkzeuge...' von Hand aus - dieser zweite Weg " +
+                    "kommt ohne Sprachmodell und damit ohne Kosten aus. " +
+                    "Jede Aktion ist entweder lesend oder verändernd. Lesende Aktionen laufen sofort; verändernde " +
+                    "zeigen zuerst eine Vorschau und laufen erst nach Ihrer ausdrücklichen Bestätigung, die nach " +
+                    "kurzer Zeit verfällt. Vor der ersten Änderung legt das Programm einen Sicherungspunkt der " +
+                    "Datenbank an. Jeder Versuch bekommt eine Zeile im Aktionsprotokoll ('Protokoll anzeigen'). " +
+                    "Ein Beispiel: 'Lege zum Projekt Musterhaus eine Variante Wärmepumpe statt Kessel an.' Der " +
+                    "Assistent schlägt daraufhin die Aktion 'Variante anlegen' mit dem Stammprojekt Musterhaus " +
+                    "und dem Bezeichner 'Wärmepumpe statt Kessel' vor und zeigt die Vorschau; erst 'Ausführen' " +
+                    "legt die Variante an. Von Hand erreichen Sie dasselbe über 'Werkzeuge...': links 'Variante " +
+                    "anlegen' wählen, rechts die zwei Pflichtfelder 'Stammprojekt' und 'Bezeichner' ausfüllen " +
+                    "und 'Ausführen' drücken. " +
+                    "Lesende Aktionen sind unter anderem: Projekte auflisten, Projekt suchen, Varianten " +
+                    "auflisten, Wirtschaftlichkeitsergebnisse lesen, Lastgangdatei prüfen und die kleinste " +
+                    "Netzbezugsspitze ermitteln. Verändernd sind: Variante anlegen, Speichervariante aktiv " +
+                    "setzen, Kostenposition setzen sowie das Ausfüllen von Feldern und das Auslösen von Knöpfen " +
+                    "einer geöffneten Maske."),
             };
         }
     }

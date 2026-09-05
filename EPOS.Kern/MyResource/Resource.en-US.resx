@@ -14505,4 +14505,226 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FEHLERSCHRANKE_BTN_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="KI_KERN_DIENST_KEIN_SCHLUESSEL" xml:space="preserve">
+    <value>No API key stored — please enter one under “Settings…”.</value>
+  </data>
+  <data name="KI_KERN_DIENST_ABGELEHNT" xml:space="preserve">
+    <value>The AI service rejected the request ({0}). Please check the key under “Settings…”.</value>
+  </data>
+  <data name="KI_KERN_DIENST_SCHLUESSEL_UNGUELTIG" xml:space="preserve">
+    <value>The AI service did not accept the key ({0}). Please check it under “Settings…”.</value>
+  </data>
+  <data name="KI_KERN_DIENST_KONTINGENT" xml:space="preserve">
+    <value>The AI service currently accepts no further request ({0}). Please ask again later.</value>
+  </data>
+  <data name="KI_KERN_DIENST_GESTOERT" xml:space="preserve">
+    <value>The AI service cannot be reached at the moment ({0}). Please ask again later.</value>
+  </data>
+  <data name="KI_KERN_DIENST_UNBEKANNT" xml:space="preserve">
+    <value>The AI service did not answer the request ({0}). The details are under “Show log”.</value>
+  </data>
+  <data name="KI_KERN_DIENST_PROTOKOLLZEILE" xml:space="preserve">
+    <value>AI service HTTP {0}: {1}</value>
+  </data>
+  <data name="KI_KERN_DIENST_PROTOKOLLKOPF" xml:space="preserve">
+    <value>Failures of the AI service (this session):</value>
+  </data>
+  <data name="KI_CHAT_VERLAUF_LEER" xml:space="preserve">
+    <value>No question asked yet.</value>
+  </data>
+  <data name="KI_CHAT_ERKLAERUNG_MEHR" xml:space="preserve">
+    <value>What the assistant does and what is transmitted</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_HINWEIS" xml:space="preserve">
+    <value>Here you carry out an action by hand — without the model and free of charge.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_SUCHE" xml:space="preserve">
+    <value>Find an action</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_KEIN_TREFFER" xml:space="preserve">
+    <value>No action matches this search text.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_GRUPPE_LESEND" xml:space="preserve">
+    <value>Actions that only read</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_GRUPPE_AENDERND" xml:space="preserve">
+    <value>Actions that change data</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_MERKMAL_LESEND" xml:space="preserve">
+    <value>Reads only</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_MERKMAL_AENDERND" xml:space="preserve">
+    <value>Changes data</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_BEISPIEL" xml:space="preserve">
+    <value>This is how you ask:</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_ANGABEN" xml:space="preserve">
+    <value>Entries</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_KEINE_ANGABEN" xml:space="preserve">
+    <value>This action needs no entries.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_WIRKUNG" xml:space="preserve">
+    <value>Afterwards:</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_PFLICHT" xml:space="preserve">
+    <value>Required entry</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_LEER_KOPF" xml:space="preserve">
+    <value>Please choose an action on the left.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_LEER_TEXT" xml:space="preserve">
+    <value>An example: choose “Create a variant” on the left. Under “Master project” enter the project the variant belongs to (Musterhaus, say), and under “Identifier” the name of the new variant (Heat pump instead of boiler, say). “Execute” first shows a preview; only your confirmation creates the variant. You reach the same result in the conversation with the sentence: “Create a variant Heat pump instead of boiler for the project Musterhaus.”</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_BESTAETIGUNG" xml:space="preserve">
+    <value>Actions that change data run only after your confirmation.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_ANDOCKPUNKT" xml:space="preserve">
+    <value>Technical entry point: {0}</value>
+  </data>
+  <data name="KI_REG_TITEL_PROJEKTE_AUFLISTEN" xml:space="preserve">
+    <value>List projects</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PROJEKTE_AUFLISTEN" xml:space="preserve">
+    <value>Which projects are in the database?</value>
+  </data>
+  <data name="KI_REG_TITEL_PROJEKT_AKTIV" xml:space="preserve">
+    <value>Name the open project</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PROJEKT_AKTIV" xml:space="preserve">
+    <value>Which project is currently open?</value>
+  </data>
+  <data name="KI_REG_TITEL_PROJEKT_SUCHEN" xml:space="preserve">
+    <value>Find a project</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PROJEKT_SUCHEN" xml:space="preserve">
+    <value>Is there a project called Musterhaus?</value>
+  </data>
+  <data name="KI_REG_TITEL_PROJEKT_LESEN" xml:space="preserve">
+    <value>Read the project header</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PROJEKT_LESEN" xml:space="preserve">
+    <value>Who is the customer of project Musterhaus?</value>
+  </data>
+  <data name="KI_REG_TITEL_VARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>List variants</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_VARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>How many variants does this project have?</value>
+  </data>
+  <data name="KI_REG_TITEL_SPEICHERVARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>List storage variants</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_SPEICHERVARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>Which storage variant is active in Musterhaus?</value>
+  </data>
+  <data name="KI_REG_TITEL_ERGEBNISSE_LESEN" xml:space="preserve">
+    <value>Read profitability results</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_ERGEBNISSE_LESEN" xml:space="preserve">
+    <value>Compare the results of projects 1007 and 1017.</value>
+  </data>
+  <data name="KI_REG_TITEL_PARAMETER_LESEN" xml:space="preserve">
+    <value>Read profitability parameters</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PARAMETER_LESEN" xml:space="preserve">
+    <value>Which electricity price does Musterhaus calculate with?</value>
+  </data>
+  <data name="KI_REG_TITEL_KOSTENLAGE_PRUEFEN" xml:space="preserve">
+    <value>Check the cost situation</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_KOSTENLAGE_PRUEFEN" xml:space="preserve">
+    <value>Does the recorded investment for the boiler match the planning values?</value>
+  </data>
+  <data name="KI_REG_TITEL_UEBERNAHME_VORSCHAU" xml:space="preserve">
+    <value>Preview transferring a trade</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_UEBERNAHME_VORSCHAU" xml:space="preserve">
+    <value>What would change if I transferred the heat pump from Musterhaus to Neubau?</value>
+  </data>
+  <data name="KI_REG_TITEL_MERKMAL_VORSCHAU" xml:space="preserve">
+    <value>Preview transferring a property</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_MERKMAL_VORSCHAU" xml:space="preserve">
+    <value>Could the climate region be transferred from Musterhaus to Neubau?</value>
+  </data>
+  <data name="KI_REG_TITEL_LASTGANG_PRUEFEN" xml:space="preserve">
+    <value>Check a load profile file</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_LASTGANG_PRUEFEN" xml:space="preserve">
+    <value>Check the load profile file C:\Daten\Lastgang2025.csv.</value>
+  </data>
+  <data name="KI_REG_TITEL_GANGLINIEN_AUFLISTEN" xml:space="preserve">
+    <value>List electricity load curves</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_GANGLINIEN_AUFLISTEN" xml:space="preserve">
+    <value>Which electricity load curves can I choose for this project?</value>
+  </data>
+  <data name="KI_REG_TITEL_MINIMALE_SPITZE" xml:space="preserve">
+    <value>Determine the smallest grid peak</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_MINIMALE_SPITZE" xml:space="preserve">
+    <value>How far does a 200 kWh storage unit push down the grid supply peak?</value>
+  </data>
+  <data name="KI_REG_TITEL_LETZTE_AKTIONEN" xml:space="preserve">
+    <value>Name the actions carried out</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_LETZTE_AKTIONEN" xml:space="preserve">
+    <value>What did you carry out in this session?</value>
+  </data>
+  <data name="KI_REG_TITEL_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
+    <value>Check energy carrier units</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
+    <value>Are the units of the energy carriers consistent?</value>
+  </data>
+  <data name="KI_REG_TITEL_DIALOG_LESEN" xml:space="preserve">
+    <value>Name the fields of the open form</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_DIALOG_LESEN" xml:space="preserve">
+    <value>Which fields can I set in this form?</value>
+  </data>
+  <data name="KI_REG_TITEL_DIALOG_ERKLAEREN" xml:space="preserve">
+    <value>Explain a field of the open form</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_DIALOG_ERKLAEREN" xml:space="preserve">
+    <value>What does the field seasonal performance factor mean?</value>
+  </data>
+  <data name="KI_REG_TITEL_FELD_SETZEN" xml:space="preserve">
+    <value>Fill in a field of the open form</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_FELD_SETZEN" xml:space="preserve">
+    <value>Enter 3.8 for the seasonal performance factor.</value>
+  </data>
+  <data name="KI_REG_TITEL_FORMULAR_AUSFUELLEN" xml:space="preserve">
+    <value>Fill in several fields of the open form</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_FORMULAR_AUSFUELLEN" xml:space="preserve">
+    <value>Enter the name Neubau and the customer Stadtwerke.</value>
+  </data>
+  <data name="KI_REG_TITEL_DIALOG_AKTION" xml:space="preserve">
+    <value>Release a button of the open form</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_DIALOG_AKTION" xml:space="preserve">
+    <value>Release the Calculate button in this form.</value>
+  </data>
+  <data name="KI_REG_TITEL_VARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Create a variant</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_VARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Create a variant Heat pump instead of boiler for the project Musterhaus.</value>
+  </data>
+  <data name="KI_REG_TITEL_SPEICHERVARIANTE_AKTIV" xml:space="preserve">
+    <value>Activate a storage variant</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_SPEICHERVARIANTE_AKTIV" xml:space="preserve">
+    <value>Make the 200 kWh storage variant the active one in Musterhaus.</value>
+  </data>
+  <data name="KI_REG_TITEL_KOSTENPOSITION_SETZEN" xml:space="preserve">
+    <value>Set a cost item</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_KOSTENPOSITION_SETZEN" xml:space="preserve">
+    <value>Set the cost item heat pump of Musterhaus to 45000.</value>
+  </data>
 </root>

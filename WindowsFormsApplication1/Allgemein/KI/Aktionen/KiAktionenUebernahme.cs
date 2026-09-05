@@ -29,6 +29,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "uebernahme_vorschau",
                 zweck: KiAktionsTexte.ZweckUebernahmeVorschau,
+                titel: KiAktionsTexte.TitelUebernahmeVorschau,
+                beispiel: KiAktionsTexte.BeispielUebernahmeVorschau,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "KomponentenUebernahmeCtrl.Planen",
                 parameter: new[]
@@ -127,6 +129,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "merkmal_vorschau",
                 zweck: KiAktionsTexte.ZweckMerkmalVorschau,
+                titel: KiAktionsTexte.TitelMerkmalVorschau,
+                beispiel: KiAktionsTexte.BeispielMerkmalVorschau,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "MerkmalUebernahmeCtrl.Pruefe",
                 parameter: new[]

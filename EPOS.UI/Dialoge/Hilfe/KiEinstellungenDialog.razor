@@ -1,4 +1,4 @@
-@* Einstellungen des KI-Assistenten: Schluessel, Tageslimit, Modell, Weg B
+﻿@* Einstellungen des KI-Assistenten: Schluessel, Tageslimit, Modell, Weg B
    (iU9-W15b.4, Ersatz fuer Views/Help/Form_KiEinstellungen.cs, 149 Z. + 191
    Designer).
 
@@ -148,8 +148,32 @@
 
     private string LimitWert => string.Format(TageslimitFormat, Tageslimit);
 
+    private bool _aufgebaut;
+
+    /// <summary>
+    /// Die Anfangswerte werden EINMAL uebernommen, nicht bei jedem Parametersatz.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Seit Befund W15b‑B‑1</b> steht dieser Dialog auch als UEBERLAGERUNG im
+    /// Chatfenster, und dort wird sein Parametersatz bei JEDEM Zeichenlauf des Wirtes
+    /// neu gebaut. Blazor haelt einen Delegaten, der neu entstanden ist, fuer
+    /// veraendert — <c>OnParametersSet</c> liefe also mitten in der Eingabe erneut und
+    /// setzte <see cref="_schluessel"/> auf die Vorbelegung zurueck: Der Anwender
+    /// haette getippt, und das Feld waere wieder leer.
+    /// </para>
+    /// <para>
+    /// Das Fenster setzt seine Parameter ohnehin nur einmal, und in der Ueberlagerung
+    /// entsteht der Dialog beim Aufgehen neu (<c>Ueberlagerung</c> zeichnet ihren
+    /// Inhalt nur, solange sie offen ist). Der Riegel kostet also nichts und ist
+    /// dasselbe Muster wie in <c>KiChatDialog.OnParametersSet</c>.
+    /// </para>
+    /// </remarks>
     protected override void OnParametersSet()
     {
+        if (_aufgebaut) return;
+        _aufgebaut = true;
+
         _schluessel = Schluessel ?? "";
         _wegB = WegB;
         _modellzeile = Modellzeile ?? "";
