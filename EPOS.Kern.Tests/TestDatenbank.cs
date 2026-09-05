@@ -95,6 +95,11 @@ namespace EPOS.Kern.Tests
         {
             DataRepository.PfadUeberschreibung = _vorher;
             if (_ordner == null) return;
+            // Der Verbindungspool von Microsoft.Data.Sqlite haelt die Arbeitskopie nach dem Schliessen
+            // der Verbindung offen; die geloeschte 77-MB-Datei bliebe dann bis zum Prozessende belegt -
+            // ein voller Lauf band so rund 9 GB und fiel auf einer knappen Platte mit "No space left on
+            // device" (Windows-Abnahme 05.09.2026). Pool leeren, damit das Loeschen den Platz freigibt.
+            try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { /* wie unten */ }
             try { Directory.Delete(_ordner, true); } catch { /* Aufraeumen darf nicht scheitern */ }
         }
     }
