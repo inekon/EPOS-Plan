@@ -10985,6 +10985,18 @@ Overwrite it anyway?</value>
   <data name="BKS_WAHL_VERSION" xml:space="preserve">
     <value>Select version</value>
   </data>
+  <data name="BKS_LBL_VARIANTE" xml:space="preserve">
+    <value>Variant:</value>
+  </data>
+  <data name="BKS_SIM_NIE" xml:space="preserve">
+    <value>not yet simulated</value>
+  </data>
+  <data name="BKS_SIM_GRUND_FEHLT" xml:space="preserve">
+    <value>No simulation result is available for this version.</value>
+  </data>
+  <data name="BKS_SIM_GRUND_VERALTET" xml:space="preserve">
+    <value>The simulation result is older than the last change to the project.</value>
+  </data>
   <data name="BKS_WAHL_ANLAGE" xml:space="preserve">
     <value>Select unit</value>
   </data>

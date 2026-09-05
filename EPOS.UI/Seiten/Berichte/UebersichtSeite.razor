@@ -2,12 +2,24 @@
 
    Vorbild: Views/BerichteKosten/UcBkUebersicht.cs (1 552 Z., K4).
 
-   AUFBAU. Oben die Verwaltung der Vergleichsgruppe: Stammprojekt-Auswahl,
-   Filter "nur Stammprojekte", die Liste aus Stamm und Varianten mit
-   Simulationsstand, daneben Bezeichnerfeld und die drei Knoepfe (Variante
-   anlegen, loeschen, Simulation starten). Darunter der Komponentenbereich -
-   auf der Stammzeile die GEGENUEBERSTELLUNG aller Versionen, auf einer
-   Variantenzeile deren UNTERSCHIEDE zum Stamm samt Aktionsspalte.
+   AUFBAU. Oben die Verwaltung der Vergleichsgruppe: Stammprojekt-Auswahl und
+   Filter "nur Stammprojekte", darunter in EINER Zeile die Variantenwahl,
+   das Bezeichnerfeld und die drei Knoepfe (Variante anlegen, loeschen,
+   Simulation starten), darunter die leise Statuszeile des Simulationsstands.
+   Und dann der Komponentenbereich - auf der Stammzeile die GEGENUEBERSTELLUNG
+   aller Versionen, auf einer Variante deren UNTERSCHIEDE zum Stamm samt
+   Aktionsspalte.
+
+   DIE VERSIONSWAHL IST EIN AUSWAHLFELD, KEINE TABELLE (Anwenderwunsch
+   05.09.2026, W5-E-1: "Variantenprojekte-Auswahl als Dropdown, damit weniger
+   Platz verwendet wird"). Die Tabelle mit Wahlknopf, Art, Bezeichner,
+   Projektname und Simulationsspalte brauchte vier bis fuenf Zeilen Hoehe fuer
+   eine Angabe, die in EINE passt - und nahm sie dem, worum es auf der Seite
+   geht: der Unterschiedstabelle. Was die Tabelle sonst noch sagte, bleibt:
+   die Reihenfolge (Stamm zuerst) durch die Reihenfolge der Eintraege, der
+   Bezeichner und der Projektname im Eintragstext, und der Simulationsstand
+   samt "⚠" in der Statuszeile darunter (aria-live, weil er beim Wechsel der
+   Version wechselt, ohne dass der Anwender dorthin sieht).
 
    DIE SEITE VERGLEICHT NICHT SELBST. Beide Ansichten kommen als fertige
    Zeilen aus der Huelle (ProjektDetails + AbweichungsErmittler - dieselbe
@@ -43,68 +55,53 @@
     }
 
     @* ------------------------------------------------ Stamm und Filter *@
-    <div class="epos-seite-zeile">
+    <div class="epos-seite-zeile epos-stammzeile">
         <Auswahlfeld Bezeichnung="@LabelStamm" Eintraege="@_stand.Staemme"
                      Auswahl="@_stand.StammId" AuswahlChanged="BeiStamm" />
         <Schalter Bezeichnung="@LabelNurStaemme" Wert="@_stand.NurStaemme"
                   WertChanged="BeiFilter" />
     </div>
 
-    @* -------------------------------------------------------- Die Liste *@
-    <div class="epos-seite-spalten">
-        <section class="epos-seite-spalte">
-            <div class="epos-raster-huelle">
-                <table class="epos-raster epos-variantentabelle">
-                    <thead>
-                        <tr>
-                            <th scope="col"></th>
-                            <th scope="col">@SpalteArt</th>
-                            <th scope="col">@SpalteBezeichner</th>
-                            <th scope="col">@SpalteProjektname</th>
-                            <th scope="col">@SpalteSimulation</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (VarianteZeile z in _stand.Zeilen)
-                        {
-                            VarianteZeile zeile = z;
-                            <tr class="@(zeile.IdProjekt == _stand.MarkierteId ? "epos-zeile--markiert" : "")">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(zeile.IdProjekt == _stand.MarkierteId)"
-                                                Kurztext="@WahlKurztext"
-                                                Gewaehltwerden="@(() => BeiZeile(zeile))" />
-                                </td>
-                                <td>@zeile.Art</td>
-                                <td>@zeile.Bezeichner</td>
-                                <td>@zeile.Projektname</td>
-                                <td><span class="@(zeile.Auffaellig ? "epos-veraltet" : "")">@zeile.SimStand</span></td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        @* ------------------------------------------------- Die Verwaltung *@
-        <section class="epos-seite-spalte epos-variantenpflege">
-            <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
-                      WertChanged="@(w => _bezeichner = w)" />
-            <button type="button" class="epos-knopf" disabled="@(!_stand.AnlegenMoeglich)"
-                    @onclick="Anlegen">@AnlegenText</button>
-            <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar)"
-                    @onclick="LoeschenFragen">@LoeschenText</button>
-            <button type="button" class="epos-knopf epos-knopf--primaer"
-                    disabled="@(!_stand.SimulierenMoeglich || _laeuft)"
-                    @onclick="Simulieren">@SimulierenText</button>
-        </section>
+    @* ------------------------- Die Version, der Bezeichner, die Knoepfe *@
+    <div class="epos-seite-zeile epos-variantenzeile">
+        <Auswahlfeld Bezeichnung="@LabelVariante" Kurzname="@WahlKurztext"
+                     Eintraege="@Versionen" Auswahl="@Markierung"
+                     AuswahlChanged="BeiVersion" />
+        <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+                  WertChanged="@(w => _bezeichner = w)" />
+        <button type="button" class="epos-knopf" disabled="@(!_stand.AnlegenMoeglich)"
+                @onclick="Anlegen">@AnlegenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar)"
+                @onclick="LoeschenFragen">@LoeschenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(!_stand.SimulierenMoeglich || _laeuft)"
+                @onclick="Simulieren">@SimulierenText</button>
     </div>
+
+    @* Der Simulationsstand der gewaehlten Version - das, was die
+       Simulationsspalte der Tabelle sagte. aria-live, weil er sich beim
+       Wechsel der Version aendert, ohne dass der Anwender hinsieht. *@
+    <p class="epos-simstand" aria-live="polite">
+        @if (_stand.MarkierteId > 0)
+        {
+            <span>@Simulationszeile</span>
+            @if (Markierte is not null && Markierte.Auffaellig)
+            {
+                <span class="epos-veraltet" title="@Simulationsgrund">@WarnZeichen</span>
+            }
+        }
+    </p>
 
     @* --------------------------------------------- Komponentenbereich *@
     <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
 
     @if (_stand.Vergleich.Count > 0)
     {
-        <div class="epos-raster-huelle">
+        @* Die Unterschiedstabelle bekommt die Hoehe, die die Variantentabelle
+           frei gemacht hat: dieselbe Hausregel W9-B-2 (fester Rahmen, innerer
+           Rollbalken, stehender Spaltenkopf), nur mit einer groesseren
+           Hoechsthoehe - sie ist das, worum es auf dieser Seite geht. *@
+        <div class="epos-raster-huelle epos-raster-huelle--vergleich">
             <table class="epos-raster epos-vergleichstabelle">
                 <thead>
                     <tr>
@@ -194,7 +191,7 @@
     /// <summary>Der Filter „nur Stammprojekte" hat gewechselt.</summary>
     [Parameter] public Action<bool>? FilterGewechselt { get; set; }
 
-    /// <summary>Eine Listenzeile wurde markiert (Projekt-Id).</summary>
+    /// <summary>Eine andere Version wurde gewählt (Projekt-Id).</summary>
     [Parameter] public Action<int>? ZeileMarkiert { get; set; }
 
     /// <summary>Legt eine Variante an und liefert die Meldung.</summary>
@@ -245,17 +242,43 @@
     [Parameter] public string TitelText { get; set; } = "Übersicht";
     [Parameter] public string LabelStamm { get; set; } = "Stammprojekt:";
     [Parameter] public string LabelNurStaemme { get; set; } = "nur Stammprojekte";
+
+    /// <summary>Beschriftung der Versionswahl (Anwenderwunsch 05.09.2026, W5‑E‑1).</summary>
+    [Parameter] public string LabelVariante { get; set; } = "Variante:";
+
     [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";
-    [Parameter] public string SpalteArt { get; set; } = "Art";
-    [Parameter] public string SpalteBezeichner { get; set; } = "Bezeichner";
-    [Parameter] public string SpalteProjektname { get; set; } = "Projektname";
+
+    /// <summary>
+    /// Das Wort vor dem Simulationszeitpunkt in der Statuszeile — bis W5‑E‑1 der
+    /// Kopf der Simulationsspalte der Variantentabelle. Dieselbe Ressource, dieselbe
+    /// Aussage, nur eine Zeile statt einer Spalte.
+    /// </summary>
     [Parameter] public string SpalteSimulation { get; set; } = "Simulation";
+
     [Parameter] public string SpalteAktion { get; set; } = "Aktion";
     [Parameter] public string AnlegenText { get; set; } = "Variante anlegen";
     [Parameter] public string LoeschenText { get; set; } = "Variante löschen";
     [Parameter] public string SimulierenText { get; set; } = "Simulation starten";
     [Parameter] public string UebernehmenText { get; set; } = "Übernehmen";
+
+    /// <summary>Name der Versionswahl für die Sprachausgabe (<c>aria-label</c>).</summary>
     [Parameter] public string WahlKurztext { get; set; } = "Version wählen";
+
+    /// <summary>Statuszeile, wenn die gewählte Version nie gerechnet wurde.</summary>
+    [Parameter] public string SimNieText { get; set; } = "noch nicht simuliert";
+
+    /// <summary>Kurztext am „⚠", wenn kein Ergebnis vorliegt.</summary>
+    [Parameter] public string SimGrundFehlt { get; set; }
+        = "Für diese Version liegt kein Simulationsergebnis vor.";
+
+    /// <summary>
+    /// Kurztext am „⚠", wenn das Ergebnis älter ist als die letzte Änderung am
+    /// Projekt — genau das, was <c>BerichtsDatenSammler.ErmittleStatus</c> als
+    /// „veraltet" meldet (Zeitstempel des Ergebnisses &lt; <c>Aenderungsdatum</c>).
+    /// </summary>
+    [Parameter] public string SimGrundVeraltet { get; set; }
+        = "Das Simulationsergebnis ist älter als die letzte Änderung am Projekt.";
+
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
 
@@ -339,6 +362,86 @@
         => spalte < z.Kurztexte.Count ? z.Kurztexte[spalte] : "";
 
     // =====================================================================
+    // Die Versionswahl (Anwenderwunsch 05.09.2026, W5-E-1)
+    // =====================================================================
+
+    /// <summary>Das Warnzeichen der auffälligen Stände — dasselbe wie im Bestand.</summary>
+    private const string WarnZeichen = "⚠";
+
+    /// <summary>
+    /// Die Einträge der Versionswahl in der Reihenfolge der Gruppe: der Stamm
+    /// zuerst, dann die Varianten. Der Text ist „Bezeichner — Projektname" — die
+    /// zwei Spalten, die die Tabelle bis W5‑E‑1 nebeneinander führte; die Spalte
+    /// „Art" braucht es nicht mehr, weil der Stamm seinen Bezeichner
+    /// („(Stammprojekt)") schon trägt und immer oben steht.
+    ///
+    /// <para>Die Ids sind die Projekt-Ids und damit über einen Neuaufbau stabil —
+    /// die Bedingung, die die Hausregel dem Wirt eines <c>Auswahlfeld</c>
+    /// auferlegt. Dubletten kann es nicht geben: <c>Tab_Projekt.ID</c> ist der
+    /// Schlüssel.</para>
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Versionen
+    {
+        get
+        {
+            var liste = new List<(int, string)>(_stand.Zeilen.Count);
+            foreach (VarianteZeile z in _stand.Zeilen)
+                liste.Add((z.IdProjekt, Eintragstext(z)));
+            return liste;
+        }
+    }
+
+    private static string Eintragstext(VarianteZeile z)
+    {
+        string bezeichner = z.Bezeichner ?? "";
+        string projekt = z.Projektname ?? "";
+
+        if (bezeichner.Length == 0) return projekt;
+        if (projekt.Length == 0) return bezeichner;
+        return bezeichner + " — " + projekt;
+    }
+
+    /// <summary>Die gewählte Version für das <c>Auswahlfeld</c>; <c>null</c> = keine.</summary>
+    private int? Markierung => _stand.MarkierteId > 0 ? _stand.MarkierteId : null;
+
+    /// <summary>Die Zeile der gewählten Version; <c>null</c> = keine.</summary>
+    private VarianteZeile? Markierte
+    {
+        get
+        {
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (z.IdProjekt == _stand.MarkierteId) return z;
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Der Simulationsstand der gewählten Version als Satz: „Simulation:
+    /// 05.09.26 16:23" bzw. „noch nicht simuliert". Das Warnzeichen steht daneben
+    /// als eigenes Element, damit es einen Kurztext tragen kann.
+    /// </summary>
+    private string Simulationszeile
+    {
+        get
+        {
+            VarianteZeile? z = Markierte;
+            if (z is null || string.IsNullOrEmpty(z.SimZeitpunkt)) return SimNieText;
+            return SpalteSimulation + ": " + z.SimZeitpunkt;
+        }
+    }
+
+    /// <summary>Warum der Stand auffällig ist: kein Ergebnis oder ein veraltetes.</summary>
+    private string Simulationsgrund
+    {
+        get
+        {
+            VarianteZeile? z = Markierte;
+            return z is null || string.IsNullOrEmpty(z.SimZeitpunkt)
+                ? SimGrundFehlt : SimGrundVeraltet;
+        }
+    }
+
+    // =====================================================================
     // Auswahl
     // =====================================================================
 
@@ -355,9 +458,16 @@
         Auffrischen();
     }
 
-    private void BeiZeile(VarianteZeile z)
+    /// <summary>
+    /// Die Wahl im Auswahlfeld treibt genau das, was bis W5‑E‑1 die Zeilenwahl der
+    /// Tabelle trieb: dieselbe Meldung an die Hülle, danach dasselbe Auffrischen —
+    /// Unterschiedstabelle, Knopfzustände und Statuszeile kommen aus dem neuen
+    /// Stand.
+    /// </summary>
+    private void BeiVersion(int? id)
     {
-        ZeileMarkiert?.Invoke(z.IdProjekt);
+        if (id is null) return;
+        ZeileMarkiert?.Invoke(id.Value);
         Auffrischen();
     }
 
@@ -428,16 +538,8 @@
         if (!string.IsNullOrEmpty(meldung)) _status = meldung;
     }
 
-    /// <summary>Der Projektname der markierten Zeile (leer, wenn keine markiert ist).</summary>
-    private string MarkierterProjektname
-    {
-        get
-        {
-            foreach (VarianteZeile z in _stand.Zeilen)
-                if (z.IdProjekt == _stand.MarkierteId) return z.Projektname ?? "";
-            return "";
-        }
-    }
+    /// <summary>Der Projektname der gewählten Version (leer, wenn keine gewählt ist).</summary>
+    private string MarkierterProjektname => Markierte?.Projektname ?? "";
 
     private string MehrdeutigFrage
         => string.Format(MehrdeutigFormat ?? "", MarkierterProjektname, _anzahlGleicher);
