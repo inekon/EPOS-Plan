@@ -9,9 +9,14 @@
    zweiter Baustein waere ein zweiter Ort fuer dieselben Regeln (Beschriftung,
    Hoechstlaenge, NurLesen). *@
 
+@* epos-feld--breit meldet dem Formularraster (iU8-E-2 / W14a-E-7), dass dieses
+   Feld LANG ist: Es spannt dort ueber beide Spalten, statt neben einem kurzen
+   Zahlenfeld zu stehen. Im Vorbild war die Beschreibung 250 x 48 px - zwei
+   Zeilen hoch und so breit wie der ganze Block (Form_AdminPV). Ausserhalb
+   eines Formularrasters aendert die Klasse nichts. *@
 @if (Mehrzeilig)
 {
-    <label class="epos-feld">
+    <label class="epos-feld epos-feld--breit">
         @if (!string.IsNullOrEmpty(Bezeichnung))
         {
             <span class="epos-feld-text">@Bezeichnung</span>

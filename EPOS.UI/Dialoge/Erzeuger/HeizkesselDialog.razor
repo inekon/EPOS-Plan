@@ -107,6 +107,11 @@
     @* --- Detailblock ------------------------------------------------------- *@
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
+        @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
+           Zahlenfelder kurz mit der Einheit dahinter. Der Detailblock stand
+           zuvor als eine Spalte voller Felder ueber die ganze Breite. *@
+        <Formularraster>
+            <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
             @foreach (var feld in _detail.Felder)
             {
@@ -127,13 +132,15 @@
                 <Auswahlfeld Bezeichnung="@LabelTraeger" Eintraege="@_varianten"
                              Auswahl="@(_projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
                              AuswahlChanged="BeiTraegerwechsel" />
-                <div class="epos-feldpaar">
-                    <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
-                                  Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
-                    <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
-                                  Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
-                </div>
+                @* Das Feldpaar von Hand entfaellt - der Raster stellt zwei
+                   Feldpaare je Zeile (iU8-E-2 / W14a-E-7). *@
+                <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
+                              Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
+                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
+                              Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
             }
+            </KindInhalt>
+        </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 

@@ -1,0 +1,37 @@
+﻿@* Eine GRUPPE zusammengehoeriger Felder im Formularraster (iU8-E-2 /
+   W14a-E-7, 05.09.2026).
+
+   Sie zeichnet eine leise Zwischenueberschrift und sonst NICHTS: kein Kasten,
+   kein zweiter Gruppenkopf, kein Rahmen. Der Balken (Gruppenkopf) steht schon
+   ueber dem ganzen Block; ein Balken im Balken waere eine Hierarchie, die es
+   fachlich nicht gibt - dieselbe Begruendung, aus der .epos-untergruppe
+   existiert (Form_Tarifstruktur.Gruppe).
+
+   DIE GRUPPE IST DURCHSICHTIG. Ihr Wirt traegt display: contents, damit die
+   Felder DIREKTE Rasterkinder bleiben: Ein zwischengeschobener Kasten haette
+   den Raster gebrochen (die Felder saessen dann alle in EINER Rasterzelle) und
+   die Beschriftungsspalten zweier Gruppen liefen auseinander. Die Ueberschrift
+   spannt ueber alle Spalten.
+
+   Ohne Titel ist die Gruppe reine Gliederung im Quelltext - sie zeichnet dann
+   ueberhaupt nichts Eigenes. Die ERSTE Gruppe eines Blocks bleibt ueblicherweise
+   so: Ihr Name steht im Gruppenkopf darueber. *@
+
+<div class="epos-formulargruppe">
+    @if (!string.IsNullOrEmpty(Titel))
+    {
+        <p class="epos-formulargruppe-titel">@Titel</p>
+    }
+    @KindInhalt
+</div>
+
+@code {
+    /// <summary>
+    /// Die leise Zwischenueberschrift. Leer = keine - die erste Gruppe eines
+    /// Blocks steht ueblicherweise ohne Titel.
+    /// </summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Die Felder der Gruppe.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+}

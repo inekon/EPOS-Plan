@@ -80,11 +80,16 @@
 
             <Herleitungszeile Text="@HinweisStundenwerte" />
 
-            <Textfeld Bezeichnung="@LabelOrdner" Wert="@Ordner" NurLesen="true" />
+            @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@LabelOrdner" Wert="@Ordner" NurLesen="true" />
 
-            <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
-                       Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
-                       Aktiv="@(!_laeuft)" />
+                    <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
+                               Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+                               Aktiv="@(!_laeuft)" />
+                </KindInhalt>
+            </Formularraster>
 
             <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
         </Eingabe>
