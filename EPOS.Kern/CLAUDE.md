@@ -375,14 +375,23 @@ mitkommt.** Die Regel steht einmal in `ProfilBedarf.Vorschaumodus(namen, idProje
 |---|---|---|
 | ohne Namensliste | `Projektrechnung` | der Simulationslauf (Referenzlauf) |
 | mit Liste, **ohne** Projekt | `Katalogvorschau` | die drei Katalogverwaltungen |
-| mit Liste **und** Projekt | `Projektvorschau` | der Bedarfsprofil-Dialog |
+| mit Liste **und** Projekt | `Projektvorschau` | der Bedarfsprofil-Dialog (Kopie zuerst, W9‑O‑3c) |
 
-`Projektvorschau` liest den Katalog zuerst und fällt für einen Namen, den der Katalog nicht kennt,
-auf die Projektkopie zurück (`ProfilQuelle.Rueckfall`) — beide Quellen sind nötig, weil die Liste
-des Dialogs gemischt ist: eine gespeicherte Zuordnung trägt den Namen ihrer Projektkopie
+**Zweite Hausregel (Anwenderentscheid W9‑O‑3c vom 05.09.2026, „Empfehlung"): Die Projektvorschau
+liest die KOPIE zuerst.** `Projektvorschau` rechnet auf denselben Tabellen und mit demselben
+Projektfilter wie der Lauf und fällt erst für einen Namen, den das PROJEKT nicht kennt, auf den
+`_STAMM`-Katalog zurück (`ProfilQuelle.Rueckfall`). Beide Quellen sind nötig, weil die Liste des
+Dialogs gemischt ist: eine gespeicherte Zuordnung trägt den Namen ihrer Projektkopie
 (`Z_Projekt*Ctrl.LiesProjekt` liest `Tab_*.Bezeichner`, und eine Kopie heißt vielfach
-„‹Name› (P‹Projekt›)"), eine eben aufgenommene Zeile den ihres Katalogeintrags. Wird der Rückfall
-gezogen, liefert er **Kopf UND Typprofil** — ihre Vermischung war Befund V0‑4.
+„‹Name› (P‹Projekt›)"), eine eben aufgenommene Zeile den ihres Katalogeintrags — deren Kopie
+entsteht erst beim Speichern, und genau für sie greift der Rückfall. Wird er gezogen, liefert er
+**Kopf UND Typprofil** — ihre Vermischung war Befund V0‑4.
+
+Damit zeigt die Vorschau überall dieselben Zahlen wie der Lauf. Die erste Fassung (Behebung
+W9‑B‑4/B‑5) las den Katalog zuerst, damit jede damals richtige Zahl zeichengleich blieb; eine im
+Projekt GEÄNDERTE Kopie erschien dadurch mit der Katalogverteilung — Brauchwasser 1007: Januar
+1,900 statt 0,552 MWh bei gleicher Jahressumme. Der Entscheid hat das gedreht. **Wer eine Zahl der
+Vorschau ändert, hat sie am Lauf zu messen, nicht am Katalog.**
 
 Die alte Ableitung `list == null ? Projektrechnung : Katalogvorschau` stand in allen drei
 Bedarfszweigen und ließ den Dialog Projektnamen im `_STAMM`-Katalog suchen; er fand nichts, übersprang
