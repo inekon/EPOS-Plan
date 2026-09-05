@@ -236,6 +236,78 @@ public class UebersichtSeiteTests : BunitContext
     }
 
     // =====================================================================
+    //  Anwenderbefund W5‑E‑2 (05.09.2026) — die Gegenüberstellung zeigt
+    //  ausschließlich verwendete ERZEUGERKOMPONENTEN
+    // =====================================================================
+
+    /// <summary>
+    /// Der Stand des Bildschirmfotos vom 05.09.2026 — Projekt „Booster-Kette mit
+    /// Kombi-Speicher" (1042) mit seiner Variante „Schichtspeicher" (1044), so wie
+    /// ihn <c>KomponentenVergleich.Gegenueberstellung</c> seither baut: zwei
+    /// Wärmepumpen, ein Spitzenkessel, vier Pufferspeicher — und kein Gewerk
+    /// „Anlage".
+    /// </summary>
+    private static UebersichtStand ErzeugeransichtW5E2() => new UebersichtStand
+    {
+        Staemme = new[] { (1042, "Booster-Kette mit Kombi-Speicher") },
+        StammId = 1042,
+        Zeilen = Zeilen(),
+        MarkierteId = 1030,
+        KomponentenTitel = "Komponenten im Vergleich — Stammprojekt und Varianten",
+        Spalten = new[] { "Gewerk", "Merkmal", "Stamm", "Schichtspeicher" },
+        Vergleich = new[]
+        {
+            new VergleichZeile { Gewerk = "Wärmepumpe", Merkmal = "Anzahl Komponenten",
+                                 Zellen = new[] { "2", "2" } },
+            new VergleichZeile { Merkmal = "Komponente 1",
+                                 Zellen = new[] { "CS6800iAW", "CS6800iAW" } },
+            new VergleichZeile { Merkmal = "Komponente 2",
+                                 Zellen = new[] { "CS7800iLW 16", "CS7800iLW 16" } },
+            new VergleichZeile { Gewerk = "Spitzenkessel", Merkmal = "Anzahl Komponenten",
+                                 Zellen = new[] { "1", "1" } },
+            new VergleichZeile { Merkmal = "Komponente",
+                                 Zellen = new[] { "ecoTEC plus", "ecoTEC plus" } },
+            new VergleichZeile { Gewerk = "Pufferspeicher", Merkmal = "Anzahl Komponenten",
+                                 Zellen = new[] { "4", "4" } }
+        },
+        Statuszeile = "6 Komponentenzeile(n) für das Stammprojekt und 1 Variante(n)."
+    };
+
+    /// <summary>
+    /// Die Wache zum Anwenderbefund W5‑E‑2: „Gewerk Anlage gibt es nicht. Dort
+    /// stehen Parameter. Dargestellt werden nur die Erzeugerkomponenten, die
+    /// verwendet werden, keine Parameter." Die Zeilenbildung dazu steht im Kern
+    /// (<c>KomponentenVergleich</c>, Proben V1–V6); hier wird geprüft, dass die
+    /// SEITE genau diese Zeilen zeigt — mit dem Gewerk je Blockanfang und ohne
+    /// Aktionsspalte.
+    /// </summary>
+    [Fact]
+    public void W5E2_Die_Gegenueberstellung_zeigt_nur_Erzeugerkomponenten()
+    {
+        var cut = Zeige(stand: ErzeugeransichtW5E2());
+
+        var zeilen = Vergleichszeilen(cut);
+        Assert.Equal(6, zeilen.Count);
+
+        // Die Gewerkspalte trägt die drei verwendeten Erzeugergewerke — und nichts
+        // sonst. Ein „Anlage" hier wäre der Rückfall in den Befund.
+        var gewerke = zeilen.Select(z => z.QuerySelector(".epos-vergleich-gewerk")!.TextContent)
+                            .Where(t => t.Length > 0).ToArray();
+        Assert.Equal(new[] { "Wärmepumpe", "Spitzenkessel", "Pufferspeicher" }, gewerke);
+
+        // Kein Anlagenparameter steht mehr in der Merkmalspalte.
+        string tabelle = cut.Find(".epos-vergleichstabelle").TextContent;
+        foreach (string parameter in new[] { "Anlage", "Vorlauftemperatur", "Rücklauftemperatur",
+                                             "Abschaltpunkt", "Neigung", "Azimut", "Solaranteil" })
+            Assert.DoesNotContain(parameter, tabelle);
+
+        // Die Gegenüberstellung trägt keine Aktionsspalte (die gehört den
+        // Unterschieden), also vier Spalten wie im Bildschirmfoto.
+        Assert.False(cut.Instance.MitAktionsspalte);
+        Assert.Equal(4, cut.Find(".epos-vergleichstabelle thead tr").QuerySelectorAll("th").Count);
+    }
+
+    // =====================================================================
     //  Die Versionswahl (Anwenderwunsch 05.09.2026, W5‑E‑1)
     // =====================================================================
 

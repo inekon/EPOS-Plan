@@ -44,9 +44,6 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const int MAX_VARIANTENSPALTEN = 8;
 
-        /// <summary>Zelltext für „führt diese Version nicht".</summary>
-        private const string OHNE_WERT = "—";
-
         private readonly VariantenCtrl _ctrl = new VariantenCtrl();
 
         private int _aktuellesProjekt = -1;
@@ -367,95 +364,29 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Eine Zeile je Merkmal, eine Zelle je Version. Ein Gewerk erscheint,
-        /// sobald es IRGENDEINE der Versionen führt — würde nur die Stamm-Probe
-        /// entscheiden, verschwiege die Tabelle genau das, was sie zeigen soll.
+        /// Die Zeilen der Gegenüberstellung — sie kommen seit dem Anwenderbefund
+        /// W5‑E‑2 (05.09.2026) fertig aus dem Kern
+        /// (<see cref="KomponentenVergleich.Gegenueberstellung"/>); hier bleibt
+        /// allein die Abbildung auf den Zeilentyp der Razor-Seite.
+        ///
+        /// <para><b>Was sich geändert hat.</b> Gezeigt werden nur noch die
+        /// tatsächlich VERWENDETEN Erzeugerkomponenten — je Gewerk die Stückzahl
+        /// und darunter eine Zeile je Komponente. Die Parameterblöcke „Anlage"
+        /// und „Gebäude" der Feldliste sind aus dieser Ansicht heraus: „Gewerk
+        /// Anlage gibt es nicht. Dort stehen Parameter." Die Parameter werden
+        /// weiterhin verglichen — in der UNTERSCHIEDSansicht einer Variante, wo
+        /// eine Zeile eine Änderung zeigt und die Übernahme trägt.</para>
         /// </summary>
-        private void FuelleVergleich(List<ProjektDetails> versionen, List<VergleichZeile> ziel)
+        private static void FuelleVergleich(List<ProjektDetails> versionen, List<VergleichZeile> ziel)
         {
-            foreach (string gewerk in GewerkeInReihenfolge())
-            {
-                List<AbweichungsErmittler.Merkmal> felder =
-                    AbweichungsErmittler.Felder.Where(f => f.Gewerk == gewerk).ToList();
-                if (felder.Count == 0) continue;
-
-                bool zaehlbar = ProjektDetails.GewerkTabellen.Any(g => g.Key == gewerk);
-
-                // Artefakt-Guard (Nutzerbefund 28.08.2026).
-                if (!zaehlbar && felder[0].Tabelle == "Tab_Energieanlagen" &&
-                    !AbweichungsErmittler.AnlagenEinheitlich(versionen)) continue;
-
-                bool irgendwo = versionen.Any(d => AbweichungsErmittler.ZeileFuer(d, felder[0]) != null)
-                             || (zaehlbar && versionen.Any(d => AbweichungsErmittler.Anzahl(d, gewerk) > 0));
-                if (!irgendwo) continue;
-
-                bool ersteZeile = true;
-
-                if (zaehlbar)
+            foreach (KomponentenVergleichZeile z in KomponentenVergleich.Gegenueberstellung(versionen))
+                ziel.Add(new VergleichZeile
                 {
-                    var anzahlen = new List<string>();
-                    foreach (ProjektDetails d in versionen)
-                        anzahlen.Add(AbweichungsErmittler.AnzahlText(AbweichungsErmittler.Anzahl(d, gewerk)));
-                    ziel.Add(new VergleichZeile
-                    {
-                        Gewerk = gewerk,
-                        Merkmal = AbweichungsErmittler.MERKMAL_ANZAHL,
-                        Zellen = anzahlen
-                    });
-
-                    // Nutzerauftrag 28.08.2026: eine Zeile JE KOMPONENTE mit
-                    // ihrem Bezeichner je Version; die Merkmale stehen im
-                    // Kurztext der Zelle.
-                    AbweichungsErmittler.Merkmal bez = AbweichungsErmittler.BezeichnerMerkmal(gewerk);
-                    int maxKomp = 0;
-                    foreach (ProjektDetails d in versionen)
-                        maxKomp = Math.Max(maxKomp, AbweichungsErmittler.Anzahl(d, gewerk));
-
-                    for (int k = 0; k < maxKomp; k++)
-                    {
-                        var namen = new List<string>();
-                        var kurz = new List<string>();
-                        foreach (ProjektDetails d in versionen)
-                        {
-                            DataRow rk = AbweichungsErmittler.KomponenteZeile(d, gewerk, k);
-                            namen.Add(rk == null || bez == null ? OHNE_WERT
-                                                                : AbweichungsErmittler.Formatiere(rk, bez));
-                            kurz.Add(rk == null ? ""
-                                     : AbweichungsErmittler.MerkmaleText(rk, gewerk, "\r\n"));
-                        }
-                        ziel.Add(new VergleichZeile
-                        {
-                            Merkmal = maxKomp == 1
-                                ? T("BK_SP_KOMPONENTE", "Komponente")
-                                : string.Format(T("BK_SP_KOMPONENTE_N", "Komponente {0}"), k + 1),
-                            Zellen = namen,
-                            Kurztexte = kurz
-                        });
-                    }
-                    continue;   // Merkmalszeilen entfallen fuer zaehlbare Gewerke
-                }
-
-                foreach (AbweichungsErmittler.Merkmal f in felder)
-                {
-                    var werte = new List<string>();
-                    bool belegt = false;
-                    foreach (ProjektDetails d in versionen)
-                    {
-                        DataRow r = AbweichungsErmittler.ZeileFuer(d, f);
-                        werte.Add(r == null ? OHNE_WERT : AbweichungsErmittler.Formatiere(r, f));
-                        if (r != null) belegt = true;
-                    }
-                    if (!belegt) continue;
-
-                    ziel.Add(new VergleichZeile
-                    {
-                        Gewerk = ersteZeile ? gewerk : "",
-                        Merkmal = f.Label,
-                        Zellen = werte
-                    });
-                    ersteZeile = false;
-                }
-            }
+                    Gewerk = z.Gewerk,
+                    Merkmal = z.Merkmal,
+                    Zellen = z.Zellen,
+                    Kurztexte = z.Kurztexte
+                });
         }
 
         /// <summary>Unterschiede der Variante gegenüber dem Stamm samt Aktionsspalte.</summary>
@@ -531,14 +462,6 @@ namespace WindowsFormsApplication1
                 return MyResource.Resource.BK_TIP_UEBERNEHMEN_GESPERRT_SCHLUESSEL;
 
             return null;
-        }
-
-        private static IEnumerable<string> GewerkeInReihenfolge()
-        {
-            var gesehen = new List<string>();
-            foreach (AbweichungsErmittler.Merkmal f in AbweichungsErmittler.Felder)
-                if (!gesehen.Contains(f.Gewerk)) gesehen.Add(f.Gewerk);
-            return gesehen;
         }
 
         // =====================================================================
