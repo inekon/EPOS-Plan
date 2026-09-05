@@ -193,3 +193,27 @@ Remote-Stände (`d423fd4`, `91bac96`, `4cdc462`) gefahren worden — dreimal 355
 * **Konzept Projektstammdaten** (PS5 Speichern-unter): `Form_ProjektSpeichernUnter` ist mit W15a
   gefallen — Ziel ist `ProjektKopieDialog.razor`.
 * **Push** wartet auf das Wort des Anwenders.
+
+---
+
+## 7. Merge 6 (05.09.2026, abends) — der Nachschub nach Merge 5
+
+Während der Nachweise zu Merge 5 lief die Gegenseite weiter: `4cdc462` → `ed71d73`, **drei**
+Commits, **vier** Dateien — Befund W12‑B‑1 (die Knopfleiste `.epos-leiste` bricht um, `.epos-knopf`
+bemisst sich an seiner Beschriftung), die Wache `ZweispaltenauswahlTests` und zwei Protokolle.
+
+* **Merge-Base:** `4cdc462` (der Remote-Elter von Merge 5)
+* **Lokal vorher:** `a98cde5` (Merge 5 samt Nachweis und Nachzug, 26 Commits)
+* **Merge-Commit:** `328676d5`; Sicherung `sicherung/vor-merge6-2026-09-05`, Anker `merge6/ios-2026-09-05`
+* Kein Push.
+
+**Berührungsfläche:** nur `EPOS.UI/wwwroot/epos-ui.css` — Remote ändert die Regeln der Knopfleiste,
+Merge 5 hatte am Blattende sechs Regeln angehängt (Mehrfachauswahl, Projektkopf-Hinweis,
+Rückfragetext). `git merge-tree` vereinigt beides ohne Konflikt; Klammerbilanz 717/717.
+
+**Nachweis** (Export des Merge-Baums `d98b097`, dasselbe Verfahren wie Abschnitt 1): `WP-Plan.sln`
+**0 Fehler**; `EPOS.UI.Tests` und `EPOS.Kern.Tests` grün (Zahlen im Abschluss des Merge-Commits);
+Referenzlauf **355/355 byte-gleich** zur Basis `2026-09-05_M5_nach-Merge5` — erwartungsgemäß, denn
+kein Rechenweg ist berührt. Die Basis bleibt deshalb M5; ein eigener Referenzordner wäre eine Kopie.
+
+Der Merge selbst lief im Hauptbaum direkt (`git merge --no-ff ed71d738`), ohne Kopierliste.

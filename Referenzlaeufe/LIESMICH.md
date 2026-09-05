@@ -38,6 +38,10 @@ heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Wa
 > `EPOS.Kern.Tests` 1 077/1 077) und gefahren; die Arbeitskopie des Laufs migriert
 > **61 → 62 → 63 → 64**. Die produktive Datei blieb unberührt.
 >
+> **Merge 6 (05.09.2026, abends):** der Nachschub `ed71d73` (W12‑B‑1, nur Stilblatt, Wache und
+> Protokolle) ist konfliktfrei dazugekommen; der Lauf des Merge-6-Baums ist **355/355 byte-gleich**
+> zu dieser Basis — sie bleibt deshalb die aktuelle Basis (Protokoll Merge 5, Abschnitt 7).
+>
 > **Codestand:** Merge-Commit auf `ios_migration` (Eltern `9810d5b` lokal und `4cdc462` remote),
 > Protokoll `WindowsFormsApplication1/Allgemein/Simulation/Merge5_ios_2026-09-05_Protokoll.md`.
 >
