@@ -590,16 +590,25 @@ es gäbe gar keinen Namen anzuzeigen. Zwei Fälle in `StartseiteTests` halten da
 (`Ein_Projektname_im_Kopfband_und_gesperrte_Reiter_schliessen_einander_aus`,
 `Der_Projektwechsel_gibt_die_Reiter_frei`).
 
-**Die Erklärung ist deshalb die FARBE, nicht die Sperre — Befund W16b‑B‑2b (`8d3b10b`).**
+**Die Erklärung ist deshalb die FARBE, nicht die Sperre — Befund W16b‑B‑2b.**
 Gemessen: `tabControl_Wizard_DrawItem` zeichnete einen bedienbaren, nicht gewählten Reiter
 **schwarz** (`Color.FromArgb(0x000000)`, `Form_Start.cs` :129‑141; den gewählten in Weiß auf
 farbiger Fläche). `.epos-reiter-knopf` trägt dagegen `--epos-text-leise` (#5f5e5a), der
 gesperrte `--epos-text-sehr-leise` (#888780) — 0x29 Unterschied je Kanal. Bei den 16 px
 halbfett der Startseitenleiste sehen beide gleich grau aus: **ein freier Reiter liest sich als
-gesperrter.** Eine Deklaration, nur für die Startseite und nur für den bedienbaren, nicht
-gewählten Knopf, stellt das Vorbild wieder her; Wache
-`StartseiteTests.Ein_freier_Reiter_der_Startseite_traegt_die_Textfarbe` liest die REGEL, denn
-eine bunit-Probe sieht kein Stilblatt (Lehre W6‑B‑1).
+gesperrter.**
+
+Behoben ist es **in der Farbgebung W16b‑E‑5** (Merge `1a72cd5`, parallele Arbeit): Die
+Startseite setzt an ihrer eigenen Reiterregel `color: var(--epos-text)`, gibt der aktiven
+Zunge eine gefüllte Fläche (`--epos-start-reiter-aktiv`, 7,1:1) und dem gesperrten Knopf eine
+eigene Regel mit `--epos-text-sehr-leise`. Damit sind die drei Zustände auch ohne die aktive
+Zunge unterscheidbar. Diese Abnahme hat denselben Befund unabhängig gefunden und dieselbe
+Deklaration gesetzt; im Merge ist die doppelte Regel wieder gefallen — eine zweite Wahrheit
+für dieselbe Farbe wäre schlimmer als der Befund. Geblieben ist die **Wache**:
+`StartseiteTests.Ein_freier_Reiter_der_Startseite_traegt_die_Textfarbe` liest die REGEL (denn
+eine bunit-Probe sieht kein Stilblatt, Lehre W6‑B‑1) und schließt die Lücke, die
+`StartseiteAnmutungTests` lässt — dort stehen die aktive und die gesperrte Zunge, nicht der
+freie Reiter.
 
 **Die zweite Lesart bleibt offen und ist am Gerät in einem Blick zu klären:** Stand über den
 Reitern das Hinweisbanner „Bitte zuerst ein Projekt auswählen! Projekt öffnen oder zuletzt
