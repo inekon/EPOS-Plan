@@ -301,4 +301,60 @@ public class KatalogdialogTests : BunitContext
         Assert.Equal(Resource.KFAK_SP_WAHL,
                      Katalogbrowser().FindAll(".epos-katalog-liste thead th")[0].TextContent.Trim());
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8‑E‑2 / W14a‑E‑7, 05.09.2026
+    // =====================================================================
+
+    /// <summary>
+    /// <b>iU8‑E‑2 / W14a‑E‑7:</b> „Verbessere die Darstellung der Dialoge,
+    /// insbesondere der Parameter auf der rechten Seite: kompakter,
+    /// übersichtlicher, …"
+    ///
+    /// <para>Der Eingabeblock eines Katalogdialogs steht seither im
+    /// <c>Formularraster</c>: Beschriftung NEBEN dem Feld, Zahlenfelder kurz mit
+    /// der Einheit dahinter, zwei Feldpaare je Zeile, sobald die Spalte breit
+    /// genug ist. Zuvor nahm jedes Feld die volle Breite und die Beschriftung
+    /// stand darüber — der Block war doppelt so hoch wie der Dialog und
+    /// rollte.</para>
+    ///
+    /// <para>Geprüft wird, dass der Raster IM EINGABEBLOCK steht (nicht
+    /// irgendwo) und dass Felder darin liegen. Die Regeln dahinter hält
+    /// <c>Bausteine/FormularrasterTests</c>.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Eingabeblock_eines_Katalogdialogs_steht_im_Formularraster()
+    {
+        Rasterprobe("KatalogBrowserDialog", Katalogbrowser().FindAll(Suchpfad));
+        Rasterprobe("ModulKatalogDialog", Modulkatalog().FindAll(Suchpfad));
+        Rasterprobe("BedarfAdminDialog", Bedarfsverwaltung().FindAll(Suchpfad));
+        Rasterprobe("WaermebedarfAdminDialog", Waermebedarfsverwaltung().FindAll(Suchpfad));
+    }
+
+    private const string Suchpfad = ".epos-katalog-eingabe .epos-formularraster";
+
+    private static void Rasterprobe(string name, IReadOnlyList<AngleSharp.Dom.IElement> raster)
+    {
+        Assert.True(raster.Count > 0, name + ": kein Formularraster im Eingabeblock");
+        Assert.True(raster.Any(r => r.QuerySelectorAll(".epos-feld").Length > 0),
+                    name + ": im Formularraster steht kein Feld");
+    }
+
+    /// <summary>
+    /// Ein ZAHLENfeld des Katalogs meldet sich als kurzes Feld — daran hängt im
+    /// Raster die kurze Breite und die Einheit unmittelbar dahinter. Im Vorbild
+    /// (<c>Form_AdminPV</c>, gemessen) war das Feld 62 px breit und die Einheit
+    /// stand 4 px danach; im Befund stand sie am rechten Rand des Blocks.
+    /// </summary>
+    [Fact]
+    public void Die_Zahlenfelder_des_Modulkatalogs_sind_kurze_Felder()
+    {
+        var kurz = Modulkatalog(ModulKatalogArt.Photovoltaik)
+                   .FindAll(".epos-katalog-eingabe .epos-feld--kurz");
+
+        Assert.True(kurz.Count > 0, "kein kurzes Feld im Eingabeblock des Modulkatalogs");
+
+        // Die Einheit steht IN der Feldzeile des kurzen Feldes.
+        Assert.Contains(kurz, f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
 }

@@ -218,6 +218,31 @@ entgegen — sie ist damit austauschbar.
   eine Listenspalte `epos-katalog-liste epos-katalog-fuellend` über die volle Breite.
   Wachen: `EPOS.UI.Tests/Bausteine/KatalograhmenTests` (Markup **und** Stilblatt) und
   `EPOS.UI.Tests/KatalogdialogTests` (sieben Dialoge, Kopfzeile „Wahl").
+- **Ein PARAMETERBLOCK steht im `Formularraster`** (Anwenderwunsch **iU8‑E‑2 /
+  W14a‑E‑7**, 05.09.2026: „Verbessere die Darstellung der Dialoge, insbesondere der
+  Parameter auf der rechten Seite: kompakter, übersichtlicher"). Der Befund war
+  „Administration Photovoltaik Module": Im Katalograhmen aus W14a‑E‑6 nahm rechts
+  JEDES Feld die volle Breite, die Beschriftung stand DARÜBER, die Zahlenfelder waren
+  so breit wie die Textfelder, und die Einheit stand am rechten Rand des Blocks statt
+  hinter dem Wert — der Block war doppelt so hoch wie der Dialog und rollte. Das
+  Vorbild tat es anders, **gemessen** an `Form_AdminPV.resx` (607 × 489):
+  Beschriftungsspalte **178 px** (Label x = 253, Feld x = 431), Zahlenfeld **62 px**,
+  Einheit **4 px dahinter** (x = 497), Textfeld 250 px, Beschreibung 250 × 48.
+  **Die Regel:** Ein Dialog baut das nicht selbst, er hängt seinen vorhandenen Feldlauf
+  in `<Formularraster>` — dann steht die Beschriftung neben dem Feld, die Felder ordnen
+  sich in ein oder zwei Spalten (`auto-fill`/`minmax`, nach der Breite des RASTERS), und
+  ein Feld sagt **selbst**, wie lang es ist: `Zahlenfeld`/`Ganzzahlfeld` tragen
+  `epos-feld--kurz`, ein mehrzeiliges `Textfeld` `epos-feld--breit`. Ein `Datumsfeld` ist
+  **nicht** kurz — `input type="date"` schneidet unter rund 130 px sein Kalendersymbol ab.
+  Die GRUPPEN kommen aus dem Dialog (`Formulargruppe`), der Baustein liefert nur das
+  Raster. **Nichts davon greift außerhalb** von `.epos-formularraster`: Ein Feld sonst im
+  Haus behält seine Form, sonst hätte ein Baustein 92 Dateien auf einmal verschoben —
+  dieselbe Vorsicht wie bei den sieben `--epos-start-*`-Token (W16b‑E‑5). Und die
+  Kompaktheit kommt aus der **Anordnung**, nicht aus kleineren Bedienelementen:
+  `--epos-touchziel` (44 px) bleibt die Mindesthöhe jedes Feldes. Wachen:
+  `EPOS.UI.Tests/Bausteine/FormularrasterTests` (Markup, Selbstmeldung der Felder,
+  fünf Stilblattfälle **und** ein Fall, der jede Selektorzeile des Blocks auf
+  `.epos-formularraster` prüft) und zwei Fälle in `KatalogdialogTests`.
 - **Das Vorgabemaß eines Fensters rechnet `Dienste/Fenstermass.cs`**, nicht die
   Windows-Hülle: Es ist Arithmetik auf vier ganzen Zahlen und deshalb hier prüfbar
   (`FenstermassTests`). Ein `Dialogart.Fachdialog` öffnet im **Anteil des
@@ -264,6 +289,8 @@ entgegen — sie ist damit austauschbar.
 | `Baumansicht` + `Baumknoten` | Ein vierstufiger Baum: `role="tree"/"treeitem"/"group"`, `aria-level`/`setsize`/`posinset`, `aria-expanded` NUR an Knoten mit Kindern, roving `tabindex` über die **abgeflachte Sichtliste** (↓↑ → ← Pos1 Ende Enter/Leertaste, kein Typeahead), Einrückung per CSS, `forced-colors`. Das Dreieck ist ein eigenes 44‑px‑Klickziel und **wählt nicht**; das Kennzeichen (»[Auslieferung]«) steht als eigenes `<span>` neben dem Text, nicht darin. Der Aufklappzustand kommt aus den DATEN (`VonVornOffen`) und überlebt einen Neuaufbau, solange die Schlüssel gleich bleiben. **Kein Kontextmenü, keine Mehrfachauswahl** — die kleinste tragfähige Fassung für den einen Nutzer (R‑W14c‑8) | `Views/Admin/Form_KatalogDubletten._tree` — der **einzige** `TreeView` des Bestands (iU9‑W14c.4); die Daten kommen als `DublettenBaum` aus dem Kern |
 | `Zweispaltenauswahl` | Die EINE Projekt/Datenbank-Auswahl des Hauses (Anwenderentscheid **#76**, 05.09.2026): `Links` (Projektliste), `Mitte` (die zwei Richtungsknöpfe als Parameter — Text, Kurztext, Sperrzustand, Rückruf), `Rechts` (Katalog samt Filtern und Katalogknöpfen), dazu `NurRechts` für eine Verwaltungsbetriebsart ohne Projekt. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander — der Umbruch ist eine **Medienabfrage**, kein `flex-wrap`, weil das Pfeilzeichen daran hängt: Jeder Knopf trägt **beide** Zeichen als `aria-hidden`-Element (◀▶ / ▲▼), sichtbar ist je Breite eines. **Elf** Dialoge nutzen ihn; die Liste steht in `ZweispaltenauswahlTests` | die elf handgeschriebenen Fassungen von `epos-auswahlpaar`/`epos-auswahlspalten` aus den Wellen 6, 7, 9 und 12; im Bestand `Form_Gebaeude` (252/63/436 px) und `Form_Heizkessel` (316/88/313 px) |
 | `Katalograhmen` | Der Rahmen eines KATALOGDIALOGS (Anwenderwunsch 05.09.2026, „Admin-Menüs sind nicht an Größe Bildschirm angepasst"): `Liste` links, `Eingabe` rechts, dazu `Gestapelt` für die Masken, deren Vorbild schon untereinander stand. Die Liste nimmt die **verbleibende Höhe** statt der Höchsthöhe `--epos-listenhoehe` — die einzige Stelle, an der die Regel aus W9‑B‑2 nicht gilt, weil der Eingabeblock daneben steht und **selbst** rollt statt die Seite zu schieben. Der Umbruch ist eine **Medienabfrage bei 900 px** wie bei `Zweispaltenauswahl`, nicht bei 1100: Die WebView rechnet in CSS-Pixeln, das Fenstermaß in Gerätepixeln, und bei 150 % sind 1632 Gerätepixel nur 1088 CSS-Pixel. **Sieben** Dialoge nutzen ihn; die Liste steht in `KatalogdialogTests` | die sechs Verwaltungsmasken des Bestands, die **alle** Liste und Eingabe nebeneinander stellten: `Form_Heizkessel_Admin` (726 × 383), `Form_BHKWAdmin` (856 × 517), `Form_SolarKollektorenAdmin` (825 × 494), `Form_PufferSp_Admin` (721 × 330), `Form_AdminPV` (607 × 489), `Form_AdminStromspeicher` (614 × 367) |
+| `Formularraster` | Die EINE Anordnung eines PARAMETERBLOCKS (Anwenderwunsch **iU8‑E‑2 / W14a‑E‑7**, 05.09.2026: „Verbessere die Darstellung der Dialoge, insbesondere der Parameter auf der rechten Seite: kompakter, übersichtlicher"). Ein CSS-Raster und sonst nichts: Es stellt die Beschriftung **neben** das Feld (`--epos-beschriftung-breite`, 12 rem), ordnet die Felder über `auto-fill`/`minmax` in **eine oder zwei Spalten** — gemessen an der Breite des RASTERS, nicht des Fensters, weshalb die rechte Spalte eines `Katalograhmen` genauso richtig liegt wie ein freistehender Dialog —, und macht Zahlenfelder KURZ, sodass die Einheit unmittelbar hinter dem Wert steht. `Einspaltig` ist der benannte Rückweg für Blöcke, die eine Reihenfolge tragen oder neben einem Diagramm nur wenig Breite haben. Unter 900 px (`--epos-zweispalten-umbruch`) fällt die Beschriftung wieder über das Feld. **Acht** Dialoge nutzen ihn; die Liste steht im Protokoll und in `FormularrasterTests` | die sechs Verwaltungsmasken, die Beschriftung und Feld **nebeneinander** stellten — gemessen an `Form_AdminPV` (607 × 489): Beschriftungsspalte 178 px, Zahlenfeld 62 px, Einheit 4 px dahinter, Textfeld 250 px, Beschreibung 250 × 48 |
+| `Formulargruppe` | Die leise Zwischenüberschrift IM Formularraster („Stammdaten", „Kenndaten", „Elektrik") — kein Kasten, kein zweiter `Gruppenkopf`; ein Balken im Balken wäre eine Hierarchie, die es fachlich nicht gibt. Ihr Wirt trägt **`display: contents`**, damit die Felder DIREKTE Rasterkinder bleiben: Ein zwischengeschobener Kasten setzte alle Felder einer Gruppe in EINE Rasterzelle und ließe die Beschriftungsspalten zweier Gruppen auseinanderlaufen. Ohne Titel zeichnet sie nichts Eigenes — die erste Gruppe eines Blocks steht üblicherweise so | `Form_Tarifstruktur.Gruppe`, `Form_WirtschaftlichkeitParameter.Gruppe` — der fette Label, mit dem die programmatisch gebauten Masken ihre Blöcke gliederten (`.epos-untergruppe`) |
 
 ## Bilder (`wwwroot/bilder/`)
 

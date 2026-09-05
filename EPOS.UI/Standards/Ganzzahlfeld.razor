@@ -8,7 +8,9 @@
    inputmode="numeric" statt "decimal": auf Touchgeraeten erscheint dann eine
    Tastatur ohne Trennzeichen. *@
 
-<label class="epos-feld">
+@* epos-feld--kurz: kurzes Feld im Formularraster, Einheit direkt dahinter
+   (iU8-E-2 / W14a-E-7). Siehe Zahlenfeld. *@
+<label class="epos-feld epos-feld--kurz">
     @if (!string.IsNullOrEmpty(Bezeichnung))
     {
         <span class="epos-feld-text">@Bezeichnung</span>
