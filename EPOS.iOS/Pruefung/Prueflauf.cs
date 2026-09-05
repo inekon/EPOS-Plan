@@ -17,7 +17,7 @@ namespace EPOS.iOS;
 /// maschinellen Nachweis: Die App rechnet Projekt 1030 beim Start, legt die CSV
 /// im Dokumentenordner ab, und der Job holt sie aus dem Simulator und haelt sie
 /// mit <c>EPOS.Referenzlauf vergleich</c> gegen die eingefrorene Basis
-/// <c>2026-08-30_B3-Kaskade</c>.</para>
+/// <c>2026-09-05_R2_Zeitbasis</c> (bis 05.09.2026 <c>2026-08-30_B3-Kaskade</c>).</para>
 ///
 /// <para><b>Dieselben Bausteine, nicht nachgebaute.</b>
 /// <see cref="Ergebnisexport"/> und <see cref="Protokoll"/> sind aus
@@ -43,7 +43,7 @@ internal static class Prueflauf
     /// <summary>Name der Umgebungsvariablen, die den Pruefmodus einschaltet.</summary>
     internal const string SCHALTER = "EPOS_PRUEFLAUF";
 
-    /// <summary>Das Referenzprojekt - die B3-Kaskade der eingefrorenen Basis.</summary>
+    /// <summary>Das Referenzprojekt - Projekt 1030 („B3-Kaskade") der eingefrorenen Basis.</summary>
     internal const int PROJEKT = 1030;
 
     /// <summary>Unterordner unter „Dokumente", in dem alles landet.</summary>

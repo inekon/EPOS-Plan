@@ -151,11 +151,11 @@ jobs:
 
       # Der eigentliche iZ6-Nachweis: dieselbe Toleranzregel wie in kern.yml
       # (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den Job rot.
-      - name: iZ6-Vergleich Projekt 1030 gegen 2026-08-30_B3-Kaskade
+      - name: iZ6-Vergleich Projekt 1030 gegen 2026-09-05_R2_Zeitbasis
         run: |
           dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-05_R2_Zeitbasis/Projekt_1030 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
             vergleich artifacts/reflauf/ref artifacts/ios/pruefung
           echo "--- Byte-Diff (nur Information) ---"
