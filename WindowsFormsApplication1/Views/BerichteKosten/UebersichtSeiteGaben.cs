@@ -139,10 +139,19 @@ namespace WindowsFormsApplication1
                 ["LabelStamm"] = T("BKS_LBL_STAMM", "Stammprojekt:"),
                 ["LabelNurStaemme"] = T("BKS_LBL_NUR_STAEMME", "nur Stammprojekte"),
                 ["LabelBezeichner"] = T("BKS_LBL_BEZEICHNER", "Bezeichner:"),
-                ["SpalteArt"] = MyResource.Resource.BK_SP_ART,
-                ["SpalteBezeichner"] = MyResource.Resource.BK_SP_BEZEICHNER,
-                ["SpalteProjektname"] = MyResource.Resource.BK_SP_PROJEKTNAME,
+
+                // Anwenderwunsch 05.09.2026 (W5-E-1): die Versionswahl ist ein
+                // Auswahlfeld. Die drei Spaltenkoepfe Art/Bezeichner/Projektname
+                // sind damit weg - der Eintragstext traegt Bezeichner und
+                // Projektname, die Art sagt die Reihenfolge. Geblieben ist der
+                // Kopf "Simulation": er beschriftet jetzt die Statuszeile.
+                ["LabelVariante"] = T("BKS_LBL_VARIANTE", "Variante:"),
                 ["SpalteSimulation"] = MyResource.Resource.BK_BER_SP_SIMULATION,
+                ["SimNieText"] = T("BKS_SIM_NIE", "noch nicht simuliert"),
+                ["SimGrundFehlt"] = T("BKS_SIM_GRUND_FEHLT",
+                    "Für diese Version liegt kein Simulationsergebnis vor."),
+                ["SimGrundVeraltet"] = T("BKS_SIM_GRUND_VERALTET",
+                    "Das Simulationsergebnis ist älter als die letzte Änderung am Projekt."),
                 ["SpalteAktion"] = MyResource.Resource.BK_SP_AKTION,
                 ["AnlegenText"] = T("BKS_BTN_ANLEGEN", "Variante anlegen"),
                 ["LoeschenText"] = MyResource.Resource.BK_BTN_LOESCHEN,
@@ -208,6 +217,16 @@ namespace WindowsFormsApplication1
                                                  : vi.Variantenname,
                         Projektname = vi.Projektname,
                         SimStand = st != null ? st.SimStandText : "",
+
+                        // Der REINE Zeitpunkt fuer die Statuszeile der Seite
+                        // (Anwenderwunsch 05.09.2026, W5-E-1). SimStandText traegt
+                        // das "⚠" und im Fehlfall den Wortlaut "— (fehlt) ⚠" schon
+                        // in sich; die Statuszeile setzt beides selbst zusammen und
+                        // haengt den Grund als Kurztext ans Warnzeichen. Format wie
+                        // in SimStandText - es ist derselbe Wert.
+                        SimZeitpunkt = st != null && st.SimStand.HasValue
+                            ? st.SimStand.Value.ToString("dd.MM.yy HH:mm")
+                            : "",
                         IstStamm = vi.IstStamm,
                         Auffaellig = st != null && (!st.SimStand.HasValue || st.Veraltet)
                     });

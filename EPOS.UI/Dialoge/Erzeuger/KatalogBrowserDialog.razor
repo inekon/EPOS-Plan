@@ -38,7 +38,8 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
 
-<div class="epos-dialog epos-katalogbrowser" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog epos-katalogbrowser" tabindex="-1"
+     @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Profil.Titel</h1>
@@ -50,73 +51,89 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* --- Filterleiste: 0 oder 2 Klapplisten ------------------------------ *@
-    @if (Profil.Filterart != KatalogFilterArt.Keiner)
-    {
-        <div class="epos-katalogbrowser-filter">
-            <Auswahlfeld Bezeichnung="@Profil.FilterEinsBezeichnung" Eintraege="@FilterEins"
-                         Auswahl="@_filterEins" AuswahlChanged="BeiFilterEins" />
-            <Auswahlfeld Bezeichnung="@Profil.FilterZweiBezeichnung" Eintraege="@FilterZwei"
-                         Auswahl="@_filterZwei" AuswahlChanged="BeiFilterZwei" />
-        </div>
-    }
-
-    @* --- Die Katalogliste ------------------------------------------------ *@
-    <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
-
-    <Raster TZeile="BrowserZeile" Zeilen="@_zeilen.AsQueryable()">
-        <KindInhalt>
-            <TemplateColumn TGridItem="BrowserZeile" Title="@SpalteWahlText">
-                <Zeilenwahl Gewaehlt="@(context.Bezeichner == _gewaehlt)"
-                            Kurztext="@SpalteWahlText"
-                            Gewaehltwerden="@(() => BeiZeile(context))" />
-            </TemplateColumn>
-            <PropertyColumn TGridItem="BrowserZeile" TProp="string"
-                            Property="@(z => z.Bezeichner)" Title="@Profil.SpalteName" />
-            @if (Profil.Zweispaltig)
+    @* --- Liste LINKS, Detailblock RECHTS (Anwenderwunsch 05.09.2026) -----
+           So stand es in allen vier Vorbildern: Form_Heizkessel_Admin
+           (726 x 383, Liste 302 x 157 links, Felder ab x 448),
+           Form_BHKWAdmin (856 x 517, Liste 403 x 369 links, Gruppe
+           405 x 421 rechts), Form_SolarKollektorenAdmin (825 x 494,
+           Liste 359 x 302 links, Felder ab x 402) und Form_PufferSp_Admin
+           (721 x 330, Liste 299 x 191 links, Felder ab x 346). Bis hierher
+           standen sie untereinander, und der Eingabeblock war nur ueber den
+           Seitenrollbalken zu erreichen. Auf schmalem Schirm bricht das Paar
+           um - dann steht die Liste oben. *@
+    <Katalograhmen>
+        <Liste>
+            @* Die Filter stehen UEBER der Liste, auf die sie wirken (Hausregel
+               aus Anwenderentscheid #76). Im Vorbild sassen sie darunter; oben
+               bleiben sie sichtbar, ohne der Liste Hoehe zu nehmen. *@
+            @if (Profil.Filterart != KatalogFilterArt.Keiner)
             {
-                <TemplateColumn TGridItem="BrowserZeile" Title="@Profil.SpalteEigenschaften">
-                    <span class="epos-katalogbrowser-eigenschaften @(context.Geschuetzt && Profil.ZeigtSchreibschutz ? "epos-katalogbrowser-geschuetzt" : "")">@context.Eigenschaften</span>
-                </TemplateColumn>
+                <div class="epos-katalogbrowser-filter">
+                    <Auswahlfeld Bezeichnung="@Profil.FilterEinsBezeichnung" Eintraege="@FilterEins"
+                                 Auswahl="@_filterEins" AuswahlChanged="BeiFilterEins" />
+                    <Auswahlfeld Bezeichnung="@Profil.FilterZweiBezeichnung" Eintraege="@FilterZwei"
+                                 Auswahl="@_filterZwei" AuswahlChanged="BeiFilterZwei" />
+                </div>
             }
-        </KindInhalt>
-    </Raster>
 
-    @* --- Der Detailblock ------------------------------------------------- *@
-    <Gruppenkopf Titel="@Profil.Detailueberschrift">
-        <KindInhalt>
-            @foreach (BrowserFeldwert feld in _felder)
-            {
-                @if (feld.Art == BrowserFeldArt.Schalter)
-                {
-                    <Schalter Bezeichnung="@feld.Bezeichnung" Wert="@feld.Schalterwert"
-                              WertChanged="@(w => SchalterSetzen(feld, w))"
-                              Aktiv="@(feld.Editierbar && !NurLesen)" />
-                }
-                else if (feld.Art == BrowserFeldArt.Zahl && feld.Editierbar && !NurLesen)
-                {
-                    <Zahlenfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
-                                Feldname="@feld.Feldname" Wert="@Zahl(feld)"
-                                WertChanged="@(w => ZahlSetzen(feld, w))"
-                                FehlerZustand="BeiFehlerZustand" />
-                }
-                else if (feld.Art == BrowserFeldArt.Ganzzahl && feld.Editierbar && !NurLesen)
-                {
-                    <Ganzzahlfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
-                                  Feldname="@feld.Feldname" Wert="@Ganzzahl(feld)"
-                                  WertChanged="@(w => GanzzahlSetzen(feld, w))"
-                                  FehlerZustand="BeiFehlerZustand" />
-                }
-                else
-                {
-                    <Textfeld Bezeichnung="@feld.Bezeichnung" Wert="@feld.Wert"
-                              WertChanged="@(w => TextSetzen(feld, w))"
-                              NurLesen="@(!feld.Editierbar || NurLesen)"
-                              Mehrzeilig="@(feld.Art == BrowserFeldArt.Mehrzeilig)" Zeilen="2" />
-                }
-            }
-        </KindInhalt>
-    </Gruppenkopf>
+            <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
+
+            <Raster TZeile="BrowserZeile" Zeilen="@_zeilen.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="BrowserZeile" Title="@SpalteWahlText">
+                        <Zeilenwahl Gewaehlt="@(context.Bezeichner == _gewaehlt)"
+                                    Kurztext="@SpalteWahlText"
+                                    Gewaehltwerden="@(() => BeiZeile(context))" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="BrowserZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@Profil.SpalteName" />
+                    @if (Profil.Zweispaltig)
+                    {
+                        <TemplateColumn TGridItem="BrowserZeile" Title="@Profil.SpalteEigenschaften">
+                            <span class="epos-katalogbrowser-eigenschaften @(context.Geschuetzt && Profil.ZeigtSchreibschutz ? "epos-katalogbrowser-geschuetzt" : "")">@context.Eigenschaften</span>
+                        </TemplateColumn>
+                    }
+                </KindInhalt>
+            </Raster>
+        </Liste>
+
+        <Eingabe>
+            <Gruppenkopf Titel="@Profil.Detailueberschrift">
+                <KindInhalt>
+                    @foreach (BrowserFeldwert feld in _felder)
+                    {
+                        @if (feld.Art == BrowserFeldArt.Schalter)
+                        {
+                            <Schalter Bezeichnung="@feld.Bezeichnung" Wert="@feld.Schalterwert"
+                                      WertChanged="@(w => SchalterSetzen(feld, w))"
+                                      Aktiv="@(feld.Editierbar && !NurLesen)" />
+                        }
+                        else if (feld.Art == BrowserFeldArt.Zahl && feld.Editierbar && !NurLesen)
+                        {
+                            <Zahlenfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
+                                        Feldname="@feld.Feldname" Wert="@Zahl(feld)"
+                                        WertChanged="@(w => ZahlSetzen(feld, w))"
+                                        FehlerZustand="BeiFehlerZustand" />
+                        }
+                        else if (feld.Art == BrowserFeldArt.Ganzzahl && feld.Editierbar && !NurLesen)
+                        {
+                            <Ganzzahlfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
+                                          Feldname="@feld.Feldname" Wert="@Ganzzahl(feld)"
+                                          WertChanged="@(w => GanzzahlSetzen(feld, w))"
+                                          FehlerZustand="BeiFehlerZustand" />
+                        }
+                        else
+                        {
+                            <Textfeld Bezeichnung="@feld.Bezeichnung" Wert="@feld.Wert"
+                                      WertChanged="@(w => TextSetzen(feld, w))"
+                                      NurLesen="@(!feld.Editierbar || NurLesen)"
+                                      Mehrzeilig="@(feld.Art == BrowserFeldArt.Mehrzeilig)" Zeilen="2" />
+                        }
+                    }
+                </KindInhalt>
+            </Gruppenkopf>
+        </Eingabe>
+    </Katalograhmen>
 
     <div class="epos-leiste">
         @if (Profil.HatSpeicherweg)

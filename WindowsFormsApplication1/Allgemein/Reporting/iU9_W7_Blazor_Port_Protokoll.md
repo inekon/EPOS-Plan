@@ -650,3 +650,49 @@ Pfeilspalte noch selbst). Eine bunit-Probe sieht eine Stilregel nicht — Lehre 
 4. **Knöpfe**: Beide tragen ihren Satz im Klartext — auf Deutsch **und** auf Englisch —
    und einen Kurztext, der die Herkunft der Zeile nennt. Jeder bleibt gesperrt, solange
    in der jeweils anderen Liste nichts markiert ist.
+
+---
+
+## Anwenderwunsch 05.09.2026 (**W7‑E‑1**) — die Fenster dieser Welle nutzen den Bildschirm
+
+**Der Befund** kam an einer Maske dieser Welle auf: Das Bildschirmfoto zeigt
+„Administration Solarkollektoren", also den **Katalogbrowser** aus W14a.1 mit dem
+**Katalogeditor** dieser Welle darin (`SolarkollektorKatalogDialog`, W7.6, Vorbild
+`Form_SolarDB`, 286 Z.). *„Admin-Menüs sind nicht an Größe Bildschirm angepasst."*
+
+**Was sich für diese Welle ändert — zweierlei, beides ohne Änderung an den Komponenten:**
+
+1. **Die Fenster öffnen größer.** `BlazorDialogForm` nimmt seit **iU8‑E‑1** das Maximum
+   aus Wunschmaß und einem Anteil des Arbeitsbereichs (85 % × 90 %, gedeckelt auf 92 %).
+   Die fünf Hüllen der Welle sind alle `Dialogart.Fachdialog`, also ohne eigenes Zutun:
+
+   | Hülle | `MASS` | auf 1920 × 1040 |
+   |---|---|---|
+   | `Solarthermie/SolarkollektorHuelle` (Katalog) | 760 × 640 | **1632 × 896** |
+   | `Solarthermie/SolarkollektorHuelle` (Projekt) | 1000 × 720 | **1632 × 896** |
+   | `Solarthermie/SolarganglinieHuelle` | 800 × 520 | **1632 × 896** |
+   | `Wärmepumpe/WaermepumpeStammHuelle` | 1000 × 760 | **1632 × 896** |
+   | `Wärmepumpe/WaermepumpeAnlageHuelle` | 1160 × 800 | **1632 × 896** |
+   | `Wärmepumpe/WaermepumpenHuelle` | 900 × 600 | **1632 × 896** |
+
+2. **Der Katalogeditor bleibt eine Überlagerung und bekommt KEINE volle Höhe.**
+   `SolarkollektorKatalogDialog`, `HeizkesselKatalogDialog` und `BhkwKatalogDialog`
+   erscheinen als `Ueberlagerung` im Katalogbrowser (Risiko R2); die trägt seit jeher
+   `width: min(92vw, 900px)` und `max-height: 90vh` und rollt selbst. Sie tragen deshalb
+   **nicht** `epos-katalog-dialog` — eine Formularmaske mit vierzehn Feldern über die
+   ganze Fensterhöhe zu ziehen macht sie nicht lesbarer. Die volle Höhe bekommt der
+   **Browser** darunter (W14a‑E‑6).
+
+**`WaermepumpenKatalogDialog` (W7.1, Vorbild `Form_WpFilterAuswahl`) bleibt unverändert.**
+Er ist EINE Liste mit Filterzeile und ohne Detailblock daneben; die Hausregel
+„eine Liste plus Detailblock ist etwas anderes" aus Anwenderentscheid #76 gilt hier
+weiter. Er gewinnt allein durch das größere Fenster.
+
+**Abnahmepunkte am Gerät** (100 / 125 / 150 %):
+
+1. „Solarkollektoren" (Projektmaske) und „Wärmepumpen-Verwaltung" öffnen groß und
+   lassen sich weiterhin ziehen.
+2. Im Katalogbrowser „Bearbeiten…" drücken: Der Editor erscheint als mittiges
+   Überlagerungsfenster mit Rollbalken, **nicht** über die ganze Höhe.
+3. „Kollektorganglinien" (Verwaltung) zeigt Liste und Einleseblock nebeneinander
+   (W14b‑E‑9).

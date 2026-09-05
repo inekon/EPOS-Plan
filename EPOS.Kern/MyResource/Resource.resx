@@ -10992,6 +10992,18 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BKS_WAHL_VERSION" xml:space="preserve">
     <value>Version wählen</value>
   </data>
+  <data name="BKS_LBL_VARIANTE" xml:space="preserve">
+    <value>Variante:</value>
+  </data>
+  <data name="BKS_SIM_NIE" xml:space="preserve">
+    <value>noch nicht simuliert</value>
+  </data>
+  <data name="BKS_SIM_GRUND_FEHLT" xml:space="preserve">
+    <value>Für diese Version liegt kein Simulationsergebnis vor.</value>
+  </data>
+  <data name="BKS_SIM_GRUND_VERALTET" xml:space="preserve">
+    <value>Das Simulationsergebnis ist älter als die letzte Änderung am Projekt.</value>
+  </data>
   <data name="BKS_WAHL_ANLAGE" xml:space="preserve">
     <value>Anlage wählen</value>
   </data>

@@ -54,8 +54,10 @@ namespace WindowsFormsApplication1
                     })
             };
 
+            // KLEIN (Anwenderwunsch 05.09.2026): vier Felder, keine Liste.
             dlg = new BlazorDialogForm<KiEinstellungenDialog>(
-                MyResource.Resource.KI_EINST_TITEL, MASS, werte);
+                MyResource.Resource.KI_EINST_TITEL, MASS, werte,
+                EPOS.UI.Dienste.Dialogart.Klein);
 
             using (dlg)
             {
