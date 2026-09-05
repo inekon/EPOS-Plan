@@ -1879,6 +1879,19 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Die x-Achse kann ins Negative reichen</b> (Aussentemperatur) und
         /// bekommt deshalb eine vorzeichenfaehige Skala; y beginnt bei null.</para>
+        ///
+        /// <para><b>Windows-Abnahme 05.09.2026, Befund W11b-B-3 — RUNDE TEILUNG UND
+        /// PLATZ AN DEN RAENDERN.</b> Die x-Achse trug bis dahin fuenf Marken, die den
+        /// vorkommenden Bereich in vier gleiche Teile schnitten: Bei einem Jahr von
+        /// −18,2 °C bis 20,3 °C stand dort „−18,2 · −8,6 · 1,1 · 10,7 · 20,3“ — krumme
+        /// Zahlen, an denen sich nichts ablesen laesst. Jetzt laeuft die Achse von einer
+        /// RUNDEN Stufe zur naechsten (dieselbe Stufenfolge wie <see cref="Jahresgang"/>:
+        /// 1 / 2 / 2,5 / 5 × 10^k), und der Wertebereich wird auf diese Stufen
+        /// AUFGERUNDET — aus dem Beispiel wird „−20 · −15 · −10 · −5 · 0 · 5 · 10 · 15 ·
+        /// 20“. Dazu bekommt das Bild rechts Platz (die letzte Marke stand auf der
+        /// Kante), die Legende rueckt hoch und der y-Achsentitel darunter: Beide lagen
+        /// mit 66 und 86 Bildpunkten so dicht, dass die Schriftzeilen sich beruehrten.
+        /// Die Bildmasse bleiben 1 240 × 560.</para>
         /// </summary>
         public static byte[] Streuwolke(string titel, string xTitel, string yTitel,
                                         IReadOnlyList<Punktreihe> reihen)
@@ -1888,7 +1901,9 @@ namespace WindowsFormsApplication1
             {
                 SKCanvas g = flaeche.Canvas;
                 Titel(g, titel ?? "", W);
-                var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
+                // Rechts 90 statt 40 Bildpunkte: Dort steht die letzte x-Marke, und
+                // eine Marke wie "−20" ragt sonst ueber den Bildrand hinaus.
+                var rc = SKRect.Create(100f, 110f, W - 190f, 360f);
 
                 var gueltig = (reihen ?? new List<Punktreihe>())
                     .Where(r => r != null && r.Punkte != null && r.Punkte.Count > 0)
@@ -1900,31 +1915,44 @@ namespace WindowsFormsApplication1
                 }
 
                 Legende(g, gueltig.Select(r => new Segment(r.Name, 0, Undurchsichtig(r.Farbe))).ToList(),
-                        100f, 66f, W - 30f);
+                        100f, 56f, W - 30f);
 
-                double xMin = gueltig.Min(r => r.Punkte.Min(p => p.X));
-                double xMax = gueltig.Max(r => r.Punkte.Max(p => p.X));
-                if (xMax - xMin < 1e-9) { xMax = xMin + 1; }
+                double xRoh0 = gueltig.Min(r => r.Punkte.Min(p => p.X));
+                double xRoh1 = gueltig.Max(r => r.Punkte.Max(p => p.X));
+                if (xRoh1 - xRoh0 < 1e-9) { xRoh1 = xRoh0 + 1; }
+
+                // Runde Teilung: Schrittweite aus der Spanne, Bereich auf die Stufen
+                // aufgerundet. Fuenf bis acht Marken - genug zum Ablesen, wenig genug,
+                // dass sich die Beschriftungen nicht beruehren.
+                double xSchritt = RundeStufe((xRoh1 - xRoh0) / 6.0);
+                double xMin = Math.Floor(xRoh0 / xSchritt) * xSchritt;
+                double xMax = Math.Ceiling(xRoh1 / xSchritt) * xSchritt;
+                if (xMax - xMin < 1e-9) { xMax = xMin + xSchritt; }
+
                 double yMax = Nice(Math.Max(0, gueltig.Max(r => r.Punkte.Max(p => p.Y))));
                 if (yMax <= 0) yMax = 1;
 
                 YRaster(g, rc, yMax);
 
-                // x-Skala mit fuenf Marken ueber den vorkommenden Bereich.
+                // x-Skala: eine Marke je runder Stufe.
                 using (var raster = Strich(SKColors.Gainsboro, 1f))
                 using (var f = Schrift(15f))
-                    for (int i = 0; i <= 4; i++)
+                    for (double wert = xMin; wert <= xMax + xSchritt * 1e-6; wert += xSchritt)
                     {
-                        double wert = xMin + (xMax - xMin) * i / 4.0;
-                        float x = rc.Left + (float)i / 4f * rc.Width;
+                        float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
                         g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = wert.ToString("0.#", DE);
+                        // Die Null soll "0" heissen und nicht "-0" (Math.Floor auf
+                        // negativen Zahlen liefert bei ganzzahligen Schritten -0).
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("0.#", DE);
                         Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
                 using (var f = Schrift(15f))
                 {
-                    Text(g, xTitel ?? "", f, SKColors.DimGray, rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 30f);
-                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                    // Der x-Titel steht UNTER den Marken (34 statt 30 Bildpunkte), der
+                    // y-Titel ueber der Flaeche und UNTER der Legende.
+                    Text(g, xTitel ?? "", f, SKColors.DimGray,
+                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
                 }
 
                 foreach (Punktreihe r in gueltig)
@@ -2685,6 +2713,20 @@ namespace WindowsFormsApplication1
             return new KeyValuePair<int[], string[]>(
                 new[] { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 },
                 new[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" });
+        }
+
+        /// <summary>
+        /// Die nächstgrößere „runde“ Schrittweite (1 / 2 / 2,5 / 5 × 10^k) — dieselbe
+        /// Stufenfolge, die <see cref="Jahresgang"/> und <see cref="KapitalwertVerlauf"/>
+        /// von Hand rechnen.
+        /// </summary>
+        private static double RundeStufe(double roh)
+        {
+            if (roh <= 0 || double.IsNaN(roh) || double.IsInfinity(roh)) return 1;
+            double zehner = Math.Pow(10, Math.Floor(Math.Log10(roh)));
+            foreach (double f in new[] { 1.0, 2.0, 2.5, 5.0, 10.0 })
+                if (zehner * f >= roh) return zehner * f;
+            return zehner * 10.0;
         }
 
         // "Schöne" Achsen-Obergrenze (1/2/2,5/5 × 10^k).
