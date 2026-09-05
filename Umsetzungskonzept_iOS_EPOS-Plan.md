@@ -2196,6 +2196,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > 125 %, Esc je Ebene.
 > **Anwenderentscheid #76 vom 05.09.2026 („#76: Empfehlung"), umgesetzt in `b6fd863`:** `StromganglinieDialog` steht im Baustein `Zweispaltenauswahl`; die zwei
 > Glyphen-Parameter samt `STROMGL_BTN_HINZUFUEGEN`/`_ENTFERNEN` sind ohne Nutzer und gefallen.
+>
+> **Windows-Abnahme 05.09.2026, Befund W12‑B‑1 (Bildschirmfoto „Standard Stromprofil": „Beschriftung der Buttons
+> nicht zur Umrandung passen" — die vier Katalogknöpfe unter der Datenbankliste liefen über ihren Rahmen bzw. waren
+> abgeschnitten), behoben in `e56ac6d`:** Ursache waren zwei Zeilen im Hausblatt, nicht der Baustein
+> `Zweispaltenauswahl`: `.epos-leiste` war ein `display: flex` ohne `flex-wrap`, `.epos-knopf` hatte neben
+> `min-width: 88px` die Vorgabe `flex-shrink: 1` — in der halb so breiten rechten Spalte schrumpften die vier Knöpfe
+> auf ihre 88 px, während „Stromverbraucher" als unteilbares Wort breiter blieb. Behoben an **einer** Stelle für das
+> ganze Haus, ohne einen Dialog anzufassen: `flex-wrap: wrap` an der Leiste, `flex: 0 1 auto` mit `white-space:
+> normal` und `overflow-wrap: break-word` am Knopf, `padding: 4px 12px`; **kein** `overflow: hidden`, denn
+> Abschneiden wäre derselbe Fehler in still; einzeilige Knöpfe („OK", „Abbrechen", Fußleiste) bleiben in Höhe und
+> Breite, wie sie waren. Mit erledigt sind die Katalogleisten aller elf Projekt↔DB-Dialoge (vier Knöpfe bei
+> `BedarfsProfileDialog` und `GebaeudeDialog`, drei bei BHKW/Heizkessel/Solarkollektoren, zwei bei
+> Pufferspeicher/Photovoltaik/Wärmebedarf extern) und die der Katalogverwaltungen am `Katalograhmen`. Drei neue
+> Wachen in `ZweispaltenauswahlTests` (14 → 17: Markup, Bestand, Stilregel), Gegenprobe mit zurückgedrehtem Blatt
+> rot. Protokoll W12, Abnahmepunkte A‑W12‑B‑1.
 
 > **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
 >
