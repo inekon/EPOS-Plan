@@ -1487,6 +1487,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Kandidaten für eine echte Abweichung, Monitorwechsel, Setup mit WebView2. Der vierundzwanzigste iOS-Lauf
 > (33904433007) auf diesem Stand ist grün — erstmals mit `Hauptfenster`, `Menueband` und der `AppWurzel` als gemeinsamer
 > Wurzel (N9; Lauf 23 war eine abgebrochene Dublette).
+> **Windows-Abnahme 05.09.2026, W16c‑E‑4 („Sprache sollte oben rechts sein") umgesetzt (`4bcd981`):** der Kopf
+> „Sprache" steht am **rechten Rand** des Menübands — `Menuepunkt.RechtsBuendig` aus der erzeugten `Menuetabelle`,
+> das `Menueband` hängt `epos-menueband-punkt--rechts` (`margin-left: auto`) an. **Nur die Optik wandert**:
+> Markup-Reihenfolge, Tastaturweg (Ende = „Sprache"), Sprachausgabe und N4 bleiben unverändert; fünf bunit-Fälle.
+> Der Abnahmepunkt 3a „Wo ‚Sprache' steht" ist neu in der Liste, die Sichtprüfung bleibt beim Anwender.
 
 > **Statusblock iU9 — Teilwelle 16b umgesetzt (04.09.2026, Basis `84d7c16` nach W16a, zusammengeführt mit `d4a7632` nach dem einundzwanzigsten iOS-Lauf)**
 >
@@ -1554,6 +1559,20 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > fest, wie unscharf es ist). Der zweiundzwanzigste iOS-Lauf (33898599945) auf diesem Stand ist grün — erstmals mit der
 > Razor-Startseite und `IProjektQuelle.Startkacheln` im gemeinsamen `EPOS.UI` (N9; iOS setzt die Startkacheln noch nicht
 > um, der Zweig in der `AppWurzel` kommt mit K7 in W16c).
+> **Windows-Abnahme 05.09.2026 (erstes Bildschirmfoto der gestylten Startseite — „Icons fehlen … Design ähnlich
+> WinForms"), W16b‑E‑3 und W16b‑E‑4 umgesetzt (`4bcd981`):** die **21 Kachelbilder und Symbole** von `Form_Start`
+> wandern per `git mv` unverändert nach `EPOS.UI/wwwroot/bilder/start` (Zuordnung Kachel → Datei in
+> `Seiten/Start/Kachelbilder.cs`, der Ausschnitt 84 × 84 im Stilblatt über `object-fit`, aus `Properties/Resources`
+> samt drei Leichen ausgetragen; `PHeizkessel.jpg` lag nur eingebettet in `Form_Start.resx`, Bytes nachgemessen;
+> die Konfigurationskachel hatte im Vorläufer kein Bild und bekommt `PSchnellSim.jpg`, das einzige Kachelbild ohne eigene Kachel). Die
+> **Gattungszeile** der Startseite steht nur noch **ohne Kopfleiste** (`Startseite.KopfbandZeigen`, von der
+> `AppWurzel` nach dem Parametersatz gesetzt: Windows nennt die Gattung schon im Markenkopf, iOS behält die Zeile).
+> Die **Anordnung** folgt `Form_Start.Designer.cs` ohne feste Pixelkoordinaten: Kopfband über den zwei Kästen, Klima
+> links und Projekt rechts (Seh- und Tabreihenfolge), Statuszeichen vor der Beschriftung, Globus im Klimakasten,
+> Schriftgrade des Markenbands, der Reiter und der Überschriften, **drei Kachelspalten** (Mindestbreite 404, das
+> Raster läuft schmal nicht mehr über), Sinnbild links vom Titel, Erläuterung darunter, Zurück/Weiter 132 px fett.
+> Nicht angeglichen: der Bildknopf „Speichern" bleibt beschriftet, der Infoknopf beim Haus-Token 28 px, keine
+> feste Kachelhöhe. 18 neue bunit-Fälle; die Sichtprüfung (Abnahmepunkte 1, 2a, 2b) bleibt beim Anwender.
 
 > **Statusblock iU9 — Teilwelle 16a umgesetzt (04.09.2026, Basis `975ead5` = Tag `vor-W16`, zusammengeführt mit `3c7e0d6` nach den W15c-Entscheiden)**
 >
