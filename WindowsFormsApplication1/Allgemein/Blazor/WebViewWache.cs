@@ -246,7 +246,13 @@ namespace WindowsFormsApplication1
                 WordWrap = true,
                 ScrollBars = ScrollBars.Vertical,
                 BorderStyle = BorderStyle.None,
-                Dock = DockStyle.Fill,
+
+                // OBEN, nicht ueber die ganze Flaeche: Kommt die WebView2 doch
+                // noch (ein sehr langsamer Kaltstart), steht sie darunter und
+                // bleibt bedienbar. Eine Meldung, die den Inhalt verdeckt, waere
+                // ein zweiter Befund.
+                Dock = DockStyle.Top,
+                Height = 130,
                 BackColor = Color.FromArgb(0xFD, 0xF3, 0xF2),   // WARN_FEHLER_FLAECHE
                 ForeColor = Color.FromArgb(0x8A, 0x1C, 0x1C),   // WARN_FEHLER_TEXT
                 Text = satz.Replace("\n", Environment.NewLine)
