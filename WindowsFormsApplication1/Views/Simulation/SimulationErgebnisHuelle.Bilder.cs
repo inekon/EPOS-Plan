@@ -124,6 +124,30 @@ namespace WindowsFormsApplication1
                                                  float breite = 0f)
             => new ChartRenderer.Reihe(name, Alsdouble(werte), farbe, art, false, breite);
 
+        /// <summary>
+        /// DER DATENZOOM (Windows-Abnahme 05.09.2026, Befund A-1). Der Baustein
+        /// <c>Diagramm</c> meldet ein aufgezogenes Rechteck in ANTEILEN DES BILDES —
+        /// mehr kann die Oberfläche nicht wissen, sie sieht ein PNG. Was an dieser
+        /// Stelle des Bildes steht, weiß der Renderer, der es gezeichnet hat; deshalb
+        /// rechnet <c>ChartRenderer.FensterAusBild</c> daraus den Achsenbereich, und
+        /// die Hülle reicht ihn nur weiter.
+        ///
+        /// <para>Ohne Rechteck (und für jedes Bild, das keinen Bereich kennt) kommt
+        /// <c>null</c> heraus, und alles bleibt, wie es war.</para>
+        /// </summary>
+        /// <param name="a">Der Bildauftrag der Seite.</param>
+        /// <param name="laenge">Die Anzahl der Stützstellen der gezeigten Reihe —
+        /// 8 760 Stunden oder 35 040 Viertelstunden.</param>
+        private static ChartRenderer.Achsenfenster Fenster(Bildauftrag a, int laenge)
+        {
+            if (a?.Bereich == null) return null;
+
+            return ChartRenderer.FensterAusBild(
+                new ChartRenderer.Bildausschnitt(a.Bereich.XVon, a.Bereich.XBis,
+                                                 a.Bereich.YVon, a.Bereich.YBis),
+                laenge);
+        }
+
         // ---- B1: die zwei normierten Ganglinien des Bedarfsreiters ------
 
         private byte[] BildBedarfWaerme(Bildauftrag a)
@@ -147,22 +171,22 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE, reihen,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert);
+                a.Sortiert, Fenster(a, Kanalsatz.STUNDEN_JAHR));
         }
 
         private byte[] BildBedarfStrom(Bildauftrag a)
         {
+            float[] werte = _strombedarf.Strombedarf_viertelStundenwerte;
             var reihen = new List<ChartRenderer.Reihe>
             {
-                Reihe(MyResource.Resource.CHART_ACHSE_STROMBEDARF,
-                      _strombedarf.Strombedarf_viertelStundenwerte, F_BEDARF)
+                Reihe(MyResource.Resource.CHART_ACHSE_STROMBEDARF, werte, F_BEDARF)
             };
 
             return ChartRenderer.GanglinieNormiert(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE, reihen,
                 MyResource.Resource.CHART_ACHSE_STROMBEDARF,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert);
+                a.Sortiert, Fenster(a, werte == null ? 0 : werte.Length));
         }
 
         // ---- Kuchen und die zwei Ringe ----------------------------------
@@ -627,7 +651,8 @@ namespace WindowsFormsApplication1
                 titel, stapel, linien, kontur,
                 MyResource.Resource.CHART_ACHSE_LEISTUNG_SPEICHERINHALT,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert, zweite, MyResource.Resource.CHART_ACHSE_WAERMELAST);
+                a.Sortiert, zweite, MyResource.Resource.CHART_ACHSE_WAERMELAST,
+                Fenster(a, Kanalsatz.STUNDEN_JAHR));
         }
 
         /// <summary>
@@ -684,7 +709,8 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE,
                 stapel, linien, kontur, MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert);
+                a.Sortiert, null, null,
+                Fenster(a, Kanalsatz.STUNDEN_JAHR * 4));
         }
     }
 }
