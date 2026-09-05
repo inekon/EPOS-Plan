@@ -33352,6 +33352,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Modulparameter anzeigen ähnelt.
+        /// </summary>
+        public static string PVD_AUFKLAPP_PARAMETER {
+            get {
+                return ResourceManager.GetString("PVD_AUFKLAPP_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modul Bearbeiten... ähnelt.
         /// </summary>
         public static string PVD_BTN_BEARBEITEN {

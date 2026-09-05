@@ -43,6 +43,10 @@ else
         <span class="epos-feld-zeile">
             <input class="epos-eingabe" type="text" value="@Wert" maxlength="@Hoechstlaenge"
                    placeholder="@Platzhalter" readonly="@NurLesen" @oninput="BeiEingabe" />
+            @if (!string.IsNullOrEmpty(Einheit))
+            {
+                <span class="epos-einheit">@Einheit</span>
+            }
         </span>
     </label>
 }
@@ -59,6 +63,22 @@ else
 
     /// <summary>Grauer Hinweistext im leeren Feld.</summary>
     [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>
+    /// Einheit hinter dem Feld, z. B. "V". Leer = keine — dieselbe Angabe wie bei
+    /// <see cref="Zahlenfeld"/> und <see cref="Ganzzahlfeld"/> und derselbe Platz im
+    /// Markup, damit sie im <c>Formularraster</c> unmittelbar hinter dem kurzen Feld
+    /// steht (iU8-E-2).
+    ///
+    /// <para>Gebraucht wird sie von ANZEIGEfeldern, in denen eine fertig formatierte
+    /// Zahl steht: Der Parameterblock des PV-Projektdialogs (Anwenderwunsch W6-E-1)
+    /// nimmt Beschriftung UND Einheit aus derselben Quelle wie der Katalogdialog, und
+    /// dort ist die Einheit ein eigenes Stueck. Ein Zahlenfeld waere hier falsch - es
+    /// ist eine Eingabe, und der Wert wird nicht gerechnet, sondern gezeigt.</para>
+    ///
+    /// <para>Im mehrzeiligen Feld ohne Wirkung.</para>
+    /// </summary>
+    [Parameter] public string Einheit { get; set; } = "";
 
     /// <summary>Hoechstzahl der Zeichen; <c>null</c> = unbegrenzt.</summary>
     [Parameter] public int? Hoechstlaenge { get; set; }

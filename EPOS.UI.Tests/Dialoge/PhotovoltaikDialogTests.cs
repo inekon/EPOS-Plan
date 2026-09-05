@@ -38,7 +38,34 @@ public class PhotovoltaikDialogTests : BunitContext
 
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung",
-        new[] { ("Hersteller:", "Musterwerk"), ("Modul Leistung [KW]:", "0,40") });
+        new[] { ("Hersteller:", "Musterwerk"), ("Modul Leistung [KW]:", "0,40") },
+        null, Parameter(name));
+
+    /// <summary>
+    /// Die dreizehn Parameterzeilen des Aufklappers (W6‑E‑1). Sie kommen FERTIG
+    /// FORMATIERT aus der Hülle — die Komponente rechnet und übersetzt nichts; der
+    /// Wert hängt am Modulnamen, damit ein Wechsel sichtbar wird.
+    /// </summary>
+    private static IReadOnlyList<Modulparameter> Parameter(string name)
+    {
+        string kennung = name.EndsWith("500", StringComparison.Ordinal) ? "500" : "400";
+        return new[]
+        {
+            new Modulparameter("Wirkungsgrad:", "16," + kennung, "%"),
+            new Modulparameter("Spannung im MPP (Umpp):", "30,99", "V"),
+            new Modulparameter("Leerlaufspannung (Uoc):", "38,97", "V"),
+            new Modulparameter("Strom im MPP (Impp):", "8,88", "A"),
+            new Modulparameter("Kurzschlussstrom (Isc):", "9,42", "A"),
+            new Modulparameter("α_Isc / aIsc [A/°C]:", "–"),
+            new Modulparameter("β_Voc / BVoco [V/°C]:", "–"),
+            new Modulparameter("Temp.-Koeffizient Pmax:", "-0,4509", "%/K"),
+            new Modulparameter("Zelltemperatur NOCT:", "–", "°C"),
+            new Modulparameter("Länge:", "1,64", "m"),
+            new Modulparameter("Breite:", "0,992", "m"),
+            new Modulparameter("Modulkosten:", "–", "€"),
+            new Modulparameter("Zelltechnologie:", "Kristallines Silizium (mono/poly)")
+        };
+    }
 
     private IRenderedComponent<PhotovoltaikDialog> Aufbauen(
         List<ErzeugerZeile>? zeilen = null,
@@ -49,13 +76,14 @@ public class PhotovoltaikDialogTests : BunitContext
         Func<int, bool>? katalogLoeschen = null,
         Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
         bool wizard = false,
+        Func<string, ErzeugerDetail>? detail = null,
         Action<bool>? geschlossen = null)
     {
         return Render<PhotovoltaikDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
             .Add(x => x.Hersteller, Hersteller)
             .Add(x => x.Filtern, _ => Katalog)
-            .Add(x => x.Detail, n => Detail(n))
+            .Add(x => x.Detail, detail ?? (n => Detail(n)))
             .Add(x => x.Aufnehmen, aufnehmen ?? (_ => new AufnahmeErgebnis(Zeile(9, "Modul 500", 32))))
             .Add(x => x.Entfernen, entfernen)
             .Add(x => x.Uebernehmen, uebernehmen)
@@ -307,5 +335,183 @@ public class PhotovoltaikDialogTests : BunitContext
         var raster = cut.FindAll(".epos-formularraster");
         Assert.NotEmpty(raster);
         Assert.Contains(raster, r => r.QuerySelectorAll(".epos-feld").Length > 0);
+    }
+
+    // =====================================================================
+    //  Alle Modulparameter — Anwenderwunsch W6‑E‑1 (05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>W6‑E‑1:</b> „optional sollten beim ausgewählten PV-Modul alle
+    /// Eigenschaften/Parameter angezeigt werden."
+    ///
+    /// <para>OPTIONAL heißt: zugeklappt als Vorgabe. Der Dialog sieht beim Öffnen
+    /// aus wie bisher — der Aufklapper steht darunter, und der Knopf sagt seinen
+    /// Zustand über <c>aria-expanded</c> an.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Parameterblock_ist_zugeklappt_die_Vorgabe()
+    {
+        var cut = Aufbauen();
+
+        var knopf = cut.Find(".epos-modulparameter-knopf");
+        Assert.Equal("false", knopf.GetAttribute("aria-expanded"));
+        Assert.Contains("Alle Modulparameter anzeigen", knopf.TextContent);
+
+        Assert.False(cut.Instance.ParameterOffen);
+        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+    }
+
+    /// <summary>
+    /// Aufgeklappt stehen alle dreizehn Katalogfelder da — Beschriftung, Wert und
+    /// die Einheit unmittelbar hinter dem kurzen Feld (iU8‑E‑2). Und sie sind
+    /// NUR LESEND: Der Katalog wird hier angesehen, nicht gepflegt.
+    /// </summary>
+    [Fact]
+    public void Aufgeklappt_stehen_alle_dreizehn_Parameter_da()
+    {
+        var cut = Aufbauen();
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.True(cut.Instance.ParameterOffen);
+        Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+
+        var block = cut.Find(".epos-modulparameter");
+        Assert.Single(block.QuerySelectorAll(".epos-formularraster"));
+
+        var texte = block.QuerySelectorAll(".epos-feld-text").Select(e => e.TextContent).ToList();
+        Assert.Equal(13, texte.Count);
+        Assert.Equal(new[]
+        {
+            "Wirkungsgrad:", "Spannung im MPP (Umpp):", "Leerlaufspannung (Uoc):",
+            "Strom im MPP (Impp):", "Kurzschlussstrom (Isc):",
+            "α_Isc / aIsc [A/°C]:", "β_Voc / BVoco [V/°C]:",
+            "Temp.-Koeffizient Pmax:", "Zelltemperatur NOCT:",
+            "Länge:", "Breite:", "Modulkosten:", "Zelltechnologie:"
+        }, texte);
+
+        // Jedes Feld ist nur lesbar.
+        var eingaben = block.QuerySelectorAll("input");
+        Assert.Equal(13, eingaben.Length);
+        Assert.All(eingaben, e => Assert.True(e.HasAttribute("readonly")));
+
+        // Die Einheit steht hinter dem Feld - dieselbe Klasse wie beim Zahlenfeld.
+        var einheiten = block.QuerySelectorAll(".epos-einheit").Select(e => e.TextContent).ToList();
+        Assert.Equal(new[] { "%", "V", "V", "A", "A", "%/K", "°C", "m", "m", "€" }, einheiten);
+    }
+
+    /// <summary>
+    /// Ein zweiter Druck klappt wieder zu — der Zustand gehört dem Dialog, nicht
+    /// dem Browser.
+    /// </summary>
+    [Fact]
+    public void Ein_zweiter_Druck_klappt_wieder_zu()
+    {
+        var cut = Aufbauen();
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+        Assert.True(cut.Instance.ParameterOffen);
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+        Assert.False(cut.Instance.ParameterOffen);
+        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+    }
+
+    /// <summary>
+    /// <b>Der Block gehört zum GEWÄHLTEN Modul.</b> Wer in der Katalogliste ein
+    /// anderes Modul wählt, sieht dessen Werte — und der Aufklappzustand bleibt
+    /// stehen, sonst müsste man ihn beim Vergleichen zweier Module jedes Mal neu
+    /// aufziehen.
+    /// </summary>
+    [Fact]
+    public void Ein_Modulwechsel_zieht_den_Block_nach()
+    {
+        var cut = Aufbauen();
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        string vorher = cut.Find(".epos-modulparameter").QuerySelectorAll("input")[0]
+                           .GetAttribute("value")!;
+        Assert.Equal("16,400", vorher);
+
+        // Zweite Zeile der KATALOGliste: "Modul 500".
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
+
+        Assert.True(cut.Instance.ParameterOffen);
+        Assert.Equal("16,500", cut.Find(".epos-modulparameter").QuerySelectorAll("input")[0]
+                                  .GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// <b>Ein nicht gepflegter Wert steht als „–" da, nicht als 0.</b> Die
+    /// Entscheidung fällt im Kern (<c>PhotovoltaikStammCtrl.Parameterzeilen</c>);
+    /// hier ist nachgewiesen, dass die Komponente den Strich unverändert zeigt und
+    /// nicht etwa ein leeres Feld daraus macht.
+    /// </summary>
+    [Fact]
+    public void Ein_nicht_gepflegter_Wert_steht_als_Strich_da()
+    {
+        var cut = Aufbauen();
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        var werte = cut.Find(".epos-modulparameter").QuerySelectorAll("input")
+                       .Select(e => e.GetAttribute("value")).ToList();
+
+        // alpha_SC, beta_OC, T_NOCT und die Modulkosten sind im Katalog leer -
+        // und stehen als Strich da, nicht als "0" und nicht als leeres Feld.
+        foreach (int i in new[] { 5, 6, 8, 11 })
+        {
+            Assert.Equal("–", werte[i]);
+            Assert.NotEqual("0", werte[i]);
+        }
+    }
+
+    /// <summary>
+    /// Ohne Parameterzeilen gibt es keinen Aufklapper — so ist es heute bei den
+    /// vier übrigen Erzeugerdialogen, die denselben Detailblock zeichnen. Ein
+    /// leerer Knopf wäre ein Versprechen ohne Inhalt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Parameterzeilen_gibt_es_keinen_Aufklapper()
+    {
+        var cut = Aufbauen(detail: n => new ErzeugerDetail(
+            n, "Beschreibung", new[] { ("Hersteller:", "Musterwerk") }));
+
+        Assert.Empty(cut.FindAll(".epos-modulparameter-knopf"));
+    }
+
+    /// <summary>
+    /// <b>Die Komponente formatiert und übersetzt nichts.</b> Unter <c>en-US</c>
+    /// stehen genau die Texte da, die die Hülle hereingibt — samt der Zahlen, die
+    /// dort schon in der Kultur des Anwenders formatiert wurden.
+    /// </summary>
+    [Fact]
+    public void Auf_englisch_zeigt_die_Komponente_was_die_Huelle_hereingibt()
+    {
+        CultureInfo.CurrentCulture = new CultureInfo("en-US");
+        CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+
+        var cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
+            .Add(x => x.Hersteller, Hersteller)
+            .Add(x => x.Filtern, _ => Katalog)
+            .Add(x => x.Detail, n => new ErzeugerDetail(
+                n, "", Array.Empty<(string, string)>(), null,
+                new[]
+                {
+                    new Modulparameter("Efficiency:", "16.91", "%"),
+                    new Modulparameter("Cell technology:", "–")
+                }))
+            .Add(x => x.LabelAlleParameter, "Show all module parameters")
+            .Add(x => x.Gesamtleistung, () => "8"));
+
+        var knopf = cut.Find(".epos-modulparameter-knopf");
+        Assert.Contains("Show all module parameters", knopf.TextContent);
+        knopf.Click();
+
+        var block = cut.Find(".epos-modulparameter");
+        Assert.Equal(new[] { "Efficiency:", "Cell technology:" },
+                     block.QuerySelectorAll(".epos-feld-text").Select(e => e.TextContent).ToArray());
+        Assert.Equal(new[] { "16.91", "–" },
+                     block.QuerySelectorAll("input").Select(e => e.GetAttribute("value")).ToArray());
     }
 }
