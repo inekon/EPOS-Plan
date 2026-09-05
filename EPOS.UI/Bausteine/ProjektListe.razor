@@ -56,7 +56,7 @@
     }
     else
     {
-        <div class="epos-raster-huelle">
+        <div class="@Huellenklasse">
             <table class="epos-raster epos-projektliste-raster">
                 <thead>
                     <tr>
@@ -204,6 +204,17 @@
 
     /// <summary>Zusätzliche Zelle je Zeile (der iOS-Einstieg hängt dort seine zwei Knöpfe hinein).</summary>
     [Parameter] public RenderFragment<ProjektKopfZeile>? Zeilenaktionen { get; set; }
+
+    /// <summary>
+    /// Steht die Liste in einem festen Rahmen mit Rollbalken? Vorgabe <c>true</c> —
+    /// die Hausregel seit der Windows-Abnahme vom 05.09.2026 (Befund W9‑B‑2
+    /// „Liste zu lang"). Die Höchsthöhe ist das Token <c>--epos-listenhoehe</c>;
+    /// eine kurze Liste wird davon nicht künstlich hoch.
+    /// </summary>
+    [Parameter] public bool Begrenzt { get; set; } = true;
+
+    private string Huellenklasse
+        => Begrenzt ? "epos-raster-huelle" : "epos-raster-huelle epos-raster-huelle--frei";
 
     /// <summary>
     /// Der Satzbau der Zählzeile: <c>{0}</c> = gezeigte, <c>{1}</c> = vorhandene Projekte

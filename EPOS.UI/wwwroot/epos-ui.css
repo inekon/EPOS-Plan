@@ -90,6 +90,14 @@
     /* Mindestgroesse eines Beruehrungsziels (M2, Touchbetrieb). */
     --epos-touchziel: 44px;
 
+    /* Hoehe eines LISTENRAHMENS (Windows-Abnahme 05.09.2026, Befund W9-B-2:
+       "Liste zu lang"). Jede Rasterliste des Hauses steht in einem festen
+       Rahmen und rollt darin - 22 rem sind rund neun Zeilen samt Spaltenkopf
+       und passen in jedes Dialogmass des Bestands (kleinstes 520 x 360).
+       Es ist eine HOECHSTHOEHE: Eine Liste mit drei Zeilen bleibt drei Zeilen
+       hoch. Wer sie je Wirt anders will, setzt das Token am Wirt. */
+    --epos-listenhoehe: 22rem;
+
     /* Das Titelband der Startseite - Form_Start.label20 stand WEISS auf
        Color.FromArgb(104, 118, 223) (Designer :1085). Dieselbe Farbfamilie
        tragen die Sinnbilder der 21 Kacheln, die aus derselben Zeit stammen. */
@@ -730,10 +738,39 @@ body {
    ========================================================================== */
 
 /* Die Huelle rollt breite Tabellen waagerecht, damit nie die Seite selbst
-   rollt (Befund 03.09.2026, BHKW-Wirtschaftlichkeit in 914 px Breite). */
+   rollt (Befund 03.09.2026, BHKW-Wirtschaftlichkeit in 914 px Breite).
+
+   UND SENKRECHT (Windows-Abnahme 05.09.2026, Befund W9-B-2 "Liste zu lang").
+   Bis dahin wuchs jede Rasterliste mit ihrem Bestand: Die Liste "Gebaeude in
+   DB" schob die Filter, den Detailblock und die Schlussleiste meterweit nach
+   unten, und der Anwender musste die ganze SEITE rollen, um an OK zu kommen.
+   Der Anwender hat die Hausregel dazu gegeben: LISTEN STEHEN IN EINEM FESTEN
+   RAHMEN MIT ROLLBALKEN. Das ist eine HOECHSTHOEHE - eine kurze Liste wird
+   davon nicht kuenstlich hoch -, und sie steht hier an der EINEN Stelle, die
+   alle Listen des Hauses tragen: die handgeschriebenen Tabellen der
+   Projekt/DB-Dialoge, das QuickGrid des Bausteins Raster und die
+   ProjektListe. Wer eine Liste ausdruecklich ungebremst will, setzt
+   .epos-raster-huelle--frei. */
 .epos-raster-huelle {
     width: 100%;
-    overflow-x: auto;
+    overflow: auto;
+    max-height: var(--epos-listenhoehe);
+}
+
+/* Der Spaltenkopf bleibt beim Rollen stehen - ohne ihn ist eine gerollte
+   Liste nicht mehr zuzuordnen. Dieselbe Regel wie bei --hoch, nur fuer alle. */
+.epos-raster-huelle .epos-raster thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--epos-flaeche);
+}
+
+/* Ausdruecklich UNGEBREMST - fuer eine Liste, die als Ganzes gelesen oder
+   gedruckt wird (Berichtstabellen). Kein Wirt setzt sie heute; sie ist der
+   benannte Rueckweg, damit niemand die Hausregel oben aufweicht. */
+.epos-raster-huelle--frei {
+    max-height: none;
 }
 
 /* Virtualisierte Liste (iU9-W13.0l): QuickGrid virtualisiert nur, wenn es

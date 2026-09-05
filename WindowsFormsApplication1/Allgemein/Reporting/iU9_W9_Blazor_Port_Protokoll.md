@@ -588,3 +588,56 @@ weg. Nachher: einmal gerufen, Markierung steht.
 „Gebäude": Das gespeicherte Gebäude steht in der linken Liste **und ist markiert**,
 der Detailblock zeigt seine Werte. „▶" entfernt genau diese Zeile. Vor und zurück
 über die Seiten behält Liste und Markierung.
+
+### 12.2 Befund W9‑B‑2 — „Liste zu lang"
+
+**Beobachtung.** Die Liste „Gebäude in DB" läuft unbegrenzt in die Länge; die Seite
+wird meterlang. Filter, Detailblock „Gebäude: Verbrauch" und die Schlussleiste
+stehen erst weit unterhalb des Sichtfensters — um an „OK" zu kommen, muss der
+Anwender die ganze SEITE rollen. Dasselbe gilt für jede andere Katalogliste der
+Projekt↔DB-Dialoge.
+
+**Ursache.** Die Hüllenklasse `.epos-raster-huelle` rollte nur **waagerecht**
+(`overflow-x: auto`, Befund vom 03.09.2026, BHKW-Wirtschaftlichkeit in 914 px
+Breite). Senkrecht wuchs jede Tabelle mit ihrem Bestand. Eine Höhenbegrenzung gab
+es nur an `--hoch`, und die war ausdrücklich für die **virtualisierten** Listen
+gedacht (20 746 CEC-Zeilen, iU9‑W13.0l) — für alle anderen also nirgends.
+
+**Anwenderregel.** *Listen stehen in einem festen Rahmen mit Rollbalken.*
+
+**Behebung — an EINER Stelle, nicht in zwanzig Dialogen.** Die DB-Listen tragen
+weder `Zeilenwahl` noch `Zeilenraster` noch `ProjektListe`; sie stehen in drei
+Bauarten nebeneinander — handgeschriebene `<table class="epos-raster">` (Gebäude,
+Stromganglinie, Solarkollektoren, Wärmepumpe, Wärmebedarf extern, Bedarfsprofile,
+Gebäudetyp), das QuickGrid des Bausteins `Raster` (Heizkessel, BHKW, Photovoltaik,
+Stromspeicher, Pufferspeicher) und die `ProjektListe`. **Gemeinsam ist ihnen genau
+eines: die Hüllenklasse `.epos-raster-huelle`.** Dort steht die Regel jetzt:
+
+| Was | Wert | Warum |
+|---|---|---|
+| `max-height` | `var(--epos-listenhoehe)` = **22 rem** | rund neun Zeilen samt Kopf; passt in das kleinste Dialogmaß des Bestands (520 × 360). In `rem`, damit sie mit der Schriftgröße mitwächst |
+| `overflow` | `auto` | senkrecht **und** waagerecht — die waagerechte Rolle bleibt, wie sie war |
+| `thead th` | `position: sticky; top: 0` | eine gerollte Liste ohne stehenden Spaltenkopf ist nicht mehr zuzuordnen |
+| `--frei` | `max-height: none` | der **benannte Rückweg** für eine Tabelle, die als Ganzes gelesen wird. Heute setzt ihn kein Wirt |
+
+Es ist eine **Höchsthöhe**: Eine Liste mit drei Zeilen bleibt drei Zeilen hoch —
+kurze Listen werden nicht künstlich hoch. Der **Tastaturfokus** rollt die markierte
+Zeile von selbst ins Bild, weil jede Zeilenwahl ein `<button>` ist und der Browser
+ein fokussiertes Element in seinen Rollbehälter zieht; dafür braucht es kein
+JavaScript (und diese Bibliothek hat außer dem Gesprächsverlauf keines).
+
+Dazu **ein Parameter mit sinnvoller Vorgabe** an den zwei Bausteinen, die die Hülle
+selbst zeichnen: `Raster.Begrenzt` und `ProjektListe.Begrenzt`, beide `true`.
+
+**Wache.** `EPOS.UI.Tests/ListenrahmenTests` (8 Fälle) prüft **die Regel im
+Stilblatt** (Token in `:root`, Höchsthöhe, Rollbalken, stehender Kopf, `--frei`)
+**und das Markup**, das sie treffen muss (Raster, ProjektListe, beide Listen des
+Gebäudedialogs). Eine bunit-Probe allein sieht eine Stilregel nicht — Lehre
+W6‑B‑1.
+
+**Abnahmepunkt A‑W9‑B‑2.** Gebäudedialog mit einem vollen Katalog: Beide Listen
+stehen in einem Rahmen von rund 350 px, der Spaltenkopf bleibt beim Rollen stehen,
+Filter und Detailblock sind ohne Seitenrollen erreichbar. Eine Liste mit zwei
+Zeilen ist zwei Zeilen hoch. Dasselbe bei Stromganglinien, Solarkollektoren,
+Wärmepumpe, Heizkessel-/BHKW-/PV-/Speicherverwaltung und in den drei
+Projektdialogen.
