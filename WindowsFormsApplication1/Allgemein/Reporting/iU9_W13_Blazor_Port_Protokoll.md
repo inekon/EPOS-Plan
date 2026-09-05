@@ -628,3 +628,203 @@ die drei `MyResource`-Dateien, `EPOS.UI/Bausteine/Zeilenwahl.razor`,
 `Allgemein/Hilfe/H7_InfoButtons_Protokoll.md`,
 `Werkzeuge/Formularkarte.Tests/{RazorSchreiberTests,StapelTests,ErreichbarkeitTests}.cs`,
 `Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md`, `.gitattributes`.
+
+---
+
+## 13 — Windows-Abnahme 05.09.2026 (Befund W13‑B‑1)
+
+### 13.1 Beobachtung
+
+Der Anwender meldete zum Weg **Administration → Daten & Import → VDI-3805-Import**:
+
+> „Admin: VDI-3805-Datei-Import: **Absturz bei Datei laden**, **teilweise Absturz auch bei
+> Dateiauswahl-Dialog**."
+
+Zwei Beobachtungen in einem Satz, und das Wort **teilweise** ist der Hinweis, der die
+Untersuchung geführt hat: Ein Fehler, der mal auftritt und mal nicht, ist selten ein
+Rechenfehler und fast immer eine Frage der Zeitlage.
+
+### 13.2 Was der Kern NICHT ist
+
+Der erste Verdacht lag beim Parser: Eine Ausnahme aus `KatalogImportAblauf.Lesen` käme im
+Wirt als unbehandelte Ausnahme eines Blazor-Ereignisses an, und der WinForms-`BlazorWebView`
+(10.0.100) führt kein `UnhandledException`-Ereignis — sie beendete den Prozess.
+
+**Der Verdacht trifft nicht zu, und das ist jetzt bewiesen.** Neun Fälle in
+`EPOS.Kern.Tests/KatalogImportAblaufTests` (Abschnitt 2b) fahren alle vier Ausprägungen
+gegen sechs Bauarten von „kaputt" — ein leeres Blatt, Rohbytes, ein abgeschnittener Satz,
+das falsche Trennzeichen, ein Verzeichnis statt einer Datei und ein Pfad, den es nicht
+gibt — dazu je eine mitten im Satz abgeschnittene ECHTE Probe:
+
+| Stelle | Verhalten |
+|---|---|
+| `Lesen` | fängt **jeden** Fehlschlag außer dem Abbruch und macht eine `IMP_KAT_PROT_LESEFEHLER`-Meldung mit dem Wortlaut der Ausnahme daraus |
+| `Vorpruefen` | überspringt `null`, leere Listen und Indizes außerhalb des Bestands |
+| `Ausfuehren` | zählt einen fehlerhaften Eintrag als Fehler und läuft weiter (Kommentar `Form_Heizkessel_einlesen:298`) |
+
+Damit liegt die Ursache **im Wirt**, nicht im Ablauf.
+
+### 13.3 Ursache 1 (sicher) — der Dateiwähler im WebView2-Rückruf
+
+Der Weg zum Wähler lautete:
+
+```
+Kachel bzw. Menuepunkt          (Blazor-Ereignis der ERSTEN WebView2)
+  -> BlazorDialogForm<KatalogImportDialog>.ShowDialog()
+    -> Dateiwahl.BeiKlick        (Blazor-Ereignis der ZWEITEN WebView2)
+      -> KatalogImportHuelle.DateiWaehlen
+        -> Task.FromResult(Dienste.Datei.DateiOeffnen(...))
+          -> OpenFileDialog.ShowDialog()
+```
+
+Die letzte Zeile öffnet ihre **verschachtelte Nachrichtenschleife INNERHALB des
+`WebMessageReceived`-Rückrufs** der WebView2, in der die Komponente gerade ihr Ereignis
+abarbeitet. `Task.FromResult` ist dabei kein Nebenschauplatz, sondern der Kern der Sache:
+Es sieht aus wie ein Task, ist aber schon erfüllt, wenn es entsteht — der Wähler läuft
+also **vollständig synchron im Ereignis**.
+
+Das ist wortgleich das Muster von **W16b‑B‑1** (§ 12.1 des W16b-Protokolls), nur eine
+Ebene tiefer: Dort baute sich eine ZWEITE WebView2 im Rückruf der ersten auf, hier pumpt
+ein modales Fenster im Rückruf **derselben** WebView2, die den Dialog zeigt. Während die
+Schleife pumpt, liefert die WebView2 weitere Nachrichten aus, und Blazor beginnt einen
+Zeichenlauf, während einer läuft. Ob das gutgeht, hängt daran, was in diesem Augenblick
+sonst noch unterwegs ist — **daher „teilweise"**.
+
+**Behebung.** `IDateiDienst` und `IDialogDienst` bekommen **wartbare Zwillinge** mit
+Standardfassung — `DateiOeffnenAsync`, `DateiSpeichernAsync`, `OrdnerWaehlenAsync`,
+`MeldungAsync`, `WarnungAsync`, `FrageAsync`. Die synchronen Formen bleiben unangetastet;
+`KeineDateiwahl`, `StilleDialoge` und jeder Prüfstand brechen durch die Erweiterung nicht.
+Die Windows-Fassungen fahren ihr Fenster über
+`Allgemein/Blazor/Blazornachlauf.cs` eine **geposteten Nachricht später** hoch, aus der
+gewöhnlichen Schleife von `Application.Run` heraus.
+
+`Blazornachlauf` ist der Bruder von `Blazorsprung` für den Fall **mit Rückgabewert**: Der
+Sprung liefert nichts zurück und kommt mit `BeginInvoke` und einem Riegel aus; ein
+Dateiwähler MUSS einen Pfad liefern, also gibt der Nachlauf einen `Task`, den der Aufrufer
+`await`et. Einen Riegel hat er bewusst nicht — zwei Wähler nebeneinander gibt es ohnehin
+nicht, und ein Riegel würde einen Wartenden mit einem leeren Ergebnis abspeisen.
+
+**Was NICHT geändert werden musste:** `Dateiwahl.razor` und `KatalogImportDialog` — beide
+`await`eten ihren Delegaten von jeher. Die ganze Änderung liegt in den elf Hüllen und in
+den zwei Dienstfassungen.
+
+**Auf iOS ist derselbe Befund ein anderer Fehler.** Ein Blazor-Ereignis LÄUFT dort auf dem
+Hauptfaden, und `IosDateiDienst.AufDemHauptfaden` liefert von dort `default`, um einen
+Selbstblock zu vermeiden — der Wähler ging also gar nicht erst auf. `DateiOeffnenAsync`
+gibt den Task des Wählers weiter, statt auf ihn zu blocken; damit ist der Aufruf vom
+Hauptfaden der Normalfall und nicht mehr der verbotene.
+
+### 13.4 Ursache 2 (sicher) — es gab kein Netz
+
+Für „Absturz **bei Datei laden**" gilt: Was auch immer nach der Dateiwahl wirft — im
+Ereignis, in einer Lebenszyklusmethode, in einem `Progress`-Rückruf —, es ging bis hierher
+**ungefangen** an den Renderer, und von dort kam es am Bedienfaden wieder heraus. Der
+WinForms-`BlazorWebView` (10.0.100) führt kein `UnhandledException`-Ereignis; genau diese
+Lücke nennt `WebViewWache` im eigenen Klassenkopf als ihre Grenze:
+
+> „Was danach kommt — eine Ausnahme beim Zeichnen der Komponente — sieht diese Wache
+> nicht; sie schweigt dann auch."
+
+**Behebung: `EPOS.UI/Bausteine/Fehlerschranke.razor`** — eine `ErrorBoundary` auf
+`ErrorBoundaryBase`. Wirft eine Kindkomponente, zeigt sie statt der Maske einen lesbaren,
+**markierbaren** Kasten mit Typ, Wortlaut und innerster Ausnahme und zwei Knöpfen
+(„Weiter" / „Schließen", beide stellen den Inhalt wieder her); derselbe Satz geht nach
+`Debug` und `Trace`. Bewusst **nicht** die fertige `ErrorBoundary` aus
+`Microsoft.AspNetCore.Components.Web`: Die spritzt einen `IErrorBoundaryLogger` ein und
+zeigt im Fehlerfall eine leere `<div class="blazor-error-boundary">` — also wieder eine
+stumme Fläche, und das ist der Befund selbst.
+
+**`EPOS.UI/Bausteine/Wurzel<T>`** ist das fehlende Zwischenglied. Eine `ErrorBoundary`
+fängt ihre NACHFAHREN, muss also **über** `T` stehen — eine Wurzelkomponente hat aber
+nichts über sich, `RootComponents.Add<T>("#app", …)` hängt sie unmittelbar an den
+Renderer. Die drei Hüllen mounten seither `Wurzel<T>` statt `T`:
+`BlazorDialogForm`, `BlazorSeite` und `EPOS.iOS/HauptSeite` (dort
+`Wurzel<AppWurzel>`, Regel: **jede Wurzel steht in der Fehlerschranke**).
+
+Der Parametersatz geht dabei **unverändert** durch (`Wurzel.Gaben` mit
+`CaptureUnmatchedValues`), und beide Parametersatz-Wachen sehen weiterhin `T`:
+`Parametersatzwache.Pruefen` läuft im Konstruktor der Hülle mit dem UNVERPACKTEN Typ, und
+`ParametersatzTests` liest den Quelltext der Hüllen, in dem weiterhin
+`new BlazorDialogForm<T>` steht. `Wurzel` zeichnet nichts Eigenes — ohne Wurf ist im DOM
+kein Unterschied zu sehen; ein Wirt, der Maße verschöbe, hätte sechzig Dialoge verschoben.
+
+### 13.5 Was der Importweg NICHT braucht
+
+`Meldung`/`Frage` kommen im Katalogimport **gar nicht vor** — er meldet über sein
+`Warnbanner` und fragt über die Überlagerung `ImportKonflikteDialog` (Hausregel A‑8 aus
+W11b). Die wartbaren Formen von `IDialogDienst` sind deshalb für die Hüllen da, die
+AUSSERHALB einer Komponente melden; im Importweg gibt es nichts umzustellen. Das ist der
+Grund, warum die Fehlerschranke hier den zweiten Teil des Befunds trägt und nicht eine
+Umstellung von `MessageBox` auf Bausteine.
+
+### 13.6 Geänderte und neue Dateien
+
+**Neu:** `WindowsFormsApplication1/Allgemein/Blazor/Blazornachlauf.cs`,
+`EPOS.UI/Bausteine/Fehlerschranke.razor`, `EPOS.UI/Bausteine/Wurzel.cs`,
+`EPOS.UI.Tests/Bausteine/FehlerschrankeTests.cs`.
+
+**Geändert:** `EPOS.Kern/Allgemein/Dienste/{IDateiDienst,IDialogDienst}.cs`,
+`EPOS.Kern/MyResource/*` (vier Schlüssel `FEHLERSCHRANKE_*`),
+`WindowsFormsApplication1/Dienste/{WindowsDateiDienst,WindowsDialogDienst}.cs`,
+`WindowsFormsApplication1/Allgemein/Blazor/{BlazorDialogForm,BlazorSeite}.cs`
+(je die Zeile `RootComponents.Add`), elf Hüllen unter `Views/**`,
+`EPOS.iOS/{HauptSeite.cs,Dienste/IosDateiDienst.cs}`, `EPOS.UI/wwwroot/epos-ui.css`,
+`EPOS.Kern.Tests/KatalogImportAblaufTests.cs`,
+`EPOS.UI.Tests/Dialoge/KatalogImportDialogTests.cs`.
+
+Die elf umgestellten Hüllen: `Import/KatalogImportHuelle`,
+`Photovoltaik/PvModulImportHuelle`, `Kosten/SpotpreisImportHuelle`,
+`Wärmebedarf/WaermebedarfAdminHuelle`, `Stromverbraucher/StromganglinieAdminHuelle`,
+`Stromspeicher/PeakShavingHuelle`, `Solarthermie/SolarganglinieAdminHuelle`,
+`Simulation/QuellprofilHuelle`, `Simulation/SimulationKonfigHuelle`,
+`Help/LizenzHuelle` (zweimal: öffnen und speichern).
+
+### 13.7 Abnahmepunkte für den Anwender
+
+| # | Was | Erwartung |
+|---|---|---|
+| B1 | Administration → **Heizkessel einlesen** → „Datei VDI 3805 …" | Der Dateiwähler **geht auf** und die Maske dahinter bleibt stehen. Kein Absturz, kein Einfrieren — auch nicht beim zweiten und dritten Mal in derselben Sitzung |
+| B2 | Eine Hersteller-Probe wählen (`PART03_Vaillant`) | Die Liste füllt sich, der Filter 10…200 kW steht, „Speichern DB" schreibt und meldet |
+| B3 | Eine **kaputte** Datei wählen (irgendeine `.txt` in `.vdi` umbenannt) | Ein **Warnbanner** „Die Datei konnte nicht gelesen werden: …" — kein Absturz, kein leeres Fenster. Die Maske bleibt bedienbar |
+| B4 | Dasselbe für Pufferspeicher, Solarkollektoren, Wärmepumpen | Gleiches Verhalten; bei `PART22_Wolf` (8,3 MB) läuft der Fortschritt und **Abbrechen** wirkt |
+| B5 | Bleibt trotzdem etwas stehen oder erscheint ein **Fehlerkasten** mit rotem Rand | Den Wortlaut abfotografieren — er nennt Typ, Meldung und innerste Ausnahme; die Anwendung läuft weiter |
+| B6 | „Datei Auswählen…" in der Wärmebedarfs- und der Solarganglinien-Verwaltung, PV-Import PAN, Spotpreis-Import, Lizenz „Datei wählen"/„Speichern unter…" | Derselbe Wähler, dasselbe Verhalten — die elf Stellen hängen am selben Dienst |
+| B7 | de **und** en | Der Fehlerkasten spricht die Oberflächensprache |
+
+### 13.8 Wenn es am Gerät weiter abstürzt — Diagnoseanleitung
+
+1. **Erscheint ein Fehlerkasten** (roter Rahmen, „In dieser Ansicht ist ein Fehler
+   aufgetreten")? Dann hat die Fehlerschranke gefangen: Der Wortlaut IST die Antwort,
+   und die Anwendung lebt noch. Bitte abschreiben oder ablichten.
+2. **Stürzt der Prozess trotzdem ab** (Fenster weg, kein Kasten), dann liegt es nicht an
+   einer Komponentenausnahme — die fängt die Schranke jetzt. Übrig bleiben: der
+   Bedienfaden selbst, die WebView2 und der Fadenwechsel. Nachsehen in der
+   **Ereignisanzeige → Windows-Protokolle → Anwendung** auf `.NET Runtime`- oder
+   `Application Error`-Einträge zur Zeit des Klicks.
+3. **Das Ablaufprotokoll mitlesen**: `DebugView` von Sysinternals starten (Optionen:
+   „Capture Win32"), dann EPOS-Plan bedienen. Die drei Köpfe sind
+   `[Fehlerschranke]`, `[Blazornachlauf]` und `[Blazorsprung]`, dazu `[WebView]` von der
+   Wache. Steht `[Blazornachlauf] Der nachgelagerte Aufruf liess sich nicht einreihen`,
+   hat der Nachlauf kein Wirtsfenster gefunden und **unmittelbar** ausgeführt — dann ist
+   der alte Weg noch aktiv und die Ursache steht wieder in 13.3.
+4. **Friert die Maske ein, statt abzustürzen**, ist es die Nachrichtenschleife: Ein
+   Aufrufer wartet BLOCKIEREND auf einen `…Async` (`.Result`, `.Wait()`) und hält damit
+   genau den Faden an, den der Nachlauf braucht. Suchen mit
+   `git grep -nE '(DateiOeffnen|DateiSpeichern|OrdnerWaehlen|Meldung|Warnung|Frage)Async[^;]*\.(Result|Wait\(\)|GetAwaiter)'`.
+5. **Gegenprobe ohne die Verzögerung**: In `WindowsDateiDienst.DateiOeffnenAsync` statt
+   `Blazornachlauf.Nachgelagert(…)` `Task.FromResult(DateiOeffnen(…))` einsetzen und neu
+   bauen. Kommt der Absturz zurück, war die Wiedereintritts-These richtig.
+
+### 13.9 Grenzen
+
+- **Keine Bildschirmabnahme.** Diese Umgebung hat kein Windows; alle Aussagen zur
+  Zeitlage der WebView2 stützen sich auf die Bauart des Weges und auf den gleichlautenden
+  Befund W16b‑B‑1. Dass der Wähler HINTER dem Ereignis hochfährt, ist am Quelltext
+  ablesbar; dass genau das den Absturz behebt, sagt erst das Gerät (Abnahmepunkt B1).
+- **Die iOS-Fassung ist ungebaut.** `EPOS.iOS` steht bewusst nicht im Solution-Filter;
+  `IosDateiDienst.DateiOeffnenAsync` und `Wurzel<AppWurzel>` in `HauptSeite` sind hier
+  nicht übersetzt worden. Der Nachweis ist der CI-Job `ios.yml`.
+- **Die Fehlerschranke fängt keine Ausnahme, die NICHT durch den Renderer läuft.** Ein
+  `async void`, ein unbeobachteter `Task` oder ein Wurf auf einem Arbeitsfaden ohne
+  `await` geht weiterhin am Netz vorbei. Im Katalogimport gibt es keine solche Stelle
+  (jedes `Task.Run` wird `await`et), aber die Regel gilt für neue Wege.

@@ -123,15 +123,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Dateiwähler mit dem Ganglinienordner als Startpunkt und dem Filter des
-        /// Vorläufers (<c>"(*.txt)|*.txt"</c>).
+        /// Vorläufers (<c>"(*.txt)|*.txt"</c>) — HINTER dem Blazor-Ereignis
+        /// (Befund W13‑B‑1, siehe <c>IDateiDienst</c>).
         /// </summary>
         private static Task<string> DateiWaehlen(string filter)
         {
-            string pfad = Dienste.Datei.DateiOeffnen(
+            return Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.SGAD_TITEL,
                 string.IsNullOrEmpty(filter) ? MyResource.Resource.WBAD_DATEIFILTER : filter,
                 Ablageordner());
-            return Task.FromResult(pfad ?? "");
         }
 
         /// <summary>

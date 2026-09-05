@@ -73,5 +73,48 @@
         /// <c>Cursor.Current = Cursors.WaitCursor</c>. Ohne Oberfläche folgenlos.
         /// </summary>
         void Warten(bool an);
+
+        // ==================================================================
+        //  Die WARTBAREN Zwillinge (Befund W13-B-1, 05.09.2026)
+        // ==================================================================
+        //
+        // Dieselbe Lage wie bei IDateiDienst: Eine MessageBox ist ein modales
+        // Systemfenster, und aus einem Blazor-Ereignis heraus faehrt sie ihre
+        // verschachtelte Nachrichtenschleife im WebMessageReceived-Rueckruf
+        // der WebView2 hoch (Befund W16b-B-1). Wer aus einer Razor-Komponente
+        // heraus meldet oder fragt, nimmt die wartbare Form.
+        //
+        // VORHER GILT ABER DIE HAUSREGEL (A-8 aus W11b): In einer Razor-Maske
+        // ist ein Warnbanner die Meldung und ein Rueckfrage-Baustein die Frage.
+        // Diese zwei Formen sind fuer die Stellen da, an denen die HUELLE
+        // meldet - also ausserhalb der Komponente.
+
+        /// <summary>
+        /// <see cref="Meldung"/> HINTER dem laufenden Ereignis. Der Rueckgabewert
+        /// ist erst erfuellt, wenn der Anwender die Meldung geschlossen hat.
+        /// </summary>
+        System.Threading.Tasks.Task MeldungAsync(string text, string titel = null)
+        {
+            Meldung(text, titel);
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// <see cref="Warnung"/> HINTER dem laufenden Ereignis. Eigene Form, weil
+        /// das Symbol eine Aussage ist: Eine Warnung als Hinweis zu zeigen wäre
+        /// eine stille Abschwächung.
+        /// </summary>
+        System.Threading.Tasks.Task WarnungAsync(string text, string titel = null)
+        {
+            Warnung(text, titel);
+            return System.Threading.Tasks.Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// <see cref="Frage"/> HINTER dem laufenden Ereignis; <c>true</c> = Ja.
+        /// </summary>
+        System.Threading.Tasks.Task<bool> FrageAsync(
+            string text, string titel = null, bool warnend = false, bool vorgabeNein = false)
+            => System.Threading.Tasks.Task.FromResult(Frage(text, titel, warnend, vorgabeNein));
     }
 }

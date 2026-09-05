@@ -159,15 +159,17 @@ namespace WindowsFormsApplication1
         /// Dialog soll nicht melden, wo nichts schiefgegangen ist — der Vorläufer kehrte
         /// dort ebenfalls still zurück (<c>btnCsv_Click</c>:896).</para>
         /// </summary>
-        private static Task<double[]> CsvLesen(int soll)
+        private static async Task<double[]> CsvLesen(int soll)
         {
-            string pfad = Dienste.Datei.DateiOeffnen(
+            // Der Wähler läuft HINTER dem Blazor-Ereignis (Befund W13‑B‑1,
+            // siehe IDateiDienst) - deshalb await statt eines synchronen Aufrufs.
+            string pfad = await Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.SIMQ_CSV_DATEIDIALOG_TITEL,
                 MyResource.Resource.SIMQ_CSV_DATEIFILTER, null);
 
-            if (string.IsNullOrEmpty(pfad)) return Task.FromResult(new double[0]);
+            if (string.IsNullOrEmpty(pfad)) return new double[0];
 
-            return Task.Run(() => WaermequelleClass.WerteAusCsv(pfad, soll));
+            return await Task.Run(() => WaermequelleClass.WerteAusCsv(pfad, soll));
         }
 
         /// <summary>

@@ -132,7 +132,20 @@ namespace WindowsFormsApplication1
             try { _web.WebView.DefaultBackgroundColor = Themaflaeche; }
             catch { /* aeltere WebView2-Laufzeit: Schoenheitsfehler, kein Fehlschlag */ }
 
-            _web.RootComponents.Add<TKomponente>("#app", parameter);
+            // FEHLERSCHRANKE (Befund W13-B-1, 05.09.2026): Gemountet wird nicht
+            // die Komponente selbst, sondern EPOS.UI.Bausteine.Wurzel<T> - eine
+            // ErrorBoundary mit T darin. Eine ErrorBoundary faengt die Ausnahmen
+            // ihrer NACHFAHREN, sie muss also ueber T stehen; eine Wurzel hat
+            // aber nichts ueber sich. Ohne dieses Zwischenglied beendet eine
+            // Ausnahme aus einem Ereignis oder aus dem Lebenszyklus von T den
+            // PROZESS, weil der WinForms-BlazorWebView (10.0.100) kein
+            // UnhandledException-Ereignis fuehrt (dieselbe Luecke, die
+            // WebViewWache im Klassenkopf als ihre Grenze nennt).
+            //
+            // Der Parametersatz geht UNVERAENDERT durch (Wurzel.Gaben faengt ihn
+            // mit CaptureUnmatchedValues), und die Parametersatzwache oben prueft
+            // weiterhin gegen T - nicht gegen die Verpackung.
+            _web.RootComponents.Add<EPOS.UI.Bausteine.Wurzel<TKomponente>>("#app", parameter);
             Controls.Add(_web);
 
             // WACHE (Befund W16b-B-1): Bleibt die Flaeche beige, sagt sie warum.
