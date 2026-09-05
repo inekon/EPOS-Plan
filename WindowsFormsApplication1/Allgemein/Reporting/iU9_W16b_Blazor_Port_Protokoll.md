@@ -599,6 +599,45 @@ hatte sie).
 dauerhaft fern: am Gerät beim Bauen der Hülle mit dem Schlüssel im Klartext, im Gate als
 Quelltextabgleich über alle Hüllen.
 
+**Nachtrag 05.09.2026 — die dritte Wache: die FEHLERSCHRANKE** (Befund **W13‑B‑1**, siehe
+`iU9_W13_Blazor_Port_Protokoll.md` § 13). Die `WebViewWache` benennt im eigenen Klassenkopf
+ihre Grenze: „Was danach kommt — eine Ausnahme beim Zeichnen der Komponente — sieht diese
+Wache nicht; sie schweigt dann auch." Genau diese Lücke hat die Abnahme desselben Tages am
+VDI-3805-Import getroffen: Eine Ausnahme aus einem Ereignis oder aus dem Lebenszyklus einer
+Komponente ging ungefangen an den Renderer und kam am Bedienfaden wieder heraus — der
+`BlazorWebView` führt kein `UnhandledException`, also **endete der Prozess**.
+
+Seither steht **jede Wurzelkomponente in einer `ErrorBoundary`**:
+
+* `EPOS.UI/Bausteine/Fehlerschranke.razor` (auf `ErrorBoundaryBase`, ohne DI) zeigt statt
+  der Maske einen lesbaren, **markierbaren** Kasten mit Typ, Wortlaut und innerster
+  Ausnahme und zwei Knöpfen; derselbe Satz geht nach `Debug`/`Trace`, Kopf
+  `[Fehlerschranke]`. Nicht die fertige `ErrorBoundary` aus `Components.Web` — die zeigt
+  eine leere `<div class="blazor-error-boundary">`, also wieder eine stumme Fläche.
+* `EPOS.UI/Bausteine/Wurzel<T>` ist das nötige Zwischenglied: Eine `ErrorBoundary` fängt
+  ihre NACHFAHREN, muss also über `T` stehen — eine Wurzel hat aber nichts über sich.
+  **Alle drei Hüllen mounten seither `Wurzel<T>` statt `T`**: `BlazorDialogForm`,
+  `BlazorSeite` und `EPOS.iOS/HauptSeite`. Wer eine vierte Hüllenform baut, tut dasselbe.
+* Der Parametersatz geht unverändert durch (`CaptureUnmatchedValues`), und beide
+  Parametersatz-Wachen sehen weiterhin `T` — `Parametersatzwache` läuft im Konstruktor der
+  Hülle mit dem unverpackten Typ, `ParametersatzTests` liest den Quelltext der Hüllen.
+* `Wurzel` zeichnet **nichts Eigenes**: ohne Wurf im DOM kein Unterschied. Ein Wirt, der
+  Maße verschöbe, hätte sechzig Dialoge verschoben.
+
+Damit sind die drei Wachen arbeitsteilig: `Parametersatzwache` fängt den falschen Schlüssel
+**vor** dem ersten Zeichnen, `WebViewWache` die WebView2, die nicht hochkommt, und die
+`Fehlerschranke` alles, was **danach** wirft. Zeugen: `EPOS.UI.Tests/Bausteine/
+FehlerschrankeTests` (zehn Fälle, darunter die Gegenprobe ohne Schranke).
+
+**Der zweite Nachtrag betrifft die REGEL aus (c).** Sie hieß bis dahin „kein `ShowDialog`
+unmittelbar aus einem Blazor-Ereignis" und meinte ein modales Fenster mit einer zweiten
+WebView2. W13‑B‑1 zeigt, dass sie weiter reicht: Auch ein `OpenFileDialog` und eine
+`MessageBox` sind modale Fenster mit einer verschachtelten Nachrichtenschleife, und im
+`WebMessageReceived`-Rückruf richten sie denselben Schaden an — nur in der WebView, die
+gerade zeichnet. Die Regel heißt seither **„kein modales Systemfenster im WebView-Rückruf"**
+und hat zwei Werkzeuge: `Blazorsprung` für den Sprung ohne Rückgabewert (zwei Verteiler)
+und `Blazornachlauf` für den Dienst, der antworten muss (`IDateiDienst`, `IDialogDienst`).
+
 ### 12.2 Befund W16b‑B‑2 — „Die Auswahl der anderen Bereiche ist ausgegraut"
 
 **Beobachtung.** Die Reiterknöpfe „Wärmebedarf", „Strombedarf" usw. sehen gesperrt aus,

@@ -207,6 +207,7 @@ entgegen — sie ist damit austauschbar.
 | `Gruppenkopf` | Abschnittsbalken mit Titel, Symbol und Summe | `Views/Kosten/SectionPanel.cs` |
 | `Warnbanner` | Hinweis / Warnung / Fehler, `role="alert"`. Seit iU9‑W15b.1 mit **Selbstverfall**: `Verfaellt` (TimeSpan?), `Verfallen` und einer austauschbaren `Uhr` — der Ersatz für `Form_Hinweis`, den Kurzhinweis, der sich nach drei Sekunden selbst schloss. Eine NEUE Meldung setzt den Verfall zurück; eine Frist ≤ 0 heißt „kein Verfall", nicht „sofort weg" | `KartenStil.WARN_*`; Selbstverfall: `Allgemein/Form_Hinweis.cs` |
 | `SpeichernLeiste` | OK / Abbrechen und optional „Speichern" ohne Schließen samt Statuszeile | `Allgemein/SpeichernLeiste.cs` |
+| `Fehlerschranke` + `Wurzel<T>` | **Das Sicherheitsnetz um jede Wurzelkomponente** (Befund **W13‑B‑1**, Windows-Abnahme 05.09.2026). Die Schranke ist eine `ErrorBoundary` auf `ErrorBoundaryBase` (ohne DI, damit sie den Fehler ZEIGT statt ihn zu loggen): Wirft ein Nachfahr, steht statt der Maske ein markierbarer Kasten mit Typ, Wortlaut und innerster Ausnahme, dazu „Weiter"/„Schließen" (beide `Recover()`); derselbe Satz geht nach `Debug`/`Trace`, Kopf `[Fehlerschranke]`. `Wurzel<T>` ist das nötige Zwischenglied — eine Boundary fängt ihre NACHFAHREN, eine Wurzelkomponente hat aber nichts über sich; die drei Hüllen mounten seither `Wurzel<T>` statt `T` und reichen den Parametersatz unverändert durch (`CaptureUnmatchedValues`). `Wurzel` zeichnet **nichts Eigenes**. Ohne dieses Netz beendete eine Ausnahme aus Ereignis oder Lebenszyklus den PROZESS: Der WinForms-`BlazorWebView` (10.0.100) führt kein `UnhandledException` | — (neu; die Lücke, die `WebViewWache` im Klassenkopf als ihre Grenze nennt) |
 | `InfoKnopf` | 28×28-Fragezeichen, ruft `IHilfeDienst.Oeffnen` | `Allgemein/Hilfe/InfoKnopf.cs` |
 | `Kachel` | Anklickbare Einstiegskarte mit Titel, Beschreibung, Status. Seit iU9‑W16a.2 mit **`Zustand`** (`Kachelstand.Aus`/`An` — grauer oder grüner Statuspunkt, der Punkt in beiden Fällen sichtbar) und **`Aktiv`** (`<button disabled>`, der Ersatz für die vierzehn Zeilen `Cursors.Default` in `AktionsKarte`). **Befund W16a‑B1:** „nur Anzeige" ist KEIN dritter Zustand — Farbe und Anklickbarkeit sind zwei unabhängige Achsen (Brauchwasser ist „nur Anzeige" UND grün oder grau). Seit dem Anwenderwunsch 05.09.2026 (**W16b‑E‑3**) dazu **`Bildklasse`** — eine Zusatzklasse am `<img>`, mit der die Startseite ihre Kachelbilder zuschneidet; die Kachel entscheidet das nicht, sie nimmt die Klasse entgegen | `Views/Kosten/EinstiegsKarte.cs`, `Views/GemeinsameBausteine/AktionsKarte.cs` |
 | `Menueband` + `Menuepunkt`/`Menuetabelle` | Die **Windows-Schale** des Hauptfensters (iU9‑W16c.1): eine Menüleiste mit **55 Punkten in drei Ebenen unter VIER Köpfen** und 8 Trennstrichen, `role="menubar"/"menuitem"/"menu"`, ← → ↑ ↓ Pos1/Ende/Esc/Tab, roving `tabindex`, 44 px je Zeile. Der Offen-Zustand ist **EIN Pfad** über alle drei Ebenen, geschlossen wird über eine **Schließfläche** und nicht über `focusout` — beides ist Befund **W16c‑B13** der Windows-Abnahme vom 05.09.2026 (die Untermenüs klappten nicht auf), und beides steht als Hausregel oben. Die Tabelle ist **Daten** — `Menuetabelle.cs` ist aus `MDIMainForm.Designer.cs` und den drei `.resx` **erzeugt** (Auflage R‑W16‑8, Skript `w16c_menue.py`), nicht abgetippt. **Eine Zeile ist es nicht:** der Kopf **„Sprache"** (`MENU_SPRACHE`, en „Language") ist der Anwenderentscheid **W16c‑E‑2** vom 04.09.2026 — die zwei Sprachpunkte standen bis dahin als eigene Köpfe neben „Hilfe" und hängen seither unter ihm, mit unveränderten Namen, Bildern und Seitenschlüsseln. Das Erzeugerskript liegt nicht im Repository; die Tabelle sagt das im Kopfkommentar. Ein Punkt trägt den sprachneutralen Namen des Vorläufers (der Anker für `help_mapping.txt`), einen `MyResource`-Textschlüssel, ein **Ziel als `Seitenschluessel`**, ein Argument, ein Bild und ein Kürzel; das Band kennt weder Maske noch Delegat, es **meldet den Schlüssel**. Damit ersetzt ein Handler 34 Ereignishandler und neun `Init*`-Lambdas. Ein Kopf kann **rechtsbündig** stehen (`Menuepunkt.RechtsBuendig`, Anwenderwunsch 05.09.2026 / **W16c‑E‑4**): Das Band hängt daran `margin-left: auto`, der Punkt bleibt aber an SEINER Stelle im Markup — Tastaturweg, Sprachausgabe und N4 bleiben unberührt. Genau ein Kopf trägt es: „Sprache“, dort wo im Bestand die zwei Sprachpunkte sassen. Die elf Bildchen sind dieselben PNG (`wwwroot/bilder/menue/`) | `MDIMainForm.menuToolbar` (45 `ToolStripMenuItem` + 6 `ToolStripSeparator` im Designer, 9 Punkte und 2 Trenner aus den acht `Init*`-Methoden) |
@@ -315,6 +316,33 @@ fünfzehn `@ref` auf seine Felder halten muss.
 aus der Dokumentenauswahl. Ohne Delegat bleibt der Knopf weg.
 
 `Dateiwahl` fuehrt seit iU9‑W15a.5 zusaetzlich `Speichern`/`Namensvorschlag`/`Zielwaehlen`: Der Bestand kannte nur „Datei oeffnen“, der Projektexport braucht „Datei speichern unter“ MIT einem Namensvorschlag (`<Projekt>.wpx`). Der Unterschied ist nicht kosmetisch — ein Speichern-Dialog laesst einen Namen zu, den es noch nicht gibt. Auch hier gilt: kein Delegat, kein Knopf.
+
+**Der Wähler DARF warten, und die Komponente muss das aushalten** (Befund **W13‑B‑1**,
+Windows-Abnahme 05.09.2026). `Waehlen` ist ein `Task` und kein Wert — bis dahin gaben alle
+Hüllen ihn als `Task.FromResult(Dienste.Datei.DateiOeffnen(…))` herein, und damit lief der
+`OpenFileDialog` synchron IM Blazor-Ereignis, mitten im `WebMessageReceived`-Rückruf der
+WebView2. Das ist der Absturz, den der Anwender am VDI-3805-Import gemeldet hat. Die
+Hüllen rufen seither `Dienste.Datei.DateiOeffnenAsync`, und das Fenster geht eine
+geposteten Nachricht später auf. Für die Komponenten ändert sich nichts — sie `await`eten
+ihren Delegaten von jeher —, aber die Regel gilt jetzt ausdrücklich: **Ein Delegat, der
+Oberfläche der Plattform öffnet, wird `await`et und nie synchron ausgewertet.** Zeugen:
+`KatalogImportDialogTests.Der_Dateiwaehler_darf_warten_und_die_Liste_kommt_danach` und
+`…Ein_abgebrochener_Waehler_liest_nichts` — beide lösen den Wähler von Hand auf.
+
+**Jede Wurzelkomponente steht in der `Fehlerschranke`** (derselbe Befund, zweiter Teil).
+Eine Ausnahme aus einem Ereignis oder aus dem Lebenszyklus ging bis dahin ungefangen an
+den Renderer, und unter Windows beendete sie den PROZESS: Der WinForms-`BlazorWebView`
+(10.0.100) führt kein `UnhandledException`-Ereignis. `Bausteine/Fehlerschranke.razor` (auf
+`ErrorBoundaryBase`, ohne DI) zeigt statt der Maske einen markierbaren Kasten mit Typ,
+Wortlaut und innerster Ausnahme; `Bausteine/Wurzel<T>` ist das nötige Zwischenglied, weil
+eine `ErrorBoundary` nur ihre NACHFAHREN fängt und eine Wurzel nichts über sich hat. Alle
+drei Hüllen — `BlazorDialogForm`, `BlazorSeite`, `EPOS.iOS/HauptSeite` — mounten
+`Wurzel<T>` statt `T`. **`Wurzel` zeichnet nichts Eigenes**: ohne Wurf ist im DOM kein
+Unterschied; ein Wirt, der Maße verschöbe, hätte sechzig Dialoge verschoben. Wer eine
+vierte Hüllenform baut, mountet ebenfalls `Wurzel<T>`. Das Netz hat eine Lücke, die man
+kennen muss: Eine Ausnahme, die NICHT durch den Renderer läuft — `async void`, ein
+unbeobachteter `Task`, ein Wurf auf einem Arbeitsfaden ohne `await` —, geht daran vorbei.
+Wache: `Bausteine/FehlerschrankeTests` (zehn Fälle samt Gegenprobe ohne Schranke).
 
 ## Dienste (`Dienste/`)
 
