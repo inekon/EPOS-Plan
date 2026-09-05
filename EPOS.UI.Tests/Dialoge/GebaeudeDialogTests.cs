@@ -81,6 +81,7 @@ public class GebaeudeDialogTests : BunitContext
         Func<string, IReadOnlyDictionary<string, object>>? katalogGaben = null,
         Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>? wohnflaecheGaben = null,
         Func<IReadOnlyDictionary<string, object>>? gebaeudetypGaben = null,
+        Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? bedarfGaben = null,
         Action? geaendert = null,
         Action<bool>? geschlossen = null)
     {
@@ -107,6 +108,7 @@ public class GebaeudeDialogTests : BunitContext
             .Add(x => x.KatalogGaben, katalogGaben)
             .Add(x => x.WohnflaecheGaben, wohnflaecheGaben)
             .Add(x => x.GebaeudetypGaben, gebaeudetypGaben)
+            .Add(x => x.BedarfGaben, bedarfGaben)
             .Add(x => x.Geaendert, geaendert)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
     }
@@ -340,6 +342,110 @@ public class GebaeudeDialogTests : BunitContext
 
         Assert.True(cut.Instance.WohnflaecheOffen);
         Assert.Single(cut.FindAll("[role=dialog]"));
+    }
+
+    // =================================================================================
+    // „Simulation…" — Anwenderwunsch W9-E-2 (05.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Ohne Delegat kein Knopf</b> — die Hausregel für jeden Sprung. In der
+    /// Katalogverwaltung gibt es kein Projekt und damit nichts zu rechnen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Delegat_gibt_es_keinen_Simulationsknopf()
+    {
+        Assert.DoesNotContain("Simulation...", Aufbauen().Markup);
+
+        var cut = Aufbauen(bedarfGaben: _ => new Dictionary<string, object>());
+        Assert.Contains("Simulation...", cut.Markup);
+    }
+
+    /// <summary>Der Knopf hängt an der MARKIERUNG der Projektliste, wie „Ändern".</summary>
+    [Fact]
+    public void Ohne_markiertes_Gebaeude_ist_der_Simulationsknopf_gesperrt()
+    {
+        var cut = Aufbauen(bedarfGaben: _ => new Dictionary<string, object>());
+
+        // Der Sprung in den Katalog nimmt die Projektmarkierung weg
+        // (KatalogzeileWaehlen setzt _gewaehlt auf null).
+        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+
+        Assert.Null(cut.Instance.Gewaehlt);
+        Assert.True(Knopf(cut, "Simulation...").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Mit_markiertem_Gebaeude_ist_der_Simulationsknopf_frei()
+    {
+        var cut = Aufbauen(bedarfGaben: _ => new Dictionary<string, object>());
+
+        Assert.NotNull(cut.Instance.Gewaehlt);
+        Assert.False(Knopf(cut, "Simulation...").HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Der Knopf öffnet die Überlagerung und gibt dem Kern GENAU DIE markierte Zeile
+    /// mit — ihre <c>IdZ</c> ist der Schlüssel, nicht die Stamm-Id.
+    /// </summary>
+    [Fact]
+    public void Simulation_oeffnet_den_Bedarf_als_Ueberlagerung()
+    {
+        int gefragt = 0;
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(4711) },
+                           bedarfGaben: z =>
+                           {
+                               gefragt = z.IdZ;
+                               return new Dictionary<string, object>
+                               {
+                                   ["Daten"] = new GebaeudeBedarfDaten { Name = z.Name }
+                               };
+                           });
+
+        Knopf(cut, "Simulation...").Click();
+
+        Assert.Equal(4711, gefragt);
+        Assert.True(cut.Instance.BedarfOffen);
+        Assert.Single(cut.FindAll("[role=dialog]"));
+    }
+
+    /// <summary>
+    /// Kommt keine Zahl heraus — die Zeile ist noch nicht gespeichert oder das Projekt
+    /// führt keine Klimaregion —, MELDET der Dialog das, statt eine leere Überlagerung
+    /// aufzumachen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Ergebnis_meldet_der_Dialog_statt_eine_leere_Flaeche_zu_zeigen()
+    {
+        var cut = Aufbauen(bedarfGaben: _ => null);
+
+        Knopf(cut, "Simulation...").Click();
+
+        Assert.False(cut.Instance.BedarfOffen);
+        Assert.Contains("kein Wärmebedarf", cut.Instance.Meldung);
+    }
+
+    /// <summary>Esc schließt den Wirt nicht, solange der Bedarf steht.</summary>
+    [Fact]
+    public void Esc_schliesst_NICHT_wenn_der_Bedarf_offen_ist()
+    {
+        bool gerufen = false;
+        var cut = Aufbauen(bedarfGaben: _ => new Dictionary<string, object>(),
+                           geschlossen: _ => gerufen = true);
+
+        Knopf(cut, "Simulation...").Click();
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.False(gerufen);
+    }
+
+    /// <summary>In der Katalogverwaltung gibt es den Knopf auch MIT Delegat nicht.</summary>
+    [Fact]
+    public void In_der_Verwaltung_fehlt_der_Simulationsknopf()
+    {
+        var cut = Aufbauen(admin: true, bedarfGaben: _ => new Dictionary<string, object>());
+
+        Assert.DoesNotContain("Simulation...", cut.Markup);
     }
 
     [Fact]
