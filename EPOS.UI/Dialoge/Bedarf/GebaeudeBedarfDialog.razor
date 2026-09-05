@@ -1,0 +1,310 @@
+﻿@* Waermebedarf EINES Gebaeudes (iU9-W9.8, Anwenderwunsch W9-E-2 vom 05.09.2026).
+
+   DER WUNSCH, woertlich: "Der Waermebedarf vom Gebaeude (Screenshot 1) sollte aus
+   diesem Dialog (mit Button Simulation) aufgerufen werden koennen - analog wie aus
+   dem Simulationsbereich (Screenshot 2)." Nachtrag: "(ohne Brauchwasser und ohne
+   gesamt)".
+
+   KEIN VORBILD IM BESTAND. Die geloeschte Form_Gebaeude fuehrte im Detailblock
+   "Gebaeude: Verbrauch" nur den Knopf "Aendern"; die einzige Maske mit einem Knopf
+   "Simulation" war Form_Simulation_Kurz (mit iF29 stillgelegt), und die rechnete das
+   GANZE Projekt samt Kaskade. Neu ist hier also die AUSKUNFT, nicht die Rechnung:
+   Gerechnet wird mit GebaeudeBedarfCtrl, und der ruft dieselben zwei Methoden von
+   SimulationWaermebedarf wie der Lauf.
+
+   DAS VORBILD DER ANSICHT ist der Bedarfsreiter der Ergebnisseite
+   (Seiten/Simulation/BedarfReiter.razor): Kennzahlen links, darunter der Schalter
+   "sortiert", darunter die Jahresganglinie als Renderer-Bild (B1,
+   ChartRenderer.GanglinieNormiert) im Baustein Diagramm mit Bild- und Datenzoom.
+   WEG BLEIBEN, wie gewuenscht: der Block "Waermebedarf je Bedarfsart", die Schalter
+   "Gesamt" und "Brauchwasser" und die Strombedarfsspalte - dieser Dialog kennt genau
+   EINE Reihe.
+
+   DIE EINHEIT (Anwenderentscheid W8-O-5): MWh als Vorgabe, kWh waehlbar; die Wahl
+   liegt in BedarfEinheitWahl, also derselben Ablage wie im Bedarfsprofil- und im
+   Bedarfsergebnisdialog. Umgerechnet werden nur die ENERGIEMENGEN - die Hoechstlast
+   ist eine Leistung in kW, die Vollbenutzungsstunden sind Stunden, und das Bild zeigt
+   Prozent des Jahreshoechstwertes.
+
+   ER ERSCHEINT ALS UEBERLAGERUNG im Gebaeudedialog, nicht als zweites Fenster
+   (Risiko R2) - wie die drei Unterdialoge, die dort schon stehen.
+
+   TASTATUR: Esc und Enter schliessen; der Dialog zeigt nur an und traegt einen
+   einzigen Knopf. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@Daten.Name</p>
+
+    @* Die Einheit gilt fuer die Kennzahl und die Monatstabelle; sie steht deshalb
+       ueber beiden. *@
+    <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@Einheitenwahl"
+                 Auswahl="@EinheitIndex" AuswahlChanged="EinheitWaehlen" />
+
+    @* ---- Die drei Kennzahlen -------------------------------------------- *@
+    <Gruppenkopf Titel="@GruppeKennzahlen">
+        <KindInhalt>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <tbody>
+                        <tr>
+                            <td>@LabelHeizwaerme</td>
+                            <td class="epos-zahl">@Heizwaerme</td>
+                            <td>@_einheit.Text</td>
+                        </tr>
+                        <tr>
+                            <td>@LabelMaxLast</td>
+                            <td class="epos-zahl">@Zahl(Daten.MaxLastKw)</td>
+                            <td>@EinheitKw</td>
+                        </tr>
+                        <tr>
+                            <td>@LabelVollbenutzung</td>
+                            <td class="epos-zahl">@Vollbenutzung</td>
+                            <td>@EinheitStunden</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ---- Die Jahresganglinie -------------------------------------------- *@
+    <div class="epos-leiste">
+        <Schalter Bezeichnung="@LabelSortiert" Wert="@_sortiert" WertChanged="SortiertGesetzt" />
+    </div>
+
+    <ChartBild Png="@Bild" Alt="@Bildtext" PlatzhalterText="@PlatzhalterBild"
+               BereichGewaehlt="BereichGewaehlt"
+               Zurueckgesetzt="@(() => _bereich = null)" />
+
+    @* ---- Die Monatsuebersicht ------------------------------------------- *@
+    @if (Daten.MonatswerteMwh.Count >= 12)
+    {
+        <Gruppenkopf Titel="@GruppeMonate">
+            <KindInhalt>
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster">
+                        <tbody>
+                            @for (int m = 0; m < 12; m++)
+                            {
+                                int monat = m;
+                                <tr>
+                                    <td>@Monatsname(monat)</td>
+                                    <td class="epos-zahl">@Monatswert(monat)</td>
+                                    <td>@_einheit.Text</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    <SpeichernLeiste OkText="@OkText" MitAbbrechen="false" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Das eingefrorene Ergebnis; die Hülle rechnet es.</summary>
+    [Parameter] public GebaeudeBedarfDaten Daten { get; set; } = new();
+
+    /// <summary>
+    /// Liefert die Jahresganglinie als PNG — erster Parameter die Schalterstellung
+    /// „sortiert" (Dauerlinie), zweiter der aufgezogene Bildausschnitt (Datenzoom;
+    /// <c>null</c> = das ganze Jahr). Ohne Delegat bleibt der Platzhalter stehen.
+    ///
+    /// <para>Gezeichnet wird im Kern (<c>ChartRenderer.GanglinieNormiert</c>) — diese
+    /// Bibliothek ruft keinen Renderer (Risiko R‑W8‑2).</para>
+    /// </summary>
+    [Parameter] public Func<bool, Diagrammbereich?, byte[]?>? Bildauftrag { get; set; }
+
+    /// <summary>
+    /// Die ANZEIGEEINHEIT beim Öffnen — MWh (Vorgabe) oder kWh (Anwenderentscheid
+    /// W8‑O‑5 vom 04.09.2026).
+    /// </summary>
+    [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
+
+    /// <summary>Meldet der Hülle die neu gewählte Einheit, damit sie gemerkt wird.</summary>
+    [Parameter] public Action<Energieeinheit>? EinheitGewaehlt { get; set; }
+
+    /// <summary>Der Dialog wurde geschlossen — immer mit <c>true</c>, er hat nur OK.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Wärmebedarf Gebäude";
+    [Parameter] public string GruppeKennzahlen { get; set; } = "Kennzahlen";
+    [Parameter] public string GruppeMonate { get; set; } = "monatlicher Verlauf:";
+    [Parameter] public string LabelHeizwaerme { get; set; } = "Wärmebedarf Heizung:";
+    [Parameter] public string LabelMaxLast { get; set; } = "max. Wärmelast";
+    [Parameter] public string LabelVollbenutzung { get; set; } = "Vollbenutzungsstunden:";
+    [Parameter] public string LabelSortiert { get; set; } = "sortiert";
+    [Parameter] public string LabelEinheit { get; set; } = "Einheit:";
+    [Parameter] public string EinheitKw { get; set; } = "kW";
+    [Parameter] public string EinheitStunden { get; set; } = "h/a";
+    [Parameter] public string Bildtext { get; set; } = "Wärmelast Jahresganglinie";
+    [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Die zwölf Monatsbeschriftungen der Tabelle.</summary>
+    [Parameter]
+    public IReadOnlyList<string> Monatsnamen { get; set; } = new[]
+    {
+        "Januar:", "Februar:", "März:", "April:", "Mai:", "Juni:",
+        "Juli:", "August:", "September:", "Oktober:", "November:", "Dezember:"
+    };
+
+    /// <summary>Was statt eines fehlenden Wertes steht.</summary>
+    [Parameter] public string LeerText { get; set; } = "—";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Gebaeude.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _sortiert;
+    private Diagrammbereich? _bereich;
+    private Energieeinheit _einheit = Energieeinheit.MWh;
+
+    /// <summary>Steht der Schalter „sortiert"? Prüfhilfe für die Tests.</summary>
+    public bool Sortiert => _sortiert;
+
+    /// <summary>Der aufgezogene Ausschnitt; <c>null</c> = ganzes Jahr. Prüfhilfe.</summary>
+    public Diagrammbereich? Bereich => _bereich;
+
+    /// <summary>Die gewählte Anzeigeeinheit — Prüfhilfe für die Tests.</summary>
+    public Energieeinheit Anzeigeeinheit => _einheit;
+
+    protected override void OnInitialized() => _einheit = Einheit ?? Energieeinheit.Vorgabe;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =================================================================================
+    // Einheit
+    // =================================================================================
+
+    private IReadOnlyList<(int Id, string Text)> Einheitenwahl
+    {
+        get
+        {
+            var liste = new List<(int, string)>();
+            for (int i = 0; i < Energieeinheit.Alle.Count; i++)
+                liste.Add((i, Energieeinheit.Alle[i].Text));
+            return liste;
+        }
+    }
+
+    private int EinheitIndex
+    {
+        get
+        {
+            for (int i = 0; i < Energieeinheit.Alle.Count; i++)
+                if (ReferenceEquals(Energieeinheit.Alle[i], _einheit)) return i;
+            return 0;
+        }
+    }
+
+    private void EinheitWaehlen(int? id)
+    {
+        int n = id ?? 0;
+        if (n < 0 || n >= Energieeinheit.Alle.Count) return;
+
+        Energieeinheit neu = Energieeinheit.Alle[n];
+        if (ReferenceEquals(neu, _einheit)) return;
+
+        _einheit = neu;
+        EinheitGewaehlt?.Invoke(neu);
+    }
+
+    // =================================================================================
+    // Zahlen
+    // =================================================================================
+
+    /// <summary>Die Jahressumme in der gewählten Einheit — sie liegt in MWh vor.</summary>
+    private string Heizwaerme => _einheit.Formatiere(_einheit.AusMWh(Daten.HeizwaermeMwh));
+
+    private string Monatswert(int m)
+        => (Daten.MonatswerteMwh.Count > m)
+            ? _einheit.Formatiere(_einheit.AusMWh(Daten.MonatswerteMwh[m]))
+            : LeerText;
+
+    /// <summary>
+    /// Eine LEISTUNG bzw. eine Stundenzahl — sie folgt der Einheitenwahl NICHT, aber
+    /// der Anzeigekultur (zwei Nachkommastellen wie im Bestand).
+    /// </summary>
+    private string Zahl(double wert)
+        => wert.ToString("F2", System.Globalization.CultureInfo.CurrentCulture);
+
+    private string Vollbenutzung
+        => Daten.VollbenutzungsstundenH is null ? LeerText
+                                                : Zahl(Daten.VollbenutzungsstundenH.Value);
+
+    private string Monatsname(int m)
+        => (Monatsnamen is not null && Monatsnamen.Count > m) ? Monatsnamen[m] : "";
+
+    // =================================================================================
+    // Bild
+    // =================================================================================
+
+    /// <summary>
+    /// Die gezeichneten Bilder, nach Schalterstellung und Ausschnitt getrennt. Ohne den
+    /// Zwischenspeicher zeichnete der Kern bei JEDEM Zeichendurchgang ein 1 240 × 560
+    /// grosses PNG neu — dasselbe Muster wie <c>SimulationErgebnisSeite._bilder</c>.
+    /// </summary>
+    private readonly Dictionary<string, byte[]?> _bilder = new Dictionary<string, byte[]?>();
+
+    private byte[]? Bild
+    {
+        get
+        {
+            if (Bildauftrag is null) return null;
+
+            string schluessel = (_sortiert ? "1|" : "0|") + (_bereich?.ToString() ?? "");
+            if (_bilder.TryGetValue(schluessel, out byte[]? vorhanden)) return vorhanden;
+
+            byte[]? neu = Bildauftrag(_sortiert, _bereich);
+            _bilder[schluessel] = neu;
+            return neu;
+        }
+    }
+
+    /// <summary>
+    /// Ein Schalterwechsel verwirft den Achsenausschnitt: Ganglinie und Dauerlinie
+    /// tragen an derselben Stelle des Bildes verschiedene Stunden, und ein
+    /// mitgeschleppter Ausschnitt zeigte danach etwas anderes, als der Anwender
+    /// aufgezogen hat.
+    /// </summary>
+    private void SortiertGesetzt(bool wert)
+    {
+        _sortiert = wert;
+        _bereich = null;
+    }
+
+    private void BereichGewaehlt(Diagrammbereich bereich) => _bereich = bereich;
+
+    // =================================================================================
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(true);
+
+    /// <summary>
+    /// Esc UND Enter schließen. Der Dialog zeigt nur an und trägt einen einzigen Knopf —
+    /// hier kann Enter nichts versehentlich schreiben (Regel aus <c>EPOS.UI/CLAUDE.md</c>).
+    /// </summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+        => (e.Key == "Escape" || e.Key == "Enter") ? Geschlossen.InvokeAsync(true) : Task.CompletedTask;
+}

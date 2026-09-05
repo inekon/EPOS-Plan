@@ -50,7 +50,7 @@ Baustein, kein neues Renderer-Bild.**
 | `ae1c097` | iU9-W9.4: `WaermebedarfExternDialog`, `Form_Waermebedarf` gelöscht |
 | `3c89b6c` | iU9-W9.5: `BedarfsProfileDialog`, drei Bedarfsmasken gelöscht |
 | `59d984d` | iU9-W9.5a: Brauchwasser-Überlagerung im Gebäudekatalog |
-| `ecbbdc0` | iU9-W9.6: 207 Textschlüssel für die acht Masken, de und en |
+| `ecbbdc0` | iU9-W9.8: 207 Textschlüssel für die acht Masken, de und en |
 | `6c174e3` | iU9-W9.7: Formularkarte-Tests auf den Stand nach Welle 9 |
 
 **Das Blatt zuerst.** `GebaeudeWohnflaecheDialog` (W9.3) hat genau einen
@@ -976,3 +976,210 @@ Pfeilspalte noch selbst). Eine bunit-Probe sieht eine Stilregel nicht — Lehre 
 4. **Knöpfe**: Beide tragen ihren Satz im Klartext — auf Deutsch **und** auf Englisch —
    und einen Kurztext, der die Herkunft der Zeile nennt. Jeder bleibt gesperrt, solange
    in der jeweils anderen Liste nichts markiert ist.
+
+## Anwenderwunsch W9‑E‑2 (05.09.2026) — „Simulation…" im Gebäude-Dialog
+
+**Der Wunsch, wörtlich.** „Der Wärmebedarf vom Gebäude (Screenshot 1) sollte aus diesem
+Dialog (mit Button Simulation) aufgerufen werden können — analog wie aus dem
+Simulationsbereich (Screenshot 2)." Nachtrag desselben Tages: „(ohne Brauchwasser und
+ohne gesamt)".
+
+* **Screenshot 1** ist `EPOS.UI/Dialoge/Bedarf/GebaeudeDialog.razor`, Detailblock
+  **„Gebäude: Verbrauch"** — Gebäudename, Gebäudeart, Beschreibung, Wohn-/Nutzfläche,
+  Art der Angabe und der Knopf **„Ändern"**.
+* **Screenshot 2** ist der Reiter **Wärme-/Strombedarf** der Ergebnisseite
+  (`EPOS.UI/Seiten/Simulation/BedarfReiter.razor`): Kennzahlen, der Block „Wärmebedarf
+  je Bedarfsart", die Schalter „sortiert / Gesamt / Heizung / Brauchwasser" und darunter
+  die **Wärmelast-Jahresganglinie** (Renderer-Bild B1).
+
+Umgesetzt als **Teilwelle W9.8** (die Nummern W9.6 und W9.7 sind vergeben).
+
+| Hash | Betreff |
+|---|---|
+| `b429d36` | iU9-W9.8: Wärmebedarf EINES Gebäudes im Kern |
+| `3df47c8` | iU9-W9.8: Knopf „Simulation…" im Gebäudedialog |
+| `d9c7ee1` | iU9-W9.8: bunit-Fälle zum Gebäudebedarf |
+
+### Das Vorbild — es gibt keines
+
+`Form_Gebaeude` (gelöscht mit iU9‑W9.2, Commit `f960151`) trug im Detailblock **nur**
+`btn_Aendern`; ein Knopf „Simulation" kommt in ihrem Designer nicht vor. Die einzige
+Maske des Bestands mit diesem Namen war
+`Views/Simulation/Form_Simulation_Kurz` — sie ist mit **iF29** (iU9‑W0.2) stillgelegt,
+weil sie verwaist war, und rechnete etwas ganz anderes: `btn_Simulation_Click` las die
+Konfiguration des PROJEKTS, prüfte Klimaregion und Kaskadenplätze, rechnete
+`SimulationWaermebedarf` **und** `SimulationStrombedarf`, fuhr `Do_Simulation` und zeigte
+Restwärme, Reststrom und eine Deckungstorte. Das ist der ganze Lauf, nicht ein Gebäude.
+
+**Neu ist deshalb die AUSKUNFT, nicht die Rechnung.** Die Rechnung gab es längst — sie
+stand nur in der Gebäudeschleife des Laufs und war von außen nicht aufrufbar.
+
+### Der Rechenweg
+
+Zwei Methoden von `SimulationWaermebedarf` sind aus `Waermebedarf_berechnen`
+**herausgezogen**, Anweisung für Anweisung:
+
+| Methode | Was sie trägt | Woher |
+|---|---|---|
+| `KlimakalenderLesen(idKlimaregion)` | die 365 Tagessätze (`Sol_*`, `A_Temp`, `WE`, `TagTyp_W/NW`), die 8 760 Stundentemperaturen und `WochentagJan1` | der Block `// if (!DBGelesen)` samt der F3-Zeile darunter |
+| `HeizwaermeEinesGebaeudes(item, index, ziel)` | Bewohner/Fläche, `Berechnung_Gebaeude_Tageswerte`, `DBTagesVeteilung` und `StdWerte` in einen genullten Puffer | der Rumpf der Gebäudeschleife bis einschließlich `StdWerte` |
+
+Die Schleife des Laufs ruft jetzt genau diese Methode; `false` heißt „keine
+Tagesverteilung hinterlegt", und der Abbruch der Bedarfsrechnung bleibt an derselben
+Stelle wie bisher. **Es ist eine Auslagerung, keine zweite Rechnung** — deshalb ist der
+Referenzlauf byte-gleich.
+
+**Der Index ist ein Merkplatz, kein Rang.** `index` trägt allein
+`HeizwaermebedarfGeb[index]`, den Jahreswert für die Flächenrückrechnung in
+`Bewohner_und_Flaeche_berechnen`. Eine Rechnung für EIN Gebäude nimmt 0 und bekommt
+bitgleich dasselbe Ergebnis wie dieses Gebäude im Lauf.
+
+**`EPOS.Kern/Controller/GebaeudeBedarfCtrl`** setzt beides zusammen: Klimakalender
+lesen, das eine Gebäude aus `Abfrage_Projektgebaeude` heraussuchen, rechnen,
+`WattToKw`, und daraus Jahressumme (MWh), Höchstlast (kW), zwölf Monatswerte (MWh) und
+die Vollbenutzungsstunden (h/a). Ergebnistyp `GebaeudeBedarfErgebnis`.
+
+**Der Schlüssel ist die ZUORDNUNG**, nicht die Stamm-Id: Zwei gleiche Gebäude im Projekt
+teilen sich eine Stamm-Id, und der Dialog unterscheidet sie seit W9.2 über
+`Z_ProjektGebaeude.ID` (`GebaeudeProjektZeile.IdZ`, Befund W9‑B‑1). Die Sicht
+`Abfrage_Projektgebaeude` gibt diese Spalte nicht aus — sie führt `Tab_Gebaeude.ID` —,
+deshalb gibt es **eine** neue Abfrage:
+`SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?`. `ID_ProjektGebaeude` IST der
+Verweis auf `Z_ProjektGebaeude.ID` (derselbe Weg wie `Z_ProjGebCtrl.LiesProjekt`), und
+`Tab_Gebaeude.ID` ist zugleich der Schlüssel, mit dem der Lauf die Tagesverteilung sucht.
+
+**Die Jahressumme steht als `werte.Sum() / 1000` da** — eine float-Division wie im Lauf
+(`kanalHeizung.Sum() / 1000`), nicht `/ 1000.0`. Der Anwender legt die zwei Zahlen
+nebeneinander; eine double-Division ergäbe eine andere neunte Stelle.
+
+**Was NICHT eingeht**, weil es nicht am Gebäude hängt: die externen Wärmelastgänge
+(`Z_ProjektWaermebedarf`), Brauchwasser- und Prozessprofile und die anteilig verteilten
+Netzverluste. Die Zahl des Dialogs ist der reine Gebäudeanteil.
+
+### Was der Anwender sieht
+
+Im Detailblock „Gebäude: Verbrauch" steht neben „Ändern" der Knopf **„Simulation…"**.
+Er ist frei, sobald ein Gebäude der **Projektliste** markiert ist, und geht als
+**vierte Überlagerung** des Gebäudedialogs auf — kein zweites Fenster (Risiko R2). In
+der Katalogverwaltung (`Masken.GebaeudeAdmin`) gibt es ihn nicht: Dort steht kein
+Projekt hinter der Maske.
+
+`EPOS.UI/Dialoge/Bedarf/GebaeudeBedarfDialog.razor` zeigt:
+
+| Zeile | Einheit | Herkunft |
+|---|---|---|
+| Wärmebedarf Heizung | MWh (kWh wählbar) | `GebaeudeBedarfErgebnis.HeizwaermeMwh` |
+| max. Wärmelast | kW | Höchstwert der Stundenreihe |
+| Vollbenutzungsstunden | h/a | Jahresarbeit ÷ Höchstlast; ohne Höchstlast „—" |
+
+darunter der Schalter **„sortiert"** (Jahresdauerlinie), die **Jahresganglinie** als
+Renderer-Bild im Baustein `Diagramm` — Bildzoom und Datenzoom wie auf der Ergebnisseite
+— und die **Monatsübersicht** mit zwölf Werten.
+
+**Es ist dasselbe Bild wie B1 der Ergebnisseite.**
+`ChartRenderer.GanglinieNormiert(…, Achse.Monate | Achse.Jahresstunden, sortiert,
+fenster)` mit der Farbe `F_BEDARF` (Rot) — wörtlich der Aufruf aus
+`SimulationErgebnisHuelle.BildBedarfWaerme`. Nur die Reihe ist eine andere: hier steht
+**genau eine**, die Heizwärme dieses Gebäudes. **Kein neuer Renderer, kein neues Bild** —
+`ChartProben` bleibt bei 34 + 2.
+
+**Weg bleiben, wie ausdrücklich gewünscht** („ohne Brauchwasser und ohne gesamt"): der
+Block „Wärmebedarf je Bedarfsart" und die Schalter „Gesamt", „Heizung", „Brauchwasser".
+Der Dialog kennt EINE Reihe; der bunit-Fall
+`Es_gibt_weder_Brauchwasser_noch_Gesamt` ist die Wache dafür.
+
+**Die Einheit** folgt dem Anwenderentscheid **W8‑O‑5**: MWh als Vorgabe, kWh wählbar,
+gemerkt in `BedarfEinheitWahl` — derselben Ablage wie im Bedarfsprofil- und im
+Bedarfsergebnisdialog. Umgerechnet werden nur die Energiemengen; die Last bleibt kW, die
+Vollbenutzungsstunden bleiben Stunden (Hausregel: eine Energiemenge wird GENAU EINMAL
+umgerechnet, an der Anzeigekante).
+
+**Ein Schalterwechsel verwirft den Achsenausschnitt.** Ganglinie und Dauerlinie tragen
+an derselben Bildstelle verschiedene Stunden; ein mitgeschleppter Ausschnitt zeigte
+danach etwas anderes, als der Anwender aufgezogen hat.
+
+**Ohne Zahl eine Meldung, kein leerer Kasten.** Liefert die Hülle `null` — die Zeile ist
+eben erst aufgenommen und hat noch keine Projektkopie (`IdZ` ab 100 000), oder das
+Projekt führt keine Klimaregion —, meldet der Dialog `GEB_MSG_KEIN_BEDARF`, statt eine
+leere Überlagerung aufzumachen.
+
+### iOS: nichts zu tun — noch
+
+`GebaeudeDialog` ist auf iOS **nicht erreichbar**: `AppWurzel` kennt ihn nur als
+Assistentenseite 2 (`AssistentSeite.Seitentyp(2)`), und der Assistent geht dort über
+`IProjektQuelle.AssistentGaben` — die Standardumsetzung liefert `null`, und
+`EPOS.iOS/Dienste/IosProjektQuelle` überschreibt sie nicht („Solange die iOS-Hülle den
+Assistenten nicht bedient (iU11)…", `AppWurzel` :368). Solange das so ist, gibt es dort
+keinen Knopf und also auch nichts durchzureichen. **Wer den Assistenten auf iOS
+verdrahtet, denkt an `BedarfGaben`** — die Gabe ist dieselbe wie unter Windows und liegt
+vollständig im Kern.
+
+Die zwei Parametersatz-Wachen brauchen keinen Eintrag: `Parametersatzwache` (am Gerät)
+und `EPOS.UI.Tests/ParametersatzTests` (im Gate) führen keine Schlüsselliste, sondern
+halten die Gaben je Hülle per Reflexion gegen die `[Parameter]` ihrer Komponente. Die
+vier neuen Schlüssel (`BedarfGaben`, `BtnSimulationText`, `BtnSimulationHinweis`,
+`MeldungKeinBedarf`) laufen damit von selbst mit.
+
+### Texte
+
+Neu in beiden Sprachkatalogen **und** in `Resource.Designer.cs`: `GEB_BTN_SIMULATION`,
+`GEB_BTN_SIMULATION_HINWEIS`, `GEB_MSG_KEIN_BEDARF`, `GEBB_TITEL`,
+`GEBB_GRP_KENNZAHLEN`, `GEBB_LBL_HEIZWAERME`, `GEBB_LBL_VOLLBENUTZUNG`,
+`GEBB_EINHEIT_STUNDEN`. Wiederverwendet sind `SIMERG_LBL_MAX_WAERMELAST`,
+`SIM_CHK_SORTIERT`, `ALLG_LBL_EINHEIT`, `BERG_GRP_MONAT`,
+`CHART_TITEL_WAERMELAST_JAHRESGANGLINIE`, `CHART_ACHSE_WAERMELAST`, `ALLG_BTN_OK` und
+die zwölf `ALLG_MONAT_*`.
+
+### Nachweise
+
+**Kern** — `EPOS.Kern.Tests/GebaeudeBedarfCtrlTests` (13 Fälle): Reihe über null und
+keine Stunde über der Höchstlast; Monatssumme = Jahressumme; Vollbenutzungsstunden im
+Jahr; der Name kommt aus der Projektkopie; vier Leerfälle (kein Projekt, keine
+Klimaregion, keine Zuordnung, unbekannte Zuordnung) liefern kein Ergebnis und keine
+Ausnahme; zwei Zuordnungen desselben Gebäudes liefern verschiedene Zahlen.
+
+**Die Abnahmeprobe** ist der Vergleich mit dem LAUF, nicht mit einer eingefrorenen Zahl:
+
+| Projekt | Gebäude | Probe |
+|---|---|---|
+| 1007, 1017 | je **eines** | `HeizwaermeMwh` ist **bitgleich** zu `Waermebedarf_Gebaeude_Gesamt` des Laufs |
+| 1008 (zwei), 1039 (drei) | mehrere | die **Summe** der Einzelrechnungen ist dieselbe Zahl (relative Toleranz 1e‑5 — der Lauf summiert alle Gebäude als `float` und teilt danach) |
+
+**Oberfläche** — 20 bunit-Fälle: sieben in `GebaeudeDialogTests` (ohne Delegat kein
+Knopf; gesperrt ohne Markierung; die `IdZ` der markierten Zeile geht an den Kern; ohne
+Ergebnis eine Meldung; Esc schließt den Wirt nicht; in der Verwaltung kein Knopf) und
+dreizehn in `GebaeudeBedarfDialogTests` (Feldbestand, kein Brauchwasser-/Gesamt-Schalter
+und genau EIN Kontrollkästchen, „—" ohne Höchstlast, keine Monatstabelle ohne
+Monatswerte, Platzhalter ohne Bildauftrag, „sortiert" zeichnet neu, Datenzoom hinein und
+beim Umschalten wieder heraus, Einheitenwahl mit Umrechnung und Rückmeldung, Leistung
+bleibt kW, OK/Esc/Enter). Beide Klassen pinnen die Kultur auf de-DE.
+
+**Referenzlauf byte-gleich** (1030/1007/1017, `EPOS.Referenzlauf lauf` + `vergleich`):
+GESAMT PASS über 815 043 Werte, dazu `diff -r` über beide Ordner — alle **73**
+Ergebnisdateien identisch; nur `protokoll.txt` trägt Uhrzeit und Zielordner.
+**`SqlDialektPruefer`**: 1 200 SQL-Texte, **0 Fundstellen**.
+**`ChartProben`**: 36 Bilder, 0 Verstöße.
+
+### Abnahmepunkte A‑W9‑E‑2 (Windows)
+
+| # | Weg | Erwartung |
+|---|---|---|
+| 1 | Projekt **1007** öffnen → Kachel **„Gebäude"** → ein Gebäude in „ausgewählte Gebäude im Projekt" markieren | Der Knopf **„Simulation…"** steht neben „Ändern" und ist **frei** |
+| 2 | Zeile in „Gebäude in DB" markieren (die Projektmarkierung fällt weg) | „Simulation…" ist **gesperrt**, wie „Ändern" |
+| 3 | „Simulation…" drücken | Überlagerung mit Gebäudenamen, drei Kennzahlen und der Jahresganglinie; **kein** Brauchwasser, **kein** „Gesamt" |
+| 4 | Schalter **„sortiert"** | Das Bild wird zur **Dauerlinie**, die x-Achse trägt die Stundenmarken 2000/4000/6000/8000 |
+| 5 | Im Bild ein Rechteck aufziehen → „Bereich"; danach „1:1" | Das Bild zeigt den Ausschnitt und danach wieder das ganze Jahr |
+| 6 | Einheit auf **kWh** stellen | Wärmebedarf und Monatswerte × 1 000; **max. Wärmelast bleibt kW**, Vollbenutzungsstunden bleiben h/a |
+| 7 | Dialog schließen, Kachel **„Simulation Konfiguration…"** → Lauf → Reiter „Wärme-/Strombedarf" → „Details…" | **„Wärmebedarf Gebäude"** trägt dieselbe Zahl wie der Dialog (Projekt 1007 hat genau ein Gebäude) |
+| 8 | Katalogverwaltung („Gebäudedaten verwalten") öffnen | Es gibt **keinen** Knopf „Simulation…" |
+| 9 | Im Gebäudedialog eine Zeile **neu aufnehmen** und **vor** dem Speichern „Simulation…" | Meldung „Für dieses Gebäude lässt sich kein Wärmebedarf berechnen…", **keine** leere Überlagerung |
+
+### Hausregel
+
+**Eine Auskunft, die eine Zahl des Laufs wiederholt, RUFT den Rechenweg des Laufs — sie
+schreibt ihn nicht ab.** Wo das nicht geht, weil der Weg in einer Schleife steckt, wird
+der Schleifenrumpf ausgelagert und von beiden Seiten gerufen; die Probe ist dann kein
+eingefrorener Wert, sondern der **Vergleich gegen den Lauf selbst** (bei einem Gebäude
+bitgleich, bei mehreren als Summe). Ein zweiter Rechenweg für dieselbe Zahl läuft
+irgendwann auseinander, und dann sieht der Anwender zwei Zahlen und weiß nicht, welche
+gilt.

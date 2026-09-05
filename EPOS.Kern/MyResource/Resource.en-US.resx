@@ -12690,6 +12690,30 @@ Please check all entries!</value>
   <data name="GEB_BTN_DB_NEU" xml:space="preserve">
     <value>Building in DB new...</value>
   </data>
+  <data name="GEB_BTN_SIMULATION" xml:space="preserve">
+    <value>Simulation...</value>
+  </data>
+  <data name="GEB_BTN_SIMULATION_HINWEIS" xml:space="preserve">
+    <value>Calculate and show the heat requirement of the building selected in the project list</value>
+  </data>
+  <data name="GEB_MSG_KEIN_BEDARF" xml:space="preserve">
+    <value>The heat requirement of this building cannot be calculated. Please save the project and select a climate region.</value>
+  </data>
+  <data name="GEBB_TITEL" xml:space="preserve">
+    <value>Building heat requirement</value>
+  </data>
+  <data name="GEBB_GRP_KENNZAHLEN" xml:space="preserve">
+    <value>Key figures</value>
+  </data>
+  <data name="GEBB_LBL_HEIZWAERME" xml:space="preserve">
+    <value>Heat requirement, heating:</value>
+  </data>
+  <data name="GEBB_LBL_VOLLBENUTZUNG" xml:space="preserve">
+    <value>Full load hours:</value>
+  </data>
+  <data name="GEBB_EINHEIT_STUNDEN" xml:space="preserve">
+    <value>h/a</value>
+  </data>
   <data name="GEB_BTN_ENTFERNEN" xml:space="preserve">
     <value>Remove from project</value>
   </data>
