@@ -214,6 +214,200 @@ namespace EPOS.Kern.Tests
             Assert.Equal("", a.Saetze[0].Detailwert("AUFSTELLUNG"));
         }
 
+        // ==================================================================
+        // 2b — Die KAPUTTE Datei (Befund W13-B-1, Windows-Abnahme 05.09.2026)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Keine der vier Auspraegungen wirft beim Lesen</b> — auch nicht bei
+        /// einer Datei, die keine VDI-3805-Datei ist.
+        ///
+        /// <para><b>Warum der Fall hier steht.</b> Die Windows-Abnahme vom
+        /// 05.09.2026 meldete „Absturz bei Datei laden" (Befund W13-B-1). Der
+        /// Verdacht lag zuerst auf dem Parser: Eine Ausnahme aus
+        /// <see cref="KatalogImportAblauf.Lesen"/> kaeme im Wirt als unbehandelte
+        /// Ausnahme eines Blazor-Ereignisses an, und der WinForms-
+        /// <c>BlazorWebView</c> (10.0.100) fuehrt kein
+        /// <c>UnhandledException</c>-Ereignis — sie wuerde den Prozess beenden.
+        /// Dieser Fall haelt fest, dass der Verdacht den KERN nicht trifft: Das
+        /// Lesen faengt jeden Fehlschlag und macht eine
+        /// <c>IMP_KAT_PROT_LESEFEHLER</c>-Meldung daraus. Die Ursache liegt damit
+        /// im Wirt (Dateiwaehler im WebView2-Rueckruf, fehlende Fehlerschranke),
+        /// nicht im Ablauf.</para>
+        ///
+        /// <para>Sechs Bauarten von „kaputt" je Auspraegung — ein leeres Blatt,
+        /// Rohbytes, ein abgeschnittener Satz, das falsche Trennzeichen, ein
+        /// Verzeichnis statt einer Datei und ein Pfad, den es nicht gibt.</para>
+        /// </summary>
+        [Theory]
+        [InlineData(KatalogImportArt.Heizkessel)]
+        [InlineData(KatalogImportArt.Pufferspeicher)]
+        [InlineData(KatalogImportArt.Solarkollektoren)]
+        [InlineData(KatalogImportArt.Waermepumpe)]
+        public void EineKaputteDateiWirftNichtSondernMeldet(KatalogImportArt art)
+        {
+            if (art == KatalogImportArt.Heizkessel && !_db.Vorhanden) return;
+
+            string ordner = Werkstatt();
+            try
+            {
+                foreach (string pfad in KaputteDateien(ordner))
+                {
+                    KatalogImportAblauf a = Ablauf(art);
+
+                    // Die Zusicherung IST der Fall: eine Zahl statt einer Ausnahme.
+                    int n = a.Lesen(pfad);
+
+                    Assert.True(n >= 0, pfad);
+                    Assert.All(a.Saetze, s => Assert.NotNull(s));
+                }
+            }
+            finally
+            {
+                Aufraeumen(ordner);
+            }
+        }
+
+        /// <summary>
+        /// Eine Datei mit dem richtigen Satzkopf, aber abgeschnitten mitten im
+        /// Datensatz: Der Parser darf lesen, was er versteht — was danach kommt,
+        /// faellt weg oder wird eine Meldung. Geworfen wird nicht.
+        ///
+        /// <para>Die Probe <c>waermepumpen_hoval_ohne_abschluss.vdi</c> ist genau
+        /// dieser Fall aus dem Bestand; hier kommt der Zeuge fuer die uebrigen
+        /// Auspraegungen dazu, jeweils aus der ECHTEN Probe erzeugt.</para>
+        /// </summary>
+        [Theory]
+        [InlineData(KatalogImportArt.Pufferspeicher, "pufferspeicher_vaillant.vdi")]
+        [InlineData(KatalogImportArt.Solarkollektoren, "solarkollektoren_vaillant.vdi")]
+        [InlineData(KatalogImportArt.Waermepumpe, "waermepumpen_hoval.vdi")]
+        public void EineAbgeschnitteneProbeWirftNicht(KatalogImportArt art, string probe)
+        {
+            string ordner = Werkstatt();
+            try
+            {
+                string voll = File.ReadAllText(Probe(probe), AnsiEncoding.Get());
+                string pfad = Path.Combine(ordner, "abgeschnitten.vdi");
+                File.WriteAllText(pfad, voll.Substring(0, voll.Length * 2 / 3), AnsiEncoding.Get());
+
+                KatalogImportAblauf a = Ablauf(art);
+
+                Assert.True(a.Lesen(pfad) >= 0);
+            }
+            finally
+            {
+                Aufraeumen(ordner);
+            }
+        }
+
+        /// <summary>
+        /// <b>Ein Lesefehler wird ein SATZ</b>, kein blosser Schluessel. Der Wirt
+        /// zeigt ihn im Warnbanner; er muss also uebersetzbar sein und den Wortlaut
+        /// der Ausnahme tragen.
+        /// </summary>
+        [Fact]
+        public void DerLesefehlerTraegtDenWortlautDerAusnahme()
+        {
+            string ordner = Werkstatt();
+            try
+            {
+                // Ein VERZEICHNIS statt einer Datei: File.ReadAllText wirft
+                // zuverlaessig und auf jeder Plattform.
+                KatalogImportAblauf a = Ablauf(KatalogImportArt.Pufferspeicher);
+                Assert.Equal(0, a.Lesen(ordner));
+
+                SpeicherEngine.PruefMeldung fehler = Assert.Single(
+                    a.Meldungen, m => m.Schluessel == "IMP_KAT_PROT_LESEFEHLER");
+                Assert.Equal(SpeicherEngine.PruefStufe.Fehler, fehler.Stufe);
+                Assert.Single(fehler.Werte);
+                Assert.NotEqual("", fehler.Werte[0]);
+            }
+            finally
+            {
+                Aufraeumen(ordner);
+            }
+        }
+
+        /// <summary>
+        /// <b>Vorpruefung und Ausfuehrung halten leere und unsinnige Eingaben
+        /// aus.</b> Sie sind die zwei Stellen NACH dem Lesen, an denen der Wirt im
+        /// Blazor-Ereignis steht — was hier wirft, wirft dort.
+        /// </summary>
+        [Fact]
+        public void VorpruefungUndAusfuehrungWerfenNichtBeiLeerenEingaben()
+        {
+            KatalogImportAblauf a = Ablauf(KatalogImportArt.Pufferspeicher);
+
+            Assert.Empty(a.Vorpruefen(null));
+            Assert.Empty(a.Vorpruefen(new List<int>()));
+
+            // Indizes, die es nicht gibt: uebergangen, nicht geworfen.
+            Assert.Empty(a.Vorpruefen(new List<int> { -1, 7, 4711 }));
+
+            Assert.Equal(0, a.Ausfuehren(0, null).Markiert);
+
+            // Eine Entscheidung ohne Pruefung und ohne Kandidat: ein Fehler in der
+            // Bilanz, kein Wurf (Kommentar Form_Heizkessel_einlesen:298).
+            ImportBilanz bilanz = a.Ausfuehren(1, new List<KonfliktEntscheidung>
+            {
+                new KonfliktEntscheidung { Aktion = KonfliktAktion.Importieren }
+            });
+            Assert.Equal(1, bilanz.Fehler);
+            Assert.False(bilanz.EtwasGeschrieben);
+        }
+
+        // ------------------------------------------------------------------
+        // Werkstatt fuer die kaputten Dateien
+        // ------------------------------------------------------------------
+
+        /// <summary>Ein eigener Ordner je Fall — er faellt im <c>finally</c>.</summary>
+        private static string Werkstatt()
+        {
+            string ordner = Path.Combine(Path.GetTempPath(),
+                "epos-w13b1-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(ordner);
+            return ordner;
+        }
+
+        private static void Aufraeumen(string ordner)
+        {
+            try { if (Directory.Exists(ordner)) Directory.Delete(ordner, true); }
+            catch { /* das Aufraeumen darf keinen Fall zu Fall bringen */ }
+        }
+
+        /// <summary>Sechs Bauarten von „kaputt", alle im selben Ordner.</summary>
+        private static List<string> KaputteDateien(string ordner)
+        {
+            var liste = new List<string>();
+
+            string leer = Path.Combine(ordner, "leer.vdi");
+            File.WriteAllText(leer, "", AnsiEncoding.Get());
+            liste.Add(leer);
+
+            string bytes = Path.Combine(ordner, "rohbytes.vdi");
+            var muell = new byte[512];
+            new Random(1307).NextBytes(muell);
+            File.WriteAllBytes(bytes, muell);
+            liste.Add(bytes);
+
+            string stumpf = Path.Combine(ordner, "stumpf.vdi");
+            File.WriteAllText(stumpf, "700;1;2;3", AnsiEncoding.Get());
+            liste.Add(stumpf);
+
+            string komma = Path.Combine(ordner, "falschestrennzeichen.vdi");
+            File.WriteAllText(komma,
+                "010,1,2,Musterfirma" + Environment.NewLine +
+                "700,1,2,3,Musterkessel,25,0,0,0,0", AnsiEncoding.Get());
+            liste.Add(komma);
+
+            // Ein Verzeichnis: File.ReadAllText wirft, der Ablauf meldet.
+            liste.Add(ordner);
+
+            liste.Add(Path.Combine(ordner, "gibt-es-nicht.vdi"));
+
+            return liste;
+        }
+
         /// <summary>Eine fehlende Datei ergibt 0 Saetze und eine Meldung, keinen Wurf.</summary>
         [Fact]
         public void EineFehlendeDateiErgibtEineMeldung()
