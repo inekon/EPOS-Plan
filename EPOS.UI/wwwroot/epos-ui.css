@@ -90,6 +90,12 @@
     /* Mindestgroesse eines Beruehrungsziels (M2, Touchbetrieb). */
     --epos-touchziel: 44px;
 
+    /* Das Titelband der Startseite - Form_Start.label20 stand WEISS auf
+       Color.FromArgb(104, 118, 223) (Designer :1085). Dieselbe Farbfamilie
+       tragen die Sinnbilder der 21 Kacheln, die aus derselben Zeit stammen. */
+    --epos-marke-flaeche: #6876df;
+    --epos-marke-text: #ffffff;
+
     /* ---- Gespraechsverlauf des KI-Assistenten (iU9-W15b.0h) ----------
        Die acht Farben und zwei Schriftschnitte, die Form_KiChat.SchreibeZeile
        je vergeben hat (Vermessung § 6.l) - sie werden im Baustein
@@ -1508,9 +1514,13 @@ body {
    UcWirtschaftlichkeit.KachelnBauen) legt das Raster so viele Karten
    nebeneinander, wie bei --epos-kachel-min Platz haben.
    -------------------------------------------------------------------------- */
+/* min(..., 100%) statt der blossen Mindestbreite: Ist das Fenster schmaler als
+   eine Kachel, schrumpft die Spalte mit, statt waagerecht ueber den Rand zu
+   laufen. Das faellt erst auf, seit die Startseite mit 404 px die Kachelbreite
+   des Vorlaeufers verlangt (Anwenderwunsch 05.09.2026). */
 .epos-kachelraster {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--epos-kachel-min, 220px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--epos-kachel-min, 220px), 100%), 1fr));
     gap: var(--epos-rand);
 }
 
@@ -3842,24 +3852,42 @@ body {
 
 /* ---- Kopfband ---------------------------------------------------------- */
 
+/* ZWEI ZEILEN, nicht eine (Anwenderwunsch 05.09.2026). Der Vorlaeufer legte
+   das Titelband pictureBox2 (1 273 x 93 ab (23,12)) UEBER die zwei Kopfkaesten
+   (y=119); nebeneinander standen nur die Kaesten. */
 .epos-startseite-kopf {
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 16px;
+    flex-direction: column;
+    gap: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--epos-rahmen-leise);
 }
 
 .epos-startseite-marke {
-    flex: 1 1 200px;
     min-width: 0;
 }
 
+/* label20: Segoe UI Semibold 26 pt fett, WEISS auf #6876DF - das Titelband des
+   Vorlaeufers. Es steht nur ohne Kopfleiste darueber (W16b-E-4), also auf iOS;
+   unter Windows nennt das Kopfband des Hauptfensters dieselbe Gattung. */
 .epos-startseite-gattung {
-    font-size: var(--epos-schriftgroesse-kartentitel);
+    display: block;
+    padding: 6px 14px;
+    font-size: 26px;
     font-weight: 700;
-    color: var(--epos-karte-titel);
+    line-height: 1.2;
+    color: var(--epos-marke-text);
+    background: var(--epos-marke-flaeche);
+    border-radius: var(--epos-ecke);
+}
+
+/* Die zwei Kaesten nebeneinander: Klima links (panelKlima, 677 breit), Projekt
+   rechts (panelVariante, 489 breit) - das Verhaeltnis des Designers. */
+.epos-startseite-kaesten {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 /* Die zwei Kaesten des Vorlaeufers (panelVariante, panelKlima): abgerundeter
@@ -3876,6 +3904,15 @@ body {
     border-radius: var(--epos-ecke);
 }
 
+.epos-startseite-klima {
+    flex: 1 1 460px;
+}
+
+.epos-startseite-projekt {
+    flex: 0 1 380px;
+    margin-left: auto;
+}
+
 .epos-startseite-projekt > label,
 .epos-startseite-klima > label {
     font-weight: 700;
@@ -3888,8 +3925,18 @@ body {
     min-width: 160px;
 }
 
+/* pictureBox4 (globe1) stand als 65 x 37 ganz links im Klimakasten. */
+.epos-startseite-globus {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+}
+
+/* label22: Segoe UI 8,25 pt, also die kleinste Schrift der Maske - sie stand
+   RECHTS neben dem Speichernknopf, nicht in einer eigenen Zeile. */
 .epos-startseite-klimahinweis {
-    flex: 1 1 100%;
+    flex: 1 1 140px;
+    font-size: 11px;
     color: var(--epos-text-leise);
 }
 
@@ -3909,6 +3956,14 @@ body {
 }
 
 /* ---- Ein Reiterblatt --------------------------------------------------- */
+
+/* tabControl_Wizard trug Segoe UI Semibold 12 pt FETT (= 16 px) - die
+   Reiterleiste des Bestands war deutlich groesser als die Dialogschrift. Nur
+   die der Startseite; die uebrigen Reiter des Hauses bleiben, wie sie sind. */
+.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+}
 
 .epos-startreiter {
     display: flex;
@@ -3930,8 +3985,17 @@ body {
     color: var(--epos-karte-titel);
 }
 
+/* Die UEBERSCHRIFT eines Reiters war groesser als ein Kacheltitel: label25/27/29
+   trugen Segoe UI Semibold 16 pt fett (= 21 px), die Erlaeuterung darunter
+   (label24/26/28) 12 pt in DimGray. Der Kasten der Projektzusammenfassung
+   behaelt die Kacheltitelgroesse - er ist keine Reiterueberschrift. */
+.epos-startreiter-kopf .epos-startreiter-titel {
+    font-size: 21px;
+}
+
 .epos-startreiter-text {
     margin: 2px 0 0 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
     color: var(--epos-text-leise);
 }
 
@@ -3939,6 +4003,32 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+}
+
+/* ---- Eine Kachel der Startseite ---------------------------------------
+
+   SINNBILD LINKS, TITEL DANEBEN, ERLAEUTERUNG DARUNTER - die Anordnung des
+   Vorlaeufers (Anwenderwunsch 05.09.2026). Gemessen an pBox_Gebaude
+   (404 x 185 ab (23,174)): das Sinnbild sass oben links, label_pBox_Gebaude
+   136 px weiter rechts auf halber Bildhoehe, label2_pBox_Gebaude darunter ueber
+   die ganze Breite. Der Reihenumbruch macht das ohne zusaetzliches Markup: Das
+   Bild und der Titel teilen sich die erste Zeile, Erlaeuterung und Statuszeile
+   nehmen je eine volle. */
+.epos-startreiter .epos-kachel {
+    flex-flow: row wrap;
+    align-items: flex-start;
+    column-gap: 16px;
+    row-gap: 6px;
+}
+
+.epos-startreiter .epos-kachel-titel {
+    flex: 1 1 auto;
+    align-self: center;
+}
+
+.epos-startreiter .epos-kachel-beschreibung,
+.epos-startreiter .epos-kachel-status {
+    flex: 1 1 100%;
 }
 
 /* Die Weiche der Solarthermiekachel (radioButton_KollektorProfil /
@@ -3998,6 +4088,13 @@ body {
     gap: 8px;
     padding-top: 8px;
     border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+/* btn_Zurueck und btn_Weiter waren 132 x 35 und trugen Segoe UI Semibold 12 pt
+   fett - zwei gleich breite Knoepfe am rechten Rand. */
+.epos-startseite-fuss .epos-knopf {
+    min-width: 132px;
+    font-weight: 700;
 }
 
 /* ==========================================================================

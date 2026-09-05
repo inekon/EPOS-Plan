@@ -81,36 +81,49 @@ else
             </div>
         }
 
-        <div class="epos-startseite-projekt">
-            <label for="epos-start-variante">@ProjektLabelText</label>
-            <select id="epos-start-variante" class="epos-eingabe"
-                    value="@_varianteGewaehlt.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                    @onchange="BeiVariante">
-                @if (_varianten.Count == 0)
-                {
-                    <option value="0">@PlatzhalterText</option>
-                }
-                @foreach ((int Id, string Name) eintrag in _varianten)
-                {
-                    <option value="@eintrag.Id.ToString(System.Globalization.CultureInfo.InvariantCulture)">@eintrag.Name</option>
-                }
-            </select>
-            <span class="@Statusklasse" aria-label="@ProjektLabelText">@Statuszeichen</span>
-        </div>
+        @* DIE ZWEI KOPFKAESTEN stehen NEBENEINANDER, Klima links und Projekt
+           rechts - so wie panelKlima (677 x 65 ab x=79) und panelVariante
+           (489 x 65 ab x=776) auf der Flaeche von 1 273 (Designer). Auch die
+           Tabulatorreihenfolge ist die des Bestands: comboBox_Klima trug
+           TabIndex 1, comboBox_Varianten 113. *@
+        <div class="epos-startseite-kaesten">
 
-        <div class="epos-startseite-klima">
-            <label for="epos-start-klima">@KlimaLabelText</label>
-            <select id="epos-start-klima" class="epos-eingabe"
-                    value="@_klimaregion" @onchange="BeiKlima">
-                <option value="">@(ProjektOffen ? KlimaRegionText : KlimaPlatzhalterText)</option>
-                @foreach (string region in _klimaregionen)
-                {
-                    <option value="@region">@region</option>
-                }
-            </select>
-            <button type="button" class="epos-knopf" disabled="@(!ProjektOffen)"
-                    @onclick="KlimaSpeichernJetzt">@KlimaSpeichernText</button>
-            <span class="epos-startseite-klimahinweis">@KlimaHinweisText</span>
+            <div class="epos-startseite-klima">
+                @* pictureBox4 (globe1, 65 x 37) stand ganz links im Kasten. *@
+                <img class="epos-startseite-globus" alt=""
+                     src="_content/EPOS.UI/bilder/start/globe.png" />
+                <label for="epos-start-klima">@KlimaLabelText</label>
+                <select id="epos-start-klima" class="epos-eingabe"
+                        value="@_klimaregion" @onchange="BeiKlima">
+                    <option value="">@(ProjektOffen ? KlimaRegionText : KlimaPlatzhalterText)</option>
+                    @foreach (string region in _klimaregionen)
+                    {
+                        <option value="@region">@region</option>
+                    }
+                </select>
+                <button type="button" class="epos-knopf" disabled="@(!ProjektOffen)"
+                        @onclick="KlimaSpeichernJetzt">@KlimaSpeichernText</button>
+                <span class="epos-startseite-klimahinweis">@KlimaHinweisText</span>
+            </div>
+
+            <div class="epos-startseite-projekt">
+                @* label_ProjektStatus stand LINKS vor der Beschriftung (x=13
+                   gegen x=53), nicht hinter dem Feld. *@
+                <span class="@Statusklasse" aria-label="@ProjektLabelText">@Statuszeichen</span>
+                <label for="epos-start-variante">@ProjektLabelText</label>
+                <select id="epos-start-variante" class="epos-eingabe"
+                        value="@_varianteGewaehlt.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                        @onchange="BeiVariante">
+                    @if (_varianten.Count == 0)
+                    {
+                        <option value="0">@PlatzhalterText</option>
+                    }
+                    @foreach ((int Id, string Name) eintrag in _varianten)
+                    {
+                        <option value="@eintrag.Id.ToString(System.Globalization.CultureInfo.InvariantCulture)">@eintrag.Name</option>
+                    }
+                </select>
+            </div>
         </div>
     </header>
 
