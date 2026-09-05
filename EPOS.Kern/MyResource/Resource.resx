@@ -5461,7 +5461,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>nur die ersten {0} Varianten dargestellt, {1} weitere ausgeblendet</value>
   </data>
   <data name="BK_MSG_VERGLEICH_UMFANG" xml:space="preserve">
-    <value>{0} Merkmalszeile(n) für das Stammprojekt und {1} Variante(n).</value>
+    <value>{0} Komponentenzeile(n) für das Stammprojekt und {1} Variante(n).</value>
   </data>
   <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
     <value>Unterschiede zum Stammprojekt — Variante „{0}“</value>

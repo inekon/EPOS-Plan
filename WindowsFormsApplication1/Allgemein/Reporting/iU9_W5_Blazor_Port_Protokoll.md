@@ -728,3 +728,145 @@ sehen unverändert aus, obwohl im selben Programm zwölf Blöcke umgezogen sind.
 `StilblattTests`, `ParametersatzTests`, `KatalograhmenTests` und `KatalogdialogTests`
 unverändert grün — das Stilblatt ist nicht angefasst worden, die Klammerbilanz also
 unberührt.
+
+
+## Windows-Abnahme 05.09.2026 — Übersicht: nur verwendete Erzeugerkomponenten (W5‑E‑2)
+
+> **Wortlaut des Anwenders:** „Gewerk Anlage gibt es nicht. Dort stehen Parameter.
+> Dargestellt werden nur die Erzeugerkomponenten, die verwendet werden, keine Parameter
+> (wie unter WinForms)."
+
+Gemeint ist die Tabelle **„Komponenten im Vergleich — Stammprojekt und Varianten"** der Seite
+**Berichte & Kosten → Übersicht** (`EPOS.UI/Seiten/Berichte/UebersichtSeite.razor`), und zwar
+die **Gegenüberstellung** — die Ansicht, die steht, wenn im Auswahlfeld der Stamm gewählt ist.
+Das Bildschirmfoto zeigt sie für Projekt **1042 „Booster-Kette mit Kombi-Speicher"** mit seiner
+Variante **1044 „Schichtspeicher"**: vier Spalten (Gewerk · Merkmal · Stamm · Schichtspeicher),
+beginnend mit dem Gewerk „Anlage" und darunter Betriebsart, Vorlauf 45 °C, Rücklauf 35 °C,
+bivalenter Betrieb, Abschaltpunkt, Heizstab, Grenzleistung, PV-Leistung, Neigung, Azimut,
+Kollektormodulanzahl, Solaranteil, Speichervolumen (Anlage) …
+
+### 1. Das Vorbild — nachgesehen, nicht geraten
+
+| Fundstelle | Was dort steht |
+|---|---|
+| `Views/BerichteKosten/UcBkUebersicht.cs` im Stand vor der Löschung (Commit `ff4e6f7`, Vorgängerfassung, 1 604 Z.), Methode `FuelleVergleich` ab Z. 1 025 | Die WinForms-Maske lief über `GewerkeInReihenfolge()` — die Gewerke in der Reihenfolge von `AbweichungsErmittler.Felder`, also **einschließlich „Anlage" und „Gebäude"**. Der Anlagenblock war nur durch den Artefakt-Guard `AnlagenEinheitlich(versionen)` gedeckelt (Nutzerbefund 28.08.2026, Commit `a533b20`): Er entfiel, wenn die Versionen VERSCHIEDENE Anlagengewerke führen. Bei 1042/1044 führen beide dasselbe → er stand da. **Die Maske hat den Block also gezeigt**; die Erinnerung „wie unter WinForms" trifft auf diese Maske nicht zu |
+| dieselbe Datei, Z. 1 036 f. | Der Quelltext benennt den Sachverhalt selbst: *„«Anlage» und «Gebäude» sind Konfigurationsblöcke ohne Komponentenbestand; nur die echten Gewerke der `GewerkTabellen` führen eine Stückzahl."* |
+| ältere Fassung derselben Maske (Commit `3ffb179`), `ZeigeStammKomponenten` ab Z. 665 | Die **erste** Fassung (Gewerk · Merkmal · Wert, nur der Stamm) zeigte den Anlagenblock ebenfalls — der Befund ist so alt wie die Maske |
+| `Views/Varianten/Form_Variantentest.cs` im Stand vor der Stilllegung (Commit `16b106a`, Vorgängerfassung, 473 Z.) | Der mit iU9‑W0 stillgelegte Altdialog „Projektvarianten" führte **überhaupt keine** Komponententabelle (nur Projektliste, Simulationslauf, Wirtschaftlichkeit, Bericht) — er kommt als Vorbild nicht in Frage |
+| **`EPOS.Kern/Allgemein/Bericht/Bausteine/BausteineProjekt.cs:218` und `:237`** | **Das Vorbild, das es wirklich gibt.** Der Berichtsbaustein „Komponentenübersicht" zählt seit jeher **allein über `ProjektDetails.GewerkTabellen`** — Wärmepumpe, BHKW, Spitzenkessel, Solarthermie, Photovoltaik, Pufferspeicher, Stromspeicher. Kein „Anlage", kein „Gebäude". Die Kenndatentabellen darunter überspringen ein Gewerk, das keine Version führt (`HatGewerk`). Dieselbe Zählung nimmt `ExcelBerichtGenerator.cs:239` |
+
+**Der Befund gilt trotzdem, und er ist ein Fachbefund, kein Erinnerungsfehler.** Die
+Gegenüberstellung heißt „**Komponenten** im Vergleich"; ein Block ohne Komponentenbestand
+gehört nicht hinein. Gemessen am Projekt des Bildschirmfotos standen dort **21 belegte
+Anlagenmerkmale und 4 Gebäudemerkmale** — 25 Parameterzeilen über 10 Komponentenzeilen
+(Gegenprobe, siehe § 4).
+
+### 2. Umsetzung
+
+**Die Zeilenbildung ist in den Kern gezogen**, weil sie eine Fachaussage ist und beide
+Schalen sie brauchen (iOS hätte sie sonst ein zweites Mal):
+
+- **Neu: `EPOS.Kern/Allgemein/Bericht/KomponentenVergleich.cs`** mit dem anzeigefreien
+  Zeilentyp `KomponentenVergleichZeile` (Gewerk · Merkmal · Zellen · Kurztexte) und
+  `Gegenueberstellung(versionen, kurztextTrenner)`. Sie läuft über
+  **`ProjektDetails.GewerkTabellen`** statt über `AbweichungsErmittler.Felder`, überspringt
+  jedes Gewerk mit Stückzahl 0 in **allen** Versionen und liefert je verwendetem Gewerk eine
+  Kopfzeile „Anzahl Komponenten" und darunter eine Zeile je Komponente mit ihrem Bezeichner;
+  die Merkmale der Komponente stehen wie bisher im Kurztext der Zelle.
+- **`WindowsFormsApplication1/Views/BerichteKosten/UebersichtSeiteGaben.cs`**: `FuelleVergleich`
+  schrumpft von 88 auf 10 Zeilen und bildet nur noch die Kernzeilen auf `VergleichZeile` ab.
+  Ersatzlos gefallen sind der Zweig für die nicht zählbaren Gewerke, der Artefakt-Guard
+  `AnlagenEinheitlich` (er hatte hier keinen Gegenstand mehr), `GewerkeInReihenfolge()` und
+  die Konstante `OHNE_WERT` (sie steht jetzt im Kern).
+- **Die Merkmalzeilen entfallen NUR in dieser einen Ansicht.** `AbweichungsErmittler.Felder`,
+  `AbweichungsErmittler.Vergleiche` und `AnlagenEinheitlich`/`AnlagenVergleichbar` sind
+  **unverändert**: Die Unterschiedsansicht einer Variante zeigt weiter jede geänderte
+  Betriebsart, Temperatur, Neigung … — dort ist eine Zeile eine **Änderung** und trägt den
+  Übernahmeknopf (`MerkmalUebernahmeCtrl`). Ebenso unverändert bleibt der Bericht.
+- **Ein Text ist nachgezogen** (`Resource.resx` / `Resource.en-US.resx`):
+  `BK_MSG_VERGLEICH_UMFANG` heißt jetzt „**{0} Komponentenzeile(n)** für das Stammprojekt und
+  {1} Variante(n)." (en: „{0} component row(s) …") statt „{0} Merkmalszeile(n) …" — gezählt
+  werden keine Merkmale mehr. Kein neuer Schlüssel, kein toter Schlüssel; `Resource.Designer.cs`
+  ist unberührt, weil sich nur der WERT geändert hat.
+- **Der Titel bleibt** `BK_LBL_KOMPONENTEN_VERGLEICH` = „Komponenten im Vergleich —
+  Stammprojekt und Varianten": Er stimmt jetzt erst recht.
+- **Kein CSS, kein SQL.** Die Tabelle, ihre Spalten, die Kappung auf acht Variantenspalten
+  (`MAX_VARIANTENSPALTEN`) und der Rahmen der Hausregel W9‑B‑2 sind unangetastet.
+
+### 3. Was der Anwender jetzt sieht (Projekt 1042 mit Variante „Schichtspeicher")
+
+| Gewerk | Merkmal | Stamm | Schichtspeicher |
+|---|---|---|---|
+| **Wärmepumpe** | Anzahl Komponenten | 2 | 2 |
+| | Komponente 1 | CS6800iAW MB + AW 10 OR-T | CS6800iAW MB + AW 10 OR-T |
+| | Komponente 2 | CS7800iLW 16 | CS7800iLW 16 |
+| **Spitzenkessel** | Anzahl Komponenten | 1 | 1 |
+| | Komponente | ecoTEC plus VC 1206/5-5 | ecoTEC plus VC 1206/5-5 |
+| **Pufferspeicher** | Anzahl Komponenten | 4 | 4 |
+| | Komponente 1 … 4 | Puffer 3000Ltr … | Puffer 3000Ltr … |
+
+**Zehn Zeilen statt fünfunddreißig.** BHKW, Solarthermie, Photovoltaik und Stromspeicher
+erscheinen gar nicht — das Projekt führt sie nicht.
+
+### 4. Nachweise
+
+- **`EPOS.Kern.Tests/KomponentenVergleichTests.cs` (neu, 7 Fälle)** — gegen die
+  **Testdatenbank** (`Referenzlaeufe/Kenndaten_Test.sqlite`, Arbeitskopie über die Vorrichtung
+  `TestDatenbank`) und gegen synthetische Bestände:
+  **V1** keine Zeile trägt „Anlage"/„Gebäude" oder eines der vierzehn Anlagenmerkmale ·
+  **V2** die Gewerkspalte führt genau `Wärmepumpe, Spitzenkessel, Pufferspeicher` in der
+  Reihenfolge der `GewerkTabellen` · **V3** zehn Zeilen, Kopfzeile mit Stückzahl, je Version
+  eine Zelle, die Bezeichner der verbauten Geräte · **V4** der Kurztext nennt die Merkmale
+  der Komponente ohne ihren Bezeichner · **V5** ein Gewerk, das NUR die Variante führt,
+  erscheint mit „nicht vorhanden" beim Stamm und dem Strich in der Komponentenzeile ·
+  **V6** ohne Erzeugerkomponenten bleibt die Tabelle leer (leere Liste, `null`, leeres
+  Projekt) · **V7** die Beschriftung „Komponente"/„Komponente n" kommt aus dem
+  Ressourcenkatalog und wechselt mit der Sprache (de/en).
+- **Gegenprobe zum Befund** (einmalig gefahren, nicht eingecheckt): Für 1042/1044 ist
+  `AnlagenEinheitlich` **wahr**, es sind **21** Anlagen- und **4** Gebäudemerkmale belegt —
+  die Änderung entfernt also wirklich die 25 Zeilen des Bildschirmfotos und nicht etwas
+  anderes.
+- **`EPOS.UI.Tests/Seiten/UebersichtSeiteTests.cs`**, neuer Fall
+  `W5E2_Die_Gegenueberstellung_zeigt_nur_Erzeugerkomponenten`: Die SEITE zeigt die sechs
+  Zeilen des Stands, die Gewerkspalte führt die drei Erzeugergewerke, kein Anlagenparameter
+  steht im Tabellentext, und die Gegenüberstellung trägt vier Spalten **ohne** Aktionsspalte.
+- `dotnet build WindowsFormsApplication1 -c Release` → **0 Fehler, 6 Warnungen** (die
+  bekannten: 2 × CS0108, 2 × CS0109, WFO0003, CA2255) — unverändert zum Ausgangsstand.
+- `dotnet test EPOS.Kern.Tests -c Release` → **1 197** grün (1 190 auf dem Zweigstand,
+  dazu die sieben neuen Fälle), unter
+  `LANG=de_DE.UTF-8` **und** `LANG=en_US.UTF-8`.
+- `dotnet test EPOS.UI.Tests -c Release` → **2 649** grün (2 648 auf dem Zweigstand, dazu
+  der neue Fall), beide Kulturen.
+- `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite`
+  → **1 207 SQL-Texte, 0 Fundstellen**.
+- Die zwei Kern-Wächter (`Program.*` und Plattform) melden **nichts**.
+- **Referenzlauf unberührt**: Der Rechenweg ist nicht angefasst; geändert ist eine
+  Anzeigetabelle und ein Anzeigetext.
+
+**Grenze des Nachweises.** Geprüft auf Linux, ohne Oberfläche. Wie die Tabelle in WebView2
+aussieht — insbesondere, ob die gewonnene Höhe die Pufferspeicherzeilen ohne Rollen zeigt —,
+sieht der Anwender am Gerät.
+
+### 5. Abnahmepunkte A‑W5‑E‑2
+
+| # | Was der Anwender sehen muss |
+|---|---|
+| **A‑W5‑E‑2‑1** | Berichte & Kosten → Übersicht, Projekt „Booster-Kette mit Kombi-Speicher", im Auswahlfeld **den Stamm** wählen: Die Tabelle beginnt mit dem Gewerk **„Wärmepumpe"**. Ein Gewerk „Anlage" gibt es **nicht mehr**. |
+| **A‑W5‑E‑2‑2** | Keine Parameterzeile mehr: Betriebsart, Vorlauf-/Rücklauftemperatur, bivalenter Betrieb, Abschaltpunkt, Heizstab, Grenzleistung, PV-Leistung, Neigung, Azimut, Kollektormodulanzahl, Solaranteil, Speichervolumen (Anlage) und Wärmequelle stehen dort nicht. Ebenso wenig der Block **„Gebäude"** (Wärmebedarf, Wohn-/Nutzfläche, Warmwasserbedarf, Luftwechselrate). |
+| **A‑W5‑E‑2‑3** | Je Gewerk steht eine fette Kopfzeile mit **„Anzahl Komponenten"** und der Stückzahl je Spalte, darunter je Komponente eine Zeile: „Komponente 1", „Komponente 2" … Führt ein Gewerk genau eine, heißt die Zeile nur **„Komponente"**. |
+| **A‑W5‑E‑2‑4** | **Nicht verwendete Gewerke fehlen ganz.** Im Beispielprojekt erscheinen nur Wärmepumpe (2), Spitzenkessel (1) und Pufferspeicher (4) — kein BHKW, keine Solarthermie, keine Photovoltaik, kein Stromspeicher. |
+| **A‑W5‑E‑2‑5** | Der **Mauszeiger auf einer Komponentenzelle** zeigt weiter deren Merkmale (Hersteller, Typ, Nennleistung …) als Kurztext — das ist der Platz, an dem die Einzelwerte jetzt stehen. |
+| **A‑W5‑E‑2‑6** | Die Statuszeile unter der Tabelle nennt jetzt **„… Komponentenzeile(n) für das Stammprojekt und n Variante(n)."** (vorher „Merkmalszeile(n)"). |
+| **A‑W5‑E‑2‑7** | **Gegenprobe — die Unterschiede bleiben vollständig.** Im Auswahlfeld die Variante „Schichtspeicher" wählen: Dort erscheinen weiterhin ALLE Abweichungen einschließlich der Anlagen- und Gebäudeparameter, samt Spalte „Aktion" und dem Knopf „Übernehmen aus…". Nur die Gegenüberstellung ist gekürzt worden, nicht der Vergleich. |
+| **A‑W5‑E‑2‑8** | Der Bericht ist unverändert: „Varianten und Bericht…" → Bericht erzeugen — die Komponententabellen und die Kenndaten je Gewerk sehen aus wie vorher. |
+
+### 6. Offener Punkt
+
+**W5‑E‑2‑O‑1 — soll auch die Unterschiedsansicht die Parameter weglassen?** Sie ist hier
+bewusst unangetastet geblieben: Dort zeigt eine Zeile eine tatsächliche ÄNDERUNG zwischen
+Stamm und Variante, und genau an dieser Zeile hängt die Merkmalsübernahme
+(`MerkmalUebernahmeCtrl`, Stufe 3). Ein Wegfall der Parameter dort nähme dem Anwender die
+Möglichkeit, eine geänderte Vorlauftemperatur zurückzuholen. Der Befund vom 05.09.2026 betraf
+das Bild der Gegenüberstellung; wenn der Anwender die Unterschiedsansicht ebenfalls auf
+Komponenten verkürzt haben will, ist das ein eigener Entscheid mit eigener Folge für die
+Übernahme.
