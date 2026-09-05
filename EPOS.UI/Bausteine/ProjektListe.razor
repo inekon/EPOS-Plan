@@ -67,7 +67,7 @@
                         @foreach (Spaltenkopf kopf in Koepfe)
                         {
                             int nummer = kopf.Nummer;
-                            <th scope="col">
+                            <th scope="col" class="@Spaltenklasse(nummer)">
                                 @if (MitSortierung && kopf.Sortierbar)
                                 {
                                     <button type="button" class="epos-raster-kopf"
@@ -101,7 +101,7 @@
                             }
                             @foreach (Spaltenkopf kopf in Koepfe)
                             {
-                                <td>@Zelle(z, kopf.Nummer)</td>
+                                <td class="@Spaltenklasse(kopf.Nummer)">@Zelle(z, kopf.Nummer)</td>
                             }
                             @if (Zeilenaktionen is not null)
                             {
@@ -319,6 +319,26 @@
         SPALTE_KLIMA => z.Klimazone ?? "",
         SPALTE_AUSSTATTUNG => z.Ausstattung ?? "",
         _ => z.Name ?? ""
+    };
+
+    /// <summary>
+    /// Die Stilklasse einer Spalte — <b>Befund W15a‑B‑1</b> der Windows-Abnahme vom
+    /// 05.09.2026: „Geändert Datum nicht ersichtlich".
+    ///
+    /// <para>Die Hausregel <c>.epos-raster td { white-space: nowrap }</c> lässt einen
+    /// langen Projektnamen die Tabelle breiter machen, als die Spalte des Wirtes ist;
+    /// in „Speichern unter" quetschte das Formular rechts die Liste auf rund 535 px,
+    /// und die dritte Spalte lag hinter dem waagerechten Rollbalken. Projektname und
+    /// Kunde brechen deshalb um, das <b>Datum</b> bleibt einzeilig und bekommt eine
+    /// feste Breite — es ist die kürzeste und die einzige Spalte, deren Umbruch nichts
+    /// brächte.</para>
+    /// </summary>
+    private static string? Spaltenklasse(int spalte) => spalte switch
+    {
+        SPALTE_NAME => "epos-projektliste-name",
+        SPALTE_KUNDE => "epos-projektliste-kunde",
+        SPALTE_GEAENDERT => "epos-projektliste-geaendert",
+        _ => null
     };
 
     private string Pfeil(int spalte)

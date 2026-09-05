@@ -3051,6 +3051,31 @@ body {
     font-size: 0.9em;
 }
 
+/* ---- Die drei Spalten der Auswahl (Windows-Abnahme 05.09.2026, Befund
+   W15a-B-1: "Geaendert Datum nicht ersichtlich") ------------------------
+
+   Die Hausregel .epos-raster td { white-space: nowrap } haelt Namen in EINER
+   Zeile - richtig fuer ein Raster mit kurzen Bezeichnern, falsch fuer eine
+   Liste mit Projektnamen: Ein langer Name macht die Tabelle breiter als die
+   Spalte des Wirtes, und in "Speichern unter" (940 px Fenster, davon 3/5 fuer
+   die Liste) lag die dritte Spalte hinter dem waagerechten Rollbalken. Der
+   Anwender sah sie nicht - und suchte auch keinen Rollbalken, denn die Tabelle
+   sah vollstaendig aus.
+
+   Also: Name und Kunde BRECHEN UM statt die Tabelle zu treiben; das Datum
+   bleibt einzeilig und bekommt eine feste Breite - es ist die kuerzeste Spalte
+   und die einzige, deren Umbruch nichts braechte. */
+.epos-projektliste-name,
+.epos-projektliste-kunde {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.epos-projektliste-geaendert {
+    white-space: nowrap;
+    width: 7.5rem;
+}
+
 @media (forced-colors: active) {
     .epos-raster-kopf {
         color: LinkText;
@@ -3081,7 +3106,15 @@ body {
     min-width: 0;
 }
 
-@media (max-width: 780px) {
+/* DER UMBRUCH KOMMT FRUEHER (Windows-Abnahme 05.09.2026, Befund W15a-B-1).
+   Bei 780 px stand das Formular bis hinunter zum Fenstermass 940 x 660 NEBEN
+   der Liste und liess ihr 3/5 der Breite - rund 535 px fuer vier Spalten samt
+   Wahlspalte. Das reicht fuer Projektname, Kunde UND Datum nicht. Ab hier
+   steht die Liste ueber die volle Breite und das Formular darunter: bei
+   1 024 px Fensterbreite, im 940-px-Dialog und auf dem iPad hochkant
+   (768 x 1024) gleichermassen. Auf einem breiten Schirm bleiben die zwei
+   Spalten, dort ist der Platz da. */
+@media (max-width: 1100px) {
     .epos-projektkopie-raster {
         grid-template-columns: 1fr;
     }
