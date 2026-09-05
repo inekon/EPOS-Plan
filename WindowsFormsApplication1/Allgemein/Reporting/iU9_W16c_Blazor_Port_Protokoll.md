@@ -190,6 +190,37 @@ erzeugt die Datei sonst selbst, auf Linux gibt es den Designer nicht.
 | **W16c‑E‑2** | Die zwei Sprachpunkte als eigene Köpfe neben „Hilfe" — oder ein Untermenü „Sprache"? | **Anwenderentscheid 04.09.2026: Untermenü „Sprache" — umgesetzt** (Commit `03c5947`). Der Bestand führte fünf Köpfe (`menuToolbar.Items` = Projekt, Administration, Hilfe, Deutsch, Englisch); W16c hatte das wörtlich übernommen, weil die Welle nichts umbauen sollte, was sie nur umzieht. Jetzt steht **ganz rechts, wo „Deutsch" stand, der Kopf „Sprache"** (`MENU_SPRACHE`, en „Language"); er klappt nur auf, die zwei Punkte sind seine Untereinträge und behalten Name, Bild (`germany`/`usa`) und Seitenschlüssel — `help_mapping.txt` und `HauptfensterHuelle.Weg` greifen unverändert, `Application.Restart()` bleibt. Zahlen: **55** Punkte, **4** Köpfe, **13** aufklappende, 42 handelnde, 8 Trenner, 11 Bilder |
 | **W16c‑E‑3** | Holt „Varianten und Bericht…" den sechsten Reiter der Startseite nach vorn — oder wechselt er die Ansicht? | **Anwenderentscheid 04.09.2026: Ansichtswechsel — umgesetzt** (Commit `74e0cc1`). Bis dahin wörtlich der Bestand (`MenuItem_VariantenBericht_Click` → `StartseiteHuelle.Aktuelle.ZeigeBerichteKosten`), und `BERICHTE_KOSTEN` war allein der **iOS**-Weg. Jetzt ist es der Weg **beider** Plattformen: Der Fall in `HauptfensterHuelle.Weg` ist gefallen — der Schlüssel steht in `Ansichten`, nicht in `Masken`, also meldet `MaskeOeffnen` false und `Hauptfenster.Springe` lässt die `AppWurzel` auf die Ansicht wechseln. **Das sechste Reiterblatt bleibt bestehen** (dieselbe Komponente, dieselbe `BerichteKostenHuelle`); nur der Menüweg führt in die Ansicht. Der Rückweg geht über `ZurueckZurListe` auf die `Startansicht` — dafür hat `BerichteKostenSeite` einen `Geschlossen`-Rückruf und den Knopf `BK_BTN_ZURUECK` bekommen, den es **ohne** Rückruf (also im Reiterblatt) nicht gibt |
 | **W16c‑E‑4 (neu, 05.09.2026)** | **Der Kopf „Sprache" steht rechtsbündig** — Anwenderwunsch 05.09.2026 („Sprache sollte oben rechts sein") | **Umgesetzt.** Im Bestand sassen die zwei Sprachpunkte als letzte Einträge des `MenuStrip` rechtsbündig am Rand; der Kopf „Sprache" aus **W16c‑E‑2** hat ihre Stelle geerbt, stand seither aber links neben „Hilfe". Verschoben wird **nur die Optik**: `Menuepunkt` führt das Kennzeichen `RechtsBuendig`, das Band hängt daran die Klasse `epos-menueband-punkt--rechts` (`margin-left: auto`), und der Punkt bleibt an SEINER Stelle im Markup. Damit sind Tastaturreihenfolge (← → über die vier Köpfe, **Ende = „Sprache"**), Sprachausgabe und der Nachweis **N4** unverändert — ein umsortiertes Markup hätte beides verschoben. Die Zeile in der erzeugten `Menuetabelle` ist dieselbe, die schon W16c‑E‑2 von Hand nachgetragen hat (sie hat keine Designer-Herkunft); sie bekommt das Kennzeichen als benannten Ctor-Parameter, weil Objekt- und Sammelinitialisierung sich nicht mischen lassen |
+| **W16c‑E‑5 (neu, 05.09.2026)** | **Farbgebung des Menübands und des Kopfbands an die WinForms-Fassung vor W16 anlehnen** — Anwenderwunsch 05.09.2026 („Design und Farbgebung kann verbessert werden, angelehnt an winforms Version vor-W16"); die Startseite trägt denselben Wunsch als **W16b‑E‑5** | **Umgesetzt — ausschließlich im Stilblatt.** Fünf Werte des Vorläufers standen bis hierher **nur als Rückfall IN der Regel** (`var(--epos-marke, #005aa0)`) und damit an so vielen Stellen, wie sie benutzt wurden; sie sind jetzt Token in `:root` — `--epos-marke`, `--epos-marke-untertitel`, `--epos-marke-trennlinie`, `--epos-menue-flaeche`, `--epos-flaeche-hell`. Angeglichen sind dabei vier Dinge: das **Menüband** trägt wieder das AliceBlue des `menuToolbar` (#f0f8ff statt #f0f6fc) und seine **vier Köpfe** die 12-pt-Schrift des Bestands (16 px statt 13); die **Trennlinie** unter Menüband und Kopfband ist das kühle #dee3e8 aus `InitMarke` statt des warmen Hausbeiges #d9d7cf; der **Produktname** steht in 19 px (Segoe UI Semibold 14 pt) statt in Kacheltitelgröße; **Gattung und Claim** stehen in 11 px (8,25 pt) und im kühlen #70777e. **Die Menühöhe bleibt bei 44 px** — Berührungsziel (Hausregel M2/iL4), denn dieselbe Wurzel trägt auf dem iPad ein Menü, das mit dem Finger bedient wird; der Bestand maß 29 px. **Die Versionsfarbe ist NICHT übernommen** (150,156,162 trägt auf Weiß nur 2,77:1); die Version wird nur kleiner und behält das leise Hausgrau. Die Tabelle unten nennt jeden Wert mit Fundstelle |
+
+
+### Die Farb- und Schrifttabelle zu W16c‑E‑5 (Vorbild → Umsetzung)
+
+> Erhoben aus `84d7c16`: `MDIMainForm.Designer.cs` (`menuToolbar`), `MDIMainForm.resx`
+> (Schriften der Köpfe) und `MDIMainForm.InitMarke` (:200–285) — das Kopfband war
+> **programmatisch** gebaut, damit Designer und `.resx` unberührt blieben, und steht
+> deshalb vollständig im Programmtext. „bis `830c903`" ist der Stand, den der Anwender
+> am 05.09.2026 gesehen hat.
+
+| Element | Vorbild (Wert, Fundstelle) | bis `830c903` | jetzt |
+|---|---|---|---|
+| **Menüleiste, Fläche** | `menuToolbar.BackColor = Color.AliceBlue` = #f0f8ff (Designer :90) | Rückfall #f0f6fc, kein Token | `--epos-menue-flaeche` #f0f8ff |
+| **Menüköpfe, Schrift** | Segoe UI **12 pt** = 16 px (`.resx`: `Projekte`, `Administration`, `Help`, `Deutsch`, `Englisch`) | 13 px (Dialogschrift) | 16 px — nur die Köpfe; die Zeilen der aufgeschlagenen Ebene bleiben bei 13 px |
+| Menüleiste, Höhe | 29 px, Polster 7,2,0,2 (`.resx`) | 44 px Berührungsziel | **unverändert** — Hausregel M2/iL4 |
+| Menüleiste, Linie unten | (der `MenuStrip` zog keine; die Linie kam vom Kopfband darunter) | `--epos-rahmen-leise` #d9d7cf | `--epos-marke-trennlinie` #dee3e8 |
+| Auswahl im Menü | `ToolStripProfessionalRenderer` (helles Blau) | Rückfall #d9e8f7 | `--epos-menue-marke` #d9e8f7 (jetzt Token) |
+| **Kopfband, Fläche** | `Panel { Height = 52, BackColor = White }` (`InitMarke` :215–219) | Rückfall #ffffff | `--epos-flaeche-hell` #ffffff |
+| **Kopfband, Linie unten** | `Pen(Color.FromArgb(222, 227, 232))` (:224) | `--epos-rahmen-leise` #d9d7cf | `--epos-marke-trennlinie` #dee3e8 |
+| Akzentbalken links | `FillRectangle(0,90,160)`, 4 px breit, von y=10 bis Höhe−22 (:227) | 4 px, Rückfall #005aa0 | `--epos-marke` #005aa0 (Token; die senkrechte Aussparung bleibt weg — ein `border-left` läuft durch, und der Balken ist die Aussage, nicht seine Länge) |
+| **Produktname** | Segoe UI Semibold **14 pt** fett ≈ 19 px, ForeColor 0,90,160 (:235–236) | 16 px (`--epos-schriftgroesse-kartentitel`) | 19 px, `--epos-marke` |
+| **Gattung + Claim** | Segoe UI **8,25 pt** = 11 px, ForeColor 112,119,126 (:244–245) | 13 px, `--epos-text-leise` #5f5e5a | 11 px, `--epos-marke-untertitel` #70777e (4,54:1 auf Weiß) |
+| Version | Segoe UI 8,25 pt, ForeColor 150,156,162 (:267–268) | 13 px, `--epos-text-leise` | 11 px, `--epos-text-leise` — **Farbe nicht übernommen**: 150,156,162 trägt auf Weiß nur 2,77:1 |
+| Kopfband, Polster | `Padding(16, 6, 0, 0)` links, `Padding(0, 20, 18, 0)` rechts (:255, :269) | 6/18/8/18 | unverändert — ohne feste Pixelkoordinaten, das Band ist ein Flexkasten |
+
+Die Werte stehen als Fall in `EPOS.UI.Tests/Seiten/StartseiteAnmutungTests.cs`
+(`Die_Werte_des_Hauptfensters_stehen_in_root`,
+`Das_Kopfband_des_Hauptfensters_traegt_die_Masse_von_InitMarke`,
+`Das_Menueband_ist_AliceBlue_und_traegt_die_Kopfschrift_des_Bestands`) — dieselbe Wache,
+die auch W16b‑E‑5 trägt.
 
 ---
 
@@ -342,6 +373,7 @@ Ende von `BeimLaden`).
 | 5 | **Tastatur im Menü**: ← → ↓ Pos1 Ende Esc | Wandern über die **vier** Köpfe, Öffnen (auch von „Sprache"), Schließen. Ende springt auf „Sprache", nicht mehr auf „Englisch". Tab verlässt die Leiste nach EINEM Druck |
 | 6 | **F1** irgendwo im Fenster | Der KI-Assistent geht auf — auch wenn der Fokus in der WebView steht |
 | 7 | **Kopfband** | „EPOS-Plan", darunter „Energieplanungs-Software · Energie · Planung · Optimierung · Simulation", rechts der Fragezeichenknopf (Ziel „Programmablauf") und „Version x.y.z" |
+| 7a | **Die Farbgebung von Menüband und Kopfband** (W16c‑E‑5) | Das Menüband ist **hellblau** (AliceBlue) und seine vier Köpfe stehen in derselben Schriftgröße wie die Reiter der Startseite — nicht in Dialogschrift. Der Produktname „EPOS-Plan" ist **deutlich größer** als die Zeile darunter, Gattung, Claim und Version stehen **klein und grau**. Die Haarlinien unter Menüband und Kopfband sind **kühl blaugrau**, nicht beige |
 | 8 | **21 Kacheln der Startseite**, Projektwechsel im Kopfband, Klimaregion | Das Menüband steht darüber und verschwindet nie. **Seit dem 05.09.2026 (W16b‑E‑3 / W16b‑E‑4):** Jede Kachel trägt ihr Sinnbild, der Klimakasten steht links und der Projektkasten rechts, und die Zeile „Energieplanungs-Software“ steht nur noch EINMAL — im Kopfband des Fensters |
 | 9 | **Assistent** über Menü „Projekt → Neu…" und „→ Bearbeiten…" | Modal wie bisher; danach zeigt die Startseite das neue Projekt (Nachzug des Kontexts) |
 | 10 | **Simulation**: „Simulation Konfiguration…" und die Ergebniskachel | Konfiguration als freie Ansicht, Ergebnis als Überlagerung — **mit dem Menüband darüber** |
