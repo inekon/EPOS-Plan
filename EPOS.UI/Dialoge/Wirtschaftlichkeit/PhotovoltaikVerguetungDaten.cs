@@ -29,6 +29,12 @@ public sealed class PhotovoltaikVerguetungTexte
     public string Kwp { get; } = T("PVW_KWP", "Installierte Leistung:");
     public string KwpOverride { get; } = T("PVW_KWP_OVR", "Override [kWp] (0 = keiner):");
     public string Ibn { get; } = T("PVW_IBN", "Inbetriebnahme:");
+    /// <summary>Paket B, Stufe E2.4 (Merge 5): der jaehrliche Leistungsverlust der Module.</summary>
+    public string Degradation { get; } = T("PVM_DEGRADATION", "Degradation [%/a]:");
+    public string DegradationTip { get; } = T("PVM_DEGRADATION_TIP",
+        "Jährlicher Leistungsverlust der Module. Wirkt NUR in der Erlösreihe "
+        + "(Faktor (1 − d/100) hoch (t − 1) je Betrachtungsjahr), nicht in der "
+        + "Stundensimulation des Basisjahres. 0 = keine Degradation; typisch sind 0,3 bis 0,5 %/a.");
     public string GEinspeiseart { get; } = T("PVV_G_EINSPEISEART", "Einspeiseart");
     public string Ueberschuss { get; } = T("PVW_UEBERSCHUSS", "Überschusseinspeisung");
     public string Voll { get; } = T("PVW_VOLL", "Volleinspeisung");

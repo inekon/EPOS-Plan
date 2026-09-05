@@ -273,15 +273,15 @@ namespace WindowsFormsApplication1
                     StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)));
                 if (idRegion <= 0) return null;
 
-                System.Data.DataTable dt = StilleDb.Tabelle(
-                    "SELECT Temperatur FROM Tab_Solar WHERE ID_Klimaregion = ? ORDER BY ID",
-                    StilleDb.Par("@reg", DbParamTyp.Integer, idRegion));
-                if (dt == null || dt.Rows.Count < 8760) return null;
-
+                // B1 (Paket A des PV-Ertragsmodells, nachgezogen mit Merge 5): ueber denselben
+                // ORTSZEIT-Lesepfad wie die Simulation (SolardatenCtrl.ReadOrtszeit). Das
+                // eigene SQL las die Reihe im UTC-Raster - der Erdreichdialog haette sonst
+                // einen anderen Tagesgang gezeigt als der Lauf, den er vorbereitet.
+                SolardatenCtrl ctrldat = new SolardatenCtrl();
+                ctrldat.ReadOrtszeit(idRegion, idProjekt);
+                if (ctrldat.rows < 8760) return null;
                 float[] temp = new float[8760];
-                for (int i = 0; i < 8760; i++)
-                    temp[i] = (float)StilleDb.Kommazahl(StilleDb.Feld(dt.Rows[i], "Temperatur"));
-
+                for (int i = 0; i < 8760; i++) temp[i] = (float)ctrldat.items[i].Außen_Temp;
                 return temp;
             }
             catch (Exception ex)
