@@ -5767,3 +5767,23 @@ body {
         padding-left: 0;
     }
 }
+
+/* -------------------------------------------------------------------- */
+/* Formularraster - Paket P1 (iU8-E-2, 05.09.2026)                       */
+/*                                                                      */
+/* Ein Parameterblock ist selten NUR eine Reihe Felder. Zwischen den     */
+/* Feldern stehen Saetze, die den Rechenweg nennen - die Herleitungs-    */
+/* zeile ("Q_max = ...", der Ruecklaufvorschlag der Waermepumpe). Sie    */
+/* ist KEIN Feld und darf deshalb nicht in einer Rasterzelle NEBEN einem */
+/* Feld landen; sie gehoert ueber die volle Breite, genau wie            */
+/* .epos-untergruppe eine Regel weiter oben.                             */
+/*                                                                      */
+/* Ohne diese Zeile muesste jeder Dialog mit Zwischensatz seinen Block   */
+/* in zwei oder drei Raster zerlegen - und jede Zerlegung ist eine       */
+/* Stelle, an der die Beschriftungsspalten spaeter auseinanderlaufen.    */
+/* Die Regel bleibt hausweit und nennt .epos-formularraster, greift also */
+/* nirgends sonst: Eine Herleitungszeile ausserhalb eines Rasters bleibt */
+/* unveraendert.                                                        */
+.epos-formularraster > .epos-herleitung {
+    grid-column: 1 / -1;
+}

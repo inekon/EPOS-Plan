@@ -45,6 +45,10 @@
 
     <Gruppenkopf Titel="@GruppeBezeichnung">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P1): Beschriftung neben dem Feld,
+               Zahlenfelder kurz mit der Einheit dahinter. *@
+            <Formularraster>
+                <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma"
                       WertChanged="w => Daten.Firma = w" />
@@ -52,49 +56,48 @@
                       WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
             <Textfeld Bezeichnung="@LabelKollektortyp" Wert="@Daten.Kollektortyp"
                       WertChanged="w => Daten.Kollektortyp = w" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     <Gruppenkopf Titel="@GruppeTechnik">
         <KindInhalt>
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelModulflaeche" Einheit="@EinheitFlaeche"
-                            Feldname="@LabelModulflaecheKurz" Wert="@Daten.Modulflaeche"
-                            WertChanged="w => Daten.Modulflaeche = w" />
-                <Zahlenfeld Bezeichnung="@LabelAperturflaeche" Einheit="@EinheitFlaeche"
-                            Feldname="@LabelAperturflaecheKurz" Wert="@Daten.Aperturflaeche"
-                            WertChanged="w => Daten.Aperturflaeche = w" />
-            </div>
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelH0" Feldname="@LabelH0Kurz"
-                            Wert="@Daten.H0" WertChanged="w => Daten.H0 = w" />
-                <Zahlenfeld Bezeichnung="@LabelK1" Einheit="@EinheitK1"
-                            Feldname="@LabelK1Kurz" Wert="@Daten.K1"
-                            WertChanged="w => Daten.K1 = w" />
-            </div>
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelK2" Einheit="@EinheitK2"
-                            Feldname="@LabelK2Kurz" Wert="@Daten.K2"
-                            WertChanged="w => Daten.K2 = w" />
-                <Zahlenfeld Bezeichnung="@LabelKdir" Feldname="@LabelKdirKurz"
-                            Wert="@Daten.Kdir" WertChanged="w => Daten.Kdir = w" />
-            </div>
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelKdiff" Einheit="@EinheitWinkel"
-                            Feldname="@LabelKdiffKurz" Wert="@Daten.Kdiff"
-                            WertChanged="w => Daten.Kdiff = w" />
-                <Zahlenfeld Bezeichnung="@LabelKosten" Einheit="@EinheitEuro"
-                            Feldname="@LabelKostenKurz" Wert="@Daten.Kosten"
-                            WertChanged="w => Daten.Kosten = w" />
-            </div>
-            <div class="epos-feldpaar">
-                <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad"
-                              Feldname="@LabelVorlaufKurz" Wert="@Daten.Vorlauf"
-                              WertChanged="w => Daten.Vorlauf = w" />
-                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
-                              Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
-                              WertChanged="w => Daten.Ruecklauf = w" />
-            </div>
+            @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
+               Feldpaare je Zeile, sobald die Spalte breit genug ist
+               (iU8-E-2, Paket P1). *@
+            <Formularraster>
+                <KindInhalt>
+            <Zahlenfeld Bezeichnung="@LabelModulflaeche" Einheit="@EinheitFlaeche"
+                        Feldname="@LabelModulflaecheKurz" Wert="@Daten.Modulflaeche"
+                        WertChanged="w => Daten.Modulflaeche = w" />
+            <Zahlenfeld Bezeichnung="@LabelAperturflaeche" Einheit="@EinheitFlaeche"
+                        Feldname="@LabelAperturflaecheKurz" Wert="@Daten.Aperturflaeche"
+                        WertChanged="w => Daten.Aperturflaeche = w" />
+            <Zahlenfeld Bezeichnung="@LabelH0" Feldname="@LabelH0Kurz"
+                        Wert="@Daten.H0" WertChanged="w => Daten.H0 = w" />
+            <Zahlenfeld Bezeichnung="@LabelK1" Einheit="@EinheitK1"
+                        Feldname="@LabelK1Kurz" Wert="@Daten.K1"
+                        WertChanged="w => Daten.K1 = w" />
+            <Zahlenfeld Bezeichnung="@LabelK2" Einheit="@EinheitK2"
+                        Feldname="@LabelK2Kurz" Wert="@Daten.K2"
+                        WertChanged="w => Daten.K2 = w" />
+            <Zahlenfeld Bezeichnung="@LabelKdir" Feldname="@LabelKdirKurz"
+                        Wert="@Daten.Kdir" WertChanged="w => Daten.Kdir = w" />
+            <Zahlenfeld Bezeichnung="@LabelKdiff" Einheit="@EinheitWinkel"
+                        Feldname="@LabelKdiffKurz" Wert="@Daten.Kdiff"
+                        WertChanged="w => Daten.Kdiff = w" />
+            <Zahlenfeld Bezeichnung="@LabelKosten" Einheit="@EinheitEuro"
+                        Feldname="@LabelKostenKurz" Wert="@Daten.Kosten"
+                        WertChanged="w => Daten.Kosten = w" />
+            <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad"
+                          Feldname="@LabelVorlaufKurz" Wert="@Daten.Vorlauf"
+                          WertChanged="w => Daten.Vorlauf = w" />
+            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
+                          Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
+                          WertChanged="w => Daten.Ruecklauf = w" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
