@@ -35,6 +35,18 @@
    OHNE MAUSRAD-ZOOM (A-1): Die Jahresansicht des Vorlaeufers liess sich am
    Mausrad spreizen. Ein PNG kann das nicht; Zoomen ist W3-O2/W11.
 
+   DREI KATEGORIEN STATT EINER LISTE (Anwenderwunsch W8-E-2, Windows-Abnahme
+   05.09.2026). Der Bestand reihte alle Kennzahlen untereinander - eine LEISTUNG
+   in kW zwischen Energiemengen in MWh, und die Summe mittendrin. Der Anwender
+   hat beides beanstandet. Das Blatt hat jetzt einen Block je Kategorie mit
+   Zwischenueberschrift und die Summe ABGESETZT im tfoot. Wer keine Kategorien
+   mitgibt, bekommt weiter die schlichte Liste - Vorgabe ist Kennzahlart.Energie.
+
+   UND DER GRAFIKREITER TRAEGT DREI ZEITSTUFEN (ebenfalls W8-E-2): Jahr wie
+   bisher, dazu Woche und Tag mit Navigator. Das steht in BedarfGangGrafik; ohne
+   Ganglinienquelle erscheint der Umschalter gar nicht, und die drei
+   Waermeauspraegungen sehen den Reiter unveraendert.
+
    TASTATUR: Esc und Enter schliessen - der Dialog hat nur den einen Knopf. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
@@ -63,18 +75,66 @@
             <Reiterblatt Schluessel="KENNZAHLEN" Titel="@ReiterKennzahlen">
                 <KindInhalt>
                     <div class="epos-raster-huelle">
-                        <table class="epos-raster">
-                            <tbody>
-                                @foreach (ErgebnisKennzahl kennzahl in Daten.Kennzahlen)
+                        <table class="epos-raster epos-kennzahlen">
+
+                            @* Die LEISTUNG steht fuer sich (W8-E-2): eine Groesse in kW
+                               gehoert nicht zwischen Energiemengen in MWh, und schon gar
+                               nicht in deren Summe. Der Block entfaellt, wenn es keine
+                               Leistungszeile gibt. *@
+                            @if (Leistungen.Count > 0)
+                            {
+                                <tbody class="epos-kennzahlen-block">
+                                    <tr class="epos-kennzahlen-kopf">
+                                        <th colspan="3" scope="colgroup">@GruppeLeistung</th>
+                                    </tr>
+                                    @foreach (ErgebnisKennzahl kennzahl in Leistungen)
+                                    {
+                                        ErgebnisKennzahl k = kennzahl;
+                                        <tr>
+                                            <td>@k.Bezeichnung</td>
+                                            <td class="epos-zahl">@Kennzahlwert(k)</td>
+                                            <td class="epos-einheit">@Kennzahleinheit(k)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            }
+
+                            <tbody class="epos-kennzahlen-block">
+                                @if (Leistungen.Count > 0)
+                                {
+                                    <tr class="epos-kennzahlen-kopf">
+                                        <th colspan="3" scope="colgroup">@GruppeEnergie</th>
+                                    </tr>
+                                }
+                                @foreach (ErgebnisKennzahl kennzahl in Posten)
                                 {
                                     ErgebnisKennzahl k = kennzahl;
                                     <tr>
                                         <td>@k.Bezeichnung</td>
                                         <td class="epos-zahl">@Kennzahlwert(k)</td>
-                                        <td>@Kennzahleinheit(k)</td>
+                                        <td class="epos-einheit">@Kennzahleinheit(k)</td>
                                     </tr>
                                 }
                             </tbody>
+
+                            @* Die SUMME steht UNTEN und abgesetzt (W8-E-2) - im tfoot,
+                               damit sie auch fuer die Sprachausgabe der Fuss der Tabelle
+                               ist und nicht die letzte Zeile unter vielen. *@
+                            @if (Summen.Count > 0)
+                            {
+                                <tfoot class="epos-kennzahlen-summe">
+                                    @foreach (ErgebnisKennzahl kennzahl in Summen)
+                                    {
+                                        ErgebnisKennzahl k = kennzahl;
+                                        <tr>
+                                            <th scope="row">@k.Bezeichnung</th>
+                                            <td class="epos-zahl">@Kennzahlwert(k)</td>
+                                            <td class="epos-einheit">@Kennzahleinheit(k)</td>
+                                        </tr>
+                                    }
+                                </tfoot>
+                            }
+
                         </table>
                     </div>
                 </KindInhalt>
@@ -114,22 +174,35 @@
             @* --- Reiter 3: das Bild ------------------------------------------ *@
             <Reiterblatt Schluessel="GRAFIK" Titel="@ReiterGrafik">
                 <KindInhalt>
-                    @if (Daten.Sichten.Count > 1)
-                    {
-                        <Optionsgruppe Eintraege="@Sichtwahl" Auswahl="@_sichtGrafik"
-                                       AuswahlChanged="GrafiksichtWaehlen" />
-                    }
+                    @* Seit W8-E-2 liegt der Reiter in BedarfGangGrafik: Die Jahressicht
+                       geht unveraendert als KindInhalt hinein, Woche und Tag kommen aus
+                       der Ganglinienquelle. Ohne sie gibt es weder Umschalter noch
+                       Navigator und der Reiter sieht aus wie zuvor. *@
+                    <BedarfGangGrafik Quelle="@Daten.Ganglinie"
+                                      StufeJahrText="@StufeJahrText"
+                                      StufeWocheText="@StufeWocheText"
+                                      StufeTagText="@StufeTagText"
+                                      MarkeFormat="@MarkeFormat"
+                                      PlatzhalterText="@PlatzhalterBild">
+                        <JahresInhalt>
+                            @if (Daten.Sichten.Count > 1)
+                            {
+                                <Optionsgruppe Eintraege="@Sichtwahl" Auswahl="@_sichtGrafik"
+                                               AuswahlChanged="GrafiksichtWaehlen" />
+                            }
 
-                    @* Der Schalter steht nur bei der Brauchwassersicht - und nur, wenn
-                       die Huelle ueberhaupt einen Jahresverlauf mitgegeben hat
-                       (checkBox_MonatJahr.Visible, AktualisiereGrafik:142). *@
-                    @if (JahresverlaufMoeglich)
-                    {
-                        <Schalter Bezeichnung="@LabelJahresverlauf" Wert="@_jahresverlauf"
-                                  WertChanged="JahresverlaufUmschalten" />
-                    }
+                            @* Der Schalter steht nur bei der Brauchwassersicht - und nur, wenn
+                               die Huelle ueberhaupt einen Jahresverlauf mitgegeben hat
+                               (checkBox_MonatJahr.Visible, AktualisiereGrafik:142). *@
+                            @if (JahresverlaufMoeglich)
+                            {
+                                <Schalter Bezeichnung="@LabelJahresverlauf" Wert="@_jahresverlauf"
+                                          WertChanged="JahresverlaufUmschalten" />
+                            }
 
-                    <ChartBild Png="@Bild" Alt="@Bildtext" PlatzhalterText="@PlatzhalterBild" />
+                            <ChartBild Png="@Bild" Alt="@Bildtext" PlatzhalterText="@PlatzhalterBild" />
+                        </JahresInhalt>
+                    </BedarfGangGrafik>
                 </KindInhalt>
             </Reiterblatt>
 
@@ -176,6 +249,24 @@
     [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
     [Parameter] public string OkText { get; set; } = "OK";
 
+    /// <summary>Überschrift des Leistungsblocks (W8‑E‑2) — Ressource BERG_GRP_LEISTUNG.</summary>
+    [Parameter] public string GruppeLeistung { get; set; } = "Leistung";
+
+    /// <summary>Überschrift des Energieblocks (W8‑E‑2) — Ressource BERG_GRP_ENERGIE.</summary>
+    [Parameter] public string GruppeEnergie { get; set; } = "Energie";
+
+    /// <summary>Beschriftung der Zeitstufe „Jahr" — Ressource BERG_STUFE_JAHR.</summary>
+    [Parameter] public string StufeJahrText { get; set; } = "Jahr";
+
+    /// <summary>Beschriftung der Zeitstufe „Woche" — Ressource BERG_STUFE_WOCHE.</summary>
+    [Parameter] public string StufeWocheText { get; set; } = "Woche";
+
+    /// <summary>Beschriftung der Zeitstufe „Tag" — Ressource BERG_STUFE_TAG.</summary>
+    [Parameter] public string StufeTagText { get; set; } = "Tag";
+
+    /// <summary>Marke des Navigators — {0} Nummer, {1} Anzahl, {2} Stufe (BERG_GANG_MARKE).</summary>
+    [Parameter] public string MarkeFormat { get; set; } = "{2} {0} von {1}";
+
     /// <summary>Die zwölf Monatsbeschriftungen der Tabelle.</summary>
     [Parameter]
     public IReadOnlyList<string> Monatsnamen { get; set; } = new[]
@@ -219,6 +310,28 @@
 
     /// <summary>Die gewählte Anzeigeeinheit — Prüfhilfe für die Tests.</summary>
     public Energieeinheit Anzeigeeinheit => _einheit;
+
+    // --- Die drei Kennzahlblöcke (Anwenderwunsch W8‑E‑2) ------------------------
+    //
+    // Der Bestand reihte alles untereinander. Der Anwender will die LEISTUNG als
+    // eigene Kategorie und die SUMME abgesetzt am Ende. Sortiert wird hier nicht:
+    // Die Reihenfolge innerhalb eines Blocks bleibt die der Hülle.
+
+    /// <summary>Die Leistungszeilen (kW) — eigener Block, außerhalb der Summe.</summary>
+    public IReadOnlyList<ErgebnisKennzahl> Leistungen => Block(Kennzahlart.Leistung);
+
+    /// <summary>Die Posten der Energiebilanz.</summary>
+    public IReadOnlyList<ErgebnisKennzahl> Posten => Block(Kennzahlart.Energie);
+
+    /// <summary>Die Summenzeile(n) am Fuß des Blattes.</summary>
+    public IReadOnlyList<ErgebnisKennzahl> Summen => Block(Kennzahlart.Summe);
+
+    private List<ErgebnisKennzahl> Block(Kennzahlart art)
+    {
+        var liste = new List<ErgebnisKennzahl>();
+        foreach (ErgebnisKennzahl k in Daten.Kennzahlen) if (k.Art == art) liste.Add(k);
+        return liste;
+    }
 
     /// <summary>
     /// Gibt es überhaupt etwas umzurechnen? Nur wenn die Hülle Zahlen samt

@@ -5320,6 +5320,88 @@ body {
 /* Spalte doppelt so hoch - und genau das war der Befund.                */
 .epos-stundenraster .epos-feld {
     flex-direction: row;
+
+/* =====================================================================
+   ERGEBNISBLATT DES BEDARFS - Kategorien, Summenfuss und der
+   Zeitnavigator des Grafikreiters
+   (Anwenderwunsch W8-E-2, Windows-Abnahme 05.09.2026)
+   =====================================================================
+
+   WAS DER ANWENDER BEANSTANDET HAT. Das Blatt reihte vier Zeilen
+   untereinander - eine LEISTUNG in kW, zwei Posten und deren Summe -,
+   alle gleich aussehend, die Summe mittendrin. Wer die Zahlen las,
+   musste selbst wissen, welche wozu gehoert. Die Gliederung macht das
+   jetzt sichtbar: ein Block je Kategorie mit Ueberschrift, die Summe
+   ABGESETZT am Fuss.
+
+   Die Tabelle bleibt die Hausklasse epos-raster; hier stehen nur die
+   Zusaetze. Wer die Klasse nicht setzt, bekommt weiter das schlichte
+   Raster - kein Wirt muss angefasst werden. */
+
+.epos-kennzahlen {
+    width: auto;
+    min-width: min(100%, 28rem);
+}
+
+/* Die Beschriftungsspalte darf wachsen, Zahl und Einheit bleiben schmal -
+   sonst steht die Einheit einmal dicht am Wert und einmal am Rand. */
+.epos-kennzahlen td:first-child,
+.epos-kennzahlen th[scope="row"] {
+    width: 100%;
+}
+
+.epos-kennzahlen .epos-einheit {
+    white-space: nowrap;
+    color: var(--epos-text-leise);
+}
+
+/* Die Blockueberschrift ist eine Zwischenzeile, keine Spaltenzeile:
+   leise, klein, ohne Trennlinie darunter - die Zeilen darunter tragen
+   ihre eigene. Der Abstand nach oben trennt sie vom Block davor. */
+.epos-kennzahlen-kopf th {
+    padding-top: 14px;
+    border-bottom: none;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--epos-text-leise);
+}
+
+/* Die erste Ueberschrift braucht den Abstand nicht - ueber ihr ist der
+   Reiterrand. */
+.epos-kennzahlen-block:first-of-type .epos-kennzahlen-kopf th {
+    padding-top: 2px;
+}
+
+/* DIE SUMME. Sie steht unten und ist als Summe zu erkennen: eine
+   kraeftige Oberlinie wie unter einem Rechenstrich, halbfett, ohne
+   Trennlinie darunter. */
+.epos-kennzahlen-summe th,
+.epos-kennzahlen-summe td {
+    padding-top: 8px;
+    border-top: 2px solid var(--epos-rahmen);
+    border-bottom: none;
+    font-weight: 600;
+    text-align: left;
+}
+
+.epos-kennzahlen-summe .epos-zahl {
+    text-align: right;
+}
+
+/* --- Der Zeitnavigator des Grafikreiters ---------------------------- */
+
+.epos-gang {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Stufenwahl und Navigator stehen in EINER Zeile, wenn der Platz reicht;
+   auf schmalem Schirm bricht der Navigator darunter. */
+.epos-gang-navigator {
+    display: flex;
     align-items: center;
     gap: 8px;
 }
@@ -5350,4 +5432,30 @@ body {
 .epos-raster--wahlliste td {
     padding: 0;
     border-bottom: 0;
+
+/* Touchgroesse - der Navigator wird auf dem iPad mit dem Finger bedient. */
+.epos-gang-knopf {
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    padding: 0 10px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.epos-gang-knopf:hover {
+    background: var(--epos-flaeche-aktiv, var(--epos-flaeche));
+}
+
+/* Die Marke wechselt bei jedem Schritt ihren Text. Eine feste Mindestbreite
+   haelt die zwei Pfeile an Ort und Stelle - sonst wanderte der Knopf
+   "vor", sobald aus "Woche 9" ein "Woche 10" wird. */
+.epos-gang-marke {
+    min-width: 10rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
 }
