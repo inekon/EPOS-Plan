@@ -18,6 +18,12 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Die Modulverwaltung bleibt WinForms</b> (<c>Form_AdminPV</c>, bis Welle
     /// 14) und geht deshalb über die Sprungbrücke, nicht über eine zweite WebView.</para>
+    ///
+    /// <para><b>W6-O-5</b> (Anwenderentscheid 05.09.2026): Die zwei Leistungsfelder
+    /// tragen ihre wahre Einheit. <c>Tab_PV.Leistung</c> ist WATT je Modul
+    /// („Modul Leistung [W]"), die Gesamtleistung erscheint in kW
+    /// („Gesamtleistung [kW]"). Geändert ist nur die ANZEIGE — der Rechenweg
+    /// (<c>AnlagenKwp</c>, Simulation, Wirtschaftlichkeit) ist unberührt.</para>
     /// </summary>
     internal static class PhotovoltaikHuelle
     {
@@ -125,8 +131,13 @@ namespace WindowsFormsApplication1
                             : (SimulationPV.IstErweitert(m) ? DbWerte.PV_MODELL_EINFACH : m.PV_Modell);
                     }),
 
+                // W6-O-5 (Anwenderentscheid 05.09.2026): Die Summe ist in WATT -
+                // die Anzeige in kW. Die Wandlung macht der Kern
+                // (PhotovoltaikCtrl.GesamtleistungText), damit sie neben
+                // KwpSumme steht und nicht daneben.
                 ["Gesamtleistung"] = new Func<string>(
-                    () => Gesamtleistung(idType, modelle).ToString()),
+                    () => PhotovoltaikCtrl.GesamtleistungText(
+                              GesamtleistungWatt(idType, modelle))),
                 // Paket B (Merge 5): kWp der Anlage fuer die DC/AC-Anzeige des Wechselrichter-
                 // dialogs - Modulleistung (W) mal Anzahl, wie Form_PV.btn_Wechselrichter_Click.
                 ["AnlagenKwp"] = new Func<ErzeugerZeile, double>(zeile =>
@@ -165,7 +176,7 @@ namespace WindowsFormsApplication1
                                                "Alle Modulparameter anzeigen"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
-                ["LabelGesamtleistung"] = Text_("PVD_LBL_GESAMTLEISTUNG", "Gesamtleistung [KW]:"),
+                ["LabelGesamtleistung"] = Text_("PVD_LBL_GESAMTLEISTUNG", "Gesamtleistung [kW]:"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
@@ -212,10 +223,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Gesamtleistung (<c>UpdateGesamtleistung</c>, Z. 314): Summe aus Anzahl
-        /// Module mal Modulleistung über alle Zeilen dieses Typs.
+        /// Die Gesamtleistung in WATT (<c>UpdateGesamtleistung</c>, Z. 314): Summe aus
+        /// Anzahl Module mal Modulleistung über alle Zeilen dieses Typs.
         /// </summary>
-        private static double Gesamtleistung(int idType, List<WErzeugerModel> modelle)
+        /// <remarks>
+        /// <b>W6-O-5</b> (Anwenderentscheid 05.09.2026, „Gesamtleistung in kW"): Der
+        /// Name sagt seither die Einheit an. <c>Tab_PV.Leistung</c> führt die
+        /// Modulleistung in Watt — die Summe ist damit Watt, und erst
+        /// <see cref="PhotovoltaikCtrl.GesamtleistungText"/> macht daraus die Anzeige
+        /// in kW. Die Summe selbst ist unverändert.
+        /// </remarks>
+        private static double GesamtleistungWatt(int idType, List<WErzeugerModel> modelle)
         {
             double gesamt = 0;
             foreach (WErzeugerModel m in modelle)
@@ -272,7 +290,7 @@ namespace WindowsFormsApplication1
             var felder = new List<(string, string)>
             {
                 (Text_("PVD_LBL_HERSTELLER", "Hersteller:"), d.Firma),
-                (Text_("PVD_LBL_LEISTUNG", "Modul Leistung [KW]:"), d.Leistung.ToString("F2"))
+                (Text_("PVD_LBL_LEISTUNG", "Modul Leistung [W]:"), d.Leistung.ToString("F2"))
             };
 
             return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,

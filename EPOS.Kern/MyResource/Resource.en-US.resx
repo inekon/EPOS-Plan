@@ -11377,7 +11377,7 @@ Overwrite it anyway?</value>
     <value>Manufacturer:</value>
   </data>
   <data name="PVD_LBL_LEISTUNG" xml:space="preserve">
-    <value>Module power [kW]:</value>
+    <value>Module power [W]:</value>
   </data>
   <data name="PVD_LBL_GESAMTLEISTUNG" xml:space="preserve">
     <value>Total power [kW]:</value>
