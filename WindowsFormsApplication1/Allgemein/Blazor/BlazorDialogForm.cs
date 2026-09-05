@@ -76,6 +76,15 @@ namespace WindowsFormsApplication1
         public BlazorDialogForm(string titel, Size groesse, IDictionary<string, object> parameter,
                                 IServiceProvider dienste)
         {
+            // WACHE (Befund W16b-B-1, 05.09.2026): Ein Schluessel ohne passenden
+            // [Parameter] laesst die Komponente beim ERSTEN Zeichnen brechen -
+            // im Blazor-Verteiler, also ohne Namen und ohne Ort. Eine Zeile
+            // Reflexion beim Bauen der Huelle sagt dasselbe Nein frueher und
+            // nennt den Schluessel. Muster: ZustandParameterPruefen in
+            // BlazorSeite (Befund W16c-B12), nur fuer den ganzen Satz.
+            Parametersatzwache.Pruefen(typeof(TKomponente), parameter,
+                                       "BlazorDialogForm<" + typeof(TKomponente).Name + ">");
+
             Text = titel;
             FormBorderStyle = FormBorderStyle.Sizable;
             MaximizeBox = true;
@@ -111,8 +120,20 @@ namespace WindowsFormsApplication1
                 Language = Sprache.Englisch ? "en-US" : "de-DE"
             };
 
+            // Auch die Flaeche der WebView2 selbst traegt die Themafarbe - sonst
+            // blitzt beim ersten Zeichnen ihr eigenes Weiss durch. Dieselbe Zeile
+            // wie in BlazorSeite; sie fehlte hier bis W16b-B-1.
+            try { _web.WebView.DefaultBackgroundColor = Themaflaeche; }
+            catch { /* aeltere WebView2-Laufzeit: Schoenheitsfehler, kein Fehlschlag */ }
+
             _web.RootComponents.Add<TKomponente>("#app", parameter);
             Controls.Add(_web);
+
+            // WACHE (Befund W16b-B-1): Bleibt die Flaeche beige, sagt sie warum.
+            // Der WinForms-BlazorWebView fuehrt kein UnhandledException-Ereignis
+            // (10.0.100) - ohne diese Wache bleibt eine gescheiterte
+            // WebView2-Initialisierung vollstaendig still.
+            WebViewWache.Anhaengen(_web, this, typeof(TKomponente).Name);
         }
 
         /// <summary>Kleinste sinnvolle Aussenmasse: darunter passt kein Dialogkopf mehr.</summary>
