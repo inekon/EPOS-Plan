@@ -69,11 +69,50 @@ namespace EPOS.Kern.Tests
             File.Copy(quelle, ziel);
 
             DataRepository.PfadUeberschreibung = ziel;
+            SchemaNachziehen();
             Vorhanden = true;
         }
 
         /// <summary>Steht eine beschreibbare Arbeitskopie? Sonst ueberspringt der Fall.</summary>
         public bool Vorhanden { get; }
+
+        /// <summary>
+        /// Merge 5 (05.09.2026): Die Datei steht auf dem Freeze-Stand 61. Die SQLite-Schritte
+        /// 63 und 64 des PV-Ertragsmodells (Paket A/B) legen zehn Spalten an, die der Kern
+        /// seither SCHREIBT (<c>WErzeugerCtrl</c>, <c>PhotovoltaikStammCtrl</c>,
+        /// <c>ProjektPhotovoltaikCtrl</c>) - ohne sie scheitert jeder Assistentenlauf an
+        /// "no column named PV_WrWirkungsgrad". Die Migration selbst lebt im
+        /// Anwendungsprojekt und ist von hier unerreichbar; die Kopie bekommt die Spalten
+        /// deshalb aus demselben Katalog, so wie <c>SchemaMigration.SqliteSpalteAnlegen</c>
+        /// sie anlegt (ADD COLUMN, kein DML, vorhandene Spalte = nichts zu tun), und den
+        /// Marker <see cref="SchemaStand.Zielversion"/>. Schritt 62 (Klimawaisen) ist auf
+        /// der Testdatenbank ein No-op (0 Waisen, Nachweis in KatalogpflegeTests).
+        /// </summary>
+        private static void SchemaNachziehen()
+        {
+            try
+            {
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt63_PvAnlagenparameter) SpalteSicherstellen(s);
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt64_PvModellwahl) SpalteSicherstellen(s);
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt64_PvStammUndDegradation) SpalteSicherstellen(s);
+                DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Schema der Testkopie konnte nicht nachgezogen werden: " + ex.Message);
+            }
+        }
+
+        private static void SpalteSicherstellen(SchemaSpalte s)
+        {
+            System.Data.DataTable info = DataRepository.GetDataTable("PRAGMA table_info(\"" + s.Tabelle + "\")");
+            if (info != null)
+                foreach (System.Data.DataRow r in info.Rows)
+                    if (string.Equals(Convert.ToString(r["name"]), s.Name, StringComparison.OrdinalIgnoreCase))
+                        return;
+            DataRepository.ExecuteNonQuery("ALTER TABLE \"" + s.Tabelle + "\" ADD COLUMN \"" + s.Name + "\" "
+                                           + StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition));
+        }
 
         /// <summary>
         /// Sucht <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> aufwaerts vom Laufordner.

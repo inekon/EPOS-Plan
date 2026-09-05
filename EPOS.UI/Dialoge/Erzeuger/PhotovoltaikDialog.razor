@@ -107,6 +107,10 @@
                     <Zahlenfeld Bezeichnung="@LabelAnzahl" Wert="@_projektZeile.AnzahlModule"
                                 WertChanged="BeiAnzahl" />
                 </div>
+                @* Paket A/B des PV-Ertragsmodells (Merge 5): Rechenmodell, Wechselrichter-
+                   Wirkungsgrad, Systemverluste und die Wechselrichterdaten (Ueberlagerung). *@
+                <PvModellFelder Zeile="@_projektZeile" KwpAnlage="@KwpDer(_projektZeile)"
+                                Geaendert="@(() => Uebernehmen?.Invoke(_projektZeile!))" />
             </KindInhalt>
         </Gruppenkopf>
     }
@@ -176,6 +180,12 @@
     /// Modulleistung über alle Zeilen. Die Komponente rechnet sie nicht.
     /// </summary>
     [Parameter] public Func<string>? Gesamtleistung { get; set; }
+
+    /// <summary>
+    /// kWp einer Projektzeile (Modulleistung mal Anzahl) fuer die DC/AC-Anzeige des
+    /// Wechselrichterdialogs (Paket B, Merge 5). Ohne Delegat: 0 = unbekannt.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, double>? AnlagenKwp { get; set; }
 
     /// <summary>Löscht einen KATALOGsatz; <c>true</c> = gelöscht.</summary>
     [Parameter] public Func<int, bool>? KatalogLoeschen { get; set; }
@@ -278,6 +288,9 @@
     }
 
     private void GesamtNeu() { if (Gesamtleistung is not null) _gesamtleistung = Gesamtleistung(); }
+
+    private double KwpDer(ErzeugerZeile? zeile)
+        => zeile is null || AnlagenKwp is null ? 0.0 : AnlagenKwp(zeile);
 
     // =================================================================================
     // Filter und Listen

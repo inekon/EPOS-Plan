@@ -161,6 +161,30 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Klimaregion des AKTIVEN Projekts (<c>Tab_Applikation.ID_Projekt</c>), 0 ohne
+        /// Projekt - die Vorbelegung eines neuen Projekts (Nutzerauftrag 02.09.2026, Merge 5).
+        /// </summary>
+        public static int KlimaregionDesAktivenProjekts()
+        {
+            try
+            {
+                DataTable app = DataRepository.GetDataTable("SELECT ID_Projekt FROM Tab_Applikation");
+                if (app == null || app.Rows.Count == 0 || app.Rows[0]["ID_Projekt"] == DBNull.Value) return 0;
+                int id = Convert.ToInt32(app.Rows[0]["ID_Projekt"]);
+                if (id <= 0) return 0;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?", new DbParam("@id", id));
+                if (dt == null || dt.Rows.Count == 0 || dt.Rows[0]["ID_Klimaregion"] == DBNull.Value) return 0;
+                return Convert.ToInt32(dt.Rows[0]["ID_Klimaregion"]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Klimaregion des aktiven Projekts konnte nicht gelesen werden: " + ex.Message);
+                return 0;
+            }
+        }
+
+        /// <summary>
         /// Gibt es <c>Tab_Variante</c>? Still ueber <see cref="StilleDb"/> — eine
         /// Auskunft ist kein Bedienschritt und darf keinen Dialog zeigen.
         /// </summary>
@@ -354,6 +378,10 @@ namespace WindowsFormsApplication1
 
             var anlagen = new WErzeugerCtrl { ID_Projekt = idProjekt };
             anlagen.Delete();
+
+            // Nutzerauftrag 02.09.2026 (Merge 5): die gespeicherten Ergebnisse gehen mit -
+            // bisher blieben sie als Rueckstand stehen (kein FK auf Tab_Projekt).
+            new ErgebnisCtrl().Delete(idProjekt);
 
             var projekt = new ProjektCtrl { m_szProjektname = projektname };
             projekt.Delete(projektname);

@@ -105,8 +105,8 @@ public class ModulKatalogDialogTests : BunitContext
 
     [Theory]
     [InlineData(ModulKatalogArt.Stromspeicher, "Administration Stromspeicher", 13)]
-    [InlineData(ModulKatalogArt.Photovoltaik, "Administration Photovoltaik Module", 13)]
-    public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_dreizehn_Felder(
+    [InlineData(ModulKatalogArt.Photovoltaik, "Administration Photovoltaik Module", 14)]
+    public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Felder(
         ModulKatalogArt art, string titel, int felder)
     {
         var cut = Aufbauen(art);
@@ -117,9 +117,12 @@ public class ModulKatalogDialogTests : BunitContext
         foreach (var feld in Profil(art).Felder)
             Assert.Contains(feld.Bezeichnung, texte);
 
+        // Merge 5: die Photovoltaik hat 15 Felder - 14 Eingabefelder und die Zelltechnologie
+        // als Auswahlfeld (select), das hier gesondert gezaehlt wird.
         int gezeichnet = cut.FindAll(".epos-feld input").Count
                        + cut.FindAll(".epos-feld textarea").Count;
         Assert.Equal(felder, gezeichnet);
+        Assert.Equal(art == ModulKatalogArt.Photovoltaik ? 1 : 0, cut.FindAll(".epos-feld select").Count);
     }
 
     /// <summary>
@@ -247,7 +250,7 @@ public class ModulKatalogDialogTests : BunitContext
     /// (<c>Form_AdminPV.btn_Neu_Click</c> Z. 180-192).
     /// </summary>
     [Fact]
-    public void Neu_belegt_die_Photovoltaik_mit_zwei_Leerfeldern_und_zehn_Nullen()
+    public void Neu_belegt_die_Photovoltaik_mit_zwei_Leerfeldern_und_elf_Nullen()
     {
         var cut = Aufbauen(ModulKatalogArt.Photovoltaik);
 
@@ -257,7 +260,7 @@ public class ModulKatalogDialogTests : BunitContext
 
         var werte = cut.FindAll(".epos-feld input").Select(e => e.GetAttribute("value") ?? "").ToList();
         Assert.Contains("Neues Modul", werte);
-        Assert.Equal(10, werte.Count(w => w == "0"));
+        Assert.Equal(11, werte.Count(w => w == "0"));     // Merge 5: dazu die NOCT-Zelltemperatur
     }
 
     [Fact]

@@ -101,13 +101,19 @@ namespace WindowsFormsApplication1
         /// <c>muISC</c> in mA/K; der Bestand uebernahm ihn NICHT und schrieb 0
         /// (Befund W13-B44, Anwenderfrage). Woertlich behalten.
         /// </summary>
-        public double? AlphaSc => AusCec ? (CecModule?.alpha_sc ?? 0) : (double?)null;
+        // PAN fuehrt die Koeffizienten in mA/GradC bzw. mV/GradC; muIscAK/muVocVK rechnen
+        // nach A/K bzw. V/K um (PV-Katalog-Koeffizienten, mit Merge 5 aus Form_CECImport
+        // nachgezogen - vorher blieb ein PAN-Modul hier auf 0). Fuehrt die .pan den
+        // Koeffizienten nicht (0), bleibt es beim Strich der Anzeige (NULL).
+        public double? AlphaSc => AusCec ? (CecModule?.alpha_sc ?? 0)
+                                        : (PanModule != null && PanModule.muISC != 0.0 ? PanModule.muIscAK : (double?)null);
 
         /// <summary>
         /// Spannungs-Temperaturkoeffizient in V/K; bei PAN aus demselben Grund
         /// nicht belegt (Befund W13-B44).
         /// </summary>
-        public double? BetaOc => AusCec ? (CecModule?.beta_oc ?? 0) : (double?)null;
+        public double? BetaOc => AusCec ? (CecModule?.beta_oc ?? 0)
+                                       : (PanModule != null && PanModule.muVocSpec != 0.0 ? PanModule.muVocVK : (double?)null);
 
         /// <summary>Nennbetriebszelltemperatur in °C; eine PAN-Datei fuehrt sie nicht.</summary>
         public double? TNoct => AusCec ? (CecModule?.T_NOCT ?? 0) : (double?)null;
@@ -142,6 +148,12 @@ namespace WindowsFormsApplication1
             model.m_T_NOCT = TNoct ?? 0;
             model.m_Laenge = Laenge;
             model.m_Breite = Breite;
+
+            // Paket B, Stufe E2.3 (Merge 5): die Modultechnologie aus der Quelle - CEC-Spalte
+            // "Technology", PAN-Feld "Technol". Unbekannt bleibt NULL.
+            model.m_Technologie = AusCec
+                ? PvErweitertesModell.TechnologieAusCec(CecModule?.Technology ?? Technology)
+                : PvErweitertesModell.TechnologieAusPan(PanModule?.Technol ?? Technology);
 
             return model;
         }

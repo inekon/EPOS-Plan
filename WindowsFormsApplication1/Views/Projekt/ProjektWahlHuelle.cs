@@ -55,9 +55,21 @@ namespace WindowsFormsApplication1
         internal static bool Oeffnen(IWin32Window besitzer, ProjektWahlDialog.ProjektZweck zweck,
                                      out ProjektKopfZeile ergebnis, out bool alleGleichenNamens,
                                      string vorauswahl = "", bool zuletztGeaendertZuerst = false)
+            => Oeffnen(besitzer, zweck, out ergebnis, out alleGleichenNamens, out _, vorauswahl,
+                       zuletztGeaendertZuerst);
+
+        /// <summary>
+        /// Wie oben, dazu der Loeschauftrag der Mehrfachauswahl (Nutzerauftrag 02.09.2026,
+        /// Merge 5) - null, wenn der Dialog keinen erteilt hat (Oeffnen, Abbruch).
+        /// </summary>
+        internal static bool Oeffnen(IWin32Window besitzer, ProjektWahlDialog.ProjektZweck zweck,
+                                     out ProjektKopfZeile ergebnis, out bool alleGleichenNamens,
+                                     out ProjektLoeschauftrag auftrag,
+                                     string vorauswahl = "", bool zuletztGeaendertZuerst = false)
         {
             ProjektKopfZeile gewaehlt = null;
             bool alle = false;
+            ProjektLoeschauftrag erteilt = null;
             BlazorDialogForm<ProjektWahlDialog> dlg = null;
 
             var werte = new Dictionary<string, object>(Gaben(zweck, vorauswahl, zuletztGeaendertZuerst))
@@ -70,7 +82,9 @@ namespace WindowsFormsApplication1
 
                 // Entscheid O-3: Der Dialog fragt nach, WENN der Name mehrere Projekte
                 // trifft; die Antwort reicht der Aufrufer an den Kern weiter.
-                ["MehrdeutigZugelassen"] = EventCallback.Factory.Create<bool>(new object(), b => alle = b)
+                ["MehrdeutigZugelassen"] = EventCallback.Factory.Create<bool>(new object(), b => alle = b),
+                ["LoeschauftragErteilt"] = EventCallback.Factory.Create<ProjektLoeschauftrag>(
+                    new object(), a => erteilt = a)
             };
 
             dlg = new BlazorDialogForm<ProjektWahlDialog>(Titel(zweck), MASS, werte);
@@ -82,6 +96,7 @@ namespace WindowsFormsApplication1
 
             ergebnis = gewaehlt;
             alleGleichenNamens = alle;
+            auftrag = erteilt;
             return gewaehlt != null && gewaehlt.Id > 0;
         }
 
@@ -92,7 +107,8 @@ namespace WindowsFormsApplication1
         internal static bool Oeffnen(IWin32Window besitzer, ProjektWahlDialog.ProjektZweck zweck,
                                      object[] argumente)
         {
-            if (!Oeffnen(besitzer, zweck, out ProjektKopfZeile gewaehlt, out bool alleGleichenNamens))
+            if (!Oeffnen(besitzer, zweck, out ProjektKopfZeile gewaehlt, out bool alleGleichenNamens,
+                         out ProjektLoeschauftrag auftrag))
                 return false;
 
             Projektwahl fach = argumente != null && argumente.Length > 0
@@ -104,6 +120,12 @@ namespace WindowsFormsApplication1
             fach.Id = gewaehlt.Id;
             fach.Name = gewaehlt.Name ?? "";
             fach.AlleGleichenNamens = alleGleichenNamens;
+            // Mehrfachauswahl (Merge 5): die Liste in Loeschreihenfolge und der Sicherungswunsch;
+            // ohne Auftrag (Einzelwahl) genau das eine Projekt.
+            fach.Mehrere = auftrag != null
+                ? new List<ProjektKopfZeile>(auftrag.Projekte)
+                : new List<ProjektKopfZeile> { gewaehlt };
+            fach.SicherungGewuenscht = auftrag != null && auftrag.Sicherung;
             return true;
         }
 
@@ -116,6 +138,20 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Zweck"] = zweck,
+                // Mehrfachauswahl und Sicherungskopie (Nutzerauftrag 02.09.2026, Merge 5) - nur beim Loeschen.
+                ["Mehrfach"] = loeschen,
+                ["SicherungAngeboten"] = loeschen,
+                ["HinweisText"] = loeschen ? Text_("PDLG_HINWEIS",
+                    "Wählen Sie die zu löschenden Projekte per Häkchen. Ein Stammprojekt nimmt seine "
+                    + "Varianten mit. Das Löschen ist unwiderruflich.") : "",
+                ["AlleText"] = Text_("PDLG_ALLE", "Alle sichtbaren auswählen"),
+                ["KeineText"] = Text_("PDLG_KEINE", "Auswahl aufheben"),
+                ["SicherungText"] = Text_("PDLG_SICHERUNG", "Sicherungskopie der Datenbank vor dem Löschen anlegen"),
+                ["AusgewaehltFormat"] = Text_("PA_AUSGEWAEHLT", "{0} ausgewählt"),
+                ["FrageMehrereFormat"] = Text_("PDLG_RUECKFRAGE",
+                    "{0} Projekt(e) werden mit allen zugehörigen Daten unwiderruflich gelöscht:"),
+                ["VarianteText"] = Text_("PDLG_VARIANTE", "Variante"),
+                ["WeitereFormat"] = Text_("PDLG_WEITERE", "… und {0} weitere"),
                 ["Zeilen"] = ProjektCtrl.NamenListe(),
                 ["Vorauswahl"] = vorauswahl ?? "",
                 ["SortSpalte"] = zuletztGeaendertZuerst

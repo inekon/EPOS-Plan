@@ -404,6 +404,7 @@
                 LeerErlaubt = feld.LeerErlaubt,
                 Gesperrt = feld.Gesperrt,
                 Gruppe = feld.Gruppe,
+                Optionen = feld.Optionen,
                 Wert = feld.Schluessel == ModulKatalogProfil.FeldBezeichner ? name : feld.Vorgabe
             });
         }
@@ -460,6 +461,26 @@
     // Das Markup eines Feldes
     // =====================================================================
 
+    private static IReadOnlyList<(int Id, string Text)> AuswahlEintraege(ModulFeldwert feld)
+    {
+        var liste = new List<(int, string)>();
+        for (int i = 0; i < feld.Optionen.Count; i++) liste.Add((i, feld.Optionen[i].Text));
+        return liste;
+    }
+
+    private static int? AuswahlIndex(ModulFeldwert feld)
+    {
+        for (int i = 0; i < feld.Optionen.Count; i++)
+            if (string.Equals(feld.Optionen[i].Wert, feld.Wert ?? "", StringComparison.Ordinal)) return i;
+        return feld.Optionen.Count > 0 ? 0 : null;
+    }
+
+    private void AuswahlSetzen(ModulFeldwert feld, int? index)
+    {
+        feld.Wert = index.HasValue && index.Value >= 0 && index.Value < feld.Optionen.Count
+            ? feld.Optionen[index.Value].Wert : "";
+    }
+
     private RenderFragment Feldmarkup(ModulFeldwert feld) => builder =>
     {
         if (feld.Art == BrowserFeldArt.Zahl && !feld.Gesperrt)
@@ -488,6 +509,20 @@
                 EventCallback.Factory.Create<int?>(this, w => GanzzahlSetzen(feld, w)));
             builder.AddAttribute(16, "FehlerZustand",
                 EventCallback.Factory.Create<(string, bool)>(this, BeiFehlerZustand));
+            builder.CloseComponent();
+            return;
+        }
+
+        if (feld.Art == BrowserFeldArt.Auswahl && !feld.Gesperrt)
+        {
+            // Paket B (Merge 5): die Zelltechnologie - Optionen aus dem Profil, der Wert
+            // ist der Datenbankcode (leer = NULL).
+            builder.OpenComponent<Auswahlfeld>(30);
+            builder.AddAttribute(31, "Bezeichnung", feld.Bezeichnung);
+            builder.AddAttribute(32, "Eintraege", AuswahlEintraege(feld));
+            builder.AddAttribute(33, "Auswahl", AuswahlIndex(feld));
+            builder.AddAttribute(34, "AuswahlChanged",
+                EventCallback.Factory.Create<int?>(this, i => AuswahlSetzen(feld, i)));
             builder.CloseComponent();
             return;
         }

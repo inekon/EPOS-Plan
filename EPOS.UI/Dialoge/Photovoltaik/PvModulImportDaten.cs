@@ -38,11 +38,14 @@ namespace EPOS.UI.Dialoge.Photovoltaik
     public sealed class PvVorpruefung
     {
         public PvVorpruefung(ImportBefund befund, IReadOnlyList<ImportPruefung>? pruefungen,
-                             IReadOnlyCollection<string>? vergebeneNamen)
+                             IReadOnlyCollection<string>? vergebeneNamen,
+                             string plausibilitaet = "", bool gesperrt = false)
         {
             Befund = befund;
             Pruefungen = pruefungen ?? Array.Empty<ImportPruefung>();
             VergebeneNamen = vergebeneNamen ?? Array.Empty<string>();
+            Plausibilitaet = plausibilitaet ?? "";
+            Gesperrt = gesperrt;
         }
 
         /// <summary>Der Befund des einen Kandidaten.</summary>
@@ -53,5 +56,14 @@ namespace EPOS.UI.Dialoge.Photovoltaik
 
         /// <summary>Die normalisierten Bestandsnamen — fuer die Namensvalidierung.</summary>
         public IReadOnlyCollection<string> VergebeneNamen { get; }
+
+        /// <summary>
+        /// Befund der Plausibilitaetspruefung (<c>PvModulPlausibilitaet</c>, Merge 5): leer =
+        /// nichts zu bemerken; sonst der fertige Meldungstext. Mit <see cref="Gesperrt"/>
+        /// ist es ein Fehler, der die Uebernahme verhindert, sonst eine Warnung, die der
+        /// Dialog zurueckfragt.
+        /// </summary>
+        public string Plausibilitaet { get; }
+        public bool Gesperrt { get; }
     }
 }

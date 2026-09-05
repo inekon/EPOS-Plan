@@ -69,9 +69,15 @@ namespace WindowsFormsApplication1
         public double Pmp => Imp * Vmp;          // W (berechnet)
 
         // ── Temperaturkoeffizienten ───────────────────────────────────────
-        public double muISC { get; set; }          // A/°C  (absolut)
-        public double muVocSpec { get; set; }          // mV/°C (spez. → /Voc ergibt %/°C)
+        public double muISC { get; set; }          // mA/GradC (PVsyst-Konvention; A/K = muISC/1000)
+        public double muVocSpec { get; set; }          // mV/GradC (V/K = muVocSpec/1000; relativ in %/K: /Voc/10, siehe muVocPerc)
         public double muPmpReq { get; set; }          // %/°C  (Leistungs-TK)
+
+        // Umrechnung in die DB-Konvention von Tab_PV_STAMM: alpha_SC in A/K, beta_OC
+        // in V/K. Beleg 02.09.2026: Jinko JKM260P-60 fuehrt muISC=3.40 bei Isc=9.014 A
+        // - als A/K gelesen waere das der rund 400-fache plausible Wert.
+        public double muIscAK => muISC / 1000.0;       // A/K
+        public double muVocVK => muVocSpec / 1000.0;   // V/K
 
         // ── Diodenmodell (5-Parameter) ────────────────────────────────────
         public double RShunt { get; set; }          // Ω   Parallelwiderstand

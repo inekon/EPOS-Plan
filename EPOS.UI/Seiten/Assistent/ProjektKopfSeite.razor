@@ -37,13 +37,17 @@
     <Gruppenkopf Titel="@KopfText" />
 
     <Herleitungszeile Text="@HinweisText" />
+    @if (!string.IsNullOrEmpty(PflichtText))
+    {
+        <p class="epos-projektkopf-pflicht">@PflichtText</p>
+    }
 
     <div class="epos-projektkopf-raster">
 
-        <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name"
+        <Textfeld Bezeichnung="@(LabelName + PflichtMarke)" Wert="@Daten.Name"
                   WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)" />
 
-        <Auswahlfeld Bezeichnung="@LabelKlima" Eintraege="@Klimaregionen"
+        <Auswahlfeld Bezeichnung="@(LabelKlima + PflichtMarke)" Eintraege="@Klimaregionen"
                      Auswahl="@KlimaAuswahl" AuswahlChanged="KlimaGewaehlt" />
 
         <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
@@ -62,8 +66,17 @@
                   NurLesen="true" />
     </div>
 
+    @* Pflichtfelder und Namensdoppel (Nutzerauftrag 02.09.2026, mit Merge 5 aus
+       Wizard_Projekt.NameHinweisNachziehen): der Hinweis steht sofort unter den Feldern;
+       das Veto beim Verlassen der Seite spricht der Assistent ueber dieselbe Regel aus. *@
+    @if (Befund != ProjektKopfBefund.Ok)
+    {
+        <p class="epos-projektkopf-hinweis" role="alert">@Hinweis</p>
+    }
+
     <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" Mehrzeilig="true"
-              Zeilen="5" WertChanged="@(w => Daten.Beschreibung = w)" />
+              Zeilen="5" Platzhalter="@PlatzhalterBeschreibung"
+              WertChanged="@(w => Daten.Beschreibung = w)" />
 </div>
 
 @code {
@@ -88,6 +101,34 @@
     [Parameter] public string LabelAenderung { get; set; } = "Änderungsdatum";
     [Parameter] public string LabelErstellt { get; set; } = "Erstelldatum";
     [Parameter] public string LabelKlima { get; set; } = "Klimaregion";
+
+    // --- Pflichtfelder, Namensdoppel, Vorbelegung (Nutzerauftrag 02.09.2026, Merge 5) ----
+    /// <summary>Die vergebenen Projektnamen - ein NEUES Projekt darf keinen davon tragen.</summary>
+    [Parameter] public IReadOnlyCollection<string> VergebeneNamen { get; set; } = Array.Empty<string>();
+    /// <summary>Kennzeichen hinter Pflichtfeld-Beschriftungen (" *"); leer = keins.</summary>
+    [Parameter] public string PflichtMarke { get; set; } = "";
+    /// <summary>WZP_PFLICHT - die Legende zur Marke; leer = keine Zeile.</summary>
+    [Parameter] public string PflichtText { get; set; } = "";
+    /// <summary>WZP_NAME_LEER</summary>
+    [Parameter] public string TextNameLeer { get; set; } = "Bitte einen Projektnamen eingeben.";
+    /// <summary>WZP_NAME_VORHANDEN</summary>
+    [Parameter] public string TextNameVorhanden { get; set; } = "Ein Projekt mit diesem Namen existiert bereits.";
+    /// <summary>WZP_KLIMA_LEER</summary>
+    [Parameter] public string TextKlimaLeer { get; set; } = "Bitte eine Klimaregion wählen.";
+    /// <summary>WZP_BESCHREIBUNG_HINT</summary>
+    [Parameter] public string PlatzhalterBeschreibung { get; set; } = "";
+
+    /// <summary>Der Befund der Kopfregeln (Kern) fuer den aktuellen Stand der Felder.</summary>
+    public ProjektKopfBefund Befund => ProjektKopfRegeln.Pruefe(Daten, VergebeneNamen);
+
+    /// <summary>Der Hinweistext zum Befund (leer bei Ok).</summary>
+    public string Hinweis => Befund switch
+    {
+        ProjektKopfBefund.NameLeer => TextNameLeer,
+        ProjektKopfBefund.NameVorhanden => TextNameVorhanden,
+        ProjektKopfBefund.KlimaLeer => TextKlimaLeer,
+        _ => ""
+    };
 
     /// <summary>
     /// Die gewählte Klimaregion als LISTENINDEX — das <c>Auswahlfeld</c> arbeitet mit

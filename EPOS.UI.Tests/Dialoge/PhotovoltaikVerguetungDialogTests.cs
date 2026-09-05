@@ -86,8 +86,9 @@ public class PhotovoltaikVerguetungDialogTests : BunitContext
     {
         var cut = Aufbauen(Satz());
 
-        // Zahlen: kWp-Override, AW-Override, DV, PPA-Preis, PPA-Aufschlag, Ausfall
-        Assert.Equal(6, cut.FindAll("input[inputmode=decimal]").Count);
+        // Zahlen: kWp-Override, Degradation (Paket B, Merge 5), AW-Override, DV, PPA-Preis,
+        // PPA-Aufschlag, Ausfall
+        Assert.Equal(7, cut.FindAll("input[inputmode=decimal]").Count);
         Assert.Single(cut.FindAll("input[inputmode=numeric]"));   // iMSys-Jahr
         Assert.Single(cut.FindAll("input[type=date]"));           // Inbetriebnahme
         Assert.Equal(3, cut.FindAll("input[type=checkbox]").Count);   // aktiv, § 51a, Bezugsreihe
@@ -163,16 +164,18 @@ public class PhotovoltaikVerguetungDialogTests : BunitContext
         var cut = Aufbauen(m);
         var zahlen = cut.FindAll("input[inputmode=decimal]");
 
-        Assert.True(zahlen[2].HasAttribute("disabled"));   // DV-Entgelt (nur Marktpraemie)
-        Assert.True(zahlen[3].HasAttribute("disabled"));   // PPA-Festpreis
-        Assert.True(zahlen[4].HasAttribute("disabled"));   // PPA-Aufschlag
+        // Seit Merge 5 steht die Degradation als zweites Zahlenfeld in der Anlage-Gruppe;
+        // die drei Vermarktungsfelder ruecken um eins.
+        Assert.True(zahlen[3].HasAttribute("disabled"));   // DV-Entgelt (nur Marktpraemie)
+        Assert.True(zahlen[4].HasAttribute("disabled"));   // PPA-Festpreis
+        Assert.True(zahlen[5].HasAttribute("disabled"));   // PPA-Aufschlag
 
         cut.FindAll("input[type=radio]")[4].Change(true);  // "Sonstige Direktvermarktung / PPA"
 
         zahlen = cut.FindAll("input[inputmode=decimal]");
-        Assert.True(zahlen[2].HasAttribute("disabled"));
-        Assert.False(zahlen[3].HasAttribute("disabled"));
+        Assert.True(zahlen[3].HasAttribute("disabled"));
         Assert.False(zahlen[4].HasAttribute("disabled"));
+        Assert.False(zahlen[5].HasAttribute("disabled"));
         Assert.Equal(DbWerte.PV_VERMARKTUNG_SONSTIGE_DV, m.Vermarktungsform);
     }
 

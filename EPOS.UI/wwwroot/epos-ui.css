@@ -5767,3 +5767,39 @@ body {
         padding-left: 0;
     }
 }
+
+/* Projektdialoge (Nutzerauftrag 02.09.2026, Merge 5): Haekchen der Mehrfachauswahl,
+   Hinweis unter den Pflichtfeldern des Projektkopfs. Kein Nesting (Hausregel). */
+.epos-projektliste-haken {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    cursor: pointer;
+}
+
+.epos-projektwahl-mehrfach {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.epos-projektwahl-zaehler {
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-projektkopf-pflicht {
+    margin: 0;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-projektkopf-hinweis {
+    margin: 0.25rem 0 0;
+    color: #b00020;
+    font-size: 0.95em;
+}
+
+/* Merge 5: Die Rueckfrage der Mehrfachloeschung listet die Namen zeilenweise. */
+.epos-rueckfrage-text {
+    white-space: pre-line;
+}

@@ -660,3 +660,53 @@ gelöscht (Sicherung K:\backup_kenndaten_2026-08-29_vor_booster_bereinigung
 alle Projekte: 0 lose Positionen anlagenfähiger Komponenten — der Bestand
 ist wieder vollständig sauber; der T6-Exportfilter verhindert künftige
 Einschleppungen.
+
+### Projektdialoge: Löschen mit Mehrfachauswahl, Öffnen-Handhabung, Neues Projekt (02.09.2026)
+
+Nutzerauftrag mit drei Screenshots: (1) der winzige Lösch-Dialog (ComboBox +
+OK) durch einen Dialog analog zum Öffnen ersetzen — mit Mehrfachauswahl;
+(2) den Öffnen-Bereich in der Handhabung verbessern, insbesondere
+waagerecht blättern in der Projektliste; (3) die Seite „Neues Projekt"
+(administrative Projektdaten) verbessern.
+
+- EINE LISTE FÜR ALLES: `ProjektAuswahl` (UserControl hinter Öffnen,
+  „Zuletzt geöffnet" und der Assistenten-Spalte) trägt jetzt beide Dialoge.
+  Neu darin: (a) waagerechter Bildlauf — die Namensspalte wird so breit wie
+  der längste Eintrag statt auf Sichtbreite gekappt; (b) Tooltip je Zeile
+  mit Name, Kunde, Änderungsdatum und „Variante von …"; (c) Tastaturweg:
+  Enter im Suchfeld übernimmt, Pfeil-ab springt in die Liste, Enter in der
+  Liste wirkt wie Doppelklick; (d) Gruppierung bei Namenssortierung: jeder
+  Stamm, darunter eingerückt („↳") seine Varianten (Tab_Variante einmal je
+  Laden gelesen); (e) Mehrfachauswahl-Modus per Häkchen mit Stamm→Varianten-
+  Kopplung, `GewaehlteProjekte` (Varianten vor Stämmen), `AlleSichtbaren`,
+  Zählzeile „n von m Projekten · k ausgewählt".
+- LÖSCHDIALOG `Form_ProjektDelete` neu (Code-Layout, Ressourcen PDLG_*
+  de/en): Hinweiszeile, Liste im Häkchenmodus, „Alle sichtbaren auswählen"/
+  „Auswahl aufheben", Sicherungs-Haken (vorbelegt an), „Löschen…" nur bei
+  Auswahl aktiv, Rückfrage mit vollständiger Liste (Varianten gekennzeichnet,
+  ab 12 gekürzt). `MenueCtrl.ProjektDelete` löscht je Projekt über den
+  bewährten Weg (Anlagen, Projektzeile samt Kaskaden), zusätzlich die
+  gespeicherten Ergebnisse (bisher Rückstand), setzt das aktive Projekt
+  zurück, wenn es dabei war, und meldet die Anzahl (Fehler je Projekt
+  gesammelt). Rückgabewert kompatibel zu Form_Start/MDIMainForm.
+- NEUES PROJEKT `Wizard_Projekt`: Pflichtfeld-Sterne (Projektname,
+  Klimaregion) + Hinweis im Sektionsbalken; Live-Hinweis unter dem
+  Namensfeld bei Namensdoppel (Bestand einmal gelesen, keine DB-Zugriffe
+  beim Tippen); Vorbelegung Bearbeiter (Windows-Benutzer) und Klimaregion
+  (zuletzt aktives Projekt) — nur in leere Felder; Platzhaltertext in der
+  Beschreibung; Fokus im Namensfeld. `Pruefe()` wird vom Assistenten beim
+  „Weiter" gerufen (leer/doppelt/Klimaregion fehlt) — bisher erst beim
+  Speichern viele Seiten später.
+- UMGEBUNG: VS ist jetzt Version 18 (MSBuild-Pfad …/18/Community/…), die
+  App heißt EPOS_Plan (Assembly/Prozess), Zielframework .NET 10 — der
+  Prüfstand-Runner wurde entsprechend umgestellt.
+- PRÜFSTAND NACH SQLITE-CUTOVER: Die Produktiv-DB ist seit 02.09. die
+  `Kenndaten.sqlite` (GetDBPath biegt .accdb-Namen um) — Access-Testkopien
+  sind für den Runner unbrauchbar; Testkopien liegen jetzt als SQLite
+  (kd1test, kd6, transferA/B). Der Runner brauchte zusätzlich einen
+  Resolver für die native `e_sqlite3.dll` (runtimes\win-x64\native), sonst
+  scheiterte jeder DB-Zugriff still im Typinitialisierer von
+  Microsoft.Data.Sqlite — Sweep/kd6 liefen dann zwar „grün", prüften aber
+  eine alte DLL bzw. gar keine Datenbank. Sichtbeleg des Löschdialogs:
+  K:\dump_Form_ProjektDelete.png (Liste im Offscreen-Dump leer, da das
+  Laden erst beim Anzeigen läuft — Dump-Mechanik, kein Fehler).

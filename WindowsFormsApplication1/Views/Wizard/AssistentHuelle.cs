@@ -109,6 +109,7 @@ namespace WindowsFormsApplication1
                     nr => Seitengaben(ctrl, nr, komponenten, gewaehlterName[0])),
 
                 ["SeiteVerlassen"] = new Action<int>(nr => SeiteVerlassen(ctrl, nr)),
+                ["SeitePruefen"] = new Func<int, string>(nr => SeitePruefen(ctrl, nr)),
 
                 ["ProjektMarkiert"] = new Action<int, string>((id, name) =>
                 {
@@ -153,6 +154,28 @@ namespace WindowsFormsApplication1
         /// Beim Verlassen des Projektkopfes wandern seine sieben Felder in den
         /// Projektsatz, und beim ERSTEN Durchgang laufen die sechs Ladewege.
         /// </summary>
+        /// <summary>
+        /// Nutzerauftrag 02.09.2026 (mit Merge 5 aus WizardParent.Next und Wizard_Projekt.Pruefe):
+        /// Pflichtfelder und Namensdoppel der Projektseite beim VERLASSEN pruefen - vorher
+        /// fiel es erst beim Speichern auf, viele Seiten spaeter. Liefert den Meldungstext
+        /// oder null.
+        /// </summary>
+        private static string SeitePruefen(AssistentCtrl ctrl, int nr)
+        {
+            if (nr != WizardItemClass.PROJEKT_ITEM || ctrl.Kopf.Count == 0) return null;
+            switch (ProjektKopfRegeln.Pruefe(ctrl.Kopf[0], ProjektKopfHuelle.VergebeneNamen()))
+            {
+                case ProjektKopfBefund.NameLeer:
+                    return Text_("WZP_NAME_LEER", "Bitte einen Projektnamen eingeben.");
+                case ProjektKopfBefund.NameVorhanden:
+                    return Text_("WZP_NAME_VORHANDEN", "Ein Projekt mit diesem Namen existiert bereits.");
+                case ProjektKopfBefund.KlimaLeer:
+                    return Text_("WZP_KLIMA_LEER", "Bitte eine Klimaregion wählen.");
+                default:
+                    return null;
+            }
+        }
+
         private static void SeiteVerlassen(AssistentCtrl ctrl, int nr)
         {
             if (nr != WizardItemClass.PROJEKT_ITEM) return;
