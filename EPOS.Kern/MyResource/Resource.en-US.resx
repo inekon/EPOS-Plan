@@ -5445,7 +5445,7 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>only the first {0} variants shown, {1} more hidden</value>
   </data>
   <data name="BK_MSG_VERGLEICH_UMFANG" xml:space="preserve">
-    <value>{0} property row(s) for the base project and {1} variant(s).</value>
+    <value>{0} component row(s) for the base project and {1} variant(s).</value>
   </data>
   <data name="BK_LBL_KOMPONENTEN_DIFF" xml:space="preserve">
     <value>Differences from the base project — variant “{0}”</value>
