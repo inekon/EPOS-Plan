@@ -88,7 +88,7 @@ Migrationsschritte"); danach wird jeder Aufruf vorher mit dem Anwender abgestimm
 | `Werkzeuge/SqlDialektPruefer` | hält **jeden** SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Access-Verbotsliste (`UPDATE … JOIN`, `Nz`, `TOP n`, `LIKE '*'`, `&`, Umlaut-Schreibweise). **Nach jeder neuen oder geänderten SQL-Anweisung ziehen** — der Referenzlauf deckt nur den Rechenweg ab, nicht die Dialog- und Pflegepfade. Regeln in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) Abschnitt 6 | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
 
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
-gegen `Referenzlaeufe/2026-08-30_B3-Kaskade` gehalten (13 Projekte, 332 CSV); die CI rechnet bei
+gegen `Referenzlaeufe/2026-09-05_R2_Zeitbasis` gehalten (elf Projekte, 282 CSV, aus dem plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite`; eingefroren am 05.09.2026 nach der Zusammenführung der Rechner-2-Linie — Paket A verschiebt die Zeitbasis der Solardaten von UTC auf Ortszeit. Die Vorgängerbasis `2026-08-30_B3-Kaskade` bleibt zur Geschichte liegen; ihre Projekte 1011 und 1021 stehen nicht in der Testdatenbank); die CI rechnet bei
 jedem Push die Projekte 1030, 1007 und 1017 gegen dieselbe Basis.
 
 C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build zwingend

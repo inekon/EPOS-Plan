@@ -2903,7 +2903,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Referenzbasis:** Der Referenzlauf weicht seit dieser Zusammenführung für 1030, 1007 und 1017 von
 > `2026-08-30_B3-Kaskade` ab — genau die Paket-A-Verschiebung der Solar-Zeitbasis von UTC auf Ortszeit, die auf
 > Rechner 2 als PA0→PA1 dieselben Zahlen zeigt (1007 und 1017 hier byte-gleich zu deren PA1/PB1/M5). Ob die Basis
-> neu eingefroren wird, ist dem Anwender vorgelegt; bis dahin bleibt der Stand ungepusht.
+> neu eingefroren wird, war dem Anwender vorgelegt — **Entscheid 05.09.2026: ja.** Neue CI-Basis
+> `Referenzlaeufe/2026-09-05_R2_Zeitbasis` aus `EPOS.Referenzlauf` auf Linux: elf Projekte, 282 CSV (1011 und 1021 der
+> B3-Basis stehen nicht in `Kenndaten_Test.sqlite`), zweiter Lauf byte-gleich; gegen die Windows-Basis M5 von Rechner 2
+> sind sechs der acht gemeinsamen Projekte byte-gleich, 1030 und 1039 tragen die schon zwischen B3 und PA0 bekannte
+> Umgebungsdifferenz des zweiten Rechners. `kern.yml`, das Gate und `CLAUDE.md` halten seither gegen R2_Zeitbasis;
+> `2026-08-30_B3-Kaskade` bleibt zur Geschichte liegen.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
