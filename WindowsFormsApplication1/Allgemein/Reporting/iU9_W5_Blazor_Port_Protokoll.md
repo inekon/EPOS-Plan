@@ -591,3 +591,102 @@ bunit-Proben (2 205 → **2 211**, auch unter `LANG=en_US.UTF-8`). Die
 **Sichtprüfung in WebView2 steht beim Anwender**: In der Arbeitsumgebung ist
 kein Browser erreichbar, der Befund W5‑B‑1 ist deshalb aus Markup, Stilblatt
 und Tabellenboxmodell hergeleitet, nicht am Bild gemessen.
+
+---
+
+## 13. Anwenderwunsch 05.09.2026 (W5‑E‑1) — Variantenwahl als Auswahlfeld
+
+> **Wortlaut des Anwenders:** „Variantenprojekte-Auswahl als Dropdown, damit
+> weniger Platz verwendet wird."
+
+Gemeint ist die Seite **Berichte & Kosten → Übersicht — Stammprojekt und
+Varianten** (`EPOS.UI/Seiten/Berichte/UebersichtSeite.razor`).
+
+### 13.1 Vorher / Nachher
+
+| | vorher (W5.5) | nachher (W5‑E‑1) |
+|---|---|---|
+| Wahl der Version | **Tabelle** `epos-variantentabelle`: Wahlknopf (`Zeilenwahl`), Art, Bezeichner, Projektname, Simulation — ein Spaltenkopf und je Version eine Zeile | **Auswahlfeld** „Variante:" (Baustein `Auswahlfeld`) — der Stamm als erster Eintrag, dann die Varianten; Eintragstext „Bezeichner — Projektname", Id = `Tab_Projekt.ID` |
+| Verwaltung | zweite Spalte `epos-variantenpflege` (max. 260 px) mit Bezeichnerfeld und den drei Knöpfen **untereinander** | **eine Zeile** `epos-variantenzeile`: Auswahlfeld, Bezeichnerfeld, „Variante anlegen", „Variante löschen", „Simulation starten" |
+| Simulationsstand | Spalte „Simulation" je Zeile, `— (fehlt) ⚠` bzw. `05.09.26 16:23 ⚠`, **ohne Kurztext** | leise Zeile `epos-simstand` unter der Zeile: „Simulation: 05.09.26 16:23" bzw. „noch nicht simuliert", das „⚠" als eigenes Element **mit Grund im Kurztext**, `aria-live="polite"` |
+| Unterschiedstabelle | `epos-raster-huelle` (Höchsthöhe 22 rem) unterhalb des zweispaltigen Blocks | rückt hoch und steht in `epos-raster-huelle--vergleich` — **35,2 rem** (`calc(var(--epos-listenhoehe) * 1.6)`), innerer Rollbalken und stehender Spaltenkopf wie gehabt |
+| Höhe über der Tabelle | vier bis fünf Zeilen (Tabellenkopf + je Version eine Zeile) | **zwei Zeilen** (Auswahlfeldzeile + Statuszeile), unabhängig von der Zahl der Varianten |
+
+**Was das „⚠" bedeutet — nachgesehen, nicht geraten.**
+`BerichtsDatenSammler.ErmittleStatus` setzt es in **zwei** Fällen:
+`SimStand` ist `null` (es liegt kein Ergebnis vor) **oder** `Veraltet` ist
+gesetzt, das heißt der Zeitstempel des Ergebnisses ist **älter als
+`Tab_Projekt.Aenderungsdatum`**. Bis hierher sagte das Zeichen nicht, welcher
+der beiden Fälle gerade gilt; jetzt sagt es der Kurztext
+(`BKS_SIM_GRUND_FEHLT` / `BKS_SIM_GRUND_VERALTET`).
+
+### 13.2 Was dafür nötig war
+
+- **`VarianteZeile.SimZeitpunkt`** (neu, `EPOS.UI/Seiten/Berichte/BerichtDaten.cs`):
+  der **reine** Zeitpunkt, leer = nie simuliert. `SimStand` bleibt unverändert
+  der fertige Zellentext der Tabellen von Bericht und Wirtschaftlichkeit — er
+  trägt das „⚠" und im Fehlfall den Wortlaut „— (fehlt) ⚠" in sich. Aus ihm
+  ließe sich der Wert nur durch Raten zurückgewinnen; deshalb ein eigenes Feld
+  und keine Zerlegung. Gefüllt wird es in `UebersichtSeiteGaben.Laden()` aus
+  demselben `VariantenStatus`, aus dem auch `SimStandText` kommt.
+- **`Auswahlfeld.Kurzname`** (neu, `EPOS.UI/Standards/Auswahlfeld.razor`):
+  optionales `aria-label`. Die sichtbare Beschriftung ist aus Platzgründen
+  „Variante:", die Sprachausgabe hört „Version wählen" (`BKS_WAHL_VERSION` —
+  derselbe Text, der bis hierher am Wahlknopf der Zeile hing). Leer = kein
+  `aria-label`, dann benennt wie bisher das umschließende `<label>` das Feld.
+- **Vier neue Schlüssel** in `Resource.resx` und `Resource.en-US.resx`
+  (Block `BKS_*`, gelesen über `ResourceManager.GetString` mit deutschem
+  Rückfall — Weg B5b‑O4): `BKS_LBL_VARIANTE`, `BKS_SIM_NIE`,
+  `BKS_SIM_GRUND_FEHLT`, `BKS_SIM_GRUND_VERALTET`.
+- **Drei Parameter entfallen** an der Seite und in ihrem Parametersatz:
+  `SpalteArt`, `SpalteBezeichner`, `SpalteProjektname` — die Spalten gibt es
+  nicht mehr. `SpalteSimulation` (`BK_BER_SP_SIMULATION`, de/en „Simulation")
+  **bleibt** und beschriftet jetzt die Statuszeile: dieselbe Ressource,
+  dieselbe Aussage, eine Zeile statt einer Spalte. Die Ressourcenschlüssel
+  `BK_SP_ART`/`BK_SP_BEZEICHNER`/`BK_SP_PROJEKTNAME` bleiben im Bestand — die
+  Berichts- und die Wirtschaftlichkeitsseite führen ihre Tabellen weiter.
+- **Stilblatt** (`epos-ui.css`, ein Block im Abschnitt „Seiten des Reiters
+  Berichte & Kosten"): `.epos-variantenzeile` (das Auswahlfeld darf wachsen,
+  das Bezeichnerfeld bleibt schmal, Umbruch über das `flex-wrap` von
+  `.epos-seite-zeile`), `.epos-simstand`, `.epos-raster-huelle--vergleich`.
+  Gelöscht: `.epos-variantenpflege` und der Selektor `.epos-variantentabelle`.
+
+**Die Hausregel W9‑B‑2 bleibt.** Die Unterschiedstabelle steht weiter in
+`.epos-raster-huelle` — fester Rahmen, `overflow: auto`, stehender
+Spaltenkopf. Geändert ist allein die **Höchsthöhe**, und sie ist an
+`--epos-listenhoehe` gerechnet, damit sie mit der Schrift und mit der
+Hausregel mitwächst. Der Grund für die Ausnahme: Auf dieser Seite ist die
+Tabelle der **Inhalt** und nicht eine Liste neben ihm.
+
+### 13.3 Abnahmepunkte
+
+| # | Was der Anwender sehen muss |
+|---|---|
+| **A‑1** | Statt der Variantentabelle steht ein Auswahlfeld „Variante:". Es führt **den Stamm als ersten Eintrag** („(Stammprojekt) — Beispiel WP WG 1") und darunter je Variante „Bezeichner — Projektname". |
+| **A‑2** | Ein Wechsel im Auswahlfeld tut, was vorher die Zeilenwahl tat: Die Überschrift wechselt zwischen „Komponenten der Gruppe im Vergleich" und „Unterschiede der Variante ‚…'", die Tabelle darunter wechselt mit, „Variante löschen" ist auf dem Stamm gesperrt und auf einer Variante frei. |
+| **A‑3** | Unter der Zeile steht leise „Simulation: 05.09.26 16:23". Fehlt das Ergebnis, steht dort „noch nicht simuliert". Ist es veraltet oder fehlt es, steht ein „⚠" daneben, und der **Mauszeiger darauf** nennt den Grund. |
+| **A‑4** | Bezeichnerfeld und die drei Knöpfe stehen **in einer Zeile** mit dem Auswahlfeld; auf schmalem Fenster rutschen die Knöpfe darunter. Der Schalter „nur Stammprojekte" steht unverändert oben beim Stammfeld. |
+| **A‑5** | Die Unterschiedstabelle beginnt **deutlich weiter oben** und ist höher; ihr eigener Rollbalken und der stehende Spaltenkopf sind geblieben. Die Seite selbst rollt nicht mehr, um an die Tabelle zu kommen. |
+| **A‑6** | Tastatur: Tabulator führt Stammfeld → Filter → Variante → Bezeichner → die drei Knöpfe. Im Auswahlfeld wählen ↑/↓ die Version. |
+
+### 13.4 Nachweise
+
+- `dotnet build WP-Plan.sln -c Release -p:Platform=x64` → **0 Fehler**,
+  6 Warnungen (die fünf Altwarnungen von `EPOS.Kern` und `WFO0003`).
+- `dotnet test EPOS.UI.Tests -c Release` → **2 400** grün (vorher 2 392;
+  zehn neue Fälle, zwei durch sie ersetzte entfallen), ebenso unter
+  `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`. Darin `StilblattTests`
+  (Klammerbilanz, kein Nesting) und `ListenrahmenTests` (Hausregel W9‑B‑2).
+- `dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release` → **122** grün.
+- Die neuen Fälle in `EPOS.UI.Tests/Seiten/UebersichtSeiteTests.cs`:
+  Einträge und Reihenfolge des Auswahlfelds, die gewählte Version, der leere
+  Stand, das `aria-label`, die Statuszeile mit und ohne „⚠" samt beiden
+  Gründen, der Wechsel treibt `MarkierteId`/Unterschiede/Knöpfe, die
+  Variantentabelle ist weg, die Unterschiedstabelle steht im höheren Rahmen
+  (Markup **und** Stilblatt — eine bunit-Probe sieht eine Stilregel nicht,
+  Lehre W6‑B‑1).
+
+**Grenze des Nachweises.** Geprüft auf Linux. Die **Sichtprüfung in WebView2
+steht beim Anwender**: Ob die eine Zeile auf seinem Fenster wirklich ohne
+Umbruch steht und wie viel Höhe die Unterschiedstabelle gewinnt, ist aus
+Markup und Stilblatt hergeleitet, nicht am Bild gemessen.

@@ -2082,10 +2082,57 @@ body {
 /* --------------------------------------------------------------------------
    Die Uebersichtsseite (iU9-W5.5).
    -------------------------------------------------------------------------- */
-.epos-variantentabelle,
 .epos-vergleichstabelle {
     width: 100%;
     border-collapse: collapse;
+}
+
+/* --------------------------------------------------------------------------
+   Anwenderwunsch 05.09.2026 (W5-E-1): "Variantenprojekte-Auswahl als Dropdown,
+   damit weniger Platz verwendet wird."
+
+   Vorher stand die Gruppe als Tabelle da - Wahlknopf, Art, Bezeichner,
+   Projektname, Simulation - und daneben in einer zweiten Spalte das
+   Bezeichnerfeld mit den drei Knoepfen. Fuer eine Angabe, die in eine Zeile
+   passt, kostete das vier bis fuenf Zeilen Hoehe, und zwar genau die Hoehe,
+   die der Unterschiedstabelle darunter fehlte. Jetzt: EINE Zeile aus
+   Auswahlfeld, Bezeichnerfeld und den drei Knoepfen, darunter der
+   Simulationsstand als leiser Satz.
+   -------------------------------------------------------------------------- */
+
+/* Das Auswahlfeld darf wachsen (es traegt "Bezeichner - Projektname"), das
+   Bezeichnerfeld bleibt schmal, die Knoepfe stehen rechts daneben. Umbrochen
+   wird ueber das flex-wrap von .epos-seite-zeile - auf schmalem Schirm rutschen
+   die Knoepfe unter die Felder. */
+.epos-variantenzeile > .epos-feld {
+    flex: 0 1 14rem;
+}
+
+.epos-variantenzeile > .epos-feld:first-child {
+    flex: 1 1 20rem;
+    max-width: 34rem;
+}
+
+/* Der Simulationsstand der gewaehlten Version - das, was die Spalte
+   "Simulation" der Tabelle sagte. Leise, weil er begleitet und nicht meldet
+   (Staffelung W16b-E-6); das "⚠" darin traegt weiter .epos-veraltet. */
+.epos-simstand {
+    margin: 4px 0 0 0;
+    min-height: 1.4em;
+    color: var(--epos-text-leise);
+}
+
+.epos-simstand .epos-veraltet {
+    margin-left: 6px;
+}
+
+/* Die Unterschiedstabelle bekommt die frei gewordene Hoehe. Hausregel W9-B-2
+   bleibt: fester Rahmen, innerer Rollbalken, stehender Spaltenkopf - nur die
+   HOECHSTHOEHE ist eine andere, denn sie ist der Inhalt dieser Seite und nicht
+   eine Liste neben ihm. Der Wert haengt an --epos-listenhoehe, damit er mit
+   der Schriftgroesse und mit der Hausregel mitwaechst. */
+.epos-raster-huelle--vergleich {
+    max-height: calc(var(--epos-listenhoehe) * 1.6);
 }
 
 /* Das Gewerk steht nur in der ersten Zeile seines Blocks - und dort fett
@@ -2094,12 +2141,6 @@ body {
     text-align: left;
     font-weight: 700;
     white-space: nowrap;
-}
-
-/* Die Pflegespalte rechts der Liste (Vorlaeufer: 222 px Absolutspalte). */
-.epos-variantenpflege {
-    flex: 0 0 auto;
-    max-width: 260px;
 }
 
 /* Wo die Uebernahme nicht traegt, steht statt des Knopfes ein grauer Strich
