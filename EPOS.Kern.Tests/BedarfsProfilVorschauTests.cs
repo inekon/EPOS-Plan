@@ -27,6 +27,11 @@ namespace EPOS.Kern.Tests
     /// abgeleitet aus <c>list != null</c>), fand nichts, übersprang das Profil still
     /// — und lieferte zwölf Nullmonate samt leerem Bild.</para>
     ///
+    /// <para><b>Die Reihenfolge ist seit W9‑O‑3c die der KOPIE</b> (Anwenderentscheid
+    /// vom 05.09.2026): Die Projektvorschau liest die Projektkopie zuerst und den
+    /// Katalog als Rückfall — Vorschau und Lauf zeigen damit überall dieselben
+    /// Zahlen.</para>
+    ///
     /// <para><b>Ohne Datenbank schweigen die Fälle</b> (<see cref="TestDatenbank"/>);
     /// die Arbeitskopie wird je Klasse geteilt und hier nur GELESEN.</para>
     /// </summary>
@@ -121,42 +126,99 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
-        //  2 — Die Wache: was heute stimmt, bleibt zeichengleich
+        //  2 — Die Wache: gleiche Quellen, gleiche Zahlen
         // ==================================================================
 
         /// <summary>
-        /// <b>Steht der Name im Katalog, ändert sich NICHTS.</b> Die drei Proben sind
-        /// die Fälle, in denen die Vorschau schon vor der Behebung eine Zahl zeigte —
-        /// eingefroren am Bestand vom 05.09.2026. Der Katalog bleibt die erste Quelle;
-        /// die Projektkopie ist nur der Rückfall für einen Namen, den der Katalog
-        /// nicht kennt.
+        /// <b>Deckt sich die Kopie mit dem Katalog, ändert sich NICHTS.</b> Die zwei
+        /// Proben sind Fälle, in denen die Projektkopie zeichengleich zu ihrem
+        /// Katalogeintrag steht — die Zahlen bleiben deshalb auch nach dem Entscheid
+        /// W9‑O‑3c die am 05.09.2026 eingefrorenen.
+        ///
+        /// <para><b>Die dritte Probe ist mit W9‑O‑3c umgezogen.</b> Bis dahin stand hier
+        /// auch Brauchwasser 1007 mit dem Satz „der Katalog bleibt die erste Quelle" und
+        /// dem Januarwert 1,900 MWh. Genau diese Aussage hat der Anwenderentscheid vom
+        /// 05.09.2026 aufgehoben: Die Kopie kommt zuerst, und dort trägt sie eine
+        /// ANDERE Verteilung. Der Fall steht jetzt als
+        /// <see cref="Brauchwasser_Vorschau_zeigt_die_Verteilung_der_Projektkopie"/> mit
+        /// dem Wert der Kopie.</para>
         /// </summary>
         [Fact]
         public void Bekannte_Katalognamen_liefern_unveraenderte_Monatswerte()
         {
             if (!_db.Vorhanden) return;
 
-            // Prozesswaerme, Projekt 1041 - "Hotel_1" steht im Katalog.
+            // Prozesswaerme, Projekt 1041 - "Hotel_1" steht in beiden Quellen mit
+            // denselben zwoelf Monatswerten und demselben Typprofil.
             var p = new SimulationWaermebedarf { m_ID_Projekt = 1041 };
             p.Prozesswaerme_berechnen(ProzessNamen(1041));
             Assert.Equal(30000.0, p.prozesswerte.Sum(), 0);
             Assert.Equal(2.548, p.Waermebedarf_Prozess_Monat[0], 3);
             Assert.Equal(2.301, p.Waermebedarf_Prozess_Monat[1], 3);
 
-            // Brauchwasser, Projekt 1007 - "Haushalt-3" steht im Katalog. Die
-            // Projektkopie traegt eine ANDERE Monatsverteilung; sie darf die
-            // Anzeige nicht verschieben (Rueckfall nur bei unbekanntem Namen).
-            var b = new SimulationWaermebedarf { m_ID_Projekt = 1007 };
-            b.Brauchwasserwaerme_berechnen(new List<string> { BrauchwasserNamen(1007)[0] });
-            Assert.Equal(4059.700, b.brauchwasserwerte.Sum(), 1);
-            Assert.Equal(1.900, b.Waermebedarf_Brauchwasser_Monat[0], 3);
-            Assert.Equal(0.340, b.Waermebedarf_Brauchwasser_Monat[1], 3);
-
-            // Stromverbraucher, Projekt 1024 - "Buero_Konst" steht im Katalog.
+            // Stromverbraucher, Projekt 1024 - "Buero_Konst" ebenso.
             var s = new SimulationStrombedarf { m_ID_Projekt = 1024 };
             float[] reihe = s.Stromprofil_Strombedarf_berechnen(StromNamen(1024));
             Assert.NotNull(reihe);
             Assert.Equal(365000.0, reihe.Sum(), 0);
+        }
+
+        // ==================================================================
+        //  3 — Der Entscheid W9‑O‑3c: die Kopie zuerst
+        // ==================================================================
+
+        /// <summary>
+        /// <b>W9‑O‑3c („Empfehlung", Anwenderentscheid vom 05.09.2026).</b> Die
+        /// Vorschau liest die PROJEKTKOPIE zuerst und fällt erst danach auf den
+        /// Katalog zurück — Vorschau und Lauf zeigen damit überall dieselben Zahlen.
+        ///
+        /// <para>Projekt 1007 führt das Brauchwasserprofil „Haushalt-3". Katalog und
+        /// Projektkopie tragen dieselbe Jahressumme (4,0597 MWh aus
+        /// <c>Z_Projekt_Brauchwasser</c>), aber eine ANDERE Monatsverteilung: Der
+        /// Katalog steht im Januar auf 1,900 MWh, die im Projekt bearbeitete Kopie
+        /// auf 0,34 von 2,4997 — auf die Jahressumme skaliert 0,552 MWh. Der
+        /// Projektlauf rechnet seit jeher mit der Kopie; die Vorschau zeigte bis zu
+        /// diesem Entscheid den Katalogwert.</para>
+        /// </summary>
+        [Fact]
+        public void Brauchwasser_Vorschau_zeigt_die_Verteilung_der_Projektkopie()
+        {
+            if (!_db.Vorhanden) return;
+
+            var b = new SimulationWaermebedarf { m_ID_Projekt = 1007 };
+            b.Brauchwasserwaerme_berechnen(new List<string> { BrauchwasserNamen(1007)[0] });
+
+            // Die Jahressumme bleibt: sie kommt aus Z_Projekt_Brauchwasser und wird
+            // auf beide Verteilungen gleich aufskaliert.
+            Assert.Equal(4059.700, b.brauchwasserwerte.Sum(), 1);
+
+            // Die Verteilung ist die der KOPIE (W9-O-3c): 0,552 statt 1,900 MWh.
+            Assert.Equal(0.552, b.Waermebedarf_Brauchwasser_Monat[0], 3);
+            Assert.Equal(0.553, b.Waermebedarf_Brauchwasser_Monat[1], 3);
+        }
+
+        /// <summary>
+        /// <b>Der Rückfall bleibt der Katalog.</b> Eine eben aufgenommene, noch nicht
+        /// gespeicherte Zeile trägt den Namen ihres KATALOGEINTRAGS — ihre
+        /// Projektkopie entsteht erst beim Speichern (<c>WizardCtrl.Add_Projekt_*</c>
+        /// → <c>CopyFromStamm</c>). Für sie muss die Vorschau weiterhin im Katalog
+        /// nachschlagen.
+        ///
+        /// <para>„Haushalt-3 neu" steht im Brauchwasserkatalog und in KEINER
+        /// Projektkopie von 1007; es gibt auch keine Zuordnung in
+        /// <c>Z_Projekt_Brauchwasser</c>, also wird nicht skaliert — die zwölf
+        /// Katalogmonate stehen unverändert da (Januar 0,400 MWh, Jahr 2,5597 MWh).</para>
+        /// </summary>
+        [Fact]
+        public void Ein_nur_im_Katalog_bekannter_Name_kommt_aus_dem_Katalog()
+        {
+            if (!_db.Vorhanden) return;
+
+            var b = new SimulationWaermebedarf { m_ID_Projekt = 1007 };
+            b.Brauchwasserwaerme_berechnen(new List<string> { "Haushalt-3 neu" });
+
+            Assert.Equal(2559.700, b.brauchwasserwerte.Sum(), 1);
+            Assert.Equal(0.400, b.Waermebedarf_Brauchwasser_Monat[0], 3);
         }
 
         /// <summary>
