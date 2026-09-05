@@ -105,6 +105,12 @@ namespace WindowsFormsApplication1
                 : new SeitenZustand();
             parameter[SeitenZustand.PARAMETER] = Zustand;
 
+            // Die Gegenrichtung derselben Wache (Befund W16b-B-1, 05.09.2026):
+            // ZustandParameterPruefen sichert den EINEN Schluessel, den die
+            // Huelle beilegt; hier wird jeder MITGEBRACHTE geprueft.
+            Parametersatzwache.Pruefen(typeof(TKomponente), parameter,
+                                       "BlazorSeite<" + typeof(TKomponente).Name + ">");
+
             Dock = DockStyle.Fill;
             BackColor = Themaflaeche;
 
@@ -133,6 +139,11 @@ namespace WindowsFormsApplication1
 
             _web.RootComponents.Add<TKomponente>("#app", parameter);
             Controls.Add(_web);
+
+            // WACHE (Befund W16b-B-1): dieselbe Frist wie in der Dialoghuelle.
+            // Auch eine SEITE kann beige stehen bleiben, und auch hier meldet
+            // der WinForms-BlazorWebView von sich aus nichts.
+            WebViewWache.Anhaengen(_web, this, typeof(TKomponente).Name);
         }
 
         /// <summary>

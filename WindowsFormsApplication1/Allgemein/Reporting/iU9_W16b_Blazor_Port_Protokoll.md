@@ -461,3 +461,207 @@ beantwortet: Er RECHNET einen bestehenden Projektstand nach, er wechselt kein Pr
 | **W16b‑O‑4** | **`Form_Start.btn_Help` (die Fensterhilfe) hat noch keinen neuen Ort.** Der Schlüssel steht in `help_mapping.txt`; W16c hängt ihn an das Hauptfenster (Befund W16b‑B5) |
 | **W16b‑O‑5** | **Der Assistent ist weiterhin modal** (W16a‑E‑1 / W16a‑O‑3). Die Startseite kann seit E‑5 Ansichten wechseln; der Umbau bräuchte dieselbe Behandlung der zwei Aufrufer wie bei den Simulationsseiten |
 | **W16b‑O‑6** | ~~**Der Stammzweig aus W16b‑O‑3 kann in einer FRISCHEN Datenbank die falsche Region nennen.** `Tab_Klimaregion.ID` ist ein `INTEGER PRIMARY KEY AUTOINCREMENT` und beginnt in einem Neustand bei 1 — genau dort, wo auch die Stamm-Ids liegen~~ — **gegenstandslos** (04.09.2026, mit `b94dbb5`): **Es gibt keinen Stammzweig mehr.** `ProjektKlimazone` liest ausschließlich die Projektkopie, und die Stammabfrage ist aus dem Kern gefallen; eine Kollision der beiden Schlüsselräume kann die Anzeige damit nicht mehr erreichen. Der Zeuge dafür steht als N7-Fall `Ohne_Projektkopie_ist_die_Klimazone_leer` (Projekt 19 „Wöhler WP" trifft mit `ID_Klimaregion = 1` einen Stammsatz und meldet trotzdem `""`); kehrt die Stammabfrage zurück, wird er rot. **Bestehen bleibt der Schemabefund dahinter**: `Tab_Klimaregion` führt keine Stammspalte, sondern hängt über den TEXT am Stamm — entgegen der Regel „bei neuen Beziehungen IDs verwenden". Das zu ändern ist ein Migrationsschritt und gehört nicht in diese Welle |
+
+---
+
+## 12 — Windows-Abnahme 05.09.2026 (Befunde W16b‑B‑1 und W16b‑B‑2)
+
+Der Anwender hat den Stand `830c903` gestartet (Startseite gestylt, Kachelbilder da) und zwei
+Dinge gemeldet. Beide sind hier vollständig aufgeschrieben — auch das, was **nicht**
+entschieden werden konnte, denn diese Sitzung hatte kein Windows.
+
+### 12.1 Befund W16b‑B‑1 — „die Dialoge auf der Startseite sind leer"
+
+**Beobachtung.** Ein Klick auf die Kachel „Neues Projekt" öffnet das modale Fenster
+„Projektassistent" (rund 1 260 × 930). Sein Inhalt ist **vollständig einheitlich beige**
+(`#F5F4EF`). Kein Absturz, keine Meldung, kein Fehlerdialog. Der Anwender spricht von „den
+Dialogen" — also von mehr als einem Kachelweg.
+
+**Was die Farbe sagt.** `#F5F4EF` ist `--epos-flaeche` bzw. `KartenStil.FLAECHE`. Sie steht an
+**zwei** Stellen: als `BackColor` der Hülle (`BlazorDialogForm.cs`, Themafläche gegen das
+weiße Aufblitzen) **und** als Hintergrund von `.epos-seite` (Stilblatt Z. 868), der Wurzel der
+Assistentenseite. Beides sieht gleich aus — die Farbe allein entscheidet also nicht, ob die
+WebView2 nichts gezeichnet hat oder ob sie die Wurzel gezeichnet hat und der Inhalt fehlt.
+
+Der Ausschlag gibt der **Inhalt**: Der Baustein `Assistent` zeichnet seine Fußleiste
+`[Abbrechen] [◀ Zurück] [Weiter ▶]` **immer**, auch ohne Seiteninhalt (`Assistent.razor`
+:45‑52 — die drei Knöpfe stehen außerhalb jedes `@if`). Wäre die Komponente gezeichnet worden,
+stünden drei Knöpfe da. Es steht nichts da. **Also hat die WebView2 der Hülle nichts
+gezeichnet.**
+
+**Was ausgeschlossen ist.**
+
+| # | Verdacht | Wie ausgeschlossen |
+|---|---|---|
+| 1 | **Parametersatz** — ein Schlüssel ohne `[Parameter]` bricht beim ersten Zeichnen (das war W16c‑B12) | Abgleich über **alle** Hüllen: 61 Stellen `new BlazorDialogForm<T>`/`BlazorSeite<T>` in `Views/**/*Huelle.cs` samt der gerufenen `*Gaben*`-Methoden, dazu die 13 Assistentenseiten gegen `AssistentSeite.Seitentyp(nr)` — **0 Treffer**. Der Abgleich steht jetzt als `EPOS.UI.Tests/ParametersatzTests` dauerhaft im Gate (Gegenprobe gelaufen) |
+| 2 | **Ausnahme beim ersten Zeichnen** der Komponente | `StartkachelDialogeTests` zeichnet **alle 21 Kachelziele** auf dem Weg der Hülle (Wörterbuch → Parametersatz) mit einem LEEREN Satz: jeder Delegat `null`, jede Liste leer. **Alle 21 zeichnen.** Der Assistent zeichnet zusätzlich mit dem Satz, den `AssistentHuelle.Gaben` baut, und zeigt seine drei Fußknöpfe |
+| 3 | **Stilblatt** — eine der 414 Regeln, die seit `aa98738` erstmals wirksam sind (ab Z. 1386) | Die Wurzeln der Dialogseiten (`.epos-dialog` Z. 139, `.epos-seite` Z. 868, `.epos-assistent*` Z. 476‑517) stehen **davor** und waren nie abgeschaltet. Was ab Z. 1386 steht, trifft Reiterleiste, Kachelraster, Menüband und Startseite — also das HAUPTfenster, und das zeichnet beim Anwender richtig. Zudem könnte keine dieser Regeln die Fußleiste unsichtbar machen: `.epos-assistent` ist ein Raster mit `grid-template-rows: 1fr auto`, die Fußzeile hat keine Prozenthöhe |
+| 4 | **Falscher Faden** — eine WebView2 auf einem Arbeitsfaden bleibt leer | Der ganze Weg ist synchron auf dem Bedienfaden: `Kachel.@onclick` → `Startseite.BeiKachel` → `StartseiteHuelle.Kachelweg` → `MenueCtrl.ProjektNeu` → `Dienste.Navigation.OeffneMaske` → `AssistentHuelle.Oeffnen` → `ShowDialog()`. Kein `Task.Run`, kein `ConfigureAwait`, kein `BeginInvoke` auf dem ganzen Weg (gegrept) |
+| 5 | **Fehlende WebView2-Laufzeit** | `Program.Main` prüft sie und beendet sonst mit Meldung (W15c‑E‑8); außerdem läuft die WebView des Hauptfensters sichtbar |
+
+**Was übrig bleibt — die Herleitung.** Der Unterschied zwischen den Dialogen, die am
+04.09.2026 nachweislich zeichneten, und denen dieser Abnahme ist **nicht** der Dialog, sondern
+**wer ihn öffnet**:
+
+* Bis W16c.2 (`0ff1ef4`) war das Menü des Hauptfensters ein WinForms-`MenuStrip` und die
+  Startseite eine WinForms-`Form_Start`. Ein Dialog ging aus einem gewöhnlichen
+  `Click`-Handler auf. Die Belege vom 04.09.2026 (Energieträgerverwaltung / W4‑B‑1,
+  Kostenseite / W5‑B‑1) hängen sämtlich an solchen Wegen.
+* Seit W16b/W16c sind **Startseite und Hauptfenster Razor**. Jeder Kachelklick und jeder
+  Menüpunkt ist ein Blazor-Ereignis der EINEN WebView des Fensters. Der Blazor-Verteiler
+  läuft zwar auf dem Bedienfaden (`WindowsFormsDispatcher` ruft dort synchron), aber das
+  Ereignis kommt aus dem `WebMessageReceived`-Rückruf der ersten WebView2: **`ShowDialog`
+  öffnet seine verschachtelte Nachrichtenschleife INNERHALB dieses Rückrufs, und die zweite
+  WebView2 soll sich darin aufbauen.**
+
+Das ist genau der Weg, den das Haus bis dahin **ausgeschlossen** hatte.
+`Sprungbruecke` (iU9‑W2.2) sagt es im Klassenkopf: „Ziele, die selbst eine
+`BlazorDialogForm` sind, gehören NICHT hierher: Zwei WebViews übereinander … (Risiko R2)" —
+für Blazor-Ziele nimmt das Haus seit W4 den Baustein `Ueberlagerung` im selben Fenster. Mit
+der Razor-Startseite und dem Razor-Menüband ist der verbotene Weg für **21 Kacheln und 55
+Menüpunkte** zur Regel geworden, ohne dass jemand die Regel geändert hätte.
+
+**Sicherheit der Aussage: WAHRSCHEINLICH, nicht sicher.** Ohne Windows lässt sich nicht
+zeigen, dass die zweite WebView2 in dieser Lage tatsächlich nicht hochkommt. Belegt sind: die
+Ursachen 1–5 sind ausgeschlossen, der Weg hat sich genau an dieser Stelle geändert, und das
+Haus hatte ihn aus einem benannten Risiko heraus gemieden.
+
+**Behebung (`8d1256e`) — an ZWEI Stellen, nicht in 21 bzw. 55 Aufrufern.**
+`Allgemein/Blazor/Blazorsprung.cs` lässt das laufende Ereignis zu Ende laufen und führt den
+Sprung eine geposteter Nachricht später aus — aus der gewöhnlichen Schleife von
+`Application.Run` heraus statt aus dem WebView2-Rückruf.
+
+* `StartseiteHuelle.Kachelweg` reicht seinen Rumpf hindurch. Der Rumpf liefert ohnehin keinen
+  Wert zurück; er frischt am Ende **selbst** auf (`_zustand.Auffrischen()`), weil das
+  `Laden()` der Seite jetzt vor dem Dialog läuft.
+* `HauptfensterHuelle.Weg` trennt die zwei Fragen. „Behandle ich diesen Schlüssel?" bleibt
+  **synchron** — die `AppWurzel` wechselt die Ansicht wie bisher nur bei `false`. Das ÖFFNEN
+  läuft verzögert. Die Zuständigkeit kommt dabei aus **derselben** Fallunterscheidung, die den
+  Ablauf liefert (`Ablauf(ziel)` gibt einen `Action` oder `null` zurück) — zwei Listen wären
+  zwei Wahrheiten. Die Reihenfolge „erst Maskenschlüssel, dann eigener Ablauf" ist
+  wirkungsgleich: Die Schnittmenge der beiden Wertemengen ist leer (geprüft — `Masken` führt
+  nur `Form_*` und `ASSISTENT`).
+
+Ein Riegel lässt zwischen Klick und Sprung keinen zweiten Sprung zu; eine Ausnahme aus dem
+geposteten Rumpf meldet sich, statt die Anwendung mitzureißen (dieselbe Behandlung wie in
+`Sprungbruecke.Zeigen`). Der Rückweg steht im Klassenkopf von `Blazorsprung`: statt
+`Verzoegert` den Rumpf unmittelbar rufen, mehr ist nicht zu ändern.
+
+**Die Wache (`c51dc62`) — damit nie wieder eine stumme beige Fläche steht.**
+Der WinForms-`BlazorWebView` von `Microsoft.AspNetCore.Components.WebView.WindowsForms`
+**10.0.100** führt — anders als die WPF- und die MAUI-Fassung — **kein
+`UnhandledException`-Ereignis**; an der Metadatenliste des Pakets nachgeprüft: es gibt nur
+`UrlLoading`, `BlazorWebViewInitializing` und `BlazorWebViewInitialized`. Eine gescheiterte
+WebView2-Initialisierung bleibt deshalb von sich aus still. `Allgemein/Blazor/WebViewWache.cs`
+hängt sich an die zwei Ereignisse, die es GIBT, und legt eine Frist von **zehn Sekunden**
+darüber:
+
+* `CoreWebView2InitializationCompleted` mit `IsSuccess == false` → sofort ein **markierbarer
+  Text** in der Hülle mit Typ, Wortlaut und innerster Ausnahme;
+* nach zehn Sekunden ohne `CoreWebView2` oder ohne `BlazorWebViewInitialized` → ein Text, der
+  sagt, WIE weit es gekommen ist (beide Merker im Klartext).
+
+Derselbe Satz geht nach `Debug` und `Trace`. Jede Zeile steht in `try`/`catch` — eine Wache,
+die den Dialog mitreißt, wäre schlimmer als der Befund. Dazu die eine Zeile, die der
+Dialoghülle bisher fehlte: `WebView.DefaultBackgroundColor = Themaflaeche` (`BlazorSeite`
+hatte sie).
+
+**Und die zweite Wache** (`Parametersatzwache`, `ParametersatzTests`) hält die Ursache 1
+dauerhaft fern: am Gerät beim Bauen der Hülle mit dem Schlüssel im Klartext, im Gate als
+Quelltextabgleich über alle Hüllen.
+
+### 12.2 Befund W16b‑B‑2 — „Die Auswahl der anderen Bereiche ist ausgegraut"
+
+**Beobachtung.** Die Reiterknöpfe „Wärmebedarf", „Strombedarf" usw. sehen gesperrt aus,
+obwohl im Projektfeld rechts oben ein Projektname steht („…e mit Kombi-Speicher - S…" — dem
+Aufbau nach ein VARIANTENname, `<Stamm> - <Bezeichner>`).
+
+**Ist die Sperre richtig? Ja — sie ist das Vorbild.** `Form_Start_Load` sperrte die Reiter 2
+bis 6 beim Laden (`for (int i = 1; i < tabControl_Wizard.TabPages.Count; i++)
+tabControl_Wizard.TabPages[i].Enabled = false;`), und
+`ProjektKontextUebernehmen` gab sie in derselben Methode wieder frei, in der es
+`comboBox_Varianten.Text` setzte (`:182‑190`). Die Razor-Fassung tut dasselbe, nur über
+**eine** Quelle: `ProjektId()` speist über `Laden()` die Variantenliste UND über
+`ProjektOffen` die Reitersperre.
+
+**Also: Name im Feld UND gesperrte Reiter schließen einander aus.** Ohne offenes Projekt
+antwortet `StartseiteCtrl.Varianten(0)` leer, das Auswahlfeld zeigt nur „Bitte auswählen!" —
+es gäbe gar keinen Namen anzuzeigen. Zwei Fälle in `StartseiteTests` halten das jetzt fest
+(`Ein_Projektname_im_Kopfband_und_gesperrte_Reiter_schliessen_einander_aus`,
+`Der_Projektwechsel_gibt_die_Reiter_frei`).
+
+**Die Erklärung ist deshalb die FARBE, nicht die Sperre — Befund W16b‑B‑2b.**
+Gemessen: `tabControl_Wizard_DrawItem` zeichnete einen bedienbaren, nicht gewählten Reiter
+**schwarz** (`Color.FromArgb(0x000000)`, `Form_Start.cs` :129‑141; den gewählten in Weiß auf
+farbiger Fläche). `.epos-reiter-knopf` trägt dagegen `--epos-text-leise` (#5f5e5a), der
+gesperrte `--epos-text-sehr-leise` (#888780) — 0x29 Unterschied je Kanal. Bei den 16 px
+halbfett der Startseitenleiste sehen beide gleich grau aus: **ein freier Reiter liest sich als
+gesperrter.**
+
+Behoben ist es **in der Farbgebung W16b‑E‑5** (Merge `1a72cd5`, parallele Arbeit): Die
+Startseite setzt an ihrer eigenen Reiterregel `color: var(--epos-text)`, gibt der aktiven
+Zunge eine gefüllte Fläche (`--epos-start-reiter-aktiv`, 7,1:1) und dem gesperrten Knopf eine
+eigene Regel mit `--epos-text-sehr-leise`. Damit sind die drei Zustände auch ohne die aktive
+Zunge unterscheidbar. Diese Abnahme hat denselben Befund unabhängig gefunden und dieselbe
+Deklaration gesetzt; im Merge ist die doppelte Regel wieder gefallen — eine zweite Wahrheit
+für dieselbe Farbe wäre schlimmer als der Befund. Geblieben ist die **Wache**:
+`StartseiteTests.Ein_freier_Reiter_der_Startseite_traegt_die_Textfarbe` liest die REGEL (denn
+eine bunit-Probe sieht kein Stilblatt, Lehre W6‑B‑1) und schließt die Lücke, die
+`StartseiteAnmutungTests` lässt — dort stehen die aktive und die gesperrte Zunge, nicht der
+freie Reiter.
+
+**Die zweite Lesart bleibt offen und ist am Gerät in einem Blick zu klären:** Stand über den
+Reitern das Hinweisbanner „Bitte zuerst ein Projekt auswählen! Projekt öffnen oder zuletzt
+geöffnet"? Wenn **ja**, war wirklich kein Projekt offen — dann ist der Name im Feld die reine
+Anzeige des `<select>` (ein Browser behält die Auswahl des Anwenders, bis Blazor den Wert
+wieder schreibt), und der Grund läge dahinter: `VarianteGewaehlt` → `VarianteWechseln` →
+`ProjektKontextCtrl.Setzen` hätte `false` gemeldet. Wenn **nein**, war das Projekt offen und
+es war die Farbe.
+
+### 12.3 Abnahmepunkte für den Anwender
+
+| # | Was | Erwartung |
+|---|---|---|
+| A1 | Kachel „Neues Projekt" | Der Projektassistent zeigt links das Band bzw. die Komponentenliste und unten die drei Knöpfe „Abbrechen / ◀ Zurück / Weiter ▶". **Keine einfarbige Fläche.** |
+| A2 | Kacheln „Gebäudedaten eingeben", „Wärmepumpe", „Heizkessel" | Jeder Dialog zeigt Inhalt (dieselbe Prüfung wie A1, drei weitere Wege) |
+| A3 | Menü „Administration → Energieträgerverwaltung" | Zeigt Inhalt — derselbe Dialog, der am 04.09.2026 aus dem WinForms-Menü heraus funktionierte, jetzt aus dem Razor-Menüband |
+| A4 | Bleibt eine Fläche doch leer | **Nach zehn Sekunden steht ein Text darin** statt der beigen Fläche. Diesen Text bitte abfotografieren — er sagt, ob die WebView2 (CoreWebView2) oder der Blazor-Verteiler ausgefallen ist |
+| A5 | Ein Projekt öffnen („Zuletzt geöffnet") | Die Reiter 2–6 sind frei und ihre Beschriftung ist **dunkel**, nicht grau; die aktive trägt die Akzentfarbe und den Unterstrich |
+| A6 | Ohne Projekt | Reiter 2–6 sind deutlich blasser als Reiter 1, und das Hinweisbanner steht über der Leiste |
+| A7 | Kachel anklicken, Dialog mit „Abbrechen" schließen | Die Startseite steht danach unverändert da, der Statuspunkt der Kachel stimmt (die Auffrischung läuft seit `8d1256e` am Ende des Kachelwegs, nicht mehr im Klick) |
+
+### 12.4 Wenn A1 bis A3 weiter leer bleiben — Diagnoseanleitung
+
+1. **Den Text der Wache lesen** (A4). Er ist der schnellste Weg und sagt schon die halbe
+   Antwort:
+   * „CoreWebView2: FEHLT" → die zweite WebView2 kommt nicht hoch. Das ist die
+     Wiedereintritts-These aus 12.1; die Verzögerung hat dann nicht gereicht, und der Weg ist
+     der Umbau der Kachelziele auf `Ueberlagerung` in derselben WebView (so wie es das Haus
+     seit W4 für alle anderen Blazor-Ziele tut).
+   * „CoreWebView2: steht / Blazor angemeldet: NEIN" → die WebView2 läuft, aber der
+     Blazor-Verteiler hat die Seite nicht übernommen. Dann fehlt der Hülle etwas aus
+     `wwwroot` (`index.html`, `_framework/blazor.webview.js`, `_content/EPOS.UI/`) — im
+     Installationsordner nachsehen.
+   * Es kommt **gar kein** Text → die Frist läuft nicht, weil der Bedienfaden steht. Dann
+     hängt der Prozess in der verschachtelten Schleife; das ist derselbe Verdacht wie oben,
+     nur härter.
+2. **Rechtsklick in die leere Fläche → „Untersuchen"**. Kommt ein Kontextmenü, läuft die
+   WebView2 (dann ist es Blazor oder das Markup); kommt **keines**, ist die WebView2 selbst
+   nicht da. In der Konsole der Entwicklerwerkzeuge stehen Ladefehler der Seite.
+3. **Das Ablaufprotokoll mitlesen**: `DebugView` von Sysinternals starten (Optionen: „Capture
+   Win32"), dann EPOS-Plan bedienen. Die Wache schreibt jede Zeile mit dem Kopf `[WebView]`,
+   der verzögerte Sprung mit `[Blazorsprung]`.
+4. **Ereignisanzeige → Windows-Protokolle → Anwendung** auf `.NET Runtime`- oder
+   `Application Error`-Einträge zur Zeit des Klicks durchsehen — sie erscheinen nur, wenn der
+   Prozess wirklich abgestürzt ist (was der Anwender ausdrücklich verneint).
+5. **Gegenprobe ohne die Verzögerung**: In `StartseiteHuelle.Kachelweg` `Blazorsprung.Verzoegert`
+   durch den unmittelbaren Aufruf von `KachelwegJetzt` ersetzen und neu bauen. Bleibt das Bild
+   gleich, war die Wiedereintritts-These falsch.
+
+### 12.5 Die drei wahrscheinlichsten Ursachen, nach Rang
+
+| Rang | Ursache | Nachweisweg |
+|---|---|---|
+| 1 | **Wiedereintritt**: die zweite WebView2 baut sich innerhalb des `WebMessageReceived`-Rückrufs der ersten auf und kommt nicht hoch | A1–A3 nach `8d1256e`; bleibt es leer, sagt der Text der Wache „CoreWebView2: FEHLT" |
+| 2 | **Umgebung der WebView2** beim Anwender — Profilordner `%LOCALAPPDATA%\WP-Plan\WebView2` nicht beschreibbar, Richtlinie, Virenschutz | Der Text der Wache trägt dann die `InitializationException` im Wortlaut (`IsSuccess == false`) |
+| 3 | **Fehlende statische Web-Anteile** im Installationsordner (`wwwroot`, `_framework`, `_content/EPOS.UI`) | „CoreWebView2: steht / Blazor angemeldet: NEIN"; Gegenprobe im Ordner |
