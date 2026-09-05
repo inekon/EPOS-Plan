@@ -616,4 +616,45 @@ public class StartseiteTests : BunitContext
         cut.FindAll(".epos-startkachel-wahl input")[0].Change(true);
         Assert.Equal(new[] { true, false }, gemeldet);
     }
+
+    // =====================================================================
+    //  Die Gattungszeile (Anwenderwunsch 05.09.2026, W16b-E-4)
+    // =====================================================================
+
+    /// <summary>
+    /// OHNE Kopfleiste darueber steht die Gattungszeile — das ist der Zustand
+    /// auf iOS, wo die <c>Kopfleiste</c> der <c>AppWurzel</c> leer ist und diese
+    /// Zeile die einzige Nennung des Produkts.
+    /// </summary>
+    [Fact]
+    public void Die_Gattungszeile_steht_ohne_Kopfleiste()
+    {
+        var cut = Zeige();
+
+        Assert.Single(cut.FindAll(".epos-startseite-gattung"));
+        Assert.Equal("Energieplanungs-Software",
+                     cut.Find(".epos-startseite-gattung").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// MIT Kopfleiste darueber faellt sie weg: Das Kopfband des Hauptfensters
+    /// nennt dieselbe Gattung schon, und zweimal untereinander ist sie eine
+    /// Wiederholung (Anwenderwunsch 05.09.2026).
+    /// </summary>
+    [Fact]
+    public void Die_Gattungszeile_faellt_weg_wenn_eine_Kopfleiste_darueber_steht()
+    {
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 1030)
+            .Add(x => x.KopfbandZeigen, false));
+
+        Assert.Empty(cut.FindAll(".epos-startseite-gattung"));
+        Assert.Empty(cut.FindAll(".epos-startseite-marke"));
+
+        // Das Kopfband selbst bleibt - nur die eine Zeile faellt.
+        Assert.Single(cut.FindAll(".epos-startseite-kopf"));
+        Assert.Single(cut.FindAll(".epos-startseite-projekt"));
+        Assert.Single(cut.FindAll(".epos-startseite-klima"));
+    }
 }

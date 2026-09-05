@@ -209,6 +209,37 @@ public class AppWurzelTests : BunitContext
     }
 
     [Fact]
+    public void Die_Startseite_zeigt_ihre_Gattungszeile_nur_ohne_Kopfleiste()
+    {
+        // ANWENDERWUNSCH 05.09.2026 (W16b-E-4): Unter Windows nennt das Kopfband
+        // des Hauptfensters die Produktgattung schon - die Startseite laesst
+        // ihre eigene Zeile dann weg. Auf iOS ist die Kopfleiste leer, und die
+        // Zeile bleibt die einzige Nennung des Produkts.
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Startseite = new Dictionary<string, object>
+            {
+                ["ProjektId"] = new Func<int>(() => 1030)
+            }
+        };
+        Services.AddSingleton<IProjektQuelle>(quelle);
+
+        // (a) OHNE Kopfleiste - der iOS-Weg.
+        var ohne = Render<AppWurzel>(p => p.Add(x => x.Startansicht, Seitenschluessel.Startseite));
+        Assert.Single(ohne.FindAll(".epos-startseite-gattung"));
+
+        // (b) MIT Kopfleiste - der Windows-Weg.
+        var mit = Render<AppWurzel>(p => p
+            .Add(x => x.Startansicht, Seitenschluessel.Startseite)
+            .Add(x => x.Kopfleiste,
+                 (RenderFragment)(b => b.AddMarkupContent(0, "<div id=\"schale\">Menue</div>"))));
+
+        Assert.NotNull(mit.Find("#schale"));
+        Assert.Single(mit.FindAll(".epos-startseite"));
+        Assert.Empty(mit.FindAll(".epos-startseite-gattung"));
+    }
+
+    [Fact]
     public void Die_Startansicht_ist_zugleich_das_Ziel_des_Rueckwegs()
     {
         // Unter Windows fuehrt "Schliessen" eines Dialogs zurueck auf die
