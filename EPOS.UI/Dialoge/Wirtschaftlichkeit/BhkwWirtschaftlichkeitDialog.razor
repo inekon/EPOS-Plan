@@ -93,57 +93,69 @@
             }
             else
             {
-                <Datumsfeld Bezeichnung="@_t.AStichtag"
-                            Wert="@Tag(Aktuelle.Stichtag)" WertChanged="StichtagA" />
+                @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben
+                   dem Feld, Zahlenfelder kurz mit der Einheit dahinter. Die
+                   Herleitungszeile bleibt ausserhalb - sie ist ein Satz, kein Feld. *@
+                <Formularraster>
+                    <KindInhalt>
+                    <Datumsfeld Bezeichnung="@_t.AStichtag"
+                                Wert="@Tag(Aktuelle.Stichtag)" WertChanged="StichtagA" />
 
-                <Datumsfeld Bezeichnung="@_t.AIbn"
-                            Wert="@Tag(Aktuelle.Inbetriebnahme)" WertChanged="IbnA" />
+                    <Datumsfeld Bezeichnung="@_t.AIbn"
+                                Wert="@Tag(Aktuelle.Inbetriebnahme)" WertChanged="IbnA" />
 
-                <Auswahlfeld Bezeichnung="@_t.AAnlagenart"
-                             Eintraege="@BhkwWahlen.Eintraege(_artA)"
-                             Auswahl="@BhkwWahlen.NummerZu(_artA, Aktuelle.Anlagenart)"
-                             AuswahlChanged="ArtA" />
+                    <Auswahlfeld Bezeichnung="@_t.AAnlagenart"
+                                 Eintraege="@BhkwWahlen.Eintraege(_artA)"
+                                 Auswahl="@BhkwWahlen.NummerZu(_artA, Aktuelle.Anlagenart)"
+                                 AuswahlChanged="ArtA" />
 
-                <Auswahlfeld Bezeichnung="@_t.AEigenfall"
-                             Eintraege="@BhkwWahlen.Eintraege(_fallA)"
-                             Auswahl="@BhkwWahlen.NummerZu(_fallA, Aktuelle.Eigenfall)"
-                             AuswahlChanged="FallA" />
+                    <Auswahlfeld Bezeichnung="@_t.AEigenfall"
+                                 Eintraege="@BhkwWahlen.Eintraege(_fallA)"
+                                 Auswahl="@BhkwWahlen.NummerZu(_fallA, Aktuelle.Eigenfall)"
+                                 AuswahlChanged="FallA" />
 
-                <Zahlenfeld Bezeichnung="@_t.ASatzEinsp" Einheit="ct/kWh"
-                            Min="0" Max="30" Nachkommastellen="2"
-                            Wert="@Aktuelle.SatzEinspCt" WertChanged="SatzEinspA" />
+                    <Zahlenfeld Bezeichnung="@_t.ASatzEinsp" Einheit="ct/kWh"
+                                Min="0" Max="30" Nachkommastellen="2"
+                                Wert="@Aktuelle.SatzEinspCt" WertChanged="SatzEinspA" />
 
-                <Zahlenfeld Bezeichnung="@_t.ASatzEigen" Einheit="ct/kWh"
-                            Min="0" Max="30" Nachkommastellen="2"
-                            Wert="@Aktuelle.SatzEigenCt" WertChanged="SatzEigenA" />
+                    <Zahlenfeld Bezeichnung="@_t.ASatzEigen" Einheit="ct/kWh"
+                                Min="0" Max="30" Nachkommastellen="2"
+                                Wert="@Aktuelle.SatzEigenCt" WertChanged="SatzEigenA" />
 
-                <Zahlenfeld Bezeichnung="@_t.AKontingent" Einheit="h"
-                            Min="0" Max="200000" Nachkommastellen="0"
-                            Wert="@Aktuelle.VbhKontingent" WertChanged="KontingentA" />
+                    <Zahlenfeld Bezeichnung="@_t.AKontingent" Einheit="h"
+                                Min="0" Max="200000" Nachkommastellen="0"
+                                Wert="@Aktuelle.VbhKontingent" WertChanged="KontingentA" />
 
-                <Zahlenfeld Bezeichnung="@_t.ADeckel" Einheit="h/a"
-                            Min="0" Max="8760" Nachkommastellen="0"
-                            Wert="@Aktuelle.VbhDeckel" WertChanged="DeckelA" />
+                    <Zahlenfeld Bezeichnung="@_t.ADeckel" Einheit="h/a"
+                                Min="0" Max="8760" Nachkommastellen="0"
+                                Wert="@Aktuelle.VbhDeckel" WertChanged="DeckelA" />
 
-                <Auswahlfeld Bezeichnung="@_t.AEnergiesteuer"
-                             Eintraege="@BhkwWahlen.Eintraege(_esA)"
-                             Auswahl="@BhkwWahlen.NummerZu(_esA, Aktuelle.EnergiesteuerWahl)"
-                             AuswahlChanged="EnergiesteuerA" />
+                    <Auswahlfeld Bezeichnung="@_t.AEnergiesteuer"
+                                 Eintraege="@BhkwWahlen.Eintraege(_esA)"
+                                 Auswahl="@BhkwWahlen.NummerZu(_esA, Aktuelle.EnergiesteuerWahl)"
+                                 AuswahlChanged="EnergiesteuerA" />
 
-                <Auswahlfeld Bezeichnung="@_t.AAufteilung"
-                             Eintraege="@BhkwWahlen.Eintraege(_aufA)"
-                             Auswahl="@BhkwWahlen.NummerZu(_aufA, Aktuelle.AufteilungMethode)"
-                             AuswahlChanged="AufteilungA" />
+                    <Auswahlfeld Bezeichnung="@_t.AAufteilung"
+                                 Eintraege="@BhkwWahlen.Eintraege(_aufA)"
+                                 Auswahl="@BhkwWahlen.NummerZu(_aufA, Aktuelle.AufteilungMethode)"
+                                 AuswahlChanged="AufteilungA" />
 
-                @* K2/K6: Die Bemessungsbasis steht ausdruecklich in der Beschriftung -
-                   gerechnet wird am ENDENERGIEbedarf (Brennstoff) der Anlage, nicht an
-                   den Kosten; die Saetze der beiden Wege sind nicht austauschbar.
-                   Das Feld ist nur fuer BHKW-Anlagen gedacht (AnteilPflegbar). *@
+                    @* K2/K6: Die Bemessungsbasis steht ausdruecklich in der Beschriftung -
+                       gerechnet wird am ENDENERGIEbedarf (Brennstoff) der Anlage, nicht an
+                       den Kosten; die Saetze der beiden Wege sind nicht austauschbar.
+                       Das Feld ist nur fuer BHKW-Anlagen gedacht (AnteilPflegbar). *@
+
+                    @if (AnteilSichtbar)
+                    {
+                        <Zahlenfeld Bezeichnung="@_t.AHilfsanteil" Einheit="%"
+                                    Min="0" Max="100" Nachkommastellen="1"
+                                    Wert="@Aktuelle.HilfsenergieAnteil" WertChanged="HilfsAnteilA" />
+                    }
+                    </KindInhalt>
+                </Formularraster>
+
                 @if (AnteilSichtbar)
                 {
-                    <Zahlenfeld Bezeichnung="@_t.AHilfsanteil" Einheit="%"
-                                Min="0" Max="100" Nachkommastellen="1"
-                                Wert="@Aktuelle.HilfsenergieAnteil" WertChanged="HilfsAnteilA" />
                     <Herleitungszeile Text="@_t.AHilfsBasis" />
                 }
             }
@@ -153,48 +165,52 @@
     @* ------------------------------------------- Gruppe 2: KWK-Zuschlag *@
     <Gruppenkopf Titel="@_t.G2">
         <KindInhalt>
-            <Zahlenfeld Bezeichnung="@_t.PBonusEigen" Einheit="ct/kWh"
-                        Min="0" Max="30" Nachkommastellen="2"
-                        Wert="@Parameter.KwkgBonus" WertChanged="BonusEigenP" />
+            <Formularraster>
+                <KindInhalt>
+                <Zahlenfeld Bezeichnung="@_t.PBonusEigen" Einheit="ct/kWh"
+                            Min="0" Max="30" Nachkommastellen="2"
+                            Wert="@Parameter.KwkgBonus" WertChanged="BonusEigenP" />
 
-            <Zahlenfeld Bezeichnung="@_t.PBonusEinsp" Einheit="ct/kWh"
-                        Min="0" Max="30" Nachkommastellen="2"
-                        Wert="@Parameter.KwkgBonusEinspeisung" WertChanged="BonusEinspP" />
+                <Zahlenfeld Bezeichnung="@_t.PBonusEinsp" Einheit="ct/kWh"
+                            Min="0" Max="30" Nachkommastellen="2"
+                            Wert="@Parameter.KwkgBonusEinspeisung" WertChanged="BonusEinspP" />
 
-            <Zahlenfeld Bezeichnung="@_t.PDeckel" Einheit="h/a"
-                        Min="0" Max="8760" Nachkommastellen="0"
-                        Wert="@Parameter.KwkgVbhJahresdeckel" WertChanged="DeckelP" />
+                <Zahlenfeld Bezeichnung="@_t.PDeckel" Einheit="h/a"
+                            Min="0" Max="8760" Nachkommastellen="0"
+                            Wert="@Parameter.KwkgVbhJahresdeckel" WertChanged="DeckelP" />
 
-            <Zahlenfeld Bezeichnung="@_t.PKontingent" Einheit="h"
-                        Min="0" Max="200000" Nachkommastellen="0"
-                        Wert="@Parameter.KwkgVbhKontingent" WertChanged="KontingentP" />
+                <Zahlenfeld Bezeichnung="@_t.PKontingent" Einheit="h"
+                            Min="0" Max="200000" Nachkommastellen="0"
+                            Wert="@Parameter.KwkgVbhKontingent" WertChanged="KontingentP" />
 
-            <Zahlenfeld Bezeichnung="@_t.PAbschlag" Einheit="%"
-                        Min="0" Max="50" Nachkommastellen="1"
-                        Wert="@Parameter.KwkgAbschlagNegativ" WertChanged="AbschlagP" />
+                <Zahlenfeld Bezeichnung="@_t.PAbschlag" Einheit="%"
+                            Min="0" Max="50" Nachkommastellen="1"
+                            Wert="@Parameter.KwkgAbschlagNegativ" WertChanged="AbschlagP" />
 
-            <Auswahlfeld Bezeichnung="@_t.PTatbestand"
-                         Eintraege="@BhkwWahlen.Eintraege(_fallP)"
-                         Auswahl="@BhkwWahlen.NummerZu(_fallP, Parameter.KwkgTatbestand)"
-                         AuswahlChanged="TatbestandP" />
+                <Auswahlfeld Bezeichnung="@_t.PTatbestand"
+                             Eintraege="@BhkwWahlen.Eintraege(_fallP)"
+                             Auswahl="@BhkwWahlen.NummerZu(_fallP, Parameter.KwkgTatbestand)"
+                             AuswahlChanged="TatbestandP" />
 
-            <Auswahlfeld Bezeichnung="@_t.PAnlagenart"
-                         Eintraege="@BhkwWahlen.Eintraege(_artP)"
-                         Auswahl="@BhkwWahlen.NummerZu(_artP, Parameter.KwkgAnlagenart)"
-                         AuswahlChanged="AnlagenartP" />
+                <Auswahlfeld Bezeichnung="@_t.PAnlagenart"
+                             Eintraege="@BhkwWahlen.Eintraege(_artP)"
+                             Auswahl="@BhkwWahlen.NummerZu(_artP, Parameter.KwkgAnlagenart)"
+                             AuswahlChanged="AnlagenartP" />
 
-            <Zahlenfeld Bezeichnung="@_t.PKostenanteil" Einheit="%"
-                        Min="0" Max="100" Nachkommastellen="1"
-                        Wert="@Parameter.KwkgKostenanteil" WertChanged="KostenanteilP" />
+                <Zahlenfeld Bezeichnung="@_t.PKostenanteil" Einheit="%"
+                            Min="0" Max="100" Nachkommastellen="1"
+                            Wert="@Parameter.KwkgKostenanteil" WertChanged="KostenanteilP" />
 
-            <Schalter Bezeichnung="@_t.PPauschal"
-                      Wert="@Parameter.KwkgPauschalmodus" WertChanged="PauschalP" />
+                <Schalter Bezeichnung="@_t.PPauschal"
+                          Wert="@Parameter.KwkgPauschalmodus" WertChanged="PauschalP" />
 
-            <Datumsfeld Bezeichnung="@_t.PStichtag"
-                        Wert="@Tag(Parameter.KwkgStichtag)" WertChanged="StichtagP" />
+                <Datumsfeld Bezeichnung="@_t.PStichtag"
+                            Wert="@Tag(Parameter.KwkgStichtag)" WertChanged="StichtagP" />
 
-            <Datumsfeld Bezeichnung="@_t.PIbn"
-                        Wert="@Tag(Parameter.KwkgInbetriebnahme)" WertChanged="IbnP" />
+                <Datumsfeld Bezeichnung="@_t.PIbn"
+                            Wert="@Tag(Parameter.KwkgInbetriebnahme)" WertChanged="IbnP" />
+                </KindInhalt>
+            </Formularraster>
 
             @* Herleitungszeilen je Anlage - Bestand KwkgSatzRechner.Vorschlag. *@
             @foreach (string zeile in Herleitung())
@@ -210,21 +226,25 @@
     @* -------------------------------------------- Gruppe 3: Energiesteuer *@
     <Gruppenkopf Titel="@_t.G3">
         <KindInhalt>
-            <Auswahlfeld Bezeichnung="@_t.EWahl"
-                         Eintraege="@BhkwWahlen.Eintraege(_esP)"
-                         Auswahl="@BhkwWahlen.NummerZu(_esP, Parameter.EnergiesteuerWahl)"
-                         AuswahlChanged="EnergiesteuerP" />
+            <Formularraster>
+                <KindInhalt>
+                <Auswahlfeld Bezeichnung="@_t.EWahl"
+                             Eintraege="@BhkwWahlen.Eintraege(_esP)"
+                             Auswahl="@BhkwWahlen.NummerZu(_esP, Parameter.EnergiesteuerWahl)"
+                             AuswahlChanged="EnergiesteuerP" />
 
-            <Auswahlfeld Bezeichnung="@_t.EAufteilung"
-                         Eintraege="@BhkwWahlen.Eintraege(_aufP)"
-                         Auswahl="@BhkwWahlen.NummerZu(_aufP, Parameter.AufteilungMethode)"
-                         AuswahlChanged="AufteilungP" />
+                <Auswahlfeld Bezeichnung="@_t.EAufteilung"
+                             Eintraege="@BhkwWahlen.Eintraege(_aufP)"
+                             Auswahl="@BhkwWahlen.NummerZu(_aufP, Parameter.AufteilungMethode)"
+                             AuswahlChanged="AufteilungP" />
 
-            @* K5: Der Jahresnutzungsgrad bleibt eine PROJEKTgroesse (B3a-Stand) - ein
-               anlagenscharfer Wert waere eine eigene Datenfrage. *@
-            <Zahlenfeld Bezeichnung="@_t.ENutzungsgrad" Einheit="%"
-                        Min="0" Max="100" Nachkommastellen="1"
-                        Wert="@Parameter.Jahresnutzungsgrad" WertChanged="NutzungsgradP" />
+                @* K5: Der Jahresnutzungsgrad bleibt eine PROJEKTgroesse (B3a-Stand) - ein
+                   anlagenscharfer Wert waere eine eigene Datenfrage. *@
+                <Zahlenfeld Bezeichnung="@_t.ENutzungsgrad" Einheit="%"
+                            Min="0" Max="100" Nachkommastellen="1"
+                            Wert="@Parameter.Jahresnutzungsgrad" WertChanged="NutzungsgradP" />
+                </KindInhalt>
+            </Formularraster>
 
             <Herleitungszeile Text="@Steuerherkunft()" />
         </KindInhalt>
@@ -233,25 +253,30 @@
     @* --------------------------------------------- Gruppe 4: Stromsteuer *@
     <Gruppenkopf Titel="@_t.G4">
         <KindInhalt>
-            @* BW4: Die Unternehmensart ist das fuehrende Feld der Stromsteuerseite. *@
-            <Auswahlfeld Bezeichnung="@_t.SUnternehmensart"
-                         Eintraege="@BhkwWahlen.Eintraege(_uaP)"
-                         Auswahl="@BhkwWahlen.NummerZu(_uaP, Parameter.Unternehmensart)"
-                         AuswahlChanged="UnternehmensartP" />
+            <Formularraster>
+                <KindInhalt>
+                @* BW4: Die Unternehmensart ist das fuehrende Feld der Stromsteuerseite. *@
+                <Auswahlfeld Bezeichnung="@_t.SUnternehmensart"
+                             Eintraege="@BhkwWahlen.Eintraege(_uaP)"
+                             Auswahl="@BhkwWahlen.NummerZu(_uaP, Parameter.Unternehmensart)"
+                             AuswahlChanged="UnternehmensartP" />
 
-            <Schalter Bezeichnung="@_t.SRaeumlich"
-                      Wert="@Parameter.RaeumlicherZusammenhang" WertChanged="RaeumlichP" />
+                <Schalter Bezeichnung="@_t.SRaeumlich"
+                          Wert="@Parameter.RaeumlicherZusammenhang" WertChanged="RaeumlichP" />
 
-            <Schalter Bezeichnung="@_t.SHocheffizienz"
-                      Wert="@Parameter.HocheffizienzNachweis" WertChanged="HocheffizienzP" />
+                <Schalter Bezeichnung="@_t.SHocheffizienz"
+                          Wert="@Parameter.HocheffizienzNachweis" WertChanged="HocheffizienzP" />
 
-            @* K3 = a (Anwenderentscheid 03.09.2026): Das Modusfeld des § 9 Abs. 1 Nr. 3
-               (BW3) wird GEZEIGT, aber deaktiviert - die Persistenzspalte
-               Stromst_Befreiung_Modus kommt erst mit M-3 (Etappe B6). B5/B5b legt dafuer
-               ausdruecklich KEINEN Schemaschritt an, und der Wert wird nirgends
-               gespeichert; die Vorgabe "Ausweis" (BF1) ist der heutige Rechenstand. *@
-            <Auswahlfeld Bezeichnung="@_t.SModus"
-                         Eintraege="@BhkwWahlen.Eintraege(_modus)" Auswahl="0" Aktiv="false" />
+                @* K3 = a (Anwenderentscheid 03.09.2026): Das Modusfeld des § 9 Abs. 1 Nr. 3
+                   (BW3) wird GEZEIGT, aber deaktiviert - die Persistenzspalte
+                   Stromst_Befreiung_Modus kommt erst mit M-3 (Etappe B6). B5/B5b legt dafuer
+                   ausdruecklich KEINEN Schemaschritt an, und der Wert wird nirgends
+                   gespeichert; die Vorgabe "Ausweis" (BF1) ist der heutige Rechenstand. *@
+                <Auswahlfeld Bezeichnung="@_t.SModus"
+                             Eintraege="@BhkwWahlen.Eintraege(_modus)" Auswahl="0" Aktiv="false" />
+                </KindInhalt>
+            </Formularraster>
+
             <Herleitungszeile Text="@_t.SModusB6" />
 
             <button type="button" class="epos-knopf epos-sprung"

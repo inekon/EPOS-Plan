@@ -850,4 +850,30 @@ public class BhkwWirtschaftlichkeitDialogTests : BunitContext
 
         Assert.Equal("-1", cut.Find("div.epos-dialog").GetAttribute("tabindex"));
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Die vier Parameterblöcke (Angaben der
+    /// gewählten Anlage, KWK-Zuschlag, Energiesteuer, Stromsteuer) stehen im
+    /// <c>Formularraster</c>. Das Anlagenraster der Gruppe 1 bleibt ein
+    /// DATENraster — seine Felder stehen in Tabellenzellen und gehören nicht in
+    /// einen Formularblock; Herleitungszeilen und Sprungknöpfe bleiben ausserhalb.
+    /// </summary>
+    [Fact]
+    public void Die_Parameterbloecke_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 3);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count > 0);
+
+        // ct/kWh, h, h/a, %: die Einheit steht in der Feldzeile des kurzen Feldes.
+        Assert.Contains(cut.FindAll(".epos-formularraster .epos-feld--kurz"),
+                        f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
 }

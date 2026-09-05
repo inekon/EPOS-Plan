@@ -38,12 +38,19 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
-    <Schalter Bezeichnung="@_t.Aktiv" @bind-Wert="_aktiv" />
+    @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld,
+       Zahlenfelder kurz mit der Einheit dahinter. Die Untergruppen des
+       Vorlaeufers (Form_Tarifstruktur.Gruppe) sind jetzt Formulargruppen. *@
+    <Formularraster>
+        <KindInhalt>
+            <Schalter Bezeichnung="@_t.Aktiv" @bind-Wert="_aktiv" />
 
-    <Auswahlfeld Bezeichnung="@_t.Modell" Eintraege="@TarifWahlen.Eintraege(_modusWahlen)"
-                 Auswahl="_modusNr" AuswahlChanged="ModusGewaehlt" />
+            <Auswahlfeld Bezeichnung="@_t.Modell" Eintraege="@TarifWahlen.Eintraege(_modusWahlen)"
+                         Auswahl="_modusNr" AuswahlChanged="ModusGewaehlt" />
 
-    <Datumsfeld Bezeichnung="@_t.GueltigAb" @bind-Wert="_gueltigAb" />
+            <Datumsfeld Bezeichnung="@_t.GueltigAb" @bind-Wert="_gueltigAb" />
+        </KindInhalt>
+    </Formularraster>
 
     @if (Sicht != TarifSicht.Komplett)
     {
@@ -55,79 +62,105 @@
     @* ------------------------------------------------------- Zeitzonen *@
     <Gruppenkopf Titel="@_t.GZeitzonen" Symbol="🕑">
         <KindInhalt>
-            <Ganzzahlfeld Bezeichnung="@_t.WinterVon" @bind-Wert="_winterVon" Min="1" Max="12" />
-            <Ganzzahlfeld Bezeichnung="@_t.WinterBis" @bind-Wert="_winterBis" Min="1" Max="12" />
-            @* HT/NT entfaellt im Rollenmodell (Leitentscheidung L10). *@
-            <Ganzzahlfeld Bezeichnung="@_t.HtVon" @bind-Wert="_htVon" Min="0" Max="23"
-                          Aktiv="@(!Rollen)" />
-            <Ganzzahlfeld Bezeichnung="@_t.HtBis" @bind-Wert="_htBis" Min="1" Max="24"
-                          Aktiv="@(!Rollen)" />
+            <Formularraster>
+                <KindInhalt>
+                    <Ganzzahlfeld Bezeichnung="@_t.WinterVon" @bind-Wert="_winterVon" Min="1" Max="12" />
+                    <Ganzzahlfeld Bezeichnung="@_t.WinterBis" @bind-Wert="_winterBis" Min="1" Max="12" />
+                    @* HT/NT entfaellt im Rollenmodell (Leitentscheidung L10). *@
+                    <Ganzzahlfeld Bezeichnung="@_t.HtVon" @bind-Wert="_htVon" Min="0" Max="23"
+                                  Aktiv="@(!Rollen)" />
+                    <Ganzzahlfeld Bezeichnung="@_t.HtBis" @bind-Wert="_htBis" Min="1" Max="24"
+                                  Aktiv="@(!Rollen)" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     @* ----------------------------------------------------- Zonenmodell *@
     <Gruppenkopf Titel="@(MitZonenBezug ? _t.GZonen : _t.GZonenNurEinspeisung)" Symbol="⌗">
         <KindInhalt>
-            @if (MitZonenBezug)
-            {
-                <h3 class="epos-untergruppe">@_t.GBezugspreise</h3>
-                <Zahlenfeld Bezeichnung="@_t.WinterHt" @bind-Wert="_bezugWinterHt"
-                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
-                <Zahlenfeld Bezeichnung="@_t.WinterNt" @bind-Wert="_bezugWinterNt"
-                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
-                <Zahlenfeld Bezeichnung="@_t.SommerHt" @bind-Wert="_bezugSommerHt"
-                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
-                <Zahlenfeld Bezeichnung="@_t.SommerNt" @bind-Wert="_bezugSommerNt"
-                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
-            }
+            <Formularraster>
+                <KindInhalt>
+                    @if (MitZonenBezug)
+                    {
+                        <Formulargruppe Titel="@_t.GBezugspreise">
+                            <KindInhalt>
+                                <Zahlenfeld Bezeichnung="@_t.WinterHt" @bind-Wert="_bezugWinterHt"
+                                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                                <Zahlenfeld Bezeichnung="@_t.WinterNt" @bind-Wert="_bezugWinterNt"
+                                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                                <Zahlenfeld Bezeichnung="@_t.SommerHt" @bind-Wert="_bezugSommerHt"
+                                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                                <Zahlenfeld Bezeichnung="@_t.SommerNt" @bind-Wert="_bezugSommerNt"
+                                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                            </KindInhalt>
+                        </Formulargruppe>
+                    }
 
-            @if (MitZonenEinspeisung)
-            {
-                <h3 class="epos-untergruppe">@_t.GEinspeisepreise</h3>
-                <Zahlenfeld Bezeichnung="@_t.WinterHt" @bind-Wert="_einspWinterHt"
-                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
-                <Zahlenfeld Bezeichnung="@_t.WinterNt" @bind-Wert="_einspWinterNt"
-                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
-                <Zahlenfeld Bezeichnung="@_t.SommerHt" @bind-Wert="_einspSommerHt"
-                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
-                <Zahlenfeld Bezeichnung="@_t.SommerNt" @bind-Wert="_einspSommerNt"
-                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
-            }
+                    @if (MitZonenEinspeisung)
+                    {
+                        <Formulargruppe Titel="@_t.GEinspeisepreise">
+                            <KindInhalt>
+                                <Zahlenfeld Bezeichnung="@_t.WinterHt" @bind-Wert="_einspWinterHt"
+                                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                                <Zahlenfeld Bezeichnung="@_t.WinterNt" @bind-Wert="_einspWinterNt"
+                                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                                <Zahlenfeld Bezeichnung="@_t.SommerHt" @bind-Wert="_einspSommerHt"
+                                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                                <Zahlenfeld Bezeichnung="@_t.SommerNt" @bind-Wert="_einspSommerNt"
+                                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@(!Rollen)" />
+                            </KindInhalt>
+                        </Formulargruppe>
+                    }
 
-            @if (MitZonenBezug)
-            {
-                <h3 class="epos-untergruppe">@_t.GStaffel</h3>
-                <Zahlenfeld Bezeichnung="@_t.StaffelGrenze" @bind-Wert="_staffelGrenze"
-                            Min="0" Max="100000" Nachkommastellen="0" Aktiv="@(!Rollen)" />
-                <Zahlenfeld Bezeichnung="@_t.StaffelPreis1" @bind-Wert="_staffelPreis1"
-                            Min="0" Max="1000" Nachkommastellen="2" Aktiv="@(!Rollen)" />
-                <Zahlenfeld Bezeichnung="@_t.StaffelPreis2" @bind-Wert="_staffelPreis2"
-                            Min="0" Max="1000" Nachkommastellen="2" Aktiv="@(!Rollen)" />
-            }
+                    @if (MitZonenBezug)
+                    {
+                        <Formulargruppe Titel="@_t.GStaffel">
+                            <KindInhalt>
+                                <Zahlenfeld Bezeichnung="@_t.StaffelGrenze" @bind-Wert="_staffelGrenze"
+                                            Min="0" Max="100000" Nachkommastellen="0" Aktiv="@(!Rollen)" />
+                                <Zahlenfeld Bezeichnung="@_t.StaffelPreis1" @bind-Wert="_staffelPreis1"
+                                            Min="0" Max="1000" Nachkommastellen="2" Aktiv="@(!Rollen)" />
+                                <Zahlenfeld Bezeichnung="@_t.StaffelPreis2" @bind-Wert="_staffelPreis2"
+                                            Min="0" Max="1000" Nachkommastellen="2" Aktiv="@(!Rollen)" />
+                            </KindInhalt>
+                        </Formulargruppe>
+                    }
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     @* ---------------------------------------------------- Rollenmodell *@
     <Gruppenkopf Titel="@_t.GRollen" Symbol="⇄">
         <KindInhalt>
-            @if (MitRolleBezug)
-            {
-                @RollenBlock(_t.RolleBezug, _bezug)
-            }
-            @if (MitRolleReststrom)
-            {
-                @RollenBlock(_t.RolleReststrom, _rest)
-            }
+            <Formularraster>
+                <KindInhalt>
+                    @if (MitRolleBezug)
+                    {
+                        @RollenBlock(_t.RolleBezug, _bezug)
+                    }
+                    @if (MitRolleReststrom)
+                    {
+                        @RollenBlock(_t.RolleReststrom, _rest)
+                    }
 
-            @if (MitRolleEinspeisung)
-            {
-                <h3 class="epos-untergruppe">@_t.GEinspeisung</h3>
-                <Zahlenfeld Bezeichnung="@_t.Einspeisepreis" @bind-Wert="_einspArbeit"
-                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@Rollen" />
-                <Zahlenfeld Bezeichnung="@_t.Grundpreis" @bind-Wert="_einspGrund"
-                            Min="0" Max="1000000" Nachkommastellen="2" Aktiv="@Rollen" />
-            }
+                    @if (MitRolleEinspeisung)
+                    {
+                        <Formulargruppe Titel="@_t.GEinspeisung">
+                            <KindInhalt>
+                                <Zahlenfeld Bezeichnung="@_t.Einspeisepreis" @bind-Wert="_einspArbeit"
+                                            Min="0" Max="5" Nachkommastellen="4" Aktiv="@Rollen" />
+                                <Zahlenfeld Bezeichnung="@_t.Grundpreis" @bind-Wert="_einspGrund"
+                                            Min="0" Max="1000000" Nachkommastellen="2" Aktiv="@Rollen" />
+                            </KindInhalt>
+                        </Formulargruppe>
+                    }
+                </KindInhalt>
+            </Formularraster>
 
+            @* Die Herleitungszeile steht AUSSERHALB des Rasters: Sie ist ein Satz,
+               kein Feld, und wuerde in einer Rasterzelle auf halbe Breite fallen. *@
             @if (MitRolleBezug || MitRolleReststrom)
             {
                 <Herleitungszeile Text="@_t.StaffelHinweis" />
@@ -307,9 +340,8 @@
     /// Zahlentabelle ist auf einem Telefon nicht zu bedienen, und ein Feld ohne
     /// eigene Beschriftung ist fuer ein Sprachausgabeprogramm namenlos.</para>
     /// </summary>
-    private RenderFragment RollenBlock(string titel, RollenFelder f) => @<text>
-        <h3 class="epos-untergruppe">@titel</h3>
-
+    private RenderFragment RollenBlock(string titel, RollenFelder f) => @<Formulargruppe Titel="@titel">
+      <KindInhalt>
         <Zahlenfeld Bezeichnung="@_t.Arbeitspreis" Wert="@f.Arbeit"
                     WertChanged="@(w => f.Arbeit = w)"
                     Min="0" Max="5" Nachkommastellen="4" Aktiv="@Rollen" />
@@ -337,7 +369,8 @@
                         WertChanged="@(w => f.Winter[nr] = w)"
                         Min="0" Max="10000" Nachkommastellen="2" Aktiv="@Rollen" />
         }
-    </text>;
+      </KindInhalt>
+    </Formulargruppe>;
 
     /// <summary>„Stufe 4 (Rest) — Winter [€/kW·a]".</summary>
     private string Stufenfeld(int index, string spalte)

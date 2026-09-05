@@ -167,20 +167,28 @@
         <KindInhalt>
             @if (_artEditor is not null)
             {
-            <Textfeld Bezeichnung="@FeldKuerzel" Wert="@_artKuerzel"
-                      WertChanged="@(w => _artKuerzel = w)"
-                      NurLesen="@(!_artNeu && _artEditor.IstAuslieferung)" />
-            <Textfeld Bezeichnung="@FeldName" Wert="@_artName"
-                      WertChanged="@(w => _artName = w)" />
-            <Auswahlfeld Bezeichnung="@FeldEinheit" Eintraege="@Einheiten"
-                         Auswahl="@_artEinheit"
-                         AuswahlChanged="@(id => _artEinheit = id ?? 0)" />
-            <Zahlenfeld Bezeichnung="@FeldGwp" Wert="@_artGwp" Min="0"
-                        Aktiv="@(!_artEditor.IstPflicht)"
-                        WertChanged="@(w => _artGwp = w)" />
-            <Textfeld Bezeichnung="@FeldQuelle" Wert="@_artQuelle"
-                      NurLesen="@_artEditor.IstPflicht"
-                      WertChanged="@(w => _artQuelle = w)" />
+            @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem
+               Feld. Die beiden Datenraster des Dialogs bleiben Datenraster - ihre
+               Felder stehen in Tabellenzellen und gehoeren nicht in einen
+               Formularblock. *@
+            <Formularraster>
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@FeldKuerzel" Wert="@_artKuerzel"
+                              WertChanged="@(w => _artKuerzel = w)"
+                              NurLesen="@(!_artNeu && _artEditor.IstAuslieferung)" />
+                    <Textfeld Bezeichnung="@FeldName" Wert="@_artName"
+                              WertChanged="@(w => _artName = w)" />
+                    <Auswahlfeld Bezeichnung="@FeldEinheit" Eintraege="@Einheiten"
+                                 Auswahl="@_artEinheit"
+                                 AuswahlChanged="@(id => _artEinheit = id ?? 0)" />
+                    <Zahlenfeld Bezeichnung="@FeldGwp" Wert="@_artGwp" Min="0"
+                                Aktiv="@(!_artEditor.IstPflicht)"
+                                WertChanged="@(w => _artGwp = w)" />
+                    <Textfeld Bezeichnung="@FeldQuelle" Wert="@_artQuelle"
+                              NurLesen="@_artEditor.IstPflicht"
+                              WertChanged="@(w => _artQuelle = w)" />
+                </KindInhalt>
+            </Formularraster>
 
             @if (_artEditor.IstPflicht)
             {
@@ -203,16 +211,20 @@
         <KindInhalt>
             @if (_wertEditor is not null)
             {
-            <Textfeld Bezeichnung="@FeldWertText" Wert="@_wertText"
-                      WertChanged="@(w => _wertText = w)" />
-            <Zahlenfeld Bezeichnung="@FeldWert" Wert="@_wertZahl" Min="0"
-                        Einheit="@(GewaehlteArt?.Einheit ?? "")"
-                        WertChanged="@(w => _wertZahl = w)" />
-            <Schalter Bezeichnung="@FeldCo2e" Wert="@_wertCo2e"
-                      WertChanged="@(w => _wertCo2e = w)" />
-            <Schalter Bezeichnung="@FeldVorlage" Wert="@_wertVorlage"
-                      Aktiv="@(_wertNeu && MitTraeger)"
-                      WertChanged="@(w => _wertVorlage = w)" />
+            <Formularraster>
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@FeldWertText" Wert="@_wertText"
+                              WertChanged="@(w => _wertText = w)" />
+                    <Zahlenfeld Bezeichnung="@FeldWert" Wert="@_wertZahl" Min="0"
+                                Einheit="@(GewaehlteArt?.Einheit ?? "")"
+                                WertChanged="@(w => _wertZahl = w)" />
+                    <Schalter Bezeichnung="@FeldCo2e" Wert="@_wertCo2e"
+                              WertChanged="@(w => _wertCo2e = w)" />
+                    <Schalter Bezeichnung="@FeldVorlage" Wert="@_wertVorlage"
+                              Aktiv="@(_wertNeu && MitTraeger)"
+                              WertChanged="@(w => _wertVorlage = w)" />
+                </KindInhalt>
+            </Formularraster>
 
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf"
