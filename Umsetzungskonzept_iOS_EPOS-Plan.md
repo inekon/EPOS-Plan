@@ -1612,7 +1612,19 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Projektname im Kopfband und gesperrte Reiter schließen einander aus (beides hängt an `ProjektId()`); Erklärung ist
 > die Farbe (**W16b‑B‑2b**: frei #5f5e5a gegen gesperrt #888780, das Vorbild zeichnete frei schwarz) — behoben mit
 > W16b‑E‑5 (`1a72cd5`), Wache in `StartseiteTests`. Offene Frage ans Gerät: stand das Banner „Bitte zuerst ein
-> Projekt auswählen!" über der Leiste?
+> Projekt auswählen!" über der Leiste? **Antwort des Anwenders: ja** — Befund W16b‑B‑2 damit geschlossen (kein
+> Projekt offen, Sperre und Banner vorbildgetreu).
+> **Anwenderwunsch W16b‑E‑6 vom 05.09.2026 („ja, oder anderen Hinweis geben der elegant ist"), umgesetzt
+> (`2981c1a`):** Das dauerhafte Warnbanner der Reitersperre ist gefallen. An seine Stelle treten eine **leise
+> Einstiegszeile** im Reiter „Projekt" (mit dem ⚠ des Kopfbands, verschwindet mit dem offenen Projekt — Name und ✔
+> stehen darüber im Kopfband, wie bei der Gattungszeile W16b‑E‑4), der Grund als **Tooltip** am nun **weich**
+> gesperrten Reiterknopf (`Reiterblatt.Sperrgrund` → `aria-disabled` statt `disabled`, weil ein `disabled`-Knopf
+> keine Zeigerereignisse annimmt und keinen Tooltip zeigt; neues Ereignis `Reiter.Verweigert`, die Pfeiltasten
+> überspringen beide Bauarten) und das bisherige Banner **flüchtig für drei Sekunden nach dem Versuch** — auf eine
+> gesperrte Zunge wie über „Weiter ▶", den Weg der Tastatur; das ist `tabControl_Wizard_Selecting` samt der
+> Lebensdauer von `Form_Hinweis`, nur ohne Wegklicken. Sperre und Farbgebung (W16b‑E‑5) bleiben. Zwei Texte
+> `START_EINSTIEG` und `START_SPERRE_TIPP` in beiden Sprachen, ortsneutral („oben"/„unten") für die Schale ohne
+> Kopfleiste. Wachen `ReiterTests` +2, `StartseiteTests` +5; Abnahmepunkte 1/1a–1c/3/14/16 im Protokoll.
 
 > **Statusblock iU9 — Teilwelle 16a umgesetzt (04.09.2026, Basis `975ead5` = Tag `vor-W16`, zusammengeführt mit `3c7e0d6` nach den W15c-Entscheiden)**
 >
