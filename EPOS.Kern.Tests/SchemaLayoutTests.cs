@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -75,6 +75,11 @@ namespace EPOS.Kern.Tests
             { Von = "SPEICHER_10", Nach = SchemaModell.ABNEHMER_HEIZKREIS, Art = SchemaModell.Kantenart.Versorgung });
             m.Kantenliste.Add(new SchemaModell.Kante
             { Von = "SPEICHER_11", Nach = SchemaModell.ABNEHMER_WARMWASSER, Art = SchemaModell.Kantenart.Prozess });
+
+            // W10b-B-1: die DIREKTDECKUNG - sie ueberspringt die Speicherspalte und war
+            // genau die Leitung, die im Bildschirmfoto quer durch einen Puffer lief.
+            m.Kantenliste.Add(new SchemaModell.Kante
+            { Von = "ERZEUGER_2", Nach = SchemaModell.ABNEHMER_HEIZKREIS, Art = SchemaModell.Kantenart.Versorgung });
 
             // Eine RUECKWAERTSKANTE: der Kessel bezieht aus dem Speicher, den die
             // Waermepumpe laedt (Kaskade).
@@ -187,8 +192,11 @@ namespace EPOS.Kern.Tests
 
         // ================================================================== Kanten
 
+        // Anwenderbefund W10b-B-1 (05.09.2026): Die Leitungen laufen in SPALTENBAHNEN,
+        // nicht mehr als Bezierbogen von Kastenrand zu Kastenrand.
+
         [Fact]
-        public void Vorwaertskante_laeuft_von_der_rechten_zur_linken_Kante()
+        public void Vorwaertskante_verlaesst_die_rechte_Kante_und_erreicht_die_linke()
         {
             SchemaLayout l = SchemaLayout.Anordnen(Modell(), 0);
 
@@ -199,32 +207,153 @@ namespace EPOS.Kern.Tests
             Assert.False(z.Rueckwaerts);
             Assert.Equal(von.Rechts, z.A.X);
             Assert.Equal(nach.X, z.B.X);
-            Assert.Equal(z.A.Y, z.C1.Y);      // waagerechte Kontrollpunkte
-            Assert.Equal(z.B.Y, z.C2.Y);
+
+            // Der Ansatzpunkt liegt auf der Kastenseite - nicht zwingend in der Mitte:
+            // Haengen mehrere Leitungen an derselben Seite, verteilt AnkerVerteilen sie
+            // ueber die Kastenhoehe (W10b-B-1).
+            Assert.InRange(z.A.Y, von.Y, von.Unten);
+            Assert.InRange(z.B.Y, nach.Y, nach.Unten);
         }
 
         [Fact]
-        public void Rueckwaertskante_laeuft_unter_den_Kaesten_herum()
+        public void Ansaetze_an_derselben_Kastenseite_liegen_auf_verschiedenen_Hoehen()
+        {
+            SchemaLayout l = SchemaLayout.Anordnen(Modell(), 0);
+
+            // An der LINKEN Seite von SPEICHER_10 haengen zwei Leitungen: die
+            // Versorgung zum Heizkreis geht rechts hinaus, die Kaskade zum Kessel links.
+            // Die drei Ladeleitungen setzen alle an der RECHTEN Erzeugerseite an - je
+            // Erzeuger eine, aber ERZEUGER_2 fuehrt zusaetzlich die Direktdeckung.
+            SchemaLayout.Kantenzug ladung = Kante(l, "ERZEUGER_2", "SPEICHER_10");
+            SchemaLayout.Kantenzug direkt = Kante(l, "ERZEUGER_2", SchemaModell.ABNEHMER_HEIZKREIS);
+
+            Assert.NotEqual(ladung.A.Y, direkt.A.Y);
+
+            SchemaLayout.Rechteck e2 = l.FlaecheVon("ERZEUGER_2");
+            Assert.InRange(ladung.A.Y, e2.Y, e2.Unten);
+            Assert.InRange(direkt.A.Y, e2.Y, e2.Unten);
+        }
+
+        [Fact]
+        public void Rueckwaertskante_verlaesst_links_und_erreicht_rechts()
         {
             SchemaLayout l = SchemaLayout.Anordnen(Modell(), 0);
 
             SchemaLayout.Kantenzug z = Kante(l, "SPEICHER_10", "ERZEUGER_2");
-            Assert.True(z.Rueckwaerts);
+            SchemaLayout.Rechteck von = l.FlaecheVon("SPEICHER_10");
+            SchemaLayout.Rechteck nach = l.FlaecheVon("ERZEUGER_2");
 
-            int tief = System.Math.Max(z.A.Y, z.B.Y) + 26;
-            Assert.Equal(tief, z.C1.Y);
-            Assert.Equal(tief, z.C2.Y);
-            Assert.True(z.C1.X < z.A.X);
-            Assert.True(z.C2.X > z.B.X);
+            Assert.True(z.Rueckwaerts);
+            Assert.Equal(von.X, z.A.X);
+            Assert.Equal(nach.Rechts, z.B.X);
+
+            // Sie laeuft in der Gasse zwischen Erzeuger- und Speicherspalte, nicht
+            // unter den Kaesten herum.
+            foreach (SchemaLayout.Punkt p in z.Punkte)
+                Assert.True(p.X >= nach.Rechts && p.X <= von.X,
+                            "Punkt ausserhalb der Gasse: " + p.X);
         }
 
         [Fact]
-        public void Prioritaetspunkt_sitzt_auf_der_Kurvenmitte()
+        public void Jedes_Stueck_einer_Leitung_ist_waagerecht_oder_senkrecht()
+        {
+            SchemaLayout l = SchemaLayout.Anordnen(Modell(), 0);
+
+            foreach (SchemaLayout.Kantenzug z in l.Kanten)
+            {
+                Assert.True(z.Punkte.Count >= 2);
+
+                for (int i = 1; i < z.Punkte.Count; i++)
+                {
+                    bool waagerecht = z.Punkte[i].Y == z.Punkte[i - 1].Y;
+                    bool senkrecht = z.Punkte[i].X == z.Punkte[i - 1].X;
+                    Assert.True(waagerecht || senkrecht,
+                                "Schraeges Stueck in " + z.Kante.Von + " -> " + z.Kante.Nach);
+                }
+            }
+        }
+
+        /// <summary>
+        /// DER Fall des Anwenderbefunds: Keine Leitung darf einen Kasten kreuzen — auch
+        /// nicht die Direktdeckung Erzeuger → Abnehmer, die die Speicherspalte
+        /// ueberspringt, und auch nicht die Kaskade zurueck zum Erzeuger.
+        /// </summary>
+        [Fact]
+        public void Keine_Leitung_kreuzt_einen_Kasten()
+        {
+            SchemaLayout l = SchemaLayout.Anordnen(Modell(), 0);
+
+            foreach (SchemaLayout.Kantenzug z in l.Kanten)
+                for (int i = 1; i < z.Punkte.Count; i++)
+                    foreach (SchemaLayout.Knotenflaeche k in l.Knoten)
+                        Assert.False(Kreuzt(z.Punkte[i - 1], z.Punkte[i], k.Flaeche),
+                                     z.Kante.Von + " -> " + z.Kante.Nach +
+                                     " kreuzt " + k.Schluessel);
+        }
+
+        /// <summary>
+        /// Schneidet die Strecke das INNERE des Rechtecks? Ein Beruehren der Kante zaehlt
+        /// nicht — genau so setzt eine Leitung am eigenen Kasten an und am Zielkasten auf.
+        /// </summary>
+        private static bool Kreuzt(SchemaLayout.Punkt a, SchemaLayout.Punkt b,
+                                   SchemaLayout.Rechteck r)
+        {
+            int x1 = System.Math.Min(a.X, b.X), x2 = System.Math.Max(a.X, b.X);
+            int y1 = System.Math.Min(a.Y, b.Y), y2 = System.Math.Max(a.Y, b.Y);
+
+            return x2 > r.X && x1 < r.Rechts && y2 > r.Y && y1 < r.Unten;
+        }
+
+        [Fact]
+        public void Zwei_Leitungen_teilen_sich_keine_Senkrechte_in_derselben_Gasse()
+        {
+            SchemaLayout l = SchemaLayout.Anordnen(Modell(), 0);
+
+            // Jede Senkrechte liegt in einer Gasse zwischen zwei Spalten, und die Gassen
+            // sind ueberschneidungsfrei. Zwei Leitungen duerfen sich deshalb im ganzen
+            // Bild keine Senkrechte teilen - sonst laegen sie uebereinander.
+            List<int> bahnen = new List<int>();
+            foreach (SchemaLayout.Kantenzug z in l.Kanten)
+            {
+                HashSet<int> eigene = new HashSet<int>();
+                for (int i = 1; i < z.Punkte.Count; i++)
+                    if (z.Punkte[i].X == z.Punkte[i - 1].X) eigene.Add(z.Punkte[i].X);
+
+                bahnen.AddRange(eigene);
+            }
+
+            Assert.True(bahnen.Count >= 4, "Zu wenige Senkrechte: " + bahnen.Count);
+            Assert.Equal(bahnen.Count, new HashSet<int>(bahnen).Count);
+
+            // Und keine liegt IN einer Spalte.
+            foreach (int x in bahnen)
+                for (int spalte = 0; spalte < 4; spalte++)
+                    Assert.False(x > l.SpaltenX[spalte] &&
+                                 x < l.SpaltenX[spalte] + SchemaLayout.SPALTEN_BREITE[spalte],
+                                 "Senkrechte bei x=" + x + " liegt in Spalte " + spalte);
+        }
+
+        [Fact]
+        public void Jede_Leitung_traegt_dieselbe_gedeckelte_Breite()
+        {
+            SchemaLayout l = SchemaLayout.Anordnen(Modell(), 0);
+
+            Assert.True(SchemaLayout.LINIE_BREITE >= SchemaLayout.LINIE_BREITE_MIN);
+            Assert.True(SchemaLayout.LINIE_BREITE <= SchemaLayout.LINIE_BREITE_MAX);
+            Assert.True(SchemaLayout.LINIE_BREITE_HERVOR >= SchemaLayout.LINIE_BREITE);
+            Assert.True(SchemaLayout.LINIE_BREITE_HERVOR <= SchemaLayout.LINIE_BREITE_MAX);
+
+            foreach (SchemaLayout.Kantenzug z in l.Kanten)
+                Assert.Equal(SchemaLayout.LINIE_BREITE, z.Breite);
+        }
+
+        [Fact]
+        public void Prioritaetspunkt_sitzt_auf_der_halben_Weglaenge()
         {
             SchemaLayout l = SchemaLayout.Anordnen(Modell(), 0);
             SchemaLayout.Kantenzug z = Kante(l, "ERZEUGER_1", "SPEICHER_10");
 
-            SchemaLayout.Punkt erwartet = SchemaLayout.BezierPunkt(z.A, z.C1, z.C2, z.B, 0.5);
+            SchemaLayout.Punkt erwartet = SchemaLayout.Wegmitte(z.Punkte);
             Assert.Equal(erwartet.X, z.Mitte.X);
             Assert.Equal(erwartet.Y, z.Mitte.Y);
             Assert.Equal(1, z.Prioritaet);
