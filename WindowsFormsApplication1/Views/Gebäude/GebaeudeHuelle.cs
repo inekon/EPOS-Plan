@@ -179,10 +179,12 @@ namespace WindowsFormsApplication1
                 // Befund W9-B-3 (Windows-Abnahme 05.09.2026): Die zwei Pfeile
                 // trugen bis hierher nur ihr Zeichen. Beschriftung UND Kurztext
                 // kommen jetzt aus dem Ressourcenkatalog, beide Sprachen.
-                ["BtnHinzuText"] = Text_("GEB_BTN_UEBERNEHMEN", "▲ In das Projekt übernehmen"),
+                // Entscheid #76 vom selben Tag: Das ZEICHEN steht nicht mehr im
+                // Text - es haengt an der Anordnung und kommt aus dem Baustein.
+                ["BtnHinzuText"] = Text_("GEB_BTN_UEBERNEHMEN", "In das Projekt übernehmen"),
                 ["BtnHinzuHinweis"] = Text_("GEB_BTN_UEBERNEHMEN_HINWEIS",
                     "Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen"),
-                ["BtnEntfernenText"] = Text_("GEB_BTN_ENTFERNEN", "▼ Aus dem Projekt entfernen"),
+                ["BtnEntfernenText"] = Text_("GEB_BTN_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["BtnEntfernenHinweis"] = Text_("GEB_BTN_ENTFERNEN_HINWEIS",
                     "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen"),
                 ["BtnAendernText"] = Text_("GEB_BTN_AENDERN", "Ändern"),
