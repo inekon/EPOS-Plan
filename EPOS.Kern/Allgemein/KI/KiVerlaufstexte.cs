@@ -1,4 +1,4 @@
-// Was im Gespraechsverlauf des Assistenten steht - plattformfrei (iU9-W15b.7).
+﻿// Was im Gespraechsverlauf des Assistenten steht - plattformfrei (iU9-W15b.7).
 //
 // WARUM ES DIESE DATEI GIBT. Die Anzeigelogik des Chatfensters lag in rund 150
 // Zeilen quer durch Form_KiChat verstreut: SchritteZeigen (:1145-1192),
@@ -368,8 +368,16 @@ namespace WindowsFormsApplication1
         /// <param name="eingerichtet">Liegt ein API-Schluessel vor?</param>
         /// <param name="anfragenHeute">Verbrauchte Anfragen des Tages.</param>
         /// <param name="tageslimit">Das feste Tageslimit.</param>
+        /// <param name="mitZaehler">
+        /// Soll die Zeile "Heute genutzt: n von m Anfragen" mitkommen? Seit dem
+        /// Anwenderbefund <b>W15b-E-3</b> (Windows-Abnahme 05.09.2026) fuehrt das
+        /// Chatfenster den Zaehler in seiner Fussleiste - er stand dort UND hier, also
+        /// zweimal auf demselben Bild. Wer die Begruessung ohne eigene Fussleiste
+        /// zeigt (Pruefstand, iOS vor iU11), laesst die Vorgabe stehen.
+        /// </param>
         public static IReadOnlyList<KiVerlaufszeile> Begruessung(
-            bool hilfeBetrieb, bool eingerichtet, int anfragenHeute, int tageslimit)
+            bool hilfeBetrieb, bool eingerichtet, int anfragenHeute, int tageslimit,
+            bool mitZaehler = true)
         {
             var zeilen = new List<KiVerlaufszeile>
             {
@@ -394,11 +402,12 @@ namespace WindowsFormsApplication1
                                                MyResource.Resource.KI_CHAT_BEGRUESSUNG));
                 zeilen.Add(new KiVerlaufszeile(KiVerlaufsrolle.Leise,
                                                MyResource.Resource.KI_CHAT_BEGRUESSUNG_DATEN));
-                zeilen.Add(new KiVerlaufszeile(
-                    KiVerlaufsrolle.Leise,
-                    string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KI_CHAT_VERBRAUCH_LANG,
-                                  anfragenHeute, tageslimit)));
+                if (mitZaehler)
+                    zeilen.Add(new KiVerlaufszeile(
+                        KiVerlaufsrolle.Leise,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KI_CHAT_VERBRAUCH_LANG,
+                                      anfragenHeute, tageslimit)));
                 zeilen.Add(new KiVerlaufszeile(KiVerlaufsrolle.Leise,
                                                MyResource.Resource.KI_AKT_STUFE1_HINWEIS));
             }

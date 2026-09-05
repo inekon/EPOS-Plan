@@ -79,6 +79,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "dialog_lesen",
                 zweck: KiAktionsTexte.ZweckDialogLesen,
+                titel: KiAktionsTexte.TitelDialogLesen,
+                beispiel: KiAktionsTexte.BeispielDialogLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "KiDialogZugriff.Aufloesen / LiesText",
                 parameter: new[] { MaskeParameter() },
@@ -163,6 +165,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "dialog_parameter_erklaeren",
                 zweck: KiAktionsTexte.ZweckDialogErklaeren,
+                titel: KiAktionsTexte.TitelDialogErklaeren,
+                beispiel: KiAktionsTexte.BeispielDialogErklaeren,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "KiDialogKatalog / WikiHelpCatalog.Get",
                 parameter: new[] { MaskeParameter(), FeldParameter() },
@@ -245,6 +249,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "feld_setzen",
                 zweck: KiAktionsTexte.ZweckFeldSetzen,
+                titel: KiAktionsTexte.TitelFeldSetzen,
+                beispiel: KiAktionsTexte.BeispielFeldSetzen,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "KiDialogZugriff.Setze",
                 formularaktion: true,
@@ -340,6 +346,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "formular_ausfuellen",
                 zweck: KiAktionsTexte.ZweckFormularAusfuellen,
+                titel: KiAktionsTexte.TitelFormularAusfuellen,
+                beispiel: KiAktionsTexte.BeispielFormularAusfuellen,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "KiDialogZugriff.Setze",
                 formularaktion: true,
@@ -438,6 +446,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "dialog_aktion_ausfuehren",
                 zweck: KiAktionsTexte.ZweckDialogAktion,
+                titel: KiAktionsTexte.TitelDialogAktion,
+                beispiel: KiAktionsTexte.BeispielDialogAktion,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "Button.PerformClick",
                 formularaktion: true,

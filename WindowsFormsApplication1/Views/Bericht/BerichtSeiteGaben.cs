@@ -330,8 +330,11 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            return Task.FromResult(Dienste.Datei.OrdnerWaehlen(
-                MyResource.Resource.BK_BER_DLG_ZIELORDNER, start));
+            // Der Ordnerwaehler ist ein modales SYSTEMFENSTER und darf nicht
+            // synchron im WebView-Rueckruf aufgehen (Hausregel (d), Befund W13-B-1);
+            // die …Async-Form fuehrt ihn eine gepostete Nachricht spaeter hoch.
+            return Dienste.Datei.OrdnerWaehlenAsync(
+                MyResource.Resource.BK_BER_DLG_ZIELORDNER, start);
         }
 
         private Task DateiOeffnen(string pfad)

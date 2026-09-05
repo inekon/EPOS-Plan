@@ -22,7 +22,34 @@
    der Wirt meldet seinen Ueberlagerungszustand deshalb an
    KiAusfuehrer.Ueberlagerung (W15b.0d, Entscheid E-8), und die Reihenfolge
    bleibt: Diese Komponente meldet die Wahl, der Wirt schliesst und fuehrt dann
-   aus. *@
+   aus.
+
+   ------------------------------------------------------------------------
+   ANWENDERSPRACHE STATT BEZEICHNER - Anwenderbefund W15b-E-4 der Windows-
+   Abnahme vom 05.09.2026: "Es ist unklar, was ausgefuehrt werden kann und wie.
+   Es sollte klarer strukturiert sein und mindestens ein Beispiel (direkt und
+   auch in der Hilfe) geben."
+
+   Was das Bildschirmfoto zeigte: links eine Liste roher Schluessel
+   (minimale_spitze_ermitteln, speichervariante_aktiv_setzen, dialog_lesen),
+   rechts ein Nur-Lese-Textfeld mit "Aktion: variante_anlegen (Stufe 2 - ...)",
+   "Andockpunkt: VariantenCtrl.AnlegenAusStamm" und Parameterhinweisen wie
+   "(hoechstens 200 Zeichen)". Alles davon ist fuer das Modell und fuer das
+   Protokoll geschrieben.
+
+   Fuenf Aenderungen:
+     (1) Die Liste zeigt den TITEL (KiAktion.Titel, de/en aus MyResource) und
+         gruppiert nach lesend/aendernd. Ueber 8 Eintraegen kommt ein Suchfeld
+         dazu - der Bestand hat 24.
+     (2) Rechts steht ein Kennzeichen "Liest nur" / "Aendert Daten", darunter der
+         Zweck als Satz und (bei aendernden) die Wirkung.
+     (3) Die Parameter sind beschriftete Felder mit Pflichtzeichen und der
+         Erlaeuterung als Platzhalter - nicht mehr eine Textwueste im Lesefeld.
+     (4) Jede Aktion nennt ein BEISPIEL ("So fragen Sie: ..."), und im
+         Leerzustand steht ein vollstaendiges durchgespieltes Beispiel.
+     (5) Der ANDOCKPUNKT verschwindet aus der Anwendersicht und bleibt nur als
+         title am Titel stehen.
+   *@
 
 @namespace EPOS.UI.Dialoge.Hilfe
 @using KiKern
@@ -35,61 +62,145 @@
         <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
     }
 
+    <div class="epos-kiwerkzeuge-kopf">
+        <p class="epos-kiwerkzeuge-hinweis">@Texte.Hinweis</p>
+        <InfoKnopf Schluessel="KiWerkzeugliste.btn_Help" />
+    </div>
+
     <div class="epos-kiwerkzeuge-raster">
 
-        @* Die Aktionsliste - im Vorlaeufer eine ListBox von 240 px Breite. Kein
-           Baustein: Zeilenwahl ist der Wahlknopf EINER RASTERZEILE und traegt
-           keinen Text, und ein Raster mit einer Spalte waere mehr Geruest als
-           Liste. Eine Liste mit role="listbox" ist die ehrliche Entsprechung. *@
-        <ul class="epos-kiwerkzeuge-liste" role="listbox" aria-label="@ListeText">
-            @foreach (KiAktion a in Aktionen)
+        <div class="epos-kiwerkzeuge-spalte">
+            @if (Aktionen.Count > SUCHE_AB)
             {
-                <li role="option" aria-selected="@(a.Name == _gewaehlt?.Name)">
-                    <button type="button"
-                            class="epos-kiwerkzeuge-eintrag @(a.Name == _gewaehlt?.Name ? "epos-kiwerkzeuge-eintrag--gewaehlt" : "")"
-                            @onclick="() => Waehlen(a)">@a.Name</button>
-                </li>
+                <label class="epos-feld epos-kiwerkzeuge-suche">
+                    <span class="epos-feld-text">@Texte.Suche</span>
+                    <span class="epos-feld-zeile">
+                        <input class="epos-eingabe" type="search" value="@_suchtext"
+                               @oninput="SuchtextGeaendert" />
+                    </span>
+                </label>
             }
-        </ul>
+
+            @* Die Aktionsliste - im Vorlaeufer eine ListBox von 240 px Breite. Kein
+               Baustein: Zeilenwahl ist der Wahlknopf EINER RASTERZEILE und traegt
+               keinen Text, und ein Raster mit einer Spalte waere mehr Geruest als
+               Liste. Eine Liste mit role="listbox" ist die ehrliche Entsprechung. *@
+            <div class="epos-kiwerkzeuge-listenrahmen">
+                @if (Gefiltert.Count == 0)
+                {
+                    <p class="epos-kiwerkzeuge-leerliste">@Texte.KeinTreffer</p>
+                }
+                else
+                {
+                    <ul class="epos-kiwerkzeuge-liste" role="listbox" aria-label="@Texte.Liste">
+                        @foreach (Gruppe g in Gruppen)
+                        {
+                            <li class="epos-kiwerkzeuge-gruppe" role="presentation">@g.Kopf</li>
+                            @foreach (KiAktion a in g.Aktionen)
+                            {
+                                <li role="option" aria-selected="@(a.Name == _gewaehlt?.Name)">
+                                    <button type="button"
+                                            class="epos-kiwerkzeuge-eintrag @(a.Name == _gewaehlt?.Name ? "epos-kiwerkzeuge-eintrag--gewaehlt" : "")"
+                                            title="@Andockpunkt(a)"
+                                            @onclick="() => Waehlen(a)">@a.Titel</button>
+                                </li>
+                            }
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
 
         <div class="epos-kiwerkzeuge-detail">
-            <Textfeld Mehrzeilig="true" NurLesen="true" Zeilen="6"
-                      Wert="@Beschreibung" Bezeichnung="@BeschreibungText" />
-
-            @if (_gewaehlt is not null)
+            @if (_gewaehlt is null)
             {
-                <div class="epos-kiwerkzeuge-felder">
-                    @foreach (KiParameter p in _gewaehlt.Parameter)
-                    {
-                        string bezeichnung = p.Anzeigename + (p.Pflicht ? " *" : "");
-
-                        @* Aufzaehlung und Wahrheitswert waren im Vorlaeufer eine
-                           ComboBox(DropDownList), alles uebrige eine TextBox
-                           (:1326-1347). Auswahlfeld passt hier NICHT: Es waehlt
-                           ueber eine Id, hier steht der WERT selbst zur Wahl. *@
-                        @if (Werteliste(p) is { Count: > 0 } liste)
-                        {
-                            <label class="epos-feld">
-                                <span class="epos-feld-text">@bezeichnung</span>
-                                <span class="epos-feld-zeile">
-                                    <select class="epos-eingabe" value="@Wert(p.Name)"
-                                            @onchange="e => Gewaehlt(p.Name, e)">
-                                        @foreach (string w in liste)
-                                        {
-                                            <option value="@w" selected="@(w == Wert(p.Name))">@w</option>
-                                        }
-                                    </select>
-                                </span>
-                            </label>
-                        }
-                        else
-                        {
-                            <Textfeld Bezeichnung="@bezeichnung"
-                                      Wert="@Wert(p.Name)"
-                                      WertChanged="@(w => Setzen(p.Name, w))" />
-                        }
-                    }
+                @* Der LEERZUSTAND traegt das vollstaendige Beispiel (W15b-E-4). Er ist
+                   das erste, was der Anwender sieht - und damit die Stelle, an der
+                   erklaert wird, wie diese Maske ueberhaupt zu bedienen ist. *@
+                <div class="epos-kiwerkzeuge-leer">
+                    <p class="epos-kiwerkzeuge-leerkopf">@Texte.LeerKopf</p>
+                    <p class="epos-kiwerkzeuge-beispieltext">@Texte.LeerText</p>
+                    <p class="epos-kiwerkzeuge-bestaetigung">@Texte.Bestaetigungspflicht</p>
                 </div>
+            }
+            else
+            {
+                <div class="epos-kiwerkzeuge-kopfzeile">
+                    <h3 class="epos-kiwerkzeuge-titel" title="@Andockpunkt(_gewaehlt)">@_gewaehlt.Titel</h3>
+                    <span class="epos-kiwerkzeuge-merkmal @(Lesend(_gewaehlt) ? "epos-kiwerkzeuge-merkmal--lesend" : "epos-kiwerkzeuge-merkmal--aendernd")">
+                        @(Lesend(_gewaehlt) ? Texte.MerkmalLesend : Texte.MerkmalAendernd)
+                    </span>
+                </div>
+
+                <p class="epos-kiwerkzeuge-zweck">@_gewaehlt.Zweck</p>
+
+                @if (!Lesend(_gewaehlt) && _gewaehlt.Wirkung.Length > 0)
+                {
+                    <p class="epos-kiwerkzeuge-wirkung">
+                        <span class="epos-kiwerkzeuge-marke">@Texte.Wirkung</span>
+                        @_gewaehlt.Wirkung
+                    </p>
+                }
+
+                @if (_gewaehlt.Beispiel.Length > 0)
+                {
+                    <p class="epos-kiwerkzeuge-beispiel">
+                        <span class="epos-kiwerkzeuge-marke">@Texte.Beispiel</span>
+                        <span class="epos-kiwerkzeuge-beispielsatz">@_gewaehlt.Beispiel</span>
+                    </p>
+                }
+
+                <h4 class="epos-kiwerkzeuge-angabenkopf">@Texte.Angaben</h4>
+
+                @if (_gewaehlt.Parameter.Count == 0)
+                {
+                    <p class="epos-kiwerkzeuge-keineangaben">@Texte.KeineAngaben</p>
+                }
+                else
+                {
+                    <div class="epos-kiwerkzeuge-felder">
+                        @foreach (KiParameter p in _gewaehlt.Parameter)
+                        {
+                            string bezeichnung = p.Anzeigename + (p.Pflicht ? " *" : "");
+
+                            @* Aufzaehlung und Wahrheitswert waren im Vorlaeufer eine
+                               ComboBox(DropDownList), alles uebrige eine TextBox
+                               (:1326-1347). Auswahlfeld passt hier NICHT: Es waehlt
+                               ueber eine Id, hier steht der WERT selbst zur Wahl. *@
+                            @if (Werteliste(p) is { Count: > 0 } liste)
+                            {
+                                <label class="epos-feld">
+                                    <span class="epos-feld-text" title="@Pflichttipp(p)">@bezeichnung</span>
+                                    <span class="epos-feld-zeile">
+                                        <select class="epos-eingabe" value="@Wert(p.Name)"
+                                                @onchange="e => Gewaehlt(p.Name, e)">
+                                            @foreach (string w in liste)
+                                            {
+                                                <option value="@w" selected="@(w == Wert(p.Name))">@w</option>
+                                            }
+                                        </select>
+                                    </span>
+                                </label>
+                            }
+                            else
+                            {
+                                <label class="epos-feld">
+                                    <span class="epos-feld-text" title="@Pflichttipp(p)">@bezeichnung</span>
+                                    <span class="epos-feld-zeile">
+                                        <input class="epos-eingabe" type="text"
+                                               placeholder="@p.Erlaeuterung" value="@Wert(p.Name)"
+                                               @oninput="e => Gewaehlt(p.Name, e)" />
+                                    </span>
+                                </label>
+                            }
+                        }
+                    </div>
+                }
+
+                @if (!Lesend(_gewaehlt))
+                {
+                    <p class="epos-kiwerkzeuge-bestaetigung">@Texte.Bestaetigungspflicht</p>
+                }
             }
         </div>
     </div>
@@ -105,21 +216,17 @@
 </div>
 
 @code {
+    /// <summary>Ab dieser Zahl von Eintraegen bekommt die Liste ein Suchfeld.</summary>
+    private const int SUCHE_AB = 8;
+
     /// <summary>Die Aktionen des Registers, in Registrierungsreihenfolge.</summary>
     [Parameter] public IReadOnlyList<KiAktion> Aktionen { get; set; } = [];
 
     /// <summary>
-    /// Die Beschreibung der gewaehlten Aktion. Sie kommt aus
-    /// <c>KiBestaetigung.Beschreibe</c> und damit als Delegat herein — die
-    /// Komponente kennt KiKern-DATEN, aber keine Kern-Aufrufe.
+    /// Alle Anzeigetexte in EINEM Buendel (W15b‑E‑4) — sechzehn Beschriftungen
+    /// waeren als einzelne Parameter die Fachparameter nicht mehr zu finden.
     /// </summary>
-    [Parameter] public Func<KiAktion, string>? Beschreiben { get; set; }
-
-    /// <summary>Beschriftung der Aktionsliste.</summary>
-    [Parameter] public string ListeText { get; set; } = "";
-
-    /// <summary>Beschriftung des Beschreibungsfeldes.</summary>
-    [Parameter] public string BeschreibungText { get; set; } = "";
+    [Parameter] public KiWerkzeugTexte Texte { get; set; } = new();
 
     /// <summary>Beschriftung „Ausführen".</summary>
     [Parameter] public string AusfuehrenText { get; set; } = "";
@@ -146,12 +253,81 @@
     /// <summary>Die drei Einträge eines Wahrheitswertfeldes (Bestand <c>:1340-1342</c>).</summary>
     private static readonly IReadOnlyList<string> WAHRHEITSWERTE = new[] { "", "true", "false" };
 
+    /// <summary>Eine Gruppe der Liste — lesend oder ändernd (W15b‑E‑4).</summary>
+    private sealed record Gruppe(string Kopf, List<KiAktion> Aktionen);
+
     private KiAktion? _gewaehlt;
     private string _meldung = "";
+    private string _suchtext = "";
     private readonly Dictionary<string, string> _werte = new(StringComparer.Ordinal);
 
-    private string Beschreibung
-        => _gewaehlt is null || Beschreiben is null ? "" : Beschreiben(_gewaehlt);
+    /// <summary>Liest die Aktion nur? Das Kennzeichen der Liste und des Kopfes.</summary>
+    private static bool Lesend(KiAktion a) => a.Stufe == Schutzstufe.Lesen;
+
+    /// <summary>
+    /// Der Andockpunkt als Kurztext — <b>nur</b> als <c>title</c>, nie im
+    /// sichtbaren Text (W15b‑E‑4). <c>null</c> heißt kein <c>title</c>-Merkmal.
+    /// </summary>
+    private string? Andockpunkt(KiAktion a)
+    {
+        if (a.Andockpunkt.Length == 0 || Texte.AndockpunktFormat.Length == 0) return null;
+        try
+        {
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                 Texte.AndockpunktFormat, a.Andockpunkt);
+        }
+        catch (FormatException)
+        {
+            return a.Andockpunkt;
+        }
+    }
+
+    private string? Pflichttipp(KiParameter p) => p.Pflicht && Texte.Pflicht.Length > 0
+        ? Texte.Pflicht
+        : null;
+
+    /// <summary>Die Aktionen, die zum Suchtext passen — Titel, Zweck und Beispiel.</summary>
+    private List<KiAktion> Gefiltert
+    {
+        get
+        {
+            var treffer = new List<KiAktion>();
+            string suche = _suchtext.Trim();
+
+            foreach (KiAktion a in Aktionen)
+            {
+                if (suche.Length == 0 || Passt(a, suche)) treffer.Add(a);
+            }
+            return treffer;
+        }
+    }
+
+    private static bool Passt(KiAktion a, string suche)
+        => a.Titel.Contains(suche, StringComparison.CurrentCultureIgnoreCase)
+           || a.Zweck.Contains(suche, StringComparison.CurrentCultureIgnoreCase)
+           || a.Beispiel.Contains(suche, StringComparison.CurrentCultureIgnoreCase);
+
+    /// <summary>
+    /// Die Liste in zwei Gruppen: erst was nur liest, dann was Daten ändert. Eine
+    /// leere Gruppe erscheint gar nicht — ein Gruppenkopf ohne Zeilen darunter
+    /// wäre ein Versprechen ohne Inhalt.
+    /// </summary>
+    private List<Gruppe> Gruppen
+    {
+        get
+        {
+            var lesend = new List<KiAktion>();
+            var aendernd = new List<KiAktion>();
+
+            foreach (KiAktion a in Gefiltert)
+                (Lesend(a) ? lesend : aendernd).Add(a);
+
+            var gruppen = new List<Gruppe>();
+            if (lesend.Count > 0) gruppen.Add(new Gruppe(Texte.GruppeLesend, lesend));
+            if (aendernd.Count > 0) gruppen.Add(new Gruppe(Texte.GruppeAendernd, aendernd));
+            return gruppen;
+        }
+    }
 
     /// <summary>
     /// Die Werteliste eines Parameters, oder <c>null</c> fuer ein Textfeld.
@@ -182,6 +358,12 @@
     private void Setzen(string name, string wert)
     {
         _werte[name] = wert ?? "";
+        _meldung = "";
+    }
+
+    private void SuchtextGeaendert(ChangeEventArgs e)
+    {
+        _suchtext = e.Value?.ToString() ?? "";
         _meldung = "";
     }
 

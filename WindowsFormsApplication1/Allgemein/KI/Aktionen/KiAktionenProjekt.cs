@@ -22,6 +22,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "projekte_auflisten",
                 zweck: KiAktionsTexte.ZweckProjekteAuflisten,
+                titel: KiAktionsTexte.TitelProjekteAuflisten,
+                beispiel: KiAktionsTexte.BeispielProjekteAuflisten,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "ProjektCtrl.ReadAll",
                 ausfuehren: delegate
@@ -92,6 +94,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "projekt_aktiv",
                 zweck: KiAktionsTexte.ZweckProjektAktiv,
+                titel: KiAktionsTexte.TitelProjektAktiv,
+                beispiel: KiAktionsTexte.BeispielProjektAktiv,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "Dienste.Projekt / ApplikationCtrl.ReadSingle + ProjektCtrl.ReadSingle(int)",
                 ausfuehren: delegate { return AktivesProjektErgebnis(); });
@@ -260,6 +264,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "projekt_suchen",
                 zweck: KiAktionsTexte.ZweckProjektSuchen,
+                titel: KiAktionsTexte.TitelProjektSuchen,
+                beispiel: KiAktionsTexte.BeispielProjektSuchen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "ProjektCtrl.ReadAll (lokaler Teiltreffer)",
                 parameter: new[]
@@ -312,6 +318,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "projekt_lesen",
                 zweck: KiAktionsTexte.ZweckProjektLesen,
+                titel: KiAktionsTexte.TitelProjektLesen,
+                beispiel: KiAktionsTexte.BeispielProjektLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "ProjektCtrl.ReadSingle(int)",
                 parameter: new[] { KiHilfe.ProjektParameter() },
@@ -360,6 +368,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "varianten_auflisten",
                 zweck: KiAktionsTexte.ZweckVariantenAuflisten,
+                titel: KiAktionsTexte.TitelVariantenAuflisten,
+                beispiel: KiAktionsTexte.BeispielVariantenAuflisten,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "VariantenCtrl.LadeGruppe / StammRefDerVariante",
                 parameter: new[] { KiHilfe.ProjektParameter() },
@@ -426,6 +436,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "speichervarianten_auflisten",
                 zweck: KiAktionsTexte.ZweckSpeichervariantenAuflisten,
+                titel: KiAktionsTexte.TitelSpeichervariantenAuflisten,
+                beispiel: KiAktionsTexte.BeispielSpeichervariantenAuflisten,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "StromspeicherVarianteCtrl.ReadAllByProjekt / ReadAktiveVariante",
                 parameter: new[] { KiHilfe.ProjektParameter() },

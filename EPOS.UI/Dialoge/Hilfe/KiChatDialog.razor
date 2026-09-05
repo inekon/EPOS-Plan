@@ -27,68 +27,131 @@
      ohne Schluessel  Begruessung in Orange
    In Razor ist das ein bool-Ausdruck im Markup, kein Sichtbarkeitsschalten.
 
-   DREI UEBERLAGERUNGEN statt drei zweiter Fenster (Risiko R2): Werkzeugliste,
-   Textanzeige (Protokoll und Vorschau) und Rechtshinweis. Sie melden sich ueber
-   UeberlagerungGeaendert an den Wirt, der den Zustand an
-   KiAusfuehrer.Ueberlagerung weiterreicht (W15b.0d, E-8): Solange eine offen
-   steht, weist der Ausfuehrer Aktionen ab - dieselbe Zusage wie die
-   Modalitaetspruefung des Bestands. *@
+   VIER UEBERLAGERUNGEN statt vier zweiter Fenster (Risiko R2): Werkzeugliste,
+   Textanzeige (Protokoll und Vorschau), Rechtshinweis und - seit dem Befund
+   W15b-B-1 - die EINSTELLUNGEN. Sie melden sich ueber UeberlagerungGeaendert an
+   den Wirt, der den Zustand an KiAusfuehrer.Ueberlagerung weiterreicht
+   (W15b.0d, E-8): Solange eine offen steht, weist der Ausfuehrer Aktionen ab -
+   dieselbe Zusage wie die Modalitaetspruefung des Bestands.
+
+   ------------------------------------------------------------------------
+   DER AUFBAU DER ANSICHT ist der Anwenderbefund W15b-E-3 der Windows-Abnahme
+   vom 05.09.2026 ("Darstellung kann verbessert werden"). Vier Dinge standen
+   schief:
+
+   (a) Der KOPF trug vier Zeilen Erklaerung - Zweck, Datenschutz, Tagesverbrauch
+       und den Aktionshinweis -, und weil sie als Begruessung IM Verlauf standen,
+       sah der Anwender einen Kasten und keinen Gespraechsverlauf. Sichtbar
+       bleibt ein Satz; der Rest steht in einer Klappe im Kopf.
+   (b) Der ZAEHLER stand zweimal auf demselben Bild - in der Begruessung und in
+       der Fussleiste. Er steht jetzt in der Fussleiste, und nur dort; die
+       Begruessung kommt aus der Huelle ohne ihn (KiVerlaufstexte.Begruessung
+       mitZaehler: false).
+   (c) Der VERLAUF hatte keine Hoehe und keinen Rahmen. Er fuellt jetzt die
+       Flaeche zwischen Kopf und Eingabe (Flexkasten) und sagt im Leerzustand,
+       dass noch keine Frage gestellt wurde.
+   (d) Die KNOEPFE standen rechts gestapelt (Werkzeuge / Fragen / Nur suchen)
+       und "Verlauf kopieren" lose darueber. Sie stehen jetzt in EINER Reihe
+       unter dem Eingabefeld, mit dem Aktionsschalter links daneben; "Verlauf
+       kopieren" gehoert zu den Verweisen der Fussleiste.
+   *@
 
 @namespace EPOS.UI.Dialoge.Hilfe
 @implements IDisposable
 
 <div class="epos-kichat">
 
-    <p class="epos-kichat-kontext">@Kontextzeile</p>
+    @* --- Kopf: Titel, Kontext, EIN Satz, Klappe, Infoknopf --------------- *@
+    <header class="epos-kichat-kopf">
+        <div class="epos-kichat-kopfzeile">
+            <h2 class="epos-kichat-titel">@Texte.Verlauf</h2>
+            <p class="epos-kichat-kontext">@Kontextzeile</p>
+            <span class="epos-kichat-kopfknopf">
+                <InfoKnopf Schluessel="Form_KiChat.btn_Help" />
+            </span>
+        </div>
 
-    @if (!string.IsNullOrEmpty(FeldsicherungHinweis))
-    {
-        <Warnbanner Stufe="WarnStufe.Warnung" Text="@FeldsicherungHinweis" />
-    }
+        @if (Kopfsatz is not null)
+        {
+            <p class="epos-kichat-einleitung epos-kichat-einleitung--@Klasse(Kopfsatz.Rolle)">
+                @Kopfsatz.Text
+            </p>
+        }
 
+        @if (Klappzeilen.Count > 0 && !string.IsNullOrEmpty(Texte.ErklaerungMehr))
+        {
+            @* Die lange Erklaerung liegt hinter einer Klappe - sie wird EINMAL
+               gelesen und steht danach im Weg (W15b-E-3). <details> braucht
+               dafuer kein Javascript und keinen Zustand im Wirt. *@
+            <details class="epos-kichat-erklaerung">
+                <summary>@Texte.ErklaerungMehr</summary>
+                @foreach (Gespraechszeile z in Klappzeilen)
+                {
+                    <p class="epos-kichat-erklaerung-zeile">@z.Text</p>
+                }
+            </details>
+        }
+
+        @if (!string.IsNullOrEmpty(FeldsicherungHinweis))
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@FeldsicherungHinweis" />
+        }
+    </header>
+
+    @* --- Der Gespraechsverlauf fuellt die Hoehe -------------------------- *@
     <Gespraechsverlauf Zeilen="@_zeilen"
                        Bezeichnung="@Texte.Verlauf"
+                       LeerText="@Texte.VerlaufLeer"
                        Beschaeftigt="@_beschaeftigt"
                        BeschaeftigtText="@Texte.Denkt"
                        AdresseGewaehlt="AdresseGewaehlt"
-                       KopierenText="@Texte.Kopieren"
-                       Kopieren="Kopieren"
                        Fussbereich="@Bestaetigungsblock" />
 
-    @if (!HilfeBetrieb)
-    {
-        <div class="epos-kichat-schalter">
-            @* @key mit einer Fassungsnummer: Der Schalter haelt seinen Zustand SELBST
-               (Standards/Schalter.razor setzt Wert in BeiAenderung), und eine
-               abgelehnte Umschaltung aendert den Wert des Wirtes nicht - Blazor
-               saehe also keine Parameteraenderung und liesse das Kaestchen
-               angehakt. Der Vorlaeufer setzte _chkAktionen.Checked einfach zurueck
-               (Form_KiChat:824-826); hier wird der Schalter neu aufgebaut. *@
-            <Schalter @key="_schalterfassung" Bezeichnung="@Texte.Aktionen"
-                      Wert="@_aktionen" WertChanged="AktionenGeaendert" />
-            <button type="button" class="epos-knopf" disabled="@Gesperrt" @onclick="WerkzeugeOeffnen">
-                @Texte.Werkzeuge
-            </button>
-        </div>
-    }
+    @* --- Eingabe: Feld, EINE Knopfreihe, Datenschutzsatz ----------------- *@
+    <div class="epos-kichat-eingabe">
+        <KiEingabezeile Bezeichnung="@Texte.Eingabe"
+                        MitModell="@(!HilfeBetrieb)"
+                        FragenText="@Texte.Fragen"
+                        SuchenText="@Texte.Suchen"
+                        Gesperrt="@Gesperrt"
+                        Abgeschickt="Abschicken">
+            <Vorspann>
+                @if (!HilfeBetrieb)
+                {
+                    @* @key mit einer Fassungsnummer: Der Schalter haelt seinen Zustand
+                       SELBST (Standards/Schalter.razor setzt Wert in BeiAenderung), und
+                       eine abgelehnte Umschaltung aendert den Wert des Wirtes nicht -
+                       Blazor saehe also keine Parameteraenderung und liesse das
+                       Kaestchen angehakt. Der Vorlaeufer setzte _chkAktionen.Checked
+                       einfach zurueck (Form_KiChat:824-826); hier wird der Schalter neu
+                       aufgebaut. *@
+                    <Schalter @key="_schalterfassung" Bezeichnung="@Texte.Aktionen"
+                              Wert="@_aktionen" WertChanged="AktionenGeaendert" />
+                }
+            </Vorspann>
+            <Zusatzknoepfe>
+                @if (!HilfeBetrieb)
+                {
+                    <button type="button" class="epos-knopf" disabled="@Gesperrt"
+                            @onclick="WerkzeugeOeffnen">
+                        @Texte.Werkzeuge
+                    </button>
+                }
+            </Zusatzknoepfe>
+        </KiEingabezeile>
 
-    <KiEingabezeile Bezeichnung="@Texte.Eingabe"
-                    MitModell="@(!HilfeBetrieb)"
-                    FragenText="@Texte.Fragen"
-                    SuchenText="@Texte.Suchen"
-                    Gesperrt="@Gesperrt"
-                    Abgeschickt="Abschicken" />
+        <p class="epos-kichat-hinweiszeile">
+            <span>@Texte.HinweisVorn</span>
+            @if (!HilfeBetrieb && !string.IsNullOrEmpty(Texte.HinweisLink))
+            {
+                <button type="button" class="epos-kichat-link" @onclick="RechtshinweisOeffnen">
+                    @Texte.HinweisLink
+                </button>
+            }
+        </p>
+    </div>
 
-    <p class="epos-kichat-hinweiszeile">
-        <span>@Texte.HinweisVorn</span>
-        @if (!HilfeBetrieb && !string.IsNullOrEmpty(Texte.HinweisLink))
-        {
-            <button type="button" class="epos-kichat-link" @onclick="RechtshinweisOeffnen">
-                @Texte.HinweisLink
-            </button>
-        }
-    </p>
-
+    @* --- EINE Fussleiste: Verweise, Zaehler, Knoepfe --------------------- *@
     <div class="epos-kichat-leiste">
         <span class="epos-kichat-links">
             <button type="button" class="epos-kichat-link" @onclick="DokuOeffnen">@Texte.Doku</button>
@@ -96,6 +159,10 @@
             {
                 <button type="button" class="epos-kichat-link" @onclick="VorschauOeffnen">@Texte.Vorschau</button>
                 <button type="button" class="epos-kichat-link" @onclick="ProtokollOeffnen">@Texte.Protokoll</button>
+            }
+            @if (!string.IsNullOrEmpty(Texte.Kopieren))
+            {
+                <button type="button" class="epos-kichat-link" @onclick="VerlaufKopieren">@Texte.Kopieren</button>
             }
         </span>
 
@@ -108,7 +175,6 @@
         <span class="epos-kichat-status" title="@Semantiktipp">@_status</span>
 
         <span class="epos-kichat-knoepfe">
-            <InfoKnopf Schluessel="Form_KiChat.btn_Help" />
             @if (!HilfeBetrieb)
             {
                 <button type="button" class="epos-knopf" @onclick="EinstellungenOeffnen">
@@ -119,15 +185,13 @@
         </span>
     </div>
 
-    @* --- Die drei Ueberlagerungen ------------------------------------- *@
+    @* --- Die vier Ueberlagerungen -------------------------------------- *@
 
     <Ueberlagerung Offen="@(_bereich == Bereich.Werkzeuge)" Titel="@Texte.WerkzeugeTitel"
                    Geschlossen="BereichSchliessen">
         <KindInhalt>
             <KiWerkzeugliste Aktionen="@Aktionen"
-                             Beschreiben="@Beschreiben"
-                             ListeText="@Texte.Werkzeuge"
-                             BeschreibungText="@Texte.Beschreibung"
+                             Texte="@Texte.Werkzeugliste"
                              AusfuehrenText="@Texte.Ausfuehren"
                              SchliessenText="@Texte.Schliessen"
                              AktionWaehlenText="@Texte.AktionWaehlen"
@@ -147,14 +211,21 @@
     <Ueberlagerung Offen="@(_bereich == Bereich.Rechtshinweis)" Titel="@Texte.RechtshinweisTitel"
                    Geschlossen="BereichSchliessen">
         <KindInhalt>
-            @Rechtshinweisinhalt
+            @Rechtshinweisinhalt?.Invoke(BereichFertig)
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_bereich == Bereich.Einstellungen)" Titel="@Texte.EinstellungenTitel"
+                   Geschlossen="BereichSchliessen">
+        <KindInhalt>
+            @Einstellungsinhalt?.Invoke(EinstellungenFertig)
         </KindInhalt>
     </Ueberlagerung>
 </div>
 
 @code {
-    /// <summary>Die drei Bereiche, die sich ueber den Chat legen koennen.</summary>
-    private enum Bereich { Keiner, Werkzeuge, Text, Rechtshinweis }
+    /// <summary>Die vier Bereiche, die sich ueber den Chat legen koennen.</summary>
+    private enum Bereich { Keiner, Werkzeuge, Text, Rechtshinweis, Einstellungen }
 
     // =====================================================================
     //  Zustand beim Oeffnen (§ 15.3)
@@ -211,10 +282,18 @@
     /// <summary>Das Aktionsprotokoll (Datei lesen).</summary>
     [Parameter] public Func<Task<string>>? Protokoll { get; set; }
 
-    /// <summary>Die Einstellungen. Rueckgabe <c>true</c> = gespeichert.</summary>
+    /// <summary>
+    /// Die Einstellungen als ZWEITES FENSTER. Rueckgabe <c>true</c> = gespeichert.
+    /// </summary>
+    /// <remarks>
+    /// <b>Nur noch der Rueckweg</b> (Befund <b>W15b‑B‑1</b> der Windows-Abnahme vom
+    /// 05.09.2026). Ist <see cref="Einstellungsinhalt"/> gesetzt, wird dieser Delegat
+    /// NICHT gerufen — die Einstellungen erscheinen dann als Überlagerung derselben
+    /// WebView. Er bleibt für eine Hülle, die keine Überlagerung liefern kann.
+    /// </remarks>
     [Parameter] public Func<Task<bool>>? Einstellungen { get; set; }
 
-    /// <summary>Der Rechtshinweis zum Nachlesen.</summary>
+    /// <summary>Der Rechtshinweis zum Nachlesen — ebenfalls nur noch der Rückweg.</summary>
     [Parameter] public Func<Task>? Rechtshinweis { get; set; }
 
     /// <summary>
@@ -222,7 +301,32 @@
     /// UEBERLAGERUNG statt als zweites Fenster (Risiko R2); sonst greift
     /// <see cref="Rechtshinweis"/>.
     /// </summary>
-    [Parameter] public RenderFragment? Rechtshinweisinhalt { get; set; }
+    /// <remarks>
+    /// Der Rückruf, den der Inhalt bekommt, schließt die Überlagerung: Der eingebettete
+    /// Dialog trägt seinen eigenen Schließknopf, und ohne diesen Weg täte der nichts.
+    /// </remarks>
+    [Parameter] public RenderFragment<EventCallback<bool>>? Rechtshinweisinhalt { get; set; }
+
+    /// <summary>
+    /// Die EINSTELLUNGEN als eingebetteter Inhalt — der Weg, den Befund
+    /// <b>W15b‑B‑1</b> vorschreibt.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Der Befund.</b> „Einstellungen…" öffnete ein leeres Fenster, dann stürzte die
+    /// Anwendung ab. Die Hülle gab <c>Task.FromResult(KiEinstellungenHuelle.Oeffnen(…))</c>
+    /// heraus — ein zweites modales Fenster mit einer ZWEITEN WebView2, aufgezogen
+    /// SYNCHRON im <c>WebMessageReceived</c>-Rückruf der ersten. Dasselbe Muster wie
+    /// W16b‑B‑1 (leere Startkachel-Dialoge) und W13‑B‑1 (Dateiwähler).
+    /// </para>
+    /// <para>
+    /// <b>Der Weg.</b> Entscheid E‑5 des Hauses: Überlagerung statt zweitem Fenster.
+    /// Der Inhalt bekommt einen Rückruf <c>fertig(gespeichert)</c>; die Komponente
+    /// schließt daraufhin die Überlagerung und vermerkt bei <c>true</c> die Zeile
+    /// „gespeichert" im Verlauf — genau das, was der Delegatweg tat.
+    /// </para>
+    /// </remarks>
+    [Parameter] public RenderFragment<EventCallback<bool>>? Einstellungsinhalt { get; set; }
 
     /// <summary>Eine Adresse wurde angeklickt — die Huelle oeffnet sie.</summary>
     [Parameter] public EventCallback<string> AdresseGewaehlt { get; set; }
@@ -253,10 +357,10 @@
     /// <summary>Die Aktionen des Registers fuer die Werkzeugliste.</summary>
     [Parameter] public IReadOnlyList<KiKern.KiAktion> Aktionen { get; set; } = [];
 
-    /// <summary>Beschreibt eine Aktion (<c>KiBestaetigung.Beschreibe</c>).</summary>
-    [Parameter] public Func<KiKern.KiAktion, string>? Beschreiben { get; set; }
-
-    /// <summary>Die Begruessungszeilen, fertig aus dem Kern.</summary>
+    /// <summary>
+    /// Die Begruessungszeilen, fertig aus dem Kern. <b>Sie stehen im KOPF</b>, nicht
+    /// im Verlauf (Befund W15b‑E‑3): der erste Satz sichtbar, der Rest in der Klappe.
+    /// </summary>
     [Parameter] public IReadOnlyList<Gespraechszeile> Begruessung { get; set; } = [];
 
     /// <summary>
@@ -310,6 +414,54 @@
         : string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.KontextFormat, Kontext);
 
     /// <summary>
+    /// Die Erklaerzeilen der Begruessung ohne Kopf- und Leerzeilen — der Kopf ist
+    /// der Titel der Maske, und eine Leerzeile trennt in einer Liste, nicht in
+    /// einem Kasten.
+    /// </summary>
+    private List<Gespraechszeile> Erklaerzeilen
+    {
+        get
+        {
+            var zeilen = new List<Gespraechszeile>();
+            foreach (Gespraechszeile z in Begruessung)
+            {
+                if (z.Rolle is Gespraechsrolle.AssistentKopf or Gespraechsrolle.Leerzeile) continue;
+                if (string.IsNullOrWhiteSpace(z.Text)) continue;
+                zeilen.Add(z);
+            }
+            return zeilen;
+        }
+    }
+
+    /// <summary>Der EINE Satz, der im Kopf stehen bleibt (W15b‑E‑3).</summary>
+    private Gespraechszeile? Kopfsatz
+    {
+        get
+        {
+            List<Gespraechszeile> alle = Erklaerzeilen;
+            return alle.Count == 0 ? null : alle[0];
+        }
+    }
+
+    /// <summary>Was hinter die Klappe wandert.</summary>
+    private List<Gespraechszeile> Klappzeilen
+    {
+        get
+        {
+            List<Gespraechszeile> alle = Erklaerzeilen;
+            return alle.Count <= 1 ? new List<Gespraechszeile>() : alle.GetRange(1, alle.Count - 1);
+        }
+    }
+
+    /// <summary>Die Rollenklasse — dieselben Namen wie im Verlauf (G-1).</summary>
+    private static string Klasse(Gespraechsrolle rolle) => rolle switch
+    {
+        Gespraechsrolle.Warnung => "warnung",
+        Gespraechsrolle.Fehler => "fehler",
+        _ => "leise"
+    };
+
+    /// <summary>
     /// Der Tooltip der Statuszeile — <c>null</c> heisst KEIN <c>title</c>-Merkmal
     /// (Blazor laesst ein Merkmal mit dem Wert <c>null</c> weg; ein leerer Text
     /// stuende dagegen als <c>title=""</c> im Markup und ergaebe einen leeren
@@ -347,7 +499,6 @@
         _aufgebaut = true;
 
         _aktionen = AktionenVorbelegt && !HilfeBetrieb;
-        Anhaengen(Begruessung);
         StatusSetzen();
 
         Anmelden?.Invoke(new KiChatSteuerung
@@ -418,6 +569,18 @@
     /// vorangestellt, wenn die Huelle keine eigene Zeile geliefert hat.
     /// </summary>
     private string AnwenderZeile(string frage) => frage;
+
+    /// <summary>
+    /// „Verlauf kopieren" steht seit W15b‑E‑3 in der Fussleiste und nicht mehr lose
+    /// ueber der Eingabe. Den Text baut die Komponente (sie haelt die Liste); in die
+    /// Zwischenablage schreibt die HUELLE — <c>EPOS.UI</c> kennt keine Plattform.
+    /// </summary>
+    private Task VerlaufKopieren()
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (Gespraechszeile z in _zeilen) sb.AppendLine(z.Text);
+        return Kopieren.InvokeAsync(sb.ToString());
+    }
 
     // =====================================================================
     //  Der Aktionsschalter
