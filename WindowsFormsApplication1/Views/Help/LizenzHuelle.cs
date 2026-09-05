@@ -94,7 +94,9 @@ namespace WindowsFormsApplication1
                 ? MyResource.Resource.LIZR_TITEL_ZUSTIMMUNG
                 : MyResource.Resource.LIZR_TITEL;
 
-            dlg = new BlazorDialogForm<LizenzDialog>(titel, MASS, werte)
+            // KLEIN (Anwenderwunsch 05.09.2026): Lesetext, keine Verwaltung.
+            dlg = new BlazorDialogForm<LizenzDialog>(titel, MASS, werte,
+                                                    EPOS.UI.Dienste.Dialogart.Klein)
             {
                 Mindestmass = MINDEST,
             };

@@ -197,7 +197,11 @@ namespace WindowsFormsApplication1
             if (!string.IsNullOrEmpty(hinweis)) groesse.Height += ZEILE;
             if (!string.IsNullOrEmpty(zusatzFrage)) groesse.Height += ZEILE;
 
-            dlg = new BlazorDialogForm<NamensDialog>(titel ?? "", groesse, werte);
+            // KLEIN (Anwenderwunsch 05.09.2026): Eine Namensabfrage waechst NICHT mit
+            // dem Bildschirm mit - ein Fenster mit einem Eingabefeld ueber den
+            // halben Schirm zu ziehen macht es nicht besser, sondern nur leerer.
+            dlg = new BlazorDialogForm<NamensDialog>(titel ?? "", groesse, werte,
+                                                    EPOS.UI.Dienste.Dialogart.Klein);
             using (dlg)
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();

@@ -578,3 +578,56 @@ Werkzeuge/Formularkarte/Stapel.cs, Erreichbarkeit_2026-09-03.md
 Werkzeuge/Formularkarte.Tests/StapelTests.cs, ErreichbarkeitTests.cs
 EPOS.UI/CLAUDE.md, EPOS.Kern/CLAUDE.md, WindowsFormsApplication1/CLAUDE.md
 ```
+
+---
+
+## Anwenderwunsch 05.09.2026 (**W14b‑E‑9**) — die Verwaltungen nutzen die Höhe
+
+**Der Befund** (Bildschirmfoto „Administration Solarkollektoren"): *„Admin-Menüs sind
+nicht an Größe Bildschirm angepasst."* Er trifft die zwei Verwaltungen dieser Welle
+genauso: Liste in einem kleinen Rollrahmen, darunter — nur über den **Seiten**rollbalken
+erreichbar — der zweite Block.
+
+**Die Vorbilder, nachgemessen** (`git show <löschcommit>^:…resx`):
+
+| Komponente | Vorbild | Fenster | Anordnung |
+|---|---|---|---|
+| `Solarthermie/SolarganglinieAdminDialog` | `Form_Solarganglinie_Admin` | 681 × 344 | **nebeneinander** — `groupBox1` (Einlesen, 11/12) 278 × 274 links, `listBox_Extern` (331/33) 335 × 191 rechts |
+| `Bedarf/BedarfAdminDialog` | `Form_Stromverbraucher_Admin` (mit `Form_Prozesswaerme_Admin`, `Form_Brauchwasser_Admin`) | 542 × 489 | **gestapelt** — `listBox_Verbraucher_DB` (28/48) 288 × 174 oben, die vier Knöpfe rechts daneben, die Anzeigefelder ab y 239 darunter |
+| `Bedarf/WaermebedarfAdminDialog` (W13.2, derselbe Bauplan) | `Form_AdminWaermeeinlesen` | 676 × 433 | **gestapelt** — `listBox_Extern` (21/35) 639 × 174 über die volle Breite, der Einleseblock darunter |
+
+**Die Umsetzung.** Alle drei benutzen den neuen Baustein
+`EPOS.UI/Bausteine/Katalograhmen.razor` (W14a‑E‑6) und tragen an der Wurzel
+`epos-katalog-dialog`:
+
+* **`SolarganglinieAdminDialog` steht nebeneinander.** Wie das Vorbild — nur mit der
+  Liste **links** statt rechts, weil das die Anordnung aller übrigen Katalogdialoge des
+  Hauses ist. „Nebeneinander" ist die Aussage des Vorbilds, die Seite nicht.
+* **`BedarfAdminDialog` und `WaermebedarfAdminDialog` bleiben gestapelt**
+  (`Gestapelt="true"`). Wo das Vorbild untereinander stand, bleibt es untereinander —
+  neu ist nur, dass die **Liste die verbleibende Höhe nimmt** und der Block darunter
+  **ohne Seitenrollen** sichtbar bleibt.
+
+Damit fällt in diesen drei Dialogen die Höchsthöhe aus Befund W9‑B‑2
+(`--epos-listenhoehe`, 22 rem) — und nur dort: Sie war die Antwort auf eine Liste, die
+den Block darunter aus dem Fenster schob; im Katalograhmen schiebt nichts mehr, weil der
+zweite Block seinen eigenen Rollbereich hat. Überall sonst gilt sie unverändert weiter
+(Wache: `ListenrahmenTests`).
+
+**Die Fenster öffnen größer** (iU8‑E‑1): `SolarganglinieAdminHuelle` 880 × 620,
+`BedarfAdminHuelle` 780 × 640 und `WaermebedarfAdminHuelle` 860 × 600 werden auf einem
+1920 × 1040‑Arbeitsbereich alle zu **1632 × 896**.
+
+**Wache.** `EPOS.UI.Tests/KatalogdialogTests` — Wurzelklasse, Rahmen mit und ohne
+`Gestapelt`, Eingabeblock im DOM.
+
+**Abnahmepunkte am Gerät** (100 / 125 / 150 %):
+
+1. „Kollektorganglinien" zeigt Liste **links** und Einleseblock **rechts**; beides ohne
+   Seitenrollbalken.
+2. „Stromverbraucher-Verwaltung" (und die zwei Geschwister) zeigt die Liste hoch, die
+   Anzeigefelder darunter im Bild, die Knopfleiste unten am Fensterrand.
+3. „Wärmebedarf einlesen (Verwaltung)": Liste über die volle Breite, Einleseblock
+   darunter sichtbar.
+4. Das Fenster schmal ziehen (< 900 CSS-px): Die Solarganglinienverwaltung bricht
+   untereinander um, nichts verschwindet.
