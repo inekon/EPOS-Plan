@@ -1658,6 +1658,13 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > festschrieb, die den Befund verursacht hat. Ein erster Agentenlauf zu diesem Wunsch wurde um 16:45 UTC durch eine
 > Unterbrechung abgebrochen; sein Teilstand (`FestesMass`, `auto-fill`, geschrumpfte Seitenränder) ist geprüft und
 > verworfen — er hätte beim Anwender weiterhin zwei Spalten ergeben.
+>
+> **Nachtrag zu W13‑B‑1 (`4fd8cc7`):** § 12 ist um die **Fehlerschranke** ergänzt — die dritte Wache neben
+> `Parametersatzwache` (falscher Schlüssel vor dem ersten Zeichnen) und `WebViewWache` (WebView2 kommt nicht hoch):
+> `Fehlerschranke.razor` + `Wurzel<T>`, gemountet von `BlazorDialogForm`, `BlazorSeite` und `EPOS.iOS/HauptSeite`;
+> der Parametersatz geht unverändert durch, die Wachen prüfen weiter gegen `T`. Regel (c) ist erweitert: aus „kein
+> `ShowDialog` aus einem Blazor-Ereignis" wird **„kein modales Systemfenster im WebView-Rückruf"** — mit zwei
+> Werkzeugen, `Blazorsprung` ohne Rückgabewert und `Blazornachlauf` mit.
 
 > **Statusblock iU9 — Teilwelle 16a umgesetzt (04.09.2026, Basis `975ead5` = Tag `vor-W16`, zusammengeführt mit `3c7e0d6` nach den W15c-Entscheiden)**
 >
@@ -2093,6 +2100,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > ohne Temperaturkoeffizienten, B44), W13‑O‑3 (zwei Leistungsbegriffe, B40), W13‑O‑4 (fehlende Nachlaufblöcke, B23),
 > W13‑O‑5 (Kühlleistung an Zuheizung gekoppelt, B32), W13‑O‑6 (zwei PV-Menüpunkte, eine Maske). **Windows-Abnahme
 > steht aus** (§ 10 des Protokolls, zwölf Punkte). Der vierzehnte iOS-Lauf (33844935661) auf diesem Stand ist grün.
+>
+> **Windows-Abnahme 05.09.2026, Befund W13‑B‑1 („Admin: vdi3805 Datei import: Absturz bei Datei laden, teilweise
+> Absturz auch bei Dateiauswahl-Dialog"), behoben in `4fd8cc7`:** Zwei Ursachen. Der modale Dateiwähler lief
+> **synchron im `WebMessageReceived`-Rückruf** derselben WebView2 — `KatalogImportHuelle.DateiWaehlen` gab
+> `Task.FromResult(Dienste.Datei.DateiOeffnen(…))` heraus, ein schon erfüllter Task, der `OpenFileDialog` pumpte seine
+> Nachrichtenschleife also in der WebView, die gerade zeichnet (wortgleich das Muster von W16b‑B‑1, eine Ebene tiefer;
+> elf Hüllen hatten dieselbe Zeile, ob es gutgeht, hing an der Zeitlage — daher das „teilweise"). Und eine Ausnahme
+> aus einem Blazor-Ereignis hatte **kein Netz** — der WinForms-`BlazorWebView` 10.0.100 führt kein
+> `UnhandledException`. Behebung: `IDateiDienst`/`IDialogDienst` führen wartbare Zwillinge mit Standardfassung
+> (`DateiOeffnenAsync`, `DateiSpeichernAsync`, `OrdnerWaehlenAsync`, `MeldungAsync`, `WarnungAsync`, `FrageAsync`);
+> die Windows-Fassungen posten sie über `Allgemein/Blazor/Blazornachlauf.cs` — der Bruder von `Blazorsprung` für den
+> Fall **mit** Rückgabewert — eine Nachricht später; `Dateiwahl.razor` und `KatalogImportDialog` brauchten keine Zeile,
+> sie warteten von jeher. Dazu die **Fehlerschranke** (`EPOS.UI/Bausteine/Fehlerschranke.razor` auf `ErrorBoundaryBase`,
+> `Wurzel<T>`), die alle drei Hüllen und die iOS-Seite statt `T` mounten. Der Kern ist als Ursache ausgeschlossen: neun
+> neue Fälle fahren alle vier Ausprägungen gegen sechs Bauarten kaputter Dateien, `Lesen` macht daraus eine
+> `IMP_KAT_PROT_LESEFEHLER`-Meldung. Auf iOS war derselbe Befund ein anderer Fehler: `IosDateiDienst.AufDemHauptfaden`
+> lieferte vom Hauptfaden `default`, der Wähler ging nie auf — mit den `…Async`-Fassungen behoben. Protokoll § 13,
+> Abnahmepunkte B1–B7 (Wähler geht auf, kaputte Datei → Warnbanner, Fehlerkasten mit rotem Rand statt Absturz).
 
 > **Statusblock iU9 — Welle 12 umgesetzt (04.09.2026, Basis `73a4338` nach W11b, zusammengeführt mit `fe22915`)**
 >
@@ -2428,6 +2453,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `GEB_BTN_UEBERNEHMEN`/`_ENTFERNEN` entfernt und hängt jetzt an der Anordnung; „übernehmen" zeigt wie im Vorbild
 > zur Projektliste (◀). **W9‑O‑8 damit geschlossen.** Wache `ZweispaltenauswahlTests` (14) mit Medienabfrage gegen
 > Token, drei Anordnungsfälle, Selektoren in zwölf Testklassen nachgezogen.
+>
+> **Anwenderwunsch W9‑E‑2 vom 05.09.2026 (zwei Bildschirmfotos: „der Wärmebedarf vom Gebäude sollte aus diesem
+> Dialog (mit Button Simulation) aufgerufen werden können – analog wie aus dem Simulationsbereich", ohne
+> Brauchwasser und ohne Gesamt), umgesetzt als **W9.8** in `7811b5d`:** Der Gebäudedialog zeigt über den neuen
+> Knopf „Simulation…" (neben „Ändern", frei bei markiertem Projektgebäude, nicht in der Katalogverwaltung) den
+> Wärmebedarf **eines** Gebäudes als vierte Überlagerung — Heizung allein, ohne Brauchwasser und ohne Gesamtsumme:
+> Wärmebedarf [MWh/kWh wählbar, W8‑O‑5], maximale Wärmelast [kW], Vollbenutzungsstunden, die Jahresganglinie als
+> `ChartRenderer.GanglinieNormiert` (dasselbe Bild B1 wie auf der Ergebnisseite, nur mit einer Reihe) im Baustein
+> `Diagramm` mit „sortiert", Bild- und Datenzoom, dazu die Monatsübersicht. Ein Vorbild gab es nicht — `Form_Gebaeude`
+> trug nur `btn_Aendern`, `Form_Simulation_Kurz` (iF29) rechnete den ganzen Lauf; **neu ist die Auskunft, nicht die
+> Rechnung.** Gerechnet wird im Kern (`EPOS.Kern/Controller/GebaeudeBedarfCtrl`) mit **denselben** Methoden wie der
+> Lauf: `SimulationWaermebedarf.KlimakalenderLesen` und `…HeizwaermeEinesGebaeudes` sind Anweisung für Anweisung aus
+> `Waermebedarf_berechnen` herausgezogen, die Schleife des Laufs ruft sie; Schlüssel ist `Z_ProjektGebaeude.ID`
+> (eine neue Abfrage `SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ?`), die Jahressumme rechnet wie der
+> Lauf in float. Der Referenzlauf bleibt byte-gleich, bei einem Ein-Gebäude-Projekt (1007) ist die Zahl des Dialogs
+> bitgleich zu `Waermebedarf_Gebaeude_Gesamt`. Ohne Zahl (ungespeicherte Zeile, Projekt ohne Klimaregion) meldet der
+> Dialog. 13 Kern- und 20 bunit-Fälle (eine Wache: kein Brauchwasser, kein „Gesamt"), acht Texte de/en; auf iOS ist
+> der Dialog nur als Assistentenseite erreichbar, `BedarfGaben` ist dort mitzudenken, wenn der Assistent in iU11
+> verdrahtet wird. Protokoll W9.8.
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
