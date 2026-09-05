@@ -30,30 +30,11 @@ namespace EPOS.UI.Dialoge.Bedarf
         public string Meldung { get; }
     }
 
-    /// <summary>
-    /// Die eine Entscheidung, die die Importkette des Waermebedarfs dem Anwender
-    /// vorlegt. <c>null</c> als Rueckgabe = Abbruch, es wird nichts geschrieben.
-    /// </summary>
-    public sealed class WaermebedarfImportRueckrufe
-    {
-        /// <summary>
-        /// Der Konfliktdialog (Namensdubletten im Katalog). <c>null</c> als
-        /// RUECKGABE heisst Abbruch: Es wird nichts geschrieben.
-        /// </summary>
-        public Func<List<ImportPruefung>, HashSet<string>,
-                    Task<List<KonfliktEntscheidung>?>>? Konflikte;
-    }
-
-    /// <summary>Wie der Import einer Waermebedarfsganglinie ausgegangen ist.</summary>
-    public sealed class WaermebedarfImportErgebnis
-    {
-        /// <summary>Steht die Ganglinie im Katalog?</summary>
-        public bool Erfolgreich;
-
-        /// <summary>Der Bezeichner, unter dem sie steht.</summary>
-        public string Bezeichner = "";
-
-        /// <summary>Der fertige Text fuer das Banner; leer heisst: nichts zu melden.</summary>
-        public string Meldung = "";
-    }
+    // WaermebedarfImportRueckrufe und WaermebedarfImportErgebnis standen bis
+    // iU9-W9-E-3 hier. Sie waren die Oberflaechenseite einer ZWEITEN, engeren
+    // Importkette fuer den Waermebedarf; seit dem Anwenderwunsch W9-E-3 laeuft
+    // auch der Waermebedarf durch GanglinienImportAblauf (Auspraegung
+    // GanglinienZiel.Waermebedarf) und damit ueber GanglinienImportRueckrufe
+    // und GanglinienImportErgebnis aus dem Kern. Zwei Ergebnistypen fuer
+    // dieselbe Kette waeren beim ersten Fachwechsel auseinandergelaufen.
 }

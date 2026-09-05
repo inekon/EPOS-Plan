@@ -11,8 +11,17 @@
    IHR ZWILLING IST NICHT DIE VDI-EINLESEMASKE, sondern
    Form_Stromganglinie_Admin aus Welle 12: Liste, Loeschen mit Sperre,
    Dateiwahl, Import in eine STAMM-Tabelle mit Datenblock. Diese Komponente
-   folgt deshalb StromganglinieAdminDialog Zug um Zug - nur haengt hier
-   GanglinienTextDatei ein, wo dort GanglinienImportAblauf steht.
+   folgt deshalb StromganglinieAdminDialog Zug um Zug.
+
+   SEIT W9-E-3 IST ES AUCH DIESELBE KETTE. Bis dahin hing hier
+   GanglinienTextDatei ein, wo beim Strom GanglinienImportAblauf steht - zwei
+   Importe fuer dieselbe Sache, und der engere konnte weder CSV mit
+   Trennzeichen noch Excel noch Viertelstundenwerte noch kWh je Intervall.
+   Der Anwenderwunsch W9-E-3 ("Gestalte den Dialog bei Waermebedarf -> Daten
+   importieren analog zum Import des Strombedarf") hat den Unterschied zu
+   einer AUSPRAEGUNG gemacht: GanglinienZiel.Waermebedarf im Kern, und die
+   Oberflaechenseite ist der Baustein GanglinienImportLauf - derselbe, den die
+   zwei Stromdialoge und der Dialog "Waermebedarf Extern" einhaengen.
 
    BEFUND W13-B2, BEHOBEN: Die einzige Dublettenpruefung des Vorlaeufers war
    listBox_Extern.FindString(...) - eine Suche in der ANZEIGE, still, ohne
@@ -78,7 +87,14 @@
         <Eingabe>
             <Gruppenkopf Titel="@GruppeEinlesenText" />
 
-            <Herleitungszeile Text="@HinweisStundenwerte" />
+            @* W9-E-3: Der volle Wortlaut des Formats haengt am Infoknopf, die
+               Zeile darunter nennt die Kurzform - dasselbe Paar wie im
+               Dialog "Waermebedarf Extern" und in den zwei Stromdialogen. *@
+            <div class="epos-formathinweis">
+                <Herleitungszeile Text="@HinweisStundenwerte" />
+                <InfoKnopf Schluessel="@HilfeSchluesselImport"
+                           StandardKurztext="@FormatHinweisLangText" />
+            </div>
 
             @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld. *@
             <Formularraster Einspaltig="true">
@@ -91,7 +107,10 @@
                 </KindInhalt>
             </Formularraster>
 
-            <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
+            @* Die Kette meldet keinen Anteil (sie liest und schreibt in EINEM
+               Zug); der Balken laeuft deshalb unbestimmt - ehrlicher als eine
+               erfundene Prozentzahl (Regel des Bausteins Fortschritt). *@
+            <Fortschritt Sichtbar="@_laeuft" Anteil="null" Text="" />
         </Eingabe>
     </Katalograhmen>
 
@@ -111,17 +130,9 @@
     <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage" TitelText="@TitelText"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
 
-    @* --- Der Konfliktdialog als Ueberlagerung ---------------------------- *@
-    <Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
-        <KindInhalt>
-            @if (_konflikteOffen)
-            {
-                <EPOS.UI.Dialoge.Import.ImportKonflikteDialog
-                    Pruefungen="@_konfliktPruefungen" VergebeneNamen="@_konfliktNamen"
-                    Geschlossen="KonflikteFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
+    @* --- Die Importkette: EIN Baustein fuer vier Masken (W9-E-3) --------- *@
+    <GanglinienImportLauf @ref="_import" Einlesen="@Einlesen" Vorschau="@Vorschau"
+                          LaeuftChanged="@(b => _laeuft = b)" />
 </div>
 
 @code {
@@ -159,13 +170,16 @@
     [Parameter] public Func<string, Task<bool>>? MitSystemOeffnen { get; set; }
 
     /// <summary>
-    /// Liest, prueft vor und schreibt — die ganze Kette in der Huelle, weil sie
-    /// 8 760 Zeilen liest und in einer Transaktion schreibt. Der Konfliktdialog
-    /// kommt als Rueckruf zurueck.
+    /// Faehrt die Importkette MIT Ablage
+    /// (<c>GanglinienImportAblauf.MitAblage(GanglinienZiel.Waermebedarf, …)</c>);
+    /// die drei Entscheidungen stellt <see cref="GanglinienImportLauf"/>.
     /// </summary>
     [Parameter]
-    public Func<string, WaermebedarfImportRueckrufe, IProgress<ImportFortschritt>,
-                Task<WaermebedarfImportErgebnis>>? Einlesen { get; set; }
+    public Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+                Task<GanglinienImportErgebnis>>? Einlesen { get; set; }
+
+    /// <summary>Zerlegt eine Datei mit gesetzten Optionen neu (fuer den Optionendialog).</summary>
+    [Parameter] public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>>? Vorschau { get; set; }
 
     /// <summary>Der Ablageordner als Anzeigetext (<c>%APPDATA%…\Waermebedarf</c>).</summary>
     [Parameter] public string Ordner { get; set; } = "";
@@ -196,7 +210,18 @@
     [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.WBAD_FRAGE_LOESCHEN;
     [Parameter] public string VorlageGeloescht { get; set; } = Resource.WBAD_MSG_GELOESCHT;
     [Parameter] public string TextZuordnung { get; set; } = Resource.WBAD_MSG_PROJEKTZUORDNUNG;
-    [Parameter] public string TextSchreibgeschuetzt { get; set; } = Resource.IMPORT_MSG_SCHREIBGESCHUETZT;
+    /// <summary>
+    /// Sperrgrund „Auslieferungssatz". Bis W9‑E‑3 stand hier
+    /// <c>IMPORT_MSG_SCHREIBGESCHUETZT</c> — und dieser Text nennt die
+    /// STROMganglinie; in der Wärmebedarfsverwaltung war das schlicht falsch.
+    /// </summary>
+    [Parameter] public string TextSchreibgeschuetzt { get; set; } = Resource.WBAD_MSG_SCHREIBGESCHUETZT;
+
+    /// <summary>Der AUSFUEHRLICHE Formathinweis; er haengt am Infoknopf (W9-E-3).</summary>
+    [Parameter] public string FormatHinweisLangText { get; set; } = Resource.WBX_HINWEIS_FORMAT;
+
+    /// <summary>Schluessel des Hilfeknopfes am Formathinweis (W9-E-3).</summary>
+    [Parameter] public string HilfeSchluesselImport { get; set; } = "Form_Waermebedarf.btn_Help_Import";
     [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
     [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_AdminWaermeeinlesen.btn_Help";
@@ -208,8 +233,7 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
     private bool _laeuft;
-    private double? _anteil;
-    private string _fortschrittText = "";
+    private GanglinienImportLauf? _import;
 
     private List<Katalogzeile> _katalog = new();
     private string _gewaehlt = "";
@@ -227,11 +251,6 @@
 
     private bool _loeschfrageOffen;
     private string _loeschfrage = "";
-
-    private bool _konflikteOffen;
-    private IReadOnlyList<ImportPruefung>? _konfliktPruefungen;
-    private IReadOnlyCollection<string>? _konfliktNamen;
-    private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
 
     private IQueryable<Katalogzeile> Katalogzeilen => _katalog.AsQueryable();
 
@@ -349,61 +368,23 @@
 
     private async Task BeiEinlesen()
     {
-        if (!EinlesenErlaubt) return;
+        if (!EinlesenErlaubt || _import is null) return;
 
-        _laeuft = true;
-        _anteil = null;
-        _fortschrittText = "";
         _meldung = "";
-        await InvokeAsync(StateHasChanged);
 
-        try
+        // Die Maske gibt KEINE Rastervorgabe: Die Kette erkennt das Raster
+        // selbst, und der Optionendialog laesst es uebersteuern.
+        GanglinienImportErgebnis? erg = await _import.Starten(_pfad, GanglinienRaster.Unbekannt);
+        if (erg is null) return;
+
+        if (erg.Meldung.Length > 0) Melden(erg.Meldung, GanglinienImportLauf.StufeZu(erg));
+
+        if (erg.Ausgang == ImportAusgang.Erfolg)
         {
-            var melder = new Progress<ImportFortschritt>(f =>
-            {
-                _anteil = f.Anteil;
-                _fortschrittText = f.Schluessel;
-                InvokeAsync(StateHasChanged);
-            });
-
-            WaermebedarfImportErgebnis erg = await Einlesen!(
-                _pfad,
-                new WaermebedarfImportRueckrufe { Konflikte = KonflikteFragen },
-                melder);
-
-            if (erg.Meldung.Length > 0)
-                Melden(erg.Meldung, erg.Erfolgreich ? WarnStufe.Erfolg : WarnStufe.Fehler);
-
-            if (erg.Erfolgreich)
-            {
-                await KatalogLaden();
-                Geaendert?.Invoke();
-                _pfad = "";
-            }
+            await KatalogLaden();
+            Geaendert?.Invoke();
+            _pfad = "";
         }
-        finally
-        {
-            _laeuft = false;
-            _anteil = null;
-            _fortschrittText = "";
-        }
-    }
-
-    private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
-        List<ImportPruefung> pruefungen, HashSet<string> namen)
-    {
-        _konfliktPruefungen = pruefungen;
-        _konfliktNamen = namen;
-        _konflikteOffen = true;
-        _konflikteWartet = new TaskCompletionSource<List<KonfliktEntscheidung>?>();
-        await InvokeAsync(StateHasChanged);
-        return await _konflikteWartet.Task;
-    }
-
-    private void KonflikteFertig(List<KonfliktEntscheidung>? entscheidungen)
-    {
-        _konflikteOffen = false;
-        _konflikteWartet?.TrySetResult(entscheidungen);
     }
 
     // =====================================================================
@@ -421,7 +402,7 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_konflikteOffen || _loeschfrageOffen) return Task.CompletedTask;
+        if (_loeschfrageOffen || _import?.EtwasOffen == true) return Task.CompletedTask;
         return Geschlossen.InvokeAsync(false);
     }
 }

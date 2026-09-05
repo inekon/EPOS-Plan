@@ -6157,7 +6157,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>DB Ganglinie Löschen</value>
   </data>
   <data name="WBAD_DATEIFILTER" xml:space="preserve">
-    <value>(*.txt)|*.txt</value>
+    <value>Lastgangdateien (*.csv;*.txt;*.xlsx;*.xlsm;*.xls)|*.csv;*.txt;*.xlsx;*.xlsm;*.xls|CSV (*.csv)|*.csv|Textdatei (*.txt)|*.txt|Excel (*.xlsx;*.xlsm;*.xls)|*.xlsx;*.xlsm;*.xls|Alle Dateien (*.*)|*.*</value>
   </data>
   <data name="WBAD_FRAGE_LOESCHEN" xml:space="preserve">
     <value>Die Ganglinie "{0}" aus dem Katalog löschen?</value>
@@ -6172,7 +6172,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Datei Basis Ordner:</value>
   </data>
   <data name="WBAD_LBL_STUNDENWERTE" xml:space="preserve">
-    <value>Stundenwerte über 1 Jahr als Textdatei (Dezimaltrennzeichen '.')</value>
+    <value>CSV/Text, 8.760 Stunden- oder 35.040 Viertelstundenwerte, ein Wert je Zeile — Einzelheiten am Infoknopf</value>
   </data>
   <data name="WBAD_MSG_ABLAGE" xml:space="preserve">
     <value>Die Originaldatei konnte nicht in den Anwenderordner kopiert werden: {0}</value>
@@ -6192,11 +6192,32 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WBAD_MSG_SCHREIBFEHLER" xml:space="preserve">
     <value>Die Ganglinie konnte nicht gespeichert werden.</value>
   </data>
+  <data name="WBAD_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Diese Wärmebedarfsganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
+  </data>
   <data name="WBAD_SPALTE_BEZEICHNER" xml:space="preserve">
     <value>Bezeichnung</value>
   </data>
   <data name="WBAD_TITEL" xml:space="preserve">
     <value>Wärmebedarf Ganglinie</value>
+  </data>
+  <data name="WBX_HINWEIS_FORMAT" xml:space="preserve">
+    <value>Dateiformat: CSV- oder Textdatei (auch Excel .xlsx/.xlsm/.xls) mit einem Jahr Wärmebedarf — 8.760 Stundenwerte oder 35.040 Viertelstundenwerte, in Zeitfolge ab dem 1. Januar, je Zeile ein Wert. Als Feldtrennzeichen sind Semikolon, Komma, Tabulator und senkrechter Strich zugelassen; eine einspaltige Datei braucht keines. Eine Kopfzeile ist erlaubt und wird erkannt. Dezimaltrennzeichen Komma oder Punkt, kein Tausendertrennzeichen. Werte als Leistung in kW oder als Arbeit in kWh je Intervall — die Einheit wird vor dem Einlesen abgefragt und in kW umgerechnet. Eine Zeitstempelspalte ist zulässig, aber nicht nötig. Der Bezeichner der Ganglinie ist der Dateiname ohne Erweiterung.</value>
+  </data>
+  <data name="WBX_HINWEIS_FORMAT_KURZ" xml:space="preserve">
+    <value>CSV/Text, 8.760 Stunden- oder 35.040 Viertelstundenwerte, ein Wert je Zeile — Einzelheiten am Infoknopf</value>
+  </data>
+  <data name="WBX_MSG_GELOESCHT" xml:space="preserve">
+    <value>Die Wärmebedarfsganglinie „{0}“ wurde gelöscht.</value>
+  </data>
+  <data name="WBX_MSG_KOPIERT" xml:space="preserve">
+    <value>Die Wärmebedarfsganglinie „{0}“ wurde als „{1}“ gespeichert.</value>
+  </data>
+  <data name="WBX_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>Eine Wärmebedarfsganglinie mit dem Namen „{0}“ ist bereits in der Datenbank. Bitte einen anderen Namen wählen.</value>
+  </data>
+  <data name="WBX_TITEL_KOPIE" xml:space="preserve">
+    <value>Wärmebedarfsganglinie speichern unter</value>
   </data>
   <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
     <value>KWKG: Über der Ausschreibungsgrenze von {0} kW und deshalb ohne Zuschlag: {1} (der Weg über eine Ausschreibung nach § 8a KWKG/KWKAusV ist nicht abgebildet). Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>

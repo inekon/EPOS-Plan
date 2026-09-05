@@ -1,4 +1,4 @@
-﻿@* Waermebedarf EXTERN - die Ganglinien eines Projekts (iU9-W9.4).
+@* Waermebedarf EXTERN - die Ganglinien eines Projekts (iU9-W9.4).
 
    VORBILD. Views/Waermebedarf/Form_Waermebedarf (324 Z., 828 x 443,
    lokalisiert de/en, 11 Kartenzeilen + zwei Laufzeitfelder, 1 MessageBox).
@@ -9,7 +9,8 @@
    Vorlaeufer NICHT im Designer, sondern werden in KanalControlsAufbauen:72
    zur Laufzeit angelegt - die Maske ist auch Assistentenseite, und ihre
    Designer-Dateien sind vom Werkzeug erzeugt. Hier steht das Feld ganz
-   gewoehnlich im Markup.
+   gewoehnlich im Markup, seit W9-E-3 im Baustein Formularraster (Hausregel
+   iU8-E-2: ein Parameterblock stellt die Beschriftung NEBEN das Feld).
 
    DER KANAL GILT JE ZEILE. Er wirkt immer auf die MARKIERTE Zuordnung; ohne
    Markierung ist die Klappliste gesperrt. Eine neue Zeile startet auf
@@ -22,18 +23,68 @@
    Klick, und der Katalog gilt fuer ALLE Projekte (A-8, wie W6 A-4). Eine
    Ganglinie mit Projektzuordnung bleibt gesperrt und nennt den Grund.
 
-   TASTATUR: Esc schliesst, aber erst, wenn die Rueckfrage weg ist. Enter ist
-   nicht belegt.
+   TASTATUR: Esc schliesst, aber erst, wenn die oberste Ebene weg ist. Enter
+   ist nicht belegt.
 
    ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
    Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
    des Hauses: Projektliste links, Katalog rechts, die zwei Knoepfe in einer
    schmalen Mittelspalte, auf schmalem Schirm untereinander. Die Knoepfe trugen
    bis hierher nur "◀" und "▶"; das Zeichen setzt jetzt der Baustein je nach
-   Anordnung, die Beschriftung sagt im Klartext, was sie tun. *@
+   Anordnung, die Beschriftung sagt im Klartext, was sie tun.
+
+   ANWENDERWUNSCH W9-E-3 (Windows-Abnahme 05.09.2026), woertlich: "Gestalte den
+   Dialog bei Waermebedarf -> Daten importieren analog zum Import des
+   Strombedarf -> Messdaten importieren (mit grafischer Darstellung etc. wie
+   kuerzlich vorgenommen)." Gemeint ist StromganglinieDialog nach W12-E-1 und
+   W12-E-2. Uebernommen ist DREIERLEI:
+
+   * DIE KNOPFLEISTE unter der Katalogliste traegt vier Knoepfe statt zwei:
+
+       [CSV-Datei importieren...] [Speichern unter...] [Loeschen] [Einlesen/Bearbeiten..]
+
+     IMPORTIEREN ist kein zweiter Importweg. Es ist DERSELBE - die Kette liegt
+     im Kern (GanglinienImportAblauf mit der Auspraegung
+     GanglinienZiel.Waermebedarf), ihre Oberflaechenseite im Baustein
+     GanglinienImportLauf, den auch WaermebedarfAdminDialog und die zwei
+     Stromdialoge einhaengen. Der Knopf holt nur den Pfad und ruft
+     Starten(pfad, Unbekannt): Das Raster erkennt die Kette selbst, und der
+     Optionendialog laesst es uebersteuern. Der Dateiwaehler ist ein ERWARTETER
+     Delegat und wird await-et (W13-B-1) - ein synchron im Blazor-Ereignis
+     geoeffneter OpenFileDialog beendet den Prozess.
+     LOESCHEN prueft ZWEI Sperren, bevor die Rueckfrage kommt: eine
+     Projektzuordnung und das Auslieferungskennzeichen ReadOnly. Beide MELDEN
+     ihren Grund als Warnbanner; der ReadOnly-Grund haengt zusaetzlich als
+     title am Knopf (Staffelung W16b-E-6).
+     SPEICHERN UNTER ist die Kopie unter neuem Namen (WaermebedarfStammCtrl.
+     KopiereStamm); die Dublette wird VOR dem Einfuegen gegen den geladenen
+     Katalog geprueft, der Kern prueft sie ein zweites Mal.
+     "Einlesen/Bearbeiten.." bleibt, was es war: die Ganglinienverwaltung als
+     UEBERLAGERUNG (W13.2).
+
+   * DER FORMATHINWEIS steht einzeilig unter der Leiste
+     (WBX_HINWEIS_FORMAT_KURZ), der volle Wortlaut haengt am Infoknopf
+     (WBX_HINWEIS_FORMAT). Er nennt genau das, was die Kette wirklich
+     auswertet - bis W9-E-3 las der Waermebedarf nur Textdateien mit einem
+     Wert je Zeile und Dezimaltrenner Punkt.
+
+   * DIE GRAFIK der markierten Ganglinie steht - sobald LINKS ODER RECHTS eine
+     Zeile markiert ist - unter den beiden Spalten, ueber die volle Breite, vor
+     der Fussleiste: Kennzahlen (Jahresarbeit, Spitze, Vollbenutzungsstunden),
+     der Schalter "sortiert", die Einheitenwahl und das Bild B1
+     (ChartRenderer.GanglinieNormiert) im Baustein Diagramm mit Bild- und
+     Datenzoom. Es ist DASSELBE Bild wie im Bedarfsreiter der Ergebnisseite
+     (BildBedarfWaerme) und im GebaeudeBedarfDialog (W9.8), nur mit EINER Reihe.
+
+   KEIN KNOPF OHNE DELEGATEN. Fehlt der jeweilige Rueckruf, bleibt der Knopf
+   weg - dieselbe Regel wie bei Dateiwahl und Sprung. Ohne jede Gabe zeichnet
+   der Dialog nur die zwei Listen (Befund W16b-B1); ohne Kennzahlen-Delegat
+   bleibt auch die Grafik weg. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using SpeicherEngine
+@using WindowsFormsApplication1
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -51,7 +102,7 @@
 
     <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
                         UebernehmenText="@BtnHinzuText"
-                        UebernehmenGesperrt="@(_katalogname is null)" Uebernehmen="BeiHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText"
                         EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
 
@@ -71,7 +122,7 @@
                             <tr class="@(z == _gewaehlt ? "epos-zeile--markiert" : null)">
                                 <td>
                                     <Zeilenwahl Gewaehlt="@(z == _gewaehlt)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => _gewaehlt = z" />
+                                                Gewaehltwerden="() => ProjektZeileWaehlen(z)" />
                                 </td>
                                 <td>@z.Bezeichner</td>
                             </tr>
@@ -80,9 +131,16 @@
                 </table>
             </div>
 
-            <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
-                         Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
-                         Aktiv="@(_gewaehlt is not null)" />
+            @* W9-E-3: Der Kanal ist ein Parameterfeld und steht deshalb im
+               Formularraster (Hausregel iU8-E-2) - Beschriftung NEBEN dem Feld,
+               nicht darueber. Einspaltig, weil die linke Spalte schmal ist. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
+                                 Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
+                                 Aktiv="@(_gewaehlt is not null)" />
+                </KindInhalt>
+            </Formularraster>
         </Links>
 
         <Rechts>
@@ -95,15 +153,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (string name in _katalog)
+                        @foreach (WaermebedarfAdminDialog.Katalogzeile eintrag in _katalog)
                         {
-                            string n = name;
-                            <tr class="@(n == _katalogname ? "epos-zeile--markiert" : null)">
+                            WaermebedarfAdminDialog.Katalogzeile k = eintrag;
+                            <tr class="@(k == _katalogZeile ? "epos-zeile--markiert" : null)">
                                 <td>
-                                    <Zeilenwahl Gewaehlt="@(n == _katalogname)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => _katalogname = n" />
+                                    <Zeilenwahl Gewaehlt="@(k == _katalogZeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => KatalogZeileWaehlen(k)" />
                                 </td>
-                                <td>@n</td>
+                                <td>@k.Bezeichner</td>
                             </tr>
                         }
                     </tbody>
@@ -111,17 +169,51 @@
             </div>
 
             <div class="epos-leiste">
+                @if (ImportMoeglich)
+                {
+                    <button type="button" class="epos-knopf" disabled="@_laeuft"
+                            @onclick="BeiImportieren">@BtnImportierenText</button>
+                }
+                @if (KopierenMoeglich)
+                {
+                    <button type="button" class="epos-knopf" disabled="@(!KopierenErlaubt)"
+                            @onclick="BeiSpeichernUnter">@BtnSpeichernUnterText</button>
+                }
+                <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
+                        title="@LoeschenGrund" @onclick="BeiLoeschen">@BtnLoeschenText</button>
                 @if (VerwaltungGaben is not null)
                 {
                     <button type="button" class="epos-knopf"
                             @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
                 }
-                <button type="button" class="epos-knopf" disabled="@(_katalogname is null)"
-                        @onclick="BeiLoeschen">@BtnLoeschenText</button>
             </div>
+
+            @if (ImportMoeglich)
+            {
+                @* W9-E-3: Was fuer eine Datei erwartet wird - sichtbar, nicht erst
+                   im Protokoll. EINE Zeile; der volle Wortlaut haengt am Infoknopf. *@
+                <div class="epos-formathinweis">
+                    <Herleitungszeile Text="@FormatHinweisText" />
+                    <InfoKnopf Schluessel="@HilfeSchluesselImport"
+                               StandardKurztext="@FormatHinweisLangText" />
+                </div>
+            }
         </Rechts>
 
     </Zweispaltenauswahl>
+
+    @* --- Die Grafik der gewaehlten Ganglinie (W9-E-3) -------------------- *@
+    @if (_kennzahlen is not null)
+    {
+        <GanglinienGrafik Schluessel="@Grafikschluessel" Bezeichner="@GewaehlterName"
+                          Kennzahlen="@_kennzahlen" Bildauftrag="@Grafikbild"
+                          Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
+                          LabelJahresarbeit="@LabelJahresarbeit" LabelSpitze="@LabelSpitze"
+                          LabelVollbenutzung="@LabelVollbenutzung"
+                          LabelSortiert="@LabelSortiert" LabelEinheit="@LabelEinheit"
+                          EinheitKw="@EinheitKw" EinheitStunden="@EinheitStunden"
+                          Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild" />
+    }
 
     @if (!Wizard)
     {
@@ -131,6 +223,24 @@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnLoeschenText" Frage="@Loeschfrage"
                 Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
 
+    @* --- "Speichern unter": der Name der Kopie (W9-E-3) ------------------ *@
+    <Ueberlagerung Offen="@_kopieOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_kopieOffen)
+            {
+                <NamensDialog TitelText="@KopieTitelText" FrageText="@KopieFrageText"
+                              Vorbelegung="@_kopieVorschlag" MeldungLeer="@TextNameLeer"
+                              OkNurMitText="true" Pruefung="@KopieNamePruefen"
+                              OkText="@OkText" AbbrechenText="@AbbrechenText"
+                              Geschlossen="KopieFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Die Importkette: DERSELBE Baustein wie in der Verwaltung -------- *@
+    <GanglinienImportLauf @ref="_import" Einlesen="@Einlesen" Vorschau="@Vorschau"
+                          LaeuftChanged="@(b => _laeuft = b)" />
+
     @* --- Die Ganglinienverwaltung als UEBERLAGERUNG (iU9-W13.2) -----------
        Bis Welle 13 war das ein SPRUNG ueber die Sprungbruecke in ein
        WinForms-Fenster (Sprungziel.WaermebedarfExternAdmin). Ist das Ziel
@@ -139,7 +249,7 @@
        der Kostenseite aus W4. *@
     <Ueberlagerung Offen="@_verwaltungOffen" Titel="" Schliessbar="false">
         <KindInhalt>
-            @if (_verwaltungOffen)
+            @if (_verwaltungOffen && VerwaltungGaben is not null)
             {
                 <WaermebedarfAdminDialog @attributes="@VerwaltungGaben"
                                          Geschlossen="VerwaltungFertig" />
@@ -155,8 +265,17 @@
     /// </summary>
     [Parameter] public List<WaermebedarfExternZeile> Zeilen { get; set; } = new();
 
-    /// <summary>Die Bezeichner des Ganglinienkatalogs (<c>Tab_Waermebedarf_STAMM</c>).</summary>
-    [Parameter] public Func<IReadOnlyList<string>>? Katalog { get; set; }
+    /// <summary>
+    /// Der Ganglinienkatalog (<c>WaermebedarfStammCtrl.ReadAll</c> samt
+    /// <c>ReadOnly</c>-Kennzeichen).
+    ///
+    /// <para><b>Dieselbe Zeile und dieselbe Quelle wie in der Verwaltung</b>
+    /// (<c>WaermebedarfAdminHuelle.KatalogLesen</c>): Bis W9‑E‑3 holte dieser Dialog
+    /// nur eine Namensliste, und das Auslieferungskennzeichen fehlte ihm — ein
+    /// Auslieferungssatz war hier nicht als solcher zu erkennen. Denselben Weg
+    /// nahm der Stromdialog mit W12‑E‑1.</para>
+    /// </summary>
+    [Parameter] public Func<Task<List<WaermebedarfAdminDialog.Katalogzeile>>>? Katalog { get; set; }
 
     /// <summary>Legt aus einem Katalogbezeichner eine neue Zuordnung an („◀").</summary>
     [Parameter] public Func<string, WaermebedarfExternZeile?>? Aufnehmen { get; set; }
@@ -177,6 +296,55 @@
     /// WinForms-Fenster. Kein Parametersatz = kein Knopf.
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, object>? VerwaltungGaben { get; set; }
+
+    /// <summary>
+    /// Der Dateiwähler der Plattform (W9‑E‑3). Ohne ihn — oder ohne
+    /// <see cref="Einlesen"/> — bleibt „CSV-Datei importieren…" weg.
+    /// </summary>
+    [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
+
+    /// <summary>
+    /// Fährt die Importkette MIT Ablage
+    /// (<c>GanglinienImportAblauf.MitAblage(GanglinienZiel.Waermebedarf, …)</c>);
+    /// die drei Entscheidungen stellt <see cref="GanglinienImportLauf"/>.
+    /// </summary>
+    [Parameter]
+    public Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+                Task<GanglinienImportErgebnis>>? Einlesen { get; set; }
+
+    /// <summary>Zerlegt eine Datei mit gesetzten Optionen neu (für den Optionendialog).</summary>
+    [Parameter] public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>>? Vorschau { get; set; }
+
+    /// <summary>
+    /// Kopiert einen Katalogeintrag unter neuem Namen
+    /// (<c>WaermebedarfStammCtrl.KopiereStamm</c>): Quelle, Ziel,
+    /// <c>false</c> = nicht angelegt. Ohne ihn bleibt „Speichern unter…" weg.
+    /// </summary>
+    [Parameter] public Func<string, string, Task<bool>>? Kopieren { get; set; }
+
+    /// <summary>
+    /// <b>Die drei Kennzahlen der gewählten Ganglinie</b> (W9‑E‑3) —
+    /// <c>GanglinienAuswertungCtrl</c> mit <c>GanglinienQuelle.Waermebedarf</c> in der
+    /// Hülle. <c>null</c> als Ergebnis heißt „zu dieser Ganglinie gibt es keine
+    /// brauchbare Reihe"; dann bleibt die Grafik weg statt einen leeren Rahmen zu
+    /// zeigen.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? Kennzahlen { get; set; }
+
+    /// <summary>
+    /// Zeichnet die gewählte Ganglinie (W9‑E‑3): Wahl, Schalterstellung „sortiert"
+    /// und der aufgezogene Bildausschnitt (<c>null</c> = das ganze Jahr).
+    ///
+    /// <para>Gezeichnet wird im Kern (<c>ChartRenderer.GanglinieNormiert</c>) — diese
+    /// Bibliothek ruft keinen Renderer (Risiko R‑W8‑2).</para>
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, bool, Diagrammbereich?, byte[]?>? Bildauftrag { get; set; }
+
+    /// <summary>Die ANZEIGEEINHEIT der Jahresarbeit — MWh (Vorgabe) oder kWh (W8‑O‑5).</summary>
+    [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
+
+    /// <summary>Meldet der Hülle die neu gewählte Einheit, damit sie gemerkt wird.</summary>
+    [Parameter] public Action<Energieeinheit>? EinheitGewaehlt { get; set; }
 
     /// <summary>Meldet der Hülle, dass sich die Zuordnungsliste geändert hat.</summary>
     [Parameter] public Action? Geaendert { get; set; }
@@ -208,10 +376,72 @@
     [Parameter] public string BtnEntfernenText { get; set; } = Resource.AUSWAHL_BTN_ENTFERNEN;
     [Parameter] public string BtnBearbeitenText { get; set; } = "Einlesen/Bearbeiten..";
     [Parameter] public string BtnLoeschenText { get; set; } = "DB Ganglinie löschen";
+
+    /// <summary>Beschriftung des Importknopfes (W9‑E‑3) — derselbe Text wie beim Strom.</summary>
+    [Parameter] public string BtnImportierenText { get; set; } = Resource.STROMGL_BTN_IMPORTIEREN;
+
+    /// <summary>Beschriftung des Kopierknopfes (W9‑E‑3).</summary>
+    [Parameter] public string BtnSpeichernUnterText { get; set; } = Resource.STROMGL_BTN_SPEICHERN_UNTER;
+
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Der Dateifilter, den der Wähler bekommt.</summary>
+    [Parameter] public string Dateifilter { get; set; } = Resource.WBAD_DATEIFILTER;
+
+    /// <summary>Der Formathinweis neben dem Importknopf — die EINZEILIGE Fassung.</summary>
+    [Parameter] public string FormatHinweisText { get; set; } = Resource.WBX_HINWEIS_FORMAT_KURZ;
+
+    /// <summary>Der AUSFÜHRLICHE Formathinweis; er hängt am Infoknopf.</summary>
+    [Parameter] public string FormatHinweisLangText { get; set; } = Resource.WBX_HINWEIS_FORMAT;
+
+    // --- Die Grafik (W9-E-3) ---------------------------------------------------
+
+    [Parameter] public string LabelJahresarbeit { get; set; } = Resource.STROMGL_LBL_JAHRESARBEIT;
+    [Parameter] public string LabelSpitze { get; set; } = Resource.STROMGL_LBL_SPITZE;
+    [Parameter] public string LabelVollbenutzung { get; set; } = Resource.GEBB_LBL_VOLLBENUTZUNG;
+    [Parameter] public string LabelSortiert { get; set; } = Resource.SIM_CHK_SORTIERT;
+    [Parameter] public string LabelEinheit { get; set; } = Resource.ALLG_LBL_EINHEIT;
+    [Parameter] public string EinheitKw { get; set; } = "kW";
+    [Parameter] public string EinheitStunden { get; set; } = Resource.GEBB_EINHEIT_STUNDEN;
+    [Parameter] public string Bildtext { get; set; } = Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE;
+    [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
+
+    // --- Meldungen -------------------------------------------------------------
+
+    /// <summary>„Es existiert eine Projektzuordnung, Löschen nicht möglich!"</summary>
+    [Parameter] public string MeldungZuordnung { get; set; }
+        = "Es existiert eine Projektzuordnung, Löschen nicht möglich!";
+
+    /// <summary>„Soll {0} wirklich gelöscht werden ?"</summary>
+    [Parameter] public string MeldungLoeschfrage { get; set; }
+        = "Soll {0} wirklich gelöscht werden ?";
+
+    /// <summary>Meldung nach dem Löschen; <c>{0}</c> = Name.</summary>
+    [Parameter] public string VorlageGeloescht { get; set; } = Resource.WBX_MSG_GELOESCHT;
+
+    /// <summary>Sperrgrund „Auslieferungssatz".</summary>
+    [Parameter] public string TextSchreibgeschuetzt { get; set; } = Resource.WBAD_MSG_SCHREIBGESCHUETZT;
+
+    [Parameter] public string KopieTitelText { get; set; } = Resource.WBX_TITEL_KOPIE;
+    [Parameter] public string KopieFrageText { get; set; } = Resource.STROMGL_FRAGE_KOPIE;
+
+    /// <summary>Der Zusatz, den der Namensvorschlag anhängt („ - Kopie").</summary>
+    [Parameter] public string KopieZusatz { get; set; } = Resource.STROMGL_KOPIE_ZUSATZ;
+
+    /// <summary>Dublettenmeldung des Namensdialogs; <c>{0}</c> = Name.</summary>
+    [Parameter] public string TextNameVergeben { get; set; } = Resource.WBX_MSG_NAME_VERGEBEN;
+
+    /// <summary>Meldung bei leerem Namen.</summary>
+    [Parameter] public string TextNameLeer { get; set; } = Resource.STROMGL_MSG_NAME_LEER;
+
+    /// <summary>Erfolgsmeldung der Kopie; <c>{0}</c> = Quelle, <c>{1}</c> = Kopie.</summary>
+    [Parameter] public string VorlageKopiert { get; set; } = Resource.WBX_MSG_KOPIERT;
+
+    /// <summary>Meldung, wenn die Kopie nicht angelegt werden konnte.</summary>
+    [Parameter] public string TextKopieFehler { get; set; } = Resource.STROMGL_MSG_KOPIE_FEHLER;
 
     /// <summary>
     /// Die drei Kanaleinträge: Steuerwert und Anzeigetext, in dieser Reihenfolge
@@ -222,42 +452,77 @@
         = new[] { ("HEIZUNG", "Heizung"), ("BRAUCHWASSER", "Brauchwasser"),
                   ("PROZESS", "Prozesswärme") };
 
-    /// <summary>„Es existiert eine Projektzuordnung, Löschen nicht möglich!"</summary>
-    [Parameter] public string MeldungZuordnung { get; set; }
-        = "Es existiert eine Projektzuordnung, Löschen nicht möglich!";
-
-    /// <summary>„Soll {0} wirklich gelöscht werden ?"</summary>
-    [Parameter] public string MeldungLoeschfrage { get; set; }
-        = "Soll {0} wirklich gelöscht werden ?";
-
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Waermebedarf.btn_Help";
+
+    /// <summary>Schlüssel des Hilfeknopfes am Formathinweis (W9‑E‑3).</summary>
+    [Parameter] public string HilfeSchluesselImport { get; set; } = "Form_Waermebedarf.btn_Help_Import";
 
     // --- Stand -----------------------------------------------------------------
 
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private IReadOnlyList<string> _katalog = Array.Empty<string>();
-    private string? _katalogname;
+    private List<WaermebedarfAdminDialog.Katalogzeile> _katalog = new();
+    private WaermebedarfAdminDialog.Katalogzeile? _katalogZeile;
     private WaermebedarfExternZeile? _gewaehlt;
     private bool _loeschfrage;
+
+    private bool _laeuft;
+    private GanglinienImportLauf? _import;
+
+    private bool _kopieOffen;
+    private string _kopieVorschlag = "";
 
     /// <summary>Steht die Ganglinienverwaltung als Ueberlagerung offen? (iU9-W13.2)</summary>
     private bool _verwaltungOffen;
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
+    /// <summary>
+    /// Die Kennzahlen der GERADE markierten Ganglinie (W9‑E‑3); <c>null</c> = es ist
+    /// nichts markiert, es gibt keinen Delegaten, oder die Ganglinie trägt keine
+    /// brauchbare Reihe. In allen drei Fällen bleibt die Grafik weg.
+    /// </summary>
+    private GanglinienKennzahlen? _kennzahlen;
+
+    /// <summary>Die Wahl, zu der <see cref="_kennzahlen"/> gehört.</summary>
+    private GanglinienWahl? _wahl;
+
     /// <summary>Die gewählte Zuordnung — Prüfhilfe für die Tests.</summary>
     public WaermebedarfExternZeile? Gewaehlt => _gewaehlt;
 
     /// <summary>Der gewählte Katalogsatz — Prüfhilfe für die Tests.</summary>
-    public string? Katalogname => _katalogname;
+    public string? Katalogname => _katalogZeile?.Bezeichner;
+
+    /// <summary>Die Katalogzeilen — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<WaermebedarfAdminDialog.Katalogzeile> Katalogliste => _katalog;
 
     /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
     public string Meldung => _meldung;
 
-    private string Loeschfrage => string.Format(MeldungLoeschfrage, _katalogname ?? "");
+    /// <summary>Die Kennzahlen der Grafik; <c>null</c> = keine Grafik. Prüfhilfe.</summary>
+    public GanglinienKennzahlen? Grafikkennzahlen => _kennzahlen;
+
+    /// <summary>Die Wahl, zu der die Grafik gehört. Prüfhilfe für die Tests.</summary>
+    public GanglinienWahl? Grafikwahl => _wahl;
+
+    private string Loeschfrage => string.Format(MeldungLoeschfrage, Katalogname ?? "");
+
+    // --- Wer darf was (kein Delegat, kein Knopf) -------------------------
+
+    private bool ImportMoeglich => DateiWaehlen is not null && Einlesen is not null;
+    private bool KopierenMoeglich => Kopieren is not null;
+
+    private bool KopierenErlaubt => _katalogZeile is not null && !_laeuft;
+    private bool LoeschenErlaubt => _katalogZeile is not null && !_laeuft;
+
+    /// <summary>
+    /// Der Grund am Knopf selbst — solange er SYNCHRON bekannt ist. Die
+    /// Projektzuordnung ist es nicht (sie fragt die Datenbank); sie meldet sich
+    /// nach dem Versuch als Banner (Staffelung W16b‑E‑6).
+    /// </summary>
+    private string? LoeschenGrund => _katalogZeile?.NurLesen == true ? TextSchreibgeschuetzt : null;
 
     /// <summary>
     /// Der Kanal der markierten Zeile. Ein leerer oder unbekannter Wert fällt auf den
@@ -288,7 +553,6 @@
 
     protected override void OnInitialized()
     {
-        KatalogLaden();
         if (Zeilen.Count > 0) _gewaehlt = Zeilen[0];
     }
 
@@ -296,14 +560,102 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
+        await KatalogLaden();
+        if (_gewaehlt is not null) await GrafikLaden(WahlZu(_gewaehlt));
         await _wurzel.FocusAsync();
+        StateHasChanged();
     }
 
-    private void KatalogLaden()
+    /// <summary>Lädt den Katalog neu — beim Aufbau und nach jedem Katalogeingriff.</summary>
+    public async Task KatalogLaden()
     {
-        _katalog = Katalog?.Invoke() ?? Array.Empty<string>();
-        if (_katalogname is not null && !_katalog.Contains(_katalogname)) _katalogname = null;
+        if (Katalog is null) return;
+        _katalog = await Katalog() ?? new List<WaermebedarfAdminDialog.Katalogzeile>();
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile))
+        {
+            _katalogZeile = null;
+            GrafikVerwerfen();      // die geloeschte Zeile nimmt ihre Grafik mit
+        }
     }
+
+    // =================================================================================
+    // Markierung und Grafik (W9-E-3)
+    // =================================================================================
+
+    private Task ProjektZeileWaehlen(WaermebedarfExternZeile zeile)
+    {
+        _gewaehlt = zeile;
+        _katalogZeile = null;
+        return GrafikLaden(WahlZu(zeile));
+    }
+
+    private Task KatalogZeileWaehlen(WaermebedarfAdminDialog.Katalogzeile zeile)
+    {
+        _katalogZeile = zeile;
+        _gewaehlt = null;
+        _meldung = "";
+        return GrafikLaden(new GanglinienWahl(true, zeile.Id, zeile.Bezeichner));
+    }
+
+    /// <summary>
+    /// Die Wahl zu einer PROJEKTZEILE.
+    ///
+    /// <para><b>Die Id gilt nur für eine GESPEICHERTE Zuordnung.</b>
+    /// <c>Z_ProjektWaermebedarf.ID_Ganglinie</c> zeigt auf die Projektkopie
+    /// (<c>Tab_Waermebedarf.ID</c>) — eine hier eben erst aufgenommene Zeile trägt
+    /// dagegen die STAMM-Id (<c>WaermebedarfExternHuelle.Aufnehmen</c>), und die
+    /// Projektkopie entsteht erst beim Speichern
+    /// (<c>WizardCtrl.Add_WaermebedarfExtern</c> →
+    /// <c>ApplyGanglinieToProjekt</c>). Würde man sie als Kopie-Id lesen, zeigte
+    /// die Grafik die Werte einer FREMDEN Ganglinie. Deshalb: <c>IdZ = 0</c>
+    /// heißt „noch nicht gespeichert" und gibt <c>0</c> weiter — der Kern fällt
+    /// dann über den Bezeichner auf den Katalogsatz zurück, aus dem die Kopie
+    /// entstehen wird.</para>
+    /// </summary>
+    private GanglinienWahl WahlZu(WaermebedarfExternZeile zeile)
+        => new GanglinienWahl(false, zeile.IdZ > 0 ? zeile.IdGanglinie : 0, zeile.Bezeichner);
+
+    /// <summary>
+    /// Holt die Kennzahlen zur neuen Wahl. <b>Einmal je Markierung</b>, nicht je
+    /// Zeichendurchgang: Dahinter liegen 8 760 Wertzeilen aus der Datenbank.
+    /// </summary>
+    private async Task GrafikLaden(GanglinienWahl wahl)
+    {
+        _wahl = wahl;
+        _kennzahlen = null;
+
+        if (Kennzahlen is null) return;
+        _kennzahlen = await Kennzahlen(wahl);
+    }
+
+    /// <summary>
+    /// Die Grafik fällt weg, sobald ihre Zeile weg ist — beim Entfernen und immer
+    /// dann, wenn der neu geladene Katalog die markierte Zeile nicht mehr führt.
+    /// </summary>
+    private void GrafikVerwerfen()
+    {
+        _wahl = null;
+        _kennzahlen = null;
+    }
+
+    /// <summary>Was gerade markiert ist — die Namenszeile über der Grafik.</summary>
+    private string GewaehlterName => _wahl?.Bezeichner ?? "";
+
+    /// <summary>
+    /// Die IDENTITÄT der gezeigten Ganglinie. Sie trennt die Projektzeile von dem
+    /// gleichnamigen Katalogsatz: Beide dürfen denselben Bezeichner tragen, zeigen
+    /// aber verschiedene Tabellen — ein gemeinsamer Schlüssel ließe den Bildvorrat
+    /// des einen für den anderen gelten.
+    /// </summary>
+    private string Grafikschluessel
+        => _wahl is null ? "" : (_wahl.AusKatalog ? "K|" : "P|") + _wahl.GanglinieId
+                                + "|" + _wahl.Bezeichner;
+
+    /// <summary>Der Bildauftrag der Grafik — die Wahl steckt schon darin.</summary>
+    private Func<bool, Diagrammbereich?, byte[]?>? Grafikbild
+        => (Bildauftrag is null || _wahl is null)
+            ? null
+            : (sortiert, bereich) => Bildauftrag(_wahl, sortiert, bereich);
 
     // =================================================================================
     // Kanal
@@ -327,17 +679,17 @@
     /// markiert, damit die Kanalwahl sichtbar auf sie wirkt
     /// (<c>btn_Hinzu_Click</c>:206-238).
     /// </summary>
-    private void BeiHinzu()
+    private async Task BeiHinzu()
     {
-        if (_katalogname is null || Aufnehmen is null) return;
+        if (_katalogZeile is null || Aufnehmen is null) return;
 
-        WaermebedarfExternZeile? neu = Aufnehmen(_katalogname);
+        WaermebedarfExternZeile? neu = Aufnehmen(_katalogZeile.Bezeichner);
         if (neu is null) return;
 
         Zeilen.Add(neu);
-        _gewaehlt = neu;
-        Geaendert?.Invoke();
         _meldung = "";
+        await ProjektZeileWaehlen(neu);
+        Geaendert?.Invoke();
     }
 
     /// <summary>
@@ -345,18 +697,46 @@
     /// gleichen Namens; bei zwei Zuordnungen derselben Ganglinie traf er damit die
     /// falsche (A-9, dieselbe Fehlerklasse wie W7 A-21).
     /// </summary>
-    private void BeiEntfernen()
+    private async Task BeiEntfernen()
     {
         if (_gewaehlt is null) return;
 
         Zeilen.Remove(_gewaehlt);
         _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
-        Geaendert?.Invoke();
         _meldung = "";
+
+        if (_gewaehlt is null) GrafikVerwerfen();
+        else await GrafikLaden(WahlZu(_gewaehlt));
+
+        Geaendert?.Invoke();
     }
 
     // =================================================================================
-    // Katalog
+    // Importieren (W9-E-3) - DERSELBE Weg wie in der Verwaltung
+    // =================================================================================
+
+    private async Task BeiImportieren()
+    {
+        if (!ImportMoeglich || _laeuft || _import is null) return;
+
+        _meldung = "";
+
+        // W13-B-1: Der Waehler DARF warten und wird await-et - nie synchron im
+        // Blazor-Ereignis ausgewertet.
+        string? pfad = await DateiWaehlen!(Dateifilter);
+        if (string.IsNullOrEmpty(pfad)) return;      // abgebrochen: nichts passiert
+
+        GanglinienImportErgebnis? erg = await _import.Starten(pfad, GanglinienRaster.Unbekannt);
+        if (erg is null) return;
+
+        if (!string.IsNullOrEmpty(erg.Meldung))
+            Melden(erg.Meldung, GanglinienImportLauf.StufeZu(erg));
+
+        if (erg.Ausgang == ImportAusgang.Erfolg) await KatalogLaden();
+    }
+
+    // =================================================================================
+    // Katalog: Bearbeiten, Loeschen, Speichern unter
     // =================================================================================
 
     private void BeiBearbeiten()
@@ -369,23 +749,33 @@
     /// Die Verwaltung ist zu. Der Katalog wird neu geladen — der Anwender kann
     /// dort eingelesen oder gelöscht und mit „Beenden" geschlossen haben.
     /// </summary>
-    private void VerwaltungFertig(bool _)
+    private async Task VerwaltungFertig(bool _)
     {
         _verwaltungOffen = false;
-        KatalogLaden();
+        await KatalogLaden();
     }
 
     /// <summary>
-    /// „DB Ganglinie löschen" — erst die Sperre, dann die Rückfrage. Der Vorläufer
-    /// löschte ohne Rückfrage (A-8).
+    /// „DB Ganglinie löschen" — erst die zwei Sperren, dann die Rückfrage. Der
+    /// Vorläufer löschte ohne Rückfrage (A-8) und kannte die ReadOnly-Sperre nur im
+    /// Controller, wo sie eine <c>MessageBox</c> zeigte.
     /// </summary>
     private void BeiLoeschen()
     {
-        if (_katalogname is null) return;
+        if (!LoeschenErlaubt || _katalogZeile is null) return;
 
-        if (HatProjektzuordnung is not null && HatProjektzuordnung(_katalogname))
+        // Sperre 1: eine zugeordnete Ganglinie bleibt stehen.
+        if (HatProjektzuordnung is not null && HatProjektzuordnung(_katalogZeile.Bezeichner))
         {
             Melden(MeldungZuordnung, WarnStufe.Warnung);
+            return;
+        }
+
+        // Sperre 2: Auslieferungssaetze bleiben stehen. Delete prueft es selbst;
+        // hier steht es davor, damit die Rueckfrage gar nicht erst kommt.
+        if (_katalogZeile.NurLesen)
+        {
+            Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
             return;
         }
 
@@ -393,16 +783,55 @@
         _loeschfrage = true;
     }
 
-    private void LoeschenBeantwortet(bool? antwort)
+    private async Task LoeschenBeantwortet(bool? antwort)
     {
         _loeschfrage = false;
-        if (antwort != true || _katalogname is null || KatalogLoeschen is null) return;
+        if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogname)) return;
+        string name = _katalogZeile.Bezeichner;
+        bool weg = KatalogLoeschen(name);
 
-        _katalogname = null;
-        KatalogLaden();
+        if (weg) _katalogZeile = null;
+        await KatalogLaden();
+        Melden(weg ? string.Format(VorlageGeloescht, name) : TextSchreibgeschuetzt,
+               weg ? WarnStufe.Erfolg : WarnStufe.Warnung);
     }
+
+    private void BeiSpeichernUnter()
+    {
+        if (!KopierenErlaubt || _katalogZeile is null) return;
+        _meldung = "";
+        _kopieVorschlag = _katalogZeile.Bezeichner + KopieZusatz;
+        _kopieOffen = true;
+    }
+
+    /// <summary>
+    /// Die Dublettenprüfung VOR dem Einfügen — gegen den geladenen Katalog, also
+    /// ohne zweite Abfrage und ohne Warten. Sie hält den Namensdialog offen und
+    /// sagt, warum; der Kern prüft dieselbe Bedingung ein zweites Mal
+    /// (<c>KopiereStamm</c> liefert dann <c>0</c>), damit kein UNIQUE-Fehler
+    /// durchkommt.
+    /// </summary>
+    private string? KopieNamePruefen(string name)
+        => _katalog.Any(z => string.Equals(z.Bezeichner, name, StringComparison.Ordinal))
+            ? string.Format(TextNameVergeben, name)
+            : null;
+
+    private async Task KopieFertig(string? name)
+    {
+        _kopieOffen = false;
+        if (string.IsNullOrWhiteSpace(name) || Kopieren is null || _katalogZeile is null) return;
+
+        string quelle = _katalogZeile.Bezeichner;
+        bool ok = await Kopieren(quelle, name!);
+        await KatalogLaden();
+        Melden(ok ? string.Format(VorlageKopiert, quelle, name) : TextKopieFehler,
+               ok ? WarnStufe.Erfolg : WarnStufe.Fehler);
+    }
+
+    // =================================================================================
+    // Schluss
+    // =================================================================================
 
     private void Melden(string text, WarnStufe stufe)
     {
@@ -414,7 +843,13 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape" || _loeschfrage || _verwaltungOffen) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        if (e.Key != "Escape") return Task.CompletedTask;
+
+        // Jede Ebene prueft ihre eigenen Schalter, bevor sie Esc fuer sich
+        // auswertet - so schliesst Esc immer nur die oberste (Muster W7.5).
+        if (_loeschfrage || _verwaltungOffen || _kopieOffen
+            || _import?.EtwasOffen == true) return Task.CompletedTask;
+
+        return Wizard ? Task.CompletedTask : Geschlossen.InvokeAsync(false);
     }
 }

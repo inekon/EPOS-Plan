@@ -1,18 +1,19 @@
-﻿using System;
+using System;
 using System.Data;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Eine Stromganglinie als Stundenreihe samt ihren drei Kennzahlen</b>
-    /// (iU9-W12, Anwenderwunsch <b>W12‑E‑2</b> der Windows-Abnahme vom 05.09.2026:
-    /// „Stelle die importierte Stromganglinie als Grafik dar").
+    /// <b>Eine Ganglinie als Stundenreihe samt ihren drei Kennzahlen</b>
+    /// (iU9-W12, Anwenderwunsch <b>W12‑E‑2</b> der Windows-Abnahme vom 05.09.2026;
+    /// seit dem Anwenderwunsch <b>W9‑E‑3</b> vom selben Tag auch für den
+    /// Wärmebedarf).
     ///
     /// <para><b>Die Reihe liegt in kW</b> — so, wie sie in der Datenbank steht und wie
     /// der Lauf sie liest. Daraus fallen Jahresarbeit (MWh), Spitze (kW) und die
     /// Vollbenutzungsstunden (h/a).</para>
     /// </summary>
-    internal sealed class StromganglinieAuswertung
+    internal sealed class GanglinienAuswertung
     {
         /// <summary>Wurde die Ganglinie gefunden und trägt sie Werte?</summary>
         internal bool Erfolgreich;
@@ -22,7 +23,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die <b>8 760 Stundenwerte in kW</b>. Eine Viertelstundenreihe ist hier
-        /// bereits verdichtet (siehe <see cref="StromganglinieAuswertungCtrl"/>).
+        /// bereits verdichtet (siehe <see cref="GanglinienAuswertungCtrl"/>).
         /// </summary>
         internal float[] Stundenwerte = new float[0];
 
@@ -53,14 +54,56 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Der Leseweg hinter der Grafik des Dialogs „Stromganglinien"</b>
-    /// (iU9-W12, Anwenderwunsch <b>W12‑E‑2</b> vom 05.09.2026).
+    /// <b>Welche Tabellen eine Ganglinienart führt</b> (iU9‑W9, Anwenderwunsch
+    /// <b>W9‑E‑3</b> vom 05.09.2026).
+    ///
+    /// <para><b>Wozu.</b> Strom und Wärme unterscheiden sich in DREI Tabellennamen und
+    /// in der Frage, wie ein Bezeichner zur Kopf-Id wird — im Rechenweg selbst in
+    /// nichts. Ohne diese Ausprägung stünde <see cref="GanglinienAuswertungCtrl"/>
+    /// zweimal im Haus, und die zwei Fassungen liefen beim ersten Schemawechsel
+    /// auseinander. Genau derselbe Zuschnitt wie <c>KatalogImportProfil</c> (W13)
+    /// und <c>KatalogBrowserProfil</c> (W14a): die Ausprägung sind DATEN.</para>
+    /// </summary>
+    internal sealed class GanglinienQuelle
+    {
+        private GanglinienQuelle(string datenStamm, string datenProjekt, Func<string, int> stammId)
+        {
+            DatenStamm = datenStamm;
+            DatenProjekt = datenProjekt;
+            StammId = stammId;
+        }
+
+        /// <summary>Die Werttabelle des Auslieferungskatalogs.</summary>
+        internal string DatenStamm { get; }
+
+        /// <summary>Die Werttabelle der Projektkopien.</summary>
+        internal string DatenProjekt { get; }
+
+        /// <summary>Der Bezeichner → die Kopf-Id im Katalog; <c>0</c> = es gibt ihn nicht.</summary>
+        internal Func<string, int> StammId { get; }
+
+        /// <summary>Die Stromganglinien (<c>Tab_Stromganglinie*</c>).</summary>
+        internal static readonly GanglinienQuelle Strom = new GanglinienQuelle(
+            StromganglinieStammCtrl.DATA_STAMM,
+            StromganglinieStammCtrl.DATA_PROJ,
+            name => new StromganglinieStammCtrl().GetStammId(name));
+
+        /// <summary>Der externe Wärmebedarf (<c>Tab_Waermebedarf*</c>).</summary>
+        internal static readonly GanglinienQuelle Waermebedarf = new GanglinienQuelle(
+            WaermebedarfStammCtrl.DATA_STAMM,
+            WaermebedarfStammCtrl.DATA_PROJ,
+            name => new WaermebedarfStammCtrl().GetStammId(name));
+    }
+
+    /// <summary>
+    /// <b>Der Leseweg hinter der Grafik der Ganglinien-Dialoge</b>
+    /// (iU9-W12, Anwenderwunsch <b>W12‑E‑2</b>; seit <b>W9‑E‑3</b> auch für den
+    /// Dialog „Wärmebedarf Extern").
     ///
     /// <para><b>Was er tut.</b> Er holt die Werte einer Ganglinie — wahlweise aus dem
-    /// KATALOG (<c>Tab_Stromganglinie_STAMM</c> + <c>…Daten_STAMM</c>) oder aus der
-    /// PROJEKTKOPIE (<c>Tab_Stromganglinie</c> + <c>…Daten</c>) —, bringt sie auf das
-    /// Stundenraster und rechnet die drei Kennzahlen. Mehr nicht: <b>gelesen, nicht
-    /// geschrieben</b>, der Referenzlauf ist unberührt.</para>
+    /// KATALOG (<c>…Daten_STAMM</c>) oder aus der PROJEKTKOPIE (<c>…Daten</c>) —,
+    /// bringt sie auf das Stundenraster und rechnet die drei Kennzahlen. Mehr nicht:
+    /// <b>gelesen, nicht geschrieben</b>, der Referenzlauf ist unberührt.</para>
     ///
     /// <para><b>Die Verdichtung ist KEINE zweite Rechnung.</b> Eine Reihe mit 35 040
     /// Viertelstundenwerten geht durch
@@ -73,17 +116,20 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Warum die Werte als <c>float</c> gelesen werden.</b> Genau so liest
     /// sie der Lauf (<c>SimulationStrombedarf</c>: <c>Stromganglinie[index] =
+    /// (float)wert</c>, <c>SimulationWaermebedarf</c>: <c>ganglinie_roh[index] =
     /// (float)wert</c>). Wer sie hier in <c>double</c> führte, zeigte im Dialog eine
     /// Zahl, die der Lauf so nie sieht.</para>
     ///
     /// <para><b>Das Raster ergibt sich aus der WERTZAHL</b>, nicht aus dem Feld
-    /// <c>Zeitinterval</c>. Der Lauf hält beides gegeneinander und bricht ab, wenn es
-    /// nicht zusammenpasst (<c>IMPORT_GANGLINIE_RASTER_PASST_NICHT</c>); eine
-    /// ANZEIGE soll auch einen Altbestand noch zeigen können, dessen Kennzeichen
-    /// nicht stimmt. Was weder 8 760 noch 35 040 Werte hat, gilt als unbrauchbar und
-    /// liefert <see cref="StromganglinieAuswertung.Erfolgreich"/> = <c>false</c>.</para>
+    /// <c>Zeitinterval</c> — beim Wärmebedarf gibt es dieses Feld überhaupt nicht
+    /// (<c>SimulationWaermebedarf</c> leitet es dort ebenfalls aus der Wertzahl ab).
+    /// Der Lauf hält beides gegeneinander und bricht ab, wenn es nicht zusammenpasst
+    /// (<c>IMPORT_GANGLINIE_RASTER_PASST_NICHT</c>); eine ANZEIGE soll auch einen
+    /// Altbestand noch zeigen können, dessen Kennzeichen nicht stimmt. Was weder
+    /// 8 760 noch 35 040 Werte hat, gilt als unbrauchbar und liefert
+    /// <see cref="GanglinienAuswertung.Erfolgreich"/> = <c>false</c>.</para>
     /// </summary>
-    internal static class StromganglinieAuswertungCtrl
+    internal static class GanglinienAuswertungCtrl
     {
         /// <summary>Das feste Stundenraster des Rechenkerns.</summary>
         internal const int STUNDEN_JAHR = 8760;
@@ -93,40 +139,43 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Auswertung eines KATALOGsatzes über seinen Bezeichner — der Weg der
-        /// rechten Spalte des Dialogs.
+        /// rechten Spalte der Dialoge.
         /// </summary>
-        internal static StromganglinieAuswertung AusKatalog(string bezeichner)
+        internal static GanglinienAuswertung AusKatalog(GanglinienQuelle quelle, string bezeichner)
         {
-            var ergebnis = new StromganglinieAuswertung { Bezeichner = bezeichner ?? "" };
-            if (string.IsNullOrEmpty(bezeichner)) return ergebnis;
+            var ergebnis = new GanglinienAuswertung { Bezeichner = bezeichner ?? "" };
+            if (quelle == null || string.IsNullOrEmpty(bezeichner)) return ergebnis;
 
-            int id = new StromganglinieStammCtrl().GetStammId(bezeichner);
+            int id = quelle.StammId(bezeichner);
             if (id <= 0) return ergebnis;
 
-            return Auswerten(StromganglinieStammCtrl.DATA_STAMM, id, bezeichner);
+            return Auswerten(quelle.DatenStamm, id, bezeichner);
         }
 
         /// <summary>
-        /// Die Auswertung einer PROJEKTKOPIE über <c>Tab_Stromganglinie.ID</c> — der
-        /// Weg der linken Spalte des Dialogs.
+        /// Die Auswertung einer PROJEKTKOPIE über die Kopf-Id — der Weg der linken
+        /// Spalte der Dialoge.
         ///
         /// <para><b>Der Rückfall auf den Katalog ist der Normalfall, kein Notnagel:</b>
         /// Eine im Dialog eben erst zugeordnete Zeile trägt noch KEINE Projektkopie
-        /// (<c>GanglinieId</c> = 0, Zähler ab <c>StromganglinieDialog.StartIndex</c>) —
-        /// die legt erst <c>ApplyGanglinieToProjekt</c> beim Speichern an. Gezeigt wird
-        /// dann der Katalogsatz, aus dem die Kopie entstehen wird; es sind dieselben
+        /// (Id = 0 bzw. der Zähler ab <c>StartIndex</c>) — die legt erst
+        /// <c>ApplyGanglinieToProjekt</c> beim Speichern an. Gezeigt wird dann der
+        /// Katalogsatz, aus dem die Kopie entstehen wird; es sind dieselben
         /// Werte.</para>
         /// </summary>
+        /// <param name="quelle">Die Ausprägung (Strom oder Wärmebedarf).</param>
         /// <param name="idGanglinie">Die Kopf-Id der Projektkopie; 0 = es gibt noch keine.</param>
         /// <param name="bezeichner">Der Name — zugleich der Rückfallweg über den Katalog.</param>
-        internal static StromganglinieAuswertung AusProjekt(int idGanglinie, string bezeichner)
+        internal static GanglinienAuswertung AusProjekt(GanglinienQuelle quelle, int idGanglinie,
+                                                        string bezeichner)
         {
-            if (idGanglinie <= 0) return AusKatalog(bezeichner);
+            if (quelle == null) return new GanglinienAuswertung { Bezeichner = bezeichner ?? "" };
+            if (idGanglinie <= 0) return AusKatalog(quelle, bezeichner);
 
-            StromganglinieAuswertung ergebnis =
-                Auswerten(StromganglinieStammCtrl.DATA_PROJ, idGanglinie, bezeichner);
+            GanglinienAuswertung ergebnis =
+                Auswerten(quelle.DatenProjekt, idGanglinie, bezeichner);
 
-            return ergebnis.Erfolgreich ? ergebnis : AusKatalog(bezeichner);
+            return ergebnis.Erfolgreich ? ergebnis : AusKatalog(quelle, bezeichner);
         }
 
         // ==================================================================
@@ -137,15 +186,13 @@ namespace WindowsFormsApplication1
         /// Liest die Wertzeilen einer Ganglinie, bringt sie auf Stunden und rechnet die
         /// Kennzahlen.
         /// </summary>
-        /// <param name="datentabelle">
-        /// <c>Tab_StromganglinieDaten_STAMM</c> oder <c>Tab_StromganglinieDaten</c>.
-        /// </param>
+        /// <param name="datentabelle">Die Werttabelle — Katalog oder Projektkopie.</param>
         /// <param name="idGanglinie">Die Kopf-Id in der zugehörigen Kopftabelle.</param>
         /// <param name="bezeichner">Der Anzeigename.</param>
-        private static StromganglinieAuswertung Auswerten(string datentabelle, int idGanglinie,
-                                                          string bezeichner)
+        private static GanglinienAuswertung Auswerten(string datentabelle, int idGanglinie,
+                                                      string bezeichner)
         {
-            var ergebnis = new StromganglinieAuswertung { Bezeichner = bezeichner ?? "" };
+            var ergebnis = new GanglinienAuswertung { Bezeichner = bezeichner ?? "" };
 
             // ORDER BY ID: die Zeitreihe steht in Einfuegereihenfolge - dieselbe
             // Bedingung, die CopyGanglinieToProjekt und KopiereStamm stellen.

@@ -6141,7 +6141,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Delete DB curve</value>
   </data>
   <data name="WBAD_DATEIFILTER" xml:space="preserve">
-    <value>(*.txt)|*.txt</value>
+    <value>Load curve files (*.csv;*.txt;*.xlsx;*.xlsm;*.xls)|*.csv;*.txt;*.xlsx;*.xlsm;*.xls|CSV (*.csv)|*.csv|Text file (*.txt)|*.txt|Excel (*.xlsx;*.xlsm;*.xls)|*.xlsx;*.xlsm;*.xls|All files (*.*)|*.*</value>
   </data>
   <data name="WBAD_FRAGE_LOESCHEN" xml:space="preserve">
     <value>Delete the curve "{0}" from the catalogue?</value>
@@ -6156,7 +6156,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>File base folder:</value>
   </data>
   <data name="WBAD_LBL_STUNDENWERTE" xml:space="preserve">
-    <value>Hourly values over 1 year as a text file (decimal separator '.')</value>
+    <value>CSV/text, 8,760 hourly or 35,040 quarter-hourly values, one value per line — details on the info button</value>
   </data>
   <data name="WBAD_MSG_ABLAGE" xml:space="preserve">
     <value>The original file could not be copied to the user folder: {0}</value>
@@ -6176,11 +6176,32 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WBAD_MSG_SCHREIBFEHLER" xml:space="preserve">
     <value>The curve could not be saved.</value>
   </data>
+  <data name="WBAD_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This heat demand load profile is write-protected (ReadOnly) and cannot be deleted.</value>
+  </data>
   <data name="WBAD_SPALTE_BEZEICHNER" xml:space="preserve">
     <value>Designation</value>
   </data>
   <data name="WBAD_TITEL" xml:space="preserve">
     <value>Heat requirement</value>
+  </data>
+  <data name="WBX_HINWEIS_FORMAT" xml:space="preserve">
+    <value>File format: CSV or text file (Excel .xlsx/.xlsm/.xls as well) holding one year of heat demand — 8,760 hourly values or 35,040 quarter-hourly values, in chronological order starting on 1 January, one value per line. Semicolon, comma, tabulator and vertical bar are accepted as field separators; a single-column file needs none. A header line is allowed and is detected. Decimal separator comma or point, no thousands separator. Values as power in kW or as energy in kWh per interval — the unit is asked for before reading and converted to kW. A time stamp column is permitted but not required. The name of the load profile is the file name without its extension.</value>
+  </data>
+  <data name="WBX_HINWEIS_FORMAT_KURZ" xml:space="preserve">
+    <value>CSV/text, 8,760 hourly or 35,040 quarter-hourly values, one value per line — details on the info button</value>
+  </data>
+  <data name="WBX_MSG_GELOESCHT" xml:space="preserve">
+    <value>The heat demand load profile “{0}” was deleted.</value>
+  </data>
+  <data name="WBX_MSG_KOPIERT" xml:space="preserve">
+    <value>The heat demand load profile “{0}” has been saved as “{1}”.</value>
+  </data>
+  <data name="WBX_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>A heat demand load profile named “{0}” already exists in the database. Please choose a different name.</value>
+  </data>
+  <data name="WBX_TITEL_KOPIE" xml:space="preserve">
+    <value>Save heat demand load profile as</value>
   </data>
   <data name="WIRT_KWKG_ANLAGE_UEBER_GRENZE" xml:space="preserve">
     <value>CHP Act: above the tendering threshold of {0} kW and therefore without bonus: {1} (the tendering route under section 8a KWKG/KWKAusV is not modelled). The remaining units totalling {2} kW continue to be calculated.</value>
