@@ -846,8 +846,9 @@ gerade Strecken sind; eine gerade Strecke hat keine Fläche zu füllen.
 | `EPOS.Kern.Tests/SchemaModellTests` (neu, 10 Fälle) | gegen die **Testdatenbank**: 1042 wird als Kaskade erkannt (und trägt einen Kaskadenkasten), 1030 nicht (keine Kaskadenkante, keine Kette); `HatKaskade ⇔ Ketten.Count > 0` für 1042, 1043, 1044, 1030, 1007; jede Kette führt über ein Speicherglied und `Pruefen()` bleibt leer; und für sechs echte Projekte (1042, 1043, 1044, 1030, 1007, 1017) kreuzt keine Leitung einen Kasten und jede trägt die gedeckelte Breite |
 | `EPOS.UI.Tests/Bausteine/SchemaTests` (16 Fälle) | jede Leitung ist ein `<path>` mit `stroke-width` **im erlaubten Bereich**, `fill="none"`, genau einem `marker-end` (kein `marker-start`/`-mid`), ohne `C`/`Q` im Pfad; kein `<polygon>` im Bild; jeder `<marker>` steht auf `userSpaceOnUse`; die Kaskade trägt ihre Klassenpaarung, das Stilblatt die Strichelung und die Füllung **nur** an `.epos-schema-pfeil.…`; und der Satz „Keine Kaskade im Projekt" steht nur bei `HatKaskade = false` |
 
-`dotnet test EPOS.Kern.Tests -c Release` **1 183 grün**,
-`dotnet test EPOS.UI.Tests -c Release` **2 600 grün**, beide auch unter
+`dotnet test EPOS.Kern.Tests -c Release` **1 190 grün**,
+`dotnet test EPOS.UI.Tests -c Release` **2 648 grün** (Stand nach dem Merge von
+`origin/ios_migration`, der die Testdatenbank und das Formularraster-Paket P3 mitbringt), beide auch unter
 `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8`. Beide Kern-Wächter (`Program.*` und
 Plattform) leer, `WindowsFormsApplication1` baut fehlerfrei. Ein Referenzlauf ist
 nicht nötig: Das Schema rechnet nichts, `SchemaModell`/`SchemaLayout` haben im
