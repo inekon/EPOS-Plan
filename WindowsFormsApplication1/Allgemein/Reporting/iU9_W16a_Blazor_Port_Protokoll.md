@@ -265,3 +265,86 @@ nach der Welle, danach `Referenzlauf.exe vergleich <vorher> <nachher>`.
 | **W16a‑O‑2** | **`WizardCtrl.speichern`** ist ein totes Feld (B7). Streichen, sobald jemand die Klasse ohnehin anfasst |
 | **W16a‑O‑3** | **Der Assistent ist modal.** Sobald die Startseite Razor ist (W16b), könnte er eine freie Ansicht derselben WebView werden — dieselbe Frage wie R‑W10b‑1/R‑W11‑1 |
 | **W16a‑O‑4** | **`IosProjektQuelle.AssistentGaben`** ist nicht umgesetzt; der Assistent ist auf iOS damit angekündigt, aber nicht bedienbar (iU11) |
+
+---
+
+## 12 — Windows-Abnahme 05.09.2026 (Befunde W16a‑B‑1 und W16a‑B‑2)
+
+Der Anwender hat den Stand `d3abd94` am Gerät gefahren. Zwei der fünf Meldungen
+betreffen diese Teilwelle.
+
+### 12.1 Befund W16a‑B‑1 — „Optionen Profil und Ganglinie sollte eher im Solarthermie Feld sein"
+
+**Beobachtung.** Auf dem Reiter „Energieerzeuger" steht unter der Karte
+„Solarthermie" ein Kasten mit den zwei Optionen **Profil** und **Ganglinie**. Er
+steht neben den gerahmten Nachbarkacheln im Kachelraster und liest sich damit wie
+ein Zusatz zum ganzen Reiter, nicht wie die Weiche **dieser** Karte.
+
+**Wo es steht.** Die Meldung nennt die „Komponentenauswahl"; die Optionsgruppe
+gehört tatsächlich zum **Erzeugerreiter der Startseite**
+(`EPOS.UI/Seiten/Start/ErzeugerReiter.razor`, W16b.2). Der
+`KomponentenauswahlDialog` dieser Teilwelle führt keine Optionsgruppe — er zeigt
+dreizehn Kacheln und sonst nichts. Der Befund wird hier geführt, weil der Anwender
+ihn hier gemeldet hat; die Änderung liegt in `Seiten/Start/`.
+
+**Warum die zwei Knöpfe überhaupt bei der Kachel stehen.** Sie sind eine **Weiche**,
+keine Anzeige: `pBox_Solarthermie_Click` prüft `radioButton_KollektorProfil.Checked`
+und öffnet danach **entweder** den Kollektor- **oder** den Gangliniendialog
+(`Form_Start` :1262‑1307). Sie gehören also genau zu dieser einen Kachel — und
+sollen das auch zeigen.
+
+**Ursache.** Zwei Dinge zusammen. Erstens trug **jede** der sieben Kacheln den Wirt
+`epos-startkachel-mit-wahl`, obwohl nur eine eine Wahl hat; der Klassenname sagte
+etwas, das für sechs Kacheln nicht stimmte. Zweitens war dieser Wirt ein reiner
+Stapelkasten (`display: flex; gap: 6px`) **ohne** Rahmen: Die Kachel behielt ihren
+eigenen, die Optionsgruppe stand mit 6 px Abstand darunter im Freien.
+
+**Behebung.**
+
+* **Markup:** Den Wirt bekommt **nur noch** die Solarthermiekachel; die übrigen
+  sechs stehen wie auf jedem anderen Reiter unmittelbar im `Kachelraster`.
+* **Rahmen:** Der Kartenrahmen (`--epos-karte-rahmen`, `--epos-karte-flaeche`,
+  `--epos-ecke`) liegt jetzt am **Wirt**; die Kachel darin gibt ihren eigenen ab
+  (`border: 0; background: none`). Die Optionsgruppe sitzt darunter im selben
+  Rahmen, bündig unter dem Kacheltext, abgesetzt durch eine feine Linie.
+* **Warum nicht über das Markup:** Eine Kachel **ist** ein `<button>` — damit sie
+  Tastatur, Enter/Leertaste und Sprachausgabe von selbst kann. Ein `<button>` darf
+  keine Auswahlknöpfe enthalten; ein Klick darauf löste sonst die Kachel aus. Der
+  Rahmen muss deshalb um beide herum, nicht um eines von beiden.
+* **Klickziel und Tastaturweg bleiben, wie sie waren:** Anklickbar ist weiterhin
+  genau der Kachelteil (er behält seine Hoverfarbe); die Reihenfolge ist Kachel →
+  Profil → Ganglinie, und die zwei Optionen teilen sich wie bisher einen
+  `name`, sind also **ein** Tabulatorhalt mit Pfeiltasten darin.
+
+**Wachen.** `EPOS.UI.Tests/Seiten/StartseiteTests`:
+`Die_Solarweiche_steht_im_Rahmen_ihrer_Karte` (genau EINE Karte führt die Weiche,
+sie steht IN ihr, die Reihenfolge stimmt) und
+`Der_Kartenrahmen_der_Solarweiche_liegt_am_Wirt` (die Regel im Stilblatt — eine
+bunit-Probe sieht sie nicht, Lehre W6‑B‑1). Der Fall
+`Die_Solarweiche_meldet_ihre_Stellung` bleibt unverändert grün.
+
+**Abnahmepunkt A‑W16a‑B‑1.** Reiter „Energieerzeuger": Die Solarthermiekarte trägt
+Bild, Titel, Erläuterung, Statuspunkt **und** die zwei Optionen in EINEM Rahmen;
+die sechs Nachbarkacheln sehen unverändert aus. Ein Klick auf die Optionen öffnet
+nichts, ein Klick auf den Kachelteil öffnet je nach Stellung den Kollektor- oder
+den Gangliniendialog.
+
+### 12.2 Befund W16a‑B‑2 — der Parametersatz einer Assistentenseite
+
+Der zweite Teil des Befundes **W9‑B‑1** („Im Projekt gespeichertes Gebäude wird
+nicht angezeigt bzw. in der Liste selektiert") liegt in dieser Teilwelle:
+`AssistentSeite.SchritteBauen` zog den Parametersatz der **stehenden** Seite bei
+jedem `OnParametersSet` neu — also bei jedem Neuzeichnen des Wirtes —, obwohl der
+Kopfkommentar der Seite seit W16a.5 „bei JEDEM **Betreten** neu erfragt" sagt. Die
+elf Hüllen bauen in ihrer `Gaben`-Methode aber jedesmal eine **neue** Anzeigeliste
+aus ihrer Fachliste auf; der lebenden Komponente wurde die Liste damit unter den
+Füßen ausgetauscht.
+
+Die Seite merkt sich den Inhalt seither (`_inhalt` / `_inhaltSchritt` /
+`_inhaltQuelle`) und erfragt ihn nur beim **Schrittwechsel**, bei einem
+**Projektwechsel** im linken Band und bei einem **anderen Gabendelegaten**. Das
+entspricht dem Vorbild: `WizardParent.Next` bestückte die Seite, `WizardParent.Back`
+gar nicht.
+
+Vollständige Herleitung, Behebung und Abnahmepunkt: **W9‑Protokoll § 12.1**.
+Wachen: `EPOS.UI.Tests/Seiten/AssistentTests` (drei Fälle).
