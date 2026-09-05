@@ -25,6 +25,20 @@ public sealed class VarianteZeile
     /// <summary>Simulationsstand als Text (leer = nie simuliert).</summary>
     public string SimStand { get; set; } = "";
 
+    /// <summary>
+    /// Der Simulationszeitpunkt OHNE Kennzeichen („05.09.26 16:23"); leer = nie
+    /// simuliert.
+    ///
+    /// <para><b>Warum neben <see cref="SimStand"/>.</b> Der fertige Zellentext der
+    /// Tabellen trägt das „⚠" und im Fehlfall den Wortlaut „— (fehlt) ⚠" schon in
+    /// sich — für eine ZEILE ist das richtig. Die Statuszeile der Übersichtsseite
+    /// (Anwenderwunsch 05.09.2026, W5‑E‑1) setzt den Stand dagegen selbst zusammen:
+    /// „Simulation: 05.09.26 16:23" mit dem Warnzeichen als eigenem Element (mit
+    /// Kurztext) bzw. „noch nicht simuliert". Dafür braucht sie den reinen Wert —
+    /// aus dem fertigen Text ließe er sich nur durch Raten zurückgewinnen.</para>
+    /// </summary>
+    public string SimZeitpunkt { get; set; } = "";
+
     /// <summary>Ist das die Stammzeile? Sie bleibt immer gewählt (Referenz).</summary>
     public bool IstStamm { get; set; }
 
