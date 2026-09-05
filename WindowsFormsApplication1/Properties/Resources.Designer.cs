@@ -333,39 +333,9 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap PBHKW {
-            get {
-                object obj = ResourceManager.GetObject("PBHKW", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PDelete_Symbol {
-            get {
-                object obj = ResourceManager.GetObject("PDelete_Symbol", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
         public static System.Drawing.Bitmap PDetailansicht {
             get {
                 object obj = ResourceManager.GetObject("PDetailansicht", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PDetailSim {
-            get {
-                object obj = ResourceManager.GetObject("PDetailSim", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -383,49 +353,9 @@ namespace WindowsFormsApplication1.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap PGebaeude {
-            get {
-                object obj = ResourceManager.GetObject("PGebaeude", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PHeizkessel {
-            get {
-                object obj = ResourceManager.GetObject("PHeizkessel", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PHeizkessel1 {
-            get {
-                object obj = ResourceManager.GetObject("PHeizkessel1", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
         public static System.Drawing.Bitmap POptimierung {
             get {
                 object obj = ResourceManager.GetObject("POptimierung", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektBearbeiten_Symbol {
-            get {
-                object obj = ResourceManager.GetObject("PProjektBearbeiten_Symbol", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -446,116 +376,6 @@ namespace WindowsFormsApplication1.Properties {
         public static System.Drawing.Bitmap PProjektname {
             get {
                 object obj = ResourceManager.GetObject("PProjektname", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektNeu_Symbol {
-            get {
-                object obj = ResourceManager.GetObject("PProjektNeu_Symbol", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektOeffnen_Symbol {
-            get {
-                object obj = ResourceManager.GetObject("PProjektOeffnen_Symbol", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektPV {
-            get {
-                object obj = ResourceManager.GetObject("PProjektPV", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektSolarthermie {
-            get {
-                object obj = ResourceManager.GetObject("PProjektSolarthermie", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PProjektZuletzt_Symbol {
-            get {
-                object obj = ResourceManager.GetObject("PProjektZuletzt_Symbol", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PPufferSpeicher {
-            get {
-                object obj = ResourceManager.GetObject("PPufferSpeicher", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PSchnellSim {
-            get {
-                object obj = ResourceManager.GetObject("PSchnellSim", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PSSpeicher {
-            get {
-                object obj = ResourceManager.GetObject("PSSpeicher", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PStdLastProfil {
-            get {
-                object obj = ResourceManager.GetObject("PStdLastProfil", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PStromMessdaten {
-            get {
-                object obj = ResourceManager.GetObject("PStromMessdaten", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PStromProfilEigenes {
-            get {
-                object obj = ResourceManager.GetObject("PStromProfilEigenes", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -586,16 +406,6 @@ namespace WindowsFormsApplication1.Properties {
         public static System.Drawing.Bitmap PWeiter {
             get {
                 object obj = ResourceManager.GetObject("PWeiter", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap PWP {
-            get {
-                object obj = ResourceManager.GetObject("PWP", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -666,26 +476,6 @@ namespace WindowsFormsApplication1.Properties {
         public static System.Drawing.Bitmap speichern {
             get {
                 object obj = ResourceManager.GetObject("speichern", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap Unbenannt2 {
-            get {
-                object obj = ResourceManager.GetObject("Unbenannt2", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap Unbenannt3 {
-            get {
-                object obj = ResourceManager.GetObject("Unbenannt3", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
