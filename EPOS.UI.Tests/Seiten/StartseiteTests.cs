@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
@@ -150,35 +151,89 @@ public class StartseiteTests : BunitContext
 
     /// <summary>
     /// Ohne offenes Projekt sind die Reiter 2 bis 6 GESPERRT — wörtlich
-    /// <c>Form_Start_Load</c> (:80), und der Hinweis der Reitersperre steht
-    /// dabei (die zwei Sätze aus <c>tabControl_Wizard_Selecting</c>).
+    /// <c>Form_Start_Load</c> (:80). Seit dem Anwenderwunsch <b>W16b-E-6</b>
+    /// sperren sie WEICH: <c>aria-disabled</c> statt <c>disabled</c>, damit der
+    /// Knopf seinen Grund nennen und den Versuch melden kann.
     /// </summary>
     [Fact]
-    public void Ohne_Projekt_sind_fuenf_Reiter_gesperrt_und_der_Hinweis_steht()
+    public void Ohne_Projekt_sind_fuenf_Reiter_gesperrt()
     {
         var cut = Zeige(idProjekt: 0);
 
         var knoepfe = cut.FindAll("[role='tab']");
-        Assert.False(knoepfe[0].HasAttribute("disabled"));
+        Assert.False(knoepfe[0].HasAttribute("aria-disabled"));
         for (int i = 1; i < 6; i++)
-            Assert.True(knoepfe[i].HasAttribute("disabled"), "Reiter " + i + " ist nicht gesperrt.");
-
-        string banner = cut.Find(".epos-warnbanner").TextContent;
-        Assert.Contains("Bitte zuerst ein Projekt auswählen!", banner, StringComparison.Ordinal);
-        Assert.Contains("Projekt öffnen oder zuletzt geöffnet", banner, StringComparison.Ordinal);
+            Assert.Equal("true", knoepfe[i].GetAttribute("aria-disabled"));
     }
 
-    /// <summary>Mit offenem Projekt ist keiner der sechs Reiter gesperrt.</summary>
+    /// <summary>
+    /// <b>KEIN dauerhaftes Banner mehr</b> — Anwenderwunsch <b>W16b-E-6</b>
+    /// vom 05.09.2026 („ja, oder anderen Hinweis geben der elegant ist").
+    ///
+    /// <para>Bis dahin stand über der Reiterleiste ein <c>Warnbanner</c> mit den
+    /// zwei Sätzen der <c>MessageBox</c>, und zwar dauerhaft — im ersten
+    /// Augenblick, in dem der Anwender das Programm sieht. An seiner Stelle
+    /// steht jetzt die leise Zeile im Reiter „Projekt"; das Banner kommt erst
+    /// nach dem VERSUCH und geht nach drei Sekunden wieder.</para>
+    /// </summary>
     [Fact]
-    public void Mit_Projekt_sind_alle_sechs_Reiter_frei()
+    public void Ohne_Projekt_steht_kein_Banner_sondern_der_leise_Einstiegshinweis()
+    {
+        var cut = Zeige(idProjekt: 0);
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+
+        string zeile = cut.Find(".epos-startreiter-hinweis").TextContent;
+        Assert.Contains("Wählen Sie oben ein Projekt aus", zeile, StringComparison.Ordinal);
+
+        // Das Zeichen davor ist DASSELBE wie im Kopfband - eine Farbe, ein Sinn.
+        Assert.Contains("\u26a0",
+                        cut.Find(".epos-startreiter-hinweis .epos-startseite-status").TextContent,
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Mit offenem Projekt ist keiner der sechs Reiter gesperrt — und die
+    /// Einstiegszeile ist weg.
+    ///
+    /// <para>Sie wird NICHT zu „Projekt … ist geöffnet": Das stünde als dritte
+    /// Zeile unter Überschrift und Erläuterung und wiederholte nur, was einen
+    /// Zentimeter darüber im Kopfband steht (Name und grünes Häkchen) —
+    /// dieselbe Überlegung wie bei der Gattungszeile, W16b-E-4.</para>
+    /// </summary>
+    [Fact]
+    public void Mit_Projekt_sind_alle_sechs_Reiter_frei_und_die_Einstiegszeile_ist_weg()
     {
         var cut = Zeige();
 
         foreach (IElement knopf in cut.FindAll("[role='tab']"))
+        {
             Assert.False(knopf.HasAttribute("disabled"));
+            Assert.False(knopf.HasAttribute("aria-disabled"));
+            Assert.False(knopf.HasAttribute("title"));
+        }
 
+        Assert.Empty(cut.FindAll(".epos-startreiter-hinweis"));
         Assert.DoesNotContain("Bitte zuerst ein Projekt auswählen!",
                               cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der gesperrte Reiterknopf erklärt sich selbst</b> (W16b-E-6): Der
+    /// Grund steht als <c>title</c> am Knopf und ist damit zugleich die
+    /// Beschreibung, die eine Sprachausgabe zum <c>aria-disabled</c> vorliest.
+    /// </summary>
+    [Fact]
+    public void Ein_gesperrter_Reiterknopf_traegt_seinen_Grund()
+    {
+        var cut = Zeige(idProjekt: 0);
+
+        var knoepfe = cut.FindAll("[role='tab']");
+        for (int i = 1; i < 6; i++)
+            Assert.Equal("Erst nach der Projektwahl", knoepfe[i].GetAttribute("title"));
+
+        // Der freie Reiter 1 traegt keinen - er ist ja nicht gesperrt.
+        Assert.False(knoepfe[0].HasAttribute("title"));
     }
 
     // =====================================================================
@@ -497,6 +552,114 @@ public class StartseiteTests : BunitContext
     }
 
     // =====================================================================
+    //  W16b-E-6: das FLUECHTIGE Banner nach dem Versuch
+    // =====================================================================
+
+    /// <summary>
+    /// Die Seite ohne Projekt mit einer GESTEUERTEN Uhr — sonst müsste der Fall
+    /// drei Sekunden schlafen, und ein Test, der schläft, wird übersprungen.
+    /// </summary>
+    private IRenderedComponent<Startseite> OhneProjekt(
+        Func<TimeSpan, CancellationToken, Task> uhr)
+    {
+        return Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 0)
+            .Add(x => x.Varianten, () => Array.Empty<(int, string)>())
+            .Add(x => x.Klimaregionen, () => new[] { "München" })
+            .Add(x => x.Klimaregion, () => "")
+            .Add(x => x.Bericht, Bereitschaft)
+            .Add(x => x.Uhr, uhr));
+    }
+
+    /// <summary>
+    /// <b>Der Versuch, einen gesperrten Reiter zu betreten, meldet sich — und
+    /// die Meldung geht wieder</b> (Anwenderwunsch <b>W16b-E-6</b>).
+    ///
+    /// <para>Das ist das Verhalten des Vorläufers:
+    /// <c>tabControl_Wizard_Selecting</c> (:1171-1181) öffnete beim
+    /// Klickversuch einen <c>Form_Hinweis</c> mit genau diesen zwei Sätzen, und
+    /// der schloss sich nach drei Sekunden von selbst. Der Unterschied zu W16b:
+    /// Bis dahin stand der Text DAUERHAFT über der Seite, weil ein
+    /// <c>disabled</c>-Knopf gar nicht erst klickt. Mit der weichen Sperre
+    /// klickt er wieder.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Versuch_auf_einen_gesperrten_Reiter_meldet_fuer_drei_Sekunden()
+    {
+        TimeSpan? gefragt = null;
+        TaskCompletionSource<bool> uhr = new TaskCompletionSource<bool>();
+
+        var cut = OhneProjekt((frist, marke) => { gefragt = frist; return uhr.Task; });
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+
+        cut.FindAll("[role='tab']")[1].Click();
+
+        string banner = cut.Find(".epos-warnbanner").TextContent;
+        Assert.Contains("Bitte zuerst ein Projekt auswählen!", banner, StringComparison.Ordinal);
+        Assert.Contains("Projekt öffnen oder zuletzt geöffnet", banner, StringComparison.Ordinal);
+        Assert.Equal(TimeSpan.FromSeconds(3), gefragt);
+
+        // Der Reiter wechselt dabei NICHT - die Sperre ist unveraendert.
+        Assert.Equal(Reiterschluessel.Projekt, cut.Instance.AktiverReiter);
+
+        uhr.SetResult(true);
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-warnbanner")));
+    }
+
+    /// <summary>
+    /// Derselbe Weg für die TASTATUR: „Weiter ▶" bleibt ohne Projekt
+    /// anklickbar und sagt denselben Grund. Er ist der einzige Weg dorthin, den
+    /// die Tastatur hat — ein gesperrter Reiterknopf steht nicht im
+    /// Tabulatorzyklus und wird von den Pfeiltasten übersprungen.
+    /// </summary>
+    [Fact]
+    public void Der_Weiterknopf_meldet_ohne_Projekt_statt_zu_wechseln()
+    {
+        TaskCompletionSource<bool> uhr = new TaskCompletionSource<bool>();
+        var cut = OhneProjekt((frist, marke) => uhr.Task);
+
+        IElement weiter = cut.FindAll(".epos-startseite-fuss .epos-knopf")[1];
+
+        // Anklickbar - sonst gaebe es kein Ereignis -, aber als gesperrt
+        // gemeldet und mit dem Grund am Knopf.
+        Assert.False(weiter.HasAttribute("disabled"));
+        Assert.Equal("true", weiter.GetAttribute("aria-disabled"));
+        Assert.Equal("Erst nach der Projektwahl", weiter.GetAttribute("title"));
+
+        weiter.Click();
+
+        Assert.Equal(Reiterschluessel.Projekt, cut.Instance.AktiverReiter);
+        Assert.Contains("Bitte zuerst ein Projekt auswählen!",
+                        cut.Find(".epos-warnbanner").TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Gegenprobe: MIT offenem Projekt trägt „Weiter ▶" weder Grund noch
+    /// ARIA-Sperre und wechselt den Reiter, wie er es immer tat.
+    /// </summary>
+    [Fact]
+    public void Der_Weiterknopf_wechselt_mit_offenem_Projekt_ohne_Meldung()
+    {
+        var cut = Zeige();
+
+        IElement weiter = cut.FindAll(".epos-startseite-fuss .epos-knopf")[1];
+        Assert.False(weiter.HasAttribute("aria-disabled"));
+        Assert.False(weiter.HasAttribute("title"));
+
+        weiter.Click();
+
+        Assert.Equal(Reiterschluessel.Waermebedarf, cut.Instance.AktiverReiter);
+
+        // Kein Sperrhinweis. (Leer ist die Seite dabei nicht: Reiter 2 fuehrt
+        // sein eigenes Hinweisbanner - label_Hinweis des Bestands -, und das
+        // hat mit der Sperre nichts zu tun.)
+        Assert.DoesNotContain("Bitte zuerst ein Projekt auswählen!",
+                              cut.Markup, StringComparison.Ordinal);
+    }
+
+    // =====================================================================
     //  E-5: die zwei Simulationsansichten ohne zweites Fenster
     // =====================================================================
 
@@ -781,7 +944,7 @@ public class StartseiteTests : BunitContext
         Assert.Contains("Referenzprojekt", mit.Find("#epos-start-variante").TextContent,
                         StringComparison.Ordinal);
         foreach (IElement knopf in mit.FindAll("[role='tab']"))
-            Assert.False(knopf.HasAttribute("disabled"),
+            Assert.False(knopf.HasAttribute("aria-disabled"),
                          "Reiter gesperrt, obwohl ein Projektname im Kopfband steht.");
 
         // Ohne Projekt: KEIN Name im Feld, nur der Platzhalter - und die Sperre.
@@ -793,7 +956,7 @@ public class StartseiteTests : BunitContext
 
         var knoepfe = ohne.FindAll("[role='tab']");
         for (int i = 1; i < knoepfe.Count; i++)
-            Assert.True(knoepfe[i].HasAttribute("disabled"));
+            Assert.Equal("true", knoepfe[i].GetAttribute("aria-disabled"));
     }
 
     /// <summary>
@@ -824,7 +987,7 @@ public class StartseiteTests : BunitContext
             .Add(x => x.Klimaregion, () => "")
             .Add(x => x.Bericht, Bereitschaft));
 
-        Assert.True(cut.FindAll("[role='tab']")[1].HasAttribute("disabled"));
+        Assert.Equal("true", cut.FindAll("[role='tab']")[1].GetAttribute("aria-disabled"));
 
         // Die Huelle meldet das nun offene Projekt.
         id = 1030;
@@ -833,7 +996,7 @@ public class StartseiteTests : BunitContext
         cut.Render();
 
         foreach (IElement knopf in cut.FindAll("[role='tab']"))
-            Assert.False(knopf.HasAttribute("disabled"));
+            Assert.False(knopf.HasAttribute("aria-disabled"));
 
         Assert.DoesNotContain("Bitte zuerst ein Projekt auswählen!",
                               cut.Markup, StringComparison.Ordinal);
@@ -865,9 +1028,13 @@ public class StartseiteTests : BunitContext
 
         // Der gesperrte Knopf bleibt sehr leise - sonst waere der Unterschied
         // wieder weg, nur andersherum.
+        // Seit W16b-E-6 sperrt die Startseite WEICH; beide Bauarten stehen in
+        // EINER Regel, sonst waere die Farbe zweimal festgelegt.
         Assert.Contains("var(--epos-text-sehr-leise)",
                         Stilblock(".epos-startseite > .epos-reiter > .epos-reiter-leiste "
-                                  + "> .epos-reiter-knopf:disabled {"),
+                                  + "> .epos-reiter-knopf:disabled,\n"
+                                  + ".epos-startseite > .epos-reiter > .epos-reiter-leiste "
+                                  + "> .epos-reiter-knopf[aria-disabled=\"true\"] {"),
                         StringComparison.Ordinal);
     }
 
