@@ -485,3 +485,48 @@ bleibt im Dialog, Esc schließt, Infoknopf zeigt die Wikiseite.
 `EPOS.Kern.Tests/BedarfProfilTests.cs`, `EPOS.Kern.Tests/TagVCtrlTests.cs`.
 
 **Geändert in den Proben**: `Proben/ChartProben/Program.cs` (drei Bilder).
+
+---
+
+## Windows-Abnahme 05.09.2026 — Bedarfsrechnung
+
+### W8‑B‑1 — Bedarfsergebnis zeigt 0 und ein leeres Bild — **Ursache liegt nicht hier**
+
+**Gemeldet** im PDF „iOS_Migration_Probleme", S. 4–5: Kachel „Prozesswärme" →
+„Simulation…" → Überlagerung **Bedarfsergebnis** (`BedarfErgebnisDialog`,
+`BedarfErgebnisDaten`) mit Einheit MWh: „Simulation bringt Ergebnis 0
+(monatlicher Verlauf), Grafik bleibt leer" — das Bild „Prozesswärme [MWh]" zeigt
+leere Achsen 0–5. Dasselbe beim Standardlastprofil.
+
+**Der Ergebnisdialog ist entlastet, und die Einheitenwahl auch.** Der Verdacht
+lag auf den beiden Nachträgen vom 04.09.2026 — W8‑O‑5 (`e665c41`, Einheit am Wert
+statt Sonderteiler) und W9‑O‑3 (`a3906ca`, Prozesssumme über die
+Einheitenklasse) —, weil eine zweimal angewandte Umrechnung kWh→MWh den Faktor
+10⁻⁶ ergäbe und damit gerundet 0. Geprüft und ausgeschlossen:
+
+* `ProzesssummeUebernehmen()` hat **genau einen** Aufrufer
+  (`BedarfsProfileHuelle`:398).
+* `Energieeinheit.MWh.AusMWh` ist die **bitgleiche Identität** — bei der Vorgabe
+  MWh wird überhaupt nicht gerechnet (`EnergieeinheitTests`).
+* Kein Feldname der Ergebnis-DTOs ist vertauscht: `Waermebedarf_Prozess_Monat`
+  steht in der Sicht „Prozesse", `Waermebedarf_Gebaeude_Monat` in „Gebäude".
+* Der Ergebnisdialog bekommt die Reihe **schon leer** — die Monatswerte sind
+  bereits im Rechenobjekt 0.
+
+**Die eigentliche Ursache** ist die Namensauflösung der Vorschau im
+Bedarfsprofil-Dialog (Welle 9): Der Dialog gibt die Namen der **Projektkopien**
+weiter, die Vorschau schlug sie ausschließlich im `_STAMM`-Katalog nach. Analyse,
+Behebung, Wache und Abnahmepunkte stehen im Protokoll der Welle 9 unter
+**W9‑B‑4** (Prozesswärme) und **W9‑B‑5** (Standardlastprofil); behoben mit
+`b8090b0`, Zeuge `66c80b6`.
+
+**Auch der Renderer ist entlastet.** Die leeren Achsen 0–5 sind das korrekte Bild
+einer reinen Nullreihe: `ChartRenderer.MonatsSaeulen` ermittelt `maxWert = 0`,
+bekommt daraus die Vorgabeskala und zeichnet zwölf Säulen der Höhe 0
+(`hoehe > 0` ist die Zeichenbedingung). Bei einer Reihe mit Werten zeichnet er
+die Säulen — nachgewiesen durch `Proben/ChartProben` (32 Bilder, 0 Verstöße). Am
+Renderer wurde **nichts geändert**.
+
+**Was in Welle 8 unverändert bleibt:** die Einheitenwahl MWh/kWh, das doppelt
+gerenderte Säulenbild (eine Fassung je Einheit), die Einheit am Wert und die
+Sonderstellung des Brauchwassers in kWh (offener Punkt W8‑O‑5b).

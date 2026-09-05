@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
         /// <c>_STAMM</c>-Katalog; findet sich der Name dort nicht, gilt die
         /// PROJEKTKOPIE als Rückfall (<see cref="ProfilQuelle.Rueckfall"/>).
         ///
-        /// <para><b>Warum es diesen Modus gibt</b> (Befund W9‑B‑1 der Windows-Abnahme
+        /// <para><b>Warum es diesen Modus gibt</b> (Befund W9‑B‑4/B‑5 der Windows-Abnahme
         /// vom 05.09.2026). Die Liste dieses Dialogs ist GEMISCHT: Eine gespeicherte
         /// Zuordnung trägt den Namen ihrer PROJEKTKOPIE (<c>Z_Projekt*Ctrl.LiesProjekt</c>
         /// liest <c>Tab_Prozesswaerme.Bezeichner</c> bzw.
@@ -278,7 +278,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Quellmodus eines Aufrufs</b> — die eine Regel für alle drei
-        /// Bedarfszweige (Befund W9‑B‑1 der Windows-Abnahme vom 05.09.2026).
+        /// Bedarfszweige (Befund W9‑B‑4/B‑5 der Windows-Abnahme vom 05.09.2026).
         ///
         /// <para>Bis hierher stand in jedem Zweig <c>list == null ? Projektrechnung :
         /// Katalogvorschau</c>. Das ist die Ableitung, die der Kopf von
@@ -480,7 +480,7 @@ namespace WindowsFormsApplication1
 
                 // Die Quelle DIESES Satzes. Sie weicht nur in der Projektvorschau von
                 // der aeusseren ab: Kennt der Katalog den Namen nicht, gilt die
-                // Projektkopie (Befund W9-B-1). Kopf UND Typprofil kommen danach aus
+                // Projektkopie (Befund W9-B-4/B-5). Kopf UND Typprofil kommen danach aus
                 // derselben Quelle - ihre Vermischung war der Befund V0-4.
                 ProfilQuelle satzquelle = quelle;
                 DataRow kopf = KopfLesen(quelle, idProjekt, name);

@@ -11,9 +11,10 @@ namespace EPOS.Kern.Tests
     /// Bedarfsprofil-Dialoge (Kachel „Prozesswärme", „Brauchwasser",
     /// „Standardlastprofil" → <c>BedarfsProfileDialog</c>, iU9-W9.5).
     ///
-    /// <para><b>Der Befund der Windows-Abnahme vom 05.09.2026</b> (W9‑B‑1): „Simulation
-    /// bringt Ergebnis 0 (monatlicher Verlauf), Grafik bleibt leer" — bei der
-    /// Prozesswärme wie beim Standardlastprofil.</para>
+    /// <para><b>Der Befund der Windows-Abnahme vom 05.09.2026</b> — „Simulation
+    /// bringt Ergebnis 0 (monatlicher Verlauf), Grafik bleibt leer": an der
+    /// Prozesswärme <b>W9‑B‑4</b>, am Standardlastprofil <b>W9‑B‑5</b>. Eine
+    /// Ursache, eine Behebung.</para>
     ///
     /// <para><b>Die Ursache ist die Namensauflösung, nicht die Einheit.</b> Der Dialog
     /// listet die Zuordnungen des Projekts, und ihre Namen kommen aus der
@@ -66,7 +67,7 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// <b>W9‑B‑1, der Fall des Befunds.</b> Projekt 1017 führt genau ein
+        /// <b>W9‑B‑5, der Fall des Befunds.</b> Projekt 1017 führt genau ein
         /// Standardlastprofil; seine Projektkopie heißt <c>EFH_3_Pers (P1017)</c>,
         /// der Katalogeintrag dagegen <c>EFH_3_Pers</c>. Der Dialog zeigt den
         /// Kopienamen — und genau den bekommt die Vorschau.
@@ -93,7 +94,7 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(gezeigt);
             Assert.NotNull(gerechnet);
-            Assert.True(gezeigt.Sum() > 0, "Die Vorschau liefert eine Nullreihe (Befund W9-B-1).");
+            Assert.True(gezeigt.Sum() > 0, "Die Vorschau liefert eine Nullreihe (Befund W9-B-5).");
             Assert.Equal(gerechnet.Sum(), gezeigt.Sum(), 1);
         }
 
@@ -115,7 +116,7 @@ namespace EPOS.Kern.Tests
                                              sim.Strombedarf_monat, sim.mo_anfang, sim.mo_ende);
 
             Assert.All(sim.Strombedarf_monat.Take(12),
-                       m => Assert.True(m > 0, "Ein Monatswert ist 0 (Befund W9-B-1)."));
+                       m => Assert.True(m > 0, "Ein Monatswert ist 0 (Befund W9-B-5)."));
             Assert.Equal(67.462, sim.Strombedarf_monat[0], 2);
         }
 
@@ -151,7 +152,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1.900, b.Waermebedarf_Brauchwasser_Monat[0], 3);
             Assert.Equal(0.340, b.Waermebedarf_Brauchwasser_Monat[1], 3);
 
-            // Stromverbraucher, Projekt 1024 - "Bue ro_Konst" steht im Katalog.
+            // Stromverbraucher, Projekt 1024 - "Buero_Konst" steht im Katalog.
             var s = new SimulationStrombedarf { m_ID_Projekt = 1024 };
             float[] reihe = s.Stromprofil_Strombedarf_berechnen(StromNamen(1024));
             Assert.NotNull(reihe);
@@ -183,7 +184,7 @@ namespace EPOS.Kern.Tests
 
     /// <summary>
     /// Derselbe Befund für ein Profil, das es NUR im Projekt gibt — die zweite
-    /// Ausprägung von W9‑B‑1 und die, die der Anwender an der Prozesswärme gesehen
+    /// Ausprägung von W9‑B‑4 und die, die der Anwender an der Prozesswärme gesehen
     /// hat.
     ///
     /// <para><b>Eigene Klasse, weil dieser Fall SCHREIBT.</b> Er benennt die
@@ -224,10 +225,10 @@ namespace EPOS.Kern.Tests
             sim.ProzesssummeUebernehmen();
 
             Assert.True(sim.prozesswerte.Sum() > 0,
-                        "Die Vorschau liefert eine Nullreihe (Befund W9-B-1).");
+                        "Die Vorschau liefert eine Nullreihe (Befund W9-B-4).");
             Assert.True(sim.Waermebedarf_Prozess > 0);
             Assert.All(sim.Waermebedarf_Prozess_Monat.Take(12),
-                       m => Assert.True(m > 0, "Ein Monatswert ist 0 (Befund W9-B-1)."));
+                       m => Assert.True(m > 0, "Ein Monatswert ist 0 (Befund W9-B-4)."));
         }
     }
 }
