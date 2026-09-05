@@ -471,6 +471,64 @@ namespace EPOS.Kern.Tests
                             "Die Liste ist nicht nach Namen sortiert: " + liste[i - 1].Name + " / " + liste[i].Name);
         }
 
+        /// <summary>
+        /// Anwenderwunsch 05.09.2026 (W15a-E-1): „Es sollte wie zuvor kenntlich sein,
+        /// welches Variantenprojekte sind."
+        ///
+        /// <para>Jede Zeile traegt ihre Art. Eine VARIANTE nennt Stamm-Id, Bezeichner
+        /// und Stammnamen; ein Stammprojekt und ein gewoehnliches Projekt fuehren
+        /// <c>StammId = 0</c> und leere Textfelder. Geprueft wird gegen
+        /// <c>Tab_Variante</c> selbst — die Liste darf nicht raten.</para>
+        ///
+        /// <para>Nur LESEND; die Arbeitskopie bleibt unveraendert.</para>
+        /// </summary>
+        [Fact]
+        public void Die_Namensliste_nennt_zu_jeder_Variante_ihren_Stamm()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyList<ProjektKopfZeile> liste = ProjektCtrl.NamenListe();
+
+            // Die Varianten der Testdatenbank, unmittelbar aus der Seitentabelle.
+            var erwartet = new Dictionary<int, (int Stamm, string Bezeichner)>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID_Projekt, ID_ProjektRef, Variantenname FROM Tab_Variante");
+            foreach (DataRow r in dt.Rows)
+                erwartet[Convert.ToInt32(r["ID_Projekt"])] =
+                    (Convert.ToInt32(r["ID_ProjektRef"]), Convert.ToString(r["Variantenname"]) ?? "");
+
+            Assert.NotEmpty(erwartet);   // sonst prueft der Fall nichts
+
+            foreach (ProjektKopfZeile z in liste)
+            {
+                if (erwartet.TryGetValue(z.Id, out var soll))
+                {
+                    Assert.True(z.IstVariante, z.Name + " wird nicht als Variante gefuehrt.");
+                    Assert.Equal(soll.Stamm, z.StammId);
+                    Assert.Equal(soll.Bezeichner, z.Bezeichner);
+                    Assert.Equal(ProjektnameVon(soll.Stamm), z.StammName);
+                }
+                else
+                {
+                    Assert.False(z.IstVariante, z.Name + " wird faelschlich als Variante gefuehrt.");
+                    Assert.Equal(0, z.StammId);
+                    Assert.Equal("", z.Bezeichner);
+                    Assert.Equal("", z.StammName);
+                }
+            }
+
+            // Das Stammprojekt "Woehler" fuehrt zwei Varianten (1023, 1024) - beide
+            // stehen mit IHM als Stamm in der Liste, nicht mit sich selbst.
+            int stamm = ProjektCtrl.IdVonName(MIT_ANHANG);
+            Assert.True(stamm > 0);
+            var varianten = new List<ProjektKopfZeile>();
+            foreach (ProjektKopfZeile z in liste) if (z.StammId == stamm) varianten.Add(z);
+            Assert.Equal(2, varianten.Count);
+            Assert.All(varianten, z => Assert.Equal(MIT_ANHANG, z.StammName));
+            Assert.All(varianten, z => Assert.False(string.IsNullOrEmpty(z.Bezeichner)));
+        }
+
         [Fact]
         public void IdVonName_findet_das_Projekt_und_bleibt_bei_Unfug_still()
         {
