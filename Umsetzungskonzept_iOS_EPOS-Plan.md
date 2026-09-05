@@ -1641,6 +1641,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > das Stilblatt ohne Zeilenenden-Angleichung, und auf dem Windows-Läufer liegt es nach `text=auto` mit CRLF —
 > ein zweizeiliger Selektor traf nicht mehr. Angeglichen an `StartseiteAnmutungTests`/`StilblattTests`
 > (`\r\n` → `\n`), Gegenprobe mit CRLF-Stilblatt grün; Kern-Lauf 133 war grün.
+>
+> **Anwenderwunsch W16b‑E‑7 vom 05.09.2026 („Kacheln sollten ähnlich wie zuvor angeordnet sein – sind jetzt zu
+> groß"; Bildschirmfoto: zwei Kacheln je Zeile, jede rund die halbe Fensterbreite), umgesetzt in `436dfbc`:** Ursache
+> war die **Mindest**breite 404 px an einem Raster mit `1fr`-Spalten — bei 150 % Skalierung misst das Reiterblatt
+> eines Full-HD-Schirms rund 1 200 CSS‑px, die drei Kacheln brauchen 1 228; also blieben zwei Spalten, und `1fr`
+> verteilte die ganze Breite auf sie, während Sinnbild (84 px) und Titel (16 px) blieben. `Kachelraster` führt
+> deshalb eine **`Hoechstbreite`** (0 = dehnend wie bisher): drei feste Spalten von höchstens `--epos-kachel-max`,
+> linksbündig, `gap: 6px 8px` (die Fugen des Designers aus `Form_Start.resx`: x = 18/422/834, y = 134/325),
+> dazu `grid-auto-rows: minmax(185px, auto)` als Zeilenhöhe des Vorläufers (Kachel 404 × 185); auf schmalem Schirm
+> zwei Spalten (< 1 150 px) und eine (< 720 px). Alle fünf Reiter mit ihren 21 Kacheln setzen `Hoechstbreite="404"`,
+> die Kennzahlreihen der Kosten- und der Wirtschaftlichkeitsseite dehnen unverändert; Farben, Schriften und die
+> sieben `--epos-start-*`-Token aus W16b‑E‑5 sind unberührt. Wachen: `StartseiteTests.Jeder_Reiter_stellt_seine_
+> Kacheln_im_Vorbildmass` (alle fünf Reiter) und drei Fälle in `StartseiteAnmutungTests` am Stilblatt; der Fall
+> `Das_Kachelraster_nimmt_die_Kachelbreite_des_Vorlaeufers` aus W16b‑E‑3 entfällt, weil er genau die Mindestbreite
+> festschrieb, die den Befund verursacht hat. Ein erster Agentenlauf zu diesem Wunsch wurde um 16:45 UTC durch eine
+> Unterbrechung abgebrochen; sein Teilstand (`FestesMass`, `auto-fill`, geschrumpfte Seitenränder) ist geprüft und
+> verworfen — er hätte beim Anwender weiterhin zwei Spalten ergeben.
 
 > **Statusblock iU9 — Teilwelle 16a umgesetzt (04.09.2026, Basis `975ead5` = Tag `vor-W16`, zusammengeführt mit `3c7e0d6` nach den W15c-Entscheiden)**
 >
