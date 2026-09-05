@@ -56,6 +56,31 @@ entgegen — sie ist damit austauschbar.
   (Chromium las alles Folgende als darin verschachtelt), das Hauptfenster erschien als ungestyltes
   HTML. Der Browser meldet dabei nichts, und eine bunit-Probe sieht es nicht: Das Markup ist
   richtig, nur das Blatt ist es nicht.
+- **Eine Farbe steht als TOKEN in `:root`, nicht als Rückfall in der Regel.**
+  `var(--epos-marke, #005aa0)` sieht harmlos aus, schreibt den Wert aber an jede Stelle, an
+  der das Token benutzt wird — er lässt sich dann nirgends mehr ändern. Wer einen Rückfall
+  schreibt, legt das Token an. Einzige Ausnahme ist ein Wert, den der Aufrufer je Element
+  setzt (`--epos-kachel-min` aus `Kachelraster`); dort IST der Rückfall die Vorgabe.
+- **Sieben Token gehören NUR der Startseite** (`--epos-start-*`, Anwenderwunsch **W16b‑E‑5**
+  vom 05.09.2026): `--epos-start-kasten-rahmen` (das kühle Blaugrau der zwei Kopfkästen),
+  `--epos-start-leiste-flaeche` (der Grund unter den Reiterzungen),
+  `--epos-start-reiter-aktiv` und `--epos-start-reiter-aktiv-text` (die gefüllte Zunge),
+  `--epos-start-text-leise` (DimGray für jede Erläuterung), `--epos-start-knopf-flaeche`
+  (LightGray der Fußknöpfe) und `--epos-start-zusammenfassung` (die Fläche des
+  Zusammenfassungskastens). **Benutzen darf sie nur `Seiten/Start/*`.** Grund: `Form_Start`
+  hatte eine eigene Handschrift — größere Schrift, kühlere Rahmen, eine gefüllte
+  Reiterzunge, graue Knöpfe —, und die galt im Haus nirgends sonst. Wer sie in den
+  gemeinsamen Farbsatz zöge (`--epos-rahmen-leise`, `--epos-text-leise`, `--epos-flaeche`),
+  färbte sechzig Dialoge mit um. **Die Regel gilt allgemein:** Meint ein Vorbild nur EINE
+  Seite, bekommt sie ein sprechendes eigenes Token — ein gemeinsames wird nicht gekippt.
+  Wache: `Seiten/StartseiteAnmutungTests`.
+- **Jede neue Schrift-auf-Fläche-Paarung hält 4,5:1.** Drei Farben des Vorläufers sind
+  deshalb bewusst NICHT übernommen (weiß auf `#6876df` bei kleiner Schrift 3,76:1, die
+  Zusammenfassungswerte in 128,128,255 auf `#f9fafc` 3,12:1, die Versionsfarbe 150,156,162
+  auf Weiß 2,77:1); der Ersatz bleibt in derselben Farbfamilie. `#6876df` trägt weiterhin
+  die Gattungszeile — 26 px fett ist GROSSE Schrift und braucht nur 3:1.
+  `StartseiteAnmutungTests.Jede_neue_Paarung_haelt_den_Hauskontrast` rechnet die Werte aus
+  dem Stilblatt nach und fällt rot aus, sobald jemand ein Token aufhellt.
 - Bezeichner und Kommentare deutsch; neue `.razor`/`.cs` UTF-8 **mit** BOM, LF.
 - Jeder Baustein bekommt einen `bunit`-Test in `EPOS.UI.Tests` (Darstellung, Callback,
   Zustandsklasse).

@@ -96,6 +96,45 @@
     --epos-marke-flaeche: #6876df;
     --epos-marke-text: #ffffff;
 
+    /* ---- Kopfband und Menue des Hauptfensters (Anwenderwunsch 05.09.2026,
+       W16c-E-5) ----------------------------------------------------------
+       Fuenf Werte, die bisher nur als RUECKFALL in der jeweiligen Regel
+       standen - var(--epos-marke, #005aa0). Ein Rueckfall ist keine
+       Farbwahrheit: Er steht so oft da, wie er benutzt wird, und laesst sich
+       nicht an einer Stelle aendern. Die Werte selbst sind unveraendert die
+       des Vorlaeufers MDIMainForm.InitMarke. */
+    --epos-marke: #005aa0;              /* InitMarke :227/236 Akzent + Name  */
+    --epos-marke-untertitel: #70777e;   /* InitMarke :245 Gattung und Claim  */
+    --epos-marke-trennlinie: #dee3e8;   /* InitMarke :224 Linie unter dem Band */
+    --epos-menue-flaeche: #f0f8ff;      /* menuToolbar.BackColor = AliceBlue */
+    --epos-menue-marke: #d9e8f7;        /* die aufgeschlagene Ebene darin    */
+
+    /* ---- Flaeche und Abstand, ebenfalls bisher nur Rueckfall ---------- */
+    --epos-flaeche-hell: #ffffff;       /* Form_Start.BackColor = White      */
+    --epos-flaeche-gedaempft: #efefef;  /* das linke Band des Assistenten    */
+    --epos-abstand: 12px;
+
+    /* ---- NUR DIE STARTSEITE (Anwenderwunsch 05.09.2026, W16b-E-5) ------
+       Sieben Token, die ausschliesslich Seiten/Start/* benutzen darf. Sie
+       tragen die Anmutung von Form_Start, und die galt im Haus nirgends
+       sonst: Die Startmaske hatte eine EIGENE Handschrift - groessere
+       Schrift, kuehlere Rahmen, eine gefuellte Reiterzunge, graue Knoepfe.
+       Wer das ueber den gemeinsamen Farbsatz durchreichte, faerbte sechzig
+       Dialoge mit um. Deshalb ein eigener, sprechender Satz, statt einen
+       gemeinsamen zu kippen. */
+    --epos-start-kasten-rahmen: #b4becd;     /* panelKlima/panelVariante_Paint,
+                                                Pen(180,190,205)             */
+    --epos-start-leiste-flaeche: #f0f0f0;    /* SystemColors.Control - der
+                                                Grund unter den Reiterzungen */
+    --epos-start-reiter-aktiv: #005aa0;      /* die gefuellte Zunge          */
+    --epos-start-reiter-aktiv-text: #ffffff; /* Form_Start :136 weisser Text */
+    --epos-start-text-leise: #696969;        /* Color.DimGray - jede
+                                                Erlaeuterung der Startmaske  */
+    --epos-start-knopf-flaeche: #d3d3d3;     /* Color.LightGray - Form_Start
+                                                :85-88 (Weiter/Zurueck/SimKonfig) */
+    --epos-start-zusammenfassung: #f9fafc;   /* der Kasten auf Reiter 5,
+                                                Designer :903 (249,250,252)  */
+
     /* ---- Gespraechsverlauf des KI-Assistenten (iU9-W15b.0h) ----------
        Die acht Farben und zwei Schriftschnitte, die Form_KiChat.SchreibeZeile
        je vergeben hat (Vermessung § 6.l) - sie werden im Baustein
@@ -488,7 +527,7 @@ body {
     gap: 12px;
     width: 280px;
     padding: var(--epos-karte-rand);
-    background: var(--epos-flaeche-gedaempft, #EFEFEF);
+    background: var(--epos-flaeche-gedaempft);
     border-right: 1px solid var(--epos-karte-rahmen);
     overflow: auto;
 }
@@ -3846,8 +3885,8 @@ body {
 .epos-startseite {
     display: flex;
     flex-direction: column;
-    gap: var(--epos-abstand, 12px);
-    padding: var(--epos-abstand, 12px);
+    gap: var(--epos-abstand);
+    padding: var(--epos-abstand);
 }
 
 /* ---- Kopfband ---------------------------------------------------------- */
@@ -3890,9 +3929,15 @@ body {
     gap: 16px;
 }
 
-/* Die zwei Kaesten des Vorlaeufers (panelVariante, panelKlima): abgerundeter
-   Rahmen in #b4bec9 - hier derselbe Klang aus dem Farbsatz statt aus einem
-   Pen mit 1,5 px Breite. */
+/* Die zwei Kaesten des Vorlaeufers (panelVariante, panelKlima). Ihre Kontur
+   zeichneten panelKlima_Paint/panelVariante_Paint mit EINEM Stift:
+   Pen(Color.FromArgb(180, 190, 205), 1.5f) auf ein Rundeck von 8 px Radius
+   (Form_Start :2273-2292). Das ist ein KUEHLES Blaugrau; --epos-rahmen-leise
+   (#d9d7cf) ist ein warmes Beigegrau und liess die zwei Kaesten neben den
+   blaugrauen Kacheln fremd aussehen (Anwenderwunsch 05.09.2026, W16b-E-5).
+   Die Strichbreite bleibt bei 1 px - 1,5 px waeren auf einem Bildschirm ohne
+   Skalierung ein unscharfer Strich, und der Farbeindruck haengt an der
+   Farbe. */
 .epos-startseite-projekt,
 .epos-startseite-klima {
     display: flex;
@@ -3900,8 +3945,8 @@ body {
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    border: 1px solid var(--epos-rahmen-leise);
-    border-radius: var(--epos-ecke);
+    border: 1px solid var(--epos-start-kasten-rahmen);
+    border-radius: 8px;
 }
 
 .epos-startseite-klima {
@@ -3913,10 +3958,20 @@ body {
     margin-left: auto;
 }
 
+/* label12 ("Klimaregion auswaehlen:") und label11 ("Projekt:") trugen Segoe UI
+   12 pt - also 16 px und nicht die 13 px der Dialogschrift. Der KOPF der
+   Startmaske war sichtbar groesser als ein Dialog, und genau das macht sie als
+   Startseite kenntlich (W16b-E-5).
+
+   NICHT UEBERNOMMEN ist die Flaeche von label11: Es stand WEISS auf #6876df
+   (Designer :1078). Weiss auf #6876df traegt 3,76:1 - genug fuer die
+   26-px-Gattungszeile (grosse Schrift, 3:1), zu wenig fuer eine Beschriftung
+   in 16 px (4,5:1). Die Marke bleibt deshalb dem Titelband vorbehalten. */
 .epos-startseite-projekt > label,
 .epos-startseite-klima > label {
-    font-weight: 700;
-    color: var(--epos-karte-titel);
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+    color: var(--epos-text);
 }
 
 .epos-startseite-projekt .epos-eingabe,
@@ -3941,9 +3996,13 @@ body {
 }
 
 /* label_ProjektStatus: gruener Haken bei offenem Projekt, rotes Warnzeichen
-   sonst (Form_Start :188-189 und :1211-1212, Color.Green / 192,0,0). */
+   sonst (Form_Start :188-189 und :1211-1212, Color.Green / 192,0,0). Es trug
+   Microsoft Sans Serif 18 pt (= 24 px) und war damit das groesste Zeichen des
+   Kopfes - ein Statuszeichen, das man ueber die ganze Breite sieht. 20 px
+   halten das, ohne die Kopfzeile hoeher zu machen als die Auswahlfelder. */
 .epos-startseite-status {
-    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-size: 20px;
+    line-height: 1;
     font-weight: 700;
 }
 
@@ -3957,12 +4016,68 @@ body {
 
 /* ---- Ein Reiterblatt --------------------------------------------------- */
 
-/* tabControl_Wizard trug Segoe UI Semibold 12 pt FETT (= 16 px) - die
-   Reiterleiste des Bestands war deutlich groesser als die Dialogschrift. Nur
-   die der Startseite; die uebrigen Reiter des Hauses bleiben, wie sie sind. */
+/* DIE REITERLEISTE DER STARTMASKE WAR EIN ECHTES TABCONTROL, und sie sah auch
+   so aus (Anwenderwunsch 05.09.2026, W16b-E-5):
+
+     - Schrift Segoe UI Semibold 12 pt FETT (= 16 px), deutlich groesser als
+       die Dialogschrift (tabControl_Wizard.Font, .resx :3275);
+     - der GRUND unter den Zungen SystemColors.Control (#f0f0f0), das Blatt
+       darunter weiss - die Zungen standen also auf einer eigenen Flaeche;
+     - die AKTIVE Zunge GEFUELLT mit weisser Schrift, die uebrigen mit
+       schwarzer: tabControl_Wizard_DrawItem zeichnete den Text der gewaehlten
+       Seite in 0xffffff und den der uebrigen in 0x000000 (Form_Start
+       :127-141), und die Flaeche darunter kam von e.DrawBackground(), das fuer
+       das gewaehlte Stueck SystemColors.Highlight nimmt.
+
+   STATT SystemColors.Highlight steht hier --epos-start-reiter-aktiv (#005aa0),
+   der Markenton des Kopfbandes: Weiss auf dem Windows-Blau #0078d7 traegt
+   4,50:1 und liegt damit auf der Schwelle - ein Nutzer mit einem anderen
+   Akzentfarbton faellt darunter, und eine Systemfarbe kann die Oberflaeche auf
+   iOS ohnehin nicht nachbilden. #005aa0 traegt 7,1:1 und ist derselbe Ton, mit
+   dem das Kopfband den Produktnamen setzt.
+
+   Der 3-px-Fuss der Hausleiste BLEIBT - im erzwungenen Farbmodus ersetzt das
+   System jede Flaeche, und dann ist der Rahmen das Einzige, was die aktive
+   Zunge noch traegt. Er bekommt nur denselben Ton wie die Fuellung, damit die
+   Zunge im Normalbetrieb EIN Block ist.
+
+   Nur die Startseite. Die uebrigen Reiter des Hauses (Kosten, Wirtschaft-
+   lichkeit, Klima) bleiben bei der leisen Leiste aus W5. */
+.epos-startseite > .epos-reiter > .epos-reiter-leiste {
+    gap: 2px;
+    margin-bottom: 0;
+    padding: 4px 4px 0 4px;
+    background: var(--epos-start-leiste-flaeche);
+    border-bottom-color: var(--epos-start-kasten-rahmen);
+}
+
 .epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf {
     font-size: var(--epos-schriftgroesse-kartentitel);
     font-weight: 600;
+    color: var(--epos-text);
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+}
+
+.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf--aktiv {
+    color: var(--epos-start-reiter-aktiv-text);
+    background: var(--epos-start-reiter-aktiv);
+    border-bottom-color: var(--epos-start-reiter-aktiv);
+}
+
+/* Ein gesperrter Reiter (kein Projekt offen) bleibt gesperrt: Die Regel oben
+   traegt vier Klassen und schluege die zweistufige Hausregel sonst. */
+.epos-startseite > .epos-reiter > .epos-reiter-leiste > .epos-reiter-knopf:disabled {
+    color: var(--epos-text-sehr-leise);
+}
+
+/* Das Blatt ist der KOERPER des Reiterwerks - weiss, mit dem Rahmen der
+   Leiste ringsum und ohne Fuge nach oben. Ohne ihn stuende die graue Leiste
+   frei in der Flaeche, und das Reiterwerk waere kein Reiterwerk mehr. */
+.epos-startseite > .epos-reiter > .epos-reiter-blatt {
+    padding: var(--epos-rand);
+    background: var(--epos-flaeche-hell);
+    border: 1px solid var(--epos-start-kasten-rahmen);
+    border-top: 0;
 }
 
 .epos-startreiter {
@@ -3993,10 +4108,14 @@ body {
     font-size: 21px;
 }
 
+/* label24/26/28/30: Segoe UI Semibold 12 pt FETT in Color.DimGray. Der
+   Halbfettschnitt und das kuehle Grau sind der Grund, warum die Erlaeuterung
+   im Bestand nicht wie Fliesstext aussah (W16b-E-5). */
 .epos-startreiter-text {
     margin: 2px 0 0 0;
     font-size: var(--epos-schriftgroesse-kartentitel);
-    color: var(--epos-text-leise);
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
 }
 
 .epos-startreiter-leiste {
@@ -4031,6 +4150,17 @@ body {
     flex: 1 1 100%;
 }
 
+/* label2_pBox_*: die Erlaeuterung UNTER dem Kacheltitel erbte die Schrift der
+   Reiterseite (Segoe UI Semibold 12 pt fett = 16 px) und stand in
+   Color.DimGray auf Weiss - jede der sechzehn Bildkacheln (Designer :315,
+   :331, :345, :360 und fort). Dieselbe Behandlung wie die Reitererlaeuterung,
+   und derselbe Grund (W16b-E-5). */
+.epos-startreiter .epos-kachel-beschreibung {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
+}
+
 /* Die Weiche der Solarthermiekachel (radioButton_KollektorProfil /
    radioButton_Ganglinie). Sie steht UNTER ihrer Kachel, weil sie nur diese
    eine betrifft. */
@@ -4054,12 +4184,25 @@ body {
     min-height: var(--epos-touchziel);
 }
 
-/* ---- Projektzusammenfassung (Reiter Simulation) ------------------------ */
+/* ---- Projektzusammenfassung (Reiter Simulation) ------------------------
+
+   DER KASTEN HATTE EINE EIGENE FLAECHE: label70 und die vier Beschriftungen
+   trugen BackColor 249,250,252 (Designer :903, :911, :919, :927, :935) - ein
+   Hauch kuehler als Weiss, gerade genug, damit der Block sich vom Blatt
+   abhebt. Die Beschriftungen standen in DimGray (Segoe UI Semibold 13 pt
+   fett), die Werte daneben in Segoe UI 12,75 pt fett.
+
+   NICHT UEBERNOMMEN ist die FARBE der Werte: label_Name/_WBedarf/_Strom/
+   _Komponenten standen in Color.FromArgb(128, 128, 255) - hell-violettblau,
+   auf 249,250,252 sind das 3,12:1 und damit unter der Hausschwelle von 4,5:1.
+   Die Werte nehmen deshalb den Markenton --epos-marke (#005aa0, 6,9:1) - die
+   gleiche Aussage ("das kommt aus dem Projekt") in derselben Farbfamilie,
+   nur lesbar (W16b-E-5). */
 
 .epos-startzusammenfassung {
     padding: 12px;
-    background: var(--epos-karte-flaeche);
-    border: 1px solid var(--epos-karte-rahmen);
+    background: var(--epos-start-zusammenfassung);
+    border: 1px solid var(--epos-start-kasten-rahmen);
     border-radius: var(--epos-ecke);
 }
 
@@ -4071,13 +4214,14 @@ body {
 }
 
 .epos-startzusammenfassung-liste > dt {
-    font-weight: 700;
-    color: var(--epos-karte-titel);
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
 }
 
 .epos-startzusammenfassung-liste > dd {
     margin: 0;
-    color: var(--epos-text);
+    font-weight: 700;
+    color: var(--epos-marke);
 }
 
 /* ---- Fussleiste -------------------------------------------------------- */
@@ -4091,10 +4235,25 @@ body {
 }
 
 /* btn_Zurueck und btn_Weiter waren 132 x 35 und trugen Segoe UI Semibold 12 pt
-   fett - zwei gleich breite Knoepfe am rechten Rand. */
-.epos-startseite-fuss .epos-knopf {
+   fett - zwei gleich breite Knoepfe am rechten Rand. Ihre FLAECHE setzte
+   Form_Start_Load zur Laufzeit auf Color.LightGray (:85-86), das Rundeck kam
+   aus MakeSmoothButton(6); denselben Anstrich bekam der Knopf "Simulation
+   Konfiguration..." (:88). Das ist der auffaelligste Unterschied zum
+   Hausknopf, der auf der warmen Flaeche #f5f4ef sitzt (W16b-E-5). */
+.epos-startseite-fuss .epos-knopf,
+.epos-startreiter-leiste .epos-knopf {
     min-width: 132px;
     font-weight: 700;
+    background: var(--epos-start-knopf-flaeche);
+    border-color: var(--epos-start-kasten-rahmen);
+}
+
+/* "Zurueck" auf dem ersten und "Weiter" auf dem letzten Reiter sind gesperrt.
+   Ein gesperrter Knopf darf nicht wie ein bedienbarer aussehen - er faellt
+   deshalb auf die leise Hausflaeche zurueck. */
+.epos-startseite-fuss .epos-knopf:disabled {
+    background: var(--epos-flaeche);
+    border-color: var(--epos-rahmen-leise);
 }
 
 /* ==========================================================================
@@ -4109,14 +4268,28 @@ body {
    Koordinaten mehr, und genau das ist die Voraussetzung fuer "Per Monitor V2".
    ========================================================================== */
 
+/* menuToolbar.BackColor war AliceBlue (#f0f8ff) und die Leiste 29 px hoch mit
+   Padding 7,2,0,2 (Designer :90, .resx). Der Ton steht seit W16c-E-5 als
+   Token; die HOEHE bleibt beim Beruehrungsziel von 44 px (Hausregel M2/iL4) -
+   dieselbe Wurzel traegt auf dem iPad ein Menue, das mit dem Finger bedient
+   wird. */
 .epos-menueband {
     display: flex;
     flex-wrap: wrap;
     align-items: stretch;
     gap: 2px;
     padding: 2px 6px;
-    background: var(--epos-menue-flaeche, #f0f6fc);
-    border-bottom: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-menue-flaeche);
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+}
+
+/* Die vier KOEPFE trugen Segoe UI 12 pt (= 16 px), nicht die Dialogschrift
+   (Projekte/Administration/Help/Sprache, .resx MDIMainForm). Die Zeilen der
+   aufgeschlagenen Ebene bleiben bei 13 px - dort standen im Bestand
+   ebenfalls kleinere Eintraege. */
+.epos-menueband > .epos-menueband-punkt > .epos-menueband-knopf,
+.epos-menueband > .epos-menueband-knopf {
+    font-size: var(--epos-schriftgroesse-kartentitel);
 }
 
 .epos-menueband-punkt {
@@ -4159,12 +4332,12 @@ body {
 .epos-menueband-zeile:hover,
 .epos-menueband-knopf:focus-visible,
 .epos-menueband-zeile:focus-visible {
-    background: var(--epos-menue-marke, #d9e8f7);
+    background: var(--epos-menue-marke);
     outline: none;
 }
 
 .epos-menueband-knopf[aria-expanded="true"] {
-    background: var(--epos-menue-marke, #d9e8f7);
+    background: var(--epos-menue-marke);
 }
 
 .epos-menueband-bild {
@@ -4248,6 +4421,11 @@ body {
     min-height: 100%;
 }
 
+/* Das Band war weiss, 52 px hoch, mit Padding 16 links und 6 oben, und unten
+   eine Haarlinie in 222,227,232 (InitMarke :215-228). Der Ton steht seit
+   W16c-E-5 als --epos-marke-trennlinie und nicht mehr als warmes
+   --epos-rahmen-leise (#d9d7cf): Das Kopfband ist kuehl, die Kacheln
+   darunter sind es auch. */
 .epos-hauptfenster-marke {
     display: flex;
     flex-wrap: wrap;
@@ -4255,8 +4433,8 @@ body {
     justify-content: space-between;
     gap: 12px;
     padding: 6px 18px 8px 18px;
-    background: var(--epos-flaeche-hell, #ffffff);
-    border-bottom: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-flaeche-hell);
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
 }
 
 /* Der 4-px-Farbakzent links, den InitMarke mit einem SolidBrush zeichnete. */
@@ -4264,17 +4442,25 @@ body {
     display: flex;
     flex-direction: column;
     padding-left: 12px;
-    border-left: 4px solid var(--epos-marke, #005aa0);
+    border-left: 4px solid var(--epos-marke);
 }
 
+/* Der Name trug Segoe UI Semibold 14 pt fett (= rund 19 px) - er war das
+   groesste Stueck des Kopfbandes und nicht so gross wie ein Kacheltitel
+   (16 px), wie es bis W16c aussah. */
 .epos-hauptfenster-name {
-    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-size: 19px;
+    line-height: 1.2;
     font-weight: 700;
-    color: var(--epos-marke, #005aa0);
+    color: var(--epos-marke);
 }
 
+/* Gattung und Claim standen in Segoe UI 8,25 pt (= 11 px) und in 112,119,126 -
+   auffaellig kleiner als der Name und ein kuehleres Grau als das warme
+   --epos-text-leise. Auf Weiss traegt der Ton 4,54:1. */
 .epos-hauptfenster-untertitel {
-    color: var(--epos-text-leise);
+    font-size: 11px;
+    color: var(--epos-marke-untertitel);
 }
 
 .epos-hauptfenster-rechts {
@@ -4283,6 +4469,11 @@ body {
     gap: 12px;
 }
 
+/* Die Version stand ebenfalls in 8,25 pt. NICHT uebernommen ist ihre Farbe
+   150,156,162: Auf Weiss sind das 2,77:1 und damit deutlich unter der
+   Hausschwelle von 4,5:1. Sie bleibt beim leisen Hausgrau (6,5:1) und wird
+   nur kleiner - klein genug, um nicht mit dem Namen zu konkurrieren. */
 .epos-hauptfenster-version {
+    font-size: 11px;
     color: var(--epos-text-leise);
 }
