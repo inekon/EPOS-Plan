@@ -4,14 +4,16 @@
    .designer.cs (128 Z., 7 Kartenzeilen, 0 MessageBox).
 
    WOZU. Links die dem Projekt schon zugeordneten Ganglinien, rechts der
-   Katalog, dazwischen "◀" und "▶"; unter dem Katalog "Bearbeiten..." in die
-   Stammdatenverwaltung.
+   Katalog, dazwischen "◀" und "▶"; unter dem Katalog die vier Knoepfe der
+   Datenbankseite.
 
-   DER DIALOG SCHREIBT NICHTS - woertlich wie der Vorlaeufer. Er pflegt die
-   GETEILTE Liste; geschrieben wird beim Aufrufer (Form_Start bzw.
+   DER DIALOG SCHREIBT NICHTS AN DER ZUORDNUNG - woertlich wie der Vorlaeufer.
+   Er pflegt die GETEILTE Liste; geschrieben wird beim Aufrufer (Form_Start bzw.
    StromganglinieKontextMenuCtrl, je mit Del_Stromganglinie +
    Add_Stromganglinie). Deshalb gibt die Huelle die Liste zurueck und legt sie
-   nicht selbst ab (Risiko R-W12-4).
+   nicht selbst ab (Risiko R-W12-4). Am KATALOG dagegen schreibt er sehr wohl -
+   Importieren, Speichern unter und Loeschen wirken sofort, jedes ueber einen
+   Delegaten in den Kern (siehe W12-E-1 weiter unten).
 
    DASSELBE MUSTER WIE DIE ERZEUGER UND DIE SOLARGANGLINIE (Baustein
    Zweispaltenauswahl, Anwenderentscheid #76 vom 05.09.2026): zwei Listen, eine
@@ -44,9 +46,52 @@
    Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
    des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
    die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
-   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander).
+
+   ANWENDERWUNSCH W12-E-1 (Windows-Abnahme 05.09.2026): "csv-Datei
+   Stromlastgang importieren (mit Info zum Format) fehlt. Ebenfalls fehlt
+   loeschen und Speichern unter." Unter der Katalogliste stehen seither VIER
+   Knoepfe statt einem:
+
+     [CSV-Datei importieren...] [Speichern unter...] [Loeschen] [Bearbeiten...]
+
+   * IMPORTIEREN ist kein zweiter Importweg. Es ist DERSELBE - die Kette liegt
+     im Kern (GanglinienImportAblauf), ihre Oberflaechenseite im Baustein
+     GanglinienImportLauf, den auch StromganglinieAdminDialog einhaengt. Der
+     Knopf holt nur den Pfad und ruft Starten(pfad, Unbekannt): Das Raster
+     erkennt die Kette selbst, und der Optionendialog laesst es uebersteuern -
+     eine zweite Rasterliste braucht diese Maske deshalb nicht.
+     Der Dateiwaehler ist ein ERWARTETER Delegat und wird await-et (W13-B-1) -
+     ein synchron im Blazor-Ereignis geoeffneter OpenFileDialog beendet den
+     Prozess. Ein PFADFELD steht hier bewusst nicht (anders als in der
+     Verwaltung, wo der Baustein Dateiwahl in einem eigenen Einleseblock sitzt):
+     In einer Knopfleiste unter der Liste haette es nichts anzuzeigen - der Pfad
+     ist nach dem Lauf ohnehin wieder leer.
+   * DER FORMATHINWEIS steht als Text UNTER der Leiste, dazu der Infoknopf mit
+     demselben Wortlaut als Kurztext. Er nennt, was die Kette wirklich annimmt:
+     Trennzeichen, Kopfzeile, Dezimaltrenner, Spalten, Einheit und die 8.760
+     bzw. 35.040 Werte. Der Anwender soll nicht erst am Protokoll erfahren,
+     welche Datei gemeint war.
+   * LOESCHEN prueft ZWEI Sperren, bevor die Rueckfrage kommt: eine
+     Projektzuordnung (StromganglinieStammCtrl.HatProjektzuordnung, Muster der
+     Solarganglinie W14b) und das Auslieferungskennzeichen ReadOnly. Beide
+     MELDEN ihren Grund als Warnbanner, statt still nichts zu tun; der
+     ReadOnly-Grund haengt zusaetzlich als title am Knopf.
+   * SPEICHERN UNTER ist die Kopie unter neuem Namen. Der NamensDialog
+     schlaegt "<Name> - Kopie" vor - dieselbe Schreibweise, die der Bestand
+     schon fuehrt - und prueft die Dublette VOR dem Einfuegen gegen den
+     geladenen Katalog; der Kern prueft sie ein zweites Mal (KopiereStamm
+     liefert dann 0). Ein SQLite-UNIQUE-Fehler erreicht den Anwender damit
+     nicht.
+
+   KEIN KNOPF OHNE DELEGATEN. Fehlt der jeweilige Rueckruf, bleibt der Knopf
+   weg - dieselbe Regel wie bei Dateiwahl, Sprung und "Bearbeiten...". Ohne
+   jede Gabe zeichnet der Dialog nur die zwei Listen (Befund W16b-B1). *@
 
 @namespace EPOS.UI.Dialoge.Strom
+@using EPOS.UI.Dialoge.Allgemein
+@using SpeicherEngine
+@using WindowsFormsApplication1
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -54,6 +99,11 @@
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
 
     <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
@@ -112,10 +162,39 @@
                 </table>
             </div>
 
-            @if (Verwaltung is not null)
+            @if (ImportMoeglich || KopierenMoeglich || LoeschenMoeglich || Verwaltung is not null)
             {
                 <div class="epos-leiste">
-                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BearbeitenText</button>
+                    @if (ImportMoeglich)
+                    {
+                        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                                @onclick="BeiImportieren">@ImportierenText</button>
+                    }
+                    @if (KopierenMoeglich)
+                    {
+                        <button type="button" class="epos-knopf" disabled="@(!KopierenErlaubt)"
+                                @onclick="BeiSpeichernUnter">@SpeichernUnterText</button>
+                    }
+                    @if (LoeschenMoeglich)
+                    {
+                        <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
+                                title="@LoeschenGrund" @onclick="BeiLoeschen">@LoeschenText</button>
+                    }
+                    @if (Verwaltung is not null)
+                    {
+                        <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BearbeitenText</button>
+                    }
+                </div>
+            }
+
+            @if (ImportMoeglich)
+            {
+                @* W12-E-1: Was fuer eine Datei erwartet wird - sichtbar, nicht erst
+                   im Protokoll. Der Infoknopf traegt denselben Wortlaut als Kurztext
+                   und fuehrt auf die Wikiseite. *@
+                <div class="epos-formathinweis">
+                    <Herleitungszeile Text="@FormatHinweisText" />
+                    <InfoKnopf Schluessel="@HilfeSchluesselImport" StandardKurztext="@FormatHinweisText" />
                 </div>
             }
         </Rechts>
@@ -126,6 +205,28 @@
     {
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
     }
+
+    @* --- Rueckfrage vor dem Loeschen (W12-E-1) -------------------------- *@
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage" TitelText="@TitelText"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+
+    @* --- "Speichern unter": der Name der Kopie (W12-E-1) ---------------- *@
+    <Ueberlagerung Offen="@_kopieOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_kopieOffen)
+            {
+                <NamensDialog TitelText="@KopieTitelText" FrageText="@KopieFrageText"
+                              Vorbelegung="@_kopieVorschlag" MeldungLeer="@TextNameLeer"
+                              OkNurMitText="true" Pruefung="@KopieNamePruefen"
+                              OkText="@OkText" AbbrechenText="@AbbrechenText"
+                              Geschlossen="KopieFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Die Importkette: DERSELBE Baustein wie in der Verwaltung ------- *@
+    <GanglinienImportLauf @ref="_import" Einlesen="@Einlesen" Vorschau="@Vorschau"
+                          LaeuftChanged="@(b => _laeuft = b)" />
 
     @* --- Die Stammdatenverwaltung als UEBERLAGERUNG (Risiko R2) --------- *@
     <Ueberlagerung Offen="@_verwaltungOffen" Titel="" Schliessbar="false">
@@ -160,6 +261,43 @@
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, object>? Verwaltung { get; set; }
 
+    /// <summary>
+    /// Der Dateiwaehler der Plattform (W12-E-1). Ohne ihn — oder ohne
+    /// <see cref="Einlesen"/> — bleibt „CSV-Datei importieren…" weg.
+    /// </summary>
+    [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
+
+    /// <summary>
+    /// Faehrt die Importkette MIT Ablage (<c>GanglinienImportAblauf.MitAblage</c>);
+    /// die drei Entscheidungen stellt <see cref="GanglinienImportLauf"/>.
+    /// </summary>
+    [Parameter]
+    public Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+                Task<GanglinienImportErgebnis>>? Einlesen { get; set; }
+
+    /// <summary>Zerlegt eine Datei mit gesetzten Optionen neu (fuer den Optionendialog).</summary>
+    [Parameter] public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>>? Vorschau { get; set; }
+
+    /// <summary>
+    /// Loescht einen Katalogeintrag (<c>StromganglinieStammCtrl.Delete</c>);
+    /// <c>false</c> = er blieb stehen. Ohne ihn bleibt „Loeschen" weg.
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? Loeschen { get; set; }
+
+    /// <summary>
+    /// Gibt es zu dieser Ganglinie eine Projektzuordnung? Dann bleibt sie stehen
+    /// (<c>StromganglinieStammCtrl.HatProjektzuordnung</c>, W12-E-1). Ohne den
+    /// Delegaten entfaellt nur DIESE Pruefung, nicht der Knopf.
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? HatProjektzuordnung { get; set; }
+
+    /// <summary>
+    /// Kopiert einen Katalogeintrag unter neuem Namen
+    /// (<c>StromganglinieStammCtrl.KopiereStamm</c>): Quelle, Ziel,
+    /// <c>false</c> = nicht angelegt. Ohne ihn bleibt „Speichern unter…" weg.
+    /// </summary>
+    [Parameter] public Func<string, string, Task<bool>>? Kopieren { get; set; }
+
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
@@ -192,6 +330,54 @@
     [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
 
+    /// <summary>Beschriftung des Importknopfes (W12-E-1).</summary>
+    [Parameter] public string ImportierenText { get; set; } = Resource.STROMGL_BTN_IMPORTIEREN;
+
+    /// <summary>Beschriftung des Kopierknopfes (W12-E-1).</summary>
+    [Parameter] public string SpeichernUnterText { get; set; } = Resource.STROMGL_BTN_SPEICHERN_UNTER;
+
+    /// <summary>Beschriftung des Loeschknopfes (W12-E-1).</summary>
+    [Parameter] public string LoeschenText { get; set; } = Resource.STROMGL_BTN_LOESCHEN;
+
+    /// <summary>Der Formathinweis neben dem Importknopf (W12-E-1).</summary>
+    [Parameter] public string FormatHinweisText { get; set; } = Resource.STROMGL_HINWEIS_FORMAT;
+
+    /// <summary>Der Dateifilter, den der Waehler bekommt.</summary>
+    [Parameter] public string Dateifilter { get; set; } = Resource.IMPORT_DATEIFILTER;
+
+    /// <summary>Die Loeschfrage; <c>{0}</c> = Name der Ganglinie.</summary>
+    [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.IMPORT_FRAGE_LOESCHEN;
+
+    /// <summary>Meldung nach dem Loeschen; <c>{0}</c> = Name.</summary>
+    [Parameter] public string VorlageGeloescht { get; set; } = Resource.IMPORT_MSG_GELOESCHT;
+
+    /// <summary>Sperrgrund „Auslieferungssatz".</summary>
+    [Parameter] public string TextSchreibgeschuetzt { get; set; } = Resource.IMPORT_MSG_SCHREIBGESCHUETZT;
+
+    /// <summary>Sperrgrund „einem Projekt zugeordnet".</summary>
+    [Parameter] public string TextZuordnung { get; set; } = Resource.WBAD_MSG_PROJEKTZUORDNUNG;
+
+    [Parameter] public string KopieTitelText { get; set; } = Resource.STROMGL_TITEL_KOPIE;
+    [Parameter] public string KopieFrageText { get; set; } = Resource.STROMGL_FRAGE_KOPIE;
+
+    /// <summary>Der Zusatz, den der Namensvorschlag anhaengt („ - Kopie").</summary>
+    [Parameter] public string KopieZusatz { get; set; } = Resource.STROMGL_KOPIE_ZUSATZ;
+
+    /// <summary>Dublettenmeldung des Namensdialogs; <c>{0}</c> = Name.</summary>
+    [Parameter] public string TextNameVergeben { get; set; } = Resource.STROMGL_MSG_NAME_VERGEBEN;
+
+    /// <summary>Meldung bei leerem Namen.</summary>
+    [Parameter] public string TextNameLeer { get; set; } = Resource.STROMGL_MSG_NAME_LEER;
+
+    /// <summary>Erfolgsmeldung der Kopie; <c>{0}</c> = Quelle, <c>{1}</c> = Kopie.</summary>
+    [Parameter] public string VorlageKopiert { get; set; } = Resource.STROMGL_MSG_KOPIERT;
+
+    /// <summary>Meldung, wenn die Kopie nicht angelegt werden konnte.</summary>
+    [Parameter] public string TextKopieFehler { get; set; } = Resource.STROMGL_MSG_KOPIE_FEHLER;
+
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+
     /// <summary>
     /// Beschriftung des Übernahmeknopfes. Seit dem Anwenderentscheid #76 trägt
     /// der Knopf Klartext; das Zeichen setzt der Baustein je nach Anordnung
@@ -204,6 +390,9 @@
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in <c>help_mapping.txt</c>.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Stromganglinie.btn_Help";
+
+    /// <summary>Schlüssel des Hilfeknopfes am Formathinweis (W12-E-1).</summary>
+    [Parameter] public string HilfeSchluesselImport { get; set; } = "Form_Stromganglinie.btn_Help_Import";
 
     // =====================================================================
     // Zustand
@@ -225,6 +414,18 @@
     private int _naechsterSchluessel = StartIndex;
     private bool _verwaltungOffen;
 
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _laeuft;
+    private GanglinienImportLauf? _import;
+
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
+
+    private bool _kopieOffen;
+    private string _kopieVorschlag = "";
+
     /// <summary>Die Katalogzeilen (Prüfhilfe für die Tests).</summary>
     public IReadOnlyList<GanglinienKatalogZeile> Katalogliste => _katalog;
 
@@ -233,6 +434,25 @@
 
     /// <summary>Die gewählte Katalogzeile (Prüfhilfe für die Tests).</summary>
     public GanglinienKatalogZeile? Katalogzeile => _katalogZeile;
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für die Tests).</summary>
+    public string Meldung => _meldung;
+
+    // --- Wer darf was (kein Delegat, kein Knopf) -------------------------
+
+    private bool ImportMoeglich => DateiWaehlen is not null && Einlesen is not null;
+    private bool KopierenMoeglich => Kopieren is not null;
+    private bool LoeschenMoeglich => Loeschen is not null;
+
+    private bool KopierenErlaubt => _katalogZeile is not null && !_laeuft;
+    private bool LoeschenErlaubt => _katalogZeile is not null && !_laeuft;
+
+    /// <summary>
+    /// Der Grund am Knopf selbst — solange er SYNCHRON bekannt ist. Die
+    /// Projektzuordnung ist es nicht (sie fragt die Datenbank); sie meldet sich
+    /// nach dem Versuch als Banner (Staffelung W16b-E-6).
+    /// </summary>
+    private string? LoeschenGrund => _katalogZeile?.NurLesen == true ? TextSchreibgeschuetzt : null;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -243,7 +463,7 @@
         StateHasChanged();
     }
 
-    /// <summary>Lädt den Katalog neu — beim Aufbau und nach „Bearbeiten…".</summary>
+    /// <summary>Lädt den Katalog neu — beim Aufbau und nach jedem Katalogeingriff.</summary>
     public async Task KatalogLaden()
     {
         if (Katalog is null) return;
@@ -261,6 +481,13 @@
     {
         _katalogZeile = zeile;
         _projektZeile = null;
+        _meldung = "";
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
     }
 
     // =====================================================================
@@ -305,6 +532,108 @@
     }
 
     // =====================================================================
+    // Importieren (W12-E-1) - DERSELBE Weg wie in der Verwaltung
+    // =====================================================================
+
+    private async Task BeiImportieren()
+    {
+        if (!ImportMoeglich || _laeuft || _import is null) return;
+
+        _meldung = "";
+
+        // W13-B-1: Der Waehler DARF warten und wird await-et - nie synchron im
+        // Blazor-Ereignis ausgewertet.
+        string? pfad = await DateiWaehlen!(Dateifilter);
+        if (string.IsNullOrEmpty(pfad)) return;      // abgebrochen: nichts passiert
+
+        GanglinienImportErgebnis? erg = await _import.Starten(pfad, GanglinienRaster.Unbekannt);
+        if (erg is null) return;
+
+        if (!string.IsNullOrEmpty(erg.Meldung))
+            Melden(erg.Meldung, GanglinienImportLauf.StufeZu(erg));
+
+        if (erg.Ausgang == ImportAusgang.Erfolg) await KatalogLaden();
+    }
+
+    // =====================================================================
+    // Loeschen (W12-E-1) - zwei Sperren, dann die Rueckfrage
+    // =====================================================================
+
+    private async Task BeiLoeschen()
+    {
+        if (!LoeschenErlaubt || Loeschen is null) return;
+
+        GanglinienKatalogZeile? zeile = _katalogZeile;
+        if (zeile is null) return;
+
+        // Sperre 1: eine zugeordnete Ganglinie bleibt stehen (Muster W14b).
+        if (HatProjektzuordnung is not null && await HatProjektzuordnung(zeile.Bezeichner))
+        {
+            Melden(TextZuordnung, WarnStufe.Warnung);
+            return;
+        }
+
+        // Sperre 2: Auslieferungssaetze bleiben stehen. Delete prueft es selbst;
+        // hier steht es davor, damit die Rueckfrage gar nicht erst kommt.
+        if (zeile.NurLesen)
+        {
+            Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
+            return;
+        }
+
+        _loeschfrage = string.Format(VorlageLoeschfrage, zeile.Bezeichner);
+        _loeschfrageOffen = true;
+    }
+
+    private async Task LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true || Loeschen is null || _katalogZeile is null) return;
+
+        string name = _katalogZeile.Bezeichner;
+        bool weg = await Loeschen(name);
+        await KatalogLaden();
+        Melden(weg ? string.Format(VorlageGeloescht, name) : TextSchreibgeschuetzt,
+               weg ? WarnStufe.Erfolg : WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    // Speichern unter (W12-E-1) - Kopie unter neuem Namen
+    // =====================================================================
+
+    private void BeiSpeichernUnter()
+    {
+        if (!KopierenErlaubt || _katalogZeile is null) return;
+        _meldung = "";
+        _kopieVorschlag = _katalogZeile.Bezeichner + KopieZusatz;
+        _kopieOffen = true;
+    }
+
+    /// <summary>
+    /// Die Dublettenprüfung VOR dem Einfügen — gegen den geladenen Katalog, also
+    /// ohne zweite Abfrage und ohne Warten. Sie hält den Namensdialog offen und
+    /// sagt, warum; der Kern prüft dieselbe Bedingung ein zweites Mal
+    /// (<c>KopiereStamm</c> liefert dann <c>0</c>), damit kein UNIQUE-Fehler
+    /// durchkommt.
+    /// </summary>
+    private string? KopieNamePruefen(string name)
+        => _katalog.Any(z => string.Equals(z.Bezeichner, name, StringComparison.Ordinal))
+            ? string.Format(TextNameVergeben, name)
+            : null;
+
+    private async Task KopieFertig(string? name)
+    {
+        _kopieOffen = false;
+        if (string.IsNullOrWhiteSpace(name) || Kopieren is null || _katalogZeile is null) return;
+
+        string quelle = _katalogZeile.Bezeichner;
+        bool ok = await Kopieren(quelle, name!);
+        await KatalogLaden();
+        Melden(ok ? string.Format(VorlageKopiert, quelle, name) : TextKopieFehler,
+               ok ? WarnStufe.Erfolg : WarnStufe.Fehler);
+    }
+
+    // =====================================================================
     // Bearbeiten - die Verwaltung als Ueberlagerung
     // =====================================================================
 
@@ -334,7 +663,12 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_verwaltungOffen) return Task.CompletedTask;   // erst die Überlagerung
+
+        // Jede Ebene prueft ihre eigenen Schalter, bevor sie Esc fuer sich
+        // auswertet - so schliesst Esc immer nur die oberste (Muster W7.5).
+        if (_verwaltungOffen || _loeschfrageOffen || _kopieOffen
+            || _import?.EtwasOffen == true) return Task.CompletedTask;
+
         return Wizard ? Task.CompletedTask : Geschlossen.InvokeAsync(false);
     }
 }
