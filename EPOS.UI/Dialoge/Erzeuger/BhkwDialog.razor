@@ -22,7 +22,13 @@
 
    Alles Uebrige - geteilte Liste, Traegerwahl vor dem Hinzufuegen,
    Assistentenbetrieb, Tastatur - ist wie in HeizkesselDialog; dort steht die
-   ausfuehrliche Begruendung. *@
+   ausfuehrliche Begruendung.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
+   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
@@ -42,10 +48,13 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <div class="epos-auswahlpaar">
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
 
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-untergruppe">@LabelProjektliste</h2>
+        <Links>
             <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
                 <KindInhalt>
                     <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
@@ -58,18 +67,9 @@
             </Raster>
 
             <Textfeld Bezeichnung="@LabelSumme" Wert="@_summeText" NurLesen="true" />
-        </div>
+        </Links>
 
-        <div class="epos-auswahlpfeile">
-            <button type="button" class="epos-knopf" title="@LabelHinzu"
-                    disabled="@(_katalogZeile is null)" @onclick="BeiHinzu">◀</button>
-            <button type="button" class="epos-knopf" title="@LabelEntfernen"
-                    disabled="@(_projektZeile is null)" @onclick="BeiEntfernen">▶</button>
-        </div>
-
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-untergruppe">@LabelKatalogliste</h2>
-
+        <Rechts>
             <Auswahlfeld Bezeichnung="@LabelFilterBrennstoff" Eintraege="@_gruppenEintraege"
                          Auswahl="@_gruppe" AuswahlChanged="BeiGruppe" />
             <Auswahlfeld Bezeichnung="@LabelFilterLeistung" Eintraege="@_stufenEintraege"
@@ -96,8 +96,9 @@
                 <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
                         @onclick="BeiLoeschen">@BtnLoeschenText</button>
             </div>
-        </div>
-    </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
 
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>

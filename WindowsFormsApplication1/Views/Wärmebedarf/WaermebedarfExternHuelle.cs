@@ -112,8 +112,10 @@ namespace WindowsFormsApplication1
                 ["KanalBezeichnung"] = MyResource.Resource.KANAL_LABEL,
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
                 ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
-                ["BtnHinzuText"] = "◀",
-                ["BtnEntfernenText"] = "▶",
+                // Entscheid #76 (05.09.2026): Das Zeichen setzt der Baustein
+                // Zweispaltenauswahl je nach Anordnung - der Knopf traegt Klartext.
+                ["BtnHinzuText"] = Text_("AUSWAHL_BTN_UEBERNEHMEN", "In das Projekt übernehmen"),
+                ["BtnEntfernenText"] = Text_("AUSWAHL_BTN_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["BtnBearbeitenText"] = Text_("WBX_BTN_BEARBEITEN", "Einlesen/Bearbeiten.."),
                 ["BtnLoeschenText"] = Text_("WBX_BTN_LOESCHEN", "DB Ganglinie löschen"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,

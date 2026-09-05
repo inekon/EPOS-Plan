@@ -83,7 +83,7 @@ public class SolarkollektorenDialogTests : BunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-auswahlpfeile button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-mitte button").Count);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("Auswahl in Projekt:", ueberschriften);
@@ -200,7 +200,7 @@ public class SolarkollektorenDialogTests : BunitContext
     public void Der_linke_Pfeil_ist_ohne_Katalogwahl_gesperrt()
     {
         var cut = Aufbauen();
-        var pfeile = cut.FindAll(".epos-auswahlpfeile button");
+        var pfeile = cut.FindAll(".epos-zweispalten-mitte button");
 
         Assert.True(pfeile[0].HasAttribute("disabled"));    // ◀ ohne Katalogwahl
         Assert.False(pfeile[1].HasAttribute("disabled"));   // ▶ mit Projektzeile
@@ -218,7 +218,7 @@ public class SolarkollektorenDialogTests : BunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();  // Katalogzeile 2
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
 
         Assert.Equal(12, gerufen);
         Assert.Equal(2, zeilen.Count);
@@ -233,7 +233,7 @@ public class SolarkollektorenDialogTests : BunitContext
             new AufnahmeErgebnis(null, "Der Datensatz konnte nicht in das Projekt übernommen werden.", true));
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[0].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
 
         Assert.Single(zeilen);
         Assert.Contains("nicht in das Projekt", cut.Find(".epos-warnbanner").TextContent);
@@ -251,7 +251,7 @@ public class SolarkollektorenDialogTests : BunitContext
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[1]
            .QuerySelector("button")!.Click();
-        cut.FindAll(".epos-auswahlpfeile button")[1].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
 
         Assert.Single(zeilen);
         Assert.Same(a, zeilen[0]);

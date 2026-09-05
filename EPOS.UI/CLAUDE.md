@@ -179,6 +179,23 @@ entgegen — sie ist damit austauschbar.
   `epos-raster-huelle--frei` — der benannte Rückweg, damit niemand die Regel still
   aufweicht. Wache: `EPOS.UI.Tests/ListenrahmenTests` (Regel **und** Markup — eine
   bunit-Probe allein sieht eine Stilregel nicht, Lehre W6‑B‑1).
+- **Projekt ↔ Datenbank immer über `Zweispaltenauswahl`** (Anwenderentscheid **#76**
+  vom 05.09.2026). Ein Dialog mit einer Projektliste, einer Katalogliste und
+  Pfeilknöpfen dazwischen baut das Muster **nicht** selbst: Er nimmt den Baustein und
+  füllt `Links`, `Mitte` (die zwei Knöpfe als Parameter) und `Rechts`. Das Schema ist
+  das des BHKW-PLAN — Projekt **links**, Katalog **rechts**, die zwei Knöpfe in einer
+  schmalen Mittelspalte (`--epos-zweispalten-mitte`); auf schmalem Schirm bricht das
+  Paar untereinander um (`--epos-zweispalten-umbruch`, 900 px). **Filter gehören über
+  die Katalogliste in die RECHTE Spalte** — dort steht die Liste, auf die sie wirken —,
+  **Detailblöcke unter das Paar** über die volle Breite; was nur die Projektzeile
+  betrifft (Summenzeile, Kanalwahl), bleibt links. Der Umbruch ist eine **Medienabfrage
+  und kein `flex-wrap`**: Nur so weiß das Blatt, welches Pfeilzeichen gerade gilt — und
+  deshalb steht das Zeichen **nie im Ressourcentext**, sondern zweimal als
+  `aria-hidden`-Element im Knopf (◀▶ nebeneinander, ▲▼ untereinander). Elf Dialoge
+  folgen der Regel; **eine** Liste plus Detailblock ist etwas anderes und bleibt es
+  (`KatalogBrowserDialog`, `WaermepumpenDialog`). Wache:
+  `EPOS.UI.Tests/Bausteine/ZweispaltenauswahlTests` — sie führt die Liste der elf und
+  fällt rot aus, sobald eine Komponente die Pfeilspalte wieder selbst baut.
 - Bezeichner und Kommentare deutsch; neue `.razor`/`.cs` UTF-8 **mit** BOM, LF.
 - Jeder Baustein bekommt einen `bunit`-Test in `EPOS.UI.Tests` (Darstellung, Callback,
   Zustandsklasse).
@@ -216,6 +233,7 @@ entgegen — sie ist damit austauschbar.
 | `KiKnopf` | Der Einstieg in den KI-Assistenten aus einer Maske: `Beschriftung`, `Kurztext`, `Sichtbar` (aus `KiEinwilligung.Abgeschaltet` — der Abschalter blendet ihn AUS, statt ihn zu sperren), `Gewaehlt`. **Links neben dem `InfoKnopf`** (Kollisionsregel `InfoKnopf.cs:99` — in einer Knopfleiste ist das die Reihenfolge, kein gerechneter Pixelabstand). Er ist nicht tabulierbar und zieht den Fokus nicht aus dem bearbeiteten Feld; **er öffnet nichts**, er meldet | `Allgemein/KI/KiAufrufKnopf.cs` (270 Z., mit W14a ohne Aufrufer; iU9‑W15b.5) |
 | `Diagramm` + `Diagrammbereich` | **Der Rahmen, in dem JEDES Renderer-Bild steht** (Windows-Abnahme 05.09.2026, Befund A‑1: „Allgemein bei Charts: das Zoomen funktioniert nicht"). Zwei Zoomstufen: der **Bildzoom** — Mausrad um den Zeiger, Ziehen, Doppelklick, Kneifgeste, Tasten `+ − 0`, Anzeige „×2,5", Knopf „1:1" — läuft ganz im Browser (CSS-Transform, kein Neuzeichnen); der **Datenzoom** meldet ein aufgezogenes Rechteck als `Diagrammbereich` (Anteile 0…1 des BILDES, mehr lässt sich an einem PNG nicht messen), und der Wirt lässt den Kern das Bild mit diesem Achsenbereich neu zeichnen. Ohne `BereichGewaehlt` gibt es den Knopf „Bereich" nicht. Zweiter Ort mit JavaScript in dieser Bibliothek: `wwwroot/epos-diagramm.js`, über `import()` geladen — keine Wirtsseite braucht eine `<script>`-Zeile. Lädt das Modul nicht, steht das Bild starr da wie vorher | `System.Windows.Forms.DataVisualization.Charting.Chart` — Achsenzoom, Rollbalken und Zurücksetzen der siebzehn Zeichenflächen; mit iU9‑W11b (A‑7, Risiko R‑W11‑5) entfallen und hier zurückgeholt |
 | `Baumansicht` + `Baumknoten` | Ein vierstufiger Baum: `role="tree"/"treeitem"/"group"`, `aria-level`/`setsize`/`posinset`, `aria-expanded` NUR an Knoten mit Kindern, roving `tabindex` über die **abgeflachte Sichtliste** (↓↑ → ← Pos1 Ende Enter/Leertaste, kein Typeahead), Einrückung per CSS, `forced-colors`. Das Dreieck ist ein eigenes 44‑px‑Klickziel und **wählt nicht**; das Kennzeichen (»[Auslieferung]«) steht als eigenes `<span>` neben dem Text, nicht darin. Der Aufklappzustand kommt aus den DATEN (`VonVornOffen`) und überlebt einen Neuaufbau, solange die Schlüssel gleich bleiben. **Kein Kontextmenü, keine Mehrfachauswahl** — die kleinste tragfähige Fassung für den einen Nutzer (R‑W14c‑8) | `Views/Admin/Form_KatalogDubletten._tree` — der **einzige** `TreeView` des Bestands (iU9‑W14c.4); die Daten kommen als `DublettenBaum` aus dem Kern |
+| `Zweispaltenauswahl` | Die EINE Projekt/Datenbank-Auswahl des Hauses (Anwenderentscheid **#76**, 05.09.2026): `Links` (Projektliste), `Mitte` (die zwei Richtungsknöpfe als Parameter — Text, Kurztext, Sperrzustand, Rückruf), `Rechts` (Katalog samt Filtern und Katalogknöpfen), dazu `NurRechts` für eine Verwaltungsbetriebsart ohne Projekt. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander — der Umbruch ist eine **Medienabfrage**, kein `flex-wrap`, weil das Pfeilzeichen daran hängt: Jeder Knopf trägt **beide** Zeichen als `aria-hidden`-Element (◀▶ / ▲▼), sichtbar ist je Breite eines. **Elf** Dialoge nutzen ihn; die Liste steht in `ZweispaltenauswahlTests` | die elf handgeschriebenen Fassungen von `epos-auswahlpaar`/`epos-auswahlspalten` aus den Wellen 6, 7, 9 und 12; im Bestand `Form_Gebaeude` (252/63/436 px) und `Form_Heizkessel` (316/88/313 px) |
 
 ## Bilder (`wwwroot/bilder/`)
 

@@ -93,9 +93,17 @@ public class HeizkesselDialogTests : BunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-auswahlpfeile button").Count);
-        Assert.Equal("◀", cut.FindAll(".epos-auswahlpfeile button")[0].TextContent);
-        Assert.Equal("▶", cut.FindAll(".epos-auswahlpfeile button")[1].TextContent);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-mitte button").Count);
+        // Entscheid #76: Jeder Knopf traegt BEIDE Zeichen im Markup - das Stilblatt
+        // zeigt je nach Anordnung eines davon - und dazu seine Aufgabe im Klartext.
+        Assert.Equal("◀", cut.FindAll(".epos-zweispalten-mitte button")[0].QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
+        Assert.Equal("▲", cut.FindAll(".epos-zweispalten-mitte button")[0].QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
+        Assert.Equal("▶", cut.FindAll(".epos-zweispalten-mitte button")[1].QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
+        Assert.Equal("▼", cut.FindAll(".epos-zweispalten-mitte button")[1].QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
+        Assert.Equal("In das Projekt übernehmen",
+                     cut.FindAll(".epos-zweispalten-mitte button")[0].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
+        Assert.Equal("Aus dem Projekt entfernen",
+                     cut.FindAll(".epos-zweispalten-mitte button")[1].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("ausgewählt im Projekt", ueberschriften);
@@ -208,7 +216,7 @@ public class HeizkesselDialogTests : BunitContext
         // btn_Kessel_Hinzu_Click: listBox_Kessel_DB.Text == "" -> return.
         var cut = Aufbauen();
 
-        Assert.True(cut.FindAll(".epos-auswahlpfeile button")[0].HasAttribute("disabled"));
+        Assert.True(cut.FindAll(".epos-zweispalten-mitte button")[0].HasAttribute("disabled"));
     }
 
     [Fact]
@@ -217,7 +225,7 @@ public class HeizkesselDialogTests : BunitContext
         var cut = Aufbauen();
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
 
         Assert.True(cut.Instance.Traegerwahl);
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
@@ -236,7 +244,7 @@ public class HeizkesselDialogTests : BunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
         cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.False(cut.Instance.Traegerwahl);
@@ -252,7 +260,7 @@ public class HeizkesselDialogTests : BunitContext
             aufnehmen: (_, _) => new AufnahmeErgebnis(null, "Der Energieträger konnte nicht angelegt werden.", true));
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
 
         // Der Traegerdialog laesst OK erst zu, wenn ein Variantenname dasteht.
         cut.Find(".epos-ueberlagerung input[type=text]").Input("Erdgas E Variante");
@@ -270,7 +278,7 @@ public class HeizkesselDialogTests : BunitContext
             "Der ausgewählte Heizkessel wurde in den Stammdaten nicht gefunden."));
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[0].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
 
         Assert.False(cut.Instance.Traegerwahl);
         Assert.Contains("nicht gefunden", cut.Instance.Meldung);
@@ -290,7 +298,7 @@ public class HeizkesselDialogTests : BunitContext
         // Die ZWEITE Zeile waehlen und entfernen - bei Namensgleichheit muss genau sie
         // gehen (der Bestand traf ueber ListViewItem.Tag, nicht ueber den Namen).
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
-        cut.FindAll(".epos-auswahlpfeile button")[1].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
 
         Assert.Single(zeilen);
         Assert.Equal(1, zeilen[0].Schluessel);
@@ -304,7 +312,7 @@ public class HeizkesselDialogTests : BunitContext
         var zeilen = new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100), Zeile(2, "Kessel B", 200) };
         var cut = Aufbauen(zeilen);
 
-        cut.FindAll(".epos-auswahlpfeile button")[1].Click();
+        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
 
         Assert.Single(zeilen);
         Assert.Equal(2, cut.Instance.Projektzeile!.Schluessel);
@@ -357,7 +365,7 @@ public class HeizkesselDialogTests : BunitContext
         var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return true; });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[1].Click();
+        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[1].Click();
 
         Assert.Single(cut.FindAll(".epos-rueckfrage"));
         Assert.Empty(geloescht);
@@ -374,7 +382,7 @@ public class HeizkesselDialogTests : BunitContext
         var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return true; });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[1].Click();
+        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[1].Click();
         cut.FindAll(".epos-rueckfrage button")[1].Click();
 
         Assert.Empty(geloescht);
@@ -391,7 +399,7 @@ public class HeizkesselDialogTests : BunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-auswahlspalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
+        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
 
         Assert.Equal("Kessel A", gefragt);
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));

@@ -26,7 +26,15 @@
    (W8.4).
 
    TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
-   Enter ist nicht belegt. *@
+   Enter ist nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Damit steht dieser Dialog wieder wie sein Vorbild: Projektliste
+   links, Katalog rechts, die zwei Knoepfe in einer schmalen Mittelspalte
+   (Form_Gebaeude.resx: 252 / 63 / 436 px). Auf schmalem Schirm bricht das Paar
+   untereinander um - das Schema, das hier seit W9 stand. Das Pfeilzeichen setzt
+   der Baustein je nach Anordnung; die Beschriftung traegt nur noch Worte. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
@@ -45,54 +53,44 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <div class="epos-auswahlspalten">
+    @* Die zwei Listen, die Pfeilspalte und - in der Verwaltung - der Katalog
+       allein: alles im Baustein (Anwenderentscheid #76). "Admin" ist genau die
+       Betriebsart Form_Gebaeude_Load:608-620, in der es keine Projektliste
+       gibt; sie wird zu NurRechts. *@
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+                        NurRechts="@Admin"
+                        UebernehmenText="@BtnHinzuText" UebernehmenHinweis="@BtnHinzuHinweis"
+                        UebernehmenGesperrt="@(_katalogzeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@BtnEntfernenText" EntfernenHinweis="@BtnEntfernenHinweis"
+                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
 
-        @* --------------------------------------- links: Projektliste ------ *@
-        @if (!Admin)
-        {
-            <div class="epos-auswahlspalte">
-                <h2 class="epos-abschnitt">@LabelProjektliste</h2>
-                <div class="epos-raster-huelle">
-                    <table class="epos-raster">
-                        <thead>
-                            <tr>
-                                <th>@SpalteWahl</th>
-                                <th>@SpalteName</th>
+        <Links>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GebaeudeProjektZeile zeile in Zeilen)
+                        {
+                            GebaeudeProjektZeile z = zeile;
+                            <tr class="@(IstGewaehlt(z) ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@IstGewaehlt(z)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => ProjektzeileWaehlen(z)" />
+                                </td>
+                                <td>@z.Name</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (GebaeudeProjektZeile zeile in Zeilen)
-                            {
-                                GebaeudeProjektZeile z = zeile;
-                                <tr class="@(IstGewaehlt(z) ? "epos-zeile--markiert" : null)">
-                                    <td>
-                                        <Zeilenwahl Gewaehlt="@IstGewaehlt(z)" Kurztext="@SpalteWahl"
-                                                    Gewaehltwerden="() => ProjektzeileWaehlen(z)" />
-                                    </td>
-                                    <td>@z.Name</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                @* Die zwei Richtungsknoepfe (Befund W9-B-3). Sie tragen ihre
-                   Aufgabe im Klartext UND als Kurztext; das Zeichen zeigt in die
-                   Richtung, in die die Zeile wandert - die Listen stehen
-                   UNTEREINANDER, also nach oben und nach unten. *@
-                <div class="epos-leiste">
-                    <button type="button" class="epos-knopf" disabled="@(_katalogzeile is null)"
-                            title="@BtnHinzuHinweis" @onclick="BeiHinzu">@BtnHinzuText</button>
-                    <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                            title="@BtnEntfernenHinweis" @onclick="BeiEntfernen">@BtnEntfernenText</button>
-                </div>
+                        }
+                    </tbody>
+                </table>
             </div>
-        }
+        </Links>
 
-        @* --------------------------------------- rechts: Katalog ---------- *@
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-abschnitt">@LabelKatalog</h2>
-
+        <Rechts>
             <Gruppenkopf Titel="@GruppeFilter">
                 <KindInhalt>
                     <Optionsgruppe Bezeichnung="@LabelVerwendung" Eintraege="@Verwendungseintraege"
@@ -146,8 +144,9 @@
                             @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
                 }
             </div>
-        </div>
-    </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
 
     @* --------------------------------------------- Detailblock ------------ *@
     <Gruppenkopf Titel="@GruppeVerbrauch">
@@ -311,21 +310,26 @@
     ///
     /// <para><b>Befund W9‑B‑3</b> der Windows-Abnahme vom 05.09.2026: „nicht so recht
     /// klar, auf was sich die oberen 2 Buttons beziehen." Der Vorläufer trug hier die
-    /// blanken Zeichen „◀" und „▶" — bei NEBENEINANDER stehenden Listen sagten sie die
-    /// Richtung, in der Razor-Fassung stehen die beiden Listen aber UNTEREINANDER, und
-    /// dann zeigt ein waagerechter Pfeil ins Leere. Beschriftung und Kurztext benennen
-    /// jetzt die Aufgabe; das Zeichen zeigt in die Richtung, in die die Zeile wandert.
-    /// Das Anordnungsschema selbst ist ein offener Anwenderentscheid und bleibt
-    /// unberührt.</para>
+    /// blanken Zeichen „◀" und „▶"; Beschriftung und Kurztext benennen seither die
+    /// Aufgabe.</para>
+    ///
+    /// <para><b>Anwenderentscheid #76</b> vom selben Tag hat das Anordnungsschema
+    /// nachgezogen: Die Listen stehen wieder NEBENEINANDER und brechen erst auf
+    /// schmalem Schirm untereinander um. Das Zeichen steht deshalb NICHT mehr in
+    /// diesem Text — es hängt an der Anordnung und kommt aus dem Baustein
+    /// <c>Zweispaltenauswahl</c>.</para>
     /// </summary>
-    [Parameter] public string BtnHinzuText { get; set; } = "▲ In das Projekt übernehmen";
+    [Parameter] public string BtnHinzuText { get; set; } = "In das Projekt übernehmen";
 
     /// <summary>Kurztext des Übernahmeknopfes — <c>GEB_BTN_UEBERNEHMEN_HINWEIS</c>.</summary>
     [Parameter] public string BtnHinzuHinweis { get; set; } =
         "Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen";
 
-    /// <summary>Beschriftung des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN</c>.</summary>
-    [Parameter] public string BtnEntfernenText { get; set; } = "▼ Aus dem Projekt entfernen";
+    /// <summary>
+    /// Beschriftung des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN</c>. Ohne Zeichen,
+    /// aus demselben Grund wie oben.
+    /// </summary>
+    [Parameter] public string BtnEntfernenText { get; set; } = "Aus dem Projekt entfernen";
 
     /// <summary>Kurztext des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN_HINWEIS</c>.</summary>
     [Parameter] public string BtnEntfernenHinweis { get; set; } =

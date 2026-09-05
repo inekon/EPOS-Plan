@@ -73,6 +73,18 @@ public class WaermebedarfExternDialogTests : BunitContext
     private static IElement Knopf(IRenderedComponent<WaermebedarfExternDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
+    /// <summary>
+    /// Die zwei Richtungsknöpfe stehen seit dem Anwenderentscheid #76 in der
+    /// Mittelspalte des Bausteins <c>Zweispaltenauswahl</c>; ihr Zeichen ist ein
+    /// eigenes Element neben dem Text, sie sind also nicht mehr über ihren
+    /// Text zu finden.
+    /// </summary>
+    private static IElement Uebernehmen(IRenderedComponent<WaermebedarfExternDialog> cut)
+        => cut.FindAll(".epos-zweispalten-mitte button")[0];
+
+    private static IElement Entfernen(IRenderedComponent<WaermebedarfExternDialog> cut)
+        => cut.FindAll(".epos-zweispalten-mitte button")[1];
+
     // =================================================================================
     // Feldbestand
     // =================================================================================
@@ -91,8 +103,12 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.Single(cut.FindAll("select"));
         Assert.Contains("Kanal", cut.Markup);
 
-        foreach (string t in new[] { "◀", "▶", "DB Ganglinie löschen", "OK", "Abbrechen" })
+        foreach (string t in new[] { "DB Ganglinie löschen", "OK", "Abbrechen" })
             Assert.NotNull(Knopf(cut, t));
+
+        // Die zwei Pfeile: Klartext statt blossem Zeichen (Entscheid #76).
+        Assert.Contains("In das Projekt übernehmen", Uebernehmen(cut).TextContent);
+        Assert.Contains("Aus dem Projekt entfernen", Entfernen(cut).TextContent);
     }
 
     [Fact]
@@ -169,7 +185,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         var cut = Aufbauen(zeilen: zeilen, geaendert: () => gemeldet = true);
 
         cut.FindAll("button.epos-anlagenwahl").First().Click();   // erste Katalogzeile
-        Knopf(cut, "◀").Click();
+        Uebernehmen(cut).Click();
 
         Assert.Single(zeilen);
         Assert.Equal("HEIZUNG", zeilen[0].Kanal);
@@ -193,7 +209,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         var cut = Aufbauen(zeilen: zeilen);
 
         cut.FindAll("button.epos-anlagenwahl")[1].Click();
-        Knopf(cut, "▶").Click();
+        Entfernen(cut).Click();
 
         Assert.Single(zeilen);
         Assert.Equal(1, zeilen[0].IdZ);
@@ -298,4 +314,32 @@ public class WaermebedarfExternDialogTests : BunitContext
 
         Assert.True(ergebnis);
     }
+
+    // =================================================================================
+    // Die Anordnung - Anwenderentscheid #76 vom 05.09.2026
+    // =================================================================================
+
+    /// <summary>
+    /// Der Anwender hat nach der Windows-Abnahme entschieden, dass auch dieser Dialog
+    /// dem BHKW-PLAN-Schema folgt: Projektliste LINKS, Katalog RECHTS, die zwei
+    /// Pfeilknöpfe in einer schmalen Mittelspalte dazwischen. Bis dahin standen die
+    /// beiden Listen untereinander und die Knöpfe unter der Projektliste.
+    /// </summary>
+    [Fact]
+    public void Projektliste_links_Katalog_rechts_Pfeile_dazwischen()
+    {
+        var cut = Aufbauen();
+
+        var bereiche = cut.FindAll(".epos-zweispalten > div")
+                          .Select(e => e.ClassName ?? "").ToList();
+
+        Assert.Equal(3, bereiche.Count);
+        Assert.Contains("epos-zweispalten-spalte--links", bereiche[0]);
+        Assert.Contains("epos-zweispalten-mitte", bereiche[1]);
+        Assert.Contains("epos-zweispalten-spalte--rechts", bereiche[2]);
+
+        // Beide Listen stehen weiterhin in ihrem Rahmen (Befund W9-B-2).
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
+    }
+
 }

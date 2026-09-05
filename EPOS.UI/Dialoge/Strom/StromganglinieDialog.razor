@@ -13,8 +13,9 @@
    Add_Stromganglinie). Deshalb gibt die Huelle die Liste zurueck und legt sie
    nicht selbst ab (Risiko R-W12-4).
 
-   DASSELBE MUSTER WIE DIE ERZEUGER UND DIE SOLARGANGLINIE (epos-auswahlpaar,
-   iU9-W6.3): zwei Listen, eine schmale Pfeilspalte dazwischen. Die Zeile traegt
+   DASSELBE MUSTER WIE DIE ERZEUGER UND DIE SOLARGANGLINIE (Baustein
+   Zweispaltenauswahl, Anwenderentscheid #76 vom 05.09.2026): zwei Listen, eine
+   schmale Pfeilspalte dazwischen, auf schmalem Schirm untereinander. Die Zeile traegt
    Schluessel (die Zuordnung) und GanglinieId (den Katalogeintrag) GETRENNT -
    dieselbe Ganglinie darf einem Projekt mehrfach zugeordnet sein.
 
@@ -37,7 +38,13 @@
    Zwilling Wizard_Stromlastgang ohne zweiten Bau uebernehmen kann
    (Befund W12-B10, Risiko R-W12-8).
 
-   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt. *@
+   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
+   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
 
 @namespace EPOS.UI.Dialoge.Strom
 
@@ -48,10 +55,13 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
-    <div class="epos-auswahlpaar">
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
 
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-untergruppe">@LabelProjektliste</h2>
+        <Links>
             <div class="epos-raster-huelle">
                 <table class="epos-raster">
                     <thead>
@@ -75,17 +85,9 @@
                     </tbody>
                 </table>
             </div>
-        </div>
+        </Links>
 
-        <div class="epos-auswahlpfeile">
-            <button type="button" class="epos-knopf" title="@LabelHinzu"
-                    disabled="@(_katalogZeile is null)" @onclick="BeiHinzu">@HinzufuegenText</button>
-            <button type="button" class="epos-knopf" title="@LabelEntfernen"
-                    disabled="@(_projektZeile is null)" @onclick="BeiEntfernen">@EntfernenText</button>
-        </div>
-
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-untergruppe">@LabelKatalogliste</h2>
+        <Rechts>
             <div class="epos-raster-huelle">
                 <table class="epos-raster">
                     <thead>
@@ -116,8 +118,9 @@
                     <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BearbeitenText</button>
                 </div>
             }
-        </div>
-    </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {
@@ -185,16 +188,18 @@
     [Parameter] public string LabelKatalogliste { get; set; } = Resource.STROMGL_LBL_KATALOG;
     [Parameter] public string SpalteWahl { get; set; } = Resource.KFAK_SP_WAHL;
     [Parameter] public string SpalteName { get; set; } = Resource.STROMGL_SPALTE_BEZEICHNER;
-    [Parameter] public string HinzufuegenText { get; set; } = Resource.STROMGL_BTN_HINZUFUEGEN;
-    [Parameter] public string EntfernenText { get; set; } = Resource.STROMGL_BTN_ENTFERNEN;
     [Parameter] public string BearbeitenText { get; set; } = Resource.STROMGL_BTN_BEARBEITEN;
     [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
 
-    /// <summary>Kurztext des ◀-Knopfes — er trägt sonst nur ein Zeichen.</summary>
+    /// <summary>
+    /// Beschriftung des Übernahmeknopfes. Seit dem Anwenderentscheid #76 trägt
+    /// der Knopf Klartext; das Zeichen setzt der Baustein je nach Anordnung
+    /// (<c>STROMGL_BTN_HINZUFUEGEN</c> war nur „◀" und ist damit erledigt).
+    /// </summary>
     [Parameter] public string LabelHinzu { get; set; } = Resource.HZK_TIP_HINZU;
 
-    /// <summary>Kurztext des ▶-Knopfes.</summary>
+    /// <summary>Beschriftung des Entfernenknopfes.</summary>
     [Parameter] public string LabelEntfernen { get; set; } = Resource.HZK_TIP_ENTFERNEN;
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in <c>help_mapping.txt</c>.</summary>
