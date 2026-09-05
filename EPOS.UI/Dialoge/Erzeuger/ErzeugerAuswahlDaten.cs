@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Erzeuger;
+﻿using System.Globalization;
+
+namespace EPOS.UI.Dialoge.Erzeuger;
 
 /// <summary>
 /// Eine Zeile der linken Liste „ausgewählt im Projekt" (iU9-W6.3 … W6.7).
@@ -100,7 +102,32 @@ public sealed record ErzeugerDetail(
     string Bezeichner,
     string Beschreibung,
     IReadOnlyList<(string Feld, string Wert)> Felder,
-    (string Feld, bool Wert)? Schalter = null);
+    (string Feld, bool Wert)? Schalter = null)
+{
+    /// <summary>
+    /// Ist der Anzeigewert eine ZAHL? Dann bekommt sein Feld im
+    /// <c>Formularraster</c> die kurze Breite — „290" hinter
+    /// „thermische Leistung [kWth]:" braucht keine halbe Blockbreite, und die
+    /// Einheit steht ohnehin schon in der Beschriftung.
+    ///
+    /// <para>Anwenderfoto „Verwaltung BHKW" vom 05.09.2026 (iU8‑E‑2, Paket P1):
+    /// „Stelle diesen Dialog kompakter dar, insbesondere Daten zum
+    /// BHKW-Modul unten." Die Entscheidung steht HIER und nicht in sechs
+    /// Dialogen, weil alle sechs Erzeuger-Projektmasken denselben
+    /// Detailblock zeichnen. Sie hängt am WERT, nicht an der Beschriftung:
+    /// Die Feldnamen kommen je Erzeugerart anders herein, eine Zahl bleibt
+    /// eine Zahl.</para>
+    ///
+    /// <para>Beide Kulturen werden gefragt — der Wert wird von der Hülle in
+    /// der laufenden Kultur formatiert („0,9" auf Deutsch), Ganzzahlen sind
+    /// in beiden gleich. Rät die Probe falsch, ändert sich nur die BREITE
+    /// eines Anzeigefeldes.</para>
+    /// </summary>
+    public static bool IstZahl(string wert)
+        => !string.IsNullOrWhiteSpace(wert)
+           && (double.TryParse(wert, NumberStyles.Any, CultureInfo.CurrentCulture, out _)
+               || double.TryParse(wert, NumberStyles.Any, CultureInfo.InvariantCulture, out _));
+}
 
 /// <summary>
 /// Was der Kern beisteuert, bevor eine Zeile aufgenommen werden kann — die Werte, die
