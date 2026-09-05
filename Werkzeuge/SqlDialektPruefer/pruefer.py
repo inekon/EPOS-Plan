@@ -1091,9 +1091,13 @@ def main():
                     "%s -> Schema schreibt %s" % (a, "/".join(b)) for a, b in umlaute))
             if fehler and not dyn:
                 grund.append(("SYNTAX " if ist_syntax(fehler) else "OBJEKT ") + fehler)
-            elif fehler and dyn and _objekt_im_text(fehler, sql):
+            elif fehler and dyn and _objekt_im_text(fehler, sql) \
+                    and not _spaltenliste_ohne_tabelle(fehler, sql):
                 # Der bemaengelte Name steht WOERTLICH im Quelltext - er stammt also
                 # nicht aus einer Luecke. Auch ein dynamischer Text ist dann falsch.
+                # AUSNAHME: eine SELECT-Spaltenliste, deren FROM erst spaeter
+                # angehaengt wird - dort scheitert ohne Tabellenbezug jeder
+                # Spaltenname, auch der richtige (siehe _spaltenliste_ohne_tabelle).
                 grund.append("OBJEKT " + fehler)
 
             if grund:
@@ -1137,6 +1141,33 @@ def main():
 
 OBJEKT_RE = re.compile(
     r"no such (?:table|column): (?:main\.)?(\S+)|table (\S+) has no column named (\S+)")
+
+SPALTE_FEHLT_RE = re.compile(r"no such column: ", re.I)
+SELECT_OHNE_FROM_RE = re.compile(r"(?is)^\s*SELECT\b(?:(?!\bFROM\b).)*$")
+
+
+def _spaltenliste_ohne_tabelle(fehler, sql):
+    """
+    Ist der Text eine SELECT-SPALTENLISTE, deren ``FROM`` erst spaeter angehaengt wird?
+
+    Dann kann EXPLAIN ueber die Spalten NICHTS sagen: Ohne Tabellenbezug scheitert
+    jeder Spaltenname, auch der richtige - die Meldung sagt etwas ueber den
+    Ausschnitt, nicht ueber den Quelltext.
+
+    Der Fall entsteht, wenn der Rumpf einer Anweisung in einer Schleife waechst und
+    das ``FROM`` in einer ANDEREN Anweisung dazukommt. Einziger Vertreter im Bestand
+    ist ``WizardCtrl.FachspaltenSelect``: Die Spaltenliste entsteht aus
+    ``DataRepository.SpaltenVonTabelle("Tab_Energieanlagen")``, und erst das
+    ``return`` haengt ``FROM Tab_Energieanlagen WHERE ID_Projekt = ?`` an. Der Leser
+    dieses Pruefers sieht davon nur die Liste.
+
+    Eng gehalten: Es greift NUR bei fehlender SPALTE (eine fehlende TABELLE bliebe
+    ein Fund) und nur, solange im Text ueberhaupt kein ``FROM`` steht. Ein Text mit
+    ``FROM`` behaelt seinen Tabellenbezug und wird weiter voll beurteilt.
+    """
+    if not SPALTE_FEHLT_RE.search(fehler or ""):
+        return False
+    return SELECT_OHNE_FROM_RE.match(sql or "") is not None
 
 
 def _objekt_im_text(fehler, sql):

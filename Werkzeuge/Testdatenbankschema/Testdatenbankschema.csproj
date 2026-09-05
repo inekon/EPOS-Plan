@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Testdatenbankschema - zieht Referenzlaeufe\Kenndaten_Test.sqlite auf den
+    Zielschemastand nach (Aufgabe 92, 05.09.2026).
+
+    WARUM ES DAS GIBT. Die eingecheckte Testdatenbank ist die Messlatte des
+    SQL-Dialektpruefers: Er haelt jeden SQL-Text des Bestands mit EXPLAIN gegen
+    genau diese Datei. Steht sie auf einem aelteren Schemastand als der Quelltext,
+    meldet der Pruefer "no such column" fuer Spalten, die es im Programm laengst
+    gibt - so geschehen nach der Zusammenfuehrung der Rechner-2-Linie (Merge 5),
+    die mit den Schritten 63/64 zehn PV-Spalten anlegte.
+
+    Von Hand Spalten anzulegen waere der falsche Weg: Dann stuende in der Datei
+    eine zweite Schreibweise derselben Spalte. Dieses Werkzeug faehrt deshalb
+    DIESELBEN Texte wie SchemaMigration - den Spaltenkatalog (SchemaKatalog) und
+    die Typuebersetzung (StilleDb.SqliteSpaltenTyp), fuer Schritt 62 die
+    DELETE-Texte aus KlimaWaisenBereinigung. Die Migration selbst lebt im
+    Anwendungsprojekt (net10.0-windows) und ist auf Linux unerreichbar; ihre
+    QUELLEN liegen alle im Kern.
+
+    net10.0 ohne Windows-Bindung - laeuft damit auch auf Linux und in der CI.
+    Gehoert bewusst NICHT in WP-Plan.sln (Muster: Werkzeuge\Formularkarte).
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Testdatenbankschema</AssemblyName>
+    <RootNamespace>Testdatenbankschema</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -217,3 +217,61 @@ Referenzlauf **355/355 byte-gleich** zur Basis `2026-09-05_M5_nach-Merge5` — e
 kein Rechenweg ist berührt. Die Basis bleibt deshalb M5; ein eigener Referenzordner wäre eine Kopie.
 
 Der Merge selbst lief im Hauptbaum direkt (`git merge --no-ff ed71d738`), ohne Kopierliste.
+
+---
+
+## 8. Die Testdatenbank auf Stand 64 (05.09.2026, Aufgabe 92)
+
+Der Befund aus Abschnitt 5.2 hatte eine zweite Seite, die erst der SQL-Dialektprüfer sichtbar
+machte: `Referenzlaeufe/Kenndaten_Test.sqlite` stand auf dem **Freeze-Stand 61**, der Quelltext
+seit Merge 5 auf **64**. Die Kern-Tests waren grün, weil `TestDatenbank` die zehn PV-Spalten auf
+ihrer Arbeitskopie nachzieht — die eingecheckte Datei selbst blieb alt. Der Prüfer hält seine
+`EXPLAIN` aber gegen genau diese Datei und meldete deshalb **zehn Fundstellen** (Gate-Regel: 0):
+
+| Fundstellen | Ursache |
+|---|---|
+| `KomponentenUebernahmeCtrl.cs:410`, `WErzeugerCtrl.cs:112` | `PV_WrWirkungsgrad` (Schritt 63) fehlte in `Tab_Energieanlagen` |
+| `PhotovoltaikCtrl.cs:118/291`, `PhotovoltaikStammCtrl.cs:106/237/282` | `Technologie` (Schritt 64) fehlte in `Tab_PV` / `Tab_PV_STAMM` |
+| `ProjektPhotovoltaikCtrl.cs:84/97` | `Degradation` (Schritt 64) fehlte in `Tab_ProjektPhotovoltaik` |
+| `WizardCtrl.cs:1032` | **kein Schemafehler** — siehe unten |
+
+**Die Datei steht jetzt auf 64.** Nachgezogen wurde sie nicht von Hand, sondern mit dem neuen
+Werkzeug `Werkzeuge/Testdatenbankschema`, das dieselben Quellen fährt wie `SchemaMigration`:
+den Spaltenkatalog (`SchemaKatalog.Schritt63_PvAnlagenparameter`,
+`Schritt64_PvModellwahl`, `Schritt64_PvStammUndDegradation`), die Typübersetzung
+(`StilleDb.SqliteSpaltenTyp`, für Schritt 63 wie dort `REAL` ausgeschrieben) und für Schritt 62
+die zwei `DELETE`-Texte aus `KlimaWaisenBereinigung`. Es legt keine DDL aus zweiter Hand an, ist
+idempotent (zweiter Lauf: 0 Spalten) und läuft auf Linux — die Migration selbst bleibt im
+Anwendungsprojekt und ist dort unerreichbar. Aufruf und Wiederholung stehen in
+[`BETRIEB_SQLITE.md`](../../../BETRIEB_SQLITE.md) Abschnitt 6.5.
+
+* **Schritt 62** (Klimawaisen): 0 Waisen in `Tab_Solar_STAMM` und `Tab_Klimadaten_STAMM` — der
+  dokumentierte Leerlauf, gemessen statt geglaubt.
+* **Schritt 63/64:** zehn Spalten angelegt, kein DML — beide Schritte sind ergebnisneutral.
+* **Größe:** 77 000 704 → **68 157 440 Byte** (73,4 → 65,0 MB). Das `VACUUM` am Ende gibt mehr
+  frei, als die zehn Spalten kosten; die Datei wird also **kleiner**.
+
+**Der Nachweis der Ergebnisneutralität** ist der Referenzlauf **vor und nach** dem Nachziehen:
+`EPOS.Referenzlauf lauf --projekte 1030,1007,1017` gegen dieselbe Datei, `diff -r` über beide
+Zielordner. Alle **72 CSV byte-gleich**; abweichend nur `protokoll.txt` in Zeitstempel, Zielordner,
+Dateigröße und Laufdauer. Damit ist belegt, was die Schrittbeschreibungen zusagen: Die Migration
+verschiebt keinen Rechenwert.
+
+### `WizardCtrl.cs:1032` — kein Schemafehler, eine Lücke im Leser des Prüfers
+
+`WizardCtrl.FachspaltenSelect` baut `SELECT ID, ID_Type, Bezeichner` und hängt in einer Schleife
+die Fachspalten an; das `FROM Tab_Energieanlagen WHERE ID_Projekt = ?` kommt erst im `return`
+dazu. Der Prüfer sieht nur die Spaltenliste — und **ohne Tabellenbezug scheitert jeder
+Spaltenname, auch der richtige**: `EXPLAIN SELECT ID, …` meldet „no such column: ID", während
+dieselbe Anweisung **mit** `FROM` anstandslos durchläuft. `ID`, `ID_Type` und `Bezeichner` stehen
+alle drei in `Tab_Energieanlagen`.
+
+Berichtigt wurde deshalb der **Prüfer**, nicht die Anweisung: `_spaltenliste_ohne_tabelle` nimmt
+einen dynamischen Text von der Objektprüfung aus, wenn er ein `SELECT` **ohne jedes `FROM`** ist
+und die Meldung eine fehlende **Spalte** nennt. Eng gehalten und gegengeprüft — mit `FROM`, bei
+fehlender **Tabelle**, bei `UPDATE` und bei vollständigen Anweisungen bleibt es ein Fund.
+Selbsttest weiter 32/0.
+
+**Stand nach der Aufgabe:** Prüfer **0 Fundstellen** (1 206 Texte, 186 dynamisch, 1 020 in
+Ordnung), `EPOS.Kern.Tests` **1 168/1 168** grün (auch unter `LANG=en_US.UTF-8`), beide
+Kern-Wächter leer.
