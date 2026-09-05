@@ -385,4 +385,102 @@ public class AssistentTests : BunitContext
         Assert.Single(geoeffnet);
         Assert.Equal(1007, geoeffnet[0].Id);
     }
+
+    // =====================================================================
+    // Der Parametersatz einer Seite - Windows-Abnahme 05.09.2026, W9-B-1
+    // =====================================================================
+
+    /// <summary>
+    /// Zählt, wie oft je Seite ein Parametersatz erfragt wurde.
+    /// </summary>
+    private sealed class Gabenzaehler
+    {
+        internal readonly Dictionary<int, int> Aufrufe = new();
+
+        internal IReadOnlyDictionary<string, object>? Holen(int nr)
+        {
+            Aufrufe[nr] = Aufrufe.TryGetValue(nr, out int n) ? n + 1 : 1;
+            return Gaben(nr);
+        }
+
+        internal int Von(int nr) => Aufrufe.TryGetValue(nr, out int n) ? n : 0;
+    }
+
+    private IRenderedComponent<AssistentSeite> ZeigeMitZaehler(
+        Gabenzaehler zaehler, int betriebsart = 0,
+        IReadOnlyList<ProjektKopfZeile>? projekte = null)
+    {
+        return Render<AssistentSeite>(p => p
+            .Add(x => x.Betriebsart, betriebsart)
+            .Add(x => x.SeiteGaben,
+                 new Func<int, IReadOnlyDictionary<string, object>?>(zaehler.Holen))
+            .Add(x => x.SeiteAktiv, new Func<int, bool>(nr => nr <= 2))
+            .Add(x => x.Projekte, projekte ?? Array.Empty<ProjektKopfZeile>()));
+    }
+
+    /// <summary>
+    /// <b>Befund W9‑B‑1</b> der Windows-Abnahme vom 05.09.2026: „Im Projekt
+    /// gespeichertes Gebäude wird nicht angezeigt bzw. in der Liste selektiert."
+    ///
+    /// <para>Ursache war hier. <c>SchritteBauen</c> zog den Parametersatz der
+    /// STEHENDEN Seite bei jedem <c>OnParametersSet</c> neu — also bei jedem
+    /// Neuzeichnen des Wirtes. Die Hüllen bauen darin aber jedesmal eine NEUE
+    /// Anzeigeliste aus ihrer Fachliste; der lebenden Komponente wurde die Liste
+    /// unter den Füßen ausgetauscht und ihre Markierung zeigte danach auf ein
+    /// Objekt, das nicht mehr darin stand.</para>
+    ///
+    /// <para>Der Parametersatz wird deshalb beim BETRETEN geholt — und sonst nie.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Parametersatz_einer_Seite_wird_beim_Betreten_geholt_und_nicht_beim_Neuzeichnen()
+    {
+        var zaehler = new Gabenzaehler();
+        var cut = ZeigeMitZaehler(zaehler);
+
+        Assert.Equal(1, zaehler.Von(0));
+
+        // Der Wirt zeichnet neu (Statuszeile, Sprachwechsel, AppWurzel-Zweig).
+        cut.Render(p => p.Add(x => x.Betriebsart, 0));
+        cut.Render(p => p.Add(x => x.Betriebsart, 0));
+
+        Assert.Equal(1, zaehler.Von(0));
+    }
+
+    /// <summary>
+    /// Beim BETRETEN wird er sehr wohl neu geholt — auch beim Wiederbesuch, damit
+    /// die Seite den inzwischen geänderten Listenstand zeigt.
+    /// </summary>
+    [Fact]
+    public void Beim_Betreten_und_beim_Wiederbesuch_wird_der_Parametersatz_neu_geholt()
+    {
+        var zaehler = new Gabenzaehler();
+        var cut = ZeigeMitZaehler(zaehler);
+
+        Weiter(cut).Click();                       // auf Schritt 1
+        Assert.Equal(1, zaehler.Von(1));
+
+        Weiter(cut).Click();                       // auf Schritt 2
+        Zurueck(cut).Click();                      // zurueck auf Schritt 1
+        Assert.Equal(2, zaehler.Von(1));
+        Assert.Equal(1, zaehler.Von(0));           // Schritt 0 blieb unberuehrt
+    }
+
+    /// <summary>
+    /// Ein anderes Projekt im linken Band heißt ein anderer Bestand — dann MUSS der
+    /// Parametersatz neu erfragt werden, auch ohne Seitenwechsel.
+    /// </summary>
+    [Fact]
+    public void Ein_Projektwechsel_erfragt_den_Parametersatz_neu()
+    {
+        var zaehler = new Gabenzaehler();
+        var cut = ZeigeMitZaehler(zaehler, betriebsart: 1, projekte: Projekte());
+
+        Assert.Equal(1, zaehler.Von(0));
+
+        cut.FindAll(".epos-assistent-band tbody tr button")[0].Click();
+        Assert.Equal(2, zaehler.Von(0));
+
+        cut.FindAll(".epos-assistent-band tbody tr button")[1].Click();
+        Assert.Equal(3, zaehler.Von(0));
+    }
 }
