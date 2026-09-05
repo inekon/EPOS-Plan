@@ -870,7 +870,7 @@ namespace WindowsFormsApplication1
                 // F3: Die Projektrechnung folgt dem Klimadaten-Kalender, die Katalog-
                 // vorschau der Altkonvention - sie kennt kein Projekt und keine
                 // Klimaregion, und ihre Kurven sollen zwischen zwei Katalogeinträgen
-                // vergleichbar bleiben. Die Projektvorschau (W9-B-1) bleibt bei der
+                // vergleichbar bleiben. Die Projektvorschau (W9-B-4/B-5) bleibt bei der
                 // Altkonvention: WochentagJan1 entsteht erst IN Waermebedarf_berechnen
                 // aus den geladenen Klimadaten, die der Dialog nie laedt - der Wert
                 // waere hier ohnehin die Altkonvention. Damit ist der Kalender dieses
