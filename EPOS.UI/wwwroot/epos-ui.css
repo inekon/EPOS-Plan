@@ -2609,23 +2609,37 @@ body {
 
 /* ---- Leitungen ------------------------------------------------------ */
 
+/* Anwenderbefund W10b-B-1 (05.09.2026): Die Farbregeln setzten frueher NEBEN dem
+   Strich auch die FLAECHE - und weil sie nach dieser Regel stehen und dieselbe
+   Spezifitaet haben, schlugen sie das fill:none von hier UND das Praesentations-
+   attribut fill="none" am <path> (jede CSS-Regel schlaegt ein solches Attribut).
+   Der offene Bogen einer Leitung wurde dadurch als Flaeche gefuellt: die "riesige
+   blaue Flaeche mit gezacktem Rand" des Bildschirmfotos. Die Flaeche gehoert allein
+   der Pfeilspitze; deshalb steht sie unten an .epos-schema-pfeil und nirgends sonst.
+
+   Die STRICHSTAERKE steht seither am Element (stroke-width-Attribut aus
+   SchemaLayout.LINIE_BREITE) - nur so ist nachweisbar, dass sie im erlaubten
+   Bereich liegt. Hier bleibt sie deshalb ungesetzt. */
 .epos-schema-kante {
-    stroke-width: 1.8;
     fill: none;
 }
 
-.epos-schema-kante--hervor { stroke-width: 2.6; }
-
-.epos-schema--quelle { stroke: var(--epos-quelle-rahmen); fill: var(--epos-quelle-rahmen); }
-.epos-schema--kaskade { stroke: var(--epos-quelle-rahmen); fill: var(--epos-quelle-rahmen); }
-.epos-schema--ladung { stroke: var(--epos-senke-rahmen); fill: var(--epos-senke-rahmen); }
-.epos-schema--versorgung { stroke: var(--epos-schema-versorgung); fill: var(--epos-schema-versorgung); }
-.epos-schema--prozess { stroke: var(--epos-schema-prozess); fill: var(--epos-schema-prozess); }
+.epos-schema--quelle { stroke: var(--epos-quelle-rahmen); }
+.epos-schema--kaskade { stroke: var(--epos-quelle-rahmen); }
+.epos-schema--ladung { stroke: var(--epos-senke-rahmen); }
+.epos-schema--versorgung { stroke: var(--epos-schema-versorgung); }
+.epos-schema--prozess { stroke: var(--epos-schema-prozess); }
 
 /* Die Kaskadenkante ist gestrichelt - dieselbe Aussage wie beim Quellchip. */
 .epos-schema-kante.epos-schema--kaskade { stroke-dasharray: 6 4; }
 
+/* Die Pfeilspitze ist das EINZIGE gefuellte Stueck einer Leitung. */
 .epos-schema-pfeil { stroke: none; }
+.epos-schema-pfeil.epos-schema--quelle { fill: var(--epos-quelle-rahmen); }
+.epos-schema-pfeil.epos-schema--kaskade { fill: var(--epos-quelle-rahmen); }
+.epos-schema-pfeil.epos-schema--ladung { fill: var(--epos-senke-rahmen); }
+.epos-schema-pfeil.epos-schema--versorgung { fill: var(--epos-schema-versorgung); }
+.epos-schema-pfeil.epos-schema--prozess { fill: var(--epos-schema-prozess); }
 
 /* Der Prioritaetskreis auf der Kurvenmitte: weiss gefuellt, Rand in der
    Senkenfarbe (SchemaAnsicht:544-545). */
@@ -2655,7 +2669,7 @@ body {
     stroke-width: 2;
 }
 
-.epos-schema-bandpfeil { stroke-width: 1.8; }
+.epos-schema-bandpfeil { stroke-width: 2; }
 
 /* ---- Legende -------------------------------------------------------- */
 
@@ -2677,6 +2691,9 @@ body {
     .epos-schema-kante,
     .epos-schema-legendelinie,
     .epos-schema-bandpfeil { stroke: CanvasText; }
+
+    /* Die Pfeilspitze ist eine Flaeche und braucht deshalb die Textfarbe als FUELLUNG. */
+    .epos-schema-pfeil { fill: CanvasText; }
 
     .epos-schema-halo { stroke: Highlight; }
 }

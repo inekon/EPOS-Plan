@@ -44,12 +44,18 @@
              width="@Bild.Breite" height="@Bild.Hoehe"
              role="group" aria-label="@Bezeichnung">
 
+            @* Die EINE Pfeilspitze je Kantenart. markerUnits="userSpaceOnUse" ist der
+               Kern des Anwenderbefunds W10b-B-1: Mit dem Standardwert "strokeWidth"
+               nimmt die Spitze die Strichstaerke als Massstab und wird bei 1,8 px
+               Strich 16 x 13 px gross, hervorgehoben sogar 23 x 18 px - genau die
+               "breiten, spitz zulaufenden Flaechen" des Bildschirmfotos. In
+               Nutzereinheiten misst sie feste 10 x 8 px, unabhaengig vom Strich. *@
             <defs>
                 @foreach (SchemaKantenart art in Pfeilarten)
                 {
-                    <marker id="@PfeilId(art)" markerWidth="9" markerHeight="7"
-                            refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
-                        <path d="M0,0 L9,3.5 L0,7 z" class="@("epos-schema-pfeil " + Kantenklasse(art))" />
+                    <marker id="@PfeilId(art)" markerWidth="10" markerHeight="8"
+                            refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                        <path d="M0,0 L10,4 L0,8 z" class="@("epos-schema-pfeil " + Kantenklasse(art))" />
                     </marker>
                 }
             </defs>
@@ -63,10 +69,17 @@
                       text-anchor="middle" dominant-baseline="middle">@Bild.Spaltenkoepfe[i]</text></g>
             }
 
-            @* --- Kanten (unter den Kaesten) ----------------------------------- *@
+            @* --- Kanten (unter den Kaesten) -----------------------------------
+
+               Jede Leitung ist eine LINIE gleichmaessiger Breite mit EINER Spitze am
+               Ende. Die Breite steht als Attribut, weil sie im Kern gedeckelt wird
+               (SchemaLayout.LINIE_BREITE) und deshalb pruefbar sein muss; das Stilblatt
+               setzt sie seit W10b-B-1 nicht mehr. fill="none" steht ZUSAETZLICH zur
+               Stilblattregel: Ein gefuellter Bogen war der Befund. *@
             @foreach (SchemaKante k in Bild.Kanten)
             {
                 <path class="@Kantenklasse(k)" d="@k.Pfad" fill="none"
+                      stroke-width="@Strichbreite(k)"
                       marker-end="@($"url(#{PfeilId(k.Art)})")" />
 
                 @if (k.Prioritaet > 0)
@@ -156,7 +169,11 @@
             <g><text class="epos-schema-bandkopf" x="@Bild.Rand" y="@(Bild.BandOben + 8)"
                   dominant-baseline="central">@KetteKopfText</text></g>
 
-            @if (Bild.Band.Count == 0)
+            @* Der Satz „Keine Kaskade im Projekt" haengt an der TATSACHE aus dem Modell
+               (HatKaskade), nicht am leeren Band: Das Band ist die abgeleitete Kette,
+               und die entstand bis W10b-B-1 auch dann nicht, wenn Erzeugerkaesten
+               „Quelle: … · Kaskade" trugen. *@
+            @if (Bild.Band.Count == 0 && !Bild.HatKaskade)
             {
                 <g><text class="epos-schema-zeile" x="@Bild.Rand" y="@(Bild.BandOben + 24)"
                       dominant-baseline="central">@KeineKetteText</text></g>
@@ -358,12 +375,22 @@
         _ => "epos-schema--quelle"
     };
 
+    private bool Hervorgehoben(SchemaKante k)
+        => !string.IsNullOrEmpty(Gewaehlt) && (k.Von == Gewaehlt || k.Nach == Gewaehlt);
+
     private string Kantenklasse(SchemaKante k)
     {
         string s = "epos-schema-kante " + Kantenklasse(k.Art);
-        if (k.Von == Gewaehlt || k.Nach == Gewaehlt) s += " epos-schema-kante--hervor";
+        if (Hervorgehoben(k)) s += " epos-schema-kante--hervor";
         return s;
     }
+
+    /// <summary>
+    /// Die Strichstaerke einer Leitung [px] — beide Werte kommen aus dem Kern und sind
+    /// dort gedeckelt (W10b-B-1). Hier wird nur gewaehlt, nicht gerechnet.
+    /// </summary>
+    private int Strichbreite(SchemaKante k)
+        => Hervorgehoben(k) ? Bild.LinienBreiteHervor : Bild.LinienBreite;
 
     private static string Legendenklasse(SchemaLegendeeintrag e)
     {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
+using System.Text;
 using System.Windows.Forms;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten.Simulation;
@@ -1451,7 +1452,7 @@ namespace WindowsFormsApplication1
             foreach (SchemaLayout.Kantenzug z in l.Kanten)
                 kanten.Add(new SchemaKante(
                     z.Kante.Von, z.Kante.Nach, (SchemaKantenart)(int)z.Art, z.Prioritaet,
-                    Bogen(z), z.Mitte.X, z.Mitte.Y));
+                    Streckenzug(z), z.Mitte.X, z.Mitte.Y));
 
             List<SchemaBandglied> band = new List<SchemaBandglied>();
             foreach (SchemaLayout.Bandflaeche b in l.Band)
@@ -1489,17 +1490,33 @@ namespace WindowsFormsApplication1
                 new List<int>(l.SpaltenX),
                 new List<int>(SchemaLayout.SPALTEN_BREITE),
                 l.InhaltBreite, l.Gesamthoehe, SchemaLayout.RAND, SchemaLayout.KOPF_HOEHE,
-                l.BandOben, l.LegendeOben, false);
+                l.BandOben, l.LegendeOben,
+                SchemaLayout.LINIE_BREITE, SchemaLayout.LINIE_BREITE_HERVOR,
+                l.Modell != null && l.Modell.HatKaskade, false);
         }
 
-        /// <summary>Der Bezierbogen einer Kante als SVG-Pfadangabe.</summary>
-        private static string Bogen(SchemaLayout.Kantenzug z)
+        /// <summary>
+        /// Der Streckenzug einer Kante als SVG-Pfadangabe („M … L … L …").
+        ///
+        /// <para>Anwenderbefund W10b-B-1 (05.09.2026): Bis hierher stand hier ein
+        /// kubischer Bezierbogen („M … C …"). Er lief bei einer übersprungenen Spalte
+        /// quer durch die Kästen; der Kern legt die Leitung seither in Spaltenbahnen aus
+        /// lauter waagerechten und senkrechten Stücken.</para>
+        /// </summary>
+        private static string Streckenzug(SchemaLayout.Kantenzug z)
         {
             CultureInfo k = CultureInfo.InvariantCulture;
-            return "M" + z.A.X.ToString(k) + "," + z.A.Y.ToString(k) +
-                   " C" + z.C1.X.ToString(k) + "," + z.C1.Y.ToString(k) +
-                   " " + z.C2.X.ToString(k) + "," + z.C2.Y.ToString(k) +
-                   " " + z.B.X.ToString(k) + "," + z.B.Y.ToString(k);
+            StringBuilder b = new StringBuilder();
+
+            for (int i = 0; i < z.Punkte.Count; i++)
+            {
+                b.Append(i == 0 ? "M" : " L");
+                b.Append(z.Punkte[i].X.ToString(k));
+                b.Append(',');
+                b.Append(z.Punkte[i].Y.ToString(k));
+            }
+
+            return b.ToString();
         }
 
         // =================================================================
