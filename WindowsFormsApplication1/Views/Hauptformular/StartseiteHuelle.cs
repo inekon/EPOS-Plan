@@ -433,8 +433,23 @@ namespace WindowsFormsApplication1
         /// Einträgen samt <c>CentralControl_Click</c>, vierzehn einzeilige
         /// Weiterleitungshandler und sechs unmittelbar verdrahtete
         /// <c>AktionsKarte.Geklickt</c> (Befund W16-B19).
+        ///
+        /// <para><b>Er läuft eine Nachricht später</b> (Befund W16b‑B‑1,
+        /// 05.09.2026): Der Klick kommt aus dem <c>WebMessageReceived</c>-Rückruf
+        /// der WebView2 des Hauptfensters, und ein <c>ShowDialog</c> öffnete dort
+        /// seine verschachtelte Nachrichtenschleife INNERHALB dieses Rückrufs —
+        /// mit einer zweiten WebView2 darin. <see cref="Blazorsprung"/> lässt das
+        /// Ereignis erst zu Ende laufen. Der Weg selbst ist unverändert; er
+        /// liefert ohnehin keinen Wert zurück, sondern schreibt in den
+        /// Projektkontext bzw. in den <see cref="SeitenZustand"/>.</para>
         /// </summary>
         private void Kachelweg(string schluessel)
+        {
+            Blazorsprung.Verzoegert(_besitzer?.Invoke(), () => KachelwegJetzt(schluessel));
+        }
+
+        /// <summary>Der Weg selbst — wörtlich die Handler von <c>Form_Start</c>.</summary>
+        private void KachelwegJetzt(string schluessel)
         {
             IWin32Window wirt = _besitzer?.Invoke();
 
@@ -471,6 +486,14 @@ namespace WindowsFormsApplication1
                 case Kachelschluessel.SimulationKonfiguration:
                 case Kachelschluessel.SimulationErgebnis: break;
             }
+
+            // Den Bestand neu lesen lassen. Bis W16b-B-1 tat das die SEITE
+            // unmittelbar nach dem Ruf (Startseite.BeiKachel), weil der Weg
+            // synchron mitten im Klick lief; seit der Verzoegerung ist der Klick
+            // laengst vorbei, wenn der Dialog zumacht - also meldet es der Weg.
+            // Doppelt ist es unschaedlich: Wer das Projekt wechselt, loest
+            // ohnehin schon ProjektGewechselt aus.
+            _zustand.Auffrischen();
         }
 
         // ---- Reiter 1: Projekt ---------------------------------------------
