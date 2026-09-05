@@ -1624,7 +1624,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > gesperrte Zunge wie über „Weiter ▶", den Weg der Tastatur; das ist `tabControl_Wizard_Selecting` samt der
 > Lebensdauer von `Form_Hinweis`, nur ohne Wegklicken. Sperre und Farbgebung (W16b‑E‑5) bleiben. Zwei Texte
 > `START_EINSTIEG` und `START_SPERRE_TIPP` in beiden Sprachen, ortsneutral („oben"/„unten") für die Schale ohne
-> Kopfleiste. Wachen `ReiterTests` +2, `StartseiteTests` +5; Abnahmepunkte 1/1a–1c/3/14/16 im Protokoll.
+> Kopfleiste. Wachen `ReiterTests` +2, `StartseiteTests` +5; Abnahmepunkte 1/1a–1c/3/14/16 im Protokoll. Der
+> Windows-CI-Lauf 128 auf `e65d3a9` fiel an **einem** Test: der Suchhelfer `Stilblock` in `StartseiteTests` las
+> das Stilblatt ohne Zeilenenden-Angleichung, und auf dem Windows-Läufer liegt es nach `text=auto` mit CRLF —
+> ein zweizeiliger Selektor traf nicht mehr. Angeglichen an `StartseiteAnmutungTests`/`StilblattTests`
+> (`\r\n` → `\n`), Gegenprobe mit CRLF-Stilblatt grün; Kern-Lauf 133 war grün.
 
 > **Statusblock iU9 — Teilwelle 16a umgesetzt (04.09.2026, Basis `975ead5` = Tag `vor-W16`, zusammengeführt mit `3c7e0d6` nach den W15c-Entscheiden)**
 >
