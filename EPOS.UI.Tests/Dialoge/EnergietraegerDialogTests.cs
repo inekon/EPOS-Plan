@@ -472,7 +472,10 @@ public class EnergietraegerDialogTests : BunitContext
             .Add(x => x.StammSchreiben, (string n, int? g) => false)
             .Add(x => x.MeldungStammLeer, "Bezeichnung darf nicht leer sein."));
 
-        cut.Find(".epos-traeger-inhalt .epos-feldpaar button").Click();
+        // Der Uebernahmeknopf steht seit iU8-E-2 / W14a-E-7 (Paket P2) in einer
+        // eigenen Leiste unter dem Formularraster; das handgebaute Feldpaar
+        // des Stammkopfs ist damit entfallen.
+        cut.Find(".epos-traeger-inhalt .epos-leiste button").Click();
 
         Assert.Contains("nicht leer", cut.Instance.Meldung);
     }
@@ -687,5 +690,32 @@ public class EnergietraegerDialogTests : BunitContext
         cut.Find(".epos-infoknopf").Click();
 
         Assert.Equal(new[] { "Form_Energietraeger.btn_Help" }, hilfe.Geoeffnet);
+    }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Der Stammkopf im Katalogkontext und
+    /// der Preisblock von <c>EnergietraegerEinstellungen</c> stehen im
+    /// <c>Formularraster</c> — die handgebauten <c>epos-feldpaar</c> entfallen,
+    /// der Raster stellt zwei Feldpaare je Zeile, sobald die Spalte breit genug
+    /// ist. Das Suchfeld über der Liste bleibt, wo es ist: Es gehört zur Liste,
+    /// nicht zu einem Formularblock.
+    /// </summary>
+    [Fact]
+    public void Stammkopf_und_Preisblock_stehen_im_Formularraster()
+    {
+        var cut = Zeige();
+
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 2);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld").Count >= 4);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count > 0);
+
+        // Das Suchfeld der Liste steht NICHT im Raster.
+        Assert.Empty(cut.FindAll(".epos-traeger-liste .epos-formularraster"));
     }
 }

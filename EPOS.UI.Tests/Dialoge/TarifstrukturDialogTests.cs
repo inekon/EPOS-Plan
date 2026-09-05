@@ -361,4 +361,47 @@ public class TarifstrukturDialogTests : BunitContext
         Assert.Contains("Stufe 2 — Sommer [€/kW·a]", texte);
         Assert.Contains("Stufe 4 (Rest) — Winter [€/kW·a]", texte);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Die Parameterblöcke stehen im
+    /// <c>Formularraster</c> — Beschriftung NEBEN dem Feld, Zahlenfelder kurz mit
+    /// der Einheit dahinter. Zuvor nahm jedes Feld die volle Breite und die
+    /// Beschriftung stand darüber.
+    ///
+    /// <para>Die programmatisch gebauten Untergruppen des Vorläufers
+    /// (<c>Form_Tarifstruktur.Gruppe</c>) sind jetzt <c>Formulargruppe</c>n: leise
+    /// Zwischenüberschriften, deren Felder DIREKTE Rasterkinder bleiben. Der alte
+    /// <c>h3.epos-untergruppe</c> steht deshalb nicht mehr im Dialog.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Bloecke_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen(Satz());
+
+        // Kopf, Zeitzonen, Zonenmodell, Rollenmodell.
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 4);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld").Count > 0);
+
+        // Die Untergruppen sind Formulargruppen geworden.
+        Assert.True(cut.FindAll(".epos-formulargruppe-titel").Count > 0);
+        Assert.Empty(cut.FindAll("h3.epos-untergruppe"));
+    }
+
+    /// <summary>
+    /// Die Preisfelder melden sich als KURZE Felder — daran hängt im Raster die
+    /// kurze Breite (Vorbild: 62 px) statt der vollen Feldspalte.
+    /// </summary>
+    [Fact]
+    public void Die_Zahlenfelder_sind_kurze_Felder()
+    {
+        var cut = Aufbauen(Satz());
+
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count > 0);
+    }
 }

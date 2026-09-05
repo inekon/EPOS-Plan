@@ -690,3 +690,41 @@ Tabelle der **Inhalt** und nicht eine Liste neben ihm.
 steht beim Anwender**: Ob die eine Zeile auf seinem Fenster wirklich ohne
 Umbruch steht und wie viel Höhe die Unterschiedstabelle gewinnt, ist aus
 Markup und Stilblatt hergeleitet, nicht am Bild gemessen.
+
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P2 (iU8‑E‑2)
+
+**Der Wortlaut.** „Darstellung der Dialoge kompakter und übersichtlicher — Parameterblöcke
+rechts. Genauso für andere Dialoge prüfen." Die hausweite Regel dazu steht seit Aufgabe #90 in
+`EPOS.UI/Bausteine/Formularraster.razor` und `Formulargruppe.razor`; sie ist in
+[`iU9_W14a_Blazor_Port_Protokoll.md`](iU9_W14a_Blazor_Port_Protokoll.md), Abschnitt
+„Kompaktes Formularraster", hergeleitet und gemessen. Paket **P2** (Kosten und
+Wirtschaftlichkeit, Wellen 1–5) hängt die Parameterblöcke dieser Welle ein — **kein Feld
+umbenannt, kein Text geändert, keine Regel je Dialog, kein neues CSS**.
+
+**Die Arbeitsregel des Pakets.** Der Raster umschließt den **Feldlauf**. Eine
+`Herleitungszeile`, eine `Kohaerenzzeile`, ein `Warnbanner` oder ein Knopf am **Ende** des
+Blocks bleibt außerhalb — sie sind Sätze, keine Felder, und fielen in einer Rasterzelle auf
+halbe Breite. Steht so eine Zeile **mitten** im Feldlauf, wird der Raster dort **geteilt**;
+zwei Raster derselben Breite tragen dieselbe Beschriftungsspalte, die Kante bleibt also
+durchgehend. `Einspaltig` bekommt, wer eine Reihenfolge trägt oder ein breites Pfadfeld führt.
+
+**Umgestellt und bewusst nicht umgestellt.** Die Welle bringt **Seiten**, keine Dialoge —
+und Seiten tragen ihre Felder überwiegend in Werkzeugzeilen und Tabellenspalten, nicht in
+Parameterblöcken. Umgestellt ist deshalb genau eine Stelle.
+
+| Datei | Felder | Raster | Gruppen | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|---|
+| `Seiten/Berichte/BerichtSeite.razor` | 2 | 1 | – | **ja** | **B, geteilt.** Das freistehende Pfadfeld des Zielordners ist ein Formularfeld → Raster, einspaltig (ein Pfad braucht die Breite). Der Varianten‑Schalter steht in einer **Tabellenspalte**, die Ausgabewahl in einer `epos-seite-zeile` — beide bleiben |
+| `Seiten/Berichte/UebersichtSeite.razor` | 4 | – | – | – | **B, bleibt.** Stamm‑, Filter‑, Varianten‑ und Bezeichnerfeld stehen in zwei `epos-seite-zeile` **neben** den Knöpfen „Anlegen / Löschen / Öffnen". Das ist eine Werkzeugzeile; ein Raster brächte die Knöpfe aus der Zeile |
+| `Seiten/Berichte/WirtschaftlichkeitSeite.razor` | 2 | – | – | – | **B, bleibt.** Ein Schalter in einer Tabellenspalte, eine Szenariowahl in der Werkzeugzeile — kein Parameterblock |
+
+Damit ist auch die Gegenprobe gezogen, die die Regel überhaupt erst trägt: Der Raster greift
+**nur** innerhalb von `.epos-formularraster`. Die Felder der beiden nicht umgestellten Seiten
+sehen unverändert aus, obwohl im selben Programm zwölf Blöcke umgezogen sind.
+
+**Nachweis.** `EPOS.UI.Tests` **2 562** grün (2 546 + 16 neue Fälle des Pakets), unter `de-DE`
+**und** `LANG=en_US.UTF-8`; `Werkzeuge/Formularkarte` **122** grün. `FormularrasterTests`,
+`StilblattTests`, `ParametersatzTests`, `KatalograhmenTests` und `KatalogdialogTests`
+unverändert grün — das Stilblatt ist nicht angefasst worden, die Klammerbilanz also
+unberührt.

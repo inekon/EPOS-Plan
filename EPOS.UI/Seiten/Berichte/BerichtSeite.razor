@@ -98,9 +98,17 @@
                        AuswahlChanged="BeiAusgabe" />
     </div>
 
-    <Dateiwahl Bezeichnung="@LabelZiel" Pfad="@_stand.Zielordner" NurLesen="false"
-               Aktiv="@(!_laeuft)" KnopfText="@DurchsuchenText"
-               Waehlen="@OrdnerWaehler" PfadChanged="BeiZielordner" />
+    @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld.
+       EINSPALTIG - das Pfadfeld des Zielordners braucht die ganze Breite. Die
+       Kopfzeilen der Seite (epos-seite-zeile) bleiben Zeilen; sie tragen die
+       Werkzeuge der Seite, keinen Formularblock. *@
+    <Formularraster Einspaltig="true">
+        <KindInhalt>
+            <Dateiwahl Bezeichnung="@LabelZiel" Pfad="@_stand.Zielordner" NurLesen="false"
+                       Aktiv="@(!_laeuft)" KnopfText="@DurchsuchenText"
+                       Waehlen="@OrdnerWaehler" PfadChanged="BeiZielordner" />
+        </KindInhalt>
+    </Formularraster>
 
     @if (_laeuft)
     {

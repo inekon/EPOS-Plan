@@ -358,4 +358,33 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         Assert.True(mitBhkw.Length > ohne.Length);
         Assert.True(mitBeidem.Length > mitBhkw.Length);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Die Blöcke „Allgemein", „Strom" und
+    /// „Brennstoff" stehen im <c>Formularraster</c>. Die Untergruppe des
+    /// Vorläufers (<c>Form_WirtschaftlichkeitParameter.Gruppe</c> „Bilanz") ist
+    /// jetzt eine <c>Formulargruppe</c> — leise Zwischenüberschrift, Felder
+    /// bleiben direkte Rasterkinder.
+    /// </summary>
+    [Fact]
+    public void Die_Bloecke_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen(Satz(), brennstoff: true);
+
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 3);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count > 0);
+
+        Assert.Single(cut.FindAll(".epos-formulargruppe-titel"));
+        Assert.Empty(cut.FindAll("h3.epos-untergruppe"));
+
+        // Zinssatz, Betrachtungszeitraum, CO2-Preis: Einheit in der Feldzeile.
+        Assert.Contains(cut.FindAll(".epos-formularraster .epos-feld--kurz"),
+                        f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
 }

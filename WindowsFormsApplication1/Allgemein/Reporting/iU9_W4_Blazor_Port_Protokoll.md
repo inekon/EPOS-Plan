@@ -776,3 +776,43 @@ statt zweier, bei unveränderter Höhe ≥ `--epos-touchziel`.
 9 neue: Filter, leere Suche, Gruppentreffer, Groß-/Kleinschreibung, Auswahl
 über den Filterwechsel, kein Treffer, Tastatur mit und ohne Filter), grün unter
 `de-DE` **und** `en_US`; `EPOS.Kern.Tests` 1 024.
+
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P2 (iU8‑E‑2)
+
+**Der Wortlaut.** „Darstellung der Dialoge kompakter und übersichtlicher — Parameterblöcke
+rechts. Genauso für andere Dialoge prüfen." Die hausweite Regel dazu steht seit Aufgabe #90 in
+`EPOS.UI/Bausteine/Formularraster.razor` und `Formulargruppe.razor`; sie ist in
+[`iU9_W14a_Blazor_Port_Protokoll.md`](iU9_W14a_Blazor_Port_Protokoll.md), Abschnitt
+„Kompaktes Formularraster", hergeleitet und gemessen. Paket **P2** (Kosten und
+Wirtschaftlichkeit, Wellen 1–5) hängt die Parameterblöcke dieser Welle ein — **kein Feld
+umbenannt, kein Text geändert, keine Regel je Dialog, kein neues CSS**.
+
+**Die Arbeitsregel des Pakets.** Der Raster umschließt den **Feldlauf**. Eine
+`Herleitungszeile`, eine `Kohaerenzzeile`, ein `Warnbanner` oder ein Knopf am **Ende** des
+Blocks bleibt außerhalb — sie sind Sätze, keine Felder, und fielen in einer Rasterzelle auf
+halbe Breite. Steht so eine Zeile **mitten** im Feldlauf, wird der Raster dort **geteilt**;
+zwei Raster derselben Breite tragen dieselbe Beschriftungsspalte, die Kante bleibt also
+durchgehend. `Einspaltig` bekommt, wer eine Reihenfolge trägt oder ein breites Pfadfeld führt.
+
+**Umgestellt und bewusst nicht umgestellt.**
+
+| Datei | Felder | Raster | Gruppen | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|---|
+| `Dialoge/Kosten/StromAufschlaege.razor` | 5 | 2 | – | nein | **B, geteilt.** Gesamtaufschlag und die beiden Vergütungsfelder → Raster. Der **Preisblock** bleibt: Seine fünf Zeilen tragen Schalter, Wert **und** Schnellwahlknopf nebeneinander — eine Bearbeitungszeile, keine Formularzeile |
+| `Dialoge/Kosten/EnergietraegerDialog.razor` | 3 | 1 | – | nein | **B, geteilt.** Der Stammkopf im Katalogkontext → Raster; sein handgebautes `epos-feldpaar` entfällt, der Übernahmeknopf steht jetzt in einer `epos-leiste` darunter. Das **Suchfeld** über der Trägerliste bleibt, wo es ist: Es gehört zur Liste |
+| `Dialoge/Kosten/EnergietraegerEinstellungen.razor` | 18 | 2 | – | nein | **B, geteilt.** Der Preisblock (Preisbasis, Arbeits‑, Leistungs‑, Grundpreis, Heiz‑/Brennwert) und die drei Ersatzfelder des Emissionsreiters → Raster; **beide** handgebauten `epos-feldpaar` entfallen. Die zwei **Datenraster** (Umrechnungsregeln, Emissionszeilen, Historie) bleiben, ebenso die Zeile „Gültig ab + Speichern" — ein Feld mit Aktionsknopf, kein Formularblock |
+| `Dialoge/Kosten/ErtragBonus.razor` | 1 | 1 | – | nein | **B, geteilt.** Die PV‑Projektwahl → Raster. Ertragstafel, Fördertext und Verweise bleiben Text: Sie sind Ergebnis, kein Formularblock |
+
+**Die zwei Feldpaare, die entfallen.** `epos-feldpaar` war die Handarbeit, mit der zwei Felder
+nebeneinander kamen, bevor es den Raster gab. Der Raster kann das von selbst und besser: Er
+misst die eigene Breite, nicht die des Fensters, und legt unter
+`--epos-formularspalte` auf eine Spalte um. In `EnergietraegerEinstellungen` fiel dabei der
+Saison‑Knopf aus der Feldzeile in eine eigene `epos-leiste` — im Raster wäre er eine
+Rasterzelle weit rechts gelandet.
+
+**Nachweis.** `EPOS.UI.Tests` **2 562** grün (2 546 + 16 neue Fälle des Pakets), unter `de-DE`
+**und** `LANG=en_US.UTF-8`; `Werkzeuge/Formularkarte` **122** grün. `FormularrasterTests`,
+`StilblattTests`, `ParametersatzTests`, `KatalograhmenTests` und `KatalogdialogTests`
+unverändert grün — das Stilblatt ist nicht angefasst worden, die Klammerbilanz also
+unberührt.

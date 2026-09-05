@@ -512,3 +512,40 @@ GEÄNDERT
 GELÖSCHT
   9 Dateien der vier WinForms-Masken (Regel M1) — Liste in § 6
 ```
+
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P2 (iU8‑E‑2)
+
+**Der Wortlaut.** „Darstellung der Dialoge kompakter und übersichtlicher — Parameterblöcke
+rechts. Genauso für andere Dialoge prüfen." Die hausweite Regel dazu steht seit Aufgabe #90 in
+`EPOS.UI/Bausteine/Formularraster.razor` und `Formulargruppe.razor`; sie ist in
+[`iU9_W14a_Blazor_Port_Protokoll.md`](iU9_W14a_Blazor_Port_Protokoll.md), Abschnitt
+„Kompaktes Formularraster", hergeleitet und gemessen. Paket **P2** (Kosten und
+Wirtschaftlichkeit, Wellen 1–5) hängt die Parameterblöcke dieser Welle ein — **kein Feld
+umbenannt, kein Text geändert, keine Regel je Dialog, kein neues CSS**.
+
+**Die Arbeitsregel des Pakets.** Der Raster umschließt den **Feldlauf**. Eine
+`Herleitungszeile`, eine `Kohaerenzzeile`, ein `Warnbanner` oder ein Knopf am **Ende** des
+Blocks bleibt außerhalb — sie sind Sätze, keine Felder, und fielen in einer Rasterzelle auf
+halbe Breite. Steht so eine Zeile **mitten** im Feldlauf, wird der Raster dort **geteilt**;
+zwei Raster derselben Breite tragen dieselbe Beschriftungsspalte, die Kante bleibt also
+durchgehend. `Einspaltig` bekommt, wer eine Reihenfolge trägt oder ein breites Pfadfeld führt.
+
+**Umgestellt und bewusst nicht umgestellt.**
+
+| Datei | Felder | Raster | Gruppen | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|---|
+| `Dialoge/Kosten/SpotpreisImportDialog.razor` | 4 | 1 | – | **ja** | A — das Pfadfeld der `Dateiwahl` und das mehrzeilige Protokollfeld brauchen die ganze Breite |
+| `Dialoge/Kosten/KostenprofilDialog.razor` | 4 | 2 | – | nein | **B, geteilt.** Bezeichner und Wochentagswahl sind Formularfelder → Raster. Das **Zahlenraster** der 12 Monats‑ und 24 Stundenwerte bleibt, wie es ist: eine Wertetafel mit eigener Spaltenordnung, kein Formularblock |
+| `Dialoge/Kosten/EmissionskatalogDialog.razor` | 10 | 2 | – | nein | **B, geteilt.** Die zwei Editoren in der Überlagerung (Emissionsart, Emissionswert) sind Formularblöcke → Raster. Die beiden **Datenraster** und die Modus‑Neuzeile bleiben; ihre Felder stehen in Tabellenzellen |
+| `Dialoge/Wirtschaftlichkeit/GesetzeskatalogZeileDialog.razor` | 7 | 2 | – | nein | A — der Raster ist **geteilt**, weil die Herleitungszeile zum leeren Wert mitten im Feldlauf steht. Portiert wurde der Dialog mit iU9‑W14c.1; die Bestandsaufnahme von #90 führt ihn unter W3, deshalb steht er hier |
+
+Der Gesetzeskatalog‑Zeilendialog ist die Musterstelle für die Teilung: Zwei Raster derselben
+Breite tragen dieselbe Beschriftungsspalte, die Kante läuft also durch — und der Satz
+dazwischen behält die volle Zeile, statt in einer Rasterzelle zu verhungern.
+
+**Nachweis.** `EPOS.UI.Tests` **2 562** grün (2 546 + 16 neue Fälle des Pakets), unter `de-DE`
+**und** `LANG=en_US.UTF-8`; `Werkzeuge/Formularkarte` **122** grün. `FormularrasterTests`,
+`StilblattTests`, `ParametersatzTests`, `KatalograhmenTests` und `KatalogdialogTests`
+unverändert grün — das Stilblatt ist nicht angefasst worden, die Klammerbilanz also
+unberührt.

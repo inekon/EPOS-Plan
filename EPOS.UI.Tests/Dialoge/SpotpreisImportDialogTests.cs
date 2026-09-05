@@ -295,4 +295,24 @@ public class SpotpreisImportDialogTests : BunitContext
 
         Assert.Equal(new[] { "Form_SpotpreisImport.btn_Help" }, hilfe.Geoeffnet);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Der Feldlauf steht im
+    /// <c>Formularraster</c>, EINSPALTIG: Das Pfadfeld der Dateiwahl und das
+    /// mehrzeilige Protokoll brauchen die ganze Breite.
+    /// </summary>
+    [Fact]
+    public void Der_Feldlauf_steht_im_einspaltigen_Formularraster()
+    {
+        var cut = Zeige();
+
+        Assert.Single(cut.FindAll(".epos-formularraster.epos-formularraster--einspaltig"));
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld").Count >= 3);
+    }
 }

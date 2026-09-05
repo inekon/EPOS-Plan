@@ -490,3 +490,48 @@ GELÖSCHT
   11 Dateien der fünf WinForms-Masken (Regel M1) — Liste in § 6
   5 Dateien verschoben (Form_StromspeicherItemNeu → Prüfmuster)
 ```
+
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P2 (iU8‑E‑2)
+
+**Der Wortlaut.** „Darstellung der Dialoge kompakter und übersichtlicher — Parameterblöcke
+rechts. Genauso für andere Dialoge prüfen." Die hausweite Regel dazu steht seit Aufgabe #90 in
+`EPOS.UI/Bausteine/Formularraster.razor` und `Formulargruppe.razor`; sie ist in
+[`iU9_W14a_Blazor_Port_Protokoll.md`](iU9_W14a_Blazor_Port_Protokoll.md), Abschnitt
+„Kompaktes Formularraster", hergeleitet und gemessen. Paket **P2** (Kosten und
+Wirtschaftlichkeit, Wellen 1–5) hängt die Parameterblöcke dieser Welle ein — **kein Feld
+umbenannt, kein Text geändert, keine Regel je Dialog, kein neues CSS**.
+
+**Die Arbeitsregel des Pakets.** Der Raster umschließt den **Feldlauf**. Eine
+`Herleitungszeile`, eine `Kohaerenzzeile`, ein `Warnbanner` oder ein Knopf am **Ende** des
+Blocks bleibt außerhalb — sie sind Sätze, keine Felder, und fielen in einer Rasterzelle auf
+halbe Breite. Steht so eine Zeile **mitten** im Feldlauf, wird der Raster dort **geteilt**;
+zwei Raster derselben Breite tragen dieselbe Beschriftungsspalte, die Kante bleibt also
+durchgehend. `Einspaltig` bekommt, wer eine Reihenfolge trägt oder ein breites Pfadfeld führt.
+
+**Umgestellt.** Diese Welle ist der Ort, an dem `Formulargruppe` zum ersten Mal wirklich
+gebraucht wird: `Form_Tarifstruktur` und `Form_WirtschaftlichkeitParameter` bauten ihre
+Untergruppen zur Laufzeit als fette Beschriftungen (`Gruppe(...)`), die Razor‑Fassungen trugen
+sie als `h3.epos-untergruppe`. Im Raster wäre so ein `h3` ein Fremdkörper: Er steht als
+direktes Rasterkind zwar über die volle Breite, aber die Felder darunter gehören dann keiner
+Gruppe an. Der Baustein `Formulargruppe` löst genau das — er ist **durchsichtig**
+(`display: contents`), die Felder bleiben **direkte** Rasterkinder, und die
+Beschriftungsspalten zweier Gruppen laufen nicht auseinander.
+
+| Datei | Felder | Raster | Gruppen | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|---|
+| `Dialoge/Wirtschaftlichkeit/TarifstrukturDialog.razor` | 27 | 4 | 5 (Bezugs‑, Einspeisepreise, Staffel, Einspeisung, Rollenblock — zweimal gezeichnet) | nein | A — Kopf, Zeitzonen, Zonenmodell, Rollenmodell; die drei `h3.epos-untergruppe` und der Untergruppenkopf des `RollenBlock`‑Fragments sind `Formulargruppe`n geworden |
+| `Dialoge/Wirtschaftlichkeit/PhotovoltaikVerguetungDialog.razor` | 13 | 5 | – | nein | A — Anlage, anzulegender Wert, Vermarktung, § 51/§ 51a, Kappung. „Bezugsbewertung" und „Vorschau" bleiben ohne Raster: Der eine trägt nur einen Schalter, der andere nur Herleitungszeilen |
+| `Dialoge/Wirtschaftlichkeit/WirtschaftlichkeitParameterDialog.razor` | 13 | 5 | 1 (Bilanz) | nein | A — Allgemein, Strom und drei Teilraster im Brennstoffblock, weil dort Herleitungszeile, CO₂‑Katalogknopf und Referenzkesselzeile **zwischen** den Feldern stehen |
+
+**Was der Raster im Tarifdialog sichtbar ändert.** Die vier Zeitzonenfelder, die zwölf
+Zonenpreise und die je 16 Stufenfelder der beiden Rollen sind alle kurz (`epos-feld--kurz`) —
+sie fallen damit auf `--epos-kurzfeld-breite` statt auf die volle Feldspalte, und auf breitem
+Schirm stehen zwei Feldpaare nebeneinander. Der Block „Rollenmodell" war der höchste des
+Hauses; er halbiert sich.
+
+**Nachweis.** `EPOS.UI.Tests` **2 562** grün (2 546 + 16 neue Fälle des Pakets), unter `de-DE`
+**und** `LANG=en_US.UTF-8`; `Werkzeuge/Formularkarte` **122** grün. `FormularrasterTests`,
+`StilblattTests`, `ParametersatzTests`, `KatalograhmenTests` und `KatalogdialogTests`
+unverändert grün — das Stilblatt ist nicht angefasst worden, die Klammerbilanz also
+unberührt.

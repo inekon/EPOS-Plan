@@ -50,38 +50,48 @@
     @* ------------------------------------------------------- Allgemein *@
     <Gruppenkopf Titel="@_t.GAllgemein" Symbol="∑">
         <KindInhalt>
-            <Zahlenfeld Bezeichnung="@_t.Zins" Wert="@Parameter.Zinssatz"
-                        WertChanged="@(w => Parameter.Zinssatz = w ?? Parameter.Zinssatz)"
-                        Min="0" Max="15" Nachkommastellen="2" Einheit="%" />
-            <Ganzzahlfeld Bezeichnung="@_t.Jahre" Wert="@Parameter.Betrachtungszeitraum"
-                          WertChanged="@(w => Parameter.Betrachtungszeitraum = w ?? Parameter.Betrachtungszeitraum)"
-                          Min="1" Max="50" Einheit="a" />
-            <Zahlenfeld Bezeichnung="@_t.PreisEnergie" Wert="@Parameter.PreissteigerungEnergie"
-                        WertChanged="@(w => Parameter.PreissteigerungEnergie = w ?? Parameter.PreissteigerungEnergie)"
-                        Min="-10" Max="20" Nachkommastellen="2" Einheit="%/a" />
-            <Zahlenfeld Bezeichnung="@_t.PreisBetrieb" Wert="@Parameter.PreissteigerungBetrieb"
-                        WertChanged="@(w => Parameter.PreissteigerungBetrieb = w ?? Parameter.PreissteigerungBetrieb)"
-                        Min="-10" Max="20" Nachkommastellen="2" Einheit="%/a" />
+            @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem
+               Feld, Zahlenfelder kurz mit der Einheit dahinter. *@
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@_t.Zins" Wert="@Parameter.Zinssatz"
+                                WertChanged="@(w => Parameter.Zinssatz = w ?? Parameter.Zinssatz)"
+                                Min="0" Max="15" Nachkommastellen="2" Einheit="%" />
+                    <Ganzzahlfeld Bezeichnung="@_t.Jahre" Wert="@Parameter.Betrachtungszeitraum"
+                                  WertChanged="@(w => Parameter.Betrachtungszeitraum = w ?? Parameter.Betrachtungszeitraum)"
+                                  Min="1" Max="50" Einheit="a" />
+                    <Zahlenfeld Bezeichnung="@_t.PreisEnergie" Wert="@Parameter.PreissteigerungEnergie"
+                                WertChanged="@(w => Parameter.PreissteigerungEnergie = w ?? Parameter.PreissteigerungEnergie)"
+                                Min="-10" Max="20" Nachkommastellen="2" Einheit="%/a" />
+                    <Zahlenfeld Bezeichnung="@_t.PreisBetrieb" Wert="@Parameter.PreissteigerungBetrieb"
+                                WertChanged="@(w => Parameter.PreissteigerungBetrieb = w ?? Parameter.PreissteigerungBetrieb)"
+                                Min="-10" Max="20" Nachkommastellen="2" Einheit="%/a" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     @* ------------------------------------------------------------ Strom *@
     <Gruppenkopf Titel="@_t.GStrom" Symbol="⚡">
         <KindInhalt>
-            <Zahlenfeld Bezeichnung="@_t.EinspeisungPv" Wert="@Parameter.Einspeiseverguetung"
-                        WertChanged="@(w => Parameter.Einspeiseverguetung = w ?? Parameter.Einspeiseverguetung)"
-                        Min="0" Max="2" Nachkommastellen="4" />
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@_t.EinspeisungPv" Wert="@Parameter.Einspeiseverguetung"
+                                WertChanged="@(w => Parameter.Einspeiseverguetung = w ?? Parameter.Einspeiseverguetung)"
+                                Min="0" Max="2" Nachkommastellen="4" />
 
-            @* Ein KWK-Preis von 0 heisst "nicht gepflegt" - die Unterscheidung ist
-               wichtig, weil eine gepflegte 0 sonst wie ein Preis wirkte. *@
-            <Zahlenfeld Bezeichnung="@_t.EinspeisungKwk"
-                        Wert="@(Parameter.EinspeiseverguetungKWK ?? 0)"
-                        WertChanged="@(w => Parameter.EinspeiseverguetungKWK = w > 0 ? w : null)"
-                        Min="0" Max="2" Nachkommastellen="4" />
+                    @* Ein KWK-Preis von 0 heisst "nicht gepflegt" - die Unterscheidung ist
+                       wichtig, weil eine gepflegte 0 sonst wie ein Preis wirkte. *@
+                    <Zahlenfeld Bezeichnung="@_t.EinspeisungKwk"
+                                Wert="@(Parameter.EinspeiseverguetungKWK ?? 0)"
+                                WertChanged="@(w => Parameter.EinspeiseverguetungKWK = w > 0 ? w : null)"
+                                Min="0" Max="2" Nachkommastellen="4" />
 
-            @* Ae16: Die AUSWAHL liegt im Energietraegerdialog; hier nur noch Anzeige. *@
-            <Schalter Bezeichnung="@_t.Aufschlaege" Wert="@Parameter.AufschlaegeAnwenden"
-                      Aktiv="false" />
+                    @* Ae16: Die AUSWAHL liegt im Energietraegerdialog; hier nur noch Anzeige. *@
+                    <Schalter Bezeichnung="@_t.Aufschlaege" Wert="@Parameter.AufschlaegeAnwenden"
+                              Aktiv="false" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -105,9 +115,13 @@
             <KindInhalt>
                 @* K6: Der CO2-Preis kommt jahresgenau aus dem Gesetzeskatalog;
                    dieses Feld ist nur noch der Override "konstanter Preis". *@
-                <Zahlenfeld Bezeichnung="@_t.Co2" Wert="@Parameter.CO2Preis"
-                            WertChanged="@(w => Parameter.CO2Preis = w ?? Parameter.CO2Preis)"
-                            Min="0" Max="500" Nachkommastellen="0" Einheit="€/t" />
+                <Formularraster>
+                    <KindInhalt>
+                        <Zahlenfeld Bezeichnung="@_t.Co2" Wert="@Parameter.CO2Preis"
+                                    WertChanged="@(w => Parameter.CO2Preis = w ?? Parameter.CO2Preis)"
+                                    Min="0" Max="500" Nachkommastellen="0" Einheit="€/t" />
+                    </KindInhalt>
+                </Formularraster>
                 <Herleitungszeile Text="@Co2Zeile" />
 
                 @if (GesetzeGaben is not null)
@@ -116,28 +130,42 @@
                             @onclick="KatalogKlick">@_t.Co2Katalog</button>
                 }
 
-                <Auswahlfeld Bezeichnung="@_t.Park" Eintraege="@Kraftwerksparks"
-                             Auswahl="@Parameter.IdKraftwerkspark"
-                             AuswahlChanged="@(n => Parameter.IdKraftwerkspark = n ?? 0)" />
+                <Formularraster>
+                    <KindInhalt>
+                        <Auswahlfeld Bezeichnung="@_t.Park" Eintraege="@Kraftwerksparks"
+                                     Auswahl="@Parameter.IdKraftwerkspark"
+                                     AuswahlChanged="@(n => Parameter.IdKraftwerkspark = n ?? 0)" />
+                    </KindInhalt>
+                </Formularraster>
 
                 @* Referenzkessel kommt seit Phase 11 aus der DB - hier nur Anzeige. *@
                 <Herleitungszeile Text="@ReferenzkesselZeile" />
 
-                <h3 class="epos-untergruppe">@_t.GBilanz</h3>
-                <Ganzzahlfeld Bezeichnung="@_t.BilanzJahr" Wert="@Parameter.BilanzJahr"
-                              WertChanged="@(w => Parameter.BilanzJahr = w ?? Parameter.BilanzJahr)"
-                              Min="0" Max="2100" />
-                <Auswahlfeld Bezeichnung="@_t.Methode"
-                             Eintraege="@TarifWahlen.Eintraege(_methoden)"
-                             Auswahl="@TarifWahlen.NummerZu(_methoden, Parameter.EmissionsMethode)"
-                             AuswahlChanged="@(n => Parameter.EmissionsMethode = TarifWahlen.WertZu(_methoden, n))" />
-                <Auswahlfeld Bezeichnung="@_t.Biomasse"
-                             Eintraege="@TarifWahlen.Eintraege(_biomasse)"
-                             Auswahl="@TarifWahlen.NummerZu(_biomasse, Parameter.BiomasseKonvention)"
-                             AuswahlChanged="@(n => Parameter.BiomasseKonvention = TarifWahlen.WertZu(_biomasse, n))" />
-                <Schalter Bezeichnung="@_t.Nachweis"
-                          Wert="@Parameter.NachhaltigkeitsnachweisBiomasse"
-                          WertChanged="@(w => Parameter.NachhaltigkeitsnachweisBiomasse = w)" />
+                @* Die Untergruppe des Vorlaeufers (Form_WirtschaftlichkeitParameter.Gruppe)
+                   ist jetzt eine Formulargruppe - dieselbe leise Zwischenueberschrift,
+                   aber die Felder bleiben direkte Rasterkinder. *@
+                <Formularraster>
+                    <KindInhalt>
+                        <Formulargruppe Titel="@_t.GBilanz">
+                            <KindInhalt>
+                                <Ganzzahlfeld Bezeichnung="@_t.BilanzJahr" Wert="@Parameter.BilanzJahr"
+                                              WertChanged="@(w => Parameter.BilanzJahr = w ?? Parameter.BilanzJahr)"
+                                              Min="0" Max="2100" />
+                                <Auswahlfeld Bezeichnung="@_t.Methode"
+                                             Eintraege="@TarifWahlen.Eintraege(_methoden)"
+                                             Auswahl="@TarifWahlen.NummerZu(_methoden, Parameter.EmissionsMethode)"
+                                             AuswahlChanged="@(n => Parameter.EmissionsMethode = TarifWahlen.WertZu(_methoden, n))" />
+                                <Auswahlfeld Bezeichnung="@_t.Biomasse"
+                                             Eintraege="@TarifWahlen.Eintraege(_biomasse)"
+                                             Auswahl="@TarifWahlen.NummerZu(_biomasse, Parameter.BiomasseKonvention)"
+                                             AuswahlChanged="@(n => Parameter.BiomasseKonvention = TarifWahlen.WertZu(_biomasse, n))" />
+                                <Schalter Bezeichnung="@_t.Nachweis"
+                                          Wert="@Parameter.NachhaltigkeitsnachweisBiomasse"
+                                          WertChanged="@(w => Parameter.NachhaltigkeitsnachweisBiomasse = w)" />
+                            </KindInhalt>
+                        </Formulargruppe>
+                    </KindInhalt>
+                </Formularraster>
             </KindInhalt>
         </Gruppenkopf>
     }

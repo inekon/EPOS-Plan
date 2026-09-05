@@ -313,4 +313,33 @@ public class PreisbloeckeTests : BunitContext
         Assert.All(cut.FindAll(".epos-preiszeile input"),
                    e => Assert.False(e.HasAttribute("disabled")));
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Gesamtaufschlag und die beiden
+    /// Vergütungsfelder stehen im <c>Formularraster</c> — Beschriftung neben dem
+    /// Feld, Zahlenfeld kurz mit der Einheit dahinter.
+    ///
+    /// <para>Der PREISBLOCK darüber bleibt, wie er ist: Seine Zeilen tragen
+    /// Schalter, Wert und Schnellwahlknopf NEBENEINANDER; das ist eine
+    /// Bearbeitungszeile, keine Formularzeile, und der Raster darf dort nicht
+    /// hinein.</para>
+    /// </summary>
+    [Fact]
+    public void Aufschlag_und_Verguetung_stehen_im_Formularraster()
+    {
+        var cut = Render<StromAufschlaege>(p => p.Add(x => x.Stand, StromStand()));
+
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 2);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count >= 3);
+
+        // Der Preisblock steht ausserhalb.
+        Assert.Empty(cut.FindAll(".epos-formularraster .epos-preisblock"));
+        Assert.Single(cut.FindAll(".epos-preisblock"));
+    }
 }

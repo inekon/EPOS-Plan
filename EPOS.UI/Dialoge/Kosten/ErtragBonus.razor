@@ -64,8 +64,15 @@
         <Gruppenkopf Titel="@TitelPv">
             <KindInhalt>
                 <Herleitungszeile Text="@PvErklaerungText" />
-                <Auswahlfeld Bezeichnung="@LabelPvProjekt" Eintraege="@Projekte"
-                             Auswahl="@_projektId" AuswahlChanged="BeiProjekt" />
+                @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben
+                   dem Feld. Die Ertragstafel und die Herleitungszeilen bleiben
+                   Text - sie sind Ergebnis, kein Formularblock. *@
+                <Formularraster>
+                    <KindInhalt>
+                        <Auswahlfeld Bezeichnung="@LabelPvProjekt" Eintraege="@Projekte"
+                                     Auswahl="@_projektId" AuswahlChanged="BeiProjekt" />
+                    </KindInhalt>
+                </Formularraster>
                 <button type="button" class="epos-knopf" disabled="@(Projekte.Count == 0)"
                         @onclick="BeiPvOeffnen">@PvOeffnenText</button>
             </KindInhalt>

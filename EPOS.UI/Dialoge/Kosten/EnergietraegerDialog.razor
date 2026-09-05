@@ -128,13 +128,22 @@
 
                 @if (Katalogkontext)
                 {
-                    @* Ä9: Im Katalogkontext ist der Stammkopf editierbar. *@
-                    <div class="epos-feldpaar">
-                        <Textfeld Bezeichnung="@LabelStammName" Wert="@_stammName"
-                                  WertChanged="@(w => _stammName = w)" />
-                        <Auswahlfeld Bezeichnung="@LabelStammGruppe" Eintraege="@Gruppen"
-                                     Auswahl="@_stammGruppe"
-                                     AuswahlChanged="@(w => _stammGruppe = w)" />
+                    @* Ä9: Im Katalogkontext ist der Stammkopf editierbar.
+                       Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung
+                       neben dem Feld; das handgebaute Feldpaar entfaellt, der
+                       Uebernahmeknopf steht in einer eigenen Leiste. Das Suchfeld
+                       ueber der Liste bleibt, wo es ist - es gehoert zur Liste,
+                       nicht zu einem Formularblock. *@
+                    <Formularraster>
+                        <KindInhalt>
+                            <Textfeld Bezeichnung="@LabelStammName" Wert="@_stammName"
+                                      WertChanged="@(w => _stammName = w)" />
+                            <Auswahlfeld Bezeichnung="@LabelStammGruppe" Eintraege="@Gruppen"
+                                         Auswahl="@_stammGruppe"
+                                         AuswahlChanged="@(w => _stammGruppe = w)" />
+                        </KindInhalt>
+                    </Formularraster>
+                    <div class="epos-leiste">
                         <button type="button" class="epos-knopf"
                                 @onclick="StammUebernehmen">@StammSpeichernText</button>
                     </div>

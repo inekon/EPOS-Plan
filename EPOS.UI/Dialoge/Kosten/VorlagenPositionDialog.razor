@@ -31,18 +31,24 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
-    <Textfeld Bezeichnung="@LabelBezeichnung" Wert="@_bezeichnung" WertChanged="BeiBezeichnung" />
+    @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld,
+       Zahlenfelder kurz mit der Einheit dahinter. *@
+    <Formularraster>
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelBezeichnung" Wert="@_bezeichnung" WertChanged="BeiBezeichnung" />
 
-    <Auswahlfeld Bezeichnung="@LabelKostenart"
-                 Eintraege="@Kostenarten"
-                 Auswahl="@_kostenart"
-                 AuswahlChanged="BeiKostenart" />
+            <Auswahlfeld Bezeichnung="@LabelKostenart"
+                         Eintraege="@Kostenarten"
+                         Auswahl="@_kostenart"
+                         AuswahlChanged="BeiKostenart" />
 
-    <Schalter Bezeichnung="@LabelErloes" Wert="@_istErloes" WertChanged="BeiErloes" />
+            <Schalter Bezeichnung="@LabelErloes" Wert="@_istErloes" WertChanged="BeiErloes" />
 
-    <Zahlenfeld Bezeichnung="@LabelEmpfehlungVon" Wert="@_empfVon" WertChanged="BeiEmpfVon" />
+            <Zahlenfeld Bezeichnung="@LabelEmpfehlungVon" Wert="@_empfVon" WertChanged="BeiEmpfVon" />
 
-    <Zahlenfeld Bezeichnung="@LabelEmpfehlungBis" Wert="@_empfBis" WertChanged="BeiEmpfBis" />
+            <Zahlenfeld Bezeichnung="@LabelEmpfehlungBis" Wert="@_empfBis" WertChanged="BeiEmpfBis" />
+        </KindInhalt>
+    </Formularraster>
 
     @if (!string.IsNullOrEmpty(_meldung))
     {

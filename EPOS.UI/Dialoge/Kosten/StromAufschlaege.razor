@@ -40,9 +40,17 @@
                         Stand.VertriebAktiv, w => Stand.VertriebAktiv = w, null)
         </div>
 
-        <Zahlenfeld Bezeichnung="@LabelGesamtaufschlag" Einheit="@Einheit"
-                    Wert="@Stand.Override" Aktiv="@(!Stand.Aufgeschluesselt)"
-                    WertChanged="@(w => Setzen(() => Stand.Override = w ?? Stand.Override))" />
+        @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem
+           Feld, das Zahlenfeld kurz mit der Einheit dahinter. Der Preisblock
+           darueber bleibt, wie er ist - seine Zeilen sind Schalter, Wert und
+           Schnellwahlknopf NEBENEINANDER, das ist keine Formularzeile. *@
+        <Formularraster>
+            <KindInhalt>
+                <Zahlenfeld Bezeichnung="@LabelGesamtaufschlag" Einheit="@Einheit"
+                            Wert="@Stand.Override" Aktiv="@(!Stand.Aufgeschluesselt)"
+                            WertChanged="@(w => Setzen(() => Stand.Override = w ?? Stand.Override))" />
+            </KindInhalt>
+        </Formularraster>
 
         <p class="epos-preisblock-summe">@Anzeige.SummeText</p>
         <p class="@(Anzeige.RestNegativ ? "epos-preisblock-rest epos-preisblock-rest--negativ"
@@ -52,12 +60,16 @@
 
 <Gruppenkopf Titel="@TitelVerguetung">
     <KindInhalt>
-        <Zahlenfeld Bezeichnung="@LabelVerguetungPv" Einheit="@Einheit"
-                    Wert="@Stand.VerguetungPv"
-                    WertChanged="@(w => Stand.VerguetungPv = w ?? Stand.VerguetungPv)" />
-        <Zahlenfeld Bezeichnung="@LabelVerguetungBhkw" Einheit="@Einheit"
-                    Wert="@Stand.VerguetungBhkw"
-                    WertChanged="@(w => Stand.VerguetungBhkw = w ?? Stand.VerguetungBhkw)" />
+        <Formularraster>
+            <KindInhalt>
+                <Zahlenfeld Bezeichnung="@LabelVerguetungPv" Einheit="@Einheit"
+                            Wert="@Stand.VerguetungPv"
+                            WertChanged="@(w => Stand.VerguetungPv = w ?? Stand.VerguetungPv)" />
+                <Zahlenfeld Bezeichnung="@LabelVerguetungBhkw" Einheit="@Einheit"
+                            Wert="@Stand.VerguetungBhkw"
+                            WertChanged="@(w => Stand.VerguetungBhkw = w ?? Stand.VerguetungBhkw)" />
+            </KindInhalt>
+        </Formularraster>
     </KindInhalt>
 </Gruppenkopf>
 
