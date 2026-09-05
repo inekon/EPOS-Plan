@@ -92,7 +92,7 @@ namespace WindowsFormsApplication1
                 ["Kopieren"] = new Func<string, string, Task<bool>>(Kopieren),
 
                 // iU9-W12-E-2: die Grafik der markierten Ganglinie. Gerechnet wird im
-                // Kern (StromganglinieAuswertungCtrl), gezeichnet auch
+                // Kern (GanglinienAuswertungCtrl), gezeichnet auch
                 // (ChartRenderer.GanglinieNormiert) - die Komponente bekommt Zahlen
                 // und ein PNG.
                 ["Kennzahlen"] = new Func<GanglinienWahl, Task<GanglinienKennzahlen>>(
@@ -245,12 +245,12 @@ namespace WindowsFormsApplication1
         private sealed class Grafikvorrat
         {
             private string _schluessel;
-            private StromganglinieAuswertung _stand;
+            private GanglinienAuswertung _stand;
 
             /// <summary>Die drei Kennzahlen; <c>null</c> = keine brauchbare Reihe.</summary>
             internal GanglinienKennzahlen Kennzahlen(GanglinienWahl wahl)
             {
-                StromganglinieAuswertung a = Lesen(wahl);
+                GanglinienAuswertung a = Lesen(wahl);
                 if (a == null || !a.Erfolgreich) return null;
 
                 return new GanglinienKennzahlen(a.JahresarbeitMwh, a.SpitzeKw,
@@ -271,7 +271,7 @@ namespace WindowsFormsApplication1
             /// <c>ChartRenderer.FensterAusBild</c>.</param>
             internal byte[] Bild(GanglinienWahl wahl, bool sortiert, Diagrammbereich bereich)
             {
-                StromganglinieAuswertung a = Lesen(wahl);
+                GanglinienAuswertung a = Lesen(wahl);
                 if (a == null || !a.Erfolgreich) return null;
 
                 float[] werte = a.Stundenwerte;
@@ -298,7 +298,7 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>Liest die Reihe — oder gibt die schon gelesene zurück.</summary>
-            private StromganglinieAuswertung Lesen(GanglinienWahl wahl)
+            private GanglinienAuswertung Lesen(GanglinienWahl wahl)
             {
                 if (wahl == null) return null;
 
@@ -308,8 +308,9 @@ namespace WindowsFormsApplication1
 
                 _schluessel = schluessel;
                 _stand = wahl.AusKatalog
-                    ? StromganglinieAuswertungCtrl.AusKatalog(wahl.Bezeichner)
-                    : StromganglinieAuswertungCtrl.AusProjekt(wahl.GanglinieId, wahl.Bezeichner);
+                    ? GanglinienAuswertungCtrl.AusKatalog(GanglinienQuelle.Strom, wahl.Bezeichner)
+                    : GanglinienAuswertungCtrl.AusProjekt(GanglinienQuelle.Strom,
+                                                          wahl.GanglinieId, wahl.Bezeichner);
                 return _stand;
             }
         }

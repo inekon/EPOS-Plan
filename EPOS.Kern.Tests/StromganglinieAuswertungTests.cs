@@ -24,6 +24,12 @@ namespace EPOS.Kern.Tests
     ///
     /// <para><b>Ohne Datenbank schweigen die Faelle</b> (<see cref="TestDatenbank"/>);
     /// gelesen wird nur, geschrieben nichts.</para>
+    ///
+    /// <para><b>Seit iU9-W9-E-3 ist der Controller verallgemeinert</b>: Der Rechenweg
+    /// heisst <see cref="GanglinienAuswertungCtrl"/> und bekommt seine Tabellen als
+    /// <see cref="GanglinienQuelle"/> herein — <c>Strom</c> hier, <c>Waermebedarf</c>
+    /// in <see cref="WaermebedarfKatalogTests"/>. Die Zahlen dieser Faelle sind davon
+    /// UNBERUEHRT geblieben; genau das ist ihr Zweck.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class StromganglinieAuswertungTests : IClassFixture<TestDatenbank>
@@ -53,11 +59,11 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            StromganglinieAuswertung a = StromganglinieAuswertungCtrl.AusKatalog(STUNDENREIHE);
+            GanglinienAuswertung a = GanglinienAuswertungCtrl.AusKatalog(GanglinienQuelle.Strom, STUNDENREIHE);
 
             Assert.True(a.Erfolgreich);
             Assert.Equal(STUNDENREIHE, a.Bezeichner);
-            Assert.Equal(StromganglinieAuswertungCtrl.STUNDEN_JAHR, a.Stundenwerte.Length);
+            Assert.Equal(GanglinienAuswertungCtrl.STUNDEN_JAHR, a.Stundenwerte.Length);
 
             Assert.Equal(4790.086, a.JahresarbeitMwh, 3);
             Assert.Equal(2070.0, a.SpitzeKw, 3);
@@ -80,11 +86,11 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            StromganglinieAuswertung a =
-                StromganglinieAuswertungCtrl.AusKatalog(VIERTELSTUNDENREIHE);
+            GanglinienAuswertung a =
+                GanglinienAuswertungCtrl.AusKatalog(GanglinienQuelle.Strom, VIERTELSTUNDENREIHE);
 
             Assert.True(a.Erfolgreich);
-            Assert.Equal(StromganglinieAuswertungCtrl.STUNDEN_JAHR, a.Stundenwerte.Length);
+            Assert.Equal(GanglinienAuswertungCtrl.STUNDEN_JAHR, a.Stundenwerte.Length);
 
             Assert.Equal(4788.929, a.JahresarbeitMwh, 3);
             Assert.Equal(1310.75, a.SpitzeKw, 3);
@@ -105,8 +111,8 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            StromganglinieAuswertung a =
-                StromganglinieAuswertungCtrl.AusKatalog(VIERTELSTUNDENREIHE);
+            GanglinienAuswertung a =
+                GanglinienAuswertungCtrl.AusKatalog(GanglinienQuelle.Strom, VIERTELSTUNDENREIHE);
             Assert.True(a.Erfolgreich);
 
             // Die Summe der Viertelstundenwerte, wie der Lauf sie liest: Σ ÷ 4 000 = MWh.
@@ -117,7 +123,7 @@ namespace EPOS.Kern.Tests
                     Wert = new StromganglinieStammCtrl().GetStammId(VIERTELSTUNDENREIHE)
                 });
 
-            Assert.Equal(StromganglinieAuswertungCtrl.VIERTELSTUNDEN_JAHR, dt.Rows.Count);
+            Assert.Equal(GanglinienAuswertungCtrl.VIERTELSTUNDEN_JAHR, dt.Rows.Count);
 
             double summe = 0;
             double hoechster = 0;
@@ -149,10 +155,10 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            StromganglinieAuswertung ausProjekt =
-                StromganglinieAuswertungCtrl.AusProjekt(0, STUNDENREIHE);
-            StromganglinieAuswertung ausKatalog =
-                StromganglinieAuswertungCtrl.AusKatalog(STUNDENREIHE);
+            GanglinienAuswertung ausProjekt =
+                GanglinienAuswertungCtrl.AusProjekt(GanglinienQuelle.Strom, 0, STUNDENREIHE);
+            GanglinienAuswertung ausKatalog =
+                GanglinienAuswertungCtrl.AusKatalog(GanglinienQuelle.Strom, STUNDENREIHE);
 
             Assert.True(ausProjekt.Erfolgreich);
             Assert.Equal(ausKatalog.JahresarbeitMwh, ausProjekt.JahresarbeitMwh, 6);
@@ -173,11 +179,11 @@ namespace EPOS.Kern.Tests
 
             const int ID_PROJEKTKOPIE = 1008032;
 
-            StromganglinieAuswertung kopie =
-                StromganglinieAuswertungCtrl.AusProjekt(ID_PROJEKTKOPIE, STUNDENREIHE);
+            GanglinienAuswertung kopie =
+                GanglinienAuswertungCtrl.AusProjekt(GanglinienQuelle.Strom, ID_PROJEKTKOPIE, STUNDENREIHE);
 
             Assert.True(kopie.Erfolgreich);
-            Assert.Equal(StromganglinieAuswertungCtrl.STUNDEN_JAHR, kopie.Stundenwerte.Length);
+            Assert.Equal(GanglinienAuswertungCtrl.STUNDEN_JAHR, kopie.Stundenwerte.Length);
             Assert.Equal(4790.086, kopie.JahresarbeitMwh, 3);
             Assert.Equal(2070.0, kopie.SpitzeKw, 3);
         }
@@ -195,8 +201,8 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            StromganglinieAuswertung a =
-                StromganglinieAuswertungCtrl.AusKatalog("gibt es nicht");
+            GanglinienAuswertung a =
+                GanglinienAuswertungCtrl.AusKatalog(GanglinienQuelle.Strom, "gibt es nicht");
 
             Assert.False(a.Erfolgreich);
             Assert.Empty(a.Stundenwerte);
@@ -207,7 +213,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ein_leerer_Name_fragt_die_Datenbank_nicht()
         {
-            StromganglinieAuswertung a = StromganglinieAuswertungCtrl.AusKatalog("");
+            GanglinienAuswertung a = GanglinienAuswertungCtrl.AusKatalog(GanglinienQuelle.Strom, "");
 
             Assert.False(a.Erfolgreich);
             Assert.Equal("", a.Bezeichner);

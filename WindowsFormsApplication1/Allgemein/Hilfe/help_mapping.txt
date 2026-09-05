@@ -141,6 +141,11 @@ Form_Stromspeicher.btn_Help         = Stromspeicher
 # Prozesswaerme sind seine fachlichen Bestandteile und haben je eine eigene
 # Unterseite.
 Form_Waermebedarf.btn_Help          = Wärmebedarf
+# iU9-W9-E-3: der Infoknopf am Formathinweis der Knopfleiste "CSV-Datei
+# importieren..." - dieselbe Seite, eigener Schluessel wie beim Stromlastgang
+# (Form_Stromganglinie.btn_Help_Import). Er traegt den vollen Wortlaut des
+# Formats als Kurztext.
+Form_Waermebedarf.btn_Help_Import   = Wärmebedarf
 Form_Gebaeude.btn_Help              = Gebäude
 Form_Brauchwasser.btn_Help          = Brauchwasser
 Form_Prozesswaerme.btn_Help         = Prozesswärme

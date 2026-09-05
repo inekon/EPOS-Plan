@@ -1,11 +1,15 @@
 ﻿using System.Globalization;
+using System.Threading;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Allgemein;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using SpeicherEngine;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -16,12 +20,21 @@ namespace EPOS.UI.Tests.Dialoge;
 /// KANALFELD, das der Vorläufer zur Laufzeit anlegte
 /// (<c>KanalControlsAufbauen</c>:72-116).
 ///
+/// <para>Seit dem Anwenderwunsch <b>W9‑E‑3</b> der Windows-Abnahme vom 05.09.2026
+/// kommen die vier Knöpfe der Katalogseite, der Formathinweis und die Grafik dazu —
+/// wörtlich dieselben Bausteine wie im Stromganglinien-Dialog (W12‑E‑1/W12‑E‑2).</para>
+///
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Beschriftungen.</para>
 /// </summary>
 public class WaermebedarfExternDialogTests : BunitContext
 {
-    private static readonly string[] KATALOG = { "Ganglinie A", "Ganglinie B", "Ganglinie C" };
+    private static readonly List<WaermebedarfAdminDialog.Katalogzeile> KATALOG = new()
+    {
+        new WaermebedarfAdminDialog.Katalogzeile(1, "Ganglinie A", false),
+        new WaermebedarfAdminDialog.Katalogzeile(2, "Ganglinie B", true),
+        new WaermebedarfAdminDialog.Katalogzeile(3, "Ganglinie C", false)
+    };
 
     private static readonly (string Wert, string Text)[] KANAELE =
     {
@@ -33,9 +46,27 @@ public class WaermebedarfExternDialogTests : BunitContext
     public WaermebedarfExternDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
+        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    /// <summary>
+    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Hausmuster seit iU9-W8) —
+    /// Kultur UND Thread-Kultur, damit ein Lauf auf einem en-US-Läufer dieselben
+    /// deutschen Texte sieht. Seit W9‑E‑3 prüft diese Klasse auch formatierte
+    /// Meldungen; ohne das Pinnen hinge ihr Wortlaut an der Läuferkultur.
+    /// </summary>
+    private static void DeutscheOberflaeche() => Kultur("de-DE");
+
+    private static void Kultur(string name)
+    {
+        var k = new CultureInfo(name);
+        CultureInfo.DefaultThreadCurrentCulture = k;
+        CultureInfo.DefaultThreadCurrentUICulture = k;
+        Thread.CurrentThread.CurrentCulture = k;
+        Thread.CurrentThread.CurrentUICulture = k;
+        CultureInfo.CurrentCulture = k;
+        CultureInfo.CurrentUICulture = k;
     }
 
     private static WaermebedarfExternZeile Zeile(int idZ, string name = "Ganglinie A",
@@ -53,12 +84,18 @@ public class WaermebedarfExternDialogTests : BunitContext
         Func<string, bool>? hatZuordnung = null,
         Func<string, bool>? katalogLoeschen = null,
         IReadOnlyDictionary<string, object>? verwaltung = null,
+        Func<Task<List<WaermebedarfAdminDialog.Katalogzeile>>>? katalog = null,
+        Func<string, Task<string?>>? dateiWaehlen = null,
+        Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+             Task<GanglinienImportErgebnis>>? einlesen = null,
+        Func<string, string, Task<bool>>? kopieren = null,
         Action? geaendert = null,
         Action<bool>? geschlossen = null)
         => Render<WaermebedarfExternDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<WaermebedarfExternZeile> { Zeile(1) })
             .Add(x => x.Wizard, wizard)
-            .Add(x => x.Katalog, () => KATALOG)
+            .Add(x => x.Katalog, katalog ?? (() => Task.FromResult(
+                new List<WaermebedarfAdminDialog.Katalogzeile>(KATALOG))))
             .Add(x => x.Aufnehmen, n => new WaermebedarfExternZeile
             {
                 IdZ = 0, IdGanglinie = 9, Bezeichner = n, Kanal = "HEIZUNG"
@@ -66,9 +103,45 @@ public class WaermebedarfExternDialogTests : BunitContext
             .Add(x => x.HatProjektzuordnung, hatZuordnung ?? (_ => false))
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
             .Add(x => x.VerwaltungGaben, verwaltung)
+            .Add(x => x.DateiWaehlen, dateiWaehlen)
+            .Add(x => x.Einlesen, einlesen)
+            .Add(x => x.Kopieren, kopieren)
             .Add(x => x.Kanaele, KANAELE)
             .Add(x => x.Geaendert, geaendert)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+
+    /// <summary>Derselbe Aufbau, aber MIT der Grafik (Kennzahlen und Bildauftrag).</summary>
+    private IRenderedComponent<WaermebedarfExternDialog> ZeigeMitGrafik(
+        Dictionary<string, GanglinienKennzahlen?>? kennzahlen = null,
+        List<Auftrag>? auftraege = null,
+        List<WaermebedarfExternZeile>? zeilen = null)
+    {
+        Dictionary<string, GanglinienKennzahlen?> zahlen = kennzahlen ?? new()
+        {
+            ["Ganglinie A"] = new GanglinienKennzahlen(1234.5, 500.0, 2469.0),
+            ["Ganglinie B"] = new GanglinienKennzahlen(1000.0, 250.0, 4000.0)
+        };
+
+        return Render<WaermebedarfExternDialog>(p => p
+            .Add(x => x.Zeilen, zeilen ?? new List<WaermebedarfExternZeile> { Zeile(1) })
+            .Add(x => x.Katalog, () => Task.FromResult(
+                new List<WaermebedarfAdminDialog.Katalogzeile>(KATALOG)))
+            .Add(x => x.Aufnehmen, n => new WaermebedarfExternZeile
+            {
+                IdZ = 0, IdGanglinie = 9, Bezeichner = n, Kanal = "HEIZUNG"
+            })
+            .Add(x => x.Kanaele, KANAELE)
+            .Add(x => x.Kennzahlen, (GanglinienWahl w) =>
+                Task.FromResult(zahlen.TryGetValue(w.Bezeichner, out GanglinienKennzahlen? k)
+                                ? k : null))
+            .Add(x => x.Bildauftrag, (GanglinienWahl w, bool sortiert, Diagrammbereich? bereich) =>
+            {
+                auftraege?.Add(new Auftrag(w, sortiert, bereich));
+                return new byte[] { 1, 2, 3 };
+            }));
+    }
+
+    private sealed record Auftrag(GanglinienWahl Wahl, bool Sortiert, Diagrammbereich? Bereich);
 
     private static IElement Knopf(IRenderedComponent<WaermebedarfExternDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
@@ -84,6 +157,20 @@ public class WaermebedarfExternDialogTests : BunitContext
 
     private static IElement Entfernen(IRenderedComponent<WaermebedarfExternDialog> cut)
         => cut.FindAll(".epos-zweispalten-mitte button")[1];
+
+    /// <summary>
+    /// „OK" IM Namensdialog. Der Dialog fuehrt zwei Knoepfe dieses Namens - den der
+    /// Schlussleiste und den der Ueberlagerung; ueber den Text allein traefe man
+    /// immer den ersten.
+    /// </summary>
+    private static void OkImNamensdialog(IRenderedComponent<WaermebedarfExternDialog> cut)
+        => cut.FindComponent<NamensDialog>()
+              .FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+    /// <summary>Der Wahlknopf der n-ten KATALOGzeile (die Projektliste steht davor).</summary>
+    private static IElement KatalogWahl(IRenderedComponent<WaermebedarfExternDialog> cut,
+                                        int projektzeilen, int index)
+        => cut.FindAll("button.epos-anlagenwahl")[projektzeilen + index];
 
     // =================================================================================
     // Feldbestand
@@ -123,6 +210,21 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.Contains("Prozesswärme", cut.Markup);
     }
 
+    /// <summary>
+    /// <b>W9‑E‑3, Punkt 4:</b> Der Kanal ist ein Parameterfeld und steht deshalb im
+    /// Baustein <c>Formularraster</c> (Hausregel iU8‑E‑2) — Beschriftung NEBEN dem
+    /// Feld. Er bleibt in der LINKEN Spalte: Er gehört zur Zuordnung, nicht zum
+    /// Katalog (Regel des Bausteins <c>Zweispaltenauswahl</c>).
+    /// </summary>
+    [Fact]
+    public void Das_Kanalfeld_steht_im_Formularraster_der_linken_Spalte()
+    {
+        var cut = Aufbauen();
+
+        IElement raster = cut.Find(".epos-zweispalten-spalte--links .epos-formularraster");
+        Assert.NotNull(raster.QuerySelector("select"));
+    }
+
     [Fact]
     public void Im_Assistenten_gibt_es_keine_Schlussleiste()
     {
@@ -138,6 +240,120 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.DoesNotContain("Einlesen/Bearbeiten..", Aufbauen().Markup);
         Assert.Contains("Einlesen/Bearbeiten..",
                         Aufbauen(verwaltung: new Dictionary<string, object>()).Markup);
+    }
+
+    // =================================================================================
+    // W9-E-3: Die Knopfleiste unter der Katalogliste
+    // =================================================================================
+
+    /// <summary>
+    /// Die vier Knöpfe in ihrer Reihenfolge — dieselbe wie im Stromdialog:
+    /// Importieren, Speichern unter, Löschen, Bearbeiten.
+    /// </summary>
+    [Fact]
+    public void Die_Katalogleiste_traegt_vier_Knoepfe_in_dieser_Reihenfolge()
+    {
+        var cut = Aufbauen(
+            verwaltung: new Dictionary<string, object>(),
+            dateiWaehlen: _ => Task.FromResult<string?>(""),
+            einlesen: (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis()),
+            kopieren: (_, __) => Task.FromResult(true));
+
+        var texte = cut.FindAll(".epos-zweispalten-spalte--rechts .epos-leiste button")
+                       .Select(b => b.TextContent.Trim()).ToList();
+
+        Assert.Equal(new[]
+        {
+            "CSV-Datei importieren...", "Speichern unter...",
+            "DB Ganglinie löschen", "Einlesen/Bearbeiten.."
+        }, texte);
+    }
+
+    /// <summary>
+    /// <b>Kein Delegat, kein Knopf.</b> „CSV-Datei importieren…" braucht BEIDES —
+    /// den Dateiwähler und die Kette; „Speichern unter…" den Kopierweg.
+    /// </summary>
+    [Fact]
+    public void Ohne_Delegaten_bleibt_der_jeweilige_Knopf_weg()
+    {
+        Assert.DoesNotContain("CSV-Datei importieren...", Aufbauen().Markup);
+        Assert.DoesNotContain("Speichern unter...", Aufbauen().Markup);
+
+        // Halbfall: Waehler ohne Kette - immer noch kein Importknopf.
+        Assert.DoesNotContain("CSV-Datei importieren...",
+            Aufbauen(dateiWaehlen: _ => Task.FromResult<string?>("")).Markup);
+
+        Assert.Contains("Speichern unter...",
+            Aufbauen(kopieren: (_, __) => Task.FromResult(true)).Markup);
+    }
+
+    /// <summary>
+    /// Der Formathinweis steht einzeilig unter der Leiste, der volle Wortlaut hängt
+    /// am Infoknopf daneben. Er nennt genau das, was die Kette wirklich auswertet.
+    /// </summary>
+    [Fact]
+    public void Der_Formathinweis_nennt_die_Angaben_und_haengt_am_Infoknopf()
+    {
+        var cut = Aufbauen(
+            dateiWaehlen: _ => Task.FromResult<string?>(""),
+            einlesen: (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis()));
+
+        IElement hinweis = cut.Find(".epos-formathinweis");
+        Assert.Contains("8.760 Stunden- oder 35.040 Viertelstundenwerte", hinweis.TextContent);
+        Assert.Contains("ein Wert je Zeile", hinweis.TextContent);
+
+        IElement knopf = hinweis.QuerySelector("button")!;
+        string kurztext = knopf.GetAttribute("title") ?? "";
+        Assert.Contains("Semikolon, Komma, Tabulator", kurztext);
+        Assert.Contains("Leistung in kW oder als Arbeit in kWh", kurztext);
+        Assert.Contains("Kopfzeile", kurztext);
+        Assert.Contains("Dezimaltrennzeichen Komma oder Punkt", kurztext);
+    }
+
+    /// <summary>
+    /// <b>W13‑B‑1:</b> Der Dateiwähler DARF warten; die Kette läuft erst danach —
+    /// und ohne Rastervorgabe, damit die Erkennung entscheidet.
+    /// </summary>
+    [Fact]
+    public void Der_Dateiwaehler_darf_warten_und_die_Kette_laeuft_danach()
+    {
+        var wartet = new TaskCompletionSource<string?>();
+        string? gelesen = null;
+        GanglinienRaster raster = GanglinienRaster.Stunde;
+
+        var cut = Aufbauen(
+            dateiWaehlen: _ => wartet.Task,
+            einlesen: (p, r, __) =>
+            {
+                gelesen = p;
+                raster = r;
+                return Task.FromResult(new GanglinienImportErgebnis());
+            });
+
+        Knopf(cut, "CSV-Datei importieren...").Click();
+        Assert.Null(gelesen);
+
+        wartet.SetResult(@"D:\quelle\jahr.csv");
+        cut.WaitForAssertion(() => Assert.Equal(@"D:\quelle\jahr.csv", gelesen));
+        Assert.Equal(GanglinienRaster.Unbekannt, raster);
+    }
+
+    /// <summary>Ein abgebrochener Wähler liest nichts.</summary>
+    [Fact]
+    public void Ein_abgebrochener_Waehler_liest_nichts()
+    {
+        bool gerufen = false;
+        var cut = Aufbauen(
+            dateiWaehlen: _ => Task.FromResult<string?>(""),
+            einlesen: (_, __, ___) =>
+            {
+                gerufen = true;
+                return Task.FromResult(new GanglinienImportErgebnis());
+            });
+
+        Knopf(cut, "CSV-Datei importieren...").Click();
+
+        Assert.False(gerufen);
     }
 
     // =================================================================================
@@ -227,13 +443,34 @@ public class WaermebedarfExternDialogTests : BunitContext
         var cut = Aufbauen(hatZuordnung: _ => true,
                            katalogLoeschen: _ => { geloescht = true; return true; });
 
-        // Die Projektliste steht im Markup VOR dem Katalog: Bei einer Projektzeile
-        // ist der erste Katalog-Wahlknopf der zweite insgesamt.
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        KatalogWahl(cut, 1, 0).Click();
         Knopf(cut, "DB Ganglinie löschen").Click();
 
         Assert.False(geloescht);
         Assert.Contains("Projektzuordnung", cut.Instance.Meldung);
+        Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>W9‑E‑3:</b> Ein Auslieferungssatz bleibt stehen und nennt seinen Grund
+    /// schon am Knopf — bis dahin kannte dieser Dialog das Kennzeichen gar nicht,
+    /// und der Controller zeigte eine <c>MessageBox</c>.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungssatz_bleibt_stehen_und_nennt_den_Grund()
+    {
+        bool geloescht = false;
+        var cut = Aufbauen(katalogLoeschen: _ => { geloescht = true; return true; });
+
+        KatalogWahl(cut, 1, 1).Click();     // "Ganglinie B" traegt ReadOnly
+        IElement knopf = Knopf(cut, "DB Ganglinie löschen");
+        Assert.Contains("schreibgeschützt", knopf.GetAttribute("title") ?? "");
+
+        knopf.Click();
+
+        Assert.False(geloescht);
+        Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
+        Assert.DoesNotContain("wirklich gelöscht", cut.Markup);
     }
 
     /// <summary>Der Vorläufer löschte auf einen Klick; jetzt wird gefragt (A-8).</summary>
@@ -243,15 +480,14 @@ public class WaermebedarfExternDialogTests : BunitContext
         string geloescht = "";
         var cut = Aufbauen(katalogLoeschen: n => { geloescht = n; return true; });
 
-        // Die Projektliste steht im Markup VOR dem Katalog: Bei einer Projektzeile
-        // ist der erste Katalog-Wahlknopf der zweite insgesamt.
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        KatalogWahl(cut, 1, 0).Click();
         Knopf(cut, "DB Ganglinie löschen").Click();
 
         Assert.Contains("wirklich gelöscht", cut.Markup);
         Knopf(cut, "Ja").Click();
 
         Assert.Equal("Ganglinie A", geloescht);
+        Assert.Contains("gelöscht", cut.Instance.Meldung);
     }
 
     [Fact]
@@ -260,13 +496,182 @@ public class WaermebedarfExternDialogTests : BunitContext
         bool gerufen = false;
         var cut = Aufbauen(katalogLoeschen: _ => { gerufen = true; return true; });
 
-        // Die Projektliste steht im Markup VOR dem Katalog: Bei einer Projektzeile
-        // ist der erste Katalog-Wahlknopf der zweite insgesamt.
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        KatalogWahl(cut, 1, 0).Click();
         Knopf(cut, "DB Ganglinie löschen").Click();
         Knopf(cut, "Nein").Click();
 
         Assert.False(gerufen);
+    }
+
+    // =================================================================================
+    // W9-E-3: Speichern unter
+    // =================================================================================
+
+    [Fact]
+    public void Speichern_unter_ist_ohne_Auswahl_gesperrt()
+    {
+        var cut = Aufbauen(kopieren: (_, __) => Task.FromResult(true));
+
+        Assert.True(Knopf(cut, "Speichern unter...").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Speichern_unter_schlaegt_den_Namen_mit_Kopie_vor()
+    {
+        var cut = Aufbauen(kopieren: (_, __) => Task.FromResult(true));
+
+        KatalogWahl(cut, 1, 0).Click();
+        Knopf(cut, "Speichern unter...").Click();
+
+        Assert.Contains("Wärmebedarfsganglinie speichern unter", cut.Markup);
+        Assert.Equal("Ganglinie A - Kopie",
+                     cut.FindComponent<NamensDialog>().Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Ein_vergebener_Name_haelt_den_Namensdialog_offen()
+    {
+        bool gerufen = false;
+        var cut = Aufbauen(kopieren: (_, __) => { gerufen = true; return Task.FromResult(true); });
+
+        KatalogWahl(cut, 1, 0).Click();
+        Knopf(cut, "Speichern unter...").Click();
+
+        var namensdialog = cut.FindComponent<NamensDialog>();
+        namensdialog.Find("input").Input("Ganglinie C");        // gibt es schon
+        namensdialog.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.False(gerufen);
+        Assert.Single(cut.FindComponents<NamensDialog>());
+        Assert.Contains("bereits in der Datenbank", namensdialog.Markup);
+    }
+
+    [Fact]
+    public void Ein_freier_Name_legt_die_Kopie_an()
+    {
+        string quelle = "", ziel = "";
+        var cut = Aufbauen(kopieren: (q, z) => { quelle = q; ziel = z; return Task.FromResult(true); });
+
+        KatalogWahl(cut, 1, 0).Click();
+        Knopf(cut, "Speichern unter...").Click();
+        OkImNamensdialog(cut);
+
+        Assert.Equal("Ganglinie A", quelle);
+        Assert.Equal("Ganglinie A - Kopie", ziel);
+        Assert.Contains("wurde als", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void Eine_gescheiterte_Kopie_meldet_sich()
+    {
+        var cut = Aufbauen(kopieren: (_, __) => Task.FromResult(false));
+
+        KatalogWahl(cut, 1, 0).Click();
+        Knopf(cut, "Speichern unter...").Click();
+        OkImNamensdialog(cut);
+
+        Assert.Contains("konnte nicht angelegt werden", cut.Instance.Meldung);
+    }
+
+    // =================================================================================
+    // W9-E-3: Die Grafik
+    // =================================================================================
+
+    /// <summary>Ohne Markierung gibt es keine Grafik — auch nicht mit Delegaten.</summary>
+    [Fact]
+    public void Ohne_Markierung_steht_keine_Grafik()
+    {
+        var cut = ZeigeMitGrafik(zeilen: new List<WaermebedarfExternZeile>());
+
+        Assert.Null(cut.Instance.Grafikkennzahlen);
+        Assert.Empty(cut.FindAll(".epos-ganglinie-grafik"));
+    }
+
+    /// <summary>
+    /// Eine markierte KATALOGzeile bringt die Grafik — mit den Kennzahlen und dem
+    /// Bild aus dem Kern.
+    /// </summary>
+    [Fact]
+    public void Eine_markierte_Katalogzeile_bringt_die_Grafik()
+    {
+        var auftraege = new List<Auftrag>();
+        var cut = ZeigeMitGrafik(auftraege: auftraege);
+
+        KatalogWahl(cut, 1, 1).Click();      // "Ganglinie B"
+
+        Assert.NotNull(cut.Instance.Grafikkennzahlen);
+        Assert.True(cut.Instance.Grafikwahl!.AusKatalog);
+        Assert.Equal("Ganglinie B", cut.Instance.Grafikwahl.Bezeichner);
+        Assert.Single(cut.FindAll(".epos-ganglinie-grafik"));
+        Assert.Contains("Wärmelast Jahresganglinie", cut.Markup);
+
+        Assert.NotEmpty(auftraege);
+        Assert.False(auftraege[0].Sortiert);
+        Assert.Null(auftraege[0].Bereich);
+    }
+
+    /// <summary>
+    /// <b>Die Id gilt nur für eine GESPEICHERTE Zuordnung.</b> Eine eben erst
+    /// aufgenommene Zeile trägt die STAMM-Id, nicht die der Projektkopie — sie darf
+    /// deshalb nicht als Kopie-Id gelesen werden, sonst zeigte die Grafik eine
+    /// FREMDE Ganglinie.
+    /// </summary>
+    [Fact]
+    public void Eine_neu_aufgenommene_Zeile_wird_ueber_den_Katalog_gelesen()
+    {
+        var zeilen = new List<WaermebedarfExternZeile>();
+        var cut = ZeigeMitGrafik(zeilen: zeilen);
+
+        cut.FindAll("button.epos-anlagenwahl").First().Click();   // erste Katalogzeile
+        Uebernehmen(cut).Click();
+
+        Assert.NotNull(cut.Instance.Grafikwahl);
+        Assert.False(cut.Instance.Grafikwahl!.AusKatalog);
+        Assert.Equal(0, cut.Instance.Grafikwahl.GanglinieId);      // = Rueckfall ueber den Namen
+        Assert.Equal("Ganglinie A", cut.Instance.Grafikwahl.Bezeichner);
+    }
+
+    /// <summary>
+    /// Eine gespeicherte Projektzeile wird über ihre KOPIE-Id gelesen — genau
+    /// dieselbe Reihe, die der Lauf liest.
+    /// </summary>
+    [Fact]
+    public void Eine_gespeicherte_Projektzeile_wird_ueber_die_Kopie_gelesen()
+    {
+        var cut = ZeigeMitGrafik();
+
+        cut.FindAll("button.epos-anlagenwahl").First().Click();   // die Projektzeile
+
+        Assert.NotNull(cut.Instance.Grafikwahl);
+        Assert.False(cut.Instance.Grafikwahl!.AusKatalog);
+        Assert.Equal(5, cut.Instance.Grafikwahl.GanglinieId);
+    }
+
+    /// <summary>Der Schalter „sortiert" zeichnet neu — als Dauerlinie.</summary>
+    [Fact]
+    public void Der_Schalter_sortiert_zeichnet_neu()
+    {
+        var auftraege = new List<Auftrag>();
+        var cut = ZeigeMitGrafik(auftraege: auftraege);
+
+        KatalogWahl(cut, 1, 0).Click();
+        auftraege.Clear();
+
+        cut.Find(".epos-ganglinie-leiste input[type='checkbox']").Change(true);
+
+        Assert.Contains(auftraege, a => a.Sortiert);
+    }
+
+    /// <summary>Ohne brauchbare Reihe bleibt die Grafik weg statt leer zu stehen.</summary>
+    [Fact]
+    public void Ohne_brauchbare_Reihe_bleibt_die_Grafik_weg()
+    {
+        var cut = ZeigeMitGrafik(kennzahlen: new Dictionary<string, GanglinienKennzahlen?>());
+
+        KatalogWahl(cut, 1, 0).Click();
+
+        Assert.Null(cut.Instance.Grafikkennzahlen);
+        Assert.Empty(cut.FindAll(".epos-ganglinie-grafik"));
     }
 
     /// <summary>
@@ -288,7 +693,6 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.Contains("Wärmebedarf Ganglinie", cut.Markup);
     }
 
-
     // =================================================================================
     // Tastatur und Schlussleiste
     // =================================================================================
@@ -302,6 +706,20 @@ public class WaermebedarfExternDialogTests : BunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.False(ergebnis);
+    }
+
+    /// <summary>Esc schließt zuerst die Rückfrage, nicht den Dialog.</summary>
+    [Fact]
+    public void Esc_laesst_die_untere_Ebene_stehen()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        KatalogWahl(cut, 1, 0).Click();
+        Knopf(cut, "DB Ganglinie löschen").Click();
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.Null(ergebnis);
     }
 
     [Fact]
@@ -342,4 +760,35 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
     }
 
+    // =================================================================================
+    // Die zweite Sprache
+    // =================================================================================
+
+    /// <summary>
+    /// Auf einem englischen Läufer stehen die englischen Texte — kein Schlüssel ist
+    /// beim Einhängen der neuen Knöpfe deutsch hängengeblieben. Die Kultur wird
+    /// danach wieder auf de-DE gestellt, damit die übrigen Fälle der Klasse ihre
+    /// Erwartung behalten.
+    /// </summary>
+    [Fact]
+    public void In_englischer_Oberflaeche_stehen_die_englischen_Texte()
+    {
+        try
+        {
+            Kultur("en-US");
+
+            var cut = Aufbauen(
+                dateiWaehlen: _ => Task.FromResult<string?>(""),
+                einlesen: (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis()),
+                kopieren: (_, __) => Task.FromResult(true));
+
+            Assert.Contains("Import CSV file...", cut.Markup);
+            Assert.Contains("Save as...", cut.Markup);
+            Assert.Contains("8,760 hourly or 35,040 quarter-hourly values", cut.Markup);
+        }
+        finally
+        {
+            DeutscheOberflaeche();
+        }
+    }
 }

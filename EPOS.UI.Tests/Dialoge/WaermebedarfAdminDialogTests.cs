@@ -11,6 +11,7 @@ using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -61,8 +62,8 @@ public class WaermebedarfAdminDialogTests : BunitContext
         Func<string, Task<string?>>? dateiWaehlen = null,
         Func<string, Task<AblageErgebnis>>? ablegen = null,
         Func<string, Task<bool>>? mitSystem = null,
-        Func<string, WaermebedarfImportRueckrufe, IProgress<ImportFortschritt>,
-             Task<WaermebedarfImportErgebnis>>? einlesen = null,
+        Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+             Task<GanglinienImportErgebnis>>? einlesen = null,
         Action<bool>? geschlossen = null)
         => Render<WaermebedarfAdminDialog>(p => p
             .Add(x => x.Katalog, () => Task.FromResult(new List<WaermebedarfAdminDialog.Katalogzeile>(KATALOG)))
@@ -107,17 +108,24 @@ public class WaermebedarfAdminDialogTests : BunitContext
     }
 
     /// <summary>
-    /// Der Hinweis nennt den Punkt als Dezimaltrennzeichen. Der Vorläufer schrieb
-    /// „Dezimaltrennzeichen ','" — <c>WaermebedarfStammCtrl.ImportGanglinie</c>
-    /// parst aber mit <c>InvariantCulture</c>, ein Komma hätte die Datei abgelehnt
-    /// (Befund W13-B56, Abweichung A-10).
+    /// <b>W9‑E‑3:</b> Der Hinweis nennt seit der Umstellung auf die gemeinsame
+    /// Kette, was diese wirklich annimmt — CSV/Text, beide Raster, ein Wert je
+    /// Zeile —, und der volle Wortlaut hängt am Infoknopf. Bis dahin stand hier
+    /// „Stundenwerte über 1 Jahr als Textdatei (Dezimaltrennzeichen '.')": Das
+    /// war für die alte, engere Kette richtig (Befund W13‑B56, Abweichung A‑10)
+    /// und ist für die neue zu eng — sie liest auch Komma, Kopfzeilen,
+    /// Trennzeichen, Excel und Viertelstundenwerte.
     /// </summary>
     [Fact]
-    public void Der_Hinweis_nennt_den_Punkt_als_Dezimaltrennzeichen()
+    public void Der_Hinweis_nennt_beide_Raster_und_haengt_am_Infoknopf()
     {
         var cut = Aufbauen();
 
-        Assert.Contains("Stundenwerte über 1 Jahr als Textdatei (Dezimaltrennzeichen '.')", cut.Markup);
+        Assert.Contains("8.760 Stunden- oder 35.040 Viertelstundenwerte", cut.Markup);
+        Assert.Contains("ein Wert je Zeile", cut.Markup);
+
+        IElement hinweis = cut.Find(".epos-formathinweis");
+        Assert.NotNull(hinweis.QuerySelector("button"));
     }
 
     [Fact]
@@ -226,7 +234,7 @@ public class WaermebedarfAdminDialogTests : BunitContext
     {
         var cut = Aufbauen(dateiWaehlen: _ => Task.FromResult<string?>(""),
                            mitSystem: _ => Task.FromResult(true),
-                           einlesen: (_, __, ___) => Task.FromResult(new WaermebedarfImportErgebnis()));
+                           einlesen: (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis()));
 
         Assert.True(Knopf(cut, "Inhalt anzeigen...").HasAttribute("disabled"));
         Assert.True(Knopf(cut, "Datei in DB Einlesen...").HasAttribute("disabled"));
@@ -299,9 +307,9 @@ public class WaermebedarfAdminDialogTests : BunitContext
             einlesen: (p, _, __) =>
             {
                 gelesen = p;
-                return Task.FromResult(new WaermebedarfImportErgebnis
+                return Task.FromResult(new GanglinienImportErgebnis
                 {
-                    Erfolgreich = true,
+                    Ausgang = ImportAusgang.Erfolg,
                     Bezeichner = "jahr",
                     Meldung = "Die Ganglinie \"jahr\" wurde mit 8760 Werten eingelesen."
                 });
@@ -322,9 +330,10 @@ public class WaermebedarfAdminDialogTests : BunitContext
         var cut = Aufbauen(
             dateiWaehlen: _ => Task.FromResult<string?>(@"D:\quelle\jahr.txt"),
             ablegen: p => Task.FromResult(new AblageErgebnis(p)),
-            einlesen: (_, __, ___) => Task.FromResult(new WaermebedarfImportErgebnis
+            einlesen: (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis
             {
-                Erfolgreich = false,
+                Ausgang = ImportAusgang.Fehler,
+                MeldungStufe = PruefStufe.Fehler,
                 Meldung = "Zeile 7 ist leer."
             }));
 
@@ -348,7 +357,7 @@ public class WaermebedarfAdminDialogTests : BunitContext
         var cut = Aufbauen(
             dateiWaehlen: _ => Task.FromResult<string?>(@"D:\quelle\jahr.txt"),
             ablegen: p => Task.FromResult(new AblageErgebnis(p)),
-            einlesen: async (_, rueckrufe, __) =>
+            einlesen: async (_, __, rueckrufe) =>
             {
                 var pruefungen = new List<ImportPruefung>
                 {
@@ -358,7 +367,7 @@ public class WaermebedarfAdminDialogTests : BunitContext
                 };
                 await rueckrufe.Konflikte!(pruefungen, new HashSet<string> { "jahr" });
                 wartet.TrySetResult(true);
-                return new WaermebedarfImportErgebnis();
+                return new GanglinienImportErgebnis();
             });
 
         Knopf(cut, "Datei Auswählen...").Click();

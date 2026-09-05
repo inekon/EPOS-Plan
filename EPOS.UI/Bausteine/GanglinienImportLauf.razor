@@ -22,7 +22,14 @@
    ESC. Der Wirt fragt EtwasOffen, bevor er Esc fuer sich auswertet - so
    schliesst Esc immer nur die oberste Ebene (Muster W7.5). *@
 
-@namespace EPOS.UI.Dialoge.Strom
+@namespace EPOS.UI.Bausteine
+@* Die zwei Zwischendialoge der Kette stehen seit W12 in Dialoge/Strom; sie
+   gehoeren zur KETTE, nicht zum Gewerk, und werden seit W9-E-3 auch vom
+   Waermebedarf benutzt. Ohne dieses using haelt der Razor-Uebersetzer
+   <GanglinieImportOptionenDialog> fuer ein HTML-Element und zeichnet es
+   STILL als leeres Tag - kein Fehler, keine Warnung, nur eine Ueberlagerung,
+   die leer bleibt. *@
+@using EPOS.UI.Dialoge.Strom
 @using SpeicherEngine
 @using WindowsFormsApplication1
 

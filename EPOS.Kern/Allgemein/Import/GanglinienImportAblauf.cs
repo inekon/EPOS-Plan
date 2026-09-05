@@ -84,6 +84,66 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// <b>Wohin eine Importkette schreibt</b> (iU9-W9-E-3, Anwenderwunsch der
+    /// Windows-Abnahme vom 05.09.2026: „Gestalte den Dialog bei Wärmebedarf →
+    /// Daten importieren analog zum Import des Strombedarf").
+    ///
+    /// <para><b>Wozu.</b> Bis dahin gab es ZWEI Ganglinien-Importe: die vollständige
+    /// AP5-Kette für den Stromlastgang (Erkennung, Optionen, Prüfung, Protokoll,
+    /// Konflikte) und — in <c>WaermebedarfAdminHuelle</c> — einen zweiten, viel
+    /// engeren Weg für den Wärmebedarf (eine Textzeile je Wert, keine Kopfzeile,
+    /// Dezimaltrenner Punkt, keine Einheitenwahl). Zwei Importe für dieselbe Sache
+    /// laufen beim ersten Fachwechsel auseinander; deshalb ist der Unterschied
+    /// jetzt eine <b>Ausprägung als DATEN</b> — vier Werte, kein zweiter Ablauf.
+    /// Dasselbe Muster wie <c>KatalogImportProfil</c> (W13) und
+    /// <c>KatalogBrowserProfil</c> (W14a).</para>
+    /// </summary>
+    public sealed class GanglinienZiel
+    {
+        private GanglinienZiel(string ordner, string katalog,
+                               Func<string, int, IList<double>, bool> anlegen,
+                               Func<string, int, IList<double>, bool> ersetzen)
+        {
+            Ordner = ordner;
+            Katalog = katalog;
+            Anlegen = anlegen;
+            Ersetzen = ersetzen;
+        }
+
+        /// <summary>Der Unterordner der verlustfreien Originalablage unter <c>Dienste.Pfade.BenutzerLokal</c>.</summary>
+        public string Ordner { get; }
+
+        /// <summary>Der Katalogschluessel fuer die Dublettenpruefung (<c>KatalogRegistry</c>).</summary>
+        public string Katalog { get; }
+
+        /// <summary>Legt einen neuen Katalogsatz an: Name, Zeitinterval, Werte.</summary>
+        public Func<string, int, IList<double>, bool> Anlegen { get; }
+
+        /// <summary>Ersetzt die Werte eines vorhandenen Katalogsatzes.</summary>
+        public Func<string, int, IList<double>, bool> Ersetzen { get; }
+
+        /// <summary>Die Stromganglinien — der Weg seit W12.</summary>
+        public static readonly GanglinienZiel Strom = new GanglinienZiel(
+            "Strom", "STROMGANGLINIE",
+            (name, raster, werte) => new StromganglinieStammCtrl().ImportGanglinie(name, raster, werte),
+            (name, raster, werte) => new StromganglinieStammCtrl().ErsetzeGanglinie(name, raster, werte));
+
+        /// <summary>
+        /// Der externe Waermebedarf — der Weg seit W9-E-3.
+        ///
+        /// <para><b>Das Zeitinterval faellt hier weg</b>, weil
+        /// <c>Tab_Waermebedarf_STAMM</c> die Spalte nicht fuehrt;
+        /// <c>SimulationWaermebedarf</c> leitet das Raster seit jeher aus der
+        /// WERTZAHL ab (8 760 oder 35 040). Die Kette liefert beide Raster, und
+        /// beide laufen im Bestand.</para>
+        /// </summary>
+        public static readonly GanglinienZiel Waermebedarf = new GanglinienZiel(
+            "Waermebedarf", "WAERMEBEDARF",
+            (name, raster, werte) => new WaermebedarfStammCtrl().ImportGanglinie(name, werte),
+            (name, raster, werte) => new WaermebedarfStammCtrl().ErsetzeGanglinie(name, werte));
+    }
+
+    /// <summary>
     /// <b>Die AP5-Importkette — EINMAL</b> (iU9-W12.0d, Befund W12-B1).
     ///
     /// <para><b>Warum es sie gibt.</b> Bis zu dieser Welle stand die Kette ZWEIMAL
@@ -127,7 +187,15 @@ namespace WindowsFormsApplication1
         /// Ziel der verlustfreien Originalkopie. Legt NICHTS an.
         /// </summary>
         public static string AblageOrdner()
-            => Dienste.Pfade.Verbinde(Dienste.Pfade.BenutzerLokal, OrdnerStrom);
+            => AblageOrdner(GanglinienZiel.Strom);
+
+        /// <summary>
+        /// Der Ablageordner einer Ausprägung — <c>&lt;BenutzerLokal&gt;\Strom</c> bzw.
+        /// <c>&lt;BenutzerLokal&gt;\Waermebedarf</c> (iU9-W9-E-3). Legt NICHTS an.
+        /// </summary>
+        public static string AblageOrdner(GanglinienZiel ziel)
+            => Dienste.Pfade.Verbinde(Dienste.Pfade.BenutzerLokal,
+                                      ziel != null ? ziel.Ordner : OrdnerStrom);
 
         // ==================================================================
         // Die zwei Auspraegungen
@@ -143,10 +211,28 @@ namespace WindowsFormsApplication1
         /// Erkennung entscheiden.
         /// </param>
         /// <param name="rueckrufe">Die drei Entscheidungen.</param>
-        public static async Task<GanglinienImportErgebnis> MitAblage(
+        public static Task<GanglinienImportErgebnis> MitAblage(
             string pfad, GanglinienRaster rasterVorgabe, GanglinienImportRueckrufe rueckrufe)
+            => MitAblage(GanglinienZiel.Strom, pfad, rasterVorgabe, rueckrufe);
+
+        /// <summary>
+        /// Die Kette MIT Ablage in eine WÄHLBARE Ausprägung (iU9-W9-E-3) — der Weg
+        /// beider Stammdatenverwaltungen und beider Projektdialoge.
+        /// </summary>
+        /// <param name="ziel">Strom oder Wärmebedarf (<see cref="GanglinienZiel"/>).</param>
+        /// <param name="pfad">Die vom Anwender gewaehlte Datei.</param>
+        /// <param name="rasterVorgabe">
+        /// Das Raster aus der Auswahlliste der Maske; es uebersteuert die Erkennung
+        /// (Vorlaeufer :149). <see cref="GanglinienRaster.Unbekannt"/> laesst die
+        /// Erkennung entscheiden.
+        /// </param>
+        /// <param name="rueckrufe">Die drei Entscheidungen.</param>
+        public static async Task<GanglinienImportErgebnis> MitAblage(
+            GanglinienZiel ziel, string pfad, GanglinienRaster rasterVorgabe,
+            GanglinienImportRueckrufe rueckrufe)
         {
             GanglinienImportErgebnis erg = new GanglinienImportErgebnis();
+            if (ziel == null) ziel = GanglinienZiel.Strom;
             if (string.IsNullOrEmpty(pfad)) return erg;
 
             // --- Verlustfreie Originalablage --------------------------------
@@ -159,18 +245,18 @@ namespace WindowsFormsApplication1
             string lesepfad = pfad;
             try
             {
-                string ordner = AblageOrdner();
-                string ziel = Path.Combine(ordner, dateiname);
-                if (!File.Exists(ziel))
+                string ordner = AblageOrdner(ziel);
+                string zielpfad = Path.Combine(ordner, dateiname);
+                if (!File.Exists(zielpfad))
                 {
                     Directory.CreateDirectory(ordner);
-                    File.Copy(pfad, ziel, true);
+                    File.Copy(pfad, zielpfad, true);
                 }
                 // WOERTLICH aus dem Vorlaeufer (:132-133): Gelesen wird die Kopie,
                 // wenn es sie gibt. Traegt der Ordner schon eine gleichnamige Datei,
                 // gewinnt DIESE - nicht die soeben gewaehlte (Befund W12-B28, offener
-                // Punkt).
-                if (File.Exists(ziel)) lesepfad = ziel;
+                // Punkt). Dieselbe Regel galt im Waermebedarf-Zweig (W13-O-1).
+                if (File.Exists(zielpfad)) lesepfad = zielpfad;
             }
             catch (Exception ex)
             {
@@ -188,7 +274,7 @@ namespace WindowsFormsApplication1
             string zielName = bezeichner;
             bool ueberschreiben = false;
 
-            KatalogDefinition k = KatalogRegistry.Finde(Katalog);
+            KatalogDefinition k = KatalogRegistry.Finde(ziel.Katalog);
             ImportKandidat kandidat = new ImportKandidat { Name = bezeichner };
             kandidat.Werte["Zeitinterval"] = geprueft.Zeitinterval;
             List<ImportPruefung> pruefungen = DublettenPruefung.PruefeKandidaten(
@@ -232,10 +318,11 @@ namespace WindowsFormsApplication1
             }
 
             // --- 7) Ablage - unveraendertes Transaktionsmuster ---------------
-            StromganglinieStammCtrl ctrl = new StromganglinieStammCtrl();
+            // Die zwei Schreibwege stehen an der Auspraegung (W9-E-3); der Ablauf
+            // kennt weder Tabelle noch Controller.
             bool gespeichert = ueberschreiben
-                ? ctrl.ErsetzeGanglinie(zielName, geprueft.Zeitinterval, geprueft.Werte)
-                : ctrl.ImportGanglinie(zielName, geprueft.Zeitinterval, geprueft.Werte);
+                ? ziel.Ersetzen(zielName, geprueft.Zeitinterval, geprueft.Werte)
+                : ziel.Anlegen(zielName, geprueft.Zeitinterval, geprueft.Werte);
 
             erg.Bezeichner = zielName;
             erg.Zeitinterval = geprueft.Zeitinterval;
