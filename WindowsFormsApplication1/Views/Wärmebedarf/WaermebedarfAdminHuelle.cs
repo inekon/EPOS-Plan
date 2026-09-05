@@ -14,15 +14,18 @@ namespace WindowsFormsApplication1
     /// Die WINDOWS-HÜLLE der Wärmebedarfs-Ganglinienverwaltung (iU9-W13.2).
     ///
     /// <para><b>Die Datenbankseite steht hier, nicht in der Komponente.</b> Der
-    /// Katalog kommt aus <see cref="WaermebedarfStammCtrl"/>, die Datei aus
-    /// <see cref="GanglinienTextDatei"/>, die Dublettenprüfung aus
-    /// <see cref="DublettenPruefung"/> — die Komponente sieht davon nur Delegaten.</para>
+    /// Katalog kommt aus <see cref="WaermebedarfStammCtrl"/>, der Import seit
+    /// iU9‑W9‑E‑3 aus <see cref="GanglinienImportAblauf"/> mit der Ausprägung
+    /// <c>GanglinienZiel.Waermebedarf</c> (Lesen, Prüfen, Dublettenprüfung und
+    /// Ablage in EINER Kette) — die Komponente sieht davon nur Delegaten.</para>
     ///
-    /// <para><b>Die Kette läuft in <c>Task.Run</c>.</b> 8 760 Zeilen lesen und in
-    /// einer Transaktion schreiben dauert; in einer WebView ist der Renderfaden
-    /// derselbe Faden. Die eine Entscheidung (der Konfliktdialog) kommt aus der
-    /// Oberfläche zurück und läuft über <c>InvokeAsync</c> des Blazor-Verteilers
-    /// wieder auf dem richtigen Faden — dasselbe Muster wie
+    /// <para><b>Die Kette läuft in <c>Task.Run</c>.</b> 8 760 bzw. 35 040 Zeilen
+    /// lesen und in einer Transaktion schreiben dauert; in einer WebView ist der
+    /// Renderfaden derselbe Faden. Die drei Entscheidungen (Optionen, Protokoll,
+    /// Konflikte) kommen aus der Oberfläche zurück und laufen über
+    /// <c>InvokeAsync</c> des Blazor-Verteilers wieder auf dem richtigen Faden —
+    /// seit iU9‑W9‑E‑3 durch DENSELBEN Baustein wie beim Strom
+    /// (<c>GanglinienImportLauf</c>), vorgemacht von
     /// <see cref="StromganglinieAdminHuelle"/> aus W12.</para>
     /// </summary>
     internal static class WaermebedarfAdminHuelle
@@ -79,9 +82,12 @@ namespace WindowsFormsApplication1
                 ["Ablegen"] = new Func<string, Task<AblageErgebnis>>(Ablegen),
                 ["MitSystemOeffnen"] = new Func<string, Task<bool>>(
                     pfad => Task.FromResult(Dienste.Datei.MitSystemOeffnen(pfad))),
-                ["Einlesen"] = new Func<string, WaermebedarfImportRueckrufe,
-                                        IProgress<ImportFortschritt>,
-                                        Task<WaermebedarfImportErgebnis>>(Einlesen),
+                // iU9-W9-E-3: DIESELBE Kette wie beim Stromlastgang, nur mit der
+                // Auspraegung GanglinienZiel.Waermebedarf.
+                ["Einlesen"] = new Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+                                        Task<GanglinienImportErgebnis>>(Einlesen),
+                ["Vorschau"] = new Func<string, GanglinienImportOptionen,
+                                        Task<GanglinienVorschau>>(Vorschau),
                 ["Ordner"] = Ablageordner()
             };
         }
@@ -97,11 +103,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static string Ablageordner()
         {
-            return Dienste.Pfade.Verbinde(Dienste.Pfade.BenutzerLokal, "Waermebedarf");
+            // iU9-W9-E-3: Derselbe Pfad wie vorher, nur nennt ihn jetzt die
+            // Auspraegung der Kette - der Ablauf legt seine Originalkopie
+            // dorthin, und der Dateiwaehler startet dort.
+            return GanglinienImportAblauf.AblageOrdner(GanglinienZiel.Waermebedarf);
         }
 
         /// <summary>Der Katalog samt ReadOnly-Kennzeichen.</summary>
-        private static Task<List<WaermebedarfAdminDialog.Katalogzeile>> KatalogLesen()
+        internal static Task<List<WaermebedarfAdminDialog.Katalogzeile>> KatalogLesen()
         {
             WaermebedarfStammCtrl ctrl = new WaermebedarfStammCtrl();
             ctrl.ReadAll();
@@ -118,7 +127,7 @@ namespace WindowsFormsApplication1
         /// Der Dateiwähler mit dem Ablageordner als Startpunkt — HINTER dem
         /// Blazor-Ereignis (Befund W13‑B‑1, siehe <c>IDateiDienst</c>).
         /// </summary>
-        private static Task<string> DateiWaehlen(string filter)
+        internal static Task<string> DateiWaehlen(string filter)
         {
             return Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.WBAD_TITEL,
@@ -163,82 +172,34 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Importkette: lesen, vorprüfen, gegebenenfalls fragen, schreiben.
+        /// <b>Die Importkette MIT Ablage — dieselbe wie beim Stromlastgang</b>
+        /// (iU9-W9-E-3, Anwenderwunsch der Windows-Abnahme vom 05.09.2026).
         ///
-        /// <para><b>Die Dublettenprüfung ist neu</b> (Befund W13‑B2): Der Vorläufer
-        /// prüfte mit <c>listBox_Extern.FindString(...)</c> in der ANZEIGE und stieg
-        /// bei einem Treffer STILL aus. Seit W13.0g führt der Katalog
-        /// <c>WAERMEBEDARF</c> ein leeres <c>ImportSpalten</c>-Array — das heißt
-        /// „Namensprüfung, kein Inhaltsvergleich" —, und der Konfliktdialog
-        /// erscheint wie bei jedem anderen Import.</para>
+        /// <para><b>Was sich geändert hat.</b> Bis dahin stand hier eine ZWEITE,
+        /// viel engere Kette: <c>GanglinienTextDatei.Lies(pfad, mitKopfzeile: false)</c>
+        /// — eine Textzeile je Wert, Dezimaltrenner Punkt, keine Kopfzeile, kein
+        /// Trennzeichen, keine Einheitenwahl, kein Prüfprotokoll und nur
+        /// 8 760 Werte. Sie ist ersatzlos entfallen; gefahren wird
+        /// <see cref="GanglinienImportAblauf.MitAblage"/> mit der Ausprägung
+        /// <c>GanglinienZiel.Waermebedarf</c>. Die Dublettenprüfung (Befund W13‑B2,
+        /// Katalogschlüssel <c>WAERMEBEDARF</c> mit leerem <c>ImportSpalten</c>-Array
+        /// = Namensprüfung ohne Inhaltsvergleich) macht jetzt der Ablauf, ebenso die
+        /// verlustfreie Originalablage und das Überschreiben — und zwar über
+        /// <c>ErsetzeGanglinie</c>, das die Kopf-Id STEHEN lässt, statt den Satz zu
+        /// löschen und neu anzulegen.</para>
+        ///
+        /// <para><b>Die Kette läuft in <c>Task.Run</c></b> — 8 760 bzw. 35 040 Zeilen
+        /// lesen und in einer Transaktion schreiben dauert; in einer WebView ist der
+        /// Renderfaden derselbe Faden. Die drei Entscheidungen kommen aus der
+        /// Oberfläche zurück (Baustein <c>GanglinienImportLauf</c>).</para>
         /// </summary>
-        private static Task<WaermebedarfImportErgebnis> Einlesen(
-            string pfad, WaermebedarfImportRueckrufe rueckrufe,
-            IProgress<ImportFortschritt> melder)
-        {
-            return Task.Run(async () =>
-            {
-                var erg = new WaermebedarfImportErgebnis();
-                string bezeichner = Path.GetFileNameWithoutExtension(pfad) ?? "";
-                erg.Bezeichner = bezeichner;
+        internal static Task<GanglinienImportErgebnis> Einlesen(
+            string pfad, GanglinienRaster raster, GanglinienImportRueckrufe rueckrufe)
+            => Task.Run(() => GanglinienImportAblauf.MitAblage(
+                   GanglinienZiel.Waermebedarf, pfad, raster, rueckrufe));
 
-                melder?.Report(new ImportFortschritt(null, "IMP_KAT_PROT_LESEN"));
-
-                // 1. Lesen - der Waermebedarf liest OHNE Kopfzeile: jede Zeile ist
-                //    ein Wert (W13.0h; die Solarganglinie nimmt dieselbe Klasse mit
-                //    mitKopfzeile: true, das kommt mit W14b).
-                GanglinienTextErgebnis datei = GanglinienTextDatei.Lies(pfad, mitKopfzeile: false);
-                if (!datei.Erfolgreich)
-                {
-                    erg.Meldung = EPOS.UI.Dialoge.Import.Texte.Zu(
-                        datei.Meldungen.Count > 0 ? datei.Meldungen[0] : null);
-                    return erg;
-                }
-
-                // 2. Vorpruefung gegen den Katalog - Namenspruefung, kein
-                //    Inhaltsvergleich (leeres ImportSpalten-Array, W13.0g).
-                KatalogDefinition katalog = KatalogRegistry.Finde("WAERMEBEDARF");
-                var kandidat = new ImportKandidat { Name = bezeichner, Tag = 0 };
-                List<ImportPruefung> pruefungen = DublettenPruefung.PruefeKandidaten(
-                    katalog, new List<ImportKandidat> { kandidat });
-
-                string zielname = bezeichner;
-                if (KatalogImportAblauf.Konfliktbehaftet(pruefungen))
-                {
-                    if (rueckrufe?.Konflikte == null) { erg.Meldung = MyResource.Resource.WBAD_MSG_AUSGELASSEN; return erg; }
-
-                    List<KonfliktEntscheidung> entscheidungen = await rueckrufe.Konflikte(
-                        pruefungen, DublettenPruefung.VergebeneNamen(katalog));
-
-                    if (entscheidungen == null || entscheidungen.Count == 0) return erg;   // Abbruch, stumm
-
-                    KonfliktEntscheidung ent = entscheidungen[0];
-                    if (ent.Aktion == KonfliktAktion.Auslassen)
-                    {
-                        erg.Meldung = MyResource.Resource.WBAD_MSG_AUSGELASSEN;
-                        return erg;
-                    }
-                    if (ent.Aktion == KonfliktAktion.Umbenennen) zielname = ent.NeuerName;
-                    // Ueberschreiben und Importieren legen beide neu an: Der
-                    // Ganglinienkatalog kennt keinen Update-Weg (KONTEXT_Stammdaten
-                    // _Aenderbarkeit.md:128-136), deshalb loescht Ueberschreiben
-                    // zuerst.
-                    if (ent.Aktion == KonfliktAktion.Ueberschreiben)
-                        new WaermebedarfStammCtrl().Delete(zielname);
-                }
-
-                melder?.Report(new ImportFortschritt(null, "IMP_KAT_PROT_SCHREIBEN"));
-
-                // 3. Schreiben - Kopf und 8 760 Datenzeilen in EINER Transaktion.
-                bool ok = new WaermebedarfStammCtrl().ImportGanglinie(zielname, (List<string>)datei.Werte);
-
-                erg.Erfolgreich = ok;
-                erg.Bezeichner = zielname;
-                erg.Meldung = ok
-                    ? string.Format(MyResource.Resource.WBAD_MSG_GESPEICHERT, zielname, datei.Werte.Count)
-                    : MyResource.Resource.WBAD_MSG_SCHREIBFEHLER;
-                return erg;
-            });
-        }
+        /// <summary>Neuzerlegung mit den gewählten Optionen (für den Optionendialog).</summary>
+        internal static Task<GanglinienVorschau> Vorschau(string pfad, GanglinienImportOptionen optionen)
+            => Task.Run(() => GanglinienDatei.Vorschau(pfad, optionen));
     }
 }

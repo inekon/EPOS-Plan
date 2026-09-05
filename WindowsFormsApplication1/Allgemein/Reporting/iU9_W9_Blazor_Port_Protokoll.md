@@ -1210,3 +1210,284 @@ bleibt, wie er ist — er war die Stichprobe der Regel.
 Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
 als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
 Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.
+
+---
+
+## Windows-Abnahme 05.09.2026 — Wärmebedarf Extern nach dem Stromganglinien-Muster (W9‑E‑3)
+
+**Der Wortlaut des Anwenders** (Bildschirmfoto „Wärmebedarf Extern"): „Gestalte den Dialog
+bei Wärmebedarf → Daten importieren analog zum Import des Strombedarf → Messdaten
+importieren (mit grafischer Darstellung etc. wie kürzlich vorgenommen)." Gemeint ist
+`StromganglinieDialog` nach den Anwenderwünschen **W12‑E‑1** (vier Knöpfe, Formathinweis)
+und **W12‑E‑2** (Grafik) desselben Abnahmetags.
+
+### Was der Dialog vorher hatte — und was nicht
+
+Die Feldkarte von `Form_Waermebedarf` (Stand vor W9.4, 828 × 443, 11 Kartenzeilen) führt
+zwei Listen, „◀"/„▶", das zur Laufzeit gebaute Kanalfeld, „Einlesen/Bearbeiten..",
+„DB Ganglinie löschen", „OK" und „Abbrechen" — **keinen Import, kein Speichern unter, keine
+Grafik**. Der Port hat also nichts vergessen: Der Wunsch ist eine ERWEITERUNG. Zwei ihrer
+drei Teile gab es im Bestand eine Maske weiter:
+
+| Weg | Stand vorher |
+|---|---|
+| **„Einlesen/Bearbeiten.."** | Öffnet seit W13.2 `WaermebedarfAdminDialog` als Überlagerung (bis Welle 13 ein Sprung über die `Sprungbruecke` in `Form_AdminWaermeeinlesen`). Dort und **nur** dort lag der Dateiimport — der Weg dahin war zweistufig und unbeschriftet |
+| **Der Import selbst** | `WaermebedarfAdminHuelle.Einlesen`: `GanglinienTextDatei.Lies(pfad, mitKopfzeile: false)` + Dublettenprüfung + `WaermebedarfStammCtrl.ImportGanglinie(name, List<string>)`. Eine **zweite, viel engere Kette** neben der AP5‑Kette des Stroms: eine Textzeile je Wert, Dezimaltrenner **Punkt**, keine Kopfzeile, kein Trennzeichen, keine Einheitenwahl (kW/kWh), kein Prüfprotokoll, kein Excel — und **nur 8 760 Werte**, obwohl `SimulationWaermebedarf` seit V0‑5 auch 35 040 liest |
+| **„Speichern unter"** | gab es im ganzen Wärmezweig **nicht** |
+| **Die Grafik** | gab es **nirgends**; als Kurve erschien der Wärmebedarf nur im Bedarfsreiter der Ergebnisseite (`BildBedarfWaerme`) und seit W9.8 im `GebaeudeBedarfDialog` |
+
+### Die Umsetzung
+
+**1. EIN Import statt zwei — die Ausprägung als DATEN.** `GanglinienImportAblauf` bekommt
+mit **`GanglinienZiel`** eine Ausprägung nach dem Muster von `KatalogImportProfil` (W13) und
+`KatalogBrowserProfil` (W14a): vier Werte — Ablageordner, Katalogschlüssel und die zwei
+Schreibwege `Anlegen`/`Ersetzen`. `MitAblage` nimmt sie als ersten Parameter; die alte
+Signatur bleibt als Strom‑Fassade stehen, damit kein Aufrufer bricht. **Der Ablauf kennt
+seither weder Tabelle noch Controller.** Der Wärmebedarf hängt sich mit
+`GanglinienZiel.Waermebedarf` ein — Ordner `<BenutzerLokal>\Waermebedarf` (derselbe Pfad wie
+vorher), Katalogschlüssel `WAERMEBEDARF` (leeres `ImportSpalten`‑Array = Namensprüfung ohne
+Inhaltsvergleich, W13.0g) und die zwei neuen Schreibwege im Stammcontroller.
+
+**Das Zeitinterval fällt dabei weg**, und das ist keine Lücke: `Tab_Waermebedarf_STAMM`
+führt die Spalte nicht, und `SimulationWaermebedarf` leitet das Raster seit V0‑5 aus der
+WERTZAHL ab (8 760 oder 35 040). Die Kette liefert beide Raster, und beide laufen im
+Bestand — **der Wärmeimport kann seither Viertelstundenwerte**, was er vorher nicht konnte.
+
+**2. Beide Wärmemasken fahren dieselbe Kette.** Der Baustein `GanglinienImportLauf` (die drei
+Überlagerungen Optionen/Protokoll/Konflikte) zieht von `Dialoge/Strom` nach `Bausteine/` und
+wird jetzt von **vier** Masken eingehängt: `StromganglinieAdminDialog`, `StromganglinieDialog`,
+`WaermebedarfAdminDialog` und `WaermebedarfExternDialog`. `WaermebedarfAdminDialog` verliert
+dafür seine eigene Konfliktüberlagerung samt `TaskCompletionSource` und sein `IProgress` (die
+Kette meldet keinen Anteil — der Balken läuft unbestimmt, ehrlicher als eine erfundene
+Prozentzahl); `WaermebedarfImportRueckrufe` und `WaermebedarfImportErgebnis` sind ersatzlos
+entfallen.
+
+> **Ein stiller Fallstrick beim Verschieben eines Bausteins.** `GanglinienImportLauf`
+> zeichnet `<GanglinieImportOptionenDialog>` und `<GanglinieProtokollDialog>`; die stehen in
+> `EPOS.UI.Dialoge.Strom` und waren im alten Ordner ohne `@using` sichtbar. Nach dem Umzug
+> nach `Bausteine/` hält der Razor-Übersetzer eine unbekannte Marke für ein **HTML-Element**
+> und zeichnet sie still als leeres Tag — kein Fehler, keine Warnung, nur zwei
+> Überlagerungen, die leer bleiben. Aufgefallen ist es an zwei bestehenden
+> `StromganglinieAdminDialogTests`, die in ihren `WaitForAssertion` liefen. Das `@using`
+> steht jetzt mit dieser Begründung im Kopf des Bausteins.
+
+**3. Die Knopfleiste unter der Katalogliste** trägt vier statt zwei Knöpfe, in dieser
+Reihenfolge: **„CSV-Datei importieren…" · „Speichern unter…" · „DB Ganglinie löschen" ·
+„Einlesen/Bearbeiten..".** Sie ist die `epos-leiste`; **kein Delegat, kein Knopf**.
+Der Import holt den Pfad über den erwarteten `DateiWaehlen`-Delegaten und **`await`et ihn**
+(W13‑B‑1) und ruft dann `Starten(pfad, GanglinienRaster.Unbekannt)` — die Maske gibt keine
+Rastervorgabe, die Kette erkennt es selbst und der Optionendialog lässt es übersteuern.
+
+**Löschen prüft ZWEI Sperren** und beide MELDEN ihren Grund: die Projektzuordnung
+(`WaermebedarfStammCtrl.HatProjektzuordnung`, seit W9.0d im Kern) und das
+Auslieferungskennzeichen `ReadOnly`, dessen Grund zusätzlich als `title` am Knopf hängt
+(Staffelung W16b‑E‑6). **Das zweite ist neu**: Dieser Dialog holte bis hierher nur eine
+NAMENSLISTE, kannte `ReadOnly` also gar nicht — ein Auslieferungssatz führte kommentarlos
+durch die Rückfrage und scheiterte erst im Controller mit einer `MessageBox`. Er zieht seinen
+Katalog jetzt aus **derselben Quelle wie die Verwaltung** (`WaermebedarfAdminHuelle.KatalogLesen`),
+statt die Schleife ein zweites Mal zu schreiben — derselbe Weg, den W12‑E‑1 beim Strom
+genommen hat.
+
+**Speichern unter** ist die Kopie unter neuem Namen. Der `NamensDialog` schlägt
+„&lt;Name&gt; - Kopie" vor und prüft die Dublette **VOR** dem Einfügen gegen den geladenen
+Katalog; im Kern legt **`WaermebedarfStammCtrl.KopiereStamm`** Kopf und Werte in **einer**
+Transaktion an, in Stamm-Reihenfolge (`ORDER BY ID`), immer mit `ReadOnly = false` — eine
+Kopie ist Anwenderbestand, auch die eines Auslieferungssatzes. Auch dort steht die
+Dublettenprüfung vor dem `INSERT` (`Exists`), damit kein SQLite-UNIQUE-Fehler den Anwender
+erreicht. Der Schreibsatz ist mit `ImportGanglinie` **geteilt** (neues privates
+`EinfuegenStamm`).
+
+**4. Der Formathinweis** steht einzeilig unter der Leiste (`WBX_HINWEIS_FORMAT_KURZ`), der
+volle Wortlaut hängt am `InfoKnopf` (`WBX_HINWEIS_FORMAT`, neue Zeile
+`Form_Waermebedarf.btn_Help_Import` in `help_mapping.txt`). Er nennt genau das, was die Kette
+wirklich auswertet — Dateiarten, 8 760 bzw. 35 040 Werte in Zeitfolge ab dem 1. Januar, die
+vier zugelassenen Feldtrennzeichen und den einspaltigen Fall, die erkannte Kopfzeile, Komma
+**oder** Punkt als Dezimaltrennzeichen ohne Tausendertrennung, kW oder kWh je Intervall, die
+zulässige aber nicht nötige Zeitstempelspalte und den Bezeichner = Dateiname ohne Erweiterung.
+Denselben Hinweis samt Infoknopf bekommt die Verwaltung; ihr `WBAD_LBL_STUNDENWERTE` lautete
+bis hierher „Stundenwerte über 1 Jahr als Textdatei (Dezimaltrennzeichen '.')" — für die alte
+Kette richtig (Befund W13‑B56), für die neue zu eng.
+
+**5. Die Grafik** steht — sobald LINKS ODER RECHTS eine Zeile markiert ist — über die volle
+Breite unter den beiden Spalten, vor der Fußleiste: Kennzahlen, Schalter „sortiert",
+Einheitenwahl und das Bild **B1** (`ChartRenderer.GanglinieNormiert`, Titel
+`CHART_TITEL_WAERMELAST_JAHRESGANGLINIE`, Achse `CHART_ACHSE_WAERMELAST`, Farbe Rot) im
+Baustein `Diagramm` mit Bild- und Datenzoom. **Es ist dasselbe Bild** wie im Bedarfsreiter der
+Ergebnisseite und im `GebaeudeBedarfDialog` (W9.8), nur mit EINER Reihe — **kein neues
+Renderer-Bild**, `ChartProben` bleibt bei 36 + 4.
+
+**Die Zahlen kommen aus dem Kern, und es gibt sie nur EINMAL.**
+`StromganglinieAuswertungCtrl` ist zu **`GanglinienAuswertungCtrl`** verallgemeinert; die drei
+Tabellennamen und der Weg Bezeichner → Kopf-Id stehen als **`GanglinienQuelle`** (`Strom`,
+`Waermebedarf`) daneben. Gelesen wird dieselbe Wertspalte wie im Lauf
+(`… WHERE ID_Ganglinie = ? ORDER BY ID`) und als `float`; 35 040 Viertelstundenwerte gehen
+durch **dieselbe** Methode, die der Lauf benutzt
+(`SimulationControl.Viertelstunden_zu_Stundenwerte_Mittelwert`). Daraus fallen Jahresarbeit
+[MWh], Spitze [kW] und Vollbenutzungsstunden [h/a].
+
+**Eine Falle steckt in der Projektzeile**, und sie ist beim Strom nicht vorhanden:
+`Z_ProjektWaermebedarf.ID_Ganglinie` zeigt auf die PROJEKTKOPIE (`Tab_Waermebedarf.ID`) —
+eine im Dialog eben erst aufgenommene Zeile trägt dagegen die **STAMM**-Id
+(`WaermebedarfExternHuelle.Aufnehmen`), und ihre Kopie entsteht erst beim Speichern
+(`WizardCtrl.Add_WaermebedarfExtern` → `ApplyGanglinieToProjekt`). Als Kopie-Id gelesen,
+zeigte die Grafik die Werte einer **fremden** Ganglinie. Der Dialog gibt deshalb nur für eine
+GESPEICHERTE Zuordnung (`IdZ > 0`) die Id weiter und sonst `0` — dann fällt der Kern über den
+Bezeichner auf den Katalogsatz zurück, aus dem die Kopie entstehen wird. Eigener Testfall.
+
+**6. Der Kanal** bleibt, was er war (Steuerwert je Zuordnung, Vorbelegung Heizung, gesperrt
+ohne Markierung) und steht jetzt im Baustein **`Formularraster`** (Hausregel iU8‑E‑2) —
+Beschriftung neben dem Feld, einspaltig, in der LINKEN Spalte: Er gehört zur Zuordnung, nicht
+zum Katalog (Regel des Bausteins `Zweispaltenauswahl`).
+
+**Kein Inline-CSS, keine neue Regel.** Der Dialog benutzt `.epos-formathinweis` und
+`.epos-ganglinie-grafik` aus W12‑E‑2 unverändert; `epos-ui.css` ist **nicht angefasst**, der
+Formularraster-Block bleibt der letzte im Blatt (Wache `FormularrasterTests`).
+
+### Geänderte und neue Dateien
+
+| Datei | Was |
+|---|---|
+| `EPOS.Kern/Controller/GanglinienAuswertungCtrl.cs` | **neu** — der verallgemeinerte Leseweg samt `GanglinienAuswertung` und `GanglinienQuelle` |
+| `EPOS.Kern/Controller/StromganglinieAuswertungCtrl.cs` | **gelöscht** — vollständig in den obigen aufgegangen |
+| `EPOS.Kern/Allgemein/Import/GanglinienImportAblauf.cs` | `GanglinienZiel` (Strom/Wärmebedarf), `MitAblage(ziel, …)`, `AblageOrdner(ziel)` |
+| `EPOS.Kern/Controller/WaermebedarfStammCtrl.cs` | `Exists`, `KopiereStamm`, `ImportGanglinie(IList<double>)`, `ErsetzeGanglinie`, privates `EinfuegenStamm` |
+| `EPOS.UI/Bausteine/GanglinienGrafik.razor` | **verschoben** aus `Dialoge/Strom`, Namensraum `EPOS.UI.Bausteine`, ohne Fachbezug |
+| `EPOS.UI/Bausteine/GanglinienGrafikDaten.cs` | **neu** — `GanglinienWahl` und `GanglinienKennzahlen`, aus `StromganglinieDaten.cs` herausgezogen |
+| `EPOS.UI/Bausteine/GanglinienImportLauf.razor` | **verschoben**, dazu das `@using` auf die zwei Zwischendialoge |
+| `EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor` | vier Knöpfe, Formathinweis, Grafik, Kanal im Formularraster, Katalog mit `ReadOnly` |
+| `EPOS.UI/Dialoge/Bedarf/WaermebedarfAdminDialog.razor` | `GanglinienImportLauf` statt eigener Konfliktkette; Infoknopf am Formathinweis; ReadOnly-Text berichtigt |
+| `EPOS.UI/Dialoge/Bedarf/WaermebedarfAdminDaten.cs` | die zwei Importtypen entfallen; `AblageErgebnis` bleibt |
+| `EPOS.UI/Dialoge/Strom/StromganglinieDaten.cs` | zwei Records abgegeben |
+| `EPOS.UI/CLAUDE.md` | zwei Bausteinzeilen |
+| `WindowsFormsApplication1/Views/Wärmebedarf/WaermebedarfExternHuelle.cs` | sieben neue Delegaten, `Grafikvorrat` (eine gelesene Reihe je Dialog) |
+| `WindowsFormsApplication1/Views/Wärmebedarf/WaermebedarfAdminHuelle.cs` | `Einlesen`/`Vorschau` über die gemeinsame Kette; `KatalogLesen`/`DateiWaehlen` `internal` |
+| `WindowsFormsApplication1/Views/Stromverbraucher/StromganglinieHuelle.cs` | auf `GanglinienAuswertungCtrl` + `GanglinienQuelle.Strom` gezogen |
+| `WindowsFormsApplication1/Allgemein/Hilfe/help_mapping.txt` | `Form_Waermebedarf.btn_Help_Import` |
+| `EPOS.Kern/MyResource/Resource*.resx` + `Resource.Designer.cs` | **7 neue** Schlüssel (de/en), **2 geänderte** |
+| `EPOS.Kern.Tests/WaermebedarfKatalogTests.cs` | **neu** — 17 Fälle |
+| `EPOS.Kern.Tests/StromganglinieAuswertungTests.cs` | auf die neuen Namen gezogen (Zahlen unverändert) |
+| `EPOS.UI.Tests/Dialoge/WaermebedarfExternDialogTests.cs` | 16 → 36 Fälle |
+| `EPOS.UI.Tests/Dialoge/WaermebedarfAdminDialogTests.cs` | vier Fälle auf die gemeinsame Kette gezogen |
+
+**Die neuen Textschlüssel** (de/en): `WBX_HINWEIS_FORMAT`, `WBX_HINWEIS_FORMAT_KURZ`,
+`WBX_TITEL_KOPIE`, `WBX_MSG_NAME_VERGEBEN`, `WBX_MSG_KOPIERT`, `WBX_MSG_GELOESCHT`,
+`WBAD_MSG_SCHREIBGESCHUETZT`. **Geändert**: `WBAD_LBL_STUNDENWERTE` (der Hinweis nennt jetzt
+beide Raster) und `WBAD_DATEIFILTER` (`(*.txt)` → derselbe Filter wie beim Lastgang).
+Wo der Text ohnehin fachneutral ist, wird der vorhandene Schlüssel WEITERBENUTZT statt
+verdoppelt: `STROMGL_BTN_IMPORTIEREN`, `…_SPEICHERN_UNTER`, `…_LBL_JAHRESARBEIT`,
+`…_LBL_SPITZE`, `…_FRAGE_KOPIE`, `…_KOPIE_ZUSATZ`, `…_MSG_NAME_LEER`, `…_MSG_KOPIE_FEHLER`.
+
+### Wachen
+
+**Kern** — `EPOS.Kern.Tests/WaermebedarfKatalogTests` (17 Fälle, neu): die drei Kennzahlen
+zweier Katalogsätze **eingefroren**; die Projektkopie trägt dieselben Zahlen wie ihr
+Katalogsatz; ohne Projektkopie greift der Rückfall über den Bezeichner; **die Ausprägung
+entscheidet über die Tabelle** (der Name `test` steht in BEIDEN Katalogen mit
+verschiedenen Reihen — wäre `GanglinienQuelle` wirkungslos, käme zweimal dieselbe Zahl);
+ein unbekannter Name ergibt keine Auswertung; die zwei Löschsperren; `Exists` prüft den
+ganzen Namen und nicht seinen Anfang (der Fehler, der beim Solarkatalog Befund W14‑B70 war);
+die Kopie trägt dieselben Werte unter neuem Namen und ist frei, auch die eines
+Auslieferungssatzes; ein vergebener Name wird abgewiesen statt zu werfen (auch getrimmt);
+`ImportGanglinie` legt Kopf und Werte an, eine leere Reihe wird nicht geschrieben, und
+`ErsetzeGanglinie` **behält die Kopf-Id** (der alte Wärmeweg löschte den Satz und legte ihn
+neu an — die Id wechselte dabei). Der IMPORTweg selbst braucht keine neue Wache: Es ist
+dieselbe Kette, und die steht seit W12 in `GanglinienImportAblaufTests` und
+`GanglinienProbenTests`.
+
+**Oberfläche** — `EPOS.UI.Tests/Dialoge/WaermebedarfExternDialogTests` (16 → 36 Fälle): die
+vier Knöpfe in ihrer Reihenfolge; „kein Delegat, kein Knopf" samt dem Halbfall Dateiwähler
+ohne Kette; der Formathinweis nennt seine Angaben und der Infoknopf trägt den vollen
+Wortlaut; der Dateiwähler DARF warten und die Kette läuft danach mit `Raster.Unbekannt`; ein
+abgebrochener Wähler liest nichts; der Kanal steht im `Formularraster` der linken Spalte;
+Löschen ohne Auswahl gesperrt, mit Zuordnung und mit `ReadOnly` je mit Grund und **ohne**
+Rückfrage, frei mit Rückfrage „Ja"/„Nein"; Speichern unter mit Vorschlag „ - Kopie",
+vergebenem Namen (Dialog bleibt offen), freiem Namen und gescheiterter Kopie; die Grafik
+erscheint bei Markierung links wie rechts, bleibt ohne Markierung und ohne brauchbare Reihe
+weg, „sortiert" zeichnet neu, **und eine neu aufgenommene Zeile wird über den KATALOG
+gelesen** (die Fallgrube oben); dazu ein Fall in **englischer** Oberfläche.
+
+### Nachweise
+
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 207 grün** (1 190 + 17 neue), auch unter `LANG=en_US.UTF-8` |
+| `dotnet test EPOS.UI.Tests -c Release` | **2 668 grün** (2 648 + 20 neue), auch unter `LANG=en_US.UTF-8` |
+| `dotnet build WindowsFormsApplication1 -p:EnableWindowsTargeting=true` | 0 Fehler, 6 Warnungen (unverändert) |
+| `dotnet run --project Proben/ChartProben -c Release` | 40 Bilder (36 + 4 Gegenproben), 0 Verstöße |
+| `SqlDialektPruefer` | 1 212 SQL-Texte, **0 Fundstellen** |
+| Kern-Wächter (`Program.*`, Plattform) | beide leer |
+| Referenzlauf | nicht nötig — der Rechenweg ist unberührt; gelesen wird nur, und die Verdichtung ist DIESELBE Methode wie im Lauf |
+
+**Eingefrorene Kennzahlen** (`Referenzlaeufe/Kenndaten_Test.sqlite`):
+
+| Katalogsatz | Raster | Jahresarbeit | Spitze | Vollbenutzung |
+|---|---|---|---|---|
+| `Wärmebedarf_Laurentiuskirche` | 8 760 Stundenwerte | 65,430 MWh | 47,649 kW | 1 373,16 h/a |
+| `Nestle_Sprühturm-Wärmebedarf-1098kW-4300h-4724MWh.txt` | 8 760 Stundenwerte | 4 724,694 MWh | 1 098,00 kW | 4 303,00 h/a |
+
+### Abnahmepunkte A‑W9‑E‑3
+
+1. **Die vier Knöpfe.** Startseite → Kachel „Wärmebedarf" → „Daten importieren" (oder
+   Assistentenseite 3): Unter „Wärmebedarf aus DB" stehen „CSV-Datei importieren…",
+   „Speichern unter…", „DB Ganglinie löschen" und „Einlesen/Bearbeiten..", jeder so breit
+   wie sein Text. Darunter der Formathinweis mit dem Fragezeichenknopf rechts daneben; der
+   Knopf öffnet die Wikiseite „Wärmebedarf", sein Tooltip zeigt den vollen Formattext.
+2. **Import mit einer sauberen Datei.** Eine CSV mit 8 760 Zeilen, ein Wert je Zeile, Komma
+   als Dezimaltrennzeichen, ohne Kopfzeile — z. B. `123,4` / `118,9` / … Der Dateiwähler
+   geht auf (kein Absturz, W13‑B‑1), der Optionendialog zeigt „kein Trennzeichen /
+   Dezimaltrenner Komma / keine Kopfzeile / Spalte 1", das Protokoll bleibt weg, und die
+   neue Ganglinie steht unter dem Dateinamen ohne Erweiterung in der rechten Liste. Grünes
+   Banner mit Name und Wertezahl.
+3. **Import mit Semikolon, Kopfzeile und Viertelstundenwerten.** `Zeit;Leistung` mit
+   Kopfzeile und 35 040 Zeilen (`01.01.2024 00:00;123.4`): Der Optionendialog erkennt
+   Semikolon, Kopfzeile „ja", Zeitspalte 1, Wertspalte 2 und Punkt als Dezimaltrennzeichen.
+   **Das konnte der Wärmeimport vorher nicht** — er hätte die Datei abgelehnt.
+4. **Import in kWh je Intervall.** Im Optionendialog die Einheit auf „kWh je Intervall"
+   stellen: Die Kette rechnet in kW um; die Grafik zeigt danach dieselbe Spitze wie eine
+   inhaltsgleiche kW-Datei.
+5. **Import mit einer Datei, die es schon gibt.** Dieselbe Datei ein zweites Mal wählen: Der
+   Konfliktdialog kommt (Auslassen / Überschreiben / Umbenennen) — genau derselbe wie hinter
+   „Einlesen/Bearbeiten..". „Überschreiben" tauscht die Werte und **behält die Kopf-Id**:
+   Ein Projekt, das die Ganglinie schon führt, verliert seinen Bezug nicht.
+6. **Löschen — zugeordnet.** Eine Ganglinie wählen, die im Projekt steht: „DB Ganglinie
+   löschen" meldet „Es existiert eine Projektzuordnung, Löschen nicht möglich!" — **keine**
+   Rückfrage, nichts gelöscht.
+7. **Löschen — Auslieferung.** Ein Katalogeintrag mit `ReadOnly`: Der Knopf zeigt den Grund
+   schon als Tooltip; der Klick meldet „Diese Wärmebedarfsganglinie ist schreibgeschützt
+   (ReadOnly)…", ohne Rückfrage. **Bis hierher kam an dieser Stelle eine `MessageBox` mit dem
+   Wort „Stromganglinie".**
+8. **Löschen — frei.** Eine freie Ganglinie: Rückfrage „Soll … wirklich gelöscht werden ?" →
+   „Ja"; die Zeile verschwindet, grünes Banner. „Nein" lässt alles stehen.
+9. **Speichern unter.** Eine Ganglinie wählen → „Speichern unter…": Der Name steht mit
+   „ - Kopie" vorbelegt. Erst einen vergebenen Namen tippen: Der Dialog bleibt offen und
+   sagt, warum. Dann den Vorschlag nehmen: Die Kopie erscheint in der Liste, grünes Banner
+   mit beiden Namen. Die Kopie ist frei, auch wenn die Quelle Auslieferung war.
+10. **Die Grafik.** Beim Öffnen steht sie nur, wenn links eine Zuordnung markiert ist.
+    Rechts eine Ganglinie anklicken: Darunter erscheinen Name, Jahresarbeit, Spitzenlast,
+    Vollbenutzungsstunden und die Jahresganglinie. Schalter **„sortiert"** macht daraus die
+    Dauerlinie (x-Achse 2000/4000/6000/8000). Im Bild ein Rechteck aufziehen → „Bereich",
+    danach „1:1". Einheit auf **kWh** stellen: Jahresarbeit × 1 000, **Spitze bleibt kW**,
+    Vollbenutzungsstunden bleiben h/a.
+11. **Die Zahlen stimmen mit dem Lauf überein.** `Wärmebedarf_Laurentiuskirche` markieren
+    (Projekt 1041): 65,43 MWh / 47,65 kW / 1 373 h/a. Danach Simulation rechnen → Reiter
+    „Wärmebedarf": Der externe Anteil trägt dieselbe Jahresarbeit.
+12. **Eine eben übernommene Zeile zeigt schon ihre Grafik.** Rechts eine Ganglinie wählen,
+    „In das Projekt übernehmen": Die neue Zeile links ist markiert, und darunter steht die
+    Grafik mit denselben Zahlen wie eben rechts — **noch bevor** gespeichert wurde.
+13. **Der Kanal.** Bei markierter Projektzeile steht „Kanal:" **neben** der Klappliste (nicht
+    darüber); ohne Markierung ist sie gesperrt. Umschalten auf „Brauchwasser" wirkt auf
+    genau diese Zeile, OK speichert, Wiederöffnen zeigt sie unverändert.
+14. **Nichts sonst hat sich bewegt.** „Einlesen/Bearbeiten.." zeigt unverändert die
+    Verwaltung als Überlagerung — dort ist der Fortschrittsbalken jetzt unbestimmt und der
+    Konflikt-, Optionen- und Protokolldialog derselbe wie im Hauptdialog. „In das Projekt
+    übernehmen"/„Aus dem Projekt entfernen", OK und Abbrechen verhalten sich wie bisher.
+    Esc schließt immer nur die oberste Ebene.
+
+### Hausregel
+
+**Wer einen Baustein in einen anderen Namensraum verschiebt, prüft seine KIND-Marken.**
+Ein unbekanntes Element ist in Razor kein Fehler, sondern HTML — die Komponente
+verschwindet still, und das Markup sieht bis auf ein leeres Tag richtig aus. Eine
+bunit-Probe, die nur auf Text prüft, sieht es nicht; gesehen haben es hier zwei Proben,
+die auf die KLASSE des Unterdialogs warteten (`.epos-importoptionen`). Dieselbe Lehre wie
+W6‑B‑1 beim Stilblatt, nur eine Ebene höher.

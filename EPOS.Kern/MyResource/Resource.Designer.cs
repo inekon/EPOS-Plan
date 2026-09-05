@@ -30050,6 +30050,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Wärmebedarfsganglinie ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string WBAD_MSG_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("WBAD_MSG_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
         /// </summary>
         public static string WBAD_SPALTE_BEZEICHNER {
@@ -30064,6 +30073,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WBAD_TITEL {
             get {
                 return ResourceManager.GetString("WBAD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dateiformat: CSV- oder Textdatei (auch Excel .xlsx/.xlsm/.xls) mit einem Jahr Wärmebedarf — 8.760 St ähnelt.
+        /// </summary>
+        public static string WBX_HINWEIS_FORMAT {
+            get {
+                return ResourceManager.GetString("WBX_HINWEIS_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV/Text, 8.760 Stunden- oder 35.040 Viertelstundenwerte, ein Wert je Zeile — Einzelheiten am Infokn ähnelt.
+        /// </summary>
+        public static string WBX_HINWEIS_FORMAT_KURZ {
+            get {
+                return ResourceManager.GetString("WBX_HINWEIS_FORMAT_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmebedarfsganglinie „{0}“ wurde gelöscht. ähnelt.
+        /// </summary>
+        public static string WBX_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("WBX_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmebedarfsganglinie „{0}“ wurde als „{1}“ gespeichert. ähnelt.
+        /// </summary>
+        public static string WBX_MSG_KOPIERT {
+            get {
+                return ResourceManager.GetString("WBX_MSG_KOPIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Wärmebedarfsganglinie mit dem Namen „{0}“ ist bereits in der Datenbank. Bitte einen anderen Nam ähnelt.
+        /// </summary>
+        public static string WBX_MSG_NAME_VERGEBEN {
+            get {
+                return ResourceManager.GetString("WBX_MSG_NAME_VERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarfsganglinie speichern unter ähnelt.
+        /// </summary>
+        public static string WBX_TITEL_KOPIE {
+            get {
+                return ResourceManager.GetString("WBX_TITEL_KOPIE", resourceCulture);
             }
         }
         
