@@ -105,14 +105,16 @@ namespace WindowsFormsApplication1
         private static Task<bool> Loeschen(string bezeichner)
             => Task.FromResult(new StromganglinieStammCtrl().Delete(bezeichner));
 
-        /// <summary>Der Dateiwähler der Plattform, mit dem Ablageordner als Startpunkt.</summary>
+        /// <summary>
+        /// Der Dateiwähler der Plattform, mit dem Ablageordner als Startpunkt —
+        /// HINTER dem Blazor-Ereignis (Befund W13‑B‑1, siehe <c>IDateiDienst</c>).
+        /// </summary>
         private static Task<string> DateiWaehlen(string filter)
         {
-            string pfad = Dienste.Datei.DateiOeffnen(
+            return Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.IMPORT_TITEL_ADMIN,
                 string.IsNullOrEmpty(filter) ? MyResource.Resource.IMPORT_DATEIFILTER : filter,
                 GanglinienImportAblauf.AblageOrdner());
-            return Task.FromResult(pfad ?? "");
         }
 
         /// <summary>

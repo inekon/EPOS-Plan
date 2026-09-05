@@ -40107,5 +40107,41 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("MENU_ZULETZT_GEOEFFNET", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In dieser Ansicht ist ein Fehler aufgetreten ähnelt.
+        /// </summary>
+        public static string FEHLERSCHRANKE_TITEL {
+            get {
+                return ResourceManager.GetString("FEHLERSCHRANKE_TITEL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anwendung läuft weiter. … ähnelt.
+        /// </summary>
+        public static string FEHLERSCHRANKE_SATZ {
+            get {
+                return ResourceManager.GetString("FEHLERSCHRANKE_SATZ", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weiter ähnelt.
+        /// </summary>
+        public static string FEHLERSCHRANKE_BTN_WEITER {
+            get {
+                return ResourceManager.GetString("FEHLERSCHRANKE_BTN_WEITER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string FEHLERSCHRANKE_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("FEHLERSCHRANKE_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
 }
 }

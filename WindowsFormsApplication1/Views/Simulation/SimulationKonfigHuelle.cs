@@ -1708,20 +1708,22 @@ namespace WindowsFormsApplication1
         /// Der CSV-Zweig (:1064-1089): Datei wählen, Profil prüfen, Pfad schreiben.
         /// Die Rückfrage davor stellt die SEITE.
         /// </summary>
-        private System.Threading.Tasks.Task<Rueckmeldung> QuelleCsvWaehlen(int idAnlage)
+        private async System.Threading.Tasks.Task<Rueckmeldung> QuelleCsvWaehlen(int idAnlage)
         {
-            string pfad = Dienste.Datei.DateiOeffnen(
+            // Der Wähler läuft HINTER dem Blazor-Ereignis (Befund W13‑B‑1,
+            // siehe IDateiDienst) - deshalb await statt eines synchronen Aufrufs.
+            string pfad = await Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.SIMQ_CSV_DATEIDIALOG_TITEL,
                 MyResource.Resource.SIMQ_CSV_DATEIFILTER, "");
 
             if (string.IsNullOrEmpty(pfad))
-                return System.Threading.Tasks.Task.FromResult(Rueckmeldung.Still);
+                return Rueckmeldung.Still;
 
             if (WaermequelleClass.ProfilAusCsv(pfad) == null)
-                return System.Threading.Tasks.Task.FromResult(new Rueckmeldung(false,
+                return new Rueckmeldung(false,
                     Zeilenumbruch.Einzeilig(
                         string.Format(MyResource.Resource.SIMQ_CSV_FEHLER,
-                                      WaermequelleClass.CSV_FORMAT_HINWEIS))));
+                                      WaermequelleClass.CSV_FORMAT_HINWEIS)));
 
             WaermequelleClass.QuelleSchreiben(idAnlage, new QuelleErgebnis
             {
@@ -1729,7 +1731,7 @@ namespace WindowsFormsApplication1
                 CsvPfad = pfad
             });
 
-            return System.Threading.Tasks.Task.FromResult(Rueckmeldung.Still);
+            return Rueckmeldung.Still;
         }
 
         private IReadOnlyDictionary<string, object> WaermesenkeGaben(int idAnlage)

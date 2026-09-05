@@ -114,14 +114,16 @@ namespace WindowsFormsApplication1
             return Task.FromResult(liste);
         }
 
-        /// <summary>Der Dateiwähler mit dem Ablageordner als Startpunkt.</summary>
+        /// <summary>
+        /// Der Dateiwähler mit dem Ablageordner als Startpunkt — HINTER dem
+        /// Blazor-Ereignis (Befund W13‑B‑1, siehe <c>IDateiDienst</c>).
+        /// </summary>
         private static Task<string> DateiWaehlen(string filter)
         {
-            string pfad = Dienste.Datei.DateiOeffnen(
+            return Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.WBAD_TITEL,
                 string.IsNullOrEmpty(filter) ? MyResource.Resource.WBAD_DATEIFILTER : filter,
                 Ablageordner());
-            return Task.FromResult(pfad ?? "");
         }
 
         /// <summary>
