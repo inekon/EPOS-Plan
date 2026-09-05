@@ -33,8 +33,14 @@
                      Eintraege="@Eintraege" Gewaehlt="@_gewaehlt"
                      GewaehltChanged="@(w => _gewaehlt = w)" />
 
+    @* DATENZOOM (Windows-Abnahme 05.09.2026, Befund A-1): Ein aufgezogenes Rechteck
+       laesst den Kern das Bild mit diesem Achsenbereich neu zeichnen. Bei 35 040
+       Viertelstunden auf 1 100 Bildpunkten ist er der einzige Weg zu einer einzelnen
+       Stunde - dreissig Werte je Bildpunkt kann kein Bildzoom aufloesen. *@
     <ChartBild Png="@BildGang"
-               Alt="@Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE" />
+               Alt="@Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE"
+               BereichGewaehlt="@(b => _bereich = b)"
+               Zurueckgesetzt="@(() => _bereich = null)" />
 
     @if (Csv.HasDelegate)
     {
@@ -61,9 +67,13 @@
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;
 
+    /// <summary>Der aufgezogene Achsenbereich; <c>null</c> = das ganze Jahr (Pruefhilfe).</summary>
+    public Diagrammbereich? Bereich => _bereich;
+
     private bool _sortiert;
     private IReadOnlyList<int> _gewaehlt = Array.Empty<int>();
     private bool _erstBelegt;
+    private Diagrammbereich? _bereich;
 
     private List<Ganglinienreihe> Vorhandene
     {
@@ -106,7 +116,8 @@
     }
 
     private byte[]? BildGang =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Stromgang, _sortiert, -1, Schluessel()));
+        Bild?.Invoke(new Bildauftrag(Bilder.Stromgang, _sortiert, -1, Schluessel(),
+                                     0.0, _bereich));
 
     private Task CsvGewuenscht() => Csv.InvokeAsync(Schluessel());
 }

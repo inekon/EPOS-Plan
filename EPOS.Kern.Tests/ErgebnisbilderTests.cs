@@ -340,5 +340,142 @@ namespace EPOS.Kern.Tests
             Assert.False(r.Gestrichelt);
             Assert.Equal(0f, r.Breite);
         }
+
+        // ------------------------------------------------------------ Datenzoom
+        //
+        // Windows-Abnahme 05.09.2026, Befund A-1. Der Baustein Diagramm meldet ein
+        // aufgezogenes Rechteck in ANTEILEN DES BILDES; hier wird daraus ein
+        // Achsenbereich. Die Zeichenflaeche der Ganglinienbilder liegt waagerecht
+        // zwischen 100/1240 und 1200/1240, senkrecht zwischen 110/560 und 470/560.
+
+        /// <summary>
+        /// Ein Rechteck ueber der halben rechten Bildhaelfte trifft die zweite
+        /// Jahreshaelfte. Gerechnet wird gegen die Zeichenflaeche, nicht gegen das
+        /// Bild — der linke Rand mit der y-Beschriftung gehoert nicht dazu.
+        /// </summary>
+        [Fact]
+        public void FensterAusBild_rechnet_gegen_die_Zeichenflaeche()
+        {
+            // Die MITTE der Zeichenflaeche in Bildanteilen.
+            double mitte = (100.0 + 1200.0) / 2.0 / 1240.0;
+
+            ChartRenderer.Achsenfenster f = ChartRenderer.FensterAusBild(
+                new ChartRenderer.Bildausschnitt(mitte, 1200.0 / 1240.0, 0.2, 0.9), STUNDEN);
+
+            Assert.NotNull(f);
+            Assert.InRange(f.Von, STUNDEN / 2 - 3, STUNDEN / 2 + 3);
+            Assert.Equal(STUNDEN, f.Bis);
+        }
+
+        /// <summary>
+        /// Die OBERE Kante des Rechtecks wird die neue Obergrenze der y-Achse; die
+        /// Null bleibt unten. Ein Rechteck, dessen Oberkante die Mitte der Flaeche
+        /// trifft, halbiert die Achse.
+        /// </summary>
+        [Fact]
+        public void FensterAusBild_nimmt_die_obere_Kante_als_Obergrenze()
+        {
+            double mitteHoehe = (110.0 + 470.0) / 2.0 / 560.0;
+
+            ChartRenderer.Achsenfenster f = ChartRenderer.FensterAusBild(
+                new ChartRenderer.Bildausschnitt(0.2, 0.8, mitteHoehe, 470.0 / 560.0), STUNDEN);
+
+            Assert.NotNull(f);
+            Assert.Equal(0.5, f.YAnteil, 3);
+        }
+
+        /// <summary>
+        /// Drei Faelle, in denen es KEIN Fenster gibt: ein Rechteck ohne Breite, ein
+        /// Rechteck ueber das ganze Bild (dann ist nichts zugeschnitten) und eine zu
+        /// kurze Reihe. In allen dreien bleibt das Bild, wie es ist.
+        /// </summary>
+        [Fact]
+        public void FensterAusBild_liefert_ohne_Ausschnitt_nichts()
+        {
+            Assert.Null(ChartRenderer.FensterAusBild(
+                new ChartRenderer.Bildausschnitt(0.5, 0.5, 0.2, 0.8), STUNDEN));
+            Assert.Null(ChartRenderer.FensterAusBild(
+                new ChartRenderer.Bildausschnitt(0.0, 1.0, 0.0, 1.0), STUNDEN));
+            Assert.Null(ChartRenderer.FensterAusBild(
+                new ChartRenderer.Bildausschnitt(0.2, 0.8, 0.2, 0.8), 2));
+            Assert.Null(ChartRenderer.FensterAusBild(null, STUNDEN));
+        }
+
+        /// <summary>
+        /// Und die Zusage, an der alles haengt: OHNE Fenster zeichnen beide
+        /// Ganglinienbilder byte-genau dasselbe wie vorher. Der Zusatzparameter darf
+        /// kein einziges Bild des Bestands veraendern — die 32 ChartProben pruefen
+        /// dieselbe Aussage von der anderen Seite.
+        /// </summary>
+        [Fact]
+        public void Ohne_Fenster_bleibt_jedes_Bild_wie_es_war()
+        {
+            var reihen = new List<ChartRenderer.Reihe>
+            { new ChartRenderer.Reihe("Gesamt", Reihe(40, 25), SKColors.Red) };
+
+            Assert.Equal(
+                ChartRenderer.GanglinieNormiert("T", reihen, "%", ChartRenderer.Achse.Monate, false),
+                ChartRenderer.GanglinieNormiert("T", reihen, "%", ChartRenderer.Achse.Monate, false, null));
+
+            Assert.Equal(
+                ChartRenderer.ErzeugerStapel("T", reihen, null, null, "kW",
+                                             ChartRenderer.Achse.Jahresstunden, false),
+                ChartRenderer.ErzeugerStapel("T", reihen, null, null, "kW",
+                                             ChartRenderer.Achse.Jahresstunden, false, null, null, null));
+        }
+
+        /// <summary>
+        /// Mit Fenster entsteht ein ANDERES Bild — und zwar in denselben Massen. Der
+        /// Ausschnitt zeichnet neu, er schneidet nicht das fertige Bild zu.
+        /// </summary>
+        [Fact]
+        public void Mit_Fenster_entsteht_ein_anderes_Bild_gleicher_Groesse()
+        {
+            var reihen = new List<ChartRenderer.Reihe>
+            { new ChartRenderer.Reihe("Gesamt", Reihe(40, 25), SKColors.Red) };
+            var fenster = new ChartRenderer.Achsenfenster(2000, 2500);
+
+            byte[] ganz = ChartRenderer.ErzeugerStapel("T", reihen, null, null, "kW",
+                                                       ChartRenderer.Achse.Jahresstunden, false);
+            byte[] teil = ChartRenderer.ErzeugerStapel("T", reihen, null, null, "kW",
+                                                       ChartRenderer.Achse.Jahresstunden, false,
+                                                       null, null, fenster);
+
+            Assert.NotEqual(ganz, teil);
+            Assert.Equal((1240, 560), Mass(teil));
+
+            byte[] b1Ganz = ChartRenderer.GanglinieNormiert("T", reihen, "%",
+                                                            ChartRenderer.Achse.Jahresstunden, false);
+            byte[] b1Teil = ChartRenderer.GanglinieNormiert("T", reihen, "%",
+                                                            ChartRenderer.Achse.Jahresstunden, false, fenster);
+            Assert.NotEqual(b1Ganz, b1Teil);
+            Assert.Equal((1240, 560), Mass(b1Teil));
+        }
+
+        /// <summary>
+        /// Der senkrechte Anteil greift nur beim Stapelbild. Die Prozentachse von B1
+        /// ist per Definition 0…100 % des JAHRESHOECHSTWERTS; sie darf sich durch
+        /// einen Ausschnitt nicht verschieben, sonst hiesse „100 %" in jedem Bild
+        /// etwas anderes.
+        /// </summary>
+        [Fact]
+        public void Der_senkrechte_Anteil_gilt_nur_fuer_den_Stapel()
+        {
+            var reihen = new List<ChartRenderer.Reihe>
+            { new ChartRenderer.Reihe("Gesamt", Reihe(40, 25), SKColors.Red) };
+
+            var ohne = new ChartRenderer.Achsenfenster(2000, 2500);
+            var mit = new ChartRenderer.Achsenfenster(2000, 2500, 0.5);
+
+            Assert.Equal(
+                ChartRenderer.GanglinieNormiert("T", reihen, "%", ChartRenderer.Achse.Jahresstunden, false, ohne),
+                ChartRenderer.GanglinieNormiert("T", reihen, "%", ChartRenderer.Achse.Jahresstunden, false, mit));
+
+            Assert.NotEqual(
+                ChartRenderer.ErzeugerStapel("T", reihen, null, null, "kW",
+                                             ChartRenderer.Achse.Jahresstunden, false, null, null, ohne),
+                ChartRenderer.ErzeugerStapel("T", reihen, null, null, "kW",
+                                             ChartRenderer.Achse.Jahresstunden, false, null, null, mit));
+        }
     }
 }

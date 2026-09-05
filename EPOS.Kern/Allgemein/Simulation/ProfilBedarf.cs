@@ -31,9 +31,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Vorschau AUS EINEM PROJEKT</b> — der Knopf „Simulation…" der drei
-        /// Bedarfsprofil-Dialoge (iU9-W9.5). Kopf- und Typdaten kommen ZUERST aus dem
-        /// <c>_STAMM</c>-Katalog; findet sich der Name dort nicht, gilt die
-        /// PROJEKTKOPIE als Rückfall (<see cref="ProfilQuelle.Rueckfall"/>).
+        /// Bedarfsprofil-Dialoge (iU9-W9.5). Kopf- und Typdaten kommen ZUERST aus der
+        /// PROJEKTKOPIE; kennt das Projekt den Namen nicht, gilt der
+        /// <c>_STAMM</c>-Katalog als Rückfall (<see cref="ProfilQuelle.Rueckfall"/>).
         ///
         /// <para><b>Warum es diesen Modus gibt</b> (Befund W9‑B‑4/B‑5 der Windows-Abnahme
         /// vom 05.09.2026). Die Liste dieses Dialogs ist GEMISCHT: Eine gespeicherte
@@ -47,12 +47,15 @@ namespace WindowsFormsApplication1
         /// umbenannte oder nur im Projekt angelegte Kopie zwölf Nullmonate samt leerem
         /// Bild.</para>
         ///
-        /// <para><b>Warum der Katalog zuerst kommt.</b> So bleibt jede Zahl, die diese
-        /// Vorschau heute zeigt, zeichengleich — der Rückfall greift nur dort, wo bisher
-        /// eine Nullreihe stand. Dass eine im Projekt GEÄNDERTE Kopie damit weiterhin
-        /// mit der Katalogverteilung angezeigt wird (Brauchwasser 1007: Januar 1,900
-        /// statt 0,552 MWh), ist die verbleibende Unstimmigkeit; sie zu drehen ändert
-        /// angezeigte Zahlen und braucht einen eigenen Anwenderentscheid (W9‑O‑3c).</para>
+        /// <para><b>Warum die KOPIE zuerst kommt</b> (Anwenderentscheid <b>W9‑O‑3c</b>
+        /// vom 05.09.2026, „Empfehlung"). Eine Vorschau, die etwas anderes zeigt als der
+        /// Lauf, ist keine: Der Projektlauf rechnet mit der Projektkopie, also zeigt sie
+        /// auch die Vorschau. Die erste Fassung (Behebung W9‑B‑4/B‑5) las den Katalog
+        /// zuerst, damit jede damals richtige Zahl zeichengleich blieb; eine im Projekt
+        /// GEÄNDERTE Kopie erschien dadurch mit der Katalogverteilung — Brauchwasser
+        /// 1007: Januar 1,900 statt 0,552 MWh bei gleicher Jahressumme. Genau das ist
+        /// mit dem Entscheid gedreht. Der Katalog bleibt als Rückfall für die noch nicht
+        /// gespeicherte Zeile, die ihren Katalognamen trägt.</para>
         /// </summary>
         Projektvorschau
     }
@@ -97,9 +100,9 @@ namespace WindowsFormsApplication1
         /// unberührt bleibt).
         ///
         /// <para>Gesetzt ist er allein bei <see cref="ProfilQuellmodus.Projektvorschau"/>
-        /// und trägt dort die PROJEKTKOPIEN. Wird er gezogen, liefert er Kopf UND
-        /// Typprofil — beides aus derselben Quelle, denn genau ihre Vermischung war der
-        /// Befund V0-4.</para>
+        /// und trägt dort den KATALOG (W9‑O‑3c: die Projektkopie ist die erste Quelle).
+        /// Wird er gezogen, liefert er Kopf UND Typprofil — beides aus derselben Quelle,
+        /// denn genau ihre Vermischung war der Befund V0-4.</para>
         /// </summary>
         public ProfilQuelle Rueckfall;
 
@@ -124,11 +127,14 @@ namespace WindowsFormsApplication1
         /// <summary>Brauchwasser (Konzept 4.2, Kanal <see cref="Kanal.BRAUCHWASSER"/>).</summary>
         public static ProfilQuelle Brauchwasser(ProfilQuellmodus modus)
         {
-            bool stamm = modus != ProfilQuellmodus.Projektrechnung;
+            // W9-O-3c: STAMM-Tabellen liest allein die Katalogvorschau. Die
+            // Projektvorschau rechnet auf den PROJEKTKOPIEN wie der Lauf und haelt den
+            // Katalog nur als Rueckfall fuer die noch nicht gespeicherte Zeile bereit.
+            bool stamm = modus == ProfilQuellmodus.Katalogvorschau;
             return new ProfilQuelle
             {
                 Rueckfall = modus == ProfilQuellmodus.Projektvorschau
-                            ? Brauchwasser(ProfilQuellmodus.Projektrechnung) : null,
+                            ? Brauchwasser(ProfilQuellmodus.Katalogvorschau) : null,
                 Modus = modus,
                 NamenAbfrage = "Abfrage_Monatswaerme_Brauchwasser",
                 KopfTabelle = stamm ? "Tab_Brauchwasser_STAMM" : "Tab_Brauchwasser",
@@ -147,11 +153,14 @@ namespace WindowsFormsApplication1
         /// <summary>Prozesswärme (Konzept 4.2, Kanal <see cref="Kanal.PROZESS"/>).</summary>
         public static ProfilQuelle Prozesswaerme(ProfilQuellmodus modus)
         {
-            bool stamm = modus != ProfilQuellmodus.Projektrechnung;
+            // W9-O-3c: STAMM-Tabellen liest allein die Katalogvorschau. Die
+            // Projektvorschau rechnet auf den PROJEKTKOPIEN wie der Lauf und haelt den
+            // Katalog nur als Rueckfall fuer die noch nicht gespeicherte Zeile bereit.
+            bool stamm = modus == ProfilQuellmodus.Katalogvorschau;
             return new ProfilQuelle
             {
                 Rueckfall = modus == ProfilQuellmodus.Projektvorschau
-                            ? Prozesswaerme(ProfilQuellmodus.Projektrechnung) : null,
+                            ? Prozesswaerme(ProfilQuellmodus.Katalogvorschau) : null,
                 Modus = modus,
                 NamenAbfrage = "Abfrage_Monatswaerme_Prozesse",
                 KopfTabelle = stamm ? "Tab_Prozesswaerme_STAMM" : "Tab_Prozesswaerme",
@@ -193,11 +202,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static ProfilQuelle Strom(ProfilQuellmodus modus)
         {
-            bool stamm = modus != ProfilQuellmodus.Projektrechnung;
+            // W9-O-3c: STAMM-Tabellen liest allein die Katalogvorschau. Die
+            // Projektvorschau rechnet auf den PROJEKTKOPIEN wie der Lauf und haelt den
+            // Katalog nur als Rueckfall fuer die noch nicht gespeicherte Zeile bereit.
+            bool stamm = modus == ProfilQuellmodus.Katalogvorschau;
             return new ProfilQuelle
             {
                 Rueckfall = modus == ProfilQuellmodus.Projektvorschau
-                            ? Strom(ProfilQuellmodus.Projektrechnung) : null,
+                            ? Strom(ProfilQuellmodus.Katalogvorschau) : null,
                 Modus = modus,
                 NamenAbfrage = "Abfrage_Monatsstrom",
                 KopfTabelle = stamm ? "Tab_Stromverbraucher_STAMM" : "Tab_Stromverbraucher",
@@ -296,8 +308,8 @@ namespace WindowsFormsApplication1
         ///     (unverändert).</item>
         ///   <item>mit Liste UND Projekt → der Bedarfsprofil-Dialog zeigt die
         ///     Zuordnungen eines Projekts:
-        ///     <see cref="ProfilQuellmodus.Projektvorschau"/> — Katalog zuerst,
-        ///     Projektkopie als Rückfall. Das ist die Behebung.</item>
+        ///     <see cref="ProfilQuellmodus.Projektvorschau"/> — Projektkopie zuerst,
+        ///     Katalog als Rückfall (W9‑O‑3c). Das ist die Behebung.</item>
         /// </list>
         /// </summary>
         public static ProfilQuellmodus Vorschaumodus(List<string> namen, int idProjekt)
@@ -479,9 +491,10 @@ namespace WindowsFormsApplication1
                 if (info != null) info.AktuellerName = name;
 
                 // Die Quelle DIESES Satzes. Sie weicht nur in der Projektvorschau von
-                // der aeusseren ab: Kennt der Katalog den Namen nicht, gilt die
-                // Projektkopie (Befund W9-B-4/B-5). Kopf UND Typprofil kommen danach aus
-                // derselben Quelle - ihre Vermischung war der Befund V0-4.
+                // der aeusseren ab: Kennt das Projekt den Namen nicht, gilt der Katalog
+                // (Befund W9-B-4/B-5, Reihenfolge nach W9-O-3c). Kopf UND Typprofil
+                // kommen danach aus derselben Quelle - ihre Vermischung war der
+                // Befund V0-4.
                 ProfilQuelle satzquelle = quelle;
                 DataRow kopf = KopfLesen(quelle, idProjekt, name);
                 if (kopf == null && quelle.Rueckfall != null)

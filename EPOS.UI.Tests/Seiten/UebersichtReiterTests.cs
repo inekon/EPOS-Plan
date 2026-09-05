@@ -16,6 +16,11 @@ namespace EPOS.UI.Tests.Seiten;
 /// <para>Soll: die 13 Zahlen aus dem Kern-DTO, die Praesenzregel je Zeile,
 /// zwei Ringe und zwei Kacheln, das Eigenanteilsraster, ohne Bedarf KEIN Ring
 /// (Befund W11-B36) und die beiden Rollen der Komponente.</para>
+/// <para>Der Selektor nennt seit der Windows-Abnahme 05.09.2026 die Klasse
+/// <c>epos-simerg-knopf</c>: Jedes Diagramm steht seither im Baustein
+/// <c>Diagramm</c> und bringt seine eigenen Knöpfe („1:1“, „Bereich“) mit.
+/// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
+/// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
 /// </summary>
 public class UebersichtReiterTests : BunitContext
 {
@@ -205,7 +210,7 @@ public class UebersichtReiterTests : BunitContext
     public void Ohne_Rueckruf_bleibt_der_Bedarfsknopf_weg()
     {
         var seite = Zeichnen(Daten());
-        Assert.Empty(seite.FindAll("button"));
+        Assert.Empty(seite.FindAll("button.epos-simerg-knopf"));
     }
 
     [Fact]
@@ -214,7 +219,7 @@ public class UebersichtReiterTests : BunitContext
         int gerufen = 0;
         var seite = Zeichnen(Daten(), details: () => gerufen++);
 
-        seite.Find("button").Click();
+        seite.Find("button.epos-simerg-knopf").Click();
         Assert.Equal(1, gerufen);
     }
 }

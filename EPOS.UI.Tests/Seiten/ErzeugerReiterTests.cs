@@ -18,6 +18,11 @@ namespace EPOS.UI.Tests.Seiten;
 /// liegen deshalb in EINER Probendatei; jede Ausprägung hat ihre eigenen
 /// Fälle. Geprüft werden die Felder aus dem DTO, die Präsenzregeln, die
 /// Brennstoffblöcke und die Bildaufträge.</para>
+/// <para>Der Selektor nennt seit der Windows-Abnahme 05.09.2026 die Klasse
+/// <c>epos-simerg-knopf</c>: Jedes Diagramm steht seither im Baustein
+/// <c>Diagramm</c> und bringt seine eigenen Knöpfe („1:1“, „Bereich“) mit.
+/// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
+/// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
 /// </summary>
 public class ErzeugerReiterTests : BunitContext
 {
@@ -147,7 +152,7 @@ public class ErzeugerReiterTests : BunitContext
         int gerufen = 0;
         var seite = KesselZeichnen(Kessel(), csv: () => gerufen++);
 
-        seite.Find("button").Click();
+        seite.Find("button.epos-simerg-knopf").Click();
         Assert.Equal(1, gerufen);
     }
 
