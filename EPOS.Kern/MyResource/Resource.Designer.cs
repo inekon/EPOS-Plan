@@ -40535,6 +40535,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV/Text, 8.760 Stunden- oder 35.040 Viertelstundenwerte, ein Wert je [...] ähnelt.
+        /// </summary>
+        public static string STROMGL_HINWEIS_FORMAT_KURZ {
+            get {
+                return ResourceManager.GetString("STROMGL_HINWEIS_FORMAT_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeit: ähnelt.
+        /// </summary>
+        public static string STROMGL_LBL_JAHRESARBEIT {
+            get {
+                return ResourceManager.GetString("STROMGL_LBL_JAHRESARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenlast: ähnelt.
+        /// </summary>
+        public static string STROMGL_LBL_SPITZE {
+            get {
+                return ResourceManager.GetString("STROMGL_LBL_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinie speichern unter ähnelt.
         /// </summary>
         public static string STROMGL_TITEL_KOPIE {

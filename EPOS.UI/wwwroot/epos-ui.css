@@ -5961,6 +5961,82 @@ body {
     .epos-kiwerkzeuge-leer { border: 2px dashed CanvasText; }
 }
 
+/* STROMGANGLINIE - GRAFIK (Anwenderwunsch W12-E-2, 05.09.2026)          */
+/*                                                                      */
+/* "Stelle die importierte Stromganglinie als Grafik dar (wie bisher,    */
+/* zoombar, umschaltbar auf sortiert)."                                  */
+/*                                                                      */
+/* WO SIE STEHT. Unter den ZWEI Spalten des Dialogs, ueber die volle     */
+/* Breite und vor der Fussleiste - sie gehoert zu beiden Listen, nicht   */
+/* zu einer. Das Bild selbst bringt seinen Rahmen mit (.epos-diagramm    */
+/* hat width:100 % und min-width:0), hier steht nur, was darum liegt:    */
+/* die Kennzahlenzeile und die Leiste mit Schalter und Einheit.          */
+/*                                                                      */
+/* KEIN WAAGERECHTES ROLLEN. min-width:0 auf dem Abschnitt loest die     */
+/* Mindestbreite auf, die ein Flex-Kind sonst von seinem Inhalt erbt -   */
+/* ohne sie schoebe das 1 240 px breite PNG den Dialog auf einem         */
+/* schmalen Schirm auseinander. Unter dem Hausumbruch von 900 px         */
+/* (--epos-zweispalten-umbruch) stehen die drei Kennzahlen zudem         */
+/* untereinander, statt in einer Zeile umzubrechen.                      */
+/* ==================================================================== */
+
+.epos-ganglinie-grafik {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-abstand);
+    min-width: 0;
+    margin-top: var(--epos-rand);
+}
+
+/* Die drei Kennzahlen nebeneinander: Jahresarbeit, Spitze,
+   Vollbenutzungsstunden. <dl> statt Tabelle - es sind drei Paare aus
+   Begriff und Wert, keine Matrix. */
+.epos-ganglinie-kennzahlen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-abstand) 24px;
+    margin: 0;
+}
+
+.epos-ganglinie-kennzahl {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.epos-ganglinie-kennzahl dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-ganglinie-kennzahl dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Der Wert traegt das Gewicht, die Einheit bleibt leicht - sonst liest
+   sich "4.790,09 MWh" als ein einziges Wort. */
+.epos-ganglinie-wert {
+    font-weight: 600;
+}
+
+/* Schalter "sortiert" und Einheitenwahl in EINER Zeile. Sie stehen auf
+   der Grundlinie, damit das Kaestchen nicht ueber dem Auswahlfeld
+   schwebt. */
+.epos-ganglinie-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-abstand);
+}
+
+@media (max-width: 900px) {
+    .epos-ganglinie-kennzahlen {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
