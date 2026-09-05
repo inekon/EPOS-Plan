@@ -256,6 +256,87 @@ public class KatalogImportDialogTests : BunitContext
     // 3 — Lesen, Filtern, Markieren
     // =====================================================================
 
+    /// <summary>
+    /// <b>Der Dateiwähler darf WARTEN</b> (Befund W13‑B‑1, Windows-Abnahme
+    /// 05.09.2026).
+    ///
+    /// <para>Bis dahin gaben alle Hüllen ihren Wähler als
+    /// <c>Task.FromResult(Dienste.Datei.DateiOeffnen(…))</c> herein — der
+    /// <c>OpenFileDialog</c> ging also SYNCHRON im Blazor-Ereignis auf, mitten
+    /// im <c>WebMessageReceived</c>-Rückruf der WebView2. Seither liefert
+    /// <c>DateiOeffnenAsync</c> einen Task, der erst eine geposteten Nachricht
+    /// später erfüllt wird.</para>
+    ///
+    /// <para>Der Fall hält fest, dass die Komponente das aushält: Solange der
+    /// Wähler offen ist, steht die alte Liste; erst wenn er antwortet, läuft das
+    /// Lesen an. Der Wähler wird hier von Hand aufgelöst — genau die Rolle, die
+    /// am Gerät der Bedienfaden hinter dem Ereignis spielt.</para>
+    /// </summary>
+    [Fact]
+    public async Task Der_Dateiwaehler_darf_warten_und_die_Liste_kommt_danach()
+    {
+        var waehler = new TaskCompletionSource<string?>();
+
+        var cut = Render<KatalogImportDialog>(p =>
+        {
+            p.Add(x => x.Art, KatalogImportArt.Heizkessel);
+            p.Add(x => x.ProfilVorgabe, KatalogImportProfil.Finde(KatalogImportArt.Heizkessel, Texte.Zu));
+            p.Add(x => x.DateiWaehlen, (Func<string, Task<string?>>)(_ => waehler.Task));
+            p.Add(x => x.Lesen, (Func<string, IProgress<ImportFortschritt>, CancellationToken,
+                                      Task<KatalogLeseErgebnis>>)((_, __, ___) =>
+                Task.FromResult(new KatalogLeseErgebnis(
+                    DreiZeilen(), Array.Empty<PruefMeldung>()))));
+            p.Add(x => x.Meldungstext, (Func<PruefMeldung, string>)Texte.Zu);
+            p.Add(x => x.Fortschrittstext, (Func<ImportFortschritt, string>)Texte.Zu);
+        });
+
+        Einlesen(cut);
+
+        // Der Waehler steht noch offen: nichts gelesen, nichts in der Liste.
+        Assert.Equal(0, cut.Instance.SichtbareZeilen);
+
+        // Jetzt antwortet er - so wie der Bedienfaden hinter dem Ereignis.
+        await cut.InvokeAsync(() => waehler.SetResult("probe.vdi"));
+
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.Instance.SichtbareZeilen));
+        Assert.Contains("Kessel klein", cut.Find("tbody").TextContent);
+    }
+
+    /// <summary>
+    /// Ein ABGEBROCHENER Wähler (leerer Pfad) lässt alles, wie es war — kein
+    /// Lesen, keine Meldung. Dieselbe Zusage wie im Baustein <c>Dateiwahl</c>,
+    /// hier auf dem wartenden Weg.
+    /// </summary>
+    [Fact]
+    public async Task Ein_abgebrochener_Waehler_liest_nichts()
+    {
+        var waehler = new TaskCompletionSource<string?>();
+        bool gelesen = false;
+
+        var cut = Render<KatalogImportDialog>(p =>
+        {
+            p.Add(x => x.Art, KatalogImportArt.Heizkessel);
+            p.Add(x => x.ProfilVorgabe, KatalogImportProfil.Finde(KatalogImportArt.Heizkessel, Texte.Zu));
+            p.Add(x => x.DateiWaehlen, (Func<string, Task<string?>>)(_ => waehler.Task));
+            p.Add(x => x.Lesen, (Func<string, IProgress<ImportFortschritt>, CancellationToken,
+                                      Task<KatalogLeseErgebnis>>)((_, __, ___) =>
+            {
+                gelesen = true;
+                return Task.FromResult(new KatalogLeseErgebnis(
+                    DreiZeilen(), Array.Empty<PruefMeldung>()));
+            }));
+            p.Add(x => x.Meldungstext, (Func<PruefMeldung, string>)Texte.Zu);
+            p.Add(x => x.Fortschrittstext, (Func<ImportFortschritt, string>)Texte.Zu);
+        });
+
+        Einlesen(cut);
+        await cut.InvokeAsync(() => waehler.SetResult(""));
+
+        Assert.False(gelesen);
+        Assert.Equal(0, cut.Instance.SichtbareZeilen);
+        Assert.Equal("", cut.Instance.Meldung);
+    }
+
     [Fact]
     public void Nach_dem_Lesen_stehen_die_Saetze_in_der_Liste()
     {
