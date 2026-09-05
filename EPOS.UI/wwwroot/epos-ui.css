@@ -4912,3 +4912,126 @@ body {
     font-size: 11px;
     color: var(--epos-text-leise);
 }
+
+/* ==================================================================== */
+/* KATALOGDIALOGE - Anwenderwunsch 05.09.2026                           */
+/*                                                                      */
+/* "Admin-Menues sind nicht an Groesse Bildschirm angepasst." Der        */
+/* Katalogdialog "Administration Solarkollektoren" zeigte uebereinander: */
+/* Ueberschrift, Balken "Auswahl in DB:", eine Liste in ihrem eigenen    */
+/* kleinen Rollrahmen und darunter - nur ueber den SEITENrollbalken zu   */
+/* erreichen - den Balken "Eingabe der Solarkollektoren" mit den         */
+/* Feldern. Das Fenster nutzte weder Breite noch Hoehe des Schirms.      */
+/*                                                                      */
+/* ZWEI SEITEN EINER SACHE. Die eine ist die HUELLE: BlazorDialogForm    */
+/* oeffnet eine Fachmaske seither im Anteil des Arbeitsbereichs          */
+/* (85 % x 90 %, Rechnung in EPOS.UI/Dienste/Fenstermass.cs). Die andere */
+/* steht hier: Der Dialog muss die gewonnene Hoehe auch BENUTZEN.        */
+/*                                                                      */
+/* DIE VORBILDER STANDEN NEBENEINANDER: Form_Heizkessel_Admin            */
+/* (726 x 383, Liste 302 x 157 links), Form_BHKWAdmin (856 x 517,        */
+/* Liste 403 x 369 links, Gruppe 405 x 421 rechts),                      */
+/* Form_SolarKollektorenAdmin (825 x 494, Liste 359 x 302 links),        */
+/* Form_PufferSp_Admin (721 x 330), Form_AdminPV (607 x 489),            */
+/* Form_AdminStromspeicher (614 x 367). Wo das Vorbild gestapelt war     */
+/* (Form_AdminWaermeeinlesen 676 x 433), bleibt es gestapelt.            */
+/*                                                                      */
+/* DIE UMBRUCHBREITE IST 900 px UND NICHT 1100. Der Inhalt der WebView   */
+/* rechnet in CSS-Pixeln, das Fenstermass in Geraetepixeln: Bei 150 %    */
+/* Skalierung sind 1632 Geraetepixel nur 1088 CSS-Pixel. Ein Umbruch bei */
+/* 1100 px liesse genau den Anwender, der den Befund gemeldet hat,       */
+/* wieder untereinander stehen. 900 px ist ausserdem die Breite, bei der */
+/* schon der Baustein Zweispaltenauswahl und der Dublettenbaum           */
+/* umbrechen (--epos-zweispalten-umbruch); die Vorbilder waren           */
+/* 607 bis 856 px breit und standen dabei nebeneinander.                 */
+/* ==================================================================== */
+
+/* Die Wurzel eines Katalogdialogs. Sie nimmt .epos-dialog zwei Dinge:
+   die Breitenbremse (max-width 1160px - eine Liste neben einem
+   Eingabeblock ist keine Bandwurmzeile) und die freie Hoehe. Statt der
+   Seite rollen die Abschnitte darin.
+
+   overflow: auto und nicht hidden: Im Normalfall rollt hier nichts -
+   die Abschnitte darin schrumpfen. Wird das Fenster aber bis auf das
+   Kleinstmass zusammengezogen (520 x 360 Geraetepixel, bei 150 % rund
+   347 x 240 CSS-Pixel), reicht die Hoehe irgendwann nicht einmal mehr
+   fuer Kopf, Mindestliste und Schlussleiste. Dann ist ein Rollbalken
+   die ehrliche Antwort; hidden schnitte die Knoepfe ab. */
+.epos-katalog-dialog {
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    overflow: auto;
+}
+
+/* Der Abschnitt, der die uebrige Hoehe nimmt - genau EINER je Dialog.
+   min-height: 0 ist Pflicht: Ohne sie waechst ein Flex-Kind nie unter
+   seinen Inhalt und der Rollbalken landet an der Seite statt in der
+   Liste. */
+.epos-katalog-fuellend {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Liste und Eingabeblock nebeneinander. Das Verhaeltnis 45:55 folgt den
+   Vorbildern (BHKW 403 zu 405 px zuzueglich Beschriftungsspalte,
+   Solarkollektoren 359 zu 410) und ist dasselbe wie beim Dublettenbaum. */
+.epos-katalog-paar {
+    display: grid;
+    grid-template-columns: minmax(280px, 45fr) minmax(320px, 55fr);
+    gap: var(--epos-rand);
+    align-items: stretch;
+}
+
+/* Fuer die Masken, deren Vorbild schon gestapelt war. */
+.epos-katalog-paar--gestapelt {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.epos-katalog-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+    min-height: 0;
+}
+
+/* Der Eingabeblock steht IMMER im Bild; ist er zu hoch, rollt er selbst -
+   nie die Seite. Das war der Kern des Befunds. Deshalb steht er als eigene
+   Regel und nicht neben der Liste: Nur er rollt. */
+.epos-katalog-eingabe {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* HIER faellt die Hoechsthoehe aus W9-B-2. Sie war die Antwort auf eine
+   Liste, die den Detailblock und die Schlussleiste nach unten schob; in
+   diesem Rahmen schiebt nichts mehr, weil der Eingabeblock daneben steht
+   und die Schlussleiste ausserhalb. Ueberall sonst gilt sie weiter. */
+.epos-katalog-liste .epos-raster-huelle {
+    flex: 1 1 auto;
+    max-height: none;
+    min-height: 9rem;
+}
+
+/* Alles ANDERE in den zwei Spalten behaelt seine Hoehe: Ueberschrift,
+   Filterzeile, Hinweis, Fortschrittsbalken. Nur die Liste waechst. Ohne
+   diese Zeile teilte sich der Rest die Hoehe mit ihr und ein
+   Gruppenkopf wuerde zusammengestaucht. */
+.epos-katalog-liste > *,
+.epos-katalog-eingabe > * {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 900px) {
+
+    .epos-katalog-paar {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) auto;
+    }
+}

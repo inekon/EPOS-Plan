@@ -48,7 +48,8 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
 
-<div class="epos-dialog epos-bedarf-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog epos-bedarf-admin" tabindex="-1"
+     @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
@@ -60,30 +61,41 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Gruppenkopf Titel="@LabelKatalog" />
+    @* --- Liste OBEN, Anzeigeblock UNTEN (Anwenderwunsch 05.09.2026) ------
+           Gestapelt wie das Vorbild: Form_Stromverbraucher_Admin (542 x 489)
+           hatte die Liste (288 x 174) oben links, die vier Knoepfe rechts
+           daneben und die Anzeigefelder darunter (ab y 239). Neu ist nur,
+           dass die Liste die verbleibende Hoehe nimmt. *@
+    <Katalograhmen Gestapelt="true">
+        <Liste>
+            <Gruppenkopf Titel="@LabelKatalog" />
 
-    <Raster TZeile="Katalogzeile" Zeilen="@Katalogzeilen">
-        <KindInhalt>
-            <TemplateColumn TGridItem="Katalogzeile" Title="@SpalteWahlText">
-                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahlText"
-                            Gewaehltwerden="() => Waehlen(context)" />
-            </TemplateColumn>
-            <PropertyColumn TGridItem="Katalogzeile" TProp="string"
-                            Property="@(z => z.Bezeichner)" Title="@SpalteBezeichnerText" />
-        </KindInhalt>
-    </Raster>
+            <Raster TZeile="Katalogzeile" Zeilen="@Katalogzeilen">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="Katalogzeile" Title="@SpalteWahlText">
+                        <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahlText"
+                                    Gewaehltwerden="() => Waehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="Katalogzeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@SpalteBezeichnerText" />
+                </KindInhalt>
+            </Raster>
+        </Liste>
 
-    @* --- Der Anzeigeblock: Jahressumme, Name, Beschreibung, Typ -----------
-       Die Einheit steht RECHTS neben dem Feld, wie Label11 im Designer. *@
-    <div class="epos-feldpaar">
-        <Textfeld Bezeichnung="@LabelJahressumme" Wert="@_jahressumme" NurLesen="true" />
-        <span class="epos-einheit">@EinheitText</span>
-    </div>
+        <Eingabe>
+            @* --- Der Anzeigeblock: Jahressumme, Name, Beschreibung, Typ ---
+               Die Einheit steht RECHTS neben dem Feld, wie Label11 im Designer. *@
+            <div class="epos-feldpaar">
+                <Textfeld Bezeichnung="@LabelJahressumme" Wert="@_jahressumme" NurLesen="true" />
+                <span class="epos-einheit">@EinheitText</span>
+            </div>
 
-    <Textfeld Bezeichnung="@LabelName" Wert="@_gewaehlt" NurLesen="true" />
-    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
-              Mehrzeilig="true" Zeilen="3" />
-    <Textfeld Bezeichnung="@LabelTyp" Wert="@_typ" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelName" Wert="@_gewaehlt" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                      Mehrzeilig="true" Zeilen="3" />
+            <Textfeld Bezeichnung="@LabelTyp" Wert="@_typ" NurLesen="true" />
+        </Eingabe>
+    </Katalograhmen>
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" disabled="@(!ZeileGewaehlt)"

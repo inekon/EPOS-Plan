@@ -40,7 +40,8 @@
 @using SpeicherEngine
 @using WindowsFormsApplication1
 
-<div class="epos-dialog epos-waermebedarf-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog epos-waermebedarf-admin" tabindex="-1"
+     @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
@@ -52,30 +53,42 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Gruppenkopf Titel="@LabelKatalog" />
+    @* --- Liste OBEN, Einleseblock UNTEN (Anwenderwunsch 05.09.2026) ------
+           Hier bleibt es gestapelt, weil das Vorbild es war:
+           Form_AdminWaermeeinlesen (676 x 433) fuehrte die Liste ueber die
+           volle Breite (639 x 174) und den Einleseblock darunter. Neu ist
+           nur, dass die Liste die verbleibende Hoehe nimmt und der
+           Einleseblock ohne Seitenrollen sichtbar bleibt. *@
+    <Katalograhmen Gestapelt="true">
+        <Liste>
+            <Gruppenkopf Titel="@LabelKatalog" />
 
-    <Raster TZeile="Katalogzeile" Zeilen="@Katalogzeilen">
-        <KindInhalt>
-            <TemplateColumn TGridItem="Katalogzeile" Title="@SpalteWahlText">
-                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahlText"
-                            Gewaehltwerden="() => Waehlen(context)" />
-            </TemplateColumn>
-            <PropertyColumn TGridItem="Katalogzeile" TProp="string"
-                            Property="@(z => z.Bezeichner)" Title="@SpalteBezeichnerText" />
-        </KindInhalt>
-    </Raster>
+            <Raster TZeile="Katalogzeile" Zeilen="@Katalogzeilen">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="Katalogzeile" Title="@SpalteWahlText">
+                        <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahlText"
+                                    Gewaehltwerden="() => Waehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="Katalogzeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@SpalteBezeichnerText" />
+                </KindInhalt>
+            </Raster>
+        </Liste>
 
-    <Gruppenkopf Titel="@GruppeEinlesenText" />
+        <Eingabe>
+            <Gruppenkopf Titel="@GruppeEinlesenText" />
 
-    <Herleitungszeile Text="@HinweisStundenwerte" />
+            <Herleitungszeile Text="@HinweisStundenwerte" />
 
-    <Textfeld Bezeichnung="@LabelOrdner" Wert="@Ordner" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelOrdner" Wert="@Ordner" NurLesen="true" />
 
-    <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
-               Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
-               Aktiv="@(!_laeuft)" />
+            <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
+                       Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+                       Aktiv="@(!_laeuft)" />
 
-    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
+            <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
+        </Eingabe>
+    </Katalograhmen>
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" disabled="@(!AnzeigenErlaubt)"

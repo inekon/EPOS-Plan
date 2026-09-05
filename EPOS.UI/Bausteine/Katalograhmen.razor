@@ -1,0 +1,70 @@
+﻿@* Der Rahmen eines KATALOGDIALOGS - Liste und Eingabeblock in EINEM Fenster
+   (Anwenderwunsch 05.09.2026: "Admin-Menues sind nicht an Groesse Bildschirm
+   angepasst").
+
+   DER BEFUND. Der Katalogdialog "Administration Solarkollektoren" zeigte
+   uebereinander: Ueberschrift, den Balken "Auswahl in DB:", eine Liste in
+   ihrem eigenen kleinen Rollrahmen und darunter - nur ueber den
+   SEITENrollbalken erreichbar - den Balken "Eingabe der Solarkollektoren" mit
+   den Feldern. Das Fenster nutzte weder Breite noch Hoehe des Schirms.
+
+   DIE VORBILDER TATEN ES ANDERS. Alle sechs Verwaltungsmasken des Bestands
+   stellten Liste und Eingabe NEBENEINANDER:
+     Form_Heizkessel_Admin       726 x 383   Liste 302 x 157 links, Felder rechts ab x 448
+     Form_BHKWAdmin              856 x 517   Liste 403 x 369 links, Gruppe 405 x 421 rechts
+     Form_SolarKollektorenAdmin  825 x 494   Liste 359 x 302 links, Felder rechts ab x 402
+     Form_PufferSp_Admin         721 x 330   Liste 299 x 191 links, Felder rechts ab x 346
+     Form_AdminPV                607 x 489   Liste 211 x 259 links, Felder rechts ab x 253
+     Form_AdminStromspeicher     614 x 367   Liste 201 x 293 links, Felder rechts ab x 240
+   Wo das Vorbild gestapelt war (Form_AdminWaermeeinlesen 676 x 433 - Liste
+   ueber die volle Breite, Einlesen darunter), bleibt es gestapelt: dafuer
+   steht Gestapelt.
+
+   WAS DER RAHMEN TUT. Er ist die EINE Stelle, an der die drei Regeln stehen:
+     * Die LISTE nimmt die verbleibende Hoehe (flex: 1 1 auto) statt der
+       Hoechsthoehe --epos-listenhoehe aus W9-B-2. Die Hoechsthoehe bleibt
+       ueberall sonst - sie war die Antwort auf eine Liste, die den
+       Detailblock nach unten schob; hier schiebt nichts mehr, weil der
+       Eingabeblock daneben oder in einem eigenen Rollbereich steht.
+     * Der EINGABEBLOCK ist immer sichtbar und rollt fuer sich.
+     * Ab 900 CSS-Pixeln stehen beide NEBENEINANDER, darunter untereinander -
+       dieselbe Umbruchbreite wie beim Baustein Zweispaltenauswahl und beim
+       Dublettenbaum.
+
+   KEIN EIGENES CSS JE DIALOG. Wer den Rahmen benutzt, setzt an der Wurzel
+   seines Dialogs zusaetzlich die Klasse epos-katalog-dialog - die gibt dem
+   Fenster die volle Hoehe und nimmt die Breitenbremse von .epos-dialog. *@
+
+<div class="epos-katalog-paar epos-katalog-fuellend@(Gestapelt ? " epos-katalog-paar--gestapelt" : "")">
+
+    <div class="epos-katalog-liste">
+        @Liste
+    </div>
+
+    <div class="epos-katalog-eingabe">
+        @Eingabe
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Die linke Spalte: Filter, Listenueberschrift und die Liste selbst.
+    /// Ihre <c>.epos-raster-huelle</c> verliert hier die Hoechsthoehe und
+    /// nimmt stattdessen die verbleibende Hoehe.
+    /// </summary>
+    [Parameter] public RenderFragment? Liste { get; set; }
+
+    /// <summary>
+    /// Die rechte Spalte: der Eingabe- oder Detailblock. Er steht IMMER im
+    /// Bild; ist er zu hoch, rollt er selbst - nie die Seite.
+    /// </summary>
+    [Parameter] public RenderFragment? Eingabe { get; set; }
+
+    /// <summary>
+    /// <c>true</c> = Liste ueber Eingabe, auch auf breitem Schirm. Fuer die
+    /// Masken, deren Vorbild schon gestapelt war
+    /// (<c>Form_AdminWaermeeinlesen</c>): Die Liste dort ging ueber die volle
+    /// Breite, und schmal wirkt sie schlechter, nicht besser.
+    /// </summary>
+    [Parameter] public bool Gestapelt { get; set; }
+}

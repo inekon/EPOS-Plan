@@ -90,7 +90,12 @@ namespace WindowsFormsApplication1
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
                 ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
-                ["SpalteWahlText"] = profil.SpalteName,
+                // Die WAHLSPALTE heisst „Wahl", nicht wie die Namensspalte
+                // (Anwenderwunsch 05.09.2026): Die Kopfzeile las sich
+                // „Name | Name | Eigenschaften", weil hier die Beschriftung der
+                // NACHBARSPALTE stand. Derselbe Schluessel wie in den acht
+                // uebrigen Katalogdialogen.
+                ["SpalteWahlText"] = MyResource.Resource.KFAK_SP_WAHL,
 
                 // Angleichung E-4: EIN Löschtext für alle vier. Der
                 // Solarkollektor-Browser hatte einen eigenen Wortlaut OHNE Namen
