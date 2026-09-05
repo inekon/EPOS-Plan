@@ -509,8 +509,8 @@ namespace WindowsFormsApplication1
 
             if (!IstEingerichtet)
             {
-                antwort.Fehler = "Es ist kein API-Schlüssel hinterlegt. " +
-                                 "Bitte im Chatfenster über 'Einstellungen...' eintragen.";
+                // W15b-B-2: EIN Satz, und zwar derselbe wie am Riegel in SendenAsync.
+                antwort.Fehler = KiDienstfehler.Anwendersatz(KiDienstfehler.OhneAnfrage);
                 return antwort;
             }
 
@@ -568,6 +568,13 @@ namespace WindowsFormsApplication1
 
                 ZaehlerErhoehen();
                 _cache[cacheKey] = new CacheEintrag { Angelegt = DateTime.UtcNow, Antwort = antwort };
+            }
+            catch (KiDienstAusnahme absage)
+            {
+                // Der ANWENDERSATZ steht im Verlauf, der Rohtext des Anbieters im
+                // Protokoll (W15b-B-2). Kein "Die Anfrage konnte nicht beantwortet
+                // werden:" davor - der Satz sagt schon, was los ist und was zu tun.
+                antwort.Fehler = absage.Message;
             }
             catch (Exception ex)
             {
@@ -745,7 +752,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                if (!IstModellFehler(ex.Message)) throw;
+                if (!IstModellFehler(ex)) throw;
 
                 string neuesModell = await ModellErmittelnAsync(false, abbruch);
                 if (string.IsNullOrEmpty(neuesModell))
@@ -755,6 +762,24 @@ namespace WindowsFormsApplication1
                 MODELL = neuesModell;   // für die nächsten Aufrufe merken
                 return await AufrufenMitModellAsync(prompt, neuesModell, abbruch);
             }
+        }
+
+        /// <summary>
+        /// Erkennt eine Absage, die auf ein ungültiges Modell hindeutet.
+        /// </summary>
+        /// <remarks>
+        /// Seit W15b-B-2 trägt die Ausnahme den ANWENDERSATZ als Meldung; die
+        /// Erkennungswörter („no longer available", „not found") stehen im ROHTEXT des
+        /// Anbieters. Geprüft wird deshalb beides — sonst fiele der Modellwechsel
+        /// stillschweigend aus, sobald der Anwendersatz eingeführt wird.
+        /// </remarks>
+        private static bool IstModellFehler(Exception ex)
+        {
+            if (ex == null) return false;
+            if (IstModellFehler(ex.Message)) return true;
+
+            KiDienstAusnahme absage = ex as KiDienstAusnahme;
+            return absage != null && IstModellFehler(absage.Rohtext);
         }
 
         /// <summary>Erkennt Fehlermeldungen, die auf ein ungültiges Modell hindeuten.</summary>
@@ -867,7 +892,7 @@ namespace WindowsFormsApplication1
                     string body = await antwort.Content.ReadAsStringAsync();
 
                     if (!antwort.IsSuccessStatusCode)
-                        throw new Exception("HTTP " + (int)antwort.StatusCode + " - " + KurzFehler(body));
+                        throw Dienstabsage((int)antwort.StatusCode, KurzFehler(body));
 
                     return TextAusJson(body);
                 }
@@ -882,7 +907,33 @@ namespace WindowsFormsApplication1
         private static Task<HttpResponseMessage> SendenAsync(HttpRequestMessage nachricht,
                                                              CancellationToken abbruch = default)
         {
-            nachricht.Headers.TryAddWithoutValidation(HEADER_APIKEY, ApiKey);
+            // W15b-B-2: OHNE Schluessel geht GAR KEINE Anfrage hinaus.
+            //
+            // Der Anbieter beantwortet eine Anfrage ohne Kopfzeile mit
+            // "401 - Expected OAuth 2 access token, login cookie or other valid
+            // authentication credential" - ein Satz aus einer Entwicklerkonsole, den
+            // der Anwender im Verlauf zu lesen bekam. Das Programm kennt die Lage
+            // aber, BEVOR es sendet: Der Schluessel ist leer. Also wird nicht
+            // gesendet, sondern gesagt, was zu tun ist.
+            //
+            // Der Riegel steht HIER und nicht nur in FrageAsync, weil hier jede
+            // Anfrage durchgeht - auch die Modellabfrage (ModellErmittelnAsync) und
+            // jede Werkzeugrunde. Ein zweiter Riegel weiter vorn kann uebersehen
+            // werden; dieser nicht.
+            string schluessel = (ApiKey ?? "").Trim();
+            if (schluessel.Length == 0)
+                throw Dienstabsage(KiDienstfehler.OhneAnfrage,
+                                   "Anfrage nicht gesendet: kein API-Schluessel hinterlegt (" +
+                                   SchluesselDatei() + ").");
+
+            // TryAddWithoutValidation meldet einen unbrauchbaren Wert mit false und
+            // sonst NICHTS - die Anfrage ginge dann ohne Kopfzeile hinaus und ergaebe
+            // genau dieselbe 401. Der Rueckgabewert wird deshalb ausgewertet.
+            if (!nachricht.Headers.TryAddWithoutValidation(HEADER_APIKEY, schluessel))
+                throw Dienstabsage(KiDienstfehler.OhneAnfrage,
+                                   "Anfrage nicht gesendet: der hinterlegte Schluessel liess " +
+                                   "sich nicht als Kopfzeile " + HEADER_APIKEY + " setzen.");
+
             return _http.SendAsync(nachricht, abbruch);
         }
 
@@ -937,6 +988,67 @@ namespace WindowsFormsApplication1
 
             if (body != null && body.Length > 200) return body.Substring(0, 200) + "...";
             return body ?? "";
+        }
+
+        // ==================================================================
+        // Stoerungen des Modelldienstes (Befund W15b-B-2)
+        // ==================================================================
+
+        /// <summary>Hoechstzahl gemerkter Stoerungen; danach faellt die aelteste heraus.</summary>
+        private const int STOERUNGEN_MAX = 20;
+
+        private static readonly List<string> _stoerungen = new List<string>();
+
+        /// <summary>
+        /// Die Stoerungen dieser Sitzung im Wortlaut des Anbieters - fuer
+        /// "Protokoll anzeigen" (Befund <b>W15b-B-2</b>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum nicht in die Protokolldatei.</b> Das Aktionsprotokoll fuehrt GENAU
+        /// EINE Zeile je Ausfuehrungsversuch in einem festen Format (Fachkonzept 3.6,
+        /// <c>KiProtokoll.Zeile</c>). Eine Netzstoerung ist kein Ausfuehrungsversuch;
+        /// sie dort einzutragen zerstoerte das Format, das der Leser erwartet. Sie steht
+        /// deshalb hier, und das Chatfenster haengt sie unter das Aktionsprotokoll.
+        /// </para>
+        /// <para>
+        /// <b>Der Wortlaut bleibt roh.</b> Er ist der Nachweis dafuer, was der Anbieter
+        /// geantwortet hat - im Verlauf steht stattdessen der Anwendersatz.
+        /// </para>
+        /// </remarks>
+        public static IReadOnlyList<string> Stoerungen
+        {
+            get { lock (_stoerungen) { return _stoerungen.ToArray(); } }
+        }
+
+        /// <summary>Leert die Stoerungsliste (Programmstart, Pruefstand).</summary>
+        public static void StoerungenLeeren()
+        {
+            lock (_stoerungen) { _stoerungen.Clear(); }
+        }
+
+        /// <summary>
+        /// Die Absage des Dienstes: Anwendersatz nach draussen, Rohtext ins Protokoll.
+        /// <b>Die eine Stelle</b>, an der aus einer HTTP-Kennzahl ein Fehler des
+        /// Assistenten wird.
+        /// </summary>
+        private static KiDienstAusnahme Dienstabsage(int status, string rohtext)
+        {
+            var absage = new KiDienstAusnahme(status, rohtext);
+
+            string zeile = DateTime.Now.ToString(
+                               "yyyy-MM-dd HH:mm:ss",
+                               System.Globalization.CultureInfo.InvariantCulture)
+                           + "  " + absage.Protokollzeile();
+
+            lock (_stoerungen)
+            {
+                _stoerungen.Add(zeile);
+                while (_stoerungen.Count > STOERUNGEN_MAX) _stoerungen.RemoveAt(0);
+            }
+
+            System.Diagnostics.Debug.WriteLine("[KI] " + zeile);
+            return absage;
         }
 
         // ==================================================================
@@ -1161,7 +1273,7 @@ namespace WindowsFormsApplication1
                     {
                         rumpf = await RundeSendenAsync(anfrage, modell, abbruch).ConfigureAwait(true);
                     }
-                    catch (Exception ex) when (!wegB && IstModellFehler(ex.Message))
+                    catch (Exception ex) when (!wegB && IstModellFehler(ex))
                     {
                         // Das gemerkte Modell gibt es nicht mehr. Erst ein anderes
                         // WERKZEUGFÄHIGES suchen; gibt es keines, wird sichtbar auf
@@ -1274,6 +1386,15 @@ namespace WindowsFormsApplication1
             catch (OperationCanceledException)
             {
                 antwort.Fehler = MyResource.Resource.KI_AKT_ABGEBROCHEN;
+                antwort.Runden = runden.Verbraucht;
+                antwort.WegB = wegB;
+                return antwort;
+            }
+            catch (KiDienstAusnahme absage)
+            {
+                // W15b-B-2: der ANWENDERSATZ, nicht der Wortlaut des Anbieters. Der
+                // steht unter "Protokoll anzeigen" (KiChatService.Stoerungen).
+                antwort.Fehler = absage.Message;
                 antwort.Runden = runden.Verbraucht;
                 antwort.WegB = wegB;
                 return antwort;
@@ -1545,7 +1666,7 @@ namespace WindowsFormsApplication1
                     string body = await antwort.Content.ReadAsStringAsync().ConfigureAwait(true);
 
                     if (!antwort.IsSuccessStatusCode)
-                        throw new Exception("HTTP " + (int)antwort.StatusCode + " - " + KurzFehler(body));
+                        throw Dienstabsage((int)antwort.StatusCode, KurzFehler(body));
 
                     return body;
                 }

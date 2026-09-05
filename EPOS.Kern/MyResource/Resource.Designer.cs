@@ -40596,5 +40596,599 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("STROMGL_MSG_KOPIE_FEHLER", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Frage gestellt. ähnelt.
+        /// </summary>
+        public static string KI_CHAT_VERLAUF_LEER {
+            get {
+                return ResourceManager.GetString("KI_CHAT_VERLAUF_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was der Assistent tut und was übertragen wird ähnelt.
+        /// </summary>
+        public static string KI_CHAT_ERKLAERUNG_MEHR {
+            get {
+                return ResourceManager.GetString("KI_CHAT_ERKLAERUNG_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hier führen Sie eine Aktion von Hand aus — ohne Modell un... ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_HINWEIS {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktion suchen ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_SUCHE {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Aktion passt zu diesem Suchtext. ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_KEIN_TREFFER {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_KEIN_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen, die nur lesen ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_GRUPPE_LESEND {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_GRUPPE_LESEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen, die Daten ändern ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_GRUPPE_AENDERND {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_GRUPPE_AENDERND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liest nur ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_MERKMAL_LESEND {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_MERKMAL_LESEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ändert Daten ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_MERKMAL_AENDERND {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_MERKMAL_AENDERND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die So fragen Sie: ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_BEISPIEL {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_BEISPIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angaben ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_ANGABEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_ANGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Aktion braucht keine Angaben. ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_KEINE_ANGABEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_KEINE_ANGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Danach: ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflichtangabe ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_PFLICHT {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte links eine Aktion wählen. ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_LEER_KOPF {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_LEER_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Beispiel: Wählen Sie links „Variante anlegen". Tragen... ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_LEER_TEXT {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_LEER_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verändernde Aktionen laufen erst nach Ihrer Bestätigung. ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_BESTAETIGUNG {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_BESTAETIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technischer Andockpunkt: {0} ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERKZEUGE_ANDOCKPUNKT {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERKZEUGE_ANDOCKPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekte auflisten ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_PROJEKTE_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_PROJEKTE_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Projekte gibt es in der Datenbank? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_PROJEKTE_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_PROJEKTE_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geöffnetes Projekt nennen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_PROJEKT_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_PROJEKT_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welches Projekt ist gerade geöffnet? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_PROJEKT_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_PROJEKT_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt suchen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_PROJEKT_SUCHEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_PROJEKT_SUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gibt es ein Projekt Musterhaus? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_PROJEKT_SUCHEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_PROJEKT_SUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkopf lesen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_PROJEKT_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_PROJEKT_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wer ist der Kunde des Projekts Musterhaus? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_PROJEKT_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_PROJEKT_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten auflisten ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_VARIANTEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_VARIANTEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Varianten hat dieses Projekt? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_VARIANTEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_VARIANTEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervarianten auflisten ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_SPEICHERVARIANTEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_SPEICHERVARIANTEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Speichervariante ist bei Musterhaus aktiv? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_SPEICHERVARIANTEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_SPEICHERVARIANTEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeitsergebnisse lesen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_ERGEBNISSE_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_ERGEBNISSE_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleiche die Ergebnisse der Projekte 1007 und 1017. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_ERGEBNISSE_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_ERGEBNISSE_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeitsparameter lesen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_PARAMETER_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_PARAMETER_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit welchem Strompreis rechnet Musterhaus? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_PARAMETER_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_PARAMETER_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenlage prüfen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_KOSTENLAGE_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_KOSTENLAGE_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Passt die erfasste Investition für den Kessel zu den Plan... ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_KOSTENLAGE_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_KOSTENLAGE_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme eines Gewerks vorschauen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_UEBERNAHME_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_UEBERNAHME_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was würde sich ändern, wenn ich die Wärmepumpe von Muster... ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_UEBERNAHME_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_UEBERNAHME_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme eines Merkmals vorschauen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_MERKMAL_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_MERKMAL_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ließe sich die Klimaregion von Musterhaus nach Neubau übe... ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_MERKMAL_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_MERKMAL_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgangdatei prüfen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_LASTGANG_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_LASTGANG_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfe die Lastgangdatei C:\Daten\Lastgang2025.csv. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_LASTGANG_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_LASTGANG_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinien auflisten ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_GANGLINIEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_GANGLINIEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Stromganglinien stehen für dieses Projekt zur Wahl? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_GANGLINIEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_GANGLINIEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste Netzbezugsspitze ermitteln ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_MINIMALE_SPITZE {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_MINIMALE_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie weit drückt ein Speicher mit 200 kWh die Netzbezugssp... ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_MINIMALE_SPITZE {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_MINIMALE_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgeführte Aktionen nennen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_LETZTE_AKTIONEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_LETZTE_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was hast du in dieser Sitzung ausgeführt? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_LETZTE_AKTIONEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_LETZTE_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger auf Einheiten prüfen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_ENERGIETRAEGER_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_ENERGIETRAEGER_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sind die Einheiten der Energieträger stimmig? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_ENERGIETRAEGER_PRUEFEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_ENERGIETRAEGER_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Felder der offenen Maske nennen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_DIALOG_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_DIALOG_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Felder kann ich in dieser Maske setzen? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_DIALOG_LESEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_DIALOG_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feld der offenen Maske erklären ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_DIALOG_ERKLAEREN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_DIALOG_ERKLAEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was bedeutet das Feld Jahresarbeitszahl? ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_DIALOG_ERKLAEREN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_DIALOG_ERKLAEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feld der offenen Maske ausfüllen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_FELD_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_FELD_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trage bei Jahresarbeitszahl 3,8 ein. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_FELD_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_FELD_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrere Felder der offenen Maske ausfüllen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_FORMULAR_AUSFUELLEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_FORMULAR_AUSFUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trage Name Neubau und Kunde Stadtwerke ein. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_FORMULAR_AUSFUELLEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_FORMULAR_AUSFUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Knopf der offenen Maske auslösen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_DIALOG_AKTION {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_DIALOG_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löse in dieser Maske den Knopf Berechnen aus. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_DIALOG_AKTION {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_DIALOG_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_VARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_VARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lege zum Projekt Musterhaus eine Variante Wärmepumpe stat... ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_VARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_VARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervariante aktiv setzen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_SPEICHERVARIANTE_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_SPEICHERVARIANTE_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setze bei Musterhaus die Speichervariante 200 kWh aktiv. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_SPEICHERVARIANTE_AKTIV {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_SPEICHERVARIANTE_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenposition setzen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_KOSTENPOSITION_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_KOSTENPOSITION_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setze bei Musterhaus die Kostenposition Wärmepumpe auf 45... ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_KOSTENPOSITION_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_KOSTENPOSITION_SETZEN", resourceCulture);
+            }
+        }
 }
 }

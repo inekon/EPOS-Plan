@@ -46,6 +46,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "energietraeger_pruefen",
                 zweck: KiAktionsTexte.ZweckEnergietraegerPruefen,
+                titel: KiAktionsTexte.TitelEnergietraegerPruefen,
+                beispiel: KiAktionsTexte.BeispielEnergietraegerPruefen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "EnergieEinheitenPruefung.PruefeKatalog / PruefeProjekt",
                 parameter: new[]

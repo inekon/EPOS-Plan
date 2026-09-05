@@ -200,6 +200,11 @@ Form_AdminSettings.btn_Help         = Einstellungen
 # dort steht der Knopf fuer die geschriebene Hilfe neben dem Assistenten.
 Form_KiChat.btn_Help                = Hilfe-Assistent
 
+# Die Werkzeugliste ("Aktionen von Hand ausfuehren") hat seit dem Anwenderbefund
+# W15b-E-4 einen eigenen Infoknopf. Er springt auf denselben Wiki-Abschnitt, den
+# das eingebaute Wissen unter "Aktionen des Assistenten" fuehrt.
+KiWerkzeugliste.btn_Help            = Hilfe-Assistent#Aktionen des Assistenten
+
 # ---------------------------------------------------------------------------
 # Zielvorrat: die 23 Unterseiten der Rubrik
 # ---------------------------------------------------------------------------

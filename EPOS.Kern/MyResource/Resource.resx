@@ -14771,4 +14771,226 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="STROMGL_MSG_KOPIE_FEHLER" xml:space="preserve">
     <value>Die Kopie konnte nicht angelegt werden.</value>
   </data>
+  <data name="KI_KERN_DIENST_KEIN_SCHLUESSEL" xml:space="preserve">
+    <value>Kein API-Schlüssel hinterlegt — bitte unter „Einstellungen…" eintragen.</value>
+  </data>
+  <data name="KI_KERN_DIENST_ABGELEHNT" xml:space="preserve">
+    <value>Der KI-Dienst hat die Anfrage abgelehnt ({0}). Prüfen Sie den Schlüssel unter „Einstellungen…".</value>
+  </data>
+  <data name="KI_KERN_DIENST_SCHLUESSEL_UNGUELTIG" xml:space="preserve">
+    <value>Der KI-Dienst hat den Schlüssel nicht angenommen ({0}). Prüfen Sie ihn unter „Einstellungen…".</value>
+  </data>
+  <data name="KI_KERN_DIENST_KONTINGENT" xml:space="preserve">
+    <value>Der KI-Dienst nimmt zurzeit keine weitere Anfrage an ({0}). Bitte später noch einmal fragen.</value>
+  </data>
+  <data name="KI_KERN_DIENST_GESTOERT" xml:space="preserve">
+    <value>Der KI-Dienst ist zurzeit nicht erreichbar ({0}). Bitte später noch einmal fragen.</value>
+  </data>
+  <data name="KI_KERN_DIENST_UNBEKANNT" xml:space="preserve">
+    <value>Der KI-Dienst hat die Anfrage nicht beantwortet ({0}). Einzelheiten stehen unter „Protokoll anzeigen".</value>
+  </data>
+  <data name="KI_KERN_DIENST_PROTOKOLLZEILE" xml:space="preserve">
+    <value>KI-Dienst HTTP {0}: {1}</value>
+  </data>
+  <data name="KI_KERN_DIENST_PROTOKOLLKOPF" xml:space="preserve">
+    <value>Störungen des KI-Dienstes (diese Sitzung):</value>
+  </data>
+  <data name="KI_CHAT_VERLAUF_LEER" xml:space="preserve">
+    <value>Noch keine Frage gestellt.</value>
+  </data>
+  <data name="KI_CHAT_ERKLAERUNG_MEHR" xml:space="preserve">
+    <value>Was der Assistent tut und was übertragen wird</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_HINWEIS" xml:space="preserve">
+    <value>Hier führen Sie eine Aktion von Hand aus — ohne Modell und ohne Kosten.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_SUCHE" xml:space="preserve">
+    <value>Aktion suchen</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_KEIN_TREFFER" xml:space="preserve">
+    <value>Keine Aktion passt zu diesem Suchtext.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_GRUPPE_LESEND" xml:space="preserve">
+    <value>Aktionen, die nur lesen</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_GRUPPE_AENDERND" xml:space="preserve">
+    <value>Aktionen, die Daten ändern</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_MERKMAL_LESEND" xml:space="preserve">
+    <value>Liest nur</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_MERKMAL_AENDERND" xml:space="preserve">
+    <value>Ändert Daten</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_BEISPIEL" xml:space="preserve">
+    <value>So fragen Sie:</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_ANGABEN" xml:space="preserve">
+    <value>Angaben</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_KEINE_ANGABEN" xml:space="preserve">
+    <value>Diese Aktion braucht keine Angaben.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_WIRKUNG" xml:space="preserve">
+    <value>Danach:</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_PFLICHT" xml:space="preserve">
+    <value>Pflichtangabe</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_LEER_KOPF" xml:space="preserve">
+    <value>Bitte links eine Aktion wählen.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_LEER_TEXT" xml:space="preserve">
+    <value>Ein Beispiel: Wählen Sie links „Variante anlegen". Tragen Sie bei „Stammprojekt" das Projekt ein, zu dem die Variante gehört (etwa Musterhaus), und bei „Bezeichner" den Namen der neuen Variante (etwa Wärmepumpe statt Kessel). „Ausführen" zeigt zuerst eine Vorschau; erst Ihre Bestätigung legt die Variante an. Dasselbe erreichen Sie im Gespräch mit dem Satz: „Lege zum Projekt Musterhaus eine Variante Wärmepumpe statt Kessel an."</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_BESTAETIGUNG" xml:space="preserve">
+    <value>Verändernde Aktionen laufen erst nach Ihrer Bestätigung.</value>
+  </data>
+  <data name="KI_AKT_WERKZEUGE_ANDOCKPUNKT" xml:space="preserve">
+    <value>Technischer Andockpunkt: {0}</value>
+  </data>
+  <data name="KI_REG_TITEL_PROJEKTE_AUFLISTEN" xml:space="preserve">
+    <value>Projekte auflisten</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PROJEKTE_AUFLISTEN" xml:space="preserve">
+    <value>Welche Projekte gibt es in der Datenbank?</value>
+  </data>
+  <data name="KI_REG_TITEL_PROJEKT_AKTIV" xml:space="preserve">
+    <value>Geöffnetes Projekt nennen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PROJEKT_AKTIV" xml:space="preserve">
+    <value>Welches Projekt ist gerade geöffnet?</value>
+  </data>
+  <data name="KI_REG_TITEL_PROJEKT_SUCHEN" xml:space="preserve">
+    <value>Projekt suchen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PROJEKT_SUCHEN" xml:space="preserve">
+    <value>Gibt es ein Projekt Musterhaus?</value>
+  </data>
+  <data name="KI_REG_TITEL_PROJEKT_LESEN" xml:space="preserve">
+    <value>Projektkopf lesen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PROJEKT_LESEN" xml:space="preserve">
+    <value>Wer ist der Kunde des Projekts Musterhaus?</value>
+  </data>
+  <data name="KI_REG_TITEL_VARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>Varianten auflisten</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_VARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>Wie viele Varianten hat dieses Projekt?</value>
+  </data>
+  <data name="KI_REG_TITEL_SPEICHERVARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>Speichervarianten auflisten</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_SPEICHERVARIANTEN_AUFLISTEN" xml:space="preserve">
+    <value>Welche Speichervariante ist bei Musterhaus aktiv?</value>
+  </data>
+  <data name="KI_REG_TITEL_ERGEBNISSE_LESEN" xml:space="preserve">
+    <value>Wirtschaftlichkeitsergebnisse lesen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_ERGEBNISSE_LESEN" xml:space="preserve">
+    <value>Vergleiche die Ergebnisse der Projekte 1007 und 1017.</value>
+  </data>
+  <data name="KI_REG_TITEL_PARAMETER_LESEN" xml:space="preserve">
+    <value>Wirtschaftlichkeitsparameter lesen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PARAMETER_LESEN" xml:space="preserve">
+    <value>Mit welchem Strompreis rechnet Musterhaus?</value>
+  </data>
+  <data name="KI_REG_TITEL_KOSTENLAGE_PRUEFEN" xml:space="preserve">
+    <value>Kostenlage prüfen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_KOSTENLAGE_PRUEFEN" xml:space="preserve">
+    <value>Passt die erfasste Investition für den Kessel zu den Planwerten?</value>
+  </data>
+  <data name="KI_REG_TITEL_UEBERNAHME_VORSCHAU" xml:space="preserve">
+    <value>Übernahme eines Gewerks vorschauen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_UEBERNAHME_VORSCHAU" xml:space="preserve">
+    <value>Was würde sich ändern, wenn ich die Wärmepumpe von Musterhaus nach Neubau übernehme?</value>
+  </data>
+  <data name="KI_REG_TITEL_MERKMAL_VORSCHAU" xml:space="preserve">
+    <value>Übernahme eines Merkmals vorschauen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_MERKMAL_VORSCHAU" xml:space="preserve">
+    <value>Ließe sich die Klimaregion von Musterhaus nach Neubau übernehmen?</value>
+  </data>
+  <data name="KI_REG_TITEL_LASTGANG_PRUEFEN" xml:space="preserve">
+    <value>Lastgangdatei prüfen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_LASTGANG_PRUEFEN" xml:space="preserve">
+    <value>Prüfe die Lastgangdatei C:\Daten\Lastgang2025.csv.</value>
+  </data>
+  <data name="KI_REG_TITEL_GANGLINIEN_AUFLISTEN" xml:space="preserve">
+    <value>Stromganglinien auflisten</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_GANGLINIEN_AUFLISTEN" xml:space="preserve">
+    <value>Welche Stromganglinien stehen für dieses Projekt zur Wahl?</value>
+  </data>
+  <data name="KI_REG_TITEL_MINIMALE_SPITZE" xml:space="preserve">
+    <value>Kleinste Netzbezugsspitze ermitteln</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_MINIMALE_SPITZE" xml:space="preserve">
+    <value>Wie weit drückt ein Speicher mit 200 kWh die Netzbezugsspitze?</value>
+  </data>
+  <data name="KI_REG_TITEL_LETZTE_AKTIONEN" xml:space="preserve">
+    <value>Ausgeführte Aktionen nennen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_LETZTE_AKTIONEN" xml:space="preserve">
+    <value>Was hast du in dieser Sitzung ausgeführt?</value>
+  </data>
+  <data name="KI_REG_TITEL_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
+    <value>Energieträger auf Einheiten prüfen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_ENERGIETRAEGER_PRUEFEN" xml:space="preserve">
+    <value>Sind die Einheiten der Energieträger stimmig?</value>
+  </data>
+  <data name="KI_REG_TITEL_DIALOG_LESEN" xml:space="preserve">
+    <value>Felder der offenen Maske nennen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_DIALOG_LESEN" xml:space="preserve">
+    <value>Welche Felder kann ich in dieser Maske setzen?</value>
+  </data>
+  <data name="KI_REG_TITEL_DIALOG_ERKLAEREN" xml:space="preserve">
+    <value>Feld der offenen Maske erklären</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_DIALOG_ERKLAEREN" xml:space="preserve">
+    <value>Was bedeutet das Feld Jahresarbeitszahl?</value>
+  </data>
+  <data name="KI_REG_TITEL_FELD_SETZEN" xml:space="preserve">
+    <value>Feld der offenen Maske ausfüllen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_FELD_SETZEN" xml:space="preserve">
+    <value>Trage bei Jahresarbeitszahl 3,8 ein.</value>
+  </data>
+  <data name="KI_REG_TITEL_FORMULAR_AUSFUELLEN" xml:space="preserve">
+    <value>Mehrere Felder der offenen Maske ausfüllen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_FORMULAR_AUSFUELLEN" xml:space="preserve">
+    <value>Trage Name Neubau und Kunde Stadtwerke ein.</value>
+  </data>
+  <data name="KI_REG_TITEL_DIALOG_AKTION" xml:space="preserve">
+    <value>Knopf der offenen Maske auslösen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_DIALOG_AKTION" xml:space="preserve">
+    <value>Löse in dieser Maske den Knopf Berechnen aus.</value>
+  </data>
+  <data name="KI_REG_TITEL_VARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Variante anlegen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_VARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Lege zum Projekt Musterhaus eine Variante Wärmepumpe statt Kessel an.</value>
+  </data>
+  <data name="KI_REG_TITEL_SPEICHERVARIANTE_AKTIV" xml:space="preserve">
+    <value>Speichervariante aktiv setzen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_SPEICHERVARIANTE_AKTIV" xml:space="preserve">
+    <value>Setze bei Musterhaus die Speichervariante 200 kWh aktiv.</value>
+  </data>
+  <data name="KI_REG_TITEL_KOSTENPOSITION_SETZEN" xml:space="preserve">
+    <value>Kostenposition setzen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_KOSTENPOSITION_SETZEN" xml:space="preserve">
+    <value>Setze bei Musterhaus die Kostenposition Wärmepumpe auf 45000.</value>
+  </data>
 </root>

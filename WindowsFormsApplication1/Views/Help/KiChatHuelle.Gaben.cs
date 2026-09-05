@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Hilfe;
 using KiKern;
+using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
@@ -42,9 +43,13 @@ namespace WindowsFormsApplication1
                 ["Tageslimit"] = KiChatService.Tageslimit,
                 ["FeldsicherungHinweis"] = KiFeldsicherung.Chathinweis() ?? "",
                 ["AktionenVorbelegt"] = KiChatService.AktionenZulassen && KiEinwilligung.Erteilt,
+                // OHNE Zaehler (Befund W15b-E-3): "Heute genutzt: n von 50" stand
+                // zweimal auf demselben Bild - hier und in der Fussleiste. Die
+                // Fussleiste behaelt ihn, weil sie ihn nach jeder Frage nachfuehrt.
                 ["Begruessung"] = Umsetzen(KiVerlaufstexte.Begruessung(
                     _hilfeBetrieb, KiChatService.IstEingerichtet,
-                    KiChatService.AnfragenHeute, KiChatService.Tageslimit)),
+                    KiChatService.AnfragenHeute, KiChatService.Tageslimit,
+                    mitZaehler: false)),
 
                 // ---- Die vier Wege nach draussen ------------------------------
                 ["Fragen"] = (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)FragenAsync,
@@ -56,6 +61,15 @@ namespace WindowsFormsApplication1
                 // ---- Die vier Nebenwege ---------------------------------------
                 ["Vorschau"] = (Func<Task<string>>)VorschauAsync,
                 ["Protokoll"] = (Func<Task<string>>)ProtokollAsync,
+
+                // W15b-B-1: Einstellungen und Rechtshinweis erscheinen als
+                // UEBERLAGERUNG derselben WebView (Entscheid E-5) - kein zweites
+                // Fenster mehr aus dem WebMessageReceived-Rueckruf heraus. Die zwei
+                // Delegaten daneben bleiben als Rueckweg stehen; sie laufen jetzt
+                // ueber Blazornachlauf und werden von der Komponente nur noch
+                // gerufen, wenn kein Inhalt mitkommt.
+                ["Einstellungsinhalt"] = Einstellungsflaeche(),
+                ["Rechtshinweisinhalt"] = Rechtshinweisflaeche(),
                 ["Einstellungen"] = (Func<Task<bool>>)EinstellungenAsync,
                 ["Rechtshinweis"] = (Func<Task>)RechtshinweisAsync,
 
@@ -63,7 +77,6 @@ namespace WindowsFormsApplication1
                 ["Belegt"] = (Func<bool>)(() => KiAusfuehrer.Belegt),
                 ["SemantikZeile"] = (Func<string>)Semantikzeile,
                 ["Aktionen"] = KiAusfuehrungsweg.Aktuell.Register.Alle,
-                ["Beschreiben"] = (Func<KiAktion, string>)KiBestaetigung.Beschreibe,
 
                 // ---- Rueckwege -------------------------------------------------
                 ["AdresseGewaehlt"] = Microsoft.AspNetCore.Components.EventCallback.Factory
@@ -196,21 +209,135 @@ namespace WindowsFormsApplication1
                 string[] alle = File.ReadAllLines(pfad);
                 int ab = Math.Max(0, alle.Length - PROTOKOLL_ZEILEN);
                 return Task.FromResult(pfad + Environment.NewLine + Environment.NewLine +
-                                       string.Join(Environment.NewLine, alle, ab, alle.Length - ab));
+                                       string.Join(Environment.NewLine, alle, ab, alle.Length - ab) +
+                                       Stoerungsteil());
             }
             catch (Exception ex)
             {
-                return Task.FromResult(pfad + Environment.NewLine + Environment.NewLine + ex.Message);
+                return Task.FromResult(pfad + Environment.NewLine + Environment.NewLine +
+                                       ex.Message + Stoerungsteil());
             }
         }
 
-        private Task<bool> EinstellungenAsync()
-            => Task.FromResult(KiEinstellungenHuelle.Oeffnen(_fenster));
-
-        private Task RechtshinweisAsync()
+        /// <summary>
+        /// Die Störungen des Modelldienstes dieser Sitzung, im WORTLAUT des Anbieters
+        /// (Befund <b>W15b‑B‑2</b>); leer, wenn keine aufgetreten ist.
+        /// </summary>
+        /// <remarks>
+        /// Sie stehen UNTER dem Aktionsprotokoll und nicht darin: Das Aktionsprotokoll
+        /// führt genau eine Zeile je Ausführungsversuch in einem festen Format
+        /// (Fachkonzept 3.6). Eine Netzstörung ist kein Ausführungsversuch — sie dort
+        /// einzutragen zerstörte das Format, das der Leser erwartet.
+        /// </remarks>
+        private static string Stoerungsteil()
         {
-            KiHinweisHuelle.Anzeigen(_fenster);
-            return Task.CompletedTask;
+            IReadOnlyList<string> stoerungen = KiChatService.Stoerungen;
+            if (stoerungen == null || stoerungen.Count == 0) return "";
+
+            return Environment.NewLine + Environment.NewLine +
+                   KiTexte.DienstProtokollkopf + Environment.NewLine +
+                   string.Join(Environment.NewLine, stoerungen);
+        }
+
+        /// <summary>
+        /// Der RUECKWEG zu den Einstellungen als zweitem Fenster.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Befund W15b-B-1</b> der Windows-Abnahme vom 05.09.2026: „Einstellungen…"
+        /// öffnete ein leeres Fenster, dann stürzte die Anwendung ab. Hier stand
+        /// <c>Task.FromResult(KiEinstellungenHuelle.Oeffnen(_fenster))</c> — ein zweites
+        /// modales <c>BlazorDialogForm</c> mit einer ZWEITEN WebView2, aufgezogen
+        /// SYNCHRON im <c>WebMessageReceived</c>-Rückruf der ersten. Dasselbe Muster wie
+        /// W16b‑B‑1 (leere Startkachel-Dialoge) und W13‑B‑1 (Dateiwähler).
+        /// </para>
+        /// <para>
+        /// <b>Der Regelweg ist jetzt die Überlagerung</b> (<see cref="Einstellungsflaeche"/>,
+        /// Entscheid E‑5) — die Komponente ruft diesen Delegaten gar nicht mehr, solange
+        /// sie einen Inhalt bekommt. Er bleibt für den Fall stehen, dass eine Hülle keinen
+        /// liefert, und läuft dann über <see cref="Blazornachlauf"/>: eine gepostete
+        /// Nachricht später, also nicht mehr im WebView-Rückruf. Auf den Rückgabewert darf
+        /// NICHT blockierend gewartet werden.
+        /// </para>
+        /// </remarks>
+        private Task<bool> EinstellungenAsync()
+            => Blazornachlauf.Nachgelagert(() => KiEinstellungenHuelle.Oeffnen(_fenster));
+
+        /// <summary>Derselbe Rückweg für den Rechtshinweis (siehe oben).</summary>
+        private Task RechtshinweisAsync()
+            => Blazornachlauf.Nachgelagert(() => KiHinweisHuelle.Anzeigen(_fenster));
+
+        // ==================================================================
+        //  Die zwei Ueberlagerungsinhalte (Befund W15b-B-1)
+        // ==================================================================
+
+        /// <summary>
+        /// Die EINSTELLUNGEN als Inhalt einer Überlagerung — derselbe Parametersatz,
+        /// den auch das eigene Fenster benutzt (<c>KiEinstellungenHuelle.Gaben</c>),
+        /// nur mit einem anderen Ausgang.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Die Hülle baut hier einen <c>RenderFragment&lt;EventCallback&lt;bool&gt;&gt;</c>:
+        /// Die Komponente reicht ihren Rückruf „fertig(gespeichert)" hinein, und dieser
+        /// Bauplan hängt ihn an <c>KiEinstellungenDialog.Geschlossen</c>. Ohne diesen Weg
+        /// könnte der eingebettete Dialog seine eigene Überlagerung nicht schließen.
+        /// </para>
+        /// <para>
+        /// <b>Das Schreiben bleibt, wo es war:</b> <c>KiEinstellungenHuelle.Uebernehmen</c>
+        /// — dieselben zwei Zuweisungen wie hinter dem <c>ShowDialog</c> des Vorläufers
+        /// (<c>Form_KiChat.cs:1490-1491</c>).
+        /// </para>
+        /// </remarks>
+        private RenderFragment<Microsoft.AspNetCore.Components.EventCallback<bool>> Einstellungsflaeche()
+        {
+            return fertig => bauer =>
+            {
+                bauer.OpenComponent<KiEinstellungenDialog>(0);
+
+                int folge = 1;
+                foreach (KeyValuePair<string, object> paar in KiEinstellungenHuelle.Gaben())
+                    bauer.AddAttribute(folge++, paar.Key, paar.Value);
+
+                bauer.AddAttribute(folge, nameof(KiEinstellungenDialog.Geschlossen),
+                    Microsoft.AspNetCore.Components.EventCallback.Factory
+                        .Create<KiEinstellungenErgebnis>(new object(), ergebnis =>
+                        {
+                            KiEinstellungenHuelle.Uebernehmen(ergebnis);
+                            return fertig.InvokeAsync(ergebnis != null);
+                        }));
+
+                bauer.CloseComponent();
+            };
+        }
+
+        /// <summary>
+        /// Der RECHTSHINWEIS als Inhalt einer Überlagerung — <b>zum Nachlesen</b>,
+        /// also ohne Einwilligung (<c>mitEinwilligung: false</c>, wie
+        /// <c>KiHinweisHuelle.Anzeigen</c>).
+        /// </summary>
+        /// <remarks>
+        /// Die Einwilligung selbst läuft weiterhin über
+        /// <c>KiEinwilligung.Nachfragen</c> und damit über das Fenster von
+        /// <c>KiHinweisHuelle</c>: Sie wird auch aus dem Kern heraus gezogen, wo es
+        /// gar keine Überlagerung gibt.
+        /// </remarks>
+        private RenderFragment<Microsoft.AspNetCore.Components.EventCallback<bool>> Rechtshinweisflaeche()
+        {
+            return fertig => bauer =>
+            {
+                bauer.OpenComponent<KiHinweisDialog>(0);
+
+                int folge = 1;
+                foreach (KeyValuePair<string, object> paar in KiHinweisHuelle.Gaben(false))
+                    bauer.AddAttribute(folge++, paar.Key, paar.Value);
+
+                bauer.AddAttribute(folge, nameof(KiHinweisDialog.Beantwortet),
+                    Microsoft.AspNetCore.Components.EventCallback.Factory
+                        .Create<bool>(new object(), _ => fertig.InvokeAsync(false)));
+
+                bauer.CloseComponent();
+            };
         }
 
         // ==================================================================
@@ -332,6 +459,15 @@ namespace WindowsFormsApplication1
             return new KiChatTexte
             {
                 Verlauf = MyResource.Resource.KI_CHAT_TITEL,
+
+                // W15b-E-3: EIN Satz im Kopf, der Rest hinter der Klappe. Welcher Satz
+                // das ist, entscheidet der Kern ueber die Begruessung - die Komponente
+                // nimmt deren erste Zeile. Hier steht nur die Klappenbeschriftung und
+                // der Text des leeren Verlaufs.
+                ErklaerungMehr = MyResource.Resource.KI_CHAT_ERKLAERUNG_MEHR,
+                VerlaufLeer = MyResource.Resource.KI_CHAT_VERLAUF_LEER,
+                EinstellungenTitel = MyResource.Resource.KI_EINST_TITEL,
+
                 KontextFormat = MyResource.Resource.KI_CHAT_KONTEXT,
                 KontextLeer = MyResource.Resource.KI_CHAT_KONTEXT_LEER,
                 Denkt = MyResource.Resource.KI_CHAT_DENKT,
@@ -358,7 +494,7 @@ namespace WindowsFormsApplication1
                     : MyResource.Resource.KI_HINWEIS_ABGELEHNT,
                 Werkzeuge = MyResource.Resource.KI_AKT_WERKZEUGE_BTN,
                 WerkzeugeTitel = MyResource.Resource.KI_AKT_WERKZEUGE_TITEL,
-                Beschreibung = MyResource.Resource.KI_AKT_WERKZEUGE_TITEL,
+                Werkzeugliste = Werkzeugtexte(),
                 Ausfuehren = MyResource.Resource.KI_AKT_BESTAETIGUNG_AUSFUEHREN,
                 AktionWaehlen = MyResource.Resource.KI_AKT_AKTION_WAEHLEN,
                 HinweisVorn = _hilfeBetrieb
@@ -383,6 +519,39 @@ namespace WindowsFormsApplication1
                 BestaetigungTitel = MyResource.Resource.KI_AKT_BESTAETIGUNG_TITEL,
                 BestaetigungAusfuehren = MyResource.Resource.KI_AKT_BESTAETIGUNG_AUSFUEHREN,
                 BestaetigungAbbrechen = MyResource.Resource.KI_AKT_BESTAETIGUNG_ABBRECHEN
+            };
+        }
+
+        /// <summary>
+        /// Die sechzehn Anzeigetexte der Werkzeugliste (Befund <b>W15b‑E‑4</b>).
+        /// </summary>
+        /// <remarks>
+        /// Sie stehen in einem eigenen Bündel, weil die Liste seit dem Befund eine
+        /// eigene Maske mit Suchfeld, Gruppenköpfen, Kennzeichen und Beispiel ist —
+        /// als einzelne Parameter wären die vier Fachparameter darin nicht mehr zu
+        /// finden (Hausregel „ab etwa zehn Anzeigetexten ein BÜNDEL").
+        /// </remarks>
+        private static KiWerkzeugTexte Werkzeugtexte()
+        {
+            return new KiWerkzeugTexte
+            {
+                Liste = MyResource.Resource.KI_AKT_WERKZEUGE_TITEL,
+                Hinweis = MyResource.Resource.KI_AKT_WERKZEUGE_HINWEIS,
+                Suche = MyResource.Resource.KI_AKT_WERKZEUGE_SUCHE,
+                KeinTreffer = MyResource.Resource.KI_AKT_WERKZEUGE_KEIN_TREFFER,
+                GruppeLesend = MyResource.Resource.KI_AKT_WERKZEUGE_GRUPPE_LESEND,
+                GruppeAendernd = MyResource.Resource.KI_AKT_WERKZEUGE_GRUPPE_AENDERND,
+                MerkmalLesend = MyResource.Resource.KI_AKT_WERKZEUGE_MERKMAL_LESEND,
+                MerkmalAendernd = MyResource.Resource.KI_AKT_WERKZEUGE_MERKMAL_AENDERND,
+                Beispiel = MyResource.Resource.KI_AKT_WERKZEUGE_BEISPIEL,
+                Angaben = MyResource.Resource.KI_AKT_WERKZEUGE_ANGABEN,
+                KeineAngaben = MyResource.Resource.KI_AKT_WERKZEUGE_KEINE_ANGABEN,
+                Wirkung = MyResource.Resource.KI_AKT_WERKZEUGE_WIRKUNG,
+                Pflicht = MyResource.Resource.KI_AKT_WERKZEUGE_PFLICHT,
+                LeerKopf = MyResource.Resource.KI_AKT_WERKZEUGE_LEER_KOPF,
+                LeerText = MyResource.Resource.KI_AKT_WERKZEUGE_LEER_TEXT,
+                Bestaetigungspflicht = MyResource.Resource.KI_AKT_WERKZEUGE_BESTAETIGUNG,
+                AndockpunktFormat = MyResource.Resource.KI_AKT_WERKZEUGE_ANDOCKPUNKT
             };
         }
     }
