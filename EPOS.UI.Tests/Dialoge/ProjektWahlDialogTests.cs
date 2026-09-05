@@ -395,4 +395,57 @@ public class ProjektWahlDialogTests : BunitContext
 
     private static int ProjektListeSpalteGeaendert
         => EPOS.UI.Bausteine.ProjektListe.SPALTE_GEAENDERT;
+
+    // =====================================================================
+    // Merge 5 (Nutzerauftrag 02.09.2026): Loeschen mit Mehrfachauswahl
+    // =====================================================================
+
+    /// <summary>
+    /// Ohne Haken kein Loeschen; "Alle" hakt die Sicht; die Rueckfrage traegt Anzahl und
+    /// Namen (Varianten gekennzeichnet); der Auftrag kommt in Loeschreihenfolge - die
+    /// Variante VOR ihrem Stamm - samt Sicherungswunsch (Vorgabe an).
+    /// </summary>
+    [Fact]
+    public void Mehrfachloeschen_hakt_alle_fragt_mit_Liste_zurueck_und_liefert_den_Auftrag_Varianten_zuerst()
+    {
+        ProjektLoeschauftrag? auftrag = null;
+        var zeilen = new[]
+        {
+            DREI[0], DREI[1],
+            new ProjektKopfZeile(1099, "Referenz BHKW V1", "Stadtwerke", "", null, StammId: 1030)
+        };
+        var cut = Render<ProjektWahlDialog>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Zweck, ProjektWahlDialog.ProjektZweck.Loeschen)
+            .Add(x => x.TitelText, "Projekte löschen")
+            .Add(x => x.OkText, "Löschen")
+            .Add(x => x.FrageTitel, "Projekt löschen bestätigen")
+            .Add(x => x.Mehrfach, true)
+            .Add(x => x.SicherungAngeboten, true)
+            .Add(x => x.LoeschauftragErteilt, a => auftrag = a));
+
+        Assert.Equal(3, cut.FindAll(".epos-projektliste-haken").Count);
+        Assert.Empty(cut.FindAll(".epos-anlagenwahl"));
+
+        Ok(cut).Click();                                          // ohne Haken: nur der Hinweis
+        Assert.False(cut.Instance.FrageOffen);
+        Assert.Null(auftrag);
+
+        cut.Find(".epos-projektwahl-alle").Click();
+        Assert.Equal(3, cut.Instance.Angehakt.Count);
+        Assert.Contains("3 ausgewählt", cut.Find(".epos-projektwahl-zaehler").TextContent);
+
+        Ok(cut).Click();
+        Assert.True(cut.Instance.FrageOffen);
+        string frage = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.Contains("3 Projekt(e)", frage);
+        Assert.Contains("Referenz BHKW V1 (Variante)", frage);
+
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja
+
+        Assert.NotNull(auftrag);
+        Assert.Equal(3, auftrag!.Projekte.Count);
+        Assert.Equal(1099, auftrag.Projekte[0].Id);               // die Variante vor ihrem Stamm
+        Assert.True(auftrag.Sicherung);
+    }
 }

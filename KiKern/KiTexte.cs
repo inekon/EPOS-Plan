@@ -304,5 +304,42 @@ namespace KiKern
         /// </summary>
         public static string FeldsicherungVermerk => Hole(Vorsatz + "FELDSICHERUNG_VERMERK",
             "Feldsicherung aus");
+
+        // -------------------------------------------------- Stoerungen des Modelldienstes
+
+        /// <summary>
+        /// Kein Zugangsschluessel hinterlegt - der EINE Satz, mit dem eine Anfrage gar
+        /// nicht erst hinausgeht (Anwenderbefund <b>W15b-B-2</b>).
+        /// </summary>
+        public static string DienstKeinSchluessel => Hole(Vorsatz + "DIENST_KEIN_SCHLUESSEL",
+            "Kein API-Schlüssel hinterlegt — bitte unter „Einstellungen…\" eintragen.");
+
+        /// <summary>Der Dienst hat die Zugangsdaten abgewiesen (401, 403).</summary>
+        public static string DienstAbgelehnt => Hole(Vorsatz + "DIENST_ABGELEHNT",
+            "Der KI-Dienst hat die Anfrage abgelehnt ({0}). Prüfen Sie den Schlüssel unter „Einstellungen…\".");
+
+        /// <summary>Der Dienst hat den Schluessel nicht angenommen (400).</summary>
+        public static string DienstSchluesselUngueltig => Hole(Vorsatz + "DIENST_SCHLUESSEL_UNGUELTIG",
+            "Der KI-Dienst hat den Schlüssel nicht angenommen ({0}). Prüfen Sie ihn unter „Einstellungen…\".");
+
+        /// <summary>Das Kontingent des Anbieters ist erschoepft (429).</summary>
+        public static string DienstKontingent => Hole(Vorsatz + "DIENST_KONTINGENT",
+            "Der KI-Dienst nimmt zurzeit keine weitere Anfrage an ({0}). Bitte später noch einmal fragen.");
+
+        /// <summary>Der Dienst selbst ist gestoert (5xx).</summary>
+        public static string DienstGestoert => Hole(Vorsatz + "DIENST_GESTOERT",
+            "Der KI-Dienst ist zurzeit nicht erreichbar ({0}). Bitte später noch einmal fragen.");
+
+        /// <summary>Jede andere Absage des Dienstes.</summary>
+        public static string DienstUnbekannt => Hole(Vorsatz + "DIENST_UNBEKANNT",
+            "Der KI-Dienst hat die Anfrage nicht beantwortet ({0}). Einzelheiten stehen unter „Protokoll anzeigen\".");
+
+        /// <summary>Der ROHTEXT des Anbieters, wie er ins Protokoll geschrieben wird.</summary>
+        public static string DienstProtokollzeile => Hole(Vorsatz + "DIENST_PROTOKOLLZEILE",
+            "KI-Dienst HTTP {0}: {1}");
+
+        /// <summary>Ueberschrift des Stoerungsteils unter „Protokoll anzeigen\".</summary>
+        public static string DienstProtokollkopf => Hole(Vorsatz + "DIENST_PROTOKOLLKOPF",
+            "Störungen des KI-Dienstes (diese Sitzung):");
     }
 }

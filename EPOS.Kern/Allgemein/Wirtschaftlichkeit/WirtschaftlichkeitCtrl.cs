@@ -1862,10 +1862,24 @@ namespace WindowsFormsApplication1
                 }
                 catch { }
 
+                // ETAPPE E2.4 (Paket B des PV-Ertragsmodells): Eigenverbrauch und
+                // Arbeitspreis des Basisjahres - beide NUR fuer den
+                // degradationsbedingten Mehrbezug. Ohne gepflegte Degradation bleiben
+                // sie wirkungslos (der Rechner prueft d > 0 zuerst), die Reihe ist dann
+                // bitgleich zum P6-Stand. Dieselben zwei Groessen wie im Ausweis
+                // PvVermiedenerBezugAusweis - eine Wahrheit, zwei Verwendungen.
+                double evKwh = 0, strompreis = 0;
+                if (v.Ergebnis != null && v.Ergebnis.Photovoltaik != null)
+                    evKwh = Math.Max(0, (v.Ergebnis.Photovoltaik.Stromproduktion
+                                       - v.Ergebnis.Photovoltaik.Ueberschuss) * 1000.0);
+                double? arbeitspreis = StromArbeitspreisEurJeKwh(v.IdProjekt);
+                if (arbeitspreis.HasValue) strompreis = arbeitspreis.Value;
+
                 GesetzKatalog katalog = new GesetzKatalog();
                 PvErloesErgebnis pe = PvErloesRechner.Rechne(pv, kwp, einspMWh,
                     einspStunden, spot, p.Betrachtungszeitraum, katalog.Wert,
-                    jahr => pvc.Jahresmarktwert(jahr, pv), BerichtTexte.Kultur);
+                    jahr => pvc.Jahresmarktwert(jahr, pv), BerichtTexte.Kultur,
+                    evKwh, strompreis);
 
                 // Der bisherige PV-Anteil (des jeweils aktiven Pfades) verlässt den
                 // konstanten Erlös; die Dialog-Reihe übernimmt.

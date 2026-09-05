@@ -5610,7 +5610,357 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
+/* Projektdialoge (Nutzerauftrag 02.09.2026, Merge 5): Haekchen der Mehrfachauswahl,
+   Hinweis unter den Pflichtfeldern des Projektkopfs. Kein Nesting (Hausregel). */
+.epos-projektliste-haken {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    cursor: pointer;
+}
+
+.epos-projektwahl-mehrfach {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.epos-projektwahl-zaehler {
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-projektkopf-pflicht {
+    margin: 0;
+    color: var(--epos-text-leise);
+    font-size: 0.9em;
+}
+
+.epos-projektkopf-hinweis {
+    margin: 0.25rem 0 0;
+    color: #b00020;
+    font-size: 0.95em;
+}
+
+/* Merge 5: Die Rueckfrage der Mehrfachloeschung listet die Namen zeilenweise. */
+.epos-rueckfrage-text {
+    white-space: pre-line;
+}
+
 /* ==================================================================== */
+/* ==========================================================================
+   Hilfe-Assistent (Windows-Abnahme 05.09.2026, Befunde W15b-E-3 und W15b-E-4)
+
+   Der Anwender: "Darstellung kann verbessert werden." Auf dem Bildschirmfoto
+   stand ein breiter Kopfkasten mit vier Zeilen Erklaerung, darunter lose
+   "Verlauf kopieren", ein Ankreuzfeld, drei rechts GESTAPELTE Knoepfe, ein
+   Eingabefeld, ein Datenschutzsatz und eine Fussleiste, in der der Zaehler
+   "Heute genutzt: 0 von 50" ein ZWEITES Mal stand - vom Gespraechsverlauf war
+   nichts zu sehen.
+
+   Zwei Ursachen, beide hier behoben:
+
+   (a) DIE HOEHE. .epos-kichat traegt height: 100% - und die Hoehenkette darueber
+       (html, body, #app) ist offen, also greift die Prozentangabe nicht
+       (CSS 2.1, 10.5: eine prozentuale Hoehe braucht einen Wirt mit bestimmter
+       Hoehe). Der Chat war damit nur so hoch wie sein Inhalt, und der Verlauf
+       blieb bei seiner Mindesthoehe von 160 px unter dem Kopfkasten stehen. Ein
+       Viewport-Mass loest die Kette nicht auf, es umgeht sie: 100vh gilt
+       unabhaengig vom Wirt. Der Chat ist die einzige Komponente seines
+       Fensters - das darf er.
+
+   (b) DIE KNOPFREIHE. .epos-kieingabe-knoepfe stand auf flex-direction: column.
+       Hier steht sie in einer Reihe UNTER dem Feld, mit dem Aktionsschalter
+       links.
+
+   Die Regeln dieses Blocks stehen NACH ihren Vorgaengern und gewinnen damit bei
+   gleicher Spezifitaet - der Block ist angehaengt und hat nichts umsortiert.
+   ========================================================================== */
+
+.epos-kichat {
+    height: 100vh;
+    padding: var(--epos-rand);
+    gap: 10px;
+}
+
+/* ---- Kopf: Titel, Kontext, Infoknopf, EIN Satz, Klappe ------------------ */
+.epos-kichat-kopf {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.epos-kichat-kopfzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-kichat-titel {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+    color: var(--epos-marke);
+}
+
+.epos-kichat-kopfzeile .epos-kichat-kontext {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.epos-kichat-kopfknopf {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+}
+
+.epos-kichat-einleitung {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-kichat-einleitung--leise   { color: var(--epos-text-leise); }
+.epos-kichat-einleitung--warnung { color: var(--epos-verlauf-warnung); font-weight: 600; }
+.epos-kichat-einleitung--fehler  { color: var(--epos-verlauf-fehler); font-weight: 600; }
+
+/* Die lange Erklaerung liegt hinter einer Klappe - sie wird einmal gelesen. */
+.epos-kichat-erklaerung {
+    color: var(--epos-text-leise);
+}
+
+.epos-kichat-erklaerung > summary {
+    cursor: pointer;
+    min-height: var(--epos-touchziel);
+    display: flex;
+    align-items: center;
+    color: var(--epos-verlauf-kopf);
+}
+
+.epos-kichat-erklaerung > summary:focus-visible {
+    outline: 2px solid var(--epos-quelle-text);
+    outline-offset: 2px;
+}
+
+.epos-kichat-erklaerung-zeile {
+    margin: 0 0 4px 0;
+    overflow-wrap: anywhere;
+}
+
+/* ---- Der Verlauf fuellt die Flaeche zwischen Kopf und Eingabe ----------- */
+.epos-kichat > .epos-verlauf {
+    flex: 1 1 auto;
+    min-height: 10rem;
+    background: var(--epos-flaeche-hell);
+}
+
+.epos-verlauf-leer {
+    font-style: italic;
+}
+
+/* ---- Eingabe: Feld, EINE Knopfreihe, kleiner Datenschutzsatz ------------ */
+.epos-kichat-eingabe {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.epos-kieingabe {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.epos-kieingabe-feld {
+    flex: 0 0 auto;
+    width: 100%;
+}
+
+.epos-kieingabe-knoepfe {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-kieingabe-vorspann {
+    display: flex;
+    align-items: center;
+}
+
+.epos-kieingabe-fueller {
+    flex: 1 1 auto;
+}
+
+.epos-kichat-hinweiszeile {
+    font-size: 12px;
+}
+
+.epos-kichat-leiste {
+    flex: 0 0 auto;
+}
+
+/* ==========================================================================
+   Die Werkzeugliste "Aktionen von Hand ausfuehren" (Befund W15b-E-4)
+
+   "Es ist unklar, was ausgefuehrt werden kann und wie." Links standen rohe
+   Bezeichner (minimale_spitze_ermitteln), rechts ein Nur-Lese-Textfeld mit
+   "Andockpunkt: VariantenCtrl.AnlegenAusStamm". Jetzt: Titel in
+   Anwendersprache, nach lesend/aendernd gruppiert, mit Suchfeld ab neun
+   Eintraegen; rechts Kennzeichen, Zweck, Wirkung, Beispiel und beschriftete
+   Felder. Der Andockpunkt steht nur noch im title.
+   ========================================================================== */
+
+.epos-kiwerkzeuge-kopf {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-kiwerkzeuge-hinweis {
+    margin: 0;
+    flex: 1 1 auto;
+    color: var(--epos-text-leise);
+}
+
+.epos-kiwerkzeuge-spalte {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-kiwerkzeuge-suche {
+    margin: 0;
+}
+
+.epos-kiwerkzeuge-listenrahmen {
+    min-height: 0;
+}
+
+.epos-kiwerkzeuge-leerliste {
+    margin: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche-hell);
+    color: var(--epos-text-leise);
+}
+
+/* Ein Gruppenkopf ist KEIN Eintrag: role="presentation", kein Klickziel. */
+.epos-kiwerkzeuge-gruppe {
+    padding: 6px 10px 2px 10px;
+    color: var(--epos-text-leise);
+    font-weight: 600;
+    text-transform: none;
+}
+
+.epos-kiwerkzeuge-kopfzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-kiwerkzeuge-titel {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+    color: var(--epos-karte-titel);
+}
+
+/* Das Kennzeichen sagt in zwei Woertern, ob die Aktion liest oder schreibt. */
+.epos-kiwerkzeuge-merkmal {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--epos-ecke);
+    border: 1px solid var(--epos-rahmen-leise);
+    font-weight: 600;
+}
+
+.epos-kiwerkzeuge-merkmal--lesend {
+    border-color: var(--epos-quelle-rahmen);
+    color: var(--epos-quelle-text);
+    background: var(--epos-flaeche-hell);
+}
+
+.epos-kiwerkzeuge-merkmal--aendernd {
+    border-color: var(--epos-warn-rahmen);
+    color: var(--epos-warn-text);
+    background: var(--epos-warn-flaeche);
+}
+
+.epos-kiwerkzeuge-zweck {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-kiwerkzeuge-wirkung,
+.epos-kiwerkzeuge-beispiel {
+    margin: 0;
+    color: var(--epos-text-leise);
+    overflow-wrap: anywhere;
+}
+
+.epos-kiwerkzeuge-marke {
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.epos-kiwerkzeuge-beispielsatz {
+    font-style: italic;
+}
+
+.epos-kiwerkzeuge-angabenkopf {
+    margin: 4px 0 0 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 600;
+    color: var(--epos-text-leise);
+}
+
+.epos-kiwerkzeuge-keineangaben {
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-kiwerkzeuge-bestaetigung {
+    margin: 0;
+    color: var(--epos-warn-text);
+}
+
+/* Der Leerzustand traegt das vollstaendige Beispiel - er ist das erste, was
+   der Anwender in dieser Maske sieht. */
+.epos-kiwerkzeuge-leer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 1px dashed var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    padding: 10px 12px;
+    background: var(--epos-flaeche);
+}
+
+.epos-kiwerkzeuge-leerkopf {
+    margin: 0;
+    font-weight: 600;
+}
+
+.epos-kiwerkzeuge-beispieltext {
+    margin: 0;
+    color: var(--epos-text-leise);
+    overflow-wrap: anywhere;
+}
+
+@media (forced-colors: active) {
+    /* Im Hochkontrastbetrieb traegt die Farbe keine Bedeutung mehr - was bleibt,
+       ist der Rahmen und der Schriftschnitt. */
+    .epos-kiwerkzeuge-merkmal { border: 2px solid CanvasText; }
+    .epos-kiwerkzeuge-leer { border: 2px dashed CanvasText; }
+}
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

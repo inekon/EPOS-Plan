@@ -47,10 +47,12 @@ namespace WindowsFormsApplication1
         /// (<c>SchemaMigration.FREEZE_VERSION</c> = 61): Das ist der Stand, den der
         /// eingefrorene ACCESS-Zweig erreicht. Seit dem ersten Schritt des SQLite-Zweigs
         /// (<c>SCHRITT_62_KLIMAWAISEN</c>, iU9‑W14c) sind die beiden Zahlen verschieden —
-        /// das ZIEL steht auf 62, der Freeze-Stand bleibt bei 61. Der Kern kennt nur das
+        /// das ZIEL stand auf 62 und steht seit Merge 5 (05.09.2026, die PV-Schritte
+        /// 63 und 64 des PV-Ertragsmodells, umnummeriert von 62/63) auf 64; der
+        /// Freeze-Stand bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 62;
+        public const int Zielversion = 64;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -1,4 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿using System.Collections.Generic;
+
+namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Rückgabefach für Masken, die ein Projekt AUSWÄHLEN — die Projektauswahl und der
@@ -32,5 +34,14 @@
         /// weiter. Id und Name bleiben davon unberührt (Befund W15a-B45).</para>
         /// </summary>
         public bool AlleGleichenNamens;
+
+        /// <summary>
+        /// Mehrfachauswahl des Loeschdialogs (Nutzerauftrag 02.09.2026, Merge 5): die
+        /// gewaehlten Projekte, Varianten VOR ihren Staemmen. Bei Einzelwahl genau eins.
+        /// </summary>
+        public List<ProjektKopfZeile> Mehrere = new List<ProjektKopfZeile>();
+
+        /// <summary>Vor dem Loeschen eine Sicherungskopie der Datenbank anlegen?</summary>
+        public bool SicherungGewuenscht;
     }
 }

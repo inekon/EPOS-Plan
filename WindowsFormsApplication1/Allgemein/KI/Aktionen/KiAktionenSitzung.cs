@@ -27,6 +27,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "letzte_aktionen",
                 zweck: KiAktionsTexte.ZweckLetzteAktionen,
+                titel: KiAktionsTexte.TitelLetzteAktionen,
+                beispiel: KiAktionsTexte.BeispielLetzteAktionen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "KiAusfuehrer.LetzteAktionen",
                 parameter: new[]

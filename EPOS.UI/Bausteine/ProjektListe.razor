@@ -114,8 +114,18 @@
                     {
                         ProjektKopfZeile z = zeile;
                         <tr class="@Zeilenklasse(z)"
+                            title="@(string.IsNullOrEmpty(z.Beschreibung) ? null : z.Beschreibung)"
                             @ondblclick="@(() => Uebernehmen(z))">
-                            @if (MitAuswahl)
+                            @if (MitAuswahl && Mehrfach)
+                            {
+                                @* Haekchen statt Einzelwahl (Loeschen mit Mehrfachauswahl,
+                                   Nutzerauftrag 02.09.2026 - mit Merge 5 aus ProjektAuswahl.cs). *@
+                                <td class="epos-projektliste-wahl">
+                                    <input type="checkbox" class="epos-projektliste-haken" aria-label="@WahlText"
+                                           checked="@Ist(z.Id)" @onchange="@(e => Haken(z, e))" />
+                                </td>
+                            }
+                            else if (MitAuswahl)
                             {
                                 <td class="epos-projektliste-wahl">
                                     <Zeilenwahl Gewaehlt="@(z.Id == Markiert)" Kurztext="@WahlText"
@@ -261,6 +271,15 @@
 
     /// <summary>Sortiert die Liste. <c>false</c> = die übergebene Reihenfolge bleibt.</summary>
     [Parameter] public bool MitSortierung { get; set; } = true;
+
+    // --- Mehrfachauswahl (Nutzerauftrag 02.09.2026, Merge 5) -------------------------
+    /// <summary>Haekchen statt Einzelwahl; ein Stamm nimmt seine Varianten mit.</summary>
+    [Parameter] public bool Mehrfach { get; set; }
+
+    /// <summary>Die angehakten Ids. Bindbar ueber @@bind-Angehakt.</summary>
+    [Parameter] public IReadOnlyCollection<int> Angehakt { get; set; } = Array.Empty<int>();
+
+    [Parameter] public EventCallback<IReadOnlyCollection<int>> AngehaktChanged { get; set; }
 
     /// <summary>
     /// Darf die Spalte „Art" erscheinen? (Anwenderwunsch 05.09.2026, W15a‑E‑1.)
@@ -583,6 +602,32 @@
             await MarkiertChanged.InvokeAsync(null);
         }
         await Vorauswaehlen();
+    }
+
+    // --- Mehrfachauswahl (Nutzerauftrag 02.09.2026, Merge 5) -------------------------
+    private bool Ist(int id) => Angehakt.Contains(id);
+
+    private Task Haken(ProjektKopfZeile z, ChangeEventArgs e) => Setzen(z, e.Value is bool b && b);
+
+    /// <summary>Doppelklick im Mehrfachmodus: den Haken der Zeile umschalten (wie der Vorlaeufer).</summary>
+    public Task Umschalten(ProjektKopfZeile z) => Setzen(z, !Ist(z.Id));
+
+    private Task Setzen(ProjektKopfZeile z, bool an)
+    {
+        var menge = new HashSet<int>(Angehakt);
+        // Ein Stamm nimmt seine Varianten mit - beim Setzen wie beim Loesen.
+        if (an) menge.Add(z.Id); else menge.Remove(z.Id);
+        foreach (ProjektKopfZeile v in Zeilen)
+            if (v.StammId == z.Id) { if (an) menge.Add(v.Id); else menge.Remove(v.Id); }
+        return AngehaktChanged.InvokeAsync(menge);
+    }
+
+    /// <summary>Alle SICHTBAREN Zeilen anhaken bzw. alle Haken loesen ("Alle"/"Keine").</summary>
+    public Task AlleSichtbaren(bool an)
+    {
+        var menge = new HashSet<int>(an ? Angehakt : Array.Empty<int>());
+        if (an) foreach (ProjektKopfZeile z in Sicht) menge.Add(z.Id);
+        return AngehaktChanged.InvokeAsync(menge);
     }
 
     private async Task Markieren(ProjektKopfZeile z)

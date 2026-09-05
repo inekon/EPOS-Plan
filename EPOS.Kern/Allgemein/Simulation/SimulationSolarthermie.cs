@@ -231,8 +231,12 @@ namespace WindowsFormsApplication1
                 ctrlsol.ReadSingle(nId);
                 double nFlaeche = ctrlsol.m_Aperturfläche;
 
+                // B1 (Paket A): der zentrale Ortszeit-Lesepfad. Bis dahin stand die
+                // Kollektorreihe im UTC-Raster und damit 1 bis 2 Stunden vor dem
+                // Waermebedarf - die Jahressumme blieb richtig, die stundenscharfe
+                // Deckung nicht.
                 SolardatenCtrl ctrldat = new SolardatenCtrl();
-                ctrldat.ReadAll("select * from Tab_Solar where ID_Klimaregion=" + nID_Klimaregion + " order by ID");
+                ctrldat.ReadOrtszeit((int)nID_Klimaregion, m_ID_Projekt);
 
                 // Konstanten für das Kollektormodell
                 double h0 = ctrlsol.m_h0;
@@ -251,16 +255,23 @@ namespace WindowsFormsApplication1
 
                 for (int i = 0; i < f.Stunden; i++)
                 {
+                    SolardatenModel zeile = ctrldat.items[i];
+
                     // CalculateHourly berechnet bereits die effektive Strahlung auf der geneigten Fläche [cite: 52, 69, 71]
+                    //
+                    // E1.4 (Paket A): Der Sonnenstand rechnet auf UTC-Basis und erwartet
+                    // einen 1-BASIERTEN Tag. Beides steht seit dem Ortszeit-Lesepfad an der
+                    // Zeile selbst - der Index i ist jetzt die ORTSZEIT-Position und taugt
+                    // dafuer nicht mehr.
                     double gTilted = SolarCalculator.CalculateHourly(
                         Lon, Lat, nNeigung, nAzimuth,
-                        ctrldat.items[i].Globalstrahlung,
-                        ctrldat.items[i].Direktstrahlung,
-                        ctrldat.items[i].Diffusstrahlung,
-                        ctrldat.items[i].Außen_Temp,
-                        i / 24, i % 24);
+                        zeile.Globalstrahlung,
+                        zeile.Direktstrahlung,
+                        zeile.Diffusstrahlung,
+                        zeile.Außen_Temp,
+                        zeile.TagUtc, zeile.StundeUtc);
 
-                    double ta = ctrldat.items[i].Außen_Temp;
+                    double ta = zeile.Außen_Temp;
 
                     // WICHTIG: cosTheta für IAM-Berechnung sauber ermitteln
                     // Wir nutzen hier den internen Wert aus dem Calculator

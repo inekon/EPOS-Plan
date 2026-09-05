@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace EPOS.UI.Dialoge.Erzeuger;
 
@@ -42,6 +43,12 @@ public sealed class ModulFeldwert
 
     /// <summary>Der Feldname, den eine Prüfmeldung nennt — die Beschriftung ohne „:".</summary>
     public string Feldname => (Bezeichnung ?? "").TrimEnd(' ', ':');
+
+    /// <summary>
+    /// Die Optionen eines <c>Auswahl</c>-Feldes (Wert = Datenbankcode, Text = Beschriftung);
+    /// leer bei allen anderen Feldarten. Paket B des PV-Ertragsmodells (Merge 5).
+    /// </summary>
+    public IReadOnlyList<(string Wert, string Text)> Optionen { get; init; } = Array.Empty<(string, string)>();
 }
 
 /// <summary>

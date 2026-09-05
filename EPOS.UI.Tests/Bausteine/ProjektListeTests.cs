@@ -603,4 +603,45 @@ public class ProjektListeTests : BunitContext
         Assert.True(e > a);
         return css.Substring(a + selektor.Length, e - a - selektor.Length);
     }
+
+    // =====================================================================
+    // Merge 5 (Nutzerauftrag 02.09.2026): Varianten unter ihrem Stamm, Mehrfachauswahl
+    // =====================================================================
+
+    private static readonly ProjektKopfZeile[] MIT_STAMM =
+    {
+        new ProjektKopfZeile(1030, "Referenz BHKW", "Stadtwerke", "Kaskade", new DateTime(2026, 3, 1)),
+        new ProjektKopfZeile(1031, "Referenz BHKW - V2", "Stadtwerke", "Variante zwei", new DateTime(2026, 3, 2),
+                             StammId: 1030, Bezeichner: "V2", StammName: "Referenz BHKW"),
+        new ProjektKopfZeile(1007, "Laurentiuskirche", "Kirchengemeinde", "Denkmalschutz", new DateTime(2026, 5, 4)),
+        new ProjektKopfZeile(1032, "Referenz BHKW - V1", "Stadtwerke", "Variante eins", new DateTime(2026, 3, 3),
+                             StammId: 1030, Bezeichner: "V1", StammName: "Referenz BHKW")
+    };
+
+    /// <summary>Die Zeile traegt die Beschreibung als Tooltip (Nutzerauftrag 02.09.2026).</summary>
+    [Fact]
+    public void Die_Zeile_traegt_die_Beschreibung_als_Tooltip()
+    {
+        var cut = Render<ProjektListe>(p => p.Add(x => x.Zeilen, MIT_STAMM));
+        Assert.Equal("Denkmalschutz", cut.FindAll("tbody tr")[0].GetAttribute("title"));   // sortiert: Laurentiuskirche
+    }
+
+    /// <summary>Im Mehrfachmodus gibt es Haekchen statt Einzelwahl; ein Stamm nimmt seine Varianten mit.</summary>
+    [Fact]
+    public void Ein_Haken_am_Stamm_nimmt_die_Varianten_mit()
+    {
+        IReadOnlyCollection<int> angehakt = Array.Empty<int>();
+        var cut = Render<ProjektListe>(p => p
+            .Add(x => x.Zeilen, MIT_STAMM)
+            .Add(x => x.Mehrfach, true)
+            .Add(x => x.Angehakt, angehakt)
+            .Add(x => x.AngehaktChanged, s => angehakt = s));
+
+        var haken = cut.FindAll(".epos-projektliste-haken");
+        Assert.Equal(4, haken.Count);
+        Assert.Empty(cut.FindAll(".epos-anlagenwahl"));
+
+        haken[1].Change(true);                                   // Zeile 2 = Stamm "Referenz BHKW"
+        Assert.Equal(new[] { 1030, 1031, 1032 }, angehakt.OrderBy(i => i).ToArray());
+    }
 }

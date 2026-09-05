@@ -174,17 +174,67 @@ public class ProjektKopfSeiteTests : BunitContext
     }
 
     // =====================================================================
+    // Merge 5 (Nutzerauftrag 02.09.2026): Pflichtfelder und Namensdoppel
+    // =====================================================================
+
+    [Fact]
+    public void Leerer_und_vergebener_Name_bringen_den_Hinweis_ein_freier_Name_nimmt_ihn_weg()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.NameAenderbar = true;
+        daten.Name = "";
+        var cut = Render<ProjektKopfSeite>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Klimaregionen, REGIONEN)
+            .Add(x => x.VergebeneNamen, new[] { "Speicherhaus" })
+            .Add(x => x.PflichtMarke, " *"));
+
+        Assert.Equal(ProjektKopfBefund.NameLeer, cut.Instance.Befund);
+        Assert.Contains("Projektnamen", cut.Find(".epos-projektkopf-hinweis").TextContent);
+        Assert.Contains("Projektname *", cut.Markup);
+
+        cut.FindAll("input[type=text]:not([readonly])")[0].Input("speicherhaus");
+        Assert.Equal(ProjektKopfBefund.NameVorhanden, cut.Instance.Befund);
+        Assert.Contains("existiert bereits", cut.Find(".epos-projektkopf-hinweis").TextContent);
+
+        cut.FindAll("input[type=text]:not([readonly])")[0].Input("Neubau Ost");
+        Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
+        Assert.Empty(cut.FindAll(".epos-projektkopf-hinweis"));
+    }
+
+    [Fact]
+    public void Ohne_Klimaregion_bleibt_der_Hinweis_bis_eine_gewaehlt_ist()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.IdKlimaregion = 0;
+        daten.Klimaname = "";
+        var cut = Render<ProjektKopfSeite>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Klimaregionen, REGIONEN));
+
+        Assert.Equal(ProjektKopfBefund.KlimaLeer, cut.Instance.Befund);
+        cut.Find("select").Change("5");
+        Assert.Equal(ProjektKopfBefund.Ok, cut.Instance.Befund);
+        Assert.Empty(cut.FindAll(".epos-projektkopf-hinweis"));
+    }
+
+    // =====================================================================
     //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
     // =====================================================================
 
     /// <summary>
-    /// Die sieben Felder stehen im Formularraster; der handgebaute Zweispalter <c>epos-projektkopf-raster</c> ist fort, und die Beschreibung meldet sich selbst als breites Feld ueber beide Spalten.
+    /// Die sechs kurzen Felder stehen im Formularraster; der handgebaute
+    /// Zweispalter <c>epos-projektkopf-raster</c> ist fort.
     ///
-    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <para>Die BESCHREIBUNG bleibt unter dem Raster: Zwischen ihr und den
+    /// Feldern steht der Pflichtfeldhinweis (Merge 5), und der gehört zu den
+    /// Feldern darüber.</para>
+    ///
+    /// <para>Geprüft wird das MARKUP: Der Block trägt
     /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
     /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
-    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
-    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// als Stilblattprobe in <c>FormularrasterTests</c> — eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6‑B‑1).</para>
     /// </summary>
     [Fact]
     public void Die_Projektkopffelder_stehen_im_Formularraster()
@@ -193,9 +243,11 @@ public class ProjektKopfSeiteTests : BunitContext
 
         Assert.Empty(cut.FindAll(".epos-projektkopf-raster"));
         Assert.Single(cut.FindAll(".epos-formularraster"));
-        Assert.Equal(7, cut.FindAll(".epos-formularraster .epos-feld").Count);
+        Assert.Equal(6, cut.FindAll(".epos-formularraster .epos-feld").Count);
 
-        // Die Beschreibung ist mehrzeilig und damit ein BREITES Feld.
-        Assert.Single(cut.FindAll(".epos-formularraster .epos-feld--breit"));
+        // Die Beschreibung steht als mehrzeiliges - also BREITES - Feld
+        // ausserhalb des Rasters.
+        Assert.Empty(cut.FindAll(".epos-formularraster .epos-feld--breit"));
+        Assert.Single(cut.FindAll(".epos-feld--breit"));
     }
 }

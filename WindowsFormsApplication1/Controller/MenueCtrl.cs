@@ -181,6 +181,12 @@ namespace WindowsFormsApplication1
             if (!Dienste.Navigation.OeffneMaske(Masken.ProjektDelete, wahl) || wahl.Name == "")
                 return "";
 
+            // Sicherungskopie und Mehrfachauswahl (Nutzerauftrag 02.09.2026; mit Merge 5 aus
+            // Form_ProjektDelete in den ProjektWahlDialog portiert). Der Dialog hat bereits
+            // mit der vollstaendigen Liste zurueckgefragt.
+            if (wahl.SicherungGewuenscht && !DatenbankSichern("vor_Loeschen")) return "";
+            if (wahl.Mehrere.Count > 1) return MehrereLoeschen(wahl.Mehrere);
+
             LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(
                 wahl.Id, wahl.Name, wahl.AlleGleichenNamens);
 
@@ -219,6 +225,114 @@ namespace WindowsFormsApplication1
 
             return befund.Projektname;
         }
+
+        /// <summary>
+        /// Loescht mehrere Projekte hintereinander - Varianten VOR ihren Staemmen, wie der
+        /// Dialog sie liefert. Je Projekt der Kernweg (Anlagen, Ergebnisse, Projektzeile samt
+        /// Kaskaden). Rueckgabe wie beim Einzelweg ein Name: der des aktiven Projekts, falls
+        /// es dabei war (Form_Start setzt dann seinen Platzhalter), sonst der zuletzt
+        /// geloeschte; leer, wenn nichts geschah.
+        /// </summary>
+        private string MehrereLoeschen(List<ProjektKopfZeile> liste)
+        {
+            int aktuell = AktuelleProjektId();
+            string aktuellerName = "", letzter = "";
+            int n = 0;
+            var fehler = new List<string>();
+            foreach (ProjektKopfZeile p in liste)
+            {
+                LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(p.Id, p.Name, mehrdeutigZugelassen: false);
+                if (befund.Stand != LoeschStand.Geloescht)
+                {
+                    fehler.Add(p.Name + (string.IsNullOrEmpty(befund.Fehlertext) ? "" : " (" + befund.Fehlertext + ")"));
+                    continue;
+                }
+                n++;
+                letzter = p.Name;
+                if (p.Id == aktuell) aktuellerName = p.Name;
+            }
+
+            string meldung = string.Format(Text_("PDLG_ERFOLG", "{0} Projekt(e) gelöscht."), n);
+            if (fehler.Count > 0)
+                meldung += Environment.NewLine + Text_("PDLG_FEHLER", "Fehler bei:") + " " + string.Join(", ", fehler);
+            string titel = Text_("PDLG_TITEL", "Projekte löschen");
+            if (fehler.Count > 0) Dienste.Dialog.Warnung(meldung, titel);
+            else Dienste.Dialog.Meldung(meldung, titel);
+
+            return aktuellerName.Length > 0 ? aktuellerName : letzter;
+        }
+
+        // ------------------------------------------------------------------
+        // Sicherungshelfer des Löschwegs mit Mehrfachauswahl (Nutzerauftrag 02.09.2026,
+        // WinForms-Fassung Form_ProjektDelete). Die Maske ist mit iU9‑W15a.2 durch
+        // ProjektWahlDialog ersetzt; die Helfer bleiben für die Portierung der
+        // Mehrfachlöschung samt Sicherungskopie (Merge 5, 05.09.2026).
+        // ------------------------------------------------------------------
+        // Das aktive Projekt (Tab_Applikation.ID_Projekt), 0 wenn keins.
+        private static int AktuelleProjektId()
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable("SELECT * FROM Tab_Applikation");
+                if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["ID_Projekt"] != DBNull.Value)
+                    return Convert.ToInt32(dt.Rows[0]["ID_Projekt"]);
+            }
+            catch { }
+            return 0;
+        }
+
+        // Gezieltes UPDATE statt CommandBuilder (Bestandsweg vor dem Umbau).
+        private static void AktuellesProjektZuruecksetzen()
+        {
+            DbParam pName = new DbParam("?", "");
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET Projektname = ?, ID_Projekt = 0", pName);
+        }
+
+        /// <summary>
+        /// Sicherungskopie der aktiven Datenbank — in den Ordner „DB-Backup" neben der
+        /// Datei, falls es ihn gibt (der Migrationsstrang legt ihn an), sonst daneben;
+        /// Zweck und Zeitstempel im Namen. Bei SQLite reisen die Journal-Dateien
+        /// (-wal/-shm) mit, damit die Kopie den letzten Stand vollständig trägt.
+        /// Wirft bei Fehlern (der Aufrufer entscheidet, ob er fortfährt).
+        /// Gemeinsame Wahrheit für „Projekte löschen" und den Projektimport.
+        /// </summary>
+        public static string DatenbankKopieAnlegen(string zweck)
+        {
+            string dbPfad = DataRepository.GetDBPath();
+            string ordner = System.IO.Path.GetDirectoryName(dbPfad) ?? "";
+            string backupOrdner = System.IO.Path.Combine(ordner, "DB-Backup");
+            if (System.IO.Directory.Exists(backupOrdner)) ordner = backupOrdner;
+            string stamm = System.IO.Path.GetFileNameWithoutExtension(dbPfad) + "_" + zweck + "_" +
+                           DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string sicherung = System.IO.Path.Combine(ordner, stamm + System.IO.Path.GetExtension(dbPfad));
+            System.IO.File.Copy(dbPfad, sicherung, false);
+            foreach (string anhang in new[] { "-wal", "-shm" })
+                if (System.IO.File.Exists(dbPfad + anhang))
+                    System.IO.File.Copy(dbPfad + anhang, sicherung + anhang, true);
+            return sicherung;
+        }
+
+        // Sicherungskopie vor dem Löschen; false = der Anwender möchte nach einem
+        // Sicherungsfehler NICHT fortfahren.
+        private static bool DatenbankSichern(string zweck)
+        {
+            try
+            {
+                DatenbankKopieAnlegen(zweck);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // warnend + vorgabeNein: dieselbe Aussage wie zuvor über
+                // MessageBoxIcon.Warning und MessageBoxDefaultButton.Button2 — ohne
+                // Sicherung soll die Eingabetaste nicht löschen.
+                return Dienste.Dialog.Frage(
+                    string.Format(Text_("PDLG_SICHERUNG_FEHLER",
+                        "Die Sicherungskopie konnte nicht angelegt werden:\r\n{0}\r\n\r\nTrotzdem löschen?"), ex.Message),
+                    Text_("PDLG_TITEL", "Projekte löschen"),
+                    warnend: true,
+                    vorgabeNein: true);
+            }        }
 
         /// <summary>Anzeigetext aus dem Ressourcenkatalog; Rueckfall = der deutsche Satz.</summary>
         private static string Text_(string schluessel, string rueckfall)

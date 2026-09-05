@@ -57,6 +57,15 @@ namespace WindowsFormsApplication1
             new Merkmal("Anlage", "Tab_Energieanlagen", "PV_Leistung",        "PV-Leistung", "kWp", 1),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Neigung",            "Neigung", "°", 0),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Azimut",             "Azimut", "°", 0),
+            // Paket A des PV-Ertragsmodells (Stufe E1.3), Migrationsschritt 62.
+            new Merkmal("Anlage", "Tab_Energieanlagen", "PV_WrWirkungsgrad",  "Wechselrichter-Wirkungsgrad", "", 2),
+            new Merkmal("Anlage", "Tab_Energieanlagen", "PV_Systemverluste",  "Systemverluste", "%", 1),
+            // Paket B desselben Konzepts (Stufe E2), Migrationsschritt 63.
+            new Merkmal("Anlage", "Tab_Energieanlagen", "PV_Modell",          "PV-Rechenmodell", "", TEXT),
+            new Merkmal("Anlage", "Tab_Energieanlagen", "PV_WrNennleistungKw","Wechselrichter-Nennleistung", "kW", 1),
+            new Merkmal("Anlage", "Tab_Energieanlagen", "PV_WrEta10",         "Wechselrichter-Wirkungsgrad bei 10 %", "", 3),
+            new Merkmal("Anlage", "Tab_Energieanlagen", "PV_WrEta50",         "Wechselrichter-Wirkungsgrad bei 50 %", "", 3),
+            new Merkmal("Anlage", "Tab_Energieanlagen", "PV_WrEta100",        "Wechselrichter-Wirkungsgrad bei 100 %", "", 3),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Kollektormodulanzahl","Kollektormodulanzahl", "", 0),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Solaranteil",        "Solaranteil", "%", 0),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Volumen",            "Speichervolumen (Anlage)", "l", 0),
@@ -100,6 +109,7 @@ namespace WindowsFormsApplication1
             new Merkmal("Photovoltaik", "Tab_PV", "Firma",       "Hersteller", "", TEXT),
             new Merkmal("Photovoltaik", "Tab_PV", "Leistung",    "Modulleistung", "W", 0),
             new Merkmal("Photovoltaik", "Tab_PV", "Wirkungsgrad","Wirkungsgrad", "%", 1),
+            new Merkmal("Photovoltaik", "Tab_PV", "Technologie", "Zelltechnologie", "", TEXT),
 
             // Pufferspeicher (Tab_Pufferspeicher)
             new Merkmal("Pufferspeicher", "Tab_Pufferspeicher", "Bezeichner",   "Komponente", "", TEXT),

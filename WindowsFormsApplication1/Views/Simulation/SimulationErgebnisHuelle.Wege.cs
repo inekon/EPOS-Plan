@@ -572,10 +572,14 @@ namespace WindowsFormsApplication1
         private async Task<EPOS.UI.Seiten.Simulation.Rueckmeldung> VergleichCsv()
         {
             string vorschlag = string.Format(MyResource.Resource.VAR_VGL_DATEI, m_ID_Projekt);
-            string pfad = await Task.FromResult(
-                WindowsFormsApplication1.Dienste.Datei.DateiSpeichern(MyResource.Resource.OPT_CSV_TITEL,
-                                             "CSV (*.csv)|*.csv|Alle Dateien (*.*)|*.*",
-                                             vorschlag));
+            // Der Speichern-Dialog ist ein modales SYSTEMFENSTER und darf nicht
+            // synchron im WebView-Rueckruf aufgehen (Hausregel (d), Befund W13-B-1):
+            // Task.FromResult(...) verspricht ein Warten und tut die Arbeit doch
+            // sofort. Die …Async-Form fuehrt ihn eine gepostete Nachricht spaeter hoch.
+            string pfad = await WindowsFormsApplication1.Dienste.Datei.DateiSpeichernAsync(
+                MyResource.Resource.OPT_CSV_TITEL,
+                "CSV (*.csv)|*.csv|Alle Dateien (*.*)|*.*",
+                vorschlag);
 
             if (string.IsNullOrEmpty(pfad)) return EPOS.UI.Seiten.Simulation.Rueckmeldung.Still;
 

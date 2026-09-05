@@ -58,6 +58,17 @@ namespace WindowsFormsApplication1
         public bool KappungAngewendet;
         public string Herleitung = "";
         public bool Unvollstaendig;
+
+        /// <summary>Angewandte Degradation [%/a] (Stufe E2.4); 0 = keine.</summary>
+        public double DegradationProzent;
+
+        /// <summary>
+        /// Summe der degradationsbedingten MEHRKOSTEN des Netzbezugs über alle
+        /// Betrachtungsjahre [€] — der Betrag, den die Reihe <c>PV_VERGUETUNG</c> als
+        /// negativen Beitrag trägt (siehe <see cref="PvErloesRechner.Rechne"/>).
+        /// 0 ohne Degradation oder ohne Preisangabe.
+        /// </summary>
+        public double MehrbezugDurchDegradationEur;
     }
 
     /// <summary>
@@ -86,6 +97,32 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Stichtag des Solarspitzengesetzes (§ 51 n. F.).</summary>
         public static readonly DateTime Par51Stichtag = new DateTime(2025, 2, 25);
+
+        /// <summary>
+        /// Der Degradationsfaktor des Betrachtungsjahres <paramref name="jahr"/>
+        /// (1-basiert): <c>(1 − d/100)^(jahr − 1)</c> — Stufe E2.4 des
+        /// PV-Ertragsmodell-Konzepts.
+        ///
+        /// <para><b>Jahr 1 ist immer 1</b> (Exponent <c>jahr − 1</c>): Die
+        /// Stundensimulation rechnet das Basisjahr, sie kennt keine Degradation. Erst
+        /// die Erlösreihe altert.</para>
+        ///
+        /// <para><b>d = 0 liefert EXAKT 1,0</b>, und zwar über einen eigenen Zweig statt
+        /// über <c>Math.Pow(1.0, n)</c>. Das ist keine Kosmetik: <c>NULL = 0 %/a</c> ist
+        /// die Vorgabe jeder Bestandszeile, und die Erlösreihe muss dann Bit für Bit
+        /// dieselbe sein wie vor Paket B (Abnahmekriterium: die
+        /// Wirtschaftlichkeits-Referenz „INEKON Schulung 01" bleibt unverändert).</para>
+        ///
+        /// <para>Ein negativer Wert wird wie 0 behandelt — ein „Zuwachs" der
+        /// Modulleistung ist keine Fachaussage, die dieses Feld tragen soll.</para>
+        /// </summary>
+        /// <param name="prozentProJahr">d [%/a] aus <c>Tab_ProjektPhotovoltaik.Degradation</c>.</param>
+        /// <param name="jahr">Betrachtungsjahr t, 1-basiert.</param>
+        public static double DegradationsFaktor(double prozentProJahr, int jahr)
+        {
+            if (prozentProJahr <= 0.0 || jahr <= 1) return 1.0;
+            return Math.Pow(1.0 - prozentProJahr / 100.0, jahr - 1);
+        }
 
         /// <summary>
         /// V4-Umschluss (Entscheidung F7): der führende Vergütungssatz [ct/kWh] für
@@ -142,6 +179,13 @@ namespace WindowsFormsApplication1
         /// <param name="jahresmarktwert">Kalenderjahr → amtlicher JW Solar [ct/kWh]
         /// (Projekt-Override eingerechnet); null = unbekannt</param>
         /// <param name="kultur">Zahlenformat der Herleitung</param>
+        /// <param name="eigenverbrauchKwhJahr1">
+        /// PV-Eigenverbrauch des Basisjahres [kWh] (Stufe E2.4, optional). Zusammen mit
+        /// <paramref name="strompreisEurKwh"/> trägt die Reihe den degradationsbedingten
+        /// MEHRBEZUG als negativen Beitrag — siehe den Absatz „Vermiedener Bezug" bei
+        /// <see cref="DegradationsFaktor"/> in dieser Methode. 0 = nicht bekannt.
+        /// </param>
+        /// <param name="strompreisEurKwh">Arbeitspreis Strom [€/kWh]; 0 = nicht gepflegt.</param>
         public static PvErloesErgebnis Rechne(ProjektPhotovoltaikModel pv,
                                               double kwpRechnerisch,
                                               double einspeisungMWh,
@@ -150,7 +194,9 @@ namespace WindowsFormsApplication1
                                               int betrachtungsJahre,
                                               Func<string, int, double?> katalog,
                                               Func<int, double?> jahresmarktwert,
-                                              CultureInfo kultur)
+                                              CultureInfo kultur,
+                                              double eigenverbrauchKwhJahr1 = 0.0,
+                                              double strompreisEurKwh = 0.0)
         {
             var e = new PvErloesErgebnis();
             if (kultur == null) kultur = CultureInfo.CurrentCulture;
@@ -274,6 +320,30 @@ namespace WindowsFormsApplication1
             double dv = pv.DvEntgelt ?? 0.40;
             double ausfallKwhBasis = 0, ausfallEurBasis = 0;
 
+            // --- Degradation (Stufe E2.4) ----------------------------------------
+            //
+            // d wirkt AUSSCHLIESSLICH hier, nicht in der Stundensimulation: Die
+            // Stundenreihe ist das BASISJAHR, sie kennt kein Alter. Der Faktor
+            // (1 - d/100)^(t-1) trifft in jedem Jahr t
+            //   * die verguetungsfaehige Arbeit (und damit Einspeiseerloes,
+            //     Marktpraemie, Spoterloes und den Paragraf-51-Ausfall),
+            //   * die Paragraf-51a-Gutschrift des Gutschriftjahres und
+            //   * den VERMIEDENEN BEZUG (siehe unten).
+            //
+            // NULL = 0 %/a liefert Faktor 1,0 EXAKT (eigener Zweig in
+            // DegradationsFaktor) - die Reihe ist damit bitgleich zum P6-Stand.
+            e.DegradationProzent = pv.Degradation ?? 0.0;
+
+            // VERMIEDENER BEZUG. Die Stundenreihe und damit der Reststrom des
+            // Kapitalwerts sind ueber alle Jahre KONSTANT. Altert die Anlage, deckt
+            // sie weniger Eigenverbrauch, der Netzbezug steigt - und zwar um
+            // EV_Basisjahr * (1 - Faktor(t)). Dieser Mehrbezug steht als NEGATIVER
+            // Beitrag in der PV-Reihe; die Kostenseite bleibt unangetastet. Kein
+            // Doppelansatz: Die Kostenseite rechnet die Ersparnis des BASISJAHRES,
+            // dieser Posten nur ihren jaehrlichen Schwund.
+            bool mehrbezugRechenbar = e.DegradationProzent > 0.0 &&
+                                      eigenverbrauchKwhJahr1 > 0.0 && strompreisEurKwh > 0.0;
+
             // --- Jahresschleife ---------------------------------------------------
             for (int t = 1; t <= T; t++)
             {
@@ -281,6 +351,11 @@ namespace WindowsFormsApplication1
                 bool inVerguetung = t <= e.LetztesVerguetungsjahr;
                 bool p51 = par51ImJahr(kalenderjahr);
                 double a = p51 ? anteil : 0;
+
+                // Die gealterte Arbeit des Jahres t. Bei d = 0 ist dFaktor exakt 1,0
+                // und basisKwhT damit bitgleich basisKwh.
+                double dFaktor = DegradationsFaktor(e.DegradationProzent, t);
+                double basisKwhT = basisKwh * dFaktor;
 
                 double erloes = 0, ausfallKwh = 0, ausfallEur = 0, praemie = 0;
 
@@ -292,8 +367,8 @@ namespace WindowsFormsApplication1
                 {
                     if (inVerguetung)
                     {
-                        ausfallKwh = basisKwh * a;
-                        erloes = (basisKwh - ausfallKwh) * evCt / 100.0;
+                        ausfallKwh = basisKwhT * a;
+                        erloes = (basisKwhT - ausfallKwh) * evCt / 100.0;
                         ausfallEur = ausfallKwh * evCt / 100.0;
                     }
                     // nach Ablauf: keine Vergütung (Fall a → 0).
@@ -304,14 +379,14 @@ namespace WindowsFormsApplication1
                                              StringComparison.Ordinal);
                     double? jw = jwImJahr(kalenderjahr);
 
-                    ausfallKwh = basisKwh * a;
-                    double arbeitKwh = basisKwh - ausfallKwh;
+                    ausfallKwh = basisKwhT * a;
+                    double arbeitKwh = basisKwhT - ausfallKwh;
 
                     // Spoterlös: zeitaufgelöst (Basisjahr, § 51 über die Reihe schon
                     // heraus) oder Stufe-1-Ersatz über den Jahresmarktwert.
                     double spotEur;
                     if (spotErloesEurBasis.HasValue)
-                        spotEur = spotErloesEurBasis.Value *
+                        spotEur = spotErloesEurBasis.Value * dFaktor *
                                   (jw.HasValue && letzterJw.HasValue && letzterJw.Value > 0
                                       ? (jwImJahr(kalenderjahr) ?? letzterJw.Value) / letzterJw.Value
                                       : 1.0);
@@ -336,6 +411,15 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                // Degradationsbedingter Mehrbezug des Jahres t (siehe oben). Ohne
+                // Degradation ist (1 - dFaktor) exakt 0 - der Posten entfaellt.
+                if (mehrbezugRechenbar)
+                {
+                    double mehr = eigenverbrauchKwhJahr1 * (1.0 - dFaktor) * strompreisEurKwh;
+                    erloes -= mehr;
+                    e.MehrbezugDurchDegradationEur += mehr;
+                }
+
                 e.JeJahr[t] = erloes;
                 if (t == 1)
                 {
@@ -354,7 +438,10 @@ namespace WindowsFormsApplication1
             if (pv.Par51a_Kompensieren && ausfallKwhBasis > 0 && e.LetztesVerguetungsjahr >= 1)
             {
                 double faktor = katalog(DbWerte.GESETZ_EEG_51A_FAKTOR_SOLAR, ibnJahr) ?? 0.5;
-                e.Kompensation51aEur = ausfallKwhBasis * faktor * e.AwMixCt / 100.0;
+                // E2.4: Die Gutschrift altert mit dem Jahr, in dem sie gutgeschrieben
+                // wird. Bei d = 0 ist der Faktor exakt 1,0.
+                e.Kompensation51aEur = ausfallKwhBasis * faktor * e.AwMixCt / 100.0
+                                     * DegradationsFaktor(e.DegradationProzent, e.LetztesVerguetungsjahr);
                 e.JeJahr[e.LetztesVerguetungsjahr] += e.Kompensation51aEur;
             }
 
@@ -365,6 +452,16 @@ namespace WindowsFormsApplication1
                 e.Par51Angewendet ? "angewendet" : "nicht angewendet",
                 e.AusfallanteilProzent, e.AusfallGemessen ? ", gemessen" : ", Pauschale",
                 einspeisungMWh, e.SatzJahr1Ct);
+
+            if (e.DegradationProzent > 0.0)
+                sb.AppendFormat(kultur,
+                    " Degradation {0:0.##} %/a (Faktor Jahr {1}: {2:0.0000}{3}).",
+                    e.DegradationProzent, T, DegradationsFaktor(e.DegradationProzent, T),
+                    mehrbezugRechenbar
+                        ? "; Mehrbezug ueber die Laufzeit " +
+                          e.MehrbezugDurchDegradationEur.ToString("N0", kultur) + " EUR"
+                        : "");
+
             e.Herleitung = sb.ToString();
             return e;
         }

@@ -109,6 +109,7 @@ namespace WindowsFormsApplication1
                     LeerErlaubt = feld.LeerErlaubt,
                     Gesperrt = feld.Gesperrt,
                     Gruppe = feld.Gruppe,
+                    Optionen = feld.Optionen,
                     Wert = wert ?? ""
                 });
             }

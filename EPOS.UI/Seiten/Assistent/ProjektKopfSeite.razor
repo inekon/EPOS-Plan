@@ -37,40 +37,55 @@
     <Gruppenkopf Titel="@KopfText" />
 
     <Herleitungszeile Text="@HinweisText" />
+    @if (!string.IsNullOrEmpty(PflichtText))
+    {
+        <p class="epos-projektkopf-pflicht">@PflichtText</p>
+    }
 
     @* Formularraster (iU8-E-2, Paket P3): Der handgebaute Zweispalter
-       epos-projektkopf-raster entfaellt - der Hausraster stellt dieselben
-       zwei Spalten und rueckt zusaetzlich die Beschriftung neben das Feld. *@
+       epos-projektkopf-raster entfaellt - der Hausraster stellt dieselben zwei
+       Spalten aus auto-fill, rueckt die Beschriftung neben das Feld und bricht
+       bei 900 px wie das ganze Haus.
+
+       Die BESCHREIBUNG bleibt unter dem Raster: Zwischen ihr und den sechs
+       kurzen Feldern steht der Pflichtfeldhinweis, und der gehoert zu den
+       Feldern DARUEBER. *@
     <Formularraster>
         <KindInhalt>
-    <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name"
-              WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)" />
+            <Textfeld Bezeichnung="@(LabelName + PflichtMarke)" Wert="@Daten.Name"
+                      WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)" />
 
-    <Auswahlfeld Bezeichnung="@LabelKlima" Eintraege="@Klimaregionen"
-                 Auswahl="@KlimaAuswahl" AuswahlChanged="KlimaGewaehlt" />
+            <Auswahlfeld Bezeichnung="@(LabelKlima + PflichtMarke)" Eintraege="@Klimaregionen"
+                         Auswahl="@KlimaAuswahl" AuswahlChanged="KlimaGewaehlt" />
 
-    <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
-              WertChanged="@(w => Daten.Kunde = w)" />
+            <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
+                      WertChanged="@(w => Daten.Kunde = w)" />
 
-    <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@Daten.Bearbeiter"
-              WertChanged="@(w => Daten.Bearbeiter = w)" />
+            <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@Daten.Bearbeiter"
+                      WertChanged="@(w => Daten.Bearbeiter = w)" />
 
-    @* Beide Datumsfelder sind GESPERRT - wie im Vorlaeufer (textBox_*.Enabled
-       = false). Sie zeigen, was das Programm gespeichert hat; geaendert wird
-       daran nichts. *@
-    <Textfeld Bezeichnung="@LabelAenderung" Wert="@Datumstext(Daten.Aenderungsdatum)"
-              NurLesen="true" />
+            @* Beide Datumsfelder sind GESPERRT - wie im Vorlaeufer (textBox_*.Enabled
+               = false). Sie zeigen, was das Programm gespeichert hat; geaendert wird
+               daran nichts. *@
+            <Textfeld Bezeichnung="@LabelAenderung" Wert="@Datumstext(Daten.Aenderungsdatum)"
+                      NurLesen="true" />
 
-    <Textfeld Bezeichnung="@LabelErstellt" Wert="@Datumstext(Daten.Erstelldatum)"
-              NurLesen="true" />
-
-    @* Die Beschreibung meldet sich als BREITES Feld (Mehrzeilig) und spannt
-       damit von selbst ueber beide Spalten - der eigene Kasten dafuer
-       entfaellt. *@
-    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" Mehrzeilig="true"
-              Zeilen="5" WertChanged="@(w => Daten.Beschreibung = w)" />
+            <Textfeld Bezeichnung="@LabelErstellt" Wert="@Datumstext(Daten.Erstelldatum)"
+                      NurLesen="true" />
         </KindInhalt>
     </Formularraster>
+
+    @* Pflichtfelder und Namensdoppel (Nutzerauftrag 02.09.2026, mit Merge 5 aus
+       Wizard_Projekt.NameHinweisNachziehen): der Hinweis steht sofort unter den Feldern;
+       das Veto beim Verlassen der Seite spricht der Assistent ueber dieselbe Regel aus. *@
+    @if (Befund != ProjektKopfBefund.Ok)
+    {
+        <p class="epos-projektkopf-hinweis" role="alert">@Hinweis</p>
+    }
+
+    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" Mehrzeilig="true"
+              Zeilen="5" Platzhalter="@PlatzhalterBeschreibung"
+              WertChanged="@(w => Daten.Beschreibung = w)" />
 </div>
 
 @code {
@@ -95,6 +110,34 @@
     [Parameter] public string LabelAenderung { get; set; } = "Änderungsdatum";
     [Parameter] public string LabelErstellt { get; set; } = "Erstelldatum";
     [Parameter] public string LabelKlima { get; set; } = "Klimaregion";
+
+    // --- Pflichtfelder, Namensdoppel, Vorbelegung (Nutzerauftrag 02.09.2026, Merge 5) ----
+    /// <summary>Die vergebenen Projektnamen - ein NEUES Projekt darf keinen davon tragen.</summary>
+    [Parameter] public IReadOnlyCollection<string> VergebeneNamen { get; set; } = Array.Empty<string>();
+    /// <summary>Kennzeichen hinter Pflichtfeld-Beschriftungen (" *"); leer = keins.</summary>
+    [Parameter] public string PflichtMarke { get; set; } = "";
+    /// <summary>WZP_PFLICHT - die Legende zur Marke; leer = keine Zeile.</summary>
+    [Parameter] public string PflichtText { get; set; } = "";
+    /// <summary>WZP_NAME_LEER</summary>
+    [Parameter] public string TextNameLeer { get; set; } = "Bitte einen Projektnamen eingeben.";
+    /// <summary>WZP_NAME_VORHANDEN</summary>
+    [Parameter] public string TextNameVorhanden { get; set; } = "Ein Projekt mit diesem Namen existiert bereits.";
+    /// <summary>WZP_KLIMA_LEER</summary>
+    [Parameter] public string TextKlimaLeer { get; set; } = "Bitte eine Klimaregion wählen.";
+    /// <summary>WZP_BESCHREIBUNG_HINT</summary>
+    [Parameter] public string PlatzhalterBeschreibung { get; set; } = "";
+
+    /// <summary>Der Befund der Kopfregeln (Kern) fuer den aktuellen Stand der Felder.</summary>
+    public ProjektKopfBefund Befund => ProjektKopfRegeln.Pruefe(Daten, VergebeneNamen);
+
+    /// <summary>Der Hinweistext zum Befund (leer bei Ok).</summary>
+    public string Hinweis => Befund switch
+    {
+        ProjektKopfBefund.NameLeer => TextNameLeer,
+        ProjektKopfBefund.NameVorhanden => TextNameVorhanden,
+        ProjektKopfBefund.KlimaLeer => TextKlimaLeer,
+        _ => ""
+    };
 
     /// <summary>
     /// Die gewählte Klimaregion als LISTENINDEX — das <c>Auswahlfeld</c> arbeitet mit

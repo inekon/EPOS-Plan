@@ -30,6 +30,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "lastgang_pruefen",
                 zweck: KiAktionsTexte.ZweckLastgangPruefen,
+                titel: KiAktionsTexte.TitelLastgangPruefen,
+                beispiel: KiAktionsTexte.BeispielLastgangPruefen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "GanglinienDatei.Erkenne / GanglinienDatei.Vorschau",
                 parameter: new[]
@@ -102,6 +104,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "ganglinien_auflisten",
                 zweck: KiAktionsTexte.ZweckGanglinienAuflisten,
+                titel: KiAktionsTexte.TitelGanglinienAuflisten,
+                beispiel: KiAktionsTexte.BeispielGanglinienAuflisten,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "PeakShavingCtrl.LeseGanglinien",
                 parameter: new[]
@@ -165,6 +169,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "minimale_spitze_ermitteln",
                 zweck: KiAktionsTexte.ZweckMinimaleSpitze,
+                titel: KiAktionsTexte.TitelMinimaleSpitze,
+                beispiel: KiAktionsTexte.BeispielMinimaleSpitze,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "PeakShaving.MinimaleSchwelleKw",
                 parameter: new[]

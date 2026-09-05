@@ -62,7 +62,14 @@ namespace WindowsFormsApplication1
         Ganzzahl,
 
         /// <summary><c>Schalter</c> (nur der Brennwertkessel).</summary>
-        Schalter
+        Schalter,
+
+        /// <summary>
+        /// <c>Auswahlfeld</c> ueber die <c>Optionen</c> des Feldes (Wert = Datenbankcode,
+        /// Text = Beschriftung); der Wert des Feldes ist der CODE. Erster Einsatz: die
+        /// Zelltechnologie der PV-Module (Paket B, Merge 5).
+        /// </summary>
+        Auswahl
     }
 
     /// <summary>

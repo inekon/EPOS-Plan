@@ -105,8 +105,9 @@ namespace WindowsFormsApplication1
 
             string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Beschreibung, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf,
-                             I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten,
+                             Technologie, ReadOnly)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -126,6 +127,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@lae", this.m_Laenge),
                 new DbParam("@bre", this.m_Breite),
                 new DbParam("@mod", this.m_Modulkosten),
+                Tec(),
                 new DbParam("@ro", false)
             };
 
@@ -236,7 +238,7 @@ namespace WindowsFormsApplication1
                             Bezeichner = ?, Firma = ?, Beschreibung = ?, Leistung = ?, Wirkungsgrad = ?,
                             U_Mpp = ?, U_Leerlauf = ?, I_Mpp = ?, I_Kurzschluss = ?,
                             alpha_SC = ?, beta_OC = ?, gamma_PMP = ?, T_NOCT = ?,
-                            Laenge = ?, Breite = ?, Modulkosten = ?
+                            Laenge = ?, Breite = ?, Modulkosten = ?, Technologie = ?
                           WHERE ID = ?";
 
             DbParam[] ps = {
@@ -256,6 +258,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@lae", this.m_Laenge),
                 new DbParam("@bre", this.m_Breite),
                 new DbParam("@mod", this.m_Modulkosten),
+                Tec(),
                 new DbParam("@id", id)
             };
 
@@ -280,7 +283,7 @@ namespace WindowsFormsApplication1
                             Firma = ?, Leistung = ?, Wirkungsgrad = ?,
                             U_Mpp = ?, U_Leerlauf = ?, I_Mpp = ?, I_Kurzschluss = ?,
                             alpha_SC = ?, beta_OC = ?, gamma_PMP = ?, T_NOCT = ?,
-                            Laenge = ?, Breite = ?
+                            Laenge = ?, Breite = ?, Technologie = ?
                           WHERE ID = ?";
 
             DbParam[] ps = {
@@ -297,10 +300,22 @@ namespace WindowsFormsApplication1
                 new DbParam("@noc", this.m_T_NOCT),
                 new DbParam("@lae", this.m_Laenge),
                 new DbParam("@bre", this.m_Breite),
+                Tec(),
                 new DbParam("@id", id)
             };
 
             return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        /// <summary>
+        /// Parameter fuer <c>Technologie</c> (E2.3): LEER bleibt NULL. Eine leere
+        /// Zeichenkette waere eine dritte Aussage neben "nicht gepflegt" und einem der
+        /// fuenf Persistenzwerte - und die Dublettenpruefung vergleicht die Spalte mit.
+        /// </summary>
+        private DbParam Tec()
+        {
+            return new DbParam("@tec", string.IsNullOrEmpty(this.m_Technologie)
+                                           ? DBNull.Value : (object)this.m_Technologie);
         }
 
         /// <summary>
@@ -350,6 +365,7 @@ namespace WindowsFormsApplication1
             this.m_Laenge = m.m_Laenge;
             this.m_Breite = m.m_Breite;
             this.m_Modulkosten = m.m_Modulkosten;
+            this.m_Technologie = m.m_Technologie;
         }
 
         private static bool ReadOnlyOf(DataRow row)
@@ -381,6 +397,9 @@ namespace WindowsFormsApplication1
             m.m_Laenge = D(row, "Laenge");
             m.m_Breite = D(row, "Breite");
             m.m_Modulkosten = D(row, "Modulkosten");
+            // E2.3: fehlende Spalte und NULL sind derselbe Fall - Technologie unbekannt.
+            if (row.Table.Columns.Contains("Technologie") && row["Technologie"] != DBNull.Value)
+                m.m_Technologie = row["Technologie"].ToString();
         }
 
         private PhotovoltaikModel MapRowToModel(DataRow row)
@@ -568,6 +587,19 @@ namespace WindowsFormsApplication1
 
                     return new SpeicherErgebnis(true,
                         MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, daten.m_szName);
+                }
+
+                // PV-Katalog-Koeffizienten (mit Merge 5 aus Form_AdminPV nachgezogen): Die
+                // Katalogmaske fuehrt alpha_SC und beta_OC nicht. Ein Update aus ihr traegt
+                // deshalb die GESPEICHERTEN Koeffizienten weiter, statt sie mit 0 zu
+                // ueberschreiben - genau das loeschte bis dahin bei jedem Speichern eines
+                // CEC-Moduls seine Temperaturkoeffizienten.
+                var bestand = new PhotovoltaikStammCtrl();
+                bestand.ReadSingle(schluessel ?? daten.m_szName);
+                if (bestand.rows > 0)
+                {
+                    if (daten.m_alpha_SC == 0.0) daten.m_alpha_SC = bestand.items[0].m_alpha_SC;
+                    if (daten.m_beta_OC == 0.0) daten.m_beta_OC = bestand.items[0].m_beta_OC;
                 }
 
                 if (!ctrl.UpdateFrom(daten, schluessel ?? daten.m_szName))

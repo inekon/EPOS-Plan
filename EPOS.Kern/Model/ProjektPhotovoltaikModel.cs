@@ -68,6 +68,21 @@ namespace WindowsFormsApplication1
         /// <summary>Option 4.5.1: Netzbezug stundenscharf aus der Preiszeitreihe bewerten.</summary>
         public bool BezugAusPreisreihe;
 
+        /// <summary>
+        /// Jaehrliche Leistungsdegradation der PV-Anlagen [%/a] (Stufe E2.4,
+        /// Migrationsschritt 63).
+        ///
+        /// <para><b>null = 0 %/a</b>, also ergebnisneutral - die Hausregel „der
+        /// Vorgabewert ist der, der nichts aendert". Beim ANLEGEN einer neuen Zeile
+        /// belegt <see cref="ProjektPhotovoltaikCtrl.LiesOderVorbelegt"/> mit 0,5 vor
+        /// (Muster N5/F5); Bestandszeilen bleiben NULL und rechnen wie bisher.</para>
+        ///
+        /// <para>Wirkt als Faktor (1 − d/100)^(t−1) in <see cref="PvErloesRechner"/> auf
+        /// Einspeiseerloes, Paragraf-51-Ausfall/-Gutschrift und den vermiedenen Bezug des
+        /// Jahres t - <b>nicht</b> in der Stundensimulation des Basisjahres.</para>
+        /// </summary>
+        public double? Degradation;
+
         public DateTime? GeaendertAm;
     }
 }

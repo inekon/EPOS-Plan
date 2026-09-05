@@ -23,6 +23,21 @@ public sealed class KiChatTexte
     /// <summary>Beschriftung des Verlaufs fuer Sprachausgaben.</summary>
     public string Verlauf { get; set; } = "";
 
+    /// <summary>
+    /// Beschriftung der aufklappbaren Erlaeuterung im Kopf
+    /// (<c>KI_CHAT_ERKLAERUNG_MEHR</c>); leer = keine Klappe.
+    /// </summary>
+    public string ErklaerungMehr { get; set; } = "";
+
+    /// <summary>
+    /// Die Zeile im leeren Verlauf (<c>KI_CHAT_VERLAUF_LEER</c>) - „Noch keine Frage
+    /// gestellt." Ohne sie steht dort eine leere Flaeche ohne Rahmen (W15b-E-3).
+    /// </summary>
+    public string VerlaufLeer { get; set; } = "";
+
+    /// <summary>Titel der Einstellungs-Ueberlagerung (<c>KI_EINST_TITEL</c>).</summary>
+    public string EinstellungenTitel { get; set; } = "";
+
     /// <summary>„Kontext: {0}" (<c>KI_CHAT_KONTEXT</c>).</summary>
     public string KontextFormat { get; set; } = "{0}";
 
@@ -81,8 +96,12 @@ public sealed class KiChatTexte
     /// <summary>Titel der Werkzeugliste (<c>KI_AKT_WERKZEUGE_TITEL</c>).</summary>
     public string WerkzeugeTitel { get; set; } = "";
 
-    /// <summary>Beschriftung des Beschreibungsfeldes der Werkzeugliste.</summary>
-    public string Beschreibung { get; set; } = "";
+    /// <summary>
+    /// Alle Texte der Werkzeugliste in einem eigenen Buendel — sie ist seit
+    /// <b>W15b-E-4</b> eine Maske mit sechzehn Anzeigetexten und traegt sie
+    /// deshalb selbst.
+    /// </summary>
+    public KiWerkzeugTexte Werkzeugliste { get; set; } = new();
 
     /// <summary>„Ausführen" (<c>KI_AKT_AUSFUEHREN_BTN</c>).</summary>
     public string Ausfuehren { get; set; } = "";

@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using EPOS.UI.Dialoge.Projekt;
-
 namespace WindowsFormsApplication1
 {
     /// <summary>
@@ -161,7 +161,6 @@ namespace WindowsFormsApplication1
                 case Masken.ProjektDelete:
                     return ProjektWahlHuelle.Oeffnen(null,
                                ProjektWahlDialog.ProjektZweck.Loeschen, argumente);
-
                 // --- Zusammengesetzte Abläufe ----------------------------------------
                 case Masken.Assistent:
                     return AssistentZeigen(Ganzzahl(argumente, 0));

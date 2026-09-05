@@ -79,7 +79,6 @@
             listBoxKlimreg.Dock = System.Windows.Forms.DockStyle.Fill;
             listBoxKlimreg.Font = new System.Drawing.Font("Segoe UI", 10F);
             listBoxKlimreg.FormattingEnabled = true;
-            listBoxKlimreg.ItemHeight = 28;
             listBoxKlimreg.Location = new System.Drawing.Point(10, 30);
             listBoxKlimreg.Margin = new System.Windows.Forms.Padding(4, 8, 4, 4);
             listBoxKlimreg.Name = "listBoxKlimreg";

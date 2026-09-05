@@ -25,6 +25,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "ergebnisse_lesen",
                 zweck: KiAktionsTexte.ZweckErgebnisseLesen,
+                titel: KiAktionsTexte.TitelErgebnisseLesen,
+                beispiel: KiAktionsTexte.BeispielErgebnisseLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "WirtschaftlichkeitCtrl.LadeErgebnisse / ErgebnisAktuell",
                 parameter: new[]
@@ -85,6 +87,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "wirtschaftlichkeit_parameter_lesen",
                 zweck: KiAktionsTexte.ZweckParameterLesen,
+                titel: KiAktionsTexte.TitelParameterLesen,
+                beispiel: KiAktionsTexte.BeispielParameterLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "WirtschaftlichkeitCtrl.LadeParameter / LadeTarif",
                 parameter: new[] { KiHilfe.ProjektParameter() },
@@ -142,6 +146,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "kostenlage_pruefen",
                 zweck: KiAktionsTexte.ZweckKostenlagePruefen,
+                titel: KiAktionsTexte.TitelKostenlagePruefen,
+                beispiel: KiAktionsTexte.BeispielKostenlagePruefen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "KostenPositionCtrl.Pruefe / TechnikPlanwertCtrl.LiesAnlagen",
                 parameter: new[]
