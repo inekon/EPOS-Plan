@@ -403,4 +403,28 @@ public class BerichtSeiteTests : BunitContext
 
         Assert.Equal("UcBericht.btn_Help", cut.Instance.HilfeSchluessel);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Das Pfadfeld des Zielordners steht im
+    /// <c>Formularraster</c>, EINSPALTIG — ein Pfad braucht die ganze Breite. Die
+    /// Kopfzeilen der Seite (<c>epos-seite-zeile</c>) bleiben Zeilen: Sie tragen
+    /// die Werkzeuge der Seite, keinen Formularblock.
+    /// </summary>
+    [Fact]
+    public void Der_Zielordner_steht_im_einspaltigen_Formularraster()
+    {
+        var cut = Zeige();
+
+        Assert.Single(cut.FindAll(".epos-formularraster.epos-formularraster--einspaltig"));
+        Assert.Single(cut.FindAll(".epos-formularraster .epos-feld"));
+
+        // Die Seitenzeilen bleiben ausserhalb.
+        Assert.Empty(cut.FindAll(".epos-formularraster .epos-seite-zeile"));
+    }
 }

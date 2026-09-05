@@ -522,3 +522,41 @@ Alles Obige ist auf Linux gemessen. Am Windows-Rechner nachzuziehen:
 | **W0‑O1** | `EPOS.iOS/Dienste/IosProjektQuelle.cs` nennt in einer Meldung noch `Views/Kosten/Form_Kosten.CreateNewEnergyCarrier`. Die Datei gehört zur iOS-Hülle und wird dort beim nächsten Anfassen nachgezogen. |
 | **W0‑O2** | Die Erkennung „Knopf wird zur Laufzeit entfernt" (`EntferneAltknopf`) im Erreichbarkeitswerkzeug hat seit W0 keinen Beleg mehr im Bestand. Sie bleibt stehen; ein Prüfmuster dafür lohnt erst, wenn der Fall wiederkommt. |
 | **W0‑O3** | `SchliessenAngefordert` in `UcBericht`/`UcWirtschaftlichkeit` hat keinen Abonnenten mehr (die Dialoghüllen sind weg). Das Ereignis bleibt, weil die Seiten es beim Umbau nach Blazor (Welle 5) wieder brauchen. |
+
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P2 (iU8‑E‑2)
+
+**Der Wortlaut.** „Darstellung der Dialoge kompakter und übersichtlicher — Parameterblöcke
+rechts. Genauso für andere Dialoge prüfen." Die hausweite Regel dazu steht seit Aufgabe #90 in
+`EPOS.UI/Bausteine/Formularraster.razor` und `Formulargruppe.razor`; sie ist in
+[`iU9_W14a_Blazor_Port_Protokoll.md`](iU9_W14a_Blazor_Port_Protokoll.md), Abschnitt
+„Kompaktes Formularraster", hergeleitet und gemessen. Paket **P2** (Kosten und
+Wirtschaftlichkeit, Wellen 1–5) hängt die Parameterblöcke dieser Welle ein — **kein Feld
+umbenannt, kein Text geändert, keine Regel je Dialog, kein neues CSS**.
+
+**Die Arbeitsregel des Pakets.** Der Raster umschließt den **Feldlauf**. Eine
+`Herleitungszeile`, eine `Kohaerenzzeile`, ein `Warnbanner` oder ein Knopf am **Ende** des
+Blocks bleibt außerhalb — sie sind Sätze, keine Felder, und fielen in einer Rasterzelle auf
+halbe Breite. Steht so eine Zeile **mitten** im Feldlauf, wird der Raster dort **geteilt**;
+zwei Raster derselben Breite tragen dieselbe Beschriftungsspalte, die Kante bleibt also
+durchgehend. `Einspaltig` bekommt, wer eine Reihenfolge trägt oder ein breites Pfadfeld führt.
+
+**Umgestellt und bewusst nicht umgestellt.**
+
+| Datei | Felder | Raster | Gruppen | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|---|
+| `Dialoge/Kosten/CaseEingabeDialog.razor` | 6 | 3 | – | nein | A — Kosten, Nutzungsdauer und der Startjahr‑Block sind Formularblöcke; der Zuschusshinweis steht hinter dem Raster |
+| `Dialoge/Kosten/VorlagenPositionDialog.razor` | 5 | 1 | – | nein | A — ein Feldlauf, ein Raster |
+| `Dialoge/Kosten/VorlagenUebernahmeDialog.razor` | 5 | 1 | – | **ja** | A — der Block trägt eine **Reihenfolge**: Ziel, dann Quelle, dann die Quelle im Einzelnen. Nebeneinander gestellt liest sie sich nicht mehr als Weg |
+| `Dialoge/Wirtschaftlichkeit/BhkwWirtschaftlichkeitDialog.razor` | 29 | 4 | – | nein | **B, geteilt.** Die vier Parameterblöcke (Anlagenangaben 1b, KWK‑Zuschlag, Energiesteuer, Stromsteuer) sind Formularblöcke → Raster. Das **Anlagenraster** der Gruppe 1 bleibt ein Datenraster (Felder in Tabellenzellen); Kohärenzprüfung, Hilfsstrom und Vorschau tragen **kein** Feld |
+| `Dialoge/Kosten/VorlagenZeile.razor` | 4 | – | – | – | **B, bleibt.** Eine **Bearbeitungszeile in einer Tabelle** (`epos-zr-zeile`, sieben `epos-zr-zelle`): Ihre Felder gehören in Tabellenspalten, nicht in einen Formularblock — der Raster darf dort nicht hinein |
+
+Der Vorlagenübernahme‑Dialog ist die Stelle, an der `Einspaltig` seinen Namen verdient: Er
+steht **nicht** für „wie vorher" — die Beschriftung bleibt neben dem Feld —, sondern dafür,
+dass eine Kette von Wahlen eine Kette bleibt.
+
+**Nachweis.** `EPOS.UI.Tests` **2 562** grün (2 546 + 16 neue Fälle des Pakets), unter `de-DE`
+**und** `LANG=en_US.UTF-8`; `Werkzeuge/Formularkarte` **122** grün. `FormularrasterTests`,
+`StilblattTests`, `ParametersatzTests`, `KatalograhmenTests` und `KatalogdialogTests`
+unverändert grün — das Stilblatt ist nicht angefasst worden, die Klammerbilanz also
+unberührt.

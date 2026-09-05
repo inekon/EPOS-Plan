@@ -30,17 +30,24 @@
 
     <Herleitungszeile Text="@InfoText" />
 
-    <Dateiwahl Bezeichnung="@LabelDatei" KnopfText="@WaehlenText" Filter="@Dateifilter"
-               Pfad="@_pfad" Waehlen="@Waehlen" PfadChanged="BeiDatei" Aktiv="@(!_laeuft)" />
+    @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld.
+       EINSPALTIG, weil das Pfadfeld der Dateiwahl und das mehrzeilige Protokoll
+       die ganze Breite brauchen. *@
+    <Formularraster Einspaltig="true">
+        <KindInhalt>
+            <Dateiwahl Bezeichnung="@LabelDatei" KnopfText="@WaehlenText" Filter="@Dateifilter"
+                       Pfad="@_pfad" Waehlen="@Waehlen" PfadChanged="BeiDatei" Aktiv="@(!_laeuft)" />
 
-    <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
-              WertChanged="@(w => _bezeichner = w)" />
+            <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+                      WertChanged="@(w => _bezeichner = w)" />
 
-    <Schalter Bezeichnung="@LabelStamm" Wert="@_stamm" Aktiv="@(!_laeuft)"
-              WertChanged="@(w => _stamm = w)" />
+            <Schalter Bezeichnung="@LabelStamm" Wert="@_stamm" Aktiv="@(!_laeuft)"
+                      WertChanged="@(w => _stamm = w)" />
 
-    <Textfeld Bezeichnung="@LabelProtokoll" Wert="@_protokoll"
-              Mehrzeilig="true" Zeilen="@ProtokollZeilen" NurLesen="true" Festbreite="true" />
+            <Textfeld Bezeichnung="@LabelProtokoll" Wert="@_protokoll"
+                      Mehrzeilig="true" Zeilen="@ProtokollZeilen" NurLesen="true" Festbreite="true" />
+        </KindInhalt>
+    </Formularraster>
 
     @if (_statusFehler)
     {

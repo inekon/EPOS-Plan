@@ -268,4 +268,26 @@ public class VorlagenUebernahmeDialogTests : BunitContext
 
         Assert.Equal(new[] { "Form_VorlagenUebernahme.btn_Help" }, hilfe.Geoeffnet);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Der Feldlauf steht im
+    /// <c>Formularraster</c>, und zwar EINSPALTIG: Der Block trägt eine
+    /// Reihenfolge — Ziel, dann Quelle, dann die Quelle im Einzelnen —, und
+    /// nebeneinander gestellt liest sie sich nicht mehr als Weg.
+    /// </summary>
+    [Fact]
+    public void Der_Feldlauf_steht_im_einspaltigen_Formularraster()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindAll(".epos-formularraster"));
+        Assert.Single(cut.FindAll(".epos-formularraster.epos-formularraster--einspaltig"));
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld").Count >= 4);
+    }
 }

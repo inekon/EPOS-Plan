@@ -551,4 +551,29 @@ public class GesetzeskatalogDialogTests : BunitContext
         Assert.Equal(0, angelegt);
         Assert.Empty(cut.FindComponents<GesetzeskatalogZeileDialog>());
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Der Zeilendialog steht im
+    /// <c>Formularraster</c> — Beschriftung neben dem Feld, Jahr und Wert kurz.
+    /// Der Raster ist GETEILT, weil die Herleitungszeile mitten im Feldlauf
+    /// steht: Sie ist ein Satz und fiele in einer Rasterzelle auf halbe Breite.
+    /// </summary>
+    [Fact]
+    public void Der_Zeilendialog_steht_im_Formularraster()
+    {
+        var cut = Aufbauen(aktuellesJahr: 2027);
+        cut.FindAll("div.epos-leiste button")[0].Click();       // Neu
+
+        var zeile = cut.FindComponent<GesetzeskatalogZeileDialog>();
+
+        Assert.Equal(2, zeile.FindAll(".epos-formularraster").Count);
+        Assert.True(zeile.FindAll(".epos-formularraster .epos-feld").Count >= 6);
+        Assert.True(zeile.FindAll(".epos-formularraster .epos-feld--kurz").Count >= 2);
+    }
 }

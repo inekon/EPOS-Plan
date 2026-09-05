@@ -55,30 +55,42 @@
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
     }
 
-    @* Schluessel und Klasse: beim Aendern gesperrt, beim Anlegen frei. *@
-    <Textfeld Bezeichnung="@LabelSchluessel" Wert="@_schluessel" WertChanged="BeiSchluessel"
-              Hoechstlaenge="60" NurLesen="@(!IstNeu)" />
+    @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld,
+       Zahlenfelder kurz. Der Raster ist GETEILT, weil die Herleitungszeile mitten
+       im Feldlauf steht - sie ist ein Satz und fiele in einer Rasterzelle auf
+       halbe Breite; beide Raster tragen dieselbe Beschriftungsspalte. *@
+    <Formularraster>
+        <KindInhalt>
+            @* Schluessel und Klasse: beim Aendern gesperrt, beim Anlegen frei. *@
+            <Textfeld Bezeichnung="@LabelSchluessel" Wert="@_schluessel" WertChanged="BeiSchluessel"
+                      Hoechstlaenge="60" NurLesen="@(!IstNeu)" />
 
-    <Auswahlfeld Bezeichnung="@LabelKlasse" Eintraege="@KlassenEintraege"
-                 Auswahl="@_klasseIndex" AuswahlChanged="BeiKlasse" Aktiv="@IstNeu" />
+            <Auswahlfeld Bezeichnung="@LabelKlasse" Eintraege="@KlassenEintraege"
+                         Auswahl="@_klasseIndex" AuswahlChanged="BeiKlasse" Aktiv="@IstNeu" />
 
-    <Ganzzahlfeld Bezeichnung="@LabelJahr" Wert="@_jahr" WertChanged="BeiJahr"
-                  Min="@GesetzKatalog.JAHR_MIN" Max="@GesetzKatalog.JAHR_MAX"
-                  Feldname="@LabelJahr" FehlerZustand="BeiFehler" />
+            <Ganzzahlfeld Bezeichnung="@LabelJahr" Wert="@_jahr" WertChanged="BeiJahr"
+                          Min="@GesetzKatalog.JAHR_MIN" Max="@GesetzKatalog.JAHR_MAX"
+                          Feldname="@LabelJahr" FehlerZustand="BeiFehler" />
 
-    <Zahlenfeld Bezeichnung="@LabelWert" Wert="@_wert" WertChanged="BeiWert"
-                Feldname="@LabelWert" FehlerZustand="BeiFehler" />
+            <Zahlenfeld Bezeichnung="@LabelWert" Wert="@_wert" WertChanged="BeiWert"
+                        Feldname="@LabelWert" FehlerZustand="BeiFehler" />
+        </KindInhalt>
+    </Formularraster>
 
     <Herleitungszeile Text="@HinweisWertLeer" />
 
-    <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@EinheitEintraege"
-                 Auswahl="@_einheitIndex" AuswahlChanged="BeiEinheit" />
+    <Formularraster>
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@EinheitEintraege"
+                         Auswahl="@_einheitIndex" AuswahlChanged="BeiEinheit" />
 
-    <Auswahlfeld Bezeichnung="@LabelStatus" Eintraege="@StatusEintraege"
-                 Auswahl="@_statusIndex" AuswahlChanged="BeiStatus" />
+            <Auswahlfeld Bezeichnung="@LabelStatus" Eintraege="@StatusEintraege"
+                         Auswahl="@_statusIndex" AuswahlChanged="BeiStatus" />
 
-    <Textfeld Bezeichnung="@LabelQuelle" Wert="@_quelle" WertChanged="@(t => _quelle = t)"
-              Hoechstlaenge="120" />
+            <Textfeld Bezeichnung="@LabelQuelle" Wert="@_quelle" WertChanged="@(t => _quelle = t)"
+                      Hoechstlaenge="120" />
+        </KindInhalt>
+    </Formularraster>
 
     <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
                      OkErlaubt="@(!_fehlerhaft)" Ergebnis="BeiLeiste" />

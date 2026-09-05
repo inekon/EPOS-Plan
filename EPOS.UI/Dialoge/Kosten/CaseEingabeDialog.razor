@@ -46,31 +46,49 @@
 
     <Gruppenkopf Titel="@LabelKosten">
         <KindInhalt>
-            <Zahlenfeld Bezeichnung="@LabelBestKosten" Einheit="@EinheitKosten"
-                        Wert="@_best" Min="@MinKosten" Max="@MaxKosten"
-                        WertChanged="BeiBest" />
-            <Zahlenfeld Bezeichnung="@LabelWorstKosten" Einheit="@EinheitKosten"
-                        Wert="@_worst" Min="@MinKosten" Max="@MaxKosten"
-                        WertChanged="BeiWorst" />
+            @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem
+               Feld, Zahlenfelder kurz mit der Einheit dahinter. *@
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@LabelBestKosten" Einheit="@EinheitKosten"
+                                Wert="@_best" Min="@MinKosten" Max="@MaxKosten"
+                                WertChanged="BeiBest" />
+                    <Zahlenfeld Bezeichnung="@LabelWorstKosten" Einheit="@EinheitKosten"
+                                Wert="@_worst" Min="@MinKosten" Max="@MaxKosten"
+                                WertChanged="BeiWorst" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     <Gruppenkopf Titel="@LabelNutzungsdauer">
         <KindInhalt>
-            <Zahlenfeld Bezeichnung="@LabelBestNutzung" Wert="@_bestNutzung"
-                        Min="0" Max="99999" WertChanged="@(w => _bestNutzung = w ?? 0)" />
-            <Zahlenfeld Bezeichnung="@LabelWorstNutzung" Wert="@_worstNutzung"
-                        Min="0" Max="99999" WertChanged="@(w => _worstNutzung = w ?? 0)" />
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@LabelBestNutzung" Wert="@_bestNutzung"
+                                Min="0" Max="99999" WertChanged="@(w => _bestNutzung = w ?? 0)" />
+                    <Zahlenfeld Bezeichnung="@LabelWorstNutzung" Wert="@_worstNutzung"
+                                Min="0" Max="99999" WertChanged="@(w => _worstNutzung = w ?? 0)" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
-    <Ganzzahlfeld Bezeichnung="@LabelStartJahr" Wert="@_startJahr"
-                  Min="0" Max="50" WertChanged="@(w => _startJahr = w ?? 0)" />
+    <Formularraster>
+        <KindInhalt>
+            <Ganzzahlfeld Bezeichnung="@LabelStartJahr" Wert="@_startJahr"
+                          Min="0" Max="50" WertChanged="@(w => _startJahr = w ?? 0)" />
+
+            @if (ZuschussMoeglich)
+            {
+                <Schalter Bezeichnung="@LabelZuschuss" Wert="@_istZuschuss"
+                          WertChanged="@(w => _istZuschuss = w)" />
+            }
+        </KindInhalt>
+    </Formularraster>
 
     @if (ZuschussMoeglich)
     {
-        <Schalter Bezeichnung="@LabelZuschuss" Wert="@_istZuschuss"
-                  WertChanged="@(w => _istZuschuss = w)" />
         <Herleitungszeile Text="@HinweisZuschuss" />
     }
 

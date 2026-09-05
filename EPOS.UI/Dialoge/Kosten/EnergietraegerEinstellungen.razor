@@ -44,25 +44,52 @@
     @* =============================================== Preise und Umrechnung *@
     <Gruppenkopf Titel="@TitelPreise">
         <KindInhalt>
-            <div class="epos-feldpaar">
-                <Auswahlfeld Bezeichnung="@LabelPreisbasis" Eintraege="@Stand.Preisbasen"
-                             Auswahl="@Stand.PreisbasisId" AuswahlChanged="BeiPreisbasis" />
-                <Kohaerenzzeile Text="@($"{LabelBasiseinheit} {Stand.Basiseinheit}")" />
-            </div>
+            @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem
+               Feld, Zahlenfelder kurz mit der Einheit dahinter. Die beiden
+               handgebauten Feldpaare entfallen - der Raster stellt zwei Feldpaare
+               je Zeile, sobald die Spalte breit genug ist. *@
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@LabelPreisbasis" Eintraege="@Stand.Preisbasen"
+                                 Auswahl="@Stand.PreisbasisId" AuswahlChanged="BeiPreisbasis" />
+                    <Kohaerenzzeile Text="@($"{LabelBasiseinheit} {Stand.Basiseinheit}")" />
 
-            <Zahlenfeld Bezeichnung="@LabelArbeitspreis" Einheit="@Stand.EinheitArbeitspreis"
-                        Wert="@Stand.Arbeitspreis"
-                        WertChanged="@(w => Feld(() => Stand.Arbeitspreis = w ?? Stand.Arbeitspreis))" />
+                    <Zahlenfeld Bezeichnung="@LabelArbeitspreis" Einheit="@Stand.EinheitArbeitspreis"
+                                Wert="@Stand.Arbeitspreis"
+                                WertChanged="@(w => Feld(() => Stand.Arbeitspreis = w ?? Stand.Arbeitspreis))" />
+
+                    @if (Stand.MitLeistungspreis)
+                    {
+                        <Zahlenfeld Bezeichnung="@LabelLeistungspreis" Einheit="@Stand.EinheitLeistungspreis"
+                                    Wert="@Stand.Leistungspreis"
+                                    WertChanged="@(w => Feld(() => Stand.Leistungspreis = w ?? Stand.Leistungspreis))" />
+                        <Auswahlfeld Eintraege="@LEISTUNGSMODI"
+                                     Auswahl="@(Stand.LeistungsModusMonat ? 1 : 0)"
+                                     AuswahlChanged="BeiLeistungsModus" />
+                    }
+
+                    <Zahlenfeld Bezeichnung="@LabelGrundpreis" Einheit="@Stand.EinheitGrundpreis"
+                                Wert="@Stand.Grundpreis"
+                                WertChanged="@(w => Feld(() => Stand.Grundpreis = w ?? Stand.Grundpreis))" />
+
+                    @if (Stand.MitHeizwert)
+                    {
+                        <Zahlenfeld Bezeichnung="@LabelHeizwert" Einheit="@Stand.EinheitHeizwert"
+                                    Wert="@Stand.Heizwert"
+                                    WertChanged="@(w => Feld(() => Stand.Heizwert = w ?? Stand.Heizwert))" />
+                    }
+                    @if (Stand.MitBrennwert)
+                    {
+                        <Zahlenfeld Bezeichnung="@LabelBrennwert" Einheit="@Stand.EinheitBrennwert"
+                                    Wert="@Stand.Brennwert"
+                                    WertChanged="@(w => Feld(() => Stand.Brennwert = w ?? Stand.Brennwert))" />
+                    }
+                </KindInhalt>
+            </Formularraster>
 
             @if (Stand.MitLeistungspreis)
             {
-                <div class="epos-feldpaar">
-                    <Zahlenfeld Bezeichnung="@LabelLeistungspreis" Einheit="@Stand.EinheitLeistungspreis"
-                                Wert="@Stand.Leistungspreis"
-                                WertChanged="@(w => Feld(() => Stand.Leistungspreis = w ?? Stand.Leistungspreis))" />
-                    <Auswahlfeld Eintraege="@LEISTUNGSMODI"
-                                 Auswahl="@(Stand.LeistungsModusMonat ? 1 : 0)"
-                                 AuswahlChanged="BeiLeistungsModus" />
+                <div class="epos-leiste">
                     <button type="button" class="epos-knopf"
                             @onclick="() => SaisonSaetze.InvokeAsync()">@SaisonText</button>
                 </div>
@@ -70,23 +97,6 @@
                 {
                     <Herleitungszeile Text="@Stand.ReihenStatus" />
                 }
-            }
-
-            <Zahlenfeld Bezeichnung="@LabelGrundpreis" Einheit="@Stand.EinheitGrundpreis"
-                        Wert="@Stand.Grundpreis"
-                        WertChanged="@(w => Feld(() => Stand.Grundpreis = w ?? Stand.Grundpreis))" />
-
-            @if (Stand.MitHeizwert)
-            {
-                <Zahlenfeld Bezeichnung="@LabelHeizwert" Einheit="@Stand.EinheitHeizwert"
-                            Wert="@Stand.Heizwert"
-                            WertChanged="@(w => Feld(() => Stand.Heizwert = w ?? Stand.Heizwert))" />
-            }
-            @if (Stand.MitBrennwert)
-            {
-                <Zahlenfeld Bezeichnung="@LabelBrennwert" Einheit="@Stand.EinheitBrennwert"
-                            Wert="@Stand.Brennwert"
-                            WertChanged="@(w => Feld(() => Stand.Brennwert = w ?? Stand.Brennwert))" />
             }
 
             @if (Stand.MitFormel)
@@ -174,12 +184,16 @@
             @if (!Stand.EmissionenVerfuegbar)
             {
                 <Warnbanner Stufe="WarnStufe.Warnung" Text="@KeinKatalogText" />
-                <Zahlenfeld Bezeichnung="@LabelCo2" Einheit="g/kWh" Wert="@Stand.AltCO2"
-                            WertChanged="@(w => Feld(() => Stand.AltCO2 = w ?? Stand.AltCO2))" />
-                <Zahlenfeld Bezeichnung="@LabelSo2" Einheit="g/kWh" Wert="@Stand.AltSO2"
-                            WertChanged="@(w => Feld(() => Stand.AltSO2 = w ?? Stand.AltSO2))" />
-                <Zahlenfeld Bezeichnung="@LabelNox" Einheit="g/kWh" Wert="@Stand.AltNOx"
-                            WertChanged="@(w => Feld(() => Stand.AltNOx = w ?? Stand.AltNOx))" />
+                <Formularraster>
+                    <KindInhalt>
+                        <Zahlenfeld Bezeichnung="@LabelCo2" Einheit="g/kWh" Wert="@Stand.AltCO2"
+                                    WertChanged="@(w => Feld(() => Stand.AltCO2 = w ?? Stand.AltCO2))" />
+                        <Zahlenfeld Bezeichnung="@LabelSo2" Einheit="g/kWh" Wert="@Stand.AltSO2"
+                                    WertChanged="@(w => Feld(() => Stand.AltSO2 = w ?? Stand.AltSO2))" />
+                        <Zahlenfeld Bezeichnung="@LabelNox" Einheit="g/kWh" Wert="@Stand.AltNOx"
+                                    WertChanged="@(w => Feld(() => Stand.AltNOx = w ?? Stand.AltNOx))" />
+                    </KindInhalt>
+                </Formularraster>
             }
             else
             {
