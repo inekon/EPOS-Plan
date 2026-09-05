@@ -4235,19 +4235,47 @@ body {
 }
 
 /* Die Weiche der Solarthermiekachel (radioButton_KollektorProfil /
-   radioButton_Ganglinie). Sie steht UNTER ihrer Kachel, weil sie nur diese
-   eine betrifft. */
+   radioButton_Ganglinie). Sie betrifft NUR diese eine Kachel.
+
+   SIE STEHT IN DER KARTE, NICHT DARUNTER (Windows-Abnahme 05.09.2026, Befund
+   W16a-B-1): "Optionen Profil und Ganglinie sollte eher im Solarthermie Feld
+   sein." Bis dahin stand die Optionsgruppe als eigener Kasten UNTER der Karte
+   im Kachelraster - zwischen zwei gerahmten Nachbarkacheln sah sie aus wie ein
+   Zusatz zum ganzen Reiter, nicht wie die Weiche DIESER Kachel.
+
+   Warum ueber den Rahmen und nicht ueber das Markup: Eine Kachel IST ein
+   <button> (damit sie Tastatur, Enter und Sprachausgabe von selbst kann), und
+   ein <button> darf keine Auswahlknoepfe enthalten - ein Klick darauf loeste
+   sonst die Kachel aus. Der Rahmen wandert deshalb auf den Wirt, und die
+   Kachel darin wird rahmen- und flaechenlos: Beides zusammen liest sich als
+   EINE Karte, das Klickziel bleibt aber genau der Kachelteil. */
 .epos-startkachel-mit-wahl {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
 }
 
+/* Die Kachel IM Rahmen gibt ihren eigenen ab. Ihre Hoverfarbe behaelt sie -
+   sie ist das Klickziel, die Optionen darunter sind es nicht. */
+.epos-startkachel-mit-wahl > .epos-kachel {
+    background: none;
+    border: 0;
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+    padding-bottom: 8px;
+}
+
+/* Die Optionen sitzen buendig unter dem Kacheltext; die Trennlinie laeuft
+   ueber die Kartenbreite abzueglich des Kartenrandes. */
 .epos-startkachel-wahl {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    padding-left: var(--epos-karte-rand);
+    padding: 2px 0 6px;
+    margin: 0 var(--epos-karte-rand);
+    border-top: 1px solid var(--epos-rahmen-leise);
 }
 
 .epos-startkachel-wahl > label {
