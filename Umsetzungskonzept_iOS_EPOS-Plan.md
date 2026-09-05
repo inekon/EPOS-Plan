@@ -722,7 +722,7 @@ gegen die Referenzbasis gefahren** — die Spalte ganz rechts nennt, was dafür 
 | **iU5** Statics kappen, Dienste | ✔ hier erreicht 03.09. (iZ5a) | `35be81f`..`c477523`; zweiter Umzug `a546af9`..`a9e5c16`, Doku `f95fc34` | Bedienprobe: Bericht, Katalogimport, Lizenzaktivierung, KI-Chat, 12 Gewerke, Sprachumschaltung |
 | **iU6** Datenzugriff plattformfrei | ✔ hier erreicht 03.09. | `22fb7eb`..`300a354` | Erststart-Migration aus `.accdb`, Solar-/Pufferspeicherdialoge, die 36 `RecordSet`-Views |
 | **iU7** Charts und Berichte | ✔ hier erreicht 03.09. | `c6b32eb`..`f84932b`, `6604c05`..`0759b37`, `0af6421` | `Referenzlauf.exe bildvergleich` alt/neu (Vorbedingung für iF23)  Zoom seit 05.09.2026 über den Baustein `Diagramm` (Nachtrag im W11b-Block) |
-| **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK. Anwenderwunsch **iU8‑E‑1** (05.09.2026, `ddf4d00`): Fachdialoge öffnen im Anteil des Arbeitsbereichs (85 % × 90 %, Deckel 92 %; `EPOS.UI/Dienste/Fenstermass.cs`), fünf kleine Masken als `Dialogart.Klein`; Abnahme je 100/125/150 % offen; **iU8‑E‑2** (05.09.2026, `6ab0b9f`): hausweite Formularregel — Baustein `Formularraster`/`Formulargruppe`, Beschriftung neben dem Feld, kurze Zahlenfelder mit Einheit, `auto-fill`-Spalten; acht Dialoge umgestellt, Rest als #91 in drei Paketen |
+| **iU8** `EPOS.UI`, erster Dialog | ✔ **iZ5 hier erreicht** 03.09. | A `8574911`..`8f5a28e`, `45a21dc`, `f5fb05c` · B `4369fdb`..`eafbc1f`, `eff82aa`, `e3d1e5b` · C `479fcf9`..`0af7ca7`, `4aa6b15` | Dialogabnahme (Maus/Finger, de/en, Hochkontrast, 125 %/150 %, Enter/Esc), Setup mit und ohne WebView2, VS-2026-Designer unter dem Razor-SDK. Anwenderwunsch **iU8‑E‑1** (05.09.2026, `ddf4d00`): Fachdialoge öffnen im Anteil des Arbeitsbereichs (85 % × 90 %, Deckel 92 %; `EPOS.UI/Dienste/Fenstermass.cs`), fünf kleine Masken als `Dialogart.Klein`; Abnahme je 100/125/150 % offen; **iU8‑E‑2** (05.09.2026, `6ab0b9f`): hausweite Formularregel — Baustein `Formularraster`/`Formulargruppe`, Beschriftung neben dem Feld, kurze Zahlenfelder mit Einheit, `auto-fill`-Spalten; acht Dialoge umgestellt, Rest als #91 in drei Paketen — Restumstellung #91 in drei Paketen abgeschlossen (P1 Erzeuger W6/W7, P2 Kosten W1–W5, P3 Bedarf/Simulation/Projekt W8–W16a: 41 weitere Dateien, alle `epos-feldpaar` gefallen; offen iU8‑O‑1 `PufferSpProjektDialog`) |
 | **iU9** Masken in Wellen | ✔ **W0 bis W16 umgesetzt, M9 abgeschlossen** 04.09. | `ab3aea8` | **1** Designer-Maske offen (`Form_HelpPopup`, bis iU11; 2 nach W16b, 7 nach W16a, 11 nach W15c, 12 nach W15b, 13 nach W15a, 17 nach W14c, 21 nach W14a, 28 nach W14b, 32 nach W13, 38 nach W12, 43 nach W11b, 49 nach W10b, 50 nach W10a, 55 nach W9, 63 nach W8, 73 nach W7, 81 nach W6, 88 nach W5, 91 nach W4, 98 nach W3, 102 nach W2, 105 nach W0); Stilllegung nach iF29 abgeschlossen, Sprungbrücke steht, `ChartRenderer` um Kostenprofil, Kennlinien und die drei Bedarfsbilder erweitert, seit W5 die erste **Seite** (`BlazorSeite`, Reiter „Berichte & Kosten"), seit W6–W9 **alle elf Kacheln des Startbilds** (sieben Erzeuger, vier Bedarfe) und **zehn der dreizehn Assistentenseiten** als Razor-Komponenten; `WPCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `Ferienzeit`, die Projektlisten der Bedarfsgewerke und das Suchmuster im Kern; seit W10a die sieben Quell-, Senken- und Pufferdialoge der Simulationskonfiguration mit dem Baustein `Bildkarte` und dem zweireihigen `Jahresgang`, seit W10b die **Simulationskonfiguration als Seite** mit Kartenspalten, SVG-Schema (`SchemaModell`/`SchemaLayout` im Kern) und drei Überlagerungsebenen in einer WebView; seit W11a die Ergebnisrechnung der Detailansicht als DTOs im Kern (`SimulationErgebnisCtrl`), der **nebenläufige Simulationslauf** (`SimulationLaufCtrl`, `Do_Simulation` mit Fortschritt und Abbruch), sieben Ergebnisbilder im Renderer (30 Proben) und der Baustein `Fortschritt`; seit W11b die **Ergebnisseite der Simulation** (`SimulationErgebnisSeite`, zehn Blätter, Autarkie, Ganglinien-Navigatoren, Variantenvergleich als Überlagerung) — `Form_Simulation_Detail` mit 7 766 Zeilen ist gelöscht; seit W12 die **AP5-Importkette als ein Kern-Ablauf** (`GanglinienImportAblauf` mit zwölf bitgleichen Proben), `StromganglinieDialog`, `StromganglinieAdminDialog`, `PeakShavingDialog` (nebenläufig) und der gemeinsame `ImportKonflikteDialog`; seit W13 die **Katalog-Importe** — `KatalogImportDialog` mit vier Ausprägungen (`KatalogImportProfil`/`KatalogImportAblauf` im Kern, transaktional), `WaermebedarfAdminDialog`, `PvModulImportDialog` (CEC/PAN), die Mehrfachmarkierung im `Raster` und zwanzig eingefrorene Importproben; die `ImportKonflikteHuelle` und die Sprungbrücke `WaermebedarfExternAdmin` sind gefallen; seit W14b die **Bedarfs-Admin** — `BedarfAdminDialog` mit drei Ausprägungen über `BedarfsArt` (`BedarfsVorschauCtrl` im Kern) und `SolarganglinieAdminDialog` (Sprungziel → Überlagerung), `ToolsClass` gefallen; dazu der Anwenderentscheid **Energieeinheit MWh/kWh wählbar** (W8‑O‑5/W9‑O‑3); seit W14a die **Erzeuger-Admin** — `KatalogBrowserDialog` mit vier Ausprägungen (`KatalogBrowserProfil`), `PufferSpKatalogDialog` (der vierte Katalogeditor), `ModulKatalogDialog` (PV, Stromspeicher), die Heizkessel-Brennstoffkette im Kern berichtigt, die letzten fünf ablösbaren Sprungziele → Überlagerungen, `SpeichernLeiste`/`KiAufrufKnopf`/`PufferSpFilter` gefallen; **der Erreichbarkeitsbefund steht auf 0 nein / 0 verwaist / 0 unklar**; seit W14c die **Verwaltung** — `GesetzeskatalogDialog` (Zeilendialog als Überlagerung), `KatalogDublettenDialog` mit dem Baustein `Baumansicht`, `EinstellungenDialog` (`EinstellungenCtrl` im Kern), `KlimadatenDialog` (`KlimaregionStammCtrl` und `KlimaImportAblauf` im Kern, zwei Klimabilder im Renderer → 32 Proben); die **letzten zwei ablösbaren Sprungziele** → Überlagerungen, `ChartManager` (die MS-Chart-Bindung) und `RoundedPanel` gefallen, **WFO1000 6 → 0**, Warnungen der Mappe 12 → 6; **Anwenderentscheide W14c E‑3/E‑5/E‑6/E‑7 vom 04.09.2026 umgesetzt** (`a0e6707`: Komponente wieder `KlimadatenDialog`, feste Pfade ohne Ordnerwähler nur lesend, **Altbereinigung der Klimadaten-Waisen als Schema-Schritt 62** — `ZIEL_VERSION` 62, neu `FREEZE_VERSION` 61 —, keine Ortsliste in der Auslieferung); seit W15a das **Projekt** — Baustein `ProjektListe` (vier Projektlisten des Bestands werden eine), `ProjektWahlDialog` (Öffnen und Löschen), `ProjektKopieDialog`, `ProjektTransferDialog` (`ProjektExportImportCtrl` im Kern, `SchemaStand.Zielversion`; **der Projektimport war seit der SQLite-Umstellung kaputt, B55 — von den Proben gefunden und behoben**), `ProjektKopfSeite` (die erste Assistentenseite als Razor, über `BlazorAssistentSeite`); `ProjektAuswahl` (uc) bleibt bis W16; seit W15b **Hilfe und KI** — `KiChatService` (1 751 Z.) im Kern hinter der Naht `IKiAusfuehrung`, die Bausteine `Gespraechsverlauf` (Bausteinlücke 17) und `KiKnopf`, `Warnbanner.Verfaellt`, `TextAnzeige`, `KiHinweisDialog`, `KiEinstellungenDialog`, `KiChatDialog` in vier Kindern (kein Streaming, kein Markdown, Schlüssel nie durchgereicht, Riegel vor dem `Modellkanal`); `Form_HelpPopup` (E‑2, fällt in iU11) und `Form_Hinweis` (E‑1b, fällt mit W16) bleiben bewusst; seit W15c **Lizenz und Erststart** — `LizenzVerwaltungDialog`, `ErststartDialog` (besitzerlose Hülle mit vier Zusätzen an `BlazorDialogForm`) und `LizenzDialog` (drei Reiterblätter, Zustimmungsmodus, Browserdruck), im Kern `LizenzManager.Bewerten`, `LizenzCtrl`, `LizenzTextCtrl`, `ZustimmungCtrl`; **die ersten Lizenztests überhaupt** (+79 Kern-, +67 bunit-Fälle); **E‑8 Weg 2: `Program.Main` prüft die WebView2-Laufzeit und endet mit Meldung, wenn sie fehlt**; iF30 (Lesemodus-Durchsetzung) nach W16; seit W16a **der Assistent** — `KomponentenBestandCtrl` im Kern mit **Nachweis N6** (Bitmaske bitgleich für alle 13 Referenzprojekte), `AssistentCtrl` und `WizardCtrl` im Kern, Baustein `Assistent`, Seite `AssistentSeite` (13 Seiten in Bestandsreihenfolge), `KomponentenauswahlDialog`, `Kachel.Zustand`; `WizardParent`, `Wizard_Komponenten`, `Wizard_Stromlastgang`, `ProjektAuswahl` (uc) und `BlazorAssistentSeite` gefallen (26 Dateien); `Views/Wizard` und `Views/Projekt` führen keine Designer-Maske mehr; seit W16b **die Startseite** — Seite `Startseite` (`EPOS.UI/Seiten/Start/`, Kopfband, sechs Reiter mit 21 Kacheln in fünf Reiterkomponenten, Reiter 6 = `BerichteKostenSeite`), im Kern `ProjektKontextCtrl` (**Nachweis N7**), `StartseiteCtrl` und `BedarfsZustand`, `StartseiteHuelle` im `MDIMainForm_Load`, `Dienste.Projekt` über den Kern; **E‑5** (Simulationskonfiguration als freie Ansicht, Ergebnis als `Ueberlagerung` — **R‑W10b‑1 und R‑W11‑1 eingelöst**), **E‑7** (`FormMain`, `Form_StromTest`, `StromTestClass` und zwölf `*KontextMenuCtrl` ohne Nachfolge gefallen), **E‑9** (`Form_Start`-Designer als Prüfmuster eingefroren); `Form_Start` (+`.bak`), `AktionsKarte`, `Form_Hinweis`, `FormStartProjektKontext` gefallen — **34 Dateien, 13 019 gegen 5 549 Zeilen**; `Program.startfrm` weg; `WindowsFormsApplication1` führt noch `MDIMainForm` und `Form_HelpPopup` und **null Inline-SQL** (B34); seit W16c **das Hauptfenster** — Baustein `Menueband` mit der aus dem Designer erzeugten `Menuetabelle` (54 Punkte, **Nachweis N4**), Seite `Hauptfenster` hinter `HauptfensterHuelle`, `Seitenschluessel` als die eine Schlüsseltabelle beider Plattformen (K7), `AppWurzel` als gemeinsame Wurzel (E‑1); `MDIMainForm` auf die Hülle zurückgebaut (873 → 129 Zeilen, Designer und drei `.resx` als Prüfmuster, E‑9) und in `Hauptfensterrahmen` umbenannt (E‑10), **Per Monitor V2 statt `DpiInsel` (E‑6, iF21)**, Zeugen und Schwellen der Formularkarte auf N1/N2; **die Mischphase (M9) ist zu Ende** — `WindowsFormsApplication1` führt eine Designer-Maske (`Form_HelpPopup`, bis iU11), null Inline-SQL und die `Sprungbruecke` mit einem Zweig (iF22) |
 | **iU10** iOS-Hülle `EPOS.iOS` | ✔ hier erreicht 03.09., seither je Welle im CI geprüft | `ios.yml`-Läufe 15–22 grün (außer 18), zuletzt 33898599945 auf `c8fbd77` | Gerätebefunde (iU13), siehe `Umsetzung_iU10_Nachweise.md` |
 | **iU11**–**iU13** | ⏳ nicht begonnen | — | — |
@@ -1726,6 +1726,13 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Stamm und tragen darunter leise „Variante von ‹Stamm›" — eine Artspalte hat in 280 px keinen Platz. `AssistentSeite`
 > reicht dafür zwei Texte durch, `AssistentHuelle` füllt sie aus `PRJ_LIST_ART_VARIANTE`/`PRJ_LIST_VARIANTE_VON`.
 > Herleitung im W15a-Protokoll § 14, hier § 13, Abnahmepunkt A‑W16a‑E‑1.
+>
+> **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `ProjektKopfSeite`: die sechs Felder zweispaltig im Raster
+> (`epos-projektkopf-raster` gefallen), Pflichtsternchen, Legende und der Hinweis bei leerem/vergebenem Namen aus der
+> Rechner-2-Linie (Merge 5) bleiben zwischen Feldern und Beschreibung — deshalb steht die Beschreibung als breites Feld
+> unter dem Raster. Paket P3 gesamt: 14 Dateien, 168 Felder, 43 Raster, kein `Formulargruppe` nötig (jede Gruppe des
+> Vorbilds ist schon ein `Gruppenkopf`), 15 `epos-feldpaar` und drei Zweispalter samt Stilblattregeln gefallen, eine
+> Zeile CSS neu (Herleitungszeile spannt über alle Spalten); UI 2 595 (+14), Formularkarte 122.
 
 > **Statusblock iU9 — Welle 15c umgesetzt (04.09.2026, Basis `f71853b` nach W15b, zusammengeführt mit `5a73fd6` nach den W15b-Entscheiden)**
 >
@@ -1864,6 +1871,32 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > (Punkt 16):** die DPI-Insel greift nur im modalen Lauf, der nicht-modale Chat ist ab 125 % bitmapskaliert (iF21, W16c).
 > Der achtzehnte iOS-Lauf (33876284942) auf diesem Stand war **rot** — CS0103 im iOS-Hilfedienst aus W15b.0g, den nur der
 > macOS-Läufer übersetzt; behoben in `f0e23a4`, der neunzehnte Lauf (33878903371) darauf ist grün.
+>
+> **Windows-Abnahme 05.09.2026 am Hilfe-Assistenten — Befunde W15b‑B‑1, W15b‑B‑2 und Wünsche W15b‑E‑3, W15b‑E‑4
+> (Bildschirmfotos „Hilfe-Assistent", „Aktionen von Hand ausführen", HTTP 401), umgesetzt in `28082e8`:** **W15b‑B‑1** —
+> „Einstellungen…" öffnete ein leeres Fenster, dann stürzte die Anwendung ab: `KiChatHuelle.Gaben.cs:208` gab
+> `Task.FromResult(KiEinstellungenHuelle.Oeffnen(_fenster))` heraus, ein zweites modales `BlazorDialogForm` mit
+> einer zweiten WebView2 synchron im `WebMessageReceived`-Rückruf der ersten — dieselbe Lage wie W16b‑B‑1 und
+> W13‑B‑1 (Risiko R2); dieselbe Zeile für den Rechtshinweis, dritte Fundstelle `KiHinweisHuelle.Einhaengen`. Die
+> Einstellungen und der Hinweis erscheinen seither als **Überlagerung** derselben WebView (Entscheid E‑5; beide Hüllen
+> hatten ihren Parametersatz seit W15b.3/.4 dafür getrennt), die Delegatenwege laufen über `Blazornachlauf`; drei
+> gleichartige Fundstellen in Bericht (`BerichtSeiteGaben.cs`), Einstellungen (`EinstellungenHuelle.cs`) und
+> Ergebnisseite (`SimulationErgebnisHuelle.Wege.cs`) sind mitbehoben, und die neue Wache `HuellenwegTests` hält
+> alle 63 Hüllendateien darauf, dass kein modales Systemfenster synchron aus einem Blazor-Ereignis kommt.
+> **W15b‑B‑2** — die Frage endete mit dem rohen Anbietertext „HTTP 401 … Expected OAuth 2 access token": Neu
+> `KiKern/KiDienstfehler.cs` mit `KiDienstAusnahme` — Anwendersatz in den Verlauf, Rohtext ins Protokoll
+> („Protokoll anzeigen"); `SendenAsync` weist eine Anfrage **ohne** Schlüssel ab, bevor sie hinausgeht, und wertet den
+> Rückgabewert von `TryAddWithoutValidation` aus. Der **doppelte Block** im Verlauf kam aus der Eingabezeile:
+> `@onkeydown:preventDefault` wird beim Zeichnen ausgewertet, der Browser trug den Zeilenumbruch nach, `oninput`
+> schrieb die Frage ins geleerte Feld zurück. Die Schlüsselablage selbst (`%APPDATA%\wp-plan\ki-schluessel.dat`,
+> DPAPI) ist unverändert; steht künftig „Kein API-Schlüssel hinterlegt", ist der Speicher leer, bei „(401)" nimmt
+> der Dienst einen vorhandenen Schlüssel nicht an. **W15b‑E‑3** — `.epos-kichat` hing an einer offenen Höhenkette,
+> der Gesprächsverlauf war nicht zu sehen; er füllt jetzt die Höhe, die Begrüßung steht mit einem Satz und einer
+> Klappe im Kopf, der Zähler genau einmal, die drei Knöpfe in einer Reihe (`KiChatAnmutungTests`). **W15b‑E‑4** —
+> `KiAktion` führt Titel und Beispiel (zweisprachig, alle 24 Aktionen); die Werkzeugliste zeigt Klartext statt
+> Bezeichner, gruppiert nach lesend/ändernd, mit Suchfeld, Kennzeichen, Beispiel und beschrifteten Pflichtfeldern,
+> der Andockpunkt ist nur noch Kurztext, und das eingebaute Hilfewissen trägt den Abschnitt „Aktionen des
+> Assistenten". UI 2 571 (+25), Kern 1 165 (+76), KiKern 469 (+19). Protokoll W15b, 21 Abnahmepunkte.
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >
@@ -1942,6 +1975,9 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > behoben: Die Umbruchregel stand im Blatt und **wirkte nicht** — `.epos-raster td` (0,1,1) schlug
 > `.epos-projektliste-name` (0,1,0); sie trägt jetzt den Tabellenselektor davor. Elf neue bunit-Fälle, ein Kern-Fall
 > gegen `Tab_Variante`; Protokoll § 14, Abnahmepunkt A‑W15a‑E‑1.
+>
+> **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `ProjektTransferDialog` (drei Raster, einspaltig) und `ProjektKopieDialog` (die vier Felder
+> rechts neben der Liste, Beschriftung daneben).
 
 > **Statusblock iU9 — Welle 14c umgesetzt (04.09.2026, Basis `4e77221` nach W14a/W14b, zusammengeführt mit `809fe41`)**
 >
@@ -2182,6 +2218,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `IMP_KAT_PROT_LESEFEHLER`-Meldung. Auf iOS war derselbe Befund ein anderer Fehler: `IosDateiDienst.AufDemHauptfaden`
 > lieferte vom Hauptfaden `default`, der Wähler ging nie auf — mit den `…Async`-Fassungen behoben. Protokoll § 13,
 > Abnahmepunkte B1–B7 (Wähler geht auf, kaputte Datei → Warnbanner, Fehlerkasten mit rotem Rand statt Absturz).
+>
+> **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `PvModulImportDialog` (Klasse B, 21 von 28 Feldern in drei Rastern — die drei
+> Detailreiter sind Formularblöcke, die zwei Filterleisten `epos-pvimport-filter` über dem Modulgitter nicht;
+> `epos-pvimport-details` samt Regel gefallen). Nachtrag im W13-Protokoll, obwohl die Datei in der P3-Pakettabelle
+> stand.
 
 > **Statusblock iU9 — Welle 12 umgesetzt (04.09.2026, Basis `73a4338` nach W11b, zusammengeführt mit `fe22915`)**
 >
@@ -2271,6 +2312,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Nebenbefund behoben: `ReadAll` warf `ReadOnly` weg — die Verwaltungshülle fragte je Zeile nach (N+1), der
 > Projektdialog konnte einen Auslieferungssatz nicht erkennen. Kern 1 086 (+10 `StromganglinieKatalogTests`), UI 2 509
 > (+16), SQL-Prüfer 1 204 / 0. Protokoll W12, zehn Abnahmepunkte.
+>
+> **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `PeakShavingDialog` (19 Felder, vier Raster, sieben `epos-feldpaar` gefallen; „minimale
+> Schwelle ermitteln" steht neben der Zielschwelle, Ergebnisreiter bleibt Tabelle) und
+> `GanglinieImportOptionenDialog` (Klasse B: die acht Formatlisten im Raster, das Vorschaugitter nicht).
+> `StromganglinieDialog`/`StromganglinieAdminDialog` unangetastet (W12‑E‑1/E‑2).
 
 > **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
 >
@@ -2332,6 +2378,9 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Titel. Abnahmepunkte 18–24; Punkt 22 (iPad-Pinch, Seite zoomt nicht mit) bleibt bis zur Geräteprüfung offen.
 > Bewusste Vereinfachungen: die Null bleibt unten, B1 nimmt nur den Zeitausschnitt, „1:1" verwirft Bild- und
 > Datenzoom, Doppelklick nur den Bildzoom.
+>
+> **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `ParameterReiter` der Simulationsseite (Klasse B, 23 Felder, neun Raster, alle einspaltig —
+> unter jeder Zahl steht ihre Entsprechung; `Daten.Unterblaetter` und Grafikreiter bleiben).
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
@@ -2413,6 +2462,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Foto des Bestands, synchrone Auswahl in beiden Ansichten, drei Überlagerungsebenen mit Esc je
 > Ebene, Rücksprung aus `Form_Simulation_Detail`, de/en. Der elfte iOS-Lauf (33826084944) auf
 > diesem Stand ist grün.
+>
+> **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `QuelleErdreichDialog` („Standort" einspaltig, jeder Hinweis unter seinem Feld; Vorschau
+> und Auslegungsprüfung bleiben am Diagramm), `QuellprofilDialog` (die 24 Stundenwerte zu zweit je Zeile; Werteseite
+> bleibt Tabelle), `WaermesenkeDialog` (Klasse B: beide Blöcke einspaltig, weil jeder Schalter das Feld unter sich
+> freigibt; die Senkenliste bleibt Zeilenraster).
 
 > **Statusblock iU9 — Welle 10a umgesetzt (03.09.2026, Basis `04fc474` nach W9, zusammengeführt mit `b6a72b0`)**
 >
@@ -2576,6 +2630,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > des Nullwerts im Ergebnisdialog; die Namensauflösung der Projektkopien arbeitet korrekt — der Profilbedarf ging
 > erst danach verloren, in der Abschrift der Vorschaurechnung in `BedarfsProfileHuelle`, die mit W8‑B‑3 ersatzlos
 > entfällt (`BedarfsVorschauCtrl.ProjektVorschau` im Kern).
+>
+> **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `GebaeudeKatalogDialog` (41 Felder, neun Raster in beiden Reitern; „Wohnfläche" kurz mit
+> „m²", die Ferientage als Tag | Monat nebeneinander — acht `epos-feldpaar` gefallen) und `GebaeudeWohnflaecheDialog`
+> (zwei Raster).
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
@@ -2663,6 +2721,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > fehlten zwei schließende Klammern aus der Konfliktauflösung; dabei fiel eine seit `91bac96` verwaiste
 > Konfliktmarke vor dem Schema-Block auf, die als ungültiger Selektor die erste Regel des Blocks verschluckte —
 > beide behoben, Klammerbilanz 739/739.
+>
+> **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `BedarfsProfileDialog` (Block „Jahresverbrauch": zwei Felder in einer Zeile,
+> „Übernehmen" darunter) und `TypStammDialog` (die zwölf Monatswerte in zwei Spalten zu sechs statt zwölf voller
+> Zeilen) hängen im Raster; `TypProfilDialog` und `BedarfErgebnisDialog` bleiben, wie sie heute abgenommen wurden.
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >
@@ -2721,6 +2783,13 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `ddf4d00`:** Die sechs Fenster der Welle öffnen im Anteil des Arbeitsbereichs (Hüllenregel iU8‑E‑1, 85 % × 90 %,
 > gedeckelt auf 92 %); `SolarganglinieAdminDialog` stellt Liste und Eingabe nebeneinander (Baustein `Katalograhmen`).
 > Die drei Katalogeditoren bleiben Überlagerung ohne volle Höhe, `WaermepumpenKatalogDialog` bleibt unverändert.
+>
+> **Formularraster, Paket P1 (iU8‑E‑2, 05.09.2026, `6b2a23f`; Anwenderbeispiel „Verwaltung BHKW"):** Fünf der sechs Masken sind umgestellt (`KennlinienEditorDialog` „Neue Stützstelle",
+> `WaermepumpeStammDialog` zehn Felder, `WaermepumpeAnlageDialog` mit Kenndaten/Auslegung/Spitzenlast,
+> `SolarkollektorKatalogDialog` 14, `SolarkollektorenDialog` 8); die Wärmepumpen-Anlage nutzt als erster Dialog des
+> Hauses den benannten Rückweg `Einspaltig` — ihr Block „Spitzenlast" ist eine Regel, die sich von oben nach unten
+> aufblättert. Der `WaermepumpenKatalogDialog` bleibt bewusst außen vor: seine zwölf Felder filtern eine Liste, sie
+> beschreiben kein Gerät. `PufferSpProjektDialog` (W10a) ist in keinem Paket umgestellt — offen als iU8‑O‑1.
 
 > **Statusblock iU9 — Welle 6 umgesetzt (03.09.2026, Basis `740c73e`, zusammengeführt mit W5 `ddaea70` und iF22–iF28 `f7fefdf`)**
 >
@@ -2795,6 +2864,46 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Knöpfen (beide Sprachen, `AUSWAHL_BTN_*`) und der Umbruch untereinander unter 900 px (Token
 > `--epos-zweispalten-umbruch`, Glyphen ◀▶/▲▼ je Breite). Protokollabschnitt „Anwenderentscheid #76", Abnahmepunkte
 > A‑#76 (breit nebeneinander, schmal untereinander, Listen begrenzt, Knöpfe beschriftet und gesperrt ohne Markierung).
+>
+> **Formularraster, Paket P1 (iU8‑E‑2, 05.09.2026, `6b2a23f`; Anwenderbeispiel „Verwaltung BHKW"):** Sechs Masken der Welle hängen ihren Parameterblock ins `Formularraster`
+> (`HeizkesselKatalogDialog` 21 Felder in vier Gruppen, `BhkwKatalogDialog` 26, `BhkwDialog`, `PhotovoltaikDialog` —
+> der gestrichelte Anlagenrahmen bleibt, der Raster steht darin —, `StromspeicherDialog`, `PufferspeicherDialog`,
+> dazu `HeizkesselDialog` aus #90 nachgezogen); die handgebauten `epos-feldpaar`-Wirte sind in `Dialoge/Erzeuger/`
+> restlos verschwunden. Der Detailblock des BHKW-Projektdialogs — das Beispiel des Anwenders — steht jetzt in drei
+> bis fünf Zeilen statt sieben: Name und Hersteller in der Feldspalte, thermische und elektrische Leistung kurz
+> nebeneinander, Beschreibung über beide Spalten, darunter Brennstoff und die drei kurzen Felder Grenzleistung,
+> Vorlauf, Rücklauf; die Summenzeile unter der linken Liste ist einspaltig kompakt. Eine `Herleitungszeile` im Raster
+> spannt seither über alle Spalten, sodass die Kostengruppe des BHKW-Katalogs ein Raster bleibt. Neu hausweit:
+> `Textfeld.Kurz` und `ErzeugerDetail.IstZahl` — welches nur lesbare Anzeigefeld kurz ist, entscheidet sich an einer
+> Stelle am Wert, nicht an der Beschriftung. Nicht umgestellt: die Spalte „Eigenschaften" der BHKW-Datenbankliste
+> (vier Zeilen je Zelle) kommt aus `BhkwHuelle.KatalogZeilen` in der Windows-Hülle — als offener Punkt im W6-Protokoll.
+>
+> **Zusammenführung Rechner 2 am 05.09.2026 (`12aa3a5`):** Auf dem zweiten Rechner des Anwenders lief seit dem
+> 02.09.2026 eine eigene Entwicklungslinie, sechsmal mit `origin/ios_migration` zusammengeführt und jedes Mal mit
+> Referenzlauf-Nachweis (M1–M5, 355/355 byte-gleich zur jeweiligen Vorstufe); sie kam als Zweig
+> `pv-ertragsmodell-rechner2` (28 Commits auf Basis `ed71d73`, Tip `d331823`) nach GitHub und ist hier mit **einem**
+> Konflikt (`epos-ui.css`, beide Seiten hatten Blöcke ans Dateiende gehängt) zusammengeführt. Inhalt: das
+> **PV-Ertragsmodell** Paket A (Zeitbasis UTC→Ortszeit der `Tab_Solar`-Leser, Anlagenparameter
+> WR-Wirkungsgrad/Systemverluste, Migration 62) und Paket B (Rechenmodell ERWEITERT mit Hay-Davies, Huld,
+> WR-Kennlinie, Clipping, Degradation; Modellwahl im PV-Dialog über `PvModellFelder`; Datenmodell PV_Modell/
+> Wechselrichter/Technologie, Migration 63 — EINFACH unverändert), die **PV-Katalog-Koeffizienten** (Import CEC/PAN,
+> `PvModulPlausibilitaet`, Reparaturskript unter `sql/pv_katalog/`), die **Projektdialoge** (Löschen mit Mehrfachauswahl,
+> Öffnen, Neues Projekt) und die **Projektstammdaten** (Datumspflege, Kunde/Bearbeiter, `ProjektKopfSeite`), dazu
+> **FS1 N‑1** (AnkerNachziehen unter SQLite: Access-JOIN-UPDATE durch korreliertes UPDATE ersetzt). Konzepte:
+> `Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`, `Konzept_Projektstammdaten_EPOS-Plan.md`; Protokolle unter
+> `WindowsFormsApplication1/Allgemein/Simulation/` (PaketA, PaketB, FS1, Merge 1–5); acht Referenzlauf-Ordner
+> `Referenzlaeufe/2026-09-0x_*` (je 356 Dateien) als Nachweise mit `LIESMICH.md`. Gate hier: Bau 0 Fehler, Tests 469 + 337 + 2 634 + 1 168 grün (serialisiert), Formularkarte 122, SQL-Prüfer 0 Fundstellen, ChartProben 36 Bilder grün. Betroffene
+> Wellen: W3 (`PhotovoltaikVerguetungDialog`), W6 (`PhotovoltaikDialog`), W13 (`PvModulImportDialog`), W14a
+> (`ModulKatalogDialog`), W15a (`ProjektWahlDialog`), W16a (`ProjektKopfSeite`). **Nachzug `a738d08`:** Die
+> Rechner-2-Linie brachte die Migrationen 62–64 mit, die Testdatenbank `Referenzlaeufe/Kenndaten_Test.sqlite` stand
+> aber auf Schemastand 61 — der SQL-Prüfer meldete deshalb neun Spaltenfehler in PV- und Projektabfragen, dazu eine
+> Prüferlücke (dynamischer `SELECT` ohne `FROM` in `WizardCtrl.FachspaltenSelect`). Neues Werkzeug
+> `Werkzeuge/Testdatenbankschema` zieht die Testdatenbank idempotent auf den Stand des `SchemaKatalog` (`--trocken`
+> zeigt die anstehenden Schritte), Regel „Testdatenbank mitziehen" in `BETRIEB_SQLITE.md` 6.5; Prüfer 0 Fundstellen.
+> **Referenzbasis:** Der Referenzlauf weicht seit dieser Zusammenführung für 1030, 1007 und 1017 von
+> `2026-08-30_B3-Kaskade` ab — genau die Paket-A-Verschiebung der Solar-Zeitbasis von UTC auf Ortszeit, die auf
+> Rechner 2 als PA0→PA1 dieselben Zahlen zeigt (1007 und 1017 hier byte-gleich zu deren PA1/PB1/M5). Ob die Basis
+> neu eingefroren wird, ist dem Anwender vorgelegt; bis dahin bleibt der Stand ungepusht.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
@@ -2869,6 +2978,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > die Unterschiedstabelle bekommt die frei gewordene Höhe (`epos-raster-huelle--vergleich`, 35,2 rem; Hausregel
 > W9‑B‑2 bleibt). Neu dafür `VarianteZeile.SimZeitpunkt` und `Auswahlfeld.Kurzname`; die Parameter
 > `SpalteArt`/`SpalteBezeichner`/`SpalteProjektname` entfallen. Protokoll Abschnitt 13, zehn neue bunit-Fälle.
+>
+> **Formularraster, Paket P2 (iU8‑E‑2, 05.09.2026, `ac6be91`):** Seiten tragen ihre Felder in Werkzeugzeilen und Tabellenspalten; genau eine Stelle — das
+> Pfadfeld des Zielordners der `BerichtSeite` — ist ein Formularfeld und steht einspaltig im Raster. `UebersichtSeite`
+> und `WirtschaftlichkeitSeite` bleiben unverändert und sind zugleich die Gegenprobe, dass die Regel nur innerhalb
+> `.epos-formularraster` greift. Paket P2: 16 Dateien, UI 2 562 (+16), Formularkarte 122.
 
 > **Statusblock iU9 — Welle 4 umgesetzt (03.09.2026, Basis `ae1af82`)**
 >
@@ -2938,6 +3052,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Abrechnungseinheit zuerst, Zieleinheiten in Regelreihenfolge, jede genau einmal, normalisiert verglichen; die Id
 > indiziert die bereinigte Liste); m³ ist bewusst keine Preisbasis (nur Quelle des z-Faktors, L4). 14 Kern-Fälle, ein
 > bunit-Fall, Referenzlauf byte-gleich, keine Datenzeile berührt (`cac4a1d`, W4-Protokoll § 9a).
+>
+> **Formularraster, Paket P2 (iU8‑E‑2, 05.09.2026, `ac6be91`):** `StromAufschlaege`, `EnergietraegerDialog`, `EnergietraegerEinstellungen`, `ErtragBonus`: drei
+> handgebaute `epos-feldpaar` entfallen — der Raster misst die eigene Breite und legt unter `--epos-formularspalte`
+> selbst auf eine Spalte um. Preisblock (Schalter + Wert + Schnellwahl), Datenraster und das Suchfeld der Trägerliste
+> bleiben, wo sie waren; der Übernahmeknopf des Energieträgers steht in einer `epos-leiste`.
 
 > **Statusblock iU9 — Welle 3 umgesetzt (03.09.2026, Basis `95cf8be`)**
 >
@@ -2986,6 +3105,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Windows-Abnahmeliste mit vierzehn fachlichen Proben und sieben offenen Punkten:
 > `WindowsFormsApplication1/Allgemein/Reporting/iU9_W3_Blazor_Port_Protokoll.md`.
 > **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+>
+> **Formularraster, Paket P2 (iU8‑E‑2, 05.09.2026, `ac6be91`):** Vier Dialoge (`SpotpreisImportDialog` einspaltig wegen des Pfadfelds, `KostenprofilDialog`,
+> `EmissionskatalogDialog`, `GesetzeskatalogZeileDialog`), davon drei mit geteiltem Raster: Der Satz zwischen den Feldern
+> behält die volle Zeile, die Beschriftungskante läuft über beide Raster durch. Die Wertetafeln (12 Monats-, 24
+> Stundenwerte) und Datenraster bleiben, was sie sind.
 
 > **Statusblock iU9 — Welle 2 umgesetzt (03.09.2026, Basis `b0d3d86`)**
 >
@@ -3026,6 +3150,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > (A‑1…A‑18), Windows-Abnahmeliste mit elf fachlichen Proben und sieben offenen Punkten:
 > `WindowsFormsApplication1/Allgemein/Reporting/iU9_W2_Blazor_Port_Protokoll.md`.
 > **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+>
+> **Formularraster, Paket P2 (iU8‑E‑2, 05.09.2026, `ac6be91`):** Die drei Wirtschaftlichkeitsmasken (`TarifstrukturDialog`, `PhotovoltaikVerguetungDialog`,
+> `WirtschaftlichkeitParameterDialog`) sind der eigentliche Anlass des Pakets: 53 Felder, vierzehn Raster, sechs
+> `Formulargruppe`n (erster echter Einsatz; die vier zur Laufzeit gebauten Untergruppen der Tarifstruktur und die Gruppe
+> „Bilanz"). Der Block „Rollenmodell" war der höchste des Hauses und halbiert sich, weil alle Stufenfelder kurz sind.
+> Beim Merge mit der Rechner-2-Linie blieb das Degradationsfeld (Paket B) im Raster — sein Tooltip-Wirt ist durchsichtig.
 
 > **Statusblock iU9 — Welle 1 umgesetzt (03.09.2026, Basis `aef9509`)**
 >
@@ -3059,6 +3189,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Protokoll** mit Feldkartenabgleich, 19 Abweichungen (A‑1…A‑19), Windows-Abnahmeliste und sieben
 > offenen Punkten: `WindowsFormsApplication1/Allgemein/Reporting/iU9_W1_Blazor_Port_Protokoll.md`.
 > **Windows-Abnahme steht aus** — alles Obige ist auf Linux gemessen.
+>
+> **Formularraster, Paket P2 (iU8‑E‑2, 05.09.2026, `ac6be91`):** Die drei Kostenvorlagen-Kleindialoge (`CaseEingabeDialog`, `VorlagenPositionDialog`,
+> `VorlagenUebernahmeDialog`) und der BHKW-Wirtschaftlichkeitsdialog tragen den Raster; die Vorlagenübernahme ist die
+> Stelle, an der `Einspaltig` seinen Namen verdient — eine Kette von Wahlen bleibt eine Kette, die Beschriftung steht
+> trotzdem neben dem Feld. `VorlagenZeile` bleibt Bearbeitungszeile in der Tabelle.
 
 > **Statusblock iU9 — Welle 0 umgesetzt (03.09.2026, Basis `908926a`)**
 >
