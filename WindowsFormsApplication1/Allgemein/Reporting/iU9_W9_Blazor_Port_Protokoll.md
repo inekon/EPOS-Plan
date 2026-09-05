@@ -1183,3 +1183,30 @@ eingefrorener Wert, sondern der **Vergleich gegen den Lauf selbst** (bei einem G
 bitgleich, bei mehreren als Summe). Ein zweiter Rechenweg für dieselbe Zahl läuft
 irgendwann auseinander, und dann sieht der Anwender zwei Zahlen und weiß nicht, welche
 gilt.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Bedarf/GebaeudeKatalogDialog.razor` | 41 | 9 | nein | Klasse A, der **dickste Dialog des Hauses**. Alle sieben Gruppenköpfe beider Reiter plus der Luftwechsel; die acht handgebauten `epos-feldpaar`‑Kästen der zwei Ferienblöcke entfallen — Tag und Monat stehen als eigene Rasterkinder nebeneinander. Der Knopf zu den Brauchwasserprofilen bleibt unter dem Raster. |
+| `Dialoge/Bedarf/GebaeudeWohnflaecheDialog.razor` | 9 | 2 | nein | Klasse A. Beide Blöcke; der Verbrauch ist ein kurzes Feld mit „m³/a" unmittelbar dahinter, die Herleitungszeile zum Jahresnutzungsgrad spannt über beide Spalten. |
+
+Der schon in Aufgabe #90 umgestellte `GebaeudeDialog` (Detailblock „Verbrauch")
+bleibt, wie er ist — er war die Stichprobe der Regel.
+
+**Probe.** `Die_Bloecke_des_Gebaeudekatalogs_stehen_im_Formularraster` und
+`Beide_Bloecke_stehen_im_Formularraster`.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.

@@ -686,3 +686,31 @@ faktisch 0 % — Bedingung des Referenzlaufs).
 `Werkzeuge/Formularkarte.Tests/StapelTests.cs`,
 `Werkzeuge/Formularkarte.Tests/ErreichbarkeitTests.cs`; dazu
 `Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md`.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Seiten/Simulation/ParameterReiter.razor` | 23 | 9 | **ja, alle neun** | **Klasse B, umgestellt.** Jeder der neun Feldkästen (`epos-simerg-felder`) stellt seine Felder in den Hausraster; der Kasten selbst **bleibt** — er trägt den Deckel von 640 px und den Abstand, der Raster ordnet darin. **Einspaltig** aus zwei Gründen: Der Parameterblock ist die schmale Spalte der Ergebnisseite, und unter mancher Zahl steht ihre Entsprechung (`epos-simerg-aequivalent`, „= 4,8 kWh") bzw. ein Hinweisabsatz, der zu dem Feld ÜBER ihm gehört — zweispaltig fiele beides neben ein fremdes Feld. Die Begründung steht **einmal** im Dateikopf, an den neun Blöcken nur die Kennung. |
+
+**Nicht angefasst:** das gerechnete Reiterband selbst (`Daten.Unterblaetter`) und
+die Kennzahlenlisten (`epos-simerg-werte`, eine `dl`) — sie zeigen Ergebnisse, sie
+nehmen keine Eingabe.
+
+**Probe.** `Der_Parameterblock_steht_im_einspaltigen_Formularraster`: so viele
+einspaltige Raster wie Raster, und mindestens ein kurzes Feld mit seiner Einheit
+in der Feldzeile.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.

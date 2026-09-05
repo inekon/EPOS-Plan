@@ -24,6 +24,20 @@
 
 @namespace EPOS.UI.Seiten.Simulation
 
+@* FORMULARRASTER (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026). Jeder der
+   neun Feldkaesten (epos-simerg-felder) stellt seine Felder in den
+   Hausraster: Die Beschriftung rueckt NEBEN das Feld, ein Zahlenfeld wird
+   kurz und traegt seine Einheit dahinter.
+
+   EINSPALTIG, und zwar aus zwei Gruenden: Der Parameterblock ist die
+   SCHMALE Spalte der Ergebnisseite (epos-simerg-felder deckelt bei 640 px),
+   und unter mancher Zahl steht ihre Entsprechung (epos-simerg-aequivalent:
+   "= 4,8 kWh") bzw. ein Hinweisabsatz, der zu dem Feld UEBER ihm gehoert.
+   Zweispaltig fiele beides neben ein fremdes Feld.
+
+   Der Kasten selbst bleibt - er traegt den Deckel und den Abstand; der
+   Raster ordnet darin. *@
+
 <div class="epos-simerg-parameter">
 
     <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@ReiterBezeichnung">
@@ -98,10 +112,15 @@
     // ---- P1 -------------------------------------------------------------
 
     private RenderFragment BlattBedarf => @<div class="epos-simerg-felder">
+        @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
         <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_NETZVERLUSTE"
                     Wert="@Daten.Netzverluste" Einheit="@Daten.NetzverlusteEinheit"
                     Aktiv="@(!Gesperrt)"
                     WertChanged="NetzverlusteGesetzt" />
+            </KindInhalt>
+        </Formularraster>
     </div>;
 
     private void NetzverlusteGesetzt(double? wert)
@@ -113,6 +132,9 @@
     // ---- P2 -------------------------------------------------------------
 
     private RenderFragment BlattBhkw => @<div class="epos-simerg-felder">
+        @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
         <Optionsgruppe Bezeichnung="@Resource.SIMERG_GRP_BETRIEBSART"
                        Eintraege="@BETRIEBSARTEN" Auswahl="@Daten.Betriebsart"
                        Aktiv="@(!Gesperrt)" AuswahlChanged="BetriebsartGesetzt" />
@@ -122,6 +144,8 @@
                       Aktiv="@(!Gesperrt)" WertChanged="LeistungsgrenzeGesetzt" />
 
         <p class="epos-simerg-info">@Resource.SIMERG_INFO_BHKW</p>
+            </KindInhalt>
+        </Formularraster>
     </div>;
 
     /// <summary>
@@ -151,8 +175,13 @@
     // ---- P4 -------------------------------------------------------------
 
     private RenderFragment BlattWaermepumpe => @<div class="epos-simerg-felder">
+        @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
         <Schalter Bezeichnung="@Resource.SIMERG_CHK_HEIZSTAB" Wert="@Daten.Heizstab"
                   Aktiv="@(!Gesperrt)" WertChanged="HeizstabGesetzt" />
+            </KindInhalt>
+        </Formularraster>
     </div>;
 
     private void HeizstabGesetzt(bool wert)
@@ -164,9 +193,14 @@
     // ---- P5 -------------------------------------------------------------
 
     private RenderFragment BlattHeizkessel => @<div class="epos-simerg-felder">
+        @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
         <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_BEREITSCHAFT"
                     Wert="@Daten.Bereitschaft" Einheit="h/a"
                     Aktiv="@(!Gesperrt)" WertChanged="BereitschaftGesetzt" />
+            </KindInhalt>
+        </Formularraster>
     </div>;
 
     private void BereitschaftGesetzt(double? wert)
@@ -184,6 +218,9 @@
     private RenderFragment BlattStromspeicher => @<div class="epos-simerg-speicherparameter">
 
         <div class="epos-simerg-felder">
+            @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
             <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_SOC_MIN" Wert="@Sp.SoCMinProzent"
                         Einheit="%" Aktiv="@SpAktiv"
                         WertChanged="@(w => SpZahl(SpeicherFeld.SoCMin, w, v => Sp.SoCMinProzent = v))" />
@@ -203,12 +240,17 @@
             <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_LADESCHWELLE"
                         Wert="@Sp.Ladeschwellwert" Einheit="kW" Aktiv="@SpAktiv"
                         WertChanged="@(w => SpZahl(SpeicherFeld.Ladeschwelle, w, v => Sp.Ladeschwellwert = v))" />
+                </KindInhalt>
+            </Formularraster>
         </div>
 
         <p class="epos-simerg-hinweis">@Resource.SP_PARAM_HINWEIS_LADELEISTUNG</p>
 
         <Gruppenkopf Titel="@Resource.SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG" />
         <div class="epos-simerg-felder">
+            @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
             <Auswahlfeld Bezeichnung="@Resource.SP_PARAM_LABEL_BETRIEBSART"
                          Eintraege="@Eintraege(Sp.Betriebsarten)"
                          Auswahl="@Index(Sp.Betriebsarten, Sp.Betriebsart)"
@@ -225,11 +267,16 @@
                       Wert="@Sp.Kompatibilitaet"
                       Aktiv="@(SpAktiv && Sp.KompatibilitaetMoeglich)"
                       WertChanged="@(w => SpSchalter(SpeicherFeld.Kompatibilitaet, w, v => Sp.Kompatibilitaet = v))" />
+                </KindInhalt>
+            </Formularraster>
         </div>
         <p class="epos-simerg-hinweis">@Resource.SP_PARAM_HINWEIS_KOMPATIBILITAET</p>
 
         <Gruppenkopf Titel="@Resource.SP_PARAM_GRUPPE_QUELLEN" />
         <div class="epos-simerg-felder">
+            @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
             <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_PV" Wert="@Sp.LadenAusPv" Aktiv="@SpAktiv"
                       WertChanged="@(w => SpSchalter(SpeicherFeld.LadenPv, w, v => Sp.LadenAusPv = v))" />
             <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_BHKW" Wert="@Sp.LadenAusBhkw" Aktiv="@SpAktiv"
@@ -239,11 +286,16 @@
             @* Ausbaustufe 11: sichtbar, aber ohne Rechenweg — dauerhaft gesperrt. *@
             <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_BHKW_STROMGEFUEHRT"
                       Wert="@Sp.BhkwStromgefuehrt" Aktiv="false" />
+                </KindInhalt>
+            </Formularraster>
         </div>
         <p class="epos-simerg-hinweis">@Resource.SP_PARAM_HINWEIS_AUSBAUSTUFE</p>
 
         <Gruppenkopf Titel="@Resource.SP_PARAM_GRUPPE_WIRTSCHAFT" />
         <div class="epos-simerg-felder">
+            @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
             <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_KAPITALZINS" Wert="@Sp.Kapitalzins"
                         Einheit="%" Aktiv="@SpAktiv"
                         WertChanged="@(w => SpZahl(SpeicherFeld.Kapitalzins, w, v => Sp.Kapitalzins = v))" />
@@ -256,10 +308,15 @@
             <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_NETZLADEAUFSCHLAG" Wert="@Sp.Netzladeaufschlag"
                         Einheit="ct/kWh" Aktiv="@SpAktiv"
                         WertChanged="@(w => SpZahl(SpeicherFeld.Netzladeaufschlag, w, v => Sp.Netzladeaufschlag = v))" />
+                </KindInhalt>
+            </Formularraster>
         </div>
 
         <Gruppenkopf Titel="@Resource.PREIS_PARAM_GRUPPE_PREISQUELLE" />
         <div class="epos-simerg-felder">
+            @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
             <Auswahlfeld Bezeichnung="@Resource.PREIS_PARAM_LABEL_PREISQUELLE"
                          Eintraege="@Eintraege(Sp.Preisquellen)"
                          Auswahl="@Index(Sp.Preisquellen, Sp.Preisquelle)"
@@ -273,6 +330,8 @@
 
             <Schalter Bezeichnung="@Resource.PREIS_PARAM_CHK_AUFSCHLAG" Wert="@Sp.Aufschlag" Aktiv="@SpAktiv"
                       WertChanged="@(w => SpSchalter(SpeicherFeld.Aufschlag, w, v => Sp.Aufschlag = v))" />
+                </KindInhalt>
+            </Formularraster>
         </div>
 
         @if (!string.IsNullOrEmpty(Sp.Preisinfo))

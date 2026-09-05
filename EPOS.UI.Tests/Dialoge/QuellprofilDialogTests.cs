@@ -466,4 +466,27 @@ public class QuellprofilDialogTests : BunitContext
     private static IReadOnlyList<AngleSharp.Dom.IElement> Zahlenfelder(
         IRenderedComponent<QuellprofilDialog> cut)
         => cut.FindAll("input[inputmode=decimal]");
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Kopf (Profil, Betriebsart, Bezeichner, Beschreibung) und die Monatswerte stehen im Formularraster.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Kopf_und_Werte_stehen_im_Formularraster()
+    {
+        var cut = Zeige(Neu(), new Pruefstand());
+
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 2,
+                    "Kopf oder Werteblatt steht nicht im Raster");
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+    }
 }

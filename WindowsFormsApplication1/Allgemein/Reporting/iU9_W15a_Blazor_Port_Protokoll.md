@@ -656,3 +656,27 @@ Assistent, Seite 0: In der 280 px breiten Spalte steht der volle Projektname
 (umgebrochen, nicht abgeschnitten); unter jeder Variante steht leise „Variante von
 Booster-Kette mit Kombi-Speicher", und die Zeile ist eingerückt. Dasselbe auf dem
 iPad hochkant.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Projekt/ProjektTransferDialog.razor` | 5 | 3 | **ja, alle drei** | Klasse A. Exportreiter: Projekt und Variantenliste (eine Reihenfolge, und die Liste braucht die Breite). Importreiter: das Pfadfeld allein in einem Raster, darunter Zielname → Konfliktmodus → Sicherung als der Weg des Imports von oben nach unten. **Nicht** umgestellt: der Berichtskasten (ein festbreites Textfeld über sechs Zeilen) und der Fortschrittsbereich. |
+| `Dialoge/Projekt/ProjektKopieDialog.razor` | 4 | 1 | **ja** | Klasse A. Die vier Eingabefelder stehen in der **schmalen** rechten Spalte (2 von 5 Teilen) neben der Quellliste — dort ist für zwei Feldpaare nebeneinander kein Platz, also einspaltig. Der Kasten `epos-projektkopie-felder` bleibt: Er ist die Rasterzelle des Zweispalters und der Anker von acht Proben. **Nicht** umgestellt: die Quellliste (`ProjektListe`) und der Fortschrittsbereich. |
+
+**Probe.** `Die_Felder_stehen_im_einspaltigen_Formularraster` (beide Reiter) und
+`Die_Eingabefelder_stehen_im_einspaltigen_Formularraster`.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.

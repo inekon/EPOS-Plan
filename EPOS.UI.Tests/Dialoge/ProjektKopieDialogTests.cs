@@ -258,4 +258,27 @@ public class ProjektKopieDialogTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-fortschritt"));
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die vier Eingabefelder stehen im Formularraster, einspaltig: Sie sitzen in der schmalen rechten Spalte neben der Quellliste.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Eingabefelder_stehen_im_einspaltigen_Formularraster()
+    {
+        var cut = Aufbauen(new Kern());
+
+        Assert.Single(cut.FindAll(
+            ".epos-projektkopie-felder .epos-formularraster--einspaltig"));
+        Assert.Equal(4, cut.FindAll(".epos-formularraster .epos-feld").Count);
+    }
 }

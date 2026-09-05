@@ -59,6 +59,11 @@
     @* ================================================== Quelle des Lastgangs *@
     <Gruppenkopf Titel="@GruppeQuelle">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Der Block traegt
+               ein Pfadfeld (Dateiwahl), das die Breite braucht, und darunter
+               die Zeile mit der geladenen Reihe. *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
             <Optionsgruppe Bezeichnung="@GruppeQuelle" Eintraege="@Quellen"
                            Auswahl="@_quelle" AuswahlChanged="QuelleGeaendert"
                            Aktiv="@(!_laeuft)" />
@@ -77,6 +82,8 @@
             @* lbl_Reihe: leer = "Kein Lastgang geladen." in Grau; der Baustein
                Herleitungszeile ist die leise Zeile des Hauses. *@
             <Herleitungszeile Text="@_reiheText" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -85,79 +92,79 @@
         <KindInhalt>
             <Herleitungszeile Text="@_herkunft" />
 
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelP" Einheit="kW" Feldname="@LabelP"
-                            Wert="@_pKw" WertChanged="w => _pKw = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-                <Zahlenfeld Bezeichnung="@LabelKapazitaet" Einheit="kWh" Feldname="@LabelKapazitaet"
-                            Wert="@_kapazitaet" WertChanged="w => _kapazitaet = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            </div>
-
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelEta" Feldname="@LabelEta"
-                            Wert="@_eta" WertChanged="w => _eta = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-                <Zahlenfeld Bezeichnung="@LabelSoCMin" Einheit="%" Feldname="@LabelSoCMin"
-                            Wert="@_socMin" WertChanged="w => _socMin = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            </div>
-
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelSoCMax" Einheit="%" Feldname="@LabelSoCMax"
-                            Wert="@_socMax" WertChanged="w => _socMax = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-                <Zahlenfeld Bezeichnung="@LabelStartSoC" Einheit="%" Feldname="@LabelStartSoC"
-                            Wert="@_startSoC" WertChanged="w => _startSoC = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            </div>
+            @* Formularraster (iU8-E-2, Paket P3): Die sechs Speicherwerte. Die
+               handgebauten epos-feldpaar-Kaesten entfallen - der Raster stellt
+               zwei Feldpaare je Zeile, sobald der Platz da ist. *@
+            <Formularraster>
+                <KindInhalt>
+            <Zahlenfeld Bezeichnung="@LabelP" Einheit="kW" Feldname="@LabelP"
+                        Wert="@_pKw" WertChanged="w => _pKw = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@LabelKapazitaet" Einheit="kWh" Feldname="@LabelKapazitaet"
+                        Wert="@_kapazitaet" WertChanged="w => _kapazitaet = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@LabelEta" Feldname="@LabelEta"
+                        Wert="@_eta" WertChanged="w => _eta = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@LabelSoCMin" Einheit="%" Feldname="@LabelSoCMin"
+                        Wert="@_socMin" WertChanged="w => _socMin = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@LabelSoCMax" Einheit="%" Feldname="@LabelSoCMax"
+                        Wert="@_socMax" WertChanged="w => _socMax = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@LabelStartSoC" Einheit="%" Feldname="@LabelStartSoC"
+                        Wert="@_startSoC" WertChanged="w => _startSoC = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                </KindInhalt>
+            </Formularraster>
 
             <Schalter Bezeichnung="@LabelAdaptiv" Wert="@_adaptiv" WertChanged="AdaptivGeaendert"
                       Aktiv="@(!_laeuft)" />
 
-            <div class="epos-feldpaar">
-                @* Woertlich: die Zielschwelle ist gesperrt, solange nachgezogen wird -
-                   sie bleibt dabei SICHTBAR und lesbar. *@
-                <Zahlenfeld Bezeichnung="@LabelZiel" Einheit="kW" Feldname="@LabelZiel"
-                            Wert="@_ziel" WertChanged="w => _ziel = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_adaptiv && !_laeuft)" />
-                <button type="button" class="epos-knopf" disabled="@_laeuft"
-                        @onclick="BeiMinimal">@MinimalText</button>
-            </div>
-
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelLp" Feldname="@LabelLp"
-                            Wert="@_lp" WertChanged="w => _lp = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-                <Zahlenfeld Bezeichnung="@LabelBezugspreis" Feldname="@LabelBezugspreis"
-                            Wert="@_bezugspreis" WertChanged="w => _bezugspreis = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            </div>
+            @* Formularraster (iU8-E-2, Paket P3): Der Knopf zur minimalen
+               Schwelle steht NEBEN der Zielschwelle, wie im Vorbild - er ist
+               das zweite Rasterkind derselben Zeile. *@
+            <Formularraster>
+                <KindInhalt>
+            @* Woertlich: die Zielschwelle ist gesperrt, solange nachgezogen wird -
+               sie bleibt dabei SICHTBAR und lesbar. *@
+            <Zahlenfeld Bezeichnung="@LabelZiel" Einheit="kW" Feldname="@LabelZiel"
+                        Wert="@_ziel" WertChanged="w => _ziel = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_adaptiv && !_laeuft)" />
+            <button type="button" class="epos-knopf" disabled="@_laeuft"
+                    @onclick="BeiMinimal">@MinimalText</button>
+            <Zahlenfeld Bezeichnung="@LabelLp" Feldname="@LabelLp"
+                        Wert="@_lp" WertChanged="w => _lp = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@LabelBezugspreis" Feldname="@LabelBezugspreis"
+                        Wert="@_bezugspreis" WertChanged="w => _bezugspreis = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                </KindInhalt>
+            </Formularraster>
 
             <Schalter Bezeichnung="@LabelKompatibel" Wert="@_kompatibel"
                       WertChanged="w => _kompatibel = w" Aktiv="@(!_laeuft)" />
 
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelCCap" Feldname="@LabelCCap"
-                            Wert="@_cCap" WertChanged="w => _cCap = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-                <Zahlenfeld Bezeichnung="@LabelCPow" Feldname="@LabelCPow"
-                            Wert="@_cPow" WertChanged="w => _cPow = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            </div>
-
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelIFix" Feldname="@LabelIFix"
-                            Wert="@_iFix" WertChanged="w => _iFix = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-                <Zahlenfeld Bezeichnung="@LabelZins" Einheit="%" Feldname="@LabelZins"
-                            Wert="@_zins" WertChanged="w => _zins = w"
-                            FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
-            </div>
-
+            @* Formularraster (iU8-E-2, Paket P3): die fuenf Wirtschaftlichkeitswerte. *@
+            <Formularraster>
+                <KindInhalt>
+            <Zahlenfeld Bezeichnung="@LabelCCap" Feldname="@LabelCCap"
+                        Wert="@_cCap" WertChanged="w => _cCap = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@LabelCPow" Feldname="@LabelCPow"
+                        Wert="@_cPow" WertChanged="w => _cPow = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@LabelIFix" Feldname="@LabelIFix"
+                        Wert="@_iFix" WertChanged="w => _iFix = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@LabelZins" Einheit="%" Feldname="@LabelZins"
+                        Wert="@_zins" WertChanged="w => _zins = w"
+                        FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
             <Zahlenfeld Bezeichnung="@LabelNutzungsdauer" Einheit="a" Feldname="@LabelNutzungsdauer"
                         Wert="@_nutzungsdauer" WertChanged="w => _nutzungsdauer = w"
                         FehlerZustand="BeiFehlerZustand" Aktiv="@(!_laeuft)" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 

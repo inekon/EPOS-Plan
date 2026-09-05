@@ -666,3 +666,30 @@ Fenster, Esc schließt die oberste Ebene, Infoknopf zeigt die Wikiseite.
 (W10b‑B42), `Werkzeuge/Formularkarte.Tests/StapelTests.cs`,
 `Werkzeuge/Formularkarte.Tests/ErreichbarkeitTests.cs`; dazu
 `Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md`.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Simulation/QuelleErdreichDialog.razor` | 7 | 2 | Standort: **ja** | Klasse A/B gemischt. „Quellsystem": der Kasten `epos-erdreich-zweig` (ohne eigene Regel im Stilblatt) entfällt, die vier Felder werden Rasterkinder, die Optionsgruppe spannt wie gehabt über alle Spalten. „Standort" **einspaltig** — Bodentyp → Klimazone → Spreizung tragen eine Reihenfolge, und unter jedem Wert steht seine Herleitungszeile. **Nicht** umgestellt: „Vorschau" (ein Diagramm) und „Auslegungsprüfung" (zwei Warnbanner und ein Knopf) — beides sind keine Formularblöcke. |
+| `Dialoge/Simulation/QuellprofilDialog.razor` | 7 | 3 | nein | Klasse A. Der lose Kopf (Profil, Betriebsart, Bezeichner, Beschreibung), die zwölf Monatswerte und der Altweg mit Wochentag und **24 Stundenwerten** — die standen bisher untereinander über die ganze Breite. **Nicht** umgestellt: die Werteseite (ein `Raster` mit zwei Spalten) und der Grafikreiter. |
+| `Dialoge/Simulation/WaermesenkeDialog.razor` | 9 | 2 | **ja, beide** | **Klasse B.** Umgestellt sind „Die gewählte Zeile" und „Ladeverhalten", beide **einspaltig**: Dort schaltet jede Wahl bzw. jeder Schalter das Feld UNTER sich frei (Speicher/Bedarfsart, Ladegrenze, Einspeisehöhe) — nebeneinander verlöre das Paar seinen Zusammenhang. **Nicht** umgestellt: die Senkenliste (ein `Zeilenraster` mit sieben Spalten) und der Parallelverbund (eine `Mehrfachauswahl`); eine Liste ist kein Formularblock, und der Raster darf dort nicht hinein. |
+
+**Probe.** Drei Fälle: `Quellsystem_und_Standort_stehen_im_Formularraster`,
+`Kopf_und_Werte_stehen_im_Formularraster` und
+`Senkenzeile_und_Ladeverhalten_stehen_im_einspaltigen_Formularraster` — der letzte
+prüft ausdrücklich, dass **jeder** Raster des Dialogs einspaltig ist.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.
