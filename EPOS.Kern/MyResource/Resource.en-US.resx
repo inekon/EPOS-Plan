@@ -14538,4 +14538,37 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FEHLERSCHRANKE_BTN_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="STROMGL_BTN_IMPORTIEREN" xml:space="preserve">
+    <value>Import CSV file...</value>
+  </data>
+  <data name="STROMGL_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Save as...</value>
+  </data>
+  <data name="STROMGL_BTN_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="STROMGL_HINWEIS_FORMAT" xml:space="preserve">
+    <value>File format: CSV or text file (Excel .xlsx/.xlsm/.xls as well) holding one year of load data — 8,760 hourly values or 35,040 quarter-hourly values, in chronological order starting on 1 January, one value per line. Semicolon, comma, tabulator and vertical bar are accepted as field separators; a single-column file needs none. A header line is allowed and is detected. Decimal separator comma or point, no thousands separator. Values as power in kW or as energy in kWh per interval — the unit is asked for before reading and converted to kW. A time stamp column is permitted but not required. The name of the load profile is the file name without its extension.</value>
+  </data>
+  <data name="STROMGL_TITEL_KOPIE" xml:space="preserve">
+    <value>Save electricity load profile as</value>
+  </data>
+  <data name="STROMGL_FRAGE_KOPIE" xml:space="preserve">
+    <value>Name of the copy:</value>
+  </data>
+  <data name="STROMGL_KOPIE_ZUSATZ" xml:space="preserve">
+    <value> - Copy</value>
+  </data>
+  <data name="STROMGL_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>An electricity load profile named “{0}” already exists in the database. Please choose a different name.</value>
+  </data>
+  <data name="STROMGL_MSG_NAME_LEER" xml:space="preserve">
+    <value>Please enter a name for the copy.</value>
+  </data>
+  <data name="STROMGL_MSG_KOPIERT" xml:space="preserve">
+    <value>The electricity load profile “{0}” has been saved as “{1}”.</value>
+  </data>
+  <data name="STROMGL_MSG_KOPIE_FEHLER" xml:space="preserve">
+    <value>The copy could not be created.</value>
+  </data>
 </root>

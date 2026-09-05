@@ -1,0 +1,231 @@
+﻿@* Die AP5-Importkette als BAUSTEIN - EIN Weg fuer beide Masken (iU9-W12-E-1).
+
+   WOZU. Die Kette selbst liegt seit W12.0d im Kern (GanglinienImportAblauf).
+   Was hier steht, ist ihre OBERFLAECHENSEITE: die drei Entscheidungen als
+   Ueberlagerungen im selben Fenster, jede mit einer TaskCompletionSource, die
+   der Unterdialog beim Schliessen aufloest - kein zweites Fenster, keine zweite
+   WebView (Risiko R2).
+
+   WARUM SIE EIN EIGENER BAUSTEIN IST. Bis zur Windows-Abnahme vom 05.09.2026
+   gab es den Import nur in der Stammdatenverwaltung
+   (StromganglinieAdminDialog); der Anwender hat ihn auch am Dialog
+   "Stromganglinien" verlangt (W12-E-1). Zwei Masken mit demselben Ablauf
+   heissen ohne diesen Baustein: zweimal dieselben drei Ueberlagerungen, zweimal
+   dieselbe Fehlerbehandlung, zweimal derselbe Warnbannertext - und beim ersten
+   Fachwechsel zwei verschiedene Importe. Deshalb: EIN Weg, zwei Wirte.
+
+   DIE KOMPONENTE ZEICHNET NICHTS EIGENES, solange nichts laeuft. Sie hat keinen
+   Knopf; der Wirt setzt seinen eigenen und ruft Starten(pfad, raster). Das
+   Ergebnis kommt als Rueckgabewert zurueck - der Wirt entscheidet, ob er seine
+   Liste neu laedt und was er meldet.
+
+   ESC. Der Wirt fragt EtwasOffen, bevor er Esc fuer sich auswertet - so
+   schliesst Esc immer nur die oberste Ebene (Muster W7.5). *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<Ueberlagerung Offen="@_optionenOffen" Titel="" Schliessbar="false">
+    <KindInhalt>
+        @if (_optionenOffen)
+        {
+            <GanglinieImportOptionenDialog Pfad="@_optionenPfad" Erkennung="@_optionenErkennung"
+                                           Vorschau="@Vorschau" Geschlossen="OptionenFertig" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
+<Ueberlagerung Offen="@_protokollOffen" Titel="" Schliessbar="false">
+    <KindInhalt>
+        @if (_protokollOffen)
+        {
+            <GanglinieProtokollDialog Meldungen="@_protokollMeldungen"
+                                      ImportMoeglich="@_protokollMoeglich"
+                                      BestaetigungNoetig="@_protokollBestaetigen"
+                                      Geschlossen="ProtokollFertig" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
+<Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
+    <KindInhalt>
+        @if (_konflikteOffen)
+        {
+            <EPOS.UI.Dialoge.Import.ImportKonflikteDialog
+                Pruefungen="@_konfliktPruefungen" VergebeneNamen="@_konfliktNamen"
+                Geschlossen="KonflikteFertig" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    // =====================================================================
+    // Delegaten - die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>
+    /// Faehrt die Importkette MIT Ablage
+    /// (<c>GanglinienImportAblauf.MitAblage</c>). Die drei Entscheidungen kommen
+    /// von dieser Komponente. Ohne den Delegaten passiert nichts.
+    /// </summary>
+    [Parameter]
+    public Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+                Task<GanglinienImportErgebnis>>? Einlesen { get; set; }
+
+    /// <summary>Zerlegt eine Datei mit gesetzten Optionen neu (fuer den Optionendialog).</summary>
+    [Parameter] public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>>? Vorschau { get; set; }
+
+    /// <summary>
+    /// Meldung, sobald sich der Laufzustand aendert — der Wirt sperrt daran seine
+    /// Knoepfe. Er kann stattdessen auch <see cref="Laeuft"/> abfragen.
+    /// </summary>
+    [Parameter] public EventCallback<bool> LaeuftChanged { get; set; }
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private bool _laeuft;
+
+    private bool _optionenOffen;
+    private string _optionenPfad = "";
+    private GanglinienVorschau? _optionenErkennung;
+    private TaskCompletionSource<GanglinienImportOptionen?>? _optionenWartet;
+
+    private bool _protokollOffen;
+    private IReadOnlyList<PruefMeldung>? _protokollMeldungen;
+    private bool _protokollMoeglich, _protokollBestaetigen;
+    private TaskCompletionSource<bool>? _protokollWartet;
+
+    private bool _konflikteOffen;
+    private IReadOnlyList<ImportPruefung>? _konfliktPruefungen;
+    private IReadOnlyCollection<string>? _konfliktNamen;
+    private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
+
+    /// <summary>Laeuft gerade ein Import?</summary>
+    public bool Laeuft => _laeuft;
+
+    /// <summary>
+    /// Steht eine der drei Ueberlagerungen? Der Wirt fragt das, bevor er Esc fuer
+    /// sich auswertet.
+    /// </summary>
+    public bool EtwasOffen => _optionenOffen || _protokollOffen || _konflikteOffen;
+
+    /// <summary>Ist der Weg ueberhaupt verkabelt? Ohne <see cref="Einlesen"/> nicht.</summary>
+    public bool Bereit => Einlesen is not null;
+
+    // =====================================================================
+    // Der Lauf
+    // =====================================================================
+
+    /// <summary>
+    /// Faehrt die Kette fuer eine gewaehlte Datei und liefert ihr Ergebnis;
+    /// <c>null</c>, wenn es keinen <see cref="Einlesen"/>-Delegaten gibt oder der
+    /// Pfad leer ist.
+    /// </summary>
+    /// <param name="pfad">Die gewaehlte Quelldatei.</param>
+    /// <param name="raster">
+    /// Rastervorgabe der Maske; <c>Unbekannt</c> laesst die Erkennung entscheiden
+    /// (der Optionendialog kann sie ohnehin uebersteuern).
+    /// </param>
+    public async Task<GanglinienImportErgebnis?> Starten(string pfad, GanglinienRaster raster)
+    {
+        if (string.IsNullOrEmpty(pfad) || Einlesen is null) return null;
+
+        await LaufSetzen(true);
+        try
+        {
+            return await Einlesen(
+                pfad, raster,
+                new GanglinienImportRueckrufe
+                {
+                    Optionen = OptionenFragen,
+                    Protokoll = ProtokollFragen,
+                    Konflikte = KonflikteFragen
+                });
+        }
+        finally
+        {
+            await LaufSetzen(false);
+        }
+    }
+
+    private async Task LaufSetzen(bool laeuft)
+    {
+        _laeuft = laeuft;
+        if (LaeuftChanged.HasDelegate) await LaeuftChanged.InvokeAsync(laeuft);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // --- Rueckruf 1: die Optionen ---------------------------------------
+
+    private async Task<GanglinienImportOptionen?> OptionenFragen(string pfad, GanglinienVorschau vorschau)
+    {
+        _optionenPfad = pfad;
+        _optionenErkennung = vorschau;
+        _optionenOffen = true;
+        _optionenWartet = new TaskCompletionSource<GanglinienImportOptionen?>();
+        await InvokeAsync(StateHasChanged);
+        return await _optionenWartet.Task;
+    }
+
+    private void OptionenFertig(GanglinienImportOptionen? optionen)
+    {
+        _optionenOffen = false;
+        _optionenWartet?.TrySetResult(optionen);
+    }
+
+    // --- Rueckruf 2: das Protokoll --------------------------------------
+
+    private async Task<bool> ProtokollFragen(IList<PruefMeldung> meldungen, bool moeglich, bool bestaetigen)
+    {
+        _protokollMeldungen = meldungen as IReadOnlyList<PruefMeldung> ?? meldungen.ToList();
+        _protokollMoeglich = moeglich;
+        _protokollBestaetigen = bestaetigen;
+        _protokollOffen = true;
+        _protokollWartet = new TaskCompletionSource<bool>();
+        await InvokeAsync(StateHasChanged);
+        return await _protokollWartet.Task;
+    }
+
+    private void ProtokollFertig(bool weiter)
+    {
+        _protokollOffen = false;
+        _protokollWartet?.TrySetResult(weiter);
+    }
+
+    // --- Rueckruf 3: die Konflikte --------------------------------------
+
+    private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
+        List<ImportPruefung> pruefungen, HashSet<string> namen)
+    {
+        _konfliktPruefungen = pruefungen;
+        _konfliktNamen = namen;
+        _konflikteOffen = true;
+        _konflikteWartet = new TaskCompletionSource<List<KonfliktEntscheidung>?>();
+        await InvokeAsync(StateHasChanged);
+        return await _konflikteWartet.Task;
+    }
+
+    private void KonflikteFertig(List<KonfliktEntscheidung>? entscheidungen)
+    {
+        _konflikteOffen = false;
+        _konflikteWartet?.TrySetResult(entscheidungen);
+    }
+
+    // =====================================================================
+    // Die Meldung, die aus einem Ergebnis wird
+    // =====================================================================
+
+    /// <summary>
+    /// Die Warnstufe zu einem Kettenergebnis — der Ausdruck stand in der
+    /// Verwaltungsmaske und gilt genauso fuer den Projektdialog.
+    /// </summary>
+    public static WarnStufe StufeZu(GanglinienImportErgebnis erg) => erg.MeldungStufe switch
+    {
+        PruefStufe.Fehler => WarnStufe.Fehler,
+        PruefStufe.Warnung => WarnStufe.Warnung,
+        _ => erg.Ausgang == ImportAusgang.Erfolg ? WarnStufe.Erfolg : WarnStufe.Hinweis
+    };
+}

@@ -681,6 +681,20 @@ body {
     color: var(--epos-text-sehr-leise);
 }
 
+/* Formathinweis mit Infoknopf daneben (iU9-W12-E-1): der erklaerende Satz nimmt
+   die Breite, der Knopf steht rechts oben daran - Kollisionsregel wie in einer
+   Knopfleiste, kein gerechneter Pixelabstand. */
+.epos-formathinweis {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--epos-abstand);
+    margin-top: var(--epos-rand);
+}
+
+.epos-formathinweis > .epos-herleitung {
+    flex: 1 1 auto;
+}
+
 .epos-kohaerenz {
     display: flex;
     align-items: baseline;
