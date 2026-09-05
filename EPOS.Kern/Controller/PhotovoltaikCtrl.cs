@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -238,6 +239,42 @@ namespace WindowsFormsApplication1
                 return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o) / 1000.0;
             }
             catch { return 0; }
+        }
+
+        // =================================================================================
+        // W6-O-5 - die Gesamtleistung des PV-Dialogs als Anzeigetext
+        // =================================================================================
+
+        /// <summary>
+        /// Das Zahlenformat der kW-Anzeige (Anwenderentscheid <b>W6-O-5</b>): drei
+        /// Nachkommastellen. „N" wie im uebrigen Haus (<c>PVM_DLG_DCAC</c> mit
+        /// <c>N2</c>, <c>PVW_KWP_WERT</c> mit <c>N1</c>) - eine Anlage von 1 200 kW
+        /// liest sich damit als „1.200,000" und nicht als „1200,000".
+        /// </summary>
+        public const string KW_ANZEIGE_FORMAT = "N3";
+
+        /// <summary>
+        /// <b>Die Gesamtleistung eines PV-Bestandes als ANZEIGETEXT [kW]</b> -
+        /// Anwenderentscheid <b>W6-O-5</b> vom 05.09.2026: „Gesamtleistung in kW".
+        ///
+        /// <para><b>Warum es diese Stelle gibt.</b> <c>Tab_PV.Leistung</c> fuehrt die
+        /// Modulleistung in WATT (der Katalogdialog nennt sie „Nennleistung (Pmax)"
+        /// mit der Einheit W), und <c>Tab_Energieanlagen.PV_Leistung</c> ist die
+        /// MODULANZAHL. Der Projektdialog zeigte deren Produkt bis hierher roh an -
+        /// also Watt unter der Beschriftung „[KW]". Die Wandlung ist dieselbe wie in
+        /// <see cref="KwpSumme"/> (Summe / 1000); sie steht hier und nicht in der
+        /// Huelle, damit es bei EINER kWp-Wahrheit bleibt und der Nachweis ohne
+        /// Windows laufen kann.</para>
+        ///
+        /// <para><b>Nur Anzeige.</b> Weder Simulation noch Wirtschaftlichkeit lesen
+        /// diesen Text; sie rechnen ueber <see cref="KwpSumme"/> aus der Datenbank.
+        /// Der Referenzlauf bleibt deshalb bitgleich.</para>
+        /// </summary>
+        /// <param name="summeWatt">Summe aus Modulleistung [W] mal Modulanzahl.</param>
+        /// <returns>Die Leistung in kW, formatiert in der Kultur des Anwenders.</returns>
+        public static string GesamtleistungText(double summeWatt)
+        {
+            return (summeWatt / 1000.0).ToString(KW_ANZEIGE_FORMAT, CultureInfo.CurrentCulture);
         }
 
         // Liefert die Projekt-ID (Tab_PV.ID) eines Bezeichners im Projekt, oder 0.
