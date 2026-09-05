@@ -236,8 +236,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                ProfilQuellmodus modus = (list == null) ? ProfilQuellmodus.Projektrechnung
-                                                        : ProfilQuellmodus.Katalogvorschau;
+                ProfilQuellmodus modus = ProfilBedarf.Vorschaumodus(list, m_ID_Projekt);
 
                 bool vollstaendig = ProfilBedarf.Rechnen(
                     ProfilQuelle.Strom(modus), m_ID_Projekt, list,
