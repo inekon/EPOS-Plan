@@ -2946,6 +2946,33 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > sind sechs der acht gemeinsamen Projekte byte-gleich, 1030 und 1039 tragen die schon zwischen B3 und PA0 bekannte
 > Umgebungsdifferenz des zweiten Rechners. `kern.yml`, das Gate und `CLAUDE.md` halten seither gegen R2_Zeitbasis;
 > `2026-08-30_B3-Kaskade` bleibt zur Geschichte liegen.
+>
+> **Anwenderwunsch W6‑E‑1 vom 05.09.2026 („optional sollten beim ausgewählten PV-Modul alle Eigenschaften/Parameter
+> angezeigt werden"), umgesetzt in `87191a8`:** Der Block „Modul Eigenschaften:" zeigte vier der neunzehn Spalten von
+> `Tab_PV_STAMM`; die übrigen dreizehn standen nur im Katalogdialog — dort, wo man ein Modul ÄNDERT, nicht dort, wo man
+> es AUSWÄHLT. Unter dem Block steht jetzt ein Aufklapper „Alle Modulparameter anzeigen" (`PVD_AUFKLAPP_PARAMETER`,
+> de/en), zugeklappt als Vorgabe, nur lesend, im `Formularraster` mit Einheit hinter dem kurzen Feld. Es ist ein Knopf
+> mit `aria-expanded` und kein `<details>`: Nur so gehört der Offen-Zustand dem Dialog und übersteht den Wechsel des
+> gewählten Moduls. Beschriftung und Einheit kommen aus `ModulKatalogProfil` (Ausprägung Photovoltaik) — derselben
+> Quelle wie der Katalogdialog —, die zwei Temperaturkoeffizienten aus dem Modulimport (`PVIMP_LBL_ALPHA_ISC`/
+> `_BETA_VOC`), die der Katalog nicht führt; neu ist genau EIN Anzeigetext. Gelesen wird im selben Vorgang:
+> `PhotovoltaikStammCtrl.Detail` trägt seither alle Spalten (4 → 17), und weil der Dialog ihn bei jeder
+> Auswahländerung ruft, zieht der Block von selbst nach. Nicht gepflegt heißt „–", nicht 0 — NULL und die 0 des
+> Bestands sind dieselbe Aussage; ein unbekannter Technologiecode bleibt sichtbar. `Textfeld` bekommt dafür `Einheit`
+> wie `Zahlenfeld`. Tests: `PvModulparameterTests` 12 neu, `PhotovoltaikDialogTests` 14 → 21, beide Reihen unter de
+> und en grün; SQL-Prüfer 0 Fundstellen, Kern-Wächter leer. Beobachtung W6‑O‑5: Die Einheit „[KW]" an Modul- und
+> Gesamtleistung war bestandstreu aus `Form_PV` übernommen, sachlich aber Watt (der Katalog nennt denselben Wert
+> „Nennleistung (Pmax)" in W, `AnlagenKwp` teilt durch 1000). Zehn Abnahmepunkte A‑W6‑E‑1 im W6-Protokoll.
+>
+> **Anwenderentscheid W6‑O‑5 vom 05.09.2026 („Gesamtleistung in kW"), umgesetzt in `d534af4`:** Der PV-Projektdialog
+> zeigte zwei Leistungen unter der Beschriftung „[KW]", die beide Watt waren — `Tab_PV.Leistung` führt die
+> Modulleistung in Watt, und die Gesamtleistung war deren rohes Produkt mit der Modulanzahl; zehn Module ergaben
+> „2751,912 KW". Seither heißt das Modulfeld „Modul Leistung [W]" und die Gesamtleistung „Gesamtleistung [kW]" mit drei
+> Nachkommastellen („2,752"); der englische Text „Total power [kW]" sagte die Einheit als einziger schon richtig und
+> bleibt. Die Wandlung steht als `PhotovoltaikCtrl.GesamtleistungText` im Kern neben `KwpSumme` — eine kWp-Wahrheit,
+> ohne Windows nachweisbar — und ist reine Anzeige: Der Rechenweg (`AnlagenKwp`, `KwpSumme`, Simulation,
+> Wirtschaftlichkeit) ist unberührt, der Referenzlauf bitgleich. Nachweis: Kern 1 209 → 1 213, UI 2 656 → 2 659, beide
+> grün unter de und en; Windows-Bau 0 Fehler; Kern-Wächter leer. Vier Abnahmepunkte A‑W6‑O‑5 im W6-Protokoll.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
@@ -3025,6 +3052,27 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Pfadfeld des Zielordners der `BerichtSeite` — ist ein Formularfeld und steht einspaltig im Raster. `UebersichtSeite`
 > und `WirtschaftlichkeitSeite` bleiben unverändert und sind zugleich die Gegenprobe, dass die Regel nur innerhalb
 > `.epos-formularraster` greift. Paket P2: 16 Dateien, UI 2 562 (+16), Formularkarte 122.
+>
+> **Anwenderbefund W5‑E‑2 vom 05.09.2026 („Gewerk Anlage gibt es nicht. Dort stehen Parameter. Dargestellt werden nur
+> die Erzeugerkomponenten, die verwendet werden, keine Parameter"), umgesetzt in `7dcda25`:** Die Gegenüberstellung der
+> Seite „Übersicht" lief über `AbweichungsErmittler.Felder` und nahm damit die Blöcke „Anlage" und „Gebäude" mit —
+> Konfigurationsblöcke ohne Komponentenbestand; im Projekt des Bildschirmfotos (1042 „Booster-Kette mit
+> Kombi-Speicher" mit Variante 1044 „Schichtspeicher") waren das 21 Anlagen- und 4 Gebäudemerkmale über 10
+> Komponentenzeilen. Das Vorbild ist nachgesehen: Die gelöschte Maske `UcBkUebersicht` zeigte den Block ebenfalls (der
+> Wächter `AnlagenEinheitlich` greift nur bei verschiedenen Anlagengewerken), schon in ihrer ersten Fassung — das
+> wirkliche Vorbild ist der Berichtsbaustein `BausteineProjekt`, der seit jeher allein über
+> `ProjektDetails.GewerkTabellen` zählt. Die Zeilenbildung zieht deshalb in den Kern: `Allgemein/Bericht/
+> KomponentenVergleich.cs` mit dem anzeigefreien `KomponentenVergleichZeile` liefert je verwendetem Erzeugergewerk eine
+> Kopfzeile „Anzahl Komponenten" und darunter eine Zeile je Komponente; ein Gewerk mit Stückzahl 0 in allen Versionen
+> erscheint gar nicht. `UebersichtSeiteGaben.FuelleVergleich` schrumpft von 88 auf 10 Zeilen und bildet nur noch ab.
+> Die Unterschiedsansicht einer Variante bleibt vollständig — dort zeigt eine Zeile eine Änderung und trägt die
+> Merkmalsübernahme; `AbweichungsErmittler` ist nicht angefasst, der Referenzlauf unberührt. Nachgezogen ist ein Text
+> (`BK_MSG_VERGLEICH_UMFANG`: „Komponentenzeile(n)" statt „Merkmalszeile(n)", de/en). Nachweis:
+> `KomponentenVergleichTests` (7 Fälle) und ein bunit-Fall in `UebersichtSeiteTests`; Kern 1 197 und UI 2 649 grün unter
+> de und en, SQL-Prüfer 0 Fundstellen, Kern-Wächter leer. **W5‑O‑4 — Anwenderentscheid 05.09.2026: „soll bleiben".**
+> Die Unterschiedsansicht einer Variante zeigt weiterhin alle Abweichungen einschließlich der Anlagen- und
+> Gebäudeparameter, weil eine Zeile dort eine tatsächliche Änderung ist und die Übernahme (z. B. einer geänderten
+> Vorlauftemperatur) daran hängt. Acht Abnahmepunkte A‑W5‑E‑2 im W5-Protokoll.
 
 > **Statusblock iU9 — Welle 4 umgesetzt (03.09.2026, Basis `ae1af82`)**
 >
@@ -3295,7 +3343,7 @@ Windows-Basis; Bericht zeilengleich.
 | **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
 | **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
-| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün · **Zwanzigster Lauf** (33883210632, 04.09.2026, 10 min 14 s) auf `975ead5` nach W15c: grün · **Einundzwanzigster Lauf** (33890882150, 04.09.2026, 8 min 03 s) auf `84d7c16` nach W16a: grün · **Zweiundzwanzigster Lauf** (33898599945, 04.09.2026, 7 min 56 s) auf `c8fbd77` nach W16b: grün · **Vierundzwanzigster Lauf** (33904433007, 04.09.2026, 8 min 43 s) auf `555ef11` nach W16c: grün (Nr. 23 war eine abgebrochene Dublette) · **Fünfundzwanzigster Lauf** (33913313694, 04.09.2026, 6 min 29 s) auf `853b8c6` nach den W16-Nachträgen (E‑2/E‑3, LizenzTexte, W16b‑O‑3): grün · **Sechsundzwanzigster Lauf** (33975880961, 05.09.2026, 6 min 14 s) auf `7bec4ad` nach den Abnahmebefunden vom 05.09. (Baustein `Diagramm`, `epos-diagramm.js` über `import()`): grün · **Siebenundzwanzigster Lauf** (33982889724, 05.09.2026, 10 min 51 s) auf `c563a40` nach den sechs Nachmittagsbefunden vom 05.09. (W13‑B‑1: `…Async`-Zwillinge in `IDateiDienst`/`IDialogDienst`, Fehlerschranke `Wurzel<T>` in `EPOS.iOS/HauptSeite`; W9.8, W15a‑E‑1, W16b‑E‑7, iU8‑E‑1): grün |
+| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün · **Zwanzigster Lauf** (33883210632, 04.09.2026, 10 min 14 s) auf `975ead5` nach W15c: grün · **Einundzwanzigster Lauf** (33890882150, 04.09.2026, 8 min 03 s) auf `84d7c16` nach W16a: grün · **Zweiundzwanzigster Lauf** (33898599945, 04.09.2026, 7 min 56 s) auf `c8fbd77` nach W16b: grün · **Vierundzwanzigster Lauf** (33904433007, 04.09.2026, 8 min 43 s) auf `555ef11` nach W16c: grün (Nr. 23 war eine abgebrochene Dublette) · **Fünfundzwanzigster Lauf** (33913313694, 04.09.2026, 6 min 29 s) auf `853b8c6` nach den W16-Nachträgen (E‑2/E‑3, LizenzTexte, W16b‑O‑3): grün · **Sechsundzwanzigster Lauf** (33975880961, 05.09.2026, 6 min 14 s) auf `7bec4ad` nach den Abnahmebefunden vom 05.09. (Baustein `Diagramm`, `epos-diagramm.js` über `import()`): grün · **Siebenundzwanzigster Lauf** (33982889724, 05.09.2026, 10 min 51 s) auf `c563a40` nach den sechs Nachmittagsbefunden vom 05.09. (W13‑B‑1: `…Async`-Zwillinge in `IDateiDienst`/`IDialogDienst`, Fehlerschranke `Wurzel<T>` in `EPOS.iOS/HauptSeite`; W9.8, W15a‑E‑1, W16b‑E‑7, iU8‑E‑1): grün · **Achtundzwanzigster Lauf** (33992594094, 05.09.2026, 6 min 53 s) auf `6eddd27` nach der Zusammenführung der Rechner-2-Linie: Bau, Start, Prüfmodus grün, **iZ6-Vergleich rot**, weil `ios.yml` noch gegen `2026-08-30_B3-Kaskade` hielt (8 711 Abweichungen = Paket-A-Zeitbasis; Basiswechsel `37dfebb`, Workflow `e3fd980`) · **Neunundzwanzigster Lauf** (33993379551, 05.09.2026, 6 min 32 s) auf `e3fd980` gegen `2026-09-05_R2_Zeitbasis`: grün, PASS und byte-gleich (236 670 Werte, `diff -rq` leer; die Simulation meldet die Paket-A-Zeitbasis „Klimadaten: UTC → MEZ/MESZ, Referenzjahr 2025") |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
 
 **Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):
