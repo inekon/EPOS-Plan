@@ -27,35 +27,43 @@
 
     <p class="epos-kontextzeile">@KontextText</p>
 
-    <Auswahlfeld Bezeichnung="@LabelZielProjekt"
-                 Eintraege="@Zielprojekte"
-                 Auswahl="@_zielProjekt"
-                 Aktiv="@ZielWaehlbar"
-                 AuswahlChanged="BeiZielProjekt" />
+    @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld.
+       EINSPALTIG, weil der Block eine Reihenfolge traegt - Ziel, dann Quelle,
+       dann die Quelle im Einzelnen; nebeneinander gestellt liest sie sich nicht
+       mehr als Weg. *@
+    <Formularraster Einspaltig="true">
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@LabelZielProjekt"
+                         Eintraege="@Zielprojekte"
+                         Auswahl="@_zielProjekt"
+                         Aktiv="@ZielWaehlbar"
+                         AuswahlChanged="BeiZielProjekt" />
 
-    <Optionsgruppe Bezeichnung="@LabelQuelle"
-                   Eintraege="@_quellen"
-                   Auswahl="@(_ausVorlage ? QUELLE_VORLAGE : QUELLE_PROJEKT)"
-                   Gesperrt="@_gesperrteQuellen"
-                   AuswahlChanged="BeiQuelle" />
+            <Optionsgruppe Bezeichnung="@LabelQuelle"
+                           Eintraege="@_quellen"
+                           Auswahl="@(_ausVorlage ? QUELLE_VORLAGE : QUELLE_PROJEKT)"
+                           Gesperrt="@_gesperrteQuellen"
+                           AuswahlChanged="BeiQuelle" />
 
-    <Auswahlfeld Bezeichnung="@LabelQuellVorlage"
-                 Eintraege="@Quellvorlagen"
-                 Auswahl="@_quellVorlage"
-                 Aktiv="@_ausVorlage"
-                 AuswahlChanged="BeiQuellVorlage" />
+            <Auswahlfeld Bezeichnung="@LabelQuellVorlage"
+                         Eintraege="@Quellvorlagen"
+                         Auswahl="@_quellVorlage"
+                         Aktiv="@_ausVorlage"
+                         AuswahlChanged="BeiQuellVorlage" />
 
-    <Auswahlfeld Bezeichnung="@LabelQuellProjekt"
-                 Eintraege="@Quellprojekte"
-                 Auswahl="@_quellProjekt"
-                 Aktiv="@(!_ausVorlage)"
-                 AuswahlChanged="BeiQuellProjekt" />
+            <Auswahlfeld Bezeichnung="@LabelQuellProjekt"
+                         Eintraege="@Quellprojekte"
+                         Auswahl="@_quellProjekt"
+                         Aktiv="@(!_ausVorlage)"
+                         AuswahlChanged="BeiQuellProjekt" />
 
-    <Auswahlfeld Bezeichnung="@LabelQuellAnlage"
-                 Eintraege="@_quellAnlagen"
-                 Auswahl="@_quellAnlage"
-                 Aktiv="@(!_ausVorlage)"
-                 AuswahlChanged="BeiQuellAnlage" />
+            <Auswahlfeld Bezeichnung="@LabelQuellAnlage"
+                         Eintraege="@_quellAnlagen"
+                         Auswahl="@_quellAnlage"
+                         Aktiv="@(!_ausVorlage)"
+                         AuswahlChanged="BeiQuellAnlage" />
+        </KindInhalt>
+    </Formularraster>
 
     <Herleitungszeile Text="@_vorschau" />
 

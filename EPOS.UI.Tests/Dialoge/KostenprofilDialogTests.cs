@@ -419,4 +419,29 @@ public class KostenprofilDialogTests : BunitContext
 
         Assert.Equal(new[] { "Form_Kostenprofil.btn_Help" }, hilfe.Geoeffnet);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Bezeichner und Wochentagswahl stehen
+    /// im <c>Formularraster</c>. Das Zahlenraster der 12 Monats- und 24
+    /// Stundenwerte bleibt, wie es ist — das ist eine Wertetafel, kein
+    /// Formularblock, und der Raster darf dort nicht hinein.
+    /// </summary>
+    [Fact]
+    public void Bezeichner_und_Wochentag_stehen_im_Formularraster()
+    {
+        var cut = Zeige();
+
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 1);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld").Count >= 1);
+
+        // Die Wertetafel bleibt ausserhalb.
+        Assert.Empty(cut.FindAll(".epos-formularraster .epos-zahlenraster"));
+        Assert.True(cut.FindAll(".epos-zahlenraster").Count >= 1);
+    }
 }

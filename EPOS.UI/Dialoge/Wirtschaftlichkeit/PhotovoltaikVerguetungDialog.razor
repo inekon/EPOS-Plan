@@ -48,15 +48,22 @@
         <KindInhalt>
             <Herleitungszeile Text="@_t.Kwp" Formel="@KwpText" />
 
-            <Zahlenfeld Bezeichnung="@_t.KwpOverride" Wert="@(Modell.KwpOverride ?? 0)"
-                        WertChanged="@LeistungGeaendert"
-                        Min="0" Max="100000" Nachkommastellen="2" />
+            @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem
+               Feld, Zahlenfelder kurz mit der Einheit dahinter. Die Herleitungs-
+               und Warnzeilen bleiben ausserhalb - sie sind Saetze, keine Felder. *@
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@_t.KwpOverride" Wert="@(Modell.KwpOverride ?? 0)"
+                                WertChanged="@LeistungGeaendert"
+                                Min="0" Max="100000" Nachkommastellen="2" />
 
-            <Datumsfeld Bezeichnung="@_t.Ibn" Wert="@Ibn"
-                        WertChanged="@IbnGeaendert" />
+                    <Datumsfeld Bezeichnung="@_t.Ibn" Wert="@Ibn"
+                                WertChanged="@IbnGeaendert" />
 
-            <Optionsgruppe Bezeichnung="@_t.GEinspeiseart" Eintraege="@_einspeisearten"
-                           Auswahl="@EinspeiseartNr" AuswahlChanged="EinspeiseartGewaehlt" />
+                    <Optionsgruppe Bezeichnung="@_t.GEinspeiseart" Eintraege="@_einspeisearten"
+                                   Auswahl="@EinspeiseartNr" AuswahlChanged="EinspeiseartGewaehlt" />
+                </KindInhalt>
+            </Formularraster>
 
             @if (!string.IsNullOrEmpty(Anlagenwarnung))
             {
@@ -68,9 +75,13 @@
     @* --------------------------------------------- Anzulegender Wert *@
     <Gruppenkopf Titel="@_t.GAw" Symbol="€">
         <KindInhalt>
-            <Zahlenfeld Bezeichnung="@_t.AwOverride" Wert="@(Modell.AwOverride ?? 0)"
-                        WertChanged="@(w => Modell.AwOverride = w > 0 ? w : null)"
-                        Min="0" Max="100" Nachkommastellen="2" />
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@_t.AwOverride" Wert="@(Modell.AwOverride ?? 0)"
+                                WertChanged="@(w => Modell.AwOverride = w > 0 ? w : null)"
+                                Min="0" Max="100" Nachkommastellen="2" />
+                </KindInhalt>
+            </Formularraster>
 
             <Herleitungszeile Text="@AwText" />
             <Herleitungszeile Text="@Satz.Herleitung" />
@@ -81,18 +92,22 @@
     @* ------------------------------------------------------ Vermarktung *@
     <Gruppenkopf Titel="@_t.GVermarktung" Symbol="⇄">
         <KindInhalt>
-            <Optionsgruppe Eintraege="@_vermarktungsformen" Gesperrt="@GesperrteFormen"
-                           Auswahl="@VermarktungNr" AuswahlChanged="VermarktungGewaehlt" />
+            <Formularraster>
+                <KindInhalt>
+                    <Optionsgruppe Eintraege="@_vermarktungsformen" Gesperrt="@GesperrteFormen"
+                                   Auswahl="@VermarktungNr" AuswahlChanged="VermarktungGewaehlt" />
 
-            <Zahlenfeld Bezeichnung="@_t.Dv" Wert="@(Modell.DvEntgelt ?? 0)"
-                        WertChanged="@(w => Modell.DvEntgelt = w)"
-                        Min="0" Max="10" Nachkommastellen="2" Aktiv="@IstMarktpraemie" />
-            <Zahlenfeld Bezeichnung="@_t.PpaPreis" Wert="@(Modell.PpaPreis ?? 0)"
-                        WertChanged="@(w => Modell.PpaPreis = w > 0 ? w : null)"
-                        Min="0" Max="100" Nachkommastellen="2" Aktiv="@IstPpa" />
-            <Zahlenfeld Bezeichnung="@_t.PpaAufschlag" Wert="@(Modell.PpaSpotAufschlag ?? 0)"
-                        WertChanged="@(w => Modell.PpaSpotAufschlag = w != 0 ? w : null)"
-                        Min="-100" Max="100" Nachkommastellen="2" Aktiv="@IstPpa" />
+                    <Zahlenfeld Bezeichnung="@_t.Dv" Wert="@(Modell.DvEntgelt ?? 0)"
+                                WertChanged="@(w => Modell.DvEntgelt = w)"
+                                Min="0" Max="10" Nachkommastellen="2" Aktiv="@IstMarktpraemie" />
+                    <Zahlenfeld Bezeichnung="@_t.PpaPreis" Wert="@(Modell.PpaPreis ?? 0)"
+                                WertChanged="@(w => Modell.PpaPreis = w > 0 ? w : null)"
+                                Min="0" Max="100" Nachkommastellen="2" Aktiv="@IstPpa" />
+                    <Zahlenfeld Bezeichnung="@_t.PpaAufschlag" Wert="@(Modell.PpaSpotAufschlag ?? 0)"
+                                WertChanged="@(w => Modell.PpaSpotAufschlag = w != 0 ? w : null)"
+                                Min="-100" Max="100" Nachkommastellen="2" Aktiv="@IstPpa" />
+                </KindInhalt>
+            </Formularraster>
 
             <Herleitungszeile Text="@VermarktungHinweis" />
         </KindInhalt>
@@ -101,21 +116,25 @@
     @* -------------------------------------------------- § 51 / § 51a *@
     <Gruppenkopf Titel="@_t.G51">
         <KindInhalt>
-            <Auswahlfeld Bezeichnung="@_t.Anwenden"
-                         Eintraege="@TarifWahlen.Eintraege(_schalter)"
-                         Auswahl="@PvSchalterwahlen.Index(Modell.Par51_Anwenden)"
-                         AuswahlChanged="@(n => Modell.Par51_Anwenden = PvSchalterwahlen.Wert(n))" />
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@_t.Anwenden"
+                                 Eintraege="@TarifWahlen.Eintraege(_schalter)"
+                                 Auswahl="@PvSchalterwahlen.Index(Modell.Par51_Anwenden)"
+                                 AuswahlChanged="@(n => Modell.Par51_Anwenden = PvSchalterwahlen.Wert(n))" />
 
-            <Ganzzahlfeld Bezeichnung="@_t.IMSys" Wert="@(Modell.IMSys_Einbaujahr ?? 0)"
-                          WertChanged="@(w => Modell.IMSys_Einbaujahr = w >= 2000 ? w : null)"
-                          Min="0" Max="2100" />
+                    <Ganzzahlfeld Bezeichnung="@_t.IMSys" Wert="@(Modell.IMSys_Einbaujahr ?? 0)"
+                                  WertChanged="@(w => Modell.IMSys_Einbaujahr = w >= 2000 ? w : null)"
+                                  Min="0" Max="2100" />
 
-            <Zahlenfeld Bezeichnung="@_t.Ausfall" Wert="@(Modell.AusfallanteilProzent ?? 0)"
-                        WertChanged="@(w => Modell.AusfallanteilProzent = w)"
-                        Min="0" Max="100" Nachkommastellen="1" Einheit="%" />
+                    <Zahlenfeld Bezeichnung="@_t.Ausfall" Wert="@(Modell.AusfallanteilProzent ?? 0)"
+                                WertChanged="@(w => Modell.AusfallanteilProzent = w)"
+                                Min="0" Max="100" Nachkommastellen="1" Einheit="%" />
 
-            <Schalter Bezeichnung="@_t.Par51a" Wert="@Modell.Par51a_Kompensieren"
-                      WertChanged="@(w => Modell.Par51a_Kompensieren = w)" />
+                    <Schalter Bezeichnung="@_t.Par51a" Wert="@Modell.Par51a_Kompensieren"
+                              WertChanged="@(w => Modell.Par51a_Kompensieren = w)" />
+                </KindInhalt>
+            </Formularraster>
 
             <Herleitungszeile Text="@Par51Status" />
         </KindInhalt>
@@ -133,10 +152,14 @@
     @* ---------------------------------------------------------- Kappung *@
     <Gruppenkopf Titel="@_t.GKappung">
         <KindInhalt>
-            <Auswahlfeld Bezeichnung="@_t.Anwenden"
-                         Eintraege="@TarifWahlen.Eintraege(_schalter)"
-                         Auswahl="@PvSchalterwahlen.Index(Modell.Kappung60_Anwenden)"
-                         AuswahlChanged="@(n => Modell.Kappung60_Anwenden = PvSchalterwahlen.Wert(n))" />
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@_t.Anwenden"
+                                 Eintraege="@TarifWahlen.Eintraege(_schalter)"
+                                 Auswahl="@PvSchalterwahlen.Index(Modell.Kappung60_Anwenden)"
+                                 AuswahlChanged="@(n => Modell.Kappung60_Anwenden = PvSchalterwahlen.Wert(n))" />
+                </KindInhalt>
+            </Formularraster>
             <Herleitungszeile Text="@KappungStatus" />
         </KindInhalt>
     </Gruppenkopf>

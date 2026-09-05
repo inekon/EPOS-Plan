@@ -37,8 +37,15 @@
 
     <Herleitungszeile Text="@InfoText" />
 
-    <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
-              WertChanged="@(w => _bezeichner = w)" />
+    @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld.
+       Das Zahlenraster der 12 Monats- und 24 Stundenwerte bleibt, wie es ist -
+       das ist eine Wertetafel, kein Formularblock. *@
+    <Formularraster>
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+                      WertChanged="@(w => _bezeichner = w)" />
+        </KindInhalt>
+    </Formularraster>
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
@@ -69,8 +76,12 @@
         @* ========================================================= Wochenwerte *@
         <Reiterblatt Schluessel="WOCHE" Titel="@KopfWoche">
             <KindInhalt>
-                <Auswahlfeld Bezeichnung="@LabelWochentag" Eintraege="@Wochentage"
-                             Auswahl="@_tag" AuswahlChanged="BeiTagwechsel" />
+                <Formularraster>
+                    <KindInhalt>
+                        <Auswahlfeld Bezeichnung="@LabelWochentag" Eintraege="@Wochentage"
+                                     Auswahl="@_tag" AuswahlChanged="BeiTagwechsel" />
+                    </KindInhalt>
+                </Formularraster>
 
                 <div class="epos-zahlenraster">
                     @{ int tagJetzt = _tag ?? 0; }

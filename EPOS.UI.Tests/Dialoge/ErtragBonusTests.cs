@@ -182,4 +182,29 @@ public class ErtragBonusTests : BunitContext
 
         Assert.Equal(5, cut.FindAll(".epos-gruppenkopf").Count);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Die Projektwahl der PV-Ausprägung
+    /// steht im <c>Formularraster</c> — Beschriftung neben dem Feld. Die
+    /// Ertragstafel und die Herleitungszeilen bleiben Text; sie sind Ergebnis,
+    /// kein Formularblock.
+    /// </summary>
+    [Fact]
+    public void Die_Projektwahl_steht_im_Formularraster()
+    {
+        var cut = Render<ErtragBonus>(p => p
+            .Add(x => x.IstPv, true)
+            .Add(x => x.TitelPv, "Photovoltaik")
+            .Add(x => x.LabelPvProjekt, "PV-Projekt")
+            .Add(x => x.Projekte, new[] { (1, "Variante A") }));
+
+        Assert.Single(cut.FindAll(".epos-formularraster"));
+        Assert.Single(cut.FindAll(".epos-formularraster .epos-feld"));
+    }
 }

@@ -384,4 +384,29 @@ public class PhotovoltaikVerguetungDialogTests : BunitContext
         Assert.Single(cut.FindAll(".epos-infoknopf"));
         Assert.Equal("Form_PhotovoltaikVerguetung.btn_Help", cut.Instance.HilfeSchluessel);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Die fünf Parameterblöcke stehen im
+    /// <c>Formularraster</c> — Beschriftung neben dem Feld, Zahlenfelder kurz mit
+    /// der Einheit unmittelbar dahinter. Die Herleitungs- und Warnzeilen bleiben
+    /// ausserhalb: Sie sind Sätze, keine Felder.
+    /// </summary>
+    [Fact]
+    public void Die_Bloecke_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen(Satz());
+
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 4);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count > 0);
+
+        // Die Einheit steht IN der Feldzeile des kurzen Feldes (Ausfallanteil "%").
+        Assert.Contains(cut.FindAll(".epos-formularraster .epos-feld--kurz"),
+                        f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
 }

@@ -289,4 +289,27 @@ public class CaseEingabeDialogTests : BunitContext
 
         Assert.Equal(new[] { "Form_CaseEingabe.btn_Help" }, hilfe.Geoeffnet);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Kosten, Nutzungsdauer und der
+    /// Startjahr-Block stehen im <c>Formularraster</c> — Beschriftung neben dem
+    /// Feld, Zahlenfelder kurz mit der Einheit dahinter.
+    /// </summary>
+    [Fact]
+    public void Die_Bloecke_stehen_im_Formularraster()
+    {
+        var cut = Aufbauen(_ => { });
+
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 3);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count > 0);
+
+        Assert.Contains(cut.FindAll(".epos-formularraster .epos-feld--kurz"),
+                        f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
 }

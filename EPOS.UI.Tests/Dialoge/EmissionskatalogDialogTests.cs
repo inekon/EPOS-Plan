@@ -614,4 +614,31 @@ public class EmissionskatalogDialogTests : BunitContext
 
         Assert.Equal(new[] { "Form_Emissionskatalog.btn_Help" }, hilfe.Geoeffnet);
     }
+
+    // =====================================================================
+    //  Das Formularraster — Anwenderwunsch iU8-E-2 / W14a-E-7, Paket P2
+    //  (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+
+    /// <summary>
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Die beiden Editoren in der
+    /// Überlagerung sind Formularblöcke und stehen im <c>Formularraster</c> —
+    /// Beschriftung neben dem Feld. Die beiden Datenraster des Dialogs bleiben
+    /// DATENraster: Ihre Felder stehen in Tabellenzellen, dort darf der Raster
+    /// nicht hinein.
+    /// </summary>
+    [Fact]
+    public void Der_Arteneditor_steht_im_Formularraster()
+    {
+        var cut = Zeige();
+        ArtenKnoepfe(cut)[0].Click();                       // Neu…
+
+        var block = cut.Find(".epos-ueberlagerung-inhalt");
+        Assert.NotNull(block.QuerySelector(".epos-formularraster"));
+        Assert.True(block.QuerySelectorAll(".epos-formularraster .epos-feld").Length >= 4);
+
+        // Kein Raster um die Tabellen.
+        Assert.Empty(cut.FindAll(".epos-formularraster .epos-zeilenraster"));
+    }
 }
