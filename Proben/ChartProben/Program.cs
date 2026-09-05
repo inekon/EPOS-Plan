@@ -386,6 +386,38 @@ namespace ChartProben
                             },
                             null, "Waermelast [kW]", ChartRenderer.Achse.Jahresstunden, false));
 
+            // --- DATENZOOM: dieselben zwei Bilder mit Achsenbereich --------------------
+            //
+            // Windows-Abnahme 05.09.2026, Befund A-1. Der Anwender zieht im Bild ein
+            // Rechteck auf; der Kern zeichnet DIESEN Ausschnitt neu, statt das fertige
+            // Bild zu vergroessern. Geprueft wird dasselbe wie bei jedem anderen Bild -
+            // Masse, Farben, Determinismus -, und zusaetzlich, dass der Ausschnitt ein
+            // ANDERES Bild ergibt als die Vollansicht (weiter unten, Unterschiedlich).
+            //
+            // Das Fenster liegt auf den Stunden 3 000 bis 3 500: mitten im Jahr, damit
+            // im Bild wirklich ein Ausschnitt steht und nicht zufaellig der Rand.
+            var fenster = new ChartRenderer.Achsenfenster(3000, 3500);
+
+            Pruefe(ziel, "ganglinie_normiert_fenster", 1240, 560,
+                   new[] { SKColors.Red },
+                   () => ChartRenderer.GanglinieNormiert("Waermelast Jahresganglinie",
+                            new List<ChartRenderer.Reihe>
+                            { new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Red) },
+                            "Anteil am Hoechstwert", ChartRenderer.Achse.Jahresstunden, false,
+                            fenster));
+
+            // Mit senkrechtem Anteil: die obere Kante des Rechtecks halbiert die Achse.
+            Pruefe(ziel, "erzeugerstapel_fenster", 1240, 560,
+                   new[] { SKColors.Orange, SKColors.Yellow, SKColors.Blue, SKColors.Green },
+                   () => ChartRenderer.ErzeugerStapel("Waermeproduktion Jahresganglinie",
+                            b2Stapel,
+                            new List<ChartRenderer.Reihe>(),
+                            new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
+                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                            "Waermelast [kW]", ChartRenderer.Achse.Jahresstunden, false,
+                            null, null,
+                            new ChartRenderer.Achsenfenster(3000, 3500, 0.6)));
+
             // --- B4: Streuwolke -------------------------------------------------------
             Pruefe(ziel, "streuwolke_drei_reihen", 1240, 560,
                    new[] { STREU_ROT_AUF_WEISS, STREU_GELB_AUF_WEISS, STREU_BLAU_AUF_WEISS },
@@ -489,6 +521,33 @@ namespace ChartProben
                                                         ChartRenderer.Stapelart.Keine, true)
                             },
                             minAuto: true));
+
+            // --- Der Ausschnitt muss auch WIRKEN --------------------------------------
+            //
+            // Masse, Farben und Determinismus stimmen auch dann, wenn der
+            // Fensterparameter stillschweigend ignoriert wird. Diese zwei Faelle
+            // pruefen deshalb das Gegenstueck: derselbe Aufruf mit und ohne Fenster
+            // muss zwei verschiedene Bilder liefern - und OHNE Fenster genau das der
+            // Vollansicht, Byte fuer Byte.
+            Unterschiedlich("ganglinie_normiert_fenster",
+                () => ChartRenderer.GanglinieNormiert("Waermelast Jahresganglinie",
+                        new List<ChartRenderer.Reihe>
+                        { new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Red) },
+                        "Anteil am Hoechstwert", ChartRenderer.Achse.Jahresstunden, false),
+                () => ChartRenderer.GanglinieNormiert("Waermelast Jahresganglinie",
+                        new List<ChartRenderer.Reihe>
+                        { new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Red) },
+                        "Anteil am Hoechstwert", ChartRenderer.Achse.Jahresstunden, false,
+                        fenster));
+
+            Unterschiedlich("erzeugerstapel_fenster",
+                () => ChartRenderer.ErzeugerStapel("Waermeproduktion Jahresganglinie",
+                        b2Stapel, new List<ChartRenderer.Reihe>(), null,
+                        "Waermelast [kW]", ChartRenderer.Achse.Jahresstunden, false),
+                () => ChartRenderer.ErzeugerStapel("Waermeproduktion Jahresganglinie",
+                        b2Stapel, new List<ChartRenderer.Reihe>(), null,
+                        "Waermelast [kW]", ChartRenderer.Achse.Jahresstunden, false,
+                        null, null, fenster));
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
@@ -638,6 +697,34 @@ namespace ChartProben
             }
 
             Melde(name, masse, bytes, farbzahl, determ, maengel);
+        }
+
+        /// <summary>
+        /// Zwei Zeichenwege muessen VERSCHIEDENE Bilder liefern (Datenzoom, Befund A-1
+        /// der Windows-Abnahme 05.09.2026). Das ist die Gegenprobe zu
+        /// <see cref="Pruefe"/>: Ein Fensterparameter, den der Renderer uebergeht,
+        /// bestuende jede Mass-, Farb- und Determinismuspruefung und wuerde trotzdem
+        /// nichts tun.
+        /// </summary>
+        private static void Unterschiedlich(string name, Func<byte[]> ganz, Func<byte[]> teil)
+        {
+            _bilder++;
+            var maengel = new List<string>();
+
+            byte[] a, b;
+            try { a = ganz(); b = teil(); }
+            catch (Exception ex)
+            {
+                Melde(name + " (wirkt)", "-", "-", "-", "-",
+                      new List<string> { "Ausnahme: " + ex.GetType().Name + " - " + ex.Message });
+                return;
+            }
+
+            if (a == null || b == null) maengel.Add("Renderer liefert null");
+            else if (a.SequenceEqual(b)) maengel.Add("Ausschnitt aendert das Bild nicht");
+
+            Melde(name + " (wirkt)", "-", b == null ? "-" : b.Length.ToString("N0", CultureInfo.InvariantCulture),
+                  "-", "-", maengel);
         }
 
         private static void Melde(string name, string masse, string bytes, string farbzahl,

@@ -15,6 +15,11 @@ namespace EPOS.UI.Tests.Seiten;
 /// <para>Soll: die vier Zahlen, die Kanalzeilen nur bei Praesenz, ein
 /// Bildauftrag je Schalterstellung (Befund W11-B14: EINE Fuelllogik statt
 /// zweier) und die drei Rueckrufe.</para>
+/// <para>Der Selektor nennt seit der Windows-Abnahme 05.09.2026 die Klasse
+/// <c>epos-simerg-knopf</c>: Jedes Diagramm steht seither im Baustein
+/// <c>Diagramm</c> und bringt seine eigenen Knöpfe („1:1“, „Bereich“) mit.
+/// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
+/// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
 /// </summary>
 public class BedarfReiterTests : BunitContext
 {
@@ -141,7 +146,7 @@ public class BedarfReiterTests : BunitContext
     public void Ohne_Rueckruf_bleiben_die_drei_Knoepfe_weg()
     {
         var seite = Zeichnen(Daten());
-        Assert.Empty(seite.FindAll("button"));
+        Assert.Empty(seite.FindAll("button.epos-simerg-knopf"));
     }
 
     [Fact]
@@ -150,7 +155,7 @@ public class BedarfReiterTests : BunitContext
         int w = 0, s = 0, c = 0;
         var seite = Zeichnen(Daten(), () => w++, () => s++, () => c++);
 
-        var knoepfe = seite.FindAll("button");
+        var knoepfe = seite.FindAll("button.epos-simerg-knopf");
         Assert.Equal(3, knoepfe.Count);
         knoepfe[0].Click();
         knoepfe[1].Click();
