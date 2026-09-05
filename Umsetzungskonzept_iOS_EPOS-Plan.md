@@ -3043,6 +3043,27 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Pfadfeld des Zielordners der `BerichtSeite` — ist ein Formularfeld und steht einspaltig im Raster. `UebersichtSeite`
 > und `WirtschaftlichkeitSeite` bleiben unverändert und sind zugleich die Gegenprobe, dass die Regel nur innerhalb
 > `.epos-formularraster` greift. Paket P2: 16 Dateien, UI 2 562 (+16), Formularkarte 122.
+>
+> **Anwenderbefund W5‑E‑2 vom 05.09.2026 („Gewerk Anlage gibt es nicht. Dort stehen Parameter. Dargestellt werden nur
+> die Erzeugerkomponenten, die verwendet werden, keine Parameter"), umgesetzt in `7dcda25`:** Die Gegenüberstellung der
+> Seite „Übersicht" lief über `AbweichungsErmittler.Felder` und nahm damit die Blöcke „Anlage" und „Gebäude" mit —
+> Konfigurationsblöcke ohne Komponentenbestand; im Projekt des Bildschirmfotos (1042 „Booster-Kette mit
+> Kombi-Speicher" mit Variante 1044 „Schichtspeicher") waren das 21 Anlagen- und 4 Gebäudemerkmale über 10
+> Komponentenzeilen. Das Vorbild ist nachgesehen: Die gelöschte Maske `UcBkUebersicht` zeigte den Block ebenfalls (der
+> Wächter `AnlagenEinheitlich` greift nur bei verschiedenen Anlagengewerken), schon in ihrer ersten Fassung — das
+> wirkliche Vorbild ist der Berichtsbaustein `BausteineProjekt`, der seit jeher allein über
+> `ProjektDetails.GewerkTabellen` zählt. Die Zeilenbildung zieht deshalb in den Kern: `Allgemein/Bericht/
+> KomponentenVergleich.cs` mit dem anzeigefreien `KomponentenVergleichZeile` liefert je verwendetem Erzeugergewerk eine
+> Kopfzeile „Anzahl Komponenten" und darunter eine Zeile je Komponente; ein Gewerk mit Stückzahl 0 in allen Versionen
+> erscheint gar nicht. `UebersichtSeiteGaben.FuelleVergleich` schrumpft von 88 auf 10 Zeilen und bildet nur noch ab.
+> Die Unterschiedsansicht einer Variante bleibt vollständig — dort zeigt eine Zeile eine Änderung und trägt die
+> Merkmalsübernahme; `AbweichungsErmittler` ist nicht angefasst, der Referenzlauf unberührt. Nachgezogen ist ein Text
+> (`BK_MSG_VERGLEICH_UMFANG`: „Komponentenzeile(n)" statt „Merkmalszeile(n)", de/en). Nachweis:
+> `KomponentenVergleichTests` (7 Fälle) und ein bunit-Fall in `UebersichtSeiteTests`; Kern 1 197 und UI 2 649 grün unter
+> de und en, SQL-Prüfer 0 Fundstellen, Kern-Wächter leer. **Offen W5‑O‑4 (Anwenderfrage):** Soll auch die
+> Unterschiedsansicht einer Variante die Anlagen- und Gebäudeparameter weglassen? Bewusst unangetastet, weil eine
+> Zeile dort eine tatsächliche Änderung ist und die Übernahme (z. B. einer geänderten Vorlauftemperatur) daran hängt.
+> Acht Abnahmepunkte A‑W5‑E‑2 im W5-Protokoll.
 
 > **Statusblock iU9 — Welle 4 umgesetzt (03.09.2026, Basis `ae1af82`)**
 >
