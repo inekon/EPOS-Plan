@@ -35867,7 +35867,16 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BPRO_MSG_FEHLER", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Typ mit diesem Namen ist schon vorhanden ähnelt.
+        /// </summary>
+        public static string BPRO_MSG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("BPRO_MSG_NAME_BELEGT", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll {0} wirklich gelöscht werden ? ähnelt.
         /// </summary>
@@ -40141,6 +40150,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FEHLERSCHRANKE_BTN_SCHLIESSEN {
             get {
                 return ResourceManager.GetString("FEHLERSCHRANKE_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Datei importieren... ähnelt.
+        /// </summary>
+        public static string STROMGL_BTN_IMPORTIEREN {
+            get {
+                return ResourceManager.GetString("STROMGL_BTN_IMPORTIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter... ähnelt.
+        /// </summary>
+        public static string STROMGL_BTN_SPEICHERN_UNTER {
+            get {
+                return ResourceManager.GetString("STROMGL_BTN_SPEICHERN_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string STROMGL_BTN_LOESCHEN {
+            get {
+                return ResourceManager.GetString("STROMGL_BTN_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dateiformat: CSV- oder Textdatei (auch Excel .xlsx/.xlsm/.xls) mit einem Jahr [...] ähnelt.
+        /// </summary>
+        public static string STROMGL_HINWEIS_FORMAT {
+            get {
+                return ResourceManager.GetString("STROMGL_HINWEIS_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinie speichern unter ähnelt.
+        /// </summary>
+        public static string STROMGL_TITEL_KOPIE {
+            get {
+                return ResourceManager.GetString("STROMGL_TITEL_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Kopie: ähnelt.
+        /// </summary>
+        public static string STROMGL_FRAGE_KOPIE {
+            get {
+                return ResourceManager.GetString("STROMGL_FRAGE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  - Kopie ähnelt.
+        /// </summary>
+        public static string STROMGL_KOPIE_ZUSATZ {
+            get {
+                return ResourceManager.GetString("STROMGL_KOPIE_ZUSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Stromganglinie mit dem Namen „{0}“ ist bereits in der Datenbank. Bitte [...] ähnelt.
+        /// </summary>
+        public static string STROMGL_MSG_NAME_VERGEBEN {
+            get {
+                return ResourceManager.GetString("STROMGL_MSG_NAME_VERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Namen für die Kopie eingeben. ähnelt.
+        /// </summary>
+        public static string STROMGL_MSG_NAME_LEER {
+            get {
+                return ResourceManager.GetString("STROMGL_MSG_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromganglinie „{0}“ wurde als „{1}“ gespeichert. ähnelt.
+        /// </summary>
+        public static string STROMGL_MSG_KOPIERT {
+            get {
+                return ResourceManager.GetString("STROMGL_MSG_KOPIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kopie konnte nicht angelegt werden. ähnelt.
+        /// </summary>
+        public static string STROMGL_MSG_KOPIE_FEHLER {
+            get {
+                return ResourceManager.GetString("STROMGL_MSG_KOPIE_FEHLER", resourceCulture);
             }
         }
         

@@ -79,6 +79,73 @@ public sealed class BedarfErgebnisDaten
     /// der Schalter „Jahresverlauf" erscheint nicht.
     /// </summary>
     public byte[]? JahresverlaufBild { get; set; }
+
+    /// <summary>
+    /// Die GANGLINIE hinter dem Grafikreiter — Woche und Tag (Anwenderwunsch W8‑E‑2 der
+    /// Windows-Abnahme 05.09.2026); <c>null</c> = der Reiter zeigt nur die Jahressicht
+    /// wie bisher.
+    /// </summary>
+    public Ganglinienquelle? Ganglinie { get; set; }
+}
+
+/// <summary>
+/// Welche Sorte Kennzahl auf dem ersten Reiter steht (Anwenderwunsch W8‑E‑2,
+/// Windows-Abnahme 05.09.2026).
+///
+/// <para><b>Warum die Unterscheidung nötig ist.</b> Der Bestand reihte alle vier
+/// Stromkennzahlen untereinander, und die erste hieß „max. Strombedarf" — eine
+/// LEISTUNG in kW zwischen drei ENERGIEMENGEN in MWh, mit einer Beschriftung, die
+/// wie ein vierter Summand klang. Der Anwender hat genau das beanstandet: „max.
+/// Strombedarf ist falsch, das ist die max. Leistung, und sie gehört nicht in die
+/// Summe."</para>
+/// </summary>
+public enum Kennzahlart
+{
+    /// <summary>Eine LEISTUNG in kW — eigener Block, außerhalb der Summe.</summary>
+    Leistung,
+
+    /// <summary>Ein Posten der Energiebilanz.</summary>
+    Energie,
+
+    /// <summary>Die SUMME der Posten — abgesetzt am Ende des Blattes.</summary>
+    Summe
+}
+
+/// <summary>Die Zeitstufe des Ganglinienbildes (W8‑E‑2).</summary>
+public enum Gangstufe
+{
+    /// <summary>Das ganze Jahr — die Sicht des Bestands (Monatssäulen).</summary>
+    Jahr,
+
+    /// <summary>Eine Woche, 168 Stunden, mit Navigator.</summary>
+    Woche,
+
+    /// <summary>Ein Tag, 24 Stunden, mit Navigator.</summary>
+    Tag
+}
+
+/// <summary>
+/// Woher die Bilder der Zeitstufen Woche und Tag kommen (W8‑E‑2).
+///
+/// <para><b>Ein Delegat, kein Bildvorrat.</b> 52 Wochen und 365 Tage sind 417 Bilder;
+/// sie vorab zu zeichnen hieße, für einen Blick auf eine Woche ein Jahr zu rendern.
+/// Die Hülle zeichnet deshalb auf Zuruf — dasselbe Muster, mit dem der Stromgang-Reiter
+/// der Ergebnisseite (W11b) seine Bilder holt. Die Komponente ruft weiterhin keinen
+/// Renderer; sie ruft die Hülle.</para>
+/// </summary>
+public sealed class Ganglinienquelle
+{
+    /// <summary>Wie viele Wochen der Navigator kennt (52 bei einem vollen Jahr).</summary>
+    public int Wochen { get; init; } = 52;
+
+    /// <summary>Wie viele Tage der Navigator kennt (365 bei einem vollen Jahr).</summary>
+    public int Tage { get; init; } = 365;
+
+    /// <summary>
+    /// Liefert das Bild zu einer Stufe und einer NULLBASIERTEN Nummer;
+    /// <c>null</c> = kein Bild, die Anzeige zeigt ihren Platzhalter.
+    /// </summary>
+    public Func<Gangstufe, int, byte[]?>? Bild { get; init; }
 }
 
 /// <summary>
@@ -106,6 +173,13 @@ public sealed record ErgebnisKennzahl(string Bezeichnung, string Wert, string Ei
 
     /// <summary>Die Einheit, in der <see cref="Energie"/> vorliegt.</summary>
     public Energieeinheit? QuelleEinheit { get; init; }
+
+    /// <summary>
+    /// Wo die Zeile steht: im Leistungsblock, unter den Posten oder als Summe am Ende
+    /// (Anwenderwunsch W8‑E‑2). Vorgabe ist <see cref="Kennzahlart.Energie"/> — ein
+    /// Datensatz, der nichts dazu sagt, sieht aus wie vorher.
+    /// </summary>
+    public Kennzahlart Art { get; init; } = Kennzahlart.Energie;
 }
 
 /// <summary>

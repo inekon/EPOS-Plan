@@ -1,0 +1,166 @@
+@* Der GRAFIKREITER des Bedarfs-Ergebnisdialogs mit den drei Zeitstufen
+   (Anwenderwunsch W8-E-2, Windows-Abnahme 05.09.2026).
+
+   WAS DER ANWENDER WOLLTE. „Grafik Strombedarf soll ausser dem Jahr auch Woche
+   und Tag zeigen." Bis hierher zeigte der Reiter genau ein Bild: die zwoelf
+   Monatssaeulen. Ein Jahr in zwoelf Saeulen sagt nichts ueber den Tagesgang, und
+   genau der entscheidet beim Strom ueber Gleichzeitigkeit und Spitzenlast.
+
+   DREI STUFEN, ZWEI BILDQUELLEN.
+
+     JAHR   bleibt WOERTLICH die Sicht des Bestands - die Monatssaeulen (bzw. beim
+            Brauchwasser der Jahresverlauf hinter dem Schalter). Nichts daran
+            aendert sich, und wer den Reiter oeffnet, sieht das gewohnte Bild.
+
+     WOCHE  168 Stunden, TAG 24 Stunden - beide aus dem Ganglinienbild des Kerns
+            mit einem Achsenfenster (ChartRenderer.Jahresverlauf). Es ist derselbe
+            Zeichenweg, den die Ergebnisseite fuer ihren Datenzoom nimmt; ein
+            neues Renderer-Bild braucht es dafuer nicht.
+
+   WARUM EIN DELEGAT UND KEIN BILDVORRAT. 52 Wochen und 365 Tage sind 417 Bilder.
+   Sie vorab zu zeichnen hiesse, fuer einen Blick auf eine Woche ein Jahr zu
+   rendern. Die Huelle zeichnet auf Zuruf - dasselbe Muster wie beim
+   Stromgang-Reiter der Ergebnisseite (W11b). Die Komponente ruft weiterhin
+   keinen Renderer, sie ruft die Huelle.
+
+   DER NAVIGATOR IST EINE SCHLEIFE. Hinter Woche 52 kommt Woche 1; wer den
+   Jahreswechsel betrachten will, soll nicht zurueckscrollen muessen. Die
+   Pfeiltasten bedienen ihn ebenfalls - die Knoepfe sind gewoehnliche
+   <button>, also tastaturerreichbar.
+
+   OHNE Ganglinienquelle GIBT ES DEN UMSCHALTER GAR NICHT: Die drei
+   Waermeauspraegungen bekommen sie nicht mitgegeben und sehen den Reiter
+   unveraendert (W9-B-4/B-5 duerfen sich nicht verschlechtern). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+
+<div class="epos-gang">
+
+    @if (Quelle is not null)
+    {
+        <div class="epos-gang-stufen">
+            <Optionsgruppe Eintraege="@Stufenwahl" Auswahl="@((int)_stufe)"
+                           AuswahlChanged="StufeWaehlen" />
+        </div>
+    }
+
+    @if (Quelle is not null && _stufe != Gangstufe.Jahr)
+    {
+        <div class="epos-gang-navigator">
+            <button type="button" class="epos-gang-knopf" title="@ZurueckHilfe"
+                    @onclick="Zurueck">@ZurueckZeichen</button>
+            <span class="epos-gang-marke" aria-live="polite">@Marke</span>
+            <button type="button" class="epos-gang-knopf" title="@VorHilfe"
+                    @onclick="Vor">@VorZeichen</button>
+        </div>
+
+        <ChartBild Png="@Fensterbild" Alt="@Marke" PlatzhalterText="@PlatzhalterText" />
+    }
+    else
+    {
+        @JahresInhalt
+    }
+
+</div>
+
+@code {
+    /// <summary>
+    /// Die Jahressicht — die Monatssäulen des Bestands samt allem, was dazugehört
+    /// (Sichtwahl, Schalter „Jahresverlauf", Bild). Sie wird unverändert
+    /// durchgereicht.
+    /// </summary>
+    [Parameter] public RenderFragment? JahresInhalt { get; set; }
+
+    /// <summary>
+    /// Woher die Bilder für Woche und Tag kommen; <c>null</c> = es gibt nur die
+    /// Jahressicht und keinen Umschalter.
+    /// </summary>
+    [Parameter] public Ganglinienquelle? Quelle { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string StufeJahrText { get; set; } = "Jahr";
+    [Parameter] public string StufeWocheText { get; set; } = "Woche";
+    [Parameter] public string StufeTagText { get; set; } = "Tag";
+
+    /// <summary>Formatstring der Marke — {0} = Nummer, {1} = Anzahl, {2} = Stufe.</summary>
+    [Parameter] public string MarkeFormat { get; set; } = "{2} {0} von {1}";
+
+    [Parameter] public string ZurueckZeichen { get; set; } = "◀";
+    [Parameter] public string VorZeichen { get; set; } = "▶";
+    [Parameter] public string ZurueckHilfe { get; set; } = "Einen Schritt zurück";
+    [Parameter] public string VorHilfe { get; set; } = "Einen Schritt vor";
+    [Parameter] public string PlatzhalterText { get; set; } = "Kein Diagramm vorhanden";
+
+    /// <summary>Die gewählte Zeitstufe — Prüfhilfe für die Tests.</summary>
+    public Gangstufe Stufe => _stufe;
+
+    /// <summary>Die EINSBASIERTE Nummer der gezeigten Woche bzw. des Tages (Prüfhilfe).</summary>
+    public int Nummer => _nummer[(int)_stufe] + 1;
+
+    private Gangstufe _stufe = Gangstufe.Jahr;
+
+    /// <summary>
+    /// Die nullbasierte Stelle JE STUFE. Wer von Woche 30 auf den Tag wechselt und
+    /// zurück, findet seine Woche wieder — ein gemeinsamer Zähler würde beim
+    /// Umschalten auf einen fremden Wertebereich stoßen.
+    /// </summary>
+    private readonly int[] _nummer = new int[3];
+
+    private IReadOnlyList<(int Id, string Text)> Stufenwahl => new[]
+    {
+        ((int)Gangstufe.Jahr, StufeJahrText),
+        ((int)Gangstufe.Woche, StufeWocheText),
+        ((int)Gangstufe.Tag, StufeTagText)
+    };
+
+    /// <summary>Wie viele Schritte die gewählte Stufe kennt; mindestens einer.</summary>
+    private int Anzahl
+    {
+        get
+        {
+            if (Quelle is null) return 1;
+            int n = _stufe == Gangstufe.Woche ? Quelle.Wochen : Quelle.Tage;
+            return n > 0 ? n : 1;
+        }
+    }
+
+    private string Marke => string.Format(MarkeFormat, Nummer, Anzahl,
+        _stufe == Gangstufe.Woche ? StufeWocheText : StufeTagText);
+
+    private byte[]? Fensterbild => Quelle?.Bild?.Invoke(_stufe, _nummer[(int)_stufe]);
+
+    private void StufeWaehlen(int? id)
+    {
+        int n = id ?? 0;
+        if (n < 0 || n > (int)Gangstufe.Tag) return;
+        _stufe = (Gangstufe)n;
+        Klemme();
+    }
+
+    /// <summary>Ein Schritt zurück — vor dem ersten steht der letzte (Ringschluss).</summary>
+    private void Zurueck()
+    {
+        int i = (int)_stufe;
+        _nummer[i] = _nummer[i] > 0 ? _nummer[i] - 1 : Anzahl - 1;
+    }
+
+    /// <summary>Ein Schritt vor — hinter dem letzten steht der erste.</summary>
+    private void Vor()
+    {
+        int i = (int)_stufe;
+        _nummer[i] = _nummer[i] + 1 < Anzahl ? _nummer[i] + 1 : 0;
+    }
+
+    /// <summary>
+    /// Hält die Stelle im Wertebereich der Stufe. Nötig, weil die Hülle die Anzahl
+    /// aus der Länge ihrer Reihe ableitet: Eine kürzere Reihe (ein Ausschnitt, ein
+    /// Altbestand) darf keine Woche 52 anbieten, die es nicht gibt.
+    /// </summary>
+    private void Klemme()
+    {
+        int i = (int)_stufe;
+        if (_nummer[i] >= Anzahl) _nummer[i] = Anzahl - 1;
+        if (_nummer[i] < 0) _nummer[i] = 0;
+    }
+}

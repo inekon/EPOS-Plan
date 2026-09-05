@@ -277,6 +277,7 @@ Form_Solarganglinie.btn_Help = Solarthermie
 Form_Solarganglinie_Admin.btn_Help = Solarthermie
 Form_GanglinieImportOptionen.btn_Help = Strombedarf
 Form_Stromganglinie.btn_Help = Strombedarf
+Form_Stromganglinie.btn_Help_Import = Strombedarf
 Form_Stromganglinie_Admin.btn_Help = Strombedarf
 Form_AdminStromspeicher.btn_Help = Stromspeicher
 Form_PeakShaving.btn_Help = Stromspeicher

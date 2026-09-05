@@ -517,11 +517,11 @@ Beschnitt, der Name bleibt der Schlüssel) und acht bunit-Fälle zur Liste.
 
 ### Prüfstand
 
-| Suite | vorher | nachher |
+| Suite | neue Fälle dieser Behebung | Gesamtstand nach dem Merge |
 |---|---|---|
-| `EPOS.UI.Tests` | 2 484 | **2 509** (25 neue Fälle) |
-| `EPOS.Kern.Tests` | 1 074 | **1 150** (76 neue Fälle) |
-| `KiKern.Tests` | 450 | **469** (19 neue Fälle) |
+| `EPOS.UI.Tests` | 25 | **2 554** |
+| `EPOS.Kern.Tests` | 76 | **1 165** |
+| `KiKern.Tests` | 19 | **469** |
 
 Beide Kulturen (`de-DE` und `LANG=en_US.UTF-8`) grün; die zwei Kern-Wächter (iU5 und
 Plattform) leer. `WindowsFormsApplication1` übersetzt mit

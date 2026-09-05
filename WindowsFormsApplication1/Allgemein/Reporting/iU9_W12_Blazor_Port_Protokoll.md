@@ -687,3 +687,174 @@ Gegenprobe wurde gezogen: Mit zurückgedrehtem Stilblatt fällt der dritte Fall 
    breit, wie sein Text ist.
 4. **Nichts sonst hat sich bewegt.** Einzeilige Knöpfe — „OK", „Abbrechen", die
    Startseitenfußleiste — stehen unverändert in ihrer bisherigen Höhe und Breite.
+
+## Windows-Abnahme 05.09.2026 — Stromganglinien: Import, Löschen, Speichern unter (W12‑E‑1)
+
+**Der Wortlaut des Anwenders** (Bildschirmfoto 4, Dialog „Stromganglinien"): „csv-Datei
+Stromlastgang importieren (mit Info zum Format) fehlt. Ebenfalls fehlt löschen und Speichern
+unter."
+
+**Was das Vorbild hatte — und was nicht.** Die Feldkarte von `Form_Stromganglinie`
+(`git show 58d02f6^:…/Form_Stromganglinie.designer.cs`, 678 × 345, 7 Kartenzeilen) führt
+`listBox_Auswahl`, `btn_Hinzufuegen` („◀"), `btn_Entfernen` („▶"), `listBox_Extern`,
+`btn_OK`, `btn_Abbrechen` und `btn_Bearbeiten` („Bearbeiten…") — **keinen Import, kein
+Löschen, kein Speichern unter**. Der Port hat also nichts vergessen: Der Wunsch ist eine
+ERWEITERUNG, und zwei ihrer drei Teile gab es im Bestand nur eine Maske weiter.
+`Form_Stromganglinie_Admin` (664 × 316, Feldkarte aus `1c8c7c3^`) trug „Datei Einlesen…"
+und „Ganglinie Löschen"; **„Speichern unter" gab es im ganzen Bestand nicht** — der
+Katalogeintrag „Lastgang_Strom_NestleLB-05-2010-05-2011 - Kopie" der Testdatenbank ist ein
+zweiter Import unter anderem Dateinamen, kein Kopierweg. Der einzige Kopierweg der
+Stromganglinien war `CopyGanglinieToProjekt` (STAMM → Projekt) und taugt dafür nicht.
+
+**Wo der Import bisher lag.** Ausschließlich hinter „Bearbeiten…" → `StromganglinieAdminDialog`
+(dort „Datei Einlesen…" im Block „Ganglinie aus Datei in Datenbank Einlesen", mit der
+Rasterliste davor). Der Weg dorthin war zweistufig und unbeschriftet; wer im Dialog
+„Stromganglinien" stand, sah keinen Hinweis darauf, dass hinter „Bearbeiten…" der Import liegt.
+
+### Die Umsetzung
+
+**Ein Importweg, zwei Wirte.** Die Kette liegt seit W12.0d im Kern
+(`GanglinienImportAblauf.MitAblage`, bitgleich geprüft). Neu ist der Baustein
+**`EPOS.UI/Dialoge/Strom/GanglinienImportLauf.razor`** (231 Z.): die OBERFLÄCHENSEITE der
+Kette — die drei Überlagerungen (Optionen, Protokoll, Konflikte), je mit ihrer
+`TaskCompletionSource`, dazu `Starten(pfad, raster)`, `EtwasOffen` für die Esc-Staffelung und
+`StufeZu(ergebnis)` für die Bannerstufe. `StromganglinieAdminDialog` hängt ihn seither ein
+statt die drei Überlagerungen selbst zu führen (422 → 303 Z.), `StromganglinieDialog`
+ebenso. **Es gibt damit keinen zweiten Importweg** — dieselbe Kette, dieselben
+Zwischendialoge, dieselben Delegaten aus `StromganglinieAdminHuelle`.
+
+**Die Knopfleiste unter der Katalogliste** trägt jetzt vier statt einem Knopf, in dieser
+Reihenfolge: **„CSV-Datei importieren…" · „Speichern unter…" · „Löschen" · „Bearbeiten…"**.
+Sie ist die `epos-leiste` aus W12‑B‑1 und bemisst sich am Text; auf schmalem Schirm bricht
+sie um. **Kein Delegat, kein Knopf** — fehlt der jeweilige Rückruf, ist der Knopf gar nicht
+da; ohne jede Gabe zeichnet der Dialog weiterhin nur die zwei Listen (Regel W16b‑B‑1).
+
+**Der Formathinweis** steht als leise Zeile unter der Leiste, mit einem `InfoKnopf` daneben,
+der denselben Wortlaut als Kurztext trägt und auf die Wikiseite „Strombedarf" führt (neue
+Zeile `Form_Stromganglinie.btn_Help_Import` in `help_mapping.txt`). Er nennt genau das, was
+die Kette wirklich auswertet — Dateiarten, 8 760 bzw. 35 040 Werte in Zeitfolge ab dem
+1. Januar, die vier zugelassenen Feldtrennzeichen und den einspaltigen Fall, die erkannte
+Kopfzeile, Komma **oder** Punkt als Dezimaltrennzeichen ohne Tausendertrennung, kW oder kWh je
+Intervall, die zulässige aber nicht nötige Zeitstempelspalte und den Bezeichner = Dateiname
+ohne Erweiterung (`STROMGL_HINWEIS_FORMAT`, de/en). Neu im Stilblatt ist dafür
+`.epos-formathinweis` (Flex, Text nimmt die Breite, Knopf rechts daneben).
+
+**Der Import selbst** holt den Pfad über den erwarteten `DateiWaehlen`-Delegaten und
+`await`et ihn (W13‑B‑1: die Hülle ruft `Dienste.Datei.DateiOeffnenAsync`, das Fenster geht
+eine geposteten Nachricht später auf) und ruft dann `Starten(pfad, GanglinienRaster.Unbekannt)`
+— die Maske gibt **keine** Rastervorgabe: Die Kette erkennt es selbst, und der Optionendialog
+lässt es übersteuern. Ein PFADFELD steht hier bewusst nicht: In einer Knopfleiste unter der
+Liste hätte es nichts anzuzeigen, der Pfad ist nach dem Lauf ohnehin wieder leer.
+
+**Löschen** prüft ZWEI Sperren, bevor die Rückfrage kommt, und beide MELDEN ihren Grund
+(Warnbanner) statt still nichts zu tun: (1) die **Projektzuordnung** — neu im Kern als
+`StromganglinieStammCtrl.HatProjektzuordnung` (`SELECT COUNT(*) FROM Z_ProjektStromganglinie
+WHERE Bezeichner = ?`, Muster der Solarganglinie W14b); (2) das **Auslieferungskennzeichen**
+`ReadOnly`, dessen Grund zusätzlich als `title` am Knopf hängt — er ist synchron bekannt
+(Staffelung W16b‑E‑6: der Grund am Bedienelement, das Banner erst nach dem Versuch). Erst
+danach steht die `Rueckfrage`; „Ja" löscht, lädt den Katalog neu und meldet.
+
+**Speichern unter** ist die Kopie unter neuem Namen. Der `NamensDialog` schlägt
+„&lt;Name&gt; - Kopie" vor — dieselbe Schreibweise, die der Bestand schon führt — und prüft
+die Dublette **VOR** dem Einfügen gegen den geladenen Katalog (`Pruefung`, hält den Dialog
+offen und sagt, warum). Im Kern legt **`StromganglinieStammCtrl.KopiereStamm(quelle, ziel)`**
+Kopf und Werte in **einer** Transaktion an, in Stamm-Reihenfolge (`ORDER BY ID`), immer mit
+`ReadOnly = false` — eine Kopie ist Anwenderbestand, auch die eines Auslieferungssatzes. Auch
+dort steht die Dublettenprüfung vor dem `INSERT`: Ein vergebener Name ergibt `0` und keine
+Zeile, kein SQLite-UNIQUE-Fehler erreicht den Anwender. Der Schreibsatz selbst ist mit
+`ImportGanglinie` **geteilt** (neues privates `EinfuegenStamm(v, name, raster, werte)`) — zwei
+Fassungen desselben `INSERT` liefen beim ersten Schemawechsel auseinander.
+
+**Zwei Nebenbefunde, mit behoben.** `StromganglinieStammCtrl.ReadAll` warf die Spalte
+`ReadOnly` weg, obwohl `SELECT *` sie ohnehin mitbringt: Die Verwaltungshülle fragte sie
+deshalb je Katalogzeile einzeln nach (N+1), und die Zuordnungshülle gab schlicht `false`
+weiter — der Projektdialog konnte einen Auslieferungssatz gar nicht erkennen. `ReadAll` liest
+sie jetzt (`StromganglinieModel.m_bReadOnly`), beide Hüllen nehmen sie von dort, und
+`StromganglinieHuelle.KatalogLesen` ruft `StromganglinieAdminHuelle.KatalogLesen` statt die
+Schleife ein zweites Mal zu schreiben.
+
+### Wachen
+
+**Kern** — `EPOS.Kern.Tests/StromganglinieKatalogTests` (10 Fälle, neu): `ReadAll` trägt
+dasselbe `ReadOnly` wie die Einzelabfrage; `HatProjektzuordnung` trennt zugeordnete von freien
+Ganglinien und zählt dieselben Zeilen wie die Tabelle; ein Auslieferungssatz wird nicht
+gelöscht; eine freie Ganglinie fällt samt ihren Werten (keine Datenwaisen); die Kopie trägt
+denselben Zeitschritt und dieselben Werte unter neuem Namen; die Kopie eines
+Auslieferungssatzes ist frei; ein vergebener Name wird abgewiesen statt zu werfen (auch
+getrimmt); ohne Quelle oder ohne Namen entsteht keine Kopie; `Exists` prüft den ganzen Namen
+und nicht seinen Anfang (der Fehler, der beim Solarkatalog Befund W14‑B70 war). Der
+IMPORTweg selbst braucht keine neue Wache — es ist dieselbe Kette, und die steht seit W12 in
+`GanglinienImportAblaufTests` und `GanglinienProbenTests`.
+
+**Oberfläche** — `EPOS.UI.Tests/Dialoge/StromganglinieDialogTests` (14 → 30 Fälle): die vier
+Knöpfe in ihrer Reihenfolge; „kein Delegat, kein Knopf" (auch der Halbfall Dateiwähler ohne
+Kette); der Formathinweis nennt die sechs Angaben und der Infoknopf trägt denselben Wortlaut;
+der Dateiwähler DARF warten und die Kette läuft danach mit `Raster.Unbekannt`; ein
+abgebrochener Wähler liest nichts; Löschen und Speichern unter sind ohne Auswahl gesperrt;
+zugeordnet und schreibgeschützt melden ihren Grund und lassen die Rückfrage gar nicht erst
+kommen; Rückfrage mit „Ja"/„Nein"; der Kopiervorschlag „… - Kopie"; ein vergebener Name hält
+den Namensdialog offen; ein freier Name legt die Kopie an; eine gescheiterte Kopie meldet sich
+als Fehlerbanner; Abbrechen kopiert nichts; Esc meldet nichts, solange Rückfrage oder
+Namensdialog stehen. Die Klasse pinnt die Kultur seither vollständig
+(`DeutscheOberflaeche()`), weil sie jetzt formatierte Meldungen prüft.
+
+### Nachweise
+
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet test EPOS.Kern.Tests -c Release` | 1 084 grün (1 074 + 10 neue), auch unter `LANG=en_US.UTF-8` |
+| `dotnet test EPOS.UI.Tests -c Release` | 2 500 grün (2 484 + 16 neue), auch unter `LANG=en_US.UTF-8` |
+| `SqlDialektPruefer` | 1 204 SQL-Texte, **0 Fundstellen** |
+| Kern-Wächter (`Program.*`, Plattform) | beide leer |
+| Referenzlauf | nicht nötig — der Rechenweg ist unberührt |
+
+### Abnahmepunkte A‑W12‑E‑1
+
+1. **Die vier Knöpfe.** Startseite → Kachel „Stromlastgang" (oder Assistentenseite 6):
+   Unter „Stromganglinie aus DB" stehen „CSV-Datei importieren…", „Speichern unter…",
+   „Löschen" und „Bearbeiten…", jeder so breit wie sein Text. Darunter steht der
+   Formathinweis mit dem Fragezeichenknopf rechts daneben; der Knopf öffnet die Wikiseite
+   „Strombedarf", sein Tooltip zeigt denselben Hinweistext.
+2. **Import mit einer sauberen Datei.** Eine CSV mit 8 760 Zeilen, ein Wert je Zeile, Komma
+   als Dezimaltrennzeichen, ohne Kopfzeile, ohne Trennzeichen (einspaltig) — z. B.
+   `123,4` / `118,9` / … Der Dateiwähler geht auf (kein Absturz, W13‑B‑1), der Optionendialog
+   zeigt „kein Trennzeichen / Dezimaltrenner Komma / keine Kopfzeile / Spalte 1", das
+   Protokoll bleibt weg (sauberer Lauf), und die neue Ganglinie steht unter dem Dateinamen
+   ohne Erweiterung in der rechten Liste. Grünes Banner mit Name, Wertezahl und Zeitschritt.
+3. **Import mit einer Datei, die es schon gibt.** Dieselbe Datei ein zweites Mal wählen: Der
+   Konfliktdialog kommt (Auslassen / Überschreiben / Umbenennen) — genau derselbe wie hinter
+   „Bearbeiten…"; es gibt keinen zweiten Import.
+4. **Import mit Zeitstempel und Kopfzeile.** Eine CSV `Zeit;Leistung` mit Semikolon,
+   Kopfzeile und 35 040 Viertelstundenzeilen (`01.01.2024 00:00;123.4`): Der Optionendialog
+   erkennt Semikolon, Kopfzeile „ja", Zeitspalte 1, Wertspalte 2 und Punkt als
+   Dezimaltrennzeichen; der Zeitschritt steht danach auf 4.
+5. **Löschen — zugeordnet.** Eine Ganglinie wählen, die im Projekt steht („In das Projekt
+   übernehmen" und speichern, dann Dialog neu öffnen): „Löschen" meldet „Es existiert eine
+   Projektzuordnung, Löschen nicht möglich!" — **keine** Rückfrage, nichts gelöscht.
+6. **Löschen — Auslieferung.** Ein Katalogeintrag mit `ReadOnly` (Auslieferungsbestand):
+   Der Knopf zeigt den Grund schon als Tooltip; der Klick meldet „…schreibgeschützt
+   (ReadOnly)…", ohne Rückfrage.
+7. **Löschen — frei.** Eine freie, nicht zugeordnete Ganglinie: Rückfrage „Die Stromganglinie
+   „X" wird gelöscht. Fortfahren?" → „Ja"; die Zeile verschwindet aus der Liste, grünes
+   Banner. „Nein" lässt alles stehen.
+8. **Speichern unter.** Eine Ganglinie wählen → „Speichern unter…": Der Name steht mit
+   „ - Kopie" hinten vorbelegt. **Erst** einen Namen tippen, den es schon gibt: Der Dialog
+   bleibt offen und sagt „…ist bereits in der Datenbank…". Dann den Vorschlag nehmen: Die
+   Kopie erscheint in der Liste, grünes Banner mit beiden Namen. Die Kopie danach auswählen
+   und „Löschen" — sie ist frei, auch wenn die Quelle Auslieferung war.
+9. **Die Werte sind wirklich mitkopiert.** Kopie ins Projekt übernehmen, Simulation rechnen:
+   Sie ergibt dasselbe wie mit der Quelle (gleicher Zeitschritt, gleiche Reihe).
+10. **Nichts sonst hat sich bewegt.** „Bearbeiten…" zeigt unverändert die Verwaltung als
+    Überlagerung; „In das Projekt übernehmen"/„Aus dem Projekt entfernen", OK und Abbrechen
+    verhalten sich wie bisher. Esc schließt immer nur die oberste Ebene.
+
+**Beispiel-CSV (Abnahmepunkt 2), die kürzeste Form, die die Kette annimmt:**
+
+```
+123,4
+118,9
+…
+(8 760 Zeilen insgesamt, ein Wert je Zeile, in kW, Stunde 1 = 1. Januar 00:00–01:00)
+```
+
+Dateiname `Werk-Nord-2024.csv` → Bezeichner der Ganglinie `Werk-Nord-2024`.

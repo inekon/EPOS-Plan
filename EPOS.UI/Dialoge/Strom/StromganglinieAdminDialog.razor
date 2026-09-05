@@ -8,10 +8,11 @@
    einer Transaktion.
 
    DIE KETTE LIEGT IM KERN. Seit iU9-W12.0d ist sie GanglinienImportAblauf;
-   diese Komponente liefert ihr die drei Entscheidungen als Rueckrufe und zeigt
-   sie als UEBERLAGERUNG im selben Fenster - kein zweites Fenster, keine zweite
-   WebView (Risiko R2). Ein Rueckruf wartet auf eine TaskCompletionSource, die
-   der jeweilige Unterdialog beim Schliessen aufloest.
+   ihre OBERFLAECHENSEITE - die drei Entscheidungen als Ueberlagerungen im selben
+   Fenster (Risiko R2) - steht seit W12-E-1 im Baustein GanglinienImportLauf.
+   Diese Maske haengt ihn ein und ruft Starten(pfad, raster); denselben Baustein
+   benutzt seither StromganglinieDialog, damit es fuer den Anwender EINEN Import
+   gibt und nicht zwei, die auseinanderlaufen.
 
    DREI TOTE FELDER FALLEN WEG. m_ID_Projekt, m_szProjekt, result und DateiListe
    des Vorlaeufers waren allesamt tot: Die beiden Aufrufer werteten ShowDialog
@@ -80,39 +81,9 @@
     <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage" TitelText="@TitelText"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
 
-    @* --- Die drei Ueberlagerungen der Importkette ----------------------- *@
-    <Ueberlagerung Offen="@_optionenOffen" Titel="" Schliessbar="false">
-        <KindInhalt>
-            @if (_optionenOffen)
-            {
-                <GanglinieImportOptionenDialog Pfad="@_optionenPfad" Erkennung="@_optionenErkennung"
-                                               Vorschau="@Vorschau" Geschlossen="OptionenFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
-
-    <Ueberlagerung Offen="@_protokollOffen" Titel="" Schliessbar="false">
-        <KindInhalt>
-            @if (_protokollOffen)
-            {
-                <GanglinieProtokollDialog Meldungen="@_protokollMeldungen"
-                                          ImportMoeglich="@_protokollMoeglich"
-                                          BestaetigungNoetig="@_protokollBestaetigen"
-                                          Geschlossen="ProtokollFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
-
-    <Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
-        <KindInhalt>
-            @if (_konflikteOffen)
-            {
-                <EPOS.UI.Dialoge.Import.ImportKonflikteDialog
-                    Pruefungen="@_konfliktPruefungen" VergebeneNamen="@_konfliktNamen"
-                    Geschlossen="KonflikteFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
+    @* --- Die Importkette: EIN Baustein fuer beide Masken (W12-E-1) ------ *@
+    <GanglinienImportLauf @ref="_import" Einlesen="@Einlesen" Vorschau="@Vorschau"
+                          LaeuftChanged="@(b => _laeuft = b)" />
 </div>
 
 @code {
@@ -188,20 +159,11 @@
     private bool _loeschfrageOffen;
     private string _loeschfrage = "";
 
-    private bool _optionenOffen;
-    private string _optionenPfad = "";
-    private GanglinienVorschau? _optionenErkennung;
-    private TaskCompletionSource<GanglinienImportOptionen?>? _optionenWartet;
-
-    private bool _protokollOffen;
-    private IReadOnlyList<PruefMeldung>? _protokollMeldungen;
-    private bool _protokollMoeglich, _protokollBestaetigen;
-    private TaskCompletionSource<bool>? _protokollWartet;
-
-    private bool _konflikteOffen;
-    private IReadOnlyList<ImportPruefung>? _konfliktPruefungen;
-    private IReadOnlyCollection<string>? _konfliktNamen;
-    private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
+    /// <summary>
+    /// Die Importkette samt ihren drei Ueberlagerungen — seit W12-E-1 ein
+    /// eigener Baustein, den auch <c>StromganglinieDialog</c> benutzt.
+    /// </summary>
+    private GanglinienImportLauf? _import;
 
     private IReadOnlyList<(int Id, string Text)> _rasterliste = Array.Empty<(int, string)>();
 
@@ -295,93 +257,24 @@
     private async Task BeiDatei(string pfad)
     {
         _pfad = pfad;
-        if (string.IsNullOrEmpty(pfad) || Einlesen is null) return;
+        if (string.IsNullOrEmpty(pfad) || _import is null) return;
 
-        _laeuft = true;
         _meldung = "";
         try
         {
-            GanglinienImportErgebnis erg = await Einlesen(
-                pfad,
-                GanglinienOptionenModell.RasterAusIndex(_iRaster),
-                new GanglinienImportRueckrufe
-                {
-                    Optionen = OptionenFragen,
-                    Protokoll = ProtokollFragen,
-                    Konflikte = KonflikteFragen
-                });
+            GanglinienImportErgebnis? erg = await _import.Starten(
+                pfad, GanglinienOptionenModell.RasterAusIndex(_iRaster));
+            if (erg is null) return;
 
             if (!string.IsNullOrEmpty(erg.Meldung))
-                Melden(erg.Meldung, erg.MeldungStufe switch
-                {
-                    PruefStufe.Fehler => WarnStufe.Fehler,
-                    PruefStufe.Warnung => WarnStufe.Warnung,
-                    _ => erg.Ausgang == ImportAusgang.Erfolg ? WarnStufe.Erfolg : WarnStufe.Hinweis
-                });
+                Melden(erg.Meldung, GanglinienImportLauf.StufeZu(erg));
 
             if (erg.Ausgang == ImportAusgang.Erfolg) await KatalogLaden();
         }
         finally
         {
-            _laeuft = false;
             _pfad = "";
         }
-    }
-
-    // --- Rueckruf 1: die Optionen ---------------------------------------
-
-    private async Task<GanglinienImportOptionen?> OptionenFragen(string pfad, GanglinienVorschau vorschau)
-    {
-        _optionenPfad = pfad;
-        _optionenErkennung = vorschau;
-        _optionenOffen = true;
-        _optionenWartet = new TaskCompletionSource<GanglinienImportOptionen?>();
-        await InvokeAsync(StateHasChanged);
-        return await _optionenWartet.Task;
-    }
-
-    private void OptionenFertig(GanglinienImportOptionen? optionen)
-    {
-        _optionenOffen = false;
-        _optionenWartet?.TrySetResult(optionen);
-    }
-
-    // --- Rueckruf 2: das Protokoll --------------------------------------
-
-    private async Task<bool> ProtokollFragen(IList<PruefMeldung> meldungen, bool moeglich, bool bestaetigen)
-    {
-        _protokollMeldungen = meldungen as IReadOnlyList<PruefMeldung> ?? meldungen.ToList();
-        _protokollMoeglich = moeglich;
-        _protokollBestaetigen = bestaetigen;
-        _protokollOffen = true;
-        _protokollWartet = new TaskCompletionSource<bool>();
-        await InvokeAsync(StateHasChanged);
-        return await _protokollWartet.Task;
-    }
-
-    private void ProtokollFertig(bool weiter)
-    {
-        _protokollOffen = false;
-        _protokollWartet?.TrySetResult(weiter);
-    }
-
-    // --- Rueckruf 3: die Konflikte --------------------------------------
-
-    private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
-        List<ImportPruefung> pruefungen, HashSet<string> namen)
-    {
-        _konfliktPruefungen = pruefungen;
-        _konfliktNamen = namen;
-        _konflikteOffen = true;
-        _konflikteWartet = new TaskCompletionSource<List<KonfliktEntscheidung>?>();
-        await InvokeAsync(StateHasChanged);
-        return await _konflikteWartet.Task;
-    }
-
-    private void KonflikteFertig(List<KonfliktEntscheidung>? entscheidungen)
-    {
-        _konflikteOffen = false;
-        _konflikteWartet?.TrySetResult(entscheidungen);
     }
 
     // =====================================================================
@@ -402,7 +295,7 @@
 
         // Jede Ebene prueft ihre eigenen Schalter, bevor sie Esc fuer sich
         // auswertet - so schliesst Esc immer nur die oberste (Muster W7.5).
-        if (_optionenOffen || _protokollOffen || _konflikteOffen || _loeschfrageOffen)
+        if (_import?.EtwasOffen == true || _loeschfrageOffen)
             return Task.CompletedTask;
 
         return Geschlossen.InvokeAsync(false);

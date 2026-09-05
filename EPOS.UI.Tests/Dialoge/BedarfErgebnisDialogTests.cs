@@ -61,18 +61,27 @@ public class BedarfErgebnisDialogTests : BunitContext
 
     // --- die drei Ausprägungen als Datensatz -----------------------------------
 
-    private static BedarfErgebnisDaten Strom(int startReiter = 0) => new()
+    /// <summary>
+    /// Die Stromkarte, wie die Hülle sie seit dem Anwenderwunsch <b>W8‑E‑2</b>
+    /// (Windows-Abnahme 05.09.2026) baut: die LEISTUNG für sich, darunter die zwei
+    /// Posten, darunter abgesetzt die Summe. „max. Strombedarf" heißt jetzt „max.
+    /// Leistung" und „Strombedarf Gebäude" heißt „Strombedarf aus Profil".
+    /// </summary>
+    private static BedarfErgebnisDaten Strom(int startReiter = 0,
+                                             Ganglinienquelle? ganglinie = null) => new()
     {
         Sicht = ErgebnisSicht.Strom,
         StartReiter = startReiter,
         Kennzahlen = new[]
         {
-            new ErgebnisKennzahl("max. Strombedarf:", "12,00", "kW"),
-            new ErgebnisKennzahl("Gesamter Strombedarf:", "340,00", "MWh"),
+            new ErgebnisKennzahl("max. Leistung:", "12,00", "kW") { Art = Kennzahlart.Leistung },
             new ErgebnisKennzahl("Stromganglinie:", "5,00", "MWh"),
-            new ErgebnisKennzahl("Strombedarf Gebäude:", "335,00", "MWh")
+            new ErgebnisKennzahl("Strombedarf aus Profil:", "335,00", "MWh"),
+            new ErgebnisKennzahl("Gesamter Strombedarf:", "340,00", "MWh")
+                { Art = Kennzahlart.Summe }
         },
-        Sichten = new[] { new Monatssicht("Strombedarf", Reihe(10), BILD) }
+        Sichten = new[] { new Monatssicht("Strombedarf", Reihe(10), BILD) },
+        Ganglinie = ganglinie
     };
 
     private static BedarfErgebnisDaten Waerme(bool mitBrauchwasser, int startReiter = 0,
@@ -92,16 +101,19 @@ public class BedarfErgebnisDialogTests : BunitContext
             StartReiter = startReiter,
             TitelZusatz = titelZusatz,
             JahresverlaufBild = mitBrauchwasser ? BILD : null,
+            // Dieselbe Gliederung wie beim Strom (W8-E-2): Leistung, Posten, Summe.
             Kennzahlen = new[]
             {
+                new ErgebnisKennzahl("max. Wärmelast:", "180,00", "kW")
+                    { Art = Kennzahlart.Leistung },
                 new ErgebnisKennzahl("Netzverluste:", "3,00", "MWh"),
-                new ErgebnisKennzahl("Gesamter Wärmebedarf:", "900,00", "MWh"),
                 new ErgebnisKennzahl("Externer Wärmebedarf:", "0,00", "MWh"),
                 new ErgebnisKennzahl("Wärmebedarf Prozess:", "200,00", "MWh"),
                 new ErgebnisKennzahl("Wärmebedarf Gebäude:", "600,00", "MWh"),
-                new ErgebnisKennzahl("max. Wärmelast:", "180,00", "kW"),
                 new ErgebnisKennzahl(mitBrauchwasser ? "Wärmebedarf Brauchwasser:" : "davon Brauchwasser:",
-                             "97,00", "MWh")
+                             "97,00", "MWh"),
+                new ErgebnisKennzahl("Gesamter Wärmebedarf:", "900,00", "MWh")
+                    { Art = Kennzahlart.Summe }
             },
             Sichten = sichten
         };
@@ -141,12 +153,19 @@ public class BedarfErgebnisDialogTests : BunitContext
         Assert.Equal(new[] { "Strombedarf Ergebnisse", "Strombedarf monatlich", "Grafik Strombedarf" },
                      reiter);
 
-        // Vier Kennzahlen mit den Beschriftungen des Designers.
-        var zeilen = cut.FindAll(".epos-raster tbody tr");
-        Assert.Equal(4, zeilen.Count);
-        Assert.Contains("max. Strombedarf:", zeilen[0].TextContent);
+        // Vier Kennzahlen in DREI Kategorien (W8-E-2): eine Leistung, zwei Posten,
+        // eine Summe im Fuss.
+        var zeilen = cut.FindAll(".epos-kennzahlen tbody tr:not(.epos-kennzahlen-kopf)");
+        Assert.Equal(3, zeilen.Count);
+        Assert.Contains("max. Leistung:", zeilen[0].TextContent);
         Assert.Contains("kW", zeilen[0].TextContent);
-        Assert.Contains("Strombedarf Gebäude:", zeilen[3].TextContent);
+        Assert.Contains("Stromganglinie:", zeilen[1].TextContent);
+        Assert.Contains("Strombedarf aus Profil:", zeilen[2].TextContent);
+
+        var summe = cut.FindAll(".epos-kennzahlen tfoot tr");
+        Assert.Single(summe);
+        Assert.Contains("Gesamter Strombedarf:", summe[0].TextContent);
+        Assert.Contains("340,00", summe[0].TextContent);
 
         // EINE Sicht heisst: keine Optionsgruppe (der Vorlaeufer hatte dort keine).
         cut.Find("[role=tab]:nth-child(2)").Click();
@@ -161,7 +180,9 @@ public class BedarfErgebnisDialogTests : BunitContext
         var reiter = cut.FindAll("[role=tab]").Select(e => e.TextContent.Trim()).ToList();
         Assert.Equal(new[] { "Wärmebedarf Ergebnisse", "Übersicht monatlich", "Grafik" }, reiter);
 
-        Assert.Equal(7, cut.FindAll(".epos-raster tbody tr").Count);
+        // Sieben Kennzahlen: eine Leistung, fuenf Posten, eine Summe im Fuss (W8-E-2).
+        Assert.Equal(6, cut.FindAll(".epos-kennzahlen tbody tr:not(.epos-kennzahlen-kopf)").Count);
+        Assert.Single(cut.FindAll(".epos-kennzahlen tfoot tr"));
         Assert.Contains("davon Brauchwasser:", cut.Markup);
 
         // ZWEI Optionen, kein Jahresverlauf-Schalter.
@@ -176,7 +197,8 @@ public class BedarfErgebnisDialogTests : BunitContext
     {
         var cut = Aufbauen(Waerme(true));
 
-        Assert.Equal(7, cut.FindAll(".epos-raster tbody tr").Count);
+        Assert.Equal(6, cut.FindAll(".epos-kennzahlen tbody tr:not(.epos-kennzahlen-kopf)").Count);
+        Assert.Single(cut.FindAll(".epos-kennzahlen tfoot tr"));
         Assert.Contains("Wärmebedarf Brauchwasser:", cut.Markup);
 
         Reiterknopf(cut, "Übersicht monatlich").Click();
@@ -466,5 +488,181 @@ public class BedarfErgebnisDialogTests : BunitContext
     {
         var cut = Aufbauen(Waerme(false));
         Assert.Empty(cut.FindAll("select"));
+    }
+
+    // =================================================================================
+    // Die drei Kategorien (Anwenderwunsch W8-E-2 vom 05.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Die LEISTUNG steht für sich und NICHT in der Summe.</b> Das war die
+    /// Beanstandung: „max. Strombedarf ist falsch — das ist die max. Leistung, eine
+    /// eigene Kategorie in kW, kein Strombedarf." Sie steht deshalb in ihrem eigenen
+    /// Block mit eigener Überschrift, und der Summenfuß enthält sie nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Leistung_steht_in_einem_eigenen_Block_und_nicht_in_der_Summe()
+    {
+        var cut = Aufbauen(Strom(), "Strombedarf Ergebnisse", "Strombedarf monatlich",
+                           "Grafik Strombedarf");
+
+        var koepfe = cut.FindAll(".epos-kennzahlen-kopf").Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Leistung", "Energie" }, koepfe);
+
+        // Der Leistungsblock trägt GENAU die Leistungszeile.
+        var block = cut.FindAll(".epos-kennzahlen tbody")[0];
+        Assert.Contains("max. Leistung:", block.TextContent);
+        Assert.Contains("kW", block.TextContent);
+        Assert.DoesNotContain("Stromganglinie", block.TextContent);
+
+        // Und der Summenfuß kennt sie nicht.
+        string fuss = cut.Find(".epos-kennzahlen tfoot").TextContent;
+        Assert.DoesNotContain("max. Leistung", fuss);
+        Assert.DoesNotContain("kW", fuss);
+
+        Assert.Single(cut.Instance.Leistungen);
+        Assert.Equal(2, cut.Instance.Posten.Count);
+        Assert.Single(cut.Instance.Summen);
+    }
+
+    /// <summary>
+    /// <b>Die Summe steht UNTEN</b> — im <c>tfoot</c> und damit hinter allen Posten,
+    /// nicht als zweite Zeile mittendrin wie im Bestand.
+    /// </summary>
+    [Fact]
+    public void Die_Summe_ist_der_Fuss_der_Tabelle()
+    {
+        var cut = Aufbauen(Waerme(false));
+
+        var tabelle = cut.Find(".epos-kennzahlen");
+        int posten = tabelle.QuerySelectorAll("tbody tr:not(.epos-kennzahlen-kopf)").Length;
+        Assert.Equal(6, posten);
+
+        var fuss = tabelle.QuerySelector("tfoot tr");
+        Assert.NotNull(fuss);
+        Assert.Contains("Gesamter Wärmebedarf:", fuss!.TextContent);
+        Assert.Contains("900,00", fuss.TextContent);
+
+        // Der Fuss steht im Markup HINTER dem letzten Posten.
+        Assert.True(tabelle.InnerHtml.IndexOf("Gesamter Wärmebedarf", StringComparison.Ordinal)
+                    > tabelle.InnerHtml.IndexOf("davon Brauchwasser", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// <b>Ein Datensatz OHNE Kategorien sieht aus wie vorher</b> — alles in einem Block,
+    /// keine Zwischenüberschrift, kein Fuß. Das ist die Rückfallsicherung für jeden
+    /// Aufrufer, der die Gliederung nicht mitgibt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Kategorien_bleibt_das_Blatt_eine_schlichte_Liste()
+    {
+        var cut = Aufbauen(WaermeMitEinheiten());
+
+        Assert.Empty(cut.FindAll(".epos-kennzahlen-kopf"));
+        Assert.Empty(cut.FindAll(".epos-kennzahlen tfoot tr"));
+        Assert.Equal(3, cut.FindAll(".epos-kennzahlen tbody tr").Count);
+    }
+
+    // =================================================================================
+    // Der Zeitumschalter Jahr | Woche | Tag (W8-E-2)
+    // =================================================================================
+
+    /// <summary>Eine Quelle, die ihre Aufrufe mitschreibt.</summary>
+    private static Ganglinienquelle Gangquelle(List<(Gangstufe Stufe, int Nummer)> ruf)
+        => new()
+        {
+            Wochen = 52,
+            Tage = 365,
+            Bild = (stufe, nummer) => { ruf.Add((stufe, nummer)); return BILD_KWH; }
+        };
+
+    [Fact]
+    public void Der_Grafikreiter_zeigt_Jahr_Woche_und_Tag()
+    {
+        var ruf = new List<(Gangstufe, int)>();
+        var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
+                           "Strombedarf monatlich", "Grafik Strombedarf");
+
+        var stufen = cut.FindAll(".epos-gang-stufen .epos-option")
+                        .Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Jahr", "Woche", "Tag" }, stufen);
+
+        // JAHR ist die Vorgabe und zeigt UNVERAENDERT das Saeulenbild des Bestands -
+        // kein Navigator, kein Aufruf der Ganglinienquelle.
+        Assert.Equal(Gangstufe.Jahr, cut.FindComponent<BedarfGangGrafik>().Instance.Stufe);
+        Assert.Empty(cut.FindAll(".epos-gang-navigator"));
+        Assert.Empty(ruf);
+        Assert.Contains(Convert.ToBase64String(BILD),
+                        cut.Find("img.epos-chartbild").GetAttribute("src") ?? "");
+    }
+
+    [Fact]
+    public void Woche_und_Tag_holen_ihr_Bild_beim_Kern()
+    {
+        var ruf = new List<(Gangstufe Stufe, int Nummer)>();
+        var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
+                           "Strombedarf monatlich", "Grafik Strombedarf");
+
+        cut.FindAll(".epos-gang-stufen input[type=radio]")[1].Change(true);
+
+        var gang = cut.FindComponent<BedarfGangGrafik>().Instance;
+        Assert.Equal(Gangstufe.Woche, gang.Stufe);
+        Assert.Equal(1, gang.Nummer);
+        Assert.Contains("Woche 1 von 52", cut.Find(".epos-gang-marke").TextContent);
+        Assert.Contains((Gangstufe.Woche, 0), ruf);
+
+        cut.FindAll(".epos-gang-stufen input[type=radio]")[2].Change(true);
+        Assert.Equal(Gangstufe.Tag, cut.FindComponent<BedarfGangGrafik>().Instance.Stufe);
+        Assert.Contains("Tag 1 von 365", cut.Find(".epos-gang-marke").TextContent);
+        Assert.Contains((Gangstufe.Tag, 0), ruf);
+    }
+
+    /// <summary>
+    /// <b>Der Navigator ist eine Schleife</b> — hinter Woche 52 kommt Woche 1, und vor
+    /// Woche 1 steht Woche 52. Wer den Jahreswechsel ansehen will, soll nicht durch
+    /// 51 Wochen zurückgehen müssen.
+    /// </summary>
+    [Fact]
+    public void Der_Navigator_schaltet_vor_zurueck_und_im_Ring()
+    {
+        var ruf = new List<(Gangstufe Stufe, int Nummer)>();
+        var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
+                           "Strombedarf monatlich", "Grafik Strombedarf");
+        cut.FindAll(".epos-gang-stufen input[type=radio]")[1].Change(true);
+
+        // Nach jedem Klick neu suchen: Der Zeichenlauf tauscht die Knoepfe aus.
+        IElement Knopf(int i) => cut.FindAll(".epos-gang-knopf")[i];
+
+        Knopf(1).Click();                                        // vor
+        Assert.Equal(2, cut.FindComponent<BedarfGangGrafik>().Instance.Nummer);
+        Assert.Contains((Gangstufe.Woche, 1), ruf);
+
+        Knopf(0).Click();                                        // zurueck
+        Assert.Equal(1, cut.FindComponent<BedarfGangGrafik>().Instance.Nummer);
+
+        Knopf(0).Click();                                        // ueber den Anfang hinaus
+        Assert.Equal(52, cut.FindComponent<BedarfGangGrafik>().Instance.Nummer);
+        Assert.Contains((Gangstufe.Woche, 51), ruf);
+
+        Knopf(1).Click();                                        // und wieder herum
+        Assert.Equal(1, cut.FindComponent<BedarfGangGrafik>().Instance.Nummer);
+    }
+
+    /// <summary>
+    /// <b>Die Wärmeausprägungen dürfen sich nicht verschlechtern</b> (W9‑B‑4/B‑5): Ohne
+    /// Ganglinienquelle gibt es weder Umschalter noch Navigator, und der Grafikreiter
+    /// sieht aus wie zuvor — samt Sichtwahl und Jahresverlauf-Schalter.
+    /// </summary>
+    [Fact]
+    public void Ohne_Ganglinienquelle_bleibt_der_Grafikreiter_unveraendert()
+    {
+        var cut = Aufbauen(Waerme(true, 2));
+
+        Assert.Empty(cut.FindAll(".epos-gang-stufen"));
+        Assert.Empty(cut.FindAll(".epos-gang-navigator"));
+
+        // Die drei Sichten und der Schalter „Jahresverlauf" stehen unveraendert da.
+        Assert.Equal(3, cut.FindAll(".epos-option").Count);
+        Assert.Single(cut.FindAll("input[type=checkbox]"));
     }
 }

@@ -109,6 +109,34 @@
     --epos-zweispalten-mitte: 10rem;
     --epos-zweispalten-umbruch: 900px;
 
+    /* Das FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026:
+       "Verbessere die Darstellung der Dialoge, insbesondere der Parameter
+       auf der rechten Seite: kompakter, uebersichtlicher").
+
+       Alle drei Masse sind an den Vorbildern GEMESSEN, nicht geschaetzt
+       (Form_AdminPV.resx, 607 x 489):
+         Beschriftung bei x = 253, Feld bei x = 431  -> Spalte 178 px
+         Zahlenfeld 62 px breit (Modulkosten 85 px)  -> hier 8em = 104 px
+                                                        bei 13 px Schrift, mit
+                                                        Polsterung und
+                                                        44-px-Touchziel
+         Textfeld 250 px, Beschreibung 250 x 48
+
+       --epos-formularspalte ist die MINDESTbreite eines Feldpaares
+       (Beschriftungsspalte 12rem + Feld). Ab zwei passenden Spalten legt
+       auto-fill zwei Paare nebeneinander - gemessen an der Breite des
+       RASTERS, nicht des Fensters; genau das braucht die rechte Spalte
+       eines Katalograhmens.
+
+       Die UMBRUCHBREITE, bei der die Beschriftung wieder ueber das Feld
+       faellt, steht in der Medienabfrage des Blocks "Formularraster" -
+       eine Medienabfrage kann kein Token lesen. Es ist dieselbe wie bei
+       Zweispaltenauswahl und Katalograhmen (900 px); FormularrasterTests
+       haelt die zwei Werte gegeneinander. */
+    --epos-beschriftung-breite: 12rem;
+    --epos-kurzfeld-breite: 8em;
+    --epos-formularspalte: 26rem;
+
     /* Das Titelband der Startseite - Form_Start.label20 stand WEISS auf
        Color.FromArgb(104, 118, 223) (Designer :1085). Dieselbe Farbfamilie
        tragen die Sinnbilder der 21 Kacheln, die aus derselben Zeit stammen. */
@@ -679,6 +707,20 @@ body {
     margin-left: 6px;
     font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
     color: var(--epos-text-sehr-leise);
+}
+
+/* Formathinweis mit Infoknopf daneben (iU9-W12-E-1): der erklaerende Satz nimmt
+   die Breite, der Knopf steht rechts oben daran - Kollisionsregel wie in einer
+   Knopfleiste, kein gerechneter Pixelabstand. */
+.epos-formathinweis {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--epos-abstand);
+    margin-top: var(--epos-rand);
+}
+
+.epos-formathinweis > .epos-herleitung {
+    flex: 1 1 auto;
 }
 
 .epos-kohaerenz {
@@ -2456,7 +2498,7 @@ body {
         border: 1px solid CanvasText;
     }
 }
-=======
+
 /* =====================================================================
    Das Hydraulikschema als SVG (Baustein Schema, iU9-W10b.0c)
 
@@ -4296,41 +4338,136 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Lizenz und rechtliche Hinweise (iU9-W15c.11).
+   Lizenz und rechtliche Hinweise (iU9-W15c.11), neu gesetzt zur Windows-
+   Abnahme vom 05.09.2026 (Befunde W15c-B-1 und W15c-E-1).
 
    Der Vorlaeufer war 920 x 700 mit einer weissen Kopfzeile (58 px), einem
-   TabControl und einer Fusszeile (68 px). Hier fliesst es; die Kopfzeile behaelt
-   ihren Klang, der Rechtstext liest sich in einer angenehmen Zeilenlaenge.
+   TabControl und einer Fusszeile (68 px). Hier fliesst es; die Kopfzeile
+   behaelt ihren Klang, der Rechtstext liest sich in einer angenehmen
+   Zeilenlaenge.
+
+   W15c-B-1 - DIE WURZEL HAT EINEN RAND UND ROLLT NIE WAAGERECHT. Der Anwender
+   fand am 05.09.2026 in "Hilfe -> Lizenz" jede Zeile links angeschnitten:
+   Ueberschrift ("izenz und rechtliche Hinweise"), Untertitel, Reiterleiste,
+   Feldbeschriftung und beide Fusszeilen begannen links vom sichtbaren Rand.
+   Die Fundstelle ist diese hier. ZWEIUNDSIEBZIG der Dialoge haengen unter
+   .epos-dialog und bekommen von dort padding: var(--epos-karte-rand) samt
+   max-width und margin: 0 auto. Die drei Wurzeln der Welle 15c -
+   .epos-lizenz, .epos-lizverw und .epos-erststart - tun das nicht: Sie trugen
+   nur display, flex-direction, gap und min-width. body traegt margin: 0 und
+   #app traegt nichts - also klebte das erste Zeichen jeder Zeile bei x = 0 an
+   der Kante der WebView, und bei 125-150 % schneidet sie es weg. Und weil
+   weder die Wurzel noch body ein overflow-x fuehrten, verschob jeder
+   Waagerecht-Ueberlauf die GANZE Seite, statt in seinem eigenen Rahmen zu
+   rollen. (Dieselbe Form haben die VIER Wurzeln der Welle 15b - .epos-kichat,
+   .epos-kihinweis, .epos-kieinst und .epos-textanzeige; sie sind derselbe
+   Fall und stehen als offener Punkt W15c-O-6 im Wellenprotokoll - hier nicht
+   mitgeaendert, weil eine andere Welle sie verantwortet.)
+
+   Beides steht deshalb an EINER Stelle und fuer alle drei Wurzeln.
+   overflow-x: clip und nicht hidden: hidden zwaenge die zweite Achse mit zum
+   Rollrahmen (CSS Overflow 3 - ist ein Wert nicht sichtbar, wird der andere zu
+   auto), clip laesst die senkrechte Achse sichtbar. box-sizing steht
+   ausdruecklich dabei, damit der Rand die Wurzel nie breiter macht als das
+   Fenster. Breiter Inhalt rollt in SEINEM Rahmen: .epos-lizenz-lesebereich.
    -------------------------------------------------------------------------- */
+.epos-lizenz,
+.epos-lizverw,
+.epos-erststart {
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: var(--epos-karte-rand);
+    overflow-x: clip;
+}
+
+/* Die Verwaltung erscheint AUCH als Ueberlagerung im Lizenzdialog (E-11), und
+   die bringt ihren Rand schon mit - dieselbe Angleichung, die
+   .epos-ueberlagerung-inhalt > .epos-dialog bekommt. */
+.epos-ueberlagerung-inhalt > .epos-lizverw {
+    padding: 0;
+}
+
+/* Der Lizenzdialog fuellt sein Fenster: Kopf, Reiterleiste und Fusszeile
+   stehen, der Lesebereich dazwischen nimmt den Rest. Ohne die Mindesthoehe
+   waere seine Hoehe die seines Textes - der Ladehinweis stuende dann in einem
+   Rahmen von drei Zeilen, und der Vertragstext schoebe die Knopfleiste aus
+   dem Fenster. */
 .epos-lizenz {
     display: flex;
     flex-direction: column;
     gap: 12px;
     min-width: 0;
+    min-height: 100vh;
 }
 
+/* Kopfzeile: Titel und Untertitel links, der Hilfeknopf rechts - dieselbe Lage
+   wie .epos-dialog-kopf und wie InfoKnopf.Anbringen sie in WinForms erzeugt.
+   Bis zur Abnahme stand er als letztes Element der Knopfleiste hinter
+   "Schliessen" (W15c-E-1). */
 .epos-lizenz-kopf {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--epos-rand);
     border-bottom: 1px solid var(--epos-rahmen-leise);
     padding-bottom: 8px;
 }
 
+.epos-lizenz-kopftext {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Die Schriftgroessen kommen aus den Token und nicht aus Pixeln (W15c-E-1):
+   17 px und 11 px standen frueher hier und gehoerten keiner Stufe des Hauses
+   an. Der Untertitel traegt jetzt --epos-text-leise statt
+   --epos-text-sehr-leise - #888780 auf Weiss haelt nur 3,3:1, und die
+   Hausregel verlangt 4,5:1. */
 .epos-lizenz-titel {
     margin: 0;
-    font-size: 17px;
+    font-size: var(--epos-schriftgroesse-kartentitel);
     font-weight: 600;
     color: var(--epos-quelle-text);
+    overflow-wrap: anywhere;
 }
 
 .epos-lizenz-untertitel {
     margin: 2px 0 0 0;
-    font-size: 11px;
-    color: var(--epos-text-sehr-leise);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text-leise);
+    overflow-wrap: anywhere;
 }
 
-.epos-lizenz-werkzeuge {
+/* W15c-E-1 - DER LESEBEREICH. Bis zur Abnahme stand der Vertragstext in einem
+   <textarea>: ein FORMULARfeld mit Groessenanfasser, eigener Schriftflaeche
+   und eigenem Rollbalken fuer einen Text, den niemand bearbeitet. Jetzt ist es
+   ein Lesebereich - dieselbe Bauart wie der Gespraechsverlauf des
+   KI-Assistenten (.epos-verlauf, W15b): senkrecht rollt er, waagerecht gar
+   nicht, weil overflow-wrap im Absatz auch eine ueberlange Adresse bricht.
+   Alle drei Karten benutzen ihn, damit der Reiterwechsel das Bild nicht
+   springen laesst. */
+.epos-lizenz-lesebereich {
+    flex: 1 1 auto;
+    min-height: 12rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 14px 14px;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+.epos-lizenz-lesebereich:focus-visible {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+/* Der Lesebereich soll die freie Hoehe des Blattes bekommen; ein Block gaebe
+   sie nicht weiter ("die Hoehe fuellen" bedeutet dort nichts). Nur im
+   Lizenzdialog - das Blatt des Hauses bleibt, was es ist. */
+.epos-lizenz .epos-reiter-blatt {
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: 8px;
+    flex-direction: column;
 }
 
 /* Der Sprachhinweis (E-7): auf Deutsch leer, auf Englisch "Binding version in
@@ -4341,12 +4478,14 @@ body {
     color: var(--epos-text-leise);
 }
 
-/* 13 Ueberschriften und 14 Absaetze. Im Vorlaeufer Segoe UI Semibold +1,5 pt in
-   #005AA0 bzw. Segoe UI in #282C30 - dieselbe Aussage, hier ueber die
-   Themafarben. */
+/* 13 Ueberschriften und 14 Absaetze, dazu die Paragrafenueberschriften des
+   Vertragstextes ("§ 1 ..."), die Vertragsabschnitte aus dem Fliesstext holt.
+   Im Vorlaeufer Segoe UI Semibold +1,5 pt in #005AA0 bzw. Segoe UI in #282C30
+   - dieselbe Aussage, hier ueber die Themafarben und die Schriftstufe des
+   Abschnittsbalkens. */
 .epos-lizenz-ueberschrift {
     margin: 14px 0 4px 0;
-    font-size: 14px;
+    font-size: var(--epos-schriftgroesse-gruppenkopf);
     font-weight: 600;
     color: var(--epos-quelle-text);
 }
@@ -4362,12 +4501,14 @@ body {
     overflow-wrap: anywhere;
 }
 
+/* Die Fusszeile: links LEISE die Herkunft (Lizenzstand, Quelle und Stand),
+   rechts die Knopfleiste. Beide brechen um, wenn das Fenster schmal wird. */
 .epos-lizenz-fuss {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: var(--epos-rand);
     border-top: 1px solid var(--epos-rahmen);
     padding-top: 8px;
 }
@@ -4375,32 +4516,45 @@ body {
 .epos-lizenz-herkunft {
     display: flex;
     flex-direction: column;
-    color: var(--epos-text-leise);
+    flex: 1 1 16rem;
     min-width: 0;
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text-leise);
     overflow-wrap: anywhere;
 }
 
-/* RightToLeft des Vorlaeufers: zuerst hinzugefuegt = ganz rechts. In der
+/* Die Knopfleiste ist die des Hauses (.epos-leiste - sie bricht um, und jeder
+   Knopf bemisst sich an seiner Beschriftung, W12-B-1). Ihr margin-top gilt
+   unter einer Liste; hier steht sie IN der Fusszeile und rueckt nach rechts.
+
+   RightToLeft des Vorlaeufers: zuerst hinzugefuegt = ganz rechts. In der
    Markup-Reihenfolge steht deshalb [Aktivieren] [Speichern] [Drucken] ...
    [Zustimmen] - von rechts gelesen ist es die Reihenfolge des Bestands
    (Entscheid E-14). */
 .epos-lizenz-knoepfe {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
+    margin-top: 0;
+    justify-content: flex-end;
 }
 
 /* --------------------------------------------------------------------------
    Der Druck (Entscheid E-2): window.print() statt PrintDocument. Gedruckt wird
    der Rechtstext, nicht die Bedienung; Kopf- und Fusszeile setzt der Browser
-   aus @page.
+   aus @page. Der Lesebereich gibt dafuer seinen Rahmen und seine Hoehe ab -
+   sonst kaeme nur der sichtbare Ausschnitt aufs Papier.
    -------------------------------------------------------------------------- */
 @media print {
-    .epos-lizenz-werkzeuge,
     .epos-lizenz-knoepfe,
+    .epos-lizenz-kopf .epos-infoknopf,
     .epos-reiter-leiste {
         display: none !important;
+    }
+
+    .epos-lizenz-lesebereich {
+        overflow: visible;
+        min-height: 0;
+        padding: 0;
+        border: 0;
+        background: none;
     }
 
     .epos-lizenz-absatz {
@@ -4409,6 +4563,8 @@ body {
 
     .epos-lizenz {
         gap: 6px;
+        min-height: 0;
+        padding: 0;
     }
 }
 
@@ -5246,6 +5402,369 @@ body {
     .epos-katalog-paar {
         grid-template-columns: 1fr;
         grid-template-rows: minmax(0, 1fr) auto;
+    }
+}
+
+/* ==================================================================== */
+/* WOCHEN-STUNDENPROFIL (Befund W8-E-1, Windows-Abnahme 05.09.2026)      */
+/*                                                                      */
+/* Der Anwender wollte den Dialog "so wie zuvor". Die erste Fassung      */
+/* stellte alles UNTEREINANDER - die Typliste als hohe Wahlzeilen, die   */
+/* sieben Wochentage als Optionsgruppe, die 24 Stundenwerte in EINER     */
+/* Spalte -, und der Dialog war damit rund dreimal so hoch wie sein      */
+/* Vorbild (Form_EingStromTyp, 607 x 544) und musste rollen.             */
+/*                                                                      */
+/* Zurueckgeholt ist die ANORDNUNG, nicht das Pixelmass: Die zwei        */
+/* Listen und die 24 Felder halten weiter --epos-touchziel (44 px statt  */
+/* der 17 bzw. 22 px des Designers). Was dadurch nicht mehr in die       */
+/* Hoehe passt, rollt in seinem eigenen Rahmen - nie die Seite.          */
+/* ==================================================================== */
+
+/* Kopfzeile: Typliste links, Beschreibung rechts. Das Verhaeltnis folgt */
+/* dem Designer (listBox_Typname 197 px, textBox_Beschreibung 343 px).   */
+.epos-typprofil-typen {
+    flex: 1 1 220px;
+}
+
+.epos-typprofil-beschreibung {
+    flex: 2 1 320px;
+}
+
+/* Der Reiter "Wochenwerte": das Stundenraster links, die Wochentage     */
+/* rechts daneben (Label27/listBox_Tag standen bei x = 338 bzw. 345,     */
+/* das Stundenraster endete bei x = 328). Auf schmalem Schirm bricht das */
+/* Paar um; hier ist der Umbruch folgenlos, deshalb flex-wrap und keine  */
+/* Medienabfrage (dieselbe Begruendung wie bei .epos-auswahlpaar).       */
+.epos-typprofil-woche {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--epos-rand);
+}
+
+.epos-typprofil-stunden {
+    flex: 1 1 440px;
+    min-width: 0;
+}
+
+.epos-typprofil-tage {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 0 1 15rem;
+    min-width: 0;
+}
+
+/* DIE 24 STUNDENFELDER STEHEN IN DREI SPALTEN ZU ACHT ZEILEN - 1..8,    */
+/* 9..16, 17..24, genau wie im Vorbild (st1..st8 bei x = 37, st9..st16   */
+/* bei x = 147, st17..st24 bei x = 258, je acht Zeilen ab y = 34).       */
+/*                                                                      */
+/* Im Markup laufen die Felder weiter 1..24, damit der Tabulator die     */
+/* Reihenfolge der Maske nimmt (TabIndex 119..165); grid-auto-flow:      */
+/* column fuellt daraus spaltenweise. Eine von Hand gebaute Dreiteilung  */
+/* haette die Markup-Reihenfolge zerrissen und den Tabulator mit ihr.    */
+.epos-stundenraster {
+    display: grid;
+    grid-template-rows: repeat(8, auto);
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 4px 12px;
+}
+
+/* Die Nummer steht VOR dem Feld, nicht darueber: Label3 lag bei x = 16  */
+/* und st1 bei x = 37 auf DERSELBEN Zeile. Uebereinander waere die       */
+/* Spalte doppelt so hoch - und genau das war der Befund.                */
+.epos-stundenraster .epos-feld {
+    flex-direction: row;
+}
+
+/* =====================================================================
+   ERGEBNISBLATT DES BEDARFS - Kategorien, Summenfuss und der
+   Zeitnavigator des Grafikreiters
+   (Anwenderwunsch W8-E-2, Windows-Abnahme 05.09.2026)
+   =====================================================================
+
+   WAS DER ANWENDER BEANSTANDET HAT. Das Blatt reihte vier Zeilen
+   untereinander - eine LEISTUNG in kW, zwei Posten und deren Summe -,
+   alle gleich aussehend, die Summe mittendrin. Wer die Zahlen las,
+   musste selbst wissen, welche wozu gehoert. Die Gliederung macht das
+   jetzt sichtbar: ein Block je Kategorie mit Ueberschrift, die Summe
+   ABGESETZT am Fuss.
+
+   Die Tabelle bleibt die Hausklasse epos-raster; hier stehen nur die
+   Zusaetze. Wer die Klasse nicht setzt, bekommt weiter das schlichte
+   Raster - kein Wirt muss angefasst werden. */
+
+.epos-kennzahlen {
+    width: auto;
+    min-width: min(100%, 28rem);
+}
+
+/* Die Beschriftungsspalte darf wachsen, Zahl und Einheit bleiben schmal -
+   sonst steht die Einheit einmal dicht am Wert und einmal am Rand. */
+.epos-kennzahlen td:first-child,
+.epos-kennzahlen th[scope="row"] {
+    width: 100%;
+}
+
+.epos-kennzahlen .epos-einheit {
+    white-space: nowrap;
+    color: var(--epos-text-leise);
+}
+
+/* Die Blockueberschrift ist eine Zwischenzeile, keine Spaltenzeile:
+   leise, klein, ohne Trennlinie darunter - die Zeilen darunter tragen
+   ihre eigene. Der Abstand nach oben trennt sie vom Block davor. */
+.epos-kennzahlen-kopf th {
+    padding-top: 14px;
+    border-bottom: none;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--epos-text-leise);
+}
+
+/* Die erste Ueberschrift braucht den Abstand nicht - ueber ihr ist der
+   Reiterrand. */
+.epos-kennzahlen-block:first-of-type .epos-kennzahlen-kopf th {
+    padding-top: 2px;
+}
+
+/* DIE SUMME. Sie steht unten und ist als Summe zu erkennen: eine
+   kraeftige Oberlinie wie unter einem Rechenstrich, halbfett, ohne
+   Trennlinie darunter. */
+.epos-kennzahlen-summe th,
+.epos-kennzahlen-summe td {
+    padding-top: 8px;
+    border-top: 2px solid var(--epos-rahmen);
+    border-bottom: none;
+    font-weight: 600;
+    text-align: left;
+}
+
+.epos-kennzahlen-summe .epos-zahl {
+    text-align: right;
+}
+
+/* --- Der Zeitnavigator des Grafikreiters ---------------------------- */
+
+.epos-gang {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Stufenwahl und Navigator stehen in EINER Zeile, wenn der Platz reicht;
+   auf schmalem Schirm bricht der Navigator darunter. */
+.epos-gang-navigator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-stundenraster .epos-feld-text {
+    flex: 0 0 auto;
+    min-width: 1.75rem;
+    text-align: right;
+    color: var(--epos-text-leise);
+}
+
+.epos-stundenraster .epos-feld-zeile {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* KOMPAKTE WAHLLISTE. Vorbild sind die zwei ListBox der Maske:          */
+/* listBox_Typname (197 x 157, neun sichtbare Zeilen) und listBox_Tag    */
+/* (109 x 123, alle sieben Wochentage). Die Zeile traegt dort ihren      */
+/* Namen selbst - hier ist sie deshalb eine breite Zeilenwahl            */
+/* (.epos-zeilenwahl--breit) und damit EIN Klickziel und EIN             */
+/* Tabulatorhalt, so wie eine ListBox-Zeile auch.                        */
+/*                                                                      */
+/* Die Zellenpolsterung faellt weg: Sie kaeme zu den 44 px des Knopfes   */
+/* hinzu, und im Rahmen (--epos-listenhoehe, 22 rem) stuenden dann sechs */
+/* Zeilen statt acht. Die Trennlinie faellt mit ihr - der Knopf hat      */
+/* seinen eigenen Rahmen, zwei uebereinander waeren ein Doppelstrich.    */
+.epos-raster--wahlliste td {
+    padding: 0;
+    border-bottom: 0;
+}
+
+/* Touchgroesse - der Navigator wird auf dem iPad mit dem Finger bedient. */
+.epos-gang-knopf {
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    padding: 0 10px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    color: inherit;
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.epos-gang-knopf:hover {
+    background: var(--epos-flaeche-aktiv, var(--epos-flaeche));
+}
+
+/* Die Marke wechselt bei jedem Schritt ihren Text. Eine feste Mindestbreite
+   haelt die zwei Pfeile an Ort und Stelle - sonst wanderte der Knopf
+   "vor", sobald aus "Woche 9" ein "Woche 10" wird. */
+.epos-gang-marke {
+    min-width: 10rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ==================================================================== */
+/* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
+/*                                                                      */
+/* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
+/* auf der rechten Seite: kompakter, uebersichtlicher, ..."              */
+/*                                                                      */
+/* DER BEFUND (Bildschirmfoto "Administration Photovoltaik Module").     */
+/* Im Katalograhmen stand rechts der Block "Moduldaten"; jedes Feld nahm */
+/* die volle Breite, die Beschriftung stand DARUEBER, die Zahlenfelder   */
+/* waren so breit wie die Textfelder, und die Einheit stand am rechten   */
+/* Rand des Blocks statt hinter dem Wert. Der Block war doppelt so hoch  */
+/* wie der Dialog und rollte.                                           */
+/*                                                                      */
+/* DIE VORBILDER, GEMESSEN (Form_AdminPV.resx, 607 x 489):              */
+/*   Beschriftung x = 253, Feld x = 431   -> Beschriftungsspalte 178 px  */
+/*   Zahlenfeld 62 px breit, Einheit bei 497 -> 4 px hinter dem Feld     */
+/*   Textfeld 250 px, Beschreibung 250 x 48 (zwei Zeilen)                */
+/* Dieselbe Anordnung in Form_Heizkessel_Admin (726 x 383),             */
+/* Form_BHKWAdmin (856 x 517) und Form_AdminStromspeicher (614 x 367).   */
+/*                                                                      */
+/* EINE REGEL FUER DAS GANZE HAUS, kein CSS je Dialog. Wer die           */
+/* vorhandenen Feldbausteine benutzt, bekommt die kompakte Form allein   */
+/* dadurch, dass seine Felder in <Formularraster> stehen. Deshalb greift */
+/* hier NICHTS ausserhalb von .epos-formularraster: Ein Feld irgendwo    */
+/* sonst im Haus behaelt seine Form (Beschriftung darueber), und die     */
+/* Umstellung eines Dialogs bleibt eine Zeile.                           */
+/* ==================================================================== */
+
+/* Der Raster selbst. auto-fill/minmax statt gerechneter Prozentbreiten -
+   dieselbe Bauart wie beim Kachelraster. Die Spaltenzahl haengt an der
+   Breite des RASTERS: In der rechten Spalte eines Katalograhmens stehen
+   damit zwei Feldpaare nebeneinander, sobald sie hineinpassen, und eines,
+   wenn nicht. align-items: start, damit ein zweizeiliges Feld sein
+   Nachbarfeld nicht mit in die Hoehe zieht. */
+.epos-formularraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--epos-formularspalte), 1fr));
+    align-items: start;
+    column-gap: var(--epos-rand);
+    row-gap: 4px;
+}
+
+/* Fuer Bloecke, deren Felder eine Reihenfolge tragen oder die neben einem
+   Diagramm nur wenig Breite haben. Die Beschriftung steht auch dann noch
+   neben dem Feld. */
+.epos-formularraster--einspaltig {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+/* Eine Gruppe ist DURCHSICHTIG: Ihre Felder bleiben direkte Rasterkinder.
+   Ein zwischengeschobener Kasten haette alle Felder der Gruppe in EINE
+   Rasterzelle gesetzt und die Beschriftungsspalten zweier Gruppen
+   auseinanderlaufen lassen. */
+.epos-formulargruppe {
+    display: contents;
+}
+
+/* Die leise Zwischenueberschrift - kein zweiter Gruppenkopf, kein Kasten
+   (dieselbe Begruendung wie bei .epos-untergruppe). Sie spannt ueber alle
+   Spalten, sonst stuende die naechste Gruppe neben ihr. */
+.epos-formulargruppe-titel {
+    grid-column: 1 / -1;
+    margin: 8px 0 0 0;
+    font-weight: 700;
+    color: var(--epos-text-leise);
+}
+
+/* Was ueber die volle Breite gehoert: eine Untergruppe, eine
+   Optionsgruppe und jedes Feld, das sich selbst als lang meldet
+   (mehrzeiliges Textfeld). */
+.epos-formularraster > .epos-untergruppe,
+.epos-formularraster > .epos-optionsgruppe,
+.epos-formularraster .epos-feld--breit {
+    grid-column: 1 / -1;
+}
+
+/* HIER faellt die Beschriftung neben das Feld. .epos-feld ist sonst eine
+   Spalte (Beschriftung ueber Feld); im Raster ist es ein zweispaltiges
+   Raster aus fester Beschriftungsspalte und Feldspalte. Linksbuendig wie
+   im Vorbild: Dort standen alle Beschriftungen auf derselben x-Kante. */
+.epos-formularraster .epos-feld {
+    display: grid;
+    grid-template-columns: var(--epos-beschriftung-breite) minmax(0, 1fr);
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 0;
+    min-width: 0;
+    min-height: var(--epos-touchziel);
+}
+
+.epos-formularraster .epos-feld-text {
+    grid-column: 1;
+    text-align: left;
+    color: var(--epos-text);
+}
+
+/* Die zweite Spalte AUSDRUECKLICH: Ein Feld ohne Beschriftung zeichnet
+   seinen .epos-feld-text gar nicht, und ohne diese Zeile ruecke sein
+   Eingabeteil in die Beschriftungsspalte. Zwei Faelle - die Feldzeile
+   (Eingabe samt Einheit oder Knopf) und das mehrzeilige Textfeld, dessen
+   textarea direkt im Label haengt. */
+.epos-formularraster .epos-feld > .epos-feld-zeile,
+.epos-formularraster .epos-feld > .epos-eingabe {
+    grid-column: 2;
+}
+
+/* Das kurze Feld: Ein Zahlen-, Ganzzahl- oder Datumsfeld ist so breit, wie
+   sein Wertebereich braucht - im Vorbild 62 px -, und die EINHEIT steht
+   unmittelbar dahinter statt am rechten Rand des Blocks. Genau das war der
+   sichtbare Teil des Befunds. */
+.epos-formularraster .epos-feld--kurz .epos-eingabe {
+    flex: 0 0 auto;
+    width: var(--epos-kurzfeld-breite);
+}
+
+/* Ein Schalter ist kein .epos-feld (sein Kaestchen sitzt VOR dem Text).
+   Damit er nicht aus der Reihe faellt, beginnt er dort, wo die Felder
+   ihre Eingabe beginnen. */
+.epos-formularraster .epos-schalter {
+    padding-left: calc(var(--epos-beschriftung-breite) + 8px);
+}
+
+/* Unter 900 CSS-Pixeln faellt die Beschriftung wieder UEBER das Feld und
+   der Raster auf eine Spalte - dieselbe Umbruchbreite wie bei
+   Zweispaltenauswahl und Katalograhmen (--epos-zweispalten-umbruch).
+   Grund dort wie hier: Die WebView rechnet in CSS-Pixeln, das Fenstermass
+   in Geraetepixeln, und bei 150 % sind 1632 Geraetepixel nur 1088
+   CSS-Pixel. */
+@media (max-width: 900px) {
+
+    .epos-formularraster {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .epos-formularraster .epos-feld {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 4px;
+        min-height: 0;
+    }
+
+    .epos-formularraster .epos-feld > .epos-feld-zeile,
+    .epos-formularraster .epos-feld > .epos-eingabe {
+        grid-column: 1;
+    }
+
+    .epos-formularraster .epos-schalter {
+        padding-left: 0;
     }
 }
 

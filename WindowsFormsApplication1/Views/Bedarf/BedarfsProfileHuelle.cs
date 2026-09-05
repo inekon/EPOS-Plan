@@ -344,15 +344,21 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Hält das Rechenobjekt zwischen „Simulation" und „monatlicher Verlauf" — im
         /// Vorläufer war es ein Feld der Maske.
+        ///
+        /// <para><b>Die RECHNUNG steht seit dem Befund W8‑B‑3 im Kern</b>
+        /// (<c>BedarfsVorschauCtrl.ProjektVorschau</c>, Windows-Abnahme 05.09.2026). Hier
+        /// stand sie bis dahin ein zweites Mal, von Hand nachgezogen — und beim Strom
+        /// fehlte darin die Zeile, die <c>Strombedarf_Gebaeude_gesamt</c> belegt: Die
+        /// Ergebnisanzeige zeigte „Gesamter Strombedarf 0" und „Strombedarf Gebäude 0"
+        /// neben einem gerechneten Spitzenwert von 3,72 kW. Die Hülle HÄLT den Stand
+        /// jetzt nur noch; gerechnet wird einmal, im Kern.</para>
         /// </summary>
         private sealed class Rechenstand
         {
             private readonly BedarfsArt _art;
             private readonly int _projektId;
-            private readonly SimulationWaermebedarf _waerme = new SimulationWaermebedarf();
-            private readonly SimulationStrombedarf _strom = new SimulationStrombedarf();
+            private BedarfsVorschau _stand;
             private string _titelZusatz = "";
-            private bool _gerechnet;
 
             internal Rechenstand(BedarfsArt art, int projektId)
             {
@@ -362,66 +368,16 @@ namespace WindowsFormsApplication1
 
             internal IReadOnlyDictionary<string, object> Rechnen(IReadOnlyList<string> namen)
             {
-                var liste = new List<string>(namen);
+                BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(_art, _projektId, namen);
+                if (!v.Erfolgreich) return null;
 
-                if (_art == BedarfsArt.Stromverbraucher)
-                {
-                    _strom.m_ID_Projekt = _projektId;
-                    float[] ergebnis = _strom.Stromprofil_Strombedarf_berechnen(liste);
-                    if (ergebnis == null) return null;
+                _stand = v;
 
-                    _strom.Strombedarf_gesamt = ergebnis.Sum();
-                    Array.Copy(ergebnis, _strom.Strombedarf_viertelStundenwerte, ergebnis.Length);
-                    WPPlan.Core.BhkwPlan.MonatsSumme(_strom.Strombedarf_viertelStundenwerte,
-                        _strom.Strombedarf_monat, _strom.mo_anfang, _strom.mo_ende);
-                    _strom.Strombedarf_Max =
-                        _strom.Maximaler_Strombedarf(_strom.Strombedarf_viertelStundenwerte);
-                    _strom.Strombedarf_gesamt = _strom.Strombedarf_Gebaeude_gesamt;
+                // Nur der Brauchwasserweg haengt den Profilnamen an den Fenstertitel
+                // (Form_Brauchwasser.btn_Berechnen_Click:308).
+                _titelZusatz = (_art == BedarfsArt.Brauchwasser && namen != null && namen.Count > 0)
+                    ? namen[0] : "";
 
-                    _gerechnet = true;
-                    return LetzterStand();
-                }
-
-                _waerme.m_ID_Projekt = _projektId;
-
-                if (_art == BedarfsArt.Prozesswaerme)
-                {
-                    _waerme.Prozesswaerme_berechnen(liste);
-
-                    // W9-O-3, Entscheid des Anwenders vom 04.09.2026: Die Prozesssumme
-                    // geht ueber die EINHEITENKLASSE in die Einheit, die der Kern fuer
-                    // Waermebedarf_Prozess fuehrt - MWh. Hier stand bis hierher die
-                    // blanke Summe der Stundenwerte, also kWh, woertlich aus
-                    // Form_Prozesswaerme uebernommen; die Ergebnishuelle liest das Feld
-                    // aber als MWh (BedarfErgebnisHuelle: Energieeinheit.MWh), und
-                    // "Waermebedarf Prozess" stand in diesem Weg um Faktor 1000 zu gross.
-                    // Der Kern (SimulationWaermebedarf.Waermebedarf_berechnen) und die
-                    // Prozesswaerme-Verwaltung setzten das Feld schon immer in MWh.
-                    _waerme.ProzesssummeUebernehmen();
-
-                    WPPlan.Core.BhkwPlan.MonatsSumme(_waerme.prozesswerte,
-                        _waerme.Waermebedarf_Prozess_Monat, _waerme.mo_anfang, _waerme.mo_ende);
-                }
-                else
-                {
-                    _waerme.Brauchwasserwaerme_berechnen(liste);
-
-                    // BEWUSST unveraendert - und damit NICHT symmetrisch zum Zweig
-                    // darueber: Waermebedarf_Brauchwasser liegt hier in kWh, und genau so
-                    // nimmt die Ergebnishuelle es an (Energieeinheit.KWh, Entscheid
-                    // W8-O-5). Der Weg zeigt heute die richtige Zahl; ihn auf MWh zu
-                    // heben hiesse, die Annahme der Huelle mitzudrehen - und die gilt
-                    // auch fuer den Simulationsweg, der das Feld aus dem Kern schon in
-                    // MWh bekommt und es deshalb ein zweites Mal teilt. Diese
-                    // Unstimmigkeit ist als W8-O-5b notiert; sie braucht einen eigenen
-                    // Anwenderentscheid und wird hier nicht nebenbei mitentschieden.
-                    _waerme.Waermebedarf_Brauchwasser = _waerme.brauchwasserwerte.Sum();
-                    WPPlan.Core.BhkwPlan.MonatsSumme(_waerme.brauchwasserwerte,
-                        _waerme.Waermebedarf_Brauchwasser_Monat, _waerme.mo_anfang, _waerme.mo_ende);
-                    _titelZusatz = liste.Count > 0 ? liste[0] : "";
-                }
-
-                _gerechnet = true;
                 return LetzterStand();
             }
 
@@ -432,16 +388,16 @@ namespace WindowsFormsApplication1
             /// </summary>
             internal IReadOnlyDictionary<string, object> LetzterStand()
             {
-                if (!_gerechnet) return null;
+                if (_stand == null) return null;
 
                 switch (_art)
                 {
                     case BedarfsArt.Stromverbraucher:
-                        return BedarfErgebnisHuelle.Gaben(_strom, 1);
+                        return BedarfErgebnisHuelle.Gaben(_stand.Strom, 1);
                     case BedarfsArt.Prozesswaerme:
-                        return BedarfErgebnisHuelle.Gaben(_waerme, false, 1, "");
+                        return BedarfErgebnisHuelle.Gaben(_stand.Waerme, false, 1, "");
                     default:
-                        return BedarfErgebnisHuelle.Gaben(_waerme, true, 2, _titelZusatz);
+                        return BedarfErgebnisHuelle.Gaben(_stand.Waerme, true, 2, _titelZusatz);
                 }
             }
         }

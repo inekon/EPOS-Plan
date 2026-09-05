@@ -81,8 +81,15 @@ namespace WindowsFormsApplication1
         // Die Datenwege
         // =====================================================================
 
-        /// <summary>Der Katalog samt ReadOnly-Kennzeichen.</summary>
-        private static Task<List<GanglinienKatalogZeile>> KatalogLesen()
+        /// <summary>
+        /// Der Katalog samt ReadOnly-Kennzeichen.
+        ///
+        /// <para><b>Seit iU9-W12-E-1 aus dem Modell</b>: <c>ReadAll</c> liest die
+        /// Spalte mit, und der frühere Aufruf <c>ctrl.IsReadOnly(bezeichner)</c> je
+        /// Zeile war eine zweite Abfrage pro Katalogeintrag (N+1). Die Werte sind
+        /// dieselben — es ist dieselbe Spalte derselben Tabelle.</para>
+        /// </summary>
+        internal static Task<List<GanglinienKatalogZeile>> KatalogLesen()
         {
             StromganglinieStammCtrl ctrl = new StromganglinieStammCtrl();
             ctrl.ReadAll();
@@ -92,7 +99,7 @@ namespace WindowsFormsApplication1
             {
                 StromganglinieModel m = ctrl.items[i];
                 liste.Add(new GanglinienKatalogZeile(m.m_szBezeichner, m.m_Zeitinterval,
-                                                     ctrl.IsReadOnly(m.m_szBezeichner)));
+                                                     m.m_bReadOnly));
             }
             return Task.FromResult(liste);
         }
@@ -102,14 +109,14 @@ namespace WindowsFormsApplication1
         /// prüft ReadOnly selbst — die Komponente tut es vorher noch einmal, damit
         /// die Rückfrage gar nicht erst kommt.
         /// </summary>
-        private static Task<bool> Loeschen(string bezeichner)
+        internal static Task<bool> Loeschen(string bezeichner)
             => Task.FromResult(new StromganglinieStammCtrl().Delete(bezeichner));
 
         /// <summary>
         /// Der Dateiwähler der Plattform, mit dem Ablageordner als Startpunkt —
         /// HINTER dem Blazor-Ereignis (Befund W13‑B‑1, siehe <c>IDateiDienst</c>).
         /// </summary>
-        private static Task<string> DateiWaehlen(string filter)
+        internal static Task<string> DateiWaehlen(string filter)
         {
             return Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.IMPORT_TITEL_ADMIN,
@@ -122,12 +129,12 @@ namespace WindowsFormsApplication1
         /// Rückrufe der Komponente werden von dort aus gerufen und laufen über die
         /// <c>InvokeAsync</c> des Blazor-Verteilers wieder auf dem richtigen Faden.
         /// </summary>
-        private static Task<GanglinienImportErgebnis> Einlesen(
+        internal static Task<GanglinienImportErgebnis> Einlesen(
             string pfad, GanglinienRaster raster, GanglinienImportRueckrufe rueckrufe)
             => Task.Run(() => GanglinienImportAblauf.MitAblage(pfad, raster, rueckrufe));
 
         /// <summary>Neuzerlegung mit den gewählten Optionen (für den Optionendialog).</summary>
-        private static Task<GanglinienVorschau> Vorschau(string pfad, GanglinienImportOptionen optionen)
+        internal static Task<GanglinienVorschau> Vorschau(string pfad, GanglinienImportOptionen optionen)
             => Task.Run(() => GanglinienDatei.Vorschau(pfad, optionen));
     }
 }

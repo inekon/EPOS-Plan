@@ -11904,6 +11904,36 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BERG_LBL_STROM_GEBAEUDE" xml:space="preserve">
     <value>Strombedarf Gebäude:</value>
   </data>
+  <data name="BERG_LBL_MAX_LEISTUNG" xml:space="preserve">
+    <value>max. Leistung:</value>
+  </data>
+  <data name="BERG_LBL_STROM_PROFIL" xml:space="preserve">
+    <value>Strombedarf aus Profil:</value>
+  </data>
+  <data name="BERG_GRP_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="BERG_GRP_ENERGIE" xml:space="preserve">
+    <value>Energie</value>
+  </data>
+  <data name="BERG_STUFE_JAHR" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="BERG_STUFE_WOCHE" xml:space="preserve">
+    <value>Woche</value>
+  </data>
+  <data name="BERG_STUFE_TAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="BERG_GANG_MARKE" xml:space="preserve">
+    <value>{2} {0} von {1}</value>
+  </data>
+  <data name="BERG_BILD_STROM_GANG" xml:space="preserve">
+    <value>Strombedarf Ganglinie</value>
+  </data>
+  <data name="BERG_ACHSE_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf [kW]</value>
+  </data>
   <data name="BERG_LBL_NETZVERLUSTE" xml:space="preserve">
     <value>Netzverluste:</value>
   </data>
@@ -12116,6 +12146,9 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="BPRO_MSG_FEHLER" xml:space="preserve">
     <value>Speichern nicht möglich!</value>
+  </data>
+  <data name="BPRO_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>Ein Typ mit diesem Namen ist schon vorhanden</value>
   </data>
   <data name="BPRO_FRAGE_LOESCHEN" xml:space="preserve">
     <value>Soll {0} wirklich gelöscht werden ?</value>
@@ -14511,6 +14544,39 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="FEHLERSCHRANKE_BTN_SCHLIESSEN" xml:space="preserve">
     <value>Schließen</value>
+  </data>
+  <data name="STROMGL_BTN_IMPORTIEREN" xml:space="preserve">
+    <value>CSV-Datei importieren...</value>
+  </data>
+  <data name="STROMGL_BTN_SPEICHERN_UNTER" xml:space="preserve">
+    <value>Speichern unter...</value>
+  </data>
+  <data name="STROMGL_BTN_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="STROMGL_HINWEIS_FORMAT" xml:space="preserve">
+    <value>Dateiformat: CSV- oder Textdatei (auch Excel .xlsx/.xlsm/.xls) mit einem Jahr Lastgang — 8.760 Stundenwerte oder 35.040 Viertelstundenwerte, in Zeitfolge ab dem 1. Januar, je Zeile ein Wert. Als Feldtrennzeichen sind Semikolon, Komma, Tabulator und senkrechter Strich zugelassen; eine einspaltige Datei braucht keines. Eine Kopfzeile ist erlaubt und wird erkannt. Dezimaltrennzeichen Komma oder Punkt, kein Tausendertrennzeichen. Werte als Leistung in kW oder als Arbeit in kWh je Intervall — die Einheit wird vor dem Einlesen abgefragt und in kW umgerechnet. Eine Zeitstempelspalte ist zulässig, aber nicht nötig. Der Bezeichner der Ganglinie ist der Dateiname ohne Erweiterung.</value>
+  </data>
+  <data name="STROMGL_TITEL_KOPIE" xml:space="preserve">
+    <value>Stromganglinie speichern unter</value>
+  </data>
+  <data name="STROMGL_FRAGE_KOPIE" xml:space="preserve">
+    <value>Name der Kopie:</value>
+  </data>
+  <data name="STROMGL_KOPIE_ZUSATZ" xml:space="preserve">
+    <value> - Kopie</value>
+  </data>
+  <data name="STROMGL_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>Eine Stromganglinie mit dem Namen „{0}“ ist bereits in der Datenbank. Bitte einen anderen Namen wählen.</value>
+  </data>
+  <data name="STROMGL_MSG_NAME_LEER" xml:space="preserve">
+    <value>Bitte einen Namen für die Kopie eingeben.</value>
+  </data>
+  <data name="STROMGL_MSG_KOPIERT" xml:space="preserve">
+    <value>Die Stromganglinie „{0}“ wurde als „{1}“ gespeichert.</value>
+  </data>
+  <data name="STROMGL_MSG_KOPIE_FEHLER" xml:space="preserve">
+    <value>Die Kopie konnte nicht angelegt werden.</value>
   </data>
   <data name="KI_KERN_DIENST_KEIN_SCHLUESSEL" xml:space="preserve">
     <value>Kein API-Schlüssel hinterlegt — bitte unter „Einstellungen…" eintragen.</value>

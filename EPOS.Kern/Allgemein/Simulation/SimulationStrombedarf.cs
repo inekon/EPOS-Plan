@@ -45,6 +45,20 @@ namespace WindowsFormsApplication1
         public float[] Dauerlinie = new float[8760 * 4];
         public float[] Dauerlinie_nicht_sortiert = new float[8760 * 4];
 
+        /// <summary>
+        /// Wie viele Plätze von <see cref="Strombedarf_viertelStundenwerte"/> BELEGT sind
+        /// (Windows-Abnahme 05.09.2026, Anwenderwunsch W8‑E‑2).
+        ///
+        /// <para><b>Warum das Feld nötig ist.</b> Der Vektor hat immer 35 040 Plätze, trägt
+        /// aber je nach Weg zwei verschiedene Raster: <see cref="Berechnung"/> spreizt auf
+        /// Viertelstunden und belegt alle 35 040, die VORSCHAU
+        /// (<see cref="ProfilbedarfUebernehmen"/>) legt die 8 760 STUNDENwerte in die ersten
+        /// Plätze und lässt den Rest auf null. Wer daraus ein Ganglinienbild zeichnet, muss
+        /// wissen, welches von beidem vorliegt — sonst hinge ein Vierteljahr Nullen hinten
+        /// dran, und „Woche 12" träfe die falschen Stunden.</para>
+        /// </summary>
+        public int Stuetzstellen = 8760 * 4;
+
         public SimulationStrombedarf()
         {
             Classes.Simulation.Init init = new Classes.Simulation.Init();
@@ -263,6 +277,67 @@ namespace WindowsFormsApplication1
                     ex.Message));
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Übernimmt eine gerechnete STUNDENREIHE [kWh] als Vorschaustand — der Knopf
+        /// „Simulation" der Bedarfsprofil- und der Bedarfsverwaltungsdialoge.
+        ///
+        /// <para><b>Warum es die Methode gibt (Befund W8‑B‑3, Windows-Abnahme
+        /// 05.09.2026).</b> Die Vorschauwege setzten die vier Kennzahlen jeder für sich
+        /// zusammen, und in der Fassung des Bedarfsprofildialogs fehlte genau EINE Zeile:
+        /// <see cref="Strombedarf_Gebaeude_gesamt"/> wurde nie belegt und blieb 0 — worauf
+        /// die Zeile darunter <see cref="Strombedarf_gesamt"/> mit derselben 0
+        /// überschrieb. Die Ergebnisanzeige zeigte „Gesamter Strombedarf 0" und
+        /// „Strombedarf Gebäude 0", während „max. Strombedarf" mit 3,72 kW dastand —
+        /// dieselbe Klasse Fehler wie W9‑B‑4/B‑5: eine von Hand nachgezogene Abschrift
+        /// des Rechenwegs, aus der eine Zeile herausgefallen ist. Sie steht jetzt einmal,
+        /// an der Klasse, deren Felder sie belegt.</para>
+        ///
+        /// <para><b>Die Einheiten sind die von <see cref="Berechnung"/>.</b> Die drei
+        /// Energiemengen liegen in MWh, <see cref="Strombedarf_Max"/> ist eine LEISTUNG in
+        /// kW, und <see cref="Strombedarf_monat"/> kommt aus
+        /// <c>BhkwPlan.MonatsSumme</c> (Stundenindizes × 0,001) und liegt damit ebenfalls
+        /// in MWh. Genau so liest die Ergebnishülle die Felder.</para>
+        ///
+        /// <para><b>Die Stromganglinie zählt hier nicht mit.</b> Eine Vorschau rechnet die
+        /// AUSGEWÄHLTEN PROFILE, nicht das ganze Projekt; <see cref="Stromganglinie_gesamt"/>
+        /// bleibt deshalb 0 und die Gesamtsumme ist die Summe beider Posten — dieselbe
+        /// Rechnung wie im Lauf, nur mit einem Summanden weniger.</para>
+        ///
+        /// <para><b>Der Rechenweg bleibt unberührt</b>: <see cref="Berechnung"/> hat seine
+        /// eigenen Zeilen, und der Referenzlauf bleibt byte-gleich.</para>
+        /// </summary>
+        /// <param name="stundenreihe">
+        /// Die Stundenwerte aus <see cref="Stromprofil_Strombedarf_berechnen"/> [kWh];
+        /// <c>null</c> lässt alles auf null.
+        /// </param>
+        public void ProfilbedarfUebernehmen(float[] stundenreihe)
+        {
+            Array.Clear(Strombedarf_viertelStundenwerte, 0, Strombedarf_viertelStundenwerte.Length);
+            Strombedarf_Gebaeude_gesamt = 0;
+            Stromganglinie_gesamt = 0;
+            Strombedarf_gesamt = 0;
+            Strombedarf_Max = 0;
+            Array.Clear(Strombedarf_monat, 0, Strombedarf_monat.Length);
+            Stuetzstellen = 0;
+
+            if (stundenreihe == null || stundenreihe.Length == 0) return;
+
+            // Das Zielfeld hat 35 040 Plaetze (Viertelstunden); belegt werden die ersten
+            // 8 760. Woertlich wie in den Vorlaeufern - gespreizt wird hier NICHT, und
+            // BhkwPlan.MonatsSumme zaehlt genau diese Stundenindizes ab.
+            int n = Math.Min(stundenreihe.Length, Strombedarf_viertelStundenwerte.Length);
+            Array.Copy(stundenreihe, Strombedarf_viertelStundenwerte, n);
+            Stuetzstellen = n;
+
+            // DIE ZEILE, DIE IM BEDARFSPROFILDIALOG FEHLTE (W8-B-3).
+            Strombedarf_Gebaeude_gesamt = stundenreihe.Sum() / 1000;
+            Strombedarf_gesamt = Strombedarf_Gebaeude_gesamt + Stromganglinie_gesamt;
+
+            WPPlan.Core.BhkwPlan.MonatsSumme(Strombedarf_viertelStundenwerte, Strombedarf_monat,
+                                             mo_anfang, mo_ende);
+            Strombedarf_Max = Maximaler_Strombedarf(Strombedarf_viertelStundenwerte);
         }
 
         public float Maximaler_Strombedarf(float[] Strombedarf)
