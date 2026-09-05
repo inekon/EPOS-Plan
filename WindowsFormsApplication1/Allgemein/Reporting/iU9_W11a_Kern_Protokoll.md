@@ -182,6 +182,19 @@ die gemeinsam gefiltert werden mussten, `NavigatorUebersicht` :304–306).
 | **B6** `MonatsStapel` | 978 × 542 | `monatsstapel_drei_reihen`, `monatsstapel_eine_reihe` | `chartSolar` |
 | **B7** `Temperaturverlauf` | 1240 × 560 | `temperaturverlauf_zwei_speicher` (2 Speicher + 1 Quelle), `temperaturverlauf_ein_speicher` (Mindestspanne greift) | `chart_Speichertemperatur` |
 
+**Nachtrag Windows-Abnahme 05.09.2026.** Zwei der sieben Bilder haben seither
+Zuwachs, die Maße aller sieben sind unverändert:
+
+* **B1 und B2** kennen einen wahlfreien `Achsenfenster`-Parameter — den DATENZOOM
+  (Befund A‑1, § 10a des W11b-Protokolls). Ohne ihn zeichnen sie Bildpunkt für
+  Bildpunkt dasselbe wie vorher; zwei neue Proben
+  (`ganglinie_normiert_fenster`, `erzeugerstapel_fenster`) und zwei Gegenproben
+  halten beides fest.
+* **B4** hat eine **runde Achsenteilung** und Ränder bekommen (Befund W11b‑B‑3):
+  Die fünf gleichmäßig verteilten Marken ergaben krumme Temperaturen
+  („−18,2 … −5,3 … 7,7"), rechts stand die letzte Marke auf der Bildkante, und
+  Legende und y-Achsentitel berührten sich.
+
 Dazu **19 Renderer-Tests** im Kern (`EPOS.Kern.Tests/ErgebnisbilderTests.cs`):
 Maße, Determinismus, Leerfall, die dynamische Legende des Rings, die Mindestspanne
 der Temperaturachse, der fehlende Stapel im sortierten Modus, die Wirkung von
