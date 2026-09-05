@@ -126,4 +126,44 @@ public sealed class IosDateiDienst : IDateiDienst
         if (MainThread.IsMainThread) return default;
         return MainThread.InvokeOnMainThreadAsync(arbeit).GetAwaiter().GetResult();
     }
+
+    // ==================================================================
+    //  Der WARTBARE Waehler (Befund W13-B-1, 05.09.2026)
+    // ==================================================================
+    //
+    // AUF IOS IST DERSELBE BEFUND EIN ANDERER FEHLER. Unter Windows stuerzte
+    // der Dateiwaehler aus einem Blazor-Ereignis heraus ab (verschachtelte
+    // Nachrichtenschleife im WebView2-Rueckruf). Hier ginge er gar nicht erst
+    // auf: Ein Blazor-Ereignis LAEUFT auf dem Hauptfaden, und AufDemHauptfaden
+    // liefert von dort default zurueck, um einen Selbstblock zu vermeiden - der
+    // Anwender klickt "Durchsuchen ..." und es geschieht nichts.
+    //
+    // Die wartbare Form braucht das Warten nicht: Sie gibt den Task des
+    // Waehlers weiter, statt auf ihn zu blocken. Damit ist der Aufruf vom
+    // Hauptfaden genau der Normalfall - und nicht mehr der verbotene.
+
+    /// <inheritdoc/>
+    public async Task<string> DateiOeffnenAsync(string titel, string filter, string startOrdner)
+    {
+        try
+        {
+            var typen = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                [DevicePlatform.iOS] = Dateifilter.Kennungen_Zu(filter),
+                [DevicePlatform.MacCatalyst] = Dateifilter.Kennungen_Zu(filter),
+            });
+
+            var wahl = new PickOptions { PickerTitle = titel ?? "", FileTypes = typen };
+
+            FileResult? ergebnis = await MainThread.InvokeOnMainThreadAsync(
+                () => FilePicker.Default.PickAsync(wahl));
+
+            return ergebnis?.FullPath ?? "";
+        }
+        catch
+        {
+            // Abbruch und Fehler sind hier dasselbe: nichts gewaehlt.
+            return "";
+        }
+    }
 }

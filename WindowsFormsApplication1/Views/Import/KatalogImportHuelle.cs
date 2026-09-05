@@ -135,6 +135,18 @@ namespace WindowsFormsApplication1
         /// Wärmepumpe suchte im Ordner <c>VDI</c> ohne Gewerksnamen. Der neue
         /// Ordner heißt <c>VDI_Waermepumpe</c> wie die drei anderen; gibt es ihn
         /// nicht und den alten schon, startet der Wähler weiterhin dort.</para>
+        ///
+        /// <para><b>Der Wähler läuft HINTER dem Blazor-Ereignis</b> (Befund
+        /// W13‑B‑1, Windows-Abnahme 05.09.2026). Bis dahin stand hier
+        /// <c>Task.FromResult(Dienste.Datei.DateiOeffnen(…))</c> — der
+        /// <c>OpenFileDialog</c> ging also SYNCHRON im <c>WebMessageReceived</c>-
+        /// Rückruf der WebView2 auf, in der die Komponente steht, und pumpte
+        /// seine verschachtelte Nachrichtenschleife mitten in deren Ereignis.
+        /// Das ist dasselbe Muster wie Befund W16b‑B‑1. <c>DateiOeffnenAsync</c>
+        /// lässt Blazor sein Ereignis abschließen und fährt das Fenster eine
+        /// geposteten Nachricht später hoch; die Komponente <c>await</c>et
+        /// ohnehin (<c>Dateiwahl.BeiKlick</c>), es ändert sich also nichts an
+        /// ihr.</para>
         /// </summary>
         private static Task<string> DateiWaehlen(KatalogImportProfil profil, string filter)
         {
@@ -147,11 +159,10 @@ namespace WindowsFormsApplication1
                 if (Directory.Exists(alt)) ordner = alt;
             }
 
-            string pfad = Dienste.Datei.DateiOeffnen(
+            return Dienste.Datei.DateiOeffnenAsync(
                 Titel(profil.Art),
                 string.IsNullOrEmpty(filter) ? profil.Dateifilter : filter,
                 ordner);
-            return Task.FromResult(pfad ?? "");
         }
 
         /// <summary>

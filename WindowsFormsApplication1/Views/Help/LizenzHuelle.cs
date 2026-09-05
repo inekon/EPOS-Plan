@@ -197,7 +197,7 @@ namespace WindowsFormsApplication1
         /// „Datei wählen…": Der Wähler gehört der Plattform, der gemerkte Pfad den
         /// Einstellungen. <c>null</c> = abgebrochen.
         /// </summary>
-        private static Task<LizenzTextGaben> DateiWaehlen()
+        private static async Task<LizenzTextGaben> DateiWaehlen()
         {
             string start = null;
             try
@@ -208,15 +208,18 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            string pfad = Dienste.Datei.DateiOeffnen(MyResource.Resource.LIZR_DLG_WAEHLEN_TITEL,
-                                                     MyResource.Resource.LIZR_DLG_WAEHLEN_FILTER,
-                                                     start);
-            if (string.IsNullOrEmpty(pfad)) return Task.FromResult<LizenzTextGaben>(null);
+            // Der Wähler läuft HINTER dem Blazor-Ereignis (Befund W13‑B‑1,
+            // siehe IDateiDienst).
+            string pfad = await Dienste.Datei.DateiOeffnenAsync(
+                MyResource.Resource.LIZR_DLG_WAEHLEN_TITEL,
+                MyResource.Resource.LIZR_DLG_WAEHLEN_FILTER,
+                start);
+            if (string.IsNullOrEmpty(pfad)) return null;
 
             LizenzTextCtrl.GewaehltenPfadSpeichern(pfad);
 
-            return Task.FromResult(new LizenzTextGaben(
-                string.Format(MyResource.Resource.LIZR_TEXT_DATEI, pfad), pfad, ""));
+            return new LizenzTextGaben(
+                string.Format(MyResource.Resource.LIZR_TEXT_DATEI, pfad), pfad, "");
         }
 
         /// <summary>
@@ -224,7 +227,7 @@ namespace WindowsFormsApplication1
         /// Textdatei. <b>Kein <c>RichTextBox.SaveFile</c> mehr</b> (E-1) — gespeichert
         /// wird, was auf dem Bildschirm steht.
         /// </summary>
-        private static Task<string> SpeichernUnter(string reiter, string inhalt)
+        private static async Task<string> SpeichernUnter(string reiter, string inhalt)
         {
             bool istVertrag = reiter == "VERTRAG";
             string name = reiter switch
@@ -234,24 +237,26 @@ namespace WindowsFormsApplication1
                 _ => MyResource.Resource.LIZR_DATEI_VERTRAG
             };
 
-            string ziel = Dienste.Datei.DateiSpeichern(
+            // Auch der Speichern-Wähler läuft HINTER dem Blazor-Ereignis
+            // (Befund W13‑B‑1, siehe IDateiDienst).
+            string ziel = await Dienste.Datei.DateiSpeichernAsync(
                 istVertrag ? MyResource.Resource.LIZR_DLG_SPEICHERN_VERTRAG_TITEL
                            : MyResource.Resource.LIZR_DLG_SPEICHERN_TEXT_TITEL,
                 MyResource.Resource.LIZR_DLG_SPEICHERN_TEXT_FILTER,
                 name + ".txt");
 
-            if (string.IsNullOrEmpty(ziel)) return Task.FromResult<string>(null);
+            if (string.IsNullOrEmpty(ziel)) return null;
 
             try
             {
                 File.WriteAllText(ziel, inhalt ?? "");
-                return Task.FromResult(ziel);
+                return ziel;
             }
             catch (Exception ex)
             {
-                Dienste.Dialog.Warnung(
+                await Dienste.Dialog.WarnungAsync(
                     string.Format(MyResource.Resource.LIZR_MSG_SPEICHERN_FEHLER, ex.Message));
-                return Task.FromResult<string>(null);
+                return null;
             }
         }
 
