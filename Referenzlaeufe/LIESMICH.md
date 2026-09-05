@@ -12,6 +12,41 @@ Paket B1, Kapitel 9.
 
 ## Aktuelle Basis
 
+**`2026-09-05_M5_nach-Merge5/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **64**.
+Der Stand **nach dem fünften Merge von `origin/ios_migration`** (`4cdc462`, **555** Commits:
+die iU9-Wellen W2 bis W16c, Entscheid #76 Zweispaltenauswahl, die Befunde der Windows-Abnahmen
+vom 04./05.09.2026) — und nach dem **Umzug der lokalen Arbeit auf die Razor-Struktur**: zwölf
+stillgelegte WinForms-Masken, ihre Deltas leben in `PhotovoltaikDialog` (`PvModellFelder`),
+`ModulKatalogDialog` (NOCT, Zelltechnologie), `PvModulImportDialog` (PAN-Koeffizienten,
+Plausibilität), `PhotovoltaikVerguetungDialog` (Degradation), `ProjektWahlDialog`/`ProjektListe`
+(Varianten, Mehrfachlöschen) und `ProjektKopfSeite` (Pflichtfelder). Die PV-Schritte 62/63
+heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Waisen; Ziel 64.
+
+> **Sie ist byte-gleich zu M4 — und genau das ist ihr Zweck.** 555 Remote-Commits tauschen
+> Oberfläche aus und räumen Waisen ab; die Portierung trägt Dialogfelder um, keinen Rechenweg.
+> **355/355 byte-/MD5-gleich gegen M4, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (`4cdc462`, ohne unsere
+> Pakete, Schemastand 62) ist **14/14 PASS zum THEIRS-Lauf von Merge 4** (`b0d3d86`). Beide
+> Achsen des Vergleichs sind exakt. THEIRS gegen MERGE weicht erwartet in den Temperaturreihen
+> ab (Ortszeit-Zeitbasis des Pakets A, wie PA0 → PA1).
+>
+> **Konflikte: 20** (zwölf Modify/Delete der stillgelegten Masken, acht Inhaltskonflikte), alle
+> vorab in der Sandbox aufgelöst und dort gebaut, getestet (`EPOS.UI.Tests` 2 491/2 491,
+> `EPOS.Kern.Tests` 1 077/1 077) und gefahren; die Arbeitskopie des Laufs migriert
+> **61 → 62 → 63 → 64**. Die produktive Datei blieb unberührt.
+>
+> **Codestand:** Merge-Commit auf `ios_migration` (Eltern `9810d5b` lokal und `4cdc462` remote),
+> Protokoll `WindowsFormsApplication1/Allgemein/Simulation/Merge5_ios_2026-09-05_Protokoll.md`.
+>
+> ```powershell
+> & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M4_nach-Merge4`
+
 **`2026-09-03_M4_nach-Merge4/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
 1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
 Der Stand **nach dem vierten Merge von `origin/ios_migration`** — nach **iU9 Welle 0**, der
