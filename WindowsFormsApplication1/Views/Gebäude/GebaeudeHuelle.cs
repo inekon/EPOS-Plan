@@ -176,8 +176,15 @@ namespace WindowsFormsApplication1
                 ["TextWohngebaeude"] = Text_("GEBK_VERWENDUNG_WOHN", "Wohngebäude"),
                 ["TextSonstige"] = Text_("GEB_TEXT_SONSTIGE", "Gewerbe+Sonstige"),
 
-                ["BtnHinzuText"] = "◀",
-                ["BtnEntfernenText"] = "▶",
+                // Befund W9-B-3 (Windows-Abnahme 05.09.2026): Die zwei Pfeile
+                // trugen bis hierher nur ihr Zeichen. Beschriftung UND Kurztext
+                // kommen jetzt aus dem Ressourcenkatalog, beide Sprachen.
+                ["BtnHinzuText"] = Text_("GEB_BTN_UEBERNEHMEN", "▲ In das Projekt übernehmen"),
+                ["BtnHinzuHinweis"] = Text_("GEB_BTN_UEBERNEHMEN_HINWEIS",
+                    "Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen"),
+                ["BtnEntfernenText"] = Text_("GEB_BTN_ENTFERNEN", "▼ Aus dem Projekt entfernen"),
+                ["BtnEntfernenHinweis"] = Text_("GEB_BTN_ENTFERNEN_HINWEIS",
+                    "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen"),
                 ["BtnAendernText"] = Text_("GEB_BTN_AENDERN", "Ändern"),
                 ["BtnDbAendernText"] = Text_("GEB_BTN_DB_AENDERN", "Gebäude in DB ändern..."),
                 ["BtnDbNeuText"] = Text_("GEB_BTN_DB_NEU", "Gebäude in DB neu..."),

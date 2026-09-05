@@ -76,11 +76,15 @@
                     </table>
                 </div>
 
+                @* Die zwei Richtungsknoepfe (Befund W9-B-3). Sie tragen ihre
+                   Aufgabe im Klartext UND als Kurztext; das Zeichen zeigt in die
+                   Richtung, in die die Zeile wandert - die Listen stehen
+                   UNTEREINANDER, also nach oben und nach unten. *@
                 <div class="epos-leiste">
                     <button type="button" class="epos-knopf" disabled="@(_katalogzeile is null)"
-                            @onclick="BeiHinzu">@BtnHinzuText</button>
+                            title="@BtnHinzuHinweis" @onclick="BeiHinzu">@BtnHinzuText</button>
                     <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
-                            @onclick="BeiEntfernen">@BtnEntfernenText</button>
+                            title="@BtnEntfernenHinweis" @onclick="BeiEntfernen">@BtnEntfernenText</button>
                 </div>
             </div>
         }
@@ -302,8 +306,30 @@
     [Parameter] public string TextWohngebaeude { get; set; } = "Wohngebäude";
     [Parameter] public string TextSonstige { get; set; } = "Gewerbe+Sonstige";
 
-    [Parameter] public string BtnHinzuText { get; set; } = "◀";
-    [Parameter] public string BtnEntfernenText { get; set; } = "▶";
+    /// <summary>
+    /// Beschriftung des Übernahmeknopfes — <c>GEB_BTN_UEBERNEHMEN</c>.
+    ///
+    /// <para><b>Befund W9‑B‑3</b> der Windows-Abnahme vom 05.09.2026: „nicht so recht
+    /// klar, auf was sich die oberen 2 Buttons beziehen." Der Vorläufer trug hier die
+    /// blanken Zeichen „◀" und „▶" — bei NEBENEINANDER stehenden Listen sagten sie die
+    /// Richtung, in der Razor-Fassung stehen die beiden Listen aber UNTEREINANDER, und
+    /// dann zeigt ein waagerechter Pfeil ins Leere. Beschriftung und Kurztext benennen
+    /// jetzt die Aufgabe; das Zeichen zeigt in die Richtung, in die die Zeile wandert.
+    /// Das Anordnungsschema selbst ist ein offener Anwenderentscheid und bleibt
+    /// unberührt.</para>
+    /// </summary>
+    [Parameter] public string BtnHinzuText { get; set; } = "▲ In das Projekt übernehmen";
+
+    /// <summary>Kurztext des Übernahmeknopfes — <c>GEB_BTN_UEBERNEHMEN_HINWEIS</c>.</summary>
+    [Parameter] public string BtnHinzuHinweis { get; set; } =
+        "Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen";
+
+    /// <summary>Beschriftung des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN</c>.</summary>
+    [Parameter] public string BtnEntfernenText { get; set; } = "▼ Aus dem Projekt entfernen";
+
+    /// <summary>Kurztext des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN_HINWEIS</c>.</summary>
+    [Parameter] public string BtnEntfernenHinweis { get; set; } =
+        "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen";
     [Parameter] public string BtnAendernText { get; set; } = "Ändern";
     [Parameter] public string BtnDbAendernText { get; set; } = "Gebäude in DB ändern...";
     [Parameter] public string BtnDbNeuText { get; set; } = "Gebäude in DB neu...";
