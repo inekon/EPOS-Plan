@@ -348,3 +348,68 @@ gar nicht.
 
 Vollständige Herleitung, Behebung und Abnahmepunkt: **W9‑Protokoll § 12.1**.
 Wachen: `EPOS.UI.Tests/Seiten/AssistentTests` (drei Fälle).
+
+## 13 — Anwenderwunsch 05.09.2026 (W15a‑E‑1): Varianten im linken Band
+
+> **„Projekt öffnen: Es sollte wie zuvor kenntlich sein, welches Variantenprojekte
+> sind."**
+
+Gemeldet **an dieser Maske**: Projektassistent, Seite 0 in Betriebsart BEARBEITEN,
+linke Spalte „Bestehendes Projekt auswählen". Die Liste dort ist der Baustein
+`ProjektListe` aus W15a; die Änderung liegt deshalb in ihm und im Kern. Die
+vollständige Herleitung — Vorbild, Ursache, Umsetzung, Wachen — steht im
+**W15a‑Protokoll § 14**. Hier steht, was diese Teilwelle davon trägt.
+
+### 13.1 Was das Band betrifft
+
+Das Band ist **280 px** breit (`.epos-assistent-band { width: 280px }`) und zeigt
+nur die Namensspalte (`ProjektListe.NurName`, die Designer-Eigenschaft
+`ProjektAuswahl.NurNamensspalte` des Vorläufers). Zwei Dinge fielen darin zusammen:
+
+1. Der Projektname wurde **abgeschnitten** (waagerechter Rollbalken). Die
+   Umbruchregel aus Befund W15a‑B‑1 stand zwar im Stilblatt, verlor aber gegen die
+   Hausregel `.epos-raster td { white-space: nowrap }` — (0,1,0) gegen (0,1,1).
+2. Kenntlich war eine Variante **allein am Namen** („&lt;Stamm&gt; ‑
+   &lt;Bezeichner&gt;", `VariantenCtrl.AnlegenAusStamm` :124) — und abgeschnitten
+   wurde ausgerechnet der Teil, der sie ausmacht. Drei Zeilen „Booster-Kette mit
+   Kombi-Spe…" waren nicht zu unterscheiden.
+
+### 13.2 Was sich am Band ändert
+
+* **Der Name bricht um statt abzuschneiden.** Die Regel bekommt den
+  Tabellenselektor davor und schlägt die Hausregel damit — eine Klasse mehr, keine
+  Wichtigkeitsmarke. In der schmalen Spalte steht der Name jetzt zwei- oder
+  dreizeilig, aber vollständig.
+* **Die Gruppe steht beieinander:** Stamm, darunter **eingerückt** seine Varianten
+  nach Bezeichner — die Ordnung von `VariantenCtrl.LadeGruppe`, die schon
+  `Form_Start.FuelleVariantenCombo` benutzte.
+* **Eine Artspalte gibt es hier nicht** — dafür ist in 280 px kein Platz. Statt
+  ihrer steht unter dem Namen die **leise Zeile** „Variante von &lt;Stamm&gt;". Die
+  `ProjektListe` entscheidet das selbst (`ZeigtHerkunft`): Wo die Artspalte steht,
+  entfällt die Zeile, sonst steht sie.
+* **`AssistentSeite` reicht zwei Texte durch** — `ArtVarianteText` und
+  `VarianteVonFormat` —, damit die Zeile auch in der englischen Oberfläche stimmt;
+  `AssistentHuelle.Gaben` füllt sie aus `PRJ_LIST_ART_VARIANTE` und
+  `PRJ_LIST_VARIANTE_VON`. Die Liste selbst rührt keine Datenbank an: Die Herkunft
+  kommt fertig aus `ProjektCtrl.NamenListe`, die `AssistentHuelle.Projektliste()`
+  unverändert ruft.
+
+Am Klickziel, am Tabulatorweg, an `AutoVorauswahl="false"` und an der Regel
+„»Weiter« wirkt erst nach einer ausdrücklichen Wahl" ändert sich **nichts**.
+
+### 13.3 Wachen
+
+`EPOS.UI.Tests/Bausteine/ProjektListeTests.Im_schmalen_Band_traegt_die_Variante_Einrueckung_und_Herkunft`
+(Markup) und `…Die_Umbruchregel_schlaegt_die_Hausregel_des_Rasters` /
+`…Die_Variantenzeile_ist_im_Stilblatt_eingerueckt` (die Regeln im Stilblatt — eine
+bunit-Probe sieht sie nicht, Lehre W6‑B‑1). `EPOS.UI.Tests/ParametersatzTests`
+hält die zwei neuen Gaben der `AssistentHuelle` gegen die `[Parameter]` von
+`AssistentSeite`.
+
+### 13.4 Abnahmepunkt A‑W16a‑E‑1
+
+Assistent, Seite 0 in BEARBEITEN: In der linken Spalte ist **jeder** Projektname
+vollständig lesbar (er bricht um, die Liste rollt nicht waagerecht). Jede Variante
+steht unmittelbar unter ihrem Stamm, ist eingerückt und trägt darunter leise
+„Variante von &lt;Stamm&gt;". Die drei „Booster-Kette mit Kombi-Speicher"-Zeilen
+sind damit auseinanderzuhalten. Dasselbe auf dem iPad hochkant.
