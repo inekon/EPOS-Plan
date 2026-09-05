@@ -147,7 +147,12 @@ public static class Menuetabelle
         // Ziel; Namen, Bilder und Seitenschluessel der zwei Punkte sind
         // unveraendert, damit help_mapping.txt und HauptfensterHuelle.Weg
         // weiterhin greifen.
-        new Menuepunkt("Sprache", "MENU_SPRACHE", "")
+        // ANWENDERWUNSCH 05.09.2026 (W16c-E-4): Der Kopf steht GANZ RECHTS in
+        // der Leiste - so wie im Bestand die zwei Sprachpunkte, die als letzte
+        // Eintraege des MenuStrip rechtsbuendig am Rand sassen. Verschoben wird
+        // nur die Optik (margin-left: auto im Band), nicht die Reihenfolge im
+        // Markup: Tastaturweg und Nachweis N4 bleiben unveraendert.
+        new Menuepunkt("Sprache", "MENU_SPRACHE", "", rechtsBuendig: true)
         {
             new Menuepunkt("Deutsch", "MENU_DEUTSCH", Seitenschluessel.SpracheDeutsch, bild: "germany"),
             new Menuepunkt("Englisch", "MENU_ENGLISCH", Seitenschluessel.SpracheEnglisch, bild: "usa"),

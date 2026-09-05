@@ -40,7 +40,8 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
 
     /// <summary>Ein gewoehnlicher Punkt, gegebenenfalls mit Untereintraegen.</summary>
     public Menuepunkt(string name, string textSchluessel, string ziel,
-                      string argument = "", string bild = "", string kuerzel = "")
+                      string argument = "", string bild = "", string kuerzel = "",
+                      bool rechtsBuendig = false)
     {
         Name = name;
         TextSchluessel = textSchluessel;
@@ -48,6 +49,7 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
         Argument = argument;
         Bild = bild;
         Kuerzel = kuerzel;
+        RechtsBuendig = rechtsBuendig;
     }
 
     /// <summary>Ein Trennstrich — er traegt weder Text noch Ziel.</summary>
@@ -80,6 +82,20 @@ public sealed class Menuepunkt : IEnumerable<Menuepunkt>
 
     /// <summary>Ein Trennstrich statt eines Punktes.</summary>
     public bool Trenner { get; private init; }
+
+    /// <summary>
+    /// Der Punkt steht am RECHTEN Rand der Leiste (Anwenderwunsch 05.09.2026,
+    /// <b>W16c‑E‑4</b>) — im Bestand standen die zwei Sprachpunkte
+    /// „Deutsch"/„Englisch" rechtsbuendig am Ende des <c>MenuStrip</c>, und der
+    /// Kopf „Sprache" aus W16c‑E‑2 hat ihre Stelle geerbt.
+    ///
+    /// <para><b>Nur die Optik wandert, nicht die Ordnung.</b> Das Band setzt
+    /// dafuer eine Klasse mit <c>margin-left: auto</c>; der Punkt bleibt an
+    /// SEINER Stelle im Markup. Damit sind Tastaturreihenfolge (← → ueber die
+    /// vier Koepfe, Ende = „Sprache"), Sprachausgabe und der Nachweis N4
+    /// unveraendert — ein umsortiertes Markup haette beides verschoben.</para>
+    /// </summary>
+    public bool RechtsBuendig { get; }
 
     /// <summary>Das Untermenue; leer, wenn der Punkt unmittelbar handelt.</summary>
     public IReadOnlyList<Menuepunkt> Untereintraege => _kinder;

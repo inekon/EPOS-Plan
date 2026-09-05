@@ -49,7 +49,7 @@
         }
         else if (p.Klappt)
         {
-            <div class="epos-menueband-punkt">
+            <div class="@Punktklasse(p)">
                 <button type="button" role="menuitem" class="epos-menueband-knopf"
                         id="@Kennung(p)"
                         aria-haspopup="true"
@@ -74,7 +74,7 @@
                Anwenderentscheid W16c-E-2 hat die Menuetabelle keinen solchen
                mehr (die zwei Sprachpunkte sind unter den Kopf "Sprache"
                gewandert); der Zweig bleibt, weil Eintraege ein Parameter ist. *@
-            <button type="button" role="menuitem" class="epos-menueband-knopf"
+            <button type="button" role="menuitem" class="@Knopfklasse(p)"
                     id="@Kennung(p)"
                     tabindex="@(Vorn(p) ? 0 : -1)"
                     @onclick="@(() => Waehlen(p))">
@@ -117,6 +117,24 @@
     }
 
     private static string Kennung(Menuepunkt p) => "menue-" + p.Name;
+
+    /// <summary>
+    /// Die Klasse des aufklappenden Kopfes. Ein Punkt mit
+    /// <see cref="Menuepunkt.RechtsBuendig"/> bekommt zusaetzlich
+    /// <c>epos-menueband-punkt--rechts</c> (margin-left: auto) und rutscht damit
+    /// an den rechten Rand der Leiste, OHNE seine Stelle im Markup zu wechseln —
+    /// Tastaturweg und Sprachausgabe bleiben unveraendert (W16c-E-4).
+    /// </summary>
+    private static string Punktklasse(Menuepunkt p)
+        => p.RechtsBuendig
+            ? "epos-menueband-punkt epos-menueband-punkt--rechts"
+            : "epos-menueband-punkt";
+
+    /// <summary>Dasselbe fuer einen Kopf ohne Untermenue.</summary>
+    private static string Knopfklasse(Menuepunkt p)
+        => p.RechtsBuendig
+            ? "epos-menueband-knopf epos-menueband-knopf--rechts"
+            : "epos-menueband-knopf";
 
     // =====================================================================
     //  Zeichnen

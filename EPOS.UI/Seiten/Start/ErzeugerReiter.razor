@@ -27,7 +27,7 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
-    <Kachelraster Mindestbreite="320">
+    <Kachelraster Mindestbreite="404">
         <KindInhalt>
             @foreach (StartKachel kachel in Kacheln)
             {
@@ -37,6 +37,8 @@
                     <Kachel Titel="@k.Titel"
                             Beschreibung="@k.Beschreibung"
                             Zustand="@k.Zustand"
+                            Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                            Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
                             Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
 
                     @if (k.Schluessel == Kachelschluessel.Solarthermie)
