@@ -137,7 +137,12 @@ namespace WindowsFormsApplication1
             try { _web.WebView.DefaultBackgroundColor = Themaflaeche; }
             catch { /* aeltere WebView2-Laufzeit: Schoenheitsfehler, kein Fehlschlag */ }
 
-            _web.RootComponents.Add<TKomponente>("#app", parameter);
+            // FEHLERSCHRANKE (Befund W13-B-1, 05.09.2026): dasselbe Zwischenglied
+            // wie in der Dialoghuelle - EPOS.UI.Bausteine.Wurzel<T> ist eine
+            // ErrorBoundary mit T darin. Eine Ausnahme aus einem Ereignis oder aus
+            // dem Lebenszyklus von T zeigt damit einen lesbaren Kasten, statt den
+            // Prozess zu beenden.
+            _web.RootComponents.Add<EPOS.UI.Bausteine.Wurzel<TKomponente>>("#app", parameter);
             Controls.Add(_web);
 
             // WACHE (Befund W16b-B-1): dieselbe Frist wie in der Dialoghuelle.

@@ -14452,4 +14452,16 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="AUSWAHL_GRP_PFEILE" xml:space="preserve">
     <value>Zwischen Projekt und Datenbank verschieben</value>
   </data>
+  <data name="FEHLERSCHRANKE_TITEL" xml:space="preserve">
+    <value>In dieser Ansicht ist ein Fehler aufgetreten</value>
+  </data>
+  <data name="FEHLERSCHRANKE_SATZ" xml:space="preserve">
+    <value>Die Anwendung läuft weiter. Bitte den folgenden Wortlaut abschreiben oder ablichten und mit der Beschreibung melden, was zuletzt bedient wurde.</value>
+  </data>
+  <data name="FEHLERSCHRANKE_BTN_WEITER" xml:space="preserve">
+    <value>Weiter</value>
+  </data>
+  <data name="FEHLERSCHRANKE_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
 </root>
