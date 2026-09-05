@@ -641,3 +641,53 @@ Filter und Detailblock sind ohne Seitenrollen erreichbar. Eine Liste mit zwei
 Zeilen ist zwei Zeilen hoch. Dasselbe bei Stromganglinien, Solarkollektoren,
 Wärmepumpe, Heizkessel-/BHKW-/PV-/Speicherverwaltung und in den drei
 Projektdialogen.
+
+### 12.3 Befund W9‑B‑3 — „nicht so recht klar, auf was sich die oberen 2 Buttons beziehen"
+
+**Beobachtung.** Zwischen der Projektliste und der DB-Liste des Gebäudedialogs stehen
+zwei Knöpfe mit den blanken Zeichen **◀** und **▶**. Der Anwender kann ihnen nicht
+ansehen, worauf sie sich beziehen.
+
+**Ursache.** Die Zeichen sind aus `Form_Gebaeude` unverändert übernommen — und dort
+sagten sie die Wahrheit: Der Vorläufer stellte die beiden Listen **nebeneinander**
+(links „ausgewählte Gebäude im Projekt", rechts „Gebäude in DB", dazwischen die
+Pfeilspalte), und „nach links" hieß dann „in das Projekt". In der Razor-Fassung stehen
+die beiden Listen **untereinander**: Der Behälter des Dialogs heißt
+`epos-auswahlspalten`, und für diesen Klassennamen gibt es keine Stilregel — die zwei
+`epos-auswahlspalte`-Blöcke stapeln sich als gewöhnliche Blockelemente. (Die Reihe mit
+der Pfeilspalte ist `epos-auswahlpaar`/`epos-auswahlpfeile`, das Muster der fünf
+Erzeugerdialoge aus Welle 6.) Ein **waagerechter** Pfeil zeigt bei untereinander
+stehenden Listen ins Leere.
+
+**Behebung.** Beide Knöpfe tragen ihre Aufgabe im **Klartext** und dazu einen
+**Kurztext** (`title`), der die Herkunft der Zeile nennt; das Zeichen zeigt in die
+Richtung, in die die Zeile wandert.
+
+| Knopf | Beschriftung | Kurztext |
+|---|---|---|
+| übernehmen | `GEB_BTN_UEBERNEHMEN` — „▲ In das Projekt übernehmen" / „▲ Add to project" | `GEB_BTN_UEBERNEHMEN_HINWEIS` — „Das in „Gebäude in DB" markierte Gebäude in die Projektliste übernehmen" |
+| entfernen | `GEB_BTN_ENTFERNEN` — „▼ Aus dem Projekt entfernen" / „▼ Remove from project" | `GEB_BTN_ENTFERNEN_HINWEIS` — „Das in der Projektliste markierte Gebäude aus dem Projekt entfernen" |
+
+Vier Schlüssel in **beiden** Sprachkatalogen (`EPOS.Kern/MyResource/Resource.resx` und
+`…en-US.resx`, dazu die vier Eigenschaften im `Resource.Designer.cs`).
+
+**Was ausdrücklich NICHT geändert ist: das Anordnungsschema.** Ob die zwei Listen
+neben- oder untereinander stehen, ist ein **offener Anwenderentscheid (#76)**. Diese
+Änderung macht die Knöpfe nur bei der HEUTIGEN Anordnung verständlich; entscheidet der
+Anwender sich für nebeneinander, wechseln die zwei Zeichen wieder auf ◀/▶ — die zwei
+Ressourcenwerte, sonst nichts.
+
+**Die zwei Geschwister bleiben vorerst.** `WaermebedarfExternDialog` und
+`BedarfsProfileDialog` stehen in derselben Bauart (`epos-auswahlspalten` mit ◀/▶) und
+haben denselben Befund. Sie sind hier bewusst nicht angefasst: Der Anwenderentscheid
+#76 gilt für alle drei gemeinsam, und `BedarfsProfileHuelle` liegt in derselben
+Sitzung bei einem anderen Bearbeiter. **Offener Punkt W9‑O‑8.**
+
+**Wachen.** `EPOS.UI.Tests/Dialoge/GebaeudeDialogTests`:
+`Die_zwei_Richtungsknoepfe_sagen_was_sie_tun` (Klartext, ▲/▼, kein ◀/▶ mehr im Markup),
+`Die_zwei_Richtungsknoepfe_tragen_einen_Kurztext`.
+
+**Abnahmepunkt A‑W9‑B‑3.** Gebäudedialog auf Deutsch **und** auf Englisch: Beide
+Knöpfe tragen ihren Satz, das Zeichen passt zur Anordnung, der Kurztext erscheint beim
+Verweilen. Der Knopf bleibt gesperrt, solange in der jeweils anderen Liste nichts
+markiert ist.
