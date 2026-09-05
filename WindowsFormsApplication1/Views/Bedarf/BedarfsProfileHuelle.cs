@@ -287,8 +287,10 @@ namespace WindowsFormsApplication1
                 ["SpalteName"] = TextEinfach("BHKWV_SP_NAME", "Name"),
                 ["SpalteTyp"] = TextEinfach("BPF_SP_TYP", "Typ"),
 
-                ["BtnHinzuText"] = "◀",
-                ["BtnEntfernenText"] = "▶",
+                // Entscheid #76 (05.09.2026): Das Zeichen setzt der Baustein
+                // Zweispaltenauswahl je nach Anordnung - der Knopf traegt Klartext.
+                ["BtnHinzuText"] = TextEinfach("AUSWAHL_BTN_UEBERNEHMEN", "In das Projekt übernehmen"),
+                ["BtnEntfernenText"] = TextEinfach("AUSWAHL_BTN_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["BtnDbAendernText"] = Text_(art, "BPF_BTN_DB_AENDERN",
                     "Prozess in DB ändern", "Stromverbraucher ändern...", "Profil in DB ändern"),
                 ["BtnDbNeuText"] = Text_(art, "BPF_BTN_DB_NEU",

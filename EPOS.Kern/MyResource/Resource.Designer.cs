@@ -37606,7 +37606,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ▼ Aus dem Projekt entfernen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Projekt entfernen ähnelt.
         /// </summary>
         public static string GEB_BTN_ENTFERNEN {
             get {
@@ -37633,7 +37633,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ▲ In das Projekt übernehmen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die In das Projekt übernehmen ähnelt.
         /// </summary>
         public static string GEB_BTN_UEBERNEHMEN {
             get {

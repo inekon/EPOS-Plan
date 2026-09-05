@@ -12679,7 +12679,7 @@ Please check all entries!</value>
     <value>Building in DB new...</value>
   </data>
   <data name="GEB_BTN_ENTFERNEN" xml:space="preserve">
-    <value>▼ Remove from project</value>
+    <value>Remove from project</value>
   </data>
   <data name="GEB_BTN_ENTFERNEN_HINWEIS" xml:space="preserve">
     <value>Remove the building selected in the project list from the project</value>
@@ -12688,7 +12688,7 @@ Please check all entries!</value>
     <value>Change building type in DB...</value>
   </data>
   <data name="GEB_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>▲ Add to project</value>
+    <value>Add to project</value>
   </data>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Add the building selected in “Buildings in DB” to the project list</value>

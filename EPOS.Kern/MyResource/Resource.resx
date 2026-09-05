@@ -12686,7 +12686,7 @@ Alle Eingaben überprüfen!</value>
     <value>Gebäude in DB neu...</value>
   </data>
   <data name="GEB_BTN_ENTFERNEN" xml:space="preserve">
-    <value>▼ Aus dem Projekt entfernen</value>
+    <value>Aus dem Projekt entfernen</value>
   </data>
   <data name="GEB_BTN_ENTFERNEN_HINWEIS" xml:space="preserve">
     <value>Das in der Projektliste markierte Gebäude aus dem Projekt entfernen</value>
@@ -12695,7 +12695,7 @@ Alle Eingaben überprüfen!</value>
     <value>Gebäudetyp in DB ändern...</value>
   </data>
   <data name="GEB_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>▲ In das Projekt übernehmen</value>
+    <value>In das Projekt übernehmen</value>
   </data>
   <data name="GEB_BTN_UEBERNEHMEN_HINWEIS" xml:space="preserve">
     <value>Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen</value>
