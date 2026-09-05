@@ -2671,6 +2671,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `GebaeudeKatalogDialog` (41 Felder, neun Raster in beiden Reitern; „Wohnfläche" kurz mit
 > „m²", die Ferientage als Tag | Monat nebeneinander — acht `epos-feldpaar` gefallen) und `GebaeudeWohnflaecheDialog`
 > (zwei Raster).
+>
+> **Anwenderwunsch W9‑E‑3 vom 05.09.2026 („Gestalte den Dialog bei Wärmebedarf → Daten importieren analog zum Import
+> des Strombedarf → Messdaten importieren (mit grafischer Darstellung etc. wie kürzlich vorgenommen)"), umgesetzt in
+> `4d64626`:** Der Dialog „Wärmebedarf Extern" folgt seither `StromganglinieDialog` nach W12‑E‑1/W12‑E‑2. Unter der
+> Katalogliste stehen vier Knöpfe — „CSV-Datei importieren…", „Speichern unter…", „DB Ganglinie löschen",
+> „Einlesen/Bearbeiten.." —, darunter der einzeilige Formathinweis mit dem vollen Wortlaut am Infoknopf
+> (`WBX_HINWEIS_FORMAT`/`…_KURZ`, de/en), und unter den zwei Spalten die Grafik der markierten Ganglinie (Kennzahlen,
+> „sortiert", Einheitenwahl, Bild B1 mit Bild- und Datenzoom). Der Befund der Umsetzung ist eine Doppelung: Der
+> Wärmebedarf führte eine zweite, engere Importkette neben der AP5-Kette des Stroms (eine Textzeile je Wert,
+> Dezimaltrenner Punkt, kein Trennzeichen, keine Einheitenwahl, kein Protokoll, nur 8 760 Werte). Sie ist ersatzlos
+> entfallen: `GanglinienImportAblauf` bekommt mit `GanglinienZiel` eine Ausprägung als Daten (Muster
+> `KatalogImportProfil`), und vier Masken hängen denselben Baustein `GanglinienImportLauf` ein — der Wärmeimport kann
+> seither Excel, Kopfzeilen, Trennzeichen, kWh je Intervall und Viertelstundenwerte. Den Rechenweg der Kennzahlen gibt
+> es nur einmal: `StromganglinieAuswertungCtrl` ist zu `GanglinienAuswertungCtrl` mit `GanglinienQuelle`
+> verallgemeinert, dieselbe Verdichtung wie im Lauf; die Bausteine `GanglinienGrafik` und `GanglinienImportLauf` liegen
+> jetzt unter `Bausteine/`. Drei Befunde fielen dabei: Der Dialog kannte das Auslieferungskennzeichen nicht (er holte
+> nur eine Namensliste), die ReadOnly-Meldung der Wärmeverwaltung sprach von der „Stromganglinie"
+> (`WBAD_MSG_SCHREIBGESCHUETZT`), und Überschreiben wechselte die Kopf-Id (`ErsetzeGanglinie` behält sie). Eine
+> Falle, die es beim Strom nicht gibt: `Z_ProjektWaermebedarf.ID_Ganglinie` zeigt auf die Projektkopie, eine eben
+> aufgenommene Zeile trägt die Stamm-Id — der Dialog gibt die Id nur bei `IdZ > 0` weiter, sonst Rückfall über den
+> Bezeichner. Hausregel aus dem Umzug: Ein Baustein, der Komponenten eines anderen Namensraums zeichnet, braucht das
+> `@using` im Kopf — sonst hält der Razor-Übersetzer sie stumm für HTML-Elemente. Der Kanal bleibt, wie er war, und
+> steht im `Formularraster`. Eingefroren: `Wärmebedarf_Laurentiuskirche` 65,430 MWh / 47,649 kW / 1 373,16 h/a.
+> Nachweise: Kern 1 230 und UI 2 679 grün (auch en‑US), Windows-Bau 0 Fehler, SQL-Prüfer 0 Fundstellen, ChartProben
+> 40/0, Kern-Wächter leer; Referenzlauf nicht nötig — gelesen wird nur. Vierzehn Abnahmepunkte A‑W9‑E‑3 im W9-Protokoll.
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
