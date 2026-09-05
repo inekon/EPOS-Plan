@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Web.WebView2.WinForms;
 
@@ -58,14 +59,19 @@ namespace WindowsFormsApplication1
         /// erst mit der Handle-Erzeugung, also beim <c>ShowDialog</c>.
         /// </summary>
         /// <param name="titel">Fenstertitel - derselbe Text wie in der Komponente.</param>
-        /// <param name="groesse">Gewuenschtes Innenmass beim Oeffnen. Die Huelle klemmt es
-        /// auf den Arbeitsbereich des Bildschirms (Befund 03.09.2026: ein Fachdialog mit
-        /// 914 px Breite war auf dem Anwenderrechner zusammengequetscht und liess sich
-        /// nicht anpassen). Der Anwender kann das Fenster danach ziehen und maximieren;
-        /// das Layout innerhalb der Komponente ist fluessig (M2).</param>
+        /// <param name="groesse">WUNSCHMASS beim Oeffnen. Es ist eine Untergrenze, keine
+        /// Vorschrift: Eine Fachmaske oeffnet mindestens im Anteil des Arbeitsbereichs
+        /// (85 % x 90 %) und hoechstens auf 92 % davon - die Rechnung steht in
+        /// <see cref="Fenstermass.Vorgabe"/> (Anwenderwunsch 05.09.2026: „Admin-Menues
+        /// sind nicht an Groesse Bildschirm angepasst"; Befund 03.09.2026: ein Fachdialog
+        /// mit 914 px Breite war auf dem Anwenderrechner zusammengequetscht). Der Anwender
+        /// kann das Fenster danach ziehen und maximieren; das Layout innerhalb der
+        /// Komponente ist fluessig (M2).</param>
         /// <param name="parameter">Die Parameter der Komponente, Name -&gt; Wert.</param>
-        public BlazorDialogForm(string titel, Size groesse, IDictionary<string, object> parameter)
-            : this(titel, groesse, parameter, BlazorDienste.Erzeugen())
+        /// <param name="art">Fachmaske (Vorgabe) oder kleine Maske, die NICHT mitwaechst.</param>
+        public BlazorDialogForm(string titel, Size groesse, IDictionary<string, object> parameter,
+                                Dialogart art = Dialogart.Fachdialog)
+            : this(titel, groesse, parameter, BlazorDienste.Erzeugen(), art)
         {
         }
 
@@ -74,7 +80,7 @@ namespace WindowsFormsApplication1
         /// die einen anderen Hilfedienst einlegen wollen.
         /// </summary>
         public BlazorDialogForm(string titel, Size groesse, IDictionary<string, object> parameter,
-                                IServiceProvider dienste)
+                                IServiceProvider dienste, Dialogart art = Dialogart.Fachdialog)
         {
             // WACHE (Befund W16b-B-1, 05.09.2026): Ein Schluessel ohne passenden
             // [Parameter] laesst die Komponente beim ERSTEN Zeichnen brechen -
@@ -91,8 +97,8 @@ namespace WindowsFormsApplication1
             MinimizeBox = false;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterParent;
-            MinimumSize = new Size(MIN_BREITE, MIN_HOEHE);
-            ClientSize = AnBildschirmGeklemmt(groesse);
+            MinimumSize = new Size(Fenstermass.MindestBreite, Fenstermass.MindestHoehe);
+            ClientSize = Vorgabemass(groesse, art);
             BackColor = Themaflaeche;
 
             _web = new BlazorWebView
@@ -136,9 +142,10 @@ namespace WindowsFormsApplication1
             WebViewWache.Anhaengen(_web, this, typeof(TKomponente).Name);
         }
 
-        /// <summary>Kleinste sinnvolle Aussenmasse: darunter passt kein Dialogkopf mehr.</summary>
-        private const int MIN_BREITE = 520;
-        private const int MIN_HOEHE = 360;
+        // Die zwei Kleinstmasse stehen seit dem 05.09.2026 als
+        // Fenstermass.MindestBreite / .MindestHoehe in EPOS.UI - dort, wo auch
+        // die Rechnung steht, die sie braucht. Eine zweite Fassung hier waere
+        // die eine Zahl, die irgendwann auseinanderlaeuft.
 
         // ==================================================================
         //  Die vier Zusaetze fuer den BESITZERLOSEN Lauf (iU9-W15c.6)
@@ -247,11 +254,19 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Klemmt das gewuenschte Innenmass auf 92 % des Arbeitsbereichs des Bildschirms,
-        /// auf dem der Dialog erscheint (Bildschirm des aktiven Fensters, sonst der
-        /// Hauptbildschirm). Kleinere Wuensche bleiben unveraendert.
+        /// Das Innenmass, mit dem der Dialog oeffnet - Wunschmass und Arbeitsbereich
+        /// des Bildschirms, auf dem er erscheint (Bildschirm des aktiven Fensters,
+        /// sonst der Hauptbildschirm).
         /// </summary>
-        private static Size AnBildschirmGeklemmt(Size gewuenscht)
+        /// <remarks>
+        /// <b>Diese Methode rechnet nichts.</b> Sie besorgt nur den Arbeitsbereich und
+        /// reicht ihn an <see cref="Fenstermass.Vorgabe"/> in <c>EPOS.UI</c> weiter -
+        /// dort steht die Regel, und dort ist sie ohne Windows pruefbar
+        /// (<c>EPOS.UI.Tests/FenstermassTests</c>). Beide Masse sind Geraetepixel
+        /// desselben Schirms; unter „Per Monitor V2" (E-6 / iF21) brauchen sie keine
+        /// Umrechnung.
+        /// </remarks>
+        private static Size Vorgabemass(Size gewuenscht, Dialogart art)
         {
             Rectangle arbeit;
             try
@@ -263,9 +278,10 @@ namespace WindowsFormsApplication1
             {
                 arbeit = Screen.PrimaryScreen.WorkingArea;
             }
-            int maxBreite = Math.Max(MIN_BREITE, (int)(arbeit.Width * 0.92));
-            int maxHoehe = Math.Max(MIN_HOEHE, (int)(arbeit.Height * 0.92) - 40);   // Rahmen + Titelleiste
-            return new Size(Math.Min(gewuenscht.Width, maxBreite), Math.Min(gewuenscht.Height, maxHoehe));
+
+            (int breite, int hoehe) = Fenstermass.Vorgabe(
+                gewuenscht.Width, gewuenscht.Height, arbeit.Width, arbeit.Height, art);
+            return new Size(breite, hoehe);
         }
 
         /// <summary>

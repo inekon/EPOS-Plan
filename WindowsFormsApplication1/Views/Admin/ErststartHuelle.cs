@@ -90,7 +90,10 @@ namespace WindowsFormsApplication1
                     })
             };
 
-            dlg = new BlazorDialogForm<ErststartDialog>(MyResource.Resource.ERST_TITEL, MASS, werte)
+            // KLEIN (Anwenderwunsch 05.09.2026): Der Erststart zeigt ein Protokoll,
+            // keine Liste - er bleibt bei seinen 760 x 560.
+            dlg = new BlazorDialogForm<ErststartDialog>(MyResource.Resource.ERST_TITEL, MASS, werte,
+                                                       EPOS.UI.Dienste.Dialogart.Klein)
             {
                 ImTaskbar = true,            // ohne Elternfenster sonst nicht wiederzufinden
                 AufBildschirmMittig = true,  // es gibt keinen Besitzer, auf den zentriert würde
