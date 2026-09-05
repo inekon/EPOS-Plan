@@ -1720,6 +1720,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > nicht — eine Kachel ist ein `<button>`, der keine Optionsfelder enthalten darf), Klickziel und Tastaturweg
 > unverändert. **W16a‑B‑2** — der Parametersatz einer Assistentenseite wird beim Betreten geholt und nicht mehr bei
 > jedem Neuzeichnen (Herleitung im W9-Protokoll § 12.1, Befund W9‑B‑1).
+>
+> **Zum Anwenderwunsch W15a‑E‑1 vom 05.09.2026 (`325a275`), gemeldet an dieser Maske (Assistent, Seite 0, linkes
+> Band):** Der Projektname bricht jetzt um, statt abgeschnitten zu werden; Varianten stehen eingerückt unter ihrem
+> Stamm und tragen darunter leise „Variante von ‹Stamm›" — eine Artspalte hat in 280 px keinen Platz. `AssistentSeite`
+> reicht dafür zwei Texte durch, `AssistentHuelle` füllt sie aus `PRJ_LIST_ART_VARIANTE`/`PRJ_LIST_VARIANTE_VON`.
+> Herleitung im W15a-Protokoll § 14, hier § 13, Abnahmepunkt A‑W16a‑E‑1.
 
 > **Statusblock iU9 — Welle 15c umgesetzt (04.09.2026, Basis `f71853b` nach W15b, zusammengeführt mit `5a73fd6` nach den W15b-Entscheiden)**
 >
@@ -1901,6 +1907,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > 1 100 px (Liste über die volle Breite, Formular darunter), Name und Kunde brechen um, das Datum bleibt einzeilig
 > mit fester Breite und kulturabhängigem Kurzformat. `ProjektWahlDialog` war nicht betroffen, `ProjektTransferDialog`
 > führt keine Projektliste (W15a‑O‑2).
+>
+> **Anwenderwunsch W15a‑E‑1 vom 05.09.2026 (zwei Bildschirmfotos: „Projekt öffnen: Es sollte wie zuvor kenntlich
+> sein, welches Variantenprojekte sind"), umgesetzt in `325a275`:** Als eigene Spalte gab es die Variante im Vorbild
+> nie — weder `ProjektAuswahl` (418 Z.) noch `Form_ProjektAuswahl` (99 Z.) führten das Wort; kenntlich war sie **am
+> Namen** (`VariantenCtrl.AnlegenAusStamm` bildet „‹Stamm› - ‹Bezeichner›", `Form_Start.FuelleVariantenCombo` zeigte
+> genau das, die Ordnung kam aus `VariantenCtrl.LadeGruppe`: Stamm zuerst, dann Varianten `ORDER BY Variantenname`).
+> Das trug nicht mehr, weil das Assistentenband 280 px breit ist und ausgerechnet der Teil abgeschnitten wurde, der
+> die Variante ausmacht. Jetzt trägt `ProjektKopfZeile` Stamm-Id, Bezeichner und Stammnamen (`IstVariante`) aus
+> **einer** Abfrage mit zwei LEFT JOINs in `ProjektCtrl.NamenListe` (fehlt `Tab_Variante`, läuft die alte Abfrage —
+> ein LEFT JOIN auf eine fehlende Tabelle hätte die ganze Liste geleert); der Baustein `ProjektListe` gruppiert
+> Stamm → Varianten nach Bezeichner wie `LadeGruppe` (auch unter Datumssortierung, Stamm-Ausfall und Ringketten
+> abgesichert), zeigt die Spalte „Art" **nur, wenn die Liste eine Variante führt**, sonst die leise Zeile „Variante
+> von …" mit Einrückung, und die Suche greift über den Bezeichner. Aufrufer: `ProjektWahlDialog`, `ProjektKopieDialog`,
+> `AssistentSeite` und die drei Hüllen, vier neue Textschlüssel de/en; `Startseite.Varianten` war schon gekennzeichnet
+> und bleibt, `ProjektTransferDialog` führt keine `ProjektListe`. Dabei ist der Befund **W15a‑B‑1** erst wirklich
+> behoben: Die Umbruchregel stand im Blatt und **wirkte nicht** — `.epos-raster td` (0,1,1) schlug
+> `.epos-projektliste-name` (0,1,0); sie trägt jetzt den Tabellenselektor davor. Elf neue bunit-Fälle, ein Kern-Fall
+> gegen `Tab_Variante`; Protokoll § 14, Abnahmepunkt A‑W15a‑E‑1.
 
 > **Statusblock iU9 — Welle 14c umgesetzt (04.09.2026, Basis `4e77221` nach W14a/W14b, zusammengeführt mit `809fe41`)**
 >
