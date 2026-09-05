@@ -274,6 +274,46 @@ sqlite3 -readonly C:\ProgramData\EPOS_PLAN\Kenndaten.sqlite "EXPLAIN SELECT …;
 Syntax- **und** Objektprüfung: „near …: syntax error" und „no such column: …" fallen beide
 hier auf, nicht erst beim Anwender.
 
+### 6.5 Die Messlatte selbst — `Referenzlaeufe/Kenndaten_Test.sqlite`
+
+**Stand 05.09.2026: Schemastand 64** (`Tab_Applikation.SchemaVersion`), 68 157 440 Byte
+(65,0 MB). Nachzusehen ist er jederzeit:
+
+```
+sqlite3 -readonly Referenzlaeufe/Kenndaten_Test.sqlite "SELECT SchemaVersion FROM Tab_Applikation;"
+```
+
+**Warum das zählt.** Der Prüfer aus 6.4 hält jede Anweisung gegen **genau diese Datei**. Bleibt
+sie hinter dem Quelltext zurück, meldet er „no such column" für Spalten, die es im Programm
+längst gibt — nach der Zusammenführung der Rechner-2-Linie (Merge 5, Schritte 63/64 mit zehn
+PV-Spalten) waren das neun Fundstellen auf einen Schlag. Die Kern-Tests decken das **nicht** auf:
+`EPOS.Kern.Tests/TestDatenbank` zieht die Spalten auf ihrer Arbeitskopie nach und bleibt darum
+grün. **Ein neuer Schemaschritt heißt deshalb: die Testdatenbank mitziehen.**
+
+**Wie sie nachgezogen wird** — reproduzierbar, nie von Hand:
+
+```
+dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Das Werkzeug fährt **dieselben Quellen wie `SchemaMigration`** — den Spaltenkatalog
+(`SchemaKatalog`), die Typübersetzung (`StilleDb.SqliteSpaltenTyp`) und für Schritt 62 die
+`DELETE`-Texte aus `KlimaWaisenBereinigung` —, setzt den Marker auf `SchemaStand.Zielversion` und
+verdichtet mit `VACUUM`. Es ist **idempotent** (vorhandene Spalte = nichts zu tun), läuft auf
+Linux und kennt `--trocken` für den Blick vor dem Griff. Von Hand angelegte Spalten wären eine
+zweite Schreibweise derselben Spalte — genau das, was die Typübersetzung verhindern soll.
+
+> **Danach ist der Referenzlauf Pflicht, nicht Kür.** Eine Schemamigration darf keinen
+> Rechenwert verschieben; belegt wird das, indem
+> `EPOS.Referenzlauf lauf --projekte 1030,1007,1017` **vor und nach** dem Nachziehen läuft und
+> `diff -r` über beide Zielordner nur `protokoll.txt` meldet (Zeitstempel, Zielordner,
+> Dateigröße, Laufdauer). Jede abweichende CSV ist ein Befund.
+
+Wächst die Datei über die Zeit, ist der Weg zurück
+[`sql/tools/Reduziere-Testdatenbank.sql`](sql/tools/Reduziere-Testdatenbank.sql): Es schneidet
+eine Kopie der produktiven Datenbank auf die dreizehn Referenzprojekte zurück (iE6, iF14). Das
+Nachziehen des Schemas ersetzt es nicht — es setzt es voraus.
+
 ---
 
 ## 7. Kundenbestände außerhalb des Erststarts
