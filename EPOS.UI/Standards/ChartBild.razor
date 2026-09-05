@@ -1,16 +1,33 @@
-﻿@* Diagramm als fertiges Bild.
+@* Diagramm als fertiges Bild.
 
    Gezeichnet wird im Rechenkern (Skia-Renderer, iF16); die Oberflaeche zeigt
    nur noch das PNG. Das haelt EPOS.UI frei von jeder Zeichenbibliothek und
    liefert unter Windows und auf iOS dasselbe Bild.
 
    Das PNG wird als data:-URL eingebettet statt ueber eine Adresse geladen: In
-   der WebView gibt es keinen Webserver, der eine Datei ausliefern koennte. *@
+   der WebView gibt es keinen Webserver, der eine Datei ausliefern koennte.
+
+   SEIT DER WINDOWS-ABNAHME 05.09.2026 (Befund A-1) STEHT DAS BILD IM BAUSTEIN
+   DIAGRAMM. Das ist die Hausregel: JEDES Renderer-Bild ist zoombar, und zwar an
+   EINER Stelle - hier. Wer irgendwo ein Bild zeigt, nimmt ChartBild und bekommt
+   Rad, Kneifgeste, Ziehen, Doppelklick und die Tasten + - 0 mit. Ein zweiter
+   <img>-Weg an ChartBild vorbei waere ein Diagramm ohne Zoom und damit ein
+   Rueckfall in den Zustand, den der Anwender beanstandet hat.
+
+   Das Bild fuellt die BREITE seines Rahmens (width: 100 %). Vorher stand dort
+   max-width: Ein 1 240 Bildpunkte breites Diagramm in einer halben Rasterspalte
+   wurde damit briefmarkengross, und die Legende war nicht mehr zu lesen
+   (Befund W11b-B-2 derselben Abnahme). *@
+
+@namespace EPOS.UI.Standards
 
 @if (Png is { Length: > 0 })
 {
-    <img class="epos-chartbild" src="data:image/png;base64,@Convert.ToBase64String(Png)"
-         alt="@Alt" width="@Breite" height="@Hoehe" />
+    <Diagramm Bezeichnung="@Alt" BereichGewaehlt="@BereichGewaehlt"
+              Zurueckgesetzt="@Zurueckgesetzt">
+        <img class="epos-chartbild" src="data:image/png;base64,@Convert.ToBase64String(Png)"
+             alt="@Alt" width="@Breite" height="@Hoehe" />
+    </Diagramm>
 }
 else
 {
@@ -36,4 +53,18 @@ else
 
     /// <summary>Text, solange es noch kein Bild gibt.</summary>
     [Parameter] public string PlatzhalterText { get; set; } = "Kein Diagramm vorhanden";
+
+    /// <summary>
+    /// Der DATENZOOM: Der Anwender hat einen Achsenbereich aufgezogen. Nur
+    /// belegen, wo der Renderer einen Bereich zeichnen kann (die Jahresganglinien
+    /// der Ergebnisseite) - ohne Delegat bleibt es beim Bildzoom, und der Knopf
+    /// „Bereich" erscheint erst gar nicht.
+    /// </summary>
+    [Parameter] public EventCallback<Diagrammbereich> BereichGewaehlt { get; set; }
+
+    /// <summary>
+    /// Der Knopf „1:1" wurde gedrueckt — wer einen Achsenbereich fuehrt, verwirft
+    /// ihn hier. Ohne Datenzoom bleibt der Rueckruf unbelegt.
+    /// </summary>
+    [Parameter] public EventCallback Zurueckgesetzt { get; set; }
 }

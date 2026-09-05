@@ -1,0 +1,201 @@
+﻿@* Bestaetigungsdialog der Uebernahme auf der Seite "Uebersicht" des Reiters
+   "Berichte & Kosten" (iU9-W5.1).
+
+   Vorbild: Views/BerichteKosten/Form_BkUebernahme.cs (180 Z.) und
+   .Designer.cs (13 Kartenzeilen).
+
+   EIN DIALOG, ZWEI FUELLUNGEN - unveraendert zum Vorlaeufer. Beide Faelle
+   stellen dieselbe Frage: woraus, wohin, und was passiert dann? Oben deshalb
+   immer die Quellenauswahl (Vorgabe: das Stammprojekt, alternativ jede andere
+   Variante derselben Gruppe), darunter je nach Fall die Wertgegenueber-
+   stellung Quelle/Ziel (Merkmals-Uebernahme, Stufe 3) oder die
+   Klartext-Zusammenfassung dessen, was angelegt, ersetzt und entfernt wird
+   (Komponenten-Uebernahme, Stufe 1). Zwei getrennte Dialoge waeren zweimal
+   dieselbe Quellenauswahl - und die zweite haette den Fehler.
+
+   DER DIALOG RECHNET NICHT SELBST. Bei jedem Wechsel der Quelle ruft er den
+   uebergebenen Lader, der die Werte frisch aus der Datenbank ermittelt; die
+   Pruef- und Schreiblogik bleibt in MerkmalUebernahmeCtrl und
+   KomponentenUebernahmeCtrl.
+
+   TASTATUR: Esc bricht ab. Enter ist NICHT belegt - "OK" schreibt sofort
+   (A-7 aus B5b). *@
+
+@namespace EPOS.UI.Dialoge.Berichte
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@Gegenstand</p>
+
+    <Auswahlfeld Bezeichnung="@LabelQuelle" Eintraege="@Eintraege"
+                 Auswahl="@_quelleId" AuswahlChanged="BeiQuelle" />
+
+    @if (MitKlartext)
+    {
+        @* Komponenten-Uebernahme: die Zusammenfassung statt der zwei Werte. *@
+        <Textfeld Bezeichnung="@LabelZiel" Wert="@ZielName" NurLesen="true" />
+        <Textfeld Bezeichnung="" Wert="@_vorschau.Klartext" Mehrzeilig="true"
+                  Zeilen="10" NurLesen="true" Festbreite="true" />
+    }
+    else
+    {
+        <Kohaerenzzeile Text="@($"{LabelWertQuelle} {Oder(_vorschau.WertQuelle)}")" />
+        <Kohaerenzzeile Text="@($"{LabelZiel} {Oder(ZielName)}")" />
+        <Kohaerenzzeile Text="@($"{LabelWertZiel} {Oder(_vorschau.WertZiel)}")" />
+    }
+
+    @if (!string.IsNullOrEmpty(_vorschau.Komponenten))
+    {
+        <Herleitungszeile Text="@_vorschau.Komponenten" />
+    }
+
+    @if (!_vorschau.Moeglich && !string.IsNullOrEmpty(_vorschau.Grund))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_vorschau.Grund" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(!_vorschau.Moeglich)" @onclick="BeiOk">@OkText</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Vorbelegung
+    // =====================================================================
+
+    /// <summary>Fenstertitel (BK_UEB_TITEL_FELD bzw. _KOMP).</summary>
+    [Parameter] public string TitelText { get; set; } = "Übernehmen";
+
+    /// <summary>Was übernommen wird: „Gewerk · Merkmal" bzw. „Gewerk".</summary>
+    [Parameter] public string Gegenstand { get; set; } = "";
+
+    /// <summary>Anzeigename des Zielprojekts.</summary>
+    [Parameter] public string ZielName { get; set; } = "";
+
+    /// <summary>Wählbare Quellen; die erste ist die Vorgabe (das Stammprojekt).</summary>
+    [Parameter] public IReadOnlyList<UebernahmeQuelle> Quellen { get; set; }
+        = UebernahmeQuellen.Keine;
+
+    /// <summary><c>true</c> = Zusammenfassung statt Wertgegenüberstellung.</summary>
+    [Parameter] public bool MitKlartext { get; set; }
+
+    /// <summary>
+    /// Liefert die Vorschau zur gewählten Quelle. Ohne Lader bleibt der Dialog
+    /// gesperrt und nennt <see cref="MeldungKeineQuelle"/> — derselbe Ausgang
+    /// wie im Vorläufer (<c>Auffrischen</c>, <c>_lader == null</c>).
+    /// </summary>
+    [Parameter] public Func<int, UebernahmeVorschau>? Lader { get; set; }
+
+    /// <summary>Ergebnis: die gewählte Quelle; <c>null</c> = abgebrochen.</summary>
+    [Parameter] public EventCallback<BkUebernahmeErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>Hilfeschlüssel — der des Vorläufers, damit die Wikiseite bleibt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_BkUebernahme.btn_Help";
+
+    // ---- Texte (Ressourcenschlüssel in Klammern) ------------------------
+
+    /// <summary>Beschriftung der Quellenauswahl (BK_UEB_LBL_QUELLE).</summary>
+    [Parameter] public string LabelQuelle { get; set; } = "Quelle:";
+
+    /// <summary>Beschriftung des Quellwerts (BK_UEB_LBL_WERT_QUELLE).</summary>
+    [Parameter] public string LabelWertQuelle { get; set; } = "Wert der Quelle:";
+
+    /// <summary>Beschriftung des Ziels (BK_UEB_LBL_ZIEL).</summary>
+    [Parameter] public string LabelZiel { get; set; } = "Ziel:";
+
+    /// <summary>Beschriftung des Zielwerts (BK_UEB_LBL_WERT_ZIEL).</summary>
+    [Parameter] public string LabelWertZiel { get; set; } = "Wert des Ziels:";
+
+    /// <summary>„OK" (SIM_BTN_OK).</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>„Abbrechen" (BK_UEB_BTN_ABBRUCH).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Meldung ohne wählbare Quelle (BK_MSG_UEB_KEINE_QUELLE).</summary>
+    [Parameter] public string MeldungKeineQuelle { get; set; }
+        = "Es gibt keine andere Version dieser Gruppe, aus der übernommen werden könnte.";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _quelleId;
+    private UebernahmeVorschau _vorschau = new();
+
+    /// <summary>Id der gewählten Quelle (Prüfhilfe).</summary>
+    public int GewaehlteQuelleId => _quelleId ?? -1;
+
+    /// <summary>Die zuletzt geladene Vorschau (Prüfhilfe).</summary>
+    public UebernahmeVorschau Vorschau => _vorschau;
+
+    private IReadOnlyList<(int Id, string Text)> Eintraege
+    {
+        get
+        {
+            var liste = new List<(int, string)>(Quellen.Count);
+            foreach (UebernahmeQuelle q in Quellen) liste.Add((q.Id, q.Anzeige));
+            return liste;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Die erste Quelle ist die Vorgabe (das Stammprojekt) - wie im
+        // Vorlaeufer, der cbQuelle.SelectedIndex = 0 setzte.
+        if (_quelleId is not null) return;
+        if (Quellen.Count > 0) _quelleId = Quellen[0].Id;
+        Auffrischen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Ablauf
+    // =====================================================================
+
+    private void BeiQuelle(int? id)
+    {
+        _quelleId = id;
+        Auffrischen();
+    }
+
+    /// <summary>Werte der gewählten Quelle frisch laden (öffentlich für die Prüfhilfe).</summary>
+    public void Auffrischen()
+    {
+        int id = _quelleId ?? -1;
+        UebernahmeVorschau? v = (Lader is not null && id > 0) ? Lader(id) : null;
+        _vorschau = v ?? new UebernahmeVorschau { Moeglich = false, Grund = MeldungKeineQuelle };
+    }
+
+    private Task BeiOk()
+        => _vorschau.Moeglich && _quelleId is int id
+            ? Geschlossen.InvokeAsync(new BkUebernahmeErgebnis(id))
+            : Task.CompletedTask;
+
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(null);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Escape" => BeiAbbrechen(),
+        _ => Task.CompletedTask
+    };
+
+    private static string Oder(string s) => string.IsNullOrEmpty(s) ? "—" : s;
+}

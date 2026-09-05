@@ -1,0 +1,171 @@
+﻿@* Der RAHMEN eines mehrstufigen Ablaufs (iU9-W16a.5).
+
+   Vorbild: Views/Wizard/WizardParent.cs (962 Z.) und .designer.cs (162 Z.) - der
+   Projektassistent. Was hier steht, ist NUR der Rahmen: linkes Band,
+   Inhaltsflaeche, Fussleiste. Die dreizehn Seiten und ihre Datenseite stehen in
+   Seiten/AssistentSeite.razor bzw. in EPOS.Kern/Controller/AssistentCtrl.
+
+   DREI TEILE STATT DREI PANEL. pnlLeft, pnlContent und pnlBottom werden ein
+   CSS-Raster; LoadNewForm (32 Zeilen gerechnete Fenstergroesse, Bildschirm-
+   arbeitsflaeche, Dock-Wechsel) entfaellt vollstaendig - eine WebView hat keine
+   Wunschgroesse und braucht keine.
+
+   EINE ABLAUFMETHODE STATT VIER. Next, Back, GetNextUpIndex, GetNextDownIndex und
+   lastIndex (zusammen rund 190 Zeilen) werden NaechsteAktive(richtung) und
+   LetzteAktive - die Seiten sind eine Liste mit Aktiv-Kennzeichen, kein
+   Formularwechsel.
+
+   "WEITER" WIRD AUF DER LETZTEN AKTIVEN SEITE "SPEICHERN" (Nutzerwunsch
+   30.08.2026, woertlich uebernommen): Der frueher eigene Speichern-Knopf ist
+   entfallen.
+
+   DAS LINKE BAND IST EINE GABE. Der Assistent selbst weiss nichts von
+   Projektlisten - er zeigt, was der Wirt hineingibt, und nur dort, wo der Wirt es
+   will (im Bestand: Betriebsart BEARBEITEN auf Schritt 0).
+
+   TASTATUR: Die drei Fussknoepfe sind Knoepfe und damit von selbst erreichbar.
+   Enter ist NICHT belegt - ein versehentliches Enter waere hier ein Seitenwechsel
+   oder ein Speichern (Lehre A-7 aus B5b). *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-assistent">
+
+    @if (Seitenband is not null)
+    {
+        <aside class="epos-assistent-band">
+            @Seitenband
+        </aside>
+    }
+
+    <div class="epos-assistent-inhalt">
+        @AktuellerInhalt
+    </div>
+
+    <div class="epos-assistent-fuss">
+        <button type="button" class="epos-knopf" disabled="@(!AbbrechenMoeglich)"
+                @onclick="BeiAbbrechen">@AbbrechenText</button>
+        <button type="button" class="epos-knopf" disabled="@(!ZurueckMoeglich)"
+                @onclick="BeiZurueck">@ZurueckText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!WeiterMoeglich)"
+                @onclick="BeiWeiter">@WeiterBeschriftung</button>
+    </div>
+</div>
+
+@code {
+    // =====================================================================
+    // Eingaben
+    // =====================================================================
+
+    /// <summary>Die Schritte in ihrer festen Reihenfolge.</summary>
+    [Parameter] public IReadOnlyList<AssistentSchritt> Seiten { get; set; } =
+        Array.Empty<AssistentSchritt>();
+
+    /// <summary>Der aktuelle Schritt. Bindbar über @@bind-Schritt.</summary>
+    [Parameter] public int Schritt { get; set; }
+
+    /// <summary>Meldet jeden Schrittwechsel.</summary>
+    [Parameter] public EventCallback<int> SchrittChanged { get; set; }
+
+    /// <summary>
+    /// Das linke Band — im Bestand die Projektliste des Bearbeiten-Modus. Nicht
+    /// gesetzt = kein Band; die Inhaltsfläche nimmt dann die ganze Breite.
+    /// </summary>
+    [Parameter] public RenderFragment? Seitenband { get; set; }
+
+    /// <summary>„Abbrechen" wurde gedrückt.</summary>
+    [Parameter] public EventCallback Abgebrochen { get; set; }
+
+    /// <summary>
+    /// Auf der letzten aktiven Seite wurde „Speichern" gedrückt. Der Rahmen
+    /// schließt sich davon NICHT selbst — das entscheidet der Wirt, denn ein
+    /// gescheitertes Speichern soll die Eingaben nicht verlieren.
+    /// </summary>
+    [Parameter] public EventCallback Gespeichert { get; set; }
+
+    /// <summary>
+    /// Darf „Weiter"/„Speichern" gedrückt werden? Im Bearbeiten-Modus ist der Knopf
+    /// gesperrt, solange kein Projekt markiert ist (<c>WizardParent.Next</c> :270).
+    /// </summary>
+    [Parameter] public bool WeiterFrei { get; set; } = true;
+
+    // =====================================================================
+    // Texte - deutscher Rueckfall wie in allen Dialogen
+    // =====================================================================
+
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string ZurueckText { get; set; } = "◀ Zurück";
+    [Parameter] public string WeiterText { get; set; } = "Weiter ▶";
+    [Parameter] public string SpeichernText { get; set; } = "Speichern";
+
+    // =====================================================================
+    // Ablauf
+    // =====================================================================
+
+    private RenderFragment? AktuellerInhalt
+        => Schritt >= 0 && Schritt < Seiten.Count ? Seiten[Schritt].Inhalt : null;
+
+    /// <summary>
+    /// Der nächste AKTIVE Schritt in einer Richtung — <b>eine</b> Methode statt
+    /// <c>GetNextUpIndex</c> und <c>GetNextDownIndex</c>.
+    ///
+    /// <para>Findet sich keiner, bleibt der Assistent stehen: Der Vorläufer lief in
+    /// diesem Fall auf den vorletzten bzw. den ersten Index, weil seine
+    /// <c>for</c>-Schleife über die Bedingung abbrach.</para>
+    /// </summary>
+    public int NaechsteAktive(int richtung)
+    {
+        int i = Schritt + Math.Sign(richtung);
+        while (i >= 0 && i < Seiten.Count)
+        {
+            if (Seiten[i].Aktiv) return i;
+            i += Math.Sign(richtung);
+        }
+        return Schritt;
+    }
+
+    /// <summary>
+    /// Steht die letzte AKTIVE Seite an? Dann trägt der Weiter-Knopf den
+    /// Speichern-Text (wörtlich <c>WizardParent.lastIndex</c>).
+    /// </summary>
+    public bool LetzteAktive()
+    {
+        for (int i = Schritt + 1; i < Seiten.Count; i++)
+            if (Seiten[i].Aktiv) return false;
+        return true;
+    }
+
+    private string WeiterBeschriftung => LetzteAktive() ? SpeichernText : WeiterText;
+
+    private bool ZurueckMoeglich => NaechsteAktive(-1) != Schritt;
+
+    private bool WeiterMoeglich => WeiterFrei;
+
+    /// <summary>
+    /// „Abbrechen" ist gesperrt, sobald der Assistent über seine letzte Seite hinaus
+    /// ist — wörtlich <c>Back</c>/<c>Next</c> (<c>top &gt;= pagecount</c>).
+    /// </summary>
+    private bool AbbrechenMoeglich => Schritt < Seiten.Count;
+
+    private Task BeiZurueck()
+    {
+        int ziel = NaechsteAktive(-1);
+        return ziel == Schritt ? Task.CompletedTask : Wechseln(ziel);
+    }
+
+    private Task BeiWeiter()
+    {
+        if (LetzteAktive()) return Gespeichert.InvokeAsync();
+
+        int ziel = NaechsteAktive(+1);
+        return ziel == Schritt ? Task.CompletedTask : Wechseln(ziel);
+    }
+
+    private Task BeiAbbrechen() => Abgebrochen.InvokeAsync();
+
+    private Task Wechseln(int ziel)
+    {
+        Schritt = ziel;
+        return SchrittChanged.InvokeAsync(ziel);
+    }
+}

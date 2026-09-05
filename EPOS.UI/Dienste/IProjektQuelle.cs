@@ -101,6 +101,137 @@ public interface IProjektQuelle
     /// Datenbank). Die Seite bleibt dann in der Liste stehen.
     /// </summary>
     BhkwDialogDaten? BhkwDaten(int idProjekt);
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Simulationskonfiguration zu einem Projekt
+    /// (iU9-W10b.1); <c>null</c> = geht gerade nicht. Die Seite bleibt dann in der
+    /// Liste stehen.
+    ///
+    /// <para><b>Warum ein Woerterbuch und kein Datensatz.</b> Die Seite traegt ueber
+    /// vierzig Parameter — Delegatensatz, Zustand und die Anzeigetexte. Sie als
+    /// Woerterbuch zu liefern und mit <c>@@attributes</c> hineinzuschuetten, ist
+    /// dasselbe Muster, mit dem jede Huelle ihre Unterdialoge fuellt (<c>Gaben</c>);
+    /// eine eigene Klasse dafuer waere eine zweite Wahrheit ueber dieselbe Liste.</para>
+    ///
+    /// <para><b>Mit Standardumsetzung</b>, damit eine vorhandene Quelle
+    /// (<c>EPOS.iOS/Dienste/IosProjektQuelle</c>) durch die Erweiterung nicht bricht:
+    /// Wer sie nicht umsetzt, kennt die Seite eben nicht.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? SimulationKonfigGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Ergebnisseite zu einem Projekt
+    /// (iU9-W11b.13); <c>null</c> = geht gerade nicht. Die Seite bleibt dann in
+    /// der Liste stehen.
+    ///
+    /// <para>Dieselbe Form und derselbe Grund wie bei
+    /// <see cref="SimulationKonfigGaben"/> — ein Woerterbuch, das die Wurzel mit
+    /// <c>@@attributes</c> hineinschuettet, und eine Standardumsetzung, damit eine
+    /// vorhandene Quelle durch die Erweiterung nicht bricht.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? SimulationErgebnisGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ des KI-Hilfe-Assistenten (iU9-W15b.7,
+    /// Entscheid E-10).
+    ///
+    /// <para>Wie <see cref="SimulationKonfigGaben"/> ein Woerterbuch <b>mit
+    /// Standardumsetzung</b>: Solange die iOS-Huelle den Assistenten nicht bedient
+    /// (iU11), liefert sie <c>null</c>, und <c>AppWurzel</c> bleibt bei der Liste
+    /// stehen — derselbe Ausgang wie „Dialog geht nicht auf" unter Windows. Der
+    /// Assistent haengt an keinem PROJEKT; der Parameter bleibt der Form halber.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? KiAssistentGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Alles, was der Dialog „Projekt exportieren / importieren" braucht
+    /// (iU9-W15a.0h); <c>null</c> = diese Huelle kann keinen Projekttransfer.
+    ///
+    /// <para>Derselbe Weg und derselbe Grund wie bei
+    /// <see cref="SimulationKonfigGaben"/> — <b>mit Standardumsetzung</b>, damit eine
+    /// vorhandene Quelle (<c>EPOS.iOS/Dienste/IosProjektQuelle</c>) durch die
+    /// Erweiterung nicht bricht. Anders als dort ist das Ergebnis ein DATENSATZ und
+    /// kein Woerterbuch: Es sind neun benannte Dinge, nicht vierzig, und drei davon
+    /// sind Pfaddelegaten, deren Fehlen der Dialog SEHEN muss (kein Delegat = kein
+    /// Knopf).</para>
+    /// </summary>
+    ProjektTransferDaten? TransferDaten() => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ des PROJEKTASSISTENTEN (iU9-W16a.5, K6);
+    /// <c>null</c> = diese Huelle kann keinen Assistentenlauf.
+    ///
+    /// <para>Derselbe Weg und derselbe Grund wie bei
+    /// <see cref="SimulationKonfigGaben"/> — ein Woerterbuch, das die Wurzel mit
+    /// <c>@@attributes</c> hineinschuettet, und eine Standardumsetzung, damit eine
+    /// vorhandene Quelle (<c>EPOS.iOS/Dienste/IosProjektQuelle</c>) durch die
+    /// Erweiterung nicht bricht.</para>
+    ///
+    /// <para><b>Zwei Angaben statt einer.</b> Der Assistent hat ZWEI Einstiege, die
+    /// sich nur in der Betriebsart unterscheiden (neues Projekt / vorhandenes
+    /// bearbeiten) — das war schon im Bestand so (<c>MenueCtrl.ProjektNeu</c> und
+    /// <c>…ProjektBearbeiten</c> riefen dieselbe Seitenliste mit anderem
+    /// <c>SetWizardMode</c>). Die Projekt-Id ist im Bearbeiten-Zweig die Vorauswahl
+    /// des linken Bandes; 0 heisst „noch keine".</para>
+    /// </summary>
+    /// <param name="betriebsart">0 = neues Projekt, 1 = vorhandenes bearbeiten.</param>
+    /// <param name="idProjekt">Vorausgewaehltes Projekt im Bearbeiten-Zweig; 0 = keines.</param>
+    IReadOnlyDictionary<string, object>? AssistentGaben(int betriebsart, int idProjekt) => null;
+
+    /// <summary>
+    /// Die <b>21 Kacheln der Startseite</b> zu einem Projekt (iU9-W16b.2, K6);
+    /// leere Liste = diese Huelle fuehrt keine Startseite.
+    ///
+    /// <para><b>Warum eine eigene Methode und kein Gaben-Woerterbuch.</b> Die
+    /// Startseite ist die einzige Seite, deren Inhalt sich nach JEDER Bedienung
+    /// aendert: Jeder Kachelweg kann den Bestand des Projekts veraendern, und der
+    /// Statuspunkt haengt daran. Ein einmal gebautes Woerterbuch waere nach dem
+    /// ersten Klick veraltet; hier wird bei jedem Auffrischen neu gefragt — genau
+    /// das tut auch die Windows-Huelle (<c>StartseiteHuelle.Kacheln</c>).</para>
+    ///
+    /// <para>Der Bestand kommt aus <c>KomponentenBestandCtrl.Bitmaske</c> (K1,
+    /// Entscheid E-3, Nachweis N6) — dieselbe Wahrheit, die der Komponentenschritt
+    /// des Assistenten zeigt.</para>
+    ///
+    /// <para><b>Mit Standardumsetzung</b>, damit eine vorhandene Quelle durch die
+    /// Erweiterung nicht bricht. <c>AppWurzel</c> bekommt ihren Zweig mit W16c
+    /// (K7, <c>Seitenschluessel.STARTSEITE</c>).</para>
+    /// </summary>
+    IReadOnlyList<EPOS.UI.Seiten.Start.StartKachel> Startkacheln(int idProjekt)
+        => Array.Empty<EPOS.UI.Seiten.Start.StartKachel>();
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der STARTSEITE (iU9-W16c.2, K7);
+    /// <c>null</c> = diese Huelle fuehrt keine Startseite.
+    ///
+    /// <para>Derselbe Weg und derselbe Grund wie bei
+    /// <see cref="AssistentGaben"/> — ein Woerterbuch, das die Wurzel mit
+    /// <c>@@attributes</c> hineinschuettet, und eine Standardumsetzung, damit eine
+    /// vorhandene Quelle durch die Erweiterung nicht bricht.</para>
+    ///
+    /// <para><b>Unter Windows wird dieser Weg NICHT gegangen.</b> Dort reicht
+    /// <c>Hauptfenster</c> den Satz von <c>StartseiteHuelle.Gaben()</c> als
+    /// Parameter an <see cref="EPOS.UI.Seiten.AppWurzel"/> weiter — die Huelle
+    /// haelt den Projektkontext, die Bedarfsobjekte und die 21 Kachelwege und
+    /// waere als Projektquelle nicht abzubilden. <see cref="Startkacheln"/>
+    /// bleibt der iOS-Weg fuer den KACHELBESTAND.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? StartseiteGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ des Reiters „Berichte &amp; Kosten"
+    /// (iU9-W16c.2, K7); <c>null</c> = diese Huelle fuehrt ihn nicht.
+    ///
+    /// <para>Die Seite gibt es als Razor seit Welle 5; in <c>AppWurzel</c> war
+    /// sie bis W16c bloss nicht verdrahtet (Vermessung § 9.2 — das fuenfte der
+    /// fuenf fehlenden Stuecke). Unter Windows steht sie ZUSAETZLICH als
+    /// sechster REITER in der Startseite; seit dem Anwenderentscheid W16c-E-3
+    /// (04.09.2026) fuehrt der Menuepunkt „Varianten und Bericht…" aber auch
+    /// dort in die ANSICHT, und die Windows-Huelle stellt den Parametersatz
+    /// unmittelbar (<c>HauptfensterHuelle.Gaben</c>) — dieser Weg hier bleibt
+    /// der iOS-Weg.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? BerichteKostenGaben(int idProjekt) => null;
 }
 
 /// <summary>

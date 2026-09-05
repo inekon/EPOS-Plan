@@ -57,6 +57,23 @@ namespace WindowsFormsApplication1
         }
 
         // Loescht eine Stamm-Ganglinie samt Daten, sofern nicht schreibgeschuetzt.
+        /// <summary>
+        /// Gibt es zu dieser Ganglinie eine PROJEKTZUORDNUNG? (iU9-W9.0d) — die Sperre vor
+        /// dem Loeschen aus <c>Form_Waermebedarf.btn_Loeschen_Click</c>:304.
+        ///
+        /// <para><b>Der Vorlaeufer las die ganze Zuordnungstabelle</b>
+        /// (<c>Select * from Z_ProjektWaermebedarf where Bezeichner ='…'</c>) und zaehlte
+        /// die Zeilen. Hier steht dieselbe Bedingung als <c>COUNT(*)</c> mit Parameter —
+        /// ergebnisgleich, ohne Zeichenkettenverkettung.</para>
+        /// </summary>
+        public bool HatProjektzuordnung(string szName)
+        {
+            object anzahl = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Z_ProjektWaermebedarf WHERE Bezeichner = ?",
+                new DbParam("@bez", szName ?? ""));
+            return anzahl != null && anzahl != DBNull.Value && Convert.ToInt32(anzahl) > 0;
+        }
+
         public bool Delete(string szName)
         {
             if (IsReadOnly(szName))

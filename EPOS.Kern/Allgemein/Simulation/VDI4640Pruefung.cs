@@ -431,6 +431,37 @@ namespace WindowsFormsApplication1
             return A2_VOLLLASTSTUNDEN[klimazone - 1];
         }
 
+        /// <summary>
+        /// Gesamte Sondenmeterzahl einer Anlage aus Länge je Sonde und Sondenzahl:
+        /// <c>laenge · max(1, anzahl)</c>.
+        ///
+        /// <para><b>iU9‑W10a.0b.</b> Die Zeile stand in <c>Form_QuelleErdreich</c> :882 —
+        /// die einzige Rechnung, die dieser Dialog selbst führte. Das <c>max(1, …)</c> ist
+        /// nicht Kosmetik: Eine leere oder auf 0 stehende Sondenzahl würde sonst 0
+        /// Sondenmeter ergeben, und die Prüfung meldete eine Entzugsleistung von unendlich
+        /// vielen W/m. Eine Sonde ist das Mindeste, was vorhanden sein kann.</para>
+        /// </summary>
+        public static double Sondenmeter(double laengeJeSonde, double anzahl)
+        {
+            return laengeJeSonde * Math.Max(1, anzahl);
+        }
+
+        /// <summary>
+        /// Die Jahresvolllaststunden, mit denen die Sondenprüfung rechnet: die aus dem
+        /// SIMULATIONSLAUF, wenn es sie gibt — sonst der Zonenwert nach DIN 4710.
+        ///
+        /// <para><b>iU9‑W10a.0b.</b> Auch diese Wahl stand in <c>Form_QuelleErdreich</c>
+        /// :883. Sie ist eine Fachregel und keine Anzeigefrage: Der gerechnete Wert
+        /// beschreibt DIESE Anlage, der Zonenwert ist die Norm-Näherung für den Fall, dass
+        /// noch nichts gerechnet wurde.</para>
+        /// </summary>
+        /// <param name="volllastAusLauf">Volllaststunden aus dem Lauf; <c>&lt;= 0</c> = keine.</param>
+        /// <param name="klimazone">Zone 1…15; außerhalb liefert <see cref="VolllaststundenZone"/> 0.</param>
+        public static double Volllaststunden(double volllastAusLauf, int klimazone)
+        {
+            return volllastAusLauf > 0 ? volllastAusLauf : VolllaststundenZone(klimazone);
+        }
+
         // ------------------------------------------------------------------
         // Sondenprüfung (Tabelle B2, Auszug)
         // ------------------------------------------------------------------

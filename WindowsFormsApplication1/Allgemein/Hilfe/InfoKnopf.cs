@@ -230,7 +230,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// Kopfbaender sind 30 bis 74 Bildpunkte hoch (<c>UcBerichteKosten.lblKopf</c> 30,
-        /// <c>Form_LeistungspreisReihe.pnlKopf</c> 40, <c>Form_KostenKomponente.pnlKopf</c>
+        /// <c>Form_Energietraeger.pnlKopf</c> 48, <c>Form_KostenKomponente.pnlKopf</c>
         /// 74). Der Regelabstand von oben schnitte den Knopf dort unten ab. Passt er nicht
         /// mit Luft nach unten hinein, sitzt er mittig - in einem Band ohnehin der richtige
         /// Platz. Auf einer Maske greift die Regel nie, weil deren Client-Bereich um ein

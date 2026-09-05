@@ -50,6 +50,21 @@
         public const string BrauchwasserAdmin = "Form_Brauchwasser_Admin";
         /// <summary>Herstellerdaten Solarkollektoren einlesen.</summary>
         public const string SolarkollektorenImport = "Form_SolarKollektoren_einlesen";
+
+        /// <summary>
+        /// Herstellerdaten PV-Module einlesen (CEC-Modulliste bzw. PVsyst-.pan).
+        ///
+        /// <para><b>Neu mit iU9-W13.0k</b> (Befund W13-B55): Diese Maske war als
+        /// einzige ihrer Welle OHNE Maskenschluessel — <c>Hauptfensterrahmen</c> erzeugte
+        /// sie an zwei Stellen unmittelbar mit <c>new</c>. Damit hing sie an zwei
+        /// Zeilen des Hauptfensters statt an der Navigation.</para>
+        ///
+        /// <para><b>Argument:</b> <c>"CEC"</c> oder <c>"PAN"</c> — die Quelle, mit
+        /// der der Dialog aufmacht. Zwei Menuepunkte oeffneten bisher dieselbe
+        /// Maske im SELBEN Zustand; „PAN laden" brachte sie nicht in den PAN-Modus
+        /// (Befund W13-B51).</para>
+        /// </summary>
+        public const string PvImport = "Form_CECImport";
         /// <summary>„Speichern unter…" — dupliziert ein Projekt.</summary>
         public const string ProjektSpeichernUnter = "Form_ProjektSpeichernUnter";
 
@@ -72,10 +87,5 @@
         /// </summary>
         public const string Assistent = "ASSISTENT";
 
-        /// <summary>
-        /// Das Detailformular „Konfiguration Projekt" mit allen Gewerkslisten und
-        /// Kontextmenüs. Argumente: Projektname und Projekt-ID.
-        /// </summary>
-        public const string ProjektDetail = "PROJEKT_DETAIL";
     }
 }

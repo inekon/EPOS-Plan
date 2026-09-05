@@ -1,0 +1,802 @@
+﻿@* Gebaeude eines Projekts - der HOST des Gewerks (iU9-W9.2).
+
+   VORBILD. Views/Gebaeude/Form_Gebaeude (695 Z., 812 x 573, lokalisiert
+   de/en, 27 Kartenzeilen, 4 MessageBox). Links "ausgewaehlte Gebaeude im
+   Projekt", rechts "Gebaeude in DB" mit vier Filtern, dazwischen die beiden
+   Pfeile, unten der Detailblock - dasselbe Muster wie die fuenf
+   Erzeugerdialoge der Welle 6.
+
+   DREI BETRIEBSARTEN (Risiko R-W9-2):
+   * Projekt:    beide Listen, OK/Abbrechen.
+   * Assistent:  beide Listen, KEINE Schlussleiste (der Rahmen hat sie).
+   * Verwaltung: NUR der Katalog - Projektliste, Pfeile und "Aendern" sind
+                 weg (Form_Gebaeude_Load:608-620, Masken.GebaeudeAdmin).
+
+   DIE ZEILE IST DER SCHLUESSEL, nicht ihr Index und nicht die Stamm-Id: Zwei
+   gleiche Gebaeude im Projekt teilen sich eine Stamm-Id, und btn_Entfernen
+   traf ohne ID_Z die falsche Zeile (Kommentar :283-287).
+
+   VIER FILTERZWEIGE, EINER DAVON ZWEIDEUTIG. Der Zweig "Gebaeudeart gewaehlt,
+   Baujahr Alle" filtert im Gebaeudeart-Handler OHNE, im Baujahr-Handler MIT
+   der Verwendung (Befund W9-B1). Woertlich uebernommen; die Komponente sagt
+   dem Kern ueber "ausBaujahrwahl", welches Feld die Auswahl ausgeloest hat.
+
+   VIER UEBERLAGERUNGEN statt vierer Fenster (Risiko R2): der Katalogeditor
+   (W9.1), die Wohnflaechenangabe (W9.3), die Gebaeudetypen-Verwaltung (W8.4)
+   und seit dem Anwenderwunsch W9-E-2 (05.09.2026) der WAERMEBEDARF des
+   markierten Gebaeudes (Knopf "Simulation..." im Detailblock, W9.8).
+
+   TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
+   Enter ist nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Damit steht dieser Dialog wieder wie sein Vorbild: Projektliste
+   links, Katalog rechts, die zwei Knoepfe in einer schmalen Mittelspalte
+   (Form_Gebaeude.resx: 252 / 63 / 436 px). Auf schmalem Schirm bricht das Paar
+   untereinander um - das Schema, das hier seit W9 stand. Das Pfeilzeichen setzt
+   der Baustein je nach Anordnung; die Beschriftung traegt nur noch Worte. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* Die zwei Listen, die Pfeilspalte und - in der Verwaltung - der Katalog
+       allein: alles im Baustein (Anwenderentscheid #76). "Admin" ist genau die
+       Betriebsart Form_Gebaeude_Load:608-620, in der es keine Projektliste
+       gibt; sie wird zu NurRechts. *@
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+                        NurRechts="@Admin"
+                        UebernehmenText="@BtnHinzuText" UebernehmenHinweis="@BtnHinzuHinweis"
+                        UebernehmenGesperrt="@(_katalogzeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@BtnEntfernenText" EntfernenHinweis="@BtnEntfernenHinweis"
+                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
+
+        <Links>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GebaeudeProjektZeile zeile in Zeilen)
+                        {
+                            GebaeudeProjektZeile z = zeile;
+                            <tr class="@(IstGewaehlt(z) ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@IstGewaehlt(z)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => ProjektzeileWaehlen(z)" />
+                                </td>
+                                <td>@z.Name</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </Links>
+
+        <Rechts>
+            <Gruppenkopf Titel="@GruppeFilter">
+                <KindInhalt>
+                    <Optionsgruppe Bezeichnung="@LabelVerwendung" Eintraege="@Verwendungseintraege"
+                                   Auswahl="@(_wohngebaeude ? 0 : 1)"
+                                   AuswahlChanged="VerwendungWaehlen" />
+                    <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
+                                 Auswahl="@_artindex" AuswahlChanged="ArtWaehlen" />
+                    <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Klasseneintraege"
+                                 Auswahl="@_klassenindex" AuswahlChanged="KlasseWaehlen" />
+                    <Textfeld Bezeichnung="@LabelSuche" Wert="@_suche" WertChanged="SucheSetzen"
+                              Platzhalter="@PlatzhalterSuche" />
+                </KindInhalt>
+            </Gruppenkopf>
+
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                            <th>@SpalteTypFlaeche</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GebaeudeKatalogZeile zeile in GefilterterKatalog)
+                        {
+                            GebaeudeKatalogZeile k = zeile;
+                            <tr class="@(k == _katalogzeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(k == _katalogzeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => KatalogzeileWaehlen(k)" />
+                                </td>
+                                <td>@k.Name</td>
+                                <td>@k.Art<br />@k.Wohnflaeche</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf"
+                        @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
+                <button type="button" class="epos-knopf"
+                        @onclick="BeiKatalogNeu">@BtnDbNeuText</button>
+                <button type="button" class="epos-knopf"
+                        @onclick="() => _loeschfrage = true">@BtnDbLoeschenText</button>
+                @if (GebaeudetypGaben is not null)
+                {
+                    <button type="button" class="epos-knopf"
+                            @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
+                }
+            </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
+
+    @* --------------------------------------------- Detailblock ------------ *@
+    <Gruppenkopf Titel="@GruppeVerbrauch">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelGebaeudename" Wert="@_detailName" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelGebaeudeart" Wert="@_detailArt" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detailBeschreibung"
+                      NurLesen="true" Mehrzeilig="true" Zeilen="3" />
+            <Textfeld Bezeichnung="@LabelWohnflaeche" Wert="@_detailWohnflaeche" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelEinheit" Wert="@_detailEinheit" NurLesen="true" />
+
+            @if (!Admin)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                            @onclick="BeiAendern">@BtnAendernText</button>
+
+                    @* Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
+                       Gebaeudes, analog zum Bedarfsreiter der Ergebnisseite. Ohne
+                       Delegat kein Knopf - in der Katalogverwaltung gibt es kein
+                       Projekt und damit auch nichts zu rechnen. *@
+                    @if (BedarfGaben is not null)
+                    {
+                        <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                                title="@BtnSimulationHinweis"
+                                @onclick="BeiSimulation">@BtnSimulationText</button>
+                    }
+                </div>
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+
+    @* --- Ueberlagerung 1: der Katalogeditor (W9.1) ------------------------- *@
+    <Ueberlagerung Offen="@(_katalogGaben is not null)" Schliessbar="false"
+                   Titel="@BtnDbAendernText" Geschlossen="KatalogeditorFertig">
+        <KindInhalt>
+            @if (_katalogGaben is not null)
+            {
+                <GebaeudeKatalogDialog @attributes="_katalogGaben"
+                                       Geschlossen="_ => KatalogeditorFertig()" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 2: die Wohnflaechenangabe (W9.3) -------------------- *@
+    <Ueberlagerung Offen="@(_wohnflaecheGaben is not null)" Schliessbar="false"
+                   Titel="@BtnAendernText" Geschlossen="() => WohnflaecheFertig(null)">
+        <KindInhalt>
+            @if (_wohnflaecheGaben is not null)
+            {
+                <GebaeudeWohnflaecheDialog @attributes="_wohnflaecheGaben"
+                                           Geschlossen="WohnflaecheFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 3: die Gebaeudetypen-Verwaltung (W8.4) -------------- *@
+    <Ueberlagerung Offen="@_gebaeudetypOffen" Schliessbar="false"
+                   Titel="@BtnGebTypText" Geschlossen="() => _gebaeudetypOffen = false">
+        <KindInhalt>
+            @if (_gebaeudetypOffen && GebaeudetypGaben is not null)
+            {
+                <GebaeudetypDialog @attributes="GebaeudetypGaben()"
+                                   Geschlossen="_ => _gebaeudetypOffen = false" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 4: der Waermebedarf des Gebaeudes (W9-E-2) ---------- *@
+    <Ueberlagerung Offen="@(_bedarfGaben is not null)" Schliessbar="false"
+                   Titel="@BtnSimulationText" Geschlossen="BedarfFertig">
+        <KindInhalt>
+            @if (_bedarfGaben is not null)
+            {
+                <GebaeudeBedarfDialog @attributes="_bedarfGaben"
+                                      Geschlossen="_ => BedarfFertig()" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Rueckfrage vor dem Loeschen eines Katalogsatzes ------------------- *@
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnDbLoeschenText"
+                Frage="@Loeschfrage" Beantwortet="LoeschenBeantwortet"
+                JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    /// <summary>
+    /// Die Gebäude des Projekts — die Liste gehört der Hülle und wird AN ORT UND STELLE
+    /// bearbeitet, wie in den Erzeugerdialogen der Wellen 6 und 7.
+    /// </summary>
+    [Parameter] public List<GebaeudeProjektZeile> Zeilen { get; set; } = new();
+
+    /// <summary>
+    /// Der gefilterte Katalog. Die vier Parameter sind Verwendung, Gebäudeart
+    /// (<c>null</c> = Alle), Index der Baualtersklasse (<c>null</c> = Alle) und die
+    /// Herkunft der Auswahl (Befund W9‑B1).
+    /// </summary>
+    [Parameter] public Func<bool, string?, int?, bool, IReadOnlyList<GebaeudeKatalogZeile>>? Katalog { get; set; }
+
+    /// <summary>Die Gebäudearten je Verwendung.</summary>
+    [Parameter] public Func<bool, IReadOnlyList<string>>? Gebaeudearten { get; set; }
+
+    /// <summary>Die 21 Baualtersklassen in ihrer festen Reihenfolge.</summary>
+    [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
+
+    /// <summary>Der Detailblock zu einem Katalogsatz.</summary>
+    [Parameter] public Func<string, GebaeudeStammDetail?>? StammDetail { get; set; }
+
+    /// <summary>
+    /// Legt aus einem Katalogsatz eine neue Projektzeile an („◀"). Die Hülle vergibt die
+    /// vorläufige <c>IdZ</c> und die Vorbelegungen.
+    /// </summary>
+    [Parameter] public Func<string, GebaeudeProjektZeile?>? StammSatz { get; set; }
+
+    /// <summary>Löscht einen Katalogsatz; <c>false</c> = abgelehnt (z. B. ReadOnly).</summary>
+    [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
+
+    /// <summary>
+    /// Meldet der Hülle, dass sich die Projektliste geändert hat — aufgenommen, entfernt
+    /// oder eine Zeile bearbeitet.
+    ///
+    /// <para><b>Warum ein Rückruf und nicht drei.</b> Die Hülle führt die Fachliste
+    /// (<c>List&lt;Z_ProjGebModel&gt;</c>) und die Anzeigeliste getrennt; eine Zeile
+    /// trägt alle Felder ihres Modells, ein Abgleich ist deshalb ein Neuaufbau der
+    /// Fachliste AN ORT UND STELLE. Drei Rückrufe für Aufnehmen, Entfernen und Ändern
+    /// wären drei Wege zu demselben Ziel.</para>
+    /// </summary>
+    [Parameter] public Action? Geaendert { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des Katalogeditors (W9.1). Erster Parameter: der Bezeichner
+    /// (leer = Modus Neu).
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? KatalogGaben { get; set; }
+
+    /// <summary>Der Parametersatz der Wohnflächenangabe (W9.3) zu einer Projektzeile.</summary>
+    [Parameter]
+    public Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>? WohnflaecheGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Gebäudetypen-Verwaltung (W8.4). Kein Delegat = kein Knopf.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? GebaeudetypGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des WÄRMEBEDARFS einer Projektzeile (Anwenderwunsch
+    /// <b>W9‑E‑2</b> vom 05.09.2026). Kein Delegat = kein Knopf „Simulation…"; in der
+    /// Katalogverwaltung gibt es kein Projekt und damit nichts zu rechnen.
+    ///
+    /// <para><c>null</c> als Rückgabe heißt „für diese Zeile gibt es keine Zahl" —
+    /// eine noch nicht gespeicherte Aufnahme (sie hat noch keine Projektkopie) oder
+    /// ein Projekt ohne Klimaregion. Der Dialog meldet das, statt einen leeren
+    /// Kasten aufzumachen.</para>
+    /// </summary>
+    [Parameter]
+    public Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>?>? BedarfGaben { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary>Katalogverwaltung: kein Projektteil.</summary>
+    [Parameter] public bool Admin { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Eingabe der Gebäudedaten";
+    [Parameter] public string KopfbandText { get; set; } = "Eingabe der Energiedaten";
+    [Parameter] public string LabelProjektliste { get; set; } = "ausgewählte Gebäude im Projekt:";
+    [Parameter] public string LabelKatalog { get; set; } = "Gebäude in DB:";
+    [Parameter] public string GruppeFilter { get; set; } = "Filter Gebäude DB";
+    [Parameter] public string GruppeVerbrauch { get; set; } = "Gebäude: Verbrauch";
+    [Parameter] public string LabelVerwendung { get; set; } = "Verwendung";
+    [Parameter] public string LabelGebaeudeart { get; set; } = "Gebäudeart";
+    [Parameter] public string LabelBaujahr { get; set; } = "Baujahr";
+    [Parameter] public string LabelSuche { get; set; } = "Filter:";
+    [Parameter] public string PlatzhalterSuche { get; set; } = "Suche, z. B. Haus*_1990*";
+    [Parameter] public string LabelGebaeudename { get; set; } = "Gebäudename:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string LabelWohnflaeche { get; set; } = "Wohn-/Nutzfläche:";
+    [Parameter] public string LabelEinheit { get; set; } = "Art der Angabe:";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string SpalteTypFlaeche { get; set; } = "Typ/Wohnfläche";
+    [Parameter] public string TextAlle { get; set; } = "Alle";
+    [Parameter] public string TextWohngebaeude { get; set; } = "Wohngebäude";
+    [Parameter] public string TextSonstige { get; set; } = "Gewerbe+Sonstige";
+
+    /// <summary>
+    /// Beschriftung des Übernahmeknopfes — <c>GEB_BTN_UEBERNEHMEN</c>.
+    ///
+    /// <para><b>Befund W9‑B‑3</b> der Windows-Abnahme vom 05.09.2026: „nicht so recht
+    /// klar, auf was sich die oberen 2 Buttons beziehen." Der Vorläufer trug hier die
+    /// blanken Zeichen „◀" und „▶"; Beschriftung und Kurztext benennen seither die
+    /// Aufgabe.</para>
+    ///
+    /// <para><b>Anwenderentscheid #76</b> vom selben Tag hat das Anordnungsschema
+    /// nachgezogen: Die Listen stehen wieder NEBENEINANDER und brechen erst auf
+    /// schmalem Schirm untereinander um. Das Zeichen steht deshalb NICHT mehr in
+    /// diesem Text — es hängt an der Anordnung und kommt aus dem Baustein
+    /// <c>Zweispaltenauswahl</c>.</para>
+    /// </summary>
+    [Parameter] public string BtnHinzuText { get; set; } = "In das Projekt übernehmen";
+
+    /// <summary>Kurztext des Übernahmeknopfes — <c>GEB_BTN_UEBERNEHMEN_HINWEIS</c>.</summary>
+    [Parameter] public string BtnHinzuHinweis { get; set; } =
+        "Das in „Gebäude in DB“ markierte Gebäude in die Projektliste übernehmen";
+
+    /// <summary>
+    /// Beschriftung des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN</c>. Ohne Zeichen,
+    /// aus demselben Grund wie oben.
+    /// </summary>
+    [Parameter] public string BtnEntfernenText { get; set; } = "Aus dem Projekt entfernen";
+
+    /// <summary>Kurztext des Entfernenknopfes — <c>GEB_BTN_ENTFERNEN_HINWEIS</c>.</summary>
+    [Parameter] public string BtnEntfernenHinweis { get; set; } =
+        "Das in der Projektliste markierte Gebäude aus dem Projekt entfernen";
+    [Parameter] public string BtnAendernText { get; set; } = "Ändern";
+
+    /// <summary>Beschriftung des Bedarfsknopfes — <c>GEB_BTN_SIMULATION</c> (W9‑E‑2).</summary>
+    [Parameter] public string BtnSimulationText { get; set; } = "Simulation...";
+
+    /// <summary>Kurztext des Bedarfsknopfes — <c>GEB_BTN_SIMULATION_HINWEIS</c>.</summary>
+    [Parameter] public string BtnSimulationHinweis { get; set; } =
+        "Den Wärmebedarf des in der Projektliste markierten Gebäudes berechnen und anzeigen";
+
+    [Parameter] public string BtnDbAendernText { get; set; } = "Gebäude in DB ändern...";
+    [Parameter] public string BtnDbNeuText { get; set; } = "Gebäude in DB neu...";
+    [Parameter] public string BtnDbLoeschenText { get; set; } = "Gebäude in DB löschen";
+    [Parameter] public string BtnGebTypText { get; set; } = "Gebäudetyp in DB ändern...";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>„Soll {0} wirklich gelöscht werden ?" — <c>{0}</c> ist der Bezeichner.</summary>
+    [Parameter] public string MeldungLoeschfrage { get; set; } = "Soll {0} wirklich gelöscht werden ?";
+
+    /// <summary>„Gebäude gelöscht!" — die Bestätigung nach dem Löschen.</summary>
+    [Parameter] public string MeldungGeloescht { get; set; } = "Gebäude gelöscht!";
+
+    /// <summary>„Gebäude in DB auswählen!" — ohne markierten Katalogsatz.</summary>
+    [Parameter] public string MeldungKeineWahl { get; set; } = "Gebäude in DB auswählen!";
+
+    /// <summary>
+    /// „Für dieses Gebäude lässt sich kein Wärmebedarf berechnen…" — die Zeile ist noch
+    /// nicht gespeichert, oder das Projekt führt keine Klimaregion (W9‑E‑2).
+    /// </summary>
+    [Parameter] public string MeldungKeinBedarf { get; set; } =
+        "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen. " +
+        "Bitte das Projekt speichern und eine Klimaregion auswählen.";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Gebaeude.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private bool _wohngebaeude = true;
+    private int? _artindex;
+    private int? _klassenindex;
+    private bool _ausBaujahrwahl;
+    private string _suche = "";
+
+    private IReadOnlyList<string> _arten = Array.Empty<string>();
+    private IReadOnlyList<GebaeudeKatalogZeile> _katalog = Array.Empty<GebaeudeKatalogZeile>();
+
+    private GebaeudeProjektZeile? _gewaehlt;
+    private GebaeudeKatalogZeile? _katalogzeile;
+
+    private string _detailName = "";
+    private string _detailArt = "";
+    private string _detailBeschreibung = "";
+    private string _detailWohnflaeche = "";
+    private string _detailEinheit = "";
+
+    private IReadOnlyDictionary<string, object>? _katalogGaben;
+    private IReadOnlyDictionary<string, object>? _wohnflaecheGaben;
+    private IReadOnlyDictionary<string, object>? _bedarfGaben;
+    private bool _gebaeudetypOffen;
+    private bool _loeschfrage;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
+    public GebaeudeProjektZeile? Gewaehlt => _gewaehlt;
+
+    /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
+    public GebaeudeKatalogZeile? Katalogzeile => _katalogzeile;
+
+    /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht der Katalogeditor? Prüfhilfe für die Tests.</summary>
+    public bool KatalogeditorOffen => _katalogGaben is not null;
+
+    /// <summary>Steht die Wohnflächenangabe? Prüfhilfe für die Tests.</summary>
+    public bool WohnflaecheOffen => _wohnflaecheGaben is not null;
+
+    /// <summary>Steht die Gebäudetypen-Verwaltung? Prüfhilfe für die Tests.</summary>
+    public bool GebaeudetypOffen => _gebaeudetypOffen;
+
+    /// <summary>Steht der Wärmebedarf des Gebäudes? Prüfhilfe für die Tests.</summary>
+    public bool BedarfOffen => _bedarfGaben is not null;
+
+    private string Loeschfrage
+        => string.Format(MeldungLoeschfrage, _katalogzeile?.Name ?? "");
+
+    protected override void OnInitialized()
+    {
+        ArtenLaden();
+        KatalogLaden(ausBaujahrwahl: false);
+        if (!Admin) ProjektauswahlNachziehen();
+        else if (_katalog.Count > 0) KatalogzeileWaehlen(_katalog[0]);
+    }
+
+    /// <summary>
+    /// Zieht die Markierung der Projektliste nach, sobald der Wirt eine ANDERE
+    /// Liste hereinreicht (Befund <b>W9‑B‑1</b> der Windows-Abnahme vom 05.09.2026).
+    ///
+    /// <para><b>Warum das nötig ist.</b> Die Hülle baut die Anzeigeliste bei jedem
+    /// <c>Gaben</c>-Aufruf NEU aus ihrer Fachliste (<c>GebaeudeHuelle.Gaben</c>
+    /// :113‑114); die Zeilenobjekte sind danach andere. Wer die Markierung an der
+    /// Objektgleichheit festmacht, verliert sie bei jedem solchen Austausch — der
+    /// Anwender sah sein gespeichertes Gebäude in der Liste stehen, aber unmarkiert,
+    /// und der Detailblock hing an einer Zeile, die es nicht mehr gab. Der Schlüssel
+    /// ist die <see cref="GebaeudeProjektZeile.IdZ"/> (<c>Z_ProjektGebaeude.ID</c>) —
+    /// dieselbe, an der „▶" hängt.</para>
+    ///
+    /// <para>Und der zweite Fall: Kommt die Liste erst NACH dem ersten Zeichnen
+    /// (der Ladeweg des Assistenten läuft im Verlassen der Projektkopfseite), stand
+    /// bis hierher für immer keine Markierung. Jetzt markiert die erste Zeile, sobald
+    /// eine da ist — wie <c>Form_Gebaeude_Load</c>.</para>
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        if (!Admin) ProjektauswahlNachziehen();
+    }
+
+    private void ProjektauswahlNachziehen()
+    {
+        if (_gewaehlt is not null)
+        {
+            // Dieselbe Zeile noch in der Liste? Dann ist nichts zu tun.
+            foreach (GebaeudeProjektZeile z in Zeilen)
+                if (ReferenceEquals(z, _gewaehlt)) return;
+
+            // Sonst dieselbe ZUORDNUNG suchen - die IdZ, nicht die Stamm-Id.
+            foreach (GebaeudeProjektZeile z in Zeilen)
+                if (z.IdZ == _gewaehlt.IdZ) { ProjektzeileWaehlen(z); return; }
+
+            _gewaehlt = null;
+        }
+
+        // Der Anwender steht im Katalog - seine Wahl wird nicht ueberschrieben.
+        if (_katalogzeile is not null) return;
+
+        if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+    }
+
+    /// <summary>
+    /// Ist diese Zeile die markierte? Verglichen wird über die
+    /// <see cref="GebaeudeProjektZeile.IdZ"/>, nicht über die Objektgleichheit
+    /// (Befund W9‑B‑1).
+    /// </summary>
+    private bool IstGewaehlt(GebaeudeProjektZeile z)
+        => _gewaehlt is not null && (ReferenceEquals(z, _gewaehlt) || z.IdZ == _gewaehlt.IdZ);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =================================================================================
+    // Filter
+    // =================================================================================
+
+    private void ArtenLaden()
+        => _arten = Gebaeudearten?.Invoke(_wohngebaeude) ?? Array.Empty<string>();
+
+    private void KatalogLaden(bool ausBaujahrwahl)
+    {
+        _ausBaujahrwahl = ausBaujahrwahl;
+        string? art = (_artindex is null || _artindex.Value < 0 || _artindex.Value >= _arten.Count)
+            ? null : _arten[_artindex.Value];
+
+        _katalog = Katalog?.Invoke(_wohngebaeude, art, _klassenindex, ausBaujahrwahl)
+                   ?? Array.Empty<GebaeudeKatalogZeile>();
+
+        if (_katalogzeile is not null && !_katalog.Contains(_katalogzeile)) _katalogzeile = null;
+    }
+
+    /// <summary>
+    /// Der Umschalter Wohn-/Nichtwohngebäude lädt BEIDE Listen neu — den Katalog und die
+    /// Artenliste (<c>radioBtn_*_CheckedChanged</c>:164/198, dort zweimal wortgleich).
+    /// </summary>
+    private void VerwendungWaehlen(int? index)
+    {
+        _wohngebaeude = index != 1;
+        _artindex = null;
+        ArtenLaden();
+        KatalogLaden(ausBaujahrwahl: false);
+    }
+
+    private void ArtWaehlen(int? index)
+    {
+        _artindex = index;
+        KatalogLaden(ausBaujahrwahl: false);
+    }
+
+    private void KlasseWaehlen(int? index)
+    {
+        _klassenindex = index;
+        KatalogLaden(ausBaujahrwahl: true);
+    }
+
+    private void SucheSetzen(string wert)
+    {
+        _suche = wert ?? "";
+        if (_katalogzeile is not null && !GefilterterKatalog.Contains(_katalogzeile))
+            _katalogzeile = null;
+    }
+
+    /// <summary>
+    /// Die Wildcard-Suche über beide Spalten — <c>ApplyGridFilter</c>:636-682, seit W9.0e
+    /// als <c>Suchmuster</c> im Kern.
+    /// </summary>
+    private IReadOnlyList<GebaeudeKatalogZeile> GefilterterKatalog
+    {
+        get
+        {
+            var muster = WindowsFormsApplication1.Suchmuster.Uebersetzen(_suche);
+            if (muster is null) return _katalog;
+
+            var treffer = new List<GebaeudeKatalogZeile>();
+            foreach (GebaeudeKatalogZeile z in _katalog)
+            {
+                if (WindowsFormsApplication1.Suchmuster.Trifft(muster, z.Name) ||
+                    WindowsFormsApplication1.Suchmuster.Trifft(muster, z.Art + " " + z.Wohnflaeche))
+                    treffer.Add(z);
+            }
+            return treffer;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Verwendungseintraege
+        => new[] { (0, TextWohngebaeude), (1, TextSonstige) };
+
+    private IReadOnlyList<(int Id, string Text)> Arteintraege
+    {
+        get
+        {
+            var l = new List<(int, string)> { (-1, TextAlle) };
+            for (int i = 0; i < _arten.Count; i++) l.Add((i, _arten[i]));
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Klasseneintraege
+    {
+        get
+        {
+            var l = new List<(int, string)> { (-1, TextAlle) };
+            for (int i = 0; i < Baualtersklassen.Count; i++) l.Add((i, Baualtersklassen[i]));
+            return l;
+        }
+    }
+
+    // =================================================================================
+    // Auswahl und Detailblock
+    // =================================================================================
+
+    private void ProjektzeileWaehlen(GebaeudeProjektZeile z)
+    {
+        _gewaehlt = z;
+        _katalogzeile = null;
+        _detailName = z.Name;
+        _detailArt = z.Art;
+        _detailBeschreibung = z.Beschreibung;
+        _detailWohnflaeche = z.Wohnflaeche.ToString("F2");
+        _detailEinheit = z.Einheit;
+    }
+
+    /// <summary>
+    /// Der Katalogsatz füllt den Detailblock aus den STAMMDATEN; Einheit „Wohnfläche [m²]"
+    /// und ein leerer Jahresnutzungsgrad
+    /// (<c>listBox_Gebaeude_DB_SelectedIndexChanged</c>:585-592).
+    /// </summary>
+    private void KatalogzeileWaehlen(GebaeudeKatalogZeile k)
+    {
+        _katalogzeile = k;
+        _gewaehlt = null;
+
+        GebaeudeStammDetail? detail = StammDetail?.Invoke(k.Name);
+        _detailName = detail?.Name ?? k.Name;
+        _detailArt = detail?.Art ?? k.Art;
+        _detailBeschreibung = detail?.Beschreibung ?? "";
+        _detailWohnflaeche = detail?.Wohnflaeche ?? k.Wohnflaeche;
+        _detailEinheit = "Wohnfläche [m²]";
+    }
+
+    // =================================================================================
+    // Uebernehmen und Entfernen
+    // =================================================================================
+
+    private void BeiHinzu()
+    {
+        if (_katalogzeile is null || StammSatz is null) return;
+
+        GebaeudeProjektZeile? neu = StammSatz(_katalogzeile.Name);
+        if (neu is null) return;
+
+        Zeilen.Add(neu);
+        ProjektzeileWaehlen(neu);
+        Geaendert?.Invoke();
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// Entfernt GENAU die gewählte Zeile über ihre <c>IdZ</c> — die Stamm-Id ist bei zwei
+    /// gleichen Gebäuden nicht eindeutig (<c>btn_Entfernen_Click</c>:283-287).
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_gewaehlt is null) return;
+
+        Zeilen.Remove(_gewaehlt);
+        _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
+
+        if (_gewaehlt is not null) ProjektzeileWaehlen(_gewaehlt);
+        else if (GefilterterKatalog.Count > 0) KatalogzeileWaehlen(GefilterterKatalog[0]);
+        Geaendert?.Invoke();
+        _meldung = "";
+    }
+
+    // =================================================================================
+    // Ueberlagerungen
+    // =================================================================================
+
+    private void BeiKatalogAendern()
+    {
+        if (KatalogGaben is null) return;
+        if (_katalogzeile is null) { Melden(MeldungKeineWahl, WarnStufe.Warnung); return; }
+
+        _meldung = "";
+        _katalogGaben = KatalogGaben(_katalogzeile.Name);
+    }
+
+    private void BeiKatalogNeu()
+    {
+        if (KatalogGaben is null) return;
+        _meldung = "";
+        _katalogGaben = KatalogGaben("");
+    }
+
+    private void KatalogeditorFertig()
+    {
+        _katalogGaben = null;
+        KatalogLaden(_ausBaujahrwahl);   // SetGebaeudeDB() nach dem Schliessen
+    }
+
+    private void BeiAendern()
+    {
+        if (_gewaehlt is null || WohnflaecheGaben is null) return;
+        _meldung = "";
+        _wohnflaecheGaben = WohnflaecheGaben(_gewaehlt);
+    }
+
+    /// <summary>
+    /// Das Ergebnis der Wohnflächenangabe geht in die MARKIERTE Zeile zurück
+    /// (<c>btn_Aendern_Click</c>:445-469, dort über <c>ID_Z</c>).
+    /// </summary>
+    private void WohnflaecheFertig(GebaeudeWohnflaecheErgebnis? ergebnis)
+    {
+        _wohnflaecheGaben = null;
+        if (ergebnis is null || _gewaehlt is null) return;
+
+        _gewaehlt.Wohnflaeche = ergebnis.Wert;
+        _gewaehlt.Einheit = ergebnis.Einheit;
+        _gewaehlt.Jahresnutzungsgrad = ergebnis.Jahresnutzungsgrad;
+        _gewaehlt.DezentralWarmwasser = ergebnis.DezentralWarmwasser;
+
+        ProjektzeileWaehlen(_gewaehlt);
+        Geaendert?.Invoke();
+    }
+
+    /// <summary>
+    /// „Simulation…" — der Wärmebedarf GENAU DIESES Gebäudes (Anwenderwunsch
+    /// <b>W9‑E‑2</b> vom 05.09.2026).
+    ///
+    /// <para>Die Rechnung macht der Kern; die Hülle reicht ihr Ergebnis als
+    /// Parametersatz herein. Kommt <c>null</c> zurück — die Zeile ist noch nicht
+    /// gespeichert, oder das Projekt führt keine Klimaregion —, MELDET der Dialog das,
+    /// statt eine leere Überlagerung aufzumachen.</para>
+    /// </summary>
+    private void BeiSimulation()
+    {
+        if (_gewaehlt is null || BedarfGaben is null) return;
+
+        _meldung = "";
+        IReadOnlyDictionary<string, object>? gaben = BedarfGaben(_gewaehlt);
+        if (gaben is null) { Melden(MeldungKeinBedarf, WarnStufe.Warnung); return; }
+
+        _bedarfGaben = gaben;
+    }
+
+    private void BedarfFertig() => _bedarfGaben = null;
+
+    /// <summary>
+    /// „Gebäude in DB löschen" — der Vorläufer fragte nach und meldete danach
+    /// „Gebäude gelöscht!" (<c>btn_GebLoeschen_DB_Click</c>:548-566).
+    /// </summary>
+    private void LoeschenBeantwortet(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || _katalogzeile is null || KatalogLoeschen is null) return;
+
+        if (!KatalogLoeschen(_katalogzeile.Name)) return;
+
+        _katalogzeile = null;
+        KatalogLaden(_ausBaujahrwahl);
+        Melden(MeldungGeloescht, WarnStufe.Hinweis);
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _katalogGaben is not null || _wohnflaecheGaben is not null ||
+            _bedarfGaben is not null || _gebaeudetypOffen || _loeschfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

@@ -1,0 +1,541 @@
+﻿@* Datenbank Waermepumpen - die STAMMDATENPFLEGE (iU9-W7.3).
+
+   VORBILD. Views/Waermepumpe/Form_WP (585 Z., lokalisiert de/en, 28
+   Kartenzeilen, 7 MessageBox + 3 im Kenndaten-Weg). Links die Liste der
+   Stammsaetze, rechts ihre Felder, darunter zwei Kennlinienbilder in zwei
+   Reiterblaettern und der Umschalter Waerme/Kuehlung.
+
+   ZWEI UEBERLAGERUNGEN. "Kennliniendaten Ansicht/Bearbeiten..." zeigt den
+   KennlinienEditorDialog (W7.2), "Modul-Katalog..." den
+   WaermepumpenKatalogDialog (W7.1) - beide IM selben Fenster (Risiko R2),
+   nicht als zweites Fenster wie im Vorlaeufer.
+
+   DIE BILDER KOMMEN FERTIG. Der Vorlaeufer baute zwei WinForms-Charts aus
+   einer DataTable auf (InitChart:243-331); hier zeichnet
+   ChartRenderer.Kennlinien im Kern zwei PNG, und ChartBild zeigt sie. Der
+   Umschalter Waerme/Kuehlung erscheint NUR, wenn es zur gewaehlten Pumpe
+   Kuehl-Kenndaten gibt (OnLoad:160 / HatKuehlKenndaten:177).
+
+   READONLY IST DIE AUSLIEFERUNG. Ein Auslieferungssatz steht in der Liste
+   gedimmt (der Vorlaeufer zeichnete ihn grau, listBox_WP_DrawItem:187); ihn
+   zu speichern oder zu loeschen wird abgelehnt, seine Kennlinien sind nur
+   ansehbar.
+
+   MODULKOSTEN SIND NICHT GEZEICHNET (Ä19): Geraetekosten laufen ueber die
+   Kostenverwaltung. Der Wert laeuft im Datensatz unveraendert mit; bei einer
+   Neuanlage ist er 0. Die Pflichtpruefung des Vorlaeufers auf ein Feld, das
+   es nicht mehr gibt, entfaellt damit (A-14).
+
+   TASTATUR: Esc schliesst - aber erst, wenn keine Ueberlagerung und keine
+   Rueckfrage offen ist. Enter ist nicht belegt: "Speichern" und "Loeschen"
+   schreiben sofort. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using WindowsFormsApplication1
+@using EPOS.UI.Dialoge.Erzeuger
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-auswahlpaar">
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelListe</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (WaermepumpeStammZeile zeile in _liste)
+                        {
+                            WaermepumpeStammZeile z = zeile;
+                            <tr class="@(z.Id == _gewaehlteId ? "epos-zeile--markiert" : null)"
+                                aria-disabled="@(z.NurLesen ? "true" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(z.Id == _gewaehlteId)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => ZeileWaehlen(z)" />
+                                </td>
+                                <td class="@(z.NurLesen ? "epos-gesperrt" : null)">@z.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" @onclick="BeiKatalog">@BtnKatalogText</button>
+            </div>
+        </div>
+
+        <div class="epos-auswahlspalte">
+            <Gruppenkopf Titel="@GruppeStammdaten">
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name"
+                              WertChanged="w => Daten.Name = w" />
+                    <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma"
+                              WertChanged="w => Daten.Firma = w" />
+                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
+                              WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
+
+                    <div class="epos-feldpaar">
+                        <Auswahlfeld Bezeichnung="@LabelTyp" Eintraege="@Eintraege(Typen, Daten.Typ)"
+                                     Auswahl="@Index(Typen, Daten.Typ)"
+                                     AuswahlChanged="i => Daten.Typ = Wert(Typen, Daten.Typ, i)" />
+                        <Auswahlfeld Bezeichnung="@LabelRegelung" Eintraege="@Eintraege(Leistungsstufen, Daten.Regelung)"
+                                     Auswahl="@Index(Leistungsstufen, Daten.Regelung)"
+                                     AuswahlChanged="i => Daten.Regelung = Wert(Leistungsstufen, Daten.Regelung, i)" />
+                    </div>
+                    <div class="epos-feldpaar">
+                        <Auswahlfeld Bezeichnung="@LabelAufstellung" Eintraege="@Eintraege(Aufstellungen, Daten.Aufstellung)"
+                                     Auswahl="@Index(Aufstellungen, Daten.Aufstellung)"
+                                     AuswahlChanged="i => Daten.Aufstellung = Wert(Aufstellungen, Daten.Aufstellung, i)" />
+                        <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Baujahreintraege"
+                                     Auswahl="@Daten.Baujahr"
+                                     AuswahlChanged="i => Daten.Baujahr = i" />
+                    </div>
+                    <div class="epos-feldpaar">
+                        <Ganzzahlfeld Bezeichnung="@LabelNennleistung" Einheit="@EinheitKw"
+                                      Feldname="@LabelNennleistung" Wert="@Daten.Nennleistung"
+                                      WertChanged="w => Daten.Nennleistung = w" />
+                        <Ganzzahlfeld Bezeichnung="@LabelHeizstab" Einheit="@EinheitKw"
+                                      Feldname="@LabelHeizstab" Wert="@Daten.Heizstab"
+                                      WertChanged="w => Daten.Heizstab = w" />
+                    </div>
+                    <Zahlenfeld Bezeichnung="@LabelKuehlleistung" Einheit="@EinheitKw"
+                                Wert="@Daten.Kuehlleistung" Aktiv="false" />
+                </KindInhalt>
+            </Gruppenkopf>
+        </div>
+    </div>
+
+    @* --- Die beiden Kennlinienbilder ---------------------------------------- *@
+    <h2 class="epos-untergruppe">@LabelKennlinien</h2>
+
+    @if (_hatKuehlung)
+    {
+        <Optionsgruppe Eintraege="@(new[] { (0, OptionWaerme), (1, OptionKuehlung) })"
+                       Auswahl="@(_kuehlung ? 1 : 0)"
+                       AuswahlChanged="BetriebsartWaehlen" />
+    }
+
+    <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
+        <KindInhalt>
+            <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
+                <KindInhalt>
+                    <ChartBild Png="@_bilder.Cop" Alt="@ReiterCop" PlatzhalterText="@PlatzhalterBild" />
+                </KindInhalt>
+            </Reiterblatt>
+            <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
+                <KindInhalt>
+                    <ChartBild Png="@_bilder.Leistung" Alt="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild" />
+                </KindInhalt>
+            </Reiterblatt>
+        </KindInhalt>
+    </Reiter>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiKenndaten">@BtnKenndatenText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        <button type="button" class="epos-knopf" @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="() => Geschlossen.InvokeAsync(true)">@BtnBeendenText</button>
+    </div>
+
+    @* --- Ueberlagerung 1: der Kennlinieneditor ------------------------------- *@
+    <Ueberlagerung Offen="@(_kennlinien is not null)" Schliessbar="false"
+                   Titel="@BtnKenndatenText" Geschlossen="() => _kennlinien = null">
+        <KindInhalt>
+            @if (_kennlinien is not null)
+            {
+                <KennlinienEditorDialog Zeilen="_kennlinien" IdWp="@Daten.Id"
+                                        NurLesen="@Daten.NurLesen"
+                                        Geschlossen="KenndatenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 2: der Modulkatalog ----------------------------------- *@
+    <Ueberlagerung Offen="@_katalogOffen" Schliessbar="false"
+                   Titel="@BtnKatalogText" Geschlossen="() => _katalogOffen = false">
+        <KindInhalt>
+            @if (_katalogOffen)
+            {
+                <WaermepumpenKatalogDialog Zeilen="@_katalog" Geschlossen="KatalogFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" Frage="@FrageLoeschen" TitelText="@BtnLoeschenText"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+</div>
+
+@code {
+    /// <summary>Der bearbeitete Satz. Der Dialog schreibt beim Tippen hinein.</summary>
+    [Parameter] public WaermepumpeStammDaten Daten { get; set; } = new();
+
+    /// <summary>Die Stammliste (<c>WPStammCtrl.ReadAll</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<WaermepumpeStammZeile>>? Liste { get; set; }
+
+    /// <summary>Ein Satz zu seiner Id — beim Wechsel der Zeile.</summary>
+    [Parameter] public Func<int, WaermepumpeStammDaten?>? Satz { get; set; }
+
+    /// <summary>Die beiden Bilder zu einem Gerät; zweiter Parameter <c>true</c> = Kühlung.</summary>
+    [Parameter] public Func<int, bool, KennlinienBilder>? Bilder { get; set; }
+
+    /// <summary>Gibt es zu diesem Gerät Kühl-Kenndaten? Entscheidet über den Umschalter.</summary>
+    [Parameter] public Func<int, bool>? HatKuehlung { get; set; }
+
+    /// <summary>Schreibt den Satz; zweiter Parameter <c>true</c> = anlegen.</summary>
+    [Parameter] public Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>? Speichern { get; set; }
+
+    /// <summary>Projektname, der das Löschen sperrt; <c>null</c> = kein Projekt.</summary>
+    [Parameter] public Func<string, string?>? GesperrtDurch { get; set; }
+
+    /// <summary>Löscht den Stammsatz samt Kennlinien.</summary>
+    [Parameter] public Func<string, bool>? Loeschen { get; set; }
+
+    /// <summary>Die Kennlinien eines Geräts für den Editor.</summary>
+    [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>>? Kennlinien { get; set; }
+
+    /// <summary>Schreibt den Editorstand zurück (<c>KenndatenCtrl.Abgleichen</c>).</summary>
+    [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>, bool>? KennlinienAbgleichen { get; set; }
+
+    /// <summary>Der Katalog für die Überlagerung „Modul-Katalog…".</summary>
+    [Parameter] public Func<IReadOnlyList<WaermepumpenKatalogZeile>>? Katalog { get; set; }
+
+    /// <summary><c>true</c> = mit „Beenden" geschlossen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Feste Listen ----------------------------------------------------------
+
+    /// <summary>Die vier Wärmepumpentypen (<c>SetControls</c>:219-222).</summary>
+    [Parameter] public IReadOnlyList<string> Typen { get; set; } = new[]
+        { "Sole-Wasser", "Wasser-Wasser", "Luft-Wasser", "Luft-Luft-Klimagerät" };
+
+    /// <summary>Die drei Leistungsstufen (<c>SetControls</c>:223-225).</summary>
+    [Parameter] public IReadOnlyList<string> Leistungsstufen { get; set; } = new[]
+        { "einstufig", "zweistufig", "stetig" };
+
+    /// <summary>Die vier Aufstellungsarten (<c>SetControls</c>:226-229).</summary>
+    [Parameter] public IReadOnlyList<string> Aufstellungen { get; set; } = new[]
+        { "Außenaufstellung", "Innen- oder Außenaufstellung", "Innenaufstellung", "ohne Typenbeschreibung" };
+
+    /// <summary>
+    /// Die zehn Baujahre 2025…2016. <b>Befund W7-O-2:</b> Der Vorläufer trug
+    /// „2024" ZWEIMAL und „2022" gar nicht (<c>SetControls</c>:230-239) — eine
+    /// Zahlendreherei in einer sonst lückenlosen absteigenden Reihe. In einer
+    /// Klappliste mit freiem Text fiel das kaum auf; hier ist die Liste
+    /// geschlossen, und 2022 wäre unerreichbar. Deshalb steht die Reihe
+    /// vollständig da (Abweichung A-15).
+    /// </summary>
+    [Parameter] public IReadOnlyList<int> Baujahre { get; set; } = new[]
+        { 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016 };
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Datenbank Wärmepumpen";
+    [Parameter] public string KopfbandText { get; set; } = "Verwaltung Daten zu Wärmepumpen und deren Kennlinien";
+    [Parameter] public string LabelListe { get; set; } = "Wärmepumpen Auswahl:";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string GruppeStammdaten { get; set; } = "Wärmepumpe";
+    [Parameter] public string LabelName { get; set; } = "Name";
+    [Parameter] public string LabelHersteller { get; set; } = "Hersteller";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung";
+    [Parameter] public string LabelTyp { get; set; } = "Wärmepumpentyp";
+    [Parameter] public string LabelRegelung { get; set; } = "Leistungsstufen";
+    [Parameter] public string LabelAufstellung { get; set; } = "Aufstellung";
+    [Parameter] public string LabelBaujahr { get; set; } = "Baujahr";
+    [Parameter] public string LabelNennleistung { get; set; } = "Nennleistung";
+    [Parameter] public string LabelHeizstab { get; set; } = "Heizstab";
+    [Parameter] public string LabelKuehlleistung { get; set; } = "Kühlleistung";
+    [Parameter] public string LabelKennlinien { get; set; } = "Kenndaten Kennlinien:";
+    [Parameter] public string OptionWaerme { get; set; } = "Wärme";
+    [Parameter] public string OptionKuehlung { get; set; } = "Kühlung";
+    [Parameter] public string ReiterCop { get; set; } = "COP";
+    [Parameter] public string ReiterLeistung { get; set; } = "Leistung";
+    [Parameter] public string PlatzhalterBild { get; set; } = "Keine Kennlinien vorhanden";
+    [Parameter] public string EinheitKw { get; set; } = "kW";
+    [Parameter] public string BtnKenndatenText { get; set; } = "Kennliniendaten Ansicht/Bearbeiten...";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string BtnNeuText { get; set; } = "Neu";
+    [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
+    [Parameter] public string BtnKatalogText { get; set; } = "📋  Modul-Katalog...";
+    [Parameter] public string BtnBeendenText { get; set; } = "Beenden";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string FrageLoeschen { get; set; } = "Wollen Sie wirklich die Wärmepumpe löschen?";
+
+    [Parameter] public string MeldungReadOnlySpeichern { get; set; } =
+        "Diese Wärmepumpe ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.";
+    [Parameter] public string MeldungReadOnlyLoeschen { get; set; } =
+        "Diese Wärmepumpe ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.";
+    [Parameter] public string MeldungReadOnlyKenndaten { get; set; } =
+        "Diese Wärmepumpe ist schreibgeschützt (ReadOnly). Die Kennliniendaten können nur angesehen, nicht geändert werden.";
+
+    /// <summary>Löschsperre; <c>{0}</c> ist der Projektname.</summary>
+    [Parameter] public string MeldungProjektFormat { get; set; } =
+        "Löschen nicht möglich! Diese Wärmepumpe ist dem Projekt {0} zugeordnet!";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_WP.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<WaermepumpeStammZeile> _liste = Array.Empty<WaermepumpeStammZeile>();
+    private IReadOnlyList<WaermepumpenKatalogZeile> _katalog = Array.Empty<WaermepumpenKatalogZeile>();
+    private KennlinienBilder _bilder = KennlinienBilder.Leer;
+
+    private int _gewaehlteId;
+    private bool _neu;
+    private bool _kuehlung;
+    private bool _hatKuehlung;
+    private string _blatt = "COP";
+
+    private List<KennlinienZeile>? _kennlinien;
+    private bool _katalogOffen;
+    private bool _loeschfrage;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Die gewählte Zeile — Prüfhilfe für die Tests.</summary>
+    public int GewaehlteId => _gewaehlteId;
+
+    /// <summary>Steht der Kennlinieneditor? Prüfhilfe für die Tests.</summary>
+    public bool KennlinieneditorOffen => _kennlinien is not null;
+
+    protected override void OnInitialized()
+    {
+        ListeNeuLaden();
+        // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus.
+        if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void ListeNeuLaden()
+    {
+        _liste = Liste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
+    }
+
+    private void ZeileWaehlen(WaermepumpeStammZeile zeile)
+    {
+        _gewaehlteId = zeile.Id;
+        _neu = false;
+        _meldung = "";
+
+        WaermepumpeStammDaten? satz = Satz?.Invoke(zeile.Id);
+        if (satz is not null) Daten = satz;
+
+        // Der Umschalter erscheint nur mit Kuehl-Kenndaten, und die Anzeige faellt
+        // dabei auf Waerme zurueck - listBox_WP_SelectedIndexChanged:338 rief dafuer
+        // radioButton_Waerme.PerformClick().
+        _hatKuehlung = HatKuehlung?.Invoke(zeile.Id) ?? false;
+        _kuehlung = false;
+        BilderNeuZeichnen();
+    }
+
+    private void BetriebsartWaehlen(int? auswahl)
+    {
+        _kuehlung = auswahl == 1;
+        BilderNeuZeichnen();
+    }
+
+    private void BilderNeuZeichnen()
+    {
+        _bilder = (Bilder is not null && _gewaehlteId > 0)
+            ? Bilder(_gewaehlteId, _kuehlung)
+            : KennlinienBilder.Leer;
+    }
+
+    // =================================================================================
+    // Die Klapplisten mit freiem Bestandswert
+    // =================================================================================
+
+    /// <summary>
+    /// Die Einträge einer Klappliste. Steht der aktuelle Wert NICHT in der festen
+    /// Liste, wird er vorangestellt — der Vorläufer hatte dort eine frei beschreibbare
+    /// <c>ComboBox</c> und zeigte auch einen Wert, den die Liste nicht führt. Ein
+    /// <c>select</c> würde ihn sonst still verwerfen (Abweichung A-16).
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<string> feste, string wert)
+    {
+        var l = new List<(int, string)>();
+        if (!string.IsNullOrEmpty(wert) && !feste.Contains(wert)) l.Add((-1, wert));
+        for (int i = 0; i < feste.Count; i++) l.Add((i, feste[i]));
+        return l;
+    }
+
+    private int? Index(IReadOnlyList<string> feste, string wert)
+    {
+        if (string.IsNullOrEmpty(wert)) return null;
+        for (int i = 0; i < feste.Count; i++)
+            if (string.Equals(feste[i], wert, StringComparison.Ordinal)) return i;
+        return -1;   // Bestandswert ausserhalb der festen Liste (A-16)
+    }
+
+    private string Wert(IReadOnlyList<string> feste, string bisher, int? index)
+    {
+        if (index is null) return "";
+        if (index.Value < 0) return bisher;
+        return index.Value < feste.Count ? feste[index.Value] : bisher;
+    }
+
+    /// <summary>Die Baujahre als Einträge; der Wert IST die Jahreszahl.</summary>
+    private IReadOnlyList<(int Id, string Text)> Baujahreintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            if (Daten.Baujahr is int j && !Baujahre.Contains(j)) l.Add((j, j.ToString()));
+            foreach (int jahr in Baujahre) l.Add((jahr, jahr.ToString()));
+            return l;
+        }
+    }
+
+    // =================================================================================
+    // Speichern, Neu, Loeschen
+    // =================================================================================
+
+    private void BeiSpeichern()
+    {
+        if (Speichern is null) return;
+
+        // ReadOnly-Sperre nur beim AENDERN - der Vorlaeufer prueft !neu && ReadOnly.
+        if (!_neu && Daten.NurLesen)
+        {
+            _meldung = MeldungReadOnlySpeichern;
+            _meldungStufe = WarnStufe.Hinweis;
+            return;
+        }
+
+        KatalogSpeicherErgebnis ergebnis = Speichern(Daten, _neu);
+        _meldung = ergebnis.Meldung;
+        _meldungStufe = ergebnis.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung;
+        if (!ergebnis.Ok) return;
+
+        // Wie btn_Speichern_Click:417: Liste neu ziehen und den gespeicherten Satz
+        // wieder auswaehlen.
+        _neu = false;
+        ListeNeuLaden();
+        WaermepumpeStammZeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == ergebnis.Name);
+        if (zeile is not null) ZeileWaehlen(zeile);
+        _meldung = ergebnis.Meldung;
+    }
+
+    /// <summary>„Neu": leere Vorgaben, keine Zeile markiert (<c>btn_Neu_Click</c>:458).</summary>
+    private void BeiNeu()
+    {
+        _neu = true;
+        _gewaehlteId = 0;
+        _meldung = "";
+        _hatKuehlung = false;
+        _kuehlung = false;
+        _bilder = KennlinienBilder.Leer;
+        Daten = new WaermepumpeStammDaten();
+    }
+
+    private void LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || Loeschen is null) return;
+
+        if (Daten.NurLesen)
+        {
+            _meldung = MeldungReadOnlyLoeschen;
+            _meldungStufe = WarnStufe.Hinweis;
+            return;
+        }
+
+        // Die Projektsperre kommt VOR dem Loeschen (btn_Loeschen_Click:441).
+        string? projekt = GesperrtDurch?.Invoke(Daten.Name);
+        if (projekt is not null)
+        {
+            _meldung = string.Format(MeldungProjektFormat, projekt);
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        Loeschen(Daten.Name);
+        _meldung = "";
+        ListeNeuLaden();
+        if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+        else BeiNeu();
+    }
+
+    // =================================================================================
+    // Die beiden Ueberlagerungen
+    // =================================================================================
+
+    private void BeiKenndaten()
+    {
+        if (Kennlinien is null || _gewaehlteId <= 0) return;
+
+        // Der Hinweis kommt wie im Vorlaeufer VOR dem Oeffnen (btn_Kenndaten_Click:477).
+        if (Daten.NurLesen)
+        {
+            _meldung = MeldungReadOnlyKenndaten;
+            _meldungStufe = WarnStufe.Hinweis;
+        }
+        _kennlinien = Kennlinien(_gewaehlteId).Select(z => z.Kopie()).ToList();
+    }
+
+    private void KenndatenFertig(IReadOnlyList<KennlinienZeile>? stand)
+    {
+        _kennlinien = null;
+        if (stand is null || Daten.NurLesen) return;   // Abbruch oder ReadOnly: nichts schreiben
+
+        KennlinienAbgleichen?.Invoke(_gewaehlteId, stand);
+        BilderNeuZeichnen();                            // Chart aktualisieren (Z. 549)
+    }
+
+    private void BeiKatalog()
+    {
+        _katalog = Katalog?.Invoke() ?? Array.Empty<WaermepumpenKatalogZeile>();
+        _katalogOffen = true;
+    }
+
+    /// <summary>
+    /// Der Katalog liefert einen Bezeichner; der Vorläufer setzte damit
+    /// <c>listBox_WP.Text</c> und löste so die Auswahl aus (<c>btn_Katalog_Click</c>:573).
+    /// </summary>
+    private void KatalogFertig(string? bezeichner)
+    {
+        _katalogOffen = false;
+        if (bezeichner is null) return;
+
+        WaermepumpeStammZeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == bezeichner);
+        if (zeile is not null) ZeileWaehlen(zeile);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Die Ueberlagerungen und die Rueckfrage werten Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _kennlinien is not null || _katalogOffen || _loeschfrage)
+            return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -220,13 +221,54 @@ namespace WindowsFormsApplication1
         /// Rueckgabe: neue Projekt-ID, oder -1 bei Fehler.
         /// </summary>
         public int Duplizieren(string quelleName, string neuerName, IProgress<Fortschritt> fortschritt = null)
+            => Duplizieren(quelleName, neuerName, fortschritt, CancellationToken.None);
+
+        /// <summary>
+        /// Die drei VORPRUEFUNGEN des Duplizierwegs als abfragbares Ergebnis
+        /// (iU9-W15a.0b) — dieselben drei, die <see cref="Duplizieren"/> ohnehin faehrt,
+        /// nur ohne Meldung.
+        ///
+        /// <para><b>Warum das noetig war.</b> Die Oberflaeche prueft vor dem Start ein
+        /// zweites Mal, damit der Anwender nicht erst nach einem Kopierlauf erfaehrt,
+        /// dass der Name belegt ist. Sie tat es bis iU9-W15a FALSCH:
+        /// <c>listView_Projekt.FindItemWithText("Muster")</c> sucht mit
+        /// PRAEFIX-Semantik und traf ein vorhandenes „Musterprojekt" (Befund W15a-B10).
+        /// Seither fragt sie hier.</para>
+        /// </summary>
+        public DuplizierBefund PruefeNamen(string quelleName, string neuerName)
         {
             if (string.IsNullOrWhiteSpace(quelleName) || string.IsNullOrWhiteSpace(neuerName))
-            { Meldung.Zeigen("Quell- und Zielprojektname duerfen nicht leer sein."); return -1; }
+                return DuplizierBefund.NamenLeer;
+            if (GetProjektId(quelleName) <= 0) return DuplizierBefund.QuelleFehlt;
+            if (GetProjektId(neuerName) > 0) return DuplizierBefund.ZielExistiert;
+            return DuplizierBefund.Ok;
+        }
+
+        /// <summary>
+        /// Dupliziert mit ABBRUCHMOEGLICHKEIT (iU9-W15a, Angleichung A-2).
+        ///
+        /// <para>Ein Kopierlauf ueber vierzig Tabellen ohne Abbruch ist eine Zumutung;
+        /// der Baustein <c>Fortschritt</c> kann einen Abbrechen-Knopf zeigen, sobald ein
+        /// Rueckruf dafuer da ist. Geprueft wird ZWISCHEN den Tabellen — dieselbe Stelle,
+        /// an der auch der Fortschritt gemeldet wird, und dieselbe Bauart wie in
+        /// <c>SimulationControl.Do_Simulation</c> (Pruefung zwischen den Phasen).
+        /// Ein Abbruch loest die EINE Transaktion zurueck; es bleibt nichts halb Kopiertes
+        /// stehen, und die Rueckgabe ist <c>-1</c> wie bei jedem anderen Nichtzustandekommen.</para>
+        /// </summary>
+        public int Duplizieren(string quelleName, string neuerName,
+                               IProgress<Fortschritt> fortschritt, CancellationToken abbruch)
+        {
+            switch (PruefeNamen(quelleName, neuerName))
+            {
+                case DuplizierBefund.NamenLeer:
+                    Meldung.Zeigen("Quell- und Zielprojektname duerfen nicht leer sein."); return -1;
+                case DuplizierBefund.QuelleFehlt:
+                    Meldung.Zeigen("Quellprojekt '" + quelleName + "' wurde nicht gefunden."); return -1;
+                case DuplizierBefund.ZielExistiert:
+                    Meldung.Zeigen("Es existiert bereits ein Projekt mit dem Namen '" + neuerName + "'."); return -1;
+            }
 
             int srcId = GetProjektId(quelleName);
-            if (srcId <= 0) { Meldung.Zeigen("Quellprojekt '" + quelleName + "' wurde nicht gefunden."); return -1; }
-            if (GetProjektId(neuerName) > 0) { Meldung.Zeigen("Es existiert bereits ein Projekt mit dem Namen '" + neuerName + "'."); return -1; }
 
             // ARBEITSPAKET S4e: Der Vorgang (Verbindung + Transaktion) wird bewusst
             // INNERHALB des try geoeffnet - genau dort stand bisher der Aufruf, der das
@@ -288,6 +330,14 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < zuKopieren.Count; i++)
                 {
                     Spec s = zuKopieren[i];
+
+                    // A-2: Abbruch ZWISCHEN den Tabellen. Der Rollback im catch macht
+                    // die halbe Kopie rueckgaengig; die Rueckgabe ist -1 wie bei jedem
+                    // anderen Nichtzustandekommen. Eine Meldung gibt es nicht - der
+                    // Anwender hat selbst abgebrochen.
+                    if (abbruch.IsCancellationRequested)
+                    { try { v.Rollback(); } catch { } return -1; }
+
                     if (fortschritt != null)
                         fortschritt.Report(new Fortschritt { Aktuell = i, Gesamt = gesamt, Tabelle = s.Tabelle });
 
@@ -325,6 +375,58 @@ namespace WindowsFormsApplication1
                 // Deterministische Freigabe: der Vorgang wird immer entsorgt, auch im
                 // Fehlerfall. (Vorgang() kann selbst werfen -> dann ist v null.)
                 if (v != null) { try { v.Dispose(); } catch { } }
+            }
+        }
+
+        /// <summary>
+        /// Schreibt Beschreibung, Kunde und Bearbeiter auf die FERTIG DUPLIZIERTE Kopie
+        /// (iU9-W15a.0c) — der Rumpf aus
+        /// <c>Form_ProjektSpeichernUnter.VerwaltungsfelderAufKopieSchreiben</c>, ohne die
+        /// drei <c>MessageBox</c>.
+        ///
+        /// <para>
+        /// Reihenfolge ist hier keine Geschmacksfrage: <see cref="ProjektCtrl.Update"/>
+        /// schreibt mit EINEM UPDATE auch ID_Klimaregion und Erstelldatum
+        /// (WHERE Projektname=?). Wuerde man einen frisch angelegten ProjektCtrl nur mit
+        /// den drei Textfeldern fuellen, traegt die Kopie hinterher Klimaregion 0 und ein
+        /// Erstelldatum von heute. Deshalb wird die Kopie zuerst GELESEN und danach werden
+        /// nur die drei Textfelder plus Aenderungsdatum ueberschrieben - alles Uebrige
+        /// laeuft unveraendert durch.
+        /// </para>
+        /// <para>
+        /// Fehler werden gemeldet, aber NICHT zurueckgerollt: Die Kopie ist an dieser
+        /// Stelle vollstaendig angelegt; sie wieder wegzuwerfen, weil ein Beschreibungstext
+        /// nicht geschrieben werden konnte, waere der groessere Schaden. Der Anwender kann
+        /// die drei Felder im Hauptformular jederzeit nachtragen.
+        /// </para>
+        /// <para><b>iU9-W15a:</b> Nur der ORT hat sich geaendert, nicht das Verhalten
+        /// (Risiko R-W15a-11). Gemeldet wird jetzt als <see cref="VerwaltungsfelderBefund"/>;
+        /// welchen Text der Anwender sieht, entscheidet die Oberflaeche.</para>
+        /// </summary>
+        /// <param name="fehlertext">Der Ausnahmetext bei <see cref="VerwaltungsfelderBefund.Fehler"/>; sonst leer.</param>
+        public VerwaltungsfelderBefund VerwaltungsfelderSetzen(
+            string neuerName, string beschreibung, string kunde, string bearbeiter, out string fehlertext)
+        {
+            fehlertext = "";
+            try
+            {
+                ProjektCtrl ctrl = new ProjektCtrl();
+                ctrl.ReadSingle(neuerName);
+
+                if (ctrl.rows == 0) return VerwaltungsfelderBefund.KopieFehlt;
+
+                ctrl.m_szBeschreibung = beschreibung ?? "";
+                ctrl.m_szKunde = kunde ?? "";
+                ctrl.m_szBearbeiter = bearbeiter ?? "";
+                ctrl.m_Aenderungsdatum = DateTime.Now;
+
+                return ctrl.Update() ? VerwaltungsfelderBefund.Ok
+                                     : VerwaltungsfelderBefund.NichtGespeichert;
+            }
+            catch (Exception ex)
+            {
+                fehlertext = ex.Message;
+                return VerwaltungsfelderBefund.Fehler;
             }
         }
 

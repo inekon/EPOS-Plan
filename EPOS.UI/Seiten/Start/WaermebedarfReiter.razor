@@ -1,0 +1,64 @@
+﻿@* Reiter 2 der Startseite: „Wärmebedarf" (iU9-W16b.2).
+
+   Vorbild: Form_Start.tabPage2 - Kopfzeile (label25), Erlaeuterung (label24),
+   ein Hinweiskasten (pBox_WBHinweis + label33 "Hinweis" + label32) und VIER
+   Bildkacheln, von denen drei ueber den Namensverteiler CentralControl_Click
+   liefen und eine ueber zwei Weiterleitungshandler (Befund W16-B19).
+
+   DER HINWEISKASTEN ist ein Warnbanner der Stufe "Hinweis" - dieselbe Form, die
+   der Bestand als Bild plus zwei Label baute. Er steht dauerhaft; ein Verfall
+   waere hier falsch, es ist keine Meldung, sondern eine Erlaeuterung. *@
+
+@namespace EPOS.UI.Seiten.Start
+
+<div class="epos-startreiter">
+
+    <div class="epos-startreiter-kopf">
+        <div>
+            <h2 class="epos-startreiter-titel">@KopfText</h2>
+            <p class="epos-startreiter-text">@Text</p>
+        </div>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@(HinweisTitelText + ": " + HinweisText)" />
+
+    <Kachelraster Hoechstbreite="404">
+        <KindInhalt>
+            @foreach (StartKachel kachel in Kacheln)
+            {
+                StartKachel k = kachel;
+                <Kachel Titel="@k.Titel"
+                        Beschreibung="@k.Beschreibung"
+                        Zustand="@k.Zustand"
+                        Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                        Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                        Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+            }
+        </KindInhalt>
+    </Kachelraster>
+</div>
+
+@code {
+    /// <summary>Die Kacheln dieses Reiters — vier.</summary>
+    [Parameter] public IReadOnlyList<StartKachel> Kacheln { get; set; } = Array.Empty<StartKachel>();
+
+    /// <summary>Eine Kachel wurde angeklickt; übergeben wird ihr Schlüssel.</summary>
+    [Parameter] public EventCallback<string> Geklickt { get; set; }
+
+    /// <summary>Überschrift (<c>label25</c>).</summary>
+    [Parameter] public string KopfText { get; set; } = "Wärmebedarf definieren";
+
+    /// <summary>Erläuterung (<c>label24</c>).</summary>
+    [Parameter] public string Text { get; set; } = "Erfassen Sie den Wärmebedarf Ihres Projekts.";
+
+    /// <summary>Überschrift des Hinweiskastens (<c>label33</c>).</summary>
+    [Parameter] public string HinweisTitelText { get; set; } = "Hinweis";
+
+    /// <summary>Der Hinweistext (<c>label32</c>).</summary>
+    [Parameter] public string HinweisText { get; set; }
+        = "Sie können Gebäudedaten manuell eingeben oder aus einer Datei importieren.";
+
+    /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Waermebedarf";
+}

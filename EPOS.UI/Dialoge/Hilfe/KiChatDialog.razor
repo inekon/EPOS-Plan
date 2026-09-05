@@ -1,0 +1,459 @@
+﻿@* Das Chatfenster des KI-Hilfe-Assistenten (iU9-W15b.7, Ersatz fuer
+   Views/Help/Form_KiChat.cs - 1 704 Zeilen, ohne Designer).
+
+   DIE KOMPONENTE KENNT WEDER KiChatService NOCH KiAusfuehrer NOCH DAS NETZ.
+   Sie bekommt Delegaten (§ 15.3 der Vermessung). Was hinausgeht, entscheidet die
+   Huelle; was gezeigt wird, entscheidet diese Komponente. Der Riegel bleibt im
+   Kern, VOR dem Modellkanal (Regel S-4) - sie nimmt ihn nicht vorweg und umgeht
+   ihn nicht.
+
+   VIER KINDER, damit aus dem Solitaer kein Solitaer wird (Risiko R-W15b-1):
+     Gespraechsverlauf     der Baustein (W15b.6)
+     KiBestaetigungBlock   der gelbe Block, im FUSSBEREICH des Verlaufs (E-3)
+     KiWerkzeugliste       Aktionen von Hand, in einer Ueberlagerung
+     KiEingabezeile        Feld + zwei Knoepfe, Enter/Umschalt+Enter
+
+   ZWEI GETRENNTE LISTEN (H8, Risiko R-W15b-3):
+     _zeilen   die ANZEIGE - Klarnamen aufgeloest
+     _verlauf  der PROMPT  - platzgehalten, geht in die naechste Anfrage
+   Stuende in _verlauf der Klarname, waere er ab der zweiten Frage beim
+   Modellanbieter. Die Anzeige-Liste geht NIE nach draussen.
+
+   DREI BETRIEBSZUSTAENDE (Bestand :507-548):
+     Regelbetrieb   alles sichtbar
+     Hilfe-Betrieb  KI abgeschaltet: kein "Fragen", kein Aktionsschalter, keine
+                    Werkzeuge, keine Vorschau, kein Protokoll, keine
+                    Einstellungen; der Suchknopf heisst "Suchen"
+     ohne Schluessel  Begruessung in Orange
+   In Razor ist das ein bool-Ausdruck im Markup, kein Sichtbarkeitsschalten.
+
+   DREI UEBERLAGERUNGEN statt drei zweiter Fenster (Risiko R2): Werkzeugliste,
+   Textanzeige (Protokoll und Vorschau) und Rechtshinweis. Sie melden sich ueber
+   UeberlagerungGeaendert an den Wirt, der den Zustand an
+   KiAusfuehrer.Ueberlagerung weiterreicht (W15b.0d, E-8): Solange eine offen
+   steht, weist der Ausfuehrer Aktionen ab - dieselbe Zusage wie die
+   Modalitaetspruefung des Bestands. *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+@implements IDisposable
+
+<div class="epos-kichat">
+
+    <p class="epos-kichat-kontext">@Kontextzeile</p>
+
+    @if (!string.IsNullOrEmpty(FeldsicherungHinweis))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@FeldsicherungHinweis" />
+    }
+
+    <Gespraechsverlauf Zeilen="@_zeilen"
+                       Bezeichnung="@Texte.Verlauf"
+                       Beschaeftigt="@_beschaeftigt"
+                       BeschaeftigtText="@Texte.Denkt"
+                       AdresseGewaehlt="AdresseGewaehlt"
+                       KopierenText="@Texte.Kopieren"
+                       Kopieren="Kopieren"
+                       Fussbereich="@Bestaetigungsblock" />
+
+    @if (!HilfeBetrieb)
+    {
+        <div class="epos-kichat-schalter">
+            @* @key mit einer Fassungsnummer: Der Schalter haelt seinen Zustand SELBST
+               (Standards/Schalter.razor setzt Wert in BeiAenderung), und eine
+               abgelehnte Umschaltung aendert den Wert des Wirtes nicht - Blazor
+               saehe also keine Parameteraenderung und liesse das Kaestchen
+               angehakt. Der Vorlaeufer setzte _chkAktionen.Checked einfach zurueck
+               (Form_KiChat:824-826); hier wird der Schalter neu aufgebaut. *@
+            <Schalter @key="_schalterfassung" Bezeichnung="@Texte.Aktionen"
+                      Wert="@_aktionen" WertChanged="AktionenGeaendert" />
+            <button type="button" class="epos-knopf" disabled="@Gesperrt" @onclick="WerkzeugeOeffnen">
+                @Texte.Werkzeuge
+            </button>
+        </div>
+    }
+
+    <KiEingabezeile Bezeichnung="@Texte.Eingabe"
+                    MitModell="@(!HilfeBetrieb)"
+                    FragenText="@Texte.Fragen"
+                    SuchenText="@Texte.Suchen"
+                    Gesperrt="@Gesperrt"
+                    Abgeschickt="Abschicken" />
+
+    <p class="epos-kichat-hinweiszeile">
+        <span>@Texte.HinweisVorn</span>
+        @if (!HilfeBetrieb && !string.IsNullOrEmpty(Texte.HinweisLink))
+        {
+            <button type="button" class="epos-kichat-link" @onclick="RechtshinweisOeffnen">
+                @Texte.HinweisLink
+            </button>
+        }
+    </p>
+
+    <div class="epos-kichat-leiste">
+        <span class="epos-kichat-links">
+            <button type="button" class="epos-kichat-link" @onclick="DokuOeffnen">@Texte.Doku</button>
+            @if (!HilfeBetrieb)
+            {
+                <button type="button" class="epos-kichat-link" @onclick="VorschauOeffnen">@Texte.Vorschau</button>
+                <button type="button" class="epos-kichat-link" @onclick="ProtokollOeffnen">@Texte.Protokoll</button>
+            }
+        </span>
+
+        @* Der Tooltip ist zurueck (Entscheid W15b-O-2, 04.09.2026): Modell,
+           Lizenz und Herkunft der oertlichen Semantiksuche. Er haengt an
+           DIESER Zeile, weil er im Bestand am Statuslabel hing
+           (Form_KiChat:935-938), und er erscheint nur, wenn die Zeile auch
+           etwas ueber die Semantik sagt. Der Text kommt FERTIG aus der
+           Huelle - die Komponente kennt SemantikModell nicht. *@
+        <span class="epos-kichat-status" title="@Semantiktipp">@_status</span>
+
+        <span class="epos-kichat-knoepfe">
+            <InfoKnopf Schluessel="Form_KiChat.btn_Help" />
+            @if (!HilfeBetrieb)
+            {
+                <button type="button" class="epos-knopf" @onclick="EinstellungenOeffnen">
+                    @Texte.Einstellungen
+                </button>
+            }
+            <button type="button" class="epos-knopf" @onclick="Schliessen">@Texte.Schliessen</button>
+        </span>
+    </div>
+
+    @* --- Die drei Ueberlagerungen ------------------------------------- *@
+
+    <Ueberlagerung Offen="@(_bereich == Bereich.Werkzeuge)" Titel="@Texte.WerkzeugeTitel"
+                   Geschlossen="BereichSchliessen">
+        <KindInhalt>
+            <KiWerkzeugliste Aktionen="@Aktionen"
+                             Beschreiben="@Beschreiben"
+                             ListeText="@Texte.Werkzeuge"
+                             BeschreibungText="@Texte.Beschreibung"
+                             AusfuehrenText="@Texte.Ausfuehren"
+                             SchliessenText="@Texte.Schliessen"
+                             AktionWaehlenText="@Texte.AktionWaehlen"
+                             Ausgefuehrt="VonHandAusfuehren"
+                             Geschlossen="BereichSchliessen" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_bereich == Bereich.Text)" Titel="@_textTitel"
+                   Geschlossen="BereichSchliessen">
+        <KindInhalt>
+            <TextAnzeige Kopf="@_textKopf" Inhalt="@_textInhalt"
+                         SchliessenText="@Texte.Schliessen" Geschlossen="BereichSchliessen" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_bereich == Bereich.Rechtshinweis)" Titel="@Texte.RechtshinweisTitel"
+                   Geschlossen="BereichSchliessen">
+        <KindInhalt>
+            @Rechtshinweisinhalt
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Die drei Bereiche, die sich ueber den Chat legen koennen.</summary>
+    private enum Bereich { Keiner, Werkzeuge, Text, Rechtshinweis }
+
+    // =====================================================================
+    //  Zustand beim Oeffnen (§ 15.3)
+    // =====================================================================
+
+    /// <summary>Der Bedienkontext („Bereich: …"), fertig aus dem Kern.</summary>
+    [Parameter] public string Kontext { get; set; } = "";
+
+    /// <summary>Die KI ist abgeschaltet — der Chat arbeitet als reine Hilfesuche.</summary>
+    [Parameter] public bool HilfeBetrieb { get; set; }
+
+    /// <summary>Liegt ein API-Schlüssel vor?</summary>
+    [Parameter] public bool Eingerichtet { get; set; }
+
+    /// <summary>Verbrauchte Anfragen des Tages.</summary>
+    [Parameter] public int AnfragenHeute { get; set; }
+
+    /// <summary>Das feste Tageslimit.</summary>
+    [Parameter] public int Tageslimit { get; set; }
+
+    /// <summary>
+    /// Dauerhafter Hinweis, solange die Feldsicherung abgeschaltet ist (Paket F4);
+    /// leer = alles in Ordnung.
+    /// </summary>
+    [Parameter] public string FeldsicherungHinweis { get; set; } = "";
+
+    /// <summary>Vorbelegung des Aktionsschalters (gemerkt UND Einwilligung erteilt).</summary>
+    [Parameter] public bool AktionenVorbelegt { get; set; }
+
+    // =====================================================================
+    //  Die vier Wege nach draussen (§ 15.3)
+    // =====================================================================
+
+    /// <summary>Frage mit Modell; liefert die Zeilen, die anzuhaengen sind.</summary>
+    [Parameter] public Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>? Fragen { get; set; }
+
+    /// <summary>Suche ohne Modell (Wiki + Einbauwissen).</summary>
+    [Parameter] public Func<string, Task<IReadOnlyList<Gespraechszeile>>>? Suchen { get; set; }
+
+    /// <summary>Einwilligung sicherstellen — zeigt notfalls den Rechtshinweis.</summary>
+    [Parameter] public Func<Task<bool>>? Einwilligen { get; set; }
+
+    /// <summary>Aktion von Hand ausfuehren.</summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>,
+                            Task<IReadOnlyList<Gespraechszeile>>>? Ausfuehren { get; set; }
+
+    // =====================================================================
+    //  Die vier Nebenwege (§ 15.3)
+    // =====================================================================
+
+    /// <summary>„Was wird gesendet?" — der vollstaendige Anfragerumpf.</summary>
+    [Parameter] public Func<Task<string>>? Vorschau { get; set; }
+
+    /// <summary>Das Aktionsprotokoll (Datei lesen).</summary>
+    [Parameter] public Func<Task<string>>? Protokoll { get; set; }
+
+    /// <summary>Die Einstellungen. Rueckgabe <c>true</c> = gespeichert.</summary>
+    [Parameter] public Func<Task<bool>>? Einstellungen { get; set; }
+
+    /// <summary>Der Rechtshinweis zum Nachlesen.</summary>
+    [Parameter] public Func<Task>? Rechtshinweis { get; set; }
+
+    /// <summary>
+    /// Der Rechtshinweis als eingebetteter Inhalt. Ist er gesetzt, erscheint er als
+    /// UEBERLAGERUNG statt als zweites Fenster (Risiko R2); sonst greift
+    /// <see cref="Rechtshinweis"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? Rechtshinweisinhalt { get; set; }
+
+    /// <summary>Eine Adresse wurde angeklickt — die Huelle oeffnet sie.</summary>
+    [Parameter] public EventCallback<string> AdresseGewaehlt { get; set; }
+
+    /// <summary>Der Verlauf soll in die Zwischenablage (E-11).</summary>
+    [Parameter] public EventCallback<string> Kopieren { get; set; }
+
+    /// <summary>Der Anwender hat geschlossen.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>
+    /// Steht eine Ueberlagerung offen? Der Wirt reicht das an
+    /// <c>KiAusfuehrer.Ueberlagerung</c> weiter (Entscheid E-8): Solange sie offen
+    /// ist, weist der Ausfuehrer Aktionen ab.
+    /// </summary>
+    [Parameter] public EventCallback<bool> UeberlagerungGeaendert { get; set; }
+
+    // =====================================================================
+    //  Zustandsanzeige (§ 15.3)
+    // =====================================================================
+
+    /// <summary>Laeuft gerade eine Assistentenaktion? (<c>KiAusfuehrer.Belegt</c>)</summary>
+    [Parameter] public Func<bool>? Belegt { get; set; }
+
+    /// <summary>Die Semantikzeile (<c>SemantikModell.Zustand</c>); leer = keine.</summary>
+    [Parameter] public Func<string>? SemantikZeile { get; set; }
+
+    /// <summary>Die Aktionen des Registers fuer die Werkzeugliste.</summary>
+    [Parameter] public IReadOnlyList<KiKern.KiAktion> Aktionen { get; set; } = [];
+
+    /// <summary>Beschreibt eine Aktion (<c>KiBestaetigung.Beschreibe</c>).</summary>
+    [Parameter] public Func<KiKern.KiAktion, string>? Beschreiben { get; set; }
+
+    /// <summary>Die Begruessungszeilen, fertig aus dem Kern.</summary>
+    [Parameter] public IReadOnlyList<Gespraechszeile> Begruessung { get; set; } = [];
+
+    /// <summary>
+    /// Die Komponente meldet ihre Bestaetigungswege beim Aufbau an den Wirt
+    /// (<see cref="KiChatSteuerung"/>). Der haengt sie an
+    /// <c>KiChatService.Bestaetigungsweg</c> — der Bestand tat das umgekehrt, weil
+    /// Fenster und Dienst einander kannten.
+    /// </summary>
+    [Parameter] public Action<KiChatSteuerung>? Anmelden { get; set; }
+
+    /// <summary>
+    /// Alle Anzeigetexte in einem Buendel. Die Huelle baut sie einmal aus
+    /// <c>MyResource</c>; die Komponente kennt keinen Ressourcenschluessel.
+    /// </summary>
+    [Parameter] public KiChatTexte Texte { get; set; } = new();
+
+    // =====================================================================
+    //  Innerer Zustand
+    // =====================================================================
+
+    private readonly List<Gespraechszeile> _zeilen = new();
+    private long _kennung;
+    private bool _beschaeftigt;
+    private bool _aktionen;
+    private int _schalterfassung;
+    private string _status = "";
+    private string _semantik = "";
+    private Bereich _bereich = Bereich.Keiner;
+    private string _textTitel = "";
+    private string _textKopf = "";
+    private string _textInhalt = "";
+    private bool _aufgebaut;
+
+    // ---- Der offene Bestaetigungsblock ----------------------------------
+
+    private string _bestaetigungText = "";
+    private string _bestaetigungVerfall = "";
+    private bool _bestaetigungOffen;
+    private TaskCompletionSource<bool>? _bestaetigungAntwort;
+
+    /// <summary>Die Anzeige-Zeilen — fuer den Pruefstand und die Huelle.</summary>
+    public IReadOnlyList<Gespraechszeile> Zeilen => _zeilen;
+
+    /// <summary>Steht eine Ueberlagerung offen?</summary>
+    public bool UeberlagerungOffen => _bereich != Bereich.Keiner;
+
+    private bool Gesperrt => _beschaeftigt || (Belegt is not null && Belegt());
+
+    private string Kontextzeile => string.IsNullOrEmpty(Kontext)
+        ? Texte.KontextLeer
+        : string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.KontextFormat, Kontext);
+
+    /// <summary>
+    /// Der Tooltip der Statuszeile — <c>null</c> heisst KEIN <c>title</c>-Merkmal
+    /// (Blazor laesst ein Merkmal mit dem Wert <c>null</c> weg; ein leerer Text
+    /// stuende dagegen als <c>title=""</c> im Markup und ergaebe einen leeren
+    /// Kasten unter dem Mauszeiger).
+    /// </summary>
+    /// <remarks>
+    /// Bedingung ist die SEMANTIKzeile, nicht der ganze Status: Steht dort nur
+    /// der Tagesverbrauch, sagt der Tooltip nichts, was zu ihm gehoerte.
+    /// </remarks>
+    private string? Semantiktipp =>
+        string.IsNullOrEmpty(_semantik) || string.IsNullOrEmpty(Texte.SemantikHerkunft)
+            ? null
+            : Texte.SemantikHerkunft;
+
+    private RenderFragment? Bestaetigungsblock => !_bestaetigungOffen ? null : builder =>
+    {
+        builder.OpenComponent<KiBestaetigungBlock>(0);
+        builder.AddAttribute(1, nameof(KiBestaetigungBlock.Titel), Texte.BestaetigungTitel);
+        builder.AddAttribute(2, nameof(KiBestaetigungBlock.Vorschau), _bestaetigungText);
+        builder.AddAttribute(3, nameof(KiBestaetigungBlock.Verfallstext), _bestaetigungVerfall);
+        builder.AddAttribute(4, nameof(KiBestaetigungBlock.AusfuehrenText), Texte.BestaetigungAusfuehren);
+        builder.AddAttribute(5, nameof(KiBestaetigungBlock.AbbrechenText), Texte.BestaetigungAbbrechen);
+        builder.AddAttribute(6, nameof(KiBestaetigungBlock.Entschieden),
+                             EventCallback.Factory.Create<bool>(this, Entscheiden));
+        builder.CloseComponent();
+    };
+
+    // =====================================================================
+    //  Aufbau
+    // =====================================================================
+
+    protected override void OnParametersSet()
+    {
+        if (_aufgebaut) return;
+        _aufgebaut = true;
+
+        _aktionen = AktionenVorbelegt && !HilfeBetrieb;
+        Anhaengen(Begruessung);
+        StatusSetzen();
+
+        Anmelden?.Invoke(new KiChatSteuerung
+        {
+            Zeigen = BestaetigungZeigen,
+            Verfall = VerfallSetzen,
+            Beenden = BestaetigungBeenden
+        });
+    }
+
+    /// <summary>
+    /// Haengt Zeilen an die ANZEIGE-Liste. Jede bekommt eine fortlaufende Kennung —
+    /// ohne sie baut Blazor bei jedem Anhaengen die ganze Liste neu auf.
+    /// </summary>
+    private void Anhaengen(IReadOnlyList<Gespraechszeile>? zeilen)
+    {
+        if (zeilen is null) return;
+        foreach (Gespraechszeile z in zeilen)
+            _zeilen.Add(z with { Kennung = ++_kennung });
+    }
+
+    private void StatusSetzen()
+    {
+        _semantik = SemantikZeile is null ? "" : (SemantikZeile() ?? "");
+        string verbrauch = HilfeBetrieb || !Eingerichtet
+            ? ""
+            : string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                            Texte.VerbrauchFormat, AnfragenHeute, Tageslimit);
+
+        _status = string.IsNullOrEmpty(_semantik)
+            ? verbrauch
+            : (verbrauch.Length > 0 ? verbrauch + " | " + _semantik : _semantik);
+    }
+
+    // =====================================================================
+    //  Fragen und suchen
+    // =====================================================================
+
+    private async Task Abschicken((string Frage, bool MitKi) eingabe)
+    {
+        string frage = eingabe.Frage;
+        if (frage.Length == 0 || Gesperrt) return;
+
+        Anhaengen(new[] { new Gespraechszeile(Gespraechsrolle.Anwender, AnwenderZeile(frage)) });
+
+        bool mitKi = eingabe.MitKi && !HilfeBetrieb;
+        _beschaeftigt = true;
+        StateHasChanged();
+
+        try
+        {
+            IReadOnlyList<Gespraechszeile>? antwort = mitKi
+                ? (Fragen is null ? null : await Fragen(frage, _aktionen))
+                : (Suchen is null ? null : await Suchen(frage));
+
+            Anhaengen(antwort);
+        }
+        finally
+        {
+            _beschaeftigt = false;
+            StatusSetzen();
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// „Sie: " ist ein ANZEIGEtext und kommt aus dem Kern mit; hier wird er nur
+    /// vorangestellt, wenn die Huelle keine eigene Zeile geliefert hat.
+    /// </summary>
+    private string AnwenderZeile(string frage) => frage;
+
+    // =====================================================================
+    //  Der Aktionsschalter
+    // =====================================================================
+
+    /// <summary>
+    /// Beim EINschalten wird die Einwilligung sichergestellt; ohne sie bleibt der
+    /// Schalter aus (Bestand <c>:818-843</c>). Der Riegel selbst liegt im Kern.
+    /// </summary>
+    private async Task AktionenGeaendert(bool wert)
+    {
+        if (wert && Einwilligen is not null && !await Einwilligen())
+        {
+            _aktionen = false;
+            _schalterfassung++;
+            Anhaengen(new[] { new Gespraechszeile(Gespraechsrolle.Fehler, Texte.EinwilligungFehlt) });
+            StateHasChanged();
+            return;
+        }
+
+        _aktionen = wert;
+        Anhaengen(new[]
+        {
+            new Gespraechszeile(Gespraechsrolle.AssistentKopf,
+                                wert ? Texte.AktionenEin : Texte.AktionenAus)
+        });
+        StateHasChanged();
+    }
+
+    private Task Schliessen() => Geschlossen.InvokeAsync();
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        // Eine offene Vorschau darf das Fenster nicht ueberleben: Wer schliesst, hat
+        // nicht bestaetigt (Bestand OnFormClosed, :131-143).
+        Entscheiden(false);
+    }
+}

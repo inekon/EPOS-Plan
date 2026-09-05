@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using SkiaSharp;
 using WindowsFormsApplication1;
 using Xunit;
@@ -13,9 +14,9 @@ namespace EPOS.Kern.Tests
     /// Stundenreihen Diagrammreihen machen, und dass das Zeichnen selbst ein Bild in
     /// der festgelegten Groesse liefert — auf Linux und macOS genauso wie auf
     /// Windows. Die vollstaendige Bildpruefung (neun Bilder, Farbvorkommen, Masse)
-    /// macht die Probe <c>Proben\ChartProben</c>, den Pixelvergleich gegen den
-    /// eingefrorenen GDI+-Stand der Modus <c>bildvergleich</c> der
-    /// Referenzlauf-Suite unter Windows. Diese drei Tests sind die schnelle
+    /// macht die Probe <c>Proben\ChartProben</c> (der Pixelvergleich gegen den
+    /// eingefrorenen GDI+-Stand ist mit Entscheid iF23 am 03.09.2026 samt dem
+    /// GDI+-Renderer geloescht). Diese drei Tests sind die schnelle
     /// Sicherung dazwischen — sie laufen in JEDEM Kern-Lauf mit.</para>
     /// </summary>
     public class ChartRendererTests
@@ -115,8 +116,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Zwei Laeufe desselben Diagramms muessen byte-gleich sein. Ohne diese Zusage
-        /// waere ein Bericht zwischen zwei Erzeugungen nicht vergleichbar und der
-        /// Bildvergleich der Referenzlauf-Suite ohne Aussage.
+        /// waere ein Bericht zwischen zwei Erzeugungen nicht vergleichbar und die
+        /// Determinismuspruefung der ChartProben ohne Aussage.
         /// </summary>
         [Fact]
         public void Zweimal_gezeichnet_ergibt_dieselben_Bytes()
@@ -140,6 +141,309 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(1240, bild.Width);
                 Assert.Equal(150 + balken.Count * 64, bild.Height);
             }
+        }
+
+        // =====================================================================
+        // 4 — Kostenprofil (iU9-W3.4)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Kostenprofil des Preisdialogs zeichnet in 1296x780 — der doppelten
+        /// Zielaufloesung des abgeloesten WinForms-Chart (648x390) — und ist
+        /// deterministisch. Beides ist Bedingung dafuer, dass der Dialog das Bild
+        /// zwischenspeichern und die Probe <c>Proben\ChartProben</c> es
+        /// pixelweise pruefen kann.
+        ///
+        /// <para>Die Reihe laeuft hier ins Negative: Ein Wochenwert des
+        /// Kostenprofils ist eine ABWEICHUNG und darf den Monatswert unter null
+        /// ziehen. Der Renderer muss dafuer eine vorzeichenfaehige Achse
+        /// aufspannen, ohne die Linie abzuschneiden.</para>
+        /// </summary>
+        [Fact]
+        public void Kostenprofil_zeichnet_deterministisch_in_1296x780()
+        {
+            var profil = new double[8760];
+            for (int i = 0; i < profil.Length; i++)
+                profil[i] = 25.0 + 6.0 * System.Math.Sin(2.0 * System.Math.PI * i / 8760.0)
+                          + 3.0 * System.Math.Sin(2.0 * System.Math.PI * (i % 24) / 24.0)
+                          - (i > 8000 ? 40.0 : 0.0);          // Schlussabschnitt unter null
+
+            byte[] a = ChartRenderer.Kostenprofil("Kostenprofil", profil, "ct/kWh", "Monat");
+            byte[] b = ChartRenderer.Kostenprofil("Kostenprofil", profil, "ct/kWh", "Monat");
+
+            Assert.NotNull(a);
+            Assert.Equal(a, b);
+
+            using (SKBitmap bild = SKBitmap.Decode(a))
+            {
+                Assert.Equal(1296, bild.Width);
+                Assert.Equal(780, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Ohne Reihe (oder mit einer zu kurzen) liefert der Renderer trotzdem ein
+        /// Bild in voller Groesse mit einem Hinweis darin — genau wie
+        /// <c>KapitalwertVerlauf</c> bei „keine berechenbaren Reihen". Der Dialog
+        /// braucht in jedem Fall etwas zum Anzeigen.
+        /// </summary>
+        [Fact]
+        public void Kostenprofil_ohne_Reihe_liefert_ein_leeres_Bild_statt_null()
+        {
+            byte[] leer = ChartRenderer.Kostenprofil("Kostenprofil", null, "ct/kWh", "Monat");
+            byte[] kurz = ChartRenderer.Kostenprofil("Kostenprofil", new double[1], "ct/kWh", "Monat");
+
+            Assert.NotNull(leer);
+            Assert.NotNull(kurz);
+
+            using (SKBitmap bild = SKBitmap.Decode(leer))
+            {
+                Assert.Equal(1296, bild.Width);
+                Assert.Equal(780, bild.Height);
+            }
+        }
+
+        // =============================================================== Kennlinien (W7.0c)
+
+        /// <summary>Drei Vorlaufstufen mit je vier Stuetzstellen — genug fuer Farbe und Marke.</summary>
+        private static System.Collections.Generic.List<ChartRenderer.KennlinienReihe> Kennlinienproben()
+        {
+            var l = new System.Collections.Generic.List<ChartRenderer.KennlinienReihe>();
+            foreach (int vorlauf in new[] { 35, 45, 55 })
+            {
+                var p = new System.Collections.Generic.List<(double, double)>();
+                for (int t = -15; t <= 15; t += 10) p.Add((t, 5.0 - (vorlauf - 35) * 0.02 + t * 0.1));
+                l.Add(new ChartRenderer.KennlinienReihe(vorlauf, p));
+            }
+            return l;
+        }
+
+        [Fact]
+        public void Kennlinien_zeichnet_in_der_festgelegten_Groesse_und_deterministisch()
+        {
+            var reihen = Kennlinienproben();
+
+            byte[] a = ChartRenderer.Kennlinien("Kennlinien COP", "COP", "Temperatur",
+                                                reihen, ChartRenderer.Kennlinienmarke.Kreis);
+            byte[] b = ChartRenderer.Kennlinien("Kennlinien COP", "COP", "Temperatur",
+                                                reihen, ChartRenderer.Kennlinienmarke.Kreis);
+
+            Assert.NotNull(a);
+            Assert.Equal(a, b);   // zweimal zeichnen = byte-gleich
+
+            using (SKBitmap bild = SKBitmap.Decode(a))
+            {
+                Assert.Equal(968, bild.Width);
+                Assert.Equal(520, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Die beiden Punktmarken sollen SICHTBAR verschieden sein — sonst waeren die
+        /// Reiterblaetter „COP" und „Leistung" bei gleichen Werten nicht zu unterscheiden.
+        /// </summary>
+        [Fact]
+        public void Kreis_und_Kreuz_ergeben_verschiedene_Bilder()
+        {
+            var reihen = Kennlinienproben();
+
+            byte[] kreis = ChartRenderer.Kennlinien("K", "COP", "Temperatur",
+                                                    reihen, ChartRenderer.Kennlinienmarke.Kreis);
+            byte[] kreuz = ChartRenderer.Kennlinien("K", "COP", "Temperatur",
+                                                    reihen, ChartRenderer.Kennlinienmarke.Kreuz);
+
+            Assert.NotEqual(kreis, kreuz);
+        }
+
+        /// <summary>
+        /// Ohne Reihen liefert der Renderer ein Bild in voller Groesse mit Hinweis —
+        /// dieselbe Zusage wie beim Kostenprofil: Der Dialog braucht in jedem Fall
+        /// etwas zum Anzeigen. Das trifft die Waermepumpen ohne Kennlinien.
+        /// </summary>
+        [Fact]
+        public void Kennlinien_ohne_Reihen_liefert_ein_leeres_Bild_statt_null()
+        {
+            byte[] leer = ChartRenderer.Kennlinien("K", "COP", "Temperatur", null,
+                                                   ChartRenderer.Kennlinienmarke.Kreis);
+            byte[] ohnePunkte = ChartRenderer.Kennlinien("K", "COP", "Temperatur",
+                new[] { new ChartRenderer.KennlinienReihe(35, System.Array.Empty<(double, double)>()) },
+                ChartRenderer.Kennlinienmarke.Kreis);
+
+            Assert.NotNull(leer);
+            Assert.NotNull(ohnePunkte);
+
+            using (SKBitmap bild = SKBitmap.Decode(leer))
+            {
+                Assert.Equal(968, bild.Width);
+                Assert.Equal(520, bild.Height);
+            }
+        }
+
+        // =========================================================== Bedarfsbilder (iU9-W8.0c)
+
+        private static double[] Monatsprobe()
+        {
+            var w = new double[12];
+            for (int m = 0; m < 12; m++) w[m] = 10.0 + m;
+            return w;
+        }
+
+        /// <summary>
+        /// Mass und Determinismus der drei neuen Bilder. Sie ersetzen die Charts der zehn
+        /// Bedarfsmasken der Welle 8; ohne diese Zusage koennte sich ein Bild zwischen zwei
+        /// Laeufen unterscheiden, und die ChartProben wuerden es erst spaeter melden.
+        /// </summary>
+        [Fact]
+        public void Die_drei_Bedarfsbilder_haben_ihr_Mass_und_sind_deterministisch()
+        {
+            byte[] saeulen = ChartRenderer.MonatsSaeulen("M", Monatsprobe(), SKColors.YellowGreen, "MWh");
+            byte[] saeulen2 = ChartRenderer.MonatsSaeulen("M", Monatsprobe(), SKColors.YellowGreen, "MWh");
+            Assert.Equal(saeulen, saeulen2);
+            using (SKBitmap bild = SKBitmap.Decode(saeulen))
+            {
+                Assert.Equal(978, bild.Width);
+                Assert.Equal(542, bild.Height);
+            }
+
+            var profil = new double[168];
+            for (int i = 0; i < 168; i++) profil[i] = 0.5 + 0.4 * System.Math.Sin(i / 4.0);
+            byte[] stunden = ChartRenderer.Stundenprofil("P", profil, 24, "Stunde", "Verteilung");
+            byte[] stunden2 = ChartRenderer.Stundenprofil("P", profil, 24, "Stunde", "Verteilung");
+            Assert.Equal(stunden, stunden2);
+            using (SKBitmap bild = SKBitmap.Decode(stunden))
+            {
+                Assert.Equal(1244, bild.Width);
+                Assert.Equal(464, bild.Height);
+            }
+
+            var jahr = new double[8760];
+            for (int i = 0; i < jahr.Length; i++) jahr[i] = 100 + 40 * System.Math.Sin(i / 700.0);
+            byte[] verlauf = ChartRenderer.Jahresverlauf("J", jahr, "kW", SKColors.SteelBlue);
+            byte[] verlauf2 = ChartRenderer.Jahresverlauf("J", jahr, "kW", SKColors.SteelBlue);
+            Assert.Equal(verlauf, verlauf2);
+            using (SKBitmap bild = SKBitmap.Decode(verlauf))
+            {
+                Assert.Equal(978, bild.Width);
+                Assert.Equal(542, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Der Rueckfall „alles null" der Vorlaeufer (<c>SkaliereYAchse</c>: Maximum 5,
+        /// Intervall 1) darf das Bild nicht zerstoeren — zwoelf Nullen sind ein
+        /// gueltiger Zustand, solange die Simulation noch nicht gelaufen ist.
+        /// </summary>
+        [Fact]
+        public void Monatssaeulen_mit_lauter_Nullen_bleiben_ein_Bild()
+        {
+            byte[] png = ChartRenderer.MonatsSaeulen("M", new double[12], SKColors.Red, "MWh");
+            Assert.NotNull(png);
+            using (SKBitmap bild = SKBitmap.Decode(png))
+            {
+                Assert.Equal(978, bild.Width);
+                Assert.Equal(542, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Zu kurze oder fehlende Reihen liefern ein Bild MIT HINWEIS, nicht <c>null</c> —
+        /// dieselbe Zusage wie bei Kostenprofil und Kennlinien. Der Ergebnisdialog bekommt
+        /// die Reihe direkt aus der Simulation und kann leer aufgerufen werden.
+        /// </summary>
+        [Fact]
+        public void Bedarfsbilder_ohne_Werte_liefern_ein_leeres_Bild_statt_null()
+        {
+            Assert.NotNull(ChartRenderer.MonatsSaeulen("M", null, SKColors.Red, "MWh"));
+            Assert.NotNull(ChartRenderer.MonatsSaeulen("M", new double[3], SKColors.Red, "MWh"));
+            Assert.NotNull(ChartRenderer.Stundenprofil("P", null, 24, "x", "y"));
+            Assert.NotNull(ChartRenderer.Jahresverlauf("J", null, "kW", SKColors.SteelBlue));
+        }
+
+        // -----------------------------------------------------------------------------
+        // 7 — Jahresgang, zweireihig (iU9-W10a.0d)
+        // -----------------------------------------------------------------------------
+
+        private static List<ChartRenderer.Reihe> Jahresgangreihen()
+        {
+            var quelle = new double[8760];
+            var aussen = new double[8760];
+            for (int i = 0; i < 8760; i++)
+            {
+                double jahr = 2.0 * Math.PI * i / 8760.0;
+                quelle[i] = 9 + 4 * Math.Sin(jahr - Math.PI / 2);
+                aussen[i] = 9 + 14 * Math.Sin(jahr - Math.PI / 2);
+            }
+            return new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Quelltemperatur", quelle, ChartRenderer.C_QUELLTEMPERATUR),
+                new ChartRenderer.Reihe("Aussentemperatur", aussen, ChartRenderer.C_AUSSENTEMPERATUR)
+            };
+        }
+
+        /// <summary>
+        /// Das Bild des Erdreich-Dialogs misst 1304x440 — die doppelte Zielaufloesung des
+        /// abgeloesten WinForms-Chart (652x170) plus 100 px fuer die Legende, die dort
+        /// INNERHALB der Zeichenflaeche stand und den Jahresanfang verdeckte.
+        /// </summary>
+        [Fact]
+        public void Jahresgang_zeichnet_deterministisch_in_1304x440()
+        {
+            List<ChartRenderer.Reihe> reihen = Jahresgangreihen();
+
+            byte[] a = ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat", "Temperatur");
+            byte[] b = ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat", "Temperatur");
+
+            Assert.NotNull(a);
+            Assert.Equal(a, b);
+            using (SKBitmap bild = SKBitmap.Decode(a))
+            {
+                Assert.Equal(1304, bild.Width);
+                Assert.Equal(440, bild.Height);
+            }
+        }
+
+        /// <summary>
+        /// Die beiden Farben stehen woertlich im Vorlaeufer (SaddleBrown mit Deckung 200,
+        /// SteelBlue mit Deckung 90). Die dickere Braunlinie muss im fertigen Bild
+        /// ankommen — ueber Weiss gemischt ergibt sie 164/109/70.
+        /// </summary>
+        [Fact]
+        public void Jahresgang_traegt_die_Quelltemperatur_in_SaddleBrown()
+        {
+            Assert.Equal(new SKColor(0x8B, 0x45, 0x13, 200), ChartRenderer.C_QUELLTEMPERATUR);
+            Assert.Equal(new SKColor(0x46, 0x82, 0xB4, 90), ChartRenderer.C_AUSSENTEMPERATUR);
+
+            byte[] png = ChartRenderer.Jahresgang("Jahresgang", Jahresgangreihen(),
+                                                  "Monat", "Temperatur");
+            using (SKBitmap bild = SKBitmap.Decode(png))
+            {
+                var vorhanden = new HashSet<uint>();
+                foreach (SKColor p in bild.Pixels) vorhanden.Add((uint)p);
+                Assert.Contains((uint)new SKColor(164, 109, 70), vorhanden);
+            }
+        }
+
+        /// <summary>
+        /// EINE Reihe geht auch: Der Vorlaeufer zeichnete die Aussentemperatur nur, wenn
+        /// das Projekt Klimadaten fuehrt. Ohne Reihen kommt ein Bild MIT HINWEIS zurueck,
+        /// nicht <c>null</c> — dieselbe Zusage wie bei allen Bildern dieser Datei.
+        /// </summary>
+        [Fact]
+        public void Jahresgang_traegt_eine_Reihe_und_meldet_keine()
+        {
+            List<ChartRenderer.Reihe> eine = Jahresgangreihen();
+            eine.RemoveAt(1);
+            Assert.NotNull(ChartRenderer.Jahresgang("J", eine, "Monat", "Temperatur"));
+
+            Assert.NotNull(ChartRenderer.Jahresgang("J", null, "Monat", "Temperatur"));
+            Assert.NotNull(ChartRenderer.Jahresgang(
+                "J", new List<ChartRenderer.Reihe>(), "Monat", "Temperatur"));
+
+            // Eine Reihe mit weniger als zwei Werten ist keine Linie und faellt weg.
+            Assert.NotNull(ChartRenderer.Jahresgang("J", new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("kurz", new double[1], ChartRenderer.C_QUELLTEMPERATUR)
+            }, "Monat", "Temperatur"));
         }
     }
 }

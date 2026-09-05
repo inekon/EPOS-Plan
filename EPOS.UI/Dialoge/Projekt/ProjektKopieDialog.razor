@@ -1,0 +1,345 @@
+﻿@* „Projekt Speichern unter" - ein Projekt duplizieren (iU9-W15a.4).
+
+   SIE LOEST Form_ProjektSpeichernUnter AB (268 Z., 6 MessageBox, alle hartkodiert
+   deutsch). Links die Liste aller Projekte, rechts vier Eingabefelder, unten
+   OK/Abbrechen und ein einblendbarer Fortschrittsbereich.
+
+   DER FACHTEIL LIEGT VOLLSTAENDIG IM KERN und hat dort schon vor dieser Welle
+   gelegen: ProjektDuplizierenCtrl (768 Z.) kopiert alle Projekttabellen in EINER
+   Transaktion, mit einem schema-getriebenen Tabellenplan und FreieProjektId. Die
+   Maske ruft EINE Methode; danach schreibt sie die drei Verwaltungsfelder auf die
+   Kopie - und auch das liegt seit iU9-W15a.0c im Kern.
+
+   WAS SICH FUER DEN ANWENDER AENDERT:
+     * A-4 (Abnahmepunkt): Die Dublettenpruefung wird RICHTIG. Der Vorlaeufer
+       fragte listView_Projekt.FindItemWithText - Praefix-Semantik, die einen
+       freien Namen "Muster" ablehnte, weil es ein "Musterprojekt" gibt
+       (Befund W15a-B10). Jetzt fragt der Dialog ProjektDuplizierenCtrl.PruefeNamen,
+       also dieselbe Regel, die der Kopierlauf ohnehin anwendet.
+     * A-2: Der Kopierlauf ist ABBRECHBAR. Ein Lauf ueber vierzig Tabellen ohne
+       Abbruch ist eine Zumutung; der Kern bekam dafuer ein CancellationToken, und
+       ein Abbruch rollt die eine Transaktion zurueck. Ohne Abbruchrueckruf zeigt
+       der Baustein Fortschritt gar keinen Knopf - ein toter Knopf waere schlimmer.
+     * A-6: Ein Doppelklick in der Quellliste MARKIERT nur und laedt die Felder;
+       gestartet wird ueber OK. Der Vorlaeufer rief button_Open.PerformClick() -
+       gebaut wie "Oeffnen", nicht wie "Speichern unter" (B13).
+     * A-3: Das Fenster waechst nicht mehr (B12); der Fortschrittsbereich blendet
+       sich ein.
+     * A-1: Das ❌ auf dem Abbrechen-Knopf entfaellt (B16) - der einzige Knopf des
+       ganzen Bestands mit einem Emoji in der Beschriftung.
+   GEBLIEBEN ist A-5: die 1 000-ms-Fertig-Anzeige. Sie ist der einzige Beleg, dass
+   der Lauf fertig ist, bevor das Fenster zugeht.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Zeilen, Quellfelder, Pruefung, Kopierlauf
+   und Verwaltungsfelder kommen als Parameter bzw. Delegaten herein. *@
+
+@namespace EPOS.UI.Dialoge.Projekt
+
+@using System.Threading
+@using EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-projektkopie" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        @if (!string.IsNullOrEmpty(HilfeSchluessel))
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" />
+        }
+    </div>
+
+    <div class="epos-projektkopie-raster">
+
+        <section class="epos-projektkopie-quelle">
+            <Gruppenkopf Titel="@LabelAuswahl" />
+            <ProjektListe Zeilen="@Zeilen"
+                          Suche="@_suche" SucheChanged="@(s => _suche = s)"
+                          Markiert="@_markiert" MarkiertChanged="BeiMarkierung"
+                          Gewaehlt="BeiDoppelklick"
+                          AnzahlFormat="@AnzahlFormat"
+                          SpalteName="@SpalteName" SpalteKunde="@SpalteKunde"
+                          SpalteGeaendert="@SpalteGeaendert" SpalteArt="@SpalteArt"
+                          ArtStammText="@ArtStammText" ArtVarianteText="@ArtVarianteText"
+                          VarianteVonFormat="@VarianteVonFormat" SucheText="@SucheText"
+                          WahlText="@WahlText" LeerText="@LeerText" />
+        </section>
+
+        <section class="epos-projektkopie-felder">
+            @* Waehrend des Laufs bleiben die Felder LESBAR, nur nicht mehr aenderbar -
+               der Vorlaeufer sperrte sie (SetBusy), was den Text ausgraut. *@
+            <Textfeld Bezeichnung="@LabelNeuerName" Wert="@_neuerName"
+                      WertChanged="@(w => { _neuerName = w; _meldung = ""; })"
+                      NurLesen="@_laeuft" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" Mehrzeilig="true"
+                      Zeilen="4" WertChanged="@(w => _beschreibung = w)" NurLesen="@_laeuft" />
+            <Textfeld Bezeichnung="@LabelKunde" Wert="@_kunde"
+                      WertChanged="@(w => _kunde = w)" NurLesen="@_laeuft" />
+            <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@_bearbeiter"
+                      WertChanged="@(w => _bearbeiter = w)" NurLesen="@_laeuft" />
+        </section>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @if (_laeuft || _fertig)
+    {
+        <Fortschritt Anteil="@_anteil" Text="@_fortschrittText"
+                     AbbrechenText="@AbbrechenText"
+                     Abbrechen="@(_fertig ? null : EventCallback.Factory.Create(this, Abbrechen))" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     OkErlaubt="@(!_laeuft)" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Die wählbaren Quellprojekte (<c>ProjektCtrl.NamenListe</c>).</summary>
+    [Parameter] public IReadOnlyList<ProjektKopfZeile> Zeilen { get; set; } = Array.Empty<ProjektKopfZeile>();
+
+    /// <summary>
+    /// Beschreibung, Kunde und Bearbeiter des QUELLPROJEKTS; <c>null</c> = unbekannt.
+    /// Ein Auswahlwechsel überschreibt dabei BEWUSST bereits eingetippte Änderungen —
+    /// die drei Felder gehören sichtbar zum gewählten Projekt (Kommentar des Vorläufers).
+    /// </summary>
+    [Parameter] public Func<string, ProjektKopfDaten?>? Quellfelder { get; set; }
+
+    /// <summary>
+    /// Die drei Vorprüfungen des Kerns (<c>ProjektDuplizierenCtrl.PruefeNamen</c>) — die
+    /// EINE Regel statt der Präfixsuche der Maske (Befund W15a-B10).
+    /// </summary>
+    [Parameter] public Func<string, string, DuplizierBefund>? Pruefen { get; set; }
+
+    /// <summary>
+    /// Der Kopierlauf. Liefert die neue Projekt-Id oder <c>-1</c>. Ohne diesen Delegaten
+    /// bleibt OK wirkungslos (Prüfstand).
+    /// </summary>
+    [Parameter] public Func<string, string, IProgress<KopierStand>, CancellationToken, Task<int>>? Duplizieren { get; set; }
+
+    /// <summary>
+    /// Schreibt Beschreibung, Kunde und Bearbeiter auf die fertige Kopie
+    /// (<c>ProjektDuplizierenCtrl.VerwaltungsfelderSetzen</c>).
+    /// </summary>
+    [Parameter] public Func<string, string, string, string, VerwaltungsfelderErgebnis>? Verwaltungsfelder { get; set; }
+
+    /// <summary>
+    /// Wie lange der fertige Balken noch stehen bleibt, bevor das Fenster zugeht
+    /// (<c>FERTIG_ANZEIGE_MS</c> = 1000, A-5).
+    /// </summary>
+    [Parameter] public int FertigAnzeigeMs { get; set; } = 1000;
+
+    /// <summary><c>true</c> = mit OK geschlossen (die Kopie steht), <c>false</c> = abgebrochen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    [Parameter] public string TitelText { get; set; } = "Projekt Speichern unter";
+    [Parameter] public string LabelAuswahl { get; set; } = "Projektauswahl:";
+    [Parameter] public string LabelNeuerName { get; set; } = "Neuer Projektname:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string LabelKunde { get; set; } = "Kunde:";
+    [Parameter] public string LabelBearbeiter { get; set; } = "Bearbeiter:";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    [Parameter] public string MeldungNameLeer { get; set; } = "Bitte einen neuen Projektnamen eingeben.";
+    [Parameter] public string MeldungNameBelegt { get; set; } = "Projektname bereits vorhanden!";
+    [Parameter] public string MeldungQuelleFehlt { get; set; } = "Quellprojekt '{0}' wurde nicht gefunden.";
+    [Parameter] public string MeldungFehler { get; set; } = "Fehler beim Speichern unter: {0}";
+    [Parameter] public string MeldungKopieFehlt { get; set; } =
+        "Die Kopie '{0}' wurde nicht gefunden. Beschreibung, Kunde und Bearbeiter wurden nicht übernommen.";
+    [Parameter] public string MeldungFelderNicht { get; set; } =
+        "Beschreibung, Kunde und Bearbeiter konnten nicht gespeichert werden. Die Projektkopie selbst ist angelegt.";
+    [Parameter] public string MeldungFelderFehler { get; set; } =
+        "Beschreibung, Kunde und Bearbeiter konnten nicht gespeichert werden: {0}\nDie Projektkopie selbst ist angelegt.";
+
+    [Parameter] public string FortschrittFormat { get; set; } = "Kopiere Tabelle {0}/{1}: {2}";
+    [Parameter] public string FortschrittFertigstellen { get; set; } = "Fertigstellen ...";
+    [Parameter] public string FortschrittFertig { get; set; } = "Fertig";
+
+    [Parameter] public string AnzahlFormat { get; set; } = "{0} von {1} Projekten";
+    [Parameter] public string SpalteName { get; set; } = "Projektname";
+    [Parameter] public string SpalteKunde { get; set; } = "Kunde";
+    [Parameter] public string SpalteGeaendert { get; set; } = "Geändert";
+
+    /// <summary>Kopf der Artspalte der Projektliste (<c>PRJ_LIST_SP_ART</c>, W15a‑E‑1).</summary>
+    [Parameter] public string SpalteArt { get; set; } = "Art";
+
+    /// <summary>Ein Projekt mit Varianten (<c>PRJ_LIST_ART_STAMM</c>).</summary>
+    [Parameter] public string ArtStammText { get; set; } = "Stamm";
+
+    /// <summary>Eine Variante (<c>PRJ_LIST_ART_VARIANTE</c>).</summary>
+    [Parameter] public string ArtVarianteText { get; set; } = "Variante";
+
+    /// <summary>Die leise Herkunftszeile (<c>PRJ_LIST_VARIANTE_VON</c>); <c>{0}</c> = Stammname.</summary>
+    [Parameter] public string VarianteVonFormat { get; set; } = "Variante von {0}";
+    [Parameter] public string SucheText { get; set; } = "Suchen:";
+    [Parameter] public string WahlText { get; set; } = "Wahl";
+    [Parameter] public string LeerText { get; set; } = "Es ist noch kein Projekt angelegt.";
+
+    /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    private string _suche = "";
+    private int _markiert;
+    private string _quelle = "";
+    private string _neuerName = "";
+    private string _beschreibung = "";
+    private string _kunde = "";
+    private string _bearbeiter = "";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    private bool _laeuft;
+    private bool _fertig;
+    private double? _anteil;
+    private string _fortschrittText = "";
+    private CancellationTokenSource? _abbruch;
+
+    /// <summary>Läuft gerade eine Kopie? (Prüfhilfe für Tests.)</summary>
+    public bool Laeuft => _laeuft;
+
+    /// <summary>Das gewählte Quellprojekt (Prüfhilfe für Tests).</summary>
+    public string Quelle => _quelle;
+
+    private void BeiMarkierung(ProjektKopfZeile? z)
+    {
+        _markiert = z?.Id ?? 0;
+        _quelle = z?.Name ?? "";
+        QuellfelderLaden();
+    }
+
+    /// <summary>
+    /// A-6: Der Doppelklick markiert die Quelle und laedt die Felder — er startet NICHT
+    /// mehr die Duplizierung.
+    /// </summary>
+    private void BeiDoppelklick(ProjektKopfZeile z) => BeiMarkierung(z);
+
+    private void QuellfelderLaden()
+    {
+        if (string.IsNullOrEmpty(_quelle) || Quellfelder is null) return;
+
+        ProjektKopfDaten? daten = Quellfelder(_quelle);
+        if (daten is null) return;
+
+        _beschreibung = daten.Beschreibung ?? "";
+        _kunde = daten.Kunde ?? "";
+        _bearbeiter = daten.Bearbeiter ?? "";
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { Abbrechen(); await Geschlossen.InvokeAsync(false); return; }
+        if (_laeuft) return;
+        await Starten();
+    }
+
+    private async Task Starten()
+    {
+        string neu = (_neuerName ?? "").Trim();
+
+        if (string.IsNullOrWhiteSpace(neu)) { Melden(MeldungNameLeer); return; }
+
+        // A-4: die richtige Pruefung - dieselbe, die der Kern ohnehin faehrt.
+        if (Pruefen is not null)
+        {
+            switch (Pruefen(_quelle, neu))
+            {
+                case DuplizierBefund.NamenLeer: Melden(MeldungNameLeer); return;
+                case DuplizierBefund.QuelleFehlt:
+                    Melden(string.Format(MeldungQuelleFehlt, _quelle)); return;
+                case DuplizierBefund.ZielExistiert: Melden(MeldungNameBelegt); return;
+            }
+        }
+
+        if (Duplizieren is null) return;
+
+        _meldung = "";
+        _laeuft = true;
+        _fertig = false;
+        _anteil = null;
+        _fortschrittText = "";
+        _abbruch = new CancellationTokenSource();
+
+        var melder = new Progress<KopierStand>(stand =>
+        {
+            _anteil = stand.Gesamt > 0 ? Math.Min(stand.Aktuell, stand.Gesamt) / (double)stand.Gesamt : null;
+            _fortschrittText = (stand.Gesamt > 0 && stand.Aktuell < stand.Gesamt)
+                ? string.Format(FortschrittFormat, stand.Aktuell + 1, stand.Gesamt, stand.Tabelle)
+                : FortschrittFertigstellen;
+            StateHasChanged();
+        });
+
+        int neueId;
+        try
+        {
+            neueId = await Duplizieren(_quelle, neu, melder, _abbruch.Token);
+        }
+        catch (Exception ex)
+        {
+            _laeuft = false;
+            Melden(string.Format(MeldungFehler, ex.Message), WarnStufe.Fehler);
+            return;
+        }
+
+        if (neueId <= 0)
+        {
+            // Der Kern hat bereits gemeldet (Meldung.Zeigen) bzw. der Anwender hat
+            // abgebrochen - der Dialog bleibt offen.
+            _laeuft = false;
+            _fertig = false;
+            return;
+        }
+
+        // Beschreibung, Kunde und Bearbeiter auf die KOPIE schreiben - VOR dem
+        // Schliessen, damit ein Fehler dabei noch gemeldet werden kann. Ein Fehler
+        // wird gemeldet, aber NICHT zurueckgerollt (die Kopie steht bereits).
+        if (Verwaltungsfelder is not null)
+        {
+            VerwaltungsfelderErgebnis e = Verwaltungsfelder(neu, _beschreibung ?? "", _kunde ?? "", _bearbeiter ?? "");
+            switch (e.Befund)
+            {
+                case VerwaltungsfelderBefund.KopieFehlt:
+                    Melden(string.Format(MeldungKopieFehlt, neu)); break;
+                case VerwaltungsfelderBefund.NichtGespeichert:
+                    Melden(MeldungFelderNicht); break;
+                case VerwaltungsfelderBefund.Fehler:
+                    Melden(string.Format(MeldungFelderFehler, e.Fehlertext), WarnStufe.Fehler); break;
+            }
+        }
+
+        // A-5: den fertigen Balken kurz stehen lassen.
+        _laeuft = false;
+        _fertig = true;
+        _anteil = 1.0;
+        _fortschrittText = FortschrittFertig;
+        StateHasChanged();
+
+        if (FertigAnzeigeMs > 0) await Task.Delay(FertigAnzeigeMs);
+
+        await Geschlossen.InvokeAsync(true);
+    }
+
+    private void Abbrechen()
+    {
+        try { _abbruch?.Cancel(); } catch { /* der Lauf endet ohnehin */ }
+    }
+
+    private void Melden(string text, WarnStufe stufe = WarnStufe.Warnung)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (_laeuft) return Task.CompletedTask;
+        return e.Key switch
+        {
+            "Escape" => BeiErgebnis(false),
+            _ => Task.CompletedTask     // Enter startet KEINEN Kopierlauf (Hausregel)
+        };
+    }
+}

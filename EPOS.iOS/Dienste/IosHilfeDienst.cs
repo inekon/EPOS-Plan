@@ -60,7 +60,11 @@ public sealed class IosHilfeDienst : IHilfeDienst
 
         return new HilfeEintrag(
             ziel,
-            "Die ausführliche Beschreibung steht in der Dokumentation.",
+            // Drei-Schichten-Regel (A4): Anzeigetexte ausschliesslich ueber
+            // MyResource. Bis iU9-W15b.0g stand hier der deutsche Satz fest im
+            // Quelltext - der einzige Verstoss der iOS-Huelle (Befund W15b-B20,
+            // Auflage H-2).
+            WindowsFormsApplication1.MyResource.Resource.HILFE_IOS_BESCHREIBUNG,
             adresse);
     }
 

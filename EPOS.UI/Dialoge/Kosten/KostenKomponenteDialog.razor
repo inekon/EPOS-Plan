@@ -1,0 +1,771 @@
+﻿@* Kostenverwaltung einer Komponente (iU9-W4.2).
+
+   Vorbild: Views/Kosten/Form_KostenKomponente.cs (918 Z.) und .Designer.cs —
+   Etappe KD2/KD6a, Konzept Kostendialoge Rev. 1.2 § 5. Drei Kontexte in einem
+   Dialog: Katalogpflege je Komponente und Kategorie mit Varianten (KL2), der
+   Projektmodus ueber Tab_ProjektWerte (KD6a § 3.2) und — als Abschnitt — die
+   Ertrags-/Bonusanzeige des BHKW bzw. der Photovoltaik (KD5 § 6).
+
+   DER WIRT DER WELLE. Fuenf Dialoge der Wellen 1 bis 3 haengen an dieser Maske:
+   Worst/Best (W1.3), der Zeileneditor (W1.1), die Namensabfrage (W1.2), die
+   Uebernahme (W1.4) und der Kostenfaktor-Katalog (W1.5). Alle fuenf sind
+   bereits Razor-Komponenten — bis hierher oeffnete sie die WinForms-Maske
+   jeweils in einer eigenen BlazorWebView. Seit W4.0 stehen sie in einer
+   Ueberlagerung: dasselbe Fenster, dieselbe WebView (Risiko R2).
+
+   DIE DATENSEITE LIEGT IN DER HUELLE. Die Komponente kennt weder
+   KostenVorlagenCtrl noch KostenProjektPositionenCtrl. Sie fragt mit einem
+   KostenKomponenteKontext und bekommt einen KostenKomponenteStand — genau die
+   fuenf Methoden des Vorlaeufers (KopfAnzeigen, VariantenLaden, RasterAufbauen,
+   SummenAnzeigen, ErtragReiterSteuern) in einer Antwort.
+
+   ZWEI REITER - WIE IM VORLAEUFER (iU9-W5.0, Nachzug von A-2). Der
+   Vorlaeufer trug ein TabControl mit „Kosten Invest/Betrieb" und
+   „Ertrag/Bonus" und ENTFERNTE die zweite Seite zur Laufzeit, wenn das
+   Gewerk keinen Ertrag kennt (ErtragReiterSteuern). Welle 4 stellte beides
+   untereinander, weil es den Baustein Reiter noch nicht gab (offener Punkt
+   W4-O1); seit Welle 5 gibt es ihn - und das Weglassen der zweiten Seite ist
+   hier nur ein @if.
+
+   TASTATUR: Esc schliesst zuerst eine offene Ueberlagerung, dann den Dialog.
+   Enter ist nicht belegt: „Speichern", „Uebernahme" und „Katalog" schreiben
+   sofort (A-7 aus B5b). *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Wirtschaftlichkeit
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@_stand.Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@_stand.Untertitel</p>
+
+    @if (_bannerOffen && !string.IsNullOrEmpty(BannerText))
+    {
+        <div class="epos-bannerzeile">
+            <Warnbanner Stufe="WarnStufe.Hinweis" Text="@BannerText" />
+            <button type="button" class="epos-knopf epos-zr-knopf" title="@BannerZuKurztext"
+                    @onclick="() => _bannerOffen = false">✕</button>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* ------------------------------------------------------------ Kontext *@
+    <div class="epos-kontextleiste">
+        <Auswahlfeld Bezeichnung="@LabelKomponente" Eintraege="@Eintraege"
+                     Auswahl="@_eintragId" AuswahlChanged="BeiEintrag" />
+        <Optionsgruppe Bezeichnung="@LabelKategorie"
+                       Eintraege="@KATEGORIEN" Auswahl="@(_invest ? 1 : 0)"
+                       AuswahlChanged="BeiKategorie" />
+    </div>
+
+    @if (_stand.VariantePflegbar)
+    {
+        <div class="epos-kontextleiste">
+            <Auswahlfeld Bezeichnung="@LabelVariante" Eintraege="@_stand.Varianten"
+                         Auswahl="@_stand.VarianteId" AuswahlChanged="BeiVariante" />
+            <button type="button" class="epos-knopf" @onclick="() => VarianteFragen(false)">@VarianteNeuText</button>
+            <button type="button" class="epos-knopf" @onclick="() => VarianteFragen(true)">@SpeichernUnterText</button>
+            <button type="button" class="epos-knopf epos-zr-knopf" title="@VarianteLoeschenKurztext"
+                    disabled="@(!_stand.VarianteLoeschbar)" @onclick="VarianteLoeschenFragen">🗑️</button>
+        </div>
+    }
+
+    @if (_stand.NurLesen)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@ReadOnlyHinweis" />
+    }
+
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@ReiterBezeichnung">
+        <KindInhalt>
+
+    <Reiterblatt Schluessel="KOSTEN" Titel="@TitelReiterKosten">
+        <KindInhalt>
+
+    @* ------------------------------------------------------------- Raster *@
+    <Zeilenraster Bezeichnung="@LabelRaster" Spaltenmass="@SPALTENMASS"
+                  Spalten="@Spaltenkopf()" Summen="@_stand.Summen">
+        <KindInhalt>
+            @foreach (KostenPositionZeile z in _stand.Zeilen)
+            {
+                KostenPositionZeile zeile = z;
+                <VorlagenZeile @key="zeile.Id"
+                               Bezeichnung="@zeile.Bezeichnung"
+                               BezeichnungChanged="@(w => Feld(zeile, () => zeile.Bezeichnung = w))"
+                               Bemessungen="@_stand.Bemessungen"
+                               BemessungId="@zeile.BemessungId"
+                               BemessungIdChanged="@(w => Feld(zeile, () => zeile.BemessungId = w))"
+                               Satz="@zeile.Satz"
+                               SatzChanged="@(w => Feld(zeile, () => zeile.Satz = w))"
+                               Einheit="@zeile.Einheit"
+                               BetragText="@zeile.BetragText"
+                               Kette="@zeile.Kette"
+                               BetragKurztext="@zeile.BetragKurztext"
+                               EmpfehlungKurztext="@zeile.EmpfehlungKurztext"
+                               Nutzungsdauer="@zeile.Nutzungsdauer"
+                               NutzungsdauerChanged="@(w => Feld(zeile, () => zeile.Nutzungsdauer = w))"
+                               MitNutzungsdauer="@_stand.MitNutzungsdauer"
+                               MitWorstBest="@_stand.MitWorstBest"
+                               Schreibbar="@zeile.Schreibbar"
+                               EditorKurztext="@EditorKurztext"
+                               LoeschenKurztext="@ZeileLoeschenKurztext"
+                               WorstBestKurztext="@WorstBestKurztext"
+                               KetteKurztext="@KetteKurztext"
+                               EditorAngefordert="@(() => EditorOeffnen(zeile))"
+                               LoeschenAngefordert="@(() => LoeschenFragen(zeile))"
+                               WorstBestAngefordert="@(() => CaseOeffnen(zeile))" />
+            }
+        </KindInhalt>
+        <AbschlussZeile>
+            @if (_stand.PositionNeuMoeglich)
+            {
+                <div class="epos-zr-neuzeile">
+                    <div class="epos-zr-neuraster" style="grid-template-columns: @SPALTENMASS">
+                        <VorlagenZeile Neuzeile="true" Bezeichnung="@_neuerName"
+                                       BezeichnungChanged="@(w => _neuerName = w)"
+                                       Bemessungen="@_stand.Bemessungen"
+                                       MitNutzungsdauer="@_stand.MitNutzungsdauer"
+                                       Platzhalter="@NeuPlatzhalter"
+                                       AnlegenKurztext="@PositionNeuText"
+                                       AnlegenAngefordert="PositionAnlegen" />
+                    </div>
+                </div>
+            }
+        </AbschlussZeile>
+    </Zeilenraster>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!_stand.PositionNeuMoeglich)"
+                @onclick="PositionAnlegenMitVorgabe">@PositionNeuText</button>
+        <button type="button" class="epos-knopf" @onclick="UebernahmeOeffnen">@UebernahmeText</button>
+        <button type="button" class="epos-knopf" @onclick="KatalogOeffnen">@KatalogText</button>
+    </div>
+
+        </KindInhalt>
+    </Reiterblatt>
+
+    @* ------------------------------------------------------ Ertrag/Bonus *@
+    @if (_stand.ErtragSichtbar && _stand.ErtragGaben is not null)
+    {
+        <Reiterblatt Schluessel="ERTRAG" Titel="@TitelReiterErtrag">
+            <KindInhalt>
+                @* Kein Delegat, kein Knopf: Ohne GesetzeGaben bekommt das
+                   Reiterblatt auch keinen Rueckruf. *@
+                <ErtragBonus @attributes="_stand.ErtragGaben"
+                             GesetzeGewuenscht="@GesetzeRueckruf" />
+            </KindInhalt>
+        </Reiterblatt>
+    }
+
+        </KindInhalt>
+    </Reiter>
+
+    <div class="epos-leiste">
+        <span class="epos-status">@_status</span>
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiSpeichern">@SpeichernText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="BeiOk">@OkText</button>
+    </div>
+
+    @* ------------------------------------------------------ Unterdialoge *@
+    <Ueberlagerung Offen="@(_caseZeile is not null)" Schliessbar="false"
+                   Titel="@CaseTitel" Geschlossen="() => CaseFertigMachen(null)">
+        <KindInhalt>
+            @if (_caseGaben is not null)
+            {
+                <CaseEingabeDialog @attributes="_caseGaben" Geschlossen="CaseFertigMachen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_editorZeile is not null)" Schliessbar="false"
+                   Titel="@EditorTitel" Geschlossen="() => EditorFertigMachen(null)">
+        <KindInhalt>
+            @if (_editorGaben is not null)
+            {
+                <VorlagenPositionDialog @attributes="_editorGaben" Geschlossen="EditorFertigMachen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_variantenGaben is not null)" Schliessbar="false"
+                   Titel="@VarianteTitel" Geschlossen="() => VarianteFertigMachen(null)">
+        <KindInhalt>
+            @if (_variantenGaben is not null)
+            {
+                <NamensDialog @attributes="_variantenGaben" Geschlossen="VarianteFertigMachen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_uebernahmeGaben is not null)" Schliessbar="false"
+                   Titel="@UebernahmeTitel" Geschlossen="() => UebernahmeFertigMachen(false)">
+        <KindInhalt>
+            @if (_uebernahmeGaben is not null)
+            {
+                <VorlagenUebernahmeDialog @attributes="_uebernahmeGaben"
+                                          Geschlossen="UebernahmeFertigMachen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_katalogGaben is not null)" Schliessbar="false"
+                   Titel="@KatalogTitel" Geschlossen="KatalogFertigMachen">
+        <KindInhalt>
+            @if (_katalogGaben is not null)
+            {
+                <KostenfaktorKatalogDialog @attributes="_katalogGaben" Geschlossen="KatalogFertigMachen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* Die SECHSTE Ueberlagerung (iU9-W14c.3): der Gesetzeskatalog. Bis W14c
+       sprang ErtragBonus dorthin ueber die Sprungbruecke; das Ziel ist jetzt
+       selbst Razor, und zwei WebViews uebereinander sind Risiko R2. *@
+    <Ueberlagerung Offen="@(_gesetzeGaben is not null)" Schliessbar="false"
+                   Titel="@GesetzeTitel" Geschlossen="() => GesetzeFertigMachen(false)">
+        <KindInhalt>
+            @if (_gesetzeGaben is not null)
+            {
+                <GesetzeskatalogDialog @attributes="_gesetzeGaben"
+                                       Geschlossen="GesetzeFertigMachen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@(_frage.Length > 0)" Frage="@_frage" TitelText="@FrageTitel"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="FrageBeantwortet" />
+</div>
+
+@code {
+    /// <summary>Die Spuren des Positionsrasters — sieben Spalten der Feldkarte.</summary>
+    private const string SPALTENMASS =
+        "104px minmax(160px, 2fr) minmax(140px, 1.4fr) minmax(110px, 1fr) minmax(110px, 1fr) 90px 60px";
+
+    /// <summary>Die beiden Kategorien (Ids wie <c>rbInvest</c>/<c>rbBetrieb</c>).</summary>
+    private (int Id, string Text)[] KATEGORIEN => new[] { (0, KategorieBetriebText), (1, KategorieInvestText) };
+
+    // =====================================================================
+    // Vorbelegung und Datenseite
+    // =====================================================================
+
+    /// <summary>Die Klappliste: im Stammkontext Komponenten, im Projektmodus Anlagen (Ä20).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Vorwahl in der Klappliste; <c>null</c> = der erste Eintrag.</summary>
+    [Parameter] public int? EintragVorwahl { get; set; }
+
+    /// <summary>Vorwahl der Kategorie (<c>WaehleBetrieb</c> setzt sie auf Betrieb).</summary>
+    [Parameter] public bool InvestVorwahl { get; set; } = true;
+
+    /// <summary>
+    /// Die Datenseite: zu einem Kontext den ganzen Stand. Ohne Delegat bleibt
+    /// der Dialog leer — das ist der Prüfstandsfall.
+    /// </summary>
+    [Parameter] public Func<KostenKomponenteKontext, KostenKomponenteStand>? Laden { get; set; }
+
+    /// <summary>Rechnet Kopplung, Einheit und Summen nach einer Feldänderung nach.</summary>
+    [Parameter] public Action<KostenPositionZeile>? Nachziehen { get; set; }
+
+    /// <summary>Schreibt alle Zeilen (<c>JetztSpeichern</c> je Zeile). <c>false</c> = Fehler.</summary>
+    [Parameter] public Func<bool>? Speichern { get; set; }
+
+    /// <summary>
+    /// Rechnet den Summenfuß aus dem aktuellen Stand — nach jeder Feldänderung.
+    /// Sie kommt NICHT aus der Datenbank: Bis „Speichern" lebt die Änderung nur
+    /// im Objekt.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<(string Text, bool Stark)>>? Summen { get; set; }
+
+    /// <summary>Legt eine Position an; Rückgabe 0 = nichts geschrieben.</summary>
+    [Parameter] public Func<string, int>? PositionNeu { get; set; }
+
+    /// <summary>Löscht eine Position. Rückgabe <c>false</c> = nichts gelöscht.</summary>
+    [Parameter] public Func<KostenPositionZeile, bool>? PositionLoeschen { get; set; }
+
+    /// <summary>
+    /// Ist die Position eine Pflichtposition (H1-2, Schritt 59)? Dann wird sie
+    /// nicht gelöscht, sondern der Ausweg genannt.
+    /// </summary>
+    [Parameter] public Func<KostenPositionZeile, bool>? IstPflicht { get; set; }
+
+    // ---- Unterdialoge: Gaben und Antworten -------------------------------
+
+    /// <summary>Parameter des Worst/Best-Dialogs zu einer Zeile (W1.3).</summary>
+    [Parameter] public Func<KostenPositionZeile, IReadOnlyDictionary<string, object>>? CaseGaben { get; set; }
+
+    /// <summary>Trägt das Ergebnis des Worst/Best-Dialogs ein und schreibt es.</summary>
+    [Parameter] public Action<KostenPositionZeile, CaseEingabeErgebnis>? CaseFertig { get; set; }
+
+    /// <summary>Parameter des Zeileneditors zu einer Zeile (W1.1).</summary>
+    [Parameter] public Func<KostenPositionZeile, IReadOnlyDictionary<string, object>>? EditorGaben { get; set; }
+
+    /// <summary>Trägt das Ergebnis des Zeileneditors ein und schreibt es.</summary>
+    [Parameter] public Action<KostenPositionZeile, VorlagenPositionErgebnis>? EditorFertig { get; set; }
+
+    /// <summary>Parameter der Namensabfrage; <c>kopie</c> = „Speichern unter…" (W1.2).</summary>
+    [Parameter] public Func<bool, IReadOnlyDictionary<string, object>>? VariantenGaben { get; set; }
+
+    /// <summary>Legt die Variante an; Rückgabe 0 = Name belegt oder leer.</summary>
+    [Parameter] public Func<bool, string, int>? VarianteNeu { get; set; }
+
+    /// <summary>Löscht die gewählte Variante. <c>false</c> = nichts gelöscht.</summary>
+    [Parameter] public Func<bool>? VarianteLoeschen { get; set; }
+
+    /// <summary>Ist die gewählte Variante die Standardvorlage (Ä8-Restschutz)?</summary>
+    [Parameter] public Func<bool>? VarianteIstStandard { get; set; }
+
+    /// <summary>Parameter des Übernahmedialogs (W1.4).</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? UebernahmeGaben { get; set; }
+
+    /// <summary>Parameter des Kostenfaktor-Katalogs (W1.5).</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? KatalogGaben { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende; <c>true</c> = OK.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string BannerText { get; set; } = "Alle Beträge und alle Bezugsgrößen sind NETTO.";
+    [Parameter] public string BannerZuKurztext { get; set; } = "Hinweis ausblenden";
+    [Parameter] public string LabelKomponente { get; set; } = "Komponente:";
+    [Parameter] public string LabelKategorie { get; set; } = "";
+    [Parameter] public string KategorieInvestText { get; set; } = "Investitionskosten";
+    [Parameter] public string KategorieBetriebText { get; set; } = "Betriebskosten";
+    [Parameter] public string LabelVariante { get; set; } = "Variante:";
+    [Parameter] public string VarianteNeuText { get; set; } = "Neu…";
+    [Parameter] public string SpeichernUnterText { get; set; } = "Speichern unter…";
+    [Parameter] public string VarianteLoeschenKurztext { get; set; } = "Variante löschen";
+    [Parameter] public string ReadOnlyHinweis { get; set; }
+        = "Auslieferungsvorlage (schreibgeschützt) — zum Ändern „Speichern unter…\" verwenden.";
+    [Parameter] public string LabelRaster { get; set; } = "Positionen";
+
+    /// <summary>Beschriftung des ersten Reiters (Vorlaeufer: „Kosten Invest/Betrieb").</summary>
+    [Parameter] public string TitelReiterKosten { get; set; } = "Kosten Invest/Betrieb";
+
+    /// <summary>Beschriftung des zweiten Reiters (Vorlaeufer: „Ertrag/Bonus").</summary>
+    [Parameter] public string TitelReiterErtrag { get; set; } = "Ertrag/Bonus";
+
+    /// <summary>Beschriftung der Reiterleiste fuer die Sprachausgabe.</summary>
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Kostenverwaltung";
+    [Parameter] public string SpalteAktionen { get; set; } = "Aktionen";
+    [Parameter] public string SpaltePosition { get; set; } = "Position";
+    [Parameter] public string SpalteBemessung { get; set; } = "Bemessung";
+    [Parameter] public string SpalteSatz { get; set; } = "Satz";
+    [Parameter] public string SpalteNutzung { get; set; } = "Nutzung [a]";
+    [Parameter] public string SpalteWorstBest { get; set; } = "Worst/Best";
+    [Parameter] public string NeuPlatzhalter { get; set; } = "+ Neue Position…";
+    [Parameter] public string PositionNeuText { get; set; } = "+ Position hinzufügen";
+    [Parameter] public string PositionNeuVorgabe { get; set; } = "Neue Position";
+    [Parameter] public string UebernahmeText { get; set; } = "In Projekt übernehmen…";
+    [Parameter] public string KatalogText { get; set; } = "Positionskatalog…";
+    [Parameter] public string EditorKurztext { get; set; } = "Position bearbeiten";
+    [Parameter] public string ZeileLoeschenKurztext { get; set; } = "Position löschen";
+    [Parameter] public string WorstBestKurztext { get; set; }
+        = "Worst/Best wird je Projektposition gepflegt, nicht in der Stammvorlage.";
+    [Parameter] public string KetteKurztext { get; set; }
+        = "Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.";
+    [Parameter] public string SpeichernText { get; set; } = "Speichern";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string FrageTitel { get; set; } = "Kostenverwaltung";
+    [Parameter] public string CaseTitel { get; set; } = "Eingabe Worst/Best Case";
+    [Parameter] public string EditorTitel { get; set; } = "Position bearbeiten";
+    [Parameter] public string VarianteTitel { get; set; } = "Neue Variante";
+    [Parameter] public string UebernahmeTitel { get; set; } = "Übernahme ins Projekt";
+    [Parameter] public string KatalogTitel { get; set; } = "Administration Kostenfaktoren";
+
+    /// <summary>Überschrift der Gesetzeskatalog-Überlagerung (iU9-W14c.3).</summary>
+    [Parameter] public string GesetzeTitel { get; set; } = Resource.GESETZ_TITEL;
+
+    /// <summary>
+    /// Der Parametersatz des Gesetzeskatalogs
+    /// (<c>GesetzeskatalogHuelle.Gaben</c>) — ohne ihn bleibt der Knopf im
+    /// Reiterblatt „Ertrag/Bonus" weg.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? GesetzeGaben { get; set; }
+
+    /// <summary>Vorlage der Löschrückfrage einer Position.</summary>
+    [Parameter] public string VorlagePositionLoeschen { get; set; } = "Position „{0}\" löschen?";
+
+    /// <summary>Meldung, wenn eine Pflichtposition gelöscht werden soll (H1-2).</summary>
+    [Parameter] public string VorlagePflichtLoeschen { get; set; }
+        = "„{0}\" ist eine Pflichtposition dieser Komponente und kann nicht gelöscht werden. "
+        + "Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.";
+
+    /// <summary>Vorlage der Löschrückfrage einer Variante.</summary>
+    [Parameter] public string VorlageVarianteLoeschen { get; set; } = "Variante „{0}\" wirklich löschen?";
+
+    /// <summary>Meldung beim Löschversuch der Standardvorlage (Ä8-Restschutz).</summary>
+    [Parameter] public string MeldungStandardLoeschen { get; set; }
+        = "Die Standardvorlage kann nicht gelöscht werden — Varianten schon.";
+
+    /// <summary>Meldung, wenn der Variantenname belegt oder leer ist.</summary>
+    [Parameter] public string MeldungNameBelegt { get; set; } = "Der Name ist bereits vergeben oder leer.";
+
+    /// <summary>Vorlage der Speicherbestätigung in der Statuszeile.</summary>
+    [Parameter] public string VorlageGespeichert { get; set; } = "gespeichert {0} Uhr";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_KostenKomponente.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _eintragId;
+    private bool _invest = true;
+    private KostenKomponenteStand _stand = new();
+
+    private bool _bannerOffen = true;
+    private string _neuerName = "";
+    private string _status = "";
+    /// <summary>Der sichtbare Reiter (Schluessel, kein Anzeigetext).</summary>
+    private string _reiter = "KOSTEN";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Fehler;
+
+    private KostenPositionZeile? _caseZeile;
+    private IReadOnlyDictionary<string, object>? _caseGaben;
+    private KostenPositionZeile? _editorZeile;
+    private IReadOnlyDictionary<string, object>? _editorGaben;
+    private bool _variantenKopie;
+    private IReadOnlyDictionary<string, object>? _variantenGaben;
+    private IReadOnlyDictionary<string, object>? _uebernahmeGaben;
+    private IReadOnlyDictionary<string, object>? _katalogGaben;
+    private IReadOnlyDictionary<string, object>? _gesetzeGaben;
+
+    private string _frage = "";
+    private Func<Task>? _frageJa;
+
+    /// <summary>Der gezeigte Stand (Prüfhilfe für Tests).</summary>
+    public KostenKomponenteStand Stand => _stand;
+
+    /// <summary>Die Meldung im Banner (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Statuszeile (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Steht eine Überlagerung? (Prüfhilfe für Tests)</summary>
+    public bool UeberlagerungOffen => _caseZeile is not null || _editorZeile is not null
+        || _variantenGaben is not null || _uebernahmeGaben is not null
+        || _katalogGaben is not null || _gesetzeGaben is not null || _frage.Length > 0;
+
+    protected override void OnInitialized()
+    {
+        _eintragId = EintragVorwahl ?? (Eintraege.Count > 0 ? Eintraege[0].Id : null);
+        _invest = InvestVorwahl;
+        KontextLaden(null);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>Wie <c>Kontext_Geaendert</c>: einmal fragen, alles neu zeigen.</summary>
+    private void KontextLaden(int? varianteId)
+    {
+        if (Laden is null) return;
+        _stand = Laden(new KostenKomponenteKontext(_eintragId, _invest, varianteId));
+        _neuerName = "";
+    }
+
+    private string[] Spaltenkopf() => new[]
+    {
+        SpalteAktionen, SpaltePosition, SpalteBemessung, SpalteSatz,
+        _stand.SpalteBetrag, SpalteNutzung, SpalteWorstBest
+    };
+
+    // =====================================================================
+    // Kontextwechsel
+    // =====================================================================
+
+    private void BeiEintrag(int? id)
+    {
+        _eintragId = id;
+        Melden("");
+        KontextLaden(null);
+    }
+
+    private void BeiKategorie(int? id)
+    {
+        _invest = id == 1;
+        Melden("");
+        KontextLaden(null);
+    }
+
+    private void BeiVariante(int? id)
+    {
+        Melden("");
+        KontextLaden(id);
+    }
+
+    // =====================================================================
+    // Zeilenfelder (Ä12/Ä19: die Änderung lebt bis „Speichern" im Objekt)
+    // =====================================================================
+
+    private void Feld(KostenPositionZeile zeile, Action aendern)
+    {
+        aendern();
+        Nachziehen?.Invoke(zeile);
+        SummenNachziehen();
+    }
+
+    /// <summary>
+    /// Die Summen fallen aus denselben Zeilen — der Vorläufer zog sie über
+    /// <c>PositionGeaendert</c> nach (<c>SummenAnzeigen</c>). Gerechnet wird in
+    /// der Hülle, und zwar aus dem STAND, nicht aus der Datenbank: Bis
+    /// „Speichern" lebt die Änderung nur im Objekt (Ä12/Ä19).
+    /// </summary>
+    private void SummenNachziehen()
+    {
+        if (Summen is not null) _stand.Summen = Summen();
+    }
+
+    // =====================================================================
+    // Positionen
+    // =====================================================================
+
+    private void PositionAnlegen() => PositionAnlegenMit(_neuerName);
+
+    /// <summary>„+ Position hinzufügen" legt mit der Vorgabe an (<c>btnPositionNeu_Click</c>).</summary>
+    private void PositionAnlegenMitVorgabe() => PositionAnlegenMit(PositionNeuVorgabe);
+
+    private void PositionAnlegenMit(string name)
+    {
+        if (PositionNeu is null) return;
+        string sauber = (name ?? "").Trim();
+        if (sauber.Length == 0) return;
+        if (PositionNeu(sauber) == 0) return;
+        Melden("");
+        KontextLaden(_stand.VarianteId);
+    }
+
+    /// <summary>
+    /// Wie <c>Zeile_LoeschenAngefordert</c>: Pflichtpositionen werden nicht
+    /// gelöscht, sondern erklärt; alles Übrige erst nach der Rückfrage.
+    /// </summary>
+    private void LoeschenFragen(KostenPositionZeile zeile)
+    {
+        if (IstPflicht is not null && IstPflicht(zeile))
+        {
+            Melden(string.Format(VorlagePflichtLoeschen, zeile.Bezeichnung), WarnStufe.Hinweis);
+            return;
+        }
+
+        _frage = string.Format(VorlagePositionLoeschen, zeile.Bezeichnung);
+        _frageJa = () =>
+        {
+            if (PositionLoeschen is not null && PositionLoeschen(zeile)) KontextLaden(_stand.VarianteId);
+            return Task.CompletedTask;
+        };
+    }
+
+    private async Task FrageBeantwortet(bool? antwort)
+    {
+        Func<Task>? ja = _frageJa;
+        _frage = "";
+        _frageJa = null;
+        if (antwort == true && ja is not null) await ja();
+    }
+
+    // =====================================================================
+    // Worst/Best und Zeileneditor
+    // =====================================================================
+
+    private void CaseOeffnen(KostenPositionZeile zeile)
+    {
+        if (CaseGaben is null) return;
+        _caseZeile = zeile;
+        _caseGaben = CaseGaben(zeile);
+    }
+
+    private void CaseFertigMachen(CaseEingabeErgebnis? ergebnis)
+    {
+        KostenPositionZeile? zeile = _caseZeile;
+        _caseZeile = null;
+        _caseGaben = null;
+        if (ergebnis is null || zeile is null) return;
+        CaseFertig?.Invoke(zeile, ergebnis);
+    }
+
+    private void EditorOeffnen(KostenPositionZeile zeile)
+    {
+        if (EditorGaben is null) return;
+        _editorZeile = zeile;
+        _editorGaben = EditorGaben(zeile);
+    }
+
+    private void EditorFertigMachen(VorlagenPositionErgebnis? ergebnis)
+    {
+        KostenPositionZeile? zeile = _editorZeile;
+        _editorZeile = null;
+        _editorGaben = null;
+        if (ergebnis is null || zeile is null) return;
+        EditorFertig?.Invoke(zeile, ergebnis);
+        KontextLaden(_stand.VarianteId);
+    }
+
+    // =====================================================================
+    // Varianten
+    // =====================================================================
+
+    /// <summary>Wie <c>NeueVariante</c>: Namensabfrage, dann anlegen bzw. kopieren.</summary>
+    private void VarianteFragen(bool kopie)
+    {
+        if (VariantenGaben is null) return;
+        if (kopie && !_stand.VarianteId.HasValue) return;
+        _variantenKopie = kopie;
+        _variantenGaben = VariantenGaben(kopie);
+    }
+
+    private void VarianteFertigMachen(string? name)
+    {
+        bool kopie = _variantenKopie;
+        _variantenGaben = null;
+        if (name is null || VarianteNeu is null) return;
+
+        int neueId = VarianteNeu(kopie, name);
+        if (neueId == 0)
+        {
+            Melden(MeldungNameBelegt, WarnStufe.Warnung);
+            return;
+        }
+        Melden("");
+        KontextLaden(neueId);
+    }
+
+    /// <summary>Wie <c>btnVarianteLoeschen_Click</c> samt Ä8-Restschutz.</summary>
+    private void VarianteLoeschenFragen()
+    {
+        if (!_stand.VarianteId.HasValue) return;
+
+        if (VarianteIstStandard is not null && VarianteIstStandard())
+        {
+            Melden(MeldungStandardLoeschen, WarnStufe.Hinweis);
+            return;
+        }
+
+        string name = "";
+        foreach ((int id, string text) in _stand.Varianten)
+        {
+            if (id == _stand.VarianteId.Value) { name = text; break; }
+        }
+
+        _frage = string.Format(VorlageVarianteLoeschen, name);
+        _frageJa = () =>
+        {
+            if (VarianteLoeschen is not null && VarianteLoeschen()) KontextLaden(null);
+            return Task.CompletedTask;
+        };
+    }
+
+    // =====================================================================
+    // Übernahme und Katalog
+    // =====================================================================
+
+    private void UebernahmeOeffnen()
+    {
+        if (UebernahmeGaben is null) return;
+        _uebernahmeGaben = UebernahmeGaben();
+    }
+
+    private void UebernahmeFertigMachen(bool geschrieben)
+    {
+        _uebernahmeGaben = null;
+        // Wie btnUebernahme_Click: übernommene Positionen sofort zeigen.
+        KontextLaden(_stand.VarianteId);
+    }
+
+    private void KatalogOeffnen()
+    {
+        if (KatalogGaben is null) return;
+        _katalogGaben = KatalogGaben();
+    }
+
+    private void KatalogFertigMachen() => _katalogGaben = null;
+
+    /// <summary>
+    /// Der Rückruf für das Reiterblatt — <c>default</c>, solange die Hülle keine
+    /// Gaben liefert. Der Knopf im Blatt hängt an <c>HasDelegate</c>.
+    /// </summary>
+    private EventCallback GesetzeRueckruf => GesetzeGaben is null
+        ? default
+        : EventCallback.Factory.Create(this, GesetzeOeffnen);
+
+    /// <summary>
+    /// Der Gesetzeskatalog, gerufen aus dem Reiterblatt „Ertrag/Bonus" (iU9-W14c.3).
+    /// </summary>
+    private void GesetzeOeffnen()
+    {
+        if (GesetzeGaben is null) return;
+        _gesetzeGaben = GesetzeGaben();
+    }
+
+    /// <summary>
+    /// Nach dem Katalog werden die Gaben des Reiterblatts neu gebaut — der
+    /// Vorläufer rief dafür <c>ErtragBonusGaben.Bauen(name)</c> erneut.
+    /// </summary>
+    private void GesetzeFertigMachen(bool ok)
+    {
+        _gesetzeGaben = null;
+        KontextLaden(_stand.VarianteId);
+    }
+
+    // =====================================================================
+    // Schlussleiste
+    // =====================================================================
+
+    /// <summary>Ä13: OK = speichern und verlassen.</summary>
+    private Task BeiOk()
+    {
+        Speichern?.Invoke();
+        return Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>Ä12/Ä19: Speichern, Dialog bleibt offen; die Statuszeile bestätigt.</summary>
+    private void BeiSpeichern()
+    {
+        if (Speichern is not null && !Speichern()) return;
+        KontextLaden(_stand.VarianteId);
+        _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
+    }
+
+    /// <summary>Ä12: schließen OHNE Datenübernahme.</summary>
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+
+    private void Melden(string text, WarnStufe stufe = WarnStufe.Fehler)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Enter ist NICHT belegt (A-7 aus B5b). Esc geht zuerst an eine offene
+        // Überlagerung — sie fängt die Taste selbst ab und meldet nicht weiter.
+        if (e.Key != "Escape" || UeberlagerungOffen) return Task.CompletedTask;
+        return BeiAbbrechen();
+    }
+}

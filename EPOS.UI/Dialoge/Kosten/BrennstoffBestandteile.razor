@@ -1,0 +1,167 @@
+﻿@* Preiszerlegung eines BRENNSTOFF-Traegers (iU9-W4.3).
+
+   Vorbild: Views/Kosten/ucBrennstoffBestandteile.cs (863 Z.) und .Designer.cs —
+   Konzept BHKW-Wirtschaftlichkeit § 4.1 und § 6.2, Etappe B2, Befund BW1.
+
+   DER UNTERSCHIED ZUM STROM-BLOCK. Beim Strom ist der Aufschlag ein ZUSCHLAG,
+   der auf den Arbeitspreis addiert wird. Hier ist die Zerlegung eine
+   AUFTEILUNG DESSELBEN Preises: Die Bestandteile stecken bereits im
+   Arbeitspreis. Es wird deshalb nie etwas addiert; die aussagekraeftige Groesse
+   ist die Summe der AKTIVEN Anteile.
+
+   ZWEI MODI (§ 4.1). „Gesamtwert" (Vorbelegung): Der Arbeitspreis gilt, die
+   Bestandteile sind Transparenz, und die Restzeile nennt den nicht
+   aufgeschluesselten Rest — negativ steht er in Warnfarbe, statt verschwiegen
+   zu werden. „Aufgeschluesselt": Die Summe IST der Preis; der Knopf „In
+   Arbeitspreis uebernehmen" MELDET das nur — eingetragen wird der Wert vom
+   Wirt. Dieser Block schreibt den Preis nie selbst: Es gibt genau eine
+   Preiswahrheit, und die heisst energy_project_settings.custom_price_work.
+
+   NULL HEISST „KEIN ANTEIL". Ein leeres Feld wird nicht durch einen
+   Vorschlagssatz ersetzt (§ 5.1, Falle aus E5); der Katalogsatz kommt
+   ausschliesslich ueber die Schnellwahlknoepfe ins Feld. Ist eine Groesse nicht
+   belegbar, bleibt ihr Knopf gesperrt und der Kurztext nennt den Grund — eine
+   geratene Zahl waere genau der Fehlertyp, den Leitentscheidung L3 verhindert.
+
+   In BEIDEN Modi bleiben die Komponentenfelder schreibbar: Es gibt hier kein
+   Override-Feld, das sie ersetzen koennte. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<Gruppenkopf Titel="@TitelBestandteile">
+    <KindInhalt>
+        <Optionsgruppe Eintraege="@MODI" Auswahl="@(Stand.Aufgeschluesselt ? 1 : 0)"
+                       AuswahlChanged="BeiModus" />
+
+        <p class="epos-untergruppe">@LabelSchnellwahl</p>
+        <div class="epos-schnellwahl">
+            @Schnellwahlknopf(SatzRegel, w => Stand.Energiesteuer = w, true)
+            @Schnellwahlknopf(Satz53a, w => Stand.Energiesteuer = w, true)
+            @Schnellwahlknopf(Satz54, w => Stand.Energiesteuer = w, true)
+            @Schnellwahlknopf(SatzCo2, w => Stand.CO2 = w, false)
+        </div>
+        @if (!string.IsNullOrEmpty(_quelle))
+        {
+            <Herleitungszeile Text="@_quelle" />
+        }
+
+        <div class="epos-preisblock">
+            @Komponente(LabelEnergiesteuer, Stand.Energiesteuer, w => Stand.Energiesteuer = w,
+                        Stand.EnergiesteuerAktiv, w => Stand.EnergiesteuerAktiv = w)
+            @Komponente(LabelCo2, Stand.CO2, w => Stand.CO2 = w,
+                        Stand.CO2Aktiv, w => Stand.CO2Aktiv = w)
+            @Komponente(LabelNetzentgelt, Stand.Netzentgelt, w => Stand.Netzentgelt = w,
+                        Stand.NetzentgeltAktiv, w => Stand.NetzentgeltAktiv = w)
+            @Komponente(LabelVertrieb, Stand.Vertrieb, w => Stand.Vertrieb = w,
+                        Stand.VertriebAktiv, w => Stand.VertriebAktiv = w)
+        </div>
+
+        <p class="epos-preisblock-summe">@Anzeige.SummeText</p>
+        <Kohaerenzzeile Text="@ArbeitspreisZeile" />
+        <p class="@(Anzeige.RestNegativ ? "epos-preisblock-rest epos-preisblock-rest--negativ"
+                                        : "epos-preisblock-rest")">@Anzeige.RestText</p>
+
+        <button type="button" class="epos-knopf" disabled="@(!Stand.Aufgeschluesselt)"
+                @onclick="() => InArbeitspreis.InvokeAsync()">@InArbeitspreisText</button>
+    </KindInhalt>
+</Gruppenkopf>
+
+@code {
+    /// <summary>Der Bearbeitungsstand — die Komponente schreibt hinein.</summary>
+    [Parameter] public BrennstoffBestandteileStand Stand { get; set; } = new();
+
+    /// <summary>Summen- und Restzeile, von der Hülle gerechnet.</summary>
+    [Parameter] public PreisblockAnzeige Anzeige { get; set; } = new("", "", false);
+
+    /// <summary>Der Arbeitspreis des Trägers [ct/kWh], vom Wirt gesetzt.</summary>
+    [Parameter] public double ArbeitspreisCtKwh { get; set; }
+
+    /// <summary>Der Stand hat sich geändert — die Hülle rechnet neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Der Anwender möchte den Preis aus den Bestandteilen in das
+    /// Arbeitspreisfeld übernehmen. Dieser Block trägt ihn nicht selbst ein.
+    /// </summary>
+    [Parameter] public EventCallback InArbeitspreis { get; set; }
+
+    /// <summary>Energiesteuer-Regelsatz (§ 2 EnergieStG).</summary>
+    [Parameter] public Schnellwahlsatz? SatzRegel { get; set; }
+
+    /// <summary>Energiesteuer § 53a Abs. 5.</summary>
+    [Parameter] public Schnellwahlsatz? Satz53a { get; set; }
+
+    /// <summary>Energiesteuer § 54.</summary>
+    [Parameter] public Schnellwahlsatz? Satz54 { get; set; }
+
+    /// <summary>CO₂-Anteil nach BEHG: Preis [€/t] × Emissionsfaktor [g/kWh].</summary>
+    [Parameter] public Schnellwahlsatz? SatzCo2 { get; set; }
+
+    [Parameter] public string TitelBestandteile { get; set; } = "Preisbestandteile des Brennstoffs";
+    [Parameter] public string ModusAufgeschluesselt { get; set; } = "aufgeschlüsselt (Summe ist der Preis)";
+    [Parameter] public string ModusGesamtwert { get; set; } = "Gesamtwert (Arbeitspreis gilt)";
+    [Parameter] public string LabelSchnellwahl { get; set; } = "Schnellwahl (Katalog):";
+    [Parameter] public string LabelEnergiesteuer { get; set; } = "Energiesteuer";
+    [Parameter] public string LabelCo2 { get; set; } = "CO₂-Anteil (BEHG)";
+    [Parameter] public string LabelNetzentgelt { get; set; } = "Netz-/Messentgelt";
+    [Parameter] public string LabelVertrieb { get; set; } = "Vertrieb";
+    [Parameter] public string LabelArbeitspreis { get; set; } = "Arbeitspreis (Trägerdialog)";
+    [Parameter] public string InArbeitspreisText { get; set; } = "In Arbeitspreis übernehmen";
+    [Parameter] public string Einheit { get; set; } = "ct/kWh";
+
+    private string _quelle = "";
+
+    /// <summary>Die Herkunft des zuletzt übernommenen Satzes (Prüfhilfe für Tests).</summary>
+    public string Quelle => _quelle;
+
+    private string ArbeitspreisZeile
+        => LabelArbeitspreis + ": " +
+           ArbeitspreisCtKwh.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture) +
+           " " + Einheit;
+
+    private (int Id, string Text)[] MODI
+        => new[] { (0, ModusGesamtwert), (1, ModusAufgeschluesselt) };
+
+    private async Task BeiModus(int? id)
+    {
+        Stand.Aufgeschluesselt = id == 1;
+        await Geaendert.InvokeAsync();
+    }
+
+    private void Setzen(Action aendern)
+    {
+        aendern();
+        Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Eine Komponentenzeile: Schalter, Wertfeld, Einheit. Ein leeres
+    /// Feld heißt „kein Anteil" und bleibt leer.</summary>
+    private RenderFragment Komponente(string beschriftung, double? wert, Action<double?> setzen,
+                                      bool aktiv, Action<bool> setzenAktiv)
+        => @<div class="epos-preiszeile">
+        <Schalter Bezeichnung="@beschriftung" Wert="@aktiv"
+                  WertChanged="@(w => Setzen(() => setzenAktiv(w)))" />
+        <Zahlenfeld Wert="@wert" Einheit="@Einheit"
+                    WertChanged="@(w => Setzen(() => setzen(w)))" />
+    </div>;
+
+    private RenderFragment Schnellwahlknopf(Schnellwahlsatz? satz, Action<double> setzen,
+                                            bool energiesteuer)
+    {
+        if (satz is null) return @<text></text>;
+        return @<button type="button" class="epos-knopf epos-schnellwahl-knopf"
+                        title="@satz.Herkunft" disabled="@(!satz.CtKwh.HasValue)"
+                        @onclick="@(() => Uebernehmen(satz, setzen, energiesteuer))">@satz.Beschriftung</button>;
+    }
+
+    /// <summary>Wie <c>SatzUebernehmen</c>: Wert eintragen, Zeile aktiv schalten,
+    /// Herkunft in die Fußzeile.</summary>
+    private void Uebernehmen(Schnellwahlsatz satz, Action<double> setzen, bool energiesteuer)
+    {
+        if (!satz.CtKwh.HasValue) return;
+        setzen(satz.CtKwh.Value);
+        if (energiesteuer) Stand.EnergiesteuerAktiv = true; else Stand.CO2Aktiv = true;
+        _quelle = satz.Herkunft;
+        Geaendert.InvokeAsync();
+    }
+}

@@ -1,0 +1,704 @@
+﻿@* QUELLPROFIL einer Waermequelle (iU9-W10a.6, Migrationsschritt 54).
+
+   VORBILD. Views/Simulation/Form_Quellprofil (1 084 Z., OHNE Designer und ohne
+   .resx - die Maske baut sich programmatisch auf, 700 x 612, sieben MessageBox,
+   45 Ressourcenschluessel). Das Profil ist ein eigener Gegenstand
+   (Tab_Quellprofil + Tab_QuellprofilDaten); die Anlage verweist ueber
+   WQ_ID_Quellprofil darauf.
+
+   DREI BETRIEBSARTEN. Monat (12 Werte in zwoelf Feldern), Tag (365) und Stunde
+   (8 760) - die beiden langen kommen ueber CSV oder ueber "alle Werte gleich
+   setzen", nicht ueber 365 Felder.
+
+   DER DIALOG SPEICHERT SELBST (btnOk_Click:1020). Anders als die uebrigen
+   Quellendialoge entscheidet er nicht nur; herauskommt die Id, die der Aufrufer
+   an die Anlage schreibt.
+
+   ABWEICHUNG A-7 (Befund W10-B18): DIE ZWILLINGSKNOEPFE MELDEN BEIDE. Im
+   Vorlaeufer meldete "alle Monate" bei ungueltiger Eingabe
+   (SIMQ_QUELLPROFIL_MSG_JANUAR), waehrend "alle Werte" stumm zurueckkehrte -
+   dieselbe Handlung, zwei Verhaltensweisen. Hier fragt beides ueber WertAbfrage
+   (W10a.0f), und dort bleibt OK gesperrt, solange keine Zahl dasteht: Der
+   Unterschied verschwindet an der Wurzel.
+
+   ABWEICHUNG A-8 (Befund W10-B19): EINE UNLESBARE ZELLE WIRD ANGEZEIGT. Im
+   Vorlaeufer verschluckte GridUebernehmen:854-856 den Konvertierungsfehler mit
+   catch { } - die Zelle behielt still ihren alten Wert. Hier faerbt das
+   Zahlenfeld wie ueberall, und der Wert bleibt bis zur naechsten gueltigen
+   Eingabe.
+
+   DER ALTWEG-REITER (Befund W10-B17) bleibt: 24 Stundenfelder je Wochentag,
+   NUR LESEND, und nur wenn die Anlage einen Wochengang traegt. Ohne ihn
+   verschwaenden gepflegte Daten stillschweigend. Eine Herleitungszeile sagt,
+   dass er nicht mehr wirkt.
+
+   8 760 ZEILEN (Befund W10-B20) stehen in einem VIRTUALISIERTEN Raster
+   (QuickGrid ueber Virtualize) - eine DataTable mit 8 760 Zeilen machte die
+   Seite unbenutzbar.
+
+   TASTATUR: Esc bricht ab - erst die Wertabfrage bzw. die CSV-Rueckfrage, dann
+   der Dialog. Enter ist NICHT belegt: OK SPEICHERT. *@
+
+@namespace EPOS.UI.Dialoge.Simulation
+@using Microsoft.AspNetCore.Components.QuickGrid
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Herleitungszeile Text="@InfoText" />
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Kopf: Profilwahl, Betriebsart, Bezeichner, Beschreibung ------------- *@
+    <Auswahlfeld Bezeichnung="@LabelProfil" Eintraege="@Profileintraege"
+                 Auswahl="@_profil" AuswahlChanged="ProfilWaehlen" />
+    <Auswahlfeld Bezeichnung="@LabelBetriebsart" Eintraege="@Betriebsarteintraege"
+                 Auswahl="@_betriebsart" AuswahlChanged="BetriebsartWaehlen" />
+    <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+              WertChanged="w => _bezeichner = w" />
+    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung"
+              WertChanged="w => _beschreibung = w" />
+
+    <Reiter Bezeichnung="@Titel" @bind-Aktiv="_reiter">
+        <KindInhalt>
+
+            @* --- Monatswerte ------------------------------------------------ *@
+            @if (IstMonat)
+            {
+                <Reiterblatt Schluessel="MONAT" Titel="@TabMonatswerte">
+                    <KindInhalt>
+                        <Herleitungszeile Text="@KopfMonat" />
+                        @for (int m = 0; m < 12; m++)
+                        {
+                            int i = m;
+                            <Zahlenfeld Bezeichnung="@Monatsnamen[i]" Einheit="°C"
+                                        Feldname="@Monatsnamen[i]" Wert="@_monat[i]"
+                                        WertChanged="w => _monat[i] = w" />
+                        }
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf"
+                                    @onclick="AlleMonateStarten">@BtnAlleMonate</button>
+                        </div>
+                    </KindInhalt>
+                </Reiterblatt>
+            }
+
+            @* --- Altweg: Wochenwerte (NUR LESEND, nur mit Wochengang) -------- *@
+            @if (IstMonat && Wochengang)
+            {
+                <Reiterblatt Schluessel="WOCHE" Titel="@TabWochenwerte">
+                    <KindInhalt>
+                        <Herleitungszeile Text="@HinweisAltweg" />
+                        <Auswahlfeld Bezeichnung="@LabelWochentag" Eintraege="@Wochentageintraege"
+                                     Auswahl="@_tag" AuswahlChanged="t => _tag = t ?? 0" />
+                        @for (int h = 0; h < 24; h++)
+                        {
+                            <Textfeld Bezeichnung="@Stundenname(h)"
+                                      Wert="@Wochenwert(_tag ?? 0, h)" NurLesen="true" />
+                        }
+                    </KindInhalt>
+                </Reiterblatt>
+            }
+
+            @* --- Werteseite (Tag / Stunde) ----------------------------------- *@
+            @if (!IstMonat)
+            {
+                <Reiterblatt Schluessel="WERTE" Titel="@TabWerte">
+                    <KindInhalt>
+                        <Herleitungszeile Text="@HinweisWerte" />
+
+                        <div class="epos-leiste">
+                            @if (CsvLesen is not null)
+                            {
+                                <button type="button" class="epos-knopf"
+                                        @onclick="() => _csvFrageOffen = true">@BtnCsv</button>
+                            }
+                            <button type="button" class="epos-knopf"
+                                    @onclick="AlleWerteStarten">@BtnAlleWerte</button>
+                        </div>
+
+                        <Herleitungszeile Text="@Werteinfo" />
+
+                        <Raster TZeile="Wertzeile" Zeilen="@Wertzeilen">
+                            <KindInhalt>
+                                <PropertyColumn TGridItem="Wertzeile" TProp="int"
+                                                Property="@(z => z.Nr)" Title="@SpalteNr" />
+                                <PropertyColumn TGridItem="Wertzeile" TProp="string"
+                                                Property="@(z => z.Text)" Title="@SpalteWert" />
+                            </KindInhalt>
+                        </Raster>
+                    </KindInhalt>
+                </Reiterblatt>
+            }
+
+            @* --- Grafik ------------------------------------------------------ *@
+            <Reiterblatt Schluessel="GRAFIK" Titel="@TabGrafik" Betreten="BildZeichnen">
+                <KindInhalt>
+                    <ChartBild Png="@_bild" Alt="@BildAlt" PlatzhalterText="@PlatzhalterText" />
+                </KindInhalt>
+            </Reiterblatt>
+
+        </KindInhalt>
+    </Reiter>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+
+    @* --- Die Zahlenabfrage für „alle …" -------------------------------------- *@
+    <WertAbfrage Offen="@(_abfrage != Abfrageart.Keine)" TitelText="@_abfrageTitel"
+                 Beschriftung="@_abfrageText" Einheit="°C" Vorgabe="@VorgabeWert"
+                 Beantwortet="AbfrageBeantwortet"
+                 OkText="@OkText" AbbrechenText="@AbbrechenText" />
+
+    @* --- Die CSV-Rückfrage --------------------------------------------------- *@
+    <Rueckfrage Offen="@_csvFrageOffen" Frage="@CsvHinweistext" TitelText="@Titel"
+                Beantwortet="CsvBeantwortet" JaText="@OkText" NeinText="@AbbrechenText" />
+</div>
+
+@code {
+    /// <summary>Welche Zahlenabfrage gerade steht.</summary>
+    private enum Abfrageart
+    {
+        /// <summary>Keine.</summary>
+        Keine,
+
+        /// <summary>„Alle Monate" — aus dem Januarwert werden zwölf.</summary>
+        Monate,
+
+        /// <summary>„Alle Werte" — 365 bzw. 8 760 gleiche Zahlen.</summary>
+        Werte
+    }
+
+    /// <summary>Eine Zeile des Werterasters: laufende Nummer und Wert.</summary>
+    public sealed record Wertzeile(int Nr, string Text);
+
+    // --- Was hereinkommt --------------------------------------------------------
+
+    /// <summary>Der Satz Übergabefelder (Vermessung §5).</summary>
+    [Parameter] public QuellprofilDaten Daten { get; set; } = new();
+
+    /// <summary>Die Profile des Projekts (ohne den Eintrag „neues Profil").</summary>
+    [Parameter] public IReadOnlyList<QuellprofilZeile> Profile { get; set; }
+        = Array.Empty<QuellprofilZeile>();
+
+    /// <summary>Lädt Kopf und Werte eines Profils; <c>null</c> = gibt es nicht.</summary>
+    [Parameter] public Func<int, QuellprofilInhalt?>? ProfilLesen { get; set; }
+
+    /// <summary>
+    /// Speichert Kopf und Werte und liefert die Id; <c>&lt;= 0</c> = nicht gespeichert.
+    /// </summary>
+    [Parameter] public Func<QuellprofilInhalt, int>? Speichern { get; set; }
+
+    /// <summary>
+    /// Liest eine CSV-Datei mit der Sollzahl an Werten; <c>null</c> = fehlgeschlagen
+    /// oder abgebrochen. Ohne Delegat fehlt der Knopf — Hausregel.
+    /// </summary>
+    [Parameter] public Func<int, Task<double[]?>>? CsvLesen { get; set; }
+
+    /// <summary>Zeichnet das Jahresbild aus Betriebsart und Werten.</summary>
+    [Parameter] public Func<string, double[], Task<byte[]?>>? Jahresbild { get; set; }
+
+    /// <summary>Die Sollzahl an Werten je Betriebsart (<c>DbWerte.QuellprofilWerteanzahl</c>).</summary>
+    [Parameter] public Func<string, int>? Werteanzahl { get; set; }
+
+    /// <summary>Die drei Steuerwerte der Betriebsart, in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<string> Betriebsarten { get; set; }
+        = new[] { "Monat", "Tag", "Stunde" };
+
+    /// <summary>Die Anzeigetexte zu <see cref="Betriebsarten"/>.</summary>
+    [Parameter] public IReadOnlyList<string> BetriebsartTexte { get; set; }
+        = new[] { "Monatswerte", "Tageswerte", "Stundenwerte" };
+
+    /// <summary>Die zwölf Monatsnamen der eingestellten Sprache.</summary>
+    [Parameter] public IReadOnlyList<string> Monatsnamen { get; set; }
+        = new[] { "Januar", "Februar", "März", "April", "Mai", "Juni",
+                  "Juli", "August", "September", "Oktober", "November", "Dezember" };
+
+    /// <summary>Die sieben Wochentage AB MONTAG.</summary>
+    [Parameter] public IReadOnlyList<string> Wochentage { get; set; }
+        = new[] { "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag",
+                  "Samstag", "Sonntag" };
+
+    /// <summary>Vorbelegung der Zahlenabfragen (<c>VORGABE_MONATSWERT</c>).</summary>
+    [Parameter] public double VorgabeWert { get; set; } = 10.0;
+
+    /// <summary>Das Ergebnis: die Id des gespeicherten Profils, <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<int?> Geschlossen { get; set; }
+
+    // --- Texte ------------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Quellprofil";
+    [Parameter] public string TitelMitWp { get; set; } = "Quellprofil — {0}";
+    [Parameter] public string InfoText { get; set; } = "";
+    [Parameter] public string LabelProfil { get; set; } = "Profil:";
+    [Parameter] public string ProfilNeu { get; set; } = "<neues Profil>";
+    [Parameter] public string LabelBetriebsart { get; set; } = "Betriebsart:";
+    [Parameter] public string LabelBezeichner { get; set; } = "Bezeichnung:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string LabelWochentag { get; set; } = "Wochentag:";
+    [Parameter] public string TabMonatswerte { get; set; } = "Monatswerte";
+    [Parameter] public string TabWochenwerte { get; set; } = "Wochenwerte";
+    [Parameter] public string TabTageswerte { get; set; } = "Tageswerte";
+    [Parameter] public string TabStundenwerte { get; set; } = "Stundenwerte";
+    [Parameter] public string TabGrafik { get; set; } = "Grafik";
+    [Parameter] public string KopfMonat { get; set; } = "Monats-Mitteltemperaturen der Quelle:";
+    [Parameter] public string HinweisAltweg { get; set; } = "";
+    [Parameter] public string HinweisTag { get; set; } = "";
+    [Parameter] public string HinweisStunde { get; set; } = "";
+    [Parameter] public string SpalteNr { get; set; } = "Nr.";
+    [Parameter] public string SpalteWert { get; set; } = "Wert";
+    [Parameter] public string BtnAlleMonate { get; set; } = "Alle Monate gleich setzen…";
+    [Parameter] public string BtnAlleWerte { get; set; } = "Alle Werte gleich setzen…";
+    [Parameter] public string BtnCsv { get; set; } = "CSV einlesen…";
+    [Parameter] public string AlleWerteText { get; set; } = "Wert für alle Zeilen:";
+    [Parameter] public string InfoWerte { get; set; }
+        = "{0} Werte · Min {1} · Max {2} · Mittel {3}";
+    [Parameter] public string CsvHinweis { get; set; }
+        = "Erwartet werden {0} Zahlenwerte, je Zeile einer.";
+    [Parameter] public string BildAlt { get; set; } = "Jahresverlauf des Quellprofils";
+    [Parameter] public string PlatzhalterText { get; set; } = "Noch kein Diagramm";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    // Die vier Prüfregeln aus btnOk_Click:955-1031, wörtlich.
+    [Parameter] public string MsgMonatUngueltig { get; set; } = "{0}: '{1}' ist keine gültige Zahl!";
+    [Parameter] public string MsgWerteFehlen { get; set; }
+        = "Für diese Betriebsart werden {0} Werte gebraucht.\nBitte zuerst eine CSV-Datei " +
+          "einlesen oder alle Werte gleich setzen.";
+    [Parameter] public string MsgBezeichner { get; set; }
+        = "Bitte eine Bezeichnung für das Quellprofil eintragen!";
+    [Parameter] public string MsgSpeichern { get; set; }
+        = "Das Quellprofil konnte nicht gespeichert werden. Bitte prüfen, ob die Datenbank " +
+          "beschreibbar ist.";
+    [Parameter] public string MsgCsvFehler { get; set; }
+        = "Aus der Datei ließen sich keine {0} Werte lesen.\nBitte Zeilenzahl und " +
+          "Zahlenformat prüfen.";
+
+    /// <summary>Schlüssel des Hilfeknopfes.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Quellprofil.btn_Help";
+
+    // --- Stand ------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _profil;
+    private int? _betriebsart;
+    private string _bezeichner = "";
+    private string _beschreibung = "";
+
+    private readonly double?[] _monat = new double?[12];
+    private double[]? _werte;
+    private int? _tag = 0;
+
+    private string _reiter = "";
+    private byte[]? _bild;
+
+    private Abfrageart _abfrage = Abfrageart.Keine;
+    private string _abfrageTitel = "";
+    private string _abfrageText = "";
+    private bool _csvFrageOffen;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    // --- Prüfhilfen für die Tests -----------------------------------------------
+
+    /// <summary>Der Steuerwert der gewählten Betriebsart.</summary>
+    public string Betriebsart => (_betriebsart is int i && i >= 0 && i < Betriebsarten.Count)
+        ? Betriebsarten[i] : Betriebsarten[0];
+
+    /// <summary>Ist die Betriebsart „Monat"?</summary>
+    public bool IstMonat => _betriebsart is null || _betriebsart.Value == 0;
+
+    /// <summary>Trägt die Anlage einen Wochengang (Altweg)?</summary>
+    public bool Wochengang => Daten.Wochenwerte is { Length: >= 168 };
+
+    /// <summary>Die zwölf Monatsfelder.</summary>
+    public IReadOnlyList<double?> Monatsfelder => _monat;
+
+    /// <summary>Die Werte der Betriebsarten Tag und Stunde; <c>null</c> = keine.</summary>
+    public double[]? Werte => _werte;
+
+    /// <summary>Die stehende Meldung.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Der gewählte Profileintrag; <c>0</c> = „neues Profil".</summary>
+    public int GewaehltesProfil => _profil ?? 0;
+
+    /// <summary>Der Bezeichner im Feld.</summary>
+    public string Bezeichner => _bezeichner;
+
+    /// <summary>Das gezeichnete Bild.</summary>
+    public byte[]? Bild => _bild;
+
+    /// <summary>Steht eine Zahlenabfrage?</summary>
+    public bool AbfrageSteht => _abfrage != Abfrageart.Keine;
+
+    /// <summary>Steht die CSV-Rückfrage?</summary>
+    public bool CsvFrageSteht => _csvFrageOffen;
+
+    // --- Listen und Texte -------------------------------------------------------
+
+    public string Titel => string.IsNullOrEmpty(Daten.WPName)
+        ? TitelText : string.Format(TitelMitWp, Daten.WPName);
+
+    private IReadOnlyList<(int Id, string Text)> Profileintraege
+    {
+        get
+        {
+            var l = new List<(int, string)> { (0, ProfilNeu) };
+            foreach (QuellprofilZeile z in Profile) l.Add((z.Id, z.Anzeige));
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Betriebsarteintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < Betriebsarten.Count; i++)
+                l.Add((i, i < BetriebsartTexte.Count ? BetriebsartTexte[i] : Betriebsarten[i]));
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Wochentageintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int t = 0; t < Wochentage.Count; t++) l.Add((t, Wochentage[t]));
+            return l;
+        }
+    }
+
+    /// <summary>Reitertitel und Hinweis der Werteseite folgen der Betriebsart.</summary>
+    private bool IstStunde => _betriebsart == 2;
+
+    private string TabWerte => IstStunde ? TabStundenwerte : TabTageswerte;
+
+    private string HinweisWerte => IstStunde ? HinweisStunde : HinweisTag;
+
+    /// <summary>Die Sollzahl an Werten zur aktuellen Betriebsart.</summary>
+    private int Soll => Werteanzahl?.Invoke(Betriebsart) ?? 0;
+
+    private string CsvHinweistext => string.Format(CsvHinweis, Soll);
+
+    private string Stundenname(int h)
+        => h.ToString("00", System.Globalization.CultureInfo.CurrentCulture) + ":00";
+
+    private string Wochenwert(int tag, int stunde)
+    {
+        double[]? w = Daten.Wochenwerte;
+        int i = tag * 24 + stunde;
+        return (w is null || i >= w.Length)
+            ? ""
+            : w[i].ToString("F1", System.Globalization.CultureInfo.CurrentCulture);
+    }
+
+    /// <summary>
+    /// Die Info-Zeile der Werteseite (<c>WerteInfoAktualisieren</c>:859-883): Anzahl,
+    /// Min, Max und Mittel.
+    /// </summary>
+    public string Werteinfo
+    {
+        get
+        {
+            if (_werte is null || _werte.Length == 0) return "";
+
+            double min = _werte[0], max = _werte[0], summe = 0;
+            foreach (double w in _werte)
+            {
+                if (w < min) min = w;
+                if (w > max) max = w;
+                summe += w;
+            }
+
+            var ci = System.Globalization.CultureInfo.CurrentCulture;
+            return string.Format(InfoWerte, _werte.Length, min.ToString("F1", ci),
+                                 max.ToString("F1", ci), (summe / _werte.Length).ToString("F1", ci));
+        }
+    }
+
+    /// <summary>
+    /// Das VIRTUALISIERTE Raster (Befund W10‑B20): 8 760 Zeilen als
+    /// <c>IQueryable</c> — QuickGrid holt sich nur, was sichtbar ist.
+    /// </summary>
+    private IQueryable<Wertzeile> Wertzeilen
+    {
+        get
+        {
+            if (_werte is null) return Array.Empty<Wertzeile>().AsQueryable();
+            var ci = System.Globalization.CultureInfo.CurrentCulture;
+            return _werte.Select((w, i) => new Wertzeile(i + 1, w.ToString("F1", ci)))
+                         .AsQueryable();
+        }
+    }
+
+    // --- Aufbau -----------------------------------------------------------------
+
+    protected override void OnInitialized()
+    {
+        // SetControls:246-269 - ein vorgewaehltes Profil wird geladen, sonst steht die
+        // Betriebsart auf Monat und die zwoelf Felder tragen den Altweg.
+        _profil = Daten.IdQuellprofil > 0 &&
+                  Profile.Any(z => z.Id == Daten.IdQuellprofil) ? Daten.IdQuellprofil : 0;
+
+        for (int m = 0; m < 12; m++)
+            _monat[m] = (Daten.Monatswerte is not null && m < Daten.Monatswerte.Length)
+                ? Daten.Monatswerte[m] : VorgabeWert;
+
+        _betriebsart = 0;
+        if (_profil > 0) ProfilUebernehmen(_profil.Value);
+        VorderstesBlattSetzen();
+    }
+
+    /// <summary>
+    /// Das Blatt, das nach einem Betriebsartwechsel vorn steht: die Monatsseite bzw.
+    /// die Werteseite — nie die Grafik.
+    /// </summary>
+    private void VorderstesBlattSetzen() => _reiter = IstMonat ? "MONAT" : "WERTE";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// <c>cbProfil_SelectedIndexChanged</c>:714-734 — „neues Profil" leert Bezeichner
+    /// und Beschreibung; ein vorhandenes wird geladen.
+    /// </summary>
+    private void ProfilWaehlen(int? id)
+    {
+        _profil = id ?? 0;
+
+        if (_profil == 0)
+        {
+            _bezeichner = "";
+            _beschreibung = "";
+            return;
+        }
+
+        ProfilUebernehmen(_profil.Value);
+        VorderstesBlattSetzen();
+    }
+
+    /// <summary><c>ProfilUebernehmen</c>:737-763.</summary>
+    private void ProfilUebernehmen(int id)
+    {
+        QuellprofilInhalt? k = ProfilLesen?.Invoke(id);
+        if (k is null) return;
+
+        _bezeichner = k.Bezeichner;
+        _beschreibung = k.Beschreibung;
+
+        // BetriebsartSetzen:765-774 - ein unbekannter Altwert faellt auf Monat zurueck.
+        _betriebsart = 0;
+        for (int i = 0; i < Betriebsarten.Count; i++)
+            if (string.Equals(Betriebsarten[i], k.Betriebsart, StringComparison.Ordinal))
+            { _betriebsart = i; break; }
+
+        if (k.Werte is null) return;
+
+        if (IstMonat)
+        {
+            for (int m = 0; m < 12 && m < k.Werte.Length; m++) _monat[m] = k.Werte[m];
+            return;
+        }
+
+        int soll = Soll;
+        if (soll <= 0) return;
+        _werte = new double[soll];
+        Array.Copy(k.Werte, _werte, Math.Min(soll, k.Werte.Length));
+    }
+
+    /// <summary>
+    /// <c>cbBetriebsart_SelectedIndexChanged</c>:776-795 — beim Längenwechsel Tag ↔
+    /// Stunde gilt: „Was passt, bleibt; der Rest bekommt die Vorgabe." Kein stilles
+    /// Abschneiden, kein Verwerfen der ganzen Eingabe.
+    /// </summary>
+    private void BetriebsartWaehlen(int? index)
+    {
+        _betriebsart = index ?? 0;
+
+        // Der Vorlaeufer baute die Reiterleiste neu auf (TabPages.Clear samt
+        // Neuaufbau, SeitenAnpassen:802-826) und stand danach auf der ERSTEN Seite.
+        // Hier bleiben die Blaetter dieselben Komponenten; deshalb wird das
+        // vorderste ausdruecklich gesetzt - sonst stuende nach dem Wechsel die
+        // Grafik vorn, weil sie als einziges Blatt beide Betriebsarten ueberlebt.
+        VorderstesBlattSetzen();
+
+        int soll = Soll;
+        if (soll > 0 && !IstMonat)
+        {
+            var neu = new double[soll];
+            for (int i = 0; i < soll; i++)
+                neu[i] = (_werte is not null && i < _werte.Length) ? _werte[i] : VorgabeWert;
+            _werte = neu;
+        }
+
+        _bild = null;
+    }
+
+    // --- Die beiden „alle …"-Knöpfe ---------------------------------------------
+
+    private void AlleMonateStarten()
+    {
+        _abfrage = Abfrageart.Monate;
+        _abfrageTitel = BtnAlleMonate;
+        _abfrageText = KopfMonat;
+    }
+
+    private void AlleWerteStarten()
+    {
+        if (Soll <= 0) return;
+        _abfrage = Abfrageart.Werte;
+        _abfrageTitel = BtnAlleWerte;
+        _abfrageText = AlleWerteText;
+    }
+
+    /// <summary>
+    /// Beide Knöpfe kommen hier an (Abweichung A‑7): Ohne gültige Zahl liefert die
+    /// Abfrage <c>null</c>, und dann geschieht nichts — der Unterschied zwischen den
+    /// Zwillingen des Vorläufers ist damit verschwunden.
+    /// </summary>
+    private void AbfrageBeantwortet(double? wert)
+    {
+        Abfrageart was = _abfrage;
+        _abfrage = Abfrageart.Keine;
+        if (wert is null) return;
+
+        if (was == Abfrageart.Monate)
+        {
+            for (int m = 0; m < 12; m++) _monat[m] = wert.Value;
+            _bild = null;
+            return;
+        }
+
+        int soll = Soll;
+        if (soll <= 0) return;
+        _werte = new double[soll];
+        for (int i = 0; i < soll; i++) _werte[i] = wert.Value;
+        _bild = null;
+    }
+
+    // --- CSV --------------------------------------------------------------------
+
+    private async Task CsvBeantwortet(bool? ja)
+    {
+        _csvFrageOffen = false;
+        if (ja != true || CsvLesen is null) return;
+
+        int soll = Soll;
+        if (soll <= 0) return;
+
+        double[]? gelesen = await CsvLesen(soll);
+        if (gelesen is null)
+        {
+            // Abgebrochen ODER unlesbar. Der Vorlaeufer unterschied beides nicht
+            // (der Dateidialog kehrte still zurueck, die leere Datei meldete) -
+            // die Huelle liefert deshalb null nur nach einem gewaehlten, aber
+            // unbrauchbaren Pfad.
+            _meldung = string.Format(MsgCsvFehler, soll);
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        _meldung = "";
+        _werte = gelesen;
+        _bild = null;
+    }
+
+    // --- Grafik -----------------------------------------------------------------
+
+    /// <summary>
+    /// Das Bild entsteht erst, wenn das Grafikblatt betreten wird — es kostet einen
+    /// vollständigen Rendervorgang über 8 760 Punkte.
+    /// </summary>
+    private async Task BildZeichnen()
+    {
+        if (Jahresbild is null) return;
+
+        double[] werte;
+        if (IstMonat)
+        {
+            werte = new double[12];
+            for (int m = 0; m < 12; m++) werte[m] = _monat[m] ?? VorgabeWert;
+        }
+        else
+        {
+            if (_werte is null) return;
+            werte = _werte;
+        }
+
+        _bild = await Jahresbild(Betriebsart, werte);
+        StateHasChanged();
+    }
+
+    // --- Ergebnis ---------------------------------------------------------------
+
+    /// <summary>
+    /// Die vier Prüfregeln aus <c>btnOk_Click</c>:955-1031, in derselben Reihenfolge —
+    /// und danach das SPEICHERN.
+    /// </summary>
+    private Task BeiErgebnis(bool ok)
+    {
+        if (!ok) return Geschlossen.InvokeAsync(null);
+        if (Speichern is null) return Task.CompletedTask;
+
+        double[] werte;
+
+        if (IstMonat)
+        {
+            for (int m = 0; m < 12; m++)
+                if (_monat[m] is null)
+                    return Meldet(string.Format(MsgMonatUngueltig, Monatsnamen[m], ""));
+
+            werte = new double[12];
+            for (int m = 0; m < 12; m++) werte[m] = _monat[m]!.Value;
+        }
+        else
+        {
+            int soll = Soll;
+            if (_werte is null || _werte.Length != soll)
+                return Meldet(string.Format(MsgWerteFehlen, soll));
+            werte = _werte;
+        }
+
+        string bezeichner = (_bezeichner ?? "").Trim();
+        if (bezeichner.Length == 0) return Meldet(MsgBezeichner);
+
+        int id = Speichern(new QuellprofilInhalt(bezeichner, (_beschreibung ?? "").Trim(),
+                                                 Betriebsart, werte));
+        if (id <= 0) return Meldet(MsgSpeichern);
+
+        _meldung = "";
+        return Geschlossen.InvokeAsync(id);
+    }
+
+    private Task Meldet(string text)
+    {
+        _meldung = text;
+        _meldungStufe = WarnStufe.Warnung;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Esc: erst die Abfragen, dann der Dialog.</summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_abfrage != Abfrageart.Keine) { _abfrage = Abfrageart.Keine; return Task.CompletedTask; }
+        if (_csvFrageOffen) { _csvFrageOffen = false; return Task.CompletedTask; }
+        return Geschlossen.InvokeAsync(null);
+    }
+}

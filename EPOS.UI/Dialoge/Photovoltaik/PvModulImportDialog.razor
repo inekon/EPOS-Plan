@@ -1,0 +1,759 @@
+﻿@* Import von PV-Modulen aus CEC und PVsyst-PAN (iU9-W13.3).
+
+   Vorbild: Views/Photovoltaik/Form_CECImport.cs (658 Z., KLASSE Main_PV_Test)
+   und .Designer.cs (1 077 Z., 75 Steuerelemente).
+
+   WOZU. Zwei Quellen, ein Gitter: die CEC-Modulliste des NREL (CSV ueber HTTP,
+   30-Tage-Zwischenspeicher, 20 746 Zeilen) und PVsyst-.pan-Dateien. Filterleiste,
+   21 Detailfelder in drei Reitern, Einzelimport nach Tab_PV_STAMM mit
+   Vorpruefung und Konfliktdialog.
+
+   ZWEI MENUEPUNKTE, EINE MASKE. Der Bestand oeffnete sie aus MDIMainForm:783
+   und :789 im SELBEN Zustand - "PAN laden" brachte sie nicht in den PAN-Modus
+   (Befund W13-B51). Der Parameter Quelle tut das jetzt; welcher Menuepunkt
+   ihn setzt, entscheidet Hauptfensterrahmen ueber Masken.PvImport (W13.0k).
+
+   DER NETZABRUF LAEUFT NEBENHER. Drei URLs mit je 45 Sekunden Zeitgrenze sind
+   im schlechtesten Fall ueber zwei Minuten. CECDataService.LoadDataAsync nimmt
+   seit jeher einen Melder entgegen - die Maske uebergab ihn nur nicht und warf
+   damit sechs fertige Fortschrittstexte weg (Befund W13-B38). Hier haengt der
+   Baustein Fortschritt daran, samt Abbrechen (W13.0j).
+
+   20 746 ZEILEN stehen in einem VIRTUALISIERTEN Raster (W13.0l): QuickGrid
+   haelt nur den sichtbaren Ausschnitt im Baum. Die Wahlspalte ist einwertig -
+   der Vorlaeufer hatte MultiSelect = false, als einzige Maske der Welle ohne
+   Mehrfachimport.
+
+   VOLLSTAENDIG NEU LOKALISIERT (Befund W13-B54): Die Maske war die am wenigsten
+   uebersetzte des ganzen Bestands - leere .resx, keine Satellitendateien, rund
+   36 deutsche Literale im Designer und 33 im .cs. Alle Texte stehen jetzt in
+   beiden Sprachen im Katalog.
+
+   VIER ZEICHENANTEILE ENTFALLEN ERSATZLOS: der HeaderGradientPanel mit seinem
+   LinearGradientBrush, MakeSmoothButton und MakeSmoothRounded ueber GraphicsPath,
+   MakeSmooth per Reflexion und die Gitterkopf-Faerbung. Sie waren WinForms-Ersatz
+   fuer das, was CSS ohnehin kann.
+
+   TASTATUR: Esc schliesst die oberste Ebene. Enter ist NICHT belegt - der
+   Uebernehmen-Knopf schreibt sofort. *@
+
+@namespace EPOS.UI.Dialoge.Photovoltaik
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-pvimport" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Herleitungszeile Text="@KopfbandText" />
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Die beiden Quellen ---------------------------------------------- *@
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+                @onclick="BeiCec">@CecText</button>
+        @if (PanWaehlen is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@_laeuft"
+                    @onclick="BeiPan">@PanText</button>
+        }
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-pvimport-status">@StatusText</span>
+    </div>
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@null" Text="@_fortschrittText"
+                 Abbrechen="@(_abbruch is null ? null : AbbrechenCallback)"
+                 AbbrechenText="@AbbrechenText" />
+
+    @* --- Die Filterleiste ------------------------------------------------ *@
+    <div class="epos-pvimport-filter">
+        <Auswahlfeld Bezeichnung="@LabelHersteller" Eintraege="@_herstellerliste"
+                     Auswahl="@_iHersteller" AuswahlChanged="BeiHersteller" Aktiv="@(!_laeuft)" />
+        <Auswahlfeld Bezeichnung="@LabelTechnologie" Eintraege="@_technologieliste"
+                     Auswahl="@_iTechnologie" AuswahlChanged="BeiTechnologie" Aktiv="@(!_laeuft)" />
+        <Textfeld Bezeichnung="@LabelSuche" Wert="@_suche" WertChanged="BeiSuche"
+                  Platzhalter="@SuchePlatzhalter" />
+    </div>
+
+    <div class="epos-pvimport-filter">
+        <Zahlenfeld Bezeichnung="@LabelLeistungVon" Wert="@_pMin" WertChanged="@(w => { _pMin = w; Filtern(); })"
+                    Min="0" Max="999" Nachkommastellen="2" Einheit="@EinheitWatt" Aktiv="@(!_laeuft)" />
+        <Zahlenfeld Bezeichnung="@LabelBis" Wert="@_pMax" WertChanged="@(w => { _pMax = w; Filtern(); })"
+                    Min="0" Max="999" Nachkommastellen="2" Einheit="@EinheitWatt" Aktiv="@(!_laeuft)" />
+        <Zahlenfeld Bezeichnung="@LabelEffizienzVon" Wert="@_effMin" WertChanged="@(w => { _effMin = w; Filtern(); })"
+                    Min="0" Max="100" Nachkommastellen="2" Einheit="@EinheitProzent" Aktiv="@(!_laeuft)" />
+        <Zahlenfeld Bezeichnung="@LabelBis" Wert="@_effMax" WertChanged="@(w => { _effMax = w; Filtern(); })"
+                    Min="0" Max="100" Nachkommastellen="2" Einheit="@EinheitProzent" Aktiv="@(!_laeuft)" />
+        <button type="button" class="epos-knopf" @onclick="Zuruecksetzen">@ZuruecksetzenText</button>
+    </div>
+
+    @* --- Das Gitter (20 746 Zeilen) --------------------------------------- *@
+    <Raster TZeile="Modulzeile" Zeilen="@Zeilen" Virtualisiert="@Virtualisieren">
+        <KindInhalt>
+            <TemplateColumn TGridItem="Modulzeile" Title="@SpalteWahlText">
+                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Zeile)" Kurztext="@SpalteWahlText"
+                            Gewaehltwerden="() => Waehlen(context)" />
+            </TemplateColumn>
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.Quelle)" Title="@SpalteQuelleText" />
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.Name)" Title="@SpalteModulnameText" />
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.Hersteller)" Title="@LabelHersteller" />
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.Technologie)" Title="@LabelTechnologie" />
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.PmpText)" Title="@SpaltePmpText" />
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.EffizienzText)" Title="@SpalteEffizienzText" />
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.IscText)" Title="@SpalteIscText" />
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.BifazialText)" Title="@SpalteBifazialText" />
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.VocText)" Title="@SpalteVocText" />
+            <PropertyColumn TGridItem="Modulzeile" TProp="string"
+                            Property="@(z => z.JahrText)" Title="@SpalteJahrText" />
+        </KindInhalt>
+    </Raster>
+
+    @* --- Die 21 Detailfelder in drei Reitern ------------------------------ *@
+    <Reiter Bezeichnung="@TitelText">
+      <KindInhalt>
+        <Reiterblatt Schluessel="UEBERSICHT" Titel="@ReiterUebersichtText">
+          <KindInhalt>
+            <div class="epos-pvimport-details">
+                <Textfeld Bezeichnung="@LabelModulname" Wert="@Wert(d => d.Name)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelHersteller" Wert="@Wert(d => d.Manufacturer)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelTechnologie" Wert="@Wert(d => d.Technology)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelLeistung" Wert="@Zahl(d => d.Pmp, 2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelEffizienz" Wert="@Zahl(d => d.Efficiency, 2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelBifazial" Wert="@BifazialText" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelFlaeche" Wert="@Zahl(d => d.Flaeche, 2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelLaenge" Wert="@Zahl(d => d.Laenge, 2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelBreite" Wert="@Zahl(d => d.Breite, 2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelBaujahr" Wert="@Wert(d => d.Date.ToString(Invariant))" NurLesen="true" />
+            </div>
+          </KindInhalt>
+        </Reiterblatt>
+
+        <Reiterblatt Schluessel="ELEKTRISCH" Titel="@ReiterElektrischText">
+          <KindInhalt>
+            <div class="epos-pvimport-details">
+                <Textfeld Bezeichnung="@LabelIsc" Wert="@Zahl(d => d.Isc, 3)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelVoc" Wert="@Zahl(d => d.Voc, 3)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelImp" Wert="@Zahl(d => d.Imp, 3)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelVmp" Wert="@Zahl(d => d.Vmp, 3)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelPmp" Wert="@Zahl(d => d.Pmp, 2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelAlphaIsc" Wert="@ZahlOderStrich(d => d.AlphaSc, 6)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelBetaVoc" Wert="@ZahlOderStrich(d => d.BetaOc, 6)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelGammaPmp" Wert="@Zahl(d => d.GammaPmp, 4)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelStc" Wert="@Zahl(d => d.Stc, 2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelPtc" Wert="@Zahl(d => d.Ptc, 2)" NurLesen="true" />
+            </div>
+          </KindInhalt>
+        </Reiterblatt>
+
+        <Reiterblatt Schluessel="THERMISCH" Titel="@ReiterThermischText">
+          <KindInhalt>
+            <div class="epos-pvimport-details">
+                <Textfeld Bezeichnung="@LabelTNoct" Wert="@ZahlOderStrich(d => d.TNoct, 1)" NurLesen="true" />
+            </div>
+            <Herleitungszeile Text="@HinweisPanKoeffizienten" />
+          </KindInhalt>
+        </Reiterblatt>
+      </KindInhalt>
+    </Reiter>
+
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!UebernehmenErlaubt)"
+                @onclick="BeiUebernehmen">@UebernehmenText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
+    </div>
+
+    @* --- Der Konfliktdialog als Ueberlagerung ---------------------------- *@
+    @* Plausibilitaet der Modulwerte (Merge 5): Warnungen fragen zurueck, Fehler sperren. *@
+    <Rueckfrage Offen="@_plausiOffen" TitelText="@TextPlausiTitel" Frage="@_plausiText"
+                JaText="@TextJa" NeinText="@TextNein" Beantwortet="PlausiFertig" />
+
+    <Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_konflikteOffen)
+            {
+                <EPOS.UI.Dialoge.Import.ImportKonflikteDialog
+                    Pruefungen="@_konfliktPruefungen" VergebeneNamen="@_konfliktNamen"
+                    Geschlossen="KonflikteFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Eine Zeile des Modulgitters — zehn Spalten wie im Vorlaeufer.</summary>
+    public sealed record Modulzeile(int Zeile, string Quelle, string Name, string Hersteller,
+                                    string Technologie, string PmpText, string EffizienzText,
+                                    string IscText, string BifazialText, string VocText,
+                                    string JahrText);
+
+    private static readonly System.Globalization.CultureInfo Invariant =
+        System.Globalization.CultureInfo.InvariantCulture;
+
+    // =====================================================================
+    // Die Quelle
+    // =====================================================================
+
+    /// <summary>
+    /// <c>"CEC"</c> oder <c>"PAN"</c> — mit welcher Quelle der Dialog aufmacht.
+    /// Zwei Menuepunkte, EINE Maske; der Vorlaeufer oeffnete beide im selben
+    /// Zustand (Befund W13-B51).
+    /// </summary>
+    [Parameter] public string Quelle { get; set; } = "CEC";
+
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Holt die CEC-Modulliste (Netz oder Zwischenspeicher).</summary>
+    [Parameter]
+    public Func<IProgress<CecFortschritt>, CancellationToken, Task<PvLeseErgebnis>>? CecLaden { get; set; }
+
+    /// <summary>Der Dateiwaehler fuer eine <c>.pan</c>-Datei; ohne ihn bleibt der Knopf weg.</summary>
+    [Parameter] public Func<Task<string?>>? PanWaehlen { get; set; }
+
+    /// <summary>Liest eine <c>.pan</c>-Datei und nimmt sie in die Sitzungsliste auf.</summary>
+    [Parameter] public Func<string, Task<PvLeseErgebnis>>? PanLaden { get; set; }
+
+    /// <summary>Vorpruefung des gewaehlten Moduls gegen den Katalog.</summary>
+    [Parameter] public Func<UnifiedModule, Task<PvVorpruefung>>? Vorpruefen { get; set; }
+
+    /// <summary>Legt das Modul neu an; <c>false</c> = es blieb aus.</summary>
+    [Parameter] public Func<UnifiedModule, string, Task<bool>>? Anlegen { get; set; }
+
+    /// <summary>Aktualisiert den Bestandssatz mit der Id.</summary>
+    [Parameter] public Func<UnifiedModule, int, Task<bool>>? Ueberschreiben { get; set; }
+
+    /// <summary>Uebersetzt einen Meldungsschluessel des Dienstes.</summary>
+    [Parameter] public Func<CecFortschritt, string>? Meldungstext { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende. <c>true</c> = es wurde etwas geschrieben.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.PVIMP_TITEL;
+    [Parameter] public string KopfbandText { get; set; } = Resource.PVIMP_KOPFBAND;
+    [Parameter] public string CecText { get; set; } = Resource.PVIMP_BTN_CEC;
+    [Parameter] public string PanText { get; set; } = Resource.PVIMP_BTN_PAN;
+    [Parameter] public string ZuruecksetzenText { get; set; } = Resource.PVIMP_BTN_ZURUECKSETZEN;
+    [Parameter] public string UebernehmenText { get; set; } = Resource.PVIMP_BTN_UEBERNEHMEN;
+    [Parameter] public string SchliessenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
+
+    [Parameter] public string LabelHersteller { get; set; } = Resource.PVIMP_LBL_HERSTELLER;
+    [Parameter] public string LabelTechnologie { get; set; } = Resource.PVIMP_LBL_TECHNOLOGIE;
+    [Parameter] public string LabelSuche { get; set; } = Resource.PVIMP_LBL_SUCHE;
+    [Parameter] public string SuchePlatzhalter { get; set; } = Resource.PVIMP_PLATZHALTER_SUCHE;
+    [Parameter] public string LabelLeistungVon { get; set; } = Resource.PVIMP_LBL_LEISTUNG_VON;
+    [Parameter] public string LabelEffizienzVon { get; set; } = Resource.PVIMP_LBL_EFFIZIENZ_VON;
+    [Parameter] public string LabelBis { get; set; } = Resource.IMP_KAT_FILTER_BIS;
+    [Parameter] public string EinheitWatt { get; set; } = Resource.PVIMP_EINH_W;
+    [Parameter] public string EinheitProzent { get; set; } = Resource.IMP_KAT_EINH_PROZENT;
+
+    [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string SpalteQuelleText { get; set; } = Resource.PVIMP_SP_QUELLE;
+    [Parameter] public string SpalteModulnameText { get; set; } = Resource.PVIMP_SP_MODULNAME;
+    [Parameter] public string SpaltePmpText { get; set; } = Resource.PVIMP_SP_PMP;
+    [Parameter] public string SpalteEffizienzText { get; set; } = Resource.PVIMP_SP_EFFIZIENZ;
+    [Parameter] public string SpalteIscText { get; set; } = Resource.PVIMP_SP_ISC;
+    [Parameter] public string SpalteBifazialText { get; set; } = Resource.PVIMP_SP_BIFAZIAL;
+    [Parameter] public string SpalteVocText { get; set; } = Resource.PVIMP_SP_VOC;
+    [Parameter] public string SpalteJahrText { get; set; } = Resource.PVIMP_SP_JAHR;
+
+    [Parameter] public string ReiterUebersichtText { get; set; } = Resource.PVIMP_REITER_UEBERSICHT;
+    [Parameter] public string ReiterElektrischText { get; set; } = Resource.PVIMP_REITER_ELEKTRISCH;
+    [Parameter] public string ReiterThermischText { get; set; } = Resource.PVIMP_REITER_THERMISCH;
+
+    [Parameter] public string LabelModulname { get; set; } = Resource.PVIMP_SP_MODULNAME;
+    [Parameter] public string LabelLeistung { get; set; } = Resource.PVIMP_LBL_LEISTUNG;
+    [Parameter] public string LabelEffizienz { get; set; } = Resource.PVIMP_LBL_EFFIZIENZ;
+    [Parameter] public string LabelFlaeche { get; set; } = Resource.PVIMP_LBL_FLAECHE;
+    [Parameter] public string LabelLaenge { get; set; } = Resource.PVIMP_LBL_LAENGE;
+    [Parameter] public string LabelBreite { get; set; } = Resource.PVIMP_LBL_BREITE;
+    [Parameter] public string LabelBifazial { get; set; } = Resource.PVIMP_LBL_BIFAZIAL;
+    [Parameter] public string LabelBaujahr { get; set; } = Resource.PVIMP_LBL_BAUJAHR;
+    [Parameter] public string LabelIsc { get; set; } = Resource.PVIMP_LBL_ISC;
+    [Parameter] public string LabelVoc { get; set; } = Resource.PVIMP_LBL_VOC;
+    [Parameter] public string LabelImp { get; set; } = Resource.PVIMP_LBL_IMP;
+    [Parameter] public string LabelVmp { get; set; } = Resource.PVIMP_LBL_VMP;
+    [Parameter] public string LabelPmp { get; set; } = Resource.PVIMP_LBL_PMP;
+    [Parameter] public string LabelAlphaIsc { get; set; } = Resource.PVIMP_LBL_ALPHA_ISC;
+    [Parameter] public string LabelBetaVoc { get; set; } = Resource.PVIMP_LBL_BETA_VOC;
+    [Parameter] public string LabelGammaPmp { get; set; } = Resource.PVIMP_LBL_GAMMA_PMP;
+    [Parameter] public string LabelStc { get; set; } = Resource.PVIMP_LBL_STC;
+    [Parameter] public string LabelPtc { get; set; } = Resource.PVIMP_LBL_PTC;
+    [Parameter] public string LabelTNoct { get; set; } = Resource.PVIMP_LBL_TNOCT;
+
+    [Parameter] public string HinweisPanKoeffizienten { get; set; } = Resource.PVIMP_HINWEIS_PAN;
+    [Parameter] public string TextAlle { get; set; } = Resource.PVIMP_ALLE;
+    [Parameter] public string TextJa { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string TextNein { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string TextBereit { get; set; } = Resource.PVIMP_STATUS_BEREIT;
+    [Parameter] public string VorlageGefunden { get; set; } = Resource.PVIMP_STATUS_GEFUNDEN;
+    [Parameter] public string TextKeineAuswahl { get; set; } = Resource.PVIMP_MSG_KEINE_AUSWAHL;
+    [Parameter] public string TextGespeichert { get; set; } = Resource.PVIMP_MSG_GESPEICHERT;
+    [Parameter] public string TextAktualisiert { get; set; } = Resource.PVIMP_MSG_AKTUALISIERT;
+    [Parameter] public string TextSchreibfehler { get; set; } = Resource.PVIMP_MSG_SCHREIBFEHLER;
+    [Parameter] public string TextBereitsEingelesen { get; set; } = Resource.IMP_KAT_MSG_BEREITS_EINGELESEN;
+
+    /// <summary>Titel der Rueckfrage bei Warnungen der Plausibilitaetspruefung (PVIMP_PLAUSI_TITEL, Merge 5).</summary>
+    [Parameter] public string TextPlausiTitel { get; set; } = "Hinweis zu den Modulwerten";
+
+    /// <summary>Nachsatz dieser Rueckfrage (PVIMP_PLAUSI_FRAGE).</summary>
+    [Parameter] public string TextPlausiFrage { get; set; } = "Trotzdem übernehmen?";
+    [Parameter] public string HilfeSchluessel { get; set; } = "Main_PV_Test.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _laeuft;
+    private string _fortschrittText = "";
+    private CancellationTokenSource? _abbruch;
+
+    private IReadOnlyList<UnifiedModule> _module = Array.Empty<UnifiedModule>();
+    private List<Modulzeile> _anzeige = new();
+    private List<int> _anzeigeIndex = new();
+    private int _gewaehlt = -1;
+
+    private IReadOnlyList<(int Id, string Text)> _herstellerliste = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _technologieliste = Array.Empty<(int, string)>();
+    private int _iHersteller, _iTechnologie;
+    private string _suche = "";
+    private double? _pMin = 0, _pMax = 999, _effMin = 0, _effMax = 50;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+    private string _status = "";
+
+    private bool _konflikteOffen;
+    private IReadOnlyList<ImportPruefung>? _konfliktPruefungen;
+    private IReadOnlyCollection<string>? _konfliktNamen;
+    private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
+
+    private IQueryable<Modulzeile> Zeilen => _anzeige.AsQueryable();
+
+    /// <summary>
+    /// Ab wie vielen Zeilen sich das Virtualisieren lohnt. Die CEC-Modulliste
+    /// bringt 20 746; eine PAN-Sitzung selten mehr als eine Handvoll. Darunter
+    /// kostet die Virtualisierung mehr, als sie bringt — und sie braucht einen
+    /// Behaelter mit fester Hoehe, in dem dann kaum etwas steht.
+    /// </summary>
+    private const int VIRTUALISIEREN_AB = 120;
+
+    private bool Virtualisieren => _anzeige.Count >= VIRTUALISIEREN_AB;
+
+    private EventCallback AbbrechenCallback =>
+        EventCallback.Factory.Create(this, () => _abbruch?.Cancel());
+
+    /// <summary>Das gewaehlte Modul, oder <c>null</c> (Pruefhilfe fuer Tests).</summary>
+    public UnifiedModule? Gewaehlt =>
+        _gewaehlt >= 0 && _gewaehlt < _anzeige.Count ? _module[_anzeigeIndex[_gewaehlt]] : null;
+
+    /// <summary>Der Text des Warnbanners (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Zahl der sichtbaren Zeilen (Pruefhilfe fuer Tests).</summary>
+    public int SichtbareZeilen => _anzeige.Count;
+
+    private string StatusText => _status.Length > 0 ? _status : TextBereit;
+
+    private bool UebernehmenErlaubt => !_laeuft && Gewaehlt is not null && Vorpruefen is not null;
+
+    private string BifazialText
+    {
+        get
+        {
+            UnifiedModule? m = Gewaehlt;
+            if (m is null) return "";
+            return m.Bifacial
+                ? (m.BifazialFaktor > 0
+                    ? TextJa + " (" + m.BifazialFaktor.ToString("F2") + ")"
+                    : TextJa)
+                : TextNein;
+        }
+    }
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        ListenAufbauen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Die beiden Quellen
+    // =====================================================================
+
+    private async Task BeiCec()
+    {
+        if (CecLaden is null || _laeuft) return;
+
+        _laeuft = true;
+        _meldung = "";
+        _abbruch = new CancellationTokenSource();
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var melder = new Progress<CecFortschritt>(f =>
+            {
+                _fortschrittText = Meldungstext?.Invoke(f) ?? "";
+                InvokeAsync(StateHasChanged);
+            });
+
+            PvLeseErgebnis erg = await CecLaden(melder, _abbruch.Token);
+            Uebernehmen(erg, "CEC");
+        }
+        catch (OperationCanceledException)
+        {
+            // Stiller Ausstieg - der Anwender hat abgebrochen.
+        }
+        finally
+        {
+            _laeuft = false;
+            _fortschrittText = "";
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+    }
+
+    private async Task BeiPan()
+    {
+        if (PanWaehlen is null || PanLaden is null || _laeuft) return;
+
+        string? pfad = await PanWaehlen();
+        if (string.IsNullOrEmpty(pfad)) return;
+
+        _laeuft = true;
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            Uebernehmen(await PanLaden(pfad), "PAN");
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private void Uebernehmen(PvLeseErgebnis erg, string quelle)
+    {
+        if (erg is null) return;
+
+        if (!erg.Erfolgreich)
+        {
+            Melden(Meldungstext?.Invoke(erg.Meldung) ?? "", WarnStufe.Fehler);
+            return;
+        }
+
+        Quelle = quelle;
+        _module = erg.Module;
+        _gewaehlt = -1;
+        ListenAufbauen();
+        Filtern();
+    }
+
+    // =====================================================================
+    // Filter
+    // =====================================================================
+
+    /// <summary>
+    /// Die beiden Auswahllisten. Der erste Eintrag steht fuer „alle" — und zwar
+    /// als STEUERWERT (Index 0), nicht als Anzeigetext, gegen den verglichen
+    /// wird. Der Vorlaeufer verglich gegen die Zeichenkette „(alle)"
+    /// (Befund W13-B39): Eine Uebersetzung haette den Filter still zerrissen.
+    /// </summary>
+    private void ListenAufbauen()
+    {
+        var hersteller = new List<(int, string)> { (0, TextAlle) };
+        var technologie = new List<(int, string)> { (0, TextAlle) };
+
+        foreach (string h in _module.Select(m => m.Manufacturer ?? "").Distinct().OrderBy(x => x))
+            if (h.Length > 0) hersteller.Add((hersteller.Count, h));
+        foreach (string t in _module.Select(m => m.Technology ?? "").Distinct().OrderBy(x => x))
+            if (t.Length > 0) technologie.Add((technologie.Count, t));
+
+        _herstellerliste = hersteller;
+        _technologieliste = technologie;
+        _iHersteller = 0;
+        _iTechnologie = 0;
+    }
+
+    private void BeiHersteller(int? i) { _iHersteller = i ?? 0; Filtern(); }
+    private void BeiTechnologie(int? i) { _iTechnologie = i ?? 0; Filtern(); }
+    private void BeiSuche(string t) { _suche = t ?? ""; Filtern(); }
+
+    private void Zuruecksetzen()
+    {
+        _suche = "";
+        _iHersteller = 0;
+        _iTechnologie = 0;
+        _pMin = 0; _pMax = 999; _effMin = 0; _effMax = 50;
+        Filtern();
+    }
+
+    /// <summary>
+    /// Die Filterrechnung, woertlich aus <c>ApplyFilter</c> :198-246: Die
+    /// Leistung ist <c>I_mp · V_mp</c> (nicht STC), und eine Obergrenze von 0
+    /// zaehlt als „keine Obergrenze".
+    ///
+    /// <para><b>Woertlich behalten trotz Befund W13-B40:</b> Der Bestand fuehrt
+    /// ZWEI Leistungsbegriffe nebeneinander — die Maske filtert und zeigt
+    /// <c>I_mp · V_mp</c>, <c>PVModule.Efficiency</c> rechnet mit <c>STC</c>. Bei
+    /// den meisten Modulen liegen beide dicht beieinander; welcher gemeint ist,
+    /// ist eine ANWENDERFRAGE (offener Punkt W13-O-3).</para>
+    /// </summary>
+    private void Filtern()
+    {
+        System.Text.RegularExpressions.Regex? muster = Suchmuster.Uebersetzen(_suche);
+
+        string? hersteller = _iHersteller > 0 && _iHersteller < _herstellerliste.Count
+            ? _herstellerliste[_iHersteller].Text : null;
+        string? technologie = _iTechnologie > 0 && _iTechnologie < _technologieliste.Count
+            ? _technologieliste[_iTechnologie].Text : null;
+
+        double pMin = _pMin ?? 0, pMax = _pMax ?? 0;
+        double eMin = _effMin ?? 0, eMax = _effMax ?? 0;
+
+        int? gewaehltQuelle = _gewaehlt >= 0 && _gewaehlt < _anzeigeIndex.Count
+            ? _anzeigeIndex[_gewaehlt] : (int?)null;
+
+        _anzeige = new List<Modulzeile>();
+        _anzeigeIndex = new List<int>();
+
+        for (int i = 0; i < _module.Count; i++)
+        {
+            UnifiedModule m = _module[i];
+
+            if (muster is not null && !muster.IsMatch(m.Name ?? "")) continue;
+            if (hersteller is not null && !string.Equals(m.Manufacturer, hersteller, StringComparison.OrdinalIgnoreCase)) continue;
+            if (technologie is not null && !string.Equals(m.Technology, technologie, StringComparison.OrdinalIgnoreCase)) continue;
+
+            if (!(m.Pmp >= pMin && (pMax <= 0 || m.Pmp <= pMax))) continue;
+            if (!(m.Efficiency >= eMin && (eMax <= 0 || m.Efficiency <= eMax))) continue;
+
+            _anzeige.Add(new Modulzeile(
+                _anzeige.Count, m.Database, m.Name ?? "", m.Manufacturer ?? "", m.Technology ?? "",
+                m.Pmp.ToString("N1"), m.Efficiency.ToString("N2"), m.Isc.ToString("N2"),
+                m.Bifacial ? TextJa : TextNein, m.Voc.ToString("N2"),
+                m.Date.ToString(Invariant)));
+            _anzeigeIndex.Add(i);
+        }
+
+        // Die Auswahl ueberlebt das Umfiltern, solange die Zeile sichtbar bleibt.
+        _gewaehlt = gewaehltQuelle.HasValue ? _anzeigeIndex.IndexOf(gewaehltQuelle.Value) : -1;
+
+        _status = string.Format(VorlageGefunden, _anzeige.Count);
+    }
+
+    private void Waehlen(Modulzeile zeile)
+    {
+        _gewaehlt = zeile.Zeile;
+        _meldung = "";
+    }
+
+    // =====================================================================
+    // Die 21 Detailfelder
+    // =====================================================================
+
+    private string Wert(Func<UnifiedModule, string> lesen)
+    {
+        UnifiedModule? m = Gewaehlt;
+        return m is null ? "" : (lesen(m) ?? "");
+    }
+
+    private string Zahl(Func<UnifiedModule, double> lesen, int stellen)
+    {
+        UnifiedModule? m = Gewaehlt;
+        return m is null ? "" : lesen(m).ToString("F" + stellen.ToString(Invariant));
+    }
+
+    /// <summary>
+    /// Ein Wert, den nur die CEC-Quelle fuehrt. Eine PAN-Datei zeigt „-" — genau
+    /// wie im Vorlaeufer (<c>ShowDetail</c> :425-427, :438).
+    /// </summary>
+    private string ZahlOderStrich(Func<UnifiedModule, double?> lesen, int stellen)
+    {
+        UnifiedModule? m = Gewaehlt;
+        if (m is null) return "";
+        double? wert = lesen(m);
+        return wert.HasValue ? wert.Value.ToString("F" + stellen.ToString(Invariant)) : "-";
+    }
+
+    // =====================================================================
+    // Uebernehmen (btnSelect_Click)
+    // =====================================================================
+
+    private async Task BeiUebernehmen()
+    {
+        UnifiedModule? modul = Gewaehlt;
+        if (modul is null || Vorpruefen is null)
+        {
+            Melden(TextKeineAuswahl, WarnStufe.Hinweis);
+            return;
+        }
+
+        _laeuft = true;
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            PvVorpruefung vor = await Vorpruefen(modul);
+
+            // Plausibilitaet der Modulwerte (PV-Katalog-Koeffizienten, Merge 5): ein Fehler
+            // sperrt die Uebernahme, eine Warnung wird zurueckgefragt - der Anwender hat die
+            // Werte im Reiter "Elektrisch" vor sich.
+            if (vor.Gesperrt)
+            {
+                Melden(vor.Plausibilitaet, WarnStufe.Fehler);
+                return;
+            }
+            if (vor.Plausibilitaet.Length > 0 && !await PlausiFragen(vor.Plausibilitaet)) return;
+
+            if (vor.Befund == ImportBefund.Neu)
+            {
+                await Schreiben(modul, modul.Name ?? "", neu: true);
+                return;
+            }
+
+            List<KonfliktEntscheidung>? entscheidungen =
+                await KonflikteFragen(vor.Pruefungen, vor.VergebeneNamen);
+            if (entscheidungen is null || entscheidungen.Count == 0) return;   // Abbruch: nichts schreiben
+
+            KonfliktEntscheidung ent = entscheidungen[0];
+            switch (ent.Aktion)
+            {
+                case KonfliktAktion.Ueberschreiben:
+                    await Schreiben(modul, modul.Name ?? "", neu: false,
+                                    bestandsId: ent.Pruefung.Vorhanden.Id);
+                    break;
+                case KonfliktAktion.Umbenennen:
+                    await Schreiben(modul, ent.NeuerName, neu: true);
+                    break;
+                case KonfliktAktion.Importieren:
+                    // Bei InhaltsGleich: gewollte Variante trotzdem anlegen.
+                    await Schreiben(modul, modul.Name ?? "", neu: true);
+                    break;
+                default:
+                    Melden(TextBereitsEingelesen, WarnStufe.Hinweis);
+                    break;
+            }
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private async Task Schreiben(UnifiedModule modul, string name, bool neu, int bestandsId = 0)
+    {
+        bool ok = neu
+            ? (Anlegen is not null && await Anlegen(modul, name))
+            : (Ueberschreiben is not null && await Ueberschreiben(modul, bestandsId));
+
+        Melden(ok ? (neu ? TextGespeichert : TextAktualisiert) : TextSchreibfehler,
+               ok ? WarnStufe.Erfolg : WarnStufe.Fehler);
+
+        // Wie im Bestand bleibt der Dialog OFFEN - er ist ein Katalogfenster, aus
+        // dem der Anwender mehrere Module nacheinander uebernimmt.
+        if (ok) _geschrieben = true;
+    }
+
+    private bool _geschrieben;
+
+    // --- Rueckfrage der Plausibilitaetspruefung (Merge 5) ---------------------
+    private bool _plausiOffen;
+    private string _plausiText = "";
+    private TaskCompletionSource<bool>? _plausiWartet;
+
+    /// <summary>Steht die Plausibilitaets-Rueckfrage? (Pruefhilfe fuer Tests.)</summary>
+    public bool PlausiOffen => _plausiOffen;
+
+    private async Task<bool> PlausiFragen(string text)
+    {
+        _plausiText = text + " " + TextPlausiFrage;
+        _plausiOffen = true;
+        _plausiWartet = new TaskCompletionSource<bool>();
+        await InvokeAsync(StateHasChanged);
+        return await _plausiWartet.Task;
+    }
+
+    private void PlausiFertig(bool? antwort)
+    {
+        _plausiOffen = false;
+        _plausiWartet?.TrySetResult(antwort == true);
+    }
+
+    private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
+        IReadOnlyList<ImportPruefung> pruefungen, IReadOnlyCollection<string> namen)
+    {
+        _konfliktPruefungen = pruefungen;
+        _konfliktNamen = namen;
+        _konflikteOffen = true;
+        _konflikteWartet = new TaskCompletionSource<List<KonfliktEntscheidung>?>();
+        await InvokeAsync(StateHasChanged);
+        return await _konflikteWartet.Task;
+    }
+
+    private void KonflikteFertig(List<KonfliktEntscheidung>? entscheidungen)
+    {
+        _konflikteOffen = false;
+        _konflikteWartet?.TrySetResult(entscheidungen);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(_geschrieben);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+
+        if (_konflikteOffen) return Task.CompletedTask;
+        if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
+
+        return Geschlossen.InvokeAsync(_geschrieben);
+    }
+}

@@ -1,0 +1,330 @@
+﻿@* Kennliniendaten einer Waermepumpe bearbeiten (iU9-W7.2).
+
+   VORBILD. Views/Waermepumpe/Kenndaten (190 Z., lokalisiert de/en, 12
+   Kartenzeilen, 1 MessageBox). Eine Vorlaufliste links, ein Raster mit den
+   Stuetzstellen dieser Vorlaufstufe rechts, darunter die Gruppe "Neue
+   Stuetzstelle" mit drei Feldern und dem Knopf "Daten uebernehmen", dazu
+   "Neue Vorlauftemperatur".
+
+   DER EDITOR SCHREIBT NICHT. Der Vorlaeufer bekam ein DataSet per ref und
+   liess den AUFRUFER (Form_WP.btn_Kenndaten_Click) die RowState-Faelle
+   zurueckschreiben. Hier gibt der Dialog eine LISTE zurueck; die Differenz
+   rechnet KenndatenCtrl.Abgleichen im Kern (W7.0d), und zwar in einer
+   Transaktion. Abbrechen heisst: null zurueckgeben, die Kopie verwerfen.
+
+   DIE VORLAUFSTUFE IST DIE GRUPPE. listBox1 fuehrt die Stufen, das Raster
+   zeigt genau die Zeilen der gewaehlten - im Bestand ueber
+   DataTable.DefaultView.RowFilter. Eine NEUE Stufe erscheint in der Liste,
+   OHNE dass eine Zeile entsteht (btn_NeuVorlauf_Click:86 baut die Zeile,
+   fuegt sie aber ausdruecklich NICHT ein - die Zeile dt.Rows.Add(newRow) ist
+   dort auskommentiert). Woertlich uebernommen.
+
+   PFLICHTFELDER MIT NAMEN. "Daten uebernehmen" prueft Vorlauf (aus der
+   Liste), Temperatur (Ganzzahl), COP und Ptherm (Zahl) - alle vier mit
+   leerErlaubt:false. Statt vier MessageBox steht ein Warnbanner, das das
+   FEHLENDE Feld nennt.
+
+   NURLESEN sperrt alles: Der Aufrufer setzt das, wenn die Waermepumpe ein
+   Auslieferungssatz ist (ReadOnly). Der Vorlaeufer zeigte dann einen Hinweis
+   und verwarf das Ergebnis stillschweigend - hier ist gar nichts erst
+   bedienbar.
+
+   TASTATUR: Esc schliesst mit null. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (NurLesen)
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@NurLesenText" />
+    }
+    @if (_warnung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_warnung" />
+    }
+
+    <div class="epos-auswahlpaar">
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelVorlaufliste</h2>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteVorlauf</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (int stufe in Vorlaufstufen)
+                        {
+                            int v = stufe;
+                            <tr class="@(v == _vorlauf ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(v == _vorlauf)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => VorlaufWaehlen(v)" />
+                                </td>
+                                <td>@v</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="epos-neuzeile">
+                <Ganzzahlfeld Bezeichnung="@LabelNeuerVorlauf" Feldname="@LabelNeuerVorlauf"
+                              Wert="_neuerVorlauf" WertChanged="w => { _neuerVorlauf = w; }"
+                              Aktiv="@(!NurLesen)" Einheit="@EinheitGrad" />
+                <button type="button" class="epos-knopf" disabled="@NurLesen"
+                        @onclick="VorlaufAnlegen">@BtnNeuVorlaufText</button>
+            </div>
+        </div>
+
+        <div class="epos-auswahlspalte">
+            <h2 class="epos-untergruppe">@LabelStuetzstellen</h2>
+
+            <Zeilenraster Bezeichnung="@LabelStuetzstellen"
+                          Spalten="@(new[] { SpalteTemperatur, SpalteCop, SpaltePtherm, SpalteAktion })"
+                          Spaltenmass="1fr 1fr 1fr 110px">
+                <KindInhalt>
+                    @foreach (KennlinienZeile zeile in Sichtbar)
+                    {
+                        KennlinienZeile z = zeile;
+                        <div class="epos-zr-zeile" role="row">
+                            <div class="epos-zr-zelle" role="cell">
+                                <Ganzzahlfeld Wert="z.Temperatur" WertChanged="w => { z.Temperatur = w; }"
+                                              Feldname="@SpalteTemperatur" Aktiv="@(!NurLesen)" />
+                            </div>
+                            <div class="epos-zr-zelle" role="cell">
+                                <Zahlenfeld Wert="z.Cop" WertChanged="w => { z.Cop = w; }"
+                                            Feldname="@SpalteCop" Aktiv="@(!NurLesen)" />
+                            </div>
+                            <div class="epos-zr-zelle" role="cell">
+                                <Zahlenfeld Wert="z.Ptherm" WertChanged="w => { z.Ptherm = w; }"
+                                            Feldname="@SpaltePtherm" Aktiv="@(!NurLesen)" />
+                            </div>
+                            <div class="epos-zr-aktionen" role="cell">
+                                <button type="button" class="epos-zr-knopf" disabled="@NurLesen"
+                                        title="@BtnZeileLoeschenText"
+                                        @onclick="() => ZeileLoeschen(z)">🗑</button>
+                            </div>
+                        </div>
+                    }
+                </KindInhalt>
+            </Zeilenraster>
+
+            <Gruppenkopf Titel="@GruppeNeu">
+                <KindInhalt>
+                    <Ganzzahlfeld Bezeichnung="@LabelTemperatur" Feldname="@LabelTemperatur"
+                                  Wert="_neuTemperatur" WertChanged="w => { _neuTemperatur = w; }"
+                                  Aktiv="@(!NurLesen)" Einheit="@EinheitGrad" />
+                    <Zahlenfeld Bezeichnung="@LabelCop" Feldname="@LabelCop"
+                                Wert="_neuCop" WertChanged="w => { _neuCop = w; }"
+                                Aktiv="@(!NurLesen)" />
+                    <Zahlenfeld Bezeichnung="@LabelPtherm" Feldname="@LabelPtherm"
+                                Wert="_neuPtherm" WertChanged="w => { _neuPtherm = w; }"
+                                Aktiv="@(!NurLesen)" Einheit="@EinheitKw" />
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf" disabled="@NurLesen"
+                                @onclick="ZeileUebernehmen">@BtnItemNeuText</button>
+                    </div>
+                </KindInhalt>
+            </Gruppenkopf>
+        </div>
+    </div>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>
+    /// Die Stützstellen — eine KOPIE der Hülle. Der Dialog bearbeitet sie an Ort und
+    /// Stelle und gibt sie am OK zurück; Abbrechen verwirft sie.
+    /// </summary>
+    [Parameter] public List<KennlinienZeile> Zeilen { get; set; } = new();
+
+    /// <summary>Das Stammgerät — es steht in jeder neu angelegten Zeile.</summary>
+    [Parameter] public int IdWp { get; set; }
+
+    /// <summary>
+    /// Schreibgeschützter Auslieferungssatz: ansehen ja, ändern nein. Der Vorläufer
+    /// zeigte dazu einen Hinweis und verwarf das Ergebnis; hier ist nichts bedienbar.
+    /// </summary>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>Der Stand nach OK; <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<KennlinienZeile>?> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = Resource.WPKL_TITEL;
+    [Parameter] public string LabelVorlaufliste { get; set; } = Resource.WPKL_LBL_VORLAUFLISTE;
+    [Parameter] public string LabelStuetzstellen { get; set; } = Resource.WPKL_LBL_STUETZSTELLEN;
+    [Parameter] public string GruppeNeu { get; set; } = Resource.WPKL_GRP_NEU;
+    [Parameter] public string LabelTemperatur { get; set; } = Resource.WPKL_LBL_TEMPERATUR;
+    [Parameter] public string LabelCop { get; set; } = Resource.WPKL_LBL_COP;
+    [Parameter] public string LabelPtherm { get; set; } = Resource.WPKL_LBL_PTHERM;
+    [Parameter] public string LabelNeuerVorlauf { get; set; } = Resource.WPKL_LBL_NEUVORLAUF;
+    [Parameter] public string SpalteWahl { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string SpalteVorlauf { get; set; } = Resource.WPKL_SP_VORLAUF;
+    [Parameter] public string SpalteTemperatur { get; set; } = Resource.WPKL_SP_TEMPERATUR;
+    [Parameter] public string SpalteCop { get; set; } = Resource.WPKL_LBL_COP;
+    [Parameter] public string SpaltePtherm { get; set; } = Resource.WPKL_SP_PTHERM;
+    [Parameter] public string SpalteAktion { get; set; } = Resource.WPKL_SP_AKTION;
+    [Parameter] public string BtnItemNeuText { get; set; } = Resource.WPKL_BTN_ITEMNEU;
+    [Parameter] public string BtnNeuVorlaufText { get; set; } = Resource.WPKL_LBL_NEUVORLAUF;
+    [Parameter] public string BtnZeileLoeschenText { get; set; } = Resource.WPKL_BTN_ZEILE_LOESCHEN;
+    [Parameter] public string EinheitGrad { get; set; } = "°C";
+    [Parameter] public string EinheitKw { get; set; } = "kW";
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.WPKL_BTN_ABBRUCH;
+    [Parameter] public string NurLesenText { get; set; } = Resource.WPS_MSG_READONLY_KENNDATEN;
+
+    /// <summary>Warnung, wenn keine Vorlaufstufe gewählt ist (Vorläufer: „Vorlauftemperatur selektieren!").</summary>
+    [Parameter] public string WarnungKeinVorlauf { get; set; } = Resource.WPKL_MSG_KEIN_VORLAUF;
+
+    /// <summary>Warnung bei fehlender Pflichtangabe; <c>{0}</c> ist der Feldname.</summary>
+    [Parameter] public string WarnungFeldFormat { get; set; } = Resource.WPKL_MSG_FELD;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Kenndaten.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    /// <summary>Zusätzlich angelegte Vorlaufstufen, die noch KEINE Zeile haben.</summary>
+    private readonly List<int> _leereStufen = new();
+
+    private int? _vorlauf;
+    private int? _neuerVorlauf;
+    private int? _neuTemperatur;
+    private double? _neuCop;
+    private double? _neuPtherm;
+    private string _warnung = "";
+
+    /// <summary>Die gewählte Vorlaufstufe — Prüfhilfe für die Tests.</summary>
+    public int? Vorlauf => _vorlauf;
+
+    /// <summary>
+    /// Alle Stufen: die aus den Zeilen plus die von Hand angelegten, aufsteigend.
+    /// Der Vorläufer füllte die Liste aus <c>KenndatenCtrl.ReadVorlauf</c> — hier
+    /// stehen die Zeilen schon da, eine zweite Abfrage wäre eine zweite Wahrheit.
+    /// </summary>
+    private IReadOnlyList<int> Vorlaufstufen
+    {
+        get
+        {
+            var stufen = new SortedSet<int>();
+            foreach (KennlinienZeile z in Zeilen) stufen.Add(z.Vorlauf);
+            foreach (int v in _leereStufen) stufen.Add(v);
+            return stufen.ToList();
+        }
+    }
+
+    /// <summary>Die Zeilen der gewählten Stufe (Vorläufer: <c>RowFilter</c>).</summary>
+    private IReadOnlyList<KennlinienZeile> Sichtbar
+        => _vorlauf is null
+            ? Array.Empty<KennlinienZeile>()
+            : Zeilen.Where(z => z.Vorlauf == _vorlauf.Value).ToList();
+
+    protected override void OnInitialized()
+    {
+        // Der Vorlaeufer filterte beim Aufbau auf den Vorlauf der ERSTEN Zeile
+        // (Konstruktor:19, dr[2]) - nicht auf die kleinste Stufe.
+        if (Zeilen.Count > 0) _vorlauf = Zeilen[0].Vorlauf;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void VorlaufWaehlen(int stufe)
+    {
+        _vorlauf = stufe;
+        _warnung = "";
+    }
+
+    /// <summary>
+    /// „Neue Vorlauftemperatur": die Stufe erscheint in der Liste, eine Zeile entsteht
+    /// NICHT. Woertlich aus <c>btn_NeuVorlauf_Click</c>:86 — dort ist
+    /// <c>dt.Rows.Add(newRow)</c> auskommentiert.
+    /// </summary>
+    private void VorlaufAnlegen()
+    {
+        if (NurLesen) return;
+        if (_neuerVorlauf is null)
+        {
+            _warnung = string.Format(WarnungFeldFormat, LabelNeuerVorlauf);
+            return;
+        }
+
+        _warnung = "";
+        if (!Vorlaufstufen.Contains(_neuerVorlauf.Value)) _leereStufen.Add(_neuerVorlauf.Value);
+        _vorlauf = _neuerVorlauf.Value;
+        _neuerVorlauf = null;
+    }
+
+    /// <summary>
+    /// „Daten übernehmen": Vorlauf aus der Liste (Pflicht), dann die drei Zahlen —
+    /// alle mit <c>leerErlaubt:false</c> wie im Vorläufer. Erst wenn alles steht,
+    /// entsteht die Zeile; danach sind die drei Felder wieder leer.
+    /// </summary>
+    private void ZeileUebernehmen()
+    {
+        if (NurLesen) return;
+
+        if (_vorlauf is null) { _warnung = WarnungKeinVorlauf; return; }
+        if (_neuTemperatur is null) { _warnung = string.Format(WarnungFeldFormat, LabelTemperatur); return; }
+        if (_neuCop is null) { _warnung = string.Format(WarnungFeldFormat, LabelCop); return; }
+        if (_neuPtherm is null) { _warnung = string.Format(WarnungFeldFormat, LabelPtherm); return; }
+
+        _warnung = "";
+        Zeilen.Add(new KennlinienZeile
+        {
+            Id = 0,                       // 0 = neu, die Hülle legt sie an
+            Vorlauf = _vorlauf.Value,
+            Temperatur = _neuTemperatur,
+            Cop = _neuCop,
+            Ptherm = _neuPtherm
+        });
+        _leereStufen.Remove(_vorlauf.Value);
+
+        _neuTemperatur = null;
+        _neuCop = null;
+        _neuPtherm = null;
+    }
+
+    /// <summary>
+    /// Eine Stützstelle entfernen. Der Vorläufer nahm dafür die Entf-Taste des
+    /// <c>DataGridView</c>; ein Tastendruck ohne sichtbares Bedienelement ist auf
+    /// einem Berührungsgerät nicht erreichbar (A-9).
+    /// </summary>
+    private void ZeileLoeschen(KennlinienZeile zeile)
+    {
+        if (NurLesen) return;
+
+        int stufe = zeile.Vorlauf;
+        Zeilen.Remove(zeile);
+        _warnung = "";
+
+        // Die Stufe bleibt in der Liste, auch wenn ihre letzte Zeile weg ist -
+        // sonst spraenge die Auswahl waehrend des Aufraeumens fort.
+        if (!Zeilen.Any(z => z.Vorlauf == stufe) && !_leereStufen.Contains(stufe))
+            _leereStufen.Add(stufe);
+    }
+
+    private Task BeiErgebnis(bool ok)
+        => Geschlossen.InvokeAsync(ok ? Zeilen : null);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" ? Geschlossen.InvokeAsync(null) : Task.CompletedTask;
+}

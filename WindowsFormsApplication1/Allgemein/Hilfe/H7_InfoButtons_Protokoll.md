@@ -1,4 +1,4 @@
-# H7 — Info-Buttons auf allen Hauptdialogen (Umsetzungsprotokoll, 29.08.2026)
+﻿# H7 — Info-Buttons auf allen Hauptdialogen (Umsetzungsprotokoll, 29.08.2026)
 
 Grundlage: `Inventar.md` und `Entscheidungen.md` der H7-Orchestrierung, Soll-Zuordnung
 `mapping_soll.txt` (73 Zeilen, wörtlich übernommen). Vorbild für die Knopfklasse:
@@ -132,7 +132,7 @@ zweite Durchlauf ist folgenlos (§ 2.4). Spalte „Kod" = Kodierung der Datei.
 | Form_Gebaeude2 | `Views/Gebäude/Form_Gebaeude2.cs:16` | **CP1252** | Regelfall |
 | Form_Heizkessel_Admin | `Views/Heizkessel/Form_Heizkessel_Admin.cs:15` | UTF-8+BOM | Regelfall |
 | Form_Heizkessel_Bearbeiten | `Views/Heizkessel/Form_Heizkessel_Bearbeiten.cs:38` | UTF-8+BOM | `Anbringen(this, abstandRechts: 60, abstandOben: 176)` |
-| Form_Heizkessel_einlesen | `Views/Heizkessel/Form_Heizkessel_einlesen.cs:30` | **CP1252** | Regelfall |
+| ~~Form_Heizkessel_einlesen~~ | mit **iU9‑W13.1** abgelöst → `KatalogImportDialog` (Ausprägung Heizkessel) | UTF‑8+BOM (seit iU1‑P1.12, nicht CP1252 — Befund W13‑B13) | Infoknopf jetzt als Razor-Baustein |
 | Form_KiEinstellungen | `Views/Help/Form_KiEinstellungen.cs:48` | UTF-8 | Regelfall |
 | Form_Betriebskosten | `Views/Kosten/Form_Betriebskosten.cs:81` | UTF-8 | Regelfall |
 | Form_CaseEingabe | `Views/Kosten/Form_CaseEingabe.cs:20` und `:42` | UTF-8+BOM | Regelfall, 2 Konstruktoren |
@@ -147,7 +147,7 @@ zweite Durchlauf ist folgenlos (§ 2.4). Spalte „Kod" = Kodierung der Datei.
 | Form_PhotovoltaikVerguetung | `Views/Wirtschaftlichkeit/Form_PhotovoltaikVerguetung.cs:56` | UTF-8+BOM | `Anbringen(this, abstandRechts: 175, ziel: pnlKopf)` |
 | Form_Tarifstruktur | `Views/Wirtschaftlichkeit/Form_Tarifstruktur.cs:95` | UTF-8 | Regelfall |
 | Form_AdminPV | `Views/Photovoltaik/Form_AdminPV.cs:19` | UTF-8+BOM | Regelfall |
-| Main_PV_Test | `Views/Photovoltaik/Form_CECImport.cs:31` | UTF-8+BOM | `Anbringen(this, ziel: _headerPanel)` |
+| ~~Main_PV_Test~~ | mit **iU9‑W13.3** abgelöst → `PvModulImportDialog` | UTF‑8+BOM | Das Kopfband `_headerPanel` (der einzige `ziel:`-Sonderfall der Welle) entfällt mit dem `HeaderGradientPanel` ersatzlos — der Infoknopf sitzt jetzt im Dialogkopf wie überall |
 | Form_ProjektExportImport | `Views/Projekt/Form_ProjektExportImport.cs:43` | UTF-8+BOM | Regelfall |
 | FormMain | `Views/Hauptformular/FormMain.cs:75` | UTF-8+BOM | Regelfall |
 | Form_EingProzTyp | `Views/Prozesswärme/Form_EingProzTyp.cs:20` | **CP1252** | Regelfall |
@@ -155,14 +155,14 @@ zweite Durchlauf ist folgenlos (§ 2.4). Spalte „Kod" = Kodierung der Datei.
 | Form_ErgProzesswaerme | `Views/Prozesswärme/Form_ErgProzesswaerme.cs:23` | **CP1252** | Regelfall |
 | Form_PufferSp_Admin | `Views/Pufferspeicher/Form_PufferSp_Admin.cs:22` | UTF-8+BOM | Regelfall |
 | Form_PufferSp_Projekt | `Views/Pufferspeicher/Form_PufferSp_Projekt.cs:170` | UTF-8+BOM | Regelfall |
-| Form_PufferSp_einlesen | `Views/Pufferspeicher/Form_PufferSp_einlesen.cs:23` | UTF-8+BOM | Regelfall |
+| ~~Form_PufferSp_einlesen~~ | mit **iU9‑W13.1** abgelöst → `KatalogImportDialog` (Ausprägung Pufferspeicher) | UTF‑8+BOM | Infoknopf jetzt als Razor-Baustein |
 | Form_Quellprofil | `Views/Simulation/Form_Quellprofil.cs:148` | UTF-8+BOM | Regelfall |
 | Form_Waermesenke | `Views/Simulation/Form_Waermesenke.cs:275` | UTF-8+BOM | Regelfall |
 | Form_Simulation_Detail | `Views/Simulation/Form_Simulation_Detail.cs:275` | UTF-8+BOM | Regelfall |
 | Form_QuelleErdreich | `Views/Simulation/Form_QuelleErdreich.cs:206` | UTF-8+BOM | Regelfall |
 | Form_SolarDB | `Views/Solarthermie/Form_SolarDB.cs:18` | **CP1252** | Regelfall |
 | Form_SolarKollektorenAdmin | `Views/Solarthermie/Form_SolarKollektorenAdmin.cs:23` | **CP1252** | Regelfall |
-| Form_SolarKollektoren_einlesen | `Views/Solarthermie/Form_SolarKollektoren_einlesen.cs:23` | **CP1252** | Regelfall |
+| ~~Form_SolarKollektoren_einlesen~~ | mit **iU9‑W13.1** abgelöst → `KatalogImportDialog` (Ausprägung Solarkollektoren) | UTF‑8+BOM (seit iU1‑P1.12, nicht CP1252 — Befund W13‑B13) | Infoknopf jetzt als Razor-Baustein |
 | Form_Solarganglinie | `Views/Solarthermie/Form_Solarganglinie.cs:25` | UTF-8 | Regelfall |
 | Form_Solarganglinie_Admin | `Views/Solarthermie/Form_Solarganglinie_Admin.cs:21` | **CP1252** | Regelfall |
 | Form_GanglinieImportOptionen | `Views/Stromverbraucher/Form_GanglinieImportOptionen.cs:89` | UTF-8+BOM | Regelfall |
@@ -179,11 +179,11 @@ zweite Durchlauf ist folgenlos (§ 2.4). Spalte „Kod" = Kodierung der Datei.
 | UcBkUebersicht | `Views/BerichteKosten/UcBkUebersicht.cs:126` | UTF-8+BOM | Regelfall |
 | UcBkKosten | `Views/BerichteKosten/UcBkKosten.cs:99` | UTF-8+BOM | Regelfall |
 | UcBericht | `Views/Bericht/UcBericht.cs:89` | UTF-8+BOM | Regelfall |
-| Form_AdminWaermeeinlesen | `Views/Wärmebedarf/Form_AdminWaermeeinlesen.cs:26` | **CP1252** | Regelfall |
+| ~~Form_AdminWaermeeinlesen~~ | mit **iU9‑W13.2** abgelöst → `WaermebedarfAdminDialog` | UTF‑8+BOM (seit iU1‑P1.12, nicht CP1252 — Befund W13‑B13) | Infoknopf jetzt als Razor-Baustein |
 | Wizard_WPItem | `Views/Wizard/Wizard_WPItem.cs:46` und `:75` | UTF-8+BOM | Regelfall, 2 Konstruktoren |
 | Form_WPAuswahl | `Views/Wärmepumpe/Form_WPAuswahl.cs:21` | UTF-8+BOM | Regelfall |
 | Form_WpFilterAuswahl | `Views/Wärmepumpe/Form_WPFilterAuswahl.cs:20` | UTF-8+BOM | Regelfall (Datei ≠ Klasse) |
-| Form_WP_einlesen | `Views/Wärmepumpe/Form_WP_einlesen.cs:31` | UTF-8 | Regelfall |
+| ~~Form_WP_einlesen~~ | mit **iU9‑W13.1** abgelöst → `KatalogImportDialog` (Ausprägung Wärmepumpe) | reines ASCII ohne BOM | Infoknopf jetzt als Razor-Baustein; der Designer liegt als Prüfmuster unter `Werkzeuge/Formularkarte.Tests/Pruefmuster/Wärmepumpe/` |
 | Kenndaten | `Views/Wärmepumpe/Kenndaten.cs:22` | UTF-8+BOM | Regelfall |
 | Form_KwkgModule | `Views/Wirtschaftlichkeit/Form_KwkgModule.cs:61` | UTF-8 | Regelfall |
 | Form_WirtschaftlichkeitParameter | `Views/Wirtschaftlichkeit/Form_WirtschaftlichkeitParameter.cs:64` | UTF-8 | Regelfall |
@@ -240,10 +240,10 @@ Schreiben nachgemessen. `HilfeKontext.cs` und `WikiWissen.cs` sind UTF-8 ohne BO
 | `Form_Start` Reiter 4/5 | Programmatisch auf `tabPage4`/`tabPage5`, 51×39, `abstandRechts 18`, `abstandOben 20` — deckungsgleich zu `btn_Help_Strombedarf` auf Reiter 3 (Location 1196/26 bei Seitenbreite 1265). Die Startmaske führt ihre Koordinaten je Sprache in eigenen `.resx`; von Hand wäre jede zu pflegen. Zur TabPage-Vierseitenanker-Falle: der Knopf wird **nach** `InitializeComponent()` eingehängt, nur `Top\|Right` verankert und behält damit seine Größe; selbst wenn die Seite zu diesem Zeitpunkt noch auf einer vorläufigen Größe stünde, korrigierte die Verankerung die Lage beim ersten Layout (gemessen, § 6). |
 | Reiter 6 → `UcBerichteKosten` | Der Knopf gehört nicht auf `tabPage6` — `UcBerichteKosten` dockt `Fill` und läge darüber. Er sitzt 24×24 **in** `lblKopf` (Dock Top, 30 hoch); `lblKopf` ist zugleich sein Elternelement, nur so zeigt der durchsichtige Hintergrund die Farbe der Kopfzeile. Gemessen nach dem ersten Layout: 1021/3. |
 | `Form_Heizkessel_Bearbeiten` | Die Maske führt oben rechts eine **senkrechte Knopfleiste** (x 616..721 von y 19 bis 168), der KI-Aufrufknopf sitzt deshalb laut `KiDialoge.cs` **darunter** (`AbstandRechts 8, AbstandOben 176`) — nicht oben rechts. Die Kollisionsregel „Infoknopf links neben den KI-Knopf" ergibt damit `abstandRechts: 60, abstandOben: 176`. Ein Knopf bei `abstandRechts: 60` auf Regelhöhe läge mitten auf `btn_Ueberschreiben`. |
-| Kopfband trägt den Knopf | `Form_KostenKomponente`, `Form_LeistungspreisReihe`, `Form_VorlagenUebernahme`, `Form_Emissionskatalog` (je `ziel: pnlKopf`) und `Main_PV_Test` (`ziel: _headerPanel`) — deren Kopfbänder sind rechts frei. |
+| Kopfband trägt den Knopf | `Form_KostenKomponente`, `Form_LeistungspreisReihe`, `Form_VorlagenUebernahme`, `Form_Emissionskatalog` (je `ziel: pnlKopf`) und `Main_PV_Test` (`ziel: _headerPanel`) — deren Kopfbänder sind rechts frei. **Alle fünf sind inzwischen Razor-Komponenten**; dort sitzt der Infoknopf im Dialogkopf, und die Frage nach einem freien Kopfband stellt sich nicht mehr. |
 | Kopfband **belegt** | `Form_Energietraeger`: `lblKontext` ist rechts verankert und endet 12 px vor dem Rand → `abstandRechts: 200` setzt den Knopf links daneben (x 856..884). `Form_PhotovoltaikVerguetung`: `chkAktiv` rechts verankert bei x 756..901 → `abstandRechts: 175` (x 711..739). |
 | Zwei Konstruktoren | `Form_CaseEingabe`, `Wizard_WPItem` — beide versorgt, zweiter Aufruf folgenlos. |
-| Datei ≠ Klasse | `Form_WPFilterAuswahl.cs` → `Form_WpFilterAuswahl`, `Form_CECImport.cs` → `Main_PV_Test`. Beide über die Klasse zugeordnet, wie in `mapping_soll.txt`. |
+| Datei ≠ Klasse | `Form_WPFilterAuswahl.cs` → `Form_WpFilterAuswahl`, `Form_CECImport.cs` → `Main_PV_Test`. Beide über die Klasse zugeordnet, wie in `mapping_soll.txt`. **Beide sind abgelöst** (W7.1 bzw. W13.3); mit `Main_PV_Test` fällt auch der tote `HilfeKontext`-Eintrag `Form_CECImport`, den der Dateiname erzeugt hatte (Befund W13‑B37). |
 | `Form_Gebaeude2` | Ohne Fenstertitel — Knopf trotzdem angebracht (Zuordnung läuft über `Control.Name`, nicht über den Titel). |
 | Sechs namenlose Masken | siehe § 2.1. |
 | `.cs.bak` und `Form_Simulation_Detail - Kopie.cs` | Nicht angefasst (Letztere ist per `.csproj` vom Build ausgeschlossen). |

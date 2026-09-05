@@ -142,20 +142,10 @@ namespace WindowsFormsApplication1
                     }
 
                     // Deserialisierung des JSON absichern
-                    try
-                    {
-                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                        var result = JsonSerializer.Deserialize<PvgisResponse>(jsonString, options);
-
-                        // Globale Variable oder Property setzen
-                        meteoDb = result?.Inputs?.Meteo_Data?.Meteo_Db + " - " + result?.Inputs?.Meteo_Data?.RadiationDb;
-
-                        return result?.Outputs?.TmyHourly ?? new List<TmyHourlyData>();
-                    }
-                    catch (JsonException)
-                    {
-                        throw new Exception("Die empfangenen Klimadaten sind beschädigt oder ungültig (JSON-Fehler).");
-                    }
+                    string db;
+                    List<TmyHourlyData> stunden = AusJson(jsonString, out db);
+                    meteoDb = db;      // globale Variable wie bisher setzen
+                    return stunden;
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
@@ -183,6 +173,36 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 throw new Exception($"Fehler bei der Klimadaten Ermittlung: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Liest eine PVGIS-TMY-Antwort aus ihrem JSON-Text (iU9-W14c.0k).
+        ///
+        /// <para><b>Warum das eine eigene Methode ist.</b> Der Klimaimport ist die EINZIGE
+        /// Stelle des Programms mit Netzzugriff (Risiko R-W14c-5). Damit sein Ablauf ohne
+        /// Internet nachweisbar bleibt, liest die Probe dieselbe Antwort aus einer
+        /// EINGEFRORENEN Datei (<c>Referenzlaeufe/Importproben/pvgis_tmy_*.json</c>) — und
+        /// zwar ueber genau diesen Weg, nicht ueber einen zweiten Leser. Am Verhalten von
+        /// <see cref="GetTMY"/> aendert die Auslagerung nichts.</para>
+        /// </summary>
+        /// <param name="jsonText">Der Antworttext des PVGIS-Servers.</param>
+        /// <param name="meteoDatenbank">Die Herkunftsangabe „meteo_db - radiation_db".</param>
+        public static List<TmyHourlyData> AusJson(string jsonText, out string meteoDatenbank)
+        {
+            try
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var result = JsonSerializer.Deserialize<PvgisResponse>(jsonText, options);
+
+                meteoDatenbank = result?.Inputs?.Meteo_Data?.Meteo_Db + " - " +
+                                 result?.Inputs?.Meteo_Data?.RadiationDb;
+
+                return result?.Outputs?.TmyHourly ?? new List<TmyHourlyData>();
+            }
+            catch (JsonException)
+            {
+                throw new Exception("Die empfangenen Klimadaten sind beschädigt oder ungültig (JSON-Fehler).");
             }
         }
 

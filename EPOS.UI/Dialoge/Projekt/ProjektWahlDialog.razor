@@ -1,0 +1,416 @@
+﻿@* Projektauswahl - EINE Maske fuer zwei Zwecke (iU9-W15a.2).
+
+   SIE LOEST ZWEI WINFORMS-MASKEN AB, die dasselbe taten:
+     * Form_ProjektAuswahl ("Projekt oeffnen", 99 Z. + das UserControl
+       ProjektAuswahl mit 408 Z.) - Liste, OK, Abbrechen, Hilfeknopf.
+     * Form_ProjektDelete ("Projekt Loeschen", 55 Z.) - eine Klappliste, OK,
+       Abbrechen. Der Kopfkommentar in Masken.cs:62 sagt es woertlich: "nur die
+       AUSWAHL des Projekts; geloescht wird danach vom Aufrufer."
+   Beide liefern (Id, Name) und sonst nichts. Der Unterschied ist der Zweck - und
+   damit Titel, Knopftext und die Sicherheitsabfrage.
+
+   WAS SICH FUER DEN ANWENDER AENDERT (Angleichungen der Welle):
+     * A-12: "Loeschen" zeigt jetzt DIESELBE Liste wie "Oeffnen" - mit Suche,
+       Kunde und Aenderungsdatum statt einer Klappliste. Das ist die sichtbarste
+       Aenderung der Welle (Anwenderfrage E-5).
+     * A-7: Der Loeschdialog bekommt Esc und einen Standardknopf. Form_ProjektDelete
+       hatte weder AcceptButton noch CancelButton - Esc schloss sie nicht (B6).
+     * Die Sicherheitsabfrage steht jetzt IM Dialog statt danach. Ihre Stellung in
+       der Schrittfolge ist dieselbe (Auswahl -> Rueckfrage -> loeschen ->
+       Erfolgsmeldung), nur sieht der Anwender sie dort, wo er gerade ist.
+
+   BITGLEICH BLEIBT das Rueckgabefach: Der Dialog meldet (Id, Name), der Aufrufer
+   fuellt daraus die Projektwahl (Befund W15a-B45 - der ganze Projektwechsel
+   haengt daran).
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Zeilen kommen fertig als [Parameter]
+   aus ProjektCtrl.NamenListe; geloescht wird ausserhalb. *@
+
+@namespace EPOS.UI.Dialoge.Projekt
+
+@using EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-projektwahl" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        @if (!string.IsNullOrEmpty(HilfeSchluessel))
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" />
+        }
+    </div>
+
+    @if (Mehrfach && !string.IsNullOrEmpty(HinweisText))
+    {
+        <p class="epos-kontextzeile">@HinweisText</p>
+    }
+
+    <ProjektListe @ref="_liste" Zeilen="@Zeilen"
+                  Mehrfach="@Mehrfach" Angehakt="@_angehakt" AngehaktChanged="@(s => _angehakt = s)"
+                  Suche="@_suche" SucheChanged="@(s => _suche = s)"
+                  SortSpalte="@SortSpalte" SortAbsteigend="@SortAbsteigend"
+                  Markiert="@_markiert" MarkiertChanged="BeiMarkierung"
+                  Gewaehlt="BeiDoppelklick"
+                  AutoVorauswahl="@AutoVorauswahl"
+                  AnzahlFormat="@AnzahlFormat"
+                  SpalteName="@SpalteName" SpalteKunde="@SpalteKunde"
+                  SpalteGeaendert="@SpalteGeaendert" SpalteArt="@SpalteArt"
+                  ArtStammText="@ArtStammText" ArtVarianteText="@ArtVarianteText"
+                  VarianteVonFormat="@VarianteVonFormat" SucheText="@SucheText"
+                  WahlText="@WahlText" LeerText="@LeerText" />
+
+    @if (Mehrfach)
+    {
+        @* Mehrfachauswahl (Nutzerauftrag 02.09.2026, aus Form_ProjektDelete portiert):
+           Alle/Keine, der Zaehler und die angebotene Sicherungskopie. *@
+        <div class="epos-leiste epos-projektwahl-mehrfach">
+            <button type="button" class="epos-knopf epos-projektwahl-alle"
+                    @onclick="() => _liste!.AlleSichtbaren(true)">@AlleText</button>
+            <button type="button" class="epos-knopf epos-projektwahl-keine"
+                    @onclick="() => _liste!.AlleSichtbaren(false)">@KeineText</button>
+            <span class="epos-projektwahl-zaehler">@string.Format(AusgewaehltFormat ?? "{0}", _angehakt.Count)</span>
+            <span class="epos-leiste-fueller"></span>
+            @if (SicherungAngeboten)
+            {
+                <Schalter Bezeichnung="@SicherungText" Wert="@_sicherung" WertChanged="@(w => _sicherung = w)" />
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     Ergebnis="BeiErgebnis" />
+
+    <Rueckfrage Offen="@_frageOffen" TitelText="@FrageTitel" Frage="@Frage"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="BeiFrage" />
+
+    @* Entscheid O-3: erst NACH der Sicherheitsabfrage und nur, wenn der Name
+       mehrere Projekte trifft. Ebenfalls Vorgabe "Nein". *@
+    <Rueckfrage Offen="@_mehrdeutigOffen" TitelText="@MehrdeutigTitel" Frage="@MehrdeutigFrage"
+                VorgabeNein="true" JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="BeiMehrdeutig" />
+</div>
+
+@code {
+    /// <summary>Wozu die Liste da ist.</summary>
+    public enum ProjektZweck
+    {
+        /// <summary>„Projekt öffnen" — der Dialog hinter <c>Masken.ProjektAuswahl</c>.</summary>
+        Oeffnen = 0,
+
+        /// <summary>„Projekt löschen" — der Dialog hinter <c>Masken.ProjektDelete</c>.</summary>
+        Loeschen
+    }
+
+    /// <summary>Öffnen oder Löschen — der einzige echte Unterschied der beiden Masken.</summary>
+    [Parameter] public ProjektZweck Zweck { get; set; } = ProjektZweck.Oeffnen;
+
+    /// <summary>Die wählbaren Projekte (<c>ProjektCtrl.NamenListe</c>).</summary>
+    [Parameter] public IReadOnlyList<ProjektKopfZeile> Zeilen { get; set; } = Array.Empty<ProjektKopfZeile>();
+
+    /// <summary>
+    /// Der Name, der beim Öffnen vorgewählt sein soll; leer = keiner. Vorbild
+    /// <c>Form_ProjektAuswahl.ZuletztGeaendertZuerst</c>, das die Startmasken-Kachel
+    /// „Zuletzt geöffnet" benutzt.
+    /// </summary>
+    [Parameter] public string Vorauswahl { get; set; } = "";
+
+    /// <summary>Nach welcher Spalte sortiert wird (Vorgabe: Projektname).</summary>
+    [Parameter] public int SortSpalte { get; set; } = ProjektListe.SPALTE_NAME;
+
+    /// <summary>Absteigend? Die Kachel „Zuletzt geöffnet" sortiert nach Datum absteigend.</summary>
+    [Parameter] public bool SortAbsteigend { get; set; }
+
+    /// <summary>Markiert die erste Zeile von selbst (Vorbild <c>AutomatischeVorauswahl</c>).</summary>
+    [Parameter] public bool AutoVorauswahl { get; set; } = true;
+
+    /// <summary>
+    /// Das Ergebnis: die gewählte Zeile bei OK, <c>null</c> bei Abbrechen. Der Aufrufer
+    /// füllt daraus die <c>Projektwahl</c> — das Rückgabefach bleibt unverändert (B45).
+    /// </summary>
+    [Parameter] public EventCallback<ProjektKopfZeile?> Geschlossen { get; set; }
+
+    [Parameter] public string TitelText { get; set; } = "Projekt öffnen";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Der Titel der Sicherheitsabfrage.</summary>
+    [Parameter] public string FrageTitel { get; set; } = "";
+
+    /// <summary>
+    /// Die Sicherheitsabfrage; <c>{0}</c> = Projektname. Wörtlich aus
+    /// <c>MenueCtrl.ProjektDelete:193</c>.
+    /// </summary>
+    [Parameter] public string FrageFormat { get; set; } = "";
+
+    /// <summary>
+    /// Wie viele Projekte tragen diesen Namen? Der Löschweg fragt damit nach, bevor er
+    /// einen mehrdeutigen Namen löscht (iU9-W15a, Entscheid O-3 vom 04.09.2026).
+    ///
+    /// <para><b>Warum ein Rückruf und keine Abfrage.</b> EPOS.UI rührt keine Datenbank an
+    /// (Hausregel). Die Hülle reicht <c>ProjektCtrl.AnzahlGleicherNamen</c> herein —
+    /// DIESELBE Zählung, mit der <c>ProjektCtrl.LoeschenMitVorarbeiten</c> im Kern
+    /// abbricht. So können die beiden nicht auseinanderlaufen. <c>null</c> = nicht
+    /// gesetzt, dann wird nicht gefragt (der Kern hält die Sperre trotzdem).</para>
+    /// </summary>
+    [Parameter] public Func<string, int>? NamensAnzahl { get; set; }
+
+    /// <summary>Der Titel der Mehrdeutigkeits-Rückfrage.</summary>
+    [Parameter] public string MehrdeutigTitel { get; set; } = "";
+
+    /// <summary>
+    /// Die Mehrdeutigkeits-Rückfrage; <c>{0}</c> = Projektname, <c>{1}</c> = Anzahl.
+    /// Leer = die Rückfrage unterbleibt.
+    /// </summary>
+    [Parameter] public string MehrdeutigFormat { get; set; } = "";
+
+    /// <summary>
+    /// Meldet dem Aufrufer, dass der Anwender dem Löschen ALLER Projekte dieses Namens
+    /// ausdrücklich zugestimmt hat — er reicht das als <c>mehrdeutigZugelassen</c> an
+    /// den Kern weiter. Wird nur bei „Ja" gerufen, unmittelbar vor
+    /// <see cref="Geschlossen"/>.
+    /// </summary>
+    [Parameter] public EventCallback<bool> MehrdeutigZugelassen { get; set; }
+
+    /// <summary>Meldung, wenn OK ohne Auswahl gedrückt wird (Schlüssel <c>Text_Select</c>).</summary>
+    [Parameter] public string MeldungKeineWahl { get; set; } = "Bitte auswählen!";
+
+    [Parameter] public string AnzahlFormat { get; set; } = "{0} von {1} Projekten";
+    [Parameter] public string SpalteName { get; set; } = "Projektname";
+    [Parameter] public string SpalteKunde { get; set; } = "Kunde";
+    [Parameter] public string SpalteGeaendert { get; set; } = "Geändert";
+
+    /// <summary>Kopf der Artspalte der Projektliste (<c>PRJ_LIST_SP_ART</c>, W15a‑E‑1).</summary>
+    [Parameter] public string SpalteArt { get; set; } = "Art";
+
+    /// <summary>Ein Projekt mit Varianten (<c>PRJ_LIST_ART_STAMM</c>).</summary>
+    [Parameter] public string ArtStammText { get; set; } = "Stamm";
+
+    /// <summary>Eine Variante (<c>PRJ_LIST_ART_VARIANTE</c>).</summary>
+    [Parameter] public string ArtVarianteText { get; set; } = "Variante";
+
+    /// <summary>Die leise Herkunftszeile (<c>PRJ_LIST_VARIANTE_VON</c>); <c>{0}</c> = Stammname.</summary>
+    [Parameter] public string VarianteVonFormat { get; set; } = "Variante von {0}";
+    [Parameter] public string SucheText { get; set; } = "Suchen:";
+    [Parameter] public string WahlText { get; set; } = "Wahl";
+    [Parameter] public string LeerText { get; set; } = "Es ist noch kein Projekt angelegt.";
+
+    /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    // --- Mehrfachauswahl (Nutzerauftrag 02.09.2026, Merge 5) -------------------------
+    /// <summary>Haekchenliste statt Einzelwahl - nur im Loeschmodus.</summary>
+    [Parameter] public bool Mehrfach { get; set; }
+    /// <summary>Wird eine Sicherungskopie der Datenbank angeboten? (Schalter, Vorgabe an.)</summary>
+    [Parameter] public bool SicherungAngeboten { get; set; }
+    [Parameter] public string HinweisText { get; set; } = "";
+    [Parameter] public string AlleText { get; set; } = "Alle sichtbaren auswählen";
+    [Parameter] public string KeineText { get; set; } = "Auswahl aufheben";
+    [Parameter] public string SicherungText { get; set; } = "Sicherungskopie der Datenbank vor dem Löschen anlegen";
+    [Parameter] public string AusgewaehltFormat { get; set; } = "{0} ausgewählt";
+    /// <summary>Rueckfrage der Mehrfachloeschung; {0} = Anzahl, danach die Namen (hoechstens zwoelf).</summary>
+    [Parameter] public string FrageMehrereFormat { get; set; } =
+        "{0} Projekt(e) werden mit allen zugehörigen Daten unwiderruflich gelöscht:";
+    [Parameter] public string VarianteText { get; set; } = "Variante";
+    [Parameter] public string WeitereFormat { get; set; } = "… und {0} weitere";
+    /// <summary>Der Loeschauftrag - Varianten VOR ihren Staemmen, samt Sicherungswunsch.</summary>
+    [Parameter] public EventCallback<ProjektLoeschauftrag> LoeschauftragErteilt { get; set; }
+
+    private string _suche = "";
+    private int _markiert;
+    private ProjektKopfZeile? _gewaehlt;
+    private string _meldung = "";
+    private bool _frageOffen;
+    private bool _mehrdeutigOffen;
+    private int _anzahlGleicher;
+    private ProjektListe? _liste;
+    private IReadOnlyCollection<int> _angehakt = Array.Empty<int>();
+    private bool _sicherung = true;
+
+    /// <summary>Die angehakten Ids der Mehrfachauswahl (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyCollection<int> Angehakt => _angehakt;
+
+    /// <summary>Die gerade markierte Zeile (Prüfhilfe für Tests).</summary>
+    public ProjektKopfZeile? Markiert => _gewaehlt;
+
+    /// <summary>Steht die Sicherheitsabfrage? (Prüfhilfe für Tests.)</summary>
+    public bool FrageOffen => _frageOffen;
+
+    /// <summary>Steht die Mehrdeutigkeits-Rückfrage? (Prüfhilfe für Tests.)</summary>
+    public bool MehrdeutigOffen => _mehrdeutigOffen;
+
+    private string Frage => Mehrfach ? MehrereFrage : string.Format(FrageFormat ?? "", _gewaehlt?.Name ?? "");
+
+    /// <summary>Die Auswahl in Loeschreihenfolge: Varianten VOR ihren Staemmen (wie der Vorlaeufer).</summary>
+    private IReadOnlyList<ProjektKopfZeile> Auswahl
+    {
+        get
+        {
+            var liste = new List<ProjektKopfZeile>();
+            foreach (ProjektKopfZeile z in Zeilen) if (_angehakt.Contains(z.Id) && z.StammId > 0) liste.Add(z);
+            foreach (ProjektKopfZeile z in Zeilen) if (_angehakt.Contains(z.Id) && z.StammId <= 0) liste.Add(z);
+            return liste;
+        }
+    }
+
+    /// <summary>Rueckfrage mit Liste (hoechstens zwoelf Namen, Varianten gekennzeichnet).</summary>
+    private string MehrereFrage
+    {
+        get
+        {
+            IReadOnlyList<ProjektKopfZeile> liste = Auswahl;
+            var sb = new System.Text.StringBuilder();
+            sb.Append(string.Format(FrageMehrereFormat ?? "{0}", liste.Count));
+            int n = 0;
+            foreach (ProjektKopfZeile z in liste)
+            {
+                if (++n > 12)
+                {
+                    sb.Append('\n').Append(string.Format(WeitereFormat ?? "{0}", liste.Count - 12));
+                    break;
+                }
+                sb.Append('\n').Append(z.Name);
+                if (z.StammId > 0) sb.Append(" (").Append(VarianteText).Append(')');
+            }
+            return sb.ToString();
+        }
+    }
+
+    private string MehrdeutigFrage
+        => string.Format(MehrdeutigFormat ?? "", _gewaehlt?.Name ?? "", _anzahlGleicher);
+
+    protected override void OnParametersSet()
+    {
+        // Vorauswahl EINMAL scharfstellen - danach gehoert die Markierung dem Anwender.
+        if (_markiert != 0 || string.IsNullOrEmpty(Vorauswahl)) return;
+
+        foreach (ProjektKopfZeile z in Zeilen)
+            if (string.Equals(z.Name, Vorauswahl, StringComparison.CurrentCultureIgnoreCase))
+            {
+                _markiert = z.Id;
+                _gewaehlt = z;
+                return;
+            }
+    }
+
+    private void BeiMarkierung(ProjektKopfZeile? z)
+    {
+        _gewaehlt = z;
+        _markiert = z?.Id ?? 0;
+        if (z is not null) _meldung = "";
+    }
+
+    /// <summary>
+    /// Doppelklick = OK. So hielt es <c>Form_ProjektAuswahl.ucAuswahl_ProjektGewaehlt</c>;
+    /// im Loeschmodus fuehrt er ueber dieselbe Sicherheitsabfrage wie der Knopf.
+    /// </summary>
+    private Task BeiDoppelklick(ProjektKopfZeile z)
+    {
+        // Mehrfachmodus: Doppelklick schaltet den Haken (Vorlaeufer), loescht nicht.
+        if (Mehrfach) return _liste is null ? Task.CompletedTask : _liste.Umschalten(z);
+        BeiMarkierung(z);
+        return BeiErgebnis(true);
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Geschlossen.InvokeAsync(null);
+            return;
+        }
+
+        // btn_OK_Click: ohne Auswahl bleibt der Dialog offen und sagt, warum.
+        if (Mehrfach)
+        {
+            // Die Rueckfrage traegt die ganze Liste; ohne Haken gibt es nichts zu fragen.
+            if (_angehakt.Count == 0) { _meldung = MeldungKeineWahl; return; }
+            _meldung = "";
+            _frageOffen = true;
+            return;
+        }
+
+        if (_gewaehlt is null || _gewaehlt.Id <= 0)
+        {
+            _meldung = MeldungKeineWahl;
+            return;
+        }
+
+        if (Zweck == ProjektZweck.Loeschen && !string.IsNullOrEmpty(FrageFormat))
+        {
+            _frageOffen = true;
+            return;
+        }
+
+        await Uebernehmen();
+    }
+
+    private async Task BeiFrage(bool? antwort)
+    {
+        _frageOffen = false;
+        if (antwort != true) return;          // "Nein" laesst den Dialog stehen
+        await Uebernehmen();
+    }
+
+    /// <summary>
+    /// Der letzte Schritt vor dem Schliessen — und die Stelle, an der der Loeschweg
+    /// nach einem MEHRDEUTIGEN Namen fragt (Entscheid O-3 vom 04.09.2026).
+    ///
+    /// <para>Regulaer trifft ein Name genau ein Projekt: <c>Tab_Projekt</c> traegt den
+    /// eindeutigen Index <c>Projektname</c>. Ein Altbestand ohne ihn kann den Fall
+    /// fuehren, und weil der Loeschweg ueber den NAMEN laeuft, traefe er dann beide
+    /// Projekte. Deshalb: nachfragen. „Nein" laesst den Dialog stehen, wie bei der
+    /// Sicherheitsabfrage.</para>
+    /// </summary>
+    private async Task Uebernehmen()
+    {
+        if (Mehrfach)
+        {
+            IReadOnlyList<ProjektKopfZeile> liste = Auswahl;
+            await LoeschauftragErteilt.InvokeAsync(new ProjektLoeschauftrag(liste, SicherungAngeboten && _sicherung));
+            await Geschlossen.InvokeAsync(liste.Count > 0 ? liste[0] : null);
+            return;
+        }
+
+        if (Zweck == ProjektZweck.Loeschen && NamensAnzahl is not null
+            && !string.IsNullOrEmpty(MehrdeutigFormat))
+        {
+            _anzahlGleicher = NamensAnzahl(_gewaehlt?.Name ?? "");
+            if (_anzahlGleicher > 1)
+            {
+                _mehrdeutigOffen = true;
+                return;
+            }
+        }
+
+        await Geschlossen.InvokeAsync(_gewaehlt);
+    }
+
+    private async Task BeiMehrdeutig(bool? antwort)
+    {
+        _mehrdeutigOffen = false;
+        if (antwort != true) return;          // "Nein" laesst den Dialog stehen
+        await MehrdeutigZugelassen.InvokeAsync(true);
+        await Geschlossen.InvokeAsync(_gewaehlt);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Steht eine Rueckfrage, beantwortet sie Esc selbst.
+        if (_frageOffen || _mehrdeutigOffen) return Task.CompletedTask;
+        return e.Key switch
+        {
+            "Enter" => BeiErgebnis(true),
+            "Escape" => BeiErgebnis(false),
+            _ => Task.CompletedTask
+        };
+    }
+}

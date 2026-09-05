@@ -1,0 +1,349 @@
+﻿@* Lizenz und rechtliche Hinweise - der verbindliche Vertragstext und alles, was
+   rechtlich daneben gehoert. iU9-W15c.11, Ersatz fuer Views/Help/Form_Lizenz.cs
+   (1 013 Z., ohne Designer, ohne .resx). Die Anzeigetexte stehen seit W15c-O-2
+   (04.09.2026) gebuendelt in LizenzTexte statt als 18 Einzelparameter.
+
+   ZWEI GESICHTER, EINE KOMPONENTE - wie im Vorlaeufer, dessen Konstruktor einen
+   bool nahm: Zustimmungsmodus = false ist der Menuepunkt "Hilfe -> Lizenz",
+   Zustimmungsmodus = true die EULA-Abfrage beim ersten Start. Der Unterschied
+   sind vier Zeilen Text und zwei Knoepfe.
+
+   DREI REGISTERKARTEN: Lizenzvereinbarung (Datei, Zwischenspeicher oder
+   Online-Fassung), Rechtliche Hinweise (7+8 Abschnitte) und Komponenten (6+6).
+   VERBINDLICH IST AUSSCHLIESSLICH DIE ERSTE - das sagt der Klassenkopf des
+   Vorlaeufers ausdruecklich, und die uebrigen Seiten sagen es selbst.
+
+   WAS NICHT MITWANDERT (Vermessung § 12.5): die Suchleiste und A+/A- (E-12, Zoom
+   kann die WebView selbst), die RTF-Anzeige (E-1: .rtf und .docx zeigen DENSELBEN
+   Hinweistext), PrintDocument mit eigenem Seitenumbruch (E-2: der Knopf ruft den
+   Browserdruck, Kopf- und Fusszeile aus @@media print), Process.Start (daraus wird
+   ein <a target="_blank">) und ein zweites modales Fenster fuer die
+   Lizenzverwaltung (E-11, Risiko R2: Ueberlagerung IM selben Fenster).
+
+   VERWEISE WERDEN NICHT GERATEN. Der Vorlaeufer liess die RichTextBox Adressen
+   ERKENNEN (DetectUrls); hier werden nur "https://"-Laeufe im ERZEUGTEN Rechtstext
+   zu Verweisen - unser eigener Ressourcentext, keine Fremdeingabe -, und der
+   Vertragstext der ersten Karte steht als reiner Text in einem Nur-Lese-Feld.
+   Gebaut werden die Verweise als Elemente, NICHT als MarkupString: Aus Text darf
+   nie Auszeichnung werden. *@
+
+@namespace EPOS.UI.Dialoge.Lizenz
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
+
+<div class="epos-lizenz">
+
+    <header class="epos-lizenz-kopf">
+        <h1 class="epos-lizenz-titel">@Texte.KopfTitel</h1>
+        <p class="epos-lizenz-untertitel">@Texte.KopfUntertitel</p>
+    </header>
+
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@Texte.KopfTitel">
+        <KindInhalt>
+
+            @* ============================================ Lizenzvereinbarung *@
+            <Reiterblatt Schluessel="VERTRAG" Titel="@Texte.ReiterVertrag">
+                <KindInhalt>
+                    @if (DateiWaehlen is not null)
+                    {
+                        <div class="epos-lizenz-werkzeuge">
+                            <button type="button" class="epos-knopf" @onclick="DateiWaehlenKlick">
+                                @Texte.KnopfDatei
+                            </button>
+                        </div>
+                    }
+
+                    <Textfeld Bezeichnung="@Texte.ReiterVertrag" Wert="@Text.Text"
+                              Mehrzeilig="true" NurLesen="true" Zeilen="20" />
+                </KindInhalt>
+            </Reiterblatt>
+
+            @* ========================================== Rechtliche Hinweise *@
+            <Reiterblatt Schluessel="HINWEISE" Titel="@Texte.ReiterHinweise">
+                <KindInhalt>
+                    @Rechtstext(Hinweise)
+                </KindInhalt>
+            </Reiterblatt>
+
+            @* ================================================== Komponenten *@
+            <Reiterblatt Schluessel="KOMPONENTEN" Titel="@Texte.ReiterKomponenten">
+                <KindInhalt>
+                    @Rechtstext(Komponenten)
+                </KindInhalt>
+            </Reiterblatt>
+
+        </KindInhalt>
+    </Reiter>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungsstufe" Text="@_meldung" />
+    }
+
+    @* ---- Fusszeile: links die Herkunft, rechts die Knoepfe. Die Reihenfolge von
+       RECHTS nach links ist bitgleich (Entscheid E-14): [Zustimmen] [Ablehnen]
+       [Drucken] [Speichern] [Aktivieren] bzw. ohne die ersten beiden. *@
+    <footer class="epos-lizenz-fuss">
+        <div class="epos-lizenz-herkunft">
+            <span>@Zeile1</span>
+            <span>@Zeile2</span>
+        </div>
+
+        <div class="epos-lizenz-knoepfe">
+            @if (VerwaltungGaben is not null)
+            {
+                <button type="button" class="epos-knopf" @onclick="VerwaltungOeffnen">@Texte.KnopfAktivieren</button>
+            }
+            @if (Speichern is not null)
+            {
+                <button type="button" class="epos-knopf" @onclick="SpeichernKlick">@Texte.KnopfSpeichern</button>
+            }
+            <button type="button" class="epos-knopf" @onclick="Drucken">@Texte.KnopfDrucken</button>
+
+            @if (Zustimmungsmodus)
+            {
+                <button type="button" class="epos-knopf" @onclick="Ablehnen">@Texte.KnopfAblehnen</button>
+                <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Zustimmen">@Texte.KnopfZustimmen</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Schliessen">@Texte.KnopfSchliessen</button>
+            }
+
+            <InfoKnopf Schluessel="Form_Lizenz.btn_Help" />
+        </div>
+    </footer>
+</div>
+
+@* Die Lizenzverwaltung als UEBERLAGERUNG statt als zweites Fenster (E-11): Der Wirt
+   haelt ihren Parametersatz und splattet ihn, Geschlossen setzt er selbst. Ihre Texte
+   stehen im selben Buendel (LizenzTexte.Verwaltung) und kommen mit dem Satz. *@
+<Ueberlagerung Offen="@_verwaltungOffen" Titel="@Texte.KnopfAktivieren"
+               Geschlossen="VerwaltungGeschlossen">
+    <KindInhalt>
+        @if (_verwaltungOffen && VerwaltungGaben is not null)
+        {
+            <LizenzVerwaltungDialog @attributes="VerwaltungGaben"
+                                    Geschlossen="VerwaltungGeschlossen" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    /// <summary><c>true</c> = die EULA-Abfrage beim ersten Start: zwei zusätzliche
+    /// Knöpfe statt „Schließen", und die Fußzeile trägt den Bestätigungshinweis.</summary>
+    [Parameter] public bool Zustimmungsmodus { get; set; }
+
+    /// <summary>Der Vertragstext samt Herkunft und Stand (erste Registerkarte).</summary>
+    [Parameter] public LizenzTextGaben Text { get; set; } = LizenzTextGaben.Leer;
+
+    /// <summary>Der Lizenzstand dieses Arbeitsplatzes für die Fußzeile.</summary>
+    [Parameter] public string Lizenzstatus { get; set; } = "";
+
+    /// <summary>Die 15 Abschnitte der Registerkarte „Rechtliche Hinweise".</summary>
+    [Parameter] public IReadOnlyList<RechtsAbschnitt> Hinweise { get; set; } = new List<RechtsAbschnitt>();
+
+    /// <summary>Die 12 Abschnitte der Registerkarte „Komponenten".</summary>
+    [Parameter] public IReadOnlyList<RechtsAbschnitt> Komponenten { get; set; } = new List<RechtsAbschnitt>();
+
+    /// <summary>Alle Anzeigetexte in EINEM Satz (W15c-O-2), samt dem Sprachhinweis über
+    /// den Abschnitten. Ohne Angabe füllt sich das Bündel aus <c>MyResource</c>.</summary>
+    [Parameter] public LizenzTexte Texte { get; set; } = new();
+
+    // ---- Wege nach draussen ------------------------------------------------
+
+    /// <summary>„Datei wählen…": Die Hülle zeigt den Dateiwähler, merkt den Pfad und
+    /// liefert den neuen Zustand der ersten Karte. <c>null</c> = abgebrochen.</summary>
+    [Parameter] public Func<Task<LizenzTextGaben?>>? DateiWaehlen { get; set; }
+
+    /// <summary>
+    /// Die Online-Fassung nachliefern — EINMAL beim Öffnen und nur, wenn keine
+    /// örtliche Datei gefunden wurde; <c>null</c> = es bleibt beim vorhandenen Stand.
+    /// Der Vorläufer stieß den Abruf als <c>async void</c> an (Befund W15c-B28); hier
+    /// wird er abgewartet und über den Verteiler gezeichnet.
+    /// </summary>
+    [Parameter] public Func<Task<LizenzTextGaben?>>? OnlineNachladen { get; set; }
+
+    /// <summary>„Speichern unter…": Reiterschlüssel und Inhalt hinein, die gespeicherte
+    /// Datei (oder <c>null</c>) heraus. Die Dateiwahl gehört der Plattform.</summary>
+    [Parameter] public Func<string, string, Task<string?>>? Speichern { get; set; }
+
+    /// <summary>Der Parametersatz der Lizenzverwaltung — ohne ihn kein Knopf „Lizenz
+    /// aktivieren…". Sie erscheint als <c>Ueberlagerung</c> (E-11).</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? VerwaltungGaben { get; set; }
+
+    /// <summary>Der Dialog ist zu. <c>true</c> = zugestimmt bzw. normal geschlossen,
+    /// <c>false</c> = abgelehnt. Im Normalmodus kommt immer <c>true</c>.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Die Zustimmung ist erteilt — die Hülle merkt sie sich.</summary>
+    [Parameter] public EventCallback Zugestimmt { get; set; }
+
+    // ---- Zustand -----------------------------------------------------------
+
+    private string _reiter = "VERTRAG";
+    private bool _verwaltungOffen;
+    private bool _nachgeladen;
+    private string _meldung = "";
+    private WarnStufe _meldungsstufe = WarnStufe.Hinweis;
+
+    /// <summary>Die erste Fußzeile: Lizenzstand bzw. im Zustimmungsmodus der Hinweis.</summary>
+    private string Zeile1 => Zustimmungsmodus
+        ? Texte.ZustimmungHinweis
+        : string.Format(Texte.FussLizenz, Lizenzstatus);
+
+    /// <summary>Die zweite Fußzeile: Herkunft des Textes, mit Stand, wenn bekannt.</summary>
+    private string Zeile2 => string.Format(Texte.FussQuelle, Text.Quelle)
+        + (string.IsNullOrEmpty(Text.Stand) ? "" : string.Format(Texte.FussStand, Text.Stand));
+
+    protected override async Task OnAfterRenderAsync(bool erstesMal)
+    {
+        // EINMAL, und nur wenn die Huelle einen Weg dafuer gegeben hat.
+        if (!erstesMal || _nachgeladen || OnlineNachladen is null) return;
+        _nachgeladen = true;
+
+        LizenzTextGaben? frisch = await OnlineNachladen();
+        if (frisch is null) return;
+
+        Text = frisch;
+        StateHasChanged();
+    }
+
+    // ---- Der erzeugte Rechtstext -------------------------------------------
+
+    /// <summary>Zeichnet eine Abschnittsliste: Überschriften als <c>h3</c>, Absätze
+    /// als <c>p</c>, und <c>https://</c>-Läufe als echte Verweise.</summary>
+    private RenderFragment Rechtstext(IReadOnlyList<RechtsAbschnitt> abschnitte) => bau =>
+    {
+        int folge = 0;
+
+        if (!string.IsNullOrEmpty(Texte.SprachHinweis))
+        {
+            bau.OpenElement(folge++, "p");
+            bau.AddAttribute(folge++, "class", "epos-lizenz-sprachhinweis");
+            bau.AddContent(folge++, Texte.SprachHinweis);
+            bau.CloseElement();
+        }
+
+        foreach (RechtsAbschnitt a in abschnitte)
+        {
+            bau.OpenElement(folge++, a.IstUeberschrift ? "h3" : "p");
+            bau.AddAttribute(folge++, "class", a.IstUeberschrift ? "epos-lizenz-ueberschrift" : "epos-lizenz-absatz");
+
+            foreach ((string stueck, bool verweis) in Zerlegen(a.Text))
+            {
+                if (verweis)
+                {
+                    bau.OpenElement(folge++, "a");
+                    bau.AddAttribute(folge++, "href", stueck);
+                    bau.AddAttribute(folge++, "target", "_blank");
+                    bau.AddAttribute(folge++, "rel", "noopener noreferrer");
+                    bau.AddContent(folge++, stueck);
+                    bau.CloseElement();
+                }
+                else
+                {
+                    bau.AddContent(folge++, stueck);
+                }
+            }
+
+            bau.CloseElement();
+        }
+    };
+
+    /// <summary>
+    /// Zerlegt einen Abschnitt in Text- und Verweisstücke. Erkannt wird ausschließlich
+    /// <c>https://</c> bis zum nächsten Leerraum; ein Satzzeichen am Ende gehört nicht
+    /// zur Adresse. <b>Hier wird nichts geraten</b> (Linie von <c>Gespraechsverlauf</c>,
+    /// W15b-A-4): kein <c>http://</c>, keine nackten Domänen, keine E-Mail-Adressen.
+    /// <c>public</c>, damit der Prüfstand die REGEL ohne den Dialog prüfen kann.
+    /// </summary>
+    public static IEnumerable<(string Stueck, bool IstVerweis)> Zerlegen(string text)
+    {
+        if (string.IsNullOrEmpty(text)) yield break;
+
+        int i = 0;
+        while (i < text.Length)
+        {
+            int treffer = text.IndexOf("https://", i, StringComparison.Ordinal);
+            if (treffer < 0)
+            {
+                yield return (text[i..], false);
+                yield break;
+            }
+
+            if (treffer > i) yield return (text[i..treffer], false);
+
+            int ende = treffer;
+            while (ende < text.Length && !char.IsWhiteSpace(text[ende])) ende++;
+            while (ende > treffer && ".,;:!?)".IndexOf(text[ende - 1]) >= 0) ende--;
+
+            yield return (text[treffer..ende], true);
+            i = ende;
+        }
+    }
+
+    // ---- Die Knöpfe --------------------------------------------------------
+
+    private async Task DateiWaehlenKlick()
+    {
+        if (DateiWaehlen is null) return;
+
+        LizenzTextGaben? neu = await DateiWaehlen();
+        if (neu is null) return;      // abgebrochen - alles bleibt
+        Text = neu;
+    }
+
+    /// <summary>„Speichern unter…": gespeichert wird der Inhalt der AKTIVEN
+    /// Registerkarte — wie im Vorläufer, der dafür <c>AktiveAnzeige()</c> fragte.</summary>
+    private async Task SpeichernKlick()
+    {
+        if (Speichern is null) return;
+
+        string? ziel = await Speichern(_reiter, InhaltDerKarte(_reiter));
+        if (string.IsNullOrEmpty(ziel)) return;
+
+        _meldung = string.Format(Texte.MsgGespeichert, ziel);
+        _meldungsstufe = WarnStufe.Hinweis;
+    }
+
+    private string InhaltDerKarte(string schluessel) => schluessel switch
+    {
+        "HINWEISE" => AlsText(Hinweise),
+        "KOMPONENTEN" => AlsText(Komponenten),
+        _ => Text.Text
+    };
+
+    private static string AlsText(IReadOnlyList<RechtsAbschnitt> abschnitte)
+        => string.Join("\n\n", abschnitte.Select(a => a.Text));
+
+    /// <summary>„Drucken…": der Browserdruck der WebView (Entscheid E-2). Kopf- und
+    /// Fußzeile kommen aus <c>@@media print</c>; einen eigenen Seitenumbruch wie
+    /// <c>Druck_PrintPage</c> gibt es hier nicht — und braucht es nicht.</summary>
+    private async Task Drucken()
+    {
+        try
+        {
+            await Js.InvokeVoidAsync("window.print");
+        }
+        catch (Exception)
+        {
+            // Ohne Druckdienst (Prüfstand, gesperrte Umgebung) passiert nichts -
+            // dasselbe stille Verhalten wie beim fehlgeschlagenen Process.Start.
+        }
+    }
+
+    private void VerwaltungOeffnen() => _verwaltungOffen = true;
+
+    private void VerwaltungGeschlossen() => _verwaltungOffen = false;
+
+    private async Task Zustimmen()
+    {
+        await Zugestimmt.InvokeAsync();
+        await Geschlossen.InvokeAsync(true);
+    }
+
+    private Task Ablehnen() => Geschlossen.InvokeAsync(false);
+
+    private Task Schliessen() => Geschlossen.InvokeAsync(true);
+}

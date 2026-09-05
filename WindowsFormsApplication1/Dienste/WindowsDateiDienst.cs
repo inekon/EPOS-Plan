@@ -90,5 +90,83 @@ namespace WindowsFormsApplication1
                 return false;
             }
         }
+
+        /// <summary>
+        /// Öffnet eine Adresse im Standardbrowser (iU9-W16c.3).
+        ///
+        /// <para>Wörtlich der Rumpf von <c>Hauptfensterrahmen.MenuItem_Dokumentation_Click</c>
+        /// (<c>:826</c>) — bis dahin die letzte unmittelbare
+        /// <c>Process.Start</c>-Zeile des Hauptfensters. Ein Fehlschlag bleibt
+        /// folgenlos: Der Vorläufer schrieb ihn nach <c>Debug.WriteLine</c> und
+        /// meldete nichts.</para>
+        /// </summary>
+        public bool AdresseOeffnen(string adresse)
+        {
+            if (string.IsNullOrWhiteSpace(adresse)) return false;
+
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = adresse,
+                    UseShellExecute = true
+                });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Fehler beim Öffnen des Links: " + ex.Message);
+                return false;
+            }
+        }
+
+        // ==================================================================
+        //  Die drei Wähler HINTER dem Blazor-Ereignis (Befund W13‑B‑1)
+        // ==================================================================
+        //
+        // DER BEFUND. Die Windows-Abnahme vom 05.09.2026 meldete zum
+        // VDI-3805-Import: "Absturz bei Datei laden, teilweise Absturz auch bei
+        // Dateiauswahl-Dialog". Der Weg dorthin ist
+        //
+        //   Kachel/Menue (Blazor-Ereignis der ERSTEN WebView2)
+        //     -> BlazorDialogForm<KatalogImportDialog>.ShowDialog()
+        //       -> Dateiwahl.BeiKlick (Blazor-Ereignis der ZWEITEN WebView2)
+        //         -> Dienste.Datei.DateiOeffnen
+        //           -> OpenFileDialog.ShowDialog()
+        //
+        // und der letzte Schritt oeffnet seine verschachtelte Nachrichtenschleife
+        // INNERHALB des WebMessageReceived-Rueckrufs der zweiten WebView2. Das
+        // ist wortgleich das Muster, das als Befund W16b-B-1 die leeren Dialoge
+        // verursacht hat - nur dass es hier nicht eine zweite WebView2 trifft,
+        // sondern die laufende: Waehrend die Schleife pumpt, liefert die WebView2
+        // weitere Nachrichten aus, und Blazor faengt an, WAEHREND eines
+        // Zeichenlaufs einen zweiten zu beginnen. Das erklaert das "teilweise"
+        // der Meldung - Wiedereintritt trifft nach Zeitlage, nicht immer.
+        //
+        // DIE BEHEBUNG. Der Waehler faehrt eine gepostete Nachricht spaeter hoch,
+        // aus der gewoehnlichen Schleife von Application.Run heraus. Fuer den
+        // Anwender aendert sich nichts; fuer die WebView2 aendert sich, dass sie
+        // ihr Ereignis abgeschlossen hat, bevor das Fenster kommt.
+        //
+        // DIE SYNCHRONEN FORMEN BLEIBEN, WIE SIE SIND. Sie haben Aufrufer, die
+        // nicht warten koennen (FileDlgClass, CsvExportClass im Kern) und die
+        // NICHT aus einem Blazor-Ereignis kommen. Wer aus einer Razor-Komponente
+        // heraus waehlt, nimmt die wartbare Form - das ist die Hausregel, die in
+        // WindowsFormsApplication1/CLAUDE.md steht.
+
+        /// <inheritdoc/>
+        public System.Threading.Tasks.Task<string> DateiOeffnenAsync(
+            string titel, string filter, string startOrdner)
+            => Blazornachlauf.Nachgelagert(() => DateiOeffnen(titel, filter, startOrdner));
+
+        /// <inheritdoc/>
+        public System.Threading.Tasks.Task<string> DateiSpeichernAsync(
+            string titel, string filter, string vorschlag)
+            => Blazornachlauf.Nachgelagert(() => DateiSpeichern(titel, filter, vorschlag));
+
+        /// <inheritdoc/>
+        public System.Threading.Tasks.Task<string> OrdnerWaehlenAsync(
+            string titel, string startOrdner)
+            => Blazornachlauf.Nachgelagert(() => OrdnerWaehlen(titel, startOrdner));
     }
 }

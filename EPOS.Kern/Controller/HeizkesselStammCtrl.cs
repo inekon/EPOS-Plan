@@ -268,6 +268,90 @@ namespace WindowsFormsApplication1
             return this.ID > 0 ? Update() : Insert();
         }
 
+        /// <summary>
+        /// <b>Der Schreibweg des Katalogimports</b> (iU9-W13.0e): Duplikatpruefung und
+        /// Einfuegen in EINER Transaktion.
+        ///
+        /// <para><b>Warum es das hier gibt.</b> Bis Welle 13 stand dieser Weg in
+        /// <c>Form_Heizkessel_einlesen</c> — ein 19-spaltiges INSERT mit
+        /// <c>MAX(ID)+1</c> und 19 <c>DbParam</c> IM FORMULAR, der einzige
+        /// Schreibweg der Welle, der nicht im Kern lag (Befund W13-B16). Der Rumpf
+        /// ist woertlich uebernommen; nur die <c>MessageBox</c> ist zum
+        /// Rueckgabewert geworden, damit der Aufrufer die Meldung waehlt.</para>
+        ///
+        /// <para>Die Spaltenliste bleibt die des Imports: <c>Wartungskosten_Einheit</c>,
+        /// <c>Brennwert</c>, <c>Vorlauf</c> und <c>Ruecklauf</c> schreibt er NICHT
+        /// (anders als <see cref="Insert"/>) — sie sind Anwenderfelder.</para>
+        /// </summary>
+        /// <param name="model">Die Importwerte; <c>Name</c> ist der Bezeichner.</param>
+        /// <param name="nameOverride">Beim Umbenennen der vom Anwender vergebene Bezeichner.</param>
+        public VdiUebernahmeErgebnis ImportUebernehmen(HeizkesselModel model, string nameOverride = null)
+        {
+            if (model == null) return VdiUebernahmeErgebnis.Fehler;
+
+            try
+            {
+                string bezeichner = nameOverride ?? model.Name;
+
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    // Zweite Verteidigungslinie hinter der Vorpruefung des
+                    // Konfliktdialogs - sie prueft auch den Umbenennen-Namen.
+                    object anzahl = v.Skalar(
+                        "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                        new DbParam("?", bezeichner ?? ""));
+                    if (Convert.ToInt32(anzahl) > 0)
+                    {
+                        v.Rollback();
+                        return VdiUebernahmeErgebnis.Duplikat;
+                    }
+
+                    object mx = v.Skalar("SELECT MAX(ID) FROM [" + TABLE + "]");
+                    int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
+
+                    string sql = @"INSERT INTO [" + TABLE + @"]
+                            (ID, Bezeichner, Beschreibung, Firma, Ptherm, Brennstoff, Wirkungsgrad_Gas, Wirkungsgrad_Öl,
+                             Investitionskosten, Raumbedarf, Wartungskosten, Nutzungsdauer, CO2, SO2, NOx, CO, Staub,
+                             Betriebsbereitschaftverlust, ReadOnly)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                    DbParam[] ps = {
+                        new DbParam("@id", neueId),
+                        new DbParam("@nam", (object)bezeichner ?? DBNull.Value),
+                        new DbParam("@bes", (object)model.Beschreibung ?? DBNull.Value),
+                        new DbParam("@fir", (object)model.Firma ?? DBNull.Value),
+                        new DbParam("@pth", model.Ptherm),
+                        new DbParam("@bre", model.Brennstoff),
+                        new DbParam("@wgg", model.Wirkungsgrad_Gas),
+                        new DbParam("@wgo", model.Wirkungsgrad_Oel),
+                        new DbParam("@inv", model.Investitionskosten),
+                        new DbParam("@rau", model.Raumbedarf),
+                        new DbParam("@war", model.Wartungskosten),
+                        new DbParam("@nut", model.Nutzungsdauer),
+                        new DbParam("@co2", model.CO2),
+                        new DbParam("@so2", model.SO2),
+                        new DbParam("@nox", model.NOx),
+                        new DbParam("@co", model.CO),
+                        new DbParam("@sta", model.Staub),
+                        new DbParam("@bbv", model.Betriebsbereitschaftverlust),
+                        new DbParam("@ro", false)
+                    };
+
+                    v.Ausfuehren(sql, ps);
+                    v.Commit();
+                    this.ID = neueId;
+                    return VdiUebernahmeErgebnis.Gespeichert;
+                }
+            }
+            catch (Exception ex)
+            {
+                // DbVorgang.Dispose rollt beim Verlassen des using zurueck, wenn
+                // kein Commit gesehen wurde - ein eigener Rollback ist unnoetig.
+                Console.WriteLine("Fehler bei Heizkessel Übernehmen: " + ex.Message);
+                return VdiUebernahmeErgebnis.Fehler;
+            }
+        }
+
         public bool Insert()
         {
             int neueId = DataRepository.GetMaxID(TABLE) + 1;
@@ -337,42 +421,33 @@ namespace WindowsFormsApplication1
         /// entsteht.
         /// </para>
         /// </remarks>
+        /// <remarks>
+        /// <para>
+        /// <b>Seit iU9-W6.1 zweigeteilt.</b> Die drei Ablehnungsgruende stehen in
+        /// <see cref="UpdateMitGrund"/> und kommen dort als Text ZURUECK; diese Methode
+        /// zeigt ihn wie bisher ueber <c>Meldung.*</c>. Grund: Der Katalogeditor ist
+        /// seither eine Razor-Komponente und hat keine <c>MessageBox</c> - er braucht den
+        /// Grund als Rueckgabe. Es bleibt bei genau EINER Regel, nur mit zwei Arten, sie
+        /// zu erfahren.
+        /// </para>
+        /// </remarks>
         public bool Update()
         {
-            if (this.ID <= 0)
+            (bool ok, string grund) = UpdateMitGrund();
+            if (!ok && !string.IsNullOrEmpty(grund))
             {
-                Meldung.Warnung("Der Datensatz kann nicht gespeichert werden, weil er ohne Datenbank-ID " +
-                    "geladen wurde. Bitte den Kessel erneut aus der Liste auswählen.",
-                    "Speichern nicht möglich");
-                return false;
+                // Die Titelzeile haengt am Grund - wie im Bestand: fehlende ID war eine
+                // Warnung, die beiden fachlichen Ablehnungen ein Hinweis.
+                if (this.ID <= 0) Meldung.Warnung(grund, "Speichern nicht möglich");
+                else if (IsReadOnlyById(this.ID)) Meldung.Hinweis(grund, "Schreibgeschützt");
+                else Meldung.Hinweis(grund, "Name bereits vergeben");
             }
+            return ok;
+        }
 
-            // ReadOnly-Schutz: schreibgeschuetzte Stammdatensaetze duerfen nicht geaendert werden.
-            if (IsReadOnlyById(this.ID))
-            {
-                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
-                    "Schreibgeschützt");
-                return false;
-            }
-
-            // Umbenennen darf keinen bereits vergebenen Namen treffen - sonst legte
-            // ausgerechnet die Korrektur eine neue Dublette an.
-            //
-            // Die Pruefung greift NUR bei einer echten Umbenennung. Ohne diese
-            // Einschraenkung sperrte sie genau den Fall aus, um den es hier geht: Eine
-            // der 16 Bestandszeilen mit doppeltem Bezeichner liesse sich nicht mehr
-            // speichern, weil der eigene, unveraenderte Name ja bereits einer anderen
-            // Zeile gehoert. Bearbeiten muss moeglich bleiben - verboten ist nur, eine
-            // WEITERE Dublette zu erzeugen.
-            if (!string.Equals(GespeicherterBezeichner(this.ID), this.Name ?? "", StringComparison.Ordinal)
-                && BezeichnerBelegt(this.Name, this.ID))
-            {
-                Meldung.Hinweis("Ein anderer Katalogeintrag trägt bereits den Namen \"" + (this.Name ?? "") +
-                    "\". Bitte einen eindeutigen Namen vergeben.",
-                    "Name bereits vergeben");
-                return false;
-            }
-
+        /// <summary>Die UPDATE-Anweisung selbst, ohne Pruefungen.</summary>
+        private bool Schreiben()
+        {
             string sql = @"UPDATE [" + TABLE + @"] SET
                             Bezeichner = ?, Beschreibung = ?, Firma = ?, Ptherm = ?, Brennstoff = ?,
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
@@ -570,6 +645,500 @@ namespace WindowsFormsApplication1
             HeizkesselModel m = new HeizkesselModel();
             FillModelFromRow(m, row);
             return m;
+        }
+
+        // =================================================================================
+        // W6.0c - der KATALOGFILTER des Projektdialogs
+        // =================================================================================
+
+        /// <summary>
+        /// Eine Zeile der Katalogliste: Primaerschluessel und Bezeichner.
+        /// </summary>
+        /// <remarks>
+        /// Der Vorlaeufer <c>Form_Heizkessel.SetFilter</c> legte nur den Bezeichner in die
+        /// <c>ListBox</c> und suchte die Id beim Hinzufuegen ueber
+        /// <c>DataRepository.GetIdByName</c> nach. <c>Tab_Heizkessel_STAMM</c> hat auf
+        /// <c>Bezeichner</c> aber keinen eindeutigen Index (siehe
+        /// <see cref="AnzahlMitBezeichner"/>) - bei einer Dublette entschied die Reihenfolge
+        /// der Engine, welcher Kessel aufgenommen wurde. Die Id kommt deshalb mit der Zeile.
+        /// </remarks>
+        public sealed record KatalogZeile(int Id, string Bezeichner);
+
+        /// <summary>
+        /// Die sechs Leistungsstufen des Filters, Index 0 = „Alle".
+        /// </summary>
+        /// <remarks>
+        /// Die Praedikate sind zeichengleich aus <c>Form_Heizkessel.SetFilter</c>
+        /// uebernommen. Was sich aendert, ist allein der STEUERWERT: Bis Welle 6 verglich
+        /// die Maske den ANGEZEIGTEN Text der editierbaren <c>ComboBox</c> gegen deutsche
+        /// Literale - mit lokalisierten Eintraegen haette das in keiner anderen Sprache
+        /// mehr getroffen (dieselbe Fehlerklasse wie B0-10 im Pufferspeicher, dort in
+        /// Paket 9 auf den Index umgestellt). Jetzt entscheidet der Index.
+        /// </remarks>
+        public static readonly string[] LEISTUNG_SQL =
+        {
+            "Ptherm Like '%'",
+            "Ptherm <50",
+            "Ptherm >=50 and Ptherm <200",
+            "Ptherm >=200 and Ptherm <500",
+            "Ptherm >=500 and Ptherm <1000",
+            "Ptherm >=1000"
+        };
+
+        /// <summary>
+        /// Die Katalogliste des Projektdialogs, eingeengt auf Brennstoffgruppe und
+        /// Leistungsstufe.
+        /// </summary>
+        /// <param name="gruppe">
+        /// Eintrag aus <see cref="Brennstoffart_Gruppe"/>. Leer, <c>null</c>, „Alle" und
+        /// jeder unbekannte Wert heben die Einengung auf - Bestandsverhalten.
+        /// </param>
+        /// <param name="leistungsstufe">Index in <see cref="LEISTUNG_SQL"/>; alles
+        /// ausserhalb gilt als 0 („Alle").</param>
+        /// <remarks>
+        /// <para>
+        /// <b>Berichtigt mit iU9-W14a.0b (Befund W14-B2, Abweichung A-1).</b> Bis dahin
+        /// stammte die Kette wortgleich aus dem mit W6.3 geloeschten
+        /// <c>Form_Heizkessel.SetFilter</c> und trug dessen zwei Ungenauigkeiten: Sie kannte
+        /// „Sonstige" (<c>Brennstoff=23</c>), waehrend <c>Tab_BrennstoffKategorien</c>
+        /// „Sonstige Energieträger" fuehrt - der Eintrag traf nie -, und die drei
+        /// wirklich vorhandenen Gruppen „Fernwärme", „Sonstige Energieträger" und
+        /// „Wasserstoff" standen gar nicht in der Kette und hoben die Einengung auf: Wer
+        /// sie waehlte, sah den GANZEN Katalog.
+        /// </para>
+        /// <para>
+        /// Die richtige Kette stand in <c>Form_Heizkessel_Admin.SetFilter</c> (Z. 118-120) und
+        /// steht so auch in <see cref="BHKWStammCtrl.Filtern"/>: <c>Fernwärme=23</c>,
+        /// <c>Sonstige Energieträger=24</c>, <c>Wasserstoff=25</c>. Sie ist jetzt die
+        /// einzige; der Kern-Kommentar „W6-O-1" ist damit geschlossen.
+        /// </para>
+        /// <para>
+        /// <b>Das aendert die angezeigte Liste</b> - in der KATALOGVERWALTUNG (W14a.1,
+        /// Auspraegung Heizkessel) und ebenso im schon portierten Projektdialog
+        /// <c>HeizkesselDialog</c> (W6.3), der dieselbe Methode benutzt. Auf
+        /// <c>Kenndaten_Test.sqlite</c> gemessen: die drei Gruppen liefern statt je 62
+        /// Saetzen (dem ganzen Katalog) je 0; alle uebrigen zehn Gruppen sind unveraendert.
+        /// Die Zahlen stehen in <c>KatalogVerwaltungTests</c>.
+        /// </para>
+        /// <para>
+        /// Die doppelte Zeile fuer „Tierische Fette" des Vorlaeufers (die zweite war schon
+        /// dort unerreichbar) ist beim Umzug in den Kern entfallen und bleibt entfallen.
+        /// </para>
+        /// </remarks>
+        public IReadOnlyList<KatalogZeile> Filtern(string gruppe, int leistungsstufe)
+        {
+            if (leistungsstufe < 0 || leistungsstufe >= LEISTUNG_SQL.Length) leistungsstufe = 0;
+            string szFilterLeistung = LEISTUNG_SQL[leistungsstufe];
+
+            string szFilter = "";
+            string g = gruppe ?? "";
+            if (g == "Gas") szFilter = "(Brennstoff >=1 and Brennstoff <=5) or Brennstoff=14";
+            else if (g == "Öl") szFilter = "(Brennstoff >=6 and Brennstoff <=9) or (Brennstoff >=18 and Brennstoff <=22)";
+            else if (g == "Koks") szFilter = "Brennstoff=10";
+            else if (g == "Kohle") szFilter = "Brennstoff=11";
+            else if (g == "Holz") szFilter = "Brennstoff=12";
+            else if (g == "Tierische Fette") szFilter = "Brennstoff=17";
+            else if (g == "Strom") szFilter = "Brennstoff=13";
+            else if (g == "Pellets") szFilter = "Brennstoff=15";
+            else if (g == "Rapsöl") szFilter = "Brennstoff=16";
+            else if (g == "Fernwärme") szFilter = "Brennstoff=23";
+            else if (g == "Sonstige Energieträger") szFilter = "Brennstoff=24";
+            else if (g == "Wasserstoff") szFilter = "Brennstoff=25";
+            else if (g == "Alle") szFilter = "Brennstoff Like '%'";
+
+            string sql = szFilter == ""
+                ? "SELECT ID, Bezeichner FROM [" + TABLE + "] WHERE " + szFilterLeistung + " ORDER BY Bezeichner"
+                : "SELECT ID, Bezeichner FROM [" + TABLE + "] WHERE " + szFilter + " and " + szFilterLeistung + " ORDER BY Bezeichner";
+
+            var liste = new List<KatalogZeile>();
+            DataTable dt = DataRepository.GetDataTable(sql);
+            if (dt == null) return liste;
+
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row["ID"] == null || row["ID"] == DBNull.Value) continue;
+                liste.Add(new KatalogZeile(Convert.ToInt32(row["ID"]),
+                                           row["Bezeichner"] == DBNull.Value ? "" : row["Bezeichner"].ToString()));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Der Primaerschluessel zum Bezeichner, 0 wenn es keinen gibt.
+        /// </summary>
+        /// <remarks>
+        /// Ersetzt <c>DataRepository.GetIdByName(TABLE, "Bezeichner", name)</c> in den
+        /// Aufrufern. <c>ORDER BY ID</c> macht die Wahl bei einer Dublette benennbar - es
+        /// ist die zuerst angelegte Zeile, dieselbe Wahl wie in <see cref="ReadSingle"/>.
+        /// </remarks>
+        public static int IdZu(string name)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@nam", name ?? ""));
+            return (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
+        }
+
+        // =================================================================================
+        // W6.1 - der EINE Schreibeinstieg des Katalogeditors
+        // =================================================================================
+
+        /// <summary>
+        /// Was ein Speicherversuch des Katalogeditors ergeben hat.
+        /// </summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">
+        /// Der Grund im Klartext - bei Erfolg die Bestaetigung, sonst die Ablehnung.
+        /// Bereits lokalisiert; die Oberflaeche zeigt ihn als Banner.
+        /// </param>
+        /// <param name="Name">
+        /// Der Bezeichner, unter dem der Satz jetzt steht. Nach einer Umbenennung ist das
+        /// der NEUE Name - der Aufrufer waehlt damit die Zeile in seiner Liste wieder aus.
+        /// </param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Schreibt den geladenen Katalogsatz zurueck - der Weg des Knopfes
+        /// „Überschreiben".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Zusammengefasst aus zwei Orten.</b> Bis iU9-W6.1 stand die Dublettenbremse
+        /// (<c>SELECT COUNT(*) … WHERE Bezeichner = ?</c>) in
+        /// <c>Form_Heizkessel_Bearbeiten.btn_Ueberschreiben_Click</c> und die drei
+        /// Ablehnungsgruende in <see cref="Update"/>, das sie ueber <c>Meldung.*</c>
+        /// selbst zeigte. Eine Razor-Komponente hat keine <c>MessageBox</c>: Der Grund
+        /// muss zurueckkommen, nicht erscheinen.
+        /// </para>
+        /// <para>
+        /// <b>Die Bremse bleibt.</b> <c>Tab_Heizkessel_STAMM</c> fuehrt auf
+        /// <c>Bezeichner</c> keinen eindeutigen Schluessel. Zwar adressiert
+        /// <see cref="Update"/> seit dem 18.08.2026 ueber die ID und traefe die
+        /// Dublette gar nicht mehr - die Meldung bleibt trotzdem, weil sonst
+        /// unerklaerlich bliebe, warum derselbe Name in der Auswahlliste mehrfach steht.
+        /// </para>
+        /// </remarks>
+        public static SpeicherErgebnis Ueberschreiben(HeizkesselModel daten)
+        {
+            if (daten == null)
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+
+            try
+            {
+                // Tab_Heizkessel_STAMM fuehrt keinen eindeutigen Schluessel auf Bezeichner.
+                // Bei einer Dublette abbrechen, statt unbemerkt zu arbeiten, wo der
+                // Anwender nur einen von zwei Saetzen gesehen hat (gleiche Bremse wie in
+                // Form_Heizkessel_Admin).
+                object anz = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                    new DbParam("@nam", GespeicherterBezeichner(daten.ID)));
+                int nAnzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
+                if (nAnzahl > 1)
+                    return new SpeicherErgebnis(false,
+                        string.Format(MyResource.Resource.ADM_MEHRDEUTIG_TEXT,
+                                      GespeicherterBezeichner(daten.ID), nAnzahl), "");
+
+                var ctrl = new HeizkesselStammCtrl();
+                ctrl.Uebernehmen(daten);
+
+                (bool ok, string grund) = ctrl.UpdateMitGrund();
+                if (!ok) return new SpeicherErgebnis(false, grund, "");
+
+                return new SpeicherErgebnis(true,
+                    Text("HZKK_MSG_GESPEICHERT", "Datensatz gespeichert"), ctrl.Name);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
+
+        /// <summary>
+        /// Legt einen neuen Katalogsatz an - der Weg der Knoepfe „Speichern" (Modus NEU)
+        /// und „Speichern unter".
+        /// </summary>
+        /// <remarks>
+        /// Fasst <c>Form_Heizkessel_Bearbeiten.Insert</c> zusammen: erst
+        /// <see cref="Exists"/>, dann <see cref="Insert"/>. Der Vorlaeufer meldete beide
+        /// Ausgaenge ununterscheidbar als „Name existiert bereits oder Datenbankfehler!";
+        /// hier sagt der Grund, welcher der beiden es war.
+        /// </remarks>
+        public static SpeicherErgebnis Anlegen(HeizkesselModel daten, string name)
+        {
+            if (daten == null || string.IsNullOrWhiteSpace(name))
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_NAME_FEHLT",
+                    "Bitte einen gültigen Namen eingeben!"), "");
+
+            try
+            {
+                var ctrl = new HeizkesselStammCtrl();
+                ctrl.Uebernehmen(daten);
+                ctrl.Name = name.Trim();
+                ctrl.ID = 0;                       // Insert vergibt die Id selbst
+
+                if (ctrl.Exists(ctrl.Name))
+                    return new SpeicherErgebnis(false, Text("HZKK_MSG_NAME_BELEGT",
+                        "Name existiert bereits!"), "");
+
+                if (!ctrl.Insert())
+                    return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER_ANLEGEN",
+                        "Fehler beim Speichern des Datensatzes!"), "");
+
+                return new SpeicherErgebnis(true,
+                    Text("HZKK_MSG_ANGELEGT", "Datensatz erfolgreich neu angelegt."), ctrl.Name);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER_ANLEGEN",
+                    "Fehler beim Speichern des Datensatzes!"), "");
+            }
+        }
+
+        /// <summary>
+        /// Die drei Ablehnungsgruende von <see cref="Update"/> als RUECKGABE statt als
+        /// Meldung. <see cref="Update"/> ruft die Methode und zeigt den Grund selbst -
+        /// so gibt es weiterhin genau eine Regel, aber zwei Arten, sie zu erfahren.
+        /// </summary>
+        internal (bool Ok, string Grund) UpdateMitGrund()
+        {
+            if (this.ID <= 0)
+                return (false, "Der Datensatz kann nicht gespeichert werden, weil er ohne Datenbank-ID " +
+                               "geladen wurde. Bitte den Kessel erneut aus der Liste auswählen.");
+
+            // ReadOnly-Schutz: schreibgeschuetzte Stammdatensaetze duerfen nicht geaendert werden.
+            if (IsReadOnlyById(this.ID))
+                return (false, "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.");
+
+            // Umbenennen darf keinen bereits vergebenen Namen treffen - sonst legte
+            // ausgerechnet die Korrektur eine neue Dublette an. Die Pruefung greift NUR
+            // bei einer echten Umbenennung; ohne diese Einschraenkung liesse sich eine der
+            // 16 Bestandszeilen mit doppeltem Bezeichner gar nicht mehr speichern.
+            if (!string.Equals(GespeicherterBezeichner(this.ID), this.Name ?? "", StringComparison.Ordinal)
+                && BezeichnerBelegt(this.Name, this.ID))
+                return (false, "Ein anderer Katalogeintrag trägt bereits den Namen \"" + (this.Name ?? "") +
+                               "\". Bitte einen eindeutigen Namen vergeben.");
+
+            return (Schreiben(), "");
+        }
+
+        /// <summary>Uebernimmt die 21 Felder eines Modells in diesen Controller.</summary>
+        private void Uebernehmen(HeizkesselModel m)
+        {
+            this.ID = m.ID;
+            this.Name = m.Name;
+            this.Beschreibung = m.Beschreibung;
+            this.Firma = m.Firma;
+            this.Ptherm = m.Ptherm;
+            this.Brennstoff = m.Brennstoff;
+            this.Wirkungsgrad_Gas = m.Wirkungsgrad_Gas;
+            this.Wirkungsgrad_Oel = m.Wirkungsgrad_Oel;
+            this.Investitionskosten = m.Investitionskosten;
+            this.Raumbedarf = m.Raumbedarf;
+            this.Wartungskosten = m.Wartungskosten;
+            this.Wartungskosten_Einheit = m.Wartungskosten_Einheit;
+            this.Nutzungsdauer = m.Nutzungsdauer;
+            this.CO2 = m.CO2;
+            this.SO2 = m.SO2;
+            this.NOx = m.NOx;
+            this.CO = m.CO;
+            this.Staub = m.Staub;
+            this.Betriebsbereitschaftverlust = m.Betriebsbereitschaftverlust;
+            this.Brennwert = m.Brennwert;
+            this.Vorlauf = m.Vorlauf;
+            this.Ruecklauf = m.Ruecklauf;
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        /// <summary>
+        /// Die BRENNSTOFFARTEN, die die Heizkessel EINES Projekts fuehren
+        /// (iU9-W11a.2; SQL woertlich aus <c>Form_Simulation_Detail
+        /// .KesselBrennstoffartenLesen</c>, Z. 1194-1221).
+        ///
+        /// <para><b>Wozu.</b> Die Heizkessel-Ergebnisseite blendet eine der zehn
+        /// Brennstoffzeilen ein, wenn ihr Jahreswert &gt; 0 ist ODER ein Kessel des
+        /// Projekts diesen Brennstoff fuehrt. Der zweite Teil ist diese Abfrage — die
+        /// einzige echte Fachabfrage jener Maske und damit ein Kern-Kandidat.</para>
+        ///
+        /// <para><b>Der Verbund laeuft ueber den Bezeichner</b>, nicht ueber eine Id:
+        /// <c>Tab_Heizkessel.Bezeichner = Tab_Energieanlagen.Bezeichner</c>. Das ist die
+        /// Textverknuepfung des Altschemas (Wurzel-CLAUDE.md, „Namenskonventionen");
+        /// der Wortlaut bleibt unveraendert, damit die Anzeige dieselbe bleibt.</para>
+        ///
+        /// <para>Dialogfrei ueber <see cref="StilleDb"/> wie
+        /// <see cref="ErgebnisPraesenz"/>: Schlaegt die Abfrage fehl, bleibt die Menge
+        /// leer, und der Aufrufer faellt auf die vollstaendige Anzeige zurueck.</para>
+        /// </summary>
+        public static HashSet<int> BrennstoffartenJeProjekt(int idProjekt)
+        {
+            HashSet<int> arten = new HashSet<int>();
+            if (idProjekt <= 0) return arten;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT DISTINCT k.Brennstoff FROM Tab_Heizkessel AS k " +
+                "INNER JOIN Tab_Energieanlagen AS a ON k.Bezeichner = a.Bezeichner " +
+                "WHERE k.ID_Projekt = ? AND a.ID_Projekt = ? AND a.ID_Type = ?",
+                StilleDb.Par("@proj1", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@proj2", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP));
+
+            if (dt == null) return arten;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int a = StilleDb.Zahl(StilleDb.Feld(r, "Brennstoff"), -1);
+                if (a >= 0) arten.Add(a);
+            }
+            return arten;
+        }
+
+        // =================================================================================
+        // W14a.0c - der Detailblock des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Die acht Anzeigefelder eines Katalogsatzes, bereits als Text — der Detailblock
+        /// von <c>Form_Heizkessel_Admin.listBox_Kessel_DB_SelectedIndexChanged</c>
+        /// (Z. 49-77). <c>null</c>, wenn es den Bezeichner nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum hier.</b> Der Vorlaeufer baute sein SQL per Textverkettung
+        /// (<c>… WHERE Bezeichner='" + listBox.Text + "'</c>, Befund W14-B12). Hier steht
+        /// derselbe Zugriff mit <see cref="DbParam"/>; ein Bezeichner mit Apostroph
+        /// zerreisst das Praedikat nicht mehr.</para>
+        /// <para><b>Die Formatierung ist woertlich uebernommen</b>: Leistung und
+        /// Investitionskosten mit <c>F2</c> (Z. 61-62), Vorlauf und Ruecklauf als leerer
+        /// Text bei <c>NULL</c> (Z. 64-65), der Brennstoff als NACHSCHLAG in
+        /// <see cref="Brennstoffart"/> ueber die 1-basierte Nummer (Z. 59). Der Schalter
+        /// „Brennwertkessel" kommt sprachneutral als <c>"1"</c> oder <c>"0"</c> — die
+        /// Oberflaeche macht daraus ihren Schalter.</para>
+        /// <para>Die Schluessel sind die Feldschluessel aus
+        /// <see cref="KatalogBrowserProfil"/>; damit passen Profil, Anzeige und
+        /// Speicherweg ohne zweite Liste zusammen.</para>
+        /// </remarks>
+        public IReadOnlyDictionary<string, string> KatalogsatzAnzeige(string name)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@nam", name ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            DataRow r = dt.Rows[0];
+            var werte = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            werte[KatalogBrowserProfil.FeldBezeichner] = Feld(r, "Bezeichner");
+            werte[KatalogBrowserProfil.FeldBeschreibung] = Feld(r, "Beschreibung");
+
+            // Nachschlage-Anzeige: die Spalte fuehrt eine 1-basierte Nummer, gezeigt wird
+            // der Name. Liegt die Nummer ausserhalb der Liste, bleibt das Feld leer -
+            // Bestandsverhalten (der Vorlaeufer waere dort abgestuerzt).
+            int brenn = r["Brennstoff"] == DBNull.Value ? 0 : Convert.ToInt32(r["Brennstoff"]);
+            werte[KatalogBrowserProfil.FeldBrennstoff] =
+                (brenn >= 1 && brenn <= Brennstoffart.Count) ? Brennstoffart[brenn - 1] : "";
+
+            werte[KatalogBrowserProfil.FeldPtherm] =
+                r["Ptherm"] == DBNull.Value ? "" : Convert.ToDouble(r["Ptherm"]).ToString("F2");
+            werte[KatalogBrowserProfil.FeldInvestitionskosten] =
+                r["Investitionskosten"] == DBNull.Value ? "" : Convert.ToDouble(r["Investitionskosten"]).ToString("F2");
+            werte[KatalogBrowserProfil.FeldBrennwert] =
+                (r["Brennwert"] != DBNull.Value && Convert.ToBoolean(r["Brennwert"])) ? "1" : "0";
+            werte[KatalogBrowserProfil.FeldVorlauf] =
+                r["Vorlauf"] == DBNull.Value ? "" : Convert.ToInt32(r["Vorlauf"]).ToString();
+            werte[KatalogBrowserProfil.FeldRuecklauf] =
+                r["Ruecklauf"] == DBNull.Value ? "" : Convert.ToInt32(r["Ruecklauf"]).ToString();
+
+            return werte;
+        }
+
+        /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
+        private static string Feld(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return "";
+            object v = row[spalte];
+            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
+
+        // =================================================================================
+        // W14a.0c - der Speicherweg des Katalogbrowsers
+        // =================================================================================
+
+        /// <summary>
+        /// Die SECHS Felder, die der Katalogbrowser zurueckschreibt (Speicherpaket vom
+        /// 18.08.2026, <c>Form_Heizkessel_Admin.Speicherfelder</c> Z. 277-284 plus der
+        /// Schalter „Brennwertkessel").
+        /// </summary>
+        public sealed record AnzeigefelderHeizkessel(string Beschreibung, double Ptherm,
+                                                     double Investitionskosten, bool Brennwert,
+                                                     int Vorlauf, int Ruecklauf);
+
+        /// <summary>
+        /// Schreibt die sechs Anzeigefelder in den Katalogsatz zurueck — der Weg des
+        /// Knopfes „Speichern" im Browser.
+        /// </summary>
+        /// <remarks>
+        /// <para>Zusammengefasst aus <c>Form_Heizkessel_Admin.SpeichereStammsatz</c>
+        /// (Z. 310-361), woertlich und in derselben Reihenfolge:</para>
+        /// <list type="number">
+        /// <item><b>Dublettenklammer</b> (Z. 325-337): <c>Tab_Heizkessel_STAMM</c> fuehrt
+        /// auf <c>Bezeichner</c> keinen eindeutigen Schluessel, und <see cref="Update"/>
+        /// filtert genau darauf. Bei einer Dublette wuerden beide Saetze zugleich
+        /// ueberschrieben — deshalb hier abbrechen.</item>
+        /// <item><b>Satz VOLLSTAENDIG lesen</b> (Z. 342-351) und nur die angezeigten
+        /// Felder aendern: <see cref="Update"/> schreibt alle Spalten, ein halb gefuelltes
+        /// Modell wuerde Wirkungsgrade, Emissionen und Wartungskosten nullen.</item>
+        /// <item><b>Schreiben</b> (Z. 355). Der Grund einer Ablehnung kommt als Text
+        /// zurueck statt als <c>MessageBox</c> — eine Razor-Komponente hat keine.</item>
+        /// </list>
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreiben(string bezeichner,
+                                                              AnzeigefelderHeizkessel felder)
+        {
+            if (string.IsNullOrEmpty(bezeichner) || felder == null)
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+
+            try
+            {
+                object anz = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                    new DbParam("@nam", bezeichner));
+                int nAnzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
+                if (nAnzahl > 1)
+                    return new SpeicherErgebnis(false,
+                        string.Format(MyResource.Resource.ADM_MEHRDEUTIG_TEXT, bezeichner, nAnzahl), "");
+
+                var schreiber = new HeizkesselStammCtrl();
+                schreiber.ReadSingle(bezeichner);
+                if (schreiber.rows == 0)
+                    return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                        "Fehler beim Überschreiben des Datensatzes!"), "");
+
+                schreiber.Beschreibung = felder.Beschreibung ?? "";
+                schreiber.Ptherm = felder.Ptherm;
+                schreiber.Investitionskosten = felder.Investitionskosten;
+                schreiber.Brennwert = felder.Brennwert;
+                schreiber.Vorlauf = felder.Vorlauf;
+                schreiber.Ruecklauf = felder.Ruecklauf;
+
+                (bool ok, string grund) = schreiber.UpdateMitGrund();
+                if (!ok) return new SpeicherErgebnis(false, grund, "");
+
+                return new SpeicherErgebnis(true,
+                    Text("HZKK_MSG_GESPEICHERT", "Datensatz gespeichert"), schreiber.Name);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
         }
     }
 }

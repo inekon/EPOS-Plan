@@ -1,0 +1,116 @@
+@* Der versionierte Rechtshinweis zur Datenuebertragung
+   (iU9-W15b.3, Ersatz fuer Views/Help/Form_KiHinweis.cs, 280 Z.).
+
+   ZWEI BETRIEBSARTEN UEBER EINEN bool - genau wie im Vorlaeufer:
+     MitEinwilligung = true   "Verstanden und einverstanden" + "Abbrechen"
+     MitEinwilligung = false   "Schliessen" (Nachlesen aus dem Chat heraus)
+
+   DIE REGEL, DIE UEBER ALLEM STEHT (Klassenkopf des Vorlaeufers, :19-22):
+   "Wird der Text inhaltlich geaendert, muss KiEinwilligung.FASSUNG erhoeht
+   werden - dann wird die Einwilligung erneut eingeholt." Die Umstellung auf
+   Razor aendert KEINEN der 17 Texte; FASSUNG bleibt bei 2 (Entscheid E-4,
+   nachgewiesen durch git diff ueber Resource.resx).
+
+   DER TEXT IST DERSELBE. Sieben Abschnitte, jeder mit Ueberschrift und Absatz,
+   davor Titel, Fassungszeile und Einleitung - dieselben 17 Ressourcenschluessel
+   in derselben Reihenfolge (TextAufbauen, :209-238). Was entfaellt, ist der
+   Umbruch-Kniff (:267-278): Die Ressourcen tragen ihre Zeilenumbrueche als \n,
+   und der Vorlaeufer musste sie fuer die RichTextBox in Environment.NewLine
+   uebersetzen. In HTML genuegt white-space: pre-line - ABER die Absaetze
+   muessen erhalten bleiben, sonst steht der Rechtshinweis als Textwurst.
+
+   DIE VIER SCHRIFTROLLEN des Vorlaeufers (Ueberschrift 12 pt bzw. 9,5 pt fett
+   blau, Absatz 9,5 pt schwarz, Grau 8,5 pt DimGray, Leer 5 pt) werden zu
+   Elementen und Klassen: h2/h3, p, .epos-kihinweis-fassung. Die Leerzeile ist
+   der Abstand zwischen zwei Absaetzen.
+
+   SIE MERKT NICHTS. Wie der Vorlaeufer: Das Merken der Einwilligung tut
+   KiEinwilligung, nicht dieser Dialog. Er liefert nur ja oder nein. *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+
+<div class="epos-kihinweis">
+
+    <div class="epos-kihinweis-text" tabindex="0" role="document" aria-label="@Titel">
+        <h2 class="epos-kihinweis-titel">@Titel</h2>
+        <p class="epos-kihinweis-fassung">@Fassungszeile</p>
+
+        <p class="epos-kihinweis-absatz">@Einleitung</p>
+
+        @foreach (KiHinweisAbschnitt a in Abschnitte)
+        {
+            <h3 class="epos-kihinweis-ueberschrift">@a.Ueberschrift</h3>
+            <p class="epos-kihinweis-absatz">@a.Inhalt</p>
+        }
+    </div>
+
+    <div class="epos-kihinweis-fuss">
+        <span class="epos-kihinweis-stand">@Stand</span>
+
+        <span class="epos-kihinweis-knoepfe">
+            @if (MitEinwilligung)
+            {
+                <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Ja">
+                    @EinverstandenText
+                </button>
+                <button type="button" class="epos-knopf" @onclick="Nein">
+                    @AbbrechenText
+                </button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Nein">
+                    @SchliessenText
+                </button>
+            }
+        </span>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// <c>true</c> = Einwilligung einholen, <c>false</c> = nur nachlesen.
+    /// Derselbe eine <c>bool</c> wie im Vorlaeufer.
+    /// </summary>
+    [Parameter] public bool MitEinwilligung { get; set; }
+
+    /// <summary>Ueberschrift des Hinweises (<c>KI_HINWEIS_TITEL</c>).</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Die graue Fassungszeile (<c>KI_HINWEIS_FASSUNG</c> mit der Nummer).</summary>
+    [Parameter] public string Fassungszeile { get; set; } = "";
+
+    /// <summary>Der Einleitungsabsatz (<c>KI_HINWEIS_EINLEITUNG</c>).</summary>
+    [Parameter] public string Einleitung { get; set; } = "";
+
+    /// <summary>
+    /// Die sieben Abschnitte in Reihenfolge: uebertragen, Aktionen, nicht,
+    /// Empfaenger, beachten, Verantwortung, abschalten.
+    /// </summary>
+    [Parameter] public IReadOnlyList<KiHinweisAbschnitt> Abschnitte { get; set; } = [];
+
+    /// <summary>
+    /// Die Fusszeile ueber den Stand der Einwilligung - einer der drei Texte
+    /// <c>KI_HINWEIS_STAND_NEIN</c>/<c>_ALT</c>/<c>_JA</c>, fertig formatiert.
+    /// Sie steht auch beim Nachlesen da.
+    /// </summary>
+    [Parameter] public string Stand { get; set; } = "";
+
+    /// <summary>Beschriftung „Verstanden und einverstanden".</summary>
+    [Parameter] public string EinverstandenText { get; set; } = "";
+
+    /// <summary>Beschriftung „Abbrechen".</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "";
+
+    /// <summary>Beschriftung „Schliessen" (Nachlesen).</summary>
+    [Parameter] public string SchliessenText { get; set; } = "";
+
+    /// <summary>
+    /// Die Antwort: <c>true</c> = eingewilligt. Beim Nachlesen kommt immer
+    /// <c>false</c> — dort gibt es nichts einzuwilligen.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Beantwortet { get; set; }
+
+    private Task Ja() => Beantwortet.InvokeAsync(true);
+    private Task Nein() => Beantwortet.InvokeAsync(false);
+}

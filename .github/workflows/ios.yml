@@ -76,9 +76,13 @@ jobs:
 
       # Der Simulator braucht KEINE Signatur; deshalb laeuft dieser Job ohne
       # Apple-Konto und ohne Geheimnisse (iF24).
+      # Debug statt Release: Der Release-Bau fuer den Simulator lief im fuenften Lauf
+      # (33740727778, 03.09.2026) 40 Minuten in der Mono-AOT-Uebersetzung mit LLVM
+      # (mono-aot-cross, opt) ueber den gesamten Kern und wurde abgebrochen. Fuer den
+      # Rauchtest reicht JIT ohne Linker; AOT gehoert zum Geraetebau (iU13).
       - name: Bauen (Simulator, ohne Signatur)
         run: >
-          dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release
+          dotnet build EPOS.iOS/EPOS.iOS.csproj -c Debug
           -f net10.0-ios -r iossimulator-arm64
           -p:SeedDb=../${{ env.SEED }}
 
@@ -103,7 +107,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p artifacts/ios
-          APP=$(ls -d EPOS.iOS/bin/Release/net10.0-ios/iossimulator-arm64/EPOS.iOS.app)
+          APP=$(ls -d EPOS.iOS/bin/Debug/net10.0-ios/iossimulator-arm64/EPOS.iOS.app)
           echo "App: $APP"
           xcrun simctl install "${{ steps.sim.outputs.udid }}" "$APP"
 
@@ -135,11 +139,14 @@ jobs:
       - name: Startmarken pruefen
         run: |
           grep -E "EPOS\.iOS bereit: Projekte=[0-9]+" artifacts/ios/start.log
-          grep -E "^SQLite [0-9]+\.[0-9]+\.[0-9]+" artifacts/ios/start.log
+          # Ohne Zeilenanker: simctl launch --console-pty stellt jeder Zeile Zeitstempel und
+          # Prozessnamen voran ("2026-09-03 10:37:08.121 EPOS.iOS[7814:28980] SQLite 3.53.3").
+          # Sechster Lauf 33744793453: alle Marken vorhanden, nur die Anker griffen nicht.
+          grep -E "SQLite [0-9]+\.[0-9]+\.[0-9]+" artifacts/ios/start.log
           # Das STRICT-Gate: Die Testdatenbank fuehrt 114 von 115 Tabellen als
           # STRICT. Steht hier eine kleinere Zahl, hat die App eine andere
           # SQLite-Fassung erwischt als Windows, Linux und macOS-CI.
-          grep -E "^STRICT=114$" artifacts/ios/start.log
+          grep -E "STRICT=114([^0-9]|$)" artifacts/ios/start.log   # [^0-9] faengt auch das \r der pty-Ausgabe (siebter Lauf)
           test -f artifacts/ios/pruefung/fertig.txt
 
       # Der eigentliche iZ6-Nachweis: dieselbe Toleranzregel wie in kern.yml
@@ -173,5 +180,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-app
-          path: EPOS.iOS/bin/Release/net10.0-ios/iossimulator-arm64/EPOS.iOS.app
+          path: EPOS.iOS/bin/Debug/net10.0-ios/iossimulator-arm64/EPOS.iOS.app
           retention-days: 14

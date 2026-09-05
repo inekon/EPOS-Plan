@@ -34,6 +34,50 @@ public sealed class PruefmusterTests
         // Beleg fuer die Bereichsspalte einer NumericUpDown.
         { "Kosten", "Form_CaseEingabe",
           "EPOS.UI/Dialoge/Kosten/CaseEingabeDialog.razor" },
+
+        // iU9-W2.1: Form_StromspeicherItemNeu ist der Beleg fuer den
+        // lokalisierten Weg - drei Ressourcendateien, Koordinaten und TabIndex
+        // nur in der .resx, Klassenname (Form_Sp_ItemNeu) abweichend vom
+        // Dateinamen. Sechs Tests haengen daran.
+        { "Stromspeicher", "Form_StromspeicherItemNeu",
+          "EPOS.UI/Dialoge/Allgemein/NamensDialog.razor" },
+
+        // iU9-W3.4: Form_Kostenprofil ist der Beleg fuer die Abschnittsbildung -
+        // ein TabControl mit drei Reitern, darin ein Chart, eine ListBox mit
+        // eigenem Label und Beschriftungen, die nur innerhalb ihres Abschnitts
+        // wirken. Neun Testbezuege haengen daran.
+        { "Kosten", "Form_Kostenprofil",
+          "EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor" },
+
+        // iU9-W4.2: Form_KostenKomponente ist der Beleg fuer die grosse
+        // Schreibweise ".Designer.cs" in Verbindung mit einem TabControl, das
+        // eine Reiterseite ZUR LAUFZEIT entfernt (ErtragReiterSteuern) - und der
+        // Anker, an dem der Stapellauf-Test bis Welle 3 hing. Acht Testbezuege
+        // haengen daran.
+        { "Kosten", "Form_KostenKomponente",
+          "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" },
+    };
+
+    /// <summary>
+    /// Muster ohne eigene <c>.resx</c> (iU9-W4.2). Ein UserControl, dessen Texte
+    /// vollstaendig im Code stehen, fuehrt keine Ressourcendatei — das Muster
+    /// besteht deshalb nur aus zwei Dateien.
+    /// </summary>
+    public static TheoryData<string, string, string> MusterOhneRessource => new()
+    {
+        // iU9-W4.2: ucVorlagenZeile ist die EINZIGE kleingeschriebene Maske, die
+        // der Bestand je gefuehrt hat, und damit der einzige Beleg dafuer, dass
+        // der Razor-Schreiber den Anfangsbuchstaben gross zieht (RZ10011).
+        { "Kosten", "ucVorlagenZeile",
+          "EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor" },
+
+        // iU9-W5.2: UcBericht ist der EINZIGE Beleg fuer die CheckedListBox -
+        // mit ihrem Loeschen faellt der Typ aus der Typtabelle des Stapellaufs.
+        // Sie ist ausserdem der einzige Fall, in dem ein Steuerelement seine
+        // Beschriftung ueber ein daneben stehendes Label bekommt UND selbst
+        // keinen Text traegt.
+        { "Bericht", "UcBericht",
+          "EPOS.UI/Seiten/Berichte/BerichtSeite.razor" },
     };
 
     /// <summary>
@@ -64,6 +108,27 @@ public sealed class PruefmusterTests
             var muster = Repowurzel.Pruefmuster(fach + "/" + maske + endung);
             Assert.True(File.Exists(muster), "Pruefmuster fehlt: " + muster);
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(MusterOhneRessource))]
+    public void DieNachfolgeStehtImRepoUndDasMusterHatZweiDateien(
+        string fach, string maske, string nachfolge)
+    {
+        Assert.True(File.Exists(Repowurzel.Datei(nachfolge)),
+                    "Die Nachfolge " + nachfolge + " fehlt.");
+
+        foreach (var endung in new[] { ".Designer.cs", ".cs" })
+        {
+            var alt = Repowurzel.Designer(fach + "/" + maske + endung);
+            Assert.False(File.Exists(alt), "Die WinForms-Fassung lebt wieder: " + alt);
+
+            var muster = Repowurzel.Pruefmuster(fach + "/" + maske + endung);
+            Assert.True(File.Exists(muster), "Pruefmuster fehlt: " + muster);
+        }
+
+        Assert.False(File.Exists(Repowurzel.Pruefmuster(fach + "/" + maske + ".resx")),
+                     "Das Muster fuehrt eine .resx, die es im Bestand nie gab.");
     }
 
     [Theory]

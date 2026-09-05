@@ -1,0 +1,15 @@
+010;19;200602;Probe Solar GmbH;20260904;http://example.invalid;Gegenprobe iU9-W13;0;;;
+100;1;1;Sonnenkollektoren DIN EN 12975;;;20091001;
+110;8;1;Trinkwassererwaermung, Heizung und Schwimmbad;;;20080612;
+700;1;1;Probe Flach;
+710.01;1;Probe Flach;1.0;0.08;2.0;36;2.0;1;Flachkollektor mit Antireflexglas;2;2.35;0.800;3.50;0.010;0.95;;;;;;;;;;2.51;2.35;
+720;1;9001;
+700;2;2;Probe Roehre;
+710.01;1;Probe Roehre;1.0;0.08;2.0;36;2.0;2;Vakuum-Roehrenkollektor;2;1.60;0.640;0.90;0.001;0.98;;;;;;;;;;1.85;1.60;
+720;1;9002;
+700;3;3;Probe Absorber;
+710.01;1;Probe Absorber;1.0;0.08;2.0;36;2.0;3;Schwimmbadabsorber ohne Abdeckung;2;5.00;0.900;12.00;0.050;0.94;;;;;;;;;;5.40;5.00;
+720;1;9003;
+700;4;4;Probe Sonder;
+710.01;1;Probe Sonder;1.0;0.08;2.0;36;2.0;9;Sonderkonstruktion;2;;0.750;3.10;0.012;0.93;;;;;;;;;;3.20;2.90;
+720;1;9004;

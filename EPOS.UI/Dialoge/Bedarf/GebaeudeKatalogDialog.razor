@@ -1,0 +1,905 @@
+﻿@* Gebaeude-KATALOGEDITOR (iU9-W9.1) - EIN Katalogsatz auf ZWEI Reitern.
+
+   VORBILD. ZWEI Masken, die denselben Satz bearbeiten:
+   Views/Gebaeude/Form_Gebaeude1 (338 Z., 707 x 651, 37 Kartenzeilen,
+   4 MessageBox) und Views/Gebaeude/Form_Gebaeude2 (400 Z., 607 x 591,
+   41 Kartenzeilen, 5 MessageBox). Die zweite bekam mit "frm.model = model"
+   DASSELBE Objekt in die Hand - sie war nie ein eigener Datensatz, sondern
+   die zweite Haelfte desselben. Deshalb hier zwei Reiter und kein
+   Unterdialog.
+
+   DER TIPPFEHLER IM TITEL BLEIBT NICHT. Der Designer schreibt
+   "Gebaeudedaten: Flaeschen, U-Werte" (en: "bottles"); gemeint sind
+   FLAECHEN. Berichtigt (A-4).
+
+   DREI MODI - woertlich aus Form_Gebaeude1_Load:21.
+   * Bearbeiten: "Ueberschreiben" und "Speichern unter" frei.
+   * Neu:        nur "Speichern" frei (derselbe Knopf, anderer Text).
+   * Admin:      "Ueberschreiben" frei, "Speichern" gesperrt, und der Name
+                 wird zur Klappliste ALLER Katalogsaetze.
+
+   DER ZWEITE REITER HAT SEINEN EIGENEN UEBERNAHMEKNOPF. Im Vorlaeufer war er
+   ein modales Fenster mit OK; sein OK prueft die Zahlen, leitet vier Groessen
+   ab (Maximaltemperatur < 1 -> 24, die Flags Wochenende und Ferien aus > 0,
+   WW_Bedarf = 0, Winterferienbeginn 0 -> 366) und prueft die vier
+   Ferienregeln. Wer das Fenster nie oeffnete, aenderte dort auch nichts -
+   und genau so bleibt es: Ohne "Uebernehmen" wandert vom zweiten Reiter
+   nichts in den Satz (A-6, dasselbe Muster wie TypProfilDialog in W8).
+
+   BEFUND W9-B5. SetControls:45-60 setzte zuerst ALLE 16 Ferienfelder auf
+   Ferienbeginn_1 und ueberschrieb sie unmittelbar danach ueber
+   JahrestagUmrechner. Wirkungslos, entfaellt.
+
+   BEFUND W9-B6 / ENTSCHEID W9-O-2 (Anwender, 04.09.2026). Die BAUWEISE hing
+   im Vorlaeufer am Index der GEBAEUDEART-Klappliste
+   (InitModelFromControls:188-191) und NICHT an der Bauart-Klappliste - obwohl
+   die Bauart aus derselben Groesse abgeleitet ANGEZEIGT wurde. Der Anwender
+   hat entschieden: Die BAUART bestimmt die Bauweise. Dieser Dialog fuehrt
+   Daten.Bauweise deshalb bei jeder Bauartwahl und unmittelbar vor jedem
+   Schreiben nach (Gebaeudebauweise.BauweiseAusBauart(Bauart, Wohnflaeche));
+   die Anzeige ist damit zum ersten Mal auch die Eingabe. Der Rundweg bleibt:
+   Beim Laden eines Satzes kommt die Bauart aus der gespeicherten Bauweise
+   (Gebaeudebauweise.BauartAusBauweise). Die Gebaeudeart-Klappliste behaelt
+   nur ihre eigene Bedeutung. Die Rechnung selbst steht - wie Ferienzeit und
+   Suchmuster - als reine Hilfsklasse im Kern; ein Controller wird von dieser
+   Komponente nicht angefasst.
+
+   BEFUND W9-B8. comboBox_Verwendung fuehrte die beiden STEUERWERTE
+   "Wohngebaeude" / "Nicht Wohngebaeude" als Anzeigetexte - und die
+   en-US-Satellitendatei uebersetzte sie ("residential buildings"). In
+   englischer Oberflaeche schrieb der Vorlaeufer also den englischen Text in
+   die Spalte, und jeder Filter lief danach ins Leere. Hier ist der Steuerwert
+   getrennt vom Anzeigetext (Drei-Schichten-Regel, A-5).
+
+   TASTATUR: Esc schliesst. Enter ist nicht belegt - drei Knoepfe schreiben
+   sofort. Die Reiterleiste laeuft mit den Pfeiltasten. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">
+        <KindInhalt>
+
+            @* ================================================== Reiter 1 *@
+            <Reiterblatt Schluessel="FLAECHEN" Titel="@ReiterFlaechen">
+                <KindInhalt>
+
+                    <Gruppenkopf Titel="@GruppeKopf">
+                        <KindInhalt>
+                            @if (Modus == GebaeudeKatalogModus.Admin)
+                            {
+                                <Auswahlfeld Bezeichnung="@LabelName" Eintraege="@Namenseintraege"
+                                             Auswahl="@_namensindex" AuswahlChanged="NamenWaehlen" />
+                            }
+                            else
+                            {
+                                <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name"
+                                          WertChanged="w => Daten.Name = w" />
+                            }
+
+                            <Auswahlfeld Bezeichnung="@LabelGebaeudetyp" Eintraege="@Typeintraege"
+                                         Auswahl="@Typindex" AuswahlChanged="TypWaehlen" />
+                            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
+                                      WertChanged="w => Daten.Beschreibung = w"
+                                      Mehrzeilig="true" Zeilen="3" />
+                            <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
+                                         Auswahl="@Artindex" AuswahlChanged="ArtWaehlen" />
+                            <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Klasseneintraege"
+                                         Auswahl="@Daten.Baualtersklasse"
+                                         AuswahlChanged="i => Daten.Baualtersklasse = i ?? 0" />
+                            <Auswahlfeld Bezeichnung="@LabelVerwendung" Eintraege="@Verwendungseintraege"
+                                         Auswahl="@Verwendungsindex" AuswahlChanged="VerwendungWaehlen" />
+                            <Auswahlfeld Bezeichnung="@LabelBauart" Eintraege="@Bauarteintraege"
+                                         Auswahl="@Daten.Bauart"
+                                         AuswahlChanged="BauartWaehlen" />
+
+                            <Zahlenfeld Bezeichnung="@LabelWohnflaeche" Einheit="m²"
+                                        Feldname="@FeldWohnflaeche" Wert="@Daten.WohnflaecheGesamt"
+                                        WertChanged="w => Daten.WohnflaecheGesamt = w" />
+                            <Zahlenfeld Bezeichnung="@LabelFlaecheNutzer" Einheit="m²"
+                                        Feldname="@FeldFlaecheNutzer" Wert="@Daten.FlaecheNutzer"
+                                        WertChanged="w => Daten.FlaecheNutzer = w" />
+                            <Zahlenfeld Bezeichnung="@LabelWaermegewinne" Einheit="W"
+                                        Feldname="@FeldWaermegewinne" Wert="@Daten.Waermegewinne"
+                                        WertChanged="w => Daten.Waermegewinne = w" />
+                            <Zahlenfeld Bezeichnung="@LabelFensterdurchlassgrad"
+                                        Feldname="@FeldFensterdurchlassgrad"
+                                        Wert="@Daten.Fensterdurchlassgrad"
+                                        WertChanged="w => Daten.Fensterdurchlassgrad = w" />
+                            <Herleitungszeile Text="@HinweisFensterdurchlassgrad" />
+                            <Zahlenfeld Bezeichnung="@LabelRaumhoehe" Einheit="m"
+                                        Feldname="@FeldRaumhoehe" Wert="@Daten.Raumhoehe"
+                                        WertChanged="w => Daten.Raumhoehe = w" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <Gruppenkopf Titel="@GruppeFlaechen">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@LabelFFNord" Feldname="@FeldFFNord"
+                                        Wert="@Daten.FensterflaecheNord"
+                                        WertChanged="w => Daten.FensterflaecheNord = w" />
+                            <Zahlenfeld Bezeichnung="@LabelFFSued" Feldname="@FeldFFSued"
+                                        Wert="@Daten.FensterflaecheSued"
+                                        WertChanged="w => Daten.FensterflaecheSued = w" />
+                            <Zahlenfeld Bezeichnung="@LabelFFOstWest" Feldname="@FeldFFOstWest"
+                                        Wert="@Daten.FensterflaecheOstWest"
+                                        WertChanged="w => Daten.FensterflaecheOstWest = w" />
+                            <Zahlenfeld Bezeichnung="@LabelFlaecheAussenwand"
+                                        Feldname="@FeldFlaecheAussenwand"
+                                        Wert="@Daten.FlaecheAussenwand"
+                                        WertChanged="w => Daten.FlaecheAussenwand = w" />
+                            <Zahlenfeld Bezeichnung="@LabelDachflaeche" Feldname="@FeldDachflaeche"
+                                        Wert="@Daten.Dachflaeche"
+                                        WertChanged="w => Daten.Dachflaeche = w" />
+                            <Zahlenfeld Bezeichnung="@LabelGrundflaeche" Feldname="@FeldGrundflaeche"
+                                        Wert="@Daten.Grundflaeche"
+                                        WertChanged="w => Daten.Grundflaeche = w" />
+                            <Zahlenfeld Bezeichnung="@LabelSonstigeFlaechen"
+                                        Feldname="@FeldSonstigeFlaechen"
+                                        Wert="@Daten.SonstigeFlaechen"
+                                        WertChanged="w => Daten.SonstigeFlaechen = w" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <Gruppenkopf Titel="@GruppeUWerte">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@LabelUAussenwand" Feldname="@FeldUAussenwand"
+                                        Wert="@Daten.UWertAussenwand"
+                                        WertChanged="w => Daten.UWertAussenwand = w" />
+                            <Zahlenfeld Bezeichnung="@LabelUFenster" Feldname="@FeldUFenster"
+                                        Wert="@Daten.UWertFenster"
+                                        WertChanged="w => Daten.UWertFenster = w" />
+                            <Zahlenfeld Bezeichnung="@LabelUDachflaeche" Feldname="@FeldUDachflaeche"
+                                        Wert="@Daten.UWertDachflaeche"
+                                        WertChanged="w => Daten.UWertDachflaeche = w" />
+                            <Zahlenfeld Bezeichnung="@LabelUGrundflaeche" Feldname="@FeldUGrundflaeche"
+                                        Wert="@Daten.UWertGrundflaeche"
+                                        WertChanged="w => Daten.UWertGrundflaeche = w" />
+                            <Zahlenfeld Bezeichnung="@LabelUSonstiges" Feldname="@FeldUSonstiges"
+                                        Wert="@Daten.UWertSonstiges"
+                                        WertChanged="w => Daten.UWertSonstiges = w" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                </KindInhalt>
+            </Reiterblatt>
+
+            @* ================================================== Reiter 2 *@
+            <Reiterblatt Schluessel="TEMPERATUREN" Titel="@ReiterTemperaturen">
+                <KindInhalt>
+
+                    <Gruppenkopf Titel="@GruppeRaumtemperaturen">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@LabelSollTag" Einheit="°C"
+                                        Feldname="@LabelSollTag" Wert="@_sollTag"
+                                        WertChanged="w => _sollTag = w" />
+                            <Zahlenfeld Bezeichnung="@LabelNachtAbsenkung" Einheit="°C"
+                                        Feldname="@LabelNachtAbsenkung" Wert="@_nachtAbsenkung"
+                                        WertChanged="w => _nachtAbsenkung = w" />
+                            <Zahlenfeld Bezeichnung="@LabelMaxTemperatur" Einheit="°C"
+                                        Feldname="@LabelMaxTemperatur" Wert="@_maxTemperatur"
+                                        WertChanged="w => _maxTemperatur = w" />
+                            <Zahlenfeld Bezeichnung="@LabelWEAbsenkung" Einheit="°C"
+                                        Feldname="@LabelWEAbsenkung" Wert="@_weAbsenkung"
+                                        WertChanged="w => _weAbsenkung = w" />
+                            <Zahlenfeld Bezeichnung="@LabelSollFerien" Einheit="°C"
+                                        Feldname="@LabelSollFerien" Wert="@_sollFerien"
+                                        WertChanged="w => _sollFerien = w" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <Gruppenkopf Titel="@GruppeWaermebruecken">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@LabelWbvkFenster" Feldname="@LabelWbvkFenster"
+                                        Wert="@_wbvkFenster" WertChanged="w => _wbvkFenster = w" />
+                            <Zahlenfeld Bezeichnung="@LabelWbvkKeller" Feldname="@LabelWbvkKeller"
+                                        Wert="@_wbvkKeller" WertChanged="w => _wbvkKeller = w" />
+                            <Zahlenfeld Bezeichnung="@LabelWbvkDach" Feldname="@LabelWbvkDach"
+                                        Wert="@_wbvkDach" WertChanged="w => _wbvkDach = w" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <Gruppenkopf Titel="@GruppeAnschlussmasse">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@LabelWbvkFenster" Feldname="@LabelAnschlussFenster"
+                                        Wert="@_anschlussFenster"
+                                        WertChanged="w => _anschlussFenster = w" />
+                            <Zahlenfeld Bezeichnung="@LabelWbvkDach" Feldname="@LabelAnschlussDach"
+                                        Wert="@_anschlussDach" WertChanged="w => _anschlussDach = w" />
+                            <Zahlenfeld Bezeichnung="@LabelWbvkKeller" Feldname="@LabelAnschlussKeller"
+                                        Wert="@_anschlussKeller"
+                                        WertChanged="w => _anschlussKeller = w" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <Gruppenkopf Titel="@GruppeFerienAnfang">
+                        <KindInhalt>
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                int n = i;
+                                <div class="epos-feldpaar">
+                                    <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + LabelTag)"
+                                                  Min="1" Max="31" Wert="@_beginnTag[n]"
+                                                  WertChanged="w => _beginnTag[n] = w" />
+                                    <Ganzzahlfeld Bezeichnung="@LabelMonat" Min="1" Max="12"
+                                                  Wert="@_beginnMonat[n]"
+                                                  WertChanged="w => _beginnMonat[n] = w" />
+                                </div>
+                            }
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <Gruppenkopf Titel="@GruppeFerienEnde">
+                        <KindInhalt>
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                int n = i;
+                                <div class="epos-feldpaar">
+                                    <Ganzzahlfeld Bezeichnung="@(Ferienname(n) + " " + LabelTag)"
+                                                  Min="1" Max="31" Wert="@_endeTag[n]"
+                                                  WertChanged="w => _endeTag[n] = w" />
+                                    <Ganzzahlfeld Bezeichnung="@LabelMonat" Min="1" Max="12"
+                                                  Wert="@_endeMonat[n]"
+                                                  WertChanged="w => _endeMonat[n] = w" />
+                                </div>
+                            }
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <Gruppenkopf Titel="@GruppeSonstiges">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@LabelLuftwechsel" Einheit="1/h"
+                                        Feldname="@LabelLuftwechsel" Wert="@_luftwechsel"
+                                        WertChanged="w => _luftwechsel = w" />
+
+                            @if (BrauchwasserGaben is not null)
+                            {
+                                <Herleitungszeile Text="@LabelBrauchwasserprofile" />
+                                <button type="button" class="epos-knopf"
+                                        @onclick="BeiBrauchwasser">@BtnBrauchwasserText</button>
+                            }
+                        </KindInhalt>
+                    </Gruppenkopf>
+
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf epos-knopf--primaer"
+                                @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
+                    </div>
+
+                </KindInhalt>
+            </Reiterblatt>
+
+        </KindInhalt>
+    </Reiter>
+
+    @* --- Ueberlagerung: die Brauchwasser-Profilliste des Projekts (W9.5) ---- *@
+    <Ueberlagerung Offen="@(_brauchwasserGaben is not null)" Schliessbar="false"
+                   Titel="@BtnBrauchwasserText" Geschlossen="() => BrauchwasserGeschlossen(false)">
+        <KindInhalt>
+            @if (_brauchwasserGaben is not null)
+            {
+                <BedarfsProfileDialog @attributes="_brauchwasserGaben"
+                                      Geschlossen="BrauchwasserGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf"
+                disabled="@(Modus == GebaeudeKatalogModus.Neu)"
+                @onclick="BeiUeberschreiben">@BtnUeberschreibenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(Modus == GebaeudeKatalogModus.Admin)"
+                @onclick="BeiSpeichern">@SpeichernKnopftext</button>
+        <button type="button" class="epos-knopf"
+                @onclick="() => Geschlossen.InvokeAsync(true)">@BtnBeendenText</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Der Feldsatz. Die Hülle lädt ihn und nimmt ihn beim Speichern entgegen.</summary>
+    [Parameter] public GebaeudeKatalogDaten Daten { get; set; } = new();
+
+    /// <summary>Welche der drei Betriebsarten gilt.</summary>
+    [Parameter] public GebaeudeKatalogModus Modus { get; set; } = GebaeudeKatalogModus.Bearbeiten;
+
+    /// <summary>Die Gebäudetypen der Klappliste (<c>Abfrage_Gebaeudetypen</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Gebaeudetypen { get; set; }
+
+    /// <summary>Die Gebäudearten der Klappliste (<c>Abfrage_Gebaeudearten</c>, ohne Filter).</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Gebaeudearten { get; set; }
+
+    /// <summary>Die 21 Baualtersklassen in ihrer festen Reihenfolge.</summary>
+    [Parameter] public IReadOnlyList<string> Baualtersklassen { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die Namen aller Katalogsätze — nur im Modus Admin gebraucht.</summary>
+    [Parameter] public Func<IReadOnlyList<string>>? Katalognamen { get; set; }
+
+    /// <summary>Lädt einen Katalogsatz nach Namen — der Klapplistenwechsel im Modus Admin.</summary>
+    [Parameter] public Func<string, GebaeudeKatalogDaten?>? Lies { get; set; }
+
+    /// <summary>
+    /// Schreibt den Satz. Zweiter Parameter: <c>true</c> = anlegen, <c>false</c> =
+    /// überschreiben. Dritter Parameter: der Bezeichner, unter dem geschrieben wird.
+    /// </summary>
+    [Parameter]
+    public Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>? Speichern { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Brauchwasser-Profilliste des laufenden Projekts
+    /// (<c>btn_Brauchwasser_Click</c>:213). Sie erscheint als ÜBERLAGERUNG im selben
+    /// Fenster (Risiko R2). Kein Delegat = kein Knopf.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? BrauchwasserGaben { get; set; }
+
+    /// <summary>
+    /// Meldet, wie die Brauchwasserliste geschlossen wurde — die Hülle schreibt bei
+    /// <c>true</c> die Zuordnungen zurück (<c>btn_Brauchwasser_Click</c>:246-254).
+    /// </summary>
+    [Parameter] public Action<bool>? BrauchwasserFertig { get; set; }
+
+    /// <summary>Der Dialog wurde geschlossen („Beenden"/Esc) — immer <c>true</c>.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Gebäudedaten: Flächen, U-Werte";
+    [Parameter] public string ReiterFlaechen { get; set; } = "Flächen und U-Werte";
+    [Parameter] public string ReiterTemperaturen { get; set; } = "Temperaturen, Ferien, Luftwechsel";
+
+    [Parameter] public string GruppeKopf { get; set; } = "Kenngrößen";
+    [Parameter] public string GruppeFlaechen { get; set; } = "Flächen [m²]";
+    [Parameter] public string GruppeUWerte { get; set; } = "U-Werte [W/m²K]";
+    [Parameter] public string GruppeRaumtemperaturen { get; set; } = "Raumtemperaturen";
+    [Parameter] public string GruppeWaermebruecken { get; set; }
+        = "Wärmebrückenverlustkoeffizienten [W/(mK)]";
+    [Parameter] public string GruppeAnschlussmasse { get; set; } = "Abmessung Anschluß [m]";
+    [Parameter] public string GruppeFerienAnfang { get; set; } = "Ferien Anfang";
+    [Parameter] public string GruppeFerienEnde { get; set; } = "Ferien Ende";
+    [Parameter] public string GruppeSonstiges { get; set; } = "Sonstiges";
+
+    [Parameter] public string LabelName { get; set; } = "Name :";
+    [Parameter] public string LabelGebaeudetyp { get; set; } = "Gebäudetyp :";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung :";
+    [Parameter] public string LabelGebaeudeart { get; set; } = "Gebäudeart :";
+    [Parameter] public string LabelBaujahr { get; set; } = "Baujahr :";
+    [Parameter] public string LabelVerwendung { get; set; } = "Verwendung :";
+    [Parameter] public string LabelBauart { get; set; } = "Bauart :";
+    [Parameter] public string LabelWohnflaeche { get; set; } = "Wohn-/Nutzfläche :";
+    [Parameter] public string LabelFlaecheNutzer { get; set; } = "Fläche / Nutzer :";
+    [Parameter] public string LabelWaermegewinne { get; set; } = "Interne Wärmegewinne :";
+    [Parameter] public string LabelFensterdurchlassgrad { get; set; } = "Fensterdurchlaßgrad :";
+    [Parameter] public string HinweisFensterdurchlassgrad { get; set; } = "(z.B. 0,4)";
+    [Parameter] public string LabelRaumhoehe { get; set; } = "Raumhöhe :";
+
+    [Parameter] public string LabelFFNord { get; set; } = "Fensterfläche Nord :";
+    [Parameter] public string LabelFFSued { get; set; } = "Fensterfläche Süd :";
+    [Parameter] public string LabelFFOstWest { get; set; } = "Fensterfläche Ost + West :";
+    [Parameter] public string LabelFlaecheAussenwand { get; set; } = "Fläche Außenwand :";
+    [Parameter] public string LabelDachflaeche { get; set; } = "Gebäude Dachfläche :";
+    [Parameter] public string LabelGrundflaeche { get; set; } = "Gebäude Grundfläche :";
+    [Parameter] public string LabelSonstigeFlaechen { get; set; } = "sonstige Flächen :";
+
+    [Parameter] public string LabelUAussenwand { get; set; } = "Außenwand :";
+    [Parameter] public string LabelUFenster { get; set; } = "Fenster :";
+    [Parameter] public string LabelUDachflaeche { get; set; } = "Dachfläche :";
+    [Parameter] public string LabelUGrundflaeche { get; set; } = "Grundfläche :";
+    [Parameter] public string LabelUSonstiges { get; set; } = "Sonstiges :";
+
+    [Parameter] public string LabelSollTag { get; set; } = "Soll am Tag :";
+    [Parameter] public string LabelNachtAbsenkung { get; set; } = "Nachtabsenkung auf :";
+    [Parameter] public string LabelMaxTemperatur { get; set; } = "Maximalraumtemperatur :";
+    [Parameter] public string LabelWEAbsenkung { get; set; } = "Wochenendabsenkung :";
+    [Parameter] public string LabelSollFerien { get; set; } = "Soll in Ferien :";
+    [Parameter] public string LabelWbvkFenster { get; set; } = "Fenster-Wand :";
+    [Parameter] public string LabelWbvkKeller { get; set; } = "Außenwand-Keller :";
+    [Parameter] public string LabelWbvkDach { get; set; } = "Wand-Dach :";
+    [Parameter] public string LabelLuftwechsel { get; set; } = "Luftwechselrate :";
+    [Parameter] public string LabelTag { get; set; } = "Tag :";
+    [Parameter] public string LabelMonat { get; set; } = "Monat :";
+    [Parameter] public string LabelBrauchwasserprofile { get; set; } = "Brauchwasserprofile :";
+
+    /// <summary>Die vier Ferienzeiträume in ihrer festen Reihenfolge.</summary>
+    [Parameter]
+    public IReadOnlyList<string> Ferienzeitraeume { get; set; }
+        = new[] { "Winter :", "Ostern :", "Sommer :", "Herbst :" };
+
+    /// <summary>Die drei Bauarten (<c>SetControls</c>:84-86).</summary>
+    [Parameter]
+    public IReadOnlyList<string> Bauarten { get; set; }
+        = new[] { "Leichte Bauart", "Schwere Bauart", "Sehr schwere Bauart" };
+
+    /// <summary>
+    /// Die beiden Verwendungen als ANZEIGETEXT. Der Steuerwert steht daneben in
+    /// <see cref="Verwendungswerte"/> und wird nie übersetzt (Befund W9‑B8).
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<string> Verwendungen { get; set; }
+        = new[] { "Wohngebäude", "Nicht Wohngebäude" };
+
+    /// <summary>Die beiden Steuerwerte in derselben Reihenfolge wie <see cref="Verwendungen"/>.</summary>
+    [Parameter]
+    public IReadOnlyList<string> Verwendungswerte { get; set; }
+        = new[] { "Wohngebaeude", "Nicht Wohngebaeude" };
+
+    [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
+    [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string BtnBeendenText { get; set; } = "Beenden";
+    [Parameter] public string BtnUebernehmenText { get; set; } = "Werte übernehmen";
+    [Parameter] public string BtnBrauchwasserText { get; set; } = "Brauchwasser...";
+
+    [Parameter] public string MeldungZahlFehlt { get; set; } = "Bitte {0} als Zahl eingeben.";
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Gebäudenamen eingeben!";
+    [Parameter] public string MeldungGespeichert { get; set; } = "Gebäude ist gespeichert!";
+    [Parameter] public string MeldungUeberschrieben { get; set; }
+        = "Gebäude Datensatz ist überschrieben!";
+    [Parameter] public string MeldungUebernommen { get; set; } = "Werte übernommen.";
+    [Parameter] public string MeldungFerienWinter { get; set; }
+        = "Die Ferien müssen über die Jahresgrenze gehen!";
+    [Parameter] public string MeldungFerienOstern { get; set; }
+        = "Fehler: Bei der Eingabe der Osterferien!";
+    [Parameter] public string MeldungFerienSommer { get; set; }
+        = "Fehler: Bei der Eingabe der Sommerferien!";
+    [Parameter] public string MeldungFerienHerbst { get; set; }
+        = "Fehler: Bei der Eingabe der Herbstferien!";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Gebaeude1.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private string _reiter = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    private IReadOnlyList<string> _typen = Array.Empty<string>();
+    private IReadOnlyList<string> _arten = Array.Empty<string>();
+    private IReadOnlyList<string> _namen = Array.Empty<string>();
+    private int? _namensindex;
+    private IReadOnlyDictionary<string, object>? _brauchwasserGaben;
+
+    /// <summary>Der Name, den „Überschreiben" trifft — der Stand beim Öffnen bzw. Laden.</summary>
+    private string _ursprungsname = "";
+
+    // Der zweite Reiter fuehrt einen EIGENEN Stand; erst "Uebernehmen" schreibt ihn in
+    // den Satz (A-6). Genau so arbeitete das zweite Fenster des Vorlaeufers.
+    private double? _sollTag, _nachtAbsenkung, _maxTemperatur, _weAbsenkung, _sollFerien;
+    private double? _wbvkFenster, _wbvkKeller, _wbvkDach;
+    private double? _anschlussFenster, _anschlussDach, _anschlussKeller;
+    private double? _luftwechsel;
+    private readonly int?[] _beginnTag = new int?[4];
+    private readonly int?[] _beginnMonat = new int?[4];
+    private readonly int?[] _endeTag = new int?[4];
+    private readonly int?[] _endeMonat = new int?[4];
+
+    /// <summary>Die stehende Meldung. Prüfhilfe für die Tests.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Der Name, den „Überschreiben" trifft. Prüfhilfe für die Tests.</summary>
+    public string Ursprungsname => _ursprungsname;
+
+    /// <summary>Der gewählte Reiter. Prüfhilfe für die Tests.</summary>
+    public string AktiverReiter => _reiter;
+
+    /// <summary>Steht die Brauchwasserliste? Prüfhilfe für die Tests.</summary>
+    public bool BrauchwasserOffen => _brauchwasserGaben is not null;
+
+    /// <summary>„Speichern unter" im Modus Bearbeiten, „Speichern" im Modus Neu.</summary>
+    private string SpeichernKnopftext
+        => Modus == GebaeudeKatalogModus.Neu ? BtnSpeichernText : BtnSpeichernUnterText;
+
+    protected override void OnInitialized()
+    {
+        _typen = Gebaeudetypen?.Invoke() ?? Array.Empty<string>();
+        _arten = Gebaeudearten?.Invoke() ?? Array.Empty<string>();
+
+        if (Modus == GebaeudeKatalogModus.Admin)
+        {
+            _namen = Katalognamen?.Invoke() ?? Array.Empty<string>();
+            if (_namen.Count > 0)
+            {
+                _namensindex = 0;
+                SatzLaden(_namen[0]);
+            }
+        }
+
+        _ursprungsname = Daten.Name ?? "";
+        ZweitenReiterFuellen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =================================================================================
+    // Klapplisten
+    // =================================================================================
+
+    private IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<string> quelle, string bestand)
+    {
+        var l = new List<(int, string)>();
+
+        // Ein Bestandswert, den die Liste nicht (mehr) fuehrt, wird vorangestellt - die
+        // ComboBox des Vorlaeufers war frei beschreibbar (A-16 aus Welle 7).
+        if (!string.IsNullOrEmpty(bestand) && !quelle.Contains(bestand)) l.Add((-1, bestand));
+        for (int i = 0; i < quelle.Count; i++) l.Add((i, quelle[i]));
+        return l;
+    }
+
+    private static int? Index(IReadOnlyList<string> quelle, string wert)
+    {
+        if (string.IsNullOrEmpty(wert)) return null;
+        for (int i = 0; i < quelle.Count; i++)
+            if (string.Equals(quelle[i], wert, StringComparison.Ordinal)) return i;
+        return -1;
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Typeintraege => Eintraege(_typen, Daten.Typ);
+    private int? Typindex => Index(_typen, Daten.Typ);
+
+    private IReadOnlyList<(int Id, string Text)> Arteintraege => Eintraege(_arten, Daten.Gebaeudeart);
+    private int? Artindex => Index(_arten, Daten.Gebaeudeart);
+
+    private IReadOnlyList<(int Id, string Text)> Namenseintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < _namen.Count; i++) l.Add((i, _namen[i]));
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Klasseneintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < Baualtersklassen.Count; i++) l.Add((i, Baualtersklassen[i]));
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Bauarteintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < Bauarten.Count; i++) l.Add((i, Bauarten[i]));
+            return l;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Verwendungseintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < Verwendungen.Count; i++) l.Add((i, Verwendungen[i]));
+            return l;
+        }
+    }
+
+    private int? Verwendungsindex
+    {
+        get
+        {
+            for (int i = 0; i < Verwendungswerte.Count; i++)
+                if (string.Equals(Verwendungswerte[i], Daten.Verwendung, StringComparison.Ordinal))
+                    return i;
+            return null;
+        }
+    }
+
+    private void TypWaehlen(int? i)
+    {
+        if (i is null) { Daten.Typ = ""; return; }
+        if (i.Value >= 0 && i.Value < _typen.Count) Daten.Typ = _typen[i.Value];
+    }
+
+    private void ArtWaehlen(int? i)
+    {
+        if (i is null) { Daten.Gebaeudeart = ""; return; }
+        if (i.Value >= 0 && i.Value < _arten.Count) Daten.Gebaeudeart = _arten[i.Value];
+    }
+
+    /// <summary>
+    /// Die Bauartwahl — und mit ihr die BAUWEISE (Entscheid W9‑O‑2 zu Befund W9‑B6,
+    /// Anwender 04.09.2026). Der Vorläufer nahm dafür den Index der
+    /// <b>Gebäudeart</b>-Klappliste; seither ist die Bauart die Eingabe.
+    /// </summary>
+    private void BauartWaehlen(int? i)
+    {
+        Daten.Bauart = i ?? 1;
+        BauweiseNachfuehren();
+    }
+
+    /// <summary>
+    /// <c>Bauweise = Wohnfläche × 20 / 50 / 100</c> aus der BAUART-Auswahl
+    /// (<c>Gebaeudebauweise.BauweiseAusBauart</c>).
+    ///
+    /// <para>Wird auch unmittelbar vor jedem Schreiben gerufen: Die Wohnfläche kann
+    /// nach der Bauartwahl noch geändert worden sein, und sie geht in die Größe
+    /// ein.</para>
+    /// </summary>
+    private void BauweiseNachfuehren()
+        => Daten.Bauweise = Gebaeudebauweise.BauweiseAusBauart(
+               Daten.Bauart, Daten.WohnflaecheGesamt ?? 0);
+
+    private void VerwendungWaehlen(int? i)
+    {
+        if (i is null || i.Value < 0 || i.Value >= Verwendungswerte.Count) return;
+        Daten.Verwendung = Verwendungswerte[i.Value];
+    }
+
+    /// <summary>
+    /// Der Klapplistenwechsel im Modus Admin lädt den gewählten Satz —
+    /// <c>comboBox_Name_SelectedIndexChanged</c>:237 rief dafür <c>SetControls()</c>.
+    /// </summary>
+    private void NamenWaehlen(int? i)
+    {
+        _namensindex = i;
+        if (i is null || i.Value < 0 || i.Value >= _namen.Count) return;
+        SatzLaden(_namen[i.Value]);
+        ZweitenReiterFuellen();
+    }
+
+    private void SatzLaden(string name)
+    {
+        GebaeudeKatalogDaten? satz = Lies?.Invoke(name);
+        if (satz is null) return;
+        Daten = satz;
+
+        // Der Rundweg zu W9-O-2: Die BAUART kommt aus der gespeicherten Bauweise
+        // (SetControls:107-110). Geschrieben wird sie danach wieder aus der Bauart.
+        Daten.Bauart = Gebaeudebauweise.BauartAusBauweise(
+            Daten.Bauweise, Daten.WohnflaecheGesamt ?? 0);
+
+        _ursprungsname = satz.Name ?? "";
+        _meldung = "";
+    }
+
+    private string Ferienname(int n)
+        => (Ferienzeitraeume is not null && Ferienzeitraeume.Count > n) ? Ferienzeitraeume[n] : "";
+
+    // =================================================================================
+    // Reiter 2 - eigener Stand, "Uebernehmen" schreibt ihn in den Satz
+    // =================================================================================
+
+    private void ZweitenReiterFuellen()
+    {
+        _sollTag = Daten.SollTag;
+        _nachtAbsenkung = Daten.NachtAbsenkung;
+        _maxTemperatur = Daten.MaxTemperatur;
+        _weAbsenkung = Daten.WochenendAbsenkung;
+        _sollFerien = Daten.SollFerien;
+        _wbvkFenster = Daten.WbvkFensterWand;
+        _wbvkKeller = Daten.WbvkAussenwandKeller;
+        _wbvkDach = Daten.WbvkWandDach;
+        _anschlussFenster = Daten.AnschlussFensterWand;
+        _anschlussDach = Daten.AnschlussWandDach;
+        _anschlussKeller = Daten.AnschlussAussenwandKeller;
+        _luftwechsel = Daten.Luftwechselrate;
+
+        for (int n = 0; n < 4; n++)
+        {
+            (int? tag, int? monat) = Ferienzeit.TagUndMonat(Daten.Ferienbeginn[n]);
+            _beginnTag[n] = tag;
+            _beginnMonat[n] = monat;
+
+            (tag, monat) = Ferienzeit.TagUndMonat(Daten.Ferienende[n]);
+            _endeTag[n] = tag;
+            _endeMonat[n] = monat;
+        }
+    }
+
+    /// <summary>
+    /// Der frühere <c>btn_Speichern_Click</c>:122-205 — vier Ableitungen und die vier
+    /// Ferienregeln. Leere Felder gelten wie im Vorläufer als 0.
+    /// </summary>
+    private void BeiUebernehmen()
+    {
+        int[] beginn = new int[4];
+        int[] ende = new int[4];
+        for (int n = 0; n < 4; n++)
+        {
+            beginn[n] = Ferienzeit.Jahrestag(_beginnMonat[n], _beginnTag[n]);
+            ende[n] = Ferienzeit.Jahrestag(_endeMonat[n], _endeTag[n]);
+        }
+
+        string regel = Ferienzeit.Pruefen(beginn, ende);
+        if (regel is not null) { Melden(FerienMeldung(regel), WarnStufe.Warnung); return; }
+
+        Daten.SollTag = _sollTag ?? 0;
+        Daten.NachtAbsenkung = _nachtAbsenkung ?? 0;
+
+        // "Maximaleraumtemperatur < 1 -> 24" (btn_Speichern_Click:151).
+        double max = _maxTemperatur ?? 0;
+        Daten.MaxTemperatur = max < 1 ? 24 : max;
+
+        Daten.WochenendAbsenkung = _weAbsenkung ?? 0;
+        Daten.Wochenende = (Daten.WochenendAbsenkung ?? 0) > 0 ? 1 : 0;
+        Daten.SollFerien = _sollFerien ?? 0;
+        Daten.Ferien = (Daten.SollFerien ?? 0) > 0 ? 1 : 0;
+
+        Daten.WbvkFensterWand = _wbvkFenster ?? 0;
+        Daten.WbvkAussenwandKeller = _wbvkKeller ?? 0;
+        Daten.WbvkWandDach = _wbvkDach ?? 0;
+        Daten.AnschlussFensterWand = _anschlussFenster ?? 0;
+        Daten.AnschlussWandDach = _anschlussDach ?? 0;
+        Daten.AnschlussAussenwandKeller = _anschlussKeller ?? 0;
+
+        // "Ferienbeginn_1 == 0 -> 366" (btn_Speichern_Click:198).
+        beginn[0] = Ferienzeit.WinterbeginnGehoben(beginn[0]);
+        Daten.Ferienbeginn = beginn;
+        Daten.Ferienende = ende;
+
+        Daten.Luftwechselrate = _luftwechsel ?? 0;
+        Daten.WwBedarf = 0;
+
+        Melden(MeldungUebernommen, WarnStufe.Hinweis);
+    }
+
+    private string FerienMeldung(string schluessel) => schluessel switch
+    {
+        Ferienzeit.MELDUNG_WINTER => MeldungFerienWinter,
+        Ferienzeit.MELDUNG_OSTERN => MeldungFerienOstern,
+        Ferienzeit.MELDUNG_SOMMER => MeldungFerienSommer,
+        _ => MeldungFerienHerbst
+    };
+
+    private void BeiBrauchwasser()
+    {
+        if (BrauchwasserGaben is null) return;
+        _brauchwasserGaben = BrauchwasserGaben();
+    }
+
+    private void BrauchwasserGeschlossen(bool ok)
+    {
+        _brauchwasserGaben = null;
+        BrauchwasserFertig?.Invoke(ok);
+    }
+
+    // =================================================================================
+    // Speichern
+    // =================================================================================
+
+    /// <summary>
+    /// Die 17 Pflichtzahlen des ersten Reiters — <c>InitModelFromControls</c>:154-172 in
+    /// derselben Reihenfolge. Die Meldung nennt das erste fehlende Feld.
+    /// </summary>
+    private bool PflichtzahlenStehen()
+    {
+        (double? wert, string name)[] pflicht =
+        {
+            (Daten.WohnflaecheGesamt, FeldWohnflaeche),
+            (Daten.FlaecheNutzer, FeldFlaecheNutzer),
+            (Daten.Waermegewinne, FeldWaermegewinne),
+            (Daten.Fensterdurchlassgrad, FeldFensterdurchlassgrad),
+            (Daten.Raumhoehe, FeldRaumhoehe),
+            (Daten.FensterflaecheSued, FeldFFSued),
+            (Daten.FensterflaecheOstWest, FeldFFOstWest),
+            (Daten.FensterflaecheNord, FeldFFNord),
+            (Daten.FlaecheAussenwand, FeldFlaecheAussenwand),
+            (Daten.Dachflaeche, FeldDachflaeche),
+            (Daten.Grundflaeche, FeldGrundflaeche),
+            (Daten.SonstigeFlaechen, FeldSonstigeFlaechen),
+            (Daten.UWertAussenwand, FeldUAussenwand),
+            (Daten.UWertFenster, FeldUFenster),
+            (Daten.UWertDachflaeche, FeldUDachflaeche),
+            (Daten.UWertGrundflaeche, FeldUGrundflaeche),
+            (Daten.UWertSonstiges, FeldUSonstiges)
+        };
+
+        foreach ((double? wert, string name) in pflicht)
+        {
+            if (wert is null)
+            {
+                Melden(string.Format(MeldungZahlFehlt, name), WarnStufe.Warnung);
+                _reiter = "FLAECHEN";
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void BeiUeberschreiben()
+    {
+        if (Modus == GebaeudeKatalogModus.Neu) return;
+        if (!PflichtzahlenStehen()) return;
+        Schreiben(istNeu: false, bezeichner: _ursprungsname);
+    }
+
+    /// <summary>
+    /// „Speichern unter" bzw. „Speichern" — <c>btn_NeuerDatensatz_Click</c>:226. Der Name
+    /// ist Pflicht, danach wird ANGELEGT.
+    /// </summary>
+    private void BeiSpeichern()
+    {
+        if (Modus == GebaeudeKatalogModus.Admin) return;
+
+        if (string.IsNullOrWhiteSpace(Daten.Name))
+        {
+            Melden(MeldungNameFehlt, WarnStufe.Warnung);
+            return;
+        }
+        if (!PflichtzahlenStehen()) return;
+        Schreiben(istNeu: true, bezeichner: Daten.Name);
+    }
+
+    private void Schreiben(bool istNeu, string bezeichner)
+    {
+        if (Speichern is null) return;
+
+        // W9-O-2: Die Bauweise entsteht aus der BAUART und der Wohnflaeche - beide
+        // koennen bis hierher noch geaendert worden sein.
+        BauweiseNachfuehren();
+
+        GebaeudeKatalogErgebnis ergebnis = Speichern(Daten, istNeu, bezeichner);
+        if (!ergebnis.Erfolg)
+        {
+            Melden(ergebnis.Meldung, WarnStufe.Warnung);
+            return;
+        }
+
+        if (istNeu) _ursprungsname = bezeichner;
+        Melden(istNeu ? MeldungGespeichert : MeldungUeberschrieben, WarnStufe.Hinweis);
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Die Ueberlagerung wertet Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _brauchwasserGaben is not null) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(true);
+    }
+
+    // =================================================================================
+    // Die 17 FELDNAMEN der Pflichtmeldung - sie sind NICHT die Beschriftungen
+    // (Program.ZahlPruefen bekam eigene Texte, InitModelFromControls:154-172).
+    // =================================================================================
+
+    [Parameter] public string FeldWohnflaeche { get; set; } = "Wohn-/Nutzfläche";
+    [Parameter] public string FeldFlaecheNutzer { get; set; } = "Fläche / Nutzer";
+    [Parameter] public string FeldWaermegewinne { get; set; } = "Interne Wärmegewinne";
+    [Parameter] public string FeldFensterdurchlassgrad { get; set; } = "Fensterdurchlaßgrad";
+    [Parameter] public string FeldRaumhoehe { get; set; } = "Raumhöhe";
+    [Parameter] public string FeldFFSued { get; set; } = "Fensterfläche Süd";
+    [Parameter] public string FeldFFOstWest { get; set; } = "Fensterfläche Ost + West";
+    [Parameter] public string FeldFFNord { get; set; } = "Fensterfläche Nord";
+    [Parameter] public string FeldFlaecheAussenwand { get; set; } = "Fläche Außenwand";
+    [Parameter] public string FeldDachflaeche { get; set; } = "Gebäude Dachfläche";
+    [Parameter] public string FeldGrundflaeche { get; set; } = "Gebäude Grundfläche";
+    [Parameter] public string FeldSonstigeFlaechen { get; set; } = "sonstige Flächen";
+    [Parameter] public string FeldUAussenwand { get; set; } = "U-Wert Außenwand";
+    [Parameter] public string FeldUFenster { get; set; } = "U-Wert Fenster";
+    [Parameter] public string FeldUDachflaeche { get; set; } = "U-Wert Dachfläche";
+    [Parameter] public string FeldUGrundflaeche { get; set; } = "U-Wert Grundfläche";
+    [Parameter] public string FeldUSonstiges { get; set; } = "U-Wert Sonstiges";
+    [Parameter] public string LabelAnschlussFenster { get; set; } = "Anschluß Fenster-Wand";
+    [Parameter] public string LabelAnschlussDach { get; set; } = "Anschluß Wand-Dach";
+    [Parameter] public string LabelAnschlussKeller { get; set; } = "Anschluß Außenwand-Keller";
+}

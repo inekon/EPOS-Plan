@@ -6,8 +6,9 @@
 
     Zweck: zeigen, dass ChartRenderer.cs nach der Portierung auf SkiaSharp (iU7-2)
     OHNE Windows laeuft - also auf Linux, in der CI und damit spaeter auf iOS. Der
-    Bildvergleich unter Referenzlauf\ beweist die Bildgleichheit auf Windows, diese
-    Probe beweist die Lauffaehigkeit ueberall sonst. Beides zusammen ist die Abnahme.
+    fruehere Bildvergleich unter Referenzlauf\ (GDI+ gegen SkiaSharp, nur Windows) ist
+    mit Entscheid iF23 am 03.09.2026 geloescht; diese Probe ist seither die Abnahme
+    des Renderers: Masse, Farben, Determinismus und Lauffaehigkeit ueberall.
 
     net10.0 OHNE -windows und OHNE ProjectReference auf die Anwendung: Ein Verweis
     auf WindowsFormsApplication1 haette die halbe Windows-Welt mitgezogen und den

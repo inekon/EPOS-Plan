@@ -1,4 +1,4 @@
-# Fach- und Umsetzungskonzept: KI-Assistent mit Aufgabensteuerung (EPOS-Plan)
+﻿# Fach- und Umsetzungskonzept: KI-Assistent mit Aufgabensteuerung (EPOS-Plan)
 
 Stand: 2026-08-20, Rev. 2 ·
 Auftraggeber: Philipp (INEKON) ·
@@ -320,6 +320,15 @@ Weil das Chatfenster seine Anfrage bereits aus einem UI-Ereignis heraus `await`-
 oben. Das Handmuster `InvokeRequired`/`Invoke` existiert im Bestand nur vereinzelt
 (`Views\Kosten\ucKostenItem.cs:89-91`) und wird nicht zum Vorbild genommen.
 
+**Nachtrag iU9‑W15b (Entscheid E‑8, Befund W15b‑B16).** Der Weg auf den Oberflächenfaden war bis dahin ein
+`Control`: `KiAusfuehrer.Anker`, den `Form_KiChat` im Konstruktor auf sich selbst setzte. Ein Blazor-Chat hat kein
+Steuerelement — er hat `ComponentBase.InvokeAsync`. Beide erfüllen dieselbe Zusage, und die heißt seit W15b.0c
+`KiAusfuehrer.AufOberflaeche` (`Func<Func<Task>, Task>`): Windows belegt sie mit `InvokeRequired`/`BeginInvoke`,
+Blazor mit `InvokeAsync`. Bleibt sie leer, gilt der alte Rückfall unverändert — `UiAnker()` sucht das erste offene
+Formular, und ohne Oberfläche (Aktionsharnisch, Konsolenlauf, iOS-Prüfmodus) läuft die Aktion auf dem rufenden
+Thread. **An der Regel selbst ändert sich nichts:** Jeder Datenbankzugriff einer Assistentenaktion läuft weiterhin
+auf dem Faden der Oberfläche, weil `DataRepository` seinen dialogfreien Modus prozessweit hält.
+
 **Vier zusätzliche Pflichten der Ausführungsschicht:**
 
 1. **Einläufigkeit.** Ein prozessweiter Schalter (`SemaphoreSlim(1,1)` oder einfaches `Interlocked`-Flag) verhindert,
@@ -330,6 +339,15 @@ oben. Das Handmuster `InvokeRequired`/`Invoke` existiert im Bestand nur vereinze
 2. **Modalitätsprüfung.** Vor jeder Aktion prüfen, ob gerade ein modaler Dialog offen ist; wenn ja, keine Aktion,
    die Fenster öffnet oder in dieselben Daten schreibt. Erkennung über `Application.OpenForms` (Hausmuster, u. a.
    `Views\Stromspeicher\Form_Stromspeicher.cs:103`) plus `Form.ActiveForm.Modal`.
+
+   **Nachtrag iU9‑W15b (Entscheid E‑8, Befund W15b‑B17).** In einer Razor-Oberfläche gibt es diese Modalität nicht —
+   eine `Ueberlagerung` ist ein `div`, und `Form.ActiveForm.Modal` meldet für das Chatfenster weiterhin `false`.
+   Die Pflicht bliebe damit still unerfüllt, sobald der Chat eine Razor-Komponente ist. `KiAusfuehrer` führt deshalb
+   seit W15b.0d einen **zweiten Haken** `Ueberlagerung` (`Func<bool>`), den die Chatkomponente mit ihrem eigenen
+   Überlagerungszustand belegt; `ModalitaetSperrt()` verknüpft beide mit ODER. Der WinForms-Weg bleibt wörtlich, wie
+   er war, und der Aktionsharnisch tauscht weiterhin nur `ModalerDialog`. Die Regel des Bestands — „erst NACH dem
+   Schließen der Werkzeugliste ausführen" (`Form_KiChat.cs:1295`) — gilt damit unverändert weiter, jetzt aber, weil
+   die Liste sich abmeldet, statt weil ein Fenster zugeht.
 3. **Dialogfreiheit.** Jede Aktion läuft in `using (DataRepository.EngineModus())` (`Allgemein\DataRepository.cs:77`)
    und holt danach `StilleFehlerAbholen()` (`:86`) ab. So erscheint keine MessageBox hinter einem Chatfenster, und
    die Meldungen kommen im Chat an. Verschachtelung ist zulässig (`:44-46`), der Runner setzt den Modus ohnehin

@@ -1,0 +1,443 @@
+﻿@* Verwaltung Pufferspeicher - der PROJEKTDIALOG (iU9-W6.7).
+
+   VORBILD. Views/Pufferspeicher/Form_PufferSp (377 Z., lokalisiert de/en, 21
+   Kartenzeilen, 4 MessageBox samt der Rueckfrage aus AnlagenEindeutigkeit).
+   Muster wie die uebrigen vier: links "ausgewaehlt im Projekt", rechts der
+   Katalog, dazwischen ◀ und ▶.
+
+   EINE ZEILE JE PROJEKT UND GERAET - und wenn doch zwei, dann ausdruecklich.
+   btn_PufferSp_Hinzu_Click fragt nach, sobald derselbe Speicher schon in der
+   Liste steht (AnlagenEindeutigkeit.BereitsInListe), und merkt sich die
+   Antwort im Modell (GeraetekopieErzwingen), damit der Schreibweg nicht
+   nochmals fragt. Die Frage steht hier als Rueckfrage-Baustein im selben
+   Fenster; im Bestand kam sie ueber Dienste.Dialog, also als WinForms-Fenster.
+
+   ZWEI DETAILQUELLEN. Eine Projektzeile zeigt ihre KOPIE aus
+   Tab_Pufferspeicher (die kann anders heissen als die Vorlage - "… 600 Liter"
+   gegen "… 600 Ltr"), eine frisch hinzugefuegte Zeile hat noch keine und
+   faellt auf den Katalogsatz zurueck. Welche Quelle es ist, entscheidet die
+   Huelle; die Komponente fragt nur nach der Id.
+
+   KEINE ASSISTENTENSEITE. Der Pufferspeicher steht nicht in den dreizehn
+   Seiten des Assistenten (FR-1) - Wizard gibt es hier trotzdem, weil die
+   Maske ihn im Bestand kannte und ein Aufrufer ihn kuenftig setzen koennte.
+
+   TASTATUR wie in den uebrigen Erzeugerdialogen: Esc schliesst, Enter ist
+   nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
+   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+
+        <Links>
+            <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_projektZeile == context)" Kurztext="@SpalteWahl"
+                                    Gewaehltwerden="() => ProjektZeileWaehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@LabelProjektliste" />
+                </KindInhalt>
+            </Raster>
+        </Links>
+
+        <Rechts>
+            <Auswahlfeld Bezeichnung="@LabelFilterHersteller" Eintraege="@_herstellerEintraege"
+                         Auswahl="@_hersteller" AuswahlChanged="BeiHersteller" />
+            <Auswahlfeld Bezeichnung="@LabelFilterVolumen" Eintraege="@_volumenEintraege"
+                         Auswahl="@_volumen" AuswahlChanged="BeiVolumen" />
+
+            <Raster TZeile="KatalogZeile" Zeilen="@_katalog.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="KatalogZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_katalogZeile == context)" Kurztext="@SpalteWahl"
+                                    Gewaehltwerden="() => KatalogZeileWaehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="KatalogZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@LabelKatalogliste" />
+                </KindInhalt>
+            </Raster>
+
+            <div class="epos-leiste">
+                @if (VerwaltungGaben is not null)
+                {
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                }
+                <button type="button" class="epos-knopf" @onclick="BeiLoeschen">@BtnLoeschenText</button>
+            </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
+
+    <Gruppenkopf Titel="@GruppeModul">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
+            @foreach (var feld in _detail.Felder)
+            {
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+
+    @* „Dieses Geraet steht schon in der Liste" - vor dem Aufnehmen. *@
+    @* --- Ueberlagerung: die Katalogverwaltung (iU9-W14a.4) ------------------- *@
+    @* Der Knopf "Verwaltung" oeffnete bis hierher Form_PufferSp_Admin ueber die Sprungbruecke; das Ziel ist jetzt selbst Blazor. *@
+    <Ueberlagerung Offen="@(_verwaltungGaben is not null)" Schliessbar="false"
+                   Titel="" Geschlossen="() => VerwaltungFertig(null)">
+        <KindInhalt>
+            @if (_verwaltungGaben is not null)
+            {
+                <KatalogBrowserDialog @attributes="_verwaltungGaben" Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@(_dublettenfrage is not null)" TitelText="@TitelDublette"
+                Frage="@(_dublettenfrage ?? "")" JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="BeiDublettenfrage" />
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
+                Frage="@(string.Format(FrageLoeschen, _katalogZeile?.Bezeichner ?? ""))"
+                Beantwortet="BeiLoeschfrage" />
+</div>
+
+@code {
+    /// <summary>Die Zeilen der linken Liste — sie gehört der Hülle und wird in place bearbeitet.</summary>
+    [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
+
+    /// <summary>Die Hersteller des Katalogs, „Alle" voran (Index 0).</summary>
+    [Parameter] public IReadOnlyList<string> Hersteller { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die sechs Volumenstufen, „Alle" voran (Index 0).</summary>
+    [Parameter] public IReadOnlyList<string> Volumenstufen { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die Katalogliste zu Hersteller und Volumenstufe.</summary>
+    [Parameter] public Func<string, int, IReadOnlyList<KatalogZeile>>? Filtern { get; set; }
+
+    /// <summary>Der Detailblock zu einem KATALOGsatz (über seinen Primärschlüssel).</summary>
+    [Parameter] public Func<int, ErzeugerDetail?>? KatalogDetail { get; set; }
+
+    /// <summary>
+    /// Der Detailblock zu einer PROJEKTzeile (über <c>GeraetId</c>). Die Hülle fällt
+    /// dabei auf den Katalogsatz zurück, wenn es noch keine Projektkopie gibt.
+    /// </summary>
+    [Parameter] public Func<int, ErzeugerDetail?>? ProjektDetail { get; set; }
+
+    /// <summary>
+    /// Steht dieses Gerät schon in der Liste? Nicht leer = die Frage im Klartext
+    /// (<c>AnlagenEindeutigkeit.BereitsInListe</c> plus der Fragetext).
+    /// </summary>
+    [Parameter] public Func<int, string>? Dublettenfrage { get; set; }
+
+    /// <summary>
+    /// Nimmt den Speicher auf. Der zweite Parameter ist die Antwort auf die
+    /// Dublettenfrage — sie landet als <c>GeraetekopieErzwingen</c> im Modell, damit
+    /// der Schreibweg nicht ein zweites Mal fragt.
+    /// </summary>
+    [Parameter] public Func<int, bool, AufnahmeErgebnis>? Aufnehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste.</summary>
+    [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary>Löscht einen KATALOGsatz über seine Id; <c>true</c> = gelöscht.</summary>
+    [Parameter] public Func<int, bool>? KatalogLoeschen { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der KATALOGVERWALTUNG. Sie erscheint seit iU9-W14a als
+    /// <c>Ueberlagerung</c> im selben Fenster statt als zweites Fenster über die
+    /// Sprungbrücke (Risiko R2) — ihr Ziel ist jetzt selbst Blazor. Ohne Delegat
+    /// kein Knopf.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Verwaltung Pufferspeicher";
+    [Parameter] public string KopfbandText { get; set; } = "Geben Sie die Daten der Pufferspeicher ein";
+    [Parameter] public string LabelProjektliste { get; set; } = "ausgewählt im Projekt";
+    [Parameter] public string LabelKatalogliste { get; set; } = "Pufferspeicher aus Datenbank";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string LabelFilterHersteller { get; set; } = "Filtern nach Hersteller:";
+    [Parameter] public string LabelFilterVolumen { get; set; } = "Filtern nach Volumen:";
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
+    [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
+    [Parameter] public string GruppeModul { get; set; } = "Modul";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string TitelDublette { get; set; } = "Gerät bereits vorhanden";
+    [Parameter] public string TitelLoeschen { get; set; } = "Katalog";
+
+    /// <summary>Die Rückfrage vor dem Löschen aus dem Katalog (<c>PSP_MELDUNG_KATALOG_LOESCHEN</c>).</summary>
+    [Parameter] public string FrageLoeschen { get; set; } =
+        "Der Katalogeintrag \"{0}\" wird für ALLE Projekte gelöscht. Fortfahren?";
+
+    /// <summary>Meldung, wenn kein Katalogsatz gewählt ist (<c>PSP_MELDUNG_MODUL_WAEHLEN</c>).</summary>
+    [Parameter] public string MeldungModulWaehlen { get; set; } = "Bitte ein Modul auswählen!";
+
+    /// <summary>Meldung, wenn das Löschen abgelehnt wurde.</summary>
+    [Parameter] public string MeldungLoeschFehler { get; set; } =
+        "Der Katalogeintrag konnte nicht gelöscht werden.";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_PufferSp.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private ErzeugerZeile? _projektZeile;
+    private KatalogZeile? _katalogZeile;
+    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
+
+    private IReadOnlyList<(int Id, string Text)> _herstellerEintraege = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _volumenEintraege = Array.Empty<(int, string)>();
+
+    private int? _hersteller = 0;
+    private int? _volumen = 0;
+
+    private string? _dublettenfrage;
+    private bool _loeschfrage;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Die gewaehlte Projektzeile (Pruefhilfe fuer Tests).</summary>
+    public ErzeugerZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewaehlte Katalogzeile (Pruefhilfe fuer Tests).</summary>
+    public KatalogZeile? Katalogzeile => _katalogZeile;
+
+    /// <summary>Steht die Dublettenfrage? (Pruefhilfe fuer Tests.)</summary>
+    public bool Dublettenwarnung => _dublettenfrage is not null;
+
+    /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    protected override void OnParametersSet()
+    {
+        _herstellerEintraege = Nummeriert(Hersteller);
+        _volumenEintraege = Nummeriert(Volumenstufen);
+    }
+
+    protected override void OnInitialized()
+    {
+        KatalogNeuLaden();
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private static IReadOnlyList<(int Id, string Text)> Nummeriert(IReadOnlyList<string> texte)
+    {
+        var liste = new List<(int, string)>();
+        for (int i = 0; i < texte.Count; i++) liste.Add((i, texte[i]));
+        return liste;
+    }
+
+    // =================================================================================
+    // Filter und Listen
+    // =================================================================================
+
+    private void KatalogNeuLaden()
+    {
+        if (Filtern is null) return;
+
+        string hersteller = (_hersteller.HasValue && _hersteller.Value < Hersteller.Count)
+                          ? Hersteller[_hersteller.Value] : "";
+        _katalog = Filtern(hersteller, _volumen ?? 0);
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+    }
+
+    private void BeiHersteller(int? id) { _hersteller = id ?? 0; KatalogNeuLaden(); }
+
+    private void BeiVolumen(int? id) { _volumen = id ?? 0; KatalogNeuLaden(); }
+
+    private void ProjektZeileWaehlen(ErzeugerZeile zeile)
+    {
+        _projektZeile = zeile;
+        _katalogZeile = null;
+        _detail = (ProjektDetail is not null ? ProjektDetail(zeile.GeraetId) : null) ?? Leer(zeile.Bezeichner);
+    }
+
+    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    {
+        _katalogZeile = zeile;
+        _projektZeile = null;
+        _detail = (KatalogDetail is not null ? KatalogDetail(zeile.Id) : null) ?? Leer(zeile.Bezeichner);
+    }
+
+    private static ErzeugerDetail Leer(string name)
+        => new(name, "", Array.Empty<(string, string)>());
+
+    // =================================================================================
+    // Hinzufuegen und Entfernen
+    // =================================================================================
+
+    /// <summary>
+    /// „◀": Steht das Geraet schon in der Liste, wird ZUERST gefragt - der Anwender soll
+    /// die Meldung sehen, waehrend er den Speicher aufnimmt, nicht erst beim Speichern.
+    /// </summary>
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null || Aufnehmen is null) return;
+
+        string frage = Dublettenfrage is not null ? Dublettenfrage(_katalogZeile.Id) : "";
+        if (!string.IsNullOrEmpty(frage)) { _dublettenfrage = frage; return; }
+
+        Uebernehmen(false);
+    }
+
+    private void BeiDublettenfrage(bool? antwort)
+    {
+        _dublettenfrage = null;
+        if (antwort != true) return;   // „Nein" fuegt nichts hinzu
+
+        // „Ja" setzt GeraetekopieErzwingen - der Schreibweg fragt dann nicht erneut.
+        Uebernehmen(true);
+    }
+
+    private void Uebernehmen(bool erzwingen)
+    {
+        if (_katalogZeile is null || Aufnehmen is null) return;
+
+        AufnahmeErgebnis aufnahme = Aufnehmen(_katalogZeile.Id, erzwingen);
+        if (!string.IsNullOrEmpty(aufnahme.Meldung)) Melden(aufnahme.Meldung, aufnahme.Fehler);
+        if (aufnahme.Zeile is null) return;
+
+        Zeilen.Add(aufnahme.Zeile);
+        ProjektZeileWaehlen(aufnahme.Zeile);
+    }
+
+    /// <summary>
+    /// „▶": Die GEWAEHLTE Zeile geht - auch bei Namensgleichheit. Der Vorlaeufer
+    /// brauchte dafuer eine Parallelliste (<c>_linkeListe</c>, Befund 4); hier ist die
+    /// Zeile selbst der Schluessel.
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_projektZeile is null) return;
+
+        ErzeugerZeile zeile = _projektZeile;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+
+        _projektZeile = null;
+        _detail = Leer("");
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+    }
+
+    // =================================================================================
+    // Katalogpflege
+    // =================================================================================
+
+    /// <summary>Der Parametersatz der offenen Katalogverwaltung; <c>null</c> = zu.</summary>
+    private IReadOnlyDictionary<string, object>? _verwaltungGaben;
+
+    /// <summary>Steht die Katalogverwaltung? (Prüfhilfe für Tests.)</summary>
+    public bool VerwaltungOffen => _verwaltungGaben is not null;
+
+    /// <summary>
+    /// Nach der Verwaltung die Katalogliste neu ziehen — genau das tat der Vorläufer
+    /// nach der Rückkehr aus dem zweiten Fenster.
+    /// </summary>
+    private void VerwaltungFertig(BrowserErgebnis? ergebnis)
+    {
+        _verwaltungGaben = null;
+        KatalogNeuLaden();
+    }
+
+    private async Task BeiBearbeiten()
+    {
+        if (VerwaltungGaben is null) return;
+        _verwaltungGaben = VerwaltungGaben();
+        await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// „Löschen": Ohne gewaehlten Katalogsatz sagt der Dialog das, statt nichts zu tun
+    /// (<c>PSP_MELDUNG_MODUL_WAEHLEN</c>).
+    /// </summary>
+    private void BeiLoeschen()
+    {
+        if (_katalogZeile is null) { Melden(MeldungModulWaehlen, true); return; }
+        _loeschfrage = true;
+    }
+
+    private void BeiLoeschfrage(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
+
+        if (!KatalogLoeschen(_katalogZeile.Id)) { Melden(MeldungLoeschFehler, true); return; }
+
+        _katalogZeile = null;
+        _detail = Leer("");
+        KatalogNeuLaden();
+    }
+
+    // =================================================================================
+    // Abschluss
+    // =================================================================================
+
+    private void Melden(string text, bool fehler)
+    {
+        _meldung = text;
+        _meldungStufe = fehler ? WarnStufe.Warnung : WarnStufe.Hinweis;
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_dublettenfrage is not null || _loeschfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

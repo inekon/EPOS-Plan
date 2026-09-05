@@ -1,0 +1,630 @@
+@* Das SIMULATIONSERGEBNIS als Seite (iU9-W11b.13).
+
+   VORBILD. WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail
+   (7 629 Z. + 3 082 Designer) samt DashboardForm, NavigatorUebersicht,
+   NavigatorStrom, NavigatorWaerme und Form_SpeicherVariantenVergleich - sechs
+   Masken, 11 031 Zeilen, 21 MessageBox.
+
+   ENTSCHEID R-W11-1. Die Komponente ist eine SEITE: SeitenZustand fuer den
+   Projektwechsel, ein Eintrag in Seitenschluessel und ein Zweig in AppWurzel,
+   damit iOS sie erreicht. Unter Windows erscheint sie BIS W16 in einer modalen
+   Dialoghuelle (BlazorDialogForm<SimulationErgebnisSeite>, 1 474 x 821,
+   Sizable) - nicht in einem neuen nicht-modalen Fenster. Gruende: (1) die
+   beiden Bedarfsobjekte gehoeren Form_Start und werden von hier
+   weitergeschrieben (Befund W11-B3) - nebeneinander offen waeren beide Fenster
+   im Streit; (2) dieselbe Entscheidung wie W10b; (3) die Nebenlaeufigkeit des
+   Laufs braucht kein nicht-modales Fenster, nur Task.Run in der Huelle.
+
+   EIN REITER FUER ZEHN BLAETTER (Befund W11-B11). Der Vorlaeufer fuehrte DREI
+   Navigationen fuer dieselbe Sache: die Reiterleiste tabControl_Simulation (auf
+   drei Reiter reduziert), die Menueliste listViewQuellen (acht Fachreiter, per
+   STEUERELEMENT-AUSLEIHE) und den TabListMapper, der tabControl_Einstellungen
+   noch einmal in eine Menueliste umbaute - zusammen rund 700 Zeilen. Der
+   Behaelter-Reiter „Simulation" (R3) war kein Fachreiter, sondern genau diese
+   Menueliste; er entfaellt, und aus elf Reitern werden ZEHN Blaetter.
+
+   BILDER ERST BEIM BETRETEN. Zwoelf PNG je Lauf im Voraus zu rechnen waere zu
+   teuer (Risiko der Vermessung § 11.5). Jedes Blatt fordert seine Bilder selbst
+   an, und die Seite haelt sie in einem Zwischenspeicher, dessen Schluessel die
+   Schalterstellung traegt. Ein neuer Lauf leert ihn.
+
+   DER AUTOMATIKSTART BLEIBT WOERTLICH (Befund W11-B48): Beim Oeffnen laeuft die
+   Simulation von selbst an, wenn das Projekt eine Konfigurationszeile fuehrt -
+   nur eben nebenlaeufig, mit Balken und Abbrechen (W11a.4). Die sichtbare
+   ENDLAGE ist wie bisher die „Uebersicht". *@
+
+@namespace EPOS.UI.Seiten.Simulation
+@implements IDisposable
+
+<div class="epos-simerg">
+
+    <div class="epos-simerg-kopf">
+        <span class="epos-simerg-titel">@Resource.SIMERG_TITEL</span>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_daten.Gesperrt)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_daten.Sperrgrund" />
+    }
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
+                 Abbrechen="@(Dienste?.Abbrechen is null ? null : EventCallback.Factory.Create(this, Abbrechen))"
+                 AbbrechenText="@Resource.OPT_BTN_ABBRUCH" />
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* Die Laufmeldungen als anklickbares Banner - der Vorlaeufer zeigte den
+       Volltext als ToolTip an einem programmatischen Label und beim Klick als
+       MessageBox (:3862). *@
+    @if (_daten.LaufmeldungenAnzahl > 0)
+    {
+        <button type="button" class="epos-simerg-knopf" @onclick="() => _volltext = true">
+            @(_daten.LaufmeldungenAnzahl == 1
+                ? Resource.SIM_LAUFMELDUNG_EINER
+                : string.Format(Resource.SIM_LAUFMELDUNG_MEHRERE, _daten.LaufmeldungenAnzahl))
+        </button>
+    }
+
+    <fieldset class="epos-simerg-bereich" disabled="@_daten.Gesperrt">
+
+        <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@Resource.SIMERG_TITEL">
+            <KindInhalt>
+
+                <Reiterblatt Schluessel="@Blatt.Parameter" Titel="@Resource.SIMERG_TAB_PARAMETER">
+                    <KindInhalt>
+                        <ParameterReiter Daten="@_daten.Parameter" Dienste="@Dienste"
+                                         Gesperrt="@_daten.Gesperrt"
+                                         OptimierungMoeglich="@(Dienste?.Sprung is not null)"
+                                         Optimierung="Optimierung" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+                <Reiterblatt Schluessel="@Blatt.Uebersicht" Titel="@Resource.SIMERG_TAB_UEBERSICHT">
+                    <KindInhalt>
+                        <UebersichtReiter Kennzahlen="@_daten.Kennzahlen" Daten="@_daten.Uebersicht"
+                                          Kuchen="@Bild(Bilder.UebersichtKuchen)"
+                                          RingWaerme="@Bild(Bilder.RingWaerme)"
+                                          RingStrom="@Bild(Bilder.RingStrom)"
+                                          BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+                <Reiterblatt Schluessel="@Blatt.Bedarf" Titel="@Resource.SIMERG_TAB_BEDARF">
+                    <KindInhalt>
+                        <BedarfReiter Daten="@_daten.Bedarf" Bild="BildHolen"
+                                      WaermeDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)"
+                                      StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)"
+                                      Csv="@Rueckruf(Dienste?.CsvBedarf)" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+                @if (_daten.ReiterWaermepumpe)
+                {
+                    <Reiterblatt Schluessel="@Blatt.Waermepumpe" Titel="@Resource.SIM_ERZEUGERNAME_WAERMEPUMPE">
+                        <KindInhalt>
+                            <WaermepumpeReiter Daten="@_daten.Waermepumpe" Bild="BildHolen"
+                                               Speichertemperaturen="@_daten.Speichertemperaturen"
+                                               ModulOeffnen="@(WpGabenDa ? EventCallback.Factory.Create(this, WaermepumpeOeffnen) : default)"
+                                               Csv="@Rueckruf(Dienste?.CsvWaermepumpe)" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                }
+
+                @if (_daten.ReiterHeizkessel)
+                {
+                    <Reiterblatt Schluessel="@Blatt.Heizkessel" Titel="@Resource.SIM_ERZEUGERNAME_HEIZKESSEL">
+                        <KindInhalt>
+                            <HeizkesselReiter Daten="@_daten.Heizkessel" Bild="BildHolen"
+                                              Brennstoffe="@_daten.KesselBrennstoffe"
+                                              BedarfVorhanden="@_daten.Uebersicht.WaermebedarfVorhanden"
+                                              Csv="@Rueckruf(Dienste?.CsvHeizkessel)" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                }
+
+                @if (_daten.ReiterSolarthermie)
+                {
+                    <Reiterblatt Schluessel="@Blatt.Solarthermie" Titel="@Resource.SIM_ERZEUGERNAME_SOLARTHERMIE">
+                        <KindInhalt>
+                            <SolarthermieReiter Daten="@_daten.Solarthermie" Bild="BildHolen" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                }
+
+                @if (_daten.ReiterBhkw)
+                {
+                    <Reiterblatt Schluessel="@Blatt.Bhkw" Titel="@Resource.SIM_ERZEUGERNAME_BHKW">
+                        <KindInhalt>
+                            <BhkwReiter Daten="@_daten.Bhkw" Bild="BildHolen"
+                                        Brennstoffe="@_daten.BhkwBrennstoffe"
+                                        Praesent="@_daten.Uebersicht.Bhkw"
+                                        WaermebedarfVorhanden="@_daten.Uebersicht.WaermebedarfVorhanden"
+                                        StrombedarfVorhanden="@_daten.Uebersicht.StrombedarfVorhanden" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                }
+
+                @if (_daten.ReiterPhotovoltaik)
+                {
+                    <Reiterblatt Schluessel="@Blatt.Photovoltaik" Titel="@Resource.SIM_PHOTOVOLTAIK">
+                        <KindInhalt>
+                            <PhotovoltaikReiter Daten="@_daten.Photovoltaik" Bild="BildHolen" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                }
+
+                @if (_daten.ReiterStromspeicher)
+                {
+                    <Reiterblatt Schluessel="@Blatt.Stromspeicher" Titel="@Resource.SIM_STROMSPEICHER">
+                        <KindInhalt>
+                            <StromspeicherReiter Daten="@_daten.Speicher" Bild="BildHolen"
+                                                 Csv="@Rueckruf(Dienste?.CsvSpeicher)"
+                                                 Vergleich="@(Dienste?.VergleichRechnen is null ? default : EventCallback.Factory.Create(this, VergleichOeffnen))" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                }
+
+                <Reiterblatt Schluessel="@Blatt.Ergebnis" Titel="@Resource.SIM_ERGEBNIS">
+                    <KindInhalt>
+                        <ErgebnisReiter Autarkie="@_daten.Autarkie" Bild="BildHolen"
+                                        KapazitaetGeaendert="KapazitaetGeaendert"
+                                        UebersichtInhalt="@UebersichtNavigator"
+                                        WaermegangInhalt="@Waermegang"
+                                        StromgangInhalt="@Stromgang" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+            </KindInhalt>
+        </Reiter>
+
+    </fieldset>
+
+    <div class="epos-simerg-fuss">
+        <button type="button" @onclick="LaufStarten" disabled="@(_laeuft || _daten.Gesperrt)">
+            @Resource.SIMERG_BTN_SIMULATION
+        </button>
+
+        @if (Dienste?.KonfigurationGaben is not null)
+        {
+            <button type="button" @onclick="KonfigurationOeffnen" disabled="@_laeuft">
+                @Resource.SIMERG_BTN_KONFIGURATION
+            </button>
+        }
+
+        @* „Ergebnis speichern" nur nach einem VOLLSTAENDIGEN Lauf - die
+           Zustandsmaschine aus Nacharbeit Paket 8, Befund N1. *@
+        <button type="button" @onclick="ErgebnisSpeichern"
+                disabled="@(_laeuft || !_daten.ErgebnisGueltig)">
+            @Resource.SIM_TITEL_ERGEBNIS_SPEICHERN
+        </button>
+
+        @if (Geschlossen.HasDelegate)
+        {
+            <button type="button" @onclick="Geschlossen">@Resource.SIMERG_BTN_BEENDEN</button>
+        }
+    </div>
+
+    @* ================================================================
+       Die Ueberlagerungen - alles in EINEM Fenster (Risiko R2)
+       ================================================================ *@
+
+    @if (_volltext)
+    {
+        <Ueberlagerung Offen="true" Titel="@Resource.SIM_TITEL_MELDUNGEN_LAUF"
+                       Geschlossen="() => _volltext = false">
+            <KindInhalt>
+                <Textfeld Wert="@_daten.Laufmeldungen" Mehrzeilig="true" Zeilen="12"
+                          NurLesen="true" Festbreite="true" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_konfiguration is not null)
+    {
+        <Ueberlagerung Offen="true" Titel="@Resource.SIM_KONFIG_TITEL" Geschlossen="KonfigurationFertig">
+            <KindInhalt>
+                <SimulationKonfigSeite @attributes="_konfiguration"
+                                       Geschlossen="KonfigurationFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_bedarf is not null)
+    {
+        <Ueberlagerung Offen="true" Titel="@Resource.SIMERG_TAB_BEDARF" Geschlossen="() => _bedarf = null">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Bedarf.BedarfErgebnisDialog @attributes="_bedarf"
+                                                             Geschlossen="() => _bedarf = null" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_waermepumpe is not null)
+    {
+        <Ueberlagerung Offen="true" Titel="@Resource.SIM_ERZEUGERNAME_WAERMEPUMPE"
+                       Geschlossen="() => _waermepumpe = null">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog @attributes="_waermepumpe"
+                                                                Geschlossen="WaermepumpeFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_vergleichOffen)
+    {
+        <Ueberlagerung Offen="true" Titel="@Resource.VAR_VGL_TITEL" Geschlossen="VergleichSchliessen">
+            <KindInhalt>
+                <SpeicherVariantenVergleich Daten="@_vergleich" Laeuft="@_vergleichLaeuft"
+                                            Anteil="@_vergleichAnteil"
+                                            FortschrittText="@_vergleichText"
+                                            AktivSetzen="VarianteAktivSetzen"
+                                            Csv="@(Dienste?.VergleichCsv is null ? default : EventCallback.Factory.Create(this, VergleichCsv))"
+                                            Geschlossen="VergleichSchliessen" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+</div>
+
+@code {
+    /// <summary>Die sprachneutralen Schluessel der zehn Blaetter.</summary>
+    public static class Blatt
+    {
+        public const string Parameter = "PARAMETER";
+        public const string Uebersicht = "UEBERSICHT";
+        public const string Bedarf = "BEDARF";
+        public const string Waermepumpe = "WAERMEPUMPE";
+        public const string Heizkessel = "HEIZKESSEL";
+        public const string Solarthermie = "SOLARTHERMIE";
+        public const string Bhkw = "BHKW";
+        public const string Photovoltaik = "PHOTOVOLTAIK";
+        public const string Stromspeicher = "STROMSPEICHER";
+        public const string Ergebnis = "ERGEBNIS";
+    }
+
+    // =====================================================================
+    // Parameter
+    // =====================================================================
+
+    /// <summary>Die Datenseite; ohne sie zeigt die Seite ein leeres Ergebnis.</summary>
+    [Parameter] public SimulationErgebnisDienste? Dienste { get; set; }
+
+    /// <summary>Der geteilte Zustand der Huelle: Projektwechsel und Auffrischen.</summary>
+    [Parameter] public EPOS.UI.Dienste.SeitenZustand? Zustand { get; set; }
+
+    /// <summary>Das Projekt beim Aufbau, wenn kein <see cref="Zustand"/> gesetzt ist.</summary>
+    [Parameter] public int StartProjekt { get; set; }
+
+    /// <summary>Die Seite moechte geschlossen werden („Beenden").</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>
+    /// Startet der Lauf beim Oeffnen von selbst? Woertlich <c>true</c>
+    /// (Befund W11-B48); die Proben schalten ihn ab.
+    /// </summary>
+    [Parameter] public bool Automatikstart { get; set; } = true;
+
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Simulation_Detail.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private SimulationErgebnisDaten _daten = new SimulationErgebnisDaten();
+    private readonly Dictionary<string, byte[]?> _bilder = new Dictionary<string, byte[]?>();
+
+    private Reiter? _reiter;
+    private string _blatt = Blatt.Parameter;
+
+    private bool _laeuft;
+    private double? _anteil;
+    private string _fortschrittText = "";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    private bool _volltext;
+    private IReadOnlyDictionary<string, object>? _konfiguration;
+    private IReadOnlyDictionary<string, object>? _bedarf;
+    private IReadOnlyDictionary<string, object>? _waermepumpe;
+
+    private bool _vergleichOffen;
+    private bool _vergleichLaeuft;
+    private double? _vergleichAnteil;
+    private string _vergleichText = "";
+    private VergleichDaten _vergleich = new VergleichDaten();
+
+    private bool _startGelaufen;
+
+    /// <summary>Das offene Projekt.</summary>
+    public int IdProjekt => Zustand?.ProjektId ?? StartProjekt;
+
+    /// <summary>Das sichtbare Blatt (Pruefhilfe).</summary>
+    public string AktivesBlatt => _reiter?.AktiverSchluessel ?? _blatt;
+
+    /// <summary>Laeuft die Simulation gerade? (Pruefhilfe)</summary>
+    public bool Laeuft => _laeuft;
+
+    private bool BedarfGabenDa => Dienste?.BedarfGaben is not null;
+    private bool WpGabenDa => Dienste?.WaermepumpenGaben is not null;
+
+    // =====================================================================
+    // Laden
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        if (Zustand is not null) Zustand.Geaendert += BeiZustand;
+        Neuladen();
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
+    }
+
+    private void BeiZustand()
+        => _ = InvokeAsync(() => { Neuladen(); StateHasChanged(); });
+
+    private void Neuladen()
+    {
+        _bilder.Clear();
+        _daten = Dienste?.Laden?.Invoke(IdProjekt) ?? new SimulationErgebnisDaten();
+    }
+
+    /// <summary>
+    /// Der AUTOMATIKSTART (Befund W11-B48) — woertlich wie in
+    /// <c>Form_Simulation_Detail_Load</c> :3325-3336: Bei Sperre geht es ohne Lauf
+    /// auf die „Uebersicht"; sonst laeuft die Simulation an, und die sichtbare
+    /// Endlage ist ebenfalls die „Uebersicht".
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _startGelaufen) return;
+        _startGelaufen = true;
+
+        if (_daten.Gesperrt)
+        {
+            Blattwahl(Blatt.Uebersicht);
+            StateHasChanged();
+            return;
+        }
+
+        if (!Automatikstart || Dienste?.Laufen is null) return;
+
+        await LaufStarten();
+        Blattwahl(Blatt.Uebersicht);
+        StateHasChanged();
+    }
+
+    private void Blattwahl(string schluessel)
+    {
+        // Der Reiter liest Aktiv beim naechsten Zeichnen - das Bindepaar
+        // gehoert dem Wirt (Baustein Reiter, Kopfkommentar).
+        _blatt = schluessel;
+    }
+
+    // =====================================================================
+    // Der Lauf
+    // =====================================================================
+
+    private async Task LaufStarten()
+    {
+        if (_laeuft || Dienste?.Laufen is null) return;
+
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = Resource.SIMERG_LAUF_LAEUFT;
+        _meldung = "";
+        StateHasChanged();
+
+        Rueckmeldung antwort;
+        try
+        {
+            antwort = await Dienste.Laufen(Melden);
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+
+        Neuladen();
+
+        if (!antwort.Erfolg && !string.IsNullOrEmpty(antwort.Text))
+        {
+            _meldung = antwort.Text;
+            _meldungStufe = WarnStufe.Fehler;
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Die Phasenmeldung des Kerns. Sie kommt aus dem Hintergrundfaden ueber
+    /// <c>Progress&lt;T&gt;</c> - also bereits auf dem Bedienfaden.
+    /// </summary>
+    private void Melden(double? anteil, string text)
+    {
+        _anteil = anteil;
+        _fortschrittText = string.IsNullOrEmpty(text) ? Resource.SIMERG_LAUF_LAEUFT : text;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void Abbrechen() => Dienste?.Abbrechen?.Invoke();
+
+    private void ErgebnisSpeichern()
+    {
+        Rueckmeldung antwort = Dienste?.Speichern?.Invoke() ?? Rueckmeldung.Still;
+        _meldung = antwort.Text;
+        _meldungStufe = antwort.Erfolg ? WarnStufe.Erfolg : WarnStufe.Fehler;
+    }
+
+    // =====================================================================
+    // Bilder - erst beim Betreten, dann zwischengespeichert
+    // =====================================================================
+
+    private byte[]? BildHolen(Bildauftrag auftrag)
+    {
+        if (Dienste?.Bild is null) return null;
+
+        string schluessel = auftrag.Schluessel;
+        if (_bilder.TryGetValue(schluessel, out byte[]? vorhanden)) return vorhanden;
+
+        byte[]? neu = Dienste.Bild(auftrag);
+        _bilder[schluessel] = neu;
+        return neu;
+    }
+
+    private byte[]? Bild(string bild) => BildHolen(new Bildauftrag(bild));
+
+    // =====================================================================
+    // Die Ueberlagerungen
+    // =====================================================================
+
+    private void KonfigurationOeffnen() => _konfiguration = Dienste?.KonfigurationGaben?.Invoke();
+
+    /// <summary>
+    /// Nach der Konfiguration: neu laden (die Reiterleiste haengt an
+    /// <c>Tool_1..6</c>) und auf dem gemerkten Blatt bleiben — genau der Grund,
+    /// aus dem der Vorlaeufer <c>mainTabPageIndex</c> fuehrte.
+    /// </summary>
+    private void KonfigurationFertig()
+    {
+        _konfiguration = null;
+        Neuladen();
+    }
+
+    private void BedarfOeffnen(bool waerme) => _bedarf = Dienste?.BedarfGaben?.Invoke(waerme);
+
+    private void WaermepumpeOeffnen() => _waermepumpe = Dienste?.WaermepumpenGaben?.Invoke();
+
+    /// <summary>
+    /// Der Waermepumpendialog meldet <c>true</c>, wenn die Auswahl uebernommen
+    /// wurde; dann schreibt die Huelle die Anlagen um und die Seite laedt neu
+    /// (woertlich <c>listView_SimWP_MouseDown</c> :5145-5150).
+    /// </summary>
+    private void WaermepumpeFertig(bool uebernommen)
+    {
+        _waermepumpe = null;
+        Dienste?.WaermepumpenFertig?.Invoke(uebernommen);
+        Neuladen();
+    }
+
+    private async Task Optimierung()
+    {
+        if (Dienste?.Sprung is null) return;
+
+        bool uebernommen = await Dienste.Sprung(
+            EPOS.UI.Dialoge.Allgemein.Sprungziel.SpeicherOptimierung);
+
+        // Nach einer Uebernahme des Bestpunkts die Variante neu lesen; NEU
+        // GERECHNET wird bewusst nicht - das entscheidet der Anwender (:5985-5990).
+        if (uebernommen) Neuladen();
+    }
+
+    private async Task VergleichOeffnen()
+    {
+        if (Dienste?.VergleichRechnen is null) return;
+
+        _vergleichOffen = true;
+        _vergleichLaeuft = true;
+        _vergleichAnteil = null;
+        _vergleichText = "";
+        StateHasChanged();
+
+        try
+        {
+            _vergleich = await Dienste.VergleichRechnen(VergleichMelden);
+        }
+        finally
+        {
+            _vergleichLaeuft = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private void VergleichMelden(double? anteil, string text)
+    {
+        _vergleichAnteil = anteil;
+        _vergleichText = text;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void VergleichSchliessen()
+    {
+        _vergleichOffen = false;
+        _vergleich = new VergleichDaten();
+    }
+
+    /// <summary>
+    /// Nach dem Umstellen der aktiven Variante laedt die Parameterseite neu — sie
+    /// zeigt immer die AKTIVE Variante. Neu gerechnet wird bewusst nicht
+    /// (<c>btn_SpVariantenVergleich_Click</c> :7259-7267).
+    /// </summary>
+    private void VarianteAktivSetzen(int idAnlage)
+    {
+        Rueckmeldung antwort = Dienste?.VarianteAktivSetzen?.Invoke(idAnlage) ?? Rueckmeldung.Still;
+        if (!antwort.Erfolg)
+        {
+            _meldung = antwort.Text;
+            _meldungStufe = WarnStufe.Fehler;
+            return;
+        }
+
+        Neuladen();
+    }
+
+    private async Task VergleichCsv()
+    {
+        if (Dienste?.VergleichCsv is null) return;
+
+        Rueckmeldung antwort = await Dienste.VergleichCsv();
+        if (!string.IsNullOrEmpty(antwort.Text))
+        {
+            _meldung = antwort.Text;
+            _meldungStufe = antwort.Erfolg ? WarnStufe.Erfolg : WarnStufe.Fehler;
+        }
+    }
+
+    private void KapazitaetGeaendert(double kwh)
+    {
+        AutarkieDaten? neu = Dienste?.AutarkieRechnen?.Invoke(kwh);
+        if (neu is null) return;
+
+        _daten.Autarkie = neu;
+
+        // Das Monatsbild haengt an der Kapazitaet - sein Schluessel traegt sie,
+        // der Zwischenspeicher trennt die Staende also von selbst.
+        StateHasChanged();
+    }
+
+    // =====================================================================
+    // Die Inhalte des Ergebnisreiters
+    // =====================================================================
+
+    private RenderFragment UebersichtNavigator => @<UebersichtReiter
+        Kennzahlen="@_daten.Kennzahlen" Daten="@_daten.Uebersicht" NurNavigator="true"
+        RingWaerme="@Bild(Bilder.RingWaerme)" RingStrom="@Bild(Bilder.RingStrom)"
+        BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)" />;
+
+    private RenderFragment Waermegang => @<WaermegangReiter
+        Daten="@_daten.Waermegang" Bild="BildHolen"
+        Csv="@(Dienste?.CsvWaermegang is null ? default
+                : EventCallback.Factory.Create<(int, IReadOnlyList<string>, IReadOnlyList<string>)>(
+                      this, w => Dienste!.CsvWaermegang!(w.Item1, w.Item2, w.Item3)))" />;
+
+    private RenderFragment Stromgang => @<StromgangReiter
+        Daten="@_daten.Stromgang" Bild="BildHolen"
+        Csv="@(Dienste?.CsvStromgang is null ? default
+                : EventCallback.Factory.Create<IReadOnlyList<string>>(this, r => Dienste!.CsvStromgang!(r)))" />;
+
+    /// <summary>Ein Rueckruf aus einem Delegaten; ohne Delegat bleibt der Knopf weg.</summary>
+    private EventCallback Rueckruf(Action? aktion)
+        => aktion is null ? default : EventCallback.Factory.Create(this, aktion);
+}

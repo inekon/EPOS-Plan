@@ -1,0 +1,556 @@
+﻿@* Verwaltung BHKW - der PROJEKTDIALOG (iU9-W6.4).
+
+   VORBILD. Views/BHKW/Form_BHKWEing (940 Z., lokalisiert - die .en-US.resx
+   traegt nur Masse, keine Texte -, 31 Kartenzeilen, 12 MessageBox). Dasselbe
+   Muster wie der Heizkessel (W6.3): links "Ausgewaehlte Module", rechts
+   "Module in Datenbank", dazwischen ◀ und ▶.
+
+   ZWEI UNTERSCHIEDE ZUM HEIZKESSEL.
+   * Die Katalogliste hat ZWEI Spalten. Der Vorlaeufer baute dafuer ein
+     DataGridView mit "Name" und einem Mehrzeiler "Eigenschaften" (Firma,
+     Brennstoff, Ptherm, Pel). Hier stehen beide Spalten im Raster; die zweite
+     bricht an ihren Zeilenumbruechen.
+   * Unten steht die SUMME der thermischen Leistungen aller gewaehlten Module
+     (SummeLeistung, Z. 765). Sie wird nach jedem ◀ und ▶ neu erfragt - die
+     Komponente rechnet sie nicht selbst, sie kennt die Ptherm der Geraete
+     nicht.
+
+   DER KATALOG LAESST SICH HIER PFLEGEN: "Bearbeiten…" und "Neu…" oeffnen den
+   Katalogeditor aus W6.2 in einer Ueberlagerung, "Loeschen" fragt nach - und
+   lehnt einen Auslieferungssatz (ReadOnly) mit Begruendung ab, statt ihn
+   anzubieten.
+
+   Alles Uebrige - geteilte Liste, Traegerwahl vor dem Hinzufuegen,
+   Assistentenbetrieb, Tastatur - ist wie in HeizkesselDialog; dort steht die
+   ausfuehrliche Begruendung.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
+   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+
+        <Links>
+            <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_projektZeile == context)" Kurztext="@SpalteWahl"
+                                    Gewaehltwerden="() => ProjektZeileWaehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@LabelProjektliste" />
+                </KindInhalt>
+            </Raster>
+
+            <Textfeld Bezeichnung="@LabelSumme" Wert="@_summeText" NurLesen="true" />
+        </Links>
+
+        <Rechts>
+            <Auswahlfeld Bezeichnung="@LabelFilterBrennstoff" Eintraege="@_gruppenEintraege"
+                         Auswahl="@_gruppe" AuswahlChanged="BeiGruppe" />
+            <Auswahlfeld Bezeichnung="@LabelFilterLeistung" Eintraege="@_stufenEintraege"
+                         Auswahl="@_stufe" AuswahlChanged="BeiStufe" />
+
+            <Raster TZeile="KatalogZeile" Zeilen="@_katalog.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="KatalogZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_katalogZeile == context)" Kurztext="@SpalteWahl"
+                                    Gewaehltwerden="() => KatalogZeileWaehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="KatalogZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@SpalteName" />
+                    <TemplateColumn TGridItem="KatalogZeile" Title="@SpalteEigenschaften">
+                        <span class="epos-mehrzeilig">@context.Eigenschaften</span>
+                    </TemplateColumn>
+                </KindInhalt>
+            </Raster>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                        @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
+                <button type="button" class="epos-knopf" @onclick="() => _namensfrage = true">@BtnNeuText</button>
+                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                        @onclick="BeiLoeschen">@BtnLoeschenText</button>
+            </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
+
+    <Gruppenkopf Titel="@GruppeModul">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
+            @foreach (var feld in _detail.Felder)
+            {
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+            }
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detail.Beschreibung"
+                      NurLesen="true" Mehrzeilig="true" Zeilen="2" />
+
+            @if (_projektZeile is not null)
+            {
+                <Auswahlfeld Bezeichnung="@LabelTraeger" Eintraege="@_varianten"
+                             Auswahl="@(_projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
+                             AuswahlChanged="BeiTraegerwechsel" />
+                <div class="epos-feldpaar">
+                    <Zahlenfeld Bezeichnung="@LabelGrenzleistung" Einheit="%"
+                                Wert="@_projektZeile.Grenzleistung" WertChanged="BeiGrenzleistung" />
+                    <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
+                                  Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
+                    <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
+                                  Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
+                </div>
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!Wizard)
+    {
+        <KostenKnoepfeLeiste KostenOeffnen="@KostenOeffnen" EnergiekostenOeffnen="@EnergiekostenOeffnen"
+                             InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
+                             EnergieText="@KostenEnergieText" />
+
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+
+    @* Traegerwahl vor dem Hinzufuegen. *@
+    <Ueberlagerung Offen="@(_traegerGaben is not null)" Schliessbar="false"
+                   Titel="@TraegerTitel" Geschlossen="() => TraegerFertig(null)">
+        <KindInhalt>
+            @if (_traegerGaben is not null)
+            {
+                <EnergietraegerVarianteDialog @attributes="_traegerGaben" Geschlossen="TraegerFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* Katalogeditor - "Bearbeiten…" laedt den Satz, "Neu…" fragt zuerst den Namen. *@
+    <Ueberlagerung Offen="@(_editorGaben is not null)" Schliessbar="false"
+                   Titel="@EditorTitel" Geschlossen="() => EditorFertig(null)">
+        <KindInhalt>
+            @if (_editorGaben is not null)
+            {
+                <BhkwKatalogDialog @attributes="_editorGaben" Geschlossen="EditorFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* "Neu…": erst der Name, dann der Editor - beides in derselben Ueberlagerung. *@
+    <Ueberlagerung Offen="@_namensfrage" Schliessbar="false" Titel="@BtnNeuText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnNeuText" FrageText="@LabelName"
+                          MeldungLeer="@MeldungNameFehlt" OkText="@OkText"
+                          AbbrechenText="@AbbrechenText" Geschlossen="BeiNeuemNamen" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
+                Frage="@(string.Format(FrageLoeschen, _katalogZeile?.Bezeichner ?? ""))"
+                Beantwortet="BeiLoeschfrage" />
+</div>
+
+@code {
+    /// <summary>Die Zeilen der linken Liste — sie gehört der Hülle und wird in place bearbeitet.</summary>
+    [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
+
+    /// <summary>Die Brennstoffgruppen des Filters, „Alle" voran (Index 0).</summary>
+    [Parameter] public IReadOnlyList<string> Gruppen { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die acht Leistungsstufen, „Alle" voran (Index 0).</summary>
+    [Parameter] public IReadOnlyList<string> Leistungsstufen { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die Katalogliste zu Gruppe und Stufe (<c>BHKWStammCtrl.Filtern</c>).</summary>
+    [Parameter] public Func<string, int, IReadOnlyList<KatalogZeile>>? Filtern { get; set; }
+
+    /// <summary>Der Detailblock zu einem KATALOGsatz.</summary>
+    [Parameter] public Func<string, ErzeugerDetail?>? KatalogDetail { get; set; }
+
+    /// <summary>Der Detailblock zu einer PROJEKTzeile (über ihren Bezeichner).</summary>
+    [Parameter] public Func<string, ErzeugerDetail?>? ProjektDetail { get; set; }
+
+    /// <summary>Die Trägervarianten der Gruppe eines Trägers.</summary>
+    [Parameter] public Func<int, IReadOnlyList<(int Id, string Text)>>? Varianten { get; set; }
+
+    /// <summary>Stammwerte und Auswahlliste vor dem Trägerdialog.</summary>
+    [Parameter] public Func<int, TraegerVorbereitung>? Vorbereiten { get; set; }
+
+    /// <summary>Nimmt die Zeile auf (Träger anlegen, Projektkopie, Modell in die Liste).</summary>
+    [Parameter] public Func<int, EnergietraegerVarianteErgebnis, AufnahmeErgebnis>? Aufnehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste (und ggf. die Projektkopie).</summary>
+    [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary>Hängt die Projektzuordnung auf einen anderen Träger um — SCHREIBT SOFORT.</summary>
+    [Parameter] public Action<ErzeugerZeile, int>? TraegerWechseln { get; set; }
+
+    /// <summary>Übernimmt geänderte Zeilenwerte (Grenzleistung, Vorlauf, Rücklauf).</summary>
+    [Parameter] public Action<ErzeugerZeile>? Uebernehmen { get; set; }
+
+    /// <summary>
+    /// Die Summe der thermischen Leistungen aller gewählten Module, fertig formatiert.
+    /// Die Komponente kennt die Ptherm der Geräte nicht und rechnet sie nicht.
+    /// </summary>
+    [Parameter] public Func<string>? SummePtherm { get; set; }
+
+    /// <summary>Der Parametersatz des Katalogeditors zu einem Namen; <c>null</c> = kein Knopf.</summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? EditorGaben { get; set; }
+
+    /// <summary>Der Parametersatz des Katalogeditors für einen NEUEN Satz.</summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? EditorGabenNeu { get; set; }
+
+    /// <summary>Der Parametersatz des Trägerdialogs.</summary>
+    [Parameter] public Func<TraegerVorbereitung, IReadOnlyDictionary<string, object>>? TraegerGaben { get; set; }
+
+    /// <summary>
+    /// Löscht einen KATALOGsatz. Leere Rückgabe = gelöscht; sonst der Grund — ein
+    /// Auslieferungssatz (ReadOnly) darf nicht gelöscht werden.
+    /// </summary>
+    [Parameter] public Func<int, string>? KatalogLoeschen { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen- und keine Kostenleiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Kostenleiste ----------------------------------------------------------
+
+    [Parameter] public Func<bool, Task>? KostenOeffnen { get; set; }
+    [Parameter] public Func<Task>? EnergiekostenOeffnen { get; set; }
+    [Parameter] public string KostenInvestText { get; set; } = "Investitionskosten…";
+    [Parameter] public string KostenBetriebText { get; set; } = "Betriebskosten…";
+    [Parameter] public string KostenEnergieText { get; set; } = "Energiekosten…";
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Verwaltung BHKW";
+    [Parameter] public string KopfbandText { get; set; } = "Geben Sie Daten zu BHKW ein";
+    [Parameter] public string LabelProjektliste { get; set; } = "Ausgewählte Module:";
+    [Parameter] public string LabelKatalogliste { get; set; } = "Module in Datenbank:";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string SpalteEigenschaften { get; set; } = "Eigenschaften";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string LabelSumme { get; set; } = "Summe aller ausgewählten Module [kWth]:";
+    [Parameter] public string LabelFilterBrennstoff { get; set; } = "Filtern nach Brennstoffart";
+    [Parameter] public string LabelFilterLeistung { get; set; } = "Filtern nach Leistung";
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
+    [Parameter] public string BtnNeuText { get; set; } = "Neu..";
+    [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
+    [Parameter] public string GruppeModul { get; set; } = "Modul";
+    [Parameter] public string LabelName { get; set; } = "Modul-Name:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string LabelTraeger { get; set; } = "Brennstoff:";
+    [Parameter] public string LabelGrenzleistung { get; set; } = "Untere Grenzleistung des ausgewählten Moduls:";
+    [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf";
+    [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf";
+    [Parameter] public string TraegerTitel { get; set; } = "Energieträger Variante";
+    [Parameter] public string EditorTitel { get; set; } = "BHKW Eigenschaften";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Die Rückfrage vor dem Löschen (<c>btn_DBBHKW_Löschen_Click</c>).</summary>
+    [Parameter] public string FrageLoeschen { get; set; } = "Wollen Sie wirklich das BHKW löschen?";
+
+    [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
+    [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Namen eingeben!";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_BHKWEing.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private ErzeugerZeile? _projektZeile;
+    private KatalogZeile? _katalogZeile;
+    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private IReadOnlyList<(int Id, string Text)> _varianten = Array.Empty<(int, string)>();
+    private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
+
+    private int? _gruppe = 0;
+    private int? _stufe = 0;
+    private string _summeText = "0";
+
+    private IReadOnlyDictionary<string, object>? _traegerGaben;
+    private IReadOnlyDictionary<string, object>? _editorGaben;
+    private bool _namensfrage;
+    private bool _loeschfrage;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private IReadOnlyList<(int Id, string Text)> _gruppenEintraege = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _stufenEintraege = Array.Empty<(int, string)>();
+
+    /// <summary>Die gewaehlte Projektzeile (Pruefhilfe fuer Tests).</summary>
+    public ErzeugerZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewaehlte Katalogzeile (Pruefhilfe fuer Tests).</summary>
+    public KatalogZeile? Katalogzeile => _katalogZeile;
+
+    /// <summary>Steht die Traegerwahl? (Pruefhilfe fuer Tests.)</summary>
+    public bool Traegerwahl => _traegerGaben is not null;
+
+    /// <summary>Steht der Katalogeditor? (Pruefhilfe fuer Tests.)</summary>
+    public bool Katalogeditor => _editorGaben is not null;
+
+    /// <summary>Die angezeigte Leistungssumme (Pruefhilfe fuer Tests).</summary>
+    public string Summe => _summeText;
+
+    /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    protected override void OnParametersSet()
+    {
+        _gruppenEintraege = Nummeriert(Gruppen);
+        _stufenEintraege = Nummeriert(Leistungsstufen);
+    }
+
+    protected override void OnInitialized()
+    {
+        KatalogNeuLaden();
+        SummeNeu();
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private static IReadOnlyList<(int Id, string Text)> Nummeriert(IReadOnlyList<string> texte)
+    {
+        var liste = new List<(int, string)>();
+        for (int i = 0; i < texte.Count; i++) liste.Add((i, texte[i]));
+        return liste;
+    }
+
+    private void SummeNeu() { if (SummePtherm is not null) _summeText = SummePtherm(); }
+
+    // =================================================================================
+    // Filter und Listen
+    // =================================================================================
+
+    private void KatalogNeuLaden()
+    {
+        if (Filtern is null) return;
+
+        string gruppe = (_gruppe.HasValue && _gruppe.Value < Gruppen.Count) ? Gruppen[_gruppe.Value] : "";
+        _katalog = Filtern(gruppe, _stufe ?? 0);
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+    }
+
+    private void BeiGruppe(int? id) { _gruppe = id ?? 0; KatalogNeuLaden(); }
+
+    private void BeiStufe(int? id) { _stufe = id ?? 0; KatalogNeuLaden(); }
+
+    /// <summary>
+    /// Eine PROJEKTzeile waehlen: Detail aus der Projektkopie (im Assistenten aus dem
+    /// Stamm - das entscheidet die Huelle), Grenzleistung, Vorlauf, Ruecklauf und die
+    /// Traegerliste der Gruppe (<c>ApplySelectedBHKW</c>).
+    /// </summary>
+    private void ProjektZeileWaehlen(ErzeugerZeile zeile)
+    {
+        _projektZeile = zeile;
+        _katalogZeile = null;
+        _varianten = Varianten is not null ? Varianten(zeile.CarrierId) : Array.Empty<(int, string)>();
+        _detail = (ProjektDetail is not null ? ProjektDetail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+    }
+
+    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    {
+        _katalogZeile = zeile;
+        _projektZeile = null;
+        _varianten = Array.Empty<(int, string)>();
+        _detail = (KatalogDetail is not null ? KatalogDetail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+    }
+
+    private static ErzeugerDetail Leer(string name)
+        => new(name, "", Array.Empty<(string, string)>());
+
+    // =================================================================================
+    // Hinzufuegen und Entfernen
+    // =================================================================================
+
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null || Vorbereiten is null || TraegerGaben is null) return;
+
+        TraegerVorbereitung vor = Vorbereiten(_katalogZeile.Id);
+        if (!string.IsNullOrEmpty(vor.Meldung)) { Melden(vor.Meldung, true); return; }
+
+        _traegerGaben = TraegerGaben(vor);
+    }
+
+    private void TraegerFertig(EnergietraegerVarianteErgebnis? ergebnis)
+    {
+        var katalog = _katalogZeile;
+        _traegerGaben = null;
+
+        if (ergebnis is null || katalog is null || Aufnehmen is null) return;
+
+        AufnahmeErgebnis aufnahme = Aufnehmen(katalog.Id, ergebnis);
+        if (!string.IsNullOrEmpty(aufnahme.Meldung)) Melden(aufnahme.Meldung, aufnahme.Fehler);
+        if (aufnahme.Zeile is null) return;
+
+        Zeilen.Add(aufnahme.Zeile);
+        ProjektZeileWaehlen(aufnahme.Zeile);
+        SummeNeu();
+    }
+
+    /// <summary>
+    /// „▶": Zeile weg, Summe neu. Steht danach keine Zeile mehr da, waehlt der
+    /// Vorlaeufer die erste Katalogzeile und setzt die Grenzleistung auf „0"
+    /// (<c>btn_BHKW_Löschen_Click</c>, Z. 749-758).
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_projektZeile is null) return;
+
+        ErzeugerZeile zeile = _projektZeile;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+
+        _projektZeile = null;
+        _detail = Leer("");
+        _varianten = Array.Empty<(int, string)>();
+        SummeNeu();
+
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+        else if (_katalog.Count > 0) KatalogZeileWaehlen(_katalog[0]);
+    }
+
+    // =================================================================================
+    // Zeilenwerte
+    // =================================================================================
+
+    private void BeiTraegerwechsel(int? neu)
+    {
+        if (_projektZeile is null || !neu.HasValue) return;
+        if (neu.Value == _projektZeile.CarrierId) return;
+
+        TraegerWechseln?.Invoke(_projektZeile, neu.Value);
+        _projektZeile.CarrierId = neu.Value;
+    }
+
+    private void BeiGrenzleistung(double? wert)
+    {
+        if (_projektZeile is null) return;
+        _projektZeile.Grenzleistung = wert;
+        Uebernehmen?.Invoke(_projektZeile);
+    }
+
+    private void BeiVorlauf(int? wert)
+    {
+        if (_projektZeile is null) return;
+        _projektZeile.Vorlauf = wert;
+        Uebernehmen?.Invoke(_projektZeile);
+    }
+
+    private void BeiRuecklauf(int? wert)
+    {
+        if (_projektZeile is null) return;
+        _projektZeile.Ruecklauf = wert;
+        Uebernehmen?.Invoke(_projektZeile);
+    }
+
+    // =================================================================================
+    // Katalogpflege
+    // =================================================================================
+
+    private void BeiKatalogBearbeiten()
+    {
+        if (_katalogZeile is null || EditorGaben is null) return;
+        _editorGaben = EditorGaben(_katalogZeile.Bezeichner);
+    }
+
+    /// <summary>„Neu…": Erst der Name, dann derselbe Editor im Modus „Neu".</summary>
+    private void BeiNeuemNamen(string? name)
+    {
+        _namensfrage = false;
+        if (name is null || EditorGabenNeu is null) return;
+        _editorGaben = EditorGabenNeu(name);
+    }
+
+    private void EditorFertig(string? name)
+    {
+        _editorGaben = null;
+        if (name is null) return;
+
+        KatalogNeuLaden();
+        foreach (var z in _katalog)
+            if (z.Bezeichner == name) { KatalogZeileWaehlen(z); return; }
+    }
+
+    /// <summary>
+    /// „Löschen": Ein Auslieferungssatz wird mit Begruendung abgelehnt, BEVOR die
+    /// Rueckfrage kommt - genau die Reihenfolge des Vorlaeufers (IsReadOnly, dann
+    /// Ja/Nein).
+    /// </summary>
+    private void BeiLoeschen()
+    {
+        _loeschfrage = _katalogZeile is not null;
+    }
+
+    private void BeiLoeschfrage(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
+
+        string grund = KatalogLoeschen(_katalogZeile.Id);
+        if (!string.IsNullOrEmpty(grund)) { Melden(grund, true); return; }
+
+        _katalogZeile = null;
+        _detail = Leer("");
+        KatalogNeuLaden();
+    }
+
+    // =================================================================================
+    // Abschluss
+    // =================================================================================
+
+    private void Melden(string text, bool fehler)
+    {
+        _meldung = text;
+        _meldungStufe = fehler ? WarnStufe.Warnung : WarnStufe.Hinweis;
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_traegerGaben is not null || _editorGaben is not null ||
+            _namensfrage || _loeschfrage) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Linq;
+using Bunit;
 using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.QuickGrid;
@@ -39,5 +40,124 @@ public class RasterTests : BunitContext
         Assert.Contains("Bezeichnung", cut.Find("thead").TextContent);
         Assert.Equal(2, cut.FindAll("tbody tr").Count);
         Assert.Contains("Fernwaerme", cut.Find("tbody").TextContent);
+        Assert.DoesNotContain("epos-raster--bearbeitbar", cut.Find("table").ClassName);
     }
+
+    // =====================================================================
+    // Bearbeitbare Zellen (iU9-W3.0)
+    // =====================================================================
+
+    private sealed class Satz
+    {
+        internal bool Aktiv;
+        internal double? Wert;
+    }
+
+    /// <summary>
+    /// Ein Schalter und ein Zahlenfeld in TemplateColumns: Das Raster zeigt sie,
+    /// und ihre Aenderung erreicht die Zeile - der Ersatz fuer die editierbaren
+    /// Spalten des DataGridView.
+    /// </summary>
+    [Fact]
+    public void Bearbeitbare_Zellen_melden_ihre_Aenderung_an_die_Zeile()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var satz = new Satz { Aktiv = false, Wert = 201.0 };
+        var zeilen = new[] { satz }.AsQueryable();
+
+        var cut = Render<Raster<Satz>>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Bearbeitbar, true)
+            .Add(x => x.KindInhalt, (RenderFragment)(bau =>
+            {
+                bau.OpenComponent<TemplateColumn<Satz>>(0);
+                bau.AddComponentParameter(1, nameof(TemplateColumn<Satz>.Title), "aktiv");
+                bau.AddComponentParameter(2, nameof(TemplateColumn<Satz>.ChildContent),
+                    (RenderFragment<Satz>)(z => kind =>
+                    {
+                        kind.OpenComponent<Schalter>(0);
+                        kind.AddComponentParameter(1, nameof(Schalter.Wert), z.Aktiv);
+                        kind.AddComponentParameter(2, nameof(Schalter.WertChanged),
+                            EventCallback.Factory.Create<bool>(this, b => z.Aktiv = b));
+                        kind.CloseComponent();
+                    }));
+                bau.CloseComponent();
+
+                bau.OpenComponent<TemplateColumn<Satz>>(3);
+                bau.AddComponentParameter(4, nameof(TemplateColumn<Satz>.Title), "Wert");
+                bau.AddComponentParameter(5, nameof(TemplateColumn<Satz>.ChildContent),
+                    (RenderFragment<Satz>)(z => kind =>
+                    {
+                        kind.OpenComponent<Zahlenfeld>(0);
+                        kind.AddComponentParameter(1, nameof(Zahlenfeld.Wert), z.Wert);
+                        kind.AddComponentParameter(2, nameof(Zahlenfeld.WertChanged),
+                            EventCallback.Factory.Create<double?>(this, w => z.Wert = w));
+                        kind.CloseComponent();
+                    }));
+                bau.CloseComponent();
+            })));
+
+        Assert.Contains("epos-raster--bearbeitbar", cut.Find("table").ClassName);
+        Assert.Equal(2, cut.FindAll("tbody td").Count);
+
+        cut.Find("tbody td:first-child input").Change(true);
+        Assert.True(satz.Aktiv);
+
+        cut.Find("tbody td:last-child input").Input("55,5");
+        Assert.Equal(55.5, satz.Wert);
+    }
+
+    // =====================================================================
+    // Lange Listen (iU9-W13.0l)
+    // =====================================================================
+
+    /// <summary>
+    /// Ohne <c>Virtualisiert</c> zeichnet QuickGrid JEDE Zeile - fuer die
+    /// 20 746 Zeilen der CEC-Modulliste zu viel. Mit dem Schalter haelt es nur
+    /// den sichtbaren Ausschnitt im Baum, und die Huelle bekommt die feste
+    /// Hoehe, ohne die es nichts zu rollen gaebe.
+    /// </summary>
+    [Fact]
+    public void Virtualisiert_zeichnet_nur_den_sichtbaren_Ausschnitt()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var zeilen = Enumerable.Range(0, 2000)
+                               .Select(i => new Zeile(i, "Modul " + i))
+                               .AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Virtualisiert, true)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Contains("epos-raster-huelle--hoch", cut.Find("div").ClassName);
+        Assert.True(cut.FindAll("tbody tr").Count < 2000,
+                    "Eine virtualisierte Liste darf nicht alle 2 000 Zeilen zeichnen.");
+    }
+
+    [Fact]
+    public void Ohne_den_Schalter_bleibt_die_Huelle_die_gewohnte()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var zeilen = new[] { new Zeile(1, "Erdgas") }.AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Equal("epos-raster-huelle", cut.Find("div").ClassName);
+        Assert.Single(cut.FindAll("tbody tr"));
+    }
+
+    private static RenderFragment Bezeichnerspalte() => bau =>
+    {
+        bau.OpenComponent<PropertyColumn<Zeile, string>>(0);
+        bau.AddComponentParameter(1, nameof(PropertyColumn<Zeile, string>.Property),
+                                  (System.Linq.Expressions.Expression<Func<Zeile, string>>)(z => z.Bezeichner));
+        bau.AddComponentParameter(2, nameof(PropertyColumn<Zeile, string>.Title), "Bezeichnung");
+        bau.CloseComponent();
+    };
 }

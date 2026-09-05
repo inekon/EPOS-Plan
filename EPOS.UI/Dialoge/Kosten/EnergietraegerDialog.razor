@@ -1,0 +1,781 @@
+﻿@* Energietraegerverwaltung (iU9-W4.4).
+
+   Vorbild: Views/Kosten/Form_Energietraeger.cs (535 Z.) und .Designer.cs —
+   Etappe KD4, Konzept Kostendialoge § 7, Folien 25/26: links die Traegerliste
+   unter ihren Gruppen (Ae13), rechts die Traegerkarte
+   (EnergietraegerEinstellungen), beim Stromtraeger zusaetzlich die beiden
+   Einstiegskacheln „Kostenprofil" und „Spotmarktpreise" (Ae1).
+
+   ZWEI KONTEXTE, EIN DIALOG. Der Projektkontext pflegt die Uebersteuerung
+   (energy_project_settings) und uebernimmt Traeger aus dem Katalog; der
+   Katalogkontext (Projekt 0) pflegt die Katalogzeile selbst samt Bezeichnung,
+   Gruppe, Varianten und Loeschen (Ae9/Ae10).
+
+   AE14: Die offene Traegerkarte wird NUR NOCH EXPLIZIT gespeichert (OK bzw.
+   Speichern). Abbrechen und ein Traegerwechsel uebernehmen nichts — dieselbe
+   Semantik wie in der Kostenverwaltung (Ae12).
+
+   SUCHE UND FILTER IN DER TRAEGERAUSWAHL (Anwenderwunsch 04.09.2026, Windows-
+   Abnahme): Ueber der Liste steht ein Filterfeld wie in den Importdialogen
+   unter Administration -> Daten & Import (KatalogImportDialog, W13). Es filtert
+   ueber BEZEICHNUNG UND GRUPPE mit demselben Kernbaustein wie dort
+   (VdiAuswahlFilter.Passt: Teilzeichenkette, Gross-/Kleinschreibung egal,
+   mehrere Begriffe UND-verknuepft); ein Gruppenkopf bleibt nur ueber seinen
+   Treffern. Der gewaehlte Traeger BLEIBT GEWAEHLT, auch wenn der Filter ihn
+   ausblendet - die Karte rechts gehoert weiter ihm, und beim Leeren der Suche
+   steht er wieder markiert in der Liste. Die Zeilen sind seither Zeilenwahl
+   (Einzelwahl - Loeschen, Variante und Entfernen wirken auf den EINEN
+   gewaehlten Traeger), und Pfeil hoch/runter, Pos1 und Ende wandern ueber die
+   Treffer.
+
+   ALLE UNTERDIALOGE STEHEN IM SELBEN FENSTER (W4.0): die Namensabfrage, die
+   Mehrfachauswahl der Kataloguebernahme, die Rueckfragen vor dem Loeschen und
+   Entfernen, dazu Kostenprofil, Spotpreis-Import, saisonale Saetze und der
+   Emissionskatalog. Bis Welle 3 war jeder davon eine zweite WebView
+   (Risiko R2). *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+@using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KontextText@_status</p>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-traeger-flaeche">
+
+        @* ------------------------------------------------------- Liste *@
+        <div class="epos-traeger-liste">
+            <p class="epos-untergruppe">@ListenTitel</p>
+
+            <Textfeld Bezeichnung="@SucheText" Wert="@_suche" WertChanged="SucheSetzen" />
+
+            @* Der Tastendruck wird HIER abgefangen, nicht am Suchfeld: Pfeiltasten
+               gehoeren im Eingabefeld dem Textcursor. *@
+            <div class="epos-traeger-eintraege" role="group" aria-label="@ListenTitel"
+                 @onkeydown="BeiListenTaste">
+                @{ IReadOnlyList<EnergietraegerListe> sicht = GefilterteListe; }
+
+                @if (sicht.Count == 0)
+                {
+                    <p class="epos-traeger-leer">@SucheLeerText</p>
+                }
+
+                @foreach (EnergietraegerListe eintrag in sicht)
+                {
+                    if (eintrag.Traeger is null)
+                    {
+                        <p class="epos-traeger-gruppenkopf">▪ @eintrag.Text</p>
+                    }
+                    else
+                    {
+                        int id = eintrag.Traeger.Value;
+                        <Zeilenwahl Gewaehlt="@(_traegerId == id)" Beschriftung="@eintrag.Text"
+                                    Kurztext="@eintrag.Text" Zusatzklasse="epos-traeger-eintrag"
+                                    Gewaehltwerden="() => BeiTraeger(id)" />
+                    }
+                }
+            </div>
+
+            <div class="epos-leiste">
+                @if (Katalogkontext)
+                {
+                    <button type="button" class="epos-knopf" @onclick="NeuFragen">@NeuText</button>
+                    <button type="button" class="epos-knopf" disabled="@(!_traegerId.HasValue)"
+                            @onclick="VarianteAnlegen">@VarianteText</button>
+                    <button type="button" class="epos-knopf" disabled="@(!_traegerId.HasValue)"
+                            @onclick="LoeschenFragen">@LoeschenText</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf" @onclick="UebernahmeOeffnen">@UebernehmenText</button>
+                    <button type="button" class="epos-knopf" disabled="@(!_traegerId.HasValue)"
+                            @onclick="EntfernenFragen">@EntfernenText</button>
+                }
+            </div>
+        </div>
+
+        @* ------------------------------------------------------ Inhalt *@
+        <div class="epos-traeger-inhalt">
+            @if (_ansicht.Stand is null)
+            {
+                <Herleitungszeile Text="@LeerText" />
+            }
+            else
+            {
+                @if (_ansicht.MitStromkarten)
+                {
+                    <div class="epos-kachelreihe">
+                        @if (_ansicht.MitKostenprofil)
+                        {
+                            <Kachel Titel="@KarteProfilTitel" Beschreibung="@KarteProfilInfo"
+                                    Status="@_ansicht.KarteProfilStatus" Geklickt="KostenprofilOeffnen" />
+                        }
+                        <Kachel Titel="@KarteSpotTitel" Beschreibung="@KarteSpotInfo"
+                                Status="@_ansicht.KarteSpotStatus" Geklickt="SpotpreisOeffnen" />
+                    </div>
+                }
+
+                @if (Katalogkontext)
+                {
+                    @* Ä9: Im Katalogkontext ist der Stammkopf editierbar. *@
+                    <div class="epos-feldpaar">
+                        <Textfeld Bezeichnung="@LabelStammName" Wert="@_stammName"
+                                  WertChanged="@(w => _stammName = w)" />
+                        <Auswahlfeld Bezeichnung="@LabelStammGruppe" Eintraege="@Gruppen"
+                                     Auswahl="@_stammGruppe"
+                                     AuswahlChanged="@(w => _stammGruppe = w)" />
+                        <button type="button" class="epos-knopf"
+                                @onclick="StammUebernehmen">@StammSpeichernText</button>
+                    </div>
+                }
+
+                <EnergietraegerEinstellungen @attributes="KarteTexte"
+                                             AufschlagTexte="@AufschlagTexte"
+                                             BestandteilTexte="@BestandteilTexte"
+                                             Stand="@_ansicht.Stand"
+                                             AufschlagAnzeige="@_ansicht.AufschlagAnzeige"
+                                             BestandteilAnzeige="@_ansicht.BestandteilAnzeige"
+                                             ArbeitspreisCtKwh="@_ansicht.ArbeitspreisCtKwh"
+                                             SatzRegelfall="@_ansicht.SatzRegelfall"
+                                             SatzReduziert="@_ansicht.SatzReduziert"
+                                             SatzRegel="@_ansicht.SatzRegel" Satz53a="@_ansicht.Satz53a"
+                                             Satz54="@_ansicht.Satz54" SatzCo2="@_ansicht.SatzCo2"
+                                             Geaendert="Nachziehen"
+                                             PreisbasisGewechselt="PreisbasisWechseln"
+                                             LeistungsModusGewechselt="LeistungsModusWechseln"
+                                             SaisonSaetze="SaisonOeffnen"
+                                             RegelNeu="RegelAnlegen"
+                                             RegelAbschalten="@RegelAbschalten"
+                                             InArbeitspreis="ArbeitspreisUebernehmen"
+                                             AufschlagAnwenden="AufschlagAnwendenSetzen"
+                                             KatalogFuerZeile="KatalogZeileOeffnen"
+                                             KatalogVerwalten="KatalogVerwaltenOeffnen"
+                                             Speichern="BeiSpeichern" />
+            }
+        </div>
+    </div>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiSpeichern">@SpeichernText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="BeiOk">@OkText</button>
+    </div>
+
+    @* ------------------------------------------------------ Unterdialoge *@
+    <Ueberlagerung Offen="@(_namensGaben is not null)" Schliessbar="false"
+                   Titel="@NeuTitel" Geschlossen="() => NeuFertig(null)">
+        <KindInhalt>
+            @if (_namensGaben is not null)
+            {
+                <NamensDialog @attributes="_namensGaben" Geschlossen="NeuFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@_uebernahmeOffen" Titel="@UebernahmeTitel"
+                   Geschlossen="() => _uebernahmeOffen = false">
+        <KindInhalt>
+            <Mehrfachauswahl Bezeichnung="@UebernahmeFrage" Eintraege="@Freie"
+                             Gewaehlt="@_uebernahmeWahl"
+                             GewaehltChanged="@(w => _uebernahmeWahl = w)" />
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf"
+                        @onclick="() => _uebernahmeOffen = false">@AbbrechenText</button>
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        disabled="@(_uebernahmeWahl.Count == 0)"
+                        @onclick="UebernahmeAusfuehren">@UebernehmenKurzText</button>
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@(_unterGaben is not null)" Schliessbar="true"
+                   Titel="@_unterTitel" Geschlossen="UnterSchliessen">
+        <KindInhalt>
+            @if (_unterGaben is not null)
+            {
+                @switch (_unterArt)
+                {
+                    case Unterdialog.Kostenprofil:
+                        <KostenprofilDialog @attributes="_unterGaben"
+                                            Geschlossen="@((bool ok) => UnterSchliessen())" />
+                        break;
+                    case Unterdialog.Spotpreis:
+                        <SpotpreisImportDialog @attributes="_unterGaben"
+                                               Geschlossen="@((bool ok) => UnterSchliessen())" />
+                        break;
+                    case Unterdialog.Saisonreihe:
+                        <LeistungspreisReiheDialog @attributes="_unterGaben"
+                                                   Geschlossen="@((bool ok) => UnterSchliessen())" />
+                        break;
+                    case Unterdialog.Emissionskatalog:
+                        <EmissionskatalogDialog @attributes="_unterGaben"
+                                                Geschlossen="EmissionskatalogFertig" />
+                        break;
+                }
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@(_frage.Length > 0)" Frage="@_frage" TitelText="@TitelText"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="FrageBeantwortet" />
+</div>
+
+@code {
+    /// <summary>Welcher Unterdialog gerade in der Überlagerung steht.</summary>
+    public enum Unterdialog { Keiner, Kostenprofil, Spotpreis, Saisonreihe, Emissionskatalog }
+
+    /// <summary>Ein Eintrag der Trägerliste: Gruppenkopf oder Träger (Ä13).</summary>
+    /// <param name="Traeger">Id des Trägers; <c>null</c> = Gruppenkopf.</param>
+    /// <param name="Text">Angezeigter Text.</param>
+    public sealed record EnergietraegerListe(int? Traeger, string Text);
+
+    // =====================================================================
+    // Vorbelegung und Datenseite
+    // =====================================================================
+
+    /// <summary>Die Trägerliste unter ihren Gruppen (Ä13).</summary>
+    [Parameter] public IReadOnlyList<EnergietraegerListe> Liste { get; set; }
+        = Array.Empty<EnergietraegerListe>();
+
+    /// <summary>Vorwahl in der Liste; <c>null</c> = der erste Träger.</summary>
+    [Parameter] public int? TraegerVorwahl { get; set; }
+
+    /// <summary>Katalogkontext (Projekt 0)? Sonst Projektkontext.</summary>
+    [Parameter] public bool Katalogkontext { get; set; }
+
+    /// <summary>
+    /// Lädt die Trägerkarte zu einem Träger — Stand und alles, was die Hülle
+    /// daraus gerechnet hat. Ohne Delegat bleibt die Karte leer (Prüfstand).
+    /// </summary>
+    [Parameter] public Func<int, EnergietraegerAnsicht>? TraegerLaden { get; set; }
+
+    /// <summary>
+    /// Rechnet nach einer Feldänderung Formel, Effektivzeile und Preisblöcke
+    /// nach und gibt die Ansicht zurück — der Ersatz für
+    /// <c>UpdatePricePerKWh</c> samt Folgemethoden.
+    /// </summary>
+    [Parameter] public Func<EnergietraegerAnsicht>? Nachrechnen { get; set; }
+
+    /// <summary>Die Preisbasis wurde gewechselt — alle Felder werden umgerechnet.</summary>
+    [Parameter] public EventCallback<int> PreisbasisGewechselt { get; set; }
+
+    /// <summary>Der Leistungspreis-Modus wurde umgestellt (Katalogsache je Träger).</summary>
+    [Parameter] public EventCallback<bool> LeistungsModusGewechselt { get; set; }
+
+    /// <summary>„Regel hinzufügen" des Umrechnungsblocks (K3).</summary>
+    [Parameter] public EventCallback RegelNeu { get; set; }
+
+    /// <summary>Der Riegel des Prüfers: darf diese Regel abgeschaltet werden? (§ 4.3)</summary>
+    [Parameter] public Func<UmrechnungsregelZeile, bool, bool>? RegelAbschalten { get; set; }
+
+    /// <summary>„In Arbeitspreis übernehmen" der Preiszerlegung.</summary>
+    [Parameter] public EventCallback InArbeitspreis { get; set; }
+
+    /// <summary>Ä16: der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen".</summary>
+    [Parameter] public EventCallback<bool> AufschlagAnwenden { get; set; }
+
+    /// <summary>Ä14: speichert die offene Trägerkarte. <c>false</c> = abgelehnt (K3-Riegel).</summary>
+    [Parameter] public Func<bool>? Speichern { get; set; }
+
+    /// <summary>Grund, wenn <see cref="Speichern"/> ablehnt.</summary>
+    [Parameter] public Func<string>? SpeichernGrund { get; set; }
+
+    // ---- Katalogkontext ---------------------------------------------------
+
+    /// <summary>Die wählbaren Gruppen (<c>EnergietraegerKatalogCtrl.Gruppen</c>).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Gruppen { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Schreibt Bezeichnung und Gruppe. <c>false</c> = Bezeichnung leer.</summary>
+    [Parameter] public Func<string, int?, bool>? StammSchreiben { get; set; }
+
+    /// <summary>Parameter der Namensabfrage für „Neu…".</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? NamensGaben { get; set; }
+
+    /// <summary>Legt einen Träger an; 0 = nichts geschrieben.</summary>
+    [Parameter] public Func<string, int>? TraegerNeu { get; set; }
+
+    /// <summary>Legt eine Variante des gewählten Trägers an; 0 = nichts geschrieben.</summary>
+    [Parameter] public Func<int>? TraegerVariante { get; set; }
+
+    /// <summary>Löscht den gewählten Träger; der Grund erklärt ein „nein".</summary>
+    [Parameter] public Func<(bool Erfolg, string Grund)>? TraegerLoeschen { get; set; }
+
+    // ---- Projektkontext ---------------------------------------------------
+
+    /// <summary>Die noch nicht zugeordneten Katalogträger (Ä10).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Freie { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Übernimmt die gewählten Träger ins Projekt; Rückgabe = zuletzt übernommener.</summary>
+    [Parameter] public Func<IReadOnlyList<int>, int>? InsProjekt { get; set; }
+
+    /// <summary>Löst die Zuordnung des gewählten Trägers; der Grund erklärt ein „nein".</summary>
+    [Parameter] public Func<(bool Erfolg, string Grund)>? AusProjekt { get; set; }
+
+    // ---- Unterdialoge -----------------------------------------------------
+
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? KostenprofilGaben { get; set; }
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? SpotpreisGaben { get; set; }
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? SaisonGaben { get; set; }
+
+    /// <summary>Parameter des Emissionskatalogs; <c>kuerzel</c> leer = Verwaltungsmodus.</summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? EmissionskatalogGaben { get; set; }
+
+    /// <summary>Wertet das Ergebnis des Emissionskatalogs aus (übernehmen, neu laden).</summary>
+    [Parameter] public Action<EmissionskatalogErgebnis>? EmissionskatalogAuswerten { get; set; }
+
+    /// <summary>Ein Unterdialog wurde geschlossen — die Hülle lädt nach.</summary>
+    [Parameter] public EventCallback UnterdialogGeschlossen { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende; <c>true</c> = OK.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Die Texte der Trägerkarte — als Satz, wie die der Preisblöcke.</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? KarteTexte { get; set; }
+
+    /// <summary>Die Texte des Aufschlagsblocks (<c>PREIS_*</c>).</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? AufschlagTexte { get; set; }
+
+    /// <summary>Die Texte der Preiszerlegung (<c>BB_*</c>).</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? BestandteilTexte { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = "Energieträgerverwaltung";
+    [Parameter] public string KontextText { get; set; } = "";
+    [Parameter] public string ListenTitel { get; set; } = "Energieträger";
+
+    /// <summary>Beschriftung des Filterfeldes (<c>IMP_KAT_FILTER_SUCHE</c>).</summary>
+    [Parameter] public string SucheText { get; set; } = "Filter:";
+
+    /// <summary>Was steht, wenn der Filter alles wegnimmt (<c>ETV_SUCHE_LEER</c>).</summary>
+    [Parameter] public string SucheLeerText { get; set; } = "Kein Treffer.";
+    [Parameter] public string LeerText { get; set; } = "Bitte einen Energieträger wählen.";
+    [Parameter] public string NeuText { get; set; } = "Neu…";
+    [Parameter] public string VarianteText { get; set; } = "Variante";
+    [Parameter] public string LoeschenText { get; set; } = "Löschen";
+    [Parameter] public string UebernehmenText { get; set; } = "Aus Katalog übernehmen…";
+    [Parameter] public string UebernehmenKurzText { get; set; } = "Übernehmen";
+    [Parameter] public string EntfernenText { get; set; } = "Entfernen";
+    [Parameter] public string LabelStammName { get; set; } = "Bezeichnung:";
+    [Parameter] public string LabelStammGruppe { get; set; } = "Gruppe:";
+    [Parameter] public string StammSpeichernText { get; set; } = "Übernehmen";
+    [Parameter] public string KarteProfilTitel { get; set; } = "Kostenprofil";
+    [Parameter] public string KarteProfilInfo { get; set; }
+        = "Monatliche Preisniveaus des Strombezugs pflegen.";
+    [Parameter] public string KarteSpotTitel { get; set; } = "Spotmarktpreise";
+    [Parameter] public string KarteSpotInfo { get; set; } = "Stundenpreise importieren und verwalten.";
+    [Parameter] public string NeuTitel { get; set; } = "Neuer Energieträger";
+    [Parameter] public string UebernahmeTitel { get; set; } = "Aus Katalog übernehmen";
+    [Parameter] public string UebernahmeFrage { get; set; }
+        = "Welche Katalogträger sollen ins Projekt?";
+    [Parameter] public string UebernahmeLeer { get; set; }
+        = "Alle Katalogträger sind dem Projekt bereits zugeordnet.";
+    [Parameter] public string VorlageLoeschen { get; set; } = "Energieträger „{0}\" löschen?";
+    [Parameter] public string VorlageEntfernen { get; set; }
+        = "Träger „{0}\" aus dem Projekt entfernen? (Der Katalogeintrag bleibt.)";
+    [Parameter] public string VorlageGesperrt { get; set; }
+        = "Der Träger wird verwendet und bleibt erhalten: {0}";
+    [Parameter] public string MeldungStammLeer { get; set; } = "Bezeichnung darf nicht leer sein.";
+    [Parameter] public string TitelKostenprofil { get; set; } = "Kostenprofil";
+    [Parameter] public string TitelSpotpreis { get; set; } = "Spotpreis-Import";
+    [Parameter] public string TitelSaison { get; set; } = "Saisonale Leistungspreise";
+    [Parameter] public string TitelEmissionskatalog { get; set; } = "Emissionsfaktor-Katalog";
+    [Parameter] public string SpeichernText { get; set; } = "Speichern";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string VorlageGespeichert { get; set; } = " — gespeichert {0} Uhr";
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Energietraeger.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private EnergietraegerAnsicht _ansicht = new();
+    private int? _traegerId;
+    private string _suche = "";
+    private string _stammName = "";
+    private int? _stammGruppe;
+    private string _status = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private IReadOnlyDictionary<string, object>? _namensGaben;
+    private bool _uebernahmeOffen;
+    private IReadOnlyList<int> _uebernahmeWahl = Array.Empty<int>();
+
+    private Unterdialog _unterArt = Unterdialog.Keiner;
+    private IReadOnlyDictionary<string, object>? _unterGaben;
+    private string _unterTitel = "";
+
+    private string _frage = "";
+    private Func<Task>? _frageJa;
+
+    /// <summary>Der gewählte Träger (Prüfhilfe für Tests).</summary>
+    public int? Traeger => _traegerId;
+
+    /// <summary>Der Text im Filterfeld (Prüfhilfe für Tests).</summary>
+    public string Suchtext => _suche;
+
+    /// <summary>Die Meldung im Banner (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Welcher Unterdialog steht (Prüfhilfe für Tests).</summary>
+    public Unterdialog OffenerUnterdialog => _unterArt;
+
+    protected override void OnInitialized()
+    {
+        _traegerId = TraegerVorwahl ?? ErsterTraeger();
+        if (_traegerId.HasValue) Laden(_traegerId.Value);
+    }
+
+    /// <summary>Die Karte neu holen und den Stammkopf mitziehen (Ä9).</summary>
+    private void Laden(int id)
+    {
+        if (TraegerLaden is null) return;
+        _ansicht = TraegerLaden(id);
+        _stammName = _ansicht.StammName;
+        _stammGruppe = _ansicht.StammGruppe;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private int? ErsterTraeger()
+    {
+        foreach (EnergietraegerListe e in Liste)
+        {
+            if (e.Traeger.HasValue) return e.Traeger.Value;
+        }
+        return null;
+    }
+
+    // =====================================================================
+    // Suche und Filter (Anwenderwunsch 04.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Filter wirkt NUR auf die Anzeige: <c>_traegerId</c> bleibt stehen,
+    /// damit die Karte rechts weiter ihrem Träger gehört und er beim Leeren der
+    /// Suche wieder markiert in der Liste steht.
+    /// </summary>
+    private void SucheSetzen(string wert) => _suche = wert ?? "";
+
+    /// <summary>
+    /// Die Liste, wie sie unter dem Filter aussieht — Bezeichnung UND Gruppe
+    /// werden geprüft (wie im Importdialog Bezeichner und Firma), und ein
+    /// Gruppenkopf bleibt nur über seinen Treffern.
+    /// </summary>
+    private IReadOnlyList<EnergietraegerListe> GefilterteListe
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_suche)) return Liste;
+
+            var treffer = new List<EnergietraegerListe>();
+            EnergietraegerListe? kopf = null;
+            string gruppe = "";
+            foreach (EnergietraegerListe e in Liste)
+            {
+                if (e.Traeger is null) { kopf = e; gruppe = e.Text; continue; }
+                if (!VdiAuswahlFilter.Passt(_suche, e.Text, gruppe)) continue;
+                if (kopf is not null) { treffer.Add(kopf); kopf = null; }
+                treffer.Add(e);
+            }
+            return treffer;
+        }
+    }
+
+    /// <summary>Die Träger der gefilterten Liste in Anzeigereihenfolge.</summary>
+    private List<int> Treffer()
+    {
+        var ids = new List<int>();
+        foreach (EnergietraegerListe e in GefilterteListe)
+        {
+            if (e.Traeger.HasValue) ids.Add(e.Traeger.Value);
+        }
+        return ids;
+    }
+
+    /// <summary>
+    /// ↑ ↓ Pos1 Ende wandern über die TREFFER und wählen dabei — die
+    /// <c>ListBox</c> des Vorläufers tat dasselbe, und Gruppenköpfe übersprang
+    /// sie schon dort.
+    /// </summary>
+    private void BeiListenTaste(KeyboardEventArgs e)
+    {
+        List<int> ids = Treffer();
+        if (ids.Count == 0) return;
+
+        int i = _traegerId.HasValue ? ids.IndexOf(_traegerId.Value) : -1;
+        int ziel;
+        switch (e.Key)
+        {
+            case "ArrowDown": ziel = i < 0 ? 0 : Math.Min(i + 1, ids.Count - 1); break;
+            case "ArrowUp":   ziel = i < 0 ? 0 : Math.Max(i - 1, 0);             break;
+            case "Home":      ziel = 0;                                          break;
+            case "End":       ziel = ids.Count - 1;                              break;
+            default: return;
+        }
+
+        if (ids[ziel] != _traegerId) BeiTraeger(ids[ziel]);
+    }
+
+    /// <summary>
+    /// Ä14: Der Wechsel speichert NICHT still — ungespeicherte Kartenänderungen
+    /// verfallen (wie in der Kostenverwaltung, Ä12).
+    /// </summary>
+    private void BeiTraeger(int id)
+    {
+        _traegerId = id;
+        Melden("");
+        Laden(id);
+    }
+
+    /// <summary>Nach jeder Feldänderung: die Hülle rechnet, die Ansicht folgt.</summary>
+    private void Nachziehen()
+    {
+        if (Nachrechnen is not null) _ansicht = Nachrechnen();
+    }
+
+    private async Task PreisbasisWechseln(int id)
+    {
+        await PreisbasisGewechselt.InvokeAsync(id);
+        Nachziehen();
+    }
+
+    private async Task LeistungsModusWechseln(bool monat)
+    {
+        await LeistungsModusGewechselt.InvokeAsync(monat);
+        Nachziehen();
+    }
+
+    private async Task RegelAnlegen()
+    {
+        await RegelNeu.InvokeAsync();
+        Nachziehen();
+    }
+
+    private async Task ArbeitspreisUebernehmen()
+    {
+        await InArbeitspreis.InvokeAsync();
+        Nachziehen();
+    }
+
+    private Task AufschlagAnwendenSetzen(bool an) => AufschlagAnwenden.InvokeAsync(an);
+
+    // =====================================================================
+    // Katalogkontext
+    // =====================================================================
+
+    private void StammUebernehmen()
+    {
+        if (StammSchreiben is null) return;
+        if (!StammSchreiben(_stammName, _stammGruppe))
+        {
+            Melden(MeldungStammLeer, WarnStufe.Warnung);
+            return;
+        }
+        Melden("");
+    }
+
+    private void NeuFragen()
+    {
+        if (NamensGaben is null) return;
+        _namensGaben = NamensGaben();
+    }
+
+    private void NeuFertig(string? name)
+    {
+        _namensGaben = null;
+        if (name is null || TraegerNeu is null) return;
+        int id = TraegerNeu(name);
+        if (id > 0) { _traegerId = id; Laden(id); }
+    }
+
+    private void VarianteAnlegen()
+    {
+        if (TraegerVariante is null) return;
+        int id = TraegerVariante();
+        if (id > 0) { _traegerId = id; Laden(id); }
+    }
+
+    private void LoeschenFragen()
+    {
+        if (!_traegerId.HasValue) return;
+        _frage = string.Format(VorlageLoeschen, TraegerName(_traegerId.Value));
+        _frageJa = () =>
+        {
+            if (TraegerLoeschen is null) return Task.CompletedTask;
+            (bool erfolg, string grund) = TraegerLoeschen();
+            if (!erfolg) Melden(string.Format(VorlageGesperrt, grund), WarnStufe.Warnung);
+            else { _traegerId = null; _ansicht = new EnergietraegerAnsicht(); Melden(""); }
+            return Task.CompletedTask;
+        };
+    }
+
+    // =====================================================================
+    // Projektkontext (Ä10)
+    // =====================================================================
+
+    private void UebernahmeOeffnen()
+    {
+        if (Freie.Count == 0)
+        {
+            Melden(UebernahmeLeer, WarnStufe.Hinweis);
+            return;
+        }
+        _uebernahmeWahl = Array.Empty<int>();
+        _uebernahmeOffen = true;
+    }
+
+    private void UebernahmeAusfuehren()
+    {
+        _uebernahmeOffen = false;
+        if (InsProjekt is null) return;
+        int letzter = InsProjekt(_uebernahmeWahl);
+        if (letzter > 0) { _traegerId = letzter; Laden(letzter); }
+    }
+
+    private void EntfernenFragen()
+    {
+        if (!_traegerId.HasValue) return;
+        _frage = string.Format(VorlageEntfernen, TraegerName(_traegerId.Value));
+        _frageJa = () =>
+        {
+            if (AusProjekt is null) return Task.CompletedTask;
+            (bool erfolg, string grund) = AusProjekt();
+            if (!erfolg) Melden(string.Format(VorlageGesperrt, grund), WarnStufe.Warnung);
+            else { _traegerId = null; _ansicht = new EnergietraegerAnsicht(); Melden(""); }
+            return Task.CompletedTask;
+        };
+    }
+
+    private async Task FrageBeantwortet(bool? antwort)
+    {
+        Func<Task>? ja = _frageJa;
+        _frage = "";
+        _frageJa = null;
+        if (antwort == true && ja is not null) await ja();
+    }
+
+    private string TraegerName(int id)
+    {
+        foreach (EnergietraegerListe e in Liste)
+        {
+            if (e.Traeger == id) return e.Text.Trim();
+        }
+        return "";
+    }
+
+    // =====================================================================
+    // Unterdialoge
+    // =====================================================================
+
+    private void KostenprofilOeffnen() => UnterOeffnen(Unterdialog.Kostenprofil,
+        TitelKostenprofil, KostenprofilGaben?.Invoke());
+
+    private void SpotpreisOeffnen() => UnterOeffnen(Unterdialog.Spotpreis,
+        TitelSpotpreis, SpotpreisGaben?.Invoke());
+
+    private void SaisonOeffnen() => UnterOeffnen(Unterdialog.Saisonreihe,
+        TitelSaison, SaisonGaben?.Invoke());
+
+    private void KatalogZeileOeffnen(string kuerzel) => UnterOeffnen(Unterdialog.Emissionskatalog,
+        TitelEmissionskatalog, EmissionskatalogGaben?.Invoke(kuerzel));
+
+    private void KatalogVerwaltenOeffnen() => UnterOeffnen(Unterdialog.Emissionskatalog,
+        TitelEmissionskatalog, EmissionskatalogGaben?.Invoke(""));
+
+    private void UnterOeffnen(Unterdialog art, string titel,
+                              IReadOnlyDictionary<string, object>? gaben)
+    {
+        if (gaben is null) return;
+        _unterArt = art;
+        _unterTitel = titel;
+        _unterGaben = gaben;
+    }
+
+    private async Task UnterSchliessen()
+    {
+        _unterArt = Unterdialog.Keiner;
+        _unterGaben = null;
+        await UnterdialogGeschlossen.InvokeAsync();
+        // Nach jedem Unterdialog wird neu gelesen (Risiko R3, Muster
+        // RasterAufbauen der Kostenverwaltung).
+        if (_traegerId.HasValue) Laden(_traegerId.Value);
+    }
+
+    private Task EmissionskatalogFertig(EmissionskatalogErgebnis ergebnis)
+    {
+        EmissionskatalogAuswerten?.Invoke(ergebnis);
+        return UnterSchliessen();
+    }
+
+    // =====================================================================
+    // Schlussleiste (Ä14)
+    // =====================================================================
+
+    private void BeiSpeichern()
+    {
+        if (Speichern is not null && !Speichern())
+        {
+            Melden(SpeichernGrund is null ? "" : SpeichernGrund(), WarnStufe.Warnung);
+            return;
+        }
+        Melden("");
+        _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
+    }
+
+    private Task BeiOk()
+    {
+        if (Speichern is not null && !Speichern())
+        {
+            Melden(SpeichernGrund is null ? "" : SpeichernGrund(), WarnStufe.Warnung);
+            return Task.CompletedTask;
+        }
+        return Geschlossen.InvokeAsync(true);
+    }
+
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+
+    private void Melden(string text, WarnStufe stufe = WarnStufe.Hinweis)
+    {
+        _meldung = text;
+        _meldungStufe = stufe;
+    }
+
+    private bool UeberlagerungOffen => _namensGaben is not null || _uebernahmeOffen
+        || _unterGaben is not null || _frage.Length > 0;
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Enter ist NICHT belegt (A-7 aus B5b); Esc geht zuerst an eine offene
+        // Überlagerung — sie fängt die Taste selbst ab.
+        if (e.Key != "Escape" || UeberlagerungOffen) return Task.CompletedTask;
+        return BeiAbbrechen();
+    }
+}

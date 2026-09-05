@@ -41,5 +41,46 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(text)) return false;
             return int.TryParse(text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out wert);
         }
+
+        /// <summary>
+        /// Der Vertrag von <c>Program.convertTxt2Double</c> als KERNREGEL
+        /// (iU9-W13.0c): leer oder <c>null</c> ergibt 0, nicht parsbarer Text wirft
+        /// <see cref="System.FormatException"/> — die Einlesewege fangen sie und
+        /// zaehlen den Eintrag als Fehler.
+        ///
+        /// <para><b>Warum hier.</b> Die vier Katalogimporte rechnen mit genau diesem
+        /// Vertrag, und ihre Rechnung zieht mit Welle 13 in den Kern. <c>Program.*</c>
+        /// ist dort verboten (iU5-Waechter); der Rumpf ist wortgleich uebernommen,
+        /// damit die Zahl dieselbe bleibt.</para>
+        /// </summary>
+        public static double NachDouble(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return 0;
+
+            double zahl;
+            if (Parsen(text, out zahl)) return zahl;
+            throw new System.FormatException("Keine gültige Zahl: \"" + text + "\"");
+        }
+
+        /// <summary>
+        /// Der Vertrag von <c>Program.convertTxt2Int</c> als Kernregel: leer oder
+        /// nicht (ganzzahlig) parsbar ergibt 0, kein Wurf. Zusaetzlich werden
+        /// Dezimalschreibweisen ganzer Zahlen angenommen ("35.0" und "35,0" ergeben
+        /// 35) — VDI-Dateien fuehren Ganzzahlfelder teils so.
+        /// </summary>
+        public static int NachInt(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return 0;
+
+            int ganz;
+            if (GanzzahlParsen(text, out ganz)) return ganz;
+
+            double zahl;
+            if (Parsen(text, out zahl) && zahl >= int.MinValue && zahl <= int.MaxValue
+                && zahl == System.Math.Floor(zahl))
+                return (int)zahl;
+
+            return 0;
+        }
     }
 }

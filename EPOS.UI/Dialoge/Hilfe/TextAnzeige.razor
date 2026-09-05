@@ -1,0 +1,76 @@
+﻿@* Nur-Lese-Anzeige eines laengeren Textes in fester Schrittweite
+   (iU9-W15b.2, Ersatz fuer Views/Help/Form_TextAnzeige.cs, 110 Z.).
+
+   HERKUNFT. Die Maske war bereits eine Zusammenlegung: Sie entstand aus zwei
+   wortgleichen Wegwerf-Dialogen in Form_KiChat - ProtokollZeigen()
+   (Aktionsprotokoll, Fachkonzept 3.6) und VorschauZeigen() (Selbstpruefung A5).
+   "Der einzige Aufbauunterschied war das Kopf-Label der Vorschau; die uebrigen
+   Abweichungen (Masse, Maximieren-Schaltflaeche) stehen als Parameter."
+   Genau diese Aufteilung bleibt - nur ohne Masse: In einer Ueberlagerung gibt
+   es keine ClientSize und keine Maximieren-Schaltflaeche.
+
+   SIE IST KEIN FENSTER. Der Vorlaeufer war ein zweites modales Form ueber dem
+   Chatfenster; hier ist sie der Inhalt einer Ueberlagerung im SELBEN Fenster
+   (Risiko R2: eine zweite BlazorWebView ueber der ersten waere 60-120 MB und
+   eine Fokusreihenfolge, die niemand mehr erklaeren kann). Auf iOS ist das
+   ohnehin der einzige Weg.
+
+   ENTER UND ESC SCHLIESSEN BEIDE. Im Vorlaeufer war "Schliessen" zugleich
+   AcceptButton und CancelButton (:104-105). Esc bringt die Ueberlagerung mit;
+   Enter liegt hier auf dem Knopf, weil er der einzige ist.
+
+   FensterEinpassung.Einhaengen(:107) entfaellt - die Bildschirmklemmung ist
+   Sache der Huelle. Die Reihenfolge-Regel ":87 Fill zuerst, dann die
+   andockenden Elemente" war ein WinForms-Docking-Artefakt und entfaellt
+   ebenfalls. *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+
+<div class="epos-textanzeige">
+
+    @if (!string.IsNullOrEmpty(Kopf))
+    {
+        @* Die graue Hinweiszeile der Vorschau (66 px hoch, DimGray). Sie sagt,
+           WOHIN gesendet wuerde und mit welchem Modell - deshalb steht sie ueber
+           dem Text und nicht darin. *@
+        <p class="epos-textanzeige-kopf">@Kopf</p>
+    }
+
+    <Textfeld Mehrzeilig="true"
+              Festbreite="true"
+              NurLesen="true"
+              Zeilen="@Zeilen"
+              Wert="@Inhalt" />
+
+    <div class="epos-textanzeige-fuss">
+        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Schliessen">
+            @SchliessenText
+        </button>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Die graue Hinweiszeile ueber dem Text; leer = ohne Kopf. Genau so war das
+    /// Aktionsprotokoll aufgebaut (der Vorlaeufer nahm dafuer <c>null</c>).
+    /// </summary>
+    [Parameter] public string Kopf { get; set; } = "";
+
+    /// <summary>Der anzuzeigende Inhalt.</summary>
+    [Parameter] public string Inhalt { get; set; } = "";
+
+    /// <summary>
+    /// Sichtbare Zeilen. Der Vorlaeufer rechnete in Pixeln (900 x 480 fuer das
+    /// Protokoll, 720 x 520 fuer die Vorschau); in einer Ueberlagerung zaehlt die
+    /// Zeilenzahl, den Rest macht das Raster.
+    /// </summary>
+    [Parameter] public int Zeilen { get; set; } = 22;
+
+    /// <summary>Beschriftung des Schliessknopfs.</summary>
+    [Parameter] public string SchliessenText { get; set; } = "";
+
+    /// <summary>Der Anwender hat geschlossen.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    private Task Schliessen() => Geschlossen.InvokeAsync();
+}

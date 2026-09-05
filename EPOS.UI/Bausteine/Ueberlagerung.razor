@@ -1,0 +1,133 @@
+﻿@* Modaler Bereich INNERHALB der Komponente (iU9-W4.0, Bausteinluecke 7).
+
+   WOZU. Ein Blazor-Dialog, der einen zweiten Blazor-Dialog braucht, konnte ihn
+   bis hierher nur als zweites Fenster oeffnen - und das heisst unter Windows
+   eine zweite BlazorWebView ueber der ersten: 60-120 MB, 100-300 ms Aufbau und
+   eine Fokusreihenfolge, die niemand mehr erklaeren kann (Risiko R2 des
+   Wellenplans iU9). Deshalb sind solche Unterdialoge bisher AUSGEWICHEN: der
+   Kostenfaktor-Katalog legt inline an statt einen Namensdialog zu oeffnen
+   (iU9-W1.5, A-13), der Emissionskatalog zeigt seine beiden Untereditoren als
+   eingerueckte Bloecke (iU9-W3.3, A-10).
+
+   Dieser Baustein macht daraus die Regel statt der Ausnahme: Der Unterdialog
+   erscheint als eigener Bereich UEBER der Komponente, im selben Fenster und
+   damit in derselben WebView. Auf iOS ist das ohnehin der einzige Weg - dort
+   gibt es keine zweiten Fenster (iL5).
+
+   BAUWEISE.
+   - Eine Abdunkelung (epos-ueberlagerung-hintergrund) liegt ueber der ganzen
+     Flaeche und faengt die Maus ab. Ein Klick darauf schliesst NICHT: Wo ein
+     Unterdialog schreibt, waere ein versehentlicher Klick neben das Fenster
+     kein Abbrechen, sondern ein Verlust (dieselbe Ueberlegung wie "Enter ist
+     nicht belegt", A-7 aus B5b). Wer das anders will, setzt
+     SchliessenBeiHintergrund.
+   - Der Bereich selbst traegt role="dialog" und aria-modal="true".
+   - FOKUSFALLE OHNE JS: Vor und hinter dem Inhalt steht je ein leeres,
+     fokussierbares Feld. Wandert der Fokus per Tabulator dorthin, springt er
+     zurueck auf die Wurzel des Bereichs - der Zyklus bleibt damit im
+     Unterdialog, ohne dass EPOS.UI eine JS-Schicht braucht.
+   - Esc schliesst den Bereich. Der Wirt darf Esc erst danach fuer sich selbst
+     auswerten (Muster EmissionskatalogDialog: erst der Editor, dann der
+     Dialog).
+
+   WAS DER BAUSTEIN NICHT TUT. Er schliesst sich nicht selbst und er kennt kein
+   Ergebnis: Offen gehoert dem Wirt, Geschlossen ist die Bitte, es auf false zu
+   setzen. So bleibt genau eine Wahrheit darueber, welcher Bereich offen ist. *@
+
+@namespace EPOS.UI.Bausteine
+
+@if (Offen)
+{
+    <div class="epos-ueberlagerung-hintergrund" @onclick="BeiHintergrund"></div>
+    <div class="epos-ueberlagerung" role="dialog" aria-modal="true" aria-label="@Titel"
+         tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste" @onkeydown:stopPropagation="true">
+
+        <span class="epos-fokusfalle" tabindex="0" @onfocus="ZurWurzel"></span>
+
+        @if (!string.IsNullOrEmpty(Titel) || Schliessbar)
+        {
+            <div class="epos-ueberlagerung-kopf">
+                <h2 class="epos-ueberlagerung-titel">@Titel</h2>
+                @if (Schliessbar)
+                {
+                    <button type="button" class="epos-knopf epos-ueberlagerung-zu"
+                            title="@SchliessenText" @onclick="BeiSchliessen">✕</button>
+                }
+            </div>
+        }
+
+        <div class="epos-ueberlagerung-inhalt">
+            @KindInhalt
+        </div>
+
+        <span class="epos-fokusfalle" tabindex="0" @onfocus="ZurWurzel"></span>
+    </div>
+}
+
+@code {
+    /// <summary>Steht der Bereich? Die Wahrheit darueber gehoert dem Wirt.</summary>
+    [Parameter] public bool Offen { get; set; }
+
+    /// <summary>Meldet den gewuenschten neuen Zustand — fuer <c>@@bind-Offen</c>.</summary>
+    [Parameter] public EventCallback<bool> OffenChanged { get; set; }
+
+    /// <summary>Der Bereich moechte geschlossen werden (Esc, ✕, Hintergrund).</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>Der Bereich wurde soeben aufgebaut — der Wirt kann Werte nachladen.</summary>
+    [Parameter] public EventCallback Geoeffnet { get; set; }
+
+    /// <summary>Ueberschrift des Bereichs; leer = ohne Kopfzeile.</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Der Inhalt — ueblich ein vollstaendiger Dialog aus <c>Dialoge/</c>.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>Zeigt das ✕ in der Kopfzeile. <c>false</c> = nur der Inhalt schliesst.</summary>
+    [Parameter] public bool Schliessbar { get; set; } = true;
+
+    /// <summary>Schliesst ein Klick auf die Abdunkelung? Vorgabe <c>false</c> (siehe Kopf).</summary>
+    [Parameter] public bool SchliessenBeiHintergrund { get; set; }
+
+    /// <summary>Kurztext des ✕-Knopfes.</summary>
+    [Parameter] public string SchliessenText { get; set; } = "Schließen";
+
+    private ElementReference _wurzel;
+    private bool _warOffen;
+    private bool _fokusNoetig;
+
+    protected override void OnParametersSet()
+    {
+        if (Offen && !_warOffen) _fokusNoetig = true;
+        _warOffen = Offen;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_fokusNoetig || !Offen) return;
+        _fokusNoetig = false;
+        await _wurzel.FocusAsync();
+        await Geoeffnet.InvokeAsync();
+    }
+
+    private async Task ZurWurzel()
+    {
+        // Der Tabulator hat den Bereich verlassen wollen - er kommt zurueck.
+        await _wurzel.FocusAsync();
+    }
+
+    private Task BeiHintergrund()
+        => SchliessenBeiHintergrund ? BeiSchliessen() : Task.CompletedTask;
+
+    private async Task BeiSchliessen()
+    {
+        if (OffenChanged.HasDelegate) await OffenChanged.InvokeAsync(false);
+        await Geschlossen.InvokeAsync();
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Escape" => BeiSchliessen(),
+        _ => Task.CompletedTask
+    };
+}

@@ -180,5 +180,31 @@ namespace WindowsFormsApplication1
                 new DbParam("@pid", projektID),
                 new DbParam("@kat", kategorieID));
         }
+
+        /// <summary>
+        /// Die Summe EINER Kostenkategorie fuer EINE Anlagenzeile (iU9-W7.0e) —
+        /// woertlich aus <c>Wizard_WPItem.AnlagenSumme</c> (Z. 551-564).
+        ///
+        /// <para>Die Kostenzeile der Waermepumpenmaske zeigt damit „Invest … €" und
+        /// „Betrieb … €/a" DIESER Anlage. Ohne die Spalte <c>ID_Anlage</c> — auf einer
+        /// Datenbank vor Migrationsschritt 45 — liefert sie 0, genau wie der
+        /// Vorlaeufer; die Zeile zeigt dann „Invest — · Betrieb —".</para>
+        /// </summary>
+        internal static double AnlagenSumme(int projektId, int kategorie, int anlageId)
+        {
+            if (projektId <= 0 || anlageId <= 0) return 0;
+
+            bool spalteDa = false;
+            try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
+            if (!spalteDa) return 0;
+
+            object o = DataRepository.ExecuteScalar(
+                "SELECT SUM(EingegebenerWert) FROM Tab_ProjektWerte " +
+                "WHERE ProjektID = ? AND KategorieID = ? AND ID_Anlage = ?",
+                new DbParam("@p", projektId),
+                new DbParam("@k", kategorie),
+                new DbParam("@a", anlageId));
+            return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o);
+        }
     }
 }

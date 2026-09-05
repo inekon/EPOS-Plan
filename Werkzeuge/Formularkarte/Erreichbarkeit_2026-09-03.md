@@ -1,4 +1,4 @@
-# Öffner erreichbar — Befund aller Masken (03.09.2026)
+﻿# Öffner erreichbar — Befund aller Masken (03.09.2026, Zahlen nachgezogen 04.09.2026)
 
 Die **K6-Liste** für iU9: Welche der WinForms-Masken sind vom Einstieg der Anwendung aus
 überhaupt noch zu erreichen — und welche nicht? Erzeugt mit
@@ -24,6 +24,28 @@ Programmeinsprung `Program.Main` (er zeigt den Erststart-Dialog, bevor es ein Fe
 Abgezogen werden die Wege, die es zur Laufzeit nicht mehr gibt. Regeln und Grenzen stehen in
 [`LIESMICH.md`](LIESMICH.md), Abschnitt „Öffner erreichbar".
 
+> **Nachgezogen mit iU9‑W15a** (04.09.2026): Die Tabellen unten stammen aus einem frischen
+> Stapellauf nach dieser Welle. Der Befund zählt jetzt **13 Masken, davon 13
+> erreichbar** — Welle 12 nahm fünf (38), Welle 13 sechs (32), Welle 14a sieben (25),
+> Welle 14b vier (21), Welle 14c vier (17) und Welle 15a vier (13).
+>
+> **Welle 14a** nahm die vier Erzeuger-Katalogbrowser (sie werden EINE Razor-Komponente mit vier
+> Ausprägungen), den fehlenden vierten Katalogeditor und die zwei Modulkataloge (eine zweite
+> Komponente mit zwei Ausprägungen). **Welle 14b** die drei Bedarfs-Katalogverwaltungen
+> (`Form_Brauchwasser_Admin`, `Form_Prozesswaerme_Admin`, `Form_Stromverbraucher_Admin` — EINE
+> Komponente mit drei Ausprägungen) und `Form_Solarganglinie_Admin`.
+>
+> **Mit Welle 14a fällt der LETZTE „unklar"-Zustand des Bestands.** Er hing an
+> `Form_PufferSp_Bearbeiten`: Ihre Mutter `Form_PufferSp_Admin` schaltete `btn_Neu` und
+> `btn_Bearbeiten` in einem Zweig ab und nie wieder ein. Der Befund zählt seither
+> **0 nein / 0 verwaist / 0 unklar** — jede Maske des Bestands ist vom Einstieg aus erreichbar.
+> Die REGEL selbst („ein dauerhaft gesperrter Knopf macht den Weg unklar, nicht ja") bleibt
+> prüfbar: Beide Masken liegen eingefroren unter
+> `Werkzeuge/Formularkarte.Tests/Pruefmuster/Pufferspeicher/`, samt einer Wurzel, und der
+> Testfall `EinDauerhaftGesperrterKnopfMachtDenWegUnklarStattJa` läuft dort.
+>
+> Der erklärende Teil oben ist unverändert.
+
 ## Stand nach iU9-W0 (Anwenderentscheid iF29)
 
 Der Befund vom Vormittag nannte **vier unerreichbare und eine verwaiste Maske**. Alle fünf sind
@@ -47,9 +69,9 @@ nur `Form_Variantentest` geöffnet hat:
 | Maske | Zustand | Befund und Vorschlag |
 |---|---|---|
 | `Form_GebWohnflaeche` | unklar | Erreichbar über `Form_Gebaeude.btn_Aendern`, der aber im `m_bAdmin`-Zweig auf `Visible = false` gesetzt und dort nicht wieder eingeschaltet wird. Im Projektmodus ist er sichtbar — die Maske **bleibt und wird umgestellt** (Welle W9). |
-| `Form_PufferSp_Bearbeiten` | unklar | Erreichbar über `Form_PufferSp_Admin.btn_Bearbeiten` / `btn_Neu`; beide werden im `m_bReadOnly`-Zweig gesperrt und dort nicht wieder eingeschaltet. Die Maske **bleibt und wird umgestellt** (Welle W14a). |
+| `Form_PufferSp_Bearbeiten` | unklar | Erreichbar über `Form_PufferSp_Admin.btn_Bearbeiten` / `btn_Neu`; beide werden im `m_bReadOnly`-Zweig gesperrt und dort nicht wieder eingeschaltet. Die Maske **bleibt und wird umgestellt** (Welle W14a). **Erledigt mit iU9‑W14a.1** — sie ist `PufferSpKatalogDialog`, ihre Mutter ist eine Ausprägung von `KatalogBrowserDialog`, und beide liegen eingefroren unter `Pruefmuster/Pufferspeicher/`. Damit gibt es im Bestand **keinen „unklar"-Zustand mehr**. |
 
-Die übrigen 103 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
+Die übrigen 89 Masken haben einen Weg von `MDIMainForm` bzw. `Form_Start`; er steht je Maske in
 der Tabelle unten und im Kopf ihrer Feldkarte.
 
 **Für die Wellenplanung iU9:** Eine Maske mit „nein" oder „verwaist" wird **nicht** nach Blazor
@@ -57,122 +79,212 @@ umgestellt — sie wird stillgelegt. Eine Maske mit „unklar" wird vor der Umst
 jeder Welle ist der Stapellauf neu zu ziehen; jede stillgelegte und jede umgestellte Maske senkt
 die Gesamtzahl.
 
+## Stand nach iU9-W2 (Nachtrag 03.09.2026)
+
+Welle 2 hat sechs Masken umgestellt und gelöscht — drei mit Designer, drei ohne (K4):
+
+| Maske | Klasse | Nachfolge |
+|---|---|---|
+| `Form_StromspeicherItemNeu` | K1, lokalisiert, 28 Aufrufer | `EPOS.UI/Dialoge/Allgemein/NamensDialog.razor` über `NamensDialogHuelle.Bezeichner` |
+| `Form_GebaeudetypNeu` | K1, lokalisiert | derselbe Dialog, mit zweitem Feld (`BezeichnerUndBeschreibung`) |
+| `Form_AlsVariante` | K4 | derselbe Dialog, mit Hinweiszeile (`FragenMitHinweis`); der Ablauf steht als `Views/Varianten/AlsVarianteHuelle.cs` |
+| `Form_Tarifstruktur` | K4 | `EPOS.UI/Dialoge/Wirtschaftlichkeit/TarifstrukturDialog.razor` |
+| `Form_PhotovoltaikVerguetung` | K1 | `EPOS.UI/Dialoge/Wirtschaftlichkeit/PhotovoltaikVerguetungDialog.razor` |
+| `Form_WirtschaftlichkeitParameter` | K4 | `EPOS.UI/Dialoge/Wirtschaftlichkeit/WirtschaftlichkeitParameterDialog.razor` |
+
+Der Stapellauf zählt seither **102 Masken** (105 nach iU9‑W0), **0 × „nein"**, **0 × „verwaist"**,
+unverändert **2 × „unklar"**. Die drei K4-Masken hatten nie eine Designer-Datei und sind in
+dieser Zählung deshalb nie erschienen; sichtbar wird ihr Verschwinden nur in der
+Erreichbarkeitstabelle unten.
+
+## Stand nach iU9-W3 (Nachtrag 03.09.2026)
+
+Welle 3 hat vier Masken umgestellt und gelöscht, alle vier mit Designer:
+
+| Maske | Klasse | Nachfolge |
+|---|---|---|
+| `Form_LeistungspreisReihe` | K1 | `EPOS.UI/Dialoge/Kosten/LeistungspreisReiheDialog.razor` mit `LeistungspreisReiheHuelle` |
+| `Form_SpotpreisImport` | K1 | `EPOS.UI/Dialoge/Kosten/SpotpreisImportDialog.razor` mit `SpotpreisImportHuelle` |
+| `Form_Emissionskatalog` | K2 (zwei Raster) | `EPOS.UI/Dialoge/Kosten/EmissionskatalogDialog.razor` mit `EmissionskatalogHuelle` |
+| `Form_Kostenprofil` | K3 (Chart + 36 Laufzeitfelder) | `EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor` mit `KostenprofilHuelle` |
+
+Der Stapellauf zählte danach **98 Masken**.
+
+## Stand nach iU9-W4 (Kostenverwaltung und Energieträgerkatalog)
+
+Welle 4 hat die beiden **Hosts** der Kostenseite umgestellt und mit ihnen ihre fünf
+Unterbausteine — sieben Designer-Masken auf einmal, die größte Löschung seit iU9‑W0:
+
+| Maske | Klasse | Nachfolge |
+|---|---|---|
+| `Form_KostenKomponente` | K1 (Host, TabControl) | `EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor` mit `KostenKomponenteHuelle` |
+| `ucVorlagenZeile` | K1 (uc, dynamisch ×n) | `EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor` |
+| `ucErtragBonus` | K1 (uc) | `EPOS.UI/Dialoge/Kosten/ErtragBonus.razor` mit `ErtragBonusGaben` |
+| `Form_Energietraeger` | K1 (Host) | `EPOS.UI/Dialoge/Kosten/EnergietraegerDialog.razor` mit `EnergietraegerHuelle` |
+| `ucFuelSettings` | K2 (uc, 2 103 Z.) | `EPOS.UI/Dialoge/Kosten/EnergietraegerEinstellungen.razor` |
+| `ucStromAufschlaege` | K1 (uc) | `EPOS.UI/Dialoge/Kosten/StromAufschlaege.razor` |
+| `ucBrennstoffBestandteile` | K1 (uc) | `EPOS.UI/Dialoge/Kosten/BrennstoffBestandteile.razor` |
+
+Ohne Nutzer geblieben und mitgelöscht: `EinstiegsKarte.cs` (Nachfolge `Kachel`) und
+`SectionPanel.cs` (Nachfolge `Gruppenkopf`).
+
+Der Stapellauf zählt seither **91 Masken** (98 nach iU9‑W3, 102 nach iU9‑W2, 105 nach iU9‑W0),
+**0 × „nein"**, **0 × „verwaist"**, unverändert **2 × „unklar"**.
+`Form_KostenKomponente` und `ucVorlagenZeile` liegen als sechstes und siebtes Prüfmuster unter
+`Werkzeuge/Formularkarte.Tests/Pruefmuster/Kosten/`; **`Views/Kosten` führt seither keine
+Designer-Maske mehr** — der Stapellauf-Test des Werkzeugs läuft über `Views/Heizkessel`.
+
+## Stand nach iU9-W10a (Simulationskonfiguration I: die sieben Dialoge)
+
+Welle 10a stellt die **sieben Dialoge** um, die aus `Form_Simulation_Config` heraus geöffnet
+werden. Fünf davon hatte diese Liste geführt; `Form_Quellprofil` und `Form_Waermesenke` bauen
+ihre Oberfläche im Quelltext auf und haben nie einen Designer gehabt (Befund W10‑B38), tauchen
+hier also gar nicht erst auf.
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Betriebsmodus` | ja | gelöscht; `EPOS.UI/Dialoge/Simulation/BetriebsmodusDialog` mit `BetriebsmodusHuelle`. |
+| `Form_Klimazonenkarte` | ja | gelöscht, mit ihr das Steuerelement `KlimazonenKarte` und die beiden eingebetteten Ressourcen; `KlimazonenkarteDialog` auf dem neuen Baustein `Bildkarte`. |
+| `Form_QuelleErdreich` | ja | gelöscht; `QuelleErdreichDialog` mit `QuelleErdreichHuelle`, die Klimazonenkarte darin als Überlagerung. |
+| `Form_QuellePufferspeicher` | ja | gelöscht; `QuellePufferspeicherDialog`, die Pufferverwaltung darin als Überlagerung. |
+| `Form_PufferSp_Projekt` | ja | gelöscht; `PufferSpProjektDialog` mit sechzehn Delegaten, in drei Rollen (eigenes Fenster und zwei Überlagerungen). |
+
+`Form_Simulation_Config` bleibt in dieser Welle WinForms und erreichbar — sie wird mit **W10b**
+zur Seite. `Form_PufferSp_Admin` bleibt bis Welle 14a; der Projektdialog springt über
+`Sprungziel.PufferSpAdminNurLesen` dorthin.
+
+## Stand nach iU9-W10b (Simulationskonfiguration II: die Seite selbst)
+
+Welle 10b stellt den **Wirt** der sieben Dialoge um: `Form_Simulation_Config` mit ihren
+vier Teildateien, dem Designer und der einzigen `.resx` der ganzen Welle. Mit ihr fallen
+die drei Steuerelement-Klassen `ErzeugerKarte`, `SpeicherKarte` und `SchemaAnsicht` sowie
+`Eingabefrage` (letzter Nutzer) — keine davon hat einen eigenen Designer, sie tauchen in
+dieser Liste also nicht auf.
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Simulation_Config` | ja | gelöscht; `EPOS.UI/Seiten/Simulation/SimulationKonfigSeite` mit `SimulationKonfigHuelle`. Die Komponente ist eine **Seite** (Entscheid R‑W10b‑1) und erscheint unter Windows bis W16 in der modalen Dialoghülle. |
+
+Damit führt `Views/Simulation` keine Designer-Maske der Simulationskonfiguration mehr;
+übrig bleiben dort `Form_Simulation_Detail`, die drei `Navigator*` und `DashboardForm`.
+
+## Stand nach iU9-W11b (Simulationsergebnis II: die Ergebnisseite)
+
+Welle 11b stellt die **Ergebnisansicht** um — und mit ihr in EINEM Schritt ihre fünf
+Nebenmasken (Regel R‑W11‑2: maskenweise, nicht reiterweise; reiterweise stünden zwei
+WebViews in einem Fenster). Zusammen 11 031 Zeilen `.cs`, 4 201 Zeilen Designer und
+21 `MessageBox`.
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Simulation_Detail` | ja | gelöscht; `EPOS.UI/Seiten/Simulation/SimulationErgebnisSeite` mit `SimulationErgebnisHuelle` (vier Teildateien). Die Komponente ist eine **Seite** (Entscheid R‑W11‑1) und erscheint unter Windows bis W16 in der modalen Dialoghülle, 1 474 × 821. |
+| `DashboardForm` | ja | gelöscht; die Autarkie-Analyse ist ein Blatt des `ErgebnisReiter`. |
+| `NavigatorUebersicht` | ja | gelöscht; ihr Inhalt ist der `UebersichtReiter` in seiner zweiten Rolle (`NurNavigator`). |
+| `NavigatorStrom` | ja | gelöscht; `StromgangReiter` — jetzt MIT Sortiertumschalter (Befund W11‑B41). |
+| `NavigatorWaerme` | ja | gelöscht; `WaermegangReiter`. |
+| `Form_SpeicherVariantenVergleich` | ja | gelöscht; `SpeicherVariantenVergleich` als **Überlagerung** der Ergebnisseite, mit echtem Fortschritt („n von m"). |
+
+Ohne Designer und deshalb nie in dieser Liste: `TabNavigationManager` (226 Z.),
+`TabListMapper` (462 Z.), `GanglinienDarstellung` (97 Z., Rest) und
+`SchluesselEintrag` (37 Z.) — alle vier ebenfalls gelöscht.
+
+**`Views/Simulation` führt seither KEINE Designer-Maske mehr**; `Views/Stromspeicher`
+noch zwei (`Form_AdminStromspeicher`, `Form_PeakShaving`).
+`Form_SpeicherOptimierung` bleibt WinForms (iF22) und hatte nie einen Designer —
+sie ist ab jetzt über die **Sprungbrücke** (`Sprungziel.SpeicherOptimierung`) zu
+erreichen, aus dem Parameterblatt der Ergebnisseite heraus.
+
+## Stand nach iU9-W12 (Stromganglinie, Peak-Shaving, Importkonflikte)
+
+Welle 12 stellt **sechs** Masken um — die vier Glieder der AP5-Importkette, die
+Zuordnung der Projektganglinien und die Lastspitzenkappung; zusammen 2 134 Zeilen
+`.cs`, 1 409 Zeilen Designer, 10 `MessageBox` und 13 indirekte über
+`Program.ZahlPruefen`.
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_GanglinieProtokoll` | ja | gelöscht; `EPOS.UI/Dialoge/Strom/GanglinieProtokollDialog` als Überlagerung ihrer beiden Wirte. |
+| `Form_GanglinieImportOptionen` | ja | gelöscht; `GanglinieImportOptionenDialog`, ebenfalls als Überlagerung. |
+| `Form_ImportKonflikte` | (nie gelistet) | gelöscht; `Dialoge/Import/ImportKonflikteDialog` mit `ImportKonflikteHuelle` für die vier W13-Aufrufer. Sie hatte KEINEN Designer und stand deshalb nie in dieser Liste (Befund W12‑B21). |
+| `Form_Stromganglinie_Admin` | ja | gelöscht; `StromganglinieAdminDialog` mit `StromganglinieAdminHuelle` (`Masken.StromganglinieAdmin`). |
+| `Form_Stromganglinie` | ja | gelöscht; `StromganglinieDialog` mit `StromganglinieHuelle`. **Mit ihr fällt der Anker des Erreichbarkeitstests**: Von den zwölf Masken mit einem Pfad ab `Form_Start` fällt keine erst in W13/W14 (Befund W12‑B26). Nachfolger ist `Form_AdminSettings` über `MDIMainForm → MenuItem_Einstellungen` — W14c ist die letzte der W13/W14-Wellen. |
+| `Form_PeakShaving` | ja | gelöscht; `PeakShavingDialog` mit `PeakShavingHuelle` (`Masken.PeakShaving`, mit Projekt-Id). |
+
+**`Views/Stromverbraucher` und `Views/Stromspeicher` führten danach je eine
+Designer-Maske** (`Form_Stromverbraucher_Admin`, `Form_AdminStromspeicher`);
+`Views/Import` führt gar keine mehr.
+
+## Stand nach iU9-W14b (Bedarfs-Admin, 04.09.2026)
+
+Welle 14b hat die vier ruhenden Verwaltungsmasken des Bedarfs umgestellt und gelöscht:
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Stromverbraucher_Admin` | ja | gelöscht; Ausprägung `Stromverbraucher` von `EPOS.UI/Dialoge/Bedarf/BedarfAdminDialog` mit `BedarfAdminHuelle`. |
+| `Form_Prozesswaerme_Admin` | ja | gelöscht; Ausprägung `Prozesswaerme` derselben Komponente. |
+| `Form_Brauchwasser_Admin` | ja | gelöscht; Ausprägung `Brauchwasser` derselben Komponente. **Mit ihr wandert der KLEINSCHREIBUNGS-Zeuge** des Tests `FindetAlleDesignerDateienUnabhaengigVonDerSchreibweise` auf `WizardParent.designer.cs` (Welle 16). |
+| `Form_Solarganglinie_Admin` | ja | gelöscht; `EPOS.UI/Dialoge/Solarthermie/SolarganglinieAdminDialog` mit `SolarganglinieAdminHuelle`. Ihr `Sprungziel` entfällt — der Projektdialog zeigt sie als Überlagerung. |
+
+**`Views/Brauchwasser`, `Views/Prozesswärme` und `Views/Stromverbraucher` führen seither
+keine Designer-Maske mehr**; `Views/Solarthermie` führt noch eine
+(`Form_SolarKollektorenAdmin`, Welle 14a).
+
+## Stand nach iU9-W14c (Gesetze, Klimadaten, Einstellungen, Dubletten, 04.09.2026)
+
+Welle 14c hat fünf Masken umgestellt und gelöscht — vier mit Designer, eine ohne:
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_Gesetzesparameter` | ja | gelöscht; `EPOS.UI/Dialoge/Wirtschaftlichkeit/GesetzeskatalogDialog` mit `GesetzeskatalogHuelle`. Ihre ZWEI `Sprungziel`e entfallen — beide Aufrufer sind selbst Razor und zeigen den Katalog als Überlagerung. |
+| `Form_GesetzparameterZeile` | ja | gelöscht; `GesetzeskatalogZeileDialog` als Überlagerung im Katalog, kein eigenes Fenster. |
+| `Form_AdminSettings` | ja | gelöscht; `EPOS.UI/Dialoge/Admin/EinstellungenDialog` mit `EinstellungenHuelle`. **Mit ihr wandert der „ja"-ZEUGE** des Tests (bis W12 `Form_Stromganglinie`) auf `MDIMainForm` — die Wurzel des Graphen, Pfadlänge 1, und die allerletzte Maske überhaupt (Welle 16). |
+| `Form_Klimadaten` | ja | **verschoben** nach `Werkzeuge/Formularkarte.Tests/Pruefmuster/Klimadaten/`; `EPOS.UI/Dialoge/Klimadaten/KlimaregionDialog` mit `KlimaregionHuelle`. Sie war die einzige Maske, deren `btn_Help` im DESIGNER stand — dort laufen seither fünf Testanker. **Mit ihr wandert der GROSSSCHREIBUNGS-Zeuge** auf `MDIMainForm.Designer.cs`. |
+| `Form_KatalogDubletten` | (nicht im Befund) | gelöscht; `EPOS.UI/Dialoge/Admin/KatalogDublettenDialog` mit `KatalogDublettenHuelle`. Sie hatte keinen Designer und erschien deshalb nie in dieser Tabelle (Befund W14c‑B61). |
+
+**`Views/Admin` führt seither nur noch `Form_LizenzVerwaltung`** (Welle 15c), und
+**`Views/Klimadaten` gibt es nicht mehr**. Mit `Form_Klimadaten` fällt der letzte Nutzer des
+`ChartManager`: Die MS-Chart-Bindung der Anwendung endet außerhalb der Designer mit dieser
+Welle, und **WFO1000 steht bei null**.
+
+## Stand nach iU9-W15a (Projektdialoge, Transfer, Assistentenkopf, 04.09.2026)
+
+Welle 15a hat sechs Bauteile umgestellt — vier mit Designer, eines ohne, und ein
+UserControl, das **bleibt**:
+
+| Maske | Zustand vorher | Was geschehen ist |
+|---|---|---|
+| `Form_ProjektAuswahl` | ja | gelöscht; `EPOS.UI/Dialoge/Projekt/ProjektWahlDialog` (Zweck `Oeffnen`) mit `ProjektWahlHuelle`. |
+| `Form_ProjektDelete` | ja | gelöscht; DIESELBE Komponente mit Zweck `Loeschen` — beide Masken taten dasselbe: ein Projekt auswählen. **Mit ihr fällt der Weg über die Klappliste**: „Löschen" zeigt seither dieselbe Liste mit Suche wie „Öffnen" (A‑12). |
+| `Form_ProjektSpeichernUnter` | ja | gelöscht; `ProjektKopieDialog` mit `ProjektKopieHuelle`. **Mit ihr wandert der MASKENSCHLÜSSEL-Zeuge** des Tests `DieSprungtabelleLoestDieMaskenschluesselAuf` auf `FormMain` / `Masken.ProjektDetail` — nach dieser Welle gibt es nur noch zwei Maskenschlüssel mit einer WinForms-Maske dahinter, und beide fallen mit Welle 16. |
+| `Form_ProjektExportImport` | (nicht im Befund) | gelöscht; `ProjektTransferDialog` mit `ProjektTransferHuelle`. Sie hatte keinen Designer und erschien deshalb nie in dieser Tabelle (Befund W15a‑B24). |
+| `Wizard_Projekt` | ja | gelöscht; `EPOS.UI/Seiten/Assistent/ProjektKopfSeite` mit `ProjektKopfHuelle`. **Mit ihr verliert der ASSISTENTEN-Zeuge** seinen dritten Namen; `Wizard_Komponenten` und `Wizard_Stromlastgang` bleiben, beide Welle 16. |
+| `ProjektAuswahl` (UserControl) | ja | **BLEIBT bis Welle 16.** Es lebt in ZWEI Wirten; der eine (`Form_ProjektAuswahl`) fällt hier, der andere (`WizardParent.pnlLeft`) erst dort. Sein Erreichbarkeitspfad führt seither über den Assistenten statt über die gefallene Hüllform. Das ist eine ausdrückliche Ausnahme von der Arbeitsregel iZ5 (Entscheid R‑W15a‑1). |
+
+**`Views/Projekt` führt seither genau eine Designer-Maske** — das UserControl —, und
+`Views/Wizard` noch drei (`WizardParent`, `Wizard_Komponenten`, `Wizard_Stromlastgang`).
+
 ## Zählung
 
 | Zustand | Masken | Bedeutung |
 |---|---|---|
-| ja | 103 | Weg von MDIMainForm bzw. Form_Start vorhanden |
+| ja | 13 | Weg von MDIMainForm bzw. Form_Start vorhanden |
 | nein | 0 | Öffner steht im Quelltext, ist selbst aber nicht zu erreichen |
 | verwaist | 0 | die Maske wird nirgends erzeugt |
-| unklar | 2 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
-| gesamt | 105 | |
-
-## Alle Masken
+| unklar | 0 | nur über einen zweifelhaften Weg (verborgener oder gesperrter Knopf) |
+| gesamt | 13 | |
 
 | Maske | Öffner erreichbar | Pfad bzw. Öffner | Datei |
 |---|---|---|---|
-| Form_GebWohnflaeche | unklar | Form_Start → pBox_Gebaude_Click → Form_Gebaeude → btn_Aendern → Form_GebWohnflaeche — Öffner: Form_Gebaeude.btn_Aendern_Click (Form_Gebaeude.cs:425) — zweifelhaft: Steuerelement btn_Aendern bleibt auf Visible/Enabled = false | `WindowsFormsApplication1/Views/Gebäude/Form_GebWohnflaeche.designer.cs` |
-| Form_PufferSp_Bearbeiten | unklar | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSp → Masken.PufferSpAdmin → Form_PufferSp_Admin → btn_Bearbeiten → Form_PufferSp_Bearbeiten — Öffner: Form_PufferSp_Admin.btn_Bearbeiten_Click (Form_PufferSp_Admin.cs:164) — zweifelhaft: Steuerelement btn_Bearbeiten bleibt auf Visible/Enabled = false; Form_PufferSp_Admin.btn_Neu_Click (Form_PufferSp_Admin.cs:178) — zweifelhaft: Steuerelement btn_Neu bleibt auf Visible/Enabled = false | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Bearbeiten.designer.cs` |
 | AktionsKarte | ja | Form_Start → InitializeComponent → AktionsKarte | `WindowsFormsApplication1/Views/GemeinsameBausteine/AktionsKarte.Designer.cs` |
-| DashboardForm | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → .ctor → TabNavigationManager.ShowContent → DashboardForm | `WindowsFormsApplication1/Views/Simulation/DashboardForm.Designer.cs` |
 | FormMain | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain | `WindowsFormsApplication1/Views/Hauptformular/FormMain.Designer.cs` |
-| Form_AdminPV | ja | MDIMainForm → MenuItem_PC_Bearbeiten → Form_AdminPV | `WindowsFormsApplication1/Views/Photovoltaik/Form_AdminPV.designer.cs` |
-| Form_AdminSettings | ja | MDIMainForm → MenuItem_Einstellungen → Form_AdminSettings | `WindowsFormsApplication1/Views/Admin/Form_AdminSettings.Designer.cs` |
-| Form_AdminStromspeicher | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.StromspeicherBearbeiten → Masken.StromspeicherAdmin → Form_AdminStromspeicher | `WindowsFormsApplication1/Views/Stromspeicher/Form_AdminStromspeicher.designer.cs` |
-| Form_AdminWaermeeinlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WaermebedarfExtern → Masken.WaermebedarfExternAdmin → Form_AdminWaermeeinlesen | `WindowsFormsApplication1/Views/Wärmebedarf/Form_AdminWaermeeinlesen.designer.cs` |
-| Form_BHKWAdmin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.BHKW → Masken.BhkwAdmin → Form_BHKWAdmin | `WindowsFormsApplication1/Views/BHKW/Form_BHKWAdmin.designer.cs` |
-| Form_BHKWEing | ja | Form_Start → label2_pBox_BHKW → Form_BHKWEing | `WindowsFormsApplication1/Views/BHKW/Form_BHKWEing.designer.cs` |
-| Form_Betriebsmodus | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config → BetriebsmodusBearbeiten → Form_Betriebsmodus | `WindowsFormsApplication1/Views/Simulation/Form_Betriebsmodus.Designer.cs` |
-| Form_BkUebernahme | ja | Form_Start → BaueBerichteKostenSeite → UcBerichteKosten → Uebersicht → UcBkUebersicht → MerkmalUebernahme → Form_BkUebernahme | `WindowsFormsApplication1/Views/BerichteKosten/Form_BkUebernahme.Designer.cs` |
-| Form_Brauchwasser | ja | Form_Start → pBox_Brauchwasser_Click → Form_Brauchwasser | `WindowsFormsApplication1/Views/Brauchwasser/Form_Brauchwasser.designer.cs` |
-| Form_Brauchwasser_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Brauchwasser → Masken.BrauchwasserAdmin → Form_Brauchwasser_Admin | `WindowsFormsApplication1/Views/Brauchwasser/Form_Brauchwasser_Admin.designer.cs` |
-| Form_CECImport | ja | MDIMainForm → MenuItem_PV_Import_CEC → Main_PV_Test | `WindowsFormsApplication1/Views/Photovoltaik/Form_CECImport.Designer.cs` |
-| Form_DBBHKW | ja | Form_Start → label2_pBox_BHKW → Form_BHKWEing → btn_DBBHKW_Edit → Form_DBBHKW | `WindowsFormsApplication1/Views/BHKW/Form_DBBHKW.designer.cs` |
-| Form_EingBrauchwasserTyp | ja | Form_Start → pBox_Brauchwasser_Click → Form_Brauchwasser → btn_ProzTypeDBedit → Form_EingBrauchwasserTyp | `WindowsFormsApplication1/Views/Brauchwasser/Form_EingBrauchwasserTyp.designer.cs` |
-| Form_EingDBBrauchwasser | ja | Form_Start → pBox_Brauchwasser_Click → Form_Brauchwasser → btn_Prozess_DBedit → Form_EingDBBrauchwasser | `WindowsFormsApplication1/Views/Brauchwasser/Form_EingDBBrauchwasser.designer.cs` |
-| Form_EingDBProzess | ja | Form_Start → pBox_Prozess_Click → Form_Prozesswaerme → btn_Prozess_DBedit → Form_EingDBProzess | `WindowsFormsApplication1/Views/Prozesswärme/Form_EingDBProzess.designer.cs` |
-| Form_EingDBStromverbraucher | ja | Form_Start → pBox_StdLastProfil_Click → Form_Stromverbraucher → btn_Strom_DBedit → Form_EingDBStromverbraucher | `WindowsFormsApplication1/Views/Stromverbraucher/Form_EingDBStromverbraucher.designer.cs` |
-| Form_EingGebTyp | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.GebaeudetypenBearbeiten → Masken.GebaeudetypenAdmin → Form_EingGebTyp | `WindowsFormsApplication1/Views/Gebäude/Form_EingGebTyp.designer.cs` |
-| Form_EingProzTyp | ja | Form_Start → pBox_Prozess_Click → Form_Prozesswaerme → btn_ProzTypeDBedit → Form_EingProzTyp | `WindowsFormsApplication1/Views/Prozesswärme/Form_EingProzTyp.designer.cs` |
-| Form_EingStromTyp | ja | Form_Start → pBox_StromProfilEigenes_Click → Form_EingStromTyp | `WindowsFormsApplication1/Views/Stromverbraucher/Form_EingStromTyp.designer.cs` |
-| Form_Emissionskatalog | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → KatalogFuerZeile → Form_Emissionskatalog | `WindowsFormsApplication1/Views/Kosten/Form_Emissionskatalog.Designer.cs` |
-| Form_Energietraeger | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger | `WindowsFormsApplication1/Views/Kosten/Form_Energietraeger.Designer.cs` |
-| Form_ErgBrauchwasserwaerme | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → btn_Details → Form_ErgBrauchwasserwaerme | `WindowsFormsApplication1/Views/Brauchwasser/Form_ErgBrauchwasserwaerme.designer.cs` |
-| Form_ErgProzesswaerme | ja | Form_Start → pBox_Prozess_Click → Form_Prozesswaerme → btn_Simulation → Form_ErgProzesswaerme | `WindowsFormsApplication1/Views/Prozesswärme/Form_ErgProzesswaerme.designer.cs` |
-| Form_ErgStromverbraucher | ja | Form_Start → pBox_StdLastProfil_Click → Form_Stromverbraucher → btn_Simulation → Form_ErgStromverbraucher | `WindowsFormsApplication1/Views/Stromverbraucher/Form_ErgStromverbraucher.designer.cs` |
-| Form_GanglinieImportOptionen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PeakShavingBearbeiten → Masken.PeakShaving → Form_PeakShaving → btn_Datei → Form_GanglinieImportOptionen | `WindowsFormsApplication1/Views/Stromverbraucher/Form_GanglinieImportOptionen.Designer.cs` |
-| Form_GanglinieProtokoll | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PeakShavingBearbeiten → Masken.PeakShaving → Form_PeakShaving → btn_Datei → Form_GanglinieProtokoll.Zeigen → Form_GanglinieProtokoll | `WindowsFormsApplication1/Views/Stromverbraucher/Form_GanglinieProtokoll.Designer.cs` |
-| Form_Gebaeude | ja | Form_Start → pBox_Gebaude_Click → Form_Gebaeude | `WindowsFormsApplication1/Views/Gebäude/Form_Gebaeude.designer.cs` |
-| Form_Gebaeude1 | ja | Form_Start → pBox_Gebaude_Click → Form_Gebaeude → btn_GebAendern_DB → Form_Gebaeude1 | `WindowsFormsApplication1/Views/Gebäude/Form_Gebaeude1.designer.cs` |
-| Form_Gebaeude2 | ja | Form_Start → pBox_Gebaude_Click → Form_Gebaeude → btn_GebAendern_DB → Form_Gebaeude1 → btn_Dialog2 → Form_Gebaeude2 | `WindowsFormsApplication1/Views/Gebäude/Form_Gebaeude2.designer.cs` |
-| Form_GebaeudetypNeu | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.GebaeudetypenBearbeiten → Masken.GebaeudetypenAdmin → Form_EingGebTyp → btn_EingneuerTyp → Form_GebaeudetypNeu | `WindowsFormsApplication1/Views/Gebäude/Form_GebaeudetypNeu.Designer.cs` |
-| Form_Gesetzesparameter | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter | `WindowsFormsApplication1/Views/Admin/Form_Gesetzesparameter.Designer.cs` |
-| Form_GesetzparameterZeile | ja | MDIMainForm → InitGesetzeMenue → Form_Gesetzesparameter → Dialog → Form_GesetzparameterZeile | `WindowsFormsApplication1/Views/Admin/Form_GesetzparameterZeile.Designer.cs` |
-| Form_Heizkessel | ja | Form_Start → pBox_Heizkessel_Click → Form_Heizkessel | `WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel.Designer.cs` |
-| Form_Heizkessel_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Kessel → Masken.HeizkesselAdmin → Form_Heizkessel_Admin | `WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel_Admin.Designer.cs` |
-| Form_Heizkessel_Bearbeiten | ja | Form_Start → pBox_Heizkessel_Click → Form_Heizkessel → btn_Bearbeiten → Form_Heizkessel_Bearbeiten | `WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel_Bearbeiten.designer.cs` |
-| Form_Heizkessel_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.SPKImport → Masken.HeizkesselImport → Form_Heizkessel_einlesen | `WindowsFormsApplication1/Views/Heizkessel/Form_Heizkessel_einlesen.designer.cs` |
 | Form_HelpPopup | ja | Form_Start → pBox_Heizkessel → Program.FillRoundedRectangle → Program.Main → HilfeAutomatik.Starten → HelpExtender.PopupBereitstellen → Form_HelpPopup | `WindowsFormsApplication1/Views/Help/Form_HelpPopup.Designer.cs` |
 | Form_Hinweis | ja | Form_Start → HinweisProjektGeoeffnet → Form_Hinweis | `WindowsFormsApplication1/Allgemein/Form_Hinweis.Designer.cs` |
 | Form_KiEinstellungen | ja | MDIMainForm → InitKiHilfe → Form_KiChat.Oeffnen → Form_KiChat → EinstellungenOeffnen → Form_KiEinstellungen | `WindowsFormsApplication1/Views/Help/Form_KiEinstellungen.Designer.cs` |
-| Form_Klimadaten | ja | MDIMainForm → MenuItem_Klimadaten → Form_Klimadaten | `WindowsFormsApplication1/Views/Klimadaten/Form_Klimadaten.Designer.cs` |
-| Form_Klimazonenkarte | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config → _wqCombo → Form_QuelleErdreich → _btnKarte → Form_Klimazonenkarte | `WindowsFormsApplication1/Views/Simulation/Form_Klimazonenkarte.Designer.cs` |
-| Form_KostenKomponente | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente | `WindowsFormsApplication1/Views/Kosten/Form_KostenKomponente.Designer.cs` |
-| Form_Kostenprofil | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → Form_Kostenprofil | `WindowsFormsApplication1/Views/Kosten/Form_Kostenprofil.Designer.cs` |
-| Form_LeistungspreisReihe | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → BaueLeistungspreisZusatz → Form_LeistungspreisReihe | `WindowsFormsApplication1/Views/Kosten/Form_LeistungspreisReihe.Designer.cs` |
 | Form_LizenzVerwaltung | ja | MDIMainForm → InitLizenzMenue → Form_LizenzVerwaltung | `WindowsFormsApplication1/Views/Admin/Form_LizenzVerwaltung.Designer.cs` |
-| Form_PV | ja | Form_Start → pBox_PV → Form_PV | `WindowsFormsApplication1/Views/Photovoltaik/Form_PV.Designer.cs` |
-| Form_PeakShaving | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PeakShavingBearbeiten → Masken.PeakShaving → Form_PeakShaving | `WindowsFormsApplication1/Views/Stromspeicher/Form_PeakShaving.Designer.cs` |
-| Form_PhotovoltaikVerguetung | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → .ctor → ucErtragBonus → btnPvOeffnen → Form_PhotovoltaikVerguetung | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/Form_PhotovoltaikVerguetung.Designer.cs` |
-| Form_ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/Form_ProjektAuswahl.Designer.cs` |
-| Form_ProjektDelete | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektDelete → Masken.ProjektDelete → Form_ProjektDelete | `WindowsFormsApplication1/Views/Projekt/Form_ProjektDelete.Designer.cs` |
-| Form_ProjektSpeichernUnter | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektSpeichernUnter → Masken.ProjektSpeichernUnter → Form_ProjektSpeichernUnter | `WindowsFormsApplication1/Views/Projekt/Form_ProjektSpeichernUnter.Designer.cs` |
-| Form_Prozesswaerme | ja | Form_Start → pBox_Prozess_Click → Form_Prozesswaerme | `WindowsFormsApplication1/Views/Prozesswärme/Form_Prozesswaerme.designer.cs` |
-| Form_Prozesswaerme_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Prozesswaerme → Masken.ProzesswaermeAdmin → Form_Prozesswaerme_Admin | `WindowsFormsApplication1/Views/Prozesswärme/Form_Prozesswaerme_Admin.designer.cs` |
-| Form_PufferSp | ja | Form_Start → pBox_Pufferspeicher → Form_PufferSp | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp.Designer.cs` |
-| Form_PufferSp_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSp → Masken.PufferSpAdmin → Form_PufferSp_Admin | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Admin.Designer.cs` |
-| Form_PufferSp_Projekt | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config → PufferVerwaltungOeffnen → Form_PufferSp_Projekt | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_Projekt.Designer.cs` |
-| Form_PufferSp_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.PufferSPImport → Masken.PufferSpImport → Form_PufferSp_einlesen | `WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_einlesen.designer.cs` |
-| Form_QuelleErdreich | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config → _wqCombo → Form_QuelleErdreich | `WindowsFormsApplication1/Views/Simulation/Form_QuelleErdreich.Designer.cs` |
-| Form_QuellePufferspeicher | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config → _wqCombo → Form_QuellePufferspeicher | `WindowsFormsApplication1/Views/Simulation/Form_QuellePufferspeicher.Designer.cs` |
-| Form_Simulation_Config | ja | Form_Start → btn_SimKonfig → Form_Simulation_Config | `WindowsFormsApplication1/Views/Simulation/Form_Simulation_Config.Designer.cs` |
-| Form_Simulation_Detail | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail | `WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail.Designer.cs` |
-| Form_SolarDB | ja | Form_Start → pBox_Solarthermie → Form_SolarKollektoren → btn_Kollektor_DB_Edit → Form_SolarDB | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarDB.designer.cs` |
-| Form_SolarKollektoren | ja | Form_Start → pBox_Solarthermie → Form_SolarKollektoren | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektoren.designer.cs` |
-| Form_SolarKollektorenAdmin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarkollektoren → Masken.SolarkollektorenAdmin → Form_SolarKollektorenAdmin | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektorenAdmin.designer.cs` |
-| Form_SolarKollektoren_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.SolarThermieImport → Masken.SolarkollektorenImport → Form_SolarKollektoren_einlesen | `WindowsFormsApplication1/Views/Solarthermie/Form_SolarKollektoren_einlesen.designer.cs` |
-| Form_Solarganglinie | ja | Form_Start → pBox_Solarthermie → Form_Solarganglinie | `WindowsFormsApplication1/Views/Solarthermie/Form_Solarganglinie.designer.cs` |
-| Form_Solarganglinie_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Solarganglinie → Masken.SolarganglinieAdmin → Form_Solarganglinie_Admin | `WindowsFormsApplication1/Views/Solarthermie/Form_Solarganglinie_Admin.designer.cs` |
-| Form_SpeicherVariantenVergleich | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → btn_SpVariantenVergleich → Form_SpeicherVariantenVergleich | `WindowsFormsApplication1/Views/Stromspeicher/Form_SpeicherVariantenVergleich.Designer.cs` |
-| Form_SpotpreisImport | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → Form_SpotpreisImport | `WindowsFormsApplication1/Views/Kosten/Form_SpotpreisImport.Designer.cs` |
 | Form_Start | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/Views/Hauptformular/Form_Start.Designer.cs` |
 | Form_StromTest | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.ProjektInFormMainLaden → Masken.ProjektDetail → WinFormsNavigation.ProjektDetailZeigen → FormMain → button1 → Form_StromTest | `WindowsFormsApplication1/Views/Form_StromTest.Designer.cs` |
-| Form_Stromganglinie | ja | Form_Start → pBox_StromMessdaten_Click → Form_Stromganglinie | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromganglinie.designer.cs` |
-| Form_Stromganglinie_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Stromganglinie → Masken.StromganglinieAdmin → Form_Stromganglinie_Admin | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromganglinie_Admin.designer.cs` |
-| Form_Stromspeicher | ja | Form_Start → pBox_Stromspeicher → Form_Stromspeicher | `WindowsFormsApplication1/Views/Stromspeicher/Form_Stromspeicher.designer.cs` |
-| Form_StromspeicherItemNeu | ja | MDIMainForm → MenuItem_PC_Bearbeiten → Form_AdminPV → btn_Neu → Form_Sp_ItemNeu | `WindowsFormsApplication1/Views/Stromspeicher/Form_StromspeicherItemNeu.Designer.cs` |
-| Form_Stromverbraucher | ja | Form_Start → pBox_StdLastProfil_Click → Form_Stromverbraucher | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromverbraucher.designer.cs` |
-| Form_Stromverbraucher_Admin | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.Stromverbraucher → Masken.StromverbraucherAdmin → Form_Stromverbraucher_Admin | `WindowsFormsApplication1/Views/Stromverbraucher/Form_Stromverbraucher_Admin.designer.cs` |
-| Form_WP | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WP_Administration → Masken.WpAdministration → Form_WP | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WP.Designer.cs` |
-| Form_WPAuswahl | ja | Form_Start → pBox_WP → Form_WPAuswahl | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WPAuswahl.designer.cs` |
-| Form_WPFilterAuswahl | ja | Form_Start → pBox_WP → Form_WPAuswahl → btn_Neu → Form_WpFilterAuswahl | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WPFilterAuswahl.Designer.cs` |
-| Form_WP_einlesen | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WPImport → Masken.WpImport → Form_WP_einlesen | `WindowsFormsApplication1/Views/Wärmepumpe/Form_WP_einlesen.designer.cs` |
-| Form_Waermebedarf | ja | Form_Start → pBox_WBedarfDaten_Click → Form_Waermebedarf | `WindowsFormsApplication1/Views/Wärmebedarf/Form_Waermebedarf.designer.cs` |
-| Kenndaten | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.WP_Administration → Masken.WpAdministration → Form_WP → btn_Kenndaten → Kenndaten | `WindowsFormsApplication1/Views/Wärmepumpe/Kenndaten.Designer.cs` |
 | MDIMainForm | ja | Wurzel (Einstieg der Anwendung) | `WindowsFormsApplication1/MDIMainForm.Designer.cs` |
-| NavigatorStrom | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → .ctor → TabNavigationManager.ShowContent → NavigatorStrom | `WindowsFormsApplication1/Views/Simulation/NavigatorStrom.Designer.cs` |
-| NavigatorUebersicht | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → .ctor → TabNavigationManager.ShowContent → NavigatorUebersicht | `WindowsFormsApplication1/Views/Simulation/NavigatorUebersicht.Designer.cs` |
-| NavigatorWaerme | ja | Form_Start → pBox_DetailSim → Form_Simulation_Detail → .ctor → TabNavigationManager.ShowContent → NavigatorWaerme | `WindowsFormsApplication1/Views/Simulation/NavigatorWaerme.Designer.cs` |
-| ProjektAuswahl | ja | Form_Start → karte_ProjektZuletzt → Form_ProjektAuswahl → InitializeComponent → ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/ProjektAuswahl.Designer.cs` |
-| UcBericht | ja | Form_Start → BaueBerichteKostenSeite → UcBerichteKosten → Bericht → UcBericht | `WindowsFormsApplication1/Views/Bericht/UcBericht.Designer.cs` |
-| UcWirtschaftlichkeit | ja | Form_Start → BaueBerichteKostenSeite → UcBerichteKosten → Wirtschaftlichkeit → UcWirtschaftlichkeit | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/UcWirtschaftlichkeit.Designer.cs` |
+| ProjektAuswahl | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → WizardParent → InitializeComponent → ProjektAuswahl | `WindowsFormsApplication1/Views/Projekt/ProjektAuswahl.Designer.cs` |
 | WizardParent | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → WizardParent | `WindowsFormsApplication1/Views/Wizard/WizardParent.designer.cs` |
 | Wizard_Komponenten | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Komponenten | `WindowsFormsApplication1/Views/Wizard/Wizard_Komponenten.designer.cs` |
-| Wizard_Projekt | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Projekt | `WindowsFormsApplication1/Views/Wizard/Wizard_Projekt.Designer.cs` |
 | Wizard_Stromlastgang | ja | MDIMainForm → InitPeakShavingMenue → MenueCtrl.AssistentZeigen → Masken.Assistent → WinFormsNavigation.AssistentZeigen → AssistentSeiten.Erzeugen → AssistentSeiten (Felder) → Wizard_Stromlastgang | `WindowsFormsApplication1/Views/Wizard/Wizard_Stromlastgang.Designer.cs` |
-| Wizard_WPItem | ja | Form_Start → pBox_WP → Form_WPAuswahl → btn_Uebernehmen → Wizard_WPItem | `WindowsFormsApplication1/Views/Wizard/Wizard_WPItem.Designer.cs` |
-| ucBrennstoffBestandteile | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → BaueBrennstoffblock → ucBrennstoffBestandteile | `WindowsFormsApplication1/Views/Kosten/ucBrennstoffBestandteile.Designer.cs` |
-| ucErtragBonus | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → .ctor → ucErtragBonus | `WindowsFormsApplication1/Views/Kosten/ucErtragBonus.Designer.cs` |
-| ucFuelSettings | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings | `WindowsFormsApplication1/Views/Kosten/ucFuelSettings.Designer.cs` |
-| ucStromAufschlaege | ja | MDIMainForm → InitKostenvorlagenMenue → Form_Energietraeger → ZeigeTraeger → ucFuelSettings → BaueAufschlagsblock → ucStromAufschlaege | `WindowsFormsApplication1/Views/Kosten/ucStromAufschlaege.Designer.cs` |
-| ucVorlagenZeile | ja | MDIMainForm → InitKostenvorlagenMenue → Form_KostenKomponente → ZeileBauen → ucVorlagenZeile | `WindowsFormsApplication1/Views/Kosten/ucVorlagenZeile.Designer.cs` |

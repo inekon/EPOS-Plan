@@ -1,0 +1,169 @@
+﻿@* Schritt 1 des Projektassistenten - die administrativen Projektdaten
+   (iU9-W15a.6). Sie loest Wizard_Projekt ab (104 Z., 193 Designer).
+
+   NEUN FELDER: Projektname, Beschreibung, Kunde, Bearbeiter, Aenderungs- und
+   Erstelldatum (beide gesperrt) und die Klimaregion.
+
+   DER RUECKWEG. Wizard_Projekt war die EINZIGE Assistentenseite, die der Rahmen
+   an SECHS Stellen mit hartem Typumbruch auslas - ((Wizard_Projekt)page).Get*()
+   (Befund W15a-B42). Die zwoelf anderen bekommen eine geteilte Liste herein oder
+   haben gar keine Rueckgabe. Hier ist es dieselbe geteilte Liste, nur mit EINEM
+   Element: BlazorAssistentSeite<ProjektKopfSeite, ProjektKopfDaten> traegt
+   Modelle[0], die Seite schreibt AN ORT UND STELLE hinein, und WizardParent liest
+   daraus. Kein neuer Vertrag, kein Umbau an der Assistentenhuelle (R-W15a-8).
+
+   ZWEI ALTLASTEN SIND DABEI GERADEGEZOGEN:
+     * GetDatum() lieferte DateTime.Now statt des Feldes - der Name log (B39).
+     * GetErstellDatum() parste den ANGEZEIGTEN Text mit DateTime.Parse ohne
+       Kultur und ohne TryParse; geschrieben wurde mit de-DE, gelesen mit
+       CurrentCulture - auf englischem Windows falsch oder werfend (B40). Hier
+       reist das Datum als DateTime; die ANZEIGE folgt der Programmsprache (A-9,
+       Befund W15a-B32a: der Vorlaeufer nagelte sie auf de-DE fest).
+
+   ZWEI BETRIEBSARTEN. Der Neu-Modus laesst den Projektnamen aendern, der
+   Bearbeiten-Modus nicht - der Ersatz fuer SetEditProjektName(bool) ist das Feld
+   NameAenderbar des DTO, gesetzt VOR Bestuecken.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Klimaregionen und der Projektkopf
+   kommen fertig aus der Huelle. *@
+
+@namespace EPOS.UI.Seiten.Assistent
+
+@using EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+
+<div class="epos-seite epos-projektkopf">
+
+    <Gruppenkopf Titel="@KopfText" />
+
+    <Herleitungszeile Text="@HinweisText" />
+    @if (!string.IsNullOrEmpty(PflichtText))
+    {
+        <p class="epos-projektkopf-pflicht">@PflichtText</p>
+    }
+
+    <div class="epos-projektkopf-raster">
+
+        <Textfeld Bezeichnung="@(LabelName + PflichtMarke)" Wert="@Daten.Name"
+                  WertChanged="@(w => Daten.Name = w)" NurLesen="@(!Daten.NameAenderbar)" />
+
+        <Auswahlfeld Bezeichnung="@(LabelKlima + PflichtMarke)" Eintraege="@Klimaregionen"
+                     Auswahl="@KlimaAuswahl" AuswahlChanged="KlimaGewaehlt" />
+
+        <Textfeld Bezeichnung="@LabelKunde" Wert="@Daten.Kunde"
+                  WertChanged="@(w => Daten.Kunde = w)" />
+
+        <Textfeld Bezeichnung="@LabelBearbeiter" Wert="@Daten.Bearbeiter"
+                  WertChanged="@(w => Daten.Bearbeiter = w)" />
+
+        @* Beide Datumsfelder sind GESPERRT - wie im Vorlaeufer (textBox_*.Enabled
+           = false). Sie zeigen, was das Programm gespeichert hat; geaendert wird
+           daran nichts. *@
+        <Textfeld Bezeichnung="@LabelAenderung" Wert="@Datumstext(Daten.Aenderungsdatum)"
+                  NurLesen="true" />
+
+        <Textfeld Bezeichnung="@LabelErstellt" Wert="@Datumstext(Daten.Erstelldatum)"
+                  NurLesen="true" />
+    </div>
+
+    @* Pflichtfelder und Namensdoppel (Nutzerauftrag 02.09.2026, mit Merge 5 aus
+       Wizard_Projekt.NameHinweisNachziehen): der Hinweis steht sofort unter den Feldern;
+       das Veto beim Verlassen der Seite spricht der Assistent ueber dieselbe Regel aus. *@
+    @if (Befund != ProjektKopfBefund.Ok)
+    {
+        <p class="epos-projektkopf-hinweis" role="alert">@Hinweis</p>
+    }
+
+    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" Mehrzeilig="true"
+              Zeilen="5" Platzhalter="@PlatzhalterBeschreibung"
+              WertChanged="@(w => Daten.Beschreibung = w)" />
+</div>
+
+@code {
+    /// <summary>
+    /// Der Projektkopf — das EINE Element der geteilten Liste. Die Seite schreibt
+    /// AN ORT UND STELLE hinein; <c>WizardParent</c> liest daraus.
+    /// </summary>
+    [Parameter] public ProjektKopfDaten Daten { get; set; } = new ProjektKopfDaten();
+
+    /// <summary>
+    /// Die wählbaren Klimaregionen (<c>Id_Klimaregion</c>, Name) aus den Stammdaten.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Klimaregionen { get; set; }
+        = Array.Empty<(int, string)>();
+
+    [Parameter] public string KopfText { get; set; } = "Projektkonfiguration";
+    [Parameter] public string HinweisText { get; set; } = "Geben Sie hier die administrativen Projektdaten ein:";
+    [Parameter] public string LabelName { get; set; } = "Projektname";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung";
+    [Parameter] public string LabelKunde { get; set; } = "Kunde";
+    [Parameter] public string LabelBearbeiter { get; set; } = "Bearbeiter";
+    [Parameter] public string LabelAenderung { get; set; } = "Änderungsdatum";
+    [Parameter] public string LabelErstellt { get; set; } = "Erstelldatum";
+    [Parameter] public string LabelKlima { get; set; } = "Klimaregion";
+
+    // --- Pflichtfelder, Namensdoppel, Vorbelegung (Nutzerauftrag 02.09.2026, Merge 5) ----
+    /// <summary>Die vergebenen Projektnamen - ein NEUES Projekt darf keinen davon tragen.</summary>
+    [Parameter] public IReadOnlyCollection<string> VergebeneNamen { get; set; } = Array.Empty<string>();
+    /// <summary>Kennzeichen hinter Pflichtfeld-Beschriftungen (" *"); leer = keins.</summary>
+    [Parameter] public string PflichtMarke { get; set; } = "";
+    /// <summary>WZP_PFLICHT - die Legende zur Marke; leer = keine Zeile.</summary>
+    [Parameter] public string PflichtText { get; set; } = "";
+    /// <summary>WZP_NAME_LEER</summary>
+    [Parameter] public string TextNameLeer { get; set; } = "Bitte einen Projektnamen eingeben.";
+    /// <summary>WZP_NAME_VORHANDEN</summary>
+    [Parameter] public string TextNameVorhanden { get; set; } = "Ein Projekt mit diesem Namen existiert bereits.";
+    /// <summary>WZP_KLIMA_LEER</summary>
+    [Parameter] public string TextKlimaLeer { get; set; } = "Bitte eine Klimaregion wählen.";
+    /// <summary>WZP_BESCHREIBUNG_HINT</summary>
+    [Parameter] public string PlatzhalterBeschreibung { get; set; } = "";
+
+    /// <summary>Der Befund der Kopfregeln (Kern) fuer den aktuellen Stand der Felder.</summary>
+    public ProjektKopfBefund Befund => ProjektKopfRegeln.Pruefe(Daten, VergebeneNamen);
+
+    /// <summary>Der Hinweistext zum Befund (leer bei Ok).</summary>
+    public string Hinweis => Befund switch
+    {
+        ProjektKopfBefund.NameLeer => TextNameLeer,
+        ProjektKopfBefund.NameVorhanden => TextNameVorhanden,
+        ProjektKopfBefund.KlimaLeer => TextKlimaLeer,
+        _ => ""
+    };
+
+    /// <summary>
+    /// Die gewählte Klimaregion als LISTENINDEX — das <c>Auswahlfeld</c> arbeitet mit
+    /// Einträgen <c>(Id, Text)</c>, und die Id ist hier die Stamm-Id der Region.
+    /// </summary>
+    private int? KlimaAuswahl
+    {
+        get
+        {
+            if (Daten.IdKlimaregion > 0
+                && Klimaregionen.Any(k => k.Id == Daten.IdKlimaregion))
+                return Daten.IdKlimaregion;
+
+            // Aeltere Projekte fuehren nur den NAMEN (die Id ist die Projektkopie) -
+            // dann wird ueber den Anzeigenamen zugeordnet.
+            foreach ((int id, string text) in Klimaregionen)
+                if (string.Equals(text, Daten.Klimaname, StringComparison.CurrentCultureIgnoreCase))
+                    return id;
+
+            return null;
+        }
+    }
+
+    private void KlimaGewaehlt(int? id)
+    {
+        Daten.IdKlimaregion = id ?? 0;
+        Daten.Klimaname = id.HasValue
+            ? Klimaregionen.FirstOrDefault(k => k.Id == id.Value).Text ?? ""
+            : "";
+    }
+
+    /// <summary>
+    /// A-9: Das Datum folgt der PROGRAMMSPRACHE. Der Vorläufer schrieb an vier
+    /// Stellen <c>ToString("d", CultureInfo.CreateSpecificCulture("de-DE"))</c> —
+    /// auch in der englischen Programmfassung (Befund W15a-B32a).
+    /// </summary>
+    private static string Datumstext(DateTime wert) => wert.ToString("d");
+}

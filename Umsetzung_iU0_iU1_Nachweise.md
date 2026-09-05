@@ -1,4 +1,4 @@
-# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 / iU7 — Abnahme auf Windows
+﻿# Nachweisliste iU0 / iU1 / iU4 / iU5 / iU6 / iU7 — Abnahme auf Windows
 
 **Stand 03.09.2026 · Branch `ios_migration` · Kopfstand `f95fc34`**
 
@@ -133,7 +133,13 @@ ist nicht mehr nötig.
 
 **Nachweis Windows:**
 
-- [ ] Ganglinien-Import in `Form_PeakShaving` mit **`.xlsx`**
+- [x] Ganglinien-Import mit **`.xlsx`** — abgehakt mit iU9‑W12.0i: Probe
+      `EPOS.Kern.Tests/Proben/Ganglinien/p11_stunden_excel.xlsx` faehrt den Weg
+      `Erkenne → Lies → Pruefe` ohne Oberflaeche und mit eingefrorenen
+      Erwartungswerten. Dabei fiel Befund W12‑B27: Der Excelzweig war ueberhaupt
+      nicht benutzbar (drei Leseschleifen liefen um eine Zeile ueber das Feld
+      hinaus, jeder `.xlsx`-Import endete in `IMPORT_PROT_LESEFEHLER`). Die Maske
+      heisst seit iU9‑W12.6 `PeakShavingDialog`.
 - [ ] dasselbe mit **`.xlsm`**
 - [ ] dasselbe mit **`.xls`** — muss die neue Meldung bringen
 - [ ] dasselbe mit einer **parallel in Excel geöffneten Mappe**
@@ -591,13 +597,12 @@ physischen Kern-Umzug (iU4), die Dienste (iU5), `IDatenzugriff` (iU6) und den Re
 dieser Schritt, sind alle Bedienproben darunter nur noch Bedienproben und keine Fehlersuche.
 Danach **`EPOS_REFLAUF_UICULTURE=en-US`** setzen und wiederholen (iT7) — byte-identisch.
 
-**2. `Referenzlauf.exe bildvergleich` — die Abnahme von iU7.** Aufruf:
-`Referenzlauf.exe bildvergleich --quelle <sqlite> --projekte 1030,1007,1017 --ziel <ordner>`. Er
-rendert die neun Berichtsbilder je einmal mit dem alten `ChartRendererGdi` und einmal mit dem
-neuen SkiaSharp-`ChartRenderer` und schreibt eine `bildvergleich.md`. **Nur unter Windows
-lauffähig** (die GDI+-Seite gibt es nur dort). Steht dort PASS, wird `ChartRendererGdi.cs`
-ersatzlos gelöscht (Entscheidungsregister **iF23**); bis dahin ist die Datei eine zweite,
-ungepflegte Fassung desselben Renderers.
+**2. `Referenzlauf.exe bildvergleich` — entfallen.** Der Modus hätte die neun Berichtsbilder
+je einmal mit dem alten `ChartRendererGdi` und einmal mit dem SkiaSharp-`ChartRenderer`
+gerendert und verglichen (nur unter Windows). Er ist **nie gelaufen**: Der Anwender hat am
+03.09.2026 die Löschung von `ChartRendererGdi.cs`, `Referenzlauf/Bildvergleich.cs` und des
+Modus ohne den Vergleich angeordnet (Entscheidungsregister **iF23**). Was bleibt, ist der
+Sichtvergleich der Berichte am Gerät (Abnahmeliste in `Umsetzung_iU9_Nachweise.md`).
 
 **3. App-Start, Sprachumschaltung und Setup — die Abnahme von iU4 und iU5.**
    - Alle zwölf Gewerke über das Kontextmenü öffnen und speichern; die vier Ja/Nein-Rückfragen in

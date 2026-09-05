@@ -75,6 +75,203 @@ namespace WindowsFormsApplication1
 
         #endregion
 
+        #region --- W9.0b: Listen, Filter und Ableitungen der Gebaeudemasken ---
+
+        // Die beiden Steuerwerte der Spalte Wohngebaeude_Nicht_Wohngebaeude. Sie stehen
+        // woertlich so in Form_Gebaeude:15/16 und gehen in jeden Filter; sie sind
+        // Datenbankinhalt und werden NIE uebersetzt.
+        public const string FILTER_WOHNGEBAEUDE       = "Wohngebaeude_Nicht_Wohngebaeude='Wohngebaeude'";
+        public const string FILTER_NICHT_WOHNGEBAEUDE = "Wohngebaeude_Nicht_Wohngebaeude='Nicht Wohngebaeude'";
+
+        /// <summary>
+        /// Die 21 Baualtersklassen in ihrer festen Reihenfolge — Index 0 ist <c>'A'</c>,
+        /// Index 20 ist <c>'U'</c> (<c>Form_Gebaeude.list_geb</c>:14 und
+        /// <c>Form_Gebaeude1.list_geb</c>:9, dort zweimal wortgleich).
+        ///
+        /// <para>Die TEXTE kommen aus dem Ressourcenkatalog (<c>GEB_BAK_A</c>…
+        /// <c>GEB_BAK_U</c>), die ABBILDUNG auf den Buchstaben steht hier: Der Buchstabe
+        /// geht in die Datenbank (<c>Baualtersklasse</c>), der Text nur auf den
+        /// Bildschirm. Ginge die Abbildung ueber den Text, verschoebe eine Uebersetzung
+        /// die gespeicherte Klasse.</para>
+        /// </summary>
+        public static IReadOnlyList<string> Baualtersklassen()
+        {
+            var liste = new List<string>(BAUALTERSKLASSEN_DE.Length);
+            for (int i = 0; i < BAUALTERSKLASSEN_DE.Length; i++)
+            {
+                string schluessel = "GEB_BAK_" + (char)('A' + i);
+                string text = null;
+                try { text = MyResource.Resource.ResourceManager.GetString(schluessel); }
+                catch { }
+                liste.Add(string.IsNullOrEmpty(text) ? BAUALTERSKLASSEN_DE[i] : text);
+            }
+            return liste;
+        }
+
+        /// <summary>Die deutschen Bestandstexte — der Rueckfall, solange ein Schluessel fehlt.</summary>
+        public static readonly string[] BAUALTERSKLASSEN_DE =
+        {
+            "vor 1919", "1919 bis 1948", "1949 bis 1957", "1958 bis 1968", "1969 bis 1978",
+            "1979 bis 1983", "1984 bis 1994", "1995 bis 2000", "Niedrigenergiebauweise",
+            "Passivhaus", "EnEv 2007", "Eff. 70 (EnEV 2007)", "EnEV 2009",
+            "Eff. 70 (EnEV 2009)", "Eff. 55 (EnEV 2009)", "EnEV 2014", "EnEV 2016",
+            "Eff. 100 (EnEV 2016)", "Eff. 155 (EnEV 2016)", "BEG 55", "BEG 40"
+        };
+
+        /// <summary>
+        /// Der Buchstabe zu einem Listenindex: <c>'A' + index</c>
+        /// (<c>InitModelFromControls</c>:212). Ein Index ausserhalb der Liste faellt auf
+        /// <c>'A'</c> zurueck — genauso wie der Rueckweg.
+        /// </summary>
+        public static char KlassenBuchstabe(int index)
+        {
+            if (index < 0 || index >= BAUALTERSKLASSEN_DE.Length) return 'A';
+            return (char)('A' + index);
+        }
+
+        /// <summary>
+        /// Der Listenindex zu einer gespeicherten Baualtersklasse — das erste Zeichen
+        /// minus <c>'A'</c>, negativ wird 0 (<c>Form_Gebaeude1.SetControls</c>:102-104 und
+        /// <c>Form_Gebaeude.btn_Aendern_Click</c>:430-432, dort wortgleich).
+        /// </summary>
+        public static int KlassenIndex(string baualtersklasse)
+        {
+            if (string.IsNullOrEmpty(baualtersklasse)) return 0;
+            int index = baualtersklasse[0] - 'A';
+            if (index < 0) return 0;
+            if (index >= BAUALTERSKLASSEN_DE.Length) return 0;
+            return index;
+        }
+
+        /// <summary>
+        /// Die Gebaeudearten aus der Sicht <c>Abfrage_Gebaeudearten</c>.
+        /// <paramref name="wohngebaeude"/>: <c>true</c> nur Wohngebaeude,
+        /// <c>false</c> nur Nichtwohngebaeude, <c>null</c> alle (so laedt sie
+        /// <c>Form_Gebaeude1.SetControls</c>:88 ohne Filter).
+        /// </summary>
+        public static IReadOnlyList<string> Gebaeudearten(bool? wohngebaeude)
+        {
+            string sql = "SELECT * from Abfrage_Gebaeudearten";
+            if (wohngebaeude.HasValue)
+                sql += " where " + (wohngebaeude.Value ? FILTER_WOHNGEBAEUDE : FILTER_NICHT_WOHNGEBAEUDE);
+
+            var liste = new List<string>();
+            DataTable dt = DataRepository.GetDataTable(sql);
+            if (dt == null) return liste;
+            foreach (DataRow row in dt.Rows)
+                if (row["Gebaeudeart"] != DBNull.Value) liste.Add(row["Gebaeudeart"].ToString());
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Gebaeudetypen aus der Sicht <c>Abfrage_Gebaeudetypen</c> — die Klappliste
+        /// „Gebaeudetyp" des Katalogeditors (<c>Form_Gebaeude1.SetControls</c>:70).
+        /// </summary>
+        public static IReadOnlyList<string> Gebaeudetypen()
+        {
+            var liste = new List<string>();
+            DataTable dt = DataRepository.GetDataTable("SELECT * from Abfrage_Gebaeudetypen");
+            if (dt == null) return liste;
+            foreach (DataRow row in dt.Rows)
+                if (row["Typ"] != DBNull.Value) liste.Add(row["Typ"].ToString());
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Namen ALLER Katalogsaetze — die Klappliste des Admin-Modus
+        /// (<c>Form_Gebaeude1_Load</c>:34).
+        /// </summary>
+        public static IReadOnlyList<string> Katalognamen()
+        {
+            var liste = new List<string>();
+            DataTable dt = DataRepository.GetDataTable("SELECT * from " + TABLE);
+            if (dt == null) return liste;
+            foreach (DataRow row in dt.Rows)
+                if (row["Bezeichner"] != DBNull.Value) liste.Add(row["Bezeichner"].ToString());
+            return liste;
+        }
+
+        /// <summary>
+        /// Der KATALOGFILTER der Gebaeudeverwaltung — die vier SQL-Zweige aus
+        /// <c>Form_Gebaeude.comboBox_Gebaeudeart_SelectedIndexChanged</c>:329-374 und
+        /// <c>comboBox_Baujahr_SelectedIndexChanged</c>:376-419.
+        ///
+        /// <para><b>Befund W9-B1 — die beiden Handler sind NICHT gleich.</b> Im Zweig
+        /// „Gebaeudeart gewaehlt, Baujahr Alle" filtert der Gebaeudeart-Handler NUR nach
+        /// <c>Gebaeudeart</c> (:359), der Baujahr-Handler zusaetzlich nach der Verwendung
+        /// (:392). Welche Liste erscheint, haengt also davon ab, welche Klappliste der
+        /// Anwender zuletzt angefasst hat. Das ist woertlich uebernommen (Regel F3) und
+        /// steckt in <paramref name="ausBaujahrwahl"/>; der Anwender entscheidet, ob es so
+        /// bleibt.</para>
+        /// </summary>
+        /// <param name="wohngebaeude"><c>true</c> = Wohngebaeude, <c>false</c> = Sonstige.</param>
+        /// <param name="gebaeudeart">Gewaehlte Gebaeudeart; <c>null</c> oder leer = „Alle".</param>
+        /// <param name="klassenIndex">Index der Baualtersklasse; <c>null</c> = „Alle".</param>
+        /// <param name="ausBaujahrwahl">
+        /// <c>true</c>, wenn die BAUJAHR-Klappliste die Auswahl ausgeloest hat.
+        /// </param>
+        public static string FilterAusdruck(bool wohngebaeude, string gebaeudeart,
+                                            int? klassenIndex, bool ausBaujahrwahl)
+        {
+            string option = wohngebaeude ? FILTER_WOHNGEBAEUDE : FILTER_NICHT_WOHNGEBAEUDE;
+
+            bool arteAlle = string.IsNullOrEmpty(gebaeudeart);
+            bool jahrAlle = !klassenIndex.HasValue;
+
+            if (arteAlle && jahrAlle) return option;
+            if (arteAlle)
+                return "Baualtersklasse='" + KlassenBuchstabe(klassenIndex.Value) + "' and " + option;
+            if (jahrAlle)
+                return ausBaujahrwahl
+                    ? "Gebaeudeart='" + gebaeudeart + "' and " + option   // :392
+                    : "Gebaeudeart='" + gebaeudeart + "'";                // :359  (Befund W9-B1)
+
+            return "Gebaeudeart='" + gebaeudeart + "' and Baualtersklasse='" +
+                   KlassenBuchstabe(klassenIndex.Value) + "' and " + option;
+        }
+
+        /// <summary>
+        /// Liest den gefilterten Katalog. Derselbe Weg wie <c>ReadAll(filter)</c>, nur mit
+        /// dem Ausdruck aus <see cref="FilterAusdruck"/>.
+        /// </summary>
+        public IReadOnlyList<GebaeudeModel> Filtern(bool wohngebaeude, string gebaeudeart,
+                                                    int? klassenIndex, bool ausBaujahrwahl)
+        {
+            ReadAll(FilterAusdruck(wohngebaeude, gebaeudeart, klassenIndex, ausBaujahrwahl));
+            return _internalList;
+        }
+
+        /// <summary>
+        /// Die BAUART aus der gespeicherten Bauweise — <c>Form_Gebaeude1.SetControls</c>
+        /// :107-110. 0 = leicht (&lt; 30), 1 = schwer, 2 = sehr schwer (&gt; 75).
+        ///
+        /// <para>Die Rechnung steht seit dem Entscheid W9-O-2 (04.09.2026) in der
+        /// oeffentlichen Hilfsklasse <see cref="Gebaeudebauweise"/>: Der
+        /// Katalogeditor in <c>EPOS.UI</c> braucht sie selbst, und dieser Controller
+        /// ist <c>internal</c>. Hier bleibt der Name aus W9.0b stehen.</para>
+        /// </summary>
+        public static int BauartAusBauweise(double bauweise, double wohnflaeche)
+            => Gebaeudebauweise.BauartAusBauweise(bauweise, wohnflaeche);
+
+        /// <summary>
+        /// Der Rueckweg — <c>InitModelFromControls</c>:188-191. Index 0/1/2 ergeben
+        /// Wohnflaeche × 20 / 50 / 100, jeder andere Index ergibt 50.
+        ///
+        /// <para><b>Befund W9-B6, Entscheid W9-O-2 (Anwender, 04.09.2026).</b> Der
+        /// Vorlaeufer nahm hier den Index der <b>Gebaeudeart</b>-Klappliste
+        /// (<c>comboBox_Gebaeudeart.SelectedIndex</c>) und NICHT den der
+        /// Bauart-Klappliste, obwohl die Bauart aus derselben Groesse abgeleitet
+        /// angezeigt wurde. Der Anwender hat entschieden: Die BAUART bestimmt die
+        /// Bauweise. <c>GebaeudeKatalogDialog</c> bildet sie deshalb aus der
+        /// BAUART-Auswahl; <see cref="BauartAusBauweise"/> ist der Rueckweg beim
+        /// Laden. Die Rechnung selbst ist unveraendert und steht jetzt in
+        /// <see cref="Gebaeudebauweise"/>.</para>
+        /// </summary>
+        public static double BauweiseAusBauart(int index, double wohnflaeche)
+            => Gebaeudebauweise.BauweiseAusBauart(index, wohnflaeche);
+
+        #endregion
+
         #region --- MAPPING (namensbasiert) ---
 
         private void FillModel(GebaeudeModel item, DataRow row)

@@ -102,6 +102,38 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const double M3_IN_LITER = 1000.0;
 
+        /// <summary>
+        /// Wärmekapazität von Wasser in Wh je Liter und Kelvin — der Faktor 1,16, mit dem
+        /// beide Dialoge und die Engine die nutzbare Speicherkapazität rechnen.
+        /// </summary>
+        public const double WH_JE_LITER_KELVIN = 1.16;
+
+        /// <summary>
+        /// Nutzbare Speicherkapazität in kWh aus Volumen [l] und nutzbarer Spreizung [K]:
+        /// <c>Volumen · 1,16 · ΔT / 1000</c>.
+        ///
+        /// <para><b>iU9‑W10a.0b (Befund W10‑B12).</b> Dieselbe Formel stand in ZWEI Masken:
+        /// <c>Form_QuellePufferspeicher.BerechneKapazitaet</c> :883 (ΔT = die nutzbare
+        /// Spreizung der Quelle) und <c>Form_PufferSp_Projekt.QmaxAnzeigen</c> :1380
+        /// (ΔT = Vorlauf − Rücklauf). Zwei Stellen, eine Physik — mit dem Port nach Blazor
+        /// wäre daraus die dritte Fehlerquelle geworden.</para>
+        ///
+        /// <para><b>Nur die Rechnung, nicht der Leerfall.</b> Die beiden Masken zeigen
+        /// unterschiedlich viel Nichts: <c>QmaxAnzeigen</c> lässt die Anzeige leer, sobald
+        /// <c>volumen &lt;= 0</c> oder <c>vorlauf &lt;= ruecklauf</c>;
+        /// <c>BerechneKapazitaet</c> lässt sie leer, sobald kein Speicher gewählt ist oder
+        /// die Spreizung keine Zahl ergibt, zeigt aber bei Spreizung 0 die 0,0. Diese
+        /// Unterschiede sind Anzeigeregeln der jeweiligen Maske und bleiben dort —
+        /// hier steht ausschließlich die Physik.</para>
+        /// </summary>
+        /// <param name="volumenLiter">Gesamtvolumen des Speichers in Litern.</param>
+        /// <param name="deltaK">Nutzbare Spreizung in Kelvin.</param>
+        /// <returns>Kapazität in kWh.</returns>
+        public static double NutzbareKapazitaetKWh(double volumenLiter, double deltaK)
+        {
+            return volumenLiter * WH_JE_LITER_KELVIN * deltaK / 1000.0;
+        }
+
         // --- Systemvorgaben des Projekts (Etappe 4) -----------------------------------
 
         /// <summary>

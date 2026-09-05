@@ -1,0 +1,457 @@
+﻿@* Eingabe der Solarkollektoren - der PROJEKTDIALOG (iU9-W7.7).
+
+   VORBILD. Views/Solarthermie/Form_SolarKollektoren (513 Z., lokalisiert
+   de/en, 26 Kartenzeilen plus die Gruppe "Kollektor", 3 MessageBox, ein
+   Paint-Rahmen). Derselbe Aufbau wie die fuenf Erzeugerdialoge der Welle 6 -
+   links "ausgewaehlt im Projekt", rechts "aus Datenbank", dazwischen ◀ und ▶,
+   unten der Detailblock -, deshalb dieselbe Datenform ErzeugerAuswahlDaten.
+
+   EINE GRUPPE MEHR. Anders als die fuenf traegt diese Maske unter dem
+   Modulblock eine zweite Gruppe "Kollektor": Modulanzahl, Neigung, Azimut,
+   Vorlauf, Ruecklauf und die gerechnete Aperturflaeche. Sie erscheint nur bei
+   einer PROJEKTZEILE - ein Katalogsatz hat keine Ausrichtung
+   (dataGridView1_Click:289 blendete sie aus, ApplySelectedSolar:324 ein).
+
+   GESCHRIEBEN WIRD NUR MIT "UEBERNEHMEN". Der Vorlaeufer hatte daneben zwei
+   Validating-Handler auf Vorlauf und Ruecklauf - die pruefen aber
+   ID_Type == BHKW_TYP und trafen in dieser Maske nie zu (Befund W7-O-5).
+   Faktisch schrieb also auch dort allein btn_Speichern_Click; dabei bleibt es.
+
+   DER BILDBLITZ WIRD EIN HINWEIS. "Uebernehmen" zeigte eine PictureBox fuer
+   500 ms und hielt dafuer den Oberflaechenfaden mit Thread.Sleep an. In der
+   WebView waere das ein eingefrorener Dialog; stattdessen steht ein
+   Warnbanner "uebernommen" (A-24).
+
+   TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung und keine
+   Rueckfrage offen ist. Enter ist nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
+   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
+
+@namespace EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Erzeuger
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+
+        <Links>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ErzeugerZeile zeile in Zeilen)
+                        {
+                            ErzeugerZeile z = zeile;
+                            <tr class="@(z == _projektZeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(z == _projektZeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => ProjektZeileWaehlen(z)" />
+                                </td>
+                                <td>@z.Bezeichner</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </Links>
+
+        <Rechts>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            <th>@SpalteName</th>
+                            <th>@SpalteEigenschaften</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (KatalogZeile zeile in _katalog)
+                        {
+                            KatalogZeile k = zeile;
+                            <tr class="@(k == _katalogZeile ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(k == _katalogZeile)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => KatalogZeileWaehlen(k)" />
+                                </td>
+                                <td>@k.Bezeichner</td>
+                                <td><span class="epos-mehrzeilig">@k.Eigenschaften</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                        @onclick="() => KatalogEditor(false)">@BtnKatalogAendernText</button>
+                <button type="button" class="epos-knopf"
+                        @onclick="() => _namensfrage = true">@BtnKatalogNeuText</button>
+                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                        @onclick="() => _loeschfrage = true">@BtnKatalogLoeschenText</button>
+            </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
+
+    <Gruppenkopf Titel="@GruppeModul">
+        <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
+            @foreach (var feld in _detail.Felder)
+            {
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* Die Kollektorgruppe steht NUR bei einer Projektzeile. *@
+    @if (_projektZeile is not null)
+    {
+        <Gruppenkopf Titel="@GruppeKollektor">
+            <KindInhalt>
+                <div class="epos-feldpaar">
+                    <Ganzzahlfeld Bezeichnung="@LabelAnzahl" Feldname="@LabelAnzahl"
+                                  Wert="@_anzahl" WertChanged="w => { _anzahl = w; }" />
+                    <Textfeld Bezeichnung="@LabelAperturflaeche" Wert="@Gesamtflaeche" NurLesen="true" />
+                </div>
+                <div class="epos-feldpaar">
+                    <Ganzzahlfeld Bezeichnung="@LabelNeigung" Feldname="@LabelNeigung"
+                                  Wert="@_neigung" WertChanged="w => { _neigung = w; }" />
+                    <Ganzzahlfeld Bezeichnung="@LabelAzimut" Feldname="@LabelAzimut"
+                                  Wert="@_azimut" WertChanged="w => { _azimut = w; }" />
+                </div>
+                <div class="epos-feldpaar">
+                    <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad" Feldname="@LabelVorlauf"
+                                  Wert="@_vorlauf" WertChanged="w => { _vorlauf = w; }" />
+                    <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad" Feldname="@LabelRuecklauf"
+                                  Wert="@_ruecklauf" WertChanged="w => { _ruecklauf = w; }" />
+                </div>
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
+                </div>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+
+    @* --- Ueberlagerung 1: der Katalogeditor (W7.6) --------------------------- *@
+    <Ueberlagerung Offen="@(_editorGaben is not null)" Schliessbar="false"
+                   Titel="@BtnKatalogAendernText" Geschlossen="() => _editorGaben = null">
+        <KindInhalt>
+            @if (_editorGaben is not null)
+            {
+                <SolarkollektorKatalogDialog @attributes="_editorGaben" Geschlossen="EditorFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 2: die Namensabfrage vor "Kollektor in DB neu..." ----- *@
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnKatalogNeuText"
+                   Geschlossen="() => _namensfrage = false">
+        <KindInhalt>
+            <NamensDialog TitelText="@BtnKatalogNeuText" FrageText="@LabelName"
+                          OkText="@OkText" AbbrechenText="@AbbrechenText"
+                          Geschlossen="NameFertig" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" Frage="@FrageLoeschen" TitelText="@BtnKatalogLoeschenText"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+</div>
+
+@code {
+    /// <summary>
+    /// Die Solarkollektoren des Projekts — die Liste gehört der Hülle und wird an Ort
+    /// und Stelle bearbeitet (wie in den fünf Erzeugerdialogen der Welle 6).
+    /// </summary>
+    [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
+
+    /// <summary>Die Katalogliste (<c>SolarkollektorenStammCtrl.ReadAll</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<KatalogZeile>>? Katalog { get; set; }
+
+    /// <summary>Der Detailblock zu einem Kollektor — für beide Listen dieselbe Quelle.</summary>
+    [Parameter] public Func<string, ErzeugerDetail?>? Detail { get; set; }
+
+    /// <summary>
+    /// Die Aperturfläche EINES Moduls [m²] — sie mal der Modulanzahl ergibt die
+    /// Gesamtfläche. Der Vorläufer las dafür die Spalte <c>Aperturflaeche</c> des
+    /// Stammsatzes (die lokale Variable dort heißt <c>modulflaeche</c>).
+    /// </summary>
+    [Parameter] public Func<string, double>? Modulflaeche { get; set; }
+
+    /// <summary>Nimmt den Kollektor in das Projekt auf („◀").</summary>
+    [Parameter] public Func<int, AufnahmeErgebnis>? Aufnehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste („▶").</summary>
+    [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary>Übernimmt die Kollektorgruppe in das Modell („Übernehmen").</summary>
+    [Parameter] public Action<ErzeugerZeile>? Uebernehmen { get; set; }
+
+    /// <summary>Der Parametersatz des Katalogeditors; zweiter Wert <c>true</c> = anlegen.</summary>
+    [Parameter] public Func<string, bool, IReadOnlyDictionary<string, object>>? EditorGaben { get; set; }
+
+    /// <summary>Löscht einen Katalogsatz.</summary>
+    [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Eingabe der Solarkollektoren";
+    [Parameter] public string KopfbandText { get; set; } = "Eingabe der Solarkollektoren";
+    [Parameter] public string LabelProjektliste { get; set; } = "Auswahl in Projekt:";
+    [Parameter] public string LabelKatalogliste { get; set; } = "Auswahl in DB:";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string SpalteEigenschaften { get; set; } = "Eigenschaften";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string GruppeModul { get; set; } = "Modul";
+    [Parameter] public string GruppeKollektor { get; set; } = "Kollektor";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string LabelAnzahl { get; set; } = "Modulanzahl:";
+    [Parameter] public string LabelAperturflaeche { get; set; } = "Aperturfläche [m²]:";
+    [Parameter] public string LabelNeigung { get; set; } = "Neigung [°]:";
+    [Parameter] public string LabelAzimut { get; set; } = "Azimut [°]:";
+    [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
+    [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
+    [Parameter] public string EinheitGrad { get; set; } = "°C";
+    [Parameter] public string BtnUebernehmenText { get; set; } = "Übernehmen";
+    [Parameter] public string BtnKatalogAendernText { get; set; } = "Kollektor in DB ändern...";
+    [Parameter] public string BtnKatalogNeuText { get; set; } = "Kollektor in DB neu...";
+    [Parameter] public string BtnKatalogLoeschenText { get; set; } = "Kollektor in DB löschen";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+    [Parameter] public string FrageLoeschen { get; set; } = "Wollen Sie wirklich den Solarkollektor löschen?";
+    [Parameter] public string MeldungUebernommen { get; set; } = "Die Angaben sind übernommen.";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_SolarKollektoren.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private ErzeugerZeile? _projektZeile;
+    private KatalogZeile? _katalogZeile;
+    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
+    private double _modulflaeche;
+
+    private int? _anzahl, _neigung, _azimut, _vorlauf, _ruecklauf;
+
+    private IReadOnlyDictionary<string, object>? _editorGaben;
+    private bool _namensfrage;
+    private bool _loeschfrage;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
+    public ErzeugerZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
+    public KatalogZeile? Katalogzeile => _katalogZeile;
+
+    /// <summary>Steht der Katalogeditor? Prüfhilfe für die Tests.</summary>
+    public bool EditorOffen => _editorGaben is not null;
+
+    /// <summary>Die Gesamtfläche — Modulfläche mal Anzahl, live (<c>textBox_Anzahl_TextChanged</c>:367).</summary>
+    private string Gesamtflaeche => (_modulflaeche * (_anzahl ?? 0)).ToString();
+
+    protected override void OnInitialized()
+    {
+        KatalogNeuLaden();
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void KatalogNeuLaden()
+    {
+        _katalog = Katalog?.Invoke() ?? Array.Empty<KatalogZeile>();
+        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+    }
+
+    private void DetailSetzen(string name)
+    {
+        _detail = (Detail is not null ? Detail(name) : null) ?? new ErzeugerDetail(name, "", Array.Empty<(string, string)>());
+        _modulflaeche = Modulflaeche?.Invoke(name) ?? 0;
+    }
+
+    /// <summary>Projektzeile: Detail UND Kollektorgruppe (<c>ApplySelectedSolar</c>:324).</summary>
+    private void ProjektZeileWaehlen(ErzeugerZeile zeile)
+    {
+        _projektZeile = zeile;
+        _katalogZeile = null;
+        _meldung = "";
+        DetailSetzen(zeile.Bezeichner);
+
+        _anzahl = (int?)(zeile.AnzahlModule ?? 0);
+        _neigung = zeile.Neigung ?? 0;
+        _azimut = zeile.Azimut ?? 0;
+        _vorlauf = zeile.Vorlauf ?? 0;
+        _ruecklauf = zeile.Ruecklauf ?? 0;
+    }
+
+    /// <summary>Katalogzeile: nur das Detail, KEINE Kollektorgruppe (<c>dataGridView1_Click</c>:289).</summary>
+    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    {
+        _katalogZeile = zeile;
+        _projektZeile = null;
+        _meldung = "";
+        DetailSetzen(zeile.Bezeichner);
+    }
+
+    // =================================================================================
+    // Aufnehmen und Entfernen
+    // =================================================================================
+
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null || Aufnehmen is null) return;
+
+        AufnahmeErgebnis aufnahme = Aufnehmen(_katalogZeile.Id);
+        if (aufnahme.Meldung.Length > 0)
+        {
+            _meldung = aufnahme.Meldung;
+            _meldungStufe = aufnahme.Fehler ? WarnStufe.Warnung : WarnStufe.Hinweis;
+        }
+        if (aufnahme.Zeile is null) return;
+
+        Zeilen.Add(aufnahme.Zeile);
+        ProjektZeileWaehlen(aufnahme.Zeile);
+    }
+
+    /// <summary>
+    /// „▶": Die GEWÄHLTE Zeile geht. Ob die Projektkopie mitgeht, entscheidet die
+    /// Hülle — sie bleibt stehen, solange eine zweite Zeile darauf verweist
+    /// (<c>btn_Entfernen_Click</c>:251).
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_projektZeile is null) return;
+
+        ErzeugerZeile zeile = _projektZeile;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+
+        _projektZeile = null;
+        _meldung = "";
+
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+        else if (_katalog.Count > 0) KatalogZeileWaehlen(_katalog[0]);
+        else _detail = new ErzeugerDetail("", "", Array.Empty<(string, string)>());
+    }
+
+    /// <summary>
+    /// „Übernehmen": die fünf Ganzzahlen in das Modell (<c>btn_Speichern_Click</c>:387).
+    /// Leer gilt als 0 — dort steht <c>leerErlaubt: true</c>.
+    /// </summary>
+    private void BeiUebernehmen()
+    {
+        if (_projektZeile is null) return;
+
+        _projektZeile.AnzahlModule = _anzahl ?? 0;
+        _projektZeile.Neigung = _neigung ?? 0;
+        _projektZeile.Azimut = _azimut ?? 0;
+        _projektZeile.Vorlauf = _vorlauf ?? 0;
+        _projektZeile.Ruecklauf = _ruecklauf ?? 0;
+
+        Uebernehmen?.Invoke(_projektZeile);
+
+        _meldung = MeldungUebernommen;
+        _meldungStufe = WarnStufe.Hinweis;
+    }
+
+    // =================================================================================
+    // Katalogpflege
+    // =================================================================================
+
+    private void KatalogEditor(bool neu, string? name = null)
+    {
+        if (EditorGaben is null) return;
+        string bezeichner = name ?? _katalogZeile?.Bezeichner ?? "";
+        if (bezeichner.Length == 0) return;
+
+        _editorGaben = EditorGaben(bezeichner, neu);
+    }
+
+    private void NameFertig(string? name)
+    {
+        _namensfrage = false;
+        if (string.IsNullOrWhiteSpace(name)) return;
+        KatalogEditor(true, name!.Trim());
+    }
+
+    /// <summary>
+    /// Nach dem Editor wird die Katalogliste IMMER neu gezogen — der Anwender kann
+    /// dort etwas geändert und mit Abbrechen geschlossen haben (A-19 aus Welle 6).
+    /// Der Vorläufer rief <c>SetDBList()</c> ebenfalls unbedingt.
+    /// </summary>
+    private void EditorFertig(bool _)
+    {
+        _editorGaben = null;
+        KatalogNeuLaden();
+    }
+
+    private void LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrage = false;
+        if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
+
+        if (!KatalogLoeschen(_katalogZeile.Bezeichner)) return;
+        _katalogZeile = null;
+        KatalogNeuLaden();
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        // Die Ueberlagerungen und die Rueckfrage werten Esc zuerst fuer sich aus.
+        if (e.Key != "Escape" || _editorGaben is not null || _namensfrage || _loeschfrage)
+            return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

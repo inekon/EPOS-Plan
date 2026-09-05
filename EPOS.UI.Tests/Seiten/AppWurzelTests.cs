@@ -3,6 +3,7 @@ using Bunit;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using Xunit;
@@ -146,5 +147,175 @@ public class AppWurzelTests : BunitContext
         Assert.Same(cut.Instance, Navigationsziel.Aktuell);
         Assert.True(Navigationsziel.Aktuell!.OeffneMaske(Seitenschluessel.Energietraeger));
         Assert.False(Navigationsziel.Aktuell.OeffneMaske("GIBT_ES_NICHT"));
+    }
+
+    // =====================================================================
+    //  K7 (iU9-W16c.2) - die drei Ansichten des Rahmens
+    // =====================================================================
+
+    [Fact]
+    public void Die_Wurzel_traegt_die_Schale_ueber_jeder_Ansicht()
+    {
+        // Entscheid E-1: eine Wurzel, zwei Schalen. Unter Windows ist die
+        // Kopfleiste das Menueband; auf iOS gibt es keine.
+        Services.AddSingleton<IProjektQuelle>(new TestProjektquelle(ZweiProjekte));
+        var cut = Render<AppWurzel>(p => p
+            .Add(x => x.Kopfleiste,
+                 (RenderFragment)(b => b.AddMarkupContent(0, "<div id=\"schale\">Menue</div>"))));
+
+        Assert.NotNull(cut.Find("#schale"));
+        Assert.Single(cut.FindAll(".epos-seite"));
+
+        cut.Instance.OeffneMaske(Seitenschluessel.Energietraeger);
+        cut.Render();
+
+        // Auch ueber dem Dialog steht die Schale - ein Menue verschwindet nicht.
+        Assert.NotNull(cut.Find("#schale"));
+    }
+
+    [Fact]
+    public void Ohne_Startseitengaben_bleibt_die_Liste_stehen_und_sagt_warum()
+    {
+        // Der Zustand der iOS-Huelle vor iU11 - derselbe Umgang wie beim
+        // Assistenten und beim KI-Chat.
+        var quelle = new TestProjektquelle(ZweiProjekte);
+        var cut = Aufbauen(quelle);
+
+        cut.Instance.OeffneMaske(Seitenschluessel.Startseite);
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-startseite"));
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Contains("Startseite", cut.Find(".epos-warnbanner").TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Mit_Startseitengaben_loest_die_Startseite_die_Liste_ab()
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Startseite = new Dictionary<string, object>
+            {
+                ["ProjektId"] = new Func<int>(() => 1030)
+            }
+        };
+        var cut = Aufbauen(quelle);
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.Startseite));
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-seite"));
+        Assert.Single(cut.FindAll(".epos-startseite"));
+    }
+
+    [Fact]
+    public void Die_Startseite_zeigt_ihre_Gattungszeile_nur_ohne_Kopfleiste()
+    {
+        // ANWENDERWUNSCH 05.09.2026 (W16b-E-4): Unter Windows nennt das Kopfband
+        // des Hauptfensters die Produktgattung schon - die Startseite laesst
+        // ihre eigene Zeile dann weg. Auf iOS ist die Kopfleiste leer, und die
+        // Zeile bleibt die einzige Nennung des Produkts.
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Startseite = new Dictionary<string, object>
+            {
+                ["ProjektId"] = new Func<int>(() => 1030)
+            }
+        };
+        Services.AddSingleton<IProjektQuelle>(quelle);
+
+        // (a) OHNE Kopfleiste - der iOS-Weg.
+        var ohne = Render<AppWurzel>(p => p.Add(x => x.Startansicht, Seitenschluessel.Startseite));
+        Assert.Single(ohne.FindAll(".epos-startseite-gattung"));
+
+        // (b) MIT Kopfleiste - der Windows-Weg.
+        var mit = Render<AppWurzel>(p => p
+            .Add(x => x.Startansicht, Seitenschluessel.Startseite)
+            .Add(x => x.Kopfleiste,
+                 (RenderFragment)(b => b.AddMarkupContent(0, "<div id=\"schale\">Menue</div>"))));
+
+        Assert.NotNull(mit.Find("#schale"));
+        Assert.Single(mit.FindAll(".epos-startseite"));
+        Assert.Empty(mit.FindAll(".epos-startseite-gattung"));
+    }
+
+    [Fact]
+    public void Die_Startansicht_ist_zugleich_das_Ziel_des_Rueckwegs()
+    {
+        // Unter Windows fuehrt "Schliessen" eines Dialogs zurueck auf die
+        // STARTSEITE, auf iOS auf die Projektliste. Es ist derselbe Weg.
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Startseite = new Dictionary<string, object>
+            {
+                ["ProjektId"] = new Func<int>(() => 1030)
+            }
+        };
+        Services.AddSingleton<IProjektQuelle>(quelle);
+        var cut = Render<AppWurzel>(p => p.Add(x => x.Startansicht, Seitenschluessel.Startseite));
+
+        Assert.Single(cut.FindAll(".epos-startseite"));
+
+        cut.Instance.OeffneMaske(Seitenschluessel.Energietraeger);
+        cut.Render();
+        Assert.Empty(cut.FindAll(".epos-startseite"));
+
+        // Der Dialog meldet sein Ende - danach steht wieder die Startseite,
+        // nicht die Liste. (Abbrechen ist der letzte nicht-primaere Knopf der
+        // Speichernleiste - derselbe Griff wie in den Faellen oben.)
+        cut.FindAll(".epos-dialog button").Last(k => !k.ClassList.Contains("epos-knopf--primaer")).Click();
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-startseite"));
+    }
+
+    [Fact]
+    public void Berichte_und_Kosten_ist_eine_Ansicht_mit_Rueckweg()
+    {
+        // ANWENDERENTSCHEID W16c-E-3 (04.09.2026): BERICHTE_KOSTEN ist der Weg
+        // BEIDER Plattformen. Die Ansicht traegt deshalb einen Rueckwegknopf -
+        // sie loest die Startansicht ab, und ohne ihn gaebe es keinen Weg
+        // zurueck; als sechstes Reiterblatt der Startseite hat dieselbe
+        // Komponente ihn NICHT (dort fehlt der Rueckruf).
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Startseite = new Dictionary<string, object>
+            {
+                ["ProjektId"] = new Func<int>(() => 1030)
+            },
+            BerichteKosten = new Dictionary<string, object>
+            {
+                ["ZurueckText"] = "◀ Zurück"
+            }
+        };
+        Services.AddSingleton<IProjektQuelle>(quelle);
+        var cut = Render<AppWurzel>(p => p.Add(x => x.Startansicht, Seitenschluessel.Startseite));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.BerichteKosten));
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-startseite"));
+        Assert.Single(cut.FindAll(".epos-navigation"));
+
+        cut.Find(".epos-navigation-zurueck").Click();
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-startseite"));
+        Assert.Empty(cut.FindAll(".epos-navigation"));
+    }
+
+    [Fact]
+    public void Ohne_Parametersatz_bleibt_Berichte_und_Kosten_stehen_und_sagt_warum()
+    {
+        // Die Standardumsetzung von IProjektQuelle.BerichteKostenGaben liefert
+        // null. Dann wechselt die Wurzel NICHT, sondern nennt den Grund - der
+        // Zustand einer Huelle, die diese Seite nicht fuehrt.
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.BerichteKosten));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Empty(cut.FindAll(".epos-navigation"));
     }
 }

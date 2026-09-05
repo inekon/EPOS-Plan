@@ -605,7 +605,7 @@ Verpacken und das Setup danach.
 | S3 | `AccessDatabaseEngine_X64.exe` (ADE 2016 Redistributable, **64 Bit**) liegt noch nicht in der Repo-Wurzel — ohne sie bricht `build-setup.ps1` ab | Aus dem Microsoft Download Center beschaffen und unverändert in die Repo-Wurzel legen (5.1). Die 32-bit-Fassung der x86-Ära entfällt ersatzlos |
 | S8 | `MicrosoftEdgeWebview2Setup.exe` (Evergreen-Bootstrapper) liegt noch nicht in der Repo-Wurzel — ohne sie bricht `build-setup.ps1` ab | Von <https://go.microsoft.com/fwlink/p/?LinkId=2124703> beschaffen und unverändert in die Repo-Wurzel legen (5.5) |
 | S9 | `.gitignore` deckt `/AccessDatabaseEngine*.exe` ab, den WebView2-Bootstrapper in der Repo-Wurzel aber **nicht** — `GitHub_Sync.bat` committet mit `git add -A` | Zeile `/MicrosoftEdgeWebview2Setup.exe` in `.gitignore` ergänzen |
-| S10 | Online- oder Offline-Verteilung der WebView2-Laufzeit (5.5) | Anwenderentscheidung: Bootstrapper (heute), Standalone-Installer oder Fixed Version |
+| S10 | Online- oder Offline-Verteilung der WebView2-Laufzeit (5.5) | **Entschieden 03.09.2026 (iF20): Bootstrapper.** Der Standalone-Installer wird erst beigelegt, wenn ein Kunde ohne Internet installiert |
 | S4 | Herausgebername: „INEKON" oder die vollständige Firmierung? Steht in Setup, Softwareliste und später im Zertifikat | Festlegen, danach `#define AppPublisher` |
 | S5 | Automatisierte Erzeugung der Auslieferungsdatenbank (6.1) | Skript schreiben; bis dahin Handlauf mit Gegenprüfung |
 | S6 | `Settings.Default.Upgrade()` beim Versionswechsel vorhanden? (7.7) | Im Code nachsehen |

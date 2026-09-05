@@ -1,0 +1,70 @@
+﻿@* Die KOSTENLEISTE der Anlagen- und Geraetedialoge (iU9-W6.0f).
+
+   VORBILD. Views/Kosten/KostenKnoepfe.cs, Methode Leiste (Z. 39-77) - der
+   Serienbaustein der Etappe KD6 (Konzept Kostendialoge Paragraf 9): drei
+   Knoepfe "Investitionskosten…", "Betriebskosten…", "Energiekosten…" und
+   rechts daneben der rote FK8-Kurzhinweis mit dem Vollsatz als Tooltip.
+   Vier Masken haengen ihn an: Heizkessel (:116), Heizkessel-Katalogeditor
+   (:135), BHKW (:253) und BHKW-Katalogeditor (~:45).
+
+   WAS DIE LEISTE NICHT TUT. Sie oeffnet nichts. Wohin die drei Knoepfe fuehren,
+   entscheidet die Huelle ueber zwei Delegaten - dasselbe Muster wie Sprung
+   (iU9-W2.2) und Dateiwahl (iU9-W3.0). Ohne Delegat bleibt der Knopf weg:
+   Ein Knopf, der nichts tut, waere eine Behauptung, die nicht stimmt.
+
+   ZWEI DELEGATEN, DREI KNOEPFE. Investitions- und Betriebskosten fuehren in
+   DIESELBE Maske und unterscheiden sich nur im Schalter "betrieb" - im
+   Vorlaeufer waren es zwei Click-Handler auf dieselbe Methode OeffneKosten.
+   Deshalb ein Delegat mit bool statt zweier.
+
+   GRENZE (A-1 des Protokolls W6). Unter Windows sind beide Ziele SELBST
+   Blazor-Huellen. Die Huelle oeffnet sie aus dem Rueckruf als zweites
+   modales Fenster - dieselbe Mechanik wie die Sprungbruecke, aber Risiko R2.
+   Die Verschmelzung zur Ueberlagerung braucht die Datenseite von
+   KostenKomponenteHuelle als Delegatensatz und gehoert nicht in Welle 6. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-kostenleiste">
+    @if (KostenOeffnen is not null)
+    {
+        <button type="button" class="epos-knopf" @onclick="() => KostenOeffnen(false)">@InvestText</button>
+        <button type="button" class="epos-knopf" @onclick="() => KostenOeffnen(true)">@BetriebText</button>
+    }
+    @if (EnergiekostenOeffnen is not null)
+    {
+        <button type="button" class="epos-knopf" @onclick="EnergiekostenOeffnen">@EnergieText</button>
+    }
+    @if (!string.IsNullOrEmpty(Fk8Kurz))
+    {
+        <span class="epos-kostenleiste-hinweis" title="@Fk8Hinweis">@Fk8Kurz</span>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Oeffnet den Kostendialog. Der Schalter ist <c>betrieb</c>: <c>false</c> =
+    /// Investitionskosten, <c>true</c> = Betriebskosten - genau der Parameter, den
+    /// <c>KostenKnoepfe.OeffneKosten</c> durchreichte. Ohne Delegat fehlen beide Knoepfe.
+    /// </summary>
+    [Parameter] public Func<bool, Task>? KostenOeffnen { get; set; }
+
+    /// <summary>
+    /// Fuehrt in die Energietraegerverwaltung, im Projektkontext vorgefiltert auf den
+    /// Traeger. Ohne Delegat fehlt der Knopf.
+    /// </summary>
+    [Parameter] public Func<Task>? EnergiekostenOeffnen { get; set; }
+
+    /// <summary>
+    /// Der rote Kurzhinweis rechts (<c>KDLG_FK8_KURZ</c>). Leer = keiner - so wie der
+    /// Vorlaeufer das Label nur bei gesetztem <c>fk8Hinweis</c> anlegte.
+    /// </summary>
+    [Parameter] public string Fk8Kurz { get; set; } = "";
+
+    /// <summary>Der Vollsatz als Tooltip (<c>KDLG_FK8_HINWEIS</c>).</summary>
+    [Parameter] public string Fk8Hinweis { get; set; } = "";
+
+    [Parameter] public string InvestText { get; set; } = "Investitionskosten…";
+    [Parameter] public string BetriebText { get; set; } = "Betriebskosten…";
+    [Parameter] public string EnergieText { get; set; } = "Energiekosten…";
+}

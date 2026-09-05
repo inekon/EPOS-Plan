@@ -1,0 +1,98 @@
+﻿@* Reiter 1 der Startseite: „Projekt" (iU9-W16b.2).
+
+   Vorbild: Form_Start.tabPage1 - Kopfzeile (label3), Erlaeuterung (label1) und
+   SECHS AktionsKarte. Es sind hier FUENF: "Projekt Details" war der einzige Weg
+   in den Altzweig FormMain (Befund W16-B20) und ist mit dem Anwenderentscheid
+   E-7 (K6-a) entfallen.
+
+   KEIN STATUSPUNKT. Die fuenf Kacheln fuehren keinen Bestand - es gibt nichts zu
+   zaehlen. StartKachel.Zustand ist deshalb null, und Kachel zeigt wie bisher
+   keinen Punkt.
+
+   Der Infoknopf stand im Bestand als btn_Help_Kurzanleitung frei auf der
+   Reiterflaeche; hier steht er im FLUSS der Kopfzeile und kann nichts mehr
+   ueberdecken (dieselbe Angleichung wie in BerichteKostenSeite, H11).
+
+   DER EINSTIEGSHINWEIS (Anwenderwunsch W16b-E-6, 05.09.2026). Solange kein
+   Projekt offen ist, steht unter der Erlaeuterung EINE leise Zeile, die sagt,
+   was als Erstes zu tun ist. Sie steht HIER und nicht als Banner ueber der
+   Seite: Der Anwender schaut ohnehin auf diesen Reiter - der einzige, der ohne
+   Projekt bedienbar ist -, und eine dauerhafte Warnflaeche ueber der ganzen
+   Seite meldete einen FEHLER, wo nur ein Anfang fehlt. Das ⚠ davor ist
+   dasselbe Zeichen wie im Kopfband; damit haengen Statuszeichen und Hinweis
+   sichtbar zusammen. Ist ein Projekt offen, gibt die Huelle einen leeren Text
+   - dann steht die Zeile gar nicht mehr da. *@
+
+@namespace EPOS.UI.Seiten.Start
+
+<div class="epos-startreiter">
+
+    <div class="epos-startreiter-kopf">
+        <div>
+            <h2 class="epos-startreiter-titel">@KopfText</h2>
+            <p class="epos-startreiter-text">@Text</p>
+            @if (!string.IsNullOrEmpty(HinweisText))
+            {
+                <p class="epos-startreiter-hinweis">
+                    <span class="epos-startseite-status epos-startseite-status--keins"
+                          aria-hidden="true">@HinweisZeichen</span>
+                    <span>@HinweisText</span>
+                </p>
+            }
+        </div>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Kachelraster Hoechstbreite="404">
+        <KindInhalt>
+            @foreach (StartKachel kachel in Kacheln)
+            {
+                StartKachel k = kachel;
+                <Kachel Titel="@k.Titel"
+                        Beschreibung="@k.Beschreibung"
+                        Zustand="@k.Zustand"
+                        Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                        Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                        Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+            }
+        </KindInhalt>
+    </Kachelraster>
+</div>
+
+@code {
+    /// <summary>Die Kacheln dieses Reiters — fünf.</summary>
+    [Parameter] public IReadOnlyList<StartKachel> Kacheln { get; set; } = Array.Empty<StartKachel>();
+
+    /// <summary>Eine Kachel wurde angeklickt; übergeben wird ihr Schlüssel.</summary>
+    [Parameter] public EventCallback<string> Geklickt { get; set; }
+
+    /// <summary>Überschrift (<c>label3</c>).</summary>
+    [Parameter] public string KopfText { get; set; } = "Projekt einrichten";
+
+    /// <summary>Erläuterung (<c>label1</c>).</summary>
+    [Parameter] public string Text { get; set; }
+        = "Erstellen Sie ein neues Projekt oder öffnen Sie ein bestehendes.";
+
+    /// <summary>
+    /// Der leise EINSTIEGSHINWEIS unter der Erläuterung (<b>W16b‑E‑6</b>);
+    /// leer = keiner. Die Startseite gibt ihn nur, solange kein Projekt offen
+    /// ist.
+    ///
+    /// <para>Der Wortlaut ist ORTSNEUTRAL genug für beide Schalen: Das Kopfband
+    /// mit dem Projektfeld gehört der Startseite selbst und steht auf Windows
+    /// wie auf iOS über diesem Reiter — „oben" stimmt also überall. „Oben
+    /// rechts" täte es nicht: Auf einem schmalen Schirm bricht der Projektkasten
+    /// unter den Klimakasten (<c>flex-wrap</c>).</para>
+    /// </summary>
+    [Parameter] public string HinweisText { get; set; }
+        = "Wählen Sie oben ein Projekt aus oder legen Sie unten ein neues an — die übrigen Bereiche öffnen sich danach.";
+
+    /// <summary>
+    /// Das Statuszeichen vor dem Einstiegshinweis — dasselbe ⚠ wie im Kopfband
+    /// (<c>label_ProjektStatus</c>), damit beide sichtbar zusammengehören.
+    /// </summary>
+    [Parameter] public string HinweisZeichen { get; set; } = "⚠";
+
+    /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Kurzanleitung";
+}

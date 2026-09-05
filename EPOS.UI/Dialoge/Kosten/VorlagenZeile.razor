@@ -1,0 +1,184 @@
+﻿@* EINE Zeile des Positionsrasters der Kostenverwaltung (iU9-W4.1).
+
+   Vorbild: Views/Kosten/ucVorlagenZeile.cs (377 Z.) und .Designer.cs — die
+   Zeile aus Etappe KD2, Konzept Kostendialoge Rev. 1.2 § 5.2:
+   Aktionen · Position · Bemessung · Satz 🔗 Betrag · Nutzungsdauer · Worst/Best.
+
+   WARUM EINE KOMPONENTE UND KEINE RASTERSPALTEN. Die sieben Felder bedingen
+   einander: Die Bemessung entscheidet, ob Satz und Betrag EIN Wert sind
+   (Kopplungsregel KL4 / § 5.4), der Kontext entscheidet, ob im Betragsfeld ein
+   Strich, ein Spiegel oder ein gerechneter Wert steht. In sieben
+   QuickGrid-Spaltenvorlagen zerlegt waere dieser Zusammenhang auf sieben
+   Stellen verteilt. Der Baustein Zeilenraster (iU9-W4.0) traegt dafuer die
+   gemeinsamen Spalten; diese Zeile setzt ihre Zellen hinein (display:contents).
+
+   DIE ZEILE RECHNET UND SCHREIBT NICHT. Sie zeigt an und meldet. Was ein
+   geaenderter Satz fuer den Betrag bedeutet, entscheidet der Wirt
+   (KostenKomponenteDialog) — genau wie im Bestand, wo KopplungAnwenden zwar
+   hier stand, seine Wahrheit (die Bemessung) aber vom Wirt kam.
+
+   NEU-MODUS (FK2): die gestrichelte Abschlusszeile der Mockups. Der Vorlaeufer
+   legte an, sobald man das Namensfeld mit gefuelltem Namen VERLIESS. Hier
+   steht dafuer ein Knopf (A-1 des Protokolls): In einer WebView gibt es kein
+   „Leave" mit derselben Bedeutung, und ein Anlegen, das beim Weiterklicken
+   nebenbei passiert, ist schwer vorherzusehen. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-zr-zeile">
+
+    <div class="epos-zr-zelle epos-zr-aktionen">
+        @if (Neuzeile)
+        {
+            <button type="button" class="epos-knopf epos-zr-knopf" title="@AnlegenKurztext"
+                    disabled="@(!Schreibbar || string.IsNullOrWhiteSpace(Bezeichnung))"
+                    @onclick="() => AnlegenAngefordert.InvokeAsync()">＋</button>
+        }
+        else
+        {
+            <button type="button" class="epos-knopf epos-zr-knopf" title="@EditorKurztext"
+                    disabled="@(!Schreibbar)"
+                    @onclick="() => EditorAngefordert.InvokeAsync()">✏️</button>
+            <button type="button" class="epos-knopf epos-zr-knopf" title="@LoeschenKurztext"
+                    disabled="@(!Schreibbar)"
+                    @onclick="() => LoeschenAngefordert.InvokeAsync()">🗑️</button>
+        }
+    </div>
+
+    <div class="epos-zr-zelle">
+        <Textfeld Wert="@Bezeichnung" WertChanged="@BezeichnungChanged"
+                  Platzhalter="@(Neuzeile ? Platzhalter : "")" NurLesen="@(!Schreibbar)" />
+    </div>
+
+    <div class="epos-zr-zelle">
+        <Auswahlfeld Eintraege="@Bemessungen" Auswahl="@BemessungId"
+                     AuswahlChanged="@BemessungIdChanged" Aktiv="@Schreibbar" />
+    </div>
+
+    <div class="epos-zr-zelle" title="@EmpfehlungKurztext">
+        <Zahlenfeld Wert="@Satz" WertChanged="@SatzChanged" Einheit="@Einheit"
+                    Aktiv="@(Schreibbar && !Neuzeile)" />
+    </div>
+
+    <div class="epos-zr-zelle epos-zr-text" title="@BetragKurztext">
+        @if (Kette)
+        {
+            <span class="epos-zr-kette" title="@KetteKurztext">🔗</span>
+        }
+        <span class="epos-zr-betrag">@BetragText</span>
+    </div>
+
+    <div class="epos-zr-zelle">
+        @if (MitNutzungsdauer)
+        {
+            <Zahlenfeld Wert="@Nutzungsdauer" WertChanged="@NutzungsdauerChanged"
+                        Aktiv="@(Schreibbar && !Neuzeile)" />
+        }
+    </div>
+
+    <div class="epos-zr-zelle">
+        @if (!Neuzeile && MitWorstBest)
+        {
+            <button type="button" class="epos-knopf epos-zr-knopf" title="@WorstBestKurztext"
+                    disabled="@(!Schreibbar)"
+                    @onclick="() => WorstBestAngefordert.InvokeAsync()">±</button>
+        }
+    </div>
+</div>
+
+@code {
+    // ---- Werte ----------------------------------------------------------
+
+    /// <summary>Bezeichnung der Position (<c>txtBezeichnung</c>).</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Meldet die getippte Bezeichnung.</summary>
+    [Parameter] public EventCallback<string> BezeichnungChanged { get; set; }
+
+    /// <summary>Die waehlbaren Bemessungen (<c>cmbBemessung</c>) — der Wirt
+    /// filtert sie nach Invest/Betrieb, wie <c>BemessungenFuellen</c>.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Bemessungen { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Id der gewaehlten Bemessung; <c>null</c> = keine.</summary>
+    [Parameter] public int? BemessungId { get; set; }
+
+    /// <summary>Meldet die neue Bemessung.</summary>
+    [Parameter] public EventCallback<int?> BemessungIdChanged { get; set; }
+
+    /// <summary>Der Satz (<c>txtSatz</c>).</summary>
+    [Parameter] public double? Satz { get; set; }
+
+    /// <summary>Meldet den neuen Satz.</summary>
+    [Parameter] public EventCallback<double?> SatzChanged { get; set; }
+
+    /// <summary>Einheit der Bemessung, rechts am Satzfeld (<c>lblEinheit</c>).</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>
+    /// Der Betrag als fertiger Text (<c>txtBetrag</c>) — im Bestand nie
+    /// eingebbar: absolut spiegelt er den Satz, im Projekt steht der gerechnete
+    /// Wert, im Katalog ein Strich.
+    /// </summary>
+    [Parameter] public string BetragText { get; set; } = "";
+
+    /// <summary>Zeigt das Kettensymbol (<c>lblKette</c>) — Satz und Betrag sind EIN Wert.</summary>
+    [Parameter] public bool Kette { get; set; }
+
+    /// <summary>Nutzungsdauer (<c>txtNutzung</c>); nur bei Investitionskosten sichtbar.</summary>
+    [Parameter] public double? Nutzungsdauer { get; set; }
+
+    /// <summary>Meldet die neue Nutzungsdauer.</summary>
+    [Parameter] public EventCallback<double?> NutzungsdauerChanged { get; set; }
+
+    /// <summary>Zeigt die Spalte Nutzungsdauer (<c>txtNutzung.Visible = istInvest</c>).</summary>
+    [Parameter] public bool MitNutzungsdauer { get; set; }
+
+    // ---- Zustand --------------------------------------------------------
+
+    /// <summary>Darf die Zeile bearbeitet werden? (<c>!nurLesen</c>)</summary>
+    [Parameter] public bool Schreibbar { get; set; } = true;
+
+    /// <summary>Die Abschlusszeile „+ Neue Position hinzufuegen…" (FK2).</summary>
+    [Parameter] public bool Neuzeile { get; set; }
+
+    /// <summary>Zeigt den ±-Knopf (<c>btnWorstBest</c>, nur im Projektmodus).</summary>
+    [Parameter] public bool MitWorstBest { get; set; }
+
+    // ---- Meldungen ------------------------------------------------------
+
+    /// <summary>Der Stift (<c>btnEditor</c>) — der Wirt oeffnet den Zeileneditor.</summary>
+    [Parameter] public EventCallback EditorAngefordert { get; set; }
+
+    /// <summary>Der Papierkorb (<c>btnLoeschen</c>) — der Wirt fragt nach und loescht.</summary>
+    [Parameter] public EventCallback LoeschenAngefordert { get; set; }
+
+    /// <summary>Das ± (<c>btnWorstBest</c>) — der Wirt oeffnet die Worst/Best-Eingabe.</summary>
+    [Parameter] public EventCallback WorstBestAngefordert { get; set; }
+
+    /// <summary>Der ＋-Knopf der Abschlusszeile — der Wirt legt an.</summary>
+    [Parameter] public EventCallback AnlegenAngefordert { get; set; }
+
+    // ---- Texte ----------------------------------------------------------
+
+    /// <summary>Platzhalter der Abschlusszeile („+ Neue Position…").</summary>
+    [Parameter] public string Platzhalter { get; set; } = "+ Neue Position…";
+
+    [Parameter] public string EditorKurztext { get; set; } = "Position bearbeiten";
+    [Parameter] public string LoeschenKurztext { get; set; } = "Position löschen";
+    [Parameter] public string AnlegenKurztext { get; set; } = "Position anlegen";
+
+    /// <summary>Kurztext des ±-Knopfes (im Bestand ein Tooltip).</summary>
+    [Parameter] public string WorstBestKurztext { get; set; }
+        = "Worst/Best wird je Projektposition gepflegt, nicht in der Stammvorlage.";
+
+    /// <summary>Kurztext des Kettensymbols.</summary>
+    [Parameter] public string KetteKurztext { get; set; }
+        = "Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.";
+
+    /// <summary>Kurztext des Betragsfeldes — je Kontext ein anderer.</summary>
+    [Parameter] public string BetragKurztext { get; set; } = "";
+
+    /// <summary>Kurztext des Satzfeldes: der Empfehlungsbereich, wenn es einen gibt.</summary>
+    [Parameter] public string EmpfehlungKurztext { get; set; } = "";
+}

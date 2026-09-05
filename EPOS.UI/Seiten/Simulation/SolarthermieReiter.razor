@@ -1,0 +1,104 @@
+@* Der SOLARTHERMIE-Reiter der Ergebnisseite (R7, iU9-W11b.6).
+
+   VORBILD. tabPage_Solarthermie mit fuenf Feldern, der programmatischen
+   Kollektortabelle (listView_SimSolar, 6 Spalten) und chart8 (zwei Linien:
+   Waermebedarf rot, Waermeproduktion blau). Kein Umschalter, kein Export, kein
+   Zoom - so war es, so bleibt es.
+
+   BEFUND W11-B20 IST IN W11a BEHOBEN: Die Solarthermie-Felder standen INNERHALB
+   von „if (sim.bSimulationSolarthermie)" ohne Gegenstueck ausserhalb - ein
+   Folgelauf ohne Solarthermie liess die Zahlen des Vorlaufs stehen. Das DTO ist
+   dann null, und die Rubrik kann nichts Altes mehr zeigen.
+
+   PAKET E1 / BEFUND V0-O1: Der NENNER des Deckungsgrades ist der PROJEKTbedarf
+   (wie bei Waermepumpe, Kessel und BHKW und wie im Runner), der RESTBEDARF
+   darunter bleibt auf dem Stufeneingang. Beides steht im DTO; die Anzeige
+   uebernimmt es unveraendert. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @if (Daten is null)
+    {
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_SIMULATION</p>
+    }
+    else
+    {
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <dl class="epos-simerg-werte">
+                    @* Ohne bekannten Bezug bleibt das Feld LEER - woertlich :4603. *@
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
+                               Daten.DeckungBekannt ? Zahl(Daten.DeckungProzent) : "", "%")
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_MODULE, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
+                </dl>
+            </section>
+
+            @* Das Diagramm steht ueber BEIDE Spalten (Befund W11b-B-2). *@
+            <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                <ChartBild Png="@BildSolar" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
+            </section>
+
+        </div>
+
+        @if (Daten.Module.Count > 0)
+        {
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.SIM_SPALTE_SOLARKOLLEKTOR</th>
+                        <th scope="col">@Resource.SIM_SPALTE_NAME</th>
+                        <th scope="col">@Resource.SIM_SPALTE_FLAECHE</th>
+                        <th scope="col">@Resource.SIM_SPALTE_ANZAHL</th>
+                        <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
+                        <th scope="col">@Resource.SIM_SPALTE_UEBERSCHUSS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Daten.Module.Count; i++)
+                    {
+                        var k = Daten.Module[i];
+                        <tr>
+                            <td class="epos-simerg-zahl">@(i + 1)</td>
+                            <td>@k.Name</td>
+                            <td class="epos-simerg-zahl">@Zahl(k.FlaecheM2)</td>
+                            <td class="epos-simerg-zahl">@k.Anzahl</td>
+                            <td class="epos-simerg-zahl">@Zahl(k.WaermeproduktionMwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(k.UeberschussMwh)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    private static System.Globalization.CultureInfo Kultur
+        => System.Globalization.CultureInfo.CurrentCulture;
+
+    /// <summary>Die Zahlen aus dem Kern; <c>null</c> = der Lauf fuehrte keine Solarthermie.</summary>
+    [Parameter]
+    public WindowsFormsApplication1.SimulationErgebnisCtrl.SolarthermieErgebnis? Daten { get; set; }
+
+    /// <summary>Liefert das Bild.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    private byte[]? BildSolar => Bild?.Invoke(new Bildauftrag(Bilder.Solarthermie));
+
+    private static string Zahl(double wert) => wert.ToString("F2", Kultur);
+
+    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
+        <dt>@text</dt>
+        <dd>@wert</dd>
+        <dd class="epos-simerg-einheit">@einheit</dd>
+    </text>;
+}

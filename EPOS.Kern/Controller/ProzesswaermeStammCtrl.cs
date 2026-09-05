@@ -213,5 +213,119 @@ namespace WindowsFormsApplication1
         }
 
         #endregion
+
+        #region --- KATALOG-SCHREIBEN (Kopf + Typ) ---
+
+        // Die drei Bedarfsblaetter sind Drillinge (iU9-W8.0a): StromverbraucherStammCtrl und
+        // BrauchwasserStammCtrl tragen Exists/SaveHead/TypIsReadOnly/TypNew/TypDelete schon,
+        // die Prozessmaske hatte ihr SQL inline in Form_EingDBProzess bzw. Form_EingProzTyp.
+        // Damit EINE Razor-Komponente alle drei bedienen kann, sind die drei Controller ab
+        // hier gleich geschnitten. Die ANWEISUNGEN bleiben die des Vorlaeufers - insbesondere
+        // ueberlaesst der Prozesskatalog seine Id weiterhin der Datenbank (AUTOINCREMENT),
+        // waehrend die beiden Zwillinge sie mit GetMaxID+1 selbst vergeben.
+
+        public bool Exists(string szBezeichner)
+        {
+            object v = DataRepository.ExecuteScalar("SELECT ID FROM " + TABLE + " WHERE Bezeichner = ?",
+                new DbParam("@bez", szBezeichner ?? ""));
+            return v != null && v != DBNull.Value;
+        }
+
+        /// <summary>
+        /// Schreibt einen Katalog-Kopf (<c>Tab_Prozesswaerme_STAMM</c>). <paramref name="isNew"/>:
+        /// INSERT ohne ID (die Datenbank vergibt sie) mit <c>ReadOnly = false</c>, sonst UPDATE
+        /// per Bezeichner mit ReadOnly-Schutz. Wortgleich aus
+        /// <c>Form_EingDBProzess.btn_Ueberschreiben_Click</c>:82 und
+        /// <c>btn_Speichern_Click</c>:146.
+        /// </summary>
+        public bool SaveHead(string bez, string typ, string beschr, double[] monat, bool isNew)
+        {
+            if (monat == null || monat.Length < 12) return false;
+
+            if (isNew)
+            {
+                var cols = new StringBuilder("Bezeichner, Typ, Beschreibung");
+                var vals = new StringBuilder("?, ?, ?");
+                var ps = new List<DbParam>
+                {
+                    new DbParam("@hbez", DbParamTyp.VarWChar) { Wert = (object)(bez ?? "") },
+                    new DbParam("@htyp", DbParamTyp.VarWChar) { Wert = (object)(typ ?? "") },
+                    new DbParam("@hbeschr", DbParamTyp.VarWChar) { Wert = (object)(beschr ?? "") }
+                };
+                for (int i = 0; i < 12; i++)
+                {
+                    cols.Append(", Monat_" + (i + 1)); vals.Append(", ?");
+                    ps.Add(new DbParam("@mon" + (i + 1).ToString("D2"), DbParamTyp.Double) { Wert = monat[i] });
+                }
+                cols.Append(", ReadOnly"); vals.Append(", ?");
+                ps.Add(new DbParam("@hro", DbParamTyp.Boolean) { Wert = false });
+                return DataRepository.ExecuteSQL("INSERT INTO " + TABLE + " (" + cols + ") VALUES (" + vals + ")", ps.ToArray());
+            }
+
+            if (IsReadOnly(bez))
+            {
+                Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschuetzt (ReadOnly) und kann nicht ueberschrieben werden.",
+                    "Schreibgeschuetzt");
+                return false;
+            }
+
+            var set = new StringBuilder("Typ = ?, Beschreibung = ?");
+            var pu = new List<DbParam>
+            {
+                new DbParam("@utyp", DbParamTyp.VarWChar) { Wert = (object)(typ ?? "") },
+                new DbParam("@ubeschr", DbParamTyp.VarWChar) { Wert = (object)(beschr ?? "") }
+            };
+            for (int i = 0; i < 12; i++)
+            {
+                set.Append(", Monat_" + (i + 1) + " = ?");
+                pu.Add(new DbParam("@umon" + (i + 1).ToString("D2"), DbParamTyp.Double) { Wert = monat[i] });
+            }
+            pu.Add(new DbParam("@ukey", DbParamTyp.VarWChar) { Wert = (object)(bez ?? "") });
+            return DataRepository.ExecuteSQL("UPDATE " + TABLE + " SET " + set + " WHERE Bezeichner = ?", pu.ToArray());
+        }
+
+        // --- Typ-Katalog (Tab_Prozesstyp_STAMM), namensbasiert ueber Bezeichner ---
+
+        /// <summary>Aus <c>Form_EingProzTyp.IsTypReadOnly</c>:357.</summary>
+        public static bool TypIsReadOnly(string bez)
+        {
+            object v = DataRepository.ExecuteScalar("SELECT ReadOnly FROM " + TYP_STAMM + " WHERE Bezeichner = ?",
+                new DbParam("@bez", bez ?? ""));
+            return v != null && v != DBNull.Value && Convert.ToBoolean(v);
+        }
+
+        /// <summary>
+        /// Legt einen neuen Typ (nur Kopf, Profil = 0) an; Rueckgabe: neue ID oder 0. Aus
+        /// <c>Form_EingProzTyp.btn_Neu_Click</c>:285. Die ID kommt hier von der Datenbank
+        /// (AUTOINCREMENT) und wird danach GELESEN - die Zwillinge vergeben sie mit
+        /// GetMaxID+1 selbst. Wortlaut des Vorlaeufers vor Gleichmacherei (Regel F3).
+        /// </summary>
+        public static int TypNew(string bez)
+        {
+            bool ok = DataRepository.ExecuteSQL(
+                "INSERT INTO " + TYP_STAMM + " (Bezeichner, ReadOnly) VALUES (?, ?)",
+                new DbParam("@tbez", DbParamTyp.VarWChar) { Wert = (object)(bez ?? "") },
+                new DbParam("@tro", DbParamTyp.Boolean) { Wert = false });
+            if (!ok) return 0;
+
+            object v = DataRepository.ExecuteScalar("SELECT ID FROM " + TYP_STAMM + " WHERE Bezeichner = ?",
+                new DbParam("@bez", bez ?? ""));
+            return (v == null || v == DBNull.Value) ? 0 : Convert.ToInt32(v);
+        }
+
+        /// <summary>Aus <c>Form_EingProzTyp.btn_Loeschen_Click</c>:252, mit dem ReadOnly-Schutz der Zwillinge.</summary>
+        public static bool TypDelete(string bez)
+        {
+            if (TypIsReadOnly(bez))
+            {
+                Meldung.Hinweis("Dieser Typ ist schreibgeschuetzt (ReadOnly) und kann nicht geloescht werden.",
+                    "Schreibgeschuetzt");
+                return false;
+            }
+            return DataRepository.ExecuteSQL("DELETE FROM " + TYP_STAMM + " WHERE Bezeichner = ?",
+                new DbParam("@bez", bez ?? ""));
+        }
+
+        #endregion
     }
 }

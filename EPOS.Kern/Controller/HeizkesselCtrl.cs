@@ -349,5 +349,72 @@ namespace WindowsFormsApplication1
             FillModelFromRow(m, row);
             return m;
         }
+
+        // =================================================================================
+        // W6.0c - der Detailblock des Projektdialogs
+        // =================================================================================
+
+        /// <summary>
+        /// Die sechs Anzeigefelder eines Kessels - der Detailblock von
+        /// <c>Form_Heizkessel</c>.
+        /// </summary>
+        /// <param name="Bezeichner">Kesselname.</param>
+        /// <param name="Beschreibung">Freitext.</param>
+        /// <param name="Brennstoff">
+        /// Anzeigename aus <see cref="Brennstoffart"/>; leer, wenn die gespeicherte Nummer
+        /// ausserhalb der Liste liegt. Der Bestand griff hier ohne Bereichspruefung zu
+        /// (<c>Brennstoffart[(int)rs.Read("Brennstoff") - 1]</c>) und stuerzte bei einer
+        /// 0 oder einer zu grossen Nummer ab.
+        /// </param>
+        /// <param name="Ptherm">Thermische Leistung [kW].</param>
+        /// <param name="Investitionskosten">Investition [EUR].</param>
+        /// <param name="Brennwert">Brennwertgeraet?</param>
+        public sealed record KesselDetail(string Bezeichner, string Beschreibung, string Brennstoff,
+                                          double Ptherm, double Investitionskosten, bool Brennwert);
+
+        /// <summary>
+        /// Die Anzeigefelder der PROJEKTKOPIE ueber ihren Primaerschluessel; <c>null</c>,
+        /// wenn es sie nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// Aus <c>Form_Heizkessel.ApplySelectedKessel</c > (Z. 575-587), dort noch
+        /// <c>select * from [Tab_Heizkessel] where ID=</c> mit eingesetzter Zahl.
+        /// </remarks>
+        public KesselDetail ProjektDetail(int id)
+        {
+            return AusZeile(DataRepository.GetDataTable(
+                "SELECT Bezeichner, Beschreibung, Brennstoff, Ptherm, Investitionskosten, Brennwert " +
+                "FROM [Tab_Heizkessel] WHERE ID = ?",
+                new DbParam("@id", id)));
+        }
+
+        /// <summary>
+        /// Dieselben Felder aus dem KATALOG ueber den Bezeichner - die rechte Liste des
+        /// Projektdialogs (<c>listBox_Kessel_DB_SelectedIndexChanged</c>, Z. 622-634).
+        /// </summary>
+        public KesselDetail KatalogDetail(string szName)
+        {
+            return AusZeile(DataRepository.GetDataTable(
+                "SELECT Bezeichner, Beschreibung, Brennstoff, Ptherm, Investitionskosten, Brennwert " +
+                "FROM [" + HeizkesselStammCtrl.TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@nam", szName ?? "")));
+        }
+
+        private KesselDetail AusZeile(DataTable dt)
+        {
+            if (dt == null || dt.Rows.Count == 0) return null;
+            DataRow r = dt.Rows[0];
+
+            int nr = r["Brennstoff"] == DBNull.Value ? 0 : Convert.ToInt32(r["Brennstoff"]);
+            string brennstoff = (nr >= 1 && nr <= Brennstoffart.Count) ? Brennstoffart[nr - 1] : "";
+
+            return new KesselDetail(
+                r["Bezeichner"] == DBNull.Value ? "" : r["Bezeichner"].ToString(),
+                r["Beschreibung"] == DBNull.Value ? "" : r["Beschreibung"].ToString(),
+                brennstoff,
+                r["Ptherm"] == DBNull.Value ? 0 : Convert.ToDouble(r["Ptherm"]),
+                r["Investitionskosten"] == DBNull.Value ? 0 : Convert.ToDouble(r["Investitionskosten"]),
+                r["Brennwert"] != DBNull.Value && Convert.ToBoolean(r["Brennwert"]));
+        }
     }
 }

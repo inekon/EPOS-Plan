@@ -1,0 +1,451 @@
+﻿using System;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
+using Bunit;
+using EPOS.UI.Dialoge.Projekt;
+using EPOS.UI.Dienste;
+using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using Xunit;
+
+namespace EPOS.UI.Tests.Dialoge;
+
+/// <summary>
+/// Projektauswahl (iU9-W15a.2) — EINE Komponente fuer <c>Form_ProjektAuswahl</c>
+/// („Projekt öffnen") und <c>Form_ProjektDelete</c> („Projekt Löschen").
+///
+/// <para>Soll sind die beiden Feldkarten: Liste + OK + Abbrechen + Hilfeknopf bzw.
+/// Auswahlfeld + OK + Abbrechen. Geprueft wird zusaetzlich, was die Welle
+/// ANGLEICHT: die Sicherheitsabfrage mit Vorgabe „Nein" im Dialog (A-7), die
+/// Meldung ohne Auswahl (die einzige MessageBox des Vorlaeufers) und der
+/// Doppelklick als OK.</para>
+///
+/// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
+/// Beschriftungen.</para>
+/// </summary>
+public class ProjektWahlDialogTests : BunitContext
+{
+    private static readonly ProjektKopfZeile[] DREI =
+    {
+        new ProjektKopfZeile(1030, "Referenz BHKW", "Stadtwerke", "Kaskade", new DateTime(2026, 3, 1)),
+        new ProjektKopfZeile(1007, "Laurentiuskirche", "Kirchengemeinde", "Denkmalschutz", new DateTime(2026, 5, 4)),
+        new ProjektKopfZeile(1017, "Speicherhaus", "Stadtwerke", "PV", new DateTime(2026, 1, 9))
+    };
+
+    public ProjektWahlDialogTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        DeutscheOberflaeche();
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    /// <summary>Sprache auf de-DE pinnen (Muster <c>GebaeudeKatalogDialogTests</c>).</summary>
+    private static void DeutscheOberflaeche()
+    {
+        var de = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = de;
+        CultureInfo.DefaultThreadCurrentUICulture = de;
+        Thread.CurrentThread.CurrentCulture = de;
+        Thread.CurrentThread.CurrentUICulture = de;
+        CultureInfo.CurrentCulture = de;
+        CultureInfo.CurrentUICulture = de;
+    }
+
+    private IRenderedComponent<ProjektWahlDialog> Oeffnen(
+        Action<ComponentParameterCollectionBuilder<ProjektWahlDialog>>? mehr = null)
+        => Render<ProjektWahlDialog>(p =>
+        {
+            p.Add(x => x.Zeilen, DREI);
+            mehr?.Invoke(p);
+        });
+
+    private IRenderedComponent<ProjektWahlDialog> Loeschen(
+        Action<ComponentParameterCollectionBuilder<ProjektWahlDialog>>? mehr = null)
+        => Render<ProjektWahlDialog>(p =>
+        {
+            p.Add(x => x.Zeilen, DREI);
+            p.Add(x => x.Zweck, ProjektWahlDialog.ProjektZweck.Loeschen);
+            p.Add(x => x.TitelText, "Projekt Löschen");
+            p.Add(x => x.OkText, "Löschen");
+            p.Add(x => x.FrageTitel, "Projekt löschen bestätigen");
+            p.Add(x => x.FrageFormat,
+                  "Sind Sie sicher, dass Sie das Projekt '{0}' und alle dazugehörigen Daten "
+                  + "unwiderruflich löschen möchten?");
+            mehr?.Invoke(p);
+        });
+
+    [Fact]
+    public void Der_Oeffnen_Dialog_zeigt_Titel_Liste_und_die_zwei_Knoepfe()
+    {
+        var cut = Oeffnen();
+
+        Assert.Equal("Projekt öffnen", cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Equal(3, cut.FindAll("tbody tr").Count);
+        Assert.Contains("OK", Ok(cut).TextContent);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    [Fact]
+    public void Der_Loeschen_Dialog_zeigt_dieselbe_Liste_mit_anderem_Knopftext()
+    {
+        var cut = Loeschen();
+
+        Assert.Equal("Projekt Löschen", cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Equal(3, cut.FindAll("tbody tr").Count);   // A-12: Liste statt Klappliste
+        Assert.Contains("Löschen", Ok(cut).TextContent);
+    }
+
+    [Fact]
+    public void Ohne_Auswahl_meldet_OK_und_der_Dialog_bleibt_stehen()
+    {
+        ProjektKopfZeile? ergebnis = null;
+        bool gerufen = false;
+
+        var cut = Oeffnen(p => p
+            .Add(x => x.AutoVorauswahl, false)
+            .Add(x => x.MeldungKeineWahl, "Bitte auswählen!")
+            .Add(x => x.Geschlossen, (ProjektKopfZeile? z) => { ergebnis = z; gerufen = true; }));
+
+        Ok(cut).Click();
+
+        Assert.False(gerufen);
+        Assert.Null(ergebnis);
+        Assert.Contains("Bitte auswählen!", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    [Fact]
+    public void Mit_Auswahl_meldet_OK_die_Zeile()
+    {
+        ProjektKopfZeile? ergebnis = null;
+
+        var cut = Oeffnen(p => p.Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();   // sortiert: Laurentiuskirche
+        Ok(cut).Click();
+
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1007, ergebnis!.Id);
+    }
+
+    [Fact]
+    public void Abbrechen_meldet_null()
+    {
+        ProjektKopfZeile? ergebnis = new ProjektKopfZeile(1, "x");
+        bool gerufen = false;
+
+        var cut = Oeffnen(p => p.Add(x => x.Geschlossen,
+            (ProjektKopfZeile? z) => { ergebnis = z; gerufen = true; }));
+
+        Abbruch(cut).Click();
+
+        Assert.True(gerufen);
+        Assert.Null(ergebnis);
+    }
+
+    [Fact]
+    public void Im_Loeschmodus_kommt_erst_die_Rueckfrage_mit_Vorgabe_Nein()
+    {
+        ProjektKopfZeile? ergebnis = null;
+
+        var cut = Loeschen(p => p.Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();   // sortiert: Speicherhaus
+        Ok(cut).Click();
+
+        // Die Frage steht, der Dialog ist NICHT geschlossen.
+        Assert.Null(ergebnis);
+        var frage = cut.Find(".epos-rueckfrage-text");
+        Assert.Contains("Speicherhaus", frage.TextContent);
+        Assert.Contains("unwiderruflich", frage.TextContent);
+
+        // Vorgabe "Nein": der hervorgehobene Knopf der Rueckfrage ist der zweite.
+        var knoepfe = cut.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.DoesNotContain("epos-knopf--primaer", knoepfe[0].ClassList);
+        Assert.Contains("epos-knopf--primaer", knoepfe[1].ClassList);
+    }
+
+    [Fact]
+    public void Nein_laesst_den_Loeschdialog_stehen_Ja_schliesst_ihn()
+    {
+        ProjektKopfZeile? ergebnis = null;
+        bool gerufen = false;
+
+        var cut = Loeschen(p => p.Add(x => x.Geschlossen,
+            (ProjektKopfZeile? z) => { ergebnis = z; gerufen = true; }));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[1].Click();   // Nein
+
+        Assert.False(gerufen);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja
+
+        Assert.True(gerufen);
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1007, ergebnis!.Id);
+    }
+
+    // =========================================================================
+    //  Entscheid W15a-O-3 (04.09.2026) - ein Name, der MEHRERE Projekte trifft
+    // =========================================================================
+
+    /// <summary>
+    /// Der Loeschweg laeuft ueber den NAMEN. Regulaer trifft der genau ein Projekt
+    /// (<c>Tab_Projekt</c> traegt den eindeutigen Index <c>Projektname</c>); ein
+    /// Altbestand ohne ihn kann zwei fuehren, und dann wird gefragt statt still beide
+    /// zu loeschen. Die Zaehlung kommt als Rueckruf herein — dieselbe, mit der
+    /// <c>ProjektCtrl.LoeschenMitVorarbeiten</c> im Kern abbricht.
+    /// </summary>
+    private IRenderedComponent<ProjektWahlDialog> LoeschenMehrdeutig(
+        Func<string, int> anzahl,
+        Action<ComponentParameterCollectionBuilder<ProjektWahlDialog>>? mehr = null)
+        => Loeschen(p =>
+        {
+            p.Add(x => x.NamensAnzahl, anzahl);
+            p.Add(x => x.MehrdeutigTitel, "Projektname mehrfach vergeben");
+            p.Add(x => x.MehrdeutigFormat,
+                  "Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden "
+                  + "gelöscht. Fortfahren?");
+            mehr?.Invoke(p);
+        });
+
+    [Fact]
+    public void Ein_mehrdeutiger_Name_bringt_nach_der_Sicherheitsabfrage_eine_zweite_Rueckfrage()
+    {
+        ProjektKopfZeile? ergebnis = null;
+        bool alle = false;
+
+        var cut = LoeschenMehrdeutig(
+            n => n == "Speicherhaus" ? 2 : 1,
+            p => p
+                .Add(x => x.MehrdeutigZugelassen, (bool b) => alle = b)
+                .Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();   // sortiert: Speicherhaus
+        Ok(cut).Click();
+
+        // A-7 bleibt unveraendert DAVOR und wird bejaht.
+        Assert.Contains("unwiderruflich", cut.Find(".epos-rueckfrage-text").TextContent);
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja
+
+        // Jetzt steht die zweite Frage - gemeldet ist noch nichts.
+        Assert.Null(ergebnis);
+        Assert.False(alle);
+
+        var frage = cut.Find(".epos-rueckfrage-text");
+        Assert.Contains("Speicherhaus", frage.TextContent);
+        Assert.Contains("2-mal", frage.TextContent);
+
+        // Auch hier ist "Nein" die Vorgabe - der hervorgehobene Knopf ist der zweite.
+        var knoepfe = cut.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.DoesNotContain("epos-knopf--primaer", knoepfe[0].ClassList);
+        Assert.Contains("epos-knopf--primaer", knoepfe[1].ClassList);
+    }
+
+    [Fact]
+    public void Nein_laesst_den_Dialog_stehen_Ja_meldet_die_Freigabe_mit()
+    {
+        ProjektKopfZeile? ergebnis = null;
+        bool alle = false;
+        bool gerufen = false;
+
+        var cut = LoeschenMehrdeutig(
+            _ => 2,
+            p => p
+                .Add(x => x.MehrdeutigZugelassen, (bool b) => alle = b)
+                .Add(x => x.Geschlossen,
+                     (ProjektKopfZeile? z) => { ergebnis = z; gerufen = true; }));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();   // Speicherhaus
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // A-7: Ja
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[1].Click();   // mehrdeutig: Nein
+
+        // Nichts passiert, der Dialog bleibt offen.
+        Assert.False(gerufen);
+        Assert.False(alle);
+        Assert.Null(ergebnis);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+
+        // Zweiter Anlauf, diesmal mit "Ja".
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // A-7: Ja
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // mehrdeutig: Ja
+
+        Assert.True(gerufen);
+        Assert.True(alle);
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1017, ergebnis!.Id);
+    }
+
+    [Fact]
+    public void Ein_eindeutiger_Name_fragt_nicht_nach()
+    {
+        ProjektKopfZeile? ergebnis = null;
+        bool alle = false;
+
+        var cut = LoeschenMehrdeutig(
+            _ => 1,
+            p => p
+                .Add(x => x.MehrdeutigZugelassen, (bool b) => alle = b)
+                .Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();   // Laurentiuskirche
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // A-7: Ja
+
+        // Kein zweiter Kasten - der Dialog ist zu, die Freigabe wurde nicht gemeldet.
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.False(alle);
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1007, ergebnis!.Id);
+    }
+
+    /// <summary>
+    /// Ohne den Rueckruf bleibt der Loeschdialog, wie er war (die Sperre haelt der Kern).
+    /// </summary>
+    [Fact]
+    public void Ohne_Zaehlung_bleibt_es_bei_der_einen_Sicherheitsabfrage()
+    {
+        ProjektKopfZeile? ergebnis = null;
+
+        var cut = Loeschen(p => p.Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+        Ok(cut).Click();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // A-7: Ja
+
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1017, ergebnis!.Id);
+    }
+
+    [Fact]
+    public void Ein_Doppelklick_uebernimmt_wie_OK()
+    {
+        ProjektKopfZeile? ergebnis = null;
+
+        var cut = Oeffnen(p => p.Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        cut.FindAll("tbody tr")[2].DoubleClick();           // sortiert: Speicherhaus
+
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1017, ergebnis!.Id);
+    }
+
+    [Fact]
+    public void Esc_bricht_ab_und_Enter_bestaetigt()
+    {
+        ProjektKopfZeile? ergebnis = new ProjektKopfZeile(1, "x");
+
+        var cut = Oeffnen(p => p.Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+        cut.Find(".epos-dialog").KeyDown(key: "Escape");
+        Assert.Null(ergebnis);
+
+        cut = Oeffnen(p => p.Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+        cut.Find(".epos-dialog").KeyDown(key: "Enter");
+        Assert.NotNull(ergebnis);
+    }
+
+    [Fact]
+    public void Die_Vorauswahl_der_Kachel_stellt_das_gemerkte_Projekt_scharf()
+    {
+        ProjektKopfZeile? ergebnis = null;
+
+        var cut = Oeffnen(p => p
+            .Add(x => x.Vorauswahl, "Speicherhaus")
+            .Add(x => x.SortSpalte, ProjektListeSpalteGeaendert)
+            .Add(x => x.SortAbsteigend, true)
+            .Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+
+        Ok(cut).Click();
+
+        Assert.NotNull(ergebnis);
+        Assert.Equal(1017, ergebnis!.Id);
+
+        // "zuletzt geaendert zuerst": Laurentiuskirche (04.05.) steht oben.
+        Assert.Contains("Laurentiuskirche", cut.FindAll("tbody tr")[0].TextContent);
+    }
+
+    [Fact]
+    public void Ohne_Hilfeschluessel_erscheint_kein_Infoknopf()
+    {
+        Assert.Empty(Oeffnen().FindAll(".epos-infoknopf"));
+        Assert.Single(Oeffnen(p => p.Add(x => x.HilfeSchluessel, "Form_ProjektAuswahl.btn_Help"))
+                          .FindAll(".epos-infoknopf"));
+    }
+
+    /// <summary>
+    /// Der OK-Knopf der SCHLUSSLEISTE. Nicht ueber ".epos-knopf--primaer" allein:
+    /// Die markierte Rasterzeile traegt dieselbe Klasse (Baustein Zeilenwahl).
+    /// </summary>
+    private static AngleSharp.Dom.IElement Ok(IRenderedComponent<ProjektWahlDialog> cut)
+        => cut.FindAll(".epos-dialog > .epos-leiste .epos-knopf--primaer")[0];
+
+    /// <summary>Der Abbrechen-Knopf der Schlussleiste.</summary>
+    private static AngleSharp.Dom.IElement Abbruch(IRenderedComponent<ProjektWahlDialog> cut)
+        => cut.FindAll(".epos-dialog > .epos-leiste button")
+              .First(k => !k.ClassList.Contains("epos-knopf--primaer"));
+
+    private static int ProjektListeSpalteGeaendert
+        => EPOS.UI.Bausteine.ProjektListe.SPALTE_GEAENDERT;
+
+    // =====================================================================
+    // Merge 5 (Nutzerauftrag 02.09.2026): Loeschen mit Mehrfachauswahl
+    // =====================================================================
+
+    /// <summary>
+    /// Ohne Haken kein Loeschen; "Alle" hakt die Sicht; die Rueckfrage traegt Anzahl und
+    /// Namen (Varianten gekennzeichnet); der Auftrag kommt in Loeschreihenfolge - die
+    /// Variante VOR ihrem Stamm - samt Sicherungswunsch (Vorgabe an).
+    /// </summary>
+    [Fact]
+    public void Mehrfachloeschen_hakt_alle_fragt_mit_Liste_zurueck_und_liefert_den_Auftrag_Varianten_zuerst()
+    {
+        ProjektLoeschauftrag? auftrag = null;
+        var zeilen = new[]
+        {
+            DREI[0], DREI[1],
+            new ProjektKopfZeile(1099, "Referenz BHKW V1", "Stadtwerke", "", null, StammId: 1030)
+        };
+        var cut = Render<ProjektWahlDialog>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Zweck, ProjektWahlDialog.ProjektZweck.Loeschen)
+            .Add(x => x.TitelText, "Projekte löschen")
+            .Add(x => x.OkText, "Löschen")
+            .Add(x => x.FrageTitel, "Projekt löschen bestätigen")
+            .Add(x => x.Mehrfach, true)
+            .Add(x => x.SicherungAngeboten, true)
+            .Add(x => x.LoeschauftragErteilt, a => auftrag = a));
+
+        Assert.Equal(3, cut.FindAll(".epos-projektliste-haken").Count);
+        Assert.Empty(cut.FindAll(".epos-anlagenwahl"));
+
+        Ok(cut).Click();                                          // ohne Haken: nur der Hinweis
+        Assert.False(cut.Instance.FrageOffen);
+        Assert.Null(auftrag);
+
+        cut.Find(".epos-projektwahl-alle").Click();
+        Assert.Equal(3, cut.Instance.Angehakt.Count);
+        Assert.Contains("3 ausgewählt", cut.Find(".epos-projektwahl-zaehler").TextContent);
+
+        Ok(cut).Click();
+        Assert.True(cut.Instance.FrageOffen);
+        string frage = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.Contains("3 Projekt(e)", frage);
+        Assert.Contains("Referenz BHKW V1 (Variante)", frage);
+
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja
+
+        Assert.NotNull(auftrag);
+        Assert.Equal(3, auftrag!.Projekte.Count);
+        Assert.Equal(1099, auftrag.Projekte[0].Id);               // die Variante vor ihrem Stamm
+        Assert.True(auftrag.Sicherung);
+    }
+}

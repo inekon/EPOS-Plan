@@ -8,18 +8,29 @@ namespace Formularkarte.Tests;
 /// sieht. Geprueft an zwei Masken: <c>Form_Kostenprofil</c>
 /// (TabControl mit drei Reitern, darin ein Chart) und <c>Wizard_WPItem</c>
 /// (GroupBox, darin ein TabControl mit zwei Reitern).
+///
+/// <para><b>Beide sind eingefrorene Pruefmuster.</b> Sie sind im Bestand geloescht -
+/// Form_Kostenprofil mit iU9-W3.4, Wizard_WPItem mit iU9-W7.4 -, taugen aber
+/// weiterhin als Analysegegenstand: Ein Behaelterbaum aus GroupBox, TabControl und
+/// TabPage ist genau das, was diese Tests pruefen. Das Rezept steht in
+/// <c>Werkzeuge/Formularkarte/LIESMICH.md</c>.</para>
 /// </summary>
 public sealed class AbschnittTests
 {
     private static List<Abschnitt> Abschnitte(string relativ) =>
         Kartenbau.Abschnitte(Kartenbau.Vollstaendig(Repowurzel.Designer(relativ)));
 
+    /// <summary>Dasselbe aus einem eingefrorenen Pruefmuster (iU9-W3.6).</summary>
+    private static List<Abschnitt> Musterabschnitte(string relativ) =>
+        Kartenbau.Abschnitte(Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster(relativ), null, Repowurzel.PruefmusterWurzel));
+
     // ---- Form_Kosten/Form_Kostenprofil: TabControl mit drei Reitern --------
 
     [Fact]
     public void Kostenprofil_HatFensterUndDreiReiter()
     {
-        var abschnitte = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs");
+        var abschnitte = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs");
 
         Assert.Equal(new[] { "Fenster", "Monatswerte", "Wochenwerte", "Grafik" },
                      abschnitte.Select(a => a.Titel).ToArray());
@@ -30,7 +41,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Kostenprofil_ReiterHaengenAmTabControl()
     {
-        var abschnitte = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs");
+        var abschnitte = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs");
 
         // Das TabControl selbst hat keine eigenen Zeilen und faellt deshalb
         // aus der Liste; seine Reiter stehen eine Stufe tiefer.
@@ -41,7 +52,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Kostenprofil_ChartWirdZuChartBild()
     {
-        var grafik = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs").Single(a => a.Titel == "Grafik");
+        var grafik = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs").Single(a => a.Titel == "Grafik");
 
         var zeile = Assert.Single(grafik.Zeilen);
         Assert.Equal("chart", zeile.Element.Name);
@@ -52,7 +63,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Kostenprofil_ListBoxWirdAuswahlfeldUndBekommtSeinLabel()
     {
-        var woche = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs").Single(a => a.Titel == "Wochenwerte");
+        var woche = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs").Single(a => a.Titel == "Wochenwerte");
         var zeile = woche.Zeilen.Single(z => z.Element.Name == "lbTag");
 
         Assert.Equal("Auswahlfeld", zeile.Komponente);
@@ -62,7 +73,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Kostenprofil_BeschriftungWirktNurInnerhalbDesAbschnitts()
     {
-        var abschnitte = Abschnitte("Kosten/Form_Kostenprofil.Designer.cs");
+        var abschnitte = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs");
         var fenster = abschnitte[0];
 
         // lblName steht im Fenster und beschriftet tbBezeichner; die Label in
@@ -77,7 +88,7 @@ public sealed class AbschnittTests
     [Fact]
     public void WpItem_HatDreiGruppenUndZweiReiter()
     {
-        var abschnitte = Abschnitte("Wizard/Wizard_WPItem.Designer.cs");
+        var abschnitte = Musterabschnitte("Wizard/Wizard_WPItem.Designer.cs");
 
         var kenndaten = abschnitte.Single(a => a.Traeger?.Name == "groupBox2");
         Assert.Equal("GroupBox", kenndaten.Traeger!.Typ);
@@ -96,7 +107,7 @@ public sealed class AbschnittTests
     [Fact]
     public void WpItem_ErkenntGanzzahlfelderAusDerFormCs()
     {
-        var kenndaten = Abschnitte("Wizard/Wizard_WPItem.Designer.cs")
+        var kenndaten = Musterabschnitte("Wizard/Wizard_WPItem.Designer.cs")
             .Single(a => a.Traeger?.Name == "groupBox2");
 
         // Program.GanzzahlPruefen(textBox_PHeizstab, ...) in Wizard_WPItem.cs
@@ -111,11 +122,20 @@ public sealed class AbschnittTests
     }
 
     // ---- Form_Klimadaten: Panel ueber TabControl ueber TabPage ------------
+    //
+    // iU9-W14c.9: Die Maske ist mit Welle 14c gefallen; ihre drei Dateien liegen
+    // seither als PRUEFMUSTER unter Pruefmuster/Klimadaten/ (Muster W2/W4/W7/W13).
+    // Sie ist die EINZIGE Maske des Bestands gewesen, deren btn_Help im DESIGNER
+    // stand statt ueber InfoKnopf.Anbringen - und genau das pruefen die zwei Faelle
+    // hier und der Skelettfall in RazorSchreiberTests. Ein Umhaengen auf eine andere
+    // Maske haette den Fall inhaltlich veraendert.
 
     [Fact]
     public void Klimadaten_GehtDreiStufenTief()
     {
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Klimadaten/Form_Klimadaten.Designer.cs"));
+        var maske = Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster("Klimadaten/Form_Klimadaten.Designer.cs"),
+            null, Repowurzel.PruefmusterWurzel);
         var abschnitte = Kartenbau.Abschnitte(maske);
 
         // Panel -> TabControl -> TabPage: die Kette steht in Elter, die Tiefe
@@ -130,7 +150,7 @@ public sealed class AbschnittTests
     [Fact]
     public void Klimadaten_HilfeknopfWirdInfoKnopf()
     {
-        var zeile = Abschnitte("Klimadaten/Form_Klimadaten.Designer.cs")
+        var zeile = Musterabschnitte("Klimadaten/Form_Klimadaten.Designer.cs")
             .SelectMany(a => a.Zeilen)
             .Single(z => z.Element.Name == "btn_Help");
 
@@ -141,7 +161,8 @@ public sealed class AbschnittTests
     [Fact]
     public void WpItem_GruppenkoepfeSindDasZielDerBehaelter()
     {
-        var maske = Kartenbau.Vollstaendig(Repowurzel.Designer("Wizard/Wizard_WPItem.Designer.cs"));
+        var maske = Kartenbau.Vollstaendig(
+            Repowurzel.Pruefmuster("Wizard/Wizard_WPItem.Designer.cs"), null, Repowurzel.PruefmusterWurzel);
 
         Assert.Equal("Gruppenkopf", Kartenbau.Ziel(maske.Finden("groupBox2")!).Komponente);
         Assert.Equal("Gruppenkopf", Kartenbau.Ziel(maske.Finden("tabPage1")!).Komponente);

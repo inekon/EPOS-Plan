@@ -23,7 +23,7 @@
         <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
                type="text" inputmode="decimal" value="@_text"
                aria-invalid="@(Fehlerhaft ? "true" : null)"
-               @oninput="BeiEingabe" />
+               disabled="@(!Aktiv)" @oninput="BeiEingabe" />
         @if (!string.IsNullOrEmpty(Einheit))
         {
             <span class="epos-einheit">@Einheit</span>
@@ -53,10 +53,51 @@
     /// <summary>Feste Nachkommastellen der Anzeige; <c>null</c> = so genau wie noetig.</summary>
     [Parameter] public int? Nachkommastellen { get; set; }
 
+    /// <summary>
+    /// Bedienbar? <c>false</c> sperrt das Feld - dieselbe Eigenschaft, die
+    /// <see cref="Schalter"/> und <see cref="Auswahlfeld"/> schon fuehren
+    /// (iU9-W2.3).
+    ///
+    /// <para>Gebraucht wird sie von Dialogen, die ZWEI Rechenmodelle
+    /// nebeneinander zeigen und nur eines gelten lassen: Der Tarifdialog sperrt
+    /// den Block des nicht gewaehlten Modells, statt ihn auszublenden - die
+    /// Werte des anderen Modells bleiben damit lesbar und erhalten
+    /// (<c>Form_Tarifstruktur.ModusUebernehmen</c>: Enabled, nicht Visible).</para>
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Name des Feldes fuer die Sammelmeldung des Dialogs (iU9-W6.1). Leer = das Feld
+    /// meldet sich nicht.
+    ///
+    /// <para>Der WinForms-Bestand prueft beim Speicherknopf jedes Zahlenfeld einzeln
+    /// (<c>Program.ZahlPruefen(feld, "Thermische Leistung", …)</c>) und nennt in der
+    /// Meldung genau das Feld, an dem es haengt. Hier faerbt das Feld waehrend der
+    /// Eingabe wie bisher und meldet SEINEN NAMEN an den Dialog, der ihn beim Speichern
+    /// in dieselbe Meldung setzt. So bleibt die Regel erhalten, ohne dass der Dialog
+    /// fuenfzehn <c>@@ref</c> auf seine Felder halten muss.</para>
+    /// </summary>
+    [Parameter] public string Feldname { get; set; } = "";
+
+    /// <summary>
+    /// Meldet jede AENDERUNG des Fehlerzustands - <c>true</c>, sobald der Text keine
+    /// gueltige Zahl (mehr) ist, <c>false</c>, sobald er es wieder ist. Ohne
+    /// <see cref="Feldname"/> wird nichts gemeldet.
+    /// </summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
     private string _text = "";
 
     /// <summary>Der Text im Feld ist gerade keine gueltige Zahl (Pruefhilfe fuer Tests).</summary>
     public bool Fehlerhaft { get; private set; }
+
+    /// <summary>Setzt den Fehlerzustand und meldet ihn, wenn er sich geaendert hat.</summary>
+    private async Task FehlerSetzen(bool fehlerhaft)
+    {
+        if (Fehlerhaft == fehlerhaft) return;
+        Fehlerhaft = fehlerhaft;
+        if (Feldname.Length > 0) await FehlerZustand.InvokeAsync((Feldname, fehlerhaft));
+    }
 
     protected override void OnParametersSet()
     {
@@ -77,7 +118,7 @@
 
         if (_text.Trim().Length == 0)
         {
-            Fehlerhaft = false;
+            await FehlerSetzen(false);
             Wert = null;
             await WertChanged.InvokeAsync(null);
             return;
@@ -85,13 +126,13 @@
 
         if (Zahlen.ZahlParsen(_text, out double dWert) && ImBereich(dWert))
         {
-            Fehlerhaft = false;
+            await FehlerSetzen(false);
             Wert = dWert;
             await WertChanged.InvokeAsync(dWert);
             return;
         }
 
-        Fehlerhaft = true;
+        await FehlerSetzen(true);
     }
 
     private bool ImBereich(double dWert)

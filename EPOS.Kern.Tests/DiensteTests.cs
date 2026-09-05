@@ -16,7 +16,12 @@ namespace EPOS.Kern.Tests
     /// <para>Jeder Test, der einen Dienst tauscht, setzt ihn im <c>finally</c> zurück:
     /// <see cref="Dienste"/> ist prozessweiter Zustand, und xunit gibt keine Reihenfolge
     /// vor.</para>
+    ///
+    /// <para>Die Sammlung „Dienste" hält diese Klasse und <c>EnergieeinheitTests</c>
+    /// auseinander: Beide tauschen <see cref="Dienste.Einstellungen"/>, und xunit
+    /// fährt Testklassen sonst nebeneinander.</para>
     /// </summary>
+    [Collection("Dienste")]
     public class DiensteTests
     {
         // ==================================================================
@@ -127,26 +132,27 @@ namespace EPOS.Kern.Tests
             Assert.False(nav.OeffneMaske(Masken.WpAdministration));
             Assert.False(nav.OeffneMaske("gibt-es-nicht", 1, "zwei"));
 
-            nav.OeffneGewerk(Gewerke.Bhkw, 1030, "Projekt");
             nav.MenueAktualisieren();
             nav.AnsichtAktualisieren(Ansichten.Varianten);
         }
 
         /// <summary>
-        /// Gewerks-, Masken- und Bereichsschluessel sind sprachneutrales ASCII
+        /// Masken- und Bereichsschluessel sind sprachneutrales ASCII
         /// (Drei-Schichten-Regel, Konzept 13.6) - kein Anzeigetext, kein Umlaut.
         /// Ein Verstoss faellt sonst erst auf, wenn eine Oberflaeche in einer anderen
         /// Sprache laeuft.
+        ///
+        /// <para>Die zwoelf GEWERKSSCHLUESSEL sind mit iU9-W16b.1 entfallen: Sie
+        /// existierten ausschliesslich fuer das Detailformular <c>FormMain</c>
+        /// (Befunde W16-B27/B28), und das ist mit dem Anwenderentscheid E-7 (K6-a)
+        /// geloescht. Mit ihnen fallen <c>Masken.ProjektDetail</c> und
+        /// <c>Ansichten.ProjektDetail</c>.</para>
         /// </summary>
         [Fact]
         public void Navigationsschluessel_sind_sprachneutrales_ASCII()
         {
             string[] schluessel =
             {
-                Gewerke.Waermepumpe, Gewerke.Bhkw, Gewerke.Stromspeicher, Gewerke.Heizkessel,
-                Gewerke.Gebaeude, Gewerke.WaermebedarfExtern, Gewerke.Prozesswaerme,
-                Gewerke.Strombedarf, Gewerke.Stromganglinie, Gewerke.Photovoltaik,
-                Gewerke.Pufferspeicher, Gewerke.Solarthermie,
                 Masken.WpAdministration, Masken.StromspeicherAdmin, Masken.PeakShaving,
                 Masken.GebaeudeAdmin, Masken.GebaeudetypenAdmin, Masken.WaermebedarfExternAdmin,
                 Masken.ProzesswaermeAdmin, Masken.StromverbraucherAdmin, Masken.StromganglinieAdmin,
@@ -154,9 +160,15 @@ namespace EPOS.Kern.Tests
                 Masken.BhkwAdmin, Masken.SolarkollektorenAdmin, Masken.PvAdmin,
                 Masken.HeizkesselImport, Masken.PufferSpImport, Masken.PufferSpAdmin,
                 Masken.BrauchwasserAdmin, Masken.SolarkollektorenImport,
+                // iU9-W16c.0: PvImport fehlte in dieser Liste, seit er mit
+                // W13.0k angelegt wurde - der einzige Maskenschluessel ohne
+                // Zeugen. Die Zusammenlegung K7 zaehlt sie beide Seiten ab
+                // (EPOS.UI.Tests/Seiten/SeitenschluesselTests), und dabei ist
+                // die Luecke aufgefallen.
+                Masken.PvImport,
                 Masken.ProjektSpeichernUnter, Masken.ProjektAuswahl, Masken.ProjektDelete,
-                Masken.Assistent, Masken.ProjektDetail,
-                Ansichten.Varianten, Ansichten.BerichteKosten, Ansichten.ProjektDetail
+                Masken.Assistent,
+                Ansichten.Varianten, Ansichten.BerichteKosten
             };
 
             foreach (string s in schluessel)
@@ -166,16 +178,10 @@ namespace EPOS.Kern.Tests
                     Assert.True(c < 128, "Nicht-ASCII in Schluessel '" + s + "'");
             }
 
-            // Die zwoelf Gewerke muessen verschieden sein, sonst frischt ein Kontextmenue
-            // die Liste eines anderen Gewerks auf.
-            var gewerke = new System.Collections.Generic.HashSet<string>
-            {
-                Gewerke.Waermepumpe, Gewerke.Bhkw, Gewerke.Stromspeicher, Gewerke.Heizkessel,
-                Gewerke.Gebaeude, Gewerke.WaermebedarfExtern, Gewerke.Prozesswaerme,
-                Gewerke.Strombedarf, Gewerke.Stromganglinie, Gewerke.Photovoltaik,
-                Gewerke.Pufferspeicher, Gewerke.Solarthermie
-            };
-            Assert.Equal(12, gewerke.Count);
+            // Die Maskenschluessel muessen verschieden sein - zwei gleiche Werte
+            // oeffneten dieselbe Maske aus zwei Menuepunkten.
+            var eindeutig = new System.Collections.Generic.HashSet<string>(schluessel);
+            Assert.Equal(schluessel.Length, eindeutig.Count);
         }
 
         [Fact]

@@ -1,0 +1,504 @@
+﻿@* Pflegemaske "Gesetzliche Parameter" (iU9-W14c.2).
+
+   VORBILD: Views/Admin/Form_Gesetzesparameter.cs (403 Z.) und .Designer.cs
+   (207 Z.) - Konzept_BHKW_Kosten_Erloese.md Abschnitt 6, Etappe E1.
+
+   DIE KERNREGEL STEHT SICHTBAR AUF DER MASKE: Eine Gesetzesaenderung ist eine
+   NEUE Jahreszeile, kein Aendern der alten. Nur so liefert eine heute
+   gerechnete Variante in einigen Jahren noch dieselben Zahlen. Wer eine Zeile
+   bearbeitet, deren Gueltig-ab-Jahr in der VERGANGENHEIT liegt, wird deshalb
+   gefragt - mit drei Antworten: neue Zeile, alte aendern, abbrechen.
+
+   ER IST DER WIRT DES ZEILENDIALOGS (W14c.1) und zeigt ihn als
+   Ueberlagerung, nicht als zweites Fenster (Risiko R2).
+
+   DREI AUFRUFER, ALLE DREI JETZT OHNE SPRUNGBRUECKE:
+   * Hauptfensterrahmen -> InitGesetzeMenue (eigenes Fenster ueber die Huelle),
+   * KostenKomponenteDialog / ErtragBonus (Ueberlagerung, W14c.3),
+   * WirtschaftlichkeitParameterDialog (Ueberlagerung mit Vorwahl CO2_PREIS).
+   Beide Sprungquellen waren schon vorher Razor (Befund W14c-B13); aus dem
+   Sprung wird deshalb eine Ueberlagerung im selben Fenster.
+
+   DIE FUENF WFO1000 FALLEN MIT DIESER KOMPONENTE (Befund W14c-B14). Der
+   Vorlaeufer fuehrte FrageNeueZeile, FrageLoeschen, ZeileBearbeiten,
+   GewaehlteKlasse und Meldung als ueberschreibbare Eigenschaften, "damit der
+   Reflection-Harness beide Antworten pruefen kann" - einen solchen Test gab es
+   nie. Hier klickt ein bunit-Test unmittelbar auf "Ja"/"Nein"/"Abbrechen".
+
+   BEFUND W14c-B10, ANGEGLICHEN (A-13): "Aendern" und "Loeschen" hingen an der
+   LISTENLAENGE statt an der Auswahl - bei gefuellter Liste ohne Markierung
+   waren beide Knoepfe aktiv und taten beim Klick nichts. Sie haengen jetzt an
+   der Auswahl.
+
+   BEFUND W14c-B11, ANGEGLICHEN: btnSchliessen_Click rief nur Close() und
+   setzte kein DialogResult; MitOk lieferte damit IMMER false. "Schliessen"
+   liefert jetzt OK.
+
+   BEFUND W14c-B12, BEHOBEN: Die Dublettenpruefung lud den ganzen Katalog neu
+   und durchsuchte seine 222 Zeilen linear - bei jedem Anlegen und jedem
+   Aendern. Sie ist seit W14c.0b eine SQL-Zaehlung.
+
+   DIE REINE WINFORMS-EIGENHEIT ENTFAELLT ERSATZLOS: "_ = lvZeilen.Handle;"
+   mit dem Kommentar "ohne Handle greift die ListView-Auswahl nicht".
+
+   TASTATUR: Esc schliesst die oberste Ebene - erst die Rueckfragen, dann den
+   Zeilendialog, dann den Katalog. Enter ist nicht belegt: Neu, Aendern und
+   Loeschen wirken SOFORT auf die Datenbank. *@
+
+@namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-katalog-dialog epos-gesetzeskatalog" tabindex="-1"
+     @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @* Die Kernregel - im Vorlaeufer ein blaues Label ueber der Liste. *@
+    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@HinweisText" />
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Die Liste nimmt die HOEHE (Anwenderwunsch 05.09.2026) -----------
+           Das Vorbild Form_Gesetzesparameter war 940 x 560 gross, und die
+           ListView darin 916 x 424 - die Liste WAR die Maske. Hier hat sie
+           keinen Eingabeblock neben sich (der Zeileneditor ist eine
+           Ueberlagerung), deshalb kein Katalograhmen, sondern eine
+           Listenspalte ueber die volle Breite. *@
+    <div class="epos-katalog-liste epos-katalog-fuellend">
+
+        <Auswahlfeld Bezeichnung="@LabelKlasse" Eintraege="@KlassenEintraege"
+                     Auswahl="@_klasseIndex" AuswahlChanged="BeiKlasse" />
+
+        <Raster TZeile="Zeile" Zeilen="@Zeilenliste">
+            <KindInhalt>
+                <TemplateColumn TGridItem="Zeile" Title="@SpalteWahlText">
+                    <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Id)" Kurztext="@SpalteWahlText"
+                                Gewaehltwerden="() => Waehlen(context)" />
+                </TemplateColumn>
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.Schluessel)" Title="@SpalteSchluesselText" />
+                <PropertyColumn TGridItem="Zeile" TProp="int"
+                                Property="@(z => z.JahrVon)" Title="@SpalteJahrText" />
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.WertText)" Title="@SpalteWertText" />
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.Einheit)" Title="@SpalteEinheitText" />
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.Status)" Title="@SpalteStatusText" />
+                <PropertyColumn TGridItem="Zeile" TProp="string"
+                                Property="@(z => z.Quelle)" Title="@SpalteQuelleText" />
+            </KindInhalt>
+        </Raster>
+    </div>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="BeiNeu">@NeuText</button>
+        <button type="button" class="epos-knopf" disabled="@(!AuswahlDa)"
+                @onclick="BeiAendern">@AendernText</button>
+        <button type="button" class="epos-knopf" disabled="@(!AuswahlDa)"
+                @onclick="BeiLoeschen">@LoeschenText</button>
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiSchliessen">@SchliessenText</button>
+    </div>
+
+    @* --- Der Zeilendialog als Ueberlagerung (Risiko R2) ------------------- *@
+    <Ueberlagerung Offen="@_zeileOffen" Titel="@(_zeileNeu ? TitelNeu : TitelAendern)"
+                   Schliessbar="false">
+        <KindInhalt>
+            <GesetzeskatalogZeileDialog IstNeu="@_zeileNeu" Id="@_zeileId"
+                                        Schluessel="@_zeileSchluessel" Klasse="@_zeileKlasse"
+                                        JahrVon="@_zeileJahr" Wert="@_zeileWert"
+                                        Einheit="@_zeileEinheit" Status="@_zeileStatus"
+                                        Quelle="@_zeileQuelle"
+                                        Klassen="@Klassenvorrat" Einheiten="@Einheiten"
+                                        Statuswerte="@Statuswerte"
+                                        Pruefen="@ZeilePruefen"
+                                        Geschlossen="ZeileGeschlossen" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Die Kernregel: neue Jahreszeile? (drei Antworten) ---------------- *@
+    <Rueckfrage Offen="@_frageNeueZeileOffen" Frage="@_frageNeueZeile"
+                TitelText="@TitelFrageNeueZeile" MitAbbrechen="true"
+                JaText="@JaText" NeinText="@NeinText" AbbrechenText="@AbbrechenText"
+                Beantwortet="NeueZeileBeantwortet" />
+
+    @* --- Loeschen (Vorgabe "Nein", A-1) ---------------------------------- *@
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage"
+                TitelText="@TitelLoeschen" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="LoeschfrageBeantwortet" />
+</div>
+
+@code {
+    /// <summary>Eine Zeile der Liste — die sechs Spalten und die Id.</summary>
+    public sealed record Zeile(int Id, string Schluessel, string Klasse, int JahrVon,
+                               string WertText, string Einheit, string Status, string Quelle);
+
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>
+    /// Die Klassen, die im Katalog VORKOMMEN, als (DB-Wert, Anzeigename) —
+    /// <c>GesetzKatalog.Klassen()</c>. Der Aufruf lädt den Katalog neu.
+    /// </summary>
+    [Parameter] public Func<Task<IReadOnlyList<(string Wert, string Anzeige)>>>? Klassen { get; set; }
+
+    /// <summary>Die Zeilen einer Klasse (<c>GesetzKatalog.Zeilen</c>).</summary>
+    [Parameter] public Func<string, Task<IReadOnlyList<Zeile>>>? Zeilen { get; set; }
+
+    /// <summary>
+    /// Legt eine Zeile an (<c>GesetzKatalog.Anlegen</c>); <c>false</c> = fehlgeschlagen.
+    /// </summary>
+    [Parameter] public Func<GesetzeskatalogZeileDialog.Zeilenwerte, Task<bool>>? Anlegen { get; set; }
+
+    /// <summary>
+    /// Ändert eine Zeile (<c>GesetzKatalog.Aendern</c>) — <b>Jahr, Wert, Einheit,
+    /// Status und Quelle, NICHT Schlüssel und Klasse</b>.
+    /// </summary>
+    [Parameter] public Func<GesetzeskatalogZeileDialog.Zeilenwerte, Task<bool>>? Aendern { get; set; }
+
+    /// <summary>Löscht eine Zeile (<c>GesetzKatalog.Loeschen</c>).</summary>
+    [Parameter] public Func<int, Task<bool>>? Loeschen { get; set; }
+
+    /// <summary>
+    /// Die Zeilenprüfung (<c>GesetzKatalog.Pruefe</c>): leerer Text = in Ordnung.
+    /// Der zweite Wert ist die Id, die bei der Dublettenprüfung nicht mitzählt.
+    /// </summary>
+    [Parameter] public Func<GesetzeskatalogZeileDialog.Zeilenwerte, int, Task<string>>? Pruefen { get; set; }
+
+    /// <summary>Der Klassenvorrat des Zeilendialogs (<c>GesetzKatalog.KlassenVorrat</c>).</summary>
+    [Parameter] public IReadOnlyList<(string Wert, string Anzeige)> Klassenvorrat { get; set; }
+        = Array.Empty<(string, string)>();
+
+    /// <summary>Die fünfzehn Einheiten.</summary>
+    [Parameter] public IReadOnlyList<string> Einheiten { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die drei Statuswerte.</summary>
+    [Parameter] public IReadOnlyList<string> Statuswerte { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Vorwahl des Bereichs beim Öffnen — der Weg, den bis W14c.3
+    /// <c>Sprungziel.GesetzesparameterCo2</c> ging
+    /// (<c>f.GewaehlteKlasse = DbWerte.GESETZ_KLASSE_CO2_PREIS</c>).
+    /// </summary>
+    [Parameter] public string Vorwahl { get; set; } = "";
+
+    /// <summary>Das laufende Kalenderjahr — Grundlage der Rückfrage „neue Jahreszeile?".
+    /// Als Parameter, damit ein Test den Jahreswechsel nicht abwarten muss.</summary>
+    [Parameter] public int AktuellesJahr { get; set; } = DateTime.Today.Year;
+
+    /// <summary>Der Dialog ist zu Ende.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Meldet dem Wirt, dass sich der Katalog geändert hat (Überlagerungsbetrieb).</summary>
+    [Parameter] public Action? Geaendert { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.GESETZ_TITEL;
+    [Parameter] public string HinweisText { get; set; } = Resource.GESETZ_LBL_HINWEIS;
+    [Parameter] public string LabelKlasse { get; set; } = Resource.GESETZ_LBL_KLASSE;
+    [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string SpalteSchluesselText { get; set; } = Resource.GESETZ_SP_SCHLUESSEL;
+    [Parameter] public string SpalteJahrText { get; set; } = Resource.GESETZ_SP_JAHRVON;
+    [Parameter] public string SpalteWertText { get; set; } = Resource.GESETZ_SP_WERT;
+    [Parameter] public string SpalteEinheitText { get; set; } = Resource.GESETZ_SP_EINHEIT;
+    [Parameter] public string SpalteStatusText { get; set; } = Resource.GESETZ_SP_STATUS;
+    [Parameter] public string SpalteQuelleText { get; set; } = Resource.GESETZ_SP_QUELLE;
+    [Parameter] public string NeuText { get; set; } = Resource.GESETZ_BTN_NEU;
+    [Parameter] public string AendernText { get; set; } = Resource.GESETZ_BTN_AENDERN;
+    [Parameter] public string LoeschenText { get; set; } = Resource.GESETZ_BTN_LOESCHEN;
+    [Parameter] public string SchliessenText { get; set; } = Resource.GESETZ_BTN_SCHLIESSEN;
+    [Parameter] public string TitelNeu { get; set; } = Resource.GESETZ_DLG_TITEL_NEU;
+    [Parameter] public string TitelAendern { get; set; } = Resource.GESETZ_DLG_TITEL_AENDERN;
+    [Parameter] public string TitelFrageNeueZeile { get; set; } = Resource.GESETZ_FRAGE_TITEL;
+    [Parameter] public string VorlageFrageNeueZeile { get; set; } = Resource.GESETZ_FRAGE_NEUE_ZEILE;
+    [Parameter] public string TitelLoeschen { get; set; } = Resource.GESETZ_LOESCHEN_TITEL;
+    [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.GESETZ_FRAGE_LOESCHEN;
+    [Parameter] public string SpeicherfehlerText { get; set; } = Resource.GESETZ_MSG_SPEICHERN_FEHLER;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.GESETZ_BTN_ABBRECHEN;
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Gesetzesparameter.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private List<(string Wert, string Anzeige)> _klassen = new();
+    private int? _klasseIndex;
+    private List<Zeile> _zeilen = new();
+    private int _gewaehlt;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    private bool _zeileOffen;
+    private bool _zeileNeu;
+    private int _zeileId;
+    private string _zeileSchluessel = "";
+    private string _zeileKlasse = "";
+    private int _zeileJahr;
+    private double? _zeileWert;
+    private string _zeileEinheit = "";
+    private string _zeileStatus = "";
+    private string _zeileQuelle = "";
+
+    private bool _frageNeueZeileOffen;
+    private string _frageNeueZeile = "";
+    private GesetzeskatalogZeileDialog.Zeilenwerte? _bearbeitet;
+    private Zeile? _alt;
+
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
+
+    private IQueryable<Zeile> Zeilenliste => _zeilen.AsQueryable();
+
+    private IReadOnlyList<(int Id, string Text)> KlassenEintraege =>
+        _klassen.Select((k, i) => (i, k.Anzeige)).ToList();
+
+    /// <summary>Die gewählte Klasse als DB-Wert; leer, wenn nichts gewählt ist.</summary>
+    public string GewaehlteKlasse =>
+        _klasseIndex is int i && i >= 0 && i < _klassen.Count ? _klassen[i].Wert : "";
+
+    /// <summary>Die Zahl der angezeigten Zeilen (Prüfhilfe für Tests).</summary>
+    public int ZeilenAnzahl => _zeilen.Count;
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    private bool AuswahlDa => _gewaehlt > 0 && _zeilen.Any(z => z.Id == _gewaehlt);
+
+    private Zeile? Auswahl => _zeilen.FirstOrDefault(z => z.Id == _gewaehlt);
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await KlassenLaden();
+        await _wurzel.FocusAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Lädt die Klassenliste und stellt die Vorwahl her (<c>KlassenFuellen</c> des
+    /// Vorläufers). Ohne Vorwahl steht der erste Eintrag.
+    /// </summary>
+    public async Task KlassenLaden()
+    {
+        if (Klassen is null) return;
+        _klassen = (await Klassen() ?? Array.Empty<(string, string)>()).ToList();
+
+        int? index = null;
+        if (!string.IsNullOrEmpty(Vorwahl))
+            for (int i = 0; i < _klassen.Count; i++)
+                if (string.Equals(_klassen[i].Wert, Vorwahl, StringComparison.Ordinal)) index = i;
+        _klasseIndex = index ?? (_klassen.Count > 0 ? 0 : (int?)null);
+
+        await ZeilenLaden();
+    }
+
+    /// <summary>Lädt die Zeilen der gewählten Klasse (<c>Aktualisieren</c>).</summary>
+    public async Task ZeilenLaden()
+    {
+        string klasse = GewaehlteKlasse;
+        _zeilen = klasse.Length > 0 && Zeilen is not null
+            ? (await Zeilen(klasse) ?? Array.Empty<Zeile>()).ToList()
+            : new List<Zeile>();
+
+        // A-13: Die Auswahl faellt weg, wenn die Zeile nicht mehr da ist - und mit ihr
+        // der Knopfzustand. Der Vorlaeufer haengte beide an die Listenlaenge (B10).
+        if (_zeilen.All(z => z.Id != _gewaehlt)) _gewaehlt = 0;
+    }
+
+    private async Task BeiKlasse(int? index)
+    {
+        _klasseIndex = index;
+        _meldung = "";
+        await ZeilenLaden();
+    }
+
+    private void Waehlen(Zeile zeile)
+    {
+        _gewaehlt = zeile.Id;
+        _meldung = "";
+    }
+
+    // =====================================================================
+    // Neu (btnNeu_Click)
+    // =====================================================================
+
+    private void BeiNeu()
+    {
+        _meldung = "";
+        _alt = null;
+        _zeileNeu = true;
+        _zeileId = 0;
+        _zeileSchluessel = "";
+        _zeileKlasse = GewaehlteKlasse.Length > 0 ? GewaehlteKlasse : DbWerte.GESETZ_KLASSE_KWKG;
+        _zeileJahr = AktuellesJahr;
+        _zeileWert = null;
+        _zeileEinheit = DbWerte.GESETZ_EINHEIT_OHNE;
+        _zeileStatus = DbWerte.GESETZ_STATUS_GESICHERT;
+        _zeileQuelle = "";
+        _zeileOffen = true;
+    }
+
+    // =====================================================================
+    // Aendern (btnAendern_Click) - der fachliche Kern der Maske
+    // =====================================================================
+
+    private void BeiAendern()
+    {
+        Zeile? alt = Auswahl;
+        if (alt is null) return;
+
+        _meldung = "";
+        _alt = alt;
+        _zeileNeu = false;
+        _zeileId = alt.Id;
+        _zeileSchluessel = alt.Schluessel;
+        _zeileKlasse = alt.Klasse;
+        _zeileJahr = alt.JahrVon;
+        _zeileWert = Zahlen.ZahlParsen(alt.WertText, out double w) ? w : (double?)null;
+        _zeileEinheit = alt.Einheit;
+        _zeileStatus = alt.Status;
+        _zeileQuelle = alt.Quelle;
+        _zeileOffen = true;
+    }
+
+    /// <summary>
+    /// Die Prüfung des Zeilendialogs — sie läuft dort und NUR dort (Befund W14c-B7).
+    /// Beim Anlegen zählt keine eigene Id mit, beim Ändern die der bearbeiteten Zeile.
+    /// </summary>
+    private async Task<string> ZeilePruefen(GesetzeskatalogZeileDialog.Zeilenwerte werte)
+    {
+        if (Pruefen is null) return "";
+        return await Pruefen(werte, _zeileNeu ? 0 : _zeileId);
+    }
+
+    private async Task ZeileGeschlossen(GesetzeskatalogZeileDialog.Zeilenwerte? werte)
+    {
+        _zeileOffen = false;
+        if (werte is null) return;
+
+        if (_zeileNeu) { await Speichern(werte, neu: true); return; }
+
+        // Die Kernregel: Liegt das Gueltig-ab-Jahr der BESTEHENDEN Zeile in der
+        // Vergangenheit, ist eine Aenderung im Regelfall eine Gesetzesaenderung - und
+        // die gehoert in eine neue Jahreszeile.
+        if (_alt is not null && _alt.JahrVon < AktuellesJahr)
+        {
+            _bearbeitet = werte;
+            _frageNeueZeile = string.Format(VorlageFrageNeueZeile, _alt.Schluessel, _alt.JahrVon);
+            _frageNeueZeileOffen = true;
+            return;
+        }
+
+        await Speichern(werte, neu: false);
+    }
+
+    private async Task NeueZeileBeantwortet(bool? antwort)
+    {
+        _frageNeueZeileOffen = false;
+        if (antwort is null) { _bearbeitet = null; return; }      // Abbrechen
+
+        GesetzeskatalogZeileDialog.Zeilenwerte? werte = _bearbeitet;
+        _bearbeitet = null;
+        if (werte is null) return;
+
+        await Speichern(werte, neu: antwort == true);
+    }
+
+    /// <summary>
+    /// Schreibt die Zeile. <b>Ändern nimmt Jahr, Wert, Einheit, Status und Quelle,
+    /// NICHT Schlüssel und Klasse</b> — die sind im Zeilendialog gesperrt.
+    /// </summary>
+    private async Task Speichern(GesetzeskatalogZeileDialog.Zeilenwerte werte, bool neu)
+    {
+        bool ok;
+        if (neu)
+            ok = Anlegen is not null && await Anlegen(werte with { Id = 0 });
+        else
+            ok = Aendern is not null && await Aendern(werte);
+
+        if (!ok) Melden(SpeicherfehlerText, WarnStufe.Warnung);
+
+        // Eine neue Klasse kann in der Liste fehlen (KlassenErgaenzen des Vorlaeufers) -
+        // deshalb die Klassen neu laden und die geschriebene Klasse vorwaehlen.
+        Vorwahl = werte.Klasse;
+        await KlassenLaden();
+        if (ok) _gewaehlt = _zeilen.FirstOrDefault(
+            z => z.Schluessel == werte.Schluessel && z.JahrVon == werte.JahrVon)?.Id ?? 0;
+        Geaendert?.Invoke();
+    }
+
+    // =====================================================================
+    // Loeschen (btnLoeschen_Click)
+    // =====================================================================
+
+    private void BeiLoeschen()
+    {
+        Zeile? p = Auswahl;
+        if (p is null) return;
+
+        _meldung = "";
+        _loeschfrage = string.Format(VorlageLoeschfrage, p.Schluessel, p.JahrVon);
+        _loeschfrageOffen = true;
+    }
+
+    private async Task LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true) return;
+
+        Zeile? p = Auswahl;
+        if (p is null || Loeschen is null) return;
+
+        if (!await Loeschen(p.Id)) Melden(SpeicherfehlerText, WarnStufe.Warnung);
+        await ZeilenLaden();
+        Geaendert?.Invoke();
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    /// <summary>
+    /// „Schließen" liefert OK (Befund W14c-B11). Der Vorläufer rief nur <c>Close()</c>
+    /// und liess <c>DialogResult</c> auf <c>Cancel</c> stehen.
+    /// </summary>
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
+
+    /// <summary>Esc schließt die OBERSTE Ebene — Rückfrage, Zeilendialog, Katalog.</summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_frageNeueZeileOffen || _loeschfrageOffen || _zeileOffen) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

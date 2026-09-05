@@ -1,0 +1,249 @@
+@* Der WAERMEPUMPEN-Reiter der Ergebnisseite (R5, iU9-W11b.4).
+
+   VORBILD. tabPage_Wärmepumpe mit zehn Feldern, der Modultabelle
+   (listView_SimWP, Doppelklick -> WaermepumpenDialog), der programmatischen
+   Pufferrubrik (listView_SimPuffer, 8 Spalten), der Erdreich-Hinweiszeile,
+   chart4 („Leistung ueber Aussentemperatur") und DREI Unterblaettern:
+   Waermproduktion (chart3), Stromverbrauch (chart6) und - nur mit Reihen -
+   Speichertemperaturen.
+
+   DREI BEFUNDE SIND IN W11a BEHOBEN und stehen hier nur noch als Zahl:
+   W11-B15 (Vollbenutzungsstunden ohne Nullpruefung -> unendlich), W11-B16
+   (Mindest-Spitzenkesselleistung ueber 8 750 statt 8 760 Stunden) und die
+   Kapazitaetszeile ohne Speicher (PufferVolumenKwh, woertlich uebernommen).
+
+   BEFUND W11-B18 (A-Zeile). Im sortierten Zweig lief der HEIZSTAB als
+   KUMULIERTE Kurve „WP-Produktion + Heizstab", im chronologischen als eigener
+   Anteil - zwei verschiedene Groessen unter demselben Serienschluessel und
+   derselben Legende. Hier ist es in BEIDEN Zweigen derselbe Anteil: Der
+   Bildauftrag traegt nur die Schalterstellung, die Reihen bleiben dieselben.
+
+   DIE SEITE „SPEICHERTEMPERATUREN" haengt sich nur ein, wenn der Lauf
+   mindestens eine Temperaturreihe hat - und wieder aus, wenn nicht
+   (SpeichertemperaturAnzeigen :2587-2597). *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @if (Daten is null)
+    {
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_WAERMEPUMPE</p>
+    }
+    else
+    {
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG, Zahl(Daten.DeckungProzent), "%")
+                    @* „-" statt einer Zahl, wenn der Lauf keinen Bivalenzpunkt kennt
+                       (woertlich :4374). *@
+                    @Wertzeile(Resource.SIMERG_LBL_BIVALENZPUNKT,
+                               Daten.BivalenzpunktVorhanden ? Zahl(Daten.Bivalenzpunkt) : "-", "°C")
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, Zahl(Daten.StromverbrauchMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, Zahl(Daten.HeizstabStromverbrauchMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN,
+                               Daten.Vollbenutzungsstunden.ToString("F0", Kultur), "h/a")
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_MIN_SPK_LEISTUNG, Zahl(Daten.MinSpkLeistungKw), "kW")
+
+                    @* Ohne Speicherliste bleibt es beim Altausdruck der Rubrik
+                       (Volumen * 1,16) - woertlich uebernommen, W11a-O-1b. *@
+                    @if (Daten.Puffer.Count == 0)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_PUFFERKAPAZITAET,
+                                   Daten.PufferVolumenKwh.ToString(Kultur), "kWh")
+                    }
+                </dl>
+            </section>
+
+            @* Die Streuwolke steht ueber BEIDE Spalten (Befund W11b-B-2). In der
+               halben Spalte lief sie rechts aus dem Fenster und legte sich ueber die
+               Modultabelle darunter. *@
+            <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                <ChartBild Png="@BildStreuwolke"
+                           Alt="@Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR" />
+            </section>
+
+        </div>
+
+        @* ---- Die Modultabelle; Doppelklick oeffnet den Waermepumpendialog ---- *@
+        @if (Daten.Module.Count > 0)
+        {
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.SIM_SPALTE_MODUL</th>
+                        <th scope="col">@Resource.SIM_SPALTE_LEISTUNG</th>
+                        <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
+                        <th scope="col">@Resource.SIM_SPALTE_STROMVERBRAUCH</th>
+                        <th scope="col">@Resource.SIM_SPALTE_HEIZSTAB</th>
+                        <th scope="col">@Resource.SIM_SPALTE_BETRIEBSSTUNDEN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in Daten.Module)
+                    {
+                        <tr @ondblclick="ModulGewaehlt">
+                            <td>@m.Name</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.GrenzleistungKw)</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.WaermeproduktionMwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.StrombedarfMwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.HeizstabMwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.LaufzeitStunden)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @* ---- Die Pufferrubrik (Konzept 13.3): eine Zeile je Speicher ---- *@
+        @if (Daten.Puffer.Count > 0)
+        {
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.PSP_BEZEICHNER_ERSATZ</th>
+                        <th scope="col">@Resource.PSP_SPALTE_ROLLE</th>
+                        <th scope="col">@Resource.PSP_SPALTE_KAPAZITAET</th>
+                        <th scope="col">@Resource.PSP_SPALTE_LADUNG</th>
+                        <th scope="col">@Resource.PSP_SPALTE_ENTLADUNG</th>
+                        <th scope="col">@Resource.PSP_SPALTE_VERLUSTE</th>
+                        <th scope="col">@Resource.PSP_SPALTE_VOLLZYKLEN</th>
+                        <th scope="col">@Resource.PSP_SPALTE_FUELLSTAND_ENDE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sp in Daten.Puffer)
+                    {
+                        <tr>
+                            <td>@sp.Bezeichner</td>
+                            <td>@sp.Rolle</td>
+                            <td class="epos-simerg-zahl">@sp.KapazitaetKwh.ToString("F1", Kultur)</td>
+                            <td class="epos-simerg-zahl">@sp.LadungKwh.ToString("F0", Kultur)</td>
+                            <td class="epos-simerg-zahl">@sp.EntladungKwh.ToString("F0", Kultur)</td>
+                            <td class="epos-simerg-zahl">@sp.VerlusteKwh.ToString("F0", Kultur)</td>
+                            @* ETAPPE D4: Beim KOMBISPEICHER laufen beide Kanaele ueber EINEN
+                               Vorrat; die Kennzahl misst dann den Jahresdurchsatz. Der
+                               gespeicherte Wert bleibt unveraendert, die Anzeige markiert
+                               ihn und erklaert ihn im Mouseover. *@
+                            <td class="epos-simerg-zahl"
+                                title="@(sp.IstKombi ? Resource.PSP_VOLLZYKLEN_KOMBI_TIP : null)">
+                                @(sp.Vollzyklen.ToString("F1", Kultur) + (sp.IstKombi ? " *" : ""))
+                            </td>
+                            <td class="epos-simerg-zahl">@sp.FuellstandEndeProzent.ToString("F1", Kultur)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @* ---- Die VDI-4640-Auslegungspruefung (Konzept 4.5) ---- *@
+        @if (Daten.ErdreichHinweise.Count > 0)
+        {
+            <Warnbanner Stufe="@(Daten.ErdreichWarnung ? WarnStufe.Warnung : WarnStufe.Hinweis)"
+                        Text="@string.Join("\n", Daten.ErdreichHinweise)" />
+        }
+
+        @* ---- Die drei Unterblaetter ---- *@
+        <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@ReiterBezeichnung">
+            <KindInhalt>
+
+                <Reiterblatt Schluessel="PRODUKTION" Titel="@Resource.SIMERG_TAB_WP_PRODUKTION">
+                    <KindInhalt>
+                        <div class="epos-simerg-schalter">
+                            <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                                      WertChanged="@(w => _sortiert = w)" />
+                        </div>
+                        <ChartBild Png="@BildProduktion"
+                                   Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+                <Reiterblatt Schluessel="STROM" Titel="@Resource.SIMERG_TAB_WP_STROM">
+                    <KindInhalt>
+                        <ChartBild Png="@BildStrom"
+                                   Alt="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE" />
+                    </KindInhalt>
+                </Reiterblatt>
+
+                @if (Speichertemperaturen)
+                {
+                    <Reiterblatt Schluessel="TEMPERATUREN" Titel="@Resource.SIM_TAB_SPEICHERTEMPERATUR">
+                        <KindInhalt>
+                            <ChartBild Png="@BildTemperaturen"
+                                       Alt="@Resource.CHART_TITEL_SPEICHERTEMPERATUR" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                }
+
+            </KindInhalt>
+        </Reiter>
+
+        @if (Csv.HasDelegate)
+        {
+            <button type="button" class="epos-simerg-knopf" @onclick="Csv"
+                    title="@Resource.SIM_TOOLTIP_CSV_WAERMEPUMPE">@Resource.SIM_BTN_CSV_EXPORT</button>
+        }
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    private static System.Globalization.CultureInfo Kultur
+        => System.Globalization.CultureInfo.CurrentCulture;
+
+    /// <summary>
+    /// Die Zahlen aus dem Kern; <c>null</c> = der Lauf fuehrte keine Waermepumpe.
+    /// Dann steht die Rubrik LEER da statt mit den Zahlen des Vorlaufs.
+    /// </summary>
+    [Parameter]
+    public WindowsFormsApplication1.SimulationErgebnisCtrl.WaermepumpeErgebnis? Daten { get; set; }
+
+    /// <summary>Liefert ein Bild zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>
+    /// Fuehrt der Lauf Speichertemperaturen? Nur dann steht das dritte
+    /// Unterblatt da (<c>SpeichertemperaturAnzeigen</c> :2587-2597).
+    /// </summary>
+    [Parameter] public bool Speichertemperaturen { get; set; }
+
+    /// <summary>Doppelklick auf eine Modulzeile — der Waermepumpendialog (W7).</summary>
+    [Parameter] public EventCallback ModulOeffnen { get; set; }
+
+    /// <summary>Der CSV-Export; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Csv { get; set; }
+
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Wärmepumpe";
+
+    /// <summary>Das sichtbare Unterblatt (Pruefhilfe).</summary>
+    public string AktivesBlatt => _reiter?.AktiverSchluessel ?? _blatt;
+
+    /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
+    private Reiter? _reiter;
+    private string _blatt = "";
+    private bool _sortiert;
+
+    private Task ModulGewaehlt() => ModulOeffnen.InvokeAsync();
+
+    private byte[]? BildStreuwolke => Bild?.Invoke(new Bildauftrag(Bilder.WpLeistungTemperatur));
+    private byte[]? BildProduktion => Bild?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert));
+    private byte[]? BildStrom => Bild?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch));
+    private byte[]? BildTemperaturen => Bild?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen));
+
+    private static string Zahl(double wert) => wert.ToString("F2", Kultur);
+
+    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
+        <dt>@text</dt>
+        <dd>@wert</dd>
+        <dd class="epos-simerg-einheit">@einheit</dd>
+    </text>;
+}

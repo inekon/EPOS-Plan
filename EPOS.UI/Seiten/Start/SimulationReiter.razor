@@ -1,0 +1,124 @@
+﻿@* Reiter 5 der Startseite: „Simulation" (iU9-W16b.2).
+
+   Vorbild: Form_Start.tabPage5 - Kopfzeile (label31), Erlaeuterung (label30), die
+   PROJEKTZUSAMMENFASSUNG (label70 samt vier Wertzeilen), der Knopf
+   "Simulation Konfiguration..." (btn_SimKonfig) und EINE Bildkachel
+   (pBox_DetailSim).
+
+   DIE KACHEL "OPTIMIERUNG" WIRD NICHT GEBAUT. Ihr Handler war leer, und der
+   Vorlaeufer blendete sie samt ihren beiden Beschriftungen zur Laufzeit aus
+   (H11, OptimierungskachelVerbergen). Damit entfallen auch die drei
+   Weiterleitungshandler label64/label65 und der Tippfehler
+   label2_pBox_Optinierung.
+
+   DIE ZUSAMMENFASSUNG RECHNET DIE HUELLE. tabPage5_Enter rief
+   SimulationStrombedarf.Berechnung und SimulationWaermebedarf.Waermebedarf_berechnen
+   und schrieb das Ergebnis formatiert in vier Label; die drei Left-Rechnungen
+   (Rechtsbuendigkeit von Hand) entfallen ersatzlos - das macht CSS.
+
+   OHNE KLIMAREGION gibt es keine Zusammenfassung: Der Vorlaeufer sprang auf
+   Reiter 1 zurueck und zeigte eine MessageBox. Das entscheidet die Seite
+   (Startseite.BeiReiter), nicht dieser Reiter - er zeigt dann nur nichts. *@
+
+@namespace EPOS.UI.Seiten.Start
+
+<div class="epos-startreiter">
+
+    <div class="epos-startreiter-kopf">
+        <div>
+            <h2 class="epos-startreiter-titel">@KopfText</h2>
+            <p class="epos-startreiter-text">@Text</p>
+        </div>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (Bericht is not null)
+    {
+        <section class="epos-startzusammenfassung" aria-label="@ZusammenfassungTitelText">
+            <h3 class="epos-startreiter-titel">@ZusammenfassungTitelText</h3>
+            <dl class="epos-startzusammenfassung-liste">
+                <dt>@ProjektnameText</dt>
+                <dd>@Bericht.Projektname</dd>
+                <dt>@WaermebedarfText</dt>
+                <dd>@Bericht.Waermebedarf</dd>
+                <dt>@StrombedarfText</dt>
+                <dd>@Bericht.Strombedarf</dd>
+                <dt>@KomponentenText</dt>
+                <dd>@Bericht.Komponenten</dd>
+            </dl>
+        </section>
+    }
+
+    @* Der Knopf traegt seit dem Anwenderwunsch vom 05.09.2026 das Sinnbild
+       seiner Kachel (W16b-E-3). Er IST die 21. Kachel dieser Seite - im Bestand
+       ein btn_SimKonfig ohne Bild, aber mit demselben Rang wie die
+       Bildkacheln daneben; ein Knopf mit Bild ist in dieser Maske Hausform
+       (btn_Speichern, btn_Help). *@
+    <div class="epos-startreiter-leiste">
+        <button type="button" class="epos-knopf epos-knopf--mit-bild"
+                @onclick="@(() => Geklickt.InvokeAsync(Kachelschluessel.SimulationKonfiguration))">
+            <img class="epos-kachel-bild epos-kachel-bild--knopf @Kachelbilder.Klasse(Kachelschluessel.SimulationKonfiguration)"
+                 src="@Kachelbilder.Quelle(Kachelschluessel.SimulationKonfiguration)" alt="" />
+            <span>@KonfigText</span>
+        </button>
+    </div>
+
+    <Kachelraster Hoechstbreite="404">
+        <KindInhalt>
+            @foreach (StartKachel kachel in Kacheln)
+            {
+                StartKachel k = kachel;
+                <Kachel Titel="@k.Titel"
+                        Beschreibung="@k.Beschreibung"
+                        Zustand="@k.Zustand"
+                        Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                        Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                        Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+            }
+        </KindInhalt>
+    </Kachelraster>
+</div>
+
+@code {
+    /// <summary>Die Kacheln dieses Reiters — eine (die Ergebnisansicht).</summary>
+    [Parameter] public IReadOnlyList<StartKachel> Kacheln { get; set; } = Array.Empty<StartKachel>();
+
+    /// <summary>
+    /// Eine Kachel ODER der Konfigurationsknopf wurde angeklickt; übergeben wird
+    /// der Schlüssel. Der Knopf zählt als 21. Kachel der Startseite.
+    /// </summary>
+    [Parameter] public EventCallback<string> Geklickt { get; set; }
+
+    /// <summary>
+    /// Die vier Zeilen der Projektzusammenfassung; <c>null</c> = keine — dann
+    /// steht der Kasten gar nicht da.
+    /// </summary>
+    [Parameter] public Zusammenfassung? Bericht { get; set; }
+
+    /// <summary>Überschrift (<c>label31</c>).</summary>
+    [Parameter] public string KopfText { get; set; } = "Simulation durchführen";
+
+    /// <summary>Erläuterung (<c>label30</c>).</summary>
+    [Parameter] public string Text { get; set; } = "Berechnen Sie die Energieflüsse und Systemleistung.";
+
+    /// <summary>Beschriftung des Konfigurationsknopfes (<c>btn_SimKonfig</c>).</summary>
+    [Parameter] public string KonfigText { get; set; } = "Simulation Konfiguration...";
+
+    /// <summary>Überschrift des Kastens (<c>label70</c>).</summary>
+    [Parameter] public string ZusammenfassungTitelText { get; set; } = "Projektzusammenfassung";
+
+    /// <summary>Beschriftung „Projektname:" (<c>label_ProjektName</c>).</summary>
+    [Parameter] public string ProjektnameText { get; set; } = "Projektname:";
+
+    /// <summary>Beschriftung „Wärmebedarf:" (<c>label6_WBedarf</c>).</summary>
+    [Parameter] public string WaermebedarfText { get; set; } = "Wärmebedarf:";
+
+    /// <summary>Beschriftung „Strombedarf:" (<c>label_Strombedarf</c>).</summary>
+    [Parameter] public string StrombedarfText { get; set; } = "Strombedarf:";
+
+    /// <summary>Beschriftung „Ausgewählte Technologien:" (<c>label_ProjektKomp</c>).</summary>
+    [Parameter] public string KomponentenText { get; set; } = "Ausgewählte Technologien:";
+
+    /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Simulation";
+}

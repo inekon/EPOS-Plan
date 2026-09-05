@@ -1,0 +1,140 @@
+﻿@* Reiter 4 der Startseite: „Energieerzeuger" (iU9-W16b.2).
+
+   Vorbild: Form_Start.tabPage4 - Kopfzeile (label29), Erlaeuterung (label28),
+   SIEBEN Bildkacheln, ein Tippkasten (label58/label59) und die ZWEI
+   Auswahlknoepfe der Solarthermie (radioButton_KollektorProfil /
+   radioButton_Ganglinie).
+
+   DIE ZWEI AUSWAHLKNOEPFE SIND KEINE ANZEIGE, SIE SIND EINE WEICHE. Der Handler
+   pBox_Solarthermie_Click prueft radioButton_KollektorProfil.Checked und oeffnet
+   danach ENTWEDER den Kollektordialog ODER den Gangliniendialog (:1262-1307). Sie
+   stehen deshalb bei der Solarthermiekachel und nicht im Kopf.
+
+   IM BESTAND TRUGEN SIE ZUSAETZLICH DEN STATUS: pBox_Solarthermie_Click faerbte
+   beide Knoepfe gruen, wenn Kollektoren ODER Ganglinien vorhanden waren (:1313-1325).
+   Das ist dieselbe Aussage wie der Statuspunkt der Kachel (Bit 512) und faellt
+   deshalb ersatzlos - eine Farbe an zwei Stellen ist eine Wahrheit zu viel.
+
+   SIE STEHEN IN DER KARTE (Windows-Abnahme 05.09.2026, Befund W16a-B-1:
+   "Optionen Profil und Ganglinie sollte eher im Solarthermie Feld sein"). Bis
+   dahin trug JEDE der sieben Kacheln den Wirt epos-startkachel-mit-wahl, und
+   die Optionsgruppe stand als eigener Kasten UNTER der Solarthermiekarte -
+   zwischen zwei gerahmten Nachbarkacheln las sie sich wie ein Zusatz zum
+   ganzen Reiter. Jetzt bekommt NUR die Solarthermiekachel den Wirt, und der
+   traegt den Kartenrahmen; die Kachel darin gibt ihren eigenen ab (Stilblatt),
+   beides zusammen ist EINE Karte. Ueber das Markup ginge es nicht: Eine Kachel
+   IST ein <button>, und ein <button> darf keine Auswahlknoepfe enthalten. *@
+
+@namespace EPOS.UI.Seiten.Start
+
+<div class="epos-startreiter">
+
+    <div class="epos-startreiter-kopf">
+        <div>
+            <h2 class="epos-startreiter-titel">@KopfText</h2>
+            <p class="epos-startreiter-text">@Text</p>
+        </div>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Kachelraster Hoechstbreite="404">
+        <KindInhalt>
+            @foreach (StartKachel kachel in Kacheln)
+            {
+                StartKachel k = kachel;
+
+                @if (k.Schluessel == Kachelschluessel.Solarthermie)
+                {
+                    @* DIE EINZIGE Kachel mit einer Weiche. Der Kartenrahmen liegt
+                       hier am WIRT, nicht an der Kachel: Eine Kachel ist ein
+                       <button> und darf keine Auswahlknoepfe enthalten (ein Klick
+                       darauf loeste sonst die Kachel aus). Kachel und Optionen
+                       lesen sich trotzdem als EINE Karte, weil die Kachel darin
+                       ihren eigenen Rahmen abgibt - Befund W16a-B-1 der
+                       Windows-Abnahme vom 05.09.2026. *@
+                    <div class="epos-startkachel-mit-wahl">
+                        <Kachel Titel="@k.Titel"
+                                Beschreibung="@k.Beschreibung"
+                                Zustand="@k.Zustand"
+                                Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                                Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                                Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+
+                        <div class="epos-startkachel-wahl" role="radiogroup" aria-label="@k.Titel">
+                            <label>
+                                <input type="radio" name="epos-solarart"
+                                       checked="@(!Ganglinie)"
+                                       @onchange="@(() => ArtWaehlen(false))" />
+                                @ProfilText
+                            </label>
+                            <label>
+                                <input type="radio" name="epos-solarart"
+                                       checked="@Ganglinie"
+                                       @onchange="@(() => ArtWaehlen(true))" />
+                                @GanglinieText
+                            </label>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <Kachel Titel="@k.Titel"
+                            Beschreibung="@k.Beschreibung"
+                            Zustand="@k.Zustand"
+                            Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                            Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                            Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+                }
+            }
+        </KindInhalt>
+    </Kachelraster>
+
+    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@(TippTitelText + ": " + TippText)" />
+</div>
+
+@code {
+    /// <summary>Die Kacheln dieses Reiters — sieben.</summary>
+    [Parameter] public IReadOnlyList<StartKachel> Kacheln { get; set; } = Array.Empty<StartKachel>();
+
+    /// <summary>Eine Kachel wurde angeklickt; übergeben wird ihr Schlüssel.</summary>
+    [Parameter] public EventCallback<string> Geklickt { get; set; }
+
+    /// <summary>
+    /// Die Weiche der Solarthermiekachel: <c>false</c> = Kollektorprofil (die
+    /// Vorbelegung des Bestands), <c>true</c> = Ganglinie.
+    /// </summary>
+    [Parameter] public bool Ganglinie { get; set; }
+
+    /// <summary>Meldet den Wechsel der Weiche — für <c>@@bind-Ganglinie</c>.</summary>
+    [Parameter] public EventCallback<bool> GanglinieChanged { get; set; }
+
+    /// <summary>Überschrift (<c>label29</c>).</summary>
+    [Parameter] public string KopfText { get; set; } = "Energieerzeuger auswählen";
+
+    /// <summary>Erläuterung (<c>label28</c>).</summary>
+    [Parameter] public string Text { get; set; }
+        = "Wählen Sie die Energieerzeugungstechnologien für Ihr System.";
+
+    /// <summary>Überschrift des Tippkastens (<c>label58</c>).</summary>
+    [Parameter] public string TippTitelText { get; set; } = "Tipp";
+
+    /// <summary>Der Tipptext (<c>label59</c>).</summary>
+    [Parameter] public string TippText { get; set; }
+        = "Sie können mehrere Energieerzeuger kombinieren. Wählen Sie alle gewünschten Technologien aus.";
+
+    /// <summary>Beschriftung des Auswahlknopfes „Profil" (<c>radioButton_KollektorProfil</c>).</summary>
+    [Parameter] public string ProfilText { get; set; } = "Profil";
+
+    /// <summary>Beschriftung des Auswahlknopfes „Ganglinie" (<c>radioButton_Ganglinie</c>).</summary>
+    [Parameter] public string GanglinieText { get; set; } = "Ganglinie";
+
+    /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Energieerzeuger";
+
+    private Task ArtWaehlen(bool ganglinie)
+    {
+        if (Ganglinie == ganglinie) return Task.CompletedTask;
+        Ganglinie = ganglinie;
+        return GanglinieChanged.InvokeAsync(ganglinie);
+    }
+}

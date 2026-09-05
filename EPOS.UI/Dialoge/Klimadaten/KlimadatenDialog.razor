@@ -1,0 +1,507 @@
+﻿@* Klimadaten - der weltweite TMY-Import (iU9-W14c.7).
+
+   VORBILD: Views/Klimadaten/Form_Klimadaten.cs (417 Z.) und .Designer.cs
+   (503 Z.) - 27 Steuerelemente, drei Ebenen tief.
+
+   WOZU. Drei Dinge in einer Maske:
+   1. IMPORT einer neuen Region aus PVGIS - ueber einen Ortsnamen
+      (Geokodierung) ODER ueber Longitude/Latitude/Bezeichnung von Hand,
+   2. die LISTE der vorhandenen Regionen mit Loeschen,
+   3. ZWEI Diagramme (Jahrestemperatur, Sonnenwinkel) in zwei Reitern.
+
+   SIE HEISST WIEDER KLIMADATEN (Entscheid E-3, Anwender 04.09.2026):
+   "Klimaregion ist eigentlich fuer Deutschland gedacht, Klimadaten fuer den
+   Download weltweit mit TMY-Daten." Der Menuetext bleibt "Klimadaten", und die
+   Komponente traegt denselben Namen. Damit stehen die beiden Begriffe fest:
+   - KLIMAREGION = die DEUTSCHEN Klimaregionen (Klimazonenkarte, Projektbezug
+     ueber ID_Klimaregion). Dort bleiben KlimazonenkarteDialog (W10a),
+     KlimaregionStammCtrl, KlimaregionCtrl und Tab_Klimaregion_STAMM - sie
+     werden NICHT umbenannt.
+   - KLIMADATEN = der WELTWEITE Download von TMY-Daten (PVGIS) in den
+     Stammkatalog. Genau das tut diese Maske, und deshalb heisst sie so.
+   Davon zu trennen bleibt die KLIMAZONE: eine der 15 VDI-4640-Zonen
+   Deutschlands, die die Klimazonenkarte zeigt.
+
+   BEFUND W14c-B36, BEHOBEN: Die Maske hatte NULL MyResource-Zugriffe - auf
+   englischer Oberflaeche war sie vollstaendig deutsch, samt Fenstertitel. Alle
+   43 Texte kommen jetzt aus dem Katalog (W14c.0l).
+
+   BEFUND W14c-B15, ENTSCHIEDEN (E-7): Form_Klimadaten_Load las
+   <BenutzerLokal>\Ortsliste\Ortsnamen.txt OHNE File.Exists und OHNE try - die
+   Datei liegt weder im Repo noch im Setup. Auf einer frischen Installation warf
+   Load, und die Maske OEFFNETE NICHT. Hier ist die Vorschlagsliste ein
+   PARAMETER: vorhanden -> Vorschlaege, fehlt -> leere Liste, nie ein Absturz.
+   Das Feld erlaubt in jedem Fall freie Eingabe.
+
+   BEFUND W14c-B19, BEHOBEN: yAxis.ToArray().Max() ohne Leerpruefung liess jeden
+   Klick auf eine Region ohne Stundenwerte mit einer Ausnahme abbrechen.
+
+   BEFUND W14c-B22, BEHOBEN: Nach dem Loeschen der letzten Region wurde nur
+   chart1 geleert; chart2 zeigte weiter die Kurve der geloeschten Region.
+
+   BEFUND W14c-B23, ANGEGLICHEN (A-7/A-8): Geloescht wurde OHNE Rueckfrage und
+   OHNE Kaskade - 9 125 Zeilen blieben als Waisen stehen. Jetzt fragt der Dialog,
+   und der Kern loescht mit.
+
+   A-4: Der Import laeuft im Task.Run der Huelle und laesst sich ABBRECHEN.
+   A-6/E-2: Die x-Achse heisst "Monat" - das wird gezeichnet.
+   A-5, hingenommen: kein Mausrad-Zoom mehr; ein PNG bleibt ein Bild (wie W8-A-1).
+
+   TASTATUR: Esc schliesst - waehrend eines Imports nicht. Enter ist nicht
+   belegt: "Daten einlesen" schreibt sofort. *@
+
+@namespace EPOS.UI.Dialoge.Klimadaten
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-katalog-dialog epos-klimaregion" tabindex="-1"
+     @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <Herleitungszeile Text="@KopfText" />
+
+    @* --- Liste LINKS, Bilder und Import RECHTS (Anwenderwunsch 05.09.2026)
+           Das Vorbild Form_Klimadaten (757 x 641) hatte die Regionsliste
+           (201 x 282) links und die Anzeige rechts. Die beiden Huellklassen
+           epos-klimaregion-mitte/-liste/-bilder waren dabei NIE im Stilblatt
+           angekommen - die zwei Spalten standen deshalb untereinander, und
+           der Importblock lag noch darunter (derselbe Befund wie beim
+           Katalogbrowser). Sie sind durch den Katalograhmen ersetzt. *@
+    <Katalograhmen>
+        <Liste>
+            <Gruppenkopf Titel="@GruppeListeText" />
+
+            <Raster TZeile="Regionszeile" Zeilen="@Regionszeilen">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="Regionszeile" Title="@SpalteWahlText">
+                        <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Name)" Kurztext="@SpalteWahlText"
+                                    Gewaehltwerden="() => Waehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="Regionszeile" TProp="string"
+                                    Property="@(z => z.Name)" Title="@SpalteRegionText" />
+                </KindInhalt>
+            </Raster>
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
+                        @onclick="BeiLoeschen">@LoeschenText</button>
+            </div>
+        </Liste>
+
+        <Eingabe>
+            @* ---- die zwei Diagramme in zwei Reitern ---------------------- *@
+            <Reiter Bezeichnung="@TitelText" Aktiv="@_reiter" AktivChanged="@(s => _reiter = s)">
+                <KindInhalt>
+                    <Reiterblatt Schluessel="TEMPERATUR" Titel="@ReiterTemperaturText">
+                        <KindInhalt>
+                            <ChartBild Png="@_bildTemperatur" Alt="@DiagrammTemperaturText"
+                                       PlatzhalterText="@KeineDatenText" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                    <Reiterblatt Schluessel="SONNENWINKEL" Titel="@ReiterSonnenwinkelText">
+                        <KindInhalt>
+                            <ChartBild Png="@_bildSonnenwinkel" Alt="@DiagrammSonnenwinkelText"
+                                       PlatzhalterText="@KeineDatenText" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                </KindInhalt>
+            </Reiter>
+
+            <Textfeld Bezeichnung="@LabelDetails" Wert="@_details"
+                      Mehrzeilig="true" Zeilen="3" NurLesen="true" />
+
+            @* ---- der Import ---------------------------------------------- *@
+            <Gruppenkopf Titel="@GruppeStandortText" />
+
+            <div class="epos-klimaregion-eingabe">
+                @* comboBox_Ort: DropDownStyle.DropDown - Vorschlaege UND freie Eingabe.
+                   Entscheid E-7: Fehlt die Ortsliste, bleibt die Vorschlagsliste leer. *@
+                <label class="epos-feld">
+                    <span class="epos-feld-beschriftung">@LabelOrtText</span>
+                    <input type="text" class="epos-eingabe" list="epos-klimaregion-orte"
+                           value="@_ortsname" @oninput="BeiOrtsname" disabled="@_laeuft" />
+                </label>
+                <datalist id="epos-klimaregion-orte">
+                    @foreach (string ort in Ortsvorschlaege)
+                    {
+                        <option value="@ort"></option>
+                    }
+                </datalist>
+
+                <span class="epos-klimaregion-oder">@OderText</span>
+
+                <Zahlenfeld Bezeichnung="@LabelLongitudeText" Wert="@_longitude"
+                            WertChanged="@(w => { _longitude = w; _meldung = ""; })"
+                            Feldname="@FeldLongitudeText" FehlerZustand="BeiFehler"
+                            Aktiv="@(!_laeuft)" />
+                <Zahlenfeld Bezeichnung="@LabelLatitudeText" Wert="@_latitude"
+                            WertChanged="@(w => { _latitude = w; _meldung = ""; })"
+                            Feldname="@FeldLatitudeText" FehlerZustand="BeiFehler"
+                            Aktiv="@(!_laeuft)" />
+                <Textfeld Bezeichnung="@LabelBezeichnungText" Wert="@_bezeichnung"
+                          WertChanged="@(t => { _bezeichnung = t; _meldung = ""; })" />
+            </div>
+        </Eingabe>
+    </Katalograhmen>
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
+                 Abbrechen="@(Abbrechen is null ? null : EventCallback.Factory.Create(this, BeiAbbrechen))"
+                 AbbrechenText="@AbbrechenText" />
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!ImportErlaubt)"
+                @onclick="BeiImport">@ImportText</button>
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+                @onclick="BeiSchliessen">@BeendenText</button>
+    </div>
+
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage"
+                TitelText="@TitelLoeschenText" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+</div>
+
+@code {
+    /// <summary>Eine Zeile der Regionsliste.</summary>
+    public sealed record Regionszeile(string Name, bool NurLesen);
+
+    /// <summary>Was der Wirt zu einer gewählten Region anzeigt.</summary>
+    /// <param name="Details">Die Herkunftsangabe (<c>Tab_Klimaregion_STAMM.Details</c>).</param>
+    /// <param name="Longitude">Längengrad; <c>null</c> = unbekannt.</param>
+    /// <param name="Latitude">Breitengrad.</param>
+    /// <param name="BildTemperatur">Der Jahrestemperaturverlauf als PNG.</param>
+    /// <param name="BildSonnenwinkel">Der Sonnenwinkelverlauf als PNG.</param>
+    /// <param name="Meldung">Leer, oder warum es keine Bilder gibt (Befund W14c-B19).</param>
+    public sealed record Regionsansicht(string Details, double? Longitude, double? Latitude,
+                                        byte[]? BildTemperatur, byte[]? BildSonnenwinkel,
+                                        string Meldung);
+
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Die Regionen des Katalogs (<c>KlimaregionStammCtrl.Bezeichner</c>).</summary>
+    [Parameter] public Func<Task<List<Regionszeile>>>? Regionen { get; set; }
+
+    /// <summary>Die Ansicht einer Region samt der beiden Bilder.</summary>
+    [Parameter] public Func<string, Task<Regionsansicht>>? Ansicht { get; set; }
+
+    /// <summary>
+    /// Der Import (<c>KlimaImportAblauf.Laufen</c>) — im <c>Task.Run</c> der Hülle,
+    /// mit Fortschritt und Abbruch (A-4).
+    /// </summary>
+    [Parameter]
+    public Func<KlimaImportAuftrag, IProgress<ImportFortschritt>, Task<KlimaImportErgebnis>>? Importieren { get; set; }
+
+    /// <summary>Bricht einen laufenden Import ab; ohne Delegat bleibt der Knopf weg.</summary>
+    [Parameter] public Action? Abbrechen { get; set; }
+
+    /// <summary>
+    /// Löscht eine Region samt ihren Datenblöcken (A-7/A-8);
+    /// <c>false</c> = sie blieb stehen (Auslieferungssatz).
+    /// </summary>
+    [Parameter] public Func<string, Task<bool>>? Loeschen { get; set; }
+
+    /// <summary>
+    /// Die Vorschläge des Ortsfeldes. <b>Fehlt die Ortsliste, ist sie leer</b> —
+    /// und der Dialog öffnet trotzdem (Befund W14c-B15, Entscheid E-7).
+    /// </summary>
+    [Parameter] public IReadOnlyList<string> Ortsvorschlaege { get; set; } = Array.Empty<string>();
+
+    /// <summary>Der Dialog ist zu Ende.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.KLIMA_TITEL;
+    [Parameter] public string KopfText { get; set; } = Resource.KLIMA_LBL_IMPORT_KOPF;
+    [Parameter] public string GruppeStandortText { get; set; } = Resource.KLIMA_GRP_STANDORT;
+    [Parameter] public string GruppeListeText { get; set; } = Resource.KLIMA_GRP_LISTE;
+    [Parameter] public string LabelOrtText { get; set; } = Resource.KLIMA_LBL_ORT;
+    [Parameter] public string OderText { get; set; } = Resource.KLIMA_LBL_ODER;
+    [Parameter] public string LabelLongitudeText { get; set; } = Resource.KLIMA_LBL_LONGITUDE;
+    [Parameter] public string LabelLatitudeText { get; set; } = Resource.KLIMA_LBL_LATITUDE;
+    [Parameter] public string FeldLongitudeText { get; set; } = Resource.KLIMA_FELD_LONGITUDE;
+    [Parameter] public string FeldLatitudeText { get; set; } = Resource.KLIMA_FELD_LATITUDE;
+    [Parameter] public string LabelBezeichnungText { get; set; } = Resource.KLIMA_LBL_BEZEICHNUNG;
+    [Parameter] public string LabelDetails { get; set; } = Resource.KLIMA_LBL_DETAILS;
+    [Parameter] public string SpalteRegionText { get; set; } = Resource.KLIMA_SP_REGION;
+    [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string ImportText { get; set; } = Resource.KLIMA_BTN_IMPORT;
+    [Parameter] public string LoeschenText { get; set; } = Resource.KLIMA_BTN_LOESCHEN;
+    [Parameter] public string BeendenText { get; set; } = Resource.KLIMA_BTN_BEENDEN;
+    [Parameter] public string ReiterTemperaturText { get; set; } = Resource.KLIMA_REITER_TEMPERATUR;
+    [Parameter] public string ReiterSonnenwinkelText { get; set; } = Resource.KLIMA_REITER_SONNENWINKEL;
+    [Parameter] public string DiagrammTemperaturText { get; set; } = Resource.KLIMA_DIA_TEMPERATUR;
+    [Parameter] public string DiagrammSonnenwinkelText { get; set; } = Resource.KLIMA_DIA_SONNENWINKEL;
+    [Parameter] public string KeineDatenText { get; set; } = Resource.KLIMA_MSG_KEINE_DATEN;
+    [Parameter] public string AuswaehlenText { get; set; } = Resource.KLIMA_MSG_AUSWAEHLEN;
+    [Parameter] public string ReadOnlyText { get; set; } = Resource.KLIMA_MSG_READONLY;
+    [Parameter] public string EingabenPruefenText { get; set; } = Resource.KLIMA_MSG_EINGABEN_PRUEFEN;
+    [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.KLIMA_FRAGE_LOESCHEN;
+    [Parameter] public string TitelLoeschenText { get; set; } = Resource.KLIMA_FRAGE_LOESCHEN_TITEL;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Klimadaten.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private List<Regionszeile> _regionen = new();
+    private string _gewaehlt = "";
+    private string _reiter = "TEMPERATUR";
+
+    private string _ortsname = "";
+    private string _bezeichnung = "";
+    private double? _longitude;
+    private double? _latitude;
+
+    private string _details = "";
+    private byte[]? _bildTemperatur;
+    private byte[]? _bildSonnenwinkel;
+
+    private bool _laeuft;
+    private double? _anteil;
+    private string _fortschrittText = "";
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
+
+    private readonly HashSet<string> _fehlerFelder = new();
+
+    private IQueryable<Regionszeile> Regionszeilen => _regionen.AsQueryable();
+
+    /// <summary>Die gewählte Region (Prüfhilfe für Tests).</summary>
+    public string Gewaehlt => _gewaehlt;
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Läuft gerade ein Import? (Prüfhilfe für Tests)</summary>
+    public bool Laeuft => _laeuft;
+
+    private bool LoeschenErlaubt => !_laeuft && _gewaehlt.Length > 0 && Loeschen is not null;
+
+    /// <summary>
+    /// „Daten einlesen" braucht einen Ortsnamen ODER die drei Handangaben — und kein
+    /// fehlerhaftes Zahlenfeld.
+    /// </summary>
+    private bool ImportErlaubt => !_laeuft && Importieren is not null &&
+        _fehlerFelder.Count == 0 &&
+        (_ortsname.Trim().Length > 0 ||
+         (_longitude.HasValue && _latitude.HasValue && _bezeichnung.Trim().Length > 0));
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await RegionenLaden();
+        await _wurzel.FocusAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>Lädt die Regionsliste neu (<c>ReadAll</c> + <c>FillListBox</c>).</summary>
+    public async Task RegionenLaden()
+    {
+        if (Regionen is null) return;
+        _regionen = await Regionen() ?? new List<Regionszeile>();
+
+        if (_regionen.All(z => z.Name != _gewaehlt))
+        {
+            // Befund W14c-B22: BEIDE Bilder gehen weg, nicht nur das erste.
+            _gewaehlt = "";
+            _details = "";
+            _bildTemperatur = null;
+            _bildSonnenwinkel = null;
+        }
+    }
+
+    private async Task Waehlen(Regionszeile zeile)
+    {
+        _gewaehlt = zeile.Name;
+        _meldung = "";
+        await AnsichtLaden();
+    }
+
+    /// <summary>
+    /// Holt Details und die zwei Bilder (<c>CreateChart</c>). <b>Ohne Stundenwerte
+    /// bleibt es bei einer Meldung</b> statt einer Ausnahme (Befund W14c-B19).
+    /// </summary>
+    private async Task AnsichtLaden()
+    {
+        if (Ansicht is null || _gewaehlt.Length == 0) return;
+
+        Regionsansicht a = await Ansicht(_gewaehlt);
+        _details = a.Details ?? "";
+        _longitude = a.Longitude;
+        _latitude = a.Latitude;
+        _bildTemperatur = a.BildTemperatur;
+        _bildSonnenwinkel = a.BildSonnenwinkel;
+        if (!string.IsNullOrEmpty(a.Meldung)) Melden(a.Meldung, WarnStufe.Hinweis);
+    }
+
+    private void BeiOrtsname(ChangeEventArgs e)
+    {
+        _ortsname = e.Value?.ToString() ?? "";
+        _meldung = "";
+    }
+
+    private void BeiFehler((string Feld, bool Fehlerhaft) f)
+    {
+        if (f.Fehlerhaft) _fehlerFelder.Add(f.Feld); else _fehlerFelder.Remove(f.Feld);
+    }
+
+    // =====================================================================
+    // Import (btn_Import_Click)
+    // =====================================================================
+
+    private async Task BeiImport()
+    {
+        if (!ImportErlaubt) return;
+
+        var auftrag = _ortsname.Trim().Length > 0
+            ? new KlimaImportAuftrag
+              {
+                  Art = KlimaImportArt.AusOrtsname,
+                  Ortsname = _ortsname.Trim()
+              }
+            : new KlimaImportAuftrag
+              {
+                  Art = KlimaImportArt.AusKoordinaten,
+                  Bezeichnung = _bezeichnung.Trim(),
+                  Longitude = _longitude ?? 0,
+                  Latitude = _latitude ?? 0
+              };
+
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = "";
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var melder = new Progress<ImportFortschritt>(f =>
+            {
+                _anteil = f.Anteil;
+                _fortschrittText = Fortschrittstext(f.Schluessel);
+                InvokeAsync(StateHasChanged);
+            });
+
+            KlimaImportErgebnis erg = await Importieren!(auftrag, melder);
+
+            if (erg.Meldung.Length > 0)
+                Melden(erg.Meldung, erg.Erfolgreich ? WarnStufe.Erfolg
+                                  : erg.Ausgang == KlimaImportAusgang.Abgebrochen ? WarnStufe.Hinweis
+                                  : WarnStufe.Fehler);
+
+            if (erg.Erfolgreich)
+            {
+                await RegionenLaden();
+                _gewaehlt = erg.Bezeichner;
+                await AnsichtLaden();
+                _ortsname = "";
+                _bezeichnung = "";
+            }
+        }
+        finally
+        {
+            // Der Vorlaeufer hatte KEIN finally: Brach der Ablauf zwischen
+            // "Balken sichtbar" und einem der acht return ab, blieb er stehen
+            // (Befund W14c-B32).
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+        }
+    }
+
+    private void BeiAbbrechen()
+    {
+        Abbrechen?.Invoke();
+    }
+
+    /// <summary>
+    /// Der Begleittext eines Schritts. Der Ablauf meldet SCHLÜSSEL, keine Texte — die
+    /// Übersetzung gehört zur Anzeige.
+    /// </summary>
+    private string Fortschrittstext(string schluessel)
+    {
+        if (string.IsNullOrEmpty(schluessel)) return "";
+        try { return Resource.ResourceManager.GetString(schluessel) ?? schluessel; }
+        catch { return schluessel; }
+    }
+
+    // =====================================================================
+    // Loeschen (btn_Delete_Click) - A-7 mit Rueckfrage, A-8 mit Kaskade
+    // =====================================================================
+
+    private void BeiLoeschen()
+    {
+        if (_laeuft) return;
+        if (_gewaehlt.Length == 0) { Melden(AuswaehlenText, WarnStufe.Hinweis); return; }
+
+        Regionszeile? zeile = _regionen.FirstOrDefault(z => z.Name == _gewaehlt);
+        if (zeile is null) return;
+
+        if (zeile.NurLesen) { Melden(ReadOnlyText, WarnStufe.Warnung); return; }
+
+        _loeschfrage = string.Format(VorlageLoeschfrage, _gewaehlt);
+        _loeschfrageOffen = true;
+    }
+
+    private async Task LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true || Loeschen is null) return;
+
+        bool weg = await Loeschen(_gewaehlt);
+        if (!weg) { Melden(ReadOnlyText, WarnStufe.Warnung); return; }
+
+        _gewaehlt = "";
+        await RegionenLaden();
+
+        // Der Vorlaeufer waehlte danach die erste Region und zeichnete neu.
+        if (_regionen.Count > 0) { _gewaehlt = _regionen[0].Name; await AnsichtLaden(); }
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_loeschfrageOffen || _laeuft) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

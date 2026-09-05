@@ -1,0 +1,74 @@
+﻿@* Raster aus Kacheln (iU9-W5.0).
+
+   WOZU. Kennzahlen stehen im Bestand als Reihe gleich breiter Karten
+   nebeneinander: drei auf der Kostenseite (Investition, Betrieb, Energie),
+   vier auf der Wirtschaftlichkeitsseite (Kapitalwert, Annuitaet, Amortisation,
+   interner Zinsfuss). Beide bauten dafuer ein TableLayoutPanel mit fest
+   gerechneten Prozentspalten (UcBkKosten.pnlKacheln, UcWirtschaftlichkeit.
+   KachelnBauen). Hier steht das einmal - und ohne gerechnete Breiten.
+
+   RESPONSIV STATT GERECHNET. Das CSS-Raster legt so viele Kacheln
+   nebeneinander, wie bei einer Mindestbreite Platz haben, und bricht sonst um
+   (auto-fit/minmax). Auf einem schmalen Fenster stehen die drei Kacheln
+   untereinander statt auf ein Drittel gequetscht; auf einem breiten fuellen
+   sie die Zeile. Der Aufrufer gibt dafuer nur die Mindestbreite an.
+
+   ODER FEST STATT RESPONSIV (Hoechstbreite, W16b-E-7 vom 05.09.2026). Die
+   Startkacheln tragen das Mass des Vorlaeufers - 404 x 185, drei nebeneinander.
+   Dort ist die Dehnung falsch: Passten nur zwei Spalten in die Zeile, wuchs
+   jede Kachel auf die halbe Fensterbreite, waehrend Sinnbild und Titel blieben,
+   wo sie waren. Mit Hoechstbreite legt das Raster drei feste Spalten und rueckt
+   sie nach links, statt die Zeile aufzufuellen.
+
+   KEINE EIGENE KACHEL. Der Baustein ist ein Behaelter: Was darin steht, ist
+   entweder eine <Kennzahlkachel> (Anzeige) oder eine <Kachel> (Einstieg). So
+   bleibt eine Gestaltungswahrheit je Kartenart. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="@Klasse" style="@Stil">
+    @KindInhalt
+</div>
+
+@code {
+    /// <summary>Die Kacheln.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>
+    /// Mindestbreite einer Kachel in Bildpunkten. Darunter bricht das Raster um.
+    /// 220 traegt eine Kennzahl samt Herkunftszeile ohne Trennung. Gilt nur im
+    /// dehnenden Raster, also solange <see cref="Hoechstbreite"/> 0 ist.
+    /// </summary>
+    [Parameter] public int Mindestbreite { get; set; } = 220;
+
+    /// <summary>
+    /// <b>Hoechstbreite einer Kachel in Bildpunkten</b> — 0 (Vorgabe) heisst
+    /// „dehnendes Raster wie bisher".
+    ///
+    /// <para>Ein Wert groesser 0 schaltet auf das FESTE Raster um
+    /// (<c>.epos-kachelraster--fest</c>, Anwenderbefund <b>W16b-E-7</b> der
+    /// Windows-Abnahme vom 05.09.2026): DREI Spalten nebeneinander, jede Kachel
+    /// hoechstens so breit, linksbuendig — was rechts uebrig bleibt, bleibt
+    /// leer. Auf schmalem Schirm werden es zwei Spalten und eine.</para>
+    ///
+    /// <para>Die Startseite setzt es, weil ihre Kacheln das Mass des
+    /// Vorlaeufers tragen (404 x 185, <c>Form_Start.pBox_*</c> / <c>karte_*</c>);
+    /// die Kennzahlreihen der Kosten- und der Wirtschaftlichkeitsseite dehnen
+    /// weiter — dort ist die volle Zeile richtig.</para>
+    /// </summary>
+    [Parameter] public int Hoechstbreite { get; set; }
+
+    /// <summary>Festes Mass statt Dehnung?</summary>
+    private bool Fest => Hoechstbreite > 0;
+
+    private string Klasse
+        => Fest ? "epos-kachelraster epos-kachelraster--fest" : "epos-kachelraster";
+
+    private string Stil
+        => Fest
+            ? "--epos-kachel-max: " + Zahl(Hoechstbreite) + "px"
+            : "--epos-kachel-min: " + Zahl(Mindestbreite) + "px";
+
+    private static string Zahl(int wert)
+        => wert.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}
