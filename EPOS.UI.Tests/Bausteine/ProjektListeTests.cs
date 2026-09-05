@@ -300,13 +300,44 @@ public class ProjektListeTests : BunitContext
     [Fact]
     public void Name_und_Kunde_brechen_um_das_Datum_nicht()
     {
-        string umbrechend = Stilblock(".epos-projektliste-name,\n.epos-projektliste-kunde {");
+        string umbrechend = Stilblock(
+            ".epos-projektliste-raster .epos-projektliste-name,\n" +
+            ".epos-projektliste-raster .epos-projektliste-kunde {");
         Assert.Contains("white-space: normal", umbrechend, StringComparison.Ordinal);
         Assert.Contains("overflow-wrap: anywhere", umbrechend, StringComparison.Ordinal);
 
-        string datum = Stilblock(".epos-projektliste-geaendert {");
+        string datum = Stilblock(".epos-projektliste-raster .epos-projektliste-geaendert {");
         Assert.Contains("white-space: nowrap", datum, StringComparison.Ordinal);
         Assert.Contains("width:", datum, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Anwenderwunsch 05.09.2026 (W15a‑E‑1), zweite Haelfte:</b> „der Name ist
+    /// abgeschnitten".
+    ///
+    /// <para>Die Umbruchregel stand seit W15a‑B‑1 im Blatt und wirkte NICHT:
+    /// <c>.epos-raster td</c> ist (0,1,1), <c>.epos-projektliste-name</c> nur
+    /// (0,1,0) — die Hausregel gewann jedes Mal. Sichtbar wurde es erst im 280 px
+    /// breiten Assistentenband, wo der waagerechte Rollbalken genau den Teil des
+    /// Namens abschnitt, der eine Variante ausmacht.</para>
+    ///
+    /// <para>Geprueft wird die SPEZIFITAET, nicht der Wortlaut: Der Selektor der
+    /// Projektliste muss mehr Klassen fuehren als die Hausregel. Eine bunit-Probe
+    /// sieht das nicht (Lehre W6‑B‑1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Umbruchregel_schlaegt_die_Hausregel_des_Rasters()
+    {
+        string css = Stilblatt();
+
+        // Die Hausregel steht weiter da - sie ist fuer kurze Bezeichner richtig.
+        Assert.Contains(".epos-raster th,\n.epos-raster td {", css, StringComparison.Ordinal);
+
+        // ... und die Projektliste hebt sie mit EINER Klasse mehr auf, nicht mit
+        // einer Wichtigkeitsmarke.
+        Assert.Contains(".epos-projektliste-raster .epos-projektliste-name,", css,
+                        StringComparison.Ordinal);
+        Assert.DoesNotContain("white-space: normal !important", css, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -330,6 +361,215 @@ public class ProjektListeTests : BunitContext
 
         // Und die frühere, zu späte Schwelle steht nicht mehr da.
         Assert.DoesNotContain("@media (max-width: 780px)", css, StringComparison.Ordinal);
+    }
+
+    // =====================================================================
+    //  Varianten - Anwenderwunsch 05.09.2026, W15a-E-1
+    // =====================================================================
+
+    /// <summary>
+    /// Die Gruppe der Testdatenbank: „Woehler" mit den zwei Varianten „Test1" und
+    /// „Test2", dazu ein gewoehnliches Projekt und ein zweites, dessen Name dem
+    /// Stamm zum Verwechseln aehnelt — genau die Lage des Bildschirmfotos.
+    /// </summary>
+    private static readonly ProjektKopfZeile[] GRUPPE =
+    {
+        new ProjektKopfZeile(1024, "Wöhler - Test2", "Stadtwerke", "", new DateTime(2026, 4, 2),
+                             StammId: 1019, Bezeichner: "Test2", StammName: "Wöhler"),
+        new ProjektKopfZeile(1019, "Wöhler", "Stadtwerke", "Stammprojekt", new DateTime(2026, 4, 1)),
+        new ProjektKopfZeile(1023, "Wöhler - Test1", "Stadtwerke", "", new DateTime(2026, 4, 3),
+                             StammId: 1019, Bezeichner: "Test1", StammName: "Wöhler"),
+        new ProjektKopfZeile(1030, "Wöhler WP", "Kirchengemeinde", "", new DateTime(2026, 1, 9)),
+        new ProjektKopfZeile(1007, "Alte Mühle", "", "", null)
+    };
+
+    private IRenderedComponent<ProjektListe> MitGruppe(
+        Action<ComponentParameterCollectionBuilder<ProjektListe>>? mehr = null)
+        => Render<ProjektListe>(p =>
+        {
+            p.Add(x => x.Zeilen, GRUPPE);
+            mehr?.Invoke(p);
+        });
+
+    /// <summary>
+    /// Die Spalte „Art" nennt Stamm und Variante samt Bezeichner — und steht
+    /// zwischen Name und Kunde, weil sie den NAMEN qualifiziert.
+    /// </summary>
+    [Fact]
+    public void Die_Artspalte_nennt_Stamm_Variante_und_den_Bezeichner()
+    {
+        var cut = MitGruppe();
+
+        var koepfe = cut.FindAll("thead th");
+        Assert.Equal(5, koepfe.Count);                       // Wahl + Name + Art + Kunde + Geändert
+        Assert.Contains("Art", koepfe[2].TextContent);
+        Assert.Contains("epos-projektliste-artspalte", koepfe[2].ClassName ?? "");
+
+        // Zeile 1 ist der Stamm, Zeile 2 und 3 seine Varianten (siehe Sortierfall).
+        var zeilen = cut.FindAll("tbody tr");
+        Assert.Equal("Stamm", zeilen[1].QuerySelectorAll("td")[2].TextContent.Trim());
+
+        string variante = zeilen[2].QuerySelectorAll("td")[2].TextContent;
+        Assert.Contains("Variante", variante);
+        Assert.Contains("Test1", variante);
+    }
+
+    /// <summary>
+    /// Ein Projekt, an dem keine Variante haengt, ist WEDER Stamm NOCH Variante —
+    /// seine Artzelle bleibt leer. „Stamm" ueber alle 24 Zeilen zu schreiben waere
+    /// eine Auskunft, die der Bestand nie gegeben hat.
+    /// </summary>
+    [Fact]
+    public void Ein_gewoehnliches_Projekt_traegt_keine_Art()
+    {
+        var cut = MitGruppe();
+
+        var zeilen = cut.FindAll("tbody tr");
+        Assert.Equal("Alte Mühle", zeilen[0].QuerySelectorAll("td")[1].TextContent.Trim());
+        Assert.Equal("", zeilen[0].QuerySelectorAll("td")[2].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Ohne Variante in der Liste gibt es die Spalte gar nicht — sie waere in jeder
+    /// Zeile leer und naehme dem Namen Platz weg.
+    /// </summary>
+    [Fact]
+    public void Ohne_Variante_erscheint_die_Artspalte_nicht()
+    {
+        var cut = Aufbauen();
+
+        Assert.Equal(4, cut.FindAll("thead th").Count);
+        Assert.DoesNotContain("Art", cut.Find("thead").TextContent);
+    }
+
+    /// <summary>
+    /// Die Ordnung des Vorbilds (<c>VariantenCtrl.LadeGruppe</c>,
+    /// <c>Form_Start.FuelleVariantenCombo</c>): der Stamm zuerst, darunter seine
+    /// Varianten nach BEZEICHNER — nicht nach Projektname und nicht nach Datum.
+    /// </summary>
+    [Fact]
+    public void Jede_Variante_steht_unter_ihrem_Stamm_nach_Bezeichner()
+    {
+        var cut = MitGruppe();
+
+        Assert.Equal(new[] { "Alte Mühle", "Wöhler", "Wöhler - Test1", "Wöhler - Test2", "Wöhler WP" },
+                     Namen(cut));
+
+        // Auch nach Datum sortiert bleibt die Gruppe beieinander: Die Spalte ordnet
+        // die STAEMME, innerhalb der Gruppe gilt weiter der Bezeichner.
+        cut = MitGruppe(p => p.Add(x => x.SortSpalte, ProjektListe.SPALTE_GEAENDERT));
+        string[] namen = Namen(cut);
+        Assert.Equal("Alte Mühle", namen[0]);                 // ohne Datum
+        Assert.Equal("Wöhler WP", namen[1]);                  // 09.01.2026
+        Assert.Equal("Wöhler", namen[2]);                     // 01.04.2026
+        Assert.Equal("Wöhler - Test1", namen[3]);
+        Assert.Equal("Wöhler - Test2", namen[4]);
+    }
+
+    /// <summary>
+    /// Die Variantenzeile ist auch OHNE Artspalte zu erkennen: eingerueckt und mit
+    /// der leisen Herkunftszeile. Das ist der Fall des Assistentenbandes.
+    /// </summary>
+    [Fact]
+    public void Im_schmalen_Band_traegt_die_Variante_Einrueckung_und_Herkunft()
+    {
+        var cut = MitGruppe(p => p.Add(x => x.NurName, true));
+
+        Assert.Equal(2, cut.FindAll("thead th").Count);       // Wahl + Projektname, keine Artspalte
+
+        var zeilen = cut.FindAll("tbody tr");
+        Assert.Contains("epos-projektliste-zeile--variante", zeilen[2].ClassName ?? "");
+        Assert.DoesNotContain("epos-projektliste-zeile--variante", zeilen[1].ClassName ?? "");
+
+        var eintrag = zeilen[2].QuerySelector(".epos-projektliste-eintrag");
+        Assert.NotNull(eintrag);
+        Assert.Contains("epos-projektliste-eintrag--variante", eintrag!.ClassName ?? "");
+
+        Assert.Equal("Variante von Wöhler",
+                     zeilen[2].QuerySelector(".epos-projektliste-herkunft")!.TextContent);
+
+        // Der Stamm traegt keine.
+        Assert.Null(zeilen[1].QuerySelector(".epos-projektliste-herkunft"));
+    }
+
+    /// <summary>
+    /// Wo die Artspalte steht, sagt sie dieselbe Sache — die leise Zeile bliebe
+    /// dieselbe Auskunft zweimal.
+    /// </summary>
+    [Fact]
+    public void Mit_Artspalte_entfaellt_die_leise_Herkunftszeile()
+    {
+        var cut = MitGruppe();
+
+        Assert.Empty(cut.FindAll(".epos-projektliste-herkunft"));
+        Assert.NotEmpty(cut.FindAll(".epos-projektliste-art"));
+    }
+
+    /// <summary>
+    /// Der Bezeichner ist NIRGENDS eine eigene Spalte des Assistenten und steht in
+    /// der Auswahl klein unter dem Wort „Variante" — gesucht werden muss er
+    /// trotzdem, sonst findet ihn niemand (dieselbe Lehre wie die unsichtbare
+    /// Beschreibung, W15a‑B22).
+    /// </summary>
+    [Fact]
+    public void Die_Suche_greift_auch_ueber_den_Variantenbezeichner()
+    {
+        var cut = MitGruppe();
+
+        cut.Find(".epos-projektliste-suche input").Input("Test2");
+
+        Assert.Single(cut.FindAll("tbody tr"));
+        Assert.Equal("Wöhler - Test2", Namen(cut)[0]);
+    }
+
+    /// <summary>
+    /// Faellt der Stamm durch den Filter, steht die Variante SELBST oben — sonst
+    /// waere sie nach einer Suche unauffindbar.
+    /// </summary>
+    [Fact]
+    public void Ohne_ihren_Stamm_steht_die_Variante_selbst_oben()
+    {
+        var cut = MitGruppe();
+
+        cut.Find(".epos-projektliste-suche input").Input("Test");
+
+        Assert.Equal(new[] { "Wöhler - Test1", "Wöhler - Test2" }, Namen(cut));
+        Assert.Equal("2 von 5 Projekten", cut.Find(".epos-projektliste-anzahl").TextContent);
+    }
+
+    /// <summary>
+    /// Ohne Stammnamen — der Stamm ist geloescht, oder die Datenbank kennt
+    /// <c>Tab_Variante</c> nicht — bleibt das blosse Wort stehen. „Variante von "
+    /// ohne Namen waere ein angefangener Satz.
+    /// </summary>
+    [Fact]
+    public void Ohne_Stammnamen_bleibt_das_blosse_Wort()
+    {
+        var zeilen = new[]
+        {
+            new ProjektKopfZeile(1023, "Waise", StammId: 999, Bezeichner: "X")
+        };
+
+        var cut = Render<ProjektListe>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.NurName, true));
+
+        Assert.Equal("Variante", cut.Find(".epos-projektliste-herkunft").TextContent);
+    }
+
+    /// <summary>
+    /// Die Einrueckung ist eine REGEL, kein Markup — eine bunit-Probe sieht sie
+    /// nicht (Lehre W6‑B‑1).
+    /// </summary>
+    [Fact]
+    public void Die_Variantenzeile_ist_im_Stilblatt_eingerueckt()
+    {
+        string block = Stilblock(".epos-projektliste-eintrag--variante {");
+        Assert.Contains("padding-inline-start", block, StringComparison.Ordinal);
+        Assert.Contains("border-inline-start", block, StringComparison.Ordinal);
+
+        string herkunft = Stilblock(".epos-projektliste-herkunft {");
+        Assert.Contains("var(--epos-text-leise)", herkunft, StringComparison.Ordinal);
     }
 
     private static string[] Namen(IRenderedComponent<ProjektListe> cut)

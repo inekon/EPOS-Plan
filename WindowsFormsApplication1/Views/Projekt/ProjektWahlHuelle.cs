@@ -153,6 +153,10 @@ namespace WindowsFormsApplication1
                 ["SpalteName"] = Text_("PRJ_LIST_SP_NAME", "Projektname"),
                 ["SpalteKunde"] = Text_("PRJ_LIST_SP_KUNDE", "Kunde"),
                 ["SpalteGeaendert"] = Text_("PRJ_LIST_SP_GEAENDERT", "Geändert"),
+                ["SpalteArt"] = Text_("PRJ_LIST_SP_ART", "Art"),
+                ["ArtStammText"] = Text_("PRJ_LIST_ART_STAMM", "Stamm"),
+                ["ArtVarianteText"] = Text_("PRJ_LIST_ART_VARIANTE", "Variante"),
+                ["VarianteVonFormat"] = Text_("PRJ_LIST_VARIANTE_VON", "Variante von {0}"),
                 ["SucheText"] = Text_("PRJ_LIST_LBL_SUCHE", "Suchen:"),
                 ["LeerText"] = Text_("PRJ_LIST_LEER", "Es ist noch kein Projekt angelegt."),
 

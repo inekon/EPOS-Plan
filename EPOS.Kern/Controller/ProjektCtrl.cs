@@ -101,15 +101,40 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Die Beschreibung reist mit, obwohl sie keine Spalte hat</b> — die
         /// Suche greift ueber sie (Befund W15a-B22).</para>
+        ///
+        /// <para><b>Die Variantenherkunft reist seit dem Anwenderwunsch vom 05.09.2026
+        /// mit (W15a-E-1)</b> — Stamm-Id, Bezeichner und Stammname. Sie kommt aus
+        /// EINER Abfrage mit zwei LEFT JOINs, nicht aus einer zweiten Abfrage je Zeile:
+        /// <c>VariantenCtrl.StammRefDerVariante</c> je Projekt waere bei 24 Projekten
+        /// 24 zusaetzliche Rundlaeufe, und die Liste wird bei jedem Suchtastendruck
+        /// neu gezeichnet.</para>
+        ///
+        /// <para><b>Ohne <c>Tab_Variante</c> laeuft die alte Abfrage.</b> Die Tabelle
+        /// legt <c>VariantenCtrl.StelleVariantentabelleSicher</c> erst beim ersten
+        /// Anlegen einer Variante an; ein Bestand ohne Variantenmodul hat sie nicht.
+        /// Ein LEFT JOIN auf eine fehlende Tabelle braeche die GANZE Abfrage — der
+        /// Anwender saehe eine leere Projektliste. Also wird vorher gefragt.</para>
         /// </summary>
         public static IReadOnlyList<ProjektKopfZeile> NamenListe()
         {
             var liste = new List<ProjektKopfZeile>();
+            bool mitVarianten = VariantentabelleLesbar();
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT ID, Projektname, Kunde, Beschreibung, Aenderungsdatum " +
-                    "FROM Tab_Projekt ORDER BY Projektname");
+                // Jet verlangt bei zwei JOINs die Klammerung im FROM (wie in
+                // VariantenCtrl.EntferneWaisen); SQLite nimmt sie klaglos an.
+                DataTable dt = mitVarianten
+                    ? DataRepository.GetDataTable(
+                        "SELECT p.ID, p.Projektname, p.Kunde, p.Beschreibung, p.Aenderungsdatum, " +
+                        "v.ID_ProjektRef AS StammId, v.Variantenname AS Bezeichner, " +
+                        "s.Projektname AS Stammname " +
+                        "FROM (Tab_Projekt p LEFT JOIN " + SchemaKatalog.TAB_VARIANTE + " v " +
+                        "ON v.ID_Projekt = p.ID) " +
+                        "LEFT JOIN Tab_Projekt s ON s.ID = v.ID_ProjektRef " +
+                        "ORDER BY p.Projektname")
+                    : DataRepository.GetDataTable(
+                        "SELECT ID, Projektname, Kunde, Beschreibung, Aenderungsdatum " +
+                        "FROM Tab_Projekt ORDER BY Projektname");
                 if (dt == null) return liste;
 
                 foreach (DataRow r in dt.Rows)
@@ -118,7 +143,12 @@ namespace WindowsFormsApplication1
                         Convert.ToString(r["Projektname"]) ?? "",
                         Convert.ToString(r["Kunde"]) ?? "",
                         Convert.ToString(r["Beschreibung"]) ?? "",
-                        r["Aenderungsdatum"] != DBNull.Value ? Convert.ToDateTime(r["Aenderungsdatum"]) : (DateTime?)null));
+                        r["Aenderungsdatum"] != DBNull.Value ? Convert.ToDateTime(r["Aenderungsdatum"]) : (DateTime?)null,
+                        "",
+                        "",
+                        SpaltenZahl(dt, r, "StammId"),
+                        SpaltenText(dt, r, "Bezeichner"),
+                        SpaltenText(dt, r, "Stammname")));
             }
             catch (Exception ex)
             {
@@ -129,6 +159,24 @@ namespace WindowsFormsApplication1
             }
             return liste;
         }
+
+        /// <summary>
+        /// Gibt es <c>Tab_Variante</c>? Still ueber <see cref="StilleDb"/> — eine
+        /// Auskunft ist kein Bedienschritt und darf keinen Dialog zeigen.
+        /// </summary>
+        private static bool VariantentabelleLesbar()
+        {
+            try { return StilleDb.TabelleVorhanden(SchemaKatalog.TAB_VARIANTE); }
+            catch { return false; }
+        }
+
+        /// <summary>Ganzzahl einer Spalte, die es nur in der Variantenabfrage gibt (0 sonst).</summary>
+        private static int SpaltenZahl(DataTable dt, DataRow r, string spalte)
+            => dt.Columns.Contains(spalte) && r[spalte] != DBNull.Value ? Convert.ToInt32(r[spalte]) : 0;
+
+        /// <summary>Text einer Spalte, die es nur in der Variantenabfrage gibt (leer sonst).</summary>
+        private static string SpaltenText(DataTable dt, DataRow r, string spalte)
+            => dt.Columns.Contains(spalte) && r[spalte] != DBNull.Value ? Convert.ToString(r[spalte]) ?? "" : "";
 
         /// <summary>
         /// Die neun Kopffelder eines Projekts fuer die erste Assistentenseite
