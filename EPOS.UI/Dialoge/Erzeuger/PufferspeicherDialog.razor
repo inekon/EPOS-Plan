@@ -97,11 +97,19 @@
 
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P1): Der Detailblock stand zuvor als
+               eine Spalte voller Felder ueber die ganze Breite. *@
+            <Formularraster>
+                <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
             @foreach (var feld in _detail.Felder)
             {
-                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+                @* Eine Zahl bekommt die kurze Feldbreite (iU8-E-2, Paket P1). *@
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
+                          Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
             }
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 

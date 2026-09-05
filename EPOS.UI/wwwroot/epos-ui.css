@@ -3300,11 +3300,8 @@ body {
     margin: 8px 0;
 }
 
-.epos-pvimport-details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 4px 16px;
-}
+/* Die drei Detailreiter stellen ihre Felder seit iU8-E-2 (Paket P3) in
+   den Hausraster (Formularraster) - der eigene Kasten dafuer ist fort. */
 
 /* Die Statuszeile des Vorlaeufers (statusStrip1) - jetzt rechts in der
    Quellenleiste, leise. */
@@ -3655,17 +3652,12 @@ body {
    volle Breite - dieselbe Anordnung wie im Vorlaeufer (631 x 558), nur ohne feste
    Pixelpositionen.
    -------------------------------------------------------------------------- */
-.epos-projektkopf-raster {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 16px;
-}
-
-@media (max-width: 700px) {
-    .epos-projektkopf-raster {
-        grid-template-columns: 1fr;
-    }
-}
+/* Seit iU8-E-2 (Paket P3) steht der Feldlauf im Hausraster
+   (Formularraster): zwei Spalten aus auto-fill statt zwei gerechneten,
+   die Beschriftung neben dem Feld und die Beschreibung als breites Feld
+   ueber beide Spalten. Der eigene Kasten und sein eigener Umbruch bei
+   700 px sind damit fort - der Raster bricht bei 900 px wie das ganze
+   Haus. */
 
 /* --------------------------------------------------------------------------
    Gespraechsverlauf des KI-Assistenten (iU9-W15b.6, Bausteinluecke 17).
@@ -5986,6 +5978,82 @@ body {
     .epos-kiwerkzeuge-leer { border: 2px dashed CanvasText; }
 }
 
+/* STROMGANGLINIE - GRAFIK (Anwenderwunsch W12-E-2, 05.09.2026)          */
+/*                                                                      */
+/* "Stelle die importierte Stromganglinie als Grafik dar (wie bisher,    */
+/* zoombar, umschaltbar auf sortiert)."                                  */
+/*                                                                      */
+/* WO SIE STEHT. Unter den ZWEI Spalten des Dialogs, ueber die volle     */
+/* Breite und vor der Fussleiste - sie gehoert zu beiden Listen, nicht   */
+/* zu einer. Das Bild selbst bringt seinen Rahmen mit (.epos-diagramm    */
+/* hat width:100 % und min-width:0), hier steht nur, was darum liegt:    */
+/* die Kennzahlenzeile und die Leiste mit Schalter und Einheit.          */
+/*                                                                      */
+/* KEIN WAAGERECHTES ROLLEN. min-width:0 auf dem Abschnitt loest die     */
+/* Mindestbreite auf, die ein Flex-Kind sonst von seinem Inhalt erbt -   */
+/* ohne sie schoebe das 1 240 px breite PNG den Dialog auf einem         */
+/* schmalen Schirm auseinander. Unter dem Hausumbruch von 900 px         */
+/* (--epos-zweispalten-umbruch) stehen die drei Kennzahlen zudem         */
+/* untereinander, statt in einer Zeile umzubrechen.                      */
+/* ==================================================================== */
+
+.epos-ganglinie-grafik {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-abstand);
+    min-width: 0;
+    margin-top: var(--epos-rand);
+}
+
+/* Die drei Kennzahlen nebeneinander: Jahresarbeit, Spitze,
+   Vollbenutzungsstunden. <dl> statt Tabelle - es sind drei Paare aus
+   Begriff und Wert, keine Matrix. */
+.epos-ganglinie-kennzahlen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-abstand) 24px;
+    margin: 0;
+}
+
+.epos-ganglinie-kennzahl {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.epos-ganglinie-kennzahl dt {
+    color: var(--epos-text-leise);
+}
+
+.epos-ganglinie-kennzahl dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Der Wert traegt das Gewicht, die Einheit bleibt leicht - sonst liest
+   sich "4.790,09 MWh" als ein einziges Wort. */
+.epos-ganglinie-wert {
+    font-weight: 600;
+}
+
+/* Schalter "sortiert" und Einheitenwahl in EINER Zeile. Sie stehen auf
+   der Grundlinie, damit das Kaestchen nicht ueber dem Auswahlfeld
+   schwebt. */
+.epos-ganglinie-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-abstand);
+}
+
+@media (max-width: 900px) {
+    .epos-ganglinie-kennzahlen {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
@@ -6133,4 +6201,25 @@ body {
     .epos-formularraster .epos-schalter {
         padding-left: 0;
     }
+}
+
+/* ==================================================================== */
+/* FORMULARRASTER - PAKET P3 (iU8-E-2, 05.09.2026)                       */
+/*                                                                      */
+/* Eine einzige Zeile Zusatz, gefunden beim Umstellen von Bedarf,       */
+/* Simulation und Projekt: Eine HERLEITUNGSZEILE gehoert zu dem Feld    */
+/* UEBER ihr ("Fensterdurchlassgrad: Vorgabe 0,6", "Jahresnutzungsgrad  */
+/* aus dem Kesselwirkungsgrad"). Als gewoehnliches Rasterkind faellt    */
+/* sie in die naechste freie Zelle - im zweispaltigen Raster also NEBEN */
+/* ein fremdes Feld, wo sie wie dessen Erlaeuterung aussieht. Ueber die */
+/* volle Breite steht sie wieder da, wo der Vorlaeufer sie hatte: als   */
+/* eigene Zeile unter ihrem Feld.                                       */
+/*                                                                      */
+/* Die zweite Selektorzeile deckt die Gruppe ab: .epos-formulargruppe   */
+/* ist display: contents, ihre Kinder sind Rasterkinder - der           */
+/* Kindselektor sieht das nicht, der DOM-Vater bleibt die Gruppe.       */
+/* ==================================================================== */
+.epos-formularraster > .epos-herleitung,
+.epos-formularraster > .epos-formulargruppe > .epos-herleitung {
+    grid-column: 1 / -1;
 }

@@ -292,4 +292,30 @@ public class ParameterReiterTests : BunitContext
 
         Assert.Empty(seite.FindAll("input:not([disabled])"));
     }
+
+    // =====================================================================
+    //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Parameterblock stellt seine Felder in den Formularraster, einspaltig: Er ist die schmale Spalte der Ergebnisseite, und unter mancher Zahl steht ihre Entsprechung in kWh.
+    ///
+    /// <para>Geprueft wird das MARKUP: Der Block traegt
+    /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
+    /// daraus MACHT (Beschriftungsspalte, kurzes Feld, zwei Spalten), steht
+    /// als Stilblattprobe in <c>FormularrasterTests</c> - eine bunit-Probe
+    /// rechnet kein CSS aus (Lehre W6-B-1).</para>
+    /// </summary>
+    [Fact]
+    public void Der_Parameterblock_steht_im_einspaltigen_Formularraster()
+    {
+        var seite = Zeichnen(Alles());
+
+        var raster = seite.FindAll(".epos-simerg-felder .epos-formularraster");
+        Assert.NotEmpty(raster);
+        Assert.Equal(raster.Count,
+                     seite.FindAll(".epos-simerg-felder .epos-formularraster--einspaltig").Count);
+        Assert.NotEmpty(seite.FindAll(
+            ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
+    }
 }

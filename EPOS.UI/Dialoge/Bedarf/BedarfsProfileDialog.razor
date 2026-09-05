@@ -142,23 +142,35 @@
     @* --------------------------------------------- Infoblock -------------- *@
     <Gruppenkopf Titel="@GruppeInfo">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P3): Beschriftung neben dem Feld,
+               Zahlenfelder kurz mit der Einheit dahinter. *@
+            <Formularraster>
+                <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@_infoName" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelTyp" Wert="@_infoTyp" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_infoBeschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="3" />
             <Textfeld Bezeichnung="@LabelJahresverbrauch" Wert="@Jahresverbrauch" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelSumme" Wert="@Gesamtsumme" NurLesen="true" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     @* --------------------------------------------- Jahresverbrauch -------- *@
     <Gruppenkopf Titel="@GruppeVerbrauch">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P3): Beschriftung neben dem Feld,
+               Zahlenfelder kurz mit der Einheit dahinter. *@
+            <Formularraster>
+                <KindInhalt>
             <Auswahlfeld Bezeichnung="@LabelEinheit" Eintraege="@Einheitenwahl"
                          Auswahl="@EinheitIndex" AuswahlChanged="EinheitWaehlen" />
             <Zahlenfeld Bezeichnung="@LabelNeuerWert" Einheit="@_einheit.Text"
                         Feldname="@LabelNeuerWert" Wert="@_neuerWert"
                         WertChanged="w => _neuerWert = w" />
+                </KindInhalt>
+            </Formularraster>
             <button type="button" class="epos-knopf epos-knopf--primaer"
                     @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
         </KindInhalt>

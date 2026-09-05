@@ -100,12 +100,19 @@
         <Gruppenkopf Titel="@GruppeAnlage">
             <KindInhalt>
                 <div class="epos-anlagenblock">
+                    @* Der gestrichelte Rahmen bleibt - er sagt "diese Werte gehoeren zur
+                       markierten Anlage". Der Raster ordnet nur die drei Felder darin
+                       (iU8-E-2, Paket P1). *@
+                    <Formularraster>
+                        <KindInhalt>
                     <Ganzzahlfeld Bezeichnung="@LabelNeigung" Wert="@_projektZeile.Neigung"
                                   WertChanged="BeiNeigung" />
                     <Ganzzahlfeld Bezeichnung="@LabelAzimut" Wert="@_projektZeile.Azimut"
                                   WertChanged="BeiAzimut" />
                     <Zahlenfeld Bezeichnung="@LabelAnzahl" Wert="@_projektZeile.AnzahlModule"
                                 WertChanged="BeiAnzahl" />
+                        </KindInhalt>
+                    </Formularraster>
                 </div>
                 @* Paket A/B des PV-Ertragsmodells (Merge 5): Rechenmodell, Wechselrichter-
                    Wirkungsgrad, Systemverluste und die Wechselrichterdaten (Ueberlagerung). *@
@@ -118,14 +125,23 @@
     @* Eigenschaften des MODULS - immer sichtbar (panel2). *@
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
+            @* Formularraster (iU8-E-2, Paket P1): Der Detailblock stand zuvor als
+               eine Spalte voller Felder ueber die ganze Breite. *@
+            <Formularraster>
+                <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
             @foreach (var feld in _detail.Felder)
             {
-                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+                @* Eine Zahl bekommt die kurze Feldbreite (iU8-E-2, Paket P1). *@
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
+                          Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
             }
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detail.Beschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="2" />
-            <Textfeld Bezeichnung="@LabelGesamtleistung" Wert="@_gesamtleistung" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelGesamtleistung" Wert="@_gesamtleistung" NurLesen="true"
+                      Kurz="true" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 

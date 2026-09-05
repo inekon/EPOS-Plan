@@ -135,13 +135,13 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-08-30_B3-Kaskade
+      - name: Vergleich mit Referenzbasis 2026-09-05_R2_Zeitbasis
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-08-30_B3-Kaskade/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-05_R2_Zeitbasis/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-05_R2_Zeitbasis/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-05_R2_Zeitbasis/Projekt_1017 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017; do

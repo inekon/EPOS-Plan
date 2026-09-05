@@ -115,7 +115,9 @@
             <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
             @foreach (var feld in _detail.Felder)
             {
-                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+                @* Eine Zahl bekommt die kurze Feldbreite (iU8-E-2, Paket P1). *@
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
+                          Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
             }
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detail.Beschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="2" />

@@ -14750,6 +14750,15 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="STROMGL_HINWEIS_FORMAT" xml:space="preserve">
     <value>Dateiformat: CSV- oder Textdatei (auch Excel .xlsx/.xlsm/.xls) mit einem Jahr Lastgang — 8.760 Stundenwerte oder 35.040 Viertelstundenwerte, in Zeitfolge ab dem 1. Januar, je Zeile ein Wert. Als Feldtrennzeichen sind Semikolon, Komma, Tabulator und senkrechter Strich zugelassen; eine einspaltige Datei braucht keines. Eine Kopfzeile ist erlaubt und wird erkannt. Dezimaltrennzeichen Komma oder Punkt, kein Tausendertrennzeichen. Werte als Leistung in kW oder als Arbeit in kWh je Intervall — die Einheit wird vor dem Einlesen abgefragt und in kW umgerechnet. Eine Zeitstempelspalte ist zulässig, aber nicht nötig. Der Bezeichner der Ganglinie ist der Dateiname ohne Erweiterung.</value>
   </data>
+  <data name="STROMGL_HINWEIS_FORMAT_KURZ" xml:space="preserve">
+    <value>CSV/Text, 8.760 Stunden- oder 35.040 Viertelstundenwerte, ein Wert je Zeile — Einzelheiten am Infoknopf</value>
+  </data>
+  <data name="STROMGL_LBL_JAHRESARBEIT" xml:space="preserve">
+    <value>Jahresarbeit:</value>
+  </data>
+  <data name="STROMGL_LBL_SPITZE" xml:space="preserve">
+    <value>Spitzenlast:</value>
+  </data>
   <data name="STROMGL_TITEL_KOPIE" xml:space="preserve">
     <value>Stromganglinie speichern unter</value>
   </data>

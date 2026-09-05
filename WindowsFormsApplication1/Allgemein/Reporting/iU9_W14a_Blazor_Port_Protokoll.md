@@ -803,3 +803,120 @@ Stilblatts hält auch nach dem Merge, der 14 Zeilen in einen anderen Block gesch
    „Gebäude" (Detailblock „Verbrauch"), „Einstellungen" (Reiter „Datenbank" und „Web").
 8. Ein Feld **außerhalb** eines Katalogdialogs — z. B. „Tarifstruktur" — sieht **unverändert**
    aus; dort steht die Beschriftung weiter über dem Feld, bis Paket P2 läuft.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P1 (iU8‑E‑2)
+
+Paket **P1 — Erzeuger und Kataloge** aus der Pakettabelle weiter oben ist gelaufen. Die
+beiden W14a-Dialoge (`ModulKatalogDialog`, `KatalogBrowserDialog`) trugen den Raster schon
+seit dem Vortagsschritt; **neu** sind die zwölf Dialoge der Wellen **W6** und **W7** — die
+Tabellen dazu stehen in `iU9_W6_Blazor_Port_Protokoll.md` und
+`iU9_W7_Blazor_Port_Protokoll.md`, je Datei nur die eigenen. Hier steht, was **hausweit**
+dazugekommen ist.
+
+**Elf Dateien umgestellt, eine bewusst nicht.**
+
+| Welle | Umgestellt | Felder im Raster |
+|---|---|---|
+| W6 | `HeizkesselKatalogDialog`, `BhkwKatalogDialog`, `BhkwDialog`, `PhotovoltaikDialog`, `StromspeicherDialog`, `PufferspeicherDialog` | 65 |
+| W7 | `KennlinienEditorDialog`, `WaermepumpeStammDialog`, `WaermepumpeAnlageDialog`, `SolarkollektorKatalogDialog`, `SolarkollektorenDialog` | 52 |
+
+Damit stehen **19** der 92 Dateien im Formularraster (8 aus dem Vorschritt, 11 aus P1); in
+`EPOS.UI/Dialoge/Erzeuger/`, `…/Solarthermie/` und `…/Waermepumpe/` gibt es **kein**
+handgebautes `epos-feldpaar` mehr. Die verbliebenen fünfzehn Stellen liegen in Bedarf,
+Kosten und Strom — Sache der Pakete P2 und P3.
+
+**Eine Regel kam dazu — Unterblock „Formularraster — Paket P1" am Ende von `epos-ui.css`:**
+
+```
+.epos-formularraster > .epos-herleitung { grid-column: 1 / -1; }
+```
+
+Ein Parameterblock ist selten NUR eine Reihe Felder: Zwischen den Feldern stehen Sätze, die
+den Rechenweg nennen — „der abgeleitete Wert je kWel", der Rücklaufvorschlag der Wärmepumpe,
+der Hinweis zur Spitzenlast. Eine `Herleitungszeile` ist **kein** Feld und darf deshalb nicht
+in einer Rasterzelle **neben** einem Feld landen; sie gehört über die volle Breite, genau wie
+`.epos-untergruppe` eine Regel weiter oben. Ohne diese Zeile hätten allein `BhkwKatalogDialog`
+und `WaermepumpeAnlageDialog` ihre Blöcke in fünf statt zwei Raster zerlegen müssen — und
+jede Zerlegung ist eine Stelle, an der die Beschriftungsspalten später auseinanderlaufen. Die
+Regel nennt `.epos-formularraster` und greift damit nirgends sonst: Eine Herleitungszeile
+außerhalb eines Rasters bleibt unverändert. Der Wächterfall
+`Ausserhalb_des_Rasters_bleibt_ein_Feld_unveraendert` liest den Unterblock mit und hält das
+fest.
+
+**Der `Einspaltig`-Rückweg ist zum ersten Mal fachlich in Gebrauch** — im Block „Spitzenlast"
+von `WaermepumpeAnlageDialog`: eine Regel, die sich von oben nach unten aufblättert. Zwei
+Spalten stellten den Schalter „Sperrzeit" neben den Schalter „Heizstab" und rissen die
+Reihenfolge auseinander. Einspaltig heißt nicht „wie vorher": Die Beschriftung steht auch
+dort neben dem Feld.
+
+**Zwei Blöcke bleiben bewusst, wie sie sind** (Klasse‑B‑Entscheid, Begründung in den
+Wellenprotokollen):
+
+* die **Filterzeile** von `WaermepumpenKatalogDialog` (`epos-zahlenraster`, zwölf Filter über
+  einer Liste) — Werkzeuge der Liste, keine Parameter eines Geräts; eine 12‑rem-Spalte je
+  Filter machte das Band doppelt so breit und die Liste kürzer;
+* der **`Zeilenraster`** und die **Neuzeile** von `KennlinienEditorDialog` — Bearbeitungszeilen
+  einer Tabelle. Ebenso bleiben die Listenfilter über den Kataloglisten (BHKW, PV,
+  Pufferspeicher) und die Summenzeile unter der BHKW-Projektliste außerhalb des Rasters.
+
+**Grenzfall, nicht angefasst:** `PufferSpProjektDialog` steht in der P1-Liste der Aufgabe,
+trägt im Kopf aber die Welle **iU9‑W10a.4** und fällt damit in den Wellenbereich von Paket
+**P3** (W8–W16a). Er ist hier bewusst **nicht** umgestellt, damit ihn nicht zwei Pakete
+gleichzeitig anfassen; sein Block „Eigenschaften" ist mit der neuen Herleitungszeilen-Regel
+jetzt in **einem** Raster darstellbar.
+
+**Testzahlen.** `EPOS.UI.Tests` **2557** grün (de‑DE und `LANG=en_US.UTF-8`) — elf neue
+Fälle, je einer in der vorhandenen Testdatei des umgestellten Dialogs.
+`Werkzeuge/Formularkarte` **122** grün. `FormularrasterTests`, `ParametersatzTests`,
+`StilblattTests` und `KatalogdialogTests` unverändert grün; die Klammerbilanz des Stilblatts
+hält (757 / 757).
+
+**Abnahmepunkte am Gerät** (100 / 125 / 150 %) stehen je Welle in `iU9_W6_…` (fünf Punkte)
+und `iU9_W7_…` (sieben Punkte). Übergreifend gilt: Ein Feld **außerhalb** dieser neunzehn
+Dateien — z. B. „Tarifstruktur" (P2) oder „Gebäude-Katalog" (P3) — sieht **unverändert** aus.
+
+### Nachtrag 05.09.2026 — `Textfeld.Kurz` und `ErzeugerDetail.IstZahl`
+
+Zweite Meldung des Anwenders am selben Tag, mit Bildschirmfoto „Verwaltung BHKW": „Stelle
+diesen Dialog kompakter dar (insbesondere Daten zum BHKW-Modul unten). Prüfe das Gleiche
+mit anderen Komponenten zur Darstellung der Komponentendaten."
+
+Der Befund betrifft nicht das Raster, sondern die **Selbstmeldung eines Feldes**. Der
+Komponentenblock der sechs Erzeuger-Projektmasken zeichnet seine Werte als NUR LESBARE
+`Textfeld` — die Paare (Beschriftung, Wert) kommen fertig formatiert aus der Hülle. Ein
+`Textfeld` konnte sich bis dahin nur als **lang** melden (`Mehrzeilig` →
+`epos-feld--breit`), nie als kurz; also nahm „80" hinter „thermische Leistung [kWth]:" die
+volle Feldspalte.
+
+**Zwei hausweite Ergänzungen, keine neue Datenform:**
+
+* **`Textfeld.Kurz`** setzt `epos-feld--kurz` — dieselbe Klasse, dieselbe Regel im
+  Stilblatt wie beim `Zahlenfeld`, kein neues CSS. Sie greift wie alles andere **nur** im
+  Raster; ein Textfeld ohne `Kurz` bleibt unverändert, ein **mehrzeiliges** bleibt lang,
+  auch wenn jemand beides setzt (die Länge hängt am Bauteil, nicht am Aufrufer).
+* **`ErzeugerDetail.IstZahl(wert)`** entscheidet, WELCHES Anzeigefeld kurz ist — an EINER
+  Stelle für alle sechs Masken, die diesen Block zeichnen. Die Probe hängt am **Wert**:
+  Die Feldnamen kommen je Erzeugerart anders herein (`Hersteller:`, `Nennweite:`,
+  `Aperturfläche:`), eine Zahl bleibt eine Zahl. Beide Kulturen werden gefragt, weil die
+  Hülle in der laufenden Kultur formatiert; rät die Probe falsch, ändert sich nur die
+  **Breite** eines Anzeigefeldes. Die Alternative — ein drittes Element im Tupel
+  `(Feld, Wert)` — hätte sechs Windows-Hüllen und ihre Feldkartenproben angefasst, um
+  dieselbe Auskunft zu transportieren.
+
+Betroffen sind neun Dateien: die sechs Detailblöcke (`BhkwDialog`, `HeizkesselDialog`,
+`PhotovoltaikDialog`, `StromspeicherDialog`, `PufferspeicherDialog`,
+`SolarkollektorenDialog`), dazu vier einzeln benannte Anzeigewerte — die BHKW-Summenzeile,
+die PV-Gesamtleistung, die Gesamt-Aperturfläche der Solarthermie und Baujahr/Nennleistung
+der Wärmepumpenanlage. Die Aufteilung je Block steht in den Wellenprotokollen W6 und W7.
+
+**Wachen.** Vier Fälle in `FormularrasterTests` (Kurz meldet sich, Gegenprobe ohne Kurz,
+mehrzeilig bleibt lang, und `IstZahl` mit acht Werten) und ein Fall in `BhkwDialogTests`,
+der am Beispiel des Anwenders prüft, dass die beiden Leistungen kurz sind, der Hersteller
+nicht und die Beschreibung breit. **Testzahlen nach dem Nachtrag:** `EPOS.UI.Tests`
+**2569** grün in beiden Sprachen, `Werkzeuge/Formularkarte` **122** grün.
+
+**Vermerkt, nicht gemacht:** Die Spalte „Eigenschaften" der BHKW-Katalogliste bricht in
+vier Zeilen um. Sie kommt nicht aus `Zweispaltenauswahl` und aus keinem Listenprofil,
+sondern wird in `Views/BHKW/BhkwHuelle.KatalogZeilen` aus `\n`-getrennten Stücken gebaut —
+ein eigener Umbau in der Windows-Hülle, von `EPOS.UI.Tests` aus nicht prüfbar. Begründung
+im Protokoll W6.
