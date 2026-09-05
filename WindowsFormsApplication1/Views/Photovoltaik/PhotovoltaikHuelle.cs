@@ -159,6 +159,10 @@ namespace WindowsFormsApplication1
                 ["LabelAzimut"] = Text_("PVD_LBL_AZIMUT", "Azimut [°]:"),
                 ["LabelAnzahl"] = Text_("PVD_LBL_ANZAHL", "Anzahl Module:"),
                 ["GruppeModul"] = Text_("PVD_GRP_MODUL", "Modul Eigenschaften:"),
+                // W6-E-1 (Windows-Abnahme 05.09.2026): der Aufklapper ueber allen
+                // Modulparametern.
+                ["LabelAlleParameter"] = Text_("PVD_AUFKLAPP_PARAMETER",
+                                               "Alle Modulparameter anzeigen"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
                 ["LabelGesamtleistung"] = Text_("PVD_LBL_GESAMTLEISTUNG", "Gesamtleistung [KW]:"),
@@ -253,6 +257,13 @@ namespace WindowsFormsApplication1
         /// Der Detailblock. Beide Listen lasen im Vorläufer denselben Katalogsatz —
         /// nur das Anlagen-Panel unterschied sie.
         /// </summary>
+        /// <remarks>
+        /// <b>W6‑E‑1</b> (Windows-Abnahme 05.09.2026): Dazu kommen ALLE übrigen
+        /// Katalogparameter für den Aufklapper. Sie stehen im SELBEN Lesevorgang —
+        /// <c>PhotovoltaikStammCtrl.Detail</c> liest sie seither mit —, und weil der
+        /// Dialog diesen Weg bei jedem Wechsel der Modulwahl ruft, aktualisiert sich
+        /// der Block von selbst.
+        /// </remarks>
         private static ErzeugerDetail DetailZu(string name)
         {
             PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(name);
@@ -264,7 +275,23 @@ namespace WindowsFormsApplication1
                 (Text_("PVD_LBL_LEISTUNG", "Modul Leistung [KW]:"), d.Leistung.ToString("F2"))
             };
 
-            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
+            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,
+                                      null, Parameterzeilen(d));
+        }
+
+        /// <summary>
+        /// Die dreizehn übrigen Katalogfelder als Anzeigezeilen (W6‑E‑1). Beschriftung,
+        /// Einheit, Zahlenform und das „–" für einen nicht gepflegten Wert entscheidet
+        /// der Kern — die Hülle bildet nur ab.
+        /// </summary>
+        private static IReadOnlyList<Modulparameter> Parameterzeilen(
+            PhotovoltaikStammCtrl.ModulDetail d)
+        {
+            var liste = new List<Modulparameter>();
+            foreach (PhotovoltaikStammCtrl.ModulParameter p in
+                     PhotovoltaikStammCtrl.Parameterzeilen(d))
+                liste.Add(new Modulparameter(p.Bezeichnung, p.Wert, p.Einheit));
+            return liste;
         }
 
         private static IReadOnlyList<KatalogZeile> KatalogZeilen(
