@@ -467,3 +467,115 @@ Am Windows-Gerät zu prüfen — was kein automatisches Netz sieht.
 | `Allgemein/SpeichernLeiste.cs` | 128 | beide Nutzer weg (B76) |
 | `Allgemein/KI/KiAufrufKnopf.cs` | 270 | letzter Nutzer weg (B19, E‑10) |
 | fünf `Sprungziel`-Konstanten und -Zweige | ~47 | die Ziele sind selbst Blazor |
+
+
+## Anwenderentscheid #76 (05.09.2026) — ein Schema für alle Projekt↔DB-Auswahldialoge
+
+**Der Entscheid.** Nach der Windows-Abnahme (PDF „iOS_Migration_Probleme", S. 2, 6–8)
+hat der Anwender festgelegt: *Alle* Dialoge, in denen links „im Projekt ausgewählt" und
+rechts „aus der Datenbank/Katalog" mit Pfeilknöpfen dazwischen stehen, folgen dem alten
+**BHKW-PLAN-Schema NEBENEINANDER** — Projektliste links, Katalogliste rechts, die zwei
+Pfeilknöpfe in einer schmalen Mittelspalte. Auf **schmalem Schirm** (iPad hochkant,
+schmales Fenster) bricht das Paar automatisch **untereinander** um; dann gilt das
+Schema, das der Gebäudedialog seit Welle 9 hatte (Projektliste oben, Pfeile dazwischen,
+Katalog unten). Listen sind in beiden Fällen höhenbegrenzt mit Rollbalken (Befund
+W9‑B‑2, `.epos-raster-huelle` / `--epos-listenhoehe`).
+
+**Ein Baustein statt elf Markups.** `EPOS.UI/Bausteine/Zweispaltenauswahl.razor` trägt
+drei benannte Bereiche — `Links` (Projekt), `Mitte` (die zwei Knöpfe), `Rechts`
+(Katalog) — dazu die Überschriften, die vier Texte der Knöpfe, ihre Sperrzustände und
+Rückrufe sowie `NurRechts` für die Verwaltungsbetriebsart. Der Stilblock
+„Zweispaltenauswahl" in `EPOS.UI/wwwroot/epos-ui.css` steht direkt hinter dem alten
+Block AUSWAHLPAAR; die alte Klasse `.epos-auswahlpfeile` ist entfallen,
+`.epos-auswahlpaar`/`.epos-auswahlspalte` bleiben für die fünf Masken **ohne** Pfeile
+(`GebaeudetypDialog`, `TypProfilDialog`, `KennlinienEditorDialog`,
+`WaermepumpeAnlageDialog`, `WaermepumpeStammDialog`).
+
+**Das Zeichen hängt an der Anordnung, nicht am Text.** Ein Pfeil im Ressourcentext kann
+nicht wissen, wie die Listen gerade stehen. Jeder Knopf trägt deshalb **beide** Zeichen
+im Markup (`aria-hidden`, damit eine Sprachausgabe den Satz liest und nicht das
+Dreieck), und das Stilblatt zeigt je Breite genau eines: nebeneinander **◀/▶** (die
+Zeile wandert nach links ins Projekt bzw. nach rechts in den Katalog zurück),
+untereinander **▲/▼**. Kein JavaScript.
+
+> **Zur Pfeilrichtung.** Der Entscheidtext nennt in der Klammer „▶ In das Projekt
+> übernehmen, ◀ Aus dem Projekt entfernen". Umgesetzt ist es **umgekehrt** — ◀
+> übernimmt, ▶ entfernt —, weil derselbe Satz die Projektliste ausdrücklich **links**
+> verortet und weil das Vorbild es so hält: `Form_Gebaeude.resx` `btn_Hinzu` = „◀",
+> `btn_Entfernen` = „▶"; `Form_Heizkessel.resx` `btn_Kessel_Hinzu` = „◀",
+> `btn_Kessel_Entfernen` = „▶". Bei Projektliste links zeigt „übernehmen" nach links.
+> Soll es doch andersherum sein, sind es zwei Zeichen in
+> `Bausteine/Zweispaltenauswahl.razor` — sonst nichts.
+
+**Der Umbruch ist eine Medienabfrage, kein `flex-wrap`.** Nur so weiß das Stilblatt,
+welches Zeichen gerade gilt; bei `flex-wrap` käme die Reihe um, ohne dass eine Regel es
+merkt, und die Pfeile zeigten ins Leere. Die Umbruchbreite steht als Token
+`--epos-zweispalten-umbruch` (900 px) **und** — weil eine Medienabfrage kein Token
+lesen kann — ein zweites Mal in der Abfrage; die Wache
+`ZweispaltenauswahlTests.Die_Umbruchbreite_steht_als_Token` hält beide Werte
+gegeneinander. Die Breite der Mittelspalte ist `--epos-zweispalten-mitte` (10 rem; im
+Bestand 63 px bei `Form_Gebaeude`, 88 px bei `Form_Heizkessel` — hier etwas mehr, weil
+die Knöpfe seit Befund W9‑B‑3 ihre Aufgabe im Klartext tragen).
+
+**Texte.** Neu in beiden Sprachkatalogen und im `Resource.Designer.cs`:
+`AUSWAHL_BTN_UEBERNEHMEN`, `AUSWAHL_BTN_UEBERNEHMEN_HINWEIS`, `AUSWAHL_BTN_ENTFERNEN`,
+`AUSWAHL_BTN_ENTFERNEN_HINWEIS`, `AUSWAHL_GRP_PFEILE` (der Name der Knopfgruppe für die
+Sprachausgabe). Aus `GEB_BTN_UEBERNEHMEN` / `GEB_BTN_ENTFERNEN` sind die Zeichen
+**▲/▼ entfernt**; die acht nebeneinander stehenden Dialoge nehmen weiter
+`HZK_TIP_HINZU` / `HZK_TIP_ENTFERNEN` — jetzt als **Beschriftung** statt nur als
+Kurztext.
+
+**Tastaturweg und Sprachausgabe.** Die drei Bereiche stehen in der Reihenfolge links –
+Mitte – rechts im Markup; der Tabulator läuft damit von der Projektliste über die zwei
+Knöpfe in den Katalog. Jede Spalte ist eine `role="group"` mit ihrer Überschrift als
+`aria-label`, die Knopfgruppe ebenso.
+
+### Der Katalogbrowser ist NICHT betroffen — und warum das die Prüfung war
+
+Der Auftrag zum Entscheid #76 nannte den `KatalogBrowserDialog` (vier Ausprägungen:
+Heizkessel, BHKW, Solarkollektoren, Pufferspeicher) unter den Kandidaten, weil er
+„heute schon nebeneinander steht, aber mit eigenem Markup". Die Prüfung ergibt:
+**Er gehört nicht zu diesem Muster.**
+
+Der Entscheid gilt für Dialoge mit **zwei Listen und Pfeilknöpfen dazwischen** — links
+das Projekt, rechts die Datenbank, und die Knöpfe schieben eine Zeile von der einen in
+die andere. Der Katalogbrowser hat **eine** Liste (den Katalog) und daneben einen
+**Detailblock**; es gibt kein Projekt, keine zweite Liste und keinen Pfeil. Seine
+Knöpfe heißen „Neu…", „Bearbeiten…", „Löschen" und „OK". Ein Umbau auf
+`Zweispaltenauswahl` hätte ihm eine Mittelspalte mit zwei Knöpfen gegeben, die nichts
+zu tun haben. Er bleibt auf `epos-katalogbrowser`.
+
+Dieselbe Prüfung fällt für `WaermepumpenDialog` (`Form_WPAuswahl`, eine Liste),
+`WaermepumpenKatalogDialog`, `SolarganglinieAdminDialog` und `StromganglinieAdminDialog`
+ebenso aus. Die **elf** Dialoge, für die der Entscheid gilt, stehen in
+`ZweispaltenauswahlTests.Dialoge` — wer einen zwölften baut, trägt ihn dort ein, und die
+Wache `Keine_Komponente_baut_die_Pfeilspalte_noch_selbst` verhindert, dass daneben eine
+zweite Fassung entsteht.
+
+Die vier Projektdialoge der Erzeuger, die der Katalogbrowser als Sprungziel bedient
+(`HeizkesselDialog`, `BhkwDialog`, `PufferspeicherDialog`, `PhotovoltaikDialog`), sind
+umgestellt — dokumentiert im Protokoll der Welle 6.
+
+### Wachen
+
+`EPOS.UI.Tests/Bausteine/ZweispaltenauswahlTests` (14 Fälle) prüft drei Ebenen: den
+**Baustein** (Reihenfolge der drei Bereiche = Tastaturweg, `aria`-Beschriftungen, beide
+Zeichen je Knopf mit `aria-hidden`, Klartext, Kurztext, Sperrzustände, Rückrufe,
+`NurRechts`), die **Regel im Stilblatt** (nebeneinander ist die Vorgabe, kein
+`flex-wrap`, Token gegen Medienabfrage, je Anordnung genau ein Zeichen) und den
+**Bestand** (alle elf Projekt↔DB-Dialoge nehmen den Baustein; keine Komponente baut die
+Pfeilspalte noch selbst). Eine bunit-Probe sieht eine Stilregel nicht — Lehre W6‑B‑1.
+
+### Abnahmepunkte A‑#76
+
+1. **Breit** (Fenster ≥ 900 px): Projektliste **links**, Katalog **rechts**, die zwei
+   Knöpfe in einer schmalen Spalte dazwischen; die Zeichen sind ◀ (übernehmen) und ▶
+   (entfernen).
+2. **Schmal** (Fenster < 900 px, iPad hochkant): Projektliste **oben**, Knöpfe
+   darunter nebeneinander, Katalog **unten**; die Zeichen sind ▲ und ▼.
+3. **Listen begrenzt**: Beide Listen rollen in ihrem Rahmen, der Spaltenkopf bleibt
+   stehen; Filter, Detailblock und Schlussleiste bleiben erreichbar, ohne die ganze
+   Seite zu rollen.
+4. **Knöpfe**: Beide tragen ihren Satz im Klartext — auf Deutsch **und** auf Englisch —
+   und einen Kurztext, der die Herkunft der Zeile nennt. Jeder bleibt gesperrt, solange
+   in der jeweils anderen Liste nichts markiert ist.
