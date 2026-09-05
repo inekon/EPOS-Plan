@@ -196,6 +196,34 @@ entgegen — sie ist damit austauschbar.
   (`KatalogBrowserDialog`, `WaermepumpenDialog`). Wache:
   `EPOS.UI.Tests/Bausteine/ZweispaltenauswahlTests` — sie führt die Liste der elf und
   fällt rot aus, sobald eine Komponente die Pfeilspalte wieder selbst baut.
+- **Ein KATALOGDIALOG nutzt die Höhe** (Anwenderwunsch 05.09.2026, „Admin-Menüs sind
+  nicht an Größe Bildschirm angepasst"). Der Befund war „Administration
+  Solarkollektoren": Überschrift, Balken „Auswahl in DB:", eine Liste im eigenen kleinen
+  Rollrahmen — und darunter, nur über den SEITENrollbalken erreichbar, der Balken
+  „Eingabe der Solarkollektoren". Alle sechs Verwaltungsmasken des Bestands stellten
+  Liste und Eingabe **nebeneinander** (`Form_Heizkessel_Admin` 726 × 383,
+  `Form_BHKWAdmin` 856 × 517, `Form_SolarKollektorenAdmin` 825 × 494,
+  `Form_PufferSp_Admin` 721 × 330, `Form_AdminPV` 607 × 489,
+  `Form_AdminStromspeicher` 614 × 367). Ein Dialog mit **einer** Liste und **einem**
+  Eingabe- oder Detailblock baut das nicht selbst: Er setzt an seine Wurzel
+  `epos-katalog-dialog` und füllt den Baustein **`Katalograhmen`** (`Liste`, `Eingabe`,
+  dazu `Gestapelt` für die Masken, deren Vorbild schon untereinander stand —
+  `Form_AdminWaermeeinlesen` 676 × 433, `Form_Stromverbraucher_Admin` 542 × 489).
+  **Hier und nur hier fällt die Höchsthöhe aus W9‑B‑2**: Im Rahmen nimmt die Liste die
+  verbleibende Höhe, weil der Eingabeblock daneben steht und selbst rollt; überall sonst
+  gilt `--epos-listenhoehe` weiter. Der Umbruch ist eine **Medienabfrage bei 900 px**
+  wie bei `Zweispaltenauswahl` — nicht 1100 px: Die WebView rechnet in CSS-Pixeln, das
+  Fenstermaß in Gerätepixeln, und bei 150 % sind 1632 Gerätepixel nur 1088 CSS-Pixel.
+  Eine Verwaltung **ohne** Eingabeblock (Gesetzeskatalog) nimmt keinen Rahmen, sondern
+  eine Listenspalte `epos-katalog-liste epos-katalog-fuellend` über die volle Breite.
+  Wachen: `EPOS.UI.Tests/Bausteine/KatalograhmenTests` (Markup **und** Stilblatt) und
+  `EPOS.UI.Tests/KatalogdialogTests` (sieben Dialoge, Kopfzeile „Wahl").
+- **Das Vorgabemaß eines Fensters rechnet `Dienste/Fenstermass.cs`**, nicht die
+  Windows-Hülle: Es ist Arithmetik auf vier ganzen Zahlen und deshalb hier prüfbar
+  (`FenstermassTests`). Ein `Dialogart.Fachdialog` öffnet im **Anteil des
+  Arbeitsbereichs** (85 % Breite × 90 % Höhe, gedeckelt auf 92 %), eine
+  `Dialogart.Klein`e Maske bleibt bei ihrem Wunschmaß. Wer eine Größe braucht, holt sie
+  hier — eine zweite Fassung der Zahlen läuft irgendwann auseinander.
 - Bezeichner und Kommentare deutsch; neue `.razor`/`.cs` UTF-8 **mit** BOM, LF.
 - Jeder Baustein bekommt einen `bunit`-Test in `EPOS.UI.Tests` (Darstellung, Callback,
   Zustandsklasse).
@@ -234,6 +262,7 @@ entgegen — sie ist damit austauschbar.
 | `Diagramm` + `Diagrammbereich` | **Der Rahmen, in dem JEDES Renderer-Bild steht** (Windows-Abnahme 05.09.2026, Befund A‑1: „Allgemein bei Charts: das Zoomen funktioniert nicht"). Zwei Zoomstufen: der **Bildzoom** — Mausrad um den Zeiger, Ziehen, Doppelklick, Kneifgeste, Tasten `+ − 0`, Anzeige „×2,5", Knopf „1:1" — läuft ganz im Browser (CSS-Transform, kein Neuzeichnen); der **Datenzoom** meldet ein aufgezogenes Rechteck als `Diagrammbereich` (Anteile 0…1 des BILDES, mehr lässt sich an einem PNG nicht messen), und der Wirt lässt den Kern das Bild mit diesem Achsenbereich neu zeichnen. Ohne `BereichGewaehlt` gibt es den Knopf „Bereich" nicht. Zweiter Ort mit JavaScript in dieser Bibliothek: `wwwroot/epos-diagramm.js`, über `import()` geladen — keine Wirtsseite braucht eine `<script>`-Zeile. Lädt das Modul nicht, steht das Bild starr da wie vorher | `System.Windows.Forms.DataVisualization.Charting.Chart` — Achsenzoom, Rollbalken und Zurücksetzen der siebzehn Zeichenflächen; mit iU9‑W11b (A‑7, Risiko R‑W11‑5) entfallen und hier zurückgeholt |
 | `Baumansicht` + `Baumknoten` | Ein vierstufiger Baum: `role="tree"/"treeitem"/"group"`, `aria-level`/`setsize`/`posinset`, `aria-expanded` NUR an Knoten mit Kindern, roving `tabindex` über die **abgeflachte Sichtliste** (↓↑ → ← Pos1 Ende Enter/Leertaste, kein Typeahead), Einrückung per CSS, `forced-colors`. Das Dreieck ist ein eigenes 44‑px‑Klickziel und **wählt nicht**; das Kennzeichen (»[Auslieferung]«) steht als eigenes `<span>` neben dem Text, nicht darin. Der Aufklappzustand kommt aus den DATEN (`VonVornOffen`) und überlebt einen Neuaufbau, solange die Schlüssel gleich bleiben. **Kein Kontextmenü, keine Mehrfachauswahl** — die kleinste tragfähige Fassung für den einen Nutzer (R‑W14c‑8) | `Views/Admin/Form_KatalogDubletten._tree` — der **einzige** `TreeView` des Bestands (iU9‑W14c.4); die Daten kommen als `DublettenBaum` aus dem Kern |
 | `Zweispaltenauswahl` | Die EINE Projekt/Datenbank-Auswahl des Hauses (Anwenderentscheid **#76**, 05.09.2026): `Links` (Projektliste), `Mitte` (die zwei Richtungsknöpfe als Parameter — Text, Kurztext, Sperrzustand, Rückruf), `Rechts` (Katalog samt Filtern und Katalogknöpfen), dazu `NurRechts` für eine Verwaltungsbetriebsart ohne Projekt. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander — der Umbruch ist eine **Medienabfrage**, kein `flex-wrap`, weil das Pfeilzeichen daran hängt: Jeder Knopf trägt **beide** Zeichen als `aria-hidden`-Element (◀▶ / ▲▼), sichtbar ist je Breite eines. **Elf** Dialoge nutzen ihn; die Liste steht in `ZweispaltenauswahlTests` | die elf handgeschriebenen Fassungen von `epos-auswahlpaar`/`epos-auswahlspalten` aus den Wellen 6, 7, 9 und 12; im Bestand `Form_Gebaeude` (252/63/436 px) und `Form_Heizkessel` (316/88/313 px) |
+| `Katalograhmen` | Der Rahmen eines KATALOGDIALOGS (Anwenderwunsch 05.09.2026, „Admin-Menüs sind nicht an Größe Bildschirm angepasst"): `Liste` links, `Eingabe` rechts, dazu `Gestapelt` für die Masken, deren Vorbild schon untereinander stand. Die Liste nimmt die **verbleibende Höhe** statt der Höchsthöhe `--epos-listenhoehe` — die einzige Stelle, an der die Regel aus W9‑B‑2 nicht gilt, weil der Eingabeblock daneben steht und **selbst** rollt statt die Seite zu schieben. Der Umbruch ist eine **Medienabfrage bei 900 px** wie bei `Zweispaltenauswahl`, nicht bei 1100: Die WebView rechnet in CSS-Pixeln, das Fenstermaß in Gerätepixeln, und bei 150 % sind 1632 Gerätepixel nur 1088 CSS-Pixel. **Sieben** Dialoge nutzen ihn; die Liste steht in `KatalogdialogTests` | die sechs Verwaltungsmasken des Bestands, die **alle** Liste und Eingabe nebeneinander stellten: `Form_Heizkessel_Admin` (726 × 383), `Form_BHKWAdmin` (856 × 517), `Form_SolarKollektorenAdmin` (825 × 494), `Form_PufferSp_Admin` (721 × 330), `Form_AdminPV` (607 × 489), `Form_AdminStromspeicher` (614 × 367) |
 
 ## Bilder (`wwwroot/bilder/`)
 
