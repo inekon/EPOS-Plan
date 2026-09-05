@@ -2946,6 +2946,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > sind sechs der acht gemeinsamen Projekte byte-gleich, 1030 und 1039 tragen die schon zwischen B3 und PA0 bekannte
 > Umgebungsdifferenz des zweiten Rechners. `kern.yml`, das Gate und `CLAUDE.md` halten seither gegen R2_Zeitbasis;
 > `2026-08-30_B3-Kaskade` bleibt zur Geschichte liegen.
+>
+> **Anwenderwunsch W6‑E‑1 vom 05.09.2026 („optional sollten beim ausgewählten PV-Modul alle Eigenschaften/Parameter
+> angezeigt werden"), umgesetzt in `87191a8`:** Der Block „Modul Eigenschaften:" zeigte vier der neunzehn Spalten von
+> `Tab_PV_STAMM`; die übrigen dreizehn standen nur im Katalogdialog — dort, wo man ein Modul ÄNDERT, nicht dort, wo man
+> es AUSWÄHLT. Unter dem Block steht jetzt ein Aufklapper „Alle Modulparameter anzeigen" (`PVD_AUFKLAPP_PARAMETER`,
+> de/en), zugeklappt als Vorgabe, nur lesend, im `Formularraster` mit Einheit hinter dem kurzen Feld. Es ist ein Knopf
+> mit `aria-expanded` und kein `<details>`: Nur so gehört der Offen-Zustand dem Dialog und übersteht den Wechsel des
+> gewählten Moduls. Beschriftung und Einheit kommen aus `ModulKatalogProfil` (Ausprägung Photovoltaik) — derselben
+> Quelle wie der Katalogdialog —, die zwei Temperaturkoeffizienten aus dem Modulimport (`PVIMP_LBL_ALPHA_ISC`/
+> `_BETA_VOC`), die der Katalog nicht führt; neu ist genau EIN Anzeigetext. Gelesen wird im selben Vorgang:
+> `PhotovoltaikStammCtrl.Detail` trägt seither alle Spalten (4 → 17), und weil der Dialog ihn bei jeder
+> Auswahländerung ruft, zieht der Block von selbst nach. Nicht gepflegt heißt „–", nicht 0 — NULL und die 0 des
+> Bestands sind dieselbe Aussage; ein unbekannter Technologiecode bleibt sichtbar. `Textfeld` bekommt dafür `Einheit`
+> wie `Zahlenfeld`. Tests: `PvModulparameterTests` 12 neu, `PhotovoltaikDialogTests` 14 → 21, beide Reihen unter de
+> und en grün; SQL-Prüfer 0 Fundstellen, Kern-Wächter leer. **Offen als Vorschlag W6‑O‑5:** Die Einheit „[KW]" an
+> Modul- und Gesamtleistung ist bestandstreu aus `Form_PV` übernommen, sachlich aber Watt (der Katalog nennt denselben
+> Wert „Nennleistung (Pmax)" in W, `AnlagenKwp` teilt durch 1000) — Anwenderentscheid, ob „[W]" oder Gesamtleistung in
+> kW mit Teiler. Zehn Abnahmepunkte A‑W6‑E‑1 im W6-Protokoll.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
