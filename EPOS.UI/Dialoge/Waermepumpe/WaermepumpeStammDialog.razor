@@ -85,6 +85,11 @@
         <div class="epos-auswahlspalte">
             <Gruppenkopf Titel="@GruppeStammdaten">
                 <KindInhalt>
+                    @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
+                       Feldpaare je Zeile, sobald die Spalte breit genug ist
+                       (iU8-E-2, Paket P1). *@
+                    <Formularraster>
+                        <KindInhalt>
                     <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name"
                               WertChanged="w => Daten.Name = w" />
                     <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma"
@@ -92,32 +97,28 @@
                     <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
                               WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
 
-                    <div class="epos-feldpaar">
-                        <Auswahlfeld Bezeichnung="@LabelTyp" Eintraege="@Eintraege(Typen, Daten.Typ)"
-                                     Auswahl="@Index(Typen, Daten.Typ)"
-                                     AuswahlChanged="i => Daten.Typ = Wert(Typen, Daten.Typ, i)" />
-                        <Auswahlfeld Bezeichnung="@LabelRegelung" Eintraege="@Eintraege(Leistungsstufen, Daten.Regelung)"
-                                     Auswahl="@Index(Leistungsstufen, Daten.Regelung)"
-                                     AuswahlChanged="i => Daten.Regelung = Wert(Leistungsstufen, Daten.Regelung, i)" />
-                    </div>
-                    <div class="epos-feldpaar">
-                        <Auswahlfeld Bezeichnung="@LabelAufstellung" Eintraege="@Eintraege(Aufstellungen, Daten.Aufstellung)"
-                                     Auswahl="@Index(Aufstellungen, Daten.Aufstellung)"
-                                     AuswahlChanged="i => Daten.Aufstellung = Wert(Aufstellungen, Daten.Aufstellung, i)" />
-                        <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Baujahreintraege"
-                                     Auswahl="@Daten.Baujahr"
-                                     AuswahlChanged="i => Daten.Baujahr = i" />
-                    </div>
-                    <div class="epos-feldpaar">
-                        <Ganzzahlfeld Bezeichnung="@LabelNennleistung" Einheit="@EinheitKw"
-                                      Feldname="@LabelNennleistung" Wert="@Daten.Nennleistung"
-                                      WertChanged="w => Daten.Nennleistung = w" />
-                        <Ganzzahlfeld Bezeichnung="@LabelHeizstab" Einheit="@EinheitKw"
-                                      Feldname="@LabelHeizstab" Wert="@Daten.Heizstab"
-                                      WertChanged="w => Daten.Heizstab = w" />
-                    </div>
+                    <Auswahlfeld Bezeichnung="@LabelTyp" Eintraege="@Eintraege(Typen, Daten.Typ)"
+                                 Auswahl="@Index(Typen, Daten.Typ)"
+                                 AuswahlChanged="i => Daten.Typ = Wert(Typen, Daten.Typ, i)" />
+                    <Auswahlfeld Bezeichnung="@LabelRegelung" Eintraege="@Eintraege(Leistungsstufen, Daten.Regelung)"
+                                 Auswahl="@Index(Leistungsstufen, Daten.Regelung)"
+                                 AuswahlChanged="i => Daten.Regelung = Wert(Leistungsstufen, Daten.Regelung, i)" />
+                    <Auswahlfeld Bezeichnung="@LabelAufstellung" Eintraege="@Eintraege(Aufstellungen, Daten.Aufstellung)"
+                                 Auswahl="@Index(Aufstellungen, Daten.Aufstellung)"
+                                 AuswahlChanged="i => Daten.Aufstellung = Wert(Aufstellungen, Daten.Aufstellung, i)" />
+                    <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Baujahreintraege"
+                                 Auswahl="@Daten.Baujahr"
+                                 AuswahlChanged="i => Daten.Baujahr = i" />
+                    <Ganzzahlfeld Bezeichnung="@LabelNennleistung" Einheit="@EinheitKw"
+                                  Feldname="@LabelNennleistung" Wert="@Daten.Nennleistung"
+                                  WertChanged="w => Daten.Nennleistung = w" />
+                    <Ganzzahlfeld Bezeichnung="@LabelHeizstab" Einheit="@EinheitKw"
+                                  Feldname="@LabelHeizstab" Wert="@Daten.Heizstab"
+                                  WertChanged="w => Daten.Heizstab = w" />
                     <Zahlenfeld Bezeichnung="@LabelKuehlleistung" Einheit="@EinheitKw"
                                 Wert="@Daten.Kuehlleistung" Aktiv="false" />
+                        </KindInhalt>
+                    </Formularraster>
                 </KindInhalt>
             </Gruppenkopf>
         </div>

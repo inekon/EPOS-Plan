@@ -121,6 +121,10 @@
 
             <Gruppenkopf Titel="@GruppeNeu">
                 <KindInhalt>
+                    @* Formularraster (iU8-E-2, Paket P1): Beschriftung neben dem Feld.
+                       Die Knopfleiste bleibt darunter - sie ist kein Feld. *@
+                    <Formularraster>
+                        <KindInhalt>
                     <Ganzzahlfeld Bezeichnung="@LabelTemperatur" Feldname="@LabelTemperatur"
                                   Wert="_neuTemperatur" WertChanged="w => { _neuTemperatur = w; }"
                                   Aktiv="@(!NurLesen)" Einheit="@EinheitGrad" />
@@ -130,6 +134,8 @@
                     <Zahlenfeld Bezeichnung="@LabelPtherm" Feldname="@LabelPtherm"
                                 Wert="_neuPtherm" WertChanged="w => { _neuPtherm = w; }"
                                 Aktiv="@(!NurLesen)" Einheit="@EinheitKw" />
+                        </KindInhalt>
+                    </Formularraster>
                     <div class="epos-leiste">
                         <button type="button" class="epos-knopf" disabled="@NurLesen"
                                 @onclick="ZeileUebernehmen">@BtnItemNeuText</button>

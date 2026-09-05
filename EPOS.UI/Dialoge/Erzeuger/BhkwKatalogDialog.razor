@@ -47,6 +47,10 @@
 
     <Gruppenkopf Titel="@GruppeBezeichnung">
         <KindInhalt>
+        @* Formularraster (iU8-E-2, Paket P1): Beschriftung neben dem Feld,
+           Zahlenfelder kurz mit der Einheit dahinter. *@
+        <Formularraster>
+            <KindInhalt>
             <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Bezeichner"
                       WertChanged="BeiName" NurLesen="@(Modus == KatalogModus.Bearbeiten)" />
             <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma"
@@ -55,20 +59,24 @@
                       WertChanged="w => Daten.Motortyp = w" />
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
                       WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
+            </KindInhalt>
+        </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     <Gruppenkopf Titel="@GruppeTechnik">
         <KindInhalt>
-            <div class="epos-feldpaar">
+            @* Die drei Feldpaare von Hand entfallen - das Formularraster stellt
+               zwei Feldpaare je Zeile, sobald die Spalte breit genug ist
+               (iU8-E-2, Paket P1). *@
+            <Formularraster>
+                <KindInhalt>
                 <Zahlenfeld Bezeichnung="@LabelPtherm" Einheit="kW" Feldname="@FeldPtherm"
                             Wert="@Daten.Ptherm" WertChanged="BeiPtherm"
                             FehlerZustand="BeiFehlerZustand" />
                 <Zahlenfeld Bezeichnung="@LabelPel" Einheit="kW" Feldname="@FeldPel"
                             Wert="@Daten.Pel" WertChanged="BeiPel"
                             FehlerZustand="BeiFehlerZustand" />
-            </div>
-            <div class="epos-feldpaar">
                 <Zahlenfeld Bezeichnung="@LabelWirkungsgrad" Einheit="@HinweisWirkungsgrad"
                             Feldname="@FeldWirkungsgrad"
                             Wert="@Daten.Wirkungsgrad" WertChanged="w => Daten.Wirkungsgrad = w"
@@ -76,64 +84,62 @@
                 <Zahlenfeld Bezeichnung="@LabelGrenzleistung" Einheit="%" Feldname="@FeldGrenzleistung"
                             Wert="@Daten.Grenzleistung" WertChanged="w => Daten.Grenzleistung = w"
                             FehlerZustand="BeiFehlerZustand" />
-            </div>
-            <Auswahlfeld Bezeichnung="@LabelEnergietraeger" Eintraege="@Brennstoffe"
-                         Auswahl="@Daten.Brennstoff" AuswahlChanged="w => Daten.Brennstoff = w" />
-            <div class="epos-feldpaar">
+                <Auswahlfeld Bezeichnung="@LabelEnergietraeger" Eintraege="@Brennstoffe"
+                             Auswahl="@Daten.Brennstoff" AuswahlChanged="w => Daten.Brennstoff = w" />
                 <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@FeldVorlauf"
                               Wert="@Daten.Vorlauf" WertChanged="w => Daten.Vorlauf = w"
                               FehlerZustand="BeiFehlerZustand" />
                 <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@FeldRuecklauf"
                               Wert="@Daten.Ruecklauf" WertChanged="w => Daten.Ruecklauf = w"
                               FehlerZustand="BeiFehlerZustand" />
-            </div>
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     <Gruppenkopf Titel="@GruppeKosten">
         <KindInhalt>
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelModul" Einheit="€" Feldname="@FeldModul"
-                            Wert="@Daten.KostenModul" WertChanged="w => BeiPosten(() => Daten.KostenModul = w)"
-                            FehlerZustand="BeiFehlerZustand" />
-                <Zahlenfeld Bezeichnung="@LabelMontage" Einheit="€" Feldname="@FeldMontage"
-                            Wert="@Daten.KostenMontage" WertChanged="w => BeiPosten(() => Daten.KostenMontage = w)"
-                            FehlerZustand="BeiFehlerZustand" />
-            </div>
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelLieferung" Einheit="€" Feldname="@FeldLieferung"
-                            Wert="@Daten.KostenLieferung" WertChanged="w => BeiPosten(() => Daten.KostenLieferung = w)"
-                            FehlerZustand="BeiFehlerZustand" />
-                <Zahlenfeld Bezeichnung="@LabelSchallschutz" Einheit="€" Feldname="@FeldSchallschutz"
-                            Wert="@Daten.KostenSchallschutzhaube"
-                            WertChanged="w => BeiPosten(() => Daten.KostenSchallschutzhaube = w)"
-                            FehlerZustand="BeiFehlerZustand" />
-                <Zahlenfeld Bezeichnung="@LabelAbgasreinigung" Einheit="€" Feldname="@FeldAbgasreinigung"
-                            Wert="@Daten.KostenAbgasreinigung"
-                            WertChanged="w => BeiPosten(() => Daten.KostenAbgasreinigung = w)"
-                            FehlerZustand="BeiFehlerZustand" />
-            </div>
+            @* Die Feldpaare von Hand entfallen. Die Herleitungszeile zum
+               abgeleiteten Wert je kWel steht MITTEN im Raster und ist kein
+               Feld - sie bekommt keine Rasterzelle neben einem Feld, sondern
+               die volle Breite (Regel "Formularraster - Paket P1"). *@
+            <Formularraster>
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@LabelModul" Einheit="€" Feldname="@FeldModul"
+                                Wert="@Daten.KostenModul" WertChanged="w => BeiPosten(() => Daten.KostenModul = w)"
+                                FehlerZustand="BeiFehlerZustand" />
+                    <Zahlenfeld Bezeichnung="@LabelMontage" Einheit="€" Feldname="@FeldMontage"
+                                Wert="@Daten.KostenMontage" WertChanged="w => BeiPosten(() => Daten.KostenMontage = w)"
+                                FehlerZustand="BeiFehlerZustand" />
+                    <Zahlenfeld Bezeichnung="@LabelLieferung" Einheit="€" Feldname="@FeldLieferung"
+                                Wert="@Daten.KostenLieferung" WertChanged="w => BeiPosten(() => Daten.KostenLieferung = w)"
+                                FehlerZustand="BeiFehlerZustand" />
+                    <Zahlenfeld Bezeichnung="@LabelSchallschutz" Einheit="€" Feldname="@FeldSchallschutz"
+                                Wert="@Daten.KostenSchallschutzhaube"
+                                WertChanged="w => BeiPosten(() => Daten.KostenSchallschutzhaube = w)"
+                                FehlerZustand="BeiFehlerZustand" />
+                    <Zahlenfeld Bezeichnung="@LabelAbgasreinigung" Einheit="€" Feldname="@FeldAbgasreinigung"
+                                Wert="@Daten.KostenAbgasreinigung"
+                                WertChanged="w => BeiPosten(() => Daten.KostenAbgasreinigung = w)"
+                                FehlerZustand="BeiFehlerZustand" />
+                    @* Summe und abgeleiteter Wert - beide nur lesbar, beide von hier gefuellt. *@
+                    <Textfeld Bezeichnung="@LabelSumme" Wert="@SummeText" NurLesen="true" />
+                    <Textfeld Bezeichnung="@LabelInvest" Wert="@InvestText" NurLesen="true" />
+                    <Herleitungszeile Text="@InvestHinweis" />
 
-            @* Summe und abgeleiteter Wert - beide nur lesbar, beide von hier gefuellt. *@
-            <div class="epos-feldpaar">
-                <Textfeld Bezeichnung="@LabelSumme" Wert="@SummeText" NurLesen="true" />
-                <Textfeld Bezeichnung="@LabelInvest" Wert="@InvestText" NurLesen="true" />
-            </div>
-            <Herleitungszeile Text="@InvestHinweis" />
-
-            <div class="epos-feldpaar">
-                <Zahlenfeld Bezeichnung="@LabelRaumbedarf" Einheit="m³" Feldname="@FeldRaumbedarf"
-                            Wert="@Daten.Raumbedarf" WertChanged="w => Daten.Raumbedarf = w"
-                            FehlerZustand="BeiFehlerZustand" />
-                <Zahlenfeld Bezeichnung="@LabelWartung" Einheit="€ / kWhel" Feldname="@FeldWartung"
-                            Wert="@Daten.WartungskostenJeKWhel"
-                            WertChanged="w => Daten.WartungskostenJeKWhel = w"
-                            FehlerZustand="BeiFehlerZustand" />
-                <Ganzzahlfeld Bezeichnung="@LabelNutzungsdauer" Einheit="@EinheitJahre"
-                              Feldname="@FeldNutzungsdauer"
-                              Wert="@Daten.Nutzungsdauer" WertChanged="w => Daten.Nutzungsdauer = w"
-                              FehlerZustand="BeiFehlerZustand" />
-            </div>
+                    <Zahlenfeld Bezeichnung="@LabelRaumbedarf" Einheit="m³" Feldname="@FeldRaumbedarf"
+                                Wert="@Daten.Raumbedarf" WertChanged="w => Daten.Raumbedarf = w"
+                                FehlerZustand="BeiFehlerZustand" />
+                    <Zahlenfeld Bezeichnung="@LabelWartung" Einheit="€ / kWhel" Feldname="@FeldWartung"
+                                Wert="@Daten.WartungskostenJeKWhel"
+                                WertChanged="w => Daten.WartungskostenJeKWhel = w"
+                                FehlerZustand="BeiFehlerZustand" />
+                    <Ganzzahlfeld Bezeichnung="@LabelNutzungsdauer" Einheit="@EinheitJahre"
+                                  Feldname="@FeldNutzungsdauer"
+                                  Wert="@Daten.Nutzungsdauer" WertChanged="w => Daten.Nutzungsdauer = w"
+                                  FehlerZustand="BeiFehlerZustand" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -149,15 +155,14 @@
 
     <Gruppenkopf Titel="@GruppeEmissionen">
         <KindInhalt>
-            <div class="epos-feldpaar">
+            <Formularraster>
+                <KindInhalt>
                 <Ganzzahlfeld Bezeichnung="CO2:" Einheit="g / MWh" Feldname="CO2-Emission"
                               Wert="@Daten.CO2" WertChanged="w => Daten.CO2 = w"
                               FehlerZustand="BeiFehlerZustand" />
                 <Ganzzahlfeld Bezeichnung="SO2:" Einheit="g / MWh" Feldname="SO2-Emission"
                               Wert="@Daten.SO2" WertChanged="w => Daten.SO2 = w"
                               FehlerZustand="BeiFehlerZustand" />
-            </div>
-            <div class="epos-feldpaar">
                 <Ganzzahlfeld Bezeichnung="NOx:" Einheit="g / MWh" Feldname="NOx-Emission"
                               Wert="@Daten.NOx" WertChanged="w => Daten.NOx = w"
                               FehlerZustand="BeiFehlerZustand" />
@@ -167,7 +172,8 @@
                 <Ganzzahlfeld Bezeichnung="@LabelStaub" Einheit="g / MWh" Feldname="@FeldStaub"
                               Wert="@Daten.Staub" WertChanged="w => Daten.Staub = w"
                               FehlerZustand="BeiFehlerZustand" />
-            </div>
+                </KindInhalt>
+            </Formularraster>
             <div class="epos-leiste">
                 <Schalter Bezeichnung="@LabelScr" Wert="@Daten.ScrVorhanden"
                           WertChanged="w => Daten.ScrVorhanden = w" />
