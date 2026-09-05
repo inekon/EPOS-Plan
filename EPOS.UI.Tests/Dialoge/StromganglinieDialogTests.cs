@@ -1,10 +1,13 @@
 ﻿using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using SpeicherEngine;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -20,19 +23,28 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class StromganglinieDialogTests : BunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-
     public StromganglinieDialogTests()
     {
+        DeutscheOberflaeche();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
     }
 
-    protected override void Dispose(bool disposing)
+    /// <summary>
+    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Hausmuster seit iU9-W8) —
+    /// Kultur UND Thread-Kultur, damit ein Lauf auf einem en-US-Läufer dieselben
+    /// deutschen Texte sieht. Seit W12-E-1 prüft diese Klasse auch formatierte
+    /// Meldungen; ohne das Pinnen hinge ihr Wortlaut an der Läuferkultur.
+    /// </summary>
+    private static void DeutscheOberflaeche()
     {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        base.Dispose(disposing);
+        var de = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = de;
+        CultureInfo.DefaultThreadCurrentUICulture = de;
+        Thread.CurrentThread.CurrentCulture = de;
+        Thread.CurrentThread.CurrentUICulture = de;
+        CultureInfo.CurrentCulture = de;
+        CultureInfo.CurrentUICulture = de;
     }
 
     private static List<GanglinienKatalogZeile> Katalog() => new()
@@ -65,6 +77,42 @@ public class StromganglinieDialogTests : BunitContext
             .Add(x => x.Geaendert, geaendert)
             .Add(x => x.Geschlossen, (bool ok) => geschlossen?.Invoke(ok)));
     }
+
+    /// <summary>
+    /// Der Dialog MIT der Datenbankseite (W12-E-1): Importieren, Speichern unter,
+    /// Löschen. Ein nicht gesetzter Delegat heißt „diesen Knopf gibt es nicht" —
+    /// deshalb sind die Vorgaben hier gesetzt und nicht null.
+    /// </summary>
+    private IRenderedComponent<StromganglinieDialog> ZeigeMitKatalogpflege(
+        List<GanglinienKatalogZeile>? katalog = null,
+        Func<string, Task<bool>>? loeschen = null,
+        Func<string, Task<bool>>? zuordnung = null,
+        Func<string, string, Task<bool>>? kopieren = null,
+        Func<string, Task<string?>>? waehlen = null,
+        Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+             Task<GanglinienImportErgebnis>>? einlesen = null)
+    {
+        List<GanglinienKatalogZeile> liste = katalog ?? Katalog();
+
+        return Render<StromganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
+            .Add(x => x.Katalog, () => Task.FromResult(liste))
+            .Add(x => x.Verwaltung, VerwaltungsGaben())
+            .Add(x => x.Loeschen, loeschen ?? (n => Task.FromResult(true)))
+            .Add(x => x.HatProjektzuordnung, zuordnung ?? (n => Task.FromResult(false)))
+            .Add(x => x.Kopieren, kopieren ?? ((q, z) => Task.FromResult(true)))
+            .Add(x => x.DateiWaehlen, waehlen ?? (f => Task.FromResult<string?>(null)))
+            .Add(x => x.Einlesen, einlesen ?? ((pf, r, rr) =>
+                Task.FromResult(new GanglinienImportErgebnis { Ausgang = ImportAusgang.Abgebrochen }))));
+    }
+
+    /// <summary>Die Knopfleiste unter der Katalogliste.</summary>
+    private static IHtmlCollection<IElement> Katalogknoepfe(
+        IRenderedComponent<StromganglinieDialog> cut)
+        => Spalte(cut, 1).QuerySelectorAll(".epos-leiste button");
+
+    private static IElement Katalogknopf(IRenderedComponent<StromganglinieDialog> cut, string text)
+        => Katalogknoepfe(cut).First(b => b.TextContent.Contains(text, StringComparison.Ordinal));
 
     private static IElement Spalte(IRenderedComponent<StromganglinieDialog> cut, int i)
         => cut.FindAll(".epos-zweispalten-spalte")[i];
@@ -108,7 +156,10 @@ public class StromganglinieDialogTests : BunitContext
                      cut.FindAll(".epos-zweispalten-mitte button")[1].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
 
         // "Bearbeiten..." steht unter der Katalogliste, OK und Abbrechen im Fuss.
-        Assert.Contains("Bearbeiten", Spalte(cut, 1).QuerySelector(".epos-leiste button")!.TextContent);
+        // OHNE die Gaben der Katalogpflege (W12-E-1) ist es der EINZIGE Knopf dort —
+        // kein Delegat, kein Knopf.
+        Assert.Single(Katalogknoepfe(cut));
+        Assert.Contains("Bearbeiten", Katalogknoepfe(cut)[0].TextContent);
         Assert.Equal(2, cut.FindAll(".epos-dialog > .epos-leiste button").Count);
 
         Assert.Contains("Ausgewählt im Projekt", Spalte(cut, 0).QuerySelector("h2")!.TextContent);
@@ -359,5 +410,366 @@ public class StromganglinieDialogTests : BunitContext
         Hinzu(cut).Click();
 
         Assert.Single(zeilen);
+    }
+    // =====================================================================
+    // W12-E-1: Importieren, Speichern unter, Loeschen (Windows-Abnahme 05.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Anwenderwunsch im Bild: unter der Katalogliste stehen VIER Knöpfe, in
+    /// dieser Reihenfolge. Vorher war „Bearbeiten…" der einzige.
+    /// </summary>
+    [Fact]
+    public void Unter_der_Katalogliste_stehen_vier_Knoepfe()
+    {
+        var cut = ZeigeMitKatalogpflege();
+
+        string[] texte = Katalogknoepfe(cut).Select(b => b.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "CSV-Datei importieren...", "Speichern unter...", "Löschen", "Bearbeiten..." },
+                     texte);
+    }
+
+    /// <summary>
+    /// „Kein Delegat, kein Knopf": Fehlt der jeweilige Rückruf, ist der Knopf gar
+    /// nicht da — und ohne jede Gabe zeichnet der Dialog nur die zwei Listen
+    /// (Regel W16b-B1).
+    /// </summary>
+    [Fact]
+    public void Ohne_Delegaten_bleibt_der_jeweilige_Knopf_weg()
+    {
+        var ohneAlles = Render<StromganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
+            .Add(x => x.Katalog, () => Task.FromResult(Katalog())));
+        Assert.Empty(Spalte(ohneAlles, 1).QuerySelectorAll(".epos-leiste button"));
+        Assert.Empty(ohneAlles.FindAll(".epos-formathinweis"));
+
+        // Ein Dateiwähler OHNE Einlesekette ist kein Importweg.
+        var halb = Render<StromganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
+            .Add(x => x.Katalog, () => Task.FromResult(Katalog()))
+            .Add(x => x.DateiWaehlen, (Func<string, Task<string?>>)(f => Task.FromResult<string?>(null))));
+        Assert.Empty(halb.FindAll(".epos-formathinweis"));
+    }
+
+    /// <summary>
+    /// <b>Der Formathinweis</b> — der Anwender soll nicht erst am Prüfprotokoll
+    /// erfahren, welche Datei gemeint war. Geprüft wird, dass er die sechs Angaben
+    /// wirklich nennt, die die Kette auswertet.
+    /// </summary>
+    [Fact]
+    public void Der_Formathinweis_nennt_Trennzeichen_Kopfzeile_Dezimaltrenner_Einheit_und_Anzahl()
+    {
+        var cut = ZeigeMitKatalogpflege();
+
+        IElement hinweis = Spalte(cut, 1).QuerySelector(".epos-formathinweis")!;
+        string text = hinweis.QuerySelector(".epos-herleitung-text")!.TextContent;
+
+        Assert.Contains("CSV", text, StringComparison.Ordinal);
+        Assert.Contains("8.760", text, StringComparison.Ordinal);
+        Assert.Contains("35.040", text, StringComparison.Ordinal);
+        Assert.Contains("Semikolon", text, StringComparison.Ordinal);
+        Assert.Contains("Kopfzeile", text, StringComparison.Ordinal);
+        Assert.Contains("Dezimaltrennzeichen", text, StringComparison.Ordinal);
+        Assert.Contains("kW", text, StringComparison.Ordinal);
+        Assert.Contains("Dateiname ohne Erweiterung", text, StringComparison.Ordinal);
+
+        // Der Infoknopf steht daneben und trägt denselben Wortlaut als Kurztext.
+        IElement info = hinweis.QuerySelector(".epos-infoknopf")!;
+        Assert.Equal(text, info.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// Der Dateiwähler DARF warten (W13-B-1) und wird await-et; danach läuft
+    /// DIESELBE Kette wie in der Verwaltung, und der Katalog wird neu gezogen.
+    /// </summary>
+    [Fact]
+    public async Task Importieren_waehlt_die_Datei_und_faehrt_die_Kette()
+    {
+        TaskCompletionSource<string?> waehler = new();
+        string? gesehenPfad = null;
+        GanglinienRaster gesehenRaster = GanglinienRaster.Minute;
+        int katalogLaeufe = 0;
+
+        var liste = Katalog();
+        var cut = Render<StromganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
+            .Add(x => x.Katalog, () => { katalogLaeufe++; return Task.FromResult(liste); })
+            .Add(x => x.DateiWaehlen, (Func<string, Task<string?>>)(f => waehler.Task))
+            .Add(x => x.Einlesen, (Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+                                        Task<GanglinienImportErgebnis>>)((pfad, raster, r) =>
+            {
+                gesehenPfad = pfad;
+                gesehenRaster = raster;
+                return Task.FromResult(new GanglinienImportErgebnis
+                {
+                    Ausgang = ImportAusgang.Erfolg,
+                    Meldung = "Ganglinie eingelesen",
+                    MeldungStufe = PruefStufe.Info
+                });
+            })));
+
+        cut.WaitForAssertion(() => Assert.Equal(1, katalogLaeufe));
+
+        Katalogknopf(cut, "importieren").Click();
+        Assert.Null(gesehenPfad);                       // der Wähler steht noch offen
+
+        waehler.SetResult(@"C:\Daten\lastgang.csv");
+        await cut.InvokeAsync(() => Task.CompletedTask);
+
+        cut.WaitForAssertion(() => Assert.Equal(@"C:\Daten\lastgang.csv", gesehenPfad));
+
+        // Die Maske gibt KEINE Rastervorgabe - die Kette erkennt es selbst, und der
+        // Optionendialog laesst es uebersteuern.
+        Assert.Equal(GanglinienRaster.Unbekannt, gesehenRaster);
+        cut.WaitForAssertion(() => Assert.Equal("Ganglinie eingelesen", cut.Instance.Meldung));
+        cut.WaitForAssertion(() => Assert.Equal(2, katalogLaeufe));
+    }
+
+    /// <summary>Ein abgebrochener Wähler liest nichts und meldet nichts.</summary>
+    [Fact]
+    public void Ein_abgebrochener_Dateiwaehler_liest_nichts()
+    {
+        int gerufen = 0;
+        var cut = ZeigeMitKatalogpflege(
+            waehlen: f => Task.FromResult<string?>(null),
+            einlesen: (pfad, raster, r) =>
+            {
+                gerufen++;
+                return Task.FromResult(new GanglinienImportErgebnis());
+            });
+
+        Katalogknopf(cut, "importieren").Click();
+
+        Assert.Equal(0, gerufen);
+        Assert.Equal("", cut.Instance.Meldung);
+    }
+
+    // --- Loeschen --------------------------------------------------------
+
+    /// <summary>Ohne gewählten Katalogeintrag sind „Löschen" und „Speichern unter" gesperrt.</summary>
+    [Fact]
+    public void Loeschen_und_Speichern_unter_sind_ohne_Auswahl_gesperrt()
+    {
+        var cut = ZeigeMitKatalogpflege();
+
+        Assert.True(Katalogknopf(cut, "Löschen").HasAttribute("disabled"));
+        Assert.True(Katalogknopf(cut, "Speichern unter").HasAttribute("disabled"));
+
+        Waehle(cut, 1, 0);
+        Assert.False(Katalogknopf(cut, "Löschen").HasAttribute("disabled"));
+        Assert.False(Katalogknopf(cut, "Speichern unter").HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Sperre 1</b> (Muster der Solarganglinie, W14b): Eine einem Projekt
+    /// zugeordnete Ganglinie bleibt stehen — mit Grund, und ohne dass die Rückfrage
+    /// überhaupt kommt.
+    /// </summary>
+    [Fact]
+    public void Eine_zugeordnete_Ganglinie_wird_nicht_geloescht()
+    {
+        int geloescht = 0;
+        var cut = ZeigeMitKatalogpflege(
+            zuordnung: n => Task.FromResult(n == "Werk Nord"),
+            loeschen: n => { geloescht++; return Task.FromResult(true); });
+
+        Waehle(cut, 1, 0);                              // "Werk Nord"
+        Katalogknopf(cut, "Löschen").Click();
+
+        Assert.Equal(0, geloescht);
+        Assert.Contains("Projektzuordnung", cut.Instance.Meldung);
+        Assert.Single(cut.FindAll(".epos-warnbanner"));
+        Assert.All(cut.FindComponents<Rueckfrage>(), f => Assert.False(f.Instance.Offen));
+    }
+
+    /// <summary>
+    /// <b>Sperre 2</b>: Ein Auslieferungssatz bleibt stehen. Der Grund hängt
+    /// zusätzlich als <c>title</c> am Knopf — er ist synchron bekannt (Staffelung
+    /// W16b-E-6: der Grund am Bedienelement, das Banner erst nach dem Versuch).
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungssatz_wird_nicht_geloescht()
+    {
+        int geloescht = 0;
+        var cut = ZeigeMitKatalogpflege(loeschen: n => { geloescht++; return Task.FromResult(true); });
+
+        Waehle(cut, 1, 1);                              // "Auslieferung", NurLesen
+        Assert.Contains("schreibgeschützt", Katalogknopf(cut, "Löschen").GetAttribute("title")!);
+
+        Katalogknopf(cut, "Löschen").Click();
+
+        Assert.Equal(0, geloescht);
+        Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
+        Assert.All(cut.FindComponents<Rueckfrage>(), f => Assert.False(f.Instance.Offen));
+    }
+
+    /// <summary>Vor dem Löschen kommt die Rückfrage; „Ja" löscht und meldet.</summary>
+    [Fact]
+    public void Vor_dem_Loeschen_kommt_eine_Rueckfrage()
+    {
+        List<string> geloescht = new();
+        var liste = Katalog();
+        var cut = ZeigeMitKatalogpflege(
+            katalog: liste,
+            loeschen: n => { geloescht.Add(n); liste.RemoveAll(z => z.Bezeichner == n); return Task.FromResult(true); });
+
+        Waehle(cut, 1, 0);
+        Katalogknopf(cut, "Löschen").Click();
+
+        Rueckfrage frage = cut.FindComponents<Rueckfrage>().First(f => f.Instance.Offen).Instance;
+        Assert.Contains("Werk Nord", frage.Frage);
+        Assert.Empty(geloescht);
+
+        cut.FindComponents<Rueckfrage>().First(f => f.Instance.Offen)
+           .FindAll("button").First(b => b.TextContent.Trim() == "Ja").Click();
+
+        Assert.Equal(new[] { "Werk Nord" }, geloescht);
+        cut.WaitForAssertion(() => Assert.Contains("gelöscht", cut.Instance.Meldung));
+        cut.WaitForAssertion(() => Assert.Single(Zeilen(cut, 1)));
+    }
+
+    /// <summary>„Nein" lässt die Ganglinie stehen.</summary>
+    [Fact]
+    public void Nein_laesst_die_Ganglinie_stehen()
+    {
+        int geloescht = 0;
+        var cut = ZeigeMitKatalogpflege(loeschen: n => { geloescht++; return Task.FromResult(true); });
+
+        Waehle(cut, 1, 0);
+        Katalogknopf(cut, "Löschen").Click();
+        cut.FindComponents<Rueckfrage>().First(f => f.Instance.Offen)
+           .FindAll("button").First(b => b.TextContent.Trim() == "Nein").Click();
+
+        Assert.Equal(0, geloescht);
+        Assert.All(cut.FindComponents<Rueckfrage>(), f => Assert.False(f.Instance.Offen));
+        Assert.Equal(2, Zeilen(cut, 1).Length);
+    }
+
+    // --- Speichern unter -------------------------------------------------
+
+    /// <summary>
+    /// „Speichern unter…" fragt den Namen und schlägt „&lt;Name&gt; - Kopie" vor —
+    /// dieselbe Schreibweise, die der Bestand schon führt.
+    /// </summary>
+    [Fact]
+    public void Speichern_unter_schlaegt_den_Namen_mit_Kopie_vor()
+    {
+        var cut = ZeigeMitKatalogpflege();
+
+        Waehle(cut, 1, 0);
+        Katalogknopf(cut, "Speichern unter").Click();
+
+        var namensdialog = cut.FindComponent<EPOS.UI.Dialoge.Allgemein.NamensDialog>();
+        Assert.Equal("Werk Nord - Kopie", namensdialog.Instance.Name);
+    }
+
+    /// <summary>
+    /// <b>Die Dublettenprüfung läuft VOR dem Einfügen</b>: Ein vergebener Name hält
+    /// den Namensdialog offen und sagt, warum — kein UNIQUE-Fehler aus SQLite.
+    /// </summary>
+    [Fact]
+    public void Ein_vergebener_Name_wird_abgewiesen_bevor_kopiert_wird()
+    {
+        int kopiert = 0;
+        var cut = ZeigeMitKatalogpflege(kopieren: (q, z) => { kopiert++; return Task.FromResult(true); });
+
+        Waehle(cut, 1, 0);
+        Katalogknopf(cut, "Speichern unter").Click();
+
+        var namensdialog = cut.FindComponent<EPOS.UI.Dialoge.Allgemein.NamensDialog>();
+        namensdialog.Find("input").Input("Auslieferung");        // gibt es schon
+        namensdialog.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.Equal(0, kopiert);
+        Assert.Single(cut.FindComponents<EPOS.UI.Dialoge.Allgemein.NamensDialog>());
+        Assert.Contains("bereits in der Datenbank", namensdialog.Markup);
+    }
+
+    /// <summary>Ein freier Name legt die Kopie an; die Meldung nennt beide Namen.</summary>
+    [Fact]
+    public void Ein_freier_Name_legt_die_Kopie_an()
+    {
+        List<(string Quelle, string Ziel)> kopien = new();
+        var liste = Katalog();
+        var cut = ZeigeMitKatalogpflege(
+            katalog: liste,
+            kopieren: (q, z) =>
+            {
+                kopien.Add((q, z));
+                liste.Add(new GanglinienKatalogZeile(z, 4, false));
+                return Task.FromResult(true);
+            });
+
+        Waehle(cut, 1, 0);
+        Katalogknopf(cut, "Speichern unter").Click();
+
+        var namensdialog = cut.FindComponent<EPOS.UI.Dialoge.Allgemein.NamensDialog>();
+        namensdialog.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.Equal(new[] { ("Werk Nord", "Werk Nord - Kopie") }, kopien);
+        cut.WaitForAssertion(() => Assert.Contains("Werk Nord - Kopie", cut.Instance.Meldung));
+        cut.WaitForAssertion(() => Assert.Equal(3, Zeilen(cut, 1).Length));
+    }
+
+    /// <summary>
+    /// Scheitert die Kopie trotzdem (der Kern prüft dieselbe Dublette ein zweites
+    /// Mal), steht ein Fehlerbanner — keine Ausnahme.
+    /// </summary>
+    [Fact]
+    public void Eine_gescheiterte_Kopie_meldet_sich_als_Banner()
+    {
+        var cut = ZeigeMitKatalogpflege(kopieren: (q, z) => Task.FromResult(false));
+
+        Waehle(cut, 1, 0);
+        Katalogknopf(cut, "Speichern unter").Click();
+        cut.FindComponent<EPOS.UI.Dialoge.Allgemein.NamensDialog>()
+           .FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("konnte nicht angelegt werden", cut.Instance.Meldung));
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-warnbanner--fehler")));
+    }
+
+    /// <summary>Abbrechen im Namensdialog kopiert nichts.</summary>
+    [Fact]
+    public void Abbrechen_im_Namensdialog_kopiert_nichts()
+    {
+        int kopiert = 0;
+        var cut = ZeigeMitKatalogpflege(kopieren: (q, z) => { kopiert++; return Task.FromResult(true); });
+
+        Waehle(cut, 1, 0);
+        Katalogknopf(cut, "Speichern unter").Click();
+        cut.FindComponent<EPOS.UI.Dialoge.Allgemein.NamensDialog>()
+           .FindAll("button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+
+        Assert.Equal(0, kopiert);
+        Assert.Empty(cut.FindComponents<EPOS.UI.Dialoge.Allgemein.NamensDialog>());
+        Assert.Equal("", cut.Instance.Meldung);
+    }
+
+    // --- Esc schliesst immer nur die oberste Ebene -----------------------
+
+    [Fact]
+    public void Esc_meldet_nichts_solange_die_Rueckfrage_oder_der_Namensdialog_steht()
+    {
+        bool? ergebnis = null;
+        var cut = Render<StromganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
+            .Add(x => x.Katalog, () => Task.FromResult(Katalog()))
+            .Add(x => x.Loeschen, (Func<string, Task<bool>>)(n => Task.FromResult(true)))
+            .Add(x => x.Kopieren, (Func<string, string, Task<bool>>)((q, z) => Task.FromResult(true)))
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        Waehle(cut, 1, 0);
+
+        Katalogknopf(cut, "Löschen").Click();
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Null(ergebnis);
+
+        cut.FindComponents<Rueckfrage>().First(f => f.Instance.Offen)
+           .FindAll("button").First(b => b.TextContent.Trim() == "Nein").Click();
+
+        Katalogknopf(cut, "Speichern unter").Click();
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Null(ergebnis);
     }
 }

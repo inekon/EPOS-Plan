@@ -204,6 +204,31 @@ namespace ChartProben
                    () => ChartRenderer.Jahresverlauf("Jahresuebersicht", jahresverlauf,
                             "Waermebedarf [kW]", SKColors.SteelBlue));
 
+            // 15b/15c - DIE ZWEI ZEITSTUFEN des Bedarfs-Ergebnisdialogs
+            // (Anwenderwunsch W8-E-2, Windows-Abnahme 05.09.2026).
+            //
+            // "Grafik Strombedarf soll ausser dem Jahr auch Woche und Tag zeigen." Beides
+            // ist DERSELBE Zeichenweg mit einem Achsenfenster - ein neues Renderer-Bild
+            // braucht es nicht. Geprueft wird hier, dass die zwei Ausschnitte dieselben
+            // Masse und Farben tragen wie die Vollansicht und deterministisch sind; DASS
+            // sie ueberhaupt etwas anderes zeigen, sagt die Gegenprobe weiter unten.
+            //
+            // Woche 27 (Stunde 4 368 bis 4 536) und Tag 200 (Stunde 4 776 bis 4 800)
+            // liegen mitten im Sommer - dort ist die Reihe weder am Rand noch auf ihrem
+            // Jahreshoechstwert, und ein Zuschnittfehler faellt auf.
+            var fensterWoche = new ChartRenderer.Achsenfenster(26 * 168, 27 * 168);
+            var fensterTag = new ChartRenderer.Achsenfenster(199 * 24, 200 * 24);
+
+            Pruefe(ziel, "jahresverlauf_woche", 978, 542,
+                   new[] { SKColors.SteelBlue },
+                   () => ChartRenderer.Jahresverlauf("Strombedarf Ganglinie", jahresverlauf,
+                            "Strombedarf [kW]", SKColors.SteelBlue, fensterWoche));
+
+            Pruefe(ziel, "jahresverlauf_tag", 978, 542,
+                   new[] { SKColors.SteelBlue },
+                   () => ChartRenderer.Jahresverlauf("Strombedarf Ganglinie", jahresverlauf,
+                            "Strombedarf [kW]", SKColors.SteelBlue, fensterTag));
+
             // 16 - Jahresgang zweireihig (iU9-W10a.0d): Quelltemperatur und
             // Aussentemperatur ueber der Monatsachse 0…12, Legende oben. Er loest das
             // Chart des Erdreich-Dialogs ab. Beide Reihen sind TEMPERATUREN und laufen
@@ -548,6 +573,23 @@ namespace ChartProben
                         b2Stapel, new List<ChartRenderer.Reihe>(), null,
                         "Waermelast [kW]", ChartRenderer.Achse.Jahresstunden, false,
                         null, null, fenster));
+
+            // Dasselbe fuer die ZEITSTUFEN des Bedarfsdialogs (W8-E-2): Ohne diese zwei
+            // Gegenproben bestuende ein stillschweigend uebergangener Fensterparameter
+            // jede Mass-, Farb- und Determinismuspruefung - und "Woche" zeigte das Jahr.
+            // Geprueft wird BEIDES: Woche gegen Jahr und Tag gegen Woche; sonst waere ein
+            // Fenster, das immer denselben Ausschnitt nimmt, nicht zu bemerken.
+            Unterschiedlich("jahresverlauf_woche_fenster",
+                () => ChartRenderer.Jahresverlauf("Strombedarf Ganglinie", jahresverlauf,
+                        "Strombedarf [kW]", SKColors.SteelBlue),
+                () => ChartRenderer.Jahresverlauf("Strombedarf Ganglinie", jahresverlauf,
+                        "Strombedarf [kW]", SKColors.SteelBlue, fensterWoche));
+
+            Unterschiedlich("jahresverlauf_tag_fenster",
+                () => ChartRenderer.Jahresverlauf("Strombedarf Ganglinie", jahresverlauf,
+                        "Strombedarf [kW]", SKColors.SteelBlue, fensterWoche),
+                () => ChartRenderer.Jahresverlauf("Strombedarf Ganglinie", jahresverlauf,
+                        "Strombedarf [kW]", SKColors.SteelBlue, fensterTag));
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");

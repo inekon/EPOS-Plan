@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Strom;
 using Microsoft.AspNetCore.Components;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -71,7 +72,19 @@ namespace WindowsFormsApplication1
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
                 ["Katalog"] = new Func<Task<List<GanglinienKatalogZeile>>>(KatalogLesen),
-                ["Verwaltung"] = StromganglinieAdminHuelle.Gaben()
+                ["Verwaltung"] = StromganglinieAdminHuelle.Gaben(),
+
+                // iU9-W12-E-1: die Datenbankseite des Dialogs. Die vier Wege sind
+                // DIESELBEN, die die Verwaltung benutzt — Import, Löschen und Vorschau
+                // kommen wörtlich von dort, damit es keinen zweiten Importweg gibt.
+                ["DateiWaehlen"] = new Func<string, Task<string>>(StromganglinieAdminHuelle.DateiWaehlen),
+                ["Einlesen"] = new Func<string, GanglinienRaster, GanglinienImportRueckrufe,
+                                        Task<GanglinienImportErgebnis>>(StromganglinieAdminHuelle.Einlesen),
+                ["Vorschau"] = new Func<string, GanglinienImportOptionen,
+                                        Task<GanglinienVorschau>>(StromganglinieAdminHuelle.Vorschau),
+                ["Loeschen"] = new Func<string, Task<bool>>(StromganglinieAdminHuelle.Loeschen),
+                ["HatProjektzuordnung"] = new Func<string, Task<bool>>(HatProjektzuordnung),
+                ["Kopieren"] = new Func<string, string, Task<bool>>(Kopieren)
             };
 
             // Der Assistent schliesst nicht - er blaettert. Deshalb geht der Stand nach
@@ -164,17 +177,32 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Der Katalog — dieselbe Quelle wie in der Verwaltung.</summary>
+        /// <summary>
+        /// Der Katalog — <b>dieselbe</b> Quelle wie in der Verwaltung.
+        ///
+        /// <para><b>Bis iU9-W12-E-1 war es NICHT dieselbe</b>: Diese Hülle baute die
+        /// Zeilen selbst und setzte das ReadOnly-Kennzeichen fest auf <c>false</c>
+        /// (der Dialog brauchte es nicht). Seit der Dialog löschen kann, braucht er es
+        /// — ein Auslieferungssatz wäre sonst nicht als solcher zu erkennen. Statt die
+        /// Schleife ein zweites Mal zu schreiben, ruft sie jetzt
+        /// <see cref="StromganglinieAdminHuelle.KatalogLesen"/>.</para>
+        /// </summary>
         private static Task<List<GanglinienKatalogZeile>> KatalogLesen()
-        {
-            StromganglinieStammCtrl ctrl = new StromganglinieStammCtrl();
-            ctrl.ReadAll();
+            => StromganglinieAdminHuelle.KatalogLesen();
 
-            List<GanglinienKatalogZeile> liste = new List<GanglinienKatalogZeile>();
-            for (int i = 0; i < ctrl.rows; i++)
-                liste.Add(new GanglinienKatalogZeile(ctrl.items[i].m_szBezeichner,
-                                                     ctrl.items[i].m_Zeitinterval, false));
-            return Task.FromResult(liste);
-        }
+        /// <summary>
+        /// Gibt es zu dieser Katalogganglinie eine Projektzuordnung? (W12-E-1) —
+        /// die erste der zwei Löschsperren.
+        /// </summary>
+        private static Task<bool> HatProjektzuordnung(string bezeichner)
+            => Task.FromResult(new StromganglinieStammCtrl().HatProjektzuordnung(bezeichner));
+
+        /// <summary>
+        /// „Speichern unter": die Katalogganglinie unter neuem Namen (W12-E-1).
+        /// <see cref="StromganglinieStammCtrl.KopiereStamm"/> prüft die Dublette
+        /// selbst und liefert dann <c>0</c> — der Dialog meldet es als Banner.
+        /// </summary>
+        private static Task<bool> Kopieren(string quelle, string ziel)
+            => Task.FromResult(new StromganglinieStammCtrl().KopiereStamm(quelle, ziel) > 0);
     }
 }

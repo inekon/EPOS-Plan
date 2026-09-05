@@ -1471,12 +1471,25 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Bildmaß 978 × 542</b> wie die Monatssäulen — beide teilen sich in der
         /// Maske dieselbe Fläche und wechseln über einen Schalter.</para>
+        ///
+        /// <para><b>MIT ZEITAUSSCHNITT seit dem Anwenderwunsch W8‑E‑2</b> (Windows-Abnahme
+        /// 05.09.2026): Derselbe Zeichenweg trägt jetzt auch die Woche und den Tag. Das
+        /// Fenster wird ZUERST angelegt — Höchstwert, Skala und Linie beziehen sich danach
+        /// auf den Ausschnitt, genau wie es <see cref="ErzeugerStapel"/> hält. Die x-Achse
+        /// wechselt dabei von den Monatsgrenzen auf die WIRKLICHEN Jahresstunden
+        /// (<see cref="XAchseFenster"/>): In einer Julinacht sagt „Jan" nichts mehr, die
+        /// Stunde 4 700 schon.</para>
         /// </summary>
         /// <param name="titel">Überschrift, z. B. „Jahresübersicht".</param>
         /// <param name="stundenwerte">Der Jahresverlauf; jede Länge ≥ 2 geht.</param>
         /// <param name="yTitel">Beschriftung der y-Achse, z. B. „Wärmebedarf [kW]".</param>
         /// <param name="farbe">Linienfarbe (Vorläufer: <c>SteelBlue</c>).</param>
-        public static byte[] Jahresverlauf(string titel, double[] stundenwerte, string yTitel, SKColor farbe)
+        /// <param name="fenster">
+        /// Der Zeitausschnitt (Woche, Tag oder ein aufgezogener Bereich); <c>null</c> = das
+        /// ganze Jahr und damit Bild für Bild das des Bestands.
+        /// </param>
+        public static byte[] Jahresverlauf(string titel, double[] stundenwerte, string yTitel,
+                                           SKColor farbe, Achsenfenster fenster = null)
         {
             int W = 978, H = 542;
             using (var flaeche = Start(W, H))
@@ -1485,7 +1498,13 @@ namespace WindowsFormsApplication1
                 Titel(g, titel, W);
                 var rc = SKRect.Create(100f, 80f, W - 140f, 380f);
 
-                if (stundenwerte == null || stundenwerte.Length < 2)
+                // Der Zuschnitt steht GANZ oben - alles darunter rechnet mit dem
+                // Ausschnitt, ohne davon zu wissen. gesamt merkt sich die volle Laenge:
+                // Die Achsenbeschriftung nennt Jahresstunden, nicht Fensterstunden.
+                int gesamt = stundenwerte == null ? 0 : stundenwerte.Length;
+                double[] werte = Ausschnitt(stundenwerte, fenster);
+
+                if (werte == null || werte.Length < 2)
                 {
                     using (var f = Schrift(18f))
                         Text(g, BerichtTexte.T("Kein Jahresverlauf vorhanden."), f, SKColors.DimGray,
@@ -1494,33 +1513,41 @@ namespace WindowsFormsApplication1
                 }
 
                 double maxWert = 0;
-                foreach (double w in stundenwerte) if (w > maxWert) maxWert = w;
+                foreach (double w in werte) if (w > maxWert) maxWert = w;
+                if (fenster != null && fenster.YAnteil > 0) maxWert *= fenster.YAnteil;
                 (double schritt, double max, string format) = BedarfsSkala(maxWert);
 
                 BedarfsRaster(g, rc, schritt, max, format);
 
-                // Monatsgrenzen statt Stundenzahlen (siehe Kopf).
-                KeyValuePair<int[], string[]> ticks = MonatsTicks365();
-                using (var raster = Strich(SKColors.Gainsboro, 1f))
-                using (var f = Schrift(15f))
-                    for (int m = 0; m < 12; m++)
-                    {
-                        float x = rc.Left + (float)(ticks.Key[m] * 24) / stundenwerte.Length * rc.Width;
-                        if (x > rc.Right) break;
-                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
-                        Text(g, ticks.Value[m], f, SKColors.DimGray, x + 4f, rc.Bottom + 8f);
-                    }
+                if (fenster == null)
+                {
+                    // Monatsgrenzen statt Stundenzahlen (siehe Kopf).
+                    KeyValuePair<int[], string[]> ticks = MonatsTicks365();
+                    using (var raster = Strich(SKColors.Gainsboro, 1f))
+                    using (var f = Schrift(15f))
+                        for (int m = 0; m < 12; m++)
+                        {
+                            float x = rc.Left + (float)(ticks.Key[m] * 24) / werte.Length * rc.Width;
+                            if (x > rc.Right) break;
+                            g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                            Text(g, ticks.Value[m], f, SKColors.DimGray, x + 4f, rc.Bottom + 8f);
+                        }
+                }
+                else XAchseFenster(g, rc, fenster, gesamt);
+
                 using (var f = Schrift(15f))
                     Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
 
                 // 8 760 Punkte auf rund 840 Bildpunkte: jeder n-te genügt (wie beim
                 // Kostenprofil) — mehr Punkte als Pixel zeichnen dasselbe Bild langsamer.
-                int schrittweite = Math.Max(1, stundenwerte.Length / (int)rc.Width);
+                // Im Fenster stehen weniger Werte als Bildpunkte; dann ist die
+                // Schrittweite 1 und jede Stunde wird gezeichnet.
+                int schrittweite = Math.Max(1, werte.Length / (int)rc.Width);
                 var punkte = new List<SKPoint>();
-                for (int i = 0; i < stundenwerte.Length; i += schrittweite)
+                for (int i = 0; i < werte.Length; i += schrittweite)
                 {
-                    float x = rc.Left + (float)i / (stundenwerte.Length - 1) * rc.Width;
-                    float y = (float)(rc.Bottom - Math.Max(0, stundenwerte[i]) / max * rc.Height);
+                    float x = rc.Left + (float)i / (werte.Length - 1) * rc.Width;
+                    float y = (float)(rc.Bottom - Math.Max(0, werte[i]) / max * rc.Height);
                     punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
                 }
                 using (var stift = Strich(farbe, 2f))
@@ -2822,6 +2849,26 @@ namespace WindowsFormsApplication1
 
         private static double Klemme(double wert)
             => wert < 0.0 ? 0.0 : wert > 1.0 ? 1.0 : wert;
+
+        /// <summary>
+        /// Eine nackte Wertereihe auf das Fenster zugeschnitten; ohne Fenster (oder wenn
+        /// es die ganze Reihe umfasst) kommt sie unverändert zurück — dieselbe Regel wie
+        /// bei <see cref="Zugeschnitten(Reihe, Achsenfenster)"/>, nur ohne die Hülle
+        /// <see cref="Reihe"/>. Sie trägt den Zeitausschnitt von
+        /// <see cref="Jahresverlauf"/> (Anwenderwunsch W8‑E‑2).
+        /// </summary>
+        private static double[] Ausschnitt(double[] werte, Achsenfenster f)
+        {
+            if (f == null || werte == null) return werte;
+
+            int von = Math.Max(0, Math.Min(werte.Length, f.Von));
+            int bis = Math.Max(von, Math.Min(werte.Length, f.Bis));
+            if (von == 0 && bis == werte.Length) return werte;
+
+            var teil = new double[bis - von];
+            Array.Copy(werte, von, teil, 0, teil.Length);
+            return teil;
+        }
 
         /// <summary>Die Reihe auf das Fenster zugeschnitten; ohne Fenster unverändert.</summary>
         private static Reihe Zugeschnitten(Reihe r, Achsenfenster f)

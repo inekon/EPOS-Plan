@@ -1796,6 +1796,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Git-Tag `vor-W16` ließ sich aus der CI-Umgebung nicht pushen (der Push-Zugang der Umgebung erlaubt nur den Zweig
 > `ios_migration`, Tag-Refs werden mit HTTP 403 abgewiesen); **der Anwender hat ihn am 04.09.2026 vom Arbeitsplatz aus
 > gesetzt** — `refs/tags/vor-W16` zeigt auf `975ead5`.
+>
+> **Befund W15c‑B‑1 und Anwenderwunsch W15c‑E‑1 vom 05.09.2026 (Bildschirmfoto Hilfe → Lizenz: „Die Darstellung
+> kann verbessert werden. Wozu gibt es ‚Datei wählen'? löschen"), umgesetzt in `ee7214f`:** **W15c‑B‑1** — Jede
+> Zeile begann links vom sichtbaren Rand. Ursache war die Wurzelregel selbst: Die drei Wurzeln der Welle 15c
+> (`.epos-lizenz`, `.epos-lizverw`, `.epos-erststart`) hängen als einzige nicht unter `.epos-dialog` und trugen
+> deshalb weder Seitenrand noch `overflow-x` — das erste Zeichen stand bei x = 0 an der Kante der WebView, und bei
+> 125–150 % schnitt sie es weg. Rand und Waagerecht-Sperre stehen jetzt an einer Stelle für alle drei
+> (`overflow-x: clip`, nicht `hidden`). **W15c‑E‑1** — Der Vertragstext stand in einem `<textarea>` mit
+> Größenanfasser; er ist jetzt eine Leseansicht: Kopf mit dem `InfoKnopf` (er stand hinter „Schließen"), je Karte
+> derselbe gerollte Lesebereich mit Absätzen und den „§ …"-Zeilen als Überschriften, leise Fußzeile, rechts die
+> Knopfleiste. Am Wortlaut ändert sich nichts, neu ist allein `LizenzDialog.Vertragsabschnitte`. **„Datei wählen…"
+> ist gefallen:** `LizenzHuelle.DateiWaehlen` war der Rest der RichTextBox des Vorläufers (Filter `*.rtf;*.docx;*.pdf`)
+> und ersetzte den lesbaren Vertragstext durch den Zeiger auf eine Datei, die die WebView seit E‑1 nicht anzeigt;
+> der Weg zur `.lic` bleibt allein „Lizenz aktivieren…", eine Vertragsdatei findet `LizenzTextCtrl.DateiSuchen`
+> weiterhin selbst. 15 neue bunit-Fälle (UI 2 497). Offen als **W15c‑O‑6**: Die vier KI-Wurzeln der Welle 15b haben
+> dieselbe Form (kein Seitenrand, kein `overflow-x`) — sie gehören in die laufende Überarbeitung des
+> Hilfe-Assistenten (W15b‑E‑3).
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
@@ -2211,6 +2228,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Pufferspeicher/Photovoltaik/Wärmebedarf extern) und die der Katalogverwaltungen am `Katalograhmen`. Drei neue
 > Wachen in `ZweispaltenauswahlTests` (14 → 17: Markup, Bestand, Stilregel), Gegenprobe mit zurückgedrehtem Blatt
 > rot. Protokoll W12, Abnahmepunkte A‑W12‑B‑1.
+>
+> **Anwenderwunsch W12‑E‑1 vom 05.09.2026 (Bildschirmfoto „Stromganglinien": „csv-Datei Stromlastgang importieren
+> (mit Info zum Format) fehlt. Ebenfalls fehlt löschen und Speichern unter"), umgesetzt in `43f0581`:** Das Vorbild
+> `Form_Stromganglinie` (678 × 345) hatte keinen Import, kein Löschen und kein Speichern unter — der Wunsch ist eine
+> echte Erweiterung; „Datei Einlesen…" und „Ganglinie Löschen" lagen eine Maske weiter in `Form_Stromganglinie_Admin`,
+> „Speichern unter" gab es im ganzen Bestand nicht (der Eintrag „… - Kopie" der Testdatenbank ist ein zweiter Import
+> unter anderem Dateinamen). Der Dialog trägt unter der Katalogliste jetzt **vier** Knöpfe statt einem: „CSV-Datei
+> importieren…", „Speichern unter…", „Löschen", „Bearbeiten…". Der Import ist kein zweiter Weg, sondern derselbe: Die
+> Kette liegt seit W12.0d im Kern (`GanglinienImportAblauf`), ihre Oberflächenseite steht jetzt im Baustein
+> `GanglinienImportLauf.razor` (drei Überlagerungen, `Starten(pfad, raster)`), den auch die Verwaltung
+> `StromganglinieAdminDialog` einhängt (422 → 303 Zeilen) — die Überlagerungen gibt es einmal statt zweimal. Der
+> Formathinweis nennt sichtbar, was die Kette annimmt (8 760 bzw. 35 040 Werte, vier Feldtrennzeichen oder einspaltig,
+> erkannte Kopfzeile, Komma oder Punkt, kW oder kWh je Intervall, Bezeichner = Dateiname ohne Erweiterung) und steht
+> als Kurztext am Infoknopf. Löschen prüft zwei Sperren vor der Rückfrage und meldet beide Gründe — Projektzuordnung
+> (`StromganglinieStammCtrl.HatProjektzuordnung`, Muster W14b) und `ReadOnly` (Grund als `title` am Knopf).
+> „Speichern unter" ist die Kopie unter neuem Namen (`KopiereStamm`: Kopf und Werte in einer Transaktion, `ORDER BY
+> ID`, immer `ReadOnly = false`, Vorschlag „‹Name› - Kopie", Dublettenprüfung vor dem Einfügen in Maske und Kern).
+> Nebenbefund behoben: `ReadAll` warf `ReadOnly` weg — die Verwaltungshülle fragte je Zeile nach (N+1), der
+> Projektdialog konnte einen Auslieferungssatz nicht erkennen. Kern 1 086 (+10 `StromganglinieKatalogTests`), UI 2 509
+> (+16), SQL-Prüfer 1 204 / 0. Protokoll W12, zehn Abnahmepunkte.
 
 > **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
 >
@@ -2511,6 +2548,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Dialog. 13 Kern- und 20 bunit-Fälle (eine Wache: kein Brauchwasser, kein „Gesamt"), acht Texte de/en; auf iOS ist
 > der Dialog nur als Assistentenseite erreichbar, `BedarfGaben` ist dort mitzudenken, wenn der Assistent in iU11
 > verdrahtet wird. Protokoll W9.8.
+>
+> **Nachtrag zu W9‑B‑4/B‑5 (`99033ce`, W8‑B‑3):** Der heute Vormittag berichtigte Rechenstand war nicht die Ursache
+> des Nullwerts im Ergebnisdialog; die Namensauflösung der Projektkopien arbeitet korrekt — der Profilbedarf ging
+> erst danach verloren, in der Abschrift der Vorschaurechnung in `BedarfsProfileHuelle`, die mit W8‑B‑3 ersatzlos
+> entfällt (`BedarfsVorschauCtrl.ProjektVorschau` im Kern).
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
@@ -2558,6 +2600,46 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > sind **entlastet** — die Nullreihe hinter „Prozesswärme/Standardlastprofil bringt 0, Grafik leer" entstand in der
 > Vorschau der Welle 9 (W9‑B‑4/B‑5, Namensauflösung der Projektkopien); die leeren Achsen 0–5 sind das korrekte
 > Bild einer Nullreihe (`MonatsSaeulen` mit `maxWert = 0`). Renderer unverändert, ChartProben 32/0.
+>
+> **Anwenderwunsch W8‑E‑1 und Befund W8‑B‑2 vom 05.09.2026 (Bildschirmfotos „Typ in DB ändern…" aus dem Standard-
+> Stromprofil, „eigenes Lastprofil" im Assistenten, WinForms-Vorbild „Stromverbrauchertyp Stundenverteilung"),
+> umgesetzt in `01dae1c`:** **W8‑E‑1 — Stundenverteilung in der Anordnung des Vorbilds.** Der Anwender wollte den Dialog
+> „so wie zuvor"; die Razor-Fassung stapelte Typen, Wochentage und die 24 Stundenwerte untereinander und war dreimal
+> so hoch wie `Form_EingStromTyp` (607 × 544). Zurückgeholt ist die Anordnung des Designers — Typliste links,
+> Beschreibung rechts, Reiter darunter; im Wochenblatt drei Spalten zu acht Stundenwerten mit der Nummer vor dem
+> Feld, rechts die Wochentagsliste mit „Tag kopieren"/„Tag einfügen", unten „Änderungen Übernehmen" samt Diskette,
+> und die Fußleiste in der Reihenfolge Speichern unter | Speichern in DB | Löschen | Neu | Schließen. Übernommen ist
+> die Anordnung, nicht das Pixelmaß: `--epos-touchziel` gilt weiter (acht statt neun Typzeilen im Rahmen), die
+> Dreiteilung macht das Stilblatt (`grid-auto-flow: column`), im Markup laufen die Felder weiter 1…24, damit der
+> Tabulatorweg bleibt. **W8‑B‑2 — ein belegter Typname meldet sich, statt zu werfen.** „Neu" mit vorhandenem Namen
+> lief bis ins `INSERT` und endete in einem modalen „SQLite Error 19"-Kasten aus einem Blazor-Ereignis heraus
+> (`TypProfilCtrl.Anlegen` prüfte nicht, der Wurf lief über `SqliteDatenzugriff` → `DataRepository.FehlerMelden` →
+> `Dienste.Dialog`, Regel A‑8). `TypProfilCtrl.TypExists` prüft jetzt vorher, `Neu`/`SpeichernUnter` geben
+> `TypAnlageErgebnis` statt `bool`, die Namensabfrage bleibt offen mit dem Warnbanner „Ein Typ mit diesem Namen ist
+> schon vorhanden" (`BPRO_MSG_NAME_BELEGT`, de/en). Beide Aufrufwege — Überlagerung und Assistentenseite — zeigen
+> dieselbe Komponente aus einem Parametersatz, alle drei Ausprägungen (Strom, Prozesswärme, Brauchwasser). Zwei
+> Kern-Wachen, elf bunit-Fälle; Protokoll „Windows-Abnahme 05.09.2026 — Stundenverteilung".
+>
+> **Anwenderwunsch W8‑E‑2 und Befund W8‑B‑3 vom 05.09.2026 (Bildschirmfoto „monatlicher Verlauf…" aus dem
+> Standard-Stromprofil: „max. Strombedarf 3,72 kW, Gesamter Strombedarf 0, Stromganglinie 0, Strombedarf Gebäude
+> 0"), umgesetzt in `99033ce`:** Der Ergebnisdialog des Strombedarfs zeigte „Gesamter Strombedarf 0" und
+> „Strombedarf Gebäude 0" neben einem gerechneten Spitzenwert (**W8‑B‑3**). Ursache war eine zweite, von Hand
+> nachgezogene Fassung der Vorschaurechnung in `BedarfsProfileHuelle.Rechenstand`, aus der die Zeile
+> herausgefallen war, die `Strombedarf_Gebaeude_gesamt` belegt — dieselbe Klasse Fehler wie W9‑B‑4/B‑5, nur eine
+> Ebene weiter; weder Einheit noch Projektkopie waren beteiligt. Die sechs Zuweisungen stehen jetzt einmal im Kern
+> (`SimulationStrombedarf.ProfilbedarfUebernehmen`, Zwilling von `ProzesssummeUebernehmen`), und die Projektvorschau
+> ist als `BedarfsVorschauCtrl.ProjektVorschau` aus der Hülle in den Kern gezogen; Katalog- und Projektvorschau
+> nehmen dieselbe Fassung, die Hülle hält den Stand nur noch. Zum Wunsch **W8‑E‑2** gliedert `Kennzahlart` das
+> Blatt in drei Kategorien: die LEISTUNG („max. Leistung", vormals „max. Strombedarf") in einem eigenen Block und
+> außerhalb der Summe, darunter die Posten, am Fuß abgesetzt die Summe; „Strombedarf Gebäude" heißt jetzt
+> „Strombedarf aus Profil" und trägt den gerechneten Wert (8 000 kWh/a bei kWh, 8,00 bei MWh). Der Grafikreiter
+> bekommt mit `BedarfGangGrafik` die Stufen Jahr | Woche | Tag samt Ringnavigator — ohne neues Renderer-Bild, über
+> einen optionalen `Achsenfenster`-Parameter an `ChartRenderer.Jahresverlauf` (`jahresverlauf_bedarf` bleibt
+> byte-gleich; ChartProben jetzt 36 Bilder + 4 Gegenproben). Die Wärmeausprägung ist konsistent mitgezogen und sieht
+> ihren Grafikreiter unverändert. Kern 1 077, UI 2 491, Referenzlauf byte-gleich. Beim Merge mit W8‑E‑1 (`4724774`)
+> fehlten zwei schließende Klammern aus der Konfliktauflösung; dabei fiel eine seit `91bac96` verwaiste
+> Konfliktmarke vor dem Schema-Block auf, die als ungültiger Selektor die erste Regel des Blocks verschluckte —
+> beide behoben, Klammerbilanz 739/739.
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >

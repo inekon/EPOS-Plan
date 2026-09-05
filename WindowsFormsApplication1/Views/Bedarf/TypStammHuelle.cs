@@ -193,11 +193,17 @@ namespace WindowsFormsApplication1
                 ["Lies"] = new Func<string, (string, double[,])?>(typ => TypProfilCtrl.Lies(art, typ)),
                 ["Speichern"] = new Func<string, double[,], string, bool>(
                     (typ, w, beschr) => TypProfilCtrl.Speichern(art, typ, w, beschr)),
-                ["Neu"] = new Func<string, bool>(name => TypProfilCtrl.Neu(art, name)),
+                ["Neu"] = new Func<string, bool>(
+                    name => TypProfilCtrl.Neu(art, name) == TypAnlageErgebnis.Angelegt),
                 ["SpeichernUnter"] = new Func<string, double[,], string, bool>(
-                    (name, w, beschr) => TypProfilCtrl.SpeichernUnter(art, name, w, beschr)),
+                    (name, w, beschr) => TypProfilCtrl.SpeichernUnter(art, name, w, beschr)
+                                         == TypAnlageErgebnis.Angelegt),
                 ["Loeschen"] = new Func<string, bool>(typ => TypProfilCtrl.Loeschen(art, typ)),
                 ["IstReadOnly"] = new Func<string, bool>(typ => TypProfilCtrl.IstReadOnly(art, typ)),
+
+                // Die Vorpruefung des Namens (Befund W8-B-2): Sie haelt die Namensabfrage
+                // offen, statt den belegten Namen bis in das INSERT laufen zu lassen.
+                ["Existiert"] = new Func<string, bool>(name => TypProfilCtrl.TypExists(art, name)),
                 ["Bild"] = new Func<double[], byte[]>(Wochenbild),
 
                 ["TitelText"] = ProfilTitel(art),
@@ -227,6 +233,8 @@ namespace WindowsFormsApplication1
 
                 ["MeldungZahlFehlt"] = Text_("BTYP_MSG_ZAHL", "Bitte {0} als Zahl eingeben."),
                 ["MeldungNameFehlt"] = Text_("BTYP_MSG_NAME_LEER", "Bitte einen Namen eingeben!"),
+                ["MeldungNameBelegt"] = Text_("BPRO_MSG_NAME_BELEGT",
+                    "Ein Typ mit diesem Namen ist schon vorhanden"),
                 ["MeldungReadOnly"] = Text_("BPRO_MSG_READONLY",
                     "Dieser Typ ist schreibgeschützt und kann nicht geändert werden."),
                 ["MeldungGespeichert"] = Text_("BPRO_MSG_GESPEICHERT", "Datensatz gespeichert!"),
