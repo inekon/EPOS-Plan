@@ -31,7 +31,8 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
 
-<div class="epos-dialog epos-modulkatalog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog epos-modulkatalog" tabindex="-1"
+     @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Profil.Titel</h1>
@@ -43,43 +44,52 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* --- Die Modulliste -------------------------------------------------- *@
-    <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
+    @* --- Liste LINKS, Felder RECHTS (Anwenderwunsch 05.09.2026) ----------
+           Beide Vorbilder standen so: Form_AdminPV (607 x 489, Liste
+           211 x 259 links, Felder ab x 253) und Form_AdminStromspeicher
+           (614 x 367, Liste 201 x 293 links, Felder ab x 240). *@
+    <Katalograhmen>
+        <Liste>
+            <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
 
-    <Raster TZeile="ModulZeile" Zeilen="@_zeilen.AsQueryable()">
-        <KindInhalt>
-            <TemplateColumn TGridItem="ModulZeile" Title="@SpalteWahlText">
-                <Zeilenwahl Gewaehlt="@(context.Bezeichner == _gewaehlt)"
-                            Kurztext="@SpalteWahlText"
-                            Gewaehltwerden="@(() => BeiZeile(context))" />
-            </TemplateColumn>
-            <PropertyColumn TGridItem="ModulZeile" TProp="string"
-                            Property="@(z => z.Bezeichner)" Title="@Profil.Listenbeschriftung" />
-        </KindInhalt>
-    </Raster>
+            <Raster TZeile="ModulZeile" Zeilen="@_zeilen.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="ModulZeile" Title="@SpalteWahlText">
+                        <Zeilenwahl Gewaehlt="@(context.Bezeichner == _gewaehlt)"
+                                    Kurztext="@SpalteWahlText"
+                                    Gewaehltwerden="@(() => BeiZeile(context))" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="ModulZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@Profil.Listenbeschriftung" />
+                </KindInhalt>
+            </Raster>
+        </Liste>
 
-    @* --- Die Felder, Gruppe 0 -------------------------------------------- *@
-    <Gruppenkopf Titel="@Profil.GruppeBestand">
-        <KindInhalt>
-            @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 0))
+        <Eingabe>
+            @* --- Die Felder, Gruppe 0 ------------------------------------ *@
+            <Gruppenkopf Titel="@Profil.GruppeBestand">
+                <KindInhalt>
+                    @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 0))
+                    {
+                        @Feldmarkup(feld)
+                    }
+                </KindInhalt>
+            </Gruppenkopf>
+
+            @* --- Die Felder, Gruppe 1 (AP3-Gerätetechnik, nur Stromspeicher) *@
+            @if (_felder.Any(f => f.Gruppe == 1))
             {
-                @Feldmarkup(feld)
+                <Gruppenkopf Titel="@Profil.GruppeZwei">
+                    <KindInhalt>
+                        @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 1))
+                        {
+                            @Feldmarkup(feld)
+                        }
+                    </KindInhalt>
+                </Gruppenkopf>
             }
-        </KindInhalt>
-    </Gruppenkopf>
-
-    @* --- Die Felder, Gruppe 1 (AP3-Gerätetechnik, nur Stromspeicher) ----- *@
-    @if (_felder.Any(f => f.Gruppe == 1))
-    {
-        <Gruppenkopf Titel="@Profil.GruppeZwei">
-            <KindInhalt>
-                @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 1))
-                {
-                    @Feldmarkup(feld)
-                }
-            </KindInhalt>
-        </Gruppenkopf>
-    }
+        </Eingabe>
+    </Katalograhmen>
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" disabled="@(_gewaehlt.Length == 0 && !_neu)"
