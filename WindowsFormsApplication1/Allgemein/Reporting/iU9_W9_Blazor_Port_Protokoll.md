@@ -154,7 +154,7 @@ Brauchwassersicht) beim Brauchwasser.
 | | `GebaeudetypDialog` (W8.4) | „Gebäudetyp in DB ändern…" |
 | | `Rueckfrage` | „Gebäude in DB löschen" |
 | `GebaeudeKatalogDialog` | `BedarfsProfileDialog` (W9.5) | „Brauchwasser…" auf Reiter 2 |
-| `WaermebedarfExternDialog` | `Rueckfrage` | „DB Ganglinie löschen" (neu, A‑8) |
+| `WaermebedarfExternDialog` | `Rueckfrage` | „Löschen" (neu, A‑8; bis W9‑O‑9 hieß der Knopf „DB Ganglinie löschen") |
 | `BedarfsProfileDialog` | `BedarfErgebnisDialog` (W8.2) | „Simulation" / „monatlicher Verlauf" |
 | | `TypStammDialog` (W8.1) | „DB ändern" und „DB neu" |
 | | `TypProfilDialog` (W8.3) | „Typ in DB ändern" |
@@ -205,7 +205,7 @@ stillschweigende Spaltenzuordnung kennt. Bei `Form_Gebaeude1` steht im Titel
 | **A‑5** | **Befund W9‑B8 behoben:** Steuerwert und Anzeigetext der Verwendung sind getrennt | `comboBox_Verwendung` führte die beiden STEUERWERTE „Wohngebaeude"/„Nicht Wohngebaeude" als Anzeigetext, und `Form_Gebaeude1.en-US.resx` übersetzte sie („residential buildings"). In englischer Oberfläche schrieb der Vorläufer damit englischen Text in `Wohngebaeude_Nicht_Wohngebaeude`, und **jeder Filter lief danach ins Leere**. Drei-Schichten-Regel, Persistenzschicht |
 | **A‑6** | Der zweite Reiter des Katalogeditors behält einen eigenen Knopf „Werte übernehmen" | Sein Vorläufer war ein modales Fenster, dessen OK vier Größen ableitet. Ohne den Knopf liefen diese Ableitungen bei JEDEM Speichern — auch für Sätze, deren zweite Seite der Anwender nie geöffnet hat (§ 2.3). Dasselbe Muster wie `TypProfilDialog` in W8 |
 | **A‑7** | Die drei verborgenen Hilfsfelder von `Form_Gebaeude` (Baujahr, Jahresnutzungsgrad, dezWarmwasser) haben kein Gegenstück | Sie waren `Visible = false` und dienten als Wertträger zwischen Liste und Ändern-Dialog. Das ist jetzt die Zeile selbst |
-| **A‑8** | „DB Ganglinie löschen" fragt nach | Der Vorläufer löschte auf einen Klick, und der Katalog gilt für ALLE Projekte (wie W6 A‑4). Die Sperre „Es existiert eine Projektzuordnung" bleibt und steht als Warnbanner |
+| **A‑8** | Der Löschknopf des externen Wärmebedarfs fragt nach | Der Vorläufer löschte auf einen Klick, und der Katalog gilt für ALLE Projekte (wie W6 A‑4). Die Sperre „Es existiert eine Projektzuordnung" bleibt und steht als Warnbanner |
 | **A‑9** | „▶" entfernt die MARKIERTE Zeile statt der ersten gleichen Namens | `Form_Waermebedarf.btn_Entfernen_Click`:240 suchte den ersten Treffer über den Bezeichner; bei zwei Zuordnungen derselben Ganglinie traf er die falsche. Dieselbe Fehlerklasse wie W7 A‑21 — und der Kommentar in `Form_Gebaeude`:283 benennt sie für das Gebäude selbst |
 | **A‑10** | 42 `MessageBox` werden `Warnbanner`, `Rueckfrage` oder Meldungstext | Wie A‑4 aus Welle 8: Bestätigungen bleiben Bestätigungen, Ablehnungen bleiben als Banner stehen und lassen den Dialog offen |
 | **A‑11** | Der Erfolgstext nach dem Löschen bleibt auf die Prozessmaske beschränkt | Nur `Form_Prozesswaerme` meldete „Prozess erfolgreich gelöscht."; Strom und Brauchwasser schwiegen. Wörtlich übernommen |
@@ -449,7 +449,7 @@ bleibt im Dialog, Esc schließt, Infoknopf zeigt die Wikiseite.
 | 5 | In 4 → **„Brauchwasser…"** | Die Brauchwasserliste des laufenden Projekts als Überlagerung; OK schreibt die Zuordnung |
 | 6 | In 1 → **„Gebäude in DB neu…" / „…löschen" / „Gebäudetyp in DB ändern…"** | Neu ohne Markierung; Löschen fragt nach und meldet „Gebäude gelöscht!"; der Gebäudetyp ist die W8.4-Komponente |
 | 7 | Menü → **Gebäudeverwaltung** (`Masken.GebaeudeAdmin`) | Kein Projektteil, keine Pfeile, kein „Ändern" — nur der Katalog |
-| 8 | Startbild → **Wärmebedarf extern** | Kanalwahl wirkt auf die markierte Zeile; eine neue Zeile steht auf Heizung; „DB Ganglinie löschen" fragt nach (A‑8) und meldet bei Projektzuordnung; „Einlesen/Bearbeiten.." öffnet die Verwaltung über der Komponente (Sprungbrücke) |
+| 8 | Startbild → **Wärmebedarf extern** | Kanalwahl wirkt auf die markierte Zeile; eine neue Zeile steht auf Heizung; „Löschen" fragt nach (A‑8) und meldet bei Projektzuordnung; „Bearbeiten…" öffnet die Verwaltung über der Komponente (Sprungbrücke). **Beide Knöpfe hießen bis W9‑O‑9 „DB Ganglinie löschen" und „Einlesen/Bearbeiten..".** |
 | 9 | Assistent → **Seiten 2 bis 5** | Jetzt zehn WebViews im Assistenten (R‑W6‑1/R‑W9‑5): Speicher am Gerät messen; Vor/Zurück behält den Listenstand |
 | 10 | Startbild → **Prozesswärme / Stromverbraucher / Brauchwasser** | Je Ausprägung: Katalogzeile zeigt Σ Monate, Projektzeile die Summe der Zeile; „Übernehmen" ohne Zeile oder mit negativem Wert meldet — in **allen dreien** in der gewählten Einheit (Entscheid W9‑O‑3). Das Wahlfeld „Einheit" steht auf MWh; Umschalten auf kWh nimmt Jahresverbrauch, Summe, das Eingabefeld und die Meldung mit, der gespeicherte Wert bleibt MWh |
 | 11 | In 10 → **„Simulation"** | Prozess und Strom rechnen ALLE Zuordnungen, Brauchwasser NUR die gewählte; danach ist „monatlicher Verlauf" frei und zeigt denselben Stand ; bei der Prozesswärme steht „Wärmebedarf Prozess" seit dem Nachtrag zu W9‑O‑3 in **MWh** und damit um den Faktor 1000 kleiner als bisher — „davon Brauchwasser" bleibt zeichengleich |
@@ -1272,8 +1272,12 @@ entfallen.
 > steht jetzt mit dieser Begründung im Kopf des Bausteins.
 
 **3. Die Knopfleiste unter der Katalogliste** trägt vier statt zwei Knöpfe, in dieser
-Reihenfolge: **„CSV-Datei importieren…" · „Speichern unter…" · „DB Ganglinie löschen" ·
-„Einlesen/Bearbeiten..".** Sie ist die `epos-leiste`; **kein Delegat, kein Knopf**.
+Reihenfolge: **„CSV-Datei importieren…" · „Speichern unter…" · „Löschen" ·
+„Bearbeiten…".** Sie ist die `epos-leiste`; **kein Delegat, kein Knopf**. Die zwei hinteren
+trugen bis zum **Anwenderentscheid W9‑O‑9** vom 06.09.2026 noch die wärmespezifischen Texte
+„DB Ganglinie löschen" und „Einlesen/Bearbeiten.." (`WBX_BTN_LOESCHEN`/`WBX_BTN_BEARBEITEN`);
+seither lesen **alle vier** die Stromschlüssel, und die zwei WBX-Schlüssel sind aus beiden
+`.resx` gelöscht.
 Der Import holt den Pfad über den erwarteten `DateiWaehlen`-Delegaten und **`await`et ihn**
 (W13‑B‑1) und ruft dann `Starten(pfad, GanglinienRaster.Unbekannt)` — die Maske gibt keine
 Rastervorgabe, die Kette erkennt es selbst und der Optionendialog lässt es übersteuern.
@@ -1429,8 +1433,8 @@ gelesen** (die Fallgrube oben); dazu ein Fall in **englischer** Oberfläche.
 
 1. **Die vier Knöpfe.** Startseite → Kachel „Wärmebedarf" → „Daten importieren" (oder
    Assistentenseite 3): Unter „Wärmebedarf aus DB" stehen „CSV-Datei importieren…",
-   „Speichern unter…", „DB Ganglinie löschen" und „Einlesen/Bearbeiten..", jeder so breit
-   wie sein Text. Darunter der Formathinweis mit dem Fragezeichenknopf rechts daneben; der
+   „Speichern unter…", „Löschen" und „Bearbeiten…", jeder so breit
+   wie sein Text — **wortgleich zum Stromganglinien-Dialog** (W9‑O‑9). Darunter der Formathinweis mit dem Fragezeichenknopf rechts daneben; der
    Knopf öffnet die Wikiseite „Wärmebedarf", sein Tooltip zeigt den vollen Formattext.
 2. **Import mit einer sauberen Datei.** Eine CSV mit 8 760 Zeilen, ein Wert je Zeile, Komma
    als Dezimaltrennzeichen, ohne Kopfzeile — z. B. `123,4` / `118,9` / … Der Dateiwähler
@@ -1447,10 +1451,10 @@ gelesen** (die Fallgrube oben); dazu ein Fall in **englischer** Oberfläche.
    inhaltsgleiche kW-Datei.
 5. **Import mit einer Datei, die es schon gibt.** Dieselbe Datei ein zweites Mal wählen: Der
    Konfliktdialog kommt (Auslassen / Überschreiben / Umbenennen) — genau derselbe wie hinter
-   „Einlesen/Bearbeiten..". „Überschreiben" tauscht die Werte und **behält die Kopf-Id**:
+   „Bearbeiten…". „Überschreiben" tauscht die Werte und **behält die Kopf-Id**:
    Ein Projekt, das die Ganglinie schon führt, verliert seinen Bezug nicht.
-6. **Löschen — zugeordnet.** Eine Ganglinie wählen, die im Projekt steht: „DB Ganglinie
-   löschen" meldet „Es existiert eine Projektzuordnung, Löschen nicht möglich!" — **keine**
+6. **Löschen — zugeordnet.** Eine Ganglinie wählen, die im Projekt steht: „Löschen"
+   meldet „Es existiert eine Projektzuordnung, Löschen nicht möglich!" — **keine**
    Rückfrage, nichts gelöscht.
 7. **Löschen — Auslieferung.** Ein Katalogeintrag mit `ReadOnly`: Der Knopf zeigt den Grund
    schon als Tooltip; der Klick meldet „Diese Wärmebedarfsganglinie ist schreibgeschützt
@@ -1477,11 +1481,19 @@ gelesen** (die Fallgrube oben); dazu ein Fall in **englischer** Oberfläche.
 13. **Der Kanal.** Bei markierter Projektzeile steht „Kanal:" **neben** der Klappliste (nicht
     darüber); ohne Markierung ist sie gesperrt. Umschalten auf „Brauchwasser" wirkt auf
     genau diese Zeile, OK speichert, Wiederöffnen zeigt sie unverändert.
-14. **Nichts sonst hat sich bewegt.** „Einlesen/Bearbeiten.." zeigt unverändert die
+14. **Nichts sonst hat sich bewegt.** „Bearbeiten…" zeigt unverändert die
     Verwaltung als Überlagerung — dort ist der Fortschrittsbalken jetzt unbestimmt und der
     Konflikt-, Optionen- und Protokolldialog derselbe wie im Hauptdialog. „In das Projekt
     übernehmen"/„Aus dem Projekt entfernen", OK und Abbrechen verhalten sich wie bisher.
     Esc schließt immer nur die oberste Ebene.
+15. **Die zwei Knopftexte kommen vom Strom (W9‑O‑9, 06.09.2026).** Die Katalogleiste liest
+    jetzt in ALLEN vier Knöpfen die Stromschlüssel: „Bearbeiten…" statt
+    „Einlesen/Bearbeiten.." und „Löschen" statt „DB Ganglinie löschen". Beide Dialoge
+    nebeneinander öffnen (Strombedarf → „Messdaten importieren" und Wärmebedarf →
+    „Daten importieren"): Die vier Beschriftungen stehen **zeichengleich**. Dann die
+    Oberfläche auf **Englisch** stellen und beide erneut öffnen: „Edit…" und „Delete",
+    ebenfalls zeichengleich. Und: Die **Rückfrage vor dem Löschen** trägt seither den
+    Dialogtitel „Wärmebedarf Extern" (vorher den Knopftext) — genauso wie beim Strom.
 
 ### Hausregel
 

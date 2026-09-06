@@ -63,6 +63,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -41073,24 +41074,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WBAD_TITEL {
             get {
                 return ResourceManager.GetString("WBAD_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Einlesen/Bearbeiten.. ähnelt.
-        /// </summary>
-        public static string WBX_BTN_BEARBEITEN {
-            get {
-                return ResourceManager.GetString("WBX_BTN_BEARBEITEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die DB Ganglinie löschen ähnelt.
-        /// </summary>
-        public static string WBX_BTN_LOESCHEN {
-            get {
-                return ResourceManager.GetString("WBX_BTN_LOESCHEN", resourceCulture);
             }
         }
         
