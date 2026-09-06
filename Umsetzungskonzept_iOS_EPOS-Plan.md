@@ -3409,6 +3409,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > (S3.7, Kapitel 12, zwei überholte Sätze in Kapitel 4 und 10) nachgezogen; R2 bleibt zur Geschichte liegen. Zwei
 > Prüfstandszahlen zogen mit (die Testdatenbank führt jetzt einen Wechselrichter, der Auslieferungskatalog bleibt leer).
 > Nachweis: Kern 1 619 / UI 2 987 grün, SQL 0, Testdatenbankschema trocken 0/0, Gate grün gegen R3 mit vier Projekten byte-gleich.
+>
+> **W6‑O‑8 („Empfehlung") und W6‑O‑9 („ja"), Anwenderentscheide 06.09.2026, umgesetzt in `de5da29`/`88eeb27`/`68752a9`,
+> zusammengeführt in `04b12e5`:** Die Regel „Die Kennlinie fällt im Teillastast" meldet erst ab
+> `WechselrichterPlausibilitaet.TEILLAST_ABFALL_SCHWELLE = 0,01` (ein Prozentpunkt). **Der Wert ist gemessen**, nicht gesetzt:
+> Über alle 2 343 Geräte der Auslieferungsdatei fällt die Kennlinie zwischen 5 und 30 % nur zweimal (größter 0,372 PP) und
+> zwischen 30 und 50 % 303‑mal, davon 302 unter 0,4 PP (246 unter 0,1); zwischen 0,4 und 2,4 PP liegt **keine einzige**
+> Kennlinie — die Schwelle sitzt in einer Lücke, nicht in einer Verteilung. Übrig bleibt ein Gerät (OutBack GS8048A, 2,423 PP),
+> ein Tippfehler 0,79 statt 0,97 sind 18 PP. Der Meldungssatz nennt die Zahl; die Auslieferungsliste steht bei **2 342 grün /
+> 1 gelb / 0 rot** statt 2 040 / 303 / 0 (Auslieferungstest festgeschrieben, vier neue Fälle). **W6‑O‑9:** `Setup/EPOS-Plan.iss`
+> liefert den Ordner `VDI-3805-Daten` (186 MB, davon WP-Daten 134) als **vorgewählte, abwählbare** Komponente „Herstellerdaten
+> (VDI 3805, CEC)" nach `{app}\VDI-3805-Daten` aus — neben dem Programm wie die Vorlagendatenbank, weil die Importmasken nur
+> lesen, ein Update ihn ersetzt und `%ProgramData%` bei der Deinstallation absichtlich stehen bleibt (Setup-Konzept E10);
+> `[Types]`/`[Components]`/`[UninstallDelete]`, `build-setup.ps1` bricht ohne den Ordner ab. `IPfade.Herstellerdaten` findet den
+> Ordner ohne Einstellung (installiert neben dem Programm, im Entwicklungsstand die Repowurzel),
+> `EinstellungenCtrl.HerstellerdatenpfadOderVorgabe` ordnet gespeicherter Pfad → Auslieferung → alter Vorgabeordner, beide
+> Importmasken starten dort; der schreibende VDI-Pfad bleibt getrennt. Ein Setup-Bau ist auf Linux nicht möglich — die `.iss` ist
+> per Skript geprüft (293 Sätze, 0 Fundstellen, Gegenprobe meldet), der Nachweis der Komponentenseite folgt beim nächsten
+> Windows-Bau (Abnahmepunkt A‑W6‑O‑9‑1). Nachweis: Kern 1 644 / UI 2 998 grün, Designer „abweichend 0", SQL 0, Gate grün,
+> Referenzlauf 1030/1007/1017/1045 byte-gleich. **Kapitel 12 des Wechselrichterkonzepts: alle neun Punkte geschlossen.**
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
