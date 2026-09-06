@@ -402,6 +402,10 @@ namespace WindowsFormsApplication1
             s = Regex.Replace(s, @"<sup>\s*(.*?)\s*</sup>", "^$1",
                               RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
+            // Geschuetzte Leerzeichen der Anzeige-Formeln ("</big> &nbsp;&nbsp;(3)") und
+            // der Zahlen ("8&nbsp;760") - fuer den Assistenten ein gewoehnliches Leerzeichen.
+            s = s.Replace("&nbsp;", " ");
+
             // Einfache HTML-Reste (<br>, <ref>, <code>, <big> der Anzeige-Formeln).
             // Bewusst eng gefasst:
             // Ein Muster wie "<[^>]+>" verschluckte in einer Formelzeile alles

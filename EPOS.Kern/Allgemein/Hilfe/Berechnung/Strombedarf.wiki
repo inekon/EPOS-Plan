@@ -40,7 +40,9 @@ Bedarf hinzu.
 
 == Formelzeichen und Parameter ==
 
-'''Parameter''' — was in die Rechnung hereinkommt:
+=== Parameter ===
+
+Was in die Rechnung hereinkommt:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
@@ -66,7 +68,9 @@ Bedarf hinzu.
 | 1 000 || Teiler einer Stundenreihe: kWh je MWh || — || Konstante
 |}
 
-'''Variablen''' — was die Rechnung selbst bildet:
+=== Variablen ===
+
+Was die Rechnung selbst bildet:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
@@ -127,8 +131,7 @@ und lieferte ein Ergebnis, das vollstaendig aussah und keines war.
 Die Stundenreihe wird gespreizt, indem der Stundenwert '''in alle vier Viertel derselben
 Stunde''' geschrieben wird:
 
-: <big>P<sub>Prof</sub>(4t) = P<sub>Prof</sub>(4t+1) = P<sub>Prof</sub>(4t+2) = P<sub>Prof</sub>(4t+3) = P<sub>h</sub>(t)</big>  (1)
-
+: <big>P<sub>Prof</sub>(4t) = P<sub>Prof</sub>(4t+1) = P<sub>Prof</sub>(4t+2) = P<sub>Prof</sub>(4t+3) = P<sub>h</sub>(t)</big> &nbsp;&nbsp;(1)
 Der Wert bleibt damit eine '''Leistung''' — er wird nicht geviertelt. Genau daraus folgt der
 Teiler 4 000 in Gleichung (4): vier gleich hohe Viertel je Stunde, danach kWh nach MWh.
 
@@ -151,8 +154,7 @@ der Jahresbedarf war zu klein.
 Stundenganglinien werden nach derselben Regel wie in (1) gespreizt. Danach wird
 Viertelstunde fuer Viertelstunde addiert:
 
-: <big>P(k) = P<sub>Prof</sub>(k) + Σ<sub>g</sub> P<sub>g</sub>(k)</big>  (2)
-
+: <big>P(k) = P<sub>Prof</sub>(k) + Σ<sub>g</sub> P<sub>g</sub>(k)</big> &nbsp;&nbsp;(2)
 === 4. Was der Import vorher sicherstellt ===
 
 Die Rasterpruefung im Lauf ist ein Sicherheitsnetz fuer Altbestaende — neu eingelesene
@@ -160,8 +162,7 @@ Ganglinien sind bereits normalisiert:
 
 * '''Einheit:''' Rohwerte in kWh je Intervall werden ueber die Intervalldauer in '''kW''' umgerechnet; die Ablage fuehrt Leistungen:
 
-: <big>P<sub>g</sub> = E<sub>Int</sub> / Δt<sub>Int</sub></big>  (3)
-
+: <big>P<sub>g</sub> = E<sub>Int</sub> / Δt<sub>Int</sub></big> &nbsp;&nbsp;(3)
 * '''Schaltjahr:''' 8 784 bzw. 35 136 Werte werden auf 8 760 / 35 040 gebracht, indem der 29. Februar entfaellt. Der Vorgang steht im Importprotokoll und verlangt eine Bestaetigung.
 * '''Sommerzeit:''' Die Reihe gilt als Ortszeitreihe. Am letzten Maerzsonntag fehlt die Ortsstunde 02:00 — die Luecke wird mit dem Wert des Vorintervalls gefuellt; am letzten Oktobersonntag gibt es sie doppelt — die Dublette wird arithmetisch gemittelt. Jede ANDERE Luecke oder Dublette bleibt ein Fehler.
 * '''Plausibilitaet:''' negative Werte, lange Nullserien und Ausreisser werden gemeldet.
@@ -172,12 +173,9 @@ Imports nicht von der Zeitzonentabelle des Rechners abhaengt.
 
 === 5. Kennzahlen und Jahresdauerlinie ===
 
-: <big>E<sub>a</sub> = ( Σ<sub>k=0…35 039</sub> P(k) ) / 4 000</big>  (4)
-
-: <big>E<sub>M</sub>(m) = ( Σ<sub>k ∈ Monat m</sub> P(k) ) / 4 000</big>  (5)
-
-: <big>P<sub>max</sub> = max<sub>k=0…35 039</sub> P(k)</big>  (6)
-
+: <big>E<sub>a</sub> = ( Σ<sub>k=0…35 039</sub> P(k) ) / 4 000</big> &nbsp;&nbsp;(4)
+: <big>E<sub>M</sub>(m) = ( Σ<sub>k ∈ Monat m</sub> P(k) ) / 4 000</big> &nbsp;&nbsp;(5)
+: <big>P<sub>max</sub> = max<sub>k=0…35 039</sub> P(k)</big> &nbsp;&nbsp;(6)
 Der '''Anteil aus Profilen''' und der '''Anteil aus Ganglinien''' entstehen nach derselben
 Gleichung (4), angewandt auf P<sub>Prof</sub>(k) allein bzw. auf Σ<sub>g</sub>
 P<sub>g</sub>(k) allein.
@@ -188,12 +186,9 @@ normieren (Prozent), aufsteigend sortieren, umdrehen.
 '''Kennzahlen einer EINZELNEN Ganglinie''' — wie sie der Lastgangdialog neben dem Bild zeigt
 — rechnen auf der '''Stundenreihe''' dieser einen Ganglinie:
 
-: <big>E<sub>GL</sub> = ( Σ<sub>t=0…8 759</sub> P<sub>GL</sub>(t) ) / 1 000</big>  (7)
-
-: <big>P<sub>GL,max</sub> = max<sub>t=0…8 759</sub> P<sub>GL</sub>(t)</big>  (8)
-
-: <big>t<sub>V</sub> = E<sub>GL</sub> · 1 000 / P<sub>GL,max</sub></big>  (9)
-
+: <big>E<sub>GL</sub> = ( Σ<sub>t=0…8 759</sub> P<sub>GL</sub>(t) ) / 1 000</big> &nbsp;&nbsp;(7)
+: <big>P<sub>GL,max</sub> = max<sub>t=0…8 759</sub> P<sub>GL</sub>(t)</big> &nbsp;&nbsp;(8)
+: <big>t<sub>V</sub> = E<sub>GL</sub> · 1 000 / P<sub>GL,max</sub></big> &nbsp;&nbsp;(9)
 Ohne Spitze (P<sub>GL,max</sub> = 0) bleibt (9) unbestimmt, und der Dialog zeigt keine
 Angabe. Die Spitze aus (8) ist '''nicht''' die Spitze des Laufs aus (6): Der Lauf misst im
 Viertelstundenraster und ueber alle Ganglinien und Profile zusammen, die Kennzahl gehoert
@@ -208,8 +203,7 @@ Speichers wird hier ausdruecklich '''nicht''' aufgeschlagen — sie speist sich 
 Erzeugungsueberschuss und mindert die Einspeisung, nicht den Netzbezug. Was am Ende bleibt,
 ist der Netzbezug:
 
-: <big>E<sub>Rest</sub> = ( Σ<sub>k=0…35 039</sub> P<sub>Netz</sub>(k) ) / 4 000</big>  (10)
-
+: <big>E<sub>Rest</sub> = ( Σ<sub>k=0…35 039</sub> P<sub>Netz</sub>(k) ) / 4 000</big> &nbsp;&nbsp;(10)
 Umgekehrt kommt der Strombedarf der Waermeerzeuger — Waermepumpe, Heizstab,
 Kesselhilfsenergie — erst waehrend der Kaskade hinzu; er steht nicht in P(k).
 

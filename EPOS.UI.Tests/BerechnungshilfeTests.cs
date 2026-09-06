@@ -93,14 +93,16 @@ public sealed class BerechnungshilfeTests : BunitContext
     };
 
     /// <summary>
-    /// Die Seiten dieses Teils (Erzeuger und Speicher). Sie stehen hier
-    /// AUSDRÜCKLICH und nicht als Verzeichnisinhalt: Eine gelöschte Datei soll
-    /// rot ausfallen, nicht still durchgehen.
+    /// Alle dreizehn Seiten der Rubrik (seit der Zusammenführung von Teil A und
+    /// Teil B am 06.09.2026). Sie stehen hier AUSDRÜCKLICH und nicht als
+    /// Verzeichnisinhalt: Eine gelöschte Datei soll rot ausfallen, nicht still
+    /// durchgehen.
     /// </summary>
-    private static readonly string[] SeitenTeilB =
+    private static readonly string[] SeitenDerRubrik =
     {
-        "Heizkessel", "BHKW", "Wärmepumpe", "Pufferspeicher",
-        "Solarthermie", "Photovoltaik", "Stromspeicher"
+        "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
+        "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
+        "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
     };
 
     public BerechnungshilfeTests()
@@ -309,17 +311,17 @@ public sealed class BerechnungshilfeTests : BunitContext
     // =====================================================================
 
     /// <summary>
-    /// Jeder Schlüssel des Abschnitts „Teil B" zeigt auf eine Seite, die es als
+    /// Jeder Schlüssel der Abschnitte „Teil A" und „Teil B" zeigt auf eine Seite, die es als
     /// Datei gibt — und der Leser findet überhaupt Zeilen.
     /// </summary>
     [Fact]
     public void Jede_Zuordnung_zeigt_auf_eine_vorhandene_Seite()
     {
-        var zuordnungen = ZuordnungenTeilB();
+        var zuordnungen = ZuordnungenDerRubrik();
 
         Assert.True(zuordnungen.Count >= 10,
                     "Nur " + zuordnungen.Count + " Zuordnungen gefunden — der Leser ist kaputt " +
-                    "oder der Abschnitt # Teil B (Erzeuger und Speicher) fehlt.");
+                    "oder die Abschnitte # Teil A / # Teil B der Rubrik fehlen.");
 
         var fehlend = zuordnungen
             .Where(z => !File.Exists(Seitendatei(z.Value)))
@@ -345,7 +347,11 @@ public sealed class BerechnungshilfeTests : BunitContext
 
         var funde = new List<string>();
 
-        foreach (var z in ZuordnungenTeilB())
+        // Nur die Schlüssel des Teils B: Die Schlüssel des Teils A wählt zum Teil die
+        // Hülle (BedarfsProfileHuelle.BerechnungsSchluessel je BedarfsArt, dazu die
+        // Razor-Vorgabe) — dort sind zwei Fundstellen richtig. Für sie gilt der
+        // Wächter BerechnungsknopfTests, der Razor UND Hüllen liest.
+        foreach (var z in ZuordnungenDerRubrik(nurTeilB: true))
         {
             string muster = "\"" + z.Key + "\"";
             string[] treffer = quellen
@@ -452,13 +458,13 @@ public sealed class BerechnungshilfeTests : BunitContext
     //  Lesen
     // =====================================================================
 
-    /// <summary>Die Seitennamen dieses Teils als Theoriedaten.</summary>
+    /// <summary>Alle dreizehn Seitennamen der Rubrik als Theoriedaten.</summary>
     public static TheoryData<string> Seitennamen
     {
         get
         {
             var daten = new TheoryData<string>();
-            foreach (string s in SeitenTeilB) daten.Add(s);
+            foreach (string s in SeitenDerRubrik) daten.Add(s);
             return daten;
         }
     }
@@ -468,15 +474,12 @@ public sealed class BerechnungshilfeTests : BunitContext
            Path.DirectorySeparatorChar + seite + ".wiki";
 
     /// <summary>
-    /// Die Zuordnungen des Abschnitts „# Teil B (Erzeuger und Speicher)" bis zum
-    /// nächsten Abschnittskommentar bzw. Dateiende: Schlüssel → Seitenname (der
-    /// Teil hinter „Berechnung/").
-    ///
-    /// <para>Bewusst NUR dieser Abschnitt: Teil A der Rubrik hängt seine Zeilen an
-    /// derselben Stelle an, und beide Teile sollen sich nicht gegenseitig rot
-    /// färben.</para>
+    /// Die Zuordnungen der Abschnitte „# Teil A (Ablauf und Bedarf)" und
+    /// „# Teil B (Erzeuger und Speicher)" bis zum nächsten fremden
+    /// Abschnittskommentar bzw. Dateiende: Schlüssel → Seitenname (der Teil hinter
+    /// „Berechnung/"). Seit der Zusammenführung beider Teile (06.09.2026) beide.
     /// </summary>
-    private static Dictionary<string, string> ZuordnungenTeilB()
+    private static Dictionary<string, string> ZuordnungenDerRubrik(bool nurTeilB = false)
     {
         var ergebnis = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -491,7 +494,8 @@ public sealed class BerechnungshilfeTests : BunitContext
 
             if (zeile.StartsWith("#", StringComparison.Ordinal))
             {
-                if (zeile.Contains("Teil B", StringComparison.Ordinal)) imAbschnitt = true;
+                if ((zeile.Contains("Teil A", StringComparison.Ordinal) && !nurTeilB) ||
+                    zeile.Contains("Teil B", StringComparison.Ordinal)) imAbschnitt = true;
                 else if (imAbschnitt) break;   // der nächste Abschnitt beginnt
                 continue;
             }

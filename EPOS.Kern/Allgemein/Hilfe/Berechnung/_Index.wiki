@@ -59,7 +59,8 @@ Malpunkt „·", Summenzeichen „Σ", Differenz „Δ", Wurzel „√", die Ver
 und die griechischen Buchstaben (η, ϑ, ρ, λ, α, β, γ, ε, τ, φ) unmittelbar als Zeichen.
 Bruchstriche stehen als ''(Zaehler)/(Nenner)'', tiefgestellte Indizes als
 P<sub>AC,nenn</sub>, Hochzahlen als T<sup>2</sup>, die Abhaengigkeit vom Zeitschritt als
-P<sub>AC</sub>(t).
+P<sub>AC</sub>(t). Die Argumente von min(…) und max(…) trennt ein '''Semikolon''' —
+min( a ; b ) —, weil das Komma in dieser Schreibweise bereits mehrteilige Indizes trennt.
 
 '''Warum keine LaTeX-Formeln.''' Diese Wikiinstallation hat '''keine Math-Erweiterung''': Ein
 Block <nowiki><math>…</math></nowiki> erschiene dem Leser als Klartext, nicht als Formel. Die

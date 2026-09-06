@@ -72,7 +72,7 @@ namespace EPOS.Kern.Tests
         /// der laufenden Nummer am Zeilenende.
         /// </summary>
         private static readonly Regex Anzeigeformel =
-            new(@"^:\s*<big>.+</big>\s*\(\d+\)\s*$",
+            new(@"^:\s*<big>.+</big>(?:\s|&nbsp;)*\(\d+\)\s*$",
                 RegexOptions.Multiline | RegexOptions.Compiled);
 
         /// <summary>Ein LaTeX-Befehl — <c>\frac</c>, <c>\sum</c>, <c>\cdot</c> …</summary>
@@ -90,24 +90,25 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die SECHS Seiten des Pakets H13 Teil A — namentlich. Eine gelöschte oder
+        /// Die DREIZEHN Seiten der Rubrik H13 — namentlich (seit der Zusammenführung von
+        /// Teil A und Teil B am 06.09.2026 beide Teile). Eine gelöschte oder
         /// umbenannte Datei fiele sonst nur dadurch auf, dass niemand sie mehr findet;
         /// der Infoknopf des zugehörigen Dialogs zeigte weiter auf eine Wikiseite, die
         /// es im Quellbaum nicht mehr gibt.
         /// </summary>
         /// <remarks>
-        /// Die sieben Erzeugerseiten aus Teil B stehen hier bewusst NICHT: Diese Liste
-        /// ist die Zusage DIESES Pakets. Geprüft wird „mindestens", nicht „genau" —
-        /// jede weitere Seite ist willkommen und läuft durch dieselben Fälle.
+        /// Geprüft wird „mindestens", nicht „genau" — jede weitere Seite ist willkommen
+        /// und läuft durch dieselben Fälle.
         /// </remarks>
-        public static readonly string[] SeitenTeilA =
+        public static readonly string[] SeitenDerRubrik =
         {
-            "Brauchwasser", "Prozesswärme", "Simulationsablauf", "Strombedarf",
-            "Wärmebedarf", "Wärmequelle Erdreich"
+            "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
+            "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
+            "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
         };
 
         /// <summary>
-        /// Die Rubrik ist eingebettet und lesbar, und sie führt die sechs Seiten des
+        /// Die Rubrik ist eingebettet und lesbar, und sie führt die dreizehn Seiten des
         /// Pakets. Ein leerer Bestand liefe sonst durch jeden folgenden Fall grün
         /// hindurch, ohne je etwas geprüft zu haben — die <c>.wiki</c>-Dateien hängen an
         /// einem <c>EmbeddedResource</c>-Muster in <c>EPOS.Kern.csproj</c>, und ein
@@ -119,13 +120,13 @@ namespace EPOS.Kern.Tests
             IReadOnlyList<BerechnungsSeite> seiten = BerechnungsHilfe.Seiten;
 
             Assert.NotNull(seiten);
-            Assert.True(seiten.Count >= SeitenTeilA.Length,
+            Assert.True(seiten.Count >= SeitenDerRubrik.Length,
                 "Die Rubrik 'Berechnung' führt nur " + seiten.Count + " Seite(n), erwartet sind " +
-                "mindestens " + SeitenTeilA.Length + ". Ist das EmbeddedResource-Muster " +
+                "mindestens " + SeitenDerRubrik.Length + ". Ist das EmbeddedResource-Muster " +
                 "'Allgemein\\Hilfe\\Berechnung\\*.wiki' mit LogicalName '" +
                 BerechnungsHilfe.RESSOURCE_VORSATZ + "%(Filename)%(Extension)' noch in EPOS.Kern.csproj?");
 
-            var fehlend = SeitenTeilA
+            var fehlend = SeitenDerRubrik
                 .Where(n => BerechnungsHilfe.Seite(n) == null)
                 .ToList();
 
@@ -248,13 +249,12 @@ namespace EPOS.Kern.Tests
         /// Anwender die Formeln, bevor er die Zeichen kennt.
         /// </summary>
         /// <remarks>
-        /// Bewusst nur die Seiten des Teils A: Bis Teil B zusammengeführt ist, liegen dessen
-        /// sieben Erzeugerseiten in der Fassung 1 im selben Ordner und würden hier rot
-        /// ausfallen, ohne dass jemand einen Fehler gemacht hätte.
+        /// Seit der Zusammenführung beider Teile (06.09.2026) gilt die Fassung 2 für alle
+        /// dreizehn Seiten der Rubrik (H13‑O‑5 geschlossen).
         /// </remarks>
         [Theory]
-        [MemberData(nameof(SeitenDesTeilsA))]
-        public void Jede_Seite_des_Teils_A_hat_die_sieben_Abschnitte_in_Reihenfolge(string seitenname)
+        [MemberData(nameof(AlleSeitenDerRubrik))]
+        public void Jede_Seite_hat_die_sieben_Abschnitte_in_Reihenfolge(string seitenname)
         {
             BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
             Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
@@ -281,8 +281,8 @@ namespace EPOS.Kern.Tests
         /// mitten im Satz.
         /// </summary>
         [Theory]
-        [MemberData(nameof(SeitenDesTeilsA))]
-        public void Jede_Seite_des_Teils_A_kommt_ohne_LaTeX_aus(string seitenname)
+        [MemberData(nameof(AlleSeitenDerRubrik))]
+        public void Jede_Seite_kommt_ohne_LaTeX_aus(string seitenname)
         {
             BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
             Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
@@ -303,8 +303,8 @@ namespace EPOS.Kern.Tests
         /// Formel, auf die er sich beziehen könnte.
         /// </summary>
         [Theory]
-        [MemberData(nameof(SeitenDesTeilsA))]
-        public void Jede_Seite_des_Teils_A_traegt_nummerierte_Anzeigeformeln(string seitenname)
+        [MemberData(nameof(AlleSeitenDerRubrik))]
+        public void Jede_Seite_traegt_nummerierte_Anzeigeformeln(string seitenname)
         {
             BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
             Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
@@ -332,8 +332,8 @@ namespace EPOS.Kern.Tests
         /// Programm bildet; genau diese Trennung war der Anwenderwunsch.
         /// </summary>
         [Theory]
-        [MemberData(nameof(SeitenDesTeilsA))]
-        public void Jede_Seite_des_Teils_A_traegt_beide_Symboltabellen(string seitenname)
+        [MemberData(nameof(AlleSeitenDerRubrik))]
+        public void Jede_Seite_traegt_beide_Symboltabellen(string seitenname)
         {
             BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
             Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
@@ -344,11 +344,11 @@ namespace EPOS.Kern.Tests
                 seitenname + ": die Variablentabelle fehlt (Kopfzeile '" + KOPF_VARIABLEN + "').");
         }
 
-        /// <summary>Die Seiten des Teils A als Theoriedaten.</summary>
-        public static TheoryData<string> SeitenDesTeilsA()
+        /// <summary>Alle dreizehn Seiten der Rubrik als Theoriedaten.</summary>
+        public static TheoryData<string> AlleSeitenDerRubrik()
         {
             var daten = new TheoryData<string>();
-            foreach (string name in SeitenTeilA) daten.Add(name);
+            foreach (string name in SeitenDerRubrik) daten.Add(name);
             return daten;
         }
 
@@ -462,6 +462,22 @@ namespace EPOS.Kern.Tests
 
             Assert.Contains("Q_a = ( Σ_t=1…8 760 Q(t) ) / 1 000", klartext);
             Assert.Contains("ϑ ≥ 0 °C, η ≤ 1, Δϑ = 50 K, √2, ρ · c_p, ṁ ≠ 0", klartext);
+        }
+
+        /// <summary>
+        /// Geschützte Leerzeichen (H13 Fassung 2: „&lt;/big&gt; &amp;nbsp;&amp;nbsp;(3)", „8&amp;nbsp;760")
+        /// werden zu gewöhnlichen — der Assistent liest „8 760" und „(3)", nicht die Entität.
+        /// </summary>
+        [Fact]
+        public void Der_Klartext_loest_geschuetzte_Leerzeichen_auf()
+        {
+            string klartext = BerechnungsHilfe.AlsKlartext(
+                "== Rechenweg ==\n: <big>P<sub>AC</sub>(t) = 8&nbsp;760 · x</big> &nbsp;&nbsp;(3)\n");
+
+            Assert.DoesNotContain("&nbsp;", klartext, StringComparison.Ordinal);
+            Assert.Contains("8 760", klartext, StringComparison.Ordinal);
+            Assert.Contains("P_AC(t)", klartext, StringComparison.Ordinal);
+            Assert.Contains("(3)", klartext, StringComparison.Ordinal);
         }
 
         /// <summary>

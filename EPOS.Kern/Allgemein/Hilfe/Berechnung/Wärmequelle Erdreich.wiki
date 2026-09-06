@@ -39,7 +39,9 @@ Der Entwurfsstand von Blatt 1 ist bewusst gewaehlt und wird hier ausdruecklich g
 
 == Formelzeichen und Parameter ==
 
-'''Parameter''' — was in die Rechnung hereinkommt:
+=== Parameter ===
+
+Was in die Rechnung hereinkommt:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
@@ -81,7 +83,9 @@ Der Entwurfsstand von Blatt 1 ist bewusst gewaehlt und wird hier ausdruecklich g
 | 0,05 || Frostschwelle als Anteil der Betriebsstunden || — || Konstante des Rechenkerns (5 %)
 |}
 
-'''Variablen''' — was die Rechnung selbst bildet:
+=== Variablen ===
+
+Was die Rechnung selbst bildet:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
@@ -134,18 +138,15 @@ Der Entwurfsstand von Blatt 1 ist bewusst gewaehlt und wird hier ausdruecklich g
 Das Erdreichmodell braucht drei Zahlen aus dem Aussentemperaturvektor: das '''Jahresmittel'''
 ϑ<sub>m</sub>, die '''Amplitude''' A und die '''Stunde des Minimums''' t<sub>min</sub>.
 
-: <big>ϑ<sub>m</sub> = ( Σ<sub>t=1…8 760</sub> ϑ<sub>a</sub>(t) ) / 8 760</big>  (1)
-
+: <big>ϑ<sub>m</sub> = ( Σ<sub>t=1…8 760</sub> ϑ<sub>a</sub>(t) ) / 8 760</big> &nbsp;&nbsp;(1)
 Amplitude und Minimum kommen '''nicht''' aus den Extrema der Stundenwerte — die
 ueberschaetzen die Amplitude erheblich —, sondern aus einer '''Ausgleichsrechnung ueber die
 zwoelf Monatsmittel''' gegen Kosinus und Sinus des Jahresgangs (2×2-Normalgleichung mit den
 exakten Monatsmitteln der Regressoren, angesetzt auf die Abweichung der Monatsmittel von
 ϑ<sub>m</sub>). Aus den beiden Koeffizienten folgt
 
-: <big>A = √( a<sub>1</sub>² + b<sub>1</sub>² )</big>  (2)
-
-: <big>t<sub>min</sub> = arctan2( −b<sub>1</sub> , −a<sub>1</sub> ) / ω</big>  (3)
-
+: <big>A = √( a<sub>1</sub>² + b<sub>1</sub>² )</big> &nbsp;&nbsp;(2)
+: <big>t<sub>min</sub> = arctan2( −b<sub>1</sub> , −a<sub>1</sub> ) / ω</big> &nbsp;&nbsp;(3)
 Ein negativer Winkel in (3) wird vorher um 2π angehoben, damit t<sub>min</sub> im Jahr
 liegt.
 
@@ -172,18 +173,15 @@ Januarhaelfte). Dass mit ihnen gerechnet wurde, sagt der Dialog an.
 
 Aus den Bodenkennwerten folgen zuerst Temperaturleitfaehigkeit und Daempfungstiefe:
 
-: <big>a = λ / ( ρ·c<sub>p</sub> · 10<sup>6</sup> )</big>  (4)
-
-: <big>d = √( 2 · a · 3 600 / ω )</big>  (5)
-
+: <big>a = λ / ( ρ·c<sub>p</sub> · 10<sup>6</sup> )</big> &nbsp;&nbsp;(4)
+: <big>d = √( 2 · a · 3 600 / ω )</big> &nbsp;&nbsp;(5)
 Der Faktor 10<sup>6</sup> in (4) rechnet ρ·c<sub>p</sub> von MJ/(m³·K) in J/(m³·K); der
 Faktor 3 600 in (5) rechnet ''a'' von m²/s in m²/h, damit ω in 1/h eingesetzt werden kann
 und ''d'' in Metern herauskommt.
 
 Damit die Quelltemperatur in der Tiefe z:
 
-: <big>ϑ<sub>K</sub>(z, t) = ϑ<sub>m</sub> − A · exp(−z/d) · cos( ω · (t − t<sub>min</sub>) − z/d )</big>  (6)
-
+: <big>ϑ<sub>K</sub>(z, t) = ϑ<sub>m</sub> − A · exp(−z/d) · cos( ω · (t − t<sub>min</sub>) − z/d )</big> &nbsp;&nbsp;(6)
 Die Verlegetiefe z daempft die Amplitude mit exp(−z/d) und verschiebt zugleich die Phase um
 z/d Radiant — in 1,5 m Tiefe in feuchtem Sand (d = 2,72 m) bleiben rund 58 % der Amplitude,
 und das Minimum kommt rund einen Monat spaeter als an der Oberflaeche (0,55 rad entsprechen
@@ -233,8 +231,7 @@ Ein unbekannter oder leerer Bodentyp ergibt '''Sand, feucht'''.
 Ab der neutralen Zone (10 bis 20 m) ist der Jahresgang abgeklungen; die Sonde bekommt
 deshalb eine '''ueber das Jahr konstante''' Quelltemperatur:
 
-: <big>ϑ<sub>S</sub> = ϑ<sub>m</sub> + 1,5 + 0,03 · max( 0 ; ℓ<sub>S</sub> / 2 − 20 )</big>  (7)
-
+: <big>ϑ<sub>S</sub> = ϑ<sub>m</sub> + 1,5 + 0,03 · max( 0 ; ℓ<sub>S</sub> / 2 − 20 )</big> &nbsp;&nbsp;(7)
 '''1,5''' K ist der Oberflaechenoffset, '''0,03''' K/m der geothermische Gradient, und
 '''20''' m die Untergrenze der neutralen Zone — bis dorthin stammt die Energie nach
 VDI 4640 Blatt 1 „fast ausschliesslich aus Sonneneinstrahlung und Sickerwasser". Massgeblich
@@ -259,14 +256,10 @@ Simulation nie angefasst hat.
 
 === 6. Nach dem Lauf: die Entzugsgroessen ===
 
-: <big>P<sub>Q</sub>(t) = P<sub>th,WP</sub>(t) − P<sub>el,WP</sub>(t)</big>  (8)
-
-: <big>Q<sub>Q,a</sub> = Σ<sub>t=1…8 760</sub> max( 0 ; P<sub>Q</sub>(t) )</big>  (9)
-
-: <big>P<sub>Q,max</sub> = 1 000 · max( 0 ; max<sub>t=1…8 760</sub> P<sub>Q</sub>(t) )</big>  (10)
-
-: <big>t<sub>V</sub> = Q<sub>Q,a</sub> · 1 000 / P<sub>Q,max</sub></big>  (11)
-
+: <big>P<sub>Q</sub>(t) = P<sub>th,WP</sub>(t) − P<sub>el,WP</sub>(t)</big> &nbsp;&nbsp;(8)
+: <big>Q<sub>Q,a</sub> = Σ<sub>t=1…8 760</sub> max( 0 ; P<sub>Q</sub>(t) )</big> &nbsp;&nbsp;(9)
+: <big>P<sub>Q,max</sub> = 1 000 · max( 0 ; max<sub>t=1…8 760</sub> P<sub>Q</sub>(t) )</big> &nbsp;&nbsp;(10)
+: <big>t<sub>V</sub> = Q<sub>Q,a</sub> · 1 000 / P<sub>Q,max</sub></big> &nbsp;&nbsp;(11)
 Stunden mit P<sub>Q</sub>(t) ≤ 0 zaehlen weder in (9) noch in (10) — die Waermepumpe entzieht
 in ihnen nichts. Der Faktor 1 000 in (10) rechnet kW in W (so verlangt es die Norm), und
 (11) nimmt ihn wieder heraus, damit Stunden herauskommen.
@@ -288,10 +281,8 @@ Waermepumpen-Module zusammen. Daraus die Stufung:
 
 Geprueft werden '''zwei''' Groessen, und '''beide''' muessen eingehalten sein:
 
-: <big>q<sub>A</sub> = P<sub>Q,max</sub> / A<sub>K</sub> ≤ q<sub>A,zul</sub></big>  (12)
-
-: <big>e<sub>A</sub> = Q<sub>Q,a</sub> / A<sub>K</sub> ≤ e<sub>A,zul</sub></big>  (13)
-
+: <big>q<sub>A</sub> = P<sub>Q,max</sub> / A<sub>K</sub> ≤ q<sub>A,zul</sub></big> &nbsp;&nbsp;(12)
+: <big>e<sub>A</sub> = Q<sub>Q,a</sub> / A<sub>K</sub> ≤ e<sub>A,zul</sub></big> &nbsp;&nbsp;(13)
 Die Grenzwerte stehen in Tabelle A2 — 15 Klimazonen nach DIN 4710 mal vier Bodenarten
 (Sand, Lehm, Schluff, sandiger Ton). Diese Tabelle ist '''vollstaendig''' hinterlegt. Die
 Spannen: von 5 W/m² und 12 kWh/(m²·a) (Zone 11, Sand) bis 42 W/m² und 69 kWh/(m²·a)
@@ -309,18 +300,15 @@ Die 13 Untergrundtypen aus Blatt 1 werden auf die vier Bodenarten aus Blatt 2 ab
 Wird ein Grenzwert ueberschritten, nennt der Hinweis die '''erforderliche Flaeche''' — die
 groessere der beiden Forderungen:
 
-: <big>A<sub>K,erf</sub> = max( P<sub>Q,max</sub> / q<sub>A,zul</sub> ; Q<sub>Q,a</sub> / e<sub>A,zul</sub> )</big>  (14)
-
+: <big>A<sub>K,erf</sub> = max( P<sub>Q,max</sub> / q<sub>A,zul</sub> ; Q<sub>Q,a</sub> / e<sub>A,zul</sub> )</big> &nbsp;&nbsp;(14)
 Beispiel: 250 m² in Zone 6 auf feuchtem Sand bei P<sub>Q,max</sub> = 6 480 W und
 Q<sub>Q,a</sub> = 8 900 kWh/a ergeben 25,9 W/m² gegen 16 W/m² und 35,6 gegen
 31 kWh/(m²·a); nach (14) waeren 405 m² noetig.
 
 === 8. Auslegungspruefung Erdsonde (Anhang B) ===
 
-: <big>ℓ<sub>ges</sub> = ℓ<sub>S</sub> · max( 1 ; n<sub>S</sub> )</big>  (15)
-
-: <big>q<sub>B</sub> = P<sub>Q,max</sub> / ℓ<sub>ges</sub> ≤ q<sub>B,zul</sub></big>  (16)
-
+: <big>ℓ<sub>ges</sub> = ℓ<sub>S</sub> · max( 1 ; n<sub>S</sub> )</big> &nbsp;&nbsp;(15)
+: <big>q<sub>B</sub> = P<sub>Q,max</sub> / ℓ<sub>ges</sub> ≤ q<sub>B,zul</sub></big> &nbsp;&nbsp;(16)
 Das max(1; n<sub>S</sub>) in (15) ist nicht Kosmetik: Eine leere oder auf 0 stehende
 Sondenzahl ergaebe 0 Sondenmeter, und (16) meldete eine Entzugsleistung von unendlich vielen
 W/m. Eine Sonde ist das Mindeste, was vorhanden sein kann.
@@ -340,18 +328,15 @@ Sondenzahl sinkt. Ein solches Ergebnis traegt deshalb einen ausdruecklichen Vorb
 Ueberschreitet der Istwert den Grenzwert, nennt der Hinweis die erforderliche
 Sondenmeterzahl:
 
-: <big>ℓ<sub>erf</sub> = P<sub>Q,max</sub> / q<sub>B,zul</sub></big>  (17)
-
+: <big>ℓ<sub>erf</sub> = P<sub>Q,max</sub> / q<sub>B,zul</sub></big> &nbsp;&nbsp;(17)
 === 9. Die zweite Warnbedingung: Frost ===
 
 Geprueft wird ausserdem, ob '''Quelltemperatur minus Spreizung''' dauerhaft unter 0 °C
 liegt. Gezaehlt werden ausschliesslich die '''Betriebsstunden''' — in Stillstandsstunden
 entzieht niemand Waerme, eine Frostmeldung daraus waere gegenstandslos:
 
-: <big>n<sub>Frost</sub> = Zahl der Betriebsstunden mit ϑ<sub>Q</sub>(t) − Δϑ < 0 °C</big>  (18)
-
-: <big>Warnung, wenn n<sub>Frost</sub> > 0,05 · n<sub>Betrieb</sub></big>  (19)
-
+: <big>n<sub>Frost</sub> = Zahl der Betriebsstunden mit ϑ<sub>Q</sub>(t) − Δϑ < 0 °C</big> &nbsp;&nbsp;(18)
+: <big>Warnung, wenn n<sub>Frost</sub> > 0,05 · n<sub>Betrieb</sub></big> &nbsp;&nbsp;(19)
 Ohne gepflegte Spreizung gelten Δϑ = 5 K.
 
 Der Bezug auf n<sub>Betrieb</sub> in (19) ist Absicht: Eine Waermepumpe mit 2 000
