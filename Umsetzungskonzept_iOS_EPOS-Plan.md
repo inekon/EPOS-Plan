@@ -3325,6 +3325,49 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Katalogs rechnen nicht mit" in den Hilfeseiten BHKW und Solarthermie sind umformuliert (Vorbelegung, im Projekt änderbar,
 > gerechnet wird mit der Projektzeile). Nachweis: `EPOS.Kern.Tests/AnlagenTemperaturenTests` (sechs Fälle, bis in
 > `Tab_Energieanlagen`), Gate grün, Referenzlauf 1030/1007/1017 byte-gleich; Abnahmepunkte A‑W6‑E‑4‑1…4 in der Sitzungsmeldung.
+>
+> **W6‑O‑2 / O‑4 / O‑5 / O‑6 (Anwenderentscheide 06.09.2026: O‑2 „Empfehlung", O‑4 „Hersteller kann vom Modul verschieden sein.
+> Herstellerfilter etc. wie in Modulliste einfügen", O‑5 „Modul der gewählten Zeile", O‑6 „jeder Strang mit nur einem Modultyp,
+> unterschiedliche Stränge können jeweils einen anderen Modultyp haben"), umgesetzt in `35a48eb`, Papiere `df4f8c2`/`6e10dd6`,
+> zusammengeführt in `c6e2d8d`:** Eine Frage — *welches Modul gilt für diesen Strang?* — an drei Stellen beantwortet. Im
+> **Rechenweg** bündelt `SimulationPV` die Modulgrößen als `Modulsatz` je Modultyp (Nennleistung, Fläche, Wirkungsgrad, γ,
+> NOCT, Huld-Satz), gewählt über `Z_AnlageStrang.ID_PV`, NULL/0/unbekannt → Anlagenmodul; gelesen einmal vor der Stundenschleife
+> und nur, wenn eine Strangzeile ein eigenes Modul führt; kWp je Gerät ist die Summe der Stränge mit je eigener Modulleistung. In
+> der **Ampel** bekommt `Pruefen` die gewählte Projektzeile (`ModulDer(zeile)` statt „erstes bekanntes Modul"), `Gaben.Module`
+> trägt die Strangmodule; P1–P4 je Strang gegen sein Modul, der MPPT-Strom als Summe der Stränge mit je eigenem I_sc, P8 bleibt
+> Anlagenprüfung. In der **Maske** steht die Filterzeile ÜBER der Strangtabelle wie über der Modulliste (Hersteller aus dem
+> Wechselrichterkatalog, unabhängig vom Modulfilter; ein gewähltes Fremdgerät bleibt in seiner Zeile), dazu die Spalte „Modul"
+> je Strang mit „(Modul der Anlage)" als Vorgabe. **O‑2** ist als Entscheid geschlossen: nur eingesetzte Geräte werden von Hand
+> nachgepflegt, keine Programmarbeit. Prüfstand: `Ein_Strang_ohne_ID_PV_rechnet_mit_dem_Anlagenmodul` (bitgleich),
+> `Zwei_Module_an_einem_Geraet_kosten_das_gemeinsame_Clipping` (275,19 W + 400 W an 2,0 kW, 6,7519 kWp, Zerlegung auf sechs
+> Stellen; Gegenprobe mit abgeschaltetem Strangmodul fällt rot), drei Ampelfälle (425,3 V / 495,5 V, DC/AC 1,35038) und acht
+> bunit-Fälle (Filter 4 → 2, „Alle", Fremdgerät bleibt, Modulspalte, `Assert.Same` auf die gewählte Zeile). Konzept Rev. 5,
+> Mockup M1, `Photovoltaik.wiki` nachgezogen (Fassung 3, Wächter grün). Nachweis: Kern 1 619 / UI 2 987 grün, Designer
+> „abweichend 0", SQL 0 Fundstellen, Gate grün, **Referenzlauf byte-gleich** (ohne `ID_PV` ändert sich nichts, ohne
+> Strangzuordnung gar nichts). Auf Windows abzunehmen (A‑W6‑O‑456‑1…3): Anmutung der Filterzeile, Breite der Modulspalte auf
+> schmalem Schirm, Zusammenspiel von Modulwahl und abgeleiteter „Anzahl Module".
+>
+> **W6‑O‑1 / O‑3 (Anwenderentscheide 06.09.2026: „der OND-Import soll umgesetzt werden. baue daher den Modulimport schon jetzt
+> um" und „hole die Wechselrichterdaten für den Import … Liste als Datei und dann über import (aus Admin Menü)"), umgesetzt in
+> `9ef8ca5`, Papiere `1d4365d`, zusammengeführt in `c7c2eb7`:** Aus `PvModulImportDialog` (771 Z.) und `WechselrichterImportDialog`
+> (655 Z.) ist **EIN Wirt** geworden — `ModulImportDialog` (669 Z.) mit zwei Ausprägungen, Modul (CEC, CEC-Datei, PAN) und
+> Wechselrichter (CEC, CEC-Datei, OND); Spalten, Felder, Reiter, Filter und Quellen sind DATEN (`ModulImportProfil` im Kern,
+> Zwilling zu `ModulKatalogProfil`: `ModulKatalog*` pflegt, `ModulImport*` liest ein), die Komponente kennt keinen Satztyp
+> (`ImportZeile` trägt Zellwerte, Detailwerte und Filtergrößen), die zwei Hüllen sind eine (`ModulImportHuelle`), beide
+> Hilfeschlüssel bleiben, `help_mapping.txt` ist unverändert; die 17 Fälle des alten Modulimports laufen wortgleich im neuen
+> Prüfstand (34 Fälle über beide Ausprägungen). **Neu der OND-Import** (Konzept 5.2): `OndWechselrichterDienst` liest
+> PVsyst-`.OND`-Dateien (ANSI/1252, Leistungen in kW, Schwellen in W, Wirkungsgrade in %; `ProfilPIO` sind Paare P_in/P_out,
+> interpoliert über P_out; bei drei Fassungen die nominale), zwei synthetische Proben (`ond_muster_2500tl.ond` mit den Zahlen
+> des Konzept-Anhangs A, `ond_muster_10000tl_3profile.ond`), 20 Fälle. **Die CEC-Wechselrichterliste** liegt als
+> Auslieferungsdatei `VDI-3805-Daten/PV/CEC Inverters.csv` neben `CEC Modules.csv` (NREL SAM, Abruf 06.09.2026, 2 343 Geräte,
+> 152 Hersteller, Kennlinie für alle vollständig; Plausibilität 2 040 grün / 303 gelb / 0 rot) mit LIESMICH; der vom Anwender
+> bestätigte Weg ist gebaut: **Administration → Datenimport → „Wechselrichter (CEC, OND)…" → „CEC-Datei laden"** (Dateiwähler
+> im Unterordner PV des Herstellerdatenpfads; denselben Knopf hat jetzt auch der Modulimport). Das Setup liefert
+> `VDI-3805-Daten` wie bisher nicht aus — im LIESMICH vermerkt. Nachweis: Kern 1 619 / UI 2 987 grün, Formularkarte 122,
+> Designer „abweichend 0", SQL 0 Fundstellen, Gate grün, Referenzlauf byte-gleich. **Neu offen W6‑O‑8:** 303 der 2 343
+> CEC-Geräte sind gelb aus EINEM Grund („Die Kennlinie fällt im Teillastast", η30 > η50 — der Scheitel der Sandia-Parabel bei
+> Geräten mit hohem Wirkungsgrad, kein Datenfehler); Empfehlung: die Regel auf einen Schwellwert heben, Anwenderentscheid.
+> Abnahmepunkte A‑W6‑O‑13‑1…3 in der Sitzungsmeldung.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
