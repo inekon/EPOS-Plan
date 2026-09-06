@@ -13937,6 +13937,24 @@ Trotzdem importieren?</value>
   <data name="LIZ_ST_NICHTAKTIVIERT" xml:space="preserve">
     <value>Nicht aktiviert — Testversion oder Lizenzschlüssel unter Administration → Lizenz.</value>
   </data>
+  <data name="LIZ_LESEMODUS_SPERRE" xml:space="preserve">
+    <value>Lesemodus: Die Lizenz erlaubt derzeit keine Änderungen. Der Vorgang wurde nicht gespeichert. Ansehen, Berichte und Export bleiben möglich.</value>
+  </data>
+  <data name="LIZ_BANNER_LESEMODUS" xml:space="preserve">
+    <value>Lesemodus — es lassen sich keine Änderungen speichern und keine Simulation rechnen. Ansehen, Berichte und Export bleiben möglich. Lizenz: Menü „Hilfe → Lizenzverwaltung“.</value>
+  </data>
+  <data name="LIZ_BANNER_ABLAUF" xml:space="preserve">
+    <value>Die Lizenz läuft in {0} Tagen ab ({1}). Bitte rechtzeitig verlängern — Menü „Hilfe → Lizenzverwaltung“.</value>
+  </data>
+  <data name="LIZ_BANNER_ABLAUF_EIN" xml:space="preserve">
+    <value>Die Lizenz läuft morgen ab ({0}). Bitte verlängern — Menü „Hilfe → Lizenzverwaltung“.</value>
+  </data>
+  <data name="LIZ_BANNER_ABLAUF_HEUTE" xml:space="preserve">
+    <value>Die Lizenz läuft heute ab ({0}). Bitte verlängern — Menü „Hilfe → Lizenzverwaltung“.</value>
+  </data>
+  <data name="SIM_MSG_LESEMODUS" xml:space="preserve">
+    <value>Im Lesemodus lässt sich keine Simulation rechnen: Die Lizenz erlaubt derzeit keine neuen Arbeitsergebnisse. Vorhandene Ergebnisse, Berichte und Export bleiben möglich.</value>
+  </data>
   <data name="LIZ_TYP_DEMO" xml:space="preserve">
     <value>Demoversion</value>
   </data>
