@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmepumpe | Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmepumpe | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs, WaermequelleClass.cs,
      WaermequelleClass.Quellenwahl.cs, WaermesenkeClass.cs, ErdreichTemperatur.cs,
      Kaskadenschleife.cs (Bivalenzpunkt, Phase F); Katalog/ParameterVerwendung.cs (Befund W14a-E-8-B2) -->
@@ -54,10 +54,12 @@ Heizstabs, die Laufzeit, der ermittelte Bivalenzpunkt und die daraus gebildete
 
 == Formelzeichen und Parameter ==
 
-Die Schreibweise ist die der ganzen Rubrik: ''t'' ist die Stunde des Jahres (1…8&nbsp;760), ''P''
-eine Leistung, ''Q'' eine Wärmemenge, ''E'' eine Strommenge, ''ϑ'' eine Temperatur in Grad Celsius.
-Weil eine Stunde lang ist, sind Leistung und Energie zahlengleich. Die Leistungszahl heißt in der
-Stunde '''COP''', über das Jahr '''JAZ'''.
+Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres
+(1…8&nbsp;760), <math>P</math> eine Leistung, <math>Q</math> eine Wärmemenge, <math>E</math> eine
+Strommenge, <math>\vartheta</math> eine Temperatur in Grad Celsius. Weil eine Stunde lang ist, sind
+Leistung und Energie zahlengleich. Die Leistungszahl heißt in der Stunde
+<math>\operatorname{COP}</math>, über das Jahr <math>\mathrm{JAZ}</math>. Ein Strich am Symbol
+(<math>P'_{\mathrm{th}}</math>) bezeichnet den Wert '''nach''' einer Kürzung.
 
 === Parameter ===
 
@@ -66,29 +68,29 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
 |-
-| ϑ<sub>u</sub>, ϑ<sub>o</sub> || Quelltemperatur der zwei Kennfeld-Stützstellen, zwischen denen ϑ<sub>Q</sub>(t) liegt || °C || Kennlinien-Editor (Projektkopie des Katalogkennfelds)
+| <math>\vartheta_{\mathrm{u}}</math>, <math>\vartheta_{\mathrm{o}}</math> || Quelltemperatur der zwei Kennfeld-Stützstellen, zwischen denen <math>\vartheta_{\mathrm{Q}}(t)</math> liegt || °C || Kennlinien-Editor (Projektkopie des Katalogkennfelds)
 |-
-| COP<sub>u</sub>, COP<sub>o</sub> || Leistungszahl an diesen zwei Stützstellen || — || derselbe Kennfeldsatz
+| <math>\operatorname{COP}_{\mathrm{u}}</math>, <math>\operatorname{COP}_{\mathrm{o}}</math> || Leistungszahl an diesen zwei Stützstellen || — || derselbe Kennfeldsatz
 |-
-| P<sub>th,u</sub>, P<sub>th,o</sub> || thermische Leistung an diesen zwei Stützstellen || kW || derselbe Kennfeldsatz
+| <math>P_{\mathrm{th,u}}</math>, <math>P_{\mathrm{th,o}}</math> || thermische Leistung an diesen zwei Stützstellen || kW || derselbe Kennfeldsatz
 |-
-| P<sub>HS</sub> || Heizstableistung des Moduls || kW || Dialog „Wärmepumpe", Abschnitt „Kenndaten", Feld „P Heizstab"
+| <math>P_{\mathrm{HS}}</math> || Heizstableistung des Moduls || kW || Dialog „Wärmepumpe", Abschnitt „Kenndaten", Feld „P Heizstab"
 |-
-| ϑ<sub>biv</sub> || Bivalenztemperatur || °C || Abschnitt „Spitzenlast und Betrieb"; '''Vorbelegung: 0&nbsp;°C''' — sie gilt wörtlich
+| <math>\vartheta_{\mathrm{biv}}</math> || Bivalenztemperatur || °C || Abschnitt „Spitzenlast und Betrieb"; '''Vorbelegung: 0&nbsp;°C''' — sie gilt wörtlich
 |-
-| h<sub>von</sub>, h<sub>bis</sub> || Sperrzeitfenster des Energieversorgers || h || derselbe Abschnitt, Felder „von" und „bis"
+| <math>h_{\mathrm{von}}</math>, <math>h_{\mathrm{bis}}</math> || Sperrzeitfenster des Energieversorgers || h || derselbe Abschnitt, Felder „von" und „bis"
 |-
-| ϑ<sub>VL</sub>, ϑ<sub>RL</sub> || Vorlauf- und Rücklauftemperatur der Anlage || °C || Dialog „Wärmepumpe", Abschnitt „Auslegung"
+| <math>\vartheta_{\mathrm{VL}}</math>, <math>\vartheta_{\mathrm{RL}}</math> || Vorlauf- und Rücklauftemperatur der Anlage || °C || Dialog „Wärmepumpe", Abschnitt „Auslegung"
 |-
-| ϑ<sub>VL,Sp</sub>, ϑ<sub>RL,Sp</sub> || Vorlauf und Rücklauf des Quellpuffers || °C || Pufferspeicher (Projekt), Abschnitt „Eigenschaften"
+| <math>\vartheta_{\mathrm{VL,Sp}}</math>, <math>\vartheta_{\mathrm{RL,Sp}}</math> || Vorlauf und Rücklauf des Quellpuffers || °C || Pufferspeicher (Projekt), Abschnitt „Eigenschaften"
 |-
-| COP<sub>HS</sub> || Leistungszahl des Heizstabs || — || '''Konstante: 1''' — eine kWh Wärme kostet eine kWh Strom
+| <math>\operatorname{COP}_{\mathrm{HS}}</math> || Leistungszahl des Heizstabs || — || '''Konstante: 1''' — eine kWh Wärme kostet eine kWh Strom
 |-
-| z || Verlegetiefe des Erdkollektors || m || Wärmequelle „Erdreich, Kollektor"; '''Vorgabe: 1,5&nbsp;m''' bei „Sand feucht"
+| <math>z</math> || Verlegetiefe des Erdkollektors || m || Wärmequelle „Erdreich, Kollektor"; '''Vorgabe: 1,5&nbsp;m''' bei „Sand feucht"
 |-
-| r || Ladepriorität des Moduls in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 20''' (Solarthermie 10, BHKW 30, Heizkessel 40)
+| <math>r</math> || Ladepriorität des Moduls in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 20''' (Solarthermie 10, BHKW 30, Heizkessel 40)
 |-
-| N<sub>max</sub> || größte Zahl Module je Projekt || Stück || '''Konstante: 10'''
+| <math>N_{\mathrm{max}}</math> || größte Zahl Module je Projekt || Stück || '''Konstante: 10'''
 |}
 
 === Variablen ===
@@ -98,60 +100,61 @@ Größen, die der Lauf je Stunde oder je Modul bildet.
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
 |-
-| t || Stunde des Jahres, 1…8&nbsp;760 || — || Laufindex der Stundenschleife
+| <math>t</math> || Stunde des Jahres, 1…8&nbsp;760 || — || Laufindex der Stundenschleife
 |-
-| h<sub>T</sub>(t) || Tagesstunde, 0…23 || — || aus t
+| <math>h_{\mathrm{T}}(t)</math> || Tagesstunde, 0…23 || — || aus <math>t</math>
 |-
-| ϑ<sub>Luft</sub>(t) || Außentemperatur || °C || Klimadatenreihe (Eingang)
+| <math>\vartheta_{\mathrm{Luft}}(t)</math> || Außentemperatur || °C || Klimadatenreihe (Eingang)
 |-
-| ϑ<sub>Q</sub>(t) || Quelltemperatur der Stunde || °C || Schritt 1, Quellentabelle; Rückfall (1)
+| <math>\vartheta_{\mathrm{Q}}(t)</math> || Quelltemperatur der Stunde || °C || Schritt 1, Quellentabelle; Rückfall (1)
 |-
-| COP(t) || Leistungszahl der Stunde || — || (2)
+| <math>\operatorname{COP}(t)</math> || Leistungszahl der Stunde || — || (2)
 |-
-| P<sub>th</sub>(t) || thermische Leistung der Stunde || kW || (3), gekürzt durch (5) und (7)
+| <math>P_{\mathrm{th}}(t)</math> || thermische Leistung der Stunde || kW || (3), gekürzt durch (5) und (7)
 |-
-| P<sub>el</sub>(t) || elektrische Leistung der Wärmepumpe || kW || (4), gekürzt durch (5) und (7)
+| <math>P_{\mathrm{el}}(t)</math> || elektrische Leistung der Wärmepumpe || kW || (4), gekürzt durch (5) und (7)
 |-
-| Q<sub>Q</sub>(t) || Verdampferwärme, die die Quelle liefern muss || kWh || (6)
+| <math>Q_{\mathrm{Q}}(t)</math> || Verdampferwärme, die die Quelle liefern muss || kWh || (6)
 |-
-| Q<sub>Sp</sub>(t) || Inhalt des Quellpuffers || kWh || Pufferspeicher (Eingang)
+| <math>Q_{\mathrm{Sp}}(t)</math> || Inhalt des Quellpuffers || kWh || Pufferspeicher (Eingang)
 |-
-| k(t) || Kürzungsfaktor bei erschöpfter Quelle || — || (7)
+| <math>k(t)</math> || Kürzungsfaktor bei erschöpfter Quelle || — || (7)
 |-
-| Q<sub>verf</sub>(t) || offener Bedarf der eigenen Senkenkette || kWh || Eingang aus der Kaskade
+| <math>Q_{\mathrm{verf}}(t)</math> || offener Bedarf der eigenen Senkenkette || kWh || Eingang aus der Kaskade
 |-
-| Q<sub>deck</sub>(t) || in dieser Stunde gedeckte Wärme || kWh || (8) bzw. (9)
+| <math>Q_{\mathrm{deck}}(t)</math> || in dieser Stunde gedeckte Wärme || kWh || (8) bzw. (9)
 |-
-| E(t) || Strombedarf der Wärmepumpe in dieser Stunde || kWh || (8) bzw. (9)
+| <math>E(t)</math> || Strombedarf der Wärmepumpe in dieser Stunde || kWh || (8) bzw. (9)
 |-
-| Δh(t) || Zuwachs der Laufzeit — eine '''Vollbenutzungs'''stunde || h || (8) bzw. (9)
+| <math>\Delta h(t)</math> || Zuwachs der Laufzeit — eine '''Vollbenutzungs'''stunde || h || (8) bzw. (9)
 |-
-| E<sub>PV</sub>(t) || noch freier PV-Überschuss der Stunde || kWh || Photovoltaikzweig (Eingang)
+| <math>E_{\mathrm{PV}}(t)</math> || noch freier PV-Überschuss der Stunde || kWh || Photovoltaikzweig (Eingang)
 |-
-| Q<sub>lad</sub>(t) || Ladepotenzial der Stunde || kWh || Schritt 5, Modustabelle; PV-Fall (10)
+| <math>Q_{\mathrm{lad}}(t)</math> || Ladepotenzial der Stunde || kWh || Schritt 5, Modustabelle; PV-Fall (10)
 |-
-| Q<sub>Rest</sub>(t) || nach Deckung, Ladung und Nachentladung offener Rest || kWh || Stundenschleife, vor dem Heizstab
+| <math>Q_{\mathrm{Rest}}(t)</math> || nach Deckung, Ladung und Nachentladung offener Rest || kWh || Stundenschleife, vor dem Heizstab
 |-
-| Q<sub>HS</sub>(t) || Wärme des Heizstabs || kWh || (11)
+| <math>Q_{\mathrm{HS}}(t)</math> || Wärme des Heizstabs || kWh || (11)
 |-
-| E<sub>HS</sub>(t) || Strom des Heizstabs || kWh || (12)
+| <math>E_{\mathrm{HS}}(t)</math> || Strom des Heizstabs || kWh || (12)
 |-
-| Q<sub>a</sub> || Wärmeproduktion des Moduls im Jahr || kWh || Jahressumme
+| <math>Q_{\mathrm{a}}</math> || Wärmeproduktion des Moduls im Jahr || kWh || Jahressumme
 |-
-| E<sub>a</sub> || Strombedarf der Wärmepumpe im Jahr || kWh || Jahressumme
+| <math>E_{\mathrm{a}}</math> || Strombedarf der Wärmepumpe im Jahr || kWh || Jahressumme
 |-
-| E<sub>HS,a</sub> || Strombedarf des Heizstabs im Jahr || kWh || Jahressumme
+| <math>E_{\mathrm{HS,a}}</math> || Strombedarf des Heizstabs im Jahr || kWh || Jahressumme
 |-
-| ϑ<sub>biv,erg</sub> || ermittelter Bivalenzpunkt || °C || (13)
+| <math>\vartheta_{\mathrm{biv,erg}}</math> || ermittelter Bivalenzpunkt || °C || (13)
 |-
-| JAZ || Jahresarbeitszahl || — || (14)
+| <math>\mathrm{JAZ}</math> || Jahresarbeitszahl || — || (14)
 |}
 
 == Rechenweg ==
 
-Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''. Höchstens N<sub>max</sub> =
-'''zehn''' Module je Projekt gehen in die Rechnung ein; sie arbeiten in jeder Stunde in
-Anlagenpriorität nacheinander.
+Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
+Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht
+wiederholt. Höchstens <math>N_{\mathrm{max}} = 10</math> Module je Projekt gehen in die Rechnung
+ein; sie arbeiten in jeder Stunde in Anlagenpriorität nacheinander.
 
 === Schritt 1 — Quelltemperatur je Stunde ===
 
@@ -159,24 +162,27 @@ Sie entscheidet über alles Weitere. Eine '''Luft/Wasser'''-Wärmepumpe nimmt im
 Außentemperatur; sonst gilt die eingestellte Wärmequelle:
 
 {| class="wikitable"
-! Wärmequelle !! Quelltemperatur ϑ<sub>Q</sub>(t)
+! Wärmequelle !! Quelltemperatur <math>\vartheta_{\mathrm{Q}}(t)</math>
 |-
-| Außenluft || ϑ<sub>Luft</sub>(t) aus der Klimareihe
+| Außenluft || <math>\vartheta_{\mathrm{Luft}}(t)</math> aus der Klimareihe
 |-
 | Konstante Temperatur || der eingegebene Wert, für alle 8&nbsp;760 Stunden
 |-
 | Erdreich, Erdsonde || konstant über das Jahr, aus dem Jahresmittel der Außentemperatur plus dem geothermischen Anteil über die Sondenlänge (VDI 4640 Blatt 1)
 |-
-| Erdreich, Kollektor || Jahreswelle nach Kusuda über die Verlegetiefe z und die Bodenart; ohne Werte gelten 1,5&nbsp;m und „Sand feucht"
+| Erdreich, Kollektor || Jahreswelle nach Kusuda über die Verlegetiefe <math>z</math> und die Bodenart; ohne Werte gelten 1,5&nbsp;m und „Sand feucht"
 |-
 | Quellprofil || 12 Monats-, 365 Tages- oder 8&nbsp;760 Stundenwerte, auf das Jahresraster gekachelt (die Tagesvariante kalenderunabhängig)
 |-
 | CSV-Reihe || die eingelesene Reihe
 |-
-| Pufferspeicher || die gepflegte Quelltemperatur; sonst der Mittelwert (1). Ist der Puffer zugleich Senke eines anderen Erzeugers, folgt ϑ<sub>Q</sub>(t) '''stündlich''' dem Speicherzustand an der Entnahmehöhe
+| Pufferspeicher || die gepflegte Quelltemperatur; sonst der Mittelwert (1). Ist der Puffer zugleich Senke eines anderen Erzeugers, folgt <math>\vartheta_{\mathrm{Q}}(t)</math> '''stündlich''' dem Speicherzustand an der Entnahmehöhe
 |}
 
-: <big>ϑ<sub>Q</sub>(t) = ( ϑ<sub>VL,Sp</sub> + ϑ<sub>RL,Sp</sub> ) / 2</big> &nbsp;&nbsp;(1)
+: <math>\displaystyle \vartheta_{\mathrm{Q}}(t) = \frac{\vartheta_{\mathrm{VL,Sp}} + \vartheta_{\mathrm{RL,Sp}}}{2}</math> &nbsp;&nbsp;(1)
+:: <math>\vartheta_{\mathrm{Q}}(t)</math> – Quelltemperatur der Stunde [°C]
+:: <math>\vartheta_{\mathrm{VL,Sp}}</math> – Vorlauftemperatur des Quellpuffers [°C]
+:: <math>\vartheta_{\mathrm{RL,Sp}}</math> – Rücklauftemperatur des Quellpuffers [°C]
 
 Lässt sich eine Quelle nicht auflösen — kein Profil, keine lesbare Datei, kein gewählter Puffer —,
 gilt ersatzweise die Außentemperatur, und der Lauf sagt es im Protokoll. Das ist eine
@@ -185,24 +191,35 @@ Ersatzannahme mit voller Wirkung auf die Jahresarbeitszahl.
 === Schritt 2 — Kennfeldauswertung ===
 
 Das Kennfeld führt je Vorlauftemperatur Stützstellen aus Quelltemperatur, COP und thermischer
-Leistung, nach Quelltemperatur absteigend. Liegt ϑ<sub>Q</sub>(t) '''innerhalb''' des Feldes, wird
-zwischen den zwei umgebenden Stützstellen linear interpoliert — getrennt für COP und für die
-Leistung:
+Leistung, nach Quelltemperatur absteigend. Liegt <math>\vartheta_{\mathrm{Q}}(t)</math>
+'''innerhalb''' des Feldes, wird zwischen den zwei umgebenden Stützstellen linear interpoliert —
+getrennt für COP und für die Leistung:
 
-: <big>COP(t) = COP<sub>u</sub> + ( COP<sub>o</sub> − COP<sub>u</sub> ) · ( ϑ<sub>Q</sub>(t) − ϑ<sub>u</sub> ) / ( ϑ<sub>o</sub> − ϑ<sub>u</sub> )</big> &nbsp;&nbsp;(2)
+: <math>\displaystyle \operatorname{COP}(t) = \operatorname{COP}_{\mathrm{u}} + \left( \operatorname{COP}_{\mathrm{o}} - \operatorname{COP}_{\mathrm{u}} \right) \cdot \frac{\vartheta_{\mathrm{Q}}(t) - \vartheta_{\mathrm{u}}}{\vartheta_{\mathrm{o}} - \vartheta_{\mathrm{u}}}</math> &nbsp;&nbsp;(2)
+:: <math>\operatorname{COP}(t)</math> – Leistungszahl der Stunde [–]
+:: <math>\operatorname{COP}_{\mathrm{u}}</math>, <math>\operatorname{COP}_{\mathrm{o}}</math> – Leistungszahl an der unteren und der oberen Stützstelle [–]
+:: <math>\vartheta_{\mathrm{Q}}(t)</math> – Quelltemperatur der Stunde [°C]
+:: <math>\vartheta_{\mathrm{u}}</math>, <math>\vartheta_{\mathrm{o}}</math> – Quelltemperatur der unteren und der oberen Stützstelle [°C]
 
-: <big>P<sub>th</sub>(t) = P<sub>th,u</sub> + ( P<sub>th,o</sub> − P<sub>th,u</sub> ) · ( ϑ<sub>Q</sub>(t) − ϑ<sub>u</sub> ) / ( ϑ<sub>o</sub> − ϑ<sub>u</sub> )</big> &nbsp;&nbsp;(3)
+: <math>\displaystyle P_{\mathrm{th}}(t) = P_{\mathrm{th,u}} + \left( P_{\mathrm{th,o}} - P_{\mathrm{th,u}} \right) \cdot \frac{\vartheta_{\mathrm{Q}}(t) - \vartheta_{\mathrm{u}}}{\vartheta_{\mathrm{o}} - \vartheta_{\mathrm{u}}}</math> &nbsp;&nbsp;(3)
+:: <math>P_{\mathrm{th}}(t)</math> – thermische Leistung der Stunde [kW]
+:: <math>P_{\mathrm{th,u}}</math>, <math>P_{\mathrm{th,o}}</math> – thermische Leistung an der unteren und der oberen Stützstelle [kW]
+:: <math>\vartheta_{\mathrm{Q}}(t)</math> – Quelltemperatur der Stunde [°C]
+:: <math>\vartheta_{\mathrm{u}}</math>, <math>\vartheta_{\mathrm{o}}</math> – Quelltemperatur der zwei Stützstellen [°C]
 
-: <big>P<sub>el</sub>(t) = P<sub>th</sub>(t) / COP(t)</big> &nbsp;&nbsp;(4)
+: <math>\displaystyle P_{\mathrm{el}}(t) = \frac{P_{\mathrm{th}}(t)}{\operatorname{COP}(t)}</math> &nbsp;&nbsp;(4)
+:: <math>P_{\mathrm{el}}(t)</math> – elektrische Leistung der Wärmepumpe [kW]
+:: <math>P_{\mathrm{th}}(t)</math> – thermische Leistung der Stunde [kW]
+:: <math>\operatorname{COP}(t)</math> – Leistungszahl der Stunde [–]
 
 Außerhalb des Feldes gilt:
 
 {| class="wikitable"
-! Lage von ϑ<sub>Q</sub>(t) !! was gilt
+! Lage von <math>\vartheta_{\mathrm{Q}}(t)</math> !! was gilt
 |-
-| ϑ<sub>Q</sub>(t) ≥ oberste Stützstelle || '''Kappung''' auf deren COP und Leistung — keine Extrapolation nach oben
+| <math>\vartheta_{\mathrm{Q}}(t)</math> ab der obersten Stützstelle || '''Kappung''' auf deren COP und Leistung — keine Extrapolation nach oben
 |-
-| ϑ<sub>Q</sub>(t) < unterste Stützstelle || zwei Wege, siehe unten
+| <math>\vartheta_{\mathrm{Q}}(t)</math> unterhalb der untersten Stützstelle || zwei Wege, siehe unten
 |-
 | nur EINE Stützstelle vorhanden || deren Werte gelten konstant
 |}
@@ -230,27 +247,37 @@ Auf das Kennfeldergebnis wirken drei Regeln, in dieser Reihenfolge.
 {| class="wikitable"
 ! Betriebsart !! Bedingung !! Wirkung
 |-
-| teilparallel || ϑ<sub>Luft</sub>(t) ≤ ϑ<sub>biv</sub> || P<sub>th</sub>(t) = 0 und P<sub>el</sub>(t) = 0 — die Wärmepumpe ist aus
+| teilparallel || <math>\vartheta_{\mathrm{Luft}}(t) \le \vartheta_{\mathrm{biv}}</math> || <math>P_{\mathrm{th}}(t) = 0</math> und <math>P_{\mathrm{el}}(t) = 0</math> — die Wärmepumpe ist aus
 |-
 | parallel || — || die Wärmepumpe läuft weiter, der zweite Erzeuger unterstützt
 |-
-| alternativ || ϑ<sub>Luft</sub>(t) < ϑ<sub>biv</sub> || P<sub>th</sub>(t) = 0 und P<sub>el</sub>(t) = 0
+| alternativ || <math>\vartheta_{\mathrm{Luft}}(t) < \vartheta_{\mathrm{biv}}</math> || <math>P_{\mathrm{th}}(t) = 0</math> und <math>P_{\mathrm{el}}(t) = 0</math>
 |}
 
-Der Unterschied zwischen ≤ und < betrifft nur die Stunden mit exakter Gleichheit. Der
-Vorbelegungswert ϑ<sub>biv</sub> = 0&nbsp;°C gilt '''wörtlich''' — eine Ersatzregel für 0 würde die
-Anlagen falsch rechnen, die diesen Wert bewusst führen. Steht eine alternativ betriebene Anlage auf
-0&nbsp;°C, weist der Lauf einmalig darauf hin.
+Der Unterschied zwischen <math>\le</math> und dem strengen „kleiner" betrifft nur die Stunden mit
+exakter Gleichheit. Der Vorbelegungswert <math>\vartheta_{\mathrm{biv}} = 0</math>&nbsp;°C gilt
+'''wörtlich''' — eine Ersatzregel für 0 würde die Anlagen falsch rechnen, die diesen Wert bewusst
+führen. Steht eine alternativ betriebene Anlage auf 0&nbsp;°C, weist der Lauf einmalig darauf hin.
 
 '''Sperrzeit''' — ist sie eingeschaltet und liegt die Tagesstunde im Fenster:
 
-: <big>h<sub>von</sub> ≤ h<sub>T</sub>(t) < h<sub>bis</sub> &nbsp;→&nbsp; P<sub>th</sub>(t) = 0 , &nbsp;P<sub>el</sub>(t) = 0</big> &nbsp;&nbsp;(5)
+: <math>\displaystyle h_{\mathrm{von}} \le h_{\mathrm{T}}(t) < h_{\mathrm{bis}} \; \to \; P_{\mathrm{th}}(t) = 0 \; ; \quad P_{\mathrm{el}}(t) = 0</math> &nbsp;&nbsp;(5)
+:: <math>P_{\mathrm{th}}(t)</math>, <math>P_{\mathrm{el}}(t)</math> – thermische und elektrische Leistung der Stunde; in der Sperrzeit beide 0 [kW]
+:: <math>h_{\mathrm{von}}</math>, <math>h_{\mathrm{bis}}</math> – Grenzen des Sperrzeitfensters [h]
+:: <math>h_{\mathrm{T}}(t)</math> – Tagesstunde, 0…23 [–]
 
 '''Wärmequelle Pufferspeicher''' — die Verdampferwärme muss aus dem Speicher kommen:
 
-: <big>Q<sub>Q</sub>(t) = P<sub>th</sub>(t) − P<sub>el</sub>(t)</big> &nbsp;&nbsp;(6)
+: <math>\displaystyle Q_{\mathrm{Q}}(t) = P_{\mathrm{th}}(t) - P_{\mathrm{el}}(t)</math> &nbsp;&nbsp;(6)
+:: <math>Q_{\mathrm{Q}}(t)</math> – Verdampferwärme, die die Quelle liefern muss [kWh]
+:: <math>P_{\mathrm{th}}(t)</math> – thermische Leistung der Stunde [kW]
+:: <math>P_{\mathrm{el}}(t)</math> – elektrische Leistung der Wärmepumpe [kW]
 
-: <big>Q<sub>Sp</sub>(t) < Q<sub>Q</sub>(t) &nbsp;→&nbsp; k(t) = Q<sub>Sp</sub>(t) / Q<sub>Q</sub>(t) , &nbsp;P<sub>th</sub>(t) ← P<sub>th</sub>(t) · k(t) , &nbsp;P<sub>el</sub>(t) ← P<sub>el</sub>(t) · k(t)</big> &nbsp;&nbsp;(7)
+: <math>\displaystyle Q_{\mathrm{Sp}}(t) < Q_{\mathrm{Q}}(t) \; \to \; k(t) = \frac{Q_{\mathrm{Sp}}(t)}{Q_{\mathrm{Q}}(t)} \; ; \quad P'_{\mathrm{th}}(t) = P_{\mathrm{th}}(t) \cdot k(t) \; ; \quad P'_{\mathrm{el}}(t) = P_{\mathrm{el}}(t) \cdot k(t)</math> &nbsp;&nbsp;(7)
+:: <math>k(t)</math> – Kürzungsfaktor bei erschöpfter Quelle [–]
+:: <math>Q_{\mathrm{Sp}}(t)</math> – Inhalt des Quellpuffers [kWh]
+:: <math>Q_{\mathrm{Q}}(t)</math> – geforderte Verdampferwärme aus (6) [kWh]
+:: <math>P'_{\mathrm{th}}(t)</math>, <math>P'_{\mathrm{el}}(t)</math> – gekürzte thermische und elektrische Leistung der Stunde [kW]
 
 Die tatsächlich entnommene Quellwärme wird dem Speicher abgezogen. Ist der Quellpuffer zugleich
 Senke eines anderen Erzeugers, wird die Entnahme diesem gutgeschrieben und der Wärmepumpe
@@ -260,37 +287,54 @@ ausgewiesen.
 === Schritt 4 — Bedarfsdeckung ===
 
 Gedeckt wird '''nur über Direktsenken'''; eine Anlage ohne Direktsenke lädt ausschließlich. Bei
-einer reinen Ladeanlage tritt an die Stelle von Q<sub>verf</sub>(t) der Bilanzraum des Puffers.
+einer reinen Ladeanlage tritt an die Stelle von <math>Q_{\mathrm{verf}}(t)</math> der Bilanzraum
+des Puffers.
 
-: <big>P<sub>th</sub>(t) < Q<sub>verf</sub>(t) &nbsp;→&nbsp; Q<sub>deck</sub>(t) = P<sub>th</sub>(t) , &nbsp;E(t) = P<sub>el</sub>(t) , &nbsp;Δh(t) = 1</big> &nbsp;&nbsp;(8)
+: <math>\displaystyle P_{\mathrm{th}}(t) < Q_{\mathrm{verf}}(t) \; \to \; Q_{\mathrm{deck}}(t) = P_{\mathrm{th}}(t) \; ; \quad E(t) = P_{\mathrm{el}}(t) \; ; \quad \Delta h(t) = 1</math> &nbsp;&nbsp;(8)
+:: <math>Q_{\mathrm{deck}}(t)</math> – in dieser Stunde gedeckte Wärme [kWh]
+:: <math>P_{\mathrm{th}}(t)</math> – thermische Leistung der Stunde [kW]
+:: <math>Q_{\mathrm{verf}}(t)</math> – offener Bedarf der eigenen Senkenkette [kWh]
+:: <math>E(t)</math> – Strombedarf der Wärmepumpe in dieser Stunde [kWh]
+:: <math>P_{\mathrm{el}}(t)</math> – elektrische Leistung der Wärmepumpe [kW]
+:: <math>\Delta h(t)</math> – Zuwachs der Laufzeit, hier eine volle Stunde [h]
 
-: <big>P<sub>th</sub>(t) ≥ Q<sub>verf</sub>(t) &nbsp;→&nbsp; Q<sub>deck</sub>(t) = Q<sub>verf</sub>(t) , &nbsp;E(t) = Q<sub>verf</sub>(t) / COP(t) , &nbsp;Δh(t) = Q<sub>verf</sub>(t) / P<sub>th</sub>(t)</big> &nbsp;&nbsp;(9)
+: <math>\displaystyle P_{\mathrm{th}}(t) \ge Q_{\mathrm{verf}}(t) \; \to \; Q_{\mathrm{deck}}(t) = Q_{\mathrm{verf}}(t) \; ; \quad E(t) = \frac{Q_{\mathrm{verf}}(t)}{\operatorname{COP}(t)} \; ; \quad \Delta h(t) = \frac{Q_{\mathrm{verf}}(t)}{P_{\mathrm{th}}(t)}</math> &nbsp;&nbsp;(9)
+:: <math>Q_{\mathrm{deck}}(t)</math> – in dieser Stunde gedeckte Wärme [kWh]
+:: <math>P_{\mathrm{th}}(t)</math> – thermische Leistung der Stunde [kW]
+:: <math>Q_{\mathrm{verf}}(t)</math> – offener Bedarf der eigenen Senkenkette [kWh]
+:: <math>E(t)</math> – Strombedarf der Wärmepumpe in dieser Stunde [kWh]
+:: <math>\operatorname{COP}(t)</math> – Leistungszahl der Stunde [–]
+:: <math>\Delta h(t)</math> – Zuwachs der Laufzeit als Vollbenutzungsstunde [h]
 
 Die Laufzeit wird also als '''Vollbenutzungsstunde''' geführt, nicht als Betriebsstunde. Ist
-P<sub>th</sub>(t) durch (5) oder (7) auf 0 gefallen, wächst sie nicht.
+<math>P_{\mathrm{th}}(t)</math> durch (5) oder (7) auf 0 gefallen, wächst sie nicht.
 
 === Schritt 5 — Ladepotenzial und Leistungssteuerung ===
 
 Was über den Momentanbedarf hinaus erzeugt werden darf, entscheidet der Betriebsmodus:
 
 {| class="wikitable"
-! Modus !! Ladepotenzial Q<sub>lad</sub>(t)
+! Modus !! Ladepotenzial <math>Q_{\mathrm{lad}}(t)</math>
 |-
-| laufzeitoptimiert (Vorgabe, auch bei unbekanntem Wert) || die volle thermische Leistung P<sub>th</sub>(t) — lange Laufzeiten, wenig Takten
+| laufzeitoptimiert (Vorgabe, auch bei unbekanntem Wert) || die volle thermische Leistung <math>P_{\mathrm{th}}(t)</math> — lange Laufzeiten, wenig Takten
 |-
 | leistungsoptimiert || '''0''' — die Wärmepumpe moduliert auf den Bedarf. '''Ausnahme:''' eine reine Ladeanlage ohne Direktsenke lädt wie im laufzeitoptimierten Fall, sonst stünde sie still
 |-
 | PV-optimiert || begrenzt auf den PV-Überschuss der Stunde nach (10); sonst wie leistungsoptimiert
 |}
 
-: <big>Q<sub>lad</sub>(t) ≤ min( P<sub>th</sub>(t) ; E<sub>PV</sub>(t) · COP(t) )</big> &nbsp;&nbsp;(10)
+: <math>\displaystyle Q_{\mathrm{lad}}(t) \le \min\left( P_{\mathrm{th}}(t) , E_{\mathrm{PV}}(t) \cdot \operatorname{COP}(t) \right)</math> &nbsp;&nbsp;(10)
+:: <math>Q_{\mathrm{lad}}(t)</math> – Ladepotenzial der Stunde [kWh]
+:: <math>P_{\mathrm{th}}(t)</math> – thermische Leistung der Stunde [kW]
+:: <math>E_{\mathrm{PV}}(t)</math> – noch freier PV-Überschuss der Stunde [kWh]
+:: <math>\operatorname{COP}(t)</math> – Leistungszahl der Stunde [–]
 
 Das PV-Budget wird '''hier nicht verbraucht''' — es geht nur als Obergrenze ein. Abgebucht wird
 erst in der Ladephase, und zwar um die tatsächlich geladene Menge: Sonst wäre das Budget für das
 zweite Modul verbraucht, ohne dass eine kWh PV-Strom geflossen wäre.
 
-Mit dem Vorgaberang r = '''20''' lädt die Wärmepumpe nach der Solarthermie (10), aber vor BHKW (30)
-und Heizkessel (40) — sie profitiert vom leeren Speicher.
+Mit dem Vorgaberang <math>r = 20</math> lädt die Wärmepumpe nach der Solarthermie (10), aber vor
+BHKW (30) und Heizkessel (40) — sie profitiert vom leeren Speicher.
 
 === Schritt 6 — Heizstab ===
 
@@ -299,9 +343,15 @@ Nachentladung, vor dem Stundenabschluss. Er läuft nur, wenn er eingeschaltet is
 '''aggregierten''' offenen Rest (Heizung und Warmwasser, mit Warmwasservorrang) und ist je Modul auf
 seine Heizstableistung begrenzt:
 
-: <big>Q<sub>HS</sub>(t) = min( Q<sub>Rest</sub>(t) ; P<sub>HS</sub> )</big> &nbsp;&nbsp;(11)
+: <math>\displaystyle Q_{\mathrm{HS}}(t) = \min\left( Q_{\mathrm{Rest}}(t) , P_{\mathrm{HS}} \right)</math> &nbsp;&nbsp;(11)
+:: <math>Q_{\mathrm{HS}}(t)</math> – Wärme des Heizstabs in dieser Stunde [kWh]
+:: <math>Q_{\mathrm{Rest}}(t)</math> – nach Deckung, Ladung und Nachentladung offener Rest [kWh]
+:: <math>P_{\mathrm{HS}}</math> – Heizstableistung des Moduls [kW]
 
-: <big>E<sub>HS</sub>(t) = Q<sub>HS</sub>(t) / COP<sub>HS</sub> = Q<sub>HS</sub>(t)</big> &nbsp;&nbsp;(12)
+: <math>\displaystyle E_{\mathrm{HS}}(t) = \frac{Q_{\mathrm{HS}}(t)}{\operatorname{COP}_{\mathrm{HS}}} = Q_{\mathrm{HS}}(t)</math> &nbsp;&nbsp;(12)
+:: <math>E_{\mathrm{HS}}(t)</math> – Strom des Heizstabs in dieser Stunde [kWh]
+:: <math>Q_{\mathrm{HS}}(t)</math> – Wärme des Heizstabs aus (11) [kWh]
+:: <math>\operatorname{COP}_{\mathrm{HS}}</math> – Leistungszahl des Heizstabs [–], Konstante 1
 
 Seine Wärme kostet Strom im Verhältnis '''1:1''' — der Heizstab hat keine Leistungszahl. Der
 Strombedarf der Wärmepumpe und der des Heizstabs gehen beide in den Strombedarf des Projekts ein.
@@ -312,11 +362,18 @@ Der ausgewiesene '''Bivalenzpunkt''' ist ein '''Ergebnis''', keine Eingabe: die 
 Außentemperatur, bei der nach Deckung, Ladung und Nachentladung noch Wärmebedarf offen blieb —
 gemessen vor dem Heizstab.
 
-: <big>ϑ<sub>biv,erg</sub> = max { ϑ<sub>Luft</sub>(t) &nbsp;|&nbsp; Q<sub>Rest</sub>(t) > 0 }</big> &nbsp;&nbsp;(13)
+: <math>\displaystyle \vartheta_{\mathrm{biv,erg}} = \max_{Q_{\mathrm{Rest}}(t) > 0} \vartheta_{\mathrm{Luft}}(t)</math> &nbsp;&nbsp;(13)
+:: <math>\vartheta_{\mathrm{biv,erg}}</math> – ermittelter Bivalenzpunkt [°C]
+:: <math>\vartheta_{\mathrm{Luft}}(t)</math> – Außentemperatur der Stunde [°C]
+:: <math>Q_{\mathrm{Rest}}(t)</math> – offener Rest vor dem Heizstab; nur Stunden mit einem Rest zählen [kWh]
 
 Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den Heizstab ein:
 
-: <big>JAZ = Q<sub>a</sub> / ( E<sub>a</sub> + E<sub>HS,a</sub> )</big> &nbsp;&nbsp;(14)
+: <math>\displaystyle \mathrm{JAZ} = \frac{Q_{\mathrm{a}}}{E_{\mathrm{a}} + E_{\mathrm{HS,a}}}</math> &nbsp;&nbsp;(14)
+:: <math>\mathrm{JAZ}</math> – Jahresarbeitszahl des Moduls [–]
+:: <math>Q_{\mathrm{a}}</math> – Wärmeproduktion des Moduls im Jahr [kWh]
+:: <math>E_{\mathrm{a}}</math> – Strombedarf der Wärmepumpe im Jahr [kWh]
+:: <math>E_{\mathrm{HS,a}}</math> – Strombedarf des Heizstabs im Jahr [kWh]
 
 == Grenzen und Annahmen ==
 
@@ -327,25 +384,26 @@ Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den
 * '''Keine Abtauverluste''' und keine Feuchtekorrektur bei Luft/Wasser-Geräten. Was das Kennfeld
   ausweist, gilt.
 * '''Keine Vorlauftemperatur-Regelung im Lauf.''' Das Kennfeld wird zu der Vorlauftemperatur
-  ϑ<sub>VL</sub> ausgewertet, die an der Anlage steht; eine witterungsgeführte Heizkurve gibt es
-  nicht.
+  <math>\vartheta_{\mathrm{VL}}</math> ausgewertet, die an der Anlage steht; eine witterungsgeführte
+  Heizkurve gibt es nicht.
 * '''Kein Kühlbetrieb''' in der Jahressimulation. Ein Kühlkennfeld lässt sich pflegen, es geht in
   die Wärmebilanz nicht ein.
-* '''Der Heizstab hat keinen eigenen Wirkungsgrad''' — COP<sub>HS</sub> = 1 nach (12).
+* '''Der Heizstab hat keinen eigenen Wirkungsgrad''' — <math>\operatorname{COP}_{\mathrm{HS}} =
+  1</math> nach (12).
 * '''Fünf Katalogspalten hat kein Leser''' (Befund W14a‑E‑8‑B2): Länge, Breite, Höhe, Gewicht und
   Raumbedarf kommen aus dem VDI‑3805-Import, werden ins Projekt kopiert und im ganzen Bestand
   nirgends gelesen. Sie sind die einzigen Spalten aller sieben Gerätekataloge ohne jede Verwendung.
 * '''Höchstens zehn Module''' je Projekt.
 * '''Strompreis, Wärmepumpentarif und Kapitaldienst''' gehören zur Wirtschaftlichkeit; der Lauf
-  liefert ihr die Strommengen E<sub>a</sub> und E<sub>HS,a</sub>.
+  liefert ihr die Strommengen <math>E_{\mathrm{a}}</math> und <math>E_{\mathrm{HS,a}}</math>.
 
 == Ergebnisse und wo sie stehen ==
 
 * '''Simulationsergebnis, Reiter „Wärmepumpe"''' — je Modul Wärmeproduktion, Strombedarf,
   Laufzeit und Heizstabanteil; dazu die Ganglinien von Produktion, Strombedarf und
-  Quelltemperatur ϑ<sub>Q</sub>.
-* '''Simulationsergebnis, Reiter „Übersicht"''' — Deckungsanteil, Jahresarbeitszahl JAZ,
-  Vollbenutzungsstunden und der Stromverbrauch des Heizstabs.
+  Quelltemperatur <math>\vartheta_{\mathrm{Q}}</math>.
+* '''Simulationsergebnis, Reiter „Übersicht"''' — Deckungsanteil, Jahresarbeitszahl
+  <math>\mathrm{JAZ}</math>, Vollbenutzungsstunden und der Stromverbrauch des Heizstabs.
 * '''Simulationsergebnis, Reiter „Ergebnis"''' — der Anteil der Wärmepumpe am Strombedarf.
 * '''Simulationsprotokoll''' — Kappungen nach oben und unten mit Stundenzahl und Temperaturbereich,
   Extrapolationshinweis, nicht auflösbare Quellen, Bivalenztemperatur auf dem Vorbelegungswert.
