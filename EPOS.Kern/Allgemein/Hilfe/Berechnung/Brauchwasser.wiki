@@ -1,0 +1,166 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Brauchwasser | Stand: 2026-09-06 | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs,
+     EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Simulation/Init.cs,
+     EPOS.Kern/Controller/BedarfsVorschauCtrl.cs, EPOS.Kern/Allgemein/Energieeinheit.cs -->
+
+== Was berechnet wird ==
+
+Der '''Brauchwasserwaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der zweite der
+drei Bedarfskanaele. Grundlage ist je Profil ein Satz aus '''zwoelf Monatswerten''' und einem
+'''Wochenprofil mit 168 Stundenwerten'''; daraus entsteht der Jahresgang.
+
+Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen. Die Temperaturen des
+Trinkwassers, die Zirkulation und die Speicherverluste rechnet '''diese''' Seite nicht — sie
+stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
+
+== Eingangsgrößen ==
+
+{| class="wikitable"
+! Groesse !! Einheit !! Herkunft im Programm
+|-
+| Brauchwasserprofile des Projekts || — || Dialog „Brauchwasserwärme", Liste „Ausgewählt im Projekt"
+|-
+| Zwoelf Monatswerte je Profil || MWh je Bezugseinheit || Brauchwasserkatalog (Kopfsatz des Profils)
+|-
+| Typbezug des Profils || — || Kopfsatz des Profils, Feld „Typ"
+|-
+| Wochenprofil, 168 Stundenwerte || beliebige Skala || Brauchwassertyp-Katalog, Reiter „Wochenwerte"
+|-
+| Jahressumme des Projekts || MWh || Dialog „Brauchwasserwärme", Feld „Jahresverbrauch"; leer oder 0 = Katalogwerte gelten unveraendert
+|-
+| Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion abgeleitet
+|}
+
+== Rechenweg ==
+
+=== 1. Profile des Projekts sammeln ===
+
+Der Lauf holt die Namen aller dem Projekt zugeordneten Brauchwasserprofile und rechnet sie
+'''nacheinander in denselben Zielvektor''' — die Stundenwerte addieren sich. Kopf- und
+Typdaten kommen dabei aus den '''Projektkopien''' der Kataloge, nicht aus dem Katalog
+selbst: Der Anwender darf ein uebernommenes Profil im Projekt aendern, ohne den Katalog zu
+beruehren.
+
+Findet sich zu einem Namen kein Kopfsatz, geht das Profil mit '''Anteil 0''' ein und der
+Lauf meldet es. Fehlt der Typbezug ganz, bricht die Brauchwasserrechnung ab.
+
+=== 2. Jahressumme des Projekts einrechnen ===
+
+Hat der Anwender im Projekt eine eigene Jahressumme hinterlegt, werden die zwoelf
+Monatswerte linear darauf skaliert:
+
+ jv  = Summe der zwoelf Katalog-Monatswerte
+ pjv = Jahressumme des Projekts
+ Monatswert_neu(m) = Monatswert(m) * pjv / jv        fuer alle m, wenn pjv > 0
+
+Ist ''pjv'' gesetzt, ''jv'' aber null, wird das Profil uebersprungen und gemeldet — die
+Rechnung waere sonst 0 · pjv / 0 und damit in allen zwoelf Monaten unbestimmt.
+
+Die '''Verteilung''' bleibt dabei unveraendert; die Jahressumme aendert nur die Hoehe.
+
+=== 3. Wochenprofil auf das Jahr kacheln ===
+
+Das 168-Stunden-Profil wird ab dem '''tatsaechlichen Wochentag des 1. Januar''' fortlaufend
+ueber das Jahr gelegt:
+
+ Start = Wochentag(1. Januar) * 24            (Montag = 0 … Sonntag = 6)
+ Jahreswert(h) = Wochenprofil( (Start + h) mod 168 )      fuer h = 0 … 8759
+
+Das Wochenprofil ist so gelesen, dass die Stunden 1 bis 24 der Montag sind und 145 bis 168
+der Sonntag.
+
+Ein Wochenprofil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet —
+der naechste Schritt teilte sonst durch null.
+
+=== 4. Monatsweise auf die Monatswerte normieren ===
+
+Erst dieser Schritt macht aus der Form eine Energiemenge:
+
+ je Monat m:
+   S = Summe der gekachelten Jahreswerte innerhalb des Monats
+   Jahreswert(h) = Jahreswert(h) / S * Monatswert(m) * 1000      fuer alle h im Monat m
+
+Daraus folgt zweierlei, und beides ist wichtig zu wissen:
+
+* '''Die Skala des Wochenprofils ist frei.''' Ob die 168 Werte in Prozent, in Litern oder in
+  Kilowattstunden stehen, aendert am Ergebnis nichts — nur ihr Verhaeltnis zaehlt. Der
+  mitgelieferte Katalog fuehrt sie als Prozent des Wochenbedarfs (Summe der 168 Werte = 100).
+* '''Die Monatswerte bestimmen allein die Energiemenge.''' Der Faktor 1 000 rechnet die
+  Monatswerte von MWh in kWh.
+
+Die Monatsgrenzen sind Stundenindizes eines '''Nicht-Schaltjahres''' (Januar 0…743,
+Februar 744…1415 und so fort bis Dezember 8016…8759).
+
+=== 5. In den Kanal und in die Bilanz ===
+
+Der fertige Vektor geht in den '''Brauchwasserkanal'''. Ausgewiesen wird die Jahresmenge als
+
+ Jahresmenge [MWh] = Summe der 8 760 Stundenwerte / 1000
+
+und zwar '''vor''' der Verteilung der Netzverluste. Der Stundenvektor bekommt seinen
+anteiligen Netzverlust danach dazu (siehe
+[[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7) — die
+Waermepumpe rechnet mit dem Vektor, nicht mit der ausgewiesenen Menge.
+
+=== 6. Der mitgelieferte Katalog ===
+
+Der Auslieferungskatalog fuehrt '''11 Wochen-Stundenprofile''' und '''13 Monatswertsaetze'''
+(Stand 02.08.2026). Vier davon sind Normdaten aus VDI 6002 Blatt 1 und 2 und deshalb
+schreibgeschuetzt:
+
+* '''Wohnen gross''' (VDI 6002 Blatt 1, Anhang D — Bilder D1 bis D5),
+* '''Studentenwohnheim''' (VDI 6002 Blatt 2, Tabelle 3 und Bilder 2/3),
+* '''Seniorenheim''' (VDI 6002 Blatt 2, Bilder 6/8/9),
+* '''Krankenhaus''' (VDI 6002 Blatt 2, Bild 10; der Jahresgang folgt dem Seniorenheim).
+
+Die uebrigen sieben — MFH Wohnen, EFH Wohnen, Hotel (in drei Jahresgangvarianten),
+Pflegeheim, Buero/Verwaltung, Sportstaette/Duschen, Schule — sind generische Profile des
+Hauses und frei aenderbar.
+
+Die Monatswerte beziehen sich auf '''60/10 °C''' und eine Bezugseinheit (Person, Bett,
+Zimmer, Nutzer). Der Zusammenhang zum spezifischen Bedarf lautet
+
+ Jahresmenge [MWh/a] = Zapfmenge [l/(Einheit*d)] * 365 * 50 K * 1,163 / 1000000
+
+(1,163 Wh/(l·K) ist die spezifische Waermekapazitaet von Wasser, 50 K die Spreizung von 10
+auf 60 °C.) Richtwerte des Katalogs: Wohnen gross 28, Studentenwohnheim 37, Seniorenheim 36,
+Krankenhaus 38, MFH und EFH 35, Hotel 60 je Zimmer, Pflegeheim 50 je Bett,
+Buero 8, Sportstaette 30, Schule 5 l/(Einheit·d).
+
+Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang vor. Dort
+bildet der Katalog ihn als
+
+ Monatsfaktor(m) = Nutzung(m) * Kaltwasserfaktor(m)
+
+und normiert auf die unveraenderte Jahressumme. Der Kaltwasserfaktor kommt aus einer
+gedaempften Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkeit
+0,8 · 10⁻⁶ m²/s, daraus Daempfungstiefe 2,83 m, Daempfung 0,494, Phasenverzug 41 Tage) und
+laeuft ueber das Jahr von 1,083 im Februar bis 0,917 im August. Die '''VDI-Typen bekommen
+diesen Faktor nicht''' — ihre Monatsprofile sind Messwerte des Waermebedarfs, in denen der
+Effekt schon steckt.
+
+== Grenzen und Annahmen ==
+
+* '''Kein Zapfmodell.''' Gerechnet werden Stundenmittelwerte, keine einzelnen Zapfungen. Gleichzeitigkeit, Spitzenzapfung und Bereitschaftsvolumen nach VDI 6002 sind damit '''nicht''' abgedeckt — die Auslegung eines Speichers ist eine andere Rechnung als dieser Bedarf.
+* '''Keine Temperaturen im Rechenweg.''' Der Bedarf kommt als Energiemenge herein; Trinkwarmwassertemperatur, Kaltwassertemperatur und Spreizung stecken in den Katalogwerten, nicht in der Formel. Wer bei anderer Spreizung rechnet, aendert die Monatswerte.
+* '''Keine Zirkulationsverluste als eigener Posten.''' Sie sind entweder in den Katalogwerten enthalten oder ueber die Netzverluste abzubilden.
+* '''Kein Legionellenbetrieb, keine Nachheizung''' als eigener Vorgang.
+* '''Der Wochengang ist starr.''' Dasselbe 168-Stunden-Muster gilt fuer alle 52 Wochen; Feiertage, Betriebsferien und Belegungsschwankungen bildet allein der Monatswert ab.
+* '''Die Monatsnormierung glaettet.''' Innerhalb eines Monats verschiebt der Kalender nur die Verteilung; die Monatsmenge bleibt, unabhaengig davon, wie viele Wochenenden im Monat liegen.
+* '''EINE Unstimmigkeit in der Anzeige, bewusst offen (W8‑O‑5b, Stand 06.09.2026):''' Der '''Lauf''' weist die Brauchwassermenge in MWh aus (Summe / 1 000). Die '''Vorschau''' der Bedarfsdialoge dagegen reicht die nackte Summe der Stundenreihe weiter, also '''kWh''' — der Teiler, den der Prozesszweig hat, fehlt dort seit jeher. Die Anzeige nimmt den Wert seit dem Anwenderentscheid W8‑O‑5 ausdruecklich als kWh entgegen und rechnet selbst um; die Zahl auf dem Bildschirm ist damit richtig. Dass die zwei Wege verschiedene Einheiten fuehren, ist notiert und braucht einen eigenen Entscheid.
+* '''Der Auslieferungskatalog kann bei einer Datenbankmigration verlorengehen''' — die neuen VDI-Typen sind kein Bestandteil des alten Migrationsskripts. Vor einer Migration Sicherung anlegen.
+
+== Ergebnisse und wo sie stehen ==
+
+* '''Dialog „Brauchwasserwärme"''', Knopf „Simulation…" — Jahresmenge und die zwoelf Monatswerte der ausgewaehlten Profile, dazu der monatliche Verlauf.
+* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Brauchwasseranteil im Jahresbedarf.
+* '''Bericht''' — Bedarfsuebersicht.
+* '''Laufprotokoll''' — uebersprungene Profile (kein Kopfsatz, kein Wochenprofil, Monatssumme null, Typ nicht definiert).
+
+== Bezüge ==
+
+* [[Programm Dokumentation/Brauchwasser|Brauchwasser]] — Bedienung des Dialogs und Katalogpflege
+* [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] — wie der Kanal in den Gesamtbedarf eingeht
+* [[Programm Dokumentation/Berechnung/Prozesswärme|Berechnung: Prozesswärme]] — dieselbe Profilroutine
+* [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]] — dieselbe Profilroutine
+* [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Speicherung und Bereitschaftsverluste

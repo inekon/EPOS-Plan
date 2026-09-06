@@ -333,7 +333,13 @@ namespace WindowsFormsApplication1
                 ["MeldungNameFehlt"] =
                     TextEinfach("BTYP_MSG_NAME_LEER", "Bitte einen Namen eingeben!"),
 
-                ["HilfeSchluessel"] = HilfeSchluessel(art)
+                ["HilfeSchluessel"] = HilfeSchluessel(art),
+
+                // H13 (06.09.2026): der zweite Knopf im Kopf - der RECHENWEG der
+                // Auspraegung. Er zeigt auf die Rubrik "Programm Dokumentation/
+                // Berechnung"; der Fensterknopf daneben bleibt die Bedienhilfe.
+                ["HilfeSchluesselBerechnung"] = BerechnungsSchluessel(art),
+                ["HilfeKurztextBerechnung"] = BerechnungsKurztext(art)
             };
         }
 
@@ -529,6 +535,34 @@ namespace WindowsFormsApplication1
                 case BedarfsArt.Prozesswaerme:    return "Form_Prozesswaerme.btn_Help";
                 default:                          return "Form_Brauchwasser.btn_Help";
             }
+        }
+
+        /// <summary>
+        /// H13 — der Schlüssel des RECHENWEG-Knopfes je Ausprägung. Dieselben drei
+        /// Präfixe wie oben, nur mit dem Nachnamen <c>.Berechnung</c>; die Ziele stehen
+        /// in <c>help_mapping.txt</c>, Abschnitt „H13 - Rubrik Berechnung".
+        /// </summary>
+        private static string BerechnungsSchluessel(BedarfsArt art)
+        {
+            switch (art)
+            {
+                case BedarfsArt.Stromverbraucher: return "Form_Stromverbraucher.Berechnung";
+                case BedarfsArt.Prozesswaerme:    return "Form_Prozesswaerme.Berechnung";
+                default:                          return "Form_Brauchwasser.Berechnung";
+            }
+        }
+
+        /// <summary>
+        /// Der Kurztext am Rechenweg-Knopf, solange der Hilfekatalog den Schlüssel nicht
+        /// kennt (die Wikiseiten sind erst anzulegen). Kennt er ihn, gewinnt der Tooltip
+        /// des Katalogs — „Berechnung: Brauchwasser".
+        /// </summary>
+        private static string BerechnungsKurztext(BedarfsArt art)
+        {
+            return Text_(art, "BPF_HILFE_BERECHNUNG",
+                         "Berechnungsweg: Prozesswärme",
+                         "Berechnungsweg: Strombedarf",
+                         "Berechnungsweg: Brauchwasser");
         }
 
         /// <summary>

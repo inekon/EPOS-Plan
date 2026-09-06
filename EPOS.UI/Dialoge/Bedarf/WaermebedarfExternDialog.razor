@@ -104,6 +104,10 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* H13: der Rechenweg — wie eine eingelesene Ganglinie in den Waermebedarf
+           des Projekts eingeht (Raster, Kanal, Netzverlustanteil). *@
+        <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
+                   StandardKurztext="@HilfeKurztextBerechnung" />
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -483,6 +487,15 @@
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Waermebedarf.btn_Help";
+
+    /// <summary>
+    /// H13 — der ZWEITE Hilfeschlüssel: der RECHENWEG statt der Bedienung. Er zeigt auf
+    /// die Wikiseite „Programm Dokumentation/Berechnung/Wärmebedarf".
+    /// </summary>
+    [Parameter] public string HilfeSchluesselBerechnung { get; set; } = "Form_Waermebedarf.Berechnung";
+
+    /// <summary>Kurztext des Rechenweg-Knopfes, solange der Katalog den Schlüssel nicht kennt.</summary>
+    [Parameter] public string HilfeKurztextBerechnung { get; set; } = "Berechnungsweg: Wärmebedarf";
 
     /// <summary>Schlüssel des Hilfeknopfes am Formathinweis (W9‑E‑3).</summary>
     [Parameter] public string HilfeSchluesselImport { get; set; } = "Form_Waermebedarf.btn_Help_Import";

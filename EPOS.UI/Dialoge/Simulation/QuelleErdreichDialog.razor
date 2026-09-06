@@ -96,6 +96,14 @@
     </Gruppenkopf>
 
     @* --- Standort ---------------------------------------------------------- *@
+    @* H13: der Rechenweg. Dieser Abschnitt parametriert beides - den Jahresgang der
+       Quelltemperatur (Bodentyp, Tiefe) und die Auslegungspruefung (Klimazone,
+       Spreizung). Der Fensterknopf im Kopf bleibt die Bedienhilfe. *@
+    <p class="epos-herleitung">
+        <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
+                   StandardKurztext="@HilfeKurztextBerechnung" />
+    </p>
+
     <Gruppenkopf Titel="@GbStandort">
         <KindInhalt>
             @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Die drei Werte
@@ -319,6 +327,15 @@
 
     /// <summary>Schlüssel des Hilfeknopfes.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_QuelleErdreich.btn_Help";
+
+    /// <summary>
+    /// H13 — der ZWEITE Hilfeschlüssel: der RECHENWEG statt der Bedienung. Er zeigt auf
+    /// die Wikiseite „Programm Dokumentation/Berechnung/Wärmequelle Erdreich".
+    /// </summary>
+    [Parameter] public string HilfeSchluesselBerechnung { get; set; } = "Form_QuelleErdreich.Berechnung";
+
+    /// <summary>Kurztext des Rechenweg-Knopfes, solange der Katalog den Schlüssel nicht kennt.</summary>
+    [Parameter] public string HilfeKurztextBerechnung { get; set; } = "Berechnungsweg: Wärmequelle Erdreich";
 
     // --- Stand ------------------------------------------------------------------
 

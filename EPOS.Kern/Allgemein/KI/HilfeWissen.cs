@@ -34,10 +34,14 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Lokale Wissensbasis des KI-Assistenten (Grundlage für RAG).
     ///
-    /// Die Abschnitte werden aus zwei Quellen gespeist:
+    /// Die Abschnitte werden aus drei Quellen gespeist:
     ///  1. fest eingebaute Basistexte zur Bedien- und Rechenlogik (immer verfügbar,
     ///     auch ohne Internet und ohne WordPress-Server)
-    ///  2. optional der lokale Hilfe-Cache "help_cache.json" des WordPress-Katalogs
+    ///  2. seit H13 (06.09.2026) die Seiten der Wiki-Rubrik "Programm Dokumentation/
+    ///     Berechnung" - je Seite ein Abschnitt, gelesen aus den eingebetteten
+    ///     .wiki-Dateien des Kerns (BerechnungsHilfe). Damit beantwortet der
+    ///     Assistent "Wie wird die Photovoltaik berechnet?" auch ohne Netz.
+    ///  3. optional der lokale Hilfe-Cache "help_cache.json" des WordPress-Katalogs
     ///
     /// Die Suche ist bewusst einfach gehalten (Stichwort-Treffer mit Gewichtung).
     /// Sie läuft vollständig lokal und kostenlos - nur die wenigen besten
@@ -62,6 +66,7 @@ namespace WindowsFormsApplication1
         {
             _abschnitte = new List<WissensAbschnitt>();
             _abschnitte.AddRange(Basiswissen());
+            _abschnitte.AddRange(Berechnungswissen());
 
             // Zusätzlich den lokalen WordPress-Hilfecache einlesen, falls vorhanden
             try
@@ -325,6 +330,51 @@ namespace WindowsFormsApplication1
                     "setzen, Kostenposition setzen sowie das Ausfüllen von Feldern und das Auslösen von Knöpfen " +
                     "einer geöffneten Maske."),
             };
+        }
+
+        /// <summary>
+        /// H13 — die Rechenwege aus der Wiki-Rubrik „Programm Dokumentation/Berechnung".
+        ///
+        /// <para><b>Warum sie hier stehen und nicht nur im Wiki.</b> Die Rubrik ist die
+        /// Antwort auf den Anwenderwunsch vom 06.09.2026: Die Details der Berechnung
+        /// gehören nicht in die allgemeine Erklärung der Funktionen, sondern in eine
+        /// eigene Rubrik. Der Assistent soll dieselben Sätze kennen — und zwar auch
+        /// ohne Netz und bevor der Anwender die Seiten im Wiki angelegt hat. Die Texte
+        /// liegen deshalb als eingebettete <c>.wiki</c>-Dateien im Kern
+        /// (<see cref="BerechnungsHilfe"/>); hier kommt je Seite EIN Abschnitt an.</para>
+        ///
+        /// <para><b>Titel und Bereich.</b> Titel ist „Berechnung: &lt;Thema&gt;",
+        /// Bereich schlicht „Berechnung". Beides zählt in <see cref="Suchen"/> dreifach
+        /// bzw. doppelt — eine Frage nach „Berechnung Photovoltaik" trifft damit die
+        /// Rechenwegseite und nicht die Bedienhilfe. An Suche und Gewichtung selbst
+        /// ändert das Paket nichts.</para>
+        ///
+        /// <para>Inhalt ist der KLARTEXT der Seite, nicht das Markup: Der Kopfblock mit
+        /// den Quelldateien und die Wiki-Auszeichnung gehören nicht in den Prompt, jede
+        /// Zahl und jede Formelzeile dagegen schon.</para>
+        /// </summary>
+        private static List<WissensAbschnitt> Berechnungswissen()
+        {
+            var abschnitte = new List<WissensAbschnitt>();
+
+            try
+            {
+                foreach (BerechnungsSeite seite in BerechnungsHilfe.Seiten)
+                {
+                    if (seite == null || string.IsNullOrWhiteSpace(seite.Klartext)) continue;
+
+                    abschnitte.Add(new WissensAbschnitt(
+                        seite.Titel, BerechnungsHilfe.BEREICH, seite.Klartext));
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ein fehlender Rechenwegtext ist ein Schoenheitsfehler, kein Grund,
+                // das ganze Wissen scheitern zu lassen.
+                Console.WriteLine("Berechnungswissen nicht lesbar: " + ex.Message);
+            }
+
+            return abschnitte;
         }
     }
 }
