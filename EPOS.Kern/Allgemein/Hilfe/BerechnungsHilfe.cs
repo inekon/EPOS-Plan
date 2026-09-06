@@ -275,10 +275,18 @@ namespace WindowsFormsApplication1
         /// Kursivsatz, die Gerüstzeilen einer Tabelle und die Zielhälfte eines
         /// Verweises.</para>
         /// <para><b>Was bleibt:</b> jedes Wort und jede Zahl. Die Formelzeilen
-        /// stehen im Markup als vorformatierte Zeilen (führendes Leerzeichen) —
-        /// sie bleiben Zeile für Zeile stehen, denn sie sind der Kern der
-        /// Auskunft. Tabellenzellen werden zu einer Zeile mit
-        /// „&#160;|&#160;" zwischen den Feldern.</para>
+        /// stehen im Markup als vorformatierte Zeilen (führendes Leerzeichen) oder
+        /// — seit H13 Fassung 2 — als eingerückte Anzeige-Zeile
+        /// <c>: &lt;big&gt;…&lt;/big&gt;  (3)</c>; sie bleiben Zeile für Zeile
+        /// stehen, denn sie sind der Kern der Auskunft. Tabellenzellen werden zu
+        /// einer Zeile mit „&#160;|&#160;" zwischen den Feldern.</para>
+        /// <para><b>Was umgesetzt wird:</b> die Formelschreibweise der Rubrik.
+        /// Diese Wikiinstallation hat keine Math-Erweiterung; tief- und
+        /// hochgestellte Zeichen stehen deshalb als HTML im Wikitext. Für den
+        /// Assistenten werden sie zu Zeichen, die er lesen und wiedergeben kann:
+        /// <c>P&lt;sub&gt;AC,nenn&lt;/sub&gt;</c> wird zu <c>P_AC,nenn</c>,
+        /// <c>T&lt;sup&gt;2&lt;/sup&gt;</c> zu <c>T^2</c>, und die
+        /// <c>&lt;big&gt;</c>-Klammer der Anzeige-Formel fällt weg.</para>
         /// </remarks>
         internal static string AlsKlartext(string markup)
         {
@@ -382,7 +390,20 @@ namespace WindowsFormsApplication1
             // Formeln, falls die Wikiinstallation sie kann
             s = Regex.Replace(s, @"</?math>", "");
 
-            // Einfache HTML-Reste (<br>, <ref>, <code>). Bewusst eng gefasst:
+            // H13 Fassung 2 - die Formelschreibweise der Rubrik. Indizes stehen im
+            // Markup als HTML ("P<sub>AC,nenn</sub>", "T<sup>2</sup>"), weil diese
+            // Wikiinstallation keine Math-Erweiterung hat. Sie werden HIER in die
+            // Schreibweise umgesetzt, die der Assistent lesen kann - "P_AC,nenn" und
+            // "T^2". Die Zeile MUSS vor der HTML-Zeile darunter stehen: Die fraesse
+            // die Auszeichnung samt Trennzeichen weg, und aus "P<sub>AC</sub>" wuerde
+            // das stumme "PAC".
+            s = Regex.Replace(s, @"<sub>\s*(.*?)\s*</sub>", "_$1",
+                              RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            s = Regex.Replace(s, @"<sup>\s*(.*?)\s*</sup>", "^$1",
+                              RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            // Einfache HTML-Reste (<br>, <ref>, <code>, <big> der Anzeige-Formeln).
+            // Bewusst eng gefasst:
             // Ein Muster wie "<[^>]+>" verschluckte in einer Formelzeile alles
             // zwischen einem "<" und dem naechsten ">" - aus "P < 0 und Q > 1"
             // wuerde "P 1".

@@ -34,6 +34,14 @@ namespace EPOS.UI.Tests;
 /// Komponente mehrere Ausprägungen bedient und die Hülle je Ausprägung einen anderen
 /// Schlüssel hereinreicht (so bei den drei Bedarfsprofil-Dialogen Prozesswärme,
 /// Stromverbraucher und Brauchwasser).</para>
+///
+/// <para><b>Fassung 2 (06.09.2026).</b> Dazu kommt die dritte Hälfte des Wegs: Wohin der
+/// Knopf führt, muss auch etwas taugen. Der Anwender wollte „die Definition der Parameter
+/// und Variablen" und die Formeln „in mathematischer Schreibweise"; die letzten zwei Fälle
+/// halten deshalb fest, dass jede Seite, auf die ein Knopf dieses Pakets zeigt, den
+/// Abschnitt „Formelzeichen und Parameter" mit beiden Tabellen und mindestens eine
+/// nummerierte Anzeige-Formel trägt — und dass die Rubrikstartseite die Schreibweise
+/// erklärt, die alle 13 Seiten teilen.</para>
 /// </summary>
 public sealed class BerechnungsknopfTests
 {
@@ -44,6 +52,27 @@ public sealed class BerechnungsknopfTests
     /// <summary>Eine Zuordnungszeile <c>Schlüssel = Ziel</c>.</summary>
     private static readonly Regex Zuordnungszeile =
         new(@"^\s*([A-Za-z0-9_.]+)\s*=\s*(\S.*?)\s*$", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Eine Anzeige-Formel der Fassung 2: eingerückte Zeile, in <c>&lt;big&gt;</c>
+    /// gesetzt, mit der laufenden Nummer am Zeilenende.
+    /// </summary>
+    private static readonly Regex Anzeigeformel =
+        new(@"^:\s*<big>.+</big>\s*\(\d+\)\s*$", RegexOptions.Multiline | RegexOptions.Compiled);
+
+    /// <summary>Ein LaTeX-Befehl — <c>\frac</c>, <c>\sum</c>, <c>\cdot</c> …</summary>
+    private static readonly Regex LatexBefehl = new(@"\\[A-Za-z]+", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Die Seiten, die dieses Paket (Teil A) liefert. Bis Teil B zusammengeführt ist,
+    /// liegen dessen sieben Erzeugerseiten in der Fassung 1 im selben Ordner — die
+    /// Fassung-2-Fälle gelten deshalb ausdrücklich nur für diese sechs.
+    /// </summary>
+    private static readonly string[] SeitenTeilA =
+    {
+        "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
+        "Strombedarf", "Wärmequelle Erdreich"
+    };
 
     // =====================================================================
     //  Die zwei Richtungen
@@ -160,6 +189,99 @@ public sealed class BerechnungsknopfTests
     }
 
     // =====================================================================
+    //  Fassung 2 — wohin der Knopf führt
+    // =====================================================================
+
+    /// <summary>
+    /// Jede Seite, auf die ein Knopf dieses Pakets zeigt, trägt die Bauform der
+    /// Fassung 2: den Abschnitt „Formelzeichen und Parameter" mit BEIDEN Tabellen,
+    /// mindestens eine nummerierte Anzeige-Formel — und keine LaTeX-Auszeichnung.
+    ///
+    /// <para><b>Warum das hier steht und nicht nur im Kern-Prüfstand.</b> Die zwei
+    /// Fälle oben sichern, dass Knopf und Zuordnungszeile zusammenpassen. Dieser
+    /// sichert, dass das ZIEL der Zuordnung etwas taugt: Ein Knopf, der auf eine
+    /// Seite ohne Zeichenerklärung führt, hält die Zusage des Anwenderwunsches
+    /// nicht ein, obwohl beide Hälften der Verdrahtung stimmen.</para>
+    ///
+    /// <para>Das Wiki hat KEINE Math-Erweiterung (gemessen am 06.09.2026) — ein
+    /// <c>math</c>-Block oder ein Backslash-Befehl erschiene dem Anwender als
+    /// Klartext mitten im Satz. Deshalb der Riegel.</para>
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(SeitenDesTeilsA))]
+    public void Jeder_Knopf_des_Teils_A_fuehrt_auf_eine_Seite_der_Fassung_2(string seitenname)
+    {
+        // Der Knopf führt wirklich dorthin - sonst prüfte der Fall eine Seite, die
+        // niemand aufruft.
+        Assert.Contains(Berechnungszuordnungen().Values,
+                        ziel => string.Equals(ziel, "Berechnung/" + seitenname, StringComparison.Ordinal));
+
+        string pfad = Seitenpfad(seitenname);
+        Assert.True(File.Exists(pfad), "Die Seite '" + seitenname + "' fehlt: " + pfad);
+
+        string markup = File.ReadAllText(pfad);
+
+        int zeichen = markup.IndexOf("== Formelzeichen und Parameter ==", StringComparison.Ordinal);
+        int rechenweg = markup.IndexOf("== Rechenweg ==", StringComparison.Ordinal);
+
+        Assert.True(zeichen >= 0, seitenname + ": der Abschnitt 'Formelzeichen und Parameter' fehlt.");
+        Assert.True(rechenweg > zeichen,
+            seitenname + ": 'Formelzeichen und Parameter' muss VOR dem Rechenweg stehen — " +
+            "der Leser soll die Zeichen kennen, bevor er die erste Formel sieht.");
+
+        Assert.Contains("! Symbol !! Bedeutung !! Einheit !! Herkunft", markup, StringComparison.Ordinal);
+        Assert.Contains("! Symbol !! Bedeutung !! Einheit !! berechnet in", markup, StringComparison.Ordinal);
+
+        Assert.True(Anzeigeformel.IsMatch(markup),
+            seitenname + ": keine nummerierte Anzeige-Formel. Muster: " +
+            "': <big>Q<sub>a</sub> = ( Σ … ) / 1 000</big>  (4)'.");
+
+        Assert.True(markup.IndexOf("<math", StringComparison.OrdinalIgnoreCase) < 0,
+            seitenname + ": <math> im Markup — das Wiki hat keine Math-Erweiterung.");
+
+        Match befehl = LatexBefehl.Match(markup);
+        Assert.False(befehl.Success,
+            seitenname + ": LaTeX-Befehl '" + befehl.Value + "' im Markup. Formeln stehen " +
+            "in Unicode-Notation (·, Σ, Δ, √, ≤, η, ϑ …).");
+    }
+
+    /// <summary>
+    /// Die Rubrikstartseite erklärt die Schreibweise, die alle 13 Seiten teilen: warum
+    /// keine LaTeX-Formeln, wie eine Anzeige-Formel aussieht, und die gemeinsame
+    /// Zeichentabelle. Ohne diesen Abschnitt stünde auf jeder Seite eine Notation, die
+    /// nirgends erklärt ist.
+    /// </summary>
+    [Fact]
+    public void Die_Rubrikstartseite_erklaert_die_Schreibweise()
+    {
+        string pfad = Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Hilfe", "Berechnung",
+                                   "_Index.wiki");
+        Assert.True(File.Exists(pfad), "_Index.wiki nicht gefunden: " + pfad);
+
+        string markup = File.ReadAllText(pfad);
+
+        Assert.Contains("== Schreibweise ==", markup, StringComparison.Ordinal);
+        Assert.Contains("Math-Erweiterung", markup, StringComparison.Ordinal);
+        Assert.Contains("! Groesse !! Symbol !! Einheit", markup, StringComparison.Ordinal);
+
+        // Die Gliederung der Startseite nennt den neuen Abschnitt - sonst verspräche sie
+        // sechs Abschnitte und die Seiten trügen sieben.
+        Assert.Contains("Formelzeichen und Parameter", markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>Die Seiten des Teils A als Theoriedaten.</summary>
+    public static TheoryData<string> SeitenDesTeilsA()
+    {
+        var daten = new TheoryData<string>();
+        foreach (string name in SeitenTeilA) daten.Add(name);
+        return daten;
+    }
+
+    /// <summary>Der Pfad einer Seitendatei der Rubrik.</summary>
+    private static string Seitenpfad(string seitenname) =>
+        Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Hilfe", "Berechnung", seitenname + ".wiki");
+
+    // =====================================================================
     //  Gegenproben
     // =====================================================================
 
@@ -177,6 +299,38 @@ public sealed class BerechnungsknopfTests
 
         Assert.DoesNotMatch(Schluesselmuster, "Schluessel=\"Form_PV.btn_Help\"");
         Assert.DoesNotMatch(Schluesselmuster, "// Rubrik Berechnung, siehe Protokoll");
+    }
+
+    /// <summary>
+    /// <b>Gegenprobe zur Anzeige-Formel:</b> Das Muster trifft die Bauform der Fassung 2
+    /// und NICHT jede eingerückte Zeile. Ohne diese Probe liefe der Fall oben womöglich
+    /// über eine Zeile, die gar keine Formel ist, oder über eine Formel ohne Nummer —
+    /// und die Nummer ist das, worauf der Fließtext sich beruft.
+    /// </summary>
+    [Fact]
+    public void Der_Waechter_erkennt_eine_Anzeigeformel()
+    {
+        Assert.Matches(Anzeigeformel,
+            ": <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q(t) ) / 1 000</big>  (4)");
+        Assert.Matches(Anzeigeformel, ": <big>ϑ = ϑ<sub>m</sub> + 1,5 K</big> (7)");
+
+        Assert.DoesNotMatch(Anzeigeformel, ": <big>P = U · I</big>");          // ohne Nummer
+        Assert.DoesNotMatch(Anzeigeformel, ": eine eingerueckte Zeile  (1)");  // ohne <big>
+        Assert.DoesNotMatch(Anzeigeformel, "; Zeitraster");                    // Definitionsliste
+    }
+
+    /// <summary>
+    /// <b>Gegenprobe zum LaTeX-Riegel:</b> Er trifft den Befehl und nicht den deutschen
+    /// Satz. Ein Wikitext ohne Backslash läuft durch.
+    /// </summary>
+    [Fact]
+    public void Der_Waechter_erkennt_einen_LaTeX_Befehl()
+    {
+        Assert.Matches(LatexBefehl, @"\frac{a}{b}");
+        Assert.Matches(LatexBefehl, @"\sum_{t=1}^{8760}");
+
+        Assert.DoesNotMatch(LatexBefehl, "Q_a = ( Σ Q(t) ) / 1 000");
+        Assert.DoesNotMatch(LatexBefehl, "Der Faktor 0,83 gilt fuer Wand und Waermebruecken.");
     }
 
     /// <summary>
