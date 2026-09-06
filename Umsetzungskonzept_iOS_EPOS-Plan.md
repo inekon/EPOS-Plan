@@ -1510,6 +1510,18 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Zeile (ein bedingter `AddElementReferenceCapture` brach Blazors Abgleich). 14 hüllengleiche Wachen mit der
 > echten `Menuetabelle`, darunter die Gegenprobe zur Ursache; Abnahmepunkte 4a (Maus/Berührung) und 5a
 > (Tastatur); drei Hausregeln in `EPOS.UI/CLAUDE.md`.
+>
+> **Anwenderwunsch W16c‑E‑6 vom 06.09.2026 („Administration: Verschiebe BHKW von Energiesystem in ‚Wärmebedarf &
+> Heizung' …"), umgesetzt in `14bc16c`:** BHKW und Solarkollektoren wandern nach „Wärmebedarf & Heizung", Pufferspeicher
+> nach „Energiesysteme", und die drei Zeitreihen stehen in der neuen Unterrubrik „Profile & Lastgänge"
+> (`MENU_PROFILE_LASTGAENGE`, en „Profiles & load curves") — Wärmebedarf Lastgang, Prozesswärme, Solarthermieganglinie.
+> Die zwei Untermenüs mit dem einzigen Punkt „Bearbeiten" sind aufgelöst: `MenuItem_PV` und
+> `MenuItem_Solarkollektoren` tragen jetzt selbst das Ziel ihres früheren Kindes. 55 → 54 Punkte, 13 → 12
+> aufklappende, 42 handelnde unverändert — kein Ziel entfallen, keines hinzugekommen, die Menge der 28 Ziele unter
+> „Administration" ist dieselbe. Geändert wurde die `Menuetabelle`, kein Zeichen im `Menueband`; der bisher einzige
+> dreistufige Weg (PV ▸ Bearbeiten) ist durch „Profile & Lastgänge" ersetzt, der Wächter über W16c‑B13 bleibt. Neun
+> neue bunit-Fälle, 2 704 in beiden Kulturen. Zur Kennung: `W16c‑E‑5` war seit dem 05.09.2026 die Farbgebung
+> (`04d5ac6`), deshalb E‑6; die Abnahmepunkte im W16c-Protokoll heißen A‑W16c‑E‑5‑1 … ‑7.
 
 > **Statusblock iU9 — Teilwelle 16b umgesetzt (04.09.2026, Basis `84d7c16` nach W16a, zusammengeführt mit `d4a7632` nach dem einundzwanzigsten iOS-Lauf)**
 >
