@@ -10,7 +10,14 @@ namespace EPOS.UI.Dialoge.Waermepumpe;
 /// (<c>listBox_WP_DrawItem</c>:187); hier tragen sie <c>aria-disabled</c> und dieselbe
 /// gedämpfte Farbe — sie bleiben wählbar, nur nicht änderbar.
 /// </param>
-public sealed record WaermepumpeStammZeile(int Id, string Bezeichner, bool NurLesen);
+/// <param name="Firma">
+/// Hersteller — die Spalte, die der Anwender in der Windows-Abnahme vom 06.09.2026
+/// vermisst hat (<b>W7‑B‑1</b>: „es fehlt der Hersteller (vor Typ)"). Sie steht mit
+/// einer Vorbelegung am Ende, damit die Aufrufer, die sie nicht führen (der
+/// Stammdialog), unverändert bleiben.
+/// </param>
+public sealed record WaermepumpeStammZeile(int Id, string Bezeichner, bool NurLesen,
+                                           string Firma = "");
 
 /// <summary>
 /// Die beiden Kennlinienbilder als fertige PNG (iU9-W7.3) — gezeichnet von

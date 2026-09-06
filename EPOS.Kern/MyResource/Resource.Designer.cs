@@ -75,6 +75,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -43872,6 +43873,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrische Nachheizung aktivieren (falls vorhanden) ähnelt.
+        /// </summary>
+        public static string WPA_CHK_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("WPA_CHK_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit durch Energieversorger ähnelt.
+        /// </summary>
+        public static string WPA_CHK_SPERRZEIT {
+            get {
+                return ResourceManager.GetString("WPA_CHK_SPERRZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bei der bivalent-alternativen Betriebsweise wird der Wärmebedarf bis zum Erreichen des Bivalenzpunktes allein von der Wärmepumpe getragen. Der zweite Wärmeerzeuger springt bei der Unterschreitung des Bivalenzpunktes ein und übernimmt den alleinigen Heizbetrieb. ähnelt.
         /// </summary>
         public static string WPA_ERL_ALTERNATIV {
@@ -44925,6 +44944,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
+        /// </summary>
+        public static string WPV_SP_HERSTELLER {
+            get {
+                return ResourceManager.GetString("WPV_SP_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
         /// </summary>
         public static string WPV_SP_LEISTUNG {
@@ -44939,6 +44967,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPV_SP_RUECKLAUF {
             get {
                 return ResourceManager.GetString("WPV_SP_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
+        /// </summary>
+        public static string WPV_SP_TYP {
+            get {
+                return ResourceManager.GetString("WPV_SP_TYP", resourceCulture);
             }
         }
         

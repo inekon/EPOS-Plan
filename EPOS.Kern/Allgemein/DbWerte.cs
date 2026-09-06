@@ -1625,6 +1625,73 @@ namespace WindowsFormsApplication1
         public const string WP_BETRIEBSART_PARALLEL = "Parallelbetrieb";
         public const string WP_BETRIEBSART_TEILPARALLEL = "Teilparallelbetrieb";
 
+        /// <summary>
+        /// Die Betriebsart einer gelesenen Spalte — <b>tolerant</b>, wie
+        /// <see cref="TemperaturModusOderDefault"/> und
+        /// <see cref="BoosterLesepunktOderDefault"/>. <c>null</c>, <c>DBNull</c>,
+        /// Leerwert und jeder unlesbare Wert ergeben die leere Zeichenkette; sie ist
+        /// hier — anders als beim Temperaturmodus — die richtige Antwort, denn ohne
+        /// bivalenten Betrieb gibt es keine Betriebsart, und mit ihm ist sie eine
+        /// Pflichtangabe, nach der die Maske fragen muss.
+        ///
+        /// <para><b>Warum es diese Methode gibt</b> (Befund <b>W7‑B‑2</b> der
+        /// Windows-Abnahme vom 06.09.2026): Der Vorläufer <c>Wizard_WPItem</c> zeigte
+        /// die Betriebsart in einer <b>frei beschreibbaren</b> <c>ComboBox</c>
+        /// (<c>DropDownStyle</c> unbelegt) und schrieb deren <c>Text</c> ungeprüft
+        /// zurück. Was immer in <c>Tab_Energieanlagen.Betriebsart</c> stand, stand
+        /// damit auch im Feld. Die Razor-Fassung hat ein <c>select</c> — ein Wert, der
+        /// nicht zeichengleich zu einem der drei Steuerwerte ist, ist dort <b>keine
+        /// Auswahl</b>: Die Klappliste zeigt den Platzhalter, und der Anwender sieht
+        /// eine Bestandszeile, deren Betriebsart verschwunden ist. Das ist genau die
+        /// Lage aus Befund <b>L0‑1</b>, nur andersherum gelesen.</para>
+        ///
+        /// <para><b>Erkannt wird über den Wortstamm</b>, nicht über eine Liste
+        /// gepflegter Schreibweisen: Buchstaben, kleingeschrieben, ohne Trennzeichen —
+        /// damit greifen „Parallelbetrieb", „parallelbetrieb", „Bivalent-parallel",
+        /// „bivalent parallel" und das englische „Parallel operation" gleichermaßen.
+        /// <b>Teilparallel wird ZUERST geprüft</b>, denn sein Stamm enthält den des
+        /// Parallelbetriebs.</para>
+        ///
+        /// <para><b>Sie gehört an die LESEKANTE der Oberfläche</b>
+        /// (<c>WaermepumpeAnlageHuelle.AusModell</c>), nicht in die Engine:
+        /// <c>SimulationWaermepumpe</c> vergleicht unverändert zeichengleich, und der
+        /// Referenzlauf bleibt damit unberührt. Geschrieben wird der berichtigte Wert
+        /// erst, wenn der Anwender die Detailansicht mit OK schließt.</para>
+        /// </summary>
+        public static string BetriebsartOderDefault(object feld)
+        {
+            if (feld == null || feld == System.DBNull.Value) return "";
+
+            string stamm = NurBuchstabenKlein(feld.ToString());
+            if (stamm.Length == 0) return "";
+
+            // Teilparallel VOR Parallel: "teilparallel" enthaelt "parallel".
+            if (stamm.Contains("teilparallel") || stamm.Contains("partparallel") ||
+                stamm.Contains("semiparallel") || stamm.Contains("partiallyparallel") ||
+                stamm.Contains("partialparallel"))
+                return WP_BETRIEBSART_TEILPARALLEL;
+
+            if (stamm.Contains("parallel")) return WP_BETRIEBSART_PARALLEL;
+            if (stamm.Contains("alternativ")) return WP_BETRIEBSART_ALTERNATIV;
+
+            return "";
+        }
+
+        /// <summary>
+        /// Nur die Buchstaben eines Wertes, kleingeschrieben — Leerzeichen,
+        /// Bindestriche und Ziffern fallen weg. Damit ist „Bivalent-parallel"
+        /// derselbe Stamm wie „bivalent parallel".
+        /// </summary>
+        private static string NurBuchstabenKlein(string wert)
+        {
+            if (string.IsNullOrEmpty(wert)) return "";
+
+            var sb = new System.Text.StringBuilder(wert.Length);
+            foreach (char c in wert)
+                if (char.IsLetter(c)) sb.Append(char.ToLowerInvariant(c));
+            return sb.ToString();
+        }
+
         // =====================================================================
         // Betriebsmodus / Leistungssteuerung
         //   Tab_Energieanlagen.BM_Typ

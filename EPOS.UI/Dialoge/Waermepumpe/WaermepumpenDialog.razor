@@ -45,7 +45,12 @@
             <thead>
                 <tr>
                     <th>@SpalteWahl</th>
-                    <th>@SpalteName</th>
+                    @* W7-B-1 (Windows-Abnahme 06.09.2026): "Anstelle Name sollte Typ
+                       stehen, es fehlt der Hersteller (vor Typ)." Typ ist hier die
+                       MODELLBEZEICHNUNG (Bezeichner); der Waermepumpentyp
+                       "Luft-Wasser" steht im Kenndatenblock der Detailansicht. *@
+                    <th>@SpalteHersteller</th>
+                    <th>@SpalteTyp</th>
                     <th>@SpalteLeistung</th>
                     <th>@SpalteVorlauf</th>
                     <th>@SpalteRuecklauf</th>
@@ -62,6 +67,7 @@
                             <Zeilenwahl Gewaehlt="@(z == _gewaehlt)" Kurztext="@SpalteWahl"
                                         Gewaehltwerden="() => _gewaehlt = z" />
                         </td>
+                        <td>@z.Firma</td>
                         <td>@z.Bezeichner</td>
                         <td>@z.Nennleistung</td>
                         <td>@z.Vorlauf</td>
@@ -101,14 +107,24 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung 2: die Detailansicht --------------------------------- *@
+    @* --- Ueberlagerung 2: die Detailansicht ---------------------------------
+
+       BREIT (W7-E-2): Die Detailansicht steht in DREI Spalten wie ihr Vorbild
+       Wizard_WPItem (1126 x 752). In der Regelbreite der Ueberlagerung
+       (900 px) fielen sie untereinander, und der Bereich rollte innen - genau
+       das zeigte das Bildschirmfoto der Abnahme.
+
+       TITEL EINMAL: TitelText steht NACH @attributes und schlaegt damit den
+       Wert aus dem Parametersatz der Huelle. Den Titel traegt die
+       Ueberlagerung. *@
     <Ueberlagerung Offen="@(_anlageGaben is not null)" Schliessbar="false"
+                   Zusatzklasse="epos-ueberlagerung--breit"
                    Titel="@TitelDetail" Geschlossen="AnlageAbbrechen">
         <KindInhalt>
             @if (_anlageGaben is not null)
             {
                 <WaermepumpeAnlageDialog @attributes="_anlageGaben" NurLesen="@_nurAnsehen"
-                                         Geschlossen="AnlageFertig" />
+                                         TitelText="" Geschlossen="AnlageFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -152,9 +168,22 @@
 
     [Parameter] public string TitelText { get; set; } = "Wärmepumpen Verwaltung";
     [Parameter] public string KopfbandText { get; set; } = "Geben Sie die Daten der Wärmepumpe ein";
+    /// <summary>
+    /// Titel der Überlagerung, in der die Detailansicht steht. Sie trägt ihn als
+    /// EINZIGE — die Komponente darin bekommt <c>TitelText</c> leer (W7‑E‑2).
+    /// </summary>
     [Parameter] public string TitelDetail { get; set; } = "Detailansicht";
     [Parameter] public string SpalteWahl { get; set; } = "Wahl";
-    [Parameter] public string SpalteName { get; set; } = "Name";
+
+    /// <summary>Spaltenkopf „Hersteller" (<c>Firma</c>) — W7‑B‑1.</summary>
+    [Parameter] public string SpalteHersteller { get; set; } = "Hersteller";
+
+    /// <summary>
+    /// Spaltenkopf „Typ" — die MODELLBEZEICHNUNG (<c>Bezeichner</c>), nicht der
+    /// Wärmepumpentyp. W7‑B‑1: Er löst die frühere Spalte „Name" ab.
+    /// </summary>
+    [Parameter] public string SpalteTyp { get; set; } = "Typ";
+
     [Parameter] public string SpalteLeistung { get; set; } = "Leistung [kW]";
     [Parameter] public string SpalteVorlauf { get; set; } = "Vorlauf [°C]";
     [Parameter] public string SpalteRuecklauf { get; set; } = "Rücklauf [°C]";
