@@ -111,15 +111,16 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// Math-Erweiterung des Wikis zeichnet einen unbekannten Befehl als roten
     /// Fehlerkasten, und der Anwender liest statt der Gleichung eine Fehlermeldung.
     ///
-    /// <para>Sieben Befehle stehen über der Liste der Bauform, alle texvc-sicher:
+    /// <para>Acht Befehle stehen über der Liste der Bauform, alle texvc-sicher:
     /// <c>\pi</c> (der Ersatzbehälter des Pufferspeichers ist ein Zylinder — eine
     /// Konstante, keine Schreibweise), <c>\kappa</c> (die Kappung seines
     /// vertikalen Ausgleichs; dasselbe Zeichen führt die Brauchwasserseite für den
     /// Kaltwasserfaktor), <c>\theta</c> (der Einfallswinkel der Sonnengeometrie),
     /// <c>\cos</c>, <c>\sin</c> (dieselbe Geometrie), <c>\ln</c> (das
     /// logarithmische Wechselrichtermodell der Photovoltaikseite) und
-    /// <c>\circ</c> (das Gradzeichen eines Winkels, <c>85^{\circ}</c>). Ohne sie
-    /// ließe sich keine dieser drei Seiten schreiben.</para>
+    /// <c>\circ</c> (das Gradzeichen eines Winkels, <c>85^{\circ}</c>) und
+    /// <c>\chi</c> (die Zulässigkeit einer Ladequelle des Stromspeichers). Ohne
+    /// sie ließe sich keine dieser vier Seiten schreiben.</para>
     /// </summary>
     private static readonly string[] ErlaubteBefehle =
     {
@@ -128,7 +129,7 @@ public sealed class BerechnungshilfeTests : BunitContext
         "\\mathrm", "\\text", "\\operatorname", "\\displaystyle", "\\begin", "\\end",
         "\\eta", "\\vartheta", "\\rho", "\\lambda", "\\alpha", "\\beta", "\\gamma",
         "\\varepsilon", "\\tau", "\\varphi", "\\Delta", "\\Sigma", "\\pi", "\\kappa", "\\theta",
-        "\\cos", "\\sin", "\\ln", "\\circ",
+        "\\cos", "\\sin", "\\ln", "\\circ", "\\chi",
         "\\le", "\\ge", "\\ne", "\\approx", "\\pm", "\\to", "\\infty", "\\in", "\\dots",
         "\\quad", "\\,", "\\;", "\\ ", "\\\\"
     };
