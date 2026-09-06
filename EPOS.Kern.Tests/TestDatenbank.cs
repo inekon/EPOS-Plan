@@ -106,6 +106,17 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt63_PvAnlagenparameter) SpalteSicherstellen(s);
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt64_PvModellwahl) SpalteSicherstellen(s);
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt64_PvStammUndDegradation) SpalteSicherstellen(s);
+
+                // Schritt 65 (W6-E-2, 06.09.2026): der Wechselrichterkatalog und seine
+                // Projektkopie. Zwei CREATE TABLE statt ADD COLUMN - die DDL kommt aus
+                // DERSELBEN Quelle wie in der Migration und im Werkzeug
+                // Testdatenbankschema, und CREATE TABLE IF NOT EXISTS ist selbst
+                // idempotent. Die Quelldatei fuehrt die Tabellen seit dem Nachziehen
+                // ebenfalls; hier stehen sie fuer den Fall, dass jemand eine aeltere
+                // Kopie einlegt.
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in WechselrichterSchema.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
