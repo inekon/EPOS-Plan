@@ -3215,6 +3215,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > der Strangtabelle; Umsetzung in S2.4. Weitere offene Punkte: **W6‑O‑2** (die CEC-Liste führt weder `Anzahl_Mppt` noch
 > `S_AC_Max`), **W6‑O‑3** (Auslieferungskatalog leer — vorbefüllen?). Elf Abnahmepunkte A‑W6‑E‑2‑S1 in der
 > Sitzungsmeldung; Gate grün.
+>
+> **Wechselrichter Stufe S2 (W6‑E‑2, W6‑E‑3), umgesetzt in `706fe6f`:** Migrationsschritt **66** legt `Z_AnlageStrang` an (zwölf
+> Spalten, `ID_Anlage` mit `ON DELETE CASCADE`, `ID_Wechselrichter` restriktiv auf die Projektkopie) und die Spalte
+> `Tab_Energieanlagen.PV_Wechselrichterweg` des sichtbaren Schalters aus **W6‑E‑3** (NULL = vereinfacht, `KATALOG` = mit
+> Wechselrichter — Empfehlung (a) des Konzepts 7.1); `SchemaStand.Zielversion` steht auf 66, die Testdatenbank ist nachgezogen.
+> `AnlageStrangModel`/`AnlageStrangCtrl` sind Zeile für Zeile die Bauart von `Z_AnlageSenke`; die **Falle N3.3** schließt Block
+> **ST1** in `WizardCtrl` — der Speicherweg ist Löschen + Neuanlegen, und ohne Rettung räumte jedes Speichern die Strangzuordnung
+> ab. `StrangPlausibilitaet` liefert **P1 bis P8** als Ampel je Strang und je Gerät; die sechs Zeilen und drei Gegenproben aus
+> **Anhang A** kommen Zahl für Zahl heraus (425,3 V / 260,9 V / 355,3 V / 9,5515 A / DC/AC 1,10076). Im PV-Dialog ersetzt der
+> Abschnitt **„Wechselrichter und Stränge"** den ausgegrauten Knopf: zwei sichtbare Optionen mit weicher Sperre (W16b‑E‑6),
+> Strangtabelle mit Ampelsätzen, abgeleitete Modulzahl (**Q9**) und die Anlagenüberlagerung als Rückfall — in beiden Modellen
+> bedienbar (**Q5**); der Projekttransfer `.wpx` trägt die zwei Tabellen. **S2 rechnet nicht:** `SimulationPV` ist unberührt,
+> ein sichtbarer Satz in der Maske sagt es bis S3, und der Referenzlauf 1030/1007/1017 bleibt **byte-gleich**. 1 446 Kern- und
+> 2 822 UI-Fälle grün, SQL-Prüfer 0, Designer „abweichend 0", Gate grün; der Merkposten heißt seither
+> `Der_Wechselrichter_rechnet_in_S2_noch_nicht`. Neue offene Punkte **W6‑O‑4** (kein Herstellerfilter über der Klappliste der
+> Strangtabelle) und **W6‑O‑5** (die Ampel prüft gegen das Modul der ersten Projektzeile). Elf Abnahmepunkte A‑W6‑E‑2‑S2 in der
+> Sitzungsmeldung. S3 (Rechenweg, Kennzahlen, Prüfstand) läuft.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
