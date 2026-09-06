@@ -262,6 +262,23 @@ public sealed class IosProjektQuelle : IProjektQuelle
 
     // =====================================================================
 
+    /// <summary>
+    /// Das Lagebild der Lizenz fuer das Banner der <c>AppWurzel</c> (Welle iF30).
+    /// </summary>
+    /// <remarks>
+    /// Unter Windows reicht die Huelle es als Parameter herein; auf iOS gibt es keine
+    /// Seitenhuelle, und deshalb geht es ueber die Projektquelle. Gerechnet wird es im
+    /// Kern (<c>LizenzLage.Ermitteln</c>), der dabei ueber <c>Dienste.Lizenzablage</c>
+    /// den SCHLUESSELBUND liest - genau der synchrone Zugriff, den eine Razor-Komponente
+    /// nicht selbst tun darf (Regel S-2 aus W15c).
+    /// </remarks>
+    public WindowsFormsApplication1.LizenzLage? Lizenzlage()
+    {
+        return WindowsFormsApplication1.LizenzLage.Ermitteln();
+    }
+
+    // =====================================================================
+
     private static int Zahl(object wert)
     {
         if (wert == null || wert == DBNull.Value) return 0;

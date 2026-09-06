@@ -3648,7 +3648,16 @@ namespace WindowsFormsApplication1
             bool erfolg = false;
             try
             {
-                erfolg = SchritteAbarbeitenSqlite(l);
+                // AUSNAHME DER SCHREIBNAHT (Welle iF30, Anwenderentscheid 04.09.2026).
+                // Die Schemamigration laeuft in Program.Main VOR jedem Fenster und muss
+                // auch im Lesemodus durchlaufen: Ein Anwender mit abgelaufener Lizenz
+                // duerfte seine Datenbank sonst nicht einmal mehr OEFFNEN, weil das
+                // Programm sie erst auf den heutigen Stand heben muss. Die Freigabe traegt
+                // ihren Grund; sie gilt nur fuer diesen Aufruf und endet mit ihm.
+                using (Schreibnaht.Freigabe(Schreibnaht.GRUND_MIGRATION))
+                {
+                    erfolg = SchritteAbarbeitenSqlite(l);
+                }
             }
             catch (Exception ex)
             {

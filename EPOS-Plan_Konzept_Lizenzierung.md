@@ -219,6 +219,17 @@ Eine abgelaufene Lizenz darf Bestandsdaten nicht in Geiselhaft nehmen. Vorschlag
 
 Der Lesemodus ist zugleich das Auffangnetz aller Fehlerfälle (Serverausfall über die Karenzzeit hinaus, Uhrmanipulation erkannt): Die Anwendung wird nie „zugenagelt", sie stellt nur das Erzeugen neuer Arbeitsergebnisse ein.
 
+### 6.1 Umsetzungsvermerk (Welle iF30, 06.09.2026)
+
+**Dieser Abschnitt ist umgesetzt und geprüft.** Der Anwenderentscheid vom 04.09.2026 lautete „streng"; die Welle iF30 hat ihn eingelöst. Alles Weitere — Fundstellen, Ausnahmen, Nachweise, Abnahmepunkte und die offenen Punkte iF30‑O‑1…5 — steht in [`WindowsFormsApplication1/Allgemein/Reporting/iF30_Lesemodus_Protokoll.md`](WindowsFormsApplication1/Allgemein/Reporting/iF30_Lesemodus_Protokoll.md).
+
+- **Durchgesetzt wird an EINER Stelle.** Jede SQL-Anweisung des Rechenkerns wird von `SqliteDatenzugriff.ErzeugeKommando` gebaut — die sechs Zugriffsmethoden, der Datenbankvorgang, `RecordSet`, `StilleDb` und die sechs Eigenverbindungen laufen ausnahmslos dort hindurch. Dort steht seither `Schreibnaht.Pruefe(sql)` (`EPOS.Kern/Allgemein/Lizenz/Schreibnaht.cs`). **Lesen bleibt frei**: `SELECT`, `PRAGMA`, `EXPLAIN` und `VALUES` kommen durch, alles andere gilt als schreibend.
+- **Der Anwender sieht einen Satz, keinen Datenbankfehler.** Ein abgewiesener Schreibversuch wirft eine eigene `LesemodusException` mit fertigem Text aus dem Ressourcenkatalog (`LIZ_LESEMODUS_SPERRE`, de/en); die vier schreibenden Zugriffsmethoden melden ihn über denselben Weg wie jede Datenbankmeldung und geben ihren gewohnten Fehlerwert zurück.
+- **Der Simulationslauf fragt vor dem Start.** `SimulationLaufCtrl.Vorpruefen` meldet den Lesemodus als ersten Grund (`SIM_MSG_LESEMODUS`) — sonst liefe die Rechnung minutenlang und scheiterte erst beim Speichern. **Ansehen, Berichte (Word/Excel), Drucken und Export bleiben unberührt**: Die ganze Berichts- und Exportkette fasst die Datenbank nur lesend an.
+- **Fünf benannte Ausnahmen**, jede als `Schreibnaht.Freigabe(grund)` an ihrer Stelle im Quelltext und **nie** über den SQL-Text: Schemamigration, Erststart-Migration, Schemamarker, Programmzustand (`Tab_Applikation` — „zuletzt geöffnetes Projekt"; ohne sie ließe sich im Lesemodus kein Projekt mehr öffnen) und die Datenbanksicherung (`VACUUM INTO` schreibt eine zweite Datei daneben und ist damit ein Export). Die im Entscheid genannten Ausnahmen **Lizenzaktivierung** und **Einstellungen** brauchen keine: Beide Wege gehen über `Dienste.Lizenzablage` bzw. `Properties.Settings` und berühren die Datenbank nicht — eine Lizenztabelle gibt es im Schema nicht.
+- **Werkzeuge und Prüfstände laufen ohne Lizenz weiter.** Referenzlauf (Linux/CI und Windows), iOS-Prüfmodus, Schemawerkzeug und die Testvorrichtung heben die Sperre mit je einer benannten Zeile `Schreibnaht.WerkzeugFreigabe(grund)` — ausdrücklich, nicht durch Auslassen.
+- **Die drei Warnstufen der Tabelle oben sind gebaut**: `LizenzManager.WARNSTUFE_1/2/3` (30/14/7) mit `RestTage` und `Warnstufe`; das Lagebild dazu liefert `LizenzLage`. Angezeigt werden sie als Banner in `EPOS.UI/Seiten/AppWurzel.razor`, der gemeinsamen Wurzel von Windows und iOS: **der Lesemodus dauerhaft** in Warnfarbe, die drei Stufen als verfallender Hinweis („dezenter Hinweis beim Start"). Die Oberflächenkomponente kennt den Lizenzkern nicht; sie bekommt ein fertiges, sprachfertiges Lagebild — kein Token, kein Zeitanker, kein Schlüssel.
+
 ---
 
 ## 7. Datenschutz
