@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Stand: 2026-09-06 | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationControl.Stromspeicher.cs, Controller/StromspeicherSimCtrl.cs,
      SpeicherEngine/ (Vorverarbeitung, Dauernutzung, Nachtnutzung, Arbitrage, ArbitragePlaner,
      Wirtschaftlichkeit, Amortisation, SpeicherParameter, GanglinienPruefung, SpeicherOptimierer) -->
@@ -51,12 +51,130 @@ Speicherwirkung weiter.
 | Berechnungsart, Betriebsart, zulässige Ladequellen || — || Speichervariante
 |}
 
+== Formelzeichen und Parameter ==
+
+Diese Seite rechnet als '''einzige''' der Rubrik nicht in Stunden, sondern in '''Viertelstunden''':
+Der Laufindex heißt ''k'' und läuft von 1 bis 35&nbsp;040, die Intervalldauer ist Δt = 0,25&nbsp;h.
+Alle Energien stehen in kWh je Intervall, ''E'' ist eine Strommenge, ''P'' eine Leistung, ''η'' ein
+Wirkungsgrad, ''SOC''(k) der Ladezustand in kWh.
+
+=== Parameter ===
+
+Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eines Laufs nicht.
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! Herkunft
+|-
+| Δt || Dauer eines Intervalls || h || '''Konstante: 0,25'''
+|-
+| K || Zahl der Intervalle des Jahres || — || '''Konstante: 35 040'''
+|-
+| C<sub>nom</sub> || Nennkapazität des Speichers || kWh || Speicherkatalog, Feld „Energie (Kapazität)"
+|-
+| P || Lade- und Entladeleistung || kW || Speicherkatalog, Feld „Leistung"; fehlt sie, gilt '''1 C''' — dann ist P zahlengleich C<sub>nom</sub>
+|-
+| s<sub>min</sub>, s<sub>max</sub> || nutzbares Ladezustandsband || % || Speichervariante, Felder „SoC min"/„SoC max"; '''Rückfall: 10…90'''
+|-
+| η<sub>RT</sub> || Umlaufwirkungsgrad || — || Speicherkatalog, Feld „Wirkungsgrad RT"; '''Rückfall: 0,90'''
+|-
+| d || Degradation je Jahr || — (Anteil) || Speicherkatalog, Feld „Degradation"
+|-
+| P<sub>sb</sub> || Standby-Verbrauch || W || Speicherkatalog — Parameter des Geräts, kein Term des Dispatchs
+|-
+| n<sub>Z</sub> || zugesicherte Zyklen || — || Speicherkatalog
+|-
+| c<sub>ver</sub> || Verschleißkosten je Zyklus || €/(kWh·Zyklus) || Speicherkatalog; '''Rückfall: 0,025'''
+|-
+| c<sub>cap</sub> || Modulkosten || €/kWh || Speicherkatalog
+|-
+| c<sub>pow</sub> || Leistungskosten || €/kW || Speicherkatalog
+|-
+| I<sub>fix</sub> || feste Investition || € || Speicherkatalog
+|-
+| i || Kapitalzins || — (Anteil) || Speichervariante; '''Rückfall: 0,03''' (3&nbsp;%)
+|-
+| N || Nutzungsdauer || a || Speichervariante; '''Rückfall: 20'''
+|-
+| χ<sub>PV</sub>, χ<sub>BHKW</sub> || Zulässigkeit der Ladequelle: 1 = zulässig, 0 = nicht || — || Speichervariante, „zulässige Ladequellen" (Grün- oder Graustrom)
+|-
+| SOC(0) || Startladezustand || kWh || Speichervariante; ohne Angabe '''SOC<sub>min</sub>'''
+|}
+
+Jeder gezogene Rückfall wird im Simulationsprotokoll benannt.
+
+=== Variablen ===
+
+Größen, die der Lauf je Intervall oder je Lauf bildet.
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! berechnet in
+|-
+| k || Viertelstunde des Jahres, 1…35&nbsp;040 || — || Laufindex
+|-
+| P<sub>last</sub>(k), P<sub>pv</sub>(k), P<sub>bhkw</sub>(k) || Lastgang, PV- und BHKW-Erzeugung || kW || Eingangsreihen
+|-
+| p<sub>bez</sub>(k) || Bezugspreis || ct/kWh || Eingangsreihe
+|-
+| v<sub>pv</sub>(k), v<sub>bhkw</sub>(k) || Einspeisevergütung je Quelle || ct/kWh || Eingangsreihen
+|-
+| SOC<sub>min</sub>, SOC<sub>max</sub> || untere und obere Grenze des Ladezustands || kWh || (1) und (2)
+|-
+| C<sub>nutz</sub> || nutzbare Kapazität || kWh || (3)
+|-
+| η<sub>ch</sub>, η<sub>dis</sub> || Lade- und Entladewirkungsgrad || — || (4)
+|-
+| I || Investition || € || (5)
+|-
+| E<sub>last</sub>(k), E<sub>pv</sub>(k), E<sub>bhkw</sub>(k) || Energien des Intervalls || kWh || (6)
+|-
+| E<sub>restlast</sub>(k) || Last nach der Direktdeckung durch das BHKW || kWh || (7)
+|-
+| E<sub>pv,frei</sub>(k) || ladefähiger PV-Überschuss || kWh || (8)
+|-
+| E<sub>bhkw,frei</sub>(k) || ladefähiger BHKW-Überschuss || kWh || (9)
+|-
+| E<sub>defizit</sub>(k) || Residuallast || kWh || (10)
+|-
+| E<sub>quelle</sub>(k) || zum Laden zugelassener Überschuss || kWh || (11)
+|-
+| E<sub>ch</sub>(k) || Ladeenergie des Intervalls, AC-seitig || kWh || (12)
+|-
+| E<sub>dis</sub>(k) || Entladeenergie des Intervalls, AC-seitig || kWh || (13)
+|-
+| SOC(k) || Ladezustand am Ende des Intervalls || kWh || (12) und (13)
+|-
+| E<sub>pv,ant</sub>(k), E<sub>bhkw,ant</sub>(k) || Aufteilung der Ladung nach der Merit-Order PV vor BHKW || kWh || Schritt 4
+|-
+| F(k) || Geldwert des Intervalls || € || (14)
+|-
+| E<sub>dis,DC</sub> || entnommene Energie des Jahres, DC-seitig || kWh || Jahressumme
+|-
+| z<sub>äq</sub> || äquivalente Vollzyklen || — || (15)
+|-
+| E<sub>a,1</sub> || Ertrag im Referenzjahr || €/a || (16)
+|-
+| a(i,N) || Annuitätsfaktor || 1/a || (17)
+|-
+| A || Kapitaldienst || €/a || (18)
+|-
+| RBF(i,N) || Rentenbarwertfaktor || a || (19)
+|-
+| q || Hilfsgröße des degradierten Rentenbarwertfaktors || — || (20)
+|-
+| RBF<sub>deg</sub> || degradierter Rentenbarwertfaktor || a || (21)
+|-
+| NPV || Kapitalwert || € || (22)
+|-
+| ΔJ(C,P) || Jahresüberschuss nach Kapitaldienst — die Zielfunktion der Auslegung || €/a || (23)
+|-
+| t<sub>A</sub> || Amortisationszeit || a || Ausgabe — Sekundärkennzahl je Auslegung
+|}
+
 == Rechenweg ==
 
-Gerechnet wird '''viertelstündlich''' — 35&nbsp;040 Intervalle, dt = 0,25&nbsp;h. Alle Energien
-stehen in kWh je Intervall; die Reihen kommen als Leistungen [kW] herein und gehen als Leistungen
-zurück. Passt die Länge einer Reihe nicht zum Raster, wird der Speicher übersprungen und die
-Abweichung gemeldet.
+Gerechnet wird '''viertelstündlich''' — K = 35&nbsp;040 Intervalle, Δt = 0,25&nbsp;h. Die Reihen
+kommen als Leistungen [kW] herein und gehen als Leistungen zurück. Passt die Länge einer Reihe nicht
+zum Raster, wird der Speicher übersprungen und die Abweichung gemeldet.
 
 === Schritt 1 — Parameter der aktiven Variante ===
 
@@ -66,50 +184,58 @@ Protokoll. Mehrere Anlagen werden kapazitätsgewichtet gemittelt (Ladezustand, D
 Wirkungsgrad, Verschleißkosten, Zyklen, Modulkosten) beziehungsweise leistungsgewichtet
 (Leistungskosten).
 
- SoC_min = C_nom · SoC_min[%] / 100
- SoC_max = C_nom · SoC_max[%] / 100
- C_nutz  = SoC_max − SoC_min
- η_ch = η_dis = √η_RT
+: <big>SOC<sub>min</sub> = C<sub>nom</sub> · s<sub>min</sub> / 100</big> &nbsp;&nbsp;(1)
+
+: <big>SOC<sub>max</sub> = C<sub>nom</sub> · s<sub>max</sub> / 100</big> &nbsp;&nbsp;(2)
+
+: <big>C<sub>nutz</sub> = SOC<sub>max</sub> − SOC<sub>min</sub></big> &nbsp;&nbsp;(3)
+
+: <big>η<sub>ch</sub> = η<sub>dis</sub> = √η<sub>RT</sub></big> &nbsp;&nbsp;(4)
+
+: <big>I = c<sub>cap</sub> · C<sub>nom</sub> + c<sub>pow</sub> · P + I<sub>fix</sub></big> &nbsp;&nbsp;(5)
 
 Rückfallwerte, wenn ein Wert fehlt oder unplausibel ist: Band '''10…90&nbsp;%''' der Nennkapazität,
-η<sub>RT</sub> = '''0,90''', Verschleißkosten '''0,025&nbsp;€/(kWh·Zyklus)''', Kapitalzins
-'''3&nbsp;%''', Nutzungsdauer '''20&nbsp;a'''. Fehlt die Leistungsgrenze, gilt '''1&nbsp;C''' (die
-Leistung wird gleich der Kapazität gesetzt) — das entspricht der impliziten Annahme des Bestands und
-begrenzt praktisch nicht. Der Startladezustand ist ohne Angabe SoC<sub>min</sub>. Jeder dieser
-Rückfälle wird im Protokoll benannt.
-
- Investition = Modulkosten · C_nom + Leistungskosten · P + feste Investition
+η<sub>RT</sub> = '''0,90''', c<sub>ver</sub> = '''0,025&nbsp;€/(kWh·Zyklus)''', i = '''3&nbsp;%''',
+N = '''20&nbsp;a'''. Fehlt die Leistungsgrenze, gilt '''1&nbsp;C''' — P wird gleich C<sub>nom</sub>
+gesetzt; das entspricht der impliziten Annahme des Bestands und begrenzt praktisch nicht.
 
 === Schritt 2 — Vorverarbeitung je Intervall ===
 
 Sie ist für alle Strategien dieselbe und teilt Last, PV und BHKW auf:
 
- E_last     = P_last · dt      E_pv = P_pv · dt      E_bhkw = P_bhkw · dt
- E_restlast = max(0 ; E_last − E_bhkw)          das BHKW deckt vorrangig
- E_pv_frei  = max(0 ; E_pv   − E_restlast)      ladefähiger PV-Überschuss
- E_bhkw_frei= max(0 ; E_bhkw − E_last)          ladefähiger BHKW-Überschuss
- E_defizit  = max(0 ; E_last − E_pv − E_bhkw)   Residuallast
- E_quelle   = (PV zulässig ? E_pv_frei : 0) + (BHKW zulässig ? E_bhkw_frei : 0)
+: <big>E<sub>last</sub>(k) = P<sub>last</sub>(k) · Δt ,&nbsp; E<sub>pv</sub>(k) = P<sub>pv</sub>(k) · Δt ,&nbsp; E<sub>bhkw</sub>(k) = P<sub>bhkw</sub>(k) · Δt</big> &nbsp;&nbsp;(6)
 
-Überschuss und Defizit schließen einander konstruktiv aus — Laden und Entladen im selben Intervall
-ist damit unmöglich. Welche Quellen zulässig sind, sagt die Variante (Grün- oder Graustrom).
+: <big>E<sub>restlast</sub>(k) = max( 0 ; E<sub>last</sub>(k) − E<sub>bhkw</sub>(k) )</big> &nbsp;&nbsp;(7)
+
+: <big>E<sub>pv,frei</sub>(k) = max( 0 ; E<sub>pv</sub>(k) − E<sub>restlast</sub>(k) )</big> &nbsp;&nbsp;(8)
+
+: <big>E<sub>bhkw,frei</sub>(k) = max( 0 ; E<sub>bhkw</sub>(k) − E<sub>last</sub>(k) )</big> &nbsp;&nbsp;(9)
+
+: <big>E<sub>defizit</sub>(k) = max( 0 ; E<sub>last</sub>(k) − E<sub>pv</sub>(k) − E<sub>bhkw</sub>(k) )</big> &nbsp;&nbsp;(10)
+
+: <big>E<sub>quelle</sub>(k) = χ<sub>PV</sub> · E<sub>pv,frei</sub>(k) + χ<sub>BHKW</sub> · E<sub>bhkw,frei</sub>(k)</big> &nbsp;&nbsp;(11)
+
+(7) sagt: '''das BHKW deckt vorrangig'''. Überschuss E<sub>quelle</sub> und Defizit
+E<sub>defizit</sub> schließen einander konstruktiv aus — Laden und Entladen im selben Intervall ist
+damit unmöglich. Welche Quellen zulässig sind (χ = 1) und welche nicht (χ = 0), sagt die Variante.
 
 === Schritt 3 — Dispatch nach Betriebsstrategie ===
 
 '''Dauernutzung''' (Vorgabe): laden aus Überschuss, entladen gegen die Residuallast.
 
- Laden:    E_ac ≤ min( E_quelle  ; P·dt ; (SoC_max − SoC)/η_ch )    SoC += E_ac · η_ch
- Entladen: E_ac ≤ min( E_defizit ; P·dt ; (SoC − SoC_min)·η_dis )   SoC −= E_ac / η_dis
+: <big>E<sub>ch</sub>(k) ≤ min( E<sub>quelle</sub>(k) ; P · Δt ; ( SOC<sub>max</sub> − SOC(k−1) ) / η<sub>ch</sub> ) ,&nbsp; SOC(k) = SOC(k−1) + E<sub>ch</sub>(k) · η<sub>ch</sub></big> &nbsp;&nbsp;(12)
 
-'''Nachtnutzung''': Solange die PV erzeugt, wird '''nur geladen'''; entladen wird erst, wenn die
-PV-Reihe null ist. Ein BHKW-Überschuss darf auch nachts laden. Zweck ist ein Speicher, der nach
-Sonnenuntergang nicht schon leer ist. Das Kriterium ist die PV-Reihe selbst — es braucht weder
+: <big>E<sub>dis</sub>(k) ≤ min( E<sub>defizit</sub>(k) ; P · Δt ; ( SOC(k−1) − SOC<sub>min</sub> ) · η<sub>dis</sub> ) ,&nbsp; SOC(k) = SOC(k−1) − E<sub>dis</sub>(k) / η<sub>dis</sub></big> &nbsp;&nbsp;(13)
+
+'''Nachtnutzung''': Solange die PV erzeugt, wird '''nur geladen'''; entladen wird erst, wenn
+P<sub>pv</sub>(k) = 0 ist. Ein BHKW-Überschuss darf auch nachts laden. Zweck ist ein Speicher, der
+nach Sonnenuntergang nicht schon leer ist. Das Kriterium ist die PV-Reihe selbst — es braucht weder
 Klimadaten noch Sonnenstand.
 
 '''Preissteuerung / Arbitrage''': Zuerst plant ein Vorlauf die Netzpfade des ganzen Jahres
 (rollierend über 24-Stunden-Fenster mit vollständiger Pfadprüfung), dann fährt der Dispatch diesen
-Plan ab. Der '''Eigenverbrauchsfluss hat Vorrang''' und läuft unverändert wie in der Dauernutzung;
-die Netzpfade — Netzladung zum Ladepreis, Verkauf zum Erlöspreis — bekommen nur, was im Intervall
+Plan ab. Der '''Eigenverbrauchsfluss hat Vorrang''' und läuft unverändert nach (12) und (13); die
+Netzpfade — Netzladung zum Ladepreis, Verkauf zum Erlöspreis — bekommen nur, was im Intervall
 danach frei bleibt. Sind weder Netzladung noch Netzentladung zugelassen, ist das Ergebnis
 '''bitgleich''' zur Dauernutzung.
 
@@ -117,9 +243,9 @@ Jede andere Berechnungsart fällt protokolliert auf die Dauernutzung zurück: Ei
 scheitern, dass eine Variante eine Ausbaustufe anfordert, die das Programm noch nicht kann.
 
 Daneben gibt es einen '''Excel-Kompatibilitätsmodus''' — die zeichengetreue Nachbildung der alten
-Tabellenmappe. Er kennt nur Last und PV, rechnet energetisch mit Wirkungsgrad 1 und schlägt einen
-pauschalen Verlustfaktor erst auf die Euro-Summe auf; er gilt '''nur''' für die Dauernutzung. Für
-eine Bewertung ist der energetische Modus gemeint.
+Tabellenmappe. Er kennt nur Last und PV, rechnet energetisch mit η<sub>ch</sub> = η<sub>dis</sub> = 1
+und schlägt einen pauschalen Verlustfaktor erst auf die Euro-Summe auf; er gilt '''nur''' für die
+Dauernutzung. Für eine Bewertung ist der energetische Modus gemeint.
 
 === Schritt 4 — Bewertung je Intervall ===
 
@@ -127,29 +253,35 @@ Bewertet wird die '''AC-seitige''' Energie. Die Entladung mit dem Bezugspreis (v
 Netzbezug), die Ladung nach der Merit-Order '''PV vor BHKW''' — erst der PV-Anteil bis zur
 Ladegrenze, der Rest aus dem BHKW-Überschuss:
 
- F[i] = + E_entladen · p_bezug[i] / 100
-        − E_pv_anteil · v_pv[i] / 100
-        − E_bhkw_anteil · v_bhkw[i] / 100
+: <big>F(k) = E<sub>dis</sub>(k) · p<sub>bez</sub>(k) / 100 − E<sub>pv,ant</sub>(k) · v<sub>pv</sub>(k) / 100 − E<sub>bhkw,ant</sub>(k) · v<sub>bhkw</sub>(k) / 100</big> &nbsp;&nbsp;(14)
 
-Die Ladung kostet also die '''entgangene Vergütung''' der Energie, die sonst eingespeist worden
-wäre. Energetisch ist der Speicher dabei quellenblind — die Aufteilung ist reine Bewertung.
+Die Division durch 100 rechnet Cent in Euro um. Die Ladung kostet also die '''entgangene
+Vergütung''' der Energie, die sonst eingespeist worden wäre. Energetisch ist der Speicher dabei
+quellenblind — die Aufteilung E<sub>pv,ant</sub> / E<sub>bhkw,ant</sub> ist reine Bewertung.
 
 === Schritt 5 — Kennzahlen und Wirtschaftlichkeit ===
 
- äquivalente Vollzyklen = entnommene Energie (DC) / C_nutz
- Ertrag im Referenzjahr = Σ F[i]
+: <big>z<sub>äq</sub> = E<sub>dis,DC</sub> / C<sub>nutz</sub></big> &nbsp;&nbsp;(15)
 
- Annuitätsfaktor a(i,N) = i / (1 − (1 + i)^−N)          bei i = 0:  1/N
- Kapitaldienst          = Investition · a(i,N)
- Rentenbarwertfaktor    = (1 − (1 + i)^−N) / i          bei i = 0:  N
+: <big>E<sub>a,1</sub> = Σ<sub>k=1…K</sub> F(k)</big> &nbsp;&nbsp;(16)
 
-Mit Degradation ''d'' tritt der degradierte Rentenbarwertfaktor an seine Stelle:
+: <big>a(i,N) = i / ( 1 − (1 + i)<sup>−N</sup> ) ,&nbsp; für i = 0: &nbsp;a = 1 / N</big> &nbsp;&nbsp;(17)
 
- q       = (1 − d) / (1 + i)
- RBF_deg = 1/(1 + i) · (1 − q^N) / (1 − q)
+: <big>A = I · a(i,N)</big> &nbsp;&nbsp;(18)
 
-Der '''Kapitalwert''' ist Ertrag mal (degradiertem) Rentenbarwertfaktor minus Investition; die
-'''Amortisationszeit''' wird daraus als Sekundärkennzahl je Auslegung ausgewiesen.
+: <big>RBF(i,N) = ( 1 − (1 + i)<sup>−N</sup> ) / i ,&nbsp; für i = 0: &nbsp;RBF = N</big> &nbsp;&nbsp;(19)
+
+Mit Degradation d tritt der '''degradierte''' Rentenbarwertfaktor an die Stelle von (19):
+
+: <big>q = ( 1 − d ) / ( 1 + i )</big> &nbsp;&nbsp;(20)
+
+: <big>RBF<sub>deg</sub> = 1 / (1 + i) · ( 1 − q<sup>N</sup> ) / ( 1 − q )</big> &nbsp;&nbsp;(21)
+
+: <big>NPV = E<sub>a,1</sub> · RBF<sub>deg</sub> − I</big> &nbsp;&nbsp;(22)
+
+Die Grenzfälle sind ausdrücklich geregelt: d = 0 führt (21) auf (19) zurück; i = 0 und d > 0 ergibt
+RBF<sub>deg</sub> = ( 1 − (1 − d)<sup>N</sup> ) / d; d = 0 und i = 0 ergibt N. Die
+'''Amortisationszeit''' t<sub>A</sub> wird daraus als Sekundärkennzahl je Auslegung ausgewiesen.
 
 === Schritt 6 — Auslegungsoptimierung (getrennter Lauf) ===
 
@@ -158,43 +290,44 @@ durchsucht zweistufig — Grobraster über den ganzen Suchraum, dann ein Feinras
 verfeinert wird nur die Kapazitätsachse — und maximiert den '''Jahresüberschuss nach
 Kapitaldienst''':
 
- ΔJ(C,P) = E_a,äq(C,P) − [ c_cap·C + c_pow·P + I_fix ] · a(i,N)   [ − Verschleißkosten ]
+: <big>ΔJ(C,P) = E<sub>a,äq</sub>(C,P) − [ c<sub>cap</sub>·C + c<sub>pow</sub>·P + I<sub>fix</sub> ] · a(i,N) &nbsp;[ − Verschleißkosten ]</big> &nbsp;&nbsp;(23)
 
-Der Verschleißterm ist wählbar und '''standardmäßig aus'''. Die '''Amortisationszeit ist bewusst
-nicht die Zielfunktion''': Sie ignoriert die Nutzungsdauer und liefert systematisch zu kleine
-Speicher; sie erscheint als Sekundärkennzahl je Rasterpunkt. Das Ergebnis ist unabhängig davon, auf
-wie vielen Fäden gerechnet wurde.
+Der Verschleißterm über c<sub>ver</sub> ist wählbar und '''standardmäßig aus'''. Die
+'''Amortisationszeit ist bewusst nicht die Zielfunktion''': Sie ignoriert die Nutzungsdauer N und
+liefert systematisch zu kleine Speicher; sie erscheint als Sekundärkennzahl je Rasterpunkt. Das
+Ergebnis ist unabhängig davon, auf wie vielen Fäden gerechnet wurde.
 
 == Grenzen und Annahmen ==
 
 * '''Der Speicher rechnet nach den Erzeugern.''' Er verändert den ausgewiesenen PV-Ertrag nicht; die
   Speicherwirkung wird getrennt bilanziert.
-* '''Laden und Entladen schließen einander im Intervall aus''' — das ist eine Folge der
-  Vorverarbeitung, keine Regel obendrauf.
-* '''Ein konstanter Umlaufwirkungsgrad''', gleichmäßig auf Laden und Entladen verteilt (je √η<sub>RT</sub>).
-  Keine Abhängigkeit von Ladezustand, Temperatur oder C-Rate.
-* '''Keine Alterung im Jahreslauf.''' Die Degradation wirkt in der Wirtschaftlichkeit über die
-  Jahresreihe, nicht auf die Kapazität innerhalb des gerechneten Jahres.
+* '''Laden und Entladen schließen einander im Intervall aus''' — das ist eine Folge von (7) bis
+  (10), keine Regel obendrauf.
+* '''Ein konstanter Umlaufwirkungsgrad''', gleichmäßig auf Laden und Entladen verteilt — das ist die
+  Aussage von (4). Keine Abhängigkeit von Ladezustand, Temperatur oder C-Rate.
+* '''Keine Alterung im Jahreslauf.''' d wirkt in (20) und (21) über die Jahresreihe, nicht auf
+  C<sub>nutz</sub> innerhalb des gerechneten Jahres.
 * '''Keine Temperaturabhängigkeit''', kein Batteriemanagement, keine Zellchemie.
-* '''Der Standby-Verbrauch''' ist ein Parameter des Speichers, kein eigener Rechenweg im Dispatch.
+* '''Der Standby-Verbrauch P<sub>sb</sub>''' ist ein Parameter des Speichers und kommt in keiner
+  Gleichung des Dispatchs vor.
 * '''Netzladung und Netzverkauf''' gibt es nur in der Preissteuerung, und nur, soweit die Variante
   sie zulässt.
 * '''Der Excel-Kompatibilitätsmodus rechnet bewusst „falsch"''': Er übernimmt die Eigenheiten der
-  Vorlage — der Startwert beginnt bei 0 statt bei SoC<sub>min</sub>, das erste Intervall fällt aus
-  der Bilanz, der Preis steuert nicht die Entscheidung, sondern nur die Bewertung, und der
-  Wirkungsgrad ist energetisch 1. Er ist zum '''Nachstellen''' der alten Mappe da, nicht zum
-  Bewerten.
-* '''Die Auslegungsoptimierung ist ein eigener Lauf''' und schreibt nichts in das Simulationsergebnis.
+  Vorlage — SOC(0) beginnt bei 0 statt bei SOC<sub>min</sub>, das erste Intervall fällt aus der
+  Bilanz, der Preis steuert nicht die Entscheidung, sondern nur die Bewertung, und energetisch ist
+  η = 1. Er ist zum '''Nachstellen''' der alten Mappe da, nicht zum Bewerten.
+* '''Die Auslegungsoptimierung ist ein eigener Lauf''' und schreibt nichts in das
+  Simulationsergebnis.
 
 == Ergebnisse und wo sie stehen ==
 
-* '''Simulationsergebnis, Reiter „Stromspeicher"''' — Ladezustandsverlauf, Lade- und Entladeenergie,
-  äquivalente Vollzyklen, Geldwert und die Kennzahlen der Wirtschaftlichkeit.
+* '''Simulationsergebnis, Reiter „Stromspeicher"''' — der Verlauf SOC(k), Lade- und Entladeenergie,
+  äquivalente Vollzyklen z<sub>äq</sub>, Geldwert und die Kennzahlen der Wirtschaftlichkeit.
 * '''Simulationsergebnis, Reiter „Ergebnis"''' — Eigenverbrauchsquote und Autarkie mit
   Speicherwirkung.
 * '''Variantenvergleich der Speicher''' — dieselben Kennzahlen je Variante nebeneinander.
-* '''Auslegungsoptimierung''' — Heatmap über Kapazität und C-Rate, Bestpunkt und Kennzahlen je
-  Rasterpunkt.
+* '''Auslegungsoptimierung''' — Heatmap über Kapazität und C-Rate, Bestpunkt nach (23) und
+  Kennzahlen je Rasterpunkt.
 * '''Simulationsprotokoll''' — jeder Rückfall (kein Speicher, keine Kapazität, 1‑C‑Annahme,
   Ersatz-SoC-Band, nicht umgesetzte Berechnungsart) und jede Rasterabweichung.
 
