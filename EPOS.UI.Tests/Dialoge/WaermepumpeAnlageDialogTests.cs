@@ -20,10 +20,14 @@ public class WaermepumpeAnlageDialogTests : BunitContext
     private static readonly byte[] BildCop = { 1, 2, 3 };
     private static readonly byte[] BildLeistung = { 4, 5, 6 };
 
+    /// <summary>
+    /// Die Stammliste führt seit <b>W7‑B‑1</b> auch den HERSTELLER — die Liste zeigt
+    /// „Wahl | Hersteller | Typ", und Typ ist die Modellbezeichnung.
+    /// </summary>
     private static readonly WaermepumpeStammZeile[] Stammliste =
     {
-        new(1, "WP Alpha", false),
-        new(2, "WP Beta", false)
+        new(1, "WP Alpha", false, "Alpha"),
+        new(2, "WP Beta", false, "Beta")
     };
 
     public WaermepumpeAnlageDialogTests()
@@ -110,14 +114,18 @@ public class WaermepumpeAnlageDialogTests : BunitContext
     // Feldbestand
     // =================================================================================
 
+    /// <summary>
+    /// Die drei Blöcke stehen seit <b>W7‑E‑2</b> in der Reihenfolge des Vorbilds —
+    /// links Spitzenlast, in der Mitte die Auslegung, rechts die Kenndaten.
+    /// </summary>
     [Fact]
     public void Die_drei_Gruppen_und_die_zwei_Reiter_stehen()
     {
         var cut = Aufbauen();
 
         var gruppen = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Wärmepumpen Kenndaten", "Auslegung für Verteilung",
-                             "Spitzenlast und Betrieb" }, gruppen);
+        Assert.Equal(new[] { "Wärmeerzeuger Spitzenlast:", "Auslegung für Verteilung",
+                             "Wärmepumpen Kenndaten" }, gruppen);
 
         var reiter = cut.FindAll(".epos-reiter-knopf").Select(b => b.TextContent.Trim()).ToList();
         Assert.Equal(new[] { "COP", "Leistung" }, reiter);
@@ -142,7 +150,7 @@ public class WaermepumpeAnlageDialogTests : BunitContext
     public void Die_Stammfelder_sind_nur_lesbar()
     {
         var cut = Aufbauen();
-        var gruppe = cut.FindAll(".epos-gruppenkopf-koerper")[0];
+        var gruppe = cut.FindAll(".epos-gruppenkopf-koerper")[2];   // rechts: Kenndaten
 
         // Beschreibung, Hersteller, Typ, Regelung, Baujahr, Nennleistung.
         Assert.Equal(6, gruppe.QuerySelectorAll("input[readonly]").Length);
@@ -165,8 +173,13 @@ public class WaermepumpeAnlageDialogTests : BunitContext
                  })
             Assert.Contains(soll, texte);
 
-        Assert.Contains("Wärmeerzeuger Spitzenlast:", schalter);
-        Assert.Contains("Wärmepumpenleistung / maximale Betriebszeit:", schalter);
+        // W7-E-2: label7 und label19 sind im Vorbild UEBERSCHRIFTEN, nicht die
+        // Beschriftungen der Kaestchen - sie stehen als Gruppentitel bzw. als
+        // Zwischenueberschrift im Formularraster.
+        Assert.Contains("Wärmeerzeuger Spitzenlast:",
+                        cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
+        Assert.Contains("Wärmepumpenleistung / maximale Betriebszeit:",
+                        cut.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent.Trim()));
         Assert.Contains("Bivalenter Betrieb", schalter);
     }
 
@@ -283,7 +296,7 @@ public class WaermepumpeAnlageDialogTests : BunitContext
         Assert.DoesNotContain("Bivalenztemperatur",
                               cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
 
-        IElement Betriebsart() => cut.FindAll(".epos-gruppenkopf-koerper")[2].QuerySelectorAll("select")[0];
+        IElement Betriebsart() => cut.FindAll(".epos-gruppenkopf-koerper")[0].QuerySelectorAll("select")[0];
 
         // Parallelbetrieb wertet den Abschaltpunkt NICHT aus - kein Feld.
         Betriebsart().Change("1");
@@ -305,7 +318,7 @@ public class WaermepumpeAnlageDialogTests : BunitContext
         daten.BivalenterBetrieb = true;
         var cut = Aufbauen(daten);
 
-        var werte = cut.FindAll(".epos-gruppenkopf-koerper")[2]
+        var werte = cut.FindAll(".epos-gruppenkopf-koerper")[0]
                        .QuerySelectorAll("select option").Select(o => o.TextContent).ToList();
 
         // Der leere erste Eintrag ist der Platzhalter - er entspricht der leeren
@@ -494,7 +507,7 @@ public class WaermepumpeAnlageDialogTests : BunitContext
         var daten = Voll();
         var cut = Aufbauen(daten);
 
-        var spitzenlast = cut.FindAll(".epos-gruppenkopf-koerper")[2];
+        var spitzenlast = cut.FindAll(".epos-gruppenkopf-koerper")[0];
         spitzenlast.QuerySelectorAll("input[type=text]")[0].Input("3");
 
         Assert.Equal(3, daten.SperrzeitVon);
@@ -542,5 +555,269 @@ public class WaermepumpeAnlageDialogTests : BunitContext
         var kurz = cut.FindAll(".epos-formularraster .epos-feld--kurz");
         Assert.NotEmpty(kurz);
         Assert.Contains(kurz, f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
+
+    // =====================================================================
+    //  W7-B-2 — „OK-Button funktioniert nicht im Dialog Detailansicht bei
+    //  Aufruf über button Ändern" (Windows-Abnahme 06.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Prüfung des Kerns, WÖRTLICH: <c>ProjektPuffer.TemperaturenPruefen</c>
+    /// verwirft einen Rücklauf ≤ 0 °C. Die Vorrichtung oben tut das nicht — und
+    /// genau darin lag der Unterschied zwischen Prüfstand und Anwenderrechner.
+    /// </summary>
+    private static string? WieDerKern(int? vorlauf, int? ruecklauf)
+    {
+        if (vorlauf is null) return "Bitte eine Vorlauftemperatur als ganze Zahl eingeben (°C).";
+        if (ruecklauf is null) return "Bitte eine Rücklauftemperatur als ganze Zahl eingeben (°C).";
+        if (ruecklauf <= 0) return "Die Rücklauftemperatur muss größer als 0 °C sein.";
+        if (vorlauf <= ruecklauf) return "Die Vorlauftemperatur muss über der Rücklauftemperatur liegen.";
+        return null;
+    }
+
+    /// <summary>
+    /// EINE BESTANDSZEILE, wie sie „Ändern.." aus <c>Tab_Energieanlagen</c> holt:
+    /// Kenndaten gefüllt, aber <c>Rücklauf</c> nie gepflegt (0). Der Weg „Neu.."
+    /// setzt wenigstens den Vorlauf aus den Kennlinien
+    /// (<c>AnlagenTemperaturen.VorlaufAusKennlinien</c>) — für den Rücklauf gibt es
+    /// keine solche Regel, und eine Altzeile trägt dort schlicht die 0.
+    /// </summary>
+    private static WaermepumpeAnlageDaten Bestandszeile()
+    {
+        var d = Voll();
+        d.Ruecklauf = 0;
+        return d;
+    }
+
+    /// <summary>
+    /// <b>Die Ursache, Teil 1.</b> Der OK-Knopf REAGIERT — er meldet einen Fehler.
+    /// Nur stand die Meldung ganz oben im Dialog, der Knopf ganz unten in einer
+    /// rollenden Überlagerung: Der Anwender drückt, sieht nichts geschehen und
+    /// schließt daraus, der Knopf sei tot. Seit W7‑B‑2 steht das Band DORT, WO ER
+    /// HINSCHAUT — in derselben Fußleiste wie OK und Abbrechen.
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Das_Warnband_steht_bei_der_Speichernleiste()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(Bestandszeile(), temperaturen: WieDerKern,
+                           geschlossen: b => ergebnis = b);
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Null(ergebnis);
+        var band = cut.Find(".epos-dialog-fuss .epos-warnbanner");
+        Assert.Contains("Rücklauftemperatur", band.TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Ursache, Teil 1 — die Gegenprobe.</b> Steht der Rücklauf, geht dieselbe
+    /// Zeile durch. Ohne diesen Fall bewiese der Fall darüber nur, dass ein Band da
+    /// ist, nicht dass es der GRUND ist.
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Mit_gepflegtem_Ruecklauf_meldet_dieselbe_Zeile_true()
+    {
+        bool? ergebnis = null;
+        var daten = Bestandszeile();
+        daten.Ruecklauf = 28;
+        var cut = Aufbauen(daten, temperaturen: WieDerKern, geschlossen: b => ergebnis = b);
+
+        Knopf(cut, "OK").Click();
+
+        Assert.True(ergebnis);
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
+    }
+
+    /// <summary>
+    /// <b>Die Ursache, Teil 2.</b> Der Vorläufer <c>Wizard_WPItem</c> zeigte die
+    /// Betriebsart in einer FREI BESCHREIBBAREN <c>ComboBox</c> und schrieb deren
+    /// Text ungeprüft in die Spalte (Befund L0‑1). Ein <c>select</c> kann einen
+    /// nicht zeichengleichen Wert nicht zeigen: Die Klappliste stand leer, der
+    /// Anwender sah eine Bestandszeile ohne Betriebsart — und beim OK meldete
+    /// <c>ErsterFehler</c> „Bitte Betriebsart auswählen!", sobald der Wert dabei
+    /// ganz verlorenging. Seit W7‑B‑2 liest der Dialog TOLERANT
+    /// (<c>DbWerte.BetriebsartOderDefault</c>).
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Ein_alter_Betriebsart_Text_steht_gewaehlt_in_der_Klappliste()
+    {
+        bool? ergebnis = null;
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        daten.Betriebsart = "parallelbetrieb";          // Altwert aus der Datenbank
+        var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
+
+        var betriebsart = cut.FindAll(".epos-formularraster select")
+                             .First(s => s.QuerySelectorAll("option")
+                                          .Any(o => o.TextContent == DbWerte.WP_BETRIEBSART_PARALLEL));
+        Assert.Equal("1", betriebsart.GetAttribute("value"));   // Parallelbetrieb steht gewählt
+
+        Knopf(cut, "OK").Click();
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// Der berichtigte Steuerwert geht auch in den Datensatz — sonst zeigte die
+    /// Maske „Parallelbetrieb" und die Engine läse weiter den Altwert, den sie
+    /// zeichengleich vergleicht (<c>SimulationWaermepumpe</c>:980 ff.).
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Der_Altwert_wird_beim_Aufbau_auf_den_Steuerwert_gezogen()
+    {
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        daten.Betriebsart = "Bivalent-teilparallel";
+        Aufbauen(daten);
+
+        Assert.Equal(DbWerte.WP_BETRIEBSART_TEILPARALLEL, daten.Betriebsart);
+    }
+
+    /// <summary>
+    /// Ist der Wert gar nicht zu deuten, bleibt die Pflichtangabe offen — und die
+    /// Meldung nennt sie, wieder in der Fußleiste.
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Ohne_deutbare_Betriebsart_meldet_das_Band_bei_der_Leiste()
+    {
+        bool? ergebnis = null;
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        daten.Betriebsart = "Monovalent";
+        var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Null(ergebnis);
+        Assert.Contains("Bitte Betriebsart auswählen!",
+                        cut.Find(".epos-dialog-fuss .epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// „das genannte Feld wird markiert": Das Band nennt das Feld, und das Feld
+    /// selbst trägt die Mängelklasse — ein Band allein hilft in einem Dialog mit
+    /// dreißig Feldern nicht weiter.
+    /// </summary>
+    [Fact]
+    public void W7_B_2_Das_bemaengelte_Feld_ist_markiert()
+    {
+        var daten = Voll();
+        daten.SperrzeitVon = null;
+        var cut = Aufbauen(daten);
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Contains("Sperrzeit von", cut.Find(".epos-dialog-fuss .epos-warnbanner").TextContent);
+        var mangel = cut.Find(".epos-feldhuelle--mangel .epos-feld");
+        Assert.Contains("Sperrzeit von", mangel.TextContent);
+    }
+
+    // =====================================================================
+    //  W7-B-1 — Spalten „Wahl | Hersteller | Typ"
+    // =====================================================================
+
+    /// <summary>
+    /// <b>W7‑B‑1</b> (Windows-Abnahme 06.09.2026): „Anstelle Name sollte Typ stehen,
+    /// es fehlt der Hersteller (vor Typ)." <c>Typ</c> ist die MODELLBEZEICHNUNG;
+    /// der Wärmepumpentyp „Luft-Wasser" bleibt im Kenndatenblock.
+    /// </summary>
+    [Fact]
+    public void W7_B_1_Die_Auswahlliste_fuehrt_Wahl_Hersteller_Typ()
+    {
+        var cut = Aufbauen();
+        var kopf = cut.FindAll(".epos-wp-auswahl .epos-raster th")
+                      .Select(e => e.TextContent.Trim()).ToList();
+
+        Assert.Equal(new[] { "Wahl", "Hersteller", "Typ" }, kopf);
+
+        var zellen = cut.FindAll(".epos-wp-auswahl .epos-raster tbody tr")[0]
+                        .QuerySelectorAll("td").Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal("Alpha", zellen[1]);        // Hersteller
+        Assert.Equal("WP Alpha", zellen[2]);     // Typ = Modellbezeichnung
+    }
+
+    // =====================================================================
+    //  W7-E-2 — Anordnung nach dem alten Wizard_WPItem
+    // =====================================================================
+
+    /// <summary>
+    /// <b>W7‑E‑2:</b> „Dialoganordnung sehr unübersichtlich — versuche den Dialog
+    /// angelehnt an die alte Version zu gestalten." Drei Spalten wie im Vorbild:
+    /// links Auswahl und Spitzenlast, in der Mitte die Auslegung, rechts Kenndaten
+    /// und Kennlinien.
+    /// </summary>
+    [Fact]
+    public void W7_E_2_Die_drei_Spalten_stehen_in_der_Reihenfolge_des_Vorbilds()
+    {
+        var cut = Aufbauen();
+        var spalten = cut.FindAll(".epos-wp-spalten > div");
+
+        Assert.Equal(3, spalten.Count);
+        Assert.NotNull(spalten[0].QuerySelector(".epos-wp-auswahl"));
+        Assert.Contains("Wärmeerzeuger Spitzenlast:",
+                        spalten[0].QuerySelectorAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
+        Assert.Contains("Auslegung für Verteilung",
+                        spalten[1].QuerySelectorAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
+        Assert.Contains("Wärmepumpen Kenndaten",
+                        spalten[2].QuerySelectorAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
+        Assert.NotEmpty(spalten[2].QuerySelectorAll(".epos-reiter-knopf"));
+    }
+
+    /// <summary>
+    /// Die DREI farbigen Erklärkästen des Vorbilds (label21 grün, label22 gelb,
+    /// label23 türkis) — sie standen dort ALLE DREI und immer, weil sie die Wahl
+    /// der Betriebsart erklären. Die Texte sind wortgleich aus der alten
+    /// <c>.resx</c> und stehen in <c>MyResource</c>.
+    /// </summary>
+    [Fact]
+    public void W7_E_2_Die_drei_farbigen_Erklaerkaesten_stehen_links()
+    {
+        var cut = Aufbauen();
+        var kaesten = cut.FindAll(".epos-wp-spalten > div")[0]
+                         .QuerySelectorAll(".epos-wp-erklaerung");
+
+        Assert.Equal(3, kaesten.Length);
+        Assert.Contains("epos-wp-erklaerung--gruen", kaesten[0].ClassName);
+        Assert.Contains("epos-wp-erklaerung--gelb", kaesten[1].ClassName);
+        Assert.Contains("epos-wp-erklaerung--tuerkis", kaesten[2].ClassName);
+
+        Assert.Contains("bivalent-alternativen", kaesten[0].TextContent);
+        Assert.Contains("bivalent-parallelen", kaesten[1].TextContent);
+        Assert.Contains("bivalent-teilparallele", kaesten[2].TextContent);
+    }
+
+    /// <summary>
+    /// Der Titel steht EINMAL. Das Bildschirmfoto der Abnahme zeigte ihn zweimal —
+    /// als Titel der <c>Ueberlagerung</c> UND als Titel der Komponente darin. Wer
+    /// <c>TitelText</c> leer übergibt, bekommt keinen zweiten Kopf.
+    /// </summary>
+    [Fact]
+    public void W7_E_2_Ohne_TitelText_zeichnet_der_Dialog_keinen_zweiten_Kopf()
+    {
+        var cut = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
+    /// <summary>
+    /// Die Häkchen tragen wieder ihren EIGENEN Text; „Wärmeerzeuger Spitzenlast:"
+    /// und „Wärmepumpenleistung / maximale Betriebszeit:" sind im Vorbild
+    /// Überschriften (label7, label19), keine Beschriftungen der Kästchen.
+    /// </summary>
+    [Fact]
+    public void W7_E_2_Die_Haekchen_tragen_die_Texte_des_Vorbilds()
+    {
+        var cut = Aufbauen();
+        var schalter = cut.FindAll(".epos-schalter").Select(e => e.TextContent.Trim()).ToList();
+
+        Assert.Contains("Elektrische Nachheizung aktivieren (falls vorhanden)", schalter);
+        Assert.Contains("Sperrzeit durch Energieversorger", schalter);
+        Assert.Contains("Bivalenter Betrieb", schalter);
     }
 }

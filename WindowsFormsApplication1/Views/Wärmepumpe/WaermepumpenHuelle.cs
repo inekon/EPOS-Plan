@@ -29,8 +29,17 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Gewünschtes Innenmaß. Der Vorläufer maß 581 × 299 — mit fünf Spalten,
         /// 44‑px-Zeilen und der Aktionsspalte braucht die Razor-Fassung mehr.
+        ///
+        /// <para><b>Seit W7‑E‑2 (Windows-Abnahme 06.09.2026) deutlich mehr:</b> Die
+        /// Detailansicht erscheint als <c>Ueberlagerung</c> DIESES Fensters und steht
+        /// darin in drei Spalten wie ihr Vorbild <c>Wizard_WPItem</c> (1126 × 752).
+        /// Das Wunschmaß ist eine UNTERGRENZE (<c>Fenstermass.Vorgabe</c>: Maximum aus
+        /// Wunsch und 85 % / 90 % des Arbeitsbereichs, gedeckelt auf 92 %) — mit
+        /// 900 × 600 blieb auf einem kleinen Schirm zu wenig übrig, und die
+        /// Überlagerung rollte innen. Genau das zeigte das Bildschirmfoto der
+        /// Abnahme.</para>
         /// </summary>
-        private static readonly Size MASS = new Size(900, 600);
+        private static readonly Size MASS = new Size(1280, 860);
 
         /// <summary>
         /// Zeigt die Verwaltung als eigenes Fenster — der Weg von
@@ -131,7 +140,12 @@ namespace WindowsFormsApplication1
                 ["KopfbandText"] = Text_("WPV_KOPFBAND", "Geben Sie die Daten der Wärmepumpe ein"),
                 ["TitelDetail"] = Text_("WPA_TITEL", "Detailansicht"),
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
-                ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
+
+                // W7-B-1 (Windows-Abnahme 06.09.2026): "Anstelle Name sollte Typ
+                // stehen, es fehlt der Hersteller (vor Typ)."
+                ["SpalteHersteller"] = Text_("WPV_SP_HERSTELLER", "Hersteller"),
+                ["SpalteTyp"] = Text_("WPV_SP_TYP", "Typ"),
+
                 ["SpalteLeistung"] = Text_("WPV_SP_LEISTUNG", "Leistung [kW]"),
                 ["SpalteVorlauf"] = Text_("WPV_SP_VORLAUF", "Vorlauf [°C]"),
                 ["SpalteRuecklauf"] = Text_("WPV_SP_RUECKLAUF", "Rücklauf [°C]"),

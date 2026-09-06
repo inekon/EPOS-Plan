@@ -4,6 +4,59 @@
    Kartenzeilen, 3 Gruppen, 2 Reiter mit 2 Charts, 3 MessageBox, dazu die
    Laufzeitfelder der Kostenzeile). Die groesste Maske der Welle.
 
+   DREI SPALTEN WIE IM VORBILD (W7-E-2, Windows-Abnahme 06.09.2026:
+   "Dialoganordnung sehr uebersichtlich - versuche den Dialog angelehnt an die
+   alte Version zu gestalten"). Bis dahin standen die drei Bloecke UNTEREINANDER
+   und die Ueberlagerung rollte innen; die Auslegung war abgeschnitten. Die
+   Anordnung des Vorbilds, gemessen an Wizard_WPItem.resx (1126 x 752):
+
+     LINKS  (x 16..560)  Auswahl (label_WP 16/13, listBox_WP 21/40,
+                         btn_Katalog 286/10), darunter "Waermeerzeuger
+                         Spitzenlast:" (label7 22/82) mit dem Heizstab-Haekchen
+                         (26/105), "Ein Spitzenlast Waermeerzeuger kann
+                         notwendig sein aufgrund:" (label18 22/173) und den zwei
+                         Unterpunkten label19 (54/207) und label20 (54/277) mit
+                         ihren Haekchen, Betriebsart (118/339),
+                         Bivalenztemperatur (438/342) und den DREI FARBIGEN
+                         ERKLAERKAESTEN label21/22/23 (54/381, 54/447, 54/512 -
+                         gruen 128,255,128 / gelb 255,255,128 / Aqua).
+     MITTE  (x 537..748) groupBox3 "Auslegung fuer Verteilung" (32, 211x111) und
+                         darunter "Nutzungsdauer 20 a" (label31 532/158).
+     RECHTS (x 693..1122) groupBox2 "Waermepumpen Kenndaten" (32, 348x320) in der
+                         Reihenfolge Nennleistung, Waermepumpentyp,
+                         Leistungsstufen, Hersteller, Baujahr, Bezeichnung,
+                         Heizstab, Kosten, Parameter - darunter "Kenndaten
+                         Kennlinien:" (label24 693/355) und tabControl1
+                         (693/381, 429x260).
+
+   DIE HAEKCHEN TRAGEN WIEDER IHREN EIGENEN TEXT. label7 und label19 sind im
+   Vorbild UEBERSCHRIFTEN; die Kaestchen daneben heissen "Elektrische
+   Nachheizung aktivieren (falls vorhanden)" und "Sperrzeit durch
+   Energieversorger". Bis W7-E-2 stand die Ueberschrift AM Kaestchen und der
+   eigentliche Text fehlte.
+
+   DER TITEL STEHT EINMAL. Wer die Ansicht in einer Ueberlagerung zeigt, gibt
+   TitelText leer - dann zeichnet der Dialog keinen zweiten Kopf. Das
+   Bildschirmfoto der Abnahme zeigte "Detailansicht" zweimal uebereinander.
+
+   DIE MELDUNG STEHT BEI DEM KNOPF, DER SIE AUSLOEST (Befund W7-B-2, "OK-Button
+   funktioniert nicht bei Aufruf ueber Aendern.."). Der Knopf REAGIERTE - er
+   meldete einen Fehler; nur stand das Band ganz oben und der Knopf ganz unten
+   in einer rollenden Ueberlagerung. Seither sitzen Band und Leiste in DERSELBEN
+   Fussleiste (.epos-dialog-fuss), und das bemaengelte Feld traegt die
+   Mangelklasse. Der haeufigste Grund bei einer Bestandszeile: Ruecklauf 0 -
+   ProjektPuffer.TemperaturenPruefen verwirft ihn ("groesser als 0 grad C"),
+   und "Neu.." faellt nicht darauf herein, weil AnlagenTemperaturen wenigstens
+   den Vorlauf setzt.
+
+   DIE BETRIEBSART WIRD TOLERANT GELESEN (zweiter Teil von W7-B-2). Der
+   Vorlaeufer hatte eine FREI BESCHREIBBARE ComboBox und schrieb ihren Text
+   ungeprueft in Tab_Energieanlagen.Betriebsart (Befund L0-1); ein <select>
+   kann einen nicht zeichengleichen Wert gar nicht zeigen. DbWerte
+   .BetriebsartOderDefault fuehrt "parallelbetrieb", "Bivalent-parallel" oder
+   "Parallel operation" auf den Steuerwert zurueck - unbekannt bleibt leer und
+   ist dann eine Pflichtangabe, nach der der Dialog sichtbar fragt.
+
    DER DIALOG BEARBEITET EINE KOPIE. Der Vorlaeufer schrieb im OK-Knopf in
    item - die Referenz in die Projektliste der Verwaltung. Hier bekommt der
    Dialog eine Kopie, die Huelle uebertraegt sie beim OK zurueck; Abbrechen
@@ -17,11 +70,14 @@
    nicht: Der Aufbau fuellt aus den Daten, und NUR ein Klick auf eine
    Listenzeile wechselt die Id - samt der Stammfelder am Datensatz (Ä23).
 
-   DREI SICHTBARKEITSREGELN, woertlich uebernommen: Die Betriebsart erscheint
+   ZWEI SICHTBARKEITSREGELN, woertlich uebernommen: Die Betriebsart erscheint
    nur bei bivalentem Betrieb; die Bivalenztemperatur nur, wenn sie
    RECHENWIRKSAM ist - Teilparallel- oder Alternativbetrieb
-   (BivalenztemperaturSichtbarkeitSetzen:645). Die Pufferspeichergruppe wird
-   GAR NICHT gezeichnet (Ä19); ihre Werte laufen im Datensatz mit.
+   (BivalenztemperaturSichtbarkeitSetzen:645). Die drei Erklaerkaesten stehen
+   dagegen IMMER, wie im Vorbild (label21/22/23 kannten keine Sichtbarkeitsregel):
+   Sie erklaeren die Wahl, die der Anwender erst treffen soll. Die
+   Pufferspeichergruppe wird GAR NICHT gezeichnet (Ä19); ihre Werte laufen im
+   Datensatz mit.
 
    DIE KOSTENZEILE (Ä19/Ä22/Ä25) ersetzt die Modulkosten: ein Knopf und die
    Summen dieser Anlage. Ohne gespeicherte Anlagenzeile bleibt er gesperrt und
@@ -35,72 +91,198 @@
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
 
-<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-wp-anlage" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
-    @if (_warnung.Length > 0)
-    {
-        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_warnung" />
-    }
+    <div class="epos-wp-spalten">
 
-    <div class="epos-auswahlpaar">
+        @* ================= LINKS: Auswahl, Spitzenlast, Betrieb ============ *@
+        <div class="epos-wp-spalte epos-wp-spalte--links">
 
-        <div class="epos-auswahlspalte">
-            <h2 class="epos-untergruppe">@LabelWpAuswahl</h2>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <thead>
-                        <tr>
-                            <th>@SpalteWahl</th>
-                            <th>@SpalteName</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (WaermepumpeStammZeile zeile in _stammliste)
-                        {
-                            WaermepumpeStammZeile z = zeile;
-                            <tr class="@(z.Bezeichner == Daten.Bezeichner ? "epos-zeile--markiert" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(z.Bezeichner == Daten.Bezeichner)"
-                                                Kurztext="@SpalteWahl" Aktiv="@(!NurLesen)"
-                                                Gewaehltwerden="() => WaermepumpeWaehlen(z)" />
-                                </td>
-                                <td>@z.Bezeichner</td>
+            <div class="epos-wp-auswahl">
+                <div class="epos-wp-auswahl-kopf">
+                    <h2 class="epos-untergruppe">@LabelWpAuswahl</h2>
+                    <button type="button" class="epos-knopf" disabled="@NurLesen"
+                            @onclick="BeiKatalog">@BtnKatalogText</button>
+                </div>
+
+                @* W7-B-1: "Anstelle Name sollte Typ stehen, es fehlt der
+                   Hersteller (vor Typ)." Typ ist die MODELLBEZEICHNUNG; der
+                   Waermepumpentyp "Luft-Wasser" bleibt im Kenndatenblock. *@
+                <div class="epos-raster-huelle epos-wp-auswahlliste">
+                    <table class="epos-raster">
+                        <thead>
+                            <tr>
+                                <th>@SpalteWahl</th>
+                                <th>@SpalteHersteller</th>
+                                <th>@SpalteTyp</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (WaermepumpeStammZeile zeile in _stammliste)
+                            {
+                                WaermepumpeStammZeile z = zeile;
+                                <tr class="@(z.Bezeichner == Daten.Bezeichner ? "epos-zeile--markiert" : null)">
+                                    <td>
+                                        <Zeilenwahl Gewaehlt="@(z.Bezeichner == Daten.Bezeichner)"
+                                                    Kurztext="@SpalteWahl" Aktiv="@(!NurLesen)"
+                                                    Gewaehltwerden="() => WaermepumpeWaehlen(z)" />
+                                    </td>
+                                    <td>@z.Firma</td>
+                                    <td>@z.Bezeichner</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf" disabled="@NurLesen"
-                        @onclick="BeiKatalog">@BtnKatalogText</button>
-            </div>
+            <Gruppenkopf Titel="@GruppeSpitzenlast">
+                <KindInhalt>
+                    @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
+                       weil dieser Abschnitt den Rechenweg parametriert - Heizstab, Sperrzeit,
+                       bivalenter Betrieb und Bivalenztemperatur. Der Fensterknopf oben rechts
+                       bleibt, was er ist. *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_WP.Berechnung"
+                                   StandardKurztext="Berechnungsweg Wärmepumpe" />
+                    </div>
+                    @* Formularraster, EINSPALTIG (iU8-E-2, Paket P1): Der Block ist eine
+                       Regel, die sich von oben nach unten aufblaettert; zwei Spalten
+                       stellten den Schalter "Sperrzeit" neben den Schalter "Heizstab". *@
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            <Schalter Bezeichnung="@LabelHeizstab" Wert="@Daten.Heizstab"
+                                      WertChanged="w => Daten.Heizstab = w" Aktiv="@(!NurLesen)" />
+
+                            <Herleitungszeile Text="@HinweisSpitzenlast" />
+
+                            <Formulargruppe Titel="@LabelSperrzeit">
+                                <KindInhalt>
+                                    <Schalter Bezeichnung="@LabelSperrzeitSchalter" Wert="@Daten.Sperrung"
+                                              WertChanged="w => Daten.Sperrung = w" Aktiv="@(!NurLesen)" />
+                                    <span class="@Huelle(MANGEL_VON)">
+                                        <Ganzzahlfeld Bezeichnung="@LabelVon" Feldname="@LabelVon"
+                                                      Wert="@Daten.SperrzeitVon"
+                                                      WertChanged="w => Daten.SperrzeitVon = w"
+                                                      Aktiv="@(!NurLesen)" />
+                                    </span>
+                                    <span class="@Huelle(MANGEL_BIS)">
+                                        <Ganzzahlfeld Bezeichnung="@LabelBis" Feldname="@LabelBis"
+                                                      Einheit="@EinheitStundeTag" Wert="@Daten.SperrzeitBis"
+                                                      WertChanged="w => Daten.SperrzeitBis = w"
+                                                      Aktiv="@(!NurLesen)" />
+                                    </span>
+                                </KindInhalt>
+                            </Formulargruppe>
+
+                            <Formulargruppe Titel="@HinweisBetrieb">
+                                <KindInhalt>
+                                    <Schalter Bezeichnung="@LabelBivalent" Wert="@Daten.BivalenterBetrieb"
+                                              WertChanged="BivalentSetzen" Aktiv="@(!NurLesen)" />
+
+                                    @if (Daten.BivalenterBetrieb)
+                                    {
+                                        <span class="@Huelle(MANGEL_BETRIEBSART)">
+                                            <Auswahlfeld Bezeichnung="@LabelBetriebsart" Eintraege="@Betriebsarten"
+                                                         Auswahl="@BetriebsartIndex" Aktiv="@(!NurLesen)"
+                                                         AuswahlChanged="BetriebsartSetzen" Platzhalter="" />
+                                        </span>
+
+                                        @if (BivalenztemperaturSichtbar)
+                                        {
+                                            <Zahlenfeld Bezeichnung="@LabelAbschalttemp" Einheit="@EinheitGrad"
+                                                        Feldname="@LabelAbschalttempKurz" Wert="@Daten.Abschaltpunkt"
+                                                        WertChanged="w => Daten.Abschaltpunkt = w"
+                                                        Aktiv="@(!NurLesen)" />
+                                        }
+                                    }
+                                </KindInhalt>
+                            </Formulargruppe>
+                        </KindInhalt>
+                    </Formularraster>
+
+                    @* Die DREI Erklaerkaesten des Vorbilds - gruen, gelb, tuerkis, in
+                       derselben Reihenfolge wie label21/22/23. Die gewaehlte Betriebsart
+                       ist hervorgehoben; das ersetzt die einzelne Herleitungszeile, die
+                       hier bis W7-E-2 stand. *@
+                    <div class="epos-wp-erklaerungen">
+                        <p class="epos-wp-erklaerung epos-wp-erklaerung--gruen @Kastenstand(DbWerte.WP_BETRIEBSART_ALTERNATIV)">
+                            @ErlaeuterungAlternativ
+                        </p>
+                        <p class="epos-wp-erklaerung epos-wp-erklaerung--gelb @Kastenstand(DbWerte.WP_BETRIEBSART_PARALLEL)">
+                            @ErlaeuterungParallel
+                        </p>
+                        <p class="epos-wp-erklaerung epos-wp-erklaerung--tuerkis @Kastenstand(DbWerte.WP_BETRIEBSART_TEILPARALLEL)">
+                            @ErlaeuterungTeilparallel
+                        </p>
+                    </div>
+                </KindInhalt>
+            </Gruppenkopf>
         </div>
 
-        <div class="epos-auswahlspalte">
+        @* ================= MITTE: Auslegung fuer Verteilung ================ *@
+        <div class="epos-wp-spalte epos-wp-spalte--mitte">
+            <Gruppenkopf Titel="@GruppeAuslegung">
+                <KindInhalt>
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            <span class="@Huelle(MANGEL_TEMPERATUR)">
+                                <Auswahlfeld Bezeichnung="@LabelVorlauf" Eintraege="@Vorlaufeintraege"
+                                             Auswahl="@Daten.Vorlauf" AuswahlChanged="w => Daten.Vorlauf = w"
+                                             Aktiv="@(!NurLesen)" />
+                            </span>
+                            <span class="@Huelle(MANGEL_TEMPERATUR)">
+                                <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
+                                              Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
+                                              WertChanged="w => Daten.Ruecklauf = w" Aktiv="@(!NurLesen)" />
+                            </span>
+                            <Herleitungszeile Text="@RuecklaufVorschlagszeile" />
+
+                            @* Im Vorbild steht die Nutzungsdauer UNTER der Auslegung
+                               (label31 532/158) und traegt "a" - Jahre; "h/Tag" gehoert
+                               zur Sperrzeit (label35 492/232). *@
+                            <span class="@Huelle(MANGEL_NUTZUNG)">
+                                <Ganzzahlfeld Bezeichnung="@LabelNutzungszeit" Einheit="@EinheitJahr"
+                                              Feldname="@LabelNutzungszeit" Wert="@Daten.Nutzungszeit"
+                                              WertChanged="w => Daten.Nutzungszeit = w" Aktiv="@(!NurLesen)" />
+                            </span>
+                        </KindInhalt>
+                    </Formularraster>
+                </KindInhalt>
+            </Gruppenkopf>
+        </div>
+
+        @* ================= RECHTS: Kenndaten und Kennlinien ================ *@
+        <div class="epos-wp-spalte epos-wp-spalte--rechts">
             <Gruppenkopf Titel="@GruppeKenndaten">
                 <KindInhalt>
                     @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
                        Feldpaare je Zeile, sobald die Spalte breit genug ist
-                       (iU8-E-2, Paket P1). *@
+                       (iU8-E-2, Paket P1). Die Reihenfolge ist die des Vorbilds
+                       (groupBox2 von oben nach unten). *@
                     <Formularraster>
                         <KindInhalt>
-                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" NurLesen="true" />
-                    <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma" NurLesen="true" />
-                    <Textfeld Bezeichnung="@LabelTyp" Wert="@Daten.Typ" NurLesen="true" />
-                    <Textfeld Bezeichnung="@LabelRegelung" Wert="@Daten.Regelung" NurLesen="true" />
-                    <Textfeld Bezeichnung="@LabelBaujahr" Wert="@Daten.Baujahr.ToString()" NurLesen="true"
-                              Kurz="true" />
-                    <Textfeld Bezeichnung="@LabelNennleistung" Wert="@Daten.Nennleistung.ToString()"
-                              NurLesen="true" Kurz="true" />
-                    <Ganzzahlfeld Bezeichnung="@LabelPHeizstab" Einheit="@EinheitKw"
-                                  Feldname="@LabelPHeizstabKurz" Wert="@Daten.HeizstabLeistung"
-                                  WertChanged="w => Daten.HeizstabLeistung = w" Aktiv="@(!NurLesen)" />
+                            <Textfeld Bezeichnung="@LabelNennleistung" Wert="@Daten.Nennleistung.ToString()"
+                                      NurLesen="true" Kurz="true" />
+                            <Textfeld Bezeichnung="@LabelTyp" Wert="@Daten.Typ" NurLesen="true" />
+                            <Textfeld Bezeichnung="@LabelRegelung" Wert="@Daten.Regelung" NurLesen="true" />
+                            <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma" NurLesen="true" />
+                            <Textfeld Bezeichnung="@LabelBaujahr" Wert="@Daten.Baujahr.ToString()" NurLesen="true"
+                                      Kurz="true" />
+                            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" NurLesen="true" />
+                            <span class="@Huelle(MANGEL_HEIZSTAB)">
+                                <Ganzzahlfeld Bezeichnung="@LabelPHeizstab" Einheit="@EinheitKw"
+                                              Feldname="@LabelPHeizstabKurz" Wert="@Daten.HeizstabLeistung"
+                                              WertChanged="w => Daten.HeizstabLeistung = w" Aktiv="@(!NurLesen)" />
+                            </span>
                         </KindInhalt>
                     </Formularraster>
 
@@ -125,110 +307,47 @@
                     </div>
                 </KindInhalt>
             </Gruppenkopf>
+
+            @* --- Die beiden Kennlinienbilder ------------------------------- *@
+            <h2 class="epos-untergruppe">@LabelKennlinien</h2>
+
+            <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
+                <KindInhalt>
+                    <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
+                        <KindInhalt>
+                            <ChartBild Png="@_bilder.Cop" Alt="@ReiterCop" PlatzhalterText="@PlatzhalterBild" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                    <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
+                        <KindInhalt>
+                            <ChartBild Png="@_bilder.Leistung" Alt="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                </KindInhalt>
+            </Reiter>
         </div>
     </div>
 
-    <Gruppenkopf Titel="@GruppeAuslegung">
-        <KindInhalt>
-            @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
-               Feldpaare je Zeile, sobald die Spalte breit genug ist
-               (iU8-E-2, Paket P1). *@
-            <Formularraster>
-                <KindInhalt>
-            <Auswahlfeld Bezeichnung="@LabelVorlauf" Eintraege="@Vorlaufeintraege"
-                         Auswahl="@Daten.Vorlauf" AuswahlChanged="w => Daten.Vorlauf = w"
-                         Aktiv="@(!NurLesen)" />
-            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad"
-                          Feldname="@LabelRuecklaufKurz" Wert="@Daten.Ruecklauf"
-                          WertChanged="w => Daten.Ruecklauf = w" Aktiv="@(!NurLesen)" />
-            <Herleitungszeile Text="@RuecklaufVorschlagszeile" />
-                </KindInhalt>
-            </Formularraster>
-        </KindInhalt>
-    </Gruppenkopf>
+    @* --- Fussleiste: die Meldung steht bei dem Knopf, der sie ausloest ----- *@
+    <div class="epos-dialog-fuss">
+        @if (_warnung.Length > 0)
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@_warnung" />
+        }
 
-    <Gruppenkopf Titel="@GruppeSpitzenlast">
-        <KindInhalt>
-            @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
-               weil dieser Abschnitt den Rechenweg parametriert - Heizstab, Sperrzeit,
-               bivalenter Betrieb und Bivalenztemperatur. Der Fensterknopf oben rechts
-               bleibt, was er ist. *@
-            <div class="epos-berechnungshilfe">
-                <InfoKnopf Schluessel="Form_WP.Berechnung"
-                           StandardKurztext="Berechnungsweg Wärmepumpe" />
+        @if (NurLesen)
+        {
+            @* Nur ansehen: EIN Knopf, der schliesst - kein OK, das nichts uebernimmt. *@
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        @onclick="() => Geschlossen.InvokeAsync(false)">@SchliessenText</button>
             </div>
-            @* Formularraster, EINSPALTIG (iU8-E-2, Paket P1): Der Block ist eine
-               Regel, die sich von oben nach unten aufblaettert; zwei Spalten
-               stellten den Schalter "Sperrzeit" neben den Schalter "Heizstab". *@
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-            <Herleitungszeile Text="@HinweisSpitzenlast" />
-            <Schalter Bezeichnung="@LabelHeizstab" Wert="@Daten.Heizstab"
-                      WertChanged="w => Daten.Heizstab = w" Aktiv="@(!NurLesen)" />
-
-            <Schalter Bezeichnung="@LabelSperrzeit" Wert="@Daten.Sperrung"
-                      WertChanged="w => Daten.Sperrung = w" Aktiv="@(!NurLesen)" />
-            <Ganzzahlfeld Bezeichnung="@LabelVon" Feldname="@LabelVon" Wert="@Daten.SperrzeitVon"
-                          WertChanged="w => Daten.SperrzeitVon = w" Aktiv="@(!NurLesen)" />
-            <Ganzzahlfeld Bezeichnung="@LabelBis" Feldname="@LabelBis" Wert="@Daten.SperrzeitBis"
-                          WertChanged="w => Daten.SperrzeitBis = w" Aktiv="@(!NurLesen)" />
-            <Ganzzahlfeld Bezeichnung="@LabelNutzungszeit" Einheit="@EinheitStundeTag"
-                          Feldname="@LabelNutzungszeit" Wert="@Daten.Nutzungszeit"
-                          WertChanged="w => Daten.Nutzungszeit = w" Aktiv="@(!NurLesen)" />
-
-            <Herleitungszeile Text="@HinweisBetrieb" />
-            <Schalter Bezeichnung="@LabelBivalent" Wert="@Daten.BivalenterBetrieb"
-                      WertChanged="BivalentSetzen" Aktiv="@(!NurLesen)" />
-
-            @if (Daten.BivalenterBetrieb)
-            {
-                <Auswahlfeld Bezeichnung="@LabelBetriebsart" Eintraege="@Betriebsarten"
-                             Auswahl="@BetriebsartIndex" Aktiv="@(!NurLesen)"
-                             AuswahlChanged="BetriebsartSetzen" Platzhalter="" />
-
-                @if (BivalenztemperaturSichtbar)
-                {
-                    <Zahlenfeld Bezeichnung="@LabelAbschalttemp" Einheit="@EinheitGrad"
-                                Feldname="@LabelAbschalttempKurz" Wert="@Daten.Abschaltpunkt"
-                                WertChanged="w => Daten.Abschaltpunkt = w" Aktiv="@(!NurLesen)" />
-                }
-                <Herleitungszeile Text="@BetriebsartErlaeuterung" />
-            }
-                </KindInhalt>
-            </Formularraster>
-        </KindInhalt>
-    </Gruppenkopf>
-
-    @* --- Die beiden Kennlinienbilder ---------------------------------------- *@
-    <h2 class="epos-untergruppe">@LabelKennlinien</h2>
-
-    <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
-        <KindInhalt>
-            <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
-                <KindInhalt>
-                    <ChartBild Png="@_bilder.Cop" Alt="@ReiterCop" PlatzhalterText="@PlatzhalterBild" />
-                </KindInhalt>
-            </Reiterblatt>
-            <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
-                <KindInhalt>
-                    <ChartBild Png="@_bilder.Leistung" Alt="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild" />
-                </KindInhalt>
-            </Reiterblatt>
-        </KindInhalt>
-    </Reiter>
-
-    @if (NurLesen)
-    {
-        @* Nur ansehen: EIN Knopf, der schliesst - kein OK, das nichts uebernimmt. *@
-        <div class="epos-leiste">
-            <button type="button" class="epos-knopf epos-knopf--primaer"
-                    @onclick="() => Geschlossen.InvokeAsync(false)">@SchliessenText</button>
-        </div>
-    }
-    else
-    {
-        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
-    }
+        }
+        else
+        {
+            <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+        }
+    </div>
 
     @* --- Ueberlagerung 1: der Stammdialog ("Parameter Bearbeiten...") ------- *@
     <Ueberlagerung Offen="@(_stammGaben is not null)" Schliessbar="false"
@@ -315,13 +434,31 @@
 
     // --- Texte -----------------------------------------------------------------
 
+    /// <summary>
+    /// Überschrift des Dialogs. <b>Leer = keine</b> — so bekommt eine Ansicht in einer
+    /// <c>Ueberlagerung</c> den Titel genau EINMAL (W7‑E‑2).
+    /// </summary>
     [Parameter] public string TitelText { get; set; } = "Detailansicht";
+
     [Parameter] public string LabelWpAuswahl { get; set; } = "Wärmepumpen Auswahl:";
     [Parameter] public string SpalteWahl { get; set; } = "Wahl";
-    [Parameter] public string SpalteName { get; set; } = "Name";
+
+    /// <summary>Spaltenkopf „Hersteller" beider Listen (W7‑B‑1).</summary>
+    [Parameter] public string SpalteHersteller { get; set; } = "Hersteller";
+
+    /// <summary>
+    /// Spaltenkopf „Typ" beider Listen (W7‑B‑1) — gemeint ist die MODELLBEZEICHNUNG
+    /// (<c>Bezeichner</c>). Der Wärmepumpentyp „Luft-Wasser" heißt im Kenndatenblock
+    /// weiter <see cref="LabelTyp"/>.
+    /// </summary>
+    [Parameter] public string SpalteTyp { get; set; } = "Typ";
+
     [Parameter] public string GruppeKenndaten { get; set; } = "Wärmepumpen Kenndaten";
     [Parameter] public string GruppeAuslegung { get; set; } = "Auslegung für Verteilung";
-    [Parameter] public string GruppeSpitzenlast { get; set; } = "Spitzenlast und Betrieb";
+
+    /// <summary>Überschrift des linken Blocks — <c>label7</c> des Vorbilds.</summary>
+    [Parameter] public string GruppeSpitzenlast { get; set; } = "Wärmeerzeuger Spitzenlast:";
+
     [Parameter] public string LabelBeschreibung { get; set; } = "Bezeichnung";
     [Parameter] public string LabelHersteller { get; set; } = "Hersteller";
     [Parameter] public string LabelTyp { get; set; } = "Wärmepumpentyp";
@@ -333,8 +470,18 @@
     [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf";
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf";
     [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
-    [Parameter] public string LabelHeizstab { get; set; } = "Wärmeerzeuger Spitzenlast:";
-    [Parameter] public string LabelSperrzeit { get; set; } = "Wärmepumpenleistung / maximale Betriebszeit:";
+
+    /// <summary>Text des Heizstab-HÄKCHENS — <c>checkBox_Heizstab.Text</c> des Vorbilds.</summary>
+    [Parameter] public string LabelHeizstab { get; set; } =
+        "Elektrische Nachheizung aktivieren (falls vorhanden)";
+
+    /// <summary>Unterpunkt über der Sperrzeit — <c>label19</c> des Vorbilds.</summary>
+    [Parameter] public string LabelSperrzeit { get; set; } =
+        "Wärmepumpenleistung / maximale Betriebszeit:";
+
+    /// <summary>Text des Sperrzeit-HÄKCHENS — <c>checkBox_Sperrzeit.Text</c> des Vorbilds.</summary>
+    [Parameter] public string LabelSperrzeitSchalter { get; set; } = "Sperrzeit durch Energieversorger";
+
     [Parameter] public string LabelVon { get; set; } = "Sperrzeit von";
     [Parameter] public string LabelBis { get; set; } = "Sperrzeit bis";
     [Parameter] public string LabelNutzungszeit { get; set; } = "Nutzungsdauer";
@@ -349,6 +496,10 @@
     [Parameter] public string EinheitKw { get; set; } = "kW";
     [Parameter] public string EinheitGrad { get; set; } = "°C";
     [Parameter] public string EinheitStundeTag { get; set; } = "h/Tag";
+
+    /// <summary>Einheit der Nutzungsdauer — <c>label34</c> des Vorbilds, Jahre.</summary>
+    [Parameter] public string EinheitJahr { get; set; } = "a";
+
     [Parameter] public string BtnKatalogText { get; set; } = "📋  Modul-Katalog...";
     [Parameter] public string BtnParameterText { get; set; } = "Parameter Bearbeiten...";
     [Parameter] public string BtnKostenText { get; set; } = "Kosten bearbeiten…";
@@ -401,6 +552,30 @@
     private string _blatt = "COP";
     private string _warnung = "";
 
+    // --- Das bemaengelte Feld (W7-B-2) -----------------------------------------
+    //
+    // Ein Band, das ein Feld NENNT, ist in einem Dialog mit dreissig Feldern nur
+    // die halbe Auskunft. Der Dialog merkt sich deshalb, WELCHES Feld gemeint ist,
+    // und markiert es. Die Schluessel sind sprachneutral - sie stehen nie in der
+    // Anzeige.
+    private const string MANGEL_BETRIEBSART = "BETRIEBSART";
+    private const string MANGEL_TEMPERATUR = "TEMPERATUR";
+    private const string MANGEL_VON = "VON";
+    private const string MANGEL_BIS = "BIS";
+    private const string MANGEL_NUTZUNG = "NUTZUNG";
+    private const string MANGEL_HEIZSTAB = "HEIZSTAB";
+
+    private string _mangel = "";
+
+    /// <summary>Die Hülle eines Feldes: durchsichtig im Raster, markiert bei Mangel.</summary>
+    private string Huelle(string schluessel)
+        => _mangel == schluessel ? "epos-feldhuelle epos-feldhuelle--mangel" : "epos-feldhuelle";
+
+    /// <summary>Zusatzklasse des Erklärkastens, dessen Betriebsart gewählt ist.</summary>
+    private string Kastenstand(string betriebsart)
+        => Daten.BivalenterBetrieb && Daten.Betriebsart == betriebsart
+            ? "epos-wp-erklaerung--aktiv" : "";
+
     /// <summary>Steht der Modulkatalog? Prüfhilfe für die Tests.</summary>
     public bool KatalogOffen => _katalogOffen;
 
@@ -425,12 +600,18 @@
         }
     }
 
+    /// <summary>
+    /// Der Index der gewählten Betriebsart — TOLERANT gelesen (W7‑B‑2): Ein Altwert
+    /// wie „parallelbetrieb" oder „Bivalent-parallel" steht damit als Parallelbetrieb
+    /// in der Klappliste, statt sie leer zu lassen.
+    /// </summary>
     private int? BetriebsartIndex
     {
         get
         {
+            string wert = DbWerte.BetriebsartOderDefault(Daten.Betriebsart);
             for (int i = 0; i < BETRIEBSARTEN.Length; i++)
-                if (string.Equals(BETRIEBSARTEN[i], Daten.Betriebsart, StringComparison.Ordinal)) return i;
+                if (string.Equals(BETRIEBSARTEN[i], wert, StringComparison.Ordinal)) return i;
             return null;
         }
     }
@@ -445,14 +626,6 @@
         => Daten.BivalenterBetrieb &&
            (Daten.Betriebsart == DbWerte.WP_BETRIEBSART_TEILPARALLEL ||
             Daten.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV);
-
-    private string BetriebsartErlaeuterung => Daten.Betriebsart switch
-    {
-        var b when b == DbWerte.WP_BETRIEBSART_ALTERNATIV => ErlaeuterungAlternativ,
-        var b when b == DbWerte.WP_BETRIEBSART_PARALLEL => ErlaeuterungParallel,
-        var b when b == DbWerte.WP_BETRIEBSART_TEILPARALLEL => ErlaeuterungTeilparallel,
-        _ => ""
-    };
 
     private string RuecklaufVorschlagszeile
         => string.Format(RuecklaufFormat, string.Join(", ", RuecklaufVorschlaege));
@@ -486,6 +659,12 @@
     protected override void OnInitialized()
     {
         _stammliste = Stammliste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
+
+        // W7-B-2: Ein Altwert aus Tab_Energieanlagen wird auf den Steuerwert
+        // gezogen - sonst zeigte die Klappliste nichts und die Engine laese
+        // weiter einen Wert, den sie zeichengleich vergleicht.
+        Daten.Betriebsart = DbWerte.BetriebsartOderDefault(Daten.Betriebsart);
+
         // STILLE Vorwahl: Der Aufbau fuellt aus den Daten und laesst Daten.IdWp
         // unberuehrt - er ist der Fall, gegen den sich der Vorlaeufer mit
         // m_bStilleFuellung wehren musste (Ä21).
@@ -520,6 +699,7 @@
         Daten.Bezeichner = zeile.Bezeichner;
         Daten.IdWp = zeile.Id;
         _warnung = "";
+        _mangel = "";
 
         WaermepumpeStammDaten? stamm = Stammdaten?.Invoke(zeile.Id);
         if (stamm is not null)
@@ -610,26 +790,27 @@
     /// <summary>
     /// Die Prüfungen von <c>btn_Beenden_Click</c>:197 in derselben Reihenfolge.
     /// Statt drei <c>MessageBox</c> und der Meldungen aus <c>Program.GanzzahlPruefen</c>
-    /// steht ein Warnbanner, das das Feld beim Namen nennt.
+    /// steht ein Warnbanner, das das Feld beim Namen nennt — und seit W7‑B‑2 sagt der
+    /// zweite Rückgabewert auch, WELCHES Feld zu markieren ist.
     /// </summary>
-    private string? ErsterFehler()
+    private (string? Meldung, string Feld) ErsterFehler()
     {
         if (string.IsNullOrEmpty(Daten.Betriebsart) && Daten.BivalenterBetrieb)
-            return WarnungBetriebsart;
+            return (WarnungBetriebsart, MANGEL_BETRIEBSART);
         if (string.IsNullOrEmpty(Daten.Bezeichner))
-            return WarnungWaermepumpe;
+            return (WarnungWaermepumpe, "");
 
         string? temperatur = TemperaturenPruefen?.Invoke(Daten.Vorlauf, Daten.Ruecklauf);
-        if (temperatur is not null) return temperatur;
+        if (temperatur is not null) return (temperatur, MANGEL_TEMPERATUR);
 
-        if (Daten.SperrzeitVon is null) return string.Format(WarnungFeldFormat, LabelVon);
-        if (Daten.SperrzeitBis is null) return string.Format(WarnungFeldFormat, LabelBis);
-        if (Daten.Nutzungszeit is null) return string.Format(WarnungFeldFormat, LabelNutzungszeit);
-        if (Daten.HeizstabLeistung is null) return string.Format(WarnungFeldFormat, LabelPHeizstabKurz);
+        if (Daten.SperrzeitVon is null) return (string.Format(WarnungFeldFormat, LabelVon), MANGEL_VON);
+        if (Daten.SperrzeitBis is null) return (string.Format(WarnungFeldFormat, LabelBis), MANGEL_BIS);
+        if (Daten.Nutzungszeit is null) return (string.Format(WarnungFeldFormat, LabelNutzungszeit), MANGEL_NUTZUNG);
+        if (Daten.HeizstabLeistung is null) return (string.Format(WarnungFeldFormat, LabelPHeizstabKurz), MANGEL_HEIZSTAB);
 
         // Die Bivalenztemperatur ist je nach Betriebsart ausgeblendet - ein leeres
         // Feld ist deshalb erlaubt und laesst den bisherigen Wert stehen.
-        return null;
+        return (null, "");
     }
 
     private async Task BeiErgebnis(bool ok)
@@ -640,10 +821,11 @@
             return;
         }
 
-        string? fehler = ErsterFehler();
-        if (fehler is not null) { _warnung = fehler; return; }
+        (string? fehler, string feld) = ErsterFehler();
+        if (fehler is not null) { _warnung = fehler; _mangel = feld; return; }
 
         _warnung = "";
+        _mangel = "";
         await Geschlossen.InvokeAsync(true);
     }
 
