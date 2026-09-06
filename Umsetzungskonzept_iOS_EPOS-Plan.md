@@ -2015,6 +2015,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Offen: H13‑O‑1 (die sieben Beschreibungen der Teil-B-Seiten im Startbestand an den Satz „Was berechnet wird" angleichen).
 > Fünf Handgriffe des Anwenders im Wiki stehen in § 9 des Protokolls `H13_Berechnungshilfe_Protokoll.md`; bis dahin sind die
 > Knöpfe über den Startbestand wirksam. Nachweis: Kern/UI 0 Fehler, Gate grün, Referenzlauf byte-gleich.
+>
+> **H13 Fassung 2 — Formelzeichen, Parameter und mathematische Schreibweise (Anwenderwunsch 06.09.2026: „Definiere in der
+> hochgeladenen Dokumentation die Definition der Parameter und Variablen. Stell wenn möglich die Formeln in mathematischer
+> Schreibweise dar."), umgesetzt in `d0c17a1` (Teil A), `75866fa` (Teil B) und `25c08e2` (Zusammenführung):** Alle 13 Seiten
+> der Rubrik tragen zwischen Eingangsgrößen und Rechenweg den Abschnitt **„Formelzeichen und Parameter"** mit zwei Tabellen
+> (Parameter: Symbol, Bedeutung, Einheit, Herkunft — Variablen: Symbol, Bedeutung, Einheit, berechnet in; 208 Parameter- und
+> 255 Variablenzeilen) und **205 nummerierte Anzeige-Gleichungen in Unicode-Notation** (Malpunkt, Σ, Δ, √, griechische
+> Buchstaben, Indizes als `<sub>`/`<sup>`). Grund für Unicode statt LaTeX: Das Wiki hat **keine Math-Erweiterung** (gemessen
+> 06.09.2026 über `siteinfo` — 25 Erweiterungen, Math nicht darunter), `<math>` erschiene dem Leser als Klartext. Die
+> Schreibweise steht als Abschnitt auf der Rubrikstartseite (gemeinsame Zeichentabelle aller Seiten, Semikolon als
+> Argumenttrenner von min/max). `BerechnungsHilfe.Klartext` setzt Indizes für den Assistenten in `P_AC,nenn`/`T^2` um und
+> löst `&nbsp;` auf. Neun Unstimmigkeiten der Fassung 1 gegen den Rechenkern berichtigt (u. a. Viertelstundenwerte sind kW,
+> Klimaeinstrahlung W/m² im Tagesmittel, Ost und West teilen eine Fensterfläche, Nutzungsgrad des Kessels brennstoffbezogen,
+> Vollzyklen des Puffers rollenabhängig, Entladeleistung als Stundenbudget). Die vier Wächter prüfen sieben Abschnitte in
+> Reihenfolge, das Verbot von `<math>`/LaTeX, lückenlose Gleichungsnummern, beide Tabellen und die Kodierung nach der
+> Einbettung — seit der Zusammenführung für **alle 13 Seiten** (H13‑O‑5 geschlossen; Bauform angeglichen: Unterüberschriften
+> Parameter/Variablen und Formelnummer hinter `&nbsp;&nbsp;` auf allen Seiten). Vorschau-Probe 13/13 über die
+> Wiki-Schnittstelle. Nachweis: Kern 1 558 / UI 2 921 grün, Gate grün, Referenzlauf byte-gleich. **Wiki:** Fassung 2 mit
+> `--ueberschreiben` hochgeladen (06.09.2026, 19:29 UTC); die Rubrikseite „Programm Dokumentation" trägt nach Anwenderwunsch vom
+> 06.09.2026 die sieben Unterrubriken voran und die Zuordnung der 100 Aufrufstellen gruppiert (Revision 446, Zeilen
+> wortgleich, Anker unverändert). **Neu vom Anwender (06.09.2026, nach Sichtung der Fassung 1 im Wiki):** echte
+> mathematische Darstellung wie LaTeX (Summen- und Integralzeichen, Brüche, Indizes) und die Definitionen der Zeichen
+> unmittelbar unter jeder Formel (Beispiel: SKZ = P_el / P_therm; P_el: elektrische Leistung des BHKW …) — offen als
+> **H13‑O‑6** (Math-Erweiterung auf dem Wiki-Server, native MathML-Wiedergabe ohne Zusatzdienst; Anwenderentscheid, Ersatzweg
+> Formelbilder) und **H13‑O‑7** (Legende je Gleichung als Fassung 3, unabhängig von H13‑O‑6).
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >
@@ -3259,6 +3284,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > byte-gleich**. Konzept auf Rev. 4; neu offen **W6‑O‑6** (Modultyp je Strang rechnet noch nicht, Zwilling zu W6‑O‑5) und
 > **W6‑O‑7** (Referenzbasis mit Strängen: Empfehlung ein zwölftes Prüfprojekt Ost/West in der Testdatenbank, Anwenderentscheid).
 > Damit sind S1, S2 und S3 des Wechselrichter-Konzepts umgesetzt; sechs Abnahmepunkte A‑W6‑E‑2‑S3 in der Sitzungsmeldung.
+>
+> **W6‑E‑4 (Anwenderentscheid 06.09.2026 zu „Vorlauf und Rücklauf des Katalogs rechnen nicht mit"), umgesetzt in `b55b46b`,
+> zusammengeführt in `1e0ede8`:** Beim Anlegen eines Erzeugers übernimmt die Anlagenzeile das Temperaturpaar des Katalogs;
+> danach bleibt es projektweise änderbar. Die Vorbelegung ist **eine Wahrheit im Kern** — `EPOS.Kern/Controller/AnlagenTemperaturen`
+> mit `AusStammsatz` (Katalogsatz je `ID_Type`), `AusGeraetekopie` (Projektkopie über den Fremdschlüssel) und
+> `VorlaufAusKennlinien` (die Wärmepumpe hat keine Katalogtemperaturen; ihr Katalog sind die Vorlaufstufen, die kleinste wird
+> vorgeschlagen). Sie stand vorher dreimal in den Windows-Hüllen; wer ohne Hülle kam — Assistent, Import, iOS —, legte 0/0 an.
+> Gerufen wird sie im **einen Schreibweg** `WizardCtrl.Add_WP_Waermeerzeuger` (nach `CopyFromStamm`, vor `AnlagenParameter`)
+> und in den vier Hüllen. **Ein vorhandenes vollständiges Paar (`ProjektPuffer.IstTemperaturpaar`) wird nie überschrieben** —
+> ergänzt wird nur, was fehlt; eine Bestandsanlage mit 0/0 und einer Gerätekopie mit Paar bekommt es beim nächsten Speichern
+> (für den Kessel dieselbe Aussage wie die Lesekette, für BHKW und Solar neu wirksam auf `SystemVorlauf/SystemRuecklauf`
+> und `AnlagenVorlauf`; in der Testdatenbank ändert sich keine Bestandszeile). Übertragen wird das PAAR, nicht das einzelne
+> Feld: eine halbe Katalogangabe („90/0", 5 von 79 BHKW-Stammsätzen) kommt nicht mehr mit, weil sie über
+> `SQL_SYSTEM_VORLAUF` die Systemvorgabe verzerrte. **Der WP-Rücklauf bleibt bewusst leer** — `RuecklaufVorschlaege` ist eine
+> feste Liste ohne Bezug zur Vorlaufstufe, die Kennlinien führen keinen Rücklauf. Katalogeditoren schreiben das Paar in beiden
+> Wegen; der veraltete Kommentar an `SolarkollektorenStammCtrl.UpdateFrom` ist berichtigt. Die Sätze „Vor- und Rücklauf des
+> Katalogs rechnen nicht mit" in den Hilfeseiten BHKW und Solarthermie sind umformuliert (Vorbelegung, im Projekt änderbar,
+> gerechnet wird mit der Projektzeile). Nachweis: `EPOS.Kern.Tests/AnlagenTemperaturenTests` (sechs Fälle, bis in
+> `Tab_Energieanlagen`), Gate grün, Referenzlauf 1030/1007/1017 byte-gleich; Abnahmepunkte A‑W6‑E‑4‑1…4 in der Sitzungsmeldung.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
