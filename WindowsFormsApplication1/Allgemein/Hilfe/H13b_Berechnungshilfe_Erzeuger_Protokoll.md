@@ -493,3 +493,179 @@ Die Behebung ist eine Zeile: die ersten zehn Zeichen parsen statt der ganzen Zei
 | **O‑H13b‑5** | Teil A schreibt den Abschnitt „Schreibweise" auf die Rubrikstartseite `_Index.wiki`. Nach der Zusammenführung ist zu prüfen, dass die dortige Zeichentabelle und die Notation dieser sieben Seiten wörtlich übereinstimmen — insbesondere die Semikolon-Regel in `min(…)`/`max(…)` und der Viertelstundenindex `k` des Stromspeichers. |
 | **O‑H13b‑6** | Der KI-Klartext (`BerechnungsHilfe.Klartext`: `<sub>x</sub>` → `_x`, `<sup>x</sup>` → `^x`, `<big>` weg) gehört zu Teil A. Bis er steht, liest der Assistent die Indizes als Markup. |
 | **O‑H13b‑7** | Die Gleichungsnummern sind **seitenlokal**. Ein Verweis von einer Seite auf eine Gleichung einer anderen gibt es bewusst nicht — er wäre beim nächsten Einschub falsch. Wer eine Gleichung einfügt, nummeriert die folgenden neu; der Wächter „lückenlos von 1" fängt ein Vergessen ab. |
+
+---
+
+## 11. Fassung 3 — LaTeX-Formeln (`<math>`) und Legende unter jeder Gleichung (06.09.2026)
+
+**Anwenderwunsch, wörtlich (nach Sichtung der Seiten im Wiki):**
+
+> „stelle die Berechnungsdokumentation mit mathematischen Zeichen (z.B. Summenzeichen,
+> Integralzeichen, Index/Symbol als Formel wie LaTeX mathematisch dar. Die Definitionen der
+> Parameter/Variablen ist nicht erläutert (sollte unter der verwendeten Formel — oder an geeigneter
+> sichtbarer Stelle — beschrieben werden) — z.B. bei Blockheizkraftwerk: SKZ = P_el / P_therm —
+> P_el: elektrische Leistung des BHKW — P_therm: thermische Leistung des BHKW"
+
+> „mathe erweiterung soll für die Formeln installiert werden auf wiki"
+
+**Ergebnis in einem Satz:** Die **129 Anzeige-Gleichungen** dieser sieben Seiten stehen als LaTeX in
+`<math>` — dieselbe Zahl wie in der Fassung 2, keine ist verlorengegangen oder hinzugekommen —, und
+unter jeder steht die **Legende**: **488 Zeilen**, je Zeichen eine. Zusammen mit den Symbolen der
+Tabellen und des Fließtexts sind es **1 291 Formeln**, alle gegen die frisch installierte
+Math-Erweiterung des Wikis geprüft: **0 Fehler**. `EPOS.UI.Tests/BerechnungshilfeTests` **154/154**,
+`EPOS.Kern.Tests/BerechnungshilfeEinbettungTests` **16/16**.
+
+### 11.1 Was sich gegenüber der Fassung 2 ändert
+
+| | Fassung 2 | Fassung 3 |
+|---|---|---|
+| Anzeige-Gleichung | `: <big>SKZ = P<sub>el</sub> / P<sub>th</sub></big>  (1)` | `: <math>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</math>  (1)` |
+| Zeichenerklärung | nur in den zwei Tabellen | zusätzlich **unter jeder Gleichung**, je Zeichen eine Zeile `:: <math>…</math> – Bedeutung [Einheit]` |
+| Symbolspalte der Tabellen | `P<sub>el</sub>` | `<math>P_{\mathrm{el}}</math>` — dieselbe Schreibweise wie in der Formel |
+| Symbole im Fließtext | `<sub>`-Auszeichnung | `<math>`, damit ein Zeichen im Satz aussieht wie in der Gleichung |
+| `<big>` | die Formelzeile | **kommt nicht mehr vor** |
+| Kopfblock | `Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation)` | `… (Fassung 3: LaTeX-Formeln und Legenden)` |
+
+Das Beispiel des Anwenders steht **wörtlich so** auf der BHKW-Seite als Gleichung (1):
+
+```
+: <math>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</math> &nbsp;&nbsp;(1)
+:: <math>\mathrm{SKZ}</math> – Stromkennzahl des Moduls [–]
+:: <math>P_{\mathrm{el}}</math> – elektrische Nennleistung des BHKW-Moduls [kW]
+:: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des BHKW-Moduls [kW]
+```
+
+**Die Regel der Legende:** ALLE Zeichen der Gleichung, in der Reihenfolge ihres Auftretens, die
+Ergebnisgröße zuerst, die Einheit in eckigen Klammern, eine Konstante mit ihrem Wert. Die einzige
+Ausnahme ist der Zeitindex — <math>t</math> beziehungsweise <math>k</math> beim Stromspeicher —, der
+einmal am Anfang des Rechenwegs erklärt wird und danach in keiner Legende mehr auftaucht. Wer
+mitten in eine Seite hineinspringt, findet damit unter der Gleichung, die er gerade liest, jedes
+ihrer Zeichen; die Herkunft (Dialog, Katalog, Vorgabe) bleibt Sache der zwei Tabellen.
+
+### 11.2 Die sieben Seiten in Zahlen
+
+| Seite | Gleichungen | Legendezeilen | Formeln gesamt | Zeilen |
+|---|---:|---:|---:|---:|
+| Heizkessel | 16 | 54 | 140 | 378 |
+| BHKW | 13 | 48 | 130 | 370 |
+| Wärmepumpe | 14 | 53 | 155 | 421 |
+| Pufferspeicher | 19 | 74 | 198 | 430 |
+| Solarthermie | 10 | 42 | 120 | 308 |
+| Photovoltaik | 34 | 132 | 322 | 732 |
+| Stromspeicher | 23 | 85 | 226 | 441 |
+| **Summe** | **129** | **488** | **1 291** | **3 080** |
+
+„Formeln gesamt" zählt jedes `<math>` der Seite — Gleichungen, Legendezeilen, Symbolspalten und die
+Zeichen im Fließtext.
+
+### 11.3 Die LaTeX-Teilmenge, und was sie gekostet hat
+
+Gesetzt wird nur, was **WikiTexVC** kennt: `\frac`, `\sqrt`, `\sum`, `\min`, `\max`, `\cdot`,
+`\left(`/`\right)`, `\mathrm{…}` für Wort-Indizes, `\begin{cases}` für Fallunterscheidungen,
+`\displaystyle`, `\operatorname{…}`, die griechischen Buchstaben als Befehl, die Vergleichszeichen
+und die Abstände. Acht Befehle mussten über die Liste der Bauform hinaus dazukommen, alle
+texvc-sicher und alle unvermeidlich:
+
+| Befehl | wo | warum |
+|---|---|---|
+| `\pi` | Pufferspeicher (14) | Der Ersatzbehälter ist ein Zylinder — eine Konstante, keine Schreibweise |
+| `\kappa` | Pufferspeicher (18) | die Kappung des vertikalen Ausgleichs; dasselbe Zeichen führt die Brauchwasserseite |
+| `\theta`, `\cos`, `\circ` | Solarthermie (1)–(3), Photovoltaik (4)–(8) | Einfallswinkel, Kosinus und Gradzeichen der Sonnengeometrie |
+| `\sin` | Sonnengeometrie | dieselbe Rechnung |
+| `\ln` | Photovoltaik (15) | das Schwachlichtmodell nach Huld ist logarithmisch |
+| `\chi` | Stromspeicher (11) | die Zulässigkeit einer Ladequelle |
+
+**Umlaute gehen nicht in einen Index.** Wo die Fassung 2 <code>Q<sub>über</sub></code>,
+<code>η<sub>Öl</sub></code>, <code>z<sub>äq</sub></code> oder
+<code>Σ<sub>s ∈ Gerät</sub></code> schrieb, steht jetzt die ASCII-Umschrift
+<math>Q_{\mathrm{ueber}}</math>, <math>\eta_{\mathrm{Oel}}</math>, <math>z_{\mathrm{aeq}}</math>,
+<math>\mathrm{Geraet}</math>. Jede betroffene Seite sagt das in einem Halbsatz im Abschnitt
+„Formelzeichen und Parameter"; die Tabellen nennen das Katalogfeld weiterhin mit Umlaut
+(„Wirkungsgrad Öl").
+
+**`\lvert` und `\rvert` sind gestrichen** (Befund vom 06.09.2026): Die Vorschau-Probe gegen die
+installierte Erweiterung meldete „Fehler beim Parsen (Unbekannte Funktion `\lvert`)" für
+Pufferspeicher (18) und Photovoltaik (3) — obwohl `latex2mathml` beide klaglos umsetzt. Der
+Betragsstrich ist seither `\left| … \right|`. Dieselbe Beobachtung kommt aus Teil A
+(Wärmequelle Erdreich). Der Wächter dieses Teils führt die Streichung samt Begründung.
+
+### 11.4 Sechs Stellen, die präziser geworden sind — ohne die Aussage zu ändern
+
+Eine Begrenzung, die in der Fassung 2 als Halbsatz hinter der Formel stand, steht jetzt **in** der
+Formel; ein Zuweisungspfeil, der Programmiersprache war, ist ein zweites Symbol geworden:
+
+| Seite | Stelle | vorher | jetzt |
+|---|---|---|---|
+| Heizkessel | (4) | „auf 0…1 begrenzt" | <math>\min\left( \max\left( \dots , 0 \right) , 1 \right)</math> |
+| Heizkessel | (8) | <code>ID<sub>B</sub> ∈ {6…9, 18…22}</code> | Fallunterscheidung mit <math>6 \le \mathrm{ID}_{\mathrm{B}} \le 9</math> |
+| Wärmepumpe | (7) | <code>P<sub>th</sub> ← P<sub>th</sub> · k</code> | <math>P'_{\mathrm{th}}(t) = P_{\mathrm{th}}(t) \cdot k(t)</math> |
+| Wärmepumpe | (13) | <code>max { ϑ<sub>Luft</sub>(t) &#124; Q<sub>Rest</sub>(t) > 0 }</code> | <math>\max_{Q_{\mathrm{Rest}}(t) > 0} \vartheta_{\mathrm{Luft}}(t)</math> |
+| Pufferspeicher | (6), (11) | „danach auf das Restbudget begrenzt", <code>SOC ← SOC − Q<sub>V</sub></code> | drittes Argument im Minimum; <math>\mathrm{SOC}'(t)</math> |
+| Stromspeicher | (17), (19) | „für i = 0: …" | `\begin{cases}` mit beiden Fällen |
+
+Der **Rechenweg ist dabei unberührt**. Jede dieser Umsetzungen wurde gegen den Kern gegengelesen:
+die Klammer 0…1 des Quellanteils steht in `SimulationSPK.AnteilAus`, die des Anisotropieindex als
+`Clamp(ai, 0, 1)` in `SolarPVGISCalculator`, die des IAM als `Math.Max(Math.Min(iam, 1), 0)` in
+`SimulationSolarthermie`. **Keine neue Unstimmigkeit gefunden** — die drei der Fassung 2 waren
+bereits berichtigt.
+
+### 11.5 Die zwei Wächter dieses Teils
+
+`EPOS.UI.Tests/BerechnungshilfeTests` — aus 78 werden **154 Fälle**:
+
+* **Auf jede Anzeige-Gleichung folgt ihre Legende** (`:: <math>…`). Das ist der Kern des
+  Anwenderwunsches: Eine Gleichung ohne Legende ist genau der Zustand, den er beanstandet hat.
+* **Jede Anzeige-Gleichung ist LaTeX in `<math>`** und beginnt mit `\displaystyle` — Summenlimits
+  über und unter dem Zeichen, echte Brüche —, trägt ihre Nummer am Zeilenende und läuft lückenlos
+  von 1; **`<big>` kommt auf der Seite nicht mehr vor**.
+* **Jeder Befehl steht in der erlaubten Teilmenge** — geprüft nur innerhalb von `<math>`, denn
+  außerhalb ist ein Backslash gewöhnlicher Text. Was WikiTexVC nicht kennt, erschiene beim Anwender
+  als roter Fehlerkasten.
+* **Die Symbolspalte beider Tabellen steht in `<math>`** — ein Symbol, das in der Tabelle anders
+  aussieht als in der Formel, ist für den Leser ein zweites Symbol. Ausgenommen ist eine Zeile,
+  deren Symbolzelle nur den Gedankenstrich trägt: Die Solarthermieseite führt so ihre vier
+  Annahmen ohne Formelzeichen.
+
+`EPOS.Kern.Tests/BerechnungshilfeEinbettungTests` — **16 Fälle**: Für eine Seite der Fassung 3
+überstehen `<math>` und mindestens einer der tragenden Befehle (`\cdot`, `\frac`, `\sum`) die
+Einbettung, und `<big>` kommt nicht mehr vor; für eine Seite der Fassung 2 gilt unverändert die
+Unicode-Prüfung. Gelesen wird aus der **Assembly**, nicht von der Platte.
+
+**Beide Wächter arbeiten mit einer Übergangsliste `SeitenDiesesTeils`** (die sieben Seiten dieses
+Teils) und tragen an jeder betroffenen Stelle den Vermerk
+`// TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen`. Die Seiten des Teils A bleiben
+bis zur Zusammenführung in Fassung 2 und werden weiter nach deren Regeln geprüft — beide Zustände
+sind grün.
+
+### 11.6 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| Lokale LaTeX-Probe (`latexprobe_b.py`, `latex2mathml`) | **1 291 Formeln, 0 Fehler**, kein Befehl außerhalb der Teilmenge |
+| Wiki-Probe je Seite (`action=parse` gegen die installierte Math-Erweiterung) | **7 / 7 ohne einen einzigen „Fehler beim Parsen"**; Tabellen, Tabellenzeilen, Abschnitte und Formelzahl je Seite gleich |
+| `dotnet test EPOS.UI.Tests` (dieser Wächter) | **154 / 154 grün** |
+| `dotnet test EPOS.Kern.Tests` (dieser Wächter) | **16 / 16 grün** |
+| Rechenweg | **unberührt** — keine Quelldatei des Rechenkerns geändert, kein Referenzlauf nötig |
+| SQL, Ressourcen, `help_mapping.txt`, `help_cache.json`, `HelpCatalog`, `_Index.wiki`, `BerechnungsHilfe.cs` | **unverändert** |
+
+**Die roten Fälle gehören Teil A** — 21 Stück, alle in dessen zwei Wächtern, die dieser Auftrag
+nicht anfassen darf:
+
+| Wächter | Fälle | Ursache |
+|---|---:|---|
+| `EPOS.Kern.Tests/BerechnungsHilfeTests.Jede_Seite_kommt_ohne_LaTeX_aus` | 7 | verbietet `<math>` und jeden Backslash-Befehl für alle 13 Seiten |
+| `EPOS.Kern.Tests/BerechnungsHilfeTests.Jede_Seite_traegt_nummerierte_Anzeigeformeln` | 7 | sucht die `<big>`-Formelzeile der Fassung 2 |
+| `EPOS.UI.Tests/BerechnungsknopfTests.Jeder_Knopf_fuehrt_auf_eine_Seite_der_Fassung_2` | 7 | dieselben zwei Regeln in einem Fall |
+
+Die Behebung ist dieselbe wie hier: eine Übergangsliste der umgestellten Seiten, und für sie die
+Fassung-3-Regeln statt der Fassung-2-Verbote. Ohne Teil A stehen `EPOS.UI.Tests` bei
+**2 942 / 2 949** und `EPOS.Kern.Tests` bei **1 544 / 1 558**.
+
+### 11.7 Offene Punkte der Fassung 3
+
+| Nr. | Punkt |
+|---|---|
+| **O‑H13b‑8** | Die zwei Wächter dieses Teils führen `SeitenDiesesTeils` als Übergangsliste. Nach der Zusammenführung beider Teile ist sie auf `SeitenDerRubrik` umzustellen und der Fassung-2-Zweig zu streichen; die Stellen tragen den TODO-Vermerk. |
+| **O‑H13b‑9** | Der Abschnitt „Schreibweise" auf `_Index.wiki` (Teil A) beschreibt die Unicode-Notation der Fassung 2 und muss auf LaTeX nachgezogen werden — einschließlich der acht zusätzlichen Befehle aus 11.3, der ASCII-Umschrift der Umlaute und der Streichung von `\lvert`/`\rvert`. |
+| **O‑H13b‑10** | Der KI-Klartext (`BerechnungsHilfe.Klartext`, Teil A) löst `<sub>`/`<sup>`/`<big>` auf. Für die Fassung 3 ist zu entscheiden, was der Assistent aus einem `<math>`-Block lesen soll — der LaTeX-Quelltext ist lesbar, aber `\frac{a}{b}` ist kein „a / b". |
+| **O‑H13b‑11** | Die Gleichungsnummern bleiben **seitenlokal** (O‑H13b‑7 gilt fort). Wer eine Gleichung einfügt, nummeriert die folgenden neu **und** zieht die Legende mit; der Wächter fängt eine vergessene Nummer ab, eine vergessene Legende ebenfalls. |
