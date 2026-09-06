@@ -9301,6 +9301,21 @@ Nutzung trotzdem ändern?</value>
   <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
     <value>Nutzung ändern</value>
   </data>
+  <data name="PSP_GRUPPE_VOLUMEN" xml:space="preserve">
+    <value>Volumen und Verluste</value>
+  </data>
+  <data name="PSP_GRUPPE_TEMPERATUREN" xml:space="preserve">
+    <value>Temperaturen</value>
+  </data>
+  <data name="PSP_GRUPPE_SCHWELLEN" xml:space="preserve">
+    <value>Schwellen</value>
+  </data>
+  <data name="PSP_GRUPPE_LEISTUNGSGRENZEN" xml:space="preserve">
+    <value>Leistungsgrenzen</value>
+  </data>
+  <data name="PSP_GRUPPE_SCHICHTMODELL" xml:space="preserve">
+    <value>Schichtmodell</value>
+  </data>
   <data name="PSP_GRUPPE_SCHICHTUNG" xml:space="preserve">
     <value>Schichtung und Leistungsgrenzen</value>
   </data>

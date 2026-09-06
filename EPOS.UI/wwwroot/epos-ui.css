@@ -6162,10 +6162,18 @@ body {
 }
 
 /* Was ueber die volle Breite gehoert: eine Untergruppe, eine
-   Optionsgruppe und jedes Feld, das sich selbst als lang meldet
-   (mehrzeiliges Textfeld). */
+   Optionsgruppe, eine Mehrfachauswahl und jedes Feld, das sich selbst als
+   lang meldet (mehrzeiliges Textfeld).
+
+   Die MEHRFACHAUSWAHL kam mit dem Nachzug iU8-O-1 dazu (Nutzung des
+   Pufferspeichers: Heizung / Brauchwasser / Prozess). Sie ist kein
+   .epos-feld, sondern ein eigener kleiner Block aus Titel und Haekchenliste
+   - dieselbe Bauart wie die Optionsgruppe eine Zeile darueber, und aus
+   demselben Grund ueber die volle Breite: In einer halben Spalte stuenden
+   drei untereinander gesetzte Haekchen neben einer leeren Nachbarzelle. */
 .epos-formularraster > .epos-untergruppe,
 .epos-formularraster > .epos-optionsgruppe,
+.epos-formularraster > .epos-mehrfachauswahl,
 .epos-formularraster .epos-feld--breit {
     grid-column: 1 / -1;
 }

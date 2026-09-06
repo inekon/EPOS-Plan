@@ -44,6 +44,15 @@
    weg; die SICHTBARKEITSREGEL "kompakt <-> erweitert" bleibt fachlich - die
    Schichtfelder erscheinen erst ab zwei Schichten.
 
+   FORMULARRASTER (Anwenderwunsch iU8-E-2, Nachzug iU8-O-1 vom 06.09.2026).
+   Alle drei Parameterbloecke stehen im <Formularraster>: Beschriftung NEBEN dem
+   Feld, Zahlenfelder kurz mit der Einheit dahinter, auf breitem Schirm zwei
+   Feldpaare je Zeile, unter 900 px wieder einspaltig. Sechs Formulargruppen
+   gliedern die 21 Felder (Volumen und Verluste, Temperaturen, Schwellen,
+   Leistungsgrenzen, Schichtmodell, Entnahmehoehen); die beiden LISTEN bleiben
+   draussen, denn eine Liste ist kein Formularblock (Grenze aus Paket P3). Kein
+   Feld umbenannt, keines verschoben - die Reihenfolge im Markup ist der Tab-Weg.
+
    TASTATUR: Esc schliesst - erst eine Rueckfrage, dann der Dialog. Enter ist
    NICHT belegt: "Uebernehmen" schreibt sofort. *@
 
@@ -96,73 +105,125 @@
     @* --- Eigenschaften ------------------------------------------------------ *@
     <Gruppenkopf Titel="@GruppeEigenschaften">
         <KindInhalt>
-            <Auswahlfeld Bezeichnung="@LabelAusKatalog" Eintraege="@Katalogeintraege"
-                         Auswahl="@_katalogzeile" AuswahlChanged="KatalogWaehlen"
-                         Aktiv="@(_bearbeiteteId <= 0)" />
+            @* Formularraster (iU8-E-2, Nachzug iU8-O-1): Elf Felder standen hier
+               untereinander ueber die ganze Breite, die Beschriftung DARUEBER und
+               die Einheit am rechten Rand - der Block war hoeher als der Dialog.
+               Jetzt steht die Beschriftung neben dem Feld, das Zahlenfeld ist kurz
+               mit der Einheit dahinter, und auf breitem Schirm stehen zwei
+               Feldpaare je Zeile. Die REIHENFOLGE bleibt Zeichen fuer Zeichen
+               dieselbe - der Tab-Weg des Vorlaeufers haengt daran. *@
+            <Formularraster>
+                <KindInhalt>
+                    @* Die Kennung - woher der Speicher kommt, wie er heisst, wofuer
+                       er da ist. Ohne Gruppentitel: Er stuende im Gruppenkopf
+                       darueber ein zweites Mal. *@
+                    <Auswahlfeld Bezeichnung="@LabelAusKatalog" Eintraege="@Katalogeintraege"
+                                 Auswahl="@_katalogzeile" AuswahlChanged="KatalogWaehlen"
+                                 Aktiv="@(_bearbeiteteId <= 0)" />
 
-            <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
-                      WertChanged="w => _bezeichner = w" />
+                    <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+                              WertChanged="w => _bezeichner = w" />
 
-            <Mehrfachauswahl Bezeichnung="@LabelVerwendung" Eintraege="@Nutzungen"
-                             Gewaehlt="@_klassenSet" GewaehltChanged="KlassenSetSetzen"
-                             MitSammelknoepfen="false" />
-            <Herleitungszeile Text="@Nutzungsherleitung" />
+                    @* Die Mehrfachauswahl spannt ueber alle Spalten (Stilblatt,
+                       Nachzug iU8-O-1) - drei Haekchen untereinander in einer
+                       halben Spalte stuenden neben einer leeren. *@
+                    <Mehrfachauswahl Bezeichnung="@LabelVerwendung" Eintraege="@Nutzungen"
+                                     Gewaehlt="@_klassenSet" GewaehltChanged="KlassenSetSetzen"
+                                     MitSammelknoepfen="false" />
+                    <Herleitungszeile Text="@Nutzungsherleitung" />
 
-            <Ganzzahlfeld Bezeichnung="@LabelGesamtvolumen" Einheit="l" Feldname="@LabelGesamtvolumen"
-                          Wert="@_volumen" WertChanged="w => Setzen(() => _volumen = w)" />
-            <Zahlenfeld Bezeichnung="@LabelBereitschaftsverluste" Einheit="kWh/24h"
-                        Feldname="@LabelBereitschaftsverluste" Wert="@_verluste"
-                        WertChanged="w => _verluste = w" />
+                    <Formulargruppe Titel="@GruppeVolumen">
+                        <KindInhalt>
+                            <Ganzzahlfeld Bezeichnung="@LabelGesamtvolumen" Einheit="l" Feldname="@LabelGesamtvolumen"
+                                          Wert="@_volumen" WertChanged="w => Setzen(() => _volumen = w)" />
+                            <Zahlenfeld Bezeichnung="@LabelBereitschaftsverluste" Einheit="kWh/24h"
+                                        Feldname="@LabelBereitschaftsverluste" Wert="@_verluste"
+                                        WertChanged="w => _verluste = w" />
+                        </KindInhalt>
+                    </Formulargruppe>
 
-            <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlauf"
-                          Wert="@_vorlauf" WertChanged="w => Setzen(() => _vorlauf = w)" />
-            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@LabelRuecklauf"
-                          Wert="@_ruecklauf" WertChanged="w => Setzen(() => _ruecklauf = w)" />
-            <Herleitungszeile Text="@_qmax" />
+                    <Formulargruppe Titel="@GruppeTemperaturen">
+                        <KindInhalt>
+                            <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlauf"
+                                          Wert="@_vorlauf" WertChanged="w => Setzen(() => _vorlauf = w)" />
+                            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@LabelRuecklauf"
+                                          Wert="@_ruecklauf" WertChanged="w => Setzen(() => _ruecklauf = w)" />
+                            <Herleitungszeile Text="@_qmax" />
+                        </KindInhalt>
+                    </Formulargruppe>
 
-            <Zahlenfeld Bezeichnung="@LabelEinschaltschwelle" Einheit="%" Feldname="@LabelEinschaltschwelle"
-                        Wert="@_schwelleEin" WertChanged="w => _schwelleEin = w" />
-            <Zahlenfeld Bezeichnung="@LabelAbschaltschwelle" Einheit="%" Feldname="@LabelAbschaltschwelle"
-                        Wert="@_schwelleAus" WertChanged="w => _schwelleAus = w" />
-            <Zahlenfeld Bezeichnung="@LabelSchwelleNachrangig" Einheit="%" Feldname="@LabelSchwelleNachrangig"
-                        Wert="@_schwelleNachrang" WertChanged="w => _schwelleNachrang = w" />
-            <Zahlenfeld Bezeichnung="@LabelMindestfuellstand" Einheit="%" Feldname="@LabelMindestfuellstand"
-                        Wert="@_schwelleReserve" WertChanged="w => _schwelleReserve = w" />
+                    <Formulargruppe Titel="@GruppeSchwellen">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@LabelEinschaltschwelle" Einheit="%" Feldname="@LabelEinschaltschwelle"
+                                        Wert="@_schwelleEin" WertChanged="w => _schwelleEin = w" />
+                            <Zahlenfeld Bezeichnung="@LabelAbschaltschwelle" Einheit="%" Feldname="@LabelAbschaltschwelle"
+                                        Wert="@_schwelleAus" WertChanged="w => _schwelleAus = w" />
+                            <Zahlenfeld Bezeichnung="@LabelSchwelleNachrangig" Einheit="%" Feldname="@LabelSchwelleNachrangig"
+                                        Wert="@_schwelleNachrang" WertChanged="w => _schwelleNachrang = w" />
+                            <Zahlenfeld Bezeichnung="@LabelMindestfuellstand" Einheit="%" Feldname="@LabelMindestfuellstand"
+                                        Wert="@_schwelleReserve" WertChanged="w => _schwelleReserve = w" />
+                        </KindInhalt>
+                    </Formulargruppe>
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
     @* --- Schichtung --------------------------------------------------------- *@
     <Gruppenkopf Titel="@GruppeSchichtung">
         <KindInhalt>
-            <Ganzzahlfeld Bezeichnung="@LabelSchichten" Feldname="@LabelSchichten"
-                          Min="1" Wert="@_schichten"
-                          WertChanged="w => Setzen(() => _schichten = w)" />
+            @* Formularraster (iU8-E-2, Nachzug iU8-O-1). Die Schichtenzahl steht
+               allein voran - sie SCHALTET den erweiterten Teil frei und gehoert
+               deshalb in keine der Gruppen darunter. *@
+            <Formularraster>
+                <KindInhalt>
+                    <Ganzzahlfeld Bezeichnung="@LabelSchichten" Feldname="@LabelSchichten"
+                                  Min="1" Wert="@_schichten"
+                                  WertChanged="w => Setzen(() => _schichten = w)" />
 
-            <Zahlenfeld Bezeichnung="@LabelLadeleistung" Einheit="kW" Feldname="@LabelLadeleistung"
-                        Wert="@_ladeleistung" WertChanged="w => _ladeleistung = w" />
-            <Zahlenfeld Bezeichnung="@LabelEntladeleistung" Einheit="kW" Feldname="@LabelEntladeleistung"
-                        Wert="@_entladeleistung" WertChanged="w => _entladeleistung = w" />
+                    <Formulargruppe Titel="@GruppeLeistungsgrenzen">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@LabelLadeleistung" Einheit="kW" Feldname="@LabelLadeleistung"
+                                        Wert="@_ladeleistung" WertChanged="w => _ladeleistung = w" />
+                            <Zahlenfeld Bezeichnung="@LabelEntladeleistung" Einheit="kW" Feldname="@LabelEntladeleistung"
+                                        Wert="@_entladeleistung" WertChanged="w => _entladeleistung = w" />
+                        </KindInhalt>
+                    </Formulargruppe>
 
-            @* Die Sichtbarkeitsregel des Vorlaeufers: erst ab zwei Schichten hat
-               eine Schichthoehe, ein Waermeleitwert und eine Nutztemperatur ueberhaupt
-               eine Bedeutung (SchichtSichtbarkeitSetzen:867-931). *@
-            @if (Erweitert)
-            {
-                <Zahlenfeld Bezeichnung="@LabelHoehe" Einheit="m" Feldname="@LabelHoehe"
-                            Wert="@_hoehe" WertChanged="w => _hoehe = w" />
-                <Zahlenfeld Bezeichnung="@LabelLambda" Einheit="W/(m·K)" Feldname="@LabelLambda"
-                            Wert="@_lambda" WertChanged="w => _lambda = w" />
-                <Zahlenfeld Bezeichnung="@LabelTNutzBW" Einheit="°C" Feldname="@LabelTNutzBW"
-                            Wert="@_tNutzBW" WertChanged="w => _tNutzBW = w" />
+                    @* Die Sichtbarkeitsregel des Vorlaeufers: erst ab zwei Schichten hat
+                       eine Schichthoehe, ein Waermeleitwert und eine Nutztemperatur ueberhaupt
+                       eine Bedeutung (SchichtSichtbarkeitSetzen:867-931). *@
+                    @if (Erweitert)
+                    {
+                        <Formulargruppe Titel="@GruppeSchichtmodell">
+                            <KindInhalt>
+                                <Zahlenfeld Bezeichnung="@LabelHoehe" Einheit="m" Feldname="@LabelHoehe"
+                                            Wert="@_hoehe" WertChanged="w => _hoehe = w" />
+                                <Zahlenfeld Bezeichnung="@LabelLambda" Einheit="W/(m·K)" Feldname="@LabelLambda"
+                                            Wert="@_lambda" WertChanged="w => _lambda = w" />
+                                <Zahlenfeld Bezeichnung="@LabelTNutzBW" Einheit="°C" Feldname="@LabelTNutzBW"
+                                            Wert="@_tNutzBW" WertChanged="w => _tNutzBW = w" />
+                            </KindInhalt>
+                        </Formulargruppe>
 
-                <Herleitungszeile Text="@LabelEntnahmeKopf" />
-                <Zahlenfeld Bezeichnung="@LabelEntnahmeHeizung" Feldname="@LabelEntnahmeHeizung"
-                            Wert="@_entnahmeHeizung" WertChanged="w => _entnahmeHeizung = w" />
-                <Zahlenfeld Bezeichnung="@LabelEntnahmeBW" Feldname="@LabelEntnahmeBW"
-                            Wert="@_entnahmeBW" WertChanged="w => _entnahmeBW = w" />
-                <Zahlenfeld Bezeichnung="@LabelEntnahmeProzess" Feldname="@LabelEntnahmeProzess"
-                            Wert="@_entnahmeProzess" WertChanged="w => _entnahmeProzess = w" />
-            }
+                        @* Der Kopf der drei Entnahmehoehen war eine Herleitungszeile und
+                           ist jetzt der Titel IHRER Gruppe - derselbe Text
+                           (PSP_LABEL_ENTNAHMEHOEHEN), an der richtigen Stelle: Er
+                           beschreibt nicht das Feld ueber ihm, sondern die drei
+                           darunter. *@
+                        <Formulargruppe Titel="@LabelEntnahmeKopf">
+                            <KindInhalt>
+                                <Zahlenfeld Bezeichnung="@LabelEntnahmeHeizung" Feldname="@LabelEntnahmeHeizung"
+                                            Wert="@_entnahmeHeizung" WertChanged="w => _entnahmeHeizung = w" />
+                                <Zahlenfeld Bezeichnung="@LabelEntnahmeBW" Feldname="@LabelEntnahmeBW"
+                                            Wert="@_entnahmeBW" WertChanged="w => _entnahmeBW = w" />
+                                <Zahlenfeld Bezeichnung="@LabelEntnahmeProzess" Feldname="@LabelEntnahmeProzess"
+                                            Wert="@_entnahmeProzess" WertChanged="w => _entnahmeProzess = w" />
+                            </KindInhalt>
+                        </Formulargruppe>
+                    }
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -187,10 +248,18 @@
                 </KindInhalt>
             </Zeilenraster>
 
-            <Auswahlfeld Bezeichnung="@LabelEntladeprioritaet" Eintraege="@Prioritaeten"
-                         Auswahl="@_entladeprio" AuswahlChanged="PrioWaehlen" />
-            <Herleitungszeile Text="@_automatik" />
-            <Herleitungszeile Text="@_entladeposition" />
+            @* Das Zeilenraster darueber bleibt DRAUSSEN - eine Liste ist kein
+               Formularblock (dieselbe Grenze wie bei der Senkenliste, Paket P3).
+               Der Raster traegt nur die Entladeprioritaet samt ihren beiden
+               Herleitungszeilen. *@
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@LabelEntladeprioritaet" Eintraege="@Prioritaeten"
+                                 Auswahl="@_entladeprio" AuswahlChanged="PrioWaehlen" />
+                    <Herleitungszeile Text="@_automatik" />
+                    <Herleitungszeile Text="@_entladeposition" />
+                </KindInhalt>
+            </Formularraster>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -280,6 +349,17 @@
     [Parameter] public string GruppeEigenschaften { get; set; } = "Eigenschaften";
     [Parameter] public string GruppeSchichtung { get; set; } = "Schichtung und Leistungsgrenzen";
     [Parameter] public string GruppeLadereihenfolge { get; set; } = "Ladereihenfolge dieses Speichers";
+
+    // Die vier leisen Zwischenueberschriften IM Formularraster (Nachzug iU8-O-1).
+    // Sie benennen, was der Vorlaeufer nur durch Reihenfolge und Pixelabstand
+    // gliederte; die Ueberschrift der Entnahmehoehen steht schon als
+    // LabelEntnahmeKopf da (PSP_LABEL_ENTNAHMEHOEHEN).
+    [Parameter] public string GruppeVolumen { get; set; } = "Volumen und Verluste";
+    [Parameter] public string GruppeTemperaturen { get; set; } = "Temperaturen";
+    [Parameter] public string GruppeSchwellen { get; set; } = "Schwellen";
+    [Parameter] public string GruppeLeistungsgrenzen { get; set; } = "Leistungsgrenzen";
+    [Parameter] public string GruppeSchichtmodell { get; set; } = "Schichtmodell";
+
     [Parameter] public string LabelAusKatalog { get; set; } = "Aus Katalog:";
     [Parameter] public string KatalogFreieEingabe { get; set; } = "(freie Eingabe)";
     [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";

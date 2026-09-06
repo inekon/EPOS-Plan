@@ -71,6 +71,14 @@ namespace WindowsFormsApplication1
                 ["GruppeEigenschaften"] = MyResource.Resource.PSP_GRUPPE_EIGENSCHAFTEN,
                 ["GruppeSchichtung"] = MyResource.Resource.PSP_GRUPPE_SCHICHTUNG,
                 ["GruppeLadereihenfolge"] = MyResource.Resource.PSP_GRUPPE_LADEREIHENFOLGE,
+
+                // Die fünf leisen Zwischenüberschriften im Formularraster (Nachzug iU8‑O‑1).
+                ["GruppeVolumen"] = MyResource.Resource.PSP_GRUPPE_VOLUMEN,
+                ["GruppeTemperaturen"] = MyResource.Resource.PSP_GRUPPE_TEMPERATUREN,
+                ["GruppeSchwellen"] = MyResource.Resource.PSP_GRUPPE_SCHWELLEN,
+                ["GruppeLeistungsgrenzen"] = MyResource.Resource.PSP_GRUPPE_LEISTUNGSGRENZEN,
+                ["GruppeSchichtmodell"] = MyResource.Resource.PSP_GRUPPE_SCHICHTMODELL,
+
                 ["LabelAusKatalog"] = MyResource.Resource.PSP_LABEL_AUS_KATALOG,
                 ["KatalogFreieEingabe"] = MyResource.Resource.PSP_KATALOG_FREIE_EINGABE,
                 ["LabelBezeichner"] = MyResource.Resource.PSP_LABEL_BEZEICHNER,
