@@ -2775,6 +2775,18 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > steht im `Formularraster`. Eingefroren: `Wärmebedarf_Laurentiuskirche` 65,430 MWh / 47,649 kW / 1 373,16 h/a.
 > Nachweise: Kern 1 230 und UI 2 679 grün (auch en‑US), Windows-Bau 0 Fehler, SQL-Prüfer 0 Fundstellen, ChartProben
 > 40/0, Kern-Wächter leer; Referenzlauf nicht nötig — gelesen wird nur. Vierzehn Abnahmepunkte A‑W9‑E‑3 im W9-Protokoll.
+>
+> **Anwenderentscheid W9‑O‑9 vom 06.09.2026 („Knopftexte im Dialog „Wärmebedarf Extern" wortgleich zum Stromdialog"),
+> umgesetzt in `9b594e6`:** Die Katalogleiste des Dialogs liest seither in **allen vier** Knöpfen die Stromschlüssel —
+> `STROMGL_BTN_BEARBEITEN` („Bearbeiten…" / „Edit…") und `STROMGL_BTN_LOESCHEN` („Löschen" / „Delete") lösen die
+> wärmespezifischen Texte „Einlesen/Bearbeiten.." und „DB Ganglinie löschen" ab, die bei W9‑E‑3 stehen geblieben waren.
+> Die Vorgabe der Komponente **ist** damit der Stromschlüssel: Die zwei Überschreibungen der Windows-Hülle entfallen,
+> und die zwei nur dort gelesenen Schlüssel `WBX_BTN_BEARBEITEN`/`WBX_BTN_LOESCHEN` sind aus beiden `.resx` gelöscht
+> (`Resource.Designer.cs` mit `Werkzeuge/ResourceDesigner` neu erzeugt, „abweichend 0"). Mit demselben Schritt trägt
+> die **Rückfrage vor dem Löschen den Dialogtitel** statt des Knopftextes — genau wie `StromganglinieDialog`; „Löschen"
+> allein wäre als Überschrift nichtssagend. Nachweise: UI 2 724 grün (39 im Dialog, davon zwei neue Zeugen in de **und**
+> en), Kern 1 344 grün, Windows-Bau 0 Fehler, Gate grün, Referenzlauf byte-gleich. Ein Abnahmepunkt A‑W9‑E‑3 ergänzt
+> (Nr. 15), vier berichtigt; sieben Abnahmepunkte A‑W9‑O‑9 in der Sitzungsmeldung.
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
