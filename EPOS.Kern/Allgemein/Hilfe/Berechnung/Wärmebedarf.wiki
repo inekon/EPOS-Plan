@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmebedarf | Stand: 2026-09-06 | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmebedarf | Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs, EPOS.Kern/Allgemein/BhkwPlan.cs,
      EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs, EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs,
      EPOS.Kern/Allgemein/Simulation/Init.cs -->
@@ -22,7 +22,7 @@ Ausgewiesen werden ausserdem die Jahresmengen je Anteil [MWh], der groesste Stun
 {| class="wikitable"
 ! Groesse !! Einheit !! Herkunft im Programm
 |-
-| Klimaregion (Aussentemperatur, Einstrahlung je Himmelsrichtung, Tagtypen, Wochenendkennzeichen) || °C, Wh/(m²·d) || Projektverwaltung, Feld „Klimaregion"
+| Klimaregion (Aussentemperatur, Einstrahlung je Himmelsrichtung, Tagtypen, Wochenendkennzeichen) || °C, W/m² (Tagesmittel) || Projektverwaltung, Feld „Klimaregion"
 |-
 | Gebaeude des Projekts || — || „Wärmebedarf → Gebäude", Liste „ausgewählte Gebäude im Projekt"
 |-
@@ -49,6 +49,146 @@ Ausgewiesen werden ausserdem die Jahresmengen je Anteil [MWh], der groesste Stun
 | Netzverluste und ihre Einheit || % oder kWh/a || Simulationskonfiguration
 |}
 
+== Formelzeichen und Parameter ==
+
+'''Parameter''' — was in die Rechnung hereinkommt:
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! Herkunft
+|-
+| t || Stunde des Jahres, t = 1 … 8 760 || — || Zeitraster (Konstante: 8 760 Stunden je Jahr)
+|-
+| d || Tag des Jahres, d = 1 … 365 || — || Zeitraster (Konstante: 365 Tage)
+|-
+| h || Stunde des Tages, h = 1 … 24 || — || Zeitraster (Konstante: 24 Stunden je Tag)
+|-
+| c || Kanal: Hzg (Heizung), TWW (Brauchwasser), Pro (Prozesswaerme) || — || Kanalsatz des Rechenkerns (Konstante: drei Kanaele)
+|-
+| i || Tagesindex des ersten Wochenend-Samstags || — || Wochenendkennzeichen der Klimadaten
+|-
+| τ(d) || Tagtyp des Tages d (Wohn- bzw. Nichtwohngebaeude) || — || Klimadaten der Projektregion
+|-
+| ϑ<sub>a</sub>(d) || Tagesmitteltemperatur der Aussenluft || °C || Klimadaten der Projektregion
+|-
+| G<sub>N</sub>, G<sub>O</sub>, G<sub>S</sub>, G<sub>W</sub> || Einstrahlung des Tages auf Nord-, Ost-, Sued- und Westflaeche || W/m² (Tagesmittel) || Klimadaten, Spalten <code>Sol_Nord</code>, <code>Sol_Ost</code>, <code>Sol_Sued</code>, <code>Sol_West</code>
+|-
+| A<sub>F,N</sub>, A<sub>F,OW</sub>, A<sub>F,S</sub> || Fensterflaeche nach Norden, nach Osten, nach Sueden || m² || Gebäudekatalog; A<sub>F,OW</sub> ist das Feld „Fensterfläche Ost" und gilt fuer Ost UND West
+|-
+| A<sub>F</sub> || gesamte Fensterflaeche || m² || Gebäudekatalog, Feld „gesamte Fensterfläche"
+|-
+| A<sub>W</sub>, A<sub>D</sub>, A<sub>G</sub>, A<sub>S</sub> || Flaeche von Aussenwand, Dach, Grund und sonstigen Bauteilen || m² || Gebäudekatalog, Reiter „Flächen und U-Werte"
+|-
+| U<sub>W</sub>, U<sub>F</sub>, U<sub>D</sub>, U<sub>G</sub>, U<sub>S</sub> || U-Werte derselben Bauteile || W/(m²·K) || Gebäudekatalog, Reiter „Flächen und U-Werte"
+|-
+| Ψ<sub>1</sub>, Ψ<sub>2</sub>, Ψ<sub>3</sub> || Waermebrueckenverlustkoeffizienten Fenster-Wand, Wand-Dach, Aussenwand-Keller || W/(m·K) || Gebäudekatalog, Reiter „Temperaturen, Ferien, Luftwechsel"
+|-
+| ℓ<sub>1</sub>, ℓ<sub>2</sub>, ℓ<sub>3</sub> || Anschlusslaengen derselben drei Waermebruecken || m || Gebäudekatalog, Reiter „Temperaturen, Ferien, Luftwechsel"
+|-
+| A<sub>Wohn</sub> || Wohnflaeche des Katalogeintrags || m² || Gebäudekatalog
+|-
+| A<sub>ges</sub> || Flaeche, mit der das Gebaeude im Projekt rechnet || m² || Gebäudedialog, Feld „Wert der Angabe"; bei einer Verbrauchsangabe das Ergebnis von (15)
+|-
+| h<sub>R</sub> || Raumhoehe || m || Gebäudekatalog
+|-
+| n<sub>L</sub> || Luftwechselrate || 1/h || Gebäudekatalog
+|-
+| ϑ<sub>Tag</sub>, ϑ<sub>Nacht</sub>, ϑ<sub>WE</sub>, ϑ<sub>Fer</sub> || Raumsolltemperatur am Tag, in der Nacht, am Wochenende, in den Ferien || °C || Gebäudekatalog
+|-
+| ϑ<sub>max</sub> || Maximalraumtemperatur || °C || Gebäudekatalog
+|-
+| P<sub>int</sub> || interne Waermegewinne || W || Gebäudekatalog
+|-
+| g || Fensterdurchlassgrad || — || Gebäudekatalog
+|-
+| C || Speicherfaehigkeit der Bauart || Wh/K || Gebäudekatalog, Feld „Bauweise"
+|-
+| p<sub>roh</sub>(τ, h) || 24-Stunden-Tagesprofil je Tagtyp, unnormiert || beliebige Skala || Tagesverteilung des Gebaeudetyps
+|-
+| V || Verbrauchsangabe des Gebaeudes || l/a, m³/a oder MWh/a || Gebäudedialog, Abschnitt „Gebäude: Verbrauch"
+|-
+| η<sub>a</sub> || Jahresnutzungsgrad der Bestandsanlage || — || Gebäudedialog, Abschnitt „Gebäude: Verbrauch"
+|-
+| A<sub>alt</sub> || im Projekt hinterlegte gesamte Wohnflaeche des Gebaeudes || m² || Gebäudedialog, Feld „Wohnfläche gesamt"
+|-
+| a<sub>P</sub> || Flaeche je Nutzer || m² || Gebäudekatalog
+|-
+| v(k) || Wert einer externen Ganglinie im Viertelstundenraster || kWh || „Wärmebedarf Extern", eingelesene Ganglinie
+|-
+| p || Netzverlust, wenn in Prozent angegeben || % || Simulationskonfiguration, Feld „Netzverluste"; ueber 100 % bricht der Lauf ab
+|-
+| Q<sub>NV,ein</sub> || Netzverlust, wenn als Jahresmenge angegeben || kWh/a || Simulationskonfiguration, Feld „Netzverluste"
+|-
+| 0,83 / 0,95 / 0,45 || Temperatur-Korrekturfaktoren Wand und Waermebruecken / Dach / Grund || — || Konstanten des Rechenkerns
+|-
+| 1,2 || Dichte der Luft || kg/m³ || Konstante
+|-
+| 0,2778 || spezifische Waermekapazitaet der Luft (= 1/3,6) || Wh/(kg·K) || Konstante
+|-
+| 10,08 / 11,48 || Heizwert von Heizoel EL je Liter / von Erdgas je m³ || kWh/l, kWh/m³ || Konstanten
+|-
+| 1,1 || Verhaeltnis Brennwert (H<sub>o</sub>) zu Heizwert (H<sub>u</sub>) beim Erdgas || — || Konstante
+|}
+
+'''Variablen''' — was die Rechnung selbst bildet:
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! berechnet in
+|-
+| w || Wochentag des 1. Januar, w = 0 (Montag) … 6 (Sonntag) || — || (1)
+|-
+| P<sub>sol</sub>(d) || solare Gewinne des Tages d, im Tagesmittel || W || (2)
+|-
+| L<sub>T</sub> || Transmissionsanteil des Waermeverlustkoeffizienten || W/K || (3)
+|-
+| L<sub>WB</sub> || Waermebrueckenanteil || W/K || (4)
+|-
+| f || Frostfaktor der Lueftung || — || (5)
+|-
+| L<sub>V</sub> || Lueftungsanteil || W/K || (6)
+|-
+| L || spezifischer Waermeverlustkoeffizient des Gebaeudes || W/K || (7)
+|-
+| s(h) || Tagstundenschalter der solaren Entlastung || — || (8)
+|-
+| ϑ<sub>soll</sub>(h) || Raumsolltemperatur der Stunde h || °C || Fallunterscheidung in Schritt 2c
+|-
+| ϑ<sub>vor</sub> || Raumtemperatur am Ende der Vorstunde || °C || (11), Anfangswert ϑ<sub>Nacht</sub>
+|-
+| P<sub>hzg</sub>(h) || Heizleistung der Stunde h || W || (9), (10)
+|-
+| ϑ<sub>neu</sub> || Raumtemperatur am Ende der Stunde h || °C || (11)
+|-
+| Q<sub>Tag</sub>(d) || Heizarbeit des Tages d, auf die Projektgroesse gestreckt || Wh || (12)
+|-
+| p<sub>T</sub>(τ, h) || Tagesprofil, auf die Tagessumme 1 normiert || — || (13)
+|-
+| Q<sub>Geb</sub>(d, h) || Gebaeudewaerme der Stunde h des Tages d || Wh || (14)
+|-
+| Q<sub>V,alt</sub>, Q<sub>V,neu</sub> || Nutzwaerme aus Katalogflaeche bzw. aus der Verbrauchsangabe || kWh || Tabelle in Schritt 4
+|-
+| A<sub>neu</sub> || die aus dem Verbrauch gestreckte Flaeche || m² || (15)
+|-
+| n<sub>P</sub> || Zahl der Bewohner || — || (16)
+|-
+| Q<sub>ext</sub>(t) || Stundenwert einer externen Ganglinie || kWh || (17)
+|-
+| Q<sub>a,vor</sub> || Jahresbedarf VOR dem Netzverlustaufschlag || kWh || Summe der drei Kanaele vor Schritt 7
+|-
+| q<sub>NV</sub> || Netzverlust je Stunde || kWh || (18), (19)
+|-
+| Q<sub>NV,a</sub> || ausgewiesener Netzverlust des Jahres || MWh || (20)
+|-
+| q<sub>NV,c</sub>(t) || Netzverlustanteil des Kanals c in der Stunde t || kWh || (21)
+|-
+| Q<sub>c</sub>(t) || Stundenwert des Kanals c — geschrieben Q<sub>Hzg</sub>(t), Q<sub>TWW</sub>(t), Q<sub>Pro</sub>(t) || kWh || Schritte 2 bis 6, danach (21)
+|-
+| Q<sub>Bed</sub>(t) || Waermebedarf der Stunde t || kWh || (22)
+|-
+| Q<sub>a</sub> || Jahresbedarf || MWh || (23)
+|-
+| Q<sub>max</sub> || groesster Stundenwert (Spitze) || kWh || (24)
+|}
+
 == Rechenweg ==
 
 === 1. Klimadaten und Kalender ===
@@ -63,12 +203,12 @@ Aus den Wochenendkennzeichen der ersten 14 Tage leitet der Rechenkern den '''Woc
 1. Januar''' ab: Gesucht wird das erste zusammenhaengende Wochenendpaar; steht der Samstag
 am Tagesindex ''i'', dann gilt
 
- Wochentag des 1. Januar = (5 - i) mod 7      (Montag = 0 … Sonntag = 6)
+: <big>w = (5 − i) mod 7</big>  (1)
 
 Gesucht wird in zwei Durchgaengen — zuerst ein '''isoliertes''' Paar (Vortag und Folgetag
 sind kein Wochenende), damit ein als Wochenende gefuehrter Feiertag am Freitag oder Montag
 nicht traegt; erst wenn es keines gibt, zaehlt das erste Paar ueberhaupt. Findet sich gar
-keines, gilt der Rueckfallwert '''Sonntag''' — mit Hinweis im Laufprotokoll.
+keines, gilt der Rueckfallwert '''Sonntag''' (w = 6) — mit Hinweis im Laufprotokoll.
 
 Dieser Wochentag gilt fuer '''alle''' Bedarfsarten, auch fuer den Strombedarf.
 
@@ -77,66 +217,85 @@ Dieser Wochentag gilt fuer '''alle''' Bedarfsarten, auch fuer den Strombedarf.
 Je Gebaeude und Tag werden drei Groessen gebildet.
 
 '''a) Solare Gewinne''' aus den Fensterflaechen und der Einstrahlung; Ost und West gehen
-gemittelt ein:
+gemittelt ein und teilen sich EINE Fensterflaeche:
 
- Q_sol = ( E_N * A_N + ((E_O + E_W) / 2) * A_OW + E_S * A_S ) * g
-
-''g'' ist der Fensterdurchlassgrad.
+: <big>P<sub>sol</sub>(d) = ( G<sub>N</sub>(d) · A<sub>F,N</sub> + ((G<sub>O</sub>(d) + G<sub>W</sub>(d)) / 2) · A<sub>F,OW</sub> + G<sub>S</sub>(d) · A<sub>F,S</sub> ) · g</big>  (2)
 
 '''b) Spezifischer Waermeverlustkoeffizient''' aus Transmission, Waermebruecken und
 Lueftung:
 
- Transmission  = 0,83 * U_Wand * A_Wand + U_Fenster * A_Fenster
-               + 0,95 * U_Dach * A_Dach + 0,45 * U_Grund * A_Grund
-               + U_Sonstiges * A_Sonstiges
- Waermebruecken = ( Psi_1 * L_1 + Psi_2 * L_2 + Psi_3 * L_3 ) * 0,83
- Lueftung       = f * ( A_Wohn * Raumhoehe ) * 1,2 * Luftwechselrate * 0,2778
-                  mit f = 1 + 0,025 * T_aussen  falls T_aussen < 0 °C, sonst f = 1
- L = Transmission + Waermebruecken + Lueftung
+: <big>L<sub>T</sub> = 0,83 · U<sub>W</sub> · A<sub>W</sub> + U<sub>F</sub> · A<sub>F</sub> + 0,95 · U<sub>D</sub> · A<sub>D</sub> + 0,45 · U<sub>G</sub> · A<sub>G</sub> + U<sub>S</sub> · A<sub>S</sub></big>  (3)
+
+: <big>L<sub>WB</sub> = ( Ψ<sub>1</sub> · ℓ<sub>1</sub> + Ψ<sub>2</sub> · ℓ<sub>2</sub> + Ψ<sub>3</sub> · ℓ<sub>3</sub> ) · 0,83</big>  (4)
+
+: <big>f = 1 + 0,025 · ϑ<sub>a</sub>(d) fuer ϑ<sub>a</sub>(d) < 0 °C, sonst f = 1</big>  (5)
+
+: <big>L<sub>V</sub> = f · A<sub>Wohn</sub> · h<sub>R</sub> · 1,2 · n<sub>L</sub> · 0,2778</big>  (6)
+
+: <big>L = L<sub>T</sub> + L<sub>WB</sub> + L<sub>V</sub></big>  (7)
 
 Die Faktoren '''0,83''' (Wand, Waermebruecken), '''0,95''' (Dach) und '''0,45''' (Grund)
 sind Temperatur-Korrekturfaktoren gegen unbeheizte bzw. erdberuehrte Bereiche; '''1,2''' ist
 die Dichte der Luft in kg/m³ und '''0,2778''' die spezifische Waermekapazitaet der Luft in
-Wh/(kg·K) (= 1/3,6). Der Faktor ''f'' erhoeht die Lueftungswaermeverluste bei Frost nicht,
-sondern '''senkt''' sie — bei kalter Luft ist die eintretende Masse groesser, die
+Wh/(kg·K) (= 1/3,6). Der Faktor ''f'' aus (5) erhoeht die Lueftungswaermeverluste bei Frost
+nicht, sondern '''senkt''' sie — bei kalter Luft ist die eintretende Masse groesser, die
 Enthalpiedifferenz aber unterproportional.
 
 '''c) Taegliche Heizlast''' aus einem instationaeren 24-Stunden-Kapazitaetsmodell. Je
 Stunde ''h'' (1…24) gilt zunaechst der Sollwert:
 
- Wochenendabsenkung und keine Ferien -> Wochenend-Sollwert
- Ferien                              -> Ferien-Sollwert
- sonst 7 <= h <= 22                  -> Tag-Sollwert
- sonst                               -> Nacht-Sollwert
+{| class="wikitable"
+! Fall !! ϑ<sub>soll</sub>(h)
+|-
+| Wochenendabsenkung und keine Ferien || ϑ<sub>WE</sub>
+|-
+| Ferien || ϑ<sub>Fer</sub>
+|-
+| sonst 7 ≤ h ≤ 22 || ϑ<sub>Tag</sub>
+|-
+| sonst || ϑ<sub>Nacht</sub>
+|}
+
+Die solare Entlastung wirkt nur in den sechs Tagesstunden 9 bis 14, dort mit dem Faktor 4:
+
+: <big>s(h) = 1 fuer 9 ≤ h ≤ 14, sonst s(h) = 0</big>  (8)
+
+Weil 6 h · 4 = 24 h sind, geht der Tageswert der solaren Gewinne ueber den ganzen Tag
+'''genau einmal''' ein — der Faktor 4 verteilt ihn um, er vermehrt ihn nicht.
 
 Darauf die Heizleistung der Stunde:
 
- wenn T_soll < T_vor:  P_hzg = 0                       (Raum ist waermer als der Sollwert)
- sonst:                P_hzg = (T_vor - T_aussen) * L + (T_soll - T_vor) * C - Q_intern
-                       in den Stunden 9 bis 14 zusaetzlich:  P_hzg = P_hzg - 4 * Q_sol
-                       P_hzg wird auf >= 0 geklemmt
+: <big>P<sub>hzg</sub>(h) = 0 fuer ϑ<sub>soll</sub>(h) < ϑ<sub>vor</sub></big>  (9)
+
+: <big>P<sub>hzg</sub>(h) = max( 0 , (ϑ<sub>vor</sub> − ϑ<sub>a</sub>(d)) · L + (ϑ<sub>soll</sub>(h) − ϑ<sub>vor</sub>) · C − P<sub>int</sub> − 4 · P<sub>sol</sub>(d) · s(h) ) sonst</big>  (10)
 
 und die Fortschreibung der Raumtemperatur (RC-Modell mit der Speicherfaehigkeit ''C'' der
 Bauart):
 
- T_neu = exp(-L/C) * T_vor
-       + (1 - exp(-L/C)) * ( 4 * Q_sol * [Stunde 9..14] + L * T_aussen + Q_intern + P_hzg ) / L
- T_neu wird auf die Maximalraumtemperatur gekappt
+: <big>ϑ<sub>neu</sub> = min( ϑ<sub>max</sub> , exp(−L/C) · ϑ<sub>vor</sub> + (1 − exp(−L/C)) · ( 4 · P<sub>sol</sub>(d) · s(h) + L · ϑ<sub>a</sub>(d) + P<sub>int</sub> + P<sub>hzg</sub>(h) ) / L )</big>  (11)
 
-Die Vortemperatur laeuft '''ueber die Tage hinweg''' weiter. Damit das Modell nicht mit
-einem willkuerlichen Anfangswert startet, rechnet der Kern zuerst die '''Tage 351 bis 365'''
-als Einschwingvorlauf und beginnt danach beim 1. Januar.
+Der erste Fall (9) heisst: Der Raum ist waermer als der Sollwert, es wird nicht geheizt —
+und diese Stunde geht auch nicht in die Tagessumme ein.
+
+Die Vortemperatur ϑ<sub>vor</sub> laeuft '''ueber die Tage hinweg''' weiter. Damit das
+Modell nicht mit einem willkuerlichen Anfangswert startet, rechnet der Kern zuerst die
+'''Tage 351 bis 365''' als Einschwingvorlauf und beginnt danach beim 1. Januar; am ersten
+gerechneten Tag ist ϑ<sub>vor</sub> = ϑ<sub>Nacht</sub>.
 
 Die Tagessumme wird zuletzt von der Kataloggroesse auf die Projektgroesse skaliert:
 
- Heizlast_Tag = Summe der 24 Stundenwerte * Gesamtflaeche / Wohnflaeche
+: <big>Q<sub>Tag</sub>(d) = ( Σ<sub>h=1…24</sub> P<sub>hzg</sub>(h) ) · A<sub>ges</sub> / A<sub>Wohn</sub></big>  (12)
 
 === 3. Vom Tag zur Stunde ===
 
 Die 365 Tageslasten werden ueber '''typtagbezogene 24-Stunden-Profile''' verteilt. Je
-Tagtyp wird das Profil zuerst auf die Tagessumme 1 normiert, dann gilt
+Tagtyp wird das Profil zuerst auf die Tagessumme 1 normiert,
 
- Stundenwert(Tag d, Stunde h) = Tageslast(d) * Tagesprofil(Tagtyp(d), h)
+: <big>p<sub>T</sub>(τ, h) = p<sub>roh</sub>(τ, h) / Σ<sub>h=1…24</sub> p<sub>roh</sub>(τ, h)</big>  (13)
+
+und dann angewandt:
+
+: <big>Q<sub>Geb</sub>(d, h) = Q<sub>Tag</sub>(d) · p<sub>T</sub>( τ(d) , h )</big>  (14)
 
 Welches Profil gilt, entscheidet der Gebaeudetyp: Wohngebaeude nach VDI 2067 nehmen die
 Tagtypreihe der Wohngebaeude, alles Uebrige die der Nichtwohngebaeude. '''Fehlt die
@@ -153,20 +312,31 @@ Ist die „Art der Angabe" nicht die Wohnflaeche, sondern ein '''Verbrauch''', r
 Programm zuerst eine gleichwertige Flaeche aus. Dazu wird der Verbrauch mit dem
 Jahresnutzungsgrad in Nutzwaerme umgesetzt:
 
- Oelverbrauch      [l/a]        ->  V * Jahresnutzungsgrad * 10,08   [kWh]
- Gasverbrauch      [m³/a]       ->  V * Jahresnutzungsgrad * 11,48   [kWh]
- Gasverbrauch      [MWh/a] (Ho) ->  V * Jahresnutzungsgrad / 1,1 * 1000
- Brennstoffverbrauch [MWh/a]    ->  V * Jahresnutzungsgrad * 1000
- Verbrauch         [MWh/a]      ->  V * 1000                         (ohne Nutzungsgrad)
+{| class="wikitable"
+! Art der Angabe !! Nutzwaerme Q<sub>V,neu</sub> [kWh]
+|-
+| Oelverbrauch [l/a] || V · η<sub>a</sub> · 10,08
+|-
+| Gasverbrauch [m³/a] || V · η<sub>a</sub> · 11,48
+|-
+| Gasverbrauch [MWh/a], Brennwert H<sub>o</sub> || V · η<sub>a</sub> / 1,1 · 1 000
+|-
+| Brennstoffverbrauch [MWh/a] || V · η<sub>a</sub> · 1 000
+|-
+| Verbrauch [MWh/a] || V · 1 000 (ohne Nutzungsgrad)
+|}
 
-Anschliessend wird das Gebaeude mit seiner Katalogflaeche einmal durchgerechnet und die
-Flaeche im Verhaeltnis der Waermemengen gestreckt:
+Anschliessend wird das Gebaeude mit seiner hinterlegten Wohnflaeche A<sub>alt</sub> einmal
+durchgerechnet — das ergibt Q<sub>V,alt</sub> — und die Flaeche im Verhaeltnis der
+Waermemengen gestreckt:
 
- Flaeche_neu = Verbrauch_neu / Verbrauch_alt * Flaeche_alt
- Bewohner    = Flaeche_neu / Flaeche je Nutzer
+: <big>A<sub>neu</sub> = ( Q<sub>V,neu</sub> / Q<sub>V,alt</sub> ) · A<sub>alt</sub></big>  (15)
+
+: <big>n<sub>P</sub> = A<sub>neu</sub> / a<sub>P</sub></big>  (16)
 
 Die Zahlen '''10,08''' kWh/l (Heizoel EL) und '''11,48''' kWh/m³ (Erdgas) sind Heizwerte;
-der Teiler '''1,1''' rechnet den Brennwert (Ho) auf den Heizwert (Hu) zurueck.
+der Teiler '''1,1''' rechnet den Brennwert (H<sub>o</sub>) auf den Heizwert (H<sub>u</sub>)
+zurueck.
 
 === 5. Externe Ganglinien ===
 
@@ -174,7 +344,7 @@ Jede dem Projekt zugeordnete Waermeganglinie wird gelesen und muss '''genau 8 76
 genau 35 040 Werte''' fuehren; jede andere Laenge wird gemeldet und die Ganglinie
 uebersprungen. Viertelstundenwerte werden zum Stundenmittel zusammengefasst:
 
- Stundenwert(h) = ( v(4h) + v(4h+1) + v(4h+2) + v(4h+3) ) / 4
+: <big>Q<sub>ext</sub>(t) = ( v(4t) + v(4t+1) + v(4t+2) + v(4t+3) ) / 4</big>  (17)
 
 Die Ganglinie geht in den Kanal, der an ihrer Zuordnung steht. '''Leer, unbekannt oder
 nicht gesetzt ergibt den Heizkanal''' — jede Bestandsganglinie laeuft damit unveraendert im
@@ -190,51 +360,59 @@ den Brauchwasser- bzw. den Prozesskanal.
 === 7. Netzverluste ===
 
 Der Netzverlust ist ein '''konstanter Betrag je Stunde''', gebildet aus dem Bedarf VOR dem
-Aufschlag:
+Aufschlag. Welche der beiden Gleichungen gilt, entscheidet die gewaehlte Einheit:
 
- Einheit "%":     Betrag je Stunde [kWh] = Jahresbedarf [kWh] * p / 876000
-                  ausgewiesene Jahresmenge [MWh] = Jahresbedarf [MWh] * p / 100
- Einheit "kWh/a": Betrag je Stunde [kWh] = Menge / 8760
-                  ausgewiesene Jahresmenge [MWh] = Betrag je Stunde * 8760 / 1000
+: <big>q<sub>NV</sub> = Q<sub>a,vor</sub> · p / 876 000  (Einheit „%", Q<sub>a,vor</sub> in kWh)</big>  (18)
+
+: <big>q<sub>NV</sub> = Q<sub>NV,ein</sub> / 8 760  (Einheit „kWh/a")</big>  (19)
 
 (876 000 = 8 760 Stunden × 100 Prozentpunkte.) Ein Prozentwert ueber 100 laesst den Lauf
-gar nicht erst anlaufen.
+gar nicht erst anlaufen. Ausgewiesen wird in beiden Faellen dieselbe Groesse:
+
+: <big>Q<sub>NV,a</sub> = q<sub>NV</sub> · 8 760 / 1 000</big>  (20)
 
 Verteilt wird der Betrag je Stunde '''anteilig auf die drei Kanaele''', im Verhaeltnis ihres
-Bedarfs in ebendieser Stunde; der Heizkanal bekommt den Rest, damit sich die Summe exakt
-schliesst. Sind in einer Stunde alle drei Kanaele null, geht der ganze Betrag auf den
-Heizkanal.
+Bedarfs in ebendieser Stunde:
+
+: <big>q<sub>NV,c</sub>(t) = q<sub>NV</sub> · Q<sub>c</sub>(t) / ( Q<sub>Hzg</sub>(t) + Q<sub>TWW</sub>(t) + Q<sub>Pro</sub>(t) ) fuer c ∈ { TWW, Pro }</big>  (21)
+
+Der Heizkanal bekommt den '''Rest''' — also q<sub>NV</sub> minus die zwei nach (21)
+vergebenen Anteile —, damit sich die Summe exakt schliesst. Sind in einer Stunde alle drei
+Kanaele null, geht der ganze Betrag auf den Heizkanal.
 
 === 8. Summenvektor, Spitze und Dauerlinie ===
 
- Waermebedarf(h)      = Heizung(h) + Brauchwasser(h) + Prozess(h)
- Jahresbedarf [MWh]   = Summe aller 8 760 Stundenwerte / 1000
- Spitze       [kWh]   = groesster Stundenwert
+: <big>Q<sub>Bed</sub>(t) = Q<sub>Hzg</sub>(t) + Q<sub>TWW</sub>(t) + Q<sub>Pro</sub>(t)</big>  (22)
 
-Die Jahresdauerlinie entsteht, indem die Stundenwerte auf die Spitze normiert (in Prozent),
-aufsteigend sortiert und anschliessend umgedreht werden — sie faellt also von 100 % ab.
+: <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q<sub>Bed</sub>(t) ) / 1 000</big>  (23)
+
+: <big>Q<sub>max</sub> = max<sub>t=1…8 760</sub> Q<sub>Bed</sub>(t)</big>  (24)
+
+Die Jahresdauerlinie entsteht, indem die Stundenwerte auf die Spitze Q<sub>max</sub>
+normiert (in Prozent), aufsteigend sortiert und anschliessend umgedreht werden — sie faellt
+also von 100 % ab.
 
 === 9. Energieprobe ===
 
 Waehrend der Rechnung fuehrt der Kern eine '''zweite, unabhaengige Summe''' aller
 Bedarfsanteile mit hoeherer Genauigkeit und vergleicht sie am Ende Stunde fuer Stunde mit
-der Kanalsumme. Eine Kanalzuordnung, die einen Anteil verschluckt oder doppelt bucht, faellt
-damit auf. Der Erwartungswert ist null Abweichungen.
+der Kanalsumme aus (22). Eine Kanalzuordnung, die einen Anteil verschluckt oder doppelt
+bucht, faellt damit auf. Der Erwartungswert ist null Abweichungen.
 
 == Grenzen und Annahmen ==
 
 * '''Keine Kuehlung, keine Feuchte.''' Gerechnet wird Heizwaerme; Kuehllast, Entfeuchtung und Luftqualitaet kommen nicht vor.
 * '''Ein Zonenmodell je Gebaeude.''' Das Gebaeude ist EIN Raum mit EINER Solltemperatur je Stunde; einzelne Raeume, Himmelsrichtungen der Nutzung oder Etagen bildet der Rechenkern nicht ab.
-* '''Solare Gewinne nur ueber Fensterflaechen''' und nur in den Stunden 9 bis 14, dort mit dem Faktor 4 gegenueber dem Tagesmittel. Verschattung, Neigung und Orientierung ausserhalb der vier Himmelsrichtungen sind nicht abgebildet.
+* '''Solare Gewinne nur ueber Fensterflaechen''' und nur in den Stunden 9 bis 14 (Gleichung (8)). Verschattung, Neigung und Orientierung ausserhalb der vier Himmelsrichtungen sind nicht abgebildet. '''Ost und West teilen sich EINE Flaeche''': In (2) steht die Ostfensterflaeche A<sub>F,OW</sub> fuer beide Seiten — eine eigene Westflaeche kennt der Rechenweg nicht.
 * '''Die Waermebruecken''' gehen ueber drei Anschlussarten ein (Fenster-Wand, Wand-Dach, Aussenwand-Keller), nicht ueber einen vollstaendigen Nachweis.
-* '''Der Netzverlust ist ueber das Jahr konstant.''' Er haengt nicht an Temperatur, Vorlauf oder Auslastung; er ist ein pauschaler Aufschlag.
-* '''Ausgewiesene Mengen und Stundenreihen sind nicht dasselbe.''' Die Jahres- und Monatswerte fuer Brauchwasser und Prozesswaerme sind der reine Profilanteil OHNE Netzverlust — sie sind die Bedarfsmeldung des Anwenders. Die STUNDENREIHEN derselben Kanaele tragen ihren Netzverlustanteil dagegen mit; die Waermepumpe rechnet mit ihnen. Die ausgewiesenen Gebaeude-Monatswerte sind der Heizkanal, also Gebaeudewaerme plus die Ganglinien, die ausdruecklich auf „Heizung" stehen.
+* '''Der Netzverlust ist ueber das Jahr konstant.''' q<sub>NV</sub> aus (18) bzw. (19) haengt nicht an Temperatur, Vorlauf oder Auslastung; er ist ein pauschaler Aufschlag.
+* '''Ausgewiesene Mengen und Stundenreihen sind nicht dasselbe.''' Die Jahres- und Monatswerte fuer Brauchwasser und Prozesswaerme sind der reine Profilanteil OHNE Netzverlust — sie sind die Bedarfsmeldung des Anwenders. Die STUNDENREIHEN derselben Kanaele tragen ihren Netzverlustanteil nach (21) dagegen mit; die Waermepumpe rechnet mit ihnen. Die ausgewiesenen Gebaeude-Monatswerte sind der Heizkanal, also Gebaeudewaerme plus die Ganglinien, die ausdruecklich auf „Heizung" stehen.
 * '''Abbruch statt Notbehelf.''' Fehlt die Tagesverteilung eines Gebaeudetyps, wird nicht mit einem Ersatzprofil weitergerechnet — die Bedarfsrechnung endet.
 * '''Kein Schaltjahr''' und keine Sommer-/Winterzeit im Bedarf selbst: 365 Tage, 8 760 Stunden auf einer glatten Ortszeitachse.
 
 == Ergebnisse und wo sie stehen ==
 
-* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — Jahresganglinie und Jahresdauerlinie, Jahresmengen fuer Gebaeude, extern, Brauchwasser, Prozess und Netzverluste, dazu die Spitze.
+* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — Jahresganglinie und Jahresdauerlinie, Jahresmengen fuer Gebaeude, extern, Brauchwasser, Prozess und Netzverluste, dazu die Spitze Q<sub>max</sub> nach (24).
 * '''Gebäudedialog''', Knopf „Simulation…" — derselbe Rechenweg fuer EIN Gebaeude; die Zahl dort ist die Zahl des Laufs, nicht eine zweite Rechnung.
 * '''Dialog „Wärmebedarf Extern"''' — Jahresarbeit, Spitze und Vollbenutzungsstunden der markierten Ganglinie mit Bild.
 * '''Bericht''' — Bedarfsuebersicht und die Ganglinienbilder.

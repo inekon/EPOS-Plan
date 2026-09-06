@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -15,6 +16,16 @@ namespace EPOS.Kern.Tests
     /// Seitenname, Stand und den Kerndateien, gegen die sie belegt ist, und jede Seite hat
     /// dieselben SECHS Abschnitte. Wer eine Seite ergänzt und den Kopf vergisst, sieht es
     /// hier und nicht erst im Wiki.</para>
+    ///
+    /// <para><b>Fassung 2 (06.09.2026).</b> Der Anwender wünschte die Definition der
+    /// Parameter und Variablen und die Formeln „in mathematischer Schreibweise". Daraus
+    /// kommen SIEBEN Abschnitte je Seite — der neue steht zwischen den Eingangsgrößen und
+    /// dem Rechenweg — und drei weitere Zusagen: keine <c>math</c>-Auszeichnung und kein
+    /// LaTeX-Befehl (diese Wikiinstallation hat KEINE Math-Erweiterung; beides erschiene
+    /// dem Leser als Klartext), mindestens eine nummerierte Anzeige-Formel und die zwei
+    /// Symboltabellen. Geprüft werden diese vier Zusagen für die Seiten des Pakets
+    /// <b>Teil A</b>; die sieben Erzeugerseiten aus Teil B ziehen im eigenen Zweig nach,
+    /// und erst nach der Zusammenführung gilt die Prüfung für alle dreizehn.</para>
     ///
     /// <para>Dazu die zwei Anschlüsse: Dateien mit führendem Unterstrich sind KEINE
     /// Wikiseiten (<c>_Index.wiki</c> ist die Rubrik-Startseite, <c>_Bezuege.wiki</c> die
@@ -39,6 +50,40 @@ namespace EPOS.Kern.Tests
             "== Ergebnisse und wo sie stehen ==",
             "== Bezüge =="
         };
+
+        /// <summary>
+        /// Die SIEBEN Abschnitte der Fassung 2, in ihrer Reihenfolge. Der neue steht
+        /// zwischen den Eingangsgrößen und dem Rechenweg — der Leser soll die Zeichen
+        /// kennen, BEVOR er die erste Formel sieht.
+        /// </summary>
+        private static readonly string[] AbschnitteFassung2 =
+        {
+            "== Was berechnet wird ==",
+            "== Eingangsgrößen ==",
+            "== Formelzeichen und Parameter ==",
+            "== Rechenweg ==",
+            "== Grenzen und Annahmen ==",
+            "== Ergebnisse und wo sie stehen ==",
+            "== Bezüge =="
+        };
+
+        /// <summary>
+        /// Eine Anzeige-Formel: eingerückte Zeile, in <c>&lt;big&gt;</c> gesetzt, mit
+        /// der laufenden Nummer am Zeilenende.
+        /// </summary>
+        private static readonly Regex Anzeigeformel =
+            new(@"^:\s*<big>.+</big>\s*\(\d+\)\s*$",
+                RegexOptions.Multiline | RegexOptions.Compiled);
+
+        /// <summary>Ein LaTeX-Befehl — <c>\frac</c>, <c>\sum</c>, <c>\cdot</c> …</summary>
+        private static readonly Regex LatexBefehl =
+            new(@"\\[A-Za-z]+", RegexOptions.Compiled);
+
+        /// <summary>Die Kopfzeile der Parametertabelle.</summary>
+        private const string KOPF_PARAMETER = "! Symbol !! Bedeutung !! Einheit !! Herkunft";
+
+        /// <summary>Die Kopfzeile der Variablentabelle.</summary>
+        private const string KOPF_VARIABLEN = "! Symbol !! Bedeutung !! Einheit !! berechnet in";
 
         // =====================================================================
         //  Bestand
@@ -131,16 +176,30 @@ namespace EPOS.Kern.Tests
                 "Rechenkern: … -->):\n" + string.Join("\n", funde));
         }
 
-        /// <summary>Der Stand hat die Form <c>JJJJ-MM-TT</c> — sonst ist er nicht sortierbar.</summary>
+        /// <summary>
+        /// Der Stand BEGINNT mit einem Datum der Form <c>JJJJ-MM-TT</c> — sonst ist er
+        /// nicht sortierbar.
+        ///
+        /// <para>Seit der Fassung 2 darf dahinter ein Zusatz in runden Klammern stehen
+        /// (<c>Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation)</c>). Er sagt dem
+        /// Leser der Wikiseite, WELCHE Überarbeitung er vor sich hat; das Datum bleibt die
+        /// sortierbare Angabe und steht deshalb vorn.</para>
+        /// </summary>
         [Fact]
-        public void Der_Stand_ist_ein_Datum()
+        public void Der_Stand_beginnt_mit_einem_Datum()
         {
             foreach (BerechnungsSeite seite in BerechnungsHilfe.Seiten)
             {
-                Assert.True(DateTime.TryParseExact(seite.Stand, "yyyy-MM-dd",
+                Match datum = Regex.Match(seite.Stand ?? "", @"^(\d{4}-\d{2}-\d{2})(\s*\(.+\))?$");
+
+                Assert.True(datum.Success,
+                    seite.Seitenname + ": '" + seite.Stand + "' ist kein Stand der Form " +
+                    "'JJJJ-MM-TT' oder 'JJJJ-MM-TT (Zusatz)'.");
+
+                Assert.True(DateTime.TryParseExact(datum.Groups[1].Value, "yyyy-MM-dd",
                         System.Globalization.CultureInfo.InvariantCulture,
                         System.Globalization.DateTimeStyles.None, out _),
-                    seite.Seitenname + ": '" + seite.Stand + "' ist kein Datum der Form JJJJ-MM-TT.");
+                    seite.Seitenname + ": '" + datum.Groups[1].Value + "' ist kein gültiges Datum.");
             }
         }
 
@@ -180,6 +239,117 @@ namespace EPOS.Kern.Tests
             Assert.True(funde.Count == 0,
                 "Diese Abschnitte fehlen (Bauform H13: sechs Abschnitte je Seite):\n" +
                 string.Join("\n", funde));
+        }
+
+        /// <summary>
+        /// <b>Fassung 2:</b> Die Seiten dieses Pakets führen SIEBEN Abschnitte, und zwar in
+        /// der vorgegebenen Reihenfolge. Der neue Abschnitt steht zwischen den
+        /// Eingangsgrößen und dem Rechenweg — stünde er hinter dem Rechenweg, läse der
+        /// Anwender die Formeln, bevor er die Zeichen kennt.
+        /// </summary>
+        /// <remarks>
+        /// Bewusst nur die Seiten des Teils A: Bis Teil B zusammengeführt ist, liegen dessen
+        /// sieben Erzeugerseiten in der Fassung 1 im selben Ordner und würden hier rot
+        /// ausfallen, ohne dass jemand einen Fehler gemacht hätte.
+        /// </remarks>
+        [Theory]
+        [MemberData(nameof(SeitenDesTeilsA))]
+        public void Jede_Seite_des_Teils_A_hat_die_sieben_Abschnitte_in_Reihenfolge(string seitenname)
+        {
+            BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
+            Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
+
+            int gelesen = -1;
+
+            foreach (string abschnitt in AbschnitteFassung2)
+            {
+                int stelle = seite!.Markup.IndexOf(abschnitt, StringComparison.Ordinal);
+
+                Assert.True(stelle >= 0, seitenname + ": '" + abschnitt + "' fehlt.");
+                Assert.True(stelle > gelesen,
+                    seitenname + ": '" + abschnitt + "' steht vor dem vorangehenden Abschnitt — " +
+                    "die Reihenfolge der Bauform ist: " + string.Join(", ", AbschnitteFassung2));
+
+                gelesen = stelle;
+            }
+        }
+
+        /// <summary>
+        /// <b>Fassung 2:</b> Die Formeln stehen in Unicode-Notation, nicht in LaTeX. Diese
+        /// Wikiinstallation hat KEINE Math-Erweiterung (gemessen am 06.09.2026): Ein
+        /// <c>math</c>-Block und jeder Backslash-Befehl erschienen dem Leser als Klartext
+        /// mitten im Satz.
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(SeitenDesTeilsA))]
+        public void Jede_Seite_des_Teils_A_kommt_ohne_LaTeX_aus(string seitenname)
+        {
+            BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
+            Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
+
+            Assert.True(seite!.Markup.IndexOf("<math", StringComparison.OrdinalIgnoreCase) < 0,
+                seitenname + ": Die Seite setzt eine Formel in <math> — das Wiki hat keine " +
+                "Math-Erweiterung und zeigte die Auszeichnung als Klartext.");
+
+            Match befehl = LatexBefehl.Match(seite.Markup);
+            Assert.False(befehl.Success,
+                seitenname + ": Die Seite enthält den LaTeX-Befehl '" + befehl.Value +
+                "'. Formeln stehen in Unicode-Notation (·, Σ, Δ, √, ≤, η, ϑ …).");
+        }
+
+        /// <summary>
+        /// <b>Fassung 2:</b> Jede Seite trägt mindestens EINE nummerierte Anzeige-Formel.
+        /// Ohne sie wäre der Abschnitt „Formelzeichen und Parameter" eine Zeichenliste ohne
+        /// Formel, auf die er sich beziehen könnte.
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(SeitenDesTeilsA))]
+        public void Jede_Seite_des_Teils_A_traegt_nummerierte_Anzeigeformeln(string seitenname)
+        {
+            BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
+            Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
+
+            MatchCollection formeln = Anzeigeformel.Matches(seite!.Markup);
+
+            Assert.True(formeln.Count >= 1,
+                seitenname + ": keine Anzeige-Formel gefunden. Muster einer solchen Zeile: " +
+                "': <big>P<sub>AC</sub>(t) = min( … )</big>  (3)'.");
+
+            // Die Nummern laufen je Seite von 1 an und ohne Lücke - sonst verweist der
+            // Text auf eine Gleichung, die es nicht gibt.
+            var nummern = formeln
+                .Select(m => int.Parse(Regex.Match(m.Value, @"\((\d+)\)\s*$").Groups[1].Value,
+                                       System.Globalization.CultureInfo.InvariantCulture))
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(1, nummern.Count).ToList(), nummern);
+        }
+
+        /// <summary>
+        /// <b>Fassung 2:</b> Der neue Abschnitt trägt BEIDE Tabellen — Parameter (was
+        /// hereinkommt) und Variablen (was die Seite rechnet). Eine Seite mit nur einer
+        /// von beiden ließe offen, welche Zahl der Anwender eingibt und welche das
+        /// Programm bildet; genau diese Trennung war der Anwenderwunsch.
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(SeitenDesTeilsA))]
+        public void Jede_Seite_des_Teils_A_traegt_beide_Symboltabellen(string seitenname)
+        {
+            BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
+            Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
+
+            Assert.True(seite!.Markup.IndexOf(KOPF_PARAMETER, StringComparison.Ordinal) >= 0,
+                seitenname + ": die Parametertabelle fehlt (Kopfzeile '" + KOPF_PARAMETER + "').");
+            Assert.True(seite.Markup.IndexOf(KOPF_VARIABLEN, StringComparison.Ordinal) >= 0,
+                seitenname + ": die Variablentabelle fehlt (Kopfzeile '" + KOPF_VARIABLEN + "').");
+        }
+
+        /// <summary>Die Seiten des Teils A als Theoriedaten.</summary>
+        public static TheoryData<string> SeitenDesTeilsA()
+        {
+            var daten = new TheoryData<string>();
+            foreach (string name in SeitenTeilA) daten.Add(name);
+            return daten;
         }
 
         /// <summary>
@@ -240,7 +410,58 @@ namespace EPOS.Kern.Tests
                 Assert.DoesNotContain("== ", seite.Klartext);
                 Assert.DoesNotContain("'''", seite.Klartext);
                 Assert.DoesNotContain("[[", seite.Klartext);
+
+                // Fassung 2: die HTML-Klammern der Formelschreibweise sind umgesetzt,
+                // nicht mitgeschleppt.
+                Assert.DoesNotContain("<sub>", seite.Klartext);
+                Assert.DoesNotContain("<sup>", seite.Klartext);
+                Assert.DoesNotContain("<big>", seite.Klartext);
             }
+        }
+
+        /// <summary>
+        /// <b>Fassung 2 — die Formelschreibweise im Prompt.</b> Der Assistent bekommt keinen
+        /// HTML-Fähigen Anzeigebereich; ein tiefgestellter Index muss deshalb in Zeichen
+        /// übergehen, die er lesen und wiedergeben kann. Ohne diese Umsetzung fräße die
+        /// Tag-Entfernung die Auszeichnung SAMT Trennzeichen, und aus
+        /// <c>P&lt;sub&gt;AC,nenn&lt;/sub&gt;</c> würde das stumme <c>PAC,nenn</c> — der
+        /// Anwender fände „P_AC,nenn" der Wikiseite in keiner Antwort wieder.
+        /// </summary>
+        [Fact]
+        public void Der_Klartext_setzt_Indizes_und_Hochzahlen_in_lesbare_Zeichen_um()
+        {
+            const string markup =
+                "== Rechenweg ==\n" +
+                ": <big>P<sub>AC</sub>(t) = min( P<sub>DC</sub>(t) · η<sub>WR</sub>(x(t)) , " +
+                "P<sub>AC,nenn</sub> )</big>  (3)\n" +
+                "Die Flaeche geht mit A<sup>2</sup> ein.\n";
+
+            string klartext = BerechnungsHilfe.AlsKlartext(markup);
+
+            Assert.Contains("P_AC(t) = min( P_DC(t) · η_WR(x(t)) , P_AC,nenn )", klartext);
+            Assert.Contains("(3)", klartext);
+            Assert.Contains("A^2", klartext);
+
+            Assert.DoesNotContain("<sub>", klartext);
+            Assert.DoesNotContain("</sub>", klartext);
+            Assert.DoesNotContain("<sup>", klartext);
+            Assert.DoesNotContain("<big>", klartext);
+            Assert.DoesNotContain("</big>", klartext);
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe zur Umsetzung:</b> Sie greift nur die zwei Klammern und lässt
+        /// alles andere in Ruhe — die Unicode-Zeichen der Notation kommen unverändert an.
+        /// </summary>
+        [Fact]
+        public void Der_Klartext_behaelt_die_Unicode_Zeichen_der_Notation()
+        {
+            string klartext = BerechnungsHilfe.AlsKlartext(
+                ": <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q(t) ) / 1 000</big>  (4)\n" +
+                "Grenzen: ϑ ≥ 0 °C, η ≤ 1, Δϑ = 50 K, √2, ρ · c<sub>p</sub>, ṁ ≠ 0\n");
+
+            Assert.Contains("Q_a = ( Σ_t=1…8 760 Q(t) ) / 1 000", klartext);
+            Assert.Contains("ϑ ≥ 0 °C, η ≤ 1, Δϑ = 50 K, √2, ρ · c_p, ṁ ≠ 0", klartext);
         }
 
         /// <summary>
