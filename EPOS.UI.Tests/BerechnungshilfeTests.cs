@@ -111,11 +111,14 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// Math-Erweiterung des Wikis zeichnet einen unbekannten Befehl als roten
     /// Fehlerkasten, und der Anwender liest statt der Gleichung eine Fehlermeldung.
     ///
-    /// <para><c>\pi</c> und <c>\kappa</c> stehen über der Liste der Bauform: Der
-    /// Ersatzbehälter des Pufferspeichers ist ein Zylinder (<c>\pi</c> ist keine
-    /// Schreibweise, sondern eine Konstante), und <c>\kappa</c> ist die Kappung
-    /// seines vertikalen Ausgleichs — dasselbe Zeichen führt die Brauchwasserseite
-    /// für den Kaltwasserfaktor. Beide sind texvc-sicher.</para>
+    /// <para>Sechs Befehle stehen über der Liste der Bauform, alle texvc-sicher:
+    /// <c>\pi</c> (der Ersatzbehälter des Pufferspeichers ist ein Zylinder — eine
+    /// Konstante, keine Schreibweise), <c>\kappa</c> (die Kappung seines
+    /// vertikalen Ausgleichs; dasselbe Zeichen führt die Brauchwasserseite für den
+    /// Kaltwasserfaktor), <c>\theta</c> (der Einfallswinkel der Sonnengeometrie),
+    /// <c>\cos</c>, <c>\sin</c> (dieselbe Geometrie) und <c>\ln</c> (das
+    /// logarithmische Wechselrichtermodell der Photovoltaikseite). Ohne sie ließe
+    /// sich keine dieser drei Seiten schreiben.</para>
     /// </summary>
     private static readonly string[] ErlaubteBefehle =
     {
@@ -123,7 +126,8 @@ public sealed class BerechnungshilfeTests : BunitContext
         "\\cdot", "\\left", "\\right", "\\lvert", "\\rvert",
         "\\mathrm", "\\text", "\\operatorname", "\\displaystyle", "\\begin", "\\end",
         "\\eta", "\\vartheta", "\\rho", "\\lambda", "\\alpha", "\\beta", "\\gamma",
-        "\\varepsilon", "\\tau", "\\varphi", "\\Delta", "\\Sigma", "\\pi", "\\kappa",
+        "\\varepsilon", "\\tau", "\\varphi", "\\Delta", "\\Sigma", "\\pi", "\\kappa", "\\theta",
+        "\\cos", "\\sin", "\\ln",
         "\\le", "\\ge", "\\ne", "\\approx", "\\pm", "\\to", "\\infty", "\\in", "\\dots",
         "\\quad", "\\,", "\\;", "\\ ", "\\\\"
     };
@@ -431,6 +435,11 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// steht in <c>&lt;math&gt;</c> — dieselbe Schreibweise wie in den
     /// Gleichungen. Ein Symbol, das in der Tabelle anders aussieht als in der
     /// Formel, ist für den Leser ein zweites Symbol.
+    ///
+    /// <para>Eine Zeile, deren Symbolzelle nur den Gedankenstrich trägt, ist
+    /// ausgenommen: Die Solarthermieseite führt so ihre Annahmen OHNE Formelzeichen
+    /// („keine Stagnation, keine Solarkreispumpe") — dafür gibt es kein Symbol, das
+    /// man setzen könnte.</para>
     /// </summary>
     [Theory]
     [MemberData(nameof(SeitennamenDiesesTeils))]
@@ -445,8 +454,10 @@ public sealed class BerechnungshilfeTests : BunitContext
         var ohne = abschnitt.Split('\n')
             .Where(z => z.StartsWith("| ", StringComparison.Ordinal) &&
                         z.Contains("||", StringComparison.Ordinal))
-            .Where(z => !z.Substring(0, z.IndexOf("||", StringComparison.Ordinal))
-                          .Contains("<math>", StringComparison.Ordinal))
+            .Select(z => new { Zeile = z, Symbol = z.Substring(2, z.IndexOf("||", StringComparison.Ordinal) - 2).Trim() })
+            .Where(x => !x.Symbol.Contains("<math>", StringComparison.Ordinal) &&
+                        !string.Equals(x.Symbol, "—", StringComparison.Ordinal))
+            .Select(x => x.Zeile)
             .ToArray();
 
         Assert.True(ohne.Length == 0,
