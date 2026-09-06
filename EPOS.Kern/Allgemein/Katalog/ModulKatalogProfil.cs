@@ -4,7 +4,8 @@ using System.Collections.Generic;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Welcher der beiden Modulkataloge gemeint ist (iU9-W14a.0a).
+    /// Welcher der drei Modulkataloge gemeint ist (iU9-W14a.0a; die dritte
+    /// Auspraegung kam mit dem Wechselrichterkatalog, W6-E-2 vom 06.09.2026).
     ///
     /// <para>Familie C der Vermessung: <c>Form_AdminStromspeicher</c> und
     /// <c>Form_AdminPV</c> sind BROWSER UND EDITOR IN EINEM — Liste links, editierbare
@@ -19,7 +20,16 @@ namespace WindowsFormsApplication1
         Stromspeicher,
 
         /// <summary><c>Tab_PV_STAMM</c> — Vorlaeufer <c>Form_AdminPV</c>.</summary>
-        Photovoltaik
+        Photovoltaik,
+
+        /// <summary>
+        /// <c>Tab_Wechselrichter_STAMM</c> — <b>ohne Vorlaeufer</b>: Der
+        /// Wechselrichter war die einzige Geraetefamilie ohne Katalog (Konzept
+        /// Wechselrichter 1.4, Anwenderentscheid W6-E-2 vom 06.09.2026, Stufe S1.4).
+        /// Die dritte Auspraegung ist damit die erste, die nicht eine WinForms-Maske
+        /// abloest, sondern eine Luecke schliesst.
+        /// </summary>
+        Wechselrichter
     }
 
     /// <summary>
@@ -129,7 +139,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string GruppeZwei { get; private set; }
 
-        /// <summary>Die Eingabefelder in der Reihenfolge der Maske (13 / 13).</summary>
+        /// <summary>
+        /// Ueberschrift der DRITTEN Feldgruppe; leer, wenn es sie nicht gibt.
+        /// </summary>
+        /// <remarks>
+        /// Sie kam mit dem Wechselrichterkatalog (W6-E-2, Konzept 6): Seine Felder
+        /// zerfallen fachlich in drei Bloecke - Geraet, Eingang und Wirkungsgrad -,
+        /// und ein Block mit zwanzig Feldern waere nicht lesbar. Die zwei aelteren
+        /// Auspraegungen lassen sie leer.
+        /// </remarks>
+        public string GruppeDrei { get; private set; }
+
+        /// <summary>Die Eingabefelder in der Reihenfolge der Maske (13 / 13 / 21).</summary>
         public IReadOnlyList<ModulKatalogFeld> Felder { get; private set; }
 
         /// <summary>Meldung, wenn ein Knopf ohne Auswahl gedrueckt wird.</summary>
@@ -179,6 +200,34 @@ namespace WindowsFormsApplication1
         public const string FeldTNoct = "T_NOCT";
         public const string FeldTechnologie = "TECHNOLOGIE";
 
+        // --- Wechselrichter (W6-E-2, Stufe S1.4). Der Schluessel ist der SPALTENNAME
+        //     der Stammtabelle: Anders als bei den zwei aelteren Auspraegungen gibt es
+        //     hier keinen WinForms-Vorlaeufer, dessen Feldnamen zu erben waeren - und
+        //     eine zweite Schreibweise neben WechselrichterSchema waere eine zweite
+        //     Wahrheit. Die Huelle bildet damit ohne Zuordnungstabelle ab.
+        public const string FeldPAcNenn = WechselrichterSchema.SPALTE_P_AC_NENN;
+        public const string FeldSAcMax = WechselrichterSchema.SPALTE_S_AC_MAX;
+        public const string FeldPDcMax = WechselrichterSchema.SPALTE_P_DC_MAX;
+        public const string FeldUMppMin = WechselrichterSchema.SPALTE_U_MPP_MIN;
+        public const string FeldUMppMax = WechselrichterSchema.SPALTE_U_MPP_MAX;
+        public const string FeldUDcMax = WechselrichterSchema.SPALTE_U_DC_MAX;
+        public const string FeldUStart = WechselrichterSchema.SPALTE_U_START;
+        public const string FeldIDcMax = WechselrichterSchema.SPALTE_I_DC_MAX;
+        public const string FeldAnzahlMppt = WechselrichterSchema.SPALTE_ANZAHL_MPPT;
+        public const string FeldStraengeJeMppt = WechselrichterSchema.SPALTE_STRAENGE_JE_MPPT;
+        public const string FeldEta05 = WechselrichterSchema.SPALTE_ETA05;
+        public const string FeldEta10 = WechselrichterSchema.SPALTE_ETA10;
+        public const string FeldEta20 = WechselrichterSchema.SPALTE_ETA20;
+        public const string FeldEta30 = WechselrichterSchema.SPALTE_ETA30;
+        public const string FeldEta50 = WechselrichterSchema.SPALTE_ETA50;
+        public const string FeldEta100 = WechselrichterSchema.SPALTE_ETA100;
+        public const string FeldEtaEuro = WechselrichterSchema.SPALTE_ETA_EURO;
+        public const string FeldEtaMax = WechselrichterSchema.SPALTE_ETA_MAX;
+        public const string FeldPStandby = WechselrichterSchema.SPALTE_P_STANDBY;
+        public const string FeldPNacht = WechselrichterSchema.SPALTE_P_NACHT;
+        public const string FeldKosten = WechselrichterSchema.SPALTE_KOSTEN;
+        public const string FeldHerkunft = WechselrichterSchema.SPALTE_HERKUNFT;
+
         // ==================================================================
         // Die zwei Auspraegungen
         // ==================================================================
@@ -202,6 +251,7 @@ namespace WindowsFormsApplication1
                         Listenbeschriftung = t("MODK_LISTE_STROMSPEICHER"),
                         GruppeBestand = t("MODK_GRUPPE_SPEICHER"),
                         GruppeZwei = t("SP_GRUPPE_GERAETETECHNIK"),
+                        GruppeDrei = "",
                         MeldungOhneAuswahl = t("MODK_MSG_AUSWAHL_SPEICHER"),
                         HilfeSchluessel = "Form_AdminStromspeicher.btn_Help",
                         HatHerstellerfilter = false,
@@ -260,6 +310,7 @@ namespace WindowsFormsApplication1
                         Listenbeschriftung = t("MODK_LISTE_PV"),
                         GruppeBestand = t("MODK_GRUPPE_PV"),
                         GruppeZwei = "",
+                        GruppeDrei = "",
                         MeldungOhneAuswahl = t("MODK_MSG_AUSWAHL_MODUL"),
                         HilfeSchluessel = "Form_AdminPV.btn_Help",
                         HatHerstellerfilter = false,
@@ -295,6 +346,91 @@ namespace WindowsFormsApplication1
                                                  optionen: Technologien(t))
                         }
                     };
+
+                case ModulKatalogArt.Wechselrichter:
+                    return new ModulKatalogProfil
+                    {
+                        Art = art,
+                        Stammtabelle = SchemaKatalog.TAB_WECHSELRICHTER_STAMM,
+                        Titel = t("WRK_TITEL_VERWALTUNG"),
+                        Listenbeschriftung = t("WRK_LISTE"),
+                        GruppeBestand = t("WRK_GRUPPE_GERAET"),
+                        GruppeZwei = t("WRK_GRUPPE_EINGANG"),
+                        GruppeDrei = t("WRK_GRUPPE_WIRKUNGSGRAD"),
+                        MeldungOhneAuswahl = t("WRK_MSG_AUSWAHL"),
+                        HilfeSchluessel = "Form_AdminWechselrichter.btn_Help",
+                        // ALS EINZIGE der drei Auspraegungen mit Herstellerfilter
+                        // (Konzept 6): Die CEC-Liste bringt ueber zweitausend Geraete
+                        // von 152 Herstellern; ohne Einengung ist die Liste nicht
+                        // bedienbar.
+                        HatHerstellerfilter = true,
+                        FilterBezeichnung = t("WRK_LBL_FIRMA"),
+                        Felder = new[]
+                        {
+                            // --- Gruppe 0: Geraet ---------------------------------
+                            new ModulKatalogFeld(FeldBezeichner, t("WRK_LBL_BEZEICHNER"), "",
+                                                 BrowserFeldArt.Text, true, 0, gesperrt: true, vorgabe: ""),
+                            new ModulKatalogFeld(FeldFirma, t("WRK_LBL_FIRMA"), "",
+                                                 BrowserFeldArt.Text, true, 0, false, vorgabe: ""),
+                            new ModulKatalogFeld(FeldBeschreibung, t("WRK_LBL_BESCHREIBUNG"), "",
+                                                 BrowserFeldArt.Mehrzeilig, true, 0, false, vorgabe: ""),
+                            // Das EINE Pflichtfeld - wie bei der Photovoltaik allein
+                            // die Nennleistung (Konzept 6).
+                            new ModulKatalogFeld(FeldPAcNenn, t("WRK_LBL_P_AC_NENN"), "kW",
+                                                 BrowserFeldArt.Zahl, leerErlaubt: false),
+                            new ModulKatalogFeld(FeldSAcMax, t("WRK_LBL_S_AC_MAX"), "kVA"),
+                            new ModulKatalogFeld(FeldPDcMax, t("WRK_LBL_P_DC_MAX"), "kW"),
+                            new ModulKatalogFeld(FeldKosten, t("WRK_LBL_KOSTEN"), "€"),
+                            // Woher der Satz stammt - Auskunft, nicht Eingabe: Der
+                            // Import setzt sie, die Handpflege bekommt "HAND".
+                            new ModulKatalogFeld(FeldHerkunft, t("WRK_LBL_HERKUNFT"), "",
+                                                 BrowserFeldArt.Text, true, 0, gesperrt: true,
+                                                 vorgabe: DbWerte.WR_HERKUNFT_HAND),
+
+                            // --- Gruppe 1: Eingang --------------------------------
+                            new ModulKatalogFeld(FeldUMppMin, t("WRK_LBL_U_MPP_MIN"), "V",
+                                                 BrowserFeldArt.Zahl, true, 1),
+                            new ModulKatalogFeld(FeldUMppMax, t("WRK_LBL_U_MPP_MAX"), "V",
+                                                 BrowserFeldArt.Zahl, true, 1),
+                            new ModulKatalogFeld(FeldUDcMax, t("WRK_LBL_U_DC_MAX"), "V",
+                                                 BrowserFeldArt.Zahl, true, 1),
+                            new ModulKatalogFeld(FeldUStart, t("WRK_LBL_U_START"), "V",
+                                                 BrowserFeldArt.Zahl, true, 1),
+                            // JE MPPT, nicht je Geraet - so fuehrt es die CEC-Liste,
+                            // und so braucht es die Auslegungspruefung P4.
+                            new ModulKatalogFeld(FeldIDcMax, t("WRK_LBL_I_DC_MAX"), "A",
+                                                 BrowserFeldArt.Zahl, true, 1),
+                            new ModulKatalogFeld(FeldAnzahlMppt, t("WRK_LBL_ANZAHL_MPPT"), "",
+                                                 BrowserFeldArt.Ganzzahl, true, 1),
+                            new ModulKatalogFeld(FeldStraengeJeMppt, t("WRK_LBL_STRAENGE_JE_MPPT"), "",
+                                                 BrowserFeldArt.Ganzzahl, true, 1),
+
+                            // --- Gruppe 2: Wirkungsgrad ---------------------------
+                            // Faktoren 0…1, nicht Prozent - so, wie sie
+                            // PvErweitertesModell.EtaWechselrichter und die drei
+                            // Anlagenspalten PV_WrEta10/50/100 fuehren.
+                            new ModulKatalogFeld(FeldEta05, t("WRK_LBL_ETA05"), "-",
+                                                 BrowserFeldArt.Zahl, true, 2),
+                            new ModulKatalogFeld(FeldEta10, t("WRK_LBL_ETA10"), "-",
+                                                 BrowserFeldArt.Zahl, true, 2),
+                            new ModulKatalogFeld(FeldEta20, t("WRK_LBL_ETA20"), "-",
+                                                 BrowserFeldArt.Zahl, true, 2),
+                            new ModulKatalogFeld(FeldEta30, t("WRK_LBL_ETA30"), "-",
+                                                 BrowserFeldArt.Zahl, true, 2),
+                            new ModulKatalogFeld(FeldEta50, t("WRK_LBL_ETA50"), "-",
+                                                 BrowserFeldArt.Zahl, true, 2),
+                            new ModulKatalogFeld(FeldEta100, t("WRK_LBL_ETA100"), "-",
+                                                 BrowserFeldArt.Zahl, true, 2),
+                            new ModulKatalogFeld(FeldEtaEuro, t("WRK_LBL_ETA_EURO"), "-",
+                                                 BrowserFeldArt.Zahl, true, 2),
+                            new ModulKatalogFeld(FeldEtaMax, t("WRK_LBL_ETA_MAX"), "-",
+                                                 BrowserFeldArt.Zahl, true, 2),
+                            new ModulKatalogFeld(FeldPStandby, t("WRK_LBL_P_STANDBY"), "W",
+                                                 BrowserFeldArt.Zahl, true, 2),
+                            new ModulKatalogFeld(FeldPNacht, t("WRK_LBL_P_NACHT"), "W",
+                                                 BrowserFeldArt.Zahl, true, 2)
+                        }
+                    };
             }
 
             throw new ArgumentOutOfRangeException(nameof(art));
@@ -325,6 +461,7 @@ namespace WindowsFormsApplication1
             {
                 yield return ModulKatalogArt.Stromspeicher;
                 yield return ModulKatalogArt.Photovoltaik;
+                yield return ModulKatalogArt.Wechselrichter;
             }
         }
 

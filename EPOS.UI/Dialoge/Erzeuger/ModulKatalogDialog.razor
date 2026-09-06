@@ -52,6 +52,17 @@
         <Liste>
             <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
 
+            @* HERSTELLERFILTER (W6-E-2, Konzept 6) - nur die dritte Auspraegung
+               fuehrt einen: Die CEC-Wechselrichterliste bringt ueber zweitausend
+               Geraete von 152 Herstellern. Ohne den Delegaten Wege.Hersteller gibt
+               es die Zeile nicht (Regel "kein Delegat, kein Bedienelement"). *@
+            @if (Filterbar)
+            {
+                <Auswahlfeld Bezeichnung="@Profil.FilterBezeichnung"
+                             Eintraege="@_herstellerliste" Auswahl="@_iHersteller"
+                             AuswahlChanged="BeiHersteller" />
+            }
+
             <Raster TZeile="ModulZeile" Zeilen="@_zeilen.AsQueryable()">
                 <KindInhalt>
                     <TemplateColumn TGridItem="ModulZeile" Title="@SpalteWahlText">
@@ -92,6 +103,23 @@
                         <Formularraster>
                             <KindInhalt>
                                 @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 1))
+                                {
+                                    @Feldmarkup(feld)
+                                }
+                            </KindInhalt>
+                        </Formularraster>
+                    </KindInhalt>
+                </Gruppenkopf>
+            }
+
+            @* --- Die Felder, Gruppe 2 (Wirkungsgrad, nur Wechselrichter) ---- *@
+            @if (_felder.Any(f => f.Gruppe == 2))
+            {
+                <Gruppenkopf Titel="@Profil.GruppeDrei">
+                    <KindInhalt>
+                        <Formularraster>
+                            <KindInhalt>
+                                @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 2))
                                 {
                                     @Feldmarkup(feld)
                                 }
@@ -182,6 +210,9 @@
     [Parameter] public string NeinText { get; set; } = "Nein";
     [Parameter] public string SpalteWahlText { get; set; } = "Wahl";
 
+    /// <summary>Der erste Eintrag des Herstellerfilters — „alle" (PVIMP_ALLE).</summary>
+    [Parameter] public string TextAlle { get; set; } = "(alle)";
+
     /// <summary>Rückfrage vor dem Löschen; <c>{0}</c> nimmt den Bezeichner auf.</summary>
     [Parameter] public string FrageLoeschen { get; set; } = "Soll {0} wirklich gelöscht werden ?";
     [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
@@ -207,6 +238,8 @@
     private bool _ersterAufbau = true;
 
     private IReadOnlyList<ModulZeile> _zeilen = Array.Empty<ModulZeile>();
+    private IReadOnlyList<(int Id, string Text)> _herstellerliste = Array.Empty<(int, string)>();
+    private int _iHersteller;
     private List<ModulFeldwert> _felder = new();
     private IReadOnlyList<Parameterwert> _uebersicht = Array.Empty<Parameterwert>();
     private string _gewaehlt = "";
@@ -228,6 +261,18 @@
 
     /// <summary>Die Zeilen der Liste (Prüfhilfe für Tests).</summary>
     public IReadOnlyList<ModulZeile> Zeilen => _zeilen;
+
+    /// <summary>
+    /// Führt diese Ausprägung einen Herstellerfilter? Das Profil sagt es, und die
+    /// Hülle muss den Delegaten mitliefern — sonst stünde eine Liste da, die nichts
+    /// bewirkt.
+    /// </summary>
+    private bool Filterbar => Profil.HatHerstellerfilter && Wege.Hersteller is not null;
+
+    /// <summary>Der gewählte Hersteller; leer = alle (Prüfhilfe für Tests).</summary>
+    public string GewaehlterHersteller =>
+        _iHersteller > 0 && _iHersteller < _herstellerliste.Count
+            ? _herstellerliste[_iHersteller].Text : "";
 
     /// <summary>Der gewählte Bezeichner (Prüfhilfe für Tests).</summary>
     public string Gewaehlt => _gewaehlt;
@@ -253,6 +298,33 @@
     protected override void OnInitialized()
     {
         if (ProfilVorgabe is null) _profil = ModulKatalogProfil.Finde(Art);
+        HerstellerAufbauen();
+        ListeAufbauen();
+    }
+
+    /// <summary>
+    /// Die Auswahlliste des Herstellerfilters. Der erste Eintrag steht für „alle" —
+    /// und zwar als STEUERWERT (Index 0), nicht als Anzeigetext, gegen den verglichen
+    /// wird (Lehre aus Befund W13-B39: Eine Übersetzung hätte den Filter still
+    /// zerrissen).
+    /// </summary>
+    private void HerstellerAufbauen()
+    {
+        if (!Filterbar) { _herstellerliste = Array.Empty<(int, string)>(); return; }
+
+        var liste = new List<(int, string)> { (0, TextAlle) };
+        foreach (string h in Wege.Hersteller!.Invoke())
+            if (!string.IsNullOrWhiteSpace(h)) liste.Add((liste.Count, h));
+
+        _herstellerliste = liste;
+        if (_iHersteller >= _herstellerliste.Count) _iHersteller = 0;
+    }
+
+    private void BeiHersteller(int? index)
+    {
+        _iHersteller = index ?? 0;
+        _gewaehlt = "";
+        _meldung = "";
         ListeAufbauen();
     }
 
@@ -273,7 +345,10 @@
     /// </summary>
     private void ListeAufbauen()
     {
-        _zeilen = Wege.Liste?.Invoke() ?? Array.Empty<ModulZeile>();
+        _zeilen = (Filterbar && Wege.ListeGefiltert is not null
+                      ? Wege.ListeGefiltert(GewaehlterHersteller)
+                      : Wege.Liste?.Invoke())
+                  ?? Array.Empty<ModulZeile>();
 
         if (_gewaehlt.Length > 0 && _zeilen.Any(z => z.Bezeichner == _gewaehlt)) return;
 
@@ -390,6 +465,7 @@
         _neu = false;
         _gewaehlt = ergebnis.Name;
         _schluessel = ergebnis.Name;
+        HerstellerAufbauen();
         ListeAufbauen();
     }
 
@@ -466,6 +542,7 @@
 
         _gewaehlt = "";
         _meldung = "";
+        HerstellerAufbauen();
         ListeAufbauen();
     }
 

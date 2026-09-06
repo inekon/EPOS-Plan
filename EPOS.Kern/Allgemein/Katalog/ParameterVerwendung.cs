@@ -1,15 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Welche der sieben Anlagenarten mit eigener Katalogverwaltung gemeint ist
-    /// (Anwenderwunsch W14a-E-8, 06.09.2026).
+    /// Welche der acht Anlagenarten mit eigener Katalogverwaltung gemeint ist
+    /// (Anwenderwunsch W14a-E-8, 06.09.2026; die achte kam am selben Tag mit dem
+    /// Wechselrichterkatalog, W6-E-2).
     ///
-    /// <para>Die sieben sind genau die Punkte unter „Administration", hinter denen
+    /// <para>Sie sind genau die Punkte unter „Administration", hinter denen
     /// ein Geraetekatalog steht: Heizkessel, BHKW, Waermepumpe, Solarkollektoren,
-    /// PV-Module, Stromspeicher und Pufferspeicher. Ein AUFZAEHLUNGSTYP und keine
+    /// PV-Module, Stromspeicher, Pufferspeicher und Wechselrichter. Ein AUFZAEHLUNGSTYP und keine
     /// Zeichenkette — dieselbe Begruendung wie bei <see cref="KatalogBrowserArt"/>
     /// und <see cref="ModulKatalogArt"/>.</para>
     /// </summary>
@@ -34,7 +35,14 @@ namespace WindowsFormsApplication1
         Stromspeicher,
 
         /// <summary><c>Tab_Pufferspeicher_STAMM</c>.</summary>
-        Pufferspeicher
+        Pufferspeicher,
+
+        /// <summary>
+        /// <c>Tab_Wechselrichter_STAMM</c> — der ACHTE Katalog, seit dem
+        /// Anwenderentscheid W6-E-2 vom 06.09.2026 (Stufe S1 des
+        /// Konzept_Wechselrichter_EPOS-Plan.md).
+        /// </summary>
+        Wechselrichter
     }
 
     /// <summary>
@@ -173,11 +181,12 @@ namespace WindowsFormsApplication1
                 case Anlagenart.Photovoltaik: return PhotovoltaikStammCtrl.TABLE;
                 case Anlagenart.Stromspeicher: return StromspeicherStammCtrl.TABLE;
                 case Anlagenart.Pufferspeicher: return PufferSpStammCtrl.TABLE;
+                case Anlagenart.Wechselrichter: return WechselrichterStammCtrl.TABLE;
             }
             throw new ArgumentOutOfRangeException(nameof(art));
         }
 
-        /// <summary>Alle sieben Auspraegungen — fuer Stapelpruefungen und die Doku.</summary>
+        /// <summary>Alle acht Auspraegungen — fuer Stapelpruefungen und die Doku.</summary>
         public static IEnumerable<Anlagenart> AlleArten
         {
             get
@@ -189,6 +198,7 @@ namespace WindowsFormsApplication1
                 yield return Anlagenart.Photovoltaik;
                 yield return Anlagenart.Stromspeicher;
                 yield return Anlagenart.Pufferspeicher;
+                yield return Anlagenart.Wechselrichter;
             }
         }
 
@@ -216,6 +226,7 @@ namespace WindowsFormsApplication1
                 case Anlagenart.Photovoltaik: return Photovoltaik(t);
                 case Anlagenart.Stromspeicher: return Stromspeicher(t);
                 case Anlagenart.Pufferspeicher: return Pufferspeicher(t);
+                case Anlagenart.Wechselrichter: return Wechselrichter(t);
             }
             throw new ArgumentOutOfRangeException(nameof(art));
         }
@@ -616,6 +627,96 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.cs:357 (KOSTEN_KOMPONENTE_PUFFERSPEICHER)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "PufferSpStammCtrl.Ueberschreiben (Auslieferungssatz)")
+            };
+        }
+
+        // =================================================================
+        // 8. Wechselrichter — Tab_Wechselrichter_STAMM (34 Spalten)
+        // =================================================================
+
+        /// <remarks>
+        /// <b>Der Befund dieser Tabelle in Stufe S1: KEINE Spalte wird gerechnet.</b>
+        /// Das ist kein Versaeumnis, sondern die Zusage des Anwenderentscheids W6-E-2
+        /// vom 06.09.2026: „S1 Katalog, Verwaltung und Import sofort und OHNE
+        /// Rechenwirkung". Der Katalog wird gepflegt und importiert, gelesen wird er
+        /// erst mit der Strangzuordnung (S2) und dem Rechenweg (S3) — dann wandern die
+        /// Kennlinienspalten auf <c>Simulation</c> und <c>Kosten</c> auf
+        /// <c>Wirtschaftlichkeit</c> (Konzept 4.1 und Entscheidungsfrage Q8).
+        /// Der Fall <c>Der_Wechselrichter_rechnet_in_S1_noch_nicht</c> haelt diesen
+        /// Zustand fest: Faellt er rot aus, ist S3 gelaufen und die Einstufung muss mit.
+        ///
+        /// <para><b>Die sieben Sandia-Spalten stehen als <c>Keine</c> da</b> — sie sind
+        /// mitgeschriebenes Katalogwissen (Konzept 3.3.3): Der CEC-Import schreibt sie
+        /// verlustfrei mit, damit ein spannungsabhaengiges Modell (Stufe E3 des
+        /// PV-Ertragsmodells) sie spaeter ohne Neuimport vorfindet. Heute liest sie
+        /// nichts — auch die Verwaltung zeigt sie nicht, weil sie kein Anwender von
+        /// Hand pflegen kann.</para>
+        /// </remarks>
+        private static IReadOnlyList<ParameterEintrag> Wechselrichter(Func<string, string> t)
+        {
+            return new[]
+            {
+                E("ID", "ID:", "", DLG,
+                  "WechselrichterCtrl.CopyFromStamm (Quelle der Projektkopie)"),
+                E("Bezeichner", t("WRK_LBL_BEZEICHNER"), "", DLG,
+                  "ModulKatalogDialog (Liste und WHERE-Schluessel); WechselrichterCtrl.CopyFromStamm"),
+                E("Firma", t("WRK_LBL_FIRMA"), "", DLG,
+                  "WechselrichterStammCtrl.Hersteller (Herstellerfilter der Verwaltung)"),
+                E("Beschreibung", t("WRK_LBL_BESCHREIBUNG"), "", DLG,
+                  "ModulKatalogDialog (Feld Beschreibung)"),
+                E("P_AC_Nenn", t("WRK_LBL_P_AC_NENN"), "kW", DLG,
+                  "ModulKatalogProfil (Pflichtfeld); WechselrichterPlausibilitaet.PruefeLeistungen"),
+                E("S_AC_Max", t("WRK_LBL_S_AC_MAX"), "kVA", DLG,
+                  "ModulKatalogProfil (Gruppe Geraet); WechselrichterPlausibilitaet"),
+                E("P_DC_Max", t("WRK_LBL_P_DC_MAX"), "kW", DLG,
+                  "ModulKatalogProfil (Gruppe Geraet); WechselrichterPlausibilitaet"),
+                E("U_Mpp_Min", t("WRK_LBL_U_MPP_MIN"), "V", DLG,
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen"),
+                E("U_Mpp_Max", t("WRK_LBL_U_MPP_MAX"), "V", DLG,
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen"),
+                E("U_Dc_Max", t("WRK_LBL_U_DC_MAX"), "V", DLG,
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen"),
+                E("U_Start", t("WRK_LBL_U_START"), "V", DLG,
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen"),
+                E("I_Dc_Max", t("WRK_LBL_I_DC_MAX"), "A", DLG,
+                  "ModulKatalogProfil (Gruppe Eingang) - JE MPPT, siehe WechselrichterSchema"),
+                E("Anzahl_Mppt", t("WRK_LBL_ANZAHL_MPPT"), "", DLG,
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeMppt"),
+                E("Straenge_Je_Mppt", t("WRK_LBL_STRAENGE_JE_MPPT"), "", DLG,
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeMppt"),
+                E("Eta05", t("WRK_LBL_ETA05"), "-", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
+                E("Eta10", t("WRK_LBL_ETA10"), "-", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
+                E("Eta20", t("WRK_LBL_ETA20"), "-", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
+                E("Eta30", t("WRK_LBL_ETA30"), "-", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
+                E("Eta50", t("WRK_LBL_ETA50"), "-", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
+                E("Eta100", t("WRK_LBL_ETA100"), "-", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
+                E("Eta_Euro", t("WRK_LBL_ETA_EURO"), "-", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad) - Ausweis des Datenblatts"),
+                E("Eta_Max", t("WRK_LBL_ETA_MAX"), "-", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad) - Ausweis des Datenblatts"),
+                E("P_Standby", t("WRK_LBL_P_STANDBY"), "W", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad); CEC-Import (Pso)"),
+                E("P_Nacht", t("WRK_LBL_P_NACHT"), "W", DLG,
+                  "ModulKatalogProfil (Gruppe Wirkungsgrad); CEC-Import (Pnt)"),
+                E("Kosten", t("WRK_LBL_KOSTEN"), "€", DLG,
+                  "ModulKatalogProfil (Gruppe Geraet) - in S3 die Investition je Geraet (Q8)"),
+                E("Sandia_Pdco", "Sandia Pdco:", "W", NIX),
+                E("Sandia_Vdco", "Sandia Vdco:", "V", NIX),
+                E("Sandia_Pso", "Sandia Pso:", "W", NIX),
+                E("Sandia_C0", "Sandia C0:", "1/W", NIX),
+                E("Sandia_C1", "Sandia C1:", "1/V", NIX),
+                E("Sandia_C2", "Sandia C2:", "1/V", NIX),
+                E("Sandia_C3", "Sandia C3:", "1/V", NIX),
+                E("Herkunft", t("WRK_LBL_HERKUNFT"), "", DLG,
+                  "CecWechselrichter.NachModell (CEC); ModulKatalogProfil (gesperrtes Feld)"),
+                E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
+                  "WechselrichterStammCtrl.Update/Delete (Auslieferungssatz)")
             };
         }
     }

@@ -38,7 +38,10 @@ public sealed class ModulFeldwert
     /// <summary>Nur lesbar — beim Bezeichner.</summary>
     public bool Gesperrt { get; init; }
 
-    /// <summary>0 = Bestandsfelder, 1 = AP3-Gerätetechnik.</summary>
+    /// <summary>
+    /// 0 = Bestandsfelder, 1 = AP3-Gerätetechnik bzw. „Eingang", 2 = „Wirkungsgrad"
+    /// (nur der Wechselrichterkatalog, W6‑E‑2).
+    /// </summary>
     public int Gruppe { get; init; }
 
     /// <summary>Der Feldname, den eine Prüfmeldung nennt — die Beschriftung ohne „:".</summary>
@@ -68,6 +71,25 @@ public sealed class ModulKatalogWege
 {
     /// <summary>Die Liste aller Katalogmodule, sortiert.</summary>
     public Func<IReadOnlyList<ModulZeile>>? Liste { get; init; }
+
+    /// <summary>
+    /// Die Hersteller des Katalogs für den Filter über der Liste — <c>null</c>, wenn
+    /// die Ausprägung keinen führt (<c>ModulKatalogProfil.HatHerstellerfilter</c>).
+    /// </summary>
+    /// <remarks>
+    /// Kam mit dem Wechselrichterkatalog (W6‑E‑2, Konzept 6): Die CEC-Liste bringt über
+    /// zweitausend Geräte von 152 Herstellern; ohne Einengung ist die Liste nicht
+    /// bedienbar. Die zwei älteren Ausprägungen lassen beide Delegaten weg, und dann
+    /// gibt es die Filterzeile nicht — dieselbe Regel wie beim Dateiwähler:
+    /// <b>kein Delegat, kein Bedienelement</b>.
+    /// </remarks>
+    public Func<IReadOnlyList<string>>? Hersteller { get; init; }
+
+    /// <summary>
+    /// Die Liste, eingeengt auf einen Hersteller. Leer bzw. <c>null</c> hebt die
+    /// Einengung auf. Ohne diesen Delegaten nimmt der Dialog <see cref="Liste"/>.
+    /// </summary>
+    public Func<string, IReadOnlyList<ModulZeile>>? ListeGefiltert { get; init; }
 
     /// <summary>Die Felder eines Moduls; <c>null</c>, wenn es das Modul nicht gibt.</summary>
     public Func<string, IReadOnlyList<ModulFeldwert>?>? Detail { get; init; }
