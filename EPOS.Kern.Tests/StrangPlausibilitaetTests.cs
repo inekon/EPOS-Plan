@@ -444,10 +444,124 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // 6 - Das Modul: die gewählte Zeile (W6‑O‑5) und der Strang (W6‑O‑6)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>W6‑O‑5 — die Ampel prüft gegen das Modul der GEWÄHLTEN Zeile.</b>
+        /// Anwenderentscheid vom 06.09.2026, wörtlich: „Modul der gewählten Zeile".
+        ///
+        /// <para>Bis dahin gab die Hülle das ERSTE Modul herein, das der Katalog kannte;
+        /// bei zwei Projektzeilen mit verschiedenen Modulen prüfte die Ampel damit gegen
+        /// das falsche. Der Prüfstand sieht davon nur die Wirkung: DIESELBE Strangzeile
+        /// liefert mit einem anderen <c>Modul</c> einen anderen Befund — und genau das
+        /// Modul reicht die Hülle jetzt je Projektzeile herein.</para>
+        /// </summary>
+        [Fact]
+        public void Die_Ampel_prueft_gegen_das_Modul_der_gewaehlten_Zeile()
+        {
+            StrangPlausibilitaet.Befund a = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10);
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                   modul: ZweitesModul());
+
+            // P1: 10 · [38,4 + (−0,118)·(−35)] gegen 10 · [45,0 + (−0,13)·(−35)]
+            Assert.Equal(425.3, a.Straenge[0].UocKalt.Value, 6);
+            Assert.Equal(495.5, b.Straenge[0].UocKalt.Value, 6);
+
+            // Und die Nennleistung des Strangs ist die des jeweiligen Moduls.
+            Assert.Equal(2.7519, a.Kwp, 6);
+            Assert.Equal(4.0, b.Kwp, 6);
+        }
+
+        /// <summary>
+        /// <b>W6‑O‑6 — ein Strang mit eigenem Modul prüft gegen DIESES.</b>
+        /// Anwenderentscheid vom 06.09.2026, wörtlich: „jeder Strang mit nur einem
+        /// Modultyp, unterschiedliche Stränge können jeweils einen anderen Modultyp
+        /// haben."
+        ///
+        /// <para>Zwei Stränge an EINEM Gerät, an zwei Trackern: der erste ohne
+        /// <c>ID_PV</c> (also mit dem Modul der Anlage), der zweite mit einem eigenen.
+        /// Jede Grösse hängt danach am Modul SEINES Strangs — Spannung, Strom und
+        /// Nennleistung —, und die Geräte-kWp ist die Summe beider.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_Strang_mit_eigenem_Modul_prueft_gegen_dieses()
+        {
+            var geraet = Geraet(pAcNenn: 5.0, anzahlMppt: 2, uMppMax: 800.0, uDcMax: 800.0);
+
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = new List<AnlageStrangModel>
+                    {
+                        new AnlageStrangModel { Rang = 1, ID_Wechselrichter = GERAET_ID,
+                                                Geraetenummer = 1, Mppt = 1, Module_Reihe = 10 },
+                        new AnlageStrangModel { Rang = 2, ID_Wechselrichter = GERAET_ID,
+                                                Geraetenummer = 1, Mppt = 2, Module_Reihe = 10,
+                                                ID_PV = MODUL_ID }
+                    },
+                    Modul = Modul(),
+                    Module = new Dictionary<int, PhotovoltaikModel> { { MODUL_ID, ZweitesModul() } },
+                    Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, geraet } },
+                    AnzahlModuleAnlage = 20
+                });
+
+            // P1 je Strang mit SEINEM Modul.
+            Assert.Equal(425.3, b.Straenge[0].UocKalt.Value, 6);
+            Assert.Equal(495.5, b.Straenge[1].UocKalt.Value, 6);
+
+            // Nennleistung je Strang und Summe.
+            Assert.Equal(2.7519, b.Straenge[0].Kwp, 6);
+            Assert.Equal(4.0, b.Straenge[1].Kwp, 6);
+            Assert.Equal(6.7519, b.Kwp, 6);
+
+            // P4 je Tracker: jeder Strang bringt den Kurzschlussstrom SEINES Moduls mit.
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(9.5515, g.Mppts[0].Strom.Value, 6);
+            Assert.Equal(11.225, g.Mppts[1].Strom.Value, 6);
+
+            // P6 rechnet mit der Summe beider Module: 6,7519 kWp / 5,00 kW.
+            Assert.Equal(6.7519, g.Kwp, 6);
+            Assert.Equal(1.35038, g.DcAc.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+        }
+
+        /// <summary>
+        /// <b>Eine unbekannte <c>ID_PV</c> ist derselbe Fall wie keine</b>: Der Strang
+        /// prüft gegen das Modul der Anlage. Eine gelöschte Modulkopie darf die Ampel
+        /// nicht anders prüfen lassen — sonst stünde ein Strang plötzlich ohne Modul da
+        /// und würde gelb, obwohl der Anwender nichts geändert hat.
+        /// </summary>
+        [Fact]
+        public void Eine_unbekannte_Modul_Id_faellt_auf_das_Anlagenmodul_zurueck()
+        {
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = new List<AnlageStrangModel>
+                    {
+                        new AnlageStrangModel { Rang = 1, ID_Wechselrichter = GERAET_ID,
+                                                Module_Reihe = 10, ID_PV = 999999 }
+                    },
+                    Modul = Modul(),
+                    Module = new Dictionary<int, PhotovoltaikModel>(),
+                    Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, Geraet() } },
+                    AnzahlModuleAnlage = 10
+                });
+
+            Assert.Equal(425.3, b.Straenge[0].UocKalt.Value, 6);
+            Assert.Equal(2.7519, b.Kwp, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+        }
+
+        // =================================================================================
         // Der Prüfaufbau — Anhang A des Konzepts
         // =================================================================================
 
         private const int GERAET_ID = 4711;
+
+        /// <summary>Die Projektkopie des ABWEICHENDEN Strangmoduls (W6‑O‑6).</summary>
+        private const int MODUL_ID = 815;
 
         /// <summary>
         /// Das Modul <b>Ablytek 6MN6A275</b> mit den Katalogwerten des Anhangs A.
@@ -463,6 +577,25 @@ namespace EPOS.Kern.Tests
                 m_I_Kurzschluss = 9.34,
                 m_beta_OC = -0.118,
                 m_alpha_SC = 0.0047
+            };
+        }
+
+        /// <summary>
+        /// Ein ZWEITES Modul für die Fälle zu W6‑O‑5 und W6‑O‑6 — bewusst in jeder
+        /// geprüften Grösse verschieden, damit ein Befund nicht zufällig gleich
+        /// ausfällt: 400 W statt 275,19 W, <c>U_oc</c> 45,0 statt 38,4 V.
+        /// </summary>
+        private static PhotovoltaikModel ZweitesModul()
+        {
+            return new PhotovoltaikModel
+            {
+                m_szName = "Fremd 60Z400",
+                m_Leistung = 400.0,
+                m_U_Leerlauf = 45.0,
+                m_U_Mpp = 37.0,
+                m_I_Kurzschluss = 11.0,
+                m_beta_OC = -0.13,
+                m_alpha_SC = 0.005
             };
         }
 

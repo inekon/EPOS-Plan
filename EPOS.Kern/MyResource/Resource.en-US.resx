@@ -15538,4 +15538,13 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="KOSTEN_PLANWERT_WECHSELRICHTER" xml:space="preserve">
     <value>Inverter {0}</value>
   </data>
+  <data name="PVS_SP_MODUL" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="PVS_MODUL_ANLAGE" xml:space="preserve">
+    <value>(module of the system)</value>
+  </data>
+  <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
+    <value>Empty means the string is calculated with the module of the system. A separate module type applies to this string only.</value>
+  </data>
 </root>
