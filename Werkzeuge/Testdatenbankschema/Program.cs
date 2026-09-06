@@ -52,6 +52,12 @@ namespace Testdatenbankschema
             }
 
             DataRepository.PfadUeberschreibung = pfad;
+
+            // DIE WERKZEUG-FREIGABE DER SCHREIBNAHT (Welle iF30) - EINE benannte Zeile,
+            // ausdruecklich und nicht durch Auslassen. Dieses Werkzeug legt Spalten an und
+            // schreibt den Schemamarker; eine Lizenz hat es nicht und braucht es nicht.
+            Schreibnaht.WerkzeugFreigabe("Werkzeug Testdatenbankschema");
+
             Console.WriteLine("Datei:  " + pfad);
             Console.WriteLine("Groesse vorher: " + Mb(pfad));
 
