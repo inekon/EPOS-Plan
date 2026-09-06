@@ -176,6 +176,30 @@ namespace WindowsFormsApplication1
             },
             new KatalogDefinition
             {
+                Schluessel = "WECHSELRICHTER",
+                Tabelle = SchemaKatalog.TAB_WECHSELRICHTER_STAMM,
+                // "Kosten" ist ein ANWENDERFELD - wie "Modulkosten" bei der
+                // Photovoltaik und aus demselben Grund ausgeschlossen: Der Import
+                // liefert keinen Preis, und zwei Saetze, die sich nur im Preis
+                // unterscheiden, sind derselbe Wechselrichter (Konzept 5.4).
+                AusschlussSpalten = new[] { "Kosten" },
+                // Die Sandia-Spalten stehen bewusst NICHT hier: Zwei Katalogsaetze,
+                // die sich nur in C3 unterscheiden, rechnen in EPOS-Plan identisch
+                // (Konzept 3.3.2) - sie als verschieden zu melden waere falscher
+                // Alarm. Dieselbe Abwaegung hat der PV-Eintrag mit "Technologie" in
+                // die ANDERE Richtung getroffen: Dort waehlt die Spalte den
+                // Koeffizientensatz und gehoert deshalb hinein.
+                ImportSpalten = new[] { "Firma", "P_AC_Nenn", "S_AC_Max", "P_DC_Max",
+                    "U_Mpp_Min", "U_Mpp_Max", "U_Dc_Max", "U_Start", "I_Dc_Max",
+                    "Anzahl_Mppt", "Straenge_Je_Mppt",
+                    "Eta05", "Eta10", "Eta20", "Eta30", "Eta50", "Eta100",
+                    "Eta_Euro", "Eta_Max", "P_Standby", "P_Nacht", "Herkunft" }
+                // VerwendungsPruefungen: LEER - Kopiersemantik. Projekte verweisen auf
+                // die Projektkopie Tab_Wechselrichter (WechselrichterCtrl.CopyFromStamm),
+                // nie auf den Katalog.
+            },
+            new KatalogDefinition
+            {
                 Schluessel = "BHKW",
                 Tabelle = "Tab_BHKW_STAMM",
                 AusschlussSpalten = new[] { "Investition_kwel", "Wartungskosten_kwhel",
@@ -372,6 +396,7 @@ namespace WindowsFormsApplication1
                 case "PUFFERSPEICHER": return MyResource.Resource.ADM_KATALOG_PUFFERSPEICHER;
                 case "SOLARKOLLEKTOREN": return MyResource.Resource.ADM_KATALOG_SOLARKOLLEKTOREN;
                 case "PV": return MyResource.Resource.ADM_KATALOG_PV;
+                case "WECHSELRICHTER": return MyResource.Resource.ADM_KATALOG_WECHSELRICHTER;
                 case "BHKW": return MyResource.Resource.ADM_KATALOG_BHKW;
                 case "STROMSPEICHER": return MyResource.Resource.ADM_KATALOG_STROMSPEICHER;
                 case "GEBAEUDE": return MyResource.Resource.ADM_KATALOG_GEBAEUDE;
