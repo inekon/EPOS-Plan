@@ -50,24 +50,31 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// Die Registry fuehrt <b>19</b> Kataloge. Der Dublettendialog bildet sie heute ein
-        /// zweites Mal als 19 <c>case</c> ab (Befund W14c-B40); diese Zahl ist der Massstab,
-        /// an dem sich beide Seiten messen lassen muessen.
+        /// Die Registry fuehrt <b>20</b> Kataloge — seit dem Anwenderentscheid
+        /// <b>W6-E-2</b> vom 06.09.2026 (Stufe S1 des
+        /// Konzept_Wechselrichter_EPOS-Plan.md) gehoert der WECHSELRICHTER dazu, bis
+        /// dahin die einzige Geraetefamilie ohne Katalog. Der Dublettendialog bildet
+        /// sie ein zweites Mal als <c>case</c> in <c>KatalogRegistry.Anzeige</c> ab
+        /// (Befund W14c-B40); diese Zahl ist der Massstab, an dem sich beide Seiten
+        /// messen lassen muessen.
         /// </summary>
         [Fact]
         public void DieRegistryFuehrtNeunzehnKataloge()
         {
-            Assert.Equal(19, KatalogRegistry.Alle.Count);
+            Assert.Equal(20, KatalogRegistry.Alle.Count);
         }
 
-        /// <summary>Die 19 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
+        /// <summary>Die 20 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
         /// zeichnet die Kataloge in genau dieser Folge (<c>BaumFuellen</c>).</summary>
         [Fact]
         public void DieNeunzehnSchluesselStehenInDerRegistryreihenfolge()
         {
             string[] erwartet =
             {
-                "WP", "HEIZKESSEL", "PUFFERSPEICHER", "SOLARKOLLEKTOREN", "PV", "BHKW",
+                // W6-E-2: "WECHSELRICHTER" steht NACH "PV" - er gehoert zur
+                // selben Anlage und wird nach dem Modul gepflegt.
+                "WP", "HEIZKESSEL", "PUFFERSPEICHER", "SOLARKOLLEKTOREN", "PV",
+                "WECHSELRICHTER", "BHKW",
                 "STROMSPEICHER", "GEBAEUDE", "KLIMAREGION", "BRAUCHWASSER", "BRAUCHWASSERTYP",
                 "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP",
                 "STROMGANGLINIE", "SOLARGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP"
@@ -93,7 +100,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains(k.Datenbloecke, b => b.Tabelle == "Tab_Solar_STAMM" && b.FkSpalte == "ID_Klimaregion");
         }
 
-        /// <summary>Vier Kataloge fuehren eine Verwendungspruefung; die uebrigen fuenfzehn
+        /// <summary>Vier Kataloge fuehren eine Verwendungspruefung; die uebrigen sechzehn
         /// nicht — der Dublettendialog sagt das dem Anwender ausdruecklich.</summary>
         [Fact]
         public void VierKatalogeFuehrenEineVerwendungspruefung()
@@ -120,6 +127,10 @@ namespace EPOS.Kern.Tests
         [InlineData("PUFFERSPEICHER", 13, 0, 2)]
         [InlineData("SOLARKOLLEKTOREN", 7, 0, 1)]
         [InlineData("PV", 6, 0, 0)]
+        // W6-E-2: Der Wechselrichterkatalog entsteht mit Migrationsschritt 65 LEER -
+        // kein DML. Genau das ist die Ergebnisneutralitaet der Stufe S1, und diese
+        // Zeile haelt sie fest.
+        [InlineData("WECHSELRICHTER", 0, 0, 0)]
         [InlineData("BHKW", 79, 0, 1)]
         [InlineData("STROMSPEICHER", 5, 0, 0)]
         [InlineData("GEBAEUDE", 277, 0, 10)]
