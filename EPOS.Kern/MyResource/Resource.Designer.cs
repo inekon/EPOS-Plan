@@ -61,6 +61,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -22115,6 +22116,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenz läuft in {0} Tagen ab ({1}). Bitte rechtzeitig verlängern — Menü „Hilfe → Lizenzverwaltung“. ähnelt.
+        /// </summary>
+        public static string LIZ_BANNER_ABLAUF {
+            get {
+                return ResourceManager.GetString("LIZ_BANNER_ABLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenz läuft morgen ab ({0}). Bitte verlängern — Menü „Hilfe → Lizenzverwaltung“. ähnelt.
+        /// </summary>
+        public static string LIZ_BANNER_ABLAUF_EIN {
+            get {
+                return ResourceManager.GetString("LIZ_BANNER_ABLAUF_EIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lizenz läuft heute ab ({0}). Bitte verlängern — Menü „Hilfe → Lizenzverwaltung“. ähnelt.
+        /// </summary>
+        public static string LIZ_BANNER_ABLAUF_HEUTE {
+            get {
+                return ResourceManager.GetString("LIZ_BANNER_ABLAUF_HEUTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lesemodus — es lassen sich keine Änderungen speichern und keine Simulation rechnen. Ansehen, Berichte und Export bleiben möglich. Lizenz: Menü „Hilfe → Lizenzverwaltung“. ähnelt.
+        /// </summary>
+        public static string LIZ_BANNER_LESEMODUS {
+            get {
+                return ResourceManager.GetString("LIZ_BANNER_LESEMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt aktivieren ähnelt.
         /// </summary>
         public static string LIZ_BTN_AKTIVIEREN {
@@ -22257,6 +22294,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string LIZ_LBL_SCHLUESSEL {
             get {
                 return ResourceManager.GetString("LIZ_LBL_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lesemodus: Die Lizenz erlaubt derzeit keine Änderungen. Der Vorgang wurde nicht gespeichert. Ansehen, Berichte und Export bleiben möglich. ähnelt.
+        /// </summary>
+        public static string LIZ_LESEMODUS_SPERRE {
+            get {
+                return ResourceManager.GetString("LIZ_LESEMODUS_SPERRE", resourceCulture);
             }
         }
         
@@ -35167,6 +35213,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_MSG_LADEGRENZE_ZAHL {
             get {
                 return ResourceManager.GetString("SIM_MSG_LADEGRENZE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Lesemodus lässt sich keine Simulation rechnen: Die Lizenz erlaubt derzeit keine neuen Arbeitsergebnisse. Vorhandene Ergebnisse, Berichte und Export bleiben möglich. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_LESEMODUS {
+            get {
+                return ResourceManager.GetString("SIM_MSG_LESEMODUS", resourceCulture);
             }
         }
         
