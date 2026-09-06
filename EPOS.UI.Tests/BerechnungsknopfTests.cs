@@ -62,12 +62,10 @@ public sealed class BerechnungsknopfTests
 
     /// <summary>
     /// Eine Anzeige-Formel: eingerückte Zeile mit der laufenden Nummer am Zeilenende,
-    /// gesetzt in <c>&lt;math&gt;</c> (Fassung 3) ODER in <c>&lt;big&gt;</c> (Fassung 2).
-    /// Bis beide Teile zusammengeführt sind, liegen beide Formen im selben Ordner.
+    /// gesetzt in <c>&lt;math&gt;</c> (Fassung 3).
     /// </summary>
-    // TODO Zusammenführung Fassung 3: auf "<math>" allein verengen.
     private static readonly Regex Anzeigeformel =
-        new(@"^:\s*(?:<math>.+</math>|<big>.+</big>)(?:\s|&nbsp;)*\(\d+\)\s*$",
+        new(@"^:\s*<math>.+</math>(?:\s|&nbsp;)*\(\d+\)\s*$",
             RegexOptions.Multiline | RegexOptions.Compiled);
 
     /// <summary>Eine Anzeige-Gleichung der Fassung 3 — LaTeX in <c>&lt;math&gt;</c>.</summary>
@@ -96,7 +94,8 @@ public sealed class BerechnungsknopfTests
         "le", "ge", "ne", "approx", "pm", "to", "infty", "in", "dots",
         "eta", "vartheta", "rho", "lambda", "alpha", "beta", "gamma",
         "varepsilon", "tau", "varphi", "Delta", "Sigma",
-        "pi", "omega", "kappa", "Psi", "ell", "dot"
+        "pi", "omega", "kappa", "Psi", "ell", "dot",
+        "theta", "cos", "sin", "circ", "ln", "chi"
     };
 
     /// <summary>
@@ -108,17 +107,6 @@ public sealed class BerechnungsknopfTests
         "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
         "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
         "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
-    };
-
-    /// <summary>
-    /// Die SECHS Seiten, die Teil A der Fassung 3 auf LaTeX umgestellt hat. Nur für sie
-    /// gilt die Bauform „Gleichung in <c>&lt;math&gt;</c> mit Legende darunter".
-    /// </summary>
-    // TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen
-    private static readonly string[] SeitenDiesesTeils =
-    {
-        "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
-        "Strombedarf", "Wärmequelle Erdreich"
     };
 
     // =====================================================================
@@ -303,8 +291,8 @@ public sealed class BerechnungsknopfTests
     /// genau das war der Anwenderwunsch vom 06.09.2026.
     /// </summary>
     [Theory]
-    [MemberData(nameof(AlleSeitenDiesesTeils))]
-    public void Jeder_Knopf_dieses_Teils_fuehrt_auf_eine_Seite_der_Fassung_3(string seitenname)
+    [MemberData(nameof(AlleSeitenDerRubrik))]
+    public void Jeder_Knopf_fuehrt_auf_eine_Seite_der_Fassung_3(string seitenname)
     {
         string pfad = Seitenpfad(seitenname);
         Assert.True(File.Exists(pfad), "Die Seite '" + seitenname + "' fehlt: " + pfad);
@@ -372,15 +360,6 @@ public sealed class BerechnungsknopfTests
         return daten;
     }
 
-    /// <summary>Die sechs Seiten dieses Teils als Theoriedaten (Fassung 3).</summary>
-    // TODO Zusammenführung Fassung 3: auf AlleSeitenDerRubrik umstellen
-    public static TheoryData<string> AlleSeitenDiesesTeils()
-    {
-        var daten = new TheoryData<string>();
-        foreach (string name in SeitenDiesesTeils) daten.Add(name);
-        return daten;
-    }
-
     /// <summary>Der Pfad einer Seitendatei der Rubrik.</summary>
     private static string Seitenpfad(string seitenname) =>
         Path.Combine(Wurzel(), "EPOS.Kern", "Allgemein", "Hilfe", "Berechnung", seitenname + ".wiki");
@@ -416,9 +395,8 @@ public sealed class BerechnungsknopfTests
     {
         Assert.Matches(Anzeigeformel,
             ": <math>\\displaystyle Q_{\\mathrm{a}} = \\frac{\\sum_{t=1}^{8\\,760} Q(t)}{1\\,000}</math> &nbsp;&nbsp;(4)");
-        Assert.Matches(Anzeigeformel,
+        Assert.DoesNotMatch(Anzeigeformel,                                                  // Fassung 2 gilt nicht mehr
             ": <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q(t) ) / 1 000</big>  (4)");
-        Assert.Matches(Anzeigeformel, ": <big>ϑ = ϑ<sub>m</sub> + 1,5 K</big> (7)");
 
         Assert.DoesNotMatch(Anzeigeformel, ": <math>P = U \\cdot I</math>");   // ohne Nummer
         Assert.DoesNotMatch(Anzeigeformel, ": <big>P = U · I</big>");          // ohne Nummer
