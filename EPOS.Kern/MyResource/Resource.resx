@@ -15095,4 +15095,250 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="PARV_LBL_GEWICHT" xml:space="preserve">
     <value>Gewicht:</value>
   </data>
+  <data name="WRK_TITEL_VERWALTUNG" xml:space="preserve">
+    <value>Verwaltung Wechselrichter</value>
+  </data>
+  <data name="WRK_LISTE" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="WRK_GRUPPE_GERAET" xml:space="preserve">
+    <value>Gerät</value>
+  </data>
+  <data name="WRK_GRUPPE_EINGANG" xml:space="preserve">
+    <value>Eingang</value>
+  </data>
+  <data name="WRK_GRUPPE_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Wirkungsgrad</value>
+  </data>
+  <data name="WRK_MSG_AUSWAHL" xml:space="preserve">
+    <value>Bitte zuerst einen Wechselrichter auswählen!</value>
+  </data>
+  <data name="WRK_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung:</value>
+  </data>
+  <data name="WRK_LBL_FIRMA" xml:space="preserve">
+    <value>Hersteller:</value>
+  </data>
+  <data name="WRK_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung:</value>
+  </data>
+  <data name="WRK_LBL_P_AC_NENN" xml:space="preserve">
+    <value>AC-Nennleistung:</value>
+  </data>
+  <data name="WRK_LBL_S_AC_MAX" xml:space="preserve">
+    <value>max. AC-Scheinleistung:</value>
+  </data>
+  <data name="WRK_LBL_P_DC_MAX" xml:space="preserve">
+    <value>max. DC-Leistung:</value>
+  </data>
+  <data name="WRK_LBL_KOSTEN" xml:space="preserve">
+    <value>Gerätepreis:</value>
+  </data>
+  <data name="WRK_LBL_HERKUNFT" xml:space="preserve">
+    <value>Herkunft:</value>
+  </data>
+  <data name="WRK_LBL_U_MPP_MIN" xml:space="preserve">
+    <value>MPP-Fenster von:</value>
+  </data>
+  <data name="WRK_LBL_U_MPP_MAX" xml:space="preserve">
+    <value>MPP-Fenster bis:</value>
+  </data>
+  <data name="WRK_LBL_U_DC_MAX" xml:space="preserve">
+    <value>max. DC-Spannung:</value>
+  </data>
+  <data name="WRK_LBL_U_START" xml:space="preserve">
+    <value>Einschaltspannung:</value>
+  </data>
+  <data name="WRK_LBL_I_DC_MAX" xml:space="preserve">
+    <value>max. DC-Strom je MPPT:</value>
+  </data>
+  <data name="WRK_LBL_ANZAHL_MPPT" xml:space="preserve">
+    <value>Anzahl MPPT:</value>
+  </data>
+  <data name="WRK_LBL_STRAENGE_JE_MPPT" xml:space="preserve">
+    <value>Stränge je MPPT:</value>
+  </data>
+  <data name="WRK_LBL_ETA05" xml:space="preserve">
+    <value>Wirkungsgrad bei 5 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA10" xml:space="preserve">
+    <value>Wirkungsgrad bei 10 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA20" xml:space="preserve">
+    <value>Wirkungsgrad bei 20 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA30" xml:space="preserve">
+    <value>Wirkungsgrad bei 30 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA50" xml:space="preserve">
+    <value>Wirkungsgrad bei 50 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA100" xml:space="preserve">
+    <value>Wirkungsgrad bei 100 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA_EURO" xml:space="preserve">
+    <value>Euro-Wirkungsgrad:</value>
+  </data>
+  <data name="WRK_LBL_ETA_MAX" xml:space="preserve">
+    <value>Maximalwirkungsgrad:</value>
+  </data>
+  <data name="WRK_LBL_P_STANDBY" xml:space="preserve">
+    <value>Standby-Verbrauch:</value>
+  </data>
+  <data name="WRK_LBL_P_NACHT" xml:space="preserve">
+    <value>Nachtverbrauch:</value>
+  </data>
+  <data name="WRK_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.</value>
+  </data>
+  <data name="WRK_MSG_SCHREIBGESCHUETZT_LOESCHEN" xml:space="preserve">
+    <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="WRK_TITEL_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Schreibgeschützt</value>
+  </data>
+  <data name="WRK_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>Ein anderer Katalogeintrag trägt bereits den Namen "{0}". Bitte einen eindeutigen Namen vergeben.</value>
+  </data>
+  <data name="WRK_TITEL_NAME_VERGEBEN" xml:space="preserve">
+    <value>Name bereits vergeben</value>
+  </data>
+  <data name="WRK_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Der Katalogeintrag "{0}" wurde nicht gefunden.</value>
+  </data>
+  <data name="WRK_TITEL_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Nicht gefunden</value>
+  </data>
+  <data name="WRK_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>Der Name "{0}" ist im Katalog {1}-mal vergeben. Es ist deshalb nicht entscheidbar, welcher Eintrag gemeint ist - es wurde nichts geändert.</value>
+  </data>
+  <data name="WRK_TITEL_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>Name mehrdeutig</value>
+  </data>
+  <data name="WRK_MSG_STAMM_FEHLT" xml:space="preserve">
+    <value>Der Wechselrichter-Stammdatensatz wurde nicht gefunden (ID {0}).</value>
+  </data>
+  <data name="WRK_PLAUSI_KEIN_SATZ" xml:space="preserve">
+    <value>Kein Wechselrichter-Datensatz übergeben.</value>
+  </data>
+  <data name="WRK_PLAUSI_P_AC_FEHLT" xml:space="preserve">
+    <value>Die AC-Nennleistung fehlt oder ist nicht positiv - sie ist das einzige Pflichtfeld.</value>
+  </data>
+  <data name="WRK_PLAUSI_P_AC_BEREICH" xml:space="preserve">
+    <value>Die AC-Nennleistung {0} kW liegt außerhalb des plausiblen Bereichs {1} bis {2} kW.</value>
+  </data>
+  <data name="WRK_PLAUSI_PACO_UEBER_PDCO" xml:space="preserve">
+    <value>Die AC-Nennleistung ({0} W) ist größer als die DC-Leistung bei Nennlast ({1} W).</value>
+  </data>
+  <data name="WRK_PLAUSI_S_AC_KLEINER" xml:space="preserve">
+    <value>Die max. AC-Scheinleistung ({0} kVA) ist kleiner als die AC-Nennwirkleistung ({1} kW).</value>
+  </data>
+  <data name="WRK_PLAUSI_P_DC_KLEINER" xml:space="preserve">
+    <value>Die max. DC-Leistung ({0} kW) ist kleiner als die AC-Nennleistung ({1} kW).</value>
+  </data>
+  <data name="WRK_PLAUSI_DCAC_GROSS" xml:space="preserve">
+    <value>Das Verhältnis DC/AC des Geräts ist {0} und damit größer als {1}.</value>
+  </data>
+  <data name="WRK_PLAUSI_SPANNUNG_NEGATIV" xml:space="preserve">
+    <value>{0} ist negativ ({1} V).</value>
+  </data>
+  <data name="WRK_PLAUSI_MPP_FENSTER" xml:space="preserve">
+    <value>Das MPP-Fenster ist leer: Die untere Grenze {0} V liegt nicht unter der oberen {1} V.</value>
+  </data>
+  <data name="WRK_PLAUSI_MPP_UEBER_UDC" xml:space="preserve">
+    <value>Die obere MPP-Grenze ({0} V) liegt über der max. DC-Spannung ({1} V).</value>
+  </data>
+  <data name="WRK_PLAUSI_START_UEBER_MPP" xml:space="preserve">
+    <value>Die Einschaltspannung ({0} V) liegt über der oberen MPP-Grenze ({1} V).</value>
+  </data>
+  <data name="WRK_PLAUSI_I_DC_NEGATIV" xml:space="preserve">
+    <value>Der max. DC-Strom je MPPT ist negativ ({0} A).</value>
+  </data>
+  <data name="WRK_PLAUSI_MPPT_KLEINER_EINS" xml:space="preserve">
+    <value>Die Anzahl MPPT ist kleiner als 1 ({0}).</value>
+  </data>
+  <data name="WRK_PLAUSI_STRAENGE_KLEINER_EINS" xml:space="preserve">
+    <value>Die Zahl der Stränge je MPPT ist kleiner als 1 ({0}).</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_BEREICH" xml:space="preserve">
+    <value>{0} liegt außerhalb des Bereichs (0; 1]: {1}.</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_KLEIN" xml:space="preserve">
+    <value>{0} ist mit {1} kleiner als der plausible Mindestwert {2}.</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_MONOTON" xml:space="preserve">
+    <value>Die Kennlinie fällt im Teillastast: {0} = {1}, aber {2} = {3}.</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_EURO_BEREICH" xml:space="preserve">
+    <value>{0} liegt außerhalb des Bereichs (0; 1]: {1}.</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_EURO_ABWEICHUNG" xml:space="preserve">
+    <value>Der ausgewiesene Euro-Wirkungsgrad ({0}) weicht von dem aus den Stützstellen gerechneten ({1}) ab.</value>
+  </data>
+  <data name="WRK_PLAUSI_STANDBY_NEGATIV" xml:space="preserve">
+    <value>{0} ist negativ ({1} W).</value>
+  </data>
+  <data name="WRK_PLAUSI_KOSTEN_NEGATIV" xml:space="preserve">
+    <value>Der Gerätepreis ist negativ ({0} €).</value>
+  </data>
+  <data name="WRK_PLAUSI_KOPF_FEHLER" xml:space="preserve">
+    <value>Fehler:</value>
+  </data>
+  <data name="WRK_PLAUSI_KOPF_HINWEIS" xml:space="preserve">
+    <value>Hinweise:</value>
+  </data>
+  <data name="WRK_IMP_TITEL" xml:space="preserve">
+    <value>Wechselrichter einlesen (CEC)</value>
+  </data>
+  <data name="WRK_IMP_KOPFBAND" xml:space="preserve">
+    <value>Die CEC-Wechselrichterliste des NREL. Die sechs Stützstellen der Kennlinie werden aus den Sandia-Koeffizienten gerechnet; MPPT-Zahl und Scheinleistung führt die Liste nicht und sind von Hand nachzupflegen.</value>
+  </data>
+  <data name="WRK_IMP_BTN_CEC" xml:space="preserve">
+    <value>CEC-Liste laden</value>
+  </data>
+  <data name="WRK_IMP_LBL_P_AC_VON" xml:space="preserve">
+    <value>AC-Nennleistung von:</value>
+  </data>
+  <data name="WRK_IMP_SP_GERAET" xml:space="preserve">
+    <value>Gerät</value>
+  </data>
+  <data name="WRK_IMP_SP_P_AC" xml:space="preserve">
+    <value>P_AC [kW]</value>
+  </data>
+  <data name="WRK_IMP_SP_ETA_EURO" xml:space="preserve">
+    <value>η euro</value>
+  </data>
+  <data name="WRK_IMP_SP_MPP" xml:space="preserve">
+    <value>MPP-Fenster [V]</value>
+  </data>
+  <data name="WRK_IMP_SP_U_DC_MAX" xml:space="preserve">
+    <value>U_dc max [V]</value>
+  </data>
+  <data name="WRK_IMP_LBL_CEC_DATUM" xml:space="preserve">
+    <value>CEC-Listung:</value>
+  </data>
+  <data name="WRK_IMP_LBL_SANDIA_PDCO" xml:space="preserve">
+    <value>Sandia Pdco [W]:</value>
+  </data>
+  <data name="WRK_IMP_LBL_SANDIA_VDCO" xml:space="preserve">
+    <value>Sandia Vdco [V]:</value>
+  </data>
+  <data name="WRK_IMP_LBL_SANDIA_C0" xml:space="preserve">
+    <value>Sandia C0 [1/W]:</value>
+  </data>
+  <data name="WRK_IMP_HINWEIS_KENNLINIE" xml:space="preserve">
+    <value>Die sechs Stützstellen sind aus den Sandia-Koeffizienten bei U_dc = U_dco gerechnet; bei Nennlast gilt dabei η = Paco/Pdco exakt.</value>
+  </data>
+  <data name="WRK_IMP_PLAUSI_TITEL" xml:space="preserve">
+    <value>Hinweis zu den Gerätewerten</value>
+  </data>
+  <data name="ADM_KATALOG_WECHSELRICHTER" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="MENU_WECHSELRICHTER" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="MENU_WR_IMPORT_CEC" xml:space="preserve">
+    <value>Wechselrichter (CEC)...</value>
+  </data>
 </root>
