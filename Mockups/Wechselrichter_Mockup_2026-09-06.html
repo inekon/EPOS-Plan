@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wechselrichter-Mockup EPOS-Plan</title>
+<!--
+  MOCKUP zum Anwenderwunsch W6-E-2 vom 06.09.2026 ("Wechselrichter - ausgegraut ...").
+  Gehoert zu Konzept_Wechselrichter_EPOS-Plan.md; die Abschnittsnummern in den
+  Fussnoten verweisen dorthin.
+
+  EIGENSTAENDIG: kein CDN, kein Rahmenwerk, keine Schriftdatei von aussen. Die
+  Farben, Masse und Bausteinnamen sind aus EPOS.UI/wwwroot/epos-ui.css uebernommen
+  (Kopfbaender #0F1F3D, cremefarbene Knoepfe #f5f4ef, Beschriftungsspalte 12 rem,
+  kurze Zahlenfelder 8 em, Touchziel 44 px, Ecke 6 px).
+
+  ES IST EIN BILD, KEINE ANWENDUNG: Die Felder sind schreibgeschuetzt, nur der
+  Reiterwechsel und die zwei Umschalter (Modell, Strangzahl) sind belegt.
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+    --epos-schriftgroesse-gruppenkopf: 13px;
+    --epos-schriftgroesse-kartentitel: 16px;
+
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+
+    --epos-senke-rahmen: #D85A30;
+    --epos-senke-text: #993C1D;
+    --epos-warn-rahmen: rgb(200, 138, 0);
+    --epos-warn-flaeche: rgb(255, 246, 224);
+    --epos-warn-text: rgb(138, 91, 0);
+    --epos-fehleingabe: rgb(255, 235, 235);
+    --epos-erfolg-rahmen: rgb(34, 139, 34);
+    --epos-erfolg-flaeche: rgb(240, 250, 240);
+    --epos-erfolg-text: rgb(24, 98, 24);
+
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-karte-rahmen-hover: #3B82F6;
+    --epos-karte-flaeche: #ffffff;
+    --epos-karte-flaeche-hover: #EFF6FF;
+    --epos-karte-titel: #0F1F3D;
+    --epos-karte-text: #5A6270;
+
+    --epos-gruppenkopf-flaeche: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-gruppenkopf-summe: #93C5FD;
+    --epos-gruppenkopf-hoehe: 40px;
+    --epos-gruppenkopf-symbolbreite: 30px;
+
+    --epos-rand: 10px;
+    --epos-ecke: 6px;
+    --epos-karte-rand: 16px;
+    --epos-touchziel: 44px;
+
+    --epos-beschriftung-breite: 12rem;
+    --epos-kurzfeld-breite: 8em;
+    --epos-formularspalte: 26rem;
+
+    --epos-marke: #005aa0;
+    --epos-marke-trennlinie: #dee3e8;
+    --epos-menue-flaeche: #f0f8ff;
+    --epos-flaeche-gedaempft: #efefef;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0 0 48px 0;
+    font-family: var(--epos-schrift);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text);
+    background: #ffffff;
+}
+
+/* ---------- Kopfband der Mockup-Seite (nicht Teil der Maske) ---------- */
+.mockup-kopf {
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+    padding: 14px 24px 10px 24px;
+    background: #ffffff;
+}
+.mockup-kopf h1 {
+    margin: 0;
+    font-size: 20px;
+    color: var(--epos-marke);
+}
+.mockup-kopf p {
+    margin: 4px 0 0 0;
+    color: var(--epos-text-leise);
+    max-width: 96ch;
+}
+
+.mockup-reiter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 24px 0 24px;
+    background: var(--epos-menue-flaeche);
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+}
+.mockup-reiter button {
+    font: inherit;
+    padding: 8px 16px;
+    min-height: 36px;
+    cursor: pointer;
+    border: 1px solid var(--epos-rahmen);
+    border-bottom: none;
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+}
+.mockup-reiter button[aria-selected="true"] {
+    background: var(--epos-marke);
+    color: #ffffff;
+    border-color: var(--epos-marke);
+    font-weight: 700;
+}
+
+.mockup-blatt { display: none; padding: 20px 24px 0 24px; }
+.mockup-blatt.aktiv { display: block; }
+
+.mockup-hinweis {
+    max-width: 1340px;
+    margin: 0 0 14px 0;
+    padding: 8px 12px;
+    border-left: 4px solid var(--epos-marke);
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-karte-titel);
+}
+.mockup-fussnote {
+    max-width: 1340px;
+    margin: 12px 0 28px 0;
+    color: var(--epos-text-leise);
+}
+.mockup-fussnote code { font-size: 12px; }
+
+/* ---------- Baustein: Dialog ---------- */
+.epos-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    padding: var(--epos-karte-rand);
+    max-width: 1160px;
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    background: #ffffff;
+}
+.epos-dialog--breit { max-width: 1340px; }
+
+.epos-dialog-kopf { display: flex; align-items: center; gap: var(--epos-rand); }
+.epos-dialog-titel {
+    flex: 1 1 auto; margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700; color: var(--epos-karte-titel);
+}
+.epos-infoknopf {
+    width: 28px; height: 28px; padding: 0; line-height: 1;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: 50%;
+    background: transparent; color: var(--epos-marke); cursor: default;
+    font: inherit; font-weight: 700;
+}
+.epos-kontextzeile { margin: 0; font-weight: 600; }
+.epos-herleitung { margin: 0; color: var(--epos-text-leise); }
+
+/* ---------- Baustein: Gruppenkopf ---------- */
+.epos-gruppenkopf { background: var(--epos-karte-flaeche); margin-bottom: 15px; }
+.epos-gruppenkopf-balken {
+    display: flex; align-items: center;
+    min-height: var(--epos-gruppenkopf-hoehe);
+    background: var(--epos-gruppenkopf-flaeche);
+    color: var(--epos-gruppenkopf-text);
+}
+.epos-gruppenkopf-symbol {
+    flex: 0 0 var(--epos-gruppenkopf-symbolbreite); text-align: center;
+}
+.epos-gruppenkopf-titel {
+    flex: 1 1 auto; margin: 0;
+    font-size: var(--epos-schriftgroesse-gruppenkopf); font-weight: 700;
+}
+.epos-gruppenkopf-summe {
+    flex: 0 0 auto; padding-right: var(--epos-rand);
+    color: var(--epos-gruppenkopf-summe); text-align: right;
+}
+.epos-gruppenkopf-koerper {
+    padding: var(--epos-rand);
+    border: 1px solid var(--epos-rahmen-leise); border-top: none;
+}
+
+/* ---------- Baustein: Warnbanner ---------- */
+.epos-warnbanner {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: var(--epos-rand);
+    border: 1px solid transparent; border-radius: var(--epos-ecke);
+}
+.epos-warnbanner-symbol { flex: 0 0 auto; font-weight: 700; }
+.epos-warnbanner--hinweis {
+    border-color: var(--epos-karte-rahmen-hover);
+    background: var(--epos-karte-flaeche-hover); color: var(--epos-karte-titel);
+}
+.epos-warnbanner--warnung {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche); color: var(--epos-warn-text);
+}
+.epos-warnbanner--erfolg {
+    border-color: var(--epos-erfolg-rahmen);
+    background: var(--epos-erfolg-flaeche); color: var(--epos-erfolg-text);
+}
+
+/* ---------- Baustein: Formularraster ---------- */
+.epos-formularraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--epos-formularspalte), 1fr));
+    align-items: start;
+    column-gap: var(--epos-rand);
+    row-gap: 4px;
+}
+.epos-formularraster--einspaltig { grid-template-columns: minmax(0, 1fr); }
+.epos-formulargruppe-titel {
+    grid-column: 1 / -1; margin: 8px 0 0 0;
+    font-weight: 700; color: var(--epos-text-leise);
+}
+.epos-formularraster .epos-feld {
+    display: grid;
+    grid-template-columns: var(--epos-beschriftung-breite) minmax(0, 1fr);
+    align-items: center; gap: 6px;
+}
+.epos-formularraster .epos-feld--breit { grid-column: 1 / -1; }
+.epos-feld-text { color: var(--epos-text); }
+.epos-feld-zeile { display: flex; align-items: center; gap: 6px; }
+.epos-eingabe {
+    flex: 1 1 auto; min-height: var(--epos-touchziel); padding: 0 8px;
+    font: inherit; color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+}
+.epos-eingabe--kurz { flex: 0 0 var(--epos-kurzfeld-breite); width: var(--epos-kurzfeld-breite); }
+.epos-eingabe--lesen { background: var(--epos-flaeche); color: var(--epos-text-leise); }
+.epos-einheit { flex: 0 0 auto; color: var(--epos-text-leise); }
+
+/* ---------- Baustein: Knopfleiste ---------- */
+.epos-leiste {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 12px; margin-top: var(--epos-rand);
+}
+.epos-leiste-fueller { flex: 1 1 auto; }
+.epos-knopf {
+    flex: 0 1 auto; min-height: var(--epos-touchziel); min-width: 88px;
+    padding: 4px 12px; font: inherit; color: var(--epos-text);
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+.epos-knopf--primaer {
+    color: var(--epos-gruppenkopf-text);
+    background: var(--epos-karte-titel); border-color: var(--epos-karte-titel);
+}
+.epos-knopf:disabled {
+    color: var(--epos-text-sehr-leise); cursor: default;
+    background: var(--epos-flaeche); border-color: var(--epos-rahmen-leise);
+}
+.epos-status { flex: 1 1 auto; text-align: right; color: var(--epos-text-leise); }
+
+/* ---------- Baustein: Raster (Tabelle) ---------- */
+.epos-raster-huelle { width: 100%; overflow: auto; }
+.epos-raster { width: 100%; border-collapse: collapse; }
+.epos-raster th, .epos-raster td {
+    padding: 4px 8px; text-align: left; white-space: nowrap;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+.epos-raster th { background: var(--epos-flaeche); color: var(--epos-text); }
+.epos-raster tr.gewaehlt td { background: var(--epos-karte-flaeche-hover); }
+.epos-raster td.zahl, .epos-raster th.zahl { text-align: right; }
+.epos-raster--eingabe td { padding: 2px 6px; }
+.epos-raster--eingabe .epos-eingabe { min-height: 32px; }
+
+/* ---------- Katalograhmen: Liste links, Felder rechts ---------- */
+.epos-katalograhmen {
+    display: flex; gap: var(--epos-rand); align-items: stretch; flex-wrap: wrap;
+}
+.epos-katalograhmen-liste {
+    flex: 0 0 320px; min-width: 260px;
+    display: flex; flex-direction: column; gap: 4px;
+}
+.epos-katalograhmen-felder { flex: 1 1 520px; min-width: 0; }
+.epos-listenkasten {
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+    max-height: 22rem; overflow: auto;
+}
+
+/* ---------- Strangtabelle und Ampel ---------- */
+.epos-strangkopf {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+.epos-strangkopf-titel { font-weight: 700; }
+.epos-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 10px; border-radius: 999px;
+    border: 1px solid var(--epos-rahmen-leise); background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
+}
+.epos-ampel {
+    display: flex; gap: 8px; align-items: baseline;
+    padding: 6px 10px; margin: 2px 0 8px 0;
+    border-left: 4px solid transparent; border-radius: 0 var(--epos-ecke) var(--epos-ecke) 0;
+    line-height: 1.45;
+}
+.epos-ampel--gruen {
+    border-left-color: var(--epos-erfolg-rahmen);
+    background: var(--epos-erfolg-flaeche); color: var(--epos-erfolg-text);
+}
+.epos-ampel--gelb {
+    border-left-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche); color: var(--epos-warn-text);
+}
+.epos-ampel--rot {
+    border-left-color: var(--epos-senke-rahmen);
+    background: var(--epos-fehleingabe); color: var(--epos-senke-text);
+}
+.epos-ampel--grau {
+    border-left-color: var(--epos-rahmen);
+    background: var(--epos-flaeche); color: var(--epos-text-leise);
+}
+.epos-ampel b { font-weight: 700; }
+.epos-anlagenblock {
+    border: 1px dashed var(--epos-rahmen);
+    border-radius: var(--epos-ecke); padding: var(--epos-rand);
+}
+.epos-trennlinie {
+    border: none; border-top: 1px solid var(--epos-rahmen-leise); margin: 12px 0;
+}
+
+/* ---------- Ueberlagerung (Zweitdialog) ---------- */
+.epos-ueberlagerung {
+    border: 1px solid var(--epos-karte-titel); border-radius: var(--epos-ecke);
+    background: #ffffff; box-shadow: 0 2px 10px rgba(15, 31, 61, 0.18);
+    max-width: 640px;
+}
+.epos-ueberlagerung-kopf {
+    display: flex; align-items: center;
+    min-height: var(--epos-gruppenkopf-hoehe); padding: 0 var(--epos-rand);
+    background: var(--epos-gruppenkopf-flaeche); color: var(--epos-gruppenkopf-text);
+    font-weight: 700;
+}
+.epos-ueberlagerung-koerper { padding: var(--epos-rand); }
+
+/* ---------- Diagramm ---------- */
+.mockup-svghuelle { max-width: 1340px; overflow-x: auto; }
+.mockup-formeln {
+    max-width: 1340px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    gap: var(--epos-rand); margin-top: var(--epos-rand);
+}
+.mockup-formelkasten {
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+    padding: 10px 12px; background: var(--epos-karte-flaeche);
+}
+.mockup-formelkasten h3 {
+    margin: 0 0 6px 0; font-size: 13px; color: var(--epos-karte-titel);
+}
+.mockup-formelkasten pre {
+    margin: 0; white-space: pre-wrap; line-height: 1.5;
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px;
+    color: var(--epos-text);
+}
+.mockup-formelkasten p { margin: 6px 0 0 0; color: var(--epos-text-leise); }
+</style>
+</head>
+<body>
+
+<div class="mockup-kopf">
+    <h1>Wechselrichter — Mockup zum Anwenderwunsch W6‑E‑2</h1>
+    <p>Vier Ansichten zum Konzeptpapier <code>Konzept_Wechselrichter_EPOS-Plan.md</code>
+       (06.09.2026). Beispieldaten: Modul <b>Ablytek 6MN6A275</b> (275,19 W, 10 Module,
+       Neigung 30°, Azimut 0° — aus dem Bildschirmfoto des Anwenders) an einem
+       Wechselrichter <b>Muster 2500TL</b> (2,50 kW, 1 MPPT, MPP-Fenster 80…500 V).
+       <b>Nichts davon ist umgesetzt</b> — die Felder sind schreibgeschützt, nur die
+       Reiter und zwei Umschalter reagieren.</p>
+</div>
+
+<div class="mockup-reiter" role="tablist">
+    <button type="button" role="tab" aria-selected="true"  data-blatt="m1">M1 — PV-Dialog mit Strängen</button>
+    <button type="button" role="tab" aria-selected="false" data-blatt="m2">M2 — Verwaltung Wechselrichter</button>
+    <button type="button" role="tab" aria-selected="false" data-blatt="m3">M3 — Import</button>
+    <button type="button" role="tab" aria-selected="false" data-blatt="m4">M4 — Rechenfluss</button>
+</div>
+
+<!-- ================================================================== -->
+<!-- M1 — Der PV-Dialog mit dem neuen Abschnitt                         -->
+<!-- ================================================================== -->
+<section class="mockup-blatt aktiv" id="m1">
+
+    <p class="mockup-hinweis">
+        <b>M1 — „Verwaltung Photovoltaik Module" mit dem Abschnitt „Wechselrichter und
+        Stränge".</b> Der ausgegraute Knopf „Wechselrichter…" ist ersetzt. Der Umschalter
+        „Rechenmodell" zeigt, dass der Abschnitt in <b>beiden</b> Modellen bedienbar bleibt
+        (Empfehlung zu Entscheidungsfrage W6‑E‑2‑Q5) — was sich unterscheidet, steht in der
+        Zeile darunter.
+    </p>
+
+    <div class="epos-dialog">
+
+        <div class="epos-dialog-kopf">
+            <h2 class="epos-dialog-titel">Verwaltung Photovoltaik Module</h2>
+            <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">?</button>
+        </div>
+        <p class="epos-kontextzeile">Projekt 1026 — „INEKON Schulung 01" · PV-Anlage „Dach Nord/Süd"</p>
+
+        <!-- ---------- PV Anlage Eigenschaften ---------- -->
+        <div class="epos-gruppenkopf">
+            <div class="epos-gruppenkopf-balken">
+                <span class="epos-gruppenkopf-symbol" aria-hidden="true">▾</span>
+                <h3 class="epos-gruppenkopf-titel">PV Anlage Eigenschaften</h3>
+                <span class="epos-gruppenkopf-summe" id="gesamtleistung">Gesamtleistung 2,752 kW</span>
+            </div>
+            <div class="epos-gruppenkopf-koerper">
+
+                <div class="epos-anlagenblock">
+                    <div class="epos-formularraster">
+                        <div class="epos-feld">
+                            <span class="epos-feld-text">Neigung [°]:</span>
+                            <span class="epos-feld-zeile">
+                                <input class="epos-eingabe epos-eingabe--kurz" value="30" readonly>
+                            </span>
+                        </div>
+                        <div class="epos-feld">
+                            <span class="epos-feld-text">Azimut [°]:</span>
+                            <span class="epos-feld-zeile">
+                                <input class="epos-eingabe epos-eingabe--kurz" value="0" readonly>
+                            </span>
+                        </div>
+                        <div class="epos-feld">
+                            <span class="epos-feld-text">Anzahl Module:</span>
+                            <span class="epos-feld-zeile">
+                                <input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen"
+                                       id="anzahlmodule" value="10" readonly>
+                                <span class="epos-einheit">aus der Strangtabelle</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="epos-formularraster" style="margin-top:10px">
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Rechenmodell:</span>
+                        <span class="epos-feld-zeile">
+                            <select class="epos-eingabe" id="modellwahl">
+                                <option value="einfach" selected>Einfach</option>
+                                <option value="erweitert">Erweitert</option>
+                            </select>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Systemverluste [%]:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="12,00" readonly>
+                        </span>
+                    </div>
+                    <p class="epos-herleitung epos-feld--breit" id="modelltext"></p>
+                </div>
+
+                <hr class="epos-trennlinie">
+
+                <!-- ---------- NEU: Wechselrichter und Stränge ---------- -->
+                <div class="epos-strangkopf">
+                    <span class="epos-strangkopf-titel">Wechselrichter und Stränge</span>
+                    <span class="epos-chip" id="dcacchip">DC/AC 1,10 · Gerät 1: 2,752 kWp auf 2,50 kW</span>
+                    <span class="epos-leiste-fueller"></span>
+                    <label class="epos-feld-zeile" style="gap:8px">
+                        <span class="epos-einheit">Beispiel:</span>
+                        <select class="epos-eingabe" id="strangwahl" style="min-height:36px">
+                            <option value="eins" selected>ein Strang (Süd) — alles grün</option>
+                            <option value="ostwest">zwei Stränge (Ost/West) — ein Gerät, zwei MPPT</option>
+                            <option value="rot">Fehlauslegung — 15 Module in Reihe</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster epos-raster--eingabe">
+                        <thead>
+                            <tr>
+                                <th>Rang</th>
+                                <th>Bezeichner</th>
+                                <th>Wechselrichter</th>
+                                <th class="zahl">Gerät</th>
+                                <th class="zahl">MPPT</th>
+                                <th class="zahl">Module in Reihe</th>
+                                <th class="zahl">Stränge parallel</th>
+                                <th class="zahl">Neigung [°]</th>
+                                <th class="zahl">Azimut [°]</th>
+                                <th class="zahl">kWp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="strangzeilen"></tbody>
+                    </table>
+                </div>
+
+                <div id="ampelzeilen" style="margin-top:8px"></div>
+
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf epos-knopf--primaer">Strang anlegen</button>
+                    <button type="button" class="epos-knopf">Entfernen</button>
+                    <button type="button" class="epos-knopf">Wechselrichter der Anlage…</button>
+                    <span class="epos-status" id="strangstatus"></span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ---------- Modul Eigenschaften (unverändert) ---------- -->
+        <div class="epos-gruppenkopf">
+            <div class="epos-gruppenkopf-balken">
+                <span class="epos-gruppenkopf-symbol" aria-hidden="true">▾</span>
+                <h3 class="epos-gruppenkopf-titel">Modul Eigenschaften</h3>
+            </div>
+            <div class="epos-gruppenkopf-koerper">
+                <div class="epos-formularraster">
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Name:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--lesen" value="Ablytek 6MN6A275" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Hersteller:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--lesen" value="Ablytek" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Modul Leistung [W]:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen"
+                                   value="275,19" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Zelltechnologie:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--lesen"
+                                   value="Kristallines Silizium (c-Si)" readonly>
+                        </span>
+                    </div>
+                    <p class="epos-formulargruppe-titel">Aus dem Katalog — Grundlage der Auslegungsprüfung</p>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Leerlaufspannung U_oc:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen" value="38,40" readonly>
+                            <span class="epos-einheit">V</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">MPP-Spannung U_mpp:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen" value="31,40" readonly>
+                            <span class="epos-einheit">V</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Kurzschlussstrom I_sc:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen" value="9,340" readonly>
+                            <span class="epos-einheit">A</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">beta_OC:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen" value="−0,1180" readonly>
+                            <span class="epos-einheit">V/K</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">alpha_SC:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen" value="0,00470" readonly>
+                            <span class="epos-einheit">A/K</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">gamma_PMP:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen" value="−0,4000" readonly>
+                            <span class="epos-einheit">%/K</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ---------- Die Überlagerung bleibt als Anlagenrückfall ---------- -->
+    <p class="mockup-hinweis" style="margin-top:22px">
+        <b>Der bestehende Weg bleibt erreichbar.</b> Solange kein Strang angelegt ist, steht
+        statt der Tabelle eine Hinweiszeile, und der Knopf „Wechselrichter der Anlage…" öffnet
+        weiterhin die heutige Überlagerung — nur nicht mehr gesperrt.
+    </p>
+
+    <div class="epos-ueberlagerung">
+        <div class="epos-ueberlagerung-kopf">Wechselrichter — Dach Nord/Süd</div>
+        <div class="epos-ueberlagerung-koerper">
+            <p class="epos-herleitung" style="margin-bottom:8px">
+                Anlagenwerte ohne Strangzuordnung. Leer = ohne Clipping bzw. Kennlinie des Bestands.
+            </p>
+            <div class="epos-formularraster epos-formularraster--einspaltig">
+                <div class="epos-feld">
+                    <span class="epos-feld-text">AC-Nennleistung [kW]:</span>
+                    <span class="epos-feld-zeile">
+                        <input class="epos-eingabe epos-eingabe--kurz" value="" readonly>
+                    </span>
+                </div>
+                <div class="epos-feld">
+                    <span class="epos-feld-text">Wirkungsgrad bei 10 % Last:</span>
+                    <span class="epos-feld-zeile">
+                        <input class="epos-eingabe epos-eingabe--kurz" value="" readonly>
+                        <span class="epos-einheit">leer = 0,940</span>
+                    </span>
+                </div>
+                <div class="epos-feld">
+                    <span class="epos-feld-text">Wirkungsgrad bei 50 % Last:</span>
+                    <span class="epos-feld-zeile">
+                        <input class="epos-eingabe epos-eingabe--kurz" value="" readonly>
+                        <span class="epos-einheit">leer = 0,975</span>
+                    </span>
+                </div>
+                <div class="epos-feld">
+                    <span class="epos-feld-text">Wirkungsgrad bei 100 % Last:</span>
+                    <span class="epos-feld-zeile">
+                        <input class="epos-eingabe epos-eingabe--kurz" value="" readonly>
+                        <span class="epos-einheit">leer = 0,970</span>
+                    </span>
+                </div>
+            </div>
+            <p class="epos-herleitung" style="margin-top:8px">
+                <b>Ohne AC-Nennleistung: kein Clipping.</b>
+            </p>
+            <div class="epos-leiste">
+                <span class="epos-leiste-fueller"></span>
+                <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
+                <button type="button" class="epos-knopf">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <p class="mockup-fussnote">
+        Konzept Abschnitt 7 (Oberfläche), 3.4 (<code>Z_AnlageStrang</code>), 4.2
+        (Plausibilitätsprüfungen P1–P8), Anhang A (die Zahlen der Ampel).
+    </p>
+</section>
+
+<!-- ================================================================== -->
+<!-- M2 — Verwaltung Wechselrichter                                     -->
+<!-- ================================================================== -->
+<section class="mockup-blatt" id="m2">
+
+    <p class="mockup-hinweis">
+        <b>M2 — „Verwaltung Wechselrichter" als dritte Ausprägung von
+        <code>ModulKatalogDialog</code></b> (heute Stromspeicher und Photovoltaik). Familie C
+        der Vermessung: Liste links, Formularraster rechts, „Speichern" schreibt unmittelbar
+        in <code>Tab_Wechselrichter_STAMM</code>. Pflichtfeld ist allein die AC-Nennleistung —
+        jedes leere Feld schaltet die zugehörige Prüfung ab und sagt es.
+    </p>
+
+    <div class="epos-dialog epos-dialog--breit">
+
+        <div class="epos-dialog-kopf">
+            <h2 class="epos-dialog-titel">Verwaltung Wechselrichter</h2>
+            <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">?</button>
+        </div>
+
+        <div class="epos-warnbanner epos-warnbanner--erfolg">
+            <span class="epos-warnbanner-symbol" aria-hidden="true">✓</span>
+            <span>Der Katalogsatz „Muster 2500TL" wurde gespeichert.</span>
+        </div>
+
+        <div class="epos-katalograhmen">
+
+            <div class="epos-katalograhmen-liste">
+                <div class="epos-formularraster epos-formularraster--einspaltig">
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Hersteller:</span>
+                        <span class="epos-feld-zeile">
+                            <select class="epos-eingabe">
+                                <option>(alle)</option>
+                                <option selected>Muster Solar</option>
+                                <option>Beispiel Energy</option>
+                            </select>
+                        </span>
+                    </div>
+                </div>
+                <div class="epos-listenkasten">
+                    <table class="epos-raster">
+                        <thead><tr><th>Wechselrichter</th><th class="zahl">kW</th></tr></thead>
+                        <tbody>
+                            <tr class="gewaehlt"><td>Muster 2500TL</td><td class="zahl">2,50</td></tr>
+                            <tr><td>Muster 3600TL</td><td class="zahl">3,60</td></tr>
+                            <tr><td>Muster 5000TL‑2M</td><td class="zahl">5,00</td></tr>
+                            <tr><td>Muster 8000TL‑2M</td><td class="zahl">8,00</td></tr>
+                            <tr><td>Muster 10000TL‑3M</td><td class="zahl">10,00</td></tr>
+                            <tr><td>Muster 15000TP</td><td class="zahl">15,00</td></tr>
+                            <tr><td>Muster 20000TP</td><td class="zahl">20,00</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf">Neu</button>
+                    <button type="button" class="epos-knopf">Kopie</button>
+                    <button type="button" class="epos-knopf">Löschen</button>
+                    <button type="button" class="epos-knopf">Import…</button>
+                </div>
+            </div>
+
+            <div class="epos-katalograhmen-felder">
+                <div class="epos-formularraster">
+
+                    <p class="epos-formulargruppe-titel">Gerät</p>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Bezeichner:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--lesen" value="Muster 2500TL" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Hersteller:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe" value="Muster Solar" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld epos-feld--breit">
+                        <span class="epos-feld-text">Beschreibung:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe"
+                                   value="Einphasiger Stringwechselrichter, trafolos, 1 MPP-Tracker" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">AC-Nennleistung:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="2,50" readonly>
+                            <span class="epos-einheit">kW · Pflichtfeld</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">max. AC-Scheinleistung:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="2,50" readonly>
+                            <span class="epos-einheit">kVA</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">max. DC-Leistung:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="3,75" readonly>
+                            <span class="epos-einheit">kW</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Kosten:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="890,00" readonly>
+                            <span class="epos-einheit">€</span>
+                        </span>
+                    </div>
+
+                    <p class="epos-formulargruppe-titel">Eingang</p>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">MPP-Fenster von:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="80" readonly>
+                            <span class="epos-einheit">V</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">MPP-Fenster bis:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="500" readonly>
+                            <span class="epos-einheit">V</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">max. DC-Spannung:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="600" readonly>
+                            <span class="epos-einheit">V</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Einschaltspannung:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="100" readonly>
+                            <span class="epos-einheit">V</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">max. DC-Strom je MPPT:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="12,00" readonly>
+                            <span class="epos-einheit">A</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Anzahl MPPT:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="1" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Stränge je MPPT:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="1" readonly>
+                        </span>
+                    </div>
+
+                    <p class="epos-formulargruppe-titel">Wirkungsgrad</p>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">η bei 5 % Last:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="0,900" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">η bei 10 % Last:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="0,940" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">η bei 20 % Last:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="0,962" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">η bei 30 % Last:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="0,970" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">η bei 50 % Last:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="0,975" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">η bei 100 % Last:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="0,970" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Euro-Wirkungsgrad:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen"
+                                   value="0,968" readonly>
+                            <span class="epos-einheit">aus den Stützstellen gerechnet</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Maximalwirkungsgrad:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="0,977" readonly>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Standby / Einschaltschwelle:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="12,00" readonly>
+                            <span class="epos-einheit">W</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Nachtverbrauch:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="0,50" readonly>
+                            <span class="epos-einheit">W</span>
+                        </span>
+                    </div>
+                </div>
+
+                <p class="epos-herleitung" style="margin-top:10px">
+                    Herkunft: CEC-Wechselrichterliste, Abruf vom 06.09.2026 · Kennlinie aus den
+                    Sandia-Koeffizienten bei U_dc = U_dco gerechnet · η(100 %) = Paco/Pdco = 0,970 exakt.
+                </p>
+
+                <div class="epos-leiste">
+                    <span class="epos-leiste-fueller"></span>
+                    <button type="button" class="epos-knopf epos-knopf--primaer">Speichern</button>
+                    <button type="button" class="epos-knopf">Schließen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="mockup-fussnote">
+        Konzept Abschnitt 6 (Verwaltung), 3.1 (Katalogspalten), 3.3 (Kennlinienform).
+        Menüweg: Administration → Energiesysteme → Photovoltaik → „Wechselrichter bearbeiten…".
+    </p>
+</section>
+
+<!-- ================================================================== -->
+<!-- M3 — Import                                                        -->
+<!-- ================================================================== -->
+<section class="mockup-blatt" id="m3">
+
+    <p class="mockup-hinweis">
+        <b>M3 — „Wechselrichter importieren" als zweite Ausprägung des vorhandenen
+        <code>PvModulImportDialog</code>.</b> Gemeinsam sind Netzabruf mit Fortschritt und
+        Abbruch, 30‑Tage-Zwischenspeicher, virtualisiertes Raster, Vorprüfung und
+        Konfliktdialog; verschieden sind nur Spaltensatz und Zieltabelle.
+    </p>
+
+    <div class="epos-dialog epos-dialog--breit">
+
+        <div class="epos-dialog-kopf">
+            <h2 class="epos-dialog-titel">Wechselrichter importieren</h2>
+            <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">?</button>
+        </div>
+
+        <div class="epos-leiste" style="margin-top:0">
+            <button type="button" class="epos-knopf epos-knopf--primaer">CEC-Liste laden</button>
+            <button type="button" class="epos-knopf">PVsyst-Datei (.OND)…</button>
+            <button type="button" class="epos-knopf">Datenblatt von Hand…</button>
+            <span class="epos-leiste-fueller"></span>
+            <span class="epos-status">Zwischenspeicher vom 06.09.2026 · 4 812 Geräte</span>
+        </div>
+
+        <div class="epos-warnbanner epos-warnbanner--hinweis">
+            <span class="epos-warnbanner-symbol" aria-hidden="true">i</span>
+            <span>Quelle: <code>CEC&nbsp;Inverters.csv</code> (NREL/SAM). Die Liste führt
+                  <b>keine MPPT-Zahl</b> — <code>Anzahl_Mppt</code> und
+                  <code>Straenge_Je_Mppt</code> bleiben leer und sind von Hand zu pflegen;
+                  bis dahin rechnen die Prüfungen P4/P5 auf einem MPPT.</span>
+        </div>
+
+        <div class="epos-katalograhmen">
+
+            <div class="epos-katalograhmen-liste" style="flex:1 1 460px">
+                <div class="epos-formularraster epos-formularraster--einspaltig">
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">AC-Nennleistung von … bis:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe epos-eingabe--kurz" value="2,0" readonly>
+                            <input class="epos-eingabe epos-eingabe--kurz" value="6,0" readonly>
+                            <span class="epos-einheit">kW</span>
+                        </span>
+                    </div>
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">Hersteller:</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe" value="Muster" readonly>
+                        </span>
+                    </div>
+                </div>
+                <div class="epos-listenkasten" style="max-height:19rem">
+                    <table class="epos-raster">
+                        <thead>
+                            <tr><th>Gerät</th><th class="zahl">P_ac [kW]</th><th class="zahl">MPP [V]</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="gewaehlt"><td>Muster Solar: 2500TL</td><td class="zahl">2,50</td><td class="zahl">80…500</td></tr>
+                            <tr><td>Muster Solar: 3600TL</td><td class="zahl">3,60</td><td class="zahl">100…500</td></tr>
+                            <tr><td>Muster Solar: 5000TL‑2M</td><td class="zahl">5,00</td><td class="zahl">125…800</td></tr>
+                            <tr><td>Beispiel Energy: X 4.0</td><td class="zahl">4,00</td><td class="zahl">120…850</td></tr>
+                            <tr><td>Beispiel Energy: X 5.5</td><td class="zahl">5,50</td><td class="zahl">120…850</td></tr>
+                            <tr><td>Beispiel Energy: X 6.0</td><td class="zahl">6,00</td><td class="zahl">140…850</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="epos-herleitung">4 812 Zeilen, 6 nach Filter — das Raster hält nur
+                    den sichtbaren Ausschnitt im Baum.</p>
+            </div>
+
+            <div class="epos-katalograhmen-felder">
+
+                <div class="epos-gruppenkopf">
+                    <div class="epos-gruppenkopf-balken">
+                        <span class="epos-gruppenkopf-symbol" aria-hidden="true">▾</span>
+                        <h3 class="epos-gruppenkopf-titel">Feldzuordnung — Muster Solar: 2500TL</h3>
+                    </div>
+                    <div class="epos-gruppenkopf-koerper">
+                        <div class="epos-raster-huelle">
+                            <table class="epos-raster">
+                                <thead>
+                                    <tr>
+                                        <th>Quellfeld (CEC)</th>
+                                        <th class="zahl">Wert</th>
+                                        <th>Zielspalte</th>
+                                        <th>Umrechnung</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Name</td><td class="zahl">Muster Solar: 2500TL</td><td>Bezeichner / Firma</td><td>Text vor dem Doppelpunkt = Firma</td></tr>
+                                    <tr><td>Paco</td><td class="zahl">2 500 W</td><td>P_AC_Nenn</td><td>/1000 → 2,50 kW</td></tr>
+                                    <tr><td>Pdco</td><td class="zahl">2 577 W</td><td>Sandia_Pdco</td><td>unverändert</td></tr>
+                                    <tr><td>Vdco</td><td class="zahl">310 V</td><td>Sandia_Vdco</td><td>unverändert</td></tr>
+                                    <tr><td>Pso</td><td class="zahl">12,0 W</td><td>P_Standby / Sandia_Pso</td><td>unverändert</td></tr>
+                                    <tr><td>C0 … C3</td><td class="zahl">4 Werte</td><td>Sandia_C0 … C3</td><td>mitgeschrieben, nicht gerechnet</td></tr>
+                                    <tr><td>Pnt</td><td class="zahl">0,50 W</td><td>P_Nacht</td><td>unverändert</td></tr>
+                                    <tr><td>Vdcmax</td><td class="zahl">600 V</td><td>U_Dc_Max</td><td>unverändert</td></tr>
+                                    <tr><td>Idcmax</td><td class="zahl">12,0 A</td><td>I_Dc_Max</td><td>je MPPT</td></tr>
+                                    <tr><td>Mppt_low / _high</td><td class="zahl">80 / 500 V</td><td>U_Mpp_Min / U_Mpp_Max</td><td>unverändert</td></tr>
+                                    <tr><td>(gerechnet)</td><td class="zahl">6 Punkte</td><td>Eta05 … Eta100</td><td>Sandia bei U_dc = U_dco</td></tr>
+                                    <tr><td>(gerechnet)</td><td class="zahl">0,968</td><td>Eta_Euro</td><td>europäische Wichtung</td></tr>
+                                    <tr><td>—</td><td class="zahl">leer</td><td>Anzahl_Mppt</td><td>nicht in der Quelle</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="epos-gruppenkopf">
+                    <div class="epos-gruppenkopf-balken">
+                        <span class="epos-gruppenkopf-symbol" aria-hidden="true">▾</span>
+                        <h3 class="epos-gruppenkopf-titel">Dublettenprüfung</h3>
+                        <span class="epos-gruppenkopf-summe">1 Kandidat · 1 Konflikt</span>
+                    </div>
+                    <div class="epos-gruppenkopf-koerper">
+                        <div class="epos-warnbanner epos-warnbanner--warnung">
+                            <span class="epos-warnbanner-symbol" aria-hidden="true">!</span>
+                            <span>Der Katalog führt bereits „Muster 2500TL" (ID 41, angelegt am
+                                  02.09.2026). Zwei Importspalten weichen ab —
+                                  <b>U_Mpp_Min</b> 90 → 80 V und <b>Eta50</b> 0,973 → 0,975.</span>
+                        </div>
+                        <div class="epos-leiste" style="margin-top:6px">
+                            <button type="button" class="epos-knopf epos-knopf--primaer">Feldgenau überschreiben</button>
+                            <button type="button" class="epos-knopf">Als neuen Satz anlegen</button>
+                            <button type="button" class="epos-knopf">Überspringen</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="epos-gruppenkopf">
+                    <div class="epos-gruppenkopf-balken">
+                        <span class="epos-gruppenkopf-symbol" aria-hidden="true">▾</span>
+                        <h3 class="epos-gruppenkopf-titel">Protokoll</h3>
+                    </div>
+                    <div class="epos-gruppenkopf-koerper">
+                        <pre style="margin:0; white-space:pre-wrap; font-family:ui-monospace,Consolas,monospace; font-size:12px; line-height:1.55; color:var(--epos-text)">
+06.09.2026 10:14:02  Zwischenspeicher gesucht … gefunden, 3 Tage alt, wird verwendet.
+06.09.2026 10:14:02  CEC Inverters.csv gelesen: 4 812 Zeilen, 3 Kopfzeilen übersprungen.
+06.09.2026 10:14:03  Filter „2,0 … 6,0 kW" und „Muster": 6 Zeilen.
+06.09.2026 10:14:19  Muster Solar: 2500TL — Kennlinie aus Sandia bei U_dc = 310 V gerechnet:
+                     0,900 / 0,940 / 0,962 / 0,970 / 0,975 / 0,970 (Prüfwert η100 = Paco/Pdco = 0,970).
+06.09.2026 10:14:19  Muster Solar: 2500TL — Anzahl_Mppt nicht in der Quelle, bleibt leer.
+06.09.2026 10:14:19  Muster Solar: 2500TL — Dublette zu ID 41, 2 abweichende Importspalten.
+                        </pre>
+                    </div>
+                </div>
+
+                <div class="epos-leiste">
+                    <span class="epos-leiste-fueller"></span>
+                    <button type="button" class="epos-knopf epos-knopf--primaer">Übernehmen</button>
+                    <button type="button" class="epos-knopf">Schließen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="mockup-fussnote">
+        Konzept Abschnitt 5 (Import), 5.1 (CEC-Feldzuordnung), 5.2 (OND), 5.4 (Dubletten),
+        3.3.3 (Umrechnung Sandia → Stützstellen). Menüweg: Administration → Datenimport →
+        „Wechselrichter (CEC)…".
+    </p>
+</section>
+
+<!-- ================================================================== -->
+<!-- M4 — Rechenfluss                                                   -->
+<!-- ================================================================== -->
+<section class="mockup-blatt" id="m4">
+
+    <p class="mockup-hinweis">
+        <b>M4 — der Rechenweg je Stunde:</b> Module → Strang → MPPT → Wechselrichter →
+        Clipping → AC. Die Zahlen sind die des Beispiels (10 Module Ablytek 6MN6A275 an einem
+        Muster 2500TL) in einer Sommermittagsstunde mit 950 W/m² auf der Modulebene.
+    </p>
+
+    <div class="mockup-svghuelle">
+        <svg viewBox="0 0 1320 400" width="1320" height="400" role="img"
+             aria-label="Rechenfluss von den Modulen über Strang, MPPT und Wechselrichter bis zur Wechselstromleistung">
+            <defs>
+                <marker id="pfeil" viewBox="0 0 10 10" refX="9" refY="5"
+                        markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#0F1F3D"></path>
+                </marker>
+            </defs>
+
+            <!-- Kopfzeile -->
+            <text x="12" y="24" font-family="Segoe UI, sans-serif" font-size="14"
+                  font-weight="700" fill="#0F1F3D">Stunde i — eine PV-Anlage, ein Gerät, ein Strang</text>
+            <text x="12" y="44" font-family="Segoe UI, sans-serif" font-size="12" fill="#5f5e5a">
+                Einstrahlung auf die Modulebene G_t = 950 W/m² · Außentemperatur 28 °C · T_NOCT 45 °C · Systemverluste 12 %
+            </text>
+
+            <!-- Kasten 1: Modul -->
+            <rect x="12" y="70" width="196" height="112" rx="6"
+                  fill="#ffffff" stroke="#D1D5DB" stroke-width="1"></rect>
+            <rect x="12" y="70" width="196" height="26" rx="6" fill="#0F1F3D"></rect>
+            <rect x="12" y="84" width="196" height="12" fill="#0F1F3D"></rect>
+            <text x="24" y="88" font-family="Segoe UI, sans-serif" font-size="12"
+                  font-weight="700" fill="#ffffff">1 — Modul</text>
+            <text x="24" y="118" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">P_STC = 275,19 W</text>
+            <text x="24" y="136" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">T_Zelle = 57,7 °C</text>
+            <text x="24" y="154" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">γ = −0,40 %/K</text>
+            <text x="24" y="172" font-family="Segoe UI, sans-serif" font-size="12" fill="#5f5e5a">P = 0,2272 kW</text>
+
+            <!-- Kasten 2: Strang -->
+            <rect x="240" y="70" width="196" height="112" rx="6"
+                  fill="#ffffff" stroke="#D1D5DB" stroke-width="1"></rect>
+            <rect x="240" y="70" width="196" height="26" rx="6" fill="#0F1F3D"></rect>
+            <rect x="240" y="84" width="196" height="12" fill="#0F1F3D"></rect>
+            <text x="252" y="88" font-family="Segoe UI, sans-serif" font-size="12"
+                  font-weight="700" fill="#ffffff">2 — Strang</text>
+            <text x="252" y="118" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">10 in Reihe × 1 parallel</text>
+            <text x="252" y="136" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">Neigung 30° / Azimut 0°</text>
+            <text x="252" y="154" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">P_STC,s = 2,752 kWp</text>
+            <text x="252" y="172" font-family="Segoe UI, sans-serif" font-size="12" fill="#5f5e5a">P_DC,s = 2,272 kW</text>
+
+            <!-- Kasten 3: MPPT -->
+            <rect x="468" y="70" width="196" height="112" rx="6"
+                  fill="#ffffff" stroke="#D1D5DB" stroke-width="1"></rect>
+            <rect x="468" y="70" width="196" height="26" rx="6" fill="#0F1F3D"></rect>
+            <rect x="468" y="84" width="196" height="12" fill="#0F1F3D"></rect>
+            <text x="480" y="88" font-family="Segoe UI, sans-serif" font-size="12"
+                  font-weight="700" fill="#ffffff">3 — MPPT 1</text>
+            <text x="480" y="118" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">Summe der Stränge</text>
+            <text x="480" y="136" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">U_mpp 261…355 V ✓</text>
+            <text x="480" y="154" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">I 9,55 A ≤ 12,0 A ✓</text>
+            <text x="480" y="172" font-family="Segoe UI, sans-serif" font-size="12" fill="#5f5e5a">P_DC,mppt = 2,272 kW</text>
+
+            <!-- Kasten 4: Wechselrichter -->
+            <rect x="696" y="70" width="216" height="112" rx="6"
+                  fill="#ffffff" stroke="#D1D5DB" stroke-width="1"></rect>
+            <rect x="696" y="70" width="216" height="26" rx="6" fill="#0F1F3D"></rect>
+            <rect x="696" y="84" width="216" height="12" fill="#0F1F3D"></rect>
+            <text x="708" y="88" font-family="Segoe UI, sans-serif" font-size="12"
+                  font-weight="700" fill="#ffffff">4 — Wechselrichter</text>
+            <text x="708" y="118" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">Systemverluste 12 % → 2,000 kW</text>
+            <text x="708" y="136" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">x = 2,000 / 2,50 = 0,800</text>
+            <text x="708" y="154" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">η_WR(0,800) = 0,9720</text>
+            <text x="708" y="172" font-family="Segoe UI, sans-serif" font-size="12" fill="#5f5e5a">P_AC,roh = 1,944 kW</text>
+
+            <!-- Kasten 5: Clipping -->
+            <rect x="944" y="70" width="176" height="112" rx="6"
+                  fill="#FFF6E0" stroke="#C88A00" stroke-width="1"></rect>
+            <rect x="944" y="70" width="176" height="26" rx="6" fill="#C88A00"></rect>
+            <rect x="944" y="84" width="176" height="12" fill="#C88A00"></rect>
+            <text x="956" y="88" font-family="Segoe UI, sans-serif" font-size="12"
+                  font-weight="700" fill="#ffffff">5 — Clipping</text>
+            <text x="956" y="118" font-family="Segoe UI, sans-serif" font-size="12" fill="#8A5B00">Grenze 2,50 kW</text>
+            <text x="956" y="136" font-family="Segoe UI, sans-serif" font-size="12" fill="#8A5B00">1,944 &lt; 2,50</text>
+            <text x="956" y="154" font-family="Segoe UI, sans-serif" font-size="12" fill="#8A5B00">→ keine Kappung</text>
+            <text x="956" y="172" font-family="Segoe UI, sans-serif" font-size="12" fill="#8A5B00">Verlust 0 kWh</text>
+
+            <!-- Kasten 6: AC -->
+            <rect x="1152" y="70" width="156" height="112" rx="6"
+                  fill="#F0FAF0" stroke="#228B22" stroke-width="1"></rect>
+            <rect x="1152" y="70" width="156" height="26" rx="6" fill="#228B22"></rect>
+            <rect x="1152" y="84" width="156" height="12" fill="#228B22"></rect>
+            <text x="1164" y="88" font-family="Segoe UI, sans-serif" font-size="12"
+                  font-weight="700" fill="#ffffff">6 — Wechselstrom</text>
+            <text x="1164" y="122" font-family="Segoe UI, sans-serif" font-size="16"
+                  font-weight="700" fill="#186218">1,944 kW</text>
+            <text x="1164" y="146" font-family="Segoe UI, sans-serif" font-size="12" fill="#186218">in die Bilanz</text>
+            <text x="1164" y="164" font-family="Segoe UI, sans-serif" font-size="12" fill="#186218">gegen den Bedarf</text>
+
+            <!-- Pfeile -->
+            <line x1="208" y1="126" x2="238" y2="126" stroke="#0F1F3D" stroke-width="2" marker-end="url(#pfeil)"></line>
+            <line x1="436" y1="126" x2="466" y2="126" stroke="#0F1F3D" stroke-width="2" marker-end="url(#pfeil)"></line>
+            <line x1="664" y1="126" x2="694" y2="126" stroke="#0F1F3D" stroke-width="2" marker-end="url(#pfeil)"></line>
+            <line x1="912" y1="126" x2="942" y2="126" stroke="#0F1F3D" stroke-width="2" marker-end="url(#pfeil)"></line>
+            <line x1="1120" y1="126" x2="1150" y2="126" stroke="#0F1F3D" stroke-width="2" marker-end="url(#pfeil)"></line>
+
+            <text x="211" y="118" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">×10</text>
+            <text x="437" y="118" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">Σ</text>
+            <text x="665" y="118" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">Σ</text>
+
+            <!-- Nachtzweig -->
+            <path d="M 794 182 L 794 226 L 1230 226 L 1230 184"
+                  fill="none" stroke="#888780" stroke-width="1.5" stroke-dasharray="5 4"
+                  marker-end="url(#pfeil)"></path>
+            <text x="806" y="222" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">
+                Nachtzweig: P_DC &lt; P_Standby (12 W) → P_AC = −P_Nacht/1000 = −0,0005 kW
+            </text>
+
+            <!-- Vorrangregel -->
+            <rect x="12" y="252" width="1296" height="54" rx="6"
+                  fill="#EFF6FF" stroke="#3B82F6" stroke-width="1"></rect>
+            <text x="28" y="274" font-family="Segoe UI, sans-serif" font-size="12"
+                  font-weight="700" fill="#0F1F3D">Vorrangregel — der Grund für die Ergebnisneutralität</text>
+            <text x="28" y="294" font-family="Segoe UI, sans-serif" font-size="12" fill="#0F1F3D">
+                Führt die Anlage mindestens eine Strangzeile MIT Wechselrichter, rechnet dieser Weg. Sonst rechnet der Weg von heute, Zeichen für Zeichen — kein Bestandsprojekt hat eine Strangzeile.
+            </text>
+
+            <!-- Legende der Ampel -->
+            <rect x="12" y="326" width="14" height="14" rx="3" fill="#F0FAF0" stroke="#228B22"></rect>
+            <text x="34" y="338" font-family="Segoe UI, sans-serif" font-size="12" fill="#5f5e5a">
+                grün — P1…P8 bestanden
+            </text>
+            <rect x="228" y="326" width="14" height="14" rx="3" fill="#FFF6E0" stroke="#C88A00"></rect>
+            <text x="250" y="338" font-family="Segoe UI, sans-serif" font-size="12" fill="#5f5e5a">
+                gelb — P3, P5, P6, P7 verletzt oder Werte fehlen
+            </text>
+            <rect x="576" y="326" width="14" height="14" rx="3" fill="#FFEBEB" stroke="#D85A30"></rect>
+            <text x="598" y="338" font-family="Segoe UI, sans-serif" font-size="12" fill="#5f5e5a">
+                rot — P1, P2, P4 verletzt (das Gerät nimmt Schaden oder regelt ab)
+            </text>
+            <rect x="1030" y="326" width="14" height="14" rx="3" fill="#f5f4ef" stroke="#b4b2a9"></rect>
+            <text x="1052" y="338" font-family="Segoe UI, sans-serif" font-size="12" fill="#5f5e5a">
+                grau — nicht prüfbar (Modulwert fehlt)
+            </text>
+
+            <text x="12" y="376" font-family="Segoe UI, sans-serif" font-size="11" fill="#888780">
+                Rundung: alle Zwischenwerte auf vier Stellen angezeigt; gerechnet wird in doppelter Genauigkeit. Die Zellentemperatur folgt dem NOCT-Modell T_Zelle = T_amb + G_t/800 · (T_NOCT − 20).
+            </text>
+        </svg>
+    </div>
+
+    <div class="mockup-formeln">
+
+        <div class="mockup-formelkasten">
+            <h3>1 – 2 · Modul und Strang</h3>
+<pre>n_s     = Module_Reihe · Straenge_Parallel
+P_STC,s = n_s · Leistung_Modul / 1000
+T_Zelle = T_amb + G_t/800 · (T_NOCT − 20)
+P_DC,s  = P_STC,s · G_t/1000 · (1 + γ·(T_Zelle − 25))</pre>
+            <p>Im Modell ERWEITERT tritt an die Stelle der letzten Zeile das
+               Huld-Schwachlichtmodell; die Einstrahlung kommt dann aus Hay-Davies.
+               Neigung und Azimut sind die des Strangs, sonst die der Anlage.</p>
+        </div>
+
+        <div class="mockup-formelkasten">
+            <h3>3 – 4 · MPPT und Wechselrichter</h3>
+<pre>P_DC,mppt = Σ_{s ∈ MPPT} P_DC,s
+P_DC,ger  = (Σ_{mppt ∈ Gerät} P_DC,mppt)
+            · (1 − Systemverluste/100)
+x         = P_DC,ger / P_AC,nenn
+η_WR(x)   = Interpolation über 5/10/20/30/50/100 %</pre>
+            <p>Unter der kleinsten Stützstelle linear auf null, über 100 % konstant η100 —
+               dahinter greift das Clipping, kein weiter fallender Wirkungsgrad.</p>
+        </div>
+
+        <div class="mockup-formelkasten">
+            <h3>5 – 6 · Clipping, Nacht, Summe</h3>
+<pre>P_AC,roh = P_DC,ger · η_WR(x)
+P_AC,ger = min(P_AC,roh, P_AC,nenn)
+falls P_DC,ger &lt; P_Standby/1000:
+    P_AC,ger = −P_Nacht/1000
+P_AC,Anlage = Σ_{Geräte} P_AC,ger</pre>
+            <p>Clipping-Verlust = Σ max(0, P_AC,roh − P_AC,nenn); Wechselrichterverlust
+               = Σ (P_DC,ger − P_AC,roh). Beides geht ins Protokoll und auf die PV-Karte.</p>
+        </div>
+
+        <div class="mockup-formelkasten">
+            <h3>Auslegungsprüfung (P1 – P4)</h3>
+<pre>P1  n · [U_oc + β·(−10 − 25)]  ≤ U_Dc_Max
+P2  n · [U_mpp + β·(70 − 25)]  ≥ U_Mpp_Min
+P3  n · [U_mpp + β·(−10 − 25)] ≤ U_Mpp_Max
+P4  p · [I_sc + α·(70 − 25)]   ≤ I_Dc_Max</pre>
+            <p>n = Module in Reihe, p = Stränge parallel je MPPT. β ist negativ (V/K),
+               α positiv (A/K). Für U_mpp gibt es keinen eigenen Koeffizienten — P2 und P3
+               nehmen β, wie die Auslegungspraxis auch.</p>
+        </div>
+
+        <div class="mockup-formelkasten">
+            <h3>Kennlinie aus Sandia (nur beim Import)</h3>
+<pre>bei U_dc = U_dco gilt A = Pdco, B = Pso, C = C0:
+P_AC(P_DC) = [Paco/(Pdco − Pso) − C0·(Pdco − Pso)]
+             · (P_DC − Pso) + C0·(P_DC − Pso)²
+
+η(x) = x·Paco / P_DC(x)     für x = 0,05 … 1,00</pre>
+            <p>Prüfwert: bei x = 1 ist P_DC = Pdco und η100 = Paco/Pdco exakt.
+               Der Sandia-Rechenweg selbst bleibt liegen — er bräuchte U_dc je Stunde.</p>
+        </div>
+
+        <div class="mockup-formelkasten">
+            <h3>Europäischer Wirkungsgrad</h3>
+<pre>η_euro = 0,03·η5  + 0,06·η10 + 0,13·η20
+       + 0,10·η30 + 0,48·η50 + 0,20·η100</pre>
+            <p>Ausweis im Katalog und Rückfall, wenn nur dieser eine Wert aus dem Datenblatt
+               bekannt ist: Dann wird die Vorgabekurve so skaliert, dass sie ihn trifft.</p>
+        </div>
+
+    </div>
+
+    <p class="mockup-fussnote">
+        Konzept Abschnitt 4 (Berechnungsvorschrift), 4.2 (P1–P8), 4.3 (Vorrangregel und
+        Bitgleichheit), 4.4 (Kennzahlen), 3.3.3 (Umrechnung), Anhang A (die Zahlen).
+    </p>
+</section>
+
+<script>
+(function () {
+    "use strict";
+
+    /* ---- Reiterwechsel ------------------------------------------------ */
+    var reiter = document.querySelectorAll('.mockup-reiter button');
+    for (var i = 0; i < reiter.length; i++) {
+        reiter[i].addEventListener('click', function () {
+            var ziel = this.getAttribute('data-blatt');
+            for (var k = 0; k < reiter.length; k++) {
+                reiter[k].setAttribute('aria-selected', reiter[k] === this ? 'true' : 'false');
+            }
+            var blaetter = document.querySelectorAll('.mockup-blatt');
+            for (var j = 0; j < blaetter.length; j++) {
+                if (blaetter[j].id === ziel) { blaetter[j].classList.add('aktiv'); }
+                else { blaetter[j].classList.remove('aktiv'); }
+            }
+        });
+    }
+
+    /* ---- M1: Modellzeile ---------------------------------------------- */
+    var modellwahl = document.getElementById('modellwahl');
+    var modelltext = document.getElementById('modelltext');
+
+    function modellZeigen() {
+        if (modellwahl.value === 'erweitert') {
+            modelltext.innerHTML = '<b>Erweitert:</b> anisotrope Einstrahlung nach Hay-Davies, '
+                + 'Schwachlichtmodell nach Huld. <b>Der Wechselrichter rechnet in beiden Modellen</b> '
+                + '— sobald ein Strang mit Gerät zugeordnet ist.';
+        } else {
+            modelltext.innerHTML = '<b>Einfach:</b> isotrope Einstrahlung, linearer Temperaturgang. '
+                + '<b>Der Wechselrichter rechnet in beiden Modellen</b> — sobald ein Strang '
+                + 'mit Gerät zugeordnet ist.';
+        }
+    }
+
+    /* ---- M1: die drei Strangbeispiele --------------------------------- */
+    var beispiele = {
+        eins: {
+            dcac: 'DC/AC 1,10 · Gerät 1: 2,752 kWp auf 2,50 kW',
+            module: '10',
+            gesamt: 'Gesamtleistung 2,752 kW',
+            status: '1 Strang · 10 Module · alle Prüfungen bestanden',
+            zeilen: [
+                ['1', 'Dach Süd', 'Muster 2500TL', '1', '1', '10', '1', '(30)', '(0)', '2,752']
+            ],
+            ampeln: [
+                ['gruen', 'grün', 'Strang 1: 10 Module in Reihe · U_oc(−10 °C) 425 V ≤ 600 V · '
+                    + 'MPP 261…355 V im Fenster 80…500 V · I 9,55 A ≤ 12,0 A · DC/AC 1,10']
+            ]
+        },
+        ostwest: {
+            dcac: 'DC/AC 1,21 · Gerät 1: 6,054 kWp auf 5,00 kW',
+            module: '22',
+            gesamt: 'Gesamtleistung 6,054 kW',
+            status: '2 Stränge · 22 Module · ein Gerät, zwei MPPT — gemeinsames Clipping',
+            zeilen: [
+                ['1', 'Dach Ost',  'Muster 5000TL‑2M', '1', '1', '11', '1', '25', '−90', '3,027'],
+                ['2', 'Dach West', 'Muster 5000TL‑2M', '1', '2', '11', '1', '25', '90',  '3,027']
+            ],
+            ampeln: [
+                ['gruen', 'grün', 'Strang 1 (Ost): 11 Module in Reihe · U_oc(−10 °C) 468 V ≤ 800 V · '
+                    + 'MPP 287…391 V im Fenster 125…800 V · I 9,55 A ≤ 12,0 A'],
+                ['gruen', 'grün', 'Strang 2 (West): 11 Module in Reihe · dieselben Grenzen · eigener '
+                    + 'MPPT, eigene Ausrichtung — ein Gerät, eine Clipping-Grenze'],
+                ['grau', 'Hinweis', 'DC/AC 1,21 liegt im empfohlenen Bereich 1,0…1,5 (P6). Bei Ost/West '
+                    + 'ist die Überdimensionierung gewollt — die zwei Dachhälften erreichen ihre '
+                    + 'Spitze nie gleichzeitig, das gemeinsame Gerät darf deshalb kleiner sein.']
+            ]
+        },
+        rot: {
+            dcac: 'DC/AC 1,65 · Gerät 1: 4,128 kWp auf 2,50 kW',
+            module: '15',
+            gesamt: 'Gesamtleistung 4,128 kW',
+            status: '1 Strang · 15 Module · 2 Prüfungen verletzt',
+            zeilen: [
+                ['1', 'Dach Süd', 'Muster 2500TL', '1', '1', '15', '1', '(30)', '(0)', '4,128']
+            ],
+            ampeln: [
+                ['rot', 'rot', 'P1 verletzt: U_oc(−10 °C) = 15 × 42,53 V = 638 V > 600 V. '
+                    + 'Der Wechselrichter kann bei Frost und Sonne Schaden nehmen — höchstens '
+                    + '14 Module in Reihe.'],
+                ['gelb', 'gelb', 'P6 verletzt: DC/AC 1,65 liegt über 1,5. Der Clipping-Verlust dieser '
+                    + 'Auslegung liegt erfahrungsgemäß bei mehreren Prozent des Jahresertrags.'],
+                ['grau', 'Hinweis', 'Gespeichert wird trotzdem — die Ampel sagt etwas, sie verhindert nichts.']
+            ]
+        }
+    };
+
+    var strangwahl   = document.getElementById('strangwahl');
+    var strangzeilen = document.getElementById('strangzeilen');
+    var ampelzeilen  = document.getElementById('ampelzeilen');
+    var dcacchip     = document.getElementById('dcacchip');
+    var strangstatus = document.getElementById('strangstatus');
+    var anzahlmodule = document.getElementById('anzahlmodule');
+    var gesamtleist  = document.getElementById('gesamtleistung');
+
+    function beispielZeigen() {
+        var b = beispiele[strangwahl.value];
+        dcacchip.textContent = b.dcac;
+        strangstatus.textContent = b.status;
+        anzahlmodule.value = b.module;
+        gesamtleist.textContent = b.gesamt;
+
+        while (strangzeilen.firstChild) { strangzeilen.removeChild(strangzeilen.firstChild); }
+        for (var z = 0; z < b.zeilen.length; z++) {
+            var tr = document.createElement('tr');
+            for (var s = 0; s < b.zeilen[z].length; s++) {
+                var td = document.createElement('td');
+                if (s >= 3) { td.className = 'zahl'; }
+                td.textContent = b.zeilen[z][s];
+                tr.appendChild(td);
+            }
+            strangzeilen.appendChild(tr);
+        }
+
+        while (ampelzeilen.firstChild) { ampelzeilen.removeChild(ampelzeilen.firstChild); }
+        for (var a = 0; a < b.ampeln.length; a++) {
+            var div = document.createElement('div');
+            div.className = 'epos-ampel epos-ampel--' + b.ampeln[a][0];
+            var stark = document.createElement('b');
+            stark.textContent = '● ' + b.ampeln[a][1];
+            var text = document.createElement('span');
+            text.textContent = b.ampeln[a][2];
+            div.appendChild(stark);
+            div.appendChild(text);
+            ampelzeilen.appendChild(div);
+        }
+    }
+
+    modellwahl.addEventListener('change', modellZeigen);
+    strangwahl.addEventListener('change', beispielZeigen);
+    modellZeigen();
+    beispielZeigen();
+})();
+</script>
+
+</body>
+</html>
