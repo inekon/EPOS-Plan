@@ -1,5 +1,34 @@
 # CEC PV-Modul Import-Tool – Installationsanleitung
 
+> **Wo der Import in EPOS-Plan heute steht (Stand 06.09.2026).** Dieses Papier beschreibt das
+> EIGENSTÄNDIGE Vorläuferwerkzeug `CECModuleImporter` mit eigener WinForms-Oberfläche und
+> Excel-Ausleitung. In EPOS-Plan selbst ist daraus geworden:
+>
+> * der **Abrufapparat** `EPOS.Kern/Allgemein/Import/CEC/CECDataService.cs` (drei URLs als
+>   Rückfallkette, 45 s Zeitgrenze, 30-Tage-Zwischenspeicher, Fortschritt mit Abbruch) und
+>   sein Zwilling `CecWechselrichterDienst.cs` für die **Wechselrichterliste** aus demselben
+>   Verzeichnis;
+> * die PVsyst-Leser `Pan/PanDataService.cs` (Module, `.pan`) und
+>   `OND/OndWechselrichterDienst.cs` (Wechselrichter, `.OND`, seit **W6‑O‑1** vom
+>   06.09.2026);
+> * **EINE** Einlesemaske für beide Gerätefamilien:
+>   `EPOS.UI/Dialoge/Photovoltaik/ModulImportDialog.razor` mit den zwei Ausprägungen
+>   **Modul (CEC, CEC-Datei, PAN)** und **Wechselrichter (CEC, CEC-Datei, OND)**; Spalten,
+>   Detailfelder, Reiter, Filter und Quellen stehen als DATEN in
+>   `EPOS.Kern/Allgemein/Import/ModulImportProfil.cs`.
+>
+> **Die Excel-Ausleitung gibt es in EPOS-Plan nicht** — dort geht ein gewähltes Gerät über die
+> Dublettenprüfung direkt in den Katalog (`Tab_PV_STAMM` bzw. `Tab_Wechselrichter_STAMM`).
+>
+> **Die zwei ausgelieferten Listen** liegen unter `VDI-3805-Daten/PV/`:
+> `CEC Modules.csv` und — seit **W6‑O‑3** vom 06.09.2026 — `CEC Inverters.csv`
+> (2 346 Zeilen, 2 343 Geräte, 152 Hersteller; Quelle und Lizenz in
+> `LIESMICH_CEC_Inverters.md` daneben). Eingelesen werden sie über
+> **Administration → Datenimport → „…(CEC…)" → „CEC-Datei laden"**.
+>
+> Fachlich maßgeblich für den Wechselrichterzweig ist
+> [`Konzept_Wechselrichter_EPOS-Plan.md`](Konzept_Wechselrichter_EPOS-Plan.md), Kapitel 5.
+
 ## Voraussetzungen
 
 | Werkzeug | Version | Download |

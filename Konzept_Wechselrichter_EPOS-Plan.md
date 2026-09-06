@@ -1,8 +1,9 @@
 # Konzept: Wechselrichter EPOS-Plan — Katalog, Strangzuordnung und Rechenweg
 
-**Rev. 4 — 06.09.2026 — Stufen S1, S2 und S3 ENTSCHIEDEN und UMGESETZT**
+**Rev. 5 — 06.09.2026 — Stufen S1, S2 und S3 UMGESETZT; dazu W6‑O‑1 (ein Importwirt und der
+OND-Import) und W6‑O‑3 (die CEC-Wechselrichterliste als Auslieferungsdatei)**
 (Rev. 1 war Befund und Vorschlag zur Entscheidung durch den Anwender;
-Rev. 2 trug Stufe S1, Rev. 3 die Stufe S2)
+Rev. 2 trug Stufe S1, Rev. 3 die Stufe S2, Rev. 4 die Stufe S3)
 
 Auftrag (Anwenderwunsch **W6‑E‑2**, Windows-Abnahme vom 06.09.2026, im Wortlaut):
 
@@ -35,6 +36,12 @@ an, nicht die Maske).
 > S1 (Commit `40fc542`, Zweig `ios_migration`), S2 (`c02cd99`) und **S3** (`d88243e`,
 > siehe Kapitel 8). Dazu kam der neue Anwenderwunsch **W6‑E‑3** — zwei
 > sichtbare Optionen im PV-Dialog (Kapitel 7.1), umgesetzt in S2.4.
+>
+> **Zwei offene Punkte sind mit `9ef8ca5` dazu geschlossen** (Anwenderentscheide vom
+> 06.09.2026): **W6‑O‑1** — „der OND-Import soll umgesetzt werden. baue daher den
+> Modulimport schon jetzt um (Modulimport und Wechselrichter Import zwei Masken)" — und
+> **W6‑O‑3** — „hole die Wechselrichterdaten für den Import", bestätigt als „Liste als
+> Datei und dann über Import (aus Admin-Menü)". Beides steht in Kapitel 5.2, 5.5 und 12.
 >
 > **Zur Auslieferungsregel (Kapitel 8, „Reihenfolge"): S2 und S3 werden zusammen
 > AUSGELIEFERT, aber getrennt entwickelt und abgenommen.** Der Zwischenzustand ist
@@ -797,7 +804,12 @@ Die Zeilenzahl der Liste ist bei der Umsetzung zu messen. Die Modulliste hat 20 
 wird in einem virtualisierten Raster gezeigt (`PvModulImportDialog`, iU9‑W13.0l); die
 Wechselrichterliste liegt in derselben Größenordnung und braucht dieselbe Behandlung.
 
-### 5.2 PVsyst `.OND`
+### 5.2 PVsyst `.OND` — **UMGESETZT in `9ef8ca5`**
+
+> **Anwenderentscheid W6‑O‑1 vom 06.09.2026, im Wortlaut:** „der OND-Import soll umgesetzt
+> werden. baue daher den Modulimport schon jetzt um (Modulimport und Wechselrichter Import
+> zwei Masken)". Umgesetzt ist beides in einem Schritt: der OND-Zweig **und** der eine
+> Importwirt (5.5).
 
 Das Gegenstück zur `.PAN`-Datei, die EPOS-Plan schon liest
 (`EPOS.Kern/Allgemein/Import/Pan/PanDataService.cs`). Dasselbe Format: Abschnitte mit
@@ -826,6 +838,46 @@ Hersteller oder aus PVsyst, nicht aus einem offenen Verzeichnis.
 
 PVsyst führt `ProfilPIO` in drei Fassungen (untere, nominale, obere MPP-Spannung). **Empfohlen
 ist die nominale Fassung**; die anderen zwei brauchte erst ein spannungsabhängiges Modell (E3).
+
+> **Umgesetzt (06.09.2026, `9ef8ca5`) — mit vier Nachträgen zur Tabelle oben.**
+> Der Dienst ist `EPOS.Kern/Allgemein/Import/OND/OndWechselrichterDienst.cs`, der Satz
+> `OndWechselrichter.cs`; die Stützstellen rechnet
+> `WechselrichterKennlinie.AusProfil`. Nachweis: `EPOS.Kern.Tests/OndImportTests` (20 Fälle)
+> gegen die zwei synthetischen Proben `Referenzlaeufe/Importproben/ond_muster_2500tl.ond`
+> (die Zahlen des Anhangs A: 2,50 kW, 1 MPPT, 80…500 V, 600 V, 12,0 A,
+> η 0,900 / 0,940 / 0,962 / 0,970 / 0,975 / 0,970) und
+> `ond_muster_10000tl_3profile.ond` (drei ProfilPIO-Fassungen).
+>
+> 1. **Die Einheiten der Datei sind nicht die des Katalogs.** PVsyst schreibt die
+>    Leistungen des Wandlers (`PNomConv`, `PMaxOUT`, `PNomDC`, `PMaxDC`) in **kW**, die
+>    Schwellen (`PSeuil`, `Pnight`) und die Punkte der Kennlinie in **W** und die
+>    Wirkungsgrade (`EfficMax`, `EfficEuro`) in **Prozent**. Umgerechnet wird im
+>    Import — dort, wo beide Konventionen nebeneinanderstehen.
+> 2. **`ProfilPIO` führt Paare `P_in / P_out`, nicht `P_in / η`.** Der Wirkungsgrad ist
+>    `P_out / P_in`; interpoliert wird **über `P_out`**, weil eine Stützstelle nach
+>    3.3.1 an einem Anteil der AC-**Nenn**leistung hängt. Außerhalb des Bereichs, den die
+>    Tabelle abdeckt, bleibt die Stützstelle NULL — eine fortgeschriebene Kurve wäre eine
+>    erfundene Zahl.
+> 3. **Der Bezeichner trägt den Hersteller.** Die Tabelle nennt nur „`Model` →
+>    `Bezeichner`"; genommen wird `Manufacturer Model` — wörtlich das Muster des
+>    PAN-Imports (`PanDataService.Aufnehmen`). Ein bloßes „2500TL" stünde im Katalog neben
+>    CEC-Sätzen der Form „Hersteller: Modell" und wäre zwischen zwei Herstellern nicht
+>    unterscheidbar. `Firma` bleibt der reine `Manufacturer`.
+> 4. **Nachtverbrauch unter drei Namen.** Gelesen werden `Pnight`, `PNight` und
+>    `Night_Loss` — je nach PVsyst-Stand steht das eine oder das andere in der Datei.
+>
+> **Was der OND-Import kann und der CEC-Import nicht** (offener Punkt W6‑O‑2): Er füllt
+> `Anzahl_Mppt`, `S_AC_Max`, `P_DC_Max` und `U_Start`. Umgekehrt bleiben die
+> `Sandia_*`-Spalten leer — eine OND-Datei führt kein Sandia-Modell; allein `VMppNom`
+> steht als Bezugsspannung in `Sandia_Vdco`. **`Eta_Euro` und `Eta_Max` kommen aus der
+> DATEI** (`EfficEuro`, `EfficMax`) und nicht aus der Rechnung: Anders als bei CEC nennt
+> das Datenblatt sie selbst. Fehlen sie, wird gewichtet bzw. das Maximum der Stützstellen
+> genommen — dieselbe untere Schranke wie bei CEC.
+>
+> **Bei drei Fassungen gilt die nominale** (`ProfilPIOV2`), und **welche es war, steht im
+> Katalog**: Die Beschreibung des Satzes nennt Herkunft, Fassung, Baujahr und die
+> Bemerkung der Datei. Der Import trifft hier eine Entscheidung — der Anwender soll sie
+> nachlesen können.
 
 ### 5.3 Datenblatt von Hand
 
@@ -868,7 +920,7 @@ nur in `C3` unterscheiden, rechnen in EPOS-Plan identisch (3.3.2) — sie als ve
 wäre falscher Alarm. Dieselbe Abwägung hat der PV-Eintrag mit `Technologie` in die andere Richtung
 getroffen: Dort *gehört* die Spalte hinein, weil sie den Koeffizientensatz wählt.
 
-### 5.5 Wo der Import in der Oberfläche sitzt
+### 5.5 Wo der Import in der Oberfläche sitzt — **EIN WIRT, UMGESETZT in `9ef8ca5`**
 
 **Nicht** als fünfte Ausprägung von `KatalogImportProfil`: Dessen vier Ausprägungen sind
 VDI‑3805-Dateiimporte (`KatalogImportProfil.cs:16-29`) mit gemeinsamem Parser und gemeinsamer
@@ -904,6 +956,54 @@ Menüpunkt: **Administration → Datenimport → „Wechselrichter (CEC)…"**, 
 > hat **rund 300 Zeilen**, weil alles Teilbare im Kern und in den Bausteinen liegt.
 > Die Zusammenlegung beider Wirte auf EINE profilgetriebene Komponente ist als **offener
 > Punkt W6‑O‑1** festgehalten (Kapitel 12).
+
+> **Zusammengelegt (06.09.2026, `9ef8ca5`) — W6‑O‑1 ist geschlossen.** Der Zeitpunkt ist genau
+> der, den der offene Punkt selbst als den sinnvollen benannt hat: „der OND-Zweig, der
+> ohnehin in denselben Wirt kommt".
+>
+> **`EPOS.UI/Dialoge/Photovoltaik/ModulImportDialog.razor`** (669 Z. statt 771 + 655) ist
+> der eine Wirt mit zwei Ausprägungen — **Modul (CEC, CEC-Datei, PAN)** und **Wechselrichter
+> (CEC, CEC-Datei, OND)**. Beide alten `.razor` und ihre `Daten.cs` sind gelöscht; es gibt
+> nie zwei Fassungen derselben Maske.
+>
+> **Was den Umbau möglich gemacht hat, ist die neutrale Zeilenform.** Der Einwand von
+> Rev. 3 („`PvModulImportDialog` ist auf 771 Zeilen typisiert gegen `UnifiedModule`") traf
+> zu; er ist ausgeräumt, indem Spalten, Detailfelder, Reiter, Filter und Quellen **DATEN**
+> geworden sind: `EPOS.Kern/Allgemein/Import/ModulImportProfil.cs`, Zwilling zu
+> `ModulKatalogProfil` und nach demselben Muster wie `ModulFeldwert` im Modulkatalog. Eine
+> Zeile ist eine `ImportZeile` mit Zellwerten, Detailwerten und den drei Größen, nach
+> denen die Filterleiste einengt; **der Dialog kennt weder `UnifiedModule` noch
+> `CecWechselrichter` noch `OndWechselrichter`**. Welchen Satztyp eine Quelle liefert,
+> entscheidet die QUELLE und nicht die Ausprägung — der Wechselrichterimport bekommt aus
+> der CEC-Liste einen `CecWechselrichter` und aus einer `.OND`-Datei einen
+> `OndWechselrichter`, und beide füllen dieselbe Zeilenform.
+>
+> **Die zwei Hüllen sind eine** (`WindowsFormsApplication1/Views/Photovoltaik/ModulImportHuelle.cs`);
+> `WinFormsNavigation` führt beide Maskenschlüssel darauf, `HilfeKontext` kennt den neuen
+> Typnamen. **`PvVorpruefung` heißt jetzt `ImportVorpruefung`** — sie kannte nie einen
+> Satztyp, und der alte Name war schon in S1 zu eng.
+>
+> **Beide Hilfeschlüssel bleiben gültig und keiner wandert:** Das Profil trägt
+> `Main_PV_Test.btn_Help` bzw. `Form_WechselrichterImport.btn_Help`; `help_mapping.txt`
+> ist unverändert.
+>
+> **Die 594 Zeilen bunit-Fälle des Modulimports sind mitgewandert** und stehen als
+> Abschnitte 1 bis 5 in `EPOS.UI.Tests/Dialoge/ModulImportDialogTests` — Fall für Fall
+> mit denselben Erwartungswerten, samt der Feldkarte von `Form_CECImport`. Daneben stehen
+> die Fälle der Wechselrichterausprägung (Abschnitt 6, aus `WechselrichterDialogTests`
+> hierher geholt), der OND-Zweig (7) und der Dateiweg der Auslieferungsliste (8).
+>
+> **Eine Zeilenwahl, kein Mehrfachimport.** Beide Vorläufer hatten `MultiSelect = false`
+> und schrieben genau EINEN Satz; `ImportVorpruefung` trägt deshalb einen Befund und keine
+> Liste. Geteilt ist der Baustein `Zeilenwahl` (der einen Mehrfachmodus kann), die
+> Semantik bleibt die des Bestands — ein Mehrfachimport wäre eine Fachänderung und kein
+> Zusammenlegen.
+>
+> **Eine benannte Abweichung bleibt:** Das Zeichen für „führt die Quelle nicht" ist
+> BITGLEICH aus dem Bestand übernommen — der Modulimport zeigt den Bindestrich seines
+> Vorläufers (`ShowDetail` :425‑427), der Wechselrichterimport den Gedankenstrich des
+> Hauses (`ParameterVerwendung.LEER`). Beides steht als Profildatum `Strich`; sie
+> anzugleichen ist eine Anzeigefrage und keine Portentscheidung.
 
 ---
 
@@ -1400,11 +1500,12 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 
 | Nr. | Punkt | Stand |
 |---|---|---|
-| **W6‑O‑1** | **Ein Importwirt statt zwei.** `PvModulImportDialog` (771 Z.) und `WechselrichterImportDialog` (~300 Z.) teilen Abrufapparat, Vorprüfung, Konfliktweg und sämtliche Bausteine, aber nicht die `.razor`-Datei (5.5). Die Zusammenlegung verlangt eine neutrale Zeilen- und Detailform (Spalten und Felder als DATEN, wie `ModulFeldwert` im Modulkatalog) und damit den Umbau einer getesteten Maske samt 594 Zeilen bunit-Fällen. | **offen** — in S2 bewusst NICHT angefasst (Punkt S2.7: „nur, wenn Zeit bleibt und ohne Risiko"). Der sinnvolle Zeitpunkt bleibt der OND-Zweig, der ohnehin in denselben Wirt kommt |
-| **W6‑O‑2** | **MPPT-Zahl und Scheinleistung fehlen im CEC-Bestand.** Die Liste führt weder `Anzahl_Mppt` noch `S_AC_Max`; beide bleiben nach dem Import NULL, und die Prüfungen P4/P5 rechnen dann auf EINEM MPPT. Ob der Auslieferungskatalog von Hand nachgepflegt wird (und für welche Geräte), ist eine Anwenderfrage. | **offen** — mit S2 ist der Umgang damit festgelegt: Die Prüfung rechnet auf EINEM Tracker, die Ampel wird GELB, und der Satz sagt „Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem" (Fall `Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker`). Die Pflegefrage selbst bleibt offen |
-| **W6‑O‑3** | **Der Auslieferungsbestand ist leer.** Schritt 65 legt die Tabellen ohne DML an (das ist die Ergebnisneutralität). Ob EPOS-Plan künftig mit einem vorbefüllten Wechselrichterkatalog ausgeliefert wird — und wenn ja, mit welchen Geräten und mit `ReadOnly = 1` — ist ein eigener Entscheid. | **offen** — mit S2 spürbar geworden: Die Klappliste der Strangtabelle ist beim Anwender leer, bis er importiert oder von Hand anlegt |
+| **W6‑O‑1** | **Ein Importwirt statt zwei.** `PvModulImportDialog` (771 Z.) und `WechselrichterImportDialog` (655 Z.) teilten Abrufapparat, Vorprüfung, Konfliktweg und sämtliche Bausteine, aber nicht die `.razor`-Datei (5.5). Die Zusammenlegung verlangte eine neutrale Zeilen- und Detailform (Spalten und Felder als DATEN, wie `ModulFeldwert` im Modulkatalog) und damit den Umbau einer getesteten Maske samt 594 Zeilen bunit-Fällen. | **UMGESETZT in `9ef8ca5`** — Anwenderentscheid vom 06.09.2026: „der OND-Import soll umgesetzt werden. baue daher den Modulimport schon jetzt um (Modulimport und Wechselrichter Import zwei Masken)". Es ist genau der Zeitpunkt, den dieser Punkt selbst benannt hatte. `ModulImportDialog` (669 Z. statt 771 + 655) ist der eine Wirt, `ModulImportProfil` im Kern trägt die Daten, `ImportZeile` die neutrale Zeilenform; die zwei Hüllen sind eine, die beiden alten `.razor` samt `Daten.cs` sind gelöscht, die 594 Zeilen bunit-Fälle sind mitgewandert und grün. Details in 5.5 |
+| **W6‑O‑2** | **MPPT-Zahl und Scheinleistung fehlen im CEC-Bestand.** Die Liste führt weder `Anzahl_Mppt` noch `S_AC_Max`; beide bleiben nach dem Import NULL, und die Prüfungen P4/P5 rechnen dann auf EINEM MPPT. Ob der Auslieferungskatalog von Hand nachgepflegt wird (und für welche Geräte), ist eine Anwenderfrage. | **offen** — mit S2 ist der Umgang damit festgelegt: Die Prüfung rechnet auf EINEM Tracker, die Ampel wird GELB, und der Satz sagt „Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem" (Fall `Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker`). **Mit W6‑O‑1 gibt es einen zweiten Weg an die Zahlen**: Eine `.OND`-Datei führt `NbMPPT`, `PMaxOUT`, `PMaxDC` und `VStart` und füllt damit genau die vier Spalten, die die CEC-Liste offen lässt (5.2). Wer ein Gerät genau braucht, holt es als OND-Datei; die Pflegefrage für den CEC-Bestand selbst bleibt offen |
+| **W6‑O‑3** | **Der Auslieferungsbestand ist leer.** Schritt 65 legt die Tabellen ohne DML an (das ist die Ergebnisneutralität). Ob EPOS-Plan künftig mit einem vorbefüllten Wechselrichterkatalog ausgeliefert wird — und wenn ja, mit welchen Geräten und mit `ReadOnly = 1` — ist ein eigener Entscheid. | **ENTSCHIEDEN und UMGESETZT in `9ef8ca5`** — Anwenderentscheid vom 06.09.2026: „hole die Wechselrichterdaten für den Import", bestätigt als „Liste als Datei und dann über Import (aus Admin-Menü)". **Damit ist die Frage anders beantwortet als gestellt:** Der Katalog bleibt bei der Auslieferung LEER (Schritt 65 unverändert, kein DML, keine `ReadOnly`-Sätze) — ausgeliefert wird die LISTE als Datei, `VDI-3805-Daten/PV/CEC Inverters.csv` neben `CEC Modules.csv` (2 346 Zeilen, 2 343 Geräte, 152 Hersteller; Quelle, Abrufdatum und Lizenz in `LIESMICH_CEC_Inverters.md`). Eingelesen wird sie über **Administration → Datenimport → „Wechselrichter (CEC, OND)…" → „CEC-Datei laden"**; der Dateiwähler macht im Herstellerdatenordner auf. Nachweis: `EPOS.Kern.Tests/CecWechselrichterAuslieferungTests` liest die volle Datei — alle 2 343 Geräte bekommen sechs Stützstellen, Plausibilität **2 040 grün / 303 gelb / 0 rot** |
 | **W6‑O‑4** | **Kein Herstellerfilter über der Wechselrichter-Klappliste der Strangtabelle.** Kapitel 7 sieht ihn vor („mit demselben Herstellerfilter wie die Modulliste"); S2 hat ihn nicht gebaut: Eine zweite Filterzeile IN der Tabelle hätte keinen Platz, und solange W6‑O‑3 offen ist, ist die Liste ohnehin kurz. Sobald ein Auslieferungskatalog mit einigen tausend Geräten steht, braucht es ihn — dann als Zeile ÜBER der Tabelle, nicht in ihr. | **offen** — Umfang klein, Zeitpunkt hängt an W6‑O‑3 |
 | **W6‑O‑6** | **Der abweichende Modultyp je Strang rechnet noch nicht.** `Z_AnlageStrang.ID_PV` steht seit S2 in der Tabelle und reist im Controller hin und zurück; der Rechenweg der Stufe S3 rechnet jeden Strang jedoch mit dem Modul der ANLAGE. Für den Regelfall (ein Modultyp je PV-Anlage) ist das richtig; eine mit einem zweiten Typ erweiterte Anlage rechnet zu genau. Der Schritt gehört mit **W6‑O‑5** zusammen: Dieselbe Frage („welches Modul gilt für diesen Strang?") beantwortet dort die Ampel und hier der Lauf — zwei Stellen, EINE Antwort. | **offen** — neu mit S3 |
+| **W6‑O‑8** | **303 von 2 343 CEC-Geräten sind GELB — und alle aus demselben Grund.** Die Prüfung `WechselrichterPlausibilitaet` meldet „Die Kennlinie fällt im Teillastast" (η30 > η50) für 13 % des Auslieferungsbestands. Gemessen am 06.09.2026 über die volle Liste: Es ist kein Datenfehler, sondern die Modellparabel aus 3.3.3 — bei Geräten mit hohem Wirkungsgrad liegt ihr Scheitel zwischen 30 und 50 %, und genau das ist bei einem guten Stringwechselrichter auch physikalisch richtig. Die Warnung fragt jedes dieser Geräte beim Übernehmen zurück; das ist lästig und sagt nichts. **Empfehlung: Die Regel auf einen Schwellwert heben** (etwa: melden erst, wenn η30 − η50 > 0,01) oder sie auf handgepflegte Sätze beschränken. | **offen** — neu mit W6‑O‑3, Anwenderfrage. Bis dahin: gelb heißt hier „nachsehen", nicht „falsch" |
 | **W6‑O‑7** | **Referenzbasis mit Strängen?** Die Basis `2026-09-05_R2_Zeitbasis` bleibt gültig und byte-gleich: Kein Referenzprojekt führt eine Strangzeile, und genau das ist der Nachweis der Vorrangregel. Ein PRÜFPROJEKT mit Strängen in `Kenndaten_Test.sqlite` würde den Strangweg dagegen in jedem Referenzlauf mitrechnen — und wäre damit die Wache gegen eine spätere stille Änderung am Strangweg, wie sie die elf Projekte heute für den Anlagenweg sind. Kosten: eine neu einzufrierende Basis. **Empfehlung: ja, aber als eigener Schritt** — ein zwölftes Projekt mit einer Ost/West-Anlage an einem knapp ausgelegten Gerät (DC/AC ≈ 1,3), damit Clipping, Kennlinie und Nachtverbrauch alle drei wirken. Solange er aussteht, hält der Prüfstand `PvStrangRechnungTests` den Strangweg. | **offen** — Anwenderentscheid |
 | **W6‑O‑5** | **Das Modul der Ampel ist das der ERSTEN Projektzeile.** `StrangPlausibilitaet` prüft gegen EIN Modul; die Hülle nimmt dafür das erste, das der Katalog kennt (`PhotovoltaikHuelle.ModulDer`). Solange eine PV-Anlage genau einen Modultyp führt — der Regelfall —, ist das richtig. Führt ein Projekt mehrere PV-Zeilen mit VERSCHIEDENEN Modulen, prüft die Ampel gegen das falsche. Sauber wäre das Modul der GEWÄHLTEN Zeile; das weiß nur die Komponente, und der Prüfdelegat bekommt heute nur die Strangliste. Zusammen mit `Z_AnlageStrang.ID_PV` (dem abweichenden Modultyp je Strang, 3.4) gehört das in EINEN Schritt. | **offen** — betrifft die Ampel, nicht die Ablage. **Mit S3 ist der Zwilling dazu benannt** (W6‑O‑6): Der Rechenweg hat dieselbe Lücke, und beide gehören in EINEN Schritt |
 
