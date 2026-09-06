@@ -91,7 +91,7 @@ public sealed class BerechnungsknopfTests
     private static readonly HashSet<string> ErlaubteBefehle = new(StringComparer.Ordinal)
     {
         "frac", "sqrt", "sum", "int", "prod", "min", "max", "cdot",
-        "left", "right", "lvert", "rvert",
+        "left", "right",
         "mathrm", "text", "operatorname", "displaystyle", "begin", "end", "quad",
         "le", "ge", "ne", "approx", "pm", "to", "infty", "in", "dots",
         "eta", "vartheta", "rho", "lambda", "alpha", "beta", "gamma",

@@ -456,7 +456,6 @@ namespace WindowsFormsApplication1
         {
             // Aufbau
             ("cdot", "·"), ("sum", "Σ"), ("prod", "Π"), ("int", "∫"),
-            ("lvert", "|"), ("rvert", "|"),
             // Vergleich, Pfeil, Menge
             ("le", "≤"), ("ge", "≥"), ("ne", "≠"), ("approx", "≈"), ("pm", "±"),
             ("to", "→"), ("infty", "∞"), ("in", "∈"), ("dots", "…"),
