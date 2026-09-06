@@ -523,3 +523,4 @@ Form_Brauchwasser.Berechnung           = Berechnung/Brauchwasser
 Form_Prozesswaerme.Berechnung          = Berechnung/Prozesswärme
 Form_Stromverbraucher.Berechnung       = Berechnung/Strombedarf
 Form_Stromganglinie.Berechnung         = Berechnung/Strombedarf
+Form_QuelleErdreich.Berechnung         = Berechnung/Wärmequelle Erdreich
