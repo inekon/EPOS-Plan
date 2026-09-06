@@ -403,7 +403,7 @@ Geprueft wird ausserdem, ob '''Quelltemperatur minus Spreizung''' dauerhaft unte
 liegt. Gezaehlt werden ausschliesslich die '''Betriebsstunden''' — in Stillstandsstunden
 entzieht niemand Waerme, eine Frostmeldung daraus waere gegenstandslos:
 
-: <math>\displaystyle n_{\mathrm{Frost}} = \lvert \{ t \in \mathrm{Betrieb} : \vartheta_{\mathrm{Q}}(t) - \Delta\vartheta < 0 \} \rvert</math> &nbsp;&nbsp;(18)
+: <math>\displaystyle n_{\mathrm{Frost}} = \left| \{ t \in \mathrm{Betrieb} : \vartheta_{\mathrm{Q}}(t) - \Delta\vartheta < 0 \} \right|</math> &nbsp;&nbsp;(18)
 :: <math>n_{\mathrm{Frost}}</math> – Zahl der Betriebsstunden mit Frost an der Quelle [h/a]
 :: <math>\mathrm{Betrieb}</math> – die Stunden, in denen die Waermepumpe laeuft; Stillstandsstunden zaehlen nicht [–]
 :: <math>\vartheta_{\mathrm{Q}}(t)</math> – Quelltemperatur der Anlage nach (6) bzw. (7) [°C]
