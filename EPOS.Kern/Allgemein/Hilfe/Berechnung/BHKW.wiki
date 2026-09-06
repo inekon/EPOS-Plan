@@ -1,0 +1,200 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: BHKW | Stand: 2026-09-06 | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs
+     (BHKW_Liste_Laden, Betriebsart), EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs,
+     EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs (Spaltenverwendung, Befund W14a-E-8-B3) -->
+
+== Was berechnet wird ==
+
+Ein Blockheizkraftwerk erzeugt Wärme und Strom '''gleichzeitig'''; welche der beiden Größen die
+Maschine führt, entscheidet die '''Betriebsart''' des Projekts. Der Lauf ermittelt Stunde für
+Stunde, welche Module laufen und mit welcher Leistung, und bildet daraus die
+'''Wärmeproduktion''', die '''Stromproduktion''', den '''Brennstoffverbrauch''', die
+'''Emissionen''' und die '''Vollbenutzungsstunden''' — thermisch wie elektrisch.
+
+Der erzeugte Strom deckt zuerst den Strombedarf des Projekts; was darüber hinausgeht, ist
+Stromüberschuss und wird als solcher getrennt weitergereicht — er ist '''keine'''
+Photovoltaikerzeugung und wird nicht wie eine solche vergütet. Die KWK-Zuschläge, die Vergütung des
+Stroms und die Steuerentlastungen sind Sache der Wirtschaftlichkeit; der Lauf liefert ihr die
+Mengen und die Betriebsstunden.
+
+== Eingangsgrößen ==
+
+{| class="wikitable"
+! Größe !! Einheit !! Herkunft im Programm
+|-
+| Offener Wärmebedarf je Kanal || kWh je Stunde || Ergebnis der vorgelagerten Kaskadenstufen
+|-
+| Strombedarf || kWh je Stunde || Strombedarf des Projekts
+|-
+| Betriebsart (wärmegeführt / stromgeführt / ohne Einspeisung) || — || Simulationskonfiguration; sie gilt für das '''ganze Projekt''', nicht je Modul
+|-
+| Thermische Nennleistung || kW || BHKW-Katalog, Feld „P thermisch"
+|-
+| Elektrische Nennleistung || kW || BHKW-Katalog, Feld „P elektrisch"
+|-
+| Gesamtwirkungsgrad (elektrisch + thermisch) || — bzw. % || BHKW-Katalog, Feld „Wirkungsgrad"
+|-
+| Grenzleistung (Modulationsgrenze) || % || BHKW-Katalog, Feld „Grenzleistung"; ersatzweise das Feld „Grenzleistung" der Projektzeile im Dialog „BHKW"
+|-
+| Projektweite Leistungsuntergrenze || % || Simulationskonfiguration; Vorgabe 30&nbsp;%, wenn nicht gepflegt
+|-
+| Brennstoff (Energieträger) || — || BHKW-Katalog; im Projekt änderbar über „Brennstoff Variante"
+|-
+| Emissionsfaktoren CO₂, SO₂, NOₓ, CO, Staub || g/MWh || '''BHKW-Katalog''' — beim BHKW zählen die Gerätewerte, anders als beim Heizkessel
+|-
+| Vorlauf, Rücklauf || °C || Dialog „BHKW", Abschnitt „Modul"
+|-
+| Wärmesenken und Ladeaufträge || — || Simulationskonfiguration, Karte des BHKW
+|-
+| Ladepriorität || 1…99 || Simulationskonfiguration; Vorgabe 30 für das BHKW
+|}
+
+== Rechenweg ==
+
+Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''. Höchstens '''zehn''' Module je
+Projekt gehen in die Rechnung ein; sie werden in jeder Stunde in ihrer Listenreihenfolge
+nacheinander zugeschaltet.
+
+=== Schritt 1 — Kennwerte auflösen ===
+
+Je Modul werden thermische und elektrische Nennleistung, der Gesamtwirkungsgrad, der Brennstoff und
+die fünf Emissionsfaktoren aus dem Katalog gelesen. Die '''Stromkennzahl''' ist das Verhältnis der
+beiden Nennleistungen:
+
+ SKZ = P_el / P_therm
+
+Die '''Modulationsgrenze''' ist ein Faktor (0,5 = 50&nbsp;% Teillast). Sie kommt aus dem Katalog,
+sofern dort ein Wert steht; sonst gilt die projektweite Leistungsuntergrenze. Beide Werte werden als
+'''Prozentangaben''' gepflegt und durch 100 geteilt. Ist die projektweite Untergrenze nicht gepflegt,
+gilt der Rückfall '''30&nbsp;%'''.
+
+=== Schritt 2 — Die drei Fahrweisen ===
+
+Je Stunde steht ein '''Wärmeraum''' zur Verfügung: der offene Momentanbedarf plus der freie Raum im
+zugeordneten Pufferspeicher. Der Speicher wird dabei als Spiegel geführt — sein Zuwachs ist die zu
+ladende Menge, der Rückgang des Restbedarfs die Direktdeckung.
+
+'''Wärmegeführt (Standard).''' Je Modul, in Listenreihenfolge:
+
+ passt P_therm ganz in (Restwärme + freier Speicherraum)?
+   ja   →  Volllast: P_therm und P_el werden gebucht, der Überschuss geht in den Speicher
+   nein →  passt P_therm · Modulationsgrenze noch hinein?
+             ja   →  Teillast: es wird genau (Restwärme + freier Speicherraum) erzeugt,
+                     der Strom anteilig:  P_el · (Restwärme + Raum) / P_therm
+             nein →  das Modul bleibt aus
+
+'''Stromgeführt (Wirtschaftlich).''' Die Module folgen dem '''Strombedarf'''; die Wärme ist
+Koppelprodukt. Eine Speichergrenze gibt es in der Zuschaltung nicht — was über den Wärmebedarf
+hinaus entsteht, geht in die Ladephase und, wenn dort nichts mehr aufnimmt, in den
+Wärmeüberschuss.
+
+ P_el < Reststrom?
+   ja   →  Volllast
+   nein →  P_el · Modulationsgrenze ≤ Reststrom?
+             ja   →  Teillast genau auf den Reststrom, Wärme anteilig
+             nein →  das Modul bleibt aus
+
+'''Ohne Einspeisung (Zero-Export).''' Zwei Durchläufe über die Module: erst die wärmeseitige
+Zuschaltung (dieselben zwei Fälle wie wärmegeführt), dann die stromseitige. In beiden gilt
+zusätzlich die Zero-Export-Bedingung: '''Reicht der Strombedarf nicht, bleibt das Modul aus''' —
+eingespeist wird nichts. Ein Modul, dessen Teillaststrom noch über dem Reststrombedarf läge, wird
+also abgeregelt, auch wenn Wärme gebraucht würde.
+
+=== Schritt 3 — Wärme unterbringen ===
+
+Die erzeugte Wärme geht in drei Wege, und jede kWh geht genau einen davon:
+
+ Produktion = Direktdeckung + Speicherladung + Überschuss
+
+Die '''Direktdeckung''' läuft über die Direktsenken des Moduls, bei der Senkenart „beides" mit
+Warmwasservorrang. Ein Modul, dessen Hauptsenke ein '''Puffer''' ist, deckt in dieser Phase
+'''nichts''' — es läuft erst in der Ladephase gegen den Bilanzraum des Speichers; sonst wäre
+dieselbe kWh zweimal gebucht. Der '''Überschuss''' ist Wärme, die weder gedeckt noch gespeichert
+werden konnte; sie ist verworfen. Die Gleichung wird nach jedem Lauf über die Jahressumme '''und
+über jede einzelne Stunde''' nachgerechnet.
+
+Mit dem Vorgaberang '''30''' lädt das BHKW nach Solarthermie (10) und Wärmepumpe (20), aber vor dem
+Heizkessel (40).
+
+=== Schritt 4 — Strom ===
+
+Die Stromproduktion der Stunde mindert den Strombedarf des Projekts. Bleibt danach ein '''negativer'''
+Restbedarf, ist das BHKW-Stromüberschuss: Er wird bewusst nicht auf 0 geklemmt, damit ein
+Stromspeicher ihn laden kann, wird aber im Photovoltaikzweig getrennt ausgewiesen und '''nicht''' als
+PV-Einspeisung behandelt.
+
+=== Schritt 5 — Verbrauch, Emissionen, Laufzeiten ===
+
+Aus den Jahressummen je Modul:
+
+ Verbrauch [MWh] = (Wärme [MWh] + Strom [MWh]) / Gesamtwirkungsgrad
+
+Die Emissionen folgen diesem Verbrauch, mit den Faktoren des '''Geräts''':
+
+ Emission [kg] = Verbrauch [MWh] · Faktor [g/MWh] / 1000
+
+Der Verbrauch geht auf denselben Satz Brennstoffzähler wie beim Heizkessel (Gas 1…5 und 14, Öl 6…9
+und 18…22, Koks 10, Kohle 11, Holz 12, Pellets 15, Rapsöl 16, tierische Fette 17, alles Übrige auf
+den Sammelposten). Bei Gasmodulen kommt die '''Gasspitze''' dazu:
+
+ Gasspitze = P_therm · (1 + SKZ) / Gesamtwirkungsgrad
+
+Die Laufzeiten sind '''Vollbenutzungsstunden''', keine Betriebsstunden:
+
+ Vbh_therm = Wärme [MWh] / P_therm · 1000                            [h/a]
+ Vbh_el    = Strom [MWh] / P_el   · 1000                             [h/a]
+
+Ein Modul, das ein Jahr lang zur Hälfte moduliert läuft, hat 8&nbsp;760 Betriebsstunden, aber nur
+4&nbsp;380 thermische Vollbenutzungsstunden. Die Summe über mehrere Module kann 8&nbsp;760 deshalb
+überschreiten. Für die Anlage insgesamt wird die elektrische Kennzahl '''leistungsgewichtet'''
+gebildet — Module ohne gepflegte elektrische Nennleistung bleiben in Zähler und Nenner außen vor.
+
+== Grenzen und Annahmen ==
+
+* '''Die Betriebsart gilt für das ganze Projekt.''' Zwei Module mit unterschiedlicher Fahrweise
+  lassen sich nicht abbilden.
+* '''Ein Wirkungsgrad, keine Teillastkennlinie.''' Der Gesamtwirkungsgrad gilt unabhängig von der
+  Auslastung; ein moduliertes Modul rechnet mit demselben Wert wie ein voll laufendes. Auch das
+  Verhältnis von Strom zu Wärme (die Stromkennzahl) bleibt in Teillast unverändert.
+* '''Keine Taktung, keine Mindestlaufzeit, keine Anfahrverluste.''' Ein Modul läuft in einer Stunde
+  ganz, moduliert oder gar nicht.
+* '''Keine Bereitschaftsverluste''' im Stillstand — anders als beim Heizkessel gibt es dafür keinen
+  Katalogwert.
+* '''Der Sommerbetrieb des Vorläufers ist entfallen.''' Die alte Fassung trug einen zweiten
+  Zuschaltweg für die Tagesstunden 11…21 samt zwei Notschaltungen bei 10 und 20&nbsp;%; er war
+  hinter einer Bedingung eingeschlossen, die für jede Stunde des Jahres wahr ist, und damit
+  unerreichbar. Sein Entfernen war ergebnisneutral. Ihn zurückzuholen wäre eine fachliche
+  Änderung.
+* '''`Investition je kW elektrisch` ist eine Dublette ohne Leser''' (Befund W14a‑E‑8‑B3): Der Wert
+  wird seit dem 22.08.2026 aus den fünf Einzelposten '''abgeleitet''' und schreibgeschützt
+  angezeigt; die Kostenplanung rechnet mit den Posten selbst. Er ist richtig, aber er geht in keine
+  Rechnung ein.
+* '''Vorlauf und Rücklauf des Katalogs''' rechnen nicht mit — der Lauf nimmt die Werte der
+  Projektzeile.
+* '''Höchstens zehn Module''' je Projekt.
+* '''KWKG, Stromsteuer und Energiesteuer''' sind nicht Teil des Laufs. Sie hängen an den hier
+  ermittelten Mengen und Vollbenutzungsstunden und werden in der Wirtschaftlichkeit gerechnet.
+
+== Ergebnisse und wo sie stehen ==
+
+* '''Simulationsergebnis, Reiter „BHKW"''' — je Modul Wärme- und Stromproduktion,
+  Brennstoffverbrauch, thermische und elektrische Vollbenutzungsstunden, Emissionen; dazu die
+  Ganglinien von Produktion, Direktdeckung, Speicherladung und Überschuss.
+* '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil des BHKW an der Jahreswärme.
+* '''Simulationsergebnis, Reiter „Ergebnis"''' — der Beitrag zur Stromdeckung und der
+  Stromüberschuss.
+* '''Simulationsprotokoll''' — die Energieprobe des Moduls und die Meldungen zu Senken und
+  Ladeaufträgen.
+* '''Bericht''' und '''Wirtschaftlichkeit''' — Strommenge, Wärmemenge, Brennstoff und
+  Vollbenutzungsstunden sind die Bezugsgrößen der KWK-Rechnung.
+
+== Bezüge ==
+
+* [[Programm Dokumentation/BHKW|BHKW]] — Bedienung des Dialogs, Katalog, Brennstoffvarianten
+* [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Phasen der Stundenschleife, Betriebsart
+* [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Bilanzraum, Ladeordnung und Speicherentladung
+* [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]] — der nachrangige Erzeuger, und der Gegenfall bei den Emissionsfaktoren
+* [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]] — wohin der BHKW-Stromüberschuss geht
+* [[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]] — der Überschuss als Ladequelle
+* [[Programm Dokumentation/Emissionen|Emissionen]] — Herkunft und Pflege der Emissionsfaktoren
+* [[Programm Dokumentation/Wirtschaftlichkeit|Wirtschaftlichkeit]] — KWK-Zuschlag, Stromvergütung, Steuerentlastung

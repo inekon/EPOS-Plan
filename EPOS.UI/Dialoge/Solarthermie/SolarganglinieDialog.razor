@@ -104,6 +104,16 @@
 
     </Zweispaltenauswahl>
 
+    @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er steht hier, weil
+       diese Maske am haeufigsten die Frage aufwirft, wie der Solarertrag entsteht -
+       die Seite sagt, dass der Lauf ihn aus Klimadaten und Kollektorkennwerten
+       rechnet und diese Ganglinien NICHT liest. Der Fensterknopf oben rechts
+       bleibt, was er ist. *@
+    <div class="epos-berechnungshilfe">
+        <InfoKnopf Schluessel="Form_Solarganglinie.Berechnung"
+                   StandardKurztext="Berechnungsweg Solarthermie" />
+    </div>
+
     <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
     <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
               Mehrzeilig="true" Zeilen="3" />
