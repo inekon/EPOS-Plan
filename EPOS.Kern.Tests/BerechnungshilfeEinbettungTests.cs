@@ -35,6 +35,14 @@ namespace EPOS.Kern.Tests
     /// Ressource, die als ASCII oder in einer Codepage herauskäme, wäre für den
     /// KI-Assistenten Zeichensalat. Der letzte Fall hält genau das.</para>
     ///
+    /// <para><b>Fassung 3 (06.09.2026).</b> Der Anwender lässt die
+    /// Math-Erweiterung installieren; die umgestellten Seiten tragen ihre Formeln
+    /// als LaTeX in <c>&lt;math&gt;</c> statt in Unicode-Zeichen. Für sie prüft der
+    /// letzte Fall das Gegenstück: <c>&lt;math&gt;</c> und mindestens einer der
+    /// tragenden Befehle überstehen die Einbettung. Solange nur ein Teil der Rubrik
+    /// umgestellt ist, entscheidet <see cref="SeitenDiesesTeils"/>, welche der
+    /// beiden Fassungen eine Seite halten muss.</para>
+    ///
     /// <para>Keine Datenbank, keine <c>Dienste.*</c> — deshalb ohne Sammlung.</para>
     /// </summary>
     public class BerechnungshilfeEinbettungTests
@@ -119,10 +127,13 @@ namespace EPOS.Kern.Tests
         /// Kommt eines dieser Zeichen nicht an, ist die Kodierung unterwegs
         /// verlorengegangen.</para>
         ///
-        /// <para>Gleichzeitig hält der Fall die zwei Verbote der Fassung 2 auf dem
-        /// Weg, auf dem die Seiten wirklich ausgeliefert werden: keine
-        /// <c>&lt;math&gt;</c>-Auszeichnung, kein LaTeX-Befehl.</para>
+        /// <para>Gleichzeitig hält der Fall die Notation der jeweiligen Fassung auf
+        /// dem Weg, auf dem die Seiten wirklich ausgeliefert werden: Fassung 2
+        /// KEINE <c>&lt;math&gt;</c>-Auszeichnung und keinen LaTeX-Befehl,
+        /// Fassung 3 genau umgekehrt <c>&lt;math&gt;</c> und mindestens einen der
+        /// tragenden Befehle (<c>\cdot</c>, <c>\frac</c>, <c>\sum</c>).</para>
         /// </summary>
+        // TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen (dann fällt der Zweig der Fassung 2 weg)
         [Theory]
         [MemberData(nameof(SeitenDerRubrik))]
         public void Die_Formelzeichen_ueberstehen_die_Einbettung(string seite)
@@ -136,6 +147,25 @@ namespace EPOS.Kern.Tests
             using var leser = new StreamReader(strom, new UTF8Encoding(false), true);
             string inhalt = leser.ReadToEnd();
 
+            if (SeitenDiesesTeils.Contains(seite, StringComparer.Ordinal))
+            {
+                // Fassung 3: LaTeX in <math> — die Auszeichnung selbst und die
+                // Befehle sind das, was ankommen muss.
+                Assert.True(inhalt.Contains("<math>", StringComparison.Ordinal),
+                            "Die eingebettete Seite " + seite + " führt keine " +
+                            "<math>-Auszeichnung — entweder fehlt die Fassung 3, oder die " +
+                            "Einbettung liefert einen alten Stand.");
+
+                Assert.True(BEFEHLE_DER_FASSUNG_3.Any(b => inhalt.Contains(b, StringComparison.Ordinal)),
+                            "Die eingebettete Seite " + seite + " führt keinen der Befehle (" +
+                            string.Join(" ", BEFEHLE_DER_FASSUNG_3) + ") — eine Formelseite " +
+                            "ohne Multiplikation, Bruch oder Summe gibt es in dieser Rubrik nicht.");
+
+                Assert.DoesNotContain("<big>", inhalt, StringComparison.Ordinal);
+                return;
+            }
+
+            // Fassung 2: Unicode-Notation.
             foreach (string zeichen in ZEICHEN_DER_NOTATION)
                 Assert.True(inhalt.Contains(zeichen, StringComparison.Ordinal),
                             "Die eingebettete Seite " + seite + " führt das Zeichen '" +
@@ -179,7 +209,27 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Das Zeichen, das auf JEDER Seite steht: der Malpunkt (U+00B7). Das
+        /// Die sieben Seiten, die dieser Auftrag auf die FASSUNG 3 umstellt
+        /// (Erzeuger und Speicher). Nur für sie gilt der LaTeX-Zweig des letzten
+        /// Falls; die übrigen tragen bis zur Zusammenführung ihre Fassung 2.
+        /// </summary>
+        // TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen
+        private static readonly string[] SeitenDiesesTeils =
+        {
+            "Heizkessel", "BHKW", "Wärmepumpe", "Pufferspeicher", "Solarthermie",
+            "Photovoltaik", "Stromspeicher"
+        };
+
+        /// <summary>
+        /// Davon steht mindestens EINER in den Formeln jeder Seite der Fassung 3.
+        /// Ein bestimmter Befehl taugt dafür nicht: Nicht jede Seite hat eine
+        /// Summe, aber keine kommt ohne Multiplikation oder Bruch aus.
+        /// </summary>
+        private static readonly string[] BEFEHLE_DER_FASSUNG_3 = { "\\cdot", "\\frac", "\\sum" };
+
+        /// <summary>
+        /// Das Zeichen, das auf JEDER Seite der Fassung 2 steht: der Malpunkt
+        /// (U+00B7). Das
         /// typografische Minus (U+2212) steht nur, wo die Seite subtrahiert —
         /// Prozesswärme und Strombedarf tun das nicht (Zusammenführung 06.09.2026).
         /// </summary>
