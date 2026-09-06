@@ -152,7 +152,7 @@
     {
         try
         {
-            string s = Resource.ResourceManager.GetString(schluessel, Resource.Culture);
+            string? s = Resource.ResourceManager.GetString(schluessel, Resource.Culture);
             return string.IsNullOrEmpty(s) ? rueckfall : s;
         }
         catch (Exception)
