@@ -32,7 +32,7 @@ an, nicht die Maske).
 > **Entscheid des Anwenders vom 06.09.2026.** „Setze Vorschlag fuer Wechselrichter um“;
 > zu den zehn Entscheidungsfragen: „W6‑E‑2‑Q1 bis Q10: Empfehlung, ja alle". Damit ist
 > jede Empfehlung aus Kapitel 11 angenommen. **Alle drei Stufen sind umgesetzt**:
-> S1 (Commit `40fc542`, Zweig `ios_migration`), S2 (`c02cd99`) und **S3** (`@@SHA@@`,
+> S1 (Commit `40fc542`, Zweig `ios_migration`), S2 (`c02cd99`) und **S3** (`d88243e`,
 > siehe Kapitel 8). Dazu kam der neue Anwenderwunsch **W6‑E‑3** — zwei
 > sichtbare Optionen im PV-Dialog (Kapitel 7.1), umgesetzt in S2.4.
 >
@@ -1214,7 +1214,7 @@ Umsetzungsprotokoll: Die Anmutung des Abschnitts, das Zusammenspiel von Klapplis
 Katalog am echten Bestand und die Ampel an einem gepflegten Modul sind ohne Windows nicht
 prüfbar.
 
-### Stufe S3 — Rechenweg, Kennzahlen, Kosten — **UMGESETZT in `@@SHA@@`**
+### Stufe S3 — Rechenweg, Kennzahlen, Kosten — **UMGESETZT in `d88243e`**
 
 | Nr. | Inhalt | Stand |
 |---|---|---|
@@ -1362,7 +1362,7 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
    Bitgleichheit hängt an der Zuordnung, nicht am Modellschalter. Damit fällt der ausgegraute
    Knopf, der diesen Wunsch ausgelöst hat.
 6. ~~**S2 und S3 zusammen ausliefern**~~ — **beide erledigt am 06.09.2026** (`c02cd99`
-   und `@@SHA@@`). Der Referenzbasiswechsel bleibt wie empfohlen AUS: Kein
+   und `d88243e`). Der Referenzbasiswechsel bleibt wie empfohlen AUS: Kein
    Referenzprojekt führt Stränge, die Basis `2026-09-05_R2_Zeitbasis` bleibt
    byte-gleich gültig, und ob überhaupt ein Prüfprojekt mit Strängen in die
    Testdatenbank soll, ist ein eigener Anwenderentscheid (**W6‑O‑7**).

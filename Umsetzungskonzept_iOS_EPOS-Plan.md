@@ -3232,6 +3232,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `Der_Wechselrichter_rechnet_in_S2_noch_nicht`. Neue offene Punkte **W6‑O‑4** (kein Herstellerfilter über der Klappliste der
 > Strangtabelle) und **W6‑O‑5** (die Ampel prüft gegen das Modul der ersten Projektzeile). Elf Abnahmepunkte A‑W6‑E‑2‑S2 in der
 > Sitzungsmeldung. S3 (Rechenweg, Kennzahlen, Prüfstand) läuft.
+>
+> **Wechselrichter Stufe S3 (W6‑E‑2, W6‑E‑3), umgesetzt in `d88243e`:** Der Rechenweg Module → Strang → MPPT → Gerät → Clipping
+> steht. `PvStrangModell` (neu, ohne Datenbank und Oberfläche) trägt die Kennlinie mit sechs Stützstellen, die Gerätegruppierung
+> nach (Wechselrichter, Gerätenummer), Clipping und Nachtverbrauch; `SimulationPV` bekommt einen DRITTEN Zweig, die zwei
+> vorhandenen bleiben Zeichen für Zeichen stehen. **Die Vorrangregel steht VOR dem Datenbankzugriff:** Gelesen wird erst, wenn
+> eine Anlagenzeile den Schalter `KATALOG` trägt — ein Bestandsprojekt kostet keine einzige zusätzliche Abfrage, dann sind es
+> zwei für das ganze Projekt; ein Transpositions-Zwischenspeicher je (Neigung, Azimut) rechnet die Sonnengeometrie eines
+> Ost/West-Feldes zweimal, nicht achtmal. Kennzahlen (DC/AC, Clipping in kWh und %, Volllaststunden AC, Jahresnutzungsgrad,
+> Nachtverbrauch) stehen im Simulationsprotokoll, auf der PV-Karte und als zweite Tabelle im Ergebnisreiter;
+> `Tab_ErgebnisPhotovoltaik` bleibt unverändert. Die Wechselrichterkosten sind ein eigener Posten der PV-Investition (**Q8**),
+> nur für Anlagen auf dem Weg `KATALOG`. Aufgeräumt: der S3-Hinweis ist fort, zehn Katalogspalten stehen auf `Simulation` und
+> `Kosten` auf `Wirtschaftlichkeit`, der Merkposten ist zum Zeugen `Der_Wechselrichter_rechnet_ab_S3` geworden. **Ein Befund
+> aus S2 dazu:** Der Persistenzwert „vereinfacht" war 21 Zeichen lang und passte nicht in seine `TEXT(20)`-Spalte — jedes
+> Speichern einer Anlage mit dieser Wahl scheiterte; er heißt jetzt `VEREINFACHT`, eine Migration braucht es nicht. Prüfstand
+> `PvStrangRechnungTests`: **15 Fälle**, darunter die Bitgleichheit ohne Zuordnung, der Ein-Strang-Fall gegen den Anlagenweg
+> (bitgleich) und Ost/West als Zerlegung — **478,6 kWh = 554,5 kWh gemeinsames Clipping − 75,9 kWh Kennliniengewinn**. Gate
+> grün: Kern 1 479 / UI 2 829, Designer „abweichend 0", SQL 0 Fundstellen, ChartProben 40/0, **Referenzlauf 1030/1007/1017
+> byte-gleich**. Konzept auf Rev. 4; neu offen **W6‑O‑6** (Modultyp je Strang rechnet noch nicht, Zwilling zu W6‑O‑5) und
+> **W6‑O‑7** (Referenzbasis mit Strängen: Empfehlung ein zwölftes Prüfprojekt Ost/West in der Testdatenbank, Anwenderentscheid).
+> Damit sind S1, S2 und S3 des Wechselrichter-Konzepts umgesetzt; sechs Abnahmepunkte A‑W6‑E‑2‑S3 in der Sitzungsmeldung.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
