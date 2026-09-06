@@ -1,0 +1,655 @@
+﻿@* Import von Wechselrichtern aus der CEC-Liste (NREL/SAM) — Stufe S1.5 des
+   Konzept_Wechselrichter_EPOS-Plan.md, Anwenderentscheid W6-E-2 vom 06.09.2026.
+
+   ZWEITE AUSPRAEGUNG DES MODULIMPORTS (Entscheidungsfrage Q10). Sie teilt mit
+   PvModulImportDialog alles, was sich teilen laesst, und zwar dort, wo es
+   hingehoert — im KERN und in den BAUSTEINEN:
+
+     * der Netzabruf mit Rueckfallkette, 30-Tage-Zwischenspeicher, Zeitgrenze,
+       Fortschrittsmelder und Abbruch: CecWechselrichterDienst, Zwilling von
+       CECDataService, mit demselben Meldungstyp CecFortschritt und denselben
+       Ressourcenschluesseln CEC_PROT_*/CEC_MSG_*;
+     * die Vorpruefung: DublettenPruefung.PruefeKandidaten ueber die
+       KatalogRegistry-Definition "WECHSELRICHTER" — dieselbe Kette wie bei den
+       vier VDI-Importen und beim Modulimport;
+     * die Oberflaechenbausteine: Fortschritt (mit Abbrechen), das
+       VIRTUALISIERTE Raster, Zeilenwahl, Formularraster, Warnbanner,
+       Rueckfrage und der ImportKonflikteDialog in einer Ueberlagerung;
+     * das Ergebnis der Vorpruefung: PvVorpruefung — sie kennt keinen Satztyp
+       und traegt hier unveraendert.
+
+   WAS VERSCHIEDEN IST, ist genau das, was Konzept 5.5 aufzaehlt: Spaltensatz,
+   Detailfelder, Filterleiste, Zieltabelle und Beschriftungen. Der PV-Dialog
+   traegt sie als 771 Zeilen typisierten Markups gegen UnifiedModule; ihn
+   nachtraeglich auf eine neutrale Zeilenform umzubauen hiesse, eine getestete
+   Maske samt 594 Zeilen bunit-Faellen anzufassen, ohne dass S1 dadurch etwas
+   koennte. Diese Komponente ist deshalb der ZWEITE Wirt derselben Bausteine
+   und bleibt bei 300 statt 771 Zeilen — der Einwand aus Konzept 5.5 („ein
+   eigener Dialog verdoppelte 771 Zeilen fuer zwei Unterschiede") trifft sie
+   nicht. Die Zusammenlegung beider Wirte auf EINE profilgetriebene Komponente
+   ist als offener Punkt W6-O-1 festgehalten.
+
+   KEIN PAN-/OND-ZWEIG. PVsyst .OND ist ausdruecklich nicht Teil von S1
+   (Konzept 8, Stufe S1.5) — er kommt als zweite Quelle in DIESE Maske, sobald
+   S2 laeuft. Deshalb gibt es hier keine zweite Quellentaste.
+
+   TASTATUR: Esc schliesst die oberste Ebene; waehrend eines Laufs bricht Esc
+   ihn ab. Enter ist NICHT belegt — der Uebernehmen-Knopf schreibt sofort. *@
+
+@namespace EPOS.UI.Dialoge.Photovoltaik
+@using System.Threading
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-pvimport" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Herleitungszeile Text="@KopfbandText" />
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+                @onclick="BeiLaden">@LadenText</button>
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-pvimport-status">@StatusText</span>
+    </div>
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@null" Text="@_fortschrittText"
+                 Abbrechen="@(_abbruch is null ? null : AbbrechenCallback)"
+                 AbbrechenText="@AbbrechenText" />
+
+    @* --- Die Filterleiste ------------------------------------------------ *@
+    <div class="epos-pvimport-filter">
+        <Auswahlfeld Bezeichnung="@LabelHersteller" Eintraege="@_herstellerliste"
+                     Auswahl="@_iHersteller" AuswahlChanged="BeiHersteller" Aktiv="@(!_laeuft)" />
+        <Textfeld Bezeichnung="@LabelSuche" Wert="@_suche" WertChanged="BeiSuche"
+                  Platzhalter="@SuchePlatzhalter" />
+        <Zahlenfeld Bezeichnung="@LabelLeistungVon" Wert="@_pMin"
+                    WertChanged="@(w => { _pMin = w; Filtern(); })"
+                    Min="0" Max="10000" Nachkommastellen="2" Einheit="@EinheitKw" Aktiv="@(!_laeuft)" />
+        <Zahlenfeld Bezeichnung="@LabelBis" Wert="@_pMax"
+                    WertChanged="@(w => { _pMax = w; Filtern(); })"
+                    Min="0" Max="10000" Nachkommastellen="2" Einheit="@EinheitKw" Aktiv="@(!_laeuft)" />
+        <button type="button" class="epos-knopf" @onclick="Zuruecksetzen">@ZuruecksetzenText</button>
+    </div>
+
+    @* --- Das Geraeteraster (2 343 Zeilen, Stand 06.09.2026) --------------- *@
+    <Raster TZeile="Geraetezeile" Zeilen="@Zeilen" Virtualisiert="@Virtualisieren">
+        <KindInhalt>
+            <TemplateColumn TGridItem="Geraetezeile" Title="@SpalteWahlText">
+                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Zeile)" Kurztext="@SpalteWahlText"
+                            Gewaehltwerden="() => Waehlen(context)" />
+            </TemplateColumn>
+            <PropertyColumn TGridItem="Geraetezeile" TProp="string"
+                            Property="@(z => z.Name)" Title="@SpalteGeraetText" />
+            <PropertyColumn TGridItem="Geraetezeile" TProp="string"
+                            Property="@(z => z.Hersteller)" Title="@LabelHersteller" />
+            <PropertyColumn TGridItem="Geraetezeile" TProp="string"
+                            Property="@(z => z.PAcText)" Title="@SpaltePAcText" />
+            <PropertyColumn TGridItem="Geraetezeile" TProp="string"
+                            Property="@(z => z.EtaEuroText)" Title="@SpalteEtaEuroText" />
+            <PropertyColumn TGridItem="Geraetezeile" TProp="string"
+                            Property="@(z => z.MppText)" Title="@SpalteMppText" />
+            <PropertyColumn TGridItem="Geraetezeile" TProp="string"
+                            Property="@(z => z.UDcMaxText)" Title="@SpalteUDcMaxText" />
+        </KindInhalt>
+    </Raster>
+
+    @* --- Die Detailfelder in zwei Reitern --------------------------------- *@
+    <Reiter Bezeichnung="@TitelText">
+      <KindInhalt>
+        <Reiterblatt Schluessel="GERAET" Titel="@ReiterGeraetText">
+          <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                <Textfeld Bezeichnung="@SpalteGeraetText" Wert="@Wert(g => g.Name)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelHersteller" Wert="@Wert(g => g.Hersteller)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelPAcNenn" Wert="@Zahl(g => g.Paco / 1000.0, 3)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelUMppMin" Wert="@Zahl(g => g.MpptLow, 1)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelUMppMax" Wert="@Zahl(g => g.MpptHigh, 1)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelUDcMax" Wert="@Zahl(g => g.Vdcmax, 1)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelIDcMax" Wert="@Zahl(g => g.Idcmax, 2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelPStandby" Wert="@Zahl(g => g.Pso, 3)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelPNacht" Wert="@Zahl(g => g.Pnt, 3)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelCecDatum" Wert="@Wert(g => g.CecDatum)" NurLesen="true" />
+                </KindInhalt>
+            </Formularraster>
+          </KindInhalt>
+        </Reiterblatt>
+
+        <Reiterblatt Schluessel="KENNLINIE" Titel="@ReiterKennlinieText">
+          <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                <Textfeld Bezeichnung="@LabelEta05" Wert="@Stuetzstelle(0)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelEta10" Wert="@Stuetzstelle(1)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelEta20" Wert="@Stuetzstelle(2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelEta30" Wert="@Stuetzstelle(3)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelEta50" Wert="@Stuetzstelle(4)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelEta100" Wert="@Stuetzstelle(5)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelEtaEuro" Wert="@EtaEuroText" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelSandiaPdco" Wert="@Zahl(g => g.Pdco, 2)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelSandiaVdco" Wert="@Zahl(g => g.Vdco, 1)" NurLesen="true" />
+                <Textfeld Bezeichnung="@LabelSandiaC0" Wert="@Zahl(g => g.C0, 8)" NurLesen="true" />
+                </KindInhalt>
+            </Formularraster>
+            <Herleitungszeile Text="@HinweisKennlinie" />
+          </KindInhalt>
+        </Reiterblatt>
+      </KindInhalt>
+    </Reiter>
+
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!UebernehmenErlaubt)"
+                @onclick="BeiUebernehmen">@UebernehmenText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
+    </div>
+
+    @* --- Plausibilitaet: Warnungen fragen zurueck, Fehler sperren --------- *@
+    <Rueckfrage Offen="@_plausiOffen" TitelText="@TextPlausiTitel" Frage="@_plausiText"
+                JaText="@TextJa" NeinText="@TextNein" Beantwortet="PlausiFertig" />
+
+    <Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_konflikteOffen)
+            {
+                <EPOS.UI.Dialoge.Import.ImportKonflikteDialog
+                    Pruefungen="@_konfliktPruefungen" VergebeneNamen="@_konfliktNamen"
+                    Geschlossen="KonflikteFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Eine Zeile des Geräterasters — sieben Spalten.</summary>
+    public sealed record Geraetezeile(int Zeile, string Name, string Hersteller,
+                                      string PAcText, string EtaEuroText,
+                                      string MppText, string UDcMaxText);
+
+    private static readonly System.Globalization.CultureInfo Invariant =
+        System.Globalization.CultureInfo.InvariantCulture;
+
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Holt die CEC-Wechselrichterliste (Netz oder Zwischenspeicher).</summary>
+    [Parameter]
+    public Func<IProgress<CecFortschritt>, CancellationToken, Task<WrLeseErgebnis>>? Laden { get; set; }
+
+    /// <summary>Vorprüfung des gewählten Geräts gegen den Katalog.</summary>
+    [Parameter] public Func<CecWechselrichter, Task<PvVorpruefung>>? Vorpruefen { get; set; }
+
+    /// <summary>Legt den Katalogsatz neu an; <c>false</c> = es blieb aus.</summary>
+    [Parameter] public Func<CecWechselrichter, string, Task<bool>>? Anlegen { get; set; }
+
+    /// <summary>Aktualisiert den Bestandssatz mit dieser Id.</summary>
+    [Parameter] public Func<CecWechselrichter, int, Task<bool>>? Ueberschreiben { get; set; }
+
+    /// <summary>Übersetzt einen Meldungsschlüssel des Dienstes.</summary>
+    [Parameter] public Func<CecFortschritt, string>? Meldungstext { get; set; }
+
+    /// <summary>Der Dialog ist zu Ende. <c>true</c> = es wurde etwas geschrieben.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string TitelText { get; set; } = Resource.WRK_IMP_TITEL;
+    [Parameter] public string KopfbandText { get; set; } = Resource.WRK_IMP_KOPFBAND;
+    [Parameter] public string LadenText { get; set; } = Resource.WRK_IMP_BTN_CEC;
+    [Parameter] public string ZuruecksetzenText { get; set; } = Resource.PVIMP_BTN_ZURUECKSETZEN;
+    [Parameter] public string UebernehmenText { get; set; } = Resource.PVIMP_BTN_UEBERNEHMEN;
+    [Parameter] public string SchliessenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
+
+    [Parameter] public string LabelHersteller { get; set; } = Resource.WRK_LBL_FIRMA;
+    [Parameter] public string LabelSuche { get; set; } = Resource.PVIMP_LBL_SUCHE;
+    [Parameter] public string SuchePlatzhalter { get; set; } = Resource.PVIMP_PLATZHALTER_SUCHE;
+    [Parameter] public string LabelLeistungVon { get; set; } = Resource.WRK_IMP_LBL_P_AC_VON;
+    [Parameter] public string LabelBis { get; set; } = Resource.IMP_KAT_FILTER_BIS;
+    [Parameter] public string EinheitKw { get; set; } = "kW";
+
+    [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string SpalteGeraetText { get; set; } = Resource.WRK_IMP_SP_GERAET;
+    [Parameter] public string SpaltePAcText { get; set; } = Resource.WRK_IMP_SP_P_AC;
+    [Parameter] public string SpalteEtaEuroText { get; set; } = Resource.WRK_IMP_SP_ETA_EURO;
+    [Parameter] public string SpalteMppText { get; set; } = Resource.WRK_IMP_SP_MPP;
+    [Parameter] public string SpalteUDcMaxText { get; set; } = Resource.WRK_IMP_SP_U_DC_MAX;
+
+    [Parameter] public string ReiterGeraetText { get; set; } = Resource.WRK_GRUPPE_GERAET;
+    [Parameter] public string ReiterKennlinieText { get; set; } = Resource.WRK_GRUPPE_WIRKUNGSGRAD;
+
+    [Parameter] public string LabelPAcNenn { get; set; } = Resource.WRK_LBL_P_AC_NENN;
+    [Parameter] public string LabelUMppMin { get; set; } = Resource.WRK_LBL_U_MPP_MIN;
+    [Parameter] public string LabelUMppMax { get; set; } = Resource.WRK_LBL_U_MPP_MAX;
+    [Parameter] public string LabelUDcMax { get; set; } = Resource.WRK_LBL_U_DC_MAX;
+    [Parameter] public string LabelIDcMax { get; set; } = Resource.WRK_LBL_I_DC_MAX;
+    [Parameter] public string LabelPStandby { get; set; } = Resource.WRK_LBL_P_STANDBY;
+    [Parameter] public string LabelPNacht { get; set; } = Resource.WRK_LBL_P_NACHT;
+    [Parameter] public string LabelCecDatum { get; set; } = Resource.WRK_IMP_LBL_CEC_DATUM;
+
+    [Parameter] public string LabelEta05 { get; set; } = Resource.WRK_LBL_ETA05;
+    [Parameter] public string LabelEta10 { get; set; } = Resource.WRK_LBL_ETA10;
+    [Parameter] public string LabelEta20 { get; set; } = Resource.WRK_LBL_ETA20;
+    [Parameter] public string LabelEta30 { get; set; } = Resource.WRK_LBL_ETA30;
+    [Parameter] public string LabelEta50 { get; set; } = Resource.WRK_LBL_ETA50;
+    [Parameter] public string LabelEta100 { get; set; } = Resource.WRK_LBL_ETA100;
+    [Parameter] public string LabelEtaEuro { get; set; } = Resource.WRK_LBL_ETA_EURO;
+    [Parameter] public string LabelSandiaPdco { get; set; } = Resource.WRK_IMP_LBL_SANDIA_PDCO;
+    [Parameter] public string LabelSandiaVdco { get; set; } = Resource.WRK_IMP_LBL_SANDIA_VDCO;
+    [Parameter] public string LabelSandiaC0 { get; set; } = Resource.WRK_IMP_LBL_SANDIA_C0;
+
+    [Parameter] public string HinweisKennlinie { get; set; } = Resource.WRK_IMP_HINWEIS_KENNLINIE;
+    [Parameter] public string TextAlle { get; set; } = Resource.PVIMP_ALLE;
+    [Parameter] public string TextJa { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string TextNein { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string TextBereit { get; set; } = Resource.PVIMP_STATUS_BEREIT;
+    [Parameter] public string VorlageGefunden { get; set; } = Resource.PVIMP_STATUS_GEFUNDEN;
+    [Parameter] public string TextKeineAuswahl { get; set; } = Resource.PVIMP_MSG_KEINE_AUSWAHL;
+    [Parameter] public string TextGespeichert { get; set; } = Resource.PVIMP_MSG_GESPEICHERT;
+    [Parameter] public string TextAktualisiert { get; set; } = Resource.PVIMP_MSG_AKTUALISIERT;
+    [Parameter] public string TextSchreibfehler { get; set; } = Resource.PVIMP_MSG_SCHREIBFEHLER;
+    [Parameter] public string TextBereitsEingelesen { get; set; } = Resource.IMP_KAT_MSG_BEREITS_EINGELESEN;
+    [Parameter] public string TextPlausiTitel { get; set; } = Resource.WRK_IMP_PLAUSI_TITEL;
+    [Parameter] public string TextPlausiFrage { get; set; } = Resource.PVIMP_PLAUSI_FRAGE;
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_WechselrichterImport.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _laeuft;
+    private string _fortschrittText = "";
+    private CancellationTokenSource? _abbruch;
+
+    private IReadOnlyList<CecWechselrichter> _geraete = Array.Empty<CecWechselrichter>();
+    private List<Geraetezeile> _anzeige = new();
+    private List<int> _anzeigeIndex = new();
+    private int _gewaehlt = -1;
+
+    private IReadOnlyList<(int Id, string Text)> _herstellerliste = Array.Empty<(int, string)>();
+    private int _iHersteller;
+    private string _suche = "";
+    private double? _pMin = 0, _pMax = 0;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+    private string _status = "";
+    private bool _geschrieben;
+
+    private bool _plausiOffen;
+    private string _plausiText = "";
+    private TaskCompletionSource<bool>? _plausiWartet;
+
+    private bool _konflikteOffen;
+    private IReadOnlyList<ImportPruefung>? _konfliktPruefungen;
+    private IReadOnlyCollection<string>? _konfliktNamen;
+    private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
+
+    private IQueryable<Geraetezeile> Zeilen => _anzeige.AsQueryable();
+
+    /// <summary>
+    /// Ab wie vielen Zeilen sich das Virtualisieren lohnt — dieselbe Schwelle wie
+    /// beim Modulimport. Die CEC-Wechselrichterliste bringt 2 343 Geräte.
+    /// </summary>
+    private const int VIRTUALISIEREN_AB = 120;
+
+    private bool Virtualisieren => _anzeige.Count >= VIRTUALISIEREN_AB;
+
+    private EventCallback AbbrechenCallback =>
+        EventCallback.Factory.Create(this, () => _abbruch?.Cancel());
+
+    /// <summary>Das gewählte Gerät, oder <c>null</c> (Prüfhilfe für Tests).</summary>
+    public CecWechselrichter? Gewaehlt =>
+        _gewaehlt >= 0 && _gewaehlt < _anzeige.Count ? _geraete[_anzeigeIndex[_gewaehlt]] : null;
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Zahl der sichtbaren Zeilen (Prüfhilfe für Tests).</summary>
+    public int SichtbareZeilen => _anzeige.Count;
+
+    /// <summary>Steht die Plausibilitäts-Rückfrage? (Prüfhilfe für Tests.)</summary>
+    public bool PlausiOffen => _plausiOffen;
+
+    private string StatusText => _status.Length > 0 ? _status : TextBereit;
+
+    private bool UebernehmenErlaubt => !_laeuft && Gewaehlt is not null && Vorpruefen is not null;
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        ListenAufbauen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Die Quelle
+    // =====================================================================
+
+    private async Task BeiLaden()
+    {
+        if (Laden is null || _laeuft) return;
+
+        _laeuft = true;
+        _meldung = "";
+        _abbruch = new CancellationTokenSource();
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var melder = new Progress<CecFortschritt>(f =>
+            {
+                _fortschrittText = Meldungstext?.Invoke(f) ?? "";
+                InvokeAsync(StateHasChanged);
+            });
+
+            WrLeseErgebnis erg = await Laden(melder, _abbruch.Token);
+            Uebernehmen(erg);
+        }
+        catch (OperationCanceledException)
+        {
+            // Stiller Ausstieg - der Anwender hat abgebrochen.
+        }
+        finally
+        {
+            _laeuft = false;
+            _fortschrittText = "";
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+    }
+
+    private void Uebernehmen(WrLeseErgebnis erg)
+    {
+        if (erg is null) return;
+
+        if (!erg.Erfolgreich)
+        {
+            Melden(Meldungstext?.Invoke(erg.Meldung) ?? "", WarnStufe.Fehler);
+            return;
+        }
+
+        _geraete = erg.Geraete;
+        _gewaehlt = -1;
+        ListenAufbauen();
+        Filtern();
+    }
+
+    // =====================================================================
+    // Filter
+    // =====================================================================
+
+    /// <summary>
+    /// Die Herstellerliste. Der erste Eintrag steht für „alle" — und zwar als
+    /// STEUERWERT (Index 0), nicht als Anzeigetext, gegen den verglichen wird
+    /// (Lehre aus Befund W13-B39).
+    /// </summary>
+    private void ListenAufbauen()
+    {
+        var hersteller = new List<(int, string)> { (0, TextAlle) };
+        foreach (string h in _geraete.Select(g => g.Hersteller ?? "").Distinct().OrderBy(x => x))
+            if (h.Length > 0) hersteller.Add((hersteller.Count, h));
+
+        _herstellerliste = hersteller;
+        _iHersteller = 0;
+    }
+
+    private void BeiHersteller(int? i) { _iHersteller = i ?? 0; Filtern(); }
+    private void BeiSuche(string t) { _suche = t ?? ""; Filtern(); }
+
+    private void Zuruecksetzen()
+    {
+        _suche = "";
+        _iHersteller = 0;
+        _pMin = 0;
+        _pMax = 0;
+        Filtern();
+    }
+
+    /// <summary>
+    /// Die Filterrechnung. Eine Obergrenze von 0 zählt als „keine Obergrenze" —
+    /// dieselbe Regel wie beim Modulimport, und sie ist hier nötig: Die
+    /// AC-Nennleistungen der Liste reichen von 0,2 kW (Modulwechselrichter) bis über
+    /// 1 000 kW (Zentralgeräte).
+    /// </summary>
+    private void Filtern()
+    {
+        System.Text.RegularExpressions.Regex? muster = Suchmuster.Uebersetzen(_suche);
+
+        string? hersteller = _iHersteller > 0 && _iHersteller < _herstellerliste.Count
+            ? _herstellerliste[_iHersteller].Text : null;
+
+        double pMin = _pMin ?? 0, pMax = _pMax ?? 0;
+
+        int? gewaehlteQuelle = _gewaehlt >= 0 && _gewaehlt < _anzeigeIndex.Count
+            ? _anzeigeIndex[_gewaehlt] : (int?)null;
+
+        _anzeige = new List<Geraetezeile>();
+        _anzeigeIndex = new List<int>();
+
+        for (int i = 0; i < _geraete.Count; i++)
+        {
+            CecWechselrichter g = _geraete[i];
+
+            if (muster is not null && !muster.IsMatch(g.Name ?? "")) continue;
+            if (hersteller is not null
+                && !string.Equals(g.Hersteller, hersteller, StringComparison.OrdinalIgnoreCase)) continue;
+
+            double kw = g.Paco / 1000.0;
+            if (!(kw >= pMin && (pMax <= 0 || kw <= pMax))) continue;
+
+            double?[] etas = g.Stuetzstellen();
+            double? euro = WechselrichterKennlinie.EuroWirkungsgrad(etas);
+
+            _anzeige.Add(new Geraetezeile(
+                _anzeige.Count, g.Name ?? "", g.Hersteller,
+                kw.ToString("N3"),
+                euro.HasValue ? euro.Value.ToString("N4") : ParameterVerwendung.LEER,
+                g.MpptLow.ToString("N0") + " … " + g.MpptHigh.ToString("N0"),
+                g.Vdcmax.ToString("N0")));
+            _anzeigeIndex.Add(i);
+        }
+
+        // Die Auswahl ueberlebt das Umfiltern, solange die Zeile sichtbar bleibt.
+        _gewaehlt = gewaehlteQuelle.HasValue ? _anzeigeIndex.IndexOf(gewaehlteQuelle.Value) : -1;
+
+        _status = string.Format(VorlageGefunden, _anzeige.Count);
+    }
+
+    private void Waehlen(Geraetezeile zeile)
+    {
+        _gewaehlt = zeile.Zeile;
+        _meldung = "";
+    }
+
+    // =====================================================================
+    // Die Detailfelder
+    // =====================================================================
+
+    private string Wert(Func<CecWechselrichter, string> lesen)
+    {
+        CecWechselrichter? g = Gewaehlt;
+        return g is null ? "" : (lesen(g) ?? "");
+    }
+
+    private string Zahl(Func<CecWechselrichter, double> lesen, int stellen)
+    {
+        CecWechselrichter? g = Gewaehlt;
+        return g is null ? "" : lesen(g).ToString("F" + stellen.ToString(Invariant));
+    }
+
+    /// <summary>Eine der sechs gerechneten Stützstellen; „–", wenn sie sich nicht bestimmen ließ.</summary>
+    private string Stuetzstelle(int index)
+    {
+        CecWechselrichter? g = Gewaehlt;
+        if (g is null) return "";
+
+        double?[] etas = g.Stuetzstellen();
+        return etas[index].HasValue ? etas[index]!.Value.ToString("F4") : ParameterVerwendung.LEER;
+    }
+
+    private string EtaEuroText
+    {
+        get
+        {
+            CecWechselrichter? g = Gewaehlt;
+            if (g is null) return "";
+
+            double? euro = WechselrichterKennlinie.EuroWirkungsgrad(g.Stuetzstellen());
+            return euro.HasValue ? euro.Value.ToString("F4") : ParameterVerwendung.LEER;
+        }
+    }
+
+    // =====================================================================
+    // Uebernehmen
+    // =====================================================================
+
+    private async Task BeiUebernehmen()
+    {
+        CecWechselrichter? geraet = Gewaehlt;
+        if (geraet is null || Vorpruefen is null)
+        {
+            Melden(TextKeineAuswahl, WarnStufe.Hinweis);
+            return;
+        }
+
+        _laeuft = true;
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            PvVorpruefung vor = await Vorpruefen(geraet);
+
+            if (vor.Gesperrt)
+            {
+                Melden(vor.Plausibilitaet, WarnStufe.Fehler);
+                return;
+            }
+            if (vor.Plausibilitaet.Length > 0 && !await PlausiFragen(vor.Plausibilitaet)) return;
+
+            if (vor.Befund == ImportBefund.Neu)
+            {
+                await Schreiben(geraet, geraet.Name ?? "", neu: true);
+                return;
+            }
+
+            List<KonfliktEntscheidung>? entscheidungen =
+                await KonflikteFragen(vor.Pruefungen, vor.VergebeneNamen);
+            if (entscheidungen is null || entscheidungen.Count == 0) return;   // Abbruch
+
+            KonfliktEntscheidung ent = entscheidungen[0];
+            switch (ent.Aktion)
+            {
+                case KonfliktAktion.Ueberschreiben:
+                    await Schreiben(geraet, geraet.Name ?? "", neu: false,
+                                    bestandsId: ent.Pruefung.Vorhanden.Id);
+                    break;
+                case KonfliktAktion.Umbenennen:
+                    await Schreiben(geraet, ent.NeuerName, neu: true);
+                    break;
+                case KonfliktAktion.Importieren:
+                    await Schreiben(geraet, geraet.Name ?? "", neu: true);
+                    break;
+                default:
+                    Melden(TextBereitsEingelesen, WarnStufe.Hinweis);
+                    break;
+            }
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private async Task Schreiben(CecWechselrichter geraet, string name, bool neu, int bestandsId = 0)
+    {
+        bool ok = neu
+            ? (Anlegen is not null && await Anlegen(geraet, name))
+            : (Ueberschreiben is not null && await Ueberschreiben(geraet, bestandsId));
+
+        Melden(ok ? (neu ? TextGespeichert : TextAktualisiert) : TextSchreibfehler,
+               ok ? WarnStufe.Erfolg : WarnStufe.Fehler);
+
+        // Wie beim Modulimport bleibt der Dialog OFFEN - er ist ein Katalogfenster,
+        // aus dem der Anwender mehrere Geraete nacheinander uebernimmt.
+        if (ok) _geschrieben = true;
+    }
+
+    private async Task<bool> PlausiFragen(string text)
+    {
+        _plausiText = text + " " + TextPlausiFrage;
+        _plausiOffen = true;
+        _plausiWartet = new TaskCompletionSource<bool>();
+        await InvokeAsync(StateHasChanged);
+        return await _plausiWartet.Task;
+    }
+
+    private void PlausiFertig(bool? antwort)
+    {
+        _plausiOffen = false;
+        _plausiWartet?.TrySetResult(antwort == true);
+    }
+
+    private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
+        IReadOnlyList<ImportPruefung> pruefungen, IReadOnlyCollection<string> namen)
+    {
+        _konfliktPruefungen = pruefungen;
+        _konfliktNamen = namen;
+        _konflikteOffen = true;
+        _konflikteWartet = new TaskCompletionSource<List<KonfliktEntscheidung>?>();
+        await InvokeAsync(StateHasChanged);
+        return await _konflikteWartet.Task;
+    }
+
+    private void KonflikteFertig(List<KonfliktEntscheidung>? entscheidungen)
+    {
+        _konflikteOffen = false;
+        _konflikteWartet?.TrySetResult(entscheidungen);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(_geschrieben);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+
+        if (_konflikteOffen) return Task.CompletedTask;
+        if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
+
+        return Geschlossen.InvokeAsync(_geschrieben);
+    }
+}

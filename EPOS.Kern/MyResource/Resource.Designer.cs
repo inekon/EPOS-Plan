@@ -65,6 +65,8 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -521,6 +523,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_KATALOG_WAERMEBEDARF {
             get {
                 return ResourceManager.GetString("ADM_KATALOG_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_WECHSELRICHTER", resourceCulture);
             }
         }
         
@@ -22987,11 +22998,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string MENU_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("MENU_WECHSELRICHTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen ähnelt.
         /// </summary>
         public static string MENU_WP {
             get {
                 return ResourceManager.GetString("MENU_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter (CEC)... ähnelt.
+        /// </summary>
+        public static string MENU_WR_IMPORT_CEC {
+            get {
+                return ResourceManager.GetString("MENU_WR_IMPORT_CEC", resourceCulture);
             }
         }
         
@@ -44263,6 +44292,717 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WP_BTN_BEENDEN {
             get {
                 return ResourceManager.GetString("WP_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingang ähnelt.
+        /// </summary>
+        public static string WRK_GRUPPE_EINGANG {
+            get {
+                return ResourceManager.GetString("WRK_GRUPPE_EINGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät ähnelt.
+        /// </summary>
+        public static string WRK_GRUPPE_GERAET {
+            get {
+                return ResourceManager.GetString("WRK_GRUPPE_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string WRK_GRUPPE_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("WRK_GRUPPE_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CEC-Liste laden ähnelt.
+        /// </summary>
+        public static string WRK_IMP_BTN_CEC {
+            get {
+                return ResourceManager.GetString("WRK_IMP_BTN_CEC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die sechs Stützstellen sind aus den Sandia-Koeffizienten bei U_dc = U_dco gerechnet; bei Nennlast gilt dabei η = Paco/Pdco exakt. ähnelt.
+        /// </summary>
+        public static string WRK_IMP_HINWEIS_KENNLINIE {
+            get {
+                return ResourceManager.GetString("WRK_IMP_HINWEIS_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die CEC-Wechselrichterliste des NREL. Die sechs Stützstellen der Kennlinie werden aus den Sandia-Koeffizienten gerechnet; MPPT-Zahl und Scheinleistung führt die Liste nicht und sind von Hand nachzupflegen. ähnelt.
+        /// </summary>
+        public static string WRK_IMP_KOPFBAND {
+            get {
+                return ResourceManager.GetString("WRK_IMP_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CEC-Listung: ähnelt.
+        /// </summary>
+        public static string WRK_IMP_LBL_CEC_DATUM {
+            get {
+                return ResourceManager.GetString("WRK_IMP_LBL_CEC_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AC-Nennleistung von: ähnelt.
+        /// </summary>
+        public static string WRK_IMP_LBL_P_AC_VON {
+            get {
+                return ResourceManager.GetString("WRK_IMP_LBL_P_AC_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sandia C0 [1/W]: ähnelt.
+        /// </summary>
+        public static string WRK_IMP_LBL_SANDIA_C0 {
+            get {
+                return ResourceManager.GetString("WRK_IMP_LBL_SANDIA_C0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sandia Pdco [W]: ähnelt.
+        /// </summary>
+        public static string WRK_IMP_LBL_SANDIA_PDCO {
+            get {
+                return ResourceManager.GetString("WRK_IMP_LBL_SANDIA_PDCO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sandia Vdco [V]: ähnelt.
+        /// </summary>
+        public static string WRK_IMP_LBL_SANDIA_VDCO {
+            get {
+                return ResourceManager.GetString("WRK_IMP_LBL_SANDIA_VDCO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis zu den Gerätewerten ähnelt.
+        /// </summary>
+        public static string WRK_IMP_PLAUSI_TITEL {
+            get {
+                return ResourceManager.GetString("WRK_IMP_PLAUSI_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die η euro ähnelt.
+        /// </summary>
+        public static string WRK_IMP_SP_ETA_EURO {
+            get {
+                return ResourceManager.GetString("WRK_IMP_SP_ETA_EURO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät ähnelt.
+        /// </summary>
+        public static string WRK_IMP_SP_GERAET {
+            get {
+                return ResourceManager.GetString("WRK_IMP_SP_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPP-Fenster [V] ähnelt.
+        /// </summary>
+        public static string WRK_IMP_SP_MPP {
+            get {
+                return ResourceManager.GetString("WRK_IMP_SP_MPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_AC [kW] ähnelt.
+        /// </summary>
+        public static string WRK_IMP_SP_P_AC {
+            get {
+                return ResourceManager.GetString("WRK_IMP_SP_P_AC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U_dc max [V] ähnelt.
+        /// </summary>
+        public static string WRK_IMP_SP_U_DC_MAX {
+            get {
+                return ResourceManager.GetString("WRK_IMP_SP_U_DC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter einlesen (CEC) ähnelt.
+        /// </summary>
+        public static string WRK_IMP_TITEL {
+            get {
+                return ResourceManager.GetString("WRK_IMP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl MPPT: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_ANZAHL_MPPT {
+            get {
+                return ResourceManager.GetString("WRK_LBL_ANZAHL_MPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("WRK_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("WRK_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 5 %: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_ETA05 {
+            get {
+                return ResourceManager.GetString("WRK_LBL_ETA05", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 10 %: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_ETA10 {
+            get {
+                return ResourceManager.GetString("WRK_LBL_ETA10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 100 %: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_ETA100 {
+            get {
+                return ResourceManager.GetString("WRK_LBL_ETA100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 20 %: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_ETA20 {
+            get {
+                return ResourceManager.GetString("WRK_LBL_ETA20", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 30 %: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_ETA30 {
+            get {
+                return ResourceManager.GetString("WRK_LBL_ETA30", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad bei 50 %: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_ETA50 {
+            get {
+                return ResourceManager.GetString("WRK_LBL_ETA50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Euro-Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_ETA_EURO {
+            get {
+                return ResourceManager.GetString("WRK_LBL_ETA_EURO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximalwirkungsgrad: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_ETA_MAX {
+            get {
+                return ResourceManager.GetString("WRK_LBL_ETA_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_FIRMA {
+            get {
+                return ResourceManager.GetString("WRK_LBL_FIRMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_HERKUNFT {
+            get {
+                return ResourceManager.GetString("WRK_LBL_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. DC-Strom je MPPT: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_I_DC_MAX {
+            get {
+                return ResourceManager.GetString("WRK_LBL_I_DC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätepreis: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_KOSTEN {
+            get {
+                return ResourceManager.GetString("WRK_LBL_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AC-Nennleistung: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_P_AC_NENN {
+            get {
+                return ResourceManager.GetString("WRK_LBL_P_AC_NENN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. DC-Leistung: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_P_DC_MAX {
+            get {
+                return ResourceManager.GetString("WRK_LBL_P_DC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtverbrauch: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_P_NACHT {
+            get {
+                return ResourceManager.GetString("WRK_LBL_P_NACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby-Verbrauch: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_P_STANDBY {
+            get {
+                return ResourceManager.GetString("WRK_LBL_P_STANDBY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stränge je MPPT: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_STRAENGE_JE_MPPT {
+            get {
+                return ResourceManager.GetString("WRK_LBL_STRAENGE_JE_MPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. AC-Scheinleistung: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_S_AC_MAX {
+            get {
+                return ResourceManager.GetString("WRK_LBL_S_AC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. DC-Spannung: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_U_DC_MAX {
+            get {
+                return ResourceManager.GetString("WRK_LBL_U_DC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPP-Fenster bis: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_U_MPP_MAX {
+            get {
+                return ResourceManager.GetString("WRK_LBL_U_MPP_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPP-Fenster von: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_U_MPP_MIN {
+            get {
+                return ResourceManager.GetString("WRK_LBL_U_MPP_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einschaltspannung: ähnelt.
+        /// </summary>
+        public static string WRK_LBL_U_START {
+            get {
+                return ResourceManager.GetString("WRK_LBL_U_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string WRK_LISTE {
+            get {
+                return ResourceManager.GetString("WRK_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte zuerst einen Wechselrichter auswählen! ähnelt.
+        /// </summary>
+        public static string WRK_MSG_AUSWAHL {
+            get {
+                return ResourceManager.GetString("WRK_MSG_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name &quot;{0}&quot; ist im Katalog {1}-mal vergeben. Es ist deshalb nicht entscheidbar, welcher Eintrag gemeint ist - es wurde nichts geändert. ähnelt.
+        /// </summary>
+        public static string WRK_MSG_NAME_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("WRK_MSG_NAME_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein anderer Katalogeintrag trägt bereits den Namen &quot;{0}&quot;. Bitte einen eindeutigen Namen vergeben. ähnelt.
+        /// </summary>
+        public static string WRK_MSG_NAME_VERGEBEN {
+            get {
+                return ResourceManager.GetString("WRK_MSG_NAME_VERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag &quot;{0}&quot; wurde nicht gefunden. ähnelt.
+        /// </summary>
+        public static string WRK_MSG_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("WRK_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string WRK_MSG_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("WRK_MSG_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string WRK_MSG_SCHREIBGESCHUETZT_LOESCHEN {
+            get {
+                return ResourceManager.GetString("WRK_MSG_SCHREIBGESCHUETZT_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wechselrichter-Stammdatensatz wurde nicht gefunden (ID {0}). ähnelt.
+        /// </summary>
+        public static string WRK_MSG_STAMM_FEHLT {
+            get {
+                return ResourceManager.GetString("WRK_MSG_STAMM_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Verhältnis DC/AC des Geräts ist {0} und damit größer als {1}. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_DCAC_GROSS {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_DCAC_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} liegt außerhalb des Bereichs (0; 1]: {1}. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_ETA_BEREICH {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_ETA_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der ausgewiesene Euro-Wirkungsgrad ({0}) weicht von dem aus den Stützstellen gerechneten ({1}) ab. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_ETA_EURO_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_ETA_EURO_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} liegt außerhalb des Bereichs (0; 1]: {1}. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_ETA_EURO_BEREICH {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_ETA_EURO_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist mit {1} kleiner als der plausible Mindestwert {2}. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_ETA_KLEIN {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_ETA_KLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennlinie fällt im Teillastast: {0} = {1}, aber {2} = {3}. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_ETA_MONOTON {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_ETA_MONOTON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der max. DC-Strom je MPPT ist negativ ({0} A). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_I_DC_NEGATIV {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_I_DC_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wechselrichter-Datensatz übergeben. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_KEIN_SATZ {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_KEIN_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler: ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_KOPF_FEHLER {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_KOPF_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise: ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_KOPF_HINWEIS {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_KOPF_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gerätepreis ist negativ ({0} €). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_KOSTEN_NEGATIV {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_KOSTEN_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzahl MPPT ist kleiner als 1 ({0}). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_MPPT_KLEINER_EINS {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_MPPT_KLEINER_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das MPP-Fenster ist leer: Die untere Grenze {0} V liegt nicht unter der oberen {1} V. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_MPP_FENSTER {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_MPP_FENSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die obere MPP-Grenze ({0} V) liegt über der max. DC-Spannung ({1} V). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_MPP_UEBER_UDC {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_MPP_UEBER_UDC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die AC-Nennleistung ({0} W) ist größer als die DC-Leistung bei Nennlast ({1} W). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_PACO_UEBER_PDCO {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_PACO_UEBER_PDCO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die AC-Nennleistung {0} kW liegt außerhalb des plausiblen Bereichs {1} bis {2} kW. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_P_AC_BEREICH {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_P_AC_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die AC-Nennleistung fehlt oder ist nicht positiv - sie ist das einzige Pflichtfeld. ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_P_AC_FEHLT {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_P_AC_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die max. DC-Leistung ({0} kW) ist kleiner als die AC-Nennleistung ({1} kW). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_P_DC_KLEINER {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_P_DC_KLEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist negativ ({1} V). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_SPANNUNG_NEGATIV {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_SPANNUNG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist negativ ({1} W). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_STANDBY_NEGATIV {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_STANDBY_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einschaltspannung ({0} V) liegt über der oberen MPP-Grenze ({1} V). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_START_UEBER_MPP {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_START_UEBER_MPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Stränge je MPPT ist kleiner als 1 ({0}). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_STRAENGE_KLEINER_EINS {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_STRAENGE_KLEINER_EINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die max. AC-Scheinleistung ({0} kVA) ist kleiner als die AC-Nennwirkleistung ({1} kW). ähnelt.
+        /// </summary>
+        public static string WRK_PLAUSI_S_AC_KLEINER {
+            get {
+                return ResourceManager.GetString("WRK_PLAUSI_S_AC_KLEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name mehrdeutig ähnelt.
+        /// </summary>
+        public static string WRK_TITEL_NAME_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("WRK_TITEL_NAME_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name bereits vergeben ähnelt.
+        /// </summary>
+        public static string WRK_TITEL_NAME_VERGEBEN {
+            get {
+                return ResourceManager.GetString("WRK_TITEL_NAME_VERGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht gefunden ähnelt.
+        /// </summary>
+        public static string WRK_TITEL_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("WRK_TITEL_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützt ähnelt.
+        /// </summary>
+        public static string WRK_TITEL_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("WRK_TITEL_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Wechselrichter ähnelt.
+        /// </summary>
+        public static string WRK_TITEL_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("WRK_TITEL_VERWALTUNG", resourceCulture);
             }
         }
         

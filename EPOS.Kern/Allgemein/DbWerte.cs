@@ -2099,6 +2099,21 @@ namespace WindowsFormsApplication1
         /// <see cref="PV_TECHNOLOGIE_A_SI"/> ohne Huld-Koeffizienten.</summary>
         public const string PV_TECHNOLOGIE_SONSTIGE = "SONSTIGE";
 
+        // =====================================================================
+        // Wechselrichterkatalog, Stufe S1 (Anwenderentscheid W6-E-2, 06.09.2026)
+        //   Persistenzwerte der Spalte Tab_Wechselrichter(_STAMM).Herkunft,
+        //   eingefroren (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>Katalogsatz aus der CEC-Wechselrichterliste (NREL/SAM).</summary>
+        public const string WR_HERKUNFT_CEC = "CEC";
+
+        /// <summary>Katalogsatz aus einer PVsyst-<c>.OND</c>-Datei (Stufe S2/S3, Konzept 5.2).</summary>
+        public const string WR_HERKUNFT_OND = "OND";
+
+        /// <summary>Von Hand gepflegter Katalogsatz (Verwaltung, Konzept 5.3).</summary>
+        public const string WR_HERKUNFT_HAND = "HAND";
+
         /// <summary>
         /// Referenzjahr für die Zeitbasis der Klimadatenreihe (Befund B1, Paket A des
         /// PV-Ertragsmodell-Konzepts). Es bestimmt AUSSCHLIESSLICH die beiden

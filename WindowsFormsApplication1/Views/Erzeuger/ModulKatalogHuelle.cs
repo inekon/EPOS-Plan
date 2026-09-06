@@ -87,11 +87,22 @@ namespace WindowsFormsApplication1
                 // beide Ausprägungen, wie bei den vier Browsern.
                 ["Uebersicht"] = new Func<string, IReadOnlyList<Parameterwert>>(
                     bezeichner => ParameterUebersichtCtrl.Werte(
-                        profil.Art == ModulKatalogArt.Photovoltaik
-                            ? Anlagenart.Photovoltaik
-                            : Anlagenart.Stromspeicher,
-                        bezeichner, KatalogBrowserHuelle.Text))
+                        Anlage(profil.Art), bezeichner, KatalogBrowserHuelle.Text))
             };
+        }
+
+        /// <summary>
+        /// Die Anlagenart zu einer Katalogart — die Brücke zum Verwendungskatalog
+        /// (W14a-E-8). Seit W6-E-2 (06.09.2026) sind es drei Ausprägungen.
+        /// </summary>
+        private static Anlagenart Anlage(ModulKatalogArt art)
+        {
+            switch (art)
+            {
+                case ModulKatalogArt.Photovoltaik: return Anlagenart.Photovoltaik;
+                case ModulKatalogArt.Wechselrichter: return Anlagenart.Wechselrichter;
+                default: return Anlagenart.Stromspeicher;
+            }
         }
 
         /// <summary>

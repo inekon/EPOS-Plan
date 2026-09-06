@@ -40,6 +40,19 @@
         public const string SolarkollektorenAdmin = "Form_SolarKollektorenAdmin";
         /// <summary>Stammdaten Photovoltaik.</summary>
         public const string PvAdmin = "Form_AdminPV";
+        /// <summary>
+        /// Stammdaten Wechselrichter — die dritte Auspraegung von
+        /// <c>ModulKatalogDialog</c> (Anwenderentscheid W6-E-2 vom 06.09.2026,
+        /// Stufe S1.4).
+        ///
+        /// <para><b>Der Schluessel traegt einen Klassennamen, den es nie gab.</b> Jeder
+        /// andere Schluessel dieser Klasse ist der Name der abgeloesten WinForms-Maske;
+        /// hier gibt es keine — der Wechselrichter war die einzige Geraetefamilie ohne
+        /// Verwaltung. Die Namensform bleibt trotzdem: Sie ist das Muster, an dem die
+        /// Tabelle in <c>WinFormsNavigation</c> lesbar bleibt, und
+        /// <c>help_mapping.txt</c> haengt daran.</para>
+        /// </summary>
+        public const string WechselrichterAdmin = "Form_AdminWechselrichter";
         /// <summary>Herstellerdaten Heizkessel einlesen.</summary>
         public const string HeizkesselImport = "Form_Heizkessel_einlesen";
         /// <summary>Herstellerdaten Pufferspeicher einlesen.</summary>
@@ -65,6 +78,14 @@
         /// (Befund W13-B51).</para>
         /// </summary>
         public const string PvImport = "Form_CECImport";
+
+        /// <summary>
+        /// Herstellerdaten Wechselrichter einlesen — die CEC-Wechselrichterliste des
+        /// NREL (W6-E-2, Stufe S1.5). PVsyst <c>.OND</c> kommt als zweite Quelle in
+        /// dieselbe Maske, sobald Stufe S2 laeuft (Konzept 5.2); ein Argument braucht
+        /// der Schluessel deshalb heute nicht.
+        /// </summary>
+        public const string WechselrichterImport = "Form_WechselrichterImport";
         /// <summary>„Speichern unter…" — dupliziert ein Projekt.</summary>
         public const string ProjektSpeichernUnter = "Form_ProjektSpeichernUnter";
 

@@ -1,6 +1,7 @@
 # Konzept: Wechselrichter EPOS-Plan — Katalog, Strangzuordnung und Rechenweg
 
-**Rev. 1 — 06.09.2026 — Befund und Vorschlag, zur Entscheidung durch den Anwender**
+**Rev. 2 — 06.09.2026 — Stufe S1 ENTSCHIEDEN und UMGESETZT**
+(Rev. 1 war Befund und Vorschlag zur Entscheidung durch den Anwender)
 
 Auftrag (Anwenderwunsch **W6‑E‑2**, Windows-Abnahme vom 06.09.2026, im Wortlaut):
 
@@ -18,10 +19,19 @@ Dieses Papier ist die Fortsetzung von `Konzept_Photovoltaik_Ertragsmodell_EPOS-P
 der Stelle, die dort zweimal offengelassen wurde: Entscheidungsfrage **Q5** („Wechselrichter als
 Anlagenparameter oder eigener Wechselrichterkatalog?" — Empfehlung damals: Anlagenparameter,
 Katalog erst mit E3) und Stufe **E3** („Stringauslegung gegen einen Wechselrichterkatalog —
-zurückstellen"). Der Anwenderwunsch W6‑E‑2 holt beides nach vorn. **Es ist ein Konzept- und
-Mockup-Papier; nichts davon ist umgesetzt.**
+zurückstellen"). Der Anwenderwunsch W6‑E‑2 holt beides nach vorn. **Rev. 1 war ein Konzept- und
+Mockup-Papier; seit dem Entscheid vom 06.09.2026 ist Stufe S1 umgesetzt (Kapitel 8), S2 und S3
+sind es nicht.**
 
-Mockup: `Mockups/Wechselrichter_Mockup_2026-09-06.html` (vier Ansichten M1–M4).
+Mockup: `Mockups/Wechselrichter_Mockup_2026-09-06.html` (vier Ansichten M1–M4;
+in Stufe S1 unverändert).
+
+> **Entscheid des Anwenders vom 06.09.2026.** „Setze Vorschlag fuer Wechselrichter um“;
+> zu den zehn Entscheidungsfragen: „W6‑E‑2‑Q1 bis Q10: Empfehlung, ja alle". Damit ist
+> jede Empfehlung aus Kapitel 11 angenommen. **Stufe S1 ist umgesetzt** (Commit
+> `40fc542`, Zweig `ios_migration`); S2 und S3 stehen aus und werden zusammen
+> ausgeliefert. Dazu kam der neue Anwenderwunsch **W6‑E‑3** — zwei sichtbare Optionen
+> im PV-Dialog (Kapitel 7.1).
 
 ---
 
@@ -385,6 +395,12 @@ Sonst rechnet der Weg von heute, Zeichen für Zeichen.
 Diese Vorrangregel ist der Grund, warum die Umstellung ergebnisneutral sein kann (4.3): Kein
 Bestandsprojekt hat eine Strangzeile, also rechnet kein Bestandsprojekt anders.
 
+> **Ergänzt durch W6‑E‑3 (06.09.2026).** Vor der Vorrangregel steht seit diesem Anwenderwunsch
+> ein SICHTBARER Schalter: `Tab_Energieanlagen.PV_Wechselrichterweg` (NULL = „vereinfacht").
+> Gerechnet wird die Strangzuordnung erst, wenn der Schalter auf „mit Wechselrichter" steht
+> **und** eine Strangzeile vorliegt. Zwei Bedingungen statt einer machen die Bitgleichheit
+> stärker, nicht schwächer — Begründung und Datenmodell in **7.1**.
+
 `PV_Systemverluste` bleibt ein **Anlagenwert** — Verschmutzung, Leitungsverluste und Mismatch
 gelten für das Feld, nicht für den Strang. `PV_WrWirkungsgrad` bleibt der Faktor des einfachen
 Modells ohne Zuordnung.
@@ -402,6 +418,33 @@ Zielversion steht auf 64; neue Schritte beginnen bei **65**
 Beide Schritte sind **reines DDL ohne DML**: Nach der Migration ist die Katalogtabelle leer und
 kein Projekt hat eine Strangzeile. Damit ist die Migration selbst ergebnisneutral; die Idempotenz
 (Zweitlauf ohne DDL) ist wie in Schritt 63/64 nachzuweisen.
+
+> **Umgesetzt (S1, 06.09.2026).** Schritt 65 legt beide Tabellen mit
+> `CREATE TABLE IF NOT EXISTS … STRICT` an; die zwei Anweisungen stehen EINMAL, in
+> `EPOS.Kern/Allgemein/Update/WechselrichterSchema.cs`, und werden von
+> `SchemaMigration.Schritt_65_Wechselrichterkatalog`, von
+> `Werkzeuge/Testdatenbankschema` und von der Testvorrichtung `EPOS.Kern.Tests/TestDatenbank`
+> gleichermaßen gefahren. `SchemaStand.Zielversion` steht auf **65**.
+>
+> **Zwei Abweichungen gegenüber Rev. 1, beide bewusst:**
+>
+> * **`sql/schema/001_grundschema.sql` bleibt unberührt.** Rev. 1 nennt die Datei in
+>   Stufe S1.1. Sie ist aber der EINGEFRORENE Access-Zielstand 61 („NICHT VON HAND
+>   AENDERN — neu erzeugen"), eingebettete Ressource des `EposSqliteMigrator` und über
+>   `sql/schema/inventar.json` auf 114 Tabellen gezählt (`sql/tools/baue_leere_db.py`
+>   prüft das). Die Schritte 62, 63 und 64 haben sie aus demselben Grund nicht angefasst.
+>   Der Anwender hat am 06.09.2026 festgehalten, dass die Access-Datenbank nicht mehr
+>   relevant ist — die zwei Tabellen entstehen deshalb ausschließlich im SQLite-Zweig.
+> * **Kein Fremdschlüssel auf `Tab_Wechselrichter.ID_Projekt`** — spaltengleich zum
+>   Zwilling `Tab_PV`, der ebenfalls keinen führt. Ein Fremdschlüssel wäre hier eine
+>   stille Verhaltensänderung am Löschweg eines Projekts
+>   (`ProjektCtrl.LoeschenMitVorarbeiten`), und S1 ändert kein Verhalten. Für
+>   `Z_AnlageStrang` (Schritt 66) bleibt der `ON DELETE CASCADE` aus 3.4 dagegen
+>   vorgesehen: Dort ist die Kaskade der Zweck.
+>
+> Der **Typkatalog** `sql/schema/SchemaTypKatalog.g.cs` brauchte keinen Eintrag:
+> `ReadOnly` steht dort bereits als Boolean-Spalte, und einen mehrdeutigen Namen legt
+> Schritt 65 nicht an.
 
 Das Kriterium für die Aufnahme in `SchemaKatalog.Alle` ist im Haus „der LESER, nicht die Tabelle"
 (`SchemaKatalog.cs:1276-1285`). Der Rechenkern liest die Projektkopie und die Zuordnung; die
@@ -599,6 +642,28 @@ CSV-Leser bereits kennt.
 | — | | `Eta05…Eta100`, `Eta_Euro` | **gerechnet** nach 3.3.3 |
 | — | | `Anzahl_Mppt`, `Straenge_Je_Mppt` | **nicht in der Liste** → NULL |
 
+> **Gemessen bei der Umsetzung (06.09.2026).** Der Netzabruf hat funktioniert; die Liste
+> führt **2 343 Geräte von 152 Herstellern** in 2 346 Zeilen (Kopf-, Einheiten- und
+> `[0]`-Zeile). Sie liegt damit eine Größenordnung unter der Modulliste (20 746), bekommt
+> aber dieselbe Behandlung — ein virtualisiertes Raster ab 120 Zeilen.
+>
+> **Zwei Korrekturen an der Tabelle oben:**
+>
+> * Eine Spalte **`CEC_Type` gibt es nicht.** Die Kopfzeile lautet
+>   `Name, Vac, Pso, Paco, Pdco, Vdco, C0…C3, Pnt, Vdcmax, Idcmax, Mppt_low, Mppt_high,
+>   CEC_Date, CEC_hybrid`. Die `Beschreibung` entsteht deshalb aus Herkunft, `CEC_Date`
+>   und `Vac`.
+> * Einen **Herstellernamen führt die Liste ebenfalls nicht** (anders als die Modulliste
+>   mit `Manufacturer`). Er ist der Text vor dem ersten Doppelpunkt des Gerätenamens —
+>   wie in der Tabelle beschrieben, aber ohne Rückfallspalte: Ein Gerät ohne Doppelpunkt
+>   bekommt eine leere `Firma`.
+>
+> Die Umrechnung nach 3.3.3 wurde über **alle 2 343 Geräte** nachgerechnet: Jede der
+> sechs Stützstellen liegt in (0; 1], und `η100 = Paco/Pdco` trifft auf zwölf Stellen.
+> `Eta_Max` füllt der Import mit dem Maximum der sechs Stützstellen — die Liste führt
+> keinen Maximalwirkungsgrad, und der wahre Scheitel liegt zwischen zwei Stützstellen;
+> der Ausweis ist damit eine untere Schranke und keine erfundene Zahl.
+
 Zwei Punkte zur Ehrlichkeit des Imports:
 
 * **Die CEC-Liste führt keine MPPT-Zahl.** Sie bleibt NULL und ist von Hand zu pflegen; die
@@ -696,7 +761,27 @@ Beschriftungen — also genau das, was ein Profil trägt. Die Alternative (ein e
 `WechselrichterImportDialog`) verdoppelte 771 Zeilen für zwei Unterschiede.
 
 Menüpunkt: **Administration → Datenimport → „Wechselrichter (CEC)…"**, neben
-`MenuItem_PV_Import_CEC` (`EPOS.UI/Bausteine/Menuetabelle.cs:113`).
+`MenuItem_PV_Import_CEC` (`EPOS.UI/Bausteine/Menuetabelle.cs`).
+
+> **Umgesetzt (S1, 06.09.2026) — mit einer benannten Abweichung.** Geteilt ist alles,
+> was sich teilen lässt, und zwar dort, wo es hingehört: der **Abrufapparat** im Kern
+> (`CecWechselrichterDienst`, Zwilling von `CECDataService` mit denselben
+> `CecFortschritt`-Schlüsseln), die **Vorprüfung** (`DublettenPruefung` über die
+> Registry-Definition „WECHSELRICHTER"), das **Ergebnis der Vorprüfung**
+> (`PvVorpruefung` — sie kennt keinen Satztyp und trägt unverändert) und **sämtliche
+> Bausteine** (`Fortschritt` mit Abbrechen, virtualisiertes `Raster`, `Zeilenwahl`,
+> `Formularraster`, `Warnbanner`, `Rueckfrage`, `ImportKonflikteDialog` in einer
+> `Ueberlagerung`).
+>
+> **Nicht geteilt ist die `.razor`-Datei.** `PvModulImportDialog` ist auf 771 Zeilen
+> typisiert gegen `UnifiedModule`: Spalten, Detailfelder und Filterrechnung stehen als
+> Markup gegen konkrete Eigenschaften. Ihn auf eine neutrale Zeilenform umzubauen hieße,
+> eine getestete Maske samt 594 Zeilen bunit-Fällen anzufassen, ohne dass S1 dadurch
+> etwas könnte. Der Einwand von Rev. 1 („ein eigener Dialog verdoppelte 771 Zeilen für
+> zwei Unterschiede") trifft die umgesetzte Fassung nicht: `WechselrichterImportDialog`
+> hat **rund 300 Zeilen**, weil alles Teilbare im Kern und in den Bausteinen liegt.
+> Die Zusammenlegung beider Wirte auf EINE profilgetriebene Komponente ist als **offener
+> Punkt W6‑O‑1** festgehalten (Kapitel 12).
 
 ---
 
@@ -732,9 +817,36 @@ in (0; 1], `U_Mpp_Min < U_Mpp_Max ≤ U_Dc_Max`, `Anzahl_Mppt ≥ 1`, `P_AC_Nenn
 Kopierfehler wie der von 2026 in `alpha_SC`/`beta_OC`/`T_NOCT` soll hier gar nicht erst entstehen
 können.
 
-Menüpunkt: **Administration → Energiesysteme → Photovoltaik → „Wechselrichter bearbeiten…"**
-(`Menuetabelle.cs:93-99` — der Kopf „Photovoltaik" führt heute genau einen Unterpunkt
-„Bearbeiten"; der zweite gehört dazu). Seitenschlüssel `WechselrichterAdmin`.
+Menüpunkt: **Administration → Energiesysteme → „Wechselrichter"**, unmittelbar nach
+„Photovoltaik Module". (Rev. 1 nannte hier ein Untermenü „Photovoltaik → Bearbeiten"; das
+ist mit dem Anwenderentscheid **W16c‑E‑6** vom selben Tag aufgelöst — `MenuItem_PV` trägt
+sein Ziel seither selbst.) Seitenschlüssel `WechselrichterAdmin`.
+
+> **Umgesetzt (S1, 06.09.2026).** Die dritte Ausprägung von `ModulKatalogProfil` führt
+> **25 Felder in drei Gruppen**; die dritte Gruppe (`GruppeDrei`) ist neu — ein Block mit
+> zwanzig Feldern wäre nicht lesbar. Der Feldschlüssel ist hier der SPALTENNAME der
+> Stammtabelle: Es gibt keinen WinForms-Vorläufer, dessen Feldnamen zu erben wären, und
+> eine zweite Schreibweise neben `WechselrichterSchema` wäre eine zweite Wahrheit.
+>
+> Der **Herstellerfilter** ist ebenfalls neu und hängt an zwei Delegaten
+> (`ModulKatalogWege.Hersteller`/`.ListeGefiltert`); ohne sie zeichnet der Dialog die
+> Filterzeile nicht — die Hausregel „kein Delegat, kein Bedienelement". Damit hat
+> `ModulKatalogProfil.HatHerstellerfilter`, seit W14a.0a eine Eigenschaft ohne Leser,
+> endlich einen.
+>
+> **Ein leeres Zahlenfeld bleibt NULL**, nicht 0. Die zwei älteren Ausprägungen weichen
+> bei jedem leeren Feld auf 0 aus; hier wäre das falsch — eine 0 bei `U_Dc_Max` hieße
+> „Grenze null Volt" und sperrte jeden Strang, während NULL „keine Prüfung" heißt (3.1).
+>
+> Die **sieben Sandia-Spalten führt die Maske nicht** (von Hand sind sie nicht pflegbar);
+> beim Ändern eines importierten Satzes kommen sie aus dem BESTAND, damit sie nicht mit
+> NULL überschrieben werden — dieselbe Überlegung wie bei `alpha_SC`/`beta_OC` in
+> `PhotovoltaikStammCtrl.SpeichernAus`. `Herkunft` steht als gesperrtes Feld daneben und
+> sagt, woher der Satz kommt (`CEC` / `OND` / `HAND`).
+>
+> Der Aufklapper **„Alle Parameter und ihre Verwendung"** (W14a‑E‑8) trägt die achte
+> Anlagenart. In S1 hat **keine** Spalte einen Leser im Rechenweg: 27 stehen als
+> „Dialog", die sieben Sandia-Werte als „nicht verwendet".
 
 ---
 
@@ -790,39 +902,128 @@ isotrope Einstrahlung, linearer Temperaturgang. Der Wechselrichter rechnet in be
 Sperrregel `disabled="@(!Zeile.ModellErweitert)"`. Was bleibt: die Überlagerung dahinter, als
 Anlagenrückfall ohne Zuordnung.
 
+### 7.1 W6‑E‑3 — zwei SICHTBARE Optionen statt einer stillen Vorrangregel
+
+**Anwenderwunsch vom 06.09.2026, im Wortlaut:**
+
+> „Gebe zwei Optionen - vereinfacht -> Berechnung ohne Wechselrichter (Pauschalen) 2. mit
+> Wechselrichter (wie Vorschlag)"
+
+Er ergänzt Abschnitt 3.5. Dort steht die Vorrangregel **still**: „Führt die Anlage mindestens
+eine Zeile in `Z_AnlageStrang` mit `ID_Wechselrichter`, dann rechnet die Strangzuordnung."
+W6‑E‑3 verlangt stattdessen eine **Wahl, die der Anwender sieht** — im Abschnitt „Wechselrichter
+und Stränge", über der Strangtabelle:
+
+```
+Wechselrichter   ( ) vereinfacht — Pauschalen ohne Wechselrichter
+                 (•) mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping
+```
+
+* **„vereinfacht"** ist der Weg von heute: Wirkungsgrad 0,95 bzw. der gepflegte Anlagenwert,
+  `PV_Systemverluste`, und im Modell ERWEITERT die fünf Anlagenspalten aus Migrationsschritt 64.
+* **„mit Wechselrichter"** ist der Weg aus Kapitel 4: Katalog, Strangzuordnung, Kennlinie mit
+  sechs Stützstellen, Clipping je Gerät, Nachtverbrauch.
+
+**Umgesetzt wird der Schalter in Stufe S2** (Punkt S2.4). In S1 steht er nur hier — S1 fasst
+weder den PV-Dialog noch den Rechenweg an.
+
+#### Wo der Schalter im Datenmodell liegt — Empfehlung
+
+Zwei Möglichkeiten stehen zur Wahl:
+
+| | **(a) eigene Spalte an der Anlagenzeile** | **(b) abgeleitet aus der Strangtabelle** |
+|---|---|---|
+| Ablage | `Tab_Energieanlagen.PV_Wechselrichterweg` TEXT(20); NULL = „vereinfacht" | keine; die Frage lautet „gibt es eine Strangzeile mit `ID_Wechselrichter`?" |
+| Migration | eine Spalte, in Schritt 66 zusammen mit `Z_AnlageStrang` | keine |
+| Abschalten | ein Klick — die Strangzeilen bleiben liegen | nur durch **Löschen** der Strangzeilen |
+
+**Empfohlen ist (a): eine eigene Spalte.** Fünf Gründe, der erste ist der entscheidende:
+
+1. **Eine Option, die man nicht abwählen kann, ist keine Option.** Bei (b) heißt „zurück auf
+   vereinfacht": die Strangzuordnung löschen. Der Planer verlöre damit genau die Arbeit, die er
+   vergleichen will — und ein Vergleich der zwei Wege ist der Zweck des Wunsches („gebe zwei
+   Optionen"). Mit (a) parkt die Zuordnung und rechnet nicht mit.
+2. **Es ist dieselbe Bauart wie `PV_Modell`** (Schritt 64): ein sichtbarer Schalter an derselben
+   Anlagenzeile, mit NULL als dem Wert, der nichts ändert. Ein zweiter Schalter derselben Art
+   gehört daneben, nicht in eine abgeleitete Abfrage.
+3. **Die Ergebnisneutralität wird zur Aussage statt zum Zufall.** Bei (a) ist „NULL = vereinfacht"
+   eine Zusage über die Spalte; bei (b) hinge sie daran, dass keine Bestandsanlage je eine
+   Strangzeile bekommt — eine versehentlich angelegte Zeile änderte still ein Ergebnis.
+4. **Der Rechenweg liest die Spalte dort, wo er ohnehin liest.** `SimulationPV.Berechnung` holt
+   an einer Stelle bereits fünf PV-Spalten derselben Zeile; die sechste kostet nichts. (b)
+   verlangte je Anlage eine Abfrage auf `Z_AnlageStrang`, bevor überhaupt feststeht, welchen Weg
+   sie geht.
+5. **Die Oberfläche kann den Grund sagen.** „mit Wechselrichter" ohne Strangzeile ist ein
+   erklärbarer Zustand: Die Option bleibt anklickbar, trägt `aria-disabled` und den Satz „Es ist
+   noch kein Strang zugeordnet" — die weiche Sperre aus **W16b‑E‑6**. Bei (b) gäbe es diesen
+   Zustand gar nicht, und damit auch keinen Ort für den Hinweis.
+
+**Was sich dadurch an Abschnitt 3.5 ändert.** Die Vorrangregel bleibt, sie bekommt nur eine
+Bedingung davor:
+
+```
+PV_Wechselrichterweg = KATALOG  UND  mindestens eine Strangzeile mit ID_Wechselrichter
+   -> die Strangzuordnung rechnet
+sonst
+   -> der Weg von heute, Zeichen für Zeichen
+```
+
+Die Bitgleichheit des Referenzlaufs ist damit unverändert zugesichert: Kein Bestandsprojekt hat
+eine Strangzeile, und keines hat die Spalte gefüllt. **Zwei Bedingungen statt einer machen die
+Zusage stärker, nicht schwächer.**
+
+Die zwei Persistenzwerte gehören nach `DbWerte` (Drei-Schichten-Regel), die Beschriftungen nach
+`MyResource`; die Spalte entsteht in **Schritt 66** zusammen mit `Z_AnlageStrang`, damit S2 einen
+Migrationsschritt hat und nicht zwei.
+
 ---
 
 ## 8. Vorschlag in drei Stufen
 
-### Stufe S1 — Katalog, Verwaltung, Import (**ohne jede Rechenwirkung**)
+### Stufe S1 — Katalog, Verwaltung, Import (**ohne jede Rechenwirkung**) — **UMGESETZT in `40fc542`**
 
-| Nr. | Inhalt | Umfang |
+| Nr. | Inhalt | Stand |
 |---|---|---|
-| S1.1 | Migrationsschritt **65**: `Tab_Wechselrichter_STAMM` + `Tab_Wechselrichter`; `SchemaKatalog`-Einträge, Typkatalog, `sql/schema/001_grundschema.sql` | 1 Schritt, ~2 Dateien |
-| S1.2 | `WechselrichterModel`, `WechselrichterStammCtrl`, `WechselrichterCtrl` (mit `CopyFromStamm`) nach dem Muster `PhotovoltaikStammCtrl`/`PhotovoltaikCtrl` | 3 Dateien |
-| S1.3 | `KatalogRegistry`-Definition „WECHSELRICHTER" (5.4) | 1 Datei |
-| S1.4 | Dritte Ausprägung in `ModulKatalogProfil` + Menüpunkt + Seitenschlüssel + Navigation | 4 Dateien |
-| S1.5 | CEC-Wechselrichterimport: `CecWechselrichterDienst` nach dem Muster `CECDataService`, Sandia→Stützstellen-Umrechnung, zweite Ausprägung des Importdialogs | 4–5 Dateien |
-| S1.6 | `WechselrichterPlausibilitaet` (Katalogsatz) + Proben | 2 Dateien |
-| S1.7 | Ressourcenschlüssel de + en (≈ 60), Hilfetexte | 2 Dateien |
+| S1.1 | Migrationsschritt **65**: `Tab_Wechselrichter_STAMM` + `Tab_Wechselrichter`, DDL in `EPOS.Kern/Allgemein/Update/WechselrichterSchema.cs`, Tabellennamen in `SchemaKatalog`, `SchemaStand.Zielversion` = 65, `Werkzeuge/Testdatenbankschema` und `Referenzlaeufe/Kenndaten_Test.sqlite` nachgezogen | **umgesetzt** (`ee1dc44`); `001_grundschema.sql` und der Typkatalog blieben unberührt, Begründung in 3.6 |
+| S1.2 | `WechselrichterModel` (alle Fachwerte `double?`/`int?` — NULL heißt „keine Prüfung"), `WechselrichterStammCtrl`, `WechselrichterCtrl.CopyFromStamm` | **umgesetzt** (`33ecede`) |
+| S1.3 | `KatalogRegistry`-Definition „WECHSELRICHTER" (5.4) — der zwanzigste Katalog | **umgesetzt** (`6a6426c`) |
+| S1.4 | Dritte Ausprägung von `ModulKatalogProfil`/`ModulKatalogDialog` (25 Felder, drei Gruppen, Herstellerfilter), Menüpunkt, `Masken`/`Seitenschluessel`, `WinFormsNavigation`, `WechselrichterAdminHuelle`, Parameterübersicht (achte `Anlagenart`) | **umgesetzt** (`d7d25f3`) |
+| S1.5 | `CecWechselrichterDienst`, `CecWechselrichter`, `WechselrichterKennlinie` (Sandia→Stützstellen), `WechselrichterImportDialog` + Hülle, Menüpunkt, Importprobe `cec_wechselrichter_21.csv` | **umgesetzt** (`119537f`); Abweichung zur „zweiten Ausprägung" in 5.5 benannt, offener Punkt W6‑O‑1 |
+| S1.6 | `WechselrichterPlausibilitaet` (Katalogsatz) + Proben | **umgesetzt** (`33ecede`, Proben in `40fc542`) |
+| S1.7 | Ressourcenschlüssel de + en, Präfix `WRK_` | **umgesetzt** (`33ecede`): **82 Schlüssel** in beiden Sprachen, `Resource.Designer.cs` neu erzeugt |
+| S1.8 | Proben: Kern und bunit | **umgesetzt** (`40fc542`): 36 Kern-Fälle, 17 bunit-Fälle |
+| S1.9 | Fortschreibung dieses Papiers | **dieses Dokument (Rev. 2)** |
 
-**Abnahme S1:** Katalog anlegen, CEC-Liste importieren, ein Gerät von Hand anlegen, kopieren,
-löschen; die Dublettenprüfung meldet den Zweitimport; Migration idempotent (Zweitlauf ohne DDL);
-**Referenzlauf byte-gleich** — S1 fasst den Rechenweg nicht an. Das ist trivialerweise erfüllt und
-gerade deshalb wertvoll: **S1 ist ohne Risiko lieferbar.**
+**Abnahme S1 — nachgewiesen am 06.09.2026:**
+
+| Kriterium | Beleg |
+|---|---|
+| Migration idempotent (Zweitlauf ohne DDL) | `Werkzeuge/Testdatenbankschema` meldet im zweiten Lauf „vorhanden / 0 Tabelle(n) angelegt"; dazu der Kern-Fall `Der_Migrationsschritt_65_ist_idempotent` |
+| Katalog und Projektkopie spaltengleich | `Katalog_und_Projektkopie_sind_spaltengleich` — 34 zu 34, Unterschied nur `ReadOnly` gegen `ID_Projekt` |
+| Anlegen, kopieren, löschen | `Der_Katalogsatz_laesst_sich_anlegen_lesen_aendern_und_loeschen`, `Die_Projektkopie_uebernimmt_jede_Fachspalte` |
+| Dublettenprüfung meldet den Zweitimport | `Die_Dublettenpruefung_erkennt_den_Zweitimport`, `Ein_anderer_Preis_macht_keinen_anderen_Wechselrichter` |
+| CEC-Import | `Die_Importprobe_liest_einundzwanzig_Geraete`, `Die_Feldzuordnung_des_Imports_stimmt`, `Jedes_Geraet_der_Importprobe_ist_plausibel` |
+| Sandia → Stützstellen | `Die_Stuetzstelle_bei_Nennlast_ist_Paco_durch_Pdco` (zwölf Stellen), `Die_Kennlinie_steigt_bis_zur_halben_Last` |
+| **Referenzlauf byte-gleich** | 1030 / 1007 / 1017 gegen `Referenzlaeufe/2026-09-05_R2_Zeitbasis` — **byte-gleich**, vor und nach dem Nachziehen der Testdatenbank |
+| SQL-Dialekt | `Werkzeuge/SqlDialektPruefer` gegen die nachgezogene Testdatenbank: **0 Fundstellen** |
+
+**Was auf Windows noch abzunehmen ist**, steht als Abnahmepunkte A‑W6‑E‑2‑S1‑1 ff. im
+Umsetzungsprotokoll: Die zwei Menüpunkte, der Netzabruf am echten Gerät und die Anmutung der
+Verwaltung sind ohne Windows nicht prüfbar.
 
 ### Stufe S2 — Strangzuordnung, Plausibilität, Oberfläche
 
 | Nr. | Inhalt | Umfang |
 |---|---|---|
-| S2.1 | Migrationsschritt **66**: `Z_AnlageStrang` | 1 Schritt |
+| S2.1 | Migrationsschritt **66**: `Z_AnlageStrang` — **und** die Spalte `Tab_Energieanlagen.PV_Wechselrichterweg` des Schalters aus **W6‑E‑3** (7.1) | 1 Schritt |
 | S2.2 | `AnlageStrangModel`, `AnlageStrangCtrl` (Lesen/Schreiben je Anlage), Anbindung an `AnlagenSql`/`WizardCtrl` — **Achtung:** `SQL_ANLAGE_INSERT` verliert beim Löschen und Neuanlegen bekanntlich Spalten (Nachtrag 3, N3.3); die Strangzeilen dürfen nicht in dieselbe Falle laufen | 3 Dateien |
 | S2.3 | `StrangPlausibilitaet` mit P1–P8 (4.2) + Proben mit gerechneten Grenzfällen | 2 Dateien |
-| S2.4 | Abschnitt „Wechselrichter und Stränge" im PV-Dialog (Abschnitt 7); die Sperrregel des Knopfes entfällt | 3 Dateien |
+| S2.4 | Abschnitt „Wechselrichter und Stränge" im PV-Dialog (Abschnitt 7) samt der **zwei sichtbaren Optionen** aus W6‑E‑3 (7.1); die Sperrregel des Knopfes entfällt | 3 Dateien |
 | S2.5 | Projekttransfer (`.wpx`): die zwei neuen Tabellen in Export und Import, Zielversion 66 | 1–2 Dateien |
 | S2.6 | Ressourcenschlüssel de + en (≈ 40) | 2 Dateien |
 
-**Abnahme S2:** Ein Strang lässt sich anlegen, ändern, löschen; die Ampel zeigt an einem
+**Abnahme S2:** Der Schalter aus W6‑E‑3 steht sichtbar und schaltet um; ein Strang lässt sich
+anlegen, ändern, löschen; die Ampel zeigt an einem
 gerechneten Beispiel grün, gelb und rot; Modulsumme und „Anzahl Module" stimmen überein;
 Projektexport und -import tragen die Stränge; **Referenzlauf byte-gleich** (S2 rechnet noch
 nicht).
@@ -846,9 +1047,9 @@ Stufe gebaut wird.
 
 ### Reihenfolge
 
-**S1 zuerst und allein.** Sie ist ohne Rechenwirkung, ohne Referenzlauf-Risiko und liefert schon
-den halben Anwenderwunsch („Import liegt nicht vor, Admin zum Anlegen/Bearbeiten liegt nicht
-vor").
+**S1 zuerst und allein** — **erledigt am 06.09.2026.** Sie war ohne Rechenwirkung, ohne
+Referenzlauf-Risiko und liefert schon den halben Anwenderwunsch („Import liegt nicht vor, Admin
+zum Anlegen/Bearbeiten liegt nicht vor").
 
 **S2 und S3 zusammen ausliefern.** S2 allein hinterließe eine Strangtabelle, die die Oberfläche
 zeigt und der Rechenkern ignoriert — eine zweite Wahrheit, also genau der Zustand, den das
@@ -892,8 +1093,13 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 
 ## 10. Empfehlung
 
-1. **S1 sofort und allein umsetzen** — Katalog, Verwaltung, CEC-Import. Kein Rechenweg, kein
-   Referenzlauf-Risiko, und der Anwenderwunsch ist damit zur Hälfte erfüllt.
+> **Angenommen am 06.09.2026** („Q1 bis Q10: Empfehlung, ja alle"). Punkt 1 ist eingelöst;
+> Punkt 5 hat der Anwender mit **W6‑E‑3** noch einmal geschärft — nicht die Zuordnung allein
+> entscheidet, sondern ein sichtbarer Schalter (7.1).
+
+1. ~~**S1 sofort und allein umsetzen**~~ — **erledigt am 06.09.2026** (`40fc542`): Katalog,
+   Verwaltung, CEC-Import. Kein Rechenweg, kein Referenzlauf-Risiko, und der Anwenderwunsch ist
+   damit zur Hälfte erfüllt.
 2. **Kennlinie als Stützstellen** (5/10/20/30/50/100 %) rechnen, **Sandia-Koeffizienten
    mitschreiben** und beim Import in die Stützstellen umrechnen (3.3.3). Der Sandia-Rechenweg
    selbst bleibt liegen, bis es ein Ein-Dioden-Modell gibt.
@@ -914,20 +1120,35 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 
 ---
 
-## 11. Entscheidungsfragen
+## 11. Entscheidungsfragen — **alle entschieden am 06.09.2026**
 
-| Nr. | Frage | Empfehlung |
+> **Anwenderentscheid, im Wortlaut:** „W6‑E‑2‑Q1 bis Q10: Empfehlung, ja alle". Jede Empfehlung
+> dieser Tabelle ist damit angenommen; die Zeilen tragen die Entscheidung und, wo Stufe S1 sie
+> schon eingelöst hat, den Umsetzungsstand.
+
+| Nr. | Frage | Empfehlung und Entscheidung |
 |---|---|---|
-| **W6‑E‑2‑Q1** | Kennlinienform: sechs Stützstellen (5/10/20/30/50/100 %) oder Sandia-Koeffizienten als Rechenmodell? Und braucht es die siebte Stützstelle 75 % für die CEC-Wichtung? | **Stützstellen**, Sandia nur mitschreiben — Sandia braucht `U_dc` je Stunde, die es ohne Ein-Dioden-Modell (E3, zurückgestellt) nicht gibt. **Ohne** 75 %: `Eta_Euro` ist der Ausweis, den Datenblätter nennen; die kalifornische Wichtung ist in Europa ohne Belang |
-| **W6‑E‑2‑Q2** | Import-Quellen: CEC-Liste, PVsyst `.OND`, Handpflege — alle drei, oder gestaffelt? | **Alle drei, gestaffelt.** CEC und Handpflege in S1 (der Abrufapparat steht), OND anschließend — er ist die genauere, aber seltenere Quelle |
-| **W6‑E‑2‑Q3** | Zuordnung auf **Strang**- oder auf **Anlagen**ebene? | **Strangebene.** Die Anlagenebene gibt es schon und kann Ost/West, Mehrgerätigkeit und Auslegungsprüfung grundsätzlich nicht |
-| **W6‑E‑2‑Q4** | Neigung und Azimut je Strang (Teilfelder)? | **Ja**, NULL = Anlagenwert. Das ist der Ost/West-Fall, und der Vorgabewert ändert nichts |
-| **W6‑E‑2‑Q5** | Wirkt der Wechselrichter auch im Modell **EINFACH**? | **Ja**, sobald eine Zuordnung besteht. Ein Gerät ist keine Modellverfeinerung; die Bitgleichheit hängt an der Zuordnung. Damit entfällt der ausgegraute Knopf |
-| **W6‑E‑2‑Q6** | Mehrere Wechselrichter je Anlage? | **Ja**, über `Geraetenummer` in **einer** Tabelle. Clipping je Gerät, Gerätezahl für die Kosten aus `COUNT(DISTINCT …)` |
-| **W6‑E‑2‑Q7** | MPPT-Granularität: nur für die Auslegungsprüfung, oder auch mit eigener Eingangsleistungsgrenze im Rechenweg? | **Zunächst nur Prüfung** (P4/P5). Eine MPPT-Leistungsgrenze ist bei üblicher Auslegung wirkungslos und kostet eine Klemmstelle mehr in der Stundenschleife; nachrüstbar |
-| **W6‑E‑2‑Q8** | Wechselrichterkosten in der Wirtschaftlichkeit? | **Ja**, `Kosten` im Katalog, Summe über die Geräte als eigener Posten. Heute trägt die PV nur den Modulstückpreis (`TechnikPlanwertCtrl.cs:348-349`) — der Wechselrichter fehlt in der Investition, und das ist bei 10–20 % der Anlagenkosten spürbar |
-| **W6‑E‑2‑Q9** | „Anzahl Module": aus den Strängen **abgeleitet** (Feld wird nur-lesend) oder nur **geprüft** (P8 als Warnung)? | **Abgeleitet**, sobald ein Strang besteht — „eine Wahrheit" (E1.1). Der Anlagenwert wird mitgeschrieben, damit kWp, Stückpreis und Wirtschaftlichkeit unverändert weiterlesen |
-| **W6‑E‑2‑Q10** | Importmaske: zweite **Ausprägung** des vorhandenen `PvModulImportDialog` oder eigener Dialog? | **Zweite Ausprägung.** Netzabruf, Zwischenspeicher, virtualisiertes Raster, Fortschritt, Dubletten- und Konfliktweg sind identisch; verschieden sind nur Spalten und Zieltabelle — genau das, was ein Profil trägt |
+| **W6‑E‑2‑Q1** | Kennlinienform: sechs Stützstellen (5/10/20/30/50/100 %) oder Sandia-Koeffizienten als Rechenmodell? Und braucht es die siebte Stützstelle 75 % für die CEC-Wichtung? | **Stützstellen**, Sandia nur mitschreiben — Sandia braucht `U_dc` je Stunde, die es ohne Ein-Dioden-Modell (E3, zurückgestellt) nicht gibt. **Ohne** 75 %: `Eta_Euro` ist der Ausweis, den Datenblätter nennen; die kalifornische Wichtung ist in Europa ohne Belang — **Entschieden 06.09.2026: Empfehlung angenommen.** Umgesetzt in S1: `Eta05…Eta100`, `Eta_Euro`, keine 75-%-Stützstelle. |
+| **W6‑E‑2‑Q2** | Import-Quellen: CEC-Liste, PVsyst `.OND`, Handpflege — alle drei, oder gestaffelt? | **Alle drei, gestaffelt.** CEC und Handpflege in S1 (der Abrufapparat steht), OND anschließend — er ist die genauere, aber seltenere Quelle — **Entschieden 06.09.2026: Empfehlung angenommen.** CEC und Handpflege sind in S1 umgesetzt, OND folgt (S2). |
+| **W6‑E‑2‑Q3** | Zuordnung auf **Strang**- oder auf **Anlagen**ebene? | **Strangebene.** Die Anlagenebene gibt es schon und kann Ost/West, Mehrgerätigkeit und Auslegungsprüfung grundsätzlich nicht — **Entschieden 06.09.2026: Empfehlung angenommen.** `Z_AnlageStrang` kommt mit S2. |
+| **W6‑E‑2‑Q4** | Neigung und Azimut je Strang (Teilfelder)? | **Ja**, NULL = Anlagenwert. Das ist der Ost/West-Fall, und der Vorgabewert ändert nichts — **Entschieden 06.09.2026: Empfehlung angenommen.** Spalten `Neigung`/`Azimut` in `Z_AnlageStrang` (S2). |
+| **W6‑E‑2‑Q5** | Wirkt der Wechselrichter auch im Modell **EINFACH**? | **Ja**, sobald eine Zuordnung besteht. Ein Gerät ist keine Modellverfeinerung; die Bitgleichheit hängt an der Zuordnung. Damit entfällt der ausgegraute Knopf — **Entschieden 06.09.2026: Empfehlung angenommen** — und durch **W6‑E‑3** ergänzt: Ob der Wechselrichter rechnet, sagt seit dem der sichtbare Schalter, nicht mehr allein die Zuordnung (7.1). |
+| **W6‑E‑2‑Q6** | Mehrere Wechselrichter je Anlage? | **Ja**, über `Geraetenummer` in **einer** Tabelle. Clipping je Gerät, Gerätezahl für die Kosten aus `COUNT(DISTINCT …)` — **Entschieden 06.09.2026: Empfehlung angenommen.** `Geraetenummer` in `Z_AnlageStrang` (S2). |
+| **W6‑E‑2‑Q7** | MPPT-Granularität: nur für die Auslegungsprüfung, oder auch mit eigener Eingangsleistungsgrenze im Rechenweg? | **Zunächst nur Prüfung** (P4/P5). Eine MPPT-Leistungsgrenze ist bei üblicher Auslegung wirkungslos und kostet eine Klemmstelle mehr in der Stundenschleife; nachrüstbar — **Entschieden 06.09.2026: Empfehlung angenommen.** S1 legt `Anzahl_Mppt` und `Straenge_Je_Mppt` bereits an; gelesen werden sie ab S2 von P4/P5. |
+| **W6‑E‑2‑Q8** | Wechselrichterkosten in der Wirtschaftlichkeit? | **Ja**, `Kosten` im Katalog, Summe über die Geräte als eigener Posten. Heute trägt die PV nur den Modulstückpreis (`TechnikPlanwertCtrl.cs:348-349`) — der Wechselrichter fehlt in der Investition, und das ist bei 10–20 % der Anlagenkosten spürbar — **Entschieden 06.09.2026: Empfehlung angenommen.** Die Spalte `Kosten` steht seit S1 im Katalog; gerechnet wird sie in S3. |
+| **W6‑E‑2‑Q9** | „Anzahl Module": aus den Strängen **abgeleitet** (Feld wird nur-lesend) oder nur **geprüft** (P8 als Warnung)? | **Abgeleitet**, sobald ein Strang besteht — „eine Wahrheit" (E1.1). Der Anlagenwert wird mitgeschrieben, damit kWp, Stückpreis und Wirtschaftlichkeit unverändert weiterlesen — **Entschieden 06.09.2026: Empfehlung angenommen.** Umsetzung in S2.4. |
+| **W6‑E‑2‑Q10** | Importmaske: zweite **Ausprägung** des vorhandenen `PvModulImportDialog` oder eigener Dialog? | **Zweite Ausprägung.** Netzabruf, Zwischenspeicher, virtualisiertes Raster, Fortschritt, Dubletten- und Konfliktweg sind identisch; verschieden sind nur Spalten und Zieltabelle — genau das, was ein Profil trägt — **Entschieden 06.09.2026: Empfehlung angenommen** — in S1 **teilweise** eingelöst: Abrufapparat, Vorprüfung, Konfliktweg und alle Bausteine sind geteilt, die `.razor`-Datei nicht (Begründung in 5.5). Offener Punkt **W6‑O‑1**. |
+| **W6‑E‑3** | Wo liegt der SICHTBARE Schalter „vereinfacht" / „mit Wechselrichter" im Datenmodell — eigene Spalte an der Anlagenzeile oder abgeleitet aus der Strangtabelle? | **Eigene Spalte** `Tab_Energieanlagen.PV_Wechselrichterweg` (NULL = vereinfacht), angelegt in Schritt 66 zusammen mit `Z_AnlageStrang`. Begründung in 7.1: Eine Option, die man nur durch Löschen der Strangzeilen abwählen kann, ist keine Option. **Neuer Anwenderwunsch vom 06.09.2026; umgesetzt wird er in S2.4.** |
+
+---
+
+## 12. Offene Punkte
+
+| Nr. | Punkt | Stand |
+|---|---|---|
+| **W6‑O‑1** | **Ein Importwirt statt zwei.** `PvModulImportDialog` (771 Z.) und `WechselrichterImportDialog` (~300 Z.) teilen Abrufapparat, Vorprüfung, Konfliktweg und sämtliche Bausteine, aber nicht die `.razor`-Datei (5.5). Die Zusammenlegung verlangt eine neutrale Zeilen- und Detailform (Spalten und Felder als DATEN, wie `ModulFeldwert` im Modulkatalog) und damit den Umbau einer getesteten Maske samt 594 Zeilen bunit-Fällen. | **offen** — sinnvoller Zeitpunkt ist S2, wenn der OND-Zweig ohnehin in denselben Wirt kommt |
+| **W6‑O‑2** | **MPPT-Zahl und Scheinleistung fehlen im CEC-Bestand.** Die Liste führt weder `Anzahl_Mppt` noch `S_AC_Max`; beide bleiben nach dem Import NULL, und die Prüfungen P4/P5 rechnen dann auf EINEM MPPT. Ob der Auslieferungskatalog von Hand nachgepflegt wird (und für welche Geräte), ist eine Anwenderfrage. | **offen** — betrifft die Aussagekraft der Ampel in S2 |
+| **W6‑O‑3** | **Der Auslieferungsbestand ist leer.** Schritt 65 legt die Tabellen ohne DML an (das ist die Ergebnisneutralität). Ob EPOS-Plan künftig mit einem vorbefüllten Wechselrichterkatalog ausgeliefert wird — und wenn ja, mit welchen Geräten und mit `ReadOnly = 1` — ist ein eigener Entscheid. | **offen** |
 
 ---
 

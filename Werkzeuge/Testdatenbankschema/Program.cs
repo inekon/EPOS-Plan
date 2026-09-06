@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.IO;
@@ -16,14 +17,15 @@ namespace Testdatenbankschema
     /// die zwei DELETE-Texte des Schritts 62 aus <c>KlimaWaisenBereinigung</c> — also
     /// aus genau den Quellen, aus denen sich auch
     /// <c>SchemaMigration.Schritt_62_KlimaWaisen</c>,
-    /// <c>Schritt_63_PvAnlagenparameter</c> und <c>Schritt_64_PvModellwahl</c> bedienen.
-    /// Hier steht keine abgeschriebene DDL.</para>
+    /// <c>Schritt_63_PvAnlagenparameter</c>, <c>Schritt_64_PvModellwahl</c> und
+    /// <c>Schritt_65_Wechselrichterkatalog</c> bedienen (dessen zwei CREATE TABLE stehen
+    /// in <c>WechselrichterSchema</c>). Hier steht keine abgeschriebene DDL.</para>
     ///
     /// <para><b>Idempotent.</b> Eine vorhandene Spalte wird uebergangen, ein zweiter Lauf
     /// aendert nichts mehr. Rueckgabe 0 = Datei steht auf dem Zielstand.</para>
     ///
     /// <para><b>Ergebnisneutral.</b> Die Schritte 63 und 64 legen ausschliesslich Spalten
-    /// an und schreiben keinen Wert (NULL heisst im Rechenweg genau die bisher fest
+    /// an, Schritt 65 zwei LEERE Tabellen, und keiner von ihnen schreibt einen Wert (NULL heisst im Rechenweg genau die bisher fest
     /// verdrahtete Vorbelegung); Schritt 62 loescht nur Zeilen ohne Kopfsatz, die ueber
     /// keine Abfrage des Programms erreichbar sind. Der Referenzlauf muss vor und nach
     /// dem Nachziehen byte-gleiche CSV liefern — das ist die Abnahme.</para>
@@ -37,7 +39,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62, 63, 64) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 65) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -99,8 +101,16 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 64, trocken);
 
+            // ---- Schritt 65: der Wechselrichterkatalog und seine Projektkopie.
+            //      Die DDL kommt aus WechselrichterSchema - DIESELBE Quelle, aus der
+            //      sich SchemaMigration.Schritt_65_Wechselrichterkatalog bedient.
+            //      CREATE TABLE IF NOT EXISTS ist selbst idempotent.
+            int tabellen = 0;
+            foreach (KeyValuePair<string, string> a in WechselrichterSchema.Anweisungen)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 65, trocken);
+
             Console.WriteLine();
-            Console.WriteLine(angelegt + " Spalte(n) angelegt.");
+            Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
             if (trocken)
             {
@@ -147,6 +157,29 @@ namespace Testdatenbankschema
             Console.WriteLine("Schritt " + schritt + " - " + tabelle + "." + spalte + ": anlegen als " + typ + ".");
             if (!trocken)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"" + tabelle + "\" ADD COLUMN \"" + spalte + "\" " + typ);
+            return 1;
+        }
+
+        /// <summary>
+        /// Legt eine Tabelle an, wenn sie fehlt. Die Anweisung traegt ihr
+        /// <c>IF NOT EXISTS</c> selbst; die Vorabfrage dient allein der Zaehlung im
+        /// Bericht. Rueckgabe 1, wenn angelegt wurde, sonst 0.
+        /// </summary>
+        private static int TabelleSicherstellen(string tabelle, string ddl, int schritt, bool trocken)
+        {
+            object da = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = '" +
+                tabelle.Replace("'", "''") + "'");
+            bool vorhanden = da != null && da != DBNull.Value && Convert.ToInt64(da) > 0;
+
+            if (vorhanden)
+            {
+                Console.WriteLine("Schritt " + schritt + " - " + tabelle + ": vorhanden.");
+                return 0;
+            }
+
+            Console.WriteLine("Schritt " + schritt + " - " + tabelle + ": anlegen.");
+            if (!trocken) DataRepository.ExecuteNonQuery(ddl);
             return 1;
         }
 
