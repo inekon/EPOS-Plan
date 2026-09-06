@@ -18,9 +18,12 @@ namespace EPOS.Kern.Tests
     ///
     /// <para>Die Klasse steht in derselben Sammlung wie <c>DiensteTests</c>:
     /// <c>Dienste.Einstellungen</c> ist prozessweiter Zustand, und xunit fährt
-    /// Testklassen sonst nebeneinander.</para>
+    /// Testklassen sonst nebeneinander. Seit dem Befund iU5‑O‑1 (06.09.2026) ist das
+    /// die Sammlung „Testdatenbank" — sie ist die EINE serielle Sammlung, in der jeder
+    /// Tauscher steht, weil auch die Datenbanktests über
+    /// <c>DataRepository.FehlerMelden</c> in den Dialogdienst melden.</para>
     /// </summary>
-    [Collection("Dienste")]
+    [Collection("Testdatenbank")]
     public class EnergieeinheitTests
     {
         /// <summary>

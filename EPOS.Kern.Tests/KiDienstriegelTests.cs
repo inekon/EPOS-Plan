@@ -32,8 +32,13 @@ namespace EPOS.Kern.Tests
     /// Kein Netz: Der Riegel schlägt zu, bevor irgendetwas gesendet würde, und die
     /// Werkzeugrunde läuft über den eingespeisten <c>Modellkanal</c>.
     /// </para>
+    /// <para>
+    /// Die Klasse tauscht <c>Dienste.Einstellungen</c> und steht darum in der einen
+    /// seriellen Sammlung „Testdatenbank" (Befund iU5‑O‑1, 06.09.2026; vorher
+    /// „Dienste" — zwei verschiedene Sammlungen laufen in xunit nebeneinander).
+    /// </para>
     /// </remarks>
-    [Collection("Dienste")]
+    [Collection("Testdatenbank")]
     public class KiDienstriegelTests
     {
         /// <summary>Einstellungen im Arbeitsspeicher, mit erteilter Einwilligung.</summary>

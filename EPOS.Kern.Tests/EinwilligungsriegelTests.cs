@@ -28,10 +28,16 @@ namespace EPOS.Kern.Tests
     /// <c>DiensteTests</c> und <c>EnergieeinheitTests</c>, die denselben Dienst
     /// tauschen.</para>
     ///
+    /// <para>Die Sammlung heißt seit dem Befund iU5‑O‑1 (06.09.2026)
+    /// „Testdatenbank" statt „Dienste": Zwei verschiedene Sammlungen laufen in xunit
+    /// immer NEBENEINANDER, und die Datenbanktests melden über
+    /// <c>DataRepository.FehlerMelden</c> in denselben Dialogdienst. Es gibt darum nur
+    /// noch EINE serielle Sammlung für alle, die ein <c>Dienste.*</c> tauschen.</para>
+    ///
     /// <para>Jeder Fall stellt Dienst, Haken, Prüfkanal und Abschalter im
     /// <c>finally</c> wieder her.</para>
     /// </summary>
-    [Collection("Dienste")]
+    [Collection("Testdatenbank")]
     public class EinwilligungsriegelTests
     {
         /// <summary>

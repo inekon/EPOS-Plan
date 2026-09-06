@@ -33,8 +33,12 @@ namespace EPOS.Kern.Tests
     /// schreibend), nicht gegen das der Anwendung: Der Kern soll ohne die Anwendung
     /// prüfbar sein, und die Fälle sollen sich nicht ändern, wenn dem echten Register
     /// eine Aktion zuwächst (dieselbe Begründung wie in <c>KiKern.Tests</c>).</para>
+    ///
+    /// <para>Die Klasse tauscht <c>Dienste.Einstellungen</c> und steht darum in der
+    /// einen seriellen Sammlung „Testdatenbank" (Befund iU5‑O‑1, 06.09.2026; vorher
+    /// „Dienste" — zwei verschiedene Sammlungen laufen in xunit nebeneinander).</para>
     /// </summary>
-    [Collection("Dienste")]
+    [Collection("Testdatenbank")]
     public class ModellkanalTests
     {
         // ==================================================================

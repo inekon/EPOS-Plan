@@ -20,7 +20,16 @@ namespace EPOS.Kern.Tests
     /// Eine nicht lesbare Ablage blockiert den Start NICHT (Entscheid E-15, Befund
     /// W15c-B18) — eine Zusage, die man nur beim Lesen des Kommentars bemerkt und beim
     /// nächsten Umbau still verlieren würde.</para>
+    ///
+    /// <para><b>Warum die Sammlung (Befund iU5‑O‑1, 06.09.2026).</b> Die Fälle der
+    /// Zustimmung tauschen <see cref="Dienste.Einstellungen"/> — prozessweiter Zustand.
+    /// Ohne Sammlungsangabe gibt xunit jeder Testklasse ihre eigene Sammlung und fährt
+    /// sie damit NEBEN allen anderen; diese Klasse tauschte den Dienst also gegen die
+    /// übrigen Tauscher an. Alle Tauscher stehen deshalb in der einen seriellen
+    /// Sammlung „Testdatenbank"; der Wächter <see cref="DiensteSammlungTests"/> prüft
+    /// es.</para>
     /// </summary>
+    [Collection("Testdatenbank")]
     public class LizenzTextCtrlTests
     {
         // ==================================================================
