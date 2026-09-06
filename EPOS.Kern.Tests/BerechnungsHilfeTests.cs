@@ -665,7 +665,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Δϑ = 50", klartext);
             Assert.Contains("λ ≈ ρ · κ · ω · π", klartext);
             Assert.Contains("ℓ ≠ ∞", klartext);
-            Assert.Contains("τ ∈ 1, …, n", klartext);
+            Assert.Contains("τ ∈ {1, …, n}", klartext);
             Assert.Contains("Ψ ± ε → φ", klartext);
         }
 

@@ -552,7 +552,11 @@ namespace WindowsFormsApplication1
                 if (s == vorher) break;
             }
 
-            // 8) Was an Klammern und Befehlen uebrig ist
+            // 8) Was an Klammern und Befehlen uebrig ist. Eine geschweifte Klammer,
+            //    die zur AUSSAGE gehört (in LaTeX <c>\{ … \}</c>, etwa eine Menge),
+            //    ist keine Gruppierung und bleibt — sie wird wie die der
+            //    Fallunterscheidung verwahrt.
+            s = s.Replace("\\{", FALL_AUF).Replace("\\}", FALL_ZU);
             s = s.Replace("{", "").Replace("}", "");
             s = Regex.Replace(s, @"\\([A-Za-z]+)", "$1");
             s = s.Replace("\\", "");
