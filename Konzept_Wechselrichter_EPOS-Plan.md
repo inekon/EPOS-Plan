@@ -1,8 +1,9 @@
 # Konzept: Wechselrichter EPOS-Plan — Katalog, Strangzuordnung und Rechenweg
 
-**Rev. 4 — 06.09.2026 — Stufen S1, S2 und S3 ENTSCHIEDEN und UMGESETZT**
+**Rev. 5 — 06.09.2026 — Stufen S1, S2 und S3 UMGESETZT, dazu die drei Nachträge
+W6‑O‑4, W6‑O‑5 und W6‑O‑6 (Modul je Strang, Herstellerfilter)**
 (Rev. 1 war Befund und Vorschlag zur Entscheidung durch den Anwender;
-Rev. 2 trug Stufe S1, Rev. 3 die Stufe S2)
+Rev. 2 trug Stufe S1, Rev. 3 die Stufe S2, Rev. 4 die Stufe S3)
 
 Auftrag (Anwenderwunsch **W6‑E‑2**, Windows-Abnahme vom 06.09.2026, im Wortlaut):
 
@@ -27,7 +28,9 @@ sind es nicht.**
 Mockup: `Mockups/Wechselrichter_Mockup_2026-09-06.html` (vier Ansichten M1–M4;
 in Stufe S1 unverändert, mit **S2** um die zwei Optionen aus W6‑E‑3 und den
 S3-Hinweis in M1 ergänzt; in **S3 unverändert** — die Stufe fasst den Rechenweg
-an, nicht die Maske).
+an, nicht die Maske; mit dem **Nachtrag W6‑O‑4/O‑6** trägt M1 die Filterzeile
+über der Tabelle, die Spalte „Modul" und die Herleitungszeile darunter, und der
+S3-Hinweis ist dort fort).
 
 > **Entscheid des Anwenders vom 06.09.2026.** „Setze Vorschlag fuer Wechselrichter um“;
 > zu den zehn Entscheidungsfragen: „W6‑E‑2‑Q1 bis Q10: Empfehlung, ja alle". Damit ist
@@ -386,9 +389,18 @@ Drei Entwurfsentscheidungen, die eine Begründung verdienen:
    (1.6), und der Vorgabewert ändert nichts: Ohne Eintrag rechnet der Strang mit der
    Anlagenausrichtung, also exakt wie heute.
 3. **`ID_PV` je Strang, NULL = Anlagenmodul.** Kostet eine Spalte, ist im Bestand oft nötig
-   (Erweiterung einer Anlage mit einem anderen Modultyp) und wird in Stufe S2 **nicht** in der
-   Oberfläche gezeigt — sie steht bereit, sobald sie gebraucht wird. Wer sie jetzt weglässt,
-   braucht später einen Migrationsschritt für ein Feld, das ohnehin absehbar ist.
+   (Erweiterung einer Anlage mit einem anderen Modultyp) und wurde in Stufe S2 **nicht** in der
+   Oberfläche gezeigt — sie stand bereit, bis sie gebraucht wurde. Wer sie damals weggelassen
+   hätte, bräuchte jetzt einen Migrationsschritt für ein Feld, das ohnehin absehbar war.
+
+   > **Seit dem Anwenderentscheid W6‑O‑6 vom 06.09.2026 wird sie gezeigt und gerechnet**
+   > (umgesetzt in `35a48eb`), wörtlich: „jeder Strang mit nur einem Modultyp, unterschiedliche
+   > Stränge können jeweils einen anderen Modultyp haben." Die Strangtabelle führt dafür eine
+   > Spalte **„Modul"** als Klappliste über dem Modulkatalog; leer heisst „das Modul der Anlage"
+   > — dieselbe Rückfallregel wie bei Neigung und Azimut, nur als Klapplisteneintrag statt als
+   > Klammer, weil ein Modulname kein Zahlenfeld ist. Die Zeile trägt die **Projektkopie**
+   > (`Tab_PV.ID`), übernommen wird beim Wählen (`PhotovoltaikCtrl.CopyFromStamm`) wie beim
+   > Wechselrichter.
 
 ### 3.5 Was an der Anlagenzeile bleibt
 
@@ -538,6 +550,14 @@ P_DC,s    = EINFACH:   P_STC,s · G_t,s/1000 · (1 + γ_PMP·(T_Zelle,s − 25))
 Ost/West-Feld mit acht Strängen hat zwei Ausrichtungen. Ohne den Zwischenspeicher rechnete die
 Sonnengeometrie achtmal dasselbe (Befund B3 des PV-Ertragsmodells zur Laufzeit gilt sinngemäß).
 
+**Das Modul ist das des STRANGS** (Anwenderentscheid **W6‑O‑6** vom 06.09.2026, umgesetzt in
+`35a48eb`): `Leistung_Modul`, `γ_PMP`, `T_NOCT`, Fläche und Wirkungsgrad in den Zeilen oben kommen
+aus der Projektkopie, auf die `Z_AnlageStrang.ID_PV` zeigt — und nur ohne diese Angabe aus dem
+Modul der Anlage. Auch der Huld-Koeffizientensatz des erweiterten Modells folgt der
+Zelltechnologie DIESES Moduls. Gelesen wird **je Modultyp einmal**, vor der Stundenschleife;
+in der Schleife steht keine Abfrage. Eine `ID_PV`, die `Tab_PV` nicht (mehr) führt, ist derselbe
+Fall wie keine — der Strang rechnet mit dem Anlagenmodul, und der Lauf meldet es.
+
 **Schritt 2 — Summe je MPPT.**
 
 ```
@@ -552,6 +572,11 @@ Führt der Katalog eine MPPT-Eingangsleistungsgrenze, wird hier geklemmt und der
 ```
 P_DC,ger = ( Σ_{mppt ∈ Gerät} P_DC,mppt ) · (1 − PV_Systemverluste/100)
 ```
+
+Die **DC-Nennleistung eines Geräts** ist entsprechend die Summe seiner Stränge, jeder mit seiner
+eigenen Modulleistung (W6‑O‑6): `Σ_s Leistung_Modul(s)/1000 · n_s`. An ihr hängen das
+DC/AC-Verhältnis und die Rückfallebene der Auslastung, wenn der Katalog keine AC-Nennleistung
+führt.
 
 **Schritt 4 — Kennlinie, Clipping, Nachtverbrauch.**
 
@@ -984,11 +1009,13 @@ Neigung [°]    30        Azimut [°]    0        Anzahl Module   10   (abgeleit
 Rechenmodell   Einfach ▾      Systemverluste [%]   12,00
 ─────────────────────────────────────────────────────────────────────────────
 Wechselrichter und Stränge                              DC/AC 1,10   ● grün
-┌──────┬──────────────────┬──────┬──────┬────────┬───────┬────────┬─────────┐
-│ Rang │ Wechselrichter   │ Ger. │ MPPT │ Reihe  │ Par.  │ Neig.  │ Azimut  │
-├──────┼──────────────────┼──────┼──────┼────────┼───────┼────────┼─────────┤
-│  1   │ Muster 2500TL  ▾ │  1   │  1   │  10    │   1   │  (30)  │   (0)   │
-└──────┴──────────────────┴──────┴──────┴────────┴───────┴────────┴─────────┘
+Filtern nach Hersteller:  Alle ▾
+┌──────┬──────────────────────┬──────────────────┬──────┬──────┬───────┬──────┬───────┬────────┐
+│ Rang │ Modul                │ Wechselrichter   │ Ger. │ MPPT │ Reihe │ Par. │ Neig. │ Azimut │
+├──────┼──────────────────────┼──────────────────┼──────┼──────┼───────┼──────┼───────┼────────┤
+│  1   │ (Modul der Anlage) ▾ │ Muster 2500TL  ▾ │  1   │  1   │  10   │  1   │ (30)  │  (0)   │
+└──────┴──────────────────────┴──────────────────┴──────┴──────┴───────┴──────┴───────┴────────┘
+Leer heisst: der Strang rechnet mit dem Modul der Anlage.
 ● grün  Strang 1: 10 Module in Reihe · U_oc(−10 °C) 425 V ≤ 600 V · MPP 261…355 V im
         Fenster 80…500 V · I 9,55 A ≤ 12,0 A
                                               [ Strang anlegen ]  [ Entfernen ]
@@ -1003,7 +1030,13 @@ Wechselrichter und Stränge                              DC/AC 1,10   ● grün
   er ist nur nicht mehr der einzige und nicht mehr gesperrt.
 * **Die Wechselrichterspalte ist eine Klappliste aus dem Katalog**, mit demselben
   Herstellerfilter wie die Modulliste. Ein Gerät, das im Projekt noch nicht liegt, wird beim
-  Übernehmen kopiert (`CopyFromStamm`) — genau wie ein Modul.
+  Übernehmen kopiert (`CopyFromStamm`) — genau wie ein Modul. **Der Filter steht als eigene Zeile
+  ÜBER der Tabelle** (W6‑O‑4) und wirkt auf die Klappliste aller Zeilen; ein bereits gewähltes
+  Gerät bleibt in SEINER Zeile sichtbar, auch wenn der Filter es ausschliesst. Er ist vom
+  Modulfilter unabhängig — der Gerätehersteller kann ein anderer sein als der Modulhersteller.
+* **Die Modulspalte ist eine Klappliste aus dem Modulkatalog** (W6‑O‑6), mit
+  „(Modul der Anlage)" als Vorgabe. Sie wird gebraucht, wenn eine Anlage mit einem zweiten
+  Modultyp erweitert wurde; ohne Eintrag rechnet der Strang mit dem Modul der Anlage.
 * **Die Ampelzeile steht unter jeder Strangzeile**, nicht in einer eigenen Spalte: Sie trägt einen
   Satz mit Zahlen, und ein Satz braucht Breite. Grün = alle Prüfungen bestanden, gelb =
   P3/P5/P6/P7 verletzt oder Werte fehlen, rot = P1/P2/P4 verletzt. **Rot verhindert das Speichern
@@ -1041,9 +1074,18 @@ Anlagenrückfall ohne Zuordnung.
 > eine vorhandene Kopie wiederzufinden. Ist der Katalogsatz später gelöscht, steht in der
 > Liste nichts gewählt, die Zeile behält ihr Gerät, und die Ampel rechnet weiter damit.
 >
-> **Der Herstellerfilter der Klappliste ist NICHT umgesetzt** (offener Punkt **W6‑O‑4**):
-> Eine zweite Filterzeile IN der Strangtabelle hätte keinen Platz, und der Katalog ist
-> beim Anwender noch leer (W6‑O‑3). Die Liste zeigt alle Geräte.
+> **Der Herstellerfilter ist seit dem 06.09.2026 gebaut** (Anwenderentscheid **W6‑O‑4**,
+> umgesetzt in `35a48eb`) — und zwar so, wie S2 es vorgezeichnet hatte: als eigene Zeile
+> **ÜBER** der Tabelle, nicht in ihr. Er nimmt dieselben zwei Gaben wie der Filter über der
+> Modulliste (`Hersteller` und ein `Filtern`-Delegat, hier auf
+> `WechselrichterStammCtrl.Hersteller`/`Filtern`) und wirkt auf die Klappliste **aller**
+> Strangzeilen. **Ein bereits gewähltes Gerät bleibt sichtbar**, auch wenn der Filter es
+> ausschliesst — sonst stünde in der Zeile nichts, und der Anwender hielte die Zuordnung für
+> verloren. Ohne Herstellerliste zeichnet die Komponente keine Filterzeile.
+>
+> **Die Modulspalte je Strang steht seit demselben Tag daneben** (**W6‑O‑6**): Klappliste über
+> den Modulkatalog, „(Modul der Anlage)" als Id 0 voran, die Zeile trägt die Projektkopie, und
+> unter der Tabelle sagt eine Herleitungszeile, was „leer" bedeutet.
 >
 > **Neigung und Azimut stehen als PLATZHALTER in Klammern** — dafür hat `Ganzzahlfeld`
 > eine Gabe `Platzhalter` bekommen (Gegenstück zu `Textfeld` und `Auswahlfeld`). Eine
@@ -1291,6 +1333,34 @@ Umsetzungsprotokoll: die zwei Chips der PV-Karte, die zweite Tabelle des
 Ergebnisreiters, die Wechselrichterzeile in der Kostenübernahme und das
 Simulationsprotokoll an einem gepflegten Katalog sind ohne Windows nicht prüfbar.
 
+### Nachtrag zu S3 — das Modul je Strang und der Herstellerfilter — **UMGESETZT in `35a48eb`**
+
+Drei offene Punkte, EINE Frage: *Welches Modul gilt für diesen Strang?* Der Anwender hat sie am
+06.09.2026 an allen drei Stellen beantwortet, an denen sie gestellt wird — im Rechenweg, in der
+Ampel und in der Maske.
+
+| Nr. | Anwenderentscheid (Wortlaut) | Umsetzung |
+|---|---|---|
+| **W6‑O‑6** | „jeder Strang mit nur einem Modultyp, unterschiedliche Stränge können jeweils einen anderen Modultyp haben." | `SimulationPV` bündelt die Modulgrößen als **Modulsatz** je Modultyp (Nennleistung, Fläche, Wirkungsgrad, `γ_PMP`, `T_NOCT`, Huld-Satz) und wählt ihn über `Z_AnlageStrang.ID_PV`; gelesen wird je Modultyp EINMAL vor der Stundenschleife, und nur, wenn überhaupt eine Strangzeile ein eigenes Modul führt. Die kWp je Gerät ist die Summe der Stränge mit ihrer jeweiligen Modulleistung. Die Strangtabelle bekommt die Spalte „Modul" |
+| **W6‑O‑5** | „Modul der gewählten Zeile" | Der Delegat `Pruefen` bekommt die gewählte Projektzeile mit; `StrangPlausibilitaet.Gaben` trägt zusätzlich die Strangmodule je `Tab_PV.ID`. P1 bis P4 prüfen je Strang gegen SEIN Modul — auch der Strom je MPP-Tracker ist die Summe der Stränge mit ihrem jeweiligen Kurzschlussstrom. **P8 bleibt eine Anlagenprüfung** |
+| **W6‑O‑4** | „Hersteller kann vom Modul verschieden sein. Herstellerfilter etc. wie in Modulliste einfügen." | Eine Filterzeile **ÜBER** der Strangtabelle mit denselben zwei Gaben wie über der Modulliste; ein bereits gewähltes Gerät bleibt in SEINER Zeile sichtbar, auch wenn der Filter es ausschliesst |
+| **W6‑O‑2** | „Empfehlung" | Kein Programm: Die MPPT-Zahl und die Scheinleistung werden **nur für die eingesetzten Geräte** von Hand nachgepflegt. Der Umgang mit der Lücke steht seit S2 (gelb, Satz „Angabe fehlt") |
+
+**Abnahme des Nachtrags:**
+
+| Kriterium | Beleg |
+|---|---|
+| **Referenzlauf byte-gleich** | 1030 / 1007 / 1017 gegen `2026-09-05_R2_Zeitbasis` — **byte-gleich**, `GESAMT: PASS` (815 043 Werte). Ohne `ID_PV` ändert sich nichts, ohne Strangzuordnung gar nichts |
+| Ohne `ID_PV` derselbe Rechenweg | `Ein_Strang_ohne_ID_PV_rechnet_mit_dem_Anlagenmodul` — dieselbe Anlage einmal mit `ID_PV = NULL` und einmal mit dem AUSDRÜCKLICH eingetragenen Anlagenmodul: **bitgleich** |
+| Zwei Module an einem Gerät | `Zwei_Module_an_einem_Geraet_kosten_das_gemeinsame_Clipping` — dieselbe Zerlegung wie im Ost/West-Fall, `(A + B) − gemeinsam = Gleichstromversatz − Kennliniengewinn + gemeinsames Clipping` auf sechs Nachkommastellen; der **Gleichstromversatz ist der Zeuge**: Er ist nur dann null, wenn Strang 2 wirklich mit SEINEM Modul gerechnet hat (Gegenprobe mit abgeschaltetem Strangmodul: 5,5038 statt 6,7519 kWp) |
+| Ampel je Strang | `Die_Ampel_prueft_gegen_das_Modul_der_gewaehlten_Zeile`, `Ein_Strang_mit_eigenem_Modul_prueft_gegen_dieses` (U_oc 425,3 V gegen 495,5 V, Strom 9,5515 A gegen 11,225 A je Tracker, Geräte-kWp 6,7519), `Eine_unbekannte_Modul_Id_faellt_auf_das_Anlagenmodul_zurueck` |
+| Filter und Modulspalte | vier bunit-Fälle zum Filter (verengt, „Alle", gewähltes Gerät bleibt, ohne Herstellerliste keine Zeile) und vier zur Modulspalte samt dem Fall, dass der Prüfstand die gewählte Projektzeile bekommt — **26 Fälle** in `PvStraengeFelderTests` |
+| SQL-Dialekt | `Werkzeuge/SqlDialektPruefer`: **0 Fundstellen** in 1 251 Texten |
+
+**Was auf Windows abzunehmen bleibt:** die Anmutung der Filterzeile über der Tabelle, die
+Breite der zusätzlichen Modulspalte auf schmalem Schirm und das Zusammenspiel von Modulwahl
+und abgeleiteter „Anzahl Module" an einem gepflegten Katalog.
+
 ### Reihenfolge
 
 **S1 zuerst und allein** — **erledigt am 06.09.2026.** Sie war ohne Rechenwirkung, ohne
@@ -1398,15 +1468,21 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 
 ## 12. Offene Punkte
 
+**Stand 06.09.2026:** Von den sieben Punkten sind vier geschlossen — **W6‑O‑2** durch
+Anwenderentscheid („Empfehlung": nur die eingesetzten Geräte von Hand nachpflegen, keine
+Programmarbeit), **W6‑O‑4**, **W6‑O‑5** und **W6‑O‑6** durch Umsetzung. Offen bleiben der
+Importwirt (W6‑O‑1), der leere Auslieferungskatalog (W6‑O‑3) und die Frage nach einem
+Referenzprojekt mit Strängen (W6‑O‑7).
+
 | Nr. | Punkt | Stand |
 |---|---|---|
 | **W6‑O‑1** | **Ein Importwirt statt zwei.** `PvModulImportDialog` (771 Z.) und `WechselrichterImportDialog` (~300 Z.) teilen Abrufapparat, Vorprüfung, Konfliktweg und sämtliche Bausteine, aber nicht die `.razor`-Datei (5.5). Die Zusammenlegung verlangt eine neutrale Zeilen- und Detailform (Spalten und Felder als DATEN, wie `ModulFeldwert` im Modulkatalog) und damit den Umbau einer getesteten Maske samt 594 Zeilen bunit-Fällen. | **offen** — in S2 bewusst NICHT angefasst (Punkt S2.7: „nur, wenn Zeit bleibt und ohne Risiko"). Der sinnvolle Zeitpunkt bleibt der OND-Zweig, der ohnehin in denselben Wirt kommt |
-| **W6‑O‑2** | **MPPT-Zahl und Scheinleistung fehlen im CEC-Bestand.** Die Liste führt weder `Anzahl_Mppt` noch `S_AC_Max`; beide bleiben nach dem Import NULL, und die Prüfungen P4/P5 rechnen dann auf EINEM MPPT. Ob der Auslieferungskatalog von Hand nachgepflegt wird (und für welche Geräte), ist eine Anwenderfrage. | **offen** — mit S2 ist der Umgang damit festgelegt: Die Prüfung rechnet auf EINEM Tracker, die Ampel wird GELB, und der Satz sagt „Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem" (Fall `Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker`). Die Pflegefrage selbst bleibt offen |
+| **W6‑O‑2** | **MPPT-Zahl und Scheinleistung fehlen im CEC-Bestand.** Die Liste führt weder `Anzahl_Mppt` noch `S_AC_Max`; beide bleiben nach dem Import NULL, und die Prüfungen P4/P5 rechnen dann auf EINEM MPPT. Ob der Auslieferungskatalog von Hand nachgepflegt wird (und für welche Geräte), ist eine Anwenderfrage. | **entschieden am 06.09.2026 — „Empfehlung"**: Nachgepflegt werden **nur die eingesetzten Geräte**, von Hand im Katalogeditor (MPPT-Zahl, Scheinleistung). **Kein Programm nötig** — der Umgang mit der Lücke steht seit S2: Die Prüfung rechnet auf EINEM Tracker, die Ampel wird GELB, und der Satz sagt „Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem" (Fall `Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker`) |
 | **W6‑O‑3** | **Der Auslieferungsbestand ist leer.** Schritt 65 legt die Tabellen ohne DML an (das ist die Ergebnisneutralität). Ob EPOS-Plan künftig mit einem vorbefüllten Wechselrichterkatalog ausgeliefert wird — und wenn ja, mit welchen Geräten und mit `ReadOnly = 1` — ist ein eigener Entscheid. | **offen** — mit S2 spürbar geworden: Die Klappliste der Strangtabelle ist beim Anwender leer, bis er importiert oder von Hand anlegt |
-| **W6‑O‑4** | **Kein Herstellerfilter über der Wechselrichter-Klappliste der Strangtabelle.** Kapitel 7 sieht ihn vor („mit demselben Herstellerfilter wie die Modulliste"); S2 hat ihn nicht gebaut: Eine zweite Filterzeile IN der Tabelle hätte keinen Platz, und solange W6‑O‑3 offen ist, ist die Liste ohnehin kurz. Sobald ein Auslieferungskatalog mit einigen tausend Geräten steht, braucht es ihn — dann als Zeile ÜBER der Tabelle, nicht in ihr. | **offen** — Umfang klein, Zeitpunkt hängt an W6‑O‑3 |
-| **W6‑O‑6** | **Der abweichende Modultyp je Strang rechnet noch nicht.** `Z_AnlageStrang.ID_PV` steht seit S2 in der Tabelle und reist im Controller hin und zurück; der Rechenweg der Stufe S3 rechnet jeden Strang jedoch mit dem Modul der ANLAGE. Für den Regelfall (ein Modultyp je PV-Anlage) ist das richtig; eine mit einem zweiten Typ erweiterte Anlage rechnet zu genau. Der Schritt gehört mit **W6‑O‑5** zusammen: Dieselbe Frage („welches Modul gilt für diesen Strang?") beantwortet dort die Ampel und hier der Lauf — zwei Stellen, EINE Antwort. | **offen** — neu mit S3 |
+| **W6‑O‑4** | **Der Herstellerfilter über der Wechselrichter-Klappliste der Strangtabelle fehlte.** Kapitel 7 sieht ihn vor („mit demselben Herstellerfilter wie die Modulliste"); S2 hat ihn nicht gebaut. | **umgesetzt in `35a48eb`** — Anwenderentscheid vom 06.09.2026, wörtlich: „Hersteller kann vom Modul verschieden sein. Herstellerfilter etc. wie in Modulliste einfügen." Gebaut als eigene Zeile **ÜBER** der Tabelle (`PvStraengeFelder.Hersteller`/`GeraeteFiltern` → `WechselrichterStammCtrl.Hersteller`/`Filtern`), unabhängig vom Modulfilter; ein bereits gewähltes Gerät bleibt trotz Filter in seiner Zeile sichtbar. Vier bunit-Fälle |
+| **W6‑O‑6** | **Der abweichende Modultyp je Strang rechnete noch nicht.** `Z_AnlageStrang.ID_PV` steht seit S2 in der Tabelle und reist im Controller hin und zurück; der Rechenweg der Stufe S3 rechnete jeden Strang jedoch mit dem Modul der ANLAGE. | **umgesetzt in `35a48eb`** — Anwenderentscheid vom 06.09.2026, wörtlich: „jeder Strang mit nur einem Modultyp, unterschiedliche Stränge können jeweils einen anderen Modultyp haben." `SimulationPV` rechnet jeden Strang mit seinem Modulsatz (Nennleistung, Fläche, Wirkungsgrad, γ_PMP, NOCT, Huld-Satz); gelesen wird je Modultyp EINMAL vor der Stundenschleife, und ohne `ID_PV` ändert sich nichts. Die Strangtabelle führt dafür eine Spalte „Modul". Nachweise: `Ein_Strang_ohne_ID_PV_rechnet_mit_dem_Anlagenmodul` (bitgleich) und `Zwei_Module_an_einem_Geraet_kosten_das_gemeinsame_Clipping` (Zerlegung wie S3 (3)), Referenzlauf 1030/1007/1017 byte-gleich |
 | **W6‑O‑7** | **Referenzbasis mit Strängen?** Die Basis `2026-09-05_R2_Zeitbasis` bleibt gültig und byte-gleich: Kein Referenzprojekt führt eine Strangzeile, und genau das ist der Nachweis der Vorrangregel. Ein PRÜFPROJEKT mit Strängen in `Kenndaten_Test.sqlite` würde den Strangweg dagegen in jedem Referenzlauf mitrechnen — und wäre damit die Wache gegen eine spätere stille Änderung am Strangweg, wie sie die elf Projekte heute für den Anlagenweg sind. Kosten: eine neu einzufrierende Basis. **Empfehlung: ja, aber als eigener Schritt** — ein zwölftes Projekt mit einer Ost/West-Anlage an einem knapp ausgelegten Gerät (DC/AC ≈ 1,3), damit Clipping, Kennlinie und Nachtverbrauch alle drei wirken. Solange er aussteht, hält der Prüfstand `PvStrangRechnungTests` den Strangweg. | **offen** — Anwenderentscheid |
-| **W6‑O‑5** | **Das Modul der Ampel ist das der ERSTEN Projektzeile.** `StrangPlausibilitaet` prüft gegen EIN Modul; die Hülle nimmt dafür das erste, das der Katalog kennt (`PhotovoltaikHuelle.ModulDer`). Solange eine PV-Anlage genau einen Modultyp führt — der Regelfall —, ist das richtig. Führt ein Projekt mehrere PV-Zeilen mit VERSCHIEDENEN Modulen, prüft die Ampel gegen das falsche. Sauber wäre das Modul der GEWÄHLTEN Zeile; das weiß nur die Komponente, und der Prüfdelegat bekommt heute nur die Strangliste. Zusammen mit `Z_AnlageStrang.ID_PV` (dem abweichenden Modultyp je Strang, 3.4) gehört das in EINEN Schritt. | **offen** — betrifft die Ampel, nicht die Ablage. **Mit S3 ist der Zwilling dazu benannt** (W6‑O‑6): Der Rechenweg hat dieselbe Lücke, und beide gehören in EINEN Schritt |
+| **W6‑O‑5** | **Das Modul der Ampel war das der ERSTEN Projektzeile.** `StrangPlausibilitaet` prüfte gegen EIN Modul; die Hülle nahm dafür das erste, das der Katalog kennt. Führt ein Projekt mehrere PV-Zeilen mit VERSCHIEDENEN Modulen, prüfte die Ampel gegen das falsche. | **umgesetzt in `35a48eb`** — Anwenderentscheid vom 06.09.2026, wörtlich: „Modul der gewählten Zeile." Der Delegat `Pruefen` bekommt die gewählte Projektzeile mit, `PhotovoltaikHuelle.ModulDer(zeile)` liest deren Modul, und `StrangPlausibilitaet.Gaben` trägt zusätzlich die Strangmodule je `Tab_PV.ID` (W6‑O‑6): Jeder Strang prüft gegen SEIN Modul — Spannung, Strom und Nennleistung —, P8 bleibt eine Anlagenprüfung. Drei Kernfälle, ein bunit-Fall |
 
 ---
 

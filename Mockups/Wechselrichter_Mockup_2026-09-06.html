@@ -300,6 +300,12 @@ body {
     margin-bottom: 6px;
 }
 .epos-strangkopf-titel { font-weight: 700; }
+/* W6-O-4: die Filterzeile ueber der Tabelle bleibt schmal - sie filtert eine
+   Klappliste und ist kein Pflichtfeld. */
+.epos-strangfilter {
+    display: flex; align-items: center; gap: 8px;
+    max-width: 28rem; margin-bottom: 6px;
+}
 .epos-chip {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 2px 10px; border-radius: 999px;
@@ -499,11 +505,6 @@ body {
                     </label>
                 </fieldset>
 
-                <!-- Bis Stufe S3: der Abschnitt verspricht nichts, was der Kern nicht tut. -->
-                <p class="epos-herleitung" style="font-style:italic">
-                    Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage vereinfacht.
-                </p>
-
                 <div class="epos-strangkopf">
                     <span class="epos-strangkopf-titel">Wechselrichter und Stränge</span>
                     <span class="epos-chip" id="dcacchip">DC/AC 1,10 · Gerät 1: 2,752 kWp auf 2,50 kW</span>
@@ -518,12 +519,31 @@ body {
                     </label>
                 </div>
 
+                <!-- W6-O-4 (06.09.2026): der Herstellerfilter steht als eigene Zeile
+                     UEBER der Tabelle, nicht in ihr - eine zweite Filterzeile IN der
+                     Strangtabelle haette keinen Platz. Er wirkt auf die Klappliste
+                     ALLER Zeilen und ist vom Modulfilter unabhaengig ("Hersteller kann
+                     vom Modul verschieden sein"). -->
+                <div class="epos-strangfilter">
+                    <label class="epos-feld">
+                        <span class="epos-feld-text">Filtern nach Hersteller:</span>
+                        <span class="epos-feld-zeile">
+                            <select class="epos-eingabe">
+                                <option selected>Alle</option>
+                                <option>Muster</option>
+                                <option>Fremd</option>
+                            </select>
+                        </span>
+                    </label>
+                </div>
+
                 <div class="epos-raster-huelle">
                     <table class="epos-raster epos-raster--eingabe">
                         <thead>
                             <tr>
                                 <th>Rang</th>
                                 <th>Bezeichner</th>
+                                <th>Modul</th>
                                 <th>Wechselrichter</th>
                                 <th class="zahl">Gerät</th>
                                 <th class="zahl">MPPT</th>
@@ -537,6 +557,11 @@ body {
                         <tbody id="strangzeilen"></tbody>
                     </table>
                 </div>
+
+                <p class="epos-herleitung">
+                    Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp
+                    gilt nur für diesen Strang.
+                </p>
 
                 <div id="ampelzeilen" style="margin-top:8px"></div>
 
@@ -1397,7 +1422,7 @@ P_AC(P_DC) = [Paco/(Pdco − Pso) − C0·(Pdco − Pso)]
             gesamt: 'Gesamtleistung 2,752 kW',
             status: '1 Strang · 10 Module · alle Prüfungen bestanden',
             zeilen: [
-                ['1', 'Dach Süd', 'Muster 2500TL', '1', '1', '10', '1', '(30)', '(0)', '2,752']
+                ['1', 'Dach Süd', '(Modul der Anlage)', 'Muster 2500TL', '1', '1', '10', '1', '(30)', '(0)', '2,752']
             ],
             ampeln: [
                 ['gruen', 'grün', 'Strang 1: 10 Module in Reihe · U_oc(−10 °C) 425 V ≤ 600 V · '
@@ -1410,8 +1435,8 @@ P_AC(P_DC) = [Paco/(Pdco − Pso) − C0·(Pdco − Pso)]
             gesamt: 'Gesamtleistung 6,054 kW',
             status: '2 Stränge · 22 Module · ein Gerät, zwei MPPT — gemeinsames Clipping',
             zeilen: [
-                ['1', 'Dach Ost',  'Muster 5000TL‑2M', '1', '1', '11', '1', '25', '−90', '3,027'],
-                ['2', 'Dach West', 'Muster 5000TL‑2M', '1', '2', '11', '1', '25', '90',  '3,027']
+                ['1', 'Dach Ost',  '(Modul der Anlage)', 'Muster 5000TL‑2M', '1', '1', '11', '1', '25', '−90', '3,027'],
+                ['2', 'Dach West', '(Modul der Anlage)', 'Muster 5000TL‑2M', '1', '2', '11', '1', '25', '90',  '3,027']
             ],
             ampeln: [
                 ['gruen', 'grün', 'Strang 1 (Ost): 11 Module in Reihe · U_oc(−10 °C) 468 V ≤ 800 V · '
@@ -1429,7 +1454,7 @@ P_AC(P_DC) = [Paco/(Pdco − Pso) − C0·(Pdco − Pso)]
             gesamt: 'Gesamtleistung 4,128 kW',
             status: '1 Strang · 15 Module · 2 Prüfungen verletzt',
             zeilen: [
-                ['1', 'Dach Süd', 'Muster 2500TL', '1', '1', '15', '1', '(30)', '(0)', '4,128']
+                ['1', 'Dach Süd', '(Modul der Anlage)', 'Muster 2500TL', '1', '1', '15', '1', '(30)', '(0)', '4,128']
             ],
             ampeln: [
                 ['rot', 'rot', 'P1 verletzt: U_oc(−10 °C) = 15 × 42,53 V = 638 V > 600 V. '
@@ -1462,7 +1487,7 @@ P_AC(P_DC) = [Paco/(Pdco − Pso) − C0·(Pdco − Pso)]
             var tr = document.createElement('tr');
             for (var s = 0; s < b.zeilen[z].length; s++) {
                 var td = document.createElement('td');
-                if (s >= 3) { td.className = 'zahl'; }
+                if (s >= 4) { td.className = 'zahl'; }   /* Rang, Bezeichner, Modul, Geraet sind Text */
                 td.textContent = b.zeilen[z][s];
                 tr.appendChild(td);
             }
