@@ -2040,6 +2040,28 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > unmittelbar unter jeder Formel (Beispiel: SKZ = P_el / P_therm; P_el: elektrische Leistung des BHKW …) — offen als
 > **H13‑O‑6** (Math-Erweiterung auf dem Wiki-Server, native MathML-Wiedergabe ohne Zusatzdienst; Anwenderentscheid, Ersatzweg
 > Formelbilder) und **H13‑O‑7** (Legende je Gleichung als Fassung 3, unabhängig von H13‑O‑6).
+>
+> **H13 Fassung 3 — LaTeX-Formeln und eine Legende unter jeder Gleichung (Anwenderwunsch 06.09.2026 nach Sichtung der
+> Fassung 1 im Wiki: „stelle die Berechnungsdokumentation mit mathematischen Zeichen … wie LaTeX dar. Die Definitionen der
+> Parameter/Variablen … sollte unter der verwendeten Formel beschrieben werden" und „mathe erweiterung soll für die Formeln
+> installiert werden auf wiki"), umgesetzt in `7da5c69` (Teil A), `ef85efb` (Teil B), `cb97a24` und `88201ac`
+> (Zusammenführung):** Der Anwender hat die **Math-Erweiterung** auf `wiki.epos-plan.de` installiert (gemessen 06.09.2026:
+> `siteinfo` führt „Math", 26 Erweiterungen; native MathML-Wiedergabe ohne Zusatzdienst). Alle 13 Seiten der Rubrik tragen
+> ihre **205 Anzeige-Gleichungen als LaTeX in `<math>\displaystyle …</math>`** mit der laufenden Nummer und **darunter die
+> Legende — 781 Zeilen, je Zeichen eine** (Ergebnisgröße zuerst, Bedeutung, Einheit in eckigen Klammern, Konstanten mit
+> Wert); das Beispiel des Anwenders steht wörtlich als BHKW (1): SKZ = P_el / P_th mit drei Legendezeilen. Die Symbolspalte
+> beider Tabellen und die Zeichen des Fließtextes sind ebenfalls `<math>`; `<big>` ist verschwunden. Der Riegel der
+> Fassung 2 kehrt sich um: nicht mehr „kein Backslash", sondern **nur der vereinbarte Befehlsvorrat** (WikiTexVC-sicher;
+> `\lvert`/`\rvert` kennt WikiTexVC nicht — Befund der Wiki-Probe, in Erdreich (18), Pufferspeicher (18) und Photovoltaik
+> (3) durch `\left| … \right|` ersetzt); Fallunterscheidungen als `cases`, Komma statt Semikolon in min/max, Umlaute in
+> Indizes als ASCII-Umschrift. Die Schreibweise auf der Rubrikstartseite ist neu gefasst. `BerechnungsHilfe.LatexKlartext`
+> setzt `<math>` für den Assistenten in lesbare Zeichen um (Bruch, Summe mit Limits, Index/Hochzahl, cases, griechisch;
+> sechs Fälle). Die vier Wächter prüfen seit `88201ac` für **alle 13 Seiten**: `<math>`-Gleichung mit Nummer, lückenlose
+> Nummern, Legende unter jeder Gleichung, kein `<big>`, kein Fremdbefehl, beide Tabellen, sieben Abschnitte, Fassung im
+> Kopfblock, `<math>` und ein tragender Befehl nach der Einbettung. Nachweise: lokale Probe (`latexprobe.py`, latex2mathml)
+> **2 024 Formeln / 0 Fehler**; Wiki-Probe über `action=parse` gegen die installierte Erweiterung **14/14 Seiten ohne
+> Parserfehler**; Kern 1 590 / UI 2 973 grün, Gate grün, Referenzlauf byte-gleich (der Rechenweg ist unberührt). **Wiki:**
+> Fassung 3 mit `--ueberschreiben` hochgeladen (06.09.2026, 20:33 UTC). H13‑O‑6 und H13‑O‑7 geschlossen.
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >
