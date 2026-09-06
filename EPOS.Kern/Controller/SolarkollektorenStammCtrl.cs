@@ -210,7 +210,13 @@ namespace WindowsFormsApplication1
         }
 
         // Aktualisiert den Datensatz (Schluessel = Bezeichner = this.m_szKollektorname).
-        // Vorlauf/Ruecklauf werden bewusst NICHT ueberschrieben (nicht im Editor vorhanden).
+        //
+        // BERICHTIGT AM 06.09.2026 (W6-E-4): Hier stand "Vorlauf/Ruecklauf werden
+        // bewusst NICHT ueberschrieben (nicht im Editor vorhanden)". Das stimmt seit
+        // dem Umzug des Editors nach EPOS.UI nicht mehr - SolarkollektorKatalogDialog
+        // fuehrt beide Felder (leer erlaubt, leer = 0), die SET-Liste unten schreibt
+        // sie, und ImportUebernehmen/InsertFrom tun dasselbe. Der Katalog ist die Quelle
+        // der Vorbelegung aus AnlagenTemperaturen.
         public bool UpdateFrom(SolarkollektorenModel m)
         {
             if (m != null) CopyFrom(m);
