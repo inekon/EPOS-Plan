@@ -33,7 +33,15 @@ namespace WindowsFormsApplication1
     /// <para><b>Die Rechnung ist rein.</b> <see cref="Bilden"/> nimmt Zustand, Token und
     /// Tagesdatum entgegen und fasst nichts an — dieselbe Trennung wie
     /// <c>LizenzManager.Bewerten</c> gegenüber <c>Pruefe</c> (Entscheid W15c-E-10). Nur
-    /// <see cref="Ermitteln"/> geht an die Ablage.</para>
+    /// <see cref="Ermitteln"/> geht an die Ablage — und mit ihm
+    /// <see cref="MitTagesmerker"/>.</para>
+    ///
+    /// <para><b>Seit dem Anwenderentscheid iF30‑O‑2</b> (06.09.2026, „einmal täglich
+    /// reicht") erscheinen die drei Warnstufen 30/14/7 einmal je Kalendertag statt bei
+    /// jedem Programmstart. Ob heute schon gewarnt wurde, entscheidet
+    /// <see cref="MitTagesmerker"/> über <see cref="LizenzWarnungMerker"/>; die
+    /// Oberfläche fragt nur <see cref="WarnungZeigen"/>. Der LESEMODUS ist davon
+    /// unberührt und bleibt bei jedem Start sichtbar.</para>
     /// </summary>
     public sealed class LizenzLage
     {
@@ -43,9 +51,14 @@ namespace WindowsFormsApplication1
         /// <c>EPOS.UI.Tests</c> muss es können, ohne an den Lizenzkern zu kommen.
         /// Gerechnet wird es im Regelfall von <see cref="Bilden"/>.
         /// </summary>
+        /// <param name="warnungZeigen">
+        /// Ob das Banner erscheinen soll — siehe <see cref="WarnungZeigen"/>. Der
+        /// Vorgabewert <c>true</c> hält jeden vorhandenen Aufrufer und jeden Prüfstand
+        /// gültig, der von iF30‑O‑2 nichts weiß.
+        /// </param>
         public LizenzLage(LizenzStatus status, bool lesemodus, int warnstufe,
                           int? restTage, LizenzDringlichkeit dringlichkeit,
-                          string text, string detail)
+                          string text, string detail, bool warnungZeigen = true)
         {
             Status = status;
             Lesemodus = lesemodus;
@@ -54,6 +67,7 @@ namespace WindowsFormsApplication1
             Dringlichkeit = dringlichkeit;
             Text = text ?? "";
             Detail = detail ?? "";
+            WarnungZeigen = warnungZeigen;
         }
 
         /// <summary>Der Lizenzzustand, aus dem alles Übrige folgt.</summary>
@@ -83,6 +97,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Statuszeile (<c>LizenzManager.StatusText</c>) als Beiwerk.</summary>
         public string Detail { get; }
 
+        /// <summary>
+        /// Soll das Banner ERSCHEINEN? <c>false</c> heißt: Die Lage besteht, der Hinweis
+        /// dazu ist heute aber schon einmal gezeigt worden (Anwenderentscheid
+        /// <b>iF30‑O‑2</b> vom 06.09.2026, „einmal täglich reicht").
+        ///
+        /// <para><b>Nur die drei Warnstufen können hier <c>false</c> stehen.</b> Der
+        /// Lesemodus, das Kulanzfenster und die fällige Nachprüfung tragen immer
+        /// <c>true</c> — siehe <see cref="MitTagesmerker"/>. Die Oberfläche muss also
+        /// keine Fallunterscheidung führen: Sie fragt dieses eine Feld.</para>
+        /// </summary>
+        public bool WarnungZeigen { get; }
+
         /// <summary>Nichts zu melden — die Lage einer gültigen Lizenz fern vom Ablauf.</summary>
         public static readonly LizenzLage Ruhig =
             new LizenzLage(LizenzStatus.Gueltig, false, 0, null,
@@ -102,7 +128,11 @@ namespace WindowsFormsApplication1
             try
             {
                 LizenzStatus status = LizenzManager.Pruefe();
-                return Bilden(status, LizenzManager.Token, DateTime.UtcNow.Date);
+                DateTime heute = DateTime.UtcNow.Date;
+
+                // Erst die reine Rechnung, dann der Tagesmerker (iF30-O-2). Beides in
+                // dieser Reihenfolge, damit Bilden rein bleibt: Der Merker SCHREIBT.
+                return Bilden(status, LizenzManager.Token, heute).MitTagesmerker(heute);
             }
             catch (Exception)
             {
@@ -110,6 +140,40 @@ namespace WindowsFormsApplication1
                 // Schreibnaht.Lizenzantwort: im Zweifel nicht sperren, nicht warnen.
                 return Ruhig;
             }
+        }
+
+        /// <summary>
+        /// Dieselbe Lage, durch den <see cref="LizenzWarnungMerker"/> gefiltert
+        /// (Anwenderentscheid <b>iF30‑O‑2</b> vom 06.09.2026: „einmal täglich reicht").
+        ///
+        /// <para><b>Die Entscheidung liegt im Kern, nicht in der Oberfläche.</b> Die
+        /// <c>AppWurzel</c> fragt nur <see cref="WarnungZeigen"/>; ob heute schon gewarnt
+        /// wurde, steht hier und an keiner zweiten Stelle.</para>
+        ///
+        /// <para><b>Der Lesemodus geht unberührt durch</b> — und mit ihm Kulanzfenster
+        /// und fällige Nachprüfung, die beide Warnstufe <c>0</c> tragen. Nur die drei
+        /// Stufen 30/14/7 fragen den Merker, und nur sie können danach stumm sein.</para>
+        /// </summary>
+        /// <param name="heute">
+        /// Derselbe Tag, mit dem <see cref="Bilden"/> gerechnet hat — zwei Vorstellungen
+        /// von „heute" wären eine zu viel.
+        /// </param>
+        /// <returns>
+        /// Diese Lage selbst, wenn der Hinweis erscheinen soll; sonst eine gleiche Lage
+        /// mit <see cref="WarnungZeigen"/> = <c>false</c>. <b>Der Aufruf ist nicht
+        /// wirkungsfrei</b>: Ein gezeigter Hinweis wird dabei vermerkt.
+        /// </returns>
+        public LizenzLage MitTagesmerker(DateTime heute)
+        {
+            // Der Lesemodus bleibt bei JEDEM Start sichtbar (Hausregel W16b-E-6), und
+            // ohne Warnstufe gibt es nichts zu unterdruecken. Beide Faelle fassen den
+            // Merker gar nicht erst an - er soll keinen Vermerk fuer sie anlegen.
+            if (Lesemodus || Warnstufe <= 0) return this;
+
+            if (LizenzWarnungMerker.SollZeigen(Warnstufe, heute)) return this;
+
+            return new LizenzLage(Status, Lesemodus, Warnstufe, RestTage,
+                                  Dringlichkeit, Text, Detail, warnungZeigen: false);
         }
 
         /// <summary>
