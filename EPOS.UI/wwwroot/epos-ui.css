@@ -63,6 +63,19 @@
     --epos-stufe-fehler: rgb(176, 0, 32);
     --epos-stufe-warnung: rgb(160, 96, 0);
 
+    /* Die drei Ampelfarben der Strangzuordnung (Stufe S2 des
+       Wechselrichterkonzepts, W6-E-2). EIGENE Token und nicht die der Warnung:
+       Die Ampel hat DREI Zustaende, die Warnung zwei, und Gruen gab es dafuer
+       im Haus noch nicht. Gemessen gegen die Flaeche darunter:
+       #007800 auf Weiss 5,3:1, rgb(176,0,32) auf der Rotflaeche 7,0:1,
+       rgb(138,91,0) auf der Gelbflaeche 7,4:1 - alle ueber 4,5:1. */
+    --epos-ampel-gruen: #007800;
+    --epos-ampel-gelb: var(--epos-warn-text);
+    --epos-ampel-rot: var(--epos-stufe-fehler);
+    --epos-ampel-gelb-flaeche: var(--epos-warn-flaeche);
+    --epos-ampel-rot-flaeche: rgb(255, 236, 238);
+    --epos-ampel-gruen-flaeche: rgb(236, 248, 239);
+
     /* ---- Einstiegs-/Aktionskarten (KartenStil, zweiter Block) --------- */
     --epos-karte-rahmen: #D1D5DB;           /* KARTE_RAHMEN                 */
     --epos-karte-rahmen-hover: #3B82F6;     /* KARTE_RAHMEN_HOVER           */
@@ -895,8 +908,13 @@ body {
 
 /* Eine gesperrte Option bleibt sichtbar - sie sagt, dass es die Moeglichkeit
    gibt, und dass sie hier gerade nicht offensteht (Vorbild rbQuelleVorlage
-   .Enabled = false in Form_VorlagenUebernahme). */
-.epos-option-kasten:disabled + .epos-feld-text {
+   .Enabled = false in Form_VorlagenUebernahme).
+
+   HART und WEICH in EINER Regel (Hausregel, W16b-E-6): Ein Anwender
+   unterscheidet "geht nicht" nicht nach der Bauart, also duerfen :disabled und
+   [aria-disabled="true"] nicht in zwei Regeln mit denselben Werten stehen. */
+.epos-option-kasten:disabled + .epos-feld-text,
+.epos-option-kasten[aria-disabled="true"] + .epos-feld-text {
     color: var(--epos-text-sehr-leise);
 }
 
@@ -6219,6 +6237,131 @@ body {
         border-color: CanvasText;
         color: CanvasText;
     }
+}
+
+/* ==========================================================================
+   WECHSELRICHTER UND STRAENGE - Stufe S2 (W6-E-2 und W6-E-3, 06.09.2026)
+
+   Der Abschnitt im PV-Dialog, der den ausgegrauten Knopf "Wechselrichter..."
+   abloest (Konzept_Wechselrichter_EPOS-Plan.md 7, Mockup M1): die zwei
+   sichtbaren Optionen, die Strangtabelle und unter ihr die Ampel.
+   ========================================================================== */
+
+.epos-straenge {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+/* Die Zeile, die bis Stufe S3 sagt, dass der Kern die Straenge NOCH NICHT
+   rechnet. Sie ist eine LEISE Erlaeuterung und kein Banner: Der Zustand ist
+   kein Fehler, den der Anwender beheben muesste (Staffelung W16b-E-6). */
+.epos-straenge-s3 {
+    font-style: italic;
+}
+
+/* Der Kopf des Abschnitts: Titel links, die DC/AC-Chips je Geraet daneben. */
+.epos-strangkopf {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    padding-top: 8px;
+}
+
+.epos-strangkopf-titel {
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+/* Die Tabelle traegt Eingabefelder statt Text - die Zellen bekommen deshalb
+   weniger Polsterung, damit die 44-px-Felder die Zeile nicht auftuermen. Die
+   Mindesthoehe der Felder selbst bleibt unangetastet (--epos-touchziel). */
+.epos-strangtabelle td {
+    padding: 2px 4px;
+    vertical-align: middle;
+}
+
+.epos-strangtabelle .epos-feld {
+    min-height: 0;
+}
+
+/* Die AMPELZEILEN stehen UNTER der Tabelle, nicht in einer eigenen Spalte:
+   Sie tragen einen Satz mit Zahlen, und ein Satz braucht Breite (Konzept 7). */
+.epos-ampelzeilen {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.epos-ampel {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    line-height: 1.4;
+}
+
+.epos-ampel-punkt {
+    flex: 0 0 auto;
+    font-size: 12px;
+}
+
+/* GRUEN traegt keine Flaeche und keinen Rahmen - "alles in Ordnung" ist der
+   Normalfall und soll nicht schreien. Gelb und rot dagegen bekommen BEIDES:
+   Ein Zustand, der nur an einem kleinen Punkt haengt, ist keiner (Lehre
+   W16b-B-2b - zwei benachbarte Grautoene tragen keinen Unterschied). */
+.epos-ampel--gruen .epos-ampel-punkt { color: var(--epos-ampel-gruen); }
+
+.epos-ampel--gelb {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-ampel-gelb-flaeche);
+    color: var(--epos-ampel-gelb);
+}
+
+.epos-ampel--gelb .epos-ampel-punkt { color: var(--epos-ampel-gelb); }
+
+.epos-ampel--rot {
+    border-color: var(--epos-ampel-rot);
+    background: var(--epos-ampel-rot-flaeche);
+    color: var(--epos-ampel-rot);
+}
+
+.epos-ampel--rot .epos-ampel-punkt { color: var(--epos-ampel-rot); }
+
+/* Die zwei Chipfarben, die es im Bestand noch nicht gab (gelb ist
+   .epos-chip--warnung). */
+.epos-chip--gruen {
+    border-color: var(--epos-ampel-gruen);
+    background: var(--epos-ampel-gruen-flaeche);
+    color: var(--epos-ampel-gruen);
+}
+
+.epos-chip--rot {
+    border-color: var(--epos-ampel-rot);
+    background: var(--epos-ampel-rot-flaeche);
+    color: var(--epos-ampel-rot);
+}
+
+/* Die Modellzeile unter dem Rechenmodell (Konzept 7) - dieselbe leise Schrift
+   wie jede Herleitung, nur mit etwas Luft nach oben. */
+.epos-pvmodell-zeile {
+    margin-top: 4px;
+}
+
+/* Im Kontrastmodus tragen Farben nichts; die Zustaende brauchen dann einen
+   Rahmen, den das System selbst faerbt (Hausregel fuer jede Warnfarbe). */
+@media (forced-colors: active) {
+
+    .epos-ampel--gelb,
+    .epos-ampel--rot,
+    .epos-chip--gruen,
+    .epos-chip--rot { border: 1px solid CanvasText; }
 }
 
 /* ==================================================================== */

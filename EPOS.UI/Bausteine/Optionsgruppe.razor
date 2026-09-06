@@ -29,7 +29,9 @@
         <label class="epos-option">
             <input class="epos-option-kasten" type="radio" name="@_name"
                    value="@id" checked="@(Auswahl == id)"
-                   disabled="@(!Aktiv || !IstWaehlbar(id))"
+                   disabled="@HartGesperrt(id)"
+                   aria-disabled="@AriaGesperrt(id)"
+                   title="@Sperrtipp(id)"
                    @onchange="@(() => BeiWahl(id))" />
             <span class="epos-feld-text">@eintrag.Text</span>
         </label>
@@ -88,8 +90,59 @@
     /// </summary>
     [Parameter] public IReadOnlyDictionary<int, string>? Beschreibungen { get; set; }
 
+    /// <summary>
+    /// WEICH gesperrte Optionen samt ihrem GRUND, Schluessel ist die Id
+    /// (Anwenderwunsch <b>W16b-E-6</b>, uebernommen aus
+    /// <c>Reiterblatt.Sperrgrund</c> / <c>Reiter.Verweigert</c>).
+    ///
+    /// <para><b>Warum eine zweite Sperrart.</b> Ein <c>disabled</c>-Bedienelement
+    /// nimmt keine Zeigerereignisse an: Der Browser zeigt seinen <c>title</c> nicht,
+    /// er feuert kein <c>click</c>, und eine Sprachausgabe sagt „nicht verfuegbar"
+    /// ohne den Grund. Wer ERKLAEREN will, warum eine Option gerade nicht offensteht,
+    /// nimmt <c>aria-disabled</c> und meldet den VERSUCH — genau die Staffelung, die
+    /// W16b-E-6 fuer die Reiter der Startseite festgelegt hat.</para>
+    ///
+    /// <para>Eine Id in <see cref="Gesperrt"/> bleibt HART gesperrt; steht sie hier,
+    /// gewinnt die weiche Form. Beide sehen gleich aus — die Stilregel nennt
+    /// <c>:disabled</c> und <c>[aria-disabled="true"]</c> in EINEM Selektor, weil ein
+    /// Anwender „geht nicht" nicht nach der Bauart unterscheidet.</para>
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<int, string>? WeichGesperrt { get; set; }
+
+    /// <summary>
+    /// Meldet den VERSUCH, eine weich gesperrte Option zu waehlen — mit ihrer Id.
+    /// Der Wirt zeigt daraufhin seinen Hinweis; gewaehlt wird nichts.
+    /// </summary>
+    [Parameter] public EventCallback<int> Verweigert { get; set; }
+
     /// <summary>Je Instanz eindeutiger Gruppenname (siehe Kopf).</summary>
     private readonly string _name = "og" + Guid.NewGuid().ToString("N");
+
+    /// <summary>Der Sperrgrund einer Option, oder leer.</summary>
+    private string Grund(int id)
+        => WeichGesperrt is not null && WeichGesperrt.TryGetValue(id, out string? g) ? (g ?? "") : "";
+
+    /// <summary>
+    /// HART gesperrt heisst <c>disabled</c> — der Stand des Bestands und die Vorgabe.
+    /// Nennt <see cref="WeichGesperrt"/> einen Grund, bleibt die Option anklickbar.
+    /// </summary>
+    private bool HartGesperrt(int id)
+        => (!Aktiv || !IstWaehlbar(id)) && Grund(id).Length == 0;
+
+    /// <summary>Die weiche Sperre traegt sie als ARIA-Zustand; die harte sagt <c>disabled</c>.</summary>
+    private string? AriaGesperrt(int id)
+        => Grund(id).Length > 0 ? "true" : null;
+
+    /// <summary>
+    /// Der Grund am Bedienelement. Er ist zugleich die BESCHREIBUNG fuer die
+    /// Sprachausgabe: Ohne <c>aria-describedby</c> liest sie den <c>title</c> als
+    /// Beschreibung vor — ein Satz, EINE Wahrheit (wortgleich <c>Reiter.Sperrtipp</c>).
+    /// </summary>
+    private string? Sperrtipp(int id)
+    {
+        string g = Grund(id);
+        return g.Length == 0 ? null : g;
+    }
 
     private string Beschreibung(int id)
         => Beschreibungen is not null && Beschreibungen.TryGetValue(id, out string? t) ? t : "";
@@ -106,6 +159,10 @@
 
     private Task BeiWahl(int id)
     {
+        // Weich gesperrt: Der Versuch ist ein EREIGNIS, keine Wahl. Hart gesperrt
+        // kommt hier nie an - ein disabled-Element feuert nicht (Muster Reiter.Waehlen).
+        if (Grund(id).Length > 0) return Verweigert.InvokeAsync(id);
+
         if (!Aktiv || !IstWaehlbar(id)) return Task.CompletedTask;
         Auswahl = id;
         return AuswahlChanged.InvokeAsync(id);

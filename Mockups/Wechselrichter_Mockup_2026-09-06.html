@@ -405,6 +405,17 @@ body {
         Zeile darunter.
     </p>
 
+    <p class="mockup-hinweis">
+        <b>Nachgetragen mit Stufe S2 (06.09.2026):</b> die <b>zwei sichtbaren Optionen</b>
+        aus dem Anwenderwunsch <b>W6‑E‑3</b> über der Strangtabelle und der
+        <b>S3‑Hinweis</b> darunter. Die Optionen liegen im Datenmodell als eigene Spalte
+        <code>Tab_Energieanlagen.PV_Wechselrichterweg</code> (Konzept 7.1, Empfehlung a) —
+        „vereinfacht" parkt die Strangzuordnung, statt sie zu löschen. Solange Stufe S3
+        aussteht, <b>rechnet der Kern die Stränge nicht</b>; der Abschnitt sagt das
+        ausdrücklich, damit die Oberfläche nichts verspricht, was der Kern noch nicht tut.
+        Die Zeile wird mit S3 wieder entfernt.
+    </p>
+
     <div class="epos-dialog">
 
         <div class="epos-dialog-kopf">
@@ -469,6 +480,30 @@ body {
                 <hr class="epos-trennlinie">
 
                 <!-- ---------- NEU: Wechselrichter und Stränge ---------- -->
+
+                <!-- W6-E-3: die zwei sichtbaren Optionen UEBER der Tabelle.
+                     "mit Wechselrichter" ohne Strangzeile ist WEICH gesperrt
+                     (W16b-E-6): anklickbar, mit aria-disabled und dem Grund als
+                     title - ein disabled-Element koennte seinen Grund nicht sagen. -->
+                <fieldset class="epos-optionsgruppe" role="radiogroup" aria-label="Wechselrichter">
+                    <legend class="epos-optionsgruppe-titel">Wechselrichter</legend>
+                    <label class="epos-option">
+                        <input class="epos-option-kasten" type="radio" name="wrweg"
+                               value="0" id="wegeinfach">
+                        <span class="epos-feld-text">vereinfacht — Pauschalen ohne Wechselrichter</span>
+                    </label>
+                    <label class="epos-option">
+                        <input class="epos-option-kasten" type="radio" name="wrweg"
+                               value="1" id="wegkatalog" checked>
+                        <span class="epos-feld-text">mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping</span>
+                    </label>
+                </fieldset>
+
+                <!-- Bis Stufe S3: der Abschnitt verspricht nichts, was der Kern nicht tut. -->
+                <p class="epos-herleitung" style="font-style:italic">
+                    Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage vereinfacht.
+                </p>
+
                 <div class="epos-strangkopf">
                     <span class="epos-strangkopf-titel">Wechselrichter und Stränge</span>
                     <span class="epos-chip" id="dcacchip">DC/AC 1,10 · Gerät 1: 2,752 kWp auf 2,50 kW</span>
@@ -652,8 +687,10 @@ body {
     </div>
 
     <p class="mockup-fussnote">
-        Konzept Abschnitt 7 (Oberfläche), 3.4 (<code>Z_AnlageStrang</code>), 4.2
-        (Plausibilitätsprüfungen P1–P8), Anhang A (die Zahlen der Ampel).
+        Konzept Abschnitt 7 (Oberfläche), 7.1 (die zwei Optionen aus W6‑E‑3), 3.4
+        (<code>Z_AnlageStrang</code>), 4.2 (Plausibilitätsprüfungen P1–P8), Anhang A
+        (die Zahlen der Ampel). Umgesetzt in Stufe S2 als
+        <code>EPOS.UI/Dialoge/Erzeuger/PvStraengeFelder.razor</code>.
     </p>
 </section>
 
@@ -1322,6 +1359,24 @@ P_AC(P_DC) = [Paco/(Pdco − Pso) − C0·(Pdco − Pso)]
     var modellwahl = document.getElementById('modellwahl');
     var modelltext = document.getElementById('modelltext');
 
+    /* ---- M1: die zwei Optionen aus W6-E-3 ------------------------------ */
+    var wegeinfach = document.getElementById('wegeinfach');
+    var wegkatalog = document.getElementById('wegkatalog');
+    var strangblock = document.getElementById('strangzeilen').closest('.epos-raster-huelle');
+    var ampelblock = document.getElementById('ampelzeilen');
+    var leiste = document.getElementById('strangstatus').closest('.epos-leiste');
+
+    function wegZeigen() {
+        var mit = wegkatalog.checked;
+        strangblock.style.display = mit ? '' : 'none';
+        ampelblock.style.display = mit ? '' : 'none';
+        leiste.style.display = mit ? '' : 'none';
+        dcacchip.style.display = mit ? '' : 'none';
+    }
+
+    wegeinfach.addEventListener('change', wegZeigen);
+    wegkatalog.addEventListener('change', wegZeigen);
+
     function modellZeigen() {
         if (modellwahl.value === 'erweitert') {
             modelltext.innerHTML = '<b>Erweitert:</b> anisotrope Einstrahlung nach Hay-Davies, '
@@ -1432,6 +1487,7 @@ P_AC(P_DC) = [Paco/(Pdco − Pso) − C0·(Pdco − Pso)]
     strangwahl.addEventListener('change', beispielZeigen);
     modellZeigen();
     beispielZeigen();
+    wegZeigen();
 })();
 </script>
 

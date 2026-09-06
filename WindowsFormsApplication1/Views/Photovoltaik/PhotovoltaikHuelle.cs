@@ -73,6 +73,7 @@ namespace WindowsFormsApplication1
             List<WErzeugerModel> modelle, bool wizard)
         {
             var stamm = new PhotovoltaikStammCtrl();
+            var wrStamm = new WechselrichterStammCtrl();
 
             var zeilen = new List<ErzeugerZeile>();
             var zuModell = new Dictionary<int, WErzeugerModel>();
@@ -82,6 +83,12 @@ namespace WindowsFormsApplication1
                 zeilen.Add(ZeileZu(m));
                 zuModell[m.ID] = m;
             }
+
+            // Stufe S2: die PROJEKTKOPIEN der Wechselrichter, an denen die Ampel rechnet.
+            // Sie werden nach jedem Uebernehmen aus dem Katalog neu gezogen - eine frisch
+            // kopierte Zeile muss die Pruefung sofort sehen.
+            var wrKopien = new WechselrichterCtrl();
+            wrKopien.ReadAll(projektId);
 
             var zaehler = new Zaehler();
             foreach (var m in modelle) if (m.ID >= zaehler.Naechster) zaehler.Naechster = m.ID + 1;
@@ -129,6 +136,23 @@ namespace WindowsFormsApplication1
                         m.PV_Modell = zeile.ModellErweitert
                             ? DbWerte.PV_MODELL_ERWEITERT
                             : (SimulationPV.IstErweitert(m) ? DbWerte.PV_MODELL_EINFACH : m.PV_Modell);
+
+                        // Stufe S2 (W6-E-3): der SICHTBARE Wechselrichterweg. "Mit
+                        // Wechselrichter" wird ausdruecklich gesetzt; zurueck auf
+                        // "vereinfacht" nur, wenn der Bestand den Katalogweg trug - NULL
+                        // ("nie gewaehlt") bleibt NULL, damit ein Speichern ohne
+                        // Entscheidung keine Entscheidung erfindet.
+                        m.PV_Wechselrichterweg = zeile.MitWechselrichter
+                            ? DbWerte.PV_WR_WEG_KATALOG
+                            : (string.Equals(m.PV_Wechselrichterweg, DbWerte.PV_WR_WEG_KATALOG,
+                                             StringComparison.Ordinal)
+                                   ? DbWerte.PV_WR_WEG_VEREINFACHT
+                                   : m.PV_Wechselrichterweg);
+
+                        // Die Straenge reisen auf dem Modell mit; geschrieben werden sie
+                        // in WizardCtrl.Add_WP_Waermeerzeuger, wo die frische Anlagen-Id
+                        // entsteht (Begruendung bei WErzeugerModel.PV_Straenge).
+                        m.PV_Straenge = StraengeZuModell(zeile.Straenge);
                     }),
 
                 // W6-O-5 (Anwenderentscheid 05.09.2026): Die Summe ist in WATT -
@@ -147,6 +171,19 @@ namespace WindowsFormsApplication1
                 }),
 
                 ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
+
+                // --- Wechselrichter und Straenge, Stufe S2 (W6-E-2 und W6-E-3) -------
+                // Die Klappliste zeigt den KATALOG; uebernommen wird beim Waehlen, wie
+                // bei einem Modul. Der Herstellerfilter des Katalogs bleibt hier aussen
+                // vor: Er gehoert zur Verwaltung, und eine zweite Filterzeile IN der
+                // Strangtabelle waere ein Bedienelement ohne Platz.
+                ["Wechselrichter"] = WechselrichterEintraege(wrStamm),
+
+                ["WechselrichterUebernehmen"] = new Func<int, GeraetWahl>(
+                    stammId => WechselrichterUebernehmen(projektId, stammId, wrKopien)),
+
+                ["StraengePruefen"] = new Func<IReadOnlyList<StrangZeile>, StrangBefund>(
+                    straenge => Pruefen(straenge, ModulDer(zeilen), wrKopien)),
 
                 // Die Modulverwaltung ist bis Welle 14 eine WinForms-Maske.
                 // iU9-W14a.3: Der Modulkatalog ist die Razor-Komponente
@@ -174,6 +211,10 @@ namespace WindowsFormsApplication1
                 // Modulparametern.
                 ["LabelAlleParameter"] = Text_("PVD_AUFKLAPP_PARAMETER",
                                                "Alle Modulparameter anzeigen"),
+                // Q9: Sobald ein Strang besteht, ist "Anzahl Module" abgeleitet - und
+                // sagt es.
+                ["LabelAnzahlAbgeleitet"] = Text_("PVS_ANZAHL_ABGELEITET",
+                                                  "aus der Strangtabelle"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
                 ["LabelGesamtleistung"] = Text_("PVD_LBL_GESAMTLEISTUNG", "Gesamtleistung [kW]:"),
@@ -267,8 +308,198 @@ namespace WindowsFormsApplication1
                 WrNennleistungKw = m.PV_WrNennleistungKw,
                 WrEta10 = m.PV_WrEta10,
                 WrEta50 = m.PV_WrEta50,
-                WrEta100 = m.PV_WrEta100
+                WrEta100 = m.PV_WrEta100,
+
+                // Stufe S2: der sichtbare Weg (NULL heisst "vereinfacht") und die
+                // Straenge dieser Anlage.
+                MitWechselrichter = string.Equals(m.PV_Wechselrichterweg,
+                                                  DbWerte.PV_WR_WEG_KATALOG, StringComparison.Ordinal),
+                Straenge = StraengeZuZeile(m)
             };
+        }
+
+        // =================================================================================
+        // Wechselrichter und Straenge (Stufe S2, W6-E-2 und W6-E-3)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Straenge einer Anlage als Zeilen der Maske. Sie stehen bereits auf dem
+        /// MODELL, wenn der Dialog in derselben Sitzung schon einmal offen war
+        /// (<c>PV_Straenge</c>); sonst kommen sie aus <c>Z_AnlageStrang</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum erst das Modell.</b> Der Assistent oeffnet die PV-Seite mehrfach,
+        /// ohne zwischendurch zu speichern. Laese die Huelle jedes Mal die Datenbank,
+        /// waere jede noch nicht gespeicherte Strangzeile beim zweiten Oeffnen fort.
+        /// Eine noch nie gespeicherte Anlage hat ausserdem keine Id in der Datenbank -
+        /// die Leseabfrage liefert dann eine leere Liste, und das ist richtig.
+        /// </remarks>
+        private static List<StrangZeile> StraengeZuZeile(WErzeugerModel m)
+        {
+            var liste = new List<StrangZeile>();
+
+            List<AnlageStrangModel> quelle = m.PV_Straenge
+                                             ?? new AnlageStrangCtrl().LesenJeAnlage(m.ID);
+
+            var namen = new Dictionary<int, string>();
+            foreach (AnlageStrangModel z in quelle)
+            {
+                if (z == null) continue;
+
+                int wr = z.ID_Wechselrichter ?? 0;
+                if (wr > 0 && !namen.ContainsKey(wr))
+                {
+                    WechselrichterModel g = new WechselrichterCtrl().ReadSingle(wr);
+                    namen[wr] = g == null ? "" : (g.m_szName ?? "");
+                }
+
+                liste.Add(new StrangZeile
+                {
+                    Rang = z.Rang,
+                    Bezeichner = z.Bezeichner ?? "",
+                    WechselrichterId = wr,
+                    WechselrichterName = wr > 0 ? namen[wr] : "",
+                    Geraetenummer = z.Geraetenummer,
+                    Mppt = z.Mppt,
+                    ModuleReihe = z.Module_Reihe,
+                    StraengeParallel = z.Straenge_Parallel,
+                    Neigung = z.Neigung,
+                    Azimut = z.Azimut
+                });
+            }
+
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Zeilen der Maske zurueck ins Kernmodell. <c>ID_Anlage</c> bleibt 0 - die
+        /// setzt der Schreibweg, wenn die Anlagenzeile entstanden ist.
+        /// </summary>
+        private static List<AnlageStrangModel> StraengeZuModell(IReadOnlyList<StrangZeile> zeilen)
+        {
+            var liste = new List<AnlageStrangModel>();
+            if (zeilen == null) return liste;
+
+            foreach (StrangZeile z in zeilen)
+            {
+                if (z == null) continue;
+                liste.Add(new AnlageStrangModel
+                {
+                    Rang = z.Rang,
+                    Bezeichner = z.Bezeichner ?? "",
+                    ID_Wechselrichter = z.WechselrichterId > 0 ? z.WechselrichterId : (int?)null,
+                    Geraetenummer = z.Geraetenummer,
+                    Mppt = z.Mppt,
+                    Module_Reihe = z.ModuleReihe,
+                    Straenge_Parallel = z.StraengeParallel,
+                    Neigung = z.Neigung,
+                    Azimut = z.Azimut
+                });
+            }
+            return liste;
+        }
+
+        /// <summary>Der Katalog als Klapplisteneintraege (Id = Stammsatz).</summary>
+        private static IReadOnlyList<(int Id, string Text)> WechselrichterEintraege(
+            WechselrichterStammCtrl stamm)
+        {
+            var liste = new List<(int, string)>();
+            foreach (WechselrichterStammCtrl.KatalogZeile z in stamm.Filtern(""))
+                liste.Add((z.Id, z.Bezeichner));
+            return liste;
+        }
+
+        /// <summary>
+        /// Nimmt einen Katalogsatz in das Projekt auf - <c>CopyFromStamm</c>, genau wie
+        /// bei einem Modul (Konzept 7). Der Zwischenspeicher der Projektkopien wird
+        /// danach neu gezogen, damit die Ampel das frische Geraet sofort sieht.
+        /// </summary>
+        private static GeraetWahl WechselrichterUebernehmen(int projektId, int stammId,
+                                                            WechselrichterCtrl kopien)
+        {
+            int id = new WechselrichterCtrl().CopyFromStamm(stammId, projektId);
+            if (id <= 0) return new GeraetWahl(0, "");
+
+            kopien.ReadAll(projektId);
+            return new GeraetWahl(id, WechselrichterStammCtrl.BezeichnerZu(stammId));
+        }
+
+        /// <summary>
+        /// Das MODUL, gegen das P1 bis P4 rechnen. Der Dialog fuehrt je Zeile ein Modul;
+        /// die Ampel gehoert aber zur GEWAEHLTEN Zeile, und welche das ist, weiss nur die
+        /// Komponente. Genommen wird deshalb das erste Modul, das der Katalog kennt - im
+        /// Regelfall fuehrt eine PV-Anlage genau eines. Ohne Katalogsatz bleibt es
+        /// <c>null</c>, und die Ampel meldet "das Modul der Anlage fehlt".
+        /// </summary>
+        private static PhotovoltaikStammCtrl.ModulDetail ModulDer(List<ErzeugerZeile> zeilen)
+        {
+            foreach (ErzeugerZeile z in zeilen)
+            {
+                PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(z.Bezeichner);
+                if (d != null) return d;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Die AMPEL: Der Kern prueft (<c>StrangPlausibilitaet</c>), die Huelle bildet
+        /// das Ergebnis auf die Anzeigezeilen ab. Gerechnet wird hier nichts.
+        /// </summary>
+        private static StrangBefund Pruefen(IReadOnlyList<StrangZeile> zeilen,
+                                            PhotovoltaikStammCtrl.ModulDetail modul,
+                                            WechselrichterCtrl kopien)
+        {
+            var geraete = new Dictionary<int, WechselrichterModel>();
+            foreach (WechselrichterModel g in kopien.items)
+                if (g != null && !geraete.ContainsKey(g.m_ID)) geraete[g.m_ID] = g;
+
+            int module = 0;
+            foreach (StrangZeile z in zeilen) module += z.Modulzahl;
+
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = StraengeZuModell(zeilen),
+                    Modul = ModulModell(modul),
+                    Geraete = geraete,
+                    // P8 vergleicht gegen die ABGELEITETE Zahl: Die Maske schreibt sie
+                    // ohnehin in den Anlagenwert zurueck (Q9), und waehrend des
+                    // Bearbeitens ist der Anlagenwert noch der alte.
+                    AnzahlModuleAnlage = module
+                });
+
+            var straenge = new List<Ampelzeile>();
+            foreach (StrangPlausibilitaet.Strangbefund s in b.Straenge)
+                straenge.Add(new Ampelzeile(Farbe(s.Farbe), s.Satz));
+
+            var chips = new List<Ampelzeile>();
+            foreach (StrangPlausibilitaet.Geraetebefund g in b.Geraete)
+                chips.Add(new Ampelzeile(Farbe(g.Farbe), g.Satz));
+
+            return new StrangBefund(straenge, chips, b.Modulsumme, b.NaeherungMpp);
+        }
+
+        /// <summary>Der Katalogsatz des Moduls als Kernmodell; <c>null</c> bleibt <c>null</c>.</summary>
+        private static PhotovoltaikModel ModulModell(PhotovoltaikStammCtrl.ModulDetail d)
+        {
+            if (d == null) return null;
+            return new PhotovoltaikModel
+            {
+                m_szName = d.Bezeichner,
+                m_Leistung = d.Leistung,
+                m_U_Mpp = d.UMpp ?? 0,
+                m_U_Leerlauf = d.ULeerlauf ?? 0,
+                m_I_Kurzschluss = d.IKurzschluss ?? 0,
+                m_alpha_SC = d.AlphaSc ?? 0,
+                m_beta_OC = d.BetaOc ?? 0
+            };
+        }
+
+        private static Ampelfarbe Farbe(StrangPlausibilitaet.Ampel a)
+        {
+            if (a == StrangPlausibilitaet.Ampel.Rot) return Ampelfarbe.Rot;
+            if (a == StrangPlausibilitaet.Ampel.Gelb) return Ampelfarbe.Gelb;
+            return Ampelfarbe.Gruen;
         }
 
         /// <summary>

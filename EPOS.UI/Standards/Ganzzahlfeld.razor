@@ -18,6 +18,7 @@
     <span class="epos-feld-zeile">
         <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
                type="text" inputmode="numeric" value="@_text"
+               placeholder="@(string.IsNullOrEmpty(Platzhalter) ? null : Platzhalter)"
                aria-invalid="@(Fehlerhaft ? "true" : null)"
                disabled="@(!Aktiv)" @oninput="BeiEingabe" />
         @if (!string.IsNullOrEmpty(Einheit))
@@ -39,6 +40,19 @@
 
     /// <summary>Einheit hinter dem Feld, z. B. "Jahre". Leer = keine.</summary>
     [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>
+    /// Blasser Text im LEEREN Feld; leer = keiner. Gegenstueck zu
+    /// <c>Textfeld.Platzhalter</c> und <c>Auswahlfeld.Platzhalter</c>.
+    ///
+    /// <para>Gebraucht seit der Strangtabelle des PV-Dialogs (Stufe S2 des
+    /// Wechselrichterkonzepts, W6-E-2): Neigung und Azimut eines Strangs sind leer,
+    /// solange sie von der ANLAGE geerbt werden, und der geerbte Wert steht dann in
+    /// KLAMMERN im Feld. Er ist damit sichtbar, ohne gespeichert zu sein - denn eine
+    /// geschriebene 0 waere eine gueltige Ausrichtung (Sueden) und nicht mehr von
+    /// einem geerbten Wert zu unterscheiden.</para>
+    /// </summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
 
     /// <summary>Kleinster zulaessiger Wert; <c>null</c> = keine Untergrenze.</summary>
     [Parameter] public int? Min { get; set; }

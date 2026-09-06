@@ -68,6 +68,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -29700,6 +29701,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter und Stränge ähnelt.
+        /// </summary>
+        public static string PVS_ABSCHNITT {
+            get {
+                return ResourceManager.GetString("PVS_ABSCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Strangtabelle ähnelt.
+        /// </summary>
+        public static string PVS_ANZAHL_ABGELEITET {
+            get {
+                return ResourceManager.GetString("PVS_ANZAHL_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter der Anlage… ähnelt.
+        /// </summary>
+        public static string PVS_BTN_ANLAGE {
+            get {
+                return ResourceManager.GetString("PVS_BTN_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strang anlegen ähnelt.
+        /// </summary>
+        public static string PVS_BTN_ANLEGEN {
+            get {
+                return ResourceManager.GetString("PVS_BTN_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string PVS_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("PVS_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die der Wechselrichter ähnelt.
         /// </summary>
         public static string PVS_FEHLT_GERAET {
@@ -29772,11 +29818,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Hersteller: ähnelt.
+        /// </summary>
+        public static string PVS_FILTER_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PVS_FILTER_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wechselrichter zugeordnet — legen Sie einen Strang an. ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_OHNE_STRANG {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_OHNE_STRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage vereinfacht. ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_S3 {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_S3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping. ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_VEREINFACHT {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_VEREINFACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wechselrichter zugeordnet ähnelt.
         /// </summary>
         public static string PVS_KEIN_GERAET {
             get {
                 return ResourceManager.GetString("PVS_KEIN_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (kein Gerät) ähnelt.
+        /// </summary>
+        public static string PVS_KEIN_GERAET_WAHL {
+            get {
+                return ResourceManager.GetString("PVS_KEIN_GERAET_WAHL", resourceCulture);
             }
         }
         
@@ -29795,6 +29886,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_OHNE_GRENZE {
             get {
                 return ResourceManager.GetString("PVS_OHNE_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping ähnelt.
+        /// </summary>
+        public static string PVS_OPT_KATALOG {
+            get {
+                return ResourceManager.GetString("PVS_OPT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vereinfacht — Pauschalen ohne Wechselrichter ähnelt.
+        /// </summary>
+        public static string PVS_OPT_VEREINFACHT {
+            get {
+                return ResourceManager.GetString("PVS_OPT_VEREINFACHT", resourceCulture);
             }
         }
         
@@ -29934,6 +30043,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch kein Strang zugeordnet. ähnelt.
+        /// </summary>
+        public static string PVS_SPERRE_OHNE_STRANG {
+            get {
+                return ResourceManager.GetString("PVS_SPERRE_OHNE_STRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Azimut [°] ähnelt.
+        /// </summary>
+        public static string PVS_SP_AZIMUT {
+            get {
+                return ResourceManager.GetString("PVS_SP_AZIMUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string PVS_SP_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("PVS_SP_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät ähnelt.
+        /// </summary>
+        public static string PVS_SP_GERAET {
+            get {
+                return ResourceManager.GetString("PVS_SP_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPPT ähnelt.
+        /// </summary>
+        public static string PVS_SP_MPPT {
+            get {
+                return ResourceManager.GetString("PVS_SP_MPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung [°] ähnelt.
+        /// </summary>
+        public static string PVS_SP_NEIGUNG {
+            get {
+                return ResourceManager.GetString("PVS_SP_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stränge parallel ähnelt.
+        /// </summary>
+        public static string PVS_SP_PARALLEL {
+            get {
+                return ResourceManager.GetString("PVS_SP_PARALLEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang ähnelt.
+        /// </summary>
+        public static string PVS_SP_RANG {
+            get {
+                return ResourceManager.GetString("PVS_SP_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Module in Reihe ähnelt.
+        /// </summary>
+        public static string PVS_SP_REIHE {
+            get {
+                return ResourceManager.GetString("PVS_SP_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string PVS_SP_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("PVS_SP_WECHSELRICHTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die  ·  ähnelt.
         /// </summary>
         public static string PVS_TRENNER {
@@ -29943,11 +30142,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string PVS_WAHL {
+            get {
+                return ResourceManager.GetString("PVS_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Werte fehlen: {0} ähnelt.
         /// </summary>
         public static string PVS_WERTE_FEHLEN {
             get {
                 return ResourceManager.GetString("PVS_WERTE_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einfach: isotrope Einstrahlung, linearer Temperaturgang. Der Wechselrichter rechnet in beiden Modellen. ähnelt.
+        /// </summary>
+        public static string PVS_ZEILE_EINFACH {
+            get {
+                return ResourceManager.GetString("PVS_ZEILE_EINFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erweitert: anisotrope Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld. Der Wechselrichter rechnet in beiden Modellen. ähnelt.
+        /// </summary>
+        public static string PVS_ZEILE_ERWEITERT {
+            get {
+                return ResourceManager.GetString("PVS_ZEILE_ERWEITERT", resourceCulture);
             }
         }
         

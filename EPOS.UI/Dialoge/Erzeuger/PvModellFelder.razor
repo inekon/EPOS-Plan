@@ -5,19 +5,30 @@
 
    VORBILD. Form_PV zeigte im Anlagenpanel drei Zusatzfelder - das Rechenmodell
    (Klappliste Einfach/Erweitert), den Wechselrichter-Wirkungsgrad und die
-   Systemverluste - und den Knopf "Wechselrichter...", der Form_PVModell oeffnete:
-   AC-Nennleistung, die drei Stuetzstellen der Teillast-Kennlinie und die
-   DC/AC-Anzeige. Hier ist der Zweitdialog eine UEBERLAGERUNG (Hausregel R2), kein
-   zweites Fenster.
+   Systemverluste - und den Knopf "Wechselrichter...", der Form_PVModell oeffnete.
 
-   DIE REGELN DES VORBILDS, woertlich uebernommen:
-     * Modell EINFACH sperrt den Knopf und laesst den Wirkungsgrad frei; ERWEITERT
-       umgekehrt (ModellUmschalten, Form_PV Z. 118-124). Der feste Wirkungsgrad gilt
-       nur im einfachen Modell; im erweiterten rechnet die Kennlinie.
+   WAS MIT STUFE S2 DES WECHSELRICHTERKONZEPTS HIER WEGGEHT (Anwenderentscheid
+   W6-E-2 vom 06.09.2026, Entscheidungsfrage Q5):
+
+     * DER GESPERRTE KNOPF und mit ihm die Sperrregel
+       disabled="@(!Zeile.ModellErweitert)". Sie stammte woertlich aus
+       Form_PV.ModellUmschalten (Z. 118-124) und war bestimmungsgemaess - und
+       trotzdem der Anlass des Anwenderwunsches: Ein gesperrter Knopf ohne
+       sichtbaren Grund liest sich als Fehler. Der Wechselrichter ist ein GERAET,
+       keine Modellverfeinerung; er rechnet in beiden Modellen.
+     * DIE UEBERLAGERUNG mit den fuenf Anlagenwerten. Sie BLEIBT als
+       Anlagenrueckfall erreichbar, steht aber jetzt dort, wo alles zum
+       Wechselrichter steht: im Abschnitt "Wechselrichter und Straenge"
+       (PvStraengeFelder). Zwei Orte fuer dieselbe Sache waeren zwei Wahrheiten.
+
+   WAS BLEIBT: die drei Felder des Anlagenpanels - und NEU eine Zeile darunter,
+   die sagt, was die Modellwahl UEBERHAUPT unterscheidet (Konzept 7): "Einfach:
+   isotrope Einstrahlung, linearer Temperaturgang. Der Wechselrichter rechnet in
+   beiden Modellen." Der Wirkungsgrad bleibt im Modell EINFACH frei und in
+   ERWEITERT gesperrt - dort rechnet die Kennlinie.
+
+   DIE UEBRIGEN REGELN DES VORBILDS, woertlich uebernommen:
      * Leer heisst NULL - 0,95 beim Wirkungsgrad, 0 % bei den Verlusten (PvWertAusFeld).
-     * Im Wechselrichterdialog heisst 0 "nicht bekannt" und wird NULL (Form_PVModell.Wert).
-     * Die DC/AC-Anzeige braucht die kWp der Anlage (Modulleistung mal Anzahl) - die
-       kennt die Komponente nicht; sie bekommt sie fertig als Parameter.
 
    KEINE DATENBANK (Hausregel EPOS.UI): Die Werte stehen in der ErzeugerZeile, die
    Huelle schreibt sie in das WErzeugerModel (PhotovoltaikHuelle.Uebernehmen). Jede
@@ -25,7 +36,6 @@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Bausteine
-@using System.Globalization
 
 <div class="epos-pvmodell">
     <div title="@Texte.TipModell">
@@ -42,41 +52,14 @@
                     WertChanged="BeiSystemverluste" Min="0" Max="100" Nachkommastellen="2"
                     Feldname="Systemverluste" />
     </div>
-    <button type="button" class="epos-knopf epos-pvmodell-wechselrichter" title="@Texte.TipWechselrichter"
-            disabled="@(!Zeile.ModellErweitert)" @onclick="Oeffnen">@Texte.BtnWechselrichter</button>
 
-    @* --- Ueberlagerung: die Wechselrichterdaten (Form_PVModell) ------------------ *@
-    <Ueberlagerung Offen="@_offen" Titel="@Titel" Geschlossen="() => _offen = false">
-        <KindInhalt>
-            <p class="epos-kontextzeile">@(Zeile.ModellErweitert ? Texte.KopfErweitert : Texte.KopfEinfach)</p>
-            <div title="@Texte.TipNennleistung">
-                <Zahlenfeld Bezeichnung="@Texte.LabelNennleistung" Wert="@_nenn"
-                            WertChanged="@(w => _nenn = w)" Min="0" Max="100000" Nachkommastellen="2"
-                            Aktiv="@Zeile.ModellErweitert" Feldname="WrNennleistung" />
-            </div>
-            <div title="@Texte.TipEta">
-                <Zahlenfeld Bezeichnung="@Texte.LabelEta10" Wert="@_eta10"
-                            WertChanged="@(w => _eta10 = w)" Min="0" Max="1" Nachkommastellen="3"
-                            Aktiv="@Zeile.ModellErweitert" Feldname="WrEta10" />
-                <Zahlenfeld Bezeichnung="@Texte.LabelEta50" Wert="@_eta50"
-                            WertChanged="@(w => _eta50 = w)" Min="0" Max="1" Nachkommastellen="3"
-                            Aktiv="@Zeile.ModellErweitert" Feldname="WrEta50" />
-                <Zahlenfeld Bezeichnung="@Texte.LabelEta100" Wert="@_eta100"
-                            WertChanged="@(w => _eta100 = w)" Min="0" Max="1" Nachkommastellen="3"
-                            Aktiv="@Zeile.ModellErweitert" Feldname="WrEta100" />
-            </div>
-            <p class="epos-pvmodell-dcac"><b>@DcAcText</b></p>
-            <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiErgebnis" />
-        </KindInhalt>
-    </Ueberlagerung>
+    @* Was die Modellwahl unterscheidet - und was sie NICHT unterscheidet (Konzept 7). *@
+    <p class="epos-herleitung epos-pvmodell-zeile">@Modellzeile</p>
 </div>
 
 @code {
     /// <summary>Die Projektzeile, deren Felder hier stehen. Wird IN PLACE geaendert.</summary>
     [Parameter, EditorRequired] public ErzeugerZeile Zeile { get; set; } = new();
-
-    /// <summary>kWp der Anlage (Modulleistung mal Anzahl) fuer die DC/AC-Anzeige; 0 = unbekannt.</summary>
-    [Parameter] public double KwpAnlage { get; set; }
 
     /// <summary>Die Beschriftungen; fuellen sich selbst aus MyResource.</summary>
     [Parameter] public PvModellTexte Texte { get; set; } = new();
@@ -85,24 +68,14 @@
     [Parameter] public EventCallback Geaendert { get; set; }
 
     private IReadOnlyList<(int Id, string Text)> _modelle = Array.Empty<(int, string)>();
-    private bool _offen;
-    private double? _nenn, _eta10, _eta50, _eta100;
 
-    /// <summary>Steht die Wechselrichter-Ueberlagerung? (Pruefhilfe fuer Tests.)</summary>
-    public bool WechselrichterOffen => _offen;
-
-    /// <summary>Die DC/AC-Zeile der Ueberlagerung (Pruefhilfe fuer Tests).</summary>
-    public string DcAcText
-    {
-        get
-        {
-            if (!_nenn.HasValue || _nenn.Value <= 0.0 || KwpAnlage <= 0.0) return Texte.DcAcOhne;
-            return string.Format(CultureInfo.CurrentCulture, Texte.DcAc,
-                                 KwpAnlage, _nenn.Value, KwpAnlage / _nenn.Value);
-        }
-    }
-
-    private string Titel => string.Format(CultureInfo.CurrentCulture, Texte.DialogTitel, Zeile.Bezeichner);
+    /// <summary>
+    /// Die Zeile unter dem Rechenmodell: Sie nennt, was sich zwischen den zwei
+    /// Modellen unterscheidet, und sagt im selben Satz, dass der Wechselrichter davon
+    /// NICHT betroffen ist (Konzept 7, Entscheidungsfrage Q5). Pruefhilfe fuer Tests.
+    /// </summary>
+    public string Modellzeile
+        => Zeile.ModellErweitert ? Texte.ZeileErweitert : Texte.ZeileEinfach;
 
     protected override void OnParametersSet()
     {
@@ -128,27 +101,4 @@
         Zeile.Systemverluste = wert.HasValue && wert.Value > 0.0 ? wert : null;
         return Geaendert.InvokeAsync();
     }
-
-    private void Oeffnen()
-    {
-        _nenn = Zeile.WrNennleistungKw;
-        _eta10 = Zeile.WrEta10;
-        _eta50 = Zeile.WrEta50;
-        _eta100 = Zeile.WrEta100;
-        _offen = true;
-    }
-
-    /// <summary>OK uebernimmt die vier Werte (0 = nicht bekannt = NULL); Abbrechen verwirft sie.</summary>
-    private async Task BeiErgebnis(bool ok)
-    {
-        _offen = false;
-        if (!ok) return;
-        Zeile.WrNennleistungKw = Positiv(_nenn);
-        Zeile.WrEta10 = Positiv(_eta10);
-        Zeile.WrEta50 = Positiv(_eta50);
-        Zeile.WrEta100 = Positiv(_eta100);
-        await Geaendert.InvokeAsync();
-    }
-
-    private static double? Positiv(double? wert) => wert.HasValue && wert.Value > 0.0 ? wert : null;
 }

@@ -7,10 +7,21 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Der Baustein <c>PvModellFelder</c> (Paket A/B des PV-Ertragsmodells, Merge 5): die
-/// Regeln von <c>Form_PV.ModellUmschalten</c> und <c>Form_PVModell</c> - Modell EINFACH
-/// sperrt den Wechselrichterknopf und laesst den Wirkungsgrad frei, ERWEITERT umgekehrt;
-/// leer heisst NULL; die Ueberlagerung schreibt erst mit OK.
+/// Der Baustein <c>PvModellFelder</c> (Paket A/B des PV-Ertragsmodells, Merge 5): das
+/// Rechenmodell, der Wechselrichter-Wirkungsgrad und die Systemverluste.
+///
+/// <para><b>Was mit Stufe S2 des Wechselrichterkonzepts hier WEGGEFALLEN ist</b>
+/// (W6‑E‑2, Entscheidungsfrage Q5): der gesperrte Knopf „Wechselrichter…" und die
+/// Überlagerung dahinter. Die Sperrregel <c>disabled="@(!Zeile.ModellErweitert)"</c>
+/// war der Anlass des Anwenderwunsches — ein gesperrter Knopf ohne sichtbaren Grund
+/// liest sich als Fehler. Die Überlagerung selbst ist nicht weg, sie steht jetzt im
+/// Abschnitt „Wechselrichter und Stränge" (<see cref="PvStraengeFelderTests"/>), wo
+/// alles zum Wechselrichter steht.</para>
+///
+/// <para>Was BLEIBT und hier geprüft wird: Der Wirkungsgrad ist im Modell EINFACH frei
+/// und in ERWEITERT gesperrt (dort rechnet die Kennlinie), leer heisst NULL, und die
+/// Zeile unter dem Rechenmodell sagt, was die Modellwahl unterscheidet — und was
+/// nicht.</para>
 /// </summary>
 public class PvModellFelderTests : BunitContext
 {
@@ -28,18 +39,28 @@ public class PvModellFelderTests : BunitContext
     private IRenderedComponent<PvModellFelder> Aufbauen(ErzeugerZeile zeile, Action? geaendert = null)
         => Render<PvModellFelder>(p => p
             .Add(x => x.Zeile, zeile)
-            .Add(x => x.KwpAnlage, 8.0)
             .Add(x => x.Geaendert, () => geaendert?.Invoke()));
 
     [Fact]
-    public void Modell_Einfach_laesst_den_Wirkungsgrad_frei_und_sperrt_den_Knopf()
+    public void Modell_Einfach_laesst_den_Wirkungsgrad_frei()
     {
         var cut = Aufbauen(Zeile());
 
         var felder = cut.FindComponents<Zahlenfeld>();
         Assert.True(felder[0].Instance.Aktiv);                               // WR-Wirkungsgrad
-        Assert.True(cut.Find(".epos-pvmodell-wechselrichter").HasAttribute("disabled"));
-        Assert.False(cut.Instance.WechselrichterOffen);
+    }
+
+    /// <summary>
+    /// <b>Der gesperrte Knopf ist fort</b> (Q5) — und mit ihm die Sperrregel. Der
+    /// Baustein zeichnet keinen Knopf mehr; der Wechselrichter steht im eigenen
+    /// Abschnitt und ist in BEIDEN Modellen bedienbar.
+    /// </summary>
+    [Fact]
+    public void Der_gesperrte_Wechselrichterknopf_ist_fort()
+    {
+        var cut = Aufbauen(Zeile());
+
+        Assert.Empty(cut.FindAll(".epos-pvmodell-wechselrichter"));
     }
 
     [Fact]
@@ -55,7 +76,6 @@ public class PvModellFelderTests : BunitContext
         Assert.True(zeile.ModellErweitert);
         Assert.Equal(1, gemeldet);
         Assert.False(cut.FindComponents<Zahlenfeld>()[0].Instance.Aktiv);
-        Assert.False(cut.Find(".epos-pvmodell-wechselrichter").HasAttribute("disabled"));
     }
 
     [Fact]
@@ -72,32 +92,27 @@ public class PvModellFelderTests : BunitContext
         Assert.Null(zeile.Systemverluste);
     }
 
+    /// <summary>
+    /// <b>Die Modellzeile</b> (Konzept 7): Sie nennt, was sich zwischen den zwei
+    /// Modellen unterscheidet — und sagt im SELBEN Satz, dass der Wechselrichter davon
+    /// nicht betroffen ist. Ohne diese Zeile bliebe die Wahl eine Ratefrage, und die
+    /// Aussage von Q5 stünde nirgends in der Maske.
+    /// </summary>
     [Fact]
-    public async Task Die_Ueberlagerung_schreibt_erst_mit_OK_und_zeigt_DC_zu_AC()
+    public async Task Die_Modellzeile_nennt_beide_Modelle_und_den_Wechselrichter()
     {
-        int gemeldet = 0;
-        var zeile = Zeile(erweitert: true);
-        var cut = Aufbauen(zeile, () => gemeldet++);
+        var zeile = Zeile();
+        var cut = Aufbauen(zeile);
 
-        cut.Find(".epos-pvmodell-wechselrichter").Click();
-        Assert.True(cut.Instance.WechselrichterOffen);
-        Assert.Contains("kein Clipping", cut.Instance.DcAcText, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Einfach", cut.Instance.Modellzeile, StringComparison.Ordinal);
+        Assert.Contains("in beiden Modellen", cut.Instance.Modellzeile, StringComparison.Ordinal);
+        Assert.Contains("in beiden Modellen", cut.Find(".epos-pvmodell-zeile").TextContent,
+                        StringComparison.Ordinal);
 
-        // Die Felder der Ueberlagerung folgen den drei Anlagenfeldern: Nennleistung, eta10/50/100.
-        var felder = cut.FindComponents<Zahlenfeld>();
-        Assert.True(felder.Count >= 6);
-        await cut.InvokeAsync(() => felder[2].Instance.WertChanged.InvokeAsync(10.0));
-        await cut.InvokeAsync(() => felder[3].Instance.WertChanged.InvokeAsync(0.9));
-        Assert.Contains("0,80", cut.Instance.DcAcText);                       // 8 kWp auf 10 kW
-        Assert.Null(zeile.WrNennleistungKw);                                    // noch nicht geschrieben
+        var wahl = cut.FindComponent<Auswahlfeld>();
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(1));
 
-        await cut.InvokeAsync(() => cut.FindComponent<EPOS.UI.Bausteine.SpeichernLeiste>()
-                                       .Instance.Ergebnis.InvokeAsync(true));
-
-        Assert.Equal(10.0, zeile.WrNennleistungKw);
-        Assert.Equal(0.9, zeile.WrEta10);
-        Assert.Null(zeile.WrEta50);
-        Assert.Equal(1, gemeldet);
-        Assert.False(cut.Instance.WechselrichterOffen);
+        Assert.Contains("Hay-Davies", cut.Instance.Modellzeile, StringComparison.Ordinal);
+        Assert.Contains("in beiden Modellen", cut.Instance.Modellzeile, StringComparison.Ordinal);
     }
 }

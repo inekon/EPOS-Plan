@@ -6,6 +6,14 @@ namespace EPOS.UI.Dialoge.Erzeuger;
 /// Die Beschriftungen des Bausteins <c>PvModellFelder</c> (Paket A/B des PV-Ertragsmodells,
 /// mit Merge 5 am 05.09.2026 aus <c>Form_PV</c> und <c>Form_PVModell</c> nachgezogen).
 ///
+/// <para><b>Seit Stufe S2 des Wechselrichterkonzepts</b> (W6‑E‑2, 06.09.2026) trägt es
+/// dazu die zwei Sätze der Modellzeile — und NICHT mehr die Beschriftung des
+/// gesperrten Knopfes „Wechselrichter…": Der ist mit Entscheidungsfrage Q5 entfallen.
+/// Die Texte der ÜBERLAGERUNG bleiben hier, obwohl sie inzwischen
+/// <c>PvStraengeFelder</c> zeichnet: Es sind die Anlagenwerte des Modells
+/// ERWEITERT, sie gehören fachlich zu diesem Bündel, und zwei Bündel für einen
+/// Dialog wären eine Trennung ohne Gewinn.</para>
+///
 /// <para>Ein BÜNDEL nach der Bauart <c>LizenzTexte</c> (Hausregel EPOS.UI): Es füllt sich
 /// SELBST aus <c>MyResource</c> in der Oberflächensprache, weil es reine Katalogeinträge
 /// sind; ein fehlender Schlüssel fällt auf den deutschen Wortlaut zurück. Die Hülle muss
@@ -43,11 +51,20 @@ public sealed class PvModellTexte
     public string TipSystemverluste { get; } = T("PV_ANLAGE_TIP_SYSTEMVERLUSTE",
         "Pauschale Verluste (Verschmutzung, Leitungen, Abweichung). Leer = 0 %.");
 
-    /// <summary>PVM_ANLAGE_BTN_WECHSELRICHTER</summary>
-    public string BtnWechselrichter { get; } = T("PVM_ANLAGE_BTN_WECHSELRICHTER", "Wechselrichter…");
-    /// <summary>PVM_ANLAGE_TIP_WECHSELRICHTER</summary>
-    public string TipWechselrichter { get; } = T("PVM_ANLAGE_TIP_WECHSELRICHTER",
-        "AC-Nennleistung und Teillast-Kennlinie des Wechselrichters (nur im Modell Erweitert).");
+    /// <summary>
+    /// PVS_ZEILE_EINFACH — die Zeile unter dem Rechenmodell im Modell EINFACH
+    /// (Stufe S2, Konzept 7). Sie nennt, was sich zwischen den Modellen
+    /// unterscheidet, und sagt im selben Satz, dass der Wechselrichter davon nicht
+    /// betroffen ist.
+    /// </summary>
+    public string ZeileEinfach { get; } = T("PVS_ZEILE_EINFACH",
+        "Einfach: isotrope Einstrahlung, linearer Temperaturgang. "
+        + "Der Wechselrichter rechnet in beiden Modellen.");
+
+    /// <summary>PVS_ZEILE_ERWEITERT — dieselbe Zeile im Modell ERWEITERT.</summary>
+    public string ZeileErweitert { get; } = T("PVS_ZEILE_ERWEITERT",
+        "Erweitert: anisotrope Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld. "
+        + "Der Wechselrichter rechnet in beiden Modellen.");
 
     /// <summary>PVM_DLG_TITEL — {0} = Anlage</summary>
     public string DialogTitel { get; } = T("PVM_DLG_TITEL", "Wechselrichter — {0}");

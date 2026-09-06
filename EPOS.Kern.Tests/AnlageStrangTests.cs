@@ -355,19 +355,24 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            const string name = "ST1 Rettungsprobe";
+            // Der Name steht als LOKALE Variable da, nicht als "const string name":
+            // Werkzeuge/SqlDialektPruefer loest dynamische Tabellennamen ueber EINDEUTIGE
+            // Kurznamen von Konstanten auf, und eine Konstante namens "name" waere im
+            // ganzen Bestand die einzige - der Pruefer setzte sie dann fuer k.name in
+            // ProjektExportImportCtrl ein und meldete vier Fundstellen.
+            string bezeichner = "ST1 Rettungsprobe";
 
             var anlage = new WErzeugerCtrl
             {
                 ID_Projekt = TESTPROJEKT,
-                Bezeichner = name,
+                Bezeichner = bezeichner,
                 ID_Type = WizardItemClass.PV_TYP,
                 ID_PV = ModulAnlegen(),
                 PV_Leistung = 21
             };
             Assert.True(anlage.Insert());
 
-            int alteId = AnlagenId(name);
+            int alteId = AnlagenId(bezeichner);
             int geraet = WechselrichterAnlegen("ST1 Rettung 5000TL");
 
             var ctrl = new AnlageStrangCtrl();
@@ -386,7 +391,7 @@ namespace EPOS.Kern.Tests
             Assert.True(wizard.Add_WP_Waermeerzeuger(TESTPROJEKT,
                 new List<WErzeugerModel> { anlage }));
 
-            int neueId = AnlagenId(name);
+            int neueId = AnlagenId(bezeichner);
             Assert.True(neueId > 0);
 
             List<AnlageStrangModel> gerettet = ctrl.LesenJeAnlage(neueId);
