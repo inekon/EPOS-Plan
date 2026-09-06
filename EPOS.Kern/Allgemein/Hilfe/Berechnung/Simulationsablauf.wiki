@@ -46,7 +46,9 @@ Zuerst wird der Bedarf gebildet, dann arbeiten die Erzeuger ihn ab.
 
 == Formelzeichen und Parameter ==
 
-'''Parameter''' — was in den Lauf hereinkommt:
+=== Parameter ===
+
+Was in den Lauf hereinkommt:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
@@ -68,7 +70,9 @@ Zuerst wird der Bedarf gebildet, dann arbeiten die Erzeuger ihn ab.
 | Q<sub>Sp,max</sub> || nutzbare Kapazitaet eines Pufferspeichers || kWh || Pufferspeicherkatalog, siehe [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]]
 |}
 
-'''Variablen''' — was der Lauf selbst bildet:
+=== Variablen ===
+
+Was der Lauf selbst bildet:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
@@ -110,10 +114,8 @@ Viertelstundenraster gespreizt wird, steht in allen vier Vierteln gleich hoch un
 nicht geviertelt. Deshalb steht in der Jahressumme der Teiler 4 000 (= 4 Viertel je Stunde ·
 1 000 kWh je MWh) und in der Stundenreihe der Teiler 1 000:
 
-: <big>E<sub>a</sub> = ( Σ<sub>k=1…35 040</sub> P(k) ) / 4 000</big>  (1)
-
-: <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q(t) ) / 1 000</big>  (2)
-
+: <big>E<sub>a</sub> = ( Σ<sub>k=1…35 040</sub> P(k) ) / 4 000</big> &nbsp;&nbsp;(1)
+: <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q(t) ) / 1 000</big> &nbsp;&nbsp;(2)
 === 2. Vorpruefungen — der Lauf bricht ab, wenn ===
 
 # die Datenbankmigration nicht abgeschlossen ist,
@@ -132,8 +134,7 @@ Kalender''': Der Wochentag des 1. Januar wird aus den Wochenendkennzeichen der K
 abgeleitet und von der Waermerechnung an die Stromrechnung weitergegeben. Steht der Samstag
 des ersten Wochenendpaares am Tagesindex ''i'', so gilt
 
-: <big>w = (5 − i) mod 7</big>  (3)
-
+: <big>w = (5 − i) mod 7</big> &nbsp;&nbsp;(3)
 Damit kacheln Gebaeudeprofile, Brauchwasser, Prozesswaerme und Stromprofile auf denselben
 Wochentagen. Die Einzelheiten der Suche nach ''i'' — und der Rueckfallwert, wenn es kein
 Wochenendpaar gibt — stehen unter
@@ -157,8 +158,7 @@ Die Klimadatenreihe einer Region wird von PVGIS in '''UTC''' geliefert, Lastgaen
 Profile laufen dagegen in '''Ortszeit'''. Der Rechenkern verschiebt die Reihe deshalb beim
 Lesen: Zum Ortszeit-Index ''L'' gehoert der gelieferte Index
 
-: <big>U = L − Δt(L), und U = U + 8 760 fuer U < 0</big>  (4)
-
+: <big>U = L − Δt(L), und U = U + 8 760 fuer U < 0</big> &nbsp;&nbsp;(4)
 Fuer den Versatz gilt Δt(L) = 1 h in der Normalzeit (MEZ) und Δt(L) = 2 h in der Sommerzeit
 (MESZ); der Jahresumlauf im zweiten Teil von (4) fasst den Fall „1. Januar 00:00 MEZ =
 31. Dezember 23:00 UTC".
@@ -215,8 +215,7 @@ Die Reihenfolge der Bedarfsdeckung (Schritt 2 oben) ist die '''Kaskade'''. Die R
 des Ladens ist eine andere: Sie folgt der Ladepriorität, und die '''kleinere''' Zahl laedt
 zuerst:
 
-: <big>r<sub>Lade</sub>(A) < r<sub>Lade</sub>(B) → Anlage A laedt vor Anlage B</big>  (5)
-
+: <big>r<sub>Lade</sub>(A) < r<sub>Lade</sub>(B) → Anlage A laedt vor Anlage B</big> &nbsp;&nbsp;(5)
 Die Vorgabewerte stehen nach Grenzkosten:
 
 {| class="wikitable"
@@ -241,10 +240,8 @@ wird wie '''99''' behandelt, steht also hinter jeder konfigurierten Anlage.
 Ein Puffer wird mit '''Hysterese''' gefahren: Unterschreitet der Fuellstand die
 Einschaltschwelle, wird geladen, bis die Abschaltschwelle erreicht ist.
 
-: <big>Ladebeginn, wenn Q<sub>Sp</sub>(t) < (s<sub>ein</sub> / 100) · Q<sub>Sp,max</sub></big>  (6)
-
-: <big>Ladeende, wenn Q<sub>Sp</sub>(t) ≥ (s<sub>aus</sub> / 100) · Q<sub>Sp,max</sub></big>  (7)
-
+: <big>Ladebeginn, wenn Q<sub>Sp</sub>(t) < (s<sub>ein</sub> / 100) · Q<sub>Sp,max</sub></big> &nbsp;&nbsp;(6)
+: <big>Ladeende, wenn Q<sub>Sp</sub>(t) ≥ (s<sub>aus</sub> / 100) · Q<sub>Sp,max</sub></big> &nbsp;&nbsp;(7)
 Ohne eigene Vorgabe gelten s<sub>ein</sub> = 10 % und s<sub>aus</sub> = 95 % der nutzbaren
 Kapazitaet. Die Abschaltschwelle liegt bewusst unter 100 %, weil die Bereitschaftsverluste
 den Fuellstand laufend absenken.
@@ -267,10 +264,8 @@ ins Laufprotokoll. Zuordnungen sind frei — aber nur sinnvolle bleiben unkommen
 Was die Kaskade offen gelassen hat und was nach Photovoltaik und Speicher noch aus dem Netz
 kommt, sind die zwei Restmengen des Laufs — gebildet nach denselben Regeln (1) und (2):
 
-: <big>Q<sub>Rest</sub> = ( Σ<sub>t=1…8 760</sub> Q<sub>offen</sub>(t) ) / 1 000</big>  (8)
-
-: <big>E<sub>Rest</sub> = ( Σ<sub>k=1…35 040</sub> P<sub>Netz</sub>(k) ) / 4 000</big>  (9)
-
+: <big>Q<sub>Rest</sub> = ( Σ<sub>t=1…8 760</sub> Q<sub>offen</sub>(t) ) / 1 000</big> &nbsp;&nbsp;(8)
+: <big>E<sub>Rest</sub> = ( Σ<sub>k=1…35 040</sub> P<sub>Netz</sub>(k) ) / 4 000</big> &nbsp;&nbsp;(9)
 Danach bildet der Lauf die Speicherkennzahlen (mittlerer und maximaler Fuellstand,
 Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen.
 

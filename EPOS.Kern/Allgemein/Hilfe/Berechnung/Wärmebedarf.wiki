@@ -51,7 +51,9 @@ Ausgewiesen werden ausserdem die Jahresmengen je Anteil [MWh], der groesste Stun
 
 == Formelzeichen und Parameter ==
 
-'''Parameter''' — was in die Rechnung hereinkommt:
+=== Parameter ===
+
+Was in die Rechnung hereinkommt:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
@@ -129,7 +131,9 @@ Ausgewiesen werden ausserdem die Jahresmengen je Anteil [MWh], der groesste Stun
 | 1,1 || Verhaeltnis Brennwert (H<sub>o</sub>) zu Heizwert (H<sub>u</sub>) beim Erdgas || — || Konstante
 |}
 
-'''Variablen''' — was die Rechnung selbst bildet:
+=== Variablen ===
+
+Was die Rechnung selbst bildet:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
@@ -203,8 +207,7 @@ Aus den Wochenendkennzeichen der ersten 14 Tage leitet der Rechenkern den '''Woc
 1. Januar''' ab: Gesucht wird das erste zusammenhaengende Wochenendpaar; steht der Samstag
 am Tagesindex ''i'', dann gilt
 
-: <big>w = (5 − i) mod 7</big>  (1)
-
+: <big>w = (5 − i) mod 7</big> &nbsp;&nbsp;(1)
 Gesucht wird in zwei Durchgaengen — zuerst ein '''isoliertes''' Paar (Vortag und Folgetag
 sind kein Wochenende), damit ein als Wochenende gefuehrter Feiertag am Freitag oder Montag
 nicht traegt; erst wenn es keines gibt, zaehlt das erste Paar ueberhaupt. Findet sich gar
@@ -219,21 +222,15 @@ Je Gebaeude und Tag werden drei Groessen gebildet.
 '''a) Solare Gewinne''' aus den Fensterflaechen und der Einstrahlung; Ost und West gehen
 gemittelt ein und teilen sich EINE Fensterflaeche:
 
-: <big>P<sub>sol</sub>(d) = ( G<sub>N</sub>(d) · A<sub>F,N</sub> + ((G<sub>O</sub>(d) + G<sub>W</sub>(d)) / 2) · A<sub>F,OW</sub> + G<sub>S</sub>(d) · A<sub>F,S</sub> ) · g</big>  (2)
-
+: <big>P<sub>sol</sub>(d) = ( G<sub>N</sub>(d) · A<sub>F,N</sub> + ((G<sub>O</sub>(d) + G<sub>W</sub>(d)) / 2) · A<sub>F,OW</sub> + G<sub>S</sub>(d) · A<sub>F,S</sub> ) · g</big> &nbsp;&nbsp;(2)
 '''b) Spezifischer Waermeverlustkoeffizient''' aus Transmission, Waermebruecken und
 Lueftung:
 
-: <big>L<sub>T</sub> = 0,83 · U<sub>W</sub> · A<sub>W</sub> + U<sub>F</sub> · A<sub>F</sub> + 0,95 · U<sub>D</sub> · A<sub>D</sub> + 0,45 · U<sub>G</sub> · A<sub>G</sub> + U<sub>S</sub> · A<sub>S</sub></big>  (3)
-
-: <big>L<sub>WB</sub> = ( Ψ<sub>1</sub> · ℓ<sub>1</sub> + Ψ<sub>2</sub> · ℓ<sub>2</sub> + Ψ<sub>3</sub> · ℓ<sub>3</sub> ) · 0,83</big>  (4)
-
-: <big>f = 1 + 0,025 · ϑ<sub>a</sub>(d) fuer ϑ<sub>a</sub>(d) < 0 °C, sonst f = 1</big>  (5)
-
-: <big>L<sub>V</sub> = f · A<sub>Wohn</sub> · h<sub>R</sub> · 1,2 · n<sub>L</sub> · 0,2778</big>  (6)
-
-: <big>L = L<sub>T</sub> + L<sub>WB</sub> + L<sub>V</sub></big>  (7)
-
+: <big>L<sub>T</sub> = 0,83 · U<sub>W</sub> · A<sub>W</sub> + U<sub>F</sub> · A<sub>F</sub> + 0,95 · U<sub>D</sub> · A<sub>D</sub> + 0,45 · U<sub>G</sub> · A<sub>G</sub> + U<sub>S</sub> · A<sub>S</sub></big> &nbsp;&nbsp;(3)
+: <big>L<sub>WB</sub> = ( Ψ<sub>1</sub> · ℓ<sub>1</sub> + Ψ<sub>2</sub> · ℓ<sub>2</sub> + Ψ<sub>3</sub> · ℓ<sub>3</sub> ) · 0,83</big> &nbsp;&nbsp;(4)
+: <big>f = 1 + 0,025 · ϑ<sub>a</sub>(d) fuer ϑ<sub>a</sub>(d) < 0 °C, sonst f = 1</big> &nbsp;&nbsp;(5)
+: <big>L<sub>V</sub> = f · A<sub>Wohn</sub> · h<sub>R</sub> · 1,2 · n<sub>L</sub> · 0,2778</big> &nbsp;&nbsp;(6)
+: <big>L = L<sub>T</sub> + L<sub>WB</sub> + L<sub>V</sub></big> &nbsp;&nbsp;(7)
 Die Faktoren '''0,83''' (Wand, Waermebruecken), '''0,95''' (Dach) und '''0,45''' (Grund)
 sind Temperatur-Korrekturfaktoren gegen unbeheizte bzw. erdberuehrte Bereiche; '''1,2''' ist
 die Dichte der Luft in kg/m³ und '''0,2778''' die spezifische Waermekapazitaet der Luft in
@@ -258,22 +255,18 @@ Stunde ''h'' (1…24) gilt zunaechst der Sollwert:
 
 Die solare Entlastung wirkt nur in den sechs Tagesstunden 9 bis 14, dort mit dem Faktor 4:
 
-: <big>s(h) = 1 fuer 9 ≤ h ≤ 14, sonst s(h) = 0</big>  (8)
-
+: <big>s(h) = 1 fuer 9 ≤ h ≤ 14, sonst s(h) = 0</big> &nbsp;&nbsp;(8)
 Weil 6 h · 4 = 24 h sind, geht der Tageswert der solaren Gewinne ueber den ganzen Tag
 '''genau einmal''' ein — der Faktor 4 verteilt ihn um, er vermehrt ihn nicht.
 
 Darauf die Heizleistung der Stunde:
 
-: <big>P<sub>hzg</sub>(h) = 0 fuer ϑ<sub>soll</sub>(h) < ϑ<sub>vor</sub></big>  (9)
-
-: <big>P<sub>hzg</sub>(h) = max( 0 , (ϑ<sub>vor</sub> − ϑ<sub>a</sub>(d)) · L + (ϑ<sub>soll</sub>(h) − ϑ<sub>vor</sub>) · C − P<sub>int</sub> − 4 · P<sub>sol</sub>(d) · s(h) ) sonst</big>  (10)
-
+: <big>P<sub>hzg</sub>(h) = 0 fuer ϑ<sub>soll</sub>(h) < ϑ<sub>vor</sub></big> &nbsp;&nbsp;(9)
+: <big>P<sub>hzg</sub>(h) = max( 0 ; (ϑ<sub>vor</sub> − ϑ<sub>a</sub>(d)) · L + (ϑ<sub>soll</sub>(h) − ϑ<sub>vor</sub>) · C − P<sub>int</sub> − 4 · P<sub>sol</sub>(d) · s(h) ) sonst</big> &nbsp;&nbsp;(10)
 und die Fortschreibung der Raumtemperatur (RC-Modell mit der Speicherfaehigkeit ''C'' der
 Bauart):
 
-: <big>ϑ<sub>neu</sub> = min( ϑ<sub>max</sub> , exp(−L/C) · ϑ<sub>vor</sub> + (1 − exp(−L/C)) · ( 4 · P<sub>sol</sub>(d) · s(h) + L · ϑ<sub>a</sub>(d) + P<sub>int</sub> + P<sub>hzg</sub>(h) ) / L )</big>  (11)
-
+: <big>ϑ<sub>neu</sub> = min( ϑ<sub>max</sub> ; exp(−L/C) · ϑ<sub>vor</sub> + (1 − exp(−L/C)) · ( 4 · P<sub>sol</sub>(d) · s(h) + L · ϑ<sub>a</sub>(d) + P<sub>int</sub> + P<sub>hzg</sub>(h) ) / L )</big> &nbsp;&nbsp;(11)
 Der erste Fall (9) heisst: Der Raum ist waermer als der Sollwert, es wird nicht geheizt —
 und diese Stunde geht auch nicht in die Tagessumme ein.
 
@@ -284,19 +277,16 @@ gerechneten Tag ist ϑ<sub>vor</sub> = ϑ<sub>Nacht</sub>.
 
 Die Tagessumme wird zuletzt von der Kataloggroesse auf die Projektgroesse skaliert:
 
-: <big>Q<sub>Tag</sub>(d) = ( Σ<sub>h=1…24</sub> P<sub>hzg</sub>(h) ) · A<sub>ges</sub> / A<sub>Wohn</sub></big>  (12)
-
+: <big>Q<sub>Tag</sub>(d) = ( Σ<sub>h=1…24</sub> P<sub>hzg</sub>(h) ) · A<sub>ges</sub> / A<sub>Wohn</sub></big> &nbsp;&nbsp;(12)
 === 3. Vom Tag zur Stunde ===
 
 Die 365 Tageslasten werden ueber '''typtagbezogene 24-Stunden-Profile''' verteilt. Je
 Tagtyp wird das Profil zuerst auf die Tagessumme 1 normiert,
 
-: <big>p<sub>T</sub>(τ, h) = p<sub>roh</sub>(τ, h) / Σ<sub>h=1…24</sub> p<sub>roh</sub>(τ, h)</big>  (13)
-
+: <big>p<sub>T</sub>(τ, h) = p<sub>roh</sub>(τ, h) / Σ<sub>h=1…24</sub> p<sub>roh</sub>(τ, h)</big> &nbsp;&nbsp;(13)
 und dann angewandt:
 
-: <big>Q<sub>Geb</sub>(d, h) = Q<sub>Tag</sub>(d) · p<sub>T</sub>( τ(d) , h )</big>  (14)
-
+: <big>Q<sub>Geb</sub>(d, h) = Q<sub>Tag</sub>(d) · p<sub>T</sub>( τ(d) , h )</big> &nbsp;&nbsp;(14)
 Welches Profil gilt, entscheidet der Gebaeudetyp: Wohngebaeude nach VDI 2067 nehmen die
 Tagtypreihe der Wohngebaeude, alles Uebrige die der Nichtwohngebaeude. '''Fehlt die
 Tagesverteilung zu einem Gebaeudetyp, bricht die Bedarfsrechnung ab''' — mit Meldung im
@@ -330,10 +320,8 @@ Anschliessend wird das Gebaeude mit seiner hinterlegten Wohnflaeche A<sub>alt</s
 durchgerechnet — das ergibt Q<sub>V,alt</sub> — und die Flaeche im Verhaeltnis der
 Waermemengen gestreckt:
 
-: <big>A<sub>neu</sub> = ( Q<sub>V,neu</sub> / Q<sub>V,alt</sub> ) · A<sub>alt</sub></big>  (15)
-
-: <big>n<sub>P</sub> = A<sub>neu</sub> / a<sub>P</sub></big>  (16)
-
+: <big>A<sub>neu</sub> = ( Q<sub>V,neu</sub> / Q<sub>V,alt</sub> ) · A<sub>alt</sub></big> &nbsp;&nbsp;(15)
+: <big>n<sub>P</sub> = A<sub>neu</sub> / a<sub>P</sub></big> &nbsp;&nbsp;(16)
 Die Zahlen '''10,08''' kWh/l (Heizoel EL) und '''11,48''' kWh/m³ (Erdgas) sind Heizwerte;
 der Teiler '''1,1''' rechnet den Brennwert (H<sub>o</sub>) auf den Heizwert (H<sub>u</sub>)
 zurueck.
@@ -344,8 +332,7 @@ Jede dem Projekt zugeordnete Waermeganglinie wird gelesen und muss '''genau 8 76
 genau 35 040 Werte''' fuehren; jede andere Laenge wird gemeldet und die Ganglinie
 uebersprungen. Viertelstundenwerte werden zum Stundenmittel zusammengefasst:
 
-: <big>Q<sub>ext</sub>(t) = ( v(4t) + v(4t+1) + v(4t+2) + v(4t+3) ) / 4</big>  (17)
-
+: <big>Q<sub>ext</sub>(t) = ( v(4t) + v(4t+1) + v(4t+2) + v(4t+3) ) / 4</big> &nbsp;&nbsp;(17)
 Die Ganglinie geht in den Kanal, der an ihrer Zuordnung steht. '''Leer, unbekannt oder
 nicht gesetzt ergibt den Heizkanal''' — jede Bestandsganglinie laeuft damit unveraendert im
 Heizbedarf mit.
@@ -362,32 +349,25 @@ den Brauchwasser- bzw. den Prozesskanal.
 Der Netzverlust ist ein '''konstanter Betrag je Stunde''', gebildet aus dem Bedarf VOR dem
 Aufschlag. Welche der beiden Gleichungen gilt, entscheidet die gewaehlte Einheit:
 
-: <big>q<sub>NV</sub> = Q<sub>a,vor</sub> · p / 876 000  (Einheit „%", Q<sub>a,vor</sub> in kWh)</big>  (18)
-
-: <big>q<sub>NV</sub> = Q<sub>NV,ein</sub> / 8 760  (Einheit „kWh/a")</big>  (19)
-
+: <big>q<sub>NV</sub> = Q<sub>a,vor</sub> · p / 876 000  (Einheit „%", Q<sub>a,vor</sub> in kWh)</big> &nbsp;&nbsp;(18)
+: <big>q<sub>NV</sub> = Q<sub>NV,ein</sub> / 8 760  (Einheit „kWh/a")</big> &nbsp;&nbsp;(19)
 (876 000 = 8 760 Stunden × 100 Prozentpunkte.) Ein Prozentwert ueber 100 laesst den Lauf
 gar nicht erst anlaufen. Ausgewiesen wird in beiden Faellen dieselbe Groesse:
 
-: <big>Q<sub>NV,a</sub> = q<sub>NV</sub> · 8 760 / 1 000</big>  (20)
-
+: <big>Q<sub>NV,a</sub> = q<sub>NV</sub> · 8 760 / 1 000</big> &nbsp;&nbsp;(20)
 Verteilt wird der Betrag je Stunde '''anteilig auf die drei Kanaele''', im Verhaeltnis ihres
 Bedarfs in ebendieser Stunde:
 
-: <big>q<sub>NV,c</sub>(t) = q<sub>NV</sub> · Q<sub>c</sub>(t) / ( Q<sub>Hzg</sub>(t) + Q<sub>TWW</sub>(t) + Q<sub>Pro</sub>(t) ) fuer c ∈ { TWW, Pro }</big>  (21)
-
+: <big>q<sub>NV,c</sub>(t) = q<sub>NV</sub> · Q<sub>c</sub>(t) / ( Q<sub>Hzg</sub>(t) + Q<sub>TWW</sub>(t) + Q<sub>Pro</sub>(t) ) fuer c ∈ { TWW, Pro }</big> &nbsp;&nbsp;(21)
 Der Heizkanal bekommt den '''Rest''' — also q<sub>NV</sub> minus die zwei nach (21)
 vergebenen Anteile —, damit sich die Summe exakt schliesst. Sind in einer Stunde alle drei
 Kanaele null, geht der ganze Betrag auf den Heizkanal.
 
 === 8. Summenvektor, Spitze und Dauerlinie ===
 
-: <big>Q<sub>Bed</sub>(t) = Q<sub>Hzg</sub>(t) + Q<sub>TWW</sub>(t) + Q<sub>Pro</sub>(t)</big>  (22)
-
-: <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q<sub>Bed</sub>(t) ) / 1 000</big>  (23)
-
-: <big>Q<sub>max</sub> = max<sub>t=1…8 760</sub> Q<sub>Bed</sub>(t)</big>  (24)
-
+: <big>Q<sub>Bed</sub>(t) = Q<sub>Hzg</sub>(t) + Q<sub>TWW</sub>(t) + Q<sub>Pro</sub>(t)</big> &nbsp;&nbsp;(22)
+: <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q<sub>Bed</sub>(t) ) / 1 000</big> &nbsp;&nbsp;(23)
+: <big>Q<sub>max</sub> = max<sub>t=1…8 760</sub> Q<sub>Bed</sub>(t)</big> &nbsp;&nbsp;(24)
 Die Jahresdauerlinie entsteht, indem die Stundenwerte auf die Spitze Q<sub>max</sub>
 normiert (in Prozent), aufsteigend sortiert und anschliessend umgedreht werden — sie faellt
 also von 100 % ab.

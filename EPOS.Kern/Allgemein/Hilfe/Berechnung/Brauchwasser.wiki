@@ -33,7 +33,9 @@ stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
 
 == Formelzeichen und Parameter ==
 
-'''Parameter''' — was in die Rechnung hereinkommt:
+=== Parameter ===
+
+Was in die Rechnung hereinkommt:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
@@ -67,7 +69,9 @@ stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
 | 1,163 || spezifische Waermekapazitaet von Wasser || Wh/(l·K) || Konstante
 |}
 
-'''Variablen''' — was die Rechnung selbst bildet:
+=== Variablen ===
+
+Was die Rechnung selbst bildet:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
@@ -107,10 +111,8 @@ Lauf meldet es. Fehlt der Typbezug ganz, bricht die Brauchwasserrechnung ab.
 Hat der Anwender im Projekt eine eigene Jahressumme hinterlegt, werden die zwoelf
 Monatswerte linear darauf skaliert:
 
-: <big>Q<sub>a,Kat</sub> = Σ<sub>m=1…12</sub> Q<sub>M,Kat</sub>(m)</big>  (1)
-
-: <big>Q<sub>M</sub>(m) = Q<sub>M,Kat</sub>(m) · Q<sub>a,Proj</sub> / Q<sub>a,Kat</sub>  fuer Q<sub>a,Proj</sub> > 0</big>  (2)
-
+: <big>Q<sub>a,Kat</sub> = Σ<sub>m=1…12</sub> Q<sub>M,Kat</sub>(m)</big> &nbsp;&nbsp;(1)
+: <big>Q<sub>M</sub>(m) = Q<sub>M,Kat</sub>(m) · Q<sub>a,Proj</sub> / Q<sub>a,Kat</sub>  fuer Q<sub>a,Proj</sub> > 0</big> &nbsp;&nbsp;(2)
 Ohne eigene Jahressumme gilt Q<sub>M</sub>(m) = Q<sub>M,Kat</sub>(m).
 
 Ist Q<sub>a,Proj</sub> gesetzt, Q<sub>a,Kat</sub> aber null, wird das Profil uebersprungen
@@ -124,8 +126,7 @@ Die '''Verteilung''' bleibt dabei unveraendert; die Jahressumme aendert nur die 
 Das 168-Stunden-Profil wird ab dem '''tatsaechlichen Wochentag des 1. Januar''' fortlaufend
 ueber das Jahr gelegt:
 
-: <big>x(t) = P<sub>W</sub>( (w · 24 + t) mod 168 )  fuer t = 0 … 8 759</big>  (3)
-
+: <big>x(t) = P<sub>W</sub>( (w · 24 + t) mod 168 )  fuer t = 0 … 8 759</big> &nbsp;&nbsp;(3)
 Das Wochenprofil ist so gelesen, dass die Stunden 1 bis 24 der Montag sind und 145 bis 168
 der Sonntag; im Index j von (3) sind das j = 0 … 23 bzw. j = 144 … 167.
 
@@ -136,10 +137,8 @@ der naechste Schritt teilte sonst durch null.
 
 Erst dieser Schritt macht aus der Form eine Energiemenge:
 
-: <big>S(m) = Σ<sub>t ∈ Monat m</sub> x(t)</big>  (4)
-
-: <big>Q<sub>TWW</sub>(t) = x(t) / S(m) · Q<sub>M</sub>(m) · 1 000  fuer t ∈ Monat m</big>  (5)
-
+: <big>S(m) = Σ<sub>t ∈ Monat m</sub> x(t)</big> &nbsp;&nbsp;(4)
+: <big>Q<sub>TWW</sub>(t) = x(t) / S(m) · Q<sub>M</sub>(m) · 1 000  fuer t ∈ Monat m</big> &nbsp;&nbsp;(5)
 Aus (5) folgt zweierlei, und beides ist wichtig zu wissen:
 
 * '''Die Skala des Wochenprofils ist frei.''' Ob die 168 Werte in Prozent, in Litern oder in
@@ -156,8 +155,7 @@ Februar 744…1415 und so fort bis Dezember 8016…8759).
 
 Der fertige Vektor geht in den '''Brauchwasserkanal'''. Ausgewiesen wird die Jahresmenge als
 
-: <big>Q<sub>a</sub> = ( Σ<sub>t=0…8 759</sub> Q<sub>TWW</sub>(t) ) / 1 000</big>  (6)
-
+: <big>Q<sub>a</sub> = ( Σ<sub>t=0…8 759</sub> Q<sub>TWW</sub>(t) ) / 1 000</big> &nbsp;&nbsp;(6)
 und zwar '''vor''' der Verteilung der Netzverluste. Der Stundenvektor bekommt seinen
 anteiligen Netzverlust danach dazu (siehe
 [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und
@@ -182,8 +180,7 @@ Hauses und frei aenderbar.
 Die Monatswerte beziehen sich auf '''60/10 °C''' und eine Bezugseinheit (Person, Bett,
 Zimmer, Nutzer). Der Zusammenhang zum spezifischen Bedarf lautet
 
-: <big>Q<sub>a,spez</sub> = V<sub>Z</sub> · 365 · 50 · 1,163 / 1 000 000</big>  (7)
-
+: <big>Q<sub>a,spez</sub> = V<sub>Z</sub> · 365 · 50 · 1,163 / 1 000 000</big> &nbsp;&nbsp;(7)
 (1,163 Wh/(l·K) ist die spezifische Waermekapazitaet von Wasser, 50 K die Spreizung von 10
 auf 60 °C, der Teiler 1 000 000 rechnet Wh in MWh.) Die Richtwerte V<sub>Z</sub> des
 Katalogs stehen in der Parametertabelle.
@@ -191,8 +188,7 @@ Katalogs stehen in der Parametertabelle.
 Fuer Hotel, Buero, Sportstaette und Schule gibt die VDI '''keinen''' Jahresgang vor. Dort
 bildet der Katalog ihn als
 
-: <big>k(m) = n(m) · κ(m)</big>  (8)
-
+: <big>k(m) = n(m) · κ(m)</big> &nbsp;&nbsp;(8)
 und normiert auf die unveraenderte Jahressumme. Der Kaltwasserfaktor κ(m) kommt aus einer
 gedaempften Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkeit
 0,8 · 10<sup>−6</sup> m²/s, daraus Daempfungstiefe 2,83 m, Daempfung 0,494, Phasenverzug

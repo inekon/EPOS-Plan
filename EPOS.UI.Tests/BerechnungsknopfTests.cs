@@ -58,20 +58,20 @@ public sealed class BerechnungsknopfTests
     /// gesetzt, mit der laufenden Nummer am Zeilenende.
     /// </summary>
     private static readonly Regex Anzeigeformel =
-        new(@"^:\s*<big>.+</big>\s*\(\d+\)\s*$", RegexOptions.Multiline | RegexOptions.Compiled);
+        new(@"^:\s*<big>.+</big>(?:\s|&nbsp;)*\(\d+\)\s*$", RegexOptions.Multiline | RegexOptions.Compiled);
 
     /// <summary>Ein LaTeX-Befehl — <c>\frac</c>, <c>\sum</c>, <c>\cdot</c> …</summary>
     private static readonly Regex LatexBefehl = new(@"\\[A-Za-z]+", RegexOptions.Compiled);
 
     /// <summary>
-    /// Die Seiten, die dieses Paket (Teil A) liefert. Bis Teil B zusammengeführt ist,
-    /// liegen dessen sieben Erzeugerseiten in der Fassung 1 im selben Ordner — die
-    /// Fassung-2-Fälle gelten deshalb ausdrücklich nur für diese sechs.
+    /// Alle dreizehn Seiten der Rubrik — seit der Zusammenführung von Teil A und Teil B
+    /// (06.09.2026) gelten die Fassung-2-Fälle für jede von ihnen.
     /// </summary>
-    private static readonly string[] SeitenTeilA =
+    private static readonly string[] SeitenDerRubrik =
     {
         "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
-        "Strombedarf", "Wärmequelle Erdreich"
+        "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
+        "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
     };
 
     // =====================================================================
@@ -208,8 +208,8 @@ public sealed class BerechnungsknopfTests
     /// Klartext mitten im Satz. Deshalb der Riegel.</para>
     /// </summary>
     [Theory]
-    [MemberData(nameof(SeitenDesTeilsA))]
-    public void Jeder_Knopf_des_Teils_A_fuehrt_auf_eine_Seite_der_Fassung_2(string seitenname)
+    [MemberData(nameof(AlleSeitenDerRubrik))]
+    public void Jeder_Knopf_fuehrt_auf_eine_Seite_der_Fassung_2(string seitenname)
     {
         // Der Knopf führt wirklich dorthin - sonst prüfte der Fall eine Seite, die
         // niemand aufruft.
@@ -269,11 +269,11 @@ public sealed class BerechnungsknopfTests
         Assert.Contains("Formelzeichen und Parameter", markup, StringComparison.Ordinal);
     }
 
-    /// <summary>Die Seiten des Teils A als Theoriedaten.</summary>
-    public static TheoryData<string> SeitenDesTeilsA()
+    /// <summary>Alle dreizehn Seiten der Rubrik als Theoriedaten.</summary>
+    public static TheoryData<string> AlleSeitenDerRubrik()
     {
         var daten = new TheoryData<string>();
-        foreach (string name in SeitenTeilA) daten.Add(name);
+        foreach (string name in SeitenDerRubrik) daten.Add(name);
         return daten;
     }
 

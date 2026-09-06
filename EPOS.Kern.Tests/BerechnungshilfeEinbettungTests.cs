@@ -124,7 +124,7 @@ namespace EPOS.Kern.Tests
         /// <c>&lt;math&gt;</c>-Auszeichnung, kein LaTeX-Befehl.</para>
         /// </summary>
         [Theory]
-        [MemberData(nameof(SeitenTeilB))]
+        [MemberData(nameof(SeitenDerRubrik))]
         public void Die_Formelzeichen_ueberstehen_die_Einbettung(string seite)
         {
             Assembly kern = typeof(WindowsFormsApplication1.SimulationPV).Assembly;
@@ -158,20 +158,20 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die sieben Seiten des Teils B — die, deren Notation dieser Wächter
-        /// hält. Sie stehen AUSDRÜCKLICH da und nicht als Verzeichnisinhalt: Bis
-        /// beide Teile der Rubrik zusammengeführt sind, tragen die Seiten des
-        /// Teils A ihre Fassung 1, und die soll hier nicht rot ausfallen.
+        /// Alle dreizehn Seiten der Rubrik — seit der Zusammenführung von Teil A
+        /// und Teil B (06.09.2026) hält dieser Wächter die Notation jeder Seite. Sie
+        /// stehen AUSDRÜCKLICH da und nicht als Verzeichnisinhalt.
         /// </summary>
-        public static TheoryData<string> SeitenTeilB
+        public static TheoryData<string> SeitenDerRubrik
         {
             get
             {
                 var daten = new TheoryData<string>();
                 foreach (string s in new[]
                          {
-                             "Heizkessel", "BHKW", "Wärmepumpe", "Pufferspeicher",
-                             "Solarthermie", "Photovoltaik", "Stromspeicher"
+                             "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
+                             "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
+                             "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
                          })
                     daten.Add(s);
                 return daten;
@@ -179,10 +179,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die zwei Zeichen, die auf JEDER Seite stehen: Malpunkt (U+00B7) und
-        /// typografisches Minus (U+2212).
+        /// Das Zeichen, das auf JEDER Seite steht: der Malpunkt (U+00B7). Das
+        /// typografische Minus (U+2212) steht nur, wo die Seite subtrahiert —
+        /// Prozesswärme und Strombedarf tun das nicht (Zusammenführung 06.09.2026).
         /// </summary>
-        private static readonly string[] ZEICHEN_DER_NOTATION = { "·", "−" };
+        private static readonly string[] ZEICHEN_DER_NOTATION = { "·" };
 
         /// <summary>
         /// Davon steht mindestens EINES auf jeder Seite — welches, hängt vom Fach ab:

@@ -34,7 +34,9 @@ umgekehrt. Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen.
 
 == Formelzeichen und Parameter ==
 
-'''Parameter''' — was in die Rechnung hereinkommt:
+=== Parameter ===
+
+Was in die Rechnung hereinkommt:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
@@ -56,7 +58,9 @@ umgekehrt. Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen.
 | 1 000 || Umrechnung MWh in kWh || kWh/MWh || Konstante
 |}
 
-'''Variablen''' — was die Rechnung selbst bildet:
+=== Variablen ===
+
+Was die Rechnung selbst bildet:
 
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
@@ -89,10 +93,8 @@ ein Vektor aus Nullen sieht aus wie ein Ergebnis.
 
 === 2. Jahressumme des Projekts einrechnen ===
 
-: <big>Q<sub>a,Kat</sub> = Σ<sub>m=1…12</sub> Q<sub>M,Kat</sub>(m)</big>  (1)
-
-: <big>Q<sub>M</sub>(m) = Q<sub>M,Kat</sub>(m) · Q<sub>a,Proj</sub> / Q<sub>a,Kat</sub>  fuer Q<sub>a,Proj</sub> > 0</big>  (2)
-
+: <big>Q<sub>a,Kat</sub> = Σ<sub>m=1…12</sub> Q<sub>M,Kat</sub>(m)</big> &nbsp;&nbsp;(1)
+: <big>Q<sub>M</sub>(m) = Q<sub>M,Kat</sub>(m) · Q<sub>a,Proj</sub> / Q<sub>a,Kat</sub>  fuer Q<sub>a,Proj</sub> > 0</big> &nbsp;&nbsp;(2)
 Die Verteilung ueber das Jahr bleibt unveraendert; skaliert wird nur die Hoehe. Ohne eigene
 Jahressumme gilt Q<sub>M</sub>(m) = Q<sub>M,Kat</sub>(m). Ist Q<sub>a,Proj</sub> gesetzt und
 Q<sub>a,Kat</sub> null, wird das Profil uebersprungen und gemeldet.
@@ -102,18 +104,15 @@ kWh) und intern in MWh gefuehrt — (2) rechnet also immer mit MWh.
 
 === 3. Wochenprofil auf das Jahr kacheln ===
 
-: <big>x(t) = P<sub>W</sub>( (w · 24 + t) mod 168 )  fuer t = 0 … 8 759</big>  (3)
-
+: <big>x(t) = P<sub>W</sub>( (w · 24 + t) mod 168 )  fuer t = 0 … 8 759</big> &nbsp;&nbsp;(3)
 Stunden 1 bis 24 des Wochenprofils sind der Montag, 145 bis 168 der Sonntag; im Index j von
 (3) sind das j = 0 … 23 bzw. j = 144 … 167. Ein Profil, dessen 168 Werte in der Summe null
 sind, wird uebersprungen und gemeldet.
 
 === 4. Monatsweise auf die Monatswerte normieren ===
 
-: <big>S(m) = Σ<sub>t ∈ Monat m</sub> x(t)</big>  (4)
-
-: <big>Q<sub>Pro</sub>(t) = x(t) / S(m) · Q<sub>M</sub>(m) · 1 000  fuer t ∈ Monat m</big>  (5)
-
+: <big>S(m) = Σ<sub>t ∈ Monat m</sub> x(t)</big> &nbsp;&nbsp;(4)
+: <big>Q<sub>Pro</sub>(t) = x(t) / S(m) · Q<sub>M</sub>(m) · 1 000  fuer t ∈ Monat m</big> &nbsp;&nbsp;(5)
 Die '''Skala des Wochenprofils ist damit frei''' — x(t) steht in (5) im Zaehler und ueber
 S(m) im Nenner, es zaehlt also nur das Verhaeltnis der 168 Werte zueinander. Die
 '''Energiemenge bestimmen allein die Monatswerte'''; der Faktor 1 000 rechnet sie von MWh in
@@ -127,8 +126,7 @@ zur ersten Vorschaurechnung gesperrt — vorher gibt es nichts zu zeigen.
 
 Der Vektor geht in den '''Prozesskanal'''. Ausgewiesen wird
 
-: <big>Q<sub>a</sub> = ( Σ<sub>t=0…8 759</sub> Q<sub>Pro</sub>(t) ) / 1 000</big>  (6)
-
+: <big>Q<sub>a</sub> = ( Σ<sub>t=0…8 759</sub> Q<sub>Pro</sub>(t) ) / 1 000</big> &nbsp;&nbsp;(6)
 und zwar '''vor''' der Verteilung der Netzverluste; der Stundenvektor bekommt seinen Anteil
 daran anschliessend (siehe
 [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und
