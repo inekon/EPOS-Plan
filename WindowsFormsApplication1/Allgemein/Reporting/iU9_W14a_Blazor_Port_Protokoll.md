@@ -1132,10 +1132,11 @@ zwischen zwei Entscheiden:
    Bericht), `CO2` nur „nur Anzeige", `Nutzungsdauer` ebenfalls „nur Anzeige".
 3. Einen anderen Kessel in der Liste wählen: Die Werte wechseln, der Block **bleibt
    offen**. Erneut klicken schließt ihn.
-4. Dasselbe in **BHKW Verwaltung** (27 Zeilen; `CO2` trägt hier „Simulation" — der
-   Unterschied zum Kessel aus § 2), **Administration Solarkollektoren** (16),
-   **Administration Pufferspeicher** (8), **Administration PV-Module** (19),
-   **Administration Stromspeicher** (15).
+4. Dasselbe in den fünf übrigen Verwaltungen — die Menüwege nach der Umordnung
+   **W16c‑E‑6** vom 06.09.2026: *Wärmebedarf & Heizung →* **BHKW** (27 Zeilen; `CO2`
+   trägt hier „Simulation" — der Unterschied zum Kessel aus § 2) und
+   **Solarkollektoren** (16), *Energiesysteme →* **Photovoltaik** (19) und
+   **Pufferspeicher** (8), *Strombedarf & Stromspeicher →* **Stromspeicher** (15).
 5. **Administration → Wärmebedarf und Heizung → Wärmepumpe**: 20 Zeilen; `Laenge`,
    `Breite`, `Hoehe`, `Gewicht` und `Raum` tragen „nicht verwendet" (gestrichelter
    Rahmen), `Modulkosten` trägt „Wirtschaftlichkeit" — der offene Punkt W14a‑O‑1.
