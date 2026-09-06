@@ -15542,4 +15542,10 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="SIMERG_SPALTE_WR_NACHT" xml:space="preserve">
     <value>Nachtverbrauch [kWh/a]</value>
   </data>
+  <data name="KOSTEN_PLANWERT_HERL_WECHSELRICHTER" xml:space="preserve">
+    <value>{0} €/Gerät × {1} Gerät(e)</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_WECHSELRICHTER" xml:space="preserve">
+    <value>Wechselrichter {0}</value>
+  </data>
 </root>
