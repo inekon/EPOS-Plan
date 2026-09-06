@@ -1,21 +1,46 @@
-﻿// ERZEUGT — nicht von Hand bearbeiten.
+﻿// EINMAL ERZEUGT — seit W16c DIE QUELLE.
 //
-// Quelle: WindowsFormsApplication1/MDIMainForm.Designer.cs (45 ToolStripMenuItem,
+// Herkunft: WindowsFormsApplication1/MDIMainForm.Designer.cs (45 ToolStripMenuItem,
 // 6 ToolStripSeparator) und MDIMainForm.cs (die neun Punkte der acht Init*-
-// Methoden), dazu MDIMainForm.resx / .de-DE.resx / .en-US.resx.
-// Erzeuger: das Skript w16c_menue.py der Teilwelle iU9-W16c (Auflage R-W16-8:
-// "Die Menuetabelle wird per Skript erzeugt, nicht abgetippt").
+// Methoden), dazu MDIMainForm.resx / .de-DE.resx / .en-US.resx. Erzeuger war
+// das Skript w16c_menue.py der Teilwelle iU9-W16c (Auflage R-W16-8: "Die
+// Menuetabelle wird per Skript erzeugt, nicht abgetippt").
 //
-// Wer das Menue aendert, aendert die TABELLE - der Designer ist mit W16c.3
-// geloescht.
+// WER DAS MENUE AENDERT, AENDERT DIESE DATEI. Der Designer ist mit W16c.3
+// geloescht, und das Erzeugerskript w16c_menue.py liegt NICHT im Repository:
+// Es gibt keine Vorlage mehr, aus der sich die Tabelle neu ziehen liesse. Wer
+// das Skript dennoch je wiederfaende und laufen liesse, bekaeme den Stand vom
+// 03.09.2026 zurueck und muesste jeden Anwenderentscheid von Hand nachtragen -
+// die folgenden zwei Abschnitte sagen, welche.
 //
-// EINE ZEILE STAMMT NICHT VOM ERZEUGER: der Kopf "Sprache" (MENU_SPRACHE). Er
-// ist der ANWENDERENTSCHEID W16c-E-2 vom 04.09.2026 - die zwei Sprachpunkte
-// standen im Bestand als Koepfe der obersten Ebene und sind seither seine
-// Untereintraege. Ihre Namen, Bilder und Seitenschluessel sind unveraendert;
-// der Kopf hat KEINE Designer-Herkunft und kein Ziel. Das Erzeugerskript
-// w16c_menue.py liegt nicht im Repository - wer es je neu laufen laesst, traegt
-// diesen Kopf von Hand nach.
+// ANWENDERENTSCHEID W16c-E-2 (04.09.2026) - der Kopf "Sprache"
+// (MENU_SPRACHE). Die zwei Sprachpunkte standen im Bestand als Koepfe der
+// obersten Ebene und sind seither seine Untereintraege. Ihre Namen, Bilder und
+// Seitenschluessel sind unveraendert; der Kopf hat KEINE Designer-Herkunft und
+// kein Ziel.
+//
+// ANWENDERENTSCHEID W16c-E-6 (06.09.2026) - der Kopf "Administration" ist
+// umgeordnet ("Verschiebe BHKW von Energiesystem in 'Waermebedarf & Heizung'
+// ..."). Vier Bewegungen und zwei Aufloesungen:
+//   1. BHKW und Solarkollektoren wandern von "Energiesysteme" nach
+//      "Waermebedarf & Heizung" - dorthin, wo der Anwender einen Waermeerzeuger
+//      sucht.
+//   2. Pufferspeicher wandert die Gegenrichtung, von "Waermebedarf & Heizung"
+//      nach "Energiesysteme".
+//   3. Die neue Unterrubrik "Profile & Lastgaenge"
+//      (MenuItem_ProfileLastgaenge, MENU_PROFILE_LASTGAENGE) sammelt in
+//      "Waermebedarf & Heizung", was Zeitreihe und nicht Geraet ist:
+//      Waermebedarf Lastgang, Prozesswaerme und - aus "Energiesysteme" -
+//      Solarthermieganglinie, in dieser Reihenfolge. Sie ist wie der Kopf
+//      "Sprache" ohne Designer-Herkunft und ohne Ziel.
+//   4. Die zwei Untermenues mit EINEM Punkt "Bearbeiten" sind aufgeloest:
+//      MenuItem_PV und MenuItem_Solarkollektoren tragen jetzt selbst das Ziel
+//      ihres frueheren Kindes (PvAdmin bzw. SolarkollektorenAdmin). Die zwei
+//      Kinder MenuItem_PC_Bearbeiten und MenuItem_ST_Bearbeiten fallen damit
+//      weg; ihre Textschluessel MENU_PC_BEARBEITEN und MENU_ST_BEARBEITEN
+//      bleiben im Katalog stehen, werden vom Menue aber nicht mehr gelesen.
+// Namen, Seitenschluessel, Bilder und Kuerzel der verschobenen Punkte sind
+// unveraendert - es wandert die Zuordnung, nicht die Kennung.
 
 using System;
 using System.Collections.Generic;
@@ -26,17 +51,22 @@ namespace EPOS.UI.Bausteine;
 /// <summary>
 /// Das Menue des Hauptfensters als DATEN (iU9-W16c.1).
 ///
-/// <para><b>55 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
+/// <para><b>54 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
 /// 9, die dort programmatisch eingehaengt wurden ("damit Designer und
 /// .resx unberuehrt bleiben", MDIMainForm.cs:57, :95, :132, :174, :311, :414,
 /// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es
-/// gleichrangige Zeilen. Dazu kommt der Kopf "Sprache" aus dem
-/// Anwenderentscheid W16c-E-2 (04.09.2026), unter dem die zwei Sprachpunkte
-/// haengen: zusammen 55 Punkte und 8 Trennstriche.</para>
+/// gleichrangige Zeilen. Dazu kommen die zwei Punkte OHNE Designer-Herkunft:
+/// der Kopf "Sprache" (W16c-E-2) und die Unterrubrik "Profile & Lastgaenge"
+/// (W16c-E-6); dafuer fallen mit W16c-E-6 die zwei Ein-Punkt-Untermenues
+/// MenuItem_PC_Bearbeiten und MenuItem_ST_Bearbeiten weg. Also
+/// 54 Bestandspunkte + 2 - 2 = 54, dazu 8 Trennstriche.</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 55 Punkten handeln 42, 13 klappen auf.</para>
+/// vier klappen nur auf; von den 54 Punkten handeln <b>42</b>, 12 klappen auf.
+/// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6 unveraendert geblieben: Es
+/// ist kein Ziel entfallen und keines hinzugekommen, es steht nur an einer
+/// anderen Stelle des Baumes.</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -78,10 +108,24 @@ public static class Menuetabelle
             {
                 new Menuepunkt("MenuItem_Brauchwasser", "MENU_BRAUCHWASSER", Seitenschluessel.BrauchwasserAdmin),
                 new Menuepunkt("MenuItem_Kessel", "MENU_KESSEL", Seitenschluessel.HeizkesselAdmin),
-                new Menuepunkt("MenuItem_Prozesswaerme", "MENU_PROZESSWAERME", Seitenschluessel.ProzesswaermeAdmin),
-                new Menuepunkt("MenuItem_PufferSp", "MENU_PUFFER_SP", Seitenschluessel.PufferSpAdmin),
-                new Menuepunkt("MenuItem_WaermebedarfExtern", "MENU_WAERMEBEDARF_EXTERN", Seitenschluessel.WaermebedarfExternAdmin),
                 new Menuepunkt("MenuItem_WP", "MENU_WP", Seitenschluessel.WpAdministration),
+                // W16c-E-6: aus "Energiesysteme" hierher.
+                new Menuepunkt("MenuItem_BHKW", "MENU_BHKW", Seitenschluessel.BhkwAdmin),
+                // W16c-E-6: aus "Energiesysteme" hierher - und dabei aus seinem
+                // Untermenue heraus. Es fuehrte nur "Bearbeiten"
+                // (MenuItem_ST_Bearbeiten); das Ziel ist unveraendert
+                // SolarkollektorenAdmin.
+                new Menuepunkt("MenuItem_Solarkollektoren", "MENU_SOLARKOLLEKTOREN", Seitenschluessel.SolarkollektorenAdmin),
+                // W16c-E-6: die neue Unterrubrik. Sie ist die zweite Zeile ohne
+                // Designer-Herkunft (nach dem Kopf "Sprache") und traegt darum
+                // KEIN Bild; ihre drei Punkte kommen unveraendert aus
+                // "Waermebedarf & Heizung" und aus "Energiesysteme".
+                new Menuepunkt("MenuItem_ProfileLastgaenge", "MENU_PROFILE_LASTGAENGE", "")
+                {
+                    new Menuepunkt("MenuItem_WaermebedarfExtern", "MENU_WAERMEBEDARF_EXTERN", Seitenschluessel.WaermebedarfExternAdmin),
+                    new Menuepunkt("MenuItem_Prozesswaerme", "MENU_PROZESSWAERME", Seitenschluessel.ProzesswaermeAdmin),
+                    new Menuepunkt("MenuItem_SolThermGanglinie", "MENU_SOL_THERM_GANGLINIE", Seitenschluessel.SolarganglinieAdmin),
+                },
             },
             new Menuepunkt("MenuItem_StromBedarfundSp", "MENU_STROM_BEDARFUND_SP", "", bild: "Menue2")
             {
@@ -92,16 +136,12 @@ public static class Menuetabelle
             },
             new Menuepunkt("MenuItem_Energiesysteme", "MENU_ENERGIESYSTEME", "", bild: "Menu3")
             {
-                new Menuepunkt("MenuItem_PV", "MENU_PV", "")
-                {
-                    new Menuepunkt("MenuItem_PC_Bearbeiten", "MENU_PC_BEARBEITEN", Seitenschluessel.PvAdmin),
-                },
-                new Menuepunkt("MenuItem_Solarkollektoren", "MENU_SOLARKOLLEKTOREN", "")
-                {
-                    new Menuepunkt("MenuItem_ST_Bearbeiten", "MENU_ST_BEARBEITEN", Seitenschluessel.SolarkollektorenAdmin),
-                },
-                new Menuepunkt("MenuItem_SolThermGanglinie", "MENU_SOL_THERM_GANGLINIE", Seitenschluessel.SolarganglinieAdmin),
-                new Menuepunkt("MenuItem_BHKW", "MENU_BHKW", Seitenschluessel.BhkwAdmin),
+                // W16c-E-6: aus dem Untermenue heraus. Es fuehrte nur
+                // "Bearbeiten" (MenuItem_PC_Bearbeiten); das Ziel ist
+                // unveraendert PvAdmin.
+                new Menuepunkt("MenuItem_PV", "MENU_PV", Seitenschluessel.PvAdmin),
+                // W16c-E-6: aus "Waermebedarf & Heizung" hierher.
+                new Menuepunkt("MenuItem_PufferSp", "MENU_PUFFER_SP", Seitenschluessel.PufferSpAdmin),
             },
             new Menuepunkt("MenuItem_Klima", "MENU_KLIMA", "", bild: "Menu4")
             {

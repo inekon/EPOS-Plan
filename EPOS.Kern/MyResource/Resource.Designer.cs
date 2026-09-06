@@ -62,6 +62,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -22746,6 +22747,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_PC_BEARBEITEN {
             get {
                 return ResourceManager.GetString("MENU_PC_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profile &amp; Lastgänge ähnelt.
+        /// </summary>
+        public static string MENU_PROFILE_LASTGAENGE {
+            get {
+                return ResourceManager.GetString("MENU_PROFILE_LASTGAENGE", resourceCulture);
             }
         }
         

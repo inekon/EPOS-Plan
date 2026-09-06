@@ -14672,6 +14672,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="MENU_PC_BEARBEITEN" xml:space="preserve">
     <value>Bearbeiten</value>
   </data>
+  <data name="MENU_PROFILE_LASTGAENGE" xml:space="preserve">
+    <value>Profile &amp; Lastgänge</value>
+  </data>
   <data name="MENU_PROJEKTE" xml:space="preserve">
     <value>Projekt</value>
   </data>
