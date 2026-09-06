@@ -39,7 +39,7 @@
 @if (Offen)
 {
     <div class="epos-ueberlagerung-hintergrund" @onclick="BeiHintergrund"></div>
-    <div class="epos-ueberlagerung" role="dialog" aria-modal="true" aria-label="@Titel"
+    <div class="epos-ueberlagerung @Zusatzklasse" role="dialog" aria-modal="true" aria-label="@Titel"
          tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste" @onkeydown:stopPropagation="true">
 
         <span class="epos-fokusfalle" tabindex="0" @onfocus="ZurWurzel"></span>
@@ -79,6 +79,16 @@
 
     /// <summary>Ueberschrift des Bereichs; leer = ohne Kopfzeile.</summary>
     [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>
+    /// Zusatzklasse des Bereichs — der benannte Weg zu einem ANDEREN Mass
+    /// (iU9-W7, Befund W7-E-2). Die Regelbreite ist <c>min(92vw, 900px)</c>;
+    /// ein Inhalt, der in DREI Spalten steht, braucht mehr, sonst fallen sie
+    /// untereinander und der Bereich rollt innen.
+    /// <c>epos-ueberlagerung--breit</c> ist die eine Ausprägung, die es dafür
+    /// heute gibt.
+    /// </summary>
+    [Parameter] public string Zusatzklasse { get; set; } = "";
 
     /// <summary>Der Inhalt — ueblich ein vollstaendiger Dialog aus <c>Dialoge/</c>.</summary>
     [Parameter] public RenderFragment? KindInhalt { get; set; }

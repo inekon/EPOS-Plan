@@ -102,10 +102,17 @@ namespace WindowsFormsApplication1
                 ["TitelText"] = Text_("WPA_TITEL", "Detailansicht"),
                 ["LabelWpAuswahl"] = Text_("WPA_LBL_WP", "Wärmepumpen Auswahl:"),
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
-                ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
+
+                // W7-B-1: "Wahl | Hersteller | Typ" - Typ ist die
+                // MODELLBEZEICHNUNG, der Waermepumpentyp bleibt im Kenndatenblock.
+                ["SpalteHersteller"] = Text_("WPV_SP_HERSTELLER", "Hersteller"),
+                ["SpalteTyp"] = Text_("WPV_SP_TYP", "Typ"),
+
                 ["GruppeKenndaten"] = Text_("WPA_GRP_KENNDATEN", "Wärmepumpen Kenndaten"),
                 ["GruppeAuslegung"] = Text_("WPA_GRP_AUSLEGUNG", "Auslegung für Verteilung"),
-                ["GruppeSpitzenlast"] = Text_("WPA_GRP_SPITZENLAST", "Spitzenlast und Betrieb"),
+
+                // W7-E-2: Ueberschrift des linken Blocks - label7 des Vorbilds.
+                ["GruppeSpitzenlast"] = Text_("WPA_LBL_SPITZENLAST", "Wärmeerzeuger Spitzenlast:"),
                 ["LabelBeschreibung"] = Text_("WPA_LBL_BESCHREIBUNG", "Bezeichnung"),
                 ["LabelHersteller"] = Text_("WPS_LBL_HERSTELLER", "Hersteller"),
                 ["LabelTyp"] = Text_("WPS_LBL_TYP", "Wärmepumpentyp"),
@@ -117,9 +124,15 @@ namespace WindowsFormsApplication1
                 ["LabelVorlauf"] = Text_("WPA_LBL_VORLAUF", "Vorlauf"),
                 ["LabelRuecklauf"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
                 ["LabelRuecklaufKurz"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
-                ["LabelHeizstab"] = Text_("WPA_LBL_SPITZENLAST", "Wärmeerzeuger Spitzenlast:"),
+                // W7-E-2: Die Haekchen tragen wieder ihren EIGENEN Text
+                // (checkBox_Heizstab / checkBox_Sperrzeit des Vorbilds); label7 und
+                // label19 sind dort Ueberschriften.
+                ["LabelHeizstab"] = Text_("WPA_CHK_HEIZSTAB",
+                    "Elektrische Nachheizung aktivieren (falls vorhanden)"),
                 ["LabelSperrzeit"] = Text_("WPA_LBL_SPERRZEIT",
                     "Wärmepumpenleistung / maximale Betriebszeit:"),
+                ["LabelSperrzeitSchalter"] = Text_("WPA_CHK_SPERRZEIT",
+                    "Sperrzeit durch Energieversorger"),
                 ["LabelVon"] = Text_("WPA_LBL_VON", "Sperrzeit von"),
                 ["LabelBis"] = Text_("WPA_LBL_BIS", "Sperrzeit bis"),
                 ["LabelNutzungszeit"] = Text_("WPA_LBL_NUTZUNGSZEIT", "Nutzungsdauer"),
@@ -165,7 +178,10 @@ namespace WindowsFormsApplication1
 
             var liste = new List<WaermepumpeStammZeile>();
             foreach (WPModel m in ctrl.items)
-                liste.Add(new WaermepumpeStammZeile(m.ID, m.WPName ?? "", m.m_bReadOnly));
+                // W7-B-1: Der Hersteller gehoert in die Liste, vor die
+                // Modellbezeichnung.
+                liste.Add(new WaermepumpeStammZeile(m.ID, m.WPName ?? "", m.m_bReadOnly,
+                                                    m.Firma ?? ""));
             return liste;
         }
 
@@ -266,7 +282,16 @@ namespace WindowsFormsApplication1
                 SperrzeitBis = m.Sperrzeit_bis,
                 Nutzungszeit = m.Nutzungszeit,
                 BivalenterBetrieb = m.Bivalenter_Betrieb,
-                Betriebsart = m.Betriebsart ?? "",
+
+                // W7-B-2 (Windows-Abnahme 06.09.2026): TOLERANT lesen. Der
+                // Vorlaeufer Wizard_WPItem hatte eine frei beschreibbare ComboBox
+                // und schrieb ihren Text ungeprueft in die Spalte (Befund L0-1);
+                // ein <select> kann einen nicht zeichengleichen Wert gar nicht
+                // zeigen - die Klappliste stand leer und der OK-Knopf meldete
+                // "Bitte Betriebsart auswaehlen!". Geschrieben wird der
+                // berichtigte Wert erst beim OK; die Engine vergleicht
+                // unveraendert zeichengleich, der Referenzlauf bleibt unberuehrt.
+                Betriebsart = DbWerte.BetriebsartOderDefault(m.Betriebsart),
                 Abschaltpunkt = m.Abschaltpunkt,
                 Beschreibung = m.Beschreibung ?? "",
                 Baujahr = m.Baujahr,

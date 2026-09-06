@@ -15574,4 +15574,16 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="OND_MSG_KEIN_GERAET" xml:space="preserve">
     <value>The file contains no PVsyst inverter (pvGInverter).</value>
   </data>
+  <data name="WPV_SP_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="WPV_SP_TYP" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="WPA_CHK_HEIZSTAB" xml:space="preserve">
+    <value>Activate electric afterheating (if available)</value>
+  </data>
+  <data name="WPA_CHK_SPERRZEIT" xml:space="preserve">
+    <value>Blackout period by energy supplier</value>
+  </data>
 </root>

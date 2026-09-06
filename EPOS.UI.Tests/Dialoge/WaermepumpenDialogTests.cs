@@ -27,6 +27,7 @@ public class WaermepumpenDialogTests : BunitContext
     private static WaermepumpeAnlageDaten Zeile(string name, int nennleistung = 12) => new()
     {
         Bezeichner = name,
+        Firma = "Bosch",
         IdWp = 1,
         Vorlauf = 35,
         Ruecklauf = 28,
@@ -77,6 +78,13 @@ public class WaermepumpenDialogTests : BunitContext
     // Feldbestand
     // =================================================================================
 
+    /// <summary>
+    /// <b>W7‑B‑1</b> (Windows-Abnahme 06.09.2026): „Anstelle Name sollte Typ stehen,
+    /// es fehlt der Hersteller (vor Typ)." Aus der einen Spalte „Name" sind damit
+    /// zwei geworden — Hersteller (<c>Firma</c>) und Typ (die Modellbezeichnung
+    /// <c>Bezeichner</c>); der Wärmepumpentyp „Luft-Wasser" bleibt im
+    /// Kenndatenblock der Detailansicht.
+    /// </summary>
     [Fact]
     public void Die_fuenf_Spalten_der_Karte_stehen()
     {
@@ -85,7 +93,7 @@ public class WaermepumpenDialogTests : BunitContext
 
         // Wahl und Aktion sind die beiden Zugaben: die Zeilenmarkierung, die ein
         // Raster nicht kennt, und der Knopf, der den Doppelklick ersetzt.
-        Assert.Equal(new[] { "Wahl", "Name", "Leistung [kW]", "Vorlauf [°C]",
+        Assert.Equal(new[] { "Wahl", "Hersteller", "Typ", "Leistung [kW]", "Vorlauf [°C]",
                              "Rücklauf [°C]", "Betriebsart", "Aktion" }, kopf);
     }
 
@@ -108,7 +116,8 @@ public class WaermepumpenDialogTests : BunitContext
         var cut = Aufbauen();
         var zellen = cut.FindAll(".epos-raster tbody td").Select(e => e.TextContent.Trim()).ToList();
 
-        Assert.Contains("WP Alpha", zellen);
+        Assert.Contains("Bosch", zellen);            // Hersteller (W7-B-1)
+        Assert.Contains("WP Alpha", zellen);         // Typ = Modellbezeichnung
         Assert.Contains("12", zellen);
         Assert.Contains("35", zellen);
         Assert.Contains("28", zellen);
