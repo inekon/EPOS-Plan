@@ -1617,6 +1617,27 @@ namespace WindowsFormsApplication1
                             feldHinweisGezeigt = AnlagenEindeutigkeit.FeldHinweisPruefen(item, geschrieben);
                     }
 
+                    // --- W6-E-4: VOR- UND RUECKLAUF AUS DEM KATALOG -------------------
+                    // Anwenderentscheid vom 06.09.2026: Beim Anlegen einer Komponente
+                    // uebernimmt die Anlagenzeile das Temperaturpaar des Katalogs; danach
+                    // kann der Anwender es fuer das Projekt aendern.
+                    //
+                    // WARUM HIER UND NICHT NUR IN DEN DREI HUELLEN. Dies ist der EINE
+                    // Schreibweg aller Anlagen - dieselbe Begruendung, die eine Zeile
+                    // hoeher fuer die Geraetesperre steht. Die Huellen belegen die
+                    // ANZEIGE vor (AnlagenTemperaturen.AusStammsatz beim Aufnehmen);
+                    // wer ohne Huelle kommt (Assistent, Import, iOS-Oberflaeche),
+                    // bekommt das Paar erst hier - aus der Geraetekopie, die
+                    // CopyFromStamm eben aufgeloest hat.
+                    //
+                    // EIN VORHANDENES VOLLSTAENDIGES PAAR BLEIBT: AusGeraetekopie
+                    // prueft ProjektPuffer.IstTemperaturpaar und ruehrt einen
+                    // gepflegten Feldsatz nicht an. Ergaenzt wird nur, was fehlt.
+                    if (CheckType(item, WizardItemClass.WP_TYP, WizardItemClass.REF_WP_TYP))
+                        AnlagenTemperaturen.VorlaufAusKennlinien(item);
+                    else
+                        AnlagenTemperaturen.AusGeraetekopie(item);
+
                     // --- EINE ZEILE JE PROJEKT UND GERAET -----------------------------
                     // Zeigt bereits eine Zeile dieses Projekts auf dasselbe Geraet, fragt
                     // Aufnehmen nach und legt bei "Ja" eine eigene Geraetekopie an (dabei
