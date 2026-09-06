@@ -1379,6 +1379,51 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Der HERSTELLERDATENPFAD zeigt auf die Auslieferung</b>
+        /// (Anwenderentscheid <b>W6‑O‑9</b> vom 06.09.2026): Solange nichts gespeichert
+        /// ist, macht der Dateiwähler der Importmasken im mitgelieferten Ordner
+        /// <c>VDI-3805-Daten</c> auf — beim Anwender neben dem Programm, im
+        /// Entwicklungsstand in der Repowurzel.
+        ///
+        /// <para><b>Er ist NICHT derselbe wie der VDI-Pfad</b>, und das ist der Kern
+        /// des Falls: Jener wird auch BESCHRIEBEN (die Solarganglinien-Verwaltung legt
+        /// Dateien darunter ab, <c>Speichern</c> erzeugt ihn), dieser liegt in
+        /// „Programme" und ist schreibgeschützt. Fielen beide zusammen, scheiterte das
+        /// erste Ablegen einer Ganglinie beim Anwender.</para>
+        ///
+        /// <para><b>Fehlt der Ordner</b> — ein Stand ohne Auslieferung —, fällt die
+        /// Vorgabe auf <see cref="EinstellungenCtrl.VdiPfadOderVorgabe"/> zurück; der
+        /// Fall prüft deshalb ein ODER, keinen festen Pfad.</para>
+        /// </summary>
+        [Fact]
+        public void DerHerstellerdatenpfadZeigtAufDieAuslieferung()
+        {
+            string ausgeliefert = Dienste.Pfade.Herstellerdaten;
+            string pfad = EinstellungenCtrl.HerstellerdatenpfadOderVorgabe();
+
+            Assert.False(string.IsNullOrWhiteSpace(pfad));
+
+            if (string.IsNullOrWhiteSpace(ausgeliefert))
+            {
+                // Ohne Auslieferung bleibt alles beim Alten.
+                Assert.Equal(EinstellungenCtrl.VdiPfadOderVorgabe(), pfad);
+                return;
+            }
+
+            Assert.True(Directory.Exists(ausgeliefert), ausgeliefert);
+            Assert.EndsWith("VDI-3805-Daten", ausgeliefert);
+
+            // Ist NICHTS gespeichert, liefert VdiPfadOderVorgabe den Vorgabeordner
+            // BenutzerLokal - genau dann muss die Auslieferung gewinnen.
+            string vdiVorgabe = EinstellungenCtrl.VdiPfadOderVorgabe();
+            if (string.Equals(vdiVorgabe, Dienste.Pfade.BenutzerLokal, StringComparison.Ordinal))
+                Assert.Equal(ausgeliefert, pfad);
+
+            // Und er ist ein ANDERER als der schreibende VDI-Pfad.
+            Assert.NotEqual(vdiVorgabe, ausgeliefert);
+        }
+
+        /// <summary>
         /// <c>Lesen</c> fuellt alle neun Werte - kein Feld bleibt <c>null</c>, auch wenn
         /// die Einstellung leer ist.
         /// </summary>
