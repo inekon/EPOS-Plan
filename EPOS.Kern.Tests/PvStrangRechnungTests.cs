@@ -258,6 +258,31 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die Kappung wird nicht zweimal gerechnet</b> (Anhang B des Konzepts):
+        /// Nach dem Clipping liegt KEINE Stunde über der AC-Nennleistung.
+        ///
+        /// <para>Das ist die Bedingung, unter der die Leistungsbegrenzung nach
+        /// § 9 EEG (60 %) und das Clipping des Wechselrichters nacheinander statt
+        /// doppelt greifen: <c>PvErloesRechner</c> rechnet die Kappung auf der
+        /// STUNDENREIHE DER EINSPEISUNG, und die entsteht aus <c>P_AC</c> dieses
+        /// Rechenwegs. Was das Gerät bereits gekappt hat, kann der EEG-Deckel nicht
+        /// noch einmal kappen — er sieht die Mittagsspitze schon abgeschnitten.</para>
+        /// </summary>
+        [Fact]
+        public void Nach_dem_Clipping_sieht_die_EEG_Kappung_nur_noch_P_AC_Nenn()
+        {
+            PvStrangModell.Geraetegruppe g = Gruppe(nennKw: 2.0, eta: 0.97);
+
+            for (int i = 0; i <= 100; i++)
+            {
+                double ac = PvStrangModell.Stunde(g, i * 0.1);
+                Assert.True(ac <= 2.0, "P_AC " + ac.ToString("N6") + " > P_AC_Nenn 2,0 kW");
+            }
+
+            Assert.True(g.ClippingKwh > 0.0, "Ohne Clipping prueft der Fall nichts.");
+        }
+
+        /// <summary>
         /// <b>Die Gruppierung</b> (Konzept 3.4, Q6): Stränge desselben Geräts kommen
         /// zusammen, zwei Gerätenummern sind zwei Geräte, und ein Strang ohne Gerät
         /// fällt heraus und wird GEZÄHLT — damit der Aufrufer ihn melden kann, statt
