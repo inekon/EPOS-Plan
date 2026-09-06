@@ -15347,4 +15347,88 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="MENU_WR_IMPORT_CEC" xml:space="preserve">
     <value>Wechselrichter (CEC)...</value>
   </data>
+  <data name="PVS_TRENNER" xml:space="preserve">
+    <value> · </value>
+  </data>
+  <data name="PVS_SATZ_STRANG" xml:space="preserve">
+    <value>Strang {0}{1}: {2}</value>
+  </data>
+  <data name="PVS_SATZ_GERAET" xml:space="preserve">
+    <value>{0} (Gerät {1}): {2}</value>
+  </data>
+  <data name="PVS_P_MODULE" xml:space="preserve">
+    <value>{0} Module in Reihe, {1} parallel</value>
+  </data>
+  <data name="PVS_P1" xml:space="preserve">
+    <value>U_oc(−10 °C) {0} V ≤ {1} V</value>
+  </data>
+  <data name="PVS_P1_ROT" xml:space="preserve">
+    <value>U_oc(−10 °C) {0} V &gt; {1} V — der Wechselrichter kann bei Frost und Sonne Schaden nehmen</value>
+  </data>
+  <data name="PVS_P23" xml:space="preserve">
+    <value>MPP {0}…{1} V im Fenster {2}…{3} V</value>
+  </data>
+  <data name="PVS_P2_ROT" xml:space="preserve">
+    <value>MPP im Sommer {0} V &lt; {1} V — der Strang regelt ab</value>
+  </data>
+  <data name="PVS_P3_GELB" xml:space="preserve">
+    <value>MPP im Winter {0} V &gt; {1} V — das Gerät regelt an der Grenze</value>
+  </data>
+  <data name="PVS_P4" xml:space="preserve">
+    <value>I {0} A ≤ {1} A</value>
+  </data>
+  <data name="PVS_P4_ROT" xml:space="preserve">
+    <value>I {0} A &gt; {1} A am MPPT {2}</value>
+  </data>
+  <data name="PVS_P5_GELB" xml:space="preserve">
+    <value>{0} Stränge am MPPT {1}, zulässig sind {2}</value>
+  </data>
+  <data name="PVS_P6" xml:space="preserve">
+    <value>DC/AC {0}</value>
+  </data>
+  <data name="PVS_P6_GELB" xml:space="preserve">
+    <value>DC/AC {0} liegt außerhalb {1}…{2}</value>
+  </data>
+  <data name="PVS_P7_GELB" xml:space="preserve">
+    <value>{0} kWp über der DC-Eingangsgrenze {1} kW</value>
+  </data>
+  <data name="PVS_P8_GELB" xml:space="preserve">
+    <value>Modulsumme {0} weicht von „Anzahl Module" {1} ab</value>
+  </data>
+  <data name="PVS_WERTE_FEHLEN" xml:space="preserve">
+    <value>Werte fehlen: {0}</value>
+  </data>
+  <data name="PVS_FEHLT_MODUL" xml:space="preserve">
+    <value>das Modul der Anlage</value>
+  </data>
+  <data name="PVS_FEHLT_REIHE" xml:space="preserve">
+    <value>Module in Reihe</value>
+  </data>
+  <data name="PVS_FEHLT_GERAET" xml:space="preserve">
+    <value>der Wechselrichter</value>
+  </data>
+  <data name="PVS_FEHLT_UOC" xml:space="preserve">
+    <value>Leerlaufspannung oder beta_OC des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_UMPP" xml:space="preserve">
+    <value>MPP-Spannung oder beta_OC des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_ISC" xml:space="preserve">
+    <value>Kurzschlussstrom oder alpha_SC des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_P_AC" xml:space="preserve">
+    <value>AC-Nennleistung des Geräts</value>
+  </data>
+  <data name="PVS_FEHLT_MPPT" xml:space="preserve">
+    <value>Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem</value>
+  </data>
+  <data name="PVS_KEIN_GERAET" xml:space="preserve">
+    <value>Kein Wechselrichter zugeordnet</value>
+  </data>
+  <data name="PVS_OHNE_GRENZE" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="PVS_NAEHERUNG_MPP" xml:space="preserve">
+    <value>Für das MPP-Fenster wird beta_OC eingesetzt; der Katalog führt keinen eigenen Temperaturkoeffizienten der MPP-Spannung. Der Fehler liegt bei wenigen Prozent und auf der sicheren Seite.</value>
+  </data>
 </root>
