@@ -38,7 +38,8 @@
                Zustand="@Zustand"
                Startansicht="@Startansicht"
                StartseiteGaben="@StartseiteGaben"
-               BerichteKostenGaben="@BerichteKostenGaben">
+               BerichteKostenGaben="@BerichteKostenGaben"
+               Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
                        Eintraege="@Eintraege"
@@ -144,6 +145,13 @@
 
     /// <summary>Der Parametersatz von „Berichte &amp; Kosten"; unter Windows leer.</summary>
     [Parameter] public IReadOnlyDictionary<string, object>? BerichteKostenGaben { get; set; }
+
+    /// <summary>
+    /// Das Lagebild der Lizenz für das Banner der Wurzel (Welle iF30). Es kommt
+    /// fertig aus <c>HauptfensterHuelle</c> und wird hier nur durchgereicht —
+    /// das Fenster selbst wertet nichts davon aus.
+    /// </summary>
+    [Parameter] public WindowsFormsApplication1.LizenzLage? Lizenzlage { get; set; }
 
     // =====================================================================
     //  Der EINE Handler
