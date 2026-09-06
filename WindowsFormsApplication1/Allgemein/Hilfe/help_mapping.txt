@@ -517,3 +517,5 @@ UcBericht.lblZiel      = Bericht#zielordner
 # Startbestand help_cache.json Kurztext und Adresse; ein erfolgreicher
 # Onlineabruf loescht sie nicht (WikiHelpCatalog.BerechnungsRueckfallErgaenzen).
 Form_Simulation_Config.Berechnung      = Berechnung/Simulationsablauf
+Form_Gebaeude.Berechnung               = Berechnung/Wärmebedarf
+Form_Waermebedarf.Berechnung           = Berechnung/Wärmebedarf
