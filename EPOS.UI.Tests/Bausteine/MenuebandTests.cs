@@ -20,14 +20,25 @@ namespace EPOS.UI.Tests.Bausteine;
 /// aufgibt: die VOLLZAEHLIGKEIT der Punkte, ihre BESCHRIFTUNG in beiden
 /// Sprachen und die Zusicherung, dass jeder Klick einen
 /// <see cref="Seitenschluessel"/> meldet — und nichts sonst. Fiele einer der
-/// 55 Punkte beim Umzug aus, saehe man es an keiner anderen Stelle mehr; der
+/// 54 Punkte beim Umzug aus, saehe man es an keiner anderen Stelle mehr; der
 /// Designer, der ihn bisher belegte, ist mit W16c.3 geloescht.</para>
 ///
 /// <para>ANWENDERENTSCHEID W16c-E-2 (04.09.2026): Die zwei Sprachpunkte
 /// haengen seither unter dem Kopf „Sprache" statt in der obersten Ebene. Das
-/// aendert drei Zahlen dieses Nachweises — 55 statt 54 Punkte, VIER statt
-/// fuenf Koepfe, 13 statt 12 aufklappende — und den Sprachfall: Der Kopf will
+/// aendert drei Zahlen dieses Nachweises — ein Punkt mehr, VIER statt
+/// fuenf Koepfe, einer mehr, der aufklappt — und den Sprachfall: Der Kopf will
 /// erst geoeffnet werden.</para>
+///
+/// <para>ANWENDERENTSCHEID W16c-E-6 (06.09.2026): Der Kopf „Administration"
+/// ist umgeordnet — BHKW und Solarkollektoren nach „Waermebedarf &amp;
+/// Heizung", Pufferspeicher nach „Energiesysteme", die drei Zeitreihen in die
+/// neue Unterrubrik „Profile &amp; Lastgaenge", und die zwei Untermenues mit
+/// EINEM Punkt „Bearbeiten" aufgeloest. Von den Zahlen bleibt die WICHTIGSTE
+/// stehen: <b>42 handelnde Punkte</b>. Es ist kein Ziel entfallen, es steht
+/// nur woanders. Die zwei anderen wandern — 54 statt 55 Punkte (zwei
+/// aufgeloeste, eine neue Rubrik) und 12 statt 13 aufklappende. Der Nachweis
+/// prueft darum ab W16c-E-6 nicht nur ZAHLEN, sondern die STRUKTUR: den Weg
+/// jedes verschobenen Punktes samt seinem unveraenderten Seitenschluessel.</para>
 ///
 /// <para>Die Sprache wird JE FALL gepinnt (Regel seit iU9-W8): Die
 /// Beschriftungen kommen aus <c>MyResource</c>, und der Windows-Laeufer laeuft
@@ -74,10 +85,15 @@ public class MenuebandTests : BunitContext
         // 45 aus MDIMainForm.Designer.cs (dort als ToolStripMenuItem gezaehlt)
         // und 9 aus den acht Init*-Methoden von MDIMainForm.cs. Die Zahl 45 der
         // Arbeitsanweisung ist die DESIGNER-Zahl; das Menue des laufenden
-        // Programms hatte immer 54 Punkte (Befund W16c-B2). Der 55. ist der
-        // Kopf "Sprache" des Anwenderentscheids W16c-E-2 (04.09.2026) - er
-        // kommt hinzu, es faellt keiner weg.
-        Assert.Equal(55, Punkte.Count);
+        // Programms hatte immer 54 Punkte (Befund W16c-B2).
+        //
+        // Zwei Punkte OHNE Designer-Herkunft kommen hinzu: der Kopf "Sprache"
+        // (W16c-E-2) und die Unterrubrik "Profile & Lastgaenge" (W16c-E-6).
+        // Zwei fallen mit W16c-E-6 weg: MenuItem_PC_Bearbeiten und
+        // MenuItem_ST_Bearbeiten, die einzigen Kinder ihrer Untermenues. Also
+        // wieder 54 - und was zaehlt, ist die Zahl der HANDELNDEN Punkte
+        // weiter unten: Sie ist unveraendert 42 geblieben.
+        Assert.Equal(54, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -129,6 +145,268 @@ public class MenuebandTests : BunitContext
     }
 
     // =====================================================================
+    //  ANWENDERENTSCHEID W16c-E-6 (06.09.2026) — der Kopf "Administration"
+    //  ist umgeordnet
+    // =====================================================================
+
+    /// <summary>Der Kopf "Administration" — der einzige, den W16c-E-6 anfasst.</summary>
+    private static Menuepunkt Administration =>
+        Menuetabelle.Eintraege.Single(p => p.Name == "Administration");
+
+    /// <summary>Eine Rubrik darin, ueber ihren sprachneutralen Namen.</summary>
+    private static Menuepunkt Rubrik(string name) =>
+        Administration.Untereintraege.Single(p => p.Name == name);
+
+    /// <summary>Die Namen der Untereintraege eines Punktes, in ihrer Reihenfolge.</summary>
+    private static string[] Kinder(Menuepunkt p) =>
+        p.Untereintraege.Select(k => k.Name).ToArray();
+
+    [Fact]
+    public void Waermebedarf_und_Heizung_fuehrt_seit_W16c_E_5_sechs_Punkte_in_neuer_Ordnung()
+    {
+        // WORTLAUT des Anwenders: "Verschiebe BHKW von Energiesystem in
+        // 'Waermebedarf & Heizung'. Verschiebe Solarkollektoren von
+        // Energiesystem in 'Waermebedarf & Heizung'. ... Erstelle in
+        // 'Waermebedarf & Heizung' Unterrubrik 'Profile & Lastgaenge'".
+        // Die Rubrik fuehrt danach genau die Waermeerzeuger und ganz unten die
+        // neue Unterrubrik.
+        Menuepunkt wbund = Rubrik("MenuItem_WBundHeizung");
+
+        Assert.Equal(new[]
+        {
+            "MenuItem_Brauchwasser",
+            "MenuItem_Kessel",
+            "MenuItem_WP",
+            "MenuItem_BHKW",
+            "MenuItem_Solarkollektoren",
+            "MenuItem_ProfileLastgaenge",
+        }, Kinder(wbund));
+
+        // Das Bild der Rubrik ist unveraendert - es haengt am Kopf, nicht am
+        // Inhalt.
+        Assert.Equal("Menu1", wbund.Bild);
+        Assert.Equal("MENU_WBUND_HEIZUNG", wbund.TextSchluessel);
+    }
+
+    [Fact]
+    public void Die_Unterrubrik_Profile_und_Lastgaenge_fuehrt_genau_drei_Punkte_in_dieser_Reihenfolge()
+    {
+        // "Erstelle in 'Waermebedarf & Heizung' Unterrubrik 'Profile &
+        // Lastgaenge'; verschiebe in diese Rubrik: 'Waermebedarf Lastgang',
+        // 'Prozesswaerme', 'Solarthermieganglinie' (aus Menue Energiesystem)."
+        Menuepunkt rubrik = Rubrik("MenuItem_WBundHeizung")
+                            .Untereintraege.Single(p => p.Name == "MenuItem_ProfileLastgaenge");
+
+        // Sie klappt nur auf - ein Klick darauf darf nichts oeffnen.
+        Assert.True(rubrik.Klappt);
+        Assert.True(string.IsNullOrEmpty(rubrik.Ziel));
+        Assert.Equal("MENU_PROFILE_LASTGAENGE", rubrik.TextSchluessel);
+
+        // Wie der Kopf "Sprache" hat sie keine Designer-Herkunft und darum
+        // kein Bild - es gibt kein PNG, das "Profile & Lastgaenge" meinte.
+        Assert.Equal("", rubrik.Bild);
+
+        Assert.Equal(new[]
+        {
+            "MenuItem_WaermebedarfExtern",
+            "MenuItem_Prozesswaerme",
+            "MenuItem_SolThermGanglinie",
+        }, Kinder(rubrik));
+    }
+
+    [Fact]
+    public void Energiesysteme_fuehrt_seit_W16c_E_5_Photovoltaik_und_den_Pufferspeicher()
+    {
+        // "Verschiebe Pufferspeicher von 'Waermebedarf & Heizung' in
+        // Energiesystem." Uebrig bleiben zwei Punkte - und beide HANDELN, weil
+        // das Ein-Punkt-Untermenue der Photovoltaik aufgeloest ist.
+        Menuepunkt energie = Rubrik("MenuItem_Energiesysteme");
+
+        Assert.Equal(new[] { "MenuItem_PV", "MenuItem_PufferSp" }, Kinder(energie));
+        Assert.All(energie.Untereintraege, p => Assert.False(p.Klappt));
+
+        Assert.Equal("Menu3", energie.Bild);
+    }
+
+    [Fact]
+    public void Die_zwei_Untermenues_mit_einem_Punkt_Bearbeiten_sind_aufgeloest()
+    {
+        // ENTSCHEIDUNG zu W16c-E-6: Ein Untermenue, das nur "Bearbeiten"
+        // fuehrt, kostet einen Klick und sagt nichts - der Vater traegt jetzt
+        // selbst das Ziel seines frueheren Kindes. Damit steht "Photovoltaik"
+        // neben "Pufferspeicher" und "Solarkollektoren" neben "BHKW", statt
+        // dass zwei von vieren erst noch aufklappen.
+        var namen = new HashSet<string>(Menuetabelle.Alle.Select(p => p.Name), StringComparer.Ordinal);
+
+        Assert.DoesNotContain("MenuItem_PC_Bearbeiten", namen);
+        Assert.DoesNotContain("MenuItem_ST_Bearbeiten", namen);
+
+        Menuepunkt pv = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_PV");
+        Assert.False(pv.Klappt);
+        Assert.Equal(Seitenschluessel.PvAdmin, pv.Ziel);
+        Assert.Equal("MENU_PV", pv.TextSchluessel);
+
+        Menuepunkt st = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_Solarkollektoren");
+        Assert.False(st.Klappt);
+        Assert.Equal(Seitenschluessel.SolarkollektorenAdmin, st.Ziel);
+        Assert.Equal("MENU_SOLARKOLLEKTOREN", st.TextSchluessel);
+    }
+
+    [Fact]
+    public void Kein_verschobener_Punkt_steht_noch_in_seiner_alten_Rubrik()
+    {
+        // Die Gegenprobe zu den drei Faellen oben: Ein Punkt, der in beiden
+        // Rubriken staende, waere zweimal derselbe Weg - und der Nachweis der
+        // Eindeutigkeit der Namen (oben) faenge das nicht, weil er den Baum
+        // flach liest.
+        string[] wbund = Kinder(Rubrik("MenuItem_WBundHeizung"));
+        string[] energie = Kinder(Rubrik("MenuItem_Energiesysteme"));
+
+        // Aus "Waermebedarf & Heizung" fort:
+        Assert.DoesNotContain("MenuItem_PufferSp", wbund);
+        Assert.DoesNotContain("MenuItem_Prozesswaerme", wbund);
+        Assert.DoesNotContain("MenuItem_WaermebedarfExtern", wbund);
+
+        // Aus "Energiesysteme" fort:
+        Assert.DoesNotContain("MenuItem_BHKW", energie);
+        Assert.DoesNotContain("MenuItem_Solarkollektoren", energie);
+        Assert.DoesNotContain("MenuItem_SolThermGanglinie", energie);
+    }
+
+    [Fact]
+    public void Jeder_verschobene_Punkt_behaelt_seinen_Seitenschluessel()
+    {
+        // "Namen, Seitenschluessel, Bilder und Kuerzel der verschobenen Punkte
+        // bleiben; nur die Zuordnung aendert sich." Es wandert der Punkt, nicht
+        // die Kennung - sonst brechen HauptfensterHuelle.Weg und die
+        // Maskenschluessel des Kerns.
+        var erwartet = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["MenuItem_BHKW"] = Seitenschluessel.BhkwAdmin,
+            ["MenuItem_Solarkollektoren"] = Seitenschluessel.SolarkollektorenAdmin,
+            ["MenuItem_PufferSp"] = Seitenschluessel.PufferSpAdmin,
+            ["MenuItem_WaermebedarfExtern"] = Seitenschluessel.WaermebedarfExternAdmin,
+            ["MenuItem_Prozesswaerme"] = Seitenschluessel.ProzesswaermeAdmin,
+            ["MenuItem_SolThermGanglinie"] = Seitenschluessel.SolarganglinieAdmin,
+        };
+
+        foreach (KeyValuePair<string, string> paar in erwartet)
+        {
+            Menuepunkt p = Menuetabelle.Alle.Single(x => x.Name == paar.Key);
+            Assert.Equal(paar.Value, p.Ziel);
+            Assert.Equal("", p.Bild);
+            Assert.Equal("", p.Kuerzel);
+        }
+    }
+
+    [Fact]
+    public void Die_Administration_erreicht_dieselben_Ziele_wie_vor_W16c_E_5()
+    {
+        // DIE EIGENTLICHE ZUSICHERUNG der Umordnung: Es ist kein Weg
+        // verlorengegangen und keiner hinzugekommen. Geprueft wird die MENGE
+        // der Ziele unter "Administration" - der Baum darueber darf sich
+        // umsortieren, die 28 Ziele nicht.
+        var ziele = Flach(Administration.Untereintraege)
+                    .Where(p => !p.Trenner && !p.Klappt)
+                    .Select(p => p.Ziel)
+                    .ToList();
+
+        Assert.Equal(ziele.Count, ziele.Distinct(StringComparer.Ordinal).Count());
+
+        Assert.Equal(new[]
+        {
+            Seitenschluessel.BhkwAdmin,
+            Seitenschluessel.BrauchwasserAdmin,
+            Seitenschluessel.Einstellungen,
+            Seitenschluessel.EnergietraegerVerwaltung,
+            Seitenschluessel.GebaeudeAdmin,
+            Seitenschluessel.GebaeudetypenAdmin,
+            Seitenschluessel.Gesetzeskatalog,
+            Seitenschluessel.HeizkesselAdmin,
+            Seitenschluessel.HeizkesselImport,
+            Seitenschluessel.KatalogDubletten,
+            Seitenschluessel.Klimadaten,
+            Seitenschluessel.Kostenverwaltung,
+            Seitenschluessel.LizenzVerwaltung,
+            Seitenschluessel.PeakShaving,
+            Seitenschluessel.ProzesswaermeAdmin,
+            Seitenschluessel.PufferSpAdmin,
+            Seitenschluessel.PufferSpImport,
+            Seitenschluessel.PvAdmin,
+            Seitenschluessel.PvImport,
+            Seitenschluessel.SolarganglinieAdmin,
+            Seitenschluessel.SolarkollektorenAdmin,
+            Seitenschluessel.SolarkollektorenImport,
+            Seitenschluessel.StromganglinieAdmin,
+            Seitenschluessel.StromspeicherAdmin,
+            Seitenschluessel.StromverbraucherAdmin,
+            Seitenschluessel.WaermebedarfExternAdmin,
+            Seitenschluessel.WpAdministration,
+            Seitenschluessel.WpImport,
+        }.OrderBy(z => z, StringComparer.Ordinal).ToArray(),
+                     ziele.OrderBy(z => z, StringComparer.Ordinal).ToArray());
+    }
+
+    [Fact]
+    public void Die_neue_Unterrubrik_traegt_eine_Beschriftung_in_beiden_Sprachen()
+    {
+        // MENU_PROFILE_LASTGAENGE ist der einzige Schluessel, den W16c-E-6
+        // neu anlegt. Das Kaufmannsund steht EINFACH da - in Razor gibt es die
+        // Verdopplung des MenuStrip nicht (dieselbe Angleichung wie bei
+        // "Daten & Import").
+        Menuepunkt rubrik = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_ProfileLastgaenge");
+
+        Kultur("de-DE");
+        Assert.Equal("Profile & Lastgänge", rubrik.Text);
+
+        Kultur("en-US");
+        Assert.Equal("Profiles & load curves", rubrik.Text);
+
+        Kultur("de-DE");
+    }
+
+    [Fact]
+    public void Das_Band_zeigt_den_neuen_Weg_bis_in_die_dritte_Ebene()
+    {
+        // Derselbe Weg am gezeichneten Band: Administration ▸ Waermebedarf &
+        // Heizung ▸ Profile & Lastgaenge. Erst dort stehen die drei
+        // Zeitreihen im DOM.
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+
+        Assert.Single(cut.FindAll("#menue-MenuItem_BHKW"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_Solarkollektoren"));
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Prozesswaerme"));
+
+        cut.Find("#menue-MenuItem_ProfileLastgaenge").Click();
+
+        Assert.Equal(2, cut.FindAll(".epos-menueband-klappe--tief").Count);
+        foreach (string name in new[]
+                 {
+                     "MenuItem_WaermebedarfExtern", "MenuItem_Prozesswaerme",
+                     "MenuItem_SolThermGanglinie",
+                 })
+            Assert.Single(cut.FindAll("#menue-" + name));
+
+        // Und der Pufferspeicher steht jetzt drueben bei den Energiesystemen.
+        cut.Find("#menue-MenuItem_Energiesysteme").Click();
+        Assert.Single(cut.FindAll("#menue-MenuItem_PufferSp"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_PV"));
+    }
+
+    /// <summary>Der Baum flach, wie <c>Menuetabelle.Alle</c> — nur ab einem Ast.</summary>
+    private static IEnumerable<Menuepunkt> Flach(IEnumerable<Menuepunkt> punkte)
+    {
+        foreach (Menuepunkt p in punkte)
+        {
+            yield return p;
+            foreach (Menuepunkt k in Flach(p.Untereintraege)) yield return k;
+        }
+    }
+
+    // =====================================================================
     //  Jeder Klick ist ein Seitenschluessel
     // =====================================================================
 
@@ -157,14 +435,22 @@ public class MenuebandTests : BunitContext
     [Fact]
     public void Die_Blaetter_des_Baums_sind_die_Handlungen()
     {
-        // 42 der 55 Punkte handeln, 13 klappen nur auf (Projekt,
-        // Administration, die sieben Untermenues der Administration, PV,
-        // Solarkollektoren, Hilfe und - seit W16c-E-2 - Sprache). Der
-        // Vorlaeufer fuehrte dafuer 34 Designer-Handler und neun Lambdas in den
-        // Init*-Methoden - die Differenz von einem ist MenuItem_PV_Import_PAN,
-        // dessen Handler zu KEINEM Steuerelement gehoerte (Befund W16-B24).
-        // Der neue Kopf handelt NICHT: Die Zahl der Handlungen bleibt 42.
-        Assert.Equal(13, Punkte.Count(p => p.Klappt));
+        // 42 der 54 Punkte handeln, 12 klappen nur auf (Projekt,
+        // Administration, die sieben Untermenues der Administration, die
+        // Unterrubrik "Profile & Lastgaenge" aus W16c-E-6, Hilfe und - seit
+        // W16c-E-2 - Sprache). Der Vorlaeufer fuehrte dafuer 34
+        // Designer-Handler und neun Lambdas in den Init*-Methoden - die
+        // Differenz von einem ist MenuItem_PV_Import_PAN, dessen Handler zu
+        // KEINEM Steuerelement gehoerte (Befund W16-B24).
+        //
+        // DIE ZAHL 42 IST DIE UNVERAENDERLICHE. Weder W16c-E-2 noch W16c-E-6
+        // haben ein Ziel hinzugefuegt oder gestrichen: Der neue Kopf und die
+        // neue Unterrubrik handeln nicht, und wo W16c-E-6 zwei Ein-Punkt-
+        // Untermenues aufloest, wird aus dem aufklappenden Vater ein
+        // handelnder Punkt (MenuItem_PV, MenuItem_Solarkollektoren) - zwei
+        // weniger, die klappen, zwei mehr, die handeln, und dazu die eine neue
+        // Rubrik.
+        Assert.Equal(12, Punkte.Count(p => p.Klappt));
         Assert.Equal(42, Punkte.Count(p => !p.Klappt));
     }
 
@@ -543,13 +829,21 @@ public class MenuebandTests : BunitContext
         Assert.Equal("true", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
         Assert.Single(cut.FindAll(".epos-menueband-klappe--tief"));
 
-        // Alle sechs Punkte stehen im DOM - nicht bloss die Klappe.
+        // Alle sechs Punkte stehen im DOM - nicht bloss die Klappe. Es sind
+        // seit W16c-E-6 andere sechs: Prozesswaerme und Waermebedarf Lastgang
+        // sind eine Ebene tiefer gewandert (Profile & Lastgaenge),
+        // Pufferspeicher nach "Energiesysteme"; dafuer stehen BHKW und
+        // Solarkollektoren hier.
         foreach (string name in new[]
                  {
-                     "MenuItem_Brauchwasser", "MenuItem_Kessel", "MenuItem_Prozesswaerme",
-                     "MenuItem_PufferSp", "MenuItem_WaermebedarfExtern", "MenuItem_WP",
+                     "MenuItem_Brauchwasser", "MenuItem_Kessel", "MenuItem_WP",
+                     "MenuItem_BHKW", "MenuItem_Solarkollektoren",
+                     "MenuItem_ProfileLastgaenge",
                  })
             Assert.Single(cut.FindAll("#menue-" + name));
+
+        // Die Unterrubrik steht zu - ihre drei Punkte sind noch nicht im DOM.
+        Assert.Empty(cut.FindAll("#menue-MenuItem_WaermebedarfExtern"));
 
         // Der Kopf bleibt offen - das Untermenue haengt IN ihm.
         Assert.Equal("true", cut.Find("#menue-Administration").GetAttribute("aria-expanded"));
@@ -608,22 +902,26 @@ public class MenuebandTests : BunitContext
     [Fact]
     public void Ein_Punkt_der_dritten_Ebene_meldet_und_schliesst_das_ganze_Band()
     {
-        // Der EINZIGE Weg des Bestands ueber drei Ebenen: Administration ▸
-        // Energiesysteme ▸ Photovoltaik ▸ "Bearbeiten...".
+        // Der Weg ueber drei Ebenen. Bis W16c-E-6 war es der EINZIGE des
+        // Bestands - Administration ▸ Energiesysteme ▸ Photovoltaik ▸
+        // "Bearbeiten..."; seither ist genau dieser aufgeloest (ein Untermenue
+        // mit einem Punkt), und die dritte Ebene fuehrt jetzt Administration ▸
+        // Waermebedarf & Heizung ▸ Profile & Lastgaenge ▸ Waermebedarf
+        // Lastgang. Die Tiefe des Baums ist dieselbe geblieben.
         Menuepunkt? gemeldet = null;
         var cut = AusHuelle(m => gemeldet = m);
 
         cut.Find("#menue-Administration").Click();
-        cut.Find("#menue-MenuItem_Energiesysteme").Click();
-        cut.Find("#menue-MenuItem_PV").Click();
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+        cut.Find("#menue-MenuItem_ProfileLastgaenge").Click();
 
-        Assert.Equal("true", cut.Find("#menue-MenuItem_PV").GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.Find("#menue-MenuItem_ProfileLastgaenge").GetAttribute("aria-expanded"));
         Assert.Equal(2, cut.FindAll(".epos-menueband-klappe--tief").Count);
 
-        cut.Find("#menue-MenuItem_PC_Bearbeiten").Click();
+        cut.Find("#menue-MenuItem_WaermebedarfExtern").Click();
 
         Assert.NotNull(gemeldet);
-        Assert.Equal(Seitenschluessel.PvAdmin, gemeldet!.Ziel);
+        Assert.Equal(Seitenschluessel.WaermebedarfExternAdmin, gemeldet!.Ziel);
         Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
         Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
     }
@@ -711,24 +1009,27 @@ public class MenuebandTests : BunitContext
         var cut = AusHuelle();
         var band = cut.Find(".epos-menueband");
 
+        // Seit W16c-E-6 fuehrt der dreistufige Weg ueber die Unterrubrik
+        // "Profile & Lastgaenge" - sie ist der sechste und letzte Punkt von
+        // "Waermebedarf & Heizung".
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Administration
-        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // hinein
-        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Strombedarf
-        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Energiesysteme
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // hinein: Waermebedarf & Heizung
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // auf
-        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Photovoltaik auf
+        for (int i = 0; i < 5; i++)
+            band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });  // bis Profile & Lastgaenge
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Profile & Lastgaenge auf
 
-        Assert.Equal("true", cut.Find("#menue-MenuItem_Energiesysteme").GetAttribute("aria-expanded"));
-        Assert.Equal("true", cut.Find("#menue-MenuItem_PV").GetAttribute("aria-expanded"));
-        Assert.Equal("0", cut.Find("#menue-MenuItem_PC_Bearbeiten").GetAttribute("tabindex"));
+        Assert.Equal("true", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.Find("#menue-MenuItem_ProfileLastgaenge").GetAttribute("aria-expanded"));
+        Assert.Equal("0", cut.Find("#menue-MenuItem_WaermebedarfExtern").GetAttribute("tabindex"));
 
         // Zweimal ← fuehrt Ebene um Ebene zurueck, nicht auf einen Schlag hinaus.
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
-        Assert.Equal("false", cut.Find("#menue-MenuItem_PV").GetAttribute("aria-expanded"));
-        Assert.Equal("true", cut.Find("#menue-MenuItem_Energiesysteme").GetAttribute("aria-expanded"));
+        Assert.Equal("false", cut.Find("#menue-MenuItem_ProfileLastgaenge").GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
 
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
-        Assert.Equal("false", cut.Find("#menue-MenuItem_Energiesysteme").GetAttribute("aria-expanded"));
+        Assert.Equal("false", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
         Assert.Equal("true", cut.Find("#menue-Administration").GetAttribute("aria-expanded"));
     }
 
