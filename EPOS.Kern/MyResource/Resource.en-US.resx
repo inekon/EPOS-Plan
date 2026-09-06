@@ -15088,4 +15088,10 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="PARV_LBL_GEWICHT" xml:space="preserve">
     <value>Weight:</value>
   </data>
+  <data name="WPS_HERL_MODULKOSTEN" xml:space="preserve">
+    <value>from the manufacturer import; equipment costs are maintained in cost management</value>
+  </data>
+  <data name="WPS_HINWEIS_MODULKOSTEN_LEER" xml:space="preserve">
+    <value>no planned value from the manufacturer import</value>
+  </data>
 </root>
