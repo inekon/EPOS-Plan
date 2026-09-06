@@ -164,12 +164,17 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
+            // Der Katalog der Testdatenbank ist seit W6-O-7 nicht mehr leer (das
+            // "Muster 2500TL" des Pruefprojekts 1045). Gezaehlt wird deshalb der
+            // ZUWACHS, nicht der Bestand - die Aussage des Falls ist die Einengung.
+            var ctrl = new WechselrichterStammCtrl();
+            int vorher = ctrl.Filtern("Alle").Count;
+
             Anlegen("Filter A1", "Alpha AG");
             Anlegen("Filter A2", "Alpha AG");
             Anlegen("Filter B1", "Beta GmbH");
 
-            var ctrl = new WechselrichterStammCtrl();
-            Assert.Equal(3, ctrl.Filtern("Alle").Count);
+            Assert.Equal(vorher + 3, ctrl.Filtern("Alle").Count);
             Assert.Equal(2, ctrl.Filtern("Alpha AG").Count);
             Assert.Equal(1, ctrl.Filtern("Beta GmbH").Count);
             Assert.Empty(ctrl.Filtern("Gibt es nicht"));

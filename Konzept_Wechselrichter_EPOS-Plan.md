@@ -698,7 +698,7 @@ ohne Zuordnung läuft der Code von heute unverändert — dieselbe Schleife, die
 dieselbe Reihenfolge der Gleitkommaoperationen.
 
 **Das ist das zentrale Abnahmekriterium:** Der Referenzlauf gegen
-`Referenzlaeufe/2026-09-05_R2_Zeitbasis` (elf Projekte, 282 CSV) muss **byte-gleich** bleiben.
+`Referenzlaeufe/2026-09-06_R3_Straenge` (zwölf Projekte, 312 CSV; bis W6‑O‑7 `2026-09-05_R2_Zeitbasis` mit elf Projekten) muss **byte-gleich** bleiben.
 Kein Referenzprojekt hat eine Strangzeile; wäre auch nur ein CSV verschieden, wäre die
 Vorrangregel verletzt. Dieselbe Zusage hat Paket B eingelöst (355/355 byte-gleich, N4.1) — der
 Nachweis ist eingeübt.
@@ -1366,7 +1366,7 @@ prüfbar.
 | S3.4 | **Kosten (Q8):** `Kosten` je Gerät × Gerätezahl als eigener Posten der PV-Investition | **umgesetzt** (`4da44f9`); `TechnikPlanwertCtrl.Wechselrichteranlagen`, gezählt wird `COUNT(DISTINCT Gerätenummer)` JE ANLAGE und nur für Anlagen auf dem Weg `KATALOG` |
 | S3.5 | **Aufräumen aus S2:** `PVS_HINWEIS_S3` entfernen, `ParameterVerwendung` nachziehen, den Merkposten zum Zeugen machen | **umgesetzt** (`2cc33d0`); zehn Spalten auf `Simulation`, `Kosten` auf `Wirtschaftlichkeit`, `Der_Wechselrichter_rechnet_ab_S3` |
 | S3.6 | Prüfstand: Kennlinie, Clipping, Bitgleichheit ohne Zuordnung, Ein-Strang-Fall, Ost/West, Nachtverbrauch | **umgesetzt** (`c04a8cf`, `f3915c2`): **15 Fälle** in `EPOS.Kern.Tests/PvStrangRechnungTests` |
-| S3.7 | Referenzbasis | **unverändert** — `2026-09-05_R2_Zeitbasis` bleibt; kein Referenzprojekt führt Stränge, und ein neues Prüfprojekt wäre ein eigener Anwenderentscheid (Kapitel 12, **W6‑O‑7**) |
+| S3.7 | Referenzbasis | **neu eingefroren in `5fa9960`** (Anwenderentscheid **W6‑O‑7** vom 06.09.2026): `2026-09-06_R3_Straenge`, **zwölf Projekte, 312 CSV**. Das zwölfte, **1045 „Prüfprojekt Ost/West Stränge"**, ist das einzige mit Zeilen in `Z_AnlageStrang` — es rechnet den Strangweg in jedem Push mit. Die elf Bestandsprojekte sind **byte-gleich** zu `2026-09-05_R2_Zeitbasis` (282 Dateien ohne einen Unterschied, Toleranzvergleich 11/11 PASS, 3 006 238 Werte); die Vorgängerbasis bleibt zur Geschichte liegen |
 | S3.8 | Hilfeseite `Berechnung/Photovoltaik.wiki` | **umgesetzt** (`1bc2e3b`); Option 2 vom Ausblick auf „umgesetzt", neuer Unterabschnitt „Der Stundenweg" mit den Schritten A bis D, dazu Kennzahlen und Kosten |
 | S3.9 | Fortschreibung dieses Papiers | **dieses Dokument (Rev. 4)** |
 
@@ -1541,6 +1541,8 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
    nachweislich verdorben (Paket-A-Befund A1; Reparaturskript unter `sql/pv_katalog/`). **Ohne
    Katalogpflege leuchtet die Ampel grau, nicht grün** — das ist einzuplanen, sonst wirkt S2 wie
    eine Funktion, die nicht funktioniert.
+   **Nachtrag 06.09.2026:** W6‑O‑7 ist umgesetzt — Projekt 1045 mit Ost/West-Strängen hängt den Strangweg ins Netz,
+   die Basis heißt seither `2026-09-06_R3_Straenge` (Kapitel 8 S3.7 und Kapitel 12).
 
 ---
 
@@ -1568,11 +1570,10 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 
 ## 12. Offene Punkte
 
-**Stand 06.09.2026:** Von den sieben Punkten sind vier geschlossen — **W6‑O‑2** durch
+**Stand 06.09.2026:** Von den sieben Punkten sind fünf geschlossen — **W6‑O‑2** durch
 Anwenderentscheid („Empfehlung": nur die eingesetzten Geräte von Hand nachpflegen, keine
-Programmarbeit), **W6‑O‑4**, **W6‑O‑5** und **W6‑O‑6** durch Umsetzung. Offen bleiben der
-Importwirt (W6‑O‑1), der leere Auslieferungskatalog (W6‑O‑3) und die Frage nach einem
-Referenzprojekt mit Strängen (W6‑O‑7).
+Programmarbeit), **W6‑O‑4**, **W6‑O‑5**, **W6‑O‑6** und **W6‑O‑7** durch Umsetzung. Offen
+bleiben der Importwirt (W6‑O‑1) und der leere Auslieferungskatalog (W6‑O‑3).
 
 | Nr. | Punkt | Stand |
 |---|---|---|
@@ -1582,7 +1583,7 @@ Referenzprojekt mit Strängen (W6‑O‑7).
 | **W6‑O‑4** | **Der Herstellerfilter über der Wechselrichter-Klappliste der Strangtabelle fehlte.** Kapitel 7 sieht ihn vor („mit demselben Herstellerfilter wie die Modulliste"); S2 hat ihn nicht gebaut. | **umgesetzt in `35a48eb`** — Anwenderentscheid vom 06.09.2026, wörtlich: „Hersteller kann vom Modul verschieden sein. Herstellerfilter etc. wie in Modulliste einfügen." Gebaut als eigene Zeile **ÜBER** der Tabelle (`PvStraengeFelder.Hersteller`/`GeraeteFiltern` → `WechselrichterStammCtrl.Hersteller`/`Filtern`), unabhängig vom Modulfilter; ein bereits gewähltes Gerät bleibt trotz Filter in seiner Zeile sichtbar. Vier bunit-Fälle |
 | **W6‑O‑6** | **Der abweichende Modultyp je Strang rechnete noch nicht.** `Z_AnlageStrang.ID_PV` steht seit S2 in der Tabelle und reist im Controller hin und zurück; der Rechenweg der Stufe S3 rechnete jeden Strang jedoch mit dem Modul der ANLAGE. | **umgesetzt in `35a48eb`** — Anwenderentscheid vom 06.09.2026, wörtlich: „jeder Strang mit nur einem Modultyp, unterschiedliche Stränge können jeweils einen anderen Modultyp haben." `SimulationPV` rechnet jeden Strang mit seinem Modulsatz (Nennleistung, Fläche, Wirkungsgrad, γ_PMP, NOCT, Huld-Satz); gelesen wird je Modultyp EINMAL vor der Stundenschleife, und ohne `ID_PV` ändert sich nichts. Die Strangtabelle führt dafür eine Spalte „Modul". Nachweise: `Ein_Strang_ohne_ID_PV_rechnet_mit_dem_Anlagenmodul` (bitgleich) und `Zwei_Module_an_einem_Geraet_kosten_das_gemeinsame_Clipping` (Zerlegung wie S3 (3)), Referenzlauf 1030/1007/1017 byte-gleich |
 | **W6‑O‑8** | **303 von 2 343 CEC-Geräten sind GELB — und alle aus demselben Grund.** Die Prüfung `WechselrichterPlausibilitaet` meldet „Die Kennlinie fällt im Teillastast" (η30 > η50) für 13 % des Auslieferungsbestands. Gemessen am 06.09.2026 über die volle Liste: Es ist kein Datenfehler, sondern die Modellparabel aus 3.3.3 — bei Geräten mit hohem Wirkungsgrad liegt ihr Scheitel zwischen 30 und 50 %, und genau das ist bei einem guten Stringwechselrichter auch physikalisch richtig. Die Warnung fragt jedes dieser Geräte beim Übernehmen zurück; das ist lästig und sagt nichts. **Empfehlung: Die Regel auf einen Schwellwert heben** (etwa: melden erst, wenn η30 − η50 > 0,01) oder sie auf handgepflegte Sätze beschränken. | **offen** — neu mit W6‑O‑3, Anwenderfrage. Bis dahin: gelb heißt hier „nachsehen", nicht „falsch" |
-| **W6‑O‑7** | **Referenzbasis mit Strängen?** Die Basis `2026-09-05_R2_Zeitbasis` bleibt gültig und byte-gleich: Kein Referenzprojekt führt eine Strangzeile, und genau das ist der Nachweis der Vorrangregel. Ein PRÜFPROJEKT mit Strängen in `Kenndaten_Test.sqlite` würde den Strangweg dagegen in jedem Referenzlauf mitrechnen — und wäre damit die Wache gegen eine spätere stille Änderung am Strangweg, wie sie die elf Projekte heute für den Anlagenweg sind. Kosten: eine neu einzufrierende Basis. **Empfehlung: ja, aber als eigener Schritt** — ein zwölftes Projekt mit einer Ost/West-Anlage an einem knapp ausgelegten Gerät (DC/AC ≈ 1,3), damit Clipping, Kennlinie und Nachtverbrauch alle drei wirken. Solange er aussteht, hält der Prüfstand `PvStrangRechnungTests` den Strangweg. | **offen** — Anwenderentscheid |
+| **W6‑O‑7** | **Referenzbasis mit Strängen?** Die Basis `2026-09-05_R2_Zeitbasis` blieb gültig und byte-gleich: Kein Referenzprojekt führte eine Strangzeile, und genau das war der Nachweis der Vorrangregel. Ein PRÜFPROJEKT mit Strängen in `Kenndaten_Test.sqlite` rechnet den Strangweg dagegen in jedem Referenzlauf mit — und ist damit die Wache gegen eine spätere stille Änderung am Strangweg, wie sie die elf Projekte für den Anlagenweg sind. Kosten: eine neu einzufrierende Basis. | **umgesetzt in `5fa9960`** — Anwenderentscheid vom 06.09.2026, wörtlich: „Empfehlung". Neue Basis `2026-09-06_R3_Straenge` (zwölf Projekte, 312 CSV); die elf alten **byte-gleich** zu R2. Das zwölfte, **1045 „Prüfprojekt Ost/West Stränge"**, hängt an einem „Muster 2500TL" (Anhang A) zwei Stränge zu 6 Modulen — Ost (Azimut −90) und West (+90) —, der Weststrang mit SEINEM eigenen Modul (W6‑O‑6). **Kennzahlen im Simulationsprotokoll:** DC/AC 1,36 (3,39 kWp gegen 2,50 kW), Jahresertrag 3 545,5 kWh (1 418 Volllaststunden AC), Clipping-Verlust 2,0 kWh (0,06 %), Jahresnutzungsgrad 0,9629, Nachtverbrauch 9,3 kWh in 4 669 Stunden; Ampel P1–P8 **grün**. **Zwei begründete Abweichungen von Anhang A:** zwei MPP-Tracker statt einem (zwei Stränge an EINEM Tracker sind dort die Gegenprobe zu P4 — 19,1 A > 12,0 A; die Clipping-Grenze bleibt eine, Q7) und Neigung 10° statt 30° (bei 30° überlappen die zwei Tagesgänge so wenig, dass das Gerät in keiner Stunde klippt). **Und ein Befund dazu:** Solange die Ampel grün bleiben soll, deckelt P6 das Verhältnis bei DC/AC 1,5 — mit der Ost/West-Spitze von nur 0,69 kW je kWp bleibt für die Kappung wenig Raum. Das ist die Aussage des Falls: Ein Ost/West-Feld an einem knapp ausgelegten Gerät verliert fast nichts. Sichtbar würde es erst bei 7 + 7 Modulen (60,4 kWh, 1,46 %) — dann meldet P6 Gelb. Wiederholbar über `Referenzlaeufe/Skripte/pruefprojekt_1045_ost_west.py` |
 | **W6‑O‑5** | **Das Modul der Ampel war das der ERSTEN Projektzeile.** `StrangPlausibilitaet` prüfte gegen EIN Modul; die Hülle nahm dafür das erste, das der Katalog kennt. Führt ein Projekt mehrere PV-Zeilen mit VERSCHIEDENEN Modulen, prüfte die Ampel gegen das falsche. | **umgesetzt in `35a48eb`** — Anwenderentscheid vom 06.09.2026, wörtlich: „Modul der gewählten Zeile." Der Delegat `Pruefen` bekommt die gewählte Projektzeile mit, `PhotovoltaikHuelle.ModulDer(zeile)` liest deren Modul, und `StrangPlausibilitaet.Gaben` trägt zusätzlich die Strangmodule je `Tab_PV.ID` (W6‑O‑6): Jeder Strang prüft gegen SEIN Modul — Spannung, Strom und Nennleistung —, P8 bleibt eine Anlagenprüfung. Drei Kernfälle, ein bunit-Fall |
 
 ---

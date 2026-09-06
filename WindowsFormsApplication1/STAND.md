@@ -72,8 +72,10 @@ das Datum. Die Regeln stehen in [`CLAUDE.md`](CLAUDE.md); diese Datei wird nur b
   Kessel-Temperaturbezug `Tab_Energieanlagen.WQ_TemperaturModus` („Berechnet" = Senkenspeicher →
   Katalog → 70/50, Default; „Fest" = Vorgabe), Quellprofile. Protokolle `V0_…` bis
   `L_Aufraeumen_Protokoll.md` + Nachträge `E2_…`, `DCheck_…`.
-- Referenzläufe: aktuelle CI-Basis `../Referenzlaeufe/2026-09-05_R2_Zeitbasis/` — elf Projekte, 282 CSV
-  (seit 05.09.2026, Anwenderentscheid nach Paket A der Rechner-2-Linie; `2026-08-30_B3-Kaskade/` bleibt zur Geschichte liegen).
+- Referenzläufe: aktuelle CI-Basis `../Referenzlaeufe/2026-09-06_R3_Straenge/` — zwölf Projekte, 312 CSV
+  (seit 06.09.2026, Anwenderentscheid W6‑O‑7: das Prüfprojekt 1045 „Ost/West Stränge" hängt den
+  Strangweg der Stufe S3 ins Netz; die elf alten Projekte sind byte-gleich. `2026-09-05_R2_Zeitbasis/`
+  und `2026-08-30_B3-Kaskade/` bleiben zur Geschichte liegen).
 - Die auskommentierten `CSExeCOMServer.SimpleObject`-Zeilen in den Simulationsklassen sind Altbestand
   und können weg.
 

@@ -49,14 +49,87 @@ heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Wa
 > & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 
-### CI-Basis auf Linux: `2026-09-05_R2_Zeitbasis` (löst `2026-08-30_B3-Kaskade` ab)
+### CI-Basis auf Linux: `2026-09-06_R3_Straenge` (löst `2026-09-05_R2_Zeitbasis` ab)
+
+**`2026-09-06_R3_Straenge/`** — **zwölf Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030,
+1039, 1040, 1041, 1042 und **neu 1045**), **312 CSV** (282 + 30), gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (Schemastand 64).
+Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, **1045**) jeden Push;
+das Gate der Orchestrierung zieht getrennt nach.
+
+> **Anlass (Anwenderentscheid W6‑O‑7 vom 06.09.2026: „Empfehlung"):** Die elf Bestandsprojekte
+> führen **keine** Strangzeile — und genau das ist ihr Nachweis der Vorrangregel des
+> Wechselrichterkonzepts (Kapitel 3.5). Damit rechnete bis hierher **kein** Referenzlauf den
+> Strangweg der Stufe S3 mit; ihn hielt allein der Prüfstand
+> `EPOS.Kern.Tests/PvStrangRechnungTests`. Das zwölfte Projekt **1045 „Prüfprojekt Ost/West
+> Stränge"** hängt ihn ins Netz: Clipping, Wirkungsgradkennlinie, Nachtverbrauch und das Modul
+> je Strang (W6‑O‑6) laufen in jedem Push mit.
+>
+> **Die elf alten Projekte sind byte-gleich zur Vorgängerbasis** — und das ist der Beleg, dass
+> nur das zwölfte neu ist: `diff -rq` gegen `2026-09-05_R2_Zeitbasis` ohne einen einzigen
+> Unterschied in 282 Dateien, dazu der Toleranzvergleich **11/11 PASS (3 006 238 Werte)**.
+> Zweiter Lauf byte-gleich (Determinismus geprüft), `pruefen` **plausibel** mit denselben
+> Bestandshinweisen (drei Gewerke ohne Modul in 1007, 1041, 1042).
+>
+> **Das Prüfprojekt 1045** (Vorlage: Projekt **1040** „zwei Puffer je Kanal", deshalb dieselbe
+> Klimaregion Stuttgart, dasselbe Gebäude, dasselbe Standardlastprofil EFH\_3\_Pers und dieselbe
+> Wärmepumpe — Eigenverbrauch und Netzbezug haben etwas zu rechnen):
+>
+> | Stück | Wert |
+> |---|---|
+> | Anlagenzeile `Tab_Energieanlagen` 14926 | „PV Ost/West an einem Wechselrichter", `PV_Wechselrichterweg = KATALOG`, `PV_Modell = PV_MODELL_ERWEITERT`, `PV_Systemverluste = 3 %`, `PV_Leistung = 12` (Modulzahl, Bezugsgröße von P8), Neigung 10°, Azimut 0 |
+> | Gerät `Tab_Wechselrichter` 1 (Katalogsatz `Tab_Wechselrichter_STAMM` 1, `ReadOnly = 1`) | „Muster 2500TL" aus Anhang A des Konzepts: 2,50 kW AC, U\_Mpp 80…500 V, U\_Dc\_Max 600 V, I\_Dc\_Max 12,0 A, η 0,900/0,940/0,962/0,970/0,975/0,970, η\_euro 0,968, P\_Standby 10 W, **P\_Nacht 2 W**, Herkunft `HAND`, Kosten 1 200 € |
+> | Strang 1 `Z_AnlageStrang` 1 | „Dach Ost", Gerät 1, MPPT 1, 6 Module in Reihe × 1 parallel, Neigung 10°, **Azimut −90**, Modul `Tab_PV` 1015248 |
+> | Strang 2 `Z_AnlageStrang` 2 | „Dach West", Gerät 1, MPPT 2, 6 Module in Reihe × 1 parallel, Neigung 10°, **Azimut +90**, Modul `Tab_PV` **1015249 — sein eigenes** (W6‑O‑6) |
+> | Module `Tab_PV` 1015248 / 1015249 | Ablytek 6MN6A275 (275,1912 W) und 6MN6A290 (290,016 W); `alpha_SC`, `beta_OC` und `T_NOCT` sind **gepflegt** (im Katalog steht dort der Kurzschlussstrom, Paket-A-Befund A1), Technologie `C_SI` |
+>
+> **Zwei begründete Abweichungen von Anhang A**, beide im Kopf des Skripts nachgeschrieben:
+> **(1) zwei MPP-Tracker statt einem** — zwei Stränge an EINEM Tracker sind in Anhang A
+> ausdrücklich die Gegenprobe (`2 × 9,55 A = 19,1 A > 12,0 A`, P4 rot); die Clipping-Grenze
+> bleibt trotzdem eine, weil nach GERÄT gruppiert wird (Q7). **(2) Neigung 10° statt 30°** —
+> bei 30° überlappen die zwei Tagesgänge so wenig, dass die Anlagenspitze bei 2,33 kW bleibt
+> und das Gerät in **keiner** Stunde klippt. Zehn Grad ist die übliche
+> Ost/West-Flachdachaufständerung und der Grund, warum so ein Feld überhaupt an einem knapp
+> ausgelegten Gerät hängt.
+>
+> **Kennzahlen des Laufs** (aus dem Simulationsprotokoll, es steht auch auf der Konsole):
+> DC/AC **1,36** (3,39 kWp gegen 2,50 kW), Jahresertrag **3 545,5 kWh** (**1 418**
+> Volllaststunden AC), **Clipping-Verlust 2,0 kWh (0,06 %)**, Wechselrichter-Jahresnutzungsgrad
+> **0,9629**, **Nachtverbrauch 9,3 kWh in 4 669 Stunden**. In `pv_produktion.csv` stehen die
+> Kennzahlen als Struktur: **5 Stunden exakt auf 2,500000 kW** (das Clipping) und **4 669
+> negative Stunden zu −0,002 kW** (der Nachtverbrauch). Die Ampel des Projekts ist **grün**
+> (P1 bis P8; U\_oc(−10 °C) 258,6 / 266,8 V ≤ 600 V, MPP 154…211 bzw. 156…218 V im Fenster
+> 80…500 V, Strom je Tracker 9,63 / 9,89 A ≤ 12,0 A, DC/AC 1,3565 im Band 1,0…1,5, Modulsumme
+> 12 = Anlagenwert).
+>
+> **Warum das Clipping so klein ist** — und warum das kein Fehler ist: Solange die Ampel grün
+> bleiben soll, deckelt P6 das Verhältnis DC/AC bei 1,5; ein Ost/West-Feld erreicht in seiner
+> besten Stunde aber nur rund 0,69 kW je kWp (ein Südfeld gut 0,85). Beides zusammen lässt für
+> die Kappung wenig Raum. Das ist die Aussage des Falls, keine Schwäche des Prüfprojekts: Wer
+> ein Ost/West-Feld an ein knapp ausgelegtes Gerät hängt, verliert **fast nichts** — sichtbar
+> würde es erst bei DC/AC über 1,5 (7 + 7 Module ergäben 60,4 kWh und 1,46 %, dann meldet P6
+> aber Gelb).
+>
+> **Wiederholen** lässt sich das Projekt mit
+> `python3 Referenzlaeufe/Skripte/pruefprojekt_1045_ost_west.py Referenzlaeufe/Kenndaten_Test.sqlite`
+> (siehe unten, „Das Prüfprojekt 1045 neu anlegen"), der Lauf mit
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045 \
+>   --ziel Referenzlaeufe/2026-09-06_R3_Straenge
+> ```
+
+### Vorgängerbasis: `2026-09-05_R2_Zeitbasis` (löste `2026-08-30_B3-Kaskade` ab)
 
 **`2026-09-05_R2_Zeitbasis/`** — **elf Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042), **282 CSV**, gerechnet mit dem plattformfreien `EPOS.Referenzlauf` auf Linux
 gegen `Kenndaten_Test.sqlite` (Schemastand 64) auf dem zusammengeführten Stand nach der
 Rechner-2-Linie (`12aa3a5` ff.). Die Projekte 1011 und 1021 der B3-Basis stehen nicht in der
-reduzierten Testdatenbank und fallen deshalb weg (Warnung im `protokoll.txt`). Gegen diese Basis
-halten `.github/workflows/kern.yml` (1030, 1007, 1017) und das Gate der Orchestrierung jeden Push.
+reduzierten Testdatenbank und fallen deshalb weg (Warnung im `protokoll.txt`). Sie war bis zum
+06.09.2026 die CI-Basis und bleibt zur Geschichte liegen — ihre elf Projekte sind in
+`2026-09-06_R3_Straenge` byte-gleich enthalten.
 
 > **Anlass (Anwenderentscheid 05.09.2026: ja):** Die Zusammenführung der Rechner-2-Linie bringt
 > Paket A mit — die Solar-Zeitbasis der `Tab_Solar`-Leser wechselt von UTC auf Ortszeit. Damit
@@ -1089,8 +1162,30 @@ des Repos** im Modus `projekt` (siehe `2026-08-14_Paket7/lauf_protokoll.md`).
 | `<...>/Projekt_<ID>/aggregate.csv` | Alle Skalare des Laufs: `Tab_Ergebnis*`-Zeilen, Restgrößen aus `SimulationControl`, Jahressumme jedes Vektors |
 | `<...>/Projekt_<ID>/*.csv` | Die Ganglinien: 8760 Stundenwerte bzw. 35040 Viertelstundenwerte, `Index;Wert` |
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
+| `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung. Heute: `pruefprojekt_1045_ost_west.py` (W6‑O‑7) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
+
+### Das Prüfprojekt 1045 neu anlegen
+
+`Skripte/pruefprojekt_1045_ost_west.py` legt das zwölfte Projekt der Basis an: Tiefkopie von
+Projekt 1040, zwei gepflegte Modulkopien, der Wechselrichter „Muster 2500TL" in Katalog und
+Projektkopie, zwei Strangzeilen und die PV-Anlagenzeile auf dem Katalogweg. Der Kopfkommentar
+des Skripts nennt jede Zahl und jede Abweichung von Anhang A des Wechselrichterkonzepts.
+
+```bash
+cp Referenzlaeufe/Kenndaten_Test.sqlite /tmp/Kenndaten_Test.sicherung     # erst sichern
+python3 Referenzlaeufe/Skripte/pruefprojekt_1045_ost_west.py Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Das Skript **bricht ab**, wenn Projekt 1045 schon steht; für einen zweiten Lauf die Sicherung
+zurücklegen — dann vergibt er dieselben Ids. Zum Schluss vergleicht er die Zeilenzahlen je
+Tabelle zwischen Vorlage und Kopie; fehlt etwas, fällt es dort auf und nicht erst im
+Rechenergebnis. Danach gehören dazu: `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db
+Referenzlaeufe/Kenndaten_Test.sqlite` (0 Fundstellen) und
+`dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite
+--trocken` (0 Spalten, 0 Tabellen anzulegen).
 
 ## Die wichtigste Regel
 

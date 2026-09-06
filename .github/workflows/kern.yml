@@ -123,28 +123,35 @@ jobs:
       # (SimulationControl.Stromspeicher.cs samt ModuleInitializer), der mit iU4
       # in den Kern gezogen ist. Ohne sie wuerde ein stillgelegter Haken hier
       # nicht auffallen.
-      - name: Kern-Referenzlauf 1030, 1007, 1017
+      # W6-O-7 (06.09.2026): 1045 kommt als VIERTES dazu - das Pruefprojekt
+      # "Ost/West Straenge". Es ist das einzige Projekt der Basis mit Zeilen in
+      # Z_AnlageStrang und deshalb der einzige Lauf, der den Strangweg der Stufe S3
+      # (Clipping, Wirkungsgradkennlinie, Nachtverbrauch, Modul je Strang)
+      # ueberhaupt betritt. Ohne es haette die CI fuer diesen Rechenweg nichts in
+      # der Hand als den Pruefstand.
+      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
           dotnet run --project EPOS.Referenzlauf -c Release --no-build --
           lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
-          --projekte 1030,1007,1017 --ziel artifacts/reflauf/${{ matrix.os }}_kern
+          --projekte 1030,1007,1017,1045 --ziel artifacts/reflauf/${{ matrix.os }}_kern
 
       # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
       # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-09-05_R2_Zeitbasis
+      - name: Vergleich mit Referenzbasis 2026-09-06_R3_Straenge
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-09-05_R2_Zeitbasis/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-05_R2_Zeitbasis/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-09-05_R2_Zeitbasis/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-06_R3_Straenge/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-06_R3_Straenge/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-06_R3_Straenge/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-06_R3_Straenge/Projekt_1045 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
-          for p in 1030 1007 1017; do
+          for p in 1030 1007 1017 1045; do
             if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
           done
 
