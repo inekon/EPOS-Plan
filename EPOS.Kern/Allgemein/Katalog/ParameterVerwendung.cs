@@ -387,9 +387,13 @@ namespace WindowsFormsApplication1
         /// aller sieben Kataloge, den seine Verwaltung nicht zur PFLEGE fuehrt.
         /// <b>Seit dem Anwenderentscheid W14a-O-1 vom 06.09.2026 zeigt sie ihn
         /// wenigstens</b>: als Lesewert mit Herleitungszeile im Stammdialog. Ä19
-        /// bleibt damit gewahrt — hier tippt niemand Kosten ein, gefuellt wird die
-        /// Spalte allein vom VDI-3805-Import, gepflegt werden Geraetekosten in der
-        /// Kostenverwaltung. Fuenf weitere Spalten (<c>Laenge</c> … <c>Raum</c>) hat
+        /// bleibt damit gewahrt — hier tippt niemand Kosten ein, gepflegt werden
+        /// Geraetekosten in der Kostenverwaltung. <b>Befund W14a-O-2 (06.09.2026):</b>
+        /// Der VDI-3805-Import fuellt die Spalte NICHT — <c>KatalogImportSatz.NachStamm</c>
+        /// setzt sie nie, und <c>WPStammCtrl.UpdateImport</c> laesst sie beim
+        /// Ueberschreiben ausdruecklich stehen („vom Anwender gepflegte Felder").
+        /// Ein neu importiertes Geraet steht damit dauerhaft auf 0. Fuenf weitere
+        /// Spalten (<c>Laenge</c> … <c>Raum</c>) hat
         /// ueberhaupt kein Leser: sie kommen aus dem VDI-3805-Import und bleiben
         /// liegen.</para>
         /// </remarks>
@@ -421,7 +425,8 @@ namespace WindowsFormsApplication1
                   "AbweichungsErmittler.cs:82; WaermepumpenKatalogFilter.cs:96"),
                 E("Modulkosten", t("MODK_LBL_MODULKOSTEN"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:345 (BasenFuellen, ERZEUGER_WAERMEPUMPE) — " +
-                  "im Stammdialog nur lesend (W14a-O-1), gefuellt vom VDI-3805-Import"),
+                  "im Stammdialog nur lesend (W14a-O-1); geschrieben wird die Spalte " +
+                  "heute von KEINEM Importweg (Befund W14a-O-2)"),
                 E("Laenge", t("MODK_LBL_LAENGE"), "mm", NIX),
                 E("Breite", t("MODK_LBL_BREITE"), "mm", NIX),
                 E("Hoehe", t("PARV_LBL_HOEHE"), "mm", NIX),
