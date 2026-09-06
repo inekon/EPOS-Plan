@@ -51,7 +51,7 @@
 ; ABWAEHLBARE Komponente — siehe [Components].
 #define HerstellerdatenDir  RepoDir + "VDI-3805-Daten"
 #if !DirExists(HerstellerdatenDir)
-  #error Der Ordner VDI-3805-Daten fehlt neben dem Setup-Ordner. Ohne ihn laesst sich die Komponente "Herstellerdaten" nicht packen (Konzept 6.3).
+  #error Der Ordner VDI-3805-Daten fehlt in der Repowurzel. Ohne ihn laesst sich die Komponente Herstellerdaten nicht packen; siehe Konzept, Entscheidung E10.
 #endif
 
 ; Microsoft Access Database Engine 2016 Redistributable, 64 Bit
