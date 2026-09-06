@@ -920,3 +920,228 @@ vier Zeilen um. Sie kommt nicht aus `Zweispaltenauswahl` und aus keinem Listenpr
 sondern wird in `Views/BHKW/BhkwHuelle.KatalogZeilen` aus `\n`-getrennten Stücken gebaut —
 ein eigener Umbau in der Windows-Hülle, von `EPOS.UI.Tests` aus nicht prüfbar. Begründung
 im Protokoll W6.
+
+---
+
+## Anwenderwunsch W14a‑E‑8 (06.09.2026) — Parameterübersicht mit Verwendungskennzeichnung
+
+> „Für alle Menüs mit Anlagendaten: Erstelle einen Bearbeiten-Dialog zusätzlich im
+> Bearbeiten-Menü (optionale Anzeige), in dem 1. alle verfügbaren Parameter und
+> Eigenschaften angezeigt werden und 2. alle verwendeten Parameter gekennzeichnet sind.
+> Alle verwendeten Parameter und Eigenschaften sollen direkt unter Bearbeiten angezeigt
+> werden → prüfe."
+
+Gemeint sind die sieben Katalogverwaltungen unter **Administration**: Heizkessel, BHKW,
+Wärmepumpe, Solarkollektoren, PV-Module, Stromspeicher und Pufferspeicher. Vorbild für
+die optionale Anzeige ist der Aufklapper „Alle Modulparameter anzeigen" aus **W6‑E‑1**
+im PV-Projektdialog.
+
+### 1 Eine Wahrheit im Kern: `ParameterVerwendung`
+
+`EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs` nennt für **jede** Spalte der sieben
+Stammtabellen ihre Verwendung und **belegt jede Einstufung mit Datei und Zeile**. Die
+Beschriftungen holt der Katalog über denselben Übersetzer und dieselben
+Ressourcenschlüssel wie `KatalogBrowserProfil` und `ModulKatalogProfil` — ein zweiter
+Text liefe beim ersten Fachwechsel auseinander.
+
+Die fünf Stufen sind trennscharf definiert:
+
+| Stufe | Wer liest den Wert |
+|---|---|
+| `Simulation` | `EPOS.Kern/Allgemein/Simulation/**`, `SpeicherEngine`, `Controller/StromspeicherSimCtrl` |
+| `Wirtschaftlichkeit` | `Allgemein/Wirtschaftlichkeit/**`, `Bericht/KostenEmissionRechner`, `Controller/TechnikPlanwertCtrl` |
+| `Bericht` | `Allgemein/Bericht/AbweichungsErmittler.Felder` — der einzige Ort, der Gerätespalten namentlich in den Bericht trägt |
+| `Dialog` | nur Anzeige oder Pflege in einer Maske |
+| `Keine` | kein Leser: weder Rechenweg, noch Bericht, noch Maske |
+
+**Die Zählung je Anlagenart** (128 Spalten; eine Spalte kann mehrere Stufen tragen,
+`Keine` steht allein):
+
+| Anlagenart | Stammtabelle | Spalten | Simulation | Wirtschaftl. | Bericht | Dialog | Keine |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Heizkessel | `Tab_Heizkessel_STAMM` | 23 | 9 | 7 | 6 | 9 | 0 |
+| BHKW | `Tab_BHKW_STAMM` | 27 | 12 | 11 | 8 | 5 | 0 |
+| Wärmepumpe | `Tab_WP_STAMM` | 20 | 5 | 1 | 8 | 4 | **5** |
+| Solarkollektoren | `Tab_Solarkollektoren_STAMM` | 16 | 7 | 2 | 3 | 7 | 0 |
+| Photovoltaik | `Tab_PV_STAMM` | 19 | 9 | 2 | 5 | 8 | 0 |
+| Stromspeicher | `Tab_Stromspeicher_STAMM` | 15 | 9 | 8 | 4 | 1 | 0 |
+| Pufferspeicher | `Tab_Pufferspeicher_STAMM` | 8 | 5 | 2 | 3 | 2 | 0 |
+| **Summe** | | **128** | **56** | **33** | **37** | **36** | **5** |
+
+**Die gerechneten Spalten im Wortlaut** (Simulation oder Wirtschaftlichkeit; `ID` ist der
+Fremdschlüssel aus `Tab_Energieanlagen`, über den der Rechenweg das Gerät findet):
+
+| Anlagenart | gerechnet | Spalten |
+|---|---:|---|
+| Heizkessel | 12 | `ID`, `Bezeichner`, `Ptherm`, `Brennstoff`, `Wirkungsgrad_Gas`, `Wirkungsgrad_Öl`, `Investitionskosten`, `Wartungskosten`, `Wartungskosten_Einheit`, `Betriebsbereitschaftverlust`, `Vorlauf`, `Ruecklauf` |
+| BHKW | 18 | `ID`, `Bezeichner`, `Ptherm`, `Pel`, `Brennstoff`, `Wirkungsgrad`, `Grenzleistung`, `Wartungskosten_kwhel`, `Kosten_Modul`, `Kosten_Montage`, `Kosten_Lieferung`, `Kosten_Schallschutzhaube`, `Kosten_Abgasreinigung`, `CO2`, `SO2`, `NOX`, `CO`, `Staub` |
+| Wärmepumpe | 6 | `ID`, `Bezeichner`, `Typ`, `Nennleistung`, `Heizung`, `Modulkosten` |
+| Solarkollektoren | 8 | `ID`, `Bezeichner`, `Aperturflaeche`, `h0`, `k1`, `k2`, `Kdir`, `Investitionskosten` |
+| Photovoltaik | 10 | `ID`, `Bezeichner`, `Leistung`, `Wirkungsgrad`, `gamma_PMP`, `T_NOCT`, `Laenge`, `Breite`, `Modulkosten`, `Technologie` |
+| Stromspeicher | 13 | `ID`, `Bezeichner`, `Leistung`, `Energie`, `Ladezustand`, `Degradation`, `Modulkosten`, `Wirkungsgrad_RT`, `Zyklen_Zugesichert`, `Verschleisskosten`, `Leistungskosten`, `Investition_Fix`, `Standby_Verbrauch` |
+| Pufferspeicher | 6 | `ID`, `Bezeichner`, `Speichertyp`, `Bereitschaftsverluste`, `Gesamtvolumen`, `Investitionskosten` |
+
+### 2 Drei Befunde, die beim Vermessen herausfielen
+
+**W14a‑E‑8‑B1 — Die Emissionsspalten des Heizkessels rechnen nicht mit.** Der
+Katalogeditor pflegt `CO2`, `SO2`, `NOx`, `CO` und `Staub` in g/MWh; der Rechenweg liest
+sie **nie**. `SimulationSPK.Kesseldaten_Einlesen` (:151‑158) holt die Emissionsfaktoren
+zum Brennstoff aus `Tab_Brennstoff_Stamm` — fünf gepflegte Zahlen ohne Wirkung. Beim
+BHKW ist es umgekehrt: Dort liest `SimulationBHKW.Moduldaten_Einlesen` (:315‑319) genau
+diese fünf Spalten des Geräts. Zwei Masken, die gleich aussehen, und ein Unterschied,
+den bis hierher nichts anzeigte. Die Übersicht zeigt ihn jetzt: „nur Anzeige" beim
+Kessel, „Simulation" beim BHKW.
+
+**W14a‑E‑8‑B2 — Fünf Spalten der Wärmepumpe hat kein Leser.** `Laenge`, `Breite`, `Hoehe`,
+`Gewicht` und `Raum` stehen in `Tab_WP_STAMM`, werden vom VDI‑3805‑Import gefüllt, von
+`WPCtrl` ins Projekt kopiert — und im ganzen Bestand nirgends gelesen. Sie sind die
+einzigen fünf Spalten aller sieben Kataloge mit der Stufe `Keine`.
+
+**W14a‑E‑8‑B3 — `Investition_kwel` des BHKW ist eine Dublette ohne Leser.** Seit dem
+Nutzerentscheid vom 22.08.2026 wird der Wert aus den fünf Kostenposten ABGELEITET
+(`BHKWKosten.JeKWel`) und schreibgeschützt angezeigt; die Kostenplanung rechnet mit
+`Kosten_Modul` und den vier Nebenposten (`TechnikPlanwertCtrl.cs:317‑325`). Er bleibt —
+als Anzeigewert ist er richtig —, trägt aber die Stufe „nur Anzeige".
+
+### 3 Die optionale Anzeige: `Parameteruebersicht`
+
+`EPOS.UI/Bausteine/Parameteruebersicht.razor` — **ein** Baustein für alle sieben
+Ausprägungen in **drei** Wirten:
+
+| Wirt | Ausprägungen |
+|---|---|
+| `Dialoge/Erzeuger/KatalogBrowserDialog` | Heizkessel, BHKW, Solarkollektoren, Pufferspeicher |
+| `Dialoge/Erzeuger/ModulKatalogDialog` | Photovoltaik, Stromspeicher |
+| `Dialoge/Waermepumpe/WaermepumpeStammDialog` | Wärmepumpe |
+
+Der Block steht **unter dem Bearbeiten-Formular**, im Eingabeteil des `Katalograhmen`,
+und ist **zugeklappt** — der Dialog sieht aus wie vorher, bis der Anwender ihn öffnet;
+der Zustand hält die Dialogsitzung durch, auch über einen Satzwechsel hinweg (Regel aus
+W6‑E‑1). Aufgeklappt steht je Katalogeintrag eine Zeile: **Anzeigetext**, **Wert mit
+Einheit** (Halbgeviertstrich „–" bei NULL) und die **Kennzeichnung der Verwendung**.
+
+**Vier Entscheidungen dahinter:**
+
+* **Der Knopf ist der aus W6‑E‑1** (`.epos-modulparameter-knopf`, `aria-expanded`,
+  Pfeil voran) — eine Form für denselben Zweck, keine zweite Stilregel.
+* **Eine Tabelle statt eines Formularrasters.** W6‑E‑1 zeigt zwei Angaben je Zeile und
+  kommt mit lesenden Standardfeldern aus. Hier sind es drei, und die Kennzeichnung muss
+  sich über alle Zeilen hinweg vergleichen lassen („welche Werte rechnen eigentlich
+  mit?"). Die Tabelle steht in `.epos-raster-huelle` und erbt damit die Höchsthöhe aus
+  **W9‑B‑2** samt stehendem Spaltenkopf — 27 Zeilen (BHKW) dürfen den Eingabeblock nicht
+  ins Endlose schieben.
+* **Die Kennzeichnung trägt Text**, nicht nur Farbe: Jedes Chip nennt seine Stufe im
+  Klartext, das Sinnbild davor ist `aria-hidden`, „nicht verwendet" ist gestrichelt und
+  nicht rot (es ist kein Fehler, sondern eine Auskunft), und `forced-colors` ist
+  abgesichert.
+* **Die neun Texte füllt der Baustein selbst** aus `MyResource` (Bauart `LizenzTexte`,
+  W15c‑O‑2). Drei Wirte mit je neun Parametern wären siebenundzwanzig Stellen, an denen
+  ein Schlüssel fehlen kann.
+
+**Die Datenseite** ist `EPOS.Kern/Controller/ParameterUebersichtCtrl` — EIN Lesevorgang je
+Satz (`SELECT * FROM [<Stammtabelle>] WHERE Bezeichner = ? ORDER BY ID`), gepaart mit dem
+Verwendungskatalog. `SELECT *` mit Bedacht: Der Spaltensatz wächst mit den
+Migrationsschritten (die Testdatenbank steht auf 61, das Programm auf 64), eine
+namentliche Liste ließe die Übersicht auf einer älteren Datenbank mit „no such column"
+scheitern — dieselbe Überlegung wie in `StromspeicherSimCtrl` (:1046) und
+`ProjektDetails` (:118). Sieben Detail-Lader um je zehn Spalten zu erweitern hätte
+dieselbe Erweiterung siebenmal zu pflegen bedeutet. **SQL-Prüfer: 1213 Texte, 0
+Fundstellen.**
+
+**Nicht gemacht:** `PufferSpKatalogDialog` bekommt keine zweite Übersicht. Er ist der
+Editor, den der Pufferspeicher-Browser als Überlagerung öffnet — und der Browser trägt
+den Aufklapper bereits. Zwei Kopien derselben Auskunft im selben Fenster wären keine
+zweite Auskunft.
+
+### 4 Teil 3 der Prüfung: „steht jeder verwendete Parameter im Bearbeiten-Formular?"
+
+Verglichen wird je Anlagenart die Menge der **gerechneten** Spalten (Simulation oder
+Wirtschaftlichkeit) gegen die Menge der Spalten, die der Speicherweg der Verwaltung
+zurückschreibt. `ID` und `ReadOnly` bleiben außen vor: Eine Eingabemöglichkeit wäre dort
+ein Fehler, kein Fortschritt.
+
+| Anlagenart | gerechnet (ohne `ID`) | im Formular | Lücke |
+|---|---:|---:|---|
+| Heizkessel | 11 | 21 | — |
+| BHKW | 17 | 24 | — |
+| Wärmepumpe | 5 | 10 | **`Modulkosten`** |
+| Solarkollektoren | 7 | 14 | — |
+| Photovoltaik | 9 | 15 | — |
+| Stromspeicher | 12 | 13 | — |
+| Pufferspeicher | 5 | 6 | — |
+
+**Eine einzige Lücke** — und sie ist keine Nachlässigkeit, sondern ein Widerspruch
+zwischen zwei Entscheiden:
+
+> **W14a‑O‑1 (offen)** — `Tab_WP_STAMM.Modulkosten` geht in die Kostenplanung
+> (`TechnikPlanwertCtrl.BasenFuellen`, Fall `ERZEUGER_WAERMEPUMPE`, :345: Basis
+> „Modulpreis"), ist in der Wärmepumpenverwaltung aber **nicht zu pflegen**: Entscheid
+> **Ä19** der Welle 7 nahm das Feld aus der Maske („Gerätekosten laufen über die
+> Kostenverwaltung"), der Wert läuft seither nur verborgen im Datensatz mit und wird
+> allein vom VDI‑3805‑Import gefüllt. Bei einer Neuanlage steht er auf 0, und die
+> Kostenübernahme schlägt dann **keinen** Planwert vor.
+> **Vorschlag:** Das Feld im Stammdialog wieder zeigen — als **nur lesenden** Wert mit
+> einer Herleitungszeile „aus dem Herstellerimport; Gerätekosten werden in der
+> Kostenverwaltung gepflegt". Damit bleibt Ä19 gewahrt (niemand tippt hier Kosten ein),
+> und der Anwender sieht, woher der Planwert kommt bzw. warum keiner kommt. Die
+> Alternative — das Feld editierbar machen — kehrt Ä19 um und gehört deshalb dem
+> Anwender, nicht dem Umbau.
+> *Nicht eigenmächtig gebaut* (Regel: unklare Semantik → offener Punkt mit Vorschlag).
+
+**Zwei Beobachtungen ohne Lücke, aber mit Aussage:**
+
+* `Tab_WP_STAMM.maxPtherm` und `Kuehlleistung` stehen im **Bericht**
+  (`AbweichungsErmittler.cs:80/81`), sind in der Verwaltung aber nicht editierbar
+  (`maxPtherm` läuft verborgen mit, `Kuehlleistung` steht `Aktiv="false"` da). Keine
+  Rechenlücke — die Übersicht sagt es jetzt aber.
+* `Tab_PV_STAMM.alpha_SC` und `beta_OC` sind die einzigen zwei Spalten, die ein
+  Katalogeditor nicht pflegen kann; sie kommen ausschließlich aus dem CEC-/PAN-Import.
+  Da sie **nur Anzeige** sind (das erweiterte PV-Modell rechnet mit `Leistung`,
+  `gamma_PMP`, `T_NOCT` und `Technologie`), ist das keine Lücke im Sinne von Teil 3.
+
+### 5 Nachweise
+
+* **Kern** — `EPOS.Kern.Tests/ParameterVerwendungTests`, **42 Fälle**. Geprüft wird nicht
+  gegen eine zweite Liste im Testcode, sondern gegen die **Datenbank**:
+  `DataRepository.SpaltenVonTabelle` gegen den Katalog, je Anlagenart *keine vergessene
+  und keine erfundene Spalte* und dieselbe Reihenfolge; dazu die **Belegpflicht** (jede
+  gerechnete Spalte nennt eine Fundstelle), die Stichproben aus Rechenweg und
+  Kostenseite, die drei Befunde aus § 2 und der **Teil‑3‑Vergleich**
+  (`Genau_eine_gerechnete_Spalte_fehlt_im_Bearbeiten_Formular`) samt Gegenprobe, dass
+  keine Formularliste eine Spalte nennt, die es nicht gibt.
+* **Oberfläche** — `EPOS.UI.Tests/Bausteine/ParameteruebersichtTests`, **17 Fälle**:
+  Aufklapper zu/auf/zu, Zeilenzahl = Katalogeinträge je Ausprägung (4 + 2 + 1),
+  Kennzeichnung als Text mit `aria-hidden`-Zeichen, „nicht verwendet" fünfmal bei der
+  Wärmepumpe, „–" bei NULL, Einheit hinter dem Wert, englische Kultur, leere Liste, und
+  **ohne Delegat kein Aufklapper**.
+* **Testzahlen** — `EPOS.Kern.Tests` 1 230 → **1 272**, `EPOS.UI.Tests` 2 683 → **2 700**,
+  `KiKern.Tests` 469, `SpeicherEngine.Tests` 337, `Werkzeuge/Formularkarte` 122; grün
+  unter `de_DE.UTF-8` **und** `en_US.UTF-8`. Beide Kern-Wächter leer, Windows-Bau
+  (`-p:Platform=x64`) 0 Fehler, SQL-Prüfer 0 Fundstellen, Stilblatt-Wache grün
+  (Klammerbilanz, kein Nesting).
+* **Rechenweg unberührt** — es ist keine Zeile in `Allgemein/Simulation/**` oder
+  `Allgemein/Wirtschaftlichkeit/**` angefasst; der Verwendungskatalog LIEST diese
+  Dateien nur als Fundstellenangabe.
+
+### Abnahmepunkte A‑W14a‑E‑8 (100 / 125 / 150 %)
+
+1. **Administration → Wärmebedarf und Heizung → Kessel**: Unter dem Eingabeblock steht
+   die Zeile „▸ Alle Parameter und ihre Verwendung anzeigen". Draufklicken: 23 Zeilen,
+   Kopf „Parameter | Wert | Verwendung".
+2. In derselben Tabelle: `Ptherm` trägt drei Kennzeichen (Simulation, Wirtschaftlichkeit,
+   Bericht), `CO2` nur „nur Anzeige", `Nutzungsdauer` ebenfalls „nur Anzeige".
+3. Einen anderen Kessel in der Liste wählen: Die Werte wechseln, der Block **bleibt
+   offen**. Erneut klicken schließt ihn.
+4. Dasselbe in **BHKW Verwaltung** (27 Zeilen; `CO2` trägt hier „Simulation" — der
+   Unterschied zum Kessel aus § 2), **Administration Solarkollektoren** (16),
+   **Administration Pufferspeicher** (8), **Administration PV-Module** (19),
+   **Administration Stromspeicher** (15).
+5. **Administration → Wärmebedarf und Heizung → Wärmepumpe**: 20 Zeilen; `Laenge`,
+   `Breite`, `Hoehe`, `Gewicht` und `Raum` tragen „nicht verwendet" (gestrichelter
+   Rahmen), `Modulkosten` trägt „Wirtschaftlichkeit" — der offene Punkt W14a‑O‑1.
+6. Eine Anlage ohne gepflegte Werte wählen (oder „Neu…" drücken): Die leeren Spalten
+   zeigen „–" und nicht „0".
+7. Fenster schmal ziehen (< 900 CSS-px): Die Tabelle rollt in sich, die Seite nicht.
+8. Auf **English** umschalten: „Show all parameters and how they are used",
+   „Parameter | Value | Used for", „Simulation / Economics / Report / display only /
+   not used".
