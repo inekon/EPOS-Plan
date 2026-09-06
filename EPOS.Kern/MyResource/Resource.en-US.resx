@@ -15055,4 +15055,43 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="KI_REG_BEISPIEL_KOSTENPOSITION_SETZEN" xml:space="preserve">
     <value>Set the cost item heat pump of Musterhaus to 45000.</value>
   </data>
+  <data name="PARV_AUFKLAPPER" xml:space="preserve">
+    <value>Show all parameters and how they are used</value>
+  </data>
+  <data name="PARV_SPALTE_PARAMETER" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="PARV_SPALTE_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="PARV_SPALTE_VERWENDUNG" xml:space="preserve">
+    <value>Used for</value>
+  </data>
+  <data name="PARV_VERW_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="PARV_VERW_WIRTSCHAFT" xml:space="preserve">
+    <value>Economics</value>
+  </data>
+  <data name="PARV_VERW_BERICHT" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="PARV_VERW_DIALOG" xml:space="preserve">
+    <value>display only</value>
+  </data>
+  <data name="PARV_VERW_KEINE" xml:space="preserve">
+    <value>not used</value>
+  </data>
+  <data name="PARV_LBL_READONLY" xml:space="preserve">
+    <value>Factory catalogue:</value>
+  </data>
+  <data name="PARV_LBL_MAXPTHERM" xml:space="preserve">
+    <value>max. thermal output:</value>
+  </data>
+  <data name="PARV_LBL_HOEHE" xml:space="preserve">
+    <value>Height:</value>
+  </data>
+  <data name="PARV_LBL_GEWICHT" xml:space="preserve">
+    <value>Weight:</value>
+  </data>
 </root>
