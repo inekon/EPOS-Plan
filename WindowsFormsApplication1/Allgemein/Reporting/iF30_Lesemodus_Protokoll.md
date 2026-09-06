@@ -31,6 +31,13 @@ Wurzel beider Plattformen.
 | bunit-Tests | 2 679 → **2 691** (+12); nach dem Abschluss-Merge 2 695 |
 | Referenzlauf 1030/1007/1017 | **byte-gleich** zu `Referenzlaeufe/2026-09-05_R2_Zeitbasis` |
 
+**Nachtrag vom 06.09.2026 (Anwenderentscheide iF30‑O‑1…5).** Die fünf offenen Punkte aus § 8
+sind entschieden; jeder trägt dort seine Zeile „Entschieden 06.09.2026". Vier davon bestätigen
+den gebauten Stand, einer ändert ihn: **iF30‑O‑2 — die drei Warnstufen erscheinen seither
+einmal je Kalendertag statt bei jedem Programmstart** (§ 5.1, neue Datei
+`EPOS.Kern/Allgemein/Lizenz/LizenzWarnungMerker.cs`, Abnahmepunkt A‑iF30‑11). Der
+Lesemodus-Zustand bleibt davon unberührt.
+
 ---
 
 ## 1 — Die Schreibnaht: Fundstelle und Beleg, dass es nur eine gibt
@@ -209,18 +216,44 @@ E‑1) — zeigt über JEDER Ansicht ein `Warnbanner` in einem eigenen Wirt
 
 **Zwei Fälle, zwei Lebensdauern:**
 
-| Lage | Stufe | Frist | Text |
-|---|---|---|---|
-| Lesemodus (auch „nicht aktiviert", „Uhr manipuliert") | Warnung | **keine** — es bleibt stehen | `LIZ_BANNER_LESEMODUS` |
-| 30 / 14 Tage vor Ablauf | Hinweis | `HinweisDauer` (Vorgabe 20 s) | `LIZ_BANNER_ABLAUF` |
-| 7 Tage vor Ablauf … Ablauftag | Warnung | `HinweisDauer` | `LIZ_BANNER_ABLAUF`, für 1 Tag und 0 Tage eigene Sätze |
-| Kulanz, Nachprüfung fällig | Hinweis | `HinweisDauer` | die Statuszeile aus W15c |
-| gültig, fern vom Ablauf | — | — | kein Banner |
+| Lage | Stufe | Frist | Wie oft | Text |
+|---|---|---|---|---|
+| Lesemodus (auch „nicht aktiviert", „Uhr manipuliert") | Warnung | **keine** — es bleibt stehen | **jeder Start** | `LIZ_BANNER_LESEMODUS` |
+| 30 / 14 Tage vor Ablauf | Hinweis | `HinweisDauer` (Vorgabe 20 s) | einmal je Kalendertag | `LIZ_BANNER_ABLAUF` |
+| 7 Tage vor Ablauf … Ablauftag | Warnung | `HinweisDauer` | einmal je Kalendertag | `LIZ_BANNER_ABLAUF`, für 1 Tag und 0 Tage eigene Sätze |
+| Kulanz, Nachprüfung fällig | Hinweis | `HinweisDauer` | **jeder Start** | die Statuszeile aus W15c |
+| gültig, fern vom Ablauf | — | — | — | kein Banner |
 
 Das **Dauerbanner** ist die Ausnahme, die die Hausregel **W16b‑E‑6** gelten lässt: „nur für
 einen Zustand, den der Anwender beheben MUSS und sonst nicht sieht". Der Lesemodus ist
 genau das. Die drei Warnstufen sind dagegen der „dezente Hinweis beim Start" aus § 6 — die
 Lizenz trägt noch, nichts ist gesperrt, also verfallen sie.
+
+### 5.1 Der Tagesmerker (Anwenderentscheid iF30‑O‑2, 06.09.2026)
+
+Die Spalte „Wie oft" ist der **Nachtrag vom 06.09.2026**: § 6 des Konzepts verspricht für die
+drei Stufen einen „dezenten Hinweis beim Start (**einmal täglich**)", gebaut war zunächst
+„einmal je Programmstart". Der Anwenderentscheid lautet „einmal täglich reicht".
+
+`EPOS.Kern/Allgemein/Lizenz/LizenzWarnungMerker.cs` (neu) hält in
+`Dienste.Einstellungen` unter dem Schlüssel **`LizenzWarnungGezeigt`** einen Vermerk der Form
+`yyyy-MM-dd|stufe` — unter Windows in `HKCU\Software\wp-plan` neben `LizenzAnker`,
+`LizenzZugestimmt` und `LizenzDatei`, auf iOS in den `Preferences`. `SollZeigen(stufe, heute)`
+ist Frage und Vermerk in einem: Es zeigt, wenn der Tag ein anderer ist oder die Stufe
+**dringender** wurde (30 → 14 → 7), und schreibt dabei fort; ein fehlender, leerer oder
+unlesbarer Wert — und ebenso eine werfende Ablage — zeigt ebenfalls. Der Fehlerfall darf dem
+Anwender nichts wegnehmen; dieselbe Linie wie `Schreibnaht.Lizenzantwort`.
+
+**Die Entscheidung liegt im Kern, nicht in der Oberfläche.** `LizenzLage.MitTagesmerker(heute)`
+sitzt in `LizenzLage.Ermitteln` hinter dem reinen `Bilden` und setzt das neue Feld
+**`LizenzLage.WarnungZeigen`**; die `AppWurzel` fragt nur dieses Feld. `Bilden` bleibt damit
+rein — der Merker SCHREIBT. **Lesemodus, Kulanzfenster und fällige Nachprüfung fassen den
+Merker gar nicht erst an** (der Lesemodus ist keine Warnstufe, die beiden anderen tragen
+Warnstufe 0) und stehen deshalb unverändert bei jedem Start.
+
+Der Vermerk ist **kein Angriffsziel**: Er trägt keinen Lizenzzustand, nur „an welchem Tag
+welche Stufe schon zu sehen war". Wer ihn löscht oder verstellt, bekommt den Hinweis
+häufiger zu sehen, nie seltener.
 
 **Die Komponente kennt den Lizenzkern nicht** (Regel S‑2 aus W15c: `LizenzManager.Pruefe()`
 liest auf iOS den Schlüsselbund SYNCHRON, und eine Komponente ruft immer vom Zeichenfaden).
@@ -280,6 +313,18 @@ ergänzt.
 | `EPOS.Kern.Tests/LizenzWarnstufenTests` | 10 (mit `Theory`-Zeilen 26) | die drei scharfen Ränder 31/30, 15/14, 8/7, der Ablauftag selbst, die eigenen Sätze für 1 und 0 Tage, Kulanz und Nachprüfung, beide Sprachen |
 | `EPOS.UI.Tests/Seiten/LizenzbannerTests` | 10 (mit `Theory`-Zeilen 12) | das Banner: ohne Lage keines, Warnfarbe und Dauerhaftigkeit im Lesemodus, die Stufen als verfallender Hinweis, die einstellbare Frist, der iOS-Weg, der Vorrang des Parameters, beide Sprachen |
 
+### Nachtrag iF30‑O‑2 (06.09.2026)
+
+| Klasse | Fälle | Was sie sichert |
+|---|---|---|
+| `EPOS.Kern.Tests/LizenzWarnungMerkerTests` | 13 (mit `Theory`-Zeilen **24**) | den Tagesmerker: Stufe 0 zeigt nie und merkt nichts, zehn unlesbare Vermerke zeigen, der zweite Start am selben Tag zeigt nicht, der nächste Tag zeigt wieder, 7 nach 30 zeigt und 30 nach 7 nicht, die Uhrzeit ist gleichgültig, eine werfende Ablage zeigt — dazu die Naht zum Lagebild: Lesemodus, Kulanz und Nachprüfung bleiben bei **jedem** Start sichtbar und fassen den Merker nicht an |
+| `EPOS.UI.Tests/Seiten/LizenzbannerTests` (erweitert) | +2 (mit `Theory`-Zeilen **+4**) | „heute schon gezeigt → kein Banner" für alle drei Stufen, und das Lesemodus-Banner über drei Programmstarts hinweg |
+
+Die Klasse im Kern trägt `[Collection("Testdatenbank")]` — **Hausregel seit dem 06.09.2026:
+Jede Testklasse in `EPOS.Kern.Tests`, die ein `Dienste.*` tauscht, gehört in diese Sammlung.**
+`Dienste.Einstellungen` ist prozessweiter Zustand, und xunit fährt Testklassen sonst
+nebeneinander.
+
 ---
 
 ## 7 — Abnahmepunkte für den Anwender (Windows)
@@ -288,9 +333,10 @@ ergänzt.
 Ein Projekt öffnen, einen Katalogsatz ändern, speichern — geht wie bisher. Eine Simulation
 rechnen und das Ergebnis speichern — geht wie bisher.
 
-**A‑iF30‑2 — Warnstufe.** Mit einer Lizenz, die in 30, 14 oder 7 Tagen abläuft: beim Start
-ein Banner mit der Zahl der Tage **und dem Datum**; bei 30 und 14 Tagen leise (Hinweis),
-bei 7 Tagen in Warnfarbe. Es verschwindet nach rund 20 Sekunden von selbst. Volle Funktion.
+**A‑iF30‑2 — Warnstufe.** Mit einer Lizenz, die in 30, 14 oder 7 Tagen abläuft: beim **ersten
+Start des Tages** ein Banner mit der Zahl der Tage **und dem Datum**; bei 30 und 14 Tagen
+leise (Hinweis), bei 7 Tagen in Warnfarbe. Es verschwindet nach rund 20 Sekunden von selbst.
+Volle Funktion. Dass es beim zweiten Start desselben Tages ausbleibt, prüft A‑iF30‑11.
 
 **A‑iF30‑3 — Lesemodus, das Banner.** Ohne Lizenz oder mit abgelaufener Lizenz nach dem
 Kulanzfenster: ein **dauerhaftes** Banner in Warnfarbe über der Startseite und über jeder
@@ -324,9 +370,27 @@ A‑iF30‑5 wiederholen: Banner und Meldung müssen englisch sein.
 ohne gültige Lizenz: Die Erststart- und Schemamigration muss durchlaufen (Ausnahmen A‑1 bis
 A‑3), danach steht die Anwendung im Lesemodus.
 
+**A‑iF30‑11 — die Warnstufe kommt einmal am Tag** (Anwenderentscheid iF30‑O‑2, 06.09.2026).
+Mit einer Lizenz, die in 30, 14 oder 7 Tagen abläuft, drei Proben nacheinander:
+
+1. **Zweiter Start am selben Tag.** Programm starten — Banner wie in A‑iF30‑2. Programm
+   schließen und **sofort neu starten**: **kein Banner mehr**. Volle Funktion, sonst nichts
+   verändert.
+2. **Nächster Tag.** Am Folgetag starten: das Banner steht **wieder** da. (Ohne bis morgen zu
+   warten: `HKCU\Software\wp-plan`, Wert **`LizenzWarnungGezeigt`** — er hat die Form
+   `2026-09-06|30`. Das Datum um einen Tag zurücksetzen oder den Wert löschen, dann starten.)
+3. **Der Lesemodus bleibt.** Ohne gültige Lizenz starten, schließen, wieder starten: Das
+   Lesemodus-Banner steht **bei jedem** Start (A‑iF30‑3 gilt unverändert). Dasselbe für das
+   Kulanzfenster.
+
 ---
 
 ## 8 — Offene Punkte
+
+> **Alle fünf sind am 06.09.2026 entschieden.** Der Anwender hat iF30‑O‑2 und iF30‑O‑5 im
+> Wortlaut beschieden und die übrigen drei mit „alle anderen offenen Punkte wie Empfehlung,
+> bestätigt" geschlossen. Der Abschnitt bleibt als Begründungsspur stehen; jeder Punkt trägt
+> seine Entscheidung als letzte Zeile.
 
 **iF30‑O‑1 — Ist `Tab_Applikation` zu Recht eine Ausnahme?** Umgesetzt ist die sichere
 Fassung: Das Fortschreiben des zuletzt geöffneten Projekts läuft auch im Lesemodus, weil
@@ -334,23 +398,47 @@ Fassung: Das Fortschreiben des zuletzt geöffneten Projekts läuft auch im Lesem
 einsteigen könnte. Die Zeile trägt **kein** Arbeitsergebnis, nur Programmzustand. Der
 Anwender möge bestätigen, dass das seiner Absicht entspricht.
 
+> **Entschieden 06.09.2026:** bestätigt — `Tab_Applikation` bleibt Ausnahme A‑4. Es ändert
+> sich nichts; A‑iF30‑7 bleibt der Abnahmepunkt dazu.
+
 **iF30‑O‑2 — „einmal täglich" oder „einmal je Start"?** Das Konzept sagt für die Warnstufen
 „dezenter Hinweis beim Start (einmal täglich)". Umgesetzt ist **einmal je Programmstart**:
 Die Lage wird beim Aufbau der Wurzel gebildet, das Banner verfällt nach 20 s. Eine echte
 Tagesunterdrückung bräuchte einen gemerkten Tag in `Dienste.Einstellungen`; das wäre eine
 zweite Ablage neben dem Zeitanker. In der Praxis wird das Programm einmal am Tag gestartet.
 
+> **Entschieden 06.09.2026:** „einmal täglich reicht" — **umgesetzt in diesem Commit**. Der
+> neue `LizenzWarnungMerker` hält in `Dienste.Einstellungen` unter `LizenzWarnungGezeigt`
+> einen Vermerk `yyyy-MM-dd|stufe` und zeigt eine Stufe nur, wenn der Tag ein anderer ist
+> oder die Dringlichkeit gestiegen ist (30 → 14 → 7); ein unlesbarer Wert und eine werfende
+> Ablage zeigen ebenfalls. Entschieden wird das im Kern
+> (`LizenzLage.MitTagesmerker` → `LizenzLage.WarnungZeigen`), die `AppWurzel` fragt nur das
+> Feld — **Lesemodus, Kulanz und Nachprüfung fassen den Merker nicht an und bleiben bei
+> jedem Start sichtbar**. Einzelheiten in § 5.1, Abnahme in A‑iF30‑11.
+
 **iF30‑O‑3 — Soll das Banner mitlaufen?** Es entsteht **einmal** beim Aufbau der Wurzel. Wer
 im laufenden Programm aktiviert, darf sofort wieder schreiben (A‑iF30‑8), sieht das Banner
 aber bis zum nächsten Start. Ein Nachziehen ginge über `SeitenZustand`, kostet aber je
 Auffrischung einen synchronen Zugriff auf DPAPI bzw. Schlüsselbund.
+
+> **Entschieden 06.09.2026:** bestätigt — das Banner bleibt **bis zum nächsten Start**
+> stehen. Kein Nachziehen über `SeitenZustand`; der synchrone Zugriff auf DPAPI bzw.
+> Schlüsselbund je Auffrischung wäre der höhere Preis. A‑iF30‑8 bleibt unverändert.
 
 **iF30‑O‑4 — `PRAGMA` steht bei den Lesern.** Es trägt Verbindungsschalter und
 Schemaauskunft und ändert keine Daten. Ein `PRAGMA journal_mode=WAL` wäre theoretisch ein
 Schreibvorgang; im Bestand setzt ihn nur der Migrator auf seiner eigenen Verbindung, also
 nie über die Naht.
 
+> **Entschieden 06.09.2026:** bestätigt — `PRAGMA` gilt weiter als Lesen und bleibt in der
+> Liste der vier Leseformen (`SELECT`, `PRAGMA`, `EXPLAIN`, `VALUES`). Wer je ein
+> schreibendes `PRAGMA` über die Naht schickt, ändert diese Liste, nicht den Aufruf.
+
 **iF30‑O‑5 — Der Access-Zweig der Erststart-Migration kommt an der Naht vorbei.** Er baut
 seine `OleDbCommand` selbst. Das ist heute unschädlich (er ist ohnehin Ausnahme A‑2 und
 schreibt auf die `.accdb`), sollte aber bekannt bleiben, falls dort je etwas anderes
 entsteht.
+
+> **Entschieden 06.09.2026:** geschlossen — „Access-DB nicht mehr relevant". **Kein Rückbau
+> beauftragt**: Der Zweig bleibt, wie er ist, und nichts an ihm wird angefasst. Der Befund
+> bleibt hier stehen, damit er bekannt ist, falls dort je etwas anderes entsteht.
