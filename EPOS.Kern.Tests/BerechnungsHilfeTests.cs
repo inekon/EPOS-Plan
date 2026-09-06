@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using WindowsFormsApplication1;
@@ -45,22 +45,47 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Die Rubrik ist eingebettet und lesbar. Ein leerer Bestand liefe sonst durch
-        /// jeden folgenden Fall grün hindurch, ohne je etwas geprüft zu haben — die
-        /// <c>.wiki</c>-Dateien hängen an einem <c>EmbeddedResource</c>-Muster in
-        /// <c>EPOS.Kern.csproj</c>, und ein Tippfehler im <c>LogicalName</c> fällt genau
-        /// hier auf.
+        /// Die SECHS Seiten des Pakets H13 Teil A — namentlich. Eine gelöschte oder
+        /// umbenannte Datei fiele sonst nur dadurch auf, dass niemand sie mehr findet;
+        /// der Infoknopf des zugehörigen Dialogs zeigte weiter auf eine Wikiseite, die
+        /// es im Quellbaum nicht mehr gibt.
+        /// </summary>
+        /// <remarks>
+        /// Die sieben Erzeugerseiten aus Teil B stehen hier bewusst NICHT: Diese Liste
+        /// ist die Zusage DIESES Pakets. Geprüft wird „mindestens", nicht „genau" —
+        /// jede weitere Seite ist willkommen und läuft durch dieselben Fälle.
+        /// </remarks>
+        public static readonly string[] SeitenTeilA =
+        {
+            "Brauchwasser", "Prozesswärme", "Simulationsablauf", "Strombedarf",
+            "Wärmebedarf", "Wärmequelle Erdreich"
+        };
+
+        /// <summary>
+        /// Die Rubrik ist eingebettet und lesbar, und sie führt die sechs Seiten des
+        /// Pakets. Ein leerer Bestand liefe sonst durch jeden folgenden Fall grün
+        /// hindurch, ohne je etwas geprüft zu haben — die <c>.wiki</c>-Dateien hängen an
+        /// einem <c>EmbeddedResource</c>-Muster in <c>EPOS.Kern.csproj</c>, und ein
+        /// Tippfehler im <c>LogicalName</c> fällt genau hier auf.
         /// </summary>
         [Fact]
-        public void Die_Rubrik_ist_eingebettet_und_traegt_Seiten()
+        public void Die_Rubrik_ist_eingebettet_und_traegt_ihre_Seiten()
         {
             IReadOnlyList<BerechnungsSeite> seiten = BerechnungsHilfe.Seiten;
 
             Assert.NotNull(seiten);
-            Assert.True(seiten.Count >= 1,
-                "Die Rubrik 'Berechnung' führt keine einzige Seite. Ist das EmbeddedResource-Muster " +
+            Assert.True(seiten.Count >= SeitenTeilA.Length,
+                "Die Rubrik 'Berechnung' führt nur " + seiten.Count + " Seite(n), erwartet sind " +
+                "mindestens " + SeitenTeilA.Length + ". Ist das EmbeddedResource-Muster " +
                 "'Allgemein\\Hilfe\\Berechnung\\*.wiki' mit LogicalName '" +
                 BerechnungsHilfe.RESSOURCE_VORSATZ + "%(Filename)%(Extension)' noch in EPOS.Kern.csproj?");
+
+            var fehlend = SeitenTeilA
+                .Where(n => BerechnungsHilfe.Seite(n) == null)
+                .ToList();
+
+            Assert.True(fehlend.Count == 0,
+                "Diese Seiten des Pakets H13 fehlen: " + string.Join(", ", fehlend));
         }
 
         /// <summary>
