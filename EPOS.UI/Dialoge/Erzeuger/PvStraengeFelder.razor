@@ -23,10 +23,21 @@
    den Grund als title, und der Versuch MELDET sich - er handelt nicht. Ein
    disabled-Bedienelement koennte seinen Grund gar nicht sagen.
 
-   DER S3-HINWEIS. Solange Stufe S3 aussteht, rechnet der Kern die Straenge
-   NICHT. Der Abschnitt sagt das ausdruecklich, damit die Oberflaeche nichts
-   verspricht, was der Kern noch nicht tut - keine zweite Wahrheit. Mit S3 wird
-   die Zeile wieder entfernt.
+   DER S3-HINWEIS IST FORT. Bis Stufe S2 stand unter der Optionsgruppe die
+   Zeile "Die Strangrechnung folgt mit Stufe S3"; seit S3 rechnet der Kern die
+   Straenge, und der Satz waere falsch.
+
+   DER HERSTELLERFILTER (W6-O-4 vom 06.09.2026, woertlich: "Hersteller kann vom
+   Modul verschieden sein. Herstellerfilter etc. wie in Modulliste einfuegen").
+   Er steht als eigene Zeile UEBER der Tabelle - in ihr haette er keinen Platz -
+   und wirkt auf die Klappliste ALLER Zeilen; ein bereits gewaehltes Geraet
+   bleibt in seiner Zeile sichtbar, auch wenn der Filter es ausschliesst.
+
+   DIE MODULSPALTE (W6-O-6, woertlich: "jeder Strang mit nur einem Modultyp,
+   unterschiedliche Straenge koennen jeweils einen anderen Modultyp haben").
+   Leer heisst "das Modul der Anlage" - dieselbe Rueckfallregel wie bei Neigung
+   und Azimut, nur als Klapplisteneintrag statt als Klammer, weil ein Modulname
+   kein Zahlenfeld ist.
 
    KEINE DATENBANK (Hausregel EPOS.UI): Die Zeilen stehen in der ErzeugerZeile,
    die Huelle schreibt sie nach Z_AnlageStrang. Die AMPEL rechnet der Kern
@@ -62,6 +73,16 @@
             }
         </div>
 
+        @* --- W6-O-4: die Filterzeile UEBER der Tabelle, nicht in ihr ---------- *@
+        @if (Hersteller.Count > 0)
+        {
+            <div class="epos-strangfilter">
+                <Auswahlfeld Bezeichnung="@Texte.FilterHersteller" Eintraege="@_herstellerwahl"
+                             Auswahl="@_hersteller" AuswahlChanged="BeiHersteller"
+                             Kurzname="@Texte.FilterHersteller" />
+            </div>
+        }
+
         @if (Zeile.Straenge.Count == 0)
         {
             <p class="epos-herleitung">@Texte.HinweisOhneStrang</p>
@@ -75,6 +96,7 @@
                             <th>@Texte.SpalteWahl</th>
                             <th>@Texte.SpalteRang</th>
                             <th>@Texte.SpalteBezeichner</th>
+                            <th>@Texte.SpalteModul</th>
                             <th>@Texte.SpalteWechselrichter</th>
                             <th>@Texte.SpalteGeraet</th>
                             <th>@Texte.SpalteMppt</th>
@@ -99,9 +121,15 @@
                                     <Textfeld Wert="@s.Bezeichner"
                                               WertChanged="@(w => Setzen(s, () => s.Bezeichner = w ?? ""))" />
                                 </td>
+                                <td title="@Texte.HerleitungModul">
+                                    <Auswahlfeld Eintraege="@Modulwahl(s)" Auswahl="@ModulAuswahl(s)"
+                                                 AuswahlChanged="@(id => BeiModul(s, id))"
+                                                 Kurzname="@Texte.SpalteModul" />
+                                </td>
                                 <td>
-                                    <Auswahlfeld Eintraege="@_geraetewahl" Auswahl="@GeraetAuswahl(s)"
-                                                 AuswahlChanged="@(id => BeiGeraet(s, id))" />
+                                    <Auswahlfeld Eintraege="@Geraetewahl(s)" Auswahl="@GeraetAuswahl(s)"
+                                                 AuswahlChanged="@(id => BeiGeraet(s, id))"
+                                                 Kurzname="@Texte.SpalteWechselrichter" />
                                 </td>
                                 <td>
                                     <Ganzzahlfeld Wert="@s.Geraetenummer" Min="1"
@@ -132,6 +160,8 @@
                     </tbody>
                 </table>
             </div>
+
+            <p class="epos-herleitung">@Texte.HerleitungModul</p>
 
             @* --- Die Ampel: EIN Satz je Strangzeile, unter der Tabelle -------- *@
             <div class="epos-ampelzeilen">
@@ -233,11 +263,51 @@
     [Parameter] public Func<int, GeraetWahl>? GeraetUebernehmen { get; set; }
 
     /// <summary>
+    /// Die Hersteller des WECHSELRICHTERkatalogs, „Alle" voran (Index 0) — die
+    /// Auswahlliste der Filterzeile UEBER der Tabelle (<b>W6‑O‑4</b>). Leer = keine
+    /// Filterzeile.
+    ///
+    /// <para><b>Sie ist vom Modulfilter UNABHAENGIG</b> (Anwenderentscheid, woertlich:
+    /// „Hersteller kann vom Modul verschieden sein"): Wer Module von A verbaut, kann
+    /// Geraete von B einsetzen.</para>
+    /// </summary>
+    [Parameter] public IReadOnlyList<string> Hersteller { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Die Geraeteliste zu einem Hersteller
+    /// (<c>WechselrichterStammCtrl.Filtern</c>) — dieselbe Bauart wie
+    /// <c>PhotovoltaikDialog.Filtern</c> ueber der Modulliste. Ohne Delegat wirkt der
+    /// Filter nicht, und die Klappliste zeigt <see cref="Geraete"/>.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<(int Id, string Text)>>? GeraeteFiltern { get; set; }
+
+    /// <summary>
+    /// Die PV-Module des KATALOGS als Klapplisteneintraege (Id =
+    /// <c>Tab_PV_STAMM.ID</c>) — die Modulspalte je Strang (<b>W6‑O‑6</b>). Leer =
+    /// nur „(Modul der Anlage)".
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Module { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Nimmt ein Modul aus dem Katalog in das Projekt auf und liefert die PROJEKTKOPIE
+    /// (<c>PhotovoltaikCtrl.CopyFromStamm</c>) — genau wie beim Wechselrichter. Ohne
+    /// Delegat bleibt die Modulspalte wirkungslos.
+    /// </summary>
+    [Parameter] public Func<int, GeraetWahl>? ModulUebernehmen { get; set; }
+
+    /// <summary>
     /// Die AMPEL zum aktuellen Stand der Tabelle. Die Komponente rechnet nicht — der
     /// Kern prueft (<c>StrangPlausibilitaet</c>), die Huelle reicht das Ergebnis
     /// herein. Ohne Delegat bleibt die Ampel leer.
+    ///
+    /// <para><b>Die GEWAEHLTE Zeile geht mit</b> (Anwenderentscheid <b>W6‑O‑5</b> vom
+    /// 06.09.2026, woertlich „Modul der gewaehlten Zeile"): Bis dahin bekam die Huelle
+    /// nur die Strangliste und nahm deshalb das ERSTE Modul, das der Katalog kannte.
+    /// Welche Projektzeile gewaehlt ist, weiss aber nur die Komponente — genau sie ist
+    /// hier <c>Zeile</c>.</para>
     /// </summary>
-    [Parameter] public Func<IReadOnlyList<StrangZeile>, StrangBefund>? Pruefen { get; set; }
+    [Parameter] public Func<ErzeugerZeile, IReadOnlyList<StrangZeile>, StrangBefund>? Pruefen { get; set; }
 
     /// <summary>Meldet jede Aenderung — die Huelle schreibt dann in das Modell.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
@@ -250,6 +320,10 @@
 
     private IReadOnlyList<(int Id, string Text)> _optionen = Array.Empty<(int, string)>();
     private IReadOnlyList<(int Id, string Text)> _geraetewahl = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _modulwahl = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _herstellerwahl = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _gefiltert = Array.Empty<(int, string)>();
+    private int? _hersteller = 0;
     private Dictionary<int, string>? _weichGesperrt;
     private StrangBefund _befund = StrangBefund.Leer;
     private StrangZeile? _gewaehlt;
@@ -278,11 +352,21 @@
             (WEG_KATALOG, Texte.OptionKatalog)
         };
 
+        // W6-O-4: die Herstellerliste der Filterzeile - "Alle" steht als Index 0 in
+        // der Liste selbst, genau wie ueber der Modulliste.
+        var hersteller = new List<(int, string)>();
+        for (int i = 0; i < Hersteller.Count; i++) hersteller.Add((i, Hersteller[i]));
+        _herstellerwahl = hersteller;
+
         // Die Klappliste fuehrt "(kein Geraet)" als Id 0 voran - dieselbe Bauart wie
         // "Alle" im Herstellerfilter der Modulliste.
-        var liste = new List<(int, string)> { (0, Texte.KeinGeraet) };
-        foreach (var g in Geraete) liste.Add(g);
-        _geraetewahl = liste;
+        GeraeteNeuLaden();
+
+        // W6-O-6: die Modulspalte fuehrt "(Modul der Anlage)" als Id 0 voran -
+        // dieselbe Bauart und dieselbe Bedeutung: Id 0 ist der RUECKFALL, kein Eintrag.
+        var module = new List<(int, string)> { (0, Texte.ModulDerAnlage) };
+        foreach (var m in Module) module.Add(m);
+        _modulwahl = module;
 
         // WEICHE SPERRE (W16b-E-6): "mit Wechselrichter" ohne Strangzeile bleibt
         // anklickbar und traegt seinen Grund. Ist der Weg bereits gewaehlt, gibt es
@@ -368,6 +452,63 @@
         return Geaendert.InvokeAsync();
     }
 
+    // =================================================================================
+    // W6-O-4: der Herstellerfilter ueber der Tabelle
+    // =================================================================================
+
+    /// <summary>
+    /// Zieht die Geraeteliste zum gewaehlten Hersteller. Ohne Delegat bleibt es bei
+    /// <see cref="Geraete"/> — der Filter ist dann eine Anzeige ohne Wirkung, und das
+    /// ist besser als eine leere Klappliste.
+    /// </summary>
+    private void GeraeteNeuLaden()
+    {
+        if (GeraeteFiltern is null)
+        {
+            _gefiltert = Geraete;
+        }
+        else
+        {
+            string hersteller = (_hersteller.HasValue && _hersteller.Value < Hersteller.Count)
+                              ? Hersteller[_hersteller.Value] : "";
+            _gefiltert = GeraeteFiltern(hersteller) ?? Array.Empty<(int, string)>();
+        }
+
+        var liste = new List<(int, string)> { (0, Texte.KeinGeraet) };
+        foreach (var g in _gefiltert) liste.Add(g);
+        _geraetewahl = liste;
+    }
+
+    private void BeiHersteller(int? id)
+    {
+        _hersteller = id ?? 0;
+        GeraeteNeuLaden();
+    }
+
+    /// <summary>
+    /// Die Klappliste DIESER Zeile. Der Filter engt die Auswahl ein — <b>das bereits
+    /// gewaehlte Geraet bleibt aber sichtbar</b>, auch wenn es von einem anderen
+    /// Hersteller stammt: Sonst stuende in der Zeile nichts, und der Anwender hielte
+    /// die Zuordnung fuer verloren.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Geraetewahl(StrangZeile s)
+    {
+        if (s.WechselrichterId <= 0 || s.WechselrichterName.Length == 0) return _geraetewahl;
+
+        foreach (var g in _gefiltert)
+            if (string.Equals(g.Text, s.WechselrichterName, StringComparison.Ordinal))
+                return _geraetewahl;
+
+        foreach (var g in Geraete)
+            if (string.Equals(g.Text, s.WechselrichterName, StringComparison.Ordinal))
+            {
+                var liste = new List<(int, string)>(_geraetewahl) { g };
+                return liste;
+            }
+
+        return _geraetewahl;
+    }
+
     /// <summary>
     /// Der gewaehlte Eintrag der Geraeteklappliste. Das Band zwischen Zeile und Liste
     /// ist der BEZEICHNER: Katalogsatz und Projektkopie tragen denselben, und genau
@@ -381,6 +522,61 @@
         foreach (var g in Geraete)
             if (string.Equals(g.Text, s.WechselrichterName, StringComparison.Ordinal)) return g.Id;
         return null;
+    }
+
+    // =================================================================================
+    // W6-O-6: das Modul je Strang
+    // =================================================================================
+
+    /// <summary>
+    /// Die Modulklappliste DIESER Zeile — <c>_modulwahl</c>, ergaenzt um das bereits
+    /// gewaehlte Modul, falls der Katalog es nicht (mehr) fuehrt. Derselbe Gedanke wie
+    /// bei <see cref="Geraetewahl"/>.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Modulwahl(StrangZeile s)
+    {
+        if (s.ModulId <= 0 || s.ModulName.Length == 0) return _modulwahl;
+
+        foreach (var m in Module)
+            if (string.Equals(m.Text, s.ModulName, StringComparison.Ordinal)) return _modulwahl;
+
+        var liste = new List<(int, string)>(_modulwahl) { (-1, s.ModulName) };
+        return liste;
+    }
+
+    /// <summary>
+    /// Der gewaehlte Eintrag der Modulklappliste; 0 heisst „das Modul der Anlage".
+    /// Das Band ist wieder der BEZEICHNER (siehe <see cref="GeraetAuswahl"/>).
+    /// </summary>
+    private int? ModulAuswahl(StrangZeile s)
+    {
+        if (s.ModulId <= 0) return 0;
+        foreach (var m in Module)
+            if (string.Equals(m.Text, s.ModulName, StringComparison.Ordinal)) return m.Id;
+        return -1;
+    }
+
+    /// <summary>
+    /// Ein anderer Modultyp fuer DIESEN Strang. „(Modul der Anlage)" nimmt die
+    /// Abweichung wieder heraus — der Rueckweg muss ausdruecklich moeglich sein, sonst
+    /// waere eine einmal gesetzte Abweichung nicht mehr aufzuheben.
+    /// </summary>
+    private Task BeiModul(StrangZeile s, int? stammId)
+    {
+        if (stammId is null or 0)
+        {
+            s.ModulId = 0;
+            s.ModulName = "";
+        }
+        else if (stammId.Value > 0 && ModulUebernehmen is not null)
+        {
+            GeraetWahl wahl = ModulUebernehmen(stammId.Value);
+            s.ModulId = wahl.Id;
+            s.ModulName = wahl.Name;
+        }
+
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
     }
 
     private Task BeiGeraet(StrangZeile s, int? stammId)
@@ -404,7 +600,7 @@
     /// <summary>Fragt den Pruefstand des Kerns; ohne Delegat bleibt die Ampel leer.</summary>
     private void Nachpruefen()
     {
-        _befund = Pruefen is null ? StrangBefund.Leer : Pruefen(Zeile.Straenge);
+        _befund = Pruefen is null ? StrangBefund.Leer : Pruefen(Zeile, Zeile.Straenge);
     }
 
     private static string Ampelklasse(Ampelfarbe f) => f switch

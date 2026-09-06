@@ -112,10 +112,28 @@ namespace WindowsFormsApplication1
             public IReadOnlyList<AnlageStrangModel> Straenge;
 
             /// <summary>
-            /// Das Modul der ANLAGE (Projektkopie <c>Tab_PV</c>); <c>null</c> = unbekannt,
-            /// dann sind P1 bis P4 nicht prüfbar.
+            /// Das Modul der ANLAGE, also der GEWÄHLTEN Projektzeile (Projektkopie
+            /// <c>Tab_PV</c>); <c>null</c> = unbekannt, dann sind P1 bis P4 nicht prüfbar.
+            ///
+            /// <para><b>Anwenderentscheid W6‑O‑5 vom 06.09.2026 („Modul der gewählten
+            /// Zeile"):</b> Bis dahin gab die Hülle das ERSTE Modul herein, das der
+            /// Katalog kannte. Führt ein Projekt mehrere PV-Zeilen mit verschiedenen
+            /// Modulen, prüfte die Ampel damit gegen das falsche. Welche Zeile gewählt
+            /// ist, weiß nur die Oberfläche — sie sagt es jetzt.</para>
             /// </summary>
             public PhotovoltaikModel Modul;
+
+            /// <summary>
+            /// Die ABWEICHENDEN Modultypen der Stränge je <c>Tab_PV.ID</c>
+            /// (<c>Z_AnlageStrang.ID_PV</c>) — Anwenderentscheid <b>W6‑O‑6</b>: „jeder
+            /// Strang mit nur einem Modultyp, unterschiedliche Stränge können jeweils
+            /// einen anderen Modultyp haben."
+            ///
+            /// <para><c>null</c>, ein fehlender Eintrag und <c>ID_PV</c> = NULL sind
+            /// DERSELBE Fall: Der Strang prüft gegen <see cref="Modul"/>. Damit ändert
+            /// sich für eine Anlage mit einem Modultyp — den Regelfall — nichts.</para>
+            /// </summary>
+            public IReadOnlyDictionary<int, PhotovoltaikModel> Module;
 
             /// <summary>
             /// Die Projektkopien der zugeordneten Wechselrichter, je
@@ -255,7 +273,7 @@ namespace WindowsFormsApplication1
                 if (s == null) continue;
                 b.Straenge.Add(StrangPruefen(s, gaben, b));
                 b.Modulsumme += s.Modulzahl;
-                b.Kwp += StrangKwp(s, gaben.Modul);
+                b.Kwp += StrangKwp(s, ModulDesStrangs(s, gaben));
             }
 
             GeraetePruefen(gaben, b);
@@ -272,11 +290,15 @@ namespace WindowsFormsApplication1
 
         private static Strangbefund StrangPruefen(AnlageStrangModel s, Gaben gaben, Befund b)
         {
+            // W6-O-6: SEIN Modul - das abweichende der Strangzeile, sonst das der
+            // gewaehlten Projektzeile (W6-O-5).
+            PhotovoltaikModel modul = ModulDesStrangs(s, gaben);
+
             var sb = new Strangbefund
             {
                 Rang = s.Rang,
                 Modulzahl = s.Modulzahl,
-                Kwp = StrangKwp(s, gaben.Modul)
+                Kwp = StrangKwp(s, modul)
             };
 
             var teile = new List<string>();
@@ -292,10 +314,10 @@ namespace WindowsFormsApplication1
                                     Ganz(reihe), Ganz(s.ParallelOderEins)));
 
             // --- P1: Leerlaufspannung im kalten Fall -> ROT ---------------------------
-            double? uoc = SpannungReihe(reihe, gaben.Modul?.m_U_Leerlauf, gaben.Modul?.m_beta_OC, T_KALT);
+            double? uoc = SpannungReihe(reihe, modul?.m_U_Leerlauf, modul?.m_beta_OC, T_KALT);
             sb.UocKalt = uoc;
 
-            if (!uoc.HasValue) FehltEinmal(fehlt, gaben.Modul, MyResource.Resource.PVS_FEHLT_UOC);
+            if (!uoc.HasValue) FehltEinmal(fehlt, modul, MyResource.Resource.PVS_FEHLT_UOC);
             else if (g != null && Gesetzt(g.m_U_Dc_Max))
             {
                 if (uoc.Value > g.m_U_Dc_Max.Value)
@@ -312,12 +334,12 @@ namespace WindowsFormsApplication1
             }
 
             // --- P2 und P3: das MPP-Fenster ------------------------------------------
-            double? heiss = SpannungReihe(reihe, gaben.Modul?.m_U_Mpp, gaben.Modul?.m_beta_OC, T_HEISS);
-            double? kalt = SpannungReihe(reihe, gaben.Modul?.m_U_Mpp, gaben.Modul?.m_beta_OC, T_KALT);
+            double? heiss = SpannungReihe(reihe, modul?.m_U_Mpp, modul?.m_beta_OC, T_HEISS);
+            double? kalt = SpannungReihe(reihe, modul?.m_U_Mpp, modul?.m_beta_OC, T_KALT);
             sb.UmppHeiss = heiss;
             sb.UmppKalt = kalt;
 
-            if (!heiss.HasValue) FehltEinmal(fehlt, gaben.Modul, MyResource.Resource.PVS_FEHLT_UMPP);
+            if (!heiss.HasValue) FehltEinmal(fehlt, modul, MyResource.Resource.PVS_FEHLT_UMPP);
             else if (g != null && (Gesetzt(g.m_U_Mpp_Min) || Gesetzt(g.m_U_Mpp_Max)))
             {
                 bool p2Verletzt = Gesetzt(g.m_U_Mpp_Min) && heiss.Value < g.m_U_Mpp_Min.Value;
@@ -390,7 +412,7 @@ namespace WindowsFormsApplication1
                     Bezeichner = g?.m_szName ?? ""
                 };
 
-                foreach (AnlageStrangModel s in straenge) gb.Kwp += StrangKwp(s, gaben.Modul);
+                foreach (AnlageStrangModel s in straenge) gb.Kwp += StrangKwp(s, ModulDesStrangs(s, gaben));
 
                 var teile = new List<string>();
 
@@ -426,25 +448,35 @@ namespace WindowsFormsApplication1
             bool mpptBekannt = g.m_Anzahl_Mppt.HasValue && g.m_Anzahl_Mppt.Value >= 1;
 
             var reihenfolge = new List<int>();
-            var jeMppt = new Dictionary<int, int>();     // Tracker -> Summe paralleler Straenge
+            var jeMppt = new Dictionary<int, int>();       // Tracker -> Summe paralleler Straenge
+            var stromJeMppt = new Dictionary<int, double>();  // Tracker -> Strom [A]
+
+            // W6-O-6: Der Strom eines Trackers ist die Summe SEINER Straenge, und jeder
+            // Strang bringt den Kurzschlussstrom SEINES Moduls mit. Fuehrt auch nur ein
+            // Strang kein prüfbares Modul, ist der Tracker nicht prüfbar - eine halbe
+            // Summe waere schlimmer als keine.
+            bool stromBekannt = true;
 
             foreach (AnlageStrangModel s in straenge)
             {
                 int t = mpptBekannt ? s.MpptOderEins : 1;
-                if (!jeMppt.ContainsKey(t)) { jeMppt[t] = 0; reihenfolge.Add(t); }
+                if (!jeMppt.ContainsKey(t)) { jeMppt[t] = 0; stromJeMppt[t] = 0.0; reihenfolge.Add(t); }
                 jeMppt[t] += s.ParallelOderEins;
+
+                double? js = StromJeStrang(ModulDesStrangs(s, gaben));
+                if (js.HasValue) stromJeMppt[t] += s.ParallelOderEins * js.Value;
+                else stromBekannt = false;
             }
 
             reihenfolge.Sort();
 
-            double? jeStrang = StromJeStrang(gaben.Modul);
             bool p4Gemeldet = false, p5Gemeldet = false;
             double groesster = 0;
 
             foreach (int t in reihenfolge)
             {
                 var mb = new Mpptbefund { Mppt = t, Straenge = jeMppt[t] };
-                if (jeStrang.HasValue) mb.Strom = jeMppt[t] * jeStrang.Value;
+                if (stromBekannt) mb.Strom = stromJeMppt[t];
                 gb.Mppts.Add(mb);
 
                 if (mb.Strom.HasValue && mb.Strom.Value > groesster) groesster = mb.Strom.Value;
@@ -475,7 +507,7 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            if (!jeStrang.HasValue)
+            if (!stromBekannt)
             {
                 gb.Farbe = Schlechter(gb.Farbe, Ampel.Gelb);
                 teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_WERTE_FEHLEN,
@@ -596,6 +628,27 @@ namespace WindowsFormsApplication1
         {
             if (s == null || modul == null || modul.m_Leistung <= 0.0) return 0.0;
             return s.Modulzahl * modul.m_Leistung / 1000.0;
+        }
+
+        /// <summary>
+        /// Das Modul, gegen das DIESER Strang prüft (<b>W6‑O‑6</b>): sein abweichender
+        /// Modultyp (<c>ID_PV</c>), sonst das Modul der gewählten Projektzeile
+        /// (<b>W6‑O‑5</b>).
+        ///
+        /// <para>Eine <c>ID_PV</c>, die die Ablage nicht kennt, ist derselbe Fall wie
+        /// keine: Eine gelöschte Modulkopie darf die Ampel nicht anders prüfen lassen,
+        /// sondern höchstens dieselbe Meldung erzeugen wie eine fehlende Angabe.</para>
+        /// </summary>
+        public static PhotovoltaikModel ModulDesStrangs(AnlageStrangModel s, Gaben gaben)
+        {
+            if (s == null || gaben == null) return null;
+
+            int id = s.ID_PV ?? 0;
+            if (id > 0 && gaben.Module != null &&
+                gaben.Module.TryGetValue(id, out PhotovoltaikModel eigenes) && eigenes != null)
+                return eigenes;
+
+            return gaben.Modul;
         }
 
         private static WechselrichterModel Geraet(AnlageStrangModel s, Gaben gaben)

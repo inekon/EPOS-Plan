@@ -61,6 +61,22 @@ public sealed class StrangZeile
     /// <summary>Anzeigename des Geräts; leer = keins zugeordnet.</summary>
     public string WechselrichterName { get; set; } = "";
 
+    /// <summary>
+    /// Der ABWEICHENDE Modultyp dieses Strangs als PROJEKTKOPIE
+    /// (<c>Tab_PV.ID</c> → <c>Z_AnlageStrang.ID_PV</c>); <b>0 = das Modul der
+    /// Anlage</b> (Anwenderentscheid <b>W6‑O‑6</b> vom 06.09.2026: „jeder Strang mit
+    /// nur einem Modultyp, unterschiedliche Stränge können jeweils einen anderen
+    /// Modultyp haben").
+    ///
+    /// <para>Dieselbe Bauart wie <see cref="WechselrichterId"/>: Die Klappliste zeigt
+    /// den KATALOG, die Zeile trägt die Projektkopie, und das Band zwischen beiden ist
+    /// der <see cref="ModulName"/>.</para>
+    /// </summary>
+    public int ModulId { get; set; }
+
+    /// <summary>Anzeigename des Moduls; leer = das Modul der Anlage.</summary>
+    public string ModulName { get; set; } = "";
+
     /// <summary>Welches physische Gerät dieses Typs; <c>null</c> = 1.</summary>
     public int? Geraetenummer { get; set; }
 
@@ -183,6 +199,17 @@ public sealed class PvStrangTexte
     /// <summary>Spaltenkopf „Wechselrichter" — <c>PVS_SP_WECHSELRICHTER</c>.</summary>
     public string SpalteWechselrichter { get; set; } = T("PVS_SP_WECHSELRICHTER", "Wechselrichter");
 
+    /// <summary>Spaltenkopf „Modul" — <c>PVS_SP_MODUL</c> (W6‑O‑6).</summary>
+    public string SpalteModul { get; set; } = T("PVS_SP_MODUL", "Modul");
+
+    /// <summary>Klapplisteneintrag „(Modul der Anlage)" — <c>PVS_MODUL_ANLAGE</c>.</summary>
+    public string ModulDerAnlage { get; set; } = T("PVS_MODUL_ANLAGE", "(Modul der Anlage)");
+
+    /// <summary>Die Herleitung unter der Tabelle — <c>PVS_HERLEITUNG_MODUL</c>.</summary>
+    public string HerleitungModul { get; set; } =
+        T("PVS_HERLEITUNG_MODUL",
+          "Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang.");
+
     /// <summary>Spaltenkopf „Gerät" — <c>PVS_SP_GERAET</c>.</summary>
     public string SpalteGeraet { get; set; } = T("PVS_SP_GERAET", "Gerät");
 
@@ -204,7 +231,11 @@ public sealed class PvStrangTexte
     /// <summary>Klapplisteneintrag „(kein Gerät)" — <c>PVS_KEIN_GERAET_WAHL</c>.</summary>
     public string KeinGeraet { get; set; } = T("PVS_KEIN_GERAET_WAHL", "(kein Gerät)");
 
-    /// <summary>Filterzeile über der Klappliste — <c>PVS_FILTER_HERSTELLER</c>.</summary>
+    /// <summary>
+    /// Filterzeile ÜBER der Strangtabelle — <c>PVS_FILTER_HERSTELLER</c>
+    /// (Anwenderentscheid <b>W6‑O‑4</b> vom 06.09.2026: „Hersteller kann vom Modul
+    /// verschieden sein. Herstellerfilter etc. wie in Modulliste einfügen").
+    /// </summary>
     public string FilterHersteller { get; set; } =
         T("PVS_FILTER_HERSTELLER", "Filtern nach Hersteller:");
 
