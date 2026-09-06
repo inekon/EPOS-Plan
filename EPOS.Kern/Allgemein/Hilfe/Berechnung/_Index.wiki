@@ -94,9 +94,9 @@ Bedingung rechts. Sie ersetzt die Aufzaehlung „fuer … gilt …" der Fassung 
 '''Warum eine kleine LaTeX-Teilmenge.''' Die Erweiterung prueft jede Formel mit WikiTexVC, und
 was sie nicht kennt, erscheint dem Leser als rote Fehlerzeile statt als Formel. Die Rubrik
 beschraenkt sich deshalb auf einen festen Vorrat: <code>\frac \sqrt \sum \int \prod \min \max
-\cdot \left \right \mathrm \text \operatorname \displaystyle \quad</code>, die
+\cdot \left \right \mathrm \text \operatorname \displaystyle \quad \cos \sin \ln \circ</code>, die
 Vergleichs- und Mengenzeichen <code>\le \ge \ne \approx \pm \to \infty \in \dots</code>, die
-griechischen Buchstaben als Befehl und <code>\begin{cases}…\end{cases}</code>. Kein
+griechischen Buchstaben als Befehl (auch <code>\theta \chi \omega \kappa \Psi</code>), <code>\ell</code>, <code>\dot</code> und <code>\begin{cases}…\end{cases}</code>. Kein
 <code>\tag</code>, kein <code>\label</code>, kein <code>\newcommand</code>, kein
 <code>align</code> — und keine Umlaute innerhalb einer Formel. Zwei Waechter im Quellbaum
 halten das fest.

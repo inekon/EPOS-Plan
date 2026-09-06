@@ -48,12 +48,6 @@ namespace EPOS.UI.Tests;
 /// (<see cref="ErlaubteBefehle"/>): Was WikiTexVC nicht kennt, erschiene beim
 /// Anwender als roter Fehlerkasten — deshalb hält dieser Wächter die Liste.</para>
 ///
-/// <para><b>Solange nur ein Teil umgestellt ist.</b> Die Fassung 3 entsteht in
-/// zwei Aufträgen. Die sieben Seiten dieses Teils stehen in
-/// <see cref="SeitenDiesesTeils"/> und werden nach den Fassung-3-Regeln geprüft;
-/// die übrigen tragen bis zur Zusammenführung ihre Fassung 2 und dürfen davon
-/// nicht rot werden.</para>
-///
 /// <para><b>Warum QUELLTEXT und nicht der Katalog.</b> Der Hilfekatalog
 /// (<c>HelpCatalog</c>, <c>help_mapping.txt</c>) liegt in der Windows-Anwendung
 /// (<c>net10.0-windows</c>); ein Test, der sie referenziert, liefe weder auf dem
@@ -93,19 +87,6 @@ public sealed class BerechnungshilfeTests : BunitContext
     };
 
     /// <summary>
-    /// Was auf einer Seite der FASSUNG 2 nichts zu suchen hat: die Auszeichnung
-    /// einer Math-Erweiterung, die es damals nicht gab, und die LaTeX-Befehle,
-    /// die ohne sie als Backslash-Text erschienen.
-    ///
-    /// <para>Für die Seiten der Fassung 3 gilt das Verbot nicht mehr — dort tritt
-    /// <see cref="ErlaubteBefehle"/> an seine Stelle.</para>
-    /// </summary>
-    private static readonly string[] VerboteneAuszeichnung =
-    {
-        "<math", "\\frac", "\\sum", "\\cdot", "\\eta", "\\begin", "\\text", "\\sqrt"
-    };
-
-    /// <summary>
     /// Die erlaubte LaTeX-Teilmenge der Fassung 3 — texvc/WikiTexVC-sicher. Was
     /// hier nicht steht, gehört nicht in eine Formel dieser Rubrik: Die
     /// Math-Erweiterung des Wikis zeichnet einen unbekannten Befehl als roten
@@ -135,7 +116,7 @@ public sealed class BerechnungshilfeTests : BunitContext
         "\\mathrm", "\\text", "\\operatorname", "\\displaystyle", "\\begin", "\\end",
         "\\eta", "\\vartheta", "\\rho", "\\lambda", "\\alpha", "\\beta", "\\gamma",
         "\\varepsilon", "\\tau", "\\varphi", "\\Delta", "\\Sigma", "\\pi", "\\kappa", "\\theta",
-        "\\cos", "\\sin", "\\ln", "\\circ", "\\chi",
+        "\\cos", "\\sin", "\\ln", "\\circ", "\\chi", "\\omega", "\\Psi", "\\ell", "\\dot",
         "\\le", "\\ge", "\\ne", "\\approx", "\\pm", "\\to", "\\infty", "\\in", "\\dots",
         "\\quad", "\\,", "\\;", "\\ ", "\\\\"
     };
@@ -152,24 +133,6 @@ public sealed class BerechnungshilfeTests : BunitContext
         "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
         "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
     };
-
-    /// <summary>
-    /// Die sieben Seiten, die dieser Auftrag auf die FASSUNG 3 umstellt (Erzeuger
-    /// und Speicher). Nur für sie gelten LaTeX, Legende und das Verbot von
-    /// <c>&lt;big&gt;</c>.
-    ///
-    /// <para>Die Liste ist eine Übergangsliste, keine Bauform.</para>
-    /// </summary>
-    // TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen
-    private static readonly string[] SeitenDiesesTeils =
-    {
-        "Heizkessel", "BHKW", "Wärmepumpe", "Pufferspeicher", "Solarthermie",
-        "Photovoltaik", "Stromspeicher"
-    };
-
-    /// <summary>Trägt die Seite schon die Fassung 3?</summary>
-    private static bool Fassung3(string seite)
-        => SeitenDiesesTeils.Contains(seite, StringComparer.Ordinal);
 
     public BerechnungshilfeTests()
     {
@@ -262,35 +225,6 @@ public sealed class BerechnungshilfeTests : BunitContext
     // =====================================================================
 
     /// <summary>
-    /// Eine Seite, die noch NICHT auf die Fassung 3 umgestellt ist, trägt weiter
-    /// die Unicode-Notation der Fassung 2: keine Math-Auszeichnung, kein
-    /// LaTeX-Befehl.
-    ///
-    /// <para>Für die sieben Seiten dieses Teils gilt das Gegenteil — sie tragen
-    /// LaTeX, geprüft von <see cref="Jede_Seite_dieses_Teils_setzt_LaTeX_in_math"/>
-    /// und <see cref="Jede_Formel_benutzt_nur_die_erlaubten_Befehle"/>.</para>
-    /// </summary>
-    // TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen
-    [Theory]
-    [MemberData(nameof(Seitennamen))]
-    public void Eine_Seite_der_Fassung_2_benutzt_kein_LaTeX(string seite)
-    {
-        if (Fassung3(seite)) return;   // Fassung 3: LaTeX ist dort gewollt
-
-        string text = File.ReadAllText(Seitendatei(seite));
-
-        var gefunden = VerboteneAuszeichnung
-            .Where(v => text.Contains(v, StringComparison.Ordinal))
-            .ToArray();
-
-        Assert.True(gefunden.Length == 0,
-                    seite + " benutzt eine Auszeichnung, die zur Fassung 2 nicht passt: " +
-                    string.Join(", ", gefunden) +
-                    ". Entweder Unicode-Notation, oder die Seite wird ganz auf die " +
-                    "Fassung 3 umgestellt und in SeitenDiesesTeils eingetragen.");
-    }
-
-    /// <summary>
     /// Jede Seite trägt mindestens eine ANZEIGE-Gleichung, und jede trägt ihre
     /// laufende Nummer am Zeilenende. Ohne Nummer lässt sich im Text nicht auf
     /// eine Gleichung verweisen — und genau darauf zeigt die Spalte
@@ -298,12 +232,7 @@ public sealed class BerechnungshilfeTests : BunitContext
     ///
     /// <para>Die Nummern laufen lückenlos von 1 an: Eine gestrichene Gleichung,
     /// deren Nummer stehen bleibt, macht jeden Verweis darauf falsch.</para>
-    ///
-    /// <para>Die Zeile beginnt mit <c>: &lt;big&gt;</c> (Fassung 2) ODER mit
-    /// <c>: &lt;math&gt;</c> (Fassung 3) — solange beide Fassungen nebeneinander
-    /// liegen, sind beide Formen richtig.</para>
     /// </summary>
-    // TODO Zusammenführung Fassung 3: nur noch ': <math>' zulassen
     [Theory]
     [MemberData(nameof(Seitennamen))]
     public void Jede_Anzeigegleichung_traegt_ihre_laufende_Nummer(string seite)
@@ -333,8 +262,8 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// nicht mehr vor.
     /// </summary>
     [Theory]
-    [MemberData(nameof(SeitennamenDiesesTeils))]
-    public void Jede_Seite_dieses_Teils_setzt_LaTeX_in_math(string seite)
+    [MemberData(nameof(Seitennamen))]
+    public void Jede_Seite_setzt_LaTeX_in_math(string seite)
     {
         string[] zeilen = File.ReadAllLines(Seitendatei(seite));
 
@@ -370,7 +299,7 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// beanstandet hat.</para>
     /// </summary>
     [Theory]
-    [MemberData(nameof(SeitennamenDiesesTeils))]
+    [MemberData(nameof(Seitennamen))]
     public void Auf_jede_Anzeigegleichung_folgt_ihre_Legende(string seite)
     {
         string[] zeilen = File.ReadAllLines(Seitendatei(seite));
@@ -400,7 +329,7 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// <c>&lt;math&gt;</c>: Außerhalb ist ein Backslash gewöhnlicher Text.
     /// </summary>
     [Theory]
-    [MemberData(nameof(SeitennamenDiesesTeils))]
+    [MemberData(nameof(Seitennamen))]
     public void Jede_Formel_benutzt_nur_die_erlaubten_Befehle(string seite)
     {
         string text = File.ReadAllText(Seitendatei(seite));
@@ -450,7 +379,7 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// man setzen könnte.</para>
     /// </summary>
     [Theory]
-    [MemberData(nameof(SeitennamenDiesesTeils))]
+    [MemberData(nameof(Seitennamen))]
     public void Die_Symbolspalte_beider_Tabellen_steht_in_math(string seite)
     {
         string text = File.ReadAllText(Seitendatei(seite)).Replace("\r\n", "\n");
@@ -511,25 +440,21 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// Der Kopfblock nennt die Fassung. Wer eine Seite anfasst, sieht in Zeile 1,
     /// ob sie die Notation schon trägt — und welche.
     /// </summary>
-    // TODO Zusammenführung Fassung 3: nur noch „Fassung 3" zulassen
     [Theory]
     [MemberData(nameof(Seitennamen))]
     public void Jede_Seite_nennt_ihre_Fassung_im_Kopfblock(string seite)
     {
         string kopf = string.Join("\n", File.ReadAllLines(Seitendatei(seite)).Take(4));
 
-        Assert.Contains(Fassung3(seite) ? "Fassung 3" : "Fassung 2", kopf, StringComparison.Ordinal);
+        Assert.Contains("Fassung 3", kopf, StringComparison.Ordinal);
     }
 
     /// <summary>
-    /// Die Anzeige-Gleichungen einer Seite — die Fassung 2 setzt sie in
-    /// <c>&lt;big&gt;</c>, die Fassung 3 in <c>&lt;math&gt;</c>.
+    /// Die Anzeige-Gleichungen einer Seite — LaTeX in <c>&lt;math&gt;</c> (Fassung 3).
     /// </summary>
-    // TODO Zusammenführung Fassung 3: ': <big>' streichen
     private static string[] Anzeigegleichungen(string seite)
         => File.ReadAllLines(Seitendatei(seite))
-               .Where(z => z.TrimStart().StartsWith(": <big>", StringComparison.Ordinal) ||
-                           z.TrimStart().StartsWith(": <math>", StringComparison.Ordinal))
+               .Where(z => z.TrimStart().StartsWith(": <math>", StringComparison.Ordinal))
                .ToArray();
 
     private static int Zaehle(string text, string teil)
@@ -706,20 +631,6 @@ public sealed class BerechnungshilfeTests : BunitContext
         }
     }
 
-    /// <summary>
-    /// Die sieben Seiten der Fassung 3 als Theoriedaten — Übergangsliste, bis
-    /// beide Teile zusammengeführt sind.
-    /// </summary>
-    // TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen
-    public static TheoryData<string> SeitennamenDiesesTeils
-    {
-        get
-        {
-            var daten = new TheoryData<string>();
-            foreach (string s in SeitenDiesesTeils) daten.Add(s);
-            return daten;
-        }
-    }
 
     private static string Seitendatei(string seite)
         => Path.Combine(new[] { Wurzel() }.Concat(SeitenOrdner).ToArray()) +

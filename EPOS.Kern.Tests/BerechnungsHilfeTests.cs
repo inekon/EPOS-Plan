@@ -83,15 +83,8 @@ namespace EPOS.Kern.Tests
         /// Zeilenende, gesetzt in <c>&lt;math&gt;</c> (Fassung 3) ODER in
         /// <c>&lt;big&gt;</c> (Fassung 2).
         /// </summary>
-        /// <remarks>
-        /// Das Oder ist ein Übergangszustand: Teil A stellt seine sechs Seiten um,
-        /// Teil B seine sieben im eigenen Zweig. Bis beide zusammengeführt sind, liegen
-        /// beide Formen im selben Ordner, und ein Wächter, der nur eine kennte, fiele
-        /// rot aus, ohne dass jemand einen Fehler gemacht hätte.
-        /// </remarks>
-        // TODO Zusammenführung Fassung 3: auf "<math>" allein verengen.
         private static readonly Regex Anzeigeformel =
-            new(@"^:\s*(?:<math>.+</math>|<big>.+</big>)(?:\s|&nbsp;)*\(\d+\)\s*$",
+            new(@"^:\s*<math>.+</math>(?:\s|&nbsp;)*\(\d+\)\s*$",
                 RegexOptions.Multiline | RegexOptions.Compiled);
 
         /// <summary>Eine Anzeige-Gleichung der Fassung 3 — LaTeX in <c>&lt;math&gt;</c>.</summary>
@@ -134,7 +127,8 @@ namespace EPOS.Kern.Tests
             "le", "ge", "ne", "approx", "pm", "to", "infty", "in", "dots",
             "eta", "vartheta", "rho", "lambda", "alpha", "beta", "gamma",
             "varepsilon", "tau", "varphi", "Delta", "Sigma",
-            "pi", "omega", "kappa", "Psi", "ell", "dot"
+            "pi", "omega", "kappa", "Psi", "ell", "dot",
+            "theta", "cos", "sin", "circ", "ln", "chi"
         };
 
         /// <summary>Die Kopfzeile der Parametertabelle.</summary>
@@ -163,19 +157,6 @@ namespace EPOS.Kern.Tests
             "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
             "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
             "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
-        };
-
-        /// <summary>
-        /// Die SECHS Seiten, die dieses Paket (Teil A der Fassung 3) auf LaTeX
-        /// umgestellt hat. Nur für sie gelten die Fassung-3-Fälle — die sieben
-        /// Erzeugerseiten aus Teil B liegen im selben Ordner noch in der Fassung 2 und
-        /// fielen sonst rot aus, ohne dass jemand einen Fehler gemacht hätte.
-        /// </summary>
-        // TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen
-        public static readonly string[] SeitenDiesesTeils =
-        {
-            "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
-            "Strombedarf", "Wärmequelle Erdreich"
         };
 
         /// <summary>
@@ -387,8 +368,8 @@ namespace EPOS.Kern.Tests
         /// zurück — und dann springt er zur Symboltabelle zurück, statt zu lesen.
         /// </remarks>
         [Theory]
-        [MemberData(nameof(AlleSeitenDiesesTeils))]
-        public void Jede_Seite_dieses_Teils_setzt_die_Gleichungen_in_LaTeX(string seitenname)
+        [MemberData(nameof(AlleSeitenDerRubrik))]
+        public void Jede_Seite_setzt_die_Gleichungen_in_LaTeX(string seitenname)
         {
             BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
             Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
@@ -425,8 +406,8 @@ namespace EPOS.Kern.Tests
         /// Stand, der genauso gut die Unicode-Fassung meinen könnte.
         /// </summary>
         [Theory]
-        [MemberData(nameof(AlleSeitenDiesesTeils))]
-        public void Der_Stand_dieses_Teils_nennt_die_Fassung_3(string seitenname)
+        [MemberData(nameof(AlleSeitenDerRubrik))]
+        public void Der_Stand_nennt_die_Fassung_3(string seitenname)
         {
             BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
             Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
@@ -439,14 +420,6 @@ namespace EPOS.Kern.Tests
         /// Ohne sie wäre der Abschnitt „Formelzeichen und Parameter" eine Zeichenliste ohne
         /// Formel, auf die er sich beziehen könnte.
         /// </summary>
-        /// <remarks>
-        /// Der Fall nimmt beide Formen an — <c>&lt;math&gt;</c> der Fassung 3 wie
-        /// <c>&lt;big&gt;</c> der Fassung 2 —, weil bis zur Zusammenführung beide im
-        /// selben Ordner liegen. Dass die sechs Seiten dieses Teils WIRKLICH
-        /// <c>&lt;math&gt;</c> führen, hält
-        /// <see cref="Jede_Seite_dieses_Teils_setzt_die_Gleichungen_in_LaTeX"/> fest.
-        /// </remarks>
-        // TODO Zusammenführung Fassung 3: das Oder in Anzeigeformel auflösen
         [Theory]
         [MemberData(nameof(AlleSeitenDerRubrik))]
         public void Jede_Seite_traegt_nummerierte_Anzeigeformeln(string seitenname)
@@ -458,8 +431,7 @@ namespace EPOS.Kern.Tests
 
             Assert.True(formeln.Count >= 1,
                 seitenname + ": keine Anzeige-Formel gefunden. Muster einer solchen Zeile: " +
-                "': <math>\\displaystyle P_{\\mathrm{AC}}(t) = \\min( … )</math>  (3)' " +
-                "(Fassung 3) oder ': <big>P<sub>AC</sub>(t) = min( … )</big>  (3)' (Fassung 2).");
+                "': <math>\\displaystyle P_{\\mathrm{AC}}(t) = \\min( … )</math>  (3)'.");
 
             // Die Nummern laufen je Seite von 1 an und ohne Lücke - sonst verweist der
             // Text auf eine Gleichung, die es nicht gibt.
@@ -495,15 +467,6 @@ namespace EPOS.Kern.Tests
         {
             var daten = new TheoryData<string>();
             foreach (string name in SeitenDerRubrik) daten.Add(name);
-            return daten;
-        }
-
-        /// <summary>Die sechs Seiten dieses Teils als Theoriedaten (Fassung 3).</summary>
-        // TODO Zusammenführung Fassung 3: auf AlleSeitenDerRubrik umstellen
-        public static TheoryData<string> AlleSeitenDiesesTeils()
-        {
-            var daten = new TheoryData<string>();
-            foreach (string name in SeitenDiesesTeils) daten.Add(name);
             return daten;
         }
 
