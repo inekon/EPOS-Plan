@@ -326,3 +326,170 @@ Wissensabschnitt für den KI-Assistenten (`HilfeWissen`) ist ebenfalls Teil A.
 | **O‑H13b‑2** | Der Ausblick „Option 2 — mit Wechselrichter" trägt den Stand 06.09.2026. **Wenn die Umsetzung kommt, ist die Photovoltaikseite mitzuführen** — Rechenweg, die acht Prüfungen und die Kennzahlen stehen dort bereits im Wortlaut des Konzepts. |
 | **O‑H13b‑3** | Anker je Abschnitt (`{{Anker|…}}`) sind nicht gesetzt. Ein Knopf könnte damit unmittelbar auf „Rechenweg, Schritt 4" springen statt an den Seitenanfang; das Format von `help_mapping.txt` kann es seit H2 (`Slug#Anker`). Lohnt sich, sobald die Seiten im Wiki stehen und ihre Abschnitte stabil sind. |
 | **O‑H13b‑4** | Die drei Bedarfsseiten und die Rubrik-Startseite kommen aus Teil A. Die Bezüge dieser sieben Seiten zeigen bereits darauf (`Berechnung/Simulationsablauf`, `Berechnung/Wärmebedarf`, `Berechnung/Strombedarf`) — nach der Zusammenführung ist zu prüfen, dass die Seitennamen wörtlich übereinstimmen. |
+
+---
+
+## 10. Fassung 2 — Formelzeichen, Parameter und mathematische Schreibweise (06.09.2026)
+
+**Anwenderwunsch, wörtlich:**
+
+> „Definiere in der hochgeladenen Dokumentation die Definition der Parameter und Variablen. Stell
+> wenn möglich die Formeln in mathematischer Schreibweise (mathematische Zeichen) dar."
+
+**Ergebnis in einem Satz:** Alle sieben Seiten dieses Teils tragen einen neuen Abschnitt
+**„Formelzeichen und Parameter"** mit je einer Parameter- und einer Variablentabelle, und ihre
+Formeln stehen als **129 nummerierte Anzeige-Gleichungen** in Unicode-Notation. `EPOS.UI.Tests`
+**2 857/2 857**, `EPOS.Kern.Tests` **1 485 von 1 486** (der eine rote Fall gehört Teil A, siehe
+10.6); Build `WP-Plan.Kern.slnf` 0 Fehler / 0 Warnungen.
+
+### 10.1 Der Befund, der alles entschieden hat: das Wiki kann kein `<math>`
+
+Gemessen am 06.09.2026 über die Vorschau-Schnittstelle von `wiki.epos-plan.de`
+(`action=parse&contentmodel=wikitext`): Die Installation führt **keine Math-Erweiterung**. Ein
+`<math>…</math>` erschiene dort als Klartext, ein `\frac` als Backslash. Damit war die Formatfrage
+entschieden, bevor die erste Formel geschrieben war — **Unicode-Notation, keine Auszeichnung**:
+
+| Mittel | Verwendung |
+|---|---|
+| `·` (U+00B7), `−` (U+2212), `Σ`, `Δ`, `√`, `≤`, `≥`, `≠`, `±`, `→`, `∈` | Rechenzeichen |
+| `η ϑ ρ λ α β γ ε τ φ θ κ χ` | griechische Buchstaben direkt |
+| `<sub>` / `<sup>` | Indizes, mehrteilig mit Komma: `P<sub>AC,nenn</sub>` |
+| `: <big>…</big> &nbsp;&nbsp;(n)` | **Anzeige-Formel**: eigene, eingerückte Zeile mit laufender Nummer |
+| `{| class="wikitable"` | Fallunterscheidungen, wo eine geschweifte Klammer über mehrere Zeilen nötig wäre |
+
+**Eine Abweichung von der Vorlage, bewusst:** Argumente von `min(…)` und `max(…)` werden mit
+**Semikolon** getrennt, nicht mit Komma. Das Komma ist in dieser Notation bereits vergeben — es
+trennt mehrteilige Indizes (`P<sub>AC,nenn</sub>`); `min(P_AC,roh , P_AC,nenn)` wäre nicht mehr
+eindeutig lesbar. Die Fassung 1 schrieb es an dieser Stelle bereits so.
+
+### 10.2 Die Bauform des neuen Abschnitts
+
+`== Formelzeichen und Parameter ==` steht **zwischen** „Eingangsgrößen" und „Rechenweg" — wer die
+Formeln liest, hat die Zeichen unmittelbar davor gelesen. Er trägt zwei Tabellen:
+
+* **Parameter** (`Symbol | Bedeutung | Einheit | Herkunft`) — Eingaben, Katalogwerte, Vorgaben und
+  Konstanten. Die Spalte **Herkunft** ist der Grund, warum der Anwender die Tabelle liest: Sie nennt
+  Dialog und Feld, Katalog und Spalte, oder sie sagt „**Vorgabe: 0,95**" beziehungsweise
+  „**Konstante: 1 000**". Wo der Rechenkern eine andere Bezeichnung führt, steht sie dabei
+  (`PV_WrEta10`, `PV_Systemverluste`).
+* **Variablen** (`Symbol | Bedeutung | Einheit | berechnet in`) — was der Lauf je Stunde,
+  je Viertelstunde oder je Lauf bildet. Die letzte Spalte verweist auf die **Gleichungsnummer**;
+  reine Ergebnisgrößen sind als „Ausgabe" gekennzeichnet, Eingangsreihen als „(Eingang)".
+
+Regel: **Jedes Symbol einer Formel steht in einer der zwei Tabellen, und jedes Tabellensymbol kommt
+in einer Formel vor.** Die einzige Zeile ohne Symbol steht mit Absicht da — auf der Solarthermieseite
+die vierte fest verdrahtete Annahme („keine Stagnation, keine Kollektorabschaltung, keine
+Solarkreispumpe"), für die es weder Parameter noch Formel gibt.
+
+Der Kopfblock nennt seither die Fassung:
+`Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation)`.
+
+### 10.3 Die sieben Seiten in Zahlen
+
+| Seite | Gleichungen | Parameterzeilen | Variablenzeilen | Zeilen |
+|---|---:|---:|---:|---:|
+| Heizkessel | 16 | 16 | 20 | 318 |
+| BHKW | 13 | 11 | 20 | 316 |
+| Wärmepumpe | 14 | 12 | 24 | 363 |
+| Pufferspeicher | 19 | 18 | 26 | 342 |
+| Solarthermie | 10 | 15 | 16 | 258 |
+| Photovoltaik | 34 | 25 | 34 | 586 |
+| Stromspeicher | 23 | 17 | 30 | 342 |
+| **Summe** | **129** | **114** | **170** | **2 525** |
+
+Was inhaltlich dazugekommen ist und nicht nur umgesetzt wurde:
+
+* **Photovoltaik** — die stückweise Wechselrichterkennlinie ist als Interpolationsformel (20) samt
+  Intervalltabelle gefasst, statt als vier Textzeilen; die Flächenformel des Rückfalls und die
+  3‑%‑Konsistenzprüfung sind eigene Gleichungen; der Strangweg trägt seine Gleichungen (29) bis
+  (34) einschließlich des Nachtverbrauchs mit der Umrechnung W → kW.
+* **Pufferspeicher** — die **Schichtung** stand als Fließtext ohne eine einzige Formel da. Jetzt
+  stehen dort die Geometrie des Ersatzbehälters aus H/D = 2,5, die Querschnittsfläche, der
+  Wärmeleitwert `k = λ_eff · A_q · N / H / 1 000` [kWh/K], die Schichtkapazität
+  `C_Sch = (Q_max/N) / (ϑ_VL − ϑ_RL)` [kWh/K] und der auf κ = 0,25 gekappte Ausgleich.
+* **Stromspeicher** — die einzige Seite im **Viertelstundenraster**: Laufindex `k = 1…35 040`,
+  `Δt = 0,25 h`, beides als Konstante in der Parametertabelle, und jede Reihe trägt `(k)` statt
+  `(t)`. Die Grenzfälle des Rentenbarwertfaktors (d = 0; i = 0; i = 0 und d > 0; beide 0) stehen
+  jetzt vollständig.
+* **Solarthermie** — die **vier fest verdrahteten Annahmen** sind eigene Zeilen der Parametertabelle
+  (ϑ_Sp = 50 °C, f_L = 0,92, ρ = 0,2 samt „keine Hay-Davies", und die vierte ohne Symbol), mit einem
+  Absatz darunter, der sie als die Zahlen benennt, die im Dialog nirgends stehen.
+
+### 10.4 Drei berichtigte Unstimmigkeiten und zwei nachgereichte Korrekturen
+
+Beim Gegenlesen gegen den Rechenkern sind drei Aussagen der Fassung 1 als ungenau aufgefallen und
+auf der Seite berichtigt worden:
+
+| Nr. | Seite | Was ungenau war | Was gilt |
+|---|---|---|---|
+| **F2‑1** | Heizkessel | „η_Jahr = Nutzwärme / Gesamtverbrauch" | Im Zähler steht die **brennstoffbasierte** Nutzwärme `Q_K,a`. Bei einem Kessel mit Quellpuffer ist das weniger als seine Abgabe — der Puffer-Anteil hat ihn keinen Brennstoff gekostet (`SimulationSPK.cs`: `_kesselStunde` führt `ladung − ausQuelle`, und daraus bildet Schritt 5 den Nutzungsgrad) |
+| **F2‑2** | Pufferspeicher | „Vollzyklen = entnommene Energie / nutzbare Kapazität" | Der Bezug ist **rollenabhängig**: beim **Quellspeicher** die Jahresentladung, bei jedem anderen die Jahres**ladung** (`KennzahlenBerechnen`: `umsatz = (Verwendung == VERWENDUNG_QUELLE) ? Entladung_gesamt : Ladung_gesamt`) |
+| **F2‑3** | Pufferspeicher | Entladung als `min(angefordert ; Füllstand)`, „danach auf das Entladebudget begrenzt" | Die Entladeleistungsgrenze ist das **Budget der Stunde** und wirkt auf das **Restbudget**; sie gehört deshalb nicht als dritter Term in das `min()`. Gleichung (6) sagt es jetzt so |
+
+Dazu die zwei Korrekturen, die die Orchestrierung während der Umsetzung nachgereicht hat:
+
+* **BHKW, „Ergebnisse und wo sie stehen"** — die **Energieprobe** des Moduls (Jahresbilanz mit
+  1 kWh Toleranz, Stundenbedingung mit 0,01 kWh) ist ein **Entwickler-Selbsttest auf der Konsole**
+  und steht **nicht** im Simulationsprotokoll des Anwenders. Der Punkt zählt jetzt die sichtbaren
+  Protokollmeldungen auf (Stromüberschuss, Kaskade, Speicherstufe, „BHKW-Pendelspeicher: keine
+  Puffer-Senke am BHKW", Senkenzeile ohne Puffer, Senke ohne Ladeauftrag, Quelle gleich eigene
+  Senke, nachgezogene Ladeprioritäts-Vorbelegung) und nennt die Probe als das, was sie ist. Ihre
+  zwei Toleranzen stehen unter „Grenzen und Annahmen".
+* **BHKW und Solarthermie, „Vorlauf und Rücklauf des Katalogs rechnen nicht mit"** — umformuliert
+  nach dem Anwenderentscheid vom 06.09.2026: Der Katalogsatz ist die **Vorbelegung** beim Anlegen
+  der Anlage im Projekt und dort änderbar; gerechnet wird mit den Werten der **Projektzeile**.
+  Ein paralleler Agent setzt dieses Verhalten im Kern um; Formelzeichen und Notation sind davon
+  nicht berührt.
+
+### 10.5 Die zwei Wächter dieses Teils
+
+`EPOS.UI.Tests/BerechnungshilfeTests` — aus 50 werden **78 Fälle**:
+
+* Die Pflichtabschnitte sind **sieben** statt sechs; „Formelzeichen und Parameter" steht zwischen
+  Eingangsgrößen und Rechenweg, die Reihenfolgeprüfung bleibt.
+* **Keine Math-Auszeichnung, kein LaTeX-Befehl** (`<math`, `\frac`, `\sum`, `\cdot`, `\eta`,
+  `\begin`, `\text`, `\sqrt`) — was hier rot ausfällt, wäre beim Anwender unlesbar.
+* **Jede Anzeige-Formel trägt ihre Nummer**, und die Nummern laufen **lückenlos** von 1 an. Eine
+  gestrichene Gleichung, deren Nummer stehen bleibt, macht jeden Verweis der Spalte „berechnet in"
+  falsch.
+* **Beide Tabellen sind da**, mit ihren Spaltenköpfen — geprüft wird der Kopf, nicht der Inhalt:
+  Eine Tabelle mit drei Spalten hätte die Herkunft verloren.
+* Der Kopfblock **nennt die Fassung**.
+
+`EPOS.Kern.Tests/BerechnungshilfeEinbettungTests` — aus 3 werden **10 Fälle**: Die Formelzeichen
+überstehen die **Einbettung**. Gelesen wird aus der **Assembly**, nicht von der Platte — was der
+KI-Assistent und der Hilfeleser sehen, ist die Ressource. Geprüft werden zwei Zeichen, die auf jeder
+Seite stehen (Malpunkt und typografisches Minus), dazu mindestens einer der zwölf griechischen und
+mathematischen Buchstaben der Rubrik; ein **bestimmter** griechischer Buchstabe taugt dafür nicht —
+die Wärmepumpe rechnet mit COP statt mit η, der Pufferspeicher mit λ. Dazu die zwei Verbote auf dem
+Weg, auf dem die Seiten wirklich ausgeliefert werden.
+
+Beide Wächter prüfen **nur die sieben Seiten dieses Teils**. Solange Teil A nicht zusammengeführt
+ist, tragen dessen sechs Seiten ihre Fassung 1 — sie sollen davon nicht rot werden. Nach der
+Zusammenführung schaltet die Orchestrierung beide auf „alle 13".
+
+### 10.6 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.Kern.slnf -c Release` | **0 Fehler / 0 Warnungen** |
+| `dotnet test EPOS.UI.Tests -c Release` | **2 857 / 2 857 grün** |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 485 / 1 486** — ein roter Fall, siehe unten |
+| Vorschau-Probe je Seite (`action=parse`, MediaWiki-API) | **7 / 7 bestanden** — kein `&lt;sub&gt;`-Klartext, keine zerrissene Tabelle, kein Parserfehler |
+| Rechenweg | **unberührt** — keine Quelldatei des Rechenkerns geändert, kein Referenzlauf nötig |
+| SQL, Ressourcen, `help_mapping.txt`, `help_cache.json`, `HelpCatalog` | **unverändert** |
+
+**Der eine rote Fall gehört Teil A:** `EPOS.Kern.Tests/BerechnungsHilfeTests.Der_Stand_ist_ein_Datum`
+parst das Feld `Stand` mit `TryParseExact("yyyy-MM-dd")`. Der Kopfblock der Fassung 2 lautet nach der
+gemeinsamen Bauform `Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation)` — damit fällt der
+Fall für **jede** umgestellte Seite rot aus, auch für die sechs des Teils A. Er steht in der Datei,
+die Teil A anpasst (`BerechnungsHilfeTests.cs`, großes H), und wird deshalb hier nicht angefasst.
+Die Behebung ist eine Zeile: die ersten zehn Zeichen parsen statt der ganzen Zeichenkette.
+
+### 10.7 Offene Punkte der Fassung 2
+
+| Nr. | Punkt |
+|---|---|
+| **O‑H13b‑5** | Teil A schreibt den Abschnitt „Schreibweise" auf die Rubrikstartseite `_Index.wiki`. Nach der Zusammenführung ist zu prüfen, dass die dortige Zeichentabelle und die Notation dieser sieben Seiten wörtlich übereinstimmen — insbesondere die Semikolon-Regel in `min(…)`/`max(…)` und der Viertelstundenindex `k` des Stromspeichers. |
+| **O‑H13b‑6** | Der KI-Klartext (`BerechnungsHilfe.Klartext`: `<sub>x</sub>` → `_x`, `<sup>x</sup>` → `^x`, `<big>` weg) gehört zu Teil A. Bis er steht, liest der Assistent die Indizes als Markup. |
+| **O‑H13b‑7** | Die Gleichungsnummern sind **seitenlokal**. Ein Verweis von einer Seite auf eine Gleichung einer anderen gibt es bewusst nicht — er wäre beim nächsten Einschub falsch. Wer eine Gleichung einfügt, nummeriert die folgenden neu; der Wächter „lückenlos von 1" fängt ein Vergessen ab. |
