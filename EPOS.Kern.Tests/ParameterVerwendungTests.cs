@@ -363,7 +363,10 @@ namespace EPOS.Kern.Tests
         /// <c>Tab_WP_STAMM.Modulkosten</c>. Der Wert geht in die Kostenplanung
         /// (<c>TechnikPlanwertCtrl.cs:345</c>), die Waermepumpenverwaltung nimmt ihn
         /// aber nicht entgegen (Entscheid AE19 der Welle 7: „Geraetekosten laufen ueber
-        /// die Kostenverwaltung"); gefuellt wird er allein vom VDI-3805-Import.</para>
+        /// die Kostenverwaltung"). <b>Befund W14a-O-2:</b> Auch der VDI-3805-Import
+        /// fuellt ihn nicht — <c>KatalogImportSatz.NachStamm</c> setzt die Spalte nie,
+        /// <c>WPStammCtrl.UpdateImport</c> laesst sie beim Ueberschreiben stehen; ein
+        /// Wert &gt; 0 stammt aus dem Bestand.</para>
         ///
         /// <para><b>Der Anwender hat am 06.09.2026 entschieden (W14a-O-1):</b> Der Wert
         /// wird im Stammdialog wieder GEZEIGT — nur lesend, mit Herleitungszeile.

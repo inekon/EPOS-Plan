@@ -85,10 +85,16 @@ public sealed class WaermepumpeStammDaten
     ///
     /// <para><b>Anwenderentscheid W14a‑O‑1 (06.09.2026):</b> Die Maske ZEIGT den Wert
     /// wieder — als Lesewert mit Herleitungszeile. Ä19 bleibt gewahrt: Es gibt kein
-    /// Eingabefeld und keinen Schreibweg aus dem Dialog; gefüllt wird die Spalte allein
-    /// vom VDI‑3805‑Import, gepflegt werden Gerätekosten in der Kostenverwaltung. Der
-    /// Wert läuft im Speicherweg unverändert mit; bei einer Neuanlage ist er 0, und 0
-    /// heißt „kein Planwert" (<c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge ≤ 0).</para>
+    /// Eingabefeld und keinen Schreibweg aus dem Dialog; gepflegt werden Gerätekosten
+    /// in der Kostenverwaltung. Der Wert läuft im Speicherweg unverändert mit; bei
+    /// einer Neuanlage ist er 0, und 0 heißt „kein Planwert"
+    /// (<c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge ≤ 0).</para>
+    ///
+    /// <para><b>Befund W14a‑O‑2:</b> Woher ein Wert &gt; 0 stammt, ist der BESTAND —
+    /// Auslieferung, Migration oder die Maske vor Ä19. Kein Importweg schreibt die
+    /// Spalte: <c>KatalogImportSatz.NachStamm</c> setzt sie nicht, und
+    /// <c>WPStammCtrl.UpdateImport</c> lässt sie beim Überschreiben ausdrücklich
+    /// stehen. Ein neu importiertes Gerät bleibt damit dauerhaft bei 0.</para>
     /// </summary>
     public int Modulkosten { get; set; }
 

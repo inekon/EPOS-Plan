@@ -1136,11 +1136,49 @@ zwischen zwei Entscheiden:
   Einheit im Raster, **kein `input`/`textarea`/`select`/`button`** in der Zelle (und
   weiterhin genau fünf `input` im Block), Herleitungszeile deutsch und englisch, 0 → „–"
   ohne Einheit samt zweiter Zeile, die Neuanlage, und der Vergleich mit dem Aufklapper.
+* **Beim Bauen aufgefallen — der Herstellerimport füllt das Feld gar nicht.** Siehe den
+  neuen offenen Punkt **W14a‑O‑2** unten. Der beschlossene Wortlaut steht trotzdem
+  wortgetreu in der Maske: Ihn zu ändern ist ein Anwenderentscheid, kein Umbau.
 * **Nachweise** — `EPOS.UI` und `EPOS.Kern` 0 Fehler und **keine neue Warnung** (die
   fünf bekannten des Kerns, eine bekannte des Windows-Baus); `EPOS.UI.Tests` **2 731**,
   `EPOS.Kern.Tests` **1 344**, beide grün unter `de_DE.UTF-8` **und** `en_US.UTF-8`;
   Designer-Prüfung „abweichend 0" (4 895 Einträge, +2); SQL-Prüfer 1 213 Texte /
   **0 Fundstellen** (Kontrolle — es ist kein SQL angefasst).
+
+> **W14a‑O‑2 (offen, gefunden beim Umsetzen von W14a‑O‑1 am 06.09.2026)** — Der Satz
+> „aus dem Herstellerimport" stimmt nicht: **Kein Importweg schreibt
+> `Tab_WP_STAMM.Modulkosten`.** Belegt, nicht vermutet:
+> `KatalogImportSatz.NachStamm` (die WP-Ausprägung des VDI‑3805‑Imports) setzt genau
+> neun Felder — Bezeichner, Regelung, Aufstellung, Firma, Nennleistung, Typ, Bauart und,
+> nur bei angegebener Zuheizung, Heizung und Kühlleistung —, **`Modulkosten` ist nicht
+> darunter**; beim Anlegen schreibt `WPStammCtrl.Insert` deshalb den Modellvorgabewert
+> **0**, und beim Überschreiben lässt `WPStammCtrl.UpdateImport` die Spalte
+> ausdrücklich stehen („vom Anwender gepflegte Felder (Bezeichner, Beschreibung,
+> Modulkosten, ReadOnly) bleiben unangetastet", Dublettenkonzept 4.2). Der VDI‑3805‑Satz
+> führt überhaupt keinen Preis. Ein Wert > 0 in der Testdatenbank (`test5` = 1 000,
+> `T 800-2` = 10 001) stammt damit aus dem **Bestand** — Auslieferung, Migration oder
+> der Maske, wie sie **vor** Ä19 aussah. `WPCtrl.CopyFromStamm`:263 trägt den Wert nur
+> ins Projekt weiter.
+> **Die Folge:** Für jedes NEU importierte Gerät steht dauerhaft „–" samt „kein Planwert
+> aus dem Herstellerimport" — die Zeile erklärt einen Weg, den es nicht gibt, und
+> niemand kann den Wert je füllen. Der Widerspruch aus W14a‑O‑1 ist damit nicht
+> aufgelöst, sondern nur sichtbar geworden: Das ist die halbe Miete (der Anwender sieht
+> jetzt, dass kein Planwert da ist), aber die andere Hälfte fehlt.
+> **Drei Wege, einer gehört dem Anwender:**
+> **(a)** nur den Wortlaut richtigstellen — „aus dem Datenbestand; Gerätekosten werden
+> in der Kostenverwaltung gepflegt" / „from the stored catalogue; equipment costs are
+> maintained in cost management". Kleinste Änderung, sagt die Wahrheit, ändert aber
+> nichts daran, dass der Wert unerreichbar bleibt.
+> **(b)** das Feld im Stammdialog doch pflegbar machen — kehrt Ä19 um und gehört
+> deshalb ausdrücklich dem Anwender.
+> **(c)** die Zeile ganz auf die Kostenverwaltung verweisen und den Planwert dort holen
+> — die konsequente Lesart von Ä19; dann wäre `Modulkosten` in
+> `TechnikPlanwertCtrl.BasenFuellen` für die Wärmepumpe eine tote Basis.
+> *Nicht eigenmächtig entschieden* (Regel: unklare Semantik → offener Punkt mit
+> Vorschlag). **Empfehlung: (a) jetzt, (b) oder (c) getrennt entscheiden.**
+> *Nebenbefund derselben Stelle:* Auch die fünf Maße `Laenge` … `Raum`, die § 4 als „aus
+> dem VDI‑3805‑Import" führt, setzt `NachStamm` nicht — sie stehen aus demselben Grund
+> leer da.
 
 **Zwei Beobachtungen ohne Lücke, aber mit Aussage:**
 

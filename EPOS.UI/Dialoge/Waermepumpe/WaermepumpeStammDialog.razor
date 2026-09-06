@@ -23,9 +23,9 @@
 
    MODULKOSTEN STEHEN NUR LESEND DA (Anwenderentscheid W14a-O-1 vom
    06.09.2026). Ä19 der Welle 7 nahm das Feld ganz aus der Maske
-   ("Geraetekosten laufen ueber die Kostenverwaltung"); seither fuellte es
-   allein der VDI-3805-Import, und niemand sah, warum die Kostenuebernahme
-   keinen Planwert vorschlug. Der Wert ist deshalb WIEDER SICHTBAR - als
+   ("Geraetekosten laufen ueber die Kostenverwaltung"); seither lief der Wert
+   verborgen mit, und niemand sah, warum die Kostenuebernahme keinen Planwert
+   vorschlug. Der Wert ist deshalb WIEDER SICHTBAR - als
    Lesewert im Raster mit Herleitungszeile darunter, ohne Eingabefeld und ohne
    Schreibweg. Ä19 bleibt damit gewahrt: Hier tippt niemand Kosten ein, er
    sieht nur, woher der Planwert kommt bzw. warum keiner kommt. Die
@@ -129,11 +129,21 @@
                     @* --- Modulkosten, nur lesend (W14a-O-1) ------------------------
                        KEIN EINGABEFELD, sondern ein <span> in der Rasterzelle. Ein
                        gesperrtes Feld sagte "hier koenntest du tippen, nur jetzt
-                       nicht"; hier gibt es nichts zu tippen - der Wert kommt aus dem
-                       Herstellerimport (WPCtrl:265-282), gepflegt werden Geraetekosten
-                       in der Kostenverwaltung (Ä19). Die Klassen sind die des Hauses:
-                       .epos-feld traegt im Formularraster die Beschriftungsspalte,
-                       .epos-feld-zeile setzt Wert und Einheit nebeneinander.
+                       nicht"; hier gibt es nichts zu tippen - gepflegt werden
+                       Geraetekosten in der Kostenverwaltung (Ä19), und der Wert im
+                       Datensatz wird nur durchgereicht. Die Klassen sind die des
+                       Hauses: .epos-feld traegt im Formularraster die
+                       Beschriftungsspalte, .epos-feld-zeile setzt Wert und Einheit
+                       nebeneinander.
+
+                       WOHER DER WERT KOMMT, ist der Befund W14a-O-2: aus dem
+                       BESTAND - Auslieferung, Migration oder die Maske vor Ä19.
+                       KEIN Importweg schreibt die Spalte (KatalogImportSatz.NachStamm
+                       setzt sie nicht, WPStammCtrl.UpdateImport laesst sie beim
+                       Ueberschreiben stehen); WPCtrl.CopyFromStamm:263 traegt sie nur
+                       ins Projekt weiter. Die Herleitungszeile sagt trotzdem
+                       "Herstellerimport" - so lautet der Anwenderentscheid; die
+                       Richtigstellung des Wortlauts gehoert dem Anwender.
 
                        DIE EINHEIT IST EURO, nicht €/kW: TechnikPlanwertCtrl:344 nimmt
                        den Wert als Basis "Modulpreis" UNVERAENDERT als Betrag - anders
