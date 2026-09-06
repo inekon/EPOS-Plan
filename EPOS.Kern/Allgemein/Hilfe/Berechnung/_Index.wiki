@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Berechnung | Stand: 2026-09-06 | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Berechnung | Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation) | Rechenkern:
      EPOS.Kern/Allgemein/Hilfe/BerechnungsHilfe.cs -->
 <!-- KEINE Themenseite, sondern die STARTSEITE der Rubrik. Der Anwender legt sie im Wiki
      unter "Programm Dokumentation/Berechnung" an und kopiert diesen Text hinein. Die
@@ -14,6 +14,7 @@ Jede Seite folgt derselben Gliederung:
 
 * '''Was berechnet wird''' — die Ergebnisgroessen in zwei, drei Saetzen.
 * '''Eingangsgroessen''' — je Groesse die Einheit und die Stelle im Programm, an der sie herkommt.
+* '''Formelzeichen und Parameter''' — die Zeichen der Formeln, getrennt nach Parametern (was hereinkommt) und Variablen (was die Seite rechnet).
 * '''Rechenweg''' — die Schritte in ihrer Reihenfolge, jeder mit Formel.
 * '''Grenzen und Annahmen''' — was der Rechenkern nicht tut.
 * '''Ergebnisse und wo sie stehen''' — Reiter des Simulationsergebnisses, Bericht, Kennzahlen.
@@ -51,6 +52,67 @@ Jede Seite folgt derselben Gliederung:
 | [[Programm Dokumentation/Berechnung/Stromspeicher|Stromspeicher]] || Lade- und Entladefahrweise, Eigenverbrauch
 |}
 
+== Schreibweise ==
+
+Die Formeln dieser Rubrik stehen in '''mathematischer Schreibweise mit Unicode-Zeichen''' —
+Malpunkt „·", Summenzeichen „Σ", Differenz „Δ", Wurzel „√", die Vergleichszeichen „≤ ≥ ≠ ≈"
+und die griechischen Buchstaben (η, ϑ, ρ, λ, α, β, γ, ε, τ, φ) unmittelbar als Zeichen.
+Bruchstriche stehen als ''(Zaehler)/(Nenner)'', tiefgestellte Indizes als
+P<sub>AC,nenn</sub>, Hochzahlen als T<sup>2</sup>, die Abhaengigkeit vom Zeitschritt als
+P<sub>AC</sub>(t).
+
+'''Warum keine LaTeX-Formeln.''' Diese Wikiinstallation hat '''keine Math-Erweiterung''': Ein
+Block <nowiki><math>…</math></nowiki> erschiene dem Leser als Klartext, nicht als Formel. Die
+Rubrik verzichtet deshalb durchgaengig auf <nowiki><math></nowiki> und auf
+Backslash-Befehle; alles steht in Zeichen, die jeder Browser ohne Erweiterung darstellt.
+
+'''Anzeige-Formeln und ihre Nummern.''' Eine Formel, auf die der Text sich beruft, steht als
+eigene, eingerueckte Zeile und traegt am Zeilenende eine '''Nummer''' in runden Klammern. Die
+Nummern laufen '''je Seite''' von 1 an; im Text wird eine Gleichung mit ihrer Nummer
+angesprochen („nach (3)"). Fallunterscheidungen stehen als Aufzaehlung „fuer … gilt …" oder
+als kleine Tabelle — nie als geschweifte Klammer ueber mehrere Zeilen.
+
+'''Der Abschnitt „Formelzeichen und Parameter"''' steht auf jeder Seite zwischen den
+Eingangsgroessen und dem Rechenweg und traegt zwei Tabellen:
+
+* '''Parameter''' — was in die Rechnung hereinkommt: Eingaben, Katalogwerte, Vorgabewerte und Konstanten. Die Spalte „Herkunft" nennt Dialog und Feld, Katalogtabelle und Spalte oder den Vorgabewert mit seiner Zahl.
+* '''Variablen''' — was die Seite selbst rechnet, je Stunde oder je Lauf. Die Spalte „berechnet in" nennt die Gleichung, in der die Groesse entsteht; „Ausgabe" steht dort, wo eine Groesse nur ausgewiesen und nicht weiterverrechnet wird.
+
+Jedes Zeichen einer Formel steht in einer der beiden Tabellen, und jedes Zeichen der Tabellen
+kommt in einer Formel vor.
+
+'''Die gemeinsamen Zeichen aller 13 Seiten:'''
+
+{| class="wikitable"
+! Groesse !! Symbol !! Einheit
+|-
+| Zeitschritt || t = 1 … 8 760 (Stunde des Jahres); k = 1 … 35 040 (Viertelstunde, Stromseite und Stromspeicher) || —
+|-
+| Leistung || P, elektrisch P<sub>el</sub>, thermisch P<sub>th</sub> || kW
+|-
+| Energie, Arbeit || Q (Waerme), E (Strom) || kWh; Jahressummen in MWh, wo die Seite es so zeigt
+|-
+| Temperatur || ϑ (Celsius), T (Kelvin, nur wo noetig) || °C, K
+|-
+| Wirkungsgrad, Nutzungsgrad || η, Jahresnutzungsgrad η<sub>a</sub> || —
+|-
+| Leistungszahl Waermepumpe || COP (Stunde), JAZ (Jahr) || —
+|-
+| Einstrahlung || G (Bestrahlungsstaerke), H (Summe) || W/m², kWh/m²
+|-
+| Flaeche, Volumen, Massenstrom || A, V, ṁ || m²; m³ bzw. l; kg/h
+|-
+| Neigung, Azimut || β, γ || °
+|-
+| Speicherinhalt, Ladezustand || Q<sub>Sp</sub>(t), SOC(t) || kWh, —
+|-
+| Indizes || nenn, max, min, el, th, DC, AC, WR, WP, K (Kessel), BHKW, Sol, PV, Sp, Q (Quelle), S (Senke), Netz || —
+|}
+
+Wo der Rechenkern eine andere Bezeichnung fuehrt (etwa <code>PV_WrEta10</code> fuer den
+Wechselrichter-Wirkungsgrad bei 10 % Auslastung), nennt die Parametertabelle der Seite diesen
+Namen in der Spalte „Herkunft"; das '''Symbol''' bleibt das der Rubrik.
+
 == Wie diese Seiten zu lesen sind ==
 
 ; Zeitraster
@@ -60,8 +122,9 @@ Jede Seite folgt derselben Gliederung:
 
 ; Vorgabewerte
 : Wo eine Zahl genannt ist, die Sie nicht eingegeben haben, ist sie ein '''Vorgabewert des
-  Rechenkerns'''. Er steht auf der Seite ausdruecklich als solcher da, damit Sie ihn
-  wiedererkennen, wenn er in einem Ergebnis auftaucht.
+  Rechenkerns'''. Er steht auf der Seite ausdruecklich als solcher da — in der
+  Parametertabelle in der Spalte „Herkunft" —, damit Sie ihn wiedererkennen, wenn er in einem
+  Ergebnis auftaucht.
 
 ; Ausblick
 : Absaetze, die mit „in Umsetzung, Stand 06.09.2026" gekennzeichnet sind, beschreiben, was

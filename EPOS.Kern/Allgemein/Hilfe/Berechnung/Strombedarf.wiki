@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Strombedarf | Stand: 2026-09-06 | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Strombedarf | Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationStrombedarf.cs, EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs,
      EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Import/GanglinienImportAblauf.cs,
      EPOS.Kern/Controller/GanglinienAuswertungCtrl.cs, EPOS.Kern/Controller/PeakShavingCtrl.cs,
@@ -38,21 +38,79 @@ Bedarf hinzu.
 | Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion; die Waermerechnung gibt ihn weiter
 |}
 
+== Formelzeichen und Parameter ==
+
+'''Parameter''' — was in die Rechnung hereinkommt:
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! Herkunft
+|-
+| t || Stunde des Jahres, t = 0 … 8 759 || — || Zeitraster (Konstante: 8 760 Stunden je Jahr)
+|-
+| k || Viertelstunde des Jahres, k = 0 … 35 039 || — || Zeitraster (Konstante: 35 040 = 8 760 · 4)
+|-
+| m || Monat, m = 1 … 12 || — || Zeitraster (Konstante: zwoelf Monatsgrenzen eines Nicht-Schaltjahres)
+|-
+| g || laufende Nummer einer dem Projekt zugeordneten Stromganglinie || — || Dialog „Stromlastgang", Liste „Ausgewählt im Projekt"
+|-
+| r || Raster einer Ganglinie: r = 1 (Stunde) oder r = 4 (Viertelstunde) || — || Kopfsatz der Ganglinie, Feld <code>Zeitinterval</code>; jede andere Wertzahl bricht den Lauf ab
+|-
+| P<sub>GL</sub>(t) || Stundenreihe EINER Ganglinie, wie der Lastgangdialog sie zeigt || kW || Stromganglinien-Katalog
+|-
+| E<sub>Int</sub> || Rohwert eines Intervalls beim Import, wenn die Datei Arbeit fuehrt || kWh || eingelesene Datei
+|-
+| Δt<sub>Int</sub> || Dauer eines Intervalls beim Import || h || aus dem erkannten Raster: 1 h oder 0,25 h
+|-
+| 4 000 || Teiler einer Viertelstundenreihe: 4 Viertel je Stunde · 1 000 kWh je MWh || —  || Konstante
+|-
+| 1 000 || Teiler einer Stundenreihe: kWh je MWh || — || Konstante
+|}
+
+'''Variablen''' — was die Rechnung selbst bildet:
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! berechnet in
+|-
+| P<sub>h</sub>(t) || Profilanteil als Stundenreihe || kW || dieselbe Profilroutine wie [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Gleichungen (1) bis (5) dort
+|-
+| P<sub>Prof</sub>(k) || Profilanteil im Viertelstundenraster || kW || (1)
+|-
+| P<sub>g</sub>(k) || Ganglinie g im Viertelstundenraster || kW || (3), Rasterspreizung nach (1)
+|-
+| P(k) || Strombedarf der Viertelstunde k || kW || (2)
+|-
+| E<sub>a</sub> || Jahresmenge des Strombedarfs || MWh || (4)
+|-
+| E<sub>M</sub>(m) || Monatssumme || MWh || (5)
+|-
+| P<sub>max</sub> || groesste Viertelstundenleistung (Spitze des Laufs) || kW || (6)
+|-
+| E<sub>GL</sub> || Jahresarbeit EINER Ganglinie || MWh || (7)
+|-
+| P<sub>GL,max</sub> || Spitze derselben einen Ganglinie || kW || (8)
+|-
+| t<sub>V</sub> || Vollbenutzungsstunden derselben einen Ganglinie || h/a || (9)
+|-
+| P<sub>Netz</sub>(k) || nach Photovoltaik und Speicher verbleibender Netzbezug || kW || Ergebnis des Laufs
+|-
+| E<sub>Rest</sub> || Reststrombedarf (Netzbezug) des Laufs || MWh || (10)
+|}
+
 == Rechenweg ==
 
 === 1. Stromverbraucherprofile ===
 
-Der Profilanteil entsteht als '''Stundenreihe''' [8 760] nach genau derselben Routine wie
-Brauchwasser und Prozesswaerme:
+Der Profilanteil P<sub>h</sub>(t) entsteht als '''Stundenreihe''' [8 760] nach genau
+derselben Routine wie Brauchwasser und Prozesswaerme:
 
 # Kopfsatz je Profil lesen (zwoelf Monatswerte und der Typbezug),
 # Monatswerte auf die Jahressumme des Projekts skalieren, falls eine hinterlegt ist,
 # das 168-Stunden-Wochenprofil ab dem Wochentag des 1. Januar ueber das Jahr kacheln,
 # je Monat auf den Monatswert normieren (mal 1 000, MWh nach kWh).
 
-Die Einzelheiten stehen unter
-[[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Schritte 2 bis
-4 — die Formeln sind dieselben.
+Die Formeln dazu stehen unter
+[[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]], Gleichungen (1)
+bis (5) — es sind dieselben, mit demselben Zeichenvorrat.
 
 '''Eine Abweichung gibt es''': Der Stromzweig filtert Kopf- und Typsaetze '''nicht''' auf
 das Projekt. Bei Brauchwasser und Prozesswaerme wurde dieser Pflichtfilter nachgezogen, beim
@@ -69,33 +127,41 @@ und lieferte ein Ergebnis, das vollstaendig aussah und keines war.
 Die Stundenreihe wird gespreizt, indem der Stundenwert '''in alle vier Viertel derselben
 Stunde''' geschrieben wird:
 
- v(4h) = v(4h+1) = v(4h+2) = v(4h+3) = Stundenwert(h)
+: <big>P<sub>Prof</sub>(4t) = P<sub>Prof</sub>(4t+1) = P<sub>Prof</sub>(4t+2) = P<sub>Prof</sub>(4t+3) = P<sub>h</sub>(t)</big>  (1)
 
-Der Wert bleibt damit eine '''Leistung''' — er wird nicht geviertelt. Daraus folgt der
-Teiler der Jahresmenge:
-
- Jahresmenge [MWh] = Summe aller 35 040 Werte / 4000
+Der Wert bleibt damit eine '''Leistung''' — er wird nicht geviertelt. Genau daraus folgt der
+Teiler 4 000 in Gleichung (4): vier gleich hohe Viertel je Stunde, danach kWh nach MWh.
 
 === 3. Messlastgänge addieren ===
 
 Jede dem Projekt zugeordnete Stromganglinie wird gelesen und muss zu ihrem Raster passen:
 
- Zeitinterval 1 -> genau  8 760 Werte
- Zeitinterval 4 -> genau 35 040 Werte
+{| class="wikitable"
+! Raster r !! erwartete Wertzahl
+|-
+| 1 (Stunde) || genau 8 760
+|-
+| 4 (Viertelstunde) || genau 35 040
+|}
 
 Jede andere Wertzahl ist ein '''Abbruchgrund''' mit Meldung — bis zur Rasterpruefung lief
 die Addition stillschweigend ueber die kuerzere der beiden Reihen, der Rest blieb null, und
 der Jahresbedarf war zu klein.
 
-Stundenganglinien werden nach derselben Regel wie in Schritt 2 gespreizt. Danach wird
-Viertelstunde fuer Viertelstunde addiert.
+Stundenganglinien werden nach derselben Regel wie in (1) gespreizt. Danach wird
+Viertelstunde fuer Viertelstunde addiert:
+
+: <big>P(k) = P<sub>Prof</sub>(k) + Σ<sub>g</sub> P<sub>g</sub>(k)</big>  (2)
 
 === 4. Was der Import vorher sicherstellt ===
 
 Die Rasterpruefung im Lauf ist ein Sicherheitsnetz fuer Altbestaende — neu eingelesene
 Ganglinien sind bereits normalisiert:
 
-* '''Einheit:''' Rohwerte in kWh je Intervall werden ueber die Intervalldauer in '''kW''' umgerechnet; die Ablage fuehrt Leistungen.
+* '''Einheit:''' Rohwerte in kWh je Intervall werden ueber die Intervalldauer in '''kW''' umgerechnet; die Ablage fuehrt Leistungen:
+
+: <big>P<sub>g</sub> = E<sub>Int</sub> / Δt<sub>Int</sub></big>  (3)
+
 * '''Schaltjahr:''' 8 784 bzw. 35 136 Werte werden auf 8 760 / 35 040 gebracht, indem der 29. Februar entfaellt. Der Vorgang steht im Importprotokoll und verlangt eine Bestaetigung.
 * '''Sommerzeit:''' Die Reihe gilt als Ortszeitreihe. Am letzten Maerzsonntag fehlt die Ortsstunde 02:00 — die Luecke wird mit dem Wert des Vorintervalls gefuellt; am letzten Oktobersonntag gibt es sie doppelt — die Dublette wird arithmetisch gemittelt. Jede ANDERE Luecke oder Dublette bleibt ein Fehler.
 * '''Plausibilitaet:''' negative Werte, lange Nullserien und Ausreisser werden gemeldet.
@@ -106,37 +172,46 @@ Imports nicht von der Zeitzonentabelle des Rechners abhaengt.
 
 === 5. Kennzahlen und Jahresdauerlinie ===
 
- Jahresmenge gesamt   [MWh] = Summe der 35 040 Werte / 4000
- Anteil aus Profilen  [MWh] = Summe des Profilanteils / 4000
- Anteil aus Ganglinien[MWh] = Summe aller Ganglinien / 4000
- Spitze               [kW]  = groesster Viertelstundenwert
- Monatssumme(m)       [MWh] = Summe der Viertelstundenwerte des Monats / 4000
+: <big>E<sub>a</sub> = ( Σ<sub>k=0…35 039</sub> P(k) ) / 4 000</big>  (4)
 
-Die Jahresdauerlinie entsteht wie beim Waermebedarf: auf die Spitze normieren (Prozent),
-aufsteigend sortieren, umdrehen.
+: <big>E<sub>M</sub>(m) = ( Σ<sub>k ∈ Monat m</sub> P(k) ) / 4 000</big>  (5)
+
+: <big>P<sub>max</sub> = max<sub>k=0…35 039</sub> P(k)</big>  (6)
+
+Der '''Anteil aus Profilen''' und der '''Anteil aus Ganglinien''' entstehen nach derselben
+Gleichung (4), angewandt auf P<sub>Prof</sub>(k) allein bzw. auf Σ<sub>g</sub>
+P<sub>g</sub>(k) allein.
+
+Die Jahresdauerlinie entsteht wie beim Waermebedarf: auf die Spitze P<sub>max</sub>
+normieren (Prozent), aufsteigend sortieren, umdrehen.
 
 '''Kennzahlen einer EINZELNEN Ganglinie''' — wie sie der Lastgangdialog neben dem Bild zeigt
 — rechnen auf der '''Stundenreihe''' dieser einen Ganglinie:
 
- Jahresarbeit [MWh]         = Summe der Stundenleistungen / 1000
- Spitze       [kW]          = groesster Stundenwert der gezeigten Reihe
- Vollbenutzungsstunden [h/a] = Jahresarbeit * 1000 / Spitze     (ohne Spitze: keine Angabe)
+: <big>E<sub>GL</sub> = ( Σ<sub>t=0…8 759</sub> P<sub>GL</sub>(t) ) / 1 000</big>  (7)
 
-Diese Spitze ist '''nicht''' die Spitze des Laufs: Der Lauf misst im Viertelstundenraster
-und ueber alle Ganglinien und Profile zusammen, die Kennzahl gehoert zum Bild.
+: <big>P<sub>GL,max</sub> = max<sub>t=0…8 759</sub> P<sub>GL</sub>(t)</big>  (8)
+
+: <big>t<sub>V</sub> = E<sub>GL</sub> · 1 000 / P<sub>GL,max</sub></big>  (9)
+
+Ohne Spitze (P<sub>GL,max</sub> = 0) bleibt (9) unbestimmt, und der Dialog zeigt keine
+Angabe. Die Spitze aus (8) ist '''nicht''' die Spitze des Laufs aus (6): Der Lauf misst im
+Viertelstundenraster und ueber alle Ganglinien und Profile zusammen, die Kennzahl gehoert
+zum Bild.
 
 === 6. Wo der Strombedarf im Lauf steht ===
 
-Der fertige Vektor ist der '''Reststrombedarf''' zu Beginn der Simulation. Nacheinander
-werden davon abgezogen: die Photovoltaikerzeugung (Phase „Photovoltaik") und die '''Entladung'''
-des Stromspeichers (Phase „Stromspeicher"). Die '''Ladung''' des Speichers wird hier
-ausdruecklich '''nicht''' aufgeschlagen — sie speist sich aus dem Erzeugungsueberschuss und
-mindert die Einspeisung, nicht den Netzbezug. Was am Ende bleibt, ist der Netzbezug:
+Der fertige Vektor P(k) ist der '''Reststrombedarf''' zu Beginn der Simulation.
+Nacheinander werden davon abgezogen: die Photovoltaikerzeugung (Phase „Photovoltaik") und
+die '''Entladung''' des Stromspeichers (Phase „Stromspeicher"). Die '''Ladung''' des
+Speichers wird hier ausdruecklich '''nicht''' aufgeschlagen — sie speist sich aus dem
+Erzeugungsueberschuss und mindert die Einspeisung, nicht den Netzbezug. Was am Ende bleibt,
+ist der Netzbezug:
 
- Reststrom [MWh] = Summe des verbleibenden Viertelstundenvektors / 4000
+: <big>E<sub>Rest</sub> = ( Σ<sub>k=0…35 039</sub> P<sub>Netz</sub>(k) ) / 4 000</big>  (10)
 
 Umgekehrt kommt der Strombedarf der Waermeerzeuger — Waermepumpe, Heizstab,
-Kesselhilfsenergie — erst waehrend der Kaskade hinzu; er steht nicht in diesem Bedarf.
+Kesselhilfsenergie — erst waehrend der Kaskade hinzu; er steht nicht in P(k).
 
 === 7. Peak-Shaving: eine Auswertung, kein Bedarf ===
 
@@ -149,20 +224,20 @@ Simulationsbedarf und kein Simulationsergebnis.
 
 == Grenzen und Annahmen ==
 
-* '''Viertelstunden ohne Unterstruktur.''' Ein gespreizter Stundenwert steht in allen vier Vierteln gleich hoch; eine Spitze von 15 Minuten Dauer, die in einer Stundenreihe steckt, laesst sich daraus nicht zurueckgewinnen.
-* '''Keine Blindleistung, keine Phasen, keine Spannungsebene.''' Gerechnet wird Wirkleistung.
-* '''Kein Gleichzeitigkeitsfaktor.''' Mehrere Profile addieren sich ungedaempft; wer eine Gleichzeitigkeit abbilden will, tut es ueber die Jahressummen.
+* '''Viertelstunden ohne Unterstruktur.''' Gleichung (1) setzt alle vier Viertel gleich hoch; eine Spitze von 15 Minuten Dauer, die in einer Stundenreihe steckt, laesst sich daraus nicht zurueckgewinnen.
+* '''Keine Blindleistung, keine Phasen, keine Spannungsebene.''' P(k) ist Wirkleistung.
+* '''Kein Gleichzeitigkeitsfaktor.''' Die Summe in (2) ist ungedaempft; wer eine Gleichzeitigkeit abbilden will, tut es ueber die Jahressummen.
 * '''Der Wochengang ist starr''' und die Monatsmenge unantastbar — wie bei den beiden Waermeprofilen.
 * '''Kein Projektfilter im Stromzweig''' (siehe Schritt 1) — in Umsetzung, Stand 06.09.2026.
-* '''Die Vorschau ist nicht der Lauf.''' Der Knopf „Simulation…" des Profildialogs rechnet die AUSGEWAEHLTEN Profile und zaehlt die Stromganglinien bewusst nicht mit; die Gesamtsumme ist dort die Summe der Profile allein. Er belegt ausserdem nur die ersten 8 760 der 35 040 Plaetze, weil er das Stundenraster fuehrt — die Bilder wissen das und zeichnen entsprechend.
+* '''Die Vorschau ist nicht der Lauf.''' Der Knopf „Simulation…" des Profildialogs rechnet die AUSGEWAEHLTEN Profile und zaehlt die Stromganglinien bewusst nicht mit; die Gesamtsumme ist dort die Summe der Profile allein, also (4) ohne den zweiten Summanden von (2). Er belegt ausserdem nur die ersten 8 760 der 35 040 Plaetze, weil er das Stundenraster fuehrt — die Bilder wissen das und zeichnen entsprechend.
 * '''Die Peak-Shaving-Maske schreibt nicht''' (siehe Schritt 7).
 
 == Ergebnisse und wo sie stehen ==
 
-* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — Jahresmenge, Anteil aus Profilen, Anteil aus Ganglinien, Spitze, Jahresganglinie und Jahresdauerlinie.
-* '''Dialog „Standard Stromprofil"''', Knopf „Simulation…" — die Kennzahlen der ausgewaehlten Profile; „monatlicher Verlauf…" zeigt die zwoelf Monatssummen.
-* '''Dialog „Stromlastgang"''' — Jahresarbeit, Spitze und Vollbenutzungsstunden der markierten Ganglinie mit Bild in den Stufen Jahr, Woche und Tag.
-* '''Simulationsergebnis''', Reiter der Erzeuger — dort steht, wie viel vom Strombedarf gedeckt wurde; der Netzbezug erscheint als Reststrom.
+* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — E<sub>a</sub> nach (4), der Anteil aus Profilen, der Anteil aus Ganglinien, die Spitze P<sub>max</sub> nach (6), Jahresganglinie und Jahresdauerlinie.
+* '''Dialog „Standard Stromprofil"''', Knopf „Simulation…" — die Kennzahlen der ausgewaehlten Profile; „monatlicher Verlauf…" zeigt die zwoelf Monatssummen nach (5).
+* '''Dialog „Stromlastgang"''' — E<sub>GL</sub>, P<sub>GL,max</sub> und t<sub>V</sub> nach (7) bis (9) mit Bild in den Stufen Jahr, Woche und Tag.
+* '''Simulationsergebnis''', Reiter der Erzeuger — dort steht, wie viel vom Strombedarf gedeckt wurde; der Netzbezug erscheint als E<sub>Rest</sub> nach (10).
 * '''Laufprotokoll''' — uebersprungene Profile, Rasterfehler einer Ganglinie, Abbruchgruende.
 
 == Bezüge ==
