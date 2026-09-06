@@ -569,6 +569,101 @@ public class PufferSpProjektDialogTests : BunitContext
         Assert.Equal(11, ergebnis);
     }
 
+    // ============================================================ Formularraster
+
+    /// <summary>
+    /// <b>iU8‑E‑2, Nachzug iU8‑O‑1</b> (Anwender, 05.09.2026: „Darstellung der
+    /// Dialoge kompakter und übersichtlicher — Parameterblöcke rechts"): Die drei
+    /// Parameterblöcke stehen im <c>Formularraster</c> — Beschriftung NEBEN dem
+    /// Feld, Zahlenfelder kurz mit der Einheit dahinter, auf breitem Schirm zwei
+    /// Feldpaare je Zeile.
+    ///
+    /// <para>Geprüft wird das MARKUP: Jeder Block trägt <c>epos-formularraster</c>,
+    /// und darin stehen Felder. Was der Raster daraus MACHT (Beschriftungsspalte,
+    /// kurzes Feld, zwei Spalten), steht als Stilblattprobe in
+    /// <c>FormularrasterTests</c> — eine bunit-Probe rechnet kein CSS aus
+    /// (Lehre W6‑B‑1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_drei_Bloecke_stehen_im_Formularraster()
+    {
+        var stand = new Pruefstand();
+        stand.Bestand.Add(Speicher(11, "Geschichtet", schichten: 3));
+        var cut = Zeige(stand);
+
+        // Eigenschaften, Schichtung, Entladeprioritaet.
+        Assert.Equal(3, cut.FindAll(".epos-formularraster").Count);
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+
+        // KEIN Raster ist einspaltig gesetzt: Die Felder tragen hier keine
+        // Reihenfolge, sie gehoeren paarweise zusammen (Volumen/Verluste,
+        // Vorlauf/Ruecklauf, Ein-/Abschaltschwelle).
+        Assert.Empty(cut.FindAll(".epos-formularraster--einspaltig"));
+    }
+
+    /// <summary>
+    /// Die Gruppen sind <c>Formulargruppe</c>n — leise Zwischenüberschriften, deren
+    /// Felder DIREKTE Rasterkinder bleiben. Vier stehen fest (Volumen und Verluste,
+    /// Temperaturen, Schwellen, Leistungsgrenzen), zwei erscheinen erst im
+    /// erweiterten Teil (Schichtmodell, Entnahmehöhen).
+    /// </summary>
+    [Fact]
+    public void Die_Gruppen_sind_leise_Zwischenueberschriften()
+    {
+        var stand = new Pruefstand();
+        stand.Bestand.Add(Speicher(11, "Einzonig", schichten: 1));
+        var cut = Zeige(stand);
+
+        // Kompakt: Volumen und Verluste, Temperaturen, Schwellen, Leistungsgrenzen.
+        Assert.Equal(4, cut.FindAll(".epos-formulargruppe-titel").Count);
+        Assert.Contains("Volumen und Verluste", cut.Markup);
+        Assert.Contains("Schwellen", cut.Markup);
+
+        // Ab zwei Schichten kommen Schichtmodell und Entnahmehoehen dazu.
+        cut.FindAll("input.epos-eingabe").First(f => f.GetAttribute("value") == "1").Input("3");
+
+        Assert.Equal(6, cut.FindAll(".epos-formulargruppe-titel").Count);
+        Assert.Contains("Schichtmodell", cut.Markup);
+        Assert.Contains("Entnahmehöhe", cut.Markup);
+    }
+
+    /// <summary>
+    /// Die Zahlenfelder melden sich als KURZE Felder mit der Einheit unmittelbar
+    /// dahinter — Gesamtvolumen [l], Vorlauf [°C], die vier Schwellen [%]. Genau das
+    /// war der sichtbare Teil des Befunds: Die Einheit stand am rechten Rand des
+    /// Blocks statt hinter dem Wert.
+    ///
+    /// <para>Die <c>Mehrfachauswahl</c> „Nutzung" und die <c>Herleitungszeile</c>n
+    /// stehen als Rasterkinder mit im Block; das Stilblatt spannt sie über alle
+    /// Spalten (<c>FormularrasterTests</c>).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Zahlenfelder_sind_kurz_und_tragen_ihre_Einheit()
+    {
+        var cut = Zeige(MitZwei());
+
+        Assert.NotEmpty(cut.FindAll(
+            ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
+
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster > .epos-mehrfachauswahl"));
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster > .epos-herleitung"));
+    }
+
+    /// <summary>
+    /// Das <c>Zeilenraster</c> der Ladereihenfolge bleibt DRAUSSEN — eine Liste ist
+    /// kein Formularblock (dieselbe Grenze, die Paket P3 bei der Senkenliste des
+    /// <c>WaermesenkeDialog</c> gezogen hat). Der Raster dieses Blocks trägt nur die
+    /// Entladepriorität und ihre beiden Herleitungszeilen.
+    /// </summary>
+    [Fact]
+    public void Die_Listen_bleiben_ausserhalb_des_Rasters()
+    {
+        var cut = Zeige(MitZwei());
+
+        Assert.NotEmpty(cut.FindAll(".epos-zeilenraster"));
+        Assert.Empty(cut.FindAll(".epos-formularraster .epos-zeilenraster"));
+    }
+
     // ============================================================ Hilfsgriffe
 
     private static void Uebernehmen(IRenderedComponent<PufferSpProjektDialog> cut)
