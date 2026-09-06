@@ -1978,6 +1978,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Bezeichner, gruppiert nach lesend/ändernd, mit Suchfeld, Kennzeichen, Beispiel und beschrifteten Pflichtfeldern,
 > der Andockpunkt ist nur noch Kurztext, und das eingebaute Hilfewissen trägt den Abschnitt „Aktionen des
 > Assistenten". UI 2 571 (+25), Kern 1 165 (+76), KiKern 469 (+19). Protokoll W15b, 21 Abnahmepunkte.
+>
+> **H13 Teil B — Hilferubrik „Berechnung", Erzeuger und Speicher (Anwenderwunsch 06.09.2026 „Erweiterung Hilfe: Erläutere in
+> der Hilfe jeweils die Berechnungswege … die Details der Berechnung sollten in einer separaten Hilferubrik auf der Wiki sein …
+> aufrufbar aus den allgemeinen Erklärungen mit Bezügen"), umgesetzt in `845f898`:** Sieben Seiten der neuen Rubrik
+> `Programm Dokumentation/Berechnung/` liegen als MediaWiki-Markup im Rechenkern (`EPOS.Kern/Allgemein/Hilfe/Berechnung/*.wiki`,
+> 1 512 Zeilen, über ein csproj-Glob eingebettet) — Heizkessel, BHKW, Wärmepumpe, Pufferspeicher, Solarthermie, Photovoltaik,
+> Stromspeicher, jede mit denselben sechs Abschnitten (Was berechnet wird, Eingangsgrößen, Rechenweg, Grenzen und Annahmen,
+> Ergebnisse, Bezüge). Jede Zahl ist aus dem Rechenkern belegt, und jede Seite sagt unter „Grenzen und Annahmen", was der Kern
+> NICHT tut: die drei Befunde aus W14a‑E‑8, die vier fest verdrahteten Annahmen der Solarthermie (T_Speicher 50 °C,
+> Leitungsverluste 0,92) und der Punkt, dass die Solarthermie-Ganglinien vom Lauf gar nicht gelesen werden. Die PV-Seite trägt
+> den Abschnitt „Wechselrichter" mit den zwei Optionen des Entscheids W6‑E‑3, Option 2 als Ausblick „in Umsetzung, Stand
+> 06.09.2026". Zehn neue Zuordnungszeilen (`<Form>.Berechnung` → `Berechnung/<Seite>`) führen aus zehn Razor-Dialogen dorthin;
+> der Fensterknopf oben rechts bleibt daneben; die Knöpfe stehen in der eigenen Klasse `.epos-berechnungshilfe`, weil die
+> Knopfleiste eine Aufzählung von Aktionen ist. 53 neue Testfälle halten Aufbau, Zuordnung, Einbettung und Knopf. Die Wiki-Seiten
+> legt der Anwender aus den Dateien an (fünf Handgriffe im Protokoll H13b); bis dahin schaltet der Katalog die zehn Knöpfe ab.
+> Offen: O‑H13b‑3 (Anker je Abschnitt), Anwenderfrage, ob der Berechnungsknopf auch in die Katalogeditoren soll. Teil A
+> (Katalog, Lader, KI-Wissen, Startseite, Bezüge, Bedarfsseiten) folgt. Nachweis: Kern/UI 0 Fehler, Gate grün, Referenzlauf
+> byte-gleich. Protokoll `WindowsFormsApplication1/Allgemein/Hilfe/H13b_Berechnungshilfe_Erzeuger_Protokoll.md`.
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >
