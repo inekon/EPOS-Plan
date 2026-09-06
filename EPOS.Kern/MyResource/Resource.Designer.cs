@@ -64,6 +64,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -41105,7 +41106,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf aus DB ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf einlesen ähnelt.
         /// </summary>
         public static string WBX_LBL_KATALOG {
             get {

@@ -13055,7 +13055,7 @@ Please check all entries!</value>
     <value>Heat requirement data (curves)</value>
   </data>
   <data name="WBX_LBL_KATALOG" xml:space="preserve">
-    <value>Heat requirement from DB</value>
+    <value>Read in heat requirement</value>
   </data>
   <data name="WBX_LBL_PROJEKTLISTE" xml:space="preserve">
     <value>Selected in the project</value>

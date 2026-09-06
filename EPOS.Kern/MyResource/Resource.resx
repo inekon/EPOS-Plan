@@ -13062,7 +13062,7 @@ Alle Eingaben überprüfen!</value>
     <value>Wärmebedarfsdaten (Ganglinien)</value>
   </data>
   <data name="WBX_LBL_KATALOG" xml:space="preserve">
-    <value>Wärmebedarf aus DB</value>
+    <value>Wärmebedarf einlesen</value>
   </data>
   <data name="WBX_LBL_PROJEKTLISTE" xml:space="preserve">
     <value>Ausgewählt im Projekt</value>

@@ -147,7 +147,7 @@ namespace WindowsFormsApplication1
                 ["TitelText"] = Titel(),
                 ["KopfbandText"] = Text_("WBX_KOPFBAND", "Wärmebedarfsdaten (Ganglinien)"),
                 ["LabelProjektliste"] = Text_("WBX_LBL_PROJEKTLISTE", "Ausgewählt im Projekt"),
-                ["LabelKatalog"] = Text_("WBX_LBL_KATALOG", "Wärmebedarf aus DB"),
+                ["LabelKatalog"] = Text_("WBX_LBL_KATALOG", "Wärmebedarf einlesen"),
                 ["KanalBezeichnung"] = MyResource.Resource.KANAL_LABEL,
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
                 ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
