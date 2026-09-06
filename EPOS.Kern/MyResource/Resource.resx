@@ -15096,10 +15096,10 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>Gewicht:</value>
   </data>
   <data name="WPS_HERL_MODULKOSTEN" xml:space="preserve">
-    <value>aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt</value>
+    <value>aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt</value>
   </data>
   <data name="WPS_HINWEIS_MODULKOSTEN_LEER" xml:space="preserve">
-    <value>kein Planwert aus dem Herstellerimport</value>
+    <value>kein Planwert im Datenbestand</value>
   </data>
   <data name="WRK_TITEL_VERWALTUNG" xml:space="preserve">
     <value>Verwaltung Wechselrichter</value>

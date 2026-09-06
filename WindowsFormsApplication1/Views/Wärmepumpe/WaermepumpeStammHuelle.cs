@@ -121,9 +121,9 @@ namespace WindowsFormsApplication1
                 // Parameter damit wortgleich. Neu sind nur die beiden leisen Zeilen.
                 ["LabelModulkosten"] = Text_("MODK_LBL_MODULKOSTEN", "Modulkosten"),
                 ["HerleitungModulkosten"] = Text_("WPS_HERL_MODULKOSTEN",
-                    "aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt"),
+                    "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt"),
                 ["HinweisModulkostenLeer"] = Text_("WPS_HINWEIS_MODULKOSTEN_LEER",
-                    "kein Planwert aus dem Herstellerimport"),
+                    "kein Planwert im Datenbestand"),
 
                 ["LabelKennlinien"] = Text_("WPS_LBL_KENNLINIEN", "Kenndaten Kennlinien:"),
                 ["OptionWaerme"] = Text_("WPS_OPT_WAERME", "Wärme"),

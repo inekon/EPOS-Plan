@@ -72,6 +72,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -44526,7 +44527,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
         /// </summary>
         public static string WPS_HERL_MODULKOSTEN {
             get {
@@ -44535,7 +44536,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die kein Planwert aus dem Herstellerimport ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Planwert im Datenbestand ähnelt.
         /// </summary>
         public static string WPS_HINWEIS_MODULKOSTEN_LEER {
             get {

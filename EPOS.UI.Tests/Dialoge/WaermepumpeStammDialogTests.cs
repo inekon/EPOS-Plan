@@ -543,7 +543,7 @@ public class WaermepumpeStammDialogTests : BunitContext
         // Ein Wert ist da: nur die Herkunft, kein zweiter Hinweis.
         Assert.Equal(new[]
         {
-            "aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt"
+            "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt"
         }, zeilen);
     }
 
@@ -568,8 +568,8 @@ public class WaermepumpeStammDialogTests : BunitContext
                         .Select(e => e.TextContent.Trim()).ToList();
         Assert.Equal(new[]
         {
-            "aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt",
-            "kein Planwert aus dem Herstellerimport"
+            "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt",
+            "kein Planwert im Datenbestand"
         }, zeilen);
     }
 
@@ -582,23 +582,23 @@ public class WaermepumpeStammDialogTests : BunitContext
             .Add(x => x.Satz, Satz)
             .Add(x => x.LabelModulkosten, "Module costs")
             .Add(x => x.HerleitungModulkosten,
-                 "from the manufacturer import; equipment costs are maintained in cost management")
-            .Add(x => x.HinweisModulkostenLeer, "no planned value from the manufacturer import"));
+                 "from the stored catalogue; equipment costs are maintained in cost management")
+            .Add(x => x.HinweisModulkostenLeer, "no planned value in the stored catalogue"));
 
         var feld = Modulkostenfeld(cut);
         Assert.Equal("Module costs", feld.QuerySelector(".epos-feld-text")!.TextContent.Trim());
         Assert.Equal("4000", feld.QuerySelector(".epos-lesewert")!.TextContent.Trim());
         Assert.Equal(new[]
         {
-            "from the manufacturer import; equipment costs are maintained in cost management"
+            "from the stored catalogue; equipment costs are maintained in cost management"
         }, cut.FindAll(".epos-formularraster .epos-herleitung").Select(e => e.TextContent.Trim()));
 
         cut.FindAll(".epos-raster tbody tr button")[1].Click();   // WP Ausliefer: 0
         Assert.Equal("–", Modulkostenfeld(cut).QuerySelector(".epos-lesewert")!.TextContent.Trim());
         Assert.Equal(new[]
         {
-            "from the manufacturer import; equipment costs are maintained in cost management",
-            "no planned value from the manufacturer import"
+            "from the stored catalogue; equipment costs are maintained in cost management",
+            "no planned value in the stored catalogue"
         }, cut.FindAll(".epos-formularraster .epos-herleitung").Select(e => e.TextContent.Trim()));
     }
 
@@ -614,7 +614,7 @@ public class WaermepumpeStammDialogTests : BunitContext
         Knopf(cut, "Neu").Click();
 
         Assert.Equal("–", Modulkostenfeld(cut).QuerySelector(".epos-lesewert")!.TextContent.Trim());
-        Assert.Contains("kein Planwert aus dem Herstellerimport",
+        Assert.Contains("kein Planwert im Datenbestand",
                         cut.FindAll(".epos-formularraster .epos-herleitung")
                            .Select(e => e.TextContent.Trim()));
     }
