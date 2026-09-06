@@ -599,3 +599,20 @@ NOCT und Zelltechnologie (Feldart Auswahl), Erhalt von alpha_SC/beta_OC beim Spe
 PAN-Koeffizienten, Technologie und Plausibilitätsprüfung; Degradation im Vergütungsdialog;
 Modell-Chip auf der Simulationskarte; Erdreich-Temperaturleser (B1) im Kern. Referenzlauf M5
 355/355 byte-gleich zu M4 (Modell EINFACH unverändert). Offen: Sichtabnahme der Razor-Felder.
+
+---
+
+## Nachtrag 6 (06.09.2026) — Wechselrichter: eigenes Konzeptpapier `Konzept_Wechselrichter_EPOS-Plan.md` (W6‑E‑2)
+
+Der Anwenderwunsch W6‑E‑2 („Wechselrichter – ausgegraut. Import liegt nicht vor, Admin zum
+Anlegen/Bearbeiten liegt nicht vor …") holt die hier zweimal zurückgestellten Punkte nach vorn —
+Entscheidungsfrage **Q5** (Wechselrichter als Anlagenparameter statt eigenem Katalog) und Stufe
+**E3** (Stringauslegung); sie sind deshalb in ein eigenes Papier
+[`Konzept_Wechselrichter_EPOS-Plan.md`](Konzept_Wechselrichter_EPOS-Plan.md) ausgelagert, samt
+Mockup `Mockups/Wechselrichter_Mockup_2026-09-06.html`. Es schlägt einen Katalog
+`Tab_Wechselrichter_STAMM` mit Projektkopie, die Strangzuordnung `Z_AnlageStrang` (Migrationsschritte
+ab 65), eine Kennlinie aus sechs Stützstellen, den CEC-Wechselrichterimport und den Rechenweg
+Module → Strang → MPPT → Gerät → Clipping vor; **ohne Strangzuordnung bleibt der Rechenweg dieses
+Papiers Zeichen für Zeichen erhalten**, damit die Bitgleichheit gegen
+`Referenzlaeufe/2026-09-05_R2_Zeitbasis` bestehen bleibt. Nichts davon ist umgesetzt — zehn
+Entscheidungsfragen W6‑E‑2‑Q1…Q10 liegen beim Anwender.
