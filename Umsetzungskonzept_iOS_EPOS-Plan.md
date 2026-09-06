@@ -2153,6 +2153,27 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Erzeuger W6/W7/W14a, P2 Kosten W1–W5, P3 Bedarf/Simulation/Projekt W8–W16a). `FormularrasterTests` 14 Fälle
 > (darunter einer, der jede Selektorzeile des Blocks auf `.epos-formularraster` prüft), UI 2 546, Formularkarte
 > 122.
+>
+> **Anwenderwunsch W14a‑E‑8 vom 06.09.2026 („Für alle Menüs mit Anlagendaten: Erstelle einen Bearbeiten-Dialog zusätzlich
+> im Bearbeiten-Menü (optionale Anzeige) …"), umgesetzt in `e7c5f63`:** Unter dem Bearbeiten-Formular jeder der sieben
+> Anlagenverwaltungen steht seither ein Aufklapper „Alle Parameter und ihre Verwendung anzeigen" — zugeklappt die
+> Vorgabe, aufgeklappt je Katalogspalte eine Zeile mit Anzeigetext, Wert samt Einheit („–" bei NULL) und der
+> Kennzeichnung, wofür der Wert gebraucht wird. Die Antwort darauf ist eine Fachaussage über den Rechenweg und liegt
+> deshalb im Kern: `ParameterVerwendung` nennt für jede der 128 Spalten der sieben Stammtabellen ihre Stufe — 56
+> Simulation, 33 Wirtschaftlichkeit, 37 Bericht, 36 nur Anzeige, 5 ohne jeden Leser — und belegt jede Einstufung mit
+> Datei und Zeile; die Beschriftungen holt sie über dieselben Ressourcenschlüssel wie `KatalogBrowserProfil` und
+> `ModulKatalogProfil`. Drei Befunde stehen damit schwarz auf weiß: Die fünf Emissionsspalten des Heizkessels werden
+> gepflegt, aber nicht gerechnet (der Lauf holt die Faktoren aus `Tab_Brennstoff_Stamm` — beim BHKW ist es
+> umgekehrt), fünf Maße der Wärmepumpe aus dem VDI‑3805-Import hat kein Leser, und `Investition_kwel` des BHKW ist
+> seit dem Entscheid vom 22.08.2026 eine abgeleitete Dublette. **Die Prüfung, um die der Anwender gebeten hat
+> („→ prüfe"), ergibt genau eine Lücke:** `Tab_WP_STAMM.Modulkosten` geht in die Kostenplanung, ist in der
+> Verwaltung aber nicht zu pflegen (Entscheid Ä19 der Welle 7) — kein Versehen, sondern ein Widerspruch zwischen zwei
+> Entscheiden, offen als **W14a‑O‑1** mit Vorschlag (nur lesend mit Herleitungszeile zeigen). Der Baustein
+> `Parameteruebersicht` steht einmal in `EPOS.UI` und bedient alle sieben Ausprägungen in drei Wirten; er nimmt den
+> Aufklappknopf aus W6‑E‑1, trägt die Kennzeichnung als Text und nicht nur als Farbe, und seine Tabelle steht in
+> `.epos-raster-huelle`. Nachweis: 42 Kern-Fälle gegen `pragma table_info` der Testdatenbank (keine vergessene, keine
+> erfundene Spalte, Belegpflicht für jede gerechnete) und 17 bunit-Fälle; Kern 1 344, UI 2 721 grün in beiden
+> Sprachen, SQL-Prüfer 0 Fundstellen, Rechenweg unberührt. Acht Abnahmepunkte A‑W14a‑E‑8 im W14a-Protokoll.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
