@@ -569,10 +569,14 @@ namespace WindowsFormsApplication1
                 ID_Projekt = projektId,
                 ID_Type = idType,
                 Bezeichner = stamm.Name,
-                Vorlauf = stamm.Vorlauf,
-                Ruecklauf = stamm.Ruecklauf,
                 ID_Carrier = traeger.CarrierId
             };
+
+            // W6-E-4 (06.09.2026): Vor- und Ruecklauf kommen aus dem Katalogsatz - aus
+            // der EINEN Wahrheit im Kern statt aus einer zweiten Abschrift
+            // "Vorlauf = stamm.Vorlauf". Sie setzt das Paar nur, wenn der Feldsatz noch
+            // keines traegt; ein frisches Modell traegt 0/0.
+            AnlagenTemperaturen.AusStammsatz(model, stammId);
 
             // Außerhalb des Assistenten den Stammsatz sofort in die Projekttabelle
             // kopieren (idempotent) und die PROJEKT-Id referenzieren; im Wizard nur die
