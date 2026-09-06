@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmequelle Erdreich | Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmequelle Erdreich | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/ErdreichTemperatur.cs, EPOS.Kern/Allgemein/Simulation/VDI4640Pruefung.cs,
      EPOS.Kern/Allgemein/Simulation/ErdreichAuswertung.cs, EPOS.Kern/Allgemein/Simulation/WaermequelleClass.cs -->
 
@@ -46,41 +46,41 @@ Was in die Rechnung hereinkommt:
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
 |-
-| t || Stunde des Jahres, t = 1 … 8 760 || — || Zeitraster (Konstante: 8 760 Stunden je Jahr)
+| <math>t</math> || Stunde des Jahres, t = 1 … 8 760 || — || Zeitraster (Konstante: 8 760 Stunden je Jahr)
 |-
-| ω || Kreisfrequenz des Jahresgangs || 1/h || Konstante: 2π / 8 760 = 7,1725 · 10<sup>−4</sup>
+| <math>\omega</math> || Kreisfrequenz des Jahresgangs || 1/h || Konstante: 2π / 8 760 = 7,1725 · 10<sup>−4</sup>
 |-
-| ϑ<sub>a</sub>(t) || Aussentemperatur der Klimaregion || °C || Klimaregion des Projekts, 8 760 Stundenwerte in Ortszeit
+| <math>\vartheta_{\mathrm{a}}(t)</math> || Aussentemperatur der Klimaregion || °C || Klimaregion des Projekts, 8 760 Stundenwerte in Ortszeit
 |-
-| z || Verlegetiefe des Kollektors || m || Dialog „Wärmequelle Erdreich", Feld „Verlegetiefe"; Vorgabe: 1,5 m
+| <math>z</math> || Verlegetiefe des Kollektors || m || Dialog „Wärmequelle Erdreich", Feld „Verlegetiefe"; Vorgabe: 1,5 m
 |-
-| ℓ<sub>S</sub> || Laenge je Sonde || m || Dialog „Wärmequelle Erdreich", Feld „Länge je Sonde"
+| <math>\ell_{\mathrm{S}}</math> || Laenge je Sonde || m || Dialog „Wärmequelle Erdreich", Feld „Länge je Sonde"
 |-
-| n<sub>S</sub> || Anzahl Sonden || — || Dialog „Wärmequelle Erdreich", Feld „Anzahl Sonden"
+| <math>n_{\mathrm{S}}</math> || Anzahl Sonden || — || Dialog „Wärmequelle Erdreich", Feld „Anzahl Sonden"
 |-
-| A<sub>K</sub> || Kollektorflaeche || m² || Dialog „Wärmequelle Erdreich", Feld „Fläche"
+| <math>A_{\mathrm{K}}</math> || Kollektorflaeche || m² || Dialog „Wärmequelle Erdreich", Feld „Fläche"
 |-
-| λ || Waermeleitfaehigkeit des Untergrunds || W/(m·K) || Bodentypkatalog nach VDI 4640 Blatt 1, Tabelle 1; Vorgabe: Sand feucht, λ = 1,4
+| <math>\lambda</math> || Waermeleitfaehigkeit des Untergrunds || W/(m·K) || Bodentypkatalog nach VDI 4640 Blatt 1, Tabelle 1; Vorgabe: Sand feucht, λ = 1,4
 |-
-| ρ·c<sub>p</sub> || volumenbezogene Waermekapazitaet des Untergrunds || MJ/(m³·K) || derselbe Katalog; Vorgabe: Sand feucht, 1,90
+| <math>\rho \cdot c_{\mathrm{p}}</math> || volumenbezogene Waermekapazitaet des Untergrunds || MJ/(m³·K) || derselbe Katalog; Vorgabe: Sand feucht, 1,90
 |-
-| Δϑ || nutzbare Spreizung der Quelle || K || Dialog „Wärmequelle Erdreich", Feld „Nutzbare Spreizung"; Vorgabe: 5 K
+| <math>\Delta\vartheta</math> || nutzbare Spreizung der Quelle || K || Dialog „Wärmequelle Erdreich", Feld „Nutzbare Spreizung"; Vorgabe: 5 K
 |-
-| P<sub>th,WP</sub>(t), P<sub>el,WP</sub>(t) || Waermeproduktion und Stromaufnahme der Waermepumpe || kW || Ergebnis des Simulationslaufs
+| <math>P_{\mathrm{th,WP}}(t), P_{\mathrm{el,WP}}(t)</math> || Waermeproduktion und Stromaufnahme der Waermepumpe || kW || Ergebnis des Simulationslaufs
 |-
-| n<sub>Betrieb</sub> || Betriebsstunden der Waermepumpe im Lauf || h/a || Ergebnis des Simulationslaufs
+| <math>n_{\mathrm{Betrieb}}</math> || Betriebsstunden der Waermepumpe im Lauf || h/a || Ergebnis des Simulationslaufs
 |-
-| q<sub>A,zul</sub>, e<sub>A,zul</sub> || zulaessige Entzugsleistung und Entzugsenergie des Kollektors || W/m², kWh/(m²·a) || VDI 4640 Blatt 2, Tabelle A2 (15 Klimazonen × 4 Bodenarten, vollstaendig hinterlegt)
+| <math>q_{\mathrm{A,zul}}, e_{\mathrm{A,zul}}</math> || zulaessige Entzugsleistung und Entzugsenergie des Kollektors || W/m², kWh/(m²·a) || VDI 4640 Blatt 2, Tabelle A2 (15 Klimazonen × 4 Bodenarten, vollstaendig hinterlegt)
 |-
-| q<sub>B,zul</sub> || zulaessige spezifische Entzugsleistung der Sonde || W/m || VDI 4640 Blatt 2, Tabelle B2 (Auszug, siehe Schritt 8)
+| <math>q_{\mathrm{B,zul}}</math> || zulaessige spezifische Entzugsleistung der Sonde || W/m || VDI 4640 Blatt 2, Tabelle B2 (Auszug, siehe Schritt 8)
 |-
-| 1,5 || Oberflaechenoffset der Sondentemperatur || K || Konstante, VDI 4640 Blatt 1
+| <math>1{,}5</math> || Oberflaechenoffset der Sondentemperatur || K || Konstante, VDI 4640 Blatt 1
 |-
-| 0,03 || geothermischer Gradient || K/m || Konstante, VDI 4640 Blatt 1
+| <math>0{,}03</math> || geothermischer Gradient || K/m || Konstante, VDI 4640 Blatt 1
 |-
-| 20 || Untergrenze der neutralen Zone || m || Konstante, VDI 4640 Blatt 1
+| <math>20</math> || Untergrenze der neutralen Zone || m || Konstante, VDI 4640 Blatt 1
 |-
-| 0,05 || Frostschwelle als Anteil der Betriebsstunden || — || Konstante des Rechenkerns (5 %)
+| <math>0{,}05</math> || Frostschwelle als Anteil der Betriebsstunden || — || Konstante des Rechenkerns (5 %)
 |}
 
 === Variablen ===
@@ -90,45 +90,45 @@ Was die Rechnung selbst bildet:
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
 |-
-| ϑ<sub>m</sub> || Jahresmittel der Aussenluft; Ersatzwert 9,5 °C || °C || (1)
+| <math>\vartheta_{\mathrm{m}}</math> || Jahresmittel der Aussenluft; Ersatzwert 9,5 °C || °C || (1)
 |-
-| a<sub>1</sub>, b<sub>1</sub> || Koeffizienten der Ausgleichsrechnung gegen Kosinus und Sinus || K || Ausgleichsrechnung in Schritt 1
+| <math>a_{1}, b_{1}</math> || Koeffizienten der Ausgleichsrechnung gegen Kosinus und Sinus || K || Ausgleichsrechnung in Schritt 1
 |-
-| A || Amplitude des Jahresgangs; Ersatzwert 8,5 K || K || (2)
+| <math>A</math> || Amplitude des Jahresgangs; Ersatzwert 8,5 K || K || (2)
 |-
-| t<sub>min</sub> || Stunde des Jahresminimums; Ersatzwert 480 h || h || (3)
+| <math>t_{\mathrm{min}}</math> || Stunde des Jahresminimums; Ersatzwert 480 h || h || (3)
 |-
-| a || Temperaturleitfaehigkeit des Untergrunds || m²/s || (4)
+| <math>a</math> || Temperaturleitfaehigkeit des Untergrunds || m²/s || (4)
 |-
-| d || Daempfungstiefe || m || (5)
+| <math>d</math> || Daempfungstiefe || m || (5)
 |-
-| ϑ<sub>K</sub>(z, t) || Quelltemperatur des Erdkollektors || °C || (6)
+| <math>\vartheta_{\mathrm{K}}(z, t)</math> || Quelltemperatur des Erdkollektors || °C || (6)
 |-
-| ϑ<sub>S</sub> || Quelltemperatur der Erdsonde, ueber das Jahr konstant || °C || (7)
+| <math>\vartheta_{\mathrm{S}}</math> || Quelltemperatur der Erdsonde, ueber das Jahr konstant || °C || (7)
 |-
-| ϑ<sub>Q</sub>(t) || Quelltemperatur der Anlage — ϑ<sub>K</sub>(z, t) oder ϑ<sub>S</sub> || °C || (6) bzw. (7)
+| <math>\vartheta_{\mathrm{Q}}(t)</math> || Quelltemperatur der Anlage — ϑ<sub>K</sub>(z, t) oder ϑ<sub>S</sub> || °C || (6) bzw. (7)
 |-
-| P<sub>Q</sub>(t) || Entzugsleistung der Stunde t || kW || (8)
+| <math>P_{\mathrm{Q}}(t)</math> || Entzugsleistung der Stunde t || kW || (8)
 |-
-| Q<sub>Q,a</sub> || Jahresentzugsarbeit || kWh/a || (9)
+| <math>Q_{\mathrm{Q,a}}</math> || Jahresentzugsarbeit || kWh/a || (9)
 |-
-| P<sub>Q,max</sub> || maximale Entzugsleistung || W || (10)
+| <math>P_{\mathrm{Q,max}}</math> || maximale Entzugsleistung || W || (10)
 |-
-| t<sub>V</sub> || Jahresvolllaststunden des Entzugs || h/a || (11)
+| <math>t_{\mathrm{V}}</math> || Jahresvolllaststunden des Entzugs || h/a || (11)
 |-
-| q<sub>A</sub> || Entzugsleistung je Kollektorflaeche || W/m² || (12)
+| <math>q_{\mathrm{A}}</math> || Entzugsleistung je Kollektorflaeche || W/m² || (12)
 |-
-| e<sub>A</sub> || Entzugsenergie je Kollektorflaeche || kWh/(m²·a) || (13)
+| <math>e_{\mathrm{A}}</math> || Entzugsenergie je Kollektorflaeche || kWh/(m²·a) || (13)
 |-
-| A<sub>K,erf</sub> || erforderliche Kollektorflaeche || m² || (14)
+| <math>A_{\mathrm{K,erf}}</math> || erforderliche Kollektorflaeche || m² || (14)
 |-
-| ℓ<sub>ges</sub> || gesamte Sondenmeterzahl || m || (15)
+| <math>\ell_{\mathrm{ges}}</math> || gesamte Sondenmeterzahl || m || (15)
 |-
-| q<sub>B</sub> || spezifische Entzugsleistung der Sonde || W/m || (16)
+| <math>q_{\mathrm{B}}</math> || spezifische Entzugsleistung der Sonde || W/m || (16)
 |-
-| ℓ<sub>erf</sub> || erforderliche Sondenmeterzahl || m || (17)
+| <math>\ell_{\mathrm{erf}}</math> || erforderliche Sondenmeterzahl || m || (17)
 |-
-| n<sub>Frost</sub> || Zahl der Betriebsstunden mit Frost an der Quelle || h/a || (18)
+| <math>n_{\mathrm{Frost}}</math> || Zahl der Betriebsstunden mit Frost an der Quelle || h/a || (18)
 |}
 
 == Rechenweg ==
@@ -136,18 +136,26 @@ Was die Rechnung selbst bildet:
 === 1. Den Jahresgang der Aussenluft bestimmen ===
 
 Das Erdreichmodell braucht drei Zahlen aus dem Aussentemperaturvektor: das '''Jahresmittel'''
-ϑ<sub>m</sub>, die '''Amplitude''' A und die '''Stunde des Minimums''' t<sub>min</sub>.
+<math>\vartheta_{\mathrm{m}}</math>, die '''Amplitude''' A und die '''Stunde des Minimums''' <math>t_{\mathrm{min}}</math>.
 
-: <big>ϑ<sub>m</sub> = ( Σ<sub>t=1…8 760</sub> ϑ<sub>a</sub>(t) ) / 8 760</big> &nbsp;&nbsp;(1)
+: <math>\displaystyle \vartheta_{\mathrm{m}} = \frac{\sum_{t=1}^{8\,760} \vartheta_{\mathrm{a}}(t)}{8\,760}</math> &nbsp;&nbsp;(1)
+:: <math>\vartheta_{\mathrm{m}}</math> – Jahresmittel der Aussenluft; Ersatzwert 9,5 [°C]
+:: <math>\vartheta_{\mathrm{a}}(t)</math> – Aussentemperatur der Klimaregion in der Stunde [°C]
+:: <math>8\,760</math> – Stunden je Jahr [h]
 Amplitude und Minimum kommen '''nicht''' aus den Extrema der Stundenwerte — die
 ueberschaetzen die Amplitude erheblich —, sondern aus einer '''Ausgleichsrechnung ueber die
 zwoelf Monatsmittel''' gegen Kosinus und Sinus des Jahresgangs (2×2-Normalgleichung mit den
 exakten Monatsmitteln der Regressoren, angesetzt auf die Abweichung der Monatsmittel von
-ϑ<sub>m</sub>). Aus den beiden Koeffizienten folgt
+<math>\vartheta_{\mathrm{m}}</math>). Aus den beiden Koeffizienten folgt
 
-: <big>A = √( a<sub>1</sub>² + b<sub>1</sub>² )</big> &nbsp;&nbsp;(2)
-: <big>t<sub>min</sub> = arctan2( −b<sub>1</sub> , −a<sub>1</sub> ) / ω</big> &nbsp;&nbsp;(3)
-Ein negativer Winkel in (3) wird vorher um 2π angehoben, damit t<sub>min</sub> im Jahr
+: <math>\displaystyle A = \sqrt{a_{1}^{2} + b_{1}^{2}}</math> &nbsp;&nbsp;(2)
+:: <math>A</math> – Amplitude des Jahresgangs; Ersatzwert 8,5 [K]
+:: <math>a_{1}</math>, <math>b_{1}</math> – Koeffizienten der Ausgleichsrechnung gegen Kosinus und Sinus [K]
+: <math>\displaystyle t_{\mathrm{min}} = \frac{\operatorname{arctan2}(-b_{1}, -a_{1})}{\omega}</math> &nbsp;&nbsp;(3)
+:: <math>t_{\mathrm{min}}</math> – Stunde des Jahresminimums; Ersatzwert 480 [h]
+:: <math>a_{1}</math>, <math>b_{1}</math> – Koeffizienten der Ausgleichsrechnung nach Schritt 1 [K]
+:: <math>\omega</math> – Kreisfrequenz des Jahresgangs, <math>2\pi / 8\,760</math> [1/h]
+Ein negativer Winkel in (3) wird vorher um <math>2\pi</math> angehoben, damit <math>t_{\mathrm{min}}</math> im Jahr
 liegt.
 
 '''Wann Ersatzwerte gelten.''' Ein 8 760er-Feld kann formal vollstaendig sein und trotzdem
@@ -161,28 +169,44 @@ das Deutschland-Mittel nach VDI 4640 Blatt 1 zurueck:
 |-
 | mehr als 5 % exakte Nullen || Feld nur teilweise befuellt
 |-
-| ϑ<sub>m</sub> ausserhalb −10 … +25 °C || kein bewohnter Standort
+| <math>\vartheta_{\mathrm{m}}</math> ausserhalb −10 … +25 °C || kein bewohnter Standort
 |-
-| A < 1 K und ϑ<sub>m</sub> ausserhalb 0 … 20 °C || kein Konstantvektor, sondern Datenrest
+| A < 1 K und <math>\vartheta_{\mathrm{m}}</math> ausserhalb 0 … 20 °C || kein Konstantvektor, sondern Datenrest
 |}
 
-Die Ersatzwerte lauten ϑ<sub>m</sub> = 9,5 °C, A = 8,5 K und t<sub>min</sub> = 480 h (zweite
+Die Ersatzwerte lauten <math>\vartheta_{\mathrm{m}}</math> = 9,5 °C, A = 8,5 K und <math>t_{\mathrm{min}}</math> = 480 h (zweite
 Januarhaelfte). Dass mit ihnen gerechnet wurde, sagt der Dialog an.
 
 === 2. Erdkollektor — Jahresgang nach Kusuda ===
 
 Aus den Bodenkennwerten folgen zuerst Temperaturleitfaehigkeit und Daempfungstiefe:
 
-: <big>a = λ / ( ρ·c<sub>p</sub> · 10<sup>6</sup> )</big> &nbsp;&nbsp;(4)
-: <big>d = √( 2 · a · 3 600 / ω )</big> &nbsp;&nbsp;(5)
-Der Faktor 10<sup>6</sup> in (4) rechnet ρ·c<sub>p</sub> von MJ/(m³·K) in J/(m³·K); der
-Faktor 3 600 in (5) rechnet ''a'' von m²/s in m²/h, damit ω in 1/h eingesetzt werden kann
+: <math>\displaystyle a = \frac{\lambda}{\rho \cdot c_{\mathrm{p}} \cdot 10^{6}}</math> &nbsp;&nbsp;(4)
+:: <math>a</math> – Temperaturleitfaehigkeit des Untergrunds [m²/s]
+:: <math>\lambda</math> – Waermeleitfaehigkeit des Untergrunds [W/(m·K)]
+:: <math>\rho \cdot c_{\mathrm{p}}</math> – volumenbezogene Waermekapazitaet des Untergrunds [MJ/(m³·K)]
+:: <math>10^{6}</math> – Umrechnung MJ/(m³·K) in J/(m³·K) [J/MJ]
+: <math>\displaystyle d = \sqrt{\frac{2 \cdot a \cdot 3\,600}{\omega}}</math> &nbsp;&nbsp;(5)
+:: <math>d</math> – Daempfungstiefe [m]
+:: <math>a</math> – Temperaturleitfaehigkeit nach (4) [m²/s]
+:: <math>\omega</math> – Kreisfrequenz des Jahresgangs [1/h]
+:: <math>3\,600</math> – Umrechnung von m²/s in m²/h, damit <math>\omega</math> in 1/h eingesetzt werden kann [s/h]
+:: <math>2</math> – Faktor der Daempfungstiefe nach VDI 4640 Blatt 1 [–]
+Der Faktor <math>10^{6}</math> in (4) rechnet <math>\rho \cdot c_{\mathrm{p}}</math> von MJ/(m³·K) in J/(m³·K); der
+Faktor 3 600 in (5) rechnet ''a'' von m²/s in m²/h, damit <math>\omega</math> in 1/h eingesetzt werden kann
 und ''d'' in Metern herauskommt.
 
 Damit die Quelltemperatur in der Tiefe z:
 
-: <big>ϑ<sub>K</sub>(z, t) = ϑ<sub>m</sub> − A · exp(−z/d) · cos( ω · (t − t<sub>min</sub>) − z/d )</big> &nbsp;&nbsp;(6)
-Die Verlegetiefe z daempft die Amplitude mit exp(−z/d) und verschiebt zugleich die Phase um
+: <math>\displaystyle \vartheta_{\mathrm{K}}(z, t) = \vartheta_{\mathrm{m}} - A \cdot \operatorname{exp}(-z/d) \cdot \operatorname{cos}\left( \omega \cdot (t - t_{\mathrm{min}}) - z/d \right)</math> &nbsp;&nbsp;(6)
+:: <math>\vartheta_{\mathrm{K}}(z, t)</math> – Quelltemperatur des Erdkollektors in der Tiefe z [°C]
+:: <math>\vartheta_{\mathrm{m}}</math> – Jahresmittel der Aussenluft nach (1) [°C]
+:: <math>A</math> – Amplitude des Jahresgangs nach (2) [K]
+:: <math>z</math> – Verlegetiefe des Kollektors; Vorgabe 1,5 [m]
+:: <math>d</math> – Daempfungstiefe nach (5) [m]
+:: <math>\omega</math> – Kreisfrequenz des Jahresgangs [1/h]
+:: <math>t_{\mathrm{min}}</math> – Stunde des Jahresminimums nach (3) [h]
+Die Verlegetiefe z daempft die Amplitude mit <math>\operatorname{exp}(-z/d)</math> und verschiebt zugleich die Phase um
 z/d Radiant — in 1,5 m Tiefe in feuchtem Sand (d = 2,72 m) bleiben rund 58 % der Amplitude,
 und das Minimum kommt rund einen Monat spaeter als an der Oberflaeche (0,55 rad entsprechen
 769 Stunden). Ohne Angabe gilt die '''Vorgabetiefe 1,5 m'''.
@@ -190,12 +214,12 @@ und das Minimum kommt rund einen Monat spaeter als an der Oberflaeche (0,55 rad 
 === 3. Der Bodentypkatalog ===
 
 13 Untergrundtypen nach VDI 4640 Blatt 1, Tabelle 1. Angegeben sind der empfohlene
-Rechenwert der Waermeleitfaehigkeit λ [W/(m·K)] und die volumenbezogene Waermekapazitaet
-ρ·c<sub>p</sub> [MJ/(m³·K)]; die Temperaturleitfaehigkeit ''a'' und die Daempfungstiefe ''d''
+Rechenwert der Waermeleitfaehigkeit <math>\lambda</math> [W/(m·K)] und die volumenbezogene Waermekapazitaet
+<math>\rho \cdot c_{\mathrm{p}}</math> [MJ/(m³·K)]; die Temperaturleitfaehigkeit ''a'' und die Daempfungstiefe ''d''
 folgen daraus nach (4) und (5).
 
 {| class="wikitable"
-! Untergrund !! λ !! ρ·c<sub>p</sub> !! a [mm²/s] !! d [m]
+! Untergrund !! <math>\lambda</math> !! <math>\rho \cdot c_{\mathrm{p}}</math> !! a [mm²/s] !! d [m]
 |-
 | Ton/Schluff, trocken || 0,5 || 1,55 || 0,32 || 1,80
 |-
@@ -231,21 +255,27 @@ Ein unbekannter oder leerer Bodentyp ergibt '''Sand, feucht'''.
 Ab der neutralen Zone (10 bis 20 m) ist der Jahresgang abgeklungen; die Sonde bekommt
 deshalb eine '''ueber das Jahr konstante''' Quelltemperatur:
 
-: <big>ϑ<sub>S</sub> = ϑ<sub>m</sub> + 1,5 + 0,03 · max( 0 ; ℓ<sub>S</sub> / 2 − 20 )</big> &nbsp;&nbsp;(7)
+: <math>\displaystyle \vartheta_{\mathrm{S}} = \vartheta_{\mathrm{m}} + 1{,}5 + 0{,}03 \cdot \max\left( 0, \frac{\ell_{\mathrm{S}}}{2} - 20 \right)</math> &nbsp;&nbsp;(7)
+:: <math>\vartheta_{\mathrm{S}}</math> – Quelltemperatur der Erdsonde, ueber das Jahr konstant [°C]
+:: <math>\vartheta_{\mathrm{m}}</math> – Jahresmittel der Aussenluft nach (1) [°C]
+:: <math>\ell_{\mathrm{S}}</math> – Laenge je Sonde; massgeblich ist die halbe, also die mittlere Tiefe [m]
+:: <math>1{,}5</math> – Oberflaechenoffset der Sondentemperatur [K]
+:: <math>0{,}03</math> – geothermischer Gradient [K/m]
+:: <math>20</math> – Untergrenze der neutralen Zone [m]
 '''1,5''' K ist der Oberflaechenoffset, '''0,03''' K/m der geothermische Gradient, und
 '''20''' m die Untergrenze der neutralen Zone — bis dorthin stammt die Energie nach
 VDI 4640 Blatt 1 „fast ausschliesslich aus Sonneneinstrahlung und Sickerwasser". Massgeblich
-ist die '''mittlere''' Tiefe, also die halbe Sondenlaenge ℓ<sub>S</sub>/2.
+ist die '''mittlere''' Tiefe, also die halbe Sondenlaenge <math>\ell_{\mathrm{S}}/2</math>.
 
-Beispiele bei ϑ<sub>m</sub> = 9,5 °C: 50 m Sonde ergibt 11,15 °C, 100 m Sonde 11,9 °C.
+Beispiele bei <math>\vartheta_{\mathrm{m}}</math> = 9,5 °C: 50 m Sonde ergibt 11,15 °C, 100 m Sonde 11,9 °C.
 
 === 5. Die Weiche zwischen beiden — und ihr Sicherheitsnetz ===
 
 Gerechnet wird als Sonde, wenn das Quellsystem „Erdsonde" sagt. '''Oder''' wenn die
 eingetragene Tiefe '''ueber 10 m''' liegt: Reale Verlegetiefen eines Kollektors liegen bei
 1 bis 2 m, der Dialog begrenzt sie auf 10 m — alles darueber kann nur eine Sondenlaenge
-sein. Ohne diesen Riegel liesse die Daempfung exp(−z/d) aus (6) (bei z = 90 m rund
-exp(−33) ≈ 0) die Quelle stillschweigend auf die Konstante ϑ<sub>m</sub> zusammenfallen. Der
+sein. Ohne diesen Riegel liesse die Daempfung <math>\operatorname{exp}(-z/d)</math> aus (6) (bei z = 90 m rund
+<math>\operatorname{exp}(-33) \approx 0</math>) die Quelle stillschweigend auf die Konstante <math>\vartheta_{\mathrm{m}}</math> zusammenfallen. Der
 Fall kommt vor, weil die fuenf Felder des Dialogs einzeln geschrieben werden; er steht als
 Warnung im Laufprotokoll.
 
@@ -256,15 +286,29 @@ Simulation nie angefasst hat.
 
 === 6. Nach dem Lauf: die Entzugsgroessen ===
 
-: <big>P<sub>Q</sub>(t) = P<sub>th,WP</sub>(t) − P<sub>el,WP</sub>(t)</big> &nbsp;&nbsp;(8)
-: <big>Q<sub>Q,a</sub> = Σ<sub>t=1…8 760</sub> max( 0 ; P<sub>Q</sub>(t) )</big> &nbsp;&nbsp;(9)
-: <big>P<sub>Q,max</sub> = 1 000 · max( 0 ; max<sub>t=1…8 760</sub> P<sub>Q</sub>(t) )</big> &nbsp;&nbsp;(10)
-: <big>t<sub>V</sub> = Q<sub>Q,a</sub> · 1 000 / P<sub>Q,max</sub></big> &nbsp;&nbsp;(11)
-Stunden mit P<sub>Q</sub>(t) ≤ 0 zaehlen weder in (9) noch in (10) — die Waermepumpe entzieht
+: <math>\displaystyle P_{\mathrm{Q}}(t) = P_{\mathrm{th,WP}}(t) - P_{\mathrm{el,WP}}(t)</math> &nbsp;&nbsp;(8)
+:: <math>P_{\mathrm{Q}}(t)</math> – Entzugsleistung der Stunde [kW]
+:: <math>P_{\mathrm{th,WP}}(t)</math> – Waermeproduktion der Waermepumpe in der Stunde [kW]
+:: <math>P_{\mathrm{el,WP}}(t)</math> – Stromaufnahme der Waermepumpe in derselben Stunde [kW]
+: <math>\displaystyle Q_{\mathrm{Q,a}} = \sum_{t=1}^{8\,760} \max\left( 0, P_{\mathrm{Q}}(t) \right)</math> &nbsp;&nbsp;(9)
+:: <math>Q_{\mathrm{Q,a}}</math> – Jahresentzugsarbeit [kWh/a]
+:: <math>P_{\mathrm{Q}}(t)</math> – Entzugsleistung der Stunde nach (8) [kW]
+:: <math>0</math> – Untergrenze: Stunden mit einem Entzug von hoechstens null zaehlen nicht mit [kW]
+: <math>\displaystyle P_{\mathrm{Q,max}} = 1\,000 \cdot \max\left( 0, \max_{t=1 \dots 8\,760} P_{\mathrm{Q}}(t) \right)</math> &nbsp;&nbsp;(10)
+:: <math>P_{\mathrm{Q,max}}</math> – maximale Entzugsleistung [W]
+:: <math>P_{\mathrm{Q}}(t)</math> – Entzugsleistung der Stunde nach (8) [kW]
+:: <math>1\,000</math> – Umrechnung kW in W, so wie die Norm es verlangt [W/kW]
+:: <math>0</math> – Untergrenze: eine negative Spitze gibt es nicht [kW]
+: <math>\displaystyle t_{\mathrm{V}} = \frac{Q_{\mathrm{Q,a}} \cdot 1\,000}{P_{\mathrm{Q,max}}}</math> &nbsp;&nbsp;(11)
+:: <math>t_{\mathrm{V}}</math> – Jahresvolllaststunden des Entzugs [h/a]
+:: <math>Q_{\mathrm{Q,a}}</math> – Jahresentzugsarbeit nach (9) [kWh/a]
+:: <math>P_{\mathrm{Q,max}}</math> – maximale Entzugsleistung nach (10) [W]
+:: <math>1\,000</math> – Umrechnung kWh in Wh; sie nimmt den Faktor aus (10) wieder heraus [Wh/kWh]
+Stunden mit <math>P_{\mathrm{Q}}(t)</math> ≤ 0 zaehlen weder in (9) noch in (10) — die Waermepumpe entzieht
 in ihnen nichts. Der Faktor 1 000 in (10) rechnet kW in W (so verlangt es die Norm), und
 (11) nimmt ihn wieder heraus, damit Stunden herauskommen.
 
-Alle drei Groessen kommen aus '''derselben''' Basis — der Stundenganglinie P<sub>Q</sub>(t).
+Alle drei Groessen kommen aus '''derselben''' Basis — der Stundenganglinie <math>P_{\mathrm{Q}}(t)</math>.
 Das ist wichtig: Frueher stammten Arbeit und Volllaststunden aus den Modul-Jahressummen, die
 Spitze aber aus der Ganglinie. Die Waerme, die die Waermepumpe zum '''Laden''' eines
 Senkenspeichers erzeugt, steckt nur in der Ganglinie — die Pruefung setzte damit einen zu
@@ -274,72 +318,103 @@ kleinen Jahresentzug gegen eine zu grosse Spitze und fiel stillschweigend zu mil
 Waermepumpen-Module zusammen. Daraus die Stufung:
 
 * '''genau ein Modul''' → exakt, die globale Ganglinie IST die des Moduls;
-* '''mehrere Module, alle mit Erdreich''' → Q<sub>Q,a</sub> und P<sub>Q,max</sub> werden proportional zur Modul-Jahresentzugsarbeit verteilt und als Naeherung gekennzeichnet; in (11) kuerzt sich der Anteil heraus, t<sub>V</sub> ist also modulunabhaengig;
+* '''mehrere Module, alle mit Erdreich''' → <math>Q_{\mathrm{Q,a}}</math> und <math>P_{\mathrm{Q,max}}</math> werden proportional zur Modul-Jahresentzugsarbeit verteilt und als Naeherung gekennzeichnet; in (11) kuerzt sich der Anteil heraus, <math>t_{\mathrm{V}}</math> ist also modulunabhaengig;
 * '''gemischte Quellen''' → nicht je Modul trennbar, die Pruefung bleibt aus und der Hinweis sagt warum.
 
 === 7. Auslegungspruefung Erdkollektor (Anhang A) ===
 
 Geprueft werden '''zwei''' Groessen, und '''beide''' muessen eingehalten sein:
 
-: <big>q<sub>A</sub> = P<sub>Q,max</sub> / A<sub>K</sub> ≤ q<sub>A,zul</sub></big> &nbsp;&nbsp;(12)
-: <big>e<sub>A</sub> = Q<sub>Q,a</sub> / A<sub>K</sub> ≤ e<sub>A,zul</sub></big> &nbsp;&nbsp;(13)
+: <math>\displaystyle q_{\mathrm{A}} = \frac{P_{\mathrm{Q,max}}}{A_{\mathrm{K}}} \le q_{\mathrm{A,zul}}</math> &nbsp;&nbsp;(12)
+:: <math>q_{\mathrm{A}}</math> – Entzugsleistung je Kollektorflaeche [W/m²]
+:: <math>P_{\mathrm{Q,max}}</math> – maximale Entzugsleistung nach (10) [W]
+:: <math>A_{\mathrm{K}}</math> – Kollektorflaeche [m²]
+:: <math>q_{\mathrm{A,zul}}</math> – zulaessige Entzugsleistung nach VDI 4640 Blatt 2, Tabelle A2 [W/m²]
+: <math>\displaystyle e_{\mathrm{A}} = \frac{Q_{\mathrm{Q,a}}}{A_{\mathrm{K}}} \le e_{\mathrm{A,zul}}</math> &nbsp;&nbsp;(13)
+:: <math>e_{\mathrm{A}}</math> – Entzugsenergie je Kollektorflaeche [kWh/(m²·a)]
+:: <math>Q_{\mathrm{Q,a}}</math> – Jahresentzugsarbeit nach (9) [kWh/a]
+:: <math>A_{\mathrm{K}}</math> – Kollektorflaeche [m²]
+:: <math>e_{\mathrm{A,zul}}</math> – zulaessige Entzugsenergie nach VDI 4640 Blatt 2, Tabelle A2 [kWh/(m²·a)]
 Die Grenzwerte stehen in Tabelle A2 — 15 Klimazonen nach DIN 4710 mal vier Bodenarten
 (Sand, Lehm, Schluff, sandiger Ton). Diese Tabelle ist '''vollstaendig''' hinterlegt. Die
 Spannen: von 5 W/m² und 12 kWh/(m²·a) (Zone 11, Sand) bis 42 W/m² und 69 kWh/(m²·a)
 (Zone 12 bzw. 5, sandiger Ton).
 
 Die 13 Untergrundtypen aus Blatt 1 werden auf die vier Bodenarten aus Blatt 2 abgebildet —
-'''Textur zuerst, λ als Feinabgleich''', und im Zweifel konservativ:
+'''Textur zuerst, <math>\lambda</math> als Feinabgleich''', und im Zweifel konservativ:
 
 * Sand und Kies (alle Feuchtezustaende) → '''Sand'''. Blatt 2 kennt keinen Kies; „Sand" ist die naechstgelegene Kornklasse und fuehrt zugleich die niedrigsten Grenzwerte.
-* Ton/Schluff '''trocken''' → '''Sand'''. Hier schlaegt λ die Textur: 0,5 W/(m·K) liegt deutlich unter dem kleinsten Rechenwert der Tabelle (Sand, 1,2).
-* Ton/Schluff '''wassergesaettigt''' → '''sandiger Ton''' (bindig, λ = 1,8 = genau der Tabellenwert).
+* Ton/Schluff '''trocken''' → '''Sand'''. Hier schlaegt <math>\lambda</math> die Textur: 0,5 W/(m·K) liegt deutlich unter dem kleinsten Rechenwert der Tabelle (Sand, 1,2).
+* Ton/Schluff '''wassergesaettigt''' → '''sandiger Ton''' (bindig, <math>\lambda</math> = 1,8 = genau der Tabellenwert).
 * Geschiebemergel/-lehm → '''Lehm'''.
 * Festgesteine (Tonstein, Sandstein, Kalkstein, Granit, Gneis) → '''sandiger Ton''', die hoechste Klasse. Tabelle A2 gilt fuer Lockergestein; ein Flachkollektor im Fels ist ohnehin untypisch. Solche Ergebnisse werden als Naeherung gekennzeichnet.
 
 Wird ein Grenzwert ueberschritten, nennt der Hinweis die '''erforderliche Flaeche''' — die
 groessere der beiden Forderungen:
 
-: <big>A<sub>K,erf</sub> = max( P<sub>Q,max</sub> / q<sub>A,zul</sub> ; Q<sub>Q,a</sub> / e<sub>A,zul</sub> )</big> &nbsp;&nbsp;(14)
-Beispiel: 250 m² in Zone 6 auf feuchtem Sand bei P<sub>Q,max</sub> = 6 480 W und
-Q<sub>Q,a</sub> = 8 900 kWh/a ergeben 25,9 W/m² gegen 16 W/m² und 35,6 gegen
+: <math>\displaystyle A_{\mathrm{K,erf}} = \max\left( \frac{P_{\mathrm{Q,max}}}{q_{\mathrm{A,zul}}}, \frac{Q_{\mathrm{Q,a}}}{e_{\mathrm{A,zul}}} \right)</math> &nbsp;&nbsp;(14)
+:: <math>A_{\mathrm{K,erf}}</math> – erforderliche Kollektorflaeche, die groessere der zwei Forderungen [m²]
+:: <math>P_{\mathrm{Q,max}}</math> – maximale Entzugsleistung nach (10) [W]
+:: <math>q_{\mathrm{A,zul}}</math> – zulaessige Entzugsleistung [W/m²]
+:: <math>Q_{\mathrm{Q,a}}</math> – Jahresentzugsarbeit nach (9) [kWh/a]
+:: <math>e_{\mathrm{A,zul}}</math> – zulaessige Entzugsenergie [kWh/(m²·a)]
+Beispiel: 250 m² in Zone 6 auf feuchtem Sand bei <math>P_{\mathrm{Q,max}}</math> = 6 480 W und
+<math>Q_{\mathrm{Q,a}}</math> = 8 900 kWh/a ergeben 25,9 W/m² gegen 16 W/m² und 35,6 gegen
 31 kWh/(m²·a); nach (14) waeren 405 m² noetig.
 
 === 8. Auslegungspruefung Erdsonde (Anhang B) ===
 
-: <big>ℓ<sub>ges</sub> = ℓ<sub>S</sub> · max( 1 ; n<sub>S</sub> )</big> &nbsp;&nbsp;(15)
-: <big>q<sub>B</sub> = P<sub>Q,max</sub> / ℓ<sub>ges</sub> ≤ q<sub>B,zul</sub></big> &nbsp;&nbsp;(16)
-Das max(1; n<sub>S</sub>) in (15) ist nicht Kosmetik: Eine leere oder auf 0 stehende
+: <math>\displaystyle \ell_{\mathrm{ges}} = \ell_{\mathrm{S}} \cdot \max\left( 1, n_{\mathrm{S}} \right)</math> &nbsp;&nbsp;(15)
+:: <math>\ell_{\mathrm{ges}}</math> – gesamte Sondenmeterzahl [m]
+:: <math>\ell_{\mathrm{S}}</math> – Laenge je Sonde [m]
+:: <math>n_{\mathrm{S}}</math> – Anzahl Sonden [–]
+:: <math>1</math> – Untergrenze: eine Sonde ist das Mindeste, was vorhanden sein kann [–]
+: <math>\displaystyle q_{\mathrm{B}} = \frac{P_{\mathrm{Q,max}}}{\ell_{\mathrm{ges}}} \le q_{\mathrm{B,zul}}</math> &nbsp;&nbsp;(16)
+:: <math>q_{\mathrm{B}}</math> – spezifische Entzugsleistung der Sonde [W/m]
+:: <math>P_{\mathrm{Q,max}}</math> – maximale Entzugsleistung nach (10) [W]
+:: <math>\ell_{\mathrm{ges}}</math> – gesamte Sondenmeterzahl nach (15) [m]
+:: <math>q_{\mathrm{B,zul}}</math> – zulaessige spezifische Entzugsleistung nach VDI 4640 Blatt 2, Tabelle B2 [W/m]
+Das <math>\max(1, n_{\mathrm{S}})</math> in (15) ist nicht Kosmetik: Eine leere oder auf 0 stehende
 Sondenzahl ergaebe 0 Sondenmeter, und (16) meldete eine Entzugsleistung von unendlich vielen
 W/m. Eine Sonde ist das Mindeste, was vorhanden sein kann.
 
-Der Grenzwert q<sub>B,zul</sub> kommt aus Tabelle B2 („nur Heizen", Soleaustritt −5 °C bei
-Spitzenlast) und haengt an drei Groessen: der Waermeleitfaehigkeit λ des Untergrunds, der
-Sondenzahl n<sub>S</sub> (Reihe, Abstand 6 m) und den Jahresvolllaststunden t<sub>V</sub>.
+Der Grenzwert <math>q_{\mathrm{B,zul}}</math> kommt aus Tabelle B2 („nur Heizen", Soleaustritt −5 °C bei
+Spitzenlast) und haengt an drei Groessen: der Waermeleitfaehigkeit <math>\lambda</math> des Untergrunds, der
+Sondenzahl <math>n_{\mathrm{S}}</math> (Reihe, Abstand 6 m) und den Jahresvolllaststunden <math>t_{\mathrm{V}}</math>.
 Zwischenwerte entstehen durch '''lineare Interpolation''' zwischen den Stuetzstellen. Liegt
-noch kein Lauf vor, tritt an die Stelle von t<sub>V</sub> der Zonenwert nach DIN 4710.
+noch kein Lauf vor, tritt an die Stelle von <math>t_{\mathrm{V}}</math> der Zonenwert nach DIN 4710.
 
 '''Tabelle B2 ist nur als Auszug hinterlegt''' (in Umsetzung, Stand 06.09.2026):
-Stuetzstellen sind λ = 1, 2, 3, 4 W/(m·K), t<sub>V</sub> = 1 200 / 1 800 / 2 400 h/a und
-n<sub>S</sub> = 1 bzw. 5 (bei 2 400 h: 1 bzw. 4). Ausserhalb wird auf den Randwert geklemmt —
-auf der Sondenzahl-Achse ist das '''nicht konservativ''', weil q<sub>B,zul</sub> mit der
+Stuetzstellen sind <math>\lambda</math> = 1, 2, 3, 4 W/(m·K), <math>t_{\mathrm{V}}</math> = 1 200 / 1 800 / 2 400 h/a und
+<math>n_{\mathrm{S}}</math> = 1 bzw. 5 (bei 2 400 h: 1 bzw. 4). Ausserhalb wird auf den Randwert geklemmt —
+auf der Sondenzahl-Achse ist das '''nicht konservativ''', weil <math>q_{\mathrm{B,zul}}</math> mit der
 Sondenzahl sinkt. Ein solches Ergebnis traegt deshalb einen ausdruecklichen Vorbehalt.
 
 Ueberschreitet der Istwert den Grenzwert, nennt der Hinweis die erforderliche
 Sondenmeterzahl:
 
-: <big>ℓ<sub>erf</sub> = P<sub>Q,max</sub> / q<sub>B,zul</sub></big> &nbsp;&nbsp;(17)
+: <math>\displaystyle \ell_{\mathrm{erf}} = \frac{P_{\mathrm{Q,max}}}{q_{\mathrm{B,zul}}}</math> &nbsp;&nbsp;(17)
+:: <math>\ell_{\mathrm{erf}}</math> – erforderliche Sondenmeterzahl [m]
+:: <math>P_{\mathrm{Q,max}}</math> – maximale Entzugsleistung nach (10) [W]
+:: <math>q_{\mathrm{B,zul}}</math> – zulaessige spezifische Entzugsleistung [W/m]
 === 9. Die zweite Warnbedingung: Frost ===
 
 Geprueft wird ausserdem, ob '''Quelltemperatur minus Spreizung''' dauerhaft unter 0 °C
 liegt. Gezaehlt werden ausschliesslich die '''Betriebsstunden''' — in Stillstandsstunden
 entzieht niemand Waerme, eine Frostmeldung daraus waere gegenstandslos:
 
-: <big>n<sub>Frost</sub> = Zahl der Betriebsstunden mit ϑ<sub>Q</sub>(t) − Δϑ < 0 °C</big> &nbsp;&nbsp;(18)
-: <big>Warnung, wenn n<sub>Frost</sub> > 0,05 · n<sub>Betrieb</sub></big> &nbsp;&nbsp;(19)
-Ohne gepflegte Spreizung gelten Δϑ = 5 K.
+: <math>\displaystyle n_{\mathrm{Frost}} = \lvert \{ t \in \mathrm{Betrieb} : \vartheta_{\mathrm{Q}}(t) - \Delta\vartheta < 0 \} \rvert</math> &nbsp;&nbsp;(18)
+:: <math>n_{\mathrm{Frost}}</math> – Zahl der Betriebsstunden mit Frost an der Quelle [h/a]
+:: <math>\mathrm{Betrieb}</math> – die Stunden, in denen die Waermepumpe laeuft; Stillstandsstunden zaehlen nicht [–]
+:: <math>\vartheta_{\mathrm{Q}}(t)</math> – Quelltemperatur der Anlage nach (6) bzw. (7) [°C]
+:: <math>\Delta\vartheta</math> – nutzbare Spreizung der Quelle; Vorgabe 5 [K]
+: <math>\displaystyle n_{\mathrm{Frost}} > 0{,}05 \cdot n_{\mathrm{Betrieb}} \;\to\; \text{Warnung}</math> &nbsp;&nbsp;(19)
+:: <math>n_{\mathrm{Frost}}</math> – Zahl der Frost-Betriebsstunden nach (18) [h/a]
+:: <math>n_{\mathrm{Betrieb}}</math> – Betriebsstunden der Waermepumpe im Lauf [h/a]
+:: <math>0{,}05</math> – Frostschwelle als Anteil der Betriebsstunden, also 5 % [–]
+Ohne gepflegte Spreizung gelten <math>\Delta\vartheta</math> = 5 K.
 
-Der Bezug auf n<sub>Betrieb</sub> in (19) ist Absicht: Eine Waermepumpe mit 2 000
+Der Bezug auf <math>n_{\mathrm{Betrieb}}</math> in (19) ist Absicht: Eine Waermepumpe mit 2 000
 Betriebsstunden haette bei Bezug auf 8 760 h erst ab 438 h gewarnt — also erst, wenn schon
 ein Fuenftel ihrer Laufzeit im Frost liegt.
 
@@ -350,11 +425,11 @@ eine ZUSAETZLICHE, strengere Anzeige.
 
 == Grenzen und Annahmen ==
 
-* '''Keine Rueckwirkung des Entzugs auf die Temperatur.''' In (6) und (7) kommt P<sub>Q</sub>(t) nicht vor: Das Modell liefert den ungestoerten Jahresgang des Erdreichs; dass die Waermepumpe den Boden abkuehlt, ist '''nicht''' abgebildet. Auch die Regeneration (durch Solarthermie, Abwaerme oder den Sommer) wird nicht gerechnet. Genau dafuer gibt es die Auslegungspruefung: Sie haelt den Entzug gegen die Grenzwerte, unter denen die Norm eine dauerhaft tragfaehige Quelle erwartet.
+* '''Keine Rueckwirkung des Entzugs auf die Temperatur.''' In (6) und (7) kommt <math>P_{\mathrm{Q}}(t)</math> nicht vor: Das Modell liefert den ungestoerten Jahresgang des Erdreichs; dass die Waermepumpe den Boden abkuehlt, ist '''nicht''' abgebildet. Auch die Regeneration (durch Solarthermie, Abwaerme oder den Sommer) wird nicht gerechnet. Genau dafuer gibt es die Auslegungspruefung: Sie haelt den Entzug gegen die Grenzwerte, unter denen die Norm eine dauerhaft tragfaehige Quelle erwartet.
 * '''Keine Langzeitbetrachtung.''' Ein Jahr, kein Absinken ueber 20 oder 50 Betriebsjahre.
 * '''Kein Sondenmodell.''' Bohrlochwiderstand, Sondenabstand, Verfuellung und Grundwasserstroemung kommen in (7) nicht vor; die Sonde ist eine Konstante.
-* '''Ein Bodentyp je Anlage.''' Geschichteter Untergrund wird nicht abgebildet — λ und ρ·c<sub>p</sub> sind je Anlage EIN Wertepaar.
-* '''Die Randbedingungen der Normtabellen werden nicht geprueft.''' Tabelle A2 gilt fuer PE-Rohr 32 × 3,0 mm bei turbulenter Stroemung und Heizgrenztemperatur 12 °C, Tabelle B2 fuer eine Doppel-U-Sonde 32 × 3,0 mit Verfuellung λ = 0,8 W/(m·K), Bohrloch 150 mm und turbulenter Stroemung. Bei laminarer Stroemung sinkt die zulaessige Entzugsleistung um rund 10 % (A2) bzw. auf Faktor 0,79 bis 0,85 (B1) — das ist vom Anwender zu beruecksichtigen.
+* '''Ein Bodentyp je Anlage.''' Geschichteter Untergrund wird nicht abgebildet — <math>\lambda</math> und <math>\rho \cdot c_{\mathrm{p}}</math> sind je Anlage EIN Wertepaar.
+* '''Die Randbedingungen der Normtabellen werden nicht geprueft.''' Tabelle A2 gilt fuer PE-Rohr 32 × 3,0 mm bei turbulenter Stroemung und Heizgrenztemperatur 12 °C, Tabelle B2 fuer eine Doppel-U-Sonde 32 × 3,0 mit Verfuellung <math>\lambda</math> = 0,8 W/(m·K), Bohrloch 150 mm und turbulenter Stroemung. Bei laminarer Stroemung sinkt die zulaessige Entzugsleistung um rund 10 % (A2) bzw. auf Faktor 0,79 bis 0,85 (B1) — das ist vom Anwender zu beruecksichtigen.
 * '''Nur der Standardfall „Heizen ohne Trinkwarmwasser".''' Die uebrigen Betriebsfaelle (Tabellen B3 bis B7) und die Kapillarrohrmatten (Tabelle A3) sind nicht hinterlegt — in Umsetzung, Stand 06.09.2026.
 * '''Tabelle B2 nur als Auszug''' (siehe Schritt 8) — in Umsetzung, Stand 06.09.2026.
 * '''Normstand Blatt 1 ist ein Entwurf''' (2021-12, Gruendruck). Ergebnisse sind als solche auszuweisen.
@@ -362,9 +437,9 @@ eine ZUSAETZLICHE, strengere Anzeige.
 
 == Ergebnisse und wo sie stehen ==
 
-* '''Dialog „Wärmequelle Erdreich"''', Abschnitt „Jahresgang der Quelltemperatur" — das Bild von ϑ<sub>Q</sub>(t) nach (6) bzw. (7), darunter Minimum, Maximum und Mittel samt Monat; ein Hinweis sagt an, wenn mit den Ersatzwerten aus Schritt 1 gerechnet wurde.
-* '''Dialog „Wärmequelle Erdreich"''', Abschnitt „Auslegungsprüfung nach VDI 4640 Blatt 2" — Istwert gegen Grenzwert je Pruefzeile (12), (13) bzw. (16), die Grundlage (Klimazone und Bodenart bzw. λ, Sondenzahl, Volllaststunden), der Hinweis mit der erforderlichen Flaeche nach (14) bzw. Sondenlaenge nach (17), dazu Vorbehalt und Frostmeldung nach (19).
-* '''Simulationsergebnis''', Reiter „Wärmepumpe" — P<sub>th,WP</sub>(t) und P<sub>el,WP</sub>(t), aus denen (8) den Entzug bildet.
+* '''Dialog „Wärmequelle Erdreich"''', Abschnitt „Jahresgang der Quelltemperatur" — das Bild von <math>\vartheta_{\mathrm{Q}}(t)</math> nach (6) bzw. (7), darunter Minimum, Maximum und Mittel samt Monat; ein Hinweis sagt an, wenn mit den Ersatzwerten aus Schritt 1 gerechnet wurde.
+* '''Dialog „Wärmequelle Erdreich"''', Abschnitt „Auslegungsprüfung nach VDI 4640 Blatt 2" — Istwert gegen Grenzwert je Pruefzeile (12), (13) bzw. (16), die Grundlage (Klimazone und Bodenart bzw. <math>\lambda</math>, Sondenzahl, Volllaststunden), der Hinweis mit der erforderlichen Flaeche nach (14) bzw. Sondenlaenge nach (17), dazu Vorbehalt und Frostmeldung nach (19).
+* '''Simulationsergebnis''', Reiter „Wärmepumpe" — <math>P_{\mathrm{th,WP}}(t)</math> und <math>P_{\mathrm{el,WP}}(t)</math>, aus denen (8) den Entzug bildet.
 * '''Laufprotokoll''' — die Warnung bei unstimmiger Tiefe (Schritt 5) und die Meldung, wenn eine Quelle nicht geprueft werden kann.
 
 == Bezüge ==
