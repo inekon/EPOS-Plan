@@ -2392,6 +2392,36 @@ namespace WindowsFormsApplication1
         /// könnte. Der Zweitlauf meldet „bereits erledigt" und ändert nichts.</para>
         /// </summary>
         public const int SCHRITT_64_PV_MODELLWAHL = 64;
+
+        /// <summary>
+        /// <b>Der Wechselrichterkatalog</b> — Stufe S1 des
+        /// <c>Konzept_Wechselrichter_EPOS-Plan.md</c> (Anwenderentscheid <b>W6‑E‑2</b>
+        /// vom 06.09.2026): <c>Tab_Wechselrichter_STAMM</c> und die Projektkopie
+        /// <c>Tab_Wechselrichter</c>, spaltengleich, plus <c>ID_Projekt</c>, ohne
+        /// <c>ReadOnly</c>. Die DDL steht in <see cref="WechselrichterSchema"/>.
+        ///
+        /// <para><b>Wozu.</b> Der Wechselrichter war die einzige Gerätefamilie ohne
+        /// Katalog: Seine Kennlinie stand als drei Zahlen an der Anlagenzeile
+        /// (<see cref="SCHRITT_64_PV_MODELLWAHL"/>), von Hand getippt, ohne Herkunft und
+        /// ohne Prüfung. Mit dem Katalog bekommt er Datenblattwerte (CEC-Import),
+        /// Eingangsgrenzen für die Auslegungsprüfung und einen Gerätepreis.</para>
+        ///
+        /// <para><b>KEIN DML, und das ist die Ergebnisneutralität.</b> Der Schritt legt
+        /// zwei LEERE Tabellen an. Nach der Migration führt kein Projekt eine Kopie, und
+        /// kein Rechenweg liest die zwei Tabellen — S1 fasst <c>SimulationPV</c> nicht
+        /// an. Der Referenzlauf gegen <c>2026-09-05_R2_Zeitbasis</c> bleibt
+        /// <b>byte-gleich</b>.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 65
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 64
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem
+        /// Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <c>CREATE TABLE IF NOT EXISTS</c> — SQLite kann das
+        /// selbst; es gibt kein UPDATE, das ein zweiter Lauf wiederholen könnte. Der
+        /// Zweitlauf legt nichts an und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_65_WECHSELRICHTERKATALOG = 65;
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4336,7 +4366,20 @@ namespace WindowsFormsApplication1
                         "Modellwahl, die Wechselrichterdaten je Anlage, die Modultechnologie " +
                         "und die Degradation haetten keine Spalte zum Speichern. Gerechnet " +
                         "wird weiter ausschliesslich im vereinfachten Modell.",
-                        Schritt_64_PvModellwahl),        };
+                        Schritt_64_PvModellwahl),
+
+            // STUFE S1 des Konzept_Wechselrichter_EPOS-Plan.md (Anwenderentscheid
+            // W6-E-2 vom 06.09.2026). Begruendung, Ergebnisneutralitaet und
+            // Idempotenzzusage bei der Schrittkonstanten; die DDL steht in
+            // WechselrichterSchema - EINE Quelle fuer Migration und Testdatenbank.
+            new Schritt(SCHRITT_65_WECHSELRICHTERKATALOG,
+                        "Wechselrichterkatalog (Tab_Wechselrichter_STAMM) und seine " +
+                        "Projektkopie (Tab_Wechselrichter) anlegen (Stufe S1)",
+                        "Der Wechselrichterkatalog bleibt dann unerreichbar: Die " +
+                        "Verwaltung, der CEC-Import und die Projektkopie haetten keine " +
+                        "Tabelle. Gerechnet wird unveraendert mit den drei " +
+                        "Wechselrichterzahlen an der Anlagenzeile.",
+                        Schritt_65_Wechselrichterkatalog),        };
 
         /// <summary>
         /// Die Schritte, die ein SQLite-Lauf abarbeitet: <see cref="SCHRITTE_SQLITE"/>
@@ -10113,6 +10156,47 @@ namespace WindowsFormsApplication1
                     "KEIN DML: alle acht Spalten bleiben NULL. NULL heisst bei " +
                     SchemaKatalog.SPALTE_EA_PV_MODELL + " \"Modell EINFACH\", also der " +
                     "Rechenweg aus Paket A, und bei der Degradation 0 %/a. KEIN " +
+                    "Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 65 - der Wechselrichterkatalog (Konzept Wechselrichter, Stufe S1)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 65 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_65_WECHSELRICHTERKATALOG"/>.
+        ///
+        /// <para><b>Die DDL kommt aus dem KERN</b> (<see cref="WechselrichterSchema"/>)
+        /// und steht nicht hier: Dasselbe Schema legt
+        /// <c>Werkzeuge/Testdatenbankschema</c> an, wenn die Messlatte
+        /// <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> nachgezogen wird. Zwei
+        /// abgeschriebene <c>CREATE TABLE</c> wären zwei Schemata — dieselbe
+        /// Begründung, mit der Schritt 62 seine zwei <c>DELETE</c> aus
+        /// <c>KlimaWaisenBereinigung</c> holt.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteDdl"/>.</b> Der Schritt gehört dem SQLite-Zweig;
+        /// <c>Ddl</c>, <c>TabellenSchema</c> und <c>NonQuery</c> arbeiten auf
+        /// <c>Lauf.Conn</c>, und die ist hier <c>null</c>. Die Idempotenz trägt
+        /// <c>IF NOT EXISTS</c> in der Anweisung selbst.</para>
+        /// </summary>
+        private static bool Schritt_65_Wechselrichterkatalog(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (KeyValuePair<string, string> a in WechselrichterSchema.Anweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            l.Notiz("65: " + angelegt + " von 2 Tabelle(n) angelegt (" +
+                    SchemaKatalog.TAB_WECHSELRICHTER_STAMM + ", " +
+                    SchemaKatalog.TAB_WECHSELRICHTER + "). " +
+                    "KEIN DML: beide Tabellen sind nach dem Schritt LEER, kein Projekt " +
+                    "fuehrt eine Kopie, und kein Rechenweg liest sie. KEIN " +
                     "Rechenergebnis aendert sich.");
             return true;
         }
