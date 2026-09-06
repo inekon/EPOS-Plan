@@ -678,6 +678,7 @@ weiterhin für den Windows-internen Umzugsnachweis (iT2), wo sich nichts ändern
 | `.editorconfig` | kein globales `charset` (bewusst — eine BOM in den Referenz-CSV zerstört den Byte-Vergleich) | **unverändert lassen.** Die Regel ist load-bearing |
 | Formular-Generator (A7) | ~~existiert nicht~~ **`Werkzeuge/Formularkarte`** (iU8-12) | Entwicklerwerkzeug mit **eigener `.sln`**, bewusst weder in `WP-Plan.sln` noch im Kernfilter (die `.csproj` der Anwendung sammelt `**\*.cs` ein — eine `.cs`-Datei unterhalb `WindowsFormsApplication1\` bricht den Build mit CS0102/CS0017). Aufruf `dotnet run --project Werkzeuge/Formularkarte -- <Designer.cs>`, Stapellauf mit `--alle` |
 | Lokalisierung | ResXManager, Drei-Schichten-Regel | **unverändert.** `MyResource.Resource.*` ist eine normale Klasse und läuft in Blazor auf beiden Plattformen; `DbWerte` bleibt eingefroren (M7) |
+| Designer-Datei der Ressourcen | Visual Studio erzeugte `Resource.Designer.cs` über den Code-Generator der `.resx` | **`Werkzeuge/ResourceDesigner/designer_neu.py` ist seit 06.09.2026 der einzige Generator** (`abbb057`); der VS-Generator ist im `.csproj` abgeklemmt (`0785680`) — die vom Studio neu geschriebene Datei blockierte beim Anwender als „lokal geändert" jeden `git pull` |
 | Installer | Inno Setup 6.3, `build-setup.ps1` | bleibt für Windows. ~~`EPOS-Plan.iss:29` auf `EPOS_Plan.exe` korrigieren~~ ✔ erledigt (iU1-P1.10, `ce2dc9e`, samt Umstellung auf `dotnet publish`). **Neu seit iU8-10:** die WebView2-Laufzeit ist die **zweite** Voraussetzung neben ACE; der Online-Bootstrapper wird nur mitgenommen, wenn sie fehlt (→ iF20) |
 
 ### 3.10 Die Bausteine iE1–iE10
@@ -1091,6 +1092,20 @@ baut und testet auf macOS in der CI. Reine Umbau-Etappe ohne Ergebniswirkung.
 > **Offen nach dem zweiten Umzug:** die Windows-Bedienprobe (Berichte, Katalogimport,
 > Lizenzaktivierung, KI-Chat) und die 59 Dateien, die erst mit `Views/` bzw. mit dem
 > Access-Zweig gehen können.
+>
+> **Befund iU5‑O‑1 (Windows-CI 06.09.2026, Lauf 34018913888 auf `002c937`), behoben in `8256ba4`:** Acht Testklassen
+> tauschten die prozessweiten `Dienste.*` in drei nebeneinander laufenden xunit-Sammlungen; xunit trennt nur INNERHALB
+> einer Sammlung. Während der Tausch von `DiensteTests` stand, meldete ein Datenbanktest über
+> `DataRepository.FehlerMelden` in denselben `Dienste.Dialog` — die Mitschrift bekam „Fehler beim Laden der Daten:
+> Type…" statt „mit Titel", der nächste Lauf war grün. Jetzt tragen **alle** Tauscher `[Collection("Testdatenbank")]`
+> (die eine serielle Sammlung, ohne `ICollectionFixture` also kostenlos), der Name „Dienste" ist weg, und der Wächter
+> `EPOS.Kern.Tests/DiensteSammlungTests` hält die Regel über die Quelldateien fest — samt Gegenproben und Hausregel in
+> `EPOS.Kern/CLAUDE.md`. Der fremde Melder war ein **Testfehler**: `TestDatenbank.SpalteSicherstellen` fragte mit
+> eigenem `PRAGMA table_info(…)`; dessen Spalte `dflt_value` meldet für NULL den Typnamen „BLOB", die Tabelle wurde als
+> `Byte[]` gebaut und beim ersten Vorgabewert gesprengt — die Existenzprüfung fand nie eine Spalte, das `ADD COLUMN`
+> lief immer, 1 440 stille Fehlmeldungen je Lauf. Die Auskunft holt jetzt der Kern (`DataRepository.SpalteVorhanden`).
+> 1 348 statt 1 344 grün, fünf Läufe hintereinander stabil, 59 s statt 70 s; Rechenweg unberührt. Der dabei sichtbar
+> gewordene Kern-Befund steht als **iU6‑O‑1** im iU6-Block.
 
 **Voraussetzung:** iU4. **Block A2, A3, A4, M4.**
 
@@ -1171,6 +1186,13 @@ Windows und der Vollreferenzlauf 332/332 stehen aus.
 > `2026-08-30_B3-Kaskade`: **GESAMT PASS (815.043 Werte), alle drei byte-gleich** — nach
 > **jeder** Tranche. `Proben/ZugriffsschichtProben` übersetzt fehlerfrei.
 > `dotnet list EPOS.Kern package | grep -c OleDb` → **0**.
+>
+> **Offen iU6‑O‑1 (Befund aus iU5‑O‑1, 06.09.2026):** `SqliteDatenzugriff.LadeTabelle` leitet den Typ einer nicht
+> deklarierten Spalte aus der ERSTEN Zeile ab; ist die NULL, meldet `Microsoft.Data.Sqlite` „BLOB", die Spalte wird
+> `Byte[]`, und der ganze Ladevorgang stirbt an der ersten belegten Zeile. Produktiv trifft das heute keinen Weg
+> (`SpaltenVonTabelle`, `IndexListe`, `ProjektExportImportCtrl` holen aus `pragma_table_info` nur nie-leere Spalten;
+> SQL-Prüfer 0 Fundstellen). Vorschlag: bei „BLOB" **und** `IsDBNull` der ersten Zeile den Typ nicht festlegen, sondern
+> `typeof(object)` — Änderung an der Zugriffsschicht, gegen den Referenzlauf zu halten; Entscheid des Anwenders.
 
 **Voraussetzung:** iU4. **Block B1.** Der Umfang ist gegenüber Rev. 1 stark geschrumpft, weil
 `6486c36` das Meiste bereits erledigt hat.
