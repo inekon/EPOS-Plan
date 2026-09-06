@@ -1114,11 +1114,14 @@ zwischen zwei Entscheiden:
   Kennzeichnung als Text mit `aria-hidden`-Zeichen, „nicht verwendet" fünfmal bei der
   Wärmepumpe, „–" bei NULL, Einheit hinter dem Wert, englische Kultur, leere Liste, und
   **ohne Delegat kein Aufklapper**.
-* **Testzahlen** — `EPOS.Kern.Tests` 1 230 → **1 272**, `EPOS.UI.Tests` 2 683 → **2 700**,
-  `KiKern.Tests` 469, `SpeicherEngine.Tests` 337, `Werkzeuge/Formularkarte` 122; grün
-  unter `de_DE.UTF-8` **und** `en_US.UTF-8`. Beide Kern-Wächter leer, Windows-Bau
-  (`-p:Platform=x64`) 0 Fehler, SQL-Prüfer 0 Fundstellen, Stilblatt-Wache grün
-  (Klammerbilanz, kein Nesting).
+* **Testzahlen** — der Wunsch bringt **+42** Kern- und **+17** Oberflächenfälle; nach der
+  Zusammenführung mit `ios_migration` (iF30, Lizenz-Schreibnaht) steht die Mappe bei
+  `EPOS.Kern.Tests` **1 344**, `EPOS.UI.Tests` **2 721**, `KiKern.Tests` 469,
+  `SpeicherEngine.Tests` 337, `Werkzeuge/Formularkarte` 122 — grün unter
+  `de_DE.UTF-8` **und** `en_US.UTF-8`. Beide Kern-Wächter leer, Windows-Bau
+  (`-p:Platform=x64`) 0 Fehler, SQL-Prüfer 1 213 Texte / 0 Fundstellen,
+  Stilblatt-Wache grün (Klammerbilanz, kein Nesting), Designer-Prüfung
+  „abweichend 0".
 * **Rechenweg unberührt** — es ist keine Zeile in `Allgemein/Simulation/**` oder
   `Allgemein/Wirtschaftlichkeit/**` angefasst; der Verwendungskatalog LIEST diese
   Dateien nur als Fundstellenangabe.
