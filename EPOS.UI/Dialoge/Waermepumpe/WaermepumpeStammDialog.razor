@@ -21,16 +21,24 @@
    zu speichern oder zu loeschen wird abgelehnt, seine Kennlinien sind nur
    ansehbar.
 
-   MODULKOSTEN SIND NICHT GEZEICHNET (Ä19): Geraetekosten laufen ueber die
-   Kostenverwaltung. Der Wert laeuft im Datensatz unveraendert mit; bei einer
-   Neuanlage ist er 0. Die Pflichtpruefung des Vorlaeufers auf ein Feld, das
-   es nicht mehr gibt, entfaellt damit (A-14).
+   MODULKOSTEN STEHEN NUR LESEND DA (Anwenderentscheid W14a-O-1 vom
+   06.09.2026). Ä19 der Welle 7 nahm das Feld ganz aus der Maske
+   ("Geraetekosten laufen ueber die Kostenverwaltung"); seither fuellte es
+   allein der VDI-3805-Import, und niemand sah, warum die Kostenuebernahme
+   keinen Planwert vorschlug. Der Wert ist deshalb WIEDER SICHTBAR - als
+   Lesewert im Raster mit Herleitungszeile darunter, ohne Eingabefeld und ohne
+   Schreibweg. Ä19 bleibt damit gewahrt: Hier tippt niemand Kosten ein, er
+   sieht nur, woher der Planwert kommt bzw. warum keiner kommt. Die
+   Pflichtpruefung des Vorlaeufers auf das frueher pflegbare Feld bleibt
+   entfallen (A-14) - es gibt nichts zu pruefen, was der Anwender eingegeben
+   haette.
 
    TASTATUR: Esc schliesst - aber erst, wenn keine Ueberlagerung und keine
    Rueckfrage offen ist. Enter ist nicht belegt: "Speichern" und "Loeschen"
    schreiben sofort. *@
 
 @namespace EPOS.UI.Dialoge.Waermepumpe
+@using System.Globalization
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
 
@@ -117,6 +125,35 @@
                                   WertChanged="w => Daten.Heizstab = w" />
                     <Zahlenfeld Bezeichnung="@LabelKuehlleistung" Einheit="@EinheitKw"
                                 Wert="@Daten.Kuehlleistung" Aktiv="false" />
+
+                    @* --- Modulkosten, nur lesend (W14a-O-1) ------------------------
+                       KEIN EINGABEFELD, sondern ein <span> in der Rasterzelle. Ein
+                       gesperrtes Feld sagte "hier koenntest du tippen, nur jetzt
+                       nicht"; hier gibt es nichts zu tippen - der Wert kommt aus dem
+                       Herstellerimport (WPCtrl:265-282), gepflegt werden Geraetekosten
+                       in der Kostenverwaltung (Ä19). Die Klassen sind die des Hauses:
+                       .epos-feld traegt im Formularraster die Beschriftungsspalte,
+                       .epos-feld-zeile setzt Wert und Einheit nebeneinander.
+
+                       DIE EINHEIT IST EURO, nicht €/kW: TechnikPlanwertCtrl:344 nimmt
+                       den Wert als Basis "Modulpreis" UNVERAENDERT als Betrag - anders
+                       als bei Photovoltaik (Preis JE MODUL x Stueckzahl) und
+                       Stromspeicher (€/kWh x kWh) wird hier nichts multipliziert. *@
+                    <div class="epos-feld">
+                        <span class="epos-feld-text">@LabelModulkosten</span>
+                        <span class="epos-feld-zeile">
+                            <span class="epos-lesewert">@ModulkostenText</span>
+                            @if (HatModulkosten)
+                            {
+                                <span class="epos-einheit">@EinheitEuro</span>
+                            }
+                        </span>
+                    </div>
+                    <Herleitungszeile Text="@HerleitungModulkosten" />
+                    @if (!HatModulkosten)
+                    {
+                        <Herleitungszeile Text="@HinweisModulkostenLeer" />
+                    }
                         </KindInhalt>
                     </Formularraster>
 
@@ -285,6 +322,15 @@
     [Parameter] public string LabelNennleistung { get; set; } = "Nennleistung";
     [Parameter] public string LabelHeizstab { get; set; } = "Heizstab";
     [Parameter] public string LabelKuehlleistung { get; set; } = "Kühlleistung";
+
+    /// <summary>
+    /// Beschriftung des Lesewerts (W14a‑O‑1). Der Schlüssel ist <c>MODK_LBL_MODULKOSTEN</c>
+    /// — derselbe, den der Verwendungskatalog für diese Spalte führt
+    /// (<c>ParameterVerwendung.Waermepumpe</c>); Raster und Aufklapper nennen den
+    /// Parameter damit wortgleich.
+    /// </summary>
+    [Parameter] public string LabelModulkosten { get; set; } = "Modulkosten";
+
     [Parameter] public string LabelKennlinien { get; set; } = "Kenndaten Kennlinien:";
     [Parameter] public string OptionWaerme { get; set; } = "Wärme";
     [Parameter] public string OptionKuehlung { get; set; } = "Kühlung";
@@ -292,6 +338,27 @@
     [Parameter] public string ReiterLeistung { get; set; } = "Leistung";
     [Parameter] public string PlatzhalterBild { get; set; } = "Keine Kennlinien vorhanden";
     [Parameter] public string EinheitKw { get; set; } = "kW";
+
+    /// <summary>
+    /// Einheit der Modulkosten. Sie steht in beiden Sprachen gleich und braucht
+    /// deshalb — wie <see cref="EinheitKw"/> — keinen Ressourcenschlüssel.
+    /// </summary>
+    [Parameter] public string EinheitEuro { get; set; } = "€";
+
+    /// <summary>
+    /// Die Herleitungszeile unter den Modulkosten (<c>WPS_HERL_MODULKOSTEN</c>,
+    /// W14a‑O‑1). Sie steht IMMER da: Ihre zweite Hälfte ist die Auskunft aus Ä19 —
+    /// wer hier Kosten pflegen will, findet den Weg dorthin.
+    /// </summary>
+    [Parameter] public string HerleitungModulkosten { get; set; } =
+        "aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt";
+
+    /// <summary>
+    /// Die zweite, leise Zeile bei einem Wert von 0 (<c>WPS_HINWEIS_MODULKOSTEN_LEER</c>,
+    /// W14a‑O‑1) — die Antwort auf „warum schlägt die Kostenübernahme nichts vor?".
+    /// </summary>
+    [Parameter] public string HinweisModulkostenLeer { get; set; } =
+        "kein Planwert aus dem Herstellerimport";
     [Parameter] public string BtnKenndatenText { get; set; } = "Kennliniendaten Ansicht/Bearbeiten...";
     [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
     [Parameter] public string BtnNeuText { get; set; } = "Neu";
@@ -342,6 +409,28 @@
 
     /// <summary>Steht der Kennlinieneditor? Prüfhilfe für die Tests.</summary>
     public bool KennlinieneditorOffen => _kennlinien is not null;
+
+    /// <summary>
+    /// Führt der Satz einen Planwert aus dem Herstellerimport? (W14a‑O‑1)
+    ///
+    /// <para><b>0 und NULL sind dasselbe.</b> <c>Tab_WP_STAMM.Modulkosten</c> ist eine
+    /// INTEGER-Spalte; ein NULL kommt als 0 im Datensatz an
+    /// (<c>WPStammCtrl</c>:677), und <c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge
+    /// ≤ 0 („0 gilt als ungepflegt"). Eine 0 ist hier also wirklich „kein Planwert"
+    /// und nicht der Betrag null Euro.</para>
+    /// </summary>
+    private bool HatModulkosten => Daten.Modulkosten > 0;
+
+    /// <summary>
+    /// Der Anzeigetext der Modulkosten — die rohe Zahl in der Kultur des Anwenders,
+    /// ohne Tausenderpunkt, genau wie <c>ParameterUebersichtCtrl.Anzeige</c> sie in den
+    /// Aufklapper schreibt: Wer Raster und Übersicht nebeneinanderlegt, liest dieselben
+    /// Ziffern. Ohne Planwert steht derselbe Halbgeviertstrich da, den auch der
+    /// Verwendungskatalog für „kein Wert" führt (<c>ParameterVerwendung.LEER</c>).
+    /// </summary>
+    private string ModulkostenText => HatModulkosten
+        ? Daten.Modulkosten.ToString(CultureInfo.CurrentCulture)
+        : "–";
 
     protected override void OnInitialized()
     {

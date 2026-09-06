@@ -15095,4 +15095,10 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="PARV_LBL_GEWICHT" xml:space="preserve">
     <value>Gewicht:</value>
   </data>
+  <data name="WPS_HERL_MODULKOSTEN" xml:space="preserve">
+    <value>aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt</value>
+  </data>
+  <data name="WPS_HINWEIS_MODULKOSTEN_LEER" xml:space="preserve">
+    <value>kein Planwert aus dem Herstellerimport</value>
+  </data>
 </root>

@@ -486,4 +486,160 @@ public class WaermepumpeStammDialogTests : BunitContext
         Assert.NotEmpty(kurz);
         Assert.Contains(kurz, f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
     }
+
+    // =====================================================================
+    //  Modulkosten — Anwenderentscheid W14a‑O‑1 (06.09.2026)
+    // =====================================================================
+    //
+    //  Ä19 der Welle 7 nahm das Feld ganz aus der Maske; seither füllte es
+    //  allein der VDI‑3805‑Import, und niemand sah, warum die Kostenübernahme
+    //  keinen Planwert vorschlug. Der Entscheid holt den Wert zurück — NUR
+    //  LESEND, mit Herleitungszeile. Die Fälle halten beides fest: dass er
+    //  DASTEHT und dass er kein Eingabefeld ist.
+
+    /// <summary>Das Feld der Modulkosten — die Zelle mit dem Lesewert.</summary>
+    private static IElement Modulkostenfeld(IRenderedComponent<WaermepumpeStammDialog> cut)
+        => cut.FindAll(".epos-formularraster .epos-feld")
+              .First(f => f.QuerySelector(".epos-lesewert") is not null);
+
+    [Fact]
+    public void Die_Modulkosten_stehen_als_Lesewert_mit_Einheit_im_Raster()
+    {
+        var cut = Aufbauen();                                   // WP Alpha: 4000 €
+        var feld = Modulkostenfeld(cut);
+
+        Assert.Equal("Modulkosten", feld.QuerySelector(".epos-feld-text")!.TextContent.Trim());
+        Assert.Equal("4000", feld.QuerySelector(".epos-lesewert")!.TextContent.Trim());
+        Assert.Equal("€", feld.QuerySelector(".epos-einheit")!.TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>Ä19 bleibt gewahrt.</b> Der Wert steht als Text da, nicht als gesperrtes
+    /// Eingabefeld: Der Feldbestand des Blocks zählt weiterhin fünf <c>input</c>
+    /// (Name, Hersteller, Nennleistung, Heizstab, Kühlleistung), und die Zelle der
+    /// Modulkosten führt weder <c>input</c> noch <c>textarea</c> noch <c>select</c>.
+    /// </summary>
+    [Fact]
+    public void Die_Modulkosten_sind_kein_Eingabefeld()
+    {
+        var cut = Aufbauen();
+
+        Assert.Equal(5, cut.Find(".epos-gruppenkopf-koerper").QuerySelectorAll("input").Length);
+
+        var feld = Modulkostenfeld(cut);
+        Assert.Empty(feld.QuerySelectorAll("input"));
+        Assert.Empty(feld.QuerySelectorAll("textarea"));
+        Assert.Empty(feld.QuerySelectorAll("select"));
+        Assert.Empty(feld.QuerySelectorAll("button"));
+    }
+
+    [Fact]
+    public void Die_Herleitungszeile_steht_unter_dem_Wert()
+    {
+        var cut = Aufbauen();
+        var zeilen = cut.FindAll(".epos-formularraster .epos-herleitung")
+                        .Select(e => e.TextContent.Trim()).ToList();
+
+        // Ein Wert ist da: nur die Herkunft, kein zweiter Hinweis.
+        Assert.Equal(new[]
+        {
+            "aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt"
+        }, zeilen);
+    }
+
+    /// <summary>
+    /// <b>0 heißt „kein Planwert".</b> <c>Tab_WP_STAMM.Modulkosten</c> ist eine
+    /// INTEGER-Spalte, ein NULL kommt als 0 im Datensatz an, und
+    /// <c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge ≤ 0 — die Kostenübernahme
+    /// schlägt dann nichts vor. Genau das sagt die Maske: der Halbgeviertstrich statt
+    /// einer 0, keine Einheit dahinter und eine zweite leise Zeile mit dem Grund.
+    /// </summary>
+    [Fact]
+    public void Ohne_Planwert_steht_ein_Strich_und_der_Grund_darunter()
+    {
+        var cut = Aufbauen();
+        cut.FindAll(".epos-raster tbody tr button")[1].Click();   // WP Ausliefer: 0
+
+        var feld = Modulkostenfeld(cut);
+        Assert.Equal("–", feld.QuerySelector(".epos-lesewert")!.TextContent.Trim());
+        Assert.Null(feld.QuerySelector(".epos-einheit"));
+
+        var zeilen = cut.FindAll(".epos-formularraster .epos-herleitung")
+                        .Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal(new[]
+        {
+            "aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt",
+            "kein Planwert aus dem Herstellerimport"
+        }, zeilen);
+    }
+
+    /// <summary>Auch die neuen Zeilen sind lokalisiert (W7.9).</summary>
+    [Fact]
+    public void Die_Modulkostenzeilen_stehen_auch_englisch()
+    {
+        var cut = Render<WaermepumpeStammDialog>(p => p
+            .Add(x => x.Liste, () => Liste)
+            .Add(x => x.Satz, Satz)
+            .Add(x => x.LabelModulkosten, "Module costs")
+            .Add(x => x.HerleitungModulkosten,
+                 "from the manufacturer import; equipment costs are maintained in cost management")
+            .Add(x => x.HinweisModulkostenLeer, "no planned value from the manufacturer import"));
+
+        var feld = Modulkostenfeld(cut);
+        Assert.Equal("Module costs", feld.QuerySelector(".epos-feld-text")!.TextContent.Trim());
+        Assert.Equal("4000", feld.QuerySelector(".epos-lesewert")!.TextContent.Trim());
+        Assert.Equal(new[]
+        {
+            "from the manufacturer import; equipment costs are maintained in cost management"
+        }, cut.FindAll(".epos-formularraster .epos-herleitung").Select(e => e.TextContent.Trim()));
+
+        cut.FindAll(".epos-raster tbody tr button")[1].Click();   // WP Ausliefer: 0
+        Assert.Equal("–", Modulkostenfeld(cut).QuerySelector(".epos-lesewert")!.TextContent.Trim());
+        Assert.Equal(new[]
+        {
+            "from the manufacturer import; equipment costs are maintained in cost management",
+            "no planned value from the manufacturer import"
+        }, cut.FindAll(".epos-formularraster .epos-herleitung").Select(e => e.TextContent.Trim()));
+    }
+
+    /// <summary>
+    /// Eine Neuanlage steht auf 0 — der Fall, um den es dem Anwender ging: Wer eine
+    /// Wärmepumpe von Hand anlegt, sieht sofort, dass die Kostenübernahme von hier
+    /// keinen Planwert bekommt.
+    /// </summary>
+    [Fact]
+    public void Eine_Neuanlage_zeigt_den_Strich()
+    {
+        var cut = Aufbauen();
+        Knopf(cut, "Neu").Click();
+
+        Assert.Equal("–", Modulkostenfeld(cut).QuerySelector(".epos-lesewert")!.TextContent.Trim());
+        Assert.Contains("kein Planwert aus dem Herstellerimport",
+                        cut.FindAll(".epos-formularraster .epos-herleitung")
+                           .Select(e => e.TextContent.Trim()));
+    }
+
+    /// <summary>
+    /// <b>Raster und Aufklapper zeigen denselben Wert.</b> Die
+    /// <c>Parameteruebersicht</c> liest die Spalte roh aus der Datenbank, das Raster
+    /// den Feldsatz des Dialogs — zwei Wege zu einer Zahl. Der Fall legt sie
+    /// nebeneinander: Bei einem gepflegten Wert stehen dieselben Ziffern da.
+    /// </summary>
+    [Fact]
+    public void Der_Aufklapper_zeigt_dieselbe_Zahl_wie_das_Raster()
+    {
+        var eintrag = new ParameterEintrag("Modulkosten", "Modulkosten", "€",
+                                           new[] { Verwendung.Wirtschaftlichkeit },
+                                           "TechnikPlanwertCtrl.cs:345");
+        var cut = Render<WaermepumpeStammDialog>(p => p
+            .Add(x => x.Liste, () => Liste)
+            .Add(x => x.Satz, Satz)
+            .Add(x => x.Uebersicht, _ => new[] { new Parameterwert(eintrag, "4000") }));
+
+        Assert.Equal("4000", Modulkostenfeld(cut).QuerySelector(".epos-lesewert")!.TextContent.Trim());
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+        Assert.Contains("4000",
+                        cut.Find(".epos-parameteruebersicht-wert").TextContent.Trim());
+    }
 }

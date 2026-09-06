@@ -112,6 +112,19 @@ namespace WindowsFormsApplication1
                 ["LabelNennleistung"] = Text_("WPS_LBL_NENNLEISTUNG", "Nennleistung"),
                 ["LabelHeizstab"] = Text_("WPS_LBL_HEIZSTAB", "Heizstab"),
                 ["LabelKuehlleistung"] = Text_("WPS_LBL_KUEHLLEISTUNG", "Kühlleistung"),
+
+                // W14a-O-1 (Anwenderentscheid 06.09.2026): die Modulkosten stehen
+                // wieder im Raster - nur lesend, mit Herleitungszeile. Die
+                // BESCHRIFTUNG kommt aus MODK_LBL_MODULKOSTEN, also aus demselben
+                // Schluessel, den der Verwendungskatalog fuer diese Spalte fuehrt
+                // (ParameterVerwendung.Waermepumpe): Raster und Aufklapper nennen den
+                // Parameter damit wortgleich. Neu sind nur die beiden leisen Zeilen.
+                ["LabelModulkosten"] = Text_("MODK_LBL_MODULKOSTEN", "Modulkosten"),
+                ["HerleitungModulkosten"] = Text_("WPS_HERL_MODULKOSTEN",
+                    "aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt"),
+                ["HinweisModulkostenLeer"] = Text_("WPS_HINWEIS_MODULKOSTEN_LEER",
+                    "kein Planwert aus dem Herstellerimport"),
+
                 ["LabelKennlinien"] = Text_("WPS_LBL_KENNLINIEN", "Kenndaten Kennlinien:"),
                 ["OptionWaerme"] = Text_("WPS_OPT_WAERME", "Wärme"),
                 ["OptionKuehlung"] = Text_("WPS_OPT_KUEHLUNG", "Kühlung"),
@@ -211,8 +224,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Speicherweg (<c>btn_Speichern_Click</c>:372) — ohne die Pflichtprüfung
-        /// der Modulkosten, weil die Zeile seit Ä19 nicht mehr gezeichnet wird
-        /// (Abweichung A-14). Die übrigen Zahlenfelder übernahm der Vorläufer STILL:
+        /// der Modulkosten (Abweichung A-14). Seit W14a‑O‑1 steht die Zeile wieder in
+        /// der Maske, aber NUR LESEND: <c>daten.Modulkosten</c> ist derselbe Wert, den
+        /// <see cref="SatzZu"/> gelesen hat, und wird hier lediglich durchgereicht —
+        /// zu prüfen gibt es nichts, was der Anwender eingegeben hätte.
+        /// Die übrigen Zahlenfelder übernahm der Vorläufer STILL:
         /// Ein unlesbarer Text ließ den gelesenen Datensatzwert stehen. Hier meldet
         /// <c>Ganzzahlfeld</c> einen leeren Wert als <c>null</c>, und daraus wird 0 —
         /// derselbe Ausgang, weil bei einer Neuanlage 0 der Ausgangswert ist.
