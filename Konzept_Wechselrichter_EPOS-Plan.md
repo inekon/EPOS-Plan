@@ -1,8 +1,8 @@
 # Konzept: Wechselrichter EPOS-Plan — Katalog, Strangzuordnung und Rechenweg
 
-**Rev. 3 — 06.09.2026 — Stufen S1 und S2 ENTSCHIEDEN und UMGESETZT**
+**Rev. 4 — 06.09.2026 — Stufen S1, S2 und S3 ENTSCHIEDEN und UMGESETZT**
 (Rev. 1 war Befund und Vorschlag zur Entscheidung durch den Anwender;
-Rev. 2 trug Stufe S1)
+Rev. 2 trug Stufe S1, Rev. 3 die Stufe S2)
 
 Auftrag (Anwenderwunsch **W6‑E‑2**, Windows-Abnahme vom 06.09.2026, im Wortlaut):
 
@@ -26,20 +26,22 @@ sind es nicht.**
 
 Mockup: `Mockups/Wechselrichter_Mockup_2026-09-06.html` (vier Ansichten M1–M4;
 in Stufe S1 unverändert, mit **S2** um die zwei Optionen aus W6‑E‑3 und den
-S3-Hinweis in M1 ergänzt).
+S3-Hinweis in M1 ergänzt; in **S3 unverändert** — die Stufe fasst den Rechenweg
+an, nicht die Maske).
 
 > **Entscheid des Anwenders vom 06.09.2026.** „Setze Vorschlag fuer Wechselrichter um“;
 > zu den zehn Entscheidungsfragen: „W6‑E‑2‑Q1 bis Q10: Empfehlung, ja alle". Damit ist
-> jede Empfehlung aus Kapitel 11 angenommen. **Stufe S1 ist umgesetzt** (Commit
-> `40fc542`, Zweig `ios_migration`), **Stufe S2 ebenfalls** (`c02cd99`, siehe
-> Kapitel 8); S3 steht aus. Dazu kam der neue Anwenderwunsch **W6‑E‑3** — zwei
+> jede Empfehlung aus Kapitel 11 angenommen. **Alle drei Stufen sind umgesetzt**:
+> S1 (Commit `40fc542`, Zweig `ios_migration`), S2 (`c02cd99`) und **S3** (`@@SHA@@`,
+> siehe Kapitel 8). Dazu kam der neue Anwenderwunsch **W6‑E‑3** — zwei
 > sichtbare Optionen im PV-Dialog (Kapitel 7.1), umgesetzt in S2.4.
 >
 > **Zur Auslieferungsregel (Kapitel 8, „Reihenfolge"): S2 und S3 werden zusammen
-> AUSGELIEFERT, aber getrennt entwickelt und abgenommen.** S2 hinterlässt deshalb
-> keine zweite Wahrheit: Der Abschnitt im PV-Dialog trägt einen sichtbaren Satz
-> „Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage
-> vereinfacht" (Ressource `PVS_HINWEIS_S3`), der mit S3 wieder entfernt wird.
+> AUSGELIEFERT, aber getrennt entwickelt und abgenommen.** Der Zwischenzustand ist
+> vorbei: Der sichtbare Satz „Die Strangrechnung folgt mit Stufe S3 — bis dahin
+> rechnet die Anlage vereinfacht" (Ressource `PVS_HINWEIS_S3`) ist mit S3 aus
+> Maske und beiden `.resx` **entfernt**; die Oberfläche verspricht seither genau
+> das, was der Kern tut.
 
 ---
 
@@ -413,12 +415,19 @@ Bestandsprojekt hat eine Strangzeile, also rechnet kein Bestandsprojekt anders.
 gelten für das Feld, nicht für den Strang. `PV_WrWirkungsgrad` bleibt der Faktor des einfachen
 Modells ohne Zuordnung.
 
-> **Stand nach S2:** Die Spalten stehen, der Schalter steht, die Strangzeilen stehen — die
-> VORRANGREGEL selbst steht noch nicht, denn sie gehört in den Rechenweg. `SimulationPV`
-> ist in S2 unverändert; für S3 liegt bereit, was sie braucht:
-> `WErzeugerModel.PV_Wechselrichterweg` an der ohnehin gelesenen Anlagenzeile und
-> `AnlageStrangCtrl.LesenJeProjekt(idProjekt)` für die Strangzeilen aller Anlagen in EINER
-> Abfrage.
+> **Umgesetzt (S3, 06.09.2026).** Die VORRANGREGEL steht in
+> `SimulationPV.GeraeteDerAnlage`, und sie steht **vor** dem Datenbankzugriff:
+> Gelesen wird erst, wenn `SimulationPV.IrgendeineAnlageMitKatalogweg` an den
+> ohnehin geladenen Anlagenzeilen einen Schalter `KATALOG` findet — ein
+> Bestandsprojekt kostet damit **keine einzige zusätzliche Abfrage**. Dann sind es
+> zwei für das ganze Projekt: `AnlageStrangCtrl.LesenJeProjekt` und
+> `WechselrichterCtrl.ReadAll`. In der Stundenschleife wird nichts nachgeladen.
+>
+> Die Anlagenschleife hat damit einen DRITTEN Zweig; die zwei vorhandenen bleiben
+> Zeichen für Zeichen stehen (`if (mitStrang) … else if (!erweitert) … else …`).
+> Vier Rückfallebenen melden sich einzeln im Protokoll: Anlage auf `KATALOG` ohne
+> Strangzeile, Strang ohne Gerät, Gerät ohne Kennlinie, Gerät ohne
+> AC-Nennleistung.
 
 ### 3.6 Migrationsschritte
 
@@ -572,6 +581,29 @@ P_AC,Anlage,i = Σ_{Geräte} P_AC,ger
 Das ist der Wert, der in `pvPotentialGesamt_stuendlich[i]` läuft — die Schnittstelle zur
 Verbrauchsbilanz bleibt unangetastet.
 
+> **Umgesetzt (S3, 06.09.2026).** Die Schritte 1 und 2 stehen in
+> `SimulationPV.StraengeRechnen` (samt dem **Transpositions-Zwischenspeicher** je
+> Ausrichtungspaar), die Schritte 3 bis 5 dort und in
+> `PvStrangModell.Stunde` — einer Klasse **ohne Datenbank und ohne Oberfläche**,
+> Bauart `PvErweitertesModell`.
+>
+> **Drei Festlegungen, die der Text oben offenließ:**
+>
+> * **Die Nennleistung eines Strangs wird wie die der Anlage gebildet** —
+>   `Modul-Nennleistung / 1000 · Modulzahl`, in genau dieser Reihenfolge.
+>   `StrangPlausibilitaet.StrangKwp` rechnet `Modulzahl · Leistung / 1000`, was
+>   algebraisch dasselbe und im letzten Bit etwas anderes ist. Die Ampel darf das,
+>   der Rechenweg nicht: An dieser Reihenfolge hängt die Abnahme S3 (2).
+> * **Der Nachtfall greift bei `P_DC,ger ≤ P_Standby`**, nicht `<`. Ohne gepflegte
+>   Einschaltschwelle ist die Schwelle 0 — und dann sind es genau die Stunden ohne
+>   Einstrahlung, die dieselbe 0 liefern wie zuvor.
+> * **Ein Strang ohne Gerät rechnet nicht mit** und wird gezählt; der Lauf meldet
+>   die Zahl. Ebenso ein Strang, dessen Gerät die Projektkopie nicht (mehr) kennt.
+>
+> **Und eine, die offen bleibt:** `Z_AnlageStrang.ID_PV` (der abweichende
+> Modultyp je Strang) wird weiterhin **nicht gerechnet** — jeder Strang rechnet
+> mit dem Modul der Anlage. Neuer offener Punkt **W6‑O‑6** (Kapitel 12).
+
 ### 4.2 Plausibilitätsprüfungen der Zuordnung
 
 Sie laufen **beim Bearbeiten der Strangzeile** (Ampel in der Oberfläche, Abschnitt 7) und
@@ -676,6 +708,23 @@ das tatsächliche Betriebsverhalten dieser Anlage vergleichen lässt. Er gehört
 
 Kennzahlen **je Strang** (Ertrag, Vollbenutzungsstunden) sind nicht vorgesehen — sie wären eine
 neue Ergebnisebene mit eigener Speicherung. Wer sie will, bekommt sie in einer späteren Stufe.
+
+> **Umgesetzt (S3, 06.09.2026), an drei Stellen und mit einer Ergänzung.** Die
+> Kennzahlen stehen an `PvStrangModell.Geraetegruppe` und laufen von dort ins
+> **Simulationsprotokoll** (eine Zeile je Gerät, eine je Anlage), auf die
+> **PV-Karte** der Simulationskonfiguration (Zahl der Geräte und Stränge, DC/AC —
+> beides Stammdaten, ohne Lauf ablesbar) und in den **Ergebnisreiter
+> „Photovoltaik"** als zweite Tabelle mit einer Zeile je Gerät.
+> `Tab_ErgebnisPhotovoltaik` bleibt unverändert.
+>
+> **Ergänzt ist der Clipping-ANTEIL [%]** — `Clipping / (Ertrag + Clipping)`.
+> Bezugsgröße ist bewusst der ungeklippte WECHSELSTROMertrag und nicht die
+> Gleichstromseite: Gefragt ist „wieviel der möglichen Einspeisung bleibt am
+> Wechselrichter hängen".
+>
+> **Ohne Zuordnung entsteht keine einzige Zeile** — auch nicht im Protokoll. Der
+> Referenzlauf schreibt es mit, und eine zusätzliche Zeile wäre schon ein
+> Unterschied.
 
 ---
 
@@ -1165,15 +1214,34 @@ Umsetzungsprotokoll: Die Anmutung des Abschnitts, das Zusammenspiel von Klapplis
 Katalog am echten Bestand und die Ampel an einem gepflegten Modul sind ohne Windows nicht
 prüfbar.
 
-### Stufe S3 — Rechenweg, Kennzahlen, neue Referenzbasis
+### Stufe S3 — Rechenweg, Kennzahlen, Kosten — **UMGESETZT in `@@SHA@@`**
 
-| Nr. | Inhalt | Umfang |
+| Nr. | Inhalt | Stand |
 |---|---|---|
-| S3.1 | `PvStrangModell` (neu, ohne Datenbank und Oberfläche — Bauart `PvErweitertesModell`): Kennlinie mit sechs Stützstellen, Gerätegruppierung, Clipping, Nachtverbrauch | 1 Datei |
-| S3.2 | Umbau der Anlagenschleife in `SimulationPV` auf die Strangebene, **mit** Vorrangregel und Transpositions-Zwischenspeicher | 1 Datei, der heikelste Eingriff |
-| S3.3 | Kennzahlen (4.4) ins Simulationsprotokoll und auf die PV-Karte | 2–3 Dateien |
-| S3.4 | Prüfstand: Kennlinie an den Stützstellen exakt, Clipping-Verlust als Summe nachgerechnet, Bitgleichheit ohne Zuordnung, Ost/West-Fall gegen zwei getrennte Anlagen | 1 Datei |
-| S3.5 | Neue Referenzbasis, sobald ein Referenzprojekt produktiv Stränge führt | Referenzlauf |
+| S3.1 | `PvStrangModell` (neu, ohne Datenbank und Oberfläche — Bauart `PvErweitertesModell`): Kennlinie mit sechs Stützstellen, Gerätegruppierung, Clipping, Nachtverbrauch | **umgesetzt** (`df03234`); die NULL-Rückfallregel überspringt eine fehlende Stützstelle, ohne jede gilt die Dreipunkt-Vorgabe samt Protokollmeldung |
+| S3.2 | Umbau der Anlagenschleife in `SimulationPV` auf die Strangebene, **mit** Vorrangregel und Transpositions-Zwischenspeicher | **umgesetzt** (`2734c1d`); ein DRITTER Zweig, die zwei vorhandenen Zeichen für Zeichen unverändert. Die Vorrangregel steht VOR dem Datenbankzugriff (3.5) |
+| S3.3 | Kennzahlen (4.4) ins Simulationsprotokoll, auf die PV-Karte und in den Ergebnisreiter | **umgesetzt** (`2734c1d` Protokoll, `1c87d19` Karte und Reiter); zwölf Ressourcenschlüssel in beiden Sprachen |
+| S3.4 | **Kosten (Q8):** `Kosten` je Gerät × Gerätezahl als eigener Posten der PV-Investition | **umgesetzt** (`4da44f9`); `TechnikPlanwertCtrl.Wechselrichteranlagen`, gezählt wird `COUNT(DISTINCT Gerätenummer)` JE ANLAGE und nur für Anlagen auf dem Weg `KATALOG` |
+| S3.5 | **Aufräumen aus S2:** `PVS_HINWEIS_S3` entfernen, `ParameterVerwendung` nachziehen, den Merkposten zum Zeugen machen | **umgesetzt** (`2cc33d0`); zehn Spalten auf `Simulation`, `Kosten` auf `Wirtschaftlichkeit`, `Der_Wechselrichter_rechnet_ab_S3` |
+| S3.6 | Prüfstand: Kennlinie, Clipping, Bitgleichheit ohne Zuordnung, Ein-Strang-Fall, Ost/West, Nachtverbrauch | **umgesetzt** (`c04a8cf`, `f3915c2`): **15 Fälle** in `EPOS.Kern.Tests/PvStrangRechnungTests` |
+| S3.7 | Referenzbasis | **unverändert** — `2026-09-05_R2_Zeitbasis` bleibt; kein Referenzprojekt führt Stränge, und ein neues Prüfprojekt wäre ein eigener Anwenderentscheid (Kapitel 12, **W6‑O‑7**) |
+| S3.8 | Hilfeseite `Berechnung/Photovoltaik.wiki` | **umgesetzt** (`1bc2e3b`); Option 2 vom Ausblick auf „umgesetzt", neuer Unterabschnitt „Der Stundenweg" mit den Schritten A bis D, dazu Kennzahlen und Kosten |
+| S3.9 | Fortschreibung dieses Papiers | **dieses Dokument (Rev. 4)** |
+
+> **Ein BEFUND aus S2, gefunden beim Bau des Prüfstands und hier behoben**
+> (`0f46dd4`): `DbWerte.PV_WR_WEG_VEREINFACHT` trug den NAMEN der Konstanten als
+> Wert — `"PV_WR_WEG_VEREINFACHT"`, **21 Zeichen**. Die Spalte
+> `Tab_Energieanlagen.PV_Wechselrichterweg` ist `TEXT(20)`, in der
+> STRICT-Datenbank also eine CHECK-Bedingung. **Jedes Speichern einer Anlage mit
+> der Wahl „vereinfacht" scheiterte** an
+> `CHECK constraint failed: length("PV_Wechselrichterweg") <= 20` — und weil die
+> Spalte in `AnlagenSql.SQL_ANLAGE_INSERT` steht, scheiterte nicht der Schalter,
+> sondern die ganze ANLAGE. Der Wert heißt jetzt `"VEREINFACHT"`, symmetrisch zu
+> `"KATALOG"`. **Eine Migration braucht es nicht:** Der alte Wert kann in keiner
+> Datenbank stehen, denn er ließ sich nie schreiben. Warum S2 es nicht sah: Der
+> Rundweg schrieb NULL und `KATALOG`, nie `VEREINFACHT`. Er schreibt jetzt alle
+> drei, und der neue Fall `Beide_Wechselrichterwege_passen_in_die_Spalte` prüft
+> die LÄNGE beider Persistenzwerte.
 
 > **Was S2 für S3 bereitgelegt hat** (06.09.2026) — die drei Einstiege, die S3.2 ruft:
 >
@@ -1200,12 +1268,28 @@ prüfbar.
 > `Wirtschaftlichkeit` — der Fall `Der_Wechselrichter_rechnet_in_S2_noch_nicht` fällt
 > dann rot aus und ist genau dafür der Merkposten.
 
-**Abnahme S3:** (1) **Byte-gleich** gegen `2026-09-05_R2_Zeitbasis` für alle elf Projekte — kein
-Projekt hat eine Zuordnung. (2) Ein Prüfprojekt mit einem Strang und ohne Clipping rechnet
-gleich wie dieselbe Anlage mit `PV_WrNennleistungKw`/`PV_WrEta*`. (3) Ein Ost/West-Prüfprojekt mit
-zwei Strängen an **einem** Gerät rechnet dieselbe Jahressumme wie zwei getrennte Anlagen mit je
-einem Gerät **minus** dem gemeinsamen Clipping — diese Differenz ist die Aussage, für die die
-Stufe gebaut wird.
+**Abnahme S3 — nachgewiesen am 06.09.2026:**
+
+| Kriterium | Beleg |
+|---|---|
+| **(1) Referenzlauf byte-gleich** | 1030 / 1007 / 1017 gegen `Referenzlaeufe/2026-09-05_R2_Zeitbasis` — **byte-gleich** (`diff -rq` je Projekt, dazu `GESAMT: PASS`, 815 043 Werte) |
+| Gegenprobe zur Vorrangregel | `Ohne_Strangzeile_rechnet_der_Schalter_nichts` — dieselbe Anlage mit Weg NULL, mit `VEREINFACHT` und mit `KATALOG` **ohne** Strangzeile rechnet **bitgleich** denselben Jahresertrag. Der Schalter allein ändert nichts; es braucht beide Bedingungen |
+| **(2) Ein Strang, ohne Clipping** | `Ein_Strang_ohne_Clipping_rechnet_wie_die_Anlage_vereinfacht` — **bitgleich** zur selben Anlage auf dem vereinfachten Weg im Modell ERWEITERT. Beide laufen im SELBEN Simulationslauf und werden über `Modul_Ergebnisse` auseinandergehalten |
+| … und warum das geht | `Die_Dreipunkt_Kennlinie_rechnet_zeichengleich_zum_Anlagenweg` — ein Gerät mit nur 10 / 50 / 100 % rechnet über **1 601** Auslastungen zeichengleich zu `PvErweitertesModell.EtaWechselrichter`, ohne Toleranz |
+| **(3) Ost/West** | exakt auf synthetischen Stunden (`Ost_West_an_einem_Geraet_kostet_genau_das_gemeinsame_Clipping`, zwölf Stellen) und am Jahreslauf als **Zerlegung** statt als Toleranz: `(Ost + West) − gemeinsam = Gleichstromversatz − Kennliniengewinn + gemeinsames Clipping`, auf sechs Nachkommastellen. **Gemessen: 478,6 kWh = 554,5 kWh − 75,9 kWh + 0,000000 kWh** |
+| Kennlinie | `Die_Kennlinie_trifft_die_sechs_Stuetzstellen_exakt` (ohne Toleranz), `…_interpoliert_dazwischen_linear`, `Eine_fehlende_Stuetzstelle_wird_uebersprungen`, `Ohne_jede_Stuetzstelle_gilt_die_Dreipunkt_Vorgabe` |
+| Clipping | `Der_Clipping_Verlust_ist_die_Summe_der_Kappungen` — jede Kappung einzeln nachgerechnet, dazu Ertrag, Kennlinienverlust, Anteil, Jahresnutzungsgrad und Volllaststunden; `Ohne_AC_Nennleistung_wird_nicht_geklippt` |
+| Nachtverbrauch | `Der_Nachtverbrauch_faellt_nur_unter_der_Einschaltschwelle_an` (negative Erzeugung, Nachtstunden gezählt), `Ohne_gepflegten_Nachtverbrauch_bleibt_die_Nacht_bei_null` |
+| Gruppierung | `Die_Gruppierung_trennt_nach_Geraet_und_Nummer` — zwei Gerätenummern sind zwei Geräte, zwei MPP-Tracker EINE Clipping-Grenze (Q7), ein Strang ohne Gerät fällt heraus und wird gezählt |
+| Kappung nicht zweimal (Anhang B) | `Nach_dem_Clipping_sieht_die_EEG_Kappung_nur_noch_P_AC_Nenn` — keine Stunde über der AC-Nennleistung; `PvErloesRechner` rechnet die 60-%-Kappung auf DIESER Stundenreihe |
+| Einstufungen folgen dem Rechenweg | `Der_Wechselrichter_rechnet_ab_S3` — neun Spalten `Simulation` (namentlich), `Kosten` `Wirtschaftlichkeit`, MPPT- und Spannungsspalten NICHT gerechnet, die sieben Sandia-Spalten ohne Leser |
+| Der S3-Hinweis ist fort | `Der_S3_Hinweis_ist_fort` (bunit, beide Wege) — die Gegenprobe zum S2-Fall gleichen Namens |
+| SQL-Dialekt | `Werkzeuge/SqlDialektPruefer`: **0 Fundstellen** in 1 243 Texten |
+
+**Was auf Windows noch abzunehmen ist**, steht als Abnahmepunkte A‑W6‑E‑2‑S3‑1 ff. im
+Umsetzungsprotokoll: die zwei Chips der PV-Karte, die zweite Tabelle des
+Ergebnisreiters, die Wechselrichterzeile in der Kostenübernahme und das
+Simulationsprotokoll an einem gepflegten Katalog sind ohne Windows nicht prüfbar.
 
 ### Reihenfolge
 
@@ -1218,11 +1302,10 @@ zeigt und der Rechenkern ignoriert — eine zweite Wahrheit, also genau der Zust
 PV-Ertragsmodell mit E1.1 („Eine Wahrheit") beseitigt hat. Getrennt entwickeln ja, getrennt
 abnehmen ja, getrennt ausliefern nein.
 
-> **S2 ist entwickelt und abgenommen (06.09.2026), nicht ausgeliefert.** Damit der
-> Zwischenzustand keine zweite Wahrheit ist, trägt der Abschnitt im PV-Dialog den Satz
-> „Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage vereinfacht"
-> (`PVS_HINWEIS_S3`) — in BEIDEN Wegen, weil er in beiden gilt. Er wird mit S3 wieder
-> entfernt; die Wache dafür ist der Punkt in der S3-Liste oben.
+> **S2 und S3 sind beide abgenommen (06.09.2026) und gehen zusammen hinaus.** Der
+> Zwischenzustand ist damit vorbei: Der Satz „Die Strangrechnung folgt mit Stufe S3"
+> (`PVS_HINWEIS_S3`) ist mit S3 aus Maske und beiden `.resx` entfernt, und der
+> bunit-Fall `Der_S3_Hinweis_ist_fort` hält ihn draußen.
 
 ---
 
@@ -1278,10 +1361,11 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 5. **Der Wechselrichter wirkt in beiden Modellen**, sobald eine Zuordnung besteht; die
    Bitgleichheit hängt an der Zuordnung, nicht am Modellschalter. Damit fällt der ausgegraute
    Knopf, der diesen Wunsch ausgelöst hat.
-6. **S2 und S3 zusammen ausliefern**, mit Referenzbasiswechsel erst, wenn ein Referenzprojekt
-   produktiv Stränge führt. — **S2 ist seit dem 06.09.2026 umgesetzt** (`c02cd99`) und
-   trägt bis S3 einen sichtbaren Hinweis in der Maske, damit die Oberfläche nichts
-   verspricht, was der Kern noch nicht tut.
+6. ~~**S2 und S3 zusammen ausliefern**~~ — **beide erledigt am 06.09.2026** (`c02cd99`
+   und `@@SHA@@`). Der Referenzbasiswechsel bleibt wie empfohlen AUS: Kein
+   Referenzprojekt führt Stränge, die Basis `2026-09-05_R2_Zeitbasis` bleibt
+   byte-gleich gültig, und ob überhaupt ein Prüfprojekt mit Strängen in die
+   Testdatenbank soll, ist ein eigener Anwenderentscheid (**W6‑O‑7**).
 7. **Die Katalogpflege nicht vergessen.** Die Prüfungen P1–P4 hängen an `U_Leerlauf`, `U_Mpp`,
    `I_Kurzschluss`, `alpha_SC` und `beta_OC` der **Module**. Diese Werte sind im Bestand
    nachweislich verdorben (Paket-A-Befund A1; Reparaturskript unter `sql/pv_katalog/`). **Ohne
@@ -1304,8 +1388,8 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 | **W6‑E‑2‑Q4** | Neigung und Azimut je Strang (Teilfelder)? | **Ja**, NULL = Anlagenwert. Das ist der Ost/West-Fall, und der Vorgabewert ändert nichts — **Entschieden 06.09.2026: Empfehlung angenommen.** Umgesetzt in S2: Spalten `Neigung`/`Azimut` in `Z_AnlageStrang`, in der Maske als geerbter Wert in KLAMMERN (Platzhalter) — eine geschriebene 0 wäre Süden. |
 | **W6‑E‑2‑Q5** | Wirkt der Wechselrichter auch im Modell **EINFACH**? | **Ja**, sobald eine Zuordnung besteht. Ein Gerät ist keine Modellverfeinerung; die Bitgleichheit hängt an der Zuordnung. Damit entfällt der ausgegraute Knopf — **Entschieden 06.09.2026: Empfehlung angenommen** — und durch **W6‑E‑3** ergänzt: Ob der Wechselrichter rechnet, sagt seit dem der sichtbare Schalter, nicht mehr allein die Zuordnung (7.1). |
 | **W6‑E‑2‑Q6** | Mehrere Wechselrichter je Anlage? | **Ja**, über `Geraetenummer` in **einer** Tabelle. Clipping je Gerät, Gerätezahl für die Kosten aus `COUNT(DISTINCT …)` — **Entschieden 06.09.2026: Empfehlung angenommen.** Umgesetzt in S2: `Geraetenummer` in `Z_AnlageStrang`; `StrangPlausibilitaet` gruppiert über (Wechselrichter, Gerätenummer) und liefert je Gerät einen Befund. |
-| **W6‑E‑2‑Q7** | MPPT-Granularität: nur für die Auslegungsprüfung, oder auch mit eigener Eingangsleistungsgrenze im Rechenweg? | **Zunächst nur Prüfung** (P4/P5). Eine MPPT-Leistungsgrenze ist bei üblicher Auslegung wirkungslos und kostet eine Klemmstelle mehr in der Stundenschleife; nachrüstbar — **Entschieden 06.09.2026: Empfehlung angenommen.** S1 legt `Anzahl_Mppt` und `Straenge_Je_Mppt` an; **seit S2 lesen P4/P5 sie** — fehlt die MPPT-Zahl, wird auf EINEM Tracker gerechnet und im Satz gesagt. |
-| **W6‑E‑2‑Q8** | Wechselrichterkosten in der Wirtschaftlichkeit? | **Ja**, `Kosten` im Katalog, Summe über die Geräte als eigener Posten. Heute trägt die PV nur den Modulstückpreis (`TechnikPlanwertCtrl.cs:348-349`) — der Wechselrichter fehlt in der Investition, und das ist bei 10–20 % der Anlagenkosten spürbar — **Entschieden 06.09.2026: Empfehlung angenommen.** Die Spalte `Kosten` steht seit S1 im Katalog; gerechnet wird sie in S3. |
+| **W6‑E‑2‑Q7** | MPPT-Granularität: nur für die Auslegungsprüfung, oder auch mit eigener Eingangsleistungsgrenze im Rechenweg? | **Zunächst nur Prüfung** (P4/P5). Eine MPPT-Leistungsgrenze ist bei üblicher Auslegung wirkungslos und kostet eine Klemmstelle mehr in der Stundenschleife; nachrüstbar — **Entschieden 06.09.2026: Empfehlung angenommen.** S1 legt `Anzahl_Mppt` und `Straenge_Je_Mppt` an; **seit S2 lesen P4/P5 sie** — fehlt die MPPT-Zahl, wird auf EINEM Tracker gerechnet und im Satz gesagt. **S3 hat die Empfehlung eingelöst**: Der Rechenweg summiert über die Tracker eines Geräts und klemmt NUR am Gerät; beide Spalten bleiben deshalb in `ParameterVerwendung` auf `Dialog`. |
+| **W6‑E‑2‑Q8** | Wechselrichterkosten in der Wirtschaftlichkeit? | **Ja**, `Kosten` im Katalog, Summe über die Geräte als eigener Posten. Heute trägt die PV nur den Modulstückpreis (`TechnikPlanwertCtrl.cs:348-349`) — der Wechselrichter fehlt in der Investition, und das ist bei 10–20 % der Anlagenkosten spürbar — **Entschieden 06.09.2026: Empfehlung angenommen.** Die Spalte `Kosten` steht seit S1 im Katalog; **seit S3 rechnet sie** (`TechnikPlanwertCtrl.Wechselrichteranlagen`) — je Wechselrichtertyp eine eigene Kostenzeile mit `Kosten × COUNT(DISTINCT Gerätenummer)` je Anlage, und NUR für Anlagen auf dem Weg `KATALOG`. |
 | **W6‑E‑2‑Q9** | „Anzahl Module": aus den Strängen **abgeleitet** (Feld wird nur-lesend) oder nur **geprüft** (P8 als Warnung)? | **Abgeleitet**, sobald ein Strang besteht — „eine Wahrheit" (E1.1). Der Anlagenwert wird mitgeschrieben, damit kWp, Stückpreis und Wirtschaftlichkeit unverändert weiterlesen — **Entschieden 06.09.2026: Empfehlung angenommen. Umgesetzt in S2.4** (`c02cd99`): Ohne Strang bleibt es ein Eingabefeld, mit Strang steht dort die Summe mit dem Zusatz „aus der Strangtabelle"; P8 bleibt als Wache für Bestände, die von Hand auseinandergelaufen sind. |
 | **W6‑E‑2‑Q10** | Importmaske: zweite **Ausprägung** des vorhandenen `PvModulImportDialog` oder eigener Dialog? | **Zweite Ausprägung.** Netzabruf, Zwischenspeicher, virtualisiertes Raster, Fortschritt, Dubletten- und Konfliktweg sind identisch; verschieden sind nur Spalten und Zieltabelle — genau das, was ein Profil trägt — **Entschieden 06.09.2026: Empfehlung angenommen** — in S1 **teilweise** eingelöst: Abrufapparat, Vorprüfung, Konfliktweg und alle Bausteine sind geteilt, die `.razor`-Datei nicht (Begründung in 5.5). Offener Punkt **W6‑O‑1**. |
 | **W6‑E‑3** | Wo liegt der SICHTBARE Schalter „vereinfacht" / „mit Wechselrichter" im Datenmodell — eigene Spalte an der Anlagenzeile oder abgeleitet aus der Strangtabelle? | **Eigene Spalte** `Tab_Energieanlagen.PV_Wechselrichterweg` (NULL = vereinfacht), angelegt in Schritt 66 zusammen mit `Z_AnlageStrang`. Begründung in 7.1: Eine Option, die man nur durch Löschen der Strangzeilen abwählen kann, ist keine Option. **Neuer Anwenderwunsch vom 06.09.2026; UMGESETZT in S2.4** (`c02cd99`) — samt der weichen Sperre aus W16b‑E‑6 für „mit Wechselrichter" ohne Strang. |
@@ -1320,7 +1404,9 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 | **W6‑O‑2** | **MPPT-Zahl und Scheinleistung fehlen im CEC-Bestand.** Die Liste führt weder `Anzahl_Mppt` noch `S_AC_Max`; beide bleiben nach dem Import NULL, und die Prüfungen P4/P5 rechnen dann auf EINEM MPPT. Ob der Auslieferungskatalog von Hand nachgepflegt wird (und für welche Geräte), ist eine Anwenderfrage. | **offen** — mit S2 ist der Umgang damit festgelegt: Die Prüfung rechnet auf EINEM Tracker, die Ampel wird GELB, und der Satz sagt „Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem" (Fall `Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker`). Die Pflegefrage selbst bleibt offen |
 | **W6‑O‑3** | **Der Auslieferungsbestand ist leer.** Schritt 65 legt die Tabellen ohne DML an (das ist die Ergebnisneutralität). Ob EPOS-Plan künftig mit einem vorbefüllten Wechselrichterkatalog ausgeliefert wird — und wenn ja, mit welchen Geräten und mit `ReadOnly = 1` — ist ein eigener Entscheid. | **offen** — mit S2 spürbar geworden: Die Klappliste der Strangtabelle ist beim Anwender leer, bis er importiert oder von Hand anlegt |
 | **W6‑O‑4** | **Kein Herstellerfilter über der Wechselrichter-Klappliste der Strangtabelle.** Kapitel 7 sieht ihn vor („mit demselben Herstellerfilter wie die Modulliste"); S2 hat ihn nicht gebaut: Eine zweite Filterzeile IN der Tabelle hätte keinen Platz, und solange W6‑O‑3 offen ist, ist die Liste ohnehin kurz. Sobald ein Auslieferungskatalog mit einigen tausend Geräten steht, braucht es ihn — dann als Zeile ÜBER der Tabelle, nicht in ihr. | **offen** — Umfang klein, Zeitpunkt hängt an W6‑O‑3 |
-| **W6‑O‑5** | **Das Modul der Ampel ist das der ERSTEN Projektzeile.** `StrangPlausibilitaet` prüft gegen EIN Modul; die Hülle nimmt dafür das erste, das der Katalog kennt (`PhotovoltaikHuelle.ModulDer`). Solange eine PV-Anlage genau einen Modultyp führt — der Regelfall —, ist das richtig. Führt ein Projekt mehrere PV-Zeilen mit VERSCHIEDENEN Modulen, prüft die Ampel gegen das falsche. Sauber wäre das Modul der GEWÄHLTEN Zeile; das weiß nur die Komponente, und der Prüfdelegat bekommt heute nur die Strangliste. Zusammen mit `Z_AnlageStrang.ID_PV` (dem abweichenden Modultyp je Strang, 3.4) gehört das in EINEN Schritt. | **offen** — betrifft die Ampel, nicht die Ablage; die Zahlen der Rechnung ab S3 kommen ohnehin je Strang |
+| **W6‑O‑6** | **Der abweichende Modultyp je Strang rechnet noch nicht.** `Z_AnlageStrang.ID_PV` steht seit S2 in der Tabelle und reist im Controller hin und zurück; der Rechenweg der Stufe S3 rechnet jeden Strang jedoch mit dem Modul der ANLAGE. Für den Regelfall (ein Modultyp je PV-Anlage) ist das richtig; eine mit einem zweiten Typ erweiterte Anlage rechnet zu genau. Der Schritt gehört mit **W6‑O‑5** zusammen: Dieselbe Frage („welches Modul gilt für diesen Strang?") beantwortet dort die Ampel und hier der Lauf — zwei Stellen, EINE Antwort. | **offen** — neu mit S3 |
+| **W6‑O‑7** | **Referenzbasis mit Strängen?** Die Basis `2026-09-05_R2_Zeitbasis` bleibt gültig und byte-gleich: Kein Referenzprojekt führt eine Strangzeile, und genau das ist der Nachweis der Vorrangregel. Ein PRÜFPROJEKT mit Strängen in `Kenndaten_Test.sqlite` würde den Strangweg dagegen in jedem Referenzlauf mitrechnen — und wäre damit die Wache gegen eine spätere stille Änderung am Strangweg, wie sie die elf Projekte heute für den Anlagenweg sind. Kosten: eine neu einzufrierende Basis. **Empfehlung: ja, aber als eigener Schritt** — ein zwölftes Projekt mit einer Ost/West-Anlage an einem knapp ausgelegten Gerät (DC/AC ≈ 1,3), damit Clipping, Kennlinie und Nachtverbrauch alle drei wirken. Solange er aussteht, hält der Prüfstand `PvStrangRechnungTests` den Strangweg. | **offen** — Anwenderentscheid |
+| **W6‑O‑5** | **Das Modul der Ampel ist das der ERSTEN Projektzeile.** `StrangPlausibilitaet` prüft gegen EIN Modul; die Hülle nimmt dafür das erste, das der Katalog kennt (`PhotovoltaikHuelle.ModulDer`). Solange eine PV-Anlage genau einen Modultyp führt — der Regelfall —, ist das richtig. Führt ein Projekt mehrere PV-Zeilen mit VERSCHIEDENEN Modulen, prüft die Ampel gegen das falsche. Sauber wäre das Modul der GEWÄHLTEN Zeile; das weiß nur die Komponente, und der Prüfdelegat bekommt heute nur die Strangliste. Zusammen mit `Z_AnlageStrang.ID_PV` (dem abweichenden Modultyp je Strang, 3.4) gehört das in EINEN Schritt. | **offen** — betrifft die Ampel, nicht die Ablage. **Mit S3 ist der Zwilling dazu benannt** (W6‑O‑6): Der Rechenweg hat dieselbe Lücke, und beide gehören in EINEN Schritt |
 
 ---
 
@@ -1375,8 +1461,13 @@ damit ebenfalls **rot** (P4). Diese drei Fälle gehören in den Prüfstand von S
 * **Leistungsbegrenzung nach § 9 EEG (60/70 %)** — sie liegt im Wirtschaftlichkeitsmodul
   (`Konzept_Photovoltaik_Wirtschaftlichkeit_EPOS-Plan.md`, P1/V3) und wirkt auf die Einspeisung,
   nicht auf den Wechselrichter. Sie wechselwirkt allerdings mit dem Clipping — beide kappen
-  dieselbe Mittagsspitze. **Das gehört bei S3 in den Prüfstand**, damit die Kappung nicht zweimal
-  gerechnet wird.
+  dieselbe Mittagsspitze. **Mit S3 ist das im Prüfstand** (`f3915c2`):
+  `PvErloesRechner` rechnet die Kappung auf der STUNDENREIHE DER EINSPEISUNG, und
+  die entsteht aus `P_AC` des Strangwegs. Der Fall
+  `Nach_dem_Clipping_sieht_die_EEG_Kappung_nur_noch_P_AC_Nenn` hält die Bedingung
+  fest, unter der beide nacheinander statt doppelt greifen: Nach dem Clipping liegt
+  keine Stunde über der AC-Nennleistung — was das Gerät bereits gekappt hat, kann
+  der EEG-Deckel nicht noch einmal kappen.
 * **Batteriewechselrichter und Hybridgeräte.** Der Stromspeicher hat eigene Kenngrößen
   (`Tab_Stromspeicher_STAMM`); eine gemeinsame AC-Grenze von PV und Speicher ist hier nicht
   vorgesehen.
