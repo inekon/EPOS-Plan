@@ -427,9 +427,9 @@ Es gibt in diesem Modell '''kein''' Clipping.
 :: <math>P_{\mathrm{AC,roh}}(t)</math> – Wechselstromleistung vor dem Clipping aus (21) [kW]
 :: <math>P_{\mathrm{AC,nenn}}</math> – AC-Nennleistung des Wechselrichters [kW]
 
-Die Kennlinie (20) ist '''stückweise linear'''; <math>\left( x_{\mathrm{u}} , \eta_{\mathrm{u}}
-\right)</math> und <math>\left( x_{\mathrm{o}} , \eta_{\mathrm{o}} \right)</math> sind die zwei
-Stützstellen, zwischen denen <math>x</math> liegt:
+Die Kennlinie (20) ist '''stückweise linear'''; die zwei Stützstellen, zwischen denen
+<math>x</math> liegt, sind <math>\left( x_{\mathrm{u}} , \eta_{\mathrm{u}} \right)</math> und
+<math>\left( x_{\mathrm{o}} , \eta_{\mathrm{o}} \right)</math>:
 
 {| class="wikitable"
 ! Auslastung <math>x</math> !! untere Stützstelle !! obere Stützstelle

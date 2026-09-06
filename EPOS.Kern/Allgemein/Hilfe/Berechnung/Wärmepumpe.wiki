@@ -388,8 +388,8 @@ Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den
   Heizkurve gibt es nicht.
 * '''Kein Kühlbetrieb''' in der Jahressimulation. Ein Kühlkennfeld lässt sich pflegen, es geht in
   die Wärmebilanz nicht ein.
-* '''Der Heizstab hat keinen eigenen Wirkungsgrad''' — <math>\operatorname{COP}_{\mathrm{HS}} =
-  1</math> nach (12).
+* '''Der Heizstab hat keinen eigenen Wirkungsgrad''' —
+  <math>\operatorname{COP}_{\mathrm{HS}} = 1</math> nach (12).
 * '''Fünf Katalogspalten hat kein Leser''' (Befund W14a‑E‑8‑B2): Länge, Breite, Höhe, Gewicht und
   Raumbedarf kommen aus dem VDI‑3805-Import, werden ins Projekt kopiert und im ganzen Bestand
   nirgends gelesen. Sie sind die einzigen Spalten aller sieben Gerätekataloge ohne jede Verwendung.

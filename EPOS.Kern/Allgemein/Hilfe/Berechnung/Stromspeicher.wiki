@@ -215,8 +215,9 @@ Wirkungsgrad, Verschleißkosten, Zyklen, Modulkosten) beziehungsweise leistungsg
 :: <math>I_{\mathrm{fix}}</math> – feste Investition [€]
 
 Rückfallwerte, wenn ein Wert fehlt oder unplausibel ist: Band '''10…90&nbsp;%''' der Nennkapazität,
-<math>\eta_{\mathrm{RT}} = 0{,}90</math>, <math>c_{\mathrm{ver}} =
-0{,}025</math>&nbsp;€/(kWh·Zyklus), <math>i = 3</math>&nbsp;%, <math>N = 20</math>&nbsp;a. Fehlt die
+<math>\eta_{\mathrm{RT}} = 0{,}90</math>,
+<math>c_{\mathrm{ver}} = 0{,}025</math>&nbsp;€/(kWh·Zyklus), <math>i = 3</math>&nbsp;%,
+<math>N = 20</math>&nbsp;a. Fehlt die
 Leistungsgrenze, gilt '''1&nbsp;C''' — <math>P</math> wird gleich <math>C_{\mathrm{nom}}</math>
 gesetzt; das entspricht der impliziten Annahme des Bestands und begrenzt praktisch nicht.
 
@@ -297,8 +298,9 @@ Jede andere Berechnungsart fällt protokolliert auf die Dauernutzung zurück: Ei
 scheitern, dass eine Variante eine Ausbaustufe anfordert, die das Programm noch nicht kann.
 
 Daneben gibt es einen '''Excel-Kompatibilitätsmodus''' — die zeichengetreue Nachbildung der alten
-Tabellenmappe. Er kennt nur Last und PV, rechnet energetisch mit <math>\eta_{\mathrm{ch}} =
-\eta_{\mathrm{dis}} = 1</math> und schlägt einen pauschalen Verlustfaktor erst auf die Euro-Summe
+Tabellenmappe. Er kennt nur Last und PV, rechnet energetisch mit
+<math>\eta_{\mathrm{ch}} = \eta_{\mathrm{dis}} = 1</math> und schlägt einen pauschalen
+Verlustfaktor erst auf die Euro-Summe
 auf; er gilt '''nur''' für die Dauernutzung. Für eine Bewertung ist der energetische Modus gemeint.
 
 === Schritt 4 — Bewertung je Intervall ===
@@ -368,9 +370,9 @@ Mit Degradation <math>d</math> tritt der '''degradierte''' Rentenbarwertfaktor a
 :: <math>I</math> – Investition aus (5) [€]
 
 Die Grenzfälle sind ausdrücklich geregelt: <math>d = 0</math> führt (21) auf (19) zurück;
-<math>i = 0</math> und <math>d > 0</math> ergibt <math>\mathrm{RBF}_{\mathrm{deg}} = \frac{1 -
-\left( 1 - d \right)^{N}}{d}</math>; <math>d = 0</math> und <math>i = 0</math> ergibt
-<math>N</math>. Die '''Amortisationszeit''' <math>t_{\mathrm{A}}</math> wird daraus als
+<math>i = 0</math> und <math>d > 0</math> ergibt
+<math>\mathrm{RBF}_{\mathrm{deg}} = \frac{1 - \left( 1 - d \right)^{N}}{d}</math>;
+<math>d = 0</math> und <math>i = 0</math> ergibt <math>N</math>. Die '''Amortisationszeit''' <math>t_{\mathrm{A}}</math> wird daraus als
 Sekundärkennzahl je Auslegung ausgewiesen.
 
 === Schritt 6 — Auslegungsoptimierung (getrennter Lauf) ===
