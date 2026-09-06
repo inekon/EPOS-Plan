@@ -218,9 +218,9 @@ Wärmeüberschuss.
 '''Ohne Einspeisung (Zero-Export).''' Zwei Durchläufe über die Module: erst die wärmeseitige
 Zuschaltung (dieselben drei Fälle wie wärmegeführt), dann die stromseitige. In beiden gilt
 zusätzlich die Zero-Export-Bedingung: '''Reicht der Strombedarf nicht, bleibt das Modul aus''' —
-eingespeist wird nichts. Ein Modul, dessen Teillaststrom <math>P_{\mathrm{el}} \cdot
-x_{\mathrm{min}}</math> noch über <math>R_{\mathrm{E}}(t)</math> läge, wird also abgeregelt, auch
-wenn Wärme gebraucht würde.
+eingespeist wird nichts. Ein Modul, dessen Teillaststrom
+<math>P_{\mathrm{el}} \cdot x_{\mathrm{min}}</math> noch über <math>R_{\mathrm{E}}(t)</math>
+läge, wird also abgeregelt, auch wenn Wärme gebraucht würde.
 
 === Schritt 3 — Wärme unterbringen ===
 
