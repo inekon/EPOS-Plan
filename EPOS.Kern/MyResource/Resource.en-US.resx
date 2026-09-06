@@ -15089,10 +15089,10 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>Weight:</value>
   </data>
   <data name="WPS_HERL_MODULKOSTEN" xml:space="preserve">
-    <value>from the manufacturer import; equipment costs are maintained in cost management</value>
+    <value>from the stored catalogue; equipment costs are maintained in cost management</value>
   </data>
   <data name="WPS_HINWEIS_MODULKOSTEN_LEER" xml:space="preserve">
-    <value>no planned value from the manufacturer import</value>
+    <value>no planned value in the stored catalogue</value>
   </data>
   <data name="WRK_TITEL_VERWALTUNG" xml:space="preserve">
     <value>Inverter management</value>

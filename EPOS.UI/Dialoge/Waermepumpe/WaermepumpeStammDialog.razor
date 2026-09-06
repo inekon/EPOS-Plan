@@ -141,9 +141,10 @@
                        KEIN Importweg schreibt die Spalte (KatalogImportSatz.NachStamm
                        setzt sie nicht, WPStammCtrl.UpdateImport laesst sie beim
                        Ueberschreiben stehen); WPCtrl.CopyFromStamm:263 traegt sie nur
-                       ins Projekt weiter. Die Herleitungszeile sagt trotzdem
-                       "Herstellerimport" - so lautet der Anwenderentscheid; die
-                       Richtigstellung des Wortlauts gehoert dem Anwender.
+                       ins Projekt weiter. Die Herleitungszeile sagte deshalb bis
+                       W14a-O-2 faelschlich "Herstellerimport"; seit dem Anwender-
+                       entscheid vom 06.09.2026 (Weg a) heisst sie "aus dem
+                       Datenbestand".
 
                        DIE EINHEIT IST EURO, nicht €/kW: TechnikPlanwertCtrl:344 nimmt
                        den Wert als Basis "Modulpreis" UNVERAENDERT als Betrag - anders
@@ -361,14 +362,14 @@
     /// wer hier Kosten pflegen will, findet den Weg dorthin.
     /// </summary>
     [Parameter] public string HerleitungModulkosten { get; set; } =
-        "aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt";
+        "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt";
 
     /// <summary>
     /// Die zweite, leise Zeile bei einem Wert von 0 (<c>WPS_HINWEIS_MODULKOSTEN_LEER</c>,
     /// W14a‑O‑1) — die Antwort auf „warum schlägt die Kostenübernahme nichts vor?".
     /// </summary>
     [Parameter] public string HinweisModulkostenLeer { get; set; } =
-        "kein Planwert aus dem Herstellerimport";
+        "kein Planwert im Datenbestand";
     [Parameter] public string BtnKenndatenText { get; set; } = "Kennliniendaten Ansicht/Bearbeiten...";
     [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
     [Parameter] public string BtnNeuText { get; set; } = "Neu";
@@ -421,7 +422,7 @@
     public bool KennlinieneditorOffen => _kennlinien is not null;
 
     /// <summary>
-    /// Führt der Satz einen Planwert aus dem Herstellerimport? (W14a‑O‑1)
+    /// Führt der Satz einen Planwert im Datenbestand? (W14a‑O‑1, Wortlaut W14a‑O‑2)
     ///
     /// <para><b>0 und NULL sind dasselbe.</b> <c>Tab_WP_STAMM.Modulkosten</c> ist eine
     /// INTEGER-Spalte; ein NULL kommt als 0 im Datensatz an

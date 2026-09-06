@@ -2266,6 +2266,9 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Weg, den es nicht gibt; drei Wege mit Empfehlung (a: Wortlaut „aus dem Datenbestand") stehen im W14a-Protokoll,
 > Anwenderentscheid. Nachweis: UI 2 731, Kern 1 344 grün in beiden Sprachen (Basis des Agenten), Designer „abweichend
 > 0", SQL-Prüfer 0 Fundstellen, Gate grün, Referenzlauf byte-gleich; Abnahmepunkt A‑W14a‑E‑8‑9.
+> **Nachtrag W14a‑O‑2, entschieden 06.09.2026 (Weg a, Empfehlung):** Die Herleitungszeile sagt seither „aus dem
+> Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt" (en „from the stored catalogue; …"), der Leerhinweis
+> „kein Planwert im Datenbestand"; Ä19 unverändert, Weg (b) nicht beauftragt. 33 Dialogfälle grün in de und en.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >

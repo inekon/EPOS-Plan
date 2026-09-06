@@ -1179,6 +1179,8 @@ zwischen zwei Entscheiden:
 > *Nebenbefund derselben Stelle:* Auch die fünf Maße `Laenge` … `Raum`, die § 4 als „aus
 > dem VDI‑3805‑Import" führt, setzt `NachStamm` nicht — sie stehen aus demselben Grund
 > leer da.
+>
+> **Entschieden 06.09.2026 (Weg a, Empfehlung angenommen), umgesetzt am selben Tag:** Wortlaut richtiggestellt zu „aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt" (en „from the stored catalogue; equipment costs are maintained in cost management"), Leerhinweis „kein Planwert im Datenbestand" (en „no planned value in the stored catalogue"). Ä19 unverändert; Ressourcen `WPS_HERL_MODULKOSTEN`/`WPS_HINWEIS_MODULKOSTEN_LEER`, Razor-Vorgabe, Windows-Rückfalltext, Tests und Abnahmepunkt 9 nachgezogen. Der Wert bleibt nur über den Bestand füllbar — W14a‑O‑2 damit geschlossen, Weg (b) nicht beauftragt.
 
 **Zwei Beobachtungen ohne Lücke, aber mit Aussage:**
 
@@ -1244,13 +1246,13 @@ zwischen zwei Entscheiden:
    not used".
 9. **W14a‑O‑1 am Gerät** — *Administration → Wärmebedarf und Heizung → Wärmepumpe*:
    Im Block „Wärmepumpe" steht unter „Kühlleistung" die Zeile **„Modulkosten"** mit dem
-   Wert und „€" dahinter, darunter leise „aus dem Herstellerimport; Gerätekosten werden
+   Wert und „€" dahinter, darunter leise „aus dem Datenbestand; Gerätekosten werden
    in der Kostenverwaltung gepflegt". **In das Feld lässt sich nicht klicken und nicht
    tabben** — es ist Text, kein Eingabefeld. Ein Gerät ohne gepflegten Wert wählen
    (oder **„Neu"** drücken): Dort steht **„–"** ohne Einheit und eine zweite leise
-   Zeile „kein Planwert aus dem Herstellerimport". Den Aufklapper öffnen: Die Zeile
+   Zeile „kein Planwert im Datenbestand". Den Aufklapper öffnen: Die Zeile
    `Modulkosten` zeigt bei einem gepflegten Gerät **dieselbe Zahl** wie das Raster
    (beim Wert 0 dort „0", im Raster der Strich — so gewollt). „Speichern" drücken und
    den Satz erneut wählen: Der Wert steht unverändert da. Auf **English**: „Module
-   costs", „from the manufacturer import; equipment costs are maintained in cost
-   management", „no planned value from the manufacturer import".
+   costs", „from the stored catalogue; equipment costs are maintained in cost
+   management", „no planned value in the stored catalogue".
