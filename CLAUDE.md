@@ -95,8 +95,8 @@ Migrationsschritte"); danach wird jeder Aufruf vorher mit dem Anwender abgestimm
 | `Werkzeuge/SqlDialektPruefer` | hält **jeden** SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Access-Verbotsliste (`UPDATE … JOIN`, `Nz`, `TOP n`, `LIKE '*'`, `&`, Umlaut-Schreibweise). **Nach jeder neuen oder geänderten SQL-Anweisung ziehen** — der Referenzlauf deckt nur den Rechenweg ab, nicht die Dialog- und Pflegepfade. Regeln in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) Abschnitt 6 | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
 
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
-gegen `Referenzlaeufe/2026-09-05_R2_Zeitbasis` gehalten (elf Projekte, 282 CSV, aus dem plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite`; eingefroren am 05.09.2026 nach der Zusammenführung der Rechner-2-Linie — Paket A verschiebt die Zeitbasis der Solardaten von UTC auf Ortszeit. Die Vorgängerbasis `2026-08-30_B3-Kaskade` bleibt zur Geschichte liegen; ihre Projekte 1011 und 1021 stehen nicht in der Testdatenbank); die CI rechnet bei
-jedem Push die Projekte 1030, 1007 und 1017 gegen dieselbe Basis.
+gegen `Referenzlaeufe/2026-09-06_R3_Straenge` gehalten (**zwölf Projekte, 312 CSV**, aus dem plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite`; eingefroren am 06.09.2026 nach dem Anwenderentscheid **W6‑O‑7**: Das neue Projekt **1045 „Prüfprojekt Ost/West Stränge"** ist das einzige mit Zeilen in `Z_AnlageStrang` und hängt damit den Strangweg der Stufe S3 — Clipping, Wirkungsgradkennlinie, Nachtverbrauch und Modul je Strang — ins Netz; die elf Bestandsprojekte sind **byte-gleich** zur Vorgängerbasis. Diese, `2026-09-05_R2_Zeitbasis`, bleibt zur Geschichte liegen, ebenso `2026-08-30_B3-Kaskade`, deren Projekte 1011 und 1021 nicht in der Testdatenbank stehen); die CI rechnet bei
+jedem Push die Projekte 1030, 1007, 1017 und 1045 gegen dieselbe Basis.
 
 C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build zwingend
 **x64**. Bis 22.08.2026 x86; Umstellungsplan, offene Pakete und Rückweg
