@@ -490,3 +490,30 @@ UcBericht.lblZiel      = Bericht#zielordner
 # SpeicherKarte         der Tiefensuche - erst ein (ID-abhaengiger) Name macht
 #                       Quellprofil, Waermequelle und Betriebsmodus feldgenau
 #                       ansprechbar.
+
+# ===========================================================================
+# H13 - Rubrik Berechnung (06.09.2026, Anwenderwunsch "Erweiterung Hilfe")
+# ===========================================================================
+# Die Details der Berechnung gehoeren nicht in die allgemeine Erklaerung der
+# Funktionen, sondern in eine EIGENE Wikirubrik - und die allgemeinen Seiten
+# verweisen darauf. Die Rubrik heisst
+#
+#     Programm Dokumentation/Berechnung/<Seitenname>
+#
+# und das ZIEL einer Zeile ist deshalb "Berechnung/<Seitenname>" - ein Ziel MIT
+# Schraegstrich. Der Katalog loest es ueber den PFADWEG auf
+# (WikiHelpCatalog.UeberPfad): "/berechnung/photovoltaik/" ist das eindeutige
+# Ende von "/wiki/programm_dokumentation/berechnung/photovoltaik/". Leerzeichen
+# im Seitennamen sind zulaessig - PfadNormalisieren ebnet sie zu Unterstrichen
+# ein, so wie MediaWiki es im Titel tut.
+#
+# Der SCHLUESSEL folgt dem Muster <Formname>.Berechnung. Er steht NEBEN dem
+# bestehenden <Formname>.btn_Help, ersetzt ihn nicht: Der Fensterknopf oben
+# rechts bleibt die Bedienhilfe, der neue Knopf sitzt am Kopf des Abschnitts,
+# der die Rechnung parametriert.
+#
+# Die Seiten sind im Wiki ANZULEGEN (Handgriffe im Protokoll
+# H13_Berechnungshilfe_Protokoll.md). Bis dahin traegt der mitgelieferte
+# Startbestand help_cache.json Kurztext und Adresse; ein erfolgreicher
+# Onlineabruf loescht sie nicht (WikiHelpCatalog.BerechnungsRueckfallErgaenzen).
+Form_Simulation_Config.Berechnung      = Berechnung/Simulationsablauf
