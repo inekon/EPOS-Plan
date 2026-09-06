@@ -265,6 +265,143 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // 4 - Teil 3 des Anwenderwunsches: "steht jeder verwendete Parameter im
+        //     Bearbeiten-Formular?"
+        // =================================================================================
+
+        /// <summary>
+        /// Was der Anwender in der Verwaltung EINGEBEN kann, je Anlagenart — die
+        /// Spaltennamen, die der Speicherweg der jeweiligen Maske zurueckschreibt.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Woher die Listen stammen</b> (Stand 06.09.2026, gelesen, nicht
+        /// geraten): Heizkessel aus <c>HeizkesselKatalogDaten</c> und
+        /// <c>HeizkesselHuelle.Speichern</c>; BHKW aus <c>BhkwKatalogDaten</c>;
+        /// Waermepumpe aus <c>WaermepumpeStammDaten</c> und
+        /// <c>WaermepumpeStammHuelle.Speichern</c>; Solarkollektoren aus
+        /// <c>SolarkollektorKatalogDaten</c>; Photovoltaik und Stromspeicher aus
+        /// <c>ModulKatalogProfil.Felder</c> mit der Zuordnung in
+        /// <c>PvAdminHuelle</c>/<c>StromspeicherAdminHuelle</c>; Pufferspeicher aus
+        /// <c>PufferSpKatalogDaten</c>.</para>
+        /// <para><b>Warum sie hier stehen und nicht gelesen werden.</b> Vier der sieben
+        /// Feldsaetze sind Razor-Komponenten in <c>EPOS.UI</c> — von hier unerreichbar,
+        /// und ein Textscanner ueber <c>.razor</c> waere eine Wache, die auf jede
+        /// Umformatierung anspricht. Die Liste ist deshalb der EINGEFRORENE Befund;
+        /// aendert sich ein Formular, aendert sich hier eine Zeile, und der Fall
+        /// darunter sagt, was das fuer die Rechnung bedeutet.</para>
+        /// </remarks>
+        private static IReadOnlyList<string> ImFormular(Anlagenart art)
+        {
+            switch (art)
+            {
+                case Anlagenart.Heizkessel:
+                    return new[] { "Bezeichner", "Firma", "Beschreibung", "Ptherm", "Brennstoff",
+                                   "Wirkungsgrad_Gas", "Wirkungsgrad_Öl", "Investitionskosten",
+                                   "Raumbedarf", "Wartungskosten", "Wartungskosten_Einheit",
+                                   "Nutzungsdauer", "CO2", "SO2", "NOx", "CO", "Staub",
+                                   "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf" };
+
+                case Anlagenart.Bhkw:
+                    return new[] { "Bezeichner", "Firma", "Beschreibung", "Motortyp", "Ptherm", "Pel",
+                                   "Brennstoff", "Wirkungsgrad", "Grenzleistung", "Kosten_Modul",
+                                   "Kosten_Montage", "Kosten_Lieferung", "Kosten_Schallschutzhaube",
+                                   "Kosten_Abgasreinigung", "Raumbedarf", "Wartungskosten_kwhel",
+                                   "Nutzungsdauer", "NOX", "SO2", "CO", "CO2", "Staub",
+                                   "Vorlauf", "Ruecklauf" };
+
+                case Anlagenart.Waermepumpe:
+                    // ELF von achtzehn Fachspalten. Modulkosten und maxPtherm laufen
+                    // verborgen mit (Entscheid AE19), Kuehlleistung steht nur lesend da,
+                    // die fuenf Masse zeigt die Maske gar nicht.
+                    return new[] { "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr",
+                                   "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart" };
+
+                case Anlagenart.Solarkollektoren:
+                    return new[] { "Bezeichner", "Firma", "Beschreibung", "Kollektortyp",
+                                   "Modulflaeche", "Aperturflaeche", "h0", "k1", "k2", "Kdir",
+                                   "Kdfu", "Investitionskosten", "Vorlauf", "Ruecklauf" };
+
+                case Anlagenart.Photovoltaik:
+                    // alpha_SC und beta_OC fehlen - sie kommen nur aus dem CEC-/PAN-Import.
+                    return new[] { "Bezeichner", "Firma", "Beschreibung", "Leistung", "Wirkungsgrad",
+                                   "U_Mpp", "U_Leerlauf", "I_Mpp", "I_Kurzschluss", "gamma_PMP",
+                                   "T_NOCT", "Laenge", "Breite", "Modulkosten", "Technologie" };
+
+                case Anlagenart.Stromspeicher:
+                    return new[] { "Bezeichner", "Typ", "Energie", "Leistung", "Ladezustand",
+                                   "Degradation", "Modulkosten", "Wirkungsgrad_RT",
+                                   "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
+                                   "Investition_Fix", "Standby_Verbrauch" };
+
+                default:
+                    return new[] { "Bezeichner", "Hersteller", "Speichertyp",
+                                   "Bereitschaftsverluste", "Gesamtvolumen", "Investitionskosten" };
+            }
+        }
+
+        /// <summary>
+        /// Die zwei Spalten, die keine Maske je von Hand setzt: der Primaerschluessel und
+        /// die Auslieferungsmarke. Sie sind vom Vergleich ausgenommen, weil eine
+        /// Eingabemoeglichkeit dort ein FEHLER waere.
+        /// </summary>
+        private static bool Verwaltungsspalte(string spalte)
+        {
+            return string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// <b>Die Pruefung aus Teil 3 des Anwenderwunsches W14a-E-8</b>: Steht jeder
+        /// GERECHNETE Parameter im Bearbeiten-Formular seiner Verwaltung?
+        ///
+        /// <para><b>Der Befund vom 06.09.2026: genau EINE Luecke</b> —
+        /// <c>Tab_WP_STAMM.Modulkosten</c>. Der Wert geht in die Kostenplanung
+        /// (<c>TechnikPlanwertCtrl.cs:345</c>), die Waermepumpenverwaltung zeigt ihn
+        /// aber nicht (Entscheid AE19 der Welle 7: „Geraetekosten laufen ueber die
+        /// Kostenverwaltung"); gefuellt wird er allein vom VDI-3805-Import. Ob das
+        /// bleibt, entscheidet der Anwender — offener Punkt W14a-O-1.</para>
+        ///
+        /// <para>Kommt eine zweite Luecke dazu, faellt dieser Fall rot aus, und das ist
+        /// der Zweck: Ein gerechneter Wert, den niemand eingeben kann, ist kein
+        /// Schoenheitsfehler.</para>
+        /// </summary>
+        [Fact]
+        public void Genau_eine_gerechnete_Spalte_fehlt_im_Bearbeiten_Formular()
+        {
+            var luecken = new List<string>();
+
+            foreach (Anlagenart art in ParameterVerwendung.AlleArten)
+            {
+                IReadOnlyList<string> formular = ImFormular(art);
+                foreach (ParameterEintrag e in ParameterVerwendung.Katalog(art))
+                {
+                    if (!e.Gerechnet || Verwaltungsspalte(e.Spalte)) continue;
+                    if (formular.Contains(e.Spalte, Vergleich)) continue;
+                    luecken.Add(art + "." + e.Spalte);
+                }
+            }
+
+            Assert.Equal(new[] { "Waermepumpe.Modulkosten" }, luecken);
+        }
+
+        /// <summary>
+        /// Gegenprobe zur vorigen Liste: Kein Formular nennt eine Spalte, die es in der
+        /// Stammtabelle nicht gibt. Sonst waere die Luecke oben nur deshalb klein,
+        /// weil die Erwartungsliste sich verschrieben hat.
+        /// </summary>
+        [Fact]
+        public void Das_Bearbeiten_Formular_nennt_nur_vorhandene_Spalten()
+        {
+            foreach (Anlagenart art in ParameterVerwendung.AlleArten)
+            {
+                List<string> imKatalog = ParameterVerwendung.Katalog(art)
+                                                            .Select(e => e.Spalte).ToList();
+                string erfunden = string.Join(", ", ImFormular(art).Except(imKatalog, Vergleich));
+                Assert.True(erfunden.Length == 0, art + ": Formularspalte ohne Tabellenspalte — " + erfunden);
+            }
+        }
+
+        // =================================================================================
         // Hilfen
         // =================================================================================
 
