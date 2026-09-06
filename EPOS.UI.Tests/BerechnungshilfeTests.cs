@@ -21,17 +21,28 @@ namespace EPOS.UI.Tests;
 /// Hilferubrik auf der wiki sein … Die Erläuterung sollte aber aufrufbar sein aus
 /// den allgemeinen Erklärungen mit Bezügen").
 ///
-/// <para><b>Was hier gehalten wird — drei Zusagen.</b></para>
+/// <para><b>Was hier gehalten wird — vier Zusagen.</b></para>
 /// <list type="number">
-///   <item><description>Jede Seite der Rubrik trägt ihren Kopfblock und die sechs
+///   <item><description>Jede Seite der Rubrik trägt ihren Kopfblock und die sieben
 ///     Abschnitte der Bauform. Eine Seite ohne „Grenzen und Annahmen" wäre eine
 ///     Erklärung, die verschweigt, was der Rechenkern NICHT tut.</description></item>
+///   <item><description>Jede Seite setzt ihre Formeln in der NOTATION der Rubrik
+///     (Fassung 2, Anwenderwunsch vom 06.09.2026): Anzeige-Formeln mit laufender
+///     Nummer, Zeichen in Unicode, Indizes als <c>&lt;sub&gt;</c> — und die zwei
+///     Tabellen, die jedes Zeichen benennen.</description></item>
 ///   <item><description>Jeder Schlüssel <c>*.Berechnung</c> der Zuordnungsdatei
 ///     zeigt auf eine Seite, die es als Datei WIRKLICH gibt — sonst öffnet der
 ///     Knopf beim Anwender ins Leere.</description></item>
 ///   <item><description>Jeder dieser Schlüssel steht in GENAU EINEM Razor-Dialog.
 ///     Keiner ist tote Zuordnung, keiner hängt an zwei Masken.</description></item>
 /// </list>
+///
+/// <para><b>Warum kein <c>&lt;math&gt;</c>.</b> Die Wikiinstallation
+/// <c>wiki.epos-plan.de</c> führt KEINE Math-Erweiterung — gemessen am
+/// 06.09.2026 über die Vorschau-Schnittstelle. Ein <c>&lt;math&gt;</c>-Block
+/// erschiene dort als Klartext, ein <c>\frac</c> als Backslash. Die Rubrik setzt
+/// ihre Formeln deshalb in Unicode-Notation, und dieser Wächter hält es fest:
+/// Was hier rot ausfällt, wäre beim Anwender unlesbar.</para>
 ///
 /// <para><b>Warum QUELLTEXT und nicht der Katalog.</b> Der Hilfekatalog
 /// (<c>HelpCatalog</c>, <c>help_mapping.txt</c>) liegt in der Windows-Anwendung
@@ -55,15 +66,30 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// <summary>
     /// Die Abschnitte, die die Bauform von JEDER Seite verlangt — in dieser
     /// Reihenfolge und als Überschrift zweiter Ebene.
+    ///
+    /// <para>Seit der Fassung 2 (06.09.2026) sind es SIEBEN: „Formelzeichen und
+    /// Parameter" steht zwischen den Eingangsgrößen und dem Rechenweg — wer die
+    /// Formeln liest, hat die Zeichen unmittelbar davor gelesen.</para>
     /// </summary>
     private static readonly string[] Pflichtabschnitte =
     {
         "== Was berechnet wird ==",
         "== Eingangsgrößen ==",
+        "== Formelzeichen und Parameter ==",
         "== Rechenweg ==",
         "== Grenzen und Annahmen ==",
         "== Ergebnisse und wo sie stehen ==",
         "== Bezüge =="
+    };
+
+    /// <summary>
+    /// Was in einer Seite dieser Rubrik NICHTS zu suchen hat: die Auszeichnung
+    /// einer Math-Erweiterung, die es auf <c>wiki.epos-plan.de</c> nicht gibt,
+    /// und die LaTeX-Befehle, die ohne sie als Backslash-Text erscheinen.
+    /// </summary>
+    private static readonly string[] VerboteneAuszeichnung =
+    {
+        "<math", "\\frac", "\\sum", "\\cdot", "\\eta", "\\begin", "\\text", "\\sqrt"
     };
 
     /// <summary>
@@ -120,13 +146,13 @@ public sealed class BerechnungshilfeTests : BunitContext
     }
 
     /// <summary>
-    /// Die sechs Abschnitte der Bauform stehen auf jeder Seite, und zwar in der
+    /// Die sieben Abschnitte der Bauform stehen auf jeder Seite, und zwar in der
     /// vorgegebenen REIHENFOLGE. Zusätzliche Abschnitte sind erlaubt — die
     /// Photovoltaikseite führt einen eigenen über den Wechselrichter.
     /// </summary>
     [Theory]
     [MemberData(nameof(Seitennamen))]
-    public void Jede_Seite_traegt_die_sechs_Abschnitte_der_Bauform(string seite)
+    public void Jede_Seite_traegt_die_sieben_Abschnitte_der_Bauform(string seite)
     {
         string text = File.ReadAllText(Seitendatei(seite)).Replace("\r\n", "\n");
 
@@ -161,6 +187,121 @@ public sealed class BerechnungshilfeTests : BunitContext
         Assert.DoesNotContain(".cs", sichtbar, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(".razor", sichtbar, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("EPOS.Kern/", sichtbar, StringComparison.Ordinal);
+    }
+
+    // =====================================================================
+    //  1b. Die Notation der Fassung 2
+    // =====================================================================
+
+    /// <summary>
+    /// Keine Math-Auszeichnung, kein LaTeX-Befehl. Beides erschiene auf
+    /// <c>wiki.epos-plan.de</c> als Klartext — die Installation führt keine
+    /// Math-Erweiterung (gemessen am 06.09.2026).
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Seitennamen))]
+    public void Keine_Seite_benutzt_Math_Auszeichnung_oder_LaTeX(string seite)
+    {
+        string text = File.ReadAllText(Seitendatei(seite));
+
+        var gefunden = VerboteneAuszeichnung
+            .Where(v => text.Contains(v, StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.True(gefunden.Length == 0,
+                    seite + " benutzt eine Auszeichnung, die das Wiki nicht kann: " +
+                    string.Join(", ", gefunden) +
+                    ". Formeln werden in Unicode-Notation gesetzt.");
+    }
+
+    /// <summary>
+    /// Jede Seite trägt mindestens eine ANZEIGE-Formel, und jede trägt ihre
+    /// laufende Nummer am Zeilenende. Ohne Nummer lässt sich im Text nicht auf
+    /// eine Gleichung verweisen — und genau darauf zeigt die Spalte
+    /// „berechnet in" der Variablentabelle.
+    ///
+    /// <para>Die Nummern laufen lückenlos von 1 an: Eine gestrichene Gleichung,
+    /// deren Nummer stehen bleibt, macht jeden Verweis darauf falsch.</para>
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Seitennamen))]
+    public void Jede_Anzeigeformel_traegt_ihre_laufende_Nummer(string seite)
+    {
+        string[] formeln = File.ReadAllLines(Seitendatei(seite))
+                               .Where(z => z.TrimStart().StartsWith(": <big>", StringComparison.Ordinal))
+                               .ToArray();
+
+        Assert.True(formeln.Length > 0,
+                    seite + " trägt keine Anzeige-Formel (Zeile ': <big>…</big> (n)').");
+
+        var nummern = new List<int>();
+        foreach (string zeile in formeln)
+        {
+            var treffer = System.Text.RegularExpressions.Regex.Match(zeile, @"\((\d+)\)\s*$");
+            Assert.True(treffer.Success,
+                        seite + ": Diese Anzeige-Formel trägt keine Nummer:\n  " + zeile);
+            nummern.Add(int.Parse(treffer.Groups[1].Value, CultureInfo.InvariantCulture));
+        }
+
+        Assert.Equal(Enumerable.Range(1, nummern.Count).ToArray(), nummern.ToArray());
+    }
+
+    /// <summary>
+    /// Der Abschnitt „Formelzeichen und Parameter" trägt BEIDE Tabellen mit
+    /// ihren Spaltenköpfen: die Parameter mit ihrer <b>Herkunft</b> (Dialog und
+    /// Feld, Katalog und Spalte, Vorgabe oder Konstante) und die Variablen mit
+    /// der <b>Gleichung</b>, in der sie entstehen.
+    ///
+    /// <para>Geprüft werden die Spaltenköpfe, nicht der Inhalt: Eine Tabelle mit
+    /// drei Spalten hätte die Herkunft verloren — und die Herkunft ist der Grund,
+    /// warum der Anwender die Tabelle überhaupt liest.</para>
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Seitennamen))]
+    public void Der_Abschnitt_Formelzeichen_traegt_beide_Tabellen(string seite)
+    {
+        string text = File.ReadAllText(Seitendatei(seite)).Replace("\r\n", "\n");
+
+        int anfang = text.IndexOf("\n== Formelzeichen und Parameter ==", StringComparison.Ordinal);
+        Assert.True(anfang >= 0, seite + " fehlt der Abschnitt „Formelzeichen und Parameter“.");
+
+        int ende = text.IndexOf("\n== Rechenweg ==", anfang, StringComparison.Ordinal);
+        Assert.True(ende > anfang, seite + ": Der Rechenweg folgt nicht auf die Formelzeichen.");
+
+        string abschnitt = text.Substring(anfang, ende - anfang);
+
+        Assert.Contains("=== Parameter ===", abschnitt, StringComparison.Ordinal);
+        Assert.Contains("=== Variablen ===", abschnitt, StringComparison.Ordinal);
+        Assert.Contains("! Symbol !! Bedeutung !! Einheit !! Herkunft", abschnitt, StringComparison.Ordinal);
+        Assert.Contains("! Symbol !! Bedeutung !! Einheit !! berechnet in", abschnitt, StringComparison.Ordinal);
+
+        // Zwei Tabellen, nicht eine — und beide geschlossen.
+        Assert.Equal(2, Zaehle(abschnitt, "{| class=\"wikitable\""));
+        Assert.Equal(2, Zaehle(abschnitt, "\n|}"));
+    }
+
+    /// <summary>
+    /// Der Kopfblock nennt die Fassung. Wer eine Seite anfasst, sieht in Zeile 1,
+    /// ob sie die Notation schon trägt.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Seitennamen))]
+    public void Jede_Seite_nennt_ihre_Fassung_im_Kopfblock(string seite)
+    {
+        string kopf = string.Join("\n", File.ReadAllLines(Seitendatei(seite)).Take(4));
+
+        Assert.Contains("Fassung 2", kopf, StringComparison.Ordinal);
+    }
+
+    private static int Zaehle(string text, string teil)
+    {
+        int zahl = 0, stelle = 0;
+        while ((stelle = text.IndexOf(teil, stelle, StringComparison.Ordinal)) >= 0)
+        {
+            zahl++;
+            stelle += teil.Length;
+        }
+        return zahl;
     }
 
     // =====================================================================
