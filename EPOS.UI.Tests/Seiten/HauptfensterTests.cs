@@ -202,9 +202,10 @@ public class HauptfensterTests : BunitContext
     [Fact]
     public async Task Ein_Punkt_ohne_Ziel_tut_nichts()
     {
-        // Die dreizehn aufklappenden Punkte (seit W16c-E-2 mit "Sprache") und
-        // die acht Trenner tragen kein Ziel; ein Klick auf sie darf keinen Weg
-        // anstossen.
+        // Die zwoelf aufklappenden Punkte (seit W16c-E-2 mit "Sprache", seit
+        // W16c-E-6 mit "Profile & Lastgaenge" und ohne die zwei aufgeloesten
+        // Ein-Punkt-Untermenues) und die acht Trenner tragen kein Ziel; ein
+        // Klick auf sie darf keinen Weg anstossen.
         int rufe = 0;
         var cut = Fenster(weg: (_, _) => { rufe++; return Task.FromResult(true); });
 
@@ -501,9 +502,12 @@ public class HauptfensterTests : BunitContext
     [Fact]
     public async Task Ein_Punkt_der_dritten_Ebene_landet_im_selben_Handler()
     {
-        // Der einzige dreistufige Weg des Bestands: Administration ▸
-        // Energiesysteme ▸ Photovoltaik ▸ "Bearbeiten...". Bis W16c-B13 war er
-        // unter Windows gar nicht erreichbar.
+        // Der dreistufige Weg. Bis W16c-B13 war er unter Windows gar nicht
+        // erreichbar; bis W16c-E-6 lautete er Administration ▸ Energiesysteme
+        // ▸ Photovoltaik ▸ "Bearbeiten...". Genau dieses Untermenue mit dem
+        // EINEN Punkt ist mit W16c-E-6 aufgeloest - die dritte Ebene fuehrt
+        // jetzt Administration ▸ Waermebedarf & Heizung ▸ Profile &
+        // Lastgaenge ▸ Waermebedarf Lastgang.
         string? gemeldet = null;
         var gaben = Huellengaben(new SeitenZustand());
         gaben["Weg"] = new Func<string, string, Task<bool>>(
@@ -512,13 +516,13 @@ public class HauptfensterTests : BunitContext
         var cut = AusHuelle(gaben);
 
         cut.Find("#menue-Administration").Click();
-        cut.Find("#menue-MenuItem_Energiesysteme").Click();
-        cut.Find("#menue-MenuItem_PV").Click();
-        cut.Find("#menue-MenuItem_PC_Bearbeiten").Click();
+        cut.Find("#menue-MenuItem_WBundHeizung").Click();
+        cut.Find("#menue-MenuItem_ProfileLastgaenge").Click();
+        cut.Find("#menue-MenuItem_WaermebedarfExtern").Click();
 
         await Task.Yield();
 
-        Assert.Equal(Seitenschluessel.PvAdmin, gemeldet);
+        Assert.Equal(Seitenschluessel.WaermebedarfExternAdmin, gemeldet);
 
         // Nach der Wahl steht das Band zu - samt seiner Schliessflaeche.
         Assert.Empty(cut.FindAll(".epos-menueband-klappe"));

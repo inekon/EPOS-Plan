@@ -14665,6 +14665,9 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="MENU_PC_BEARBEITEN" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="MENU_PROFILE_LASTGAENGE" xml:space="preserve">
+    <value>Profiles &amp; load curves</value>
+  </data>
   <data name="MENU_PROJEKTE" xml:space="preserve">
     <value>Project</value>
   </data>
