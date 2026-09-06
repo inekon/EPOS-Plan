@@ -887,7 +887,7 @@ def dateien_im_bereich(basis):
     out = []
     for wurzel in WURZELN:
         for dp, dn, fn in os.walk(os.path.join(basis, wurzel)):
-            dn[:] = [d for d in dn if d not in ("obj", "bin", ".vs")]
+            dn[:] = [d for d in dn if d not in ("obj", "bin", ".vs", ".claude")]
             for f in fn:
                 if not f.endswith(".cs"):
                     continue
@@ -902,7 +902,9 @@ def dateien_im_bereich(basis):
 def alle_cs(basis):
     out = []
     for dp, dn, fn in os.walk(basis):
-        dn[:] = [d for d in dn if d not in ("obj", "bin", ".vs", ".git", "artifacts")]
+        # .claude: Worktrees paralleler Agenten - fremde Arbeitsstaende, die sich waehrend des
+        # Laufs bewegen (Gate 06.09.2026: FileNotFoundError mitten im Scan).
+        dn[:] = [d for d in dn if d not in ("obj", "bin", ".vs", ".git", "artifacts", ".claude")]
         for f in fn:
             if f.endswith(".cs"):
                 out.append(os.path.join(dp, f))
