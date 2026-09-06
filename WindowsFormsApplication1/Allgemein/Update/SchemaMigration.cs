@@ -2422,6 +2422,43 @@ namespace WindowsFormsApplication1
         /// Zweitlauf legt nichts an und ändert nichts.</para>
         /// </summary>
         public const int SCHRITT_65_WECHSELRICHTERKATALOG = 65;
+
+        /// <summary>
+        /// <b>Die Strangzuordnung und der sichtbare Wechselrichterweg</b> — Stufe S2 des
+        /// <c>Konzept_Wechselrichter_EPOS-Plan.md</c> (Anwenderentscheide <b>W6‑E‑2</b>
+        /// und <b>W6‑E‑3</b> vom 06.09.2026): die Tabelle <c>Z_AnlageStrang</c>
+        /// (DDL in <see cref="AnlageStrangSchema"/>) und die Spalte
+        /// <c>Tab_Energieanlagen.PV_Wechselrichterweg</c>
+        /// (<see cref="SchemaKatalog.Schritt66_PvWechselrichterweg"/>).
+        ///
+        /// <para><b>Wozu.</b> Bis hierher gilt der Wechselrichter für die GANZE Anlage:
+        /// fünf Zahlen an der Anlagenzeile (<see cref="SCHRITT_64_PV_MODELLWAHL"/>),
+        /// ohne Zuordnung zu einem Strang, ohne zweites Gerät, ohne MPPT und ohne
+        /// Spannungsgrenzen. Ein Ost/West-Dach war nur als zwei getrennte Anlagen
+        /// abbildbar — und damit ohne das gemeinsame Clipping, für das ein
+        /// Ost/West-Gerät überhaupt gebaut wird. <c>Z_AnlageStrang</c> hebt die
+        /// Zuordnung auf die Strangebene; die Spalte macht aus der stillen Vorrangregel
+        /// eine sichtbare Wahl (W6‑E‑3, Konzept 7.1).</para>
+        ///
+        /// <para><b>KEIN DML, und das ist die Ergebnisneutralität.</b> Der Schritt legt
+        /// eine LEERE Tabelle und eine NULL-Spalte an. Kein Projekt führt danach eine
+        /// Strangzeile, kein Anlagensatz hat den Schalter gesetzt, und
+        /// <c>SimulationPV</c> liest weder das eine noch das andere — S2 rechnet nicht.
+        /// Der Referenzlauf gegen <c>2026-09-05_R2_Zeitbasis</c> bleibt
+        /// <b>byte-gleich</b>.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 66
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 65
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem
+        /// Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <c>CREATE TABLE IF NOT EXISTS</c> für die Tabelle,
+        /// <see cref="SqliteSpalteAnlegen"/> für die Spalte (es überspringt eine
+        /// vorhandene). Es gibt kein UPDATE, das ein zweiter Lauf wiederholen könnte;
+        /// der Zweitlauf legt nichts an und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_66_ANLAGESTRANG = 66;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4319,7 +4356,14 @@ namespace WindowsFormsApplication1
         /// <para><b>Seit Merge 5 (05.09.2026) drei Einträge:</b> nach
         /// <see cref="SCHRITT_62_KLIMAWAISEN"/> folgen <see cref="SCHRITT_63_PV_ANLAGENPARAMETER"/>
         /// (Paket A des PV-Ertragsmodells) und <see cref="SCHRITT_64_PV_MODELLWAHL"/> (Paket B);
-        /// <see cref="ZIEL_VERSION"/> steht auf 64.</para>        ///
+        /// <see cref="ZIEL_VERSION"/> steht auf 64.</para>
+        ///
+        /// <para><b>Seit dem Wechselrichter-Konzept (06.09.2026) fünf:</b>
+        /// <see cref="SCHRITT_65_WECHSELRICHTERKATALOG"/> (Stufe S1 — Katalog und
+        /// Projektkopie) und <see cref="SCHRITT_66_ANLAGESTRANG"/> (Stufe S2 —
+        /// Strangzuordnung und der sichtbare Wechselrichterweg aus W6‑E‑3);
+        /// <see cref="ZIEL_VERSION"/> steht auf 66.</para>
+        ///
         /// <para><b>Regeln für einen Eintrag hier</b> (dieselbe Reihenfolge, die der
         /// E6-Vorfall vom 29.08.2026 erzwungen hat: erst Schrittkonstante, Methode und
         /// Eintrag, DANN <see cref="ZIEL_VERSION"/>):</para>
@@ -4379,7 +4423,23 @@ namespace WindowsFormsApplication1
                         "Verwaltung, der CEC-Import und die Projektkopie haetten keine " +
                         "Tabelle. Gerechnet wird unveraendert mit den drei " +
                         "Wechselrichterzahlen an der Anlagenzeile.",
-                        Schritt_65_Wechselrichterkatalog),        };
+                        Schritt_65_Wechselrichterkatalog),
+
+            // STUFE S2 desselben Konzepts (Anwenderentscheide W6-E-2 und W6-E-3 vom
+            // 06.09.2026). Begruendung, Ergebnisneutralitaet und Idempotenzzusage bei
+            // der Schrittkonstanten; die DDL der Tabelle steht in AnlageStrangSchema,
+            // die Spalte in SchemaKatalog.Schritt66_PvWechselrichterweg - EINE Quelle
+            // fuer Migration und Testdatenbank.
+            new Schritt(SCHRITT_66_ANLAGESTRANG,
+                        "Strangzuordnung (Z_AnlageStrang) und den sichtbaren " +
+                        "Wechselrichterweg (Tab_Energieanlagen.PV_Wechselrichterweg) " +
+                        "anlegen (Stufe S2)",
+                        "Die Strangzuordnung bleibt dann unerreichbar: Der PV-Dialog " +
+                        "haette keine Tabelle fuer die Straenge und keine Spalte fuer " +
+                        "die Wahl zwischen vereinfachter Rechnung und Wechselrichter. " +
+                        "Gerechnet wird unveraendert mit den Wechselrichterzahlen an " +
+                        "der Anlagenzeile.",
+                        Schritt_66_Strangzuordnung),        };
 
         /// <summary>
         /// Die Schritte, die ein SQLite-Lauf abarbeitet: <see cref="SCHRITTE_SQLITE"/>
@@ -10198,6 +10258,58 @@ namespace WindowsFormsApplication1
                     "KEIN DML: beide Tabellen sind nach dem Schritt LEER, kein Projekt " +
                     "fuehrt eine Kopie, und kein Rechenweg liest sie. KEIN " +
                     "Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 66 - Strangzuordnung und Wechselrichterweg (Konzept Wechselrichter, S2)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 66 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_66_ANLAGESTRANG"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene DDL:
+        /// die TABELLE aus <see cref="AnlageStrangSchema"/>, die SPALTE aus
+        /// <see cref="SchemaKatalog.Schritt66_PvWechselrichterweg"/>. Aus denselben
+        /// zwei Quellen bedient sich <c>Werkzeuge/Testdatenbankschema</c>, wenn die
+        /// Messlatte <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> nachgezogen wird.</para>
+        ///
+        /// <para><b>Reihenfolge: erst die Tabelle, dann die Spalte.</b> Sie ist
+        /// sachlich beliebig — die zwei Anweisungen kennen einander nicht —, folgt aber
+        /// der Ordnung des Konzepts (3.4 vor 7.1) und macht die Notiz lesbar.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteSpalteAnlegen"/>.</b> Der Schritt gehört dem SQLite-Zweig;
+        /// <c>Ddl</c>, <c>TabellenSchema</c> und <c>NonQuery</c> arbeiten auf
+        /// <c>Lauf.Conn</c>, und die ist hier <c>null</c>. Der Typ der Spalte geht wie
+        /// in Schritt 64 über <see cref="StilleDb.SqliteSpaltenTyp"/> — es ist eine
+        /// <c>TEXT(20)</c>-Spalte, und die Übersetzung nach
+        /// <c>TEXT CHECK (length(…) &lt;= 20)</c> ist genau die, die auch die
+        /// Rückfallebene benutzt.</para>
+        /// </summary>
+        private static bool Schritt_66_Strangzuordnung(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (KeyValuePair<string, string> a in AnlageStrangSchema.Anweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt66_PvWechselrichterweg)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("66: " + angelegt + " von 1 Tabelle(n) angelegt (" +
+                    SchemaKatalog.Z_ANLAGESTRANG + "), 1 Spalte sichergestellt (" +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + "." +
+                    SchemaKatalog.SPALTE_EA_PV_WECHSELRICHTERWEG + "). " +
+                    "KEIN DML: die Tabelle ist nach dem Schritt LEER, die Spalte bleibt " +
+                    "NULL, und NULL heisst \"vereinfacht\" - der Rechenweg von heute, " +
+                    "Zeichen fuer Zeichen. KEIN Rechenergebnis aendert sich.");
             return true;
         }
 
