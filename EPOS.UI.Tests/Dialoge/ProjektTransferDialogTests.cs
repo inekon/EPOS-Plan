@@ -124,6 +124,27 @@ public class ProjektTransferDialogTests : BunitContext
     private static void ZumImport(IRenderedComponent<ProjektTransferDialog> cut)
         => cut.FindAll(".epos-reiter-knopf")[1].Click();
 
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Abschluss eines gelungenen Imports — das
+    /// Berichtsfeld mit den Zeilen der Attrappe.
+    ///
+    /// <para><b>W16b-O-2: nicht auf das Kennzeichen der Attrappe warten.</b>
+    /// <c>kern.ImportGerufen</c> faellt auf dem Faden des <c>Task.Run</c> im Dialog,
+    /// also SCHON BEIM BETRETEN des Imports. In diesem Augenblick steht der Dialog
+    /// noch auf „laeuft": <c>_importErfolgreich</c> ist nicht gesetzt, der Bericht
+    /// nicht gefuellt, nichts davon gezeichnet — und <c>Schliessen()</c> meldet
+    /// waehrend eines laufenden Imports gar nichts. Wer auf das Kennzeichen wartet
+    /// und sofort weiterklickt, gewinnt einen Wettlauf oder verliert ihn: Ob die
+    /// erste Pruefung von <c>WaitForAssertion</c> das Kennzeichen schon sieht,
+    /// entscheidet der Faden, nicht der Dialog. Verloren ging er im Windows-Lauf
+    /// 34017401022 („Expected True, Actual False" beim Ergebnis des Schliessens).
+    /// Das Berichtsfeld dagegen entsteht erst hinter dem <c>await</c> — es belegt,
+    /// dass der Dialog fertig ist, nicht nur die Attrappe.</para>
+    /// </summary>
+    private static void ImportFertig(IRenderedComponent<ProjektTransferDialog> cut)
+        => cut.WaitForAssertion(() =>
+               Assert.Contains("Zeile eins", cut.Find(".epos-projekttransfer textarea").TextContent));
+
     [Fact]
     public void Zwei_Blaetter_Exportieren_und_Importieren()
     {
@@ -241,8 +262,7 @@ public class ProjektTransferDialogTests : BunitContext
         cut.Find(".epos-dateiwahl button").Click();
         cut.Find(".epos-transfer-import").Click();
 
-        cut.WaitForAssertion(() =>
-            Assert.Contains("Zeile eins", cut.Find(".epos-projekttransfer textarea").TextContent));
+        ImportFertig(cut);
         Assert.True(kern.SicherungGerufen);
         Assert.True(kern.ImportGerufen);
         Assert.Equal("C:\\pakete\\projekt.wpx", kern.ImportPfad);
@@ -286,7 +306,8 @@ public class ProjektTransferDialogTests : BunitContext
         cut.Find(".epos-transfer-import").Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();          // Ja
 
-        cut.WaitForAssertion(() => Assert.True(kern.ImportGerufen));
+        ImportFertig(cut);
+        Assert.True(kern.ImportGerufen);
         Assert.Equal(ProjektExportImportCtrl.BeiVorhandenem.Ueberschreiben, kern.ImportModus);
     }
 
@@ -304,7 +325,8 @@ public class ProjektTransferDialogTests : BunitContext
         Assert.False(kern.ImportGerufen);
 
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();          // Ja
-        cut.WaitForAssertion(() => Assert.True(kern.ImportGerufen));
+        ImportFertig(cut);
+        Assert.True(kern.ImportGerufen);
     }
 
     [Fact]
@@ -320,7 +342,8 @@ public class ProjektTransferDialogTests : BunitContext
         cut.Find(".epos-dateiwahl button").Click();
         cut.Find(".epos-transfer-import").Click();
 
-        cut.WaitForAssertion(() => Assert.True(kern.ImportGerufen));
+        ImportFertig(cut);
+        Assert.True(kern.ImportGerufen);
         Assert.False(kern.SicherungGerufen);
     }
 
@@ -349,16 +372,26 @@ public class ProjektTransferDialogTests : BunitContext
         bool? ergebnis = null;
         var cut = Aufbauen(kern, p => p.Add(x => x.Geschlossen, (bool b) => ergebnis = b));
 
+        // W16b-O-2, zweiter Wettlauf: bunits SYNCHRONES Click() gibt das Ereignis
+        // nur beim Zeichner ab, es wartet nicht auf den Ereignisbehandler (nur
+        // ClickAsync tut das). Der Rueckruf kann deshalb erst nach der Rueckkehr
+        // aus Click() fallen — gemessen in 5 von 12 Laeufen. Also auch hier
+        // warten statt raten.
         cut.FindAll(".epos-dialog > .epos-leiste .epos-knopf--primaer")[0].Click();
-        Assert.False(ergebnis);
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
 
         cut = Aufbauen(kern, p => p.Add(x => x.Geschlossen, (bool b) => ergebnis = b));
         ZumImport(cut);
         cut.Find(".epos-dateiwahl button").Click();
         cut.Find(".epos-transfer-import").Click();
-        cut.WaitForAssertion(() => Assert.True(kern.ImportGerufen));
+
+        // W16b-O-2, erster Wettlauf: erst der GEZEICHNETE Abschluss, dann der
+        // Klick. Auf das Kennzeichen der Attrappe zu warten hiesse, waehrend des
+        // laufenden Imports zu schliessen — und ein laufender Import meldet gar
+        // nichts (ProjektTransferDialog.Schliessen: „if (_laeuft) return").
+        ImportFertig(cut);
         cut.FindAll(".epos-dialog > .epos-leiste .epos-knopf--primaer")[0].Click();
-        Assert.True(ergebnis);
+        cut.WaitForAssertion(() => Assert.True(ergebnis));
     }
 
     // =====================================================================
