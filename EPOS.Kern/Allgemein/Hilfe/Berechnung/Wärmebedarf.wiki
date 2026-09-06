@@ -182,9 +182,9 @@ Was die Rechnung selbst bildet:
 |-
 | <math>Q_{\mathrm{NV,a}}</math> || ausgewiesener Netzverlust des Jahres || MWh || (20)
 |-
-| <math>q_{\mathrm{NV,c}}(t)</math> || Netzverlustanteil des Kanals c in der Stunde t || kWh || (21)
+| <math>q_{\mathrm{NV},c}(t)</math> || Netzverlustanteil des Kanals c in der Stunde t || kWh || (21)
 |-
-| <math>Q_{\mathrm{c}}(t)</math> || Stundenwert des Kanals c — geschrieben Q<sub>Hzg</sub>(t), Q<sub>TWW</sub>(t), Q<sub>Pro</sub>(t) || kWh || Schritte 2 bis 6, danach (21)
+| <math>Q_{c}(t)</math> || Stundenwert des Kanals c — geschrieben Q<sub>Hzg</sub>(t), Q<sub>TWW</sub>(t), Q<sub>Pro</sub>(t) || kWh || Schritte 2 bis 6, danach (21)
 |-
 | <math>Q_{\mathrm{Bed}}(t)</math> || Waermebedarf der Stunde t || kWh || (22)
 |-
