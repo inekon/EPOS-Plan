@@ -69,6 +69,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -32339,6 +32340,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Clipping [kWh/a] ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_WR_CLIPPING {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_WR_CLIPPING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Clipping [%] ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_WR_CLIPPING_PROZENT {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_WR_CLIPPING_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_WR_DCAC {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_WR_DCAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag [MWh/a] ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_WR_ERTRAG {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_WR_ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_WR_GERAET {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_WR_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtverbrauch [kWh/a] ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_WR_NACHT {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_WR_NACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresnutzungsgrad ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_WR_NUTZUNGSGRAD {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_WR_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volllaststd. AC [h/a] ähnelt.
+        /// </summary>
+        public static string SIMERG_SPALTE_WR_VOLLLAST {
+            get {
+                return ResourceManager.GetString("SIMERG_SPALTE_WR_VOLLLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärme-/Strombedarf ähnelt.
         /// </summary>
         public static string SIMERG_TAB_BEDARF {
@@ -32389,6 +32462,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TITEL {
             get {
                 return ResourceManager.GetString("SIMERG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string SIMERG_TITEL_PV_WR {
+            get {
+                return ResourceManager.GetString("SIMERG_TITEL_PV_WR", resourceCulture);
             }
         }
         
@@ -35112,6 +35194,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_KARTE_PV_MODUL {
             get {
                 return ResourceManager.GetString("SIM_KARTE_PV_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter · {0} Gerät(e), {1} Strang/Stränge ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_PV_WR_ANZAHL {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_PV_WR_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter · DC/AC {0} ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_PV_WR_DCAC {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_PV_WR_DCAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter · ohne AC-Nennleistung ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_PV_WR_OHNE_NENN {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_PV_WR_OHNE_NENN", resourceCulture);
             }
         }
         

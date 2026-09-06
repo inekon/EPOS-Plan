@@ -598,6 +598,29 @@ namespace WindowsFormsApplication1
         public sealed record PvModulZeile(string Name, double FlaecheM2, long Anzahl,
                                           double StromproduktionMwh);
 
+        /// <summary>
+        /// Eine Zeile der WECHSELRICHTER-Tabelle des PV-Reiters (Stufe S3 des
+        /// <c>Konzept_Wechselrichter_EPOS-Plan.md</c>, Kennzahlen nach 4.4).
+        ///
+        /// <para><b>Die Liste ist LEER, solange keine Anlage auf der Strangebene
+        /// rechnet</b> — dann zeigt der Reiter die Tabelle nicht, und für ein
+        /// Bestandsprojekt ändert sich nichts. <c>Tab_ErgebnisPhotovoltaik</c> bleibt
+        /// unverändert; diese Zahlen sind Ausweis eines LAUFS, keine Ergebnisebene.</para>
+        /// </summary>
+        /// <param name="Anlage">Bezeichner der PV-Anlage.</param>
+        /// <param name="Geraet">Gerätename und Gerätenummer.</param>
+        /// <param name="DcAc">Σ P_STC des Geräts / P_AC_Nenn; 0 = ohne AC-Nennleistung.</param>
+        /// <param name="ErtragMwh">Jahresertrag nach Clipping [MWh/a].</param>
+        /// <param name="ClippingKwh">Clipping-Verlust [kWh/a].</param>
+        /// <param name="ClippingProzent">Clipping als Anteil des ungeklippten AC-Ertrags [%].</param>
+        /// <param name="VolllaststundenAc">Ertrag / AC-Nennleistung [h/a].</param>
+        /// <param name="Jahresnutzungsgrad">Σ P_AC / Σ P_DC,sys.</param>
+        /// <param name="NachtverbrauchKwh">Eigenverbrauch in den Nachtstunden [kWh/a].</param>
+        public sealed record PvWechselrichterZeile(string Anlage, string Geraet, double DcAc,
+                                                   double ErtragMwh, double ClippingKwh,
+                                                   double ClippingProzent, double VolllaststundenAc,
+                                                   double Jahresnutzungsgrad, double NachtverbrauchKwh);
+
         public sealed class PhotovoltaikErgebnis
         {
             public double StromproduktionMwh;
@@ -607,6 +630,12 @@ namespace WindowsFormsApplication1
             public double ReststrombedarfMwh;
             public double MaxLeistungKw;
             public List<PvModulZeile> Module = new List<PvModulZeile>();
+
+            /// <summary>
+            /// Die Wechselrichter der Anlagen, die auf der Strangebene gerechnet haben —
+            /// leer ohne Strangzuordnung (Stufe S3, Vorrangregel des Konzepts 3.5/7.1).
+            /// </summary>
+            public List<PvWechselrichterZeile> Wechselrichter = new List<PvWechselrichterZeile>();
         }
 
         /// <summary>
@@ -637,8 +666,20 @@ namespace WindowsFormsApplication1
 
             if (pv.Modul_Ergebnisse != null)
                 foreach (var m in pv.Modul_Ergebnisse)
+                {
                     e.Module.Add(new PvModulZeile(m.Name, m.Flaeche, m.Anzahl,
                                                   m.Stromproduktion / 1000.0));
+
+                    // Stufe S3: je Geraet eine Zeile - und nur, wenn diese Anlage auf
+                    // der Strangebene gerechnet hat. Ohne Zuordnung bleibt die Liste
+                    // leer, und der Reiter zeigt die Tabelle nicht.
+                    if (m.Geraete == null) continue;
+                    foreach (PvStrangModell.Geraetegruppe g in m.Geraete)
+                        e.Wechselrichter.Add(new PvWechselrichterZeile(
+                            m.Name, g.Anzeigename, g.DcAc, g.ErtragKwh / 1000.0,
+                            g.ClippingKwh, g.ClippingAnteilProzent, g.VolllaststundenAc,
+                            g.Jahresnutzungsgrad, g.NachtKwh));
+                }
 
             return e;
         }
