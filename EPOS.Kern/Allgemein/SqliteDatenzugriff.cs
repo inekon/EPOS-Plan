@@ -306,6 +306,26 @@ namespace WindowsFormsApplication1
                 try { grundtyp = TypAusDeklaration(leser.GetDataTypeName(i)); }
                 catch (Exception) { grundtyp = null; }
 
+                // BEFUND iU6-O-1 (aus iU5-O-1; Anwenderentscheid 06.09.2026): "BLOB" ist
+                // ZWEIDEUTIG. GetDataTypeName liefert den Deklarationstext - und wo es
+                // keinen gibt (PRAGMA-Ergebnisse, Ausdruecke, Aliasse), stattdessen die
+                // Speicherklasse des Werts der ERSTEN Zeile; fuer NULL meldet
+                // Microsoft.Data.Sqlite dann ebenfalls "BLOB". Eine als Byte[] gebaute
+                // Spalte sprengt die erste belegte Zeile ("Type of value has a mismatch
+                // with column type"): In 72 der 118 Tabellen der Testdatenbank hat
+                // PRAGMA table_info(...) genau dieses Muster (dflt_value leer in Zeile 1).
+                // Gemessen wurde, dass sich der Fall NICHT von einer echt deklarierten
+                // BLOB-Spalte unterscheiden laesst - beide melden "BLOB" und Byte[].
+                // Deshalb bleibt der Typ hier OFFEN statt falsch festgelegt; echte
+                // BLOB-Werte kommen ueber GetValue weiterhin als Byte[] an und sind aus
+                // der object-Spalte unveraendert lesbar. Spalten mit anderer Deklaration
+                // und Spalten mit belegter erster Zeile aendern sich nicht.
+                if (grundtyp == typeof(byte[]) && hatZeile)
+                {
+                    try { if (leser.IsDBNull(i)) grundtyp = typeof(object); }
+                    catch (Exception) { /* keine Auskunft: bei der Deklaration bleiben */ }
+                }
+
                 if (grundtyp == null && hatZeile)
                 {
                     try { if (!leser.IsDBNull(i)) grundtyp = leser.GetFieldType(i); }
