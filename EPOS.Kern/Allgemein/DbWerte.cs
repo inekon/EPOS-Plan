@@ -2134,8 +2134,22 @@ namespace WindowsFormsApplication1
         /// <para>Der Wert wird geschrieben, sobald der Anwender die Wahl EINMAL
         /// getroffen hat; NULL heisst „nie gewählt". Beides rechnet gleich — der
         /// Unterschied ist allein, ob die Maske eine Entscheidung anzeigen kann.</para>
+        ///
+        /// <para><b>Der Wert war bis Stufe S3 nicht speicherbar</b> (Befund des
+        /// Prüfstands S3.6, 06.09.2026): Er lautete <c>"PV_WR_WEG_VEREINFACHT"</c> —
+        /// der Name der Konstanten statt ihres Wertes — und ist damit <b>21 Zeichen</b>
+        /// lang, die Spalte <c>Tab_Energieanlagen.PV_Wechselrichterweg</c> aber
+        /// <c>TEXT(20)</c>. In der STRICT-Datenbank ist das eine CHECK-Bedingung; jedes
+        /// Speichern einer Anlage mit dieser Wahl scheiterte an
+        /// <c>CHECK constraint failed: length("PV_Wechselrichterweg") &lt;= 20</c>, und
+        /// weil die Spalte in <c>AnlagenSql.SQL_ANLAGE_INSERT</c> steht, scheiterte das
+        /// Speichern der ganzen ANLAGE. Der Wert heisst deshalb seit S3 schlicht
+        /// <c>"VEREINFACHT"</c> — symmetrisch zu
+        /// <see cref="PV_WR_WEG_KATALOG"/>. <b>Eine Migration braucht es nicht:</b> Der
+        /// alte Wert kann in keiner Datenbank stehen, denn er liess sich nie
+        /// schreiben.</para>
         /// </summary>
-        public const string PV_WR_WEG_VEREINFACHT = "PV_WR_WEG_VEREINFACHT";
+        public const string PV_WR_WEG_VEREINFACHT = "VEREINFACHT";
 
         /// <summary>
         /// Wechselrichterweg einer PV-Anlage: <b>mit Wechselrichter</b> — Katalog,

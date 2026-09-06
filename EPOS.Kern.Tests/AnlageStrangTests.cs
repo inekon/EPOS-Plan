@@ -421,22 +421,41 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             AnlageAnlegen("Weg NULL");
-
-            var mit = new WErzeugerCtrl
-            {
-                ID_Projekt = TESTPROJEKT,
-                Bezeichner = "Weg KATALOG",
-                ID_Type = WizardItemClass.PV_TYP,
-                ID_PV = ModulAnlegen(),
-                PV_Wechselrichterweg = DbWerte.PV_WR_WEG_KATALOG
-            };
-            Assert.True(mit.Insert());
+            WegAnlegen("Weg KATALOG", DbWerte.PV_WR_WEG_KATALOG);
+            WegAnlegen("Weg VEREINFACHT", DbWerte.PV_WR_WEG_VEREINFACHT);
 
             Assert.Null(WegLesen("Weg NULL"));
             Assert.Equal(DbWerte.PV_WR_WEG_KATALOG, WegLesen("Weg KATALOG"));
+            Assert.Equal(DbWerte.PV_WR_WEG_VEREINFACHT, WegLesen("Weg VEREINFACHT"));
 
             AnlageLoeschen(AnlagenId("Weg NULL"));
             AnlageLoeschen(AnlagenId("Weg KATALOG"));
+            AnlageLoeschen(AnlagenId("Weg VEREINFACHT"));
+        }
+
+        /// <summary>
+        /// <b>Beide Persistenzwerte passen in die Spalte</b> —
+        /// <c>Tab_Energieanlagen.PV_Wechselrichterweg</c> ist <c>TEXT(20)</c>, und in
+        /// der STRICT-Datenbank ist das eine CHECK-Bedingung.
+        ///
+        /// <para><b>Der Fall ist ein BEFUND der Stufe S3</b> (06.09.2026): Der Wert
+        /// hiess bis dahin <c>"PV_WR_WEG_VEREINFACHT"</c> — der NAME der Konstanten
+        /// statt ihres Wertes, 21 Zeichen. Jedes Speichern einer Anlage mit der Wahl
+        /// „vereinfacht" scheiterte damit an
+        /// <c>CHECK constraint failed: length("PV_Wechselrichterweg") &lt;= 20</c>, und
+        /// weil die Spalte in <c>AnlagenSql.SQL_ANLAGE_INSERT</c> steht, scheiterte die
+        /// ganze ANLAGE. Der Rundweg oben hatte die Luecke, weil er nur NULL und
+        /// KATALOG schrieb — dieser Fall schliesst sie an der Wurzel: an der
+        /// LAENGE.</para>
+        /// </summary>
+        [Fact]
+        public void Beide_Wechselrichterwege_passen_in_die_Spalte()
+        {
+            Assert.True(DbWerte.PV_WR_WEG_KATALOG.Length <= 20,
+                        DbWerte.PV_WR_WEG_KATALOG);
+            Assert.True(DbWerte.PV_WR_WEG_VEREINFACHT.Length <= 20,
+                        DbWerte.PV_WR_WEG_VEREINFACHT);
+            Assert.NotEqual(DbWerte.PV_WR_WEG_KATALOG, DbWerte.PV_WR_WEG_VEREINFACHT);
         }
 
         /// <summary>
@@ -512,6 +531,20 @@ namespace EPOS.Kern.Tests
         }
 
         private static int m_Modul;
+
+        /// <summary>Eine Wegwerf-PV-Anlage mit einem gesetzten Wechselrichterweg.</summary>
+        private static void WegAnlegen(string bezeichner, string weg)
+        {
+            var m = new WErzeugerCtrl
+            {
+                ID_Projekt = TESTPROJEKT,
+                Bezeichner = bezeichner,
+                ID_Type = WizardItemClass.PV_TYP,
+                ID_PV = ModulAnlegen(),
+                PV_Wechselrichterweg = weg
+            };
+            Assert.True(m.Insert());
+        }
 
         private static int AnlagenId(string bezeichner)
         {
