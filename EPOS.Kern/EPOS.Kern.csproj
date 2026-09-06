@@ -276,14 +276,14 @@
   <!-- haengt. Beide .resx fuehren ausschliesslich Zeichenketten.          -->
   <!-- ================================================================== -->
   <ItemGroup>
+    <!-- KEIN Code-Generator mehr (06.09.2026, Anwenderbefund beim Pull): Visual Studio
+         schrieb Resource.Designer.cs bei jeder .resx-Aenderung neu und wich damit vom
+         eingecheckten Stand ab, den Werkzeuge/ResourceDesigner/designer_neu.py erzeugt.
+         Die Designer-Datei entsteht seither NUR ueber dieses Werkzeug (EPOS.Kern/CLAUDE.md). -->
     <EmbeddedResource Update="MyResource\Resource.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
       <LogicalName>WindowsFormsApplication1.MyResource.Resource.resources</LogicalName>
     </EmbeddedResource>
-    <!-- Satellitendatei OHNE Generator - nur die neutrale Datei traegt ihn
-         (dieselbe Regel wie bisher im Hauptprojekt, Paket 9 / L1). -->
     <EmbeddedResource Update="MyResource\Resource.en-US.resx">
       <LogicalName>WindowsFormsApplication1.MyResource.Resource.en-US.resources</LogicalName>
     </EmbeddedResource>

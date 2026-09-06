@@ -191,17 +191,18 @@ oder auf die Konsole schreibenden Vorbelegung.
 | `DataRepository.Zugriff` | die Umsetzung hinter `IDatenzugriff` (iU6-T4) | `new SqliteDatenzugriff()`; wird in iU5 an `Dienste.Daten` gehängt |
 
 **ResX und Settings pflegen.** Der Anzeigetext-Katalog liegt jetzt hier; `Resource.Designer.cs`
-ist **eingecheckter Quelltext** und muss beim Ergänzen von Schlüsseln mitgepflegt werden. Nur die
-neutrale `Resource.resx` trägt den Code-Generator, die Satellitendatei nicht. Der `LogicalName`
-beider Dateien ist im `.csproj` festgeschrieben
-(`WindowsFormsApplication1.MyResource.Resource[.en-US].resources`), damit der Ressourcenname nicht
-am Ordnerpfad hängt — der Basisname in `Resource.Designer.cs` bleibt dadurch gültig. Visual Studio
-regeneriert die Designer-Datei bei jeder `.resx`-Änderung selbst; wer parallel von Hand ergänzt
-hat, baut Duplikate (CS0102). **Ohne Visual Studio (Linux, macOS, Agenten) wird die Datei nicht von
-Hand ergänzt, sondern neu erzeugt:** `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben`
-schreibt sie vollständig aus der neutralen `.resx` im Format des StronglyTypedResourceBuilder
-(alphabetisch, XML-Escapes, BOM/LF); ohne Argument prüft es nur. Am 06.09.2026 hingen so 314
-Schlüssel ohne Eigenschaft nach — seither ist das Werkzeug der einzige Weg.
+ist **eingecheckter, erzeugter Quelltext**. Der `LogicalName` beider `.resx` ist im `.csproj`
+festgeschrieben (`WindowsFormsApplication1.MyResource.Resource[.en-US].resources`), damit der
+Ressourcenname nicht am Ordnerpfad hängt — der Basisname in `Resource.Designer.cs` bleibt dadurch
+gültig. **Keine der zwei `.resx` trägt einen Code-Generator** (abgeklemmt am 06.09.2026): Visual
+Studio schrieb die Designer-Datei bei jeder `.resx`-Änderung neu und wich damit vom eingecheckten
+Stand ab — beim Anwender blockierte die „lokal geänderte" Datei jeden `git pull`. **Die Datei wird
+nie von Hand ergänzt und nie von Visual Studio erzeugt, sondern nur neu geschrieben:**
+`python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` erzeugt sie vollständig aus der
+neutralen `.resx` im Format des StronglyTypedResourceBuilder (alphabetisch, XML-Escapes, BOM/LF);
+ohne Argument prüft es nur („abweichend 0" ist die Abnahme). Am 06.09.2026 hingen 314 Schlüssel
+ohne Eigenschaft nach — seither ist das Werkzeug der einzige Weg; wer parallel von Hand ergänzt,
+baut Duplikate (CS0102).
 
 **`InternalsVisibleTo`.** Etliche Typen sind ohne Zugriffsangabe deklariert und damit `internal`
 (`ProjektCtrl`, `KlimaregionCtrl`, `WPStammCtrl`, `Properties.Settings`, `Init` …). Das `.csproj`
