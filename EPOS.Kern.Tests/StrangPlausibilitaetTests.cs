@@ -275,29 +275,42 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker()
         {
-            var geraet = Geraet(anzahlMppt: null);
+            // Der Satz kommt aus den Ressourcen der laufenden UI-Kultur; der Windows-Laeufer
+            // der CI steht auf en-US und lieferte "MPP trackers" statt "MPP-Tracker"
+            // (CI 06.09.2026, dreimal rot). Muster LizenzTokenTests: Kultur pinnen und im
+            // finally zuruecklegen.
+            var kulturVorher = System.Globalization.CultureInfo.CurrentUICulture;
+            System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("de-DE");
+            try
+            {
+                var geraet = Geraet(anzahlMppt: null);
 
-            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
-                new StrangPlausibilitaet.Gaben
-                {
-                    Straenge = new List<AnlageStrangModel>
+                StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                    new StrangPlausibilitaet.Gaben
                     {
-                        new AnlageStrangModel { Rang = 1, ID_Wechselrichter = GERAET_ID,
-                                                Mppt = 1, Module_Reihe = 10 },
-                        new AnlageStrangModel { Rang = 2, ID_Wechselrichter = GERAET_ID,
-                                                Mppt = 2, Module_Reihe = 10 }
-                    },
-                    Modul = Modul(),
-                    Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, geraet } },
-                    AnzahlModuleAnlage = 20
-                });
+                        Straenge = new List<AnlageStrangModel>
+                        {
+                            new AnlageStrangModel { Rang = 1, ID_Wechselrichter = GERAET_ID,
+                                                    Mppt = 1, Module_Reihe = 10 },
+                            new AnlageStrangModel { Rang = 2, ID_Wechselrichter = GERAET_ID,
+                                                    Mppt = 2, Module_Reihe = 10 }
+                        },
+                        Modul = Modul(),
+                        Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, geraet } },
+                        AnzahlModuleAnlage = 20
+                    });
 
-            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
-            StrangPlausibilitaet.Mpptbefund m = Assert.Single(g.Mppts);   // EIN Tracker
-            Assert.Equal(2, m.Straenge);
-            Assert.Equal(19.103, m.Strom.Value, 6);                       // > 12,0 A -> P4 rot
-            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, g.Farbe);
-            Assert.Contains("MPP-Tracker", g.Satz, StringComparison.Ordinal);
+                StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+                StrangPlausibilitaet.Mpptbefund m = Assert.Single(g.Mppts);   // EIN Tracker
+                Assert.Equal(2, m.Straenge);
+                Assert.Equal(19.103, m.Strom.Value, 6);                       // > 12,0 A -> P4 rot
+                Assert.Equal(StrangPlausibilitaet.Ampel.Rot, g.Farbe);
+                Assert.Contains("MPP-Tracker", g.Satz, StringComparison.Ordinal);
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = kulturVorher;
+            }
         }
 
         /// <summary>
