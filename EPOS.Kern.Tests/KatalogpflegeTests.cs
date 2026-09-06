@@ -128,9 +128,12 @@ namespace EPOS.Kern.Tests
         [InlineData("SOLARKOLLEKTOREN", 7, 0, 1)]
         [InlineData("PV", 6, 0, 0)]
         // W6-E-2: Der Wechselrichterkatalog entsteht mit Migrationsschritt 65 LEER -
-        // kein DML. Genau das ist die Ergebnisneutralitaet der Stufe S1, und diese
-        // Zeile haelt sie fest.
-        [InlineData("WECHSELRICHTER", 0, 0, 0)]
+        // kein DML. Genau das ist die Ergebnisneutralitaet der Stufe S1.
+        // W6-O-7 (06.09.2026): In der TESTdatenbank steht seither GENAU EIN Satz -
+        // das "Muster 2500TL" des Pruefprojekts 1045 (Referenzlaeufe/Skripte/
+        // pruefprojekt_1045_ost_west.py). Der AUSLIEFERUNGSkatalog bleibt leer; das
+        // ist der offene Punkt W6-O-3.
+        [InlineData("WECHSELRICHTER", 1, 0, 0)]
         [InlineData("BHKW", 79, 0, 1)]
         [InlineData("STROMSPEICHER", 5, 0, 0)]
         [InlineData("GEBAEUDE", 277, 0, 10)]
