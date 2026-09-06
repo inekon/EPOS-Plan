@@ -22,7 +22,7 @@ namespace WindowsFormsApplication1
     /// Variantenmenü), die Ladeanzeige <c>label_OnlineDoku</c>, die Menüsuche
     /// über den Anzeigetext (Befund W16-B23) und die sieben stillen
     /// <c>Console.WriteLine</c> (Befund W16-B33). Sie sind Razor: das Menüband
-    /// als Daten (<c>Menuetabelle</c>, 55 Punkte), das Kopfband als Markup, die
+    /// als Daten (<c>Menuetabelle</c>, 54 Punkte), das Kopfband als Markup, die
     /// Wege als <see cref="HauptfensterHuelle"/>.</para>
     ///
     /// <para><b>Der Name hieß bis zum 04.09.2026 <c>MDIMainForm</c></b> und log
