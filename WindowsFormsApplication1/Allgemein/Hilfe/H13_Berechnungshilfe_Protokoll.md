@@ -37,6 +37,10 @@ Daraus die drei Auflagen, gegen die dieses Paket zu messen ist:
 
 ## 2. Die Bauform — was für JEDE Seite gilt
 
+> **Nachtrag 06.09.2026:** Dieser Abschnitt hält die **Fassung 1** fest. Mit der
+> **Fassung 2** (§ 12) sind es **sieben** Abschnitte je Seite, und die Formeln stehen in
+> mathematischer Unicode-Notation statt als vorformatierte Zeilen.
+
 **Ort.** `EPOS.Kern/Allgemein/Hilfe/Berechnung/<Seitenname>.wiki`, eine Datei je Wikiseite.
 Der Dateiname ist der Seitenname mit Umlauten wie im Wiki. Eine Datei mit **führendem
 Unterstrich** ist keine Seite, sondern Beiwerk für den Anwender.
@@ -372,3 +376,168 @@ tritt zurück.
 | **H13‑O‑2** | Die Rubrikseite `Programm Dokumentation` nennt die neue Unterrubrik noch nicht (§ 8, Punkt 4) — Handgriff des Anwenders. |
 | **H13‑O‑3** | `_Bezuege.wiki` führt Blöcke für alle 18 allgemeinen Seiten; ob der Anwender sie alle einfügt, entscheidet er beim Einpflegen. |
 | **H13‑O‑4** | Die Kurztexte der Rechenweg-Knöpfe stehen als deutscher Rückfall im Quelltext. Sobald der Katalog den Schlüssel kennt, gewinnt sein Tooltip; für eine englische Oberfläche ohne Katalog wäre je Knopf ein Ressourcenschlüssel nachzuziehen. |
+| **H13‑O‑5** | *(Fassung 2, § 12.5)* Bis Teil B zusammengeführt ist, prüfen die vier Fassung-2-Wächter nur die sechs Seiten dieses Teils. Nach dem Merge schaltet die Orchestrierung beide Wächter auf „alle 13". |
+| **H13‑O‑6** | *(Fassung 2)* Im Wiki steht seit dem 06.09.2026 die Fassung 1. Die sechs überarbeiteten Seiten und die Rubrikstartseite sind erneut hochzuladen — das tut die Orchestrierung, nicht dieses Paket. |
+
+---
+
+## 12. Fassung 2 (06.09.2026) — Formelzeichen, Parameter und mathematische Schreibweise
+
+### 12.1 Der Anwenderwunsch (wörtlich)
+
+> „Definiere in der hochgeladenen Dokumentation die Definition der Parameter und Variablen.
+> Stell wenn möglich die Formeln in mathematischer Schreibweise (mathematische Zeichen) dar."
+
+Die 13 Seiten standen zu diesem Zeitpunkt bereits im Wiki. Dieser Nachtrag beschreibt, was
+**Teil A** an seinen sechs Seiten geändert hat; die sieben Erzeugerseiten liefert Teil B
+(`H13b_…`) im selben Schnitt nach.
+
+### 12.2 Der Befund, der die Technik entschieden hat
+
+**Das Wiki hat KEINE Math-Erweiterung.** Gemessen am 06.09.2026 gegen die Vorschau-Schnittstelle:
+
+```
+curl -sS "https://wiki.epos-plan.de/api.php?action=parse&contentmodel=wikitext&format=json&prop=text" \
+     --data-urlencode "text@<datei>"
+```
+
+Ein Block `<math>…</math>` erscheint dem Leser dort als **Klartext**, nicht als Formel.
+LaTeX schied damit aus. Was der Parser dagegen sauber ausgibt — in derselben Messung geprüft —,
+ist die Kombination aus **Unicode-Zeichen** (· Σ Δ √ ≤ ≥ ≠ ≈ ± → ∞ ∈ und die griechischen
+Buchstaben) und **HTML für Indizes** (`P<sub>AC,nenn</sub>`, `T<sup>2</sup>`).
+
+### 12.3 Die Bauform der Fassung 2
+
+**Sieben Abschnitte statt sechs.** Zwischen `== Eingangsgrößen ==` und `== Rechenweg ==` steht
+neu:
+
+```
+== Formelzeichen und Parameter ==
+```
+
+Er trägt **zwei** Tabellen mit festen Kopfzeilen — daran hängen die Wächter:
+
+| Tabelle | Kopfzeile | Inhalt |
+|---|---|---|
+| **Parameter** | `! Symbol !! Bedeutung !! Einheit !! Herkunft` | was hereinkommt: Eingabe, Katalogwert, Vorgabe **mit ihrer Zahl**, Konstante |
+| **Variablen** | `! Symbol !! Bedeutung !! Einheit !! berechnet in` | was die Seite rechnet, mit der Gleichungsnummer, in der die Größe entsteht |
+
+**Regel:** Jedes Zeichen einer Formel steht in einer der beiden Tabellen, und jedes Zeichen der
+Tabellen kommt in einer Formel vor.
+
+**Anzeige-Formeln.** Eine Formel, auf die der Text sich beruft, steht als eigene, eingerückte
+Zeile mit laufender Nummer am Zeilenende:
+
+```
+: <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q<sub>Bed</sub>(t) ) / 1 000</big>  (23)
+```
+
+Die Nummern laufen **je Seite von 1 an, in Lesereihenfolge und ohne Lücke** — der Wächter prüft
+genau das. Fallunterscheidungen stehen als Aufzählung oder als kleine Tabelle, nie als
+geschweifte Klammer über mehrere Zeilen.
+
+**Kopfblock.** Das Feld `Stand` trägt jetzt einen Zusatz:
+`Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation)`. Das sortierbare Datum steht vorn.
+
+**Rubrikstartseite.** `_Index.wiki` bekommt den Abschnitt `== Schreibweise ==`: warum kein
+LaTeX, wie eine Anzeige-Formel aussieht, was die zwei Tabellen trennen — und die
+**gemeinsame Zeichentabelle aller 13 Seiten** (Zeitschritt t bzw. k, Leistung P, Energie Q
+und E, Temperatur ϑ, Wirkungsgrad η, COP/JAZ, Einstrahlung G/H, A/V/ṁ, β/γ, Q<sub>Sp</sub>
+und SOC, die Indexliste). Die Gliederungsliste der Startseite nennt den siebten Abschnitt.
+
+### 12.4 Der Klartext für den Assistenten
+
+`BerechnungsHilfe.AlsKlartext` setzt die Formelschreibweise um, bevor die HTML-Reste fallen:
+
+| im Wikitext | im Klartext |
+|---|---|
+| `P<sub>AC,nenn</sub>` | `P_AC,nenn` |
+| `T<sup>2</sup>` | `T^2` |
+| `<big>` / `</big>` | entfällt |
+
+Ohne diese zwei Zeilen fräße die allgemeine Tag-Entfernung die Auszeichnung **samt
+Trennzeichen** — aus `P<sub>AC</sub>` würde das stumme `PAC`, und der Anwender fände das
+Zeichen der Wikiseite in keiner Antwort des Assistenten wieder. Die Unicode-Zeichen der
+Notation gehen unverändert durch; zwei Gegenproben halten das fest.
+
+### 12.5 Die Wächter (Teil A)
+
+`EPOS.Kern.Tests/BerechnungsHilfeTests.cs` — auf den **eingebetteten** Seiten:
+
+* `Jede_Seite_des_Teils_A_hat_die_sieben_Abschnitte_in_Reihenfolge`
+* `Jede_Seite_des_Teils_A_kommt_ohne_LaTeX_aus` (kein `<math`, kein Backslash-Befehl)
+* `Jede_Seite_des_Teils_A_traegt_nummerierte_Anzeigeformeln` (≥ 1, Nummern 1…n lückenlos)
+* `Jede_Seite_des_Teils_A_traegt_beide_Symboltabellen`
+* `Der_Stand_beginnt_mit_einem_Datum` (Zusatz in Klammern zugelassen)
+* `Der_Klartext_setzt_Indizes_und_Hochzahlen_in_lesbare_Zeichen_um` und
+  `Der_Klartext_behaelt_die_Unicode_Zeichen_der_Notation`
+
+`EPOS.UI.Tests/BerechnungsknopfTests.cs` — auf den **Dateien** und am Weg des Infoknopfes:
+
+* `Jeder_Knopf_des_Teils_A_fuehrt_auf_eine_Seite_der_Fassung_2` (das Ziel der Zuordnungszeile
+  trägt den neuen Abschnitt VOR dem Rechenweg, beide Tabellen, eine nummerierte Formel, kein LaTeX)
+* `Die_Rubrikstartseite_erklaert_die_Schreibweise`
+* zwei Gegenproben auf die Muster (`Der_Waechter_erkennt_eine_Anzeigeformel`,
+  `Der_Waechter_erkennt_einen_LaTeX_Befehl`)
+
+**Bis zur Zusammenführung mit Teil B gelten die vier Fassung-2-Fälle nur für die sechs Seiten
+dieses Teils** — die sieben Erzeugerseiten liegen im selben Ordner noch in der Fassung 1 und
+fielen sonst rot aus, ohne dass jemand einen Fehler gemacht hätte. Danach schaltet die
+Orchestrierung beide Wächter auf „alle 13".
+
+### 12.6 Was je Seite entstanden ist
+
+| Seite | Gleichungen | Zeilen Parameter / Variablen |
+|---|---|---|
+| Simulationsablauf | 9 | 8 / 12 |
+| Wärmebedarf | 24 | 36 / 27 |
+| Brauchwasser | 8 | 14 / 8 |
+| Prozesswärme | 6 | 8 / 6 |
+| Strombedarf | 10 | 10 / 12 |
+| Wärmequelle Erdreich | 19 | 18 / 20 |
+| **Summe** | **76** | **94 / 85** |
+
+### 12.7 Berichtigungen, die beim Umsetzen aufgefallen sind
+
+Die Notation ändert die Aussage nicht — beim Gegenlesen gegen den Rechenkern fielen dennoch
+sechs Stellen auf, die die Fassung 1 falsch oder unvollständig beschrieb:
+
+| Seite | Befund | belegt an |
+|---|---|---|
+| Simulationsablauf | Die Werte einer Viertelstundenreihe sind **Leistungen [kW]**, nicht Energien [kWh]. Genau das setzt der Teiler 4 000 voraus. | `SimulationStrombedarf.Berechnung` |
+| Wärmebedarf | Die Einstrahlung der Klimadaten ist eine **Bestrahlungsstärke [W/m²] im Tagesmittel**, nicht eine Tagessumme [Wh/(m²·d)]. Gemessen an `Referenzlaeufe/Kenndaten_Test.sqlite`, `Tab_Klimadaten`: `Sol_Sued` von 0 bis 272 bei einem Mittel von 107 — eine Tagessumme läge bei rund 2 500. Damit stimmt auch die Dimension: P<sub>sol</sub> ist eine Leistung, und der Faktor 4 in den sechs Stunden 9…14 verteilt den Tageswert um (6 h · 4 = 24 h), statt ihn zu vermehren. | Datenbestand + `BhkwPlan.TaeglHeizlastWG` |
+| Wärmebedarf | **Ost und West teilen sich EINE Fensterfläche** (das Feld „Fensterfläche Ost"); eine eigene Westfläche kennt der Rechenweg nicht. Steht jetzt unter „Grenzen und Annahmen". | `BhkwPlan.SolareGewinneC` |
+| Wärmebedarf | Die im Schritt 4 gestreckte Fläche geht von der **Projektangabe „Wohnfläche gesamt"** aus, nicht von der Katalogfläche. | `SimulationWaermebedarf.Bewohner_und_Flaeche_berechnen` |
+| Wärmequelle Erdreich | Stunden mit einem Entzug **≤ 0** zählen weder in die Jahresarbeit noch in die Spitze. | `ErdreichAuswertung` (`if (q <= 0) continue`) |
+| Wärmequelle Erdreich | Die Volllaststunden rechnen mit der Spitze in **kW**, ausgewiesen wird sie in **W** — der Faktor 1 000 steht jetzt in der Gleichung. Dazu präzisiert: die zwei Umrechnungsfaktoren 10⁶ und 3 600 in Temperaturleitfähigkeit und Dämpfungstiefe, das `max(1; n)` der Sondenmeterzahl, und dass ohne Lauf der Zonenwert nach DIN 4710 an die Stelle der Volllaststunden tritt. | `ErdreichAuswertung`, `ErdreichTemperatur`, `VDI4640Pruefung` |
+
+### 12.8 Nachweise
+
+* `dotnet test EPOS.Kern.Tests -c Release` → **1 505** bestanden, 0 fehlgeschlagen.
+* `dotnet test EPOS.UI.Tests -c Release` → **2 838** bestanden, 0 fehlgeschlagen.
+* **Vorschau-Probe je Seite** über `action=parse` der Wiki-Schnittstelle — geprüft wurde, dass
+  keine Auszeichnung als Klartext erscheint (`&lt;sub&gt;`, `&lt;big&gt;`, `{|`), dass die Zahl
+  der Tabellen, Tabellenzeilen, Anzeige-Formeln (`<dd><big>`) und Abschnitte im Ergebnis mit
+  der im Wikitext übereinstimmt und dass der Parser keinen Fehler meldet:
+
+| Seite | Tabellen | Tabellenzeilen | Anzeige-Formeln | Abschnitte |
+|---|---|---|---|---|
+| `_Index` | 2 | 24 | — | 4 |
+| Simulationsablauf | 6 | 44 | 9 | 7 |
+| Wärmebedarf | 5 | 85 | 24 | 7 |
+| Brauchwasser | 3 | 28 | 8 | 7 |
+| Prozesswärme | 3 | 20 | 6 | 7 |
+| Strombedarf | 4 | 31 | 10 | 7 |
+| Wärmequelle Erdreich | 5 | 64 | 19 | 7 |
+
+* **Nicht angefasst:** Rechenweg, SQL, Ressourcen, `help_mapping.txt`, `help_cache.json`,
+  `HelpCatalog.cs`, `Umsetzungskonzept_iOS_EPOS-Plan.md`, `SqliteDatenzugriff.cs`.
+
+### 12.9 Abnahme auf Windows (Nachtrag zu § 9)
+
+| Punkt | Was zu prüfen ist | Erwartung |
+|---|---|---|
+| **A‑H13‑11** | Die sechs Seiten der Fassung 2 ins Wiki hochladen und im Browser ansehen | Indizes stehen tief, Hochzahlen hoch, keine spitze Klammer im Text; jede Anzeige-Formel steht eingerückt mit ihrer Nummer |
+| **A‑H13‑12** | Auf der Rubrikstartseite den Abschnitt „Schreibweise" lesen | die Zeichentabelle stimmt mit den Symbolen der sechs Seiten überein |
+| **A‑H13‑13** | Hilfe-Assistent: „Was bedeutet P_sol im Wärmebedarf?" — auch ohne Netz | die Antwort nennt die solaren Gewinne und die Einheit W; die Indizes kommen als `_x` an, nicht zusammengezogen |
+| **A‑H13‑14** | Die 76 Gleichungen fachlich gegenlesen | jede Formel beschreibt den Rechenweg, den das Programm geht; die sechs Berichtigungen aus § 12.7 sind einverstanden |
