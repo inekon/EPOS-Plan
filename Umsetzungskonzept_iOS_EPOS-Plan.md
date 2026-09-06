@@ -3082,6 +3082,29 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Hauses den benannten Rückweg `Einspaltig` — ihr Block „Spitzenlast" ist eine Regel, die sich von oben nach unten
 > aufblättert. Der `WaermepumpenKatalogDialog` bleibt bewusst außen vor: seine zwölf Felder filtern eine Liste, sie
 > beschreiben kein Gerät. `PufferSpProjektDialog` (W10a) ist in keinem Paket umgestellt — offen als iU8‑O‑1.
+>
+> **Windows-Abnahme 06.09.2026, Wärmepumpe — W7‑B‑1, W7‑B‑2, W7‑E‑2, umgesetzt in `2c9d969`, zusammengeführt in `ffa213d`:**
+> Befunde des Anwenders zu Erzeuger → Wärmepumpe → Verwaltung: „Anstelle Name sollte Typ stehen, es fehlt der Hersteller (vor
+> Typ). OK-Button funktioniert nicht im Dialog Detailansicht bei Aufruf über button Ändern. Dialoganordnung sehr
+> unübersichtlich — angelehnt an die alte Version in branch version_august_2026." **W7‑B‑2, Ursache belegt statt geraten:** Der
+> OK-Knopf reagierte, seine Meldung stand nur außerhalb des Sichtfelds — Warnband oben, Knopf unten in einer rollenden
+> Überlagerung. Bei einer Zeile aus „Ändern.." sind genau zwei Prüfungen erreichbar: `TemperaturenPruefen` (Bestandszeilen
+> tragen vielfach Rücklauf 0, „Neu.." setzt seit W6‑E‑4 wenigstens den Vorlauf — die Asymmetrie, die der Anwender sah) und die
+> leere Betriebsart bei bivalentem Betrieb, verschärft durch Altwerte der freien ComboBox des Vorläufers (Befund L0‑1), die
+> das `select` gar nicht zeigte; die vier Pflicht-Ganzzahlen können dort nicht `null` werden. Behoben auf beiden Seiten:
+> `DbWerte.BetriebsartOderDefault` liest den Altwert über den Wortstamm auf den Steuerwert zurück — an der Lesekante (Hülle,
+> Dialogaufbau), die Engine vergleicht unverändert zeichengleich —, und Warnband, Speichern-Leiste und Feldmarkierung sitzen in
+> EINER am Rand klebenden Fußleiste. Beleg: `W7_B_2_Das_Warnband_steht_bei_der_Speichernleiste` war rot (OK blockiert, Band
+> unauffindbar), die Gegenprobe mit Rücklauf 28 grün; 10 der 11 neuen bunit-Fälle waren vorher rot. **W7‑B‑1:** beide Listen
+> führen „Wahl | Hersteller | Typ" — Typ ist die Modellbezeichnung, der Wärmepumpentyp bleibt im Kenndatenblock; vier neue
+> Ressourcenschlüssel. **W7‑E‑2:** Die Detailansicht steht in der Dreispalten-Anordnung von `Wizard_WPItem` (Feldkarte per
+> Werkzeug gezogen, 48 von 48 Texten des Vorbilds im neuen Dialog; die sieben Pufferfelder und die Modulkosten fehlen bewusst
+> seit Ä19): links Auswahl mit eigenem Rollbalken, „Modul-Katalog…", Heizstab- und Sperrzeit-Häkchen mit den Texten des
+> Vorbilds, Bivalenz und Betriebsart mit den drei farbigen Erklärkästen; Mitte Auslegung für Verteilung (Vorlauf/Rücklauf,
+> Nutzungsdauer in „a"); rechts Kenndaten in der Reihenfolge des Vorbilds, Kosten-/Parameterknöpfe, Reiter COP/Leistung. Der
+> Titel steht einmal (`TitelText=""`), die Überlagerung ist breit (`Ueberlagerung.Zusatzklasse`, Wunschmaß 1 280 × 860), kein
+> innerer Rollbalken bei 1 400 × 900. Nachweis: Kern 1 640 / UI 2 998 grün (+21 Kern, +11 UI), Formularkarte 122, Designer
+> „abweichend 0", SQL 0, Gate grün, Referenzlauf byte-gleich. Abnahmepunkte A‑W7‑B12‑1…9 in der Sitzungsmeldung.
 
 > **Statusblock iU9 — Welle 6 umgesetzt (03.09.2026, Basis `740c73e`, zusammengeführt mit W5 `ddaea70` und iF22–iF28 `f7fefdf`)**
 >
