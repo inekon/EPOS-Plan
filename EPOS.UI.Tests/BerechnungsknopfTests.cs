@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -90,20 +90,33 @@ public sealed class BerechnungsknopfTests
     }
 
     /// <summary>
-    /// Ein Schlüssel gehört GENAU EINEM Dialog. Zwei Dialoge mit demselben
+    /// Ein Schlüssel gehört GENAU EINEM Dialog. Zwei Komponenten mit demselben
     /// Berechnungsschlüssel wären zwei Wege auf dieselbe Seite, ohne dass die
     /// Zuordnungsdatei das noch zeigte.
+    ///
+    /// <para><b>Gezählt werden Razor-Dateien.</b> Dass ein Schlüssel ZUSÄTZLICH in
+    /// einer Hülle steht, ist der Regelfall bei einer Komponente mit mehreren
+    /// Ausprägungen: <c>BedarfsProfileDialog</c> trägt den Vorgabewert für die
+    /// Prozesswärme, und <c>BedarfsProfileHuelle</c> reicht je Ausprägung den
+    /// passenden Schlüssel herein. Beides ist derselbe Dialog.</para>
     /// </summary>
     [Fact]
     public void Jeder_Schluessel_gehoert_genau_einem_Dialog()
     {
         var mehrfach = SchluesselImQuelltext()
-            .Where(p => p.Value.Distinct(StringComparer.Ordinal).Count() > 1)
-            .Select(p => p.Key + ": " + string.Join(", ", p.Value.Distinct(StringComparer.Ordinal)))
+            .Select(p => new
+            {
+                p.Key,
+                Razor = p.Value.Where(d => d.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
+                                .Distinct(StringComparer.Ordinal).ToList()
+            })
+            .Where(p => p.Razor.Count > 1)
+            .Select(p => p.Key + ": " + string.Join(", ", p.Razor))
             .ToList();
 
         Assert.True(mehrfach.Count == 0,
-            "Diese Schlüssel stehen in mehr als einer Datei:\n" + string.Join("\n", mehrfach));
+            "Diese Schlüssel stehen in mehr als einer Razor-Komponente:\n" +
+            string.Join("\n", mehrfach));
     }
 
     /// <summary>
