@@ -3160,6 +3160,28 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Rechenfluss als SVG. **Nichts umgesetzt; zehn Entscheidungsfragen W6‑E‑2‑Q1…Q10 liegen beim Anwender**, darunter
 > Kennlinienform (Empfehlung Stützstellen, weil Sandia die DC-Spannung je Stunde bräuchte) und ob der Wechselrichter
 > auch in EINFACH wirkt (Empfehlung ja — damit entfällt der ausgegraute Knopf).
+>
+> **Wechselrichter Stufe S1 (Anwenderentscheid 06.09.2026: W6‑E‑2‑Q1…Q10 Empfehlung angenommen, neuer Wunsch W6‑E‑3
+> „zwei Optionen: vereinfacht ohne Wechselrichter mit Pauschalen / mit Wechselrichter"), umgesetzt in `6baee8b`:** Der
+> Wechselrichter war die einzige Gerätefamilie ohne Katalog — seine Kennlinie stand als drei Zahlen an der Anlagenzeile,
+> von Hand getippt, ohne Herkunft und ohne Prüfung. **Migrationsschritt 65** legt `Tab_Wechselrichter_STAMM` und die
+> spaltengleiche Projektkopie `Tab_Wechselrichter` an (34+34 Spalten, DDL EINMAL in `WechselrichterSchema`, gefahren von
+> Migration, `Werkzeuge/Testdatenbankschema` und der Testvorrichtung); `SchemaStand.Zielversion` steht auf **65**, die
+> Testdatenbank ist nachgezogen. Dazu `WechselrichterModel`/`-StammCtrl`/`-Ctrl` (alle Fachwerte `double?` — NULL heißt
+> „keine Prüfung", nicht 0), der zwanzigste `KatalogRegistry`-Eintrag, die **dritte Ausprägung** von `ModulKatalogDialog`
+> (25 Felder in drei Gruppen, erster Herstellerfilter des Hauses, Parameterübersicht als achte `Anlagenart`) und der
+> **CEC-Wechselrichterimport** samt geschlossener Sandia→Stützstellen-Umrechnung (`η100 = Paco/Pdco` exakt; die Liste
+> mit 2 343 Geräten von 152 Herstellern wurde über das Netz geholt und die Umrechnung über alle nachgerechnet). Zwei neue
+> Menüpunkte unter „Administration". **Ohne jede Rechenwirkung:** kein Rechenweg liest die zwei Tabellen, kein
+> Bestandsprojekt führt eine Kopie; Referenzlauf 1030/1007/1017 gegen `2026-09-05_R2_Zeitbasis` **byte-gleich**,
+> Migration idempotent, SQL-Prüfer 0. Nachweis: 36 Kern-Fälle und 17 bunit-Fälle; der Fall
+> `Der_Wechselrichter_rechnet_in_S1_noch_nicht` fällt rot aus, sobald S3 gelaufen ist. Q10 ist **teilweise** eingelöst:
+> der Importdialog ist eine eigene Komponente (~300 Zeilen) auf den geteilten Bausteinen, nicht eine Ausprägung des
+> 771-Zeilen-Modulimports — offen als **W6‑O‑1** (ein Wirt in S2). W6‑E‑3 ist im Konzept 7.1 festgeschrieben, mit dem
+> Vorschlag einer eigenen Spalte `Tab_Energieanlagen.PV_Wechselrichterweg` (NULL = vereinfacht) statt der Ableitung aus
+> der Strangtabelle; Umsetzung in S2.4. Weitere offene Punkte: **W6‑O‑2** (die CEC-Liste führt weder `Anzahl_Mppt` noch
+> `S_AC_Max`), **W6‑O‑3** (Auslieferungskatalog leer — vorbefüllen?). Elf Abnahmepunkte A‑W6‑E‑2‑S1 in der
+> Sitzungsmeldung; Gate grün.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
