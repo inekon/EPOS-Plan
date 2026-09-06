@@ -185,7 +185,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.Contains("Wärmebedarf Extern", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Contains("Wärmebedarfsdaten (Ganglinien)", cut.Markup);
         Assert.Contains("Ausgewählt im Projekt", cut.Markup);
-        Assert.Contains("Wärmebedarf aus DB", cut.Markup);
+        Assert.Contains("Wärmebedarf einlesen", cut.Markup);
 
         // Das Kanalfeld ist die einzige Klappliste.
         Assert.Single(cut.FindAll("select"));

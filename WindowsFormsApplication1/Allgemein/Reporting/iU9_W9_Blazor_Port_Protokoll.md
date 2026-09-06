@@ -1432,7 +1432,7 @@ gelesen** (die Fallgrube oben); dazu ein Fall in **englischer** Oberfläche.
 ### Abnahmepunkte A‑W9‑E‑3
 
 1. **Die vier Knöpfe.** Startseite → Kachel „Wärmebedarf" → „Daten importieren" (oder
-   Assistentenseite 3): Unter „Wärmebedarf aus DB" stehen „CSV-Datei importieren…",
+   Assistentenseite 3): Unter „Wärmebedarf einlesen" (W9‑O‑9b, vorher „Wärmebedarf aus DB") stehen „CSV-Datei importieren…",
    „Speichern unter…", „Löschen" und „Bearbeiten…", jeder so breit
    wie sein Text — **wortgleich zum Stromganglinien-Dialog** (W9‑O‑9). Darunter der Formathinweis mit dem Fragezeichenknopf rechts daneben; der
    Knopf öffnet die Wikiseite „Wärmebedarf", sein Tooltip zeigt den vollen Formattext.

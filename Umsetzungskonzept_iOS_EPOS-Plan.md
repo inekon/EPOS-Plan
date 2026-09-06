@@ -2787,6 +2787,9 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > allein wäre als Überschrift nichtssagend. Nachweise: UI 2 724 grün (39 im Dialog, davon zwei neue Zeugen in de **und**
 > en), Kern 1 344 grün, Windows-Bau 0 Fehler, Gate grün, Referenzlauf byte-gleich. Ein Abnahmepunkt A‑W9‑E‑3 ergänzt
 > (Nr. 15), vier berichtigt; sieben Abnahmepunkte A‑W9‑O‑9 in der Sitzungsmeldung.
+> **Nachtrag W9‑O‑9b (Anwender, 06.09.2026, nach der Abnahme):** Die Überschrift der Katalogspalte heißt
+> „Wärmebedarf einlesen" (en „Read in heat requirement") statt „Wärmebedarf aus DB"; die Razor-Vorgabe liest seither
+> `WBX_LBL_KATALOG` wie die Knöpfe ihre Schlüssel, der Windows-Rückfalltext ist nachgezogen.
 
 > **Statusblock iU9 — Welle 8 umgesetzt (03.09.2026, Basis `e5114e1` nach W7, zusammengeführt mit `e74136e`)**
 >
