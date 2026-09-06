@@ -6269,6 +6269,17 @@ body {
     color: var(--epos-text);
 }
 
+/* W6-O-4 (06.09.2026): der Herstellerfilter steht UEBER der Tabelle, nicht in
+   ihr - eine zweite Filterzeile IN der Strangtabelle haette keinen Platz. Die
+   Zeile bleibt schmal: Ein Auswahlfeld ueber die ganze Breite sieht aus wie ein
+   Pflichtfeld, sie filtert aber nur eine Klappliste. */
+.epos-strangfilter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 28rem;
+}
+
 /* Die Tabelle traegt Eingabefelder statt Text - die Zellen bekommen deshalb
    weniger Polsterung, damit die 44-px-Felder die Zeile nicht auftuermen. Die
    Mindesthoehe der Felder selbst bleibt unangetastet (--epos-touchziel). */

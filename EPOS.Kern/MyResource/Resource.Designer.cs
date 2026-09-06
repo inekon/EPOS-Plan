@@ -73,6 +73,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -29849,6 +29850,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang. ähnelt.
+        /// </summary>
+        public static string PVS_HERLEITUNG_MODUL {
+            get {
+                return ResourceManager.GetString("PVS_HERLEITUNG_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wechselrichter zugeordnet — legen Sie einen Strang an. ähnelt.
         /// </summary>
         public static string PVS_HINWEIS_OHNE_STRANG {
@@ -29881,6 +29891,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_KEIN_GERAET_WAHL {
             get {
                 return ResourceManager.GetString("PVS_KEIN_GERAET_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Modul der Anlage) ähnelt.
+        /// </summary>
+        public static string PVS_MODUL_ANLAGE {
+            get {
+                return ResourceManager.GetString("PVS_MODUL_ANLAGE", resourceCulture);
             }
         }
         
@@ -30088,6 +30107,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_SP_GERAET {
             get {
                 return ResourceManager.GetString("PVS_SP_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
+        /// </summary>
+        public static string PVS_SP_MODUL {
+            get {
+                return ResourceManager.GetString("PVS_SP_MODUL", resourceCulture);
             }
         }
         

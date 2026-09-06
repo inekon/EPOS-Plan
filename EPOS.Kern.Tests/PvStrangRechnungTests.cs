@@ -573,12 +573,169 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // Teil 3 — das Modul JE STRANG (W6‑O‑6)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Ohne <c>ID_PV</c> rechnet der Strang mit dem Modul der ANLAGE</b> — und
+        /// zwar zeichengleich zum Stand vor diesem Auftrag (Anwenderentscheid
+        /// <b>W6‑O‑6</b> vom 06.09.2026).
+        ///
+        /// <para>Der Fall stellt zwei Anlagen nebeneinander, die sich in genau einem
+        /// Zeichen unterscheiden: Die eine führt <c>ID_PV = NULL</c>, die andere trägt
+        /// AUSDRÜCKLICH das Modul der Anlage ein. Beide müssen <b>bitgleich</b>
+        /// rechnen — sonst wäre der neue Lesepfad nicht der alte Rechenweg, sondern ein
+        /// zweiter.</para>
+        ///
+        /// <para>Das ist die Gegenprobe zum Referenzlauf auf der STRANGebene: Er belegt,
+        /// dass eine Anlage ohne Strangzeile unberührt bleibt; dieser Fall belegt, dass
+        /// auch eine Anlage MIT Strangzeile unberührt bleibt, solange kein Strang ein
+        /// eigenes Modul führt.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_Strang_ohne_ID_PV_rechnet_mit_dem_Anlagenmodul()
+        {
+            if (!_db.Vorhanden) return;
+
+            const string leer = "S3 Modul leer";
+            const string gesetzt = "S3 Modul ausdruecklich";
+
+            int modul = ModulAnlegen();
+            int aLeer = PvAnlageAnlegen(leer, weg: DbWerte.PV_WR_WEG_KATALOG);
+            int aGesetzt = PvAnlageAnlegen(gesetzt, weg: DbWerte.PV_WR_WEG_KATALOG);
+
+            int geraet = GeraetAnlegen("S3 Muster 3000TL Modul", nennKw: 3.0,
+                                       eta10: PvErweitertesModell.WR_ETA10_VORGABE,
+                                       eta50: PvErweitertesModell.WR_ETA50_VORGABE,
+                                       eta100: PvErweitertesModell.WR_ETA100_VORGABE);
+
+            var ctrl = new AnlageStrangCtrl();
+            Assert.True(ctrl.SchreibenJeAnlage(aLeer, new List<AnlageStrangModel>
+            {
+                Strang(geraet, mppt: 1, azimut: 0)
+            }));
+            Assert.True(ctrl.SchreibenJeAnlage(aGesetzt, new List<AnlageStrangModel>
+            {
+                Strang(geraet, mppt: 1, azimut: 0, modul: modul)
+            }));
+
+            var pv = Lauf();
+            double ertragLeer = Ertrag(pv, leer);
+
+            Assert.True(ertragLeer > 0.0, "Ohne Ertrag prueft der Fall nichts.");
+            Assert.Equal(ertragLeer, Ertrag(pv, gesetzt));
+
+            AnlageLoeschen(aLeer);
+            AnlageLoeschen(aGesetzt);
+            GeraetLoeschen(geraet);
+        }
+
+        /// <summary>
+        /// <b>Zwei Stränge, zwei Module, EIN Gerät</b> (W6‑O‑6, Abnahme wie S3 (3)).
+        ///
+        /// <para>Der Aufbau ist der des Ost/West-Falls, nur trennt hier nicht die
+        /// AUSRICHTUNG die beiden Stränge, sondern der MODULTYP: Strang 1 rechnet mit
+        /// dem Modul der Anlage (275,19 W), Strang 2 mit einem eigenen (400 W). Ihnen
+        /// gegenüber stehen zwei getrennte Anlagen mit je einem dieser Module an einem
+        /// eigenen Gerät desselben Typs.</para>
+        ///
+        /// <para>Die Aussage ist dieselbe wie dort — das gemeinsame Gerät erntet
+        /// WENIGER, und der Unterschied ist das gemeinsame Clipping —, und geprüft wird
+        /// wieder die ZERLEGUNG statt einer Toleranz:</para>
+        ///
+        /// <code>
+        /// (A + B) − gemeinsam
+        ///     = Gleichstromversatz − Kennliniengewinn + gemeinsames Clipping
+        /// </code>
+        ///
+        /// <para><b>Der Gleichstromversatz ist hier der Zeuge der Stufe:</b> Er ist nur
+        /// dann null, wenn Strang 2 wirklich mit SEINEM Modul gerechnet hat — mit dem
+        /// Anlagenmodul läge die Gleichstromseite der gemeinsamen Anlage um den
+        /// Leistungsunterschied der zwei Module daneben.</para>
+        /// </summary>
+        [Fact]
+        public void Zwei_Module_an_einem_Geraet_kosten_das_gemeinsame_Clipping()
+        {
+            if (!_db.Vorhanden) return;
+
+            const string gemeinsam = "S3 ZweiModule gemeinsam";
+            const string nurA = "S3 ZweiModule nur A";
+            const string nurB = "S3 ZweiModule nur B";
+
+            int modulA = ModulAnlegen();
+            int modulB = ZweitesModulAnlegen();
+
+            int aGem = PvAnlageAnlegen(gemeinsam, weg: DbWerte.PV_WR_WEG_KATALOG,
+                                       module: 2 * MODULE);
+            int aA = PvAnlageAnlegen(nurA, weg: DbWerte.PV_WR_WEG_KATALOG);
+            int aB = PvAnlageAnlegen(nurB, weg: DbWerte.PV_WR_WEG_KATALOG, modul: modulB);
+
+            // Ein knapp ausgelegtes Geraet - ohne Clipping prueft der Fall nichts.
+            int geraet = GeraetAnlegen("S3 Muster 2000TL Module", nennKw: 2.0,
+                                       eta10: 0.97, eta50: 0.97, eta100: 0.97);
+
+            var ctrl = new AnlageStrangCtrl();
+
+            Assert.True(ctrl.SchreibenJeAnlage(aGem, new List<AnlageStrangModel>
+            {
+                Strang(geraet, mppt: 1, azimut: 0),                    // Modul der Anlage (A)
+                Strang(geraet, mppt: 2, azimut: 0, modul: modulB)      // eigenes Modul (B)
+            }));
+            Assert.True(ctrl.SchreibenJeAnlage(aA, new List<AnlageStrangModel>
+            {
+                Strang(geraet, mppt: 1, azimut: 0)
+            }));
+            Assert.True(ctrl.SchreibenJeAnlage(aB, new List<AnlageStrangModel>
+            {
+                Strang(geraet, mppt: 1, azimut: 0)
+            }));
+
+            var pv = Lauf();
+
+            PvStrangModell.Geraetegruppe gem = Assert.Single(Zeile(pv, gemeinsam).Geraete);
+            PvStrangModell.Geraetegruppe a = Assert.Single(Zeile(pv, nurA).Geraete);
+            PvStrangModell.Geraetegruppe b = Assert.Single(Zeile(pv, nurB).Geraete);
+
+            // Die zwei Module rechnen wirklich verschieden - sonst prueft der Fall nichts.
+            Assert.True(b.DcSysKwh > a.DcSysKwh * 1.2,
+                        "Das zweite Modul muss deutlich mehr liefern als das erste.");
+
+            // Und die Nennleistung der gemeinsamen Anlage ist die SUMME beider Module.
+            Assert.Equal(a.KwpDc + b.KwpDc, gem.KwpDc, 9);
+
+            double differenz = a.ErtragKwh + b.ErtragKwh - gem.ErtragKwh;
+            double gemeinsamesClipping = gem.ClippingKwh - a.ClippingKwh - b.ClippingKwh;
+            double kennlinienGewinn = a.WrVerlustKwh + b.WrVerlustKwh - gem.WrVerlustKwh;
+            double dcVersatz = a.DcSysKwh + b.DcSysKwh - gem.DcSysKwh;
+
+            Assert.True(gemeinsamesClipping > 0.0,
+                        "Ohne gemeinsames Clipping prueft der Fall nichts.");
+            Assert.True(differenz > 0.0,
+                        "Das gemeinsame Geraet muss WENIGER ernten als zwei getrennte.");
+
+            // DIE ZERLEGUNG - sie geht auf, wie im Ost/West-Fall.
+            Assert.Equal(dcVersatz - kennlinienGewinn + gemeinsamesClipping, differenz, 6);
+
+            // Der Gleichstromversatz ist der ZEUGE: Strang 2 hat mit SEINEM Modul
+            // gerechnet, nicht mit dem der Anlage.
+            Assert.Equal(1.0, gem.DcSysKwh / (a.DcSysKwh + b.DcSysKwh), 9);
+
+            AnlageLoeschen(aGem);
+            AnlageLoeschen(aA);
+            AnlageLoeschen(aB);
+            GeraetLoeschen(geraet);
+        }
+
+        // =================================================================================
         // Innenleben
         // =================================================================================
 
         private const int TESTPROJEKT = 1030;
         private const int MODULE = 10;
         private const double MODULLEISTUNG_W = 275.19;
+
+        /// <summary>Nennleistung des ZWEITEN Moduls [W] (W6‑O‑6).</summary>
+        private const double MODULLEISTUNG2_W = 400.0;
 
         private static PvStrangModell.Geraetegruppe Gruppe(double? nennKw, double eta,
                                                            double? standbyW = null,
@@ -602,12 +759,17 @@ namespace EPOS.Kern.Tests
             };
         }
 
-        private static AnlageStrangModel Strang(int geraet, int mppt, int azimut)
+        /// <param name="modul">
+        /// W6‑O‑6: die Projektkopie des ABWEICHENDEN Modultyps; 0 = das Modul der
+        /// Anlage (und damit <c>ID_PV = NULL</c> in der Datenbank).
+        /// </param>
+        private static AnlageStrangModel Strang(int geraet, int mppt, int azimut, int modul = 0)
         {
             return new AnlageStrangModel
             {
                 ID_Wechselrichter = geraet, Geraetenummer = 1, Mppt = mppt,
-                Module_Reihe = MODULE, Straenge_Parallel = 1, Azimut = azimut
+                Module_Reihe = MODULE, Straenge_Parallel = 1, Azimut = azimut,
+                ID_PV = modul > 0 ? modul : (int?)null
             };
         }
 
@@ -640,14 +802,15 @@ namespace EPOS.Kern.Tests
         /// Modulformel (Huld) nehmen, mit der Dreipunkt-Kennlinie und der
         /// AC-Nennleistung der Anlagenzeile.
         /// </summary>
-        private static int PvAnlageAnlegen(string bezeichner, string weg, int module = MODULE)
+        private static int PvAnlageAnlegen(string bezeichner, string weg, int module = MODULE,
+                                           int modul = 0)
         {
             var m = new WErzeugerCtrl
             {
                 ID_Projekt = TESTPROJEKT,
                 Bezeichner = bezeichner,
                 ID_Type = WizardItemClass.PV_TYP,
-                ID_PV = ModulAnlegen(),
+                ID_PV = modul > 0 ? modul : ModulAnlegen(),
                 PV_Leistung = module,
                 m_Neigung = 30,
                 m_Azimut = 0,
@@ -686,6 +849,35 @@ namespace EPOS.Kern.Tests
         }
 
         private static int m_Modul;
+
+        /// <summary>
+        /// Die Projektkopie eines ZWEITEN Wegwerf-Moduls (W6‑O‑6) — deutlich stärker
+        /// als das erste (400 W statt 275,19 W), damit ein Strang, der es NICHT nimmt,
+        /// sofort auffällt. Dieselbe Zelltechnologie, damit beide Stränge denselben
+        /// Huld-Satz rechnen und der Unterschied allein die Nennleistung ist.
+        /// </summary>
+        private static int ZweitesModulAnlegen()
+        {
+            if (m_Modul2 > 0) return m_Modul2;
+
+            int id = DataRepository.GetMaxID(SchemaKatalog.TAB_PV) + 1;
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO [" + SchemaKatalog.TAB_PV + "] " +
+                "(ID, ID_Projekt, Bezeichner, Leistung, Laenge, Breite, Wirkungsgrad, " +
+                " gamma_PMP, T_NOCT, Technologie) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                new DbParam("@id", id), new DbParam("@p", TESTPROJEKT),
+                new DbParam("@b", "Strangrechnung 400"),
+                new DbParam("@l", MODULLEISTUNG2_W),
+                new DbParam("@lae", 1.9), new DbParam("@bre", 1.05),
+                new DbParam("@wir", 20.05), new DbParam("@g", -0.34),
+                new DbParam("@noct", 44.0),
+                new DbParam("@tech", DbWerte.PV_TECHNOLOGIE_C_SI)));
+
+            m_Modul2 = id;
+            return id;
+        }
+
+        private static int m_Modul2;
 
         private static int GeraetAnlegen(string bezeichner, double nennKw,
                                          double eta10, double eta50, double eta100)

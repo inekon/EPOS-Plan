@@ -54,15 +54,24 @@ public class PvStraengeFelderTests : BunitContext
     private IRenderedComponent<PvStraengeFelder> Aufbauen(
         ErzeugerZeile zeile,
         Action? geaendert = null,
-        Func<IReadOnlyList<StrangZeile>, StrangBefund>? pruefen = null,
-        Func<int, GeraetWahl>? uebernehmen = null)
+        Func<ErzeugerZeile, IReadOnlyList<StrangZeile>, StrangBefund>? pruefen = null,
+        Func<int, GeraetWahl>? uebernehmen = null,
+        IReadOnlyList<string>? hersteller = null,
+        Func<string, IReadOnlyList<(int Id, string Text)>>? filtern = null,
+        IReadOnlyList<(int Id, string Text)>? module = null,
+        Func<int, GeraetWahl>? modulUebernehmen = null)
         => Render<PvStraengeFelder>(p => p
             .Add(x => x.Zeile, zeile)
             .Add(x => x.NeigungAnlage, zeile.Neigung)
             .Add(x => x.AzimutAnlage, zeile.Azimut)
             .Add(x => x.KwpAnlage, 2.752)
-            .Add(x => x.Geraete, KATALOG)
+            .Add(x => x.Geraete, filtern is null ? KATALOG : filtern(""))
             .Add(x => x.GeraetUebernehmen, uebernehmen ?? (id => new GeraetWahl(1000 + id, Name(id))))
+            .Add(x => x.Hersteller, hersteller ?? Array.Empty<string>())
+            .Add(x => x.GeraeteFiltern, filtern)
+            .Add(x => x.Module, module ?? Array.Empty<(int, string)>())
+            .Add(x => x.ModulUebernehmen,
+                 modulUebernehmen ?? (id => new GeraetWahl(2000 + id, Modulname(id))))
             .Add(x => x.Pruefen, pruefen)
             .Add(x => x.Geaendert, () => geaendert?.Invoke()));
 
@@ -70,6 +79,50 @@ public class PvStraengeFelderTests : BunitContext
     {
         foreach (var e in KATALOG) if (e.Id == stammId) return e.Text;
         return "";
+    }
+
+    /// <summary>Der Wechselrichterkatalog nach Hersteller (W6‑O‑4) — die Hüllenseite.</summary>
+    private static readonly (int Id, string Text, string Firma)[] KATALOG_MIT_FIRMA =
+    {
+        (7, "Muster 2500TL", "Muster"),
+        (8, "Muster 5000TL-2M", "Muster"),
+        (9, "Fremd 3000X", "Fremd")
+    };
+
+    private static readonly string[] HERSTELLER = { "Alle", "Fremd", "Muster" };
+
+    private static IReadOnlyList<(int Id, string Text)> Filtern(string firma)
+    {
+        var liste = new List<(int, string)>();
+        foreach (var z in KATALOG_MIT_FIRMA)
+            if (firma.Length == 0 || firma == "Alle" ||
+                string.Equals(z.Firma, firma, StringComparison.Ordinal))
+                liste.Add((z.Id, z.Text));
+        return liste;
+    }
+
+    /// <summary>Der MODULkatalog der Strangspalte (W6‑O‑6).</summary>
+    private static readonly (int Id, string Text)[] MODULE =
+    {
+        (31, "Ablytek 6MN6A275"),
+        (32, "Jinkosolar JKM 260P-60")
+    };
+
+    private static string Modulname(int stammId)
+    {
+        foreach (var e in MODULE) if (e.Id == stammId) return e.Text;
+        return "";
+    }
+
+    /// <summary>Die Klappliste EINER Strangzeile — der Filter steht als Index 0 davor.</summary>
+    private static IRenderedComponent<Auswahlfeld> Wahl(
+        IRenderedComponent<PvStraengeFelder> cut, string kurzname, int zeile = 0)
+    {
+        var treffer = new List<IRenderedComponent<Auswahlfeld>>();
+        foreach (var f in cut.FindComponents<Auswahlfeld>())
+            if (string.Equals(f.Instance.Kurzname, kurzname, StringComparison.Ordinal))
+                treffer.Add(f);
+        return treffer[zeile];
     }
 
     // =================================================================================
@@ -284,7 +337,7 @@ public class PvStraengeFelderTests : BunitContext
         var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
         var cut = Aufbauen(zeile, uebernehmen: id => { gerufen++; return new GeraetWahl(4711, Name(id)); });
 
-        var wahl = cut.FindComponents<Auswahlfeld>()[0];
+        var wahl = Wahl(cut, "Wechselrichter");
         await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(7));
 
         Assert.Equal(1, gerufen);
@@ -292,7 +345,7 @@ public class PvStraengeFelderTests : BunitContext
         Assert.Equal("Muster 2500TL", zeile.Straenge[0].WechselrichterName);
 
         // Die Klappliste findet ihren Eintrag ueber den BEZEICHNER wieder.
-        Assert.Equal(7, cut.FindComponents<Auswahlfeld>()[0].Instance.Auswahl);
+        Assert.Equal(7, Wahl(cut, "Wechselrichter").Instance.Auswahl);
     }
 
     /// <summary>„(kein Gerät)" nimmt die Zuordnung wieder heraus.</summary>
@@ -305,7 +358,7 @@ public class PvStraengeFelderTests : BunitContext
         });
         var cut = Aufbauen(zeile);
 
-        var wahl = cut.FindComponents<Auswahlfeld>()[0];
+        var wahl = Wahl(cut, "Wechselrichter");
         await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(0));
 
         Assert.Equal(0, zeile.Straenge[0].WechselrichterId);
@@ -354,7 +407,7 @@ public class PvStraengeFelderTests : BunitContext
             "beta_OC-Naeherung");
 
         var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 15 }),
-                           pruefen: _ => befund);
+                           pruefen: (_, _) => befund);
 
         var zeilen = cut.FindAll(".epos-ampel");
         Assert.Single(zeilen);
@@ -377,7 +430,7 @@ public class PvStraengeFelderTests : BunitContext
     {
         int gerufen = 0;
         var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
-        var cut = Aufbauen(zeile, pruefen: _ => { gerufen++; return StrangBefund.Leer; });
+        var cut = Aufbauen(zeile, pruefen: (_, _) => { gerufen++; return StrangBefund.Leer; });
 
         int nachAufbau = gerufen;
         Assert.True(nachAufbau > 0);
@@ -399,6 +452,164 @@ public class PvStraengeFelderTests : BunitContext
 
         Assert.Empty(cut.FindAll(".epos-ampel"));
         Assert.Empty(cut.Instance.Befund.Straenge);
+    }
+
+    // =================================================================================
+    // 4b - W6-O-4: der Herstellerfilter ueber der Tabelle
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Der Filter verengt die Klappliste ALLER Zeilen</b> (W6‑O‑4). Er steht ÜBER
+    /// der Tabelle, nicht in ihr — in der Zeile hätte er keinen Platz —, und wirkt auf
+    /// jede Gerätespalte.
+    /// </summary>
+    [Fact]
+    public async Task Der_Herstellerfilter_verengt_die_Geraeteklappliste()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern);
+
+        // "Alle" (Index 0) zeigt alle drei Geraete, dazu "(kein Geraet)".
+        Assert.Equal(4, Wahl(cut, "Wechselrichter").Instance.Eintraege.Count);
+
+        var filter = Wahl(cut, "Filtern nach Hersteller:");
+        await cut.InvokeAsync(() => filter.Instance.AuswahlChanged.InvokeAsync(1));   // "Fremd"
+
+        var eintraege = Wahl(cut, "Wechselrichter").Instance.Eintraege;
+        Assert.Equal(2, eintraege.Count);
+        Assert.Contains(eintraege, e => e.Text == "Fremd 3000X");
+        Assert.DoesNotContain(eintraege, e => e.Text == "Muster 2500TL");
+    }
+
+    /// <summary>
+    /// <b>„Alle" zeigt wieder alles</b> — der Filter ist eine Einengung, keine
+    /// Entscheidung.
+    /// </summary>
+    [Fact]
+    public async Task Alle_zeigt_wieder_den_ganzen_Katalog()
+    {
+        var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                           hersteller: HERSTELLER, filtern: Filtern);
+
+        var filter = Wahl(cut, "Filtern nach Hersteller:");
+        await cut.InvokeAsync(() => filter.Instance.AuswahlChanged.InvokeAsync(2));   // "Muster"
+        Assert.Equal(3, Wahl(cut, "Wechselrichter").Instance.Eintraege.Count);
+
+        await cut.InvokeAsync(() => filter.Instance.AuswahlChanged.InvokeAsync(0));   // "Alle"
+        Assert.Equal(4, Wahl(cut, "Wechselrichter").Instance.Eintraege.Count);
+    }
+
+    /// <summary>
+    /// <b>Ein bereits gewähltes Gerät bleibt in SEINER Zeile sichtbar</b>, auch wenn
+    /// der Filter es ausschliesst: Sonst stünde in der Zeile nichts, und der Anwender
+    /// hielte die Zuordnung für verloren.
+    /// </summary>
+    [Fact]
+    public async Task Ein_gewaehltes_Geraet_bleibt_trotz_Filter_sichtbar()
+    {
+        var zeile = Zeile(true, new StrangZeile
+        {
+            Rang = 1, ModuleReihe = 10, WechselrichterId = 4711, WechselrichterName = "Fremd 3000X"
+        });
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern);
+
+        var filter = Wahl(cut, "Filtern nach Hersteller:");
+        await cut.InvokeAsync(() => filter.Instance.AuswahlChanged.InvokeAsync(2));   // "Muster"
+
+        var wahl = Wahl(cut, "Wechselrichter");
+        Assert.Contains(wahl.Instance.Eintraege, e => e.Text == "Fremd 3000X");
+        Assert.Equal(9, wahl.Instance.Auswahl);
+    }
+
+    /// <summary>
+    /// Ohne Herstellerliste gibt es KEINE Filterzeile — dieselbe Regel wie überall im
+    /// Haus: kein Delegat, kein Bedienelement.
+    /// </summary>
+    [Fact]
+    public void Ohne_Herstellerliste_gibt_es_keine_Filterzeile()
+    {
+        var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }));
+
+        Assert.Empty(cut.FindAll(".epos-strangfilter"));
+    }
+
+    // =================================================================================
+    // 4c - W6-O-6: das Modul je Strang
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Die Modulspalte trägt „(Modul der Anlage)" als Vorgabe</b> — leer heisst
+    /// nicht „kein Modul", sondern „das der Anlage" (dieselbe Rückfallregel wie bei
+    /// Neigung und Azimut).
+    /// </summary>
+    [Fact]
+    public void Die_Modulspalte_steht_auf_dem_Modul_der_Anlage()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        var cut = Aufbauen(zeile, module: MODULE);
+
+        var wahl = Wahl(cut, "Modul");
+        Assert.Equal(0, wahl.Instance.Auswahl);
+        Assert.Equal(3, wahl.Instance.Eintraege.Count);          // Rueckfall + zwei Module
+        Assert.Equal(0, zeile.Straenge[0].ModulId);
+        Assert.Contains("Modul der Anlage", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Ein anderer Modultyp wird beim Wählen ÜBERNOMMEN</b> (<c>CopyFromStamm</c>,
+    /// genau wie ein Gerät): Die Zeile trägt danach die PROJEKTKOPIE und den Namen, und
+    /// über den Namen findet die Klappliste ihren Eintrag wieder.
+    /// </summary>
+    [Fact]
+    public async Task Ein_abweichendes_Modul_wird_beim_Waehlen_uebernommen()
+    {
+        int gerufen = 0;
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        var cut = Aufbauen(zeile, module: MODULE,
+                           modulUebernehmen: id => { gerufen++; return new GeraetWahl(5150, Modulname(id)); });
+
+        var wahl = Wahl(cut, "Modul");
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(32));
+
+        Assert.Equal(1, gerufen);
+        Assert.Equal(5150, zeile.Straenge[0].ModulId);
+        Assert.Equal("Jinkosolar JKM 260P-60", zeile.Straenge[0].ModulName);
+        Assert.Equal(32, Wahl(cut, "Modul").Instance.Auswahl);
+    }
+
+    /// <summary>
+    /// <b>„(Modul der Anlage)" nimmt die Abweichung wieder heraus.</b> Ohne diesen
+    /// Rückweg wäre ein einmal gesetzter Modultyp nicht mehr aufzuheben.
+    /// </summary>
+    [Fact]
+    public async Task Das_Modul_der_Anlage_nimmt_die_Abweichung_heraus()
+    {
+        var zeile = Zeile(true, new StrangZeile
+        {
+            Rang = 1, ModuleReihe = 10, ModulId = 5150, ModulName = "Jinkosolar JKM 260P-60"
+        });
+        var cut = Aufbauen(zeile, module: MODULE);
+
+        var wahl = Wahl(cut, "Modul");
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(0));
+
+        Assert.Equal(0, zeile.Straenge[0].ModulId);
+        Assert.Equal("", zeile.Straenge[0].ModulName);
+    }
+
+    /// <summary>
+    /// Der Prüfstand bekommt die GEWÄHLTE Projektzeile mit (<b>W6‑O‑5</b>) — sie sagt,
+    /// gegen welches Modul die Ampel prüft.
+    /// </summary>
+    [Fact]
+    public void Der_Pruefstand_bekommt_die_gewaehlte_Projektzeile()
+    {
+        ErzeugerZeile? gesehen = null;
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+
+        Aufbauen(zeile, pruefen: (z, _) => { gesehen = z; return StrangBefund.Leer; });
+
+        Assert.Same(zeile, gesehen);
     }
 
     // =================================================================================

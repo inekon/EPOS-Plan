@@ -170,6 +170,10 @@
                                   KwpAnlage="@KwpDer(_projektZeile)"
                                   Geraete="@Wechselrichter"
                                   GeraetUebernehmen="@WechselrichterUebernehmen"
+                                  Hersteller="@WechselrichterHersteller"
+                                  GeraeteFiltern="@WechselrichterFiltern"
+                                  Module="@Strangmodule"
+                                  ModulUebernehmen="@ModulUebernehmen"
                                   Pruefen="@StraengePruefen"
                                   Geaendert="BeiStrangaenderung" />
             </KindInhalt>
@@ -314,11 +318,39 @@
     [Parameter] public Func<int, GeraetWahl>? WechselrichterUebernehmen { get; set; }
 
     /// <summary>
+    /// Die Hersteller des WECHSELRICHTERkatalogs, „Alle" voran — der Filter über der
+    /// Strangtabelle (<b>W6‑O‑4</b>). Er ist vom Modulfilter unabhängig: Der
+    /// Gerätehersteller kann ein anderer sein als der Modulhersteller.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string> WechselrichterHersteller { get; set; }
+        = Array.Empty<string>();
+
+    /// <summary>Die Geräteliste zu einem Hersteller (<c>WechselrichterStammCtrl.Filtern</c>).</summary>
+    [Parameter] public Func<string, IReadOnlyList<(int Id, string Text)>>? WechselrichterFiltern { get; set; }
+
+    /// <summary>
+    /// Die PV-Module des KATALOGS für die Modulspalte der Strangtabelle
+    /// (<b>W6‑O‑6</b>): Id = <c>Tab_PV_STAMM.ID</c>.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Strangmodule { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Nimmt ein Modul aus dem Katalog in das Projekt auf und liefert die PROJEKTKOPIE
+    /// (<c>PhotovoltaikCtrl.CopyFromStamm</c>) — für den abweichenden Modultyp eines
+    /// Strangs.
+    /// </summary>
+    [Parameter] public Func<int, GeraetWahl>? ModulUebernehmen { get; set; }
+
+    /// <summary>
     /// Die AMPEL zum aktuellen Stand der Strangtabelle. Der Kern prüft
     /// (<c>StrangPlausibilitaet</c>), die Hülle reicht das Ergebnis herein; die
     /// Komponente rechnet nicht.
+    ///
+    /// <para>Die GEWÄHLTE Projektzeile geht mit (<b>W6‑O‑5</b>): Nur sie sagt, gegen
+    /// welches Modul die Ampel prüft.</para>
     /// </summary>
-    [Parameter] public Func<IReadOnlyList<StrangZeile>, StrangBefund>? StraengePruefen { get; set; }
+    [Parameter] public Func<ErzeugerZeile, IReadOnlyList<StrangZeile>, StrangBefund>? StraengePruefen { get; set; }
 
     /// <summary>
     /// Der Parametersatz der MODULVERWALTUNG. Sie erscheint seit iU9-W14a als
