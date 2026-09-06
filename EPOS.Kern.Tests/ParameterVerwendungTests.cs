@@ -259,54 +259,76 @@ namespace EPOS.Kern.Tests
         /// Jede Anlagenart fuehrt mindestens einen gerechneten Parameter — ein Katalog
         /// ganz ohne Rechenbezug waere ein Zeichen dafuer, dass die Einstufung fehlt.
         ///
-        /// <para><b>Eine Ausnahme, und sie ist gewollt:</b> der WECHSELRICHTER. Stufe S1
-        /// des Konzept_Wechselrichter_EPOS-Plan.md liefert Katalog, Verwaltung und
-        /// Import <b>ohne jede Rechenwirkung</b> (Anwenderentscheid W6-E-2 vom
-        /// 06.09.2026); gelesen wird der Katalog erst mit Stufe S3. Der Fall
-        /// <see cref="Der_Wechselrichter_rechnet_in_S2_noch_nicht"/> haelt genau das
-        /// fest.</para>
+        /// <para><b>Seit Stufe S3 ohne Ausnahme.</b> Bis dahin war der WECHSELRICHTER
+        /// eine: S1 und S2 des Konzept_Wechselrichter_EPOS-Plan.md lieferten Katalog,
+        /// Verwaltung, Import und Strangzuordnung <b>ohne jede Rechenwirkung</b>
+        /// (Anwenderentscheid W6-E-2 vom 06.09.2026). S3 hat den Rechenweg gebaut, und
+        /// damit faellt die Ausnahme - der Fall
+        /// <see cref="Der_Wechselrichter_rechnet_ab_S3"/> sagt, welche Spalten es
+        /// sind.</para>
         /// </summary>
         [Fact]
         public void Jede_Anlagenart_fuehrt_gerechnete_Parameter()
         {
             foreach (Anlagenart art in ParameterVerwendung.AlleArten)
-            {
-                if (art == Anlagenart.Wechselrichter) continue;
                 Assert.Contains(ParameterVerwendung.Katalog(art), e => e.Gerechnet);
-            }
         }
 
         /// <summary>
-        /// <b>Die Zusage der Stufen S1 UND S2</b> (W6-E-2, 06.09.2026): Keine Spalte des
-        /// Wechselrichterkatalogs wird gerechnet — weder in der Simulation noch in der
-        /// Wirtschaftlichkeit. Genau daran haengt, dass der Referenzlauf byte-gleich
-        /// bleibt.
+        /// <b>Der Zeuge der Stufe S3</b> (W6-E-2, 06.09.2026): Der Wechselrichterkatalog
+        /// RECHNET jetzt — und zwar genau die Spalten, die der Rechenweg liest.
         ///
-        /// <para><b>Umbenannt mit Stufe S2</b> (vorher
-        /// <c>Der_Wechselrichter_rechnet_in_S1_noch_nicht</c>). Der Fall PRUEFT
-        /// unveraendert dasselbe, seine Aussage reicht aber jetzt eine Stufe weiter:
-        /// S2 hat acht Spalten einen zweiten LESER gegeben
-        /// (<c>StrangPlausibilitaet</c>, die Ampel des PV-Dialogs) und trotzdem keinen
-        /// RECHNER. Ein Name, der bei S1 stehen bliebe, laese den Fall wie eine
-        /// vergessene Altlast aussehen statt wie die weitergereichte Zusage, die er
-        /// ist.</para>
+        /// <para><b>Umbenannt mit Stufe S3</b> (vorher
+        /// <c>Der_Wechselrichter_rechnet_in_S2_noch_nicht</c>, davor
+        /// <c>…_in_S1_…</c>). Der Merkposten hat seine Aufgabe erfuellt: Er sollte rot
+        /// ausfallen, sobald S3 laeuft. Aus dem Merkposten ist damit ein ZEUGE geworden
+        /// — er haelt fest, was seit S3 gilt, und faellt rot aus, wenn eine Einstufung
+        /// dem Rechenweg wieder davonlaeuft.</para>
         ///
-        /// <para><b>Faellt dieser Fall rot aus, ist Stufe S3 gelaufen</b> — dann liest
-        /// <c>SimulationPV</c> die Kennlinie und <c>TechnikPlanwertCtrl</c> die Kosten
-        /// (Entscheidungsfrage Q8), und die Einstufungen in
-        /// <c>ParameterVerwendung.Wechselrichter</c> muessen mit. Der Fall ist der
-        /// Merkposten dafuer, kein Fehler.</para>
+        /// <para><b>Zehn Spalten in der Simulation:</b> die sechs Stuetzstellen
+        /// <c>Eta05…Eta100</c> (<c>PvStrangModell.Kennlinie</c>), <c>P_AC_Nenn</c>
+        /// (Auslastung und Clipping), <c>P_Standby</c> (Einschaltschwelle) und
+        /// <c>P_Nacht</c> (Nachtverbrauch). <b>Eine in der Wirtschaftlichkeit:</b>
+        /// <c>Kosten</c> (<c>TechnikPlanwertCtrl</c>, Entscheidungsfrage Q8).</para>
+        ///
+        /// <para><b>Was NICHT rechnet, und warum das so bleibt:</b> Die MPPT-Spalten
+        /// (Q7 — der Tracker ist reine Pruefgroesse) und die Spannungs-/Stromgrenzen
+        /// (ohne Ein-Dioden-Modell gibt es keine Strangspannung je Stunde). Sie lesen
+        /// die Ampel des PV-Dialogs und sind damit <c>Dialog</c>. Die sieben
+        /// Sandia-Spalten haben weiter GAR KEINEN Leser (Konzept 3.3.3).</para>
         /// </summary>
         [Fact]
-        public void Der_Wechselrichter_rechnet_in_S2_noch_nicht()
+        public void Der_Wechselrichter_rechnet_ab_S3()
         {
             IReadOnlyList<ParameterEintrag> katalog =
                 ParameterVerwendung.Katalog(Anlagenart.Wechselrichter);
 
-            Assert.DoesNotContain(katalog, e => e.Gerechnet);
+            string[] simulation = katalog.Where(e => e.Hat(Verwendung.Simulation))
+                                         .Select(e => e.Spalte).OrderBy(s => s, StringComparer.Ordinal)
+                                         .ToArray();
 
-            // Die sieben Sandia-Spalten sind mitgeschriebenes Katalogwissen und
-            // haben in S1 GAR KEINEN Leser (Konzept 3.3.3).
+            Assert.Equal(
+                new[] { "Eta05", "Eta10", "Eta100", "Eta20", "Eta30", "Eta50",
+                        "P_AC_Nenn", "P_Nacht", "P_Standby" },
+                simulation);
+
+            ParameterEintrag kosten = Eintrag(Anlagenart.Wechselrichter, "Kosten");
+            Assert.True(kosten.Hat(Verwendung.Wirtschaftlichkeit));
+            Assert.Contains("TechnikPlanwertCtrl", kosten.Fundstelle);
+
+            // Jede gerechnete Spalte nennt ihren Rechner in der Fundstelle - ohne sie
+            // waere die Einstufung eine Behauptung.
+            Assert.All(katalog.Where(e => e.Hat(Verwendung.Simulation)),
+                       e => Assert.Contains("PvStrangModell", e.Fundstelle));
+
+            // Der MPP-Tracker bleibt Pruefgroesse (Q7), die Spannungsgrenzen ebenso.
+            foreach (string spalte in new[] { "Anzahl_Mppt", "Straenge_Je_Mppt",
+                                              "U_Mpp_Min", "U_Mpp_Max", "U_Dc_Max",
+                                              "U_Start", "I_Dc_Max" })
+                Assert.False(Eintrag(Anlagenart.Wechselrichter, spalte).Gerechnet, spalte);
+
+            // Die sieben Sandia-Spalten sind mitgeschriebenes Katalogwissen und haben
+            // auch nach S3 GAR KEINEN Leser (Konzept 3.3.3).
             Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine)));
             Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine)),
                        e => Assert.StartsWith("Sandia_", e.Spalte, StringComparison.Ordinal));
