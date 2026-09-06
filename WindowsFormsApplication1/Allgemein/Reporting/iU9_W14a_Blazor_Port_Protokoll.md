@@ -1073,7 +1073,8 @@ ein Fehler, kein Fortschritt.
 **Eine einzige Lücke** — und sie ist keine Nachlässigkeit, sondern ein Widerspruch
 zwischen zwei Entscheiden:
 
-> **W14a‑O‑1 (offen)** — `Tab_WP_STAMM.Modulkosten` geht in die Kostenplanung
+> **W14a‑O‑1 — Entschieden 06.09.2026 (Empfehlung angenommen), umgesetzt in `83e8490`**
+> — `Tab_WP_STAMM.Modulkosten` geht in die Kostenplanung
 > (`TechnikPlanwertCtrl.BasenFuellen`, Fall `ERZEUGER_WAERMEPUMPE`, :345: Basis
 > „Modulpreis"), ist in der Wärmepumpenverwaltung aber **nicht zu pflegen**: Entscheid
 > **Ä19** der Welle 7 nahm das Feld aus der Maske („Gerätekosten laufen über die
@@ -1087,6 +1088,59 @@ zwischen zwei Entscheiden:
 > Alternative — das Feld editierbar machen — kehrt Ä19 um und gehört deshalb dem
 > Anwender, nicht dem Umbau.
 > *Nicht eigenmächtig gebaut* (Regel: unklare Semantik → offener Punkt mit Vorschlag).
+
+**Was gebaut wurde** (`83e8490`) — der Vorschlag wortgetreu, nicht mehr:
+
+* **Ein Lesewert, kein Feld.** Im `Formularraster` des Stammdatenblocks steht hinter
+  „Kühlleistung" eine Rasterzelle aus `.epos-feld-text` und `.epos-feld-zeile` mit einem
+  `<span class="epos-lesewert">` und der Einheit dahinter — **kein `<input>`**, auch
+  kein gesperrtes. Ein `disabled`-Feld sagte „hier könntest du tippen, nur jetzt nicht"
+  und verspräche eine Pflege, die es nicht gibt; ein `readonly`-Feld bliebe im
+  Tabulatorweg. Die neue Stilklasse `.epos-lesewert` ist der allgemeine Fall dafür
+  (Tabellenziffern, kein Rahmen, kein Fokusring) und steht in `epos-ui.css` neben
+  `.epos-eingabe`/`.epos-einheit`, wo sie hingehört.
+* **Die Einheit ist Euro, nicht €/kW.** `TechnikPlanwertCtrl.BasenFuellen` nimmt den
+  Wert im Fall `ERZEUGER_WAERMEPUMPE` **unverändert** als Basis „Modulpreis" — anders
+  als bei Photovoltaik (Preis je Modul × Stückzahl) und Stromspeicher (€/kWh × kWh)
+  wird hier nichts multipliziert. Es ist ein Betrag **je Gerät**; der
+  Verwendungskatalog führt für diese Spalte dieselbe Einheit „€".
+* **Die Herleitungszeile steht immer da.** Ihre zweite Hälfte ist die Auskunft aus Ä19:
+  „aus dem Herstellerimport; **Gerätekosten werden in der Kostenverwaltung gepflegt**" —
+  wer hier Kosten pflegen will, findet den Weg dorthin, statt ein fehlendes Feld zu
+  suchen. Englisch: „from the manufacturer import; equipment costs are maintained in
+  cost management" (`WPS_HERL_MODULKOSTEN`).
+* **0 und NULL sind dasselbe, und beides heißt „kein Planwert".** Die Spalte ist
+  `INTEGER`, ein NULL kommt als 0 im Datensatz an (`WPStammCtrl`:677), und
+  `TechnikPlanwertCtrl.Basis` verwirft Beträge ≤ 0 („0 gilt als ungepflegt und erzeugt
+  nie eine Scheinauswahl"). Die Maske zeigt deshalb den **Halbgeviertstrich ohne
+  Einheit** und darunter eine zweite leise Zeile „kein Planwert aus dem
+  Herstellerimport" / „no planned value from the manufacturer import"
+  (`WPS_HINWEIS_MODULKOSTEN_LEER`). Genau der Fall der Neuanlage, um den es ging.
+* **Eine Zahl, zwei Wege — dieselben Ziffern.** Der Anzeigetext ist die rohe Zahl in der
+  Kultur des Anwenders ohne Tausenderpunkt, wortgleich zu `ParameterUebersichtCtrl.Anzeige`;
+  die **Beschriftung** kommt aus `MODK_LBL_MODULKOSTEN`, also aus demselben Schlüssel,
+  den `ParameterVerwendung.Waermepumpe` führt. Wer Raster und Aufklapper
+  nebeneinanderlegt, liest denselben Namen und denselben Wert. **Ein Unterschied bleibt
+  mit Absicht:** Beim Wert 0 schreibt der Aufklapper „0" — er zeigt die Spalte roh —,
+  das Raster den Strich samt Grund; dort geht es nicht um den Zellinhalt, sondern um den
+  Planwert, und der ist bei 0 keiner.
+* **Ä19 ist unberührt geblieben**, ebenso Rechenweg, SQL und Speicherweg: Der Wert wird
+  im `Speichern` der Hülle wie bisher nur durchgereicht (Abweichung **A‑14** bleibt —
+  es gibt nichts zu prüfen, was der Anwender eingegeben hätte). Die
+  **Teil‑3‑Lücke bleibt deshalb bestehen und der Kern-Fall
+  `Genau_eine_gerechnete_Spalte_fehlt_im_Bearbeiten_Formular` unverändert**: Er zählt
+  die Spalten, die das Formular ZURÜCKSCHREIBT, und ein Lesewert ist keine Pflege.
+  Angepasst sind nur die Erläuterungen — im Verwendungskatalog, in `WaermepumpeStammDaten`
+  und in den beiden Doc-Kommentaren der Kern-Probe.
+* **Sieben neue Fälle** in `EPOS.UI.Tests/Dialoge/WaermepumpeStammDialogTests`: Wert mit
+  Einheit im Raster, **kein `input`/`textarea`/`select`/`button`** in der Zelle (und
+  weiterhin genau fünf `input` im Block), Herleitungszeile deutsch und englisch, 0 → „–"
+  ohne Einheit samt zweiter Zeile, die Neuanlage, und der Vergleich mit dem Aufklapper.
+* **Nachweise** — `EPOS.UI` und `EPOS.Kern` 0 Fehler und **keine neue Warnung** (die
+  fünf bekannten des Kerns, eine bekannte des Windows-Baus); `EPOS.UI.Tests` **2 731**,
+  `EPOS.Kern.Tests` **1 344**, beide grün unter `de_DE.UTF-8` **und** `en_US.UTF-8`;
+  Designer-Prüfung „abweichend 0" (4 895 Einträge, +2); SQL-Prüfer 1 213 Texte /
+  **0 Fundstellen** (Kontrolle — es ist kein SQL angefasst).
 
 **Zwei Beobachtungen ohne Lücke, aber mit Aussage:**
 
@@ -1142,10 +1196,23 @@ zwischen zwei Entscheiden:
    **Pufferspeicher** (8), *Strombedarf & Stromspeicher →* **Stromspeicher** (15).
 5. **Administration → Wärmebedarf und Heizung → Wärmepumpe**: 20 Zeilen; `Laenge`,
    `Breite`, `Hoehe`, `Gewicht` und `Raum` tragen „nicht verwendet" (gestrichelter
-   Rahmen), `Modulkosten` trägt „Wirtschaftlichkeit" — der offene Punkt W14a‑O‑1.
+   Rahmen), `Modulkosten` trägt „Wirtschaftlichkeit" — der entschiedene Punkt
+   W14a‑O‑1, Punkt 9.
 6. Eine Anlage ohne gepflegte Werte wählen (oder „Neu…" drücken): Die leeren Spalten
    zeigen „–" und nicht „0".
 7. Fenster schmal ziehen (< 900 CSS-px): Die Tabelle rollt in sich, die Seite nicht.
 8. Auf **English** umschalten: „Show all parameters and how they are used",
    „Parameter | Value | Used for", „Simulation / Economics / Report / display only /
    not used".
+9. **W14a‑O‑1 am Gerät** — *Administration → Wärmebedarf und Heizung → Wärmepumpe*:
+   Im Block „Wärmepumpe" steht unter „Kühlleistung" die Zeile **„Modulkosten"** mit dem
+   Wert und „€" dahinter, darunter leise „aus dem Herstellerimport; Gerätekosten werden
+   in der Kostenverwaltung gepflegt". **In das Feld lässt sich nicht klicken und nicht
+   tabben** — es ist Text, kein Eingabefeld. Ein Gerät ohne gepflegten Wert wählen
+   (oder **„Neu"** drücken): Dort steht **„–"** ohne Einheit und eine zweite leise
+   Zeile „kein Planwert aus dem Herstellerimport". Den Aufklapper öffnen: Die Zeile
+   `Modulkosten` zeigt bei einem gepflegten Gerät **dieselbe Zahl** wie das Raster
+   (beim Wert 0 dort „0", im Raster der Strich — so gewollt). „Speichern" drücken und
+   den Satz erneut wählen: Der Wert steht unverändert da. Auf **English**: „Module
+   costs", „from the manufacturer import; equipment costs are maintained in cost
+   management", „no planned value from the manufacturer import".
