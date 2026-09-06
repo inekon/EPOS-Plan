@@ -1187,12 +1187,16 @@ Windows und der Vollreferenzlauf 332/332 stehen aus.
 > **jeder** Tranche. `Proben/ZugriffsschichtProben` übersetzt fehlerfrei.
 > `dotnet list EPOS.Kern package | grep -c OleDb` → **0**.
 >
-> **Offen iU6‑O‑1 (Befund aus iU5‑O‑1, 06.09.2026):** `SqliteDatenzugriff.LadeTabelle` leitet den Typ einer nicht
-> deklarierten Spalte aus der ERSTEN Zeile ab; ist die NULL, meldet `Microsoft.Data.Sqlite` „BLOB", die Spalte wird
-> `Byte[]`, und der ganze Ladevorgang stirbt an der ersten belegten Zeile. Produktiv trifft das heute keinen Weg
-> (`SpaltenVonTabelle`, `IndexListe`, `ProjektExportImportCtrl` holen aus `pragma_table_info` nur nie-leere Spalten;
-> SQL-Prüfer 0 Fundstellen). Vorschlag: bei „BLOB" **und** `IsDBNull` der ersten Zeile den Typ nicht festlegen, sondern
-> `typeof(object)` — Änderung an der Zugriffsschicht, gegen den Referenzlauf zu halten; Entscheid des Anwenders.
+> **Anwenderentscheid iU6‑O‑1 vom 06.09.2026 (Empfehlung), umgesetzt in `b80e5aa`:** `SqliteDatenzugriff.LadeTabelle`
+> legt den Spaltentyp nicht mehr fest, wenn die Deklaration auf `Byte[]` führt **und** die erste Zeile `IsDBNull` ist —
+> die Spalte entsteht dann als `object`. Der Befund kam aus iU5‑O‑1: Für eine Spalte ohne deklarierten Typ (PRAGMA-Ergebnis,
+> Ausdruck) meldet `Microsoft.Data.Sqlite` bei NULL in der ersten Zeile „BLOB", die Tabelle wurde `Byte[]` und der Ladevorgang
+> starb an der ersten belegten Zeile; 72 der 118 Tabellen der Testdatenbank tragen das Muster in `pragma table_info`. Die
+> Probe (Microsoft.Data.Sqlite 10.0.11) zeigt, warum das auch für echte BLOB-Spalten gilt: Deklaration und Speicherklasse
+> melden bei NULL beide „BLOB"/`Byte[]` und sind nicht trennbar, `GetValue` liefert BLOB-Werte aber auch aus der
+> `object`-Spalte unverändert als `Byte[]`. Belegt: fünf neue Fälle in `EPOS.Kern.Tests/SpaltentypTests` (ohne die Änderung
+> fallen genau die drei zweideutigen), `EPOS.Kern.Tests` 1 484 grün, SQL-Prüfer 0 Fundstellen, Referenzlauf 1030/1007/1017
+> **byte-gleich**, Gate grün. **iU6‑O‑1 ist damit geschlossen.**
 
 **Voraussetzung:** iU4. **Block B1.** Der Umfang ist gegenüber Rev. 1 stark geschrumpft, weil
 `6486c36` das Meiste bereits erledigt hat.
