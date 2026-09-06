@@ -246,6 +246,29 @@
         /// <summary>PV_WrEta100 - Wirkungsgrad bei 100 % Auslastung; <b>NULL = 0,97.</b></summary>
         public double? PV_WrEta100;
 
+        // =============================================================================
+        // Der SICHTBARE Wechselrichterweg (W6-E-3, Stufe S2 des Wechselrichterkonzepts)
+        // =============================================================================
+
+        /// <summary>
+        /// PV_Wechselrichterweg - auf welchem Weg die Wechselrichter dieser Anlage
+        /// gerechnet werden: <see cref="DbWerte.PV_WR_WEG_VEREINFACHT"/> oder
+        /// <see cref="DbWerte.PV_WR_WEG_KATALOG"/>. <b>NULL = vereinfacht</b>, also der
+        /// Weg von heute, Zeichen fuer Zeichen.
+        ///
+        /// <para><b>Warum nullable und nicht bool.</b> Aus demselben Grund wie bei
+        /// <see cref="PV_Modell"/>: NULL heisst „nie gewaehlt" und ist etwas anderes als
+        /// ein ausdrueckliches „vereinfacht" - auch wenn beide gleich rechnen. Nur so
+        /// macht der Roundtrip aus einer nie gepflegten Zeile keine gepflegte, und nur
+        /// so kann die Maske eine getroffene Entscheidung von einer nicht getroffenen
+        /// unterscheiden.</para>
+        ///
+        /// <para><b>In Stufe S2 rechnet das Feld noch nicht.</b> <c>SimulationPV</c>
+        /// liest es nicht; der Rechenweg folgt mit S3 (Konzept 3.5 und 7.1). Bis dahin
+        /// traegt es allein die Wahl des Anwenders.</para>
+        /// </summary>
+        public string PV_Wechselrichterweg;
+
         public WErzeugerModel()
         {
             ID = 0;

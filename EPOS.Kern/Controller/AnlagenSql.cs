@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
     internal static class AnlagenSql
     {
         /// <summary>
-        /// VOLLSTAENDIGES INSERT der Anlagenzeile - alle 63 Spalten (gezaehlt).
+        /// VOLLSTAENDIGES INSERT der Anlagenzeile - alle 64 Spalten (gezaehlt).
         ///
         /// <para>
         /// WARUM VOLLSTAENDIG. Der Speicherweg aller Erzeuger ist Loeschen + Neuanlegen
@@ -58,6 +58,16 @@ namespace WindowsFormsApplication1
         /// </para>
         ///
         /// <para>
+        /// STUFE S2 des Wechselrichterkonzepts (Anwenderwunsch W6-E-3, Schritt 66) hat
+        /// <c>PV_Wechselrichterweg</c> ergaenzt - den SICHTBAREN Schalter zwischen
+        /// vereinfachter Rechnung und Wechselrichterkatalog. Auch er ist eine
+        /// MODELLspalte: Die PV-Anlagenmaske schreibt ihn, ab Stufe S3 liest ihn der
+        /// Rechenkern. Weil die Anweisung ihn nennt, MUSS die Spalte vorhanden sein -
+        /// deshalb steht sie in <c>SchemaKatalog.Alle</c> und damit in der
+        /// Rueckfallebene <c>WaermequelleClass.SchemaSicherstellen</c>.
+        /// </para>
+        ///
+        /// <para>
         /// NICHT VOLLSTAENDIG, MIT ABSICHT: Die FACHSPALTEN - KWKG je Anlage (Schritt 22),
         /// Steuerwahl/Hilfsenergie je Anlage (Schritt 61), Quell-Entnahmehoehe, Quellprofil
         /// und Temperaturmodus (Schritte 54/55) - fuehrt die Anweisung NICHT. Sie gehoeren
@@ -81,13 +91,15 @@ namespace WindowsFormsApplication1
                          WS_Typ, WS_Ziel, WS_ID_Puffer, WS_Ladeprio, WS_Ladegrenze, WS_Ladeprio_PV,
                          WS_Ziel2, WS_ID_Puffer2, WS_Ladeprio2, WS_Ladegrenze2,
                          PV_WrWirkungsgrad, PV_Systemverluste,
-                         PV_Modell, PV_WrNennleistungKw, PV_WrEta10, PV_WrEta50, PV_WrEta100)
+                         PV_Modell, PV_WrNennleistungKw, PV_WrEta10, PV_WrEta50, PV_WrEta100,
+                         PV_Wechselrichterweg)
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
                                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,
                                 ?,?,?,?,?,?,?,?,?,?,
                                 ?,?,
-                                ?,?,?,?,?)";
+                                ?,?,?,?,?,
+                                ?)";
 
         /// <summary>
         /// Parameter zu <see cref="SQL_ANLAGE_INSERT"/>, exakt in der Reihenfolge der
@@ -201,7 +213,13 @@ namespace WindowsFormsApplication1
                         ProjektPuffer.Par("@pvwrnenn",  DbParamTyp.Double,    Wert(item.PV_WrNennleistungKw)),
                         ProjektPuffer.Par("@pvwreta10", DbParamTyp.Double,    Wert(item.PV_WrEta10)),
                         ProjektPuffer.Par("@pvwreta50", DbParamTyp.Double,    Wert(item.PV_WrEta50)),
-                        ProjektPuffer.Par("@pvwreta100",DbParamTyp.Double,    Wert(item.PV_WrEta100))
+                        ProjektPuffer.Par("@pvwreta100",DbParamTyp.Double,    Wert(item.PV_WrEta100)),
+
+                        // --- Der sichtbare Wechselrichterweg (W6-E-3, Stufe S2) ------
+                        // Ausdruecklicher Typ aus demselben Grund wie bei PV_Modell:
+                        // NULL ist hier der Regelfall des Bestands ("vereinfacht"), und
+                        // ein Leerstring waere davon nicht zu unterscheiden.
+                        ProjektPuffer.Par("@pvwrweg",   DbParamTyp.VarWChar,  item.PV_Wechselrichterweg)
                     };
         }
 
