@@ -541,3 +541,237 @@ sechs Stellen auf, die die Fassung 1 falsch oder unvollständig beschrieb:
 | **A‑H13‑12** | Auf der Rubrikstartseite den Abschnitt „Schreibweise" lesen | die Zeichentabelle stimmt mit den Symbolen der sechs Seiten überein |
 | **A‑H13‑13** | Hilfe-Assistent: „Was bedeutet P_sol im Wärmebedarf?" — auch ohne Netz | die Antwort nennt die solaren Gewinne und die Einheit W; die Indizes kommen als `_x` an, nicht zusammengezogen |
 | **A‑H13‑14** | Die 76 Gleichungen fachlich gegenlesen | jede Formel beschreibt den Rechenweg, den das Programm geht; die sechs Berichtigungen aus § 12.7 sind einverstanden |
+
+## 13. Fassung 3 (06.09.2026) — LaTeX-Formeln und eine Legende unter jeder Gleichung
+
+### 13.1 Der Anwenderwunsch (wörtlich)
+
+> „stelle die Berechnungsdokumentation mit mathematischen Zeichen (z.B. Summenzeichen,
+> Integralzeichen, Index/Symbol als Formel wie LaTeX mathematisch dar. Die Definitionen der
+> Parameter/Variablen ist nicht erläutert (sollte unter der verwendeten Formel — oder an
+> geeigneter sichtbarer Stelle — beschrieben werden) — z.B. bei Blockheizkraftwerk:
+> SKZ = P_el / P_therm — P_el: elektrische Leistung des BHKW — P_therm: thermische Leistung
+> des BHKW"
+
+und, im selben Zug: „mathe erweiterung soll für die Formeln installiert werden auf wiki".
+
+Der Wunsch hat **zwei** Hälften, und die zweite ist die wichtigere: nicht nur schönerer
+Formelsatz, sondern **unter jeder Formel steht, was ihre Zeichen bedeuten**.
+
+### 13.2 Was sich gegenüber der Fassung 2 gedreht hat
+
+Die Fassung 2 verbot `<math>` und jeden Backslash-Befehl — mit gutem Grund: Das Wiki hatte
+**keine Math-Erweiterung**, und ein `<math>`-Block wäre dem Leser als Klartext mitten im Satz
+erschienen (§ 12.2). Der Anwender lässt die Erweiterung nun installieren (MediaWiki 1.46,
+native MathML-Wiedergabe). Damit kehrt sich der Riegel um:
+
+| | Fassung 2 | Fassung 3 |
+|---|---|---|
+| Anzeige-Gleichung | `: <big>Q<sub>a</sub> = ( Σ … ) / 1 000</big>  (23)` | `: <math>\displaystyle Q_{\mathrm{a}} = \frac{\sum … }{1\,000}</math>  (23)` |
+| Zeichenerklärung | nur in der Symboltabelle des Abschnitts „Formelzeichen und Parameter" | **zusätzlich** je Zeichen eine Zeile unmittelbar unter der Gleichung |
+| `<math>` | verboten | die Bauform |
+| Backslash-Befehl | verboten | **erlaubt, aber nur aus einer festen Liste** |
+| Argumente von min/max | Semikolon (`min( a ; b )`) | **Komma** (`\min(a, b)`) |
+| Fallunterscheidung | Aufzählung „für … gilt …" | `\begin{cases}…\end{cases}` |
+
+**Der Riegel bleibt, er zielt nur woanders hin.** Nicht mehr „kein Backslash", sondern „nur,
+was WikiTexVC sicher kennt": Ein unbekannter Befehl wird von der Erweiterung abgewiesen, und
+an der Stelle der Formel steht dem Leser eine **rote Fehlerzeile**. Das ist schlimmer als
+Klartext.
+
+### 13.3 Die Bauform einer Gleichung
+
+```
+: <math>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</math> &nbsp;&nbsp;(2)
+:: <math>\mathrm{SKZ}</math> – Stromkennzahl des Moduls [–]
+:: <math>P_{\mathrm{el}}</math> – elektrische Nennleistung des BHKW-Moduls [kW]
+:: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des BHKW-Moduls [kW]
+```
+
+Regeln, die dabei gelten:
+
+* **Alle** Zeichen der Gleichung, in der Reihenfolge ihres Auftretens, Ergebnisgröße zuerst —
+  auch die, die unter einer früheren Gleichung schon standen. Der Leser springt in eine Seite
+  hinein; er soll nicht zurückblättern müssen.
+* Einheit in eckigen Klammern; eine **Konstante mit ihrem Wert und ihrer Bedeutung**
+  (`4\,000` – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh).
+* Ausnahme ist allein der **Zeitindex** `t` bzw. `k` — er wird einmal am Anfang des Rechenwegs
+  erklärt und gilt für die ganze Seite.
+* Herkunft und Gleichungsverweis bleiben Sache der **zwei Tabellen**; sie sind nicht
+  überflüssig geworden, sie sagen etwas anderes.
+
+### 13.4 Die LaTeX-Teilmenge — und die sechs Zeichen, die dazukamen
+
+Erlaubt ist die Liste des Auftrags: `\frac \sqrt \sum \int \prod \min \max \cdot \left \right
+\lvert \rvert \mathrm \text \operatorname \displaystyle \quad`, die Vergleichs- und
+Mengenzeichen `\le \ge \ne \approx \pm \to \infty \in \dots`, die griechischen Buchstaben
+`\eta \vartheta \rho \lambda \alpha \beta \gamma \varepsilon \tau \varphi \Delta \Sigma` und
+`\begin{cases}…\end{cases}`. Verboten bleiben `\tag`, `\label`, `\newcommand`, `align` und
+Umlaute innerhalb einer Formel.
+
+**Sechs Zeichen kommen dazu**, weil die Rechenwege dieses Teils sie führen und es kein
+Ersatzzeichen gibt. Alle sechs sind texvc-Kernbefehle:
+
+| Befehl | wofür | wo |
+|---|---|---|
+| `\pi` | Kreiszahl | Kreisfrequenz des Jahresgangs, Kusuda-Modell (Erdreich) |
+| `\omega` | Kreisfrequenz | Erdreich, Symbol der Parametertabelle und (3), (5), (6) |
+| `\kappa` | Kaltwasserfaktor | Brauchwasser, Herleitung der Monatswerte (8) |
+| `\Psi` | Wärmebrückenverlustkoeffizient | Wärmebedarf (4) |
+| `\ell` | Länge | Sondenmeter (Erdreich) und Anschlusslängen (Wärmebedarf) |
+| `\dot` | Punkt darüber | Massenstrom in der Zeichentabelle der Rubrikstartseite |
+
+Die Liste steht wörtlich gleich an **drei** Stellen: im Wächter des Kerns, im Wächter der
+Oberfläche und in der lokalen Probe (§ 13.7). Wer sie erweitert, erweitert sie dreimal.
+
+### 13.5 Die Schreibweise auf `_Index.wiki`
+
+Der Abschnitt „Schreibweise" ist neu gefasst. Aus „Warum keine LaTeX-Formeln" ist
+**„Warum eine kleine LaTeX-Teilmenge"** geworden; dazu kommen ein vollständiges Beispiel mit
+Legende, die Regel „unter jeder Gleichung steht ihre Legende", die Ausnahme des Zeitindex und
+der Hinweis, was der Leser sieht, falls die Erweiterung im Wiki einmal nicht aktiv ist. Die
+**Semikolon-Regel der Fassung 2 ist gestrichen**: In LaTeX steht ein mehrteiliger Index in
+seiner eigenen Klammer (`P_{\mathrm{AC,nenn}}`), das Komma kann nichts mehr verwechseln. Die
+Zeichentabelle bleibt; ihre Symbolspalte ist selbst `<math>`.
+
+### 13.6 Der Klartext für den Assistenten
+
+`BerechnungsHilfe.LatexKlartext` setzt jede `<math>…</math>` in eine Zeile um, **bevor** die
+Tag-Entfernung greift — sonst bekäme der Assistent den Backslash-Salat.
+
+| LaTeX | Klartext |
+|---|---|
+| `\displaystyle`, `\left`, `\right`, `\,`, `\;`, `\quad` | fallen weg |
+| `\mathrm{x}`, `\text{x}`, `\operatorname{x}` | `x` |
+| `\frac{a}{b}` | `(a)/(b)` |
+| `\sqrt{x}` | `√(x)` |
+| `\sum_{t=1}^{8\,760}` | `Σ_t=1^8760` |
+| `P_{\mathrm{AC,nenn}}` | `P_AC,nenn` |
+| `\begin{cases} a & b \\ c & \text{sonst}\end{cases}` | `{ a wenn b; c sonst }` |
+| `\eta \le 1`, `0{,}95`, `\{1, \dots, n\}` | `η ≤ 1`, `0,95`, `{1, …, n}` |
+
+Zwei Feinheiten, an denen es hängt:
+
+* Die Umsetzung **zählt Klammern aus**. Ein Muster wie `\\frac\{([^{}]*)\}\{([^{}]*)\}` genügt
+  nicht: In `\frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}` trägt jedes Argument selbst eine Klammer.
+* Hinter einem Befehlsnamen steht `(?![A-Za-z])` und **nicht** `\b`. Der Wortanschluss läge
+  zwischen „sum" und dem Unterstrich von `\sum_{t=1}` gar nicht vor — beides sind für ihn
+  Wortzeichen —, und die Summe bliebe als `sum` stehen. Ein Buchstabenzeichen schluckt
+  zusätzlich das Leerzeichen, das den Namen beendet: `\Delta t(L)` wird `Δt(L)`, während
+  `\lambda = 1{,}4` als `λ = 1,4` stehen bleibt.
+
+Sechs neue Prüffälle halten das fest: Bruch, Summe mit Grenzen, Index und Hochzahl,
+Fallunterscheidung, griechische Befehle und eine Gegenprobe, die zeigt, dass ein deutscher
+Satz unverändert durchläuft.
+
+### 13.7 Die lokale LaTeX-Probe
+
+Die Wiki-Vorschau (`action=parse`) kann eine kaputte Formel **nicht** melden, solange die
+Erweiterung nicht installiert ist — sie gibt `<math>` als Klartext zurück. An ihre Stelle tritt
+`…/scratchpad/h13/latexprobe.py`: Sie zieht jede `<math>…</math>` aus der Datei, setzt sie mit
+`latex2mathml` nach MathML um (genau der Schritt, den die Erweiterung im Wiki tut) und hält
+jeden `\befehl` gegen die Liste aus § 13.4. Dazu prüft sie die lückenlose Nummernfolge, dass
+unter jeder Gleichung eine Legendezeile steht, und dass kein `<big>` übrig ist.
+
+| Seite | `<math>`-Spannen | Gleichungen | Legendezeilen | Fehler |
+|---|---|---|---|---|
+| `_Index` | 36 | 1 (Beispiel) | 3 | 0 |
+| Simulationsablauf | 67 | 9 | 30 | 0 |
+| Wärmebedarf | 237 | 24 | 102 | 0 |
+| Brauchwasser | 77 | 8 | 32 | 0 |
+| Prozesswärme | 54 | 6 | 23 | 0 |
+| Strombedarf | 74 | 10 | 31 | 0 |
+| Wärmequelle Erdreich | 188 | 19 | 75 | 0 |
+| **Summe** | **733** | **77** | **296** | **0** |
+
+Die sechs Seiten tragen davon **76 Gleichungen und 293 Legendezeilen** — dieselben 76
+Gleichungen wie in der Fassung 2, keine ist dazugekommen oder weggefallen.
+
+### 13.8 Was der Formelsatz sichtbar macht
+
+Die Umsetzung ändert die Aussage nicht — sie macht sie lesbar. Die Stellen, an denen der
+Unterschied am größten ist:
+
+| Seite | vorher | jetzt |
+|---|---|---|
+| Simulationsablauf (4) | zwei Aussagen in einer Zeile, durch Komma getrennt | Fallunterscheidung; der Text sagt „der zweite Fall von (4)" statt „der zweite Teil" |
+| Wärmebedarf (2), (11) | Klammerketten mit `/` | echte Brüche; das RC-Modell ist als eines zu lesen |
+| Wärmebedarf (5), (8) | „für … sonst" am Zeilenende | `cases` |
+| Wärmebedarf (21) | Bedingung `für c ∈ { TWW, Pro }` NEBEN der Gleichung | in der Gleichung; dafür sagt der Satz unter (18)/(19), welche Gleichung zu welcher Einheit gehört |
+| Brauchwasser/Prozesswärme (3), (4) | „mod 168" und „t ∈ Monat m" als angehängter Halbsatz | `\operatorname{mod}` bzw. unter dem Summenzeichen |
+| Erdreich (2), (5), (6) | `√( a₁² + b₁² )`, `cos( … )` als Text | Wurzel über der Quadratsumme, Kosinus als `\operatorname` |
+| Erdreich (18) | ein deutscher Satz in Formelgestalt: „Zahl der Betriebsstunden mit …" | Mächtigkeit der Menge der Betriebsstunden mit Frost |
+| alle | Index immer aufrecht | **laufender** Index kursiv (`P_g`, `Q_c`, `q_{NV,c}`), **Wort**index aufrecht (`P_{Prof}`, `E_{GL}`) |
+
+**Gegengelesen gegen den Rechenkern** wurden beim Umsetzen die Stellen, an denen die Fassung 3
+die Form ändert: die drei Temperatur-Korrekturfaktoren und der Frostfaktor
+(`BhkwPlan.HeizlastKoeffizienten`, `0.83/0.95/0.45`, `AussenTemp·0.025 + 1.0`), das
+`Math.Max(1, anzahl)` der Sondenmeterzahl (`VDI4640Pruefung:446`, `ErdreichAuswertung:524`),
+das `if (q <= 0) continue` der Entzugsganglinie (`ErdreichAuswertung:400`) und der Faktor
+1 000 der Spitze (`ErdreichAuswertung:466`). Sie stimmen mit den Seiten überein;
+**eine Berichtigung war nicht nötig** — die sechs Befunde der Fassung 2 (§ 12.7) sind darin
+schon eingearbeitet.
+
+### 13.9 Die Wächter (Teil A)
+
+`EPOS.Kern.Tests/BerechnungsHilfeTests` — **90/90 grün** (Theoriefälle einzeln gezählt):
+
+| Fall | was er hält |
+|---|---|
+| `Jede_Seite_dieses_Teils_setzt_die_Gleichungen_in_LaTeX` | je Seite: Gleichung als `: <math>…</math>  (n)`, lückenlose Nummern, **unter jeder** mindestens eine Zeile `:: <math>`, kein `<big>` mehr |
+| `Der_Stand_dieses_Teils_nennt_die_Fassung_3` | Kopfblock `2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden)` |
+| `Jede_Seite_haelt_sich_an_die_LaTeX_Teilmenge` | alle 13 Seiten: kein Befehl außerhalb der Liste aus § 13.4 |
+| sechs Klartextfälle | § 13.6 |
+
+`EPOS.UI.Tests/BerechnungsknopfTests` — **29/29 grün**: dazu
+`Jeder_Knopf_dieses_Teils_fuehrt_auf_eine_Seite_der_Fassung_3` (dieselbe Bauform, gelesen von
+der Platte statt aus der Assembly) und die erweiterte Prüfung der Rubrikstartseite
+(`\displaystyle`, „LaTeX", „Legende").
+
+**Der Übergangszustand ist ausdrücklich eingebaut.** Bis Teil B seine sieben Erzeugerseiten
+nachzieht, liegen im selben Ordner **beide** Fassungen. Deshalb:
+
+* die Fälle über **alle 13** Seiten nehmen `<math>` **oder** `<big>` an,
+* die Fälle der Fassung 3 laufen über eine zweite Liste `SeitenDiesesTeils` (die sechs Seiten
+  dieses Teils),
+* beide tragen den Vermerk `// TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen`.
+
+### 13.10 Nachweise
+
+* `dotnet test EPOS.Kern.Tests -c Release` → **1 570 bestanden, 6 fehlgeschlagen**.
+* `dotnet test EPOS.UI.Tests -c Release` → **2 909 bestanden, 18 fehlgeschlagen**.
+* **Alle 24 roten Fälle liegen in den zwei Wächtern des Teils B** und melden dort die
+  Fassung-2-Regeln, die mit dieser Fassung entfallen:
+  `EPOS.Kern.Tests/BerechnungshilfeEinbettungTests.Die_Formelzeichen_ueberstehen_die_Einbettung`
+  (6× — `DoesNotContain("<math")`, `\frac`, `\sum`) sowie
+  `EPOS.UI.Tests/BerechnungshilfeTests.Keine_Seite_benutzt_Math_Auszeichnung_oder_LaTeX`,
+  `…Jede_Anzeigeformel_traegt_ihre_laufende_Nummer` und
+  `…Jede_Seite_nennt_ihre_Fassung_im_Kopfblock` (je 6× — `Contains("Fassung 2")`, `<big>`).
+  Jeder dieser Fälle betrifft **ausschließlich** die sechs Seiten dieses Teils. Sie sind nach
+  Punkt 7 des Auftrags **nicht anzufassen** (Teil B stellt sie im eigenen Zweig um, Punkt 7:
+  „`<math>` und mindestens einer von `\cdot`, `\frac`, `\sum` überleben die Einbettung; die
+  Unicode-Prüfung auf ‚·' entfällt"). Mit der Zusammenführung beider Teile schließt sich der
+  Punkt.
+* **Die zwei Wächter dieses Teils sind grün**: `BerechnungsHilfeTests` 90/90,
+  `BerechnungsknopfTests` 29/29.
+* Lokale LaTeX-Probe je Seite: § 13.7 — **733 Formeln, 0 Fehler**.
+* **Nicht angefasst:** Rechenweg, SQL, Ressourcen, `help_mapping.txt`, `help_cache.json`,
+  `HelpCatalog.cs`, `Umsetzungskonzept_iOS_EPOS-Plan.md`, die sieben Seiten des Teils B und
+  dessen zwei Wächter.
+
+### 13.11 Was noch offen ist
+
+| Punkt | was zu tun ist |
+|---|---|
+| **H13‑F3‑1** | Die **Math-Erweiterung** im Wiki muss laufen, bevor die Seiten hochgeladen werden. Solange sie fehlt, sieht der Leser `\displaystyle …` als Klartext — kein Fehler des Textes, aber unbrauchbar. |
+| **H13‑F3‑2** | Nach der Zusammenführung von Teil A und Teil B: die zwei `TODO`-Vermerke einlösen — `SeitenDiesesTeils` → `SeitenDerRubrik`, das Oder `<math>`/`<big>` auflösen. |
+| **H13‑F3‑3** | Die Vorschau-Probe über `action=parse` erneut ziehen, sobald die Erweiterung steht — diesmal auf die WIEDERGABE der Formeln, nicht nur auf Tabellen und Abschnitte. |
+
+### 13.12 Abnahme auf Windows (Nachtrag zu § 9 und § 12.9)
+
+| Punkt | Was zu prüfen ist | Erwartung |
+|---|---|---|
+| **A‑H13‑15** | Die sechs Seiten der Fassung 3 ins Wiki hochladen und im Browser ansehen | Brüche mit Bruchstrich, Summenzeichen mit Grenzen darüber und darunter, geschweifte Klammer über zwei Zeilen; **keine rote Fehlerzeile** |
+| **A‑H13‑16** | Unter einer beliebigen Gleichung die Legende lesen | jedes Zeichen der Gleichung steht darunter, mit Einheit; Konstanten mit ihrem Wert |
+| **A‑H13‑17** | Hilfe-Assistent: „Wie rechnet EPOS-Plan den Netzverlust?" — auch ohne Netz | die Antwort gibt `q_NV = (Q_a,vor · p)/(876000)` in lesbaren Zeichen wieder, nicht als `\frac{…}{…}` |
+| **A‑H13‑18** | Auf der Rubrikstartseite den Abschnitt „Schreibweise" lesen | das Beispiel rendert; die Zeichentabelle stimmt mit den Symbolen der sechs Seiten überein |
