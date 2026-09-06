@@ -124,7 +124,16 @@ namespace WindowsFormsApplication1
             // Kopie auf das Profil des QUELLprojekts; eine Aenderung dort schlueg dann
             // stillschweigend in beiden Projekten durch.
             {"WQ_ID_Quellprofil","Tab_Quellprofil"},
-            {"ID_Quellprofil","Tab_Quellprofil"}
+            {"ID_Quellprofil","Tab_Quellprofil"},
+            // S2 des Wechselrichterkonzepts (Migrationsschritt 66): Der Strang zeigt auf
+            // die PROJEKTKOPIE des Geraets. Ohne Versatz zeigte die Strangzeile einer
+            // Variante auf den Wechselrichter des QUELLprojekts - und weil Tab_Wechselrichter
+            // wie ihr Zwilling Tab_PV keinen Fremdschluessel auf Tab_Projekt fuehrt, faellt
+            // das beim Einfuegen nicht einmal auf. Die deklarierte Beziehung
+            // Z_AnlageStrang.ID_Wechselrichter -> Tab_Wechselrichter erkennt _echteFks
+            // ohnehin; der Eintrag hier ist Guertel und Hosentraeger fuer Datenbanken, in
+            // denen Schritt 66 (noch) nicht gelaufen ist.
+            {"ID_Wechselrichter","Tab_Wechselrichter"}
         };
 
         // Mehrdeutige FK-Spalten (gleicher Name, verschiedene Zieltabellen) -> je Tabelle aufgeloest.
@@ -169,6 +178,19 @@ namespace WindowsFormsApplication1
             // mitkommen.
             {"Z_AnlageSenke",          "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
             {"Z_AnlagePufferVerbund",  "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
+
+            // S2 des Wechselrichterkonzepts (Migrationsschritt 66): Die Strangliste
+            // haengt an der ANLAGE und fuehrt bewusst kein eigenes ID_Projekt - dasselbe
+            // Muster wie die zwei Zeilen darueber.
+            //
+            // AUSDRUECKLICH UND NICHT UEBER DIE AUTO-ERKENNUNG, aus genau demselben
+            // Grund wie bei Z_AnlageSenke: Die Erkennung nimmt die ERSTE Spalte, zu der
+            // sie eine deklarierte Beziehung auf eine bereits geplante Tabelle findet -
+            // bei Z_AnlageStrang waeren das ID_Anlage ODER ID_Wechselrichter, je nach
+            // Spaltenreihenfolge. Ueber ID_Wechselrichter gefiltert fielen alle Straenge
+            // OHNE zugeordnetes Geraet aus der Kopie, und das ist genau der
+            // Zwischenstand, den ein Planer ablegen darf.
+            {"Z_AnlageStrang",         "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
 
             // Q1 (Migrationsschritt 54): Die Wertzeilen eines Quellprofils haengen am
             // KOPF und fuehren bewusst kein eigenes ID_Projekt - dasselbe Muster wie
