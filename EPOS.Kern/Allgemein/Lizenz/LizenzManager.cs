@@ -36,6 +36,19 @@ namespace WindowsFormsApplication1
         /// <summary>Adresse des Lizenzportals für Hinweise an den Benutzer.</summary>
         public const string PORTAL_URL = "https://epos-plan.de/lizenzportal/";
 
+        // ------------------------------------------------------------------
+        //  Die drei Warnstufen vor dem Ablauf (Konzept § 6, Welle iF30)
+        // ------------------------------------------------------------------
+
+        /// <summary>Erste Warnstufe: 30 Tage vor Ablauf.</summary>
+        public const int WARNSTUFE_1 = 30;
+
+        /// <summary>Zweite Warnstufe: 14 Tage vor Ablauf.</summary>
+        public const int WARNSTUFE_2 = 14;
+
+        /// <summary>Dritte Warnstufe: 7 Tage vor Ablauf.</summary>
+        public const int WARNSTUFE_3 = 7;
+
         private static readonly object _sperre = new object();
         private static LizenzToken _token;
         private static bool _geladen;
@@ -213,6 +226,46 @@ namespace WindowsFormsApplication1
         }
 
         // ------------------------------------------------------------------
+        //  Restlaufzeit und Warnstufe (Welle iF30, Konzept § 6)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Tage bis zum Ablauf der Lizenz (<c>gueltig_bis</c>); <c>null</c> bei fehlendem
+        /// oder unbefristetem Token, negativ, wenn der Tag schon vorbei ist.
+        /// </summary>
+        /// <remarks>
+        /// Gemessen wird gegen <c>GueltigBis</c> — die LIZENZLAUFZEIT — und nicht gegen
+        /// <c>TokenBis</c>, die Offline-Leine: Letztere erneuert sich bei jeder stillen
+        /// Nachprüfung von selbst, und ein Hinweis darauf wäre für den Anwender kein
+        /// Handlungsauftrag. Dieselbe Rangfolge wie in <see cref="Bewerten"/>.
+        /// </remarks>
+        internal static int? RestTage(LizenzToken token, DateTime heute)
+        {
+            if (token == null || !token.GueltigBis.HasValue) return null;
+            return (int)(token.GueltigBis.Value.Date - heute.Date).TotalDays;
+        }
+
+        /// <summary>
+        /// Die erreichte Warnstufe: <c>0</c> (keine), sonst
+        /// <see cref="WARNSTUFE_1"/>, <see cref="WARNSTUFE_2"/> oder
+        /// <see cref="WARNSTUFE_3"/>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Nach dem Ablauf gibt es keine Warnstufe mehr</b>, sondern einen ZUSTAND
+        /// (Kulanz oder Lesemodus) — die Stufen warnen VOR dem Ablauf. Der Tag des Ablaufs
+        /// selbst zählt noch zur dritten Stufe: An ihm ist die Lizenz gültig.
+        /// </remarks>
+        internal static int Warnstufe(LizenzToken token, DateTime heute)
+        {
+            int? rest = RestTage(token, heute);
+            if (!rest.HasValue || rest.Value < 0) return 0;
+            if (rest.Value <= WARNSTUFE_3) return WARNSTUFE_3;
+            if (rest.Value <= WARNSTUFE_2) return WARNSTUFE_2;
+            if (rest.Value <= WARNSTUFE_1) return WARNSTUFE_1;
+            return 0;
+        }
+
+        // ------------------------------------------------------------------
         //  Aktivierung / Nachprüfung / Freigabe
         // ------------------------------------------------------------------
 
@@ -343,6 +396,11 @@ namespace WindowsFormsApplication1
                 _token = token;
                 _geladen = true;
             }
+
+            // Welle iF30: Die Schreibnaht speichert ihre Antwort ein paar Sekunden lang
+            // zwischen. Eine frisch aktivierte Lizenz soll SOFORT tragen und nicht erst
+            // nach Ablauf der Haltbarkeit - deshalb hier verwerfen.
+            Schreibnaht.Neubewerten();
         }
 
         private static void TokenLoeschen()
@@ -353,6 +411,10 @@ namespace WindowsFormsApplication1
                 _token = null;
                 _geladen = true;
             }
+
+            // Umgekehrt genauso: Ein abgelehntes oder freigegebenes Gerät verliert sein
+            // Schreibrecht mit dem Token, nicht fünf Sekunden später.
+            Schreibnaht.Neubewerten();
         }
 
         /// <summary>Höchsten je gesehenen Tag lesen (Datei und Registry, Maximum).</summary>

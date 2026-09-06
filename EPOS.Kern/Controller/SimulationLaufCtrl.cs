@@ -57,6 +57,13 @@ namespace WindowsFormsApplication1
         /// <param name="idKlimaregion">Die Klimaregion des Projekts; 0 heißt „keine".</param>
         public static string Vorpruefen(int idProjekt, KonfigurationModel konfig, int idKlimaregion)
         {
+            // Der LESEMODUS steht VOR allem anderen (Welle iF30, Anwenderentscheid
+            // 04.09.2026). Ein Lauf endet mit ErgebnisSpeichern, und der schriebe an der
+            // Schreibnaht auf - nach Minuten Rechenzeit und mitten im Speichern. Die Frage
+            // gehört deshalb an den Anfang: erst der Grund, dann gar kein Lauf.
+            string lesemodus = LesemodusGrund();
+            if (lesemodus != null) return lesemodus;
+
             if (konfig == null) return MyResource.Resource.SIM_MSG_KONFIGURATION_FEHLT;
 
             // Wörtlich aus Energiebedarf :3953: NUR bei der Einheit „%" und NUR über 100.
@@ -66,6 +73,25 @@ namespace WindowsFormsApplication1
             if (idKlimaregion == 0) return MyResource.Resource.SIM_MSG_KLIMAREGION_WAEHLEN;
 
             return null;
+        }
+
+        /// <summary>
+        /// Der Grund, warum im LESEMODUS nicht gerechnet werden darf — <c>null</c>, wenn
+        /// die Lizenz Arbeitsergebnisse erlaubt (Welle iF30).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum eine eigene Frage und nicht die Schreibnaht.</b> Die Naht wirft
+        /// dort, wo die erste schreibende Anweisung steht — bei einem Simulationslauf ist
+        /// das <c>ErgebnisCtrl.Save</c>, also NACH der ganzen Rechnung. Der Anwender sähe
+        /// eine Meldung, nachdem er eine Minute gewartet hat. Die Frage steht deshalb ein
+        /// zweites Mal, ganz vorn; die Naht bleibt der Riegel dahinter.</para>
+        /// <para><b>Ansehen bleibt frei.</b> Diese Prüfung gehört zum LAUF und nicht zur
+        /// Ergebnisansicht: Ein gespeichertes Ergebnis darf im Lesemodus geöffnet,
+        /// betrachtet, berichtet und exportiert werden (Konzept § 6).</para>
+        /// </remarks>
+        public static string LesemodusGrund()
+        {
+            return Schreibnaht.DarfSchreiben() ? null : MyResource.Resource.SIM_MSG_LESEMODUS;
         }
 
         /// <summary>

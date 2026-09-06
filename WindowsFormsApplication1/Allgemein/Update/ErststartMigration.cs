@@ -175,6 +175,16 @@ namespace WindowsFormsApplication1
             LetzteTabellenOk = 0;
             LetzteZeilen = 0;
 
+            // AUSNAHME DER SCHREIBNAHT (Welle iF30, Anwenderentscheid 04.09.2026).
+            // Die Erststart-Migration hebt einen .accdb-Bestand nach SQLite. Sie laeuft
+            // genau einmal je Bestand, vor jeder Fachmaske, und muss auch im Lesemodus
+            // laufen duerfen: Ohne sie gaebe es keine Datenbank, die man ansehen koennte.
+            // Der Access-Zweig selbst geht ohnehin ueber eigene OleDb-Verbindungen an der
+            // Naht vorbei - die Freigabe deckt die SQLite-Seite (Schemamarker,
+            // Nachmigration) und macht die Ausnahme an dieser Stelle LESBAR.
+            using IDisposable freigabe = Schreibnaht.Freigabe(Schreibnaht.GRUND_MIGRATION);
+
+
             // --- Vorprüfung: nur die Lage "nur .accdb" ist ein Auftrag ------------------
             ErststartLage lage = Pruefe(dbOrdner);
             if (lage == ErststartLage.SqliteVorhanden)
