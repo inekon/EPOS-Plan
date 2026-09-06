@@ -1,0 +1,201 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Pufferspeicher | Stand: 2026-09-06 | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/SimulationPufferspeicher.cs (Energie- und Schichtebene),
+     Ladeordnung.cs (Lade- und Entladereihenfolge, Obergrenzen), Kaskadenschleife.cs (Phasen A-G),
+     Kaskade.cs, Hydraulikbild.cs, Update/ProjektPuffer.cs (nutzbare Kapazität) -->
+
+== Was berechnet wird ==
+
+Ein thermischer Pufferspeicher entkoppelt Erzeugung und Bedarf. Der Lauf führt für jede Stunde
+seinen '''Füllstand''', die '''Ladung''', die '''Entladung''', die '''Bereitschaftsverluste''' und —
+wenn mehr als eine Schicht gepflegt ist — die '''Temperaturen''' seiner Zonen. Ergebnisgrößen sind
+die Jahressummen dieser vier Energieströme, die '''Vollzyklen''' und die Ganglinien von Füllstand und
+Temperaturen.
+
+Der Speicher rechnet nicht für sich: Er ist die Senke der Erzeuger und die Quelle der
+Bedarfsdeckung. Wer wann in ihn lädt, entscheidet die '''Ladeordnung'''; wer wann aus ihm entnimmt,
+die '''Entladereihenfolge''' seines Kanals.
+
+== Eingangsgrößen ==
+
+{| class="wikitable"
+! Größe !! Einheit !! Herkunft im Programm
+|-
+| Gesamtvolumen || l || Pufferspeicherkatalog, Feld „Gesamtvolumen"
+|-
+| Bereitschaftsverluste || kWh/24&nbsp;h || Pufferspeicherkatalog, Feld „Bereitschaftsverluste"
+|-
+| Vorlauf, Rücklauf || °C || Dialog „Pufferspeicher (Projekt)", Abschnitt „Eigenschaften"
+|-
+| Nutzung (Heizung / Brauchwasser / Prozess, einzeln oder kombiniert) || — || derselbe Abschnitt, Klassen-Set
+|-
+| Einschaltschwelle, Abschaltschwelle || Anteil 0…1 || derselbe Abschnitt, Abschnitt „Schwellen"
+|-
+| Abschaltschwelle für nachrangige Anlagen || Anteil 0…1 || derselbe Abschnitt — die Solar-Reservezone
+|-
+| Mindestfüllstand || Anteil 0…1 || derselbe Abschnitt
+|-
+| Schichtenzahl (1…10), Behälterhöhe, effektive Wärmeleitfähigkeit || —, m, W/(m·K) || Abschnitt „Schichtung"
+|-
+| Entnahmehöhe je Kanal || Anteil 0…1 (1 = ganz oben) || Abschnitt „Schichtung"
+|-
+| Mindest-Nutztemperatur Brauchwasser || °C || Abschnitt „Schichtung"
+|-
+| Ladeleistungsgrenze, Entladeleistungsgrenze || kWh je Stunde, 0 = unbegrenzt || Abschnitt „Eigenschaften"
+|-
+| Entladepriorität || 1…99 oder Automatik || Abschnitt „Ladereihenfolge"
+|-
+| Ladepriorität je ladender Anlage || 1…99 || Simulationskonfiguration, Karte des Erzeugers
+|}
+
+== Rechenweg ==
+
+=== Schritt 1 — Nutzbare Kapazität ===
+
+ Q_max [kWh] = Volumen [l] · 1,16 Wh/(l·K) · (Vorlauf − Rücklauf) / 1000
+
+Fehlt ein vollständiges Temperaturpaar, gilt ein Rückfall-ΔT von '''10&nbsp;K''' — beim
+BHKW-Pendelspeicher '''20&nbsp;K''', weil dessen Altformel diese Spreizung fest verdrahtet hatte und
+ein Rückfall auf 10&nbsp;K seine Kapazität ohne fachlichen Grund halbieren würde. Der Rückfall wird
+am Speicher vermerkt und lässt sich protokollieren.
+
+ Verlust je Stunde = Bereitschaftsverluste [kWh/24 h] / 24
+
+=== Schritt 2 — Laden ===
+
+Ein Erzeuger lädt bis zu seiner '''Obergrenze''', und die hängt davon ab, ob er an diesem Speicher
+der vorrangige Lader ist:
+
+ Obergrenze = eigene Ladegrenze der Senkenzeile, wenn gesetzt
+            = Abschaltschwelle,                  wenn die Anlage die vorrangige ist
+            = Abschaltschwelle für Nachrangige,  sonst
+
+ Ladefähigkeit = Q_max · Obergrenze − Füllstand − Reserviertes
+
+Die zweite Zeile ist die '''Solar-Reservezone''': Wo eine Reserve gepflegt ist, laden nachrangige
+Erzeuger — üblicherweise der Heizkessel — nur bis dorthin, und der obere Teil bleibt für die
+Solarthermie frei. In Stunden mit PV-Überschuss kann eine andere Anlage vorrangig sein; dann gilt die
+Reservezone für sie, denn Anzeige und Rechnung lösen die Obergrenzen mit derselben Funktion und der
+jeweils gültigen Priorität auf.
+
+'''Der Speicher als hydraulische Weiche.''' Er drosselt die Anlage nicht auf seinen freien Raum: Er
+wird geladen, während die Last aus ihm entnimmt. Die Aufnahme einer Stunde darf deshalb um genau die
+Menge über die freie Kapazität hinausgehen, die im selben Zeitschritt wieder entnommen wird
+(''Durchlass''):
+
+ aufnehmbar = Q_max − Füllstand + Durchlass
+ Bilanzraum = Ladefähigkeit + min(offener Kanalbedarf ; Entnahmefähigkeit)
+
+Der Füllstand liegt dann vorübergehend über Q_max; die Nachentladung zieht ihn im selben Zeitschritt
+wieder herunter. Buchhalterisch wird die Aufnahme in '''Umsatz''' (bis Q_max) und '''Durchfluss'''
+(alles darüber) zerlegt — nur der Umsatz ist Speicherinhalt.
+
+Eine gepflegte '''Ladeleistungsgrenze''' wirkt als '''Budget der Stunde''', nicht je Ladevorgang:
+Ein Speicher wird in derselben Stunde von mehreren Erzeugern angefahren, und je Aufruf gewährt
+bekäme er die Grenze mehrfach.
+
+=== Schritt 3 — Entladen ===
+
+ Entnahme = min(angefordert ; Füllstand)
+ danach auf das Entladebudget der Stunde begrenzt (0 = unbegrenzt)
+
+Die Entnahme wird ebenfalls in Durchfluss und Umsatz zerlegt — der Durchfluss verlässt den Speicher
+zuerst. Führt ein Kanal eine '''Mindest-Nutztemperatur''' und ist der Speicher geschichtet, zählt nur,
+was die Schichten oberhalb dieser Temperatur und unterhalb der '''Entnahmehöhe''' des Kanals
+hergeben. Beim Kombispeicher ist das der Grund, warum die Heizung die Bereitschaftszone des
+Brauchwassers oben nicht antastet.
+
+'''Die Entladereihenfolge''' läuft je Kanal über die Entladepriorität; ohne manuelle Angabe gilt die
+Automatik: die beste (kleinste) Ladepriorität der Anlagen, die diesen Speicher laden.
+
+=== Schritt 4 — Hysterese der Speicherregelung ===
+
+ Füllstand ≤ Q_max · Einschaltschwelle  →  Nachladung beginnt
+ Füllstand ≥ Q_max · Abschaltschwelle   →  Nachladung endet
+
+Solange nachgeladen wird, deckt der Speicher '''keinen''' Bedarf vorab (Phase A der Stundenschleife).
+Die '''Nachentladung''' (Phase E) greift davon unabhängig — genau wie im Bestand die Entladung vor
+Heizstab und nachfolgendem Erzeuger.
+
+=== Schritt 5 — Bereitschaftsverluste, einmal je Stunde ===
+
+Am Stundenende, nach Bedarfsdeckung, Ladung und Nachentladung:
+
+ Anteil  = Füllstand / Q_max , auf 1 begrenzt
+ Verlust = Verlust je Stunde · Anteil ,  höchstens der Füllstand
+ Füllstand = Füllstand − Verlust
+
+Der Verlust ist also füllstandsanteilig: Ein halb voller Speicher verliert halb so viel wie ein
+voller. Steht ausnahmsweise noch Durchfluss im Speicher, trägt dieser den Verlust zuerst, damit die
+getrennte Bilanz aufgeht.
+
+=== Schritt 6 — Schichtung (nur bei mehr als einer Schicht) ===
+
+Der Speicherinhalt wird auf '''N''' gleich große Zonen verteilt, Schicht 0 oben. Der Füllstand bleibt
+die führende Größe; die Schichtebene verteilt ihn nur:
+
+ Σ Schichtenergie  =  min(Füllstand ; Q_max)
+ Schichtenergie ∈ [0 ; Q_max/N]     entspricht     T ∈ [Rücklauf ; Vorlauf]
+ T[i] = Rücklauf + Schichtenergie[i] / (Q_max/N) · (Vorlauf − Rücklauf)
+
+Je Stunde laufen in dieser Reihenfolge: ideale '''Einschichtung''' beim Laden (die Wärme geht auf die
+Einspeisehöhe), ideale '''Verdrängung''' beim Entladen (an der Entnahmehöhe des Kanals), dann der
+'''vertikale Ausgleich''' — Wärmeleitung zwischen benachbarten Zonen, je Schichtpaar und Stunde auf
+'''25&nbsp;%''' der Temperaturdifferenz gekappt, damit der Schritt stabil bleibt und die Reihenfolge
+zweier Schichten nicht kippen kann —, anschließend die '''Inversionsmischung''' (wärmer unten als
+oben wird gemischt), danach die Verluste nach Wärmeabgabefläche und Temperaturüberhöhung, und ein
+zweiter Inversionsdurchgang.
+
+Vorbelegungen ohne gepflegte Werte: effektive Wärmeleitfähigkeit '''1,5&nbsp;W/(m·K)''' (sie enthält
+die Wandleitung und ist deshalb deutlich größer als die des ruhenden Wassers), Höhen-Durchmesser-
+Verhältnis '''2,5''', Entnahmehöhe '''oben''', Mindest-Nutztemperatur '''gleich dem Rücklauf'''.
+Höchstens '''zehn''' Schichten.
+
+Mit '''N = 1''' — der Vorbelegung — ist die Schichtebene wirkungslos: Es gibt kein Schichtpaar, also
+keine Wärmeleitung und keine Inversion, und die Entladefähigkeit klemmt nichts.
+
+=== Schritt 7 — Vollzyklen ===
+
+ Vollzyklen = entnommene Energie / nutzbare Kapazität
+
+== Grenzen und Annahmen ==
+
+* '''Ein Energiebilanzmodell, kein Strömungsmodell.''' Es gibt keine Massenströme, keine
+  Rohrleitungen, keine Wärmeübertrager. Die Lade- und Entladeleistungsgrenzen sind die einzige
+  hydraulische Schranke, und sie sind Zahlen, keine Geometrie.
+* '''Ideale Einschichtung und ideale Verdrängung.''' Ein einströmender Strahl mischt nicht auf; in
+  einem realen Speicher tut er das.
+* '''Gleich große Zonen.''' Die Schichtdicke ist nicht wählbar.
+* '''Der Bereitschaftsverlust ist ein Tageswert''', keine Funktion von Umgebungstemperatur,
+  Aufstellort oder Dämmstärke.
+* '''Ein Quellspeicher ist statisch''', solange er nicht zugleich Senke eines Erzeugers ist: Erst
+  ein geteilter Puffer bekommt eine stündliche Temperatur; ein eigenständiger Quellspeicher bleibt
+  bei seiner festen Temperatur.
+* '''Der Durchfluss wird nicht in Schichten geführt.''' Er ist hydraulisch durchströmende Wärme und
+  war nie Speicherinhalt; eine bei Vorlauftemperatur gekappte Temperatursumme könnte ihn gar nicht
+  darstellen.
+* '''Der Katalog führt nur sechs Gerätewerte.''' Vor- und Rücklauf, Schwellen, Schichten,
+  Entnahmehöhen und Leistungsgrenzen entstehen erst in der Projektkopie und werden im
+  Projektdialog gepflegt.
+* '''Kein interner Wärmeübertrager''', kein Frischwassermodul, keine Legionellenschaltung.
+
+== Ergebnisse und wo sie stehen ==
+
+* '''Simulationsergebnis, Reiter „Übersicht"''' — je Speicher Ladung, Entladung, Verluste und
+  Vollzyklen; dazu die Ganglinie des Füllstands.
+* '''Simulationsergebnis, Reiter „Wärmegang"''' — Speicherladung und Speicherentladung im Stapel
+  der Erzeuger; die Entladung ist dabei den Erzeugern zugerechnet, die geladen haben.
+* '''Simulationsergebnis, Temperaturverlauf''' — je geschichtetem Speicher die Zonentemperaturen
+  über das Jahr.
+* '''Simulationskonfiguration''' — die Speicherkachel zeigt Kurzbilanz und Schwellenband, das
+  Hydraulikschema die Kanten zwischen Erzeugern, Speichern und Kanälen samt Ladepriorität.
+* '''Simulationsprotokoll''' — Rückfall-ΔT, wirkungslose Quellbezüge, Speicher ohne Lader.
+
+== Bezüge ==
+
+* [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] — Bedienung von Katalog und Projektdialog
+* [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — die Phasen A bis G einer Stunde und die Kaskade
+* [[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]] — Ladepotenzial, Leistungssteuerung und die Quelle „Pufferspeicher"
+* [[Programm Dokumentation/Berechnung/Solarthermie|Berechnung: Solarthermie]] — der vorrangige Lader und die Reservezone
+* [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]] — Bilanzraum und Pendelspeicher
+* [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]] — der nachrangige Lader und die Kessel-Kaskade
+* [[Programm Dokumentation/Simulation|Simulation]] — Hydraulikschema und Kaskadenband
