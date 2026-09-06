@@ -646,14 +646,20 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <remarks>
-        /// <b>Der Befund dieser Tabelle in Stufe S1: KEINE Spalte wird gerechnet.</b>
+        /// <b>Der Befund dieser Tabelle in Stufe S2: KEINE Spalte wird GERECHNET.</b>
         /// Das ist kein Versaeumnis, sondern die Zusage des Anwenderentscheids W6-E-2
         /// vom 06.09.2026: „S1 Katalog, Verwaltung und Import sofort und OHNE
-        /// Rechenwirkung". Der Katalog wird gepflegt und importiert, gelesen wird er
-        /// erst mit der Strangzuordnung (S2) und dem Rechenweg (S3) — dann wandern die
-        /// Kennlinienspalten auf <c>Simulation</c> und <c>Kosten</c> auf
-        /// <c>Wirtschaftlichkeit</c> (Konzept 4.1 und Entscheidungsfrage Q8).
-        /// Der Fall <c>Der_Wechselrichter_rechnet_in_S1_noch_nicht</c> haelt diesen
+        /// Rechenwirkung", und S2 setzt sie fort — die Strangzuordnung wird gepflegt
+        /// und geprueft, gerechnet wird erst mit S3.
+        ///
+        /// <para><b>Was S2 geaendert hat, ist die FUNDSTELLE, nicht die Einstufung.</b>
+        /// Acht Spalten lesen seither zusaetzlich die Auslegungspruefungen P1 bis P7
+        /// (<c>StrangPlausibilitaet</c>) — die laufen beim BEARBEITEN einer Strangzeile
+        /// und faerben eine Ampel; sie sind Dialog, nicht Simulation. Mit S3 wandern
+        /// die Kennlinienspalten auf <c>Simulation</c> und <c>Kosten</c> auf
+        /// <c>Wirtschaftlichkeit</c> (Konzept 4.1 und Entscheidungsfrage Q8).</para>
+        ///
+        /// Der Fall <c>Der_Wechselrichter_rechnet_in_S2_noch_nicht</c> haelt diesen
         /// Zustand fest: Faellt er rot aus, ist S3 gelaufen und die Einstufung muss mit.
         ///
         /// <para><b>Die sieben Sandia-Spalten stehen als <c>Keine</c> da</b> — sie sind
@@ -676,25 +682,33 @@ namespace WindowsFormsApplication1
                 E("Beschreibung", t("WRK_LBL_BESCHREIBUNG"), "", DLG,
                   "ModulKatalogDialog (Feld Beschreibung)"),
                 E("P_AC_Nenn", t("WRK_LBL_P_AC_NENN"), "kW", DLG,
-                  "ModulKatalogProfil (Pflichtfeld); WechselrichterPlausibilitaet.PruefeLeistungen"),
+                  "ModulKatalogProfil (Pflichtfeld); WechselrichterPlausibilitaet.PruefeLeistungen; " +
+                  "StrangPlausibilitaet.DcAcPruefen (P6, Ampel des PV-Dialogs)"),
                 E("S_AC_Max", t("WRK_LBL_S_AC_MAX"), "kVA", DLG,
                   "ModulKatalogProfil (Gruppe Geraet); WechselrichterPlausibilitaet"),
                 E("P_DC_Max", t("WRK_LBL_P_DC_MAX"), "kW", DLG,
-                  "ModulKatalogProfil (Gruppe Geraet); WechselrichterPlausibilitaet"),
+                  "ModulKatalogProfil (Gruppe Geraet); WechselrichterPlausibilitaet; " +
+                  "StrangPlausibilitaet.DcAcPruefen (P7)"),
                 E("U_Mpp_Min", t("WRK_LBL_U_MPP_MIN"), "V", DLG,
-                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen"),
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen; " +
+                  "StrangPlausibilitaet.StrangPruefen (P2)"),
                 E("U_Mpp_Max", t("WRK_LBL_U_MPP_MAX"), "V", DLG,
-                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen"),
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen; " +
+                  "StrangPlausibilitaet.StrangPruefen (P3)"),
                 E("U_Dc_Max", t("WRK_LBL_U_DC_MAX"), "V", DLG,
-                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen"),
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen; " +
+                  "StrangPlausibilitaet.StrangPruefen (P1)"),
                 E("U_Start", t("WRK_LBL_U_START"), "V", DLG,
                   "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeSpannungen"),
                 E("I_Dc_Max", t("WRK_LBL_I_DC_MAX"), "A", DLG,
-                  "ModulKatalogProfil (Gruppe Eingang) - JE MPPT, siehe WechselrichterSchema"),
+                  "ModulKatalogProfil (Gruppe Eingang) - JE MPPT, siehe WechselrichterSchema; " +
+                  "StrangPlausibilitaet.MpptPruefen (P4)"),
                 E("Anzahl_Mppt", t("WRK_LBL_ANZAHL_MPPT"), "", DLG,
-                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeMppt"),
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeMppt; " +
+                  "StrangPlausibilitaet.MpptPruefen (NULL = ein Tracker, W6-O-2)"),
                 E("Straenge_Je_Mppt", t("WRK_LBL_STRAENGE_JE_MPPT"), "", DLG,
-                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeMppt"),
+                  "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeMppt; " +
+                  "StrangPlausibilitaet.MpptPruefen (P5)"),
                 E("Eta05", t("WRK_LBL_ETA05"), "-", DLG,
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
                 E("Eta10", t("WRK_LBL_ETA10"), "-", DLG,

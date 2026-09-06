@@ -263,7 +263,7 @@ namespace EPOS.Kern.Tests
         /// des Konzept_Wechselrichter_EPOS-Plan.md liefert Katalog, Verwaltung und
         /// Import <b>ohne jede Rechenwirkung</b> (Anwenderentscheid W6-E-2 vom
         /// 06.09.2026); gelesen wird der Katalog erst mit Stufe S3. Der Fall
-        /// <see cref="Der_Wechselrichter_rechnet_in_S1_noch_nicht"/> haelt genau das
+        /// <see cref="Der_Wechselrichter_rechnet_in_S2_noch_nicht"/> haelt genau das
         /// fest.</para>
         /// </summary>
         [Fact]
@@ -277,10 +277,19 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Zusage der Stufe S1</b> (W6-E-2, 06.09.2026): Keine Spalte des
+        /// <b>Die Zusage der Stufen S1 UND S2</b> (W6-E-2, 06.09.2026): Keine Spalte des
         /// Wechselrichterkatalogs wird gerechnet — weder in der Simulation noch in der
         /// Wirtschaftlichkeit. Genau daran haengt, dass der Referenzlauf byte-gleich
         /// bleibt.
+        ///
+        /// <para><b>Umbenannt mit Stufe S2</b> (vorher
+        /// <c>Der_Wechselrichter_rechnet_in_S1_noch_nicht</c>). Der Fall PRUEFT
+        /// unveraendert dasselbe, seine Aussage reicht aber jetzt eine Stufe weiter:
+        /// S2 hat acht Spalten einen zweiten LESER gegeben
+        /// (<c>StrangPlausibilitaet</c>, die Ampel des PV-Dialogs) und trotzdem keinen
+        /// RECHNER. Ein Name, der bei S1 stehen bliebe, laese den Fall wie eine
+        /// vergessene Altlast aussehen statt wie die weitergereichte Zusage, die er
+        /// ist.</para>
         ///
         /// <para><b>Faellt dieser Fall rot aus, ist Stufe S3 gelaufen</b> — dann liest
         /// <c>SimulationPV</c> die Kennlinie und <c>TechnikPlanwertCtrl</c> die Kosten
@@ -289,7 +298,7 @@ namespace EPOS.Kern.Tests
         /// Merkposten dafuer, kein Fehler.</para>
         /// </summary>
         [Fact]
-        public void Der_Wechselrichter_rechnet_in_S1_noch_nicht()
+        public void Der_Wechselrichter_rechnet_in_S2_noch_nicht()
         {
             IReadOnlyList<ParameterEintrag> katalog =
                 ParameterVerwendung.Katalog(Anlagenart.Wechselrichter);

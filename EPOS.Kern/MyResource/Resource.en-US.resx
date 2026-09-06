@@ -15340,4 +15340,163 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="MENU_WR_IMPORT_CEC" xml:space="preserve">
     <value>Inverters (CEC)...</value>
   </data>
+  <data name="PVS_TRENNER" xml:space="preserve">
+    <value> · </value>
+  </data>
+  <data name="PVS_SATZ_STRANG" xml:space="preserve">
+    <value>String {0}{1}: {2}</value>
+  </data>
+  <data name="PVS_SATZ_GERAET" xml:space="preserve">
+    <value>{0} (device {1}): {2}</value>
+  </data>
+  <data name="PVS_P_MODULE" xml:space="preserve">
+    <value>{0} modules in series, {1} in parallel</value>
+  </data>
+  <data name="PVS_P1" xml:space="preserve">
+    <value>U_oc(−10 °C) {0} V ≤ {1} V</value>
+  </data>
+  <data name="PVS_P1_ROT" xml:space="preserve">
+    <value>U_oc(−10 °C) {0} V &gt; {1} V — the inverter can be damaged in frost and sunshine</value>
+  </data>
+  <data name="PVS_P23" xml:space="preserve">
+    <value>MPP {0}…{1} V within the window {2}…{3} V</value>
+  </data>
+  <data name="PVS_P2_ROT" xml:space="preserve">
+    <value>MPP in summer {0} V &lt; {1} V — the string drops out of tracking</value>
+  </data>
+  <data name="PVS_P3_GELB" xml:space="preserve">
+    <value>MPP in winter {0} V &gt; {1} V — the device tracks at its limit</value>
+  </data>
+  <data name="PVS_P4" xml:space="preserve">
+    <value>I {0} A ≤ {1} A</value>
+  </data>
+  <data name="PVS_P4_ROT" xml:space="preserve">
+    <value>I {0} A &gt; {1} A at MPPT {2}</value>
+  </data>
+  <data name="PVS_P5_GELB" xml:space="preserve">
+    <value>{0} strings at MPPT {1}, {2} are permitted</value>
+  </data>
+  <data name="PVS_P6" xml:space="preserve">
+    <value>DC/AC {0}</value>
+  </data>
+  <data name="PVS_P6_GELB" xml:space="preserve">
+    <value>DC/AC {0} is outside {1}…{2}</value>
+  </data>
+  <data name="PVS_P7_GELB" xml:space="preserve">
+    <value>{0} kWp above the DC input limit of {1} kW</value>
+  </data>
+  <data name="PVS_P8_GELB" xml:space="preserve">
+    <value>Module total {0} differs from “Number of modules” {1}</value>
+  </data>
+  <data name="PVS_WERTE_FEHLEN" xml:space="preserve">
+    <value>Values missing: {0}</value>
+  </data>
+  <data name="PVS_FEHLT_MODUL" xml:space="preserve">
+    <value>the module of the system</value>
+  </data>
+  <data name="PVS_FEHLT_REIHE" xml:space="preserve">
+    <value>modules in series</value>
+  </data>
+  <data name="PVS_FEHLT_GERAET" xml:space="preserve">
+    <value>the inverter</value>
+  </data>
+  <data name="PVS_FEHLT_UOC" xml:space="preserve">
+    <value>open-circuit voltage or beta_OC of the module</value>
+  </data>
+  <data name="PVS_FEHLT_UMPP" xml:space="preserve">
+    <value>MPP voltage or beta_OC of the module</value>
+  </data>
+  <data name="PVS_FEHLT_ISC" xml:space="preserve">
+    <value>short-circuit current or alpha_SC of the module</value>
+  </data>
+  <data name="PVS_FEHLT_P_AC" xml:space="preserve">
+    <value>AC rated power of the device</value>
+  </data>
+  <data name="PVS_FEHLT_MPPT" xml:space="preserve">
+    <value>Value missing: number of MPP trackers — one is assumed</value>
+  </data>
+  <data name="PVS_KEIN_GERAET" xml:space="preserve">
+    <value>No inverter assigned</value>
+  </data>
+  <data name="PVS_OHNE_GRENZE" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="PVS_NAEHERUNG_MPP" xml:space="preserve">
+    <value>beta_OC is used for the MPP window; the catalogue carries no separate temperature coefficient for the MPP voltage. The error is a few per cent and on the safe side.</value>
+  </data>
+  <data name="PVS_ABSCHNITT" xml:space="preserve">
+    <value>Inverters and strings</value>
+  </data>
+  <data name="PVS_WAHL" xml:space="preserve">
+    <value>Inverter</value>
+  </data>
+  <data name="PVS_OPT_VEREINFACHT" xml:space="preserve">
+    <value>simplified — flat rates without inverter</value>
+  </data>
+  <data name="PVS_OPT_KATALOG" xml:space="preserve">
+    <value>with inverter — catalogue, strings, efficiency curve, clipping</value>
+  </data>
+  <data name="PVS_SPERRE_OHNE_STRANG" xml:space="preserve">
+    <value>No string has been assigned yet.</value>
+  </data>
+  <data name="PVS_HINWEIS_S3" xml:space="preserve">
+    <value>The string calculation follows with stage S3 — until then the system calculates in the simplified way.</value>
+  </data>
+  <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
+    <value>The system calculates with an efficiency of {0} and without clipping.</value>
+  </data>
+  <data name="PVS_HINWEIS_OHNE_STRANG" xml:space="preserve">
+    <value>No inverter assigned — create a string.</value>
+  </data>
+  <data name="PVS_SP_RANG" xml:space="preserve">
+    <value>Rank</value>
+  </data>
+  <data name="PVS_SP_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="PVS_SP_WECHSELRICHTER" xml:space="preserve">
+    <value>Inverter</value>
+  </data>
+  <data name="PVS_SP_GERAET" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="PVS_SP_MPPT" xml:space="preserve">
+    <value>MPPT</value>
+  </data>
+  <data name="PVS_SP_REIHE" xml:space="preserve">
+    <value>Modules in series</value>
+  </data>
+  <data name="PVS_SP_PARALLEL" xml:space="preserve">
+    <value>Strings in parallel</value>
+  </data>
+  <data name="PVS_SP_NEIGUNG" xml:space="preserve">
+    <value>Tilt [°]</value>
+  </data>
+  <data name="PVS_SP_AZIMUT" xml:space="preserve">
+    <value>Azimuth [°]</value>
+  </data>
+  <data name="PVS_KEIN_GERAET_WAHL" xml:space="preserve">
+    <value>(no device)</value>
+  </data>
+  <data name="PVS_FILTER_HERSTELLER" xml:space="preserve">
+    <value>Filter by manufacturer:</value>
+  </data>
+  <data name="PVS_BTN_ANLEGEN" xml:space="preserve">
+    <value>Create string</value>
+  </data>
+  <data name="PVS_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="PVS_BTN_ANLAGE" xml:space="preserve">
+    <value>Inverter of the system…</value>
+  </data>
+  <data name="PVS_ANZAHL_ABGELEITET" xml:space="preserve">
+    <value>from the string table</value>
+  </data>
+  <data name="PVS_ZEILE_EINFACH" xml:space="preserve">
+    <value>Simple: isotropic irradiance, linear temperature response. The inverter is calculated in both models.</value>
+  </data>
+  <data name="PVS_ZEILE_ERWEITERT" xml:space="preserve">
+    <value>Advanced: anisotropic irradiance after Hay-Davies, low-light model after Huld. The inverter is calculated in both models.</value>
+  </data>
 </root>

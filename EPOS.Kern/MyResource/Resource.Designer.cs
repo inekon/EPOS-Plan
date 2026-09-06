@@ -67,6 +67,8 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -29695,6 +29697,483 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVM_TECHNOLOGIE_SONSTIGE {
             get {
                 return ResourceManager.GetString("PVM_TECHNOLOGIE_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter und Stränge ähnelt.
+        /// </summary>
+        public static string PVS_ABSCHNITT {
+            get {
+                return ResourceManager.GetString("PVS_ABSCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Strangtabelle ähnelt.
+        /// </summary>
+        public static string PVS_ANZAHL_ABGELEITET {
+            get {
+                return ResourceManager.GetString("PVS_ANZAHL_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter der Anlage… ähnelt.
+        /// </summary>
+        public static string PVS_BTN_ANLAGE {
+            get {
+                return ResourceManager.GetString("PVS_BTN_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strang anlegen ähnelt.
+        /// </summary>
+        public static string PVS_BTN_ANLEGEN {
+            get {
+                return ResourceManager.GetString("PVS_BTN_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string PVS_BTN_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("PVS_BTN_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Wechselrichter ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_GERAET {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurzschlussstrom oder alpha_SC des Moduls ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_ISC {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_ISC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Modul der Anlage ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_MODUL {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_MPPT {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_MPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AC-Nennleistung des Geräts ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_P_AC {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_P_AC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Module in Reihe ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_REIHE {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPP-Spannung oder beta_OC des Moduls ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_UMPP {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_UMPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leerlaufspannung oder beta_OC des Moduls ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_UOC {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_UOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filtern nach Hersteller: ähnelt.
+        /// </summary>
+        public static string PVS_FILTER_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PVS_FILTER_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wechselrichter zugeordnet — legen Sie einen Strang an. ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_OHNE_STRANG {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_OHNE_STRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage vereinfacht. ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_S3 {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_S3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping. ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_VEREINFACHT {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_VEREINFACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wechselrichter zugeordnet ähnelt.
+        /// </summary>
+        public static string PVS_KEIN_GERAET {
+            get {
+                return ResourceManager.GetString("PVS_KEIN_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (kein Gerät) ähnelt.
+        /// </summary>
+        public static string PVS_KEIN_GERAET_WAHL {
+            get {
+                return ResourceManager.GetString("PVS_KEIN_GERAET_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für das MPP-Fenster wird beta_OC eingesetzt; der Katalog führt keinen eigenen Temperaturkoeffizienten der MPP-Spannung. Der Fehler liegt bei wenigen Prozent und auf der sicheren Seite. ähnelt.
+        /// </summary>
+        public static string PVS_NAEHERUNG_MPP {
+            get {
+                return ResourceManager.GetString("PVS_NAEHERUNG_MPP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — ähnelt.
+        /// </summary>
+        public static string PVS_OHNE_GRENZE {
+            get {
+                return ResourceManager.GetString("PVS_OHNE_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping ähnelt.
+        /// </summary>
+        public static string PVS_OPT_KATALOG {
+            get {
+                return ResourceManager.GetString("PVS_OPT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vereinfacht — Pauschalen ohne Wechselrichter ähnelt.
+        /// </summary>
+        public static string PVS_OPT_VEREINFACHT {
+            get {
+                return ResourceManager.GetString("PVS_OPT_VEREINFACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U_oc(−10 °C) {0} V ≤ {1} V ähnelt.
+        /// </summary>
+        public static string PVS_P1 {
+            get {
+                return ResourceManager.GetString("PVS_P1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U_oc(−10 °C) {0} V &gt; {1} V — der Wechselrichter kann bei Frost und Sonne Schaden nehmen ähnelt.
+        /// </summary>
+        public static string PVS_P1_ROT {
+            get {
+                return ResourceManager.GetString("PVS_P1_ROT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPP {0}…{1} V im Fenster {2}…{3} V ähnelt.
+        /// </summary>
+        public static string PVS_P23 {
+            get {
+                return ResourceManager.GetString("PVS_P23", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPP im Sommer {0} V &lt; {1} V — der Strang regelt ab ähnelt.
+        /// </summary>
+        public static string PVS_P2_ROT {
+            get {
+                return ResourceManager.GetString("PVS_P2_ROT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPP im Winter {0} V &gt; {1} V — das Gerät regelt an der Grenze ähnelt.
+        /// </summary>
+        public static string PVS_P3_GELB {
+            get {
+                return ResourceManager.GetString("PVS_P3_GELB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die I {0} A ≤ {1} A ähnelt.
+        /// </summary>
+        public static string PVS_P4 {
+            get {
+                return ResourceManager.GetString("PVS_P4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die I {0} A &gt; {1} A am MPPT {2} ähnelt.
+        /// </summary>
+        public static string PVS_P4_ROT {
+            get {
+                return ResourceManager.GetString("PVS_P4_ROT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Stränge am MPPT {1}, zulässig sind {2} ähnelt.
+        /// </summary>
+        public static string PVS_P5_GELB {
+            get {
+                return ResourceManager.GetString("PVS_P5_GELB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC {0} ähnelt.
+        /// </summary>
+        public static string PVS_P6 {
+            get {
+                return ResourceManager.GetString("PVS_P6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC {0} liegt außerhalb {1}…{2} ähnelt.
+        /// </summary>
+        public static string PVS_P6_GELB {
+            get {
+                return ResourceManager.GetString("PVS_P6_GELB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kWp über der DC-Eingangsgrenze {1} kW ähnelt.
+        /// </summary>
+        public static string PVS_P7_GELB {
+            get {
+                return ResourceManager.GetString("PVS_P7_GELB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulsumme {0} weicht von „Anzahl Module&quot; {1} ab ähnelt.
+        /// </summary>
+        public static string PVS_P8_GELB {
+            get {
+                return ResourceManager.GetString("PVS_P8_GELB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Module in Reihe, {1} parallel ähnelt.
+        /// </summary>
+        public static string PVS_P_MODULE {
+            get {
+                return ResourceManager.GetString("PVS_P_MODULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Gerät {1}): {2} ähnelt.
+        /// </summary>
+        public static string PVS_SATZ_GERAET {
+            get {
+                return ResourceManager.GetString("PVS_SATZ_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strang {0}{1}: {2} ähnelt.
+        /// </summary>
+        public static string PVS_SATZ_STRANG {
+            get {
+                return ResourceManager.GetString("PVS_SATZ_STRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch kein Strang zugeordnet. ähnelt.
+        /// </summary>
+        public static string PVS_SPERRE_OHNE_STRANG {
+            get {
+                return ResourceManager.GetString("PVS_SPERRE_OHNE_STRANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Azimut [°] ähnelt.
+        /// </summary>
+        public static string PVS_SP_AZIMUT {
+            get {
+                return ResourceManager.GetString("PVS_SP_AZIMUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string PVS_SP_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("PVS_SP_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät ähnelt.
+        /// </summary>
+        public static string PVS_SP_GERAET {
+            get {
+                return ResourceManager.GetString("PVS_SP_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPPT ähnelt.
+        /// </summary>
+        public static string PVS_SP_MPPT {
+            get {
+                return ResourceManager.GetString("PVS_SP_MPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung [°] ähnelt.
+        /// </summary>
+        public static string PVS_SP_NEIGUNG {
+            get {
+                return ResourceManager.GetString("PVS_SP_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stränge parallel ähnelt.
+        /// </summary>
+        public static string PVS_SP_PARALLEL {
+            get {
+                return ResourceManager.GetString("PVS_SP_PARALLEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang ähnelt.
+        /// </summary>
+        public static string PVS_SP_RANG {
+            get {
+                return ResourceManager.GetString("PVS_SP_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Module in Reihe ähnelt.
+        /// </summary>
+        public static string PVS_SP_REIHE {
+            get {
+                return ResourceManager.GetString("PVS_SP_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string PVS_SP_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("PVS_SP_WECHSELRICHTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  ·  ähnelt.
+        /// </summary>
+        public static string PVS_TRENNER {
+            get {
+                return ResourceManager.GetString("PVS_TRENNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter ähnelt.
+        /// </summary>
+        public static string PVS_WAHL {
+            get {
+                return ResourceManager.GetString("PVS_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte fehlen: {0} ähnelt.
+        /// </summary>
+        public static string PVS_WERTE_FEHLEN {
+            get {
+                return ResourceManager.GetString("PVS_WERTE_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einfach: isotrope Einstrahlung, linearer Temperaturgang. Der Wechselrichter rechnet in beiden Modellen. ähnelt.
+        /// </summary>
+        public static string PVS_ZEILE_EINFACH {
+            get {
+                return ResourceManager.GetString("PVS_ZEILE_EINFACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erweitert: anisotrope Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld. Der Wechselrichter rechnet in beiden Modellen. ähnelt.
+        /// </summary>
+        public static string PVS_ZEILE_ERWEITERT {
+            get {
+                return ResourceManager.GetString("PVS_ZEILE_ERWEITERT", resourceCulture);
             }
         }
         

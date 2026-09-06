@@ -250,6 +250,119 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  P6 — Wechselrichter und Straenge reisen mit (Stufe S2, W6-E-2)
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Die zwei neuen Tabellen der Stufe S2 im Paket</b> (Konzept
+        /// Wechselrichter, S2.5): die Projektkopie <c>Tab_Wechselrichter</c> — sie führt
+        /// ein eigenes <c>ID_Projekt</c> und kommt damit über den GENERISCHEN Weg mit —
+        /// und die Strangliste <c>Z_AnlageStrang</c>, die an der Anlage hängt und
+        /// deshalb einen festen Eintrag in <c>ProjektDuplizierenCtrl.KINDER</c> braucht.
+        ///
+        /// <para><b>Warum eine eigene Probe.</b> P2 und P3 prüfen jede Pakettabelle,
+        /// aber nur die, die im Paket auch VORKOMMT — und das Regressionsprojekt führt
+        /// weder einen Wechselrichter noch einen Strang. Ohne diesen Fall wären die zwei
+        /// Tabellen also grün, indem sie fehlen. Der Fall legt deshalb erst einen
+        /// Gerätesatz und eine Strangzeile an und exportiert danach.</para>
+        ///
+        /// <para><b>Und er prüft den VERSATZ:</b> Die importierte Strangzeile muss auf
+        /// die Projektkopie des ZIELprojekts zeigen, nicht auf die der Quelle. Genau das
+        /// leistet der Eintrag <c>ID_Wechselrichter</c> in <c>FK_MAP</c>; ohne ihn
+        /// rechnete die Kopie mit dem Gerät des fremden Projekts, und weil
+        /// <c>Tab_Wechselrichter</c> keinen Fremdschlüssel auf <c>Tab_Projekt</c> führt,
+        /// fiele es nicht einmal beim Einfügen auf.</para>
+        /// </summary>
+        [Fact]
+        public void P6_Wechselrichter_und_Straenge_reisen_mit_und_zeigen_auf_die_eigene_Kopie()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Assert.True(quelle > 0);
+
+            // --- Gerätekopie und Strangzeile im QUELLprojekt anlegen -------------------
+            int geraet = DataRepository.GetMaxID(SchemaKatalog.TAB_WECHSELRICHTER) + 1;
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO [" + SchemaKatalog.TAB_WECHSELRICHTER + "] " +
+                "(ID, ID_Projekt, Bezeichner, P_AC_Nenn) VALUES (?,?,?,?)",
+                new DbParam("@id", geraet), new DbParam("@p", quelle),
+                new DbParam("@b", "Transferprobe 2500TL"), new DbParam("@n", 2.5)));
+
+            object anlage = DataRepository.ExecuteScalar(
+                "SELECT MIN(ID) FROM " + SchemaKatalog.TAB_ENERGIEANLAGEN + " WHERE ID_Projekt = ?",
+                new DbParam("@p", quelle));
+            int idAnlage = Convert.ToInt32(anlage);
+            Assert.True(idAnlage > 0);
+
+            var strangCtrl = new AnlageStrangCtrl();
+            Assert.True(strangCtrl.SchreibenJeAnlage(idAnlage, new List<AnlageStrangModel>
+            {
+                new AnlageStrangModel { Bezeichner = "Dach Süd", ID_Wechselrichter = geraet,
+                                        Mppt = 1, Module_Reihe = 10 }
+            }));
+
+            // --- Rundreise -----------------------------------------------------------
+            string paket = ordner.Datei("wechselrichter.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            Dictionary<string, int> imPaket = PaketZeilen(paket);
+            Assert.True(imPaket.ContainsKey(SchemaKatalog.TAB_WECHSELRICHTER),
+                        "Das Paket fuehrt " + SchemaKatalog.TAB_WECHSELRICHTER + " nicht.");
+            Assert.True(imPaket.ContainsKey(SchemaKatalog.Z_ANLAGESTRANG),
+                        "Das Paket fuehrt " + SchemaKatalog.Z_ANLAGESTRANG + " nicht.");
+            Assert.Equal(1, imPaket[SchemaKatalog.TAB_WECHSELRICHTER]);
+            Assert.Equal(1, imPaket[SchemaKatalog.Z_ANLAGESTRANG]);
+
+            int neu = io.Importieren(paket, "Wechselrichter P6",
+                                     ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            Assert.NotEqual(quelle, neu);
+
+            // --- Die Strangzeile des ZIELprojekts zeigt auf DESSEN Gerätekopie ---------
+            List<AnlageStrangModel> gereist = strangCtrl.LesenJeProjekt(neu);
+            AnlageStrangModel z = Assert.Single(gereist);
+            Assert.Equal("Dach Süd", z.Bezeichner);
+            Assert.Equal(10, z.Module_Reihe);
+            Assert.NotEqual(geraet, z.ID_Wechselrichter);
+
+            object projektDesGeraets = DataRepository.ExecuteScalar(
+                "SELECT ID_Projekt FROM [" + SchemaKatalog.TAB_WECHSELRICHTER + "] WHERE ID = ?",
+                new DbParam("@id", z.ID_Wechselrichter.Value));
+            Assert.Equal(neu, Convert.ToInt32(projektDesGeraets));
+        }
+
+        /// <summary>
+        /// <b>Ein Altpaket ohne die zwei Tabellen lädt weiter</b> (Konzept S2.5): Der
+        /// Import ist tolerant — was im Paket fehlt, entsteht im Ziel nicht, und das ist
+        /// kein Fehler. Das Regressionsprojekt führt weder Wechselrichter noch Strang;
+        /// sein Paket ist damit selbst der Altfall.
+        /// </summary>
+        [Fact]
+        public void P7_Ein_Paket_ohne_Wechselrichter_und_Straenge_laedt_weiter()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            string paket = ordner.Datei("ohne.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            Dictionary<string, int> imPaket = PaketZeilen(paket);
+            Assert.False(imPaket.ContainsKey(SchemaKatalog.Z_ANLAGESTRANG) &&
+                         imPaket[SchemaKatalog.Z_ANLAGESTRANG] > 0);
+
+            int neu = io.Importieren(paket, "Ohne Straenge P7",
+                                     ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            Assert.Empty(new AnlageStrangCtrl().LesenJeProjekt(neu));
+        }
+
+        // =============================================================================
         //  Handwerkszeug
         // =============================================================================
 

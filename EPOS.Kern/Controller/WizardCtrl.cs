@@ -87,6 +87,9 @@ namespace WindowsFormsApplication1
         {
             SpVariantenSichern(projektID, TYP_ALLE);
             SenkenSichern(projektID);
+            // ST1: Dieselbe Falle ein Gewerk weiter - Z_AnlageStrang haengt mit
+            // Loeschweitergabe an der Anlagenzeile (Block ueber StraengeSichern).
+            StraengeSichern(projektID);
             FachspaltenSichern(projektID, TYP_ALLE);
 
             // ID_Type fest im SQL statt als Parameter - dieselbe Begruendung wie bei
@@ -106,6 +109,11 @@ namespace WindowsFormsApplication1
             // gleich ob mit oder ohne Typfilter. Anlagen, die den Filter ueberleben,
             // behalten ihre Senken und werden beim Wiederherstellen uebergangen.
             SenkenSichern(projektID);
+
+            // ST1: Die Stranglisten werden AUCH im typgefilterten Weg gesichert -
+            // wortgleiche Begruendung wie bei den Senken eine Zeile hoeher.
+            StraengeSichern(projektID);
+
             FachspaltenSichern(projektID, nType);
 
             return DataRepository.ExecuteSQL("DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
@@ -916,6 +924,261 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
+        //  ST1 - Rettung der STRANGLISTE ueber den Del+Add-Speicherweg
+        // =================================================================================
+        //
+        // DIESELBE FALLE EIN VIERTES MAL, EIN GEWERK WEITER - und diesmal ist sie im
+        // Konzept vorab benannt (Konzept_Wechselrichter_EPOS-Plan.md, Stufe S2.2:
+        // "SQL_ANLAGE_INSERT verliert beim Loeschen/Neuanlegen Spalten - die
+        // Strangzeilen duerfen beim Neuanlegen der Anlage nicht verwaisen", Falle N3.3).
+        //
+        // Seit Migrationsschritt 66 haengt an jeder PV-Anlage eine geordnete Strangliste
+        // in Z_AnlageStrang, verbunden ueber ID_Anlage und mit Loeschweitergabe. Die
+        // Loeschweitergabe ist dort nicht wahlweise, sondern zwingend - dieselbe
+        // Begruendung wie bei Z_AnlageSenke (SchemaMigration.SQL_FK_SENKE_ANLAGE):
+        // Restriktiv scheiterte bereits das DELETE des Speicherwegs, und es liesse sich
+        // kein Projekt mehr speichern. Der Preis ist wieder derselbe: Ohne
+        // Gegenmassnahme raeumte JEDES Speichern - ueber Karte, Kontextmenue oder
+        // Assistent - die komplette Strangzuordnung des Projekts ab. Genau daran haengt,
+        // ob Stufe S2 mehr ist als eine Tabelle, die man einmal fuellen kann.
+        //
+        // ZUORDNUNG UEBER (ID_Type, Bezeichner), wortgleich zur Senken- und zur
+        // Variantenrettung: Die alte Anlagen-Id ist nach dem Loeschen wertlos (AutoWert),
+        // die Geraete-Id nicht eindeutig. Wer eine Anlage im Dialog UMBENENNT, verliert
+        // ihre Straenge - dieselbe Grenze wie bei den zwei Nachbarn.
+        //
+        // BEIDE LOESCHWEGE sichern, aus demselben Grund wie bei den Senken: Die
+        // Loeschweitergabe trifft jede geloeschte Anlage, gleich ob mit oder ohne
+        // Typfilter. Anlagen, die den Filter ueberleben, behalten ihre Straenge und
+        // werden beim Wiederherstellen uebergangen.
+        //
+        // KEINE Tabelle, kein Aufwand: Fehlt Z_AnlageStrang (Schritt 66 noch nicht
+        // gelaufen), gibt es nichts zu sichern und nichts zu tun.
+
+        /// <summary>Eine gesicherte Strangliste samt ihrem Wiedererkennungsmerkmal.</summary>
+        private sealed class StrangSicherung
+        {
+            public int ID_Type;
+            public string Bezeichner = "";
+            public List<AnlageStrangModel> Straenge = new List<AnlageStrangModel>();
+        }
+
+        /// <summary>Die Sicherung des laufenden Speichervorgangs; <c>null</c> = nichts zu retten.</summary>
+        private List<StrangSicherung> m_StrangSicherung;
+
+        /// <summary>Das Projekt, zu dem <see cref="m_StrangSicherung"/> gehoert (siehe <see cref="m_SpVariantenProjekt"/>).</summary>
+        private int m_StrangProjekt;
+
+        /// <summary>
+        /// Sichert die Stranglisten des Projekts - <b>nur im Arbeitsspeicher</b>. Fehlt
+        /// die Tabelle (Migrationsschritt 66 noch nicht gelaufen), gibt es nichts zu
+        /// sichern und nichts zu tun.
+        /// </summary>
+        private void StraengeSichern(int projektID)
+        {
+            m_StrangSicherung = null;
+            m_StrangProjekt = 0;
+
+            if (projektID <= 0 || !AnlageStrangCtrl.TabelleVorhanden()) return;
+
+            try
+            {
+                List<AnlageStrangModel> alle = new AnlageStrangCtrl().LesenJeProjekt(projektID);
+                if (alle.Count == 0) return;
+
+                // Die Merkmale der Anlagen EINMAL lesen - die Strangzeilen fuehren nur
+                // die Anlagen-Id, wiedererkannt wird aber ueber (ID_Type, Bezeichner).
+                Dictionary<int, StrangSicherung> jeAnlage = new Dictionary<int, StrangSicherung>();
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ? ORDER BY ID",
+                    new DbParam("@pID", projektID));
+
+                if (dt == null || dt.Rows.Count == 0) return;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0) continue;
+
+                    jeAnlage[idAnlage] = new StrangSicherung
+                    {
+                        ID_Type = SpZahl(r, "ID_Type"),
+                        Bezeichner = SpText(r, "Bezeichner")
+                    };
+                }
+
+                foreach (AnlageStrangModel z in alle)
+                {
+                    StrangSicherung s;
+                    if (jeAnlage.TryGetValue(z.ID_Anlage, out s)) s.Straenge.Add(z);
+                }
+
+                List<StrangSicherung> sicherung = new List<StrangSicherung>();
+                foreach (StrangSicherung s in jeAnlage.Values)
+                {
+                    if (s.Straenge.Count == 0) continue;
+
+                    // Doppelte Bezeichner sind im Schema moeglich - die erste Zeile
+                    // gewinnt, wie bei der Senken- und der Variantenrettung.
+                    if (StrangTreffer(sicherung, s.ID_Type, s.Bezeichner) != null)
+                    {
+                        Console.WriteLine("Strang-Rettung: \"" + s.Bezeichner + "\" kommt im Projekt " +
+                                          projektID + " mehrfach vor - gesichert wird die erste Zeile, " +
+                                          "die Straenge der weiteren gehen verloren.");
+                        continue;
+                    }
+
+                    sicherung.Add(s);
+                }
+
+                if (sicherung.Count > 0)
+                {
+                    m_StrangSicherung = sicherung;
+                    m_StrangProjekt = projektID;
+                }
+            }
+            catch (Exception ex)
+            {
+                m_StrangSicherung = null;
+                m_StrangProjekt = 0;
+                Console.WriteLine("Die Stranglisten konnten vor dem Loeschen nicht gesichert " +
+                                  "werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Schreibt die gesicherten Stranglisten auf die NEUEN Anlagenzeilen zurueck.
+        ///
+        /// <para>
+        /// Geschrieben wird ausschliesslich auf Anlagen, die JETZT keine Strangzeile
+        /// fuehren. Damit ist die Methode idempotent, sie ueberschreibt nichts, was der
+        /// Dialog gerade gespeichert hat, und eine im Dialog neu hinzugekommene Anlage
+        /// bleibt ohne Strang - dort gilt wie bisher der vereinfachte Weg.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Der Wechselrichter einer geretteten Strangzeile kann fort sein.</b>
+        /// <c>Z_AnlageStrang.ID_Wechselrichter</c> steht unter einer ERZWUNGENEN
+        /// Beziehung auf <c>Tab_Wechselrichter</c>; zeigt die Id auf keine Projektkopie
+        /// mehr, faellt die REFERENZ weg statt der ganzen Zeile - derselbe Schutz wie
+        /// bei <c>PufferFkOderNull</c> und bei der Senkenrettung. Ein gescheitertes
+        /// Insert haette hier die Anlage ohne jede Strangzeile zurueckgelassen.
+        /// </para>
+        ///
+        /// <para><b>BEST EFFORT</b> - ein gelungenes Speichern scheitert nicht daran.</para>
+        /// </summary>
+        private void StraengeWiederherstellen(int projektID)
+        {
+            List<StrangSicherung> sicherung = m_StrangSicherung;
+            int projektDerSicherung = m_StrangProjekt;
+
+            m_StrangSicherung = null;                 // eine Sicherung, ein Wiederherstellen
+            m_StrangProjekt = 0;
+
+            if (sicherung == null || sicherung.Count == 0 || projektID <= 0) return;
+
+            if (projektDerSicherung != projektID)
+            {
+                Console.WriteLine("Strang-Rettung nicht ausgefuehrt: Die Sicherung gehoert zu " +
+                                  "Projekt " + projektDerSicherung + ", geschrieben wird aber " +
+                                  "Projekt " + projektID + ".");
+                return;
+            }
+
+            try
+            {
+                AnlageStrangCtrl ctrl = new AnlageStrangCtrl();
+
+                // Wer fuehrt jetzt schon Straenge? Ein Aufruf statt einer Abfrage je Anlage.
+                HashSet<int> hatStraenge = new HashSet<int>();
+                foreach (AnlageStrangModel z in ctrl.LesenJeProjekt(projektID))
+                    hatStraenge.Add(z.ID_Anlage);
+
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ? ORDER BY ID",
+                    new DbParam("@pID", projektID));
+
+                if (dt == null || dt.Rows.Count == 0) return;
+
+                Dictionary<int, bool> geraeteCache = new Dictionary<int, bool>();
+                int wieder = 0;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = SpZahl(r, "ID");
+                    if (idAnlage <= 0 || hatStraenge.Contains(idAnlage)) continue;
+
+                    StrangSicherung treffer = StrangTreffer(sicherung, SpZahl(r, "ID_Type"),
+                                                            SpText(r, "Bezeichner"));
+                    if (treffer == null) continue;
+
+                    List<AnlageStrangModel> zeilen = new List<AnlageStrangModel>();
+
+                    foreach (AnlageStrangModel alt in treffer.Straenge)
+                    {
+                        if ((alt.ID_Wechselrichter ?? 0) > 0 &&
+                            !WechselrichterVorhanden(alt.ID_Wechselrichter.Value, geraeteCache))
+                        {
+                            Console.WriteLine("Strang-Rettung: \"" + treffer.Bezeichner +
+                                              "\", Rang " + alt.Rang + " zeigte auf den Wechselrichter " +
+                                              alt.ID_Wechselrichter.Value + ", den es nicht mehr gibt - " +
+                                              "die Referenz wird als leer gespeichert.");
+                            alt.ID_Wechselrichter = null;
+                        }
+
+                        alt.ID = 0;                   // frische Zeile, neuer AutoWert
+                        alt.ID_Anlage = idAnlage;
+                        zeilen.Add(alt);
+                    }
+
+                    if (ctrl.SchreibenJeAnlage(idAnlage, zeilen)) wieder += zeilen.Count;
+                }
+
+                if (wieder > 0)
+                    Console.WriteLine("Strang-Rettung: " + wieder + " Strangzeile(n) des Projekts " +
+                                      projektID + " wiederhergestellt.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Stranglisten konnten nicht wiederhergestellt werden: " +
+                                  ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Die Sicherung zu (<paramref name="idType"/>, <paramref name="bezeichner"/>),
+        /// oder <c>null</c>. Verglichen wird wie in <see cref="SenkenTreffer"/>.
+        /// </summary>
+        private static StrangSicherung StrangTreffer(List<StrangSicherung> sicherung,
+                                                     int idType, string bezeichner)
+        {
+            foreach (StrangSicherung s in sicherung)
+                if (s.ID_Type == idType &&
+                    string.Equals(s.Bezeichner, bezeichner, StringComparison.OrdinalIgnoreCase))
+                    return s;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gibt es die Projektkopie des Wechselrichters? Nur TREFFER werden gemerkt —
+        /// wortgleiche Begruendung wie bei <c>AnlagenSql.PufferVorhanden</c>: Eine
+        /// Gerätekopie kann waehrend desselben Speichervorgangs noch entstehen.
+        /// </summary>
+        private static bool WechselrichterVorhanden(int id, Dictionary<int, bool> cache)
+        {
+            if (cache != null && cache.ContainsKey(id)) return true;
+
+            object v = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_WECHSELRICHTER + "] WHERE ID = ?",
+                new DbParam[] { new DbParam("@id", id) });
+
+            bool vorhanden = (v != null && v != DBNull.Value && Convert.ToInt32(v) > 0);
+            if (vorhanden && cache != null) cache[id] = true;
+            return vorhanden;
+        }
+
+        // =================================================================================
         //  FS1 - Rettung der FACHSPALTEN von Tab_Energieanlagen ueber den Del+Add-Speicherweg
         // =================================================================================
         //
@@ -1408,6 +1671,23 @@ namespace WindowsFormsApplication1
                     }
                     catch { }
 
+                    // ST1, zweite Haelfte: Die vom PV-DIALOG bearbeiteten Straenge. Sie
+                    // koennen erst HIER geschrieben werden - die Anlagen-Id entsteht eine
+                    // Zeile darueber, und vorher gibt es nichts, worauf sie zeigen
+                    // koennten. NULL heisst "nicht angefasst" und ueberlaesst die Zeile
+                    // der Rettung weiter unten; eine gesetzte Liste ist die neue Wahrheit
+                    // und hat Vorrang, weil StraengeWiederherstellen nur Anlagen OHNE
+                    // Straenge bedient. BEST EFFORT wie die Nachbarn.
+                    if (item.PV_Straenge != null && item.ID > 0)
+                    {
+                        try { new AnlageStrangCtrl().SchreibenJeAnlage(item.ID, item.PV_Straenge); }
+                        catch (Exception exStrang)
+                        {
+                            Console.WriteLine("Die Straenge der Anlage \"" + item.Bezeichner +
+                                              "\" konnten nicht geschrieben werden: " + exStrang.Message);
+                        }
+                    }
+
                     geschrieben.Add(item);
                 }
 
@@ -1479,6 +1759,15 @@ namespace WindowsFormsApplication1
                 // Aufraeumlauf, weil Z_AnlageSenke.ID_Puffer dort als Verweis zaehlt
                 // (Begruendung im Block ueber SenkenSichern).
                 SenkenWiederherstellen(projektID);
+
+                // ST1: Die Stranglisten auf die NEUEN Anlagenzeilen zurueck. Die
+                // Reihenfolge ist hier gleichgueltig - Z_AnlageStrang traegt keinen
+                // Verweis, den GeraeteWaisen als Beleg zaehlt (Tab_Wechselrichter ist
+                // keine der sieben Geraetetabellen des Aufraeumlaufs). Sie steht
+                // trotzdem VOR dem Aufraeumlauf, damit alle vier Rettungen beieinander
+                // stehen und niemand spaeter raten muss, warum eine davon weiter unten
+                // steht.
+                StraengeWiederherstellen(projektID);
 
                 // FS1: Die Fachspalten (KWKG je Anlage, Steuerwahl/Hilfsenergie,
                 // Quell-Einstellungen) auf die NEUEN Anlagenzeilen zurueck - ebenfalls

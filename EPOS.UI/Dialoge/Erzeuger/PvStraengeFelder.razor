@@ -1,0 +1,482 @@
+﻿@* Der Abschnitt "Wechselrichter und Straenge" im PV-Dialog - Stufe S2 des
+   Konzept_Wechselrichter_EPOS-Plan.md (Anwenderentscheide W6-E-2 und W6-E-3
+   vom 06.09.2026, Kapitel 7 und 7.1, Mockup M1).
+
+   WAS ER ABLOEST. Bis hierher stand hier ein einziger, AUSGEGRAUTER Knopf
+   "Wechselrichter..." mit der Sperrbedingung disabled="@(!Zeile.ModellErweitert)"
+   (PvModellFelder, wortgleich aus Form_PV.ModellUmschalten). Er war
+   bestimmungsgemaess gesperrt und trotzdem der Anlass des Anwenderwunsches: Ein
+   gesperrter Knopf ohne sichtbaren Grund liest sich als Fehler. Mit
+   Entscheidungsfrage Q5 faellt die Sperrregel - der Wechselrichter ist ein
+   GERAET, keine Modellverfeinerung, und rechnet in beiden Modellen.
+
+   DIE ZWEI SICHTBAREN OPTIONEN (W6-E-3, woertlich: "Gebe zwei Optionen -
+   vereinfacht -> Berechnung ohne wechselrichter (pauschalen) 2. mit
+   Wechselrichter (wie Vorschlag)"). Sie stehen als Optionsgruppe UEBER der
+   Tabelle und liegen im Datenmodell als eigene Spalte
+   Tab_Energieanlagen.PV_Wechselrichterweg (Konzept 7.1, Empfehlung a): Eine
+   Option, die man nur durch LOESCHEN der Strangzeilen abwaehlen koennte, ist
+   keine Option.
+
+   DIE WEICHE SPERRE (W16b-E-6). "mit Wechselrichter" ohne Strangzeile ist ein
+   erklaerbarer Zustand: Die Option bleibt anklickbar, traegt aria-disabled und
+   den Grund als title, und der Versuch MELDET sich - er handelt nicht. Ein
+   disabled-Bedienelement koennte seinen Grund gar nicht sagen.
+
+   DER S3-HINWEIS. Solange Stufe S3 aussteht, rechnet der Kern die Straenge
+   NICHT. Der Abschnitt sagt das ausdruecklich, damit die Oberflaeche nichts
+   verspricht, was der Kern noch nicht tut - keine zweite Wahrheit. Mit S3 wird
+   die Zeile wieder entfernt.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Zeilen stehen in der ErzeugerZeile,
+   die Huelle schreibt sie nach Z_AnlageStrang. Die AMPEL rechnet der Kern
+   (StrangPlausibilitaet); die Komponente erfragt sie ueber den Delegaten
+   Pruefen und zeigt Farbe und Satz. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Bausteine
+@using System.Globalization
+
+<div class="epos-straenge">
+
+    @* --- Die zwei Optionen aus W6-E-3 ---------------------------------------- *@
+    <Optionsgruppe Bezeichnung="@Texte.Wahl" Eintraege="@_optionen"
+                   Auswahl="@(Zeile.MitWechselrichter ? WEG_KATALOG : WEG_VEREINFACHT)"
+                   AuswahlChanged="BeiWeg"
+                   WeichGesperrt="@_weichGesperrt" Verweigert="BeiVerweigert" />
+
+    @* Bis S3: der Abschnitt verspricht nichts, was der Kern noch nicht tut. *@
+    <p class="epos-herleitung epos-straenge-s3">@Texte.HinweisS3</p>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung"
+                    Verfaellt="@TimeSpan.FromSeconds(3)" Verfallen="Verfallen" />
+    }
+
+    @if (Zeile.MitWechselrichter)
+    {
+        @* --- Kopf: Abschnittstitel und DC/AC je Geraet ----------------------- *@
+        <div class="epos-strangkopf">
+            <span class="epos-strangkopf-titel">@Texte.Abschnitt</span>
+            @foreach (Ampelzeile g in _befund.Geraete)
+            {
+                <span class="epos-chip @Chipklasse(g.Farbe)" title="@_befund.Werkzeugtipp">@g.Satz</span>
+            }
+        </div>
+
+        @if (Zeile.Straenge.Count == 0)
+        {
+            <p class="epos-herleitung">@Texte.HinweisOhneStrang</p>
+        }
+        else
+        {
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-strangtabelle">
+                    <thead>
+                        <tr>
+                            <th>@Texte.SpalteWahl</th>
+                            <th>@Texte.SpalteRang</th>
+                            <th>@Texte.SpalteBezeichner</th>
+                            <th>@Texte.SpalteWechselrichter</th>
+                            <th>@Texte.SpalteGeraet</th>
+                            <th>@Texte.SpalteMppt</th>
+                            <th>@Texte.SpalteReihe</th>
+                            <th>@Texte.SpalteParallel</th>
+                            <th>@Texte.SpalteNeigung</th>
+                            <th>@Texte.SpalteAzimut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Zeile.Straenge.Count; i++)
+                        {
+                            int nr = i;
+                            StrangZeile s = Zeile.Straenge[nr];
+                            <tr class="@(s == _gewaehlt ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(s == _gewaehlt)" Kurztext="@Texte.SpalteWahl"
+                                                Gewaehltwerden="() => _gewaehlt = s" />
+                                </td>
+                                <td>@s.Rang</td>
+                                <td>
+                                    <Textfeld Wert="@s.Bezeichner"
+                                              WertChanged="@(w => Setzen(s, () => s.Bezeichner = w ?? ""))" />
+                                </td>
+                                <td>
+                                    <Auswahlfeld Eintraege="@_geraetewahl" Auswahl="@GeraetAuswahl(s)"
+                                                 AuswahlChanged="@(id => BeiGeraet(s, id))" />
+                                </td>
+                                <td>
+                                    <Ganzzahlfeld Wert="@s.Geraetenummer" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.Geraetenummer = w))" />
+                                </td>
+                                <td>
+                                    <Ganzzahlfeld Wert="@s.Mppt" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.Mppt = w))" />
+                                </td>
+                                <td>
+                                    <Ganzzahlfeld Wert="@s.ModuleReihe" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.ModuleReihe = w))" />
+                                </td>
+                                <td>
+                                    <Ganzzahlfeld Wert="@s.StraengeParallel" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.StraengeParallel = w))" />
+                                </td>
+                                <td>
+                                    <Ganzzahlfeld Wert="@s.Neigung" Platzhalter="@Geerbt(NeigungAnlage)"
+                                                  WertChanged="@(w => Setzen(s, () => s.Neigung = w))" />
+                                </td>
+                                <td>
+                                    <Ganzzahlfeld Wert="@s.Azimut" Platzhalter="@Geerbt(AzimutAnlage)"
+                                                  WertChanged="@(w => Setzen(s, () => s.Azimut = w))" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* --- Die Ampel: EIN Satz je Strangzeile, unter der Tabelle -------- *@
+            <div class="epos-ampelzeilen">
+                @foreach (Ampelzeile a in _befund.Straenge)
+                {
+                    <p class="epos-ampel @Ampelklasse(a.Farbe)" title="@_befund.Werkzeugtipp">
+                        <span class="epos-ampel-punkt" aria-hidden="true">●</span>
+                        <span>@a.Satz</span>
+                    </p>
+                }
+            </div>
+        }
+
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    @onclick="StrangAnlegen">@Texte.BtnAnlegen</button>
+            <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                    @onclick="StrangEntfernen">@Texte.BtnEntfernen</button>
+            <button type="button" class="epos-knopf epos-straenge-anlagenknopf"
+                    @onclick="Oeffnen">@Texte.BtnAnlage</button>
+        </div>
+    }
+    else
+    {
+        @* --- Der Weg von heute: Pauschalen ohne Wechselrichter --------------- *@
+        <p class="epos-herleitung">@VereinfachtText</p>
+
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf epos-straenge-anlagenknopf"
+                    @onclick="Oeffnen">@Texte.BtnAnlage</button>
+        </div>
+    }
+
+    @* --- Ueberlagerung: die fuenf Anlagenwerte (bisher Form_PVModell) -------- *@
+    @* Sie bleibt der ANLAGENRUECKFALL ohne Zuordnung (Konzept 7) und ist in
+       BEIDEN Wegen erreichbar - nur nicht mehr gesperrt. Bis S2 hing sie an
+       PvModellFelder; sie steht jetzt dort, wo alles zum Wechselrichter steht. *@
+    <Ueberlagerung Offen="@_offen" Titel="@Titel" Geschlossen="() => _offen = false">
+        <KindInhalt>
+            <p class="epos-kontextzeile">@AnlagenTexte.KopfErweitert</p>
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <div title="@AnlagenTexte.TipNennleistung">
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelNennleistung" Wert="@_nenn"
+                                    WertChanged="@(w => _nenn = w)" Min="0" Max="100000" Nachkommastellen="2"
+                                    Feldname="WrNennleistung" />
+                    </div>
+                    <div title="@AnlagenTexte.TipEta">
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta10" Wert="@_eta10"
+                                    WertChanged="@(w => _eta10 = w)" Min="0" Max="1" Nachkommastellen="3"
+                                    Feldname="WrEta10" />
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta50" Wert="@_eta50"
+                                    WertChanged="@(w => _eta50 = w)" Min="0" Max="1" Nachkommastellen="3"
+                                    Feldname="WrEta50" />
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta100" Wert="@_eta100"
+                                    WertChanged="@(w => _eta100 = w)" Min="0" Max="1" Nachkommastellen="3"
+                                    Feldname="WrEta100" />
+                    </div>
+                </KindInhalt>
+            </Formularraster>
+            <p class="epos-pvmodell-dcac"><b>@DcAcText</b></p>
+            <SpeichernLeiste OkText="@AnlagenTexte.Ok" AbbrechenText="@AnlagenTexte.Abbrechen"
+                             Ergebnis="BeiErgebnis" />
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Id der Option „vereinfacht" in der Optionsgruppe.</summary>
+    private const int WEG_VEREINFACHT = 0;
+
+    /// <summary>Id der Option „mit Wechselrichter".</summary>
+    private const int WEG_KATALOG = 1;
+
+    /// <summary>Die Projektzeile, deren Straenge hier stehen. Wird IN PLACE geaendert.</summary>
+    [Parameter, EditorRequired] public ErzeugerZeile Zeile { get; set; } = new();
+
+    /// <summary>Neigung der ANLAGE [°] — der geerbte Wert in der Klammer.</summary>
+    [Parameter] public int? NeigungAnlage { get; set; }
+
+    /// <summary>Azimut der ANLAGE [°] — der geerbte Wert in der Klammer.</summary>
+    [Parameter] public int? AzimutAnlage { get; set; }
+
+    /// <summary>kWp der Anlage fuer die DC/AC-Anzeige der Ueberlagerung; 0 = unbekannt.</summary>
+    [Parameter] public double KwpAnlage { get; set; }
+
+    /// <summary>
+    /// Die Wechselrichter des KATALOGS als Klapplisteneintraege (Id =
+    /// <c>Tab_Wechselrichter_STAMM.ID</c>), bereits nach Hersteller gefiltert.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Geraete { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Nimmt einen Katalogsatz in das Projekt auf und liefert die PROJEKTKOPIE
+    /// (<c>WechselrichterCtrl.CopyFromStamm</c>) — genau wie bei einem Modul. Ohne
+    /// Delegat bleibt die Klappliste wirkungslos.
+    /// </summary>
+    [Parameter] public Func<int, GeraetWahl>? GeraetUebernehmen { get; set; }
+
+    /// <summary>
+    /// Die AMPEL zum aktuellen Stand der Tabelle. Die Komponente rechnet nicht — der
+    /// Kern prueft (<c>StrangPlausibilitaet</c>), die Huelle reicht das Ergebnis
+    /// herein. Ohne Delegat bleibt die Ampel leer.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<StrangZeile>, StrangBefund>? Pruefen { get; set; }
+
+    /// <summary>Meldet jede Aenderung — die Huelle schreibt dann in das Modell.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die Beschriftungen; fuellen sich selbst aus MyResource.</summary>
+    [Parameter] public PvStrangTexte Texte { get; set; } = new();
+
+    /// <summary>Die Beschriftungen der Ueberlagerung (dieselben wie bisher).</summary>
+    [Parameter] public PvModellTexte AnlagenTexte { get; set; } = new();
+
+    private IReadOnlyList<(int Id, string Text)> _optionen = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _geraetewahl = Array.Empty<(int, string)>();
+    private Dictionary<int, string>? _weichGesperrt;
+    private StrangBefund _befund = StrangBefund.Leer;
+    private StrangZeile? _gewaehlt;
+    private string _meldung = "";
+
+    private bool _offen;
+    private double? _nenn, _eta10, _eta50, _eta100;
+
+    /// <summary>Steht die Anlagen-Ueberlagerung? (Pruefhilfe fuer Tests.)</summary>
+    public bool WechselrichterOffen => _offen;
+
+    /// <summary>Der aktuelle Befund (Pruefhilfe fuer Tests).</summary>
+    public StrangBefund Befund => _befund;
+
+    /// <summary>Die gewaehlte Strangzeile (Pruefhilfe fuer Tests).</summary>
+    public StrangZeile? Gewaehlt => _gewaehlt;
+
+    /// <summary>Die zuletzt gemeldete weiche Sperre (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    protected override void OnParametersSet()
+    {
+        _optionen = new[]
+        {
+            (WEG_VEREINFACHT, Texte.OptionVereinfacht),
+            (WEG_KATALOG, Texte.OptionKatalog)
+        };
+
+        // Die Klappliste fuehrt "(kein Geraet)" als Id 0 voran - dieselbe Bauart wie
+        // "Alle" im Herstellerfilter der Modulliste.
+        var liste = new List<(int, string)> { (0, Texte.KeinGeraet) };
+        foreach (var g in Geraete) liste.Add(g);
+        _geraetewahl = liste;
+
+        // WEICHE SPERRE (W16b-E-6): "mit Wechselrichter" ohne Strangzeile bleibt
+        // anklickbar und traegt seinen Grund. Ist der Weg bereits gewaehlt, gibt es
+        // nichts zu sperren - sonst koennte der Anwender ihn nicht mehr verlassen.
+        _weichGesperrt = (!Zeile.MitWechselrichter && Zeile.Straenge.Count == 0)
+            ? new Dictionary<int, string> { { WEG_KATALOG, Texte.SperreOhneStrang } }
+            : null;
+
+        Nachpruefen();
+    }
+
+    // =================================================================================
+    // Die zwei Optionen
+    // =================================================================================
+
+    private Task BeiWeg(int? id)
+    {
+        // Der Schalter PARKT die Zuordnung, er loescht sie nicht (Konzept 7.1, Grund 1):
+        // Der Planer verloere sonst genau die Arbeit, die er vergleichen will.
+        Zeile.MitWechselrichter = id == WEG_KATALOG;
+        _meldung = "";
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Der VERSUCH, „mit Wechselrichter" ohne Strang zu waehlen. Er meldet sich
+    /// (Banner mit <c>Verfaellt</c>) statt zu handeln — die Staffelung aus W16b‑E‑6:
+    /// leise Zeile, Grund am Bedienelement, Banner erst NACH dem Versuch.
+    /// </summary>
+    private void BeiVerweigert(int id)
+    {
+        _meldung = Texte.SperreOhneStrang;
+    }
+
+    /// <summary>Das Banner verfaellt nach drei Sekunden — dann ist auch der Text fort.</summary>
+    private void Verfallen()
+    {
+        _meldung = "";
+    }
+
+    // =================================================================================
+    // Die Strangtabelle
+    // =================================================================================
+
+    private Task StrangAnlegen()
+    {
+        var neu = new StrangZeile { Rang = Zeile.Straenge.Count + 1 };
+        Zeile.Straenge.Add(neu);
+        _gewaehlt = neu;
+        _meldung = "";
+
+        // Der erste Strang macht die Wahl "mit Wechselrichter" moeglich - und wer
+        // einen Strang anlegt, will ihn auch gerechnet sehen.
+        Zeile.MitWechselrichter = true;
+
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task StrangEntfernen()
+    {
+        if (_gewaehlt is null) return Task.CompletedTask;
+
+        Zeile.Straenge.Remove(_gewaehlt);
+        _gewaehlt = null;
+        Raengeneu();
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Die Raenge bleiben lueckenlos ab 1 — dieselbe Regel wie im Controller.</summary>
+    private void Raengeneu()
+    {
+        for (int i = 0; i < Zeile.Straenge.Count; i++) Zeile.Straenge[i].Rang = i + 1;
+    }
+
+    /// <summary>Setzt einen Wert, prueft nach und meldet — der Weg jeder Zellenaenderung.</summary>
+    private Task Setzen(StrangZeile s, Action aenderung)
+    {
+        aenderung();
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Der gewaehlte Eintrag der Geraeteklappliste. Das Band zwischen Zeile und Liste
+    /// ist der BEZEICHNER: Katalogsatz und Projektkopie tragen denselben, und genau
+    /// darueber findet <c>CopyFromStamm</c> eine vorhandene Kopie wieder. Ist der
+    /// Katalogsatz inzwischen geloescht, steht nichts gewaehlt da — die Zeile behaelt
+    /// ihr Geraet trotzdem.
+    /// </summary>
+    private int? GeraetAuswahl(StrangZeile s)
+    {
+        if (s.WechselrichterId <= 0) return 0;
+        foreach (var g in Geraete)
+            if (string.Equals(g.Text, s.WechselrichterName, StringComparison.Ordinal)) return g.Id;
+        return null;
+    }
+
+    private Task BeiGeraet(StrangZeile s, int? stammId)
+    {
+        if (stammId is null or 0)
+        {
+            s.WechselrichterId = 0;
+            s.WechselrichterName = "";
+        }
+        else if (GeraetUebernehmen is not null)
+        {
+            GeraetWahl wahl = GeraetUebernehmen(stammId.Value);
+            s.WechselrichterId = wahl.Id;
+            s.WechselrichterName = wahl.Name;
+        }
+
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Fragt den Pruefstand des Kerns; ohne Delegat bleibt die Ampel leer.</summary>
+    private void Nachpruefen()
+    {
+        _befund = Pruefen is null ? StrangBefund.Leer : Pruefen(Zeile.Straenge);
+    }
+
+    private static string Ampelklasse(Ampelfarbe f) => f switch
+    {
+        Ampelfarbe.Rot => "epos-ampel--rot",
+        Ampelfarbe.Gelb => "epos-ampel--gelb",
+        _ => "epos-ampel--gruen"
+    };
+
+    private static string Chipklasse(Ampelfarbe f) => f switch
+    {
+        Ampelfarbe.Rot => "epos-chip--rot",
+        Ampelfarbe.Gelb => "epos-chip--warnung",
+        _ => "epos-chip--gruen"
+    };
+
+    /// <summary>
+    /// Der geerbte Anlagenwert als PLATZHALTER in Klammern (Konzept 7): Die Klammer
+    /// zeigt, dass der Wert von der Anlage kommt und nicht in dieser Zeile steht. Wer
+    /// hineinschreibt, macht das Teilfeld eigenstaendig; wer das Feld leert, erbt wieder.
+    /// </summary>
+    private static string Geerbt(int? anlagenwert)
+        => anlagenwert.HasValue
+            ? "(" + anlagenwert.Value.ToString(CultureInfo.CurrentCulture) + ")"
+            : "";
+
+    /// <summary>Die Zeile des Weges „vereinfacht" — mit dem Wirkungsgrad, der wirklich gilt.</summary>
+    private string VereinfachtText
+        => string.Format(CultureInfo.CurrentCulture, Texte.HinweisVereinfacht,
+                         (Zeile.WrWirkungsgrad ?? 0.95).ToString("N3", CultureInfo.CurrentCulture));
+
+    // =================================================================================
+    // Die Ueberlagerung mit den fuenf Anlagenwerten
+    // =================================================================================
+
+    private string Titel => string.Format(CultureInfo.CurrentCulture,
+                                          AnlagenTexte.DialogTitel, Zeile.Bezeichner);
+
+    /// <summary>Die DC/AC-Zeile der Ueberlagerung (Pruefhilfe fuer Tests).</summary>
+    public string DcAcText
+    {
+        get
+        {
+            if (!_nenn.HasValue || _nenn.Value <= 0.0 || KwpAnlage <= 0.0) return AnlagenTexte.DcAcOhne;
+            return string.Format(CultureInfo.CurrentCulture, AnlagenTexte.DcAc,
+                                 KwpAnlage, _nenn.Value, KwpAnlage / _nenn.Value);
+        }
+    }
+
+    private void Oeffnen()
+    {
+        _nenn = Zeile.WrNennleistungKw;
+        _eta10 = Zeile.WrEta10;
+        _eta50 = Zeile.WrEta50;
+        _eta100 = Zeile.WrEta100;
+        _offen = true;
+    }
+
+    /// <summary>OK uebernimmt die vier Werte (0 = nicht bekannt = NULL); Abbrechen verwirft sie.</summary>
+    private async Task BeiErgebnis(bool ok)
+    {
+        _offen = false;
+        if (!ok) return;
+        Zeile.WrNennleistungKw = Positiv(_nenn);
+        Zeile.WrEta10 = Positiv(_eta10);
+        Zeile.WrEta50 = Positiv(_eta50);
+        Zeile.WrEta100 = Positiv(_eta100);
+        await Geaendert.InvokeAsync();
+    }
+
+    private static double? Positiv(double? wert) => wert.HasValue && wert.Value > 0.0 ? wert : null;
+}
