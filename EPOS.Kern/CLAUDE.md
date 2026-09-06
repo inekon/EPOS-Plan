@@ -454,6 +454,17 @@ unberührt bleibt. Fehlt die Datei, schweigen die Fälle statt rot zu werden. Al
 dieser Art tragen `[Collection("Testdatenbank")]`: `PfadUeberschreibung` ist statisch, und
 xunit fährt Testklassen sonst nebeneinander.
 
+**`[Collection("Testdatenbank")]` ist seit dem 06.09.2026 (Befund iU5‑O‑1) die EINE serielle
+Sammlung — nicht nur die der Datenbank.** Wer in `EPOS.Kern.Tests` ein `Dienste.*` tauscht,
+gehört in `[Collection("Testdatenbank")]` — der Wächter
+`EPOS.Kern.Tests/DiensteSammlungTests` prüft es über die Quelldateien. Grund: `Dienste.*` ist
+prozessweiter Zustand, und xunit trennt nur INNERHALB einer Sammlung — zwei VERSCHIEDENE
+Sammlungen laufen immer nebeneinander. Eine eigene Sammlung „Dienste" half deshalb nichts:
+Während ihr Tausch stand, meldete ein Datenbanktest über `DataRepository.FehlerMelden` in
+denselben `Dienste.Dialog` und schrieb in die fremde Mitschrift (Windows-CI, Lauf 34018913888
+auf `002c937`). Der Störer muss selbst kein Tauscher sein — darum reicht es nicht, sich nur
+von den anderen Tauschern abzugrenzen.
+
 **Der iU5-Wächter — muss leer bleiben:**
 
 ```bash

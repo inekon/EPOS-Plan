@@ -14,6 +14,16 @@ namespace EPOS.Kern.Tests
     /// eigene Arbeitskopie einlegen, ueberschreiben sich dabei gegenseitig den Pfad, und
     /// eine von beiden schreibt in die Kopie der anderen. Dieselbe Sammlung heisst: eine
     /// nach der anderen.</para>
+    ///
+    /// <para><b>Seit dem Befund iU5-O-1 (06.09.2026) ist sie die EINE serielle
+    /// Sammlung.</b> Sie traegt seither auch jede Klasse, die ein prozessweites
+    /// <c>Dienste.*</c> tauscht - frueher standen die in einer eigenen Sammlung
+    /// "Dienste" oder ganz ohne Angabe. Das reichte nicht: xunit trennt nur INNERHALB
+    /// einer Sammlung, zwei VERSCHIEDENE Sammlungen laufen immer nebeneinander. Ein
+    /// Datenbanktest, der ueber <c>DataRepository.FehlerMelden</c> meldet, schrieb so in
+    /// die Mitschrift eines fremden Dialogtests (Windows-CI, Lauf 34018913888). Wer hier
+    /// einen Dienst tauscht, gehoert in DIESE Sammlung; der Waechter
+    /// <see cref="DiensteSammlungTests"/> prueft es ueber die Quelldateien.</para>
     /// </summary>
     [CollectionDefinition("Testdatenbank")]
     public sealed class TestdatenbankSammlung { }
@@ -114,13 +124,28 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// Gibt es die Spalte schon? Sonst anlegen.
+        ///
+        /// <para><b>Die Auskunft holt der KERN</b> (<see cref="DataRepository.SpalteVorhanden"/>),
+        /// nicht diese Datei. Bis zum Befund iU5-O-1 (06.09.2026) stand hier ein eigenes
+        /// <c>PRAGMA table_info("&lt;Tabelle&gt;")</c> - und das ging bei JEDEM Aufruf schief:
+        /// Die Spalte <c>dflt_value</c> eines PRAGMA-Ergebnisses hat keinen deklarierten Typ,
+        /// und <c>Microsoft.Data.Sqlite</c> meldet fuer einen NULL-Wert den Typnamen "BLOB".
+        /// Die erste Zeile - die Id-Spalte - hat nie einen Vorgabewert, also baute
+        /// <c>SqliteDatenzugriff.LadeTabelle</c> eine <c>Byte[]</c>-Spalte; die erste Zeile mit
+        /// einem Vorgabewert (71 der 115 Tabellen haben einen) sprengte sie dann mit "Type of
+        /// value has a mismatch with column type". <c>GetDataTable</c> faengt das ab, MELDET es
+        /// ueber <c>DataRepository.FehlerMelden</c> und gibt eine LEERE Tabelle zurueck: Die
+        /// Pruefung fand nie eine Spalte, das ADD COLUMN lief immer, und weil die Arbeitskopie
+        /// frisch ist, fiel niemandem etwas auf. Sichtbar wurde es erst als FREMDE Meldung in
+        /// der Mitschrift eines Dialogtests - 1 440 Meldungen in einem vollen Lauf.
+        /// <c>SpalteVorhanden</c> fragt <c>SELECT name FROM pragma_table_info(?)</c> und holt
+        /// damit nur eine Textspalte, die nie NULL ist.</para>
+        /// </summary>
         private static void SpalteSicherstellen(SchemaSpalte s)
         {
-            System.Data.DataTable info = DataRepository.GetDataTable("PRAGMA table_info(\"" + s.Tabelle + "\")");
-            if (info != null)
-                foreach (System.Data.DataRow r in info.Rows)
-                    if (string.Equals(Convert.ToString(r["name"]), s.Name, StringComparison.OrdinalIgnoreCase))
-                        return;
+            if (DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return;
             DataRepository.ExecuteNonQuery("ALTER TABLE \"" + s.Tabelle + "\" ADD COLUMN \"" + s.Name + "\" "
                                            + StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition));
         }
