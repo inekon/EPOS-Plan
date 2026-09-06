@@ -15506,4 +15506,40 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="PVS_ZEILE_ERWEITERT" xml:space="preserve">
     <value>Erweitert: anisotrope Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld. Der Wechselrichter rechnet in beiden Modellen.</value>
   </data>
+  <data name="SIM_KARTE_PV_WR_ANZAHL" xml:space="preserve">
+    <value>Wechselrichter · {0} Gerät(e), {1} Strang/Stränge</value>
+  </data>
+  <data name="SIM_KARTE_PV_WR_DCAC" xml:space="preserve">
+    <value>Wechselrichter · DC/AC {0}</value>
+  </data>
+  <data name="SIM_KARTE_PV_WR_OHNE_NENN" xml:space="preserve">
+    <value>Wechselrichter · ohne AC-Nennleistung</value>
+  </data>
+  <data name="SIMERG_TITEL_PV_WR" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_GERAET" xml:space="preserve">
+    <value>Gerät</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_DCAC" xml:space="preserve">
+    <value>DC/AC</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_ERTRAG" xml:space="preserve">
+    <value>Ertrag [MWh/a]</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_CLIPPING" xml:space="preserve">
+    <value>Clipping [kWh/a]</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_CLIPPING_PROZENT" xml:space="preserve">
+    <value>Clipping [%]</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_VOLLLAST" xml:space="preserve">
+    <value>Volllaststd. AC [h/a]</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Jahresnutzungsgrad</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_NACHT" xml:space="preserve">
+    <value>Nachtverbrauch [kWh/a]</value>
+  </data>
 </root>

@@ -15499,4 +15499,40 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="PVS_ZEILE_ERWEITERT" xml:space="preserve">
     <value>Advanced: anisotropic irradiance after Hay-Davies, low-light model after Huld. The inverter is calculated in both models.</value>
   </data>
+  <data name="SIM_KARTE_PV_WR_ANZAHL" xml:space="preserve">
+    <value>Inverter · {0} device(s), {1} string(s)</value>
+  </data>
+  <data name="SIM_KARTE_PV_WR_DCAC" xml:space="preserve">
+    <value>Inverter · DC/AC {0}</value>
+  </data>
+  <data name="SIM_KARTE_PV_WR_OHNE_NENN" xml:space="preserve">
+    <value>Inverter · no AC rating</value>
+  </data>
+  <data name="SIMERG_TITEL_PV_WR" xml:space="preserve">
+    <value>Inverter</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_GERAET" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_DCAC" xml:space="preserve">
+    <value>DC/AC</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_ERTRAG" xml:space="preserve">
+    <value>Yield [MWh/a]</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_CLIPPING" xml:space="preserve">
+    <value>Clipping [kWh/a]</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_CLIPPING_PROZENT" xml:space="preserve">
+    <value>Clipping [%]</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_VOLLLAST" xml:space="preserve">
+    <value>AC full-load h [h/a]</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_NUTZUNGSGRAD" xml:space="preserve">
+    <value>Annual efficiency</value>
+  </data>
+  <data name="SIMERG_SPALTE_WR_NACHT" xml:space="preserve">
+    <value>Night consumption [kWh/a]</value>
+  </data>
 </root>

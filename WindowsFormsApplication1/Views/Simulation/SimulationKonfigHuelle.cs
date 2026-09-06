@@ -1015,6 +1015,13 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Gerätedaten aller PV-Anlagen (:1033-1073).
         /// <c>Tab_Energieanlagen.PV_Leistung</c> ist trotz seines Namens die MODULANZAHL.
+        ///
+        /// <para><b>Stufe S3 des Wechselrichterkonzepts:</b> Steht eine Anlage auf „mit
+        /// Wechselrichter" und führt sie Stränge mit Gerät, kommen zwei Chips dazu —
+        /// die Zahl der Geräte und Stränge und das DC/AC-Verhältnis der Anlage. Beides
+        /// ist eine Zahl aus den STAMMDATEN und braucht keinen Lauf; die Kennzahlen des
+        /// Laufs (Clipping, Jahresnutzungsgrad) stehen im Simulationsprotokoll und im
+        /// Ergebnisreiter. <b>Ohne Zuordnung ändert sich an der Karte nichts.</b></para>
         /// </summary>
         private List<ChipDaten> PvDetailchips()
         {
@@ -1023,9 +1030,27 @@ namespace WindowsFormsApplication1
 
             CultureInfo kultur = CultureInfo.CurrentCulture;
 
+            // Die Strangzeilen und Geräte des PROJEKTS in je einer Abfrage - und nur,
+            // wenn überhaupt eine Anlage den Schalter trägt (dieselbe Zurückhaltung wie
+            // in SimulationPV.Berechnung).
+            List<AnlageStrangModel> alleStraenge = null;
+            Dictionary<int, WechselrichterModel> alleGeraete = null;
+
             WErzeugerCtrl anlagen = new WErzeugerCtrl();
             anlagen.ReadAllFilter("ID_Projekt=" + m_ID_Projekt +
                                   " and ID_Type=" + WizardItemClass.PV_TYP);
+
+            for (int i = 0; i < anlagen.rows; i++)
+                if (SimulationPV.IstKatalogweg(anlagen.items[i]))
+                {
+                    alleStraenge = new AnlageStrangCtrl().LesenJeProjekt(m_ID_Projekt);
+
+                    WechselrichterCtrl wr = new WechselrichterCtrl();
+                    wr.ReadAll(m_ID_Projekt);
+                    alleGeraete = new Dictionary<int, WechselrichterModel>();
+                    for (int g = 0; g < wr.rows; g++) alleGeraete[wr.items[g].m_ID] = wr.items[g];
+                    break;
+                }
 
             for (int i = 0; i < anlagen.rows; i++)
             {
@@ -1066,6 +1091,8 @@ namespace WindowsFormsApplication1
                             : MyResource.Resource.SIM_KARTE_PV_MODELL_ERWEITERT,
                          ChipStil.Quelle);
                 }
+
+                WechselrichterChips(chips, kultur, anlage, modul, alleStraenge, alleGeraete);
             }
 
             if (chips.Count == 0)
@@ -1085,6 +1112,57 @@ namespace WindowsFormsApplication1
         // "Dauernutzung" zurueck; der Kern gibt ihn unveraendert weiter. Das ist eine
         // Behauptung weniger ueber Daten, die man nicht kennt - und unerreichbar,
         // solange alle Schreiber DbWerte.SP_* setzen.
+
+        /// <summary>
+        /// Die zwei Wechselrichter-Chips einer Anlage, die auf der STRANGEBENE rechnet
+        /// (Stufe S3, <c>Konzept_Wechselrichter_EPOS-Plan.md</c> 4.4): wieviele Geräte
+        /// und Stränge, und das DC/AC-Verhältnis.
+        ///
+        /// <para><b>Dieselbe Vorrangregel wie im Rechenkern</b> — geprüft wird über
+        /// <c>SimulationPV.IstKatalogweg</c> und <c>PvStrangModell.Gruppieren</c>, damit
+        /// die Karte nichts anzeigt, was der Lauf nicht rechnet. Ohne Zuordnung entsteht
+        /// kein Chip.</para>
+        /// </summary>
+        private static void WechselrichterChips(List<ChipDaten> chips, CultureInfo kultur,
+                                                WErzeugerModel anlage, PhotovoltaikCtrl modul,
+                                                List<AnlageStrangModel> alleStraenge,
+                                                Dictionary<int, WechselrichterModel> alleGeraete)
+        {
+            if (!SimulationPV.IstKatalogweg(anlage) || alleStraenge == null) return;
+
+            List<AnlageStrangModel> eigene = new List<AnlageStrangModel>();
+            foreach (AnlageStrangModel s in alleStraenge)
+                if (s != null && s.ID_Anlage == anlage.ID) eigene.Add(s);
+            if (eigene.Count == 0) return;
+
+            int ohneGeraet;
+            List<PvStrangModell.Geraetegruppe> geraete =
+                PvStrangModell.Gruppieren(eigene, alleGeraete, out ohneGeraet);
+            if (geraete.Count == 0) return;
+
+            int straenge = 0;
+            foreach (PvStrangModell.Geraetegruppe g in geraete)
+            {
+                straenge += g.Straenge.Count;
+
+                double kwp = 0.0;
+                foreach (AnlageStrangModel s in g.Straenge)
+                    kwp += modul.m_Leistung / 1000.0 * s.Modulzahl;
+                g.KwpDc = kwp;
+            }
+
+            Chip(chips, string.Format(MyResource.Resource.SIM_KARTE_PV_WR_ANZAHL,
+                                      geraete.Count.ToString("N0", kultur),
+                                      straenge.ToString("N0", kultur)),
+                 ChipStil.Quelle);
+
+            double dcAc = SimulationPV.DcAcDerAnlage(geraete);
+            Chip(chips, dcAc > 0.0
+                     ? string.Format(MyResource.Resource.SIM_KARTE_PV_WR_DCAC,
+                                     dcAc.ToString("N2", kultur))
+                     : MyResource.Resource.SIM_KARTE_PV_WR_OHNE_NENN,
+                 ChipStil.Quelle);
+        }
 
         private static string BetriebsartAnzeige(string dbWert)
         {
