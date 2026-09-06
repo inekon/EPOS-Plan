@@ -24,10 +24,16 @@ namespace EPOS.Kern.Tests
     /// Zeichen derselbe. Der Fall setzt KEINEN Lader voraus — er fragt die
     /// Assembly unmittelbar; ein Lader kann darauf aufbauen, muss es aber nicht.</para>
     ///
-    /// <para>Die INHALTLICHE Prüfung der Seiten (Kopfblock, die sechs Abschnitte
-    /// der Bauform, die Zuordnungen in <c>help_mapping.txt</c>) steht in
-    /// <c>EPOS.UI.Tests/BerechnungshilfeTests</c> — dort, wo auch die Razor-Wirte
+    /// <para>Die INHALTLICHE Prüfung der Seiten (Kopfblock, die sieben Abschnitte
+    /// der Bauform, die Notation, die Zuordnungen in <c>help_mapping.txt</c>) steht
+    /// in <c>EPOS.UI.Tests/BerechnungshilfeTests</c> — dort, wo auch die Razor-Wirte
     /// der Infoknöpfe liegen.</para>
+    ///
+    /// <para><b>Fassung 2 (06.09.2026).</b> Die Seiten setzen ihre Formeln in
+    /// UNICODE-Notation (η, ϑ, ·, Σ, √, ≤) — das Wiki führt keine
+    /// Math-Erweiterung. Diese Zeichen müssen die Einbettung überstehen: Eine
+    /// Ressource, die als ASCII oder in einer Codepage herauskäme, wäre für den
+    /// KI-Assistenten Zeichensalat. Der letzte Fall hält genau das.</para>
     ///
     /// <para>Keine Datenbank, keine <c>Dienste.*</c> — deshalb ohne Sammlung.</para>
     /// </summary>
@@ -99,9 +105,92 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// Die Formelzeichen überstehen die Einbettung. Gelesen wird aus der
+        /// ASSEMBLY, nicht von der Platte: Was der KI-Assistent und der Hilfeleser
+        /// sehen, ist die Ressource, nicht die Datei.
+        ///
+        /// <para>Geprüft werden zwei Zeichen, die auf JEDER der sieben Seiten
+        /// vorkommen — der Malpunkt (keine Formel dieser Rubrik kommt ohne
+        /// Multiplikation aus) und das typografische Minus —, dazu MINDESTENS EIN
+        /// griechischer oder mathematischer Buchstabe aus der Schreibweise der
+        /// Rubrik. Ein bestimmter griechischer Buchstabe taugt dafür nicht: Die
+        /// Wärmepumpe rechnet mit COP statt mit η, der Pufferspeicher mit λ.
+        /// Kommt eines dieser Zeichen nicht an, ist die Kodierung unterwegs
+        /// verlorengegangen.</para>
+        ///
+        /// <para>Gleichzeitig hält der Fall die zwei Verbote der Fassung 2 auf dem
+        /// Weg, auf dem die Seiten wirklich ausgeliefert werden: keine
+        /// <c>&lt;math&gt;</c>-Auszeichnung, kein LaTeX-Befehl.</para>
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(SeitenTeilB))]
+        public void Die_Formelzeichen_ueberstehen_die_Einbettung(string seite)
+        {
+            Assembly kern = typeof(WindowsFormsApplication1.SimulationPV).Assembly;
+            string name = PRAEFIX + seite + ".wiki";
+
+            using Stream strom = kern.GetManifestResourceStream(name);
+            Assert.True(strom != null, "Die Ressource " + name + " gibt es nicht.");
+
+            using var leser = new StreamReader(strom, new UTF8Encoding(false), true);
+            string inhalt = leser.ReadToEnd();
+
+            foreach (string zeichen in ZEICHEN_DER_NOTATION)
+                Assert.True(inhalt.Contains(zeichen, StringComparison.Ordinal),
+                            "Die eingebettete Seite " + seite + " führt das Zeichen '" +
+                            zeichen + "' nicht — entweder fehlt die Notation, oder die " +
+                            "Kodierung ist unterwegs verlorengegangen.");
+
+            Assert.True(GRIECHISCH.Any(z => inhalt.Contains(z, StringComparison.Ordinal)),
+                        "Die eingebettete Seite " + seite + " führt keinen einzigen " +
+                        "griechischen oder mathematischen Buchstaben (" +
+                        string.Join(" ", GRIECHISCH) + ") — entweder fehlt die Notation, " +
+                        "oder die Kodierung ist unterwegs verlorengegangen.");
+
+            Assert.DoesNotContain("<math", inhalt, StringComparison.Ordinal);
+            Assert.DoesNotContain("\\frac", inhalt, StringComparison.Ordinal);
+            Assert.DoesNotContain("\\sum", inhalt, StringComparison.Ordinal);
+        }
+
         // =====================================================================
         //  Lesen
         // =====================================================================
+
+        /// <summary>
+        /// Die sieben Seiten des Teils B — die, deren Notation dieser Wächter
+        /// hält. Sie stehen AUSDRÜCKLICH da und nicht als Verzeichnisinhalt: Bis
+        /// beide Teile der Rubrik zusammengeführt sind, tragen die Seiten des
+        /// Teils A ihre Fassung 1, und die soll hier nicht rot ausfallen.
+        /// </summary>
+        public static TheoryData<string> SeitenTeilB
+        {
+            get
+            {
+                var daten = new TheoryData<string>();
+                foreach (string s in new[]
+                         {
+                             "Heizkessel", "BHKW", "Wärmepumpe", "Pufferspeicher",
+                             "Solarthermie", "Photovoltaik", "Stromspeicher"
+                         })
+                    daten.Add(s);
+                return daten;
+            }
+        }
+
+        /// <summary>
+        /// Die zwei Zeichen, die auf JEDER Seite stehen: Malpunkt (U+00B7) und
+        /// typografisches Minus (U+2212).
+        /// </summary>
+        private static readonly string[] ZEICHEN_DER_NOTATION = { "·", "−" };
+
+        /// <summary>
+        /// Davon steht mindestens EINES auf jeder Seite — welches, hängt vom Fach ab:
+        /// η beim Erzeuger mit Wirkungsgrad, ϑ bei jeder Temperatur, λ beim
+        /// Schichtmodell, Σ bei jeder Summe.
+        /// </summary>
+        private static readonly string[] GRIECHISCH =
+            { "η", "ϑ", "λ", "β", "γ", "ρ", "κ", "θ", "χ", "Δ", "Σ", "√" };
 
         /// <summary>
         /// Die Seiten des Ordners. Dateien mit führendem <c>_</c> sind KEINE
