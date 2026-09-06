@@ -50,6 +50,14 @@ namespace EPOS.Kern.Tests
         private const int HERSTELLER = 152;
 
         /// <summary>
+        /// Die Zahl der GELBEN Geräte seit dem Schwellwert der Teillast-Regel
+        /// (<b>W6‑O‑8</b>, 06.09.2026): <b>eines</b> — „OutBack Power: GS8048A {240V}"
+        /// mit 2,423 Prozentpunkten Abfall zwischen 30 und 50 %. Vor der Schwelle waren
+        /// es 303.
+        /// </summary>
+        private const int GELB = 1;
+
+        /// <summary>
         /// <b>Die volle Liste läuft durch.</b> 2 346 Zeilen (Kopf-, Einheiten- und
         /// <c>[0]</c>-Zeile plus 2 343 Geräte), 152 Hersteller — und jedes Gerät trägt
         /// einen Bezeichner, eine AC-Nennleistung und ein MPP-Fenster.
@@ -153,6 +161,15 @@ namespace EPOS.Kern.Tests
         /// 2 343 Sätze, und <b>kein Gerät der Auslieferung ist ROT</b>. Wäre eines rot,
         /// könnte der Anwender es gar nicht erst übernehmen — dann wäre entweder die
         /// Prüfung zu scharf oder die Datei kaputt, und beides gehört gemeldet.</para>
+        ///
+        /// <para><b>Seit W6‑O‑8 (06.09.2026) sind es 2 342 grün / 1 gelb / 0 rot</b>
+        /// statt 2 040 / 303 / 0. Die Teillast-Regel meldet erst ab
+        /// <see cref="WechselrichterPlausibilitaet.TEILLAST_ABFALL_SCHWELLE"/>
+        /// (ein Prozentpunkt); 302 der 303 früheren Fälle waren die Modellparabel des
+        /// Sandia-Umwegs und lagen unter 0,4 Prozentpunkten. Übrig bleibt <b>ein</b>
+        /// Gerät mit 2,423 Prozentpunkten — und genau dafür ist die Regel da. Die Zahl
+        /// steht hier fest: Wandert sie, hat sich entweder die Datei oder die Prüfung
+        /// geändert, und beides gehört gesehen.</para>
         /// </summary>
         [Fact]
         public void Die_Plausibilitaet_wird_fuer_jedes_Geraet_gezaehlt()
@@ -202,6 +219,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, rot);
             Assert.True(roteGeraete.Count == 0,
                 "Gesperrte Geräte in der Auslieferung: " + string.Join(", ", roteGeraete));
+
+            // Die Verteilung NACH W6-O-8 (Schwelle 1 Prozentpunkt).
+            Assert.Equal(GELB, gelb);
+            Assert.Equal(GERAETE - GELB, gruen);
         }
 
         /// <summary>

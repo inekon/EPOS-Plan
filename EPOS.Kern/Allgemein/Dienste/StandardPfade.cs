@@ -60,6 +60,56 @@ namespace WindowsFormsApplication1
             get { return Wurzel(Environment.SpecialFolder.MyDocuments); }
         }
 
+        /// <summary>Der Name des ausgelieferten Herstellerdatenordners.</summary>
+        protected const string OrdnerHerstellerdaten = "VDI-3805-Daten";
+
+        /// <summary>
+        /// <inheritdoc cref="IPfade.Herstellerdaten"/>
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Eine Suche, zwei Lagen — und deshalb KEINE Windows-Sonderfassung.</b>
+        /// Beim Anwender liegt der Ordner unmittelbar neben der Anwendung
+        /// (<c>{app}\VDI-3805-Daten</c>, so legt ihn das Setup hin, W6‑O‑9); im
+        /// Entwicklungsstand liegt er in der Wurzel des Repositorys, also einige Ebenen
+        /// ÜBER dem Ausgabeordner <c>bin\x64\Release\net10.0-windows</c>. Beides findet
+        /// derselbe Aufstieg von <see cref="AppContext.BaseDirectory"/> aus — der
+        /// installierte Fall trifft schon auf der ersten Stufe. Eine eigene
+        /// <c>WindowsPfade</c>-Fassung brächte hier nichts als eine zweite Stelle, die
+        /// auseinanderlaufen kann.</para>
+        ///
+        /// <para><b>Acht Ebenen</b> — dieselbe Grenze, die
+        /// <c>CecWechselrichterAuslieferungTests</c> für seine Dateisuche zieht: Sie
+        /// reicht vom Prüfstand bis zur Repowurzel und läuft nicht bis zum
+        /// Laufwerksstamm.</para>
+        ///
+        /// <para><b>Der Wert wird gemerkt</b>, denn er wird bei jedem Öffnen eines
+        /// Dateiwählers geholt und ändert sich zur Laufzeit nicht.</para>
+        /// </remarks>
+        public virtual string Herstellerdaten
+        {
+            get
+            {
+                if (_herstellerdaten != null) return _herstellerdaten;
+
+                string gefunden = "";
+                try
+                {
+                    var d = new DirectoryInfo(AppContext.BaseDirectory);
+                    for (int i = 0; i < 8 && d != null; i++, d = d.Parent)
+                    {
+                        string kandidat = Path.Combine(d.FullName, OrdnerHerstellerdaten);
+                        if (Directory.Exists(kandidat)) { gefunden = kandidat; break; }
+                    }
+                }
+                catch { gefunden = ""; }
+
+                _herstellerdaten = gefunden;
+                return _herstellerdaten;
+            }
+        }
+
+        private string _herstellerdaten;
+
         /// <inheritdoc/>
         public string Verbinde(string wurzel, params string[] teile)
         {

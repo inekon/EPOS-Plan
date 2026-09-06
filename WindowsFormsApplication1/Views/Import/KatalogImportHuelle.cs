@@ -147,10 +147,16 @@ namespace WindowsFormsApplication1
         /// geposteten Nachricht später hoch; die Komponente <c>await</c>et
         /// ohnehin (<c>Dateiwahl.BeiKlick</c>), es ändert sich also nichts an
         /// ihr.</para>
+        ///
+        /// <para><b>Der Startordner ist der Herstellerdatenpfad</b> — seit W6‑O‑9
+        /// (06.09.2026) über <c>EinstellungenCtrl.HerstellerdatenpfadOderVorgabe</c>:
+        /// Das Setup liefert <c>VDI-3805-Daten</c> mit, und der Wähler macht ohne Zutun
+        /// im mitgelieferten Bestand auf. Ein eingetragener Einstellungswert hat
+        /// weiterhin Vorrang.</para>
         /// </summary>
         private static Task<string> DateiWaehlen(KatalogImportProfil profil, string filter)
         {
-            string basis = Properties.Settings.Default.VDI3805Path ?? "";
+            string basis = EinstellungenCtrl.HerstellerdatenpfadOderVorgabe() ?? "";
             string ordner = Path.Combine(basis, profil.Unterordner);
 
             if (!Directory.Exists(ordner) && profil.UnterordnerRueckfall.Length > 0)

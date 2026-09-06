@@ -76,6 +76,8 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -45547,7 +45549,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennlinie fällt im Teillastast: {0} = {1}, aber {2} = {3}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennlinie fällt im Teillastast: {0} = {1}, aber {2} = {3} — ein Abfall von {4} Prozentpunkten. ähnelt.
         /// </summary>
         public static string WRK_PLAUSI_ETA_MONOTON {
             get {

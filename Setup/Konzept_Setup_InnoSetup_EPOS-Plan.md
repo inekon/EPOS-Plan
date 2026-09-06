@@ -21,6 +21,15 @@ Mitgeliefert: `EPOS-Plan.iss` (lauffähiges Setup-Skript) und `build-setup.ps1`
 > Entscheidungen und Abnahmeplan stehen in
 > [`Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md).
 
+> **Stand 06.09.2026 — Herstellerdaten.** Anwenderentscheid **W6‑O‑9** („ja"):
+> Das Setup liefert den Ordner `VDI-3805-Daten` (rund 186 MB) als **vorgewählte,
+> abwählbare Komponente** nach `{app}\VDI-3805-Daten` aus. Neu sind dadurch die
+> Abschnitte `[Types]` und `[Components]` im Skript, eine Zeile in `[Files]`, eine
+> in `[UninstallDelete]` und eine Vorbedingung in `build-setup.ps1`. Begründung
+> der Lage: Entscheidung **E10** in Abschnitt 3. Fachlicher Bezug:
+> [`Konzept_Wechselrichter_EPOS-Plan.md`](../Konzept_Wechselrichter_EPOS-Plan.md),
+> Kapitel 12.
+
 ---
 
 ## 1. Ausgangslage
@@ -75,6 +84,7 @@ kann, ohne die Installation zu wiederholen.
 |---|---|---|---|
 | `%ProgramFiles%\EPOS-Plan` | Programm, Laufzeit, Satelliten, `Vorlagen\`, `runtimes\` | Standard (Benutzer: nur lesen) | nur das Setup |
 | `…\EPOS-Plan\Vorlage\Kenndaten.accdb` | Auslieferungsdatenbank, unverändert | Standard | nur das Setup |
+| `…\EPOS-Plan\VDI-3805-Daten` | **Herstellerdaten** (VDI 3805, CEC-Modul- und Wechselrichterliste), rund 186 MB — abwählbare Komponente (E10) | Standard (Benutzer: nur lesen) | nur das Setup |
 | `%LOCALAPPDATA%\EPOS_PLAN` | **Arbeitsdatenbank des Kontos**, Protokolle | Konto hat Vollzugriff | die Anwendung |
 | `%LOCALAPPDATA%\EPOS-Plan\…\user.config` | Einstellungen (`DBPath`, `WordPressUrl` …) | Konto | .NET-Einstellungssystem |
 | `%ProgramData%\EPOS_PLAN` | leer im Regelbetrieb; Ablage für die Betriebsart „gemeinsame Datenbank" und für Altbestände | Gruppe *Benutzer*: ändern (vererbend) | Anwendung, wenn ausdrücklich konfiguriert |
@@ -174,6 +184,7 @@ so auch im Meldungstext.
 | **E7** | **Ein Setup, keine Produktvarianten** | Demo und Vollversion unterscheiden sich ausschließlich im Lizenz-Token. Zwei Setups zu pflegen brächte nichts als zwei Fehlerquellen |
 | **E8** | **Version einzig aus `AssemblyInfo.cs`** | Setup-Dateiname, Softwareliste, Registry und `Hilfe → Info` zeigen zwangsläufig denselben Stand |
 | **E9** | **Klimadaten nicht im Setup** | Rund 330 `.xls` mit etwa 300 MB verdoppelten das Setup. Offen ist, wie sie stattdessen zum Anwender kommen — siehe Abschnitt 11 |
+| **E10** | **Herstellerdaten im Setup — als abwählbare Komponente unter `{app}\VDI-3805-Daten`** | Anwenderentscheid **W6‑O‑9** vom 06.09.2026: „ja". Ohne die Datensätze steht der Kunde vor leeren Importmasken; die zwei CEC-Listen sind zudem der einzige Weg zu einem gefüllten Modul- und Wechselrichterkatalog (W6‑O‑3). 186 MB rechtfertigen aber keine Zwangsinstallation, deshalb eine **vorgewählte, abwählbare** Komponente. **Nach `{app}` und nicht nach `%ProgramData%`**, weil die Masken den Bestand nur LESEN: Er gehört damit in die Zeile „nur das Setup schreibt" der Tabelle 2.1 — dieselbe Lage und derselbe Grund wie bei der Vorlagendatenbank (E3). `%ProgramData%\EPOS_PLAN` bleibt dagegen bei der Deinstallation absichtlich stehen (dort liegen Anwenderdaten); 186 MB Auslieferungsbestand blieben dort als Leiche zurück |
 
 ---
 
@@ -188,13 +199,14 @@ Architekturbezeichner `x64compatible` noch UTF-8 ohne BOM).
 | `[Setup]` | `AppId` als feste GUID, `{autopf}`, `PrivilegesRequired=admin`, `ArchitecturesAllowed=x64compatible`, `ArchitecturesInstallIn64BitMode=x64compatible`, `MinVersion=10.0`, `CloseApplications=yes` |
 | `[Languages]` | Deutsch und Englisch — passend zur zweisprachigen Oberfläche |
 | `[CustomMessages]` | Alle eigenen Texte zweisprachig, keine Zeichenkette im Code |
+| `[Types]` / `[Components]` | Zwei Typen (`voll`, `custom`) und zwei Bestandteile: `programm` (`Flags: fixed`) und `herstellerdaten` — vorgewählt, abwählbar (E10) |
 | `[Tasks]` | Desktopsymbol |
 | `[Dirs]` | `%ProgramData%\EPOS_PLAN` mit `Permissions: users-modify` |
-| `[Files]` | Veröffentlichungsordner rekursiv (ohne `*.pdb`, `*.xml`), Vorlagendatenbank, ACE-Installer nach `{tmp}` — letzterer nur, wenn er gebraucht wird |
+| `[Files]` | Veröffentlichungsordner rekursiv (ohne `*.pdb`, `*.xml`), Vorlagendatenbank, Herstellerdatenordner `VDI-3805-Daten` rekursiv (`Components: herstellerdaten`), ACE- und WebView2-Installer nach `{tmp}` — letztere nur, wenn sie gebraucht werden |
 | `[Icons]` | Startmenü, Web-Verknüpfung, Deinstallation, optional Desktop |
 | `[Registry]` | `HKLM\SOFTWARE\INEKON\EPOS-Plan` (64-Bit-Sicht): `InstallDir`, `Version` |
 | `[Run]` | ACE-Installation mit Gegenprüfung, `icacls` bei Altbestand, Programmstart anbieten |
-| `[UninstallDelete]` | Gezielt: Protokolle, `Vorlage\`, dann `dirifempty` auf `{app}`. **Kein** pauschales Löschen des gewählten Ordners |
+| `[UninstallDelete]` | Gezielt: Protokolle, `Vorlage\`, `VDI-3805-Daten\`, dann `dirifempty` auf `{app}`. **Kein** pauschales Löschen des gewählten Ordners |
 | `[Code]` | `AceVorhanden`, `AceNachpruefen`, `Office32Vorhanden` mit Hinweisdialog, `AlteX86InstallationEntfernen` (aus `PrepareToInstall`), Zustandsaufnahme in `InitializeSetup`, Hinweisseite, Rückfrage bei der Deinstallation |
 
 Drei Feinheiten, die beim Ändern leicht kippen:
@@ -500,6 +512,9 @@ Setup\
   Voraussetzungen\AccessDatabaseEngine_X64.exe
   Voraussetzungen\MicrosoftEdgeWebview2Setup.exe
   Ausgabe\                             Ergebnis (NICHT versionieren)
+
+<Repo>\VDI-3805-Daten\                 Herstellerdaten, rund 186 MB (versioniert),
+                                      Komponente "herstellerdaten" (E10)
 ```
 
 Nach `.gitignore`: `Setup/Ausgabe/`, `Setup/Vorlage/*.accdb`,
@@ -513,9 +528,14 @@ cd C:\Waermeplan\WP_Plan\Setup
 ```
 
 Das Skript veröffentlicht eigenständig nach `artifacts\publish\win-x64`, prüft
-Vorlagendatenbank, Voraussetzungs-Installer und Inno-Setup-Version, übersetzt
-und meldet Pfad und Größe. `-SkipPublish` überspringt den Bau, `-Schnell`
-schaltet auf `lzma2/normal` für Testläufe.
+Vorlagendatenbank, **Herstellerdatenordner**, Voraussetzungs-Installer und
+Inno-Setup-Version, übersetzt und meldet Pfad und Größe. `-SkipPublish`
+überspringt den Bau, `-Schnell` schaltet auf `lzma2/normal` für Testläufe.
+
+Fehlt `VDI-3805-Daten`, bricht schon `build-setup.ps1` mit der Bezugsquelle ab;
+`EPOS-Plan.iss` hat für den Handlauf mit `ISCC.exe` denselben Abbruch als
+`#error` (`DirExists`). **Ein Setup ohne Herstellerdaten entsteht nicht aus
+Versehen** — nur, wenn der Anwender die Komponente im Assistenten abwählt.
 
 Veröffentlicht wird bewusst mit dem **MSBuild aus Visual Studio 2022**
 (`-restore -t:Publish -p:Platform=x64 -p:RuntimeIdentifier=win-x64
@@ -550,6 +570,15 @@ Windows-Installation, nicht auf dem Entwicklungsrechner:
 8. Deinstallation mit und ohne Datenlöschung
 9. `dotnet list package --include-transitive` — Lizenzprüfung, insbesondere die
    Bindung von `SixLabors.Fonts` auf 1.0.x
+10. **Komponentenseite** (E10): Der Assistent zeigt zwischen Zielordner und
+    Aufgaben eine Seite „Komponenten auswählen" mit dem Typ „Vollständige
+    Installation" und zwei Häkchen — „Programm und Auslieferungsdatenbank"
+    (fest) und „Herstellerdaten (VDI 3805, CEC)" (gesetzt, rund 186 MB). Zwei
+    Fälle: **mit** Häkchen → nach der Installation liegt `VDI-3805-Daten` neben
+    dem Programm, und der Dateiwähler von Administration → Datenimport macht
+    ohne jede Einstellung darin auf; **ohne** Häkchen → der Ordner fehlt, das
+    Programm läuft unverändert, und der Wähler startet im bisherigen
+    Vorgabeordner
 
 Eine Automatisierung über GitHub Actions ist möglich (`windows-latest` bringt
 das .NET-SDK mit, Inno Setup ist per `choco install innosetup` nachrüstbar),
@@ -592,7 +621,10 @@ Verpacken und das Setup danach.
   (`.eposlic`); `.lic` ist nicht geschützt und wird von anderen Programmen belegt.
 - **Kein automatischer Programmupdater.** Es gibt keinen im Code, und das Setup
   ersetzt ihn nicht.
-- **Keine Klimadaten** (E9).
+- **Keine Klimadaten** (E9). Die **Herstellerdaten** dagegen liegen seit dem
+  06.09.2026 bei (E10) — der Unterschied ist die Größe: 186 MB gegen 300 MB,
+  und die Herstellerdaten sind die Voraussetzung dafür, dass die Importmasken
+  überhaupt etwas zu lesen finden.
 
 ---
 
