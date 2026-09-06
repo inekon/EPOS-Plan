@@ -47,6 +47,20 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Schreibt die Einzelzeile fort — im Bestand ausschließlich „welches Projekt ist
+        /// zuletzt geöffnet worden".
+        /// </summary>
+        /// <remarks>
+        /// <para><b>AUSNAHME DER SCHREIBNAHT (Welle iF30, Anwenderentscheid 04.09.2026).</b>
+        /// <c>Tab_Applikation</c> ist die anwendungsweite Einzelzeilen-Statustabelle und
+        /// trägt PROGRAMMZUSTAND, kein Arbeitsergebnis: den Namen des zuletzt geöffneten
+        /// Projekts und den Schemastand. Ohne diese Freigabe könnte ein Anwender im
+        /// Lesemodus kein Projekt mehr ÖFFNEN — genau das, was § 6 des Konzepts
+        /// ausdrücklich erlaubt („Projekte öffnen, Ergebnisse ansehen"). Sie steht in
+        /// derselben Reihe wie die Einstellungen, die ebenfalls weiter geschrieben werden
+        /// dürfen.</para>
+        /// </remarks>
         public bool Update()
         {
             // Update erfolgt immer auf ID=1, da es nur diesen einen Datensatz gibt
@@ -64,7 +78,10 @@ namespace WindowsFormsApplication1
                 new DbParam("@icon", m_icon ?? "")
             };
 
-            return DataRepository.ExecuteSQL(sql, parameters);
+            using (Schreibnaht.Freigabe(Schreibnaht.GRUND_PROGRAMMZUSTAND))
+            {
+                return DataRepository.ExecuteSQL(sql, parameters);
+            }
         }
 
         // =========================================================================
@@ -132,14 +149,22 @@ namespace WindowsFormsApplication1
         /// Schreibt den Schemastand. Rueckgabe false, wenn nichts geschrieben werden
         /// konnte (fehlende Spalte, leere Tabelle, schreibgeschuetzte Datenbank) - die
         /// SchemaMigration wertet das als Fehlschlag des Schritts.
+        ///
+        /// <para><b>AUSNAHME DER SCHREIBNAHT (Welle iF30):</b> der Schemamarker gehört zur
+        /// Migration und damit zum Programmzustand. Er wird auch dann fortgeschrieben, wenn
+        /// die Lizenz keine Änderungen mehr erlaubt — sonst liefe die Migration bei jedem
+        /// Start erneut an.</para>
         /// </summary>
         public static bool SetSchemaVersion(int version)
         {
             try
             {
-                return StilleDb.NonQuery(
-                    "UPDATE Tab_Applikation SET [" + SPALTE_SCHEMAVERSION + "] = ?",
-                    new DbParam("@v", version)) > 0;
+                using (Schreibnaht.Freigabe(Schreibnaht.GRUND_MIGRATION))
+                {
+                    return StilleDb.NonQuery(
+                        "UPDATE Tab_Applikation SET [" + SPALTE_SCHEMAVERSION + "] = ?",
+                        new DbParam("@v", version)) > 0;
+                }
             }
             catch
             {

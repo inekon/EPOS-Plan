@@ -1820,6 +1820,29 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > weiterhin selbst. 15 neue bunit-Fälle (UI 2 497). Offen als **W15c‑O‑6**: Die vier KI-Wurzeln der Welle 15b haben
 > dieselbe Form (kein Seitenrand, kein `overflow-x`) — sie gehören in die laufende Überarbeitung des
 > Hilfe-Assistenten (W15b‑E‑3).
+>
+> **Welle iF30 — Lesemodus streng (Anwenderentscheid 04.09.2026), umgesetzt 06.09.2026 in `8daf051`:**
+> `LizenzManager.DarfSchreiben()` hatte seit iU5‑U1 genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7) — der
+> Lesemodus stand im Konzept, war sichtbar und prüfbar, aber nicht durchgesetzt. Er wird es jetzt an **einer** Stelle:
+> `SqliteDatenzugriff.ErzeugeKommando` baut jede Anweisung des Kerns (die sechs Zugriffsmethoden, `DbVorgang`,
+> `RecordSet`, `StilleDb` und die sechs Eigenverbindungen laufen dort hindurch; die zwei Kommandos daneben — PRAGMA und
+> `last_insert_rowid()` — schreiben nicht), und dort steht `Schreibnaht.Pruefe(sql)`. Lesen bleibt frei (`SELECT`,
+> `PRAGMA`, `EXPLAIN`, `VALUES` — die Liste ist die der Leser, nicht die der Schreiber); ein Schreibversuch wirft eine
+> eigene `LesemodusException` mit fertigem Satz statt eines SQLite-Fehlers. **Fünf Ausnahmen** stehen als
+> `Schreibnaht.Freigabe(grund)` an ihrer Stelle im Quelltext, nie über den SQL-Text: Schema- und Erststart-Migration,
+> Schemamarker, Programmzustand (`Tab_Applikation` — ohne ihn ließe sich im Lesemodus kein Projekt mehr öffnen) und
+> die Sicherung (`VACUUM INTO` ist ein Export). Die im Entscheid genannten Ausnahmen Lizenzaktivierung und
+> Einstellungen brauchen keine: Beide berühren die Datenbank nicht. Der Simulationslauf fragt vor dem Start
+> (`SimulationLaufCtrl.Vorpruefen`); Ansehen, Berichte und Export sind unberührt. **Die Falle der Welle** sind die
+> Werkzeuge: Referenzlauf (Linux und Windows), iOS-Prüfmodus, Schemawerkzeug und Testvorrichtung laufen ohne Lizenz
+> und schreiben — jedes hebt die Sperre mit einer benannten Zeile `Schreibnaht.WerkzeugFreigabe(grund)`; `ChartProben`
+> braucht keine. Sichtbar ist der Zustand als Banner in der `AppWurzel`: der Lesemodus dauerhaft (der eine Zustand,
+> den W16b‑E‑6 für ein Dauerbanner gelten lässt), die Warnstufen 30/14/7 als verfallender Hinweis. Nachweise: Kern
+> 1 230 → 1 302, bunit +12, Referenzlauf 1030/1007/1017 byte-gleich zu `2026-09-05_R2_Zeitbasis`, ChartProben grün,
+> SQL-Prüfer 0 Fundstellen, beide Wächter leer, Windows-Bau x64 fehlerfrei. Protokoll
+> `iF30_Lesemodus_Protokoll.md`; offene Punkte iF30‑O‑1 (ist `Tab_Applikation` zu Recht Ausnahme?), iF30‑O‑2
+> (Warnstufen je Programmstart statt täglich), iF30‑O‑3 (Banner läuft erst beim nächsten Start nach), iF30‑O‑4
+> (`PRAGMA` bei den Lesern), iF30‑O‑5 (Access-Zweig der Erststart-Migration geht an der Naht vorbei).
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
@@ -3011,6 +3034,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > ohne Windows nachweisbar — und ist reine Anzeige: Der Rechenweg (`AnlagenKwp`, `KwpSumme`, Simulation,
 > Wirtschaftlichkeit) ist unberührt, der Referenzlauf bitgleich. Nachweis: Kern 1 209 → 1 213, UI 2 656 → 2 659, beide
 > grün unter de und en; Windows-Bau 0 Fehler; Kern-Wächter leer. Vier Abnahmepunkte A‑W6‑O‑5 im W6-Protokoll.
+>
+> **Anwenderwunsch W6‑E‑2 vom 06.09.2026 („Wechselrichter – ausgegraut. Import liegt nicht vor, Admin zum
+> Anlegen/Bearbeiten liegt nicht vor … Mockup und Konzept vor Umsetzung"), Konzept und Mockup in `8fee437`:** Der Knopf
+> trägt genau eine Sperrbedingung (`PvModellFelder.razor`: `disabled`, solange das Modell nicht ERWEITERT ist) und ist
+> im Modell EINFACH bestimmungsgemäß gesperrt; EINFACH multipliziert den Ertrag mit dem konstanten Faktor
+> `PV_WrWirkungsgrad` (NULL = 0,95, `SimulationPV`) — ohne Clipping, Kennlinie und AC-Nennleistung. Nachgeprüft fehlen
+> Wechselrichtertabelle, Katalogeintrag, Verwaltungsausprägung, Import, Strangbegriff und Menüpunkt vollständig; die
+> Modulkennwerte für eine Auslegungsprüfung liegen seit W6‑E‑1 ungenutzt im Katalog. Das neue Papier
+> `Konzept_Wechselrichter_EPOS-Plan.md` (982 Zeilen) schlägt `Tab_Wechselrichter_STAMM` mit Projektkopie, die
+> Strangzuordnung `Z_AnlageStrang` (Migrationsschritte 65/66), eine Kennlinie aus sechs Stützstellen mit
+> mitgeschriebenen Sandia-Koeffizienten, den CEC-Wechselrichterimport und den Rechenweg Module → Strang → MPPT → Gerät
+> → Clipping mit acht Auslegungsprüfungen vor; ohne Strangzuordnung bleibt der Rechenweg Zeichen für Zeichen
+> erhalten, die Basis `2026-09-05_R2_Zeitbasis` also byte-gleich. Vorgeschlagen sind drei Stufen (S1
+> Katalog/Verwaltung/Import ohne Rechenwirkung sofort, S2 und S3 zusammen). Das Mockup
+> `Mockups/Wechselrichter_Mockup_2026-09-06.html` (1 439 Zeilen, eigenständig, Hausstil) zeigt vier Ansichten:
+> PV-Dialog mit dem Abschnitt „Wechselrichter und Stränge" samt Plausibilitätsampel, Verwaltung, Import und den
+> Rechenfluss als SVG. **Nichts umgesetzt; zehn Entscheidungsfragen W6‑E‑2‑Q1…Q10 liegen beim Anwender**, darunter
+> Kennlinienform (Empfehlung Stützstellen, weil Sandia die DC-Spannung je Stunde bräuchte) und ob der Wechselrichter
+> auch in EINFACH wirkt (Empfehlung ja — damit entfällt der ausgegraute Knopf).
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
@@ -3618,7 +3660,7 @@ setzen sie voraus:**
 | **iF21** | **DPI:** bleibt die Blazor-Hülle eine DPI-Insel in einer `DpiUnaware`-Anwendung? | **Insel jetzt, Anwendung DPI-fähig mit W16** — entschieden 03.09.2026 (Empfehlung angenommen). Die `DpiInsel` (iU8-6) deckt die modalen Dialoge; eingebettete Seiten bleiben bis W16 bitmapskaliert (W5‑O1). Der Windows-Befund bei 125 % und 150 % steht aus |
 | **iF22** | **Wie viele Chart-Stacks trägt das Haus?** | **eine Bibliothek (SkiaSharp), zwei Nutzungsarten.** Bericht und Blazor bekommen ein Bild aus dem Kern-Renderer; die interaktiven Bildschirmmasken bleiben bei ScottPlot — heute genau **eine**, `Form_SpeicherOptimierung`. ScottPlot 5 rendert selbst über SkiaSharp |
 | **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** | **ersatzlos gelöscht am 03.09.2026** auf Anweisung des Anwenders — samt `Referenzlauf/Bildvergleich.cs` und dem Modus `bildvergleich`, ohne vorherigen Windows-Bildvergleich. Wächter sind die Renderer-Tests im Kern und `ChartProben` |
-| **iF30** | **Lesemodus-Durchsetzung:** `LizenzManager.DarfSchreiben()` hat bis heute genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7); weder Simulation noch Projektanlage noch ein Speicherweg fragt den Lizenzzustand. Wann und wo wird der Lesemodus durchgesetzt? | **Nach W16** — angelegt 04.09.2026 mit W15c (E‑9): dann sind alle Speicherwege Razor und ihre Zahl steht fest; dazu die Warnstufen 30/14/7 Tage vor Ablauf (Lizenzkonzept § 6). Bis dahin ist der Zustand **sichtbar** (sechs Zustände, drei Stufen, Detailzeile) und **prüfbar** (19 Kern-Fälle `LizenzZustandTests`), aber nicht durchgesetzt. **Entschieden 04.09.2026 (Empfehlung angenommen): streng — alle Schreibwege und der Simulationslauf werden über die eine Schreibnaht im Kern gesperrt, Ansehen und Berichte bleiben frei, Banner in der `AppWurzel`, Warnstufen 30/14/7 Tage vor Ablauf; Ausnahmen Erststart-Migration, Lizenzaktivierung, Einstellungen; eigene kleine Welle nach der Windows-Abnahme** |
+| **iF30** | **Lesemodus-Durchsetzung:** `LizenzManager.DarfSchreiben()` hat bis heute genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7); weder Simulation noch Projektanlage noch ein Speicherweg fragt den Lizenzzustand. Wann und wo wird der Lesemodus durchgesetzt? | **Nach W16** — angelegt 04.09.2026 mit W15c (E‑9): dann sind alle Speicherwege Razor und ihre Zahl steht fest; dazu die Warnstufen 30/14/7 Tage vor Ablauf (Lizenzkonzept § 6). Bis dahin ist der Zustand **sichtbar** (sechs Zustände, drei Stufen, Detailzeile) und **prüfbar** (19 Kern-Fälle `LizenzZustandTests`), aber nicht durchgesetzt. **Entschieden 04.09.2026 (Empfehlung angenommen): streng — alle Schreibwege und der Simulationslauf werden über die eine Schreibnaht im Kern gesperrt, Ansehen und Berichte bleiben frei, Banner in der `AppWurzel`, Warnstufen 30/14/7 Tage vor Ablauf; Ausnahmen Erststart-Migration, Lizenzaktivierung, Einstellungen; eigene kleine Welle nach der Windows-Abnahme** **Erledigt 06.09.2026 (`8daf051`):** durchgesetzt an der einen Schreibnaht `SqliteDatenzugriff.ErzeugeKommando` (`Schreibnaht.Pruefe`), Lesen frei, eigene `LesemodusException` statt SQLite-Fehler; fünf benannte Ausnahmen (Schema- und Erststart-Migration, Schemamarker, Programmzustand, Sicherung — Lizenzaktivierung und Einstellungen berühren die Datenbank nicht), Simulationssperre vor dem Start, vier Werkzeug-Freigaben, Banner in der `AppWurzel` mit den Warnstufen 30/14/7; Referenzlauf byte-gleich. Offene Punkte iF30‑O‑1…5 im Protokoll |
 
 ---
 

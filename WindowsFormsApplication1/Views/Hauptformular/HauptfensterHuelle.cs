@@ -85,7 +85,16 @@ namespace WindowsFormsApplication1
                 ["Produktname"] = Hauptfensterrahmen.PRODUKTNAME,
                 ["Gattung"] = MyResource.Resource.START_GATTUNG,
                 ["Claim"] = MyResource.Resource.HAUPT_CLAIM,
-                ["VersionText"] = Versionszeile()
+                ["VersionText"] = Versionszeile(),
+
+                // DAS LIZENZBANNER (Welle iF30, Anwenderentscheid 04.09.2026).
+                // Ermittelt wird die Lage HIER, in der Hülle, und nicht in der
+                // Komponente: Der Weg dahinter liest die DPAPI-Ablage und den
+                // Zeitanker, und eine Razor-Komponente ruft immer vom
+                // Zeichenfaden (Regel S-2 aus W15c). Was hineingeht, ist ein
+                // fertiger Satz samt Dringlichkeit — kein Token, kein Anker,
+                // kein Schlüssel.
+                ["Lizenzlage"] = LizenzLage.Ermitteln()
             };
         }
 
