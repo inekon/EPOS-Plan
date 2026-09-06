@@ -462,6 +462,15 @@ namespace WindowsFormsApplication1
         /// die Auswahl der Modulspalte je Strang (<b>W6‑O‑6</b>). Ohne Herstellerfilter:
         /// Die Spalte steht in einer Tabellenzelle, und die Modulliste des Dialogs hat
         /// ihren eigenen Filter gleich daneben.
+        ///
+        /// <para><b>Warum der KATALOG und nicht die Projektkopien</b> — dieselbe Bauart
+        /// wie bei der Wechselrichter-Klappliste: Jede Projektkopie traegt den
+        /// <c>Bezeichner</c> ihres Katalogsatzes, und ueber genau diesen Namen findet
+        /// <c>CopyFromStamm</c> eine vorhandene Kopie wieder, statt eine zweite
+        /// anzulegen. Die Liste zeigt damit auch jedes Modul, das im Projekt schon
+        /// liegt. Nur der Sonderfall „Katalogsatz geloescht, Projektkopie noch da" fehlt
+        /// darin — den haelt die Komponente selbst offen und zeigt den Namen der Zeile
+        /// weiter an (<c>PvStraengeFelder.Modulwahl</c>).</para>
         /// </summary>
         private static IReadOnlyList<(int Id, string Text)> ModulEintraege(
             PhotovoltaikStammCtrl stamm)
