@@ -119,6 +119,17 @@
                                 Wert="@Daten.Kuehlleistung" Aktiv="false" />
                         </KindInhalt>
                     </Formularraster>
+
+                    @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
+                       (06.09.2026). Gerade hier ist er die Auskunft, die im Bestand
+                       fehlte: Diese Maske zeigt elf der achtzehn Fachspalten von
+                       Tab_WP_STAMM, die uebrigen sieben laufen unsichtbar mit
+                       (Modulkosten, maxPtherm) oder liegen aus dem VDI-3805-Import
+                       ungenutzt da (Laenge, Breite, Hoehe, Gewicht, Raum). *@
+                    @if (Uebersicht is not null)
+                    {
+                        <Parameteruebersicht Zeilen="@_uebersicht" />
+                    }
                 </KindInhalt>
             </Gruppenkopf>
         </div>
@@ -214,6 +225,14 @@
     /// <summary>Die Kennlinien eines Geräts für den Editor.</summary>
     [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>>? Kennlinien { get; set; }
 
+    /// <summary>
+    /// <b>Alle Parameter der gewählten Wärmepumpe samt ihrer Verwendung</b>
+    /// (Anwenderwunsch W14a-E-8) — der Weg zu
+    /// <c>ParameterUebersichtCtrl.Werte(Anlagenart.Waermepumpe, bezeichner)</c>. Ohne
+    /// ihn zeigt der Dialog keinen Aufklapper.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Uebersicht { get; set; }
+
     /// <summary>Schreibt den Editorstand zurück (<c>KenndatenCtrl.Abgleichen</c>).</summary>
     [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>, bool>? KennlinienAbgleichen { get; set; }
 
@@ -303,6 +322,7 @@
     private IReadOnlyList<WaermepumpeStammZeile> _liste = Array.Empty<WaermepumpeStammZeile>();
     private IReadOnlyList<WaermepumpenKatalogZeile> _katalog = Array.Empty<WaermepumpenKatalogZeile>();
     private KennlinienBilder _bilder = KennlinienBilder.Leer;
+    private IReadOnlyList<Parameterwert> _uebersicht = Array.Empty<Parameterwert>();
 
     private int _gewaehlteId;
     private bool _neu;
@@ -350,6 +370,11 @@
 
         WaermepumpeStammDaten? satz = Satz?.Invoke(zeile.Id);
         if (satz is not null) Daten = satz;
+
+        // W14a-E-8: Die Uebersicht folgt der Auswahl - sie liest ueber den
+        // BEZEICHNER, weil der Verwendungskatalog fuer alle sieben Anlagenarten
+        // denselben Schluessel benutzt.
+        _uebersicht = Uebersicht?.Invoke(zeile.Bezeichner) ?? Array.Empty<Parameterwert>();
 
         // Der Umschalter erscheint nur mit Kuehl-Kenndaten, und die Anzeige faellt
         // dabei auf Waerme zurueck - listBox_WP_SelectedIndexChanged:338 rief dafuer

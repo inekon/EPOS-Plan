@@ -109,8 +109,53 @@ namespace WindowsFormsApplication1
 
                 ["MeldungNameBelegt"] = MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT,
                 ["MeldungNameFehlt"] = MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
-                ["MeldungZahlUngueltig"] = MyResource.Resource.HZKK_MSG_ZAHL
+                ["MeldungZahlUngueltig"] = MyResource.Resource.HZKK_MSG_ZAHL,
+
+                // W14a-E-8 (06.09.2026): der Aufklapper „Alle Parameter und ihre
+                // Verwendung anzeigen" unter dem Bearbeiten-Formular. Er haengt an
+                // GENAU DIESER Stelle, damit alle vier Auspraegungen ihn haben und
+                // keine vergessen wird; die Anlagenart kommt aus dem Profil.
+                ["Uebersicht"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    bezeichner => ParameterUebersichtCtrl.Werte(Anlage(profil.Art), bezeichner, Text))
             };
+        }
+
+        /// <summary>
+        /// Die Anlagenart zu einer Browserart (W14a-E-8). Die zwei Aufzaehlungen
+        /// haben verschiedene Zwecke — <see cref="KatalogBrowserArt"/> nennt eine
+        /// MASKE, <see cref="Anlagenart"/> einen KATALOG (den auch die Wärmepumpe und
+        /// die zwei Modulkataloge fuehren) — und werden deshalb hier abgebildet statt
+        /// zusammengelegt.
+        /// </summary>
+        private static Anlagenart Anlage(KatalogBrowserArt art)
+        {
+            switch (art)
+            {
+                case KatalogBrowserArt.Bhkw: return Anlagenart.Bhkw;
+                case KatalogBrowserArt.Solarkollektoren: return Anlagenart.Solarkollektoren;
+                case KatalogBrowserArt.Pufferspeicher: return Anlagenart.Pufferspeicher;
+                default: return Anlagenart.Heizkessel;
+            }
+        }
+
+        /// <summary>
+        /// Der Uebersetzer, den der Verwendungskatalog bekommt: Schluessel → Text der
+        /// Oberflaechensprache, fehlender Schluessel → der Schluessel selbst (dann
+        /// faellt er auf). Dasselbe Vorgehen wie bei den Profilen der Welle 14a.
+        /// </summary>
+        internal static string Text(string schluessel)
+        {
+            if (string.IsNullOrEmpty(schluessel)) return "";
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(
+                    schluessel, MyResource.Resource.Culture);
+                return string.IsNullOrEmpty(s) ? schluessel : s;
+            }
+            catch (Exception)
+            {
+                return schluessel;
+            }
         }
 
         /// <summary>

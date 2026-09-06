@@ -80,7 +80,17 @@ namespace WindowsFormsApplication1
 
                 ["MeldungNameFehlt"] = MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG,
                 ["MeldungZahlUngueltig"] = MyResource.Resource.HZKK_MSG_ZAHL,
-                ["MeldungFeldLeer"] = MyResource.Resource.MODK_MSG_FELD_LEER
+                ["MeldungFeldLeer"] = MyResource.Resource.MODK_MSG_FELD_LEER,
+
+                // W14a-E-8 (06.09.2026): der Aufklapper „Alle Parameter und ihre
+                // Verwendung anzeigen" unter den Feldgruppen — an EINER Stelle für
+                // beide Ausprägungen, wie bei den vier Browsern.
+                ["Uebersicht"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    bezeichner => ParameterUebersichtCtrl.Werte(
+                        profil.Art == ModulKatalogArt.Photovoltaik
+                            ? Anlagenart.Photovoltaik
+                            : Anlagenart.Stromspeicher,
+                        bezeichner, KatalogBrowserHuelle.Text))
             };
         }
 

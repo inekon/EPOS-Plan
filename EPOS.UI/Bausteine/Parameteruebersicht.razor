@@ -1,0 +1,248 @@
+﻿@* ALLE PARAMETER UND IHRE VERWENDUNG - der Aufklapper unter dem
+   Bearbeiten-Formular jeder Anlagenverwaltung (Anwenderwunsch W14a-E-8,
+   06.09.2026).
+
+   Der Wortlaut: "Erstelle einen Bearbeiten-Dialog zusaetzlich im
+   Bearbeiten-Menue (optionale Anzeige), in dem 1. alle verfuegbaren Parameter
+   und Eigenschaften angezeigt werden und 2. alle verwendeten Parameter
+   gekennzeichnet sind."
+
+   OPTIONAL HEISST AUFKLAPPBAR, und aufgeklappt wird mit einem KNOPF - nicht
+   mit <details>: Nur so gehoert der Offen-Zustand dem Dialog (er ueberlebt
+   den Satzwechsel), und aria-expanded sagt ihn an. Bauart und Stilklassen
+   sind die des Vorbilds W6-E-1 (der Aufklapper "Alle Modulparameter anzeigen"
+   im PV-Projektdialog) - EINE Form fuer denselben Zweck, nicht zwei.
+
+   WARUM EINE TABELLE UND KEIN FORMULARRASTER. Der Vorlaeufer aus W6-E-1
+   zeigt zwei Angaben je Zeile (Beschriftung, Wert) und kommt deshalb mit
+   lesenden Standardfeldern aus. Hier sind es DREI: Die Kennzeichnung der
+   Verwendung ist eine eigene Spalte, und sie muss sich ueber alle Zeilen
+   hinweg vergleichen lassen ("welche Werte rechnen eigentlich mit?"). Genau
+   dafuer ist eine Tabelle da; drei Angaben in eine Feldzeile zu quetschen
+   haette die Frage nicht beantwortet. Der Block steht IM Eingabeteil des
+   Katalograhmens, unter dem Formularraster des Bearbeiten-Formulars, und
+   rollt mit ihm.
+
+   DIE KENNZEICHNUNG IST TEXT, NICHT NUR FARBE. Jede Stufe traegt ihren
+   Namen im Klartext; das Sinnbild davor steht als aria-hidden daneben.
+   Wer nicht farbsehen kann, liest dasselbe (Hausregel: Warnfarben nie
+   allein tragend, forced-colors abgesichert).
+
+   SIE RECHNET UND LIEST NICHTS. Zeilen, Werte und Verwendung kommen fertig
+   aus EPOS.Kern (ParameterVerwendung / ParameterUebersichtCtrl); die
+   Komponente malt sie. *@
+
+@namespace EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+
+<div class="epos-parameteruebersicht">
+    <button type="button" class="epos-modulparameter-knopf"
+            aria-expanded="@(_offen ? "true" : "false")"
+            @onclick="Umschalten">
+        <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_offen ? "▾" : "▸")</span>
+        <span>@Beschriftung</span>
+    </button>
+
+    @if (_offen)
+    {
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-parameteruebersicht-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@SpalteParameter</th>
+                        <th scope="col">@SpalteWert</th>
+                        <th scope="col">@SpalteVerwendung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Parameterwert p in Zeilen)
+                    {
+                        <tr>
+                            <th scope="row" class="epos-parameteruebersicht-name">@p.Eintrag.Anzeigetext</th>
+                            <td class="epos-parameteruebersicht-wert">
+                                @p.Wert@(string.IsNullOrEmpty(p.Eintrag.Einheit) ? "" : " " + p.Eintrag.Einheit)
+                            </td>
+                            <td>
+                                @foreach (Verwendung v in Stufen(p))
+                                {
+                                    <span class="epos-verwendung @Klasse(v)" title="@Langtext(v)">
+                                        <span class="epos-verwendung-zeichen" aria-hidden="true">@Zeichen(v)</span>
+                                        <span class="epos-verwendung-text">@Kurztext(v)</span>
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Die Parameter des gewaehlten Katalogsatzes, fertig aus dem Kern
+    /// (<c>ParameterUebersichtCtrl.Werte</c>). Leer = der Aufklapper steht trotzdem,
+    /// zeigt aber eine leere Tabelle.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Parameterwert> Zeilen { get; set; }
+        = Array.Empty<Parameterwert>();
+
+    /// <summary>
+    /// Ist der Block beim ersten Zeichnen offen? Vorgabe ZU — der Dialog sieht damit
+    /// aus wie vorher, und wer mehr sehen will, klappt auf.
+    /// </summary>
+    [Parameter] public bool VonVornOffen { get; set; }
+
+    /// <summary>
+    /// Wird gerufen, sobald der Anwender auf- oder zuklappt. Der Wirt braucht ihn
+    /// nicht — der Zustand gehoert der Komponente und haelt die Dialogsitzung durch.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OffenGeaendert { get; set; }
+
+    // --- Texte ---------------------------------------------------------------
+    //
+    // SIE FUELLEN SICH SELBST. Es sind neun reine Katalogeintraege ohne eine
+    // einzige Fallunterscheidung - genau der Fall, fuer den die Hausregel das
+    // Vorgehen von LizenzTexte vorsieht (W15c-O-2): Der Baustein holt sie aus
+    // MyResource in der Oberflaechensprache, die Huelle muss nichts weiterreichen.
+    // Drei Wirte mit je neun Parametern waeren siebenundzwanzig Stellen, an denen
+    // ein Schluessel fehlen kann.
+    //
+    // Ein fehlender Schluessel faellt auf den deutschen Wortlaut zurueck.
+
+    /// <summary>Beschriftung des Aufklappknopfs (<c>PARV_AUFKLAPPER</c>).</summary>
+    [Parameter] public string Beschriftung { get; set; }
+        = Text("PARV_AUFKLAPPER", "Alle Parameter und ihre Verwendung anzeigen");
+
+    /// <summary>Spaltenkopf „Parameter" (<c>PARV_SPALTE_PARAMETER</c>).</summary>
+    [Parameter] public string SpalteParameter { get; set; }
+        = Text("PARV_SPALTE_PARAMETER", "Parameter");
+
+    /// <summary>Spaltenkopf „Wert" (<c>PARV_SPALTE_WERT</c>).</summary>
+    [Parameter] public string SpalteWert { get; set; } = Text("PARV_SPALTE_WERT", "Wert");
+
+    /// <summary>Spaltenkopf „Verwendung" (<c>PARV_SPALTE_VERWENDUNG</c>).</summary>
+    [Parameter] public string SpalteVerwendung { get; set; }
+        = Text("PARV_SPALTE_VERWENDUNG", "Verwendung");
+
+    /// <summary>Kennzeichen „Simulation" (<c>PARV_VERW_SIMULATION</c>).</summary>
+    [Parameter] public string TextSimulation { get; set; }
+        = Text("PARV_VERW_SIMULATION", "Simulation");
+
+    /// <summary>Kennzeichen „Wirtschaftlichkeit" (<c>PARV_VERW_WIRTSCHAFT</c>).</summary>
+    [Parameter] public string TextWirtschaft { get; set; }
+        = Text("PARV_VERW_WIRTSCHAFT", "Wirtschaftlichkeit");
+
+    /// <summary>Kennzeichen „Bericht" (<c>PARV_VERW_BERICHT</c>).</summary>
+    [Parameter] public string TextBericht { get; set; } = Text("PARV_VERW_BERICHT", "Bericht");
+
+    /// <summary>Kennzeichen „nur Anzeige" (<c>PARV_VERW_DIALOG</c>).</summary>
+    [Parameter] public string TextDialog { get; set; } = Text("PARV_VERW_DIALOG", "nur Anzeige");
+
+    /// <summary>Kennzeichen „nicht verwendet" (<c>PARV_VERW_KEINE</c>).</summary>
+    [Parameter] public string TextKeine { get; set; } = Text("PARV_VERW_KEINE", "nicht verwendet");
+
+    /// <summary>
+    /// Ein Ressourcentext mit deutschem Rueckfall. <c>Resource.ResourceManager</c>
+    /// liefert <c>null</c>, solange ein Schluessel fehlt — dann steht der Wortlaut da,
+    /// nicht der Schluessel.
+    /// </summary>
+    private static string Text(string schluessel, string rueckfall)
+    {
+        try
+        {
+            string s = Resource.ResourceManager.GetString(schluessel, Resource.Culture);
+            return string.IsNullOrEmpty(s) ? rueckfall : s;
+        }
+        catch (Exception)
+        {
+            return rueckfall;
+        }
+    }
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private bool _offen;
+    private bool _ersterAufbau = true;
+
+    /// <summary>Steht der Block offen? (Pruefhilfe fuer Tests.)</summary>
+    public bool Offen => _offen;
+
+    protected override void OnParametersSet()
+    {
+        // NUR beim ersten Mal: Danach gehoert der Zustand dem Anwender, und ein
+        // Satzwechsel im Wirt darf ihn nicht zuruecksetzen (Regel aus W6-E-1).
+        if (!_ersterAufbau) return;
+        _ersterAufbau = false;
+        _offen = VonVornOffen;
+    }
+
+    private async Task Umschalten()
+    {
+        _offen = !_offen;
+        if (OffenGeaendert.HasDelegate) await OffenGeaendert.InvokeAsync(_offen);
+    }
+
+    // =====================================================================
+    // Die Kennzeichnung
+    // =====================================================================
+
+    /// <summary>
+    /// Die Stufen eines Parameters in fester Reihenfolge — Simulation zuerst, dann
+    /// Wirtschaftlichkeit, Bericht, nur Anzeige, nicht verwendet. Die Reihenfolge
+    /// haengt NICHT am Katalog: Zwei Zeilen mit denselben Stufen sollen gleich
+    /// aussehen, egal in welcher Folge sie dort stehen.
+    /// </summary>
+    private IReadOnlyList<Verwendung> Stufen(Parameterwert p)
+    {
+        var liste = new List<Verwendung>(3);
+        if (p?.Eintrag == null) return liste;
+
+        if (p.Eintrag.Hat(Verwendung.Simulation)) liste.Add(Verwendung.Simulation);
+        if (p.Eintrag.Hat(Verwendung.Wirtschaftlichkeit)) liste.Add(Verwendung.Wirtschaftlichkeit);
+        if (p.Eintrag.Hat(Verwendung.Bericht)) liste.Add(Verwendung.Bericht);
+        if (p.Eintrag.Hat(Verwendung.Dialog)) liste.Add(Verwendung.Dialog);
+        if (p.Eintrag.Hat(Verwendung.Keine)) liste.Add(Verwendung.Keine);
+        return liste;
+    }
+
+    private string Kurztext(Verwendung v) => v switch
+    {
+        Verwendung.Simulation => TextSimulation,
+        Verwendung.Wirtschaftlichkeit => TextWirtschaft,
+        Verwendung.Bericht => TextBericht,
+        Verwendung.Dialog => TextDialog,
+        _ => TextKeine
+    };
+
+    /// <summary>
+    /// Der Tooltip. Er wiederholt den Text und ist damit KEINE zusaetzliche Aussage —
+    /// er hilft nur dort, wo die Spalte schmal wird und der Text abschneidet.
+    /// </summary>
+    private string Langtext(Verwendung v) => Kurztext(v);
+
+    /// <summary>
+    /// Das Sinnbild. Es steht <c>aria-hidden</c> neben dem Text und traegt nie
+    /// allein — ein Zeichen ohne Wort waere eine Farbe mit anderen Mitteln.
+    /// </summary>
+    private static string Zeichen(Verwendung v) => v switch
+    {
+        Verwendung.Simulation => "∑",
+        Verwendung.Wirtschaftlichkeit => "€",
+        Verwendung.Bericht => "▤",
+        Verwendung.Dialog => "◻",
+        _ => "·"
+    };
+
+    private static string Klasse(Verwendung v) => v switch
+    {
+        Verwendung.Simulation => "epos-verwendung--simulation",
+        Verwendung.Wirtschaftlichkeit => "epos-verwendung--wirtschaft",
+        Verwendung.Bericht => "epos-verwendung--bericht",
+        Verwendung.Dialog => "epos-verwendung--dialog",
+        _ => "epos-verwendung--keine"
+    };
+}
