@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Solarthermie | Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Solarthermie | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs, EPOS.Kern/Allgemein/SolarPVGISCalculator.cs,
      EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, Ladeordnung.cs;
      Katalogverwendung: EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs (Befund zu Kdfu) -->
@@ -46,9 +46,12 @@ Ladung, der verworfene Überschuss und der Deckungsanteil an der Jahreswärme.
 
 == Formelzeichen und Parameter ==
 
-Die Schreibweise ist die der ganzen Rubrik: ''t'' ist die Stunde des Jahres (1…8&nbsp;760), ''G''
-eine Bestrahlungsstärke, ''q'' eine flächenbezogene Leistung, ''Q'' eine Wärmemenge, ''ϑ'' eine
-Temperatur in Grad Celsius, ''η'' ein Wirkungsgrad, ''β'' und ''γ'' Neigung und Azimut.
+Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres
+(1…8&nbsp;760), <math>G</math> eine Bestrahlungsstärke, <math>q</math> eine flächenbezogene
+Leistung, <math>Q</math> eine Wärmemenge, <math>\vartheta</math> eine Temperatur in Grad Celsius,
+<math>\eta</math> ein Wirkungsgrad, <math>\beta</math> und <math>\gamma</math> Neigung und Azimut.
+Umlaute stehen in den Formeln in ASCII-Umschrift — der Überschuss heißt dort
+<math>Q_{\mathrm{ueber}}</math>.
 
 === Parameter ===
 
@@ -57,35 +60,35 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! Herkunft
 |-
-| n || Anzahl Kollektoren des Feldes || Stück || Dialog „Solarkollektoren", Abschnitt „Kollektor", Feld „Anzahl"
+| <math>n</math> || Anzahl Kollektoren des Feldes || Stück || Dialog „Solarkollektoren", Abschnitt „Kollektor", Feld „Anzahl"
 |-
-| β || Neigung der Kollektorebene || ° || derselbe Abschnitt, Feld „Neigung"
+| <math>\beta</math> || Neigung der Kollektorebene || ° || derselbe Abschnitt, Feld „Neigung"
 |-
-| γ || Azimut der Kollektorebene || ° || derselbe Abschnitt, Feld „Azimut"
+| <math>\gamma</math> || Azimut der Kollektorebene || ° || derselbe Abschnitt, Feld „Azimut"
 |-
-| A<sub>Ap</sub> || Aperturfläche eines Kollektors || m² || Kollektorkatalog, Feld „Aperturfläche" — '''nicht''' die Modulfläche
+| <math>A_{\mathrm{Ap}}</math> || Aperturfläche eines Kollektors || m² || Kollektorkatalog, Feld „Aperturfläche" — '''nicht''' die Modulfläche
 |-
-| h<sub>0</sub> || Konversionsfaktor (optischer Wirkungsgrad) || — || Kollektorkatalog
+| <math>h_{0}</math> || Konversionsfaktor (optischer Wirkungsgrad) || — || Kollektorkatalog
 |-
-| k<sub>1</sub> || Wärmeverlustkoeffizient || W/(m²·K) || Kollektorkatalog
+| <math>k_{1}</math> || Wärmeverlustkoeffizient || W/(m²·K) || Kollektorkatalog
 |-
-| k<sub>2</sub> || temperaturabhängiger Verlustkoeffizient || W/(m²·K²) || Kollektorkatalog
+| <math>k_{2}</math> || temperaturabhängiger Verlustkoeffizient || W/(m²·K²) || Kollektorkatalog
 |-
-| K<sub>dir50</sub> || Einfallswinkelkorrektur bei 50° || — || Kollektorkatalog, Feld K<sub>dir</sub>(50°)
+| <math>K_{\mathrm{dir50}}</math> || Einfallswinkelkorrektur bei 50° || — || Kollektorkatalog, Feld K<sub>dir</sub>(50°)
 |-
-| ϑ<sub>Sp</sub> || Arbeitstemperatur, gegen die der Kollektor rechnet || °C || '''Konstante: 50''' — fest verdrahtet, im Dialog nirgends einstellbar
+| <math>\vartheta_{\mathrm{Sp}}</math> || Arbeitstemperatur, gegen die der Kollektor rechnet || °C || '''Konstante: 50''' — fest verdrahtet, im Dialog nirgends einstellbar
 |-
-| f<sub>L</sub> || Leitungsverlustfaktor des Solarkreises || — || '''Konstante: 0,92''' — fest verdrahtet
+| <math>f_{\mathrm{L}}</math> || Leitungsverlustfaktor des Solarkreises || — || '''Konstante: 0,92''' — fest verdrahtet
 |-
-| ρ || Boden-Albedo der isotropen Transposition || — || '''Konstante: 0,2''' — fest verdrahtet; es gibt hier keine Hay-Davies-Transposition
+| <math>\rho</math> || Boden-Albedo der isotropen Transposition || — || '''Konstante: 0,2''' — fest verdrahtet; es gibt hier keine Hay-Davies-Transposition
 |-
 | — || keine Stagnation, keine Kollektorabschaltung, keine Solarkreispumpe || — || '''fest verdrahtet''' — dafür gibt es keinen Parameter und keine Formel
 |-
-| θ<sub>ref</sub> || Bezugswinkel der b<sub>0</sub>-Näherung || ° || '''Konstante: 50'''
+| <math>\theta_{\mathrm{ref}}</math> || Bezugswinkel der <math>b_{0}</math>-Näherung || ° || '''Konstante: 50'''
 |-
-| c<sub>min</sub> || untere Klemme des Kosinus in der IAM-Rechnung || — || '''Konstante: 0,001''' — sie verhindert die Division durch null bei flachem Einfall
+| <math>c_{\mathrm{min}}</math> || untere Klemme des Kosinus in der IAM-Rechnung || — || '''Konstante: 0,001''' — sie verhindert die Division durch null bei flachem Einfall
 |-
-| r || Ladepriorität des Feldes in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 10''' — der erste Lader der Kaskade
+| <math>r</math> || Ladepriorität des Feldes in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 10''' — der erste Lader der Kaskade
 |}
 
 Die vier Zeilen mit „fest verdrahtet" sind die '''vier Annahmen dieses Rechenwegs, die im Dialog
@@ -100,89 +103,126 @@ Größen, die der Lauf je Stunde oder je Kollektorfeld bildet.
 {| class="wikitable"
 ! Symbol !! Bedeutung !! Einheit !! berechnet in
 |-
-| t || Stunde des Jahres, 1…8&nbsp;760 || — || Laufindex der Stundenschleife
+| <math>t</math> || Stunde des Jahres, 1…8&nbsp;760 || — || Laufindex der Stundenschleife
 |-
-| GHI(t), DNI(t), DHI(t) || Global-, Direkt- und Diffusstrahlung || W/m² || Klimadatenreihe (Eingang)
+| <math>\mathrm{GHI}(t)</math>, <math>\mathrm{DNI}(t)</math>, <math>\mathrm{DHI}(t)</math> || Global-, Direkt- und Diffusstrahlung || W/m² || Klimadatenreihe (Eingang)
 |-
-| ϑ<sub>Luft</sub>(t) || Außentemperatur || °C || Klimadatenreihe (Eingang)
+| <math>\vartheta_{\mathrm{Luft}}(t)</math> || Außentemperatur || °C || Klimadatenreihe (Eingang)
 |-
-| θ(t) || Einfallswinkel der Direktstrahlung auf die Kollektorebene || ° || Sonnenstand aus Längen- und Breitengrad, β und γ
+| <math>\theta(t)</math> || Einfallswinkel der Direktstrahlung auf die Kollektorebene || ° || Sonnenstand aus Längen- und Breitengrad, <math>\beta</math> und <math>\gamma</math>
 |-
-| G<sub>t</sub>(t) || Bestrahlungsstärke in der Kollektorebene || W/m² || (1)
+| <math>G_{\mathrm{t}}(t)</math> || Bestrahlungsstärke in der Kollektorebene || W/m² || (1)
 |-
-| b<sub>0</sub> || Beiwert der IAM-Näherung für Flachkollektoren || — || (2)
+| <math>b_{0}</math> || Beiwert der IAM-Näherung für Flachkollektoren || — || (2)
 |-
-| IAM(t) || Einfallswinkelkorrektur der Stunde || — || (3)
+| <math>\mathrm{IAM}(t)</math> || Einfallswinkelkorrektur der Stunde || — || (3)
 |-
-| Δϑ(t) || Übertemperatur des Kollektors gegen die Umgebung || K || (4)
+| <math>\Delta\vartheta(t)</math> || Übertemperatur des Kollektors gegen die Umgebung || K || (4)
 |-
-| η(t) || Kollektorwirkungsgrad nach EN 12975 || — || (5)
+| <math>\eta(t)</math> || Kollektorwirkungsgrad nach EN 12975 || — || (5)
 |-
-| q(t) || flächenbezogene Nutzleistung des Kollektors || W/m² || (6)
+| <math>q(t)</math> || flächenbezogene Nutzleistung des Kollektors || W/m² || (6)
 |-
-| A<sub>ges</sub> || Aperturfläche des ganzen Feldes || m² || (7)
+| <math>A_{\mathrm{ges}}</math> || Aperturfläche des ganzen Feldes || m² || (7)
 |-
-| Q<sub>pot</sub>(t) || Bruttopotenzial des Feldes in dieser Stunde || kWh || (8)
+| <math>Q_{\mathrm{pot}}(t)</math> || Bruttopotenzial des Feldes in dieser Stunde || kWh || (8)
 |-
-| Q<sub>direkt</sub>(t) || Anteil, der unmittelbar Bedarf deckt || kWh || (9)
+| <math>Q_{\mathrm{direkt}}(t)</math> || Anteil, der unmittelbar Bedarf deckt || kWh || (9)
 |-
-| Q<sub>lad</sub>(t) || Anteil, der in einen Pufferspeicher geht || kWh || (9)
+| <math>Q_{\mathrm{lad}}(t)</math> || Anteil, der in einen Pufferspeicher geht || kWh || (9)
 |-
-| Q<sub>über</sub>(t) || Überschuss — verworfene Wärme || kWh || (9)
+| <math>Q_{\mathrm{ueber}}(t)</math> || Überschuss — verworfene Wärme || kWh || (9)
 |-
-| Q<sub>nutz</sub>(t) || nutzbarer Ertrag der Stunde || kWh || (10)
+| <math>Q_{\mathrm{nutz}}(t)</math> || nutzbarer Ertrag der Stunde || kWh || (10)
 |}
 
 == Rechenweg ==
 
-Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''. Die Klimadatenreihe wird — wie
-bei der Photovoltaik — in '''Ortszeit''' gelesen: Die gespeicherte Reihe steht in UTC, gelesen wird
-sie um eine Stunde (Normalzeit) beziehungsweise zwei Stunden (Sommerzeit) versetzt; Sonnenstand und
-Einfallswinkel rechnen weiter auf der UTC-Zeitmarke jeder Zeile. Ohne diese Verschiebung stünde die
-Kollektorreihe ein bis zwei Stunden vor dem Wärmebedarf — die Jahressumme bliebe richtig, die
-stundenscharfe Deckung nicht.
+Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
+Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht
+wiederholt. Die Klimadatenreihe wird — wie bei der Photovoltaik — in '''Ortszeit''' gelesen: Die
+gespeicherte Reihe steht in UTC, gelesen wird sie um eine Stunde (Normalzeit) beziehungsweise zwei
+Stunden (Sommerzeit) versetzt; Sonnenstand und Einfallswinkel rechnen weiter auf der UTC-Zeitmarke
+jeder Zeile. Ohne diese Verschiebung stünde die Kollektorreihe ein bis zwei Stunden vor dem
+Wärmebedarf — die Jahressumme bliebe richtig, die stundenscharfe Deckung nicht.
 
 === Schritt 1 — Einstrahlung auf die Kollektorebene ===
 
-Isotrop, mit dem Boden-Albedo ρ = 0,2 — dieselbe Rechnung wie im einfachen PV-Modell:
+Isotrop, mit dem Boden-Albedo <math>\rho = 0{,}2</math> — dieselbe Rechnung wie im einfachen
+PV-Modell:
 
-: <big>G<sub>t</sub>(t) = DNI(t) · cos θ(t) + DHI(t) · (1 + cos β) / 2 + GHI(t) · ρ · (1 − cos β) / 2</big> &nbsp;&nbsp;(1)
+: <math>\displaystyle G_{\mathrm{t}}(t) = \mathrm{DNI}(t) \cdot \cos\theta(t) + \mathrm{DHI}(t) \cdot \frac{1 + \cos\beta}{2} + \mathrm{GHI}(t) \cdot \rho \cdot \frac{1 - \cos\beta}{2}</math> &nbsp;&nbsp;(1)
+:: <math>G_{\mathrm{t}}(t)</math> – Bestrahlungsstärke in der Kollektorebene [W/m²]
+:: <math>\mathrm{DNI}(t)</math> – Direktstrahlung (senkrecht zur Sonne) [W/m²]
+:: <math>\theta(t)</math> – Einfallswinkel der Direktstrahlung auf die Kollektorebene [°]
+:: <math>\mathrm{DHI}(t)</math> – Diffusstrahlung auf die Horizontale [W/m²]
+:: <math>\beta</math> – Neigung der Kollektorebene [°]
+:: <math>\mathrm{GHI}(t)</math> – Globalstrahlung auf die Horizontale [W/m²]
+:: <math>\rho</math> – Boden-Albedo [–], Konstante 0,2
 
-Bei Nacht — Sonne unter dem Horizont — ist G<sub>t</sub>(t) = 0.
+Bei Nacht — Sonne unter dem Horizont — ist <math>G_{\mathrm{t}}(t) = 0</math>.
 
 === Schritt 2 — Einfallswinkelkorrektur (IAM) ===
 
-Aus dem Katalogwert K<sub>dir50</sub> wird der b<sub>0</sub>-Beiwert der üblichen Näherung für
-Flachkollektoren gebildet:
+Aus dem Katalogwert <math>K_{\mathrm{dir50}}</math> wird der <math>b_{0}</math>-Beiwert der
+üblichen Näherung für Flachkollektoren gebildet:
 
-: <big>b<sub>0</sub> = ( 1 − K<sub>dir50</sub> ) / ( 1 / cos θ<sub>ref</sub> − 1 )</big> &nbsp;&nbsp;(2)
+: <math>\displaystyle b_{0} = \frac{1 - K_{\mathrm{dir50}}}{\frac{1}{\cos\theta_{\mathrm{ref}}} - 1}</math> &nbsp;&nbsp;(2)
+:: <math>b_{0}</math> – Beiwert der IAM-Näherung für Flachkollektoren [–]
+:: <math>K_{\mathrm{dir50}}</math> – Einfallswinkelkorrektur des Katalogs bei 50° [–]
+:: <math>\theta_{\mathrm{ref}}</math> – Bezugswinkel der Näherung [°], Konstante 50
 
-: <big>IAM(t) = 1 − b<sub>0</sub> · ( 1 / max( cos θ(t) ; c<sub>min</sub> ) − 1 ) ,&nbsp; auf 0…1 begrenzt</big> &nbsp;&nbsp;(3)
+: <math>\displaystyle \mathrm{IAM}(t) = \min\left( \max\left( 1 - b_{0} \cdot \left( \frac{1}{\max\left( \cos\theta(t) , c_{\mathrm{min}} \right)} - 1 \right) , 0 \right) , 1 \right)</math> &nbsp;&nbsp;(3)
+:: <math>\mathrm{IAM}(t)</math> – Einfallswinkelkorrektur der Stunde; auf 0…1 begrenzt [–]
+:: <math>b_{0}</math> – Beiwert aus (2) [–]
+:: <math>\theta(t)</math> – Einfallswinkel der Stunde [°]
+:: <math>c_{\mathrm{min}}</math> – untere Klemme des Kosinus [–], Konstante 0,001
 
-Die Klemme c<sub>min</sub> = 0,001 hält den Nenner endlich, damit ein flacher Einfall keine Division
-durch null erzeugt.
+Die Klemme <math>c_{\mathrm{min}} = 0{,}001</math> hält den Nenner endlich, damit ein flacher
+Einfall keine Division durch null erzeugt.
 
 === Schritt 3 — Kollektorwirkungsgrad nach EN 12975 ===
 
-: <big>Δϑ(t) = ϑ<sub>Sp</sub> − ϑ<sub>Luft</sub>(t)</big> &nbsp;&nbsp;(4)
+: <math>\displaystyle \Delta\vartheta(t) = \vartheta_{\mathrm{Sp}} - \vartheta_{\mathrm{Luft}}(t)</math> &nbsp;&nbsp;(4)
+:: <math>\Delta\vartheta(t)</math> – Übertemperatur des Kollektors gegen die Umgebung [K]
+:: <math>\vartheta_{\mathrm{Sp}}</math> – Arbeitstemperatur des Kollektors [°C], Konstante 50
+:: <math>\vartheta_{\mathrm{Luft}}(t)</math> – Außentemperatur der Stunde [°C]
 
-: <big>η(t) = h<sub>0</sub> · IAM(t) − k<sub>1</sub> · Δϑ(t) / G<sub>t</sub>(t) − k<sub>2</sub> · Δϑ(t)<sup>2</sup> / G<sub>t</sub>(t)</big> &nbsp;&nbsp;(5)
+: <math>\displaystyle \eta(t) = h_{0} \cdot \mathrm{IAM}(t) - k_{1} \cdot \frac{\Delta\vartheta(t)}{G_{\mathrm{t}}(t)} - k_{2} \cdot \frac{\Delta\vartheta(t)^{2}}{G_{\mathrm{t}}(t)}</math> &nbsp;&nbsp;(5)
+:: <math>\eta(t)</math> – Kollektorwirkungsgrad nach EN 12975 [–]
+:: <math>h_{0}</math> – Konversionsfaktor (optischer Wirkungsgrad) des Katalogs [–]
+:: <math>\mathrm{IAM}(t)</math> – Einfallswinkelkorrektur aus (3) [–]
+:: <math>k_{1}</math> – Wärmeverlustkoeffizient [W/(m²·K)]
+:: <math>\Delta\vartheta(t)</math> – Übertemperatur aus (4) [K]
+:: <math>G_{\mathrm{t}}(t)</math> – Bestrahlungsstärke in der Kollektorebene aus (1) [W/m²]
+:: <math>k_{2}</math> – temperaturabhängiger Verlustkoeffizient [W/(m²·K²)]
 
-: <big>q(t) = max( 0 ; G<sub>t</sub>(t) · η(t) )</big> &nbsp;&nbsp;(6)
+: <math>\displaystyle q(t) = \max\left( 0 , G_{\mathrm{t}}(t) \cdot \eta(t) \right)</math> &nbsp;&nbsp;(6)
+:: <math>q(t)</math> – flächenbezogene Nutzleistung des Kollektors [W/m²]
+:: <math>G_{\mathrm{t}}(t)</math> – Bestrahlungsstärke in der Kollektorebene [W/m²]
+:: <math>\eta(t)</math> – Kollektorwirkungsgrad aus (5) [–]
 
-'''ϑ<sub>Sp</sub> ist im Modell fest 50&nbsp;°C''' und '''keine''' Eingabe. Das ist die maßgebliche
-Vereinfachung dieser Seite: Der Kollektor rechnet gegen eine gleichbleibende Arbeitstemperatur, nicht
-gegen den tatsächlichen Zustand seines Speichers.
+'''<math>\vartheta_{\mathrm{Sp}}</math> ist im Modell fest 50&nbsp;°C''' und '''keine''' Eingabe.
+Das ist die maßgebliche Vereinfachung dieser Seite: Der Kollektor rechnet gegen eine
+gleichbleibende Arbeitstemperatur, nicht gegen den tatsächlichen Zustand seines Speichers.
 
 === Schritt 4 — Bruttopotenzial des Feldes ===
 
-: <big>A<sub>ges</sub> = A<sub>Ap</sub> · n</big> &nbsp;&nbsp;(7)
+: <math>\displaystyle A_{\mathrm{ges}} = A_{\mathrm{Ap}} \cdot n</math> &nbsp;&nbsp;(7)
+:: <math>A_{\mathrm{ges}}</math> – Aperturfläche des ganzen Feldes [m²]
+:: <math>A_{\mathrm{Ap}}</math> – Aperturfläche eines Kollektors [m²]
+:: <math>n</math> – Anzahl Kollektoren des Feldes [Stück]
 
-: <big>Q<sub>pot</sub>(t) = q(t) · A<sub>ges</sub> · f<sub>L</sub> / 1 000</big> &nbsp;&nbsp;(8)
+: <math>\displaystyle Q_{\mathrm{pot}}(t) = \frac{q(t) \cdot A_{\mathrm{ges}} \cdot f_{\mathrm{L}}}{1\,000}</math> &nbsp;&nbsp;(8)
+:: <math>Q_{\mathrm{pot}}(t)</math> – Bruttopotenzial des Feldes in dieser Stunde [kWh]
+:: <math>q(t)</math> – flächenbezogene Nutzleistung aus (6) [W/m²]
+:: <math>A_{\mathrm{ges}}</math> – Aperturfläche des Feldes aus (7) [m²]
+:: <math>f_{\mathrm{L}}</math> – Leitungsverlustfaktor des Solarkreises [–], Konstante 0,92
+:: <math>1\,000</math> – Umrechnung von W in kW [W/kW]
 
-Der Faktor f<sub>L</sub> = '''0,92''' sind pauschale '''Leitungsverluste''' des Solarkreises. Auch er
-ist fest verdrahtet und nicht einstellbar. Die Division durch 1 000 rechnet W in kW um; über eine
-Stunde ist das die kWh dieser Stunde.
+Der Faktor <math>f_{\mathrm{L}} = 0{,}92</math> sind pauschale '''Leitungsverluste''' des
+Solarkreises. Auch er ist fest verdrahtet und nicht einstellbar. Die Division durch 1 000 rechnet W
+in kW um; über eine Stunde ist das die kWh dieser Stunde.
 
 === Schritt 5 — Wohin die Wärme geht ===
 
@@ -193,40 +233,50 @@ Stundenschleife, in dieser Reihenfolge:
 # '''Speicherladung''' über die Ladeaufträge, bis zur Abschaltschwelle des Speichers
 # '''Überschuss''' — alles, was weder gedeckt noch gespeichert werden konnte, ist verworfen
 
-: <big>Q<sub>pot</sub>(t) = Q<sub>direkt</sub>(t) + Q<sub>lad</sub>(t) + Q<sub>über</sub>(t)</big> &nbsp;&nbsp;(9)
+: <math>\displaystyle Q_{\mathrm{pot}}(t) = Q_{\mathrm{direkt}}(t) + Q_{\mathrm{lad}}(t) + Q_{\mathrm{ueber}}(t)</math> &nbsp;&nbsp;(9)
+:: <math>Q_{\mathrm{pot}}(t)</math> – Bruttopotenzial des Feldes aus (8) [kWh]
+:: <math>Q_{\mathrm{direkt}}(t)</math> – Anteil, der unmittelbar Bedarf deckt [kWh]
+:: <math>Q_{\mathrm{lad}}(t)</math> – Anteil, der in einen Pufferspeicher geht [kWh]
+:: <math>Q_{\mathrm{ueber}}(t)</math> – Überschuss; weder gedeckt noch gespeichert, also verworfen [kWh]
 
-: <big>Q<sub>nutz</sub>(t) = Q<sub>direkt</sub>(t) + Q<sub>lad</sub>(t)</big> &nbsp;&nbsp;(10)
+: <math>\displaystyle Q_{\mathrm{nutz}}(t) = Q_{\mathrm{direkt}}(t) + Q_{\mathrm{lad}}(t)</math> &nbsp;&nbsp;(10)
+:: <math>Q_{\mathrm{nutz}}(t)</math> – nutzbarer Ertrag der Stunde [kWh]
+:: <math>Q_{\mathrm{direkt}}(t)</math> – Direktdeckung der Stunde [kWh]
+:: <math>Q_{\mathrm{lad}}(t)</math> – Speicherladung der Stunde [kWh]
 
-Ein Feld '''ohne''' Direktsenke deckt nichts und lädt ausschließlich. Mit dem Vorgaberang r = '''10'''
-ist die Solarthermie der '''erste''' Lader der Kaskade — vor Wärmepumpe (20), BHKW (30) und
-Heizkessel (40). Der Grund steht in der Rangfolge selbst: Ihre Grenzkosten sind praktisch null, und
-nicht genutzte Einstrahlung ist verloren. Wo am Speicher eine '''Reservezone''' gepflegt ist (die
-Abschaltschwelle für nachrangige Anlagen), laden die übrigen Erzeuger nur bis dorthin und lassen den
-oberen Teil für die Solarthermie frei.
+Ein Feld '''ohne''' Direktsenke deckt nichts und lädt ausschließlich. Mit dem Vorgaberang
+<math>r = 10</math> ist die Solarthermie der '''erste''' Lader der Kaskade — vor Wärmepumpe (20),
+BHKW (30) und Heizkessel (40). Der Grund steht in der Rangfolge selbst: Ihre Grenzkosten sind
+praktisch null, und nicht genutzte Einstrahlung ist verloren. Wo am Speicher eine '''Reservezone'''
+gepflegt ist (die Abschaltschwelle für nachrangige Anlagen), laden die übrigen Erzeuger nur bis
+dorthin und lassen den oberen Teil für die Solarthermie frei.
 
 Was der Speicher später an den Bedarf abgibt, wird dem Erzeuger zugerechnet, der geladen hat — die
-Solarthermie erhält davon ihren Anteil. Q<sub>direkt</sub> plus dieser Anteil ist ihr
+Solarthermie erhält davon ihren Anteil. <math>Q_{\mathrm{direkt}}</math> plus dieser Anteil ist ihr
 '''Eigenanteil''' an der Bedarfsdeckung; der Restwärmebedarf wird ausdrücklich aus
-Q<sub>direkt</sub> gebildet, sonst würde er negativ und die Deckung überschritte 100&nbsp;%.
+<math>Q_{\mathrm{direkt}}</math> gebildet, sonst würde er negativ und die Deckung überschritte
+100&nbsp;%.
 
 == Grenzen und Annahmen ==
 
-* '''Die Arbeitstemperatur ist fest ϑ<sub>Sp</sub> = 50&nbsp;°C.''' Der Wirkungsgrad (5) hängt damit
-  nicht vom tatsächlichen Speicherzustand ab. Ein kalter Speicher am Morgen brächte real mehr
-  Ertrag, ein voller weniger; das Modell rechnet beides gleich.
-* '''Die Leitungsverluste sind pauschal 8&nbsp;%''' (f<sub>L</sub> = 0,92) und nicht einstellbar.
+* '''Die Arbeitstemperatur ist fest <math>\vartheta_{\mathrm{Sp}} = 50</math>&nbsp;°C.''' Der
+  Wirkungsgrad (5) hängt damit nicht vom tatsächlichen Speicherzustand ab. Ein kalter Speicher am
+  Morgen brächte real mehr Ertrag, ein voller weniger; das Modell rechnet beides gleich.
+* '''Die Leitungsverluste sind pauschal 8&nbsp;%''' (<math>f_{\mathrm{L}} = 0{,}92</math>) und
+  nicht einstellbar.
 * '''Keine Stagnation, keine Kollektorabschaltung.''' Wärme, die niemand aufnimmt, wird als
-  Überschuss Q<sub>über</sub> verworfen; eine Begrenzung der Kollektortemperatur oder ein
-  Abschaltkriterium gibt es nicht.
+  Überschuss <math>Q_{\mathrm{ueber}}</math> verworfen; eine Begrenzung der Kollektortemperatur
+  oder ein Abschaltkriterium gibt es nicht.
 * '''Keine Solarkreispumpe.''' Ihr Stromverbrauch geht nicht in die Bilanz ein.
 * '''Kein Wärmeübertrager zum Speicher.''' Die Übertragung ist verlustfrei, abgesehen von
-  f<sub>L</sub>.
-* '''Eine Ausrichtung je Feld.''' β und γ hängen an der Anlagenzeile.
+  <math>f_{\mathrm{L}}</math>.
+* '''Eine Ausrichtung je Feld.''' <math>\beta</math> und <math>\gamma</math> hängen an der
+  Anlagenzeile.
 * '''Die Einstrahlung ist isotrop''' — anders als beim erweiterten PV-Modell gibt es hier keine
   Hay-Davies-Transposition; (1) ist die einzige Transpositionsformel dieser Seite.
 * '''K<sub>dfu</sub> („K<sub>diff</sub>") rechnet nicht mit.''' Der Katalog führt den Wert und der
-  Editor pflegt ihn; (5) benutzt nur h<sub>0</sub>, k<sub>1</sub>, k<sub>2</sub> und
-  K<sub>dir50</sub>.
+  Editor pflegt ihn; (5) benutzt nur <math>h_{0}</math>, <math>k_{1}</math>, <math>k_{2}</math>
+  und <math>K_{\mathrm{dir50}}</math>.
 * '''„Modulfläche" ist nicht die Rechengröße.''' In (7) steht die '''Aperturfläche''' mal der Anzahl
   Kollektoren; die Modulfläche ist Anzeige.
 * '''Vor- und Rücklauf des Katalogs sind die Vorbelegung:''' Beim Anlegen der Anlage im Projekt
@@ -240,11 +290,11 @@ Q<sub>direkt</sub> gebildet, sonst würde er negativ und die Deckung überschrit
 == Ergebnisse und wo sie stehen ==
 
 * '''Simulationsergebnis, Reiter „Solarthermie"''' — je Kollektorfeld Name, Gesamtfläche
-  A<sub>ges</sub>, Anzahl, nutzbarer Jahresertrag und verworfener Überschuss.
+  <math>A_{\mathrm{ges}}</math>, Anzahl, nutzbarer Jahresertrag und verworfener Überschuss.
 * '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil der Solarthermie an der
   Jahreswärme.
-* '''Simulationsergebnis, Reiter „Wärmegang"''' — Q<sub>direkt</sub> und Q<sub>lad</sub> im Stapel
-  der Erzeuger.
+* '''Simulationsergebnis, Reiter „Wärmegang"''' — <math>Q_{\mathrm{direkt}}</math> und
+  <math>Q_{\mathrm{lad}}</math> im Stapel der Erzeuger.
 * '''Simulationsprotokoll''' — nicht lesbare Klimaregion, Felder ohne Senke.
 * '''Bericht''' und '''Wirtschaftlichkeit''' — der Ertrag als vermiedene Brennstoffmenge.
 
