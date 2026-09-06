@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using SpeicherEngine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -190,7 +191,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.Single(cut.FindAll("select"));
         Assert.Contains("Kanal", cut.Markup);
 
-        foreach (string t in new[] { "DB Ganglinie löschen", "OK", "Abbrechen" })
+        foreach (string t in new[] { "Löschen", "OK", "Abbrechen" })
             Assert.NotNull(Knopf(cut, t));
 
         // Die zwei Pfeile: Klartext statt blossem Zeichen (Entscheid #76).
@@ -233,12 +234,12 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "OK");
     }
 
-    /// <summary>Ohne Parametersatz der Verwaltung kein „Einlesen/Bearbeiten.."-Knopf.</summary>
+    /// <summary>Ohne Parametersatz der Verwaltung kein „Bearbeiten…"-Knopf.</summary>
     [Fact]
     public void Ohne_Verwaltung_gibt_es_keinen_Bearbeitenknopf()
     {
-        Assert.DoesNotContain("Einlesen/Bearbeiten..", Aufbauen().Markup);
-        Assert.Contains("Einlesen/Bearbeiten..",
+        Assert.DoesNotContain("Bearbeiten...", Aufbauen().Markup);
+        Assert.Contains("Bearbeiten...",
                         Aufbauen(verwaltung: new Dictionary<string, object>()).Markup);
     }
 
@@ -265,7 +266,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         Assert.Equal(new[]
         {
             "CSV-Datei importieren...", "Speichern unter...",
-            "DB Ganglinie löschen", "Einlesen/Bearbeiten.."
+            "Löschen", "Bearbeiten..."
         }, texte);
     }
 
@@ -444,7 +445,7 @@ public class WaermebedarfExternDialogTests : BunitContext
                            katalogLoeschen: _ => { geloescht = true; return true; });
 
         KatalogWahl(cut, 1, 0).Click();
-        Knopf(cut, "DB Ganglinie löschen").Click();
+        Knopf(cut, "Löschen").Click();
 
         Assert.False(geloescht);
         Assert.Contains("Projektzuordnung", cut.Instance.Meldung);
@@ -463,7 +464,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         var cut = Aufbauen(katalogLoeschen: _ => { geloescht = true; return true; });
 
         KatalogWahl(cut, 1, 1).Click();     // "Ganglinie B" traegt ReadOnly
-        IElement knopf = Knopf(cut, "DB Ganglinie löschen");
+        IElement knopf = Knopf(cut, "Löschen");
         Assert.Contains("schreibgeschützt", knopf.GetAttribute("title") ?? "");
 
         knopf.Click();
@@ -481,7 +482,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         var cut = Aufbauen(katalogLoeschen: n => { geloescht = n; return true; });
 
         KatalogWahl(cut, 1, 0).Click();
-        Knopf(cut, "DB Ganglinie löschen").Click();
+        Knopf(cut, "Löschen").Click();
 
         Assert.Contains("wirklich gelöscht", cut.Markup);
         Knopf(cut, "Ja").Click();
@@ -497,7 +498,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         var cut = Aufbauen(katalogLoeschen: _ => { gerufen = true; return true; });
 
         KatalogWahl(cut, 1, 0).Click();
-        Knopf(cut, "DB Ganglinie löschen").Click();
+        Knopf(cut, "Löschen").Click();
         Knopf(cut, "Nein").Click();
 
         Assert.False(gerufen);
@@ -675,7 +676,7 @@ public class WaermebedarfExternDialogTests : BunitContext
     }
 
     /// <summary>
-    /// iU9-W13.2: „Einlesen/Bearbeiten.." zeigt die Ganglinienverwaltung als
+    /// iU9-W13.2: „Bearbeiten…" zeigt die Ganglinienverwaltung als
     /// ÜBERLAGERUNG im selben Fenster. Bis Welle 13 war es ein Sprung über die
     /// <c>Sprungbruecke</c> in ein WinForms-Fenster; ist das Ziel selbst Blazor,
     /// wären zwei WebViews übereinander Risiko R2.
@@ -687,7 +688,7 @@ public class WaermebedarfExternDialogTests : BunitContext
 
         Assert.Empty(cut.FindAll("[role='dialog']"));
 
-        Knopf(cut, "Einlesen/Bearbeiten..").Click();
+        Knopf(cut, "Bearbeiten...").Click();
 
         Assert.Single(cut.FindAll("[role='dialog']"));
         Assert.Contains("Wärmebedarf Ganglinie", cut.Markup);
@@ -716,7 +717,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         var cut = Aufbauen(geschlossen: b => ergebnis = b);
 
         KatalogWahl(cut, 1, 0).Click();
-        Knopf(cut, "DB Ganglinie löschen").Click();
+        Knopf(cut, "Löschen").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(ergebnis);
@@ -790,5 +791,67 @@ public class WaermebedarfExternDialogTests : BunitContext
         {
             DeutscheOberflaeche();
         }
+    }
+
+    // =================================================================================
+    // Die Knopftexte - Anwenderentscheid W9-O-9 vom 06.09.2026
+    // =================================================================================
+
+    /// <summary>
+    /// <b>W9‑O‑9 (06.09.2026), wörtlich:</b> „Knopftexte im Dialog ‚Wärmebedarf
+    /// Extern' wortgleich zum Stromdialog". „Einlesen/Bearbeiten.." heißt seither
+    /// „Bearbeiten…", „DB Ganglinie löschen" heißt „Löschen" — und zwar nicht als
+    /// abgeschriebene Wörter, sondern über DENSELBEN Schlüssel
+    /// (<c>STROMGL_BTN_BEARBEITEN</c>/<c>STROMGL_BTN_LOESCHEN</c>), damit die zwei
+    /// Dialoge beim nächsten Textwechsel nicht wieder auseinanderlaufen. Der Zeuge
+    /// steht in BEIDEN Sprachen; die Kultur wird danach zurückgestellt.
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE", "Bearbeiten...", "Löschen")]
+    [InlineData("en-US", "Edit...", "Delete")]
+    public void Bearbeiten_und_Loeschen_tragen_die_Stromtexte(
+        string kultur, string bearbeiten, string loeschen)
+    {
+        try
+        {
+            Kultur(kultur);
+
+            var cut = Aufbauen(verwaltung: new Dictionary<string, object>());
+
+            // Der Wortlaut ...
+            Assert.NotNull(Knopf(cut, bearbeiten));
+            Assert.NotNull(Knopf(cut, loeschen));
+
+            // ... und die Quelle: es ist der Schluessel des Stromdialogs.
+            Assert.Equal(Resource.STROMGL_BTN_BEARBEITEN, bearbeiten);
+            Assert.Equal(Resource.STROMGL_BTN_LOESCHEN, loeschen);
+
+            // Die zwei alten Waermetexte stehen nirgends mehr.
+            Assert.DoesNotContain("Einlesen/Bearbeiten..", cut.Markup);
+            Assert.DoesNotContain("DB Ganglinie löschen", cut.Markup);
+            Assert.DoesNotContain("Reading/Editing..", cut.Markup);
+            Assert.DoesNotContain("Delete DB curve", cut.Markup);
+        }
+        finally
+        {
+            DeutscheOberflaeche();
+        }
+    }
+
+    /// <summary>
+    /// <b>W9‑O‑9:</b> Die Rückfrage vor dem Löschen trägt den DIALOGTITEL wie beim
+    /// Strom (<c>StromganglinieDialog</c>:249). Bis dahin stand dort der Knopftext;
+    /// mit dem kurzen „Löschen" wäre die Überschrift nichtssagend geworden.
+    /// </summary>
+    [Fact]
+    public void Die_Loeschrueckfrage_traegt_den_Dialogtitel()
+    {
+        var cut = Aufbauen(katalogLoeschen: _ => true);
+
+        KatalogWahl(cut, 1, 0).Click();
+        Knopf(cut, "Löschen").Click();
+
+        Assert.Equal("Wärmebedarf Extern",
+                     cut.Find("[role='dialog'] .epos-ueberlagerung-titel").TextContent.Trim());
     }
 }
