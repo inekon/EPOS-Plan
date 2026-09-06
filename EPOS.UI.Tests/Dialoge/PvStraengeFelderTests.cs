@@ -160,18 +160,24 @@ public class PvStraengeFelderTests : BunitContext
     }
 
     // =================================================================================
-    // 2 - Der S3-Hinweis
+    // 2 - Was mit Stufe S3 aus dem Abschnitt VERSCHWUNDEN ist
     // =================================================================================
 
     /// <summary>
-    /// <b>Bis Stufe S3 sagt der Abschnitt, dass der Kern die Stränge noch nicht
-    /// rechnet</b> — in BEIDEN Wegen. Die Oberfläche verspricht damit nichts, was der
-    /// Kern nicht tut; mit S3 wird die Zeile wieder entfernt.
+    /// <b>Der S3-Hinweis ist fort</b> (Punkt S3.5 des Wechselrichterkonzepts). Bis
+    /// Stufe S2 stand unter der Optionsgruppe die Zeile „Die Strangrechnung folgt mit
+    /// Stufe S3 — bis dahin rechnet die Anlage vereinfacht"; sie war die Wache gegen
+    /// eine zweite Wahrheit, solange die Oberfläche mehr versprach, als der Kern tat.
+    /// Seit S3 rechnet der Kern, und der Satz wäre falsch.
+    ///
+    /// <para>Dieser Fall ist die GEGENPROBE zu <c>Der_S3_Hinweis_steht_in_beiden_Wegen</c>
+    /// aus S2 — er prüft dasselbe Merkmal mit umgekehrtem Vorzeichen, damit die Zeile
+    /// nicht unbemerkt zurückkommt.</para>
     /// </summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Der_S3_Hinweis_steht_in_beiden_Wegen(bool mit)
+    public void Der_S3_Hinweis_ist_fort(bool mit)
     {
         var zeile = mit
             ? Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 })
@@ -179,8 +185,8 @@ public class PvStraengeFelderTests : BunitContext
 
         var cut = Aufbauen(zeile);
 
-        Assert.Contains("Stufe S3", cut.Find(".epos-straenge-s3").TextContent,
-                        StringComparison.Ordinal);
+        Assert.Empty(cut.FindAll(".epos-straenge-s3"));
+        Assert.DoesNotContain("Stufe S3", cut.Markup, StringComparison.Ordinal);
     }
 
     /// <summary>

@@ -71,6 +71,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -29852,15 +29853,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_HINWEIS_OHNE_STRANG {
             get {
                 return ResourceManager.GetString("PVS_HINWEIS_OHNE_STRANG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage vereinfacht. ähnelt.
-        /// </summary>
-        public static string PVS_HINWEIS_S3 {
-            get {
-                return ResourceManager.GetString("PVS_HINWEIS_S3", resourceCulture);
             }
         }
         
