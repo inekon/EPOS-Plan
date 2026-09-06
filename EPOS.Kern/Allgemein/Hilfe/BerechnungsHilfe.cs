@@ -469,6 +469,20 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// Die Teilmenge von <see cref="BefehlsZeichen"/>, die für einen BUCHSTABEN
+        /// steht. Nur bei ihr wird das Leerzeichen hinter dem Befehl geschluckt —
+        /// es beendet dort den Namen und meint keinen Abstand.
+        /// </summary>
+        private static readonly (string Befehl, string Zeichen)[] BuchstabenZeichen =
+        {
+            ("vartheta", "ϑ"), ("varepsilon", "ε"), ("varphi", "φ"),
+            ("eta", "η"), ("rho", "ρ"), ("lambda", "λ"), ("alpha", "α"),
+            ("beta", "β"), ("gamma", "γ"), ("tau", "τ"), ("kappa", "κ"),
+            ("omega", "ω"), ("pi", "π"), ("ell", "ℓ"),
+            ("Delta", "Δ"), ("Sigma", "Σ"), ("Psi", "Ψ")
+        };
+
+        /// <summary>
         /// Macht aus dem LaTeX einer Formel eine Zeile, die der Assistent lesen und
         /// wiedergeben kann.
         /// </summary>
@@ -517,7 +531,13 @@ namespace WindowsFormsApplication1
             s = Entfalten(s, "frac", 2, teile => "(" + teile[0] + ")/(" + teile[1] + ")");
             s = Entfalten(s, "sqrt", 1, teile => "√(" + teile[0] + ")");
 
-            // 5) Zeichenbefehle
+            // 5) Zeichenbefehle. Ein Buchstabenzeichen schluckt dabei das Leerzeichen,
+            //    das in LaTeX nur den Befehlsnamen beendet: "\Delta t(L)" wird
+            //    "Δt(L)" und nicht "Δ t(L)". Vor einem Operator bleibt es stehen
+            //    ("\lambda = 1" wird "λ = 1", nicht "λ= 1").
+            foreach ((string befehl, string zeichen) in BuchstabenZeichen)
+                s = Regex.Replace(s, @"\\" + befehl + @" (?=[A-Za-z0-9])", zeichen);
+
             foreach ((string befehl, string zeichen) in BefehlsZeichen)
                 s = Regex.Replace(s, @"\\" + befehl + @"(?![A-Za-z])", zeichen);
 
