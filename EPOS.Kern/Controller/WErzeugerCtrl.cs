@@ -337,6 +337,12 @@ namespace WindowsFormsApplication1
             item.PV_WrEta10 = Kommazahl(dt, row, "PV_WrEta10");
             item.PV_WrEta50 = Kommazahl(dt, row, "PV_WrEta50");
             item.PV_WrEta100 = Kommazahl(dt, row, "PV_WrEta100");
+
+            // --- Der sichtbare Wechselrichterweg (W6-E-3, Stufe S2) -------------------
+            // Ebenfalls ausdruecklich mit null. NULL traegt hier die Aussage
+            // "vereinfacht" und ist zugleich "nie gewaehlt" - eine Datenbank vor
+            // Migrationsschritt 66 laeuft damit unveraendert weiter.
+            item.PV_Wechselrichterweg = Text(dt, row, SchemaKatalog.SPALTE_EA_PV_WECHSELRICHTERWEG);
         }
 
         /// <summary>Spalte vorhanden UND nicht NULL - eine fehlende Spalte gilt wie NULL.</summary>
