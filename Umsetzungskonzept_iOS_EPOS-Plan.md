@@ -3368,6 +3368,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > CEC-Geräte sind gelb aus EINEM Grund („Die Kennlinie fällt im Teillastast", η30 > η50 — der Scheitel der Sandia-Parabel bei
 > Geräten mit hohem Wirkungsgrad, kein Datenfehler); Empfehlung: die Regel auf einen Schwellwert heben, Anwenderentscheid.
 > Abnahmepunkte A‑W6‑O‑13‑1…3 in der Sitzungsmeldung.
+>
+> **W6‑O‑7 (Anwenderentscheid 06.09.2026: „Empfehlung"), umgesetzt in `5fa9960`/`555fa4e`, zusammengeführt in `0d5f02d`:** Die elf
+> Bestandsprojekte führen keine Strangzeile, kein Referenzlauf rechnete den Strangweg der Stufe S3 mit. Projekt **1045
+> „Prüfprojekt Ost/West Stränge"** (Tiefkopie von 1040: Klimaregion Stuttgart, EFH, Standardlastprofil, WP + Kessel + Puffer)
+> hängt ihn ins Netz: PV-Anlage mit `PV_Wechselrichterweg = KATALOG`, Modell ERWEITERT, „Muster 2500TL" des Konzept-Anhangs A
+> als Stamm- und Projektsatz (2,50 kW, zwei MPP-Tracker, 80…500 V, 600 V, 12,0 A, η 0,900…0,975, Nachtverbrauch 2 W), zwei
+> Stränge zu 6 Modulen — Ost (Azimut −90) mit Ablytek 275 W, West (+90) mit **eigenem Modul** 290 W (W6‑O‑6) —, Neigung 10°.
+> Kennzahlen: DC/AC 1,36 (3,39 kWp / 2,50 kW), 3 545,5 kWh (1 418 Vbh AC), Clipping 2,0 kWh (0,06 %), Jahresnutzungsgrad
+> 0,9629, Nachtverbrauch 9,3 kWh in 4 669 h; Ampel P1–P8 grün. Zwei begründete Abweichungen von Anhang A: zwei Tracker (zwei
+> Stränge an einem wären P4 rot, 19,1 A > 12,0 A) und 10° statt 30° (bei 30° klippt das Gerät in keiner Stunde). Befund: Solange
+> P6 DC/AC bei 1,5 deckelt, bleibt das Clipping eines Ost/West-Felds klein (6+6 → 0,06 %, 6+7 → 0,50 %, 7+7 → 1,46 % bei P6 gelb).
+> **Neue Basis `Referenzlaeufe/2026-09-06_R3_Straenge`** — zwölf Projekte, **312 CSV**; die elf alten **byte-gleich** zu R2
+> (282 Dateien ohne Unterschied, Toleranzvergleich 11/11 PASS, 3 006 238 Werte), zweiter Lauf byte-gleich; wiederholbar über
+> `Referenzlaeufe/Skripte/pruefprojekt_1045_ost_west.py`. Netz umgehängt: `kern.yml` rechnet und vergleicht 1030, 1007, 1017,
+> **1045**; `ios.yml` vergleicht 1030 gegen R3; Gate-Skript ebenso; `CLAUDE.md`, `Referenzlaeufe/LIESMICH.md`, Konzept
+> (S3.7, Kapitel 12, zwei überholte Sätze in Kapitel 4 und 10) nachgezogen; R2 bleibt zur Geschichte liegen. Zwei
+> Prüfstandszahlen zogen mit (die Testdatenbank führt jetzt einen Wechselrichter, der Auslieferungskatalog bleibt leer).
+> Nachweis: Kern 1 619 / UI 2 987 grün, SQL 0, Testdatenbankschema trocken 0/0, Gate grün gegen R3 mit vier Projekten byte-gleich.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
