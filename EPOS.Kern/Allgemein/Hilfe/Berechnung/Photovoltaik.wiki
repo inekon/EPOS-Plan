@@ -509,8 +509,9 @@ einer Ausrichtung und einem Wechselrichtertyp ist das eine tragfähige Näherung
 
 Der Wechselrichter ist ein '''Katalogobjekt''' mit Projektkopie — wie Kessel, BHKW oder Modul —, und
 die Anlage bekommt eine '''Strangzuordnung''': je Strang die Zahl der Module in Reihe, die Zahl
-paralleler Stränge, das Gerät, die Gerätenummer, der MPP-Eingang und wahlweise eine eigene Neigung
-und ein eigener Azimut. Damit wird das Ost/West-Feld rechenbar.
+paralleler Stränge, das Gerät, die Gerätenummer, der MPP-Eingang, wahlweise eine eigene Neigung und
+ein eigener Azimut und — seit dem 06.09.2026 — wahlweise ein '''eigener Modultyp'''. Damit werden
+das Ost/West-Feld und die um einen zweiten Modultyp erweiterte Anlage rechenbar.
 
 Der Katalog führt AC-Nennwirkleistung, maximale AC-Scheinleistung, maximale DC-Eingangsleistung,
 MPP-Spannungsfenster, maximale DC-Spannung, maximalen DC-Strom je MPP-Tracker, Zahl der
@@ -551,6 +552,19 @@ Sonnengeometrie zweimal, nicht achtmal.
 <math>P_{\mathrm{DC,s}}(t)</math> ist dann die Modulformel des gewählten Rechenmodells — (11)
 beziehungsweise (16) — mit <math>P_{\mathrm{STC,s}}</math> an der Stelle von
 <math>P_{\mathrm{STC}}</math>.
+
+'''Jeder Strang rechnet mit SEINEM Modul.''' Führt die Strangzeile einen eigenen Modultyp, so
+kommen <math>P_{\mathrm{Mod}}</math> in (30) und alle übrigen Modulgrößen der Stundenrechnung —
+Zelltemperatur über <math>T_{\mathrm{NOCT}}</math> in (7), Temperaturgang
+<math>\gamma_{\mathrm{PMP}}</math> in (11), Fläche und Wirkungsgrad der Rückfallformel (12) sowie
+der Schwachlichtsatz nach Zelltechnologie in (16) — aus DIESEM Modul; sonst aus dem Modul der
+Anlage. Ein Strang mit einem Modul, das das Projekt nicht (mehr) führt, rechnet wie einer ohne
+Angabe, und der Lauf sagt es im Protokoll. '''Ohne eigenen Modultyp ändert sich nichts''' — genau
+das ist der Regelfall, eine Anlage mit einem Modultyp.
+
+Die '''Nennleistung eines Geräts''' ist damit die Summe seiner Stränge, jeder mit seiner eigenen
+Modulleistung; die kWp der Anlagenzeile bleibt daneben stehen und wird nur noch verglichen. Weichen
+beide voneinander ab, meldet der Lauf es und rechnet mit der Strangsumme.
 
 '''Schritt B — Summe je MPP-Eingang und je Gerät.''' Der MPP-Eingang ist eine reine
 '''Prüfgröße''' (Prüfungen P4 und P5); eine eigene Leistungsgrenze je Tracker gibt es nicht. Die
@@ -682,9 +696,10 @@ beide Bedingungen zusammen schalten den Strangweg ein.
   '''Auslegungsprüfungen''' P1 bis P5 ein, aber in keine Stundenrechnung.
 * '''Keine Leistungsgrenze je MPP-Eingang.''' Der MPP-Eingang ist eine Prüfgröße; geklemmt wird am
   Gerät.
-* '''Ein Modultyp je Anlage.''' Ein abweichender Modultyp je Strang ist im Datenmodell vorgesehen,
-  wird aber noch nicht gerechnet — jeder Strang rechnet mit dem Modul der Anlage, also mit demselben
-  <math>P_{\mathrm{Mod}}</math> in (30).
+* '''Ein Modultyp je STRANG''' (seit dem 06.09.2026). Ein Strang rechnet mit genau einem Modultyp;
+  verschiedene Stränge derselben Anlage dürfen verschiedene tragen. Ohne eigene Angabe gilt das
+  Modul der Anlage. '''Was es nicht gibt:''' zwei Modultypen INNERHALB eines Strangs — dafür wären
+  zwei Stränge anzulegen.
 * '''Keine Kennzahlen je Strang.''' Ertrag und Volllaststunden werden je Gerät ausgewiesen, nicht je
   Strang.
 * '''Keine Alterung im Stundenlauf.''' Die Degradation ist eine Größe der Wirtschaftlichkeit

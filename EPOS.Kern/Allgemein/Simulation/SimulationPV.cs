@@ -183,6 +183,7 @@ namespace WindowsFormsApplication1
             // wird nichts nachgeladen.
             List<AnlageStrangModel> alleStraenge = null;
             Dictionary<int, WechselrichterModel> alleGeraete = null;
+            Dictionary<int, PhotovoltaikModel> alleModule = null;
             if (IrgendeineAnlageMitKatalogweg(ctrl))
             {
                 alleStraenge = new AnlageStrangCtrl().LesenJeProjekt(ID_Projekt);
@@ -191,6 +192,12 @@ namespace WindowsFormsApplication1
                 wr.ReadAll(ID_Projekt);
                 alleGeraete = new Dictionary<int, WechselrichterModel>();
                 for (int g = 0; g < wr.rows; g++) alleGeraete[wr.items[g].m_ID] = wr.items[g];
+
+                // W6-O-6: die abweichenden Modultypen der Straenge. Gelesen wird JE
+                // ID_PV genau einmal - vor der Stundenschleife und nur, wenn ueberhaupt
+                // eine Strangzeile eines fuehrt. Fuehrt keine (der Regelfall), bleibt
+                // die Ablage leer und es entsteht keine einzige Abfrage.
+                alleModule = StrangmoduleLesen(alleStraenge);
             }
 
             for (int n = 0; n < ctrl.rows; n++)
@@ -207,6 +214,22 @@ namespace WindowsFormsApplication1
                 double pStcKw = PStcDerAnlage(ctrlsol, anzahlModule);   // 0 = Rueckfall Flaechenformel
                 double tNoct = NoctDesModuls(ctrlsol);
                 GammaPruefen(ctrlsol);
+
+                // W6-O-6: derselbe Satz Modulgroessen, gebuendelt - er ist der
+                // RUECKFALL jedes Strangs ohne eigenes Modul. Die vier Zahlen stehen
+                // Zeichen fuer Zeichen so, wie sie oben gebildet wurden; daran haengt
+                // die Byte-Gleichheit.
+                var anlagenModul = new Modulsatz
+                {
+                    Modul = ctrlsol,
+                    LeistungW = ctrlsol.m_Leistung,
+                    FlaecheJeModul = ctrlsol.m_Breite * ctrlsol.m_Laenge,
+                    NennWirk = nennWirk,
+                    TempKoeff = tempKoeff,
+                    TNoct = tNoct,
+                    PStcKw = pStcKw,
+                    Schluessel = ctrl.items[n].Bezeichner
+                };
 
                 // E1.3: Wechselrichter und Systemverluste JE ANLAGE. NULL = 0,95 bzw. 0 %,
                 // damit ist der Vorgabefall bitgleich zum Bestand (Faktor 1,0 ist exakt).
@@ -235,17 +258,18 @@ namespace WindowsFormsApplication1
                 // der sichtbare Schalter PV_Wechselrichterweg = KATALOG (W6-E-3) UND
                 // mindestens eine Strangzeile mit einem Geraet, das die Projektkopie
                 // kennt. Sonst der Weg von heute, Zeichen fuer Zeichen.
+                Dictionary<AnlageStrangModel, Modulsatz> modulJeStrang;
                 List<PvStrangModell.Geraetegruppe> geraete =
-                    GeraeteDerAnlage(ctrl.items[n], alleStraenge, alleGeraete, ctrlsol, pStcKw);
+                    GeraeteDerAnlage(ctrl.items[n], alleStraenge, alleGeraete, alleModule,
+                                     anlagenModul, out modulJeStrang);
 
                 if (geraete != null)
                 {
                     // =========================================================================
                     // STRANGEBENE (Stufe S3) - Module -> Strang -> MPPT -> Geraet -> Clipping
                     // =========================================================================
-                    StraengeRechnen(ctrl.items[n], ctrlsol, geraete, ctrldat, stunden,
-                                    Lon, Lat, erweitert, systemFaktor, tNoct,
-                                    nennWirk, tempKoeff, pStcKw, ref prodSummeMod);
+                    StraengeRechnen(ctrl.items[n], geraete, modulJeStrang, ctrldat, stunden,
+                                    Lon, Lat, erweitert, systemFaktor, ref prodSummeMod);
 
                     foreach (PvStrangModell.Geraetegruppe g in geraete)
                     {
@@ -510,7 +534,24 @@ namespace WindowsFormsApplication1
         /// kWp der Verguetung mit demselben Katalogeintrag nicht mehr in Deckung. Die
         /// Aenderung ist dann gewollt (Entscheidung Q1) — der Hinweis erklaert sie.</para>
         /// </summary>
-        private double PStcDerAnlage(PhotovoltaikCtrl modul, long anzahlModule)
+        private double PStcDerAnlage(PhotovoltaikModel modul, long anzahlModule)
+        {
+            if (!LeistungGepflegt(modul)) return 0.0;
+            return modul.m_Leistung / 1000.0 * anzahlModule;
+        }
+
+        /// <summary>
+        /// Der PRUEFTEIL von <see cref="PStcDerAnlage"/>: <c>false</c> heisst „der
+        /// Katalog fuehrt keine Nennleistung, es gilt die Flaechenformel".
+        ///
+        /// <para><b>Warum getrennt (W6‑O‑6):</b> Seit ein Strang sein EIGENES Modul
+        /// haben darf, wird derselbe Katalogsatz an zwei Stellen geprueft — als Modul
+        /// der Anlage und als Modul eines Strangs. Die Meldungen haengen am MODUL
+        /// (Schluessel <c>modul.m_ID</c>) und erscheinen deshalb genau einmal; die
+        /// Nennleistung dagegen entsteht mit VERSCHIEDENEN Modulzahlen. Zwei Aufgaben,
+        /// zwei Methoden.</para>
+        /// </summary>
+        private bool LeistungGepflegt(PhotovoltaikModel modul)
         {
             string modulName = string.IsNullOrEmpty(modul.m_szName) ? ("ID " + modul.m_ID) : modul.m_szName;
 
@@ -522,7 +563,7 @@ namespace WindowsFormsApplication1
                     "(Tab_PV.Leistung = 0). Gerechnet wird ersatzweise ueber Flaeche x " +
                     "Wirkungsgrad wie bisher. Eine gepflegte Nennleistung brauchte auch die " +
                     "kWp-Ermittlung der Verguetungsrechnung.");
-                return 0.0;
+                return false;
             }
 
             double ausFlaeche = modul.m_Laenge * modul.m_Breite * (modul.m_Wirkungsgrad / 100.0) * 1000.0;
@@ -542,7 +583,7 @@ namespace WindowsFormsApplication1
                     "pruefen.");
             }
 
-            return modul.m_Leistung / 1000.0 * anzahlModule;
+            return true;
         }
 
         /// <summary>
@@ -551,7 +592,7 @@ namespace WindowsFormsApplication1
         /// <see cref="NOCT_MIN"/>…<see cref="NOCT_MAX"/> liegt. Warum ein Fenster und
         /// nicht „&gt; 0": siehe <see cref="NOCT_MIN"/>.
         /// </summary>
-        private double NoctDesModuls(PhotovoltaikCtrl modul)
+        private double NoctDesModuls(PhotovoltaikModel modul)
         {
             double noct = modul.m_T_NOCT;
             if (noct >= NOCT_MIN && noct <= NOCT_MAX) return noct;
@@ -578,7 +619,7 @@ namespace WindowsFormsApplication1
         /// wuerde den Ertrag bei Waerme ERHOEHEN, ein Wert unter −1 %/K liegt jenseits
         /// jeder Modultechnik: beides eine Warnung.</para>
         /// </summary>
-        private void GammaPruefen(PhotovoltaikCtrl modul)
+        private void GammaPruefen(PhotovoltaikModel modul)
         {
             double gamma = modul.m_Temp_Coeff_Pmax;    // [%/K], so wie im Katalog
             string modulName = string.IsNullOrEmpty(modul.m_szName) ? ("ID " + modul.m_ID) : modul.m_szName;
@@ -631,16 +672,23 @@ namespace WindowsFormsApplication1
         /// Hay-Davies-Einstrahlung. Jede Rueckfallebene wird EINZELN benannt (Konzept
         /// N2.5, Kriterium 2).
         /// </summary>
-        private double[] HuldSatzDerAnlage(PhotovoltaikCtrl modul, string anlage, double pStcKw)
+        private double[] HuldSatzDerAnlage(PhotovoltaikModel modul, string anlage, double pStcKw,
+                                           string schluessel = null)
         {
             string modulName = (modul == null || string.IsNullOrEmpty(modul.m_szName))
                 ? "(ohne Modul)" : modul.m_szName;
             string technologie = modul != null ? modul.m_Technologie : null;
 
+            // W6-O-6: Der Meldeschluessel ist die ANLAGE, solange sie EIN Modul fuehrt.
+            // Fuehrt ein Strang ein abweichendes, reicht der Aufrufer seinen eigenen
+            // Schluessel herein - sonst verschluckte HinweisEinmal den Satz zum zweiten
+            // Modul, weil der zum ersten schon steht.
+            if (string.IsNullOrEmpty(schluessel)) schluessel = anlage;
+
             if (string.IsNullOrEmpty(technologie))
             {
                 SimulationProtokoll.Aktuell.HinweisEinmal(
-                    "pv-e2-technologie-fehlt-" + anlage,
+                    "pv-e2-technologie-fehlt-" + schluessel,
                     "PV-Anlage \"" + anlage + "\" rechnet im erweiterten Modell, das Modul \"" +
                     modulName + "\" fuehrt aber keine Zelltechnologie. Ohne sie gibt es keine " +
                     "Schwachlicht-Koeffizienten; gerechnet wird die Modulformel des einfachen " +
@@ -653,7 +701,7 @@ namespace WindowsFormsApplication1
             if (k == null)
             {
                 SimulationProtokoll.Aktuell.HinweisEinmal(
-                    "pv-e2-technologie-ohne-satz-" + anlage,
+                    "pv-e2-technologie-ohne-satz-" + schluessel,
                     "PV-Anlage \"" + anlage + "\": Fuer die Zelltechnologie \"" + technologie +
                     "\" des Moduls \"" + modulName + "\" gibt es keinen Huld-Koeffizientensatz " +
                     "(nur C_SI, CIS und CDTE sind veroeffentlicht). Gerechnet wird die " +
@@ -664,7 +712,7 @@ namespace WindowsFormsApplication1
             if (pStcKw <= 0.0)
             {
                 SimulationProtokoll.Aktuell.HinweisEinmal(
-                    "pv-e2-ohne-pstc-" + anlage,
+                    "pv-e2-ohne-pstc-" + schluessel,
                     "PV-Anlage \"" + anlage + "\": Das Schwachlichtmodell braucht die " +
                     "Nennleistung des Moduls; der Katalog fuehrt keine. Gerechnet wird die " +
                     "Flaechenformel des einfachen Modells auf der Hay-Davies-Einstrahlung.");
@@ -720,6 +768,87 @@ namespace WindowsFormsApplication1
             new List<PvStrangModell.Geraetegruppe>();
 
         /// <summary>
+        /// Alles, was EIN Modul zur Stundenrechnung beitraegt — der Satz, mit dem ein
+        /// Strang rechnet (Anwenderentscheid <b>W6‑O‑6</b> vom 06.09.2026: „jeder Strang
+        /// mit nur einem Modultyp, unterschiedliche Straenge koennen jeweils einen
+        /// anderen Modultyp haben").
+        ///
+        /// <para><b>Warum ein Buendel und nicht sechs Parameter:</b> Bis hierher gab die
+        /// Anlagenschleife Nennleistung, Flaeche, Wirkungsgrad, Temperaturkoeffizient und
+        /// NOCT einzeln an <see cref="StraengeRechnen"/> weiter — sie gehoerten ja alle
+        /// demselben Modul. Sobald ein Strang sein EIGENES Modul haben darf, sind es
+        /// nicht mehr fuenf Zahlen, sondern fuenf Zahlen JE MODUL; nur zusammen ergeben
+        /// sie einen Sinn, und nur zusammen sind sie zu verwechseln.</para>
+        ///
+        /// <para><b>Der Satz der Anlage wird aus den bereits gebildeten Zahlen gefuellt</b>
+        /// (nicht neu gerechnet) — daran haengt die Byte-Gleichheit jeder Anlage ohne
+        /// abweichendes Strangmodul.</para>
+        /// </summary>
+        private sealed class Modulsatz
+        {
+            /// <summary>Die Projektkopie des Moduls (<c>Tab_PV</c>); nie <c>null</c>.</summary>
+            public PhotovoltaikModel Modul;
+
+            /// <summary>Nennleistung EINES Moduls [W] — <c>Tab_PV.Leistung</c>.</summary>
+            public double LeistungW;
+
+            /// <summary>Flaeche EINES Moduls [m²] — Breite mal Laenge, in dieser Reihenfolge.</summary>
+            public double FlaecheJeModul;
+
+            /// <summary>Nennwirkungsgrad [–] — <c>Wirkungsgrad / 100</c>.</summary>
+            public double NennWirk;
+
+            /// <summary>Temperaturkoeffizient [1/K] — <c>gamma_PMP / 100</c>.</summary>
+            public double TempKoeff;
+
+            /// <summary>NOCT [°C] mit seiner Rueckfallebene (<see cref="NoctDesModuls"/>).</summary>
+            public double TNoct;
+
+            /// <summary>
+            /// Bezugsgroesse der Huld-Rueckfallebene [kWp]: bei der Anlage ihre
+            /// Nennleistung, bei einem Strangmodul die Summe seiner Straenge. 0 heisst
+            /// „keine Nennleistung" und damit Flaechenformel.
+            /// </summary>
+            public double PStcKw;
+
+            /// <summary>Schluessel der Protokollmeldungen — je Anlage und Modul einer.</summary>
+            public string Schluessel;
+
+            /// <summary>Der Huld-Koeffizientensatz; <c>null</c> = Modulformel. Wird EINMAL gebildet.</summary>
+            public double[] Huld;
+
+            /// <summary>Wurde <see cref="Huld"/> schon bestimmt? (<c>null</c> ist ein Ergebnis.)</summary>
+            public bool HuldBekannt;
+        }
+
+        /// <summary>
+        /// Die abweichenden Modultypen der Straenge (<c>Z_AnlageStrang.ID_PV</c>) als
+        /// Projektkopien — je <c>ID_PV</c> EINE Abfrage, vor der Stundenschleife.
+        ///
+        /// <para>Fuehrt keine Strangzeile ein eigenes Modul (der Regelfall: ein Modultyp
+        /// je PV-Anlage), entsteht keine einzige Abfrage und die Ablage bleibt leer —
+        /// dieselbe Zurueckhaltung wie bei den Straengen selbst (Konzept 7.1).</para>
+        /// </summary>
+        private static Dictionary<int, PhotovoltaikModel> StrangmoduleLesen(
+            List<AnlageStrangModel> straenge)
+        {
+            var module = new Dictionary<int, PhotovoltaikModel>();
+            if (straenge == null) return module;
+
+            foreach (AnlageStrangModel s in straenge)
+            {
+                int id = (s == null) ? 0 : (s.ID_PV ?? 0);
+                if (id <= 0 || module.ContainsKey(id)) continue;
+
+                var lesen = new PhotovoltaikCtrl();
+                lesen.ReadSingle(id);
+                if (lesen.rows > 0) module[id] = lesen;
+            }
+
+            return module;
+        }
+
+        /// <summary>
         /// Traegt IRGENDEINE Anlage des Projekts den Schalter
         /// <see cref="DbWerte.PV_WR_WEG_KATALOG"/>? Nur dann werden Straenge und
         /// Geraete ueberhaupt gelesen.
@@ -769,14 +898,24 @@ namespace WindowsFormsApplication1
         /// rechnet <c>Modulzahl · Leistung / 1000</c>, was algebraisch dasselbe und im
         /// letzten Bit etwas anderes ist; die Ampel darf das, der Rechenweg nicht — an
         /// dieser Reihenfolge haengt die Abnahme S3 (2).</para>
+        ///
+        /// <para><b>W6‑O‑6 — je Strang SEIN Modul.</b> Nebenbei entsteht hier
+        /// <paramref name="modulJeStrang"/>: der <see cref="Modulsatz"/>, mit dem jeder
+        /// Strang rechnet. <c>Z_AnlageStrang.ID_PV</c> &gt; 0 nimmt die Projektkopie
+        /// dieses Moduls, alles andere — NULL, 0 und eine Id, die <c>Tab_PV</c> nicht
+        /// (mehr) kennt — den Satz der ANLAGE. Damit rechnet ein Bestandsstrang Zeichen
+        /// fuer Zeichen wie zuvor.</para>
         /// </summary>
         private List<PvStrangModell.Geraetegruppe> GeraeteDerAnlage(
             WErzeugerModel anlage,
             List<AnlageStrangModel> alleStraenge,
             Dictionary<int, WechselrichterModel> alleGeraete,
-            PhotovoltaikCtrl modul,
-            double pStcKw)
+            Dictionary<int, PhotovoltaikModel> alleModule,
+            Modulsatz anlagenModul,
+            out Dictionary<AnlageStrangModel, Modulsatz> modulJeStrang)
         {
+            modulJeStrang = null;
+
             if (!IstKatalogweg(anlage) || alleStraenge == null) return null;
 
             var eigene = new List<AnlageStrangModel>();
@@ -814,16 +953,19 @@ namespace WindowsFormsApplication1
                 return null;
             }
 
-            // Die Nennleistung je Geraet: Summe der Straenge. Ohne Modul-Nennleistung
-            // faellt sie auf die Anlagen-kWp anteilig NICHT zurueck - sie bleibt 0, und
-            // dann ist die Auslastung ohne AC-Nennleistung nicht bestimmbar (dieselbe
-            // Rueckfallebene wie im Anlagenweg).
-            double leistungModulW = (modul != null) ? modul.m_Leistung : 0.0;
+            // W6-O-6: der Modulsatz JE STRANG - erst danach steht fest, mit welcher
+            // Nennleistung ein Strang zaehlt.
+            modulJeStrang = ModulsaetzeDerStraenge(anlage, eigene, alleModule, anlagenModul);
+
+            // Die Nennleistung je Geraet: Summe der Straenge, JEDER mit seinem Modul.
+            // Ohne Modul-Nennleistung faellt sie auf die Anlagen-kWp anteilig NICHT
+            // zurueck - sie bleibt 0, und dann ist die Auslastung ohne AC-Nennleistung
+            // nicht bestimmbar (dieselbe Rueckfallebene wie im Anlagenweg).
             foreach (PvStrangModell.Geraetegruppe g in geraete)
             {
                 double kwp = 0.0;
                 foreach (AnlageStrangModel s in g.Straenge)
-                    kwp += leistungModulW / 1000.0 * s.Modulzahl;
+                    kwp += modulJeStrang[s].LeistungW / 1000.0 * s.Modulzahl;
                 g.KwpDc = kwp;
 
                 if (!g.KennlinieGepflegt)
@@ -854,6 +996,7 @@ namespace WindowsFormsApplication1
             // Straengen.
             double kwpStraenge = 0.0;
             foreach (PvStrangModell.Geraetegruppe g in geraete) kwpStraenge += g.KwpDc;
+            double pStcKw = anlagenModul.PStcKw;
             if (pStcKw > 0.0 && Math.Abs(kwpStraenge - pStcKw) > KATALOG_TOLERANZ * pStcKw)
                 SimulationProtokoll.Aktuell.HinweisEinmal(
                     "pv-s3-modulsumme-" + anlage.Bezeichner,
@@ -864,6 +1007,96 @@ namespace WindowsFormsApplication1
                     "Verguetungsrechnung lesen weiter die Anlagenzeile.");
 
             return geraete;
+        }
+
+        /// <summary>
+        /// Der <see cref="Modulsatz"/> JE STRANG dieser Anlage (W6‑O‑6). Ein Strang mit
+        /// <c>ID_PV</c> bekommt den Satz SEINES Moduls, jeder andere den der Anlage.
+        ///
+        /// <para><b>Je Modul EIN Satz</b>, nicht je Strang: Die Katalogpruefungen
+        /// (Nennleistung, NOCT, gamma) haengen am Modul und laufen deshalb genau einmal
+        /// je Modul und Anlage. Ihre Meldungen tragen ohnehin die Modul-Id als Schluessel
+        /// — eine zweite Anlage mit demselben Modul meldet nichts nach.</para>
+        ///
+        /// <para><b>Die Bezugsgroesse der Huld-Rueckfallebene</b> ist beim Anlagenmodul
+        /// die kWp der ANLAGENZEILE (unveraendert), bei einem Strangmodul die Summe der
+        /// Straenge, die es fuehren — die einzige Groesse, die es ueberhaupt beschreibt.</para>
+        /// </summary>
+        private Dictionary<AnlageStrangModel, Modulsatz> ModulsaetzeDerStraenge(
+            WErzeugerModel anlage,
+            List<AnlageStrangModel> eigene,
+            Dictionary<int, PhotovoltaikModel> alleModule,
+            Modulsatz anlagenModul)
+        {
+            var jeStrang = new Dictionary<AnlageStrangModel, Modulsatz>();
+            var jeModul = new Dictionary<int, Modulsatz>();
+
+            foreach (AnlageStrangModel s in eigene)
+            {
+                int id = s.ID_PV ?? 0;
+                PhotovoltaikModel eigenes = null;
+                if (id > 0 && alleModule != null) alleModule.TryGetValue(id, out eigenes);
+
+                if (eigenes == null)
+                {
+                    // NULL, 0 und eine unbekannte Id sind DERSELBE Fall: das Modul der
+                    // Anlage. Eine Strangzeile darf nicht deshalb anders rechnen, weil
+                    // ihre Modulkopie inzwischen geloescht wurde.
+                    if (id > 0)
+                        SimulationProtokoll.Aktuell.HinweisEinmal(
+                            "pv-s3-strangmodul-fehlt-" + anlage.Bezeichner + "-" +
+                            id.ToString(CultureInfo.InvariantCulture),
+                            "PV-Anlage \"" + anlage.Bezeichner + "\": Ein Strang verweist auf " +
+                            "den Modultyp mit der Id " + id.ToString(CultureInfo.InvariantCulture) +
+                            ", den das Projekt nicht (mehr) fuehrt. Gerechnet wird mit dem Modul " +
+                            "der Anlage.");
+
+                    jeStrang[s] = anlagenModul;
+                    continue;
+                }
+
+                Modulsatz satz;
+                if (!jeModul.TryGetValue(id, out satz))
+                {
+                    satz = SatzDesStrangmoduls(anlage, eigenes);
+                    jeModul[id] = satz;
+                }
+                jeStrang[s] = satz;
+            }
+
+            // Die Bezugsgroesse der Huld-Rueckfallebene: die kWp DIESES Moduls in DIESER
+            // Anlage. Sie steht erst fest, wenn alle Straenge zugeordnet sind.
+            foreach (KeyValuePair<AnlageStrangModel, Modulsatz> paar in jeStrang)
+                if (!ReferenceEquals(paar.Value, anlagenModul))
+                    paar.Value.PStcKw += paar.Value.LeistungW / 1000.0 * paar.Key.Modulzahl;
+
+            return jeStrang;
+        }
+
+        /// <summary>
+        /// Der <see cref="Modulsatz"/> eines ABWEICHENDEN Strangmoduls — dieselben
+        /// Katalogpruefungen wie beim Modul der Anlage (E1.1, E1.2, E1.5), nur fuer ein
+        /// Modul, das keine Anlagenzeile hat.
+        /// </summary>
+        private Modulsatz SatzDesStrangmoduls(WErzeugerModel anlage, PhotovoltaikModel modul)
+        {
+            LeistungGepflegt(modul);
+            GammaPruefen(modul);
+
+            return new Modulsatz
+            {
+                Modul = modul,
+                LeistungW = modul.m_Leistung,
+                FlaecheJeModul = modul.m_Breite * modul.m_Laenge,
+                NennWirk = modul.m_Wirkungsgrad / 100.0,
+                TempKoeff = modul.m_Temp_Coeff_Pmax / 100.0,
+                TNoct = NoctDesModuls(modul),
+                PStcKw = 0.0,
+                Schluessel = anlage.Bezeichner + " / " +
+                             (string.IsNullOrEmpty(modul.m_szName)
+                                  ? ("ID " + modul.m_ID.ToString(CultureInfo.InvariantCulture))
+                                  : modul.m_szName)
+            };
         }
 
         /// <summary>
@@ -882,15 +1115,25 @@ namespace WindowsFormsApplication1
         /// dagegen rechnet in BEIDEN Modellen (Entscheidungsfrage Q5): Er ist ein
         /// Geraet, keine Modellverfeinerung.</para>
         /// </summary>
-        private void StraengeRechnen(WErzeugerModel anlage, PhotovoltaikCtrl modul,
+        private void StraengeRechnen(WErzeugerModel anlage,
                                      List<PvStrangModell.Geraetegruppe> geraete,
+                                     Dictionary<AnlageStrangModel, Modulsatz> modulJeStrang,
                                      SolardatenCtrl ctrldat, int stunden,
                                      double Lon, double Lat, bool erweitert,
-                                     double systemFaktor, double tNoct,
-                                     double nennWirk, double tempKoeff, double pStcKw,
+                                     double systemFaktor,
                                      ref double prodSummeMod)
         {
-            double[] huld = erweitert ? HuldSatzDerAnlage(modul, anlage.Bezeichner, pStcKw) : null;
+            // W6-O-6: der Huld-Satz haengt am MODUL, nicht an der Anlage - je Modulsatz
+            // wird er einmal gebildet. Fuehrt kein Strang ein eigenes Modul, ist das
+            // genau der eine Aufruf von zuvor.
+            if (erweitert)
+                foreach (Modulsatz satz in modulJeStrang.Values)
+                {
+                    if (satz.HuldBekannt) continue;
+                    satz.Huld = HuldSatzDerAnlage(satz.Modul, anlage.Bezeichner,
+                                                  satz.PStcKw, satz.Schluessel);
+                    satz.HuldBekannt = true;
+                }
 
             // Die AUSRICHTUNGEN des Feldes - je Paar (Neigung, Azimut) ein Platz im
             // Zwischenspeicher. NULL an der Strangzeile heisst „der Anlagenwert"
@@ -919,8 +1162,6 @@ namespace WindowsFormsApplication1
                     platzJeStrang[s] = platz;
                 }
 
-            double leistungModulW = (modul != null) ? modul.m_Leistung : 0.0;
-            double flaecheJeModul = (modul != null) ? modul.m_Breite * modul.m_Laenge : 0.0;
             var einstrahlung = new double[neigungen.Count];
 
             for (int i = 0; i < stunden; i++)
@@ -954,20 +1195,24 @@ namespace WindowsFormsApplication1
 
                     foreach (AnlageStrangModel s in g.Straenge)
                     {
+                        // W6-O-6: die Modulgroessen dieses Strangs - sein eigenes Modul
+                        // oder das der Anlage. Der Ausdruck selbst ist unveraendert.
+                        Modulsatz m = modulJeStrang[s];
+
                         double gT = einstrahlung[platzJeStrang[s]];
-                        double pStcStrang = leistungModulW / 1000.0 * s.Modulzahl;
+                        double pStcStrang = m.LeistungW / 1000.0 * s.Modulzahl;
 
                         double pDc;
-                        if (erweitert && huld != null)
+                        if (erweitert && m.Huld != null)
                         {
-                            double tZelle = zeile.Außen_Temp + (gT / 800.0) * (tNoct - 20.0);
-                            pDc = PvErweitertesModell.LeistungHuld(huld, pStcStrang, gT, tZelle);
+                            double tZelle = zeile.Außen_Temp + (gT / 800.0) * (m.TNoct - 20.0);
+                            pDc = PvErweitertesModell.LeistungHuld(m.Huld, pStcStrang, gT, tZelle);
                         }
                         else
                         {
-                            pDc = BerechnePV(0.0, gT, flaecheJeModul * s.Modulzahl,
-                                             nennWirk, tempKoeff, zeile.Außen_Temp, 1.0,
-                                             pStcStrang, tNoct).potenzielleErzeugung;
+                            pDc = BerechnePV(0.0, gT, m.FlaecheJeModul * s.Modulzahl,
+                                             m.NennWirk, m.TempKoeff, zeile.Außen_Temp, 1.0,
+                                             pStcStrang, m.TNoct).potenzielleErzeugung;
                         }
 
                         pDcGer += pDc;

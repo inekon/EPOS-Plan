@@ -15545,4 +15545,13 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="KOSTEN_PLANWERT_WECHSELRICHTER" xml:space="preserve">
     <value>Wechselrichter {0}</value>
   </data>
+  <data name="PVS_SP_MODUL" xml:space="preserve">
+    <value>Modul</value>
+  </data>
+  <data name="PVS_MODUL_ANLAGE" xml:space="preserve">
+    <value>(Modul der Anlage)</value>
+  </data>
+  <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
+    <value>Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang.</value>
+  </data>
 </root>

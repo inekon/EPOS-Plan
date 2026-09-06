@@ -174,16 +174,34 @@ namespace WindowsFormsApplication1
 
                 // --- Wechselrichter und Straenge, Stufe S2 (W6-E-2 und W6-E-3) -------
                 // Die Klappliste zeigt den KATALOG; uebernommen wird beim Waehlen, wie
-                // bei einem Modul. Der Herstellerfilter des Katalogs bleibt hier aussen
-                // vor: Er gehoert zur Verwaltung, und eine zweite Filterzeile IN der
-                // Strangtabelle waere ein Bedienelement ohne Platz.
-                ["Wechselrichter"] = WechselrichterEintraege(wrStamm),
+                // bei einem Modul.
+                ["Wechselrichter"] = WechselrichterEintraege(wrStamm, ""),
 
                 ["WechselrichterUebernehmen"] = new Func<int, GeraetWahl>(
                     stammId => WechselrichterUebernehmen(projektId, stammId, wrKopien)),
 
-                ["StraengePruefen"] = new Func<IReadOnlyList<StrangZeile>, StrangBefund>(
-                    straenge => Pruefen(straenge, ModulDer(zeilen), wrKopien)),
+                // W6-O-4 (Anwenderentscheid 06.09.2026): der Herstellerfilter UEBER der
+                // Strangtabelle - dieselben zwei Gaben wie ueber der Modulliste
+                // (Hersteller + Filtern). Er ist vom MODULfilter unabhaengig: "Hersteller
+                // kann vom Modul verschieden sein."
+                ["WechselrichterHersteller"] = WechselrichterHersteller(),
+
+                ["WechselrichterFiltern"] =
+                    new Func<string, IReadOnlyList<(int Id, string Text)>>(
+                        hersteller => WechselrichterEintraege(wrStamm, hersteller)),
+
+                // W6-O-6: die Modulspalte je Strang. Die Klappliste zeigt den
+                // MODULKATALOG, die Strangzeile traegt die Projektkopie - genau wie
+                // beim Wechselrichter.
+                ["Strangmodule"] = ModulEintraege(stamm),
+
+                ["ModulUebernehmen"] = new Func<int, GeraetWahl>(
+                    stammId => ModulUebernehmen(projektId, stammId)),
+
+                // W6-O-5: die GEWAEHLTE Projektzeile geht mit - sie sagt, gegen welches
+                // Modul die Ampel prueft.
+                ["StraengePruefen"] = new Func<ErzeugerZeile, IReadOnlyList<StrangZeile>, StrangBefund>(
+                    (zeile, straenge) => Pruefen(straenge, ModulDer(zeile), wrKopien)),
 
                 // Die Modulverwaltung ist bis Welle 14 eine WinForms-Maske.
                 // iU9-W14a.3: Der Modulkatalog ist die Razor-Komponente
@@ -342,6 +360,7 @@ namespace WindowsFormsApplication1
                                              ?? new AnlageStrangCtrl().LesenJeAnlage(m.ID);
 
             var namen = new Dictionary<int, string>();
+            var modulnamen = new Dictionary<int, string>();
             foreach (AnlageStrangModel z in quelle)
             {
                 if (z == null) continue;
@@ -353,12 +372,24 @@ namespace WindowsFormsApplication1
                     namen[wr] = g == null ? "" : (g.m_szName ?? "");
                 }
 
+                // W6-O-6: der abweichende Modultyp. Sein NAME ist das Band zur
+                // Klappliste - Katalogsatz und Projektkopie tragen denselben.
+                int pv = z.ID_PV ?? 0;
+                if (pv > 0 && !modulnamen.ContainsKey(pv))
+                {
+                    var modul = new PhotovoltaikCtrl();
+                    modul.ReadSingle(pv);
+                    modulnamen[pv] = modul.rows > 0 ? (modul.m_szName ?? "") : "";
+                }
+
                 liste.Add(new StrangZeile
                 {
                     Rang = z.Rang,
                     Bezeichner = z.Bezeichner ?? "",
                     WechselrichterId = wr,
                     WechselrichterName = wr > 0 ? namen[wr] : "",
+                    ModulId = pv,
+                    ModulName = pv > 0 ? modulnamen[pv] : "",
                     Geraetenummer = z.Geraetenummer,
                     Mppt = z.Mppt,
                     ModuleReihe = z.Module_Reihe,
@@ -388,6 +419,8 @@ namespace WindowsFormsApplication1
                     Rang = z.Rang,
                     Bezeichner = z.Bezeichner ?? "",
                     ID_Wechselrichter = z.WechselrichterId > 0 ? z.WechselrichterId : (int?)null,
+                    // 0 wird NIE geschrieben: "das Modul der Anlage" ist NULL.
+                    ID_PV = z.ModulId > 0 ? z.ModulId : (int?)null,
                     Geraetenummer = z.Geraetenummer,
                     Mppt = z.Mppt,
                     Module_Reihe = z.ModuleReihe,
@@ -399,14 +432,66 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Der Katalog als Klapplisteneintraege (Id = Stammsatz).</summary>
+        /// <summary>
+        /// Der Geraetekatalog als Klapplisteneintraege (Id = Stammsatz), wahlweise auf
+        /// einen Hersteller eingeengt (<b>W6‑O‑4</b>). Leer und „Alle" heben die
+        /// Einengung auf — derselbe Steuerwert wie beim Modulfilter.
+        /// </summary>
         private static IReadOnlyList<(int Id, string Text)> WechselrichterEintraege(
-            WechselrichterStammCtrl stamm)
+            WechselrichterStammCtrl stamm, string hersteller)
         {
             var liste = new List<(int, string)>();
-            foreach (WechselrichterStammCtrl.KatalogZeile z in stamm.Filtern(""))
+            foreach (WechselrichterStammCtrl.KatalogZeile z in stamm.Filtern(hersteller))
                 liste.Add((z.Id, z.Bezeichner));
             return liste;
+        }
+
+        /// <summary>
+        /// Die Hersteller des WECHSELRICHTERkatalogs, „Alle" voran — Bauart
+        /// <see cref="Hersteller"/> ueber der Modulliste (W6‑O‑4).
+        /// </summary>
+        private static IReadOnlyList<string> WechselrichterHersteller()
+        {
+            var liste = new List<string> { Text_("HZK_STUFE_ALLE", "Alle") };
+            foreach (string h in WechselrichterStammCtrl.Hersteller()) liste.Add(h);
+            return liste;
+        }
+
+        /// <summary>
+        /// Der MODULKATALOG als Klapplisteneintraege (Id = <c>Tab_PV_STAMM.ID</c>) —
+        /// die Auswahl der Modulspalte je Strang (<b>W6‑O‑6</b>). Ohne Herstellerfilter:
+        /// Die Spalte steht in einer Tabellenzelle, und die Modulliste des Dialogs hat
+        /// ihren eigenen Filter gleich daneben.
+        ///
+        /// <para><b>Warum der KATALOG und nicht die Projektkopien</b> — dieselbe Bauart
+        /// wie bei der Wechselrichter-Klappliste: Jede Projektkopie traegt den
+        /// <c>Bezeichner</c> ihres Katalogsatzes, und ueber genau diesen Namen findet
+        /// <c>CopyFromStamm</c> eine vorhandene Kopie wieder, statt eine zweite
+        /// anzulegen. Die Liste zeigt damit auch jedes Modul, das im Projekt schon
+        /// liegt. Nur der Sonderfall „Katalogsatz geloescht, Projektkopie noch da" fehlt
+        /// darin — den haelt die Komponente selbst offen und zeigt den Namen der Zeile
+        /// weiter an (<c>PvStraengeFelder.Modulwahl</c>).</para>
+        /// </summary>
+        private static IReadOnlyList<(int Id, string Text)> ModulEintraege(
+            PhotovoltaikStammCtrl stamm)
+        {
+            var liste = new List<(int, string)>();
+            foreach (PhotovoltaikStammCtrl.KatalogZeile z in stamm.Filtern(""))
+                liste.Add((z.Id, z.Bezeichner));
+            return liste;
+        }
+
+        /// <summary>
+        /// Nimmt einen MODUL-Katalogsatz in das Projekt auf — <c>CopyFromStamm</c>, wie
+        /// beim Wechselrichter (W6‑O‑6). Zurueck kommt die Projektkopie samt ihrem
+        /// Bezeichner; er ist das Band zur Klappliste.
+        /// </summary>
+        private static GeraetWahl ModulUebernehmen(int projektId, int stammId)
+        {
+            int id = new PhotovoltaikCtrl().CopyFromStamm(stammId, projektId);
+            if (id <= 0) return new GeraetWahl(0, "");
+
+            return new GeraetWahl(id, PhotovoltaikStammCtrl.BezeichnerZu(stammId));
         }
 
         /// <summary>
@@ -425,20 +510,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Das MODUL, gegen das P1 bis P4 rechnen. Der Dialog fuehrt je Zeile ein Modul;
-        /// die Ampel gehoert aber zur GEWAEHLTEN Zeile, und welche das ist, weiss nur die
-        /// Komponente. Genommen wird deshalb das erste Modul, das der Katalog kennt - im
-        /// Regelfall fuehrt eine PV-Anlage genau eines. Ohne Katalogsatz bleibt es
-        /// <c>null</c>, und die Ampel meldet "das Modul der Anlage fehlt".
+        /// Das MODUL der GEWAEHLTEN Projektzeile, gegen das P1 bis P4 rechnen
+        /// (<b>W6‑O‑5</b>, Anwenderentscheid 06.09.2026: „Modul der gewaehlten Zeile").
+        ///
+        /// <para><b>Was sich damit aendert.</b> Bis hierher nahm die Huelle das ERSTE
+        /// Modul, das der Katalog kannte — welche Zeile gewaehlt ist, wusste nur die
+        /// Komponente. Fuehrt ein Projekt mehrere PV-Zeilen mit VERSCHIEDENEN Modulen,
+        /// prueft die Ampel seither gegen das richtige. Der Delegat bekommt die Zeile
+        /// dafuer mitgereicht.</para>
+        ///
+        /// <para>Ohne Zeile oder ohne Katalogsatz bleibt es <c>null</c>, und die Ampel
+        /// meldet „das Modul der Anlage fehlt".</para>
         /// </summary>
-        private static PhotovoltaikStammCtrl.ModulDetail ModulDer(List<ErzeugerZeile> zeilen)
+        private static PhotovoltaikStammCtrl.ModulDetail ModulDer(ErzeugerZeile zeile)
         {
-            foreach (ErzeugerZeile z in zeilen)
-            {
-                PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(z.Bezeichner);
-                if (d != null) return d;
-            }
-            return null;
+            if (zeile == null) return null;
+            return PhotovoltaikStammCtrl.Detail(zeile.Bezeichner);
         }
 
         /// <summary>
@@ -456,11 +543,23 @@ namespace WindowsFormsApplication1
             int module = 0;
             foreach (StrangZeile z in zeilen) module += z.Modulzahl;
 
+            // W6-O-6: die ABWEICHENDEN Modultypen der Straenge. Der Katalogsatz wird
+            // ueber den Bezeichner geholt - dieselbe Quelle wie beim Anlagenmodul, und
+            // Projektkopie wie Katalogsatz tragen denselben Namen.
+            var strangmodule = new Dictionary<int, PhotovoltaikModel>();
+            foreach (StrangZeile z in zeilen)
+            {
+                if (z == null || z.ModulId <= 0 || strangmodule.ContainsKey(z.ModulId)) continue;
+                PhotovoltaikModel m = ModulModell(PhotovoltaikStammCtrl.Detail(z.ModulName));
+                if (m != null) strangmodule[z.ModulId] = m;
+            }
+
             StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
                 new StrangPlausibilitaet.Gaben
                 {
                     Straenge = StraengeZuModell(zeilen),
                     Modul = ModulModell(modul),
+                    Module = strangmodule,
                     Geraete = geraete,
                     // P8 vergleicht gegen die ABGELEITETE Zahl: Die Maske schreibt sie
                     // ohnehin in den Anlagenwert zurueck (Q9), und waehrend des
