@@ -553,7 +553,8 @@ Je Ausprägung derselbe Weg, mit der jeweiligen Hersteller-Probe aus
       Systemanwendung; „Datei in DB Einlesen…" mit einer 8 760-Zeilen-Datei
       meldet Erfolg (**A‑15**), ein zweites Mal erscheint der **Konfliktdialog**
       (**A‑9**).
-- [ ] Dieselbe Verwaltung **aus dem externen Wärmebedarf**: „Einlesen/Bearbeiten…"
+- [ ] Dieselbe Verwaltung **aus dem externen Wärmebedarf**: „Bearbeiten…"
+      (bis W9‑O‑9 „Einlesen/Bearbeiten..")
       zeigt sie als **Überlagerung** im selben Fenster, nicht als zweites
       Fenster; nach dem Schließen ist der Katalog frisch.
 - [ ] Menü → **PV-Import CEC**: Netzabruf mit laufendem Balken und

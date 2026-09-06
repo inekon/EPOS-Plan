@@ -1,4 +1,4 @@
-@* Waermebedarf EXTERN - die Ganglinien eines Projekts (iU9-W9.4).
+﻿@* Waermebedarf EXTERN - die Ganglinien eines Projekts (iU9-W9.4).
 
    VORBILD. Views/Waermebedarf/Form_Waermebedarf (324 Z., 828 x 443,
    lokalisiert de/en, 11 Kartenzeilen + zwei Laufzeitfelder, 1 MessageBox).
@@ -19,7 +19,7 @@
    BEFUND W9-B2. Form_Waermebedarf.Einlesen:276-298 hatte KEINEN Aufrufer -
    ein toter Importpfad mit Form_Hinweis. Er entfaellt ersatzlos.
 
-   "DB Ganglinie loeschen" FRAGT JETZT NACH. Der Vorlaeufer loeschte auf einen
+   LOESCHEN FRAGT JETZT NACH. Der Vorlaeufer loeschte auf einen
    Klick, und der Katalog gilt fuer ALLE Projekte (A-8, wie W6 A-4). Eine
    Ganglinie mit Projektzuordnung bleibt gesperrt und nennt den Grund.
 
@@ -41,7 +41,7 @@
 
    * DIE KNOPFLEISTE unter der Katalogliste traegt vier Knoepfe statt zwei:
 
-       [CSV-Datei importieren...] [Speichern unter...] [Loeschen] [Einlesen/Bearbeiten..]
+       [CSV-Datei importieren...] [Speichern unter...] [Loeschen] [Bearbeiten...]
 
      IMPORTIEREN ist kein zweiter Importweg. Es ist DERSELBE - die Kette liegt
      im Kern (GanglinienImportAblauf mit der Auspraegung
@@ -59,8 +59,21 @@
      SPEICHERN UNTER ist die Kopie unter neuem Namen (WaermebedarfStammCtrl.
      KopiereStamm); die Dublette wird VOR dem Einfuegen gegen den geladenen
      Katalog geprueft, der Kern prueft sie ein zweites Mal.
-     "Einlesen/Bearbeiten.." bleibt, was es war: die Ganglinienverwaltung als
+     "Bearbeiten..." bleibt, was es war: die Ganglinienverwaltung als
      UEBERLAGERUNG (W13.2).
+
+   ALLE VIER KNOPFTEXTE KOMMEN VOM STROM (Anwenderentscheid W9-O-9 vom
+   06.09.2026, woertlich: "Knopftexte im Dialog 'Waermebedarf Extern'
+   wortgleich zum Stromdialog"). Importieren und Speichern unter lasen die
+   Stromschluessel schon seit W9-E-3; die zwei waermespezifischen Texte
+   "Einlesen/Bearbeiten.." und "DB Ganglinie loeschen" waren dabei stehen
+   geblieben und sind jetzt STROMGL_BTN_BEARBEITEN ("Bearbeiten..." / "Edit...")
+   und STROMGL_BTN_LOESCHEN ("Loeschen" / "Delete"). Die zwei alten
+   Waermeschluessel sind damit aus beiden .resx verschwunden - ein Schluessel,
+   den niemand mehr liest, ist Ballast; ihre Namen stehen im W9-Protokoll.
+   Die Rueckfrage vor dem Loeschen traegt seither den DIALOGTITEL, nicht den
+   Knopftext: "Loeschen" allein sagt als Ueberschrift nichts. Auch das ist der
+   Stromdialog (StromganglinieDialog:249).
 
    * DER FORMATHINWEIS steht einzeilig unter der Leiste
      (WBX_HINWEIS_FORMAT_KURZ), der volle Wortlaut haengt am Infoknopf
@@ -220,7 +233,10 @@
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
     }
 
-    <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnLoeschenText" Frage="@Loeschfrage"
+    @* W9-O-9: Die Rueckfrage traegt den DIALOGTITEL wie beim Strom
+       (StromganglinieDialog:249) - der Knopftext "Loeschen" waere als
+       Ueberschrift nichtssagend. *@
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelText" Frage="@Loeschfrage"
                 Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
 
     @* --- "Speichern unter": der Name der Kopie (W9-E-3) ------------------ *@
@@ -290,7 +306,7 @@
     [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
 
     /// <summary>
-    /// „Einlesen/Bearbeiten.." — der PARAMETERSATZ der Ganglinienverwaltung
+    /// „Bearbeiten…" — der PARAMETERSATZ der Ganglinienverwaltung
     /// (<c>WaermebedarfAdminHuelle.Gaben</c>, iU9-W13.2). Sie erscheint als
     /// Überlagerung im selben Fenster; bis Welle 13 war es ein Sprung in ein
     /// WinForms-Fenster. Kein Parametersatz = kein Knopf.
@@ -374,8 +390,21 @@
 
     /// <summary>Beschriftung des Entfernenknopfes — <c>AUSWAHL_BTN_ENTFERNEN</c>.</summary>
     [Parameter] public string BtnEntfernenText { get; set; } = Resource.AUSWAHL_BTN_ENTFERNEN;
-    [Parameter] public string BtnBearbeitenText { get; set; } = "Einlesen/Bearbeiten..";
-    [Parameter] public string BtnLoeschenText { get; set; } = "DB Ganglinie löschen";
+    /// <summary>
+    /// Beschriftung des Verwaltungsknopfes — <c>STROMGL_BTN_BEARBEITEN</c>, derselbe
+    /// Text wie beim Strom. Bis zum Anwenderentscheid <b>W9‑O‑9</b> vom 06.09.2026
+    /// stand hier „Einlesen/Bearbeiten.." — der wärmespezifische Text des
+    /// Vorläufers, der bei W9‑E‑3 stehen geblieben war; sein Ressourcenschlüssel
+    /// ist mit dem Entscheid aus beiden <c>.resx</c> gelöscht.
+    /// </summary>
+    [Parameter] public string BtnBearbeitenText { get; set; } = Resource.STROMGL_BTN_BEARBEITEN;
+
+    /// <summary>
+    /// Beschriftung des Löschknopfes — <c>STROMGL_BTN_LOESCHEN</c>, derselbe Text wie
+    /// beim Strom (Anwenderentscheid <b>W9‑O‑9</b> vom 06.09.2026; vorher
+    /// „DB Ganglinie löschen" aus einem eigenen, jetzt gelöschten Schlüssel).
+    /// </summary>
+    [Parameter] public string BtnLoeschenText { get; set; } = Resource.STROMGL_BTN_LOESCHEN;
 
     /// <summary>Beschriftung des Importknopfes (W9‑E‑3) — derselbe Text wie beim Strom.</summary>
     [Parameter] public string BtnImportierenText { get; set; } = Resource.STROMGL_BTN_IMPORTIEREN;
@@ -756,7 +785,7 @@
     }
 
     /// <summary>
-    /// „DB Ganglinie löschen" — erst die zwei Sperren, dann die Rückfrage. Der
+    /// „Löschen" — erst die zwei Sperren, dann die Rückfrage. Der
     /// Vorläufer löschte ohne Rückfrage (A-8) und kannte die ReadOnly-Sperre nur im
     /// Controller, wo sie eine <c>MessageBox</c> zeigte.
     /// </summary>

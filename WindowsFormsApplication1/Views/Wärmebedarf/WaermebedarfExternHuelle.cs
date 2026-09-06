@@ -155,8 +155,10 @@ namespace WindowsFormsApplication1
                 // Zweispaltenauswahl je nach Anordnung - der Knopf traegt Klartext.
                 ["BtnHinzuText"] = Text_("AUSWAHL_BTN_UEBERNEHMEN", "In das Projekt übernehmen"),
                 ["BtnEntfernenText"] = Text_("AUSWAHL_BTN_ENTFERNEN", "Aus dem Projekt entfernen"),
-                ["BtnBearbeitenText"] = Text_("WBX_BTN_BEARBEITEN", "Einlesen/Bearbeiten.."),
-                ["BtnLoeschenText"] = Text_("WBX_BTN_LOESCHEN", "DB Ganglinie löschen"),
+                // Anwenderentscheid W9-O-9 (06.09.2026): Alle vier Knoepfe der
+                // Katalogleiste tragen die Texte des Stromdialogs. Bearbeiten und
+                // Loeschen brauchen deshalb keine Ueberschreibung mehr - die Vorgabe
+                // der Komponente IST der Stromschluessel.
                 ["BtnImportierenText"] = MyResource.Resource.STROMGL_BTN_IMPORTIEREN,
                 ["BtnSpeichernUnterText"] = MyResource.Resource.STROMGL_BTN_SPEICHERN_UNTER,
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
