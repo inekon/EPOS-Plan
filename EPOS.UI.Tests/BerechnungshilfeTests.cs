@@ -110,6 +110,12 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// hier nicht steht, gehört nicht in eine Formel dieser Rubrik: Die
     /// Math-Erweiterung des Wikis zeichnet einen unbekannten Befehl als roten
     /// Fehlerkasten, und der Anwender liest statt der Gleichung eine Fehlermeldung.
+    ///
+    /// <para><c>\pi</c> und <c>\kappa</c> stehen über der Liste der Bauform: Der
+    /// Ersatzbehälter des Pufferspeichers ist ein Zylinder (<c>\pi</c> ist keine
+    /// Schreibweise, sondern eine Konstante), und <c>\kappa</c> ist die Kappung
+    /// seines vertikalen Ausgleichs — dasselbe Zeichen führt die Brauchwasserseite
+    /// für den Kaltwasserfaktor. Beide sind texvc-sicher.</para>
     /// </summary>
     private static readonly string[] ErlaubteBefehle =
     {
@@ -117,7 +123,7 @@ public sealed class BerechnungshilfeTests : BunitContext
         "\\cdot", "\\left", "\\right", "\\lvert", "\\rvert",
         "\\mathrm", "\\text", "\\operatorname", "\\displaystyle", "\\begin", "\\end",
         "\\eta", "\\vartheta", "\\rho", "\\lambda", "\\alpha", "\\beta", "\\gamma",
-        "\\varepsilon", "\\tau", "\\varphi", "\\Delta", "\\Sigma",
+        "\\varepsilon", "\\tau", "\\varphi", "\\Delta", "\\Sigma", "\\pi", "\\kappa",
         "\\le", "\\ge", "\\ne", "\\approx", "\\pm", "\\to", "\\infty", "\\in", "\\dots",
         "\\quad", "\\,", "\\;", "\\ ", "\\\\"
     };
