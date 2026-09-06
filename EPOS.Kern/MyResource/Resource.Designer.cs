@@ -70,6 +70,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -21264,6 +21265,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_PLANWERT_HERL_SPEICHER {
             get {
                 return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/Gerät × {1} Gerät(e) ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_HERL_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_HERL_WECHSELRICHTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter {0} ähnelt.
+        /// </summary>
+        public static string KOSTEN_PLANWERT_WECHSELRICHTER {
+            get {
+                return ResourceManager.GetString("KOSTEN_PLANWERT_WECHSELRICHTER", resourceCulture);
             }
         }
         

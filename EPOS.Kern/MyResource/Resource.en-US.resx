@@ -15535,4 +15535,10 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="SIMERG_SPALTE_WR_NACHT" xml:space="preserve">
     <value>Night consumption [kWh/a]</value>
   </data>
+  <data name="KOSTEN_PLANWERT_HERL_WECHSELRICHTER" xml:space="preserve">
+    <value>{0} €/device × {1} device(s)</value>
+  </data>
+  <data name="KOSTEN_PLANWERT_WECHSELRICHTER" xml:space="preserve">
+    <value>Inverter {0}</value>
+  </data>
 </root>
