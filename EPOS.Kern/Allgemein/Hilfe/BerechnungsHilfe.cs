@@ -275,18 +275,27 @@ namespace WindowsFormsApplication1
         /// Kursivsatz, die Gerüstzeilen einer Tabelle und die Zielhälfte eines
         /// Verweises.</para>
         /// <para><b>Was bleibt:</b> jedes Wort und jede Zahl. Die Formelzeilen
-        /// stehen im Markup als vorformatierte Zeilen (führendes Leerzeichen) oder
-        /// — seit H13 Fassung 2 — als eingerückte Anzeige-Zeile
-        /// <c>: &lt;big&gt;…&lt;/big&gt;  (3)</c>; sie bleiben Zeile für Zeile
-        /// stehen, denn sie sind der Kern der Auskunft. Tabellenzellen werden zu
-        /// einer Zeile mit „&#160;|&#160;" zwischen den Feldern.</para>
-        /// <para><b>Was umgesetzt wird:</b> die Formelschreibweise der Rubrik.
-        /// Diese Wikiinstallation hat keine Math-Erweiterung; tief- und
-        /// hochgestellte Zeichen stehen deshalb als HTML im Wikitext. Für den
-        /// Assistenten werden sie zu Zeichen, die er lesen und wiedergeben kann:
-        /// <c>P&lt;sub&gt;AC,nenn&lt;/sub&gt;</c> wird zu <c>P_AC,nenn</c>,
-        /// <c>T&lt;sup&gt;2&lt;/sup&gt;</c> zu <c>T^2</c>, und die
-        /// <c>&lt;big&gt;</c>-Klammer der Anzeige-Formel fällt weg.</para>
+        /// stehen im Markup als vorformatierte Zeilen (führendes Leerzeichen), seit
+        /// H13 Fassung 2 als eingerückte Anzeige-Zeile
+        /// <c>: &lt;big&gt;…&lt;/big&gt;  (3)</c> und seit Fassung 3 als
+        /// <c>: &lt;math&gt;…&lt;/math&gt;  (3)</c> mit ihren Legendezeilen
+        /// <c>:: &lt;math&gt;…&lt;/math&gt; – Bedeutung [Einheit]</c>; alle bleiben
+        /// Zeile für Zeile stehen, denn sie sind der Kern der Auskunft.
+        /// Tabellenzellen werden zu einer Zeile mit „&#160;|&#160;" zwischen den
+        /// Feldern.</para>
+        /// <para><b>Was umgesetzt wird:</b> die Formelschreibweise der Rubrik. Sie
+        /// hat seit H13 <b>Fassung 3</b> zwei Formen, und beide führen auf dieselbe
+        /// lesbare Zeile:
+        /// <list type="bullet">
+        /// <item><b>LaTeX in <c>&lt;math&gt;</c></b> (Fassung 3) — das Wiki setzt sie
+        ///       über seine Math-Erweiterung, der Assistent kann das nicht;
+        ///       <see cref="LatexKlartext"/> macht daraus
+        ///       <c>SKZ = (P_el)/(P_th)</c>.</item>
+        /// <item><b>HTML-Indizes</b> (Fassung 2, bis die letzten Seiten nachziehen) —
+        ///       <c>P&lt;sub&gt;AC,nenn&lt;/sub&gt;</c> wird zu <c>P_AC,nenn</c>,
+        ///       <c>T&lt;sup&gt;2&lt;/sup&gt;</c> zu <c>T^2</c>, und die
+        ///       <c>&lt;big&gt;</c>-Klammer der Anzeige-Formel fällt weg.</item>
+        /// </list></para>
         /// </remarks>
         internal static string AlsKlartext(string markup)
         {
@@ -387,7 +396,16 @@ namespace WindowsFormsApplication1
             // Fett und kursiv
             s = s.Replace("'''''", "").Replace("'''", "").Replace("''", "");
 
-            // Formeln, falls die Wikiinstallation sie kann
+            // H13 Fassung 3 - die Formeln stehen als LaTeX in <math>. Der Assistent
+            // bekommt keinen Formelsetzer; die Zeile wird deshalb HIER in lesbare
+            // Zeichen umgesetzt ("\frac{a}{b}" -> "(a)/(b)", "\eta" -> "η"). Das
+            // muss vor der Tag-Entfernung weiter unten geschehen: Die naehme nur die
+            // zwei Klammern <math> und </math> und liesse den Backslash-Salat stehen.
+            s = Regex.Replace(s, @"<math>(.*?)</math>",
+                              treffer => LatexKlartext(treffer.Groups[1].Value),
+                              RegexOptions.Singleline);
+
+            // Eine unpaarige Klammer faellt trotzdem weg.
             s = Regex.Replace(s, @"</?math>", "");
 
             // H13 Fassung 2 - die Formelschreibweise der Rubrik. Indizes stehen im
@@ -417,6 +435,201 @@ namespace WindowsFormsApplication1
             s = Regex.Replace(s, @"^[\*\#:;]+\s*", "");
 
             return s.TrimEnd();
+        }
+
+        // ===================================================================
+        //  LaTeX -> lesbare Zeile (H13 Fassung 3)
+        // ===================================================================
+
+        /// <summary>
+        /// Die Zeichen, die einen LaTeX-Befehl der Rubrik im Klartext vertreten.
+        /// </summary>
+        /// <remarks>
+        /// Ein Befehlsname endet in LaTeX am ersten Zeichen, das kein Buchstabe ist —
+        /// deshalb steht hinter jedem Muster <c>(?![A-Za-z])</c> und NICHT das
+        /// bequemere <c>\b</c>: Der Wortanschluss läge zwischen „sum" und dem
+        /// Unterstrich von <c>\sum_{t=1}</c> gar nicht vor (beides sind für ihn
+        /// Wortzeichen), und die Summe bliebe stehen. Die Vorschau hindert zugleich
+        /// <c>\in</c> daran, in <c>\infty</c> hineinzugreifen.
+        /// </remarks>
+        private static readonly (string Befehl, string Zeichen)[] BefehlsZeichen =
+        {
+            // Aufbau
+            ("cdot", "·"), ("sum", "Σ"), ("prod", "Π"), ("int", "∫"),
+            ("lvert", "|"), ("rvert", "|"),
+            // Vergleich, Pfeil, Menge
+            ("le", "≤"), ("ge", "≥"), ("ne", "≠"), ("approx", "≈"), ("pm", "±"),
+            ("to", "→"), ("infty", "∞"), ("in", "∈"), ("dots", "…"),
+            // Griechisch
+            ("vartheta", "ϑ"), ("varepsilon", "ε"), ("varphi", "φ"),
+            ("eta", "η"), ("rho", "ρ"), ("lambda", "λ"), ("alpha", "α"),
+            ("beta", "β"), ("gamma", "γ"), ("tau", "τ"), ("kappa", "κ"),
+            ("omega", "ω"), ("pi", "π"), ("ell", "ℓ"),
+            ("Delta", "Δ"), ("Sigma", "Σ"), ("Psi", "Ψ")
+        };
+
+        /// <summary>
+        /// Macht aus dem LaTeX einer Formel eine Zeile, die der Assistent lesen und
+        /// wiedergeben kann.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum das sein muss.</b> Seit H13 Fassung 3 stehen die Formeln der
+        /// Rubrik als LaTeX in <c>&lt;math&gt;</c> — das Wiki setzt sie über seine
+        /// Math-Erweiterung. Der Assistent hat keine solche Erweiterung: Ohne
+        /// Umsetzung bekäme er
+        /// <c>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</c>
+        /// und gäbe genau das zurück. Nach der Umsetzung liest er
+        /// <c>SKZ = (P_el)/(P_th)</c> — dieselbe Aussage in der Schreibweise, die
+        /// der Anwender aus den Antworten kennt.</para>
+        /// <para><b>Was geschieht.</b> Satz- und Abstandsbefehle
+        /// (<c>\displaystyle</c>, <c>\left</c>, <c>\right</c>, <c>\,</c>, <c>\;</c>,
+        /// <c>\quad</c>) fallen weg; <c>\mathrm{…}</c>, <c>\text{…}</c> und
+        /// <c>\operatorname{…}</c> geben ihren Inhalt frei; ein Bruch wird zu
+        /// <c>(Zähler)/(Nenner)</c>, eine Wurzel zu <c>√(…)</c>, eine
+        /// Fallunterscheidung zu <c>{ a wenn b; c wenn d }</c>; Summen-, Vergleichs-
+        /// und griechische Befehle werden zu ihrem Zeichen; Indizes und Hochzahlen
+        /// verlieren ihre Klammern (<c>P_{\mathrm{AC,nenn}}</c> → <c>P_AC,nenn</c>),
+        /// und <c>0{,}95</c> wird wieder <c>0,95</c>.</para>
+        /// </remarks>
+        internal static string LatexKlartext(string latex)
+        {
+            if (string.IsNullOrWhiteSpace(latex)) return "";
+
+            string s = latex;
+
+            // 1) Fallunterscheidung zuerst - sie traegt die Klammern, die weiter
+            //    unten fallen, und ihr Trenner "\\" ist kein Befehl.
+            s = Regex.Replace(s, @"\\begin\{cases\}(.*?)\\end\{cases\}",
+                              treffer => Faelle(treffer.Groups[1].Value),
+                              RegexOptions.Singleline);
+
+            // 2) Satz- und Abstandsbefehle
+            s = Regex.Replace(s, @"\\(?:displaystyle|left|right)(?![A-Za-z])", "");
+            s = Regex.Replace(s, @"\\quad(?![A-Za-z])", " ");
+            s = s.Replace("\\,", "").Replace("\\;", "").Replace("\\ ", " ");
+
+            // 3) Klammernde Befehle geben ihren Inhalt frei
+            s = Entfalten(s, "mathrm", 1, teile => teile[0]);
+            s = Entfalten(s, "operatorname", 1, teile => teile[0]);
+            s = Entfalten(s, "text", 1, teile => teile[0]);
+
+            // 4) Bruch und Wurzel
+            s = Entfalten(s, "frac", 2, teile => "(" + teile[0] + ")/(" + teile[1] + ")");
+            s = Entfalten(s, "sqrt", 1, teile => "√(" + teile[0] + ")");
+
+            // 5) Zeichenbefehle
+            foreach ((string befehl, string zeichen) in BefehlsZeichen)
+                s = Regex.Replace(s, @"\\" + befehl + @"(?![A-Za-z])", zeichen);
+
+            // 6) Dezimaltrenner: "0{,}95" ist LaTeX fuer "0,95"
+            s = s.Replace("{,}", ",");
+
+            // 7) Indizes und Hochzahlen verlieren ihre Klammern
+            for (int runde = 0; runde < 6; runde++)
+            {
+                string vorher = s;
+                s = Regex.Replace(s, @"([_^])\{([^{}]*)\}", "$1$2");
+                if (s == vorher) break;
+            }
+
+            // 8) Was an Klammern und Befehlen uebrig ist
+            s = s.Replace("{", "").Replace("}", "");
+            s = Regex.Replace(s, @"\\([A-Za-z]+)", "$1");
+            s = s.Replace("\\", "");
+
+            // 9) Die zwei Klammern der Fallunterscheidung waren vor Schritt 8 in
+            //    Merkzeichen verwahrt - sie SOLLEN stehen bleiben.
+            s = s.Replace(FALL_AUF, "{").Replace(FALL_ZU, "}");
+
+            // Doppelte Leerzeichen, die beim Wegfall der Befehle entstehen
+            return Regex.Replace(s, @"[ \t]{2,}", " ").Trim();
+        }
+
+        /// <summary>
+        /// Der Rumpf einer <c>cases</c>-Umgebung wird zu
+        /// <c>{ Wert wenn Bedingung; Wert wenn Bedingung }</c>. Die Zeilen trennt
+        /// <c>\\</c>, Wert und Bedingung trennt <c>&amp;</c>.
+        /// </summary>
+        private static string Faelle(string rumpf)
+        {
+            var saetze = new List<string>();
+
+
+            foreach (string zeile in Regex.Split(rumpf ?? "", @"\\\\"))
+            {
+                string[] spalten = zeile.Split('&');
+                string wert = spalten[0].Trim();
+                if (wert.Length == 0 && spalten.Length < 2) continue;
+
+                saetze.Add(spalten.Length >= 2 && spalten[1].Trim().Length > 0
+                    ? wert + " wenn " + spalten[1].Trim()
+                    : wert);
+            }
+
+            return FALL_AUF + " " + string.Join("; ", saetze) + " " + FALL_ZU;
+        }
+
+        /// <summary>
+        /// Merkzeichen für die geschweiften Klammern einer Fallunterscheidung. Sie
+        /// stehen dort, wo Schritt 8 gleich JEDE Klammer wegnimmt — und werden danach
+        /// zurückgesetzt. Zwei Steuerzeichen, die in keinem Seitentext vorkommen.
+        /// </summary>
+        private const string FALL_AUF = "\u0001";
+
+        /// <inheritdoc cref="FALL_AUF" />
+        private const string FALL_ZU = "\u0002";
+
+        /// <summary>
+        /// Ersetzt jedes <c>\befehl{…}</c> (mit <paramref name="argumente"/> Klammern,
+        /// geschachtelte mitgezählt) durch das Ergebnis von <paramref name="bau"/>.
+        /// </summary>
+        /// <remarks>
+        /// Ein Muster wie <c>\\frac\{([^{}]*)\}\{([^{}]*)\}</c> genügt hier NICHT: In
+        /// <c>\frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</c> steht in jedem Argument
+        /// wieder eine Klammer. Deshalb wird ausgezählt.
+        /// </remarks>
+        private static string Entfalten(string s, string befehl, int argumente,
+                                        Func<string[], string> bau)
+        {
+            string marke = "\\" + befehl;
+            int ab = 0;
+
+            while (true)
+            {
+                int start = s.IndexOf(marke, ab, StringComparison.Ordinal);
+                if (start < 0) return s;
+
+                int stelle = start + marke.Length;
+
+                // "\text" darf nicht in "\textrm" hineingreifen.
+                if (stelle < s.Length && char.IsLetter(s[stelle])) { ab = start + 1; continue; }
+
+                var teile = new string[argumente];
+                bool vollstaendig = true;
+
+                for (int i = 0; i < argumente; i++)
+                {
+                    while (stelle < s.Length && s[stelle] == ' ') stelle++;
+                    if (stelle >= s.Length || s[stelle] != '{') { vollstaendig = false; break; }
+
+                    int tiefe = 0;
+                    int j = stelle;
+                    for (; j < s.Length; j++)
+                    {
+                        if (s[j] == '{') tiefe++;
+                        else if (s[j] == '}' && --tiefe == 0) break;
+                    }
+                    if (j >= s.Length) { vollstaendig = false; break; }
+
+                    teile[i] = s.Substring(stelle + 1, j - stelle - 1);
+                    stelle = j + 1;
+                }
+
+                if (!vollstaendig) { ab = start + 1; continue; }
+
+                s = s.Substring(0, start) + bau(teile) + s.Substring(stelle);
+                ab = start;   // das Eingesetzte kann selbst wieder einen Befehl tragen
+            }
         }
     }
 }

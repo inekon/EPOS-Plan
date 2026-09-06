@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Berechnung | Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Berechnung | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
      EPOS.Kern/Allgemein/Hilfe/BerechnungsHilfe.cs -->
 <!-- KEINE Themenseite, sondern die STARTSEITE der Rubrik. Der Anwender legt sie im Wiki
      unter "Programm Dokumentation/Berechnung" an und kopiert diesen Text hinein. Die
@@ -54,27 +54,57 @@ Jede Seite folgt derselben Gliederung:
 
 == Schreibweise ==
 
-Die Formeln dieser Rubrik stehen in '''mathematischer Schreibweise mit Unicode-Zeichen''' —
-Malpunkt „·", Summenzeichen „Σ", Differenz „Δ", Wurzel „√", die Vergleichszeichen „≤ ≥ ≠ ≈"
-und die griechischen Buchstaben (η, ϑ, ρ, λ, α, β, γ, ε, τ, φ) unmittelbar als Zeichen.
-Bruchstriche stehen als ''(Zaehler)/(Nenner)'', tiefgestellte Indizes als
-P<sub>AC,nenn</sub>, Hochzahlen als T<sup>2</sup>, die Abhaengigkeit vom Zeitschritt als
-P<sub>AC</sub>(t). Die Argumente von min(…) und max(…) trennt ein '''Semikolon''' —
-min( a ; b ) —, weil das Komma in dieser Schreibweise bereits mehrteilige Indizes trennt.
+Die Formeln dieser Rubrik stehen seit der '''Fassung 3''' in '''LaTeX''' innerhalb der
+Auszeichnung <code>&lt;math&gt;…&lt;/math&gt;</code>. Die '''Math-Erweiterung''' dieses Wikis
+setzt sie in natives MathML um — Sie sehen also einen echten Bruchstrich, ein Summenzeichen mit
+Grenzen darueber und darunter und eine geschweifte Klammer ueber mehrere Zeilen, nicht deren
+Nachbildung mit Textzeichen.
 
-'''Warum keine LaTeX-Formeln.''' Diese Wikiinstallation hat '''keine Math-Erweiterung''': Ein
-Block <nowiki><math>…</math></nowiki> erschiene dem Leser als Klartext, nicht als Formel. Die
-Rubrik verzichtet deshalb durchgaengig auf <nowiki><math></nowiki> und auf
-Backslash-Befehle; alles steht in Zeichen, die jeder Browser ohne Erweiterung darstellt.
+'''Anzeige-Gleichungen und ihre Nummern.''' Eine Gleichung, auf die der Text sich beruft, steht
+als eigene, eingerueckte Zeile, beginnt mit <code>\displaystyle</code> und traegt am Zeilenende
+eine '''Nummer''' in runden Klammern. Die Nummern laufen '''je Seite''' von 1 an; im Text wird
+eine Gleichung mit ihrer Nummer angesprochen („nach (3)").
 
-'''Anzeige-Formeln und ihre Nummern.''' Eine Formel, auf die der Text sich beruft, steht als
-eigene, eingerueckte Zeile und traegt am Zeilenende eine '''Nummer''' in runden Klammern. Die
-Nummern laufen '''je Seite''' von 1 an; im Text wird eine Gleichung mit ihrer Nummer
-angesprochen („nach (3)"). Fallunterscheidungen stehen als Aufzaehlung „fuer … gilt …" oder
-als kleine Tabelle — nie als geschweifte Klammer ueber mehrere Zeilen.
+'''Unter jeder Gleichung steht ihre Legende.''' Je Zeichen eine Zeile, in der Reihenfolge, in
+der die Zeichen in der Gleichung auftreten, die Ergebnisgroesse zuerst; die Einheit steht in
+eckigen Klammern. Sie wiederholt sich bewusst von Gleichung zu Gleichung — Sie sollen mitten in
+eine Seite springen koennen, ohne zurueckblaettern zu muessen:
+
+: <math>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</math> &nbsp;&nbsp;(2)
+:: <math>\mathrm{SKZ}</math> – Stromkennzahl des Moduls [–]
+:: <math>P_{\mathrm{el}}</math> – elektrische Nennleistung des BHKW-Moduls [kW]
+:: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des BHKW-Moduls [kW]
+
+Nur der '''Zeitindex''' <math>t</math> beziehungsweise <math>k</math> steht nicht in jeder
+Legende — er wird einmal am Anfang des Rechenwegs erklaert und gilt fuer die ganze Seite.
+
+'''Wie eine Formel gesetzt ist.''' Tiefgestellte Indizes stehen als <code>_{…}</code> und
+aufrecht (<math>P_{\mathrm{AC,nenn}}</math>), Hochzahlen als <code>^{…}</code>
+(<math>T^{2}</math>), die Abhaengigkeit vom Zeitschritt in runden Klammern
+(<math>P_{\mathrm{AC}}(t)</math>). Der Dezimaltrenner ist das '''Komma'''
+(<math>0{,}95</math>), Tausender trennt ein schmales Leerzeichen (<math>8\,760</math>). Die
+Argumente von <math>\min</math> und <math>\max</math> trennt ein '''Komma''' —
+<math>\min(a, b)</math> —; die Semikolon-Regel der Fassung 2 ist damit hinfaellig, weil ein
+mehrteiliger Index in LaTeX innerhalb seiner eigenen Klammer steht und nichts mehr verwechselt
+werden kann.
+
+'''Fallunterscheidungen''' stehen als geschweifte Klammer (<code>cases</code>) — Wert links,
+Bedingung rechts. Sie ersetzt die Aufzaehlung „fuer … gilt …" der Fassung 2.
+
+'''Warum eine kleine LaTeX-Teilmenge.''' Die Erweiterung prueft jede Formel mit WikiTexVC, und
+was sie nicht kennt, erscheint dem Leser als rote Fehlerzeile statt als Formel. Die Rubrik
+beschraenkt sich deshalb auf einen festen Vorrat: <code>\frac \sqrt \sum \int \prod \min \max
+\cdot \left \right \lvert \rvert \mathrm \text \operatorname \displaystyle \quad</code>, die
+Vergleichs- und Mengenzeichen <code>\le \ge \ne \approx \pm \to \infty \in \dots</code>, die
+griechischen Buchstaben als Befehl und <code>\begin{cases}…\end{cases}</code>. Kein
+<code>\tag</code>, kein <code>\label</code>, kein <code>\newcommand</code>, kein
+<code>align</code> — und keine Umlaute innerhalb einer Formel. Zwei Waechter im Quellbaum
+halten das fest.
 
 '''Der Abschnitt „Formelzeichen und Parameter"''' steht auf jeder Seite zwischen den
-Eingangsgroessen und dem Rechenweg und traegt zwei Tabellen:
+Eingangsgroessen und dem Rechenweg und traegt zwei Tabellen. Er bleibt neben den Legenden
+bestehen, denn er sagt etwas anderes: die '''Herkunft''' eines Wertes und die '''Gleichung''',
+in der eine Groesse entsteht.
 
 * '''Parameter''' — was in die Rechnung hereinkommt: Eingaben, Katalogwerte, Vorgabewerte und Konstanten. Die Spalte „Herkunft" nennt Dialog und Feld, Katalogtabelle und Spalte oder den Vorgabewert mit seiner Zahl.
 * '''Variablen''' — was die Seite selbst rechnet, je Stunde oder je Lauf. Die Spalte „berechnet in" nennt die Gleichung, in der die Groesse entsteht; „Ausgabe" steht dort, wo eine Groesse nur ausgewiesen und nicht weiterverrechnet wird.
@@ -87,32 +117,36 @@ kommt in einer Formel vor.
 {| class="wikitable"
 ! Groesse !! Symbol !! Einheit
 |-
-| Zeitschritt || t = 1 … 8 760 (Stunde des Jahres); k = 1 … 35 040 (Viertelstunde, Stromseite und Stromspeicher) || —
+| Zeitschritt || <math>t = 1 \dots 8\,760</math> (Stunde des Jahres); <math>k = 1 \dots 35\,040</math> (Viertelstunde, Stromseite und Stromspeicher) || —
 |-
-| Leistung || P, elektrisch P<sub>el</sub>, thermisch P<sub>th</sub> || kW
+| Leistung || <math>P</math>, elektrisch <math>P_{\mathrm{el}}</math>, thermisch <math>P_{\mathrm{th}}</math> || kW
 |-
-| Energie, Arbeit || Q (Waerme), E (Strom) || kWh; Jahressummen in MWh, wo die Seite es so zeigt
+| Energie, Arbeit || <math>Q</math> (Waerme), <math>E</math> (Strom) || kWh; Jahressummen in MWh, wo die Seite es so zeigt
 |-
-| Temperatur || ϑ (Celsius), T (Kelvin, nur wo noetig) || °C, K
+| Temperatur || <math>\vartheta</math> (Celsius), <math>T</math> (Kelvin, nur wo noetig) || °C, K
 |-
-| Wirkungsgrad, Nutzungsgrad || η, Jahresnutzungsgrad η<sub>a</sub> || —
+| Wirkungsgrad, Nutzungsgrad || <math>\eta</math>, Jahresnutzungsgrad <math>\eta_{\mathrm{a}}</math> || —
 |-
-| Leistungszahl Waermepumpe || COP (Stunde), JAZ (Jahr) || —
+| Leistungszahl Waermepumpe || <math>\operatorname{COP}</math> (Stunde), <math>\operatorname{JAZ}</math> (Jahr) || —
 |-
-| Einstrahlung || G (Bestrahlungsstaerke), H (Summe) || W/m², kWh/m²
+| Einstrahlung || <math>G</math> (Bestrahlungsstaerke), <math>H</math> (Summe) || W/m², kWh/m²
 |-
-| Flaeche, Volumen, Massenstrom || A, V, ṁ || m²; m³ bzw. l; kg/h
+| Flaeche, Volumen, Massenstrom || <math>A</math>, <math>V</math>, <math>\dot{m}</math> || m²; m³ bzw. l; kg/h
 |-
-| Neigung, Azimut || β, γ || °
+| Neigung, Azimut || <math>\beta</math>, <math>\gamma</math> || °
 |-
-| Speicherinhalt, Ladezustand || Q<sub>Sp</sub>(t), SOC(t) || kWh, —
+| Speicherinhalt, Ladezustand || <math>Q_{\mathrm{Sp}}(t)</math>, <math>\operatorname{SOC}(t)</math> || kWh, —
 |-
-| Indizes || nenn, max, min, el, th, DC, AC, WR, WP, K (Kessel), BHKW, Sol, PV, Sp, Q (Quelle), S (Senke), Netz || —
+| Indizes || nenn, max, min, el, th, DC, AC, WR, WP, K (Kessel), BHKW, Sol, PV, Sp, Q (Quelle), S (Senke), Netz — aufrecht gesetzt, also <code>_{\mathrm{nenn}}</code> || —
 |}
 
 Wo der Rechenkern eine andere Bezeichnung fuehrt (etwa <code>PV_WrEta10</code> fuer den
 Wechselrichter-Wirkungsgrad bei 10 % Auslastung), nennt die Parametertabelle der Seite diesen
 Namen in der Spalte „Herkunft"; das '''Symbol''' bleibt das der Rubrik.
+
+'''Ohne Math-Erweiterung.''' Sollte eine Seite die Formeln als Klartext zeigen —
+<code>\displaystyle …</code> mitten im Satz —, ist die Erweiterung im Wiki nicht aktiv. Das ist
+kein Fehler des Textes; die Formeln erscheinen, sobald sie eingeschaltet ist.
 
 == Wie diese Seiten zu lesen sind ==
 
