@@ -120,6 +120,31 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const string RubrikPraefix = "Programm Dokumentation/";
 
+        /// <summary>
+        /// H13 - die Unterrubrik "Berechnung" innerhalb der Rubrik. Ihre Seiten
+        /// erklaeren den RECHENWEG einer Komponente und liegen eine Stufe
+        /// tiefer: "Programm Dokumentation/Berechnung/Photovoltaik".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Am Abruf aendert das nichts.</b> <c>apprefix</c> der
+        /// MediaWiki-Action-API ist ein reiner ZEICHENKETTEN-Praefix, kein
+        /// Namensraum-Filter: Am 06.09.2026 gegen wiki.epos-plan.de gemessen
+        /// liefert <c>apprefix=Programm Dokumentation/W</c> genau die vier
+        /// Seiten mit W. Eine Seite zweiter Stufe kommt also von selbst mit,
+        /// sobald sie im Wiki angelegt ist - <see cref="EintragAusTitel"/>
+        /// nimmt sie auf, ihr Kurzname lautet dann "Berechnung/Photovoltaik".
+        /// </para>
+        /// <para>
+        /// Was NICHT von selbst geht, ist der Zustand DAVOR: Solange die Seiten
+        /// im Wiki fehlen, wuerde ein erfolgreicher Onlineabruf den
+        /// mitgelieferten Startbestand vollstaendig ersetzen und die Rubrik
+        /// damit aus dem Katalog werfen. Dagegen steht
+        /// <see cref="BerechnungsRueckfallErgaenzen"/>.
+        /// </para>
+        /// </remarks>
+        private const string BerechnungsPraefix = RubrikPraefix + "Berechnung/";
+
         private string _baseUrl;
 
         public WikiHelpCatalog(string baseUrl) => _baseUrl = (baseUrl ?? "").TrimEnd('/');
@@ -302,6 +327,17 @@ namespace WindowsFormsApplication1
             catch (Exception) { /* die Rohform genuegt */ }
 
             pfad = pfad.Replace('\\', '/').Trim();
+
+            // H13 - Leerzeichen und Unterstrich sind im Wiki DASSELBE Zeichen.
+            // MediaWiki bildet den Titel "Wärmequelle Erdreich" auf die Adresse
+            // ".../W%C3%A4rmequelle_Erdreich" ab; wer in help_mapping.txt das
+            // Ziel "Berechnung/Wärmequelle Erdreich" schreibt, meint dieselbe
+            // Seite. Ohne diese Zeile traefe der Pfadweg sie nicht - der
+            // Slugweg tut es laengst, weil er den Kurznamen unveraendert
+            // vergleicht. Fuer die 32 vorhandenen Seiten aendert sich nichts:
+            // keine ihrer Adressen fuehrt ein Leerzeichen.
+            pfad = pfad.Replace(' ', '_');
+
             if (pfad.Length == 0) return "";
             if (!pfad.StartsWith("/")) pfad = "/" + pfad;
             if (!pfad.EndsWith("/")) pfad += "/";
@@ -591,6 +627,12 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // H13: Was das Wiki unter "Programm Dokumentation/Berechnung/" noch
+            // nicht fuehrt, kommt aus dem mitgelieferten Startbestand dazu -
+            // sonst waere die Rubrik nach einem erfolgreichen Abruf verschwunden
+            // und jeder Knopf "Berechnungsweg ..." stumm.
+            BerechnungsRueckfallErgaenzen(tempCache);
+
             IndizesAufbauen(tempCache);
 
             // Als lokale Sicherung für den nächsten Offline-Start wegschreiben.
@@ -846,10 +888,33 @@ namespace WindowsFormsApplication1
 
         return new HelpEntry
         {
-            Tooltip = kurzname,
+            Tooltip = Kapitelname(kurzname),
             Url = SeitenUrl(titel),
             Slug = kurzname
         };
+    }
+
+    /// <summary>
+    /// Der Kapitelname, den das Popup ueber die Beschreibung setzt. Fuer die
+    /// Seiten der Rubrik ist das der Kurzname selbst; fuer eine Seite der
+    /// Unterrubrik "Berechnung" wird aus "Berechnung/Photovoltaik" das lesbare
+    /// "Berechnung: Photovoltaik" (H13).
+    /// </summary>
+    /// <remarks>
+    /// Der SLUG bleibt unangetastet - er ist die Adresse und muss zum
+    /// Wiki-Titel passen. Nur die Anzeige wird gedreht, und zwar hier UND im
+    /// mitgelieferten Startbestand (<c>help_cache.json</c>), damit beide
+    /// Bezugsquellen denselben Text zeigen.
+    /// </remarks>
+    internal static string Kapitelname(string kurzname)
+    {
+        if (string.IsNullOrWhiteSpace(kurzname)) return "";
+
+        string name = kurzname.Trim();
+        int strich = name.IndexOf('/');
+
+        return strich <= 0 ? name
+                           : name.Substring(0, strich).Trim() + ": " + name.Substring(strich + 1).Trim();
     }
 
     /// <summary>
@@ -915,6 +980,11 @@ namespace WindowsFormsApplication1
             var gesichert = JsonSerializer.Deserialize<Dictionary<string, HelpEntry>>(File.ReadAllText(pfad));
             if (gesichert == null || gesichert.Count == 0) return false;
 
+            // H13: Eine Sicherung aus der Zeit VOR diesem Paket kennt die Rubrik
+            // "Berechnung" nicht - sie stammt aus einem Abruf, den es damals noch
+            // nicht gab. Derselbe Rueckfall wie beim Onlineabruf.
+            BerechnungsRueckfallErgaenzen(gesichert);
+
             IndizesAufbauen(gesichert);
             System.Diagnostics.Debug.WriteLine(
                 $"[Help] Katalog aus lokaler Sicherung: {pfad} ({_nachPfad.Count} Seiten).");
@@ -935,6 +1005,27 @@ namespace WindowsFormsApplication1
     /// </summary>
     private bool MitgelieferterStartbestandLaden()
     {
+        Dictionary<string, HelpEntry> startbestand = StartbestandLesen();
+        if (startbestand == null || startbestand.Count == 0) return false;
+
+        IndizesAufbauen(startbestand);
+        System.Diagnostics.Debug.WriteLine(
+            $"[Help] Katalog aus mitgeliefertem Startbestand ({_nachPfad.Count} Seiten).");
+
+        return _nachPfad.Count > 0;
+    }
+
+    /// <summary>
+    /// Liest den eingebetteten Startbestand, ohne ihn einzuhaengen; <c>null</c>,
+    /// wenn er fehlt oder unlesbar ist.
+    /// </summary>
+    /// <remarks>
+    /// Getrennt von <see cref="MitgelieferterStartbestandLaden"/> seit H13:
+    /// <see cref="BerechnungsRueckfallErgaenzen"/> braucht denselben Bestand,
+    /// darf aber die bereits aufgebauten Register nicht ueberschreiben.
+    /// </remarks>
+    private static Dictionary<string, HelpEntry> StartbestandLesen()
+    {
         try
         {
             using (Stream stream = typeof(WikiHelpCatalog).Assembly
@@ -946,27 +1037,103 @@ namespace WindowsFormsApplication1
                         $"[Help] FEHLER: Eingebetteter Startbestand '{StartbestandDateiName}' fehlt. " +
                         "Ist er in der .csproj als EmbeddedResource mit passendem LogicalName eingetragen? " +
                         "Ohne Netz bleibt die Hilfe sonst leer.");
-                    return false;
+                    return null;
                 }
 
                 using (var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
                 {
-                    var startbestand = JsonSerializer.Deserialize<Dictionary<string, HelpEntry>>(reader.ReadToEnd());
-                    if (startbestand == null || startbestand.Count == 0) return false;
-
-                    IndizesAufbauen(startbestand);
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[Help] Katalog aus mitgeliefertem Startbestand ({_nachPfad.Count} Seiten).");
-
-                    return _nachPfad.Count > 0;
+                    return JsonSerializer.Deserialize<Dictionary<string, HelpEntry>>(reader.ReadToEnd());
                 }
             }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine("[Help] FEHLER beim Lesen des Startbestandes: " + ex);
-            return false;
+            return null;
         }
+    }
+
+    // -----------------------------------------------------------------------
+    //  H13 - die Unterrubrik "Berechnung" ueberlebt einen Onlineabruf
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Ergaenzt einen frisch abgerufenen Bestand um die Seiten der Unterrubrik
+    /// "Berechnung", die das Wiki (noch) nicht fuehrt. Liefert die Zahl der
+    /// ergaenzten Seiten.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Warum es diese Ausnahme gibt.</b> Die Rangfolge F6 lautet: Online
+    /// SCHLAEGT lokale Sicherung SCHLAEGT Startbestand - und zwar vollstaendig,
+    /// nicht feldweise. Das ist richtig fuer die 32 allgemeinen Seiten: Wer eine
+    /// davon im Wiki loescht, soll sie nicht durch eine veraltete Beilage
+    /// wiederauferstehen sehen. Fuer die Rubrik "Berechnung" ist es falsch. Ihre
+    /// Seiten legt der Anwender ERST NOCH an (H13, Handgriffe im Protokoll); bis
+    /// dahin antwortet das Wiki erfolgreich und ohne sie, der Startbestand faellt
+    /// weg, und jeder Knopf "Berechnungsweg …" waere stumm - unter Windows
+    /// abgeschaltet (F3), im Blazor-Dialog ohne Wirkung.
+    /// </para>
+    /// <para>
+    /// <b>Die Regel, eng gefasst:</b> Ergaenzt wird ausschliesslich, was unter
+    /// <see cref="BerechnungsPraefix"/> liegt UND im Abruf fehlt. Sobald der
+    /// Anwender eine Berechnungsseite anlegt, gewinnt die Wikifassung - sie steht
+    /// schon in <paramref name="bestand"/>, und ergaenzt wird nur Fehlendes. Fuer
+    /// alle uebrigen Seiten bleibt die Rangfolge F6 unangetastet.
+    /// </para>
+    /// <para>
+    /// Die ergaenzten Eintraege wandern mit in die lokale Sicherung. Das ist
+    /// gewollt: Der naechste Start ohne Netz kennt die Rubrik dann ebenfalls.
+    /// </para>
+    /// </remarks>
+    private int BerechnungsRueckfallErgaenzen(Dictionary<string, HelpEntry> bestand)
+    {
+        if (bestand == null) return 0;
+
+        Dictionary<string, HelpEntry> startbestand = StartbestandLesen();
+        if (startbestand == null || startbestand.Count == 0) return 0;
+
+        int ergaenzt = 0;
+
+        foreach (HelpEntry eintrag in startbestand.Values)
+        {
+            if (eintrag == null) continue;
+            if (!IstBerechnungsseite(eintrag)) continue;
+
+            string pfad = PfadNormalisieren(eintrag.Url);
+            if (pfad.Length == 0 || bestand.ContainsKey(pfad)) continue;
+
+            bestand[pfad] = eintrag;
+            ergaenzt++;
+        }
+
+        if (ergaenzt > 0)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"[Help] H13: {ergaenzt} Seite(n) der Rubrik '{BerechnungsPraefix}' stehen im Wiki noch " +
+                "nicht und kommen aus dem mitgelieferten Startbestand. Anzulegen sind sie im Wiki " +
+                "(siehe H13_Berechnungshilfe_Protokoll.md); bis dahin zeigt der Knopf Kurztext und Adresse.");
+        }
+
+        return ergaenzt;
+    }
+
+    /// <summary>
+    /// Gehoert der Eintrag zur Unterrubrik "Berechnung"? Massgeblich ist der
+    /// Kurzname (<see cref="HelpEntry.Slug"/>), ersatzweise der Link-Pfad.
+    /// </summary>
+    private static bool IstBerechnungsseite(HelpEntry eintrag)
+    {
+        if (eintrag == null) return false;
+
+        if (!string.IsNullOrWhiteSpace(eintrag.Slug) &&
+            eintrag.Slug.Trim().StartsWith("Berechnung/", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        string pfad = PfadNormalisieren(eintrag.Url);
+        return pfad.Length > 0 && pfad.IndexOf("/berechnung/", StringComparison.Ordinal) >= 0;
     }
 
         private static string StripHtml(string s)
