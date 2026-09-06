@@ -38,6 +38,46 @@ namespace WindowsFormsApplication1
         public const double DCAC_MAX = 3.0;
 
         /// <summary>
+        /// <b>Ab wann ein Abfall im Teillastast gemeldet wird</b> — 0,01, also
+        /// <b>ein Prozentpunkt</b> Wirkungsgrad zwischen zwei benachbarten Stützstellen
+        /// (Anwenderentscheid <b>W6‑O‑8</b> vom 06.09.2026: „Empfehlung").
+        ///
+        /// <para><b>Warum es die Schwelle gibt.</b> Ohne sie meldete die Regel jeden noch
+        /// so kleinen Rückgang — und traf damit 303 der 2 343 Geräte der
+        /// Auslieferungsliste, 13 % des Bestands. Es ist kein Datenfehler: Der Import
+        /// rechnet die Stützstellen aus den Sandia-Koeffizienten (Konzept 3.3.3), und
+        /// die Modellparabel hat bei guten Geräten ihren Scheitel zwischen 30 und 50 %.
+        /// Eine Warnung, die jedes zweite gute Gerät zurückfragt, wird weggeklickt statt
+        /// gelesen.</para>
+        ///
+        /// <para><b>Woher der Wert kommt.</b> Gemessen am 06.09.2026 über die volle Liste
+        /// (2 343 Geräte, alle sechs Stützstellen belegt), Abfall <c>η_i − η_{i+1}</c> je
+        /// Intervall in Prozentpunkten:</para>
+        /// <code>
+        /// Intervall   Abfälle  > 0,5 PP  > 1,0 PP  > 2,0 PP   größter
+        ///  5 → 10 %         0         0         0         0   —
+        /// 10 → 20 %         0         0         0         0   —
+        /// 20 → 30 %         2         0         0         0   0,372 PP
+        /// 30 → 50 %       303         1         1         1   2,423 PP
+        /// 50 → 100 %     2019       691       105        20   9,456 PP   (nicht geprüft)
+        /// </code>
+        /// <para>Je Gerät gerechnet: 302 der 303 Fälle liegen unter <b>0,4</b>
+        /// Prozentpunkten (246 sogar unter 0,1), und zwischen 0,4 und 2,4 Prozentpunkten
+        /// ist über den ganzen Bestand <b>keine einzige</b> Kennlinie. Die Schwelle liegt
+        /// also nicht mitten in einer Verteilung, sondern in einer LÜCKE — jeder Wert
+        /// zwischen 0,4 und 2,4 ergibt dasselbe Bild; 1,0 ist die runde Zahl darin. Übrig
+        /// bleibt genau ein Gerät (OutBack Power GS8048A, 2,423 PP), und genau dafür ist
+        /// die Regel da.</para>
+        ///
+        /// <para><b>Und ein Tippfehler bleibt sichtbar:</b> 0,79 statt 0,97 an einer
+        /// Stützstelle sind 18 Prozentpunkte — das Achtzehnfache der Schwelle.</para>
+        ///
+        /// <para>Nachgemessen wird über <c>EPOS.Kern.Tests/CecWechselrichterAuslieferungTests</c>;
+        /// die Fälle zur Schwelle stehen in <c>WechselrichterPlausibilitaetTests</c>.</para>
+        /// </summary>
+        public const double TEILLAST_ABFALL_SCHWELLE = 0.01;
+
+        /// <summary>
         /// Ergebnis der Prüfung. <see cref="Fehler"/> sperrt das Schreiben,
         /// <see cref="Warnungen"/> ist ein Hinweis.
         /// </summary>
@@ -199,13 +239,24 @@ namespace WindowsFormsApplication1
             // steil bis in den Bereich 30…50 % und faellt danach LEICHT wieder ab
             // (Anhang A des Konzepts: 0,975 bei 50 %, 0,970 bei 100 %). Wer ueber die
             // ganze Kurve Monotonie forderte, meldete jedes echte Datenblatt.
+            //
+            // …und erst ab TEILLAST_ABFALL_SCHWELLE (W6-O-8): Ein Rueckgang von
+            // Zehntelprozentpunkten ist die Modellparabel des Sandia-Umwegs, kein
+            // Datenfehler. Gemeldet wird, was DARUEBER liegt — mit der Zahl im Satz,
+            // damit der Anwender die Groessenordnung sieht, statt nur zwei Werte.
+            // Der Grenzfall GENAU auf der Schwelle bleibt still: gemeldet wird
+            // ">", nicht ">=".
             for (int i = 1; i <= 4; i++)
             {
                 if (!etas[i - 1].HasValue || !etas[i].HasValue) continue;
-                if (etas[i].Value + 1e-9 < etas[i - 1].Value)
-                    b.Warnungen.Add(string.Format(MyResource.Resource.WRK_PLAUSI_ETA_MONOTON,
-                                                  namen[i - 1], Z(etas[i - 1].Value),
-                                                  namen[i], Z(etas[i].Value)));
+
+                double abfall = etas[i - 1].Value - etas[i].Value;
+                if (abfall <= TEILLAST_ABFALL_SCHWELLE + 1e-9) continue;
+
+                b.Warnungen.Add(string.Format(MyResource.Resource.WRK_PLAUSI_ETA_MONOTON,
+                                              namen[i - 1], Z(etas[i - 1].Value),
+                                              namen[i], Z(etas[i].Value),
+                                              Z(abfall * 100.0)));
             }
 
             PruefeAusweis(m, b, MyResource.Resource.WRK_PLAUSI_ETA_EURO_BEREICH,

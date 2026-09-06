@@ -46,9 +46,17 @@ nennt die Zeilenzahl und zählt die Plausibilität je Gerät (grün/gelb/rot).
 
 ## Wird die Datei ausgeliefert?
 
-**Nein — und das ist die Gleichbehandlung.** `Setup/EPOS-Plan.iss` liefert den Ordner
-`VDI-3805-Daten` nicht aus (Abschnitt `[Files]` kennt nur die Veröffentlichung, die
-Vorlagendatenbank und die zwei Voraussetzungsinstallierer); auch `CEC Modules.csv` steht dort
-nicht. Beide Dateien liegen im Repository als **Arbeits- und Prüfbestand** und werden dem
-Anwender über den Einstellungspfad `VDI3805Path` zugänglich gemacht, aus dem der Dateiwähler
-des Imports startet. Ändert sich das für die Modulliste, ändert es sich für diese Datei mit.
+**Ja, seit dem 06.09.2026** — Anwenderentscheid **W6‑O‑9** („ja"). `Setup/EPOS-Plan.iss` liefert
+den ganzen Ordner `VDI-3805-Daten` (rund 186 MB) als eigene Komponente
+**„Herstellerdaten (VDI 3805, CEC)"** aus: im Assistenten **vorgewählt** und **abwählbar**. Das
+Ziel ist `{app}\VDI-3805-Daten`, also neben dem Programm — dieselbe Lage wie die
+Vorlagendatenbank unter `{app}\Vorlage`, aus demselben Grund: Der Auslieferungsbestand wird
+**nur gelesen**, ein Update ersetzt ihn, die Deinstallation nimmt ihn mit.
+
+`CEC Modules.csv` ist damit gleich behandelt — beide Listen liegen nach der Installation dort,
+wo der Dateiwähler des Imports von selbst aufmacht: Der Herstellerdatenpfad zeigt ohne Zutun auf
+den installierten Ordner (`EinstellungenCtrl.HerstellerdatenpfadOderVorgabe` über
+`Dienste.Pfade.Herstellerdaten`; im Entwicklungsstand bleibt der Repository-Ordner der Rückfall).
+Ein in den Einstellungen eingetragener `VDI3805Path` hat weiterhin Vorrang — wer die Datensätze
+im Netz liegen hat, ändert nichts an seiner Gewohnheit und kann die Komponente beim Installieren
+abwählen.

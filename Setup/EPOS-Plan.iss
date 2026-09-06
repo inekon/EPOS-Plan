@@ -44,6 +44,16 @@
 ; Wie dieser Stand erzeugt wird, steht im Konzept, Abschnitt 6.1.
 #define VorlageDb      SetupDir + "Vorlage\Kenndaten.accdb"
 
+; Herstellerdaten (VDI 3805 und die zwei CEC-Listen) — Anwenderentscheid W6-O-9
+; vom 06.09.2026: „ja". Der Ordner liegt im Repository und wandert unveraendert
+; nach {app}\VDI-3805-Daten; rund 186 MB (WP 134, KWK 25, PV 13, SPK 10,
+; Pufferspeicher 4,4, Solarthermie 1,1). Er ist eine eigene, VORGEWAEHLTE und
+; ABWAEHLBARE Komponente — siehe [Components].
+#define HerstellerdatenDir  RepoDir + "VDI-3805-Daten"
+#if !DirExists(HerstellerdatenDir)
+  #error Der Ordner VDI-3805-Daten fehlt neben dem Setup-Ordner. Ohne ihn laesst sich die Komponente "Herstellerdaten" nicht packen (Konzept 6.3).
+#endif
+
 ; Microsoft Access Database Engine 2016 Redistributable, 64 Bit
 #define AceInstaller   SetupDir + "Voraussetzungen\AccessDatabaseEngine_X64.exe"
 
@@ -207,10 +217,34 @@ english.WebView2Fehlt=The Microsoft Edge WebView2 Runtime could not be installed
 german.DatenLoeschen=Sollen auch die Projektdatenbank und die Einstellungen des angemeldeten Windows-Kontos gelöscht werden?%n%n%1%n%nDiese Daten lassen sich danach nicht wiederherstellen. Daten anderer Windows-Konten bleiben in jedem Fall erhalten und sind dort von Hand zu entfernen.
 english.DatenLoeschen=Do you also want to delete the project database and settings of the signed-in Windows account?%n%n%1%n%nThis cannot be undone. Data belonging to other Windows accounts is always kept and must be removed there manually.
 
+german.TypVoll=Vollständige Installation
+english.TypVoll=Full installation
+german.TypBenutzer=Benutzerdefinierte Installation
+english.TypBenutzer=Custom installation
+
+german.KompProgramm=Programm und Auslieferungsdatenbank
+english.KompProgramm=Program and shipped database
+german.KompHerstellerdaten=Herstellerdaten (VDI 3805, CEC)
+english.KompHerstellerdaten=Manufacturer data (VDI 3805, CEC)
+
 
 ; ---------------------------------------------------------------------------
 ;  4. Auswahl
 ; ---------------------------------------------------------------------------
+
+; 4.1 Bestandteile (W6-O-9, 06.09.2026). Das Programm ist "fixed" — es abzuwählen
+;     ergäbe keine Installation. Die Herstellerdaten sind VORGEWÄHLT (sie stehen im
+;     Typ "voll", und der ist der Vorschlag) und ABWÄHLBAR: Wer die 186 MB nicht
+;     braucht — etwa, weil die Datensätze im Netz liegen und der Pfad in den
+;     Einstellungen darauf zeigt —, nimmt das Häkchen heraus; Inno wechselt dann von
+;     selbst auf den Typ "benutzerdefiniert".
+[Types]
+Name: "voll";   Description: "{cm:TypVoll}"
+Name: "custom"; Description: "{cm:TypBenutzer}"; Flags: iscustom
+
+[Components]
+Name: "programm";        Description: "{cm:KompProgramm}";        Types: voll custom; Flags: fixed
+Name: "herstellerdaten"; Description: "{cm:KompHerstellerdaten}"; Types: voll
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:DesktopSymbol}"; GroupDescription: "{cm:AdditionalIcons}"
@@ -239,11 +273,29 @@ Name: "{commonappdata}\EPOS_PLAN"; Permissions: users-modify
 ; Vorlagen\Berichtsvorlage.docx).
 Source: "{#PublishDir}\*"; DestDir: "{app}"; \
     Excludes: "*.pdb,*.xml"; \
-    Flags: ignoreversion recursesubdirs createallsubdirs
+    Flags: ignoreversion recursesubdirs createallsubdirs; \
+    Components: programm
 
 ; Auslieferungsdatenbank als Vorlage. Sie wird nie direkt benutzt — die
 ; Anwendung legt daraus beim ersten Start die Datenbank des Kontos an.
-Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion
+Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
+    Components: programm
+
+; Herstellerdaten (W6-O-9). NEBEN das Programm, nicht nach {commonappdata}:
+;   * Die Importmasken LESEN daraus und schreiben nie hinein — damit gehört der
+;     Ordner in die Zeile "nur das Setup schreibt" der Rechtetabelle (Konzept 2.1),
+;     also nach %ProgramFiles%\EPOS-Plan. Genau dort liegt aus demselben Grund
+;     schon die Vorlagendatenbank ({app}\Vorlage).
+;   * Ein Update ersetzt den Bestand mit dem Programm (ignoreversion), und die
+;     Deinstallation nimmt ihn mit. %ProgramData%\EPOS_PLAN bleibt dagegen
+;     ABSICHTLICH stehen (dort liegen Anwenderdaten) — 186 MB Auslieferungsbestand
+;     blieben dann als Leiche zurück.
+;   * Die Anwendung findet den Ordner ohne Einstellung: Der Pfaddienst sucht
+;     VDI-3805-Daten von der laufenden EXE aus aufwärts und trifft ihn auf der
+;     ersten Stufe (IPfade.Herstellerdaten, EinstellungenCtrl.HerstellerdatenpfadOderVorgabe).
+Source: "{#HerstellerdatenDir}\*"; DestDir: "{app}\VDI-3805-Daten"; \
+    Flags: ignoreversion recursesubdirs createallsubdirs; \
+    Components: herstellerdaten
 
 ; Voraussetzung: nur mitnehmen, wenn sie auf diesem Rechner fehlt.
 Source: "{#AceInstaller}"; DestDir: "{tmp}"; \
@@ -253,10 +305,10 @@ Source: "{#WebView2Installer}"; DestDir: "{tmp}"; \
     Flags: deleteafterinstall; Check: not WebView2Vorhanden
 
 #if FileExists(SetupDir + "Lizenz.rtf")
-Source: "{#SetupDir}Lizenz.rtf";   DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SetupDir}Lizenz.rtf";   DestDir: "{app}"; Flags: ignoreversion; Components: programm
 #endif
 #if FileExists(SetupDir + "Liesmich.rtf")
-Source: "{#SetupDir}Liesmich.rtf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SetupDir}Liesmich.rtf"; DestDir: "{app}"; Flags: ignoreversion; Components: programm
 #endif
 
 
@@ -338,6 +390,10 @@ Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; \
 Type: files;      Name: "{app}\*.log"
 Type: files;      Name: "{app}\db_update_log.txt"
 Type: filesandordirs; Name: "{app}\Vorlage"
+; Herstellerdaten (W6-O-9): Der Deinstallierer entfernt zwar, was er selbst
+; kopiert hat — aber nicht, was der Anwender nachträglich hineingelegt hat. Der
+; Ordner gehört der Auslieferung; er geht mit ihr.
+Type: filesandordirs; Name: "{app}\VDI-3805-Daten"
 Type: dirifempty; Name: "{app}"
 
 

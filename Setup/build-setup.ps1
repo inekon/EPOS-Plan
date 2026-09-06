@@ -11,6 +11,11 @@
 
     Das Ergebnis liegt anschließend unter Setup\Ausgabe.
 
+    Geprüft wird vorher unter anderem, dass der Ordner VDI-3805-Daten in der
+    Repowurzel liegt: Er wird seit dem 06.09.2026 (Anwenderentscheid W6-O-9)
+    als vorgewählte, abwählbare Komponente "Herstellerdaten (VDI 3805, CEC)"
+    nach {app}\VDI-3805-Daten ausgeliefert - rund 186 MB unkomprimiert.
+
     Veröffentlicht wird mit "dotnet publish". Seit dem 02.09.2026 hält das
     Projekt keine COM-Referenzen mehr (Excel-Interop auf ClosedXML umgestellt),
     damit genügt "dotnet publish" — Visual Studio wird zum Bauen nicht mehr
@@ -73,6 +78,7 @@ $AusgabeDir = Join-Path $SetupDir 'Ausgabe'
 $VorlageDb  = Join-Path $SetupDir 'Vorlage\Kenndaten.accdb'
 $AceZiel    = Join-Path $SetupDir 'Voraussetzungen\AccessDatabaseEngine_X64.exe'
 $AceQuelle  = Join-Path $RepoDir  'AccessDatabaseEngine_X64.exe'
+$VdiOrdner  = Join-Path $RepoDir  'VDI-3805-Daten'            # muss zu #define HerstellerdatenDir passen
 $WvZiel     = Join-Path $SetupDir 'Voraussetzungen\MicrosoftEdgeWebview2Setup.exe'
 $WvQuelle   = Join-Path $RepoDir  'MicrosoftEdgeWebview2Setup.exe'
 
@@ -113,6 +119,24 @@ enthaelt Projektdaten aus der Entwicklung und darf nicht ausgeliefert werden.
 Erzeugung des Auslieferungsstands: siehe Konzept, Abschnitt 6.1.
 "@
 }
+
+# Herstellerdaten (VDI 3805 und die zwei CEC-Listen). Anwenderentscheid W6-O-9 vom
+# 06.09.2026: Sie werden als eigene, vorgewaehlte Komponente ausgeliefert. Fehlt der
+# Ordner, bricht schon ISCC mit #error ab - hier kommt der Abbruch frueher und mit
+# der Bezugsquelle.
+if (-not (Test-Path $VdiOrdner)) {
+    throw @"
+Herstellerdatenordner nicht gefunden: $VdiOrdner
+
+Er gehoert zum Repository und wird als Komponente "Herstellerdaten (VDI 3805, CEC)"
+nach {app}\VDI-3805-Daten ausgeliefert (Konzept 6.3, Anwenderentscheid W6-O-9).
+Ohne ihn laesst sich das Setup nicht uebersetzen.
+"@
+}
+
+$VdiMb = [math]::Round(((Get-ChildItem $VdiOrdner -Recurse -File |
+          Measure-Object Length -Sum).Sum / 1MB), 1)
+Hinweis "Herstellerdaten: $VdiMb MB in $VdiOrdner"
 
 # Voraussetzungs-Installer bei Bedarf aus der Repowurzel uebernehmen.
 if (-not (Test-Path $AceZiel)) {
