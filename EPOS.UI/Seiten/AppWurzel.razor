@@ -41,6 +41,30 @@
 
 @Kopfleiste
 
+@if (_lizenzbanner.Length > 0)
+{
+    @* DAS LIZENZBANNER (Welle iF30, Anwenderentscheid 04.09.2026).
+
+       Es steht ueber JEDER Ansicht und auf BEIDEN Plattformen - die Wurzel ist
+       der einzige Ort, an dem das geht.
+
+       ZWEI FAELLE, ZWEI LEBENSDAUERN. Der LESEMODUS bekommt ein DAUERHAFTES
+       Banner: Er ist genau der Zustand, den der Anwender beheben MUSS und sonst
+       nirgends sieht - die einzige Begruendung, die die Hausregel W16b-E-6 fuer
+       ein Dauerbanner gelten laesst. Die drei WARNSTUFEN vor dem Ablauf
+       (30/14/7 Tage, Konzept § 6) sind dagegen der „dezente Hinweis beim
+       Start": Sie verfallen nach HinweisDauer, weil die Lizenz noch traegt und
+       nichts blockiert ist. *@
+    @* Der Wirt traegt die Klasse, nicht das Banner: Eine Ansicht darf ihre EIGENEN
+       Warnbanner haben (die Projektliste hat eines), und ein Pruefstand muss die zwei
+       auseinanderhalten koennen. *@
+    <div class="epos-lizenzbanner">
+        <Warnbanner Stufe="@Bannerstufe"
+                    Text="@_lizenzbanner"
+                    Verfaellt="@Bannerfrist" />
+    </div>
+}
+
 @if (_ansicht == Seitenschluessel.Startseite && _startseite is not null)
 {
     @* DIE STARTSEITE (iU9-W16b.2). Unter Windows reicht Hauptfenster den
@@ -142,6 +166,8 @@ else
     private IReadOnlyDictionary<string, object>? _berichteKosten;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
+    private WindowsFormsApplication1.LizenzLage? _lizenz;
+    private string _lizenzbanner = "";
 
     // =====================================================================
     // Die zwei Gaben der Schale (iU9-W16c.2)
@@ -201,6 +227,48 @@ else
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, object>? BerichteKostenGaben { get; set; }
 
+    // =====================================================================
+    // Das Lizenzbanner (Welle iF30)
+    // =====================================================================
+
+    /// <summary>
+    /// Das LAGEBILD DER LIZENZ, wenn es die Huelle stellt (Windows:
+    /// <c>HauptfensterHuelle</c>). Ohne diesen Parameter fragt die Wurzel
+    /// <c>IProjektQuelle.Lizenzlage()</c> — der iOS-Weg. <c>null</c> auf beiden
+    /// Wegen heisst: kein Banner.
+    ///
+    /// <para><b>Fertig gerechnet, nicht selbst geholt</b> (Regel S-2 aus W15c):
+    /// Die Komponente kennt weder <c>LizenzManager</c> noch Token noch Zeitanker;
+    /// sie bekommt einen Satz, eine Dringlichkeit und sonst nichts.</para>
+    /// </summary>
+    [Parameter] public WindowsFormsApplication1.LizenzLage? Lizenzlage { get; set; }
+
+    /// <summary>
+    /// Wie lange ein WARNSTUFEN-Hinweis stehen bleibt (30/14/7 Tage vor Ablauf).
+    /// Das Lesemodus-Banner ist davon unberuehrt — es bleibt stehen.
+    /// </summary>
+    /// <remarks>
+    /// Der Vorgabewert ist grosszuegiger als der Selbstverfall des Vorlaeufers
+    /// <c>Form_Hinweis</c> (3 s): Hier steht ein DATUM im Text, und ein Datum
+    /// will gelesen werden.
+    /// </remarks>
+    [Parameter] public TimeSpan HinweisDauer { get; set; } = TimeSpan.FromSeconds(20);
+
+    /// <summary>Die Bannerstufe zur Dringlichkeit aus dem Kern.</summary>
+    private WarnStufe Bannerstufe => _lizenz?.Dringlichkeit switch
+    {
+        WindowsFormsApplication1.LizenzDringlichkeit.Warnung => WarnStufe.Warnung,
+        _ => WarnStufe.Hinweis
+    };
+
+    /// <summary>
+    /// Die Lebensdauer des Banners: <c>null</c> (bleibt stehen) im Lesemodus,
+    /// sonst <see cref="HinweisDauer"/>.
+    /// </summary>
+    private TimeSpan? Bannerfrist => _lizenz is not null && _lizenz.Lesemodus
+                                         ? null
+                                         : HinweisDauer;
+
     /// <summary>
     /// Die zuletzt gezeichnete Wurzel meldet sich als Navigationsziel an. Der
     /// iOS-Adapter <c>IosNavigation</c> reicht die Maskenschluessel des Kerns
@@ -211,10 +279,26 @@ else
     {
         Navigationsziel.Aktuell = this;
         if (Zustand is not null) Zustand.Geaendert += BeiZustand;
+        LizenzlageUebernehmen();
         // Die Startansicht wird ueber DENSELBEN Weg gesetzt wie jeder spaetere
         // Wechsel - sonst gaebe es zwei Stellen, an denen eine Ansicht entsteht.
         if (!Zeige(Startansicht)) _ansicht = Seitenschluessel.Projektliste;
         Laden();
+    }
+
+    /// <summary>
+    /// Holt das Lagebild der Lizenz — der Parameter der Huelle hat Vorrang, sonst
+    /// fragt die Wurzel die Projektquelle (der iOS-Weg).
+    /// </summary>
+    /// <remarks>
+    /// EINMAL beim Aufbau, nicht bei jedem Zeichnen: Der Weg dahinter liest unter
+    /// Windows die DPAPI-Ablage und auf iOS den Schluesselbund, beides synchron.
+    /// Ein Lizenzstand aendert sich in Tagen, nicht in Bildwechseln.
+    /// </remarks>
+    private void LizenzlageUebernehmen()
+    {
+        _lizenz = Lizenzlage ?? Quelle.Lizenzlage();
+        _lizenzbanner = _lizenz is null ? "" : _lizenz.Text;
     }
 
     /// <inheritdoc />

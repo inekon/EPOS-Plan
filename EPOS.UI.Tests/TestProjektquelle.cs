@@ -59,4 +59,12 @@ internal sealed class TestProjektquelle : IProjektQuelle
     public IReadOnlyDictionary<string, object>? StartseiteGaben(int idProjekt) => Startseite;
 
     public IReadOnlyDictionary<string, object>? BerichteKostenGaben(int idProjekt) => BerichteKosten;
+
+    /// <summary>
+    /// Das Lagebild der Lizenz (Welle iF30) — <c>null</c> = kein Banner, und das ist
+    /// die Vorgabe: Kein bestehender Fall soll durch die Erweiterung ein Banner bekommen.
+    /// </summary>
+    internal WindowsFormsApplication1.LizenzLage? Lizenz { get; set; }
+
+    public WindowsFormsApplication1.LizenzLage? Lizenzlage() => Lizenz;
 }
