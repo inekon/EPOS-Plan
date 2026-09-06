@@ -1996,6 +1996,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Offen: O‑H13b‑3 (Anker je Abschnitt), Anwenderfrage, ob der Berechnungsknopf auch in die Katalogeditoren soll. Teil A
 > (Katalog, Lader, KI-Wissen, Startseite, Bezüge, Bedarfsseiten) folgt. Nachweis: Kern/UI 0 Fehler, Gate grün, Referenzlauf
 > byte-gleich. Protokoll `WindowsFormsApplication1/Allgemein/Hilfe/H13b_Berechnungshilfe_Erzeuger_Protokoll.md`.
+>
+> **H13 Teil A — Hilferubrik „Berechnung": Katalog, Lader, KI-Wissen, Startseite, Bezüge und die Seiten des Ablaufs und des
+> Bedarfs, umgesetzt in `404c394`:** Der Hilfekatalog kennt die Unterrubrik `Programm Dokumentation/Berechnung/`: der Onlineabruf
+> holt Seiten zweiter Stufe von selbst (`apprefix` ist ein reiner Zeichenkettenpräfix, gemessen), `BerechnungsRueckfallErgaenzen`
+> hält die Rubrik eng gefasst am Leben, solange das Wiki sie noch nicht führt — nach F6 hätte ein erfolgreicher Abruf den
+> Startbestand sonst vollständig ersetzt und alle Knöpfe stumm geschaltet —, und `PfadNormalisieren` ebnet Leerzeichen zu
+> Unterstrichen (`Wärmequelle Erdreich`); `help_cache.json` 32 → 46 Einträge. Im Kern liest `BerechnungsHilfe` die eingebetteten
+> `.wiki`-Seiten (Kopfblock, Markup, Klartext), und `HilfeWissen` hängt je Seite einen Wissensabschnitt an — der Assistent kennt
+> jeden Rechenweg ohne Netz. Sechs Seiten (Simulationsablauf, Wärmebedarf, Brauchwasser, Prozesswärme, Strombedarf, Wärmequelle
+> Erdreich), acht Infoknöpfe in sechs Dialogen, dazu `_Index.wiki` (Rubrikstartseite mit allen 13 Seiten) und `_Bezuege.wiki`
+> (18 kopierfertige Abschnitte „Berechnung" für die allgemeinen Seiten) als Arbeitsvorlagen für den Anwender. Jede Zahl gegen den
+> Rechenkern belegt, Fundstellen im Kopfblock; die Brauchwasserseite nennt W8‑O‑5b als Grenze (Anwenderentscheid offen).
+> Offen: H13‑O‑1 (die sieben Beschreibungen der Teil-B-Seiten im Startbestand an den Satz „Was berechnet wird" angleichen).
+> Fünf Handgriffe des Anwenders im Wiki stehen in § 9 des Protokolls `H13_Berechnungshilfe_Protokoll.md`; bis dahin sind die
+> Knöpfe über den Startbestand wirksam. Nachweis: Kern/UI 0 Fehler, Gate grün, Referenzlauf byte-gleich.
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >
