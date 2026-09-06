@@ -490,3 +490,34 @@ UcBericht.lblZiel      = Bericht#zielordner
 # SpeicherKarte         der Tiefensuche - erst ein (ID-abhaengiger) Name macht
 #                       Quellprofil, Waermequelle und Betriebsmodus feldgenau
 #                       ansprechbar.
+
+# ===========================================================================
+# H13 - Rubrik Berechnung
+# ===========================================================================
+#
+# Anwenderwunsch vom 06.09.2026: "die Details der Berechnung sollten in einer
+# Separaten Hilferubrik auf der wiki sein und nicht in der allgemeine Erklaerung
+# der Funktionen. Die Erlaeuterung sollte aber aufrufbar sein aus den allgemeine
+# Erklaerungen mit Bezuegen."
+#
+# Deshalb ein ZWEITER Schluessel je Dialog neben dem Fensterschluessel, Muster
+# <Formname>.Berechnung, Ziel "Berechnung/<Seitenname>" - die Unterseiten der
+# neuen Wikirubrik "Programm Dokumentation/Berechnung/". Der Knopf sitzt im
+# Dialog am Kopf des Abschnitts, der die Rechnung parametriert; der Knopf oben
+# rechts bleibt, was er war.
+#
+# Die Quelltexte der Seiten liegen als MediaWiki-Markup im Rechenkern unter
+# EPOS.Kern/Allgemein/Hilfe/Berechnung/ (eine .wiki-Datei je Wikiseite) und sind
+# dort eingebettet. Wer eine Seite umbenennt, benennt BEIDES um.
+
+# Teil B (Erzeuger und Speicher)
+Form_Heizkessel.Berechnung       = Berechnung/Heizkessel
+Form_BHKWEing.Berechnung         = Berechnung/BHKW
+Form_WP.Berechnung               = Berechnung/Wärmepumpe
+Form_Betriebsmodus.Berechnung    = Berechnung/Wärmepumpe
+Form_PufferSp.Berechnung         = Berechnung/Pufferspeicher
+Form_PufferSp_Projekt.Berechnung = Berechnung/Pufferspeicher
+Form_SolarKollektoren.Berechnung = Berechnung/Solarthermie
+Form_Solarganglinie.Berechnung   = Berechnung/Solarthermie
+Form_PV.Berechnung               = Berechnung/Photovoltaik
+Form_Stromspeicher.Berechnung    = Berechnung/Stromspeicher

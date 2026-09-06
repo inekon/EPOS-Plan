@@ -514,6 +514,21 @@ body {
     height: var(--epos-infoknopf);
 }
 
+/* Der ZWEITE Infoknopf einer Maske: der Weg in die Wikirubrik "Berechnung"
+   (Paket H13, 06.09.2026). Er sitzt am Kopf des Abschnitts, der den Rechenweg
+   parametriert, nicht oben im Fensterkopf.
+
+   EIGENE Klasse und nicht .epos-leiste: Die Knopfleiste des Hauses ist eine
+   AUFZAEHLUNG von Aktionen, und mehrere Masken zaehlen ihre Knoepfe
+   (BetriebsmodusDialogTests: "zwei Fussknoepfe"). Ein Hilfeknopf ist keine
+   Aktion der Maske - er gehoert dem Abschnitt darunter und darf dessen
+   Knopfzahl nicht veraendern. */
+.epos-berechnungshilfe {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: calc(var(--epos-rand) / 2);
+}
+
 /* ==========================================================================
    Baustein: Kachel (Vorbild Views/Kosten/EinstiegsKarte.cs)
    ========================================================================== */

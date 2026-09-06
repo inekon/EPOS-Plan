@@ -267,6 +267,12 @@
     </Compile>
   </ItemGroup>
 
+  <!-- H13 (06.09.2026): Hilferubrik "Berechnung" - eine .wiki-Datei je Wikiseite, eingebettet fuer
+       das KI-Wissen (HilfeWissen) und als Quelle der Wikiseiten (Anwender kopiert sie ins Wiki). -->
+  <ItemGroup>
+    <EmbeddedResource Include="Allgemein\Hilfe\Berechnung\*.wiki" LogicalName="EPOS.Kern.Hilfe.Berechnung.%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <!-- ================================================================== -->
   <!-- Anzeigetexte: derselbe Katalog wie im Hauptprojekt                  -->
   <!--                                                                    -->
