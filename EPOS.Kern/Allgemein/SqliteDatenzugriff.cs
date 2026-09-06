@@ -206,9 +206,22 @@ namespace WindowsFormsApplication1
         /// <c>internal</c> statt privat, damit <see cref="DbVorgang"/> dieselbe eine
         /// Uebersetzung nutzt und nicht eine zweite Fassung davon entsteht.
         /// </summary>
+        /// <remarks>
+        /// <para><b>DIE SCHREIBNAHT (Welle iF30, Anwenderentscheid 04.09.2026).</b> Weil
+        /// jede Anweisung des Kerns hier gebaut wird - die sechs Zugriffsmethoden,
+        /// <see cref="DbVorgang"/>, <c>RecordSet</c>, <c>StilleDb</c> und die sechs
+        /// Eigenverbindungen -, ist dies die eine Stelle, an der sich der Lesemodus
+        /// durchsetzen laesst. <see cref="Schreibnaht.Pruefe"/> laesst jedes SELECT
+        /// durch und wirft bei einem Schreibversuch ohne Recht eine
+        /// <see cref="LesemodusException"/>. Neben dieser Methode entstehen genau zwei
+        /// Kommandos, und beide schreiben nicht: die PRAGMA-Zeile in
+        /// <see cref="OeffneVerbindung"/> und <c>SELECT last_insert_rowid()</c>.</para>
+        /// </remarks>
         internal static SqliteCommand ErzeugeKommando(SqliteConnection verbindung, SqliteTransaction transaktion,
                                                       string sql, DbParam[] parameter)
         {
+            Schreibnaht.Pruefe(sql);
+
             SqliteCommand cmd = verbindung.CreateCommand();
             cmd.CommandText = UebersetzeParameterzeichen(sql);
             if (transaktion != null) cmd.Transaction = transaktion;
@@ -407,6 +420,14 @@ namespace WindowsFormsApplication1
                     return true;
                 }
             }
+            catch (LesemodusException ex)
+            {
+                // Welle iF30: EIN Satz statt eines Datenbankfehlers - der Anwender soll
+                // lesen, was los ist, und kein SQL sehen. Der Rueckgabewert bleibt der des
+                // Fehlerfalls; fuer den Aufrufer heisst Lesemodus "nicht gespeichert".
+                LesemodusMelden(ex);
+                return false;
+            }
             catch (Exception ex)
             {
                 DataRepository.FehlerMelden("Datenbankfehler: " + ex.Message + "\n\nAnweisung: " + Kurz(sql));
@@ -425,6 +446,11 @@ namespace WindowsFormsApplication1
                     // ExecuteNonQuery liefert die Anzahl der betroffenen Datensätze (int)
                     return cmd.ExecuteNonQuery();
                 }
+            }
+            catch (LesemodusException ex)
+            {
+                LesemodusMelden(ex);
+                return -1;
             }
             catch (Exception ex)
             {
@@ -455,6 +481,11 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
+            catch (LesemodusException ex)
+            {
+                LesemodusMelden(ex);
+                return 0;
+            }
             catch (Exception ex)
             {
                 DataRepository.FehlerMelden("Datenbankfehler (NonQuery): " + ex.Message + "\n\nAnweisung: " + Kurz(insertSql));
@@ -478,12 +509,33 @@ namespace WindowsFormsApplication1
                     return result;
                 }
             }
+            catch (LesemodusException ex)
+            {
+                // ExecuteScalar traegt im Bestand auch SCHREIBENDE Anweisungen
+                // (PufferSpCtrl.StillProbe) - deshalb steht die Klammer auch hier.
+                LesemodusMelden(ex);
+                return null;
+            }
             catch (Exception ex)
             {
                 DataRepository.FehlerMelden("Datenbankfehler (Scalar): " + ex.Message +
                                    DataRepository.KurzSql(sql));
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Meldet einen abgewiesenen Schreibversuch (Welle iF30) — EIN fertiger Satz aus
+        /// <c>MyResource</c> über denselben Weg wie jeder Datenbankfehler, also als Dialog
+        /// in der Bedienung und als Protokollzeile im Engine-Modus. Die Anweisung geht
+        /// ausschließlich auf die Konsole; im Dialog hat sie nichts zu suchen.
+        /// </summary>
+        private static void LesemodusMelden(LesemodusException ex)
+        {
+            try { Console.WriteLine("Schreibversuch im Lesemodus abgewiesen: " + ex.Anweisung); }
+            catch (Exception) { }
+
+            DataRepository.FehlerMelden(ex.Message);
         }
 
 
