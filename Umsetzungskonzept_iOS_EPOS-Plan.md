@@ -2220,6 +2220,19 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `.epos-raster-huelle`. Nachweis: 42 Kern-Fälle gegen `pragma table_info` der Testdatenbank (keine vergessene, keine
 > erfundene Spalte, Belegpflicht für jede gerechnete) und 17 bunit-Fälle; Kern 1 344, UI 2 721 grün in beiden
 > Sprachen, SQL-Prüfer 0 Fundstellen, Rechenweg unberührt. Acht Abnahmepunkte A‑W14a‑E‑8 im W14a-Protokoll.
+>
+> **Anwenderentscheid W14a‑O‑1 vom 06.09.2026 (Empfehlung), umgesetzt in `60db6ff`:** `Tab_WP_STAMM.Modulkosten` steht
+> im Wärmepumpen-Stammdialog wieder da — als **Lesewert** im Formularraster mit „€" dahinter und einer Herleitungszeile
+> „aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt", bei fehlendem Wert „–" und „kein
+> Planwert aus dem Herstellerimport". **Ä19 bleibt gewahrt:** kein Eingabefeld, kein Schreibweg, kein gesperrtes Feld;
+> der Wert wird wie bisher nur durchgereicht, Rechenweg und SQL sind unberührt. Die Einheit ist ein Betrag **je Gerät**
+> (`TechnikPlanwertCtrl`, Basis „Modulpreis" unverändert — anders als PV und Stromspeicher), Beschriftung und Ziffern
+> sind wortgleich zum Aufklapper der Parameterübersicht. **Dabei aufgefallen und offen als W14a‑O‑2:** Kein Importweg
+> schreibt diese Spalte (`KatalogImportSatz.NachStamm` setzt sie nie, `UpdateImport` lässt sie stehen) — für ein neu
+> importiertes Gerät bleibt sie dauerhaft 0, und der beschlossene Wortlaut „aus dem Herstellerimport" beschreibt einen
+> Weg, den es nicht gibt; drei Wege mit Empfehlung (a: Wortlaut „aus dem Datenbestand") stehen im W14a-Protokoll,
+> Anwenderentscheid. Nachweis: UI 2 731, Kern 1 344 grün in beiden Sprachen (Basis des Agenten), Designer „abweichend
+> 0", SQL-Prüfer 0 Fundstellen, Gate grün, Referenzlauf byte-gleich; Abnahmepunkt A‑W14a‑E‑8‑9.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
