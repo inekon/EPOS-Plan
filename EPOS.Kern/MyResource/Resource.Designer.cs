@@ -62,6 +62,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -24163,6 +24164,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PAN_MSG_LESEFEHLER {
             get {
                 return ResourceManager.GetString("PAN_MSG_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Parameter und ihre Verwendung anzeigen ähnelt.
+        /// </summary>
+        public static string PARV_AUFKLAPPER {
+            get {
+                return ResourceManager.GetString("PARV_AUFKLAPPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewicht: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_GEWICHT {
+            get {
+                return ResourceManager.GetString("PARV_LBL_GEWICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_HOEHE {
+            get {
+                return ResourceManager.GetString("PARV_LBL_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. therm. Leistung: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_MAXPTHERM {
+            get {
+                return ResourceManager.GetString("PARV_LBL_MAXPTHERM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungskatalog: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_READONLY {
+            get {
+                return ResourceManager.GetString("PARV_LBL_READONLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter ähnelt.
+        /// </summary>
+        public static string PARV_SPALTE_PARAMETER {
+            get {
+                return ResourceManager.GetString("PARV_SPALTE_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung ähnelt.
+        /// </summary>
+        public static string PARV_SPALTE_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("PARV_SPALTE_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string PARV_SPALTE_WERT {
+            get {
+                return ResourceManager.GetString("PARV_SPALTE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht ähnelt.
+        /// </summary>
+        public static string PARV_VERW_BERICHT {
+            get {
+                return ResourceManager.GetString("PARV_VERW_BERICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Anzeige ähnelt.
+        /// </summary>
+        public static string PARV_VERW_DIALOG {
+            get {
+                return ResourceManager.GetString("PARV_VERW_DIALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht verwendet ähnelt.
+        /// </summary>
+        public static string PARV_VERW_KEINE {
+            get {
+                return ResourceManager.GetString("PARV_VERW_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string PARV_VERW_SIMULATION {
+            get {
+                return ResourceManager.GetString("PARV_VERW_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit ähnelt.
+        /// </summary>
+        public static string PARV_VERW_WIRTSCHAFT {
+            get {
+                return ResourceManager.GetString("PARV_VERW_WIRTSCHAFT", resourceCulture);
             }
         }
         
