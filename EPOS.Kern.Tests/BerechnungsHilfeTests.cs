@@ -27,6 +27,17 @@ namespace EPOS.Kern.Tests
     /// <b>Teil A</b>; die sieben Erzeugerseiten aus Teil B ziehen im eigenen Zweig nach,
     /// und erst nach der Zusammenführung gilt die Prüfung für alle dreizehn.</para>
     ///
+    /// <para><b>Fassung 3 (06.09.2026).</b> Der Anwender wünschte die Formeln „mit
+    /// mathematischen Zeichen … wie LaTeX" und die Definition jeder Variablen „unter der
+    /// verwendeten Formel"; dazu lässt er die <b>Math-Erweiterung</b> im Wiki
+    /// installieren. Damit dreht sich der Riegel der Fassung 2 um: <c>&lt;math&gt;</c>
+    /// ist nicht mehr verboten, sondern die Bauform — jede Anzeige-Gleichung steht als
+    /// <c>: &lt;math&gt;\displaystyle …&lt;/math&gt;  (n)</c>, und unmittelbar darunter
+    /// steht je Zeichen eine Legendezeile <c>:: &lt;math&gt;…&lt;/math&gt; – Bedeutung
+    /// [Einheit]</c>. Geblieben ist der Gedanke des Riegels: Ein Befehl außerhalb der
+    /// vereinbarten LaTeX-Teilmenge fällt hier auf, denn WikiTexVC weist ihn ab und der
+    /// Leser sähe eine rote Fehlermeldung statt einer Formel.</para>
+    ///
     /// <para>Dazu die zwei Anschlüsse: Dateien mit führendem Unterstrich sind KEINE
     /// Wikiseiten (<c>_Index.wiki</c> ist die Rubrik-Startseite, <c>_Bezuege.wiki</c> die
     /// Arbeitsvorlage für den Anwender), und jede echte Seite erreicht das Wissen des
@@ -68,16 +79,63 @@ namespace EPOS.Kern.Tests
         };
 
         /// <summary>
-        /// Eine Anzeige-Formel: eingerückte Zeile, in <c>&lt;big&gt;</c> gesetzt, mit
-        /// der laufenden Nummer am Zeilenende.
+        /// Eine Anzeige-Gleichung: eingerückte Zeile mit der laufenden Nummer am
+        /// Zeilenende, gesetzt in <c>&lt;math&gt;</c> (Fassung 3) ODER in
+        /// <c>&lt;big&gt;</c> (Fassung 2).
         /// </summary>
+        /// <remarks>
+        /// Das Oder ist ein Übergangszustand: Teil A stellt seine sechs Seiten um,
+        /// Teil B seine sieben im eigenen Zweig. Bis beide zusammengeführt sind, liegen
+        /// beide Formen im selben Ordner, und ein Wächter, der nur eine kennte, fiele
+        /// rot aus, ohne dass jemand einen Fehler gemacht hätte.
+        /// </remarks>
+        // TODO Zusammenführung Fassung 3: auf "<math>" allein verengen.
         private static readonly Regex Anzeigeformel =
-            new(@"^:\s*<big>.+</big>(?:\s|&nbsp;)*\(\d+\)\s*$",
+            new(@"^:\s*(?:<math>.+</math>|<big>.+</big>)(?:\s|&nbsp;)*\(\d+\)\s*$",
                 RegexOptions.Multiline | RegexOptions.Compiled);
+
+        /// <summary>Eine Anzeige-Gleichung der Fassung 3 — LaTeX in <c>&lt;math&gt;</c>.</summary>
+        private static readonly Regex Anzeigegleichung =
+            new(@"^:\s*<math>.+</math>(?:\s|&nbsp;)*\(\d+\)\s*$",
+                RegexOptions.Multiline | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Eine Legendezeile der Fassung 3: doppelt eingerückt, beginnt mit dem
+        /// Zeichen, das sie erklärt.
+        /// </summary>
+        private static readonly Regex Legendezeile =
+            new(@"^::\s*<math>", RegexOptions.Multiline | RegexOptions.Compiled);
 
         /// <summary>Ein LaTeX-Befehl — <c>\frac</c>, <c>\sum</c>, <c>\cdot</c> …</summary>
         private static readonly Regex LatexBefehl =
-            new(@"\\[A-Za-z]+", RegexOptions.Compiled);
+            new(@"\\([A-Za-z]+)", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Die LaTeX-Teilmenge der Rubrik (Fassung 3). Sie ist bewusst klein: Nur was
+        /// WikiTexVC — der Prüfer der Math-Erweiterung — sicher kennt, darf in eine
+        /// Seite. Ein Befehl außerhalb dieser Liste erschiene dem Leser als rote
+        /// Fehlerzeile mitten im Rechenweg.
+        /// </summary>
+        /// <remarks>
+        /// Die ersten fünf Zeilen sind die Liste des Auftrags. Die sechste hält die
+        /// sechs Zeichen fest, die die Rechenwege dieses Teils führen und für die es
+        /// kein Ersatzzeichen gibt: <c>\pi</c> (Kreisfrequenz des Jahresgangs, Kusuda),
+        /// <c>\omega</c> (dieselbe, als Symbol der Parametertabelle), <c>\kappa</c>
+        /// (Kaltwasserfaktor der Brauchwasser-Monatswerte), <c>\Psi</c>
+        /// (Wärmebrückenverlustkoeffizient), <c>\ell</c> (Sondenmeter und
+        /// Anschlusslängen) und <c>\dot</c> (der Massenstrom der Zeichentabelle auf
+        /// der Rubrikstartseite). Alle sechs sind texvc-Kernbefehle.
+        /// </remarks>
+        private static readonly HashSet<string> ErlaubteBefehle = new(StringComparer.Ordinal)
+        {
+            "frac", "sqrt", "sum", "int", "prod", "min", "max", "cdot",
+            "left", "right", "lvert", "rvert",
+            "mathrm", "text", "operatorname", "displaystyle", "begin", "end", "quad",
+            "le", "ge", "ne", "approx", "pm", "to", "infty", "in", "dots",
+            "eta", "vartheta", "rho", "lambda", "alpha", "beta", "gamma",
+            "varepsilon", "tau", "varphi", "Delta", "Sigma",
+            "pi", "omega", "kappa", "Psi", "ell", "dot"
+        };
 
         /// <summary>Die Kopfzeile der Parametertabelle.</summary>
         private const string KOPF_PARAMETER = "! Symbol !! Bedeutung !! Einheit !! Herkunft";
@@ -105,6 +163,19 @@ namespace EPOS.Kern.Tests
             "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
             "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
             "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
+        };
+
+        /// <summary>
+        /// Die SECHS Seiten, die dieses Paket (Teil A der Fassung 3) auf LaTeX
+        /// umgestellt hat. Nur für sie gelten die Fassung-3-Fälle — die sieben
+        /// Erzeugerseiten aus Teil B liegen im selben Ordner noch in der Fassung 2 und
+        /// fielen sonst rot aus, ohne dass jemand einen Fehler gemacht hätte.
+        /// </summary>
+        // TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen
+        public static readonly string[] SeitenDiesesTeils =
+        {
+            "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
+            "Strombedarf", "Wärmequelle Erdreich"
         };
 
         /// <summary>
@@ -275,26 +346,92 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Fassung 2:</b> Die Formeln stehen in Unicode-Notation, nicht in LaTeX. Diese
-        /// Wikiinstallation hat KEINE Math-Erweiterung (gemessen am 06.09.2026): Ein
-        /// <c>math</c>-Block und jeder Backslash-Befehl erschienen dem Leser als Klartext
-        /// mitten im Satz.
+        /// <b>Fassung 3:</b> Jeder LaTeX-Befehl einer Seite steht in der vereinbarten
+        /// Teilmenge. Die Fassung 2 verbot Backslash-Befehle ganz, weil das Wiki keine
+        /// Math-Erweiterung hatte; seit der Anwender sie installieren lässt, ist nicht
+        /// mehr der Befehl das Problem, sondern der UNBEKANNTE Befehl: WikiTexVC weist
+        /// ihn ab, und an der Stelle der Formel steht eine rote Fehlerzeile.
         /// </summary>
+        /// <remarks>
+        /// Der Fall gilt für alle dreizehn Seiten und ist für die sieben Seiten aus
+        /// Teil B trivial erfüllt — sie führen (noch) gar keinen Befehl.
+        /// </remarks>
         [Theory]
         [MemberData(nameof(AlleSeitenDerRubrik))]
-        public void Jede_Seite_kommt_ohne_LaTeX_aus(string seitenname)
+        public void Jede_Seite_haelt_sich_an_die_LaTeX_Teilmenge(string seitenname)
         {
             BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
             Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
 
-            Assert.True(seite!.Markup.IndexOf("<math", StringComparison.OrdinalIgnoreCase) < 0,
-                seitenname + ": Die Seite setzt eine Formel in <math> — das Wiki hat keine " +
-                "Math-Erweiterung und zeigte die Auszeichnung als Klartext.");
+            var fremd = LatexBefehl.Matches(seite!.Markup)
+                .Select(m => m.Groups[1].Value)
+                .Where(b => !ErlaubteBefehle.Contains(b))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
 
-            Match befehl = LatexBefehl.Match(seite.Markup);
-            Assert.False(befehl.Success,
-                seitenname + ": Die Seite enthält den LaTeX-Befehl '" + befehl.Value +
-                "'. Formeln stehen in Unicode-Notation (·, Σ, Δ, √, ≤, η, ϑ …).");
+            Assert.True(fremd.Count == 0,
+                seitenname + ": Befehl(e) außerhalb der LaTeX-Teilmenge der Rubrik: \\" +
+                string.Join(", \\", fremd) + ". Erlaubt ist nur, was WikiTexVC sicher " +
+                "kennt — die Liste steht in " + nameof(ErlaubteBefehle) + ".");
+        }
+
+        /// <summary>
+        /// <b>Fassung 3:</b> Die Seiten DIESES Teils setzen jede Anzeige-Gleichung als
+        /// LaTeX in <c>&lt;math&gt;</c> und stellen ihr die Legende unmittelbar darunter.
+        /// Genau das war der Anwenderwunsch: „Die Definitionen der Parameter/Variablen …
+        /// sollte unter der verwendeten Formel beschrieben werden."
+        /// </summary>
+        /// <remarks>
+        /// Eine Gleichung ohne Legende ist der Rückfall, gegen den dieser Fall steht:
+        /// Sie sieht gesetzt aus und lässt den Leser trotzdem mit unerklärten Zeichen
+        /// zurück — und dann springt er zur Symboltabelle zurück, statt zu lesen.
+        /// </remarks>
+        [Theory]
+        [MemberData(nameof(AlleSeitenDiesesTeils))]
+        public void Jede_Seite_dieses_Teils_setzt_die_Gleichungen_in_LaTeX(string seitenname)
+        {
+            BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
+            Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
+
+            string[] zeilen = seite!.Markup.Replace("\r\n", "\n").Split('\n');
+
+            Assert.DoesNotContain("<big>", seite.Markup, StringComparison.Ordinal);
+
+            var nummern = new List<int>();
+
+            for (int i = 0; i < zeilen.Length; i++)
+            {
+                Match gleichung = Anzeigegleichung.Match(zeilen[i]);
+                if (!gleichung.Success) continue;
+
+                nummern.Add(int.Parse(Regex.Match(zeilen[i], @"\((\d+)\)\s*$").Groups[1].Value,
+                                      System.Globalization.CultureInfo.InvariantCulture));
+
+                string darunter = i + 1 < zeilen.Length ? zeilen[i + 1] : "";
+                Assert.True(Legendezeile.IsMatch(darunter),
+                    seitenname + ": auf die Zeile '" + zeilen[i].Trim() + "' folgt keine " +
+                    "Legendezeile. Muster: ':: <math>P_{\\mathrm{el}}</math> – elektrische " +
+                    "Nennleistung [kW]'.");
+            }
+
+            Assert.True(nummern.Count >= 1,
+                seitenname + ": keine Anzeige-Gleichung in <math> gefunden.");
+            Assert.Equal(Enumerable.Range(1, nummern.Count).ToList(), nummern);
+        }
+
+        /// <summary>
+        /// <b>Fassung 3:</b> Der Kopfblock der Seiten dieses Teils nennt die Fassung.
+        /// Ohne diesen Zusatz stünde im Wiki eine Seite mit LaTeX-Formeln und einem
+        /// Stand, der genauso gut die Unicode-Fassung meinen könnte.
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(AlleSeitenDiesesTeils))]
+        public void Der_Stand_dieses_Teils_nennt_die_Fassung_3(string seitenname)
+        {
+            BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
+            Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
+
+            Assert.Equal("2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden)", seite!.Stand);
         }
 
         /// <summary>
@@ -302,6 +439,14 @@ namespace EPOS.Kern.Tests
         /// Ohne sie wäre der Abschnitt „Formelzeichen und Parameter" eine Zeichenliste ohne
         /// Formel, auf die er sich beziehen könnte.
         /// </summary>
+        /// <remarks>
+        /// Der Fall nimmt beide Formen an — <c>&lt;math&gt;</c> der Fassung 3 wie
+        /// <c>&lt;big&gt;</c> der Fassung 2 —, weil bis zur Zusammenführung beide im
+        /// selben Ordner liegen. Dass die sechs Seiten dieses Teils WIRKLICH
+        /// <c>&lt;math&gt;</c> führen, hält
+        /// <see cref="Jede_Seite_dieses_Teils_setzt_die_Gleichungen_in_LaTeX"/> fest.
+        /// </remarks>
+        // TODO Zusammenführung Fassung 3: das Oder in Anzeigeformel auflösen
         [Theory]
         [MemberData(nameof(AlleSeitenDerRubrik))]
         public void Jede_Seite_traegt_nummerierte_Anzeigeformeln(string seitenname)
@@ -313,7 +458,8 @@ namespace EPOS.Kern.Tests
 
             Assert.True(formeln.Count >= 1,
                 seitenname + ": keine Anzeige-Formel gefunden. Muster einer solchen Zeile: " +
-                "': <big>P<sub>AC</sub>(t) = min( … )</big>  (3)'.");
+                "': <math>\\displaystyle P_{\\mathrm{AC}}(t) = \\min( … )</math>  (3)' " +
+                "(Fassung 3) oder ': <big>P<sub>AC</sub>(t) = min( … )</big>  (3)' (Fassung 2).");
 
             // Die Nummern laufen je Seite von 1 an und ohne Lücke - sonst verweist der
             // Text auf eine Gleichung, die es nicht gibt.
@@ -349,6 +495,15 @@ namespace EPOS.Kern.Tests
         {
             var daten = new TheoryData<string>();
             foreach (string name in SeitenDerRubrik) daten.Add(name);
+            return daten;
+        }
+
+        /// <summary>Die sechs Seiten dieses Teils als Theoriedaten (Fassung 3).</summary>
+        // TODO Zusammenführung Fassung 3: auf AlleSeitenDerRubrik umstellen
+        public static TheoryData<string> AlleSeitenDiesesTeils()
+        {
+            var daten = new TheoryData<string>();
+            foreach (string name in SeitenDiesesTeils) daten.Add(name);
             return daten;
         }
 
@@ -416,7 +571,118 @@ namespace EPOS.Kern.Tests
                 Assert.DoesNotContain("<sub>", seite.Klartext);
                 Assert.DoesNotContain("<sup>", seite.Klartext);
                 Assert.DoesNotContain("<big>", seite.Klartext);
+
+                // Fassung 3: dasselbe für die LaTeX-Formeln. Ein durchgereichtes
+                // "\frac{a}{b}" wäre für den Assistenten kein Bruch, sondern Text.
+                Assert.DoesNotContain("<math>", seite.Klartext);
+                Assert.DoesNotContain("\\frac", seite.Klartext);
+                Assert.DoesNotContain("\\displaystyle", seite.Klartext);
+                Assert.DoesNotContain("\\mathrm", seite.Klartext);
             }
+        }
+
+        // =====================================================================
+        //  Klartext — die LaTeX-Umsetzung der Fassung 3
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Fassung 3 — der Bruch.</b> Der Assistent hat keinen Formelsetzer; ein
+        /// <c>\frac</c> muss deshalb in eine Zeile übergehen, die sich vorlesen lässt.
+        /// Der Beispielfall ist der aus dem Anwenderwunsch (Stromkennzahl des BHKW).
+        /// </summary>
+        [Fact]
+        public void Der_Klartext_macht_aus_einem_Bruch_eine_Zeile()
+        {
+            string klartext = BerechnungsHilfe.AlsKlartext(
+                ": <math>\\displaystyle \\mathrm{SKZ} = \\frac{P_{\\mathrm{el}}}{P_{\\mathrm{th}}}</math> &nbsp;&nbsp;(2)\n");
+
+            Assert.Contains("SKZ = (P_el)/(P_th)", klartext);
+            Assert.Contains("(2)", klartext);
+            Assert.DoesNotContain("\\", klartext);
+            Assert.DoesNotContain("{", klartext);
+        }
+
+        /// <summary>
+        /// <b>Fassung 3 — die Summe mit ihren Grenzen.</b> Ohne Umsetzung stünde im
+        /// Prompt <c>\sum_{t=1}^{8\,760}</c>; der Anwender fragte danach mit „Σ".
+        /// </summary>
+        [Fact]
+        public void Der_Klartext_macht_aus_einer_Summe_ihr_Zeichen()
+        {
+            string klartext = BerechnungsHilfe.AlsKlartext(
+                ": <math>\\displaystyle Q_{\\mathrm{a}} = \\frac{\\sum_{t=1}^{8\\,760} Q(t)}{1\\,000}</math> &nbsp;&nbsp;(23)\n");
+
+            Assert.Contains("Q_a = (Σ_t=1^8760 Q(t))/(1000)", klartext);
+            Assert.DoesNotContain("sum", klartext);
+        }
+
+        /// <summary>
+        /// <b>Fassung 3 — Index und Hochzahl.</b> Die Klammern von <c>_{…}</c> und
+        /// <c>^{…}</c> fallen weg, der mehrteilige Index bleibt zusammen. Ohne diesen
+        /// Schritt läse der Assistent „PAC,nenn" statt „P_AC,nenn".
+        /// </summary>
+        [Fact]
+        public void Der_Klartext_loest_Index_und_Hochzahl_auf()
+        {
+            string klartext = BerechnungsHilfe.AlsKlartext(
+                ": <math>\\displaystyle P_{\\mathrm{AC,nenn}} = A \\cdot 10^{6} \\cdot \\sqrt{2}</math> &nbsp;&nbsp;(1)\n" +
+                ":: <math>P_{\\mathrm{AC,nenn}}</math> – Nennleistung des Wechselrichters [kW]\n");
+
+            Assert.Contains("P_AC,nenn = A · 10^6 · √(2)", klartext);
+            Assert.Contains("P_AC,nenn – Nennleistung des Wechselrichters [kW]", klartext);
+        }
+
+        /// <summary>
+        /// <b>Fassung 3 — die Fallunterscheidung.</b> Eine <c>cases</c>-Umgebung ist im
+        /// Wiki eine geschweifte Klammer über zwei Zeilen; im Prompt wird daraus ein
+        /// Satz, den der Assistent wiedergeben kann.
+        /// </summary>
+        [Fact]
+        public void Der_Klartext_macht_aus_einer_Fallunterscheidung_einen_Satz()
+        {
+            string klartext = BerechnungsHilfe.AlsKlartext(
+                ": <math>\\displaystyle f = \\begin{cases} 1 + 0{,}025 \\cdot \\vartheta_{\\mathrm{a}}(d) & " +
+                "\\vartheta_{\\mathrm{a}}(d) < 0 \\\\ 1 & \\vartheta_{\\mathrm{a}}(d) \\ge 0 \\end{cases}</math> &nbsp;&nbsp;(5)\n");
+
+            Assert.Contains("f = { 1 + 0,025 · ϑ_a(d) wenn ϑ_a(d) < 0; 1 wenn ϑ_a(d) ≥ 0 }", klartext);
+            Assert.DoesNotContain("cases", klartext);
+        }
+
+        /// <summary>
+        /// <b>Fassung 3 — die griechischen Befehle.</b> Sie werden zu ihrem Zeichen;
+        /// der Anwender findet in der Antwort dasselbe η wieder, das auf der Wikiseite
+        /// steht. Geprüft ist auch, dass <c>\in</c> nicht in <c>\infty</c> hineingreift.
+        /// </summary>
+        [Fact]
+        public void Der_Klartext_setzt_griechische_Befehle_in_Zeichen_um()
+        {
+            string klartext = BerechnungsHilfe.AlsKlartext(
+                ": <math>\\displaystyle \\eta_{\\mathrm{a}} \\le 1, \\quad \\Delta\\vartheta = 50, \\quad " +
+                "\\lambda \\approx \\rho \\cdot \\kappa \\cdot \\omega \\cdot \\pi, \\quad \\ell \\ne \\infty, \\quad " +
+                "\\tau \\in \\{1, \\dots, n\\}, \\quad \\Psi \\pm \\varepsilon \\to \\varphi</math> &nbsp;&nbsp;(1)\n");
+
+            Assert.Contains("η_a ≤ 1", klartext);
+            Assert.Contains("Δϑ = 50", klartext);
+            Assert.Contains("λ ≈ ρ · κ · ω · π", klartext);
+            Assert.Contains("ℓ ≠ ∞", klartext);
+            Assert.Contains("τ ∈ 1, …, n", klartext);
+            Assert.Contains("Ψ ± ε → φ", klartext);
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe zur LaTeX-Umsetzung:</b> Sie greift die Auszeichnung und lässt
+        /// den Satz in Ruhe. Ein deutscher Text ohne Formel geht unverändert durch, und
+        /// eine Legendezeile behält ihre Bedeutung samt Einheit.
+        /// </summary>
+        [Fact]
+        public void Die_LaTeX_Umsetzung_laesst_den_Satz_in_Ruhe()
+        {
+            string klartext = BerechnungsHilfe.AlsKlartext(
+                "Der Faktor 0,83 gilt fuer Wand und Waermebruecken.\n" +
+                ":: <math>\\eta</math> – Jahresnutzungsgrad der Bestandsanlage [–]\n");
+
+            Assert.Contains("Der Faktor 0,83 gilt fuer Wand und Waermebruecken.", klartext);
+            Assert.Contains("η – Jahresnutzungsgrad der Bestandsanlage [–]", klartext);
         }
 
         /// <summary>

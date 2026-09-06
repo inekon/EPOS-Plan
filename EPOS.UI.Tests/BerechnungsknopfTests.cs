@@ -42,6 +42,13 @@ namespace EPOS.UI.Tests;
 /// Abschnitt „Formelzeichen und Parameter" mit beiden Tabellen und mindestens eine
 /// nummerierte Anzeige-Formel trägt — und dass die Rubrikstartseite die Schreibweise
 /// erklärt, die alle 13 Seiten teilen.</para>
+///
+/// <para><b>Fassung 3 (06.09.2026).</b> Der Anwender lässt die Math-Erweiterung
+/// installieren und wünschte die Formeln „wie LaTeX" samt der Definition jeder
+/// Variablen „unter der verwendeten Formel". Für die sechs Seiten dieses Teils gilt
+/// deshalb zusätzlich: jede Anzeige-Gleichung als <c>&lt;math&gt;</c> mit ihrer
+/// Legende darunter. Der LaTeX-Riegel der Fassung 2 wird dabei zur ALLOWLIST — nicht
+/// mehr „kein Backslash", sondern „nur was WikiTexVC kennt".</para>
 /// </summary>
 public sealed class BerechnungsknopfTests
 {
@@ -54,14 +61,43 @@ public sealed class BerechnungsknopfTests
         new(@"^\s*([A-Za-z0-9_.]+)\s*=\s*(\S.*?)\s*$", RegexOptions.Compiled);
 
     /// <summary>
-    /// Eine Anzeige-Formel der Fassung 2: eingerückte Zeile, in <c>&lt;big&gt;</c>
-    /// gesetzt, mit der laufenden Nummer am Zeilenende.
+    /// Eine Anzeige-Formel: eingerückte Zeile mit der laufenden Nummer am Zeilenende,
+    /// gesetzt in <c>&lt;math&gt;</c> (Fassung 3) ODER in <c>&lt;big&gt;</c> (Fassung 2).
+    /// Bis beide Teile zusammengeführt sind, liegen beide Formen im selben Ordner.
     /// </summary>
+    // TODO Zusammenführung Fassung 3: auf "<math>" allein verengen.
     private static readonly Regex Anzeigeformel =
-        new(@"^:\s*<big>.+</big>(?:\s|&nbsp;)*\(\d+\)\s*$", RegexOptions.Multiline | RegexOptions.Compiled);
+        new(@"^:\s*(?:<math>.+</math>|<big>.+</big>)(?:\s|&nbsp;)*\(\d+\)\s*$",
+            RegexOptions.Multiline | RegexOptions.Compiled);
+
+    /// <summary>Eine Anzeige-Gleichung der Fassung 3 — LaTeX in <c>&lt;math&gt;</c>.</summary>
+    private static readonly Regex Anzeigegleichung =
+        new(@"^:\s*<math>.+</math>(?:\s|&nbsp;)*\(\d+\)\s*$",
+            RegexOptions.Multiline | RegexOptions.Compiled);
+
+    /// <summary>Eine Legendezeile der Fassung 3 — doppelt eingerückt, Zeichen zuerst.</summary>
+    private static readonly Regex Legendezeile =
+        new(@"^::\s*<math>", RegexOptions.Multiline | RegexOptions.Compiled);
 
     /// <summary>Ein LaTeX-Befehl — <c>\frac</c>, <c>\sum</c>, <c>\cdot</c> …</summary>
-    private static readonly Regex LatexBefehl = new(@"\\[A-Za-z]+", RegexOptions.Compiled);
+    private static readonly Regex LatexBefehl = new(@"\\([A-Za-z]+)", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Die LaTeX-Teilmenge der Rubrik (Fassung 3) — nur was WikiTexVC sicher kennt.
+    /// Sie steht wortgleich in <c>EPOS.Kern.Tests/BerechnungsHilfeTests.cs</c>; die
+    /// zwei Wächter sehen dieselbe Seite von zwei Seiten (Markup im Kern, Datei im
+    /// Arbeitsbaum) und dürfen sich dabei nicht widersprechen.
+    /// </summary>
+    private static readonly HashSet<string> ErlaubteBefehle = new(StringComparer.Ordinal)
+    {
+        "frac", "sqrt", "sum", "int", "prod", "min", "max", "cdot",
+        "left", "right", "lvert", "rvert",
+        "mathrm", "text", "operatorname", "displaystyle", "begin", "end", "quad",
+        "le", "ge", "ne", "approx", "pm", "to", "infty", "in", "dots",
+        "eta", "vartheta", "rho", "lambda", "alpha", "beta", "gamma",
+        "varepsilon", "tau", "varphi", "Delta", "Sigma",
+        "pi", "omega", "kappa", "Psi", "ell", "dot"
+    };
 
     /// <summary>
     /// Alle dreizehn Seiten der Rubrik — seit der Zusammenführung von Teil A und Teil B
@@ -72,6 +108,17 @@ public sealed class BerechnungsknopfTests
         "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
         "Strombedarf", "Wärmequelle Erdreich", "Heizkessel", "BHKW", "Wärmepumpe",
         "Pufferspeicher", "Solarthermie", "Photovoltaik", "Stromspeicher"
+    };
+
+    /// <summary>
+    /// Die SECHS Seiten, die Teil A der Fassung 3 auf LaTeX umgestellt hat. Nur für sie
+    /// gilt die Bauform „Gleichung in <c>&lt;math&gt;</c> mit Legende darunter".
+    /// </summary>
+    // TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen
+    private static readonly string[] SeitenDiesesTeils =
+    {
+        "Simulationsablauf", "Wärmebedarf", "Brauchwasser", "Prozesswärme",
+        "Strombedarf", "Wärmequelle Erdreich"
     };
 
     // =====================================================================
@@ -234,22 +281,64 @@ public sealed class BerechnungsknopfTests
 
         Assert.True(Anzeigeformel.IsMatch(markup),
             seitenname + ": keine nummerierte Anzeige-Formel. Muster: " +
-            "': <big>Q<sub>a</sub> = ( Σ … ) / 1 000</big>  (4)'.");
+            "': <math>\\displaystyle Q_{\\mathrm{a}} = \\frac{\\sum … }{1\\,000}</math>  (4)'.");
 
-        Assert.True(markup.IndexOf("<math", StringComparison.OrdinalIgnoreCase) < 0,
-            seitenname + ": <math> im Markup — das Wiki hat keine Math-Erweiterung.");
+        var fremd = LatexBefehl.Matches(markup)
+            .Select(m => m.Groups[1].Value)
+            .Where(b => !ErlaubteBefehle.Contains(b))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
 
-        Match befehl = LatexBefehl.Match(markup);
-        Assert.False(befehl.Success,
-            seitenname + ": LaTeX-Befehl '" + befehl.Value + "' im Markup. Formeln stehen " +
-            "in Unicode-Notation (·, Σ, Δ, √, ≤, η, ϑ …).");
+        Assert.True(fremd.Count == 0,
+            seitenname + ": Befehl(e) außerhalb der LaTeX-Teilmenge der Rubrik: \\" +
+            string.Join(", \\", fremd) + ". WikiTexVC wiese sie ab, und der Anwender sähe " +
+            "an der Stelle der Formel eine rote Fehlerzeile.");
     }
 
     /// <summary>
-    /// Die Rubrikstartseite erklärt die Schreibweise, die alle 13 Seiten teilen: warum
-    /// keine LaTeX-Formeln, wie eine Anzeige-Formel aussieht, und die gemeinsame
-    /// Zeichentabelle. Ohne diesen Abschnitt stünde auf jeder Seite eine Notation, die
-    /// nirgends erklärt ist.
+    /// <b>Fassung 3:</b> Die Seiten, die dieses Paket umgestellt hat, setzen jede
+    /// Anzeige-Gleichung als LaTeX in <c>&lt;math&gt;</c> und tragen unmittelbar
+    /// darunter ihre Legende. Der Knopf führt damit auf eine Seite, auf der jedes
+    /// Zeichen erklärt ist, ohne dass der Leser zur Symboltabelle zurückspringen muss —
+    /// genau das war der Anwenderwunsch vom 06.09.2026.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(AlleSeitenDiesesTeils))]
+    public void Jeder_Knopf_dieses_Teils_fuehrt_auf_eine_Seite_der_Fassung_3(string seitenname)
+    {
+        string pfad = Seitenpfad(seitenname);
+        Assert.True(File.Exists(pfad), "Die Seite '" + seitenname + "' fehlt: " + pfad);
+
+        string[] zeilen = File.ReadAllText(pfad).Replace("\r\n", "\n").Split('\n');
+
+        Assert.DoesNotContain("<big>", string.Join("\n", zeilen), StringComparison.Ordinal);
+        Assert.Contains("Fassung 3: LaTeX-Formeln und Legenden", zeilen[0], StringComparison.Ordinal);
+
+        int gleichungen = 0;
+        int legenden = 0;
+
+        for (int i = 0; i < zeilen.Length; i++)
+        {
+            if (Legendezeile.IsMatch(zeilen[i])) legenden++;
+            if (!Anzeigegleichung.IsMatch(zeilen[i])) continue;
+
+            gleichungen++;
+            Assert.True(i + 1 < zeilen.Length && Legendezeile.IsMatch(zeilen[i + 1]),
+                seitenname + ": auf '" + zeilen[i].Trim() + "' folgt keine Legendezeile.");
+        }
+
+        Assert.True(gleichungen >= 1, seitenname + ": keine Anzeige-Gleichung in <math>.");
+        Assert.True(legenden >= gleichungen,
+            seitenname + ": " + gleichungen + " Gleichungen, aber nur " + legenden +
+            " Legendezeilen — je Gleichung gehört mindestens eine Zeile darunter.");
+    }
+
+    /// <summary>
+    /// Die Rubrikstartseite erklärt die Schreibweise, die alle 13 Seiten teilen: dass
+    /// die Formeln seit Fassung 3 als LaTeX in <c>&lt;math&gt;</c> stehen, wie eine
+    /// Anzeige-Gleichung samt ihrer Legende aussieht, und die gemeinsame Zeichentabelle.
+    /// Ohne diesen Abschnitt stünde auf jeder Seite eine Notation, die nirgends erklärt
+    /// ist.
     /// </summary>
     [Fact]
     public void Die_Rubrikstartseite_erklaert_die_Schreibweise()
@@ -267,6 +356,12 @@ public sealed class BerechnungsknopfTests
         // Die Gliederung der Startseite nennt den neuen Abschnitt - sonst verspräche sie
         // sechs Abschnitte und die Seiten trügen sieben.
         Assert.Contains("Formelzeichen und Parameter", markup, StringComparison.Ordinal);
+
+        // Fassung 3: die Startseite nennt die Auszeichnung und die Legende-Regel. Ein
+        // Leser, der ":: <math>…" sieht, soll wissen, dass das kein Tippfehler ist.
+        Assert.Contains("Legende", markup, StringComparison.Ordinal);
+        Assert.Contains("\\displaystyle", markup, StringComparison.Ordinal);
+        Assert.Contains("LaTeX", markup, StringComparison.Ordinal);
     }
 
     /// <summary>Alle dreizehn Seiten der Rubrik als Theoriedaten.</summary>
@@ -274,6 +369,15 @@ public sealed class BerechnungsknopfTests
     {
         var daten = new TheoryData<string>();
         foreach (string name in SeitenDerRubrik) daten.Add(name);
+        return daten;
+    }
+
+    /// <summary>Die sechs Seiten dieses Teils als Theoriedaten (Fassung 3).</summary>
+    // TODO Zusammenführung Fassung 3: auf AlleSeitenDerRubrik umstellen
+    public static TheoryData<string> AlleSeitenDiesesTeils()
+    {
+        var daten = new TheoryData<string>();
+        foreach (string name in SeitenDiesesTeils) daten.Add(name);
         return daten;
     }
 
@@ -311,26 +415,49 @@ public sealed class BerechnungsknopfTests
     public void Der_Waechter_erkennt_eine_Anzeigeformel()
     {
         Assert.Matches(Anzeigeformel,
+            ": <math>\\displaystyle Q_{\\mathrm{a}} = \\frac{\\sum_{t=1}^{8\\,760} Q(t)}{1\\,000}</math> &nbsp;&nbsp;(4)");
+        Assert.Matches(Anzeigeformel,
             ": <big>Q<sub>a</sub> = ( Σ<sub>t=1…8 760</sub> Q(t) ) / 1 000</big>  (4)");
         Assert.Matches(Anzeigeformel, ": <big>ϑ = ϑ<sub>m</sub> + 1,5 K</big> (7)");
 
+        Assert.DoesNotMatch(Anzeigeformel, ": <math>P = U \\cdot I</math>");   // ohne Nummer
         Assert.DoesNotMatch(Anzeigeformel, ": <big>P = U · I</big>");          // ohne Nummer
-        Assert.DoesNotMatch(Anzeigeformel, ": eine eingerueckte Zeile  (1)");  // ohne <big>
+        Assert.DoesNotMatch(Anzeigeformel, ": eine eingerueckte Zeile  (1)");  // ohne Formelsatz
         Assert.DoesNotMatch(Anzeigeformel, "; Zeitraster");                    // Definitionsliste
+
+        // Die Fassung 3 verengt: nur <math> zählt, und die Legende steht darunter.
+        Assert.Matches(Anzeigegleichung,
+            ": <math>\\displaystyle w = (5 - i)\\ \\operatorname{mod}\\ 7</math> &nbsp;&nbsp;(3)");
+        Assert.DoesNotMatch(Anzeigegleichung, ": <big>P = U · I</big> &nbsp;&nbsp;(1)");
+
+        Assert.Matches(Legendezeile, ":: <math>P_{\\mathrm{el}}</math> – elektrische Leistung [kW]");
+        Assert.DoesNotMatch(Legendezeile, ": <math>P</math> &nbsp;&nbsp;(1)");   // einfach eingerückt
+        Assert.DoesNotMatch(Legendezeile, ":: P_el – elektrische Leistung [kW]"); // ohne <math>
     }
 
     /// <summary>
-    /// <b>Gegenprobe zum LaTeX-Riegel:</b> Er trifft den Befehl und nicht den deutschen
-    /// Satz. Ein Wikitext ohne Backslash läuft durch.
+    /// <b>Gegenprobe zur LaTeX-Teilmenge:</b> Der Wächter trifft den Befehl und nicht
+    /// den deutschen Satz, und er unterscheidet den ERLAUBTEN vom fremden. Ohne diese
+    /// Probe liefe der Fall oben über eine leere Menge, und ein <c>\dfrac</c> käme
+    /// unbemerkt durch — im Wiki stünde dann eine rote Fehlerzeile.
     /// </summary>
     [Fact]
-    public void Der_Waechter_erkennt_einen_LaTeX_Befehl()
+    public void Der_Waechter_erkennt_einen_fremden_LaTeX_Befehl()
     {
         Assert.Matches(LatexBefehl, @"\frac{a}{b}");
         Assert.Matches(LatexBefehl, @"\sum_{t=1}^{8760}");
 
         Assert.DoesNotMatch(LatexBefehl, "Q_a = ( Σ Q(t) ) / 1 000");
         Assert.DoesNotMatch(LatexBefehl, "Der Faktor 0,83 gilt fuer Wand und Waermebruecken.");
+
+        Assert.True(ErlaubteBefehle.Contains("frac"));
+        Assert.True(ErlaubteBefehle.Contains("displaystyle"));
+        Assert.True(ErlaubteBefehle.Contains("vartheta"));
+
+        Assert.False(ErlaubteBefehle.Contains("dfrac"));
+        Assert.False(ErlaubteBefehle.Contains("tag"));
+        Assert.False(ErlaubteBefehle.Contains("label"));
+        Assert.False(ErlaubteBefehle.Contains("newcommand"));
     }
 
     /// <summary>
