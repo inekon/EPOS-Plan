@@ -785,6 +785,24 @@ body {
     color: var(--epos-text-leise);
 }
 
+/* DER LESEWERT - ein Wert, den die Maske ZEIGT und nicht entgegennimmt
+   (Anwenderentscheid W14a-O-1, 06.09.2026: die Modulkosten der
+   Waermepumpe). Er steht an der Stelle der .epos-eingabe in der
+   Feldzeile, ist aber kein Bedienelement: kein Rahmen, kein Fokusring,
+   kein Tabulatorhalt. Tabellenziffern, damit er unter einem Zahlenfeld
+   auf derselben Kante steht.
+
+   WARUM KEIN GESPERRTES EINGABEFELD. Ein <input disabled> sagt "hier
+   koenntest du tippen, nur jetzt nicht" und verspricht damit eine
+   Pflege, die es nicht gibt; ein <input readonly> bleibt ein Feld im
+   Tabulatorweg. Ein abgeleiteter oder importierter Wert ist beides
+   nicht - er ist Text. */
+.epos-lesewert {
+    flex: 0 0 auto;
+    font-variant-numeric: tabular-nums;
+    color: var(--epos-text);
+}
+
 .epos-schalter {
     display: flex;
     align-items: center;

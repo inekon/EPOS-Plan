@@ -32,11 +32,12 @@ public sealed record KennlinienBilder(byte[]? Cop, byte[]? Leistung)
 /// Razor-Komponente kennt die Fachklassen des Kerns nicht, und <c>WPModel</c> trägt
 /// daneben Maße, Gewicht und Raum, die diese Maske nie anfasst.</para>
 ///
-/// <para><b>Drei Werte laufen VERBORGEN mit</b> — <see cref="Modulkosten"/>,
-/// <see cref="MaxPtherm"/> und <see cref="Id"/>. Die Maske zeigt sie nicht (Ä19 für die
-/// Modulkosten, die anderen beiden nie), der Speicherweg schreibt sie aber mit: Der
-/// Vorläufer las dafür vor dem <c>Update</c> den Satz mit <c>ReadSingle</c> nach, sonst
-/// hätte er <c>maxPtherm</c> genullt.</para>
+/// <para><b>Zwei Werte laufen VERBORGEN mit</b> — <see cref="MaxPtherm"/> und
+/// <see cref="Id"/>. Die Maske zeigt sie nicht, der Speicherweg schreibt sie aber mit:
+/// Der Vorläufer las dafür vor dem <c>Update</c> den Satz mit <c>ReadSingle</c> nach,
+/// sonst hätte er <c>maxPtherm</c> genullt. <see cref="Modulkosten"/> lief bis zum
+/// 06.09.2026 ebenso mit; seit dem Anwenderentscheid W14a‑O‑1 ZEIGT die Maske ihn —
+/// nur lesend, geschrieben wird er weiterhin nur durchgereicht.</para>
 /// </summary>
 public sealed class WaermepumpeStammDaten
 {
@@ -78,9 +79,16 @@ public sealed class WaermepumpeStammDaten
     public double Kuehlleistung { get; set; }
 
     /// <summary>
-    /// Modulkosten [€]. Ä19: Die Zeile ist NICHT gezeichnet — Gerätekosten laufen über
-    /// die Kostenverwaltung. Der Wert läuft im Speicherweg unverändert mit; bei einer
-    /// Neuanlage ist er 0.
+    /// Modulkosten [€] — ein Betrag JE GERÄT, nicht ein spezifischer Satz
+    /// (<c>TechnikPlanwertCtrl.BasenFuellen</c>, Fall <c>ERZEUGER_WAERMEPUMPE</c>: Basis
+    /// „Modulpreis", der Wert unverändert).
+    ///
+    /// <para><b>Anwenderentscheid W14a‑O‑1 (06.09.2026):</b> Die Maske ZEIGT den Wert
+    /// wieder — als Lesewert mit Herleitungszeile. Ä19 bleibt gewahrt: Es gibt kein
+    /// Eingabefeld und keinen Schreibweg aus dem Dialog; gefüllt wird die Spalte allein
+    /// vom VDI‑3805‑Import, gepflegt werden Gerätekosten in der Kostenverwaltung. Der
+    /// Wert läuft im Speicherweg unverändert mit; bei einer Neuanlage ist er 0, und 0
+    /// heißt „kein Planwert" (<c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge ≤ 0).</para>
     /// </summary>
     public int Modulkosten { get; set; }
 
