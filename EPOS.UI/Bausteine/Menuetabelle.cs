@@ -158,8 +158,11 @@ public static class Menuetabelle
                 new Menuepunkt("MenuItem_PufferSp_VDI3805", "MENU_PUFFER_SP_VDI3805", Seitenschluessel.PufferSpImport),
                 new Menuepunkt("MeniItem_VDI3805", "MENU_VDI3805", Seitenschluessel.WpImport),
                 new Menuepunkt("MenuItem_PV_Import_CEC", "MENU_PV_IMPORT_CEC", Seitenschluessel.PvImport, argument: "CEC"),
-                // W6-E-2, Stufe S1.5: die CEC-Wechselrichterliste - neben dem
-                // Modulimport, aus dem sie ihren ganzen Abrufapparat erbt.
+                // W6-E-2/S1.5 und W6-O-1: die CEC-Wechselrichterliste (Netz oder
+                // Auslieferungsdatei, W6-O-3) und PVsyst .OND - neben dem
+                // Modulimport, mit dem sie sich seit W6-O-1 EINEN Wirt teilt.
+                // OHNE Argument: Der eine Menuepunkt macht mit der Vorgabequelle
+                // (CEC) auf; die zwei anderen Quellen sind Knoepfe IN der Maske.
                 new Menuepunkt("MenuItem_WR_Import_CEC", "MENU_WR_IMPORT_CEC", Seitenschluessel.WechselrichterImport),
                 new Menuepunkt("MenuItem_ST_Import", "MENU_ST_IMPORT", Seitenschluessel.SolarkollektorenImport),
             },
