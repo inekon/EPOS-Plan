@@ -15273,7 +15273,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>{0} ist mit {1} kleiner als der plausible Mindestwert {2}.</value>
   </data>
   <data name="WRK_PLAUSI_ETA_MONOTON" xml:space="preserve">
-    <value>Die Kennlinie fällt im Teillastast: {0} = {1}, aber {2} = {3}.</value>
+    <value>Die Kennlinie fällt im Teillastast: {0} = {1}, aber {2} = {3} — ein Abfall von {4} Prozentpunkten.</value>
   </data>
   <data name="WRK_PLAUSI_ETA_EURO_BEREICH" xml:space="preserve">
     <value>{0} liegt außerhalb des Bereichs (0; 1]: {1}.</value>

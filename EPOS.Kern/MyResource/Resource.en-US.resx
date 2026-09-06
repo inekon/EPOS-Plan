@@ -15266,7 +15266,7 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>{0} is {1} and thus below the plausible minimum {2}.</value>
   </data>
   <data name="WRK_PLAUSI_ETA_MONOTON" xml:space="preserve">
-    <value>The curve falls in the part-load branch: {0} = {1}, but {2} = {3}.</value>
+    <value>The curve falls in the part-load branch: {0} = {1}, but {2} = {3} — a drop of {4} percentage points.</value>
   </data>
   <data name="WRK_PLAUSI_ETA_EURO_BEREICH" xml:space="preserve">
     <value>{0} is outside the range (0; 1]: {1}.</value>
