@@ -1510,6 +1510,18 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Zeile (ein bedingter `AddElementReferenceCapture` brach Blazors Abgleich). 14 hüllengleiche Wachen mit der
 > echten `Menuetabelle`, darunter die Gegenprobe zur Ursache; Abnahmepunkte 4a (Maus/Berührung) und 5a
 > (Tastatur); drei Hausregeln in `EPOS.UI/CLAUDE.md`.
+>
+> **Anwenderwunsch W16c‑E‑6 vom 06.09.2026 („Administration: Verschiebe BHKW von Energiesystem in ‚Wärmebedarf &
+> Heizung' …"), umgesetzt in `14bc16c`:** BHKW und Solarkollektoren wandern nach „Wärmebedarf & Heizung", Pufferspeicher
+> nach „Energiesysteme", und die drei Zeitreihen stehen in der neuen Unterrubrik „Profile & Lastgänge"
+> (`MENU_PROFILE_LASTGAENGE`, en „Profiles & load curves") — Wärmebedarf Lastgang, Prozesswärme, Solarthermieganglinie.
+> Die zwei Untermenüs mit dem einzigen Punkt „Bearbeiten" sind aufgelöst: `MenuItem_PV` und
+> `MenuItem_Solarkollektoren` tragen jetzt selbst das Ziel ihres früheren Kindes. 55 → 54 Punkte, 13 → 12
+> aufklappende, 42 handelnde unverändert — kein Ziel entfallen, keines hinzugekommen, die Menge der 28 Ziele unter
+> „Administration" ist dieselbe. Geändert wurde die `Menuetabelle`, kein Zeichen im `Menueband`; der bisher einzige
+> dreistufige Weg (PV ▸ Bearbeiten) ist durch „Profile & Lastgänge" ersetzt, der Wächter über W16c‑B13 bleibt. Neun
+> neue bunit-Fälle, 2 704 in beiden Kulturen. Zur Kennung: `W16c‑E‑5` war seit dem 05.09.2026 die Farbgebung
+> (`04d5ac6`), deshalb E‑6; die Abnahmepunkte im W16c-Protokoll heißen A‑W16c‑E‑5‑1 … ‑7.
 
 > **Statusblock iU9 — Teilwelle 16b umgesetzt (04.09.2026, Basis `84d7c16` nach W16a, zusammengeführt mit `d4a7632` nach dem einundzwanzigsten iOS-Lauf)**
 >
@@ -1820,6 +1832,29 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > weiterhin selbst. 15 neue bunit-Fälle (UI 2 497). Offen als **W15c‑O‑6**: Die vier KI-Wurzeln der Welle 15b haben
 > dieselbe Form (kein Seitenrand, kein `overflow-x`) — sie gehören in die laufende Überarbeitung des
 > Hilfe-Assistenten (W15b‑E‑3).
+>
+> **Welle iF30 — Lesemodus streng (Anwenderentscheid 04.09.2026), umgesetzt 06.09.2026 in `8daf051`:**
+> `LizenzManager.DarfSchreiben()` hatte seit iU5‑U1 genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7) — der
+> Lesemodus stand im Konzept, war sichtbar und prüfbar, aber nicht durchgesetzt. Er wird es jetzt an **einer** Stelle:
+> `SqliteDatenzugriff.ErzeugeKommando` baut jede Anweisung des Kerns (die sechs Zugriffsmethoden, `DbVorgang`,
+> `RecordSet`, `StilleDb` und die sechs Eigenverbindungen laufen dort hindurch; die zwei Kommandos daneben — PRAGMA und
+> `last_insert_rowid()` — schreiben nicht), und dort steht `Schreibnaht.Pruefe(sql)`. Lesen bleibt frei (`SELECT`,
+> `PRAGMA`, `EXPLAIN`, `VALUES` — die Liste ist die der Leser, nicht die der Schreiber); ein Schreibversuch wirft eine
+> eigene `LesemodusException` mit fertigem Satz statt eines SQLite-Fehlers. **Fünf Ausnahmen** stehen als
+> `Schreibnaht.Freigabe(grund)` an ihrer Stelle im Quelltext, nie über den SQL-Text: Schema- und Erststart-Migration,
+> Schemamarker, Programmzustand (`Tab_Applikation` — ohne ihn ließe sich im Lesemodus kein Projekt mehr öffnen) und
+> die Sicherung (`VACUUM INTO` ist ein Export). Die im Entscheid genannten Ausnahmen Lizenzaktivierung und
+> Einstellungen brauchen keine: Beide berühren die Datenbank nicht. Der Simulationslauf fragt vor dem Start
+> (`SimulationLaufCtrl.Vorpruefen`); Ansehen, Berichte und Export sind unberührt. **Die Falle der Welle** sind die
+> Werkzeuge: Referenzlauf (Linux und Windows), iOS-Prüfmodus, Schemawerkzeug und Testvorrichtung laufen ohne Lizenz
+> und schreiben — jedes hebt die Sperre mit einer benannten Zeile `Schreibnaht.WerkzeugFreigabe(grund)`; `ChartProben`
+> braucht keine. Sichtbar ist der Zustand als Banner in der `AppWurzel`: der Lesemodus dauerhaft (der eine Zustand,
+> den W16b‑E‑6 für ein Dauerbanner gelten lässt), die Warnstufen 30/14/7 als verfallender Hinweis. Nachweise: Kern
+> 1 230 → 1 302, bunit +12, Referenzlauf 1030/1007/1017 byte-gleich zu `2026-09-05_R2_Zeitbasis`, ChartProben grün,
+> SQL-Prüfer 0 Fundstellen, beide Wächter leer, Windows-Bau x64 fehlerfrei. Protokoll
+> `iF30_Lesemodus_Protokoll.md`; offene Punkte iF30‑O‑1 (ist `Tab_Applikation` zu Recht Ausnahme?), iF30‑O‑2
+> (Warnstufen je Programmstart statt täglich), iF30‑O‑3 (Banner läuft erst beim nächsten Start nach), iF30‑O‑4
+> (`PRAGMA` bei den Lesern), iF30‑O‑5 (Access-Zweig der Erststart-Migration geht an der Naht vorbei).
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
@@ -3011,6 +3046,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > ohne Windows nachweisbar — und ist reine Anzeige: Der Rechenweg (`AnlagenKwp`, `KwpSumme`, Simulation,
 > Wirtschaftlichkeit) ist unberührt, der Referenzlauf bitgleich. Nachweis: Kern 1 209 → 1 213, UI 2 656 → 2 659, beide
 > grün unter de und en; Windows-Bau 0 Fehler; Kern-Wächter leer. Vier Abnahmepunkte A‑W6‑O‑5 im W6-Protokoll.
+>
+> **Anwenderwunsch W6‑E‑2 vom 06.09.2026 („Wechselrichter – ausgegraut. Import liegt nicht vor, Admin zum
+> Anlegen/Bearbeiten liegt nicht vor … Mockup und Konzept vor Umsetzung"), Konzept und Mockup in `8fee437`:** Der Knopf
+> trägt genau eine Sperrbedingung (`PvModellFelder.razor`: `disabled`, solange das Modell nicht ERWEITERT ist) und ist
+> im Modell EINFACH bestimmungsgemäß gesperrt; EINFACH multipliziert den Ertrag mit dem konstanten Faktor
+> `PV_WrWirkungsgrad` (NULL = 0,95, `SimulationPV`) — ohne Clipping, Kennlinie und AC-Nennleistung. Nachgeprüft fehlen
+> Wechselrichtertabelle, Katalogeintrag, Verwaltungsausprägung, Import, Strangbegriff und Menüpunkt vollständig; die
+> Modulkennwerte für eine Auslegungsprüfung liegen seit W6‑E‑1 ungenutzt im Katalog. Das neue Papier
+> `Konzept_Wechselrichter_EPOS-Plan.md` (982 Zeilen) schlägt `Tab_Wechselrichter_STAMM` mit Projektkopie, die
+> Strangzuordnung `Z_AnlageStrang` (Migrationsschritte 65/66), eine Kennlinie aus sechs Stützstellen mit
+> mitgeschriebenen Sandia-Koeffizienten, den CEC-Wechselrichterimport und den Rechenweg Module → Strang → MPPT → Gerät
+> → Clipping mit acht Auslegungsprüfungen vor; ohne Strangzuordnung bleibt der Rechenweg Zeichen für Zeichen
+> erhalten, die Basis `2026-09-05_R2_Zeitbasis` also byte-gleich. Vorgeschlagen sind drei Stufen (S1
+> Katalog/Verwaltung/Import ohne Rechenwirkung sofort, S2 und S3 zusammen). Das Mockup
+> `Mockups/Wechselrichter_Mockup_2026-09-06.html` (1 439 Zeilen, eigenständig, Hausstil) zeigt vier Ansichten:
+> PV-Dialog mit dem Abschnitt „Wechselrichter und Stränge" samt Plausibilitätsampel, Verwaltung, Import und den
+> Rechenfluss als SVG. **Nichts umgesetzt; zehn Entscheidungsfragen W6‑E‑2‑Q1…Q10 liegen beim Anwender**, darunter
+> Kennlinienform (Empfehlung Stützstellen, weil Sandia die DC-Spannung je Stunde bräuchte) und ob der Wechselrichter
+> auch in EINFACH wirkt (Empfehlung ja — damit entfällt der ausgegraute Knopf).
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
@@ -3381,7 +3435,7 @@ Windows-Basis; Bericht zeilengleich.
 | **iU10-5** | die neun Umgebungsdienste als `Ios*`-Adapter, dazu `IosHilfeDienst`; Belegung in `MauiProgram` in der Reihenfolge von `Program.Main` | ✅ Attrappenprobe · Wirkung nur CI |
 | **iU10-6** | Prüfmodus (`EPOS_PRUEFLAUF`) mit den **verlinkten** Bausteinen `Ergebnisexport`/`Protokoll`; CI-Job `.github/workflows/ios.yml` | ✅ YAML geprüft · Lauf nur CI |
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
-| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün · **Zwanzigster Lauf** (33883210632, 04.09.2026, 10 min 14 s) auf `975ead5` nach W15c: grün · **Einundzwanzigster Lauf** (33890882150, 04.09.2026, 8 min 03 s) auf `84d7c16` nach W16a: grün · **Zweiundzwanzigster Lauf** (33898599945, 04.09.2026, 7 min 56 s) auf `c8fbd77` nach W16b: grün · **Vierundzwanzigster Lauf** (33904433007, 04.09.2026, 8 min 43 s) auf `555ef11` nach W16c: grün (Nr. 23 war eine abgebrochene Dublette) · **Fünfundzwanzigster Lauf** (33913313694, 04.09.2026, 6 min 29 s) auf `853b8c6` nach den W16-Nachträgen (E‑2/E‑3, LizenzTexte, W16b‑O‑3): grün · **Sechsundzwanzigster Lauf** (33975880961, 05.09.2026, 6 min 14 s) auf `7bec4ad` nach den Abnahmebefunden vom 05.09. (Baustein `Diagramm`, `epos-diagramm.js` über `import()`): grün · **Siebenundzwanzigster Lauf** (33982889724, 05.09.2026, 10 min 51 s) auf `c563a40` nach den sechs Nachmittagsbefunden vom 05.09. (W13‑B‑1: `…Async`-Zwillinge in `IDateiDienst`/`IDialogDienst`, Fehlerschranke `Wurzel<T>` in `EPOS.iOS/HauptSeite`; W9.8, W15a‑E‑1, W16b‑E‑7, iU8‑E‑1): grün · **Achtundzwanzigster Lauf** (33992594094, 05.09.2026, 6 min 53 s) auf `6eddd27` nach der Zusammenführung der Rechner-2-Linie: Bau, Start, Prüfmodus grün, **iZ6-Vergleich rot**, weil `ios.yml` noch gegen `2026-08-30_B3-Kaskade` hielt (8 711 Abweichungen = Paket-A-Zeitbasis; Basiswechsel `37dfebb`, Workflow `e3fd980`) · **Neunundzwanzigster Lauf** (33993379551, 05.09.2026, 6 min 32 s) auf `e3fd980` gegen `2026-09-05_R2_Zeitbasis`: grün, PASS und byte-gleich (236 670 Werte, `diff -rq` leer; die Simulation meldet die Paket-A-Zeitbasis „Klimadaten: UTC → MEZ/MESZ, Referenzjahr 2025") |
+| **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün · **Zwanzigster Lauf** (33883210632, 04.09.2026, 10 min 14 s) auf `975ead5` nach W15c: grün · **Einundzwanzigster Lauf** (33890882150, 04.09.2026, 8 min 03 s) auf `84d7c16` nach W16a: grün · **Zweiundzwanzigster Lauf** (33898599945, 04.09.2026, 7 min 56 s) auf `c8fbd77` nach W16b: grün · **Vierundzwanzigster Lauf** (33904433007, 04.09.2026, 8 min 43 s) auf `555ef11` nach W16c: grün (Nr. 23 war eine abgebrochene Dublette) · **Fünfundzwanzigster Lauf** (33913313694, 04.09.2026, 6 min 29 s) auf `853b8c6` nach den W16-Nachträgen (E‑2/E‑3, LizenzTexte, W16b‑O‑3): grün · **Sechsundzwanzigster Lauf** (33975880961, 05.09.2026, 6 min 14 s) auf `7bec4ad` nach den Abnahmebefunden vom 05.09. (Baustein `Diagramm`, `epos-diagramm.js` über `import()`): grün · **Siebenundzwanzigster Lauf** (33982889724, 05.09.2026, 10 min 51 s) auf `c563a40` nach den sechs Nachmittagsbefunden vom 05.09. (W13‑B‑1: `…Async`-Zwillinge in `IDateiDienst`/`IDialogDienst`, Fehlerschranke `Wurzel<T>` in `EPOS.iOS/HauptSeite`; W9.8, W15a‑E‑1, W16b‑E‑7, iU8‑E‑1): grün · **Achtundzwanzigster Lauf** (33992594094, 05.09.2026, 6 min 53 s) auf `6eddd27` nach der Zusammenführung der Rechner-2-Linie: Bau, Start, Prüfmodus grün, **iZ6-Vergleich rot**, weil `ios.yml` noch gegen `2026-08-30_B3-Kaskade` hielt (8 711 Abweichungen = Paket-A-Zeitbasis; Basiswechsel `37dfebb`, Workflow `e3fd980`) · **Neunundzwanzigster Lauf** (33993379551, 05.09.2026, 6 min 32 s) auf `e3fd980` gegen `2026-09-05_R2_Zeitbasis`: grün, PASS und byte-gleich (236 670 Werte, `diff -rq` leer; die Simulation meldet die Paket-A-Zeitbasis „Klimadaten: UTC → MEZ/MESZ, Referenzjahr 2025") · **Dreißigster Lauf** (34017405042, 06.09.2026, 5 min 54 s) auf `cb8379e` nach der Welle iF30 (Schreibnaht, Werkzeug-Freigabe im Prüfmodus, Lizenzbanner): grün, PASS und byte-gleich (236 670 Werte, `diff -rq` leer; das Vergleichswerkzeug meldet „Schreibnaht: freigegeben für EPOS.Referenzlauf (Rechennachweis ohne Lizenz)") |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
 
 **Die drei Entscheidungen, die iU10 getroffen hat** (Langfassung im Entscheidungsregister § 2.9):
@@ -3618,7 +3672,7 @@ setzen sie voraus:**
 | **iF21** | **DPI:** bleibt die Blazor-Hülle eine DPI-Insel in einer `DpiUnaware`-Anwendung? | **Insel jetzt, Anwendung DPI-fähig mit W16** — entschieden 03.09.2026 (Empfehlung angenommen). Die `DpiInsel` (iU8-6) deckt die modalen Dialoge; eingebettete Seiten bleiben bis W16 bitmapskaliert (W5‑O1). Der Windows-Befund bei 125 % und 150 % steht aus |
 | **iF22** | **Wie viele Chart-Stacks trägt das Haus?** | **eine Bibliothek (SkiaSharp), zwei Nutzungsarten.** Bericht und Blazor bekommen ein Bild aus dem Kern-Renderer; die interaktiven Bildschirmmasken bleiben bei ScottPlot — heute genau **eine**, `Form_SpeicherOptimierung`. ScottPlot 5 rendert selbst über SkiaSharp |
 | **iF23** | **Was geschieht mit `ChartRendererGdi.cs`?** | **ersatzlos gelöscht am 03.09.2026** auf Anweisung des Anwenders — samt `Referenzlauf/Bildvergleich.cs` und dem Modus `bildvergleich`, ohne vorherigen Windows-Bildvergleich. Wächter sind die Renderer-Tests im Kern und `ChartProben` |
-| **iF30** | **Lesemodus-Durchsetzung:** `LizenzManager.DarfSchreiben()` hat bis heute genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7); weder Simulation noch Projektanlage noch ein Speicherweg fragt den Lizenzzustand. Wann und wo wird der Lesemodus durchgesetzt? | **Nach W16** — angelegt 04.09.2026 mit W15c (E‑9): dann sind alle Speicherwege Razor und ihre Zahl steht fest; dazu die Warnstufen 30/14/7 Tage vor Ablauf (Lizenzkonzept § 6). Bis dahin ist der Zustand **sichtbar** (sechs Zustände, drei Stufen, Detailzeile) und **prüfbar** (19 Kern-Fälle `LizenzZustandTests`), aber nicht durchgesetzt. **Entschieden 04.09.2026 (Empfehlung angenommen): streng — alle Schreibwege und der Simulationslauf werden über die eine Schreibnaht im Kern gesperrt, Ansehen und Berichte bleiben frei, Banner in der `AppWurzel`, Warnstufen 30/14/7 Tage vor Ablauf; Ausnahmen Erststart-Migration, Lizenzaktivierung, Einstellungen; eigene kleine Welle nach der Windows-Abnahme** |
+| **iF30** | **Lesemodus-Durchsetzung:** `LizenzManager.DarfSchreiben()` hat bis heute genau einen Leser (`KiAusfuehrer.Schreibrecht`, W15c‑B7); weder Simulation noch Projektanlage noch ein Speicherweg fragt den Lizenzzustand. Wann und wo wird der Lesemodus durchgesetzt? | **Nach W16** — angelegt 04.09.2026 mit W15c (E‑9): dann sind alle Speicherwege Razor und ihre Zahl steht fest; dazu die Warnstufen 30/14/7 Tage vor Ablauf (Lizenzkonzept § 6). Bis dahin ist der Zustand **sichtbar** (sechs Zustände, drei Stufen, Detailzeile) und **prüfbar** (19 Kern-Fälle `LizenzZustandTests`), aber nicht durchgesetzt. **Entschieden 04.09.2026 (Empfehlung angenommen): streng — alle Schreibwege und der Simulationslauf werden über die eine Schreibnaht im Kern gesperrt, Ansehen und Berichte bleiben frei, Banner in der `AppWurzel`, Warnstufen 30/14/7 Tage vor Ablauf; Ausnahmen Erststart-Migration, Lizenzaktivierung, Einstellungen; eigene kleine Welle nach der Windows-Abnahme** **Erledigt 06.09.2026 (`8daf051`):** durchgesetzt an der einen Schreibnaht `SqliteDatenzugriff.ErzeugeKommando` (`Schreibnaht.Pruefe`), Lesen frei, eigene `LesemodusException` statt SQLite-Fehler; fünf benannte Ausnahmen (Schema- und Erststart-Migration, Schemamarker, Programmzustand, Sicherung — Lizenzaktivierung und Einstellungen berühren die Datenbank nicht), Simulationssperre vor dem Start, vier Werkzeug-Freigaben, Banner in der `AppWurzel` mit den Warnstufen 30/14/7; Referenzlauf byte-gleich. Offene Punkte iF30‑O‑1…5 im Protokoll |
 
 ---
 

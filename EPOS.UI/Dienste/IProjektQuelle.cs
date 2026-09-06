@@ -232,6 +232,23 @@ public interface IProjektQuelle
     /// der iOS-Weg.</para>
     /// </summary>
     IReadOnlyDictionary<string, object>? BerichteKostenGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Das LAGEBILD DER LIZENZ für das Banner der <see cref="EPOS.UI.Seiten.AppWurzel"/>
+    /// (Welle iF30); <c>null</c> = kein Banner.
+    ///
+    /// <para><b>Warum über die Quelle und nicht über den Lizenzkern.</b> Eine Komponente
+    /// ruft immer vom Zeichenfaden, und <c>LizenzManager.Pruefe()</c> liest auf iOS den
+    /// Schlüsselbund SYNCHRON (Regel S-2 aus W15c). Die Wurzel bekommt deshalb ein
+    /// fertiges, sprachfertiges Bündel — <b>kein Token, kein Zeitanker, kein
+    /// Schlüssel</b>. Gerechnet wird es in <c>WindowsFormsApplication1.LizenzLage</c>.</para>
+    ///
+    /// <para><b>Unter Windows wird dieser Weg NICHT gegangen</b> — dort reicht
+    /// <c>Hauptfenster</c> die Lage als Parameter herein, aus derselben Hülle, die auch
+    /// den Startseiten-Parametersatz stellt. <b>Mit Standardumsetzung</b>, damit eine
+    /// vorhandene Quelle durch die Erweiterung nicht bricht.</para>
+    /// </summary>
+    WindowsFormsApplication1.LizenzLage? Lizenzlage() => null;
 }
 
 /// <summary>

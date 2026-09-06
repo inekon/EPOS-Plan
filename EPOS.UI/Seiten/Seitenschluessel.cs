@@ -9,7 +9,7 @@
 /// Tabelle beider Plattformen.</b> Bis dahin standen zwei nebeneinander: hier
 /// die sieben Schluessel der iOS-Wurzel, im Kern die 25 Maskenschluessel von
 /// <c>Masken</c>. Der Menueband-Baustein des Hauptfensters (W16c.1) verteilt
-/// seine 55 Punkte ueber DIESE Schluessel, und <see cref="AppWurzel"/> ist die
+/// seine 54 Punkte ueber DIESE Schluessel, und <see cref="AppWurzel"/> ist die
 /// gemeinsame Wurzel von Windows und iOS (E-1) - also braucht es genau einen
 /// Satz.</para>
 ///
