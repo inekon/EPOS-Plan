@@ -6095,6 +6095,100 @@ body {
 }
 
 /* ==================================================================== */
+/* PARAMETERUEBERSICHT - alle Parameter einer Anlage und ihre Verwendung */
+/* (Anwenderwunsch W14a-E-8, 06.09.2026)                                 */
+/*                                                                      */
+/* "Fuer alle Menues mit Anlagendaten: Erstelle einen Bearbeiten-Dialog  */
+/* zusaetzlich im Bearbeiten-Menue (optionale Anzeige), in dem 1. alle   */
+/* verfuegbaren Parameter und Eigenschaften angezeigt werden und 2. alle */
+/* verwendeten Parameter gekennzeichnet sind."                          */
+/*                                                                      */
+/* DER KNOPF IST DER AUS W6-E-1 (.epos-modulparameter-knopf) - dieselbe  */
+/* Form fuer denselben Zweck, keine zweite Regel. Neu ist nur, was die   */
+/* dritte Spalte braucht: die Kennzeichnung der Verwendung.             */
+/*                                                                      */
+/* DIE KENNZEICHNUNG TRAEGT TEXT. Ein Chip besteht aus Zeichen UND Wort; */
+/* die Farbe kommt oben drauf und traegt nie allein (Hausregel). In      */
+/* forced-colors faellt die Flaeche weg und der Rahmen bleibt - dort     */
+/* gibt es keine Hausfarben, wohl aber Rahmen und Text.                 */
+/*                                                                      */
+/* DIE TABELLE STEHT IN .epos-raster-huelle und erbt damit die           */
+/* Hoechsthoehe aus W9-B-2 samt stehendem Spaltenkopf: 27 Zeilen (BHKW)  */
+/* duerfen den Eingabeblock nicht ins Endlose schieben.                 */
+/* ==================================================================== */
+.epos-parameteruebersicht {
+    margin-top: 8px;
+}
+
+/* Die Namensspalte ist ein <th scope="row"> und soll trotzdem wie eine
+   Beschriftung aussehen - also normal statt fett, linksbuendig. */
+.epos-parameteruebersicht-name {
+    font-weight: 400;
+    white-space: normal;
+}
+
+/* Zahlen stehen rechts - nebeneinander lesen sich Groessenordnungen nur so. */
+.epos-parameteruebersicht-wert {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Ein Kennzeichen der Verwendung. */
+.epos-verwendung {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 2px 4px 2px 0;
+    padding: 1px 8px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 10px;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.epos-verwendung-zeichen {
+    font-size: 0.95em;
+}
+
+.epos-verwendung--simulation {
+    border-color: var(--epos-marke);
+    color: var(--epos-marke);
+}
+
+/* Gruen wie die Versorgungskante des Hydraulikschemas - dort steht sie schon
+   fuer "das traegt bei". #1D9E75 auf Weiss haelt 3,3:1 und ist deshalb NICHT
+   die Textfarbe: Der Wortlaut bleibt --epos-text, gruen ist der Rahmen. */
+.epos-verwendung--wirtschaft {
+    border-color: var(--epos-schema-versorgung);
+    color: var(--epos-text);
+}
+
+.epos-verwendung--bericht {
+    border-color: var(--epos-rahmen);
+    color: var(--epos-text);
+}
+
+.epos-verwendung--dialog,
+.epos-verwendung--keine {
+    border-color: var(--epos-rahmen-leise);
+    color: var(--epos-text-leise);
+}
+
+/* Ein nicht verwendeter Parameter wird nicht durchgestrichen und nicht rot:
+   Er ist kein Fehler, sondern eine Auskunft. Gestrichelt heisst "steht da,
+   traegt aber nichts". */
+.epos-verwendung--keine {
+    border-style: dashed;
+}
+
+@media (forced-colors: active) {
+    .epos-verwendung {
+        border-color: CanvasText;
+        color: CanvasText;
+    }
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

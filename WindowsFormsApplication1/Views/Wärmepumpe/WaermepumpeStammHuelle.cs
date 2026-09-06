@@ -87,6 +87,14 @@ namespace WindowsFormsApplication1
                 ["Katalog"] = new Func<IReadOnlyList<WaermepumpenKatalogZeile>>(
                     () => new WPStammCtrl().KatalogZeilen()),
 
+                // W14a-E-8 (06.09.2026): der Aufklapper „Alle Parameter und ihre
+                // Verwendung anzeigen" unter dem Stammdatenblock. Er ist hier die
+                // Auskunft, die im Bestand fehlte: Die Maske zeigt elf der achtzehn
+                // Fachspalten von Tab_WP_STAMM.
+                ["Uebersicht"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    bezeichner => ParameterUebersichtCtrl.Werte(
+                        Anlagenart.Waermepumpe, bezeichner, KatalogBrowserHuelle.Text)),
+
                 ["TitelText"] = Text_("WPS_TITEL", "Datenbank Wärmepumpen"),
                 ["KopfbandText"] = Text_("WPS_KOPFBAND",
                     "Verwaltung Daten zu Wärmepumpen und deren Kennlinien"),

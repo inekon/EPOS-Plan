@@ -100,6 +100,16 @@
                     </KindInhalt>
                 </Gruppenkopf>
             }
+
+            @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
+               (06.09.2026). Zugeklappt die Vorgabe; ohne den Delegaten gibt es
+               den Aufklapper nicht. Er steht UNTER beiden Feldgruppen, weil er
+               ueber den ganzen Katalogsatz Auskunft gibt und nicht ueber eine
+               von ihnen. *@
+            @if (Uebersicht is not null)
+            {
+                <Parameteruebersicht Zeilen="@_uebersicht" />
+            }
         </Eingabe>
     </Katalograhmen>
 
@@ -149,6 +159,14 @@
     /// <summary>Die Datenwege der Huelle.</summary>
     [Parameter] public ModulKatalogWege Wege { get; set; } = new();
 
+    /// <summary>
+    /// <b>Alle Parameter des gewaehlten Moduls samt ihrer Verwendung</b>
+    /// (Anwenderwunsch W14a-E-8) — der Weg zu
+    /// <c>ParameterUebersichtCtrl.Werte(art, bezeichner)</c>. Ohne ihn zeigt der
+    /// Dialog keinen Aufklapper.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Uebersicht { get; set; }
+
     /// <summary>Der Katalog ist zu — <c>Bestaetigt</c> sagt, ob über „Beenden".</summary>
     [Parameter] public EventCallback<ModulErgebnis> Geschlossen { get; set; }
 
@@ -190,6 +208,7 @@
 
     private IReadOnlyList<ModulZeile> _zeilen = Array.Empty<ModulZeile>();
     private List<ModulFeldwert> _felder = new();
+    private IReadOnlyList<Parameterwert> _uebersicht = Array.Empty<Parameterwert>();
     private string _gewaehlt = "";
 
     /// <summary>Der Bezeichner, unter dem der Satz zuletzt geladen wurde — WHERE-Schlüssel.</summary>
@@ -267,6 +286,10 @@
         _fehlerhaft.Clear();
         _neu = false;
         _schluessel = _gewaehlt;
+
+        // Auch ohne Auswahl (W14a-E-8): Was es an Parametern GIBT, haengt am Katalog
+        // und nicht am Satz — dann stehen lauter Leerwerte darin.
+        _uebersicht = Uebersicht?.Invoke(_gewaehlt) ?? Array.Empty<Parameterwert>();
 
         if (_gewaehlt.Length == 0) { _felder = new List<ModulFeldwert>(); return; }
         _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<ModulFeldwert>()).ToList();

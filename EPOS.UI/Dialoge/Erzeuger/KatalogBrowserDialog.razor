@@ -137,6 +137,21 @@
                     }
                     </KindInhalt>
                 </Formularraster>
+
+                @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
+                   (06.09.2026): "Erstelle einen Bearbeiten-Dialog zusaetzlich im
+                   Bearbeiten-Menue (optionale Anzeige), in dem 1. alle verfuegbaren
+                   Parameter und Eigenschaften angezeigt werden und 2. alle
+                   verwendeten Parameter gekennzeichnet sind."
+
+                   Der Block steht UNTER dem Bearbeiten-Formular und ist zugeklappt:
+                   Der Dialog sieht aus wie bisher, bis der Anwender ihn aufklappt.
+                   Ohne den Delegaten gibt es ihn nicht - eine Huelle, die ihn nicht
+                   fuellt, zeigt den Dialog unveraendert. *@
+                @if (Uebersicht is not null)
+                {
+                    <Parameteruebersicht Zeilen="@_uebersicht" />
+                }
                 </KindInhalt>
             </Gruppenkopf>
         </Eingabe>
@@ -214,6 +229,15 @@
     /// <summary>Die Datenwege der Huelle.</summary>
     [Parameter] public KatalogBrowserWege Wege { get; set; } = new();
 
+    /// <summary>
+    /// <b>Alle Parameter des gewaehlten Satzes samt ihrer Verwendung</b>
+    /// (Anwenderwunsch W14a-E-8) — der Weg zu
+    /// <c>ParameterUebersichtCtrl.Werte(art, bezeichner)</c>. Ohne ihn zeigt der
+    /// Dialog keinen Aufklapper; ein leerer Bezeichner liefert die Liste mit lauter
+    /// Leerwerten, damit auch ohne Auswahl sichtbar ist, WAS es gibt.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Uebersicht { get; set; }
+
     /// <summary>Die Eintraege der ersten Filterklappliste (Brennstoffgruppe / Hersteller).</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> FilterEins { get; set; }
         = Array.Empty<(int, string)>();
@@ -278,6 +302,7 @@
 
     private IReadOnlyList<BrowserZeile> _zeilen = Array.Empty<BrowserZeile>();
     private List<BrowserFeldwert> _felder = new();
+    private IReadOnlyList<Parameterwert> _uebersicht = Array.Empty<Parameterwert>();
     private string _gewaehlt = "";
 
     private int? _filterEins = 0;
@@ -365,6 +390,11 @@
     {
         _fehlerhaft.Clear();
         _geaendert = false;
+
+        // Die Uebersicht wird AUCH OHNE Auswahl geholt: Sie beantwortet die Frage
+        // „welche Parameter gibt es hier ueberhaupt", und die haengt nicht am Satz
+        // (W14a-E-8). Ohne Bezeichner stehen lauter Leerwerte darin.
+        _uebersicht = Uebersicht?.Invoke(_gewaehlt) ?? Array.Empty<Parameterwert>();
 
         if (_gewaehlt.Length == 0) { _felder = new List<BrowserFeldwert>(); return; }
         _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<BrowserFeldwert>()).ToList();
