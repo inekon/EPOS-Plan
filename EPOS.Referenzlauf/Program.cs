@@ -43,6 +43,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             try { Console.OutputEncoding = new UTF8Encoding(false); } catch { }
 
             KulturSetzen();
+            WerkzeugFreigabe();
 
             if (args.Length == 0) { Hilfe(); return 2; }
 
@@ -91,6 +92,23 @@ namespace WindowsFormsApplication1.Referenzlauf
             System.Threading.Thread.CurrentThread.CurrentCulture = kultur;
             System.Threading.Thread.CurrentThread.CurrentUICulture = kultur;
             Console.WriteLine("Kultur (Rechnen und Anzeige): " + kultur.Name);
+        }
+
+        /// <summary>
+        /// <b>Die Werkzeug-Freigabe der Schreibnaht</b> (Welle iF30) — EINE benannte
+        /// Zeile, ausdrücklich und nicht durch Auslassen.
+        ///
+        /// <para>Seit iF30 sperrt <c>Schreibnaht</c> jeden schreibenden Datenbankzugriff,
+        /// solange die Lizenz keinen erlaubt. Dieser Lauf hat keine Lizenz — er läuft auf
+        /// einem Linux-Läufer der CI, auf einer ARBEITSKOPIE der Testdatenbank — und er
+        /// SCHREIBT: <c>SimuliereUndSpeichere</c> legt je Projekt einen Ergebniskopf an.
+        /// Ohne diese Zeile fiele der Rechennachweis rot aus, und zwar aus einem Grund,
+        /// der mit dem Rechenweg nichts zu tun hat.</para>
+        /// </summary>
+        private static void WerkzeugFreigabe()
+        {
+            Schreibnaht.WerkzeugFreigabe("EPOS.Referenzlauf (Rechennachweis ohne Lizenz)");
+            Console.WriteLine("Schreibnaht: freigegeben für " + Schreibnaht.WerkzeugGrund);
         }
 
         private static void Hilfe()

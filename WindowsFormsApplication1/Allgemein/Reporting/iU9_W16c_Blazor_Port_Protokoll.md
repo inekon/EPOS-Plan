@@ -132,14 +132,22 @@ Skript, samt ihrer Einhängestelle („unmittelbar unter `Einstellungen`",
 | Trennstriche | **8** | 6 aus dem Designer, 2 aus `BaueVariantenMenue` und `InitKiHilfe` |
 | Bilder | **11** | 9 aus dem Designer, 2 aus `InitGesetzeMenue`/`InitLizenzMenue` — dieselben PNG unter `EPOS.UI/wwwroot/bilder/menue/` (zusammen 30 KB) |
 | **nachgetragen (W16c‑E‑2)** | **1** | der Kopf **„Sprache"** (`MENU_SPRACHE`, en „Language"). Er hat **keine Designer-Herkunft** — er ist der Anwenderentscheid vom 04.09.2026; die Tabelle sagt das im Kopfkommentar, denn das Erzeugerskript liegt nicht im Repository |
+| **nachgetragen (W16c‑E‑6)** | **1 − 2** | die Unterrubrik **„Profile & Lastgänge"** (`MENU_PROFILE_LASTGAENGE`, en „Profiles & load curves") kommt hinzu, ebenfalls **ohne Designer-Herkunft**; dafür fallen `MenuItem_PC_Bearbeiten` und `MenuItem_ST_Bearbeiten` weg — die einzigen Kinder ihrer Untermenüs (06.09.2026, Abschnitt am Ende dieses Protokolls) |
 
-Damit führt die Tabelle **55 Punkte** (54 des Bestands + 1) in **vier Köpfen**
-der obersten Ebene — Projekt, Administration, Hilfe, Sprache. Von den 55
-**handeln 42** (unverändert: der neue Kopf handelt nicht) und **13 klappen auf**
-(12 + „Sprache"); Trennstriche und Bilder sind unverändert 8 und 11. Der
-Menüpunkt „Varianten und Bericht…" meldet weiterhin `BERICHTE_KOSTEN` — was
-sich mit W16c‑E‑3 geändert hat, ist nicht die Tabelle, sondern was die Hülle
-damit tut (§ 6).
+Damit führte die Tabelle beim Abschluss der Teilwelle **55 Punkte** (54 des
+Bestands + 1) in **vier Köpfen** der obersten Ebene — Projekt, Administration,
+Hilfe, Sprache. Von den 55 **handelten 42** (unverändert: der neue Kopf handelt
+nicht) und **13 klappten auf** (12 + „Sprache"); Trennstriche und Bilder sind
+unverändert 8 und 11. Der Menüpunkt „Varianten und Bericht…" meldet weiterhin
+`BERICHTE_KOSTEN` — was sich mit W16c‑E‑3 geändert hat, ist nicht die Tabelle,
+sondern was die Hülle damit tut (§ 6).
+
+> **Nachtrag 06.09.2026 (W16c‑E‑6).** Die Umordnung des Kopfes
+> „Administration" hat aus den 55 Punkten **54** gemacht und aus den 13
+> aufklappenden **12**: Eine Unterrubrik kommt hinzu, zwei Untermenüs mit
+> nur einem Punkt „Bearbeiten" fallen weg. **Die 42 handelnden Punkte sind
+> geblieben** — das ist die Zahl, an der die Vollzähligkeit hängt. Der
+> Abschnitt am Ende dieses Protokolls sagt es im Einzelnen.
 
 Ein zweites kleines Skript, **`w16c_texte.py`**, legt die vier Texte des
 Kopfbands und der „Über"-Meldung an (`HAUPT_CLAIM`, `HAUPT_VERSION`,
@@ -418,3 +426,210 @@ Ende von `BeimLaden`).
 | **W16c‑O‑7** (neu, 04.09.2026) | **Der Abnahmepunkt „Start" (§ 10, Punkt 0) bleibt offen.** `W16c‑B12` hat gezeigt, was W16c‑O‑6 nur vermutet hatte: Der Start ist der einzige Punkt, den **jeder** Fehler der Hülle trifft, und der einzige, den Linux gar nicht prüfen kann. Zweimal hintereinander fehlte etwas, das **nur die Hülle** beisteuert — das Dienstverzeichnis (`B11`) und der Parametersatz (`B12`). Die zwei Wachen aus `B12a` decken künftig die zweite Art ab; für die erste gibt es keine, weil `@inject` erst zur Laufzeit auflöst. **Erste Handlung nach jedem Rückbau an der Hülle: starten.** |
 | **W16c‑O‑4** | **`Seitenschluessel` führt 34 Werte in einer Klasse** — Ansichten, Masken und Wege nebeneinander. Das ist gewollt (das Menüband kennt genau eine Schlüsselart, N4 prüft an einem Ort), aber die Klasse ist mit 319 Zeilen die größte Konstantenklasse des Hauses. Wenn iU11 sie teilt, dann entlang „Ansicht / Maske / Weg" — und mit einem gemeinsamen `Alle` |
 | **W16c‑O‑5** | **Das Menüband hat keine Freischaltung nach Projektzustand.** Der Bestand hatte sie auch nicht (`WinFormsNavigation.MenueAktualisieren` ist seit iU5 leer, mit Begründung); die Reitersperre der Startseite trägt das. Wer sie je will, hat mit der Tabelle jetzt den Ort dafür |
+
+---
+
+## Anwenderwunsch W16c‑E‑6 (06.09.2026) — Administration-Menü umgeordnet
+
+> **Zur Kennung.** Der Auftrag nannte diesen Wunsch „W16c‑E‑5". Diese Kennung
+> war schon vergeben: **W16c‑E‑5** ist seit dem 05.09.2026 die Farbgebung von
+> Menüband und Kopfband (§ 6, umgesetzt in `04d5ac6`, mit eigenem Statusblock
+> im Umsetzungskonzept). Zwei Entscheide unter einer Kennung machten das
+> Register unbrauchbar; der Wunsch läuft deshalb als **W16c‑E‑6**, der nächsten
+> freien Nummer. Wer nach „W16c‑E‑5 / Administration" sucht, findet ihn hier.
+
+**Wortlaut des Anwenders (06.09.2026):** „Administration: Verschiebe BHKW von
+Energiesystem in ‚Wärmebedarf & Heizung'. Verschiebe Solarkollektoren von
+Energiesystem in ‚Wärmebedarf & Heizung'. Verschiebe Pufferspeicher von
+‚Wärmebedarf & Heizung' in Energiesystem. Erstelle in ‚Wärmebedarf & Heizung'
+Unterrubrik ‚Profile & Lastgänge'; verschiebe in diese Rubrik: ‚Wärmebedarf
+Lastgang', ‚Prozesswärme', ‚Solarthermieganglinie' (aus Menü Energiesystem)."
+
+**Der Ordnungsgedanke dahinter** — er steht hier, weil er die zwei
+Entscheidungen unten trägt: Die Rubrik „Wärmebedarf & Heizung" sammelt danach
+die **Wärmeerzeuger** (was Wärme macht), „Energiesysteme" die **Anlagen, die
+Strom erzeugen oder Wärme puffern**, und die neue Unterrubrik die
+**Zeitreihen** (was einen Verlauf über das Jahr beschreibt, kein Gerät).
+
+### Vorher / Nachher — nur der Kopf „Administration"
+
+```
+VORHER — 55 Punkte, 13 aufklappende      NACHHER — 54 Punkte, 12 aufklappende
+
+Administration                           Administration
+├─ Wärmebedarf & Heizung ▸               ├─ Wärmebedarf & Heizung ▸
+│  ├─ Brauchwasser                       │  ├─ Brauchwasser
+│  ├─ Kessel                             │  ├─ Kessel
+│  ├─ Prozesswärme              [3]      │  ├─ Wärmepumpe
+│  ├─ Pufferspeicher            [2]      │  ├─ BHKW                       [1]
+│  ├─ Wärmebedarf Lastgang      [3]      │  ├─ Solarkollektoren        [1][4]
+│  └─ Wärmepumpe                         │  └─ Profile & Lastgänge ▸      [3]
+├─ Strombedarf & Speicher ▸              │     ├─ Wärmebedarf Lastgang
+│  └─ (4 Punkte, unverändert)            │     ├─ Prozesswärme
+├─ Energiesysteme ▸                      │     └─ Solarthermieganglinie
+│  ├─ Photovoltaik ▸            [4]      ├─ Strombedarf & Speicher ▸
+│  │  └─ Bearbeiten                      │  └─ (4 Punkte, unverändert)
+│  ├─ Solarkollektoren ▸     [1][4]      ├─ Energiesysteme ▸
+│  │  └─ Bearbeiten                      │  ├─ Photovoltaik               [4]
+│  ├─ Solarthermieganglinie     [3]      │  └─ Pufferspeicher             [2]
+│  └─ BHKW                      [1]      ├─ Klimadaten & Umgebung ▸
+├─ Klimadaten & Umgebung ▸               ├─ Daten & Import ▸
+├─ Daten & Import ▸                      ├─ Kostenverwaltung ▸
+├─ Kostenverwaltung ▸                    ├─ Gebäude ▸
+├─ Gebäude ▸                             ├─ Einstellungen
+├─ Einstellungen                         ├─ Gesetzliche Parameter
+├─ Gesetzliche Parameter                 ├─ Katalogdubletten
+├─ Katalogdubletten                      └─ Lizenzverwaltung
+└─ Lizenzverwaltung
+
+[1] von „Energiesysteme" nach „Wärmebedarf & Heizung"
+[2] von „Wärmebedarf & Heizung" nach „Energiesysteme"
+[3] in die NEUE Unterrubrik „Profile & Lastgänge"
+[4] Untermenü mit einem einzigen Punkt „Bearbeiten" aufgelöst
+```
+
+Die acht Rubriken darunter (Klimadaten & Umgebung bis Lizenzverwaltung) und die
+drei anderen Köpfe (Projekt, Hilfe, Sprache) sind **unberührt**.
+
+### Die Zahlen
+
+| | vorher | nachher | warum |
+|---|---|---|---|
+| Punkte (ohne Trenner) | 55 | **54** | +1 Unterrubrik, −2 aufgelöste „Bearbeiten"-Punkte |
+| davon **handelnd** | 42 | **42** | **unverändert** — kein Ziel entfallen, keines hinzugekommen |
+| davon aufklappend | 13 | **12** | +1 Unterrubrik, −2 aufgelöste Untermenüs |
+| Trennstriche | 8 | 8 | unberührt |
+| Bilder | 11 | 11 | unberührt — sie hängen an den Rubrikköpfen, nicht am Inhalt |
+| Ziele unter „Administration" | 28 | **28** | dieselbe Menge, andere Stelle im Baum |
+| Menütiefe | 3 Ebenen | 3 Ebenen | der dreistufige Weg heißt nur anders (s. u.) |
+
+**Die 42 ist die Zahl, an der die Vollzähligkeit hängt.** Punkte, die nur
+aufklappen, sind Wegweiser; ein Ziel ist ein Weg in die Anwendung. Deshalb
+prüft der Nachweis N4 seit W16c‑E‑6 nicht nur Zahlen, sondern die **Menge der
+28 Ziele** unter „Administration" und den Weg jedes verschobenen Punktes.
+
+### Zwei Entscheidungen zu den Ein-Punkt-Untermenüs
+
+**Beide aufgelöst.** „Photovoltaik ▸ Bearbeiten" und „Solarkollektoren ▸
+Bearbeiten" führten je **genau einen** Punkt, und dieser Punkt hieß
+„Bearbeiten" — ein Wort, das nichts sagt, was der Vater nicht schon sagt. Der
+Klick darauf war reine Wegzoll: aufklappen, um das Einzige zu wählen, was da
+steht. `MenuItem_PV` und `MenuItem_Solarkollektoren` tragen jetzt selbst das
+Ziel ihres früheren Kindes (`Seitenschluessel.PvAdmin` bzw.
+`…SolarkollektorenAdmin`), und `MenuItem_PC_Bearbeiten` /
+`MenuItem_ST_Bearbeiten` fallen weg.
+
+Für **Solarkollektoren** kam der Anlass aus dem Wunsch selbst: Der Punkt zieht
+nach „Wärmebedarf & Heizung" und steht dort zwischen lauter unmittelbar
+handelnden Geschwistern (Brauchwasser, Kessel, Wärmepumpe, BHKW). Ein einzelnes
+„▸ Bearbeiten" mitten darin wäre ein Bruch in der Reihe.
+
+Für **Photovoltaik** war die Lage nach der Umordnung dieselbe: „Energiesysteme"
+führt nur noch zwei Punkte, und **Pufferspeicher** handelt unmittelbar. Bliebe
+Photovoltaik aufklappend, hätte eine Rubrik mit zwei Zeilen zwei verschiedene
+Bedienweisen. Der Anwender hat für Solarkollektoren gefragt, „ob das Untermenü
+mit nur einem Punkt noch sinnvoll ist" — die Antwort gilt für beide gleich.
+
+**Was das kostet:** die zwei Textschlüssel `MENU_PC_BEARBEITEN` und
+`MENU_ST_BEARBEITEN` werden vom Menü nicht mehr gelesen. Sie bleiben im
+Katalog stehen (Löschen brächte keinen Gewinn und einen Designer-Lauf mehr);
+die Tabelle sagt im Kopfkommentar, dass sie verwaist sind.
+
+**Was das NICHT kostet:** die Menütiefe. Bis W16c‑E‑6 war „Administration ▸
+Energiesysteme ▸ Photovoltaik ▸ Bearbeiten" der **einzige** dreistufige Weg des
+Bestands — an ihm hing der Nachweis, dass `epos-menueband-klappe--tief` über
+drei Ebenen trägt (Befund W16c‑B13). Diesen Weg gibt es nicht mehr; an seine
+Stelle tritt **„Administration ▸ Wärmebedarf & Heizung ▸ Profile & Lastgänge ▸
+Wärmebedarf Lastgang"**. Die zwei Fälle, die den alten Weg gingen
+(`MenuebandTests.Ein_Punkt_der_dritten_Ebene_meldet_und_schliesst_das_ganze_Band`
+und `HauptfensterTests.Ein_Punkt_der_dritten_Ebene_landet_im_selben_Handler`),
+gehen jetzt den neuen — der Befund bleibt bewacht.
+
+### Die neue Unterrubrik
+
+| | |
+|---|---|
+| Name | `MenuItem_ProfileLastgaenge` — die Namenskonvention der Rubriken; anders als der Kopf „Sprache" (der auf der obersten Ebene steht) |
+| Textschlüssel | `MENU_PROFILE_LASTGAENGE`, de **„Profile & Lastgänge"**, en **„Profiles & load curves"** |
+| Ziel | **keines** — sie klappt nur auf |
+| Bild | **keines** — es gibt kein PNG unter `wwwroot/bilder/menue/`, das sie meinte; dieselbe Lage wie beim Kopf „Sprache" |
+| Herkunft | **keine Designer-Herkunft.** Sie ist nach „Sprache" die zweite solche Zeile und steht deshalb im Kopfkommentar der `Menuetabelle` |
+| Reihenfolge darin | Wärmebedarf Lastgang, Prozesswärme, Solarthermieganglinie — wörtlich die des Wunsches |
+
+Das Kaufmannsund steht **einfach** da („Profile & Lastgänge"), nicht verdoppelt
+— dieselbe Angleichung **A‑2**, die schon „Daten & Import" und „Wärmebedarf &
+Heizung" betrifft: WinForms verdoppelt `&` für das Tastenkürzel, Razor nicht.
+
+### Was sich NICHT geändert hat
+
+* **Namen, Seitenschlüssel, Bilder und Kürzel** aller verschobenen Punkte —
+  es wandert die Zuordnung, nicht die Kennung. `HauptfensterHuelle.Weg` und die
+  Maskenschlüssel des Kerns sind unberührt.
+* **`help_mapping.txt`** — die Datei nennt **keinen** `MenuItem_*`-Anker
+  (nachgesehen: 0 Treffer). Der Menüumbau berührt die Hilfe nicht.
+* **`Start/Kachelbilder.cs` und die Startseite** — die 21 Kacheln und die sechs
+  Reiter sind nicht Gegenstand dieses Wunsches. Nur das Menüband ist umgeordnet.
+* **`Menueband.razor`** — kein Zeichen Programmtext. Die Rekursion in
+  `Untermenue(eltern, ebene)` trägt jede Tiefe; die Umordnung ist reine
+  Datenänderung in `Menuetabelle.cs`. Das ist die Probe darauf, dass „das Menü
+  ist Daten" trägt.
+
+### Nachweis
+
+| Was | Ergebnis |
+|---|---|
+| `Werkzeuge/ResourceDesigner/designer_neu.py` | `Eintraege: 4876 (vorher 4876); Bloecke gleich 4876, abweichend 0, neu 0` — der eine neue Schlüssel steht im Designer, von Hand ergänzt wurde nichts |
+| Bau `EPOS.Kern` + `EPOS.UI` + `EPOS.UI.Tests` | 0 Fehler, 7 Warnungen (alle vorbestehend) |
+| `dotnet test` unter `LANG=de_DE.UTF-8` | **2692 / 2692 grün** (vorher 2683) |
+| `dotnet test` unter `LANG=en_US.UTF-8` | **2692 / 2692 grün** (vorher 2683) |
+| neue Fälle | **9** in `MenuebandTests` (Abschnitt „Anwenderentscheid W16c‑E‑6") |
+| geänderte Fälle | 5 — die zwei Zählfälle, der Fall über die sechs Punkte der Rubrik und die zwei dreistufigen Wege (einer je Testklasse) |
+
+Die neun neuen Fälle prüfen: die **sechs Punkte** von „Wärmebedarf & Heizung"
+in ihrer Reihenfolge; die Unterrubrik mit **genau drei** Punkten in der
+gewünschten Reihenfolge, ohne Ziel und ohne Bild; „Energiesysteme" mit
+Photovoltaik und Pufferspeicher, **beide handelnd**; dass
+`MenuItem_PC_Bearbeiten` und `MenuItem_ST_Bearbeiten` **nicht mehr vorkommen**
+und ihre Väter das Ziel geerbt haben; dass **kein** verschobener Punkt noch in
+seiner alten Rubrik steht (die Gegenprobe — der Eindeutigkeitsfall über die
+Namen liest den Baum flach und fände ein Doppel nicht); dass **jeder**
+verschobene Punkt seinen Seitenschlüssel, sein Bild und sein Kürzel behält;
+dass die **Menge der 28 Ziele** unter „Administration" dieselbe ist wie vorher;
+dass die neue Rubrik in **beiden Sprachen** beschriftet ist; und am gezeichneten
+Band, dass der Weg über drei Ebenen bis zu den drei Zeitreihen führt und der
+Pufferspeicher drüben bei den Energiesystemen steht.
+
+> **Zum flatterhaften Fall.** Der erste Gesamtlauf unter `de_DE` fiel mit
+> `ProjektTransferDialogTests.Schliessen_meldet_ob_ein_Import_gelungen_ist`
+> rot aus; der Fall läuft allein und in den drei folgenden Gesamtläufen grün.
+> Das ist **W16b‑O‑2** (§ 11) und hat mit dem Menü nichts zu tun.
+
+### Abnahmepunkte A‑W16c‑E‑5 (Windows)
+
+Auf Linux ist nur der bunit-Fall geprüft. Was ein Windows-Gerät zeigen muss:
+
+| # | Punkt | Erwartung |
+|---|---|---|
+| **A‑W16c‑E‑5‑1** | Administration ▸ **Wärmebedarf & Heizung** | Sechs Zeilen in dieser Reihenfolge: Brauchwasser, Kessel, Wärmepumpe, BHKW, Solarkollektoren, **Profile & Lastgänge ▸**. Nur die letzte trägt den Pfeil |
+| **A‑W16c‑E‑5‑2** | … ▸ **Profile & Lastgänge** | Klappt seitlich auf und zeigt drei Zeilen: Wärmebedarf Lastgang, Prozesswärme, Solarthermieganglinie. Jede öffnet ihre Maske |
+| **A‑W16c‑E‑5‑3** | Administration ▸ **Energiesysteme** | Zwei Zeilen: **Photovoltaik** und **Pufferspeicher**, beide **ohne** Pfeil. Ein Klick auf Photovoltaik öffnet unmittelbar die PV-Verwaltung (kein „Bearbeiten" mehr), ein Klick auf Pufferspeicher die Pufferspeicher-Verwaltung |
+| **A‑W16c‑E‑5‑4** | **BHKW und Solarkollektoren** | Beide stehen unter „Wärmebedarf & Heizung" und öffnen dieselben Masken wie vorher unter „Energiesysteme" |
+| **A‑W16c‑E‑5‑5** | **Tastaturweg** | Mit ← → auf „Administration", ↓ öffnet den Kopf, → öffnet „Wärmebedarf & Heizung", **5 × ↓** steht auf „Profile & Lastgänge", → öffnet sie, Enter auf „Wärmebedarf Lastgang" öffnet die Maske. Zweimal ← führt Ebene um Ebene zurück, Esc schließt alles |
+| **A‑W16c‑E‑5‑6** | **Englisch** | Unter „Language ▸ English" heißt die Unterrubrik **„Profiles & load curves"**, die Rubriken „Heat requirement & heating" und „Energy systems" wie bisher |
+| **A‑W16c‑E‑5‑7** | **Die dritte Ebene am Bildschirmrand** | „Profile & Lastgänge" ist die **letzte** Zeile ihrer Klappe und öffnet weiter rechts als der bisherige dreistufige Weg. Zu prüfen ist, dass die Klappe der dritten Ebene nicht am rechten Fensterrand abgeschnitten wird — auch bei 150 % Skalierung und schmalem Fenster |
+
+Die Punkte tragen die Kennung **A‑W16c‑E‑5**, wie im Auftrag verlangt; der
+Entscheid selbst läuft aus dem oben genannten Grund als **W16c‑E‑6**.
+
+### Berührte Dateien
+
+| Datei | Was |
+|---|---|
+| `EPOS.UI/Bausteine/Menuetabelle.cs` | der Kopf „Administration" umgeordnet; Kopfkommentar um den Absatz zu W16c‑E‑6 und um „die Datei ist seit W16c die Quelle" erweitert; Zahlen im Klassenkommentar (54 / 42 / 12) |
+| `EPOS.Kern/MyResource/Resource.resx`, `.en-US.resx` | **ein** neuer Schlüssel `MENU_PROFILE_LASTGAENGE` |
+| `EPOS.Kern/MyResource/Resource.Designer.cs` | per `designer_neu.py schreiben` erzeugt |
+| `EPOS.UI.Tests/Bausteine/MenuebandTests.cs` | 9 neue Fälle, 4 nachgezogen |
+| `EPOS.UI.Tests/Seiten/HauptfensterTests.cs` | 1 Fall nachgezogen (der dreistufige Weg), 1 Kommentar |
+| `EPOS.UI/Bausteine/Menueband.razor`, `EPOS.UI/Seiten/Hauptfenster.razor`, `EPOS.UI/Seiten/Seitenschluessel.cs`, `WindowsFormsApplication1/Views/Hauptformular/Hauptfensterrahmen.cs` | nur die Zahl 55 → 54 im Kommentar |
+| `CLAUDE.md`, `EPOS.UI/CLAUDE.md`, `WindowsFormsApplication1/CLAUDE.md`, `EPOS.iOS/CLAUDE.md` | Zahl und Entscheid nachgetragen |
+| dieses Protokoll | § 4 (Zahlen, Nachtrag) und dieser Abschnitt |

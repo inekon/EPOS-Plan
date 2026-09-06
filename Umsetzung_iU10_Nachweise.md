@@ -396,6 +396,17 @@ Ränge) und der Workflow-Umstellung: Bau, Simulatorstart, Erststart, Prüfmodus 
 Rechenweg samt Paket A die neue Basis trifft. Beide Läufe ausgelöst per `workflow_dispatch` unter der pauschalen
 Freigabe bis Migrationsende.
 
+**Dreißigster Lauf 34017405042 (`ios.yml`, `macos-26`, 06.09.2026, 06:47–06:53 UTC, 5 min 54 s)** auf
+`cb8379e` — der Stand **nach der Welle iF30 „Lesemodus streng"**: Die Schreibnaht `Schreibnaht.Pruefe` in
+`SqliteDatenzugriff.ErzeugeKommando` sperrt im Lesemodus jede schreibende Anweisung des Kerns, und genau das trifft
+den Prüfmodus der iOS-Hülle, der ohne Lizenz rechnet und Ergebnisse schreibt: `EPOS.iOS/Pruefung/Prueflauf.cs` hebt
+die Sperre mit einer benannten Zeile `Schreibnaht.WerkzeugFreigabe(…)` nach `KulturSetzen`, die Seed-Kopie und
+`VACUUM INTO` in `Datenbankbereitstellung` laufen als Ausnahme „Sicherung", und `IosProjektQuelle.Lizenzlage()`
+liefert der `AppWurzel` den Zustand für das Lizenzbanner. Bau, Simulatorstart, Erststart mit Seed-Kopie, Prüfmodus
+1030 und iZ6-Vergleich gegen `2026-09-05_R2_Zeitbasis` PASS und byte-gleich (236 670 Werte, `diff -rq` leer; das Vergleichswerkzeug meldet „Schreibnaht: freigegeben für EPOS.Referenzlauf (Rechennachweis ohne Lizenz)"). Dazu im selben Stand: die Referenzbasis R2_Zeitbasis
+(Anwenderentscheid 05.09.), `Resource.Designer.cs` per Werkzeug erzeugt, PufferSpProjektDialog im Formularraster,
+Wechselrichter-Konzept. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.

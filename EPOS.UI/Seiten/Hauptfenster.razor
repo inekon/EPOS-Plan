@@ -9,8 +9,9 @@
    ist die Huelle Hauptfensterrahmen (W16c.3).
 
    AUFBAU (Vermessung § 12.6):
-     Menueband   55 Punkte in drei Ebenen, aus Menuetabelle (erzeugt;
-                 der Kopf "Sprache" aus dem Entscheid W16c-E-2)
+     Menueband   54 Punkte in drei Ebenen, aus Menuetabelle (einmal erzeugt,
+                 seither die Quelle; der Kopf "Sprache" aus dem Entscheid
+                 W16c-E-2, der umgeordnete Kopf "Administration" aus W16c-E-6)
      Kopfband    PRODUKTNAME · GATTUNG · CLAIM · Version
      Inhalt      AppWurzel - dieselbe Wurzel, die auf iOS laeuft (E-1)
 
@@ -38,7 +39,8 @@
                Zustand="@Zustand"
                Startansicht="@Startansicht"
                StartseiteGaben="@StartseiteGaben"
-               BerichteKostenGaben="@BerichteKostenGaben">
+               BerichteKostenGaben="@BerichteKostenGaben"
+               Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
                        Eintraege="@Eintraege"
@@ -74,7 +76,7 @@
     //  Das Menue
     // =====================================================================
 
-    /// <summary>Die Menuetabelle; Vorgabe ist die des Bestands (55 Punkte).</summary>
+    /// <summary>Die Menuetabelle; Vorgabe ist die des Bestands (54 Punkte).</summary>
     [Parameter] public IReadOnlyList<Menuepunkt> Eintraege { get; set; } = Menuetabelle.Eintraege;
 
     /// <summary>Beschriftung der Menueleiste fuer die Sprachausgabe.</summary>
@@ -144,6 +146,13 @@
 
     /// <summary>Der Parametersatz von „Berichte &amp; Kosten"; unter Windows leer.</summary>
     [Parameter] public IReadOnlyDictionary<string, object>? BerichteKostenGaben { get; set; }
+
+    /// <summary>
+    /// Das Lagebild der Lizenz für das Banner der Wurzel (Welle iF30). Es kommt
+    /// fertig aus <c>HauptfensterHuelle</c> und wird hier nur durchgereicht —
+    /// das Fenster selbst wertet nichts davon aus.
+    /// </summary>
+    [Parameter] public WindowsFormsApplication1.LizenzLage? Lizenzlage { get; set; }
 
     // =====================================================================
     //  Der EINE Handler

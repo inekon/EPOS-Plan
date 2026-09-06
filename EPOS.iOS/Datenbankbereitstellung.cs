@@ -187,7 +187,15 @@ internal static class Datenbankbereitstellung
 
             // Der Dateiname geht als Parameter hinein - VACUUM INTO nimmt einen
             // Ausdruck, und ein Anwenderpfad gehoert nie in eine SQL-Zeichenkette.
-            DataRepository.ExecuteNonQuery("VACUUM INTO ?", new[] { new DbParam("@ziel", ziel) });
+            //
+            // AUSNAHME DER SCHREIBNAHT (Welle iF30): VACUUM INTO faengt die Naht als
+            // schreibende Anweisung ab, obwohl es den Bestand gar nicht anfasst - es
+            // schreibt eine ZWEITE Datei daneben. Eine Sicherung ist ein Export, und
+            // der bleibt im Lesemodus ausdruecklich erlaubt (Konzept § 6).
+            using (Schreibnaht.Freigabe(Schreibnaht.GRUND_SICHERUNG))
+            {
+                DataRepository.ExecuteNonQuery("VACUUM INTO ?", new[] { new DbParam("@ziel", ziel) });
+            }
             return File.Exists(ziel) ? ziel : "";
         }
         catch
