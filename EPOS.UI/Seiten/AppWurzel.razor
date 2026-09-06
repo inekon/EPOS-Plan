@@ -54,7 +54,12 @@
        ein Dauerbanner gelten laesst. Die drei WARNSTUFEN vor dem Ablauf
        (30/14/7 Tage, Konzept § 6) sind dagegen der „dezente Hinweis beim
        Start": Sie verfallen nach HinweisDauer, weil die Lizenz noch traegt und
-       nichts blockiert ist. *@
+       nichts blockiert ist.
+
+       Und sie erscheinen EINMAL JE KALENDERTAG statt bei jedem Programmstart
+       (Anwenderentscheid iF30-O-2 vom 06.09.2026). Entschieden wird das im
+       Kern; hier steht davon nur die Frage nach LizenzLage.WarnungZeigen in
+       LizenzlageUebernehmen. Der Lesemodus ist ausgenommen. *@
     @* Der Wirt traegt die Klasse, nicht das Banner: Eine Ansicht darf ihre EIGENEN
        Warnbanner haben (die Projektliste hat eines), und ein Pruefstand muss die zwei
        auseinanderhalten koennen. *@
@@ -298,7 +303,13 @@ else
     private void LizenzlageUebernehmen()
     {
         _lizenz = Lizenzlage ?? Quelle.Lizenzlage();
-        _lizenzbanner = _lizenz is null ? "" : _lizenz.Text;
+
+        // WarnungZeigen ist die Antwort des Kerns auf „heute schon gewarnt?"
+        // (Anwenderentscheid iF30-O-2 vom 06.09.2026, „einmal taeglich reicht").
+        // Die Wurzel FRAGT nur - welcher Tag und welche Stufe gemerkt sind, steht
+        // in LizenzLage.MitTagesmerker und an keiner zweiten Stelle. Der
+        // Lesemodus traegt dort immer true und bleibt bei jedem Start sichtbar.
+        _lizenzbanner = _lizenz is null || !_lizenz.WarnungZeigen ? "" : _lizenz.Text;
     }
 
     /// <inheritdoc />

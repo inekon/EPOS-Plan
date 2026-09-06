@@ -233,4 +233,69 @@ public class LizenzbannerTests : BunitContext
         Assert.Equal(englisch.Text, cut.Find(".epos-lizenzbanner .epos-warnbanner-text").TextContent);
         Assert.Contains("Read-only", cut.Find(".epos-lizenzbanner .epos-warnbanner-text").TextContent);
     }
+
+    // =====================================================================
+    //  11-12  Einmal je Kalendertag (Anwenderentscheid iF30-O-2, 06.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Fall 11: <b>Eine heute schon gezeigte Warnstufe bringt KEIN Banner.</b> Der
+    /// Anwenderentscheid iF30‑O‑2 vom 06.09.2026 lautet „einmal täglich reicht" —
+    /// gebaut war bis dahin „einmal je Programmstart".
+    ///
+    /// <para><b>Die Wurzel entscheidet das nicht, sie fragt.</b> Ob heute schon gewarnt
+    /// wurde, steht im Kern (<c>LizenzLage.MitTagesmerker</c> über
+    /// <c>LizenzWarnungMerker</c>); hier kommt es als fertiges
+    /// <c>LizenzLage.WarnungZeigen</c> an. Deshalb prüft dieser Fall genau das: eine
+    /// vollständige Lage mit Text und Dringlichkeit — und trotzdem kein Kasten.</para>
+    /// </summary>
+    [Theory]
+    [InlineData(30, LizenzDringlichkeit.Hinweis)]
+    [InlineData(14, LizenzDringlichkeit.Hinweis)]
+    [InlineData(7, LizenzDringlichkeit.Warnung)]
+    public void Eine_heute_schon_gezeigte_Warnstufe_bringt_kein_Banner(
+        int tage, LizenzDringlichkeit dringlichkeit)
+    {
+        var stumm = new LizenzLage(LizenzStatus.Gueltig, false, tage, tage, dringlichkeit,
+                                   "Die Lizenz läuft in " + tage + " Tagen ab.",
+                                   "", warnungZeigen: false);
+
+        var cut = Aufbauen(stumm);
+
+        Assert.Empty(cut.FindAll(".epos-lizenzbanner"));
+        // Die Ansicht selbst steht unveraendert da - stumm heisst „kein Hinweis",
+        // nicht „keine Seite".
+        Assert.Single(cut.FindAll(".epos-seite"));
+    }
+
+    /// <summary>
+    /// Fall 12: <b>Das Lesemodus-Banner ist vom Tagesmerker unabhängig.</b> Es ist keine
+    /// Warnstufe, sondern der Zustand, den der Anwender beheben MUSS und sonst nicht
+    /// sieht (Hausregel W16b‑E‑6) — es steht bei jedem Start.
+    ///
+    /// <para>Nachgewiesen am echten Weg: Die Lage läuft dreimal durch
+    /// <c>MitTagesmerker</c>, so wie <c>LizenzLage.Ermitteln</c> es bei drei
+    /// Programmstarts täte. Der Merker wird dabei nicht einmal angefasst — deshalb
+    /// braucht dieser Fall auch keine Einstellungsattrappe.</para>
+    /// </summary>
+    [Fact]
+    public void Das_Lesemodus_Banner_ueberlebt_den_Tagesmerker()
+    {
+        var tag = new DateTime(2026, 9, 6);
+        LizenzLage lage = Lesemodus();
+
+        // Die Quelle wird EINMAL eingetragen: bunit baut den Dienstbehaelter beim
+        // ersten Zeichnen, danach nimmt er keinen weiteren Eintrag mehr an.
+        Services.AddSingleton<IProjektQuelle>(new TestProjektquelle());
+
+        for (int start = 0; start < 3; start++)
+        {
+            LizenzLage nachMerker = lage.MitTagesmerker(tag);
+            Assert.True(nachMerker.WarnungZeigen);
+
+            var cut = Render<AppWurzel>(p => p.Add(w => w.Lizenzlage, nachMerker));
+            Assert.Equal(Resource.LIZ_BANNER_LESEMODUS,
+                         cut.Find(".epos-lizenzbanner .epos-warnbanner-text").TextContent);
+        }
+    }
 }
