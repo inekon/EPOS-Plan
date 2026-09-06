@@ -66,6 +66,14 @@
                 <section class="epos-simkonfig-erzeuger">
                     <Gruppenkopf Titel="@KopfErzeuger" />
 
+                    @* H13: der Rechenweg zum Abschnitt, der die Rechnung parametriert -
+                       die Reihenfolge der Erzeuger IST die Kaskade. Der Fensterknopf oben
+                       im Kopfband bleibt, was er ist: die Bedienhilfe zur Seite. *@
+                    <p class="epos-simkonfig-hinweis">
+                        <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
+                                   StandardKurztext="@HilfeKurztextBerechnung" />
+                    </p>
+
                     @foreach (KachelGruppe gruppe in _daten.Gruppen)
                     {
                         <h3 class="epos-simkonfig-gruppe">@gruppe.Titel</h3>
@@ -296,6 +304,16 @@
 
     [Parameter] public string KopfText { get; set; } = "Erzeuger definieren, Pufferspeicher zuordnen:";
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Simulation_Config.btn_Help";
+
+    /// <summary>
+    /// H13 — der ZWEITE Hilfeschlüssel: der RECHENWEG statt der Bedienung. Er zeigt auf
+    /// die Wikiseite „Programm Dokumentation/Berechnung/Simulationsablauf"
+    /// (help_mapping.txt, Abschnitt „H13 — Rubrik Berechnung").
+    /// </summary>
+    [Parameter] public string HilfeSchluesselBerechnung { get; set; } = "Form_Simulation_Config.Berechnung";
+
+    /// <summary>Kurztext des Rechenweg-Knopfes, solange der Katalog den Schlüssel nicht kennt.</summary>
+    [Parameter] public string HilfeKurztextBerechnung { get; set; } = "Berechnungsweg: Simulationsablauf";
 
     [Parameter] public string AnsichtLabel { get; set; } = "Ansicht:";
     [Parameter] public string AnsichtListe { get; set; } = "Liste";

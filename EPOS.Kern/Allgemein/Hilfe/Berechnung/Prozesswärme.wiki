@@ -1,0 +1,119 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Prozesswärme | Stand: 2026-09-06 | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs,
+     EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Simulation/Init.cs,
+     EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs, EPOS.Kern/Allgemein/Energieeinheit.cs -->
+
+== Was berechnet wird ==
+
+Der '''Prozesswaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der dritte der drei
+Bedarfskanaele. Der Rechenweg ist derselbe wie beim Brauchwasser: je Profil ein Satz aus
+'''zwoelf Monatswerten''' und einem '''Wochenprofil mit 168 Stundenwerten''', daraus der
+Jahresgang.
+
+Der eigene Kanal ist der Grund, warum die Prozesswaerme ueberhaupt getrennt gefuehrt wird:
+Ein Erzeuger darf Heizung und Brauchwasser decken und die Prozesswaerme nicht — oder
+umgekehrt. Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen.
+
+== Eingangsgrößen ==
+
+{| class="wikitable"
+! Groesse !! Einheit !! Herkunft im Programm
+|-
+| Prozesswaermeprofile des Projekts || — || Dialog „Prozesswärme", Liste „Ausgewählt im Projekt"
+|-
+| Zwoelf Monatswerte je Profil || MWh || Prozesswaerme-Katalog (Kopfsatz des Profils)
+|-
+| Typbezug des Profils || — || Kopfsatz des Profils, Feld „Typ"
+|-
+| Wochenprofil, 168 Stundenwerte || beliebige Skala || Prozesstyp-Katalog, Reiter „Wochenwerte"
+|-
+| Jahressumme des Projekts || MWh oder kWh (waehlbar) || Dialog „Prozesswärme", Feld „Jahresverbrauch"; leer oder 0 = Katalogwerte gelten unveraendert
+|-
+| Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion abgeleitet
+|}
+
+== Rechenweg ==
+
+=== 1. Profile des Projekts sammeln ===
+
+Alle dem Projekt zugeordneten Prozessprofile werden nacheinander '''in denselben
+Zielvektor''' gerechnet; die Stundenwerte addieren sich. Kopf- und Typdaten kommen aus den
+'''Projektkopien''' — ein im Projekt geaendertes Profil rechnet mit seinen eigenen Werten,
+nicht mit denen des Katalogs.
+
+Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt der
+Typbezug''', bricht die Prozesswaermerechnung ab — ohne Typ gibt es keine Verteilung, und
+ein Vektor aus Nullen sieht aus wie ein Ergebnis.
+
+=== 2. Jahressumme des Projekts einrechnen ===
+
+ jv  = Summe der zwoelf Katalog-Monatswerte
+ pjv = Jahressumme des Projekts
+ Monatswert_neu(m) = Monatswert(m) * pjv / jv        fuer alle m, wenn pjv > 0
+
+Die Verteilung ueber das Jahr bleibt unveraendert; skaliert wird nur die Hoehe. Ist ''pjv''
+gesetzt und ''jv'' null, wird das Profil uebersprungen und gemeldet.
+
+Der Wert wird im Dialog in der '''gewaehlten Einheit''' eingegeben (Vorgabe MWh, wahlweise
+kWh) und intern in MWh gefuehrt.
+
+=== 3. Wochenprofil auf das Jahr kacheln ===
+
+ Start = Wochentag(1. Januar) * 24            (Montag = 0 … Sonntag = 6)
+ Jahreswert(h) = Wochenprofil( (Start + h) mod 168 )      fuer h = 0 … 8759
+
+Stunden 1 bis 24 des Wochenprofils sind der Montag, 145 bis 168 der Sonntag. Ein Profil,
+dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet.
+
+=== 4. Monatsweise auf die Monatswerte normieren ===
+
+ je Monat m:
+   S = Summe der gekachelten Jahreswerte innerhalb des Monats
+   Jahreswert(h) = Jahreswert(h) / S * Monatswert(m) * 1000      fuer alle h im Monat m
+
+Die '''Skala des Wochenprofils ist damit frei''' — es zaehlt nur das Verhaeltnis der 168
+Werte zueinander. Die '''Energiemenge bestimmen allein die Monatswerte'''; der Faktor 1 000
+rechnet sie von MWh in kWh.
+
+Der '''monatliche Verlauf''', den der Dialog auf Knopfdruck zeigt, ist genau das Ergebnis
+dieses Schrittes: die zwoelf Monatssummen des fertigen Stundenvektors. Er ist deshalb bis
+zur ersten Vorschaurechnung gesperrt — vorher gibt es nichts zu zeigen.
+
+=== 5. In den Kanal und in die Bilanz ===
+
+Der Vektor geht in den '''Prozesskanal'''. Ausgewiesen wird
+
+ Jahresmenge [MWh] = Summe der 8 760 Stundenwerte / 1000
+
+und zwar '''vor''' der Verteilung der Netzverluste; der Stundenvektor bekommt seinen Anteil
+daran anschliessend (siehe
+[[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7).
+
+'''Die Einheit gehoert zum Wert''' (Anwenderentscheid vom 04.09.2026). Bis dahin trug der
+eine Weg den Teiler 1 000 und der andere nicht — die Prozesswaerme stand in der Vorschau um
+den Faktor 1 000 zu hoch da. Die Umrechnung steht seither an EINER Stelle, und die
+Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kWh ohne.
+
+== Grenzen und Annahmen ==
+
+* '''Der Prozess ist eine Waermemenge, kein Prozess.''' Temperaturniveau, Vor- und Ruecklauf, Gleichzeitigkeit mehrerer Verbraucher und Abwaerme werden hier nicht gerechnet. Welcher Erzeuger den Prozesskanal ueberhaupt bedienen darf, entscheidet die Senkenzuordnung — dort wirkt auch die Temperaturpruefung (Warnkriterium W3).
+* '''Kein Wirkungsgrad, keine Verteilverluste je Prozess.''' Was eingegeben wird, ist die Nutzwaerme am Prozess; Verluste bildet der pauschale Netzverlust ab.
+* '''Der Wochengang ist starr.''' Dasselbe 168-Stunden-Muster gilt fuer alle 52 Wochen. Schichtplaene, Betriebsferien und Sonderschichten bildet allein der Monatswert ab; ein Werk mit drei Wochen Sommerstillstand braucht dafuer einen kleinen Julimonatswert, nicht ein zweites Profil.
+* '''Die Monatsmenge ist unantastbar.''' Der Kalender verschiebt nur die Verteilung INNERHALB des Monats; wie viele Wochenenden ein Monat hat, aendert seine Menge nicht.
+* '''Kein Auslieferungskatalog.''' Anders als beim Brauchwasser liefert das Programm keine Normprofile fuer Prozesswaerme mit — Monatswerte und Wochenprofil sind Anwenderdaten. Das ist Absicht: Ein Prozess ist ein Einzelfall.
+* '''Abbruch statt Nullprofil.''' Ein fehlender Typbezug beendet die Prozesswaermerechnung, statt sie mit Nullen fortzusetzen.
+
+== Ergebnisse und wo sie stehen ==
+
+* '''Dialog „Prozesswärme"''', Knopf „Simulation…" — Jahresmenge und Monatswerte der ausgewaehlten Profile; „monatlicher Verlauf…" zeigt sie als Balken.
+* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Prozessanteil im Jahresbedarf.
+* '''Bericht''' — Bedarfsuebersicht.
+* '''Laufprotokoll''' — uebersprungene Profile und der Abbruchgrund „Typ nicht definiert".
+
+== Bezüge ==
+
+* [[Programm Dokumentation/Prozesswärme|Prozesswärme]] — Bedienung des Dialogs und Katalogpflege
+* [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] — wie der Kanal in den Gesamtbedarf eingeht
+* [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]] — dieselbe Profilroutine
+* [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]] — dieselbe Profilroutine
+* [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — die drei Kanäle in der Kaskade

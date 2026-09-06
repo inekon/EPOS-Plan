@@ -1,0 +1,79 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Berechnung | Stand: 2026-09-06 | Rechenkern:
+     EPOS.Kern/Allgemein/Hilfe/BerechnungsHilfe.cs -->
+<!-- KEINE Themenseite, sondern die STARTSEITE der Rubrik. Der Anwender legt sie im Wiki
+     unter "Programm Dokumentation/Berechnung" an und kopiert diesen Text hinein. Die
+     Datei traegt deshalb einen fuehrenden Unterstrich: BerechnungsHilfe liest sie nicht
+     als Seite ein, und das Wissen des Assistenten bekommt keinen Abschnitt daraus. -->
+
+Diese Rubrik erklaert, '''wie EPOS-Plan rechnet'''. Sie ist der Unterbau der allgemeinen
+Programmdokumentation: Dort steht, was ein Dialog tut und wie er bedient wird — hier steht,
+welche Formel dahinter liegt, welche Zahl das Programm einsetzt, wenn Sie keine angeben, und
+was der Rechenkern bewusst '''nicht''' abbildet.
+
+Jede Seite folgt derselben Gliederung:
+
+* '''Was berechnet wird''' — die Ergebnisgroessen in zwei, drei Saetzen.
+* '''Eingangsgroessen''' — je Groesse die Einheit und die Stelle im Programm, an der sie herkommt.
+* '''Rechenweg''' — die Schritte in ihrer Reihenfolge, jeder mit Formel.
+* '''Grenzen und Annahmen''' — was der Rechenkern nicht tut.
+* '''Ergebnisse und wo sie stehen''' — Reiter des Simulationsergebnisses, Bericht, Kennzahlen.
+* '''Bezuege''' — die allgemeine Hilfeseite zum Thema und die verwandten Rechenwege.
+
+== Die Seiten der Rubrik ==
+
+{| class="wikitable"
+! Seite !! Worum es geht
+|-
+| [[Programm Dokumentation/Berechnung/Simulationsablauf|Simulationsablauf]] || Reihenfolge eines Laufs: Bedarf, Kaskade, Photovoltaik, Stromspeicher, Abschluss
+|-
+| [[Programm Dokumentation/Berechnung/Wärmebedarf|Wärmebedarf]] || Gebaeudewaerme, externe Ganglinien, die drei Bedarfskanaele und die Netzverluste
+|-
+| [[Programm Dokumentation/Berechnung/Brauchwasser|Brauchwasser]] || Jahressumme, Monatswerte und Wochen-Stundenprofil nach VDI 6002
+|-
+| [[Programm Dokumentation/Berechnung/Prozesswärme|Prozesswärme]] || dieselbe Profilroutine fuer den Prozesskanal
+|-
+| [[Programm Dokumentation/Berechnung/Strombedarf|Strombedarf]] || Stromverbraucherprofile und eingelesene Messlastgaenge im Viertelstundenraster
+|-
+| [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Wärmequelle Erdreich]] || Erdreichtemperatur nach Kusuda und die Auslegungspruefung nach VDI 4640
+|-
+| [[Programm Dokumentation/Berechnung/Heizkessel|Heizkessel]] || Nutzwaerme, Wirkungsgrad und Brennstoffeinsatz
+|-
+| [[Programm Dokumentation/Berechnung/BHKW|BHKW]] || Fahrweise, Strom- und Waermekennzahl, Pendelspeicher
+|-
+| [[Programm Dokumentation/Berechnung/Wärmepumpe|Wärmepumpe]] || Kennlinie, COP, Bivalenzpunkt und Heizstab
+|-
+| [[Programm Dokumentation/Berechnung/Pufferspeicher|Pufferspeicher]] || Kapazitaet, Hysterese, Bereitschaftsverluste
+|-
+| [[Programm Dokumentation/Berechnung/Solarthermie|Solarthermie]] || Kollektorertrag aus Einstrahlung und Kennlinie
+|-
+| [[Programm Dokumentation/Berechnung/Photovoltaik|Photovoltaik]] || Einstrahlung, Modultemperatur, Wechselrichter
+|-
+| [[Programm Dokumentation/Berechnung/Stromspeicher|Stromspeicher]] || Lade- und Entladefahrweise, Eigenverbrauch
+|}
+
+== Wie diese Seiten zu lesen sind ==
+
+; Zeitraster
+: Die Waermerechnung laeuft in '''8 760 Stundenschritten''' je Jahr, die Stromrechnung in
+  '''35 040 Viertelstunden''' (8 760 × 4). Das Jahr hat immer 365 Tage — einen 29. Februar
+  kennt der Rechenkern nicht.
+
+; Vorgabewerte
+: Wo eine Zahl genannt ist, die Sie nicht eingegeben haben, ist sie ein '''Vorgabewert des
+  Rechenkerns'''. Er steht auf der Seite ausdruecklich als solcher da, damit Sie ihn
+  wiedererkennen, wenn er in einem Ergebnis auftaucht.
+
+; Ausblick
+: Absaetze, die mit „in Umsetzung, Stand 06.09.2026" gekennzeichnet sind, beschreiben, was
+  ein Konzeptdokument vorsieht, aber '''noch nicht gerechnet wird'''. Sie sind kein Teil des
+  aktuellen Ergebnisses.
+
+; Ingenieurvorbehalt
+: Die Rechenwege sind Planungsmodelle. Sie ersetzen keine Auslegung nach den einschlaegigen
+  Regelwerken; die Ergebnisse sind fachlich auf Plausibilitaet zu pruefen.
+
+== Bezüge ==
+
+* [[Programm Dokumentation]] — die allgemeine Programmdokumentation
+* [[Programm Dokumentation/Simulation|Simulation]] — Bedienung des Simulationsdialogs
+* [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]] — die Reiter des Ergebnisfensters

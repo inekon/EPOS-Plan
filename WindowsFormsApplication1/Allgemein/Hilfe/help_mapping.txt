@@ -492,23 +492,40 @@ UcBericht.lblZiel      = Bericht#zielordner
 #                       ansprechbar.
 
 # ===========================================================================
-# H13 - Rubrik Berechnung
+# H13 - Rubrik Berechnung (06.09.2026, Anwenderwunsch "Erweiterung Hilfe")
 # ===========================================================================
+# Die Details der Berechnung gehoeren nicht in die allgemeine Erklaerung der
+# Funktionen, sondern in eine EIGENE Wikirubrik - und die allgemeinen Seiten
+# verweisen darauf. Die Rubrik heisst
 #
-# Anwenderwunsch vom 06.09.2026: "die Details der Berechnung sollten in einer
-# Separaten Hilferubrik auf der wiki sein und nicht in der allgemeine Erklaerung
-# der Funktionen. Die Erlaeuterung sollte aber aufrufbar sein aus den allgemeine
-# Erklaerungen mit Bezuegen."
+#     Programm Dokumentation/Berechnung/<Seitenname>
 #
-# Deshalb ein ZWEITER Schluessel je Dialog neben dem Fensterschluessel, Muster
-# <Formname>.Berechnung, Ziel "Berechnung/<Seitenname>" - die Unterseiten der
-# neuen Wikirubrik "Programm Dokumentation/Berechnung/". Der Knopf sitzt im
-# Dialog am Kopf des Abschnitts, der die Rechnung parametriert; der Knopf oben
-# rechts bleibt, was er war.
+# und das ZIEL einer Zeile ist deshalb "Berechnung/<Seitenname>" - ein Ziel MIT
+# Schraegstrich. Der Katalog loest es ueber den PFADWEG auf
+# (WikiHelpCatalog.UeberPfad): "/berechnung/photovoltaik/" ist das eindeutige
+# Ende von "/wiki/programm_dokumentation/berechnung/photovoltaik/". Leerzeichen
+# im Seitennamen sind zulaessig - PfadNormalisieren ebnet sie zu Unterstrichen
+# ein, so wie MediaWiki es im Titel tut.
 #
-# Die Quelltexte der Seiten liegen als MediaWiki-Markup im Rechenkern unter
-# EPOS.Kern/Allgemein/Hilfe/Berechnung/ (eine .wiki-Datei je Wikiseite) und sind
-# dort eingebettet. Wer eine Seite umbenennt, benennt BEIDES um.
+# Der SCHLUESSEL folgt dem Muster <Formname>.Berechnung. Er steht NEBEN dem
+# bestehenden <Formname>.btn_Help, ersetzt ihn nicht: Der Fensterknopf oben
+# rechts bleibt die Bedienhilfe, der neue Knopf sitzt am Kopf des Abschnitts,
+# der die Rechnung parametriert.
+#
+# Die Seiten sind im Wiki ANZULEGEN (Handgriffe im Protokoll
+# H13_Berechnungshilfe_Protokoll.md). Bis dahin traegt der mitgelieferte
+# Startbestand help_cache.json Kurztext und Adresse; ein erfolgreicher
+# Onlineabruf loescht sie nicht (WikiHelpCatalog.BerechnungsRueckfallErgaenzen).
+
+# Teil A (Ablauf und Bedarf)
+Form_Simulation_Config.Berechnung      = Berechnung/Simulationsablauf
+Form_Gebaeude.Berechnung               = Berechnung/Wärmebedarf
+Form_Waermebedarf.Berechnung           = Berechnung/Wärmebedarf
+Form_Brauchwasser.Berechnung           = Berechnung/Brauchwasser
+Form_Prozesswaerme.Berechnung          = Berechnung/Prozesswärme
+Form_Stromverbraucher.Berechnung       = Berechnung/Strombedarf
+Form_Stromganglinie.Berechnung         = Berechnung/Strombedarf
+Form_QuelleErdreich.Berechnung         = Berechnung/Wärmequelle Erdreich
 
 # Teil B (Erzeuger und Speicher)
 Form_Heizkessel.Berechnung       = Berechnung/Heizkessel

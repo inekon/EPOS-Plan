@@ -1,0 +1,150 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Bezuege | Stand: 2026-09-06 | Rechenkern:
+     EPOS.Kern/Allgemein/Hilfe/BerechnungsHilfe.cs -->
+<!-- KEINE Wikiseite, sondern die ARBEITSVORLAGE fuer den Anwender: je allgemeiner
+     Hilfeseite ein kopierfertiger Abschnitt "== Berechnung ==", der auf die
+     Rechenwegseite verweist. Der Anwender fuegt ihn in die jeweilige Seite der Rubrik
+     "Programm Dokumentation" ein — ans Ende, vor einem etwaigen Abschnitt "Siehe auch".
+     Fuehrender Unterstrich: BerechnungsHilfe liest die Datei nicht als Seite ein. -->
+
+Wohin welcher Abschnitt gehoert, sagt die Ueberschrift des Blocks. Der Text zwischen den
+Linien wird unveraendert in die genannte Wikiseite kopiert.
+
+----
+'''Programm Dokumentation/Wärmebedarf'''
+
+ == Berechnung ==
+ Wie aus Gebaeuden, Ganglinien, Brauchwasser und Prozesswaerme die stuendliche Waermelast
+ des Projekts entsteht — Formeln, Kanaele und die Verteilung der Netzverluste — steht unter
+ [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
+
+----
+'''Programm Dokumentation/Gebäude'''
+
+ == Berechnung ==
+ Die Heizlast eines Gebaeudes entsteht aus den U-Werten, den Waermebruecken, dem
+ Luftwechsel, den solaren und internen Gewinnen und einem 24-Stunden-Kapazitaetsmodell.
+ Der vollstaendige Rechenweg steht unter
+ [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
+
+----
+'''Programm Dokumentation/Brauchwasser'''
+
+ == Berechnung ==
+ Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwerte des
+ Brauchwasserbedarfs werden, steht unter
+ [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]].
+
+----
+'''Programm Dokumentation/Prozesswärme'''
+
+ == Berechnung ==
+ Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwerte des
+ Prozesswaermebedarfs werden, steht unter
+ [[Programm Dokumentation/Berechnung/Prozesswärme|Berechnung: Prozesswärme]].
+
+----
+'''Programm Dokumentation/Stromverbraucher'''
+
+ == Berechnung ==
+ Wie ein Stromverbraucherprofil auf das Jahr verteilt und mit den uebrigen Profilen zum
+ Strombedarf des Projekts zusammengefuehrt wird, steht unter
+ [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]].
+
+----
+'''Programm Dokumentation/Strombedarf'''
+
+ == Berechnung ==
+ Profile, eingelesene Messlastgaenge, Viertelstundenraster und Jahresdauerlinie: der
+ Rechenweg steht unter
+ [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]].
+
+----
+'''Programm Dokumentation/Simulation'''
+
+ == Berechnung ==
+ Die Reihenfolge eines Simulationslaufs — Bedarf, Kaskade der Waermeerzeuger,
+ Photovoltaik, Stromspeicher, Abschluss — steht unter
+ [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]].
+
+----
+'''Programm Dokumentation/Wärmequelle Erdreich'''
+
+ == Berechnung ==
+ Jahresgang der Erdreichtemperatur nach Kusuda, konstante Sondentemperatur und die
+ Auslegungspruefung nach VDI 4640 Blatt 2 stehen unter
+ [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung: Wärmequelle Erdreich]].
+
+----
+'''Programm Dokumentation/Klimadaten'''
+
+ == Berechnung ==
+ Wie die Klimadaten in den Lauf eingehen — Aussentemperatur in Ortszeit, Tagtypen,
+ Wochenendkennzeichen und der daraus abgeleitete Kalender —, steht unter
+ [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]]
+ und [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
+
+----
+'''Programm Dokumentation/Heizkessel'''
+
+ == Berechnung ==
+ Nutzwaerme, Wirkungsgrad und Brennstoffeinsatz des Heizkessels stehen unter
+ [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]].
+
+----
+'''Programm Dokumentation/BHKW'''
+
+ == Berechnung ==
+ Fahrweise, Strom- und Waermekennzahl und der Pendelspeicher stehen unter
+ [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]].
+
+----
+'''Programm Dokumentation/Wärmepumpe'''
+
+ == Berechnung ==
+ Kennlinie, Leistungszahl, Bivalenzpunkt und Heizstab stehen unter
+ [[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]].
+
+----
+'''Programm Dokumentation/Pufferspeicher'''
+
+ == Berechnung ==
+ Nutzbare Kapazitaet, Lade- und Entladeregelung und die Bereitschaftsverluste stehen unter
+ [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]].
+
+----
+'''Programm Dokumentation/Solarthermie'''
+
+ == Berechnung ==
+ Der Kollektorertrag aus Einstrahlung und Kollektorkennlinie steht unter
+ [[Programm Dokumentation/Berechnung/Solarthermie|Berechnung: Solarthermie]].
+
+----
+'''Programm Dokumentation/Photovoltaik'''
+
+ == Berechnung ==
+ Einstrahlung, Modultemperatur, Wechselrichter und Einspeisung stehen unter
+ [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]].
+
+----
+'''Programm Dokumentation/Stromspeicher'''
+
+ == Berechnung ==
+ Lade- und Entladefahrweise, Wirkungsgrade und die Wirkung auf den Netzbezug stehen unter
+ [[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]].
+
+----
+'''Programm Dokumentation/Energieerzeuger'''
+
+ == Berechnung ==
+ Wie die ausgewaehlten Erzeuger in der Kaskade zusammenwirken, steht unter
+ [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]];
+ die Rechenwege der einzelnen Gewerke stehen in der Rubrik
+ [[Programm Dokumentation/Berechnung|Berechnung]].
+
+----
+'''Programm Dokumentation/Simulationsergebnisse'''
+
+ == Berechnung ==
+ Woher die Zahlen der einzelnen Reiter stammen, steht je Gewerk in der Rubrik
+ [[Programm Dokumentation/Berechnung|Berechnung]]; den Ablauf, der sie erzeugt, beschreibt
+ [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]].

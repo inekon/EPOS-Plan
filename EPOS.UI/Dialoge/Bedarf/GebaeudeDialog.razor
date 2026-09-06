@@ -152,6 +152,13 @@
     @* --------------------------------------------- Detailblock ------------ *@
     <Gruppenkopf Titel="@GruppeVerbrauch">
         <KindInhalt>
+        @* H13: der Rechenweg. Dieser Abschnitt parametriert die Heizlastrechnung -
+           "Art der Angabe" entscheidet, ob mit der Wohnflaeche gerechnet oder die
+           Flaeche aus einem Verbrauch zurueckgerechnet wird. *@
+        <p class="epos-herleitung">
+            <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
+                       StandardKurztext="@HilfeKurztextBerechnung" />
+        </p>
         @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
            zwei Feldpaare je Zeile, die Beschreibung ueber beide Spalten. *@
         <Formularraster>
@@ -416,6 +423,15 @@
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Gebaeude.btn_Help";
+
+    /// <summary>
+    /// H13 — der ZWEITE Hilfeschlüssel: der RECHENWEG statt der Bedienung. Er zeigt auf
+    /// die Wikiseite „Programm Dokumentation/Berechnung/Wärmebedarf".
+    /// </summary>
+    [Parameter] public string HilfeSchluesselBerechnung { get; set; } = "Form_Gebaeude.Berechnung";
+
+    /// <summary>Kurztext des Rechenweg-Knopfes, solange der Katalog den Schlüssel nicht kennt.</summary>
+    [Parameter] public string HilfeKurztextBerechnung { get; set; } = "Berechnungsweg: Wärmebedarf";
 
     // --- Stand -----------------------------------------------------------------
 
