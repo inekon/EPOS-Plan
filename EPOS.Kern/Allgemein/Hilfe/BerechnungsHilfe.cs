@@ -581,9 +581,13 @@ namespace WindowsFormsApplication1
                 string wert = spalten[0].Trim();
                 if (wert.Length == 0 && spalten.Length < 2) continue;
 
-                saetze.Add(spalten.Length >= 2 && spalten[1].Trim().Length > 0
-                    ? wert + " wenn " + spalten[1].Trim()
-                    : wert);
+                string bedingung = spalten.Length >= 2 ? spalten[1].Trim() : "";
+
+                // „sonst" ist selbst schon die Bedingung — „0 wenn sonst" wäre eine
+                // Silbe zu viel.
+                saetze.Add(bedingung.Length == 0 ? wert
+                         : bedingung == "sonst" ? wert + " sonst"
+                         : wert + " wenn " + bedingung);
             }
 
             return FALL_AUF + " " + string.Join("; ", saetze) + " " + FALL_ZU;
