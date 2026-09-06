@@ -6369,6 +6369,189 @@ body {
 }
 
 /* ==================================================================== */
+/* WAERMEPUMPEN-DETAILANSICHT - Windows-Abnahme 06.09.2026               */
+/* Befunde W7-B-1 (Spalten), W7-B-2 (OK-Knopf) und W7-E-2 (Anordnung)    */
+/*                                                                      */
+/* Der Anwender: "Dialoganordnung sehr unuebersichtlich - versuche den   */
+/* Dialog angelehnt an die alte Version in branch version_august_2026 zu */
+/* gestalten." Das Vorbild ist Views/Wizard/Wizard_WPItem (1126 x 752),  */
+/* und es stellt DREI Spalten nebeneinander (Masse aus Wizard_WPItem     */
+/* .resx, x-Kanten der Steuerelemente):                                  */
+/*                                                                      */
+/*   LINKS   16 .. 560  Auswahl, Spitzenlast, Betrieb, Erklaerkaesten    */
+/*   MITTE  537 .. 748  Auslegung fuer Verteilung, Nutzungsdauer         */
+/*   RECHTS 693 ..1122  Kenndaten, Kenndaten Kennlinien                  */
+/*                                                                      */
+/* also rund 544 : 211 : 429. Die Verhaeltnisse stehen unten als         */
+/* flex-Werte; die MINDESTBREITEN sind dagegen keine Uebernahme, sondern */
+/* eine Folge des Formularrasters: Es stellt die Beschriftung neben das  */
+/* Feld (--epos-beschriftung-breite, 12 rem = 192 px), und darunter      */
+/* bliebe fuer das Feld selbst nichts uebrig. Die mittlere Spalte senkt  */
+/* deshalb ihre zwei Token, statt breiter zu werden - im Vorbild ist sie */
+/* die schmalste.                                                        */
+/*                                                                      */
+/* DER UMBRUCH IST flex-wrap, keine Medienabfrage: An dieser Anordnung   */
+/* haengt kein Pfeilzeichen (anders als bei Zweispaltenauswahl), und der */
+/* Dialog steht ausdruecklich auf der Liste der Masken, die umbrechen    */
+/* duerfen (siehe .epos-auswahlpaar weiter oben).                        */
+/* ==================================================================== */
+
+/* Die BREITE Ueberlagerung. Die Regel ist min(92vw, 900px) - darin      */
+/* fielen die drei Spalten untereinander und der Bereich rollte innen;   */
+/* genau das zeigte das Bildschirmfoto der Abnahme (Titel doppelt, OK    */
+/* ausserhalb des Sichtfelds). 1400 px ist die Summe der drei            */
+/* Mindestbreiten plus Abstaende und Innenrand.                          */
+.epos-ueberlagerung--breit {
+    width: min(96vw, 1400px);
+    max-height: 94vh;
+}
+
+/* Der Dialog des Hauses ist auf 1160 px gedeckelt, damit im maximierten */
+/* Fenster keine Bandwurmzeilen entstehen. Drei Spalten sind keine       */
+/* Bandwurmzeile - hier zaehlt die Breite der Spalte, nicht die der      */
+/* Seite.                                                                */
+.epos-wp-anlage {
+    max-width: none;
+}
+
+/* Ohne Titel steht im Kopf nur der Hilfeknopf - er gehoert nach rechts, */
+/* dorthin, wo er auch neben einem Titel steht.                          */
+.epos-dialog-kopf--ohnetitel {
+    justify-content: flex-end;
+}
+
+.epos-wp-spalten {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--epos-rand);
+}
+
+.epos-wp-spalte {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;                           /* laesst das Raster waagerecht rollen */
+}
+
+.epos-wp-spalte--links {
+    flex: 1.25 1 420px;
+}
+
+/* Die schmalste Spalte des Vorbilds. Damit die Beschriftung trotzdem    */
+/* NEBEN dem Feld bleibt, senkt sie die zwei Token des Formularrasters - */
+/* das ist die eine Stelle, an der 12 rem Beschriftungsspalte zu viel    */
+/* waeren.                                                               */
+.epos-wp-spalte--mitte {
+    flex: 0.6 1 300px;
+    --epos-beschriftung-breite: 8rem;
+    --epos-formularspalte: 17rem;
+}
+
+.epos-wp-spalte--rechts {
+    flex: 1 1 400px;
+}
+
+/* Ueberschrift und "Modul-Katalog..." stehen in EINER Zeile - im        */
+/* Vorbild label_WP bei 16/13 und btn_Katalog bei 286/10.                */
+.epos-wp-auswahl-kopf {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--epos-rand);
+}
+
+/* Die Liste rollt IN SICH und schiebt die Spalte nicht auseinander      */
+/* (Hausregel W9-B-2). Sie ist niedriger als --epos-listenhoehe (22 rem),*/
+/* weil unter ihr in derselben Spalte noch der ganze Spitzenlastblock    */
+/* steht; im Vorbild war sie sogar nur eine Klappliste von 23 px.        */
+.epos-wp-auswahlliste {
+    max-height: 11rem;
+}
+
+/* Die DREI Erklaerkaesten des Vorbilds - label21 (128,255,128 gruen),   */
+/* label22 (255,255,128 gelb) und label23 (Aqua). Sie tragen viel Text   */
+/* auf wenig Hoehe; deshalb kleiner Schriftgrad und enger Zeilenabstand, */
+/* sonst nimmt der Block allein 300 px der Spalte.                       */
+.epos-wp-erklaerungen {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: var(--epos-rand);
+}
+
+.epos-wp-erklaerung {
+    margin: 0;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.35;
+    color: #202020;                         /* Text auf hellen Vollflaechen  */
+    border: 1px solid transparent;
+    border-radius: var(--epos-ecke);
+}
+
+.epos-wp-erklaerung--gruen {
+    background: rgb(128, 255, 128);
+}
+
+.epos-wp-erklaerung--gelb {
+    background: rgb(255, 255, 128);
+}
+
+.epos-wp-erklaerung--tuerkis {
+    background: rgb(0, 255, 255);
+}
+
+/* Der Kasten zur GEWAEHLTEN Betriebsart. Er ersetzt die einzelne
+   Herleitungszeile, die bis W7-E-2 an dieser Stelle stand: Das Vorbild
+   zeigte alle drei Texte immer, sagte aber nicht, welcher gerade gilt. */
+.epos-wp-erklaerung--aktiv {
+    border-color: #202020;
+    font-weight: 700;
+}
+
+/* ==================================================================== */
+/* DIE FUSSLEISTE EINES DIALOGS - Befund W7-B-2                          */
+/*                                                                      */
+/* "OK-Button funktioniert nicht im Dialog Detailansicht bei Aufruf ueber */
+/* button Aendern." Er funktionierte: Er meldete einen Fehler. Nur stand */
+/* das Warnband ganz OBEN im Dialog und der Knopf ganz UNTEN in einem    */
+/* Bereich, der innen rollte - der Anwender drueckte und sah nichts.     */
+/*                                                                      */
+/* Seither stehen Band und Leiste zusammen, und der Block KLEBT am       */
+/* unteren Rand des rollenden Bereichs. Damit ist beides immer sichtbar, */
+/* auch wenn der Inhalt einmal laenger ist als der Bildschirm.           */
+/* ==================================================================== */
+.epos-dialog-fuss {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 6px;
+    background: var(--epos-karte-flaeche);
+}
+
+/* Das BEMAENGELTE Feld. Die Huelle ist durchsichtig - sonst saessen die
+   Felder einer Gruppe alle in EINER Rasterzelle (dieselbe Ueberlegung wie
+   bei .epos-formulargruppe). */
+.epos-feldhuelle {
+    display: contents;
+}
+
+.epos-feldhuelle--mangel .epos-eingabe {
+    border-color: var(--epos-warn-rahmen);
+    outline: 2px solid var(--epos-warn-rahmen);
+    outline-offset: 1px;
+}
+
+.epos-feldhuelle--mangel .epos-feld-text {
+    color: var(--epos-warn-text);
+    font-weight: 700;
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
@@ -6546,3 +6729,4 @@ body {
 .epos-formularraster > .epos-formulargruppe > .epos-herleitung {
     grid-column: 1 / -1;
 }
+

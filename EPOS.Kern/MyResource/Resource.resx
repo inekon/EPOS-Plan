@@ -15581,4 +15581,16 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="OND_MSG_KEIN_GERAET" xml:space="preserve">
     <value>Die Datei enthält keinen PVsyst-Wechselrichter (pvGInverter).</value>
   </data>
+  <data name="WPV_SP_HERSTELLER" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="WPV_SP_TYP" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="WPA_CHK_HEIZSTAB" xml:space="preserve">
+    <value>Elektrische Nachheizung aktivieren (falls vorhanden)</value>
+  </data>
+  <data name="WPA_CHK_SPERRZEIT" xml:space="preserve">
+    <value>Sperrzeit durch Energieversorger</value>
+  </data>
 </root>

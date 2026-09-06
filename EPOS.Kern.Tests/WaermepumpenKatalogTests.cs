@@ -268,4 +268,78 @@ namespace EPOS.Kern.Tests
             }
         }
     }
+
+    /// <summary>
+    /// Das TOLERANTE Lesen der Betriebsart (<c>DbWerte.BetriebsartOderDefault</c>,
+    /// Befund <b>W7‑B‑2</b> der Windows-Abnahme vom 06.09.2026).
+    ///
+    /// <para>Der Vorläufer <c>Wizard_WPItem</c> zeigte den gespeicherten Text in einer
+    /// frei beschreibbaren <c>ComboBox</c> und schrieb ihn ungeprüft zurück; die
+    /// Razor-Fassung hat ein <c>select</c> und zeigt einen nicht zeichengleichen Wert
+    /// GAR NICHT — die Klappliste stand dann leer, und der OK-Knopf meldete „Bitte
+    /// Betriebsart auswählen!". Diese Fälle halten fest, was die Lesekante daraus
+    /// macht — ohne Datenbank und ohne Oberfläche.</para>
+    /// </summary>
+    public class WaermepumpenBetriebsartTests
+    {
+        [Theory]
+        [InlineData("Alternativbetrieb", DbWerte.WP_BETRIEBSART_ALTERNATIV)]
+        [InlineData("Parallelbetrieb", DbWerte.WP_BETRIEBSART_PARALLEL)]
+        [InlineData("Teilparallelbetrieb", DbWerte.WP_BETRIEBSART_TEILPARALLEL)]
+        public void Der_Steuerwert_bleibt_er_selbst(string gelesen, string erwartet)
+        {
+            Assert.Equal(erwartet, DbWerte.BetriebsartOderDefault(gelesen));
+        }
+
+        /// <summary>
+        /// Gross-/Kleinschreibung, Leerzeichen und Bindestriche — die Schreibweisen,
+        /// die eine frei beschreibbare ComboBox ueber die Jahre in die Spalte
+        /// getragen haben kann (Befund L0-1).
+        /// </summary>
+        [Theory]
+        [InlineData("parallelbetrieb", DbWerte.WP_BETRIEBSART_PARALLEL)]
+        [InlineData("  Parallelbetrieb  ", DbWerte.WP_BETRIEBSART_PARALLEL)]
+        [InlineData("Bivalent-parallel", DbWerte.WP_BETRIEBSART_PARALLEL)]
+        [InlineData("bivalent parallel", DbWerte.WP_BETRIEBSART_PARALLEL)]
+        [InlineData("Parallel operation", DbWerte.WP_BETRIEBSART_PARALLEL)]
+        [InlineData("ALTERNATIVBETRIEB", DbWerte.WP_BETRIEBSART_ALTERNATIV)]
+        [InlineData("bivalent-alternativ", DbWerte.WP_BETRIEBSART_ALTERNATIV)]
+        [InlineData("Alternative operation", DbWerte.WP_BETRIEBSART_ALTERNATIV)]
+        public void Ein_alter_Text_wird_auf_den_Steuerwert_gelesen(string gelesen, string erwartet)
+        {
+            Assert.Equal(erwartet, DbWerte.BetriebsartOderDefault(gelesen));
+        }
+
+        /// <summary>
+        /// „teilparallel" enthaelt „parallel" — die Reihenfolge der Pruefung ist
+        /// deshalb keine Geschmacksfrage.
+        /// </summary>
+        [Theory]
+        [InlineData("Teilparallelbetrieb")]
+        [InlineData("teilparallelbetrieb")]
+        [InlineData("bivalent-teilparallel")]
+        [InlineData("Partially parallel operation")]
+        public void Teilparallel_wird_vor_Parallel_erkannt(string gelesen)
+        {
+            Assert.Equal(DbWerte.WP_BETRIEBSART_TEILPARALLEL,
+                         DbWerte.BetriebsartOderDefault(gelesen));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("Monovalent")]
+        [InlineData("42")]
+        public void Unbekanntes_ergibt_leer(string gelesen)
+        {
+            Assert.Equal("", DbWerte.BetriebsartOderDefault(gelesen));
+        }
+
+        [Fact]
+        public void DBNull_ergibt_leer()
+        {
+            Assert.Equal("", DbWerte.BetriebsartOderDefault(DBNull.Value));
+        }
+    }
 }
