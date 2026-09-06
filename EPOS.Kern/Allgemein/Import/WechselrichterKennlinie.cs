@@ -150,6 +150,91 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Kennlinientabelle → sechs Stützstellen</b> (Konzept 5.2, Anwenderentscheid
+        /// <b>W6‑O‑1</b> vom 06.09.2026) — der Weg des OND-Imports.
+        ///
+        /// <para>Eine PVsyst-<c>.OND</c>-Datei führt in <c>ProfilPIO</c> eine
+        /// WERTETABELLE aus Paaren <c>P_in / P_out</c> (beide in W). Sie ist damit die
+        /// einzige Quelle, die die Kennlinie direkt liefert; gebraucht wird nur noch
+        /// lineare Interpolation, kein Modellumweg wie bei <see cref="AusSandia"/>.</para>
+        ///
+        /// <para><b>Der Bezug ist die AC-Seite.</b> Eine Stützstelle ist der
+        /// Wirkungsgrad bei einem Anteil <c>x</c> der AC-NENNLEISTUNG (Konzept 3.3.1);
+        /// gesucht wird deshalb der Punkt mit <c>P_out = x · P_AC,nenn</c>, und dort ist
+        /// <c>η = P_out / P_in</c>. Interpoliert wird η ÜBER <c>P_out</c> — nicht über
+        /// <c>P_in</c>: Sonst hinge das Ergebnis daran, wie das Gerät gerade wirkt, und
+        /// nicht daran, wonach gefragt ist.</para>
+        ///
+        /// <para><b>Keine Extrapolation.</b> Liegt <c>x · P_AC,nenn</c> außerhalb des
+        /// Bereichs, den die Tabelle abdeckt, bleibt die Stützstelle <c>null</c> — eine
+        /// über den letzten Messpunkt hinaus fortgeschriebene Kurve wäre eine erfundene
+        /// Zahl. Dieselbe Regel wie bei <see cref="AusSandia"/>: Was sich nicht
+        /// bestimmen lässt, wird nicht geschrieben.</para>
+        ///
+        /// <para><b>Der Nullpunkt zählt nicht.</b> PVsyst schreibt als ersten Punkt
+        /// <c>0,0</c>; dort ist <c>η</c> nicht definiert (0/0). Punkte ohne positiven
+        /// Ein- und Ausgangswert und Punkte mit <c>η</c> außerhalb (0; 1] werden
+        /// verworfen, statt die Interpolation zu vergiften.</para>
+        /// </summary>
+        /// <param name="punkte">Die Wertepaare der Datei: <c>P_in</c> und <c>P_out</c> in W.</param>
+        /// <param name="pacoWatt">AC-Nennleistung in <b>W</b> (also <c>PNomConv · 1000</c>).</param>
+        /// <returns>Sechs Stützstellen in der Reihenfolge von <see cref="STUETZSTELLEN"/>.</returns>
+        public static double?[] AusProfil(
+            System.Collections.Generic.IReadOnlyList<(double PIn, double POut)> punkte,
+            double pacoWatt)
+        {
+            var etas = new double?[STUETZSTELLEN.Length];
+            if (punkte == null || punkte.Count == 0 || pacoWatt <= 0.0) return etas;
+
+            // Brauchbare Punkte einsammeln und nach P_out ordnen.
+            var brauchbar = new System.Collections.Generic.List<(double POut, double Eta)>();
+            foreach ((double pIn, double pOut) in punkte)
+            {
+                if (pIn <= 0.0 || pOut <= 0.0) continue;
+                double eta = pOut / pIn;
+                if (eta <= 0.0 || eta > 1.0) continue;
+                brauchbar.Add((pOut, eta));
+            }
+            if (brauchbar.Count == 0) return etas;
+
+            brauchbar.Sort((a, b) => a.POut.CompareTo(b.POut));
+
+            for (int i = 0; i < STUETZSTELLEN.Length; i++)
+            {
+                double ziel = STUETZSTELLEN[i] * pacoWatt;
+
+                if (ziel < brauchbar[0].POut || ziel > brauchbar[brauchbar.Count - 1].POut)
+                    continue;
+
+                etas[i] = Zwischenwert(brauchbar, ziel);
+            }
+
+            return etas;
+        }
+
+        /// <summary>
+        /// Der lineare Zwischenwert von η an der Stelle <paramref name="ziel"/> in einer
+        /// nach <c>P_out</c> geordneten Tabelle. Trifft <paramref name="ziel"/> einen
+        /// Stützpunkt, kommt dessen Wert unverändert heraus.
+        /// </summary>
+        private static double Zwischenwert(
+            System.Collections.Generic.List<(double POut, double Eta)> tabelle, double ziel)
+        {
+            for (int k = 0; k < tabelle.Count; k++)
+            {
+                if (tabelle[k].POut == ziel) return tabelle[k].Eta;
+                if (tabelle[k].POut > ziel)
+                {
+                    (double p0, double e0) = tabelle[k - 1];
+                    (double p1, double e1) = tabelle[k];
+                    double spanne = p1 - p0;
+                    return spanne <= 0.0 ? e1 : e0 + (e1 - e0) * (ziel - p0) / spanne;
+                }
+            }
+            return tabelle[tabelle.Count - 1].Eta;
+        }
+
+        /// <summary>
         /// Die kleinere der beiden positiven Wurzeln; <c>NaN</c>, wenn keine positiv
         /// ist. Siehe „Welche Wurzel" bei <see cref="AusSandia"/>.
         /// </summary>

@@ -15287,10 +15287,10 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>Notes:</value>
   </data>
   <data name="WRK_IMP_TITEL" xml:space="preserve">
-    <value>Import inverters (CEC)</value>
+    <value>Import inverters (CEC and OND)</value>
   </data>
   <data name="WRK_IMP_KOPFBAND" xml:space="preserve">
-    <value>The NREL CEC inverter list. The six support points of the efficiency curve are computed from the Sandia coefficients; the list carries neither the MPPT count nor the apparent power - both have to be maintained by hand.</value>
+    <value>The NREL CEC inverter list (from the web or from the shipped file) and PVsyst OND files. For CEC the six support points of the efficiency curve are computed from the Sandia coefficients; the list carries neither the MPPT count nor the apparent power - both have to be maintained by hand. An OND file brings both, and the curve as a table of values.</value>
   </data>
   <data name="WRK_IMP_BTN_CEC" xml:space="preserve">
     <value>Load CEC list</value>
@@ -15326,7 +15326,7 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>Sandia C0 [1/W]:</value>
   </data>
   <data name="WRK_IMP_HINWEIS_KENNLINIE" xml:space="preserve">
-    <value>The six support points are computed from the Sandia coefficients at U_dc = U_dco; at nominal load η = Paco/Pdco holds exactly.</value>
+    <value>For CEC the six support points are computed from the Sandia coefficients at U_dc = U_dco; at nominal load the relation eta = Paco/Pdco holds exactly. For OND they come from the ProfilPIO table of the file - from the nominal one where three are given.</value>
   </data>
   <data name="WRK_IMP_PLAUSI_TITEL" xml:space="preserve">
     <value>Note on the device values</value>
@@ -15338,7 +15338,7 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>Inverters</value>
   </data>
   <data name="MENU_WR_IMPORT_CEC" xml:space="preserve">
-    <value>Inverters (CEC)...</value>
+    <value>Inverters (CEC, OND)...</value>
   </data>
   <data name="PVS_TRENNER" xml:space="preserve">
     <value> · </value>
@@ -15546,5 +15546,32 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Empty means the string is calculated with the module of the system. A separate module type applies to this string only.</value>
+  </data>
+  <data name="IMP_GER_BTN_CEC_DATEI" xml:space="preserve">
+    <value>📄 Load CEC file ▶</value>
+  </data>
+  <data name="WRK_IMP_BTN_OND" xml:space="preserve">
+    <value>🌿 Load OND ▶</value>
+  </data>
+  <data name="WRK_IMP_STATUS_BEREIT" xml:space="preserve">
+    <value>Ready. Please load the CEC list or choose an OND file.</value>
+  </data>
+  <data name="WRK_IMP_STATUS_GEFUNDEN" xml:space="preserve">
+    <value>Filter selection ({0} devices found)</value>
+  </data>
+  <data name="WRK_IMP_MSG_KEINE_AUSWAHL" xml:space="preserve">
+    <value>Please select an inverter!</value>
+  </data>
+  <data name="OND_MSG_GELESEN" xml:space="preserve">
+    <value>{0} inverters from OND files.</value>
+  </data>
+  <data name="OND_MSG_LESEFEHLER" xml:space="preserve">
+    <value>The OND file could not be read: {0}</value>
+  </data>
+  <data name="OND_MSG_DATEI_FEHLT" xml:space="preserve">
+    <value>The OND file was not found.</value>
+  </data>
+  <data name="OND_MSG_KEIN_GERAET" xml:space="preserve">
+    <value>The file contains no PVsyst inverter (pvGInverter).</value>
   </data>
 </root>

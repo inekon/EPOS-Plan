@@ -15294,10 +15294,10 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>Hinweise:</value>
   </data>
   <data name="WRK_IMP_TITEL" xml:space="preserve">
-    <value>Wechselrichter einlesen (CEC)</value>
+    <value>Wechselrichter einlesen (CEC und OND)</value>
   </data>
   <data name="WRK_IMP_KOPFBAND" xml:space="preserve">
-    <value>Die CEC-Wechselrichterliste des NREL. Die sechs Stützstellen der Kennlinie werden aus den Sandia-Koeffizienten gerechnet; MPPT-Zahl und Scheinleistung führt die Liste nicht und sind von Hand nachzupflegen.</value>
+    <value>Die CEC-Wechselrichterliste des NREL (Netz oder Auslieferungsdatei) und PVsyst-OND-Dateien. Bei CEC werden die sechs Stützstellen der Kennlinie aus den Sandia-Koeffizienten gerechnet; MPPT-Zahl und Scheinleistung führt die Liste nicht und sind von Hand nachzupflegen. Eine OND-Datei bringt beides und die Kennlinie als Wertetabelle mit.</value>
   </data>
   <data name="WRK_IMP_BTN_CEC" xml:space="preserve">
     <value>CEC-Liste laden</value>
@@ -15333,7 +15333,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>Sandia C0 [1/W]:</value>
   </data>
   <data name="WRK_IMP_HINWEIS_KENNLINIE" xml:space="preserve">
-    <value>Die sechs Stützstellen sind aus den Sandia-Koeffizienten bei U_dc = U_dco gerechnet; bei Nennlast gilt dabei η = Paco/Pdco exakt.</value>
+    <value>Bei CEC sind die sechs Stützstellen aus den Sandia-Koeffizienten bei U_dc = U_dco gerechnet; bei Nennlast gilt dabei η = Paco/Pdco exakt. Bei OND stammen sie aus der Wertetabelle ProfilPIO der Datei — bei drei Fassungen aus der nominalen.</value>
   </data>
   <data name="WRK_IMP_PLAUSI_TITEL" xml:space="preserve">
     <value>Hinweis zu den Gerätewerten</value>
@@ -15345,7 +15345,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>Wechselrichter</value>
   </data>
   <data name="MENU_WR_IMPORT_CEC" xml:space="preserve">
-    <value>Wechselrichter (CEC)...</value>
+    <value>Wechselrichter (CEC, OND)...</value>
   </data>
   <data name="PVS_TRENNER" xml:space="preserve">
     <value> · </value>
@@ -15553,5 +15553,32 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang.</value>
+  </data>
+  <data name="IMP_GER_BTN_CEC_DATEI" xml:space="preserve">
+    <value>📄 CEC-Datei laden ▶</value>
+  </data>
+  <data name="WRK_IMP_BTN_OND" xml:space="preserve">
+    <value>🌿 OND laden ▶</value>
+  </data>
+  <data name="WRK_IMP_STATUS_BEREIT" xml:space="preserve">
+    <value>Bereit. Bitte die CEC-Liste laden oder eine OND-Datei wählen.</value>
+  </data>
+  <data name="WRK_IMP_STATUS_GEFUNDEN" xml:space="preserve">
+    <value>Filter Auswahl ({0} Geräte gefunden)</value>
+  </data>
+  <data name="WRK_IMP_MSG_KEINE_AUSWAHL" xml:space="preserve">
+    <value>Bitte einen Wechselrichter selektieren!</value>
+  </data>
+  <data name="OND_MSG_GELESEN" xml:space="preserve">
+    <value>{0} Wechselrichter aus OND-Dateien.</value>
+  </data>
+  <data name="OND_MSG_LESEFEHLER" xml:space="preserve">
+    <value>Die OND-Datei konnte nicht gelesen werden: {0}</value>
+  </data>
+  <data name="OND_MSG_DATEI_FEHLT" xml:space="preserve">
+    <value>Die OND-Datei wurde nicht gefunden.</value>
+  </data>
+  <data name="OND_MSG_KEIN_GERAET" xml:space="preserve">
+    <value>Die Datei enthält keinen PVsyst-Wechselrichter (pvGInverter).</value>
   </data>
 </root>
