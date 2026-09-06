@@ -197,7 +197,11 @@ beider Dateien ist im `.csproj` festgeschrieben
 (`WindowsFormsApplication1.MyResource.Resource[.en-US].resources`), damit der Ressourcenname nicht
 am Ordnerpfad hängt — der Basisname in `Resource.Designer.cs` bleibt dadurch gültig. Visual Studio
 regeneriert die Designer-Datei bei jeder `.resx`-Änderung selbst; wer parallel von Hand ergänzt
-hat, baut Duplikate (CS0102).
+hat, baut Duplikate (CS0102). **Ohne Visual Studio (Linux, macOS, Agenten) wird die Datei nicht von
+Hand ergänzt, sondern neu erzeugt:** `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben`
+schreibt sie vollständig aus der neutralen `.resx` im Format des StronglyTypedResourceBuilder
+(alphabetisch, XML-Escapes, BOM/LF); ohne Argument prüft es nur. Am 06.09.2026 hingen so 314
+Schlüssel ohne Eigenschaft nach — seither ist das Werkzeug der einzige Weg.
 
 **`InternalsVisibleTo`.** Etliche Typen sind ohne Zugriffsangabe deklariert und damit `internal`
 (`ProjektCtrl`, `KlimaregionCtrl`, `WPStammCtrl`, `Properties.Settings`, `Init` …). Das `.csproj`
