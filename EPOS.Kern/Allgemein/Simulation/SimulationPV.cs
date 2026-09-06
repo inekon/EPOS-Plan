@@ -173,7 +173,26 @@ namespace WindowsFormsApplication1
 
             // PV-POTENTIAL ALLER MODULE SAMMELN
             ctrl.ReadAllFilter("ID_Projekt=" + ID_Projekt + " and ID_Type=" + WizardItemClass.PV_TYP);
-            
+
+            // S3.2: die Strangebene. GELESEN WIRD NUR, WENN MINDESTENS EINE ANLAGE DEN
+            // SCHALTER TRAEGT - die Vorrangregel steht vor dem Zugriff, nicht dahinter
+            // (Konzept 3.5 und 7.1). Ein Bestandsprojekt kostet damit keine einzige
+            // zusaetzliche Abfrage, und zwei Abfragen reichen fuer das ganze Projekt:
+            // die Straenge ALLER Anlagen (AnlageStrangCtrl.LesenJeProjekt) und die
+            // Geraete-Projektkopien (WechselrichterCtrl.ReadAll). In der Stundenschleife
+            // wird nichts nachgeladen.
+            List<AnlageStrangModel> alleStraenge = null;
+            Dictionary<int, WechselrichterModel> alleGeraete = null;
+            if (IrgendeineAnlageMitKatalogweg(ctrl))
+            {
+                alleStraenge = new AnlageStrangCtrl().LesenJeProjekt(ID_Projekt);
+
+                var wr = new WechselrichterCtrl();
+                wr.ReadAll(ID_Projekt);
+                alleGeraete = new Dictionary<int, WechselrichterModel>();
+                for (int g = 0; g < wr.rows; g++) alleGeraete[wr.items[g].m_ID] = wr.items[g];
+            }
+
             for (int n = 0; n < ctrl.rows; n++)
             {
                 PhotovoltaikCtrl ctrlsol = new PhotovoltaikCtrl();
@@ -212,7 +231,32 @@ namespace WindowsFormsApplication1
                 // ueberlange Reihe in float[8760] und warf IndexOutOfRange.
                 int stunden = Math.Min(ctrldat.rows, 8760);
 
-                if (!erweitert)
+                // S3.2 - DIE VORRANGREGEL (Konzept 3.5 und 7.1). ZWEI Bedingungen:
+                // der sichtbare Schalter PV_Wechselrichterweg = KATALOG (W6-E-3) UND
+                // mindestens eine Strangzeile mit einem Geraet, das die Projektkopie
+                // kennt. Sonst der Weg von heute, Zeichen fuer Zeichen.
+                List<PvStrangModell.Geraetegruppe> geraete =
+                    GeraeteDerAnlage(ctrl.items[n], alleStraenge, alleGeraete, ctrlsol, pStcKw);
+
+                if (geraete != null)
+                {
+                    // =========================================================================
+                    // STRANGEBENE (Stufe S3) - Module -> Strang -> MPPT -> Geraet -> Clipping
+                    // =========================================================================
+                    StraengeRechnen(ctrl.items[n], ctrlsol, geraete, ctrldat, stunden,
+                                    Lon, Lat, erweitert, systemFaktor, tNoct,
+                                    nennWirk, tempKoeff, pStcKw, ref prodSummeMod);
+
+                    foreach (PvStrangModell.Geraetegruppe g in geraete)
+                    {
+                        clippingVerlust += g.ClippingKwh;
+                        wechselrichterVerlust += g.WrVerlustKwh;
+                    }
+                    dcAc = DcAcDerAnlage(geraete);
+
+                    KennzahlenStrangMelden(ctrl.items[n], geraete);
+                }
+                else if (!erweitert)
                 {
                     // =========================================================================
                     // MODELL EINFACH - der Paket-A-Rechenweg, unveraendert
@@ -331,7 +375,11 @@ namespace WindowsFormsApplication1
                     Erweitert = erweitert,
                     DcAcVerhaeltnis = dcAc,
                     ClippingVerlust = clippingVerlust,
-                    WechselrichterVerlust = wechselrichterVerlust
+                    WechselrichterVerlust = wechselrichterVerlust,
+
+                    // Stufe S3: leer, solange die Anlage keine Strangzuordnung rechnet -
+                    // dann bleibt der Ausweis Zeichen fuer Zeichen der von heute.
+                    Geraete = geraete ?? Leer
                 });
             }
 
@@ -663,6 +711,363 @@ namespace WindowsFormsApplication1
                 "der Anlage (" + pStcKw.ToString("N2", CultureInfo.InvariantCulture) + " kWp).");
         }
 
+        // =================================================================================
+        // Stufe S3: die Strangebene (Konzept 4.1, Anwenderentscheide W6-E-2 und W6-E-3)
+        // =================================================================================
+
+        /// <summary>Die leere Geraeteliste jeder Anlage ohne Strangzuordnung — EINE Belegung.</summary>
+        private static readonly List<PvStrangModell.Geraetegruppe> Leer =
+            new List<PvStrangModell.Geraetegruppe>();
+
+        /// <summary>
+        /// Traegt IRGENDEINE Anlage des Projekts den Schalter
+        /// <see cref="DbWerte.PV_WR_WEG_KATALOG"/>? Nur dann werden Straenge und
+        /// Geraete ueberhaupt gelesen.
+        ///
+        /// <para><b>Warum nur der Schalter und nicht schon die Strangzeile:</b> Die
+        /// Strangzeile steht in der Datenbank, der Schalter in der ohnehin gelesenen
+        /// Anlagenzeile. Wer die Frage andersherum stellte, braeuchte eine Abfrage, um
+        /// zu entscheiden, ob er eine Abfrage braucht (Konzept 7.1, Grund 4).</para>
+        /// </summary>
+        private static bool IrgendeineAnlageMitKatalogweg(WErzeugerCtrl ctrl)
+        {
+            for (int n = 0; n < ctrl.rows; n++)
+                if (IstKatalogweg(ctrl.items[n])) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Steht der Wechselrichterweg dieser Anlage auf <b>mit Wechselrichter</b>?
+        ///
+        /// <para><b>Nur der ausdrueckliche Persistenzwert
+        /// <see cref="DbWerte.PV_WR_WEG_KATALOG"/> schaltet um</b> — NULL, Leerstring,
+        /// <see cref="DbWerte.PV_WR_WEG_VEREINFACHT"/> und jeder unbekannte Text
+        /// bedeuten „vereinfacht". Dieselbe Zurueckhaltung wie bei
+        /// <see cref="IstErweitert"/>, und aus demselben Grund: Eine Textmuell-Zeile in
+        /// der Datenbank darf nicht versehentlich einen anderen Rechenweg
+        /// einschalten.</para>
+        /// </summary>
+        public static bool IstKatalogweg(WErzeugerModel anlage)
+        {
+            return anlage != null &&
+                   string.Equals(anlage.PV_Wechselrichterweg, DbWerte.PV_WR_WEG_KATALOG,
+                                 StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Die Geraetegruppen EINER Anlage — oder <c>null</c>, wenn die Vorrangregel
+        /// nicht greift und damit der Weg von heute gilt.
+        ///
+        /// <para>Beide Bedingungen des Konzepts 7.1 stehen hier: der Schalter
+        /// <see cref="IstKatalogweg"/> UND mindestens ein Strang, dessen
+        /// <c>ID_Wechselrichter</c> auf eine vorhandene Projektkopie zeigt. Ein Strang
+        /// ohne Geraet rechnet nicht mit und wird gemeldet.</para>
+        ///
+        /// <para><b>Die Nennleistung eines Strangs wird wie die der Anlage gebildet</b>
+        /// — <c>Modul-Nennleistung / 1000 · Modulzahl</c>, in genau dieser Reihenfolge
+        /// (siehe <see cref="PStcDerAnlage"/>). <c>StrangPlausibilitaet.StrangKwp</c>
+        /// rechnet <c>Modulzahl · Leistung / 1000</c>, was algebraisch dasselbe und im
+        /// letzten Bit etwas anderes ist; die Ampel darf das, der Rechenweg nicht — an
+        /// dieser Reihenfolge haengt die Abnahme S3 (2).</para>
+        /// </summary>
+        private List<PvStrangModell.Geraetegruppe> GeraeteDerAnlage(
+            WErzeugerModel anlage,
+            List<AnlageStrangModel> alleStraenge,
+            Dictionary<int, WechselrichterModel> alleGeraete,
+            PhotovoltaikCtrl modul,
+            double pStcKw)
+        {
+            if (!IstKatalogweg(anlage) || alleStraenge == null) return null;
+
+            var eigene = new List<AnlageStrangModel>();
+            foreach (AnlageStrangModel s in alleStraenge)
+                if (s != null && s.ID_Anlage == anlage.ID) eigene.Add(s);
+
+            if (eigene.Count == 0)
+            {
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "pv-s3-ohne-strang-" + anlage.Bezeichner,
+                    "PV-Anlage \"" + anlage.Bezeichner + "\" steht auf \"mit Wechselrichter\", " +
+                    "fuehrt aber keine Strangzeile. Gerechnet wird der vereinfachte Weg " +
+                    "(Wirkungsgrad und Systemverluste der Anlagenzeile).");
+                return null;
+            }
+
+            int ohneGeraet;
+            List<PvStrangModell.Geraetegruppe> geraete =
+                PvStrangModell.Gruppieren(eigene, alleGeraete, out ohneGeraet);
+
+            if (ohneGeraet > 0)
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "pv-s3-strang-ohne-geraet-" + anlage.Bezeichner,
+                    "PV-Anlage \"" + anlage.Bezeichner + "\": " +
+                    ohneGeraet.ToString(CultureInfo.InvariantCulture) +
+                    " Strang/Straenge ohne zugeordneten Wechselrichter rechnen NICHT mit. " +
+                    "Die Zuordnung laesst sich im PV-Dialog nachtragen.");
+
+            if (geraete.Count == 0)
+            {
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "pv-s3-ohne-geraet-" + anlage.Bezeichner,
+                    "PV-Anlage \"" + anlage.Bezeichner + "\" steht auf \"mit Wechselrichter\", " +
+                    "keine Strangzeile fuehrt aber ein Geraet. Gerechnet wird der vereinfachte Weg.");
+                return null;
+            }
+
+            // Die Nennleistung je Geraet: Summe der Straenge. Ohne Modul-Nennleistung
+            // faellt sie auf die Anlagen-kWp anteilig NICHT zurueck - sie bleibt 0, und
+            // dann ist die Auslastung ohne AC-Nennleistung nicht bestimmbar (dieselbe
+            // Rueckfallebene wie im Anlagenweg).
+            double leistungModulW = (modul != null) ? modul.m_Leistung : 0.0;
+            foreach (PvStrangModell.Geraetegruppe g in geraete)
+            {
+                double kwp = 0.0;
+                foreach (AnlageStrangModel s in g.Straenge)
+                    kwp += leistungModulW / 1000.0 * s.Modulzahl;
+                g.KwpDc = kwp;
+
+                if (!g.KennlinieGepflegt)
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "pv-s3-kennlinie-vorgabe-" + anlage.Bezeichner + "-" + g.ID_Wechselrichter,
+                        "PV-Anlage \"" + anlage.Bezeichner + "\", Wechselrichter \"" +
+                        g.Anzeigename + "\": Der Katalog fuehrt keine einzige Stuetzstelle der " +
+                        "Wirkungsgradkennlinie. Gerechnet wird mit " +
+                        PvErweitertesModell.WR_ETA10_VORGABE.ToString("N3", CultureInfo.InvariantCulture) + " / " +
+                        PvErweitertesModell.WR_ETA50_VORGABE.ToString("N3", CultureInfo.InvariantCulture) + " / " +
+                        PvErweitertesModell.WR_ETA100_VORGABE.ToString("N3", CultureInfo.InvariantCulture) +
+                        " bei 10 / 50 / 100 % Auslastung (Vorbelegung eines typischen " +
+                        "String-Wechselrichters).");
+
+                if (!g.PAcNennKw.HasValue)
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "pv-s3-ohne-wrnennleistung-" + anlage.Bezeichner + "-" + g.ID_Wechselrichter,
+                        "PV-Anlage \"" + anlage.Bezeichner + "\", Wechselrichter \"" +
+                        g.Anzeigename + "\": Der Katalog fuehrt keine AC-Nennleistung. Gerechnet " +
+                        "wird OHNE Clipping; die Auslastung der Kennlinie bezieht sich ersatzweise " +
+                        "auf die DC-Nennleistung der angeschlossenen Straenge (" +
+                        kwp.ToString("N2", CultureInfo.InvariantCulture) + " kWp).");
+            }
+
+            // pStcKw wird hier nur GEPRUEFT: Die Modulzahl der Anlage und die Summe der
+            // Straenge sollen dieselbe Anlage beschreiben (Pruefung P8 der Ampel,
+            // Entscheidungsfrage Q9). Gerechnet wird ab hier ausschliesslich mit den
+            // Straengen.
+            double kwpStraenge = 0.0;
+            foreach (PvStrangModell.Geraetegruppe g in geraete) kwpStraenge += g.KwpDc;
+            if (pStcKw > 0.0 && Math.Abs(kwpStraenge - pStcKw) > KATALOG_TOLERANZ * pStcKw)
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "pv-s3-modulsumme-" + anlage.Bezeichner,
+                    "PV-Anlage \"" + anlage.Bezeichner + "\": Die Straenge fuehren zusammen " +
+                    kwpStraenge.ToString("N2", CultureInfo.InvariantCulture) + " kWp, die " +
+                    "Anlagenzeile " + pStcKw.ToString("N2", CultureInfo.InvariantCulture) +
+                    " kWp. Gerechnet wird die Strangsumme; kWp, Stueckpreis und " +
+                    "Verguetungsrechnung lesen weiter die Anlagenzeile.");
+
+            return geraete;
+        }
+
+        /// <summary>
+        /// Die Stundenschleife der Strangebene (Konzept 4.1, Schritte 1 bis 5).
+        ///
+        /// <para><b>Der Transpositions-Zwischenspeicher</b> ist der Grund, warum diese
+        /// Schleife nicht einfach je Strang laeuft: Ein Ost/West-Feld mit acht
+        /// Straengen hat ZWEI Ausrichtungen. Gerechnet wird die Sonnengeometrie je
+        /// (Neigung, Azimut) genau einmal je Stunde; die Straenge greifen darauf zu.
+        /// Ohne ihn rechnete ein Feld mit acht Straengen achtmal dasselbe (Befund B3
+        /// des PV-Ertragsmodells).</para>
+        ///
+        /// <para><b>Die Modellweiche bleibt die der Anlage</b> (Konzept 4.3): EINFACH
+        /// rechnet isotrop mit linearem Gamma-Gang, ERWEITERT Hay-Davies mit Huld — nur
+        /// eben je Strang und mit der Ausrichtung des Strangs. Der WECHSELRICHTER
+        /// dagegen rechnet in BEIDEN Modellen (Entscheidungsfrage Q5): Er ist ein
+        /// Geraet, keine Modellverfeinerung.</para>
+        /// </summary>
+        private void StraengeRechnen(WErzeugerModel anlage, PhotovoltaikCtrl modul,
+                                     List<PvStrangModell.Geraetegruppe> geraete,
+                                     SolardatenCtrl ctrldat, int stunden,
+                                     double Lon, double Lat, bool erweitert,
+                                     double systemFaktor, double tNoct,
+                                     double nennWirk, double tempKoeff, double pStcKw,
+                                     ref double prodSummeMod)
+        {
+            double[] huld = erweitert ? HuldSatzDerAnlage(modul, anlage.Bezeichner, pStcKw) : null;
+
+            // Die AUSRICHTUNGEN des Feldes - je Paar (Neigung, Azimut) ein Platz im
+            // Zwischenspeicher. NULL an der Strangzeile heisst „der Anlagenwert"
+            // (Konzept 3.4, Entwurfsentscheidung 2); eine 0 ist eine GUELTIGE
+            // Ausrichtung (Sueden) und darf nie als „leer" gelesen werden.
+            var neigungen = new List<int>();
+            var azimute = new List<int>();
+            var platzJeStrang = new Dictionary<AnlageStrangModel, int>();
+
+            foreach (PvStrangModell.Geraetegruppe g in geraete)
+                foreach (AnlageStrangModel s in g.Straenge)
+                {
+                    int neigung = s.Neigung ?? anlage.m_Neigung;
+                    int azimut = s.Azimut ?? anlage.m_Azimut;
+
+                    int platz = -1;
+                    for (int k = 0; k < neigungen.Count; k++)
+                        if (neigungen[k] == neigung && azimute[k] == azimut) { platz = k; break; }
+
+                    if (platz < 0)
+                    {
+                        neigungen.Add(neigung);
+                        azimute.Add(azimut);
+                        platz = neigungen.Count - 1;
+                    }
+                    platzJeStrang[s] = platz;
+                }
+
+            double leistungModulW = (modul != null) ? modul.m_Leistung : 0.0;
+            double flaecheJeModul = (modul != null) ? modul.m_Breite * modul.m_Laenge : 0.0;
+            var einstrahlung = new double[neigungen.Count];
+
+            for (int i = 0; i < stunden; i++)
+            {
+                SolardatenModel zeile = ctrldat.items[i];
+
+                for (int k = 0; k < neigungen.Count; k++)
+                {
+                    einstrahlung[k] = erweitert
+                        ? SolarCalculator.CalculateHourlyHayDavies(
+                              Lon, Lat, neigungen[k], azimute[k],
+                              zeile.Globalstrahlung, zeile.Direktstrahlung,
+                              zeile.Diffusstrahlung, zeile.TagUtc, zeile.StundeUtc)
+                        : SolarCalculator.CalculateHourly(
+                              Lon, Lat, neigungen[k], azimute[k],
+                              zeile.Globalstrahlung, zeile.Direktstrahlung,
+                              zeile.Diffusstrahlung, zeile.Außen_Temp, zeile.TagUtc, zeile.StundeUtc);
+
+                    if (einstrahlung[k] > MaxPSolar) MaxPSolar = einstrahlung[k];
+                }
+
+                double pAcAnlage = 0.0;
+
+                foreach (PvStrangModell.Geraetegruppe g in geraete)
+                {
+                    // Schritte 1 und 2: je Strang die Gleichstromleistung, Summe je
+                    // Geraet. Der MPP-Eingang bleibt reine Pruefgroesse (Q7) - die
+                    // Summe ueber die MPPT eines Geraets ist die Summe ueber seine
+                    // Straenge.
+                    double pDcGer = 0.0;
+
+                    foreach (AnlageStrangModel s in g.Straenge)
+                    {
+                        double gT = einstrahlung[platzJeStrang[s]];
+                        double pStcStrang = leistungModulW / 1000.0 * s.Modulzahl;
+
+                        double pDc;
+                        if (erweitert && huld != null)
+                        {
+                            double tZelle = zeile.Außen_Temp + (gT / 800.0) * (tNoct - 20.0);
+                            pDc = PvErweitertesModell.LeistungHuld(huld, pStcStrang, gT, tZelle);
+                        }
+                        else
+                        {
+                            pDc = BerechnePV(0.0, gT, flaecheJeModul * s.Modulzahl,
+                                             nennWirk, tempKoeff, zeile.Außen_Temp, 1.0,
+                                             pStcStrang, tNoct).potenzielleErzeugung;
+                        }
+
+                        pDcGer += pDc;
+                    }
+
+                    // Schritt 3: die Systemverluste sind ein ANLAGENwert - Verschmutzung,
+                    // Leitungsverluste und Mismatch gelten fuer das Feld, nicht fuer den
+                    // Strang (Konzept 3.5).
+                    pAcAnlage += PvStrangModell.Stunde(g, pDcGer * systemFaktor);
+                }
+
+                // Schritt 5: Summe je Anlage. Die Schnittstelle zur Verbrauchsbilanz
+                // bleibt unangetastet.
+                pvPotentialGesamt_stuendlich[i] += (float)pAcAnlage;
+                prodSummeMod += pAcAnlage;
+            }
+        }
+
+        /// <summary>
+        /// Das DC/AC-Verhaeltnis der ANLAGE: Summe der Modulnennleistungen gegen die
+        /// Summe der AC-Nennleistungen. 0, solange kein Geraet eine fuehrt.
+        /// </summary>
+        public static double DcAcDerAnlage(List<PvStrangModell.Geraetegruppe> geraete)
+        {
+            if (geraete == null) return 0.0;
+
+            double kwp = 0.0, nenn = 0.0;
+            foreach (PvStrangModell.Geraetegruppe g in geraete)
+            {
+                kwp += g.KwpDc;
+                if (g.PAcNennKw.HasValue) nenn += g.PAcNennKw.Value;
+            }
+            return nenn > 0.0 ? kwp / nenn : 0.0;
+        }
+
+        /// <summary>
+        /// Die Kennzahlen einer auf der STRANGEBENE gerechneten Anlage ins Protokoll
+        /// (Konzept 4.4): je Geraet DC/AC, Clipping-Verlust in kWh und %,
+        /// Volllaststunden AC, Jahresnutzungsgrad und Nachtverbrauch — darunter EINE
+        /// Zeile je Anlage.
+        ///
+        /// <para><b>Ohne Zuordnung entsteht hier keine Zeile</b>, und genau daran haengt
+        /// die Byte-Gleichheit: Der Referenzlauf schreibt das Protokoll mit, und eine
+        /// zusaetzliche Zeile waere schon ein Unterschied.</para>
+        /// </summary>
+        private void KennzahlenStrangMelden(WErzeugerModel anlage,
+                                            List<PvStrangModell.Geraetegruppe> geraete)
+        {
+            double ertrag = 0.0, dcSys = 0.0, clipping = 0.0, nacht = 0.0, nenn = 0.0, kwp = 0.0;
+
+            foreach (PvStrangModell.Geraetegruppe g in geraete)
+            {
+                ertrag += g.ErtragKwh;
+                dcSys += g.DcSysKwh;
+                clipping += g.ClippingKwh;
+                nacht += g.NachtKwh;
+                kwp += g.KwpDc;
+                if (g.PAcNennKw.HasValue) nenn += g.PAcNennKw.Value;
+
+                SimulationProtokoll.Aktuell.HinweisEinmal(
+                    "pv-s3-kennzahlen-" + anlage.Bezeichner + "-" +
+                    g.ID_Wechselrichter + "-" + g.Geraetenummer,
+                    "PV-Anlage \"" + anlage.Bezeichner + "\", Wechselrichter \"" +
+                    g.Anzeigename + "\": DC/AC " +
+                    (g.DcAc > 0.0 ? g.DcAc.ToString("N2", CultureInfo.InvariantCulture)
+                                  : "ohne AC-Nennleistung nicht bestimmbar") +
+                    " (" + g.KwpDc.ToString("N2", CultureInfo.InvariantCulture) + " kWp gegen " +
+                    (g.PAcNennKw.HasValue
+                        ? g.PAcNennKw.Value.ToString("N2", CultureInfo.InvariantCulture) + " kW"
+                        : "keine AC-Nennleistung") + "), Jahresertrag " +
+                    g.ErtragKwh.ToString("N1", CultureInfo.InvariantCulture) + " kWh (" +
+                    g.VolllaststundenAc.ToString("N0", CultureInfo.InvariantCulture) +
+                    " Volllaststunden AC), Clipping-Verlust " +
+                    g.ClippingKwh.ToString("N1", CultureInfo.InvariantCulture) + " kWh (" +
+                    g.ClippingAnteilProzent.ToString("N2", CultureInfo.InvariantCulture) +
+                    " %), Jahresnutzungsgrad " +
+                    g.Jahresnutzungsgrad.ToString("N4", CultureInfo.InvariantCulture) +
+                    ", Nachtverbrauch " +
+                    g.NachtKwh.ToString("N1", CultureInfo.InvariantCulture) + " kWh in " +
+                    g.Nachtstunden.ToString(CultureInfo.InvariantCulture) + " Stunden.");
+            }
+
+            double dcAc = nenn > 0.0 ? kwp / nenn : 0.0;
+            double roh = ertrag + clipping;
+
+            SimulationProtokoll.Aktuell.HinweisEinmal(
+                "pv-s3-kennzahlen-anlage-" + anlage.Bezeichner,
+                "PV-Anlage \"" + anlage.Bezeichner + "\" (mit Wechselrichter, " +
+                geraete.Count.ToString(CultureInfo.InvariantCulture) + " Geraet(e)): DC/AC " +
+                (dcAc > 0.0 ? dcAc.ToString("N2", CultureInfo.InvariantCulture)
+                            : "ohne AC-Nennleistung nicht bestimmbar") +
+                ", Jahresertrag " + ertrag.ToString("N1", CultureInfo.InvariantCulture) +
+                " kWh, Clipping-Verlust " + clipping.ToString("N1", CultureInfo.InvariantCulture) +
+                " kWh (" + (roh > 0.0 ? (clipping * 100.0 / roh) : 0.0)
+                               .ToString("N2", CultureInfo.InvariantCulture) +
+                " %), Jahresnutzungsgrad " +
+                (dcSys > 0.0 ? ertrag / dcSys : 0.0).ToString("N4", CultureInfo.InvariantCulture) +
+                ", Nachtverbrauch " + nacht.ToString("N1", CultureInfo.InvariantCulture) + " kWh.");
+        }
+
         /// <summary>
         /// Die Kennzahlen einer im erweiterten Modell gerechneten Anlage ins Protokoll
         /// (Konzept N2.3, letzter Absatz): DC/AC-Verhaeltnis, Clipping-Verlust,
@@ -719,5 +1124,20 @@ namespace WindowsFormsApplication1
 
         /// <summary>Summe P_DC,sys·(1 − eta_WR) ueber das Jahr [kWh].</summary>
         public double WechselrichterVerlust;
+
+        // --- Stufe S3 (Wechselrichterkonzept) -----------------------------------------
+
+        /// <summary>
+        /// Die Geraete dieser Anlage mit ihren Jahreskennzahlen — <b>leer, solange die
+        /// Anlage keine Strangzuordnung rechnet</b> (Vorrangregel, Konzept 3.5/7.1).
+        /// Ausweis, kein Rechenweg: Die Liste steht im Simulationsprotokoll, auf der
+        /// PV-Karte und im Ergebnisreiter; <c>Tab_ErgebnisPhotovoltaik</c> bleibt
+        /// unveraendert (Konzept 4.4).
+        /// </summary>
+        public IReadOnlyList<PvStrangModell.Geraetegruppe> Geraete =
+            new List<PvStrangModell.Geraetegruppe>();
+
+        /// <summary>true = diese Anlage hat auf der Strangebene gerechnet (Stufe S3).</summary>
+        public bool MitWechselrichter => Geraete != null && Geraete.Count > 0;
     }
 }
