@@ -111,9 +111,12 @@ namespace EPOS.Kern.Tests
         /// sehen, ist die Ressource, nicht die Datei.
         ///
         /// <para>Geprüft werden zwei Zeichen, die auf JEDER der sieben Seiten
-        /// vorkommen: der Malpunkt (keine Formel dieser Rubrik kommt ohne
-        /// Multiplikation aus) und das kleine Eta (keiner ihrer Erzeuger ohne
-        /// Wirkungsgrad). Kommt eines davon nicht an, ist die Kodierung unterwegs
+        /// vorkommen — der Malpunkt (keine Formel dieser Rubrik kommt ohne
+        /// Multiplikation aus) und das typografische Minus —, dazu MINDESTENS EIN
+        /// griechischer oder mathematischer Buchstabe aus der Schreibweise der
+        /// Rubrik. Ein bestimmter griechischer Buchstabe taugt dafür nicht: Die
+        /// Wärmepumpe rechnet mit COP statt mit η, der Pufferspeicher mit λ.
+        /// Kommt eines dieser Zeichen nicht an, ist die Kodierung unterwegs
         /// verlorengegangen.</para>
         ///
         /// <para>Gleichzeitig hält der Fall die zwei Verbote der Fassung 2 auf dem
@@ -138,6 +141,12 @@ namespace EPOS.Kern.Tests
                             "Die eingebettete Seite " + seite + " führt das Zeichen '" +
                             zeichen + "' nicht — entweder fehlt die Notation, oder die " +
                             "Kodierung ist unterwegs verlorengegangen.");
+
+            Assert.True(GRIECHISCH.Any(z => inhalt.Contains(z, StringComparison.Ordinal)),
+                        "Die eingebettete Seite " + seite + " führt keinen einzigen " +
+                        "griechischen oder mathematischen Buchstaben (" +
+                        string.Join(" ", GRIECHISCH) + ") — entweder fehlt die Notation, " +
+                        "oder die Kodierung ist unterwegs verlorengegangen.");
 
             Assert.DoesNotContain("<math", inhalt, StringComparison.Ordinal);
             Assert.DoesNotContain("\\frac", inhalt, StringComparison.Ordinal);
@@ -170,10 +179,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Zeichen der Notation, an denen sich eine kaputte Kodierung zeigt:
-        /// Malpunkt (U+00B7) und kleines Eta (U+03B7).
+        /// Die zwei Zeichen, die auf JEDER Seite stehen: Malpunkt (U+00B7) und
+        /// typografisches Minus (U+2212).
         /// </summary>
-        private static readonly string[] ZEICHEN_DER_NOTATION = { "·", "η" };
+        private static readonly string[] ZEICHEN_DER_NOTATION = { "·", "−" };
+
+        /// <summary>
+        /// Davon steht mindestens EINES auf jeder Seite — welches, hängt vom Fach ab:
+        /// η beim Erzeuger mit Wirkungsgrad, ϑ bei jeder Temperatur, λ beim
+        /// Schichtmodell, Σ bei jeder Summe.
+        /// </summary>
+        private static readonly string[] GRIECHISCH =
+            { "η", "ϑ", "λ", "β", "γ", "ρ", "κ", "θ", "χ", "Δ", "Σ", "√" };
 
         /// <summary>
         /// Die Seiten des Ordners. Dateien mit führendem <c>_</c> sind KEINE
