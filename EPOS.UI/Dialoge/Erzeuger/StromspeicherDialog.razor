@@ -102,6 +102,14 @@
 
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
+            @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
+               weil dieser Abschnitt die Geraetewerte zeigt, die die Speicherengine als
+               Parametersatz liest - Kapazitaet, Leistung, Ladezustand, Wirkungsgrad,
+               Degradation, Zyklen. Der Fensterknopf oben rechts bleibt, was er ist. *@
+            <div class="epos-leiste">
+                <InfoKnopf Schluessel="Form_Stromspeicher.Berechnung"
+                           StandardKurztext="Berechnungsweg Stromspeicher" />
+            </div>
             @* Formularraster (iU8-E-2, Paket P1): Der Detailblock stand zuvor als
                eine Spalte voller Felder ueber die ganze Breite. *@
             <Formularraster>
