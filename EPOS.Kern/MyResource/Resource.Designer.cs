@@ -73,6 +73,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -12661,6 +12662,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 📄 CEC-Datei laden ▶ ähnelt.
+        /// </summary>
+        public static string IMP_GER_BTN_CEC_DATEI {
+            get {
+                return ResourceManager.GetString("IMP_GER_BTN_CEC_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datei VDI 3805 einlesen... ähnelt.
         /// </summary>
         public static string IMP_KAT_BTN_DATEI {
@@ -23040,7 +23050,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter (CEC)... ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter (CEC, OND)... ähnelt.
         /// </summary>
         public static string MENU_WR_IMPORT_CEC {
             get {
@@ -23423,6 +23433,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string Name1 {
             get {
                 return ResourceManager.GetString("Name1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die OND-Datei wurde nicht gefunden. ähnelt.
+        /// </summary>
+        public static string OND_MSG_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("OND_MSG_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wechselrichter aus OND-Dateien. ähnelt.
+        /// </summary>
+        public static string OND_MSG_GELESEN {
+            get {
+                return ResourceManager.GetString("OND_MSG_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keinen PVsyst-Wechselrichter (pvGInverter). ähnelt.
+        /// </summary>
+        public static string OND_MSG_KEIN_GERAET {
+            get {
+                return ResourceManager.GetString("OND_MSG_KEIN_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die OND-Datei konnte nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string OND_MSG_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("OND_MSG_LESEFEHLER", resourceCulture);
             }
         }
         
@@ -44932,7 +44978,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die sechs Stützstellen sind aus den Sandia-Koeffizienten bei U_dc = U_dco gerechnet; bei Nennlast gilt dabei η = Paco/Pdco exakt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 🌿 OND laden ▶ ähnelt.
+        /// </summary>
+        public static string WRK_IMP_BTN_OND {
+            get {
+                return ResourceManager.GetString("WRK_IMP_BTN_OND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei CEC sind die sechs Stützstellen aus den Sandia-Koeffizienten bei U_dc = U_dco gerechnet; bei Nennlast gilt dabei η = Paco/Pdco exakt. Bei OND stammen sie aus der Wertetabelle ProfilPIO der Datei — bei drei Fassungen aus der nominalen. ähnelt.
         /// </summary>
         public static string WRK_IMP_HINWEIS_KENNLINIE {
             get {
@@ -44941,7 +44996,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die CEC-Wechselrichterliste des NREL. Die sechs Stützstellen der Kennlinie werden aus den Sandia-Koeffizienten gerechnet; MPPT-Zahl und Scheinleistung führt die Liste nicht und sind von Hand nachzupflegen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die CEC-Wechselrichterliste des NREL (Netz oder Auslieferungsdatei) und PVsyst-OND-Dateien. Bei CEC werden die sechs Stützstellen der Kennlinie aus den Sandia-Koeffizienten gerechnet; MPPT-Zahl und Scheinleistung führt die Liste nicht und sind von Hand nachzupflegen. Eine OND-Datei bringt beides und die Kennlinie als Wertetabelle mit. ähnelt.
         /// </summary>
         public static string WRK_IMP_KOPFBAND {
             get {
@@ -44991,6 +45046,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WRK_IMP_LBL_SANDIA_VDCO {
             get {
                 return ResourceManager.GetString("WRK_IMP_LBL_SANDIA_VDCO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Wechselrichter selektieren! ähnelt.
+        /// </summary>
+        public static string WRK_IMP_MSG_KEINE_AUSWAHL {
+            get {
+                return ResourceManager.GetString("WRK_IMP_MSG_KEINE_AUSWAHL", resourceCulture);
             }
         }
         
@@ -45049,7 +45113,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter einlesen (CEC) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereit. Bitte die CEC-Liste laden oder eine OND-Datei wählen. ähnelt.
+        /// </summary>
+        public static string WRK_IMP_STATUS_BEREIT {
+            get {
+                return ResourceManager.GetString("WRK_IMP_STATUS_BEREIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter Auswahl ({0} Geräte gefunden) ähnelt.
+        /// </summary>
+        public static string WRK_IMP_STATUS_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("WRK_IMP_STATUS_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter einlesen (CEC und OND) ähnelt.
         /// </summary>
         public static string WRK_IMP_TITEL {
             get {

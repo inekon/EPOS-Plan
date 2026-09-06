@@ -1,0 +1,669 @@
+@* Geraeteimport - EINE Komponente, ZWEI Auspraegungen (Anwenderentscheid W6-O-1
+   vom 06.09.2026: "der OND-Import soll umgesetzt werden. baue daher den
+   Modulimport schon jetzt um").
+
+   SIE LOEST ZWEI MASKEN AB: PvModulImportDialog (771 Z., CEC und PVsyst-PAN,
+   iU9-W13.3) und WechselrichterImportDialog (655 Z., CEC, W6-E-2/S1.5). Beide
+   teilten seit S1 alles, was sich teilen laesst - den Abrufapparat im Kern, die
+   Vorpruefung ueber DublettenPruefung, das Ergebnis der Vorpruefung und
+   saemtliche Bausteine -, aber nicht die .razor-Datei: Der Modulimport war auf
+   771 Zeilen gegen UnifiedModule typisiert, Spalten und Detailfelder standen als
+   Markup gegen konkrete Eigenschaften. Genau das ist jetzt weg. Spalten, Felder,
+   Reiter, Filter und Quellen sind DATEN (ModulImportProfil im Kern, Zwilling zu
+   ModulKatalogProfil), eine Zeile ist eine ImportZeile, und diese Komponente
+   kennt weder UnifiedModule noch CecWechselrichter noch OndWechselrichter.
+
+   DAMIT SCHLIESST SICH W6-O-1 (Konzept Wechselrichter 5.5 und Kapitel 12): ein
+   Wirt statt zwei, und der OND-Zweig kommt beim Umbau gleich mit hinein - genau
+   der Zeitpunkt, den der offene Punkt selbst als den sinnvollen benannt hat.
+
+   DREI QUELLEN JE AUSPRAEGUNG. Modul: CEC ueber das Netz, CEC als Datei, PVsyst
+   .pan. Wechselrichter: CEC ueber das Netz, CEC als Datei, PVsyst .OND. Die
+   Dateiquelle der CEC-Liste ist der Weg des Anwenderentscheids W6-O-3 ("Liste
+   als Datei und dann ueber Import"): Der Dateiwaehler macht im
+   Herstellerdatenordner auf, in dem CEC Modules.csv und CEC Inverters.csv
+   ausgeliefert liegen. Ohne Delegat kein Knopf - dieselbe Hausregel wie beim
+   PAN-Knopf des Vorlaeufers.
+
+   EINE ZEILENWAHL, KEIN MEHRFACHIMPORT. Beide Vorlaeufer hatten
+   MultiSelect = false und schrieben genau EINEN Satz; ImportVorpruefung traegt
+   deshalb einen Befund und keine Liste. Der Baustein Zeilenwahl ist geteilt, die
+   Semantik bleibt die des Bestands.
+
+   LANGE LISTEN stehen in einem VIRTUALISIERTEN Raster (ab 120 Zeilen): 20 746
+   Module, 2 343 Wechselrichter.
+
+   TASTATUR: Esc schliesst die oberste Ebene; waehrend eines Laufs bricht Esc ihn
+   ab. Enter ist NICHT belegt - der Uebernehmen-Knopf schreibt sofort. *@
+
+@namespace EPOS.UI.Dialoge.Photovoltaik
+@using System.Threading
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-pvimport" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Profil.Titel</h1>
+        <InfoKnopf Schluessel="@Profil.HilfeSchluessel" />
+    </div>
+
+    <Herleitungszeile Text="@Profil.Kopfband" />
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Die Quellen ----------------------------------------------------- *@
+    <div class="epos-leiste">
+        @foreach (ImportQuelle quelle in Erreichbar)
+        {
+            ImportQuelle q = quelle;
+            <button type="button" class="@Quellenklasse(q)" disabled="@_laeuft"
+                    @onclick="() => BeiQuelle(q)">@q.Beschriftung</button>
+        }
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-pvimport-status">@StatusText</span>
+    </div>
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@null" Text="@_fortschrittText"
+                 Abbrechen="@(_abbruch is null ? null : AbbrechenCallback)"
+                 AbbrechenText="@AbbrechenText" />
+
+    @* --- Die Filterleiste: Klapplisten und Suche -------------------------- *@
+    <div class="epos-pvimport-filter">
+        <Auswahlfeld Bezeichnung="@Profil.FilterHersteller" Eintraege="@_herstellerliste"
+                     Auswahl="@_iHersteller" AuswahlChanged="BeiHersteller" Aktiv="@(!_laeuft)" />
+        @if (Profil.FilterTechnologie.Length > 0)
+        {
+            <Auswahlfeld Bezeichnung="@Profil.FilterTechnologie" Eintraege="@_technologieliste"
+                         Auswahl="@_iTechnologie" AuswahlChanged="BeiTechnologie" Aktiv="@(!_laeuft)" />
+        }
+        <Textfeld Bezeichnung="@Profil.FilterSuche" Wert="@_suche" WertChanged="BeiSuche"
+                  Platzhalter="@Profil.SuchePlatzhalter" />
+    </div>
+
+    @* --- Die Filterleiste: Zahlenbereiche --------------------------------- *@
+    <div class="epos-pvimport-filter">
+        @for (int i = 0; i < Profil.Zahlenfilter.Count; i++)
+        {
+            int n = i;
+            ImportZahlenfilter f = Profil.Zahlenfilter[n];
+            <Zahlenfeld Bezeichnung="@f.BezeichnungVon" Wert="@_von[n]"
+                        WertChanged="@(w => { _von[n] = w; Filtern(); })"
+                        Min="@f.Min" Max="@f.Max" Nachkommastellen="@f.Nachkommastellen"
+                        Einheit="@f.Einheit" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@f.BezeichnungBis" Wert="@_bis[n]"
+                        WertChanged="@(w => { _bis[n] = w; Filtern(); })"
+                        Min="@f.Min" Max="@f.Max" Nachkommastellen="@f.Nachkommastellen"
+                        Einheit="@f.Einheit" Aktiv="@(!_laeuft)" />
+        }
+        <button type="button" class="epos-knopf" @onclick="Zuruecksetzen">@ZuruecksetzenText</button>
+    </div>
+
+    @* --- Das Raster: Spalten aus dem Profil ------------------------------- *@
+    <Raster TZeile="ImportZeile" Zeilen="@Zeilen" Virtualisiert="@Virtualisieren">
+        <KindInhalt>
+            <TemplateColumn TGridItem="ImportZeile" Title="@SpalteWahlText">
+                <Zeilenwahl Gewaehlt="@Istgewaehlt(context)" Kurztext="@SpalteWahlText"
+                            Gewaehltwerden="() => Waehlen(context)" />
+            </TemplateColumn>
+            @foreach (ImportSpalte spalte in Profil.Spalten)
+            {
+                string s = spalte.Schluessel;
+                <TemplateColumn TGridItem="ImportZeile" Title="@spalte.Titel">
+                    @context.Spalte(s)
+                </TemplateColumn>
+            }
+        </KindInhalt>
+    </Raster>
+
+    @* --- Die Detailfelder in den Reitern des Profils ---------------------- *@
+    <Reiter Bezeichnung="@Profil.Titel">
+      <KindInhalt>
+        @for (int r = 0; r < Profil.Reiter.Count; r++)
+        {
+            int nr = r;
+            ImportReiter blatt = Profil.Reiter[nr];
+            <Reiterblatt Schluessel="@blatt.Schluessel" Titel="@blatt.Titel">
+              <KindInhalt>
+                @* Formularraster (iU8-E-2, Paket P3): Beschriftung neben dem Feld,
+                   dieselbe Anordnung wie im Katalog, in den die Zeile uebernommen
+                   wird. *@
+                <Formularraster>
+                    <KindInhalt>
+                        @foreach (ImportFeld feld in Profil.Felder.Where(f => f.Reiter == nr))
+                        {
+                            <Textfeld Bezeichnung="@feld.Bezeichnung" Wert="@Feldwert(feld)"
+                                      NurLesen="true" />
+                        }
+                    </KindInhalt>
+                </Formularraster>
+                @if (blatt.Hinweis.Length > 0)
+                {
+                    <Herleitungszeile Text="@blatt.Hinweis" />
+                }
+              </KindInhalt>
+            </Reiterblatt>
+        }
+      </KindInhalt>
+    </Reiter>
+
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!UebernehmenErlaubt)"
+                @onclick="BeiUebernehmen">@UebernehmenText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
+    </div>
+
+    @* --- Plausibilitaet: Warnungen fragen zurueck, Fehler sperren --------- *@
+    <Rueckfrage Offen="@_plausiOffen" TitelText="@Profil.PlausiTitel" Frage="@_plausiText"
+                JaText="@JaText" NeinText="@NeinText" Beantwortet="PlausiFertig" />
+
+    <Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_konflikteOffen)
+            {
+                <EPOS.UI.Dialoge.Import.ImportKonflikteDialog
+                    Pruefungen="@_konfliktPruefungen" VergebeneNamen="@_konfliktNamen"
+                    Geschlossen="KonflikteFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    // =====================================================================
+    // Die Auspraegung
+    // =====================================================================
+
+    /// <summary>Welcher der beiden Importe (Vorgabe: Photovoltaik).</summary>
+    [Parameter] public ModulImportArt Art { get; set; } = ModulImportArt.Photovoltaik;
+
+    /// <summary>
+    /// Das Profil zur <see cref="Art"/>. Die Hülle kann es fertig hereinreichen; ohne
+    /// sie baut die Komponente es selbst und übersetzt dabei über
+    /// <see cref="ImportTexte.Zu"/>.
+    /// </summary>
+    [Parameter] public ModulImportProfil? ProfilVorgabe { get; set; }
+
+    private ModulImportProfil Profil => ProfilVorgabe ?? _profil!;
+    private ModulImportProfil? _profil;
+
+    /// <summary>
+    /// Der Schlüssel der Quelle, mit der der Dialog aufmacht — sie trägt den
+    /// hervorgehobenen Knopf. Zwei Menüpunkte, EINE Maske: Der Vorläufer öffnete beide
+    /// im SELBEN Zustand (Befund W13‑B51).
+    /// </summary>
+    [Parameter] public string Quelle { get; set; } = ModulImportProfil.QuelleCec;
+
+    /// <summary>Die Datenwege der Hülle.</summary>
+    [Parameter] public ModulImportWege Wege { get; set; } = new();
+
+    /// <summary>Der Dialog ist zu Ende. <c>true</c> = es wurde etwas geschrieben.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte, die keiner Ausprägung gehören
+    // =====================================================================
+
+    [Parameter] public string ZuruecksetzenText { get; set; } = Resource.PVIMP_BTN_ZURUECKSETZEN;
+    [Parameter] public string UebernehmenText { get; set; } = Resource.PVIMP_BTN_UEBERNEHMEN;
+    [Parameter] public string SchliessenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
+    [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string PlausiFrage { get; set; } = Resource.PVIMP_PLAUSI_FRAGE;
+    [Parameter] public string TextGespeichert { get; set; } = Resource.PVIMP_MSG_GESPEICHERT;
+    [Parameter] public string TextAktualisiert { get; set; } = Resource.PVIMP_MSG_AKTUALISIERT;
+    [Parameter] public string TextSchreibfehler { get; set; } = Resource.PVIMP_MSG_SCHREIBFEHLER;
+    [Parameter] public string TextBereitsEingelesen { get; set; } = Resource.IMP_KAT_MSG_BEREITS_EINGELESEN;
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _laeuft;
+    private string _fortschrittText = "";
+    private CancellationTokenSource? _abbruch;
+
+    private List<ImportZeile> _zeilen = new();
+    private List<ImportZeile> _anzeige = new();
+    private object? _gewaehlt;
+
+    private IReadOnlyList<(int Id, string Text)> _herstellerliste = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _technologieliste = Array.Empty<(int, string)>();
+    private int _iHersteller, _iTechnologie;
+    private string _suche = "";
+    private double?[] _von = Array.Empty<double?>();
+    private double?[] _bis = Array.Empty<double?>();
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+    private string _status = "";
+    private bool _geschrieben;
+
+    private bool _plausiOffen;
+    private string _plausiText = "";
+    private TaskCompletionSource<bool>? _plausiWartet;
+
+    private bool _konflikteOffen;
+    private IReadOnlyList<ImportPruefung>? _konfliktPruefungen;
+    private IReadOnlyCollection<string>? _konfliktNamen;
+    private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
+
+    private IQueryable<ImportZeile> Zeilen => _anzeige.AsQueryable();
+
+    /// <summary>
+    /// Ab wie vielen Zeilen sich das Virtualisieren lohnt. Die CEC-Modulliste bringt
+    /// 20 746, die Wechselrichterliste 2 343; eine PAN- oder OND-Sitzung selten mehr
+    /// als eine Handvoll. Darunter kostet die Virtualisierung mehr, als sie bringt.
+    /// </summary>
+    private const int VIRTUALISIEREN_AB = 120;
+
+    private bool Virtualisieren => _anzeige.Count >= VIRTUALISIEREN_AB;
+
+    private EventCallback AbbrechenCallback =>
+        EventCallback.Factory.Create(this, () => _abbruch?.Cancel());
+
+    /// <summary>Die Quellen, zu denen die Hülle einen Weg mitgeliefert hat.</summary>
+    private IEnumerable<ImportQuelle> Erreichbar =>
+        Profil.Quellen.Where(q => q.AusDemNetz
+            ? Wege.Netz is not null
+            : Wege.DateiWaehlen is not null && Wege.DateiLaden is not null);
+
+    /// <summary>Der gewählte Satz, oder <c>null</c> (Prüfhilfe für Tests).</summary>
+    public object? Gewaehlt => _gewaehlt;
+
+    /// <summary>Die Zeile des gewählten Satzes (Prüfhilfe für Tests).</summary>
+    public ImportZeile? GewaehlteZeile =>
+        _gewaehlt is null ? null : _anzeige.FirstOrDefault(z => ReferenceEquals(z.Satz, _gewaehlt));
+
+    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Zahl der sichtbaren Zeilen (Prüfhilfe für Tests).</summary>
+    public int SichtbareZeilen => _anzeige.Count;
+
+    /// <summary>Steht die Plausibilitäts-Rückfrage? (Prüfhilfe für Tests.)</summary>
+    public bool PlausiOffen => _plausiOffen;
+
+    private string StatusText => _status.Length > 0 ? _status : Profil.StatusBereit;
+
+    private bool UebernehmenErlaubt => !_laeuft && _gewaehlt is not null && Wege.Vorpruefen is not null;
+
+    private bool Istgewaehlt(ImportZeile zeile) => ReferenceEquals(zeile.Satz, _gewaehlt);
+
+    private string Quellenklasse(ImportQuelle q) =>
+        string.Equals(q.Schluessel, Quelle, StringComparison.OrdinalIgnoreCase)
+            ? "epos-knopf epos-knopf--primaer" : "epos-knopf";
+
+    private string Feldwert(ImportFeld feld) => GewaehlteZeile?.Feld(feld.Schluessel) ?? "";
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnParametersSet()
+    {
+        if (ProfilVorgabe is null && (_profil is null || _profil.Art != Art))
+            Aufbauen();
+        else if (_von.Length != Profil.Zahlenfilter.Count)
+            Vorbelegen();
+    }
+
+    protected override void OnInitialized()
+    {
+        if (ProfilVorgabe is null && _profil is null) Aufbauen();
+        else Vorbelegen();
+
+        ListenAufbauen();
+    }
+
+    private void Aufbauen()
+    {
+        _profil = ModulImportProfil.Finde(Art, ImportTexte.Zu);
+        Vorbelegen();
+    }
+
+    /// <summary>Die Vorbelegung der Zahlenfilter — wörtlich die des Vorläufers.</summary>
+    private void Vorbelegen()
+    {
+        int n = Profil.Zahlenfilter.Count;
+        _von = new double?[n];
+        _bis = new double?[n];
+        for (int i = 0; i < n; i++)
+        {
+            _von[i] = Profil.Zahlenfilter[i].VorgabeVon;
+            _bis[i] = Profil.Zahlenfilter[i].VorgabeBis;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Die Quellen
+    // =====================================================================
+
+    private Task BeiQuelle(ImportQuelle quelle)
+    {
+        if (_laeuft) return Task.CompletedTask;
+        return quelle.AusDemNetz ? AusDemNetz(quelle) : AusDerDatei(quelle);
+    }
+
+    /// <summary>
+    /// Der Netzabruf — mit Fortschritt und Abbruch. Drei URLs mit je 45 Sekunden
+    /// Zeitgrenze sind im schlechtesten Fall über zwei Minuten (Risiko R‑W13‑3).
+    /// </summary>
+    private async Task AusDemNetz(ImportQuelle quelle)
+    {
+        if (Wege.Netz is null) return;
+
+        _laeuft = true;
+        _meldung = "";
+        _abbruch = new CancellationTokenSource();
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var melder = new Progress<CecFortschritt>(f =>
+            {
+                _fortschrittText = Wege.Meldungstext?.Invoke(f) ?? "";
+                InvokeAsync(StateHasChanged);
+            });
+
+            Uebernehmen(await Wege.Netz(quelle.Schluessel, melder, _abbruch.Token), quelle);
+        }
+        catch (OperationCanceledException)
+        {
+            // Stiller Ausstieg - der Anwender hat abgebrochen.
+        }
+        finally
+        {
+            _laeuft = false;
+            _fortschrittText = "";
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+    }
+
+    /// <summary>Der Dateiweg: wählen, lesen, in die Liste nehmen.</summary>
+    private async Task AusDerDatei(ImportQuelle quelle)
+    {
+        if (Wege.DateiWaehlen is null || Wege.DateiLaden is null) return;
+
+        string? pfad = await Wege.DateiWaehlen(quelle);
+        if (string.IsNullOrEmpty(pfad)) return;
+
+        _laeuft = true;
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            Uebernehmen(await Wege.DateiLaden(quelle, pfad), quelle);
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private void Uebernehmen(ImportLeseErgebnis erg, ImportQuelle quelle)
+    {
+        if (erg is null) return;
+
+        if (!erg.Erfolgreich)
+        {
+            Melden(Wege.Meldungstext?.Invoke(erg.Meldung) ?? "", WarnStufe.Fehler);
+            return;
+        }
+
+        Quelle = quelle.Schluessel;
+        _zeilen = new List<ImportZeile>();
+        foreach (object satz in erg.Saetze)
+        {
+            ImportZeile? z = Profil.Zeile(_zeilen.Count, satz);
+            if (z is not null) _zeilen.Add(z);
+        }
+
+        _gewaehlt = null;
+        ListenAufbauen();
+        Filtern();
+    }
+
+    // =====================================================================
+    // Filter
+    // =====================================================================
+
+    /// <summary>
+    /// Die beiden Auswahllisten. Der erste Eintrag steht für „alle" — und zwar als
+    /// STEUERWERT (Listenplatz 0), nicht als Anzeigetext, gegen den verglichen wird
+    /// (Befund W13‑B39: Eine Übersetzung hätte den Filter still zerrissen).
+    /// </summary>
+    private void ListenAufbauen()
+    {
+        var hersteller = new List<(int, string)> { (0, Profil.TextAlle) };
+        var technologie = new List<(int, string)> { (0, Profil.TextAlle) };
+
+        foreach (string h in _zeilen.Select(z => z.Hersteller).Distinct().OrderBy(x => x))
+            if (h.Length > 0) hersteller.Add((hersteller.Count, h));
+        foreach (string t in _zeilen.Select(z => z.Technologie).Distinct().OrderBy(x => x))
+            if (t.Length > 0) technologie.Add((technologie.Count, t));
+
+        _herstellerliste = hersteller;
+        _technologieliste = technologie;
+        _iHersteller = 0;
+        _iTechnologie = 0;
+    }
+
+    private void BeiHersteller(int? i) { _iHersteller = i ?? 0; Filtern(); }
+    private void BeiTechnologie(int? i) { _iTechnologie = i ?? 0; Filtern(); }
+    private void BeiSuche(string t) { _suche = t ?? ""; Filtern(); }
+
+    private void Zuruecksetzen()
+    {
+        _suche = "";
+        _iHersteller = 0;
+        _iTechnologie = 0;
+        Vorbelegen();
+        Filtern();
+    }
+
+    /// <summary>
+    /// Die Filterrechnung, wörtlich <c>ApplyFilter</c> :198‑246: Suchmuster,
+    /// Klapplisten und Zahlenbereiche, und eine Obergrenze von 0 zählt als „keine
+    /// Obergrenze". Die Auswahl überlebt das Umfiltern, solange die Zeile sichtbar
+    /// bleibt.
+    /// </summary>
+    private void Filtern()
+    {
+        System.Text.RegularExpressions.Regex? muster = Suchmuster.Uebersetzen(_suche);
+
+        string? hersteller = _iHersteller > 0 && _iHersteller < _herstellerliste.Count
+            ? _herstellerliste[_iHersteller].Text : null;
+        string? technologie = _iTechnologie > 0 && _iTechnologie < _technologieliste.Count
+            ? _technologieliste[_iTechnologie].Text : null;
+
+        _anzeige = new List<ImportZeile>();
+
+        foreach (ImportZeile z in _zeilen)
+        {
+            if (muster is not null && !muster.IsMatch(z.Name)) continue;
+            if (hersteller is not null
+                && !string.Equals(z.Hersteller, hersteller, StringComparison.OrdinalIgnoreCase)) continue;
+            if (technologie is not null
+                && !string.Equals(z.Technologie, technologie, StringComparison.OrdinalIgnoreCase)) continue;
+            if (!ImBereich(z)) continue;
+
+            z.Nummer = _anzeige.Count;
+            _anzeige.Add(z);
+        }
+
+        if (_gewaehlt is not null && !_anzeige.Any(z => ReferenceEquals(z.Satz, _gewaehlt)))
+            _gewaehlt = null;
+
+        _status = string.Format(Profil.StatusGefunden, _anzeige.Count);
+    }
+
+    /// <summary>Liegt die Zeile in allen Zahlenbereichen der Filterleiste?</summary>
+    private bool ImBereich(ImportZeile z)
+    {
+        for (int i = 0; i < Profil.Zahlenfilter.Count && i < _von.Length; i++)
+        {
+            double wert = i == 0 ? z.Zahl1 : z.Zahl2;
+            double min = _von[i] ?? 0, max = _bis[i] ?? 0;
+            if (!(wert >= min && (max <= 0 || wert <= max))) return false;
+        }
+        return true;
+    }
+
+    private void Waehlen(ImportZeile zeile)
+    {
+        _gewaehlt = zeile.Satz;
+        _meldung = "";
+    }
+
+    // =====================================================================
+    // Uebernehmen
+    // =====================================================================
+
+    private async Task BeiUebernehmen()
+    {
+        object? satz = _gewaehlt;
+        if (satz is null || Wege.Vorpruefen is null)
+        {
+            Melden(Profil.MeldungOhneAuswahl, WarnStufe.Hinweis);
+            return;
+        }
+
+        _laeuft = true;
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            ImportVorpruefung vor = await Wege.Vorpruefen(satz);
+
+            // Plausibilitaet der Gerätewerte: ein Fehler sperrt die Uebernahme, eine
+            // Warnung wird zurueckgefragt - der Anwender hat die Werte im Detailblock
+            // vor sich.
+            if (vor.Gesperrt)
+            {
+                Melden(vor.Plausibilitaet, WarnStufe.Fehler);
+                return;
+            }
+            if (vor.Plausibilitaet.Length > 0 && !await PlausiFragen(vor.Plausibilitaet)) return;
+
+            string name = GewaehlteZeile?.Name ?? "";
+
+            if (vor.Befund == ImportBefund.Neu)
+            {
+                await Schreiben(satz, name, neu: true);
+                return;
+            }
+
+            List<KonfliktEntscheidung>? entscheidungen =
+                await KonflikteFragen(vor.Pruefungen, vor.VergebeneNamen);
+            if (entscheidungen is null || entscheidungen.Count == 0) return;   // Abbruch
+
+            KonfliktEntscheidung ent = entscheidungen[0];
+            switch (ent.Aktion)
+            {
+                case KonfliktAktion.Ueberschreiben:
+                    await Schreiben(satz, name, neu: false, bestandsId: ent.Pruefung.Vorhanden.Id);
+                    break;
+                case KonfliktAktion.Umbenennen:
+                    await Schreiben(satz, ent.NeuerName, neu: true);
+                    break;
+                case KonfliktAktion.Importieren:
+                    // Bei InhaltsGleich: gewollte Variante trotzdem anlegen.
+                    await Schreiben(satz, name, neu: true);
+                    break;
+                default:
+                    Melden(TextBereitsEingelesen, WarnStufe.Hinweis);
+                    break;
+            }
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+    }
+
+    private async Task Schreiben(object satz, string name, bool neu, int bestandsId = 0)
+    {
+        bool ok = neu
+            ? (Wege.Anlegen is not null && await Wege.Anlegen(satz, name))
+            : (Wege.Ueberschreiben is not null && await Wege.Ueberschreiben(satz, bestandsId));
+
+        Melden(ok ? (neu ? TextGespeichert : TextAktualisiert) : TextSchreibfehler,
+               ok ? WarnStufe.Erfolg : WarnStufe.Fehler);
+
+        // Wie im Bestand bleibt der Dialog OFFEN - er ist ein Katalogfenster, aus dem
+        // der Anwender mehrere Sätze nacheinander uebernimmt.
+        if (ok) _geschrieben = true;
+    }
+
+    private async Task<bool> PlausiFragen(string text)
+    {
+        _plausiText = text + " " + PlausiFrage;
+        _plausiOffen = true;
+        _plausiWartet = new TaskCompletionSource<bool>();
+        await InvokeAsync(StateHasChanged);
+        return await _plausiWartet.Task;
+    }
+
+    private void PlausiFertig(bool? antwort)
+    {
+        _plausiOffen = false;
+        _plausiWartet?.TrySetResult(antwort == true);
+    }
+
+    private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
+        IReadOnlyList<ImportPruefung> pruefungen, IReadOnlyCollection<string> namen)
+    {
+        _konfliktPruefungen = pruefungen;
+        _konfliktNamen = namen;
+        _konflikteOffen = true;
+        _konflikteWartet = new TaskCompletionSource<List<KonfliktEntscheidung>?>();
+        await InvokeAsync(StateHasChanged);
+        return await _konflikteWartet.Task;
+    }
+
+    private void KonflikteFertig(List<KonfliktEntscheidung>? entscheidungen)
+    {
+        _konflikteOffen = false;
+        _konflikteWartet?.TrySetResult(entscheidungen);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(_geschrieben);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+
+        if (_konflikteOffen) return Task.CompletedTask;
+        if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
+
+        return Geschlossen.InvokeAsync(_geschrieben);
+    }
+}

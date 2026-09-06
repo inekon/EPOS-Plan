@@ -156,7 +156,13 @@ namespace WindowsFormsApplication1
             // Befund W13-B37) und der wirksame "Main_PV_Test". Der Bereich bleibt
             // derselbe; die Zeile in help_mapping.txt heisst weiter nach der
             // Maske, denn sie ist die Adresse des HILFETEXTES (Praxis seit W12).
-            { "PvModulImportDialog",         B_PHOTOVOLTAIK },
+            // W6-O-1 (06.09.2026): Aus PvModulImportDialog und
+            // WechselrichterImportDialog ist EIN Wirt geworden - ModulImportDialog
+            // mit zwei Auspraegungen. Er fuehrt beide Hilfeschluessel weiter
+            // (Main_PV_Test.btn_Help und Form_WechselrichterImport.btn_Help, aus
+            // dem Profil); der BEREICH ist hier der der Photovoltaik, zu der der
+            // Wechselrichter fachlich gehoert.
+            { "ModulImportDialog",           B_PHOTOVOLTAIK },
             // P6 nachgetragen: die Huellform "Projekt oeffnen" aus Paket P3. Ohne
             // Eintrag griff erst die Kennungsstufe ("projekt" im Typnamen) - das
             // Ergebnis war zwar dasselbe, aber unbeabsichtigt.
