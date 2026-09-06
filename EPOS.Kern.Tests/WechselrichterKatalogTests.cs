@@ -597,6 +597,103 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die Modellparabel schweigt</b> (Anwenderentscheid <b>W6‑O‑8</b> vom
+        /// 06.09.2026). Der Sandia-Umweg (Konzept 3.3.3) legt den Scheitel bei guten
+        /// Geräten zwischen 30 und 50 %; der Rückgang danach ist ein Zehntel- bis
+        /// Drittelprozentpunkt. Genau das traf vor der Schwelle 303 der 2 343 Geräte der
+        /// Auslieferungsliste — 13 % des Bestands, jedes einzelne mit einer Rückfrage
+        /// beim Übernehmen.
+        ///
+        /// <para>Geprüft wird der gemessene Rand des Bestands: 0,35 Prozentpunkte
+        /// zwischen 30 und 50 % (der größte gemessene Fall der Parabel liegt bei 0,372)
+        /// — <b>und der Satz bleibt aus</b>.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_Abfall_unter_der_Schwelle_ist_keine_Warnung()
+        {
+            WechselrichterModel m = Muster("Parabel");
+            m.m_Eta05 = 0.900; m.m_Eta10 = 0.940; m.m_Eta20 = 0.962;
+            m.m_Eta30 = 0.972; m.m_Eta50 = 0.9685; m.m_Eta100 = 0.9600;
+            m.m_Eta_Euro = null;   // der Ausweis ist hier nicht der Gegenstand
+
+            WechselrichterPlausibilitaet.Befund b = WechselrichterPlausibilitaet.Pruefe(m);
+
+            Assert.True(b.Ok);
+            Assert.Empty(b.Warnungen);
+        }
+
+        /// <summary>
+        /// <b>Der Grenzfall GENAU auf der Schwelle bleibt still</b> — gemeldet wird, was
+        /// <i>darüber</i> liegt. 0,970 gegen 0,960 ist ein Prozentpunkt und damit
+        /// <see cref="WechselrichterPlausibilitaet.TEILLAST_ABFALL_SCHWELLE"/> selbst;
+        /// einen Hundertstelprozentpunkt tiefer meldet die Regel.
+        ///
+        /// <para><b>Das ist keine Haarspalterei, sondern die Zusage der Konstanten:</b>
+        /// Ohne den festgeschriebenen Grenzfall verschöbe sich die Regel beim nächsten
+        /// Umbau still um eine Rundung, und die Zahl im Kommentar stimmte nicht mehr mit
+        /// dem Verhalten überein.</para>
+        /// </summary>
+        [Fact]
+        public void Der_Grenzfall_genau_auf_der_Schwelle_meldet_nicht()
+        {
+            WechselrichterModel m = Muster("Grenzfall");
+            m.m_Eta05 = 0.900; m.m_Eta10 = 0.940; m.m_Eta20 = 0.962;
+            m.m_Eta30 = 0.970; m.m_Eta50 = 0.960; m.m_Eta100 = 0.955;
+            m.m_Eta_Euro = null;
+
+            Assert.Equal(0.01, WechselrichterPlausibilitaet.TEILLAST_ABFALL_SCHWELLE);
+            Assert.Empty(WechselrichterPlausibilitaet.Pruefe(m).Warnungen);
+
+            // Einen Hundertstelprozentpunkt darueber: jetzt meldet sie.
+            m.m_Eta50 = 0.9599;
+            Assert.Single(WechselrichterPlausibilitaet.Pruefe(m).Warnungen);
+        }
+
+        /// <summary>
+        /// <b>Ein Tippfehler bleibt sichtbar — und der Satz nennt die Zahl.</b> 0,79
+        /// statt 0,97 an der 50-%-Stützstelle sind 18 Prozentpunkte, das Achtzehnfache
+        /// der Schwelle. Gemeldet wird als <b>Warnung</b>, nicht als Fehler: Der
+        /// Katalogsatz bleibt schreibbar, der Anwender bestätigt ihn (Konzept 4.2).
+        ///
+        /// <para><b>Die Kultur ist gepinnt</b>, weil hier der SATZ geprüft wird und
+        /// nicht nur der Befund — der Ressourcensatz hängt an der Oberflächensprache,
+        /// die Zahlen darin sind über <c>Z</c> kulturinvariant.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_Tippfehler_im_Teillastast_nennt_die_Prozentpunkte()
+        {
+            var vorherKultur = System.Globalization.CultureInfo.DefaultThreadCurrentCulture;
+            var vorherUi = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
+            try
+            {
+                var de = new System.Globalization.CultureInfo("de-DE");
+                System.Globalization.CultureInfo.DefaultThreadCurrentCulture = de;
+                System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = de;
+                System.Threading.Thread.CurrentThread.CurrentCulture = de;
+                System.Threading.Thread.CurrentThread.CurrentUICulture = de;
+
+                WechselrichterModel m = Muster("Tippfehler");
+                m.m_Eta05 = 0.900; m.m_Eta10 = 0.940; m.m_Eta20 = 0.962;
+                m.m_Eta30 = 0.970; m.m_Eta50 = 0.790; m.m_Eta100 = 0.960;
+                m.m_Eta_Euro = null;
+
+                WechselrichterPlausibilitaet.Befund b = WechselrichterPlausibilitaet.Pruefe(m);
+
+                Assert.True(b.Ok);                       // Warnung, kein Fehler
+                string satz = Assert.Single(b.Warnungen);
+                Assert.Contains("18", satz);             // 0,970 - 0,790 = 18 Prozentpunkte
+                Assert.Contains("Prozentpunkten", satz);
+                Assert.Contains("Eta30", satz);
+                Assert.Contains("Eta50", satz);
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.DefaultThreadCurrentCulture = vorherKultur;
+                System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = vorherUi;
+            }
+        }
+
+        /// <summary>
         /// <b>Jedes Gerät der echten CEC-Liste ist plausibel.</b> Der Fall fährt die
         /// Importprobe durch die Umrechnung und die Prüfung — wäre eine der beiden
         /// falsch, meldete er es an zwanzig echten Datenblättern statt an einem

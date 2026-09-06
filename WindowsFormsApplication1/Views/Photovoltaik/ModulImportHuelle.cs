@@ -382,12 +382,18 @@ namespace WindowsFormsApplication1
         /// Der Dateiwähler — HINTER dem Blazor-Ereignis (Befund W13‑B‑1, siehe
         /// <c>IDateiDienst</c>). Filter und Unterordner kommen aus der
         /// <see cref="ImportQuelle"/> des Profils; der Startordner ist der
-        /// Herstellerdatenpfad der Einstellungen, in dem die Auslieferungsdateien
+        /// Herstellerdatenpfad, in dem die Auslieferungsdateien
         /// <c>CEC Modules.csv</c> und <c>CEC Inverters.csv</c> liegen (W6‑O‑3).
+        ///
+        /// <para><b>Seit W6‑O‑9</b> (06.09.2026) kommt der Pfad aus
+        /// <c>EinstellungenCtrl.HerstellerdatenpfadOderVorgabe</c> statt unmittelbar aus
+        /// <c>Settings.VDI3805Path</c>: Das Setup liefert den Ordner
+        /// <c>VDI-3805-Daten</c> mit, und der Wähler macht ohne Zutun darin auf. Ein
+        /// eingetragener Einstellungswert hat weiterhin Vorrang.</para>
         /// </summary>
         private static Task<string> Waehlen(ImportQuelle quelle, string titel)
         {
-            string basis = Properties.Settings.Default.VDI3805Path ?? "";
+            string basis = EinstellungenCtrl.HerstellerdatenpfadOderVorgabe() ?? "";
             string ordner = string.IsNullOrEmpty(quelle.Unterordner)
                 ? basis
                 : Path.Combine(basis, quelle.Unterordner);

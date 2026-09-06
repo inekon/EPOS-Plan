@@ -170,6 +170,44 @@ namespace WindowsFormsApplication1
                 : wert;
         }
 
+        /// <summary>
+        /// <b>Der Herstellerdatenpfad</b> — der Startordner der Dateiwähler der
+        /// Importmasken (Anwenderentscheid <b>W6‑O‑9</b> vom 06.09.2026).
+        ///
+        /// <para>Drei Stufen, in dieser Reihenfolge:</para>
+        /// <list type="number">
+        /// <item>der <b>gespeicherte</b> <c>VDI3805Path</c> — was der Anwender in den
+        /// Einstellungen eingetragen hat, gilt; daran ändert die Auslieferung
+        /// nichts;</item>
+        /// <item>sonst der <b>ausgelieferte</b> Ordner <c>Dienste.Pfade.Herstellerdaten</c>
+        /// — beim Anwender <c>{app}\VDI-3805-Daten</c>, im Entwicklungsstand die
+        /// Repowurzel. <b>Das ist die Wirkung von W6‑O‑9:</b> Nach einer frischen
+        /// Installation macht der Dateiwähler ohne Zutun im mitgelieferten Bestand
+        /// auf;</item>
+        /// <item>sonst der bisherige Vorgabeweg <see cref="VdiPfadOderVorgabe"/>
+        /// (<c>LocalApplicationData\WP-Plan</c>) — für Stände ohne den Ordner.</item>
+        /// </list>
+        ///
+        /// <para><b>Warum das NICHT dasselbe ist wie <see cref="VdiPfadOderVorgabe"/>.</b>
+        /// Jener Pfad steht in der Einstellungsmaske und wird auch BESCHRIEBEN — die
+        /// Solarganglinien-Verwaltung legt gewählte Dateien darunter ab
+        /// (<c>…\Solarthermie</c>), und <see cref="Speichern"/> erzeugt den Ordner, wenn
+        /// er fehlt. Der Auslieferungsordner liegt in „Programme" und ist für den
+        /// Anwender schreibgeschützt; ihn zur Vorgabe des SCHREIBENDEN Pfades zu machen,
+        /// brächte einen Fehlschlag beim ersten Ablegen. Deshalb zwei Wege: lesen aus der
+        /// Auslieferung, schreiben ins Benutzerprofil.</para>
+        /// </summary>
+        public static string HerstellerdatenpfadOderVorgabe()
+        {
+            string wert = Properties.Settings.Default.VDI3805Path;
+            if (!string.IsNullOrWhiteSpace(wert)) return wert;
+
+            string ausgeliefert = Dienste.Pfade.Herstellerdaten;
+            return string.IsNullOrWhiteSpace(ausgeliefert)
+                ? VdiPfadOderVorgabe()
+                : ausgeliefert;
+        }
+
         /// <summary>Gespeicherter Export-Ordner, sonst <c>&lt;VDI-Pfad&gt;\Backup</c>.</summary>
         public static string ExportPfadOderVorgabe(string vdiPfad)
         {

@@ -61,6 +61,25 @@
         /// <summary>„Eigene Dokumente" — Vorgabeordner für Berichte und CSV-Ausgaben.</summary>
         string Dokumente { get; }
 
+        /// <summary>
+        /// <b>Der AUSGELIEFERTE Herstellerdatenordner</b> <c>VDI-3805-Daten</c> — die
+        /// VDI-3805-Datensätze und die zwei CEC-Listen (<c>PV\CEC Modules.csv</c>,
+        /// <c>PV\CEC Inverters.csv</c>), aus denen die Importmasken lesen
+        /// (Anwenderentscheid <b>W6‑O‑9</b> vom 06.09.2026: „ja" — das Setup liefert
+        /// den Ordner aus).
+        ///
+        /// <para><b>Nur LESEN.</b> Er liegt beim Anwender neben dem Programm
+        /// (<c>{app}\VDI-3805-Daten</c>) und ist damit schreibgeschützt — das ist der
+        /// Punkt: Der Auslieferungsbestand bleibt, was das Setup hingelegt hat. Wer
+        /// eigene Dateien ablegen will, hat dafür den Einstellungspfad
+        /// <c>VDI3805Path</c>.</para>
+        ///
+        /// <para><b>Leer, wenn es ihn nicht gibt.</b> Dann greift der bisherige
+        /// Vorgabeweg (<c>EinstellungenCtrl.VdiPfadOderVorgabe</c>) — auf iOS etwa, wo
+        /// die Auslieferung anders aussieht.</para>
+        /// </summary>
+        string Herstellerdaten { get; }
+
         /// <summary>Setzt einen Pfad zusammen. Legt NICHTS an.</summary>
         string Verbinde(string wurzel, params string[] teile);
 
