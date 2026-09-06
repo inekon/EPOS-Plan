@@ -680,3 +680,108 @@ ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
 Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
 als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
 Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.
+
+## W16b‑O‑2 (06.09.2026) — flatterhafter Test des Transferdialogs
+
+Der Windows‑Lauf **34017401022** (`cb8379e`) war rot mit genau einem Fall:
+`ProjektTransferDialogTests.Schliessen_meldet_ob_ein_Import_gelungen_ist`,
+`Assert.True(ergebnis)` — „Expected True, Actual False". Auf Linux grün, im
+Wiederholungslauf grün, seit W16b als offener Punkt **W16b‑O‑2** notiert (Befund
+W16b‑B7). Der Fall ist jetzt geschlossen: Es war **kein Fehler des Dialogs**,
+sondern **zwei Wettläufe im Test**.
+
+### Ursache
+
+**Erster Wettlauf — auf das Kennzeichen der Attrappe gewartet statt auf den
+gezeichneten Zustand.** Der Test wartete mit
+`cut.WaitForAssertion(() => Assert.True(kern.ImportGerufen))` und klickte
+unmittelbar danach „Schließen". `ImportGerufen` fällt aber in der **Attrappe**, und
+die läuft im `Task.Run` des Dialogs
+(`EPOS.UI/Dialoge/Projekt/ProjektTransferDialog.razor:433`) — das Kennzeichen steht
+also **beim Betreten** des Imports, nicht an seinem Ende. In diesem Augenblick ist
+`_laeuft` noch `true`, `_importErfolgreich` ungesetzt, der Bericht leer. Und ein
+laufender Import meldet gar nichts: `Schliessen()` beginnt mit
+`if (_laeuft) return Task.CompletedTask;` (Zeile 468) — der Rückruf `Geschlossen`
+fällt dann **nie**. Ob der Test gewinnt, entscheidet allein, ob die **erste**
+Prüfung von `WaitForAssertion` das Kennzeichen schon sieht (dann geht es sofort
+weiter, zu früh) oder noch nicht (dann wartet bunit auf das nächste Zeichnen —
+und das ist der Abschluss).
+
+**Zweiter Wettlauf — bunits synchrones `Click()` wartet nicht.** In bunit 2.9 gibt
+`EventHandlerDispatchExtensions.Click` das Ereignis nur beim Zeichner ab; nur
+`ClickAsync` liefert „a task that completes when the event handler is done" (die
+XML‑Dokumentation des Pakets sagt es genau so). Gemessen: ein Klick, dessen
+Behandler 400 ms rechnet, kehrt nach **6 ms** zurück. Ein `Assert` unmittelbar
+hinter `Click()` prüft also einen Rückruf, der noch nicht gefallen sein muss.
+
+Beide Wettläufe enden im selben Bild: `ergebnis` trägt noch das `false` aus dem
+ersten Teil des Falls — „Expected True, Actual False".
+
+### Nachweis der Ursache
+
+Ein temporärer Fall (`ZZ_Wettlauf_Nachweis`, nach dem Nachweis gelöscht) mit einer
+Attrappe, die `ImportGerufen` sofort setzt und **danach 400 ms rechnet**:
+
+| Muster | Ergebnis |
+|---|---|
+| alt: warten auf `kern.ImportGerufen`, dann klicken, dann `Assert.True` | **12 von 15 Läufen rot** |
+| neu: warten auf das gezeichnete Berichtsfeld, klicken, `WaitForAssertion` auf das Ergebnis | **0 von 15 Läufen rot** |
+
+Die Zwischenmessung des alten Musters: `Click()` kehrt nach 6 ms zurück, das
+Berichtsfeld ist noch nicht da, `WaitForAssertion` ist nach 17 ms fertig — 383 ms
+bevor der Import zurück ist. Der zweite Wettlauf wurde eigens belegt: in **5 von
+12** Läufen war der Dialog nach dem Warten nachweislich fertig (kein
+Fortschrittsbalken, Berichtsfeld gezeichnet) und `ergebnis` gleich hinter dem
+`Click()` trotzdem noch `null`.
+
+Ohne die künstliche Rechenzeit ist der Fall auf Linux nicht zu kippen: 10 von 10
+Läufen grün, auch auf **einen** Kern eingeschnürt (`taskset -c 0`). Der geladene
+Windows‑Läufer kippt ihn.
+
+### Änderung — nur der Test, kein Produktcode
+
+`EPOS.UI.Tests/Dialoge/ProjektTransferDialogTests.cs`:
+
+- neue Hilfe **`ImportFertig(cut)`** — wartet auf das **gezeichnete** Berichtsfeld
+  (`.epos-projekttransfer textarea` mit „Zeile eins"). Das Feld entsteht erst
+  hinter dem `await` des Imports, belegt also den Dialog, nicht die Attrappe. Der
+  XML‑Kommentar der Hilfe nennt Ursache und CI‑Lauf, damit das Muster nicht
+  zurückkommt.
+- **vier** Wartestellen auf `kern.ImportGerufen` durch `ImportFertig(cut)` ersetzt;
+  wo die Aussage gebraucht wird, steht das Kennzeichen jetzt als gewöhnliches
+  `Assert.True(kern.ImportGerufen)` **nach** dem Warten.
+- im flatterhaften Fall zusätzlich beide Ergebnisprüfungen in
+  `cut.WaitForAssertion(…)` gefasst (zweiter Wettlauf).
+- `Der_Import_legt_erst_die_Sicherung_an_und_laeuft_dann` wartete schon richtig und
+  benutzt nun dieselbe Hilfe.
+
+Der Dialog selbst bleibt unverändert: `if (_laeuft) return` ist kein Fehler,
+sondern die Regel „ein laufender Import wird nicht geschlossen".
+
+### Gleichartige Muster im Bestand
+
+Gesucht wurde nach „`WaitForAssertion` auf ein Kennzeichen der Attrappe, gefolgt
+von einem Klick oder einem `Assert`" über alle 28 Wartestellen von
+`EPOS.UI.Tests`.
+
+| Fundstelle | Befund | Stand |
+|---|---|---|
+| `ProjektTransferDialogTests` (4 Stellen) | echter Wettlauf — Kennzeichen fällt im `Task.Run` des Dialogs | **berichtigt** |
+| `StromganglinieDialogTests:524,532`, `WaermebedarfExternDialogTests:337` | Warten auf eine mitgeschriebene Ortsvariable, danach ein weiteres `Assert` — die Variable fällt aber im **Zeichnerfaden** (`Task.FromResult`, kein `Task.Run`), also kein Fadenwettlauf | unverändert |
+| `ErststartDialogTests:196`, `LizenzVerwaltungDialogTests:440` | Warten auf eine Zählvariable, danach `Assert` bzw. ein zweites `WaitForAssertion` auf das Markup | unverändert |
+| übrige 20 Wartestellen | warten auf `cut.Markup`, `cut.Find…` oder `cut.Instance` — also auf den gezeichneten Zustand | unverändert |
+
+**Der Kern des Musters:** `ProjektTransferDialog` ist die **einzige** Komponente in
+`EPOS.UI`, die selbst ein `Task.Run` fährt (alle anderen legen den Lauf der Hülle
+in die Hand). Nur dort kann ein Kennzeichen der Attrappe vor dem Dialog fertig
+sein — deshalb blieb es bei diesen vier Stellen.
+
+### Wiederholungsnachweis
+
+| Lauf | vorher | nachher |
+|---|---|---|
+| `Schliessen_meldet_ob_ein_Import_gelungen_ist`, 30 Läufe, `de` | Windows‑CI 34017401022 rot; lokal 1 von 4 rot (Fremdbefund), auf Linux 10/10 grün — auch auf **einen** Kern eingeschnürt | **30 von 30 grün** |
+| `Schliessen_meldet_ob_ein_Import_gelungen_ist`, 30 Läufe, `en_US.UTF-8` | — | **30 von 30 grün** |
+| ganze `ProjektTransferDialogTests`, je 30 Läufe `de` und `en_US.UTF-8` | — | **je 30 von 30 grün** |
+| Wettlauf-Nachweis mit 400 ms Rechenzeit, 15 Läufe | 12 von 15 rot | **0 von 15 rot** |
+| gesamte `EPOS.UI.Tests` | — | **2 721 grün, 0 rot** |
