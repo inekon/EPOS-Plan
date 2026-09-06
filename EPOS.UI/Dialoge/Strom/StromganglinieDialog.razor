@@ -123,6 +123,10 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* H13: der Rechenweg — wie ein eingelesener Lastgang in den Strombedarf des
+           Projekts eingeht (Raster, Spreizung, Kennzahlen). *@
+        <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
+                   StandardKurztext="@HilfeKurztextBerechnung" />
     </div>
 
     @if (!string.IsNullOrEmpty(_meldung))
@@ -480,6 +484,15 @@
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in <c>help_mapping.txt</c>.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Stromganglinie.btn_Help";
+
+    /// <summary>
+    /// H13 — der ZWEITE Hilfeschlüssel: der RECHENWEG statt der Bedienung. Er zeigt auf
+    /// die Wikiseite „Programm Dokumentation/Berechnung/Strombedarf".
+    /// </summary>
+    [Parameter] public string HilfeSchluesselBerechnung { get; set; } = "Form_Stromganglinie.Berechnung";
+
+    /// <summary>Kurztext des Rechenweg-Knopfes, solange der Katalog den Schlüssel nicht kennt.</summary>
+    [Parameter] public string HilfeKurztextBerechnung { get; set; } = "Berechnungsweg: Strombedarf";
 
     /// <summary>Schlüssel des Hilfeknopfes am Formathinweis (W12-E-1).</summary>
     [Parameter] public string HilfeSchluesselImport { get; set; } = "Form_Stromganglinie.btn_Help_Import";

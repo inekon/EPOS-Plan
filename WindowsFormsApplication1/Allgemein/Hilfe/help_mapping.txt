@@ -519,3 +519,7 @@ UcBericht.lblZiel      = Bericht#zielordner
 Form_Simulation_Config.Berechnung      = Berechnung/Simulationsablauf
 Form_Gebaeude.Berechnung               = Berechnung/Wärmebedarf
 Form_Waermebedarf.Berechnung           = Berechnung/Wärmebedarf
+Form_Brauchwasser.Berechnung           = Berechnung/Brauchwasser
+Form_Prozesswaerme.Berechnung          = Berechnung/Prozesswärme
+Form_Stromverbraucher.Berechnung       = Berechnung/Strombedarf
+Form_Stromganglinie.Berechnung         = Berechnung/Strombedarf

@@ -48,6 +48,11 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* H13: der Rechenweg der Auspraegung - Monatswerte mal Wochenprofil, die
+           Skalierung auf die Jahressumme und die monatsweise Normierung. Die Huelle
+           setzt den Schluessel je Auspraegung. *@
+        <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
+                   StandardKurztext="@HilfeKurztextBerechnung" />
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -405,6 +410,17 @@
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Prozesswaerme.btn_Help";
+
+    /// <summary>
+    /// H13 — der ZWEITE Hilfeschlüssel: der RECHENWEG statt der Bedienung. Der
+    /// Vorgabewert gehört zur Vorgabe-Ausprägung dieser Komponente (Prozesswärme); für
+    /// die beiden anderen Ausprägungen setzt die Hülle den jeweils eigenen Schlüssel
+    /// (<c>BedarfsProfileHuelle.BerechnungsSchluessel</c>).
+    /// </summary>
+    [Parameter] public string HilfeSchluesselBerechnung { get; set; } = "Form_Prozesswaerme.Berechnung";
+
+    /// <summary>Kurztext des Rechenweg-Knopfes, solange der Katalog den Schlüssel nicht kennt.</summary>
+    [Parameter] public string HilfeKurztextBerechnung { get; set; } = "Berechnungsweg dieses Bedarfs";
 
     // --- Stand -----------------------------------------------------------------
 
