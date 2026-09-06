@@ -140,6 +140,11 @@ public static class Menuetabelle
                 // "Bearbeiten" (MenuItem_PC_Bearbeiten); das Ziel ist
                 // unveraendert PvAdmin.
                 new Menuepunkt("MenuItem_PV", "MENU_PV", Seitenschluessel.PvAdmin),
+                // ANWENDERENTSCHEID W6-E-2 (06.09.2026), Stufe S1.4 des
+                // Konzept_Wechselrichter_EPOS-Plan.md: der Wechselrichterkatalog,
+                // NACH "Photovoltaik Module" - er gehoert zur selben Anlage und
+                // wird nach dem Modul gepflegt.
+                new Menuepunkt("MenuItem_Wechselrichter", "MENU_WECHSELRICHTER", Seitenschluessel.WechselrichterAdmin),
                 // W16c-E-6: aus "Waermebedarf & Heizung" hierher.
                 new Menuepunkt("MenuItem_PufferSp", "MENU_PUFFER_SP", Seitenschluessel.PufferSpAdmin),
             },
@@ -153,6 +158,9 @@ public static class Menuetabelle
                 new Menuepunkt("MenuItem_PufferSp_VDI3805", "MENU_PUFFER_SP_VDI3805", Seitenschluessel.PufferSpImport),
                 new Menuepunkt("MeniItem_VDI3805", "MENU_VDI3805", Seitenschluessel.WpImport),
                 new Menuepunkt("MenuItem_PV_Import_CEC", "MENU_PV_IMPORT_CEC", Seitenschluessel.PvImport, argument: "CEC"),
+                // W6-E-2, Stufe S1.5: die CEC-Wechselrichterliste - neben dem
+                // Modulimport, aus dem sie ihren ganzen Abrufapparat erbt.
+                new Menuepunkt("MenuItem_WR_Import_CEC", "MENU_WR_IMPORT_CEC", Seitenschluessel.WechselrichterImport),
                 new Menuepunkt("MenuItem_ST_Import", "MENU_ST_IMPORT", Seitenschluessel.SolarkollektorenImport),
             },
             new Menuepunkt("MenuItem_KostenVerwaltung", "MENU_KOSTEN_VERWALTUNG", "")

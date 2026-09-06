@@ -92,8 +92,15 @@ public class MenuebandTests : BunitContext
         // Zwei fallen mit W16c-E-6 weg: MenuItem_PC_Bearbeiten und
         // MenuItem_ST_Bearbeiten, die einzigen Kinder ihrer Untermenues. Also
         // wieder 54 - und was zaehlt, ist die Zahl der HANDELNDEN Punkte
-        // weiter unten: Sie ist unveraendert 42 geblieben.
-        Assert.Equal(54, Punkte.Count);
+        // weiter unten.
+        //
+        // ANWENDERENTSCHEID W6-E-2 (06.09.2026), Stufe S1 des
+        // Konzept_Wechselrichter_EPOS-Plan.md: ZWEI Punkte kommen hinzu -
+        // "Wechselrichter" unter Energiesysteme (nach "Photovoltaik Module")
+        // und "Wechselrichter (CEC)" unter Datenimport. Beide HANDELN, also
+        // 56 Punkte und 44 Handlungen. Es ist die erste Erweiterung des
+        // Menues seit W16c; jeder aeltere Punkt steht unveraendert.
+        Assert.Equal(56, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -222,7 +229,11 @@ public class MenuebandTests : BunitContext
         // das Ein-Punkt-Untermenue der Photovoltaik aufgeloest ist.
         Menuepunkt energie = Rubrik("MenuItem_Energiesysteme");
 
-        Assert.Equal(new[] { "MenuItem_PV", "MenuItem_PufferSp" }, Kinder(energie));
+        // W6-E-2 (06.09.2026): "Wechselrichter" steht seither zwischen den
+        // beiden - nach "Photovoltaik Module", weil er zur selben Anlage
+        // gehoert und nach dem Modul gepflegt wird.
+        Assert.Equal(new[] { "MenuItem_PV", "MenuItem_Wechselrichter", "MenuItem_PufferSp" },
+                     Kinder(energie));
         Assert.All(energie.Untereintraege, p => Assert.False(p.Klappt));
 
         Assert.Equal("Menu3", energie.Bild);
@@ -305,7 +316,7 @@ public class MenuebandTests : BunitContext
         // DIE EIGENTLICHE ZUSICHERUNG der Umordnung: Es ist kein Weg
         // verlorengegangen und keiner hinzugekommen. Geprueft wird die MENGE
         // der Ziele unter "Administration" - der Baum darueber darf sich
-        // umsortieren, die 28 Ziele nicht.
+        // umsortieren, die Ziele nicht. Seit W6-E-2 sind es 30 statt 28.
         var ziele = Flach(Administration.Untereintraege)
                     .Where(p => !p.Trenner && !p.Klappt)
                     .Select(p => p.Ziel)
@@ -341,6 +352,11 @@ public class MenuebandTests : BunitContext
             Seitenschluessel.StromspeicherAdmin,
             Seitenschluessel.StromverbraucherAdmin,
             Seitenschluessel.WaermebedarfExternAdmin,
+            // W6-E-2 (06.09.2026), Stufe S1: die zwei NEUEN Ziele. Sie sind
+            // die einzige Aenderung an dieser Menge seit W16c-E-6 - kein
+            // aelteres Ziel ist entfallen.
+            Seitenschluessel.WechselrichterAdmin,
+            Seitenschluessel.WechselrichterImport,
             Seitenschluessel.WpAdministration,
             Seitenschluessel.WpImport,
         }.OrderBy(z => z, StringComparer.Ordinal).ToArray(),
@@ -450,8 +466,12 @@ public class MenuebandTests : BunitContext
         // handelnder Punkt (MenuItem_PV, MenuItem_Solarkollektoren) - zwei
         // weniger, die klappen, zwei mehr, die handeln, und dazu die eine neue
         // Rubrik.
+        //
+        // W6-E-2 (06.09.2026) haengt ZWEI handelnde Punkte an
+        // (Wechselrichterverwaltung und CEC-Wechselrichterimport) - die Zahl
+        // der aufklappenden bleibt 12, die der handelnden steigt auf 44.
         Assert.Equal(12, Punkte.Count(p => p.Klappt));
-        Assert.Equal(42, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(44, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

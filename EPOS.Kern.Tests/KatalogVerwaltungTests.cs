@@ -853,16 +853,48 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>
-        /// Beide Auspraegungen fuehren dreizehn Felder; nur der Stromspeicher hat eine
-        /// zweite Feldgruppe (AP3-Gerätetechnik).
+        /// DREI Auspraegungen seit dem Anwenderentscheid W6-E-2 (06.09.2026): Zum
+        /// Stromspeicher (13 Felder, zwei Gruppen) und zur Photovoltaik (15 Felder,
+        /// eine Gruppe) kommt der Wechselrichter — 25 Felder in DREI Gruppen
+        /// (Geraet, Eingang, Wirkungsgrad, Konzept Wechselrichter 6). Er ist die
+        /// erste Auspraegung mit einer dritten Gruppe und die erste mit
+        /// Herstellerfilter.
         /// </summary>
         [Fact]
         public void Modulkatalogprofil_kennt_zwei_Auspraegungen_mit_ihren_Feldern()
         {
-            Assert.Equal(2, ModulKatalogProfil.AlleArten.Count());
+            Assert.Equal(3, ModulKatalogProfil.AlleArten.Count());
 
             var sp = ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher);
             var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);
+            var wr = ModulKatalogProfil.Finde(ModulKatalogArt.Wechselrichter);
+
+            // Der Wechselrichter: acht Felder "Geraet", sieben "Eingang", zehn
+            // "Wirkungsgrad".
+            Assert.Equal(25, wr.Felder.Count);
+            Assert.Equal(8, wr.Felder.Count(f => f.Gruppe == 0));
+            Assert.Equal(7, wr.Felder.Count(f => f.Gruppe == 1));
+            Assert.Equal(10, wr.Felder.Count(f => f.Gruppe == 2));
+            Assert.NotEqual("", wr.GruppeDrei);
+
+            // Als EINZIGE der drei Auspraegungen mit Herstellerfilter (Konzept 6):
+            // Die CEC-Liste bringt ueber zweitausend Geraete.
+            Assert.True(wr.HatHerstellerfilter);
+            Assert.False(sp.HatHerstellerfilter);
+            Assert.False(pv.HatHerstellerfilter);
+            Assert.Equal(SchemaKatalog.TAB_WECHSELRICHTER_STAMM, wr.Stammtabelle);
+
+            // Das EINE Pflichtfeld ist die AC-Nennleistung - wie bei der
+            // Photovoltaik allein die Nennleistung.
+            Assert.Single(wr.Felder.Where(f => !f.LeerErlaubt));
+            Assert.Equal(ModulKatalogProfil.FeldPAcNenn,
+                         wr.Felder.Single(f => !f.LeerErlaubt).Schluessel);
+
+            // Bezeichner und Herkunft sind gesperrt: der eine ist der
+            // WHERE-Schluessel, die andere eine Auskunft des Imports.
+            Assert.Equal(ModulKatalogProfil.FeldBezeichner, wr.Felder[0].Schluessel);
+            Assert.True(wr.Felder[0].Gesperrt);
+            Assert.True(wr.Felder.Single(f => f.Schluessel == ModulKatalogProfil.FeldHerkunft).Gesperrt);
 
             // Merge 5 (Paket A/B des PV-Ertragsmodells): die Photovoltaik traegt dazu die
             // NOCT-Zelltemperatur und die Zelltechnologie (Auswahl) - fuenfzehn Felder.
