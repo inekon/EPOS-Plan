@@ -242,8 +242,10 @@ namespace EPOS.Kern.Tests
         /// <b>Die Luecke, die Teil 3 des Anwenderwunsches gefunden hat</b>:
         /// <c>Tab_WP_STAMM.Modulkosten</c> geht in die Kostenplanung
         /// (<c>TechnikPlanwertCtrl.cs:345</c>), steht aber in der Verwaltung nicht zur
-        /// Pflege (Entscheid Ä19 der Welle 7). Der Fall haelt die Einstufung fest,
-        /// damit der offene Punkt nicht still verschwindet.
+        /// Pflege (Entscheid Ä19 der Welle 7). Der Anwender hat das am 06.09.2026
+        /// entschieden (W14a-O-1): Der Wert wird im Stammdialog wieder GEZEIGT, nur
+        /// lesend und mit Herleitungszeile; eingegeben wird er weiterhin nicht. Der
+        /// Fall haelt die Einstufung fest, damit sie nicht still verschwindet.
         /// </summary>
         [Fact]
         public void Die_Modulkosten_der_Waermepumpe_sind_gerechnet()
@@ -310,9 +312,12 @@ namespace EPOS.Kern.Tests
                                    "Vorlauf", "Ruecklauf" };
 
                 case Anlagenart.Waermepumpe:
-                    // ELF von achtzehn Fachspalten. Modulkosten und maxPtherm laufen
-                    // verborgen mit (Entscheid AE19), Kuehlleistung steht nur lesend da,
-                    // die fuenf Masse zeigt die Maske gar nicht.
+                    // ELF von achtzehn Fachspalten. maxPtherm laeuft verborgen mit,
+                    // Kuehlleistung und - seit dem Anwenderentscheid W14a-O-1 vom
+                    // 06.09.2026 - Modulkosten stehen NUR LESEND da (Entscheid AE19
+                    // bleibt: keine Eingabe, kein Schreibweg aus dem Dialog), die fuenf
+                    // Masse zeigt die Maske gar nicht. Diese Liste fuehrt, was die
+                    // Verwaltung ZURUECKSCHREIBT - ein Lesewert gehoert nicht hinein.
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr",
                                    "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart" };
 
@@ -356,10 +361,18 @@ namespace EPOS.Kern.Tests
         ///
         /// <para><b>Der Befund vom 06.09.2026: genau EINE Luecke</b> —
         /// <c>Tab_WP_STAMM.Modulkosten</c>. Der Wert geht in die Kostenplanung
-        /// (<c>TechnikPlanwertCtrl.cs:345</c>), die Waermepumpenverwaltung zeigt ihn
-        /// aber nicht (Entscheid AE19 der Welle 7: „Geraetekosten laufen ueber die
-        /// Kostenverwaltung"); gefuellt wird er allein vom VDI-3805-Import. Ob das
-        /// bleibt, entscheidet der Anwender — offener Punkt W14a-O-1.</para>
+        /// (<c>TechnikPlanwertCtrl.cs:345</c>), die Waermepumpenverwaltung nimmt ihn
+        /// aber nicht entgegen (Entscheid AE19 der Welle 7: „Geraetekosten laufen ueber
+        /// die Kostenverwaltung"). <b>Befund W14a-O-2:</b> Auch der VDI-3805-Import
+        /// fuellt ihn nicht — <c>KatalogImportSatz.NachStamm</c> setzt die Spalte nie,
+        /// <c>WPStammCtrl.UpdateImport</c> laesst sie beim Ueberschreiben stehen; ein
+        /// Wert &gt; 0 stammt aus dem Bestand.</para>
+        ///
+        /// <para><b>Der Anwender hat am 06.09.2026 entschieden (W14a-O-1):</b> Der Wert
+        /// wird im Stammdialog wieder GEZEIGT — nur lesend, mit Herleitungszeile.
+        /// Diese Luecke bleibt damit bestehen, denn sie zaehlt die Spalten, die das
+        /// Formular ZURUECKSCHREIBT: Ein Lesewert ist keine Pflege, und genau das ist
+        /// der Kern von AE19. Der Fall steht also unveraendert.</para>
         ///
         /// <para>Kommt eine zweite Luecke dazu, faellt dieser Fall rot aus, und das ist
         /// der Zweck: Ein gerechneter Wert, den niemand eingeben kann, ist kein

@@ -43898,6 +43898,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Herstellerimport; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
+        /// </summary>
+        public static string WPS_HERL_MODULKOSTEN {
+            get {
+                return ResourceManager.GetString("WPS_HERL_MODULKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Planwert aus dem Herstellerimport ähnelt.
+        /// </summary>
+        public static string WPS_HINWEIS_MODULKOSTEN_LEER {
+            get {
+                return ResourceManager.GetString("WPS_HINWEIS_MODULKOSTEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Daten zu Wärmepumpen und deren Kennlinien ähnelt.
         /// </summary>
         public static string WPS_KOPFBAND {
