@@ -242,7 +242,7 @@ Der Lauf schreibt dazu einen Hinweis ins Simulationsprotokoll. Weichen Nennleist
 Flächenformel um mehr als <math>f_{\mathrm{Kat}} = 3</math>&nbsp;% voneinander ab, meldet der Lauf
 das ebenfalls:
 
-: <math>\displaystyle \frac{\lvert P_{\mathrm{Mod}} - l \cdot b \cdot \frac{\eta_{\mathrm{Mod}}}{100} \cdot 1\,000 \rvert}{P_{\mathrm{Mod}}} > f_{\mathrm{Kat}}</math> &nbsp;&nbsp;(3)
+: <math>\displaystyle \frac{\left| P_{\mathrm{Mod}} - l \cdot b \cdot \frac{\eta_{\mathrm{Mod}}}{100} \cdot 1\,000 \right|}{P_{\mathrm{Mod}}} > f_{\mathrm{Kat}}</math> &nbsp;&nbsp;(3)
 :: <math>P_{\mathrm{Mod}}</math> – Nennleistung eines Moduls aus dem Katalog [W]
 :: <math>l</math>, <math>b</math> – Länge und Breite eines Moduls [m]
 :: <math>\eta_{\mathrm{Mod}}</math> – Modulwirkungsgrad des Katalogs [%]
