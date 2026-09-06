@@ -69,6 +69,29 @@ public sealed class ErzeugerZeile
     public double? WrEta10 { get; set; }
     public double? WrEta50 { get; set; }
     public double? WrEta100 { get; set; }
+
+    // --- Wechselrichter, Stufe S2 (Anwenderentscheide W6-E-2 und W6-E-3) --------------
+    /// <summary>
+    /// Der SICHTBARE Wechselrichterweg dieser Anlage (<b>W6‑E‑3</b>):
+    /// <c>false</c> = vereinfacht, Pauschalen ohne Wechselrichter (der Weg von heute);
+    /// <c>true</c> = mit Wechselrichter, also Katalog, Stränge, Kennlinie und Clipping.
+    ///
+    /// <para>In der Datenbank ist es die Spalte
+    /// <c>Tab_Energieanlagen.PV_Wechselrichterweg</c>, wo NULL und
+    /// <c>PV_WR_WEG_VEREINFACHT</c> beide „vereinfacht" heissen (Konzept 7.1). Der
+    /// Unterschied „nie gewählt" gegen „ausdrücklich vereinfacht" gehört der Ablage,
+    /// nicht der Maske — hier ist die Frage ein Ja/Nein.</para>
+    /// </summary>
+    public bool MitWechselrichter { get; set; }
+
+    /// <summary>
+    /// Die Stränge dieser Anlage (<c>Z_AnlageStrang</c>) in Rangfolge — sie gehören
+    /// der Hülle und werden IN PLACE bearbeitet, wie die Zeile selbst.
+    ///
+    /// <para>Eine LEERE Liste ist der Normalfall des Bestands: Ohne Strangzeile
+    /// rechnet die Anlage wie bisher.</para>
+    /// </summary>
+    public List<StrangZeile> Straenge { get; set; } = new();
 }
 
 /// <summary>

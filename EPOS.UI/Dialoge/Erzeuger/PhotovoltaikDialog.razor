@@ -50,6 +50,7 @@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
+@using System.Globalization
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -126,8 +127,23 @@
                                   WertChanged="BeiNeigung" />
                     <Ganzzahlfeld Bezeichnung="@LabelAzimut" Wert="@_projektZeile.Azimut"
                                   WertChanged="BeiAzimut" />
-                    <Zahlenfeld Bezeichnung="@LabelAnzahl" Wert="@_projektZeile.AnzahlModule"
-                                WertChanged="BeiAnzahl" />
+                    @* ANZAHL MODULE - abgeleitet, sobald ein Strang besteht
+                       (Entscheidungsfrage Q9 des Wechselrichterkonzepts, "eine Wahrheit"):
+                       Sie ist dann die Summe aus Reihe x Parallel ueber alle Straenge,
+                       das Feld schaltet auf nur-lesend und sagt, woher der Wert kommt.
+                       Der ANLAGENWERT wird trotzdem mitgeschrieben, damit kWp,
+                       Stueckpreis und Wirtschaftlichkeit unveraendert weiterlesen.
+                       Ohne Strang bleibt es ein Eingabefeld wie bisher. *@
+                    @if (_projektZeile.Straenge.Count > 0)
+                    {
+                        <Textfeld Bezeichnung="@LabelAnzahl" Wert="@ModulzahlText" NurLesen="true"
+                                  Kurz="true" Einheit="@LabelAnzahlAbgeleitet" />
+                    }
+                    else
+                    {
+                        <Zahlenfeld Bezeichnung="@LabelAnzahl" Wert="@_projektZeile.AnzahlModule"
+                                    WertChanged="BeiAnzahl" />
+                    }
                         </KindInhalt>
                     </Formularraster>
                 </div>
@@ -141,8 +157,21 @@
                     <InfoKnopf Schluessel="Form_PV.Berechnung"
                                StandardKurztext="Berechnungsweg Photovoltaik" />
                 </div>
-                <PvModellFelder Zeile="@_projektZeile" KwpAnlage="@KwpDer(_projektZeile)"
+                <PvModellFelder Zeile="@_projektZeile"
                                 Geaendert="@(() => Uebernehmen?.Invoke(_projektZeile!))" />
+
+                @* Stufe S2 des Wechselrichterkonzepts (W6-E-2 und W6-E-3): der Abschnitt
+                   "Wechselrichter und Straenge" - die zwei sichtbaren Optionen, die
+                   Strangtabelle mit der Ampel und, als Anlagenrueckfall, die
+                   Ueberlagerung mit den fuenf Anlagenwerten. *@
+                <PvStraengeFelder Zeile="@_projektZeile"
+                                  NeigungAnlage="@_projektZeile.Neigung"
+                                  AzimutAnlage="@_projektZeile.Azimut"
+                                  KwpAnlage="@KwpDer(_projektZeile)"
+                                  Geraete="@Wechselrichter"
+                                  GeraetUebernehmen="@WechselrichterUebernehmen"
+                                  Pruefen="@StraengePruefen"
+                                  Geaendert="BeiStrangaenderung" />
             </KindInhalt>
         </Gruppenkopf>
     }
@@ -269,6 +298,28 @@
     /// <summary>Löscht einen KATALOGsatz; <c>true</c> = gelöscht.</summary>
     [Parameter] public Func<int, bool>? KatalogLoeschen { get; set; }
 
+    // --- Wechselrichter und Stränge, Stufe S2 (W6‑E‑2 und W6‑E‑3) ------------------
+
+    /// <summary>
+    /// Die Wechselrichter des KATALOGS als Klapplisteneinträge
+    /// (Id = <c>Tab_Wechselrichter_STAMM.ID</c>). Leer = keine Klappliste.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Wechselrichter { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Nimmt einen Wechselrichter aus dem Katalog in das Projekt auf und liefert die
+    /// PROJEKTKOPIE — genau wie ein Modul (<c>WechselrichterCtrl.CopyFromStamm</c>).
+    /// </summary>
+    [Parameter] public Func<int, GeraetWahl>? WechselrichterUebernehmen { get; set; }
+
+    /// <summary>
+    /// Die AMPEL zum aktuellen Stand der Strangtabelle. Der Kern prüft
+    /// (<c>StrangPlausibilitaet</c>), die Hülle reicht das Ergebnis herein; die
+    /// Komponente rechnet nicht.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<StrangZeile>, StrangBefund>? StraengePruefen { get; set; }
+
     /// <summary>
     /// Der Parametersatz der MODULVERWALTUNG. Sie erscheint seit iU9-W14a als
     /// <c>Ueberlagerung</c> im selben Fenster statt als zweites Fenster über die
@@ -310,6 +361,13 @@
 
     /// <summary>Beschriftung des Aufklappers über den Modulparametern (W6‑E‑1).</summary>
     [Parameter] public string LabelAlleParameter { get; set; } = "Alle Modulparameter anzeigen";
+
+    /// <summary>
+    /// Der Zusatz hinter der abgeleiteten Modulzahl (Entscheidungsfrage <b>Q9</b>) —
+    /// er sagt, WOHER der Wert kommt, damit das gesperrte Feld nicht wie ein Fehler
+    /// aussieht.
+    /// </summary>
+    [Parameter] public string LabelAnzahlAbgeleitet { get; set; } = "aus der Strangtabelle";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
@@ -392,6 +450,43 @@
     }
 
     private void GesamtNeu() { if (Gesamtleistung is not null) _gesamtleistung = Gesamtleistung(); }
+
+    /// <summary>
+    /// Die ABGELEITETE Modulzahl der gewählten Zeile: Σ (Reihe × parallel) über alle
+    /// Stränge (Q9). Prüfhilfe für Tests.
+    /// </summary>
+    public int Modulzahl
+    {
+        get
+        {
+            if (_projektZeile is null) return 0;
+            int summe = 0;
+            foreach (StrangZeile s in _projektZeile.Straenge) summe += s.Modulzahl;
+            return summe;
+        }
+    }
+
+    private string ModulzahlText => Modulzahl.ToString(CultureInfo.CurrentCulture);
+
+    /// <summary>
+    /// Jede Änderung an der Strangtabelle: Sie schreibt die abgeleitete Modulzahl in
+    /// den ANLAGENWERT zurück (Q9 — „der Anlagenwert wird mitgeschrieben, damit kWp,
+    /// Stückpreis und Wirtschaftlichkeit unverändert weiterlesen"), übernimmt die
+    /// Zeile und erfragt die Gesamtleistung neu.
+    ///
+    /// <para><b>Nur mit Strang.</b> Ohne Strangzeile bleibt „Anzahl Module" ein
+    /// Eingabefeld, und die abgeleitete 0 dürfte den eingetippten Wert nicht
+    /// überschreiben.</para>
+    /// </summary>
+    private void BeiStrangaenderung()
+    {
+        if (_projektZeile is null) return;
+
+        if (_projektZeile.Straenge.Count > 0) _projektZeile.AnzahlModule = Modulzahl;
+
+        Uebernehmen?.Invoke(_projektZeile);
+        GesamtNeu();
+    }
 
     private double KwpDer(ErzeugerZeile? zeile)
         => zeile is null || AnlagenKwp is null ? 0.0 : AnlagenKwp(zeile);

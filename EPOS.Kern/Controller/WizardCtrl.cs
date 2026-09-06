@@ -1671,6 +1671,23 @@ namespace WindowsFormsApplication1
                     }
                     catch { }
 
+                    // ST1, zweite Haelfte: Die vom PV-DIALOG bearbeiteten Straenge. Sie
+                    // koennen erst HIER geschrieben werden - die Anlagen-Id entsteht eine
+                    // Zeile darueber, und vorher gibt es nichts, worauf sie zeigen
+                    // koennten. NULL heisst "nicht angefasst" und ueberlaesst die Zeile
+                    // der Rettung weiter unten; eine gesetzte Liste ist die neue Wahrheit
+                    // und hat Vorrang, weil StraengeWiederherstellen nur Anlagen OHNE
+                    // Straenge bedient. BEST EFFORT wie die Nachbarn.
+                    if (item.PV_Straenge != null && item.ID > 0)
+                    {
+                        try { new AnlageStrangCtrl().SchreibenJeAnlage(item.ID, item.PV_Straenge); }
+                        catch (Exception exStrang)
+                        {
+                            Console.WriteLine("Die Straenge der Anlage \"" + item.Bezeichner +
+                                              "\" konnten nicht geschrieben werden: " + exStrang.Message);
+                        }
+                    }
+
                     geschrieben.Add(item);
                 }
 
