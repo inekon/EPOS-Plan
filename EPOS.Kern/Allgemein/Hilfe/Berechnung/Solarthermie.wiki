@@ -1,0 +1,159 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Solarthermie | Stand: 2026-09-06 | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs, EPOS.Kern/Allgemein/SolarPVGISCalculator.cs,
+     EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, Ladeordnung.cs;
+     Katalogverwendung: EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs (Befund zu Kdfu) -->
+
+== Was berechnet wird ==
+
+Ein Solarkollektorfeld wandelt Einstrahlung in Nutzwärme. Der Lauf ermittelt zuerst für jede Stunde
+das '''Bruttopotenzial''' des Feldes — es hängt allein vom Wetter, von der Ausrichtung und von den
+Kollektorkennwerten ab, nicht vom Bedarf und nicht vom Speicherfüllstand — und entscheidet erst
+danach, wohin diese Wärme geht: '''Direktdeckung''', '''Speicherladung''' oder '''Überschuss'''
+(verworfene Wärme).
+
+Ergebnisgrößen sind der nutzbare Jahresertrag je Kollektorfeld, seine Aufteilung auf Deckung und
+Ladung, der verworfene Überschuss und der Deckungsanteil an der Jahreswärme.
+
+== Eingangsgrößen ==
+
+{| class="wikitable"
+! Größe !! Einheit !! Herkunft im Programm
+|-
+| Globalstrahlung, Direktstrahlung, Diffusstrahlung, Außentemperatur || W/m², °C || Klimadatenreihe der Klimaregion, 8&nbsp;760 Stundenwerte
+|-
+| Längengrad, Breitengrad || ° || Klimaregion des Projekts (Sonnenstand)
+|-
+| Anzahl Kollektoren || Stück || Dialog „Solarkollektoren", Abschnitt „Kollektor"
+|-
+| Neigung, Azimut || ° || derselbe Abschnitt
+|-
+| Vorlauf, Rücklauf || °C || derselbe Abschnitt
+|-
+| Aperturfläche je Kollektor || m² || Kollektorkatalog, Feld „Aperturfläche"
+|-
+| Konversionsfaktor h₀ || — || Kollektorkatalog
+|-
+| Wärmeverlustkoeffizient k₁ || W/(m²·K) || Kollektorkatalog
+|-
+| Temperaturabhängiger Verlustkoeffizient k₂ || W/(m²·K²) || Kollektorkatalog
+|-
+| Einfallswinkelkorrektur K<sub>dir</sub>(50°) || — || Kollektorkatalog
+|-
+| Wärmesenken und Ladeaufträge || — || Simulationskonfiguration, Karte des Kollektorfelds
+|-
+| Ladepriorität || 1…99 || Simulationskonfiguration; Vorgabe 10 für die Solarthermie
+|}
+
+== Rechenweg ==
+
+Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''. Die Klimadatenreihe wird — wie
+bei der Photovoltaik — in '''Ortszeit''' gelesen: Die gespeicherte Reihe steht in UTC, gelesen wird
+sie um eine Stunde (Normalzeit) beziehungsweise zwei Stunden (Sommerzeit) versetzt; Sonnenstand und
+Einfallswinkel rechnen weiter auf der UTC-Zeitmarke jeder Zeile. Ohne diese Verschiebung stünde die
+Kollektorreihe ein bis zwei Stunden vor dem Wärmebedarf — die Jahressumme bliebe richtig, die
+stundenscharfe Deckung nicht.
+
+=== Schritt 1 — Einstrahlung auf die Kollektorebene ===
+
+Isotrop, mit dem Boden-Albedo 0,2 — dieselbe Rechnung wie im einfachen PV-Modell:
+
+ G_t = DNI · cosθ + DHI · (1 + cos β)/2 + GHI · 0,2 · (1 − cos β)/2
+
+mit β = Neigung und θ = Einfallswinkel auf die Kollektorebene. Bei Nacht ist G_t = 0.
+
+=== Schritt 2 — Einfallswinkelkorrektur (IAM) ===
+
+Aus dem Katalogwert K<sub>dir</sub> bei 50° wird der b₀-Beiwert der üblichen Näherung für
+Flachkollektoren gebildet:
+
+ b0  = (1 − K_dir50) / (1/cos 50° − 1)
+ IAM = 1 − b0 · (1/cosθ − 1)                      auf 0…1 begrenzt
+
+Der Nenner ist gegen 0 abgesichert (cosθ wird bei mindestens 0,001 gehalten), damit ein flacher
+Einfall keine Division durch null erzeugt.
+
+=== Schritt 3 — Kollektorwirkungsgrad nach EN 12975 ===
+
+ ΔT  = T_Speicher − T_Außen
+ η   = h0 · IAM − k1 · ΔT / G_t − k2 · ΔT² / G_t
+ q   = G_t · η                                     [W/m²], negative Werte auf 0
+
+'''T_Speicher ist im Modell fest 50&nbsp;°C''' und '''keine''' Eingabe. Das ist die maßgebliche
+Vereinfachung dieser Seite: Der Kollektor rechnet gegen eine gleichbleibende Arbeitstemperatur, nicht
+gegen den tatsächlichen Zustand seines Speichers.
+
+=== Schritt 4 — Bruttopotenzial des Feldes ===
+
+ A_gesamt = Aperturfläche je Kollektor · Anzahl Kollektoren           [m²]
+ Q_pot    = q · A_gesamt · 0,92 / 1000                                [kWh je Stunde]
+
+Der Faktor '''0,92''' sind pauschale '''Leitungsverluste''' des Solarkreises. Auch er ist fest
+verdrahtet und nicht einstellbar.
+
+=== Schritt 5 — Wohin die Wärme geht ===
+
+Das Potenzial der Stunde steht jedem Feld zunächst voll zur Verfügung. Danach gilt in der
+Stundenschleife:
+
+ 1. Direktdeckung  über die Direktsenken des Feldes (bei "beides" mit Warmwasservorrang)
+ 2. Speicherladung über die Ladeaufträge, bis zur Abschaltschwelle des Speichers
+ 3. Überschuss     alles, was weder gedeckt noch gespeichert werden konnte  → verworfen
+
+ Nutzbarer Ertrag = Direktdeckung + Speicherladung
+
+Ein Feld '''ohne''' Direktsenke deckt nichts und lädt ausschließlich. Mit dem Vorgaberang '''10'''
+ist die Solarthermie der '''erste''' Lader der Kaskade — vor Wärmepumpe (20), BHKW (30) und
+Heizkessel (40). Der Grund steht in der Rangfolge selbst: Ihre Grenzkosten sind praktisch null, und
+nicht genutzte Einstrahlung ist verloren. Wo am Speicher eine '''Reservezone''' gepflegt ist (die
+Abschaltschwelle für nachrangige Anlagen), laden die übrigen Erzeuger nur bis dorthin und lassen den
+oberen Teil für die Solarthermie frei.
+
+Was der Speicher später an den Bedarf abgibt, wird dem Erzeuger zugerechnet, der geladen hat — die
+Solarthermie erhält davon ihren Anteil. Direktdeckung plus dieser Anteil ist ihr '''Eigenanteil''' an
+der Bedarfsdeckung; der Restwärmebedarf wird ausdrücklich aus der '''Direktdeckung''' gebildet, sonst
+würde er negativ und die Deckung überschritte 100&nbsp;%.
+
+== Grenzen und Annahmen ==
+
+* '''Die Speichertemperatur ist fest 50&nbsp;°C.''' Der Wirkungsgrad hängt damit nicht vom
+  tatsächlichen Speicherzustand ab. Ein kalter Speicher am Morgen brächte real mehr Ertrag, ein
+  voller weniger; das Modell rechnet beides gleich.
+* '''Die Leitungsverluste sind pauschal 8&nbsp;%''' (Faktor 0,92) und nicht einstellbar.
+* '''Keine Stagnation, keine Kollektorabschaltung.''' Wärme, die niemand aufnimmt, wird als
+  Überschuss verworfen; eine Begrenzung der Kollektortemperatur oder ein Abschaltkriterium gibt es
+  nicht.
+* '''Keine Solarkreispumpe.''' Ihr Stromverbrauch geht nicht in die Bilanz ein.
+* '''Kein Wärmeübertrager zum Speicher.''' Die Übertragung ist verlustfrei, abgesehen vom
+  pauschalen Leitungsfaktor.
+* '''Eine Ausrichtung je Feld.''' Neigung und Azimut hängen an der Anlagenzeile.
+* '''Die Einstrahlung ist isotrop''' — anders als beim erweiterten PV-Modell gibt es hier keine
+  Hay-Davies-Transposition.
+* '''K<sub>dfu</sub> („K<sub>diff</sub>") rechnet nicht mit.''' Der Katalog führt den Wert und der
+  Editor pflegt ihn; der Kollektorwirkungsgrad benutzt nur h₀, k₁, k₂ und K<sub>dir</sub>.
+* '''„Modulfläche" ist nicht die Rechengröße.''' Gerechnet wird mit der '''Aperturfläche''' mal der
+  Anzahl Kollektoren; die Modulfläche ist Anzeige.
+* '''Vor- und Rücklauf des Katalogs''' rechnen nicht mit — der Lauf nimmt die Werte der Projektzeile.
+* '''Die Solarthermie-Ganglinien sind kein Rechenweg.''' Die Zeitreihen, die sich einem Projekt
+  zuordnen lassen, werden gepflegt, kopiert und exportiert — der Simulationslauf liest sie
+  '''nicht'''. Er rechnet den Ertrag aus Klimadaten und Kollektorkennwerten. Wer eine gemessene
+  Reihe einsetzen will, kann das über diesen Weg heute nicht.
+
+== Ergebnisse und wo sie stehen ==
+
+* '''Simulationsergebnis, Reiter „Solarthermie"''' — je Kollektorfeld Name, Gesamtfläche, Anzahl,
+  nutzbarer Jahresertrag und verworfener Überschuss.
+* '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil der Solarthermie an der
+  Jahreswärme.
+* '''Simulationsergebnis, Reiter „Wärmegang"''' — Direktdeckung und Speicherladung im Stapel der
+  Erzeuger.
+* '''Simulationsprotokoll''' — nicht lesbare Klimaregion, Felder ohne Senke.
+* '''Bericht''' und '''Wirtschaftlichkeit''' — der Ertrag als vermiedene Brennstoffmenge.
+
+== Bezüge ==
+
+* [[Programm Dokumentation/Solarthermie|Solarthermie]] — Bedienung von Katalog, Projektdialog und Ganglinienverwaltung
+* [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Phasen der Stundenschleife, Ladeordnung
+* [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Abschaltschwelle, Reservezone und die Zurechnung der Entladung
+* [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]] — dieselbe Sonnengeometrie und Zeitbasis, anderes Ertragsmodell
+* [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] — woher der Bedarf kommt, den die Kollektoren decken
+* [[Programm Dokumentation/Klimadaten|Klimadaten]] — Herkunft und Pflege der Strahlungsreihen
