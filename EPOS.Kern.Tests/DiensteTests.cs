@@ -17,11 +17,19 @@ namespace EPOS.Kern.Tests
     /// <see cref="Dienste"/> ist prozessweiter Zustand, und xunit gibt keine Reihenfolge
     /// vor.</para>
     ///
-    /// <para>Die Sammlung „Dienste" hält diese Klasse und <c>EnergieeinheitTests</c>
-    /// auseinander: Beide tauschen <see cref="Dienste.Einstellungen"/>, und xunit
-    /// fährt Testklassen sonst nebeneinander.</para>
+    /// <para><b>Warum „Testdatenbank" und nicht mehr „Dienste" (Befund iU5‑O‑1).</b> Bis
+    /// zum 06.09.2026 stand diese Klasse in einer eigenen Sammlung „Dienste". Das reichte
+    /// nicht: xunit fährt zwei VERSCHIEDENE Sammlungen immer nebeneinander, und die
+    /// Datenbanktests der Sammlung „Testdatenbank" melden über
+    /// <c>DataRepository.FehlerMelden</c> in denselben prozessweiten
+    /// <see cref="Dienste.Dialog"/>. So bekam
+    /// <see cref="Dialogdienst_ist_austauschbar_und_traegt_die_Meldehaken"/> in der
+    /// Windows-CI (Lauf 34018913888) die Meldung eines FREMDEN Tests in seine Mitschrift
+    /// und fiel rot aus. Wer ein <c>Dienste.*</c> tauscht, gehört deshalb in DIESELBE
+    /// Sammlung wie alles, was melden kann — <c>[Collection("Testdatenbank")]</c>. Der
+    /// Wächter <see cref="DiensteSammlungTests"/> prüft die Regel über die Quelldateien.</para>
     /// </summary>
-    [Collection("Dienste")]
+    [Collection("Testdatenbank")]
     public class DiensteTests
     {
         // ==================================================================
