@@ -268,6 +268,126 @@ namespace WindowsFormsApplication1
                 BasenFuellen(komponente, r, a);
                 liste.Add(a);
             }
+
+            // STUFE S3 des Wechselrichterkonzepts (Entscheidungsfrage W6-E-2-Q8):
+            // Der Wechselrichter ist ein GERAET mit einem Preis und einer Stueckzahl -
+            // und er fehlte bis hierher in der Investition, obwohl er 10 bis 20 % der
+            // Anlagenkosten ausmacht. Er kommt als EIGENE Zeile dazu, nicht als
+            // Aufschlag auf den Modulpreis.
+            if (string.Equals(komponente, DbWerte.ERZEUGER_PHOTOVOLTAIK, StringComparison.Ordinal))
+                liste.AddRange(Wechselrichteranlagen(projektID));
+
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Wechselrichter eines Projekts als eigene Kostenzeilen — je
+        /// Wechselrichtertyp eine, mit <c>Kosten</c> × Gerätezahl als Kostenbasis
+        /// (Konzept 4.4 / Q8, Stufe S3).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Vorrangregel gilt auch hier</b> (Konzept 3.5 und 7.1): Gezählt werden
+        /// nur Stränge von Anlagen, deren Schalter <c>PV_Wechselrichterweg</c> auf
+        /// <see cref="DbWerte.PV_WR_WEG_KATALOG"/> steht. Eine Anlage, die den
+        /// vereinfachten Weg rechnet, trägt auch keine Gerätekosten — sonst zahlte der
+        /// Anwender für ein Gerät, das die Simulation nicht kennt.
+        /// </para>
+        /// <para>
+        /// <b>Die Gerätezahl ist <c>COUNT(DISTINCT Gerätenummer)</c> je Typ — je
+        /// ANLAGE.</b> Gerät 1 der Anlage „Dach Süd" und Gerät 1 der Anlage „Halle" sind
+        /// zwei physische Geräte; die Gruppierung des Clippings ist aus demselben Grund
+        /// (Anlage, Wechselrichter, Gerätenummer). Gezählt wird deshalb über das Paar,
+        /// nicht über die Nummer allein.
+        /// </para>
+        /// <para>
+        /// <b>Gezählt wird in C#, nicht in SQL.</b> Die Zeilen liegen über
+        /// <c>AnlageStrangCtrl.LesenJeProjekt</c> ohnehin in EINER Abfrage vor, und ein
+        /// <c>COUNT(DISTINCT a || b)</c> wäre eine neue Dialektfrage ohne Gewinn.
+        /// </para>
+        /// <para>
+        /// <b>Die <c>GeraetID</c> ist NEGATIV.</b> Sie ist der Schlüssel der
+        /// Auswahl-Zuordnung in <see cref="Hauptsumme"/>; die PV-Zeilen tragen dort
+        /// <c>Tab_PV.ID</c>, diese hier <c>Tab_Wechselrichter.ID</c> — zwei Tabellen,
+        /// ein Zahlenraum. Das Minuszeichen hält beide auseinander, ohne eine zweite
+        /// Spalte zu brauchen.
+        /// </para>
+        /// </remarks>
+        private static List<Anlage> Wechselrichteranlagen(int projektID)
+        {
+            var liste = new List<Anlage>();
+            if (projektID <= 0) return liste;
+
+            try
+            {
+                var anlagen = new WErzeugerCtrl();
+                anlagen.ReadAllFilter("ID_Projekt=" + projektID +
+                                      " and ID_Type=" + WizardItemClass.PV_TYP);
+
+                var katalogweg = new HashSet<int>();
+                for (int i = 0; i < anlagen.rows; i++)
+                    if (SimulationPV.IstKatalogweg(anlagen.items[i]))
+                        katalogweg.Add(anlagen.items[i].ID);
+
+                if (katalogweg.Count == 0) return liste;
+
+                List<AnlageStrangModel> straenge = new AnlageStrangCtrl().LesenJeProjekt(projektID);
+                if (straenge.Count == 0) return liste;
+
+                // Je Wechselrichtertyp die Menge der PHYSISCHEN Geraete als Paar
+                // (Anlage, Geraetenummer).
+                var geraeteJeTyp = new Dictionary<int, HashSet<long>>();
+                foreach (AnlageStrangModel s in straenge)
+                {
+                    if (s == null || !katalogweg.Contains(s.ID_Anlage)) continue;
+
+                    int typ = s.ID_Wechselrichter ?? 0;
+                    if (typ <= 0) continue;
+
+                    HashSet<long> geraete;
+                    if (!geraeteJeTyp.TryGetValue(typ, out geraete))
+                    {
+                        geraete = new HashSet<long>();
+                        geraeteJeTyp[typ] = geraete;
+                    }
+                    geraete.Add((long)s.ID_Anlage * 1000000L + s.GeraetenummerOderEins);
+                }
+
+                if (geraeteJeTyp.Count == 0) return liste;
+
+                var wr = new WechselrichterCtrl();
+                wr.ReadAll(projektID);
+
+                for (int i = 0; i < wr.rows; i++)
+                {
+                    WechselrichterModel g = wr.items[i];
+                    HashSet<long> geraete;
+                    if (!geraeteJeTyp.TryGetValue(g.m_ID, out geraete)) continue;
+
+                    var a = new Anlage
+                    {
+                        GeraetID = -g.m_ID,
+                        Bezeichner = Herleitung(MyResource.Resource.KOSTEN_PLANWERT_WECHSELRICHTER,
+                                                g.m_szName ?? ""),
+                        Menge = geraete.Count
+                    };
+
+                    // Kein Preis gepflegt: Basis verwirft 0 ohnehin - die Zeile bleibt
+                    // dann ohne Kostenbasis und traegt nichts bei, statt still ein
+                    // Geraet zu unterstellen (dieselbe Regel wie beim Stueckpreis).
+                    double preis = g.m_Kosten ?? 0.0;
+
+                    Basis(a, BASIS_SPEZIFISCH, preis * geraete.Count,
+                          Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_WECHSELRICHTER,
+                                     Z(preis, 2), Z(geraete.Count, 0)));
+
+                    liste.Add(a);
+                }
+
+                liste.Sort((x, y) => string.Compare(x.Bezeichner, y.Bezeichner, StringComparison.Ordinal));
+            }
+            catch { return new List<Anlage>(); }
+
             return liste;
         }
 

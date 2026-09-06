@@ -45,9 +45,6 @@
                    AuswahlChanged="BeiWeg"
                    WeichGesperrt="@_weichGesperrt" Verweigert="BeiVerweigert" />
 
-    @* Bis S3: der Abschnitt verspricht nichts, was der Kern noch nicht tut. *@
-    <p class="epos-herleitung epos-straenge-s3">@Texte.HinweisS3</p>
-
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung"

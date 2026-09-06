@@ -6254,13 +6254,6 @@ body {
     margin-top: 10px;
 }
 
-/* Die Zeile, die bis Stufe S3 sagt, dass der Kern die Straenge NOCH NICHT
-   rechnet. Sie ist eine LEISE Erlaeuterung und kein Banner: Der Zustand ist
-   kein Fehler, den der Anwender beheben muesste (Staffelung W16b-E-6). */
-.epos-straenge-s3 {
-    font-style: italic;
-}
-
 /* Der Kopf des Abschnitts: Titel links, die DC/AC-Chips je Geraet daneben. */
 .epos-strangkopf {
     display: flex;

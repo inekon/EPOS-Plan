@@ -53,6 +53,44 @@
 
         </div>
 
+        @* STUFE S3 des Wechselrichterkonzepts: die Tabelle steht NUR, wenn eine Anlage
+           auf der Strangebene gerechnet hat. Ohne Strangzuordnung ist die Liste leer
+           und der Reiter sieht aus wie bisher. *@
+        @if (Daten.Wechselrichter.Count > 0)
+        {
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.SIMERG_TITEL_PV_WR</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_GERAET</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_DCAC</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_ERTRAG</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_CLIPPING</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_CLIPPING_PROZENT</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_VOLLLAST</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_NUTZUNGSGRAD</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_NACHT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var w in Daten.Wechselrichter)
+                    {
+                        <tr>
+                            <td>@w.Anlage</td>
+                            <td>@w.Geraet</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.DcAc)</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.ErtragMwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.ClippingKwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.ClippingProzent)</td>
+                            <td class="epos-simerg-zahl">@w.VolllaststundenAc.ToString("F0", Kultur)</td>
+                            <td class="epos-simerg-zahl">@w.Jahresnutzungsgrad.ToString("F4", Kultur)</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.NachtverbrauchKwh)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
         @if (Daten.Module.Count > 0)
         {
             <table class="epos-raster">

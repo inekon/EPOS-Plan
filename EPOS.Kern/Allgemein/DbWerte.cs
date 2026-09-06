@@ -2134,8 +2134,22 @@ namespace WindowsFormsApplication1
         /// <para>Der Wert wird geschrieben, sobald der Anwender die Wahl EINMAL
         /// getroffen hat; NULL heisst „nie gewählt". Beides rechnet gleich — der
         /// Unterschied ist allein, ob die Maske eine Entscheidung anzeigen kann.</para>
+        ///
+        /// <para><b>Der Wert war bis Stufe S3 nicht speicherbar</b> (Befund des
+        /// Prüfstands S3.6, 06.09.2026): Er lautete <c>"PV_WR_WEG_VEREINFACHT"</c> —
+        /// der Name der Konstanten statt ihres Wertes — und ist damit <b>21 Zeichen</b>
+        /// lang, die Spalte <c>Tab_Energieanlagen.PV_Wechselrichterweg</c> aber
+        /// <c>TEXT(20)</c>. In der STRICT-Datenbank ist das eine CHECK-Bedingung; jedes
+        /// Speichern einer Anlage mit dieser Wahl scheiterte an
+        /// <c>CHECK constraint failed: length("PV_Wechselrichterweg") &lt;= 20</c>, und
+        /// weil die Spalte in <c>AnlagenSql.SQL_ANLAGE_INSERT</c> steht, scheiterte das
+        /// Speichern der ganzen ANLAGE. Der Wert heisst deshalb seit S3 schlicht
+        /// <c>"VEREINFACHT"</c> — symmetrisch zu
+        /// <see cref="PV_WR_WEG_KATALOG"/>. <b>Eine Migration braucht es nicht:</b> Der
+        /// alte Wert kann in keiner Datenbank stehen, denn er liess sich nie
+        /// schreiben.</para>
         /// </summary>
-        public const string PV_WR_WEG_VEREINFACHT = "PV_WR_WEG_VEREINFACHT";
+        public const string PV_WR_WEG_VEREINFACHT = "VEREINFACHT";
 
         /// <summary>
         /// Wechselrichterweg einer PV-Anlage: <b>mit Wechselrichter</b> — Katalog,
@@ -2146,10 +2160,13 @@ namespace WindowsFormsApplication1
         /// mit <c>ID_Wechselrichter</c>. „Zwei Bedingungen statt einer machen die
         /// Zusage stärker, nicht schwächer" (Konzept 7.1).</para>
         ///
-        /// <para><b>In Stufe S2 rechnet er noch gar nicht</b> — <c>SimulationPV</c>
-        /// liest die Spalte nicht; der Rechenweg folgt mit S3. Die Maske sagt das
-        /// ausdrücklich (Ressource <c>PVS_HINWEIS_S3</c>), damit sie nichts verspricht,
-        /// was der Kern noch nicht tut.</para>
+        /// <para><b>Seit Stufe S3 rechnet er.</b> <c>SimulationPV.IstKatalogweg</c>
+        /// liest die Spalte, <c>GeraeteDerAnlage</c> setzt die zweite Bedingung
+        /// dahinter, und <c>PvStrangModell</c> rechnet Kennlinie, Clipping und
+        /// Nachtverbrauch je Gerät. Auch die Wirtschaftlichkeit liest ihn:
+        /// <c>TechnikPlanwertCtrl</c> zählt die Geräte nur für Anlagen auf diesem Weg
+        /// (Q8). Der Hinweis, den die Maske bis dahin trug
+        /// (<c>PVS_HINWEIS_S3</c>), ist mit S3 entfallen.</para>
         /// </summary>
         public const string PV_WR_WEG_KATALOG = "KATALOG";
 
