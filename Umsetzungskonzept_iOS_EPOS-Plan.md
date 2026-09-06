@@ -1677,6 +1677,16 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > der Parametersatz geht unverändert durch, die Wachen prüfen weiter gegen `T`. Regel (c) ist erweitert: aus „kein
 > `ShowDialog` aus einem Blazor-Ereignis" wird **„kein modales Systemfenster im WebView-Rückruf"** — mit zwei
 > Werkzeugen, `Blazorsprung` ohne Rückgabewert und `Blazornachlauf` mit.
+>
+> **W16b‑O‑2 erledigt (06.09.2026, `48a5547`):** Der flatterhafte Fall
+> `ProjektTransferDialogTests.Schliessen_meldet_ob_ein_Import_gelungen_ist` (Windows-CI rot auf `cb8379e`) war kein
+> Fehler des Dialogs, sondern zwei Wettläufe im Test: gewartet wurde auf das Kennzeichen der Attrappe, das im
+> `Task.Run` des Dialogs schon beim Betreten des Imports fällt — geschlossen wurde also mitten im Lauf, und ein
+> laufender Import meldet nichts; dazu kehrt bunits synchrones `Click()` zurück, ohne auf den Ereignisbehandler zu
+> warten. Der Test wartet jetzt auf den gezeichneten Abschluss und fasst die Ergebnisprüfungen in `WaitForAssertion`;
+> alle 28 Wartestellen der bunit-Tests sind durchgesehen, nur der Transferdialog hat einen eigenen `Task.Run`.
+> Nachweis: altes Muster unter künstlicher Last 12 von 15 rot, neues 0 von 15; der Fall 30-mal grün in de und
+> 30-mal in en, `EPOS.UI.Tests` 2 721 grün. Kein Produktcode geändert.
 
 > **Statusblock iU9 — Teilwelle 16a umgesetzt (04.09.2026, Basis `975ead5` = Tag `vor-W16`, zusammengeführt mit `3c7e0d6` nach den W15c-Entscheiden)**
 >
