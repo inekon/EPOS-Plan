@@ -213,6 +213,36 @@ namespace WindowsFormsApplication1
         public const string Z_ANLAGESENKE = "Z_AnlageSenke";
 
         /// <summary>
+        /// STUFE S2 des <c>Konzept_Wechselrichter_EPOS-Plan.md</c> (Migrationsschritt 66,
+        /// Konzept 3.4, Anwenderentscheid <b>W6-E-2</b> vom 06.09.2026): die
+        /// STRANGZUORDNUNG einer PV-Anlage — je Zeile ein Strang mit seinem
+        /// Wechselrichter, seinem MPPT-Eingang, seiner Verschaltung und, wenn er von der
+        /// Anlage abweicht, seiner eigenen Ausrichtung.
+        ///
+        /// <b>Warum <c>Z_</c> und nicht <c>Tab_</c>.</b> Der Auftrag nannte
+        /// <c>Tab_PVStrang</c>; die Hausregel sagt: <c>Tab_*</c> sind Stamm- und
+        /// Projektdaten, <c>Z_*</c> ist die ZUORDNUNG. Eine Strangzeile ist genau das —
+        /// sie verbindet eine Energieanlage mit einem Wechselrichter und legt fest, wie
+        /// viele Module in welcher Verschaltung daran haengen. Bauart und Vorbild sind
+        /// <see cref="Z_ANLAGESENKE"/>.
+        ///
+        /// <b>Eine Tabelle, keine zwei</b> (Konzept 3.4, Entwurfsentscheidung 1). Die
+        /// saubere Normalform waeren zwei Ebenen — welches Geraet wie oft, und darunter
+        /// welcher Strang an welchem MPPT. Alles, was das Geraet ausmacht, steht aber im
+        /// Katalog, und die Geraetezahl ist <c>COUNT(DISTINCT Geraetenummer)</c> je
+        /// Anlage und Wechselrichtertyp. Zwei Tabellen kosteten einen zweiten
+        /// Controller, einen zweiten Migrationsschritt und eine zweistufige Maske.
+        ///
+        /// <b>Kein eigenes <c>ID_Projekt</c></b> — wie bei
+        /// <see cref="Z_ANLAGESENKE"/>: Die Anlage weiss, zu welchem Projekt sie
+        /// gehoert, und eine zweite Wahrheit darueber koennte auseinanderlaufen.
+        ///
+        /// Die DDL steht in <see cref="AnlageStrangSchema"/> — EINE Quelle fuer die
+        /// Migration und fuer <c>Werkzeuge/Testdatenbankschema</c>.
+        /// </summary>
+        public const string Z_ANLAGESTRANG = "Z_AnlageStrang";
+
+        /// <summary>
         /// PAKET Q1 (Migrationsschritt 54, Konzept Brauchwasser/Heizung/Pufferspeicher
         /// § 8.1 Punkt 2/3): der KOPF eines Quellprofils — ein benanntes
         /// Temperaturprofil der Wärmequelle, das an einer oder mehreren Anlagen hängen
@@ -1338,6 +1368,60 @@ namespace WindowsFormsApplication1
         {
             new SchemaSpalte(TAB_PV_STAMM,            SPALTE_PV_TECHNOLOGIE,   "TEXT(30)"),
             new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_DEGRADATION,  "DOUBLE"),
+        };
+
+        // =============================================================================
+        // Schritt 66 - der SICHTBARE Wechselrichterweg (W6-E-3, Stufe S2)
+        // =============================================================================
+
+        /// <summary>
+        /// Der WEG, auf dem die Wechselrichter dieser PV-Anlage gerechnet werden
+        /// (Anwenderwunsch <b>W6-E-3</b> vom 06.09.2026, Konzept Wechselrichter 7.1):
+        /// <see cref="DbWerte.PV_WR_WEG_VEREINFACHT"/> oder
+        /// <see cref="DbWerte.PV_WR_WEG_KATALOG"/>.
+        ///
+        /// <b>NULL = vereinfacht</b> — der Weg von heute, Zeichen fuer Zeichen:
+        /// Wirkungsgrad 0,95 bzw. der gepflegte Anlagenwert, <c>PV_Systemverluste</c>,
+        /// und im Modell ERWEITERT die fuenf Anlagenspalten aus Schritt 64. Kein
+        /// DDL-DEFAULT (Hausregel „kein DDL-DEFAULT auf Fachwerten").
+        ///
+        /// <b>Warum eine eigene Spalte und keine abgeleitete Frage</b> (Konzept 7.1,
+        /// Empfehlung a): Eine Option, die man nur durch LOESCHEN der Strangzeilen
+        /// abwaehlen koennte, ist keine Option — der Planer verloere genau die Arbeit,
+        /// die er vergleichen will. Mit der Spalte parkt die Zuordnung und rechnet
+        /// nicht mit. Es ist dieselbe Bauart wie <see cref="SPALTE_EA_PV_MODELL"/>: ein
+        /// sichtbarer Schalter an derselben Anlagenzeile, mit NULL als dem Wert, der
+        /// nichts aendert.
+        /// </summary>
+        public const string SPALTE_EA_PV_WECHSELRICHTERWEG = "PV_Wechselrichterweg";
+
+        /// <summary>
+        /// Schritt 66 der Migration, SPALTENTEIL: der Schalter aus <b>W6-E-3</b> an
+        /// <c>Tab_Energieanlagen</c>. Die TABELLE des Schritts
+        /// (<c>Z_AnlageStrang</c>) steht in <see cref="AnlageStrangSchema"/> — hier
+        /// stehen nur additive Spalten (siehe <see cref="Alle"/>).
+        ///
+        /// <b>KEIN DML.</b> Die Spalte bleibt nach <c>ADD COLUMN</c> NULL, und NULL
+        /// heisst „vereinfacht". Der Referenzlauf gegen
+        /// <c>2026-09-05_R2_Zeitbasis</c> bleibt byte-gleich.
+        ///
+        /// <b>Warum in <see cref="Alle"/>.</b> Hier ist der Grund noch staerker als der
+        /// LESER: Es ist der SCHREIBER. <c>AnlagenSql.SQL_ANLAGE_INSERT</c> nennt die
+        /// Spalte seit S2 namentlich — der Speicherweg jeder Anlage (Karte,
+        /// Kontextmenue, Assistent) scheiterte auf einer Datenbank ohne sie. Die
+        /// Rueckfallebene <c>WaermequelleClass.SchemaSicherstellen</c> legt sie
+        /// deshalb an, falls die Migration (noch) nicht gelaufen ist — dieselbe Linie
+        /// wie bei <see cref="Schritt63_PvAnlagenparameter"/> und
+        /// <see cref="Schritt64_PvModellwahl"/>, die aus demselben Grund dort stehen.
+        /// Ab Stufe S3 kommt der Leser dazu (<c>SimulationPV</c>, Konzept 3.5).
+        ///
+        /// <b>Ordinalposition.</b> <c>Tab_Energieanlagen</c> wird namensbasiert gelesen
+        /// (<c>WErzeugerCtrl.AusZeile</c> prueft <c>Columns.Contains</c>); das
+        /// Anhaengen ist gefahrlos.
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt66_PvWechselrichterweg =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WECHSELRICHTERWEG, "TEXT(20)"),
         };
 
         /// <summary>
@@ -3661,10 +3745,22 @@ namespace WindowsFormsApplication1
         /// Stammtabelle des Katalogs und die Degradation der Wirtschaftlichkeit liest
         /// der Rechenkern nirgends.
         ///
+        /// <see cref="Schritt66_PvWechselrichterweg"/> ist AUFGEFÜHRT, und zwar aus einem
+        /// noch stärkeren Grund als der LESER: dem SCHREIBER.
+        /// <c>AnlagenSql.SQL_ANLAGE_INSERT</c> nennt <c>PV_Wechselrichterweg</c> seit
+        /// Stufe S2 namentlich — auf einer Datenbank ohne die Spalte scheiterte jedes
+        /// Speichern einer Anlage. Die TABELLE desselben Schritts
+        /// (<see cref="Z_ANLAGESTRANG"/>) steht dagegen NICHT hier: <see cref="Alle"/>
+        /// kennt ausschließlich additive SPALTEN an vorhandenen Tabellen — dieselbe
+        /// Grenze wie bei <see cref="Z_ANLAGESENKE"/>, und die Rückfallebene übernimmt
+        /// dort <c>AnlageStrangCtrl.TabelleVorhanden</c>.
+        ///
         /// <b>Reihenfolge:</b> Die Rückfallebene liest das Tabellenschema neu, sobald
         /// der Tabellenname wechselt (<c>WaermequelleClass.SchemaSicherstellen</c>).
         /// Einträge derselben Tabelle stehen deshalb beieinander — Schritt 64 beginnt
-        /// mit <c>Tab_Energieanlagen</c> und schließt damit unmittelbar an Schritt 63 an.
+        /// mit <c>Tab_Energieanlagen</c> und schließt damit unmittelbar an Schritt 63 an;
+        /// Schritt 66 hängt ebenfalls dort und steht aus demselben Grund ZWISCHEN
+        /// beiden, nicht nach ihnen.
         /// </summary>
         public static IEnumerable<SchemaSpalte> Alle
         {
@@ -3678,6 +3774,14 @@ namespace WindowsFormsApplication1
                 foreach (SchemaSpalte s in Schritt11_Stromspeicher) yield return s;
                 foreach (SchemaSpalte s in Schritt13_Mindestfuellstand) yield return s;
                 foreach (SchemaSpalte s in Schritt63_PvAnlagenparameter) yield return s;
+
+                // REIHENFOLGE NACH TABELLE, nicht nach Schrittnummer (siehe Absatz
+                // "Reihenfolge" oben): Schritt 66 haengt an Tab_Energieanlagen wie
+                // Schritt 63 und die ersten fuenf Eintraege des Schritts 64. Stuende er
+                // hinter Schritt 64, laege ein Tab_PV-Eintrag dazwischen und die
+                // Rueckfallebene laese das Schema von Tab_Energieanlagen ein zweites Mal.
+                foreach (SchemaSpalte s in Schritt66_PvWechselrichterweg) yield return s;
+
                 foreach (SchemaSpalte s in Schritt64_PvModellwahl) yield return s;
             }
         }

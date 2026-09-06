@@ -246,6 +246,52 @@
         /// <summary>PV_WrEta100 - Wirkungsgrad bei 100 % Auslastung; <b>NULL = 0,97.</b></summary>
         public double? PV_WrEta100;
 
+        // =============================================================================
+        // Der SICHTBARE Wechselrichterweg (W6-E-3, Stufe S2 des Wechselrichterkonzepts)
+        // =============================================================================
+
+        /// <summary>
+        /// PV_Wechselrichterweg - auf welchem Weg die Wechselrichter dieser Anlage
+        /// gerechnet werden: <see cref="DbWerte.PV_WR_WEG_VEREINFACHT"/> oder
+        /// <see cref="DbWerte.PV_WR_WEG_KATALOG"/>. <b>NULL = vereinfacht</b>, also der
+        /// Weg von heute, Zeichen fuer Zeichen.
+        ///
+        /// <para><b>Warum nullable und nicht bool.</b> Aus demselben Grund wie bei
+        /// <see cref="PV_Modell"/>: NULL heisst „nie gewaehlt" und ist etwas anderes als
+        /// ein ausdrueckliches „vereinfacht" - auch wenn beide gleich rechnen. Nur so
+        /// macht der Roundtrip aus einer nie gepflegten Zeile keine gepflegte, und nur
+        /// so kann die Maske eine getroffene Entscheidung von einer nicht getroffenen
+        /// unterscheiden.</para>
+        ///
+        /// <para><b>In Stufe S2 rechnet das Feld noch nicht.</b> <c>SimulationPV</c>
+        /// liest es nicht; der Rechenweg folgt mit S3 (Konzept 3.5 und 7.1). Bis dahin
+        /// traegt es allein die Wahl des Anwenders.</para>
+        /// </summary>
+        public string PV_Wechselrichterweg;
+
+        /// <summary>
+        /// Die STRAENGE dieser Anlage (<c>Z_AnlageStrang</c>), so wie der PV-Dialog sie
+        /// zuletzt hinterlassen hat. <b><c>null</c> heisst „nicht angefasst"</b>, eine
+        /// LEERE Liste heisst „diese Anlage fuehrt keinen Strang mehr".
+        ///
+        /// <para><b>Warum das Modell eine Liste traegt.</b> Der Speicherweg jeder Anlage
+        /// ist Loeschen + Neuanlegen; die frische Anlagen-Id entsteht erst IM
+        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c>. Der Dialog kann die Straenge deshalb
+        /// nicht selbst schreiben - er kennt die Id nicht, auf die sie zeigen sollen.
+        /// Sie reisen auf dem Modell mit und werden dort geschrieben, wo die Id
+        /// entsteht.</para>
+        ///
+        /// <para><b>Der Unterschied zu NULL ist tragend.</b> <c>null</c> ueberlaesst die
+        /// Zeile der RETTUNG (Block ST1): Was ueber Karte oder Assistent gespeichert
+        /// wird, ohne dass der PV-Dialog offen war, behaelt seine Zuordnung. Eine
+        /// gesetzte Liste dagegen ist die neue Wahrheit und hat Vorrang - die Rettung
+        /// uebergeht Anlagen, die bereits Straenge fuehren.</para>
+        ///
+        /// <para><b>Sie geht NICHT in <c>SQL_ANLAGE_INSERT</c></b> - es ist keine Spalte
+        /// von <c>Tab_Energieanlagen</c>, sondern eine eigene Tabelle.</para>
+        /// </summary>
+        public System.Collections.Generic.List<AnlageStrangModel> PV_Straenge;
+
         public WErzeugerModel()
         {
             ID = 0;

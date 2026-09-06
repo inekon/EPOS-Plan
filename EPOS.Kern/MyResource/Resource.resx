@@ -15347,4 +15347,163 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="MENU_WR_IMPORT_CEC" xml:space="preserve">
     <value>Wechselrichter (CEC)...</value>
   </data>
+  <data name="PVS_TRENNER" xml:space="preserve">
+    <value> · </value>
+  </data>
+  <data name="PVS_SATZ_STRANG" xml:space="preserve">
+    <value>Strang {0}{1}: {2}</value>
+  </data>
+  <data name="PVS_SATZ_GERAET" xml:space="preserve">
+    <value>{0} (Gerät {1}): {2}</value>
+  </data>
+  <data name="PVS_P_MODULE" xml:space="preserve">
+    <value>{0} Module in Reihe, {1} parallel</value>
+  </data>
+  <data name="PVS_P1" xml:space="preserve">
+    <value>U_oc(−10 °C) {0} V ≤ {1} V</value>
+  </data>
+  <data name="PVS_P1_ROT" xml:space="preserve">
+    <value>U_oc(−10 °C) {0} V &gt; {1} V — der Wechselrichter kann bei Frost und Sonne Schaden nehmen</value>
+  </data>
+  <data name="PVS_P23" xml:space="preserve">
+    <value>MPP {0}…{1} V im Fenster {2}…{3} V</value>
+  </data>
+  <data name="PVS_P2_ROT" xml:space="preserve">
+    <value>MPP im Sommer {0} V &lt; {1} V — der Strang regelt ab</value>
+  </data>
+  <data name="PVS_P3_GELB" xml:space="preserve">
+    <value>MPP im Winter {0} V &gt; {1} V — das Gerät regelt an der Grenze</value>
+  </data>
+  <data name="PVS_P4" xml:space="preserve">
+    <value>I {0} A ≤ {1} A</value>
+  </data>
+  <data name="PVS_P4_ROT" xml:space="preserve">
+    <value>I {0} A &gt; {1} A am MPPT {2}</value>
+  </data>
+  <data name="PVS_P5_GELB" xml:space="preserve">
+    <value>{0} Stränge am MPPT {1}, zulässig sind {2}</value>
+  </data>
+  <data name="PVS_P6" xml:space="preserve">
+    <value>DC/AC {0}</value>
+  </data>
+  <data name="PVS_P6_GELB" xml:space="preserve">
+    <value>DC/AC {0} liegt außerhalb {1}…{2}</value>
+  </data>
+  <data name="PVS_P7_GELB" xml:space="preserve">
+    <value>{0} kWp über der DC-Eingangsgrenze {1} kW</value>
+  </data>
+  <data name="PVS_P8_GELB" xml:space="preserve">
+    <value>Modulsumme {0} weicht von „Anzahl Module" {1} ab</value>
+  </data>
+  <data name="PVS_WERTE_FEHLEN" xml:space="preserve">
+    <value>Werte fehlen: {0}</value>
+  </data>
+  <data name="PVS_FEHLT_MODUL" xml:space="preserve">
+    <value>das Modul der Anlage</value>
+  </data>
+  <data name="PVS_FEHLT_REIHE" xml:space="preserve">
+    <value>Module in Reihe</value>
+  </data>
+  <data name="PVS_FEHLT_GERAET" xml:space="preserve">
+    <value>der Wechselrichter</value>
+  </data>
+  <data name="PVS_FEHLT_UOC" xml:space="preserve">
+    <value>Leerlaufspannung oder beta_OC des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_UMPP" xml:space="preserve">
+    <value>MPP-Spannung oder beta_OC des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_ISC" xml:space="preserve">
+    <value>Kurzschlussstrom oder alpha_SC des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_P_AC" xml:space="preserve">
+    <value>AC-Nennleistung des Geräts</value>
+  </data>
+  <data name="PVS_FEHLT_MPPT" xml:space="preserve">
+    <value>Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem</value>
+  </data>
+  <data name="PVS_KEIN_GERAET" xml:space="preserve">
+    <value>Kein Wechselrichter zugeordnet</value>
+  </data>
+  <data name="PVS_OHNE_GRENZE" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="PVS_NAEHERUNG_MPP" xml:space="preserve">
+    <value>Für das MPP-Fenster wird beta_OC eingesetzt; der Katalog führt keinen eigenen Temperaturkoeffizienten der MPP-Spannung. Der Fehler liegt bei wenigen Prozent und auf der sicheren Seite.</value>
+  </data>
+  <data name="PVS_ABSCHNITT" xml:space="preserve">
+    <value>Wechselrichter und Stränge</value>
+  </data>
+  <data name="PVS_WAHL" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="PVS_OPT_VEREINFACHT" xml:space="preserve">
+    <value>vereinfacht — Pauschalen ohne Wechselrichter</value>
+  </data>
+  <data name="PVS_OPT_KATALOG" xml:space="preserve">
+    <value>mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping</value>
+  </data>
+  <data name="PVS_SPERRE_OHNE_STRANG" xml:space="preserve">
+    <value>Es ist noch kein Strang zugeordnet.</value>
+  </data>
+  <data name="PVS_HINWEIS_S3" xml:space="preserve">
+    <value>Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage vereinfacht.</value>
+  </data>
+  <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
+    <value>Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping.</value>
+  </data>
+  <data name="PVS_HINWEIS_OHNE_STRANG" xml:space="preserve">
+    <value>Kein Wechselrichter zugeordnet — legen Sie einen Strang an.</value>
+  </data>
+  <data name="PVS_SP_RANG" xml:space="preserve">
+    <value>Rang</value>
+  </data>
+  <data name="PVS_SP_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="PVS_SP_WECHSELRICHTER" xml:space="preserve">
+    <value>Wechselrichter</value>
+  </data>
+  <data name="PVS_SP_GERAET" xml:space="preserve">
+    <value>Gerät</value>
+  </data>
+  <data name="PVS_SP_MPPT" xml:space="preserve">
+    <value>MPPT</value>
+  </data>
+  <data name="PVS_SP_REIHE" xml:space="preserve">
+    <value>Module in Reihe</value>
+  </data>
+  <data name="PVS_SP_PARALLEL" xml:space="preserve">
+    <value>Stränge parallel</value>
+  </data>
+  <data name="PVS_SP_NEIGUNG" xml:space="preserve">
+    <value>Neigung [°]</value>
+  </data>
+  <data name="PVS_SP_AZIMUT" xml:space="preserve">
+    <value>Azimut [°]</value>
+  </data>
+  <data name="PVS_KEIN_GERAET_WAHL" xml:space="preserve">
+    <value>(kein Gerät)</value>
+  </data>
+  <data name="PVS_FILTER_HERSTELLER" xml:space="preserve">
+    <value>Filtern nach Hersteller:</value>
+  </data>
+  <data name="PVS_BTN_ANLEGEN" xml:space="preserve">
+    <value>Strang anlegen</value>
+  </data>
+  <data name="PVS_BTN_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="PVS_BTN_ANLAGE" xml:space="preserve">
+    <value>Wechselrichter der Anlage…</value>
+  </data>
+  <data name="PVS_ANZAHL_ABGELEITET" xml:space="preserve">
+    <value>aus der Strangtabelle</value>
+  </data>
+  <data name="PVS_ZEILE_EINFACH" xml:space="preserve">
+    <value>Einfach: isotrope Einstrahlung, linearer Temperaturgang. Der Wechselrichter rechnet in beiden Modellen.</value>
+  </data>
+  <data name="PVS_ZEILE_ERWEITERT" xml:space="preserve">
+    <value>Erweitert: anisotrope Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld. Der Wechselrichter rechnet in beiden Modellen.</value>
+  </data>
 </root>

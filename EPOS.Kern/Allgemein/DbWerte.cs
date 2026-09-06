@@ -2114,6 +2114,45 @@ namespace WindowsFormsApplication1
         /// <summary>Von Hand gepflegter Katalogsatz (Verwaltung, Konzept 5.3).</summary>
         public const string WR_HERKUNFT_HAND = "HAND";
 
+        // =====================================================================
+        // Der SICHTBARE Wechselrichterweg, Stufe S2
+        //   (Anwenderwunsch W6-E-3 vom 06.09.2026, Konzept Wechselrichter 7.1)
+        //   Persistenzwerte der Spalte Tab_Energieanlagen.PV_Wechselrichterweg,
+        //   eingefroren (Drei-Schichten-Regel).
+        // =====================================================================
+
+        /// <summary>
+        /// Wechselrichterweg einer PV-Anlage: <b>vereinfacht</b> — Pauschalen ohne
+        /// Wechselrichter.
+        ///
+        /// <para><b>Auch NULL bedeutet vereinfacht</b>, und das ist keine
+        /// Bequemlichkeit, sondern die Zusage der Stufe S2: Jede Bestandsanlage rechnet
+        /// nach der Migration bitgleich weiter. Es gilt der Wirkungsgrad 0,95 bzw. der
+        /// gepflegte <c>PV_WrWirkungsgrad</c>, dazu <c>PV_Systemverluste</c> — und im
+        /// Modell ERWEITERT die fünf Anlagenspalten aus Migrationsschritt 64.</para>
+        ///
+        /// <para>Der Wert wird geschrieben, sobald der Anwender die Wahl EINMAL
+        /// getroffen hat; NULL heisst „nie gewählt". Beides rechnet gleich — der
+        /// Unterschied ist allein, ob die Maske eine Entscheidung anzeigen kann.</para>
+        /// </summary>
+        public const string PV_WR_WEG_VEREINFACHT = "PV_WR_WEG_VEREINFACHT";
+
+        /// <summary>
+        /// Wechselrichterweg einer PV-Anlage: <b>mit Wechselrichter</b> — Katalog,
+        /// Stränge, Kennlinie, Clipping (Konzept 4).
+        ///
+        /// <para><b>Der Wert allein rechnet nicht.</b> Die Vorrangregel aus Konzept 3.5
+        /// verlangt ZWEI Bedingungen: diesen Schalter UND mindestens eine Strangzeile
+        /// mit <c>ID_Wechselrichter</c>. „Zwei Bedingungen statt einer machen die
+        /// Zusage stärker, nicht schwächer" (Konzept 7.1).</para>
+        ///
+        /// <para><b>In Stufe S2 rechnet er noch gar nicht</b> — <c>SimulationPV</c>
+        /// liest die Spalte nicht; der Rechenweg folgt mit S3. Die Maske sagt das
+        /// ausdrücklich (Ressource <c>PVS_HINWEIS_S3</c>), damit sie nichts verspricht,
+        /// was der Kern noch nicht tut.</para>
+        /// </summary>
+        public const string PV_WR_WEG_KATALOG = "KATALOG";
+
         /// <summary>
         /// Referenzjahr für die Zeitbasis der Klimadatenreihe (Befund B1, Paket A des
         /// PV-Ertragsmodell-Konzepts). Es bestimmt AUSSCHLIESSLICH die beiden
