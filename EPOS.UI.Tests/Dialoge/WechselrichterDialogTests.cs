@@ -12,10 +12,13 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Die zwei Wechselrichtermasken der Stufe S1 (Anwenderentscheid <b>W6‑E‑2</b> vom
-/// 06.09.2026, <c>Konzept_Wechselrichter_EPOS-Plan.md</c>):
-/// die VERWALTUNG als dritte Ausprägung von <see cref="ModulKatalogDialog"/> und der
-/// CEC-IMPORT.
+/// Die Wechselrichter-VERWALTUNG (Anwenderentscheid <b>W6‑E‑2</b> vom 06.09.2026,
+/// <c>Konzept_Wechselrichter_EPOS-Plan.md</c>) — die dritte Ausprägung von
+/// <see cref="ModulKatalogDialog"/>.
+///
+/// <para>Der IMPORT stand bis W6‑O‑1 mit in dieser Klasse. Seit dem einen Importwirt
+/// (<c>ModulImportDialog</c>, zwei Ausprägungen) stehen seine Fälle in
+/// <c>ModulImportDialogTests</c> neben denen des Modulimports.</para>
 ///
 /// <para><b>Ohne Vorläufer, also ohne Feldkarte.</b> Die zehn anderen
 /// Katalogverwaltungen des Hauses gleichen ihre Felder gegen die vermessene
@@ -303,215 +306,9 @@ public class WechselrichterDialogTests : BunitContext
     }
 
     // =================================================================================
-    //  Der IMPORT
+    //  Der IMPORT steht seit W6-O-1 (06.09.2026) in ModulImportDialogTests: Aus
+    //  PvModulImportDialog und WechselrichterImportDialog ist EIN Wirt geworden
+    //  (ModulImportDialog, zwei Auspraegungen), und die Faelle beider Masken stehen
+    //  jetzt beieinander - samt dem OND-Zweig, der mit demselben Schritt kam.
     // =================================================================================
-
-    private static CecWechselrichter Geraet(string name, double paco, double pdco = 0)
-    {
-        return new CecWechselrichter
-        {
-            Name = name,
-            Paco = paco,
-            Pdco = pdco > 0 ? pdco : paco * 1.05,
-            Pso = paco * 0.006,
-            Vdco = 340,
-            C0 = -8.0e-06,
-            Pnt = 0.1,
-            Vdcmax = 600,
-            Idcmax = 12,
-            MpptLow = 100,
-            MpptHigh = 480,
-            CecDatum = "2024-01-01"
-        };
-    }
-
-    private static IReadOnlyList<CecWechselrichter> Liste() => new[]
-    {
-        Geraet("Alpha AG: A-3000", 3000),
-        Geraet("Alpha AG: A-5000", 5000),
-        Geraet("Beta GmbH: B-10000", 10000)
-    };
-
-    private IRenderedComponent<WechselrichterImportDialog> Import(
-        Func<CecWechselrichter, Task<PvVorpruefung>>? vorpruefen = null,
-        Func<CecWechselrichter, string, Task<bool>>? anlegen = null,
-        Action<bool>? geschlossen = null)
-    {
-        return Render<WechselrichterImportDialog>(p => p
-            .Add(x => x.Laden, (_, __) => Task.FromResult(
-                new WrLeseErgebnis(true, Liste(), new CecFortschritt("CEC_MSG_GELADEN", "3"))))
-            .Add(x => x.Vorpruefen, vorpruefen ?? (_ => Task.FromResult(
-                new PvVorpruefung(ImportBefund.Neu, null, null))))
-            .Add(x => x.Anlegen, anlegen ?? ((_, __) => Task.FromResult(true)))
-            .Add(x => x.Ueberschreiben, (_, __) => Task.FromResult(true))
-            .Add(x => x.Meldungstext, f => f.Schluessel)
-            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
-    }
-
-    /// <summary>
-    /// Vor dem Laden ist das Raster leer; „CEC-Liste laden" füllt es und meldet die
-    /// Zahl der Treffer.
-    /// </summary>
-    [Fact]
-    public void Der_Import_laedt_die_Liste_in_das_Raster()
-    {
-        IRenderedComponent<WechselrichterImportDialog> cut = Import();
-
-        Assert.Equal("Wechselrichter einlesen (CEC)", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Equal(0, cut.Instance.SichtbareZeilen);
-
-        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
-
-        Assert.Equal(3, cut.Instance.SichtbareZeilen);
-    }
-
-    /// <summary>
-    /// Die Filterleiste: Herstellerwahl und Suchmuster engen ein, „Zurücksetzen" gibt
-    /// die Liste wieder frei. Der erste Eintrag der Herstellerliste ist ein
-    /// STEUERWERT und kein Anzeigetext, gegen den verglichen wird.
-    /// </summary>
-    [Fact]
-    public void Der_Import_filtert_nach_Hersteller_und_Suchmuster()
-    {
-        IRenderedComponent<WechselrichterImportDialog> cut = Import();
-        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
-
-        var hersteller = cut.FindAll(".epos-pvimport-filter select")[0];
-        Assert.Equal(3, hersteller.QuerySelectorAll("option").Count);   // alle + zwei Firmen
-
-        hersteller.Change("1");
-        Assert.Equal(2, cut.Instance.SichtbareZeilen);
-
-        cut.FindAll(".epos-pvimport-filter input[type=text]")[0].Input("*10000*");
-        Assert.Equal(0, cut.Instance.SichtbareZeilen);
-
-        cut.FindAll(".epos-pvimport-filter .epos-knopf").Last().Click();
-        Assert.Equal(3, cut.Instance.SichtbareZeilen);
-    }
-
-    /// <summary>
-    /// Die Wahl einer Zeile füllt die Detailfelder — und die Kennlinie steht als
-    /// gerechnete Stützstelle da, nicht als Rohwert der Datei.
-    /// </summary>
-    [Fact]
-    public void Eine_gewaehlte_Zeile_zeigt_ihre_gerechnete_Kennlinie()
-    {
-        IRenderedComponent<WechselrichterImportDialog> cut = Import();
-        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
-
-        cut.FindAll(".epos-anlagenwahl")[0].Click();
-        Assert.NotNull(cut.Instance.Gewaehlt);
-        Assert.Equal("Alpha AG: A-3000", cut.Instance.Gewaehlt!.Name);
-
-        // Der Pruefwert aus Konzept 3.3.3: eta bei Nennlast ist Paco/Pdco.
-        double?[] etas = cut.Instance.Gewaehlt.Stuetzstellen();
-        Assert.Equal(3000.0 / (3000.0 * 1.05), etas[5]!.Value, 12);
-    }
-
-    /// <summary>
-    /// „Übernehmen" ohne Auswahl meldet sich, statt stillzuschweigen; mit Auswahl
-    /// geht der Satz an den Schreibweg.
-    /// </summary>
-    [Fact]
-    public void Uebernehmen_ohne_Auswahl_meldet_sich()
-    {
-        string? angelegt = null;
-        IRenderedComponent<WechselrichterImportDialog> cut =
-            Import(anlegen: (g, name) => { angelegt = name; return Task.FromResult(true); });
-
-        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
-
-        // Ohne Auswahl ist der Knopf gesperrt - der Weg ueber die Tastatur meldet.
-        Assert.True(cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[0].HasAttribute("disabled"));
-
-        cut.FindAll(".epos-anlagenwahl")[1].Click();
-        cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[0].Click();
-
-        Assert.Equal("Alpha AG: A-5000", angelegt);
-    }
-
-    /// <summary>
-    /// <b>Ein Plausibilitätsfehler SPERRT die Übernahme</b>, eine Warnung fragt
-    /// zurück — dieselbe Zweiteilung wie beim Modulimport.
-    /// </summary>
-    [Fact]
-    public void Ein_Plausibilitaetsfehler_sperrt_die_Uebernahme()
-    {
-        string? angelegt = null;
-        IRenderedComponent<WechselrichterImportDialog> cut = Import(
-            vorpruefen: _ => Task.FromResult(
-                new PvVorpruefung(ImportBefund.Neu, null, null, "Die Kennlinie taugt nicht.", true)),
-            anlegen: (g, name) => { angelegt = name; return Task.FromResult(true); });
-
-        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
-        cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[0].Click();
-
-        Assert.Null(angelegt);
-        Assert.Contains("Die Kennlinie taugt nicht.", cut.Instance.Meldung);
-        Assert.False(cut.Instance.PlausiOffen);
-    }
-
-    /// <summary>Eine Warnung fragt zurück; „Nein" schreibt nichts.</summary>
-    [Fact]
-    public void Eine_Plausibilitaetswarnung_fragt_zurueck()
-    {
-        string? angelegt = null;
-        IRenderedComponent<WechselrichterImportDialog> cut = Import(
-            vorpruefen: _ => Task.FromResult(
-                new PvVorpruefung(ImportBefund.Neu, null, null, "Die MPPT-Zahl fehlt.", false)),
-            anlegen: (g, name) => { angelegt = name; return Task.FromResult(true); });
-
-        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
-        cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[0].Click();
-
-        Assert.True(cut.Instance.PlausiOffen);
-        Assert.Null(angelegt);
-
-        cut.FindAll(".epos-rueckfrage .epos-knopf").Last().Click();   // Nein
-        Assert.False(cut.Instance.PlausiOffen);
-        Assert.Null(angelegt);
-    }
-
-    /// <summary>
-    /// <b>Der Dublettenweg</b>: Ein bereits vorhandenes Gerät führt in den
-    /// Konfliktdialog — dieselbe Überlagerung wie beim Modulimport und bei den vier
-    /// VDI-Importen.
-    /// </summary>
-    [Fact]
-    public void Eine_Dublette_fuehrt_in_den_Konfliktdialog()
-    {
-        var pruefung = new ImportPruefung
-        {
-            Kandidat = new ImportKandidat { Name = "Alpha AG: A-3000" },
-            Befund = ImportBefund.NameVorhanden,
-            Vorhanden = new KatalogSatz { Id = 7, Name = "Alpha AG: A-3000" }
-        };
-
-        IRenderedComponent<WechselrichterImportDialog> cut = Import(
-            vorpruefen: _ => Task.FromResult(new PvVorpruefung(
-                ImportBefund.NameVorhanden, new[] { pruefung }, new[] { "alpha ag: a-3000" })));
-
-        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
-        cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[0].Click();
-
-        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
-    }
-
-    /// <summary>
-    /// „Abbrechen" meldet, dass nichts geschrieben wurde — der Rückgabewert, an dem
-    /// die Hülle ihr Fenster schließt.
-    /// </summary>
-    [Fact]
-    public void Schliessen_meldet_ob_geschrieben_wurde()
-    {
-        bool? ergebnis = null;
-        IRenderedComponent<WechselrichterImportDialog> cut = Import(geschlossen: b => ergebnis = b);
-
-        cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[1].Click();
-
-        Assert.False(ergebnis);
-    }
 }

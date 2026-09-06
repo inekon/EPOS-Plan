@@ -14,7 +14,7 @@ namespace EPOS.UI.Bausteine
     /// erledigt das im Steuerelement; ein <see cref="EPOS.UI.Standards.Raster{TZeile}"/>
     /// kennt keine Markierung und kann es nicht. Diese Regel steht deshalb
     /// einmal hier statt zweimal in <c>KatalogImportDialog</c> und
-    /// <c>PvModulImportDialog</c>.</para>
+    /// <c>ModulImportDialog</c> (bis W6-O-1: <c>PvModulImportDialog</c>).</para>
     ///
     /// <para><b>Sie zaehlt Indizes, keine Zeilen.</b> Der Index ist der Platz in
     /// der GEFILTERTEN Anzeigeliste; welcher Quellsatz dahintersteht, weiss der

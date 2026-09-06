@@ -135,18 +135,20 @@ namespace WindowsFormsApplication1
                     return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Solarkollektoren);
 
                 // --- Masken mit Argument ---------------------------------------------
-                // iU9-W13.3: Der PV-Modulimport ist die Razor-Komponente
-                // PvModulImportDialog. Das Argument sagt, mit welcher Quelle sie
-                // aufmacht ("CEC" bzw. "PAN"); bis dahin oeffneten die beiden
-                // Menuepunkte dieselbe Maske im SELBEN Zustand (Befund W13-B51)
-                // und gingen ganz an der Navigation vorbei (B55).
+                // W6-O-1 (06.09.2026): Beide Geraeteimporte sind EINE Razor-Komponente
+                // (ModulImportDialog) mit zwei Auspraegungen. Das Argument sagt, welche
+                // QUELLE hervorgehoben aufmacht ("CEC", "CEC_DATEI", "PAN", "OND"); bis
+                // W13.3 oeffneten die beiden PV-Menuepunkte dieselbe Maske im SELBEN
+                // Zustand (Befund W13-B51) und gingen ganz an der Navigation vorbei (B55).
                 case Masken.PvImport:
-                    return PvModulImportHuelle.Oeffnen(null, TextOder(argumente, 0, "CEC"));
+                    return ModulImportHuelle.Oeffnen(null, ModulImportArt.Photovoltaik,
+                                                     TextOder(argumente, 0, "CEC"));
 
-                // W6-E-2, Stufe S1.5: der CEC-Wechselrichterimport. Ohne Argument -
-                // PVsyst .OND kommt als zweite Quelle erst mit Stufe S2 (Konzept 5.2).
+                // W6-E-2/S1.5 und W6-O-1: der Wechselrichterimport aus CEC (Netz oder
+                // Auslieferungsdatei, W6-O-3) und aus PVsyst .OND (Konzept 5.2).
                 case Masken.WechselrichterImport:
-                    return WechselrichterImportHuelle.Oeffnen(null);
+                    return ModulImportHuelle.Oeffnen(null, ModulImportArt.Wechselrichter,
+                                                     TextOder(argumente, 0, "CEC"));
 
                 // iU9-W12.6: Die Lastspitzenkappung ist die Razor-Komponente
                 // PeakShavingDialog; die Huelle zeigt sie modal. Der Rueckgabewert
