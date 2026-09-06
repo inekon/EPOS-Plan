@@ -17,15 +17,19 @@ namespace Testdatenbankschema
     /// die zwei DELETE-Texte des Schritts 62 aus <c>KlimaWaisenBereinigung</c> — also
     /// aus genau den Quellen, aus denen sich auch
     /// <c>SchemaMigration.Schritt_62_KlimaWaisen</c>,
-    /// <c>Schritt_63_PvAnlagenparameter</c>, <c>Schritt_64_PvModellwahl</c> und
-    /// <c>Schritt_65_Wechselrichterkatalog</c> bedienen (dessen zwei CREATE TABLE stehen
-    /// in <c>WechselrichterSchema</c>). Hier steht keine abgeschriebene DDL.</para>
+    /// <c>Schritt_63_PvAnlagenparameter</c>, <c>Schritt_64_PvModellwahl</c>,
+    /// <c>Schritt_65_Wechselrichterkatalog</c> (dessen zwei CREATE TABLE stehen in
+    /// <c>WechselrichterSchema</c>) und <c>Schritt_66_Strangzuordnung</c> (Tabelle in
+    /// <c>AnlageStrangSchema</c>, Spalte in
+    /// <c>SchemaKatalog.Schritt66_PvWechselrichterweg</c>) bedienen. Hier steht keine
+    /// abgeschriebene DDL.</para>
     ///
     /// <para><b>Idempotent.</b> Eine vorhandene Spalte wird uebergangen, ein zweiter Lauf
     /// aendert nichts mehr. Rueckgabe 0 = Datei steht auf dem Zielstand.</para>
     ///
     /// <para><b>Ergebnisneutral.</b> Die Schritte 63 und 64 legen ausschliesslich Spalten
-    /// an, Schritt 65 zwei LEERE Tabellen, und keiner von ihnen schreibt einen Wert (NULL heisst im Rechenweg genau die bisher fest
+    /// an, Schritt 65 zwei LEERE Tabellen, Schritt 66 eine LEERE Tabelle und eine
+    /// NULL-Spalte, und keiner von ihnen schreibt einen Wert (NULL heisst im Rechenweg genau die bisher fest
     /// verdrahtete Vorbelegung); Schritt 62 loescht nur Zeilen ohne Kopfsatz, die ueber
     /// keine Abfrage des Programms erreichbar sind. Der Referenzlauf muss vor und nach
     /// dem Nachziehen byte-gleiche CSV liefern — das ist die Abnahme.</para>
@@ -39,7 +43,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 65) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 66) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -108,6 +112,17 @@ namespace Testdatenbankschema
             int tabellen = 0;
             foreach (KeyValuePair<string, string> a in WechselrichterSchema.Anweisungen)
                 tabellen += TabelleSicherstellen(a.Key, a.Value, 65, trocken);
+
+            // ---- Schritt 66: die Strangzuordnung und der sichtbare Wechselrichterweg.
+            //      Zwei Quellen, beide im Kern - die TABELLE aus AnlageStrangSchema, die
+            //      SPALTE aus SchemaKatalog.Schritt66_PvWechselrichterweg. DIESELBEN,
+            //      aus denen sich SchemaMigration.Schritt_66_Strangzuordnung bedient.
+            foreach (KeyValuePair<string, string> a in AnlageStrangSchema.Anweisungen)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 66, trocken);
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt66_PvWechselrichterweg)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 66, trocken);
 
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
