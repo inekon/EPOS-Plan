@@ -186,6 +186,13 @@ namespace WindowsFormsApplication1
             };
             WaermepumpeGeraeteCtrl.GeraetedatenFuellen(modell, modell.ID_WP);
 
+            // W6-E-4 (06.09.2026): Die Waermepumpe hat keine Katalogtemperaturen - ihr
+            // "Katalog" sind die Vorlaufstufen der Kennlinien. Die kleinste steht als
+            // Vorschlag im Vorlauffeld, sobald die Detailansicht aufgeht; der Ruecklauf
+            // bleibt leer (fuer ihn gibt es keine eindeutige Regel, siehe
+            // AnlagenTemperaturen.VorlaufAusKennlinien).
+            AnlagenTemperaturen.VorlaufAusKennlinien(modell);
+
             WaermepumpeAnlageDaten daten = WaermepumpeAnlageHuelle.AusModell(modell);
             zuModell[daten] = modell;
             return daten;

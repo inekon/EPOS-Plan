@@ -523,10 +523,14 @@ namespace WindowsFormsApplication1
                 ID_Projekt = projektId,
                 ID_Type = idType,
                 Bezeichner = stamm.m_szBezeichner,
-                Vorlauf = stamm.m_Vorlauf,
-                Ruecklauf = stamm.m_Ruecklauf,
                 ID_Carrier = traeger.CarrierId
             };
+
+            // W6-E-4 (06.09.2026): Vor- und Ruecklauf kommen aus dem Katalogsatz - und
+            // zwar aus der EINEN Wahrheit im Kern statt aus einer dritten Abschrift
+            // "Vorlauf = stamm.m_Vorlauf". Sie setzt das Paar nur, wenn der Feldsatz
+            // noch keines traegt; ein frisches Modell traegt 0/0.
+            AnlagenTemperaturen.AusStammsatz(model, stammId);
 
             // Anders als beim Heizkessel prueft der Vorlaeufer hier NUR m_ID_Projekt > 0
             // und nicht zusaetzlich den Assistentenbetrieb - im Assistenten ist die

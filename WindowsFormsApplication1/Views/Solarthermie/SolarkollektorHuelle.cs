@@ -271,10 +271,14 @@ namespace WindowsFormsApplication1
                 ID_Type = WizardItemClass.SOLAR_TYP,
                 Kollektormodulanzahl = 1,
                 m_Azimut = 0,
-                m_Neigung = 0,
-                Vorlauf = (int)stamm.m_Vorlauf,
-                Ruecklauf = (int)stamm.m_Ruecklauf
+                m_Neigung = 0
             };
+
+            // W6-E-4 (06.09.2026): Vor- und Ruecklauf kommen aus dem Katalogsatz - aus
+            // der EINEN Wahrheit im Kern statt aus einer dritten Abschrift
+            // "Vorlauf = (int)stamm.m_Vorlauf". Sie setzt das Paar nur, wenn der
+            // Feldsatz noch keines traegt; ein frisches Modell traegt 0/0.
+            AnlagenTemperaturen.AusStammsatz(model, stammId);
 
             if (!wizard && projektId > 0)
             {
