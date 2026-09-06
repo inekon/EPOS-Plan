@@ -15041,4 +15041,43 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="KI_REG_BEISPIEL_KOSTENPOSITION_SETZEN" xml:space="preserve">
     <value>Setze bei Musterhaus die Kostenposition Wärmepumpe auf 45000.</value>
   </data>
+  <data name="PARV_AUFKLAPPER" xml:space="preserve">
+    <value>Alle Parameter und ihre Verwendung anzeigen</value>
+  </data>
+  <data name="PARV_SPALTE_PARAMETER" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="PARV_SPALTE_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="PARV_SPALTE_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="PARV_VERW_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="PARV_VERW_WIRTSCHAFT" xml:space="preserve">
+    <value>Wirtschaftlichkeit</value>
+  </data>
+  <data name="PARV_VERW_BERICHT" xml:space="preserve">
+    <value>Bericht</value>
+  </data>
+  <data name="PARV_VERW_DIALOG" xml:space="preserve">
+    <value>nur Anzeige</value>
+  </data>
+  <data name="PARV_VERW_KEINE" xml:space="preserve">
+    <value>nicht verwendet</value>
+  </data>
+  <data name="PARV_LBL_READONLY" xml:space="preserve">
+    <value>Auslieferungskatalog:</value>
+  </data>
+  <data name="PARV_LBL_MAXPTHERM" xml:space="preserve">
+    <value>max. therm. Leistung:</value>
+  </data>
+  <data name="PARV_LBL_HOEHE" xml:space="preserve">
+    <value>Höhe:</value>
+  </data>
+  <data name="PARV_LBL_GEWICHT" xml:space="preserve">
+    <value>Gewicht:</value>
+  </data>
 </root>
