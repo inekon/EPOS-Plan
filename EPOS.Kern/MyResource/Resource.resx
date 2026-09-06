@@ -13058,12 +13058,6 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_TITEL" xml:space="preserve">
     <value>Eingabe der Gebäudedaten</value>
   </data>
-  <data name="WBX_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Einlesen/Bearbeiten..</value>
-  </data>
-  <data name="WBX_BTN_LOESCHEN" xml:space="preserve">
-    <value>DB Ganglinie löschen</value>
-  </data>
   <data name="WBX_KOPFBAND" xml:space="preserve">
     <value>Wärmebedarfsdaten (Ganglinien)</value>
   </data>

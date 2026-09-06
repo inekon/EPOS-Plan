@@ -13051,12 +13051,6 @@ Please check all entries!</value>
   <data name="GEB_TITEL" xml:space="preserve">
     <value>Entering the building data</value>
   </data>
-  <data name="WBX_BTN_BEARBEITEN" xml:space="preserve">
-    <value>Reading/Editing..</value>
-  </data>
-  <data name="WBX_BTN_LOESCHEN" xml:space="preserve">
-    <value>Delete DB curve</value>
-  </data>
   <data name="WBX_KOPFBAND" xml:space="preserve">
     <value>Heat requirement data (curves)</value>
   </data>
