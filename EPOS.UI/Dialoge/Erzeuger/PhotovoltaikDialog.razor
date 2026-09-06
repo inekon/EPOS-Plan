@@ -133,6 +133,14 @@
                 </div>
                 @* Paket A/B des PV-Ertragsmodells (Merge 5): Rechenmodell, Wechselrichter-
                    Wirkungsgrad, Systemverluste und die Wechselrichterdaten (Ueberlagerung). *@
+                @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER
+                   und nicht oben im Kopf, weil genau dieser Abschnitt den Rechenweg
+                   parametriert - Rechenmodell, Wechselrichter, Systemverluste. Der
+                   Fensterknopf oben rechts bleibt, was er ist. *@
+                <div class="epos-leiste">
+                    <InfoKnopf Schluessel="Form_PV.Berechnung"
+                               StandardKurztext="Berechnungsweg Photovoltaik" />
+                </div>
                 <PvModellFelder Zeile="@_projektZeile" KwpAnlage="@KwpDer(_projektZeile)"
                                 Geaendert="@(() => Uebernehmen?.Invoke(_projektZeile!))" />
             </KindInhalt>
