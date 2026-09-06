@@ -307,10 +307,14 @@ public class ParameteruebersichtTests : BunitContext
             .Add(x => x.Uebersicht, _ => Zeilen(anlage)));
     }
 
-    /// <summary>Die zwei Modulkataloge tragen den Aufklapper.</summary>
+    /// <summary>
+    /// Die drei Modulkataloge tragen den Aufklapper — seit W6-E-2 (06.09.2026)
+    /// auch die Wechselrichterverwaltung.
+    /// </summary>
     [Theory]
     [InlineData(ModulKatalogArt.Photovoltaik, Anlagenart.Photovoltaik)]
     [InlineData(ModulKatalogArt.Stromspeicher, Anlagenart.Stromspeicher)]
+    [InlineData(ModulKatalogArt.Wechselrichter, Anlagenart.Wechselrichter)]
     public void Jeder_Modulkatalog_traegt_die_Uebersicht(ModulKatalogArt art, Anlagenart anlage)
     {
         IRenderedComponent<ModulKatalogDialog> k = Modulkatalog(art, anlage);

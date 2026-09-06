@@ -195,6 +195,9 @@ public static class Seitenschluessel
     /// <summary>Stammdaten Photovoltaik (Razor seit W14a.1).</summary>
     public const string PvAdmin = WindowsFormsApplication1.Masken.PvAdmin;
 
+    /// <summary>Stammdaten Wechselrichter (Razor seit W6-E-2 / Stufe S1.4).</summary>
+    public const string WechselrichterAdmin = WindowsFormsApplication1.Masken.WechselrichterAdmin;
+
     /// <summary>Herstellerdaten Heizkessel einlesen (Razor seit W13.1).</summary>
     public const string HeizkesselImport = WindowsFormsApplication1.Masken.HeizkesselImport;
 
@@ -215,6 +218,9 @@ public static class Seitenschluessel
     /// <c>"PAN"</c> (Razor seit W13.3).
     /// </summary>
     public const string PvImport = WindowsFormsApplication1.Masken.PvImport;
+
+    /// <summary>Herstellerdaten Wechselrichter einlesen, CEC (Razor seit W6-E-2 / Stufe S1.5).</summary>
+    public const string WechselrichterImport = WindowsFormsApplication1.Masken.WechselrichterImport;
 
     /// <summary>„Speichern unter…" - dupliziert ein Projekt (Razor seit W15a.4).</summary>
     public const string ProjektSpeichernUnter = WindowsFormsApplication1.Masken.ProjektSpeichernUnter;
@@ -314,7 +320,8 @@ public static class Seitenschluessel
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin,
         WpImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,
-        SolarkollektorenImport, PvImport, ProjektSpeichernUnter,
+        SolarkollektorenImport, PvImport, WechselrichterAdmin, WechselrichterImport,
+        ProjektSpeichernUnter,
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,

@@ -122,6 +122,34 @@ namespace WindowsFormsApplication1
         public const string TAB_PV = "Tab_PV";
 
         /// <summary>
+        /// Der WECHSELRICHTERKATALOG (Migrationsschritt 65, Konzept Wechselrichter 3.1,
+        /// Anwenderentscheid W6-E-2 vom 06.09.2026).
+        ///
+        /// <para>Er ist die einzige Geraetefamilie, die es bis dahin nicht als Katalog
+        /// gab: Die Wechselrichterdaten standen als fuenf Spalten an
+        /// <c>Tab_Energieanlagen</c> (Migrationsschritt 64) und hatten damit weder
+        /// Herkunft noch Pruefung. Die DDL steht in
+        /// <see cref="WechselrichterSchema"/> — EINE Quelle fuer die Migration und fuer
+        /// <c>Werkzeuge/Testdatenbankschema</c>.</para>
+        /// </summary>
+        public const string TAB_WECHSELRICHTER_STAMM = "Tab_Wechselrichter_STAMM";
+
+        /// <summary>
+        /// Die PROJEKTKOPIE des Wechselrichterkatalogs
+        /// (<c>WechselrichterCtrl.CopyFromStamm</c>) — spaltengleich zu
+        /// <see cref="TAB_WECHSELRICHTER_STAMM"/>, zusaetzlich <c>ID_Projekt</c>, ohne
+        /// <c>ReadOnly</c>. Genau das Verhaeltnis <see cref="TAB_PV_STAMM"/> ↔
+        /// <see cref="TAB_PV"/>.
+        ///
+        /// <para><b>Warum ueberhaupt eine Kopie</b> (Konzept 3.2): „Projekte KOPIEREN
+        /// Katalogsaetze, alle persistierten Verweise zeigen auf die Projektkopie, nie
+        /// auf die <c>_STAMM</c>-Tabelle" (<c>KatalogRegistry</c>). Ein Projekt, das vor
+        /// drei Jahren gerechnet wurde, rechnet damit heute noch mit den Geraetedaten
+        /// von damals.</para>
+        /// </summary>
+        public const string TAB_WECHSELRICHTER = "Tab_Wechselrichter";
+
+        /// <summary>
         /// Die gespeicherte Access-Abfrage „Projektwert vor Katalogwert" für Heiz- und
         /// Brennwert (vier Lesestellen: <c>KostenEmissionRechner</c>,
         /// <c>WirtschaftlichkeitCtrl</c>, <c>UcBkKosten</c>, <c>EnergieMengen</c>).

@@ -15094,4 +15094,250 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="WPS_HINWEIS_MODULKOSTEN_LEER" xml:space="preserve">
     <value>no planned value from the manufacturer import</value>
   </data>
+  <data name="WRK_TITEL_VERWALTUNG" xml:space="preserve">
+    <value>Inverter management</value>
+  </data>
+  <data name="WRK_LISTE" xml:space="preserve">
+    <value>Inverters</value>
+  </data>
+  <data name="WRK_GRUPPE_GERAET" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="WRK_GRUPPE_EINGANG" xml:space="preserve">
+    <value>DC input</value>
+  </data>
+  <data name="WRK_GRUPPE_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Efficiency</value>
+  </data>
+  <data name="WRK_MSG_AUSWAHL" xml:space="preserve">
+    <value>Please select an inverter first!</value>
+  </data>
+  <data name="WRK_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="WRK_LBL_FIRMA" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="WRK_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="WRK_LBL_P_AC_NENN" xml:space="preserve">
+    <value>AC nominal power:</value>
+  </data>
+  <data name="WRK_LBL_S_AC_MAX" xml:space="preserve">
+    <value>max. AC apparent power:</value>
+  </data>
+  <data name="WRK_LBL_P_DC_MAX" xml:space="preserve">
+    <value>max. DC power:</value>
+  </data>
+  <data name="WRK_LBL_KOSTEN" xml:space="preserve">
+    <value>Device price:</value>
+  </data>
+  <data name="WRK_LBL_HERKUNFT" xml:space="preserve">
+    <value>Origin:</value>
+  </data>
+  <data name="WRK_LBL_U_MPP_MIN" xml:space="preserve">
+    <value>MPP window from:</value>
+  </data>
+  <data name="WRK_LBL_U_MPP_MAX" xml:space="preserve">
+    <value>MPP window to:</value>
+  </data>
+  <data name="WRK_LBL_U_DC_MAX" xml:space="preserve">
+    <value>max. DC voltage:</value>
+  </data>
+  <data name="WRK_LBL_U_START" xml:space="preserve">
+    <value>Start-up voltage:</value>
+  </data>
+  <data name="WRK_LBL_I_DC_MAX" xml:space="preserve">
+    <value>max. DC current per MPPT:</value>
+  </data>
+  <data name="WRK_LBL_ANZAHL_MPPT" xml:space="preserve">
+    <value>Number of MPPTs:</value>
+  </data>
+  <data name="WRK_LBL_STRAENGE_JE_MPPT" xml:space="preserve">
+    <value>Strings per MPPT:</value>
+  </data>
+  <data name="WRK_LBL_ETA05" xml:space="preserve">
+    <value>Efficiency at 5 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA10" xml:space="preserve">
+    <value>Efficiency at 10 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA20" xml:space="preserve">
+    <value>Efficiency at 20 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA30" xml:space="preserve">
+    <value>Efficiency at 30 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA50" xml:space="preserve">
+    <value>Efficiency at 50 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA100" xml:space="preserve">
+    <value>Efficiency at 100 %:</value>
+  </data>
+  <data name="WRK_LBL_ETA_EURO" xml:space="preserve">
+    <value>European efficiency:</value>
+  </data>
+  <data name="WRK_LBL_ETA_MAX" xml:space="preserve">
+    <value>Maximum efficiency:</value>
+  </data>
+  <data name="WRK_LBL_P_STANDBY" xml:space="preserve">
+    <value>Standby consumption:</value>
+  </data>
+  <data name="WRK_LBL_P_NACHT" xml:space="preserve">
+    <value>Night-time consumption:</value>
+  </data>
+  <data name="WRK_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This master record is read-only and cannot be saved.</value>
+  </data>
+  <data name="WRK_MSG_SCHREIBGESCHUETZT_LOESCHEN" xml:space="preserve">
+    <value>This master record is read-only and cannot be deleted.</value>
+  </data>
+  <data name="WRK_TITEL_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Read-only</value>
+  </data>
+  <data name="WRK_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>Another catalogue entry is already named "{0}". Please choose a unique name.</value>
+  </data>
+  <data name="WRK_TITEL_NAME_VERGEBEN" xml:space="preserve">
+    <value>Name already in use</value>
+  </data>
+  <data name="WRK_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>The catalogue entry "{0}" was not found.</value>
+  </data>
+  <data name="WRK_TITEL_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="WRK_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>The name "{0}" occurs {1} times in the catalogue. It is therefore impossible to tell which entry is meant - nothing was changed.</value>
+  </data>
+  <data name="WRK_TITEL_NAME_MEHRDEUTIG" xml:space="preserve">
+    <value>Ambiguous name</value>
+  </data>
+  <data name="WRK_MSG_STAMM_FEHLT" xml:space="preserve">
+    <value>The inverter master record was not found (ID {0}).</value>
+  </data>
+  <data name="WRK_PLAUSI_KEIN_SATZ" xml:space="preserve">
+    <value>No inverter record supplied.</value>
+  </data>
+  <data name="WRK_PLAUSI_P_AC_FEHLT" xml:space="preserve">
+    <value>The AC nominal power is missing or not positive - it is the only mandatory field.</value>
+  </data>
+  <data name="WRK_PLAUSI_P_AC_BEREICH" xml:space="preserve">
+    <value>The AC nominal power {0} kW is outside the plausible range {1} to {2} kW.</value>
+  </data>
+  <data name="WRK_PLAUSI_PACO_UEBER_PDCO" xml:space="preserve">
+    <value>The AC nominal power ({0} W) is greater than the DC power at nominal load ({1} W).</value>
+  </data>
+  <data name="WRK_PLAUSI_S_AC_KLEINER" xml:space="preserve">
+    <value>The max. AC apparent power ({0} kVA) is smaller than the AC nominal active power ({1} kW).</value>
+  </data>
+  <data name="WRK_PLAUSI_P_DC_KLEINER" xml:space="preserve">
+    <value>The max. DC power ({0} kW) is smaller than the AC nominal power ({1} kW).</value>
+  </data>
+  <data name="WRK_PLAUSI_DCAC_GROSS" xml:space="preserve">
+    <value>The device DC/AC ratio is {0} and therefore greater than {1}.</value>
+  </data>
+  <data name="WRK_PLAUSI_SPANNUNG_NEGATIV" xml:space="preserve">
+    <value>{0} is negative ({1} V).</value>
+  </data>
+  <data name="WRK_PLAUSI_MPP_FENSTER" xml:space="preserve">
+    <value>The MPP window is empty: the lower limit {0} V is not below the upper limit {1} V.</value>
+  </data>
+  <data name="WRK_PLAUSI_MPP_UEBER_UDC" xml:space="preserve">
+    <value>The upper MPP limit ({0} V) exceeds the max. DC voltage ({1} V).</value>
+  </data>
+  <data name="WRK_PLAUSI_START_UEBER_MPP" xml:space="preserve">
+    <value>The start-up voltage ({0} V) exceeds the upper MPP limit ({1} V).</value>
+  </data>
+  <data name="WRK_PLAUSI_I_DC_NEGATIV" xml:space="preserve">
+    <value>The max. DC current per MPPT is negative ({0} A).</value>
+  </data>
+  <data name="WRK_PLAUSI_MPPT_KLEINER_EINS" xml:space="preserve">
+    <value>The number of MPPTs is smaller than 1 ({0}).</value>
+  </data>
+  <data name="WRK_PLAUSI_STRAENGE_KLEINER_EINS" xml:space="preserve">
+    <value>The number of strings per MPPT is smaller than 1 ({0}).</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_BEREICH" xml:space="preserve">
+    <value>{0} is outside the range (0; 1]: {1}.</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_KLEIN" xml:space="preserve">
+    <value>{0} is {1} and thus below the plausible minimum {2}.</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_MONOTON" xml:space="preserve">
+    <value>The curve falls in the part-load branch: {0} = {1}, but {2} = {3}.</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_EURO_BEREICH" xml:space="preserve">
+    <value>{0} is outside the range (0; 1]: {1}.</value>
+  </data>
+  <data name="WRK_PLAUSI_ETA_EURO_ABWEICHUNG" xml:space="preserve">
+    <value>The stated European efficiency ({0}) differs from the one computed from the support points ({1}).</value>
+  </data>
+  <data name="WRK_PLAUSI_STANDBY_NEGATIV" xml:space="preserve">
+    <value>{0} is negative ({1} W).</value>
+  </data>
+  <data name="WRK_PLAUSI_KOSTEN_NEGATIV" xml:space="preserve">
+    <value>The device price is negative ({0} EUR).</value>
+  </data>
+  <data name="WRK_PLAUSI_KOPF_FEHLER" xml:space="preserve">
+    <value>Errors:</value>
+  </data>
+  <data name="WRK_PLAUSI_KOPF_HINWEIS" xml:space="preserve">
+    <value>Notes:</value>
+  </data>
+  <data name="WRK_IMP_TITEL" xml:space="preserve">
+    <value>Import inverters (CEC)</value>
+  </data>
+  <data name="WRK_IMP_KOPFBAND" xml:space="preserve">
+    <value>The NREL CEC inverter list. The six support points of the efficiency curve are computed from the Sandia coefficients; the list carries neither the MPPT count nor the apparent power - both have to be maintained by hand.</value>
+  </data>
+  <data name="WRK_IMP_BTN_CEC" xml:space="preserve">
+    <value>Load CEC list</value>
+  </data>
+  <data name="WRK_IMP_LBL_P_AC_VON" xml:space="preserve">
+    <value>AC nominal power from:</value>
+  </data>
+  <data name="WRK_IMP_SP_GERAET" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="WRK_IMP_SP_P_AC" xml:space="preserve">
+    <value>P_AC [kW]</value>
+  </data>
+  <data name="WRK_IMP_SP_ETA_EURO" xml:space="preserve">
+    <value>η euro</value>
+  </data>
+  <data name="WRK_IMP_SP_MPP" xml:space="preserve">
+    <value>MPP window [V]</value>
+  </data>
+  <data name="WRK_IMP_SP_U_DC_MAX" xml:space="preserve">
+    <value>U_dc max [V]</value>
+  </data>
+  <data name="WRK_IMP_LBL_CEC_DATUM" xml:space="preserve">
+    <value>CEC listing:</value>
+  </data>
+  <data name="WRK_IMP_LBL_SANDIA_PDCO" xml:space="preserve">
+    <value>Sandia Pdco [W]:</value>
+  </data>
+  <data name="WRK_IMP_LBL_SANDIA_VDCO" xml:space="preserve">
+    <value>Sandia Vdco [V]:</value>
+  </data>
+  <data name="WRK_IMP_LBL_SANDIA_C0" xml:space="preserve">
+    <value>Sandia C0 [1/W]:</value>
+  </data>
+  <data name="WRK_IMP_HINWEIS_KENNLINIE" xml:space="preserve">
+    <value>The six support points are computed from the Sandia coefficients at U_dc = U_dco; at nominal load η = Paco/Pdco holds exactly.</value>
+  </data>
+  <data name="WRK_IMP_PLAUSI_TITEL" xml:space="preserve">
+    <value>Note on the device values</value>
+  </data>
+  <data name="ADM_KATALOG_WECHSELRICHTER" xml:space="preserve">
+    <value>Inverters</value>
+  </data>
+  <data name="MENU_WECHSELRICHTER" xml:space="preserve">
+    <value>Inverters</value>
+  </data>
+  <data name="MENU_WR_IMPORT_CEC" xml:space="preserve">
+    <value>Inverters (CEC)...</value>
+  </data>
 </root>

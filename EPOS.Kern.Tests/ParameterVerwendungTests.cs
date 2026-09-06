@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using WindowsFormsApplication1;
@@ -258,12 +258,49 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Jede Anlagenart fuehrt mindestens einen gerechneten Parameter — ein Katalog
         /// ganz ohne Rechenbezug waere ein Zeichen dafuer, dass die Einstufung fehlt.
+        ///
+        /// <para><b>Eine Ausnahme, und sie ist gewollt:</b> der WECHSELRICHTER. Stufe S1
+        /// des Konzept_Wechselrichter_EPOS-Plan.md liefert Katalog, Verwaltung und
+        /// Import <b>ohne jede Rechenwirkung</b> (Anwenderentscheid W6-E-2 vom
+        /// 06.09.2026); gelesen wird der Katalog erst mit Stufe S3. Der Fall
+        /// <see cref="Der_Wechselrichter_rechnet_in_S1_noch_nicht"/> haelt genau das
+        /// fest.</para>
         /// </summary>
         [Fact]
         public void Jede_Anlagenart_fuehrt_gerechnete_Parameter()
         {
             foreach (Anlagenart art in ParameterVerwendung.AlleArten)
+            {
+                if (art == Anlagenart.Wechselrichter) continue;
                 Assert.Contains(ParameterVerwendung.Katalog(art), e => e.Gerechnet);
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Zusage der Stufe S1</b> (W6-E-2, 06.09.2026): Keine Spalte des
+        /// Wechselrichterkatalogs wird gerechnet — weder in der Simulation noch in der
+        /// Wirtschaftlichkeit. Genau daran haengt, dass der Referenzlauf byte-gleich
+        /// bleibt.
+        ///
+        /// <para><b>Faellt dieser Fall rot aus, ist Stufe S3 gelaufen</b> — dann liest
+        /// <c>SimulationPV</c> die Kennlinie und <c>TechnikPlanwertCtrl</c> die Kosten
+        /// (Entscheidungsfrage Q8), und die Einstufungen in
+        /// <c>ParameterVerwendung.Wechselrichter</c> muessen mit. Der Fall ist der
+        /// Merkposten dafuer, kein Fehler.</para>
+        /// </summary>
+        [Fact]
+        public void Der_Wechselrichter_rechnet_in_S1_noch_nicht()
+        {
+            IReadOnlyList<ParameterEintrag> katalog =
+                ParameterVerwendung.Katalog(Anlagenart.Wechselrichter);
+
+            Assert.DoesNotContain(katalog, e => e.Gerechnet);
+
+            // Die sieben Sandia-Spalten sind mitgeschriebenes Katalogwissen und
+            // haben in S1 GAR KEINEN Leser (Konzept 3.3.3).
+            Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine)));
+            Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine)),
+                       e => Assert.StartsWith("Sandia_", e.Spalte, StringComparison.Ordinal));
         }
 
         // =================================================================================
@@ -337,6 +374,19 @@ namespace EPOS.Kern.Tests
                                    "Degradation", "Modulkosten", "Wirkungsgrad_RT",
                                    "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
                                    "Investition_Fix", "Standby_Verbrauch" };
+
+                case Anlagenart.Wechselrichter:
+                    // Aus ModulKatalogProfil.Felder (Auspraegung Wechselrichter, W6-E-2)
+                    // mit der Zuordnung in WechselrichterAdminHuelle: 25 Felder. Die
+                    // sieben Sandia-Spalten fehlen mit Absicht — sie sind
+                    // mitgeschriebenes Katalogwissen des Imports und von Hand nicht
+                    // pflegbar (Konzept 3.3.3).
+                    return new[] { "Bezeichner", "Firma", "Beschreibung", "P_AC_Nenn",
+                                   "S_AC_Max", "P_DC_Max", "Kosten", "Herkunft",
+                                   "U_Mpp_Min", "U_Mpp_Max", "U_Dc_Max", "U_Start",
+                                   "I_Dc_Max", "Anzahl_Mppt", "Straenge_Je_Mppt",
+                                   "Eta05", "Eta10", "Eta20", "Eta30", "Eta50", "Eta100",
+                                   "Eta_Euro", "Eta_Max", "P_Standby", "P_Nacht" };
 
                 default:
                     return new[] { "Bezeichner", "Hersteller", "Speichertyp",
