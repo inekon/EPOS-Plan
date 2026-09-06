@@ -53,11 +53,22 @@ namespace EPOS.Kern.Tests
     public sealed class TestDatenbank : IDisposable
     {
         private readonly string _vorher;
+        private readonly Func<bool> _schreibrechtVorher;
         private readonly string _ordner;
 
         public TestDatenbank()
         {
             _vorher = DataRepository.PfadUeberschreibung;
+
+            // DIE WERKZEUG-FREIGABE DER SCHREIBNAHT (Welle iF30) - EINE benannte Zeile,
+            // ausdruecklich und nicht durch Auslassen. Seit iF30 wirft jeder schreibende
+            // Zugriff eine LesemodusException, solange die Lizenz keinen erlaubt; ein
+            // Testlauf hat nie eine. Die Vorrichtung hebt die Sperre fuer die Dauer der
+            // Testklasse und stellt sie in Dispose zurueck - ein Fall, der die SPERRE
+            // nachweist (SchreibnahtDatenbankTests), setzt Schreibnaht.Schreibrecht
+            // danach fuer sich selbst wieder auf "nein".
+            _schreibrechtVorher = Schreibnaht.Schreibrecht;
+            Schreibnaht.WerkzeugFreigabe("EPOS.Kern.Tests (Arbeitskopie der Testdatenbank)");
 
             string quelle = Quelle();
             if (quelle == null) return;
@@ -133,6 +144,7 @@ namespace EPOS.Kern.Tests
         public void Dispose()
         {
             DataRepository.PfadUeberschreibung = _vorher;
+            Schreibnaht.Schreibrecht = _schreibrechtVorher;
             if (_ordner == null) return;
             // Der Verbindungspool von Microsoft.Data.Sqlite haelt die Arbeitskopie nach dem Schliessen
             // der Verbindung offen; die geloeschte 77-MB-Datei bliebe dann bis zum Prozessende belegt -

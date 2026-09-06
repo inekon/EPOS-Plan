@@ -13945,6 +13945,24 @@ Import anyway?</value>
   <data name="LIZ_ST_NICHTAKTIVIERT" xml:space="preserve">
     <value>Not activated — trial version or license key under Administration → License.</value>
   </data>
+  <data name="LIZ_LESEMODUS_SPERRE" xml:space="preserve">
+    <value>Read-only mode: the licence currently does not allow changes. Nothing was saved. Viewing, reports and export remain available.</value>
+  </data>
+  <data name="LIZ_BANNER_LESEMODUS" xml:space="preserve">
+    <value>Read-only mode — changes cannot be saved and no simulation can be run. Viewing, reports and export remain available. Licence: menu “Help → Licence management”.</value>
+  </data>
+  <data name="LIZ_BANNER_ABLAUF" xml:space="preserve">
+    <value>The licence expires in {0} days ({1}). Please renew in good time — menu “Help → Licence management”.</value>
+  </data>
+  <data name="LIZ_BANNER_ABLAUF_EIN" xml:space="preserve">
+    <value>The licence expires tomorrow ({0}). Please renew — menu “Help → Licence management”.</value>
+  </data>
+  <data name="LIZ_BANNER_ABLAUF_HEUTE" xml:space="preserve">
+    <value>The licence expires today ({0}). Please renew — menu “Help → Licence management”.</value>
+  </data>
+  <data name="SIM_MSG_LESEMODUS" xml:space="preserve">
+    <value>No simulation can be run in read-only mode: the licence currently does not allow new results. Existing results, reports and export remain available.</value>
+  </data>
   <data name="LIZ_TYP_DEMO" xml:space="preserve">
     <value>Trial version</value>
   </data>

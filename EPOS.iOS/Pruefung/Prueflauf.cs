@@ -71,6 +71,13 @@ internal static class Prueflauf
     {
         KulturSetzen();
 
+        // DIE WERKZEUG-FREIGABE DER SCHREIBNAHT (Welle iF30) - EINE benannte Zeile,
+        // ausdruecklich und nicht durch Auslassen. Der Pruefmodus rechnet das
+        // Referenzprojekt im Simulator und SPEICHERT sein Ergebnis; ein Geraet in der CI
+        // hat keine Lizenz. Ohne diese Zeile faellt der iOS-Job rot aus - aus einem Grund,
+        // der mit dem Rechenweg nichts zu tun hat.
+        Schreibnaht.WerkzeugFreigabe("EPOS.iOS-Pruefmodus (Rechennachweis ohne Lizenz)");
+
         var log = new Protokoll();
         DateTime start = DateTime.Now;
 

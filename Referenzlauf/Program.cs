@@ -44,6 +44,14 @@ namespace WindowsFormsApplication1.Referenzlauf
 
             OberflaechenspracheSetzen();
 
+            // DIE WERKZEUG-FREIGABE DER SCHREIBNAHT (Welle iF30) - EINE benannte Zeile,
+            // ausdruecklich und nicht durch Auslassen. Die Suite laeuft ohne Lizenz und
+            // SCHREIBT (SimuliereUndSpeichere legt je Projekt einen Ergebniskopf an, der
+            // Migrationsmodus hebt eine Datenbank). Ohne sie fiele der Rechennachweis rot
+            // aus - aus einem Grund, der mit dem Rechenweg nichts zu tun hat.
+            Schreibnaht.WerkzeugFreigabe("Referenzlauf-Suite (Rechennachweis ohne Lizenz)");
+            Console.WriteLine("Schreibnaht: freigegeben für " + Schreibnaht.WerkzeugGrund);
+
             if (args.Length == 0) { Hilfe(); return 2; }
 
             try
