@@ -15446,9 +15446,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="PVS_SPERRE_OHNE_STRANG" xml:space="preserve">
     <value>Es ist noch kein Strang zugeordnet.</value>
   </data>
-  <data name="PVS_HINWEIS_S3" xml:space="preserve">
-    <value>Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage vereinfacht.</value>
-  </data>
   <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
     <value>Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping.</value>
   </data>

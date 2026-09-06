@@ -646,28 +646,36 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <remarks>
-        /// <b>Der Befund dieser Tabelle in Stufe S2: KEINE Spalte wird GERECHNET.</b>
-        /// Das ist kein Versaeumnis, sondern die Zusage des Anwenderentscheids W6-E-2
-        /// vom 06.09.2026: „S1 Katalog, Verwaltung und Import sofort und OHNE
-        /// Rechenwirkung", und S2 setzt sie fort — die Strangzuordnung wird gepflegt
-        /// und geprueft, gerechnet wird erst mit S3.
+        /// <b>Seit Stufe S3 (06.09.2026) RECHNET dieser Katalog.</b> Bis dahin galt die
+        /// Zusage des Anwenderentscheids W6-E-2 „Katalog, Verwaltung und Import ohne
+        /// Rechenwirkung"; S1 und S2 haben sie gehalten, S3 loest sie ein. Zehn Spalten
+        /// stehen deshalb jetzt auf <c>Simulation</c> und eine auf
+        /// <c>Wirtschaftlichkeit</c>.
         ///
-        /// <para><b>Was S2 geaendert hat, ist die FUNDSTELLE, nicht die Einstufung.</b>
-        /// Acht Spalten lesen seither zusaetzlich die Auslegungspruefungen P1 bis P7
-        /// (<c>StrangPlausibilitaet</c>) — die laufen beim BEARBEITEN einer Strangzeile
-        /// und faerben eine Ampel; sie sind Dialog, nicht Simulation. Mit S3 wandern
-        /// die Kennlinienspalten auf <c>Simulation</c> und <c>Kosten</c> auf
-        /// <c>Wirtschaftlichkeit</c> (Konzept 4.1 und Entscheidungsfrage Q8).</para>
+        /// <para><b>Was wohin gewandert ist.</b> Die SECHS Stuetzstellen und
+        /// <c>P_AC_Nenn</c>, <c>P_Standby</c> und <c>P_Nacht</c> rechnen in
+        /// <c>PvStrangModell</c> (Kennlinie, Clipping, Nachtverbrauch, Konzept 4.1
+        /// Schritt 4); <c>Kosten</c> rechnet in <c>TechnikPlanwertCtrl</c> (Q8).
+        /// <c>Anzahl_Mppt</c> und <c>Straenge_Je_Mppt</c> bleiben <c>Dialog</c>:
+        /// Entscheidungsfrage Q7 laesst den MPP-Tracker ausdruecklich als reine
+        /// PRUEFgroesse - er hat keine eigene Leistungsgrenze im Rechenweg.</para>
         ///
-        /// Der Fall <c>Der_Wechselrichter_rechnet_in_S2_noch_nicht</c> haelt diesen
-        /// Zustand fest: Faellt er rot aus, ist S3 gelaufen und die Einstufung muss mit.
+        /// <para><b>Die Spannungs- und Stromgrenzen bleiben ebenfalls <c>Dialog</c>.</b>
+        /// <c>U_Mpp_Min</c>, <c>U_Mpp_Max</c>, <c>U_Dc_Max</c>, <c>U_Start</c> und
+        /// <c>I_Dc_Max</c> lesen die Auslegungspruefungen P1 bis P5 beim BEARBEITEN einer
+        /// Strangzeile und faerben eine Ampel; ohne Ein-Dioden-Modell (Stufe E3 des
+        /// PV-Ertragsmodells, zurueckgestellt) gibt es keine Strangspannung je Stunde,
+        /// die sie im Lauf begrenzen koennte.</para>
         ///
-        /// <para><b>Die sieben Sandia-Spalten stehen als <c>Keine</c> da</b> — sie sind
-        /// mitgeschriebenes Katalogwissen (Konzept 3.3.3): Der CEC-Import schreibt sie
-        /// verlustfrei mit, damit ein spannungsabhaengiges Modell (Stufe E3 des
+        /// Der Fall <c>Der_Wechselrichter_rechnet_ab_S3</c> haelt den neuen Zustand fest -
+        /// er ist der Zeuge dafuer, dass die Einstufungen dem Rechenweg gefolgt sind.
+        ///
+        /// <para><b>Die sieben Sandia-Spalten stehen weiter als <c>Keine</c> da</b> - sie
+        /// sind mitgeschriebenes Katalogwissen (Konzept 3.3.3): Der CEC-Import schreibt
+        /// sie verlustfrei mit, damit ein spannungsabhaengiges Modell (Stufe E3 des
         /// PV-Ertragsmodells) sie spaeter ohne Neuimport vorfindet. Heute liest sie
-        /// nichts — auch die Verwaltung zeigt sie nicht, weil sie kein Anwender von
-        /// Hand pflegen kann.</para>
+        /// nichts - auch die Verwaltung zeigt sie nicht, weil sie kein Anwender von Hand
+        /// pflegen kann.</para>
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Wechselrichter(Func<string, string> t)
         {
@@ -681,9 +689,10 @@ namespace WindowsFormsApplication1
                   "WechselrichterStammCtrl.Hersteller (Herstellerfilter der Verwaltung)"),
                 E("Beschreibung", t("WRK_LBL_BESCHREIBUNG"), "", DLG,
                   "ModulKatalogDialog (Feld Beschreibung)"),
-                E("P_AC_Nenn", t("WRK_LBL_P_AC_NENN"), "kW", DLG,
-                  "ModulKatalogProfil (Pflichtfeld); WechselrichterPlausibilitaet.PruefeLeistungen; " +
-                  "StrangPlausibilitaet.DcAcPruefen (P6, Ampel des PV-Dialogs)"),
+                E("P_AC_Nenn", t("WRK_LBL_P_AC_NENN"), "kW", SIM,
+                  "PvStrangModell.Stunde (Auslastung und CLIPPING je Geraet, Konzept 4.1 Schritt 4); " +
+                  "SimulationPV.DcAcDerAnlage; ModulKatalogProfil (Pflichtfeld); " +
+                  "WechselrichterPlausibilitaet.PruefeLeistungen; StrangPlausibilitaet.DcAcPruefen (P6)"),
                 E("S_AC_Max", t("WRK_LBL_S_AC_MAX"), "kVA", DLG,
                   "ModulKatalogProfil (Gruppe Geraet); WechselrichterPlausibilitaet"),
                 E("P_DC_Max", t("WRK_LBL_P_DC_MAX"), "kW", DLG,
@@ -709,28 +718,37 @@ namespace WindowsFormsApplication1
                 E("Straenge_Je_Mppt", t("WRK_LBL_STRAENGE_JE_MPPT"), "", DLG,
                   "ModulKatalogProfil (Gruppe Eingang); WechselrichterPlausibilitaet.PruefeMppt; " +
                   "StrangPlausibilitaet.MpptPruefen (P5)"),
-                E("Eta05", t("WRK_LBL_ETA05"), "-", DLG,
+                E("Eta05", t("WRK_LBL_ETA05"), "-", SIM,
+                  "PvStrangModell.Kennlinie (Stuetzstelle 5 %, SimulationPV.StraengeRechnen); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
-                E("Eta10", t("WRK_LBL_ETA10"), "-", DLG,
+                E("Eta10", t("WRK_LBL_ETA10"), "-", SIM,
+                  "PvStrangModell.Kennlinie (Stuetzstelle 10 %, SimulationPV.StraengeRechnen); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
-                E("Eta20", t("WRK_LBL_ETA20"), "-", DLG,
+                E("Eta20", t("WRK_LBL_ETA20"), "-", SIM,
+                  "PvStrangModell.Kennlinie (Stuetzstelle 20 %, SimulationPV.StraengeRechnen); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
-                E("Eta30", t("WRK_LBL_ETA30"), "-", DLG,
+                E("Eta30", t("WRK_LBL_ETA30"), "-", SIM,
+                  "PvStrangModell.Kennlinie (Stuetzstelle 30 %, SimulationPV.StraengeRechnen); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
-                E("Eta50", t("WRK_LBL_ETA50"), "-", DLG,
+                E("Eta50", t("WRK_LBL_ETA50"), "-", SIM,
+                  "PvStrangModell.Kennlinie (Stuetzstelle 50 %, SimulationPV.StraengeRechnen); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
-                E("Eta100", t("WRK_LBL_ETA100"), "-", DLG,
+                E("Eta100", t("WRK_LBL_ETA100"), "-", SIM,
+                  "PvStrangModell.Kennlinie (Stuetzstelle 100 %, SimulationPV.StraengeRechnen); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); WechselrichterKennlinie.EuroWirkungsgrad"),
                 E("Eta_Euro", t("WRK_LBL_ETA_EURO"), "-", DLG,
                   "ModulKatalogProfil (Gruppe Wirkungsgrad) - Ausweis des Datenblatts"),
                 E("Eta_Max", t("WRK_LBL_ETA_MAX"), "-", DLG,
                   "ModulKatalogProfil (Gruppe Wirkungsgrad) - Ausweis des Datenblatts"),
-                E("P_Standby", t("WRK_LBL_P_STANDBY"), "W", DLG,
+                E("P_Standby", t("WRK_LBL_P_STANDBY"), "W", SIM,
+                  "PvStrangModell.Stunde (Einschaltschwelle, Konzept 4.1 Schritt 4); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); CEC-Import (Pso)"),
-                E("P_Nacht", t("WRK_LBL_P_NACHT"), "W", DLG,
+                E("P_Nacht", t("WRK_LBL_P_NACHT"), "W", SIM,
+                  "PvStrangModell.Stunde (NACHTVERBRAUCH, negative Erzeugung); " +
                   "ModulKatalogProfil (Gruppe Wirkungsgrad); CEC-Import (Pnt)"),
-                E("Kosten", t("WRK_LBL_KOSTEN"), "€", DLG,
-                  "ModulKatalogProfil (Gruppe Geraet) - in S3 die Investition je Geraet (Q8)"),
+                E("Kosten", t("WRK_LBL_KOSTEN"), "€", WIRT,
+                  "TechnikPlanwertCtrl.Wechselrichteranlagen (Investition je Geraet x Geraetezahl, Q8); " +
+                  "ModulKatalogProfil (Gruppe Geraet)"),
                 E("Sandia_Pdco", "Sandia Pdco:", "W", NIX),
                 E("Sandia_Vdco", "Sandia Vdco:", "V", NIX),
                 E("Sandia_Pso", "Sandia Pso:", "W", NIX),

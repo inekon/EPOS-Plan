@@ -2146,10 +2146,13 @@ namespace WindowsFormsApplication1
         /// mit <c>ID_Wechselrichter</c>. „Zwei Bedingungen statt einer machen die
         /// Zusage stärker, nicht schwächer" (Konzept 7.1).</para>
         ///
-        /// <para><b>In Stufe S2 rechnet er noch gar nicht</b> — <c>SimulationPV</c>
-        /// liest die Spalte nicht; der Rechenweg folgt mit S3. Die Maske sagt das
-        /// ausdrücklich (Ressource <c>PVS_HINWEIS_S3</c>), damit sie nichts verspricht,
-        /// was der Kern noch nicht tut.</para>
+        /// <para><b>Seit Stufe S3 rechnet er.</b> <c>SimulationPV.IstKatalogweg</c>
+        /// liest die Spalte, <c>GeraeteDerAnlage</c> setzt die zweite Bedingung
+        /// dahinter, und <c>PvStrangModell</c> rechnet Kennlinie, Clipping und
+        /// Nachtverbrauch je Gerät. Auch die Wirtschaftlichkeit liest ihn:
+        /// <c>TechnikPlanwertCtrl</c> zählt die Geräte nur für Anlagen auf diesem Weg
+        /// (Q8). Der Hinweis, den die Maske bis dahin trug
+        /// (<c>PVS_HINWEIS_S3</c>), ist mit S3 entfallen.</para>
         /// </summary>
         public const string PV_WR_WEG_KATALOG = "KATALOG";
 

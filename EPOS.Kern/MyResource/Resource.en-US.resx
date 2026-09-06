@@ -15439,9 +15439,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="PVS_SPERRE_OHNE_STRANG" xml:space="preserve">
     <value>No string has been assigned yet.</value>
   </data>
-  <data name="PVS_HINWEIS_S3" xml:space="preserve">
-    <value>The string calculation follows with stage S3 — until then the system calculates in the simplified way.</value>
-  </data>
   <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
     <value>The system calculates with an efficiency of {0} and without clipping.</value>
   </data>

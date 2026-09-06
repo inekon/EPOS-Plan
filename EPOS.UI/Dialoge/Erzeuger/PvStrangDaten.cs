@@ -166,13 +166,6 @@ public sealed class PvStrangTexte
     public string SperreOhneStrang { get; set; } =
         T("PVS_SPERRE_OHNE_STRANG", "Es ist noch kein Strang zugeordnet.");
 
-    /// <summary>
-    /// Der Hinweis, solange Stufe S3 aussteht — <c>PVS_HINWEIS_S3</c>. Er wird mit S3
-    /// wieder entfernt.
-    /// </summary>
-    public string HinweisS3 { get; set; } =
-        T("PVS_HINWEIS_S3", "Die Strangrechnung folgt mit Stufe S3 — bis dahin rechnet die Anlage vereinfacht.");
-
     /// <summary>Die Zeile im Weg „vereinfacht" — <c>PVS_HINWEIS_VEREINFACHT</c>, mit {0} = Wirkungsgrad.</summary>
     public string HinweisVereinfacht { get; set; } =
         T("PVS_HINWEIS_VEREINFACHT", "Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping.");
