@@ -350,7 +350,7 @@ Ersatzbehälter aus dem Volumen über <math>\mathrm{HD} = 2{,}5</math> — aus
 :: <math>Q_{\mathrm{max}} / N</math> – Kapazität einer Zone [kWh]
 :: <math>\vartheta_{\mathrm{VL}}</math>, <math>\vartheta_{\mathrm{RL}}</math> – Vorlauf- und Rücklauftemperatur [°C]
 
-: <math>\displaystyle q_{i,i+1}(t) = k \cdot \Delta\vartheta_{i}(t) \; ; \quad \lvert q_{i,i+1}(t) \rvert \le \kappa \cdot \lvert \Delta\vartheta_{i}(t) \rvert \cdot C_{\mathrm{Sch}} \; ; \quad \Delta\vartheta_{i}(t) = \vartheta_{i+1}(t) - \vartheta_{i}(t)</math> &nbsp;&nbsp;(18)
+: <math>\displaystyle q_{i,i+1}(t) = k \cdot \Delta\vartheta_{i}(t) \; ; \quad \left| q_{i,i+1}(t) \right| \le \kappa \cdot \left| \Delta\vartheta_{i}(t) \right| \cdot C_{\mathrm{Sch}} \; ; \quad \Delta\vartheta_{i}(t) = \vartheta_{i+1}(t) - \vartheta_{i}(t)</math> &nbsp;&nbsp;(18)
 :: <math>q_{i,i+1}(t)</math> – Wärme, die im Ausgleich zwischen den Schichten <math>i</math> und <math>i+1</math> fließt [kWh]
 :: <math>k</math> – Wärmeleitwert eines Schichtpaars aus (16) [kWh/K]
 :: <math>\Delta\vartheta_{i}(t)</math> – Temperaturunterschied der zwei benachbarten Schichten [K]

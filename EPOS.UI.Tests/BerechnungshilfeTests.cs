@@ -121,11 +121,17 @@ public sealed class BerechnungshilfeTests : BunitContext
     /// <c>\circ</c> (das Gradzeichen eines Winkels, <c>85^{\circ}</c>) und
     /// <c>\chi</c> (die Zulässigkeit einer Ladequelle des Stromspeichers). Ohne
     /// sie ließe sich keine dieser vier Seiten schreiben.</para>
+    ///
+    /// <para><b>Zwei Befehle der Bauform fehlen hier mit Absicht:</b>
+    /// <c>\lvert</c> und <c>\rvert</c>. Gemessen am 06.09.2026 gegen die frisch
+    /// installierte Math-Erweiterung von <c>wiki.epos-plan.de</c>: „Unbekannte
+    /// Funktion \lvert" — WikiTexVC kennt sie nicht. Der Betragsstrich ist
+    /// <c>\left| … \right|</c> oder schlicht <c>|</c>.</para>
     /// </summary>
     private static readonly string[] ErlaubteBefehle =
     {
         "\\frac", "\\sqrt", "\\sum", "\\int", "\\prod", "\\min", "\\max",
-        "\\cdot", "\\left", "\\right", "\\lvert", "\\rvert",
+        "\\cdot", "\\left", "\\right",
         "\\mathrm", "\\text", "\\operatorname", "\\displaystyle", "\\begin", "\\end",
         "\\eta", "\\vartheta", "\\rho", "\\lambda", "\\alpha", "\\beta", "\\gamma",
         "\\varepsilon", "\\tau", "\\varphi", "\\Delta", "\\Sigma", "\\pi", "\\kappa", "\\theta",
