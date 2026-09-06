@@ -27176,11 +27176,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungsgrenzen ähnelt.
+        /// </summary>
+        public static string PSP_GRUPPE_LEISTUNGSGRENZEN {
+            get {
+                return ResourceManager.GetString("PSP_GRUPPE_LEISTUNGSGRENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schichtmodell ähnelt.
+        /// </summary>
+        public static string PSP_GRUPPE_SCHICHTMODELL {
+            get {
+                return ResourceManager.GetString("PSP_GRUPPE_SCHICHTMODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schichtung und Leistungsgrenzen ähnelt.
         /// </summary>
         public static string PSP_GRUPPE_SCHICHTUNG {
             get {
                 return ResourceManager.GetString("PSP_GRUPPE_SCHICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwellen ähnelt.
+        /// </summary>
+        public static string PSP_GRUPPE_SCHWELLEN {
+            get {
+                return ResourceManager.GetString("PSP_GRUPPE_SCHWELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturen ähnelt.
+        /// </summary>
+        public static string PSP_GRUPPE_TEMPERATUREN {
+            get {
+                return ResourceManager.GetString("PSP_GRUPPE_TEMPERATUREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen und Verluste ähnelt.
+        /// </summary>
+        public static string PSP_GRUPPE_VOLUMEN {
+            get {
+                return ResourceManager.GetString("PSP_GRUPPE_VOLUMEN", resourceCulture);
             }
         }
         

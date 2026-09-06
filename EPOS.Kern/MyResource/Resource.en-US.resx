@@ -9294,6 +9294,21 @@ Change the usage anyway?</value>
   <data name="PSP_TITEL_KLASSENSET_AENDERN" xml:space="preserve">
     <value>Change usage</value>
   </data>
+  <data name="PSP_GRUPPE_VOLUMEN" xml:space="preserve">
+    <value>Volume and losses</value>
+  </data>
+  <data name="PSP_GRUPPE_TEMPERATUREN" xml:space="preserve">
+    <value>Temperatures</value>
+  </data>
+  <data name="PSP_GRUPPE_SCHWELLEN" xml:space="preserve">
+    <value>Thresholds</value>
+  </data>
+  <data name="PSP_GRUPPE_LEISTUNGSGRENZEN" xml:space="preserve">
+    <value>Power limits</value>
+  </data>
+  <data name="PSP_GRUPPE_SCHICHTMODELL" xml:space="preserve">
+    <value>Stratification model</value>
+  </data>
   <data name="PSP_GRUPPE_SCHICHTUNG" xml:space="preserve">
     <value>Stratification and power limits</value>
   </data>

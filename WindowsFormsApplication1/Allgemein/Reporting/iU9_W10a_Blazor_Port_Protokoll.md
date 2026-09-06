@@ -637,3 +637,138 @@ Eingangsdatei `Zonenkarte_Klimazonen.svg` (verschoben).
 `Werkzeuge/Formularkarte.Tests/ErreichbarkeitTests.cs`;
 dazu `Proben/ChartProben/Program.cs` (das 16. Bild) und
 `Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md`.
+
+---
+
+## Formularraster, Nachzug iU8‑O‑1 (06.09.2026) — PufferSpProjektDialog
+
+**Der Wortlaut** (Anwender, 05.09.2026, iU8‑E‑2 / W14a‑E‑7): „Darstellung der
+Dialoge kompakter und übersichtlicher — Parameterblöcke rechts." Aufgabe #90 hat
+daraus die hausweite Regel gemacht (`Formularraster`/`Formulargruppe`, eine Regel
+im Stilblatt); die Pakete **P0** (Katalogdialoge), **P1** (Erzeuger, W6/W7),
+**P2** (Kosten, W1–W5) und **P3** (Bedarf, Simulation, Projekt, W8–W10/W16a)
+haben sie eingehängt. Übrig blieb genau **ein** Dialog — der größte dieser Welle,
+`Dialoge/Simulation/PufferSpProjektDialog.razor` (Welle 10a.4, Ersatz für
+`Form_PufferSp_Projekt`, 700 × 662, rund 60 Steuerelemente). Er ist damit
+nachgezogen; **iU8‑O‑1 ist geschlossen**.
+
+### Die Feldliste — vorher und nachher
+
+**Kein Feld ist dazugekommen, keines verschwunden, keines umbenannt, keines
+verschoben.** Die Reihenfolge im Markup IST der Tab‑Weg; die Proben greifen die
+Eingabefelder über ihren Index (`felder[5 + nummer]` für die vier Schwellen), sie
+hätten jede Umsortierung sofort rot gemeldet.
+
+| Baustein | vorher | nachher |
+|---|---|---|
+| `Auswahlfeld` | 2 | 2 |
+| `Textfeld` | 1 | 1 |
+| `Mehrfachauswahl` | 1 | 1 |
+| `Ganzzahlfeld` | 4 | 4 |
+| `Zahlenfeld` | 13 | 13 |
+| **Felder gesamt** | **21** | **21** |
+| `Herleitungszeile` | 5 | 4 |
+| `Zeilenraster` (Listen) | 2 | 2 |
+| `Formularraster` | 0 | **3** |
+| `Formulargruppe` | 0 | **6** |
+
+Die eine `Herleitungszeile` weniger ist der **Kopf der drei Entnahmehöhen**
+(`PSP_LABEL_ENTNAHMEHOEHEN`, „Entnahmehöhe je Kanal (0 = unten, 1 = oben; leer =
+Standard):"). Derselbe Text steht jetzt als Titel **ihrer** `Formulargruppe`: Er
+beschreibt nicht das Feld über sich, sondern die drei darunter — als
+Herleitungszeile war er an der falschen Stelle angeschrieben.
+
+### Die drei Blöcke
+
+| Block (`Gruppenkopf`) | Felder | Raster | Gruppen darin |
+|---|---|---|---|
+| Eigenschaften | 11 | 1 | ohne Titel (Aus Katalog, Bezeichner, Nutzung + Herleitung), **Volumen und Verluste**, **Temperaturen** (+ Q_max‑Herleitung), **Schwellen** (vier Stück) |
+| Schichtung und Leistungsgrenzen | 9 | 1 | Schichtenzahl voran (sie SCHALTET den erweiterten Teil frei), **Leistungsgrenzen**, dazu ab zwei Schichten **Schichtmodell** und **Entnahmehöhen** |
+| Ladereihenfolge dieses Speichers | 1 | 1 | ohne Titel — Entladepriorität samt ihren zwei Herleitungszeilen |
+
+**Kein Raster ist einspaltig.** Die Felder dieses Dialogs tragen keine
+Reihenfolge, sie gehören PAARWEISE zusammen: Volumen/Verluste,
+Vorlauf/Rücklauf, Ein‑/Abschaltschwelle, nachrangig/Mindestfüllstand,
+Lade‑/Entladeleistung. Genau dafür ist die zweite Spalte da. Das unterscheidet
+ihn von `WaermesenkeDialog` und `QuelleErdreichDialog` (Paket P3), wo eine Wahl
+das Feld UNTER sich freischaltet und der Raster deshalb `Einspaltig` steht.
+
+**Nicht umgestellt: die beiden Listen.** Der Bestand („Pufferspeicher im
+Projekt") und die Ladereihenfolge sind `Zeilenraster` — eine Liste ist kein
+Formularblock, und der Raster darf dort nicht hinein. Dieselbe Grenze hat Paket
+P3 bei der Senkenliste gezogen.
+
+### Fünf neue Texte, eine Zeile Stilblatt
+
+**Neu in `MyResource.Resource`** (de/en, dazu `Resource.Designer.cs`): die fünf
+leisen Zwischenüberschriften `PSP_GRUPPE_VOLUMEN` („Volumen und Verluste" /
+„Volume and losses"), `PSP_GRUPPE_TEMPERATUREN`, `PSP_GRUPPE_SCHWELLEN`,
+`PSP_GRUPPE_LEISTUNGSGRENZEN` und `PSP_GRUPPE_SCHICHTMODELL`. Der sechste
+Gruppentitel ist der schon vorhandene `PSP_LABEL_ENTNAHMEHOEHEN`. Die Hülle
+`Views/Pufferspeicher/PufferSpProjektHuelle.cs` reicht sie durch — sie ist die
+einzige Stelle, die den Textsatz baut, auch für die zwei Überlagerungsrollen im
+Quellen‑ und im Senkendialog.
+
+**Eine Selektorzeile Stilblatt kam dazu** — in der vorhandenen Regel „Was über
+die volle Breite gehört" steht jetzt neben `.epos-untergruppe` und
+`.epos-optionsgruppe` auch **`.epos-formularraster > .epos-mehrfachauswahl`**.
+Die Mehrfachauswahl „Nutzung" (Heizung / Brauchwasser / Prozess) ist kein
+`.epos-feld`, sondern ein eigener kleiner Block aus Titel und Häkchenliste —
+dieselbe Bauart wie die Optionsgruppe eine Zeile darüber und aus demselben
+Grund über die volle Breite: In einer halben Spalte stünden drei untereinander
+gesetzte Häkchen neben einer leeren Nachbarzelle. Kein neuer CSS‑Block, keine
+Regel je Dialog, kein Inline‑Stil.
+
+### Probe
+
+Vier neue Fälle in `EPOS.UI.Tests/Dialoge/PufferSpProjektDialogTests.cs`:
+
+* `Die_drei_Bloecke_stehen_im_Formularraster` — genau drei
+  `.epos-formularraster`, Felder darin, und **keines** davon einspaltig.
+* `Die_Gruppen_sind_leise_Zwischenueberschriften` — vier
+  `.epos-formulargruppe-titel` im kompakten Zustand, **sechs** nach dem Umstellen
+  auf drei Schichten.
+* `Die_Zahlenfelder_sind_kurz_und_tragen_ihre_Einheit` — die Einheit steht im
+  `.epos-feld--kurz` unmittelbar hinter dem Wert; die Mehrfachauswahl und die
+  Herleitungszeilen stehen als Rasterkinder mit im Block.
+* `Die_Listen_bleiben_ausserhalb_des_Rasters` — es gibt `.epos-zeilenraster`,
+  aber **keines** innerhalb eines `.epos-formularraster`.
+
+Geprüft wird jeweils das MARKUP. Was der Raster daraus MACHT
+(Beschriftungsspalte, kurzes Feld, zwei Spalten, Umbruch bei 900 px), steht als
+Stilblattprobe in `FormularrasterTests` — eine bunit‑Probe rechnet kein CSS aus
+(Lehre W6‑B‑1).
+
+`EPOS.UI.Tests`: **2 679 → 2 683** Fälle, grün unter `de-DE` **und** unter
+`en-US`; die Dialogprobe wächst von 27 auf 31 Fälle. Die **27 vorhandenen** Fälle
+blieben unverändert grün — sie sind der eigentliche Nachweis, dass
+Feldreihenfolge, Prüfkette, Sichtbarkeitsregel und Rückfragen den Umbau
+überstanden haben. Die beiden Kern‑Wächter (iU5 und Plattform) bleiben leer.
+
+`Resource.Designer.cs` ist **nicht von Hand** ergänzt worden, sondern mit
+`python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` neu erzeugt
+(Hausregel seit `abbb057`): 4 870 → 4 875 Eigenschaften, „Blöcke gleich 4 870,
+abweichend 0, neu 5" — die fünf neuen Schlüssel und sonst nichts.
+
+### Abnahmepunkte A‑iU8‑O‑1
+
+1. **A‑iU8‑O‑1‑1** — Simulation → Simulationskonfiguration → „Pufferspeicher
+   anlegen / verwalten…": Im Block „Eigenschaften" steht die Beschriftung
+   **neben** dem Feld, das Zahlenfeld ist kurz und die Einheit (l, kWh/24h, °C,
+   %) steht **unmittelbar dahinter** — nicht mehr am rechten Rand.
+2. **A‑iU8‑O‑1‑2** — Auf breitem Fenster stehen die Feldpaare **zu zweit in
+   einer Zeile** (Gesamtvolumen ‖ Bereitschaftsverluste, Vorlauf ‖ Rücklauf,
+   Einschalt‑ ‖ Abschaltschwelle); schmaler als 900 px fällt alles auf eine
+   Spalte und die Beschriftung wieder über das Feld.
+3. **A‑iU8‑O‑1‑3** — Die Zwischenüberschriften „Volumen und Verluste",
+   „Temperaturen", „Schwellen" und „Leistungsgrenzen" stehen leise (grau, kein
+   Kasten, kein zweiter Balken) über ihren Feldern; auf Englisch heißen sie
+   „Volume and losses", „Temperatures", „Thresholds", „Power limits".
+4. **A‑iU8‑O‑1‑4** — Schichtenzahl von 1 auf 2 stellen: „Schichtmodell" (Höhe,
+   λ effektiv, Nutztemperatur Brauchwasser) und „Entnahmehöhe je Kanal …"
+   erscheinen als zwei weitere Gruppen; die Entnahmezeile ist jetzt die
+   **Überschrift** der drei Felder darunter, nicht mehr eine Zeile über ihnen.
+5. **A‑iU8‑O‑1‑5** — Der Tab‑Weg ist unverändert: Aus Katalog → Bezeichner →
+   Nutzung → Gesamtvolumen → Bereitschaftsverluste → Vorlauf → Rücklauf → die
+   vier Schwellen → Schichten → Lade‑ → Entladeleistung. Die zwei Listen
+   (Bestand oben, Ladereihenfolge unten) sehen aus wie zuvor.
