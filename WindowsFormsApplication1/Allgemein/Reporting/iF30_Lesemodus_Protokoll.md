@@ -28,7 +28,7 @@ Wurzel beider Plattformen.
 | Geänderte Dateien | 17 |
 | Neue Ressourcenschlüssel | 6 (de/en) |
 | Kern-Tests | 1 230 → **1 302** (+72) |
-| bunit-Tests | 2 679 → **2 691** (+12) |
+| bunit-Tests | 2 679 → **2 691** (+12); nach dem Abschluss-Merge 2 695 |
 | Referenzlauf 1030/1007/1017 | **byte-gleich** zu `Referenzlaeufe/2026-09-05_R2_Zeitbasis` |
 
 ---
@@ -262,9 +262,9 @@ ergänzt.
 | Nachweis | Ergebnis |
 |---|---|
 | `EPOS.Kern.Tests` (serialisiert, `LANG=de_DE.UTF-8`) | **1 302** grün (vorher 1 230) |
-| `EPOS.UI.Tests` | **2 691** grün (vorher 2 679) |
+| `EPOS.UI.Tests` | **2 695** grün (vorher 2 679; +12 aus dieser Welle, +4 aus dem Abschluss-Merge) |
 | `EPOS.Referenzlauf` 1030/1007/1017 gegen `2026-09-05_R2_Zeitbasis` | 3 × PASS; `diff -rq` ohne `protokoll.txt` **byte-gleich** |
-| `Proben/ChartProben` | 40 Bilder, 0 Verstöße, alle grün |
+| `Proben/ChartProben` | 40 Bilder, 0 Verstöße, alle grün (die Welle fasst den Renderer nicht an) |
 | `Werkzeuge/SqlDialektPruefer` | 1 212 SQL-Texte, **0 Fundstellen** |
 | iU5-Wächter (`Program.*`) | leer |
 | Plattform-Wächter (WinForms/Drawing/Registry/OleDb im Kern) | leer |
