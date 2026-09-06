@@ -3011,6 +3011,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > ohne Windows nachweisbar — und ist reine Anzeige: Der Rechenweg (`AnlagenKwp`, `KwpSumme`, Simulation,
 > Wirtschaftlichkeit) ist unberührt, der Referenzlauf bitgleich. Nachweis: Kern 1 209 → 1 213, UI 2 656 → 2 659, beide
 > grün unter de und en; Windows-Bau 0 Fehler; Kern-Wächter leer. Vier Abnahmepunkte A‑W6‑O‑5 im W6-Protokoll.
+>
+> **Anwenderwunsch W6‑E‑2 vom 06.09.2026 („Wechselrichter – ausgegraut. Import liegt nicht vor, Admin zum
+> Anlegen/Bearbeiten liegt nicht vor … Mockup und Konzept vor Umsetzung"), Konzept und Mockup in `8fee437`:** Der Knopf
+> trägt genau eine Sperrbedingung (`PvModellFelder.razor`: `disabled`, solange das Modell nicht ERWEITERT ist) und ist
+> im Modell EINFACH bestimmungsgemäß gesperrt; EINFACH multipliziert den Ertrag mit dem konstanten Faktor
+> `PV_WrWirkungsgrad` (NULL = 0,95, `SimulationPV`) — ohne Clipping, Kennlinie und AC-Nennleistung. Nachgeprüft fehlen
+> Wechselrichtertabelle, Katalogeintrag, Verwaltungsausprägung, Import, Strangbegriff und Menüpunkt vollständig; die
+> Modulkennwerte für eine Auslegungsprüfung liegen seit W6‑E‑1 ungenutzt im Katalog. Das neue Papier
+> `Konzept_Wechselrichter_EPOS-Plan.md` (982 Zeilen) schlägt `Tab_Wechselrichter_STAMM` mit Projektkopie, die
+> Strangzuordnung `Z_AnlageStrang` (Migrationsschritte 65/66), eine Kennlinie aus sechs Stützstellen mit
+> mitgeschriebenen Sandia-Koeffizienten, den CEC-Wechselrichterimport und den Rechenweg Module → Strang → MPPT → Gerät
+> → Clipping mit acht Auslegungsprüfungen vor; ohne Strangzuordnung bleibt der Rechenweg Zeichen für Zeichen
+> erhalten, die Basis `2026-09-05_R2_Zeitbasis` also byte-gleich. Vorgeschlagen sind drei Stufen (S1
+> Katalog/Verwaltung/Import ohne Rechenwirkung sofort, S2 und S3 zusammen). Das Mockup
+> `Mockups/Wechselrichter_Mockup_2026-09-06.html` (1 439 Zeilen, eigenständig, Hausstil) zeigt vier Ansichten:
+> PV-Dialog mit dem Abschnitt „Wechselrichter und Stränge" samt Plausibilitätsampel, Verwaltung, Import und den
+> Rechenfluss als SVG. **Nichts umgesetzt; zehn Entscheidungsfragen W6‑E‑2‑Q1…Q10 liegen beim Anwender**, darunter
+> Kennlinienform (Empfehlung Stützstellen, weil Sandia die DC-Spannung je Stunde bräuchte) und ob der Wechselrichter
+> auch in EINFACH wirkt (Empfehlung ja — damit entfällt der ausgegraute Knopf).
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
