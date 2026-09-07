@@ -951,6 +951,33 @@
   <data name="KFLT_TRICHTER_GESETZT" xml:space="preserve">
     <value>Filter set: {0}</value>
   </data>
+  <data name="KFLT_VERGLEICHEN" xml:space="preserve">
+    <value>Compare</value>
+  </data>
+  <data name="KFLT_VERGLEICH_ABWEICHEND" xml:space="preserve">
+    <value>differing</value>
+  </data>
+  <data name="KFLT_VERGLEICH_GRENZE" xml:space="preserve">
+    <value>At most three rows can be compared.</value>
+  </data>
+  <data name="KFLT_VERGLEICH_HINWEIS" xml:space="preserve">
+    <value>Ctrl-click marks a row for comparison – two or three.</value>
+  </data>
+  <data name="KFLT_VERGLEICH_MARKIERT" xml:space="preserve">
+    <value>{0} marked</value>
+  </data>
+  <data name="KFLT_VERGLEICH_SCHLIESSEN" xml:space="preserve">
+    <value>Close comparison</value>
+  </data>
+  <data name="KFLT_VERGLEICH_SP_PARAMETER" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="KFLT_VERGLEICH_STIMMIG" xml:space="preserve">
+    <value>matching</value>
+  </data>
+  <data name="KFLT_VERGLEICH_TITEL" xml:space="preserve">
+    <value>Comparison</value>
+  </data>
   <data name="KFLT_ZURUECKSETZEN" xml:space="preserve">
     <value>Reset filters</value>
   </data>

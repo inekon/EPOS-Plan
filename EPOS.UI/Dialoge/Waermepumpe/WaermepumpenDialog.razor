@@ -106,6 +106,7 @@
                    stempelt daraus die Spalte "im Projekt verwendet". *@
                 <WaermepumpenKatalogDialog Zeilen="@_katalog" Profil="@Katalogprofil"
                                            ImProjektVerwendet="@Zeilen.Select(z => z.Bezeichner).ToList()"
+                                           Vergleichsparameter="@Vergleichsparameter"
                                            Geschlossen="KatalogFertig" />
             }
         </KindInhalt>
@@ -153,6 +154,13 @@
     /// Projektliste.
     /// </summary>
     [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+    /// <summary>
+    /// <b>Die Zeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) — derselbe Weg,
+    /// aus dem die Parameterübersicht (W14a‑E‑8) ihre Zeilen holt. Er geht
+    /// unveraendert an den Katalog weiter.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
 
     /// <summary>
     /// Der Parametersatz der Detailansicht zu einer Zeile. Die Hülle baut ihn samt der

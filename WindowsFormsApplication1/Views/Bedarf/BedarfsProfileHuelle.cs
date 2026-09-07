@@ -236,6 +236,10 @@ namespace WindowsFormsApplication1
                     () => BedarfStammCtrl.Katalogfilterzeilen(art)),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerBedarf(art, BedarfAdminHuelle.Filtertext)
                                                        .MitVerwendungsspalte(BedarfAdminHuelle.Filtertext),
+                // W14a-E-10 / S3.3: die Zeilen des Vergleichs kommen aus DERSELBEN
+                // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
+                ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    n => BedarfStammCtrl.Vergleichszeilen(art, n, BedarfAdminHuelle.Filtertext)),
                 ["Info"] = new Func<string, BedarfsProfilInfo>(name => Info(art, name)),
                 ["Jahressumme"] = new Func<string, double>(
                     name => BedarfStammCtrl.Jahressumme(art, name)),

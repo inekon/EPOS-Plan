@@ -88,6 +88,9 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
+        
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -16355,6 +16358,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_TRICHTER_GESETZT {
             get {
                 return ResourceManager.GetString("KFLT_TRICHTER_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleichen ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICHEN {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abweichend ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es lassen sich höchstens drei Zeilen vergleichen. ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_GRENZE {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strg-Klick markiert eine Zeile zum Vergleich – zwei oder drei. ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_HINWEIS {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} markiert ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_MARKIERT {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_MARKIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich schließen ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_SP_PARAMETER {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_SP_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die stimmig ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_STIMMIG {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_STIMMIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_TITEL {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_TITEL", resourceCulture);
             }
         }
         

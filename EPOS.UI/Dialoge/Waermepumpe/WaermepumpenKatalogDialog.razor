@@ -70,7 +70,8 @@
     <div class="epos-katalog-liste epos-katalog-fuellend">
         <Katalogliste Profil="@Spaltenprofil" Zeilen="@Zeilen"
                       Filterstand="@_filterstand" Texte="@Filtertexte"
-                      Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" />
+                      Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen"
+                      Vergleichsparameter="@Vergleichsparameter" />
     </div>
 
     <div class="epos-leiste">
@@ -96,6 +97,13 @@
     /// selbst, dann tragen die Köpfe die Schlüssel.
     /// </summary>
     [Parameter] public Katalogfilterprofil? Profil { get; set; }
+    /// <summary>
+    /// <b>Die Zeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) — derselbe Weg,
+    /// aus dem die Parameterübersicht (W14a‑E‑8) ihre Zeilen holt. Ohne ihn
+    /// vergleicht die <c>Katalogliste</c> ihre eigenen Spalten.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
 
     /// <summary>
     /// Die Beschriftungen der Katalogliste (Suche, Trefferzahl, „Filter

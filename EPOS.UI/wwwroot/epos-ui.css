@@ -1435,6 +1435,11 @@ body {
         forced-color-adjust: none;
         color: rgb(138, 91, 0);
     }
+
+    .epos-vergleich--abweichend {
+        forced-color-adjust: none;
+        color: rgb(138, 91, 0);
+    }
 }
 
 /* ==========================================================================
@@ -5671,6 +5676,76 @@ body {
 .epos-katalog-leer {
     margin: 4px 0 0;
     color: var(--epos-text-leise);
+}
+
+/* ==========================================================================
+   Der VERGLEICH von zwei bis drei markierten Zeilen
+   (Anwenderentscheid W14a-E-10, Frage Q3, Stufe S3.3; Konzept 5.5)
+
+   Der Knopf steht IMMER in der Suchzeile - gesperrt, solange weniger als zwei
+   Zeilen markiert sind. Waere er nur bei Markierung sichtbar, faende niemand
+   den Weg dorthin; der Kurztext sagt, wie man markiert.
+   ========================================================================== */
+
+.epos-katalog-vergleichknopf {
+    min-height: var(--epos-touchziel);
+    padding: 0 12px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+    font: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.epos-katalog-vergleichknopf:disabled {
+    color: var(--epos-text-sehr-leise);
+    cursor: default;
+}
+
+/* "Es lassen sich hoechstens drei Zeilen vergleichen." - die Antwort auf die
+   VIERTE Markierung. role="alert" sagt sie an; die Farbe traegt sie nicht
+   allein, der Satz steht da. */
+.epos-katalog-markierhinweis {
+    margin: 4px 0 0;
+    color: var(--epos-warn-text);
+}
+
+/* Eine fuer den Vergleich MARKIERTE Zeile ist an ihrem Wahlknopf erkennbar -
+   ein Rahmen in der Warnfarbe, keine neue Farbe. Die Sprachausgabe hoert ihn
+   nicht: dafuer traegt der Knopf den Zusatztext im title. */
+.epos-anlagenwahl--markiert {
+    outline: 2px solid var(--epos-warn-rahmen);
+    outline-offset: 1px;
+}
+
+/* Die Vergleichstabelle: EINE Zeile je Parameter, EINE Spalte je Geraet.
+   Abweichende Werte hervorgehoben, gleiche leise - dieselben zwei Stufen wie
+   die Kohaerenzzeile, und wie dort traegt die Stufe ihren NAMEN im Klartext
+   (Warnfarben nie allein tragend). */
+.epos-vergleich .epos-vergleich-name {
+    text-align: left;
+    white-space: normal;
+}
+
+.epos-vergleich-zeichen {
+    margin-right: 6px;
+}
+
+.epos-vergleich-stufe {
+    margin-left: 8px;
+    font-size: 0.85em;
+    font-weight: normal;
+}
+
+.epos-vergleich--stimmig {
+    color: var(--epos-text-leise);
+}
+
+.epos-vergleich--abweichend {
+    color: var(--epos-warn-text);
+    font-weight: 700;
 }
 
 /* Der Kopfinhalt steht in einem eigenen Kasten IN der Zelle - kein

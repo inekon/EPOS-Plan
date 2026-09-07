@@ -80,6 +80,10 @@ namespace WindowsFormsApplication1
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     () => BedarfStammCtrl.Katalogfilterzeilen(art)),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerBedarf(art, Filtertext),
+                // W14a-E-10 / S3.3: die Zeilen des Vergleichs kommen aus DERSELBEN
+                // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
+                ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    n => BedarfStammCtrl.Vergleichszeilen(art, n, Filtertext)),
                 ["Kopf"] = new Func<string, (string, string)?>(name => BedarfStammCtrl.Kopf(art, name)),
                 ["Jahressumme"] = new Func<string, string>(name => JahressummeText(art, name)),
                 ["Loeschen"] = new Func<string, BedarfLoeschAusgang>(name => Loeschen(art, name)),

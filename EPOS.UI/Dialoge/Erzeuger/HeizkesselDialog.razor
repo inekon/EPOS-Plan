@@ -93,7 +93,8 @@
                kann. Das PROFIL traegt die Spalte "im Projekt verwendet" (Q12). *@
             <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
-                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen" />
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
+                          Vergleichsparameter="@Vergleichsparameter" />
 
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
@@ -221,6 +222,13 @@
     /// herein; ohne Profil zeichnet die <c>Katalogliste</c> nichts.
     /// </summary>
     [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+    /// <summary>
+    /// <b>Die Zeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) — derselbe Weg,
+    /// aus dem die Parameterübersicht (W14a‑E‑8) ihre Zeilen holt. Ohne ihn
+    /// vergleicht die <c>Katalogliste</c> ihre eigenen Spalten.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
 
     /// <summary>
     /// Die Zeilen des Katalogs, UNGEFILTERT —

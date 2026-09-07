@@ -103,6 +103,10 @@ namespace WindowsFormsApplication1
                 // und einem Feld "enthaelt ...".
                 ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
                     Anlagenart.Photovoltaik, Text_),
+                // W14a-E-10 / S3.3: die Zeilen des Vergleichs kommen aus DERSELBEN
+                // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
+                ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    n => ParameterUebersichtCtrl.Werte(Anlagenart.Photovoltaik, n, Text_)),
 
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     PhotovoltaikStammCtrl.Katalogfilterzeilen),
