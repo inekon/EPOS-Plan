@@ -1166,6 +1166,9 @@ with a small tank the figure becomes large without any additional ageing.</value
   <data name="PVIMP_LBL_LEISTUNG_VON" xml:space="preserve">
     <value>Power from:</value>
   </data>
+  <data name="PVIMP_LBL_MODULNAME" xml:space="preserve">
+    <value>Module name:</value>
+  </data>
   <data name="PVIMP_LBL_PMP" xml:space="preserve">
     <value>Pmp [W]:</value>
   </data>
@@ -1220,6 +1223,9 @@ with a small tank the figure becomes large without any additional ageing.</value
   <data name="PVIMP_SP_EFFIZIENZ" xml:space="preserve">
     <value>Efficiency (%)</value>
   </data>
+  <data name="PVIMP_SP_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
   <data name="PVIMP_SP_ISC" xml:space="preserve">
     <value>Isc [A]</value>
   </data>
@@ -1227,13 +1233,16 @@ with a small tank the figure becomes large without any additional ageing.</value
     <value>Year</value>
   </data>
   <data name="PVIMP_SP_MODULNAME" xml:space="preserve">
-    <value>Module name:</value>
+    <value>Module name</value>
   </data>
   <data name="PVIMP_SP_PMP" xml:space="preserve">
     <value>Pmp (W)</value>
   </data>
   <data name="PVIMP_SP_QUELLE" xml:space="preserve">
     <value>Source</value>
+  </data>
+  <data name="PVIMP_SP_TECHNOLOGIE" xml:space="preserve">
+    <value>Technology</value>
   </data>
   <data name="PVIMP_SP_VOC" xml:space="preserve">
     <value>Voc [V]</value>
@@ -15294,6 +15303,9 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="WRK_IMP_BTN_CEC" xml:space="preserve">
     <value>Load CEC list</value>
+  </data>
+  <data name="WRK_IMP_LBL_GERAET" xml:space="preserve">
+    <value>Device:</value>
   </data>
   <data name="WRK_IMP_LBL_P_AC_VON" xml:space="preserve">
     <value>AC nominal power from:</value>

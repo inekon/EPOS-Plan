@@ -1016,6 +1016,81 @@ public class ModulImportDialogTests : BunitContext
     }
 
     // =====================================================================
+    // 9 — Der Herstellerfilter im langen Raster (Befund W6‑B‑2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Befund W6‑B‑2</b> (Windows 07.09.2026): Der Anwender wählte
+    /// „SMA America", die Statuszeile meldete richtig „109 Geräte gefunden" — und im
+    /// Raster standen weiter die ABB-Zeilen der ungefilterten Liste.
+    ///
+    /// <para>Der Fall stellt die Lage nach: 150 Geräte einer Firma und 5 einer zweiten,
+    /// also über der Schwelle <c>VIRTUALISIEREN_AB</c> (120); der Herstellerfilter auf
+    /// die kleine Firma nimmt die Liste unter die Schwelle, und genau dabei WECHSELT der
+    /// Virtualisierungsschalter — der belegte Auslöser.</para>
+    ///
+    /// <para><b>Was er beweist und was nicht.</b> Er beweist, dass die Filterrechnung,
+    /// die Statuszeile UND die gezeichneten Zeilen zusammenpassen. Er beweist NICHT das
+    /// Rollverhalten des Browsers: bunit rechnet kein CSS und misst keine Behälterhöhe,
+    /// also zeichnet das <c>Virtualize</c> ohne seinen JavaScript-Teil VOR dem Filter
+    /// überhaupt keine Zeile — geprüft wird deshalb der Stand DANACH. Der Nachweis am
+    /// laufenden Browser ist die Playwright-Probe im Arbeitsordner (elf Fälle, rot
+    /// vor dem Fix), der Wächter am Standard ist
+    /// <c>RasterTests.Der_Wechsel_des_Virtualisierungsschalters_baut_das_Raster_neu_auf</c>.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers()
+    {
+        var viele = new List<object>();
+        for (int i = 0; i < 150; i++) viele.Add(Geraet("ABB: PVI-" + i.ToString("D3"), 3000 + i));
+        for (int i = 0; i < 5; i++) viele.Add(Geraet("SMA America: SB-" + i.ToString("D3"), 5000 + i));
+
+        var cut = Bauen(ModulImportArt.Wechselrichter, viele);
+        Laden(cut);
+
+        Assert.Equal(155, cut.Instance.SichtbareZeilen);
+
+        // Die zweite Firma der Klappliste: (alle) = 0, "ABB" = 1, "SMA America" = 2.
+        cut.FindAll(".epos-pvimport-filter select")[0].Change("2");
+
+        Assert.Equal(5, cut.Instance.SichtbareZeilen);
+        Assert.Contains("Filter Auswahl (5 Geräte gefunden)", cut.Markup);
+
+        string tabelle = cut.Find("tbody").TextContent;
+        Assert.Contains("SMA America", tabelle);
+        Assert.DoesNotContain("ABB", tabelle);
+        Assert.Equal(5, cut.FindAll("tbody tr").Count);
+    }
+
+    /// <summary>
+    /// <b>Nebenbefund zu W6‑B‑2:</b> Der Spaltenkopf hieß „Hersteller:" — die
+    /// Feldbeschriftung <c>WRK_LBL_FIRMA</c> war als Spaltentitel wiederverwendet.
+    /// Ein Spaltenkopf trägt keinen Doppelpunkt, eine Feldbeschriftung schon; seither
+    /// steht dafür ein eigener Schlüssel (<c>PVIMP_SP_HERSTELLER</c>,
+    /// <c>PVIMP_SP_TECHNOLOGIE</c>, <c>PVIMP_SP_MODULNAME</c>) und für das FELD
+    /// <c>PVIMP_LBL_MODULNAME</c> bzw. <c>WRK_IMP_LBL_GERAET</c>.
+    /// </summary>
+    [Theory]
+    [InlineData(ModulImportArt.Photovoltaik)]
+    [InlineData(ModulImportArt.Wechselrichter)]
+    public void Kein_Spaltenkopf_traegt_einen_Doppelpunkt(ModulImportArt art)
+    {
+        var cut = Bauen(art, art == ModulImportArt.Photovoltaik ? DreiModule() : DreiGeraete());
+        Laden(cut);
+
+        foreach (IElement kopf in cut.FindAll("thead th"))
+            Assert.DoesNotContain(":", kopf.TextContent);
+
+        Assert.Contains("Hersteller", cut.Find("thead").TextContent);
+
+        // Die Detailfelder daneben tragen ihn weiterhin - sie sind Beschriftungen.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        string uebersicht = cut.Find(".epos-formularraster").TextContent;
+        Assert.Contains(art == ModulImportArt.Photovoltaik ? "Modulname:" : "Gerät:", uebersicht);
+        Assert.Contains("Hersteller:", uebersicht);
+    }
+
+    // =====================================================================
     // Hilfen
     // =====================================================================
 

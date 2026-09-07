@@ -337,6 +337,23 @@ der CEC-Modulliste setzt der Wirt den Schalter; die Hülle bekommt damit die Kla
 `epos-raster-huelle--hoch` (feste Höhe, stehender Spaltenkopf), ohne die es nichts zu rollen und
 also nichts zu virtualisieren gäbe.
 
+**Eine neue Zeilenmenge bekommt ein neues QuickGrid** (Befund **W6‑B‑2**, Windows 07.09.2026:
+„der Filter bei der Herstellerauswahl funktioniert nicht"). Das Raster hängt seither ein
+`@key` an `Rasterstand` = (`Virtualisiert`, Zeilenzahl); ändert sich einer der beiden Werte,
+baut Blazor das Gitter neu auf. **Kein Wirt muss etwas dafür tun** — der Standard rechnet die
+Kennung selbst. Grund: QuickGrid trägt den virtualisierten und den flachen Weg in EINER Instanz,
+und der flache Zwischenspeicher (`_currentNonVirtualizedViewItems`) wird genau einmal gefüllt —
+beim ersten Datenabruf, als das `@ref` auf das `Virtualize`-Kind noch `null` war, ohne
+Pagination also mit der GANZEN Liste. Danach ist das `@ref` gesetzt und wird beim Entfernen des
+Kindes nicht zurückgesetzt; jeder weitere Abruf läuft ins Leere. Fällt der Schalter deshalb
+unter der Schwelle der Wirte (≥ 120 Zeilen) von `true` auf `false` — 2 343 Wechselrichter → 109
+nach dem Herstellerfilter —, zeichnet QuickGrid den uralten Stand: die ungefilterte Liste. Der
+Schlüssel hängt bewusst an der ZAHL und nicht an der Zeilenmenge: Beim Tippen in einer Zelle
+(`Bearbeitbar`) ändert sie sich nicht, beim Filtern praktisch immer. Wächter: die drei Fälle in
+`RasterTests` („Der_Wechsel_des_Virtualisierungsschalters…", „Eine_andere_Zeilenzahl…",
+„Dieselbe_Zeilenzahl_behaelt_die_Rasterinstanz") und
+`ModulImportDialogTests.Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers`.
+
 `Zahlenfeld`, `Ganzzahlfeld`, `Auswahlfeld` und `Schalter` führen `Aktiv` (Vorgabe `true`):
 Ein gesperrtes Feld bleibt **sichtbar und lesbar**. Der Tarifdialog sperrt damit den Block des
 nicht gewählten Rechenmodells, statt ihn auszublenden — die Werte des anderen Modells gehen so
