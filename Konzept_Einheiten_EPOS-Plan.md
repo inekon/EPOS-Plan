@@ -493,18 +493,18 @@ Abweichung unsichtbar.
 
 ## 7. Stufenplan
 
-### S1 — Die Anzeigegrenze härten *(**ERLEDIGT** am 07.09.2026, Commit `<SHA>`)*
+### S1 — Die Anzeigegrenze härten *(**ERLEDIGT** am 07.09.2026, Commit `5b80a8e`)*
 
 | Schritt | Stellen | Aufwand | Stand |
 |---|---:|---|---|
 | S1.1 Brauchwasser: eine Einheit für beide Wege | 4 | — | **erledigt** (W8‑O‑5b, `6839a7a`) |
 | S1.2 Die elf Energie-Umrechnungen aus U6 in den Kern ziehen — die `…Mwh`-Felder von `SimulationErgebnisCtrl` benutzen statt am DTO vorbei zu rechnen | 11 | 3 h | **erledigt**: vier neue DTO-Felder (`HeizstabWaermeproduktionMwh`, `StromspeicherEntladungMwh`, `StrombedarfMitEigenverbrauchMwh`, `StromGesamtMwh`) und `SimulationErgebnisCtrl.KanalMwh`; die zwei Hüllenmethoden `StrombedarfGesamt()`/`StromgedecktMwh()` sind gefallen. Die zwei Ringdiagramme (U5) lesen jetzt EINE Konvention. Windows-Abnahme A‑W8‑O5c‑1…4 offen |
-| S1.3 Die Jahressummen benennen — Einheit am Namen | **22 Namen, 45 Deklarationen, 399 Fundstellen** | 4 h | **erledigt**: alle 31 `…_gesamt`/`…_summe` der sechs Erzeuger- und Speicherklassen bis auf die 13 begründeten Ausnahmen, dazu `Restwaerme`/`Reststrom` (U8), die 19 Brennstoffzähler und die zwei Ergebnisrecords. Der CSV-Schlüssel `Sim.Restwaerme` bleibt hart verdrahtet (Q7), mit Kommentar an der Exportzeile |
+| S1.3 Die Jahressummen benennen — Einheit am Namen | **43 Namen, 51 Deklarationen, 412 Fundstellen** | 4 h | **erledigt**: alle 31 `…_gesamt`/`…_summe` der sechs Erzeuger- und Speicherklassen bis auf die 13 begründeten Ausnahmen, dazu `Restwaerme`/`Reststrom` (U8), die 19 Brennstoffzähler und die zwei Ergebnisrecords. Der CSV-Schlüssel `Sim.Restwaerme` bleibt hart verdrahtet (Q7), mit Kommentar an der Exportzeile |
 | S1.4 Die zwei Wächter | 1 neue Testdatei, 7 Fälle | 2 h | **erledigt**: `EPOS.Kern.Tests/EinheitenWacheTests.cs` — Faktor 1000 in `EPOS.UI/**` und `WindowsFormsApplication1/Views/**` (5 Ausnahmen, alle Leistung), Einheit am Namen in den sieben Simulationsklassen (13 Ausnahmen). Beide je einmal als rot belegt |
 | S1.5 Die Einheitenregel schreiben | — | 1 h | **erledigt**: `EPOS.Kern/CLAUDE.md` Abschnitt „Einheiten: die Regel des Rechenkerns", ein Satz in `EPOS.UI/CLAUDE.md` |
-| **Summe S1** | **~415** | **10 h** | **Referenzlauf byte-gleich: 12 von 12 Projekten, 312 von 312 CSV** |
+| **Summe S1** | **~430** | **10 h** | **Referenzlauf byte-gleich: 12 von 12 Projekten, 312 von 312 CSV** |
 
-> **Warum aus „~76 Stellen" 415 wurden.** Die Schätzung zählte die Felder, die das Papier
+> **Warum aus „~76 Stellen" 430 wurden.** Die Schätzung zählte die Felder, die das Papier
 > namentlich nennt. Der Wächter aus S1.4 zieht die Grenze aber nicht bei einer Namensliste,
 > sondern bei einer REGEL — und die traf alle 31 Jahressummen der sechs Klassen plus die
 > Brennstoffzähler, die als Geschwister im selben Deklarationsblock stehen. Eine Regel, die
@@ -589,7 +589,7 @@ ist Q2.
 | **W8‑O‑5** | 04.09.2026 | Die Anzeigeeinheit der Bedarfsansichten ist wählbar: MWh als Vorgabe, kWh wählbar, konsistent in den Ansichten. Die Einheit steht AM WERT (`Energieeinheit`), die Anzeige rechnet um. | **umgesetzt** (`EPOS.Kern/Allgemein/Energieeinheit.cs`) |
 | **W9‑O‑3** | 04.09.2026 | Die Prozesssumme der Vorschau geht über die Einheitenklasse in die Einheit, die der Kern führt (MWh). | **umgesetzt** (`SimulationWaermebedarf.ProzesssummeUebernehmen`) |
 | **W8‑O‑5b** | 07.09.2026 | „Nehme die Umrechnung in den Dialogen vor." — Die Brauchwassermenge steht auf BEIDEN Wegen in MWh; jede Übergabe an einen Dialog trägt ihre Einheit, der Dialog rechnet über `Energieeinheit` um. | **umgesetzt** in Commit `6839a7a` |
-| **W8‑O‑5c** | 07.09.2026 | „Prüfe, ob es nicht sinnvoll ist, die gesamten Berechnungen in kWh auszuführen … oder Vereinheitlichen der Berechnung in MWh — aber einheitlich." | **beantwortet** — Q1 „Regel festschreiben", Q2…Q8 „Empfehlung"; **Stufe S1 umgesetzt in `<SHA>`** |
+| **W8‑O‑5c** | 07.09.2026 | „Prüfe, ob es nicht sinnvoll ist, die gesamten Berechnungen in kWh auszuführen … oder Vereinheitlichen der Berechnung in MWh — aber einheitlich." | **beantwortet** — Q1 „Regel festschreiben", Q2…Q8 „Empfehlung"; **Stufe S1 umgesetzt in `5b80a8e`** |
 | **W8‑O‑5d** | 07.09.2026 | Die Akkumulatoren des Kerns von `float` auf `double` (Q5) — als EIGENES Paket, nicht in S1. | **offen** |
 
 ### 9.1 Die Antworten auf Q1…Q8 (Anwender, 07.09.2026)
