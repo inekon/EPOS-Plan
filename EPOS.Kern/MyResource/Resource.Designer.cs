@@ -85,6 +85,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -30473,7 +30474,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter — {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenwerte (Rückfall) — {0} ähnelt.
         /// </summary>
         public static string PVM_DLG_TITEL {
             get {
@@ -30590,7 +30591,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter der Anlage… ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenwerte (Rückfall)… ähnelt.
         /// </summary>
         public static string PVS_BTN_ANLAGE {
             get {
@@ -30725,6 +30726,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gewählte Gerät bekommt der nächste Strang. In der Tabelle lässt es sich je Strang ändern. ähnelt.
+        /// </summary>
+        public static string PVS_HERLEITUNG_GERAETEWAHL {
+            get {
+                return ResourceManager.GetString("PVS_HERLEITUNG_GERAETEWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang. ähnelt.
         /// </summary>
         public static string PVS_HERLEITUNG_MODUL {
@@ -30734,7 +30744,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wechselrichter zugeordnet — legen Sie einen Strang an. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlagenwerte sind der Rückfall des vereinfachten Weges — sie rechnen nur ohne Strangzuordnung. ähnelt.
+        /// </summary>
+        public static string PVS_HERLEITUNG_RUECKFALL {
+            get {
+                return ResourceManager.GetString("PVS_HERLEITUNG_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wechselrichterkatalog ist leer. Geräte einlesen über: Administration → Daten &amp; Import → Photovoltaik → „Wechselrichter (CEC, OND)…“. ähnelt.
+        /// </summary>
+        public static string PVS_HINWEIS_KATALOG_LEER {
+            get {
+                return ResourceManager.GetString("PVS_HINWEIS_KATALOG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Strang: Gerät oben wählen und „Strang anlegen“ drücken. ähnelt.
         /// </summary>
         public static string PVS_HINWEIS_OHNE_STRANG {
             get {
@@ -30766,6 +30794,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_KEIN_GERAET_WAHL {
             get {
                 return ResourceManager.GetString("PVS_KEIN_GERAET_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter aus dem Katalog: ähnelt.
+        /// </summary>
+        public static string PVS_LBL_GERAETEWAHL {
+            get {
+                return ResourceManager.GetString("PVS_LBL_GERAETEWAHL", resourceCulture);
             }
         }
         
@@ -30946,15 +30983,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_SATZ_STRANG {
             get {
                 return ResourceManager.GetString("PVS_SATZ_STRANG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch kein Strang zugeordnet. ähnelt.
-        /// </summary>
-        public static string PVS_SPERRE_OHNE_STRANG {
-            get {
-                return ResourceManager.GetString("PVS_SPERRE_OHNE_STRANG", resourceCulture);
             }
         }
         

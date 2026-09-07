@@ -178,17 +178,51 @@ public sealed class PvStrangTexte
     public string OptionKatalog { get; set; } =
         T("PVS_OPT_KATALOG", "mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping");
 
-    /// <summary>Der GRUND der weichen Sperre (W16b‑E‑6) — <c>PVS_SPERRE_OHNE_STRANG</c>.</summary>
-    public string SperreOhneStrang { get; set; } =
-        T("PVS_SPERRE_OHNE_STRANG", "Es ist noch kein Strang zugeordnet.");
-
     /// <summary>Die Zeile im Weg „vereinfacht" — <c>PVS_HINWEIS_VEREINFACHT</c>, mit {0} = Wirkungsgrad.</summary>
     public string HinweisVereinfacht { get; set; } =
         T("PVS_HINWEIS_VEREINFACHT", "Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping.");
 
-    /// <summary>Die Zeile, wenn „mit Wechselrichter" gewählt, aber kein Strang angelegt ist.</summary>
+    /// <summary>
+    /// Die Zeile, wenn „mit Wechselrichter" gewählt, aber kein Strang angelegt ist —
+    /// <c>PVS_HINWEIS_OHNE_STRANG</c>. Seit <b>W6‑B‑3</b> nennt sie den nächsten
+    /// Handgriff, statt nur einen Mangel zu melden: Der Anwender steht in genau diesem
+    /// Zustand, sobald er den Weg wählt.
+    /// </summary>
     public string HinweisOhneStrang { get; set; } =
-        T("PVS_HINWEIS_OHNE_STRANG", "Kein Wechselrichter zugeordnet — legen Sie einen Strang an.");
+        T("PVS_HINWEIS_OHNE_STRANG",
+          "Noch kein Strang: Gerät oben wählen und „Strang anlegen“ drücken.");
+
+    /// <summary>
+    /// Beschriftung der KATALOGWAHL über der Tabelle — <c>PVS_LBL_GERAETEWAHL</c>
+    /// (<b>W6‑B‑3</b>). Sie gilt dem nächsten Strang; jede bestehende Zeile hat ihre
+    /// eigene Klappliste in der Spalte „Wechselrichter".
+    /// </summary>
+    public string LabelGeraetewahl { get; set; } =
+        T("PVS_LBL_GERAETEWAHL", "Wechselrichter aus dem Katalog:");
+
+    /// <summary>Die Herleitung unter der Katalogwahl — <c>PVS_HERLEITUNG_GERAETEWAHL</c>.</summary>
+    public string HerleitungGeraetewahl { get; set; } =
+        T("PVS_HERLEITUNG_GERAETEWAHL",
+          "Das gewählte Gerät bekommt der nächste Strang. In der Tabelle lässt es sich je Strang ändern.");
+
+    /// <summary>
+    /// Der Weg zum Import, wenn der Wechselrichterkatalog LEER ist —
+    /// <c>PVS_HINWEIS_KATALOG_LEER</c> (<b>W6‑B‑3</b>). Der Auslieferungskatalog ist
+    /// leer (W6‑O‑3); ohne diesen Satz stünde der Abschnitt stumm da.
+    /// </summary>
+    public string HinweisKatalogLeer { get; set; } =
+        T("PVS_HINWEIS_KATALOG_LEER",
+          "Der Wechselrichterkatalog ist leer. Geräte einlesen über: " +
+          "Administration → Daten & Import → Photovoltaik → „Wechselrichter (CEC, OND)…“.");
+
+    /// <summary>
+    /// Die Zeile neben dem Rückfallknopf im Weg „mit Wechselrichter" —
+    /// <c>PVS_HERLEITUNG_RUECKFALL</c> (<b>W6‑B‑3</b>). Sie sagt, dass hinter dem Knopf
+    /// die PAUSCHALEN stehen und nicht die Katalogwahl.
+    /// </summary>
+    public string HerleitungRueckfall { get; set; } =
+        T("PVS_HERLEITUNG_RUECKFALL",
+          "Die Anlagenwerte sind der Rückfall des vereinfachten Weges — sie rechnen nur ohne Strangzuordnung.");
 
     /// <summary>Spaltenkopf „Rang" — <c>PVS_SP_RANG</c>.</summary>
     public string SpalteRang { get; set; } = T("PVS_SP_RANG", "Rang");

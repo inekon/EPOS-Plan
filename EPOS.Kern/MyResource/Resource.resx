@@ -1212,7 +1212,7 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
     <value>Übernehmen</value>
   </data>
   <data name="PVM_DLG_TITEL" xml:space="preserve">
-    <value>Wechselrichter — {0}</value>
+    <value>Anlagenwerte (Rückfall) — {0}</value>
   </data>
   <data name="PVM_MODELL_EINFACH" xml:space="preserve">
     <value>Einfach</value>
@@ -15647,14 +15647,23 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="PVS_OPT_KATALOG" xml:space="preserve">
     <value>mit Wechselrichter — Katalog, Stränge, Kennlinie, Clipping</value>
   </data>
-  <data name="PVS_SPERRE_OHNE_STRANG" xml:space="preserve">
-    <value>Es ist noch kein Strang zugeordnet.</value>
-  </data>
   <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
     <value>Die Anlage rechnet mit dem Wirkungsgrad {0} und ohne Clipping.</value>
   </data>
   <data name="PVS_HINWEIS_OHNE_STRANG" xml:space="preserve">
-    <value>Kein Wechselrichter zugeordnet — legen Sie einen Strang an.</value>
+    <value>Noch kein Strang: Gerät oben wählen und „Strang anlegen“ drücken.</value>
+  </data>
+  <data name="PVS_LBL_GERAETEWAHL" xml:space="preserve">
+    <value>Wechselrichter aus dem Katalog:</value>
+  </data>
+  <data name="PVS_HERLEITUNG_GERAETEWAHL" xml:space="preserve">
+    <value>Das gewählte Gerät bekommt der nächste Strang. In der Tabelle lässt es sich je Strang ändern.</value>
+  </data>
+  <data name="PVS_HINWEIS_KATALOG_LEER" xml:space="preserve">
+    <value>Der Wechselrichterkatalog ist leer. Geräte einlesen über: Administration → Daten &amp; Import → Photovoltaik → „Wechselrichter (CEC, OND)…“.</value>
+  </data>
+  <data name="PVS_HERLEITUNG_RUECKFALL" xml:space="preserve">
+    <value>Die Anlagenwerte sind der Rückfall des vereinfachten Weges — sie rechnen nur ohne Strangzuordnung.</value>
   </data>
   <data name="PVS_SP_RANG" xml:space="preserve">
     <value>Rang</value>
@@ -15705,7 +15714,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>Entfernen</value>
   </data>
   <data name="PVS_BTN_ANLAGE" xml:space="preserve">
-    <value>Wechselrichter der Anlage…</value>
+    <value>Anlagenwerte (Rückfall)…</value>
   </data>
   <data name="PVS_ANZAHL_ABGELEITET" xml:space="preserve">
     <value>aus der Strangtabelle</value>

@@ -148,29 +148,198 @@ public class PvStraengeFelderTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Die weiche Sperre</b> (W16b‑E‑6): „mit Wechselrichter" ohne Strangzeile
-    /// bleibt ANKLICKBAR, trägt <c>aria-disabled</c> und seinen Grund als
-    /// <c>title</c> — und der Versuch MELDET sich, statt zu schalten. Ein
-    /// <c>disabled</c>-Bedienelement könnte seinen Grund gar nicht sagen.
+    /// <b>Befund W6‑B‑3</b> (Windows-Abnahme 07.09.2026, wörtlich: „die gesamte
+    /// Zuordnung Wechselrichter zum PV-Modul und Strang funktioniert nicht — Auswahl
+    /// Wechselrichter nicht vorhanden"): Die Option „mit Wechselrichter" ist OHNE
+    /// Strangzeile frei wählbar, und der Klick SCHALTET.
+    ///
+    /// <para><b>Dies ist die GEGENPROBE zum gefallenen Fall</b>
+    /// <c>Mit_Wechselrichter_ohne_Strang_ist_weich_gesperrt_und_meldet_den_Grund</c>:
+    /// Die weiche Sperre nach W16b‑E‑6 stand am falschen Ort. Sie verlangte einen
+    /// Strang, bevor sie den Weg freigab — angelegt wird ein Strang aber ausschliesslich
+    /// INNERHALB dieses Weges. Damit war er von einer frischen Anlage aus unerreichbar,
+    /// und der Anwender sah weiter den vereinfachten Weg mit seinem einen Knopf.</para>
     /// </summary>
     [Fact]
-    public void Mit_Wechselrichter_ohne_Strang_ist_weich_gesperrt_und_meldet_den_Grund()
+    public void W6B3_Mit_Wechselrichter_ohne_Strang_ist_frei_waehlbar()
     {
         var zeile = Zeile();
-        var cut = Aufbauen(zeile);
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern);
 
         var kaesten = cut.FindAll(".epos-option-kasten");
         Assert.Equal(2, kaesten.Count);
         Assert.False(kaesten[1].HasAttribute("disabled"));
-        Assert.Equal("true", kaesten[1].GetAttribute("aria-disabled"));
-        Assert.Contains("kein Strang", kaesten[1].GetAttribute("title") ?? "",
-                        StringComparison.OrdinalIgnoreCase);
+        Assert.Null(kaesten[1].GetAttribute("aria-disabled"));
+        Assert.Null(kaesten[1].GetAttribute("title"));
 
         kaesten[1].Change("1");
 
-        Assert.False(zeile.MitWechselrichter);
-        Assert.Contains("kein Strang", cut.Instance.Meldung, StringComparison.OrdinalIgnoreCase);
-        Assert.Single(cut.FindComponents<Warnbanner>());
+        Assert.True(zeile.MitWechselrichter);
+        Assert.Empty(cut.FindComponents<Warnbanner>());
+    }
+
+    /// <summary>
+    /// <b>W6‑B‑3, die Lage des Anwenders:</b> „mit Wechselrichter", noch kein Strang.
+    /// Der Abschnitt zeigt dann ALLES, was zur Zuordnung gehört — Herstellerfilter,
+    /// Klappliste der Katalog-Wechselrichter und „Strang anlegen" —, obwohl die Tabelle
+    /// noch nicht steht. Vorher stand hier nur ein Satz.
+    /// </summary>
+    [Fact]
+    public void W6B3_Ohne_Strang_stehen_Filter_Klappliste_und_Anlegen()
+    {
+        var cut = Aufbauen(Zeile(true), hersteller: HERSTELLER, filtern: Filtern);
+
+        Assert.Single(cut.FindAll(".epos-strangfilter"));
+        Assert.Single(cut.FindAll(".epos-geraetewahl"));
+
+        var wahl = Wahl(cut, "Wechselrichter aus dem Katalog:");
+        Assert.Equal(4, wahl.Instance.Eintraege.Count);           // "(kein Gerät)" + drei
+        Assert.Equal(0, wahl.Instance.Auswahl);
+
+        Assert.Contains(cut.FindAll(".epos-leiste .epos-knopf"),
+                        k => k.TextContent.Contains("Strang anlegen", StringComparison.Ordinal));
+        Assert.Empty(cut.FindAll(".epos-strangtabelle"));
+        Assert.Empty(cut.FindAll(".epos-katalogleer"));
+    }
+
+    /// <summary>
+    /// <b>W6‑B‑3, leerer Katalog:</b> Statt der Klappliste steht der WEG zum Import.
+    /// Der Auslieferungskatalog ist leer (W6‑O‑3) — ohne diesen Satz stünde der
+    /// Abschnitt stumm da, und das war die zweite Hälfte des Befunds.
+    /// </summary>
+    [Fact]
+    public void W6B3_Ein_leerer_Katalog_nennt_den_Weg_zum_Import()
+    {
+        var cut = Render<PvStraengeFelder>(p => p
+            .Add(x => x.Zeile, Zeile(true))
+            .Add(x => x.Geraete, Array.Empty<(int, string)>())
+            .Add(x => x.Hersteller, Array.Empty<string>()));
+
+        Assert.Empty(cut.FindAll(".epos-geraetewahl"));
+
+        string satz = cut.Find(".epos-katalogleer").TextContent;
+        Assert.Contains("Wechselrichterkatalog ist leer", satz, StringComparison.Ordinal);
+        Assert.Contains("Administration", satz, StringComparison.Ordinal);
+        Assert.Contains("Daten & Import", satz, StringComparison.Ordinal);
+        Assert.Contains("Photovoltaik", satz, StringComparison.Ordinal);
+        Assert.Contains("Wechselrichter (CEC, OND)", satz, StringComparison.Ordinal);
+
+        // Der Weg bleibt trotzdem begehbar: ein Strang ohne Gerät ist erlaubt, die
+        // Ampel sagt dann, was fehlt.
+        Assert.Contains(cut.FindAll(".epos-leiste .epos-knopf"),
+                        k => k.TextContent.Contains("Strang anlegen", StringComparison.Ordinal));
+
+        // Und der Satz „Gerät oben wählen" bleibt fort — er zeigte auf eine
+        // Klappliste, die es hier nicht gibt.
+        Assert.DoesNotContain("Gerät oben wählen", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>W6‑B‑3, der Rückfallknopf:</b> Er heisst nach seinem INHALT — hinter ihm
+    /// stehen die vier Pauschalen der Anlage, nicht die Katalogwahl — und er steht in
+    /// einer eigenen Zeile am Fuss, nicht in der Leiste neben „Strang anlegen".
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void W6B3_Der_Rueckfallknopf_heisst_nach_seinem_Inhalt(bool mit)
+    {
+        var cut = Aufbauen(Zeile(mit), hersteller: HERSTELLER, filtern: Filtern);
+
+        var knopf = cut.Find(".epos-straenge-anlagenknopf");
+        Assert.Contains("Anlagenwerte", knopf.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Rückfall", knopf.TextContent, StringComparison.Ordinal);
+
+        // Er steht in der Rückfallzeile und in KEINER Leiste.
+        Assert.Single(cut.FindAll(".epos-strangrueckfall .epos-straenge-anlagenknopf"));
+        Assert.Empty(cut.FindAll(".epos-leiste .epos-straenge-anlagenknopf"));
+    }
+
+    /// <summary>
+    /// <b>W6‑B‑3:</b> Im Weg „vereinfacht" ist der Rückfall der EINZIGE Knopf — der
+    /// Stand von heute, und die Zeile daneben nennt weiter den geltenden Wirkungsgrad.
+    /// </summary>
+    [Fact]
+    public void W6B3_Vereinfacht_zeigt_nur_den_Rueckfall()
+    {
+        var cut = Aufbauen(Zeile(), hersteller: HERSTELLER, filtern: Filtern);
+
+        Assert.Single(cut.FindAll("button.epos-knopf"));
+        Assert.Empty(cut.FindAll(".epos-strangfilter"));
+        Assert.Empty(cut.FindAll(".epos-geraetewahl"));
+        Assert.Empty(cut.FindAll(".epos-katalogleer"));
+        Assert.Contains("0,950", cut.Find(".epos-strangrueckfall").TextContent,
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>W6‑B‑3:</b> Das Gerät der Katalogwahl geht in den NEUEN Strang — genau das
+    /// ist der Sinn der Zeile über der Tabelle. Übernommen (<c>CopyFromStamm</c>) wird
+    /// es dabei, nicht schon beim Blättern in der Klappliste.
+    /// </summary>
+    [Fact]
+    public async Task W6B3_Strang_anlegen_nimmt_das_Geraet_der_Katalogwahl_mit()
+    {
+        int gerufen = 0;
+        var zeile = Zeile(true);
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern,
+                           uebernehmen: id => { gerufen++; return new GeraetWahl(4711, GeraetName(id)); });
+
+        var wahl = Wahl(cut, "Wechselrichter aus dem Katalog:");
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(9));   // "Fremd 3000X"
+
+        Assert.Equal(0, gerufen);                       // die Wahl allein kopiert nichts
+        Assert.Empty(zeile.Straenge);
+        Assert.Equal(9, cut.Instance.Katalogwahl);
+
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.Single(zeile.Straenge);
+        Assert.Equal(1, gerufen);
+        Assert.Equal(4711, zeile.Straenge[0].WechselrichterId);
+        Assert.Equal("Fremd 3000X", zeile.Straenge[0].WechselrichterName);
+        Assert.Single(cut.FindAll(".epos-strangtabelle"));
+    }
+
+    /// <summary>
+    /// <b>W6‑B‑3, die Gegenprobe:</b> Ohne Gerätewahl legt „Strang anlegen" eine LEERE
+    /// Zeile an wie bisher — der Strang ohne Gerät bleibt ein zulässiger Zwischenstand
+    /// (die Ampel meldet ihn, sie verhindert ihn nicht).
+    /// </summary>
+    [Fact]
+    public void W6B3_Ohne_Geraetewahl_bleibt_der_neue_Strang_leer()
+    {
+        int gerufen = 0;
+        var zeile = Zeile(true);
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern,
+                           uebernehmen: id => { gerufen++; return new GeraetWahl(4711, GeraetName(id)); });
+
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.Single(zeile.Straenge);
+        Assert.Equal(0, gerufen);
+        Assert.Equal(0, zeile.Straenge[0].WechselrichterId);
+    }
+
+    /// <summary>
+    /// <b>W6‑B‑3:</b> Führt der Katalog das vorgemerkte Gerät nicht mehr — der Anwender
+    /// stellt den Herstellerfilter um —, fällt die Katalogwahl auf „(kein Gerät)"
+    /// zurück. Sonst nähme „Strang anlegen" ein Gerät mit, das in der Klappliste gar
+    /// nicht mehr steht.
+    /// </summary>
+    [Fact]
+    public async Task W6B3_Ein_Filterwechsel_setzt_eine_unsichtbare_Katalogwahl_zurueck()
+    {
+        var cut = Aufbauen(Zeile(true), hersteller: HERSTELLER, filtern: Filtern);
+
+        var wahl = Wahl(cut, "Wechselrichter aus dem Katalog:");
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(9));   // "Fremd 3000X"
+        Assert.Equal(9, cut.Instance.Katalogwahl);
+
+        var filter = Wahl(cut, "Filtern nach Hersteller:");
+        await cut.InvokeAsync(() => filter.Instance.AuswahlChanged.InvokeAsync(2));  // "Muster"
+
+        Assert.Equal(0, cut.Instance.Katalogwahl);
     }
 
     /// <summary>
