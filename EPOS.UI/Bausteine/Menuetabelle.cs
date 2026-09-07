@@ -67,6 +67,31 @@
 // von "Wechselrichter (CEC, OND)..." unter demselben Knoten. MENU_PV bleibt
 // wie MENU_PC_BEARBEITEN im Katalog stehen und wird vom Menue nicht mehr
 // gelesen.
+//
+// ANWENDERENTSCHEID W16c-O-7 (07.09.2026) - das letzte Ein-Punkt-Untermenue
+// ist aufgeloest. Die Regel aus W16c-E-6 ("kein Untermenue mit nur EINEM
+// Punkt") war im Kopf "Administration" noch einmal verletzt: Der Knoten
+// MenuItem_Klima ("Klimadaten") fuehrte als einziges Kind den Punkt
+// MenuItem_Klimadaten ("Klimadaten") - dieselbe Beschriftung zweimal, ein
+// Klick zuviel. Der Anwender hat auf Rueckfrage "ja" gesagt; der Punkt steht
+// jetzt an der Stelle des Knotens unmittelbar im Kopf und traegt dessen Bild
+// Menu4. Sein Name, sein Textschluessel (MENU_KLIMADATEN) und sein Ziel
+// (Seitenschluessel.Klimadaten) sind unveraendert - help_mapping.txt und die
+// Huelle greifen weiter. MENU_KLIMA bleibt wie MENU_PC_BEARBEITEN und MENU_PV
+// im Katalog stehen und wird vom Menue nicht mehr gelesen. Damit fuehrt KEIN
+// Untermenue mehr nur einen Punkt, und der Waechter
+// Ein_neues_Untermenue_fuehrt_nie_nur_einen_einzigen_Punkt gilt ohne jede
+// Ausnahme.
+//
+// ANWENDERWUNSCH W13-E-2 (07.09.2026) - der STROMSPEICHERIMPORT. Er ist der
+// erste NEUE Weg seit W6-E-2 und der Grund, warum die Zahl der handelnden
+// Punkte auf 45 steigt: "Es gibt keinen Datenimport fuer Stromspeicher. Dieser
+// muss noch hinzugefuegt werden (Administration -> Datenimport)." Der Punkt
+// MenuItem_SP_Import (MENU_SP_IMPORT, Seitenschluessel.StromspeicherImport)
+// steht in "Daten & Import" HINTER dem Knoten "Photovoltaik" und VOR
+// "Import Solarkollektoren"; die Maske ist die fuenfte Auspraegung des
+// KatalogImportDialog (Stufe S1 des Konzept_Stromspeicherimport_EPOS-Plan.md,
+// Entscheide Q1...Q8 = Empfehlung).
 
 using System;
 using System.Collections.Generic;
@@ -86,16 +111,20 @@ namespace EPOS.UI.Bausteine;
 /// (W16c-E-6) und die zwei Knoten "Photovoltaik" (W16c-E-7); dafuer fallen
 /// mit W16c-E-6 die zwei Ein-Punkt-Untermenues MenuItem_PC_Bearbeiten und
 /// MenuItem_ST_Bearbeiten weg, und mit W6-E-2 kommen die zwei
-/// Wechselrichterpunkte hinzu. Also 54 Bestandspunkte + 2 - 2 + 2 + 2 = 58,
-/// dazu 8 Trennstriche.</para>
+/// Wechselrichterpunkte hinzu; mit W16c-O-7 faellt das dritte und letzte
+/// Ein-Punkt-Untermenue MenuItem_Klima, mit W13-E-2 kommt der
+/// Stromspeicherimport hinzu. Also 54 Bestandspunkte
+/// + 2 - 2 + 2 + 2 - 1 + 1 = 58, dazu 8 Trennstriche.</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 58 Punkten handeln <b>44</b>, 14 klappen auf.
-/// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6 und mit W16c-E-7
-/// unveraendert geblieben: Es ist kein Ziel entfallen und keines
+/// vier klappen nur auf; von den 58 Punkten handeln <b>45</b>, 13 klappen auf.
+/// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6, mit W16c-E-7 und mit
+/// W16c-O-7 unveraendert geblieben: Es ist kein Ziel entfallen und keines
 /// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
-/// ist sie allein mit W6-E-2, das zwei ECHTE Wege anlegte (42 -> 44).</para>
+/// ist sie zweimal, und beide Male um einen ECHTEN neuen Weg: mit W6-E-2 um
+/// den Wechselrichterkatalog und seinen Import (42 -> 44), mit W13-E-2 um den
+/// Stromspeicherimport (44 -> 45).</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -186,10 +215,11 @@ public static class Menuetabelle
                 // W16c-E-6: aus "Waermebedarf & Heizung" hierher.
                 new Menuepunkt("MenuItem_PufferSp", "MENU_PUFFER_SP", Seitenschluessel.PufferSpAdmin),
             },
-            new Menuepunkt("MenuItem_Klima", "MENU_KLIMA", "", bild: "Menu4")
-            {
-                new Menuepunkt("MenuItem_Klimadaten", "MENU_KLIMADATEN", Seitenschluessel.Klimadaten),
-            },
+            // W16c-O-7: der Punkt stand bis zum 07.09.2026 als EINZIGES Kind
+            // im Untermenue MenuItem_Klima ("Klimadaten" ueber "Klimadaten").
+            // Er traegt jetzt an dessen Stelle das Bild Menu4 des gefallenen
+            // Knotens; Name, Textschluessel und Ziel sind unveraendert.
+            new Menuepunkt("MenuItem_Klimadaten", "MENU_KLIMADATEN", Seitenschluessel.Klimadaten, bild: "Menu4"),
             new Menuepunkt("MenuItem_DatImport", "MENU_DAT_IMPORT", "", bild: "Menue5")
             {
                 new Menuepunkt("MenuItem_Import_Heizkessel", "MENU_IMPORT_HEIZKESSEL", Seitenschluessel.HeizkesselImport),
@@ -209,6 +239,13 @@ public static class Menuetabelle
                     // (CEC) auf; die zwei anderen Quellen sind Knoepfe IN der Maske.
                     new Menuepunkt("MenuItem_WR_Import_CEC", "MENU_WR_IMPORT_CEC", Seitenschluessel.WechselrichterImport),
                 },
+                // ANWENDERWUNSCH W13-E-2 (07.09.2026), Stufe S1: der
+                // Stromspeicherimport. Er stand als EINZIGER Katalog ohne
+                // Einlesepunkt da; die Rubrik fuehrte sechs Importe und keinen
+                // fuer Tab_Stromspeicher_STAMM. Seine Stelle ist HINTER dem
+                // Knoten "Photovoltaik" - Stromspeicher und PV gehoeren zur
+                // selben Anlage - und VOR den Solarkollektoren.
+                new Menuepunkt("MenuItem_SP_Import", "MENU_SP_IMPORT", Seitenschluessel.StromspeicherImport),
                 new Menuepunkt("MenuItem_ST_Import", "MENU_ST_IMPORT", Seitenschluessel.SolarkollektorenImport),
             },
             new Menuepunkt("MenuItem_KostenVerwaltung", "MENU_KOSTEN_VERWALTUNG", "")

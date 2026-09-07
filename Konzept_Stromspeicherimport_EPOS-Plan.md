@@ -1,7 +1,8 @@
 # Konzept: Stromspeicherimport EPOS-Plan — Quellenprüfung, Abbildung und Stufenplan
 
-**Rev. 1 — 07.09.2026 — Prüfbericht und Vorschlag zur Entscheidung durch den Anwender.
-Der Kern-Zerleger ist gebaut (Kapitel 9), die MASKE ist es nicht.**
+**Rev. 2 — 07.09.2026 — Prüfbericht, Entscheide und Umsetzungsbericht der Stufe S1.
+Der Kern-Zerleger ist gebaut (Kapitel 9), und seit dem Entscheid W13‑E‑2 (Kapitel 10,
+Q1…Q8 = Empfehlung) auch die MASKE, der Menüpunkt und der Netzabruf.**
 
 Auftrag (Anwenderwunsch **W13‑E‑2**, 07.09.2026, im Wortlaut):
 
@@ -15,12 +16,14 @@ Anlass ist eine Lücke im Menü **Administration → Datenimport**: Es führt se
 und keinen für Stromspeicher. Der Katalog `Tab_Stromspeicher_STAMM` wird deshalb bis
 heute ausschließlich von Hand gepflegt; die Testdatenbank führt fünf Sätze.
 
-**Dieses Papier ist ein Prüfbericht, kein Umsetzungsbericht.** Es sagt, was die vier
-Quellen wirklich hergeben — mit Beleg, nicht aus dem Gedächtnis —, wie sich das auf
-`Tab_Stromspeicher_STAMM` abbildet, und in welchen drei Stufen der Import entstehen
-sollte. Gebaut ist in diesem Schritt nur der **Rechenkern-Zerleger** samt Proben und
-Prüfung (Kapitel 9); Maske, Menüpunkt und Migrationsschritt kommen mit Stufe S1 nach
-dem Entscheid des Anwenders.
+**Dieses Papier war ein Prüfbericht und ist seit Rev. 2 auch ein Umsetzungsbericht.**
+Die Kapitel 1 bis 9 sagen unverändert, was die vier Quellen wirklich hergeben — mit
+Beleg, nicht aus dem Gedächtnis —, wie sich das auf `Tab_Stromspeicher_STAMM` abbildet
+und in welchen drei Stufen der Import entstehen sollte. **Kapitel 10 trägt die acht
+Entscheide und das, was Stufe S1 daraus geworden ist:** Maske, Menüpunkt, Netzabruf und
+Auslieferungsdatei. Einen Migrationsschritt gab es nicht — der Katalog hat alle Spalten
+seit Schritt 11a. Die Stufen S2 (Kapitel 6) und S3 bleiben, wie sie beschrieben sind;
+S3 ist mit Q7 ausdrücklich vertagt.
 
 ---
 
@@ -400,14 +403,16 @@ Das ist der einzige echte Fallstrick dieses Imports und der Grund für Frage **Q
 
 ## 4. Wo der Import in der Oberfläche sitzt
 
-**Administration → Datenimport → „Stromspeicher…"** — als **siebter** Punkt neben den
-sechs vorhandenen (`EPOS.UI/Bausteine/Menuetabelle.cs`, Kopf `MenuItem_DatImport`).
+**Administration → Daten & Import → „Stromspeicher (CEC, bslib)…"** — als **siebter**
+Punkt neben den sechs vorhandenen (`EPOS.UI/Bausteine/Menuetabelle.cs`, Kopf
+`MenuItem_DatImport`, Kennung `MenuItem_SP_Import`).
 
-> **Achtung, der Menübaum wird gerade umgebaut.** Der Anwenderentscheid **W16c‑E‑7**
-> ordnet die Köpfe des Menübands neu. Der Punkt „Stromspeicher…" wird deshalb **nach**
-> diesem Umbau eingehängt, nicht daneben — sonst entstünde ein Eintrag, den der Umbau
-> gleich wieder verschiebt. Dieses Papier legt ihn nur fest; angelegt wird er in
-> Stufe S1.
+> **Er ist NACH dem Umbau eingehängt worden.** Der Anwenderentscheid **W16c‑E‑7** vom
+> selben Tag ordnet die Rubrik neu: Modul- und Wechselrichterimport stehen seither unter
+> einem Zwischenknoten „Photovoltaik". Der neue Punkt steht **hinter** diesem Knoten und
+> **vor** „Import Solarkollektoren" — Stromspeicher und Photovoltaik gehören zur selben
+> Anlage. Von den sechs Punkten sind damit vier auf der ersten Ebene, zwei unter dem
+> Knoten; der siebte ist der Speicher.
 
 Wirt ist der vorhandene **`KatalogImportDialog.razor`** mit einer neuen Ausprägung
 `KatalogImportArt.Stromspeicher` in `KatalogImportProfil`. Damit erbt der Speicherimport
@@ -491,7 +496,7 @@ Nach der Übernahme kommt die bekannte Sammelmeldung des `KatalogImportAblauf`:
 3. Die zwei Zerleger an `KatalogImportAblauf.Lesen` hängen (heute liest der Ablauf nur
    VDI-3805-Dateien; er bekommt eine zweite Lesart für die tabellarischen Quellen).
 4. Der Dialog: Quellenwahl, zweiter Zahlenfilter, Ampel, Kostenhinweis (Kapitel 5).
-5. Menüpunkt „Stromspeicher…" **nach** dem Umbau W16c‑E‑7.
+5. Menüpunkt „Stromspeicher (CEC, bslib)…" **nach** dem Umbau W16c‑E‑7.
 6. Texte in `MyResource.Resource.*` (deutsch und englisch), Designer über
    `Werkzeuge/ResourceDesigner`.
 
@@ -696,18 +701,41 @@ keiner Simulations-, Berichts- oder Wirtschaftlichkeitsstelle berührt. Der Refe
 
 ## 10. Entscheide
 
-*(Kennung **W13‑E‑2** — hier werden die Antworten des Anwenders eingetragen.)*
+**Der Anwender hat am 07.09.2026 auf alle acht Fragen mit „Empfehlung" geantwortet.**
+Damit gilt je Frage der Vorschlag aus Kapitel 7 im Wortlaut; die Zeile „Umgesetzt in"
+nennt die Stelle, an der er steht.
 
-| Kennung | Frage | Entscheid | Umgesetzt in |
+| Kennung | Frage | Entscheid (07.09.2026) | Umgesetzt in |
 |---|---|---|---|
-| W13‑E‑2‑Q1 | Welche Quellen in S1? | *offen* | |
-| W13‑E‑2‑Q2 | CEC-Liste mitliefern? | *offen* | |
-| W13‑E‑2‑Q3 | Kostenvorbelegung? | *offen* | |
-| W13‑E‑2‑Q4 | Welcher Standby-Wert? | *offen* | |
-| W13‑E‑2‑Q5 | Schreibweise des Bezeichners? | *offen* | |
-| W13‑E‑2‑Q6 | Zyklen nach Chemie vorbelegen? | *offen* | |
-| W13‑E‑2‑Q7 | Stufe S3 verfolgen? | *offen* | |
-| W13‑E‑2‑Q8 | Abrufknopf für die CEC-Liste? | *offen* | |
+| W13‑E‑2‑Q1 | Welche Quellen in S1? | **beide, in EINEM Dialog** — CEC und `bslib` als fünfte Ausprägung `KatalogImportArt.Stromspeicher` des `KatalogImportDialog`, nicht als zwei Menüpunkte | `KatalogImportProfil.Finde`, `KatalogImportAblauf.LiesStromspeicher` |
+| W13‑E‑2‑Q2 | CEC-Liste mitliefern? | **nein** — die Nutzungsbedingungen der Energy Commission untersagen die kommerzielle Nutzung, und es gibt keinen NREL-Umweg unter BSD‑3‑Clause. Statt dessen ein **Abrufknopf** im Dialog. **`bslib` wird mitgeliefert** (CC BY 4.0, 2 729 Byte) samt `LIESMICH_bslib.md` | `VDI-3805-Daten/Stromspeicher/`, `CecSpeicherDienst` |
+| W13‑E‑2‑Q3 | Kostenvorbelegung? | **keine** — `Modulkosten`, `Leistungskosten`, `Investition_Fix` und `Verschleisskosten` bleiben 0, ebenso Degradation und Ladezustand. Die Maske sagt es in einer Herleitungszeile | `KatalogImportProfil.Hinweis` (`IMP_KAT_HINWEIS_KOSTEN`), `StromspeicherImportSatz.NachModell` |
+| W13‑E‑2‑Q4 | Welcher Standby-Wert? | **max(voll, leer), je AC + DC** — der ungünstigere Betriebszustand (Kapitel 2.4) | `BslibImport.Standby` |
+| W13‑E‑2‑Q5 | Schreibweise des Bezeichners? | **`Hersteller: Modell`** — die Schreibweise der CEC-Listen; in der Maske änderbar wie bei den vier VDI-Ausprägungen | `StromspeicherImportSatz.Bezeichner` |
+| W13‑E‑2‑Q6 | Zyklen nach Chemie vorbelegen? | **nein** — eine Zyklenzusage ist eine Garantieaussage des Herstellers, keine Eigenschaft der Chemie | — (nichts gebaut, mit Absicht) |
+| W13‑E‑2‑Q7 | Stufe S3 verfolgen? | **nicht jetzt** — sie bleibt als spätere Stufe im Konzept stehen (Kapitel 6, S3); von den vier Punkten hat nur „Standby im Dispatch" seine Daten bereits im Katalog | — (Kapitel 6 unverändert) |
+| W13‑E‑2‑Q8 | Abrufknopf für die CEC-Liste? | **ja, in S1** — er macht Q2 erst unschädlich: ein GET ohne Anmeldung, 45 Sekunden Grenze, 30-Tage-Zwischenspeicher, Fortschritt mit Abbruch | `CecSpeicherDienst` |
+
+### Was Stufe S1 wirklich geworden ist
+
+Umgesetzt am **07.09.2026**, Präfix `W13-E-2:`. Kein Migrationsschritt — der Katalog hat
+alle Spalten seit Schritt 11a; der Import schreibt nur in vorhandene.
+
+| Teil | Wo |
+|---|---|
+| Die fünfte Ausprägung | `KatalogImportArt.Stromspeicher` mit `Quellen`, `Listenspalten`, `Zweitfilter`, `HerstellerFilter` und `Hinweis` — fünf Profilteile, die bei den vier VDI-Ausprägungen leer bleiben |
+| Der Lesezweig | `KatalogImportAblauf.Lesen(pfad, melder, abbruch, **quelle**)` → `CecSpeicherImport` bzw. `BslibImport` → `StromspeicherKatalogSatz`. **Der Quellschlüssel wählt den Zerleger, nicht die Dateiendung** — beide Quellen kommen als CSV |
+| Der Schreibweg | `StromspeicherStammCtrl.ImportUebernehmen` (transaktional, mit Dublettensperre) und `.UpdateImport` (frischt Typ, Leistung, Energie, η_RT und Standby auf; Bezeichner, Kosten, Degradation und Zyklen bleiben stehen) |
+| Der Netzabruf | `EPOS.Kern/Allgemein/Import/CEC/CecSpeicherDienst.cs` nach dem Muster von `CecWechselrichterDienst`, mit einem einlegbaren `HttpMessageHandler` — deshalb **ohne Netz prüfbar** |
+| Die Maske | `KatalogImportDialog` mit drei Quellknöpfen statt des Dateiwählers, Herstellerklappliste, zwei Zahlenbereichen (kWh und kW), sieben Listenspalten und der Herleitungszeile zu den Kosten. **Mehrfachwahl, Doppelklick und Konfliktdialog kommen aus dem Wirt** (W6‑E‑5) — dafür war nichts zu bauen |
+| Die Hülle | `WindowsFormsApplication1/Views/Import/KatalogImportHuelle.cs` — sie beschafft die Datei für die zwei Quellen ohne Wähler (Netzabruf; Auslieferungsdatei mit Rückfall auf den Wähler) und öffnet das Fenster in 1 180 × 700 statt 900 × 640 |
+| Der Menüpunkt | `MenuItem_SP_Import` („Stromspeicher (CEC, bslib)…" / „Battery storage (CEC, bslib)…") in Administration ▸ Daten & Import, **hinter** dem Knoten „Photovoltaik" und **vor** „Import Solarkollektoren" |
+| Die Auslieferung | `VDI-3805-Daten/Stromspeicher/bslib_database.csv` (2 729 Byte, byte-gleich zur Importprobe) + `LIESMICH_bslib.md`. **`Setup/EPOS-Plan.iss` bleibt unverändert** — die Komponente `herstellerdaten` liefert `VDI-3805-Daten\*` mit `recursesubdirs createallsubdirs`, ein neuer Unterordner reist von selbst mit |
+| Der Nachweis | `EPOS.Kern.Tests/StromspeicherUebernahmeTests` (23 Fälle: Profil, beide Lesezweige über Kreuz, der Netzabruf mit gestelltem Handler in fünf Lagen, Anlegen/Überschreiben/Dublette/Schreibschutz gegen die Testdatenbank, die Auslieferungsdatei) und 11 neue bunit-Fälle in `EPOS.UI.Tests/Dialoge/KatalogImportDialogTests` |
+
+**Der Rechenweg ist unberührt.** Es gibt keinen Aufrufer der Zerleger in Simulation,
+Bericht oder Wirtschaftlichkeit; der Referenzlauf 1030/1007/1017/1045 gegen
+`Referenzlaeufe/2026-09-06_R3_Straenge` ist byte-gleich.
 
 ---
 

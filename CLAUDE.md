@@ -49,7 +49,14 @@ am 07.09.2026 dazu: **W16c‑E‑7** stellt das Paar Modul/Wechselrichter an BEI
 des Kopfs „Administration" unter einen Zwischenknoten **„Photovoltaik"** — unter
 „Energiesysteme" die zwei Kataloge („PV Module", „Wechselrichter"), unter „Daten & Import"
 die zwei Einlesewege („PV Module (CEC, PAN)…", „Wechselrichter (CEC, OND)…"); Ziel,
-Argument und Kennung der vier Punkte bleiben, es wandert ihre Lage im Baum. **Das Menü ist
+Argument und Kennung der vier Punkte bleiben, es wandert ihre Lage im Baum. Ein fünfter
+kam am selben Tag dazu: **W16c‑O‑7** löst das LETZTE Ein-Punkt-Untermenü auf — der Knoten
+„Klimadaten" führte ein einziges Kind derselben Beschriftung, und der Punkt steht seither
+unmittelbar im Kopf, mit dem Bild `Menu4` des gefallenen Knotens; damit gilt die Regel aus
+W16c‑E‑6 („kein Untermenü mit nur EINEM Punkt") ohne Ausnahme. Am selben Tag kam der
+erste NEUE Weg seit W6‑E‑2 dazu: **W13‑E‑2** hängt den **Stromspeicherimport**
+(„Stromspeicher (CEC, bslib)…") in „Daten & Import" — damit handeln 45 der 58 Punkte.
+**Das Menü ist
 Daten, und `Menuetabelle.cs` ist seit W16c die Quelle:** Der Designer ist gelöscht, das
 Erzeugerskript liegt nicht im Repository — wer das Menü ändert, ändert diese Datei.
 Die WinForms-Seite ist seither die **Hülle ohne Designer** (129 Zeilen) und heißt seit dem

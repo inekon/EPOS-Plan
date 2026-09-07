@@ -143,6 +143,130 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
+        // ==================================================================
+        //  Der Katalogimport (W13-E-2, Stufe S1)
+        // ==================================================================
+
+        /// <summary>
+        /// Legt einen importierten Speicher an — TRANSAKTIONAL und mit
+        /// Dublettensperre, wortgleich zu <c>PufferSpStammCtrl.ImportUebernehmen</c>
+        /// (Anwenderentscheid <b>W13-E-2</b>, Stufe S1).
+        ///
+        /// <para><b>Warum nicht <see cref="Insert"/>.</b> Der Weg des Editors
+        /// prueft den Bezeichner in der MASKE und schreibt dann ohne Vorgang; ein
+        /// Import schreibt viele Saetze am Stueck und darf zwischen Pruefung und
+        /// INSERT keine Luecke lassen. Deshalb steht beides in EINEM
+        /// <see cref="DbVorgang"/> — dieselbe Bauart wie bei den vier
+        /// VDI-Auspraegungen (Abweichung A-3 der Welle 13, Befund W13-B33).</para>
+        ///
+        /// <para><b>Was NICHT geschrieben wird:</b> die vier Kostenfelder, die
+        /// Degradation, der Start-Ladezustand und die zugesicherten Zyklen. Keine
+        /// der geprueften Quellen fuehrt sie (Entscheide Q3 und Q6); sie stehen
+        /// mit 0 in der Zeile und fallen im Rechenweg auf die Fachvorgaben
+        /// zurueck.</para>
+        /// </summary>
+        public VdiUebernahmeErgebnis ImportUebernehmen(StromspeicherModel model, string nameOverride = null)
+        {
+            if (model == null) return VdiUebernahmeErgebnis.Fehler;
+
+            try
+            {
+                StromspeicherCtrl.StelleGeraetespaltenSicher();   // AP3-Spalten, bevor sie im INSERT stehen
+
+                string bezeichner = nameOverride ?? model.m_szBezeichner;
+
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    object anzahl = v.Skalar(
+                        "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                        new DbParam("?", bezeichner ?? ""));
+                    if (Convert.ToInt32(anzahl) > 0)
+                    {
+                        v.Rollback();
+                        return VdiUebernahmeErgebnis.Duplikat;
+                    }
+
+                    object mx = v.Skalar("SELECT MAX(ID) FROM [" + TABLE + "]");
+                    int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
+
+                    string sql = @"INSERT INTO [" + TABLE + @"]
+                            (ID, Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
+                             Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+                    DbParam[] ps = {
+                        new DbParam("@id", neueId),
+                        new DbParam("@bez", bezeichner ?? ""),
+                        new DbParam("@typ", (object)(model.m_szTyp ?? "")),
+                        new DbParam("@lei", model.m_Leistung),
+                        new DbParam("@ene", model.m_Energie),
+                        new DbParam("@deg", model.m_Degradation),
+                        new DbParam("@lad", model.m_Ladezustand),
+                        new DbParam("@mod", model.m_Modulkosten),
+                        new DbParam("@ro", false),
+                        new DbParam("@eta", model.m_WirkungsgradRT),
+                        new DbParam("@nzyk", model.m_ZyklenZugesichert),
+                        new DbParam("@cver", model.m_Verschleisskosten),
+                        new DbParam("@cpow", model.m_Leistungskosten),
+                        new DbParam("@ifix", model.m_InvestitionFix),
+                        new DbParam("@stby", model.m_StandbyVerbrauch)
+                    };
+
+                    v.Ausfuehren(sql, ps);
+                    v.Commit();
+                    this.m_ID = neueId;
+                    return VdiUebernahmeErgebnis.Gespeichert;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Übernahme des Stromspeichers: " + ex.Message);
+                return VdiUebernahmeErgebnis.Fehler;
+            }
+        }
+
+        /// <summary>
+        /// Aktualisiert die IMPORTFELDER eines vorhandenen Katalogsatzes — der
+        /// Weg „Überschreiben" des Konfliktdialogs.
+        ///
+        /// <para><b>Bezeichner, Kosten, Degradation, Ladezustand und Zyklen bleiben
+        /// stehen.</b> Sie kommen aus keiner Quelle, sondern von Hand aus der
+        /// Verwaltung „Stromspeicher"; wer eine neuere Geraeteliste einliest, will
+        /// die Kennwerte auffrischen und nicht seine gepflegten Kosten
+        /// verlieren.</para>
+        ///
+        /// <para>Ein schreibgeschuetzter Satz (<c>ReadOnly</c>, also
+        /// Auslieferungsbestand) wird NICHT angefasst — dieselbe Regel wie in
+        /// <see cref="Update"/>, hier aber ohne Meldung: Im Stapel entscheidet der
+        /// Zaehler, nicht ein Kasten je Zeile.</para>
+        /// </summary>
+        public bool UpdateImport(int id)
+        {
+            if (id <= 0) return false;
+
+            StromspeicherCtrl.StelleGeraetespaltenSicher();   // AP3-Spalten, bevor sie im UPDATE stehen
+
+            object ro = DataRepository.ExecuteScalar(
+                "SELECT ReadOnly FROM [" + TABLE + "] WHERE ID = ?", new DbParam("@id", id));
+            if (ro != null && ro != DBNull.Value && Convert.ToBoolean(ro)) return false;
+
+            string sql = @"UPDATE [" + TABLE + @"] SET
+                            Typ = ?, Leistung = ?, Energie = ?,
+                            Wirkungsgrad_RT = ?, Standby_Verbrauch = ?
+                          WHERE ID = ?";
+
+            DbParam[] ps = {
+                new DbParam("@typ", (object)(this.m_szTyp ?? "")),
+                new DbParam("@lei", this.m_Leistung),
+                new DbParam("@ene", this.m_Energie),
+                new DbParam("@eta", this.m_WirkungsgradRT),
+                new DbParam("@stby", this.m_StandbyVerbrauch),
+                new DbParam("@id", id)
+            };
+
+            return DataRepository.ExecuteSQL(sql, ps);
+        }
+
         public bool Delete(string szBezeichner)
         {
             if (IsReadOnlyStatic(szBezeichner))

@@ -700,7 +700,13 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Zwischenknoten **„Photovoltaik"** aus **W16c‑E‑7** vom 07.09.2026, unter
   denen Modul und Wechselrichter an beiden Stellen dieses Kopfs zusammen
   stehen — als Katalog unter „Energiesysteme", als Import unter „Daten &
-  Import". Von den 58 Punkten **handeln 44**, 14 klappen nur auf. Das
+  Import". Dazu kommt **W16c‑O‑7** vom selben Tag, das keine Zeile anlegt,
+  sondern eine wegnimmt: Der Knoten „Klimadaten" führte als einziges Kind
+  einen Punkt derselben Beschriftung; der Punkt steht jetzt an seiner Stelle
+  im Kopf und trägt sein Bild `Menu4`. Und **W13‑E‑2** vom selben Tag hängt den
+  **Stromspeicherimport** in „Daten & Import" — der erste NEUE Weg seit
+  W6‑E‑2. Von den 58 Punkten **handeln 45**,
+  13 klappen nur auf. Das
   Erzeugerskript liegt nicht im Repository; **geändert wird die Tabelle**).
   **Drei Namen, drei Dinge** (Anwenderentscheid **E‑10**, 04.09.2026):
   `Hauptfensterrahmen` ist das WinForms-Fenster mit `Application.Run`, dem

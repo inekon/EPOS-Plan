@@ -12,15 +12,26 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der vier VDI-3805-Katalogimporte (iU9-W13.1).
+    /// Die WINDOWS-HÜLLE der Katalogimporte (iU9-W13.1) — vier aus VDI 3805 und
+    /// seit <b>W13‑E‑2</b> (07.09.2026) der Stromspeicher.
     ///
-    /// <para><b>Eine Hülle, vier Ausprägungen.</b> Die Komponente
+    /// <para><b>Eine Hülle, fünf Ausprägungen.</b> Die Komponente
     /// <see cref="KatalogImportDialog"/> ist dieselbe; was sie unterscheidet, ist
     /// die <see cref="KatalogImportArt"/> und damit das
-    /// <see cref="KatalogImportProfil"/> aus dem Kern. Die vier Maskenschlüssel
+    /// <see cref="KatalogImportProfil"/> aus dem Kern. Die fünf Maskenschlüssel
     /// (<c>Masken.HeizkesselImport</c>, <c>…PufferSpImport</c>,
-    /// <c>…SolarkollektorenImport</c>, <c>…WpImport</c>) rufen deshalb dieselbe
+    /// <c>…SolarkollektorenImport</c>, <c>…WpImport</c>,
+    /// <c>…StromspeicherImport</c>) rufen deshalb dieselbe
     /// Methode mit einem anderen Wert.</para>
+    ///
+    /// <para><b>Beim Stromspeicher beschafft die Hülle die Datei</b> (Stufe S1 des
+    /// <c>Konzept_Stromspeicherimport_EPOS-Plan.md</c>). Zwei seiner drei Quellen
+    /// haben keinen Dateiwähler: „CEC-Liste abrufen" holt die Mappe über
+    /// <see cref="CecSpeicherDienst"/> aus dem Netz (die Liste wird nicht
+    /// mitgeliefert — Entscheid Q2), „bslib laden" nimmt die
+    /// <b>Auslieferungsdatei</b> aus dem Herstellerdatenpfad und fällt nur dann
+    /// auf den Wähler zurück, wenn sie fehlt. Beides ist Plattformsache und
+    /// gehört deshalb hierher, nicht in die Komponente.</para>
     ///
     /// <para><b>Die Datenbankseite steht hier, nicht in der Komponente.</b> Parser,
     /// Vorprüfung und Schreibweg liegen als <see cref="KatalogImportAblauf"/> im
@@ -45,6 +56,22 @@ namespace WindowsFormsApplication1
         private static readonly Size MASS = new Size(900, 640);
 
         /// <summary>
+        /// Innenmaß des Stromspeicherimports. Er hat keinen Vorläufer und braucht
+        /// mehr BREITE als die vier VDI-Masken: Seine Liste führt acht Spalten
+        /// (Wahl, Bezeichner, Quelle, Hersteller, Modell, kWh, kW, η, Chemie)
+        /// statt dreien, und seine Filterleiste trägt eine Klappliste, zwei
+        /// Zahlenbereiche und die Suche.
+        /// </summary>
+        private static readonly Size MASS_STROMSPEICHER = new Size(1180, 700);
+
+        /// <summary>
+        /// Der Unterordner der mitgelieferten <c>bslib_database.csv</c> und ihr
+        /// Dateiname — beides steht in <c>VDI-3805-Daten/Stromspeicher/</c>
+        /// neben einer <c>LIESMICH_bslib.md</c> (CC BY 4.0, Namensnennung).
+        /// </summary>
+        private const string BSLIB_DATEI = "bslib_database.csv";
+
+        /// <summary>
         /// Zeigt den Katalogimport als eigenes Fenster — der Weg von
         /// <c>WinFormsNavigation</c> für alle vier Maskenschlüssel.
         /// </summary>
@@ -65,7 +92,10 @@ namespace WindowsFormsApplication1
                 })
             };
 
-            dlg = new BlazorDialogForm<KatalogImportDialog>(Titel(art), MASS, werte);
+            dlg = new BlazorDialogForm<KatalogImportDialog>(
+                Titel(art),
+                art == KatalogImportArt.Stromspeicher ? MASS_STROMSPEICHER : MASS,
+                werte);
 
             using (dlg)
             {
@@ -91,9 +121,9 @@ namespace WindowsFormsApplication1
                 ["ProfilVorgabe"] = profil,
                 ["DateiWaehlen"] = new Func<string, Task<string>>(
                     filter => DateiWaehlen(profil, filter)),
-                ["Lesen"] = new Func<string, IProgress<ImportFortschritt>, CancellationToken,
+                ["Lesen"] = new Func<string, string, IProgress<ImportFortschritt>, CancellationToken,
                                      Task<KatalogLeseErgebnis>>(
-                    (pfad, melder, abbruch) => Lesen(ablauf, pfad, melder, abbruch)),
+                    (quelle, pfad, melder, abbruch) => Lesen(ablauf, quelle, pfad, melder, abbruch)),
                 ["Vorpruefen"] = new Func<IReadOnlyList<int>, IReadOnlyDictionary<int, string>,
                                           Task<KatalogVorpruefung>>(
                     (markiert, namen) => Vorpruefen(ablauf, markiert, namen)),
@@ -124,6 +154,7 @@ namespace WindowsFormsApplication1
                 case KatalogImportArt.Pufferspeicher: return MyResource.Resource.IMP_KAT_TITEL_PUFFERSPEICHER;
                 case KatalogImportArt.Solarkollektoren: return MyResource.Resource.IMP_KAT_TITEL_SOLAR;
                 case KatalogImportArt.Waermepumpe: return MyResource.Resource.IMP_KAT_TITEL_WP;
+                case KatalogImportArt.Stromspeicher: return MyResource.Resource.IMP_KAT_TITEL_STROMSPEICHER;
                 default: return MyResource.Resource.IMP_KAT_TITEL_HEIZKESSEL;
             }
         }
@@ -176,20 +207,87 @@ namespace WindowsFormsApplication1
         /// um — die Komponente bekommt nie einen <c>KatalogImportSatz</c>, der
         /// schreiben könnte.
         /// </summary>
-        private static Task<KatalogLeseErgebnis> Lesen(
-            KatalogImportAblauf ablauf, string pfad,
+        private static async Task<KatalogLeseErgebnis> Lesen(
+            KatalogImportAblauf ablauf, string quelle, string pfad,
             IProgress<ImportFortschritt> melder, CancellationToken abbruch)
         {
-            return Task.Run(() =>
+            // Zwei der drei Stromspeicherquellen bringen keinen Pfad mit - die
+            // Huelle beschafft ihn (Netzabruf bzw. Auslieferungsdatei). Das
+            // laeuft VOR dem Task.Run, weil der Rueckfall auf den Dateiwaehler
+            // Oberflaeche der Plattform oeffnet (Regel W13-B-1).
+            if (string.IsNullOrEmpty(pfad) && quelle.Length > 0)
             {
-                ablauf.Lesen(pfad, melder, abbruch);
+                (bool ok, string beschafft, PruefMeldung fehler) = await Beschaffen(ablauf, quelle, melder, abbruch)
+                    .ConfigureAwait(true);
+                if (!ok)
+                    return new KatalogLeseErgebnis(
+                        new List<KatalogZeile>(),
+                        fehler == null ? new PruefMeldung[0] : new[] { fehler });
+                pfad = beschafft;
+            }
+
+            return await Task.Run(() =>
+            {
+                ablauf.Lesen(pfad, melder, abbruch, quelle);
 
                 var zeilen = new List<KatalogZeile>(ablauf.Saetze.Count);
                 foreach (KatalogImportSatz s in ablauf.Saetze)
-                    zeilen.Add(new KatalogZeile(s.Name, s.Firma, s.Filterwert, s.Detailwerte));
+                    zeilen.Add(new KatalogZeile(s.Name, s.Firma, s.Filterwert, s.Detailwerte, s.Filterwert2));
 
                 return new KatalogLeseErgebnis(zeilen, ablauf.Meldungen);
-            }, abbruch);
+            }, abbruch).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Beschafft die Datei einer Quelle OHNE Dateiwähler (W13‑E‑2, Stufe S1).
+        ///
+        /// <para><b>CEC-Liste abrufen.</b> <see cref="CecSpeicherDienst"/> holt die
+        /// Mappe von der Energy Commission und legt sie im Zwischenspeicher ab
+        /// (30 Tage). Ohne Netz und ohne Zwischenspeicher gibt es keine Datei —
+        /// dann sagt die Maske, wo der Anwender sie herbekommt.</para>
+        ///
+        /// <para><b>bslib laden.</b> Die Datei wird MITGELIEFERT (CC BY 4.0) und
+        /// liegt unter <c>VDI-3805-Daten\Stromspeicherslib_database.csv</c>.
+        /// Fehlt sie — weil die Setup-Komponente abgewählt wurde oder der
+        /// Herstellerdatenpfad woanders zeigt —, fällt der Weg auf den
+        /// Dateiwähler zurück, statt zu scheitern.</para>
+        ///
+        /// <para>Ein <c>false</c> mit LEERER Meldung heißt „der Anwender hat den
+        /// Wähler abgebrochen": Dann ist nichts zu melden.</para>
+        /// </summary>
+        private static async Task<(bool Ok, string Pfad, PruefMeldung Fehler)> Beschaffen(
+            KatalogImportAblauf ablauf, string quelle,
+            IProgress<ImportFortschritt> melder, CancellationToken abbruch)
+        {
+            if (quelle == KatalogImportProfil.QUELLE_CEC_NETZ)
+            {
+                var netz = new Progress<SpeicherImportMeldung>(
+                    m => melder?.Report(new ImportFortschritt(null, m.Schluessel, m.Werte)));
+
+                (bool erfolg, string pfad, SpeicherImportMeldung meldung) =
+                    await new CecSpeicherDienst().LadenAsync(netz, abbruch).ConfigureAwait(true);
+
+                return erfolg
+                    ? (true, pfad, null)
+                    : (false, "", new PruefMeldung(PruefStufe.Fehler, meldung.Schluessel, meldung.Werte));
+            }
+
+            if (quelle == KatalogImportProfil.QUELLE_BSLIB)
+            {
+                string basis = EinstellungenCtrl.HerstellerdatenpfadOderVorgabe() ?? "";
+                string mitgeliefert = Path.Combine(basis, ablauf.Profil.Unterordner, BSLIB_DATEI);
+                if (File.Exists(mitgeliefert)) return (true, mitgeliefert, null);
+
+                string gewaehlt = await Dienste.Datei.DateiOeffnenAsync(
+                    Titel(ablauf.Profil.Art), ablauf.Profil.Dateifilter,
+                    Path.Combine(basis, ablauf.Profil.Unterordner)).ConfigureAwait(true);
+
+                return string.IsNullOrEmpty(gewaehlt)
+                    ? (false, "", null)                 // abgebrochen: nichts zu melden
+                    : (true, gewaehlt, null);
+            }
+
+            return (false, "", new PruefMeldung(PruefStufe.Fehler, "SPIMP_MSG_DATEI_FEHLT", quelle));
         }
 
         /// <summary>

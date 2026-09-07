@@ -1,4 +1,4 @@
-﻿@* Katalogimport VDI 3805 - EINE Komponente, VIER Auspraegungen (iU9-W13.1).
+﻿@* Katalogimport - EINE Komponente, FUENF Auspraegungen (iU9-W13.1, W13-E-2).
 
    Vorbilder: Views/Heizkessel/Form_Heizkessel_einlesen.cs (500 Z., Blatt 3),
    Views/Pufferspeicher/Form_PufferSp_einlesen.cs (383 Z., Blatt 20),
@@ -35,6 +35,24 @@
    auf einen Schlag. Dazu kommt der DOPPELKLICK: Er nimmt die Zeile in die
    Markierung und uebernimmt SIE sofort, ohne die uebrige Markierung zu leeren.
 
+   DIE FUENFTE AUSPRAEGUNG IST DER STROMSPEICHER (Anwenderentscheid W13-E-2 vom
+   07.09.2026, Stufe S1 des Konzept_Stromspeicherimport_EPOS-Plan.md). Sie hat
+   keinen WinForms-Vorlaeufer - der Bestand kannte fuer Stromspeicher gar keinen
+   Import - und bringt drei Dinge mit, die die vier VDI-Auspraegungen nicht
+   brauchen; alle drei stehen als DATEN im KatalogImportProfil und sind bei den
+   vier leer:
+     1. QUELLKNOEPFE statt eines Dateiwaehlers ("CEC-Liste abrufen" aus dem Netz,
+        "CEC-Datei laden", "bslib laden"). Die CEC-Speicherliste wird NICHT
+        mitgeliefert (Entscheid Q2: ihre Nutzungsbedingungen untersagen die
+        kommerzielle Nutzung), bslib schon (CC BY 4.0).
+     2. Ein ZWEITER Zahlenfilter und eine HERSTELLERKLAPPLISTE. Eine Liste von
+        6 654 Geraeten, 1 bis 10 032 kWh und 0,4 bis 4 904 kW, ist mit einem
+        Filter nicht einzugrenzen.
+     3. SPALTEN in der Liste (Quelle, Hersteller, Modell, kWh, kW, eta, Chemie).
+        Die VDI-Dateien kommen je Hersteller; da genuegen Eintrag und Firma.
+   Was die Quellen NICHT liefern - Kosten, Degradation, Zyklen (Entscheide Q3
+   und Q6) -, sagt die Herleitungszeile des Profils.
+
    ABWEICHUNGEN gegenueber den vier Vorlaeufern stehen im Portprotokoll
    iU9_W13_Blazor_Port_Protokoll.md als A-Zeilen; die vier wichtigsten:
    Solar bekommt Dublettenpruefung und Konfliktdialog (es war die einzige ohne,
@@ -61,10 +79,24 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* --- Datei waehlen ------------------------------------------------- *@
-    <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
-               Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
-               Aktiv="@(!_laeuft)" />
+    @* --- Die Quelle: ein Waehler oder mehrere Knoepfe ------------------- *@
+    @if (Profil.Quellen.Count == 0)
+    {
+        <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
+                   Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+                   Aktiv="@(!_laeuft)" />
+    }
+    else
+    {
+        <div class="epos-leiste epos-katalogimport-quellen">
+            @foreach (KatalogImportQuelle quelle in Profil.Quellen)
+            {
+                KatalogImportQuelle q = quelle;
+                <button type="button" class="@Quellenklasse(q)" disabled="@_laeuft"
+                        @onclick="() => BeiQuelle(q)">@q.Beschriftung</button>
+            }
+        </div>
+    }
 
     <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
                  Abbrechen="@(_abbruch is null ? null : AbbrechenCallback)"
@@ -72,12 +104,27 @@
 
     @* --- Filterzeile ---------------------------------------------------- *@
     <div class="epos-katalogimport-filter">
+        @if (Profil.HerstellerFilter)
+        {
+            <Auswahlfeld Bezeichnung="@FilterHerstellerText" Eintraege="@_herstellerliste"
+                         Auswahl="@_iHersteller" AuswahlChanged="BeiHersteller"
+                         Aktiv="@(!_laeuft)" />
+        }
         <Zahlenfeld Bezeichnung="@FilterBezeichnung" Wert="@_von" WertChanged="BeiVon"
                     Min="0" Max="@Profil.FilterMaximum"
                     Nachkommastellen="@Profil.FilterNachkommastellen" Aktiv="@(!_laeuft)" />
         <Zahlenfeld Bezeichnung="@FilterBisText" Wert="@_bis" WertChanged="BeiBis"
                     Min="0" Max="@Profil.FilterMaximum"
                     Nachkommastellen="@Profil.FilterNachkommastellen" Aktiv="@(!_laeuft)" />
+        @if (Profil.Zweitfilter is not null)
+        {
+            <Zahlenfeld Bezeichnung="@Profil.Zweitfilter.Bezeichnung" Wert="@_von2" WertChanged="BeiVon2"
+                        Min="0" Max="@Profil.Zweitfilter.Maximum"
+                        Nachkommastellen="@Profil.Zweitfilter.Nachkommastellen" Aktiv="@(!_laeuft)" />
+            <Zahlenfeld Bezeichnung="@FilterBisText" Wert="@_bis2" WertChanged="BeiBis2"
+                        Min="0" Max="@Profil.Zweitfilter.Maximum"
+                        Nachkommastellen="@Profil.Zweitfilter.Nachkommastellen" Aktiv="@(!_laeuft)" />
+        }
         <Textfeld Bezeichnung="@FilterSucheText" Wert="@_suche" WertChanged="BeiSuche" />
     </div>
 
@@ -92,8 +139,21 @@
             </TemplateColumn>
             <PropertyColumn TGridItem="Anzeigezeile" TProp="string"
                             Property="@(z => z.Name)" Title="@SpalteEintragText" />
-            <PropertyColumn TGridItem="Anzeigezeile" TProp="string"
-                            Property="@(z => z.Firma)" Title="@FirmaSpalteText" />
+            @if (Profil.Listenspalten.Count == 0)
+            {
+                <PropertyColumn TGridItem="Anzeigezeile" TProp="string"
+                                Property="@(z => z.Firma)" Title="@FirmaSpalteText" />
+            }
+            else
+            {
+                @foreach (KatalogImportSpalte spalte in Profil.Listenspalten)
+                {
+                    string sp = spalte.Schluessel;
+                    <TemplateColumn TGridItem="Anzeigezeile" Title="@spalte.Titel">
+                        @context.Satz.Wert(sp)
+                    </TemplateColumn>
+                }
+            }
         </KindInhalt>
     </Raster>
 
@@ -112,9 +172,13 @@
         }
     </div>
 
-    @if (Profil.Art == KatalogImportArt.Waermepumpe)
+    @* Die Zeile, die sagt, was die Quelle NICHT liefert - bei der Waermepumpe
+       die Bedeutung der Stufe 0, beim Stromspeicher die fehlenden Kosten
+       (Entscheid W13-E-2-Q3). Sie steht seit W13-E-2 im PROFIL; vorher stand
+       sie als Sonderfall der Waermepumpe hier im Markup. *@
+    @if (Profil.Hinweis.Length > 0)
     {
-        <Herleitungszeile Text="@HinweisStufenText" />
+        <Herleitungszeile Text="@Profil.Hinweis" />
     }
 
     <div class="epos-leiste">
@@ -138,15 +202,21 @@
 </div>
 
 @code {
-    /// <summary>Eine Zeile der gefilterten Auswahlliste.</summary>
-    public sealed record Anzeigezeile(int Zeile, int Quelle, string Name, string Firma);
+    /// <summary>
+    /// Eine Zeile der gefilterten Auswahlliste. <c>Satz</c> ist der gelesene
+    /// Eintrag — die Auspraegungen mit eigenen Listenspalten (Stromspeicher)
+    /// holen ihre Zellen daraus; <c>Name</c> bleibt daneben stehen, weil er der
+    /// vom Anwender geaenderte Bezeichner sein kann.
+    /// </summary>
+    public sealed record Anzeigezeile(int Zeile, int Quelle, string Name, string Firma,
+                                      KatalogZeile Satz);
 
     // =====================================================================
     // Die Auspraegung
     // =====================================================================
 
     /// <summary>
-    /// Welcher der vier Katalogimporte. Ohne Angabe der Heizkessel — die
+    /// Welcher der fuenf Katalogimporte. Ohne Angabe der Heizkessel — die
     /// Referenzauspraegung (Δ 5, die aktivste der Welle).
     /// </summary>
     [Parameter] public KatalogImportArt Art { get; set; } = KatalogImportArt.Heizkessel;
@@ -168,12 +238,20 @@
     [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
 
     /// <summary>
-    /// Liest die Datei — in der Huelle auf <c>Task.Run</c>, weil eine
-    /// VDI-Datei bis 8,3 MB gross wird (Risiko R-W13-2). Liefert die Zeilen und
-    /// die Meldungen des Lesens.
+    /// Liest die Quelle — in der Huelle auf <c>Task.Run</c>, weil eine
+    /// VDI-Datei bis 8,3 MB und die CEC-Mappe 1,3 MB gross wird
+    /// (Risiko R-W13-2). Liefert die Zeilen und die Meldungen des Lesens.
+    ///
+    /// <para><b>Der erste Parameter ist der QUELLSCHLUESSEL</b>
+    /// (<c>KatalogImportProfil.Quellen</c>), der zweite der Pfad. Die vier
+    /// VDI-Auspraegungen fuehren nur eine Quelle und geben einen leeren
+    /// Schluessel; der Stromspeicher braucht ihn, weil <c>bslib_database.csv</c>
+    /// und eine ausgeleitete CEC-CSV an der Endung nicht zu unterscheiden sind.
+    /// <b>Ein leerer Pfad ist erlaubt</b> — bei „CEC-Liste abrufen" und
+    /// „bslib laden" beschafft die Huelle die Datei selbst.</para>
     /// </summary>
     [Parameter]
-    public Func<string, IProgress<ImportFortschritt>, CancellationToken,
+    public Func<string, string, IProgress<ImportFortschritt>, CancellationToken,
                 Task<KatalogLeseErgebnis>>? Lesen { get; set; }
 
     /// <summary>Vorpruefung der Auswahl gegen den Katalog (<c>KatalogImportAblauf.Vorpruefen</c>).</summary>
@@ -208,11 +286,12 @@
     [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
     [Parameter] public string FilterBisText { get; set; } = Resource.IMP_KAT_FILTER_BIS;
     [Parameter] public string FilterSucheText { get; set; } = Resource.IMP_KAT_FILTER_SUCHE;
+    [Parameter] public string FilterHerstellerText { get; set; } = Resource.IMP_KAT_FILTER_HERSTELLER;
+    [Parameter] public string FilterAlleText { get; set; } = Resource.IMP_KAT_FILTER_ALLE;
     [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
     [Parameter] public string SpalteEintragText { get; set; } = Resource.IMP_KAT_SP_EINTRAG;
     [Parameter] public string FirmaSpalteText { get; set; } = Resource.IMP_KAT_FELD_FIRMA;
     [Parameter] public string GruppeText { get; set; } = Resource.IMP_KAT_GRP_EIGENSCHAFTEN;
-    [Parameter] public string HinweisStufenText { get; set; } = Resource.IMP_KAT_HINWEIS_STUFEN;
     [Parameter] public string KeineAuswahlText { get; set; } = Resource.IMP_KAT_MSG_KEINE_AUSWAHL;
     [Parameter] public string VorlageAuswahl { get; set; } = Resource.IMP_LADE_GELADEN;
 
@@ -221,17 +300,28 @@
         KatalogImportArt.Pufferspeicher => Resource.IMP_KAT_TITEL_PUFFERSPEICHER,
         KatalogImportArt.Solarkollektoren => Resource.IMP_KAT_TITEL_SOLAR,
         KatalogImportArt.Waermepumpe => Resource.IMP_KAT_TITEL_WP,
+        KatalogImportArt.Stromspeicher => Resource.IMP_KAT_TITEL_STROMSPEICHER,
         _ => Resource.IMP_KAT_TITEL_HEIZKESSEL
     };
 
-    /// <summary>Der Bereichsschluessel des Infoknopfs — je Auspraegung ein anderer.</summary>
+    /// <summary>
+    /// Der Bereichsschluessel des Infoknopfs — je Auspraegung ein anderer.
+    /// Der Stromspeicher hat keinen WinForms-Vorlaeufer; sein Schluessel folgt
+    /// trotzdem der Schreibweise der vier anderen, damit help_mapping.txt EINE
+    /// Form kennt.
+    /// </summary>
     private string HilfeSchluessel => Art switch
     {
         KatalogImportArt.Pufferspeicher => "Form_PufferSp_einlesen.btn_Help",
         KatalogImportArt.Solarkollektoren => "Form_SolarKollektoren_einlesen.btn_Help",
         KatalogImportArt.Waermepumpe => "Form_WP_einlesen.btn_Help",
+        KatalogImportArt.Stromspeicher => "Form_Stromspeicher_einlesen.btn_Help",
         _ => "Form_Heizkessel_einlesen.btn_Help"
     };
+
+    /// <summary>Die Klasse eines Quellknopfes — der zuletzt benutzte ist hervorgehoben.</summary>
+    private string Quellenklasse(KatalogImportQuelle q) =>
+        q.Schluessel == _quelle ? "epos-knopf epos-knopf--primaer" : "epos-knopf";
 
     private string Dateifilter => Profil.Dateifilter;
     private string FilterBezeichnung => Profil.FilterBezeichnung;
@@ -254,7 +344,18 @@
     private string _pfad = "";
     private double? _von;
     private double? _bis;
+    private double? _von2;
+    private double? _bis2;
     private string _suche = "";
+
+    /// <summary>Der zuletzt benutzte Quellschluessel; leer bei den vier VDI-Auspraegungen.</summary>
+    private string _quelle = "";
+
+    /// <summary>Die Herstellerklappliste — Eintrag 0 ist immer „(alle)".</summary>
+    private IReadOnlyList<(int Id, string Text)> _herstellerliste = Array.Empty<(int, string)>();
+
+    /// <summary>Die Zeile der Klappliste; 0 heisst „alle".</summary>
+    private int _iHersteller;
 
     private IReadOnlyList<KatalogZeile> _saetze = Array.Empty<KatalogZeile>();
     private List<Anzeigezeile> _anzeige = new();
@@ -315,6 +416,12 @@
         // jedem Parametersatz: Wer den Filter verstellt hat, behaelt seinen Wert.
         _von ??= Profil.FilterVon;
         _bis ??= Profil.FilterBis;
+
+        if (Profil.Zweitfilter is not null)
+        {
+            _von2 ??= Profil.Zweitfilter.Von;
+            _bis2 ??= Profil.Zweitfilter.Bis;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -328,10 +435,45 @@
     // Datei lesen (btn_VDI3805_Click)
     // =====================================================================
 
-    private async Task BeiDatei(string pfad)
+    private Task BeiDatei(string pfad)
     {
         _pfad = pfad;
-        if (string.IsNullOrEmpty(pfad) || Lesen is null) return;
+        if (string.IsNullOrEmpty(pfad)) return Task.CompletedTask;
+        return Einlesen(_quelle, pfad);
+    }
+
+    /// <summary>
+    /// Ein Klick auf einen Quellknopf (nur Auspraegungen mit
+    /// <c>Profil.Quellen</c>). Braucht die Quelle eine Datei, geht erst der
+    /// Waehler auf; sonst beschafft die Huelle den Inhalt selbst — Netzabruf
+    /// oder Auslieferungsdatei — und bekommt einen leeren Pfad.
+    ///
+    /// <para>Ein ABGEBROCHENER Waehler liest nichts und meldet nichts: Der
+    /// Anwender hat gerade selbst entschieden, es zu lassen.</para>
+    /// </summary>
+    private async Task BeiQuelle(KatalogImportQuelle quelle)
+    {
+        if (_laeuft) return;
+        _quelle = quelle.Schluessel;
+
+        if (!quelle.AusDatei)
+        {
+            await Einlesen(quelle.Schluessel, "");
+            return;
+        }
+
+        if (DateiWaehlen is null) return;
+        string? pfad = await DateiWaehlen(
+            quelle.Dateifilter.Length > 0 ? quelle.Dateifilter : Profil.Dateifilter);
+        if (string.IsNullOrEmpty(pfad)) return;
+
+        await Einlesen(quelle.Schluessel, pfad!);
+    }
+
+    /// <summary>Der Lesegang selbst — fuer beide Wege derselbe.</summary>
+    private async Task Einlesen(string quelle, string pfad)
+    {
+        if (Lesen is null) return;
 
         _laeuft = true;
         _anteil = null;
@@ -341,6 +483,8 @@
         _anzeige.Clear();
         _wahl.Leeren();
         _bezeichner.Clear();
+        _herstellerliste = Array.Empty<(int, string)>();
+        _iHersteller = 0;
         _detailSatz = -1;
         _abbruch = new CancellationTokenSource();
 
@@ -353,18 +497,25 @@
                 InvokeAsync(StateHasChanged);
             });
 
-            KatalogLeseErgebnis erg = await Lesen(pfad, melder, _abbruch.Token);
+            KatalogLeseErgebnis erg = await Lesen(quelle, pfad, melder, _abbruch.Token);
 
             _saetze = erg.Zeilen;
+            HerstellerlisteAufbauen();
             ListeAufbauen();
 
             // Was der Parser gemeldet hat, steht als Warnbanner - im Bestand fiel
             // es entweder ganz weg oder riss die Datei mit (Befund W13-B35).
             if (erg.Meldungen.Count > 0 && Meldungstext is not null)
             {
+                // Die Stufe der SCHWERSTEN Meldung bestimmt die Farbe. Bis
+                // W13-E-2 wurde alles unterhalb von "Fehler" als Warnung
+                // gezeigt; der Stromspeicherimport meldet aber auch
+                // Nachrichten (den Stand der CEC-Liste, die uebergangenen
+                // bslib-Zeilen), und die sind keine Auffaelligkeit.
                 Melden(string.Join(Environment.NewLine, erg.Meldungen.Select(Meldungstext)),
-                       erg.Meldungen.Any(m => m.Stufe == PruefStufe.Fehler)
-                           ? WarnStufe.Fehler : WarnStufe.Warnung);
+                       erg.Meldungen.Any(m => m.Stufe == PruefStufe.Fehler) ? WarnStufe.Fehler
+                       : erg.Meldungen.Any(m => m.Stufe == PruefStufe.Warnung) ? WarnStufe.Warnung
+                       : WarnStufe.Hinweis);
             }
         }
         catch (OperationCanceledException)
@@ -388,7 +539,41 @@
 
     private void BeiVon(double? wert) { _von = wert ?? 0; ListeAufbauen(); }
     private void BeiBis(double? wert) { _bis = wert ?? Profil.FilterMaximum; ListeAufbauen(); }
+    private void BeiVon2(double? wert) { _von2 = wert ?? 0; ListeAufbauen(); }
+    private void BeiBis2(double? wert) { _bis2 = wert ?? Profil.Zweitfilter?.Maximum ?? 0; ListeAufbauen(); }
     private void BeiSuche(string text) { _suche = text ?? ""; ListeAufbauen(); }
+    private void BeiHersteller(int? i) { _iHersteller = i ?? 0; ListeAufbauen(); }
+
+    /// <summary>Der gewaehlte Hersteller; leer heisst „alle".</summary>
+    private string Hersteller => _iHersteller > 0 && _iHersteller < _herstellerliste.Count
+        ? _herstellerliste[_iHersteller].Text : "";
+
+    /// <summary>
+    /// Die Herstellerklappliste aus den gelesenen Saetzen — „(alle)" voran, dann
+    /// jeder Hersteller EINMAL, alphabetisch.
+    ///
+    /// <para>Sie entsteht beim Lesen und nicht beim Filtern: Sonst schrumpfte sie
+    /// mit ihrer eigenen Wirkung, und der Anwender kaeme nicht mehr zurueck.
+    /// (Die 130 Hersteller der CEC-Liste sind der Grund, dass es sie ueberhaupt
+    /// gibt — die VDI-Dateien kommen je Hersteller.)</para>
+    /// </summary>
+    private void HerstellerlisteAufbauen()
+    {
+        var liste = new List<(int Id, string Text)> { (0, FilterAlleText) };
+
+        if (Profil.HerstellerFilter)
+            foreach (string h in _saetze.Select(z => z.Firma)
+                                        .Where(f => f.Length > 0)
+                                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                                        .OrderBy(f => f, StringComparer.CurrentCulture))
+                liste.Add((liste.Count, h));
+
+        _herstellerliste = liste;
+
+        // Eine NEUE Quelle fuehrt andere Hersteller: Die Wahl faellt auf „alle"
+        // zurueck, sonst zeigte die Liste nach dem Quellenwechsel grundlos nichts.
+        _iHersteller = 0;
+    }
 
     /// <summary>
     /// Baut die Anzeigeliste neu — mit dem Zahlen- UND dem Suchfilter.
@@ -404,6 +589,8 @@
 
         double von = _von ?? 0;
         double bis = _bis ?? Profil.FilterMaximum;
+        double von2 = _von2 ?? 0;
+        double bis2 = _bis2 ?? Profil.Zweitfilter?.Maximum ?? 0;
 
         _anzeige = new List<Anzeigezeile>();
         for (int i = 0; i < _saetze.Count; i++)
@@ -411,8 +598,11 @@
             KatalogZeile z = _saetze[i];
             if (z.Filterwert < von) continue;
             if (z.Filterwert > bis) continue;
+            if (Profil.Zweitfilter is not null && (z.Filterwert2 < von2 || z.Filterwert2 > bis2)) continue;
+            if (Hersteller.Length > 0
+                && !string.Equals(z.Firma, Hersteller, StringComparison.OrdinalIgnoreCase)) continue;
             if (!VdiAuswahlFilter.Passt(_suche, Bezeichner(i), z.Firma)) continue;
-            _anzeige.Add(new Anzeigezeile(_anzeige.Count, i, Bezeichner(i), z.Firma));
+            _anzeige.Add(new Anzeigezeile(_anzeige.Count, i, Bezeichner(i), z.Firma, z));
         }
 
         _wahl.Leeren();

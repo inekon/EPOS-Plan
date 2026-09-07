@@ -3324,6 +3324,14 @@ body {
     margin: 8px 0;
 }
 
+/* Die Quellknoepfe des Stromspeicherimports (W13-E-2, Stufe S1). Sie stehen
+   dort, wo die vier VDI-Auspraegungen ihren Dateiwaehler haben, und tragen
+   deshalb dessen Abstand - nur so bleibt die Maske ueber alle fuenf
+   Auspraegungen gleich hoch gegliedert. */
+.epos-katalogimport-quellen {
+    margin: 8px 0;
+}
+
 .epos-katalogimport-details {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

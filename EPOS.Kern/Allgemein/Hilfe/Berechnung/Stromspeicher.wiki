@@ -51,6 +51,35 @@ Speicherwirkung weiter.
 | Berechnungsart, Betriebsart, zulässige Ladequellen || — || Speichervariante
 |}
 
+=== Datenimport ===
+
+Der Speicherkatalog lässt sich seit dem 07.09.2026 auch '''einlesen''' statt nur von
+Hand zu pflegen: '''Administration → Daten & Import → „Stromspeicher (CEC, bslib)…"'''.
+Zwei Quellen stehen dort als Knöpfe nebeneinander.
+
+{| class="wikitable"
+! Quelle !! Was sie ist !! Was sie füllt
+|-
+| '''CEC Energy Storage System List''' (California Energy Commission) || die Geräteliste — rund 6 650 zugelassene Systeme von 130 Herstellern; „CEC-Liste abrufen" holt sie aus dem Netz, „CEC-Datei laden" liest eine heruntergeladene Mappe (XLSX oder CSV) || Bezeichner, Zellchemie, Kapazität, Leistung; den Umlaufwirkungsgrad nur bei etwa jedem sechsten Gerät
+|-
+| '''bslib''' (HTW Berlin / FZ Jülich) || vier auf dem Prüfstand vermessene Systeme, mit EPOS-Plan ausgeliefert; „bslib laden" liest sie ohne Umweg || dieselben Felder — und als einzige Quelle den '''Standby-Verbrauch''', dazu einen gemessenen statt eines angegebenen Umlaufwirkungsgrads
+|}
+
+Der Bezeichner entsteht als „Hersteller: Modell" und bleibt in der Maske änderbar. Was
+eine Quelle nicht liefert, bleibt '''leer''' statt erfunden zu werden und fällt im
+Rechenweg auf die Vorgaben dieser Seite zurück: ein fehlender Umlaufwirkungsgrad auf
+0,90, eine fehlende Leistung auf 1 C.
+
+'''Kosten kommen aus keiner der beiden Quellen.''' Modulkosten, Leistungskosten, feste
+Investition und Verschleißkosten bleiben nach dem Einlesen leer; die Maske sagt es in
+einer Zeile unter den Feldern. Sie sind vor der Wirtschaftlichkeitsrechnung in der
+Verwaltung „Stromspeicher" von Hand zu ergänzen — ein Speicher mit 0 €/kWh ist in der
+Rechnung gratis und damit immer die beste Lösung. Ebenso wenig liefern die Quellen
+Degradation, Start-Ladezustand und zugesicherte Zyklen.
+
+Am Rechenweg ändert der Import nichts: Er schreibt in dieselben Katalogfelder, die eine
+Eingabe von Hand auch beschreibt.
+
 == Formelzeichen und Parameter ==
 
 Diese Seite rechnet als '''einzige''' der Rubrik nicht in Stunden, sondern in '''Viertelstunden''':

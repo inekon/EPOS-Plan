@@ -15628,4 +15628,136 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="WPA_CHK_SPERRZEIT" xml:space="preserve">
     <value>Blackout period by energy supplier</value>
   </data>
+  <data name="MENU_SP_IMPORT" xml:space="preserve">
+    <value>Battery storage (CEC, bslib)...</value>
+  </data>
+  <data name="IMP_KAT_TITEL_STROMSPEICHER" xml:space="preserve">
+    <value>Import battery storage</value>
+  </data>
+  <data name="IMP_KAT_FILTER_ENERGIE" xml:space="preserve">
+    <value>Capacity [kWh] from:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_LEISTUNG_KW" xml:space="preserve">
+    <value>Power [kW] from:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer:</value>
+  </data>
+  <data name="IMP_KAT_FILTER_ALLE" xml:space="preserve">
+    <value>(all)</value>
+  </data>
+  <data name="IMP_KAT_FELD_MODELL" xml:space="preserve">
+    <value>Model:</value>
+  </data>
+  <data name="IMP_KAT_FELD_CHEMIE" xml:space="preserve">
+    <value>Cell chemistry:</value>
+  </data>
+  <data name="IMP_KAT_FELD_ENERGIE" xml:space="preserve">
+    <value>Capacity:</value>
+  </data>
+  <data name="IMP_KAT_FELD_LEISTUNG" xml:space="preserve">
+    <value>Power:</value>
+  </data>
+  <data name="IMP_KAT_FELD_ETA_RT" xml:space="preserve">
+    <value>Round-trip efficiency:</value>
+  </data>
+  <data name="IMP_KAT_FELD_STANDBY" xml:space="preserve">
+    <value>Standby consumption:</value>
+  </data>
+  <data name="IMP_KAT_FELD_QUELLE" xml:space="preserve">
+    <value>Source:</value>
+  </data>
+  <data name="IMP_KAT_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="IMP_KAT_SP_ENERGIE" xml:space="preserve">
+    <value>kWh</value>
+  </data>
+  <data name="IMP_KAT_SP_LEISTUNG" xml:space="preserve">
+    <value>kW</value>
+  </data>
+  <data name="IMP_KAT_SP_ETA" xml:space="preserve">
+    <value>η_RT</value>
+  </data>
+  <data name="IMP_KAT_EINH_KWH" xml:space="preserve">
+    <value>kWh</value>
+  </data>
+  <data name="IMP_KAT_EINH_W" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="IMP_KAT_QUELLE_CEC_NETZ" xml:space="preserve">
+    <value>Fetch CEC list</value>
+  </data>
+  <data name="IMP_KAT_QUELLE_CEC_DATEI" xml:space="preserve">
+    <value>Load CEC file</value>
+  </data>
+  <data name="IMP_KAT_QUELLE_BSLIB" xml:space="preserve">
+    <value>Load bslib</value>
+  </data>
+  <data name="IMP_KAT_HINWEIS_KOSTEN" xml:space="preserve">
+    <value>The source provides no costs, no degradation and no guaranteed cycles. These fields stay empty and have to be filled in under "Battery storage" before running the economic assessment.</value>
+  </data>
+  <data name="IMP_KAT_MSG_KEINE_QUELLDATEI" xml:space="preserve">
+    <value>No file was selected - nothing has been imported.</value>
+  </data>
+  <data name="SPIMP_MSG_GELADEN" xml:space="preserve">
+    <value>{0} devices read.</value>
+  </data>
+  <data name="SPIMP_MSG_KOPFZEILE" xml:space="preserve">
+    <value>The header row is missing or incomplete; not found: {0}.</value>
+  </data>
+  <data name="SPIMP_MSG_DATEI_FEHLT" xml:space="preserve">
+    <value>The file "{0}" was not found.</value>
+  </data>
+  <data name="SPIMP_MSG_LEER" xml:space="preserve">
+    <value>The file is empty.</value>
+  </data>
+  <data name="SPIMP_MSG_KEINE_SAETZE" xml:space="preserve">
+    <value>The file contains no storage device with a usable capacity.</value>
+  </data>
+  <data name="SPIMP_MSG_FORMAT_ALT" xml:space="preserve">
+    <value>The format "{0}" cannot be read; please save as *.xlsx or *.csv.</value>
+  </data>
+  <data name="SPIMP_MSG_FEHLER" xml:space="preserve">
+    <value>The file could not be read: {0}</value>
+  </data>
+  <data name="SPIMP_MSG_STAND" xml:space="preserve">
+    <value>List revision: {0}</value>
+  </data>
+  <data name="SPIMP_MSG_UEBERGANGEN" xml:space="preserve">
+    <value>{0} row(s) skipped (not a storage device): {1}</value>
+  </data>
+  <data name="SPIMP_MSG_CEC_SUCHEN" xml:space="preserve">
+    <value>Looking for the cached copy...</value>
+  </data>
+  <data name="SPIMP_MSG_CEC_CACHE" xml:space="preserve">
+    <value>Reading the cached CEC list.</value>
+  </data>
+  <data name="SPIMP_MSG_CEC_VERBINDEN" xml:space="preserve">
+    <value>Connecting to the California Energy Commission...</value>
+  </data>
+  <data name="SPIMP_MSG_CEC_GEHOLT" xml:space="preserve">
+    <value>CEC list downloaded ({0} bytes).</value>
+  </data>
+  <data name="SPIMP_MSG_CEC_LEER" xml:space="preserve">
+    <value>The server returned only {0} bytes - that is not a storage list.</value>
+  </data>
+  <data name="SPIMP_MSG_CEC_FEHLER" xml:space="preserve">
+    <value>The download failed: {0}</value>
+  </data>
+  <data name="SPIMP_MSG_CEC_ALT" xml:space="preserve">
+    <value>No network - reading the cached CEC list instead.</value>
+  </data>
+  <data name="SPIMP_MSG_CEC_KEINE_QUELLE" xml:space="preserve">
+    <value>The CEC list could neither be downloaded nor read from the cache. Please download the file from solarequipment.energy.ca.gov and use "Load CEC file".</value>
+  </data>
+  <data name="IMP_KAT_SP_HERSTELLER" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="IMP_KAT_SP_MODELL" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="IMP_KAT_SP_CHEMIE" xml:space="preserve">
+    <value>Cell chemistry</value>
+  </data>
 </root>

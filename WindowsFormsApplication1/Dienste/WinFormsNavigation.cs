@@ -134,6 +134,13 @@ namespace WindowsFormsApplication1
                 case Masken.SolarkollektorenImport:
                     return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Solarkollektoren);
 
+                // W13-E-2 (07.09.2026), Stufe S1: der Stromspeicherimport - dieselbe
+                // Huelle wie die vier VDI-Auspraegungen, nur mit drei Quellknoepfen
+                // statt eines Dateiwaehlers. Ein Argument braucht er nicht: Die
+                // Quelle waehlt der Anwender IN der Maske.
+                case Masken.StromspeicherImport:
+                    return KatalogImportHuelle.Oeffnen(null, KatalogImportArt.Stromspeicher);
+
                 // --- Masken mit Argument ---------------------------------------------
                 // W6-O-1 (06.09.2026): Beide Geraeteimporte sind EINE Razor-Komponente
                 // (ModulImportDialog) mit zwei Auspraegungen. Das Argument sagt, welche

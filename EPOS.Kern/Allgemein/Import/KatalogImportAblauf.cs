@@ -100,11 +100,22 @@ namespace WindowsFormsApplication1
         // ==================================================================
 
         /// <summary>
-        /// Liest eine VDI-3805-Datei mit dem Parser der Auspraegung. Liefert die Zahl
+        /// Liest eine Katalogdatei mit dem Parser der Auspraegung. Liefert die Zahl
         /// der gelesenen Saetze; ein Lesefehler ergibt 0 und eine Meldung.
         /// </summary>
+        /// <param name="pfad">Die zu lesende Datei.</param>
+        /// <param name="melder">Fortschrittsmelder; darf <c>null</c> sein.</param>
+        /// <param name="abbruch">Abbruchzeichen des Anwenders.</param>
+        /// <param name="quelle">
+        /// Der Quellschluessel der Auspraegung
+        /// (<see cref="KatalogImportProfil.Quellen"/>) — beim Stromspeicher
+        /// <c>CEC_NETZ</c>/<c>CEC_DATEI</c> oder <c>BSLIB</c>. Er entscheidet ueber
+        /// den ZERLEGER, denn beide Quellen kommen als CSV und sind an der Endung
+        /// nicht zu unterscheiden. Die vier VDI-Auspraegungen fuehren nur EINE
+        /// Quelle und lassen ihn leer.
+        /// </param>
         public int Lesen(string pfad, IProgress<ImportFortschritt> melder = null,
-                         CancellationToken abbruch = default)
+                         CancellationToken abbruch = default, string quelle = "")
         {
             _saetze.Clear();
             _meldungen.Clear();
@@ -158,6 +169,10 @@ namespace WindowsFormsApplication1
                             _meldungen.AddRange(p.Meldungen);
                             break;
                         }
+
+                    case KatalogImportArt.Stromspeicher:
+                        LiesStromspeicher(pfad, quelle);
+                        break;
                 }
             }
             catch (OperationCanceledException)
@@ -175,6 +190,52 @@ namespace WindowsFormsApplication1
                 _saetze.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
 
             return _saetze.Count;
+        }
+
+        /// <summary>
+        /// Der Lesezweig des Stromspeichers (W13-E-2, Stufe S1) — <b>zwei Quellen,
+        /// zwei Zerleger, EIN Satztyp</b>.
+        ///
+        /// <para>Beide Zerleger liegen seit dem Zerlegerschritt im Kern und sind
+        /// dort feldgenau geprueft; hier wird nur GEWAEHLT und der Satz in die
+        /// Katalogform gehuellt. Die Wahl haengt am Quellschluessel und NICHT an
+        /// der Dateiendung: <c>bslib_database.csv</c> und eine aus der CEC-Mappe
+        /// ausgeleitete CSV sehen von aussen gleich aus.</para>
+        ///
+        /// <para><b>Uebergangene bslib-Zeilen werden BENANNT</b> (zwei reine
+        /// PV-Wechselrichter und ein System ohne Kapazitaetsangabe). Ein
+        /// stillschweigender Verlust waere hier besonders unguenstig, weil die
+        /// Datei nur sieben Zeilen hat und der Anwender vier davon sieht.</para>
+        /// </summary>
+        private void LiesStromspeicher(string pfad, string quelle)
+        {
+            if (quelle == KatalogImportProfil.QUELLE_BSLIB)
+            {
+                var b = new BslibImport();
+                (bool Erfolg, SpeicherImportMeldung Meldung) r = b.AusDatei(pfad);
+
+                foreach (StromspeicherImportSatz satz in b.Saetze)
+                    _saetze.Add(new StromspeicherKatalogSatz(satz, KatalogImportProfil.QUELLE_BSLIB));
+
+                if (!r.Erfolg)
+                    _meldungen.Add(new PruefMeldung(PruefStufe.Fehler, r.Meldung.Schluessel, r.Meldung.Werte));
+                else if (b.Uebergangen.Count > 0)
+                    _meldungen.Add(new PruefMeldung(PruefStufe.Info, "SPIMP_MSG_UEBERGANGEN",
+                        b.Uebergangen.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        string.Join(", ", b.Uebergangen)));
+                return;
+            }
+
+            var c = new CecSpeicherImport();
+            (bool Erfolg, SpeicherImportMeldung Meldung) e = c.AusDatei(pfad);
+
+            foreach (StromspeicherImportSatz satz in c.Saetze)
+                _saetze.Add(new StromspeicherKatalogSatz(satz, KatalogImportProfil.QUELLE_CEC_DATEI));
+
+            if (!e.Erfolg)
+                _meldungen.Add(new PruefMeldung(PruefStufe.Fehler, e.Meldung.Schluessel, e.Meldung.Werte));
+            else if (c.Stand.Length > 0)
+                _meldungen.Add(new PruefMeldung(PruefStufe.Info, "SPIMP_MSG_STAND", c.Stand));
         }
 
         // ==================================================================
