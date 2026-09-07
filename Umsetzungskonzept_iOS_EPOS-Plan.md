@@ -3393,6 +3393,27 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > W8‑O‑5d‑Q3/Q4):** neun Vergleiche derselben Bauart in `Motorlauf_Stromgefuehrt`/`_OhneEinspeisung` und
 > `EntnahmeObergrenze` tragen den Rand nicht — die Entscheide nannten sie nicht; Empfehlung: nachziehen, Referenzlauf
 > bleibt dann voraussichtlich byte-gleich (die zwölf Projekte fahren wärmegeführt). Abnahme auf Windows: A‑W8‑O5d‑Q‑1…6.
+>
+> **W8‑O‑5d‑Q3/Q4 (Anwenderentscheid 07.09.2026: „Empfehlung"), umgesetzt in `db67c24`, zusammengeführt in `6eb18cc` — der
+> Zahlenrand an ALLEN Betriebsschwellen:** Q3 gibt den **14** übrigen Vergleichen der BHKW-Fahrweisen
+> `Rechenrand.SchwelleErreicht` (zwei in `Motorlauf_Stromgefuehrt`, zwölf in `Motorlauf_OhneEinspeisung` — die Liste
+> des Entscheids nannte neun; eine Stelle fehlte, drei tragen je zwei Vergleiche), in EINER Leserichtung: Schwelle ist
+> die Maschinengröße, Wert der Rest; die vier Vorzeichentests `restWaerme < 0` bleiben, sie sind keine Schwelle. Sechs
+> der 14 standen schon geschlossen (`<=`); bei den acht strengen fällt die Gleichheit auf die Seite des größeren
+> Betriebszustands — an den Volllastgrenzen ergebnisgleich, an drei Modulationsgrenzen von „Motor aus" auf
+> „Mindestlast", die Seite, auf der die übrigen ohnehin lagen. Q4 stellt die Reservemarke `Q_max · SchwelleReserve` in
+> `EntnahmeObergrenze` spiegelbildlich zur Abschaltschwelle (Wert und Schwelle vertauscht, die Reserve wird von oben
+> erreicht); der frühe `double.MaxValue` ohne Reserve bleibt davor. **Nachweis:** `RechenrandFahrweisenTests` (13 Fälle:
+> Grenze und ein ulp darunter, Gegenproben, Entladeprobe über fünf Stunden), Kern 1854 / UI 3126 grün; alle 21 Projekte der
+> Testdatenbank fahren wärmegeführt (`Betriebsart` 0 oder NULL), deshalb sind die Proben synthetisch — und deshalb ist der
+> Referenzlauf **12/12 byte-gleich zu R5** (312 CSV, `diff -rq` leer), Toleranzvergleich PASS (3 313 072 Werte), **keine
+> neue Basis**, Gate grün. **Doku:** `BHKW.wiki` (Zahlenrand für alle drei Fahrweisen, stromgeführte Tabelle mit den
+> Vergleichszeichen des Codes), `Pufferspeicher.wiki` (Mindestfüllstand erstmals im Rechenweg, Schritt 3; Schritt 4
+> nennt die zwei angesteuerten Marken), `EPOS.Kern/CLAUDE.md` (Tabelle aller 17 Stellen, Kriterium „Rand an jede Marke,
+> die eine Rechnung ansteuert"). **Notiert, nicht geändert:** `Ladefaehigkeit(obergrenzeAnteil > 0)` (Kennzeichen, keine
+> Energieschwelle) und die uneinheitliche Strenge des Paars `P_el·x_min` gegen `restStrom` im Bestand (der Rand ebnet sie
+> am Gleichheitspunkt ein). Abnahme auf Windows: A‑W8‑O5d‑Q34‑1…5. Die drei geänderten Wiki-Seiten (Wärmebedarf, BHKW,
+> Pufferspeicher) sind seit R5 neu hochzuladen.
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >
