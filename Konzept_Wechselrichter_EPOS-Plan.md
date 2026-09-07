@@ -1644,10 +1644,8 @@ Programmarbeit), die übrigen neun durch Umsetzung — zuletzt **W6‑E‑6** (d
 Herstellerfilters auf den Modulhersteller) nach **W6‑O‑8** (Schwellwert der Teillast-Regel)
 und **W6‑O‑9** (der Ordner `VDI-3805-Daten` im Setup). Die Tabelle führt darunter die
 **Anwenderentscheide zur Oberfläche**, die den Wechselrichter betreffen, ohne offener Punkt
-gewesen zu sein — bislang einer: **W16c‑E‑7**.
-
-**Stand 07.09.2026:** Aus der Windows-Abnahme des Geräteimports kommen ein Befund
-(**W6‑B‑2**) und ein Anwenderentscheid (**W6‑E‑5**) dazu; beide sind umgesetzt.
+gewesen zu sein — **W16c‑E‑7** (Menüweg) sowie aus der Windows-Abnahme des Geräteimports
+der Befund **W6‑B‑2** und der Anwenderentscheid **W6‑E‑5**; alle drei sind umgesetzt.
 
 | Nr. | Punkt | Stand |
 |---|---|---|

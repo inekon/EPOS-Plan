@@ -3480,6 +3480,38 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Referenzlauf 1030/1007/1017/1045 byte-gleich. Abnahme auf Windows: A‑W6‑E6‑1…7 (Vorauswahl mit/ohne Treffer, fremdes Gerät
 > wählbar, Filter bleibt bei Zellenänderung, zweite PV-Zeile stellt neu vor, zugeordnetes fremdes Gerät bleibt sichtbar,
 > „beginnt mit" am CEC-Bestand, englische Sätze).
+>
+> **W6‑B‑2 (Windows-Befund 07.09.2026: „der Filter bei der Herstellerauswahl funktioniert nicht"), behoben in `202b867`,
+> zusammengeführt in `42b7846`:** Der Status stimmte („109 Geräte gefunden" ist exakt die Zahl der SMA-America-Geräte
+> der CEC-Liste), die Tabelle zeigte ABB. **Ursache belegt** mit einer Playwright-Probe (Blazor-Server-Wirt im Scratchpad,
+> reines QuickGrid 10.0.11, 2 343 Zeilen, elf Fälle, drei rot): Nicht das Virtualisieren ist schuld, sondern der WECHSEL
+> des Schalters. QuickGrid trägt beide Wege in EINER Instanz; der flache Zwischenspeicher `_currentNonVirtualizedViewItems`
+> wird genau einmal gefüllt — beim ersten Abruf, als das `@ref` auf das Virtualize-Kind noch `null` war, also mit der GANZEN
+> Liste — und das `@ref` wird beim Entfernen des Kindes nie zurückgesetzt; jeder spätere Refresh landet im entfernten Kind.
+> Fällt der Schalter unter der Schwelle 120 (2 343 → 109), zeichnet QuickGrid den uralten Stand: das Bildschirmfoto des
+> Anwenders. **Fix im Standard `Raster`:** `@key` an `(Virtualisiert, Zeilenzahl)` baut das QuickGrid bei geänderter Kennung
+> neu auf — kein Wirt ändert sich, alle virtualisierten Listen des Hauses haben den Fix, und die Liste steht nach einem
+> Filterwechsel wieder am Anfang; der Schlüssel hängt an der Zahl, nicht an der Menge, damit das Tippen in einer bearbeitbaren
+> Zelle nichts neu aufbaut. Weg (a) `@ref` + `RefreshDataAsync()` wäre wirkungslos gewesen — er landet im fehlerhaften Zweig.
+> Vier Wächter (drei `RasterTests`, ein Dialogfall mit den ABB-Zeilen des Fotos), alle ohne Fix rot; Probe 3 rot → 20 grün.
+> Nebenbefund erledigt: vier Spaltenköpfe trugen Feldbeschriftungen mit Doppelpunkt (`PVIMP_SP_HERSTELLER`,
+> `PVIMP_SP_TECHNOLOGIE`, `PVIMP_LBL_MODULNAME`, `WRK_IMP_LBL_GERAET`). Abnahme: A‑W6‑B2‑1…5.
+>
+> **W6‑E‑5 (Anwenderentscheid 07.09.2026: „die Mehrfachauswahl funktioniert nicht", „die Auswahl per Doppelklick geht
+> nicht", „der Mehrfachimport soll grundsätzlich für alle Importe möglich sein"), umgesetzt in `7912c3e`, zusammengeführt
+> in `42b7846`:** Befund verifiziert — der Katalogimport (vier VDI-Ausprägungen) führte unter dem Kontrollkästchen die
+> Semantik der ListBox (`Zeilenmarkierung.Anklicken` leerte ohne Strg die Wahl), der Geräteimport (Module, Wechselrichter)
+> hatte gar keine Mehrfachwahl (Konzeptkasten „Eine Zeilenwahl, kein Mehrfachimport" — jetzt ersetzt). **Eine Klickregel im
+> Baustein `Zeilenmarkierung`** statt je Wirt: Klick schaltet um, Strg dito, Umschalt nimmt den Bereich ab dem Anker dazu
+> (`Hinzufuegen`); `Zeilenwahl.Doppelklick` (`@ondblclick`) übernimmt die Zeile sofort, ohne die übrige Wahl zu löschen —
+> die zwei Klicks des Browsers vor dem Doppelklick heben sich auf. `ModulImportDialog` schreibt alle gewählten Sätze in
+> einem Zug: Vorprüfung je Satz, EINE Rückfrage für alle Warnungen (mit Geräteliste), EIN `ImportKonflikteDialog`, Bilanz
+> „n übernommen, m übersprungen"; die Wahl hängt an den Sätzen und überlebt das Umfiltern (Status „n gewählt",
+> „Zurücksetzen" leert); ein einzelner Satz verhält sich wie vorher. Nachweis je Ausprägung: sechs Fälle „zwei einfache
+> Klicks → beide geschrieben" (vier VDI mit ihren Proben, zwei Geräteimporte mit `cec_module_50.csv` /
+> `cec_wechselrichter_21.csv`), dazu Doppelklick, Konflikt unter zweien, zwei Warnungen → eine Rückfrage, Umfiltern behält
+> die Wahl. Nachweis: Kern 1672 / UI 3038 grün, Designer „abweichend 0", SQL 0, Gate grün, Referenzlauf
+> 1030/1007/1017/1045 byte-gleich. Abnahme: A‑W6‑E5‑1…7.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
