@@ -324,14 +324,48 @@ public class ErzeugerReiterTests : BunitContext
         var e = new SimulationErgebnisCtrl.PhotovoltaikErgebnis
         {
             StromproduktionMwh = 42.5,
+            GenutztMwh = 30.0,
             UeberschussMwh = 12.25,
             DeckungProzent = 0.0,
             StrombedarfMwh = 120.5,
             ReststrombedarfMwh = 90.0,
-            MaxLeistungKw = 1500.0
+            MaxEinstrahlungWm2 = 1058.93
         };
         e.Module.Add(new SimulationErgebnisCtrl.PvModulZeile("Modul A", 1.7, 120, 42.5));
+        // W11b-B-8: ein CEC-Modul ohne Masse - die Flaeche ist geschaetzt.
+        e.Module.Add(new SimulationErgebnisCtrl.PvModulZeile("Modul B", 51.2, 20, 13.26, true));
         return e;
+    }
+
+    // ---- Windows-Abnahme V3 07.09.2026: W11b-B-6 bis B-8 ------------------------
+
+    [Fact]
+    public void Photovoltaik_zeigt_Erzeugung_und_genutzten_Anteil_als_zwei_Zeilen()
+    {
+        var seite = PvZeichnen();
+        Assert.Contains(Resource.SIMERG_LBL_PV_GESAMT, seite.Markup);
+        Assert.Contains(Resource.SIMERG_LBL_PV_GENUTZT, seite.Markup);
+        Assert.Contains("42,50", seite.Markup);
+        Assert.Contains("30,00", seite.Markup);
+    }
+
+    [Fact]
+    public void Photovoltaik_zeigt_die_Einstrahlung_in_Watt_je_Quadratmeter()
+    {
+        var seite = PvZeichnen();
+        Assert.Contains("W/m²", seite.Markup);
+        Assert.Contains("1058,93", seite.Markup);
+        Assert.DoesNotContain(">kW<", seite.Markup);
+    }
+
+    [Fact]
+    public void Photovoltaik_kennzeichnet_eine_geschaetzte_Flaeche()
+    {
+        var seite = PvZeichnen();
+        var zellen = seite.FindAll("td[title]");
+        Assert.Single(zellen);
+        Assert.StartsWith("≈", zellen[0].TextContent.Trim());
+        Assert.Equal(Resource.SIMERG_TIP_FLAECHE_GESCHAETZT, zellen[0].GetAttribute("title"));
     }
 
     private IRenderedComponent<PhotovoltaikReiter> PvZeichnen()

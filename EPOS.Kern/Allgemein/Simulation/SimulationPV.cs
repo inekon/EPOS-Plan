@@ -390,10 +390,14 @@ namespace WindowsFormsApplication1
                                      prodSummeMod, clippingVerlust, wechselrichterVerlust);
                 }
 
+                bool flaecheGeschaetzt;
+                double flaecheAnzeige = FlaecheZurAnzeige(nFlaecheGesamt, pStcKw, nennWirk,
+                                                          out flaecheGeschaetzt);
                 Modul_Ergebnisse.Add(new PVModulErgebnis
                 {
                     Name = ctrl.items[n].Bezeichner,
-                    Flaeche = nFlaecheGesamt,
+                    Flaeche = flaecheAnzeige,
+                    FlaecheGeschaetzt = flaecheGeschaetzt,
                     Anzahl = anzahlModule,
                     StromproduktionKwh = prodSummeMod,
                     Erweitert = erweitert,
@@ -450,6 +454,31 @@ namespace WindowsFormsApplication1
         }
 
         // --- Hilfsmethoden ---
+
+        /// <summary>
+        /// Die Flaeche eines Modulfelds FUER DIE ERGEBNISLISTE (W11b-B-8, Windows-Abnahme
+        /// V3 07.09.2026): die Katalogmasse, wenn es sie gibt - sonst aus Nennleistung
+        /// und Wirkungsgrad geschaetzt, A = P_STC / (eta * 1000 W/m2). Ein per CEC
+        /// importiertes Modul traegt keine Laenge und Breite (die NREL-Tabelle fuehrt
+        /// nur A_c); die Liste zeigte dafuer 0,00 m2 bei 20 Modulen.
+        ///
+        /// <para>NUR ANZEIGE. Der Rechenweg bleibt bei <c>nFlaecheGesamt</c> und
+        /// <c>FlaecheJeModul</c> - beide sind hier unberuehrt, und der Referenzlauf
+        /// schreibt die Flaeche nicht.</para>
+        /// </summary>
+        /// <param name="ausMassen">Breite x Laenge x Anzahl [m2], 0 = Katalog ohne Masse.</param>
+        /// <param name="pStcKw">Nennleistung des Modulfelds [kWp], 0 = keine.</param>
+        /// <param name="nennWirk">Modulwirkungsgrad als Anteil (0,20 = 20 %).</param>
+        /// <param name="geschaetzt">true, wenn der Rueckgabewert geschaetzt ist.</param>
+        internal static double FlaecheZurAnzeige(double ausMassen, double pStcKw, double nennWirk,
+                                                 out bool geschaetzt)
+        {
+            geschaetzt = false;
+            if (ausMassen > 0.0) return ausMassen;
+            if (pStcKw <= 0.0 || nennWirk <= 0.0) return 0.0;
+            geschaetzt = true;
+            return pStcKw / nennWirk;   // kW / (kW/m2 bei 1 kW/m2 Einstrahlung) = m2
+        }
 
         public double[] Stundenwerte_zu_viertelstunden(double[] stundenwerte)
         {
@@ -1348,6 +1377,7 @@ namespace WindowsFormsApplication1
     {
         public string Name = "";
         public double Flaeche;          // m^2 gesamt
+        public bool FlaecheGeschaetzt;  // W11b-B-8: aus P_STC / Wirkungsgrad, Katalog ohne Masse
         public long Anzahl;             // Modulanzahl
         public double StromproduktionKwh;  // kWh/a (theoretisch, nach Wechselrichter)
 

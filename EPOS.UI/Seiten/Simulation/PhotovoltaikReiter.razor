@@ -13,7 +13,16 @@
 
    BEFUND W11-B22 IST IN W11a BEHOBEN: Der Deckungsgrad teilte ungepruefte
    Summen; in zwei von drei Referenzprojekten stand hier „NaN". Das DTO liefert
-   0,00. *@
+   0,00.
+
+   WINDOWS-ABNAHME V3 (07.09.2026): "Die PV-Simulation scheint nicht zu
+   funktionieren." Vier Befunde an diesem Reiter, alle im DTO bzw. der Huelle
+   behoben, hier nur die Anzeige: W11b-B-6 Erzeugung und Kurve zeigten den
+   GENUTZTEN Anteil (0 ohne Strombedarf) statt der Erzeugung - jetzt beide
+   Zeilen, "Gesamte Stromerzeugung" und "davon direkt genutzt"; W11b-B-7 die
+   Einheit der Einstrahlung ist W/m2, nicht kW; W11b-B-8 eine aus Nennleistung
+   und Wirkungsgrad GESCHAETZTE Flaeche traegt ein "≈" und den Grund als
+   Tooltip. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 
@@ -30,11 +39,12 @@
             <section class="epos-simerg-block">
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_PV_GESAMT, Zahl(Daten.StromproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_GENUTZT, Zahl(Daten.GenutztMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_DECKUNG, Zahl(Daten.DeckungProzent), "%")
                     @Wertzeile(Resource.SIMERG_LBL_PV_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_REST, Zahl(Daten.ReststrombedarfMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxLeistungKw), "kW")
+                    @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxEinstrahlungWm2), "W/m²")
                 </dl>
             </section>
 
@@ -110,7 +120,14 @@
                         <tr>
                             <td class="epos-simerg-zahl">@(i + 1)</td>
                             <td>@m.Name</td>
-                            <td class="epos-simerg-zahl">@Zahl(m.FlaecheM2)</td>
+                            @if (m.FlaecheGeschaetzt)
+                            {
+                                <td class="epos-simerg-zahl" title="@Resource.SIMERG_TIP_FLAECHE_GESCHAETZT">≈ @Zahl(m.FlaecheM2)</td>
+                            }
+                            else
+                            {
+                                <td class="epos-simerg-zahl">@Zahl(m.FlaecheM2)</td>
+                            }
                             <td class="epos-simerg-zahl">@m.Anzahl</td>
                             <td class="epos-simerg-zahl">@Zahl(m.StromproduktionMwh)</td>
                         </tr>

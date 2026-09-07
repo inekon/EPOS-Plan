@@ -496,9 +496,15 @@ namespace WindowsFormsApplication1
             if (wahl.Count == 0 || wahl.Contains("STROMBEDARF"))
                 linien.Add(Reihe(MyResource.Resource.CHART_ACHSE_STROMBEDARF,
                                  sim.simulation_pv.Strombedarf, F_BEDARF));
+            // W11b-B-6: die ERZEUGUNG der Module (Stromproduktion_Theoretisch), nicht der
+            // genutzte Anteil - der lag ohne Strombedarf auf 0, die Kurve war leer, und
+            // die Tabelle darunter wies 13 MWh aus. Der Vorlaeufer (:4574) zeichnete
+            // dieselbe genutzte Reihe; das war seine Schwaeche, nicht die des Ports.
+            // Die Viertelstunden kommen aus derselben Umrechnung wie die Bestandsreihen.
             if (wahl.Count == 0 || wahl.Contains("PHOTOVOLTAIK"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
-                                 sim.simulation_pv.Stromproduktion_viertelstunde, F_PV));
+                                 sim.simulation_pv.Stundenwerte_zu_viertelstunden(
+                                     sim.simulation_pv.Stromproduktion_Theoretisch), F_PV));
 
             ChartRenderer.Reihe zweite = wahl.Contains("SPEICHERFUELLSTAND")
                 ? Reihe(MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND,

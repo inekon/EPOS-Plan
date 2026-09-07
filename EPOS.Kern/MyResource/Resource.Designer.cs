@@ -33020,6 +33020,24 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("SIMERG_LBL_PV_REST", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon direkt genutzt [MWh/a]: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_GENUTZT {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_GENUTZT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche aus Nennleistung und Wirkungsgrad geschätzt, der Katalog führt für dieses Modul keine Maße. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_FLAECHE_GESCHAETZT {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_FLAECHE_GESCHAETZT", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf MWh/a: ähnelt.

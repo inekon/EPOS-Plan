@@ -3182,9 +3182,11 @@ body {
     flex-wrap: wrap;
 }
 
-.epos-simerg-titel {
-    font-size: var(--epos-schriftgroesse-kartentitel);
-    font-weight: 600;
+/* Ohne Titel steht im Kopf der Ergebnisseite nur der Hilfeknopf - er gehoert
+   nach rechts (W11b-B-9; dasselbe wie epos-dialog-kopf--ohnetitel). Den Titel
+   traegt die Ueberlagerung, in der die Seite steht. */
+.epos-simerg-kopf--ohnetitel {
+    justify-content: flex-end;
 }
 
 .epos-simerg-fuss {
@@ -3240,6 +3242,18 @@ body {
 .epos-simerg-diagrammzeile {
     grid-column: 1 / -1;
     min-width: 0;
+}
+
+/* ... UND KLEINER ALS DIE ZEILE (Windows-Abnahme V3 07.09.2026, Befund
+   W11b-B-10: "Grafik zu gross"). Auf 1280 x 800 bei 150 % bleiben 853 x 501
+   logische Bildpunkte; ein Bild in voller Zeilenbreite (810 x 366) fuellte dort
+   den ganzen sichtbaren Reiter. Drei Viertel der Zeile, hoechstens das
+   Familienmass: 590 x 267 auf diesem Schirm, 1 050 in einer 1 400er Zeile. Die
+   Legende steht damit bei rund 10 Bildpunkten; was darueber gebraucht wird,
+   holt der Zoom des Bausteins Diagramm (A-1). W11b-B-2 (Bild NICHT in einer
+   halben Spalte) bleibt gewahrt: Es ist weiter eine eigene Zeile. */
+.epos-simerg-diagrammzeile .epos-diagramm {
+    max-width: min(var(--epos-diagramm-breit), 75%);
 }
 
 .epos-simerg-schalter {

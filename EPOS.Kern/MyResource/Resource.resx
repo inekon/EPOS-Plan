@@ -13436,8 +13436,14 @@ Alle Eingaben überprüfen!</value>
   <data name="SIMERG_LBL_PV_REST" xml:space="preserve">
     <value>Reststrombedarf MWh/a:</value>
   </data>
+  <data name="SIMERG_LBL_PV_GENUTZT" xml:space="preserve">
+    <value>davon direkt genutzt [MWh/a]:</value>
+  </data>
+  <data name="SIMERG_TIP_FLAECHE_GESCHAETZT" xml:space="preserve">
+    <value>Fläche aus Nennleistung und Wirkungsgrad geschätzt, der Katalog führt für dieses Modul keine Maße.</value>
+  </data>
   <data name="SIMERG_LBL_MAX_SOLARE_LEISTUNG" xml:space="preserve">
-    <value>Maximale solare Leistung [W/m²]:</value>
+    <value>Maximale solare Einstrahlung [W/m²]:</value>
   </data>
   <data name="SIMERG_CHK_PV_UEBERSCHUSS" xml:space="preserve">
     <value>Überschuß anzeigen</value>

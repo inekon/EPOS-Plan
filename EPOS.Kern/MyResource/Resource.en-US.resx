@@ -13429,8 +13429,14 @@ Please check all entries!</value>
   <data name="SIMERG_LBL_PV_REST" xml:space="preserve">
     <value>Residual power requirement MWh/a:</value>
   </data>
+  <data name="SIMERG_LBL_PV_GENUTZT" xml:space="preserve">
+    <value>of which used directly [MWh/a]:</value>
+  </data>
+  <data name="SIMERG_TIP_FLAECHE_GESCHAETZT" xml:space="preserve">
+    <value>Area estimated from rated power and efficiency; the catalogue has no dimensions for this module.</value>
+  </data>
   <data name="SIMERG_LBL_MAX_SOLARE_LEISTUNG" xml:space="preserve">
-    <value>Maximum solar output [W/m²]:</value>
+    <value>Maximum solar irradiance [W/m²]:</value>
   </data>
   <data name="SIMERG_CHK_PV_UEBERSCHUSS" xml:space="preserve">
     <value>Show surplus</value>

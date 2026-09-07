@@ -460,5 +460,37 @@ namespace EPOS.Kern.Tests
             catch { }
             return string.IsNullOrEmpty(t) ? schluessel : t;
         }
+
+        // ---- W11b-B-8 (Windows-Abnahme V3 07.09.2026): die Flaeche der Ergebnisliste,
+        //      wenn der Katalog keine Masse fuehrt --------------------------------------
+
+        [Fact]
+        public void Flaeche_zur_Anzeige_nimmt_die_Katalogmasse_wenn_es_sie_gibt()
+        {
+            bool geschaetzt;
+            Assert.Equal(34.0, SimulationPV.FlaecheZurAnzeige(34.0, 10.6, 0.207, out geschaetzt), 9);
+            Assert.False(geschaetzt);
+        }
+
+        [Fact]
+        public void Flaeche_zur_Anzeige_schaetzt_aus_Nennleistung_und_Wirkungsgrad()
+        {
+            // Philadelphia Solar PS-M144(HCBF)-530W: 530,785 W, 20,73 %, 20 Module,
+            // Laenge und Breite 0 (CEC-Import) -> 10,6157 kWp / 0,2073 = 51,2 m2.
+            bool geschaetzt;
+            double f = SimulationPV.FlaecheZurAnzeige(0.0, 530.785 * 20 / 1000.0, 0.20733789, out geschaetzt);
+            Assert.True(geschaetzt);
+            Assert.Equal(51.2, f, 1);
+        }
+
+        [Fact]
+        public void Flaeche_zur_Anzeige_bleibt_null_ohne_Nennleistung_oder_Wirkungsgrad()
+        {
+            bool geschaetzt;
+            Assert.Equal(0.0, SimulationPV.FlaecheZurAnzeige(0.0, 0.0, 0.2, out geschaetzt));
+            Assert.False(geschaetzt);
+            Assert.Equal(0.0, SimulationPV.FlaecheZurAnzeige(0.0, 5.0, 0.0, out geschaetzt));
+            Assert.False(geschaetzt);
+        }
     }
 }
