@@ -431,6 +431,18 @@ Strangmodell und Clipping, Modul je Strang, Importwirt mit OND, Prüfprojekt 104
 Vorbelegung, Wärmepumpen-Umbau, Administration-Menü — auf iOS gebaut, gestartet und im Rechenweg byte-gleich nachgewiesen.
 Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Dreiunddreißigster Lauf 34094835604 (`ios.yml`, `macos-26`, 07.09.2026, 07:18–07:27 UTC, 8 min 16 s)** auf
+`83dec06` — der Gesamtstand des 07.09.2026: W6‑E‑6 (Vorauswahl des Herstellerfilters), W16c‑E‑7 und W16c‑O‑7 (Knoten
+„Photovoltaik", „Klimadaten" direkt im Kopf — das Menü ist Daten, die `Menuetabelle` ist auf beiden Plattformen dieselbe),
+W13‑E‑2 Stufe 0 und S1 (Stromspeicherimport mit `CecSpeicherDienst` und bslib-Auslieferung), W6‑B‑2 (Raster-Fix beim
+Wechsel des Virtualisierungsschalters — trifft jede lange Liste der `AppWurzel`), W6‑E‑5 (Mehrfachwahl und Doppelklick in
+allen sechs Importen) und W6‑E‑7 (BHKW-Leistungsuntergrenze ohne Fallback, **Migrationsschritt 67** in der Seed-Datenbank,
+Schemastand 67). Workload 29 s, Bau 1 min 35 s (0 Fehler), Simulatorstart 2 min 16 s, Erststart mit Seed-Kopie, Startmarken
+(STRICT-Gate aus der Seed-Datenbank, `Projekte=24`) grün, Prüfmodus 1030 in 1 min 37 s, iZ6-Vergleich gegen
+`2026-09-06_R3_Straenge` **PASS (236 670 Werte)** und **BYTE-GLEICH** (`diff -rq` leer). Damit rechnet auch der Stand mit
+gefallenem BHKW-Fallback auf iOS byte-gleich — der Beleg, dass Schritt 67 (NULL → 30) die Rechnung des Bestands unverändert
+lässt. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
