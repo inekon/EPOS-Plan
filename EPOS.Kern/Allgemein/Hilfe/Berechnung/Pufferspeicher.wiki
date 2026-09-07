@@ -265,6 +265,21 @@ ist der Speicher geschichtet, zählt nur, was die Schichten mit
 <math>h_{\mathrm{E}}</math> des Kanals hergeben. Beim Kombispeicher ist das der Grund, warum die
 Heizung die Bereitschaftszone des Brauchwassers oben nicht antastet.
 
+'''Der Mindestfüllstand''' <math>s_{\mathrm{min}}</math> (Notreserve) wirkt an genau einer Stelle:
+Er klemmt die '''angeforderte''' Entnahme <math>Q_{\mathrm{anf}}(t)</math> auf den Vorrat oberhalb
+der Marke <math>Q_{\mathrm{max}} \cdot s_{\mathrm{min}}</math>. Er gilt nur an Speichern, die ein
+'''BHKW''' lädt — eine Maschine mit Anlaufverhalten braucht einen Vorrat, aus dem die nächste
+Bedarfsspitze bis zum Anlaufen gedeckt wird; Wärmepumpe, Kessel und Solarthermie entladen
+unverändert bis 0. Ist die Marke erreicht, bleibt der Bedarf offen und geht an die nächste
+Kaskadenstufe, während der Speicher in den Nachladebetrieb geht. Der Durchfluss derselben Stunde
+bleibt unberührt — die Reserve begrenzt den '''Vorrat''', nicht die hydraulische Weiche.
+
+Auch dieser Vergleich trägt den '''Zahlenrand''' der Abschaltschwelle (siehe Schritt 4), nur
+spiegelbildlich: Die Marke wird von '''oben''' erreicht, und als erreicht gilt sie schon, wenn der
+Füllstand höchstens 10<sup>−9</sup> kWh zuzüglich 10<sup>−12</sup> seines eigenen Betrages darüber
+steht. Der Grund ist derselbe — die Entladung fährt den Füllstand auf '''genau''' diese Marke, und
+in Gleitkommaarithmetik trifft eine Differenz ihren Zielwert nicht immer im letzten Bit.
+
 '''Die Entladereihenfolge''' läuft je Kanal über die Entladepriorität; ohne manuelle Angabe gilt die
 Automatik: die beste (kleinste) Ladepriorität der Anlagen, die diesen Speicher laden.
 
@@ -289,9 +304,14 @@ Abschaltschwelle bis auf 10<sup>−9</sup> kWh zuzüglich 10<sup>−12</sup> ihr
 erreicht hat. Das ist keine Fachtoleranz, sondern Rechentechnik — die Nachladung füllt den Speicher
 auf '''genau''' diese Schwelle, und in Gleitkommaarithmetik trifft eine Summe ihren Zielwert nicht
 immer im letzten Bit. Ohne den Rand hinge es an dieser letzten Stelle, ob die Nachladung endet; da
-die Regelung bistabil ist, trüge sie den Fehltritt über Stunden weiter. Die '''Einschaltschwelle'''
-(7) braucht den Rand nicht: Auf sie wird der Füllstand von keiner Rechnung angesteuert, er sinkt
-durch Entnahme und Bereitschaftsverluste auf einen beliebigen Wert.
+die Regelung bistabil ist, trüge sie den Fehltritt über Stunden weiter.
+
+'''Zwei Marken tragen ihn, und beide aus demselben Grund''': die Abschaltschwelle (8), auf die die
+Ladung den Füllstand hinauffährt, und der '''Mindestfüllstand''' <math>s_{\mathrm{min}}</math>
+(Schritt 3), auf den die Entladung ihn herunterfährt. Auf beide wird der Füllstand von einer
+Rechnung '''angesteuert''' — deshalb sitzt er dort auf der Kante. Die '''Einschaltschwelle''' (7)
+braucht den Rand aus demselben Grund '''nicht''': Auf sie steuert keine Rechnung zu, der Füllstand
+sinkt durch Entnahme und Bereitschaftsverluste auf einen beliebigen Wert.
 
 === Schritt 5 — Bereitschaftsverluste, einmal je Stunde ===
 
