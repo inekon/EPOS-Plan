@@ -5624,6 +5624,15 @@ body {
 /* Trichter. Die Farbe kommt nur obendrauf.                              */
 /* ==================================================================== */
 
+/* Zone A und die Liste stehen untereinander mit demselben schmalen Abstand,
+   den auch der Katalograhmen zwischen seinen Bloecken laesst. */
+.epos-katalogliste {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
 /* Zone A - EINE Zeile: Suche links, Trefferzahl rechts, der Ruecksetzer
    daneben und nur, solange etwas gesetzt ist (5.6.4). */
 .epos-katalog-suchzeile {
