@@ -2583,6 +2583,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `2026-09-07_R6_PvKoeffizienten` (der Zweig hat #150 vor S3.4 aufgenommen), kein Schema. Abnahme auf Windows:
 > **A‑W14a‑E10‑S3‑1…10**. Nebenbefund am Werkzeug: `designer_neu.py schreiben` hängt je Lauf eine Leerzeile an
 > (nicht idempotent) — eigene Aufgabe.
+>
+> **O‑13 erledigt (07.09.2026, `1cf0e1e`) und ResourceDesigner wiederholbar (`ff6a724`), zusammengeführt in `bd83486`.**
+> Der in der Windows-Sandbox flatterhafte Fall `KataloglisteTests.Zwanzigtausend_Zeilen_werden_zu_fuenfzehn_und_das_Raster_zeigt_sie`
+> (3 216 von 3 217, M7-Nachweis) war ein Wettlauf im Test, kein Fehler der `Katalogliste` — die dritte Fundstelle der
+> Regel aus W16b‑O‑2 / W6‑B‑2‑O‑1: Der `@key`-Fix W6‑B‑2 schlüsselt das Raster mit `(Virtualisiert, Zeilenzahl)`, beim
+> Übergang 20 749 → 15 wechseln beide Teile, Blazor baut das QuickGrid neu (mit `OnAfterRenderAsync` und asynchronem
+> Datenabruf), und bunits synchrones Ereignis wird dahinter eingereiht — der Übergang, für den es den Fall gibt, lässt ihn
+> flattern. Behoben nur am Test: drei wartende Helfer (`Filter` auf das gezeichnete Popover, `Gezeichnet` auf
+> Trefferzeile UND Körperzeilen, `Sortiert` auf Pfeil und Reihenfolge), alle Wartestellen der Klasse nachgezogen;
+> `SpaltenfilterTests` bleibt (unter 120 Zeilen, kein Neuaufbau). Messung: unter Last 1 rot in 560 Läufen, mit belegter
+> Warteschlange 15/15 rot → 0/15; der Fall 30/30 grün unter Last in `de` und `en_US.UTF-8`. **ResourceDesigner:**
+> `designer_neu.py schreiben` hängte je Lauf neun Zeichen an `Resource.Designer.cs` an — `rstrip('\n')` ließ die acht
+> Leerzeichen der Trennzeile stehen, `block()` schrieb sie ein zweites Mal; 34 angesammelte Leerzeilen einmalig
+> begradigt (1 823 894 → 1 823 588 Byte, 34 Löschungen, kein Schlüssel berührt), Lauf 2 und 3 ändern 0 Byte, jeder
+> Aufruf prüft die Wiederholbarkeit selbst („+0; unveraendert"). Nachweis: Kern 2033 / UI 3239 grün (de und en),
+> Warnungen 6, Gate grün, Referenzlauf byte-gleich gegen R6. Abnahme auf Windows: den Fall 10× unter Last laufen
+> lassen (10/10 grün), `designer_neu.py schreiben` zweimal — `git status` bleibt sauber.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
