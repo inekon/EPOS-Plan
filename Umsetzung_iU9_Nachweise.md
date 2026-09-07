@@ -432,7 +432,9 @@ bei **100 / 125 / 150 %**, jeweils nach einem Neustart:
    Maske, die von der Umstellung betroffen ist.
 5. **`Form_SpeicherOptimierung`** (iF22, ScottPlot, über die `Sprungbruecke`
    aus der Ergebnisseite) — erwartet: scharf; die ScottPlot-Fläche rechnet in
-   Gerätepunkten.
+   Gerätepunkten. **Entfällt seit W11b‑B‑5 (07.09.2026):** Die Maske ist die
+   Razor-Überlagerung `SpeicherOptimierungDialog`, ScottPlot und Sprungbrücke
+   sind gelöscht — der Punkt geht in A‑W11b‑B5‑1…11 auf.
 6. **Bildschirmwechsel im Betrieb** (zwei Monitore mit verschiedener
    Skalierung, Fenster hinüberziehen) — das ist der eigentliche Gewinn von
    „Per Monitor V2" und war unter `DpiUnaware` gar nicht möglich.

@@ -2773,6 +2773,29 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > steht weiter über beide Spalten. Wachen: `ChartBildTests` (4), `UebersichtReiterTests` (2). Nachweis: Kern 1762 / UI
 > 3081 grün, Gate grün, Referenzlauf byte-gleich. Abnahme: A‑W11b‑B4‑1…5 (1 920 und 1 366 px ohne Rollen, Zoom, Ganglinien
 > der übrigen Reiter höchstens 1 240 px, zwei Ringe je höchstens 560 px).
+>
+> **W11b‑B‑5/B‑6 (Windows-Abnahme V2, PDF 07.09.2026: „Auslegung optimieren — Texte überschneiden sich, Dialog stürzt nach
+> kurzer Zeit ab"), behoben in `c9acb5b`, zusammengeführt in `76fafe5`:** **Die letzte WinForms-Fachmaske ist gefallen.**
+> `Form_SpeicherOptimierung` (1 325 Z., iF22) hatte zwei Ursachen, beide mit Fundstelle belegt: Die **Überschneidung** war
+> Koordinatenarbeit — `lbl_Aktuell` (x 14…414) und der Zielfunktionstext (x 310…1140) lagen beide auf y = 108, letzterer
+> ragte 8 px aus seiner GroupBox. Der **Absturz** war ScottPlot: Jeder Lauf hängte über `Plot.Add.ColorBar` eine weitere
+> Farbskala an denselben Plot, `Plot.Clear()` räumt aber nur Plottables, keine Panels — die Zeichenfläche schrumpfte je Lauf
+> um 78 Bildpunkte und war **ab dem achten Lauf null** (an der Bibliothek nachgemessen: 6 → 13 Panels, DataRect 514 → 0);
+> ein nicht endlicher Rasterwert (`c_pow = 0`) beendete sie zusätzlich im `OnPaint`, also außerhalb jedes `try/catch`.
+> Neu sind `EPOS.Kern/Controller/SpeicherOptimierungCtrl` (Eingabeprüfung, `IProgress`/`CancellationToken`, DTO, CSV,
+> Fortschritt GEDROSSELT: höchstens jeder 10. Punkt, höchstens alle 100 ms statt 400 Meldungen je Sekunde; Stützstellen
+> 2…50, ≤ 5 000 Rasterpunkte), zwei `ChartRenderer`-Bilder (`Optimierungsraster` 860×560, `Schnittkurve` 720×460; nicht
+> endliche Werte fallen im Renderer weg) und die Überlagerung `EPOS.UI/Dialoge/Strom/SpeicherOptimierungDialog.razor` der
+> Ergebnisseite mit der Erklärung als `Herleitungszeile` UNTER der Formulargruppe. Die Rechnung ist unverändert — 34
+> Kern-Fälle rechnen `dJ = E_a,äq − I·a(i_z,N)` an jedem Rasterpunkt nach; die bunit-Probe „fünf Läufe hintereinander"
+> hält den Absturzfall maschinell. Damit fällt **das letzte Sprungziel**: `Sprungziel` ist leer (Registerstelle bleibt),
+> `Sprungbruecke.cs` gelöscht, `ScottPlot.WinForms` aus dem Paketstand entfernt; `WindowsFormsApplication1` führt nur noch
+> `Form_HelpPopup` und den `Hauptfensterrahmen` — **iF22 erledigt**. Nachweis: Release x64 0 Fehler, Kern 1824 / UI 3126
+> grün, ChartProben **38 Bilder + 6 Gegenproben** (das Gate baut ChartProben seither mit, weil es nicht in `WP-Plan.sln`
+> steht und mit `--no-build` einen alten Stand meldete), Formularkarte 122 (eine Maske), SQL 0, Referenzlauf byte-gleich.
+> Abnahme auf Windows: A‑W11b‑B5‑1…11 (Überlagerung im selben Fenster; sechs Felder ohne Überdeckung bei 125/150 %; Lauf mit
+> Fortschritt und Sperre; Abbrechen ohne halbes Bild; Rand-Hinweis; Eingabefehler sperrt den Start; Zoom in beiden Bildern;
+> „Bestpunkt übernehmen" mit Rückfrage; CSV in deutschem Excel; **kein Absturz nach fünf Läufen**, Bilder gleich groß; ✕/Esc).
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
