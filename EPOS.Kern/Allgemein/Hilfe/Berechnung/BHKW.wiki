@@ -212,13 +212,20 @@ Direktdeckung.
 :: <math>Q(t)</math> – Wärmeproduktion des Moduls in der Stunde [kWh]
 :: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des Moduls [kW]
 
-Beide Grenzen dieser Tabelle tragen einen '''Zahlenrand''': Als erreicht gilt der Wärmeraum schon
-dann, wenn er die Nennleistung beziehungsweise die Modulationsgrenze bis auf 10<sup>−9</sup> kWh
-zuzüglich 10<sup>−12</sup> ihres eigenen Betrages erreicht. Das ist Rechentechnik, keine
-Fachtoleranz: Wärmeraum und Nennleistung liegen an der Kante zwischen zwei Betriebszuständen
-gleichauf, und ohne den Rand entschiede die letzte Stelle einer Gleitkommazahl darüber, ob ein
-Modul auf Volllast läuft, moduliert oder stehen bleibt. Der Rand liegt vier Größenordnungen unter
-der Toleranz, mit der die Regressionsprüfung Zahlen überhaupt unterscheidet.
+'''Jede''' Grenze der drei Fahrweisen trägt einen '''Zahlenrand''' — die zwei dieser Tabelle
+ebenso wie die der beiden folgenden. Als erreicht gilt eine Schwelle schon dann, wenn der Rest, der
+ihr gegenübersteht, sie bis auf 10<sup>−9</sup> kWh zuzüglich 10<sup>−12</sup> ihres eigenen
+Betrages erreicht. Das ist Rechentechnik, keine Fachtoleranz: Rest und Nennleistung liegen an der
+Kante zwischen zwei Betriebszuständen gleichauf, und ohne den Rand entschiede die letzte Stelle
+einer Gleitkommazahl darüber, ob ein Modul auf Volllast läuft, moduliert oder stehen bleibt. Der
+Rand liegt vier Größenordnungen unter der Toleranz, mit der die Regressionsprüfung Zahlen überhaupt
+unterscheidet.
+
+Die '''Leserichtung ist überall dieselbe''': Schwelle ist die Maschinengröße — Nennleistung,
+Modulationsgrenze oder die aus ihr abgeleitete Ausbeute —, Wert der Rest, der ihr gegenübersteht
+(Wärmeraum oder Reststrom). Damit entscheiden die drei Fahrweisen nach '''einem''' Maß; die
+Tabellen unten sind entsprechend gesetzt, also mit <math>\le</math> dort, wo Gleichstand den
+größeren Betriebszustand wählt.
 
 '''Stromgeführt (Wirtschaftlich).''' Die Module folgen dem '''Strombedarf'''; die Wärme ist
 Koppelprodukt. Eine Speichergrenze gibt es in der Zuschaltung nicht — was über den Wärmebedarf
@@ -228,9 +235,9 @@ Wärmeüberschuss.
 {| class="wikitable"
 ! Bedingung !! Strom <math>E(t)</math> !! Wärme <math>Q(t)</math>
 |-
-| <math>P_{\mathrm{el}} < R_{\mathrm{E}}(t)</math> || <math>P_{\mathrm{el}}</math> (Volllast) || <math>P_{\mathrm{th}}</math>
+| <math>P_{\mathrm{el}} \le R_{\mathrm{E}}(t)</math> || <math>P_{\mathrm{el}}</math> (Volllast) || <math>P_{\mathrm{th}}</math>
 |-
-| <math>P_{\mathrm{el}} \cdot x_{\mathrm{min}} \le R_{\mathrm{E}}(t) \le P_{\mathrm{el}}</math> || <math>R_{\mathrm{E}}(t)</math> (Teillast) || nach (5)
+| <math>P_{\mathrm{el}} \cdot x_{\mathrm{min}} \le R_{\mathrm{E}}(t) < P_{\mathrm{el}}</math> || <math>R_{\mathrm{E}}(t)</math> (Teillast) || nach (5)
 |-
 | <math>R_{\mathrm{E}}(t) < P_{\mathrm{el}} \cdot x_{\mathrm{min}}</math> || 0 — das Modul bleibt aus || 0
 |}
@@ -245,8 +252,11 @@ Wärmeüberschuss.
 Zuschaltung (dieselben drei Fälle wie wärmegeführt), dann die stromseitige. In beiden gilt
 zusätzlich die Zero-Export-Bedingung: '''Reicht der Strombedarf nicht, bleibt das Modul aus''' —
 eingespeist wird nichts. Ein Modul, dessen Teillaststrom
-<math>P_{\mathrm{el}} \cdot x_{\mathrm{min}}</math> noch über <math>R_{\mathrm{E}}(t)</math>
-läge, wird also abgeregelt, auch wenn Wärme gebraucht würde.
+<math>P_{\mathrm{el}} \cdot x_{\mathrm{min}}</math> über <math>R_{\mathrm{E}}(t)</math> läge,
+wird also abgeregelt, auch wenn Wärme gebraucht würde. Deckt die Teillast den Reststrom '''genau'''
+(<math>P_{\mathrm{el}} \cdot x_{\mathrm{min}} = R_{\mathrm{E}}(t)</math>), läuft das Modul: Es
+speist dabei nichts ein. Die stromseitige Zuschaltung prüft zusätzlich, ob der Wärmeraum die
+anfallende Wärme trägt — auch diese Vergleiche tragen den Zahlenrand.
 
 === Schritt 3 — Wärme unterbringen ===
 

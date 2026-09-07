@@ -551,11 +551,35 @@ bleibt — er kann keine Abweichung erzeugen, die ein Referenzvergleich noch sä
 | `SimulationPufferspeicher.HystereseFortschreiben` | `SOC >= Q_max · SchwelleAus` | `Ladefaehigkeit` fährt den Speicher auf **genau** `Q_max · grenze`, und `a + (b − a)` ist nicht bitgleich `b`. Bistabil — der Fehltritt trug über Stunden |
 | `SimulationBHKW.Motorlauf_Waermegefuehrt` (beide Stufen) | `P_th < restWaerme + restSpeicher` bzw. `P_th · x_min <= …` | Wärmeraum und Nennleistung liegen an der Kante gleichauf; kippt der Vergleich, springt die Stundenproduktion |
 
-Die **Einschaltschwelle** des Speichers bleibt bewusst ohne Rand: Kein Rechenweg fährt den
-Füllstand auf genau `Q_max · SchwelleEin`. **Wer eine neue Betriebsschwelle einführt, nimmt
-`Rechenrand.SchwelleErreicht` — nicht `>=`.** Nachweis: `EPOS.Kern.Tests/RechenrandTests`
-(je Schwelle ein Stand genau auf der Grenze und einer ein ulp darunter, dazu die
-Bistabilitätsprobe und je eine Gegenprobe mit dem blanken Vergleich).
+**Und seit W8‑O‑5d‑Q3/Q4 vom selben Tag („Empfehlung", das Nachziehen) an ALLEN
+Betriebsschwellen des Kerns** — nicht nur an den zwei, die der Befund erzwungen hatte:
+
+| Stelle | wie viele Vergleiche | Schwelle / Wert |
+|---|---|---|
+| `SimulationBHKW.Motorlauf_Waermegefuehrt` (Q1) | 2 | Nennleistung bzw. Modulationsgrenze / Wärmeraum |
+| `SimulationBHKW.Motorlauf_Stromgefuehrt` | 2 | Nennleistung bzw. Modulationsgrenze / Reststrom |
+| `SimulationBHKW.Motorlauf_OhneEinspeisung` (W1, W2, S1…S3) | 12 | dieselben Größen, dazu die anteilige Ausbeute des geregelten Laufs |
+| `SimulationPufferspeicher.HystereseFortschreiben` (Q1) | 1 | `Q_max · SchwelleAus` / `SOC` |
+| `SimulationPufferspeicher.EntnahmeObergrenze` | 1 | Reservemarke `Q_max · SchwelleReserve` / `SOC` — eine UNTERgrenze, deshalb mit vertauschten Rollen |
+
+**Die Leserichtung ist überall dieselbe:** SCHWELLE ist die Maschinengröße (Nennleistung,
+Modulationsgrenze, die aus ihr abgeleitete Ausbeute), WERT der Rest, der ihr gegenübersteht
+(Wärmeraum, Reststrom). Damit entscheiden die drei Fahrweisen nach EINEM Maß. Wo der Bestand
+`<` statt `<=` schrieb — zweimal in `Motorlauf_OhneEinspeisung` —, fällt die Gleichheit damit
+auf die Seite, auf der sie an den vier übrigen Modulationsgrenzen ohnehin liegt; die Änderung
+bleibt im Band der Breite `Rand` und ist die einzige, die der Rand am Gleichheitspunkt bewegt.
+
+Die **Einschaltschwelle** des Speichers bleibt bewusst ohne Rand — und der Grund benennt zugleich
+die Regel, nach der eine Schwelle einen braucht: **Auf sie steuert keine Rechnung zu.** Ein Rand
+gehört an jede Marke, die ein Rechenweg ansteuert (die Ladung fährt auf `Q_max · SchwelleAus`, die
+Entladung auf `Q_max · SchwelleReserve`) und an jeden Vergleich, dessen Operanden aus getrennten
+Rechenketten stammen und an der Kante gleichauf liegen. **Wer eine neue Betriebsschwelle einführt,
+nimmt `Rechenrand.SchwelleErreicht` — nicht `>=`.** Nachweis: `EPOS.Kern.Tests/RechenrandTests`
+(6 Fälle) und `EPOS.Kern.Tests/RechenrandFahrweisenTests` (13 Fälle) — je Schwelle ein Stand genau
+auf der Grenze und einer ein ulp darunter, dazu die zwei Bistabilitätsproben und je eine Gegenprobe
+mit dem blanken Vergleich. Die zwölf Referenzprojekte fahren **alle wärmegeführt**
+(`Tab_Einstellungen.Betriebsart` 0 bzw. `NULL`), deshalb sind die Proben der zwei anderen
+Fahrweisen synthetisch — und deshalb bleibt der Referenzlauf zu Q3/Q4 byte-gleich.
 
 ## Keine `(int)`-Abschneidung auf einer Rechengröße
 

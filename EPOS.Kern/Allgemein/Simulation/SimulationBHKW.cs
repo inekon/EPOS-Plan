@@ -687,8 +687,20 @@ namespace WindowsFormsApplication1
         {
             for (int motor = 0; motor < anzahl; motor++)
             {
-                // Fall 1: Reststrombedarf ist größer als die Volllast-Leistung des aktuellen Motors
-                if (bhkwStromLeistung[motor] < restStrom)
+                // ZAHLENRAND, Fall 1 - Volllast (Anwenderentscheid W8-O-5d-Q3 vom
+                // 07.09.2026, das Nachziehen zu Q1). Die ALTE Bauart lautete
+                //     if (bhkwStromLeistung[motor] < restStrom)
+                // und ist Zeile fuer Zeile dieselbe wie die Volllaststufe der
+                // waermegefuehrten Fahrweise, nur auf der Stromseite: SCHWELLE ist die
+                // Nennleistung des Moduls, WERT der Reststrombedarf. Sie bekommt
+                // deshalb denselben Rand und dieselbe Leserichtung - "erreicht der
+                // Reststrom die Nennleistung?".
+                //
+                // Der Fall GLEICHHEIT wechselt damit von der Modulation in die
+                // Volllast und ist dort BITGLEICH: Bei restStrom == P_el rechnet der
+                // Modulationszweig restStrom / P_el == 1,0 und daraus P_th und P_el -
+                // dieselben zwei Zahlen, die dieser Zweig unmittelbar bucht.
+                if (Rechenrand.SchwelleErreicht(restStrom, bhkwStromLeistung[motor]))
                 {
                     stromproduktion[stunde] += bhkwStromLeistung[motor];
                     waermeproduktion[stunde] += bhkwWaermeLeistung[motor];
@@ -699,8 +711,14 @@ namespace WindowsFormsApplication1
                     restStrom -= bhkwStromLeistung[motor];
                     restWaerme -= bhkwWaermeLeistung[motor];
                 }
-                // Fall 2: Der Motor kann modulieren (Teillastbetrieb), um den Reststrom exakt zu decken
-                else if (bhkwStromLeistung[motor] * bhkwGrenzleistung <= restStrom)
+                // Fall 2: Der Motor kann modulieren (Teillastbetrieb), um den Reststrom
+                // exakt zu decken. Dieselbe Schwelle eine Stufe tiefer, alte Bauart
+                //     else if (bhkwStromLeistung[motor] * bhkwGrenzleistung <= restStrom)
+                // - SCHWELLE ist die Modulationsgrenze, WERT wieder der Reststrom. Der
+                // Vergleich war schon geschlossen; der Rand aendert an der Gleichheit
+                // nichts und haelt nur die zwei Stufen derselben Weiche nach EINEM Mass.
+                else if (Rechenrand.SchwelleErreicht(restStrom,
+                                                     bhkwStromLeistung[motor] * bhkwGrenzleistung))
                 {
                     stromproduktion[stunde] += restStrom;
 
@@ -752,15 +770,33 @@ namespace WindowsFormsApplication1
                 {
                     restSpeicher = kapazitaetPendelspeicher - speicher;
 
-                    // Fall W1: Benötigte Wärme passt in Hausbedarf + freien Puffer
-                    if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
+                    // Fall W1: Benötigte Wärme passt in Hausbedarf + freien Puffer.
+                    // ZAHLENRAND (W8-O-5d-Q3): Der Vergleich ist WORTGLEICH der
+                    // Volllaststufe der waermegefuehrten Fahrweise
+                    //     if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
+                    // und wird deshalb genauso gelesen: SCHWELLE Nennwaermeleistung,
+                    // WERT der Waermeraum. Die Gleichheit wandert von W2 nach W1 und ist
+                    // dort ergebnisgleich - W2 rechnet bei raum == P_th den Faktor
+                    // raum / P_th == 1,0 und bucht damit dieselben Leistungen.
+                    if (Rechenrand.SchwelleErreicht(restWaerme + restSpeicher, bhkwWaermeLeistung[motor]))
                     {
-                        if (bhkwStromLeistung[motor] < restStrom)
+                        // Die innere STROMWEICHE der Zero-Export-Bedingung, zwei Stufen
+                        // derselben Bauart: SCHWELLE ist die Nennleistung bzw. die
+                        // Modulationsgrenze des Moduls, WERT der Reststrombedarf.
+                        if (Rechenrand.SchwelleErreicht(restStrom, bhkwStromLeistung[motor]))
                         {
                             sLeistung = bhkwStromLeistung[motor];
                             wLeistung = bhkwWaermeLeistung[motor];
                         }
-                        else if (bhkwStromLeistung[motor] * bhkwGrenzleistung < restStrom)
+                        // Alte Bauart: else if (bhkwStromLeistung[motor] * bhkwGrenzleistung < restStrom).
+                        // Der Vergleich war als EINZIGER dieser Weiche streng; mit dem
+                        // Rand faellt die Gleichheit auf die Seite, auf der sie an den
+                        // vier uebrigen Modulationsgrenzen des Moduls ohnehin liegt
+                        // (dort steht <=). Fachlich ist das die richtige Seite: Bei
+                        // restStrom == P_el * x_min deckt die Mindestlast den Bedarf
+                        // GENAU, es wird nichts eingespeist.
+                        else if (Rechenrand.SchwelleErreicht(restStrom,
+                                                             bhkwStromLeistung[motor] * bhkwGrenzleistung))
                         {
                             sLeistung = restStrom;
                             wLeistung = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
@@ -786,16 +822,28 @@ namespace WindowsFormsApplication1
                             restWaerme = 0.0;
                         }
                     }
-                    // Fall W2: Modulierter Betrieb bis zur Füllung des Speichers
-                    else if (bhkwWaermeLeistung[motor] * bhkwGrenzleistung <= restWaerme + restSpeicher)
+                    // Fall W2: Modulierter Betrieb bis zur Füllung des Speichers.
+                    // ZAHLENRAND (W8-O-5d-Q3), SCHWELLE ist die Modulationsgrenze der
+                    // Waermeseite, WERT der Waermeraum - der Vergleich war geschlossen,
+                    // die Gleichheit bleibt, wo sie war.
+                    else if (Rechenrand.SchwelleErreicht(restWaerme + restSpeicher,
+                                                         bhkwWaermeLeistung[motor] * bhkwGrenzleistung))
                     {
                         sLeistung = (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
 
-                        if (sLeistung < restStrom)
+                        // Alte Bauart: if (sLeistung < restStrom). SCHWELLE ist hier die
+                        // AUSBEUTE des modulierten Laufs, WERT wieder der Reststrom -
+                        // "traegt der Reststrom, was der Motor waermeseitig anboete?".
+                        // Bei Gleichheit bucht dieser Zweig den Waermeraum unverrechnet
+                        // statt ihn ueber zwei Dreisaetze zurueckzurechnen; die zwei
+                        // Wege liegen ein ulp auseinander.
+                        if (Rechenrand.SchwelleErreicht(restStrom, sLeistung))
                         {
                             wLeistung = restWaerme + restSpeicher;
                         }
-                        else if (bhkwStromLeistung[motor] * bhkwGrenzleistung < restStrom)
+                        // Dieselbe Modulationsgrenze wie in W1, mit derselben Begründung.
+                        else if (Rechenrand.SchwelleErreicht(restStrom,
+                                                             bhkwStromLeistung[motor] * bhkwGrenzleistung))
                         {
                             sLeistung = restStrom;
                             wLeistung = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
@@ -827,8 +875,16 @@ namespace WindowsFormsApplication1
                 {
                     restSpeicher = kapazitaetPendelspeicher - speicher;
 
-                    // Fall S1: Volllast auf den Strombedarf gedeckelt
-                    if (bhkwStromLeistung[motor] < restStrom && (restSpeicher + restWaerme > bhkwWaermeLeistung[motor]))
+                    // Fall S1: Volllast auf den Strombedarf gedeckelt. ZAHLENRAND
+                    // (W8-O-5d-Q3) an BEIDEN Vergleichen der Bedingung - der erste ist
+                    // die Volllastschwelle der Stromseite (SCHWELLE Nennleistung, WERT
+                    // Reststrom), der zweite die Frage, ob der Waermeraum die
+                    // Nennwaermeleistung traegt (SCHWELLE P_th, WERT Waermeraum). Der
+                    // zweite ist WORTGLEICH dem Vergleich in W1 und wird deshalb
+                    // genauso gelesen; an der Gleichheit rechnet der sonst greifende
+                    // Zweig S3 dieselben Leistungen (Faktor raum / P_th == 1,0).
+                    if (Rechenrand.SchwelleErreicht(restStrom, bhkwStromLeistung[motor]) &&
+                        Rechenrand.SchwelleErreicht(restSpeicher + restWaerme, bhkwWaermeLeistung[motor]))
                     {
                         stromproduktion[stunde] += bhkwStromLeistung[motor];
                         s_strom[motor] += bhkwStromLeistung[motor];
@@ -844,9 +900,16 @@ namespace WindowsFormsApplication1
                             restWaerme = 0.0;
                         }
                     }
-                    // Fall S2: Teillastbetrieb exakt auf den Reststrombedarf geregelt
-                    else if (bhkwStromLeistung[motor] * bhkwGrenzleistung <= restStrom &&
-                             (restSpeicher + restWaerme > restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor]))
+                    // Fall S2: Teillastbetrieb exakt auf den Reststrombedarf geregelt.
+                    // ZAHLENRAND (W8-O-5d-Q3) an beiden Vergleichen: SCHWELLE ist die
+                    // Modulationsgrenze der Stromseite bzw. die anteilige AUSBEUTE des
+                    // geregelten Laufs, WERT der Reststrom bzw. der Waermeraum. Der
+                    // zweite war streng; an der Gleichheit bucht S2 statt S3, und beide
+                    // rechnen dort dieselbe Menge - nur ueber verschiedene Dreisaetze.
+                    else if (Rechenrand.SchwelleErreicht(restStrom,
+                                                         bhkwStromLeistung[motor] * bhkwGrenzleistung) &&
+                             Rechenrand.SchwelleErreicht(restSpeicher + restWaerme,
+                                                         restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor]))
                     {
                         stromproduktion[stunde] += restStrom;
                         s_strom[motor] += restStrom;
@@ -864,9 +927,17 @@ namespace WindowsFormsApplication1
                             restWaerme = 0.0;
                         }
                     }
-                    // Fall S3: Teillastbetrieb bis zur thermischen Speichergrenze
-                    else if (bhkwStromLeistung[motor] * bhkwGrenzleistung <= restStrom &&
-                             (restSpeicher + restWaerme > bhkwWaermeLeistung[motor] * bhkwGrenzleistung))
+                    // Fall S3: Teillastbetrieb bis zur thermischen Speichergrenze.
+                    // ZAHLENRAND (W8-O-5d-Q3) an beiden Vergleichen: dieselbe
+                    // Modulationsgrenze der Stromseite wie in S2, dazu die
+                    // Modulationsgrenze der Waermeseite gegen den Waermeraum. Auch der
+                    // zweite war streng - wie in W1 faellt die Gleichheit damit auf die
+                    // Seite, auf der sie an der waermeseitigen Stufe W2 (dort <=) liegt:
+                    // Ein Waermeraum GENAU auf der Mindestlast laesst das Modul laufen.
+                    else if (Rechenrand.SchwelleErreicht(restStrom,
+                                                         bhkwStromLeistung[motor] * bhkwGrenzleistung) &&
+                             Rechenrand.SchwelleErreicht(restSpeicher + restWaerme,
+                                                         bhkwWaermeLeistung[motor] * bhkwGrenzleistung))
                     {
                         waermeproduktion[stunde] += (restSpeicher + restWaerme);
                         s_waerme[motor] += (restSpeicher + restWaerme);

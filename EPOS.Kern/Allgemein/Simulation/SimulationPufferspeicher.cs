@@ -984,8 +984,21 @@ namespace WindowsFormsApplication1
         ///
         /// <code>
         /// ohne BHKW-Bezug oder ohne Reserve : double.MaxValue   (bisheriges Verhalten)
-        /// sonst                             : max(0, SOC − Q_max · SchwelleReserve)
+        /// Reservemarke erreicht             : 0
+        /// sonst                             : SOC − Q_max · SchwelleReserve
         /// </code>
+        ///
+        /// <para><b>Die Reservemarke trägt den Zahlenrand</b> (Anwenderentscheid
+        /// W8‑O‑5d‑Q4 vom 07.09.2026, das Nachziehen zu Q1). Der Grund ist derselbe wie
+        /// bei der Abschaltschwelle in <see cref="HystereseFortschreiben"/>, nur
+        /// spiegelbildlich: Die Entladung fährt den Füllstand auf GENAU diese Marke —
+        /// <c>Kaskadenschleife.EntladeKanal</c> klemmt den Bedarf auf den hier
+        /// gelieferten Betrag, und <see cref="Entladen"/> bucht
+        /// <c>SOC −= entnahme</c>. In Gleitkomma ist <c>a − (a − b)</c> nicht bitgleich
+        /// <c>b</c>; blieb ein ulp über der Marke stehen, meldete die Methode diesen
+        /// Rest als entnehmbar, der Speicher gab in der nächsten Stunde ein Milliardstel
+        /// kWh ab statt in den Nachladebetrieb zu gehen — und weil der Nachladebetrieb
+        /// (<see cref="LaedtGerade"/>) bistabil ist, trug der Fehltritt weiter.</para>
         ///
         /// <para><b>Bewusst NICHT in <see cref="Entladen"/> eingebaut.</b> Diese Methode ist
         /// die Speicherphysik aller vier Erzeugerarten und aller Phasen; eine Untergrenze
@@ -1011,8 +1024,26 @@ namespace WindowsFormsApplication1
         {
             if (!BhkwReserveGilt || SchwelleReserve <= 0 || Q_max <= 0) return double.MaxValue;
 
-            double ueberReserve = SOC - Q_max * SchwelleReserve;
-            return ueberReserve > 0 ? ueberReserve : 0;
+            double marke = Q_max * SchwelleReserve;
+
+            // ZAHLENRAND an der Reservemarke (W8-O-5d-Q4). Die ALTE Bauart lautete
+            //     double ueberReserve = SOC - Q_max * SchwelleReserve;
+            //     return ueberReserve > 0 ? ueberReserve : 0;
+            // und entschied am letzten Bit, ob noch etwas ueber der Reserve liegt.
+            //
+            // Wert und Schwelle stehen hier VERTAUSCHT, und das ist Absicht: Die Reserve
+            // ist eine UNTERGRENZE - sie wird von oben erreicht. SchwelleErreicht misst
+            // eine steigende Schwelle; fuer die fallende ist die Frage "reicht die Marke
+            // bis an den Fuellstand heran?". Der Rand bemisst sich damit am Fuellstand
+            // statt an der Marke - an der Entscheidungsstelle liegen beide
+            // definitionsgemaess gleichauf, und 1e-12 ihres Abstands faellt nicht ins
+            // Gewicht.
+            //
+            // Der frueheste Rueckgabewert bleibt double.MaxValue: Ohne BHKW-Bezug oder
+            // ohne gepflegte Reserve kommt der Rand gar nicht erst zum Zug.
+            if (Rechenrand.SchwelleErreicht(marke, SOC)) return 0;
+
+            return SOC - marke;
         }
 
         /// <summary>
