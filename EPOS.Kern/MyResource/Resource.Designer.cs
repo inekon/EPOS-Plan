@@ -91,6 +91,8 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -13345,6 +13347,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_APERTUR {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_APERTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zellchemie ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_CHEMIE {
@@ -13399,6 +13410,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Th. Leistung ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_LEISTUNG_TH {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_LEISTUNG_TH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modell ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_MODELL {
@@ -13413,6 +13433,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_SP_QUELLE {
             get {
                 return ResourceManager.GetString("IMP_KAT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_VOLUMEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_VOLUMEN", resourceCulture);
             }
         }
         

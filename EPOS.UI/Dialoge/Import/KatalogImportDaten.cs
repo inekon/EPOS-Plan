@@ -156,6 +156,12 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_FELD_ETA_RT": return Resource.IMP_KAT_FELD_ETA_RT;
                 case "IMP_KAT_FELD_STANDBY": return Resource.IMP_KAT_FELD_STANDBY;
                 case "IMP_KAT_FELD_QUELLE": return Resource.IMP_KAT_FELD_QUELLE;
+                // S3.4: die Spaltenkoepfe der Kandidatenliste - ohne Doppelpunkt,
+                // ein Kopf ist keine Feldbeschriftung.
+                case "IMP_KAT_SP_EINTRAG": return Resource.IMP_KAT_SP_EINTRAG;
+                case "IMP_KAT_SP_LEISTUNG_TH": return Resource.IMP_KAT_SP_LEISTUNG_TH;
+                case "IMP_KAT_SP_VOLUMEN": return Resource.IMP_KAT_SP_VOLUMEN;
+                case "IMP_KAT_SP_APERTUR": return Resource.IMP_KAT_SP_APERTUR;
                 case "IMP_KAT_SP_QUELLE": return Resource.IMP_KAT_SP_QUELLE;
                 case "IMP_KAT_SP_HERSTELLER": return Resource.IMP_KAT_SP_HERSTELLER;
                 case "IMP_KAT_SP_MODELL": return Resource.IMP_KAT_SP_MODELL;

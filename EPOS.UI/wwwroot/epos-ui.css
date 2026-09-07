@@ -3447,6 +3447,16 @@ body {
     margin: 8px 0;
 }
 
+/* Stufe S3.4: Die zwei Filterleisten sind Spalten geworden; stehen bleibt
+   der EINE Knopf, der auch die WAHL leert (W6-E-5). Er steht rechts ueber
+   der Liste, damit er nicht mit "Filter zuruecksetzen" der Katalogliste
+   verwechselt wird - der nimmt nur die Trichter zurueck. */
+.epos-pvimport-ruecksetzer {
+    display: flex;
+    justify-content: flex-end;
+    margin: 8px 0 0;
+}
+
 /* Die drei Detailreiter stellen ihre Felder seit iU8-E-2 (Paket P3) in
    den Hausraster (Formularraster) - der eigene Kasten dafuer ist fort. */
 

@@ -522,8 +522,17 @@
   <data name="IMP_KAT_PROT_SCHREIBEN" xml:space="preserve">
     <value>Eintrag {0} von {1} wird übernommen…</value>
   </data>
+  <data name="IMP_KAT_SP_APERTUR" xml:space="preserve">
+    <value>Aperturfläche</value>
+  </data>
   <data name="IMP_KAT_SP_EINTRAG" xml:space="preserve">
     <value>Eintrag</value>
+  </data>
+  <data name="IMP_KAT_SP_LEISTUNG_TH" xml:space="preserve">
+    <value>Th. Leistung</value>
+  </data>
+  <data name="IMP_KAT_SP_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
   </data>
   <data name="IMP_KAT_TITEL_HEIZKESSEL" xml:space="preserve">
     <value>Heizkessel Einlesen</value>

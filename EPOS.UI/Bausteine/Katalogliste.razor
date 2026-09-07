@@ -69,9 +69,12 @@
            markiert sind. Der Knopf steht IMMER da - waere er nur bei Markierung
            sichtbar, faende niemand den Weg dorthin; der Kurztext sagt, wie man
            markiert (Strg-Klick ist unsichtbar). *@
-        <button type="button" class="epos-katalog-vergleichknopf"
-                disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
-                @onclick="BeiVergleichen">@Vergleichtext</button>
+        @if (!Mehrfach)
+        {
+            <button type="button" class="epos-katalog-vergleichknopf"
+                    disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
+                    @onclick="BeiVergleichen">@Vergleichtext</button>
+        }
 
         @if (Stand.Gesetzt)
         {
@@ -98,11 +101,27 @@
                    Rueckruf laeuft VOR Gewaehltwerden. Eine zweite Spalte mit
                    Kaestchen haette alle fuenfzehn Wirte um eine Spalte
                    verbreitert - fuer eine Wahl, die man selten trifft. *@
-                <Zeilenwahl Gewaehlt="@(context.Schluessel == Gewaehlt)"
-                            Kurztext="@Wahlkurztext(context)"
-                            Zusatzklasse="@Wahlklasse(context)"
-                            Tastenwahl="@(k => BeiTastenwahl(context, k))"
-                            Gewaehltwerden="@(() => BeiZeile(context))" />
+                @if (Mehrfach)
+                {
+                    @* MEHRFACHWAHL (Stufe S3.4): das Kontrollkaestchen der zwei
+                       Importmasken. Die REGEL - Klick schaltet um, Umschalt nimmt
+                       den Bereich dazu (W6-E-5) - bleibt beim Wirt: Sie haengt an
+                       seiner Zeilenmarkierung und an den QUELLindizes, die nur er
+                       kennt. Die Liste meldet, WAS angeklickt wurde. *@
+                    <Zeilenwahl Mehrfach="true"
+                                Gewaehlt="@(IstGewaehlt is not null && IstGewaehlt(context))"
+                                Kurztext="@Texte.SpalteWahl"
+                                Tastenwahl="@(k => BeiMehrfachwahl(context, k))"
+                                Doppelklick="@(() => Doppelklick.InvokeAsync(context))" />
+                }
+                else
+                {
+                    <Zeilenwahl Gewaehlt="@(context.Schluessel == Gewaehlt)"
+                                Kurztext="@Wahlkurztext(context)"
+                                Zusatzklasse="@Wahlklasse(context)"
+                                Tastenwahl="@(k => BeiTastenwahl(context, k))"
+                                Gewaehltwerden="@(() => BeiZeile(context))" />
+                }
             </TemplateColumn>
 
             @for (int i = 0; i < Profil.Spalten.Count; i++)
@@ -265,6 +284,45 @@
 
     /// <summary>Eine Zeile wurde gewählt.</summary>
     [Parameter] public EventCallback<string> GewaehltChanged { get; set; }
+
+    // =====================================================================
+    //  Mehrfachwahl (Stufe S3.4 — die zwei Importmasken)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Wahlspalte trägt Kontrollkästchen statt des einen Wahlknopfes</b>
+    /// (Stufe S3.4). Damit steht die Kandidatenliste der zwei Importmasken in
+    /// derselben Liste wie die fünfzehn Katalogwirte — mit Suchfeld,
+    /// Spaltentrichtern und Sortierpfeil.
+    ///
+    /// <para><b>Die REGEL bleibt beim Wirt</b> (W6‑E‑5: Klick schaltet um,
+    /// Umschalt nimmt den Bereich dazu, Doppelklick übernimmt sofort). Sie hängt
+    /// an seiner <c>Zeilenmarkierung</c> und an den QUELLindizes, über die er die
+    /// Wahl durch einen Filterwechsel rettet — beides weiß die Liste nicht. Sie
+    /// meldet, was angeklickt wurde, und fragt über <see cref="IstGewaehlt"/>
+    /// zurück, was gewählt ist.</para>
+    ///
+    /// <para><b>Der Vergleich (S3.3) entfällt in dieser Betriebsart</b>: Strg und
+    /// Umschalt bedeuten hier die Mehrfachwahl, und zwei Bedeutungen auf einer
+    /// Taste wären keine.</para>
+    /// </summary>
+    [Parameter] public bool Mehrfach { get; set; }
+
+    /// <summary>Ist diese Zeile gewählt? Nur bei <see cref="Mehrfach"/>.</summary>
+    [Parameter] public Func<Katalogfilterzeile, bool>? IstGewaehlt { get; set; }
+
+    /// <summary>Ein Klick auf ein Kästchen — mit Zeile, ANZEIGEindex und Zusatztasten.</summary>
+    [Parameter] public EventCallback<Mehrfachklick> Mehrfachwahl { get; set; }
+
+    /// <summary>Ein Doppelklick auf eine Zeile („wählen und übernehmen", W6‑E‑5).</summary>
+    [Parameter] public EventCallback<Katalogfilterzeile> Doppelklick { get; set; }
+
+    /// <summary>
+    /// Ein Klick in der Mehrfachwahl. <paramref name="Index"/> ist die Stelle in der
+    /// GEFILTERTEN Liste — genau das, worauf <c>Zeilenmarkierung</c> rechnet.
+    /// </summary>
+    public sealed record Mehrfachklick(Katalogfilterzeile Zeile, int Index,
+                                       bool Strg, bool Umschalt);
 
     /// <summary>Der Filter oder die Sortierung haben sich geändert (der Wirt merkt sich den Stand).</summary>
     [Parameter] public EventCallback Gefiltert { get; set; }
@@ -455,6 +513,20 @@
 
         Gewaehlt = zeile.Schluessel;
         return GewaehltChanged.InvokeAsync(zeile.Schluessel);
+    }
+
+    /// <summary>
+    /// Der Klick in der Mehrfachwahl geht UNVERÄNDERT an den Wirt — samt der Stelle
+    /// in der gefilterten Liste, denn darauf rechnet seine <c>Zeilenmarkierung</c>.
+    /// </summary>
+    private Task BeiMehrfachwahl(Katalogfilterzeile zeile, Zeilenwahl.Zeilenklick klick)
+    {
+        int i = -1;
+        for (int n = 0; n < _gefiltert.Count; n++)
+            if (ReferenceEquals(_gefiltert[n], zeile)) { i = n; break; }
+
+        return Mehrfachwahl.InvokeAsync(
+            new Mehrfachklick(zeile, i, klick.Strg, klick.Umschalt));
     }
 
     // =====================================================================

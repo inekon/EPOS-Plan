@@ -64,6 +64,7 @@
    Uebernehmen-Knopf schreibt sofort. *@
 
 @namespace EPOS.UI.Dialoge.Import
+@using System.Globalization
 @using SpeicherEngine
 @using WindowsFormsApplication1
 
@@ -102,60 +103,26 @@
                  Abbrechen="@(_abbruch is null ? null : AbbrechenCallback)"
                  AbbrechenText="@AbbrechenText" />
 
-    @* --- Filterzeile ---------------------------------------------------- *@
-    <div class="epos-katalogimport-filter">
-        @if (Profil.HerstellerFilter)
-        {
-            <Auswahlfeld Bezeichnung="@FilterHerstellerText" Eintraege="@_herstellerliste"
-                         Auswahl="@_iHersteller" AuswahlChanged="BeiHersteller"
-                         Aktiv="@(!_laeuft)" />
-        }
-        <Zahlenfeld Bezeichnung="@FilterBezeichnung" Wert="@_von" WertChanged="BeiVon"
-                    Min="0" Max="@Profil.FilterMaximum"
-                    Nachkommastellen="@Profil.FilterNachkommastellen" Aktiv="@(!_laeuft)" />
-        <Zahlenfeld Bezeichnung="@FilterBisText" Wert="@_bis" WertChanged="BeiBis"
-                    Min="0" Max="@Profil.FilterMaximum"
-                    Nachkommastellen="@Profil.FilterNachkommastellen" Aktiv="@(!_laeuft)" />
-        @if (Profil.Zweitfilter is not null)
-        {
-            <Zahlenfeld Bezeichnung="@Profil.Zweitfilter.Bezeichnung" Wert="@_von2" WertChanged="BeiVon2"
-                        Min="0" Max="@Profil.Zweitfilter.Maximum"
-                        Nachkommastellen="@Profil.Zweitfilter.Nachkommastellen" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@FilterBisText" Wert="@_bis2" WertChanged="BeiBis2"
-                        Min="0" Max="@Profil.Zweitfilter.Maximum"
-                        Nachkommastellen="@Profil.Zweitfilter.Nachkommastellen" Aktiv="@(!_laeuft)" />
-        }
-        <Textfeld Bezeichnung="@FilterSucheText" Wert="@_suche" WertChanged="BeiSuche" />
-    </div>
+    @* --- Die Auswahlliste ------------------------------------------------
+       STUFE S3.4 (Anwenderentscheid W14a-E-10, Frage Q10): Die Kandidatenliste
+       steht in der EINEN Katalogliste des Hauses. Damit fallen die zwei
+       Bedienelemente der Filterzeile - die Herstellerklappliste und das
+       von/bis-Paar (beim Stromspeicher zwei Paare) - samt dem Suchfeld: Der
+       Hersteller ist eine Spalte mit Trichter ("enthaelt ..."), die gefilterte
+       Groesse eine ZAHLENspalte mit Zahlenausdruck (">10", "10..60"), und die
+       Suche steht als EIN Feld ueber allen Spalten.
 
-    @* --- Die Auswahlliste (ListBox MultiExtended) ------------------------ *@
-    <Raster TZeile="Anzeigezeile" Zeilen="@Zeilen" Virtualisiert="@Virtualisieren">
-        <KindInhalt>
-            <TemplateColumn TGridItem="Anzeigezeile" Title="@SpalteWahlText">
-                <Zeilenwahl Mehrfach="true" Gewaehlt="@_wahl.IstGewaehlt(context.Zeile)"
-                            Kurztext="@SpalteWahlText"
-                            Tastenwahl="@(k => Anklicken(context.Zeile, k))"
-                            Doppelklick="@(() => BeiDoppelklick(context.Zeile))" />
-            </TemplateColumn>
-            <PropertyColumn TGridItem="Anzeigezeile" TProp="string"
-                            Property="@(z => z.Name)" Title="@SpalteEintragText" />
-            @if (Profil.Listenspalten.Count == 0)
-            {
-                <PropertyColumn TGridItem="Anzeigezeile" TProp="string"
-                                Property="@(z => z.Firma)" Title="@FirmaSpalteText" />
-            }
-            else
-            {
-                @foreach (KatalogImportSpalte spalte in Profil.Listenspalten)
-                {
-                    string sp = spalte.Schluessel;
-                    <TemplateColumn TGridItem="Anzeigezeile" Title="@spalte.Titel">
-                        @context.Satz.Wert(sp)
-                    </TemplateColumn>
-                }
-            }
-        </KindInhalt>
-    </Raster>
+       DREI DINGE BLEIBEN, WIE SIE WAREN. Die Mehrfachwahl mit ihrer Klicksemantik
+       (W6-E-5) liegt weiter beim Wirt - sie haengt an der Zeilenmarkierung und an
+       den QUELLindizes, ueber die die Wahl einen Filterwechsel ueberlebt; die
+       Statuszeile darunter zaehlt unveraendert; und virtualisiert wird weiter ab
+       120 Zeilen, jetzt an der GEFILTERTEN Zahl (VirtualisierenAb). *@
+    <Katalogliste Profil="@Profil.Listenprofil" Zeilen="@_katalogzeilen"
+                  Filterstand="@_filterstand" Texte="@Filtertexte"
+                  Mehrfach="true" IstGewaehlt="@Gewaehlt"
+                  Mehrfachwahl="BeiMehrfachwahl" Doppelklick="BeiDoppelklickZeile"
+                  Gefiltert="ListeAufbauen"
+                  VirtualisierenAb="@VIRTUALISIEREN_AB" />
 
     <Herleitungszeile Text="@AuswahlZeile" />
 
@@ -284,13 +251,7 @@
     [Parameter] public string UebernehmenText { get; set; } = Resource.IMP_KAT_BTN_UEBERNEHMEN;
     [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
-    [Parameter] public string FilterBisText { get; set; } = Resource.IMP_KAT_FILTER_BIS;
-    [Parameter] public string FilterSucheText { get; set; } = Resource.IMP_KAT_FILTER_SUCHE;
-    [Parameter] public string FilterHerstellerText { get; set; } = Resource.IMP_KAT_FILTER_HERSTELLER;
-    [Parameter] public string FilterAlleText { get; set; } = Resource.IMP_KAT_FILTER_ALLE;
     [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
-    [Parameter] public string SpalteEintragText { get; set; } = Resource.IMP_KAT_SP_EINTRAG;
-    [Parameter] public string FirmaSpalteText { get; set; } = Resource.IMP_KAT_FELD_FIRMA;
     [Parameter] public string GruppeText { get; set; } = Resource.IMP_KAT_GRP_EIGENSCHAFTEN;
     [Parameter] public string KeineAuswahlText { get; set; } = Resource.IMP_KAT_MSG_KEINE_AUSWAHL;
     [Parameter] public string VorlageAuswahl { get; set; } = Resource.IMP_LADE_GELADEN;
@@ -324,7 +285,6 @@
         q.Schluessel == _quelle ? "epos-knopf epos-knopf--primaer" : "epos-knopf";
 
     private string Dateifilter => Profil.Dateifilter;
-    private string FilterBezeichnung => Profil.FilterBezeichnung;
 
     private string Beschriftung(ImportDetailfeld feld) => feld.Einheit.Length > 0
         ? feld.Bezeichnung + " [" + feld.Einheit + "]"
@@ -342,20 +302,27 @@
     private CancellationTokenSource? _abbruch;
 
     private string _pfad = "";
-    private double? _von;
-    private double? _bis;
-    private double? _von2;
-    private double? _bis2;
-    private string _suche = "";
 
     /// <summary>Der zuletzt benutzte Quellschluessel; leer bei den vier VDI-Auspraegungen.</summary>
     private string _quelle = "";
 
-    /// <summary>Die Herstellerklappliste — Eintrag 0 ist immer „(alle)".</summary>
-    private IReadOnlyList<(int Id, string Text)> _herstellerliste = Array.Empty<(int, string)>();
+    /// <summary>
+    /// Die Kandidaten als Katalogzeilen (Stufe S3.4) — der SCHLUESSEL ist der
+    /// Satzindex, nicht der Bezeichner: Eine Importliste bringt Namensdubletten,
+    /// und der Bezeichner ist hier obendrein aenderbar.
+    /// </summary>
+    private IReadOnlyList<Katalogfilterzeile> _katalogzeilen = Array.Empty<Katalogfilterzeile>();
 
-    /// <summary>Die Zeile der Klappliste; 0 heisst „alle".</summary>
-    private int _iHersteller;
+    /// <summary>
+    /// Der Filterstand dieser Liste. Er gehoert dem WIRT und NICHT dem
+    /// <c>Katalogfilterregister</c>: Der Import zeigt Kandidaten aus einer DATEI,
+    /// keinen Katalog — ein Filter, der eine Sitzung lang stehenbliebe, verstellte
+    /// beim naechsten Einlesen den Blick auf eine ganz andere Menge.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
+
+    /// <summary>Die Beschriftungen der Katalogliste (Buendel, Hausregel).</summary>
+    private readonly Katalogfiltertexte _filtertexte = new();
 
     private IReadOnlyList<KatalogZeile> _saetze = Array.Empty<KatalogZeile>();
     private List<Anzeigezeile> _anzeige = new();
@@ -375,8 +342,6 @@
     private IReadOnlyCollection<string>? _konfliktNamen;
     private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
 
-    private IQueryable<Anzeigezeile> Zeilen => _anzeige.AsQueryable();
-
     /// <summary>
     /// Ab wie vielen Zeilen sich das Virtualisieren lohnt. Ein Herstellerkatalog
     /// bringt bis zu 190 Saetze (PART20_Bosch), die groessten Blatt-22-Dateien
@@ -385,7 +350,26 @@
     /// </summary>
     private const int VIRTUALISIEREN_AB = 120;
 
-    private bool Virtualisieren => _anzeige.Count >= VIRTUALISIEREN_AB;
+    /// <summary>Die Beschriftungen der Katalogliste; „Wahl" kommt vom Wirt.</summary>
+    private Katalogfiltertexte Filtertexte
+    {
+        get
+        {
+            _filtertexte.SpalteWahl = SpalteWahlText;
+            return _filtertexte;
+        }
+    }
+
+    /// <summary>Ist dieser Kandidat markiert? (Rueckfrage der Katalogliste, S3.4.)</summary>
+    private bool Gewaehlt(Katalogfilterzeile zeile) => _wahl.IstGewaehlt(Anzeigeindex(zeile));
+
+    /// <summary>Die Stelle eines Kandidaten in der ANGEZEIGTEN Liste; −1, wenn ausgefiltert.</summary>
+    private int Anzeigeindex(Katalogfilterzeile zeile)
+    {
+        for (int i = 0; i < _anzeige.Count; i++)
+            if (_anzeige[i].Quelle == zeile.Id) return i;
+        return -1;
+    }
 
     private EventCallback AbbrechenCallback =>
         EventCallback.Factory.Create(this, () => _abbruch?.Cancel());
@@ -412,16 +396,13 @@
         if (ProfilVorgabe is null && (_profil is null || _profil.Art != Art))
             _profil = KatalogImportProfil.Finde(Art, Texte.Zu);
 
-        // Die Filtervorbelegung des Designers - sie steht nur EINMAL, nicht bei
-        // jedem Parametersatz: Wer den Filter verstellt hat, behaelt seinen Wert.
-        _von ??= Profil.FilterVon;
-        _bis ??= Profil.FilterBis;
-
-        if (Profil.Zweitfilter is not null)
-        {
-            _von2 ??= Profil.Zweitfilter.Von;
-            _bis2 ??= Profil.Zweitfilter.Bis;
-        }
+        // S3.4: Die Filtervorbelegung des Designers (10...200 kW, 0...1000 l,
+        // 0...5 m2, 0...100 kW) faellt WEG. Sie war die Vorbelegung von ZWEI
+        // Zahlenfeldern; im Spaltenmodell gibt es kein Feld, das etwas
+        // vorbelegen koennte - und eine Vorbelegung, die beim Aufmachen Zeilen
+        // verschwinden liesse, war schon beim Stromspeicher als unerklaerlich
+        // verworfen worden (Entscheid W13-E-2). Wer eingrenzen will, schreibt
+        // "10..200" in den Trichter der Spalte.
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -480,11 +461,15 @@
         _fortschrittText = "";
         _meldung = "";
         _saetze = Array.Empty<KatalogZeile>();
+        _katalogzeilen = Array.Empty<Katalogfilterzeile>();
         _anzeige.Clear();
         _wahl.Leeren();
         _bezeichner.Clear();
-        _herstellerliste = Array.Empty<(int, string)>();
-        _iHersteller = 0;
+        // Eine NEUE Quelle ist eine andere Menge: Der Filter faellt zurueck,
+        // sonst zeigte die Liste nach dem Quellenwechsel grundlos nichts (das
+        // tat vorher die Herstellerklappliste an dieser Stelle).
+        _filterstand.Zuruecksetzen();
+        _filterstand.Suche = "";
         _detailSatz = -1;
         _abbruch = new CancellationTokenSource();
 
@@ -500,7 +485,7 @@
             KatalogLeseErgebnis erg = await Lesen(quelle, pfad, melder, _abbruch.Token);
 
             _saetze = erg.Zeilen;
-            HerstellerlisteAufbauen();
+            KatalogzeilenAufbauen();
             ListeAufbauen();
 
             // Was der Parser gemeldet hat, steht als Warnbanner - im Bestand fiel
@@ -537,44 +522,6 @@
     // Filtern (FuelleListe)
     // =====================================================================
 
-    private void BeiVon(double? wert) { _von = wert ?? 0; ListeAufbauen(); }
-    private void BeiBis(double? wert) { _bis = wert ?? Profil.FilterMaximum; ListeAufbauen(); }
-    private void BeiVon2(double? wert) { _von2 = wert ?? 0; ListeAufbauen(); }
-    private void BeiBis2(double? wert) { _bis2 = wert ?? Profil.Zweitfilter?.Maximum ?? 0; ListeAufbauen(); }
-    private void BeiSuche(string text) { _suche = text ?? ""; ListeAufbauen(); }
-    private void BeiHersteller(int? i) { _iHersteller = i ?? 0; ListeAufbauen(); }
-
-    /// <summary>Der gewaehlte Hersteller; leer heisst „alle".</summary>
-    private string Hersteller => _iHersteller > 0 && _iHersteller < _herstellerliste.Count
-        ? _herstellerliste[_iHersteller].Text : "";
-
-    /// <summary>
-    /// Die Herstellerklappliste aus den gelesenen Saetzen — „(alle)" voran, dann
-    /// jeder Hersteller EINMAL, alphabetisch.
-    ///
-    /// <para>Sie entsteht beim Lesen und nicht beim Filtern: Sonst schrumpfte sie
-    /// mit ihrer eigenen Wirkung, und der Anwender kaeme nicht mehr zurueck.
-    /// (Die 130 Hersteller der CEC-Liste sind der Grund, dass es sie ueberhaupt
-    /// gibt — die VDI-Dateien kommen je Hersteller.)</para>
-    /// </summary>
-    private void HerstellerlisteAufbauen()
-    {
-        var liste = new List<(int Id, string Text)> { (0, FilterAlleText) };
-
-        if (Profil.HerstellerFilter)
-            foreach (string h in _saetze.Select(z => z.Firma)
-                                        .Where(f => f.Length > 0)
-                                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                                        .OrderBy(f => f, StringComparer.CurrentCulture))
-                liste.Add((liste.Count, h));
-
-        _herstellerliste = liste;
-
-        // Eine NEUE Quelle fuehrt andere Hersteller: Die Wahl faellt auf „alle"
-        // zurueck, sonst zeigte die Liste nach dem Quellenwechsel grundlos nichts.
-        _iHersteller = 0;
-    }
-
     /// <summary>
     /// Baut die Anzeigeliste neu — mit dem Zahlen- UND dem Suchfilter.
     ///
@@ -587,22 +534,22 @@
     {
         List<int> vorher = _wahl.QuellIndizes(_anzeige.Select(z => z.Quelle).ToList());
 
-        double von = _von ?? 0;
-        double bis = _bis ?? Profil.FilterMaximum;
-        double von2 = _von2 ?? 0;
-        double bis2 = _bis2 ?? Profil.Zweitfilter?.Maximum ?? 0;
+        // S3.4: GEFILTERT WIRD IM KERN, mit DERSELBEN reinen Funktion und
+        // DEMSELBEN Filterstand, mit denen die Katalogliste ihre Zeilen
+        // bestimmt - die Reihenfolge ist deshalb Zeile fuer Zeile dieselbe.
+        // Der Wirt braucht sie, weil an ihr seine Markierung und die
+        // Statuszeile haengen; er liest sie nicht aus der Komponente zurueck,
+        // sondern rechnet sie selbst (kein Zustand an zwei Orten).
+        IReadOnlyList<Katalogfilterzeile> sichtbar =
+            Katalogfilter.Anwenden(Profil.Listenprofil, _katalogzeilen, _filterstand);
 
-        _anzeige = new List<Anzeigezeile>();
-        for (int i = 0; i < _saetze.Count; i++)
+        _anzeige = new List<Anzeigezeile>(sichtbar.Count);
+        foreach (Katalogfilterzeile k in sichtbar)
         {
-            KatalogZeile z = _saetze[i];
-            if (z.Filterwert < von) continue;
-            if (z.Filterwert > bis) continue;
-            if (Profil.Zweitfilter is not null && (z.Filterwert2 < von2 || z.Filterwert2 > bis2)) continue;
-            if (Hersteller.Length > 0
-                && !string.Equals(z.Firma, Hersteller, StringComparison.OrdinalIgnoreCase)) continue;
-            if (!VdiAuswahlFilter.Passt(_suche, Bezeichner(i), z.Firma)) continue;
-            _anzeige.Add(new Anzeigezeile(_anzeige.Count, i, Bezeichner(i), z.Firma, z));
+            int i = k.Id;
+            if (i < 0 || i >= _saetze.Count) continue;
+            _anzeige.Add(new Anzeigezeile(_anzeige.Count, i, Bezeichner(i), _saetze[i].Firma,
+                                          _saetze[i]));
         }
 
         _wahl.Leeren();
@@ -627,6 +574,67 @@
         _wahl.Anklicken(zeile, klick.Strg, klick.Umschalt);
         _detailSatz = _wahl.Anzahl > 0 && zeile < _anzeige.Count ? _anzeige[zeile].Quelle : -1;
         _meldung = "";
+    }
+
+    /// <summary>
+    /// Der Klick, den die <c>Katalogliste</c> meldet (S3.4). Sie nennt die Stelle
+    /// in der GEFILTERTEN Liste — und genau darauf rechnet
+    /// <see cref="Zeilenmarkierung"/>; die Regel selbst bleibt unveraendert.
+    /// </summary>
+    private void BeiMehrfachwahl(Katalogliste.Mehrfachklick klick)
+    {
+        Anklicken(klick.Index, new Zeilenwahl.Zeilenklick(klick.Strg, klick.Umschalt));
+    }
+
+    /// <summary>Der Doppelklick der <c>Katalogliste</c> — auf den Anzeigeindex umgesetzt.</summary>
+    private Task BeiDoppelklickZeile(Katalogfilterzeile zeile)
+        => BeiDoppelklick(Anzeigeindex(zeile));
+
+    /// <summary>
+    /// <b>Die Kandidaten als Katalogzeilen</b> (Stufe S3.4). Der Schluessel ist der
+    /// SATZINDEX: Eine Importliste bringt Namensdubletten, und der Bezeichner ist
+    /// hier obendrein aenderbar — er taugt nicht als Kennung.
+    ///
+    /// <para>Die Werte sind dieselben, die die Maske vorher in ihren Spalten und in
+    /// ihren zwei Zahlenfeldern zeigte: <c>Filterwert</c> (und beim Stromspeicher
+    /// <c>Filterwert2</c>) stehen als ZAHL da, damit ein Zahlenausdruck darauf
+    /// wirken kann.</para>
+    /// </summary>
+    private void KatalogzeilenAufbauen()
+    {
+        var liste = new List<Katalogfilterzeile>(_saetze.Count);
+        for (int i = 0; i < _saetze.Count; i++)
+        {
+            KatalogZeile z = _saetze[i];
+            var zeile = new Katalogfilterzeile(i, Bezeichner(i))
+            {
+                Schluessel = i.ToString(CultureInfo.InvariantCulture)
+            };
+            zeile.MitText(KatalogImportProfil.SpalteEintrag, Bezeichner(i));
+
+            if (Profil.Listenspalten.Count == 0)
+            {
+                zeile.MitText(KatalogImportProfil.FeldFirma, z.Firma);
+                zeile.MitZahl(KatalogImportProfil.SpalteFilterwert, z.Filterwert,
+                              Profil.FilterNachkommastellen);
+            }
+            else
+            {
+                foreach (KatalogImportSpalte sp in Profil.Listenspalten)
+                {
+                    if (sp.Schluessel == Profil.Filterspalte)
+                        zeile.MitZahl(sp.Schluessel, z.Filterwert, Profil.FilterNachkommastellen);
+                    else if (sp.Schluessel == Profil.Zweitfilterspalte)
+                        zeile.MitZahl(sp.Schluessel, z.Filterwert2,
+                                      Profil.Zweitfilter?.Nachkommastellen ?? 1);
+                    else
+                        zeile.MitText(sp.Schluessel, z.Wert(sp.Schluessel));
+                }
+            }
+
+            liste.Add(zeile);
+        }
+        _katalogzeilen = liste;
     }
 
     // =====================================================================
@@ -655,6 +663,9 @@
     {
         if (schluessel != KatalogImportProfil.FeldName || _detailSatz < 0) return;
         _bezeichner[_detailSatz] = wert ?? "";
+        // Der Bezeichner steht in der Spalte "Eintrag" - die Zeilen der
+        // Katalogliste tragen ihn und muessen deshalb mit (S3.4).
+        KatalogzeilenAufbauen();
         ListeAufbauen();
     }
 
