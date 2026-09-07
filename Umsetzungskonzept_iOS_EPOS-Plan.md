@@ -2532,6 +2532,29 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `Zielversion` 67 → 68, Testdatenbank ändert sich) wurde bewusst nicht in dieser Welle genommen — Empfehlung: mit S2.
 > Abnahme auf Windows: A‑W14a‑E10‑1…13. S2 (die sieben Projektdialoge samt Wärmepumpe untereinander, Q2) ist der
 > nächste Schritt.
+>
+> **W14a‑E‑10 Stufe S2 (Anwenderentscheid 07.09.2026: „S2 starten, Q7 mit aufnehmen"), umgesetzt in `11e1316` (Q7) ·
+> `9fc285e` (S2.6) · `84bd1a0` (S2.5/S2.3) · `e3c4a51` (S2.1) · `5370b5a` (S2.2) · `df07e18` (S2.4) · `f6faeef` (Doku),
+> zusammengeführt in `8dee370` — die Projektdialoge, der Assistent und der Filterstand.** Die **sieben Projektdialoge**
+> stehen auf derselben `Katalogliste` wie die acht Verwaltungsdialoge aus S1 — fünfzehn Dialoge, zehn Komponenten, keine
+> zweite Fassung. Der Kern des Entscheids ist die **Wärmepumpe**: ihre elf Bedienelemente sind neun Spalten geworden
+> (Hersteller, Modell, Quelle, P_N, VL min, VL max, Zuheizung, Kühlen, COP); vier fallen mit gemessener Begründung weg
+> (Bauart 45 von 51 leer, Auslegung = „Kühlen" Satz für Satz, Regelung und Aufstellung in den Kenndaten), und der
+> alte Elf-Kriterien-Filter bleibt als Gegenprobe im Test (beide 7 von 51). **Q2 = ja:** die `Zweispaltenauswahl` steht
+> **untereinander** (Projektliste oben, Übernahmeleiste als Textzeile ▲/▼, Katalog unten über die ganze Breite; elf
+> Wirte, keiner brauchte eine Änderung; die Medienabfrage 900 px und das Pfeilpaar ◀▶ sind gefallen). **Q12 = ja:** „im
+> Projekt verwendet" aus der lebenden Projektliste statt aus einer Zählabfrage (die Dialoge schreiben erst beim OK
+> zurück; ein Durchlauf, keine neue SQL; Konzept 9.1). **S2.5:** der `Katalogfilterstand` lebt je Katalog über die
+> Sitzung im `Katalogfilterregister` des Kerns, gemeinsam für Verwaltung und Projektdialog, mit Sortierspalte und
+> ‑richtung. **Q7 = ja:** Schemaschritt **68** (`StromspeicherFirmaNachtrag`) gibt `Tab_Stromspeicher_STAMM` und
+> `Tab_Stromspeicher` die Spalte `Firma`, Nachtrag aus dem Bezeichnerpräfix idempotent, beide Importwege schreiben sie,
+> das Präfix bleibt Rückfall, Editorfeld „Firma"; Testdatenbank eingespielt (Schemastand 68, STRICT 117, die fünf
+> Altsätze bleiben leer), `Zielversion` 67 → 68. Nebenbei fiel der Knopf „Modul-Katalog…" des `WaermepumpeStammDialog`
+> (zeigte dieselbe Liste, iZ5). Nachweis: Kern 1925 / UI 3194 grün, SpeicherEngine 337, KiKern 469, Formularkarte 122,
+> ChartProben 44, SQL 0, Designer 0, Gate grün, Referenzlauf byte-gleich gegen R5. Neu offen: **O‑8** (die
+> Verwendungsspalte sagt nichts über andere Projekte) und **O‑9** (vier Wärmepumpenmerkmale nur noch in der
+> Detailansicht); O‑7 bleibt. Abnahme auf Windows: A‑W14a‑E10‑S2‑1…12 — **Update-Hinweis: Schemastand 68, ein `.wpx`
+> auf Stand 67 wird abgewiesen.** Nächster Schritt: Stufe S3 (Bedarf, Zeitreihen, Vergleich, Importmasken).
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >

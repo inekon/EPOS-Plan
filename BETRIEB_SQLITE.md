@@ -276,8 +276,8 @@ hier auf, nicht erst beim Anwender.
 
 ### 6.5 Die Messlatte selbst — `Referenzlaeufe/Kenndaten_Test.sqlite`
 
-**Stand 05.09.2026: Schemastand 64** (`Tab_Applikation.SchemaVersion`), 68 157 440 Byte
-(65,0 MB). Nachzusehen ist er jederzeit:
+**Stand 07.09.2026: Schemastand 68** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
+66 Stränge, 67 BHKW-Leistungsgrenze, 68 `Firma` im Stromspeicherkatalog), 70 012 928 Byte (66,8 MB). Nachzusehen ist er jederzeit:
 
 ```
 sqlite3 -readonly Referenzlaeufe/Kenndaten_Test.sqlite "SELECT SchemaVersion FROM Tab_Applikation;"
