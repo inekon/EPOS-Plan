@@ -1215,7 +1215,7 @@ with a small tank the figure becomes large without any additional ageing.</value
     <value>Apply</value>
   </data>
   <data name="PVM_DLG_TITEL" xml:space="preserve">
-    <value>Inverter — {0}</value>
+    <value>System values (fallback) — {0}</value>
   </data>
   <data name="PVM_MODELL_EINFACH" xml:space="preserve">
     <value>Simple</value>
@@ -15643,14 +15643,23 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="PVS_OPT_KATALOG" xml:space="preserve">
     <value>with inverter — catalogue, strings, efficiency curve, clipping</value>
   </data>
-  <data name="PVS_SPERRE_OHNE_STRANG" xml:space="preserve">
-    <value>No string has been assigned yet.</value>
-  </data>
   <data name="PVS_HINWEIS_VEREINFACHT" xml:space="preserve">
     <value>The system calculates with an efficiency of {0} and without clipping.</value>
   </data>
   <data name="PVS_HINWEIS_OHNE_STRANG" xml:space="preserve">
-    <value>No inverter assigned — create a string.</value>
+    <value>No string yet: choose a device above and press “Create string”.</value>
+  </data>
+  <data name="PVS_LBL_GERAETEWAHL" xml:space="preserve">
+    <value>Inverter from the catalogue:</value>
+  </data>
+  <data name="PVS_HERLEITUNG_GERAETEWAHL" xml:space="preserve">
+    <value>The selected device is assigned to the next string. It can be changed per string in the table.</value>
+  </data>
+  <data name="PVS_HINWEIS_KATALOG_LEER" xml:space="preserve">
+    <value>The inverter catalogue is empty. Import devices via: Administration → Data &amp; import → Photovoltaics → “Inverters (CEC, OND)…”.</value>
+  </data>
+  <data name="PVS_HERLEITUNG_RUECKFALL" xml:space="preserve">
+    <value>The system values are the fallback of the simplified path — they only apply without a string assignment.</value>
   </data>
   <data name="PVS_SP_RANG" xml:space="preserve">
     <value>Rank</value>
@@ -15701,7 +15710,7 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>Remove</value>
   </data>
   <data name="PVS_BTN_ANLAGE" xml:space="preserve">
-    <value>Inverter of the system…</value>
+    <value>System values (fallback)…</value>
   </data>
   <data name="PVS_ANZAHL_ABGELEITET" xml:space="preserve">
     <value>from the string table</value>

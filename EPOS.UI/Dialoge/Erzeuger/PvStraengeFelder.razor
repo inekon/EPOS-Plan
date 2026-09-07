@@ -18,10 +18,30 @@
    Option, die man nur durch LOESCHEN der Strangzeilen abwaehlen koennte, ist
    keine Option.
 
-   DIE WEICHE SPERRE (W16b-E-6). "mit Wechselrichter" ohne Strangzeile ist ein
-   erklaerbarer Zustand: Die Option bleibt anklickbar, traegt aria-disabled und
-   den Grund als title, und der Versuch MELDET sich - er handelt nicht. Ein
-   disabled-Bedienelement koennte seinen Grund gar nicht sagen.
+   DIE WEICHE SPERRE IST FORT (Befund W6-B-3, Windows-Abnahme 07.09.2026:
+   "die gesamte Zuordnung Wechselrichter zum PV-Modul und Strang funktioniert
+   nicht - Auswahl Wechselrichter nicht vorhanden"). Bis hierher trug die Option
+   "mit Wechselrichter" eine WEICHE SPERRE nach W16b-E-6, solange die Anlage
+   keinen Strang fuehrte: Der Klick MELDETE "Es ist noch kein Strang zugeordnet"
+   und schaltete nicht um. Der einzige Weg, einen Strang anzulegen, stand aber
+   INNERHALB des gesperrten Weges - also gab es keinen. Wer eine frische Anlage
+   umstellen wollte, sah danach weiter den vereinfachten Weg mit seinem einen
+   Knopf "Wechselrichter der Anlage...", und der oeffnete die PAUSCHALEN. Genau
+   das zeigt das Bildschirmfoto der Abnahme.
+
+   Die weiche Sperre war am falschen Ort: "noch kein Strang" ist keine
+   Voraussetzung der Wahl, sondern ihre FOLGE - der erste Zustand danach. Sie
+   faellt ersatzlos; der Satz steht seither als Hinweis IM Abschnitt, dort wo er
+   etwas erklaert. Kapitel 7 des Konzepts hatte es von jeher so beschrieben:
+   "Die Tabelle ist leer, solange niemand einen Strang anlegt. Dann steht dort
+   die Zeile ..."
+
+   DIE GERAETEZEILE STEHT IMMER (W6-B-3). Bei "mit Wechselrichter" zeigt der
+   Abschnitt auch OHNE Strang den Herstellerfilter, die Klappliste der
+   Katalog-Wechselrichter und den Knopf "Strang anlegen" - die Wahl trifft der
+   Anwender VOR dem Anlegen, und der erste Strang traegt sie sofort. Ist der
+   Katalog leer, steht statt der Klappliste der Weg zum Import; ein stummer
+   leerer Abschnitt waere derselbe Befund noch einmal.
 
    DER S3-HINWEIS IST FORT. Bis Stufe S2 stand unter der Optionsgruppe die
    Zeile "Die Strangrechnung folgt mit Stufe S3"; seit S3 rechnet der Kern die
@@ -71,16 +91,11 @@
 <div class="epos-straenge">
 
     @* --- Die zwei Optionen aus W6-E-3 ---------------------------------------- *@
+    @* W6-B-3: BEIDE Optionen sind frei. Die weiche Sperre auf "mit
+       Wechselrichter" verschloss den Weg, auf dem der erste Strang entsteht. *@
     <Optionsgruppe Bezeichnung="@Texte.Wahl" Eintraege="@_optionen"
                    Auswahl="@(Zeile.MitWechselrichter ? WEG_KATALOG : WEG_VEREINFACHT)"
-                   AuswahlChanged="BeiWeg"
-                   WeichGesperrt="@_weichGesperrt" Verweigert="BeiVerweigert" />
-
-    @if (!string.IsNullOrEmpty(_meldung))
-    {
-        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung"
-                    Verfaellt="@TimeSpan.FromSeconds(3)" Verfallen="Verfallen" />
-    }
+                   AuswahlChanged="BeiWeg" />
 
     @if (Zeile.MitWechselrichter)
     {
@@ -107,9 +122,37 @@
             <p class="epos-herleitung">@Filterherleitung</p>
         }
 
+        @* --- W6-B-3: die KATALOGWAHL, auch ohne Strang ----------------------- *@
+        @* Sie steht ueber der Tabelle und gilt dem NAECHSTEN Strang; jede
+           bestehende Zeile hat ihre eigene Klappliste. Ohne diese Zeile hatte
+           eine frische Anlage kein einziges Bedienelement, das ein Geraet
+           nennt - der Befund des Anwenders. *@
+        @if (Geraete.Count == 0)
+        {
+            @* Leerer Katalog: der WEG dorthin, nicht bloss ein leeres Feld. *@
+            <p class="epos-katalogleer">@Texte.HinweisKatalogLeer</p>
+        }
+        else
+        {
+            <div class="epos-geraetewahl">
+                <Auswahlfeld Bezeichnung="@Texte.LabelGeraetewahl" Eintraege="@_geraetewahl"
+                             Auswahl="@_neuesGeraet" AuswahlChanged="BeiNeuemGeraet"
+                             Kurzname="@Texte.LabelGeraetewahl" />
+            </div>
+
+            <p class="epos-herleitung">@Texte.HerleitungGeraetewahl</p>
+        }
+
         @if (Zeile.Straenge.Count == 0)
         {
-            <p class="epos-herleitung">@Texte.HinweisOhneStrang</p>
+            @* Der Satz nennt den naechsten Handgriff - aber nur, wenn es die
+               Klappliste gibt, auf die er zeigt. Beim leeren Katalog steht der
+               Weg zum Import schon darueber, und zwei Anweisungen nacheinander
+               widerspraechen einander. *@
+            @if (Geraete.Count > 0)
+            {
+                <p class="epos-herleitung">@Texte.HinweisOhneStrang</p>
+            }
         }
         else
         {
@@ -204,20 +247,22 @@
                     @onclick="StrangAnlegen">@Texte.BtnAnlegen</button>
             <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
                     @onclick="StrangEntfernen">@Texte.BtnEntfernen</button>
-            <button type="button" class="epos-knopf epos-straenge-anlagenknopf"
-                    @onclick="Oeffnen">@Texte.BtnAnlage</button>
         </div>
     }
-    else
-    {
-        @* --- Der Weg von heute: Pauschalen ohne Wechselrichter --------------- *@
-        <p class="epos-herleitung">@VereinfachtText</p>
 
-        <div class="epos-leiste">
-            <button type="button" class="epos-knopf epos-straenge-anlagenknopf"
-                    @onclick="Oeffnen">@Texte.BtnAnlage</button>
-        </div>
-    }
+    @* --- Der ANLAGENRUECKFALL, in BEIDEN Wegen erreichbar ------------------- *@
+    @* W6-B-3: Er steht in einer EIGENEN Zeile am Fuss des Abschnitts und nicht
+       mehr in der Leiste neben "Strang anlegen" - dort las ihn der Anwender als
+       die Katalogwahl, die er nie war. Sein Text nennt seither, was hinter ihm
+       steht: die Pauschalen der Anlage. Im Weg "vereinfacht" ist er der einzige
+       Weg und sagt in derselben Zeile den Wirkungsgrad, der wirklich gilt. *@
+    <div class="epos-strangrueckfall">
+        <p class="epos-herleitung">
+            @(Zeile.MitWechselrichter ? Texte.HerleitungRueckfall : VereinfachtText)
+        </p>
+        <button type="button" class="epos-knopf epos-straenge-anlagenknopf"
+                @onclick="Oeffnen">@Texte.BtnAnlage</button>
+    </div>
 
     @* --- Ueberlagerung: die fuenf Anlagenwerte (bisher Form_PVModell) -------- *@
     @* Sie bleibt der ANLAGENRUECKFALL ohne Zuordnung (Konzept 7) und ist in
@@ -367,6 +412,14 @@
     private int? _hersteller = 0;
 
     /// <summary>
+    /// Das Geraet der KATALOGWAHL ueber der Tabelle (<b>W6‑B‑3</b>) — es gilt dem
+    /// NAECHSTEN Strang; 0 heisst „(kein Gerät)". Es steht nicht in der
+    /// <see cref="ErzeugerZeile"/>: Gewaehlt ist hier noch nichts, uebernommen wird
+    /// erst mit „Strang anlegen".
+    /// </summary>
+    private int? _neuesGeraet = 0;
+
+    /// <summary>
     /// Der Modulhersteller, fuer den zuletzt VORGESTELLT wurde; <c>null</c> = noch nie.
     /// Er ist das Gedaechtnis der Regel aus W6-E-6: Vorgestellt wird nur beim ersten
     /// Zeichnen und beim WECHSEL des Anlagenmoduls - sonst naehme jedes Neuzeichnen der
@@ -377,10 +430,8 @@
     /// <summary>Hat die Vorauswahl einen Hersteller GETROFFEN? Sonst steht sie auf „Alle".</summary>
     private bool _vorauswahlTrifft;
 
-    private Dictionary<int, string>? _weichGesperrt;
     private StrangBefund _befund = StrangBefund.Leer;
     private StrangZeile? _gewaehlt;
-    private string _meldung = "";
 
     private bool _offen;
     private double? _nenn, _eta10, _eta50, _eta100;
@@ -394,11 +445,11 @@
     /// <summary>Die gewaehlte Strangzeile (Pruefhilfe fuer Tests).</summary>
     public StrangZeile? Gewaehlt => _gewaehlt;
 
-    /// <summary>Die zuletzt gemeldete weiche Sperre (Pruefhilfe fuer Tests).</summary>
-    public string Meldung => _meldung;
-
     /// <summary>Der Stand des Herstellerfilters, 0 = „Alle" (Pruefhilfe fuer Tests).</summary>
     public int? Herstellerfilter => _hersteller;
+
+    /// <summary>Das Geraet der Katalogwahl ueber der Tabelle (Pruefhilfe fuer Tests).</summary>
+    public int? Katalogwahl => _neuesGeraet;
 
     protected override void OnParametersSet()
     {
@@ -429,13 +480,6 @@
         foreach (var m in Module) module.Add(m);
         _modulwahl = module;
 
-        // WEICHE SPERRE (W16b-E-6): "mit Wechselrichter" ohne Strangzeile bleibt
-        // anklickbar und traegt seinen Grund. Ist der Weg bereits gewaehlt, gibt es
-        // nichts zu sperren - sonst koennte der Anwender ihn nicht mehr verlassen.
-        _weichGesperrt = (!Zeile.MitWechselrichter && Zeile.Straenge.Count == 0)
-            ? new Dictionary<int, string> { { WEG_KATALOG, Texte.SperreOhneStrang } }
-            : null;
-
         Nachpruefen();
     }
 
@@ -448,25 +492,29 @@
         // Der Schalter PARKT die Zuordnung, er loescht sie nicht (Konzept 7.1, Grund 1):
         // Der Planer verloere sonst genau die Arbeit, die er vergleichen will.
         Zeile.MitWechselrichter = id == WEG_KATALOG;
-        _meldung = "";
         Nachpruefen();
         return Geaendert.InvokeAsync();
     }
 
+    // =================================================================================
+    // W6-B-3: die Katalogwahl ueber der Tabelle
+    // =================================================================================
+
     /// <summary>
-    /// Der VERSUCH, „mit Wechselrichter" ohne Strang zu waehlen. Er meldet sich
-    /// (Banner mit <c>Verfaellt</c>) statt zu handeln — die Staffelung aus W16b‑E‑6:
-    /// leise Zeile, Grund am Bedienelement, Banner erst NACH dem Versuch.
+    /// Merkt das Geraet fuer den NAECHSTEN Strang. Uebernommen (<c>CopyFromStamm</c>)
+    /// wird es erst beim Anlegen — eine Klapplistenwahl allein darf keine Projektkopie
+    /// anlegen, sonst fuellte ein Durchblaettern die Projekttabelle.
     /// </summary>
-    private void BeiVerweigert(int id)
+    private void BeiNeuemGeraet(int? id)
     {
-        _meldung = Texte.SperreOhneStrang;
+        _neuesGeraet = id ?? 0;
     }
 
-    /// <summary>Das Banner verfaellt nach drei Sekunden — dann ist auch der Text fort.</summary>
-    private void Verfallen()
+    /// <summary>Fuehrt der Katalog diesen Stammsatz (gefiltert oder ungefiltert)?</summary>
+    private bool ImKatalog(int stammId)
     {
-        _meldung = "";
+        foreach (var e in _gefiltert) if (e.Id == stammId) return true;
+        return false;
     }
 
     // =================================================================================
@@ -476,9 +524,19 @@
     private Task StrangAnlegen()
     {
         var neu = new StrangZeile { Rang = Zeile.Straenge.Count + 1 };
+
+        // W6-B-3: Der neue Strang traegt das Geraet der Katalogwahl - das ist der
+        // Sinn der Zeile darueber. "(kein Geraet)" legt wie bisher eine leere Zeile
+        // an; die Ampel sagt dann, was fehlt.
+        if (_neuesGeraet is int stammId && stammId > 0 && GeraetUebernehmen is not null)
+        {
+            GeraetWahl wahl = GeraetUebernehmen(stammId);
+            neu.WechselrichterId = wahl.Id;
+            neu.WechselrichterName = wahl.Name;
+        }
+
         Zeile.Straenge.Add(neu);
         _gewaehlt = neu;
-        _meldung = "";
 
         // Der erste Strang macht die Wahl "mit Wechselrichter" moeglich - und wer
         // einen Strang anlegt, will ihn auch gerechnet sehen.
@@ -538,6 +596,13 @@
         var liste = new List<(int, string)> { (0, Texte.KeinGeraet) };
         foreach (var g in _gefiltert) liste.Add(g);
         _geraetewahl = liste;
+
+        // W6-B-3: Fuehrt die Klappliste das vorgemerkte Geraet nicht mehr - der
+        // Anwender hat den Herstellerfilter umgestellt, oder der Katalogsatz ist fort -,
+        // faellt die Katalogwahl auf "(kein Geraet)" zurueck. Sonst naehme
+        // "Strang anlegen" ein Geraet mit, das in der Liste gar nicht mehr steht.
+        if (_neuesGeraet is int vorgemerkt && vorgemerkt > 0 && !ImKatalog(vorgemerkt))
+            _neuesGeraet = 0;
     }
 
     private void BeiHersteller(int? id)

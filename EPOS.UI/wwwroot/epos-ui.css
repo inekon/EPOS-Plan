@@ -6630,6 +6630,49 @@ body {
     max-width: 28rem;
 }
 
+/* W6-B-3 (Windows-Abnahme 07.09.2026): die KATALOGWAHL ueber der Tabelle. Sie
+   steht IMMER, auch ohne Strang - vorher hatte eine frische Anlage kein
+   Bedienelement, das ein Geraet nennt. Dieselbe Breite wie die Filterzeile
+   darueber: zwei Klapplisten untereinander, die zusammengehoeren. */
+.epos-geraetewahl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 28rem;
+}
+
+/* Der LEERE Katalog nennt den Weg zum Import (W6-B-3). Kein Warnbanner: Ein
+   leerer Auslieferungskatalog ist kein Fehler (W6-O-3), sondern der
+   Auslieferungszustand - die Staffelung aus W16b-E-6 sagt "leise Zeile dort, wo
+   der Anwender ohnehin hinsieht". Der linke Balken hebt sie aus dem Fliesstext
+   heraus, ohne eine Warnflaeche zu sein. */
+.epos-katalogleer {
+    margin: 0;
+    padding: 6px 10px;
+    border-left: 3px solid var(--epos-marke);
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+    line-height: 1.4;
+}
+
+/* Der ANLAGENRUECKFALL steht am Fuss des Abschnitts in einer EIGENEN Zeile
+   (W6-B-3) - in der Leiste neben "Strang anlegen" las der Anwender ihn als die
+   Katalogwahl. Die Trennlinie sagt, dass hier etwas anderes anfaengt; auf
+   schmalem Schirm faellt der Knopf unter seinen Satz. */
+.epos-strangrueckfall {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    padding-top: 8px;
+}
+
+.epos-strangrueckfall .epos-herleitung {
+    flex: 1 1 18rem;
+    margin: 0;
+}
+
 /* Die Tabelle traegt Eingabefelder statt Text - die Zellen bekommen deshalb
    weniger Polsterung, damit die 44-px-Felder die Zeile nicht auftuermen. Die
    Mindesthoehe der Felder selbst bleibt unangetastet (--epos-touchziel). */

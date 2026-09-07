@@ -66,8 +66,13 @@ public sealed class PvModellTexte
         "Erweitert: anisotrope Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld. "
         + "Der Wechselrichter rechnet in beiden Modellen.");
 
-    /// <summary>PVM_DLG_TITEL — {0} = Anlage</summary>
-    public string DialogTitel { get; } = T("PVM_DLG_TITEL", "Wechselrichter — {0}");
+    /// <summary>
+    /// PVM_DLG_TITEL — {0} = Anlage. <b>W6‑B‑3</b> (07.09.2026): Die Überlagerung hiess
+    /// „Wechselrichter — &lt;Anlage&gt;" und trug doch die vier PAUSCHALEN; im
+    /// Bildschirmfoto der Abnahme steht genau dieser Titel über den vier Feldern, die
+    /// der Anwender für die Gerätewahl hielt. Sie heisst seither nach ihrem Inhalt.
+    /// </summary>
+    public string DialogTitel { get; } = T("PVM_DLG_TITEL", "Anlagenwerte (Rückfall) — {0}");
     /// <summary>PVM_DLG_KOPF_EINFACH</summary>
     public string KopfEinfach { get; } = T("PVM_DLG_KOPF_EINFACH",
         "Die Anlage rechnet im Modell Einfach. Die Felder sind deshalb gesperrt - sie wirken erst im Modell Erweitert.");
