@@ -10,19 +10,19 @@ namespace WindowsFormsApplication1
 
         public List<int> wp_list = new List<int>();
         public double WaermebedarfGesamtKwh;
-        public float[] Waermebedarf_stuendlich = new float[8760];
-        public float[] waermerestbedarf_stuendlich = new float[8760];
+        public double[] Waermebedarf_stuendlich = new double[8760];
+        public double[] waermerestbedarf_stuendlich = new double[8760];
         public double WaermerestbedarfGesamtKwh;
 
         public double[] WP_Strombedarf_monatlich = new double[12];
         public double[] WP_Waermeproduktion_monatlich = new double[12];
         public double[] Heizstab_monatlich = new double[12];
-        public float[] Temperatur = new float[8760];
+        public double[] Temperatur = new double[8760];
 
-        public float[] WP_Strombedarf_stuendlich = new float[8760];
-        public float[] WP_Waermeproduktion_stuendlich = new float[8760];
-        public float[] WP_Waermeproduktion_stuendlich_sortiert = new float[8760];
-        public float[] Heizstab_stuendlich = new float[8760];
+        public double[] WP_Strombedarf_stuendlich = new double[8760];
+        public double[] WP_Waermeproduktion_stuendlich = new double[8760];
+        public double[] WP_Waermeproduktion_stuendlich_sortiert = new double[8760];
+        public double[] Heizstab_stuendlich = new double[8760];
 
         public double WpStrombedarfGesamtKwh = 0;
         public double WpWaermeproduktionGesamtKwh = 0;
@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
         // Quelltemperatur-Jahresprofil je WP-Modul (Wärmequelle):
         // Luft-Wasser = Außentemperatur; Sole-/Wasser-Wasser gemäß WQ_Typ
         // (Konstant, Pufferspeicher, Profil, CSV) - siehe WaermequelleClass.
-        private List<float[]> wp_quelltemp = new List<float[]>();
+        private List<double[]> wp_quelltemp = new List<double[]>();
 
         // Quell-Pufferspeicher je WP-Modul (Wärmequelle "Pufferspeicher");
         // null = keine Speicherbilanz (Außenluft, Konstant, Profil, CSV,
@@ -128,14 +128,14 @@ namespace WindowsFormsApplication1
         /// sondern ein LAUFERGEBNIS — sie entsteht Stunde für Stunde aus dem Zustand des
         /// geteilten Quellpuffers (Konzept 8.2).</para>
         /// </summary>
-        public IReadOnlyList<float[]> Quelltemperaturen { get { return wp_quelltemp; } }
+        public IReadOnlyList<double[]> Quelltemperaturen { get { return wp_quelltemp; } }
 
         // ==================================================================
         // PAKET B1 — BOOSTER-TEMPERATURKOPPLUNG (Konzept 8.2, Leitentscheidung L8)
         //
         // SCHNITTSTELLENWECHSEL, kein Wertetausch: Bis P1 lieferte
         // WaermequelleClass.Quelltemperatur EINMAL beim Modulaufbau ein komplettes
-        // Jahresprofil float[8760], das die Stundenschleife danach nur noch ablas. Für
+        // Jahresprofil double[8760], das die Stundenschleife danach nur noch ablas. Für
         // einen GETEILTEN Quellpuffer — ein Speicher, der zugleich Senke eines anderen
         // Erzeugers ist — ist das falsch: Seine Temperatur folgt dem Ladezustand, und
         // genau diese Aufwertung ist die Physik des Boosters.
@@ -237,7 +237,7 @@ namespace WindowsFormsApplication1
 
                 if (i < wp_quelltemp.Count && wp_quelltemp[i] != null)
                 {
-                    float[] eigen = new float[wp_quelltemp[i].Length];
+                    double[] eigen = new double[wp_quelltemp[i].Length];
                     Array.Copy(wp_quelltemp[i], eigen, eigen.Length);
                     wp_quelltemp[i] = eigen;
                 }
@@ -313,7 +313,7 @@ namespace WindowsFormsApplication1
                 if (q == null || i >= wp_quelltemp.Count || wp_quelltemp[i] == null) continue;
 
                 // PAKET Q1: an der gepflegten Quell-Entnahmehöhe statt fest oben.
-                wp_quelltemp[i][stunde] = (float)q.QuellEntnahmeTemperatur(_quellHoehe[i]);
+                wp_quelltemp[i][stunde] = (double)q.QuellEntnahmeTemperatur(_quellHoehe[i]);
             }
         }
 
@@ -351,14 +351,14 @@ namespace WindowsFormsApplication1
         /// Stündlicher PV-Überschuss [kW] für den Betriebsmodus "PV-optimiert".
         /// Wird von SimulationControl gesetzt; null = kein PV-Strom verfügbar.
         /// </summary>
-        public float[] PV_Ueberschuss_stuendlich = null;
+        public double[] PV_Ueberschuss_stuendlich = null;
 
         /// <summary>
         /// Warmwasser-(Brauchwasser-)Anteil des Wärmebedarfs als Stundenganglinie.
         /// Wird von SimulationControl gesetzt und für die Wärmesenken-Aufteilung
         /// benötigt; null = kein Warmwasseranteil bekannt.
         /// </summary>
-        public float[] Warmwasserbedarf_stuendlich = null;
+        public double[] Warmwasserbedarf_stuendlich = null;
         private string[] WP_Betriebsart = new string[MAX_WP];
         private int[] WP_Heizung = new int[MAX_WP];
 
@@ -878,7 +878,7 @@ namespace WindowsFormsApplication1
             // Gesamtbedarf ist die Summe ALLER Kanäle; Bezug des Warmwasserbedarfs ist
             // der Brauchwasserkanal.
             Waermebedarf_stuendlich = kanaele.Summe();
-            Warmwasserbedarf_stuendlich = (float[])kanaele.Brauchwasser.Clone();
+            Warmwasserbedarf_stuendlich = (double[])kanaele.Brauchwasser.Clone();
 
             WpStrombedarfGesamtKwh = 0;
             WpWaermeproduktionGesamtKwh = 0;
@@ -1060,8 +1060,8 @@ namespace WindowsFormsApplication1
                     LadepotenzialBestimmen(index, senken, result, pvRest,
                                            ladeTherm, ladeEl, pvGebunden);
 
-                    float vorherTherm = WP_Waermeproduktion_stuendlich[stunde];
-                    float vorherEl = WP_Strombedarf_stuendlich[stunde];
+                    double vorherTherm = WP_Waermeproduktion_stuendlich[stunde];
+                    double vorherEl = WP_Strombedarf_stuendlich[stunde];
 
                     // K2: Kanalsplit dieser Moduliteration leeren (siehe Feldkommentar).
                     Array.Clear(_deckungIteration, 0, Kanal.ANZAHL);
@@ -1074,9 +1074,9 @@ namespace WindowsFormsApplication1
                     {
                         if (result[PTHERM] < verfuegbar)
                         {
-                            WP_Waermeproduktion_stuendlich[stunde] += (float)result[PTHERM];
+                            WP_Waermeproduktion_stuendlich[stunde] += (double)result[PTHERM];
                             WpWaermeproduktionGesamtKwh += result[PTHERM];
-                            WP_Strombedarf_stuendlich[stunde] += (float)result[PEL];
+                            WP_Strombedarf_stuendlich[stunde] += (double)result[PEL];
                             WpStrombedarfGesamtKwh += result[PEL];
                             Modul_WP_Waermeproduktion[index] += result[PTHERM];
                             Modul_WP_Strombedarf[index] += result[PEL];
@@ -1095,9 +1095,9 @@ namespace WindowsFormsApplication1
                         }
                         else
                         {
-                            WP_Waermeproduktion_stuendlich[stunde] += (float)verfuegbar;
+                            WP_Waermeproduktion_stuendlich[stunde] += (double)verfuegbar;
                             WpWaermeproduktionGesamtKwh += verfuegbar;
-                            WP_Strombedarf_stuendlich[stunde] += (float)verfuegbar / (float)result[COP];
+                            WP_Strombedarf_stuendlich[stunde] += (double)verfuegbar / (double)result[COP];
                             WpStrombedarfGesamtKwh += verfuegbar / result[COP];
                             Modul_WP_Waermeproduktion[index] += verfuegbar;
                             Modul_WP_Strombedarf[index] += verfuegbar / result[COP];
@@ -1105,8 +1105,8 @@ namespace WindowsFormsApplication1
                             // bei begrenzter Quelle bzw. Sperrzeit kann PTHERM 0 sein
                             if (result[PTHERM] > 0)
                             {
-                                WP_Laufzeit = WP_Laufzeit + (verfuegbar / (float)result[PTHERM]);
-                                Modul_WP_Laufzeit[index] += (verfuegbar / (float)result[PTHERM]);
+                                WP_Laufzeit = WP_Laufzeit + (verfuegbar / (double)result[PTHERM]);
+                                Modul_WP_Laufzeit[index] += (verfuegbar / (double)result[PTHERM]);
                             }
 
                             SenkeAbziehen(senken, verfuegbar, rest, _deckungIteration);
@@ -1192,7 +1192,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void Zweikanalig_StundeEnde(int stunde, double[] rest)
         {
-            waermerestbedarf_stuendlich[stunde] = (float)Kaskadenschleife.RestSumme(rest);
+            waermerestbedarf_stuendlich[stunde] = (double)Kaskadenschleife.RestSumme(rest);
         }
 
         /// <summary>Abschluss des zweikanaligen Laufs: Sortierung, Jahressummen, Bivalenzpunkt.</summary>
@@ -1525,12 +1525,12 @@ namespace WindowsFormsApplication1
                 ladeRest[index] -= ladung;
                 if (ladeRest[index] < 0) ladeRest[index] = 0;
 
-                WP_Waermeproduktion_stuendlich[stunde] += (float)ladung;
+                WP_Waermeproduktion_stuendlich[stunde] += (double)ladung;
                 WpWaermeproduktionGesamtKwh += ladung;
                 Modul_WP_Waermeproduktion[index] += ladung;
 
                 double strom = ladung / cop;
-                WP_Strombedarf_stuendlich[stunde] += (float)strom;
+                WP_Strombedarf_stuendlich[stunde] += (double)strom;
                 WpStrombedarfGesamtKwh += strom;
                 Modul_WP_Strombedarf[index] += strom;
 
@@ -1576,7 +1576,7 @@ namespace WindowsFormsApplication1
                 if (WP_Heizung[index] <= 0) continue;
 
                 double menge = Math.Min(offen, WP_Heizung[index]);
-                Heizstab_stuendlich[stunde] += (float)menge;
+                Heizstab_stuendlich[stunde] += (double)menge;
                 HeizstabGesamtKwh += menge;
                 Modul_Heizstab[index] += menge;
 
@@ -1742,7 +1742,7 @@ namespace WindowsFormsApplication1
         // ausschließlich für den Kappungszähler Modul_Kappung_Oben gebraucht und geht in
         // die Rechnung nicht ein; Zweikanalig_Bedarfsphase führt ihn ohnehin als
         // Schleifenvariable.
-        double[] berechne_wptherm(float temperatur, WErzeugerModel model, _Kenndaten kenndaten, int index)
+        double[] berechne_wptherm(double temperatur, WErzeugerModel model, _Kenndaten kenndaten, int index)
         {
 
             double[] result = new double[4] { 0, 0, 0, 0 };

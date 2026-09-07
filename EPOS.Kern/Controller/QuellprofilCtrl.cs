@@ -110,7 +110,7 @@ namespace WindowsFormsApplication1
             string[] teile = text.Split(';');
             for (int m = 0; m < 12 && m < teile.Length; m++)
             {
-                float w;
+                double w;
                 if (WaermequelleClass.ZahlParsen(teile[m], out w)) werte[m] = w;
             }
             return werte;
@@ -154,7 +154,7 @@ namespace WindowsFormsApplication1
             string[] teile = text.Split(';');
             for (int i = 0; i < 168 && i < teile.Length; i++)
             {
-                float w;
+                double w;
                 if (WaermequelleClass.ZahlParsen(teile[i], out w))
                 {
                     werte[i] = w;
@@ -272,7 +272,7 @@ namespace WindowsFormsApplication1
         /// (<c>WaermequelleClass.Quelltemperatur</c>) fällt bei <c>null</c> auf die
         /// Außentemperatur zurück und meldet den Grund.</para>
         /// </summary>
-        public static float[] Jahresprofil(int idProfil)
+        public static double[] Jahresprofil(int idProfil)
         {
             Kopf k = Lesen(idProfil);
             if (k == null) return null;
@@ -301,23 +301,23 @@ namespace WindowsFormsApplication1
         /// Jahres. Ein Temperaturprofil, das ab Mitte des Jahres 0 °C behauptet, wäre
         /// die schlimmere Antwort als „geht nicht".</para>
         /// </summary>
-        public static float[] Jahresprofil(string betriebsart, double[] werte)
+        public static double[] Jahresprofil(string betriebsart, double[] werte)
         {
             int soll = DbWerte.QuellprofilWerteanzahl(betriebsart);
             if (soll <= 0 || werte == null || werte.Length != soll) return null;
 
-            float[] profil = new float[STUNDEN_JAHR];
+            double[] profil = new double[STUNDEN_JAHR];
 
             if (betriebsart == DbWerte.WQ_PROFIL_BETRIEBSART_STUNDE)
             {
-                for (int h = 0; h < STUNDEN_JAHR; h++) profil[h] = (float)werte[h];
+                for (int h = 0; h < STUNDEN_JAHR; h++) profil[h] = (double)werte[h];
                 return profil;
             }
 
             if (betriebsart == DbWerte.WQ_PROFIL_BETRIEBSART_TAG)
             {
                 // KALENDERUNABHÄNGIG: Tag i -> die 24 Stunden des Tages i.
-                for (int h = 0; h < STUNDEN_JAHR; h++) profil[h] = (float)werte[h / 24];
+                for (int h = 0; h < STUNDEN_JAHR; h++) profil[h] = (double)werte[h / 24];
                 return profil;
             }
 
@@ -326,7 +326,7 @@ namespace WindowsFormsApplication1
             for (int m = 0; m < 12; m++)
                 for (int tag = 0; tag < TAGE_PRO_MONAT[m]; tag++)
                     for (int h = 0; h < 24; h++)
-                        profil[index++] = (float)werte[m];
+                        profil[index++] = (double)werte[m];
 
             return profil;
         }

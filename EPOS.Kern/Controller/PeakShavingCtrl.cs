@@ -186,9 +186,10 @@ namespace WindowsFormsApplication1
         /// Stundenwerte werden nach der Expansionsregel der Engine
         /// (<see cref="RasterAdapter"/>) auf Viertelstunden gelegt:
         /// <b>Wertwiederholung ohne Interpolation</b>, <c>v[i*4+0..3] = w[i]</c>.
-        /// Bewusst hier ausgeschrieben statt ueber <c>RasterAdapter</c>, weil dessen
-        /// Ueberladung <c>float[]</c> erwartet und der Umweg ueber <c>float</c> die
-        /// Genauigkeit der Datenbankwerte unnoetig verkuerzen wuerde.
+        /// Bewusst hier ausgeschrieben statt ueber <c>RasterAdapter</c>: bis W8-O-5d
+        /// erwartete dessen Ueberladung <c>float[]</c>, und der Umweg ueber <c>float</c>
+        /// haette die Genauigkeit der Datenbankwerte unnoetig verkuerzt. Seit der Kern
+        /// durchgehend in <c>double</c> rechnet, sind beide Wege wertgleich.
         /// </remarks>
         public static double[] LeseWerte(GanglinienEintrag eintrag)
         {

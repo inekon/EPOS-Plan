@@ -682,7 +682,7 @@ public class BedarfErgebnisDialogTests : BunitContext
     /// die aus der Stundenreihe [kWh] die ausgewiesene Menge [MWh] macht — auf dem
     /// Vorschauweg wie im Lauf.
     /// </summary>
-    private static BedarfErgebnisDaten BrauchwasserAus(float[] stundenreihe)
+    private static BedarfErgebnisDaten BrauchwasserAus(double[] stundenreihe)
     {
         var sim = new SimulationWaermebedarf();
         Array.Copy(stundenreihe, sim.brauchwasserwerte,
@@ -708,10 +708,10 @@ public class BedarfErgebnisDialogTests : BunitContext
     }
 
     /// <summary>Eine Stundenreihe mit einer bekannten Jahressumme in kWh.</summary>
-    private static float[] Stundenreihe(double jahressummeKWh)
+    private static double[] Stundenreihe(double jahressummeKWh)
     {
-        var reihe = new float[8760];
-        for (int h = 0; h < reihe.Length; h++) reihe[h] = (float)(jahressummeKWh / 8760.0);
+        var reihe = new double[8760];
+        for (int h = 0; h < reihe.Length; h++) reihe[h] = (double)(jahressummeKWh / 8760.0);
         return reihe;
     }
 
@@ -742,7 +742,7 @@ public class BedarfErgebnisDialogTests : BunitContext
     [Fact]
     public void Vorschau_und_Lauf_zeigen_dieselbe_Brauchwassermenge()
     {
-        float[] reihe = Stundenreihe(4059.7);
+        double[] reihe = Stundenreihe(4059.7);
 
         var vorschau = Aufbauen(BrauchwasserAus(reihe));
         var lauf = Aufbauen(BrauchwasserAus(reihe));

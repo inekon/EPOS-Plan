@@ -590,7 +590,7 @@ namespace WindowsFormsApplication1
         /// </param>
         /// <param name="wpTyp">WP-Typ aus Tab_WP ("Luft-Wasser", "Sole-Wasser", "Wasser-Wasser")</param>
         /// <param name="aussentemp">Außentemperatur der Klimaregion (8760 Werte)</param>
-        public static float[] Quelltemperatur(int idEnergieanlage, int idProjekt, string wpTyp, float[] aussentemp)
+        public static double[] Quelltemperatur(int idEnergieanlage, int idProjekt, string wpTyp, double[] aussentemp)
         {
             // Luft-Wasser: immer Außenluft
             if (string.IsNullOrEmpty(wpTyp) || wpTyp == DbWerte.WP_BAUART_LUFT_WASSER) return aussentemp;
@@ -610,14 +610,14 @@ namespace WindowsFormsApplication1
                         {
                             object v = WertLesenStill(idEnergieanlage, "WQ_Temp");
                             if (v == null) return aussentemp;
-                            return KonstantesProfil(Convert.ToSingle(v));
+                            return KonstantesProfil(Convert.ToDouble(v));
                         }
 
                     case TYP_PUFFER:
                         {
                             // Temperatur des als Wärmequelle gewählten Pufferspeichers
                             object v = WertLesenStill(idEnergieanlage, "WQ_Temp");
-                            if (v != null) return KonstantesProfil(Convert.ToSingle(v));
+                            if (v != null) return KonstantesProfil(Convert.ToDouble(v));
 
                             // Fallback: mittlere Temperatur (Vorlauf + Rücklauf) / 2 des
                             // als Quelle GEWÄHLTEN Puffers (WQ_ID_Puffer, von
@@ -633,7 +633,7 @@ namespace WindowsFormsApplication1
 
                             int idQuellPuffer = ZahlOderNull(WertLesenStill(idEnergieanlage, "WQ_ID_Puffer"));
                             if (PufferSpCtrl.TemperaturenLesen(idQuellPuffer, out vorlauf, out ruecklauf))
-                                return KonstantesProfil((vorlauf + ruecklauf) / 2f);
+                                return KonstantesProfil((vorlauf + ruecklauf) / 2.0);
 
                             return aussentemp;
                         }
@@ -649,7 +649,7 @@ namespace WindowsFormsApplication1
                             int idProfil = ZahlOderNull(WertLesenStill(idEnergieanlage, "WQ_ID_Quellprofil"));
                             if (idProfil > 0)
                             {
-                                float[] ausProfil = QuellprofilCtrl.Jahresprofil(idProfil);
+                                double[] ausProfil = QuellprofilCtrl.Jahresprofil(idProfil);
                                 if (ausProfil != null) return ausProfil;
 
                                 // Protokollkanal: WARNUNG - die Anlage zeigt auf ein
@@ -670,14 +670,14 @@ namespace WindowsFormsApplication1
                             // im Dialog ein Quellprofil speichert.
                             string monat = WertLesenStill(idEnergieanlage, "WQ_Monatswerte") as string;
                             string woche = WertLesenStill(idEnergieanlage, "WQ_Wochenwerte") as string;
-                            float[] profil = ProfilAusMonatsUndWochenwerten(monat, woche);
+                            double[] profil = ProfilAusMonatsUndWochenwerten(monat, woche);
                             return profil ?? aussentemp;
                         }
 
                     case TYP_CSV:
                         {
                             string pfad = WertLesenStill(idEnergieanlage, "WQ_CSV") as string;
-                            float[] profil = ProfilAusCsv(pfad);
+                            double[] profil = ProfilAusCsv(pfad);
                             return profil ?? aussentemp;
                         }
 
@@ -912,9 +912,9 @@ namespace WindowsFormsApplication1
             return null;
         }
 
-        private static float[] KonstantesProfil(float temperatur)
+        private static double[] KonstantesProfil(double temperatur)
         {
-            float[] t = new float[8760];
+            double[] t = new double[8760];
             for (int i = 0; i < 8760; i++) t[i] = temperatur;
             return t;
         }
@@ -969,21 +969,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="monatswerteString">"t1;...;t12" Monats-Mitteltemperaturen [°C]</param>
         /// <param name="wochenwerteString">"w1;...;w168" Abweichungen [K], darf leer sein</param>
-        public static float[] ProfilAusMonatsUndWochenwerten(string monatswerteString, string wochenwerteString)
+        public static double[] ProfilAusMonatsUndWochenwerten(string monatswerteString, string wochenwerteString)
         {
             if (string.IsNullOrEmpty(monatswerteString)) return null;
 
             string[] teile = monatswerteString.Split(';');
             if (teile.Length < 12) return null;
 
-            float[] monat = new float[12];
+            double[] monat = new double[12];
             for (int m = 0; m < 12; m++)
             {
                 if (!ZahlParsen(teile[m], out monat[m])) return null;
             }
 
             // Wochenwerte (optional): 7 Tage x 24 Stunden Abweichung [K]
-            float[] woche = new float[168];
+            double[] woche = new double[168];
             if (!string.IsNullOrEmpty(wochenwerteString))
             {
                 string[] wTeile = wochenwerteString.Split(';');
@@ -997,7 +997,7 @@ namespace WindowsFormsApplication1
             // Begründung und Ergebnisgleichheit bei WOCHENTAG_JAN1_ALTWEG.
             int wochentag = WOCHENTAG_JAN1_ALTWEG;
 
-            float[] profil = new float[8760];
+            double[] profil = new double[8760];
             int index = 0;
             for (int m = 0; m < 12; m++)
             {
@@ -1019,11 +1019,11 @@ namespace WindowsFormsApplication1
         /// Liest ein Quelltemperatur-Jahresprofil aus einer CSV-Datei
         /// (siehe CSV_FORMAT_HINWEIS). Liefert null bei Fehlern.
         /// </summary>
-        public static float[] ProfilAusCsv(string pfad)
+        public static double[] ProfilAusCsv(string pfad)
         {
             if (string.IsNullOrEmpty(pfad) || !File.Exists(pfad)) return null;
 
-            float[] profil = new float[8760];
+            double[] profil = new double[8760];
             int index = 0;
 
             foreach (string zeileRoh in File.ReadLines(pfad))
@@ -1036,11 +1036,11 @@ namespace WindowsFormsApplication1
                 // Letzten Zahlenwert der Zeile verwenden (erlaubt "Zeitstempel;Wert").
                 // Erst Semikolon/Tab als Trenner versuchen (Komma = Dezimaltrennzeichen),
                 // dann Komma als Trenner (Punkt = Dezimaltrennzeichen).
-                float wert = LetzteZahl(zeile.Split(';', '\t'), true);
-                if (float.IsNaN(wert) && zeile.IndexOf(',') >= 0)
+                double wert = LetzteZahl(zeile.Split(';', '\t'), true);
+                if (double.IsNaN(wert) && zeile.IndexOf(',') >= 0)
                     wert = LetzteZahl(zeile.Split(','), false);
 
-                if (float.IsNaN(wert)) continue; // z. B. Kopfzeile
+                if (double.IsNaN(wert)) continue; // z. B. Kopfzeile
 
                 profil[index++] = wert;
             }
@@ -1089,11 +1089,11 @@ namespace WindowsFormsApplication1
                         string zeile = zeileRoh.Trim();
                         if (zeile.Length == 0) continue;
 
-                        float wert = LetzteZahl(zeile.Split(';', '\t'), true);
-                        if (float.IsNaN(wert) && zeile.IndexOf(',') >= 0)
+                        double wert = LetzteZahl(zeile.Split(';', '\t'), true);
+                        if (double.IsNaN(wert) && zeile.IndexOf(',') >= 0)
                             wert = LetzteZahl(zeile.Split(','), false);
 
-                        if (float.IsNaN(wert)) continue;   // z. B. Kopfzeile
+                        if (double.IsNaN(wert)) continue;   // z. B. Kopfzeile
 
                         werte[index++] = wert;
                     }
@@ -1111,29 +1111,29 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Liefert den letzten parsebaren Zahlenwert aus den Feldern, sonst NaN.
         /// </summary>
-        private static float LetzteZahl(string[] felder, bool kommaAlsDezimal)
+        private static double LetzteZahl(string[] felder, bool kommaAlsDezimal)
         {
             for (int f = felder.Length - 1; f >= 0; f--)
             {
                 string t = felder[f] != null ? felder[f].Trim() : "";
                 if (t.Length == 0) continue;
                 if (kommaAlsDezimal) t = t.Replace(',', '.');
-                float w;
-                if (float.TryParse(t, NumberStyles.Float, CultureInfo.InvariantCulture, out w))
+                double w;
+                if (double.TryParse(t, NumberStyles.Float, CultureInfo.InvariantCulture, out w))
                     return w;
             }
-            return float.NaN;
+            return double.NaN;
         }
 
         /// <summary>
         /// Parst eine Zahl mit Dezimal-Komma oder -Punkt.
         /// </summary>
-        public static bool ZahlParsen(string text, out float wert)
+        public static bool ZahlParsen(string text, out double wert)
         {
-            wert = 0f;
+            wert = 0.0;
             if (string.IsNullOrEmpty(text)) return false;
             text = text.Trim().Replace(',', '.');
-            return float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out wert);
+            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out wert);
         }
     }
 }

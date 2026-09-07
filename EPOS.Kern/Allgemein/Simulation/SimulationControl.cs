@@ -156,7 +156,7 @@ namespace WindowsFormsApplication1
         public KonfigurationCtrl ctrl_konfig;
         public int m_ID_Projekt;
         public string[] tool;
-        public float[] Stundentemperatur = new float[8760];
+        public double[] Stundentemperatur = new double[8760];
         public int modeBHKW;
         public int GrenzleistungBHKW;
 
@@ -172,10 +172,10 @@ namespace WindowsFormsApplication1
 
 
         // Rückgabe
-        public float RestwaermeMwh;
-        public float ReststromMwh;
-        public float[] Rest_Waermebedarf_stuendlich = new float[8760];
-        public float[] Rest_Strombedarf_viertelstuendlich = new float[8760 * 4];
+        public double RestwaermeMwh;
+        public double ReststromMwh;
+        public double[] Rest_Waermebedarf_stuendlich = new double[8760];
+        public double[] Rest_Strombedarf_viertelstuendlich = new double[8760 * 4];
 
         public bool bSimulationWP = false;
         public bool bSimulationKessel = false;
@@ -228,13 +228,13 @@ namespace WindowsFormsApplication1
         /// (<c>Stundenwerte_zu_viertelstunden_Interpoliert</c>) entfällt damit — sie
         /// hatte nur die Treppenstufen der Stundenrechnung geglättet.
         /// </remarks>
-        public float[] Speicherfuellstand_viertelstuendlich = new float[8760 * 4];
+        public double[] Speicherfuellstand_viertelstuendlich = new double[8760 * 4];
 
         /// <summary>
         /// Ladezustandsganglinie des Stromspeichers [kWh] stündlich (8.760), Mittel
         /// der vier Viertelstunden — für Berichte und Exporte im Stundenraster.
         /// </summary>
-        public float[] Speicherfuellstand_stuendlich = new float[8760];
+        public double[] Speicherfuellstand_stuendlich = new double[8760];
 
         /// <summary>
         /// Grund, aus dem der letzte Simulationsversuch gar nicht erst angelaufen ist
@@ -382,7 +382,7 @@ namespace WindowsFormsApplication1
 
             // PAKET A1: Die beiden Vektorvariablen „Eingang"/„Ausgang" der einkanaligen
             // Modulschleife sind mit ihr entfallen.
-            float[] temp = new float[8760 * 4];
+            double[] temp = new double[8760 * 4];
 
             m_ID_Projekt = ID_Projekt;
 
@@ -463,7 +463,7 @@ namespace WindowsFormsApplication1
             RestwaermeMwh = 0;
             ReststromMwh = simulation_Strombedarf.StrombedarfGesamtMwh; //MWh
             Rest_Strombedarf_viertelstuendlich = simulation_Strombedarf.Strombedarf_viertelStundenwerte;
-            Rest_Waermebedarf_stuendlich = (float[])simulation_Waermebedarf.Waermebedarf.Clone();
+            Rest_Waermebedarf_stuendlich = (double[])simulation_Waermebedarf.Waermebedarf.Clone();
 
             bSimulationWP = false;
             bSimulationKessel = false;
@@ -514,7 +514,7 @@ namespace WindowsFormsApplication1
                 // V1 (PV-Konzept § 2.3, Etappe P1): BHKW-Überschuss läuft nicht mehr
                 // als PV-Einspeisung, sondern getrennt — der Hinweis macht die
                 // Korrektur im Laufprotokoll sichtbar (Abnahmekriterium P1).
-                if (simulation_pv.BhkwUeberschussGesamtKwh > 0.5f)
+                if (simulation_pv.BhkwUeberschussGesamtKwh > 0.5)
                 {
                     string v1Text = null;
                     try { v1Text = MyResource.Resource.ResourceManager.GetString("SIM_PV_V1_BHKW_GETRENNT"); }
@@ -555,11 +555,11 @@ namespace WindowsFormsApplication1
             Phase(fortschritt, abbruch, Laufphase.Abschluss, 0.90);
 
             // Wärmebedarf von kWh in MWh umrechnen
-            RestwaermeMwh /= 1000f;
+            RestwaermeMwh /= 1000.0;
 
             // ReststromMwh mathematisch korrekt aus dem finalen Ergebnis-Vektor berechnen
             // Falls deine Quell-Vektoren stündliche kW-Mittelwerte/kWh enthalten:
-            ReststromMwh = Rest_Strombedarf_viertelstuendlich.Sum() / 4000f;
+            ReststromMwh = Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
 
             // ***********************************************************************
             // Nachlauf (Paket 7): Kennzahlen aller beteiligten Speicher aus ihren
@@ -693,7 +693,7 @@ namespace WindowsFormsApplication1
             _knappheit = Kanal.KnappheitsReihenfolge(ctrl_konfig.model.Kanal_Knappheitsreihenfolge);
             Kaskadenschleife.KnappheitFuerLauf(_knappheit);
 
-            float[] temp;
+            double[] temp;
 
             // Welche Erzeugerarten gehören in die gemeinsame Speicherstufe? Kriterium ist
             // die SENKENREFERENZ einer Anlage (WS_ID_Puffer / WS_ID_Puffer2 mit
@@ -768,8 +768,8 @@ namespace WindowsFormsApplication1
 
                     if (_wpInSchleife)
                     {
-                        ReststromMwh += (float)simulation_wp.WpStrombedarfGesamtKwh / 1000f; // in MWh
-                        ReststromMwh += (float)simulation_wp.HeizstabGesamtKwh / 1000f;       // in MWh
+                        ReststromMwh += (double)simulation_wp.WpStrombedarfGesamtKwh / 1000.0; // in MWh
+                        ReststromMwh += (double)simulation_wp.HeizstabGesamtKwh / 1000.0;       // in MWh
 
                         temp = Stundenwerte_zu_viertelstunden(simulation_wp.WP_Strombedarf_stuendlich);
                         Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
@@ -789,7 +789,7 @@ namespace WindowsFormsApplication1
                         // der Kaskade VOR der Wärmepumpe, bleibt es beim Stufeneingang.
                         if (_wpInSchleife && KesselHinterWaermepumpe())
                         {
-                            float[] stromNachWP =
+                            double[] stromNachWP =
                                 Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich);
                             simulation_spk.Strombedarf_stuendlich = stromNachWP;
                             simulation_spk.StrombedarfGesamtKwh = stromNachWP.Sum();
@@ -806,7 +806,7 @@ namespace WindowsFormsApplication1
                     {
                         // Die Stromerzeugung des BHKW senkt den Strombedarf - an der
                         // Position der Stufe.
-                        float[] bhkwStromVs =
+                        double[] bhkwStromVs =
                             Stundenwerte_zu_viertelstunden(simulation_bhkw.stromproduktion);
                         Rest_Strombedarf_viertelstuendlich =
                             SubVectors(Rest_Strombedarf_viertelstuendlich, bhkwStromVs, false);
@@ -845,7 +845,7 @@ namespace WindowsFormsApplication1
                     Simulation_BHKW_Ctrl_Zweikanalig(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich));
 
-                    float[] bhkwStromViertelstuendlich =
+                    double[] bhkwStromViertelstuendlich =
                         Stundenwerte_zu_viertelstunden(simulation_bhkw.stromproduktion);
                     Rest_Strombedarf_viertelstuendlich =
                         SubVectors(Rest_Strombedarf_viertelstuendlich, bhkwStromViertelstuendlich, false);
@@ -1132,7 +1132,7 @@ namespace WindowsFormsApplication1
         ///
         /// Die Kanäle werden dabei in place fortgeschrieben.
         /// </summary>
-        private void Speicherstufe_Rechnen(Kanalsatz kanaele, float[] Strombedarf,
+        private void Speicherstufe_Rechnen(Kanalsatz kanaele, double[] Strombedarf,
                                            bool bHeizstab, int nBereitschaft)
         {
             WaermequelleClass.SchemaSicherstellen();
@@ -1145,7 +1145,7 @@ namespace WindowsFormsApplication1
             // nullt es in Init(); wer danach daraus liest, bekommt Nullen. Genau das
             // hatte der Heizkessel getan — Tab_ErgebnisHeizkessel.Strombedarf und
             // .Reststrombedarf standen auf 0 (gemessen 1023: 133,35 -> 0 MWh).
-            float[] stromStufeneingang = (float[])Strombedarf.Clone();
+            double[] stromStufeneingang = (double[])Strombedarf.Clone();
 
             // --- 1. Modulaufbau je beteiligter Erzeugerart ---------------------------
             if (_wpInSchleife)
@@ -1189,7 +1189,7 @@ namespace WindowsFormsApplication1
                 SPK_Liste_Laden();
                 // EIGENER Vektor aus der Kopie des Stufeneingangs (N3): Die Wärmepumpe
                 // überschreibt den ihren stundenweise (WP_Strombedarf_stuendlich).
-                simulation_spk.Strombedarf_stuendlich = (float[])stromStufeneingang.Clone();
+                simulation_spk.Strombedarf_stuendlich = (double[])stromStufeneingang.Clone();
                 simulation_spk.Vorgabe_Betriebsbereitschaft = nBereitschaft;
 
                 if (!simulation_spk.Vorbereiten_Zweikanalig(m_ID_Projekt, Senkenlisten()))
@@ -1208,14 +1208,14 @@ namespace WindowsFormsApplication1
                 BHKW_Liste_Laden();
 
                 // Wie beim Kessel (N3): EIGENER Vektor aus der Kopie des Stufeneingangs.
-                simulation_bhkw.strombedarf = (float[])stromStufeneingang.Clone();
+                simulation_bhkw.strombedarf = (double[])stromStufeneingang.Clone();
                 simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
                 simulation_bhkw.modeBHKW = modeBHKW;
                 // Der skalare Pendelspeicher ist im zweikanaligen Weg abgelöst - die
                 // Kapazität kommt aus dem zugeordneten SimulationPufferspeicher
                 // (Konzept 6.5, zweiter Punkt). Der Wert bleibt auf 0, damit ein
                 // versehentlicher Rückgriff sofort auffiele.
-                simulation_bhkw.kapazitaetPendelspeicher = 0f;
+                simulation_bhkw.kapazitaetPendelspeicher = 0.0;
 
                 if (!simulation_bhkw.Vorbereiten_Zweikanalig(m_ID_Projekt, senkenzuordnungen))
                 {
@@ -1560,7 +1560,7 @@ namespace WindowsFormsApplication1
 
                 if (i < SimulationBHKW.MAX_BHKW)
                     simulation_bhkw.bhkwGrenzL[i] =
-                        (float)(StilleDb.Kommazahl(StilleDb.Feld(r, "Grenzleistung")) / 100.0);
+                        (double)(StilleDb.Kommazahl(StilleDb.Feld(r, "Grenzleistung")) / 100.0);
                 i++;
             }
         }
@@ -1576,14 +1576,14 @@ namespace WindowsFormsApplication1
         /// tatsächliche Rest statt der Vektordifferenz <c>Bedarf − Produktion</c>
         /// (Bilanzfehler aus Konzept 6.5 / 2.2, Punkt 8).
         /// </summary>
-        private void Simulation_BHKW_Ctrl_Zweikanalig(Kanalsatz kanaele, float[] Strombedarf)
+        private void Simulation_BHKW_Ctrl_Zweikanalig(Kanalsatz kanaele, double[] Strombedarf)
         {
             BHKW_Liste_Laden();
 
             simulation_bhkw.strombedarf = Strombedarf;
             simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
             simulation_bhkw.modeBHKW = modeBHKW;
-            simulation_bhkw.kapazitaetPendelspeicher = 0f;
+            simulation_bhkw.kapazitaetPendelspeicher = 0.0;
 
             if (!simulation_bhkw.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, senkenzuordnungen) &&
                 !string.IsNullOrEmpty(simulation_bhkw.Fehlertext))
@@ -1845,7 +1845,7 @@ namespace WindowsFormsApplication1
         /// Heizkessel als zweikanalige VEKTORSTUFE (Paket 5): eigene Jahresschleife an der
         /// Kaskadenposition, ohne Speicherbeteiligung.
         /// </summary>
-        private void Simulation_SPK_Ctrl_Zweikanalig(Kanalsatz kanaele, float[] Strombedarf,
+        private void Simulation_SPK_Ctrl_Zweikanalig(Kanalsatz kanaele, double[] Strombedarf,
                                                      int nBereitschaft)
         {
             SPK_Liste_Laden();
@@ -2417,7 +2417,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="art">Erzeugerart, <c>ProjektPuffer.TYP_*</c>.</param>
         /// <param name="kanal">Bedarfskanal, <see cref="Kanal"/>.</param>
-        public float[] DeckungKanalStuendlich(int art, int kanal)
+        public double[] DeckungKanalStuendlich(int art, int kanal)
         {
             if (art == ProjektPuffer.TYP_WP && simulation_wp != null)
                 return Kanalganglinie.Deckung(kanal,
@@ -2446,7 +2446,7 @@ namespace WindowsFormsApplication1
         /// HEIZSTABWÄRME je Bedarfskanal und Stunde [kWh] (Paket E2) — eigene Serie, wie
         /// in <c>NavigatorUebersicht</c> und im Ergebnis-Diagramm.
         /// </summary>
-        public float[] HeizstabKanalStuendlich(int kanal)
+        public double[] HeizstabKanalStuendlich(int kanal)
         {
             return (simulation_wp != null)
                 ? Kanalganglinie.Deckung(kanal, simulation_wp.Heizstab_KanalStuendlich)
@@ -2462,10 +2462,10 @@ namespace WindowsFormsApplication1
         /// <para>Geliefert wird die KOPIE aus <c>KanaeleDrei()</c> — die Module
         /// überschreiben ihre Eingangsvektoren in-place (Regel B0-2).</para>
         /// </summary>
-        public static float[] BedarfKanalStuendlich(SimulationWaermebedarf bedarf, int kanal)
+        public static double[] BedarfKanalStuendlich(SimulationWaermebedarf bedarf, int kanal)
         {
             if (bedarf == null || kanal < 0 || kanal >= Kanal.ANZAHL)
-                return new float[Kanalsatz.STUNDEN_JAHR];
+                return new double[Kanalsatz.STUNDEN_JAHR];
             return bedarf.KanaeleDrei().Bedarf[kanal];
         }
 
@@ -4089,7 +4089,7 @@ namespace WindowsFormsApplication1
         /// hier vorab bestimmt und um den übrigen Strombedarf reduziert.
         /// Liefert null, wenn keine Wärmepumpe im PV-Modus betrieben wird.
         /// </summary>
-        private float[] PV_Ueberschuss_Vorabberechnen()
+        private double[] PV_Ueberschuss_Vorabberechnen()
         {
             // Läuft überhaupt eine Wärmepumpe im PV-Modus?
             bool pvModus = false;
@@ -4109,16 +4109,16 @@ namespace WindowsFormsApplication1
             {
                 // PV-Potenzial vorab bestimmen (wetterabhängig, unabhängig vom Bedarf)
                 simulation_pv.m_ID_Projekt = m_ID_Projekt;
-                simulation_pv.Strombedarf = (float[])Rest_Strombedarf_viertelstuendlich.Clone();
+                simulation_pv.Strombedarf = (double[])Rest_Strombedarf_viertelstuendlich.Clone();
                 simulation_pv.Berechnung(m_ID_Projekt);
 
-                float[] potenzial = (float[])simulation_pv.pvPotentialGesamt_stuendlich.Clone();
-                float[] bedarf = Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich);
+                double[] potenzial = (double[])simulation_pv.pvPotentialGesamt_stuendlich.Clone();
+                double[] bedarf = Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich);
 
-                float[] ueberschuss = new float[8760];
+                double[] ueberschuss = new double[8760];
                 for (int i = 0; i < 8760; i++)
                 {
-                    float rest = potenzial[i] - (i < bedarf.Length ? bedarf[i] : 0);
+                    double rest = potenzial[i] - (i < bedarf.Length ? bedarf[i] : 0);
                     ueberschuss[i] = rest > 0 ? rest : 0;
                 }
 
@@ -4169,12 +4169,12 @@ namespace WindowsFormsApplication1
         // Vektorstufe (Simulation_SPK_Ctrl_Zweikanalig,
         // Simulation_Solarthermie_Ctrl_Zweikanalig).
 
-        public float[] AddVectors(float[] array1, float[] array2)
+        public double[] AddVectors(double[] array1, double[] array2)
         {
             if (array1.Length != array2.Length)
                 throw new ArgumentException("Arrays must be of the same length.");
 
-            float[] result = new float[array1.Length];
+            double[] result = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
                 result[i] = array1[i] + array2[i];
@@ -4182,12 +4182,12 @@ namespace WindowsFormsApplication1
             return result;
         }
 
-        public float[] SubVectors(float[] array1, float[] array2, bool korrigiert=true)
+        public double[] SubVectors(double[] array1, double[] array2, bool korrigiert=true)
         {
             if (array1.Length != array2.Length)
                 throw new ArgumentException("Arrays must be of the same length.");
 
-            float[] result = new float[array1.Length];
+            double[] result = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
                 if (korrigiert)
@@ -4201,9 +4201,9 @@ namespace WindowsFormsApplication1
             return result;
         }
 
-        public float[] Stundenwerte_zu_viertelstunden(float[] stundenwerte)
+        public double[] Stundenwerte_zu_viertelstunden(double[] stundenwerte)
         {
-            float[] viertelstundenwerte = new float[stundenwerte.Length * 4];
+            double[] viertelstundenwerte = new double[stundenwerte.Length * 4];
             for (int i = 0; i < stundenwerte.Length; i++)
             {
                 viertelstundenwerte[i * 4] = stundenwerte[i];
@@ -4214,26 +4214,26 @@ namespace WindowsFormsApplication1
             return viertelstundenwerte;
         }
 
-        public float[] Viertelstunden_zu_Stundenwerte_Mittelwert(float[] viertelstundenwerte)
+        public double[] Viertelstunden_zu_Stundenwerte_Mittelwert(double[] viertelstundenwerte)
         {
             // Die Länge des neuen Arrays ist genau ein Viertel des Originals
-            float[] stundenwerte = new float[viertelstundenwerte.Length / 4];
+            double[] stundenwerte = new double[viertelstundenwerte.Length / 4];
 
             for (int i = 0; i < stundenwerte.Length; i++)
             {
                 // Die 4 Viertelstunden einer Stunde zusammenrechnen und den Durchschnitt bilden
-                float summe = viertelstundenwerte[i * 4] +
+                double summe = viertelstundenwerte[i * 4] +
                               viertelstundenwerte[i * 4 + 1] +
                               viertelstundenwerte[i * 4 + 2] +
                               viertelstundenwerte[i * 4 + 3];
 
-                stundenwerte[i] = summe / 4f;
+                stundenwerte[i] = summe / 4.0;
             }
 
             return stundenwerte;
         }
 
-        private float[] Simulation_Photovoltaik_Ctrl(float[] Strombedarf)
+        private double[] Simulation_Photovoltaik_Ctrl(double[] Strombedarf)
         {
             RecordSet rs = new RecordSet();
 
@@ -4249,7 +4249,7 @@ namespace WindowsFormsApplication1
             simulation_pv.Strombedarf = Strombedarf;
 
             // Simulation starten
-            float[] temp = simulation_pv.Berechnung(m_ID_Projekt);
+            double[] temp = simulation_pv.Berechnung(m_ID_Projekt);
 
             TestePVAnlage();
 
@@ -4305,13 +4305,13 @@ namespace WindowsFormsApplication1
         /// eine Warnung ins Protokoll, Rückgabe <c>null</c> — „die Kette rechnet ohne
         /// Speicherwirkung weiter". Der Speicher darf den Lauf nicht kippen.</para>
         /// </summary>
-        public static Func<SimulationControl, int, float[]> Speicherlauf;
+        public static Func<SimulationControl, int, double[]> Speicherlauf;
 
         /// <summary>
         /// Ruft den Speicherlauf über <see cref="Speicherlauf"/> — oder meldet, dass es
         /// ihn in diesem Programm nicht gibt.
         /// </summary>
-        private float[] Simulation_Stromspeicher_Ctrl(int ID_Projekt)
+        private double[] Simulation_Stromspeicher_Ctrl(int ID_Projekt)
         {
             if (Speicherlauf == null)
             {

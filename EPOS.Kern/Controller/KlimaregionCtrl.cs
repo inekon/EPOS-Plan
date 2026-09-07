@@ -262,7 +262,7 @@ namespace WindowsFormsApplication1
         /// den Vektor je Formularsitzung; die Seite tut dasselbe in ihrer Huelle. Hier
         /// steht nur der Weg zur Datenbank.</para>
         /// </summary>
-        public static float[] Aussentemperatur(int idProjekt)
+        public static double[] Aussentemperatur(int idProjekt)
         {
             if (idProjekt <= 0) return null;
 
@@ -280,8 +280,8 @@ namespace WindowsFormsApplication1
                 SolardatenCtrl ctrldat = new SolardatenCtrl();
                 ctrldat.ReadOrtszeit(idRegion, idProjekt);
                 if (ctrldat.rows < 8760) return null;
-                float[] temp = new float[8760];
-                for (int i = 0; i < 8760; i++) temp[i] = (float)ctrldat.items[i].Außen_Temp;
+                double[] temp = new double[8760];
+                for (int i = 0; i < 8760; i++) temp[i] = (double)ctrldat.items[i].Außen_Temp;
                 return temp;
             }
             catch (Exception ex)

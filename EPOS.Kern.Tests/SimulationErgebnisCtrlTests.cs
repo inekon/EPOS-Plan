@@ -368,7 +368,7 @@ namespace EPOS.Kern.Tests
             sim.simulation_solarthermie.WaermebedarfGesamtKwh = 100_000.0;      // kWh (Stufeneingang)
 
             var wb = new SimulationWaermebedarf();
-            wb.Waermebedarf_Gesamt = 200.0f;                                  // MWh (Projekt)
+            wb.Waermebedarf_Gesamt = 200.0;                                  // MWh (Projekt)
 
             var st = SimulationErgebnisCtrl.Solarthermie(sim, wb);
 
@@ -478,30 +478,30 @@ namespace EPOS.Kern.Tests
         public void WarmwasserAnteil_begrenzt_auf_den_anliegenden_Bedarf()
         {
             var wb = new SimulationWaermebedarf();
-            wb.brauchwasserwerte = new float[8760];
-            wb.brauchwasserwerte[0] = 10f;
-            wb.brauchwasserwerte[1] = 10f;
-            wb.brauchwasserwerte[2] = -5f;
+            wb.brauchwasserwerte = new double[8760];
+            wb.brauchwasserwerte[0] = 10.0;
+            wb.brauchwasserwerte[1] = 10.0;
+            wb.brauchwasserwerte[2] = -5.0;
 
-            float[] bedarf = new float[8760];
-            bedarf[0] = 4f;      // begrenzt
-            bedarf[1] = 40f;     // begrenzt nicht
-            bedarf[2] = 40f;
+            double[] bedarf = new double[8760];
+            bedarf[0] = 4.0;      // begrenzt
+            bedarf[1] = 40.0;     // begrenzt nicht
+            bedarf[2] = 40.0;
 
-            float[] ww = SimulationErgebnisCtrl.WarmwasserAnteil(wb, bedarf);
+            double[] ww = SimulationErgebnisCtrl.WarmwasserAnteil(wb, bedarf);
 
             Assert.Equal(8760, ww.Length);
-            Assert.Equal(4f, ww[0]);
-            Assert.Equal(10f, ww[1]);
-            Assert.Equal(0f, ww[2]);   // negativer Quellwert wird 0
+            Assert.Equal(4.0, ww[0]);
+            Assert.Equal(10.0, ww[1]);
+            Assert.Equal(0.0, ww[2]);   // negativer Quellwert wird 0
         }
 
         [Fact]
         public void WarmwasserAnteil_ohne_Brauchwasserwerte_bleibt_null()
         {
-            float[] ww = SimulationErgebnisCtrl.WarmwasserAnteil(new SimulationWaermebedarf(), null);
+            double[] ww = SimulationErgebnisCtrl.WarmwasserAnteil(new SimulationWaermebedarf(), null);
             Assert.Equal(8760, ww.Length);
-            Assert.All(ww, x => Assert.Equal(0f, x));
+            Assert.All(ww, x => Assert.Equal(0.0, x));
         }
 
         // ------------------------------------------------- die geteilten Runner-Methoden

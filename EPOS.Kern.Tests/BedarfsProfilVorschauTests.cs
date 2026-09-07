@@ -91,11 +91,11 @@ namespace EPOS.Kern.Tests
 
             // Der Weg des Dialogs: Namensliste plus Projekt.
             var vorschau = new SimulationStrombedarf { m_ID_Projekt = 1017 };
-            float[] gezeigt = vorschau.Stromprofil_Strombedarf_berechnen(namen);
+            double[] gezeigt = vorschau.Stromprofil_Strombedarf_berechnen(namen);
 
             // Der Weg des Laufs: dasselbe Projekt, ohne Namensliste.
             var lauf = new SimulationStrombedarf { m_ID_Projekt = 1017 };
-            float[] gerechnet = lauf.Stromprofil_Strombedarf_berechnen();
+            double[] gerechnet = lauf.Stromprofil_Strombedarf_berechnen();
 
             Assert.NotNull(gezeigt);
             Assert.NotNull(gerechnet);
@@ -113,7 +113,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             var sim = new SimulationStrombedarf { m_ID_Projekt = 1017 };
-            float[] reihe = sim.Stromprofil_Strombedarf_berechnen(StromNamen(1017));
+            double[] reihe = sim.Stromprofil_Strombedarf_berechnen(StromNamen(1017));
             Assert.NotNull(reihe);
 
             Array.Copy(reihe, sim.Strombedarf_viertelStundenwerte, reihe.Length);
@@ -158,7 +158,7 @@ namespace EPOS.Kern.Tests
 
             // Stromverbraucher, Projekt 1024 - "Buero_Konst" ebenso.
             var s = new SimulationStrombedarf { m_ID_Projekt = 1024 };
-            float[] reihe = s.Stromprofil_Strombedarf_berechnen(StromNamen(1024));
+            double[] reihe = s.Stromprofil_Strombedarf_berechnen(StromNamen(1024));
             Assert.NotNull(reihe);
             Assert.Equal(365000.0, reihe.Sum(), 0);
         }
@@ -289,7 +289,7 @@ namespace EPOS.Kern.Tests
             // Die Vorschau kennt keine Stromganglinie - sie rechnet die AUSGEWAEHLTEN
             // Profile. Die Gesamtsumme ist deshalb die Summe beider Posten mit einem
             // Summanden 0, nicht eine zweite, eigene Groesse.
-            Assert.Equal(0.0f, v.Strom.Stromganglinie_gesamt);
+            Assert.Equal(0.0, v.Strom.Stromganglinie_gesamt);
             Assert.Equal(v.Strom.Strombedarf_Gebaeude_gesamt + v.Strom.Stromganglinie_gesamt,
                          v.Strom.StrombedarfGesamtMwh, 6);
 
@@ -370,15 +370,15 @@ namespace EPOS.Kern.Tests
         /// sofort.</para>
         ///
         /// <para><b>Der Vergleich der beiden Wege läuft auf 1e‑6 relativ</b>, und das
-        /// ist keine Nachlässigkeit, sondern die Auflösung von <c>float</c>: Vorschau
+        /// ist keine Nachlässigkeit, sondern die Auflösung von <c>double</c>: Vorschau
         /// und Lauf verteilen die Monatsmenge nach VERSCHIEDENEN Wochentagskonventionen
         /// auf die 8 760 Stunden (F3). Die Jahresmenge bleibt dieselbe — sie wird je
         /// Monat auf den Katalogwert normiert —, aber die Summe von 8 760
-        /// <c>float</c>-Werten landet je nach Verteilung auf der einen oder der anderen
-        /// Seite derselben <c>float</c>-Stufe. Gemessen: 4 059,700 68 gegen
+        /// <c>double</c>-Werten landet je nach Verteilung auf der einen oder der anderen
+        /// Seite derselben <c>double</c>-Stufe. Gemessen: 4 059,700 68 gegen
         /// 4 059,700 44 kWh, ein Abstand von 1 ULP (rund 6e‑8 relativ). Das ist der
         /// Beleg für Frage Q5 des Konzepts <c>Konzept_Einheiten_EPOS-Plan.md</c>
-        /// (<c>float</c> gegen <c>double</c> im Kern) und keine Einheitenfrage.</para>
+        /// (<c>double</c> gegen <c>double</c> im Kern) und keine Einheitenfrage.</para>
         /// </summary>
         [Fact]
         public void Vorschau_und_Lauf_weisen_dieselbe_Brauchwassermenge_aus()
@@ -407,7 +407,7 @@ namespace EPOS.Kern.Tests
                 "Der Lauf weist " + ausLauf + " zu einer Stundenreihe von " +
                 lauf.brauchwasserwerte.Sum() + " kWh aus (W8-O-5b).");
 
-            // 2) DIE ZAHL: dieselbe Menge auf beiden Wegen - bis auf die float-Stufe
+            // 2) DIE ZAHL: dieselbe Menge auf beiden Wegen - bis auf die double-Stufe
             //    der Stundenverteilung (Begruendung im Kopf).
             Assert.True(Abweichung(ausVorschau, ausLauf) < 1e-6,
                 "Vorschau " + ausVorschau + " und Lauf " + ausLauf +

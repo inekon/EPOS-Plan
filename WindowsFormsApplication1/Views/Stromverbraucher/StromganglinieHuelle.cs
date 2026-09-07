@@ -274,7 +274,7 @@ namespace WindowsFormsApplication1
                 GanglinienAuswertung a = Lesen(wahl);
                 if (a == null || !a.Erfolgreich) return null;
 
-                float[] werte = a.Stundenwerte;
+                double[] werte = a.Stundenwerte;
 
                 var reihen = new List<ChartRenderer.Reihe>
                 {

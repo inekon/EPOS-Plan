@@ -31,11 +31,11 @@ public class QuelleErdreichDialogTests : BunitContext
     }
 
     /// <summary>Ein Aussentemperaturvektor, damit die Vorschau etwas zu rechnen hat.</summary>
-    private static float[] Aussen()
+    private static double[] Aussen()
     {
-        var w = new float[8760];
+        var w = new double[8760];
         for (int i = 0; i < w.Length; i++)
-            w[i] = (float)(9 + 12 * System.Math.Sin(2 * System.Math.PI * i / 8760.0 - System.Math.PI / 2));
+            w[i] = (double)(9 + 12 * System.Math.Sin(2 * System.Math.PI * i / 8760.0 - System.Math.PI / 2));
         return w;
     }
 

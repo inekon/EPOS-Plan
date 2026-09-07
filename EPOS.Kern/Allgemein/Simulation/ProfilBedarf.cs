@@ -264,7 +264,7 @@ namespace WindowsFormsApplication1
     ///  4. <see cref="WPPlan.Core.BhkwPlan.StromWocheToJahr"/> mit dem Wochentag des
     ///     1. Januar (F3) und Aufaddieren auf den Zielvektor.
     ///
-    /// ZAHLENWEG UNVERÄNDERT: dieselben Casts, dieselbe <c>float</c>/<c>double</c>-Führung
+    /// ZAHLENWEG UNVERÄNDERT: dieselben Casts, dieselbe <c>double</c>/<c>double</c>-Führung
     /// und dieselben Kernfunktionen wie im Bestand. Geändert sind allein der KALENDER (F3)
     /// und der DATENZUGANG (<see cref="DataRepository"/> mit <c>?</c>-Parametern statt
     /// <c>RecordSet</c> mit zusammengesetztem SQL — Projektvorgabe).
@@ -466,7 +466,7 @@ namespace WindowsFormsApplication1
         /// <returns>false, wenn die Bedarfsart abgebrochen wurde (Typbezug leer).</returns>
         public static bool Rechnen(ProfilQuelle quelle, int idProjekt, List<string> namen,
                                    int wochentagJan1, int[] moAnfang, int[] moEnde,
-                                   float[] ziel, float[] monatssummen = null,
+                                   double[] ziel, double[] monatssummen = null,
                                    ProfilLaufInfo info = null)
         {
             if (quelle == null) throw new ArgumentNullException("quelle");
@@ -479,9 +479,9 @@ namespace WindowsFormsApplication1
             // Zwischenspeicher monats_waerme/wochen_waerme/temp waren instanzweit und
             // wurden von Brauchwasser UND Prozesswärme benutzt - genau daran hing der
             // V0-3-Befund „Profil des vorigen Durchlaufs".
-            float[] monatswerte = new float[MONATE];
-            float[] wochenwerte = new float[WOCHEN_STUNDEN];
-            float[] jahreswerte = new float[STUNDEN_JAHR];
+            double[] monatswerte = new double[MONATE];
+            double[] wochenwerte = new double[WOCHEN_STUNDEN];
+            double[] jahreswerte = new double[STUNDEN_JAHR];
 
             bool vollstaendig = true;
 
@@ -517,14 +517,14 @@ namespace WindowsFormsApplication1
                                     ? kopf["Bezeichner"].ToString() : name;
 
                 // Projekt-Jahressumme: skalieren, wenn der Anwender sie geändert hat.
-                float pjv = 0;
+                double pjv = 0;
                 if (idProjekt != 0) pjv = ProjektJahressumme(satzquelle, idProjekt, bezeichner);
 
-                float jv = 0;
+                double jv = 0;
                 for (int i = 0; i < MONATE; i++)
                 {
                     double d = (double)kopf["Monat_" + (i + 1).ToString()];
-                    monatswerte[i] = (float)d;
+                    monatswerte[i] = (double)d;
                     jv += monatswerte[i];
                 }
 
@@ -567,7 +567,7 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                float profilsumme = 0;
+                double profilsumme = 0;
                 for (int i = 0; i < WOCHEN_STUNDEN; i++) profilsumme += wochenwerte[i];
                 if (profilsumme <= 0)
                 {
@@ -614,7 +614,7 @@ namespace WindowsFormsApplication1
         /// Ersetzt die drei <c>Z_Projekt*Ctrl</c>-Lesungen des Bestands durch EINE
         /// parametrisierte Abfrage - gelesen wird wie dort die erste Trefferzeile.
         /// </summary>
-        private static float ProjektJahressumme(ProfilQuelle quelle, int idProjekt, string bezeichner)
+        private static double ProjektJahressumme(ProfilQuelle quelle, int idProjekt, string bezeichner)
         {
             object wert = DataRepository.ExecuteScalar(
                 "SELECT " + quelle.ZuordnungSummeSpalte + " FROM " + quelle.ZuordnungTabelle +
@@ -623,7 +623,7 @@ namespace WindowsFormsApplication1
                 new DbParam("?", bezeichner));
 
             if (wert == null || wert == DBNull.Value) return 0;
-            return (float)Convert.ToDouble(wert);
+            return (double)Convert.ToDouble(wert);
         }
 
         /// <summary>
@@ -631,7 +631,7 @@ namespace WindowsFormsApplication1
         /// Rückgabe false = kein Typsatz gefunden (der Puffer bleibt unberührt).
         /// </summary>
         private static bool WochenprofilLesen(ProfilQuelle quelle, int idProjekt, string typ,
-                                              float[] wochenwerte)
+                                              double[] wochenwerte)
         {
             string sql = "SELECT * FROM " + quelle.TypTabelle +
                          " WHERE " + quelle.TypSchluesselSpalte + "=?";
@@ -650,7 +650,7 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < WOCHEN_STUNDEN; i++)
             {
                 double dw = (double)row[(i + 1).ToString()];
-                wochenwerte[i] = (float)dw;
+                wochenwerte[i] = (double)dw;
             }
             return true;
         }

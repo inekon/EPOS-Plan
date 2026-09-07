@@ -71,8 +71,9 @@ namespace WindowsFormsApplication1
         /// zweite Rechnung: Quelle ist derselbe Kanalsatz, aus dem seit Paket K1 auch der
         /// Summenvektor gebildet wird (<c>SimulationWaermebedarf.KanaeleDrei</c> ist die
         /// FÜHRENDE Größe, die Summe die abgeleitete). Ihre Summe ist deshalb der
-        /// Gesamtbedarf — bis auf die float-Rundung, mit der die Kanäle stundenweise zum
-        /// Summenvektor addiert werden (Konzept 4.2, 1-ULP-Klasse).</para>
+        /// Gesamtbedarf — bis auf die Rundung, mit der die Kanäle stundenweise zum
+        /// Summenvektor addiert werden (Konzept 4.2, 1-ULP-Klasse; seit W8‑O‑5d ist das
+        /// eine <c>double</c>-, keine <c>float</c>-Rundung mehr).</para>
         ///
         /// <para>Spalten <c>Waermebedarf_Heizung/_Brauchwasser/_Prozess</c>, angelegt in
         /// Migrationsschritt 52.</para>

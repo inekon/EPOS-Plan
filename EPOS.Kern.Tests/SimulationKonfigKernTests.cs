@@ -260,7 +260,7 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            float[] temp = KlimaregionCtrl.Aussentemperatur(PROJEKT);
+            double[] temp = KlimaregionCtrl.Aussentemperatur(PROJEKT);
             Assert.NotNull(temp);
             Assert.Equal(8760, temp.Length);
 

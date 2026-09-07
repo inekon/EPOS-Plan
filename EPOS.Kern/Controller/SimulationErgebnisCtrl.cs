@@ -801,15 +801,15 @@ namespace WindowsFormsApplication1
         /// vorgeschaltete Erzeuger). Der Warmwasseranteil wird deshalb je Stunde auf den
         /// tatsächlich anliegenden Bedarf begrenzt.</para>
         /// </summary>
-        public static float[] WarmwasserAnteil(SimulationWaermebedarf wb, float[] bedarf)
+        public static double[] WarmwasserAnteil(SimulationWaermebedarf wb, double[] bedarf)
         {
-            float[] ww = new float[Kanalsatz.STUNDEN_JAHR];
+            double[] ww = new double[Kanalsatz.STUNDEN_JAHR];
             if (wb == null || wb.brauchwasserwerte == null) return ww;
 
-            float[] quelle = wb.brauchwasserwerte;
+            double[] quelle = wb.brauchwasserwerte;
             for (int i = 0; i < Kanalsatz.STUNDEN_JAHR && i < quelle.Length; i++)
             {
-                float wert = quelle[i];
+                double wert = quelle[i];
                 if (bedarf != null && i < bedarf.Length && wert > bedarf[i]) wert = bedarf[i];
                 if (wert < 0) wert = 0;
                 ww[i] = wert;

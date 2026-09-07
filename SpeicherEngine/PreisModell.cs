@@ -168,13 +168,15 @@ namespace SpeicherEngine
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Warum eine eigene Ueberladung.</b> Der <see cref="RasterAdapter"/>
-        /// nimmt <c>float[]</c> entgegen - er sitzt an der Grenze zum Hauptprojekt,
-        /// dessen Zeitreihen <c>float</c> sind. Eine Preisreihe entsteht dagegen
-        /// bereits in <c>double</c> (Profilrechnung, CSV-Import) und wuerde ueber
-        /// den Umweg <c>double -&gt; float -&gt; double</c> gerundet. Bei Preisen um
-        /// 0,001 ct/kWh - die Spotdatei fuehrt genau solche Werte - waere das eine
-        /// vermeidbare Ungenauigkeit im Geldwert.
+        /// <b>Warum eine eigene Ueberladung.</b> Bis zum Anwenderentscheid W8-O-5d
+        /// (07.09.2026) nahm der <see cref="RasterAdapter"/> <c>float[]</c> entgegen - er
+        /// sass an der Grenze zum Hauptprojekt, dessen Zeitreihen <c>float</c> waren. Eine
+        /// Preisreihe entsteht dagegen bereits in <c>double</c> (Profilrechnung, CSV-Import)
+        /// und wurde ueber den Umweg <c>double -&gt; float -&gt; double</c> gerundet; bei
+        /// Preisen um 0,001 ct/kWh - die Spotdatei fuehrt genau solche Werte - war das eine
+        /// vermeidbare Ungenauigkeit im Geldwert. Seit der Kern durchgehend in <c>double</c>
+        /// rechnet, sind beide Wege wertgleich; die Ueberladung bleibt als Name des
+        /// Spotpfads stehen.
         /// </para>
         /// <para>
         /// Die Rasterkonstanten kommen unveraendert aus dem Adapter; es gibt also

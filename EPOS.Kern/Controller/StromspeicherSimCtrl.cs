@@ -679,7 +679,7 @@ namespace WindowsFormsApplication1
         /// Intervall in kWh. Umgerechnet wird deshalb mit
         /// <see cref="INTERVALL_H"/>. Die Division durch 0,25 ist in IEEE-754 exakt
         /// (Zweierpotenz), der Rasterwechsel also verlustfrei bis auf die
-        /// <c>float</c>-Rundung des Zielformats.
+        /// <c>double</c>-Rundung des Zielformats.
         /// </para>
         /// <para>
         /// Für die LADUNG gibt es bewusst kein Gegenstück: Sie speist sich aus dem
@@ -688,13 +688,13 @@ namespace WindowsFormsApplication1
         /// <c>SpeicherErgebnis.LadungAcKwh</c> steht für den Bilanzausweis bereit.
         /// </para>
         /// </remarks>
-        public static float[] EntladungLeistungKw(SpeicherErgebnis ergebnis)
+        public static double[] EntladungLeistungKw(SpeicherErgebnis ergebnis)
         {
             if (ergebnis == null) throw new ArgumentNullException(nameof(ergebnis));
 
             double[] energieKwh = ergebnis.EntladungAcKwh;
-            float[] ziel = new float[energieKwh.Length];
-            for (int i = 0; i < energieKwh.Length; i++) ziel[i] = (float)(energieKwh[i] / INTERVALL_H);
+            double[] ziel = new double[energieKwh.Length];
+            for (int i = 0; i < energieKwh.Length; i++) ziel[i] = (double)(energieKwh[i] / INTERVALL_H);
             return ziel;
         }
 
@@ -705,13 +705,13 @@ namespace WindowsFormsApplication1
         /// Einspeisung; die Einspeisemenge ist max(0, Überschuss − Ladung) je
         /// Intervall. Die Reihe <c>LadungAcKwh</c> hält die Engine genau dafür vor.
         /// </summary>
-        public static float[] LadungLeistungKw(SpeicherErgebnis ergebnis)
+        public static double[] LadungLeistungKw(SpeicherErgebnis ergebnis)
         {
             if (ergebnis == null) throw new ArgumentNullException(nameof(ergebnis));
 
             double[] energieKwh = ergebnis.LadungAcKwh;
-            float[] ziel = new float[energieKwh.Length];
-            for (int i = 0; i < energieKwh.Length; i++) ziel[i] = (float)(energieKwh[i] / INTERVALL_H);
+            double[] ziel = new double[energieKwh.Length];
+            for (int i = 0; i < energieKwh.Length; i++) ziel[i] = (double)(energieKwh[i] / INTERVALL_H);
             return ziel;
         }
 

@@ -52,7 +52,7 @@ namespace WindowsFormsApplication1
         /// <see cref="DataRepository.EngineModus"/>, Verschachtelung ist zulässig).
         /// </para>
         /// </remarks>
-        private float[] SpeicherlaufAusfuehren(int ID_Projekt)
+        private double[] SpeicherlaufAusfuehren(int ID_Projekt)
         {
             StromspeicherSimCtrl ctrl = new StromspeicherSimCtrl();
             SpeicherEngine.SpeicherErgebnis ergebnis;
@@ -73,7 +73,7 @@ namespace WindowsFormsApplication1
 
             if (ergebnis == null) return null;
 
-            float[] entladung = StromspeicherSimCtrl.EntladungLeistungKw(ergebnis);
+            double[] entladung = StromspeicherSimCtrl.EntladungLeistungKw(ergebnis);
             if (entladung.Length != Rest_Strombedarf_viertelstuendlich.Length)
             {
                 Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_SPEICHER_RASTER_ABWEICHUNG,
@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
 
             Speicherergebnis = ergebnis;
             Speicherkontext = ctrl.LetzterKontext;
-            Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.ZuFloat(ergebnis.SoCKwh);
+            Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.Kopie(ergebnis.SoCKwh);
             Speicherfuellstand_stuendlich = Viertelstunden_zu_Stundenwerte_Mittelwert(Speicherfuellstand_viertelstuendlich);
 
             return entladung;

@@ -779,7 +779,7 @@ namespace WindowsFormsApplication1
                     if (sp != null && !sp.IstQuelle) sp.Reset();
             }
 
-            float[] pvUeberschussVektor = MitWP ? WP.PV_Ueberschuss_stuendlich : null;
+            double[] pvUeberschussVektor = MitWP ? WP.PV_Ueberschuss_stuendlich : null;
 
             // Paket 6: Das BHKW braucht seine Ladeaufträge schon in Phase B — die
             // Ladefähigkeit seiner (Ersatz-)Zweitsenke ist der Speicherraum, mit dem die
@@ -1009,7 +1009,7 @@ namespace WindowsFormsApplication1
                 for (int k = 0; k < Kanal.ANZAHL; k++)
                 {
                     if (rest[k] < 0) rest[k] = 0;
-                    kanaele.Bedarf[k][stunde] = (float)rest[k];
+                    kanaele.Bedarf[k][stunde] = (double)rest[k];
                 }
 
                 if (MitWP) WP.Zweikanalig_StundeEnde(stunde, rest);
@@ -1108,7 +1108,7 @@ namespace WindowsFormsApplication1
         /// <b>PUBLIC seit Paket S1 (K2-O1):</b> Bis dahin gab es dieselbe Schleife ein
         /// zweites Mal als <c>Kanalabzug.Summe</c> im Wärmepumpen-Modul. Zwei Fassungen
         /// derselben Summe sind zwei Gelegenheiten, sie unterschiedlich zu bilden — und
-        /// bei float-Akkumulation ist „unterschiedlich" nicht nur eine Formfrage. Es gibt
+        /// bei double-Akkumulation ist „unterschiedlich" nicht nur eine Formfrage. Es gibt
         /// jetzt nur noch diese hier.
         /// </summary>
         public static double RestSumme(double[] rest)

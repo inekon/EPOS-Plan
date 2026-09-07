@@ -37,22 +37,22 @@ namespace WindowsFormsApplication1
         public int m_ID_Projekt = 0;
 
         // Input-Arrays (15-Minuten-Werte vom Lastprofil)
-        public float[] Strombedarf = new float[8760 * 4];
+        public double[] Strombedarf = new double[8760 * 4];
 
         // Interne Stunden-Arrays für die Simulation
-        public float[] Strombedarf_stuendlich = new float[8760];
-        public float[] pvPotentialGesamt_stuendlich = new float[8760];
+        public double[] Strombedarf_stuendlich = new double[8760];
+        public double[] pvPotentialGesamt_stuendlich = new double[8760];
 
         // Ergebnis-Arrays (Stündlich)
-        public float[] Stromproduktion_Theoretisch = new float[8760];
-        public float[] Stromproduktion = new float[8760];
-        public float[] Reststrom = new float[8760];
-        public float[] Ueberschuss = new float[8760];
+        public double[] Stromproduktion_Theoretisch = new double[8760];
+        public double[] Stromproduktion = new double[8760];
+        public double[] Reststrom = new double[8760];
+        public double[] Ueberschuss = new double[8760];
 
         // Ergebnis-Arrays (Viertelstündlich für das UI/Chart)
-        public float[] Stromproduktion_viertelstunde = new float[8760 * 4];
-        public float[] Reststrom_viertelstunde = new float[8760 * 4];
-        public float[] Ueberschuss_viertelstunde = new float[8760 * 4];
+        public double[] Stromproduktion_viertelstunde = new double[8760 * 4];
+        public double[] Reststrom_viertelstunde = new double[8760 * 4];
+        public double[] Ueberschuss_viertelstunde = new double[8760 * 4];
 
         /// <summary>
         /// V1 (PV-Konzept § 2.3, Etappe P1): BHKW-Stromüberschuss, der als NEGATIVER
@@ -61,16 +61,16 @@ namespace WindowsFormsApplication1
         /// PV-Erzeugung und gehört nicht in <see cref="Ueberschuss"/> — sonst würde
         /// er als PV-Einspeisung vergütet. Hier getrennt ausgewiesen [kWh je Stunde].
         /// </summary>
-        public float[] BhkwUeberschuss = new float[8760];
+        public double[] BhkwUeberschuss = new double[8760];
 
         /// <summary>Jahressumme von <see cref="BhkwUeberschuss"/> [kWh].</summary>
-        public float BhkwUeberschussGesamtKwh = 0;
+        public double BhkwUeberschussGesamtKwh = 0;
 
         // Statistiken
         public double Stromproduktion_Max = 0;
         public double MaxPSolar = 0;
-        public float StromproduktionGesamtKwh = 0;
-        public float StromproduktionTheoretischGesamtKwh = 0;
+        public double StromproduktionGesamtKwh = 0;
+        public double StromproduktionTheoretischGesamtKwh = 0;
 
         // =================================================================================
         // Vorgabewerte und Plausibilitaetsfenster (Stufe E1, Paket A)
@@ -150,7 +150,7 @@ namespace WindowsFormsApplication1
             Array.Clear(Ueberschuss_viertelstunde, 0, Ueberschuss_viertelstunde.Length);
         }
 
-        public float[] Berechnung(int ID_Projekt)
+        public double[] Berechnung(int ID_Projekt)
         {
             WErzeugerCtrl ctrl = new WErzeugerCtrl();
             RecordSet rs = new RecordSet();
@@ -251,7 +251,7 @@ namespace WindowsFormsApplication1
                 double clippingVerlust = 0, wechselrichterVerlust = 0, dcAc = 0;
 
                 // B4: auf das feste Jahresraster geklemmt. Ohne die Klemme lief eine
-                // ueberlange Reihe in float[8760] und warf IndexOutOfRange.
+                // ueberlange Reihe in double[8760] und warf IndexOutOfRange.
                 int stunden = Math.Min(ctrldat.rows, 8760);
 
                 // S3.2 - DIE VORRANGREGEL (Konzept 3.5 und 7.1). ZWEI Bedingungen:
@@ -313,7 +313,7 @@ namespace WindowsFormsApplication1
 
                         // Aufsummieren auf das Stunden-Array (nach Wechselrichter und
                         // Systemverlusten - E1.3)
-                        pvPotentialGesamt_stuendlich[i] += (float)(erg.potenzielleErzeugung * etaWr * systemFaktor);
+                        pvPotentialGesamt_stuendlich[i] += (double)(erg.potenzielleErzeugung * etaWr * systemFaktor);
 
                         prodSummeMod += erg.potenzielleErzeugung * etaWr * systemFaktor;
                     }
@@ -382,7 +382,7 @@ namespace WindowsFormsApplication1
                             pAc = pAcNenn.Value;
                         }
 
-                        pvPotentialGesamt_stuendlich[i] += (float)pAc;
+                        pvPotentialGesamt_stuendlich[i] += (double)pAc;
                         prodSummeMod += pAc;
                     }
 
@@ -421,17 +421,17 @@ namespace WindowsFormsApplication1
                 // ohne BHKW-Überschuss ist bedarfRoh nie negativ — ihr Ergebnis
                 // bleibt identisch (Abnahmekriterium P1).
                 double bedarf = Math.Max(0, bedarfRoh);
-                BhkwUeberschuss[i] = (float)Math.Max(0, -bedarfRoh);
+                BhkwUeberschuss[i] = (double)Math.Max(0, -bedarfRoh);
 
-                Stromproduktion_Theoretisch[i] = (float)erzeugung;
+                Stromproduktion_Theoretisch[i] = (double)erzeugung;
 
                 // Direktverbrauch - seit AP2b der EINZIGE Verrechnungsschritt hier.
                 double direktVerbrauch = Math.Min(erzeugung, bedarf);
 
                 // Ergebnisse für diese Stunde festschreiben
-                Ueberschuss[i] = (float)(erzeugung - direktVerbrauch);   // Was ins Netz geht
-                Reststrom[i] = (float)(bedarf - direktVerbrauch);        // Was vom Netz kommt
-                Stromproduktion[i] = (float)direktVerbrauch;             // Genutzte Produktion
+                Ueberschuss[i] = (double)(erzeugung - direktVerbrauch);   // Was ins Netz geht
+                Reststrom[i] = (double)(bedarf - direktVerbrauch);        // Was vom Netz kommt
+                Stromproduktion[i] = (double)direktVerbrauch;             // Genutzte Produktion
 
                 if (erzeugung > Stromproduktion_Max) Stromproduktion_Max = erzeugung;
             }
@@ -451,9 +451,9 @@ namespace WindowsFormsApplication1
 
         // --- Hilfsmethoden ---
 
-        public float[] Stundenwerte_zu_viertelstunden(float[] stundenwerte)
+        public double[] Stundenwerte_zu_viertelstunden(double[] stundenwerte)
         {
-            float[] v = new float[stundenwerte.Length * 4];
+            double[] v = new double[stundenwerte.Length * 4];
             for (int i = 0; i < stundenwerte.Length; i++)
             {
                 v[i * 4] = v[i * 4 + 1] = v[i * 4 + 2] = v[i * 4 + 3] = stundenwerte[i];
@@ -467,12 +467,12 @@ namespace WindowsFormsApplication1
         // viertelstündlich (SimulationControl.Speicherfuellstand_viertelstuendlich),
         // die Interpolation hat damit keinen Gegenstand mehr.
 
-        public float[] Viertelstunden_zu_stunden(float[] v)
+        public double[] Viertelstunden_zu_stunden(double[] v)
         {
-            float[] s = new float[v.Length / 4];
+            double[] s = new double[v.Length / 4];
             for (int i = 0; i < s.Length; i++)
             {
-                s[i] = (v[i * 4] + v[i * 4 + 1] + v[i * 4 + 2] + v[i * 4 + 3]) / 4.0f;
+                s[i] = (v[i * 4] + v[i * 4 + 1] + v[i * 4 + 2] + v[i * 4 + 3]) / 4.0;
             }
             return s;
         }
@@ -1226,7 +1226,7 @@ namespace WindowsFormsApplication1
 
                 // Schritt 5: Summe je Anlage. Die Schnittstelle zur Verbrauchsbilanz
                 // bleibt unangetastet.
-                pvPotentialGesamt_stuendlich[i] += (float)pAcAnlage;
+                pvPotentialGesamt_stuendlich[i] += (double)pAcAnlage;
                 prodSummeMod += pAcAnlage;
             }
         }

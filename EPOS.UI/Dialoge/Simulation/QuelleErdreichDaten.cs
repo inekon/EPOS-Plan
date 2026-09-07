@@ -75,5 +75,5 @@ public sealed record QuelleErdreichDaten
     /// <c>ErdreichTemperatur</c> mit seiner Normnäherung, und die Kennwertzeile sagt
     /// das an.
     /// </summary>
-    public float[]? Aussentemperatur { get; init; }
+    public double[]? Aussentemperatur { get; init; }
 }

@@ -349,7 +349,7 @@ namespace WindowsFormsApplication1
             // Kanalsatz, aus dem seit Paket K1 auch Waermebedarf_Gesamt gebildet wird
             // (die Kanäle sind die führende Größe, die Summe die abgeleitete) — es ist
             // die Aufschlüsselung desselben Werts, keine zweite Rechnung. Die Summe der
-            // drei Spalten ist deshalb Waermebedarf_Gesamt bis auf die float-Rundung, mit
+            // drei Spalten ist deshalb Waermebedarf_Gesamt bis auf die double-Rundung, mit
             // der Kanalsatz.Summe() den Summenvektor stundenweise bildet.
             m.Energiebedarf.Waermebedarf_Kanal = BedarfJeKanal(simulation_Waermebedarf);
 
@@ -502,13 +502,13 @@ namespace WindowsFormsApplication1
                 ErgebnisBHKWModel b = new ErgebnisBHKWModel();
 
                 // NACHARBEIT PAKET 6, BEFUND N8: Der Stufeneingang kommt aus der
-                // double-Jahressumme des Moduls statt aus der Summe der float-Ganglinie.
+                // double-Jahressumme des Moduls statt aus der Summe der double-Ganglinie.
                 // Das ist dieselbe Größe, nur ohne die Summationsfehler von 8760
-                // float-Additionen — und es bindet WaermebedarfGesamtKwh an, das bis dahin
+                // double-Additionen — und es bindet WaermebedarfGesamtKwh an, das bis dahin
                 // nur geschrieben wurde.
                 double waermebedarfMWh = bh.WaermebedarfGesamtKwh / 1000.0;
                 double strombedarfMWh = bh.strombedarf.Sum() / 1000.0;
-                float[] restwaermeBhkw = sim.SubVectors(bh.waermebedarf, bh.waermeproduktion);
+                double[] restwaermeBhkw = sim.SubVectors(bh.waermebedarf, bh.waermeproduktion);
 
                 b.Waermebedarf = waermebedarfMWh;
                 b.Restwaermebedarf = restwaermeBhkw.Sum() / 1000.0;
@@ -1007,7 +1007,7 @@ namespace WindowsFormsApplication1
         /// <c>SimulationWaermebedarf.Waermebedarf_Gesamt</c>, keine zweite Rechnung:
         /// Dieselben Vektoren, aus denen seit Paket K1 der Summenvektor gebildet wird
         /// (die Kanäle sind die führende Größe), und dieselbe Umrechnung kWh → MWh.
-        /// Die Summe der drei Werte ist der Gesamtbedarf bis auf die float-Rundung, mit
+        /// Die Summe der drei Werte ist der Gesamtbedarf bis auf die double-Rundung, mit
         /// der <c>Kanalsatz.Summe()</c> je Stunde addiert (Konzept 4.2, 1-ULP-Klasse) —
         /// bei den Größenordnungen des Rechenkerns liegt das um Zehnerpotenzen unter der
         /// kaufmännischen Rundung der Ergebniszeile.</para>
@@ -1020,7 +1020,7 @@ namespace WindowsFormsApplication1
             Kanalsatz ks = bedarf.KanaeleDrei();
             for (int k = 0; k < Kanal.ANZAHL; k++)
             {
-                float[] v = ks.Bedarf[k];
+                double[] v = ks.Bedarf[k];
                 double summe = 0;
                 for (int h = 0; h < v.Length; h++) summe += v[h];
                 mwh[k] = summe / 1000.0;

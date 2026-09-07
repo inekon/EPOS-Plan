@@ -24,7 +24,7 @@ namespace WindowsFormsApplication1
     /// <c>KlimazonenKarte.PfadParsen</c> zerlegte die <c>d</c>-Angabe an Leerzeichen und
     /// Kommas und erwartete den Befehlsbuchstaben als EIGENES Token. Die Kartengrafik
     /// schreibt ihn aber am ersten Wert fest: <c>"M315.30 141.13 L315.30 142.68 …"</c>.
-    /// Das erste Token lautet damit <c>"M315.30"</c>, <c>float.Parse</c> wirft, und
+    /// Das erste Token lautet damit <c>"M315.30"</c>, das Einlesen der Zahl wirft, und
     /// <c>Daten()</c> faengt die Ausnahme mit <c>catch { _daten = null; }</c> ab — die
     /// Karte zeigte seit jeher nur ihre Ladefehlerzeile, die Auswahl lief ueber die
     /// Liste des Erdreich-Dialogs. Das Werkzeug trennt den Buchstaben vom Wert und

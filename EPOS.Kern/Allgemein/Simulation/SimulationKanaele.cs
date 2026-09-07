@@ -23,7 +23,7 @@ namespace WindowsFormsApplication1
     /// <c>SimulationPufferspeicher.BedientKanal</c> prüft (Punkt 8).
     ///
     /// Feldgrößen sind wie im gesamten Rechenkern fest verdrahtet: 8760 Stunden,
-    /// <c>float</c>-Vektoren mit Zwischenrechnung in <c>double</c>.
+    /// <c>double</c>-Vektoren mit Zwischenrechnung in <c>double</c>.
     /// </summary>
     public class Waermekanaele
     {
@@ -31,10 +31,10 @@ namespace WindowsFormsApplication1
         public const int STUNDEN_JAHR = 8760;
 
         /// <summary>Heizwärmebedarf bzw. -deckung je Stunde [kWh].</summary>
-        public float[] Heiz = new float[STUNDEN_JAHR];
+        public double[] Heiz = new double[STUNDEN_JAHR];
 
         /// <summary>Warmwasserbedarf bzw. -deckung je Stunde [kWh].</summary>
-        public float[] WW = new float[STUNDEN_JAHR];
+        public double[] WW = new double[STUNDEN_JAHR];
 
         /// <summary>
         /// Summe beider Kanäle je Stunde — die Sicht, mit der die einkanaligen
@@ -45,9 +45,9 @@ namespace WindowsFormsApplication1
         /// Eingangsvektoren in-place (siehe B0-2 in Konzept Kapitel 8), und ein solcher
         /// Schreibzugriff würde sonst stillschweigend den Heizkanal verändern.
         /// </summary>
-        public float[] Summe()
+        public double[] Summe()
         {
-            float[] s = new float[STUNDEN_JAHR];
+            double[] s = new double[STUNDEN_JAHR];
             for (int h = 0; h < STUNDEN_JAHR; h++)
                 s[h] = Heiz[h] + WW[h];
             return s;
@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
         ///
         ///    ZUR GENAUIGKEIT — die Zusicherung lautete bis zur Paket-4-Review
         ///    „bitgleich", und das ist nachweislich zu stark: Die Differenz
-        ///    <c>rest − ww</c> wird in <c>float</c> gebildet und dabei GERUNDET, wenn
+        ///    <c>rest − ww</c> wird in <c>double</c> gebildet und dabei GERUNDET, wenn
         ///    ihr exaktes Ergebnis nicht auf das Raster des Exponenten fällt. Die
         ///    Rückaddition <c>Heiz + WW</c> kann dann um ein ulp neben
         ///    <c>restSumme</c> liegen. Gegenbeispiel (im Selbsttest, Punkt 2b):
@@ -120,7 +120,7 @@ namespace WindowsFormsApplication1
         /// <param name="restSumme">einkanalig ermittelter Rest je Stunde [kWh]</param>
         /// <param name="vorherHeiz">Heizkanal VOR dem einkanaligen Schritt [kWh]</param>
         /// <param name="vorherWW">WW-Kanal VOR dem einkanaligen Schritt [kWh]</param>
-        public void Uebernehmen(float[] restSumme, float[] vorherHeiz, float[] vorherWW)
+        public void Uebernehmen(double[] restSumme, double[] vorherHeiz, double[] vorherWW)
         {
             if (restSumme == null) throw new ArgumentNullException("restSumme");
             if (vorherHeiz == null) throw new ArgumentNullException("vorherHeiz");
@@ -134,7 +134,7 @@ namespace WindowsFormsApplication1
 
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
-                float rest = restSumme[h];
+                double rest = restSumme[h];
 
                 // Zwischenrechnung in double - Konvention des Rechenkerns.
                 double vorher = (double)vorherHeiz[h] + (double)vorherWW[h];
@@ -142,7 +142,7 @@ namespace WindowsFormsApplication1
                 if (vorher > 0)
                 {
                     // Randfall 3: WW proportional, Heiz als Differenz -> exakte Erhaltung.
-                    float ww = (float)(rest * (vorherWW[h] / vorher));
+                    double ww = (double)(rest * (vorherWW[h] / vorher));
                     WW[h] = ww;
                     Heiz[h] = rest - ww;
                 }
@@ -150,7 +150,7 @@ namespace WindowsFormsApplication1
                 {
                     // Randfall 1: kein Kanalanteil bekannt -> alles auf den Heizkanal.
                     Heiz[h] = rest;
-                    WW[h] = 0f;
+                    WW[h] = 0.0;
                 }
             }
         }
@@ -209,15 +209,15 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
                 k.Heiz[h] = h % 7;
-                k.WW[h] = (h % 3) * 0.5f;
+                k.WW[h] = (h % 3) * 0.5;
             }
-            float[] summe = k.Summe();
+            double[] summe = k.Summe();
             bool summeOk = true;
             for (int h = 0; h < STUNDEN_JAHR; h++)
                 if (summe[h] != k.Heiz[h] + k.WW[h]) { summeOk = false; break; }
 
-            summe[0] = 999f;                       // eigener Vektor? (Aliasing-Probe)
-            bool eigen = k.Heiz[0] != 999f && k.WW[0] != 999f;
+            summe[0] = 999.0;                       // eigener Vektor? (Aliasing-Probe)
+            bool eigen = k.Heiz[0] != 999.0 && k.WW[0] != 999.0;
 
             sb.AppendLine("1. Summe(): elementweise = " + (summeOk ? "OK" : "FEHLER") +
                           ", eigener Vektor = " + (eigen ? "OK" : "FEHLER"));
@@ -226,19 +226,19 @@ namespace WindowsFormsApplication1
             // --- 2. Erhaltung ueber ein volles Jahr ------------------------
             // Gemischter Testfall: reine Heizstunden, reine WW-Stunden, gemischte
             // Stunden und Stunden ganz ohne Bedarf, dazu krumme Werte.
-            float[] vorHeiz = new float[STUNDEN_JAHR];
-            float[] vorWW = new float[STUNDEN_JAHR];
-            float[] rest = new float[STUNDEN_JAHR];
+            double[] vorHeiz = new double[STUNDEN_JAHR];
+            double[] vorWW = new double[STUNDEN_JAHR];
+            double[] rest = new double[STUNDEN_JAHR];
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
                 switch (h % 4)
                 {
-                    case 0: vorHeiz[h] = 12.34f; vorWW[h] = 0f; break;       // nur Heizung
-                    case 1: vorHeiz[h] = 0f; vorWW[h] = 3.7f; break;         // nur Warmwasser
-                    case 2: vorHeiz[h] = 8.1f; vorWW[h] = 2.9f; break;       // gemischt
-                    default: vorHeiz[h] = 0f; vorWW[h] = 0f; break;          // kein Bedarf
+                    case 0: vorHeiz[h] = 12.34; vorWW[h] = 0.0; break;       // nur Heizung
+                    case 1: vorHeiz[h] = 0.0; vorWW[h] = 3.7; break;         // nur Warmwasser
+                    case 2: vorHeiz[h] = 8.1; vorWW[h] = 2.9; break;       // gemischt
+                    default: vorHeiz[h] = 0.0; vorWW[h] = 0.0; break;          // kein Bedarf
                 }
-                rest[h] = (h % 11) * 0.37f;
+                rest[h] = (h % 11) * 0.37;
             }
 
             Waermekanaele erg = new Waermekanaele();
@@ -254,20 +254,20 @@ namespace WindowsFormsApplication1
 
             // --- 2b. Rundungsfall: die Zusage lautet EIN ULP, nicht bitgleich --------
             // Wertemuster aus der Paket-4-Review. rest liegt bei 2,07e8; dort ist das
-            // float-Raster 16 - die Differenz rest - ww fällt nicht darauf, und die
+            // double-Raster 16 - die Differenz rest - ww fällt nicht darauf, und die
             // Rueckaddition landet ein ulp neben rest. Der Test sichert BEIDES ab:
             // dass die Abweichung auftritt (die alte Zusage also zu stark war) und
             // dass sie ein ulp nicht überschreitet.
             Waermekanaele ulpK = new Waermekanaele();
-            float[] ulpRest = new float[STUNDEN_JAHR];
-            float[] ulpHeiz = new float[STUNDEN_JAHR];
-            float[] ulpWW = new float[STUNDEN_JAHR];
-            ulpRest[42] = 207393100f;
-            ulpHeiz[42] = 5.9786716f;
-            ulpWW[42] = 0.7120331f;
+            double[] ulpRest = new double[STUNDEN_JAHR];
+            double[] ulpHeiz = new double[STUNDEN_JAHR];
+            double[] ulpWW = new double[STUNDEN_JAHR];
+            ulpRest[42] = 207393100.0;
+            ulpHeiz[42] = 5.9786716;
+            ulpWW[42] = 0.7120331;
             ulpK.Uebernehmen(ulpRest, ulpHeiz, ulpWW);
 
-            float ulpSumme = ulpK.Heiz[42] + ulpK.WW[42];
+            double ulpSumme = ulpK.Heiz[42] + ulpK.WW[42];
             double ulpAbw = Math.Abs((double)ulpSumme - ulpRest[42]);
             // ein ulp bei diesem Exponenten: 2^-23 relativ, großzügig als 1,2e-7 gefasst
             double ulpGrenze = Math.Abs((double)ulpRest[42]) * 1.2e-7;
@@ -281,40 +281,40 @@ namespace WindowsFormsApplication1
 
             // --- 3. Proportionalitaet --------------------------------------
             Waermekanaele p = new Waermekanaele();
-            float[] pRest = new float[STUNDEN_JAHR];
-            float[] pHeiz = new float[STUNDEN_JAHR];
-            float[] pWW = new float[STUNDEN_JAHR];
-            pRest[100] = 8f; pHeiz[100] = 30f; pWW[100] = 10f;
+            double[] pRest = new double[STUNDEN_JAHR];
+            double[] pHeiz = new double[STUNDEN_JAHR];
+            double[] pWW = new double[STUNDEN_JAHR];
+            pRest[100] = 8.0; pHeiz[100] = 30.0; pWW[100] = 10.0;
             p.Uebernehmen(pRest, pHeiz, pWW);
-            bool proOk = Math.Abs(p.Heiz[100] - 6f) < 1e-4 && Math.Abs(p.WW[100] - 2f) < 1e-4;
+            bool proOk = Math.Abs(p.Heiz[100] - 6.0) < 1e-4 && Math.Abs(p.WW[100] - 2.0) < 1e-4;
             sb.AppendLine("3. Proportional 30/10 bei Rest 8 -> Heiz " + p.Heiz[100] +
                           " / WW " + p.WW[100] + "   " + (proOk ? "OK" : "FEHLER"));
             if (!proOk) allesOk = false;
 
             // --- 4. Randfall Kanalanteil 0 ---------------------------------
             Waermekanaele r0 = new Waermekanaele();
-            float[] r0Rest = new float[STUNDEN_JAHR];
-            r0Rest[200] = 5f;                       // vorher-Vektoren bleiben 0
-            r0.Uebernehmen(r0Rest, new float[STUNDEN_JAHR], new float[STUNDEN_JAHR]);
-            bool r0Ok = r0.Heiz[200] == 5f && r0.WW[200] == 0f;
+            double[] r0Rest = new double[STUNDEN_JAHR];
+            r0Rest[200] = 5.0;                       // vorher-Vektoren bleiben 0
+            r0.Uebernehmen(r0Rest, new double[STUNDEN_JAHR], new double[STUNDEN_JAHR]);
+            bool r0Ok = r0.Heiz[200] == 5.0 && r0.WW[200] == 0.0;
             sb.AppendLine("4. Kanalanteil 0 -> Heiz " + r0.Heiz[200] + " / WW " + r0.WW[200] +
                           "   " + (r0Ok ? "OK" : "FEHLER"));
             if (!r0Ok) allesOk = false;
 
             // --- 5. Randfall Restsumme 0 -----------------------------------
-            bool s0Ok = erg.Heiz[0] == 0f && erg.WW[0] == 0f;   // h = 0: rest = 0, vorher 12,34/0
+            bool s0Ok = erg.Heiz[0] == 0.0 && erg.WW[0] == 0.0;   // h = 0: rest = 0, vorher 12,34/0
             sb.AppendLine("5. Restsumme 0 bei vorhandenem Bedarf -> Heiz " + erg.Heiz[0] +
                           " / WW " + erg.WW[0] + "   " + (s0Ok ? "OK" : "FEHLER"));
             if (!s0Ok) allesOk = false;
 
             // --- 6. negative Restsumme -------------------------------------
             Waermekanaele neg = new Waermekanaele();
-            float[] nRest = new float[STUNDEN_JAHR];
-            float[] nHeiz = new float[STUNDEN_JAHR];
-            float[] nWW = new float[STUNDEN_JAHR];
-            nRest[300] = -4f; nHeiz[300] = 3f; nWW[300] = 1f;
+            double[] nRest = new double[STUNDEN_JAHR];
+            double[] nHeiz = new double[STUNDEN_JAHR];
+            double[] nWW = new double[STUNDEN_JAHR];
+            nRest[300] = -4.0; nHeiz[300] = 3.0; nWW[300] = 1.0;
             neg.Uebernehmen(nRest, nHeiz, nWW);
-            bool negOk = Math.Abs(neg.Heiz[300] + 3f) < 1e-4 && Math.Abs(neg.WW[300] + 1f) < 1e-4;
+            bool negOk = Math.Abs(neg.Heiz[300] + 3.0) < 1e-4 && Math.Abs(neg.WW[300] + 1.0) < 1e-4;
             sb.AppendLine("6. Restsumme -4 bei 3/1 -> Heiz " + neg.Heiz[300] + " / WW " +
                           neg.WW[300] + "   " + (negOk ? "OK" : "FEHLER"));
             if (!negOk) allesOk = false;
@@ -324,8 +324,8 @@ namespace WindowsFormsApplication1
             bool gleich = true;
             for (int h = 0; h < STUNDEN_JAHR; h++)
                 if (kopie.Heiz[h] != erg.Heiz[h] || kopie.WW[h] != erg.WW[h]) { gleich = false; break; }
-            kopie.Heiz[500] = -77f;
-            bool getrennt = erg.Heiz[500] != -77f;
+            kopie.Heiz[500] = -77.0;
+            bool getrennt = erg.Heiz[500] != -77.0;
             sb.AppendLine("7. Clone(): Werte gleich = " + (gleich ? "OK" : "FEHLER") +
                           ", Vektoren getrennt = " + (getrennt ? "OK" : "FEHLER"));
             if (!gleich || !getrennt) allesOk = false;
@@ -593,7 +593,7 @@ namespace WindowsFormsApplication1
     /// Kanalarithmetik samt ihrem Selbsttest bestehen.
     ///
     /// Feldgrößen wie im gesamten Rechenkern fest verdrahtet: 8760 Stunden,
-    /// <c>float</c>-Vektoren mit Zwischenrechnung in <c>double</c>.
+    /// <c>double</c>-Vektoren mit Zwischenrechnung in <c>double</c>.
     /// </summary>
     public class Kanalsatz
     {
@@ -607,23 +607,23 @@ namespace WindowsFormsApplication1
         /// äußere Feld ist <c>readonly</c>, damit niemand die Kanalstruktur austauscht —
         /// die Vektoren selbst werden (Konvention des Rechenkerns) in-place beschrieben.
         /// </summary>
-        public readonly float[][] Bedarf;
+        public readonly double[][] Bedarf;
 
         public Kanalsatz()
         {
-            Bedarf = new float[Kanal.ANZAHL][];
+            Bedarf = new double[Kanal.ANZAHL][];
             for (int k = 0; k < Kanal.ANZAHL; k++)
-                Bedarf[k] = new float[STUNDEN_JAHR];
+                Bedarf[k] = new double[STUNDEN_JAHR];
         }
 
         /// <summary>Heizkanal — Kurzform für <c>Bedarf[Kanal.HEIZUNG]</c>.</summary>
-        public float[] Heizung { get { return Bedarf[Kanal.HEIZUNG]; } }
+        public double[] Heizung { get { return Bedarf[Kanal.HEIZUNG]; } }
 
         /// <summary>Brauchwasserkanal — Kurzform für <c>Bedarf[Kanal.BRAUCHWASSER]</c>.</summary>
-        public float[] Brauchwasser { get { return Bedarf[Kanal.BRAUCHWASSER]; } }
+        public double[] Brauchwasser { get { return Bedarf[Kanal.BRAUCHWASSER]; } }
 
         /// <summary>Prozesskanal — Kurzform für <c>Bedarf[Kanal.PROZESS]</c>.</summary>
-        public float[] Prozess { get { return Bedarf[Kanal.PROZESS]; } }
+        public double[] Prozess { get { return Bedarf[Kanal.PROZESS]; } }
 
         /// <summary>
         /// Summe aller Kanäle je Stunde — die Sicht, mit der die (noch) einkanaligen
@@ -635,21 +635,21 @@ namespace WindowsFormsApplication1
         /// Eingangsvektoren in-place (Regel B0-2, Konzept 8), und ein solcher
         /// Schreibzugriff würde sonst stillschweigend einen Kanal verändern.
         ///
-        /// GERUNDET WIRD NACH JEDEM SCHRITT auf <c>float</c> — dieselbe Konvention wie in
+        /// GERUNDET WIRD NACH JEDEM SCHRITT auf <c>double</c> — dieselbe Konvention wie in
         /// <see cref="WPPlan.Core.BhkwPlan.VectorenAddieren"/>, mit der der Bestand seinen
         /// Summenvektor aufgebaut hat. Die Addition läuft in Indexreihenfolge
-        /// (Heizung → Brauchwasser → Prozess); da float-Addition nicht assoziativ ist,
+        /// (Heizung → Brauchwasser → Prozess); da double-Addition nicht assoziativ ist,
         /// kann das Ergebnis um bis zu ein ULP neben einer anders geklammerten Summe
         /// derselben Werte liegen (Konzept 4.2, Toleranz „1-ULP-Klasse").
         /// </summary>
-        public float[] Summe()
+        public double[] Summe()
         {
-            float[] s = new float[STUNDEN_JAHR];
+            double[] s = new double[STUNDEN_JAHR];
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
-                float w = Bedarf[0][h];
+                double w = Bedarf[0][h];
                 for (int k = 1; k < Kanal.ANZAHL; k++)
-                    w = (float)((double)w + Bedarf[k][h]);
+                    w = ((double)w + Bedarf[k][h]);
                 s[h] = w;
             }
             return s;
@@ -674,7 +674,7 @@ namespace WindowsFormsApplication1
         ///    ausdrücklich so in Konzept 4.2 festgelegt.
         /// 2. <b>Rundungsrest</b>: Der Heizanteil wird als DIFFERENZ gebildet, nicht als
         ///    weiteres Produkt. Damit ist die aufgeschlagene Menge je Stunde exakt
-        ///    <c>betrag</c> — bis auf die float-Rundung der Rückaddition (dieselbe
+        ///    <c>betrag</c> — bis auf die double-Rundung der Rückaddition (dieselbe
         ///    ULP-Zusage wie in <see cref="Waermekanaele.Uebernehmen"/>, Randfall 3).
         ///
         /// ERGEBNISWIRKUNG (F2, entschieden 27.08.2026): Das ersetzt die
@@ -683,9 +683,9 @@ namespace WindowsFormsApplication1
         /// Kanalaufteilung — die Jahressumme bleibt unverändert.
         /// </summary>
         /// <param name="betragJeStunde">Netzverlust je Stunde [kWh], konstant über das Jahr.</param>
-        public void NetzverlusteVerteilen(float betragJeStunde)
+        public void NetzverlusteVerteilen(double betragJeStunde)
         {
-            float[] heiz = Bedarf[Kanal.HEIZUNG];
+            double[] heiz = Bedarf[Kanal.HEIZUNG];
 
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
@@ -700,16 +700,16 @@ namespace WindowsFormsApplication1
                     for (int k = 0; k < Kanal.ANZAHL; k++)
                     {
                         if (k == Kanal.HEIZUNG) continue;
-                        float anteil = (float)(betragJeStunde * (Bedarf[k][h] / summe));
-                        Bedarf[k][h] = (float)((double)Bedarf[k][h] + anteil);
+                        double anteil = (double)(betragJeStunde * (Bedarf[k][h] / summe));
+                        Bedarf[k][h] = ((double)Bedarf[k][h] + anteil);
                         vergeben += anteil;
                     }
-                    heiz[h] = (float)((double)heiz[h] + ((double)betragJeStunde - vergeben));
+                    heiz[h] = ((double)heiz[h] + ((double)betragJeStunde - vergeben));
                 }
                 else
                 {
                     // Randfall 1: kein Kanalanteil bekannt -> alles auf den Heizkanal.
-                    heiz[h] = (float)((double)heiz[h] + betragJeStunde);
+                    heiz[h] = ((double)heiz[h] + betragJeStunde);
                 }
             }
         }
@@ -732,14 +732,14 @@ namespace WindowsFormsApplication1
         ///
         /// EINE Stelle für Selbsttest UND Laufprobe — jede zweite Fassung wäre die
         /// Stelle, an der beide auseinanderlaufen. Ab Betrag 1 gilt die relative Grenze
-        /// 1,2·10⁻⁷ (ein ulp im float-Raster, großzügig gefasst wie im bestehenden
+        /// 1,2·10⁻⁷ (ein ulp im double-Raster, großzügig gefasst wie im bestehenden
         /// <see cref="Waermekanaele.Selbsttest"/>), darunter die absolute Grenze 10⁻⁶ —
         /// dort ist die relative Grenze kleiner als jede sinnvolle Wärmemenge.
         ///
-        /// <paramref name="rundungsschritte"/> ist die ZAHL DER float-SPEICHERUNGEN, die
+        /// <paramref name="rundungsschritte"/> ist die ZAHL DER double-SPEICHERUNGEN, die
         /// die beiden verglichenen Größen trennen. Vorbelegung 1 = die Grundregel oben,
         /// unverändert. Sie zu kennen ist kein Feinschliff, sondern nötig: Wer eine
-        /// double-Referenz gegen eine Kette aus n float-Zwischenspeicherungen hält, misst
+        /// double-Referenz gegen eine Kette aus n double-Zwischenspeicherungen hält, misst
         /// die Summe von n Rundungen. Der Grundwert 1,2·10⁻⁷ deckt rund zwei davon ab
         /// (eine halbe ulp sind 6·10⁻⁸ relativ); bei fünf Rundungen — drei Kanalvektoren
         /// plus zwei Additionen in <see cref="Summe"/> — schlägt eine feste
@@ -776,7 +776,7 @@ namespace WindowsFormsApplication1
         /// ZUGESICHERT wird (jede Verletzung setzt das Gesamtergebnis auf FEHLGESCHLAGEN):
         ///   1. Konstruktion: <see cref="Kanal.ANZAHL"/> genullte Vektoren à 8760, alle
         ///      voneinander getrennt
-        ///   2. <see cref="Summe"/> = schrittweise float-Summe der Kanäle und liefert
+        ///   2. <see cref="Summe"/> = schrittweise double-Summe der Kanäle und liefert
         ///      einen EIGENEN Vektor (Aliasing-Probe)
         ///   3. <see cref="Clone"/> kopiert alle Kanäle und trennt die Vektoren
         ///   4. <see cref="NetzverlusteVerteilen"/>: Proportionalität (60/30/10 bei
@@ -807,11 +807,11 @@ namespace WindowsFormsApplication1
             {
                 if (neu.Bedarf[k] == null || neu.Bedarf[k].Length != STUNDEN_JAHR) { bauOk = false; break; }
                 for (int h = 0; h < STUNDEN_JAHR; h++)
-                    if (neu.Bedarf[k][h] != 0f) { bauOk = false; break; }
+                    if (neu.Bedarf[k][h] != 0.0) { bauOk = false; break; }
             }
             // Vektoren getrennt? (ein gemeinsames Array waere die schlimmste Falle)
-            neu.Bedarf[Kanal.BRAUCHWASSER][7] = 1f;
-            bauOk &= neu.Bedarf[Kanal.HEIZUNG][7] == 0f && neu.Bedarf[Kanal.PROZESS][7] == 0f;
+            neu.Bedarf[Kanal.BRAUCHWASSER][7] = 1.0;
+            bauOk &= neu.Bedarf[Kanal.HEIZUNG][7] == 0.0 && neu.Bedarf[Kanal.PROZESS][7] == 0.0;
             sb.AppendLine("1. Konstruktion: " + Kanal.ANZAHL + " genullte, getrennte Vektoren = " +
                           (bauOk ? "OK" : "FEHLER"));
             if (!bauOk) allesOk = false;
@@ -821,20 +821,20 @@ namespace WindowsFormsApplication1
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
                 k2.Heizung[h] = h % 7;
-                k2.Brauchwasser[h] = (h % 3) * 0.5f;
-                k2.Prozess[h] = (h % 5) * 0.25f;
+                k2.Brauchwasser[h] = (h % 3) * 0.5;
+                k2.Prozess[h] = (h % 5) * 0.25;
             }
-            float[] summe = k2.Summe();
+            double[] summe = k2.Summe();
             bool summeOk = true;
             for (int h = 0; h < STUNDEN_JAHR; h++)
             {
-                float w = k2.Heizung[h];
-                w = (float)((double)w + k2.Brauchwasser[h]);
-                w = (float)((double)w + k2.Prozess[h]);
+                double w = k2.Heizung[h];
+                w = ((double)w + k2.Brauchwasser[h]);
+                w = ((double)w + k2.Prozess[h]);
                 if (summe[h] != w) { summeOk = false; break; }
             }
-            summe[0] = 999f;                       // eigener Vektor? (Aliasing-Probe)
-            bool eigen = k2.Heizung[0] != 999f && k2.Brauchwasser[0] != 999f && k2.Prozess[0] != 999f;
+            summe[0] = 999.0;                       // eigener Vektor? (Aliasing-Probe)
+            bool eigen = k2.Heizung[0] != 999.0 && k2.Brauchwasser[0] != 999.0 && k2.Prozess[0] != 999.0;
             sb.AppendLine("2. Summe(): elementweise = " + (summeOk ? "OK" : "FEHLER") +
                           ", eigener Vektor = " + (eigen ? "OK" : "FEHLER"));
             if (!summeOk || !eigen) allesOk = false;
@@ -845,21 +845,21 @@ namespace WindowsFormsApplication1
             for (int k = 0; k < Kanal.ANZAHL && gleich; k++)
                 for (int h = 0; h < STUNDEN_JAHR; h++)
                     if (kopie.Bedarf[k][h] != k2.Bedarf[k][h]) { gleich = false; break; }
-            kopie.Prozess[500] = -77f;
-            bool getrennt = k2.Prozess[500] != -77f;
+            kopie.Prozess[500] = -77.0;
+            bool getrennt = k2.Prozess[500] != -77.0;
             sb.AppendLine("3. Clone(): Werte gleich = " + (gleich ? "OK" : "FEHLER") +
                           ", Vektoren getrennt = " + (getrennt ? "OK" : "FEHLER"));
             if (!gleich || !getrennt) allesOk = false;
 
             // --- 4. Netzverluste: Proportionalitaet und Randfall ------------
             Kanalsatz nv = new Kanalsatz();
-            nv.Heizung[100] = 60f; nv.Brauchwasser[100] = 30f; nv.Prozess[100] = 10f;
-            nv.NetzverlusteVerteilen(10f);
-            bool proOk = Math.Abs(nv.Heizung[100] - 66f) < 1e-3 &&
-                         Math.Abs(nv.Brauchwasser[100] - 33f) < 1e-3 &&
-                         Math.Abs(nv.Prozess[100] - 11f) < 1e-3;
+            nv.Heizung[100] = 60.0; nv.Brauchwasser[100] = 30.0; nv.Prozess[100] = 10.0;
+            nv.NetzverlusteVerteilen(10.0);
+            bool proOk = Math.Abs(nv.Heizung[100] - 66.0) < 1e-3 &&
+                         Math.Abs(nv.Brauchwasser[100] - 33.0) < 1e-3 &&
+                         Math.Abs(nv.Prozess[100] - 11.0) < 1e-3;
             // Stunde 200 hat keinen Bedarf -> alles auf den Heizkanal
-            bool randOk = nv.Heizung[200] == 10f && nv.Brauchwasser[200] == 0f && nv.Prozess[200] == 0f;
+            bool randOk = nv.Heizung[200] == 10.0 && nv.Brauchwasser[200] == 0.0 && nv.Prozess[200] == 0.0;
             sb.AppendLine("4. Netzverluste 10 auf 60/30/10 -> " + nv.Heizung[100] + "/" +
                           nv.Brauchwasser[100] + "/" + nv.Prozess[100] + "   " +
                           (proOk ? "OK" : "FEHLER") + "; Randfall ohne Bedarf -> Heizung " +
@@ -875,17 +875,17 @@ namespace WindowsFormsApplication1
             {
                 switch (h % 5)
                 {
-                    case 0: jahr.Heizung[h] = 12.34f; break;
-                    case 1: jahr.Brauchwasser[h] = 3.7f; break;
-                    case 2: jahr.Prozess[h] = 7.03f; break;
-                    case 3: jahr.Heizung[h] = 8.1f; jahr.Brauchwasser[h] = 2.9f; jahr.Prozess[h] = 1.7f; break;
+                    case 0: jahr.Heizung[h] = 12.34; break;
+                    case 1: jahr.Brauchwasser[h] = 3.7; break;
+                    case 2: jahr.Prozess[h] = 7.03; break;
+                    case 3: jahr.Heizung[h] = 8.1; jahr.Brauchwasser[h] = 2.9; jahr.Prozess[h] = 1.7; break;
                     default: break;                                  // kein Bedarf
                 }
                 vorher[h] = (double)jahr.Heizung[h] + jahr.Brauchwasser[h] + jahr.Prozess[h];
             }
-            const float betrag = 0.4713f;
+            const double betrag = 0.4713;
             jahr.NetzverlusteVerteilen(betrag);
-            float[] nachher = jahr.Summe();
+            double[] nachher = jahr.Summe();
             int verletzt = 0;
             double groesste = 0;
             for (int h = 0; h < STUNDEN_JAHR; h++)
@@ -983,11 +983,11 @@ namespace WindowsFormsApplication1
     /// die Assoziativität der double-Addition (die Jahressumme läuft in EINEN
     /// Akkumulator, die Ganglinie in 8760).</para>
     ///
-    /// <para><b>Warum <c>double</c> und nicht <c>float</c>.</b> Die Größe, die hier
+    /// <para><b>Warum <c>double</c> und nicht <c>double</c>.</b> Die Größe, die hier
     /// aufgelöst wird, ist eine <c>double</c>-Buchung (<c>Direktdeckung_Kanal</c> &amp;
-    /// Co. sind <c>double[]</c>). Eine float-Zwischenspeicherung je Stunde brächte einen
+    /// Co. sind <c>double[]</c>). Eine double-Zwischenspeicherung je Stunde brächte einen
     /// Rundungsschritt in eine Zusage hinein, die ohne ihn exakt ist. Für die ANZEIGE
-    /// wird über <see cref="AlsFloat"/> auf float gebracht — genau wie bei den
+    /// wird über <see cref="AlsFloat"/> auf double gebracht — genau wie bei den
     /// Bestandsganglinien <c>SimulationBHKW.Speicherladung_stuendlich</c> und
     /// <c>SimulationSolarthermie.Waermeproduktion</c>, die ebenfalls <c>double[]</c>
     /// sind.</para>
@@ -1057,31 +1057,31 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Ein Kanal als <c>float[8760]</c> für die ANZEIGE (Chart, CSV) — die Umrechnung
+        /// Ein Kanal als <c>double[8760]</c> für die ANZEIGE (Chart, CSV) — die Umrechnung
         /// steht an dieser einen Stelle, nicht in jedem Aufrufer.
         /// </summary>
-        public float[] AlsFloat(int kanal)
+        public double[] AlsFloat(int kanal)
         {
-            float[] f = new float[Kanalsatz.STUNDEN_JAHR];
+            double[] f = new double[Kanalsatz.STUNDEN_JAHR];
             double[] z = Zeile(kanal);
             if (z == null) return f;
-            for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++) f[h] = (float)z[h];
+            for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++) f[h] = (double)z[h];
             return f;
         }
 
         /// <summary>
         /// Elementweise Summe MEHRERER Kanalganglinien auf EINEM Kanal, als
-        /// <c>float[8760]</c> — die Stundenfassung von <c>SimulationRunner.Summiere</c>:
+        /// <c>double[8760]</c> — die Stundenfassung von <c>SimulationRunner.Summiere</c>:
         /// Der EIGENANTEIL eines Erzeugers an der Deckung eines Kanals ist
         /// „Direktdeckung + zugerechnete Speicherentladung" (bei der Wärmepumpe steht der
         /// Heizstab wie in der Jahresbilanz als eigene Größe daneben).
         ///
-        /// <para>Summiert wird in <c>double</c>, erst das Ergebnis wird auf <c>float</c>
+        /// <para>Summiert wird in <c>double</c>, erst das Ergebnis wird auf <c>double</c>
         /// gebracht — Konvention des Rechenkerns.</para>
         /// </summary>
-        public static float[] Deckung(int kanal, params Kanalganglinie[] teile)
+        public static double[] Deckung(int kanal, params Kanalganglinie[] teile)
         {
-            float[] f = new float[Kanalsatz.STUNDEN_JAHR];
+            double[] f = new double[Kanalsatz.STUNDEN_JAHR];
             if (teile == null) return f;
 
             for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++)
@@ -1093,7 +1093,7 @@ namespace WindowsFormsApplication1
                     double[] z = teile[i].Zeile(kanal);
                     if (z != null) s += z[h];
                 }
-                f[h] = (float)s;
+                f[h] = (double)s;
             }
             return f;
         }

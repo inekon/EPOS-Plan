@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
 
         // Plausibilitätsschranken für den Außentemperaturvektor. Hintergrund:
         // ein 8760er-Array kann auch dann formal vollständig sein, wenn es gar
-        // keine Klimadaten enthält - Form_Simulation_Config bildet DBNull auf 0f
+        // keine Klimadaten enthält - Form_Simulation_Config bildet DBNull auf 0.0
         // ab, und SimulationWaermebedarf.Stundentemperatur_aus_DB füllt ein
         // vorbelegtes Array nur so weit, wie Tab_Solar Zeilen hat. Ein Vektor aus
         // Nullen liefe sonst als "echter" Jahresgang mit T_m = 0 °C durch, ohne
@@ -294,7 +294,7 @@ namespace WindowsFormsApplication1
         /// 9,5 °C / 8,5 K und AusKlimadaten bleibt false - der Dialog weist das
         /// mit "(ohne Klimadaten - Ersatzwerte)" aus.
         /// </summary>
-        public static Jahresgang AnalysiereJahresgang(float[] aussentemp)
+        public static Jahresgang AnalysiereJahresgang(double[] aussentemp)
         {
             Jahresgang jg = new Jahresgang();
 
@@ -307,12 +307,12 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < STUNDEN_JAHR; i++)
             {
                 summe += aussentemp[i];
-                if (aussentemp[i] == 0f) nullen++;
+                if (aussentemp[i] == 0.0) nullen++;
             }
             jg.Mittel = summe / STUNDEN_JAHR;
 
             // Ein nennenswerter Anteil exakter Nullen bedeutet in der Praxis ein
-            // nur teilweise befülltes oder gar nicht befülltes Array (DBNull → 0f,
+            // nur teilweise befülltes oder gar nicht befülltes Array (DBNull → 0.0,
             // zu wenige Tab_Solar-Zeilen). Gemessene Stundenwerte treffen die
             // 0,0 °C nie so häufig.
             if (nullen > NULLANTEIL_MAX * STUNDEN_JAHR) return Ersatzwerte(jg);
@@ -408,7 +408,7 @@ namespace WindowsFormsApplication1
         /// <param name="aussentemp8760">Außentemperatur der Klimaregion [°C]</param>
         /// <param name="tiefeM">Verlegetiefe z [m]; ≤ 0 ergibt die Vorgabetiefe 1,5 m</param>
         /// <param name="bodentyp">Katalogschlüssel; unbekannt ergibt SAND_FEUCHT</param>
-        public static float[] JahresprofilKollektor(float[] aussentemp8760, double tiefeM, string bodentyp)
+        public static double[] JahresprofilKollektor(double[] aussentemp8760, double tiefeM, string bodentyp)
         {
             if (tiefeM <= 0) tiefeM = TIEFE_DEFAULT;
 
@@ -419,11 +419,11 @@ namespace WindowsFormsApplication1
             double daempfung = Math.Exp(-tiefeM / d);
             double phasenversatz = tiefeM / d;            // [rad]
 
-            float[] profil = new float[STUNDEN_JAHR];
+            double[] profil = new double[STUNDEN_JAHR];
             for (int t = 0; t < STUNDEN_JAHR; t++)
             {
                 double arg = OMEGA * (t - jg.StundeMin) - phasenversatz;
-                profil[t] = (float)(jg.Mittel - jg.Amplitude * daempfung * Math.Cos(arg));
+                profil[t] = (double)(jg.Mittel - jg.Amplitude * daempfung * Math.Cos(arg));
             }
             return profil;
         }
@@ -442,7 +442,7 @@ namespace WindowsFormsApplication1
         /// überhaupt erst spürbar wird (VDI 4640 Bl. 1, Abschn. 4.1).
         /// Beispiele bei T_m = 9,5 °C: 50 m → 11,15 °C, 100 m → 11,9 °C.
         /// </summary>
-        public static double SondenTemperatur(float[] aussentemp8760, double sondenlaengeM)
+        public static double SondenTemperatur(double[] aussentemp8760, double sondenlaengeM)
         {
             Jahresgang jg = AnalysiereJahresgang(aussentemp8760);
             return SondenTemperatur(jg.Mittel, sondenlaengeM);
@@ -458,10 +458,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Konstantes Jahresprofil (8760 Werte) - Quellprofil der Erdsonde.</summary>
-        public static float[] JahresprofilSonde(float[] aussentemp8760, double sondenlaengeM)
+        public static double[] JahresprofilSonde(double[] aussentemp8760, double sondenlaengeM)
         {
-            float t = (float)SondenTemperatur(aussentemp8760, sondenlaengeM);
-            float[] profil = new float[STUNDEN_JAHR];
+            double t = (double)SondenTemperatur(aussentemp8760, sondenlaengeM);
+            double[] profil = new double[STUNDEN_JAHR];
             for (int i = 0; i < STUNDEN_JAHR; i++) profil[i] = t;
             return profil;
         }
@@ -498,7 +498,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ermittelt die Kennwerte eines 8760er-Profils.</summary>
-        public static Kennwerte ProfilKennwerte(float[] profil)
+        public static Kennwerte ProfilKennwerte(double[] profil)
         {
             Kennwerte k = new Kennwerte();
             if (profil == null || profil.Length == 0) return k;
@@ -627,9 +627,9 @@ namespace WindowsFormsApplication1
             // --- 4. Rueckgewinnung des Jahresgangs --------------------------
             // Synthetischer Jahresgang: T_m = 9,5 C, A = 9,0 K, Minimum am 20.01.
             double sollMittel = 9.5, sollAmplitude = 9.0, sollTmin = 480.0;
-            float[] synth = new float[STUNDEN_JAHR];
+            double[] synth = new double[STUNDEN_JAHR];
             for (int t = 0; t < STUNDEN_JAHR; t++)
-                synth[t] = (float)(sollMittel - sollAmplitude * Math.Cos(OMEGA * (t - sollTmin)));
+                synth[t] = (double)(sollMittel - sollAmplitude * Math.Cos(OMEGA * (t - sollTmin)));
 
             Jahresgang jg = AnalysiereJahresgang(synth);
             sb.AppendLine("4. Rueckgewinnung aus synthetischem Jahresgang (T_m 9,5 C, A 9,0 K, t_min 480 h)");
@@ -643,10 +643,10 @@ namespace WindowsFormsApplication1
 
             // Gegenprobe: Extrema der Stundenwerte ueberschaetzen die Amplitude.
             // Dazu wird dem synthetischen Gang ein Tagesgang + Rauschen ueberlagert.
-            float[] gestoert = new float[STUNDEN_JAHR];
+            double[] gestoert = new double[STUNDEN_JAHR];
             Random rnd = new Random(4640);
             for (int t = 0; t < STUNDEN_JAHR; t++)
-                gestoert[t] = (float)(synth[t] + 4.0 * Math.Sin(2.0 * Math.PI * (t % 24) / 24.0)
+                gestoert[t] = (double)(synth[t] + 4.0 * Math.Sin(2.0 * Math.PI * (t % 24) / 24.0)
                                       + 2.0 * (rnd.NextDouble() - 0.5));
             Jahresgang jgG = AnalysiereJahresgang(gestoert);
             double extremAmplitude = 0;
@@ -663,7 +663,7 @@ namespace WindowsFormsApplication1
             sb.AppendLine();
 
             // --- 5. Kollektorprofil ----------------------------------------
-            float[] profil = JahresprofilKollektor(synth, 1.5, BODENTYP_DEFAULT);
+            double[] profil = JahresprofilKollektor(synth, 1.5, BODENTYP_DEFAULT);
             Kennwerte k = ProfilKennwerte(profil);
             Bodenkennwerte sand = Bodentyp(BODENTYP_DEFAULT);
             double erwarteteAmplitude = sollAmplitude * sand.Amplitudenanteil(1.5);
@@ -678,19 +678,19 @@ namespace WindowsFormsApplication1
             // --- 6. Plausibilitaetsschranke ---------------------------------
             sb.AppendLine("7. Plausibilitaetsschranke des Aussentemperaturvektors");
 
-            float[] nullvektor = new float[STUNDEN_JAHR];                    // 8760 x 0,0
+            double[] nullvektor = new double[STUNDEN_JAHR];                    // 8760 x 0,0
             allesOk &= PlausibilitaetsProbe(sb, ci, "8760 x 0,0 C", nullvektor, false);
 
-            float[] teilbefuellt = new float[STUNDEN_JAHR];                  // ab h 4000 genullt
+            double[] teilbefuellt = new double[STUNDEN_JAHR];                  // ab h 4000 genullt
             Array.Copy(synth, teilbefuellt, 4000);
             allesOk &= PlausibilitaetsProbe(sb, ci, "ab h 4000 genullt", teilbefuellt, false);
 
-            float[] konstant = new float[STUNDEN_JAHR];                      // durchgehend 12 C
-            for (int t = 0; t < STUNDEN_JAHR; t++) konstant[t] = 12.0f;
+            double[] konstant = new double[STUNDEN_JAHR];                      // durchgehend 12 C
+            for (int t = 0; t < STUNDEN_JAHR; t++) konstant[t] = 12.0;
             allesOk &= PlausibilitaetsProbe(sb, ci, "konstant 12,0 C", konstant, true);
 
-            float[] zuKalt = new float[STUNDEN_JAHR];                        // T_m = -30 C
-            for (int t = 0; t < STUNDEN_JAHR; t++) zuKalt[t] = (float)(-30.0 - 5.0 * Math.Cos(OMEGA * (t - 480.0)));
+            double[] zuKalt = new double[STUNDEN_JAHR];                        // T_m = -30 C
+            for (int t = 0; t < STUNDEN_JAHR; t++) zuKalt[t] = (double)(-30.0 - 5.0 * Math.Cos(OMEGA * (t - 480.0)));
             allesOk &= PlausibilitaetsProbe(sb, ci, "T_m = -30 C", zuKalt, false);
 
             allesOk &= PlausibilitaetsProbe(sb, ci, "echter Jahresgang", synth, true);
@@ -720,7 +720,7 @@ namespace WindowsFormsApplication1
         /// wird. Liefert false, wenn das Verhalten abweicht.
         /// </summary>
         private static bool PlausibilitaetsProbe(StringBuilder sb, CultureInfo ci, string bezeichnung,
-                                                 float[] vektor, bool erwartetAusKlimadaten)
+                                                 double[] vektor, bool erwartetAusKlimadaten)
         {
             Jahresgang j = AnalysiereJahresgang(vektor);
             bool ok = j.AusKlimadaten == erwartetAusKlimadaten;

@@ -94,7 +94,7 @@ namespace WindowsFormsApplication1
 
         // Außentemperatur der Klimaregion (8760 Stundenwerte) für die Vorschau des
         // Erdreichdialogs. Einmal je Sitzung geladen und gecacht (Konzept 4.5).
-        private float[] _aussentempCache;
+        private double[] _aussentempCache;
         private bool _aussentempGeladen;
 
         private SimulationKonfigHuelle(int idProjekt)
@@ -1901,7 +1901,7 @@ namespace WindowsFormsApplication1
         /// Die Außentemperatur der Projekt-Klimaregion (8760 Stundenwerte) für die
         /// Vorschau des Erdreichdialogs — einmal je Sitzung geladen und gecacht.
         /// </summary>
-        private float[] AussentemperaturLaden()
+        private double[] AussentemperaturLaden()
         {
             if (_aussentempGeladen) return _aussentempCache;
 

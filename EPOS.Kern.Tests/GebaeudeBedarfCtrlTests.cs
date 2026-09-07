@@ -107,7 +107,7 @@ namespace EPOS.Kern.Tests
             Assert.True(e.HeizwaermeMwh > 0, "Die Jahressumme muss ueber null liegen.");
             Assert.True(e.MaxLastKw > 0, "Die Hoechstlast muss ueber null liegen.");
 
-            foreach (float wert in e.Stundenwerte)
+            foreach (double wert in e.Stundenwerte)
                 Assert.True(wert <= e.MaxLastKw + 1e-4,
                             "Keine Stunde darf ueber der Hoechstlast liegen.");
         }
@@ -179,7 +179,7 @@ namespace EPOS.Kern.Tests
             SimulationWaermebedarf lauf = Lauf(idProjekt);
 
             // BITGLEICH, nicht nur nahe beieinander: Beide Wege rufen dieselben zwei
-            // Methoden und teilen mit derselben float-Division durch 1000.
+            // Methoden und teilen mit derselben double-Division durch 1000.
             Assert.Equal(lauf.Waermebedarf_Gebaeude_Gesamt, e.HeizwaermeMwh);
         }
 
@@ -209,7 +209,7 @@ namespace EPOS.Kern.Tests
 
             SimulationWaermebedarf lauf = Lauf(idProjekt);
 
-            // Der Lauf summiert die 8 760 float-Stunden ALLER Gebäude und teilt danach;
+            // Der Lauf summiert die 8 760 double-Stunden ALLER Gebäude und teilt danach;
             // hier wird je Gebäude geteilt und dann summiert. Der Unterschied ist reine
             // Gleitkommarundung, deshalb ein relatives Mass.
             Assert.True(Math.Abs(summe - lauf.Waermebedarf_Gebaeude_Gesamt)

@@ -49,13 +49,93 @@ heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Wa
 > & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 
-### CI-Basis auf Linux: `2026-09-06_R3_Straenge` (löst `2026-09-05_R2_Zeitbasis` ab)
+### CI-Basis auf Linux: `2026-09-07_R4_Double` (löst `2026-09-06_R3_Straenge` ab)
+
+**`2026-09-07_R4_Double/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, gerechnet mit dem plattformfreien
+`EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (Schemastand 67). Gegen diese Basis
+hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045) jeden Push, `ios.yml` den
+iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach.
+
+> **Anlass (Anwenderentscheid W8‑O‑5d vom 07.09.2026):** „alles in double, ist kein Nachteil und
+> systematisch. Summenfunktionen aus Original BHKW-Plan ebenfalls double." Der Rechenkern führte
+> seine Stundenreihen, Akkumulatoren und die Summenfunktionen des BHKW-Plan-Ports in `float` und
+> rechnete nur die Zwischenwerte in `double` — die bewusste Nachbildung des FPU-Verhaltens der
+> alten `BHKWPLAN.DLL`. Seit dem Entscheid rechnet und speichert der ganze Weg in `double`;
+> Codestand ist der Zweig `w135-double` auf `ios_migration` (`76fafe5`).
+>
+> **Diese Basis ist NICHT byte-gleich zur Vorgängerbasis — und das ist ihr Zweck.** Ein Projekt
+> (1030) bleibt auch unter der alten Toleranz PASS, die elf übrigen reißen sie:
+>
+> | Projekt | Werte | Abw. über Toleranz | größte rel. | größte abs. |
+> |---|---|---|---|---|
+> | 1007 | 324 219 | 306 | 2,57e‑01 (`Waermepumpe.Bivalenzpunkt` 18,11 → 24,36 °C) | 76,5 |
+> | 1008 | 227 861 | 1 287 | 9,49e‑01 (`puffer_entladung[952]` 0,348 → 6,877 kWh) | 35,0 |
+> | 1017 | 254 154 | 36 | 1,08e‑04 (`waermebedarf_gebaeude[2371]`) | 0,063 |
+> | 1018 | 236 661 | 9 619 | 1,00e+00 (`kessel_restwaerme[2169]` 9,375 → 0) | 18 770 |
+> | 1023 | 262 936 | 928 | 1,00e+00 (`puffer_soc[6147]` 7,525 → 0) | 620,6 |
+> | 1024 | 271 717 | 27 899 | 1,00e+00 (`bhkw_waerme[7337]` 0 → 8,874 kWh) | 70 251 |
+> | 1030 | 236 670 | **0** | 4,92e‑05 | 4,5e‑07 |
+> | 1039 | 262 949 | 1 574 | 1,00e+00 (`puffer_soc[1084]` 0 → 26,919) | 712,1 |
+> | 1040 | 306 764 | 334 | 4,65e‑02 (`kessel_leistung[509]`) | 129,9 |
+> | 1041 | 280 470 | 285 | 3,94e‑03 (`waermebedarf_gebaeude[525]` 30 998 → 30 876 W) | 129,9 |
+> | 1042 | 341 837 | 339 | 1,00e+00 (`kessel_restwaerme[7969]` 0 → 0,612) | 400 |
+> | 1045 | 306 764 | 334 | 4,65e‑02 (`kessel_leistung[509]`) | 129,9 |
+>
+> **Warum das kein Fehler, sondern die Verstärkung einer Nachkommastelle ist.** Die
+> EINGANGSGRÖSSEN ändern sich nur im letzten `float`-Bit: Die Jahressumme des Wärmebedarfs
+> bleibt in allen zwölf Projekten innerhalb **3e‑5** relativ (größte Abweichung 1007:
+> −1,98e‑05), die erste Differenz einer Stundenreihe liegt bei rund 1e‑7 — genau eine
+> `float`-Stufe (Projekt 1024, Stunde 0: 72,6195374 gegen 72,6195311 kWh). Verstärkt wird das
+> an **drei Schwellen des Modells**:
+>
+> 1. **Die Speicherhysterese.** `SimulationPufferspeicher.HystereseFortschreiben` vergleicht
+>    `SOC >= Q_max · SchwelleAus`. Die Ladung füllt den Speicher über `Ladefaehigkeit` auf
+>    **genau** `Q_max · grenze` — und in Gleitkomma ist `a + (b − a)` nicht bitgleich `b`. Der
+>    Vergleich entscheidet also am letzten Bit, er ist **bistabil** (Hysterese) und trägt das
+>    Ergebnis über Stunden weiter. Ursache in 1008, 1018, 1023, 1039 und 1042.
+> 2. **Die Volllast/Modulations-Grenze des BHKW.**
+>    `SimulationBHKW.Motorlauf_Waermegefuehrt` vergleicht `bhkwWaermeLeistung[motor] <
+>    restWaerme + restSpeicher`. Kippt sie, springt die Stundenproduktion — in 1024 ab
+>    Stunde 312 von 41,83 auf 46,00 kWh.
+> 3. **Die drei `int`-Rückgaben in `BhkwPlan`** (`TaeglHeizlastWG`, `SolareGewinneC`,
+>    `SpezWaermeverlusteC`; Borland `_ftol`, Abschneiden Richtung Null). Eine Stelle hinter dem
+>    Komma entscheidet über eine ganze Einheit; in 1041 verschiebt das die Tagesheizlast eines
+>    Januartags um 0,39 % (`waermebedarf_gebaeude` 30 998 → 30 876 W über den ganzen Tag).
+>
+> **Die Energie bleibt erhalten.** Projekt 1018 zeigt es am schärfsten: Wärmebedarf,
+> BHKW-Wärme, Kesselleistung, Puffer-SOC und Verluste sind identisch (7 bis 8 Stellen);
+> verschoben hat sich allein die Aufteilung des Puffers zwischen **Umsatz** und **Durchfluss** —
+> `Ladung_gesamt` 15 465,56 + `Durchsatz_Geladen` 32 571,87 = 48 037,43 kWh vorher wie nachher.
+> In **1024** verschiebt sich dagegen die Fahrweise wirklich: BHKW **+11,2 %**, Wärmepumpe
+> **−14,4 %**, Kessel **−10,8 %** bei unverändertem Gesamtbedarf (389 729,72 → 389 729,71 kWh).
+> Das Projekt führt WP, Kessel UND BHKW an einem Puffer und sitzt damit auf der Kante zwischen
+> zwei gleichwertigen Fahrweisen.
+>
+> **Welcher Stand richtig ist: der neue.** Die Entscheidungen fallen in beiden Fällen am letzten
+> Bit; der neue Lauf trifft sie auf ungerundeten Eingangswerten. Ein unabhängiger Beleg steht in
+> `EPOS.Kern.Tests/BedarfVerwaltungTests`: die Brauchwasser-Jahressumme trifft die Katalogmenge
+> jetzt **exakt** (742,9000 statt 742,9008 kWh bei 0,7429 MWh Katalogwert).
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes 12/12 **byte-gleich** (`diff -rq`
+> ohne einen einzigen Unterschied in 312 CSV), Toleranzvergleich 12/12 PASS (3 313 002 Werte).
+> **Laufzeit** 00:00:03 gegen 00:00:04 des R3-Standes auf demselben Läufer — `double` ist nicht
+> langsamer.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045 \
+>   --ziel Referenzlaeufe/2026-09-07_R4_Double
+> ```
+
+### Vorgängerbasis: `2026-09-06_R3_Straenge` (löste `2026-09-05_R2_Zeitbasis` ab)
 
 **`2026-09-06_R3_Straenge/`** — **zwölf Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030,
 1039, 1040, 1041, 1042 und **neu 1045**), **312 CSV** (282 + 30), gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (Schemastand 64).
-Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, **1045**) jeden Push;
-das Gate der Orchestrierung zieht getrennt nach.
+Sie war bis zum 07.09.2026 die CI-Basis und bleibt zur Geschichte liegen; abgelöst hat sie
+`2026-09-07_R4_Double` (Anwenderentscheid W8‑O‑5d, „alles in double").
 
 > **Anlass (Anwenderentscheid W6‑O‑7 vom 06.09.2026: „Empfehlung"):** Die elf Bestandsprojekte
 > führen **keine** Strangzeile — und genau das ist ihr Nachweis der Vorrangregel des

@@ -29,7 +29,7 @@ namespace EPOS.Kern.Tests
         private const int STUNDEN = 8760;
 
         /// <summary>Eine Simulation mit einer gefuellten Prozess-Stundenreihe [kWh].</summary>
-        private static SimulationWaermebedarf MitProzessreihe(Func<int, float> wert)
+        private static SimulationWaermebedarf MitProzessreihe(Func<int, double> wert)
         {
             var sim = new SimulationWaermebedarf();
             for (int h = 0; h < STUNDEN; h++) sim.prozesswerte[h] = wert(h);
@@ -43,7 +43,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Achttausendsiebenhundertsechzig_mal_ein_kWh_ergeben_8_76_MWh()
         {
-            SimulationWaermebedarf sim = MitProzessreihe(h => 1f);
+            SimulationWaermebedarf sim = MitProzessreihe(h => 1.0);
 
             sim.ProzesssummeUebernehmen();
 
@@ -60,7 +60,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Uebernahme_ist_die_Umrechnung_der_Einheitenklasse()
         {
-            SimulationWaermebedarf sim = MitProzessreihe(h => (h % 24) * 0.25f);
+            SimulationWaermebedarf sim = MitProzessreihe(h => (h % 24) * 0.25);
             double summeKWh = sim.prozesswerte.Sum();
 
             sim.ProzesssummeUebernehmen();
@@ -86,7 +86,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ergebnis_liegt_in_MWh_und_laesst_sich_zurueckrechnen()
         {
-            SimulationWaermebedarf sim = MitProzessreihe(h => 2f);
+            SimulationWaermebedarf sim = MitProzessreihe(h => 2.0);
 
             sim.ProzesssummeUebernehmen();
 
