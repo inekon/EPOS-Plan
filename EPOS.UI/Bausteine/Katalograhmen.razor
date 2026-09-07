@@ -20,16 +20,29 @@
    ueber die volle Breite, Einlesen darunter), bleibt es gestapelt: dafuer
    steht Gestapelt.
 
+   SEIT DEM ANWENDERENTSCHEID W14a-E-10 (07.09.2026) STEHEN SIE
+   UNTEREINANDER - Liste ueber die GANZE Breite, Eingabe darunter. Der
+   Anwender hat es begruendet: "Liste wie zuvor ueber ganze Breite, sonst zu
+   schmale Liste." Gemessen im Mockup (Chromium, 1 366 px): neben dem
+   Eingabeblock hatten FUENF Parameterspalten Platz, ueber die ganze Breite
+   sind es SECHS BIS NEUN - und die neunspaltige Liste rollt dabei um 0 px
+   statt um 118 px in sich. Das ist EINE Aenderung an diesem Baustein, nicht
+   an acht Dialogen (Konzept_Katalogfilter 5.6.1, Schritt S1.7).
+
    WAS DER RAHMEN TUT. Er ist die EINE Stelle, an der die drei Regeln stehen:
-     * Die LISTE nimmt die verbleibende Hoehe (flex: 1 1 auto) statt der
-       Hoechsthoehe --epos-listenhoehe aus W9-B-2. Die Hoechsthoehe bleibt
-       ueberall sonst - sie war die Antwort auf eine Liste, die den
-       Detailblock nach unten schob; hier schiebt nichts mehr, weil der
-       Eingabeblock daneben oder in einem eigenen Rollbereich steht.
-     * Der EINGABEBLOCK ist immer sichtbar und rollt fuer sich.
-     * Ab 900 CSS-Pixeln stehen beide NEBENEINANDER, darunter untereinander -
-       dieselbe Umbruchbreite wie beim Baustein Zweispaltenauswahl und beim
-       Dublettenbaum.
+     * Die LISTE ist hoehenbegrenzt und rollt in sich: 1,3 x
+       --epos-listenhoehe = 458 px, bei 45 px Kopfzelle und 37 px Zeilenhoehe
+       ELF Zeilen. Bis W14a-E-10 nahm sie die verbleibende Hoehe, weil der
+       Eingabeblock daneben stand und nichts geschoben wurde; jetzt steht er
+       DARUNTER, und ohne diese Grenze schoebe eine lange Liste ihn beliebig
+       weit nach unten. Die Ausnahme zu W9-B-2 faellt damit - die Hausregel
+       gilt wieder ueberall, nur hier mit dem groesseren Mass.
+     * Der EINGABEBLOCK ist so hoch wie sein Inhalt und rollt NICHT selbst.
+       Was ueber die Fensterhoehe hinausgeht, nimmt der Rollbalken der Maske
+       (offener Punkt O-7: gemessen 1 152 bis 1 228 px Dialoghoehe bei
+       1 366 px Breite - der Preis der Anordnung).
+     * Es gibt nur noch EINE Anordnung; die Medienabfrage bei 900 px
+       entfaellt, weil untereinander schon der schmale Fall war.
 
    KEIN EIGENES CSS JE DIALOG. Wer den Rahmen benutzt, setzt an der Wurzel
    seines Dialogs zusaetzlich die Klasse epos-katalog-dialog - die gibt dem
@@ -48,23 +61,26 @@
 
 @code {
     /// <summary>
-    /// Die linke Spalte: Filter, Listenueberschrift und die Liste selbst.
-    /// Ihre <c>.epos-raster-huelle</c> verliert hier die Hoechsthoehe und
-    /// nimmt stattdessen die verbleibende Hoehe.
+    /// Der OBERE Block: Suchzeile, Listenueberschrift und die Liste selbst,
+    /// ueber die ganze Breite. Ihre <c>.epos-raster-huelle</c> traegt hier die
+    /// Hoechsthoehe 1,3 × <c>--epos-listenhoehe</c> (elf Zeilen) und rollt
+    /// darin.
     /// </summary>
     [Parameter] public RenderFragment? Liste { get; set; }
 
     /// <summary>
-    /// Die rechte Spalte: der Eingabe- oder Detailblock. Er steht IMMER im
-    /// Bild; ist er zu hoch, rollt er selbst - nie die Seite.
+    /// Der UNTERE Block: der Eingabe- oder Detailblock, ebenfalls ueber die
+    /// ganze Breite. Er ist so hoch wie sein Inhalt; was ueber die
+    /// Fensterhoehe hinausgeht, nimmt der Rollbalken der Maske.
     /// </summary>
     [Parameter] public RenderFragment? Eingabe { get; set; }
 
     /// <summary>
-    /// <c>true</c> = Liste ueber Eingabe, auch auf breitem Schirm. Fuer die
-    /// Masken, deren Vorbild schon gestapelt war
-    /// (<c>Form_AdminWaermeeinlesen</c>): Die Liste dort ging ueber die volle
-    /// Breite, und schmal wirkt sie schlechter, nicht besser.
+    /// <b>Seit W14a-E-10 ohne Wirkung</b> — untereinander ist die EINZIGE
+    /// Anordnung. Der Parameter bleibt benannt stehen, weil zwei Masken ihn
+    /// setzen (<c>WaermebedarfAdminDialog</c>, <c>BedarfAdminDialog</c>, deren
+    /// Vorbild <c>Form_AdminWaermeeinlesen</c> schon gestapelt war); ihn zu
+    /// streichen waere eine Aenderung an Wirten ohne einen Gewinn.
     /// </summary>
     [Parameter] public bool Gestapelt { get; set; }
 }

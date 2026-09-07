@@ -1,0 +1,163 @@
+﻿@* Das POPOVER eines Spaltenfilters (Anwenderentscheid W14a-E-10 vom 07.09.2026,
+   Konzept_Katalogfilter 5.6.2 und 5.6.3, Schritt S1.2).
+
+   ES TRAEGT GENAU DREI DINGE: den Spaltennamen als Ueberschrift, EIN
+   Eingabefeld und den Knopf "Filter loeschen". Nichts sonst - kein
+   "Uebernehmen", kein "Alle auswaehlen", keine Werteliste. Bei einer
+   Zahlenspalte steht darunter der Formenhinweis, weil sonst niemand wissen
+   kann, dass ">10" und "10..60" gehen.
+
+   EIN FELD, AUCH FUER ZAHLEN (Frage W14a-E-10-Q1 = ja). Zwei Felder "von/bis"
+   sind die Bedienung, die der Anwender mit "nur Suche" gerade abgewaehlt hat;
+   sie hiessen zwei Tabulatorstopps, zwei leere Zustaende und die Sonderregel
+   "0 heisst alles", die man nicht sieht. Was das eine Feld versteht, steht im
+   Kern (Zahlenausdruck) und ist dort ohne Oberflaeche geprueft.
+
+   ============================ OFFENER PUNKT O-6 ============================
+   "Ein neu aufgebautes Raster schliesst das Popover." GEMESSEN (bunit,
+   SpaltenfilterTests.O6_*): Der @key-Fix W6-B-2 an (Virtualisiert, Zeilenzahl)
+   baut das QuickGrid neu auf, sobald sich die Zeilenzahl aendert - und beim
+   Filtern aendert sie sich praktisch immer. Ein Popover, das QuickGrid selbst
+   ueber ColumnOptions fuehrt, ist danach ZU: Sein Zustand liegt in der
+   Rasterinstanz, und die neue Instanz beginnt leer.
+
+   DIE ENTSCHEIDUNG DARAUS ist die erste der zwei Moeglichkeiten des Konzepts:
+   DAS FELD WIRKT BEI ENTER ODER BEIM VERLASSEN, NICHT BEIM TIPPEN.
+     * Tippen aendert nur den Text IN dieser Komponente (@oninput). Die
+       Zeilenmenge bleibt unberuehrt, das Raster wird nicht neu gebaut, das
+       Popover bleibt offen und der Schreibzeiger steht, wo er stand.
+     * Enter, ein Wechsel des Feldes (onchange) und das Verlassen (onfocusout)
+       UEBERNEHMEN und SCHLIESSEN. Damit ist der Neuaufbau des Rasters die
+       FOLGE des Uebernehmens und nicht mehr sein Gegner.
+     * Esc schliesst, ohne zu uebernehmen - der zuletzt gesetzte Filter bleibt.
+   Die zweite Moeglichkeit ("Popover nach dem Neuaufbau wieder oeffnen") loeste
+   den Schreibzeiger nicht: Das Eingabefeld waere ein NEUES DOM-Element, der
+   Fokus damit weg, und der Anwender tippte nach jedem Zeichen ins Leere.
+   ===========================================================================
+
+   "FILTER LOESCHEN" NIMMT DEN FOKUS NICHT. Der Knopf haelt mousedown mit
+   preventDefault an: Ohne das verliesse das Eingabefeld den Fokus, onfocusout
+   schloesse das Popover und der Klick landete auf einem Knopf, den es nicht
+   mehr gibt.
+
+   KEIN HOVER, TASTATUR ERREICHBAR (iL4): Der Trichter, der dieses Popover
+   oeffnet, ist ein <button> im Spaltenkopf - er steht im Wirt (Katalogliste),
+   nicht hier. *@
+
+@namespace EPOS.UI.Bausteine
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="epos-spaltenfilter@(RechtsBuendig ? " epos-spaltenfilter--rechts" : "")"
+     role="group" aria-label="@Spaltenname">
+
+    <p class="epos-spaltenfilter-name">@Spaltenname</p>
+
+    <input type="text" class="epos-eingabe epos-spaltenfilter-feld"
+           placeholder="@Platzhalter" aria-label="@Spaltenname"
+           value="@_text"
+           @oninput="BeiEingabe"
+           @onchange="BeiUebernahme"
+           @onkeydown="BeiTaste"
+           @onfocusout="BeiVerlassen" />
+
+    <button type="button" class="epos-knopf epos-spaltenfilter-loeschen"
+            @onmousedown:preventDefault="true" @onclick="BeiLoeschen">@TextLoeschen</button>
+
+    @if (!string.IsNullOrEmpty(Hinweis))
+    {
+        <p class="epos-spaltenfilter-hinweis">@Hinweis</p>
+    }
+</div>
+
+@code {
+    /// <summary>Der Spaltenname als Überschrift des Popovers.</summary>
+    [Parameter] public string Spaltenname { get; set; } = "";
+
+    /// <summary>
+    /// Der gesetzte Ausdruck. Er kommt aus dem <c>Katalogfilterstand</c> des Wirtes —
+    /// nicht aus dieser Komponente (offener Punkt O-6).
+    /// </summary>
+    [Parameter] public string Wert { get; set; } = "";
+
+    /// <summary>Der Platzhalter: „enthält…" bzw. der Formenhinweis einer Zahlenspalte.</summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>
+    /// Die Zeile unter dem Feld — bei einer Zahlenspalte die Formen, die es versteht.
+    /// Leer heißt: keine Zeile.
+    /// </summary>
+    [Parameter] public string Hinweis { get; set; } = "";
+
+    /// <summary>Beschriftung des Knopfes „Filter löschen".</summary>
+    [Parameter] public string TextLoeschen { get; set; } = "Filter löschen";
+
+    /// <summary>
+    /// Rückt das Popover an den RECHTEN Rand seiner Kopfzelle. Für die Spalten der
+    /// rechten Listenhälfte: Nach links geöffnet läge es sonst außerhalb des
+    /// Listenrahmens und würde von dessen <c>overflow</c> abgeschnitten. Denselben
+    /// Dienst tut in QuickGrid die Funktion <c>checkColumnOptionsPosition</c>; hier
+    /// entscheidet der Wirt es an der Spaltennummer — ohne JavaScript.
+    /// </summary>
+    [Parameter] public bool RechtsBuendig { get; set; }
+
+    /// <summary>Übernehmen: der neue Ausdruck. Der Wirt legt ihn in den Filterstand.</summary>
+    [Parameter] public EventCallback<string> WertChanged { get; set; }
+
+    /// <summary>Schließen — ohne Übernahme (Esc) und nach jeder Übernahme.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>Der Text IM Feld, solange er noch nicht übernommen ist.</summary>
+    private string _text = "";
+
+    /// <summary>Der Text im Feld (Prüfhilfe für Tests).</summary>
+    public string Text => _text;
+
+    protected override void OnParametersSet()
+    {
+        _text = Wert ?? "";
+    }
+
+    /// <summary>
+    /// Tippen ändert NUR den Text hier. Es filtert nicht — sonst wechselte die
+    /// Zeilenzahl, das Raster würde neu aufgebaut und dieses Feld verschwände unter
+    /// dem Schreibzeiger (O-6).
+    /// </summary>
+    private void BeiEingabe(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+    }
+
+    private Task BeiUebernahme(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+        return Uebernehmen();
+    }
+
+    /// <summary>Enter übernimmt und schließt, Esc schließt ohne zu übernehmen.</summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") return Uebernehmen();
+        if (e.Key == "Escape") return Geschlossen.InvokeAsync();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Das Verlassen übernimmt ebenfalls — „Enter/Verlassen" (O-6).</summary>
+    private Task BeiVerlassen(FocusEventArgs e) => Uebernehmen();
+
+    private async Task Uebernehmen()
+    {
+        await WertChanged.InvokeAsync(_text);
+        await Geschlossen.InvokeAsync();
+    }
+
+    /// <summary>
+    /// „Filter löschen" nimmt den Filter DIESER Spalte zurück und schließt. Der
+    /// Rücksetzer der Suchzeile tut dasselbe für alle Spalten.
+    /// </summary>
+    private async Task BeiLoeschen()
+    {
+        _text = "";
+        await WertChanged.InvokeAsync("");
+        await Geschlossen.InvokeAsync();
+    }
+}

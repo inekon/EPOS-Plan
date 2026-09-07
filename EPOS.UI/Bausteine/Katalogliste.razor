@@ -1,0 +1,334 @@
+﻿@* DIE EINE KATALOGLISTE DES HAUSES (Anwenderentscheid W14a-E-10 vom 07.09.2026,
+   Konzept_Katalogfilter Rev. 3, Kapitel 5.6, Schritte S1.2, S1.3 und S1.8).
+
+   DER ENTSCHEID IN EINEM SATZ: Ueber der Liste steht nur noch die SUCHE; alles,
+   wonach gefiltert wird, sitzt IM SPALTENKOPF neben dem Namen - mit Sortierung
+   und einem Feld "enthaelt...". Und: jeder Katalogdialog sieht gleich aus, die
+   Waermepumpe wie der Heizkessel wie die PV-Module.
+
+   ZONE A ist EINE Zeile (5.6.4): links das Suchfeld ueber alle Spalten, rechts
+   die Trefferzahl ("15 von 63 Saetzen") und - nur wenn ein Spaltenfilter
+   gesetzt ist - der Textknopf "Filter zuruecksetzen". KEINE Filterzeile, KEINE
+   Chips, KEINE Aufzaehlung der gesetzten Filter: Die hat der Anwender mit
+   "nicht separat, ausser 'Suche' ueber alle Felder" abgewaehlt. Woran man
+   sieht, dass gefiltert wird, ist der GEFUELLTE Trichter im Spaltenkopf und die
+   Trefferzahl.
+
+   GEFILTERT WIRD VOR DEM RASTER (5.6.6) - das ist der Punkt, an dem eine
+   Umsetzung schiefgehen kann. Raster.razor ist eine duenne Huelle um QuickGrid,
+   und QUICKGRID FILTERT NICHT: ColumnOptions ist nur ein Ort im Kopf, an dem
+   ein Bedienelement stehen darf. Diese Komponente laesst Katalogfilter.Anwenden
+   im KERN die Menge einschraenken und reicht die BEREITS EINGESCHRAENKTE Liste
+   als Zeilen weiter. Fuer die 20 749 PV-Module heisst das: Das Raster bekommt
+   nach dem Filtern 15 Zeilen und virtualisiert gar nicht mehr - genau der
+   Uebergang, den der @key-Fix W6-B-2 abdeckt. Der Spaltenfilter geht deshalb
+   NICHT ueber RefreshDataAsync(); die Begruendung steht im Kopf von
+   Raster.razor.
+
+   DER FILTERZUSTAND LEBT IM WIRT, nicht im Popover (offener Punkt O-6): Ein
+   neues QuickGrid heisst auch ein geschlossenes Popover. Der Stand kommt
+   deshalb als Parameter herein (Katalogfilterstand); mit Stufe S2.5 haelt ihn
+   ein Woerterbuch je Katalog ueber die Sitzung, ohne dass sich hier etwas
+   aendert.
+
+   DIE MARKIERUNG HAENGT AM BEZEICHNER, nicht an der Zeilennummer. Damit BLEIBT
+   die gewaehlte Zeile gewaehlt, auch wenn der Filter sie ausblendet (Hausregel
+   aus dem EnergietraegerDialog, W4), und sie steht nach einem Filter- oder
+   Sortierwechsel wieder da, wo sie hingehoert (S1.8).
+
+   NICHT JEDE LISTE BEKOMMT TRICHTER (5.6.5): Ohne Profil zeichnet diese
+   Komponente gar nichts - "kein Delegat, kein Bedienelement". Eine Spalte ohne
+   Filterbar traegt nur den Sortierpfeil; das sind die Wahlspalte und die
+   Kennzeichen ja/nein (Brennwert, Kuehlen).
+
+   KEIN display:flex AUF EINER ZELLE (Befund W5-B-1): Der Kopfinhalt steht in
+   einem eigenen <div class="epos-spaltenkopf"> IN der Zelle. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+@using WindowsFormsApplication1
+
+@if (Profil is not null)
+{
+<div class="epos-katalogliste">
+
+    @* ---------------- ZONE A - die EINE Suchzeile (5.6.4) ---------------- *@
+    <div class="epos-katalog-suchzeile">
+        <label class="epos-katalog-suchfeld">
+            <span class="epos-katalog-suchbeschriftung">@Texte.Suche</span>
+            <input type="search" class="epos-eingabe" value="@Stand.Suche"
+                   placeholder="@Texte.SuchePlatzhalter" aria-label="@Texte.Suche"
+                   @oninput="BeiSuche" />
+        </label>
+
+        <span class="epos-leiste-fueller"></span>
+
+        <span class="epos-katalog-treffer">@Trefferzeile</span>
+
+        @if (Stand.Gesetzt)
+        {
+            <button type="button" class="epos-katalog-ruecksetzer"
+                    @onclick="BeiZuruecksetzen">@Texte.Zuruecksetzen</button>
+        }
+    </div>
+
+    @* ---------------- ZONE B oben - die Liste ---------------------------- *@
+    <Raster TZeile="Katalogfilterzeile" Zeilen="@_gefiltert.AsQueryable()"
+            Virtualisiert="@Virtualisiert">
+        <KindInhalt>
+            <TemplateColumn TGridItem="Katalogfilterzeile" Title="@Texte.SpalteWahl"
+                            Class="epos-spalte-wahl">
+                <Zeilenwahl Gewaehlt="@(context.Bezeichner == Gewaehlt)"
+                            Kurztext="@Texte.SpalteWahl"
+                            Gewaehltwerden="@(() => BeiZeile(context))" />
+            </TemplateColumn>
+
+            @for (int i = 0; i < Profil.Spalten.Count; i++)
+            {
+                Katalogspalte spalte = Profil.Spalten[i];
+                bool rechtsbuendig = i >= Profil.Spalten.Count - 2;
+
+                <TemplateColumn TGridItem="Katalogfilterzeile" Class="@Spaltenklasse(spalte)">
+                    <HeaderTemplate>
+                        <div class="epos-spaltenkopf">
+                            @if (spalte.Sortierbar)
+                            {
+                                <button type="button" class="epos-spaltenkopf-titel"
+                                        title="@Kurztext(Texte.Sortieren, spalte)"
+                                        aria-label="@Kurztext(Texte.Sortieren, spalte)"
+                                        @onclick="@(() => BeiSortieren(spalte))">
+                                    <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                                    <span class="epos-sortierpfeil" aria-hidden="true">@Sortierzeichen(spalte)</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                            }
+
+                            @if (spalte.Filterbar)
+                            {
+                                <button type="button" class="@Trichterklasse(spalte)"
+                                        aria-expanded="@((_offen == spalte.Schluessel).ToString().ToLowerInvariant())"
+                                        title="@Trichterkurztext(spalte)"
+                                        aria-label="@Trichterkurztext(spalte)"
+                                        @onclick="@(() => BeiTrichter(spalte))">
+                                    @* GEFUELLT GEGEN UMRISS und nicht nur eine andere
+                                       Farbe (Auflage des Anwenders zu Rev. 3): In
+                                       Graustufen bleibt ein voller Trichter ein voller
+                                       Trichter. Der Unterschied steht deshalb im
+                                       MARKUP (fill), die Farbe kommt nur obendrauf. *@
+                                    <svg class="epos-trichter-bild" viewBox="0 0 16 16"
+                                         width="14" height="14" aria-hidden="true" focusable="false">
+                                        <path d="M1.5 2.5 h13 l-5 6 v5.5 l-3 1.5 v-7 z"
+                                              fill="@(Stand.Gefiltert(spalte.Schluessel) ? "currentColor" : "none")"
+                                              stroke="currentColor"
+                                              stroke-width="@(Stand.Gefiltert(spalte.Schluessel) ? "2" : "1.3")"
+                                              stroke-linejoin="round" />
+                                    </svg>
+                                </button>
+
+                                @if (_offen == spalte.Schluessel)
+                                {
+                                    <Spaltenfilter Spaltenname="@spalte.Kopftext"
+                                                   Wert="@Stand.Ausdruck(spalte.Schluessel)"
+                                                   Platzhalter="@Platzhalter(spalte)"
+                                                   Hinweis="@Hinweis(spalte)"
+                                                   TextLoeschen="@Texte.FilterLoeschen"
+                                                   RechtsBuendig="@rechtsbuendig"
+                                                   WertChanged="@(w => BeiFilter(spalte, w))"
+                                                   Geschlossen="SchliessePopover" />
+                                }
+                            }
+                        </div>
+                    </HeaderTemplate>
+                    <ChildContent>
+                        <span class="@Zellenklasse(context)">@context.Text(spalte.Schluessel)</span>
+                    </ChildContent>
+                </TemplateColumn>
+            }
+        </KindInhalt>
+    </Raster>
+
+    @if (_gefiltert.Count == 0)
+    {
+        <p class="epos-katalog-leer">@Texte.KeinTreffer</p>
+    }
+</div>
+}
+
+@code {
+    /// <summary>
+    /// Die Spalten dieses Katalogs — <c>Katalogfilterprofil.Finde(art, uebersetzer)</c>.
+    /// Ohne Profil zeichnet die Komponente nichts.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Profil { get; set; }
+
+    /// <summary>Alle Zeilen des Katalogs, UNGEFILTERT — aus <c>…StammCtrl.Katalogfilterzeilen()</c>.</summary>
+    [Parameter] public IReadOnlyList<Katalogfilterzeile> Zeilen { get; set; }
+        = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>
+    /// Der Filterzustand. Er gehört dem WIRT (O-6); ohne Vorgabe führt die Komponente
+    /// einen eigenen, damit ein einfacher Wirt nichts anlegen muss.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstand { get; set; }
+
+    /// <summary>Der gewählte Bezeichner — die Markierung hängt am NAMEN, nicht an der Zeilennummer.</summary>
+    [Parameter] public string Gewaehlt { get; set; } = "";
+
+    /// <summary>Eine Zeile wurde gewählt.</summary>
+    [Parameter] public EventCallback<string> GewaehltChanged { get; set; }
+
+    /// <summary>Der Filter oder die Sortierung haben sich geändert (der Wirt merkt sich den Stand).</summary>
+    [Parameter] public EventCallback Gefiltert { get; set; }
+
+    /// <summary>Die Beschriftungen — EIN Bündel (Hausregel).</summary>
+    [Parameter] public Katalogfiltertexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Ab wie vielen GEFILTERTEN Zeilen virtualisiert wird (Hausregel W6-B-2:
+    /// „Virtualisierung ab 120 Zeilen"). Der Schalter hängt an der gefilterten Zahl —
+    /// genau deshalb wechselt er beim Filtern, und genau dafür gibt es das <c>@key</c>.
+    /// </summary>
+    [Parameter] public int VirtualisierenAb { get; set; } = 120;
+
+    private Katalogfilterstand Stand => Filterstand ??= new Katalogfilterstand();
+
+    private IReadOnlyList<Katalogfilterzeile> _gefiltert = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>Der Schlüssel der Spalte, deren Popover offen steht; leer = keines.</summary>
+    private string _offen = "";
+
+    /// <summary>Die angezeigten Zeilen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Angezeigt => _gefiltert;
+
+    /// <summary>Steht ein Popover offen? (Prüfhilfe für Tests.)</summary>
+    public string OffenesPopover => _offen;
+
+    /// <summary>Wird virtualisiert? Der Schalter hängt an der GEFILTERTEN Zeilenzahl.</summary>
+    public bool Virtualisiert => _gefiltert.Count >= VirtualisierenAb;
+
+    protected override void OnParametersSet() => Neuberechnen();
+
+    private void Neuberechnen()
+    {
+        _gefiltert = Profil is null
+            ? Zeilen
+            : Katalogfilter.Anwenden(Profil, Zeilen, Stand);
+    }
+
+    // =====================================================================
+    //  Zone A
+    // =====================================================================
+
+    /// <summary>
+    /// „15 von 20.749 Sätzen" — die Zahlen mit Tausendertrennzeichen der Kultur
+    /// (<c>N0</c>). Bei fünfstelligen Katalogen ist es der Unterschied zwischen einer
+    /// Zahl und einer Ziffernfolge; die Hausregel „ohne Tausendertrennzeichen" gilt
+    /// dem EINLESEN einer Eingabe, nicht dem Anzeigen einer Anzahl.
+    /// </summary>
+    private string Trefferzeile =>
+        string.Format(CultureInfo.CurrentCulture, Texte.Treffer,
+                      _gefiltert.Count.ToString("N0", CultureInfo.CurrentCulture),
+                      Zeilen.Count.ToString("N0", CultureInfo.CurrentCulture));
+
+    private Task BeiSuche(ChangeEventArgs e)
+    {
+        Stand.Suche = e.Value?.ToString() ?? "";
+        _offen = "";
+        Neuberechnen();
+        return Gefiltert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// „Filter zurücksetzen" nimmt ALLE Spaltenfilter zurück. Die Suche bleibt — sie
+    /// hat ihr eigenes Feld, und der Knopf ist der Rücksetzer der Trichter (5.6.4).
+    /// </summary>
+    private Task BeiZuruecksetzen()
+    {
+        Stand.Zuruecksetzen();
+        _offen = "";
+        Neuberechnen();
+        return Gefiltert.InvokeAsync();
+    }
+
+    // =====================================================================
+    //  Der Spaltenkopf
+    // =====================================================================
+
+    private void BeiTrichter(Katalogspalte spalte)
+    {
+        _offen = _offen == spalte.Schluessel ? "" : spalte.Schluessel;
+    }
+
+    private void SchliessePopover() => _offen = "";
+
+    private Task BeiFilter(Katalogspalte spalte, string ausdruck)
+    {
+        Stand.Setzen(spalte.Schluessel, ausdruck);
+        Neuberechnen();
+        return Gefiltert.InvokeAsync();
+    }
+
+    private Task BeiSortieren(Katalogspalte spalte)
+    {
+        Stand.Sortieren(spalte.Schluessel);
+        _offen = "";
+        Neuberechnen();
+        return Gefiltert.InvokeAsync();
+    }
+
+    /// <summary>⇅ unsortiert, ▲ auf, ▼ ab (5.6.2).</summary>
+    private string Sortierzeichen(Katalogspalte spalte)
+    {
+        if (Stand.Sortierspalte != spalte.Schluessel) return "⇅";
+        return Stand.Aufsteigend ? "▲" : "▼";
+    }
+
+    private string Trichterklasse(Katalogspalte spalte) =>
+        Stand.Gefiltert(spalte.Schluessel)
+            ? "epos-trichter epos-trichter--gesetzt"
+            : "epos-trichter";
+
+    private string Trichterkurztext(Katalogspalte spalte) =>
+        Kurztext(Stand.Gefiltert(spalte.Schluessel) ? Texte.TrichterGesetzt : Texte.Trichter,
+                 spalte);
+
+    private static string Kurztext(string muster, Katalogspalte spalte) =>
+        string.Format(CultureInfo.CurrentCulture, muster ?? "{0}", spalte.Kopftext);
+
+    private string Platzhalter(Katalogspalte spalte) =>
+        spalte.Art == Katalogspaltenart.Zahl ? Texte.PlatzhalterZahl : Texte.PlatzhalterText;
+
+    /// <summary>
+    /// Die Zeile unter dem Feld — nur bei einer Zahlenspalte, und dort nennt sie die
+    /// Formen, die <see cref="Zahlenausdruck"/> versteht.
+    /// </summary>
+    private string Hinweis(Katalogspalte spalte) =>
+        spalte.Art == Katalogspaltenart.Zahl ? Texte.PlatzhalterZahl : "";
+
+    /// <summary>
+    /// Die Spaltenklasse steht über <c>ColumnBase.Class</c> an Kopf UND Körperzellen.
+    /// Damit ist eine gefilterte Spalte auch in den ZELLEN erkennbar — eine leise
+    /// Tönung, keine neue Farbe (5.6.2).
+    /// </summary>
+    private string Spaltenklasse(Katalogspalte spalte)
+    {
+        string k = spalte.Rechtsbuendig ? "epos-spalte-zahl" : "epos-spalte-text";
+        return Stand.Gefiltert(spalte.Schluessel) ? k + " epos-spalte--gefiltert" : k;
+    }
+
+    /// <summary>
+    /// Ein Auslieferungssatz steht gedimmt — der Vorläufer zeichnete ihn grau
+    /// (<c>Form_BHKWAdmin.cs:202-203</c>, <c>Form_WP.listBox_WP_DrawItem</c>).
+    /// </summary>
+    private static string Zellenklasse(Katalogfilterzeile zeile) =>
+        zeile.Geschuetzt ? "epos-gesperrt" : "";
+
+    private Task BeiZeile(Katalogfilterzeile zeile)
+    {
+        Gewaehlt = zeile.Bezeichner;
+        return GewaehltChanged.InvokeAsync(zeile.Bezeichner);
+    }
+}
