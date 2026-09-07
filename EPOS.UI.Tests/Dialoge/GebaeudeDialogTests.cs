@@ -121,11 +121,11 @@ public class GebaeudeDialogTests : BunitContext
     /// Anwenderentscheid #76 in der Mittelspalte zwischen den beiden Listen.
     /// </summary>
     private static IElement Uebernehmen(IRenderedComponent<GebaeudeDialog> cut)
-        => cut.FindAll(".epos-zweispalten-mitte button")[0];
+        => cut.FindAll(".epos-zweispalten-uebernahme button")[0];
 
     /// <summary>Der Entfernenknopf, ebendort.</summary>
     private static IElement Entfernen(IRenderedComponent<GebaeudeDialog> cut)
-        => cut.FindAll(".epos-zweispalten-mitte button")[1];
+        => cut.FindAll(".epos-zweispalten-uebernahme button")[1];
 
     // =================================================================================
     // Feldbestand je Betriebsart
@@ -575,10 +575,8 @@ public class GebaeudeDialogTests : BunitContext
 
         // Nebeneinander wandert die Zeile nach links ins Projekt und nach rechts
         // heraus; untereinander nach oben und nach unten.
-        Assert.Equal("◀", hinzu.QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
-        Assert.Equal("▲", hinzu.QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
-        Assert.Equal("▶", weg.QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
-        Assert.Equal("▼", weg.QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
+        Assert.Equal("▲", hinzu.QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
+        Assert.Equal("▼", weg.QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
 
         // Das Zeichen ist Beiwerk: Eine Sprachausgabe liest den Satz, nicht das Dreieck.
         foreach (IElement p in hinzu.QuerySelectorAll(".epos-zweispalten-pfeil"))
@@ -689,9 +687,9 @@ public class GebaeudeDialogTests : BunitContext
                           .Select(e => e.ClassName ?? "").ToList();
 
         Assert.Equal(3, bereiche.Count);
-        Assert.Contains("epos-zweispalten-spalte--links", bereiche[0]);
-        Assert.Contains("epos-zweispalten-mitte", bereiche[1]);
-        Assert.Contains("epos-zweispalten-spalte--rechts", bereiche[2]);
+        Assert.Contains("epos-zweispalten-spalte--oben", bereiche[0]);
+        Assert.Contains("epos-zweispalten-uebernahme", bereiche[1]);
+        Assert.Contains("epos-zweispalten-spalte--unten", bereiche[2]);
 
         // Beide Listen stehen weiterhin in ihrem Rahmen (Befund W9-B-2).
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);

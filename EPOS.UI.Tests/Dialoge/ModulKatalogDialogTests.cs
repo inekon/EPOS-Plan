@@ -108,7 +108,7 @@ public class ModulKatalogDialogTests : BunitContext
     // =================================================================================
 
     [Theory]
-    [InlineData(ModulKatalogArt.Stromspeicher, "Administration Stromspeicher", 13)]
+    [InlineData(ModulKatalogArt.Stromspeicher, "Administration Stromspeicher", 14)]
     [InlineData(ModulKatalogArt.Photovoltaik, "Administration Photovoltaik Module", 14)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Felder(
         ModulKatalogArt art, string titel, int felder)
@@ -407,7 +407,9 @@ public class ModulKatalogDialogTests : BunitContext
 
         Assert.NotNull(gesehen);
         Assert.Equal("Modul A", schluessel);
-        Assert.Equal(13, gesehen!.Count);
+        // VIERZEHN seit W14a-E-10-Q7 (Migrationsschritt 68): der Stromspeicher
+        // fuehrt jetzt auch das Feld "Firma".
+        Assert.Equal(14, gesehen!.Count);
     }
 
     [Fact]

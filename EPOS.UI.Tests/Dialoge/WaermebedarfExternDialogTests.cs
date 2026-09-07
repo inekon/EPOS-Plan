@@ -154,10 +154,10 @@ public class WaermebedarfExternDialogTests : BunitContext
     /// Text zu finden.
     /// </summary>
     private static IElement Uebernehmen(IRenderedComponent<WaermebedarfExternDialog> cut)
-        => cut.FindAll(".epos-zweispalten-mitte button")[0];
+        => cut.FindAll(".epos-zweispalten-uebernahme button")[0];
 
     private static IElement Entfernen(IRenderedComponent<WaermebedarfExternDialog> cut)
-        => cut.FindAll(".epos-zweispalten-mitte button")[1];
+        => cut.FindAll(".epos-zweispalten-uebernahme button")[1];
 
     /// <summary>
     /// „OK" IM Namensdialog. Der Dialog fuehrt zwei Knoepfe dieses Namens - den der
@@ -222,7 +222,7 @@ public class WaermebedarfExternDialogTests : BunitContext
     {
         var cut = Aufbauen();
 
-        IElement raster = cut.Find(".epos-zweispalten-spalte--links .epos-formularraster");
+        IElement raster = cut.Find(".epos-zweispalten-spalte--oben .epos-formularraster");
         Assert.NotNull(raster.QuerySelector("select"));
     }
 
@@ -260,7 +260,7 @@ public class WaermebedarfExternDialogTests : BunitContext
             einlesen: (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis()),
             kopieren: (_, __) => Task.FromResult(true));
 
-        var texte = cut.FindAll(".epos-zweispalten-spalte--rechts .epos-leiste button")
+        var texte = cut.FindAll(".epos-zweispalten-spalte--unten .epos-leiste button")
                        .Select(b => b.TextContent.Trim()).ToList();
 
         Assert.Equal(new[]
@@ -753,9 +753,9 @@ public class WaermebedarfExternDialogTests : BunitContext
                           .Select(e => e.ClassName ?? "").ToList();
 
         Assert.Equal(3, bereiche.Count);
-        Assert.Contains("epos-zweispalten-spalte--links", bereiche[0]);
-        Assert.Contains("epos-zweispalten-mitte", bereiche[1]);
-        Assert.Contains("epos-zweispalten-spalte--rechts", bereiche[2]);
+        Assert.Contains("epos-zweispalten-spalte--oben", bereiche[0]);
+        Assert.Contains("epos-zweispalten-uebernahme", bereiche[1]);
+        Assert.Contains("epos-zweispalten-spalte--unten", bereiche[2]);
 
         // Beide Listen stehen weiterhin in ihrem Rahmen (Befund W9-B-2).
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);

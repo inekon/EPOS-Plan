@@ -14,15 +14,19 @@ using Xunit;
 namespace EPOS.UI.Tests;
 
 /// <summary>
-/// <b>Anwenderentscheid #76</b> vom 05.09.2026, nach der Windows-Abnahme:
-/// „Alle Dialoge, in denen links ‚im Projekt ausgewählt‘ und rechts ‚aus der
-/// Datenbank/Katalog‘ mit Pfeilknöpfen dazwischen stehen, folgen dem alten
-/// BHKW-PLAN-Schema NEBENEINANDER." Auf schmalem Schirm bricht das Paar
-/// untereinander um; dann gilt das Schema, das der Gebäudedialog seit W9 hatte.
+/// <b>Anwenderentscheid #76</b> vom 05.09.2026, nach der Windows-Abnahme — zwei
+/// Listen mit Pfeilknöpfen dazwischen, nach dem alten BHKW-PLAN-Schema —,
+/// <b>in seiner ANORDNUNG geändert durch W14a-E-10-Q2</b> vom 07.09.2026: Die
+/// zwei Listen stehen seither <b>untereinander</b>, oben die kurze Projektliste,
+/// darunter die Übernahmeleiste, darunter der Katalog über die ganze Breite
+/// („Liste wie zuvor über ganze Breite, sonst zu schmale Liste"). #76 bleibt in
+/// seiner Aussage: zwei Listen, Übernahmeknöpfe dazwischen, der Filter über der
+/// Liste, auf die er wirkt.
 ///
 /// <para>Geprüft wird dreierlei: der BAUSTEIN (Bereiche, Knöpfe, Sperrzustände,
 /// Tastaturweg), die REGEL im Stilblatt (eine bunit-Probe sieht sie nicht —
-/// Lehre W6‑B‑1) und der BESTAND (kein Dialog baut das Muster noch selbst).</para>
+/// Lehre W6-B-1) und der BESTAND (kein Dialog baut das Muster noch selbst, und
+/// alle elf Wirte nehmen ihn).</para>
 /// </summary>
 public class ZweispaltenauswahlTests : BunitContext
 {
@@ -75,12 +79,12 @@ public class ZweispaltenauswahlTests : BunitContext
     // =====================================================================
 
     /// <summary>
-    /// Drei Bereiche in der Reihenfolge links — Mitte — rechts. Die Reihenfolge
-    /// IM MARKUP ist zugleich der Tastaturweg: Der Tabulator läuft von der
-    /// Projektliste über die zwei Knöpfe in den Katalog.
+    /// Drei Bereiche in der Reihenfolge oben — Übernahmeleiste — unten. Die
+    /// Reihenfolge IM MARKUP ist zugleich der Tastaturweg: Der Tabulator läuft
+    /// von der Projektliste über die zwei Knöpfe in den Katalog.
     /// </summary>
     [Fact]
-    public void Links_Mitte_Rechts_stehen_in_dieser_Reihenfolge()
+    public void Oben_Uebernahmeleiste_Unten_stehen_in_dieser_Reihenfolge()
     {
         var cut = Aufbauen();
 
@@ -88,12 +92,12 @@ public class ZweispaltenauswahlTests : BunitContext
                           .Select(e => e.ClassName ?? "").ToList();
 
         Assert.Equal(3, bereiche.Count);
-        Assert.Contains("epos-zweispalten-spalte--links", bereiche[0]);
-        Assert.Contains("epos-zweispalten-mitte", bereiche[1]);
-        Assert.Contains("epos-zweispalten-spalte--rechts", bereiche[2]);
+        Assert.Contains("epos-zweispalten-spalte--oben", bereiche[0]);
+        Assert.Contains("epos-zweispalten-uebernahme", bereiche[1]);
+        Assert.Contains("epos-zweispalten-spalte--unten", bereiche[2]);
 
-        Assert.Single(cut.FindAll(".epos-zweispalten-spalte--links .probe-links"));
-        Assert.Single(cut.FindAll(".epos-zweispalten-spalte--rechts .probe-rechts"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-spalte--oben .probe-links"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-spalte--unten .probe-rechts"));
     }
 
     /// <summary>
@@ -105,8 +109,8 @@ public class ZweispaltenauswahlTests : BunitContext
     {
         var cut = Aufbauen();
 
-        IElement links = cut.Find(".epos-zweispalten-spalte--links");
-        IElement rechts = cut.Find(".epos-zweispalten-spalte--rechts");
+        IElement links = cut.Find(".epos-zweispalten-spalte--oben");
+        IElement rechts = cut.Find(".epos-zweispalten-spalte--unten");
 
         Assert.Equal("group", links.GetAttribute("role"));
         Assert.Equal("ausgewählte Gebäude im Projekt:", links.GetAttribute("aria-label"));
@@ -119,27 +123,32 @@ public class ZweispaltenauswahlTests : BunitContext
 
         // Auch die Knopfgruppe hat einen Namen.
         Assert.Equal("Zwischen Projekt und Datenbank verschieben",
-                     cut.Find(".epos-zweispalten-mitte").GetAttribute("aria-label"));
+                     cut.Find(".epos-zweispalten-uebernahme").GetAttribute("aria-label"));
     }
 
     /// <summary>
-    /// <b>Der Kern des Entscheids.</b> Das Zeichen muss zur Anordnung passen, und
-    /// eine Komponente weiß nicht, wie breit sie gezeichnet wird. Also stehen BEIDE
-    /// Zeichen im Markup, und das Stilblatt zeigt je Breite eines — nebeneinander
-    /// ◀/▶, untereinander ▲/▼. Kein JavaScript.
+    /// <b>EIN Zeichen je Knopf</b> — und das ist der Gewinn aus Q2. Bis dahin trug
+    /// jeder Knopf BEIDE Paare im Markup (◀▶ nebeneinander, ▲▼ untereinander),
+    /// weil eine Komponente nicht weiß, wie breit sie gezeichnet wird, und das
+    /// Stilblatt je Breite eines zeigte. Bei EINER Anordnung braucht es das nicht
+    /// mehr: ▲ nach oben in das Projekt, ▼ nach unten in den Katalog.
     /// </summary>
     [Fact]
-    public void Jeder_Knopf_traegt_beide_Zeichen_und_seinen_Klartext()
+    public void Jeder_Knopf_traegt_ein_Zeichen_und_seinen_Klartext()
     {
         var cut = Aufbauen();
-        var knoepfe = cut.FindAll(".epos-zweispalten-mitte button");
+        var knoepfe = cut.FindAll(".epos-zweispalten-uebernahme button");
 
         Assert.Equal(2, knoepfe.Count);
 
-        Assert.Equal("◀", knoepfe[0].QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
-        Assert.Equal("▲", knoepfe[0].QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
-        Assert.Equal("▶", knoepfe[1].QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
-        Assert.Equal("▼", knoepfe[1].QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
+        Assert.Equal("▲", knoepfe[0].QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
+        Assert.Equal("▼", knoepfe[1].QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
+
+        // Je Knopf GENAU EIN Zeichen - das waagerechte Paar ist mit Q2 gefallen.
+        Assert.Single(knoepfe[0].QuerySelectorAll(".epos-zweispalten-pfeil"));
+        Assert.Single(knoepfe[1].QuerySelectorAll(".epos-zweispalten-pfeil"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-pfeil--breit"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-pfeil--schmal"));
 
         Assert.Equal("In das Projekt übernehmen",
                      knoepfe[0].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
@@ -155,7 +164,7 @@ public class ZweispaltenauswahlTests : BunitContext
     [Fact]
     public void Beide_Knoepfe_tragen_einen_Kurztext()
     {
-        var knoepfe = Aufbauen().FindAll(".epos-zweispalten-mitte button");
+        var knoepfe = Aufbauen().FindAll(".epos-zweispalten-uebernahme button");
 
         Assert.Contains("Datenbankliste", knoepfe[0].GetAttribute("title") ?? "");
         Assert.Contains("Projektliste", knoepfe[1].GetAttribute("title") ?? "");
@@ -165,13 +174,13 @@ public class ZweispaltenauswahlTests : BunitContext
     public void Ohne_Markierung_ist_der_jeweilige_Knopf_gesperrt()
     {
         var cut = Aufbauen(uebernehmenGesperrt: true);
-        var knoepfe = cut.FindAll(".epos-zweispalten-mitte button");
+        var knoepfe = cut.FindAll(".epos-zweispalten-uebernahme button");
 
         Assert.True(knoepfe[0].HasAttribute("disabled"));
         Assert.False(knoepfe[1].HasAttribute("disabled"));
 
         cut = Aufbauen(entfernenGesperrt: true);
-        knoepfe = cut.FindAll(".epos-zweispalten-mitte button");
+        knoepfe = cut.FindAll(".epos-zweispalten-uebernahme button");
 
         Assert.False(knoepfe[0].HasAttribute("disabled"));
         Assert.True(knoepfe[1].HasAttribute("disabled"));
@@ -183,8 +192,8 @@ public class ZweispaltenauswahlTests : BunitContext
         int hin = 0, weg = 0;
         var cut = Aufbauen(uebernommen: () => hin++, entfernt: () => weg++);
 
-        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
-        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
 
         Assert.Equal(1, hin);
         Assert.Equal(1, weg);
@@ -195,13 +204,13 @@ public class ZweispaltenauswahlTests : BunitContext
     /// kein Projekt, also keine Projektliste und keine Pfeile.
     /// </summary>
     [Fact]
-    public void NurRechts_laesst_die_linke_Spalte_und_die_Pfeile_weg()
+    public void NurRechts_laesst_den_oberen_Block_und_die_Uebernahmeleiste_weg()
     {
         var cut = Aufbauen(nurRechts: true);
 
-        Assert.Empty(cut.FindAll(".epos-zweispalten-spalte--links"));
-        Assert.Empty(cut.FindAll(".epos-zweispalten-mitte"));
-        Assert.Single(cut.FindAll(".epos-zweispalten-spalte--rechts .probe-rechts"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-spalte--oben"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-uebernahme"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-spalte--unten .probe-rechts"));
     }
 
     // =====================================================================
@@ -209,68 +218,85 @@ public class ZweispaltenauswahlTests : BunitContext
     // =====================================================================
 
     /// <summary>
-    /// Nebeneinander ist die VORGABE, untereinander der Ausnahmefall auf schmalem
-    /// Schirm. Vorher war es umgekehrt.
+    /// <b>Untereinander ist die EINZIGE Anordnung</b> (Q2). Bis dahin war
+    /// nebeneinander die Vorgabe und untereinander der Ausnahmefall auf schmalem
+    /// Schirm; die Ausnahme ist die Regel geworden — dieselbe Bewegung, die
+    /// S1.7 am <c>Katalograhmen</c> gemacht hat.
     /// </summary>
     [Fact]
-    public void Breit_stehen_die_Spalten_nebeneinander_schmal_untereinander()
+    public void Die_zwei_Listen_stehen_untereinander()
     {
-        Assert.Contains("flex-direction: row", Stilblock(".epos-zweispalten {"));
-        Assert.Contains("flex-direction: column", Umbruchblock(".epos-zweispalten {"));
+        Assert.Contains("flex-direction: column", Stilblock(".epos-zweispalten {"));
+        Assert.DoesNotContain("flex-direction: row", Stilblock(".epos-zweispalten {"));
     }
 
     /// <summary>
-    /// Der Umbruch ist eine MEDIENABFRAGE und kein <c>flex-wrap</c>: Nur so weiß
-    /// das Blatt, welches Pfeilzeichen gerade gilt. Bei <c>flex-wrap</c> käme die
-    /// Reihe um, ohne dass eine Regel es merkt.
+    /// <b>Die Medienabfrage ist gefallen.</b> Es gibt nur noch EINE Anordnung —
+    /// eine zweite wäre ein zweites Bild derselben Maske, und der Anwender hat
+    /// gerade verlangt, dass jeder Katalogdialog gleich aussieht.
     /// </summary>
     [Fact]
-    public void Der_Wirt_bricht_nicht_von_selbst_um()
+    public void Der_Block_traegt_keine_Medienabfrage_mehr()
     {
+        string css = Stilblatt();
+        int a = css.IndexOf("ZWEISPALTENAUSWAHL", StringComparison.Ordinal);
+        Assert.True(a >= 0, "Der Block Zweispaltenauswahl steht nicht im Stilblatt");
+
+        // Bis zum naechsten Blockkopf darf keine Medienabfrage stehen.
+        int e = css.IndexOf("/* ====", a + 20, StringComparison.Ordinal);
+        string block = e > a ? css.Substring(a, e - a) : css.Substring(a);
+
+        Assert.DoesNotContain("@media", block);
         Assert.DoesNotContain("flex-wrap", Stilblock(".epos-zweispalten {"));
     }
 
     /// <summary>
-    /// Die Umbruchbreite steht als Token in <c>:root</c> (Hausregel „Eine Farbe
-    /// steht als Token") und — weil eine Medienabfrage kein Token lesen kann —
-    /// ein zweites Mal in der Abfrage selbst. Diese Probe hält beide gegeneinander.
+    /// <b>Die Mittelspalte ist gefallen.</b> Mit ihr das Token
+    /// <c>--epos-zweispalten-mitte</c> und die zwei waagerechten Pfeilklassen —
+    /// der Baustein ist mit Q2 kleiner geworden, nicht größer. Das Token
+    /// <c>--epos-zweispalten-umbruch</c> BLEIBT: Formularraster, Dublettenbaum
+    /// und Kennzahlzeile benutzen es weiter.
     /// </summary>
     [Fact]
-    public void Die_Umbruchbreite_steht_als_Token()
+    public void Die_Mittelspalte_und_ihre_Klassen_sind_gefallen()
     {
-        string wurzel = Stilblock(":root {");
-        Match token = Regex.Match(wurzel, @"--epos-zweispalten-umbruch:\s*(\d+)px;");
-        Assert.True(token.Success, "Das Token --epos-zweispalten-umbruch fehlt in :root");
+        string css = Stilblatt();
 
-        Match abfrage = Regex.Match(Stilblatt(),
-            @"ZWEISPALTENAUSWAHL.*?@media \(max-width:\s*(\d+)px\)", RegexOptions.Singleline);
-        Assert.True(abfrage.Success, "Die Medienabfrage des Blocks Zweispaltenauswahl fehlt");
+        Assert.DoesNotContain(".epos-zweispalten-mitte {", css);
+        Assert.DoesNotContain(".epos-zweispalten-pfeil--breit", css);
+        Assert.DoesNotContain(".epos-zweispalten-pfeil--schmal", css);
 
-        Assert.Equal(token.Groups[1].Value, abfrage.Groups[1].Value);
+        Assert.Contains("--epos-zweispalten-umbruch:", Stilblock(":root {"));
     }
 
     /// <summary>
-    /// Die Mittelspalte bleibt SCHMAL — im Vorbild 63 px (Form_Gebaeude) bis 88 px
-    /// (Form_Heizkessel). Ihre Breite steht als Token, nicht als Zahl in der Regel.
+    /// <b>Die Projektliste ist höhenbegrenzt</b> (Konzept_Katalogfilter 5.6.5):
+    /// 12 rem = 192 px, bei 45 px Kopfzelle und 37 px Zeilenhöhe VIER Zeilen.
+    /// Ohne die Grenze schöbe eine lange Projektliste den Katalog beliebig weit
+    /// nach unten — genau der Grund, aus dem die Katalogliste ihre eigene Grenze
+    /// aus dem <c>Katalograhmen</c> mitbringt. Die Zahl steht als Token, nicht
+    /// als Zahl in der Regel.
     /// </summary>
     [Fact]
-    public void Die_Mittelspalte_nimmt_ihre_Breite_aus_einem_Token()
+    public void Die_Projektliste_ist_hoehenbegrenzt()
     {
-        Assert.Contains("--epos-zweispalten-mitte:", Stilblock(":root {"));
-        Assert.Contains("width: var(--epos-zweispalten-mitte)",
-                        Stilblock(".epos-zweispalten-mitte {"));
+        Assert.Contains("--epos-projektlistenhoehe: 12rem;", Stilblock(":root {"));
+        Assert.Contains("max-height: var(--epos-projektlistenhoehe)",
+                        Stilblock(".epos-zweispalten-spalte--oben .epos-raster-huelle {"));
     }
 
     /// <summary>
-    /// Je Anordnung ist genau EIN Zeichen zu sehen: breit die waagerechten,
-    /// schmal die senkrechten.
+    /// Die Übernahmeleiste ist eine ZEILE und bricht um wie jede Knopfleiste des
+    /// Hauses (Befund W12‑B‑1) — sie war bis Q2 eine schmale Spalte.
     /// </summary>
     [Fact]
-    public void Je_Anordnung_ist_genau_ein_Zeichen_sichtbar()
+    public void Die_Uebernahmeleiste_ist_eine_Zeile_und_bricht_um()
     {
-        Assert.Contains("display: none", Stilblock(".epos-zweispalten-pfeil--schmal {"));
-        Assert.Contains("display: none", Umbruchblock(".epos-zweispalten-pfeil--breit {"));
-        Assert.Contains("display: inline", Umbruchblock(".epos-zweispalten-pfeil--schmal {"));
+        string leiste = Stilblock(".epos-zweispalten-uebernahme {");
+
+        Assert.Contains("flex-direction: row", leiste);
+        Assert.Contains("flex-wrap: wrap", leiste);
+        Assert.DoesNotContain("width:", leiste);
     }
 
     // =====================================================================
@@ -357,8 +383,8 @@ public class ZweispaltenauswahlTests : BunitContext
                 b.CloseElement();
             })));
 
-        // Die Leiste steht IN der rechten Spalte - nicht daneben, nicht im Wirt.
-        IElement leiste = cut.Find(".epos-zweispalten-spalte--rechts > .epos-leiste");
+        // Die Leiste steht IM UNTEREN Block - nicht daneben, nicht im Wirt.
+        IElement leiste = cut.Find(".epos-zweispalten-spalte--unten > .epos-leiste");
 
         // ... und alle vier Knöpfe stehen in dieser einen Leiste.
         var knoepfe = leiste.QuerySelectorAll("button.epos-knopf");
@@ -471,20 +497,6 @@ public class ZweispaltenauswahlTests : BunitContext
     /// <summary>Liest den Rumpf einer Regel aus dem Stilblatt.</summary>
     private static string Stilblock(string selektor)
         => Block(Stilblatt(), selektor.Replace("\r\n", "\n"));
-
-    /// <summary>
-    /// Liest den Rumpf einer Regel aus der Medienabfrage des Blocks
-    /// „Zweispaltenauswahl" — also aus der Fassung für den schmalen Schirm.
-    /// </summary>
-    private static string Umbruchblock(string selektor)
-    {
-        string css = Stilblatt();
-        int a = css.IndexOf("ZWEISPALTENAUSWAHL", StringComparison.Ordinal);
-        Assert.True(a >= 0, "Der Block Zweispaltenauswahl steht nicht im Stilblatt");
-        int m = css.IndexOf("@media (max-width:", a, StringComparison.Ordinal);
-        Assert.True(m > a, "Die Medienabfrage des Blocks Zweispaltenauswahl fehlt");
-        return Block(css.Substring(m), selektor);
-    }
 
     private static string Block(string css, string selektor)
     {
