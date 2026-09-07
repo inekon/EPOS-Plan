@@ -459,6 +459,20 @@ Dokumentation) fiel an `Der_Fortschritt_kommt_gedrosselt_an`, dem Wettlauf des F
 Speicheroptimierung, der in `1fabbd1` behoben ist (Weitergabe unter dem Schloss, zehn Läufe grün). Ausgelöst per
 `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Fünfunddreißigster Lauf 34132905061 (`ios.yml`, `macos-26`, 07.09.2026, 14:25–14:37 UTC, 11 min 14 s)** auf
+`556d3f9` — der dritte Tagesstand des 07.09.2026 und der erste Lauf gegen die Basis **R5** (W8‑O‑5d‑Q1/Q2: benannter
+Zahlenrand an Speicherhysterese und BHKW-Volllastgrenze, keine `int`-Abschneidung mehr in `BhkwPlan`; Em‑9.8: die zehn
+Emissionsskalare `Em.Kessel.*`/`Em.Bhkw.*` im Referenzexport). Workload 27 s, Bau 1 min 48 s (0 Fehler), Simulatorstart
+2 min 50 s, Erststart mit Seed-Kopie (66 MB), Startmarken `SQLite 3.53.3` · `STRICT=117` (Erwartung aus der Seed-Datenbank:
+117) · `Projekte=24` grün, Prüfmodus 1030 in 22 s — **22 CSV, 160 Skalare** (Lauf 34: 150; die zehn neuen sind die
+Emissionsgrößen, wie in Kapitel 11 des Emissionskonzepts vorhergesagt), **iZ6-Vergleich gegen `2026-09-07_R5_Zahlenrand`
+PASS (236 680 Werte, zehn mehr als in Lauf 34)** und **BYTE-GLEICH** (`diff -rq` leer, iOS-Simulator arm64). Damit
+reproduziert Apple Silicon auch den Zahlenrand (`1e‑9 + 1e‑12 · |Schwelle|`) und die `double`-Rückgaben von `BhkwPlan`
+byte-gleich — Projekt 1030 hat keinen Gebäudebedarf, seine Vektoren sind gegenüber R4 unverändert; der Beweis für die
+geänderten Bedarfsprojekte bleibt der Linux-Läufer (12/12 byte-gleich beim Einfrieren). Die `kern.yml`-Läufe 204, 205
+und 206 (`67cda00`, `f59047f`, `556d3f9`) sind grün. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
