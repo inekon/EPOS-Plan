@@ -3412,8 +3412,9 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > nennt die zwei angesteuerten Marken), `EPOS.Kern/CLAUDE.md` (Tabelle aller 17 Stellen, Kriterium „Rand an jede Marke,
 > die eine Rechnung ansteuert"). **Notiert, nicht geändert:** `Ladefaehigkeit(obergrenzeAnteil > 0)` (Kennzeichen, keine
 > Energieschwelle) und die uneinheitliche Strenge des Paars `P_el·x_min` gegen `restStrom` im Bestand (der Rand ebnet sie
-> am Gleichheitspunkt ein). Abnahme auf Windows: A‑W8‑O5d‑Q34‑1…5. Die drei geänderten Wiki-Seiten (Wärmebedarf, BHKW,
-> Pufferspeicher) sind seit R5 neu hochzuladen.
+> am Gleichheitspunkt ein). Abnahme auf Windows: A‑W8‑O5d‑Q34‑1…5. Die drei seit R5 geänderten Wiki-Seiten (Wärmebedarf, BHKW,
+> Pufferspeicher) wurden am 07.09.2026 mit allen 14 Berechnungsseiten neu hochgeladen (Nachprobe per `action=parse`:
+> je 21 Anker, 0 Parserfehler, Zahlenrand und Mindestfüllstand sichtbar).
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >
