@@ -2367,6 +2367,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Kern 1724 / UI 3064 grün, Designer „abweichend 0", SQL 0, Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich.
 > Doku: `Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` § 4.7, W14a-Protokoll B3 geschlossen, `BHKW.wiki`. Abnahme auf
 > Windows: A‑W14a‑E8‑B3‑1…8.
+>
+> **W14a‑E‑8‑B1 und W11a‑O‑2 (Anwenderentscheid 07.09.2026: „Es soll der gepflegte CO₂-Wert herangezogen werden — der
+> an dem Energieträger hängt, gilt generell für alle Erzeuger"), umgesetzt in `582a803`, zusammengeführt in `47ffe37`:**
+> Kessel und BHKW lasen zwei eigene Quellen (Brennstofftabelle bzw. fünf Gerätespalten in g/MWh), die Emissionsbilanz
+> der Wirtschaftlichkeit eine dritte (Emissionskatalog des Energieträgers). Beide Erzeuger lesen jetzt den
+> Emissionskatalog über den neuen Kern-Dienst `Emissionsquelle` — Kette Projekt → Katalog → Stamm → Carrier wie
+> Konzept § 3, im Berechnungsmodus des Projekts (CO₂ oder CO₂e), mit einem fünften Glied `BRENNSTOFF` für Anlagen ohne
+> `ID_Carrier` (Protokollhinweis im Lauf). Die zehn Gerätespalten von Kessel und BHKW sind „nur Anzeige"
+> (`ParameterVerwendung`, Herleitungszeile in beiden Katalogeditoren). **W11a‑O‑2 (#45) geschlossen:** Die
+> Autarkie-Kachel nimmt Netzstrom- und Wärmeträger des Projekts statt der Literale 0,42/0,20 kg/kWh; der
+> Netzstrom-Rückfall 435 g/kWh steht einmal (`Emissionsquelle.StromTraeger`), auch für `KostenEmissionRechner`.
+> **B2 („Empfehlung"): keine Programmarbeit.** Zwei Lücken benannt statt gefüllt: keine Emissionsart „CO" (CO seither
+> auch beim BHKW 0, Saatvorschlag § 9.9) und Staub im Auslieferungsstand abgewählt (Rückfall `Tab_Brennstoff_Stamm.Staub`
+> außerhalb der Zeilenliste, damit die CO₂e-Summe nicht kippt). **Wirkung:** BHKW-CO₂ ändert sich erheblich (1030:
+> 0 → 251,59 t/a, 1024: 45,65 → 70,76 t/a, 1017: 0 → 21,62 t/a), Kessel nirgends (Projektübersteuerung 240 g/kWh
+> zahlengleich zum Stammwert). **Harter Befund, der den Auftrag umkehrt:** Die Emissionsgrößen der Simulation
+> (`Em_CO2_SPK`, `Em_CO2_BHKW` …) haben repo-weit keinen Leser außerhalb ihrer Klasse, keine `Tab_Ergebnis*`-Spalte
+> und keine Referenz-CSV trägt eine Emissionsgröße — **Referenzlauf 12/12 byte-gleich gegen R3 (3 313 002 Werte
+> PASS), R3 bleibt die Basis; eine R4 wäre eine Kopie ohne Aussage** (offener Punkt § 9.8: `Em_CO2_*` in den Export).
+> Der Nachweis hängt an `EmissionsquelleTests` (10 Fälle: Kette, Staub- und Brennstoff-Rückfall, Modus CO₂e mit
+> CH₄-Saat 240 → 269,8 g/kWh, Gegenprobe Gerätespalten 999 999 → Ergebnis unverändert, beide Autarkie-Seiten).
+> Nachweis: Kern 1744 / UI 3064 grün, Designer „abweichend 0", SQL 0, Gate grün. Doku: Emissionsarten-Konzept § 8
+> Entscheide, W14a-Protokoll B1–B3, `Heizkessel.wiki`/`BHKW.wiki`, `EPOS.Kern/CLAUDE.md`, `Referenzlaeufe/LIESMICH.md`.
+> Abnahme auf Windows: A‑W14a‑E8‑1…7 — darunter A‑W14a‑E8‑5 (die CO₂-Ersparnis der Autarkie-Kachel bewegt sich mit
+> dem Katalogfaktor des Stromträgers) und A‑W14a‑E8‑6 (Modus CO₂-Äquivalent hebt Kessel- und BHKW-Faktor).
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
