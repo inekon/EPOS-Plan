@@ -59,7 +59,8 @@ public class PvStraengeFelderTests : BunitContext
         IReadOnlyList<string>? hersteller = null,
         Func<string, IReadOnlyList<(int Id, string Text)>>? filtern = null,
         IReadOnlyList<(int Id, string Text)>? module = null,
-        Func<int, GeraetWahl>? modulUebernehmen = null)
+        Func<int, GeraetWahl>? modulUebernehmen = null,
+        string modulhersteller = "")
         => Render<PvStraengeFelder>(p => p
             .Add(x => x.Zeile, zeile)
             .Add(x => x.NeigungAnlage, zeile.Neigung)
@@ -69,6 +70,7 @@ public class PvStraengeFelderTests : BunitContext
             .Add(x => x.GeraetUebernehmen, uebernehmen ?? (id => new GeraetWahl(1000 + id, Name(id))))
             .Add(x => x.Hersteller, hersteller ?? Array.Empty<string>())
             .Add(x => x.GeraeteFiltern, filtern)
+            .Add(x => x.Modulhersteller, modulhersteller)
             .Add(x => x.Module, module ?? Array.Empty<(int, string)>())
             .Add(x => x.ModulUebernehmen,
                  modulUebernehmen ?? (id => new GeraetWahl(2000 + id, Modulname(id))))
@@ -531,6 +533,255 @@ public class PvStraengeFelderTests : BunitContext
         var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }));
 
         Assert.Empty(cut.FindAll(".epos-strangfilter"));
+    }
+
+    // =================================================================================
+    // 4b2 - W6-E-6: die Vorauswahl des Filters auf den Modulhersteller
+    // =================================================================================
+    //
+    // Anwenderentscheid vom 07.09.2026, woertlich: "Der Wechselrichter soll beliebig
+    // waehlbar sein und nur die Vorauswahl auf den Modulhersteller verweisen (falls
+    // Wechselrichter von dem Modulhersteller verfuegbar)." Die Faelle pruefen BEIDE
+    // Haelften - die Vorauswahl UND die Freiheit, die sie nicht antasten darf.
+
+    /// <summary>Der Name eines Geräts des Prüfkatalogs (auch „Fremd 3000X", Id 9).</summary>
+    private static string GeraetName(int stammId)
+    {
+        foreach (var e in KATALOG_MIT_FIRMA) if (e.Id == stammId) return e.Text;
+        return "";
+    }
+
+    /// <summary>Die Herstellerliste zum „beginnt mit"-Fall — der Katalogname ist länger.</summary>
+    private static readonly string[] HERSTELLER_LANG = { "Alle", "Fremd", "Muster Solartechnik" };
+
+    /// <summary>
+    /// <b>Der Filter steht beim Aufmachen auf dem Hersteller des Anlagenmoduls</b>
+    /// (W6‑E‑6) — und die Klappliste zeigt dessen Geräte. Das ist die eine Hälfte des
+    /// Entscheids: Wer Module von „Muster" verbaut, sieht die Muster-Geräte, ohne den
+    /// Filter anzufassen.
+    /// </summary>
+    [Fact]
+    public void Die_Vorauswahl_steht_auf_dem_Hersteller_des_Anlagenmoduls()
+    {
+        var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                           hersteller: HERSTELLER, filtern: Filtern,
+                           modulhersteller: "Muster");
+
+        Assert.Equal(2, cut.Instance.Herstellerfilter);                       // "Muster"
+        Assert.Equal(2, Wahl(cut, "Filtern nach Hersteller:").Instance.Auswahl);
+
+        var eintraege = Wahl(cut, "Wechselrichter").Instance.Eintraege;
+        Assert.Equal(3, eintraege.Count);                                     // + "(kein Geraet)"
+        Assert.Contains(eintraege, e => e.Text == "Muster 2500TL");
+        Assert.DoesNotContain(eintraege, e => e.Text == "Fremd 3000X");
+    }
+
+    /// <summary>
+    /// <b>Führt der Wechselrichterkatalog kein Gerät des Modulherstellers, steht der
+    /// Filter auf „Alle"</b> — die Bedingung aus dem Wortlaut („falls Wechselrichter
+    /// von dem Modulhersteller verfügbar"). Ein Filter auf einen Hersteller ohne Gerät
+    /// zeigte eine leere Klappliste, und die läse sich wie ein leerer Katalog.
+    /// </summary>
+    [Fact]
+    public void Ohne_Geraet_dieses_Herstellers_steht_der_Filter_auf_Alle()
+    {
+        var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                           hersteller: HERSTELLER, filtern: Filtern,
+                           modulhersteller: "Jinkosolar");
+
+        Assert.Equal(0, cut.Instance.Herstellerfilter);
+        Assert.Equal(4, Wahl(cut, "Wechselrichter").Instance.Eintraege.Count);
+
+        string satz = cut.Find(".epos-strangfilter + .epos-herleitung").TextContent;
+        Assert.Contains("Kein Wechselrichter", satz, StringComparison.Ordinal);
+        Assert.Contains("Jinkosolar", satz, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der zweite Versuch „beginnt mit" trifft in BEIDE Richtungen</b> — Modul „SMA"
+    /// gegen Gerät „SMA America" und umgekehrt: Modul- und Gerätekatalog stammen aus
+    /// verschiedenen Quellen und schreiben denselben Hersteller verschieden.
+    /// </summary>
+    [Fact]
+    public void Der_zweite_Versuch_trifft_ueber_beginnt_mit()
+    {
+        // Katalogname laenger als der Modulhersteller.
+        var lang = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                            hersteller: HERSTELLER_LANG, filtern: Filtern,
+                            modulhersteller: "Muster");
+        Assert.Equal(2, lang.Instance.Herstellerfilter);
+
+        // Modulhersteller laenger als der Katalogname.
+        var kurz = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                            hersteller: HERSTELLER, filtern: Filtern,
+                            modulhersteller: "Muster Solartechnik AG");
+        Assert.Equal(2, kurz.Instance.Herstellerfilter);
+    }
+
+    /// <summary>
+    /// <b>Die Gegenprobe zum zweiten Versuch:</b> Zwei Buchstaben sind kein Name. „Mu"
+    /// stünde auf „Muster" so gut wie auf „Munich Energy" — der Versuch verlangt
+    /// deshalb drei Zeichen, und darunter bleibt es bei „Alle".
+    /// </summary>
+    [Fact]
+    public void Ein_zu_kurzes_Praefix_trifft_nicht()
+    {
+        var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                           hersteller: HERSTELLER, filtern: Filtern, modulhersteller: "Mu");
+
+        Assert.Equal(0, cut.Instance.Herstellerfilter);
+    }
+
+    /// <summary>
+    /// <b>Gross-/Kleinschreibung und Randleerzeichen sind egal</b> — ein
+    /// Katalogbestand aus zwei Quellen schreibt „SMA" und „sma " ohne jede Absicht.
+    /// </summary>
+    [Fact]
+    public void Gross_Kleinschreibung_und_Randleerzeichen_sind_egal()
+    {
+        var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                           hersteller: HERSTELLER, filtern: Filtern,
+                           modulhersteller: "  mUsTeR  ");
+
+        Assert.Equal(2, cut.Instance.Herstellerfilter);
+    }
+
+    /// <summary>
+    /// <b>Die andere Hälfte des Entscheids: Der Wechselrichter bleibt BELIEBIG
+    /// wählbar.</b> Nach der Vorauswahl auf „Muster" führt der Filter „Fremd" zum
+    /// fremden Gerät, und die Wahl trägt sich in die Zeile ein; „Alle" zeigt wieder
+    /// den ganzen Katalog. Nichts sperrt einen fremden Hersteller — hier steht es als
+    /// Fall.
+    /// </summary>
+    [Fact]
+    public async Task Ein_fremder_Hersteller_bleibt_nach_der_Vorauswahl_waehlbar()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern,
+                           modulhersteller: "Muster",
+                           uebernehmen: id => new GeraetWahl(4711, GeraetName(id)));
+
+        Assert.Equal(2, cut.Instance.Herstellerfilter);
+
+        var filter = Wahl(cut, "Filtern nach Hersteller:");
+        await cut.InvokeAsync(() => filter.Instance.AuswahlChanged.InvokeAsync(1));   // "Fremd"
+
+        var wahl = Wahl(cut, "Wechselrichter");
+        Assert.Contains(wahl.Instance.Eintraege, e => e.Text == "Fremd 3000X");
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(9));
+
+        Assert.Equal(4711, zeile.Straenge[0].WechselrichterId);
+        Assert.Equal("Fremd 3000X", zeile.Straenge[0].WechselrichterName);
+
+        // Und "Alle" zeigt weiterhin den ganzen Katalog.
+        await cut.InvokeAsync(() => Wahl(cut, "Filtern nach Hersteller:")
+                                        .Instance.AuswahlChanged.InvokeAsync(0));
+        Assert.Equal(4, Wahl(cut, "Wechselrichter").Instance.Eintraege.Count);
+    }
+
+    /// <summary>
+    /// <b>Eine bereits gewählte Zeile behält ihr Gerät</b>, auch wenn die Vorauswahl
+    /// auf einen anderen Hersteller zeigt (Regel W6‑O‑4, jetzt gegen die Vorauswahl
+    /// geprüft): Die Vorauswahl ist eine ANZEIGEhilfe und ändert keine Zuordnung.
+    /// </summary>
+    [Fact]
+    public void Eine_gewaehlte_Zeile_behaelt_ihr_Geraet_trotz_Vorauswahl()
+    {
+        var zeile = Zeile(true, new StrangZeile
+        {
+            Rang = 1, ModuleReihe = 10, WechselrichterId = 4711, WechselrichterName = "Fremd 3000X"
+        });
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern,
+                           modulhersteller: "Muster");
+
+        Assert.Equal(2, cut.Instance.Herstellerfilter);
+
+        var wahl = Wahl(cut, "Wechselrichter");
+        Assert.Contains(wahl.Instance.Eintraege, e => e.Text == "Fremd 3000X");
+        Assert.Equal(9, wahl.Instance.Auswahl);
+        Assert.Equal("Fremd 3000X", zeile.Straenge[0].WechselrichterName);
+    }
+
+    /// <summary>
+    /// <b>Eine Anwenderwahl überlebt das Neuzeichnen.</b> Die Hülle setzt die Parameter
+    /// nach JEDER Zellenänderung neu; stellte die Komponente dabei wieder vor, nähme sie
+    /// dem Anwender seinen Filter im selben Augenblick wieder ab.
+    /// </summary>
+    [Fact]
+    public async Task Eine_Anwenderwahl_ueberlebt_das_Neuzeichnen()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern,
+                           modulhersteller: "Muster");
+
+        var filter = Wahl(cut, "Filtern nach Hersteller:");
+        await cut.InvokeAsync(() => filter.Instance.AuswahlChanged.InvokeAsync(0));   // "Alle"
+        Assert.Equal(0, cut.Instance.Herstellerfilter);
+
+        cut.Render(p => p.Add(x => x.Modulhersteller, "Muster"));
+
+        Assert.Equal(0, cut.Instance.Herstellerfilter);
+        Assert.Equal(4, Wahl(cut, "Wechselrichter").Instance.Eintraege.Count);
+    }
+
+    /// <summary>
+    /// <b>Ein anderes Anlagenmodul stellt neu vor.</b> Wer in der linken Liste eine
+    /// zweite PV-Anlage markiert (oder das Modul wechselt, während der Abschnitt
+    /// zugeklappt war), bekommt die Vorauswahl seines Herstellers — die Merkregel gilt
+    /// dem Modul, nicht der Sitzung.
+    /// </summary>
+    [Fact]
+    public async Task Ein_anderes_Anlagenmodul_stellt_neu_vor()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        var cut = Aufbauen(zeile, hersteller: HERSTELLER, filtern: Filtern,
+                           modulhersteller: "Muster");
+
+        var filter = Wahl(cut, "Filtern nach Hersteller:");
+        await cut.InvokeAsync(() => filter.Instance.AuswahlChanged.InvokeAsync(0));   // "Alle"
+
+        cut.Render(p => p.Add(x => x.Modulhersteller, "Fremd"));
+
+        Assert.Equal(1, cut.Instance.Herstellerfilter);                       // "Fremd"
+        var eintraege = Wahl(cut, "Wechselrichter").Instance.Eintraege;
+        Assert.Equal(2, eintraege.Count);
+        Assert.Contains(eintraege, e => e.Text == "Fremd 3000X");
+    }
+
+    /// <summary>
+    /// <b>Die Herleitungszeile sagt, woher die Vorauswahl kommt</b> — und im selben Satz,
+    /// dass sie nichts sperrt. Ohne bekannten Modulhersteller bleibt der zweite Halbsatz.
+    /// </summary>
+    [Fact]
+    public void Die_Herleitungszeile_nennt_die_Vorauswahl_und_die_freie_Wahl()
+    {
+        var mit = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                           hersteller: HERSTELLER, filtern: Filtern, modulhersteller: "Muster");
+
+        string satz = mit.Find(".epos-strangfilter + .epos-herleitung").TextContent;
+        Assert.Contains("Vorauswahl", satz, StringComparison.Ordinal);
+        Assert.Contains("Muster", satz, StringComparison.Ordinal);
+        Assert.Contains("Jeder Hersteller ist wählbar.", satz, StringComparison.Ordinal);
+
+        var ohne = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                            hersteller: HERSTELLER, filtern: Filtern);
+
+        Assert.Equal(0, ohne.Instance.Herstellerfilter);
+        Assert.Equal("Jeder Hersteller ist wählbar.",
+                     ohne.Find(".epos-strangfilter + .epos-herleitung").TextContent);
+    }
+
+    /// <summary>
+    /// Ohne Herstellerliste gibt es auch KEINE Herleitungszeile — sie erklärt ein
+    /// Bedienelement, das dann nicht da ist.
+    /// </summary>
+    [Fact]
+    public void Ohne_Herstellerliste_gibt_es_auch_keine_Herleitungszeile()
+    {
+        var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                           modulhersteller: "Muster");
+
+        Assert.Empty(cut.FindAll(".epos-strangfilter + .epos-herleitung"));
     }
 
     // =================================================================================

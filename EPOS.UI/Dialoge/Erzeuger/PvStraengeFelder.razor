@@ -33,6 +33,26 @@
    und wirkt auf die Klappliste ALLER Zeilen; ein bereits gewaehltes Geraet
    bleibt in seiner Zeile sichtbar, auch wenn der Filter es ausschliesst.
 
+   SEINE VORAUSWAHL (W6-E-6 vom 07.09.2026, woertlich: "Der Wechselrichter soll
+   beliebig waehlbar sein und nur die Vorauswahl auf den Modulhersteller
+   verweisen (falls Wechselrichter von dem Modulhersteller verfuegbar)").
+   Der Filter STEHT beim Aufmachen auf dem Hersteller des Anlagenmoduls, sofern
+   der Wechselrichterkatalog ueberhaupt ein Geraet dieses Herstellers fuehrt -
+   sonst auf "Alle". Er SPERRT nichts: Jeder andere Hersteller bleibt eine
+   Klapplistenwahl entfernt, und wer den Filter umstellt, behaelt seine
+   Umstellung (Vorgestellt wird nur, wenn der Modulhersteller WECHSELT - sonst
+   naehme jedes Neuzeichnen dem Anwender die eigene Wahl wieder ab).
+
+   DER NAMENSABGLEICH ist zweistufig, weil Modul- und Geraetekatalog aus
+   verschiedenen Quellen kommen und denselben Hersteller verschieden schreiben:
+   erst GLEICHHEIT ohne Ruecksicht auf Gross-/Kleinschreibung und
+   Randleerzeichen, dann "der eine Name beginnt mit dem anderen" (Modul "SMA"
+   trifft "SMA America", Modul "SMA Solar Technology" trifft "SMA"). Der zweite
+   Versuch verlangt drei Zeichen: Ein Praefix von einem oder zwei Buchstaben
+   traefe zu viel - "S" stuende auf "Siemens" so gut wie auf "SMA". Gibt es
+   mehrere Treffer, gilt der ERSTE der Katalogliste; sie ist sortiert, also ist
+   die Vorauswahl wiederholbar.
+
    DIE MODULSPALTE (W6-O-6, woertlich: "jeder Strang mit nur einem Modultyp,
    unterschiedliche Straenge koennen jeweils einen anderen Modultyp haben").
    Leer heisst "das Modul der Anlage" - dieselbe Rueckfallregel wie bei Neigung
@@ -81,6 +101,10 @@
                              Auswahl="@_hersteller" AuswahlChanged="BeiHersteller"
                              Kurzname="@Texte.FilterHersteller" />
             </div>
+
+            @* W6-E-6: Die Herleitung sagt, WOHER die Vorauswahl kommt - und im
+               selben Satz, dass sie nichts sperrt. *@
+            <p class="epos-herleitung">@Filterherleitung</p>
         }
 
         @if (Zeile.Straenge.Count == 0)
@@ -282,6 +306,23 @@
     [Parameter] public Func<string, IReadOnlyList<(int Id, string Text)>>? GeraeteFiltern { get; set; }
 
     /// <summary>
+    /// Der Hersteller des Moduls DER ANLAGE — die VORAUSWAHL des Herstellerfilters
+    /// (Anwenderentscheid <b>W6‑E‑6</b> vom 07.09.2026, wörtlich: „Der Wechselrichter
+    /// soll beliebig wählbar sein und nur die Vorauswahl auf den Modulhersteller
+    /// verweisen (falls Wechselrichter von dem Modulhersteller verfügbar)").
+    /// Leer = keine Vorauswahl, der Filter steht auf „Alle".
+    ///
+    /// <para><b>Es ist das Modul der ANLAGE, auch bei Strängen mit eigenem Modul</b>
+    /// (W6‑O‑6): Der Filter ist EINER für alle Zeilen — eine Vorauswahl je Zeile gäbe
+    /// es nicht, weil es das Bedienelement je Zeile nicht gibt.</para>
+    ///
+    /// <para><b>Die Trefferprüfung steht in der KOMPONENTE</b>, nicht in der Hülle:
+    /// Sie fragt nur die Liste <see cref="Hersteller"/> ab, die ohnehin hereinkommt,
+    /// und damit hat iOS denselben Weg ohne eine zweite Fassung derselben Regel.</para>
+    /// </summary>
+    [Parameter] public string Modulhersteller { get; set; } = "";
+
+    /// <summary>
     /// Die PV-Module des KATALOGS als Klapplisteneintraege (Id =
     /// <c>Tab_PV_STAMM.ID</c>) — die Modulspalte je Strang (<b>W6‑O‑6</b>). Leer =
     /// nur „(Modul der Anlage)".
@@ -324,6 +365,18 @@
     private IReadOnlyList<(int Id, string Text)> _herstellerwahl = Array.Empty<(int, string)>();
     private IReadOnlyList<(int Id, string Text)> _gefiltert = Array.Empty<(int, string)>();
     private int? _hersteller = 0;
+
+    /// <summary>
+    /// Der Modulhersteller, fuer den zuletzt VORGESTELLT wurde; <c>null</c> = noch nie.
+    /// Er ist das Gedaechtnis der Regel aus W6-E-6: Vorgestellt wird nur beim ersten
+    /// Zeichnen und beim WECHSEL des Anlagenmoduls - sonst naehme jedes Neuzeichnen der
+    /// Huelle (jede Zellenaenderung meldet Geaendert) dem Anwender seine Filterwahl ab.
+    /// </summary>
+    private string? _vorgestelltFuer;
+
+    /// <summary>Hat die Vorauswahl einen Hersteller GETROFFEN? Sonst steht sie auf „Alle".</summary>
+    private bool _vorauswahlTrifft;
+
     private Dictionary<int, string>? _weichGesperrt;
     private StrangBefund _befund = StrangBefund.Leer;
     private StrangZeile? _gewaehlt;
@@ -344,6 +397,9 @@
     /// <summary>Die zuletzt gemeldete weiche Sperre (Pruefhilfe fuer Tests).</summary>
     public string Meldung => _meldung;
 
+    /// <summary>Der Stand des Herstellerfilters, 0 = „Alle" (Pruefhilfe fuer Tests).</summary>
+    public int? Herstellerfilter => _hersteller;
+
     protected override void OnParametersSet()
     {
         _optionen = new[]
@@ -357,6 +413,11 @@
         var hersteller = new List<(int, string)>();
         for (int i = 0; i < Hersteller.Count; i++) hersteller.Add((i, Hersteller[i]));
         _herstellerwahl = hersteller;
+
+        // W6-E-6: die VORAUSWAHL auf den Modulhersteller. Sie steht VOR dem Laden der
+        // Geraeteliste - sonst zeigte die Klappliste einen Zug lang den Stand des alten
+        // Filters.
+        Vorstellen();
 
         // Die Klappliste fuehrt "(kein Geraet)" als Id 0 voran - dieselbe Bauart wie
         // "Alle" im Herstellerfilter der Modulliste.
@@ -483,6 +544,90 @@
     {
         _hersteller = id ?? 0;
         GeraeteNeuLaden();
+    }
+
+    // =================================================================================
+    // W6-E-6: die Vorauswahl des Filters auf den Modulhersteller
+    // =================================================================================
+
+    /// <summary>
+    /// Kuerzeste Namenslaenge, mit der der zweite Versuch („beginnt mit") noch zaehlt.
+    /// Ein Praefix von einem oder zwei Buchstaben traefe zu viel — „S" stuende auf
+    /// „Siemens" so gut wie auf „SMA".
+    /// </summary>
+    private const int PRAEFIX_MINDESTLAENGE = 3;
+
+    /// <summary>
+    /// Stellt den Herstellerfilter auf den Modulhersteller vor (<b>W6‑E‑6</b>) — aber
+    /// nur beim ERSTEN Zeichnen und bei jedem WECHSEL des Anlagenmoduls.
+    ///
+    /// <para><b>Warum nicht bei jedem <c>OnParametersSet</c>.</b> Die Hülle zeichnet
+    /// nach jeder Zellenänderung neu (jede Änderung meldet <c>Geaendert</c>); ein
+    /// Vorstellen bei jedem Durchlauf nähme dem Anwender seine eigene Filterwahl im
+    /// selben Augenblick wieder ab, in dem er sie trifft. Gemerkt wird deshalb, WOFÜR
+    /// zuletzt vorgestellt wurde: Bleibt das Anlagenmodul dasselbe, gehört der Filter
+    /// dem Anwender; wechselt es, gilt die Vorauswahl von Neuem.</para>
+    /// </summary>
+    private void Vorstellen()
+    {
+        string modul = (Modulhersteller ?? "").Trim();
+        if (_vorgestelltFuer is not null &&
+            string.Equals(_vorgestelltFuer, modul, StringComparison.Ordinal)) return;
+
+        _vorgestelltFuer = modul;
+        int treffer = Herstellertreffer(modul);
+        _vorauswahlTrifft = treffer > 0;
+        _hersteller = treffer;
+    }
+
+    /// <summary>
+    /// Der Eintrag der Herstellerliste, der zum Modulhersteller passt; <c>0</c> = keiner,
+    /// also „Alle". Index 0 ist „Alle" selbst und bleibt draussen.
+    ///
+    /// <para><b>Zwei Versuche</b>, weil Modul- und Gerätekatalog aus verschiedenen
+    /// Quellen stammen und denselben Hersteller verschieden schreiben: erst GLEICHHEIT
+    /// ohne Rücksicht auf Gross-/Kleinschreibung und Randleerzeichen, dann „der eine
+    /// Name beginnt mit dem anderen" — in BEIDE Richtungen, denn mal ist der
+    /// Katalogname der längere („SMA" → „SMA America"), mal der Modulname
+    /// („SMA Solar Technology" → „SMA"). Mehrere Treffer entscheidet der ERSTE der
+    /// Liste; sie ist sortiert, die Vorauswahl damit wiederholbar.</para>
+    /// </summary>
+    private int Herstellertreffer(string modulhersteller)
+    {
+        if (modulhersteller.Length == 0) return 0;
+
+        for (int i = 1; i < Hersteller.Count; i++)
+            if (string.Equals((Hersteller[i] ?? "").Trim(), modulhersteller,
+                              StringComparison.OrdinalIgnoreCase)) return i;
+
+        for (int i = 1; i < Hersteller.Count; i++)
+        {
+            string katalog = (Hersteller[i] ?? "").Trim();
+            if (Math.Min(katalog.Length, modulhersteller.Length) < PRAEFIX_MINDESTLAENGE) continue;
+
+            if (katalog.StartsWith(modulhersteller, StringComparison.OrdinalIgnoreCase)
+                || modulhersteller.StartsWith(katalog, StringComparison.OrdinalIgnoreCase)) return i;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Die Zeile unter dem Filter: woher die Vorauswahl kommt — und dass sie nichts
+    /// sperrt. Ohne bekannten Modulhersteller bleibt nur der zweite Halbsatz übrig.
+    /// </summary>
+    private string Filterherleitung
+    {
+        get
+        {
+            string modul = _vorgestelltFuer ?? "";
+            if (modul.Length == 0) return Texte.HerleitungFilterFrei;
+
+            return string.Format(CultureInfo.CurrentCulture,
+                                 _vorauswahlTrifft ? Texte.HerleitungFilter
+                                                   : Texte.HerleitungFilterOhne,
+                                 modul);
+        }
     }
 
     /// <summary>

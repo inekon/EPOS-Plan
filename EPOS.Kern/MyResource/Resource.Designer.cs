@@ -78,6 +78,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -29895,6 +29896,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_FILTER_HERSTELLER {
             get {
                 return ResourceManager.GetString("PVS_FILTER_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorauswahl: Hersteller des Moduls ({0}). Jeder Hersteller ist wählbar. ähnelt.
+        /// </summary>
+        public static string PVS_HERLEITUNG_FILTER {
+            get {
+                return ResourceManager.GetString("PVS_HERLEITUNG_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Hersteller ist wählbar. ähnelt.
+        /// </summary>
+        public static string PVS_HERLEITUNG_FILTER_FREI {
+            get {
+                return ResourceManager.GetString("PVS_HERLEITUNG_FILTER_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Wechselrichter des Modulherstellers ({0}) im Katalog — der Filter steht auf „Alle“. Jeder Hersteller ist wählbar. ähnelt.
+        /// </summary>
+        public static string PVS_HERLEITUNG_FILTER_OHNE {
+            get {
+                return ResourceManager.GetString("PVS_HERLEITUNG_FILTER_OHNE", resourceCulture);
             }
         }
         

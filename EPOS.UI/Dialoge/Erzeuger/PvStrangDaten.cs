@@ -239,6 +239,30 @@ public sealed class PvStrangTexte
     public string FilterHersteller { get; set; } =
         T("PVS_FILTER_HERSTELLER", "Filtern nach Hersteller:");
 
+    /// <summary>
+    /// Die Herleitung unter der Filterzeile, wenn die Vorauswahl GETROFFEN hat —
+    /// <c>PVS_HERLEITUNG_FILTER</c>, mit {0} = Hersteller des Anlagenmoduls
+    /// (Anwenderentscheid <b>W6‑E‑6</b> vom 07.09.2026).
+    /// </summary>
+    public string HerleitungFilter { get; set; } =
+        T("PVS_HERLEITUNG_FILTER",
+          "Vorauswahl: Hersteller des Moduls ({0}). Jeder Hersteller ist wählbar.");
+
+    /// <summary>
+    /// Die Herleitung, wenn der Wechselrichterkatalog KEIN Gerät des Modulherstellers
+    /// führt — <c>PVS_HERLEITUNG_FILTER_OHNE</c>, mit {0} = Hersteller des Anlagenmoduls.
+    /// </summary>
+    public string HerleitungFilterOhne { get; set; } =
+        T("PVS_HERLEITUNG_FILTER_OHNE",
+          "Kein Wechselrichter des Modulherstellers ({0}) im Katalog — der Filter steht auf „Alle“. Jeder Hersteller ist wählbar.");
+
+    /// <summary>
+    /// Die Herleitung ohne bekannten Modulhersteller — <c>PVS_HERLEITUNG_FILTER_FREI</c>.
+    /// Es bleibt der Satz, der ohnehin der wichtigere ist: Der Filter sperrt nichts.
+    /// </summary>
+    public string HerleitungFilterFrei { get; set; } =
+        T("PVS_HERLEITUNG_FILTER_FREI", "Jeder Hersteller ist wählbar.");
+
     /// <summary>Knopf „Strang anlegen" — <c>PVS_BTN_ANLEGEN</c>.</summary>
     public string BtnAnlegen { get; set; } = T("PVS_BTN_ANLEGEN", "Strang anlegen");
 

@@ -15485,6 +15485,15 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="PVS_FILTER_HERSTELLER" xml:space="preserve">
     <value>Filtern nach Hersteller:</value>
   </data>
+  <data name="PVS_HERLEITUNG_FILTER" xml:space="preserve">
+    <value>Vorauswahl: Hersteller des Moduls ({0}). Jeder Hersteller ist wählbar.</value>
+  </data>
+  <data name="PVS_HERLEITUNG_FILTER_OHNE" xml:space="preserve">
+    <value>Kein Wechselrichter des Modulherstellers ({0}) im Katalog — der Filter steht auf „Alle“. Jeder Hersteller ist wählbar.</value>
+  </data>
+  <data name="PVS_HERLEITUNG_FILTER_FREI" xml:space="preserve">
+    <value>Jeder Hersteller ist wählbar.</value>
+  </data>
   <data name="PVS_BTN_ANLEGEN" xml:space="preserve">
     <value>Strang anlegen</value>
   </data>
