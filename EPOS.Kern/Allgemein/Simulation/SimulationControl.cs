@@ -172,8 +172,8 @@ namespace WindowsFormsApplication1
 
 
         // Rückgabe
-        public float Restwaerme;
-        public float Reststrom;
+        public float RestwaermeMwh;
+        public float ReststromMwh;
         public float[] Rest_Waermebedarf_stuendlich = new float[8760];
         public float[] Rest_Strombedarf_viertelstuendlich = new float[8760 * 4];
 
@@ -460,8 +460,8 @@ namespace WindowsFormsApplication1
             WarnkriterienMelden();
 
             Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
-            Restwaerme = 0;
-            Reststrom = simulation_Strombedarf.Strombedarf_gesamt; //MWh
+            RestwaermeMwh = 0;
+            ReststromMwh = simulation_Strombedarf.StrombedarfGesamtMwh; //MWh
             Rest_Strombedarf_viertelstuendlich = simulation_Strombedarf.Strombedarf_viertelStundenwerte;
             Rest_Waermebedarf_stuendlich = (float[])simulation_Waermebedarf.Waermebedarf.Clone();
 
@@ -514,14 +514,14 @@ namespace WindowsFormsApplication1
                 // V1 (PV-Konzept § 2.3, Etappe P1): BHKW-Überschuss läuft nicht mehr
                 // als PV-Einspeisung, sondern getrennt — der Hinweis macht die
                 // Korrektur im Laufprotokoll sichtbar (Abnahmekriterium P1).
-                if (simulation_pv.BhkwUeberschuss_gesamt > 0.5f)
+                if (simulation_pv.BhkwUeberschussGesamtKwh > 0.5f)
                 {
                     string v1Text = null;
                     try { v1Text = MyResource.Resource.ResourceManager.GetString("SIM_PV_V1_BHKW_GETRENNT"); }
                     catch { }
                     if (string.IsNullOrEmpty(v1Text))
                         v1Text = "BHKW-Stromüberschuss von {0:N0} kWh getrennt von der PV-Einspeisung ausgewiesen.";
-                    Protokoll.Hinweis(string.Format(v1Text, simulation_pv.BhkwUeberschuss_gesamt));
+                    Protokoll.Hinweis(string.Format(v1Text, simulation_pv.BhkwUeberschussGesamtKwh));
                 }
             }
 
@@ -555,11 +555,11 @@ namespace WindowsFormsApplication1
             Phase(fortschritt, abbruch, Laufphase.Abschluss, 0.90);
 
             // Wärmebedarf von kWh in MWh umrechnen
-            Restwaerme /= 1000f;
+            RestwaermeMwh /= 1000f;
 
-            // Reststrom mathematisch korrekt aus dem finalen Ergebnis-Vektor berechnen
+            // ReststromMwh mathematisch korrekt aus dem finalen Ergebnis-Vektor berechnen
             // Falls deine Quell-Vektoren stündliche kW-Mittelwerte/kWh enthalten:
-            Reststrom = Rest_Strombedarf_viertelstuendlich.Sum() / 4000f;
+            ReststromMwh = Rest_Strombedarf_viertelstuendlich.Sum() / 4000f;
 
             // ***********************************************************************
             // Nachlauf (Paket 7): Kennzahlen aller beteiligten Speicher aus ihren
@@ -768,8 +768,8 @@ namespace WindowsFormsApplication1
 
                     if (_wpInSchleife)
                     {
-                        Reststrom += (float)simulation_wp.WP_Strombedarf_gesamt / 1000f; // in MWh
-                        Reststrom += (float)simulation_wp.Heizstab_gesamt / 1000f;       // in MWh
+                        ReststromMwh += (float)simulation_wp.WpStrombedarfGesamtKwh / 1000f; // in MWh
+                        ReststromMwh += (float)simulation_wp.HeizstabGesamtKwh / 1000f;       // in MWh
 
                         temp = Stundenwerte_zu_viertelstunden(simulation_wp.WP_Strombedarf_stuendlich);
                         Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
@@ -792,7 +792,7 @@ namespace WindowsFormsApplication1
                             float[] stromNachWP =
                                 Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich);
                             simulation_spk.Strombedarf_stuendlich = stromNachWP;
-                            simulation_spk.Strombedarf_gesamt = stromNachWP.Sum();
+                            simulation_spk.StrombedarfGesamtKwh = stromNachWP.Sum();
                         }
 
                         temp = Stundenwerte_zu_viertelstunden(simulation_spk.Stromverbrauch_stuendlich);
@@ -858,8 +858,8 @@ namespace WindowsFormsApplication1
             // EIGENER Vektor - kein Alias auf das Ausgangsarray eines Moduls (B0-2).
             Rest_Waermebedarf_stuendlich = kanaele.Summe();
 
-            Restwaerme = 0;
-            for (int n = 0; n < 8760; n++) Restwaerme += Rest_Waermebedarf_stuendlich[n];
+            RestwaermeMwh = 0;
+            for (int n = 0; n < 8760; n++) RestwaermeMwh += Rest_Waermebedarf_stuendlich[n];
         }
 
         // NACHARBEIT PAKET 6, BEFUND N10: Hier stand „RestAufKanaeleZurueck" — die
@@ -2483,8 +2483,8 @@ namespace WindowsFormsApplication1
         /// ist <see cref="Kanalsatz.ErhaltungOk"/>.</para>
         ///
         /// <para>Zusätzlich die Summenzusage über die Kanäle: <c>Σ_k Σ_h Ganglinie</c>
-        /// gegen den jeweiligen Bestandsskalar (<c>Direktdeckung_gesamt</c>,
-        /// <c>Speicherentladung_Anteil</c>, <c>Heizstab_gesamt</c>,
+        /// gegen den jeweiligen Bestandsskalar (<c>DirektdeckungGesamtKwh</c>,
+        /// <c>Speicherentladung_Anteil</c>, <c>HeizstabGesamtKwh</c>,
         /// <c>Entladung_gesamt</c>).</para>
         /// </summary>
         public string KanalganglinienProbe()
@@ -2535,11 +2535,11 @@ namespace WindowsFormsApplication1
             if (simulation_wp != null)
             {
                 pruefen("WP.Direktdeckung", simulation_wp.Direktdeckung_KanalStuendlich,
-                        simulation_wp.Direktdeckung_Kanal, simulation_wp.Direktdeckung_gesamt);
+                        simulation_wp.Direktdeckung_Kanal, simulation_wp.DirektdeckungGesamtKwh);
                 pruefen("WP.Speicherentladung", simulation_wp.Speicherentladung_KanalStuendlich,
                         simulation_wp.Speicherentladung_Kanal, simulation_wp.Speicherentladung_Anteil);
                 pruefen("WP.Heizstab", simulation_wp.Heizstab_KanalStuendlich,
-                        simulation_wp.Heizstab_Kanal, simulation_wp.Heizstab_gesamt);
+                        simulation_wp.Heizstab_Kanal, simulation_wp.HeizstabGesamtKwh);
             }
             if (simulation_spk != null)
             {
@@ -2552,7 +2552,7 @@ namespace WindowsFormsApplication1
             {
                 pruefen("Solar.Direktdeckung", simulation_solarthermie.Direktdeckung_KanalStuendlich,
                         simulation_solarthermie.Direktdeckung_Kanal,
-                        simulation_solarthermie.Direktdeckung_gesamt);
+                        simulation_solarthermie.DirektdeckungGesamtKwh);
                 pruefen("Solar.Speicherentladung", simulation_solarthermie.Speicherentladung_KanalStuendlich,
                         simulation_solarthermie.Speicherentladung_Kanal,
                         simulation_solarthermie.Speicherentladung_Anteil);
@@ -2560,7 +2560,7 @@ namespace WindowsFormsApplication1
             if (simulation_bhkw != null)
             {
                 pruefen("BHKW.Direktdeckung", simulation_bhkw.Direktdeckung_KanalStuendlich,
-                        simulation_bhkw.Direktdeckung_Kanal, simulation_bhkw.Direktdeckung_gesamt);
+                        simulation_bhkw.Direktdeckung_Kanal, simulation_bhkw.DirektdeckungGesamtKwh);
                 pruefen("BHKW.Speicherentladung", simulation_bhkw.Speicherentladung_KanalStuendlich,
                         simulation_bhkw.Speicherentladung_Kanal, simulation_bhkw.Speicherentladung_Anteil);
             }

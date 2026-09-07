@@ -236,12 +236,12 @@ namespace WindowsFormsApplication1
         public static double EigenanteilWpMwh(SimulationWaermepumpe wp)
         {
             if (wp == null) return 0.0;
-            return (wp.Direktdeckung_gesamt + wp.Speicherentladung_Anteil +
-                    wp.Heizstab_gesamt) / 1000.0;
+            return (wp.DirektdeckungGesamtKwh + wp.Speicherentladung_Anteil +
+                    wp.HeizstabGesamtKwh) / 1000.0;
         }
 
         /// <summary>
-        /// EIGENANTEIL des Heizkessels [MWh]. <c>S_Waerme_spk</c> ist seine gesamte
+        /// EIGENANTEIL des Heizkessels [MWh]. <c>SWaermeSpkMwh</c> ist seine gesamte
         /// NUTZWAERME, seit Paket 5 also Direktdeckung PLUS Speicherladung - als
         /// Produktion richtig, als Deckung nicht. Abgezogen wird deshalb die Ladung,
         /// hinzu kommt der zugerechnete Anteil an der bedarfsdeckenden Entladung.
@@ -250,7 +250,7 @@ namespace WindowsFormsApplication1
         {
             if (spk == null) return 0.0;
 
-            double direkt = spk.S_Waerme_spk - spk.Speicherladung_gesamt / 1000.0;
+            double direkt = spk.SWaermeSpkMwh - spk.SpeicherladungGesamtKwh / 1000.0;
             if (direkt < 0) direkt = 0;                      // Rundungsschutz
             return direkt + spk.Speicherentladung_Anteil / 1000.0;
         }
@@ -265,7 +265,7 @@ namespace WindowsFormsApplication1
         {
             if (st == null) return 0.0;
 
-            double direkt = st.Waermeproduktion_gesamt - st.Speicherladung_gesamt;
+            double direkt = st.WaermeproduktionGesamtKwh - st.SpeicherladungGesamtKwh;
             if (direkt < 0) direkt = 0;                      // Rundungsschutz
             return direkt + st.Speicherentladung_Anteil;
         }
@@ -278,7 +278,7 @@ namespace WindowsFormsApplication1
         public static double EigenanteilBhkwMwh(SimulationBHKW bh)
         {
             if (bh == null) return 0.0;
-            return (bh.Direktdeckung_gesamt + bh.Speicherentladung_Anteil) / 1000.0;
+            return (bh.DirektdeckungGesamtKwh + bh.Speicherentladung_Anteil) / 1000.0;
         }
 
         /// <summary>
@@ -340,10 +340,10 @@ namespace WindowsFormsApplication1
             m.Energiebedarf = new ErgebnisEnergiebedarfModel();
             m.Energiebedarf.Waermebedarf_Gesamt = simulation_Waermebedarf.Waermebedarf_Gesamt;
             m.Energiebedarf.Waermelast_Max = simulation_Waermebedarf.Waermebedarf_Max;
-            m.Energiebedarf.Strombedarf_Gesamt = simulation_Strombedarf.Strombedarf_gesamt;
+            m.Energiebedarf.Strombedarf_Gesamt = simulation_Strombedarf.StrombedarfGesamtMwh;
             m.Energiebedarf.Strombedarf_Max = simulation_Strombedarf.Strombedarf_Max;
-            m.Energiebedarf.Waermerestbedarf = sim.Restwaerme;   // Restwärmebedarf nach allen Erzeugern
-            m.Energiebedarf.Stromrestbedarf = sim.Reststrom;     // Reststrombedarf/Netzbezug
+            m.Energiebedarf.Waermerestbedarf = sim.RestwaermeMwh;   // Restwärmebedarf nach allen Erzeugern
+            m.Energiebedarf.Stromrestbedarf = sim.ReststromMwh;     // Reststrombedarf/Netzbezug
 
             // PAKET E1 (Konzept 4.4): der Jahresbedarf JE KANAL [MWh]. Quelle ist der
             // Kanalsatz, aus dem seit Paket K1 auch Waermebedarf_Gesamt gebildet wird
@@ -358,15 +358,15 @@ namespace WindowsFormsApplication1
             {
                 SimulationWaermepumpe wp = sim.simulation_wp;
                 ErgebnisWaermepumpeModel w = new ErgebnisWaermepumpeModel();
-                w.Waermebedarf = wp.Waermebedarf_gesamt / 1000.0;
-                w.Waermeproduktion_WP = wp.WP_Waermeproduktion_gesamt / 1000.0;
-                w.Stromverbrauch_WP = wp.WP_Strombedarf_gesamt / 1000.0;
-                w.Stromverbrauch_Heizstab = wp.Heizstab_gesamt / 1000.0;
+                w.Waermebedarf = wp.WaermebedarfGesamtKwh / 1000.0;
+                w.Waermeproduktion_WP = wp.WpWaermeproduktionGesamtKwh / 1000.0;
+                w.Stromverbrauch_WP = wp.WpStrombedarfGesamtKwh / 1000.0;
+                w.Stromverbrauch_Heizstab = wp.HeizstabGesamtKwh / 1000.0;
                 // B0-7a: Vorbelegung aus der Stundenganglinie. Sie wird seit
                 // Nutzerentscheidung 6-5 weiter unten ausnahmslos überschrieben
                 // (Stufeneingang minus Eigenanteil) und steht hier nur noch als
                 // definierter Ausgangswert.
-                w.Restwaermebedarf = wp.waermerestbedarf_gesamt / 1000.0;
+                w.Restwaermebedarf = wp.WaermerestbedarfGesamtKwh / 1000.0;
                 // Paket 7 / Konzept 6.6: Kapazität kommt aus dem zugeordneten Speicher
                 // (SimulationPufferspeicher.Q_max in kWh), nicht mehr aus dem Legacy-
                 // Ausdruck Volumen · 1,16. Der alte Ausdruck rechnete ohne ΔT (also
@@ -405,7 +405,7 @@ namespace WindowsFormsApplication1
                 //     Restwaermebedarf = Stufeneingang − EIGENANTEIL   (>= 0)
                 //
                 // Bisher meldete allein die Wärmepumpe den Rest NACH DER GANZEN
-                // Speicherstufe (waermerestbedarf_gesamt, Kanalstand nach Phase F) —
+                // Speicherstufe (WaermerestbedarfGesamtKwh, Kanalstand nach Phase F) —
                 // Variante C aus 6-5. Mit genau EINEM Mitglied in der Stufe ist das
                 // dieselbe Zahl; ab zwei Mitgliedern enthielt der Wert auch die Lieferung
                 // von Heizkessel und BHKW, die beide ihre Deckung zusätzlich selbst
@@ -504,9 +504,9 @@ namespace WindowsFormsApplication1
                 // NACHARBEIT PAKET 6, BEFUND N8: Der Stufeneingang kommt aus der
                 // double-Jahressumme des Moduls statt aus der Summe der float-Ganglinie.
                 // Das ist dieselbe Größe, nur ohne die Summationsfehler von 8760
-                // float-Additionen — und es bindet Waermebedarf_gesamt an, das bis dahin
+                // float-Additionen — und es bindet WaermebedarfGesamtKwh an, das bis dahin
                 // nur geschrieben wurde.
-                double waermebedarfMWh = bh.Waermebedarf_gesamt / 1000.0;
+                double waermebedarfMWh = bh.WaermebedarfGesamtKwh / 1000.0;
                 double strombedarfMWh = bh.strombedarf.Sum() / 1000.0;
                 float[] restwaermeBhkw = sim.SubVectors(bh.waermebedarf, bh.waermeproduktion);
 
@@ -515,7 +515,7 @@ namespace WindowsFormsApplication1
                 b.Strombedarf = strombedarfMWh;
                 b.Reststrombedarf = strombedarfMWh - bh.Stromproduktion_BHKW_MWh;
                 b.Waermeproduktion = bh.Waermeproduktion_BHKW_MWh;
-                b.Waermeueberschuss = bh.Waermeueberschuss / 1000.0;
+                b.Waermeueberschuss = bh.WaermeueberschussKwh / 1000.0;
                 b.Stromproduktion = bh.Stromproduktion_BHKW_MWh;
                 b.Betriebsstunden_Gesamt = bh.Betriebsstunden;
                 b.Betriebsstunden_Durchschnitt = bh.dLaufzeiten;
@@ -527,8 +527,8 @@ namespace WindowsFormsApplication1
                 b.VbhElektrisch = bh.VbhElektrischGesamt;
                 b.Waermebedarfsdeckung = (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
                     ? bh.Waermeproduktion_BHKW_MWh * 100.0 / simulation_Waermebedarf.Waermebedarf_Gesamt : 0;
-                b.Strombedarfsdeckung = (simulation_Strombedarf.Strombedarf_gesamt > 0)
-                    ? bh.Stromproduktion_BHKW_MWh * 100.0 / simulation_Strombedarf.Strombedarf_gesamt : 0;
+                b.Strombedarfsdeckung = (simulation_Strombedarf.StrombedarfGesamtMwh > 0)
+                    ? bh.Stromproduktion_BHKW_MWh * 100.0 / simulation_Strombedarf.StrombedarfGesamtMwh : 0;
 
                 // PAKET 6 — Restbedarf und Deckungsgrad des BHKW, NUR im zweikanaligen Weg.
                 //
@@ -584,51 +584,51 @@ namespace WindowsFormsApplication1
                         Summiere(bh.Direktdeckung_Kanal, bh.Speicherentladung_Kanal),
                         simulation_Waermebedarf.Waermebedarf_Gesamt, b.Waermebedarfsdeckung);
                 }
-                //b.Gasverbrauch_Hu = bh.Gasverbrauch_BHKW;
+                //b.Gasverbrauch_Hu = bh.GasverbrauchBhkwMwh;
 
-                if (bh.Gasverbrauch_BHKW > 0)
+                if (bh.GasverbrauchBhkwMwh > 0)
                 {
-                    b.Gasverbrauch = bh.Gasverbrauch_BHKW;
+                    b.Gasverbrauch = bh.GasverbrauchBhkwMwh;
                 }
 
-                if (bh.Oelverbrauch_BHKW > 0)
+                if (bh.OelverbrauchBhkwMwh > 0)
                 {
-                    b.Oelverbrauch = bh.Oelverbrauch_BHKW;
+                    b.Oelverbrauch = bh.OelverbrauchBhkwMwh;
                 }
 
-                if (bh.Holzmenge_BHKW > 0)
+                if (bh.HolzmengeBhkwMwh > 0)
                 {
-                    b.Holzverbrauch = bh.Holzmenge_BHKW;
+                    b.Holzverbrauch = bh.HolzmengeBhkwMwh;
                 }
 
-                if (bh.Pellets_BHKW > 0)
+                if (bh.PelletsBhkwMwh > 0)
                 {
-                    b.Pellets = bh.Pellets_BHKW;
+                    b.Pellets = bh.PelletsBhkwMwh;
                 }
 
-                if (bh.Rapsoelverbrauch_BHKW > 0)
+                if (bh.RapsoelverbrauchBhkwMwh > 0)
                 {      
-                    b.Rapsoelverbrauch = bh.Rapsoelverbrauch_BHKW;
+                    b.Rapsoelverbrauch = bh.RapsoelverbrauchBhkwMwh;
                 }
                 
-                if (bh.TierischeFette_BHKW > 0)
+                if (bh.TierischeFetteBhkwMwh > 0)
                 {
-                    b.TierischeFette = bh.TierischeFette_BHKW;
+                    b.TierischeFette = bh.TierischeFetteBhkwMwh;
                 }
                 
-                if (bh.Koks_BHKW > 0)
+                if (bh.KoksBhkwMwh > 0)
                 {
-                    b.Koks = bh.Koks_BHKW;
+                    b.Koks = bh.KoksBhkwMwh;
                 }
                 
-                if (bh.Kohle_BHKW > 0)
+                if (bh.KohleBhkwMwh > 0)
                 {
-                    b.Kohle = bh.Kohle_BHKW;
+                    b.Kohle = bh.KohleBhkwMwh;
                 }
                 
-                if (bh.Sonstigemenge_BHKW > 0)
+                if (bh.SonstigemengeBhkwMwh > 0)
                 {
-                    b.Sonstigverbrauch = bh.Sonstigemenge_BHKW;
+                    b.Sonstigverbrauch = bh.SonstigemengeBhkwMwh;
                 }
 
                 // Modulauflistung (wie dataGridView_BHKW).
@@ -676,7 +676,7 @@ namespace WindowsFormsApplication1
                 // PAKET-5-NACHARBEIT, BEFUND N1 — dieselbe Mitkorrektur wie bei der
                 // Solarthermie (Konzept 6.4), die für den Kessel gefehlt hat:
                 //
-                // S_Waerme_spk ist die gesamte NUTZWÄRME des Kessels, seit Paket 5 also
+                // SWaermeSpkMwh ist die gesamte NUTZWÄRME des Kessels, seit Paket 5 also
                 // Direktdeckung PLUS Speicherladung — und genau so gehört sie in
                 // Waermeproduktion, denn der Brennstoffverbrauch und der
                 // Jahresnutzungsgrad beziehen sich auf sie. Als BEDARFSDECKUNG taugt sie
@@ -695,13 +695,13 @@ namespace WindowsFormsApplication1
                 // Größe. Einheitlich mit Solarthermie und BHKW (Nutzerentscheidung 6-4).
                 double kesselEigen = EigenanteilKesselMwh(spk);
 
-                h.Waermebedarf = spk.Waermebedarf_gesamt;
-                h.Waermeproduktion = spk.S_Waerme_spk;
-                h.Restwaermebedarf = spk.Waermebedarf_gesamt - kesselEigen;
+                h.Waermebedarf = spk.WaermebedarfGesamtMwh;
+                h.Waermeproduktion = spk.SWaermeSpkMwh;
+                h.Restwaermebedarf = spk.WaermebedarfGesamtMwh - kesselEigen;
                 if (h.Restwaermebedarf < 0) h.Restwaermebedarf = 0;
-                h.Strombedarf = spk.Strombedarf_gesamt / 1000.0;
-                h.Reststrombedarf = spk.Strombedarf_gesamt / 1000.0 + spk.Stromverbrauch_Spk;
-                h.Stromverbrauch = spk.Stromverbrauch_Spk;
+                h.Strombedarf = spk.StrombedarfGesamtKwh / 1000.0;
+                h.Reststrombedarf = spk.StrombedarfGesamtKwh / 1000.0 + spk.StromverbrauchSpkMwh;
+                h.Stromverbrauch = spk.StromverbrauchSpkMwh;
                 h.Waermebedarfsdeckung = 0;
                 if (simulation_Waermebedarf.Waermebedarf_Gesamt > 0)
                 {
@@ -722,21 +722,21 @@ namespace WindowsFormsApplication1
                 h.Gasspitze = spk.Gasspitze_Spk;
 
                 // ETAPPE D4: Quellwärme der Kaskade. Der Rechenkern führt sie in kWh
-                // (Quellwaerme_gesamt summiert die Entladungen des Quellpuffers), die
+                // (QuellwaermeGesamtKwh summiert die Entladungen des Quellpuffers), die
                 // Ergebniszeile in MWh - dieselbe Umrechnung wie beim Strombedarf zwei
                 // Zeilen weiter oben. OHNE Quellbezug ist der Zähler exakt 0; die Spalte
                 // wird trotzdem immer geschrieben, damit „keine Kaskade" und „Spalte
                 // fehlt" unterscheidbar bleiben.
-                h.Quellwaerme = spk.Quellwaerme_gesamt / 1000.0;
-                h.Gasverbrauch = spk.Gasverbrauch_SPK;
-                h.Oelverbrauch = spk.Oelverbrauch_SPK;
-                h.Koks = spk.Koks_SPK;
-                h.Rapsoelverbrauch = spk.Rapsoelverbrauch_SPK;
-                h.Holzverbrauch = spk.Holzverbrauch_SPK;
-                h.Kohle = spk.Kohle_SPK;
-                h.Sonstigverbrauch = spk.Sonstigverbrauch_SPK;
-                h.Pellets = spk.Pellets_SPK;
-                h.TierischeFette = spk.TierischeFette_SPK;
+                h.Quellwaerme = spk.QuellwaermeGesamtKwh / 1000.0;
+                h.Gasverbrauch = spk.GasverbrauchSpkMwh;
+                h.Oelverbrauch = spk.OelverbrauchSpkMwh;
+                h.Koks = spk.KoksSpkMwh;
+                h.Rapsoelverbrauch = spk.RapsoelverbrauchSpkMwh;
+                h.Holzverbrauch = spk.HolzverbrauchSpkMwh;
+                h.Kohle = spk.KohleSpkMwh;
+                h.Sonstigverbrauch = spk.SonstigverbrauchSpkMwh;
+                h.Pellets = spk.PelletsSpkMwh;
+                h.TierischeFette = spk.TierischeFetteSpkMwh;
 
                 // Modulauflistung (wie listView_SimSPK).
                 for (int i = 0; i < spk.spk_list.Count(); i++)
@@ -765,9 +765,9 @@ namespace WindowsFormsApplication1
                 ErgebnisSolarthermieModel stm = new ErgebnisSolarthermieModel();
 
                 // Paket 5 / Konzept 6.4, ZWINGENDE MITKORREKTUR: Sobald die Solarthermie
-                // zusätzlich einen Puffer lädt, wächst Waermeproduktion_gesamt über den
+                // zusätzlich einen Puffer lädt, wächst WaermeproduktionGesamtKwh über den
                 // Momentanbedarf hinaus. Die alte Formel
-                //   Restwaermebedarf = (Waermebedarf_gesamt − Waermeproduktion_gesamt)
+                //   Restwaermebedarf = (WaermebedarfGesamtKwh − WaermeproduktionGesamtKwh)
                 // wurde damit NEGATIV und die Deckung überschritt 100 % — beides landete
                 // ungeprüft in Tab_ErgebnisSolarthermie und von dort in Variantenbericht
                 // und Wirtschaftlichkeit.
@@ -777,15 +777,15 @@ namespace WindowsFormsApplication1
                 // erst später und über den Speicher; sie einem Erzeuger zuzurechnen wäre
                 // eine Doppelzählung, sobald zwei Erzeuger denselben Puffer laden. Die
                 // Größe steht weiterhin vollständig in Waermeproduktion (und getrennt in
-                // Speicherladung_gesamt).
+                // SpeicherladungGesamtKwh).
                 //
                 // OHNE PUFFER-SENKE IST DIE KORREKTUR WIRKUNGSLOS: Dann lädt die
-                // Solarthermie keinen Puffer, Speicherladung_gesamt ist exakt 0,0 und der
+                // Solarthermie keinen Puffer, SpeicherladungGesamtKwh ist exakt 0,0 und der
                 // Ausdruck damit bitgleich der bisherige.
                 // Rundungsschutz in EigenanteilSolarKwh: Beide Summen entstehen
                 // getrennt; geht die gesamte Produktion in den Speicher, kann die
                 // Differenz um wenige 1e-10 unter null liegen. Ohne Puffer-Senke ist
-                // Speicherladung_gesamt exakt 0,0 und Waermeproduktion_gesamt eine Summe
+                // SpeicherladungGesamtKwh exakt 0,0 und WaermeproduktionGesamtKwh eine Summe
                 // nichtnegativer Werte — die Klemmung greift dann nachweislich nie.
 
                 // BEFUND N2 (Nacharbeit): Der DECKUNGSGRAD ist der Eigenanteil dieses
@@ -805,14 +805,14 @@ namespace WindowsFormsApplication1
                 // Zusatzgrößen exakt 0, der Ausdruck also bitgleich der bisherige.
                 double solarEigen = EigenanteilSolarKwh(st);
 
-                stm.Waermebedarf = st.Waermebedarf_gesamt / 1000.0;
-                stm.Waermeproduktion = st.Waermeproduktion_gesamt / 1000.0;
-                stm.Restwaermebedarf = (st.Waermebedarf_gesamt - solarEigen) / 1000.0;
+                stm.Waermebedarf = st.WaermebedarfGesamtKwh / 1000.0;
+                stm.Waermeproduktion = st.WaermeproduktionGesamtKwh / 1000.0;
+                stm.Restwaermebedarf = (st.WaermebedarfGesamtKwh - solarEigen) / 1000.0;
                 if (stm.Restwaermebedarf < 0) stm.Restwaermebedarf = 0;   // Rundungsschutz
                 // PAKET E1 — BEFUND V0-O1 BEHOBEN (GEWOLLTE WERTÄNDERUNG genau dieser
                 // einen Kennzahl):
                 //
-                // Der Nenner war bis hierher st.Waermebedarf_gesamt, also der
+                // Der Nenner war bis hierher st.WaermebedarfGesamtKwh, also der
                 // STUFENEINGANG der Solarthermie — der Bedarf, der bei ihr ankommt,
                 // nachdem vorgelagerte Erzeuger der Kaskade bereits gedeckt haben.
                 // Wärmepumpe, Heizkessel und BHKW teilen alle drei durch den
@@ -845,7 +845,7 @@ namespace WindowsFormsApplication1
                     Summiere(st.Direktdeckung_Kanal, st.Speicherentladung_Kanal),
                     simulation_Waermebedarf.Waermebedarf_Gesamt, stm.Waermebedarfsdeckung);
 
-                stm.Ueberschuss = st.Ueberschuss_summe / 1000.0;
+                stm.Ueberschuss = st.UeberschussSummeKwh / 1000.0;
 
                 if (st.Kollektor_Ergebnisse != null)
                     foreach (SolarKollektorErgebnis k in st.Kollektor_Ergebnisse)
@@ -854,8 +854,8 @@ namespace WindowsFormsApplication1
                             Modul = k.Name,
                             Flaeche = k.Flaeche,
                             Anzahl = k.Anzahl,
-                            Waermeproduktion = k.Waermeproduktion / 1000.0,
-                            Ueberschuss = k.Ueberschuss / 1000.0
+                            Waermeproduktion = k.WaermeproduktionKwh / 1000.0,
+                            Ueberschuss = k.UeberschussKwh / 1000.0
                         });
 
                 m.Solarthermie = stm;
@@ -901,7 +901,7 @@ namespace WindowsFormsApplication1
                             Modul = p.Name,
                             Flaeche = p.Flaeche,
                             Anzahl = p.Anzahl,
-                            Stromproduktion = p.Stromproduktion / 1000.0
+                            Stromproduktion = p.StromproduktionKwh / 1000.0
                         });
 
                 m.Photovoltaik = pvm;

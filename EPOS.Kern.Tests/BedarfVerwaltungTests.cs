@@ -472,7 +472,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(v.Waerme);
 
             Assert.Equal(365.0, v.Strom.Strombedarf_Gebaeude_gesamt, 4);
-            Assert.Equal(v.Strom.Strombedarf_Gebaeude_gesamt, v.Strom.Strombedarf_gesamt, 6);
+            Assert.Equal(v.Strom.Strombedarf_Gebaeude_gesamt, v.Strom.StrombedarfGesamtMwh, 6);
             Assert.Equal(35040, v.Strom.Strombedarf_viertelStundenwerte.Length);
             Assert.Equal(31.0, v.Strom.Strombedarf_monat[0], 3);
             Assert.Equal(31.0, v.Strom.Strombedarf_monat[11], 3);

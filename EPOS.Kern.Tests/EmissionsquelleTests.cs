@@ -227,7 +227,7 @@ namespace EPOS.Kern.Tests
             string fehler;
             Assert.True(lauf.Simuliere(PROJEKT, out fehler), fehler);
 
-            double verbrauch = lauf.sim.simulation_bhkw.Gasverbrauch_BHKW;
+            double verbrauch = lauf.sim.simulation_bhkw.GasverbrauchBhkwMwh;
             Assert.True(verbrauch > 0, "Das Prüfprojekt hat keinen BHKW-Verbrauch mehr.");
 
             Assert.Equal(verbrauch * 240.0 / 1000.0, lauf.sim.simulation_bhkw.Em_CO2_BHKW, 2);

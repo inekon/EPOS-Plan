@@ -64,13 +64,13 @@ namespace WindowsFormsApplication1
         public float[] BhkwUeberschuss = new float[8760];
 
         /// <summary>Jahressumme von <see cref="BhkwUeberschuss"/> [kWh].</summary>
-        public float BhkwUeberschuss_gesamt = 0;
+        public float BhkwUeberschussGesamtKwh = 0;
 
         // Statistiken
         public double Stromproduktion_Max = 0;
         public double MaxPSolar = 0;
-        public float Stromproduktion_gesamt = 0;
-        public float Stromproduktion_Theoretisch_gesamt = 0;
+        public float StromproduktionGesamtKwh = 0;
+        public float StromproduktionTheoretischGesamtKwh = 0;
 
         // =================================================================================
         // Vorgabewerte und Plausibilitaetsfenster (Stufe E1, Paket A)
@@ -135,7 +135,7 @@ namespace WindowsFormsApplication1
             Array.Clear(Reststrom, 0, Reststrom.Length);
             Array.Clear(Ueberschuss, 0, Ueberschuss.Length);
             Array.Clear(BhkwUeberschuss, 0, BhkwUeberschuss.Length);
-            BhkwUeberschuss_gesamt = 0;
+            BhkwUeberschussGesamtKwh = 0;
             Array.Clear(pvPotentialGesamt_stuendlich, 0, pvPotentialGesamt_stuendlich.Length);
             Modul_Ergebnisse.Clear();
 
@@ -143,8 +143,8 @@ namespace WindowsFormsApplication1
             // hierher.
             Stromproduktion_Max = 0;
             MaxPSolar = 0;
-            Stromproduktion_gesamt = 0;
-            Stromproduktion_Theoretisch_gesamt = 0;
+            StromproduktionGesamtKwh = 0;
+            StromproduktionTheoretischGesamtKwh = 0;
             Array.Clear(Stromproduktion_viertelstunde, 0, Stromproduktion_viertelstunde.Length);
             Array.Clear(Reststrom_viertelstunde, 0, Reststrom_viertelstunde.Length);
             Array.Clear(Ueberschuss_viertelstunde, 0, Ueberschuss_viertelstunde.Length);
@@ -395,7 +395,7 @@ namespace WindowsFormsApplication1
                     Name = ctrl.items[n].Bezeichner,
                     Flaeche = nFlaecheGesamt,
                     Anzahl = anzahlModule,
-                    Stromproduktion = prodSummeMod,
+                    StromproduktionKwh = prodSummeMod,
                     Erweitert = erweitert,
                     DcAcVerhaeltnis = dcAc,
                     ClippingVerlust = clippingVerlust,
@@ -437,9 +437,9 @@ namespace WindowsFormsApplication1
             }
 
             // SUMMEN & KONVERTIERUNG
-            Stromproduktion_gesamt = Stromproduktion.Sum();
-            Stromproduktion_Theoretisch_gesamt = Stromproduktion_Theoretisch.Sum();
-            BhkwUeberschuss_gesamt = BhkwUeberschuss.Sum();
+            StromproduktionGesamtKwh = Stromproduktion.Sum();
+            StromproduktionTheoretischGesamtKwh = Stromproduktion_Theoretisch.Sum();
+            BhkwUeberschussGesamtKwh = BhkwUeberschuss.Sum();
 
             // Für den Chart aufbereiten
             Stromproduktion_viertelstunde = Stundenwerte_zu_viertelstunden(Stromproduktion);
@@ -1349,7 +1349,7 @@ namespace WindowsFormsApplication1
         public string Name = "";
         public double Flaeche;          // m^2 gesamt
         public long Anzahl;             // Modulanzahl
-        public double Stromproduktion;  // kWh/a (theoretisch, nach Wechselrichter)
+        public double StromproduktionKwh;  // kWh/a (theoretisch, nach Wechselrichter)
 
         // --- Stufe E2 (Paket B) -------------------------------------------------------
         // Die vier Felder sind AUSWEIS, kein Rechenweg: Sie stehen im Simulations-

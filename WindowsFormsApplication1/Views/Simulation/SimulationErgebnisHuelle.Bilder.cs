@@ -194,9 +194,18 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Wärmebedarfsdeckung als Torte — wörtlich <c>FuelleUebersicht</c>
         /// :3959-3969: je Segment nur bei Wert &gt; 0.
+        ///
+        /// <para><b>W8‑O‑5c / S1.2 — EINE Konvention (Befund U5).</b> Die fünf Segmente
+        /// kamen bis dahin aus DREI Konventionen: Wärmepumpe und Heizstab in kWh, hier
+        /// geteilt; Heizkessel und BHKW schon in MWh; der Rest als
+        /// <c>float</c>-Bilanzgröße. Das Bild stimmte, weil jemand jede der fünf Größen
+        /// einzeln nachgesehen hatte. Jetzt kommen alle fünf aus
+        /// <see cref="SimulationErgebnisCtrl.UebersichtKennzahlen"/> — in MWh, mit der
+        /// Einheit am Namen und in derselben Konvention wie die zwei Ringe.</para>
         /// </summary>
         private byte[] BildKuchen()
         {
+            var k = Kennzahlen();
             var segmente = new List<ChartRenderer.Segment>();
 
             void Segment(string name, double wert, SKColor farbe)
@@ -205,14 +214,14 @@ namespace WindowsFormsApplication1
             }
 
             Segment(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
-                    sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000.0, R_WP);
+                    k.WpWaermeproduktionMwh, R_WP);
             Segment(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                    sim.simulation_wp.Heizstab_gesamt / 1000.0, R_HEIZSTAB);
+                    k.HeizstabWaermeproduktionMwh, R_HEIZSTAB);
             Segment(MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
-                    sim.simulation_spk.S_Waerme_spk, R_KESSEL);
+                    k.KesselWaermeproduktionMwh, R_KESSEL);
             Segment(MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
-                    sim.simulation_bhkw.Waermeproduktion_BHKW_MWh, R_BHKW);
-            Segment(MyResource.Resource.CHART_SEGMENT_REST, sim.Restwaerme, R_REST);
+                    k.BhkwWaermeproduktionMwh, R_BHKW);
+            Segment(MyResource.Resource.CHART_SEGMENT_REST, k.RestwaermeMwh, R_REST);
 
             return ChartRenderer.Kuchen(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARFSDECKUNG,
                                         segmente);
@@ -225,7 +234,7 @@ namespace WindowsFormsApplication1
         private byte[] BildRingWaerme()
         {
             ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
-            var k = SimulationErgebnisCtrl.Uebersicht(sim, _waermebedarf, _strombedarf);
+            var k = Kennzahlen();
             double wbGesamt = _waermebedarf.Waermebedarf_Gesamt;
 
             var segmente = new List<ChartRenderer.Ringsegment>();
@@ -255,30 +264,36 @@ namespace WindowsFormsApplication1
                                       segmente, mitte, "%");
         }
 
+        /// <summary>
+        /// Der Ring „Stromdeckung" (B6). Er liest seit W8‑O‑5c / S1.2 dieselben
+        /// <c>…Mwh</c>-Felder wie der Wärmering (Befund U5/U6); vorher rechnete er
+        /// Photovoltaik und Speicherentladung selbst auf MWh und nahm BHKW und
+        /// Reststrom fertig — drei Konventionen in EINEM Bild.
+        /// </summary>
         private byte[] BildRingStrom()
         {
             ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
-            double sbGesamt = StrombedarfGesamt();
+            var k = Kennzahlen();
+            double sbGesamt = k.StrombedarfMitEigenverbrauchMwh;
 
             var segmente = new List<ChartRenderer.Ringsegment>();
             if (p.Photovoltaik)
                 segmente.Add(new ChartRenderer.Ringsegment(
-                    MyResource.Resource.SIM_PHOTOVOLTAIK,
-                    sim.simulation_pv.Stromproduktion_gesamt / 1000.0, R_PV));
+                    MyResource.Resource.SIM_PHOTOVOLTAIK, k.PvStromproduktionMwh, R_PV));
             if (p.BHKW)
                 segmente.Add(new ChartRenderer.Ringsegment(
                     MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
-                    sim.simulation_bhkw.Stromproduktion_BHKW_MWh, R_BHKW_STROM));
+                    k.BhkwStromproduktionMwh, R_BHKW_STROM));
             if (p.Stromspeicher && sim.Speicherergebnis != null)
                 segmente.Add(new ChartRenderer.Ringsegment(
                     MyResource.Resource.SIM_STROMSPEICHER,
-                    sim.Speicherergebnis.EntladeenergieKwh / 1000.0, R_SPEICHER));
+                    k.StromspeicherEntladungMwh, R_SPEICHER));
 
             segmente.Add(new ChartRenderer.Ringsegment(
-                MyResource.Resource.SIM_KACHEL_RESTSTROMBEDARF, sim.Reststrom, R_RESTSTROM));
+                MyResource.Resource.SIM_KACHEL_RESTSTROMBEDARF, k.ReststromMwh, R_RESTSTROM));
 
             // Befund W11-B36: Ohne Bedarf steht hier 0 und nicht 100.
-            double mitte = sbGesamt > 0 ? StromgedecktMwh() * 100.0 / sbGesamt : 0.0;
+            double mitte = sbGesamt > 0 ? k.StromGesamtMwh * 100.0 / sbGesamt : 0.0;
 
             return ChartRenderer.Ring(MyResource.Resource.CHART_KACHEL_STROMBEDARFSDECKUNG,
                                       segmente, mitte, "%");

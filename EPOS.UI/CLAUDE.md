@@ -37,6 +37,14 @@ entgegen — sie ist damit austauschbar.
 - **Zahlen komma- und punkttolerant**, kein Tausendertrennzeichen, invariant geparst — dieselbe
   Regel wie `WindowsFormsApplication1/Program.cs` (`ZahlParsen`/`GanzzahlParsen`). Eine Fehleingabe
   **färbt** das Feld (`epos-fehleingabe`), sie meldet nicht.
+- **Ein Dialog rechnet Energiemengen NUR über `Energieeinheit` um** — nie mit einem nackten
+  Faktor 1 000 (Anwenderentscheid **W8‑O‑5c**, 07.09.2026). Die Zahl kommt in ihrer Einheit
+  herein, der Name sagt welche (`…Kwh`, `…Mwh`, `…Kw`); gerechnet wird im Kern, an den zwei
+  Nähten `SimulationErgebnisCtrl` und `SimulationRunner`. Wächter:
+  `EPOS.Kern.Tests/EinheitenWacheTests.cs` liest `EPOS.UI/**` auf die sieben Schreibweisen
+  `/ 1000`, `* 1000`, `/= 1000`, `*= 1000`, `/ 4000`, `0.001`, `1e-3` und führt eine begründete
+  Ausnahmeliste — heute nur Leistungen (W → kW). Die vollständige Regel steht in
+  [`EPOS.Kern/CLAUDE.md`](../EPOS.Kern/CLAUDE.md), Abschnitt „Einheiten".
 - **Beruhrungsziele mindestens 44 px** (`--epos-touchziel`), Warnfarben mit
   `@media (forced-colors: active)` absichern.
 - **Aktionsknöpfe in einer Tabellenzeile sind IMMER sichtbar**, nie erst bei `:hover` —

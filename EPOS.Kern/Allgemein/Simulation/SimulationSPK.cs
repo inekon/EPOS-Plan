@@ -50,24 +50,24 @@ namespace WindowsFormsApplication1
         public int Vorgabe_Betriebsbereitschaft;
 
         // Globale Ergebnisse
-        public double Waermebedarf_gesamt = 0;
-        public double Strombedarf_gesamt = 0;
+        public double WaermebedarfGesamtMwh = 0;
+        public double StrombedarfGesamtKwh = 0;
         public double Maximale_Kesselleistung_Spk = 0;
-        public double Stromverbrauch_Spk = 0;
-        public double BruttoWaermeSpkErzeugung = 0;
-        public double S_Waerme_spk = 0;
+        public double StromverbrauchSpkMwh = 0;
+        public double BruttoWaermeSpkErzeugungMwh = 0;
+        public double SWaermeSpkMwh = 0;
         public double Gasspitze_Spk = 0;
 
         // Globale Brennstoffzähler (in MWh)
-        public double Gasverbrauch_SPK = 0;
-        public double Oelverbrauch_SPK = 0;
-        public double Rapsoelverbrauch_SPK = 0;
-        public double Holzverbrauch_SPK = 0;
-        public double Sonstigverbrauch_SPK = 0;
-        public double Koks_SPK = 0;
-        public double Kohle_SPK = 0;
-        public double Pellets_SPK = 0;
-        public double TierischeFette_SPK = 0;
+        public double GasverbrauchSpkMwh = 0;
+        public double OelverbrauchSpkMwh = 0;
+        public double RapsoelverbrauchSpkMwh = 0;
+        public double HolzverbrauchSpkMwh = 0;
+        public double SonstigverbrauchSpkMwh = 0;
+        public double KoksSpkMwh = 0;
+        public double KohleSpkMwh = 0;
+        public double PelletsSpkMwh = 0;
+        public double TierischeFetteSpkMwh = 0;
 
         // Emissionen gesamt der Kesselstufe. EINHEITEN, seit W14a-E-8-B1 benannt statt
         // pauschal "kg": CO2 in t/a, SO2/NOx/CO/Staub in kg/a - dieselbe Konvention wie
@@ -263,10 +263,10 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < Anzahl; i++)
             {
                 double Kessel_Nutzkraft_Jahr = s_waerme_Gas_Spk[i] + s_waerme_Oel_Spk[i];
-                S_Waerme_spk += Kessel_Nutzkraft_Jahr;
+                SWaermeSpkMwh += Kessel_Nutzkraft_Jahr;
 
                 double Kessel_Gesamtverbrauch_MWh = Kessel_Verbrauch_MWh_Spk[i];
-                BruttoWaermeSpkErzeugung += Kessel_Gesamtverbrauch_MWh;
+                BruttoWaermeSpkErzeugungMwh += Kessel_Gesamtverbrauch_MWh;
 
                 // Den Verbrauch auf die globalen Brennstoffzähler buchen. Die Bereiche
                 // spiegeln Tab_Brennstoff_Stamm.ID_Kategorie: 14 (Biogas) ist Kategorie 1
@@ -274,23 +274,23 @@ namespace WindowsFormsApplication1
                 // 24 Sonstige, 25 Wasserstoff, künftige IDs), fängt das else als
                 // Sammelposten — dieselbe Verzweigung erwartet die Anzeige
                 // (Form_Simulation_Detail, _kesselBrennstoffIds).
-                if ((Brennstoff_Art[i] >= 1 && Brennstoff_Art[i] <= 5) || Brennstoff_Art[i] == 14) Gasverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
-                else if ((Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <= 9) || (Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22)) Oelverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
-                else if (Brennstoff_Art[i] == 10) Koks_SPK += Kessel_Gesamtverbrauch_MWh;
-                else if (Brennstoff_Art[i] == 11) Kohle_SPK += Kessel_Gesamtverbrauch_MWh;
-                else if (Brennstoff_Art[i] == 12) Holzverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
-                else if (Brennstoff_Art[i] == 17) TierischeFette_SPK += Kessel_Gesamtverbrauch_MWh;
+                if ((Brennstoff_Art[i] >= 1 && Brennstoff_Art[i] <= 5) || Brennstoff_Art[i] == 14) GasverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
+                else if ((Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <= 9) || (Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22)) OelverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
+                else if (Brennstoff_Art[i] == 10) KoksSpkMwh += Kessel_Gesamtverbrauch_MWh;
+                else if (Brennstoff_Art[i] == 11) KohleSpkMwh += Kessel_Gesamtverbrauch_MWh;
+                else if (Brennstoff_Art[i] == 12) HolzverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
+                else if (Brennstoff_Art[i] == 17) TierischeFetteSpkMwh += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 13)
                 {
                     // Elektrowärme / Wärmepumpe
-                    Stromverbrauch_Spk += Kessel_Nutzkraft_Jahr;
+                    StromverbrauchSpkMwh += Kessel_Nutzkraft_Jahr;
                     // B0-2: auch hier kein Aliasing — sonst bleibt der Strom-Vektor ab dem
                     // zweiten Lauf dauerhaft an die Kessel-Ganglinie gebunden.
                     Stromverbrauch_stuendlich = (float[])Kesselleistung_stuendlich.Clone();
                 }
-                else if (Brennstoff_Art[i] == 15) Pellets_SPK += Kessel_Gesamtverbrauch_MWh;
-                else if (Brennstoff_Art[i] == 16) Rapsoelverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
-                else Sonstigverbrauch_SPK += Kessel_Gesamtverbrauch_MWh;
+                else if (Brennstoff_Art[i] == 15) PelletsSpkMwh += Kessel_Gesamtverbrauch_MWh;
+                else if (Brennstoff_Art[i] == 16) RapsoelverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
+                else SonstigverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
 
                 // Emissionen basierend auf dem echten stündlich ermittelten Gesamtverbrauch
                 Em_CO2_SPK += Kessel_Gesamtverbrauch_MWh * CO2_SPK[i];
@@ -308,7 +308,7 @@ namespace WindowsFormsApplication1
             Em_NOX_SPK /= 1000;
             Em_CO_SPK /= 1000;
             Em_Staub_SPK /= 1000;
-            if (Gasverbrauch_SPK < 0.1) Gasspitze_Spk = 0;
+            if (GasverbrauchSpkMwh < 0.1) Gasspitze_Spk = 0;
 
             // 5. JAHRESNUTZUNGSGRAD PRO KESSEL SAUBER ERMITTELN
             for (int i = 0; i < Anzahl; i++)
@@ -625,7 +625,7 @@ namespace WindowsFormsApplication1
         public double[] Quellwaerme_stuendlich = new double[8760];
 
         /// <summary>Jahressumme der Quellwärme [kWh]; ohne Quellbezug exakt 0.</summary>
-        public double Quellwaerme_gesamt = 0;
+        public double QuellwaermeGesamtKwh = 0;
 
         /// <summary>
         /// RECHENEBENE je Kessel (Etappe D5a) — indexgleich zu <see cref="spk_list"/>.
@@ -745,7 +745,7 @@ namespace WindowsFormsApplication1
             double geliefert = q.Entladen(menge * _quellAnteil[i], stunde);
             if (geliefert <= 0) return 0;
 
-            Quellwaerme_gesamt += geliefert;
+            QuellwaermeGesamtKwh += geliefert;
             if (stunde >= 0 && stunde < 8760) Quellwaerme_stuendlich[stunde] += geliefert;
 
             Quellentnahmen.Add(new Quellentnahme { Quelle = q, Menge = geliefert, Ziel = ziel });
@@ -765,7 +765,7 @@ namespace WindowsFormsApplication1
         /// In Pufferspeicher geladene Kesselwärme je Stunde [kWh] (zweikanaliger Weg,
         /// Nacharbeit N1).
         ///
-        /// Sie ist ein TEIL der Nutzwärme (<see cref="S_Waerme_spk"/>): Dort steht die
+        /// Sie ist ein TEIL der Nutzwärme (<see cref="SWaermeSpkMwh"/>): Dort steht die
         /// gesamte abgegebene Wärme, also Direktdeckung PLUS Speicherladung — und genau
         /// so gehört sie dorthin, denn der Brennstoffverbrauch und der Jahresnutzungsgrad
         /// beziehen sich auf sie. Getrennt geführt wird die Ladung, weil die
@@ -777,7 +777,7 @@ namespace WindowsFormsApplication1
         public double[] Speicherladung_stuendlich = new double[8760];
 
         /// <summary>Jahressumme der Speicherladung [kWh]; ohne Puffer-Senke exakt 0.</summary>
-        public double Speicherladung_gesamt = 0;
+        public double SpeicherladungGesamtKwh = 0;
 
         /// <summary>
         /// Der Anteil dieses Erzeugers an der SPEICHERENTLADUNG, die Bedarf gedeckt hat
@@ -794,7 +794,7 @@ namespace WindowsFormsApplication1
         // KANALINDIZIERTE DECKUNGSBUCHFÜHRUNG (Paket K2, Konzept 4.4)
         //
         // ZUSÄTZLICHE Aufschlüsselung, kein Ersatz: Die Skalare des Moduls
-        // (S_Waerme_spk, Speicherladung_gesamt, Speicherentladung_Anteil,
+        // (SWaermeSpkMwh, SpeicherladungGesamtKwh, Speicherentladung_Anteil,
         // Kessel_Verbrauch_MWh_Spk …) werden unverändert gebildet und von
         // SimulationRunner unverändert gelesen. Es gilt
         //
@@ -808,7 +808,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// In Phase B direkt an den Bedarf abgegebene Kesselwärme je Kanal [kWh]
         /// (Konzept 4.4). Einen Skalar dieser Größe führt das Modul nicht — er steckt in
-        /// <c>S_Waerme_spk</c> zusammen mit der Speicherladung; die Summe über die Kanäle
+        /// <c>SWaermeSpkMwh</c> zusammen mit der Speicherladung; die Summe über die Kanäle
         /// ist genau der Direktanteil.
         /// </summary>
         public double[] Direktdeckung_Kanal = new double[Kanal.ANZAHL];
@@ -881,9 +881,9 @@ namespace WindowsFormsApplication1
             Array.Clear(_gasspitzeKessel, 0, _gasspitzeKessel.Length);
             _kesselSenke.Clear();
 
-            Waermebedarf_gesamt = 0;
+            WaermebedarfGesamtMwh = 0;
             Max_Waermebedarf = 0;
-            Strombedarf_gesamt = Strombedarf_stuendlich.Sum();
+            StrombedarfGesamtKwh = Strombedarf_stuendlich.Sum();
 
             HeizkesselCtrl heizkesselctrl = new HeizkesselCtrl();
             int Anzahl = spk_list.Count;
@@ -1098,7 +1098,7 @@ namespace WindowsFormsApplication1
             // von der (ebenfalls brennstoffbasierten) Nutzwärme ab; stünde hier die volle
             // Ladung, würde die Differenz um die Quellwärme zu klein — bei reiner
             // Puffer-Hauptsenke sogar negativ.
-            Speicherladung_gesamt += ladung - ausQuelle;
+            SpeicherladungGesamtKwh += ladung - ausQuelle;
             if (stunde >= 0 && stunde < 8760)
                 Speicherladung_stuendlich[stunde] += ladung - ausQuelle;
 
@@ -1176,9 +1176,9 @@ namespace WindowsFormsApplication1
                 Gasspitze_Spk += _gasspitzeKessel[i];
             }
 
-            Waermebedarf_gesamt = 0;
-            Array.ForEach(Waermebedarf, value => Waermebedarf_gesamt += value);
-            Waermebedarf_gesamt /= 1000;
+            WaermebedarfGesamtMwh = 0;
+            Array.ForEach(Waermebedarf, value => WaermebedarfGesamtMwh += value);
+            WaermebedarfGesamtMwh /= 1000;
 
             Bilanz_und_Nutzungsgrad(_anzahlZweikanalig);
         }
@@ -1243,7 +1243,7 @@ namespace WindowsFormsApplication1
             // Größen auf 0, damit die Ergebnisbildung in SimulationRunner dort
             // nachweislich bitgleich der bisherigen ist.
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
-            Speicherladung_gesamt = 0;
+            SpeicherladungGesamtKwh = 0;
             Speicherentladung_Anteil = 0;
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
@@ -1258,7 +1258,7 @@ namespace WindowsFormsApplication1
             // die Kaskadenschleife je Lauf neu; die Quellpuffer setzt SimulationControl,
             // nachdem die Registry offen ist.
             Array.Clear(Quellwaerme_stuendlich, 0, Quellwaerme_stuendlich.Length);
-            Quellwaerme_gesamt = 0;
+            QuellwaermeGesamtKwh = 0;
             Quellentnahmen.Clear();
             Array.Clear(_quellSpeicher, 0, _quellSpeicher.Length);
             Array.Clear(_quellAnteil, 0, _quellAnteil.Length);
@@ -1275,7 +1275,7 @@ namespace WindowsFormsApplication1
             AktiveEbene = 0;
 
             Maximale_Kesselleistung_Spk = 0;
-            Stromverbrauch_Spk = 0;
+            StromverbrauchSpkMwh = 0;
 
             for (int j = 0; j < MAX_SPK; j++)
             {
@@ -1298,18 +1298,18 @@ namespace WindowsFormsApplication1
                 Staub_SPK[j] = 0;
             }
 
-            BruttoWaermeSpkErzeugung = 0;
-            S_Waerme_spk = 0;
-            Gasverbrauch_SPK = 0;
-            Oelverbrauch_SPK = 0;
-            Rapsoelverbrauch_SPK = 0;
-            Holzverbrauch_SPK = 0;
-            Sonstigverbrauch_SPK = 0;
-            Stromverbrauch_Spk = 0;
-            Kohle_SPK = 0;
-            Koks_SPK = 0;
-            Pellets_SPK = 0;
-            TierischeFette_SPK = 0;
+            BruttoWaermeSpkErzeugungMwh = 0;
+            SWaermeSpkMwh = 0;
+            GasverbrauchSpkMwh = 0;
+            OelverbrauchSpkMwh = 0;
+            RapsoelverbrauchSpkMwh = 0;
+            HolzverbrauchSpkMwh = 0;
+            SonstigverbrauchSpkMwh = 0;
+            StromverbrauchSpkMwh = 0;
+            KohleSpkMwh = 0;
+            KoksSpkMwh = 0;
+            PelletsSpkMwh = 0;
+            TierischeFetteSpkMwh = 0;
 
             Em_CO2_SPK = 0;
             Em_CO_SPK = 0;

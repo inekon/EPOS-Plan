@@ -166,13 +166,13 @@ namespace EPOS.Kern.Tests
             var a = new SimulationRunner();
             string fehler;
             Assert.True(a.Simuliere(PROJEKT, out fehler), fehler);
-            float restA = a.sim.Restwaerme;
+            float restA = a.sim.RestwaermeMwh;
 
             var b = new SimulationRunner();
             Assert.True(b.Simuliere(PROJEKT, out fehler), fehler);
             b.sim.Do_Simulation(PROJEKT, null, CancellationToken.None);
 
-            Assert.Equal(restA, b.sim.Restwaerme, 6);
+            Assert.Equal(restA, b.sim.RestwaermeMwh, 6);
         }
 
         // ---------------------------------------------------------------- Abbruch
@@ -230,13 +230,13 @@ namespace EPOS.Kern.Tests
             var a = new SimulationRunner();
             string fehler;
             Assert.True(a.Simuliere(PROJEKT, out fehler), fehler);
-            float restEigen = a.sim.Restwaerme;
+            float restEigen = a.sim.RestwaermeMwh;
 
             var b = new SimulationRunner();
             Assert.True(b.Simuliere(PROJEKT, out fehler), fehler);
             await Task.Run(() => SimulationLaufCtrl.Laufen(b.sim, PROJEKT));
 
-            Assert.Equal(restEigen, b.sim.Restwaerme, 6);
+            Assert.Equal(restEigen, b.sim.RestwaermeMwh, 6);
         }
 
         // ---------------------------------------------------------------- Bedarf
@@ -262,7 +262,7 @@ namespace EPOS.Kern.Tests
 
             Assert.Null(fehler);
             Assert.True(waerme.Waermebedarf_Gesamt > 0);
-            Assert.True(strom.Strombedarf_gesamt > 0);
+            Assert.True(strom.StrombedarfGesamtMwh > 0);
         }
 
         /// <summary>Ein <c>IProgress&lt;T&gt;</c> ohne Marshalling — fuer den Prueffall.</summary>

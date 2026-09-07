@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
         float[] bhkwStromLeistung = new float[10];
         public float[] bhkwGrenzL = new float[10];
         public float bhkwGrenzleistungAllgemein = 0;
-        public float Waermeueberschuss = 0f;
+        public float WaermeueberschussKwh = 0f;
 
         // PAKET BHKW-REGULÄR: Hier standen die drei Solar-Felder (solarVorhanden,
         // solarSpeicher, solarWaerme) des einkanaligen Altpfads. Sie waren eine
@@ -77,16 +77,16 @@ namespace WindowsFormsApplication1
         public float Stromproduktion_BHKW_MWh = 0f;
         public float Gasspitze_BHKW = 0f;
 
-        public float Gasverbrauch_BHKW = 0f;
-        public float Oelverbrauch_BHKW = 0f;
-        public float Rapsoelverbrauch_BHKW = 0f;
-        public float Holzmenge_BHKW = 0f;
-        public float Sonstigemenge_BHKW = 0f;
-        public double Koks_BHKW = 0;
-        public double Kohle_BHKW = 0;
-        public double Pellets_BHKW = 0;
-        public double TierischeFette_BHKW = 0;
-        public float Stromverbrauch_BHKW = 0f; // Nie befüllt, nirgends gelesen — Brennstoff 13 (Strom) läuft in Auswertung() in den Sammelposten Sonstigemenge_BHKW
+        public float GasverbrauchBhkwMwh = 0f;
+        public float OelverbrauchBhkwMwh = 0f;
+        public float RapsoelverbrauchBhkwMwh = 0f;
+        public float HolzmengeBhkwMwh = 0f;
+        public float SonstigemengeBhkwMwh = 0f;
+        public double KoksBhkwMwh = 0;
+        public double KohleBhkwMwh = 0;
+        public double PelletsBhkwMwh = 0;
+        public double TierischeFetteBhkwMwh = 0;
+        public float StromverbrauchBhkwMwh = 0f; // Nie befüllt, nirgends gelesen — Brennstoff 13 (Strom) läuft in Auswertung() in den Sammelposten SonstigemengeBhkwMwh
 
         //public float Biogasverbrauch_BHKW = 0f;
         //public float Fluessiggasverbrauch_BHKW = 0f;
@@ -224,17 +224,17 @@ namespace WindowsFormsApplication1
             BruttoBHKWErzeugung = 0f;
             Waermeproduktion_BHKW_MWh = 0f;
             Stromproduktion_BHKW_MWh = 0f;
-            Gasverbrauch_BHKW = 0f;
-            Oelverbrauch_BHKW = 0f;
+            GasverbrauchBhkwMwh = 0f;
+            OelverbrauchBhkwMwh = 0f;
             Gasspitze_BHKW = 0f;
             //Biogasverbrauch_BHKW = 0f;
-            Rapsoelverbrauch_BHKW = 0f;
-            Holzmenge_BHKW = 0f;
-            Sonstigemenge_BHKW = 0f;
+            RapsoelverbrauchBhkwMwh = 0f;
+            HolzmengeBhkwMwh = 0f;
+            SonstigemengeBhkwMwh = 0f;
             //Fluessiggasverbrauch_BHKW = 0f;
             //BioErdgasverbrauch = 0f;
             //BioErdgasleistung = 0f;
-            Stromverbrauch_BHKW = 0f;
+            StromverbrauchBhkwMwh = 0f;
             Em_CO2_BHKW = 0f;
             Em_SO2_BHKW = 0f;
             Em_NOX_BHKW = 0f;
@@ -258,7 +258,7 @@ namespace WindowsFormsApplication1
             // Wert im Altpfad still auf 0 gezwungen und damit den Überschuss der
             // stromgeführten Fahrweise aus Tab_ErgebnisBHKW entfernt - eine echte
             // Altpfad-Regression.
-            Waermeueberschuss = 0f;
+            WaermeueberschussKwh = 0f;
         }
 
         /// <summary>
@@ -494,25 +494,25 @@ namespace WindowsFormsApplication1
                     // Gas — einschließlich der Gasspitze, wie beim reinen Biogas-Kessel.
                     // Was keinen eigenen Zähler hat (13 Strom, 23 Fernwärme, 24 Sonstige,
                     // 25 Wasserstoff, künftige IDs), fängt das else auf den Sammelposten
-                    // Sonstigemenge_BHKW, den Runner und Anzeige bereits konsumieren.
+                    // SonstigemengeBhkwMwh, den Runner und Anzeige bereits konsumieren.
                     // 13 bekommt bewusst keinen Strom-Sonderzweig wie der Kessel:
-                    // Stromverbrauch_BHKW wird nirgends gelesen, ein Strom-BHKW kommt im
+                    // StromverbrauchBhkwMwh wird nirgends gelesen, ein Strom-BHKW kommt im
                     // Katalog nicht vor.
                     int art = bhkwBrennstoffart[zaehler];
 
                     if ((art >= 1 && art <= 5) || art == 14)
                     {
-                        Gasverbrauch_BHKW += ModulVerbrauch;
+                        GasverbrauchBhkwMwh += ModulVerbrauch;
                         Gasspitze_BHKW += bhkwWaermeLeistung[zaehler] * (1f + bhkwSKZ[zaehler]) / bhkwWirkungsgrad[zaehler];
                     }
-                    else if ((art >= 6 && art <= 9) || (art >= 18 && art <= 22)) Oelverbrauch_BHKW += ModulVerbrauch;
-                    else if (art == 10) Koks_BHKW += ModulVerbrauch;
-                    else if (art == 11) Kohle_BHKW += ModulVerbrauch;
-                    else if (art == 12) Holzmenge_BHKW += ModulVerbrauch;
-                    else if (art == 17) TierischeFette_BHKW += ModulVerbrauch;
-                    else if (art == 15) Pellets_BHKW += ModulVerbrauch;
-                    else if (art == 16) Rapsoelverbrauch_BHKW += ModulVerbrauch;
-                    else Sonstigemenge_BHKW += ModulVerbrauch;
+                    else if ((art >= 6 && art <= 9) || (art >= 18 && art <= 22)) OelverbrauchBhkwMwh += ModulVerbrauch;
+                    else if (art == 10) KoksBhkwMwh += ModulVerbrauch;
+                    else if (art == 11) KohleBhkwMwh += ModulVerbrauch;
+                    else if (art == 12) HolzmengeBhkwMwh += ModulVerbrauch;
+                    else if (art == 17) TierischeFetteBhkwMwh += ModulVerbrauch;
+                    else if (art == 15) PelletsBhkwMwh += ModulVerbrauch;
+                    else if (art == 16) RapsoelverbrauchBhkwMwh += ModulVerbrauch;
+                    else SonstigemengeBhkwMwh += ModulVerbrauch;
 
                 }
             }
@@ -893,12 +893,12 @@ namespace WindowsFormsApplication1
         public double[] Speicherladung_stuendlich = new double[8760];
 
         /// <summary>Jahressumme der Speicherladung [kWh]; ohne Speicher exakt 0.</summary>
-        public double Speicherladung_gesamt = 0;
+        public double SpeicherladungGesamtKwh = 0;
 
         /// <summary>
         /// Verworfene Wärme je Stunde [kWh] (zweikanaliger Weg): produziert, aber weder
         /// gedeckt noch gespeichert. Die Jahressumme steht in
-        /// <see cref="Waermeueberschuss"/>; die Ganglinie macht die Energieerhaltung
+        /// <see cref="WaermeueberschussKwh"/>; die Ganglinie macht die Energieerhaltung
         /// prüfbar (Produktion = Direktdeckung + Speicherladung + Überschuss).
         /// </summary>
         public double[] Ueberschuss_stuendlich = new double[8760];
@@ -911,7 +911,7 @@ namespace WindowsFormsApplication1
         /// <c>Tab_ErgebnisBHKW.Waermebedarfsdeckung</c> künftig ausweist, statt der
         /// bloßen Produktion (offener Punkt 4 der Paket-5-Nacharbeit).
         /// </summary>
-        public double Direktdeckung_gesamt = 0;
+        public double DirektdeckungGesamtKwh = 0;
 
         /// <summary>
         /// Anteil des BHKW an der bedarfsdeckenden Speicherentladung [kWh], zugerechnet
@@ -923,12 +923,12 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------------
         // KANALINDIZIERTE DECKUNGSBUCHFÜHRUNG (Paket K2, Konzept 4.4)
         //
-        // ZUSÄTZLICHE Aufschlüsselung, kein Ersatz: Direktdeckung_gesamt,
-        // Speicherladung_gesamt, Waermeueberschuss und die Ganglinien werden
+        // ZUSÄTZLICHE Aufschlüsselung, kein Ersatz: DirektdeckungGesamtKwh,
+        // SpeicherladungGesamtKwh, WaermeueberschussKwh und die Ganglinien werden
         // unverändert gebildet; auch die Energieprobe des Moduls prüft weiter die
         // Skalare. Es gilt
         //
-        //   Σ Direktdeckung_Kanal[k]     == Direktdeckung_gesamt
+        //   Σ Direktdeckung_Kanal[k]     == DirektdeckungGesamtKwh
         //   Σ Speicherentladung_Kanal[k] == Speicherentladung_Anteil
         //
         // bis auf die Rundungsklasse der getrennten Kanalarithmetik.
@@ -936,7 +936,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Direkt gedeckter Momentanbedarf je Kanal [kWh] (Phase B) — die Aufschlüsselung
-        /// von <see cref="Direktdeckung_gesamt"/>.
+        /// von <see cref="DirektdeckungGesamtKwh"/>.
         /// </summary>
         public double[] Direktdeckung_Kanal = new double[Kanal.ANZAHL];
 
@@ -974,7 +974,7 @@ namespace WindowsFormsApplication1
         /// gegenüber dem Altpfad um bis zu 56 % ab (gemessen an 1017 mit Pendelspeicher:
         /// 62,91 -> 27,80 MWh).
         /// </summary>
-        public double Waermebedarf_gesamt = 0;
+        public double WaermebedarfGesamtKwh = 0;
 
         /// <summary>
         /// Fehlertext des zweikanaligen Wegs (Konzept 13.4: die Engine bleibt dialogfrei).
@@ -1100,11 +1100,11 @@ namespace WindowsFormsApplication1
 
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
             Array.Clear(Ueberschuss_stuendlich, 0, Ueberschuss_stuendlich.Length);
-            Speicherladung_gesamt = 0;
-            Direktdeckung_gesamt = 0;
+            SpeicherladungGesamtKwh = 0;
+            DirektdeckungGesamtKwh = 0;
             Speicherentladung_Anteil = 0;
-            Waermebedarf_gesamt = 0;
-            Waermeueberschuss = 0f;
+            WaermebedarfGesamtKwh = 0;
+            WaermeueberschussKwh = 0f;
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
@@ -1268,7 +1268,7 @@ namespace WindowsFormsApplication1
             double eingang = Kanalabzug.Summe(rest);
             if (eingang < 0) eingang = 0;
             if (stunde >= 0 && stunde < 8760) waermebedarf[stunde] = (float)eingang;
-            Waermebedarf_gesamt += eingang;
+            WaermebedarfGesamtKwh += eingang;
         }
 
         /// <summary>
@@ -1321,7 +1321,7 @@ namespace WindowsFormsApplication1
                 // Stunde - aus derselben gemessenen rest-Differenz.
                 Kanalabzug.Abziehen(wsTyp, gedeckt, rest, Direktdeckung_Kanal,
                                     Direktdeckung_KanalStuendlich, stunde);
-                Direktdeckung_gesamt += gedeckt;
+                DirektdeckungGesamtKwh += gedeckt;
                 _direktStunde += gedeckt;
             }
 
@@ -1589,7 +1589,7 @@ namespace WindowsFormsApplication1
                 Kaskadenschleife.DurchlassBuchen(sp, absehbar, genutzterDurchlass);
 
             _ueberschussStunde -= ladung;
-            Speicherladung_gesamt += ladung;
+            SpeicherladungGesamtKwh += ladung;
             if (stunde >= 0 && stunde < 8760) Speicherladung_stuendlich[stunde] += ladung;
 
             return ladung;
@@ -1598,7 +1598,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Stundenende: Was weder gedeckt noch gespeichert wurde, ist Wärmeüberschuss.
         ///
-        /// Damit ist <see cref="Waermeueberschuss"/> in allen drei Fahrweisen dieselbe
+        /// Damit ist <see cref="WaermeueberschussKwh"/> in allen drei Fahrweisen dieselbe
         /// Größe — im Altpfad kannte sie nur die stromgeführte Fahrweise (Überlauf des
         /// Pendelspeichers), die wärmegeführte trug dort den toten Solar-Überschuss und
         /// die Fahrweise ohne Einspeisung gar nichts.
@@ -1636,7 +1636,7 @@ namespace WindowsFormsApplication1
         {
             if (_ueberschussStunde > 0)
             {
-                Waermeueberschuss += (float)_ueberschussStunde;
+                WaermeueberschussKwh += (float)_ueberschussStunde;
                 if (stunde >= 0 && stunde < 8760)
                     Ueberschuss_stuendlich[stunde] += _ueberschussStunde;
                 _ueberschussStunde = 0;
@@ -1720,7 +1720,7 @@ namespace WindowsFormsApplication1
         /// und die ENERGIEPROBE des Moduls.
         ///
         /// NACHARBEIT PAKET 6, BEFUND N8: <see cref="Speicherladung_stuendlich"/>,
-        /// <see cref="Speicherladung_gesamt"/> und <see cref="Ueberschuss_stuendlich"/>
+        /// <see cref="SpeicherladungGesamtKwh"/> und <see cref="Ueberschuss_stuendlich"/>
         /// wurden bisher nur GESCHRIEBEN. Sie sind jetzt angebunden — als die Probe, die
         /// ihr Kopfkommentar seit jeher verspricht:
         ///
@@ -1775,14 +1775,14 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            double summe = Direktdeckung_gesamt + Speicherladung_gesamt + Waermeueberschuss;
+            double summe = DirektdeckungGesamtKwh + SpeicherladungGesamtKwh + WaermeueberschussKwh;
             double abwJahr = Math.Abs(produktion - summe);
 
             if (abwJahr > 1.0)
                 Console.WriteLine("BHKW-Energieprobe: Produktion " + produktion.ToString("0.###") +
-                                  " kWh gegen Direktdeckung " + Direktdeckung_gesamt.ToString("0.###") +
-                                  " + Speicherladung " + Speicherladung_gesamt.ToString("0.###") +
-                                  " + Überschuss " + Waermeueberschuss.ToString("0.###") +
+                                  " kWh gegen Direktdeckung " + DirektdeckungGesamtKwh.ToString("0.###") +
+                                  " + Speicherladung " + SpeicherladungGesamtKwh.ToString("0.###") +
+                                  " + Überschuss " + WaermeueberschussKwh.ToString("0.###") +
                                   " = " + summe.ToString("0.###") + " kWh (Abweichung " +
                                   abwJahr.ToString("0.###") + " kWh).");
 

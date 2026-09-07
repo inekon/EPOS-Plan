@@ -257,7 +257,7 @@ namespace EPOS.Kern.Tests
         /// Windows-Hülle (<c>BedarfsProfileHuelle.Rechenstand.Rechnen</c>) trug die
         /// Vorschaurechnung ein zweites Mal, von Hand nachgezogen. Darin fehlte
         /// <c>Strombedarf_Gebaeude_gesamt = reihe.Sum() / 1000</c> — das Feld blieb 0,
-        /// und die Zeile darunter überschrieb <c>Strombedarf_gesamt</c> mit eben dieser
+        /// und die Zeile darunter überschrieb <c>StrombedarfGesamtMwh</c> mit eben dieser
         /// 0. Der Spitzenwert stand daneben richtig da, weil er aus der Reihe kam und
         /// nicht aus der Summe. Dieselbe Klasse Fehler wie W9‑B‑4/B‑5: eine zweite
         /// Fassung derselben Rechnung, aus der etwas herausfällt.</para>
@@ -278,7 +278,7 @@ namespace EPOS.Kern.Tests
             Assert.True(v.Erfolgreich);
             Assert.True(v.Strom.Strombedarf_Gebaeude_gesamt > 0,
                         "Strombedarf aus Profil ist 0 (Befund W8-B-3).");
-            Assert.True(v.Strom.Strombedarf_gesamt > 0,
+            Assert.True(v.Strom.StrombedarfGesamtMwh > 0,
                         "Gesamter Strombedarf ist 0 (Befund W8-B-3).");
 
             // Die eingefrorene Zahl: die Stundenreihe des Projekts in MWh. Sie ist
@@ -291,7 +291,7 @@ namespace EPOS.Kern.Tests
             // Summanden 0, nicht eine zweite, eigene Groesse.
             Assert.Equal(0.0f, v.Strom.Stromganglinie_gesamt);
             Assert.Equal(v.Strom.Strombedarf_Gebaeude_gesamt + v.Strom.Stromganglinie_gesamt,
-                         v.Strom.Strombedarf_gesamt, 6);
+                         v.Strom.StrombedarfGesamtMwh, 6);
 
             // Der Spitzenwert ist eine LEISTUNG in kW - er war nie 0 und bleibt es nicht.
             Assert.True(v.Strom.Strombedarf_Max > 0);
@@ -314,7 +314,7 @@ namespace EPOS.Kern.Tests
             double monatssumme = 0;
             for (int m = 0; m < 12; m++) monatssumme += v.Strom.Strombedarf_monat[m];
 
-            Assert.Equal(monatssumme, v.Strom.Strombedarf_gesamt, 2);
+            Assert.Equal(monatssumme, v.Strom.StrombedarfGesamtMwh, 2);
 
             // Und die Stuetzstellen sagen dem Bild, dass STUNDEN vorliegen - nicht
             // Viertelstunden wie nach einem vollen Lauf.

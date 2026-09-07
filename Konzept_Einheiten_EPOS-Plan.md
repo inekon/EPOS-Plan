@@ -1,6 +1,16 @@
 # Konzept: Energieeinheiten in EPOS-Plan — Inventar, Bewertung kWh gegen MWh, Stufenplan
 
-**Rev. 1 — 07.09.2026 — Prüfbericht. Der Rechenkern ist in diesem Schritt NICHT umgebaut.**
+**Rev. 2 — 07.09.2026 — entschieden und Stufe S1 umgesetzt.** Der Anwender hat Q1 mit
+**„Regel festschreiben"** und Q2…Q8 mit **„Empfehlung"** beantwortet (Kennung **W8‑O‑5c**,
+Wortlaut in Kapitel 9.1). Damit ist die Einheitenregel Hausregel
+(`EPOS.Kern/CLAUDE.md`, Abschnitt „Einheiten"), zwei Wächter halten sie, und **der
+Rechenkern ist nicht umgebaut**: 12 von 12 Referenzprojekten und 312 von 312 CSV sind
+byte-gleich zur Basis `2026-09-06_R3_Straenge` geblieben. **S2 entfällt, S3 bleibt bewusst
+liegen**; die einzige offene Maßnahme mit fachlichem Gewinn ist der Typwechsel der
+Akkumulatoren — eigenes Paket **W8‑O‑5d**.
+
+*Rev. 1 (07.09.2026) war der Prüfbericht, der die Fragen stellte; Kapitel 1 bis 8 stehen
+unverändert auf dem Stand von Commit `6839a7a`.*
 
 Auftrag (Anwenderentscheid **W8‑O‑5b**, 07.09.2026, im Wortlaut):
 
@@ -148,6 +158,19 @@ kWh.* Sie gilt für rund 90 % des Bestands. Die Ausnahmen stehen im nächsten Ka
 Eine Unstimmigkeit ist hier: **zwei Wege führen für dieselbe Größe verschiedene
 Einheiten**, oder **eine Umrechnung findet außerhalb der Anzeige statt, wo die Anzeige
 sie erwarten würde**.
+
+> **Stand nach Stufe S1 (W8‑O‑5c, 07.09.2026).** Sechs der acht sind erledigt:
+>
+> | Nr. | Stand | Wodurch |
+> |---|---|---|
+> | U1 | **behoben** | W8‑O‑5b, Commit `6839a7a` |
+> | U2 | **offen, harmlos** | Zwei Rundungen derselben Größe, Abstand ≤ 1 ULP `float`. Die Berichtigung säße in `SimulationWaermebedarf:327` und damit im Rechenweg — sie kostet die Byte-Gleichheit der Basis, ohne eine sichtbare Zahl zu ändern. Bleibt liegen, bis eine neue Basis ohnehin ansteht (W8‑O‑5d) |
+> | U3 | **entschärft** | Die zwei Teiler bleiben (sie sind beide richtig: Viertelstunden- gegen Stundenraster), aber das Feld heißt jetzt `StrombedarfGesamtMwh` und nennt damit die Einheit, um die es ging. Welches RASTER die Reihe hat, sagt weiterhin `Stuetzstellen` |
+> | U4 | **behoben** | S1.3: `SimulationSPK` führt `StrombedarfGesamtKwh` neben `StromverbrauchSpkMwh`, `SWaermeSpkMwh`, `WaermebedarfGesamtMwh`, `QuellwaermeGesamtKwh`, `SpeicherladungGesamtKwh`, `BruttoWaermeSpkErzeugungMwh` — jede Jahressumme mit ihrer Einheit am Namen |
+> | U5 | **behoben** | S1.2: Torte und Stromring lesen dieselben `…Mwh`-Felder wie der Wärmering — EINE Konvention statt drei |
+> | U6 | **behoben** | S1.2: Die elf Energie-Umrechnungen sind aus der Hülle heraus; Wächter 1 hält die Grenze |
+> | U7 | **behoben** | Q8: Der Kommentar an `Strombedarf_Max` nennt kW |
+> | U8 | **halb behoben** | Die Felder heißen `RestwaermeMwh`/`ReststromMwh` und nennen ihre Einheit. Sie bleiben `float` — der Typwechsel ist Q5 und damit das eigene Paket **W8‑O‑5d** |
 
 ### U1 — Brauchwasser: ein Feld, zwei Einheiten *(behoben, W8‑O‑5b)*
 
@@ -470,18 +493,41 @@ Abweichung unsichtbar.
 
 ## 7. Stufenplan
 
-### S1 — Die Anzeigegrenze härten *(empfohlen; W8‑O‑5b hat den ersten Teil erledigt)*
+### S1 — Die Anzeigegrenze härten *(**ERLEDIGT** am 07.09.2026, Commit `<SHA>`)*
 
-| Schritt | Stellen | Aufwand | Risiko |
+| Schritt | Stellen | Aufwand | Stand |
 |---|---:|---|---|
-| S1.1 *(erledigt)* Brauchwasser: eine Einheit für beide Wege | 4 | — | — |
-| S1.2 Die elf Energie-Umrechnungen aus U6 in den Kern ziehen — die `…Mwh`-Felder von `SimulationErgebnisCtrl` benutzen statt am DTO vorbei zu rechnen | 11 | **3 h** | **niedrig** — reine Anzeige, Referenzlauf unberührt; Windows-Abnahme der zwei Ringdiagramme nötig |
-| S1.3 Die Felder aus U4/U8 umbenennen: `Stromverbrauch_Spk` → `StromverbrauchSpkMwh`, `S_Waerme_spk` → `SWaermeSpkMwh`, `Restwaerme` → `RestwaermeMwh`, `Reststrom` → `ReststromMwh`, `Waermebedarf_gesamt` (SPK) → `…GesamtMwh` | ~15 Felder, ~60 Fundstellen | **4 h** | **niedrig** — reine Umbenennung, der Übersetzer findet jeden Nutzer. **Aber:** `Ergebnisexport` schreibt `Sim.Restwaerme` als CSV-SCHLÜSSEL — der Name steht in 312 Dateien der Basis. Entweder der Schlüssel bleibt hart verdrahtet, oder R4 |
-| S1.4 Wächter: kein Faktor 1000 auf einer Energiemenge in `EPOS.UI` und in `WindowsFormsApplication1/Views/**Huelle.cs`; Muster `/ 1000`, `* 1000`, `/= 1000`, `*= 1000`, `/ 4000`, `0.001`, `1e-3`. Ausnahmeliste für Leistung (W→kW) | 1 neuer Test | **2 h** | **niedrig** |
-| S1.5 Die Einheitenregel in `EPOS.Kern/CLAUDE.md` schreiben | — | **1 h** | — |
-| **Summe S1** | **~76** | **10 h** | **niedrig**, Referenzlauf byte-gleich |
+| S1.1 Brauchwasser: eine Einheit für beide Wege | 4 | — | **erledigt** (W8‑O‑5b, `6839a7a`) |
+| S1.2 Die elf Energie-Umrechnungen aus U6 in den Kern ziehen — die `…Mwh`-Felder von `SimulationErgebnisCtrl` benutzen statt am DTO vorbei zu rechnen | 11 | 3 h | **erledigt**: vier neue DTO-Felder (`HeizstabWaermeproduktionMwh`, `StromspeicherEntladungMwh`, `StrombedarfMitEigenverbrauchMwh`, `StromGesamtMwh`) und `SimulationErgebnisCtrl.KanalMwh`; die zwei Hüllenmethoden `StrombedarfGesamt()`/`StromgedecktMwh()` sind gefallen. Die zwei Ringdiagramme (U5) lesen jetzt EINE Konvention. Windows-Abnahme A‑W8‑O5c‑1…4 offen |
+| S1.3 Die Jahressummen benennen — Einheit am Namen | **22 Namen, 45 Deklarationen, 399 Fundstellen** | 4 h | **erledigt**: alle 31 `…_gesamt`/`…_summe` der sechs Erzeuger- und Speicherklassen bis auf die 13 begründeten Ausnahmen, dazu `Restwaerme`/`Reststrom` (U8), die 19 Brennstoffzähler und die zwei Ergebnisrecords. Der CSV-Schlüssel `Sim.Restwaerme` bleibt hart verdrahtet (Q7), mit Kommentar an der Exportzeile |
+| S1.4 Die zwei Wächter | 1 neue Testdatei, 7 Fälle | 2 h | **erledigt**: `EPOS.Kern.Tests/EinheitenWacheTests.cs` — Faktor 1000 in `EPOS.UI/**` und `WindowsFormsApplication1/Views/**` (5 Ausnahmen, alle Leistung), Einheit am Namen in den sieben Simulationsklassen (13 Ausnahmen). Beide je einmal als rot belegt |
+| S1.5 Die Einheitenregel schreiben | — | 1 h | **erledigt**: `EPOS.Kern/CLAUDE.md` Abschnitt „Einheiten: die Regel des Rechenkerns", ein Satz in `EPOS.UI/CLAUDE.md` |
+| **Summe S1** | **~415** | **10 h** | **Referenzlauf byte-gleich: 12 von 12 Projekten, 312 von 312 CSV** |
 
-### S2 — Eine Einheit je Rechenstufe im Kern *(nur nach Q1/Q4)*
+> **Warum aus „~76 Stellen" 415 wurden.** Die Schätzung zählte die Felder, die das Papier
+> namentlich nennt. Der Wächter aus S1.4 zieht die Grenze aber nicht bei einer Namensliste,
+> sondern bei einer REGEL — und die traf alle 31 Jahressummen der sechs Klassen plus die
+> Brennstoffzähler, die als Geschwister im selben Deklarationsblock stehen. Eine Regel, die
+> ihre eigene Datei nur zur Hälfte durchsetzt, ist keine Regel; ein halb umbenannter Block
+> (`GasverbrauchSpkMwh` neben `Koks_SPK`) liest sich schlechter als der Ausgangszustand.
+> Die Umbenennung ist mechanisch, der Übersetzer findet jeden Nutzer, und die 312 CSV sind
+> byte-gleich geblieben.
+
+### S2 — Eine Einheit je Rechenstufe im Kern *(**ENTFÄLLT** — Anwenderentscheid Q1/Q4 vom 07.09.2026)*
+
+> Q1 lautet „Regel festschreiben" (Lesart A), Q4 entfällt damit. **S2 wird nicht gebaut.**
+> Die Begründung steht in Kapitel 5: Eine Recheneinheit behebt die Ursache nicht — die war
+> die ungenannte Einheit, nicht die zweite —, sie bringt keine Genauigkeit (Kapitel 4.3) und
+> sie kostet die Byte-Gleichheit von 312 CSV und damit eine neue Basis R4. Die Tabelle bleibt
+> als Aufwandsschätzung stehen, falls der Entscheid je zurückgenommen wird.
+
+**Was von Q5 bleibt:** Der Wechsel der AKKUMULATOREN von `float` auf `double` ist die einzige
+Maßnahme dieses Papiers, die Genauigkeit bringt (neun Größenordnungen, Kapitel 4.3). Er ist
+KEIN Teil von S2 und hat seit dem 07.09.2026 eine eigene Kennung: **W8‑O‑5d — „Akkumulatoren
+`double`", offen.** Er braucht eine neue Basis R4 und trifft `BhkwPlan.VectorSumme` /
+`BhkwPlan.MonatsSumme`, die das Verhalten der abgelösten Original-DLL absichtlich nachbilden.
+
+*Die folgende Tabelle ist die Schätzung von Rev. 1 und wird nicht ausgeführt:*
 
 Nicht in einem Zug, sondern **je Stufe** mit eigenem Referenzlauf-Diff:
 
@@ -494,7 +540,12 @@ Nicht in einem Zug, sondern **je Stufe** mit eigenem Referenzlauf-Diff:
 | S2.5 Die zwei Nähte konsolidieren: `SimulationErgebnisCtrl` und `SimulationRunner` bekommen EINE gemeinsame Umrechnung statt 68 einzelner Divisionen | 68 | **6 h** | **niedrig**, wenn S2.1–S2.4 stehen |
 | **Summe S2** | **~133** | **24 h** | **mittel bis hoch**; **neue Basis R4 nötig** |
 
-### S3 — Gespeicherte Einheiten *(Empfehlung: bewusst NICHT)*
+### S3 — Gespeicherte Einheiten *(**BEWUSST NICHT** — Anwenderentscheid Q2 vom 07.09.2026)*
+
+> Q2 lautet „Empfehlung": Die 17 `Tab_Ergebnis*` bleiben, wie sie sind, und umgerechnet wird
+> an der SCHREIBGRENZE — also dort, wo es heute schon geschieht (`SimulationRunner`). Ein
+> Migrationsschritt über die Ergebnisse aller Anwenderprojekte ist nicht rückrollbar, und der
+> Nutzen wäre null: Die Tabelle wird geschrieben und gelesen, nie gerechnet.
 
 15 der 17 `Tab_Ergebnis*`-Tabellen führen MWh, zwei (Puffer- und Stromspeicher) kWh. Ein Wechsel
 bräuchte einen Migrationsschritt, der **jede vorhandene Ergebniszeile jedes
@@ -513,6 +564,10 @@ ist Q2.
 ---
 
 ## 8. Fragen an den Anwender
+
+> **Alle acht sind am 07.09.2026 beantwortet** — Q1 mit „Regel festschreiben", Q2…Q8 mit
+> „Empfehlung". Die Antworten und was daraus folgte stehen in **Kapitel 9.1**; die Tabelle
+> hier bleibt als Begründung der Empfehlungen stehen.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
@@ -534,7 +589,21 @@ ist Q2.
 | **W8‑O‑5** | 04.09.2026 | Die Anzeigeeinheit der Bedarfsansichten ist wählbar: MWh als Vorgabe, kWh wählbar, konsistent in den Ansichten. Die Einheit steht AM WERT (`Energieeinheit`), die Anzeige rechnet um. | **umgesetzt** (`EPOS.Kern/Allgemein/Energieeinheit.cs`) |
 | **W9‑O‑3** | 04.09.2026 | Die Prozesssumme der Vorschau geht über die Einheitenklasse in die Einheit, die der Kern führt (MWh). | **umgesetzt** (`SimulationWaermebedarf.ProzesssummeUebernehmen`) |
 | **W8‑O‑5b** | 07.09.2026 | „Nehme die Umrechnung in den Dialogen vor." — Die Brauchwassermenge steht auf BEIDEN Wegen in MWh; jede Übergabe an einen Dialog trägt ihre Einheit, der Dialog rechnet über `Energieeinheit` um. | **umgesetzt** in Commit `6839a7a` |
-| **W8‑O‑5c** | 07.09.2026 | „Prüfe, ob es nicht sinnvoll ist, die gesamten Berechnungen in kWh auszuführen … oder Vereinheitlichen der Berechnung in MWh — aber einheitlich." | **offen** — dieses Papier, Fragen Q1…Q8 |
+| **W8‑O‑5c** | 07.09.2026 | „Prüfe, ob es nicht sinnvoll ist, die gesamten Berechnungen in kWh auszuführen … oder Vereinheitlichen der Berechnung in MWh — aber einheitlich." | **beantwortet** — Q1 „Regel festschreiben", Q2…Q8 „Empfehlung"; **Stufe S1 umgesetzt in `<SHA>`** |
+| **W8‑O‑5d** | 07.09.2026 | Die Akkumulatoren des Kerns von `float` auf `double` (Q5) — als EIGENES Paket, nicht in S1. | **offen** |
+
+### 9.1 Die Antworten auf Q1…Q8 (Anwender, 07.09.2026)
+
+| Nr. | Antwort im Wortlaut | Was daraus folgte |
+|---|---|---|
+| **Q1** | **„Regel festschreiben"** | Lesart A. Zeitreihen kWh, Ausweisungen MWh, die Einheit steht im FELDNAMEN, umgerechnet wird an genau zwei Nähten (`SimulationErgebnisCtrl`, `SimulationRunner`) und sonst nur in der Anzeige über `Energieeinheit`. **Kein** Wechsel der Recheneinheit im Kern, **keine** neue Referenzbasis. Die Regel steht in `EPOS.Kern/CLAUDE.md`, Abschnitt „Einheiten"; zwei Wächter halten sie (S1.4) |
+| **Q2** | „Empfehlung" | Die 17 `Tab_Ergebnis*` bleiben, wie sie sind (15 MWh, zwei kWh); umgerechnet wird an der SCHREIBGRENZE, also dort, wo es heute schon geschieht. Kein Migrationsschritt über Anwenderbestände |
+| **Q3** | „Empfehlung" | Der CSV-Export der Referenzläufe wechselt **nicht** die Einheit. Er ist ein Regressionsnetz; seine Einheit muss über Jahre stabil bleiben |
+| **Q4** | „Empfehlung" | **Entfällt** — ohne S2 gibt es keine Reihenfolge zu bestimmen |
+| **Q5** | „Empfehlung" | `float` → `double` der Akkumulatoren ist ein **eigenes späteres Paket** mit eigener Basis R4 und trägt die Kennung **W8‑O‑5d**. In S1 wurde **kein** Typ angefasst |
+| **Q6** | „Empfehlung" | Die 59 Stundenreihen bleiben `float` — sie stehen in 300 der 312 CSV der Basis |
+| **Q7** | „Empfehlung" | Die CSV-Schlüssel `Sim.Restwaerme` und `Sim.Reststrom` bleiben **hart verdrahtet**; nur die Felder bekommen ihren Einheitennamen (`RestwaermeMwh`, `ReststromMwh`). Ein Kommentar an der Exportzeile in `Referenzlauf/Ergebnisexport.cs` sagt, warum. Dieselbe Regel gilt für `Puffer.Ladung_gesamt`, `Puffer.Entladung_gesamt` und `Puffer.Verluste_gesamt` |
+| **Q8** | „Empfehlung" | U7 ist **sofort** berichtigt: Der Kommentar an `SimulationStrombedarf.Strombedarf_Max` nennt jetzt kW statt kWh |
 
 ---
 

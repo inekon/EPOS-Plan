@@ -9,10 +9,10 @@ namespace WindowsFormsApplication1
         public const int MAX_WP = 10;
 
         public List<int> wp_list = new List<int>();
-        public double Waermebedarf_gesamt;
+        public double WaermebedarfGesamtKwh;
         public float[] Waermebedarf_stuendlich = new float[8760];
         public float[] waermerestbedarf_stuendlich = new float[8760];
-        public double waermerestbedarf_gesamt;
+        public double WaermerestbedarfGesamtKwh;
 
         public double[] WP_Strombedarf_monatlich = new double[12];
         public double[] WP_Waermeproduktion_monatlich = new double[12];
@@ -24,9 +24,9 @@ namespace WindowsFormsApplication1
         public float[] WP_Waermeproduktion_stuendlich_sortiert = new float[8760];
         public float[] Heizstab_stuendlich = new float[8760];
 
-        public double WP_Strombedarf_gesamt = 0;
-        public double WP_Waermeproduktion_gesamt = 0;
-        public double Heizstab_gesamt = 0;
+        public double WpStrombedarfGesamtKwh = 0;
+        public double WpWaermeproduktionGesamtKwh = 0;
+        public double HeizstabGesamtKwh = 0;
         public double WP_Laufzeit = 0;
 
         public double[] Modul_WP_Strombedarf = new double[MAX_WP];
@@ -728,13 +728,13 @@ namespace WindowsFormsApplication1
         /// Anteil der WP-Produktion, der den Momentanbedarf in Phase B DIREKT gedeckt hat
         /// [kWh] (Paket-5-Nacharbeit, Befund N2). Nur im zweikanaligen Weg gefüllt.
         ///
-        /// <c>WP_Waermeproduktion_gesamt = Direktdeckung_gesamt + Speicherladung</c>. Die
+        /// <c>WpWaermeproduktionGesamtKwh = DirektdeckungGesamtKwh + Speicherladung</c>. Die
         /// Größe ist die Basis des EIGENANTEILS der Wärmepumpe an der Bedarfsdeckung:
         /// Bis zur Nacharbeit bildete <c>SimulationRunner</c> ihn als
         /// „Stufeneingang − Rest nach der Stufe" — mit einem zweiten Erzeuger in der
         /// Speicherstufe enthielt das dessen Lieferung mit, und beide meldeten sie.
         /// </summary>
-        public double Direktdeckung_gesamt = 0;
+        public double DirektdeckungGesamtKwh = 0;
 
         /// <summary>
         /// Der Anteil dieses Erzeugers an der SPEICHERENTLADUNG, die Bedarf gedeckt hat
@@ -750,9 +750,9 @@ namespace WindowsFormsApplication1
         // Die drei Felder sind eine ZUSÄTZLICHE Aufschlüsselung der bereits
         // vorhandenen Skalare — nicht ihr Ersatz. Es gilt je Lauf
         //
-        //   Σ Direktdeckung_Kanal[k]      == Direktdeckung_gesamt
+        //   Σ Direktdeckung_Kanal[k]      == DirektdeckungGesamtKwh
         //   Σ Speicherentladung_Kanal[k]  == Speicherentladung_Anteil
-        //   Σ Heizstab_Kanal[k]           == Heizstab_gesamt
+        //   Σ Heizstab_Kanal[k]           == HeizstabGesamtKwh
         //
         // bis auf die Rundungsklasse der getrennten Kanalarithmetik (die Skalare
         // summieren EINEN double-Strom, die Kanalfelder Kanal.ANZAHL getrennte).
@@ -767,7 +767,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Direkt gedeckter Momentanbedarf je Kanal [kWh] (Phase B) — die
-        /// Aufschlüsselung von <see cref="Direktdeckung_gesamt"/>.
+        /// Aufschlüsselung von <see cref="DirektdeckungGesamtKwh"/>.
         /// </summary>
         public double[] Direktdeckung_Kanal = new double[Kanal.ANZAHL];
 
@@ -780,7 +780,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Heizstabwärme je Kanal [kWh] (Phase F) — die Aufschlüsselung von
-        /// <see cref="Heizstab_gesamt"/>.
+        /// <see cref="HeizstabGesamtKwh"/>.
         /// </summary>
         public double[] Heizstab_Kanal = new double[Kanal.ANZAHL];
 
@@ -857,9 +857,9 @@ namespace WindowsFormsApplication1
             Waermebedarf_stuendlich = kanaele.Summe();
             Warmwasserbedarf_stuendlich = (float[])kanaele.Brauchwasser.Clone();
 
-            WP_Strombedarf_gesamt = 0;
-            WP_Waermeproduktion_gesamt = 0;
-            Heizstab_gesamt = 0;
+            WpStrombedarfGesamtKwh = 0;
+            WpWaermeproduktionGesamtKwh = 0;
+            HeizstabGesamtKwh = 0;
             WP_Laufzeit = 0;
             Bivalenzpunkt = -100;
 
@@ -1052,9 +1052,9 @@ namespace WindowsFormsApplication1
                         if (result[PTHERM] < verfuegbar)
                         {
                             WP_Waermeproduktion_stuendlich[stunde] += (float)result[PTHERM];
-                            WP_Waermeproduktion_gesamt += result[PTHERM];
+                            WpWaermeproduktionGesamtKwh += result[PTHERM];
                             WP_Strombedarf_stuendlich[stunde] += (float)result[PEL];
-                            WP_Strombedarf_gesamt += result[PEL];
+                            WpStrombedarfGesamtKwh += result[PEL];
                             Modul_WP_Waermeproduktion[index] += result[PTHERM];
                             Modul_WP_Strombedarf[index] += result[PEL];
 
@@ -1068,14 +1068,14 @@ namespace WindowsFormsApplication1
                             }
 
                             SenkeAbziehen(senken, result[PTHERM], rest, _deckungIteration);
-                            Direktdeckung_gesamt += result[PTHERM];   // N2: Eigenanteil
+                            DirektdeckungGesamtKwh += result[PTHERM];   // N2: Eigenanteil
                         }
                         else
                         {
                             WP_Waermeproduktion_stuendlich[stunde] += (float)verfuegbar;
-                            WP_Waermeproduktion_gesamt += verfuegbar;
+                            WpWaermeproduktionGesamtKwh += verfuegbar;
                             WP_Strombedarf_stuendlich[stunde] += (float)verfuegbar / (float)result[COP];
-                            WP_Strombedarf_gesamt += verfuegbar / result[COP];
+                            WpStrombedarfGesamtKwh += verfuegbar / result[COP];
                             Modul_WP_Waermeproduktion[index] += verfuegbar;
                             Modul_WP_Strombedarf[index] += verfuegbar / result[COP];
 
@@ -1087,7 +1087,7 @@ namespace WindowsFormsApplication1
                             }
 
                             SenkeAbziehen(senken, verfuegbar, rest, _deckungIteration);
-                            Direktdeckung_gesamt += verfuegbar;       // N2: Eigenanteil
+                            DirektdeckungGesamtKwh += verfuegbar;       // N2: Eigenanteil
                         }
                     }
 
@@ -1129,8 +1129,8 @@ namespace WindowsFormsApplication1
                             // Kaskade — jeder Bestandslauf — ist die Zeile wirkungslos.
                             if (!quelle.IstQuelle && geliefert > 0)
                             {
-                                Direktdeckung_gesamt -= geliefert;
-                                if (Direktdeckung_gesamt < 0) Direktdeckung_gesamt = 0;
+                                DirektdeckungGesamtKwh -= geliefert;
+                                if (DirektdeckungGesamtKwh < 0) DirektdeckungGesamtKwh = 0;
 
                                 // K2: dieselbe Rücknahme auf dem Kanalsplit derselben
                                 // Buchung — proportional, damit Σ Kanal == Skalar bleibt.
@@ -1177,10 +1177,10 @@ namespace WindowsFormsApplication1
         {
             WPPlan.Core.BhkwPlan.Heapsort(WP_Waermeproduktion_stuendlich, WP_Waermeproduktion_stuendlich_sortiert);
 
-            Waermebedarf_gesamt = 0;
-            Array.ForEach(Waermebedarf_stuendlich, value => Waermebedarf_gesamt += value);
-            waermerestbedarf_gesamt = 0;
-            Array.ForEach(waermerestbedarf_stuendlich, value => waermerestbedarf_gesamt += value);
+            WaermebedarfGesamtKwh = 0;
+            Array.ForEach(Waermebedarf_stuendlich, value => WaermebedarfGesamtKwh += value);
+            WaermerestbedarfGesamtKwh = 0;
+            Array.ForEach(waermerestbedarf_stuendlich, value => WaermerestbedarfGesamtKwh += value);
 
             Meldung.Warten(false);
 
@@ -1503,12 +1503,12 @@ namespace WindowsFormsApplication1
                 if (ladeRest[index] < 0) ladeRest[index] = 0;
 
                 WP_Waermeproduktion_stuendlich[stunde] += (float)ladung;
-                WP_Waermeproduktion_gesamt += ladung;
+                WpWaermeproduktionGesamtKwh += ladung;
                 Modul_WP_Waermeproduktion[index] += ladung;
 
                 double strom = ladung / cop;
                 WP_Strombedarf_stuendlich[stunde] += (float)strom;
-                WP_Strombedarf_gesamt += strom;
+                WpStrombedarfGesamtKwh += strom;
                 Modul_WP_Strombedarf[index] += strom;
 
                 if (ladeTherm[index] > 0)
@@ -1554,7 +1554,7 @@ namespace WindowsFormsApplication1
 
                 double menge = Math.Min(offen, WP_Heizung[index]);
                 Heizstab_stuendlich[stunde] += (float)menge;
-                Heizstab_gesamt += menge;
+                HeizstabGesamtKwh += menge;
                 Modul_Heizstab[index] += menge;
 
                 // PAKET E2: derselbe Abzug schreibt zusätzlich die Kanalganglinie des
@@ -1578,9 +1578,9 @@ namespace WindowsFormsApplication1
                 Modul_WP_Laufzeit[i] = 0;
                 WP_Modul[i] = "";
             }
-            WP_Waermeproduktion_gesamt = 0;
-            WP_Strombedarf_gesamt = 0;
-            Heizstab_gesamt = 0;
+            WpWaermeproduktionGesamtKwh = 0;
+            WpStrombedarfGesamtKwh = 0;
+            HeizstabGesamtKwh = 0;
             Meldung.Warten(false);
         }
 
@@ -1944,20 +1944,20 @@ namespace WindowsFormsApplication1
                 WP_Waermeproduktion_stuendlich_sortiert[i] = 0;
                 Heizstab_stuendlich[i] = 0;
             }
-            WP_Waermeproduktion_gesamt = 0;
-            Heizstab_gesamt = 0;
-            WP_Strombedarf_gesamt = 0;
+            WpWaermeproduktionGesamtKwh = 0;
+            HeizstabGesamtKwh = 0;
+            WpStrombedarfGesamtKwh = 0;
             WP_Laufzeit = 0;
             // B0-7: Bilanzgrößen mit zurücksetzen — bei einem Abbruch der Berechnung
             // blieben sonst Werte des Vorlaufs stehen und BaueErgebnis meldete eine
             // falsche Deckung/einen falschen Restbedarf.
-            Waermebedarf_gesamt = 0;
-            waermerestbedarf_gesamt = 0;
+            WaermebedarfGesamtKwh = 0;
+            WaermerestbedarfGesamtKwh = 0;
             Bivalenzpunkt = -100;
 
             // Paket-5-Nacharbeit N2: Eigenanteils-Größen, aus denen SimulationRunner
             // Restbedarf und Deckungsgrad der Wärmepumpe bildet.
-            Direktdeckung_gesamt = 0;
+            DirektdeckungGesamtKwh = 0;
             Speicherentladung_Anteil = 0;
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).

@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
         ///   Profil" (vormals „Strombedarf Gebäude"; die Zeile trägt den aus den Profilen
         ///   gerechneten Bedarf und heißt jetzt so).</item>
         ///   <item><b>Summe</b> — „Gesamter Strombedarf", abgesetzt am Fuß. Der Wert ist
-        ///   der des KERNS (<c>Strombedarf_gesamt</c>), nicht eine hier addierte Zahl:
+        ///   der des KERNS (<c>StrombedarfGesamtMwh</c>), nicht eine hier addierte Zahl:
         ///   Die Anzeige rechnet nicht, sie zeigt.</item>
         /// </list>
         /// </summary>
@@ -113,7 +113,7 @@ namespace WindowsFormsApplication1
                     Energie(Text_("BERG_LBL_STROM_PROFIL", "Strombedarf aus Profil:"),
                             simulation.Strombedarf_Gebaeude_gesamt, Energieeinheit.MWh),
                     Energie(Text_("BERG_LBL_STROM_GESAMT", "Gesamter Strombedarf:"),
-                            simulation.Strombedarf_gesamt, Energieeinheit.MWh,
+                            simulation.StrombedarfGesamtMwh, Energieeinheit.MWh,
                             Kennzahlart.Summe)
                 },
                 Sichten = new[]

@@ -12,8 +12,8 @@ namespace WindowsFormsApplication1
         public int m_ID_Projekt = 0;
         private long nID_Klimaregion;
 
-        public double Waermeproduktion_gesamt = 0;
-        public double Waermebedarf_gesamt = 0;
+        public double WaermeproduktionGesamtKwh = 0;
+        public double WaermebedarfGesamtKwh = 0;
         public double Max_Waermebedarf;
 
         public double[] Waermebedarf = new double[8760];
@@ -23,9 +23,9 @@ namespace WindowsFormsApplication1
 
         public double Lon = 0;
         public double Lat = 0;
-        public double Ueberschuss_summe = 0;
+        public double UeberschussSummeKwh = 0;
         public double Waermeproduktion_max = 0;
-        public double Restwaerme_summe = 0;
+        public double RestwaermeSummeKwh = 0;
 
         // ===================================================================
         // Zweikanaliger Weg (Paket 5 - Konzept 6.4)
@@ -53,13 +53,13 @@ namespace WindowsFormsApplication1
         public double[] Speicherladung_stuendlich = new double[8760];
 
         /// <summary>Jahressumme der Speicherladung [kWh]; ohne Puffer-Senke exakt 0.</summary>
-        public double Speicherladung_gesamt = 0;
+        public double SpeicherladungGesamtKwh = 0;
 
         /// <summary>
         /// Anteil der Produktion, der den Momentanbedarf DIREKT deckt [kWh].
-        /// <c>Waermeproduktion_gesamt = Direktdeckung_gesamt + Speicherladung_gesamt</c>.
+        /// <c>WaermeproduktionGesamtKwh = DirektdeckungGesamtKwh + SpeicherladungGesamtKwh</c>.
         /// </summary>
-        public double Direktdeckung_gesamt = 0;
+        public double DirektdeckungGesamtKwh = 0;
 
         /// <summary>
         /// Der Anteil dieses Erzeugers an der SPEICHERENTLADUNG, die Bedarf gedeckt hat
@@ -75,11 +75,11 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------------
         // KANALINDIZIERTE DECKUNGSBUCHFÜHRUNG (Paket K2, Konzept 4.4)
         //
-        // ZUSÄTZLICHE Aufschlüsselung, kein Ersatz: Direktdeckung_gesamt,
-        // Speicherladung_gesamt, Speicherentladung_Anteil und die Ganglinien
+        // ZUSÄTZLICHE Aufschlüsselung, kein Ersatz: DirektdeckungGesamtKwh,
+        // SpeicherladungGesamtKwh, Speicherentladung_Anteil und die Ganglinien
         // werden unverändert gebildet und gelesen. Es gilt
         //
-        //   Σ Direktdeckung_Kanal[k]     == Direktdeckung_gesamt
+        //   Σ Direktdeckung_Kanal[k]     == DirektdeckungGesamtKwh
         //   Σ Speicherentladung_Kanal[k] == Speicherentladung_Anteil
         //
         // bis auf die Rundungsklasse der getrennten Kanalarithmetik.
@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Direkt gedeckter Momentanbedarf je Kanal [kWh] (Phase B) — die Aufschlüsselung
-        /// von <see cref="Direktdeckung_gesamt"/>.
+        /// von <see cref="DirektdeckungGesamtKwh"/>.
         /// </summary>
         public double[] Direktdeckung_Kanal = new double[Kanal.ANZAHL];
 
@@ -294,15 +294,15 @@ namespace WindowsFormsApplication1
             Array.Clear(Restwaerme, 0, Restwaerme.Length);
             Array.Clear(Waermeproduktion, 0, Waermeproduktion.Length);
             Array.Clear(Ueberschuss, 0, Ueberschuss.Length);
-            Waermeproduktion_gesamt = 0;
-            Ueberschuss_summe = 0;
+            WaermeproduktionGesamtKwh = 0;
+            UeberschussSummeKwh = 0;
             Kollektor_Ergebnisse.Clear();
 
             // Speichergrößen (Paket 5) - ohne Puffer-Senke bleiben sie auf 0, damit
             // die Mitkorrektur in SimulationRunner dort nachweislich wirkungslos ist.
             Array.Clear(Speicherladung_stuendlich, 0, Speicherladung_stuendlich.Length);
-            Speicherladung_gesamt = 0;
-            Direktdeckung_gesamt = 0;
+            SpeicherladungGesamtKwh = 0;
+            DirektdeckungGesamtKwh = 0;
             Speicherentladung_Anteil = 0;
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
@@ -522,7 +522,7 @@ namespace WindowsFormsApplication1
 
                 _restPotenzial[f] -= prod;
                 _prodFeld[f] += prod;
-                Direktdeckung_gesamt += prod;
+                DirektdeckungGesamtKwh += prod;
                 if (stunde >= 0 && stunde < 8760) Waermeproduktion[stunde] += prod;
             }
 
@@ -571,7 +571,7 @@ namespace WindowsFormsApplication1
 
             _restPotenzial[f] -= ladung;
             _prodFeld[f] += ladung;
-            Speicherladung_gesamt += ladung;
+            SpeicherladungGesamtKwh += ladung;
             if (stunde >= 0 && stunde < 8760)
             {
                 Waermeproduktion[stunde] += ladung;
@@ -610,17 +610,17 @@ namespace WindowsFormsApplication1
                     Name = _feldName[f],
                     Flaeche = _feldFlaeche[f],
                     Anzahl = _feldAnzahl[f],
-                    Waermeproduktion = _prodFeld[f],
-                    Ueberschuss = _ueberFeld[f]
+                    WaermeproduktionKwh = _prodFeld[f],
+                    UeberschussKwh = _ueberFeld[f]
                 });
             }
 
-            Waermebedarf_gesamt = Waermebedarf.Sum();
+            WaermebedarfGesamtKwh = Waermebedarf.Sum();
             Max_Waermebedarf = Waermebedarf.Max();
-            Waermeproduktion_gesamt = Waermeproduktion.Sum();
+            WaermeproduktionGesamtKwh = Waermeproduktion.Sum();
             Waermeproduktion_max = Waermeproduktion.Max();
-            Ueberschuss_summe = Ueberschuss.Sum();
-            Restwaerme_summe = Restwaerme.Sum();
+            UeberschussSummeKwh = Ueberschuss.Sum();
+            RestwaermeSummeKwh = Restwaerme.Sum();
         }
 
         /// <summary>
@@ -667,7 +667,7 @@ namespace WindowsFormsApplication1
         public string Name = "";
         public double Flaeche;          // Aperturflaeche gesamt (m^2) = Modulflaeche * Anzahl
         public long Anzahl;
-        public double Waermeproduktion; // kWh/a
-        public double Ueberschuss;      // kWh/a
+        public double WaermeproduktionKwh; // kWh/a
+        public double UeberschussKwh;      // kWh/a
     }
 }

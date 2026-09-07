@@ -116,17 +116,17 @@ namespace WindowsFormsApplication1
             p.Waermepumpe = sim.bSimulationWP
                             || (sim.simulation_wp != null &&
                                 (sim.simulation_wp.wp_list.Count > 0 ||
-                                 sim.simulation_wp.WP_Waermeproduktion_gesamt > 0));
+                                 sim.simulation_wp.WpWaermeproduktionGesamtKwh > 0));
 
             p.Heizkessel = sim.bSimulationKessel
                            || (sim.simulation_spk != null &&
                                (sim.simulation_spk.spk_list.Count > 0 ||
-                                sim.simulation_spk.S_Waerme_spk > 0));
+                                sim.simulation_spk.SWaermeSpkMwh > 0));
 
             p.Solarthermie = sim.bSimulationSolarthermie
                              || (sim.simulation_solarthermie != null &&
                                  (sim.simulation_solarthermie.solarthermie_list.Count > 0 ||
-                                  sim.simulation_solarthermie.Waermeproduktion_gesamt > 0));
+                                  sim.simulation_solarthermie.WaermeproduktionGesamtKwh > 0));
 
             p.BHKW = sim.bSimulationBHKW
                      || (sim.simulation_bhkw != null &&
@@ -137,7 +137,7 @@ namespace WindowsFormsApplication1
             p.Photovoltaik = sim.bSimulationPV
                              || (sim.simulation_pv != null &&
                                  (sim.simulation_pv.photovoltaik_list.Count > 0 ||
-                                  sim.simulation_pv.Stromproduktion_gesamt > 0));
+                                  sim.simulation_pv.StromproduktionGesamtKwh > 0));
 
             // --- Punkt 4: der Anlagenbestand des Projekts ----------------------------
             AnlagenbestandUebernehmen(sim.m_ID_Projekt, p);
