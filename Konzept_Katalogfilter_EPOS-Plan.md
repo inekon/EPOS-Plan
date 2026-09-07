@@ -3,7 +3,13 @@
 **Rev. 3 — 07.09.2026 — der Anwender hat entschieden (`W14a‑E‑10`): Der Filter sitzt
 an der SPALTE, und nach seiner zweiten Rückmeldung vom selben Tag **im Spaltenkopf neben dem
 Namen**, ohne getrennte Filterzeile, mit der **Liste über die ganze Breite**. Kapitel 5.6 ist
-der gültige Vorschlag, 5.2–5.5 stehen als Geschichte daneben. Nichts davon ist umgesetzt.**
+der gültige Vorschlag, 5.2–5.5 stehen als Geschichte daneben.**
+
+> **Stand 07.09.2026: STUFE S1 IST UMGESETZT** (Zweig `w140-katalogfilter-s1`, Commits
+> `78b0f1e`, `ce43d2a`, `f842465`) — die acht Verwaltungsdialoge tragen das Spaltenmodell,
+> **Q1 = ja** (ein Feld je Zahlenspalte) und **Q2 = ja** (untereinander). Die Stufen **S2**
+> (Projektdialoge und Assistent) und **S3** (Bedarf, Zeitreihen, Vergleich, Import) stehen
+> aus; Kapitel 9 nennt die Commits, Kapitel 10 den Stand der offenen Punkte.
 
 **Was Rev. 3 gegenüber Rev. 2 ändert** — die zweite Rückmeldung im Wortlaut:
 
@@ -991,6 +997,15 @@ mehr, der zuerst fertig sein müsste.
 
 ### Stufe S1 — der Spaltenfilter und die acht Verwaltungsdialoge
 
+> **UMGESETZT am 07.09.2026** (Commits `78b0f1e`, `ce43d2a`, `f842465`). Was dabei anders
+> heißt, als hier steht: Der Weg der Controller ist `…StammCtrl.Katalogfilterzeilen()` und
+> nicht `Katalogzeilen()` — den Namen führen `PufferSpStammCtrl` (Projektdialog),
+> `SolarkollektorenStammCtrl`, `StromspeicherStammCtrl` und `WPStammCtrl` bereits mit einer
+> anderen Bedeutung. Dazu kommen zwei Dinge, die die Tabelle nicht nennt: ein **achtes**
+> Profil für die Wärmepumpe (S1.6 verlangt ihren Dialog, also braucht sie eines) und der
+> Baustein **`Katalogliste`**, der Zone A und das Raster zusammenhält — sonst stünde derselbe
+> Aufbau achtmal im Markup.
+
 | Schritt | Inhalt |
 |---|---|
 | S1.1 | `Katalogfilterprofil` + `Katalogfilter` im Kern (Daten und Rechnung, Kapitel 3) und die kleine Klasse **`Zahlenausdruck`** (`>10`, `<60`, `10..60`, `=15`; ein unverstandener Ausdruck ist **kein** Filter). Beides ohne Oberfläche prüfbar — Kernproben |
@@ -1130,7 +1145,17 @@ Kennungen `W14a‑E‑9‑Q1` … `W14a‑E‑9‑Q12`.
 | Kennung | Entscheid | Datum | Umsetzung |
 |---|---|---|---|
 | **W14a‑E‑10** | „Q1 bis Q12: ändere den Katalogfilter — nur Suche (Screenshot 2), Hersteller, Brennstoff etc. sollte an Spalte mit Sortieren und Suchen (Beispiel Screenshot 1) erfolgen. Das Schema des Dialogs sollte immer gleich aussehen (Wärmepumpe ähnlich wie PV-Module und Heizkessel)." — dazu: „erstelle aktualisiertes Mockup" | 07.09.2026 | **Konzept 5.6 und Mockup fortgeschrieben** (Rev. 2). Umsetzung: Stufe S1–S3, Kapitel 7. Nichts davon ist gebaut |
-| **W14a‑E‑10, Ergänzung** | „W14a‑E‑10: Katalogfilter — Die Filter sollten über den Spaltennamen sitzen (Hersteller, Modell, Leistung, … — siehe Screenshot als Beispiel) und nicht separat, außer ‚Suche' über alle Felder. Liste wie zuvor über ganze Breite, sonst zu schmale Liste. Erstelle neues Mockup." | 07.09.2026 | **Rev. 3, dieser Stand.** Drei Folgen: (1) die **Filterzeile fällt** — über der Liste steht nur noch die Suche mit der Trefferzahl, ein gesetzter Filter ist allein am **gefüllten Trichter** erkennbar (5.6.4); (2) die **Liste läuft über die ganze Breite**, der Eingabe-/Detailblock steht darunter (5.6.1) — damit tragen die Listen **sechs bis neun** Parameterspalten statt fünf (5.6.5); (3) das gilt auch für die Projektauswahl, weshalb Projektliste und Katalog **untereinander** stehen → **Frage W14a‑E‑10‑Q2** (8.2). Der Aufwand verschiebt sich um rund eine Stunde nach oben (Kapitel 7). Nichts davon ist gebaut |
+| **W14a‑E‑10, Ergänzung** | „W14a‑E‑10: Katalogfilter — Die Filter sollten über den Spaltennamen sitzen (Hersteller, Modell, Leistung, … — siehe Screenshot als Beispiel) und nicht separat, außer ‚Suche' über alle Felder. Liste wie zuvor über ganze Breite, sonst zu schmale Liste. Erstelle neues Mockup." | 07.09.2026 | **Rev. 3, dieser Stand.** Drei Folgen: (1) die **Filterzeile fällt** — über der Liste steht nur noch die Suche mit der Trefferzahl, ein gesetzter Filter ist allein am **gefüllten Trichter** erkennbar (5.6.4); (2) die **Liste läuft über die ganze Breite**, der Eingabe-/Detailblock steht darunter (5.6.1) — damit tragen die Listen **sechs bis neun** Parameterspalten statt fünf (5.6.5); (3) das gilt auch für die Projektauswahl, weshalb Projektliste und Katalog **untereinander** stehen → **Frage W14a‑E‑10‑Q2** (8.2). Der Aufwand verschiebt sich um rund eine Stunde nach oben (Kapitel 7) |
+| **W14a‑E‑10‑Q1** | „Katalogfilter: Empfehlung jeweils ja" — **EIN Feld je Zahlenspalte** (V1 aus 8.1): Es versteht `>10`, `>=10`, `<60`, `<=60`, `=15`, `10..60` und die bloße Zahl `15` (= `=15`); ein unverstandener Ausdruck ist **kein** Filter | 07.09.2026 | **Umgesetzt** als `EPOS.Kern/Allgemein/Katalog/Zahlenausdruck.cs`, geprüft ohne Oberfläche in `EPOS.Kern.Tests/ZahlenausdruckTests` (alle sieben Formen, zwei unverstandene, de‑DE und en‑US) |
+| **W14a‑E‑10‑Q2** | dieselbe Antwort: **untereinander** (V1 aus 8.2) — Projektliste oben, Übernahmeleiste, Katalogliste, Detailblock | 07.09.2026 | Betrifft **Stufe S2** (Schritt S2.6, `Zweispaltenauswahl`). In S1 ist der Zwilling erledigt: Der `Katalograhmen` steht seit S1.7 untereinander |
+
+**Stufe S1 ist umgesetzt** — Zweig `w140-katalogfilter-s1`, drei Commits:
+`78b0f1e` (Kern: `Katalogfilterprofil`, `Katalogfilter`, `Zahlenausdruck`, acht
+`…StammCtrl.Katalogfilterzeilen`, 49 Ressourcenschlüssel), `ce43d2a` (Bausteine
+`Spaltenfilter` und `Katalogliste`, Stilblatt, `Katalograhmen` untereinander) und
+`f842465` (die acht Verwaltungsdialoge). **Q1 = ja, Q2 = ja.** Der Rechenweg ist
+unberührt: Referenzlauf 1030/1007/1017/1045 byte-gleich gegen
+`Referenzlaeufe/2026-09-07_R5_Zahlenrand`.
 
 ### 9.1 Was der Entscheid für jede der zwölf Fragen bedeutet
 
@@ -1160,8 +1185,8 @@ Kennungen `W14a‑E‑9‑Q1` … `W14a‑E‑9‑Q12`.
 | **O‑3** | Der `Motortyp` des BHKW führt 45 verschiedene Werte in 79 Sätzen, darunter Schreibvarianten desselben Motors („Gas-Otto-Motor", „Gas-Otto-Motor_ 2G", „Gas-Otto-Motor_2G"). Eine Klappliste darüber wäre unbrauchbar; eine Bereinigung ist eine eigene Aufgabe |
 | **O‑4** | Der Hersteller steht in mehreren Schreibweisen desselben Hauses („EC Power A/S" 10 Sätze, „EC POWER A/S" 7; „2G Energy AG" 21, „2-G Energietechnik GmbH" 17). Das Spaltenmodell **entschärft** das: „enthält 2G" trifft beide Schreibweisen, „enthält EC Power" ebenfalls (Groß/Klein egal) — eine Klappliste hätte sie als verschiedene Hersteller geführt. Die Zusammenführung selbst gehört weiter zur Dublettenpflege |
 | **O‑5** | ~~Die Katalogliste der `Zweispaltenauswahl` hat nur die halbe Breite.~~ **Erledigt mit Rev. 3 (07.09.2026).** Der Anwender hat die Ursache gestrichen, nicht das Symptom: Die Liste läuft über die **ganze** Breite, die zwei Listen stehen untereinander. Gemessen rollt die Katalogliste in M2 jetzt um **0 px** statt um 118 px — und das mit **neun** Parameterspalten statt sechs. Die Höchstbreite der linken Spalte (`flex: 0 1 24rem`) wird damit gegenstandslos; an ihre Stelle tritt der Umbau des Bausteins, zu dem **Frage W14a‑E‑10‑Q2** (8.2) gestellt ist |
-| **O‑6** | **Ein neues Raster schließt das Popover.** Der `@key`-Fix W6‑B‑2 baut das QuickGrid neu auf, sobald `Virtualisiert` oder die Zeilenzahl wechselt — und beim Filtern wechselt die Zeilenzahl praktisch immer. Der Anwender tippt also in ein Popover, das nach dem ersten Zeichen verschwindet, wenn man nichts tut. Zwei Wege: das Feld erst bei `Enter` oder beim Verlassen wirken lassen, oder den Filterstand im Wirt halten und das Popover nach dem Neuaufbau wieder öffnen. **Vor S1.2 zu entscheiden** |
-| **O‑7** | **Der Dialog wird höher, als ein 768‑px‑Fenster fasst.** Steht die Eingabe unter statt neben der Liste, misst der Dialog gemessen 1 152 px (M1), 1 225 px (M3) und 1 228 px (M2) bei 1 366 px Breite; der Eingabeblock beginnt 674 px unter der Oberkante, in M2 der Kenndatenblock erst bei 825 px. Bei 768 px Fensterhöhe braucht man dafür den Rollbalken der **Maske**. Das ist kein Bruch mit W9‑B‑2 — die **Liste** rollt in sich und schluckt die Seite nicht mehr —, aber es ist der Preis der Anordnung und gehört auf den Tisch. Drei Stellschrauben, falls es stört: die Listenhöhe (heute elf Zeilen), die Parameterübersicht (ist schon zugeklappt), und in M2 der Kenndatenblock, den man ebenfalls als Aufklapper führen könnte. **Nach der Abnahme des Mockups zu entscheiden**, nicht vorher — es hängt daran, wie der Anwender die Maske tatsächlich benutzt |
+| **O‑6** | ~~**Ein neues Raster schließt das Popover.**~~ **Entschieden und belegt mit S1.2 (07.09.2026).** Gemessen in `EPOS.UI.Tests/Bausteine/SpaltenfilterTests.O6_Ein_neu_aufgebautes_Raster_schliesst_das_Popover`: Führt QuickGrid das Popover selbst über `ColumnOptions`, steht es nach einem Klick auf den Optionsknopf da — und ist nach einem Wechsel der Zeilenzahl **weg**; der `@key`-Fix W6‑B‑2 baut das Raster neu auf, und die neue Instanz beginnt ohne Zustand. **Gewählt ist der erste der zwei Wege: Das Feld wirkt bei ENTER oder beim VERLASSEN, nicht beim Tippen.** Tippen ändert nur den Text in `Spaltenfilter` (`@oninput`), die Zeilenmenge bleibt unberührt, das Raster wird nicht neu gebaut und das Popover steht mit seinem Schreibzeiger. Enter, ein Feldwechsel (`onchange`) und das Verlassen (`onfocusout`) übernehmen und schließen; Esc schließt ohne zu übernehmen. **Der zweite Weg** — „Filterstand im Wirt halten und das Popover nach dem Neuaufbau wieder öffnen" — ist zur Hälfte trotzdem gebaut (der Stand liegt im `Katalogfilterstand` des Wirtes, sonst wäre er nach dem ersten Zeichen weg), löste den Schreibzeiger aber **nicht**: Das Eingabefeld wäre nach dem Neuaufbau ein NEUES DOM-Element, der Fokus damit fort, und der Anwender tippte nach jedem Zeichen ins Leere |
+| **O‑7** | **Der Dialog wird höher, als ein 768‑px‑Fenster fasst.** Steht die Eingabe unter statt neben der Liste, misst der Dialog gemessen 1 152 px (M1), 1 225 px (M3) und 1 228 px (M2) bei 1 366 px Breite; der Eingabeblock beginnt 674 px unter der Oberkante, in M2 der Kenndatenblock erst bei 825 px. Bei 768 px Fensterhöhe braucht man dafür den Rollbalken der **Maske**. Das ist kein Bruch mit W9‑B‑2 — die **Liste** rollt in sich und schluckt die Seite nicht mehr —, aber es ist der Preis der Anordnung und gehört auf den Tisch. Drei Stellschrauben, falls es stört: die Listenhöhe (heute elf Zeilen), die Parameterübersicht (ist schon zugeklappt), und in M2 der Kenndatenblock, den man ebenfalls als Aufklapper führen könnte. **Nach der Abnahme des Mockups zu entscheiden**, nicht vorher — es hängt daran, wie der Anwender die Maske tatsächlich benutzt.<br><br>**Stand nach S1.7 (07.09.2026): unverändert offen, und die Zahlen sind die des MOCKUPS geblieben.** Eine Dialoghöhe ist im bunit-Markup **nicht messbar** — bunit rechnet kein CSS aus (Lehre W6‑B‑1); geprüft ist deshalb nur die REGEL im Stilblatt: Die Liste trägt `max-height: calc(var(--epos-listenhoehe) * 1.3)` = 458 px = elf Zeilen und rollt in sich, der Eingabeblock rollt nicht mehr selbst, und der Rollbalken der Maske sitzt an `.epos-katalog-dialog` (`overflow: auto`). Die Höhe misst der **Anwender** an der Windows-Abnahme — Abnahmepunkte A‑W14a‑E10‑11 und ‑12 |
 
 ---
 
