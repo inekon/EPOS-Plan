@@ -4029,6 +4029,33 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Tabellen mit Deckel; jede `<option>` mit `selected` und `@key`). Die drei alten Paartexte `PVS_FEHLT_UOC/_UMPP/_ISC`
 > stehen ungenutzt und fallen in einem Aufräumlauf. Abnahme auf Windows: **A‑W6‑B4‑1…9**. Der Datenbefund dahinter —
 > die verdorbenen Koeffizienten des Bestands (A1) — läuft als **W6‑B‑5** (Schemaschritt 69).
+>
+> **W6‑B‑5 — die verdorbenen PV‑Modulkoeffizienten (Anwenderentscheid 07.09.2026, Q1–Q3 = Empfehlung), umgesetzt in
+> `651894f` (Schritt 69 + 35 Tests) · `15defad` (Testdatenbank) · `373447a` (Basis R6, `kern.yml`/`ios.yml`, LIESMICH) ·
+> `17f2bfb` (Doku, Einfrierregel) · `ace49bc`, zusammengeführt in `9489d85`.** Paket‑A‑Befund A1 ist geschlossen:
+> `alpha_SC`, `beta_OC` und `T_NOCT` trugen in 3 von 6 Stammsätzen und 7 von 9 Projektkopien der Testdatenbank den Wert
+> von `I_Kurzschluss` (der Kopierfehler des alten Editors), ein Satz Nullen. Migrationsschritt **69**
+> (`EPOS.Kern/Allgemein/Update/PvKoeffizientenReparatur.cs`, `SchemaStand.Zielversion` 68 → 69) erkennt die
+> **Giftsignatur** (Wert = `I_Kurzschluss` auf 1e‑6 genau oder außerhalb des physikalischen Fensters; die 0 liegt in
+> jedem der vier Fenster außerhalb), repariert **aus der CEC‑Liste** über `CECDataService` — die vier ausgelieferten
+> Module eingebettet, weil `VDI-3805-Daten` seit W6‑O‑9 abwählbar ist; liegt die Datei am Herstellerdatenpfad, kommt sie
+> dazu (gemessen 4 + 20 197) —, nimmt die Projektkopien `Tab_PV` mit (**Q2**) und setzt alles ohne Treffer auf `NULL`
+> mit einer Protokollzeile je Satz (Jinkosolar JKM 260P‑60 und LG 320 N1K‑A5 stehen nicht in der Liste, nur
+> Schwesterzeilen eines anderen Prüflabors); idempotent, gesunde Werte bleiben Satz für Satz unberührt. Testdatenbank
+> auf Stand 69: 4 von 6 Katalog‑ und 7 von 9 Projektsätzen geändert, STRICT 117, Größe unverändert. **Q3 eingelöst:**
+> neue Basis **`Referenzlaeufe/2026-09-07_R6_PvKoeffizienten`** (12 Projekte, 312 CSV, 1 792 Skalare) — elf Projekte
+> byte‑gleich zu R5, nur **1007** weicht ab (acht Dateien der PV‑Kette, theoretische PV‑Erzeugung −0,69 %, Überschuss
+> −2,2 %), Ursache allein `T_NOCT` (Rückfall 45 °C → Katalogwert 47,4 °C; +2,4 K Zelltemperatur bei 800 W/m² mit
+> γ = −0,4509 %/K); `alpha_SC`/`beta_OC` liest kein Rechenweg. Gegenbeweis im `protokoll.txt`: `T_NOCT` allein zurück
+> auf 45 → 1007 byte‑gleich zu R5. 1040 (Jinkosolar, `NULL` → Rückfall wie vorher) und 1045 (gesund) byte‑gleich.
+> `kern.yml`/`ios.yml`/`gate.sh` zeigen auf R6, R5 bleibt zur Geschichte liegen. **Zweite Einfrierregel** (analog
+> Em‑9.8‑Q4): Wer einen Modulkoeffizienten der Testdatenbank ändert, friert die Basis neu ein (`CLAUDE.md`,
+> `Referenzlaeufe/LIESMICH.md`). Die Handläufe unter `sql/pv_katalog/` bleiben als Beleg liegen (neue `LIESMICH.md`
+> dort: der eine gewollte Unterschied — das Skript trug PAN‑Werte für Jinkosolar/LG ein, Schritt 69 setzt `NULL`, weil
+> Q1 die CEC‑Liste als Quelle nennt). Nachweis: 35 Fälle in `PvKoeffizientenReparaturTests`, Kern 1992 / UI 3214
+> grün, SpeicherEngine 337, KiKern 469, Formularkarte 122, SQL 0, Designer 0, ChartProben 44, Gate grün, Referenzlauf
+> 1030/1007/1017/1045 byte‑gleich gegen R6. Abnahme auf Windows: **A‑W6‑B5‑1…9** — **Update-Hinweis: Schemastand 69,
+> die Produktivdatenbank wird beim nächsten Start mit Sicherung migriert, ein `.wpx` auf Stand 68 wird abgewiesen.**
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
