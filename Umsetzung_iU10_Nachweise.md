@@ -485,6 +485,21 @@ BHKW-Fahrweisen und der Reservemarke ändern auf Apple Silicon ebenso wenig wie 
 Merge). Die `kern.yml`-Läufe 207 bis 210 (`3d51daf`, `322f614`, `c98790b`, `17ef1e3`) sind grün. Ausgelöst per
 `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Siebenunddreißigster Lauf 34152839454 (`ios.yml`, `macos-26`, 07.09.2026, 18:44–18:53 UTC, 8 min 50 s)** auf
+`8da1020` — der fünfte Tagesstand des 07.09.2026 und der erste Lauf mit der **Katalogfilter-Stufe S2** (W14a‑E‑10:
+die sieben Projektdialoge samt Wärmepumpe im Spaltenmodell, `Zweispaltenauswahl` untereinander, Spalte „im Projekt
+verwendet", Filterstand je Katalog über die Sitzung) und dem **Schemaschritt 68** (Q7: `Firma` im Stromspeicherkatalog,
+`SchemaStand.Zielversion` 68) — die Seed-Datenbank trägt damit erstmals den Stand 68 in die App. Workload 21 s, Bau
+1 min 32 s (0 Fehler), Simulatorstart 2 min 06 s, Erststart mit Seed-Kopie (66 MB), Startmarken `SQLite 3.53.3` ·
+`STRICT=117` (Erwartung aus der Seed-Datenbank: 117 — Schritt 68 ergänzt eine Spalte, keine Tabelle) · `Projekte=24`
+grün, Prüfmodus 1030 in 6 s (22 CSV, 160 Skalare), **iZ6-Vergleich gegen `2026-09-07_R5_Zahlenrand` PASS (236 680
+Werte)** und **BYTE-GLEICH** (`diff -rq` leer, iOS-Simulator arm64). Die `kern.yml`-Läufe 213 bis 215 (`bc9ba07`,
+`8da1020`, `833ff69`) sind grün; der Lauf 216 (Ereignis `pull_request` auf `833ff69`) fiel an EINEM Test rot
+(`ModulImportDialogTests.Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers`, 5 erwartet, 155 gezählt),
+den der Push-Lauf 215 auf demselben Commit grün führt — ein Wettlauf im Test, kein Rechenbefund; die Behebung nach
+dem Muster W16b‑O‑2 läuft als eigene Aufgabe. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
+Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
