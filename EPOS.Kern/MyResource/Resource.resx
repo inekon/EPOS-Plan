@@ -14666,6 +14666,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="MENU_PC_BEARBEITEN" xml:space="preserve">
     <value>Bearbeiten</value>
   </data>
+  <data name="MENU_PHOTOVOLTAIK" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
   <data name="MENU_PROFILE_LASTGAENGE" xml:space="preserve">
     <value>Profile &amp; Lastgänge</value>
   </data>
@@ -14697,7 +14700,10 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>Photovoltaik</value>
   </data>
   <data name="MENU_PV_IMPORT_CEC" xml:space="preserve">
-    <value>Import Photovoltaik CEC/Pan</value>
+    <value>PV Module (CEC, PAN)...</value>
+  </data>
+  <data name="MENU_PV_MODULE" xml:space="preserve">
+    <value>PV Module</value>
   </data>
   <data name="MENU_SOLARKOLLEKTOREN" xml:space="preserve">
     <value>Solarkollektoren</value>

@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests.Bausteine;
 /// aufgibt: die VOLLZAEHLIGKEIT der Punkte, ihre BESCHRIFTUNG in beiden
 /// Sprachen und die Zusicherung, dass jeder Klick einen
 /// <see cref="Seitenschluessel"/> meldet — und nichts sonst. Fiele einer der
-/// 54 Punkte beim Umzug aus, saehe man es an keiner anderen Stelle mehr; der
+/// 58 Punkte beim Umzug aus, saehe man es an keiner anderen Stelle mehr; der
 /// Designer, der ihn bisher belegte, ist mit W16c.3 geloescht.</para>
 ///
 /// <para>ANWENDERENTSCHEID W16c-E-2 (04.09.2026): Die zwei Sprachpunkte
@@ -39,6 +39,17 @@ namespace EPOS.UI.Tests.Bausteine;
 /// aufgeloeste, eine neue Rubrik) und 12 statt 13 aufklappende. Der Nachweis
 /// prueft darum ab W16c-E-6 nicht nur ZAHLEN, sondern die STRUKTUR: den Weg
 /// jedes verschobenen Punktes samt seinem unveraenderten Seitenschluessel.</para>
+///
+/// <para>ANWENDERENTSCHEID W16c-E-7 (07.09.2026): Das Paar Modul/Wechselrichter
+/// steht an ZWEI Stellen des Kopfes „Administration" — als Katalog unter
+/// „Energiesysteme" und als Import unter „Daten &amp; Import" —, und an beiden
+/// fasst es jetzt ein Zwischenknoten <b>„Photovoltaik"</b> zusammen. Auch hier
+/// bleibt die wichtigste Zahl stehen: <b>44 handelnde Punkte</b>. Zwei Knoten
+/// mehr, die aufklappen (12 → 14), macht 58 statt 56 Punkte; Ziel, Argument und
+/// Name der vier Punkte sind unveraendert. Geaendert haben sich zwei
+/// BESCHRIFTUNGEN — „Photovoltaik Module" heisst unter dem gleichnamigen Knoten
+/// „PV Module" (MENU_PV_MODULE), und der Modulimport heisst wie sein Zwilling
+/// „PV Module (CEC, PAN)…" statt „Import Photovoltaik CEC/Pan".</para>
 ///
 /// <para>Die Sprache wird JE FALL gepinnt (Regel seit iU9-W8): Die
 /// Beschriftungen kommen aus <c>MyResource</c>, und der Windows-Laeufer laeuft
@@ -100,7 +111,12 @@ public class MenuebandTests : BunitContext
         // und "Wechselrichter (CEC)" unter Datenimport. Beide HANDELN, also
         // 56 Punkte und 44 Handlungen. Es ist die erste Erweiterung des
         // Menues seit W16c; jeder aeltere Punkt steht unveraendert.
-        Assert.Equal(56, Punkte.Count);
+        //
+        // ANWENDERENTSCHEID W16c-E-7 (07.09.2026): ZWEI Zwischenknoten
+        // "Photovoltaik" kommen hinzu - einer unter "Energiesysteme", einer
+        // unter "Daten & Import". Sie KLAPPEN nur auf, also 58 Punkte bei
+        // unveraendert 44 Handlungen.
+        Assert.Equal(58, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -225,18 +241,259 @@ public class MenuebandTests : BunitContext
     public void Energiesysteme_fuehrt_seit_W16c_E_5_Photovoltaik_und_den_Pufferspeicher()
     {
         // "Verschiebe Pufferspeicher von 'Waermebedarf & Heizung' in
-        // Energiesystem." Uebrig bleiben zwei Punkte - und beide HANDELN, weil
-        // das Ein-Punkt-Untermenue der Photovoltaik aufgeloest ist.
+        // Energiesystem." Uebrig bleiben zwei Zeilen - seit W16c-E-7 der Knoten
+        // "Photovoltaik" und daneben, unveraendert handelnd, der
+        // Pufferspeicher.
         Menuepunkt energie = Rubrik("MenuItem_Energiesysteme");
 
-        // W6-E-2 (06.09.2026): "Wechselrichter" steht seither zwischen den
-        // beiden - nach "Photovoltaik Module", weil er zur selben Anlage
-        // gehoert und nach dem Modul gepflegt wird.
-        Assert.Equal(new[] { "MenuItem_PV", "MenuItem_Wechselrichter", "MenuItem_PufferSp" },
-                     Kinder(energie));
-        Assert.All(energie.Untereintraege, p => Assert.False(p.Klappt));
+        Assert.Equal(new[] { "MenuItem_PV_Gruppe", "MenuItem_PufferSp" }, Kinder(energie));
+
+        // Der Pufferspeicher handelt weiterhin unmittelbar.
+        Assert.False(energie.Untereintraege[1].Klappt);
 
         Assert.Equal("Menu3", energie.Bild);
+    }
+
+    // =====================================================================
+    //  ANWENDERENTSCHEID W16c-E-7 (07.09.2026) — zwei Zwischenknoten
+    //  "Photovoltaik"
+    // =====================================================================
+
+    [Fact]
+    public void Der_Knoten_Photovoltaik_unter_Energiesystemen_fuehrt_Modul_und_Wechselrichter()
+    {
+        // WORTLAUT des Anwenders: "Mache zwei Untermenues Photovoltaik
+        // 1. PV Module 2. Wechselrichter." Der Knoten klappt nur auf - ein
+        // Klick darauf darf nichts oeffnen - und traegt wie die Rubrik
+        // "Profile & Lastgaenge" kein Bild.
+        Menuepunkt knoten = Rubrik("MenuItem_Energiesysteme")
+                            .Untereintraege.Single(p => p.Name == "MenuItem_PV_Gruppe");
+
+        Assert.True(knoten.Klappt);
+        Assert.True(string.IsNullOrEmpty(knoten.Ziel));
+        Assert.Equal("MENU_PHOTOVOLTAIK", knoten.TextSchluessel);
+        Assert.Equal("", knoten.Bild);
+
+        Assert.Equal(new[] { "MenuItem_PV", "MenuItem_Wechselrichter" }, Kinder(knoten));
+
+        // Die REIHENFOLGE ist die aus W6-E-2: erst das Modul, dann das Geraet
+        // dahinter.
+        Assert.Equal(Seitenschluessel.PvAdmin, knoten.Untereintraege[0].Ziel);
+        Assert.Equal(Seitenschluessel.WechselrichterAdmin, knoten.Untereintraege[1].Ziel);
+    }
+
+    [Fact]
+    public void Der_Knoten_Photovoltaik_im_Datenimport_fuehrt_die_zwei_CEC_Importe()
+    {
+        // Der Anwender hat die zweite Stelle ausdruecklich benannt: "der
+        // Import steht nicht unter Energiesysteme sondern vdi3805
+        // (Wechselrichter)". Der Knoten steht an der Stelle der zwei
+        // PV-Importpunkte; die vier uebrigen Importe bleiben, wo sie waren.
+        Menuepunkt daten = Rubrik("MenuItem_DatImport");
+
+        Assert.Equal(new[]
+        {
+            "MenuItem_Import_Heizkessel",
+            "MenuItem_PufferSp_VDI3805",
+            "MeniItem_VDI3805",
+            "MenuItem_PV_Import_Gruppe",
+            "MenuItem_ST_Import",
+        }, Kinder(daten));
+
+        Menuepunkt knoten = daten.Untereintraege.Single(p => p.Name == "MenuItem_PV_Import_Gruppe");
+
+        Assert.True(knoten.Klappt);
+        Assert.True(string.IsNullOrEmpty(knoten.Ziel));
+        Assert.Equal("MENU_PHOTOVOLTAIK", knoten.TextSchluessel);
+        Assert.Equal("", knoten.Bild);
+
+        Assert.Equal(new[] { "MenuItem_PV_Import_CEC", "MenuItem_WR_Import_CEC" }, Kinder(knoten));
+
+        // Das Argument "CEC" des Modulimports reist mit - es haengt am Punkt
+        // und nicht an seiner Stelle im Baum.
+        Assert.Equal(Seitenschluessel.PvImport, knoten.Untereintraege[0].Ziel);
+        Assert.Equal("CEC", knoten.Untereintraege[0].Argument);
+        Assert.Equal(Seitenschluessel.WechselrichterImport, knoten.Untereintraege[1].Ziel);
+        Assert.Equal("", knoten.Untereintraege[1].Argument);
+    }
+
+    [Fact]
+    public void Beide_Knoten_Photovoltaik_tragen_denselben_Text_in_beiden_Sprachen()
+    {
+        // EIN Textschluessel fuer beide Knoten: Es ist derselbe Begriff, und
+        // zwei Schluessel liefen beim ersten Umbenennen auseinander.
+        Menuepunkt[] knoten = Menuetabelle.Alle
+            .Where(p => p.Name is "MenuItem_PV_Gruppe" or "MenuItem_PV_Import_Gruppe")
+            .ToArray();
+
+        Assert.Equal(2, knoten.Length);
+        Assert.All(knoten, p => Assert.Equal("MENU_PHOTOVOLTAIK", p.TextSchluessel));
+
+        Kultur("de-DE");
+        Assert.All(knoten, p => Assert.Equal("Photovoltaik", p.Text));
+
+        Kultur("en-US");
+        Assert.All(knoten, p => Assert.Equal("Photovoltaics", p.Text));
+
+        Kultur("de-DE");
+    }
+
+    [Fact]
+    public void Die_zwei_umbenannten_Punkte_heissen_in_beiden_Sprachen_neu()
+    {
+        // Unter dem Knoten "Photovoltaik" hiesse "Photovoltaik Module" zweimal
+        // dasselbe; der Punkt heisst darum "PV Module". Und der Modulimport
+        // heisst wie sein Zwilling darunter - "PV Module (CEC, PAN)..." neben
+        // "Wechselrichter (CEC, OND)..." - statt "Import Photovoltaik CEC/Pan".
+        Menuepunkt modul = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_PV");
+        Menuepunkt einlesen = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_PV_Import_CEC");
+
+        Assert.Equal("MENU_PV_MODULE", modul.TextSchluessel);
+        Assert.Equal("MENU_PV_IMPORT_CEC", einlesen.TextSchluessel);
+
+        Kultur("de-DE");
+        Assert.Equal("PV Module", modul.Text);
+        Assert.Equal("PV Module (CEC, PAN)...", einlesen.Text);
+
+        Kultur("en-US");
+        Assert.Equal("PV modules", modul.Text);
+        Assert.Equal("PV modules (CEC, PAN)...", einlesen.Text);
+
+        Kultur("de-DE");
+    }
+
+    [Fact]
+    public void Ein_neues_Untermenue_fuehrt_nie_nur_einen_einzigen_Punkt()
+    {
+        // DIE REGEL AUS W16c-E-6: Ein Untermenue mit einem Punkt kostet einen
+        // Klick und sagt nichts - genau deshalb sind
+        // MenuItem_PC_Bearbeiten/MenuItem_ST_Bearbeiten aufgeloest worden. Die
+        // zwei Knoten aus W16c-E-7 fuehren je ZWEI Punkte und wahren sie.
+        //
+        // EINE BENANNTE AUSNAHME steht im Baum: "Klimadaten" (MenuItem_Klima)
+        // fuehrt seit dem Bestand genau einen Punkt. W16c-E-6 hat sie NICHT
+        // angefasst - der Anwender hat sie nicht genannt, und ein Menuepunkt,
+        // den niemand beanstandet hat, wird nicht nebenbei umgebaut. Sie steht
+        // hier namentlich, damit eine ZWEITE nicht unbemerkt entsteht.
+        string[] einzelgaenger = Menuetabelle.Alle
+            .Where(p => p.Klappt && p.Untereintraege.Count(k => !k.Trenner) < 2)
+            .Select(p => p.Name)
+            .ToArray();
+
+        Assert.Equal(new[] { "MenuItem_Klima" }, einzelgaenger);
+    }
+
+    [Fact]
+    public void Die_vier_Ziele_der_Photovoltaik_sind_genau_einmal_erreichbar()
+    {
+        // DIE EIGENTLICHE ZUSICHERUNG von W16c-E-7: Es wandert die LAGE, nicht
+        // das Ziel. Jeder der vier Seitenschluessel steht genau einmal im Baum
+        // - haette der Umbau einen Punkt kopiert statt verschoben, gaebe es
+        // zwei Wege zu derselben Maske.
+        foreach (string ziel in new[]
+                 {
+                     Seitenschluessel.PvAdmin, Seitenschluessel.WechselrichterAdmin,
+                     Seitenschluessel.PvImport, Seitenschluessel.WechselrichterImport,
+                 })
+            Assert.Single(Menuetabelle.Alle, p => p.Ziel == ziel);
+    }
+
+    [Fact]
+    public void Das_Band_fuehrt_ueber_den_Knoten_Photovoltaik_bis_zum_Wechselrichter()
+    {
+        // Derselbe Weg am gezeichneten Band, ueber DREI Klappen:
+        // Administration ▸ Energiesysteme ▸ Photovoltaik ▸ Wechselrichter.
+        // Vorher stand der Punkt eine Ebene hoeher - erst der Knoten holt ihn
+        // in den DOM.
+        Menuepunkt? gemeldet = null;
+        var cut = Render<Menueband>(p => p
+            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_Energiesysteme").Click();
+
+        // Der Pufferspeicher steht schon da, das Modul noch nicht.
+        Assert.Single(cut.FindAll("#menue-MenuItem_PufferSp"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_PV_Gruppe"));
+        Assert.Empty(cut.FindAll("#menue-MenuItem_PV"));
+
+        cut.Find("#menue-MenuItem_PV_Gruppe").Click();
+
+        Assert.Equal("true", cut.Find("#menue-MenuItem_PV_Gruppe").GetAttribute("aria-expanded"));
+        Assert.Equal(2, cut.FindAll(".epos-menueband-klappe--tief").Count);
+        Assert.Single(cut.FindAll("#menue-MenuItem_PV"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_Wechselrichter"));
+
+        cut.Find("#menue-MenuItem_Wechselrichter").Click();
+
+        Assert.NotNull(gemeldet);
+        Assert.Equal(Seitenschluessel.WechselrichterAdmin, gemeldet!.Ziel);
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+    }
+
+    [Fact]
+    public void Das_Band_fuehrt_ueber_den_Knoten_Photovoltaik_bis_zum_Modulimport()
+    {
+        // Die zweite Stelle - der Weg, an dem der Anwender stand:
+        // Administration ▸ Daten & Import ▸ Photovoltaik ▸ PV Module
+        // (CEC, PAN)... Die vier anderen Importpunkte stehen unveraendert
+        // eine Ebene hoeher.
+        Menuepunkt? gemeldet = null;
+        var cut = Render<Menueband>(p => p
+            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_DatImport").Click();
+
+        Assert.Single(cut.FindAll("#menue-MenuItem_ST_Import"));
+        Assert.Empty(cut.FindAll("#menue-MenuItem_WR_Import_CEC"));
+
+        cut.Find("#menue-MenuItem_PV_Import_Gruppe").Click();
+
+        Assert.Single(cut.FindAll("#menue-MenuItem_PV_Import_CEC"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_WR_Import_CEC"));
+        Assert.Equal("PV Module (CEC, PAN)...",
+                     cut.Find("#menue-MenuItem_PV_Import_CEC").TextContent.Trim());
+
+        cut.Find("#menue-MenuItem_PV_Import_CEC").Click();
+
+        Assert.NotNull(gemeldet);
+        Assert.Equal(Seitenschluessel.PvImport, gemeldet!.Ziel);
+        Assert.Equal("CEC", gemeldet!.Argument);
+    }
+
+    [Fact]
+    public void Der_Tastaturweg_reicht_ueber_den_Knoten_Photovoltaik_bis_zum_Wechselrichter()
+    {
+        // Die dritte Stufe muss auch mit der TASTATUR aufgehen: → oeffnet das
+        // Untermenue des markierten Punktes, ← schliesst GENAU eine Ebene
+        // (Nachweis N4 / Befund W16c-B13).
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var band = cut.Find(".epos-menueband");
+
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Administration
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // hinein
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Strom
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Energiesysteme
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // auf
+
+        Assert.Equal("true", cut.Find("#menue-MenuItem_Energiesysteme").GetAttribute("aria-expanded"));
+        Assert.Equal("0", cut.Find("#menue-MenuItem_PV_Gruppe").GetAttribute("tabindex"));
+
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Photovoltaik auf
+
+        Assert.Equal("true", cut.Find("#menue-MenuItem_PV_Gruppe").GetAttribute("aria-expanded"));
+        Assert.Equal("0", cut.Find("#menue-MenuItem_PV").GetAttribute("tabindex"));
+
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Wechselrichter
+        Assert.Equal("0", cut.Find("#menue-MenuItem_Wechselrichter").GetAttribute("tabindex"));
+
+        // ← schliesst NUR diese Ebene.
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+        Assert.Equal("false", cut.Find("#menue-MenuItem_PV_Gruppe").GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.Find("#menue-MenuItem_Energiesysteme").GetAttribute("aria-expanded"));
     }
 
     [Fact]
@@ -255,7 +512,10 @@ public class MenuebandTests : BunitContext
         Menuepunkt pv = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_PV");
         Assert.False(pv.Klappt);
         Assert.Equal(Seitenschluessel.PvAdmin, pv.Ziel);
-        Assert.Equal("MENU_PV", pv.TextSchluessel);
+        // W16c-E-7: Der Punkt traegt das Ziel weiterhin selbst; nur seine
+        // Beschriftung heisst unter dem Knoten "Photovoltaik" jetzt
+        // "PV Module".
+        Assert.Equal("MENU_PV_MODULE", pv.TextSchluessel);
 
         Menuepunkt st = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_Solarkollektoren");
         Assert.False(st.Klappt);
@@ -406,10 +666,12 @@ public class MenuebandTests : BunitContext
                  })
             Assert.Single(cut.FindAll("#menue-" + name));
 
-        // Und der Pufferspeicher steht jetzt drueben bei den Energiesystemen.
+        // Und der Pufferspeicher steht jetzt drueben bei den Energiesystemen -
+        // seit W16c-E-7 neben dem Knoten "Photovoltaik", der das Modul erst
+        // eine Ebene tiefer fuehrt.
         cut.Find("#menue-MenuItem_Energiesysteme").Click();
         Assert.Single(cut.FindAll("#menue-MenuItem_PufferSp"));
-        Assert.Single(cut.FindAll("#menue-MenuItem_PV"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_PV_Gruppe"));
     }
 
     /// <summary>Der Baum flach, wie <c>Menuetabelle.Alle</c> — nur ab einem Ast.</summary>
@@ -451,7 +713,7 @@ public class MenuebandTests : BunitContext
     [Fact]
     public void Die_Blaetter_des_Baums_sind_die_Handlungen()
     {
-        // 42 der 54 Punkte handeln, 12 klappen nur auf (Projekt,
+        // 42 der 54 Punkte handelten, 12 klappten nur auf (Projekt,
         // Administration, die sieben Untermenues der Administration, die
         // Unterrubrik "Profile & Lastgaenge" aus W16c-E-6, Hilfe und - seit
         // W16c-E-2 - Sprache). Der Vorlaeufer fuehrte dafuer 34
@@ -470,7 +732,12 @@ public class MenuebandTests : BunitContext
         // W6-E-2 (06.09.2026) haengt ZWEI handelnde Punkte an
         // (Wechselrichterverwaltung und CEC-Wechselrichterimport) - die Zahl
         // der aufklappenden bleibt 12, die der handelnden steigt auf 44.
-        Assert.Equal(12, Punkte.Count(p => p.Klappt));
+        //
+        // W16c-E-7 (07.09.2026) haengt ZWEI aufklappende an (die zwei Knoten
+        // "Photovoltaik") und laesst die 44 unberuehrt - genau wie W16c-E-2
+        // und W16c-E-6: kein Ziel entfallen, keines hinzugekommen, nur eine
+        // Stelle im Baum weiter unten.
+        Assert.Equal(14, Punkte.Count(p => p.Klappt));
         Assert.Equal(44, Punkte.Count(p => !p.Klappt));
     }
 
@@ -680,7 +947,41 @@ public class MenuebandTests : BunitContext
         cut.Find("#menue-MenuItem_Energiesysteme").Click();
 
         Assert.Single(cut.FindAll(".epos-menueband-klappe--tief"));
+        Assert.NotNull(cut.Find("#menue-MenuItem_PufferSp"));
+    }
+
+    [Fact]
+    public void Ein_Untermenue_der_VIERTEN_Ebene_klappt_ebenfalls_seitlich_auf()
+    {
+        // W16c-E-7 legt den Knoten "Photovoltaik" unter "Energiesysteme" und
+        // damit eine Klappe mehr uebereinander: Administration ▸ Energiesysteme
+        // ▸ Photovoltaik ▸ PV Module. Das Band kann das seit W16c-E-6
+        // (Muster "Profile & Lastgaenge") - der Zaehler ist der Nachweis, dass
+        // es die Klappen SCHACHTELT und nicht ersetzt.
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_Energiesysteme").Click();
+        cut.Find("#menue-MenuItem_PV_Gruppe").Click();
+
+        Assert.Equal(2, cut.FindAll(".epos-menueband-klappe--tief").Count);
         Assert.NotNull(cut.Find("#menue-MenuItem_PV"));
+
+        // Und die Regel des Stilblatts, die dafuer sorgt, dass die tiefe
+        // Klappe eingerueckt IM Fluss steht statt sich ueber die obere zu
+        // legen (Muster W5-B-1: eine bunit-Probe sieht nur die Klasse).
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        string css = File.ReadAllText(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+        int a = css.IndexOf(".epos-menueband-klappe--tief {", StringComparison.Ordinal);
+        Assert.True(a >= 0, "Die Regel .epos-menueband-klappe--tief fehlt im Stilblatt");
+        string block = css.Substring(a, css.IndexOf('}', a) - a);
+        Assert.Contains("position: static", block, StringComparison.Ordinal);
+        Assert.Contains("margin", block, StringComparison.Ordinal);
     }
 
     [Fact]

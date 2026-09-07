@@ -34,7 +34,7 @@ Projekt führt `EPOS.Kern/Controller/ProjektKontextCtrl`. Damit sind auch die zw
 Simulationsseiten aus ihren modalen Hüllen heraus — die Konfiguration als freie Ansicht, das
 Ergebnis als `Ueberlagerung` derselben WebView (Entscheid E‑5; R‑W10b‑1 und R‑W11‑1 geschlossen).
 **Seit iU9‑W16c ist auch das HAUPTFENSTER eine Razor-Seite**
-(`EPOS.UI/Seiten/Hauptfenster.razor`): Menüband mit 54 Punkten in **vier Köpfen** aus der
+(`EPOS.UI/Seiten/Hauptfenster.razor`): Menüband mit 58 Punkten in **vier Köpfen** aus der
 erzeugten `Menuetabelle`, Kopfband PRODUKTNAME/GATTUNG/CLAIM/Version und darunter
 `AppWurzel` — **die gemeinsame Wurzel von Windows und iOS** (Entscheid E‑1: eine Wurzel,
 zwei Schalen). Zwei Anwenderentscheide vom 04.09.2026 stecken darin: die zwei Sprachpunkte
@@ -44,7 +44,12 @@ holen (W16c‑E‑3) — das Reiterblatt bleibt, nur der Menüweg führt in die 
 Ein dritter kam am 06.09.2026 dazu: **W16c‑E‑6** ordnet den Kopf **„Administration"**
 um — BHKW und Solarkollektoren zu „Wärmebedarf & Heizung", Pufferspeicher zu
 „Energiesysteme", die drei Zeitreihen in die neue Unterrubrik **„Profile & Lastgänge"** —
-und löst die zwei Untermenüs mit dem einzigen Punkt „Bearbeiten" auf. **Das Menü ist
+und löst die zwei Untermenüs mit dem einzigen Punkt „Bearbeiten" auf. Ein vierter kam
+am 07.09.2026 dazu: **W16c‑E‑7** stellt das Paar Modul/Wechselrichter an BEIDEN Stellen
+des Kopfs „Administration" unter einen Zwischenknoten **„Photovoltaik"** — unter
+„Energiesysteme" die zwei Kataloge („PV Module", „Wechselrichter"), unter „Daten & Import"
+die zwei Einlesewege („PV Module (CEC, PAN)…", „Wechselrichter (CEC, OND)…"); Ziel,
+Argument und Kennung der vier Punkte bleiben, es wandert ihre Lage im Baum. **Das Menü ist
 Daten, und `Menuetabelle.cs` ist seit W16c die Quelle:** Der Designer ist gelöscht, das
 Erzeugerskript liegt nicht im Repository — wer das Menü ändert, ändert diese Datei.
 Die WinForms-Seite ist seither die **Hülle ohne Designer** (129 Zeilen) und heißt seit dem
