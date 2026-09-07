@@ -25,7 +25,9 @@ namespace Testdatenbankschema
     /// <c>Schritt_67_BhkwLeistungsgrenze</c> (das eine UPDATE aus
     /// <c>BhkwLeistungsgrenzeVorgabe</c>) und <c>Schritt_68_StromspeicherFirma</c>
     /// (Spalten aus <c>SchemaKatalog.Schritt68_StromspeicherFirma</c>, Nachtrag aus
-    /// <c>StromspeicherFirmaNachtrag</c>) bedienen. Hier steht keine
+    /// <c>StromspeicherFirmaNachtrag</c>) und <c>Schritt_69_PvKoeffizienten</c> (Regel,
+    /// Fenster, eingebettete Werte und alle Anweisungen aus
+    /// <c>PvKoeffizientenReparatur</c>) bedienen. Hier steht keine
     /// abgeschriebene DDL und kein abgeschriebenes DML.</para>
     ///
     /// <para><b>Idempotent.</b> Eine vorhandene Spalte wird uebergangen, ein zweiter Lauf
@@ -44,6 +46,16 @@ namespace Testdatenbankschema
     /// sagt — auch das ergebnisneutral, weil kein Rechenweg den Hersteller liest. Der
     /// Referenzlauf muss vor und nach dem Nachziehen byte-gleiche CSV liefern — das ist
     /// die Abnahme.</para>
+    ///
+    /// <para><b>Schritt 69 ist die Ausnahme, und das mit Absicht.</b> Er repariert die
+    /// verdorbenen PV-Modulkoeffizienten (Befund W6-B-5, Entscheide Q1 bis Q3 vom
+    /// 07.09.2026). <c>alpha_SC</c> und <c>beta_OC</c> liest kein Rechenweg, aber
+    /// <c>T_NOCT</c> geht in beide PV-Modelle: Wo der Katalogwert ausserhalb des
+    /// Fensters 20…60 °C lag, rechnete <c>SimulationPV.NoctDesModuls</c> mit dem
+    /// Rueckfall 45 °C — steht dort danach der Listenwert, rechnet sie mit ihm.
+    /// <b>Fuer diesen einen Schritt ist die Abnahme deshalb nicht die Byte-Gleichheit,
+    /// sondern die ERKLAERTE Abweichung</b> und eine neu eingefrorene Basis; die
+    /// Begruendung steht in <c>Referenzlaeufe/LIESMICH.md</c>.</para>
     /// </summary>
     internal static class Program
     {
@@ -54,7 +66,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 68) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 69) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -182,6 +194,20 @@ namespace Testdatenbankschema
             }
             Console.WriteLine();
 
+            // ---- Schritt 69: die verdorbenen PV-Modulkoeffizienten (W6-B-5, Q1 bis Q3).
+            //      DER ERSTE SCHRITT DIESES WERKZEUGS, DER EIN RECHENERGEBNIS AENDERT -
+            //      mit Absicht: T_NOCT geht in beide PV-Modelle, und wo der Katalogwert
+            //      ausserhalb des Fensters 20 bis 60 Grad C lag, rechnete SimulationPV
+            //      mit dem Rueckfall 45 Grad C. Genau das war der Zweck des Entscheids
+            //      Q3, und genau deshalb verlangt dieser Schritt eine neue
+            //      Referenzbasis (Referenzlaeufe/LIESMICH.md). alpha_SC und beta_OC
+            //      liest kein Rechenweg - sie sind die Ampel des PV-Dialogs.
+            //      Die Anweisungen kommen aus PvKoeffizientenReparatur - DIESELBE
+            //      Quelle, aus der sich SchemaMigration.Schritt_69_PvKoeffizienten
+            //      bedient. Reihenfolge und Idempotenz sind dort begruendet.
+            SchrittPvKoeffizienten(trocken);
+            Console.WriteLine();
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
@@ -201,6 +227,63 @@ namespace Testdatenbankschema
             Console.WriteLine("Schemastand nachher: " + nachher + "   (Zielstand " + SchemaStand.Zielversion + ")");
             Console.WriteLine("Groesse nachher: " + Mb(pfad));
             return nachher >= SchemaStand.Zielversion ? 0 : 1;
+        }
+
+        /// <summary>
+        /// Schritt 69 — die verdorbenen PV-Modulkoeffizienten (Befund W6-B-5,
+        /// Anwenderentscheide Q1 bis Q3 vom 07.09.2026).
+        ///
+        /// <para>Wortgleich zu <c>SchemaMigration.Schritt_69_PvKoeffizienten</c>: erst
+        /// <c>Tab_PV_STAMM</c>, dann <c>Tab_PV</c>; je Tabelle reparieren, uebernehmen,
+        /// Protokoll lesen, leeren. Alle Anweisungen kommen aus
+        /// <c>PvKoeffizientenReparatur</c>.</para>
+        /// </summary>
+        private static void SchrittPvKoeffizienten(bool trocken)
+        {
+            PvKoeffizientenquelle quelle = PvKoeffizientenReparatur.Quelle();
+            Console.WriteLine("Schritt 69 - Wertequelle: " + quelle.Eingebettet +
+                              " eingebettete Auslieferungsmodule" +
+                              (quelle.DateiGelesen
+                                   ? ", dazu " + quelle.AusDerDatei + " aus " + quelle.Dateipfad
+                                   : " (CEC-Liste nicht gefunden: " +
+                                     (string.IsNullOrEmpty(quelle.Dateipfad) ? "kein Pfad" : quelle.Dateipfad) +
+                                     ")") + ".");
+
+            foreach (string tabelle in PvKoeffizientenReparatur.TABELLEN)
+            {
+                long vorher = Zahl(PvKoeffizientenReparatur.ZaehlungVerdorben(tabelle));
+                Console.WriteLine("Schritt 69 - " + tabelle + ": verdorbene Saetze vorher " +
+                                  vorher + " von " +
+                                  Zahl(PvKoeffizientenReparatur.Gesamtzahl(tabelle)) + ".");
+
+                if (trocken) continue;
+
+                foreach (string bezeichner in PvKoeffizientenReparatur.Zerlege(
+                             Text(PvKoeffizientenReparatur.BezeichnerAbfrage(tabelle))))
+                {
+                    if (!quelle.Finde(bezeichner, null, out PvModulKoeffizienten satz)) continue;
+                    string sql = PvKoeffizientenReparatur.Reparatur(tabelle, satz);
+                    if (sql == null) continue;   // die Liste fuehrt hier nichts Brauchbares
+                    DataRepository.ExecuteNonQuery(sql);
+                }
+
+                if (tabelle == PvKoeffizientenReparatur.TAB_PROJEKT)
+                    foreach (string spalte in PvKoeffizientenReparatur.SPALTEN)
+                        DataRepository.ExecuteNonQuery(PvKoeffizientenReparatur.UebernahmeAusStamm(spalte));
+
+                // Das Protokoll steht ZWISCHEN Reparatur und Leerung - vorher stuenden
+                // darin auch die Saetze, die die Liste gerade heilt, nachher ist seine
+                // Bedingung falsch.
+                foreach (string zeile in PvKoeffizientenReparatur.Zerlege(
+                             Text(PvKoeffizientenReparatur.Protokollabfrage(tabelle))))
+                    Console.WriteLine("   " + zeile);
+
+                foreach (string spalte in PvKoeffizientenReparatur.SPALTEN)
+                    DataRepository.ExecuteNonQuery(PvKoeffizientenReparatur.Leerung(tabelle, spalte));
+
+                Console.WriteLine("Schritt 69 - " + tabelle + ": verdorbene Saetze nachher " +
+                                  Zahl(PvKoeffizientenReparatur.ZaehlungVerdorben(tabelle)) + ".");
+            }
         }
 
         /// <summary>
@@ -275,6 +358,18 @@ namespace Testdatenbankschema
                 return o == null || o == DBNull.Value ? -1 : Convert.ToInt64(o);
             }
             catch { return -1; }
+        }
+
+        /// <summary>Ein TEXT statt einer Zahl — die Sammelabfragen des Schrittes 69.</summary>
+        private static string Text(string sql)
+        {
+            try
+            {
+                object o = DataRepository.ExecuteScalar(sql);
+                return o == null || o == DBNull.Value
+                    ? "" : (Convert.ToString(o, CultureInfo.InvariantCulture) ?? "");
+            }
+            catch { return ""; }
         }
 
         private static string Mb(string pfad)
