@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -112,16 +112,16 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "QUELLE", "FIRMA", "MODELL", "ENERGIE", "LEISTUNG", "ETA", "TYP" },
                          p.Listenspalten.Select(sp => sp.Schluessel).ToArray());
 
+            // Die zwei gefilterten Groessen: Kapazitaet [kWh] und Leistung [kW],
+            // beide mit einer Nachkommastelle in ihrer Spalte. Die Vorbelegungen
+            // der zwei Zahlenleisten sind mit Stufe S3.4 gefallen (O-12) - die
+            // Katalogliste zeigt beim Aufmachen ALLES, und der Anwender engt selbst
+            // ein (Entscheid O-10).
+            Assert.Equal("ENERGIE", p.Filterspalte);
+            Assert.Equal("LEISTUNG", p.Zweitfilterspalte);
+            Assert.Equal(1, p.FilterNachkommastellen);
             Assert.NotNull(p.Zweitfilter);
-            Assert.True(p.HerstellerFilter);
-
-            // Die Vorbelegung zeigt ALLES - es gibt keinen Designer, der eine
-            // engere Spanne vorgaebe, und eine Zeile, die beim Aufmachen fehlt,
-            // waere unerklaerlich.
-            Assert.Equal(0.0, p.FilterVon);
-            Assert.Equal(100000.0, p.FilterBis);
-            Assert.Equal(0.0, p.Zweitfilter.Von);
-            Assert.Equal(100000.0, p.Zweitfilter.Bis);
+            Assert.Equal(1, p.Zweitfilter.Nachkommastellen);
 
             // ENTSCHEID Q3: Die Maske SAGT, dass keine Kosten kommen.
             Assert.NotEqual("", p.Hinweis);
@@ -145,7 +145,7 @@ namespace EPOS.Kern.Tests
             Assert.Empty(p.Quellen);
             Assert.Empty(p.Listenspalten);
             Assert.Null(p.Zweitfilter);
-            Assert.False(p.HerstellerFilter);
+            Assert.Equal("", p.Zweitfilterspalte);
             Assert.Equal(KatalogImportProfil.VdiFilter, p.Dateifilter);
         }
 

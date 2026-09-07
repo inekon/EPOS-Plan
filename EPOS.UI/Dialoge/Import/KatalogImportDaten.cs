@@ -118,12 +118,6 @@ namespace EPOS.UI.Dialoge.Import
         {
             switch (schluessel)
             {
-                case "IMP_KAT_FILTER_LEISTUNG": return Resource.IMP_KAT_FILTER_LEISTUNG;
-                case "IMP_KAT_FILTER_VOLUMEN": return Resource.IMP_KAT_FILTER_VOLUMEN;
-                case "IMP_KAT_FILTER_APERTUR": return Resource.IMP_KAT_FILTER_APERTUR;
-                case "IMP_KAT_FILTER_ENERGIE": return Resource.IMP_KAT_FILTER_ENERGIE;
-                case "IMP_KAT_FILTER_LEISTUNG_KW": return Resource.IMP_KAT_FILTER_LEISTUNG_KW;
-
                 case "IMP_KAT_FELD_NAME": return Resource.IMP_KAT_FELD_NAME;
                 case "IMP_KAT_FELD_FIRMA": return Resource.IMP_KAT_FELD_FIRMA;
                 case "IMP_KAT_FELD_BAUART": return Resource.IMP_KAT_FELD_BAUART;
