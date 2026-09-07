@@ -3428,6 +3428,22 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > per Skript geprüft (293 Sätze, 0 Fundstellen, Gegenprobe meldet), der Nachweis der Komponentenseite folgt beim nächsten
 > Windows-Bau (Abnahmepunkt A‑W6‑O‑9‑1). Nachweis: Kern 1 644 / UI 2 998 grün, Designer „abweichend 0", SQL 0, Gate grün,
 > Referenzlauf 1030/1007/1017/1045 byte-gleich. **Kapitel 12 des Wechselrichterkonzepts: alle neun Punkte geschlossen.**
+>
+> **W6‑E‑6 (Anwenderentscheid 07.09.2026: „der Wechselrichter soll beliebig wählbar sein und nur die Vorauswahl auf den
+> Modulhersteller verweisen"), umgesetzt in `5762f32`/`363d3d0`, zusammengeführt in `83a394a`:** Der Herstellerfilter über
+> der Strangtabelle (W6‑O‑4) steht beim Aufmachen auf dem Hersteller des ANLAGENmoduls, sofern der Wechselrichterkatalog
+> ein Gerät dieses Herstellers führt — sonst auf „Alle"; er sperrt nichts, jeder andere Hersteller bleibt eine
+> Klapplistenwahl entfernt, und eine gewählte Zeile behält ihr Gerät. **Die freie Wahl war schon gegeben** (`Filtern("Alle")`
+> liefert den ganzen Katalog, `BeiGeraet` kennt keine Herstellerbedingung), nur nie als Fall belegt — jetzt wählt ein Test
+> nach der Vorauswahl ein fremdes Gerät. Abgleich zweistufig (Gleichheit ohne Groß-/Kleinschreibung und Randleerzeichen,
+> dann „beginnt mit" in beide Richtungen ab drei Zeichen — „S" träfe Siemens wie SMA), vorgestellt nur beim ersten Zeichnen
+> und beim Wechsel des Anlagenmoduls (`_vorgestelltFuer`), damit kein Neuzeichnen dem Anwender seine Filterwahl nimmt;
+> Herleitungszeile unter dem Filter nennt den Fall (drei Schlüssel `PVS_HERLEITUNG_FILTER*` in beiden `.resx`). Trefferprüfung
+> in `PvStraengeFelder` gegen die Liste `Hersteller`, die Hülle reicht nur `ModulDer(zeile).Firma` — iOS hat denselben Weg.
+> Nachweis: `PvStraengeFelderTests` 26 → 37, Kern 1644 / UI 3009 grün, Designer „abweichend 0", SQL 0, Gate grün,
+> Referenzlauf 1030/1007/1017/1045 byte-gleich. Abnahme auf Windows: A‑W6‑E6‑1…7 (Vorauswahl mit/ohne Treffer, fremdes Gerät
+> wählbar, Filter bleibt bei Zellenänderung, zweite PV-Zeile stellt neu vor, zugeordnetes fremdes Gerät bleibt sichtbar,
+> „beginnt mit" am CEC-Bestand, englische Sätze).
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
