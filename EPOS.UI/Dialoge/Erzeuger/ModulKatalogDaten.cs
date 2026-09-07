@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Erzeuger;
-
-/// <summary>
-/// Eine Zeile der Modulliste (iU9-W14a.3).
-/// </summary>
-/// <param name="Id">Primärschlüssel im Katalog.</param>
-/// <param name="Bezeichner">Der Name — zugleich der Schlüssel jeder Aktion.</param>
-public sealed record ModulZeile(int Id, string Bezeichner);
 
 /// <summary>
 /// Ein Eingabefeld des Modulkatalogs mit seinem aktuellen Wert.
@@ -69,27 +63,20 @@ public sealed record ModulErgebnis(bool Bestaetigt, string Bezeichner);
 /// </summary>
 public sealed class ModulKatalogWege
 {
-    /// <summary>Die Liste aller Katalogmodule, sortiert.</summary>
-    public Func<IReadOnlyList<ModulZeile>>? Liste { get; init; }
-
     /// <summary>
-    /// Die Hersteller des Katalogs für den Filter über der Liste — <c>null</c>, wenn
-    /// die Ausprägung keinen führt (<c>ModulKatalogProfil.HatHerstellerfilter</c>).
+    /// <b>Die vollständige, UNGEFILTERTE Katalogliste</b> mit ihren Parameterspalten —
+    /// <c>…StammCtrl.Katalogfilterzeilen()</c> (Anwenderentscheid W14a‑E‑10 vom
+    /// 07.09.2026).
     /// </summary>
     /// <remarks>
-    /// Kam mit dem Wechselrichterkatalog (W6‑E‑2, Konzept 6): Die CEC-Liste bringt über
-    /// zweitausend Geräte von 152 Herstellern; ohne Einengung ist die Liste nicht
-    /// bedienbar. Die zwei älteren Ausprägungen lassen beide Delegaten weg, und dann
-    /// gibt es die Filterzeile nicht — dieselbe Regel wie beim Dateiwähler:
-    /// <b>kein Delegat, kein Bedienelement</b>.
+    /// <para>Bis hierher gab es drei Wege: <c>Liste</c> (alles), <c>Hersteller</c> (die
+    /// Klapplistenwerte) und <c>ListeGefiltert</c> (eingeengt auf einen Hersteller) —
+    /// und die zwei älteren Ausprägungen ließen sie weg, weshalb PV-Module und
+    /// Stromspeicher GAR KEINEN Filter hatten. Gefiltert wird seither VOR dem Raster
+    /// in <c>Katalogliste</c> über <c>Katalogfilter.Anwenden</c>; der Weg hierher
+    /// liefert alles, was es gibt.</para>
     /// </remarks>
-    public Func<IReadOnlyList<string>>? Hersteller { get; init; }
-
-    /// <summary>
-    /// Die Liste, eingeengt auf einen Hersteller. Leer bzw. <c>null</c> hebt die
-    /// Einengung auf. Ohne diesen Delegaten nimmt der Dialog <see cref="Liste"/>.
-    /// </summary>
-    public Func<string, IReadOnlyList<ModulZeile>>? ListeGefiltert { get; init; }
+    public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; init; }
 
     /// <summary>Die Felder eines Moduls; <c>null</c>, wenn es das Modul nicht gibt.</summary>
     public Func<string, IReadOnlyList<ModulFeldwert>?>? Detail { get; init; }

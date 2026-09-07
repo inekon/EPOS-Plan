@@ -42,7 +42,7 @@
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
 
-<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-katalog-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
@@ -56,41 +56,31 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <div class="epos-auswahlpaar">
+    @* DAS SCHEMA IST SEIT W14a-E-10 DASSELBE WIE BEIM HEIZKESSEL UND BEI DEN
+       PV-MODULEN - der Kern des Anwenderentscheids: "Das Schema des Dialogs sollte
+       immer gleich aussehen (Waermepumpe aehnlich wie PV-Module und Heizkessel)."
 
-        <div class="epos-auswahlspalte">
+       Bis hierher zeigte diese Liste EINE Spalte (den Bezeichner), waehrend der
+       einzige vollstaendige Filter des Hauses in einer UEBERLAGERUNG "Modul-Katalog..."
+       sass, die der Anwender beim Oeffnen gar nicht sieht (Konzept Befund 1.2/4).
+       Jetzt stehen NEUN Spalten hier - Hersteller, Modell, Quelle, P_N, VL min,
+       VL max, Zuheizung, Kuehlen und COP bei A2/W35 -, jede sortierbar und (bis auf
+       das Kennzeichen "Kuehlen") mit Trichter. Der Knopf "Modul-Katalog..." bleibt:
+       Die Ueberlagerung ist der Weg in den KATALOG, nicht in einen zweiten Filter. *@
+    <Katalograhmen>
+        <Liste>
             <h2 class="epos-untergruppe">@LabelListe</h2>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <thead>
-                        <tr>
-                            <th>@SpalteWahl</th>
-                            <th>@SpalteName</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (WaermepumpeStammZeile zeile in _liste)
-                        {
-                            WaermepumpeStammZeile z = zeile;
-                            <tr class="@(z.Id == _gewaehlteId ? "epos-zeile--markiert" : null)"
-                                aria-disabled="@(z.NurLesen ? "true" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(z.Id == _gewaehlteId)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => ZeileWaehlen(z)" />
-                                </td>
-                                <td class="@(z.NurLesen ? "epos-gesperrt" : null)">@z.Bezeichner</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+
+            <Katalogliste Profil="@Spaltenprofil" Zeilen="@_liste"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" />
 
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf" @onclick="BeiKatalog">@BtnKatalogText</button>
             </div>
-        </div>
+        </Liste>
 
-        <div class="epos-auswahlspalte">
+        <Eingabe>
             <Gruppenkopf Titel="@GruppeStammdaten">
                 <KindInhalt>
                     @* H13 / O-H13b-5 (07.09.2026): Der Weg in die Wikirubrik
@@ -195,8 +185,8 @@
                     }
                 </KindInhalt>
             </Gruppenkopf>
-        </div>
-    </div>
+        </Eingabe>
+    </Katalograhmen>
 
     @* --- Die beiden Kennlinienbilder ---------------------------------------- *@
     <h2 class="epos-untergruppe">@LabelKennlinien</h2>
@@ -264,8 +254,30 @@
     /// <summary>Der bearbeitete Satz. Der Dialog schreibt beim Tippen hinein.</summary>
     [Parameter] public WaermepumpeStammDaten Daten { get; set; } = new();
 
-    /// <summary>Die Stammliste (<c>WPStammCtrl.ReadAll</c>).</summary>
-    [Parameter] public Func<IReadOnlyList<WaermepumpeStammZeile>>? Liste { get; set; }
+    /// <summary>
+    /// <b>Die Stammliste mit ihren NEUN Spalten</b>
+    /// (<c>WPStammCtrl.Katalogfilterzeilen</c>, Anwenderentscheid W14a‑E‑10 vom
+    /// 07.09.2026) — vorher <c>WPStammCtrl.ReadAll</c> mit einer Namensspalte.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Liste { get; set; }
+
+    /// <summary>
+    /// Die Spalten der Liste. Die Hülle reicht das übersetzte Profil herein; ohne
+    /// Vorgabe baut der Dialog es selbst (dann tragen die Köpfe die Schlüssel) —
+    /// dasselbe Vorgehen wie bei <c>KatalogBrowserProfil</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Filterprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — EIN Bündel.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// Das Spaltenprofil, das die Liste wirklich benutzt: die Vorgabe der Hülle,
+    /// sonst das rohe Profil der Wärmepumpe (dann tragen die Köpfe die Schlüssel) —
+    /// dasselbe Vorgehen wie <c>KatalogBrowserDialog.Profil</c>.
+    /// </summary>
+    private Katalogfilterprofil Spaltenprofil =>
+        Filterprofil ??= Katalogfilterprofil.Finde(Anlagenart.Waermepumpe);
 
     /// <summary>Ein Satz zu seiner Id — beim Wechsel der Zeile.</summary>
     [Parameter] public Func<int, WaermepumpeStammDaten?>? Satz { get; set; }
@@ -412,10 +424,22 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private IReadOnlyList<WaermepumpeStammZeile> _liste = Array.Empty<WaermepumpeStammZeile>();
+    private IReadOnlyList<Katalogfilterzeile> _liste = Array.Empty<Katalogfilterzeile>();
     private IReadOnlyList<WaermepumpenKatalogZeile> _katalog = Array.Empty<WaermepumpenKatalogZeile>();
     private KennlinienBilder _bilder = KennlinienBilder.Leer;
     private IReadOnlyList<Parameterwert> _uebersicht = Array.Empty<Parameterwert>();
+
+    /// <summary>
+    /// Der Filterzustand der Stammliste — er gehört dem WIRT (offener Punkt O‑6).
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
+
+    /// <summary>
+    /// Der gewählte BEZEICHNER. Die Markierung der <c>Katalogliste</c> hängt am Namen
+    /// und nicht an der Zeilennummer — deshalb bleibt sie über einen Filter- oder
+    /// Sortierwechsel stehen.
+    /// </summary>
+    private string _gewaehlt = "";
 
     private int _gewaehlteId;
     private bool _neu;
@@ -458,6 +482,13 @@
         ? Daten.Modulkosten.ToString(CultureInfo.CurrentCulture)
         : "–";
 
+    protected override void OnParametersSet()
+    {
+        // Der Kopf der WAHLSPALTE kommt weiter über den eigenen Text der Hülle
+        // (KFAK_SP_WAHL) — dasselbe Wort in allen neun Katalogdialogen.
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
+
     protected override void OnInitialized()
     {
         ListeNeuLaden();
@@ -474,12 +505,20 @@
 
     private void ListeNeuLaden()
     {
-        _liste = Liste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
+        _liste = Liste?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
     }
 
-    private void ZeileWaehlen(WaermepumpeStammZeile zeile)
+    /// <summary>Die Katalogliste meldet den Bezeichner; hier wird die Zeile dazu gesucht.</summary>
+    private void BeiZeile(string bezeichner)
+    {
+        Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == bezeichner);
+        if (zeile is not null) ZeileWaehlen(zeile);
+    }
+
+    private void ZeileWaehlen(Katalogfilterzeile zeile)
     {
         _gewaehlteId = zeile.Id;
+        _gewaehlt = zeile.Bezeichner;
         _neu = false;
         _meldung = "";
 
@@ -582,7 +621,7 @@
         // wieder auswaehlen.
         _neu = false;
         ListeNeuLaden();
-        WaermepumpeStammZeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == ergebnis.Name);
+        Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == ergebnis.Name);
         if (zeile is not null) ZeileWaehlen(zeile);
         _meldung = ergebnis.Meldung;
     }
@@ -592,6 +631,7 @@
     {
         _neu = true;
         _gewaehlteId = 0;
+        _gewaehlt = "";
         _meldung = "";
         _hatKuehlung = false;
         _kuehlung = false;
@@ -668,7 +708,7 @@
         _katalogOffen = false;
         if (bezeichner is null) return;
 
-        WaermepumpeStammZeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == bezeichner);
+        Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == bezeichner);
         if (zeile is not null) ZeileWaehlen(zeile);
     }
 

@@ -84,6 +84,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -15838,6 +15839,447 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFAK_TITEL {
             get {
                 return ResourceManager.GetString("KFAK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter löschen ähnelt.
+        /// </summary>
+        public static string KFLT_FILTER_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KFLT_FILTER_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die enthält… ähnelt.
+        /// </summary>
+        public static string KFLT_PLATZ_TEXT {
+            get {
+                return ResourceManager.GetString("KFLT_PLATZ_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die z. B. &gt;10, &lt;60, 10..60, =15 ähnelt.
+        /// </summary>
+        public static string KFLT_PLATZ_ZAHL {
+            get {
+                return ResourceManager.GetString("KFLT_PLATZ_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sortieren nach {0} ähnelt.
+        /// </summary>
+        public static string KFLT_SORTIEREN {
+            get {
+                return ResourceManager.GetString("KFLT_SORTIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die A_ap ähnelt.
+        /// </summary>
+        public static string KFLT_SP_APERTUR {
+            get {
+                return ResourceManager.GetString("KFLT_SP_APERTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
+        /// </summary>
+        public static string KFLT_SP_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("KFLT_SP_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string KFLT_SP_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("KFLT_SP_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwert ähnelt.
+        /// </summary>
+        public static string KFLT_SP_BRENNWERT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
+        /// </summary>
+        public static string KFLT_SP_CHEMIE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_CHEMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die COP A2/W35 ähnelt.
+        /// </summary>
+        public static string KFLT_SP_COP {
+            get {
+                return ResourceManager.GetString("KFLT_SP_COP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate ähnelt.
+        /// </summary>
+        public static string KFLT_SP_CRATE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die E ähnelt.
+        /// </summary>
+        public static string KFLT_SP_ENERGIE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die η ähnelt.
+        /// </summary>
+        public static string KFLT_SP_ETA {
+            get {
+                return ResourceManager.GetString("KFLT_SP_ETA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die η_euro ähnelt.
+        /// </summary>
+        public static string KFLT_SP_ETAEURO {
+            get {
+                return ResourceManager.GetString("KFLT_SP_ETAEURO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die η₀ ähnelt.
+        /// </summary>
+        public static string KFLT_SP_ETANULL {
+            get {
+                return ResourceManager.GetString("KFLT_SP_ETANULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die η_RT ähnelt.
+        /// </summary>
+        public static string KFLT_SP_ETART {
+            get {
+                return ResourceManager.GetString("KFLT_SP_ETART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string KFLT_SP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
+        /// </summary>
+        public static string KFLT_SP_HERSTELLER {
+            get {
+                return ResourceManager.GetString("KFLT_SP_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die k1 ähnelt.
+        /// </summary>
+        public static string KFLT_SP_K1 {
+            get {
+                return ResourceManager.GetString("KFLT_SP_K1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektortyp ähnelt.
+        /// </summary>
+        public static string KFLT_SP_KOLLEKTORTYP {
+            get {
+                return ResourceManager.GetString("KFLT_SP_KOLLEKTORTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen ähnelt.
+        /// </summary>
+        public static string KFLT_SP_KUEHLEN {
+            get {
+                return ResourceManager.GetString("KFLT_SP_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P ähnelt.
+        /// </summary>
+        public static string KFLT_SP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell ähnelt.
+        /// </summary>
+        public static string KFLT_SP_MODELL {
+            get {
+                return ResourceManager.GetString("KFLT_SP_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die A_Modul ähnelt.
+        /// </summary>
+        public static string KFLT_SP_MODULFLAECHE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_MODULFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Motortyp ähnelt.
+        /// </summary>
+        public static string KFLT_SP_MOTORTYP {
+            get {
+                return ResourceManager.GetString("KFLT_SP_MOTORTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPPT ähnelt.
+        /// </summary>
+        public static string KFLT_SP_MPPT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_MPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_N ähnelt.
+        /// </summary>
+        public static string KFLT_SP_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_AC ähnelt.
+        /// </summary>
+        public static string KFLT_SP_PAC {
+            get {
+                return ResourceManager.GetString("KFLT_SP_PAC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_el ähnelt.
+        /// </summary>
+        public static string KFLT_SP_PEL {
+            get {
+                return ResourceManager.GetString("KFLT_SP_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_STC ähnelt.
+        /// </summary>
+        public static string KFLT_SP_PSTC {
+            get {
+                return ResourceManager.GetString("KFLT_SP_PSTC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_th ähnelt.
+        /// </summary>
+        public static string KFLT_SP_PTHERM {
+            get {
+                return ResourceManager.GetString("KFLT_SP_PTHERM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KFLT_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die σ ähnelt.
+        /// </summary>
+        public static string KFLT_SP_SIGMA {
+            get {
+                return ResourceManager.GetString("KFLT_SP_SIGMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp ähnelt.
+        /// </summary>
+        public static string KFLT_SP_SPEICHERTYP {
+            get {
+                return ResourceManager.GetString("KFLT_SP_SPEICHERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technologie ähnelt.
+        /// </summary>
+        public static string KFLT_SP_TECHNOLOGIE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_TECHNOLOGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die T_NOCT ähnelt.
+        /// </summary>
+        public static string KFLT_SP_TNOCT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_TNOCT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U_DC,max ähnelt.
+        /// </summary>
+        public static string KFLT_SP_UDCMAX {
+            get {
+                return ResourceManager.GetString("KFLT_SP_UDCMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die q_B ähnelt.
+        /// </summary>
+        public static string KFLT_SP_VERLUSTE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VL max ähnelt.
+        /// </summary>
+        public static string KFLT_SP_VLMAX {
+            get {
+                return ResourceManager.GetString("KFLT_SP_VLMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VL min ähnelt.
+        /// </summary>
+        public static string KFLT_SP_VLMIN {
+            get {
+                return ResourceManager.GetString("KFLT_SP_VLMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die V ähnelt.
+        /// </summary>
+        public static string KFLT_SP_VOLUMEN {
+            get {
+                return ResourceManager.GetString("KFLT_SP_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuheizung ähnelt.
+        /// </summary>
+        public static string KFLT_SP_ZUHEIZUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_ZUHEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklen ähnelt.
+        /// </summary>
+        public static string KFLT_SP_ZYKLEN {
+            get {
+                return ResourceManager.GetString("KFLT_SP_ZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suche über alle Spalten: ähnelt.
+        /// </summary>
+        public static string KFLT_SUCHE {
+            get {
+                return ResourceManager.GetString("KFLT_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suchen – * und ? erlaubt ähnelt.
+        /// </summary>
+        public static string KFLT_SUCHE_PLATZ {
+            get {
+                return ResourceManager.GetString("KFLT_SUCHE_PLATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Sätzen ähnelt.
+        /// </summary>
+        public static string KFLT_TREFFER {
+            get {
+                return ResourceManager.GetString("KFLT_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter: {0} ähnelt.
+        /// </summary>
+        public static string KFLT_TRICHTER {
+            get {
+                return ResourceManager.GetString("KFLT_TRICHTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter gesetzt: {0} ähnelt.
+        /// </summary>
+        public static string KFLT_TRICHTER_GESETZT {
+            get {
+                return ResourceManager.GetString("KFLT_TRICHTER_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter zurücksetzen ähnelt.
+        /// </summary>
+        public static string KFLT_ZURUECKSETZEN {
+            get {
+                return ResourceManager.GetString("KFLT_ZURUECKSETZEN", resourceCulture);
             }
         }
         

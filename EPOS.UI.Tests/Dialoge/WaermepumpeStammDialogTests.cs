@@ -21,10 +21,26 @@ public class WaermepumpeStammDialogTests : BunitContext
     private static readonly byte[] BildCop = { 1, 2, 3 };
     private static readonly byte[] BildLeistung = { 4, 5, 6 };
 
-    private static readonly WaermepumpeStammZeile[] Liste =
+    /// <summary>
+    /// Die Stammliste mit ihren NEUN Spalten (Anwenderentscheid W14a-E-10 vom
+    /// 07.09.2026) - vorher eine Namensspalte.
+    /// </summary>
+    private static readonly Katalogfilterzeile[] Liste =
     {
-        new(1, "WP Alpha", false),
-        new(2, "WP Ausliefer", true)
+        new Katalogfilterzeile(1, "WP Alpha")
+            .MitText(Katalogfilterprofil.SpHersteller, "Alpha")
+            .MitText(Katalogfilterprofil.SpBezeichner, "WP Alpha")
+            .MitText(Katalogfilterprofil.SpQuelle, "Luft-Wasser")
+            .MitZahl(Katalogfilterprofil.SpNennleistung, 12.0)
+            .MitZahl(Katalogfilterprofil.SpVlMax, 55.0, 0)
+            .MitKennzeichen(Katalogfilterprofil.SpKuehlen, true),
+        new Katalogfilterzeile(2, "WP Ausliefer") { Geschuetzt = true }
+            .MitText(Katalogfilterprofil.SpHersteller, "Beta")
+            .MitText(Katalogfilterprofil.SpBezeichner, "WP Ausliefer")
+            .MitText(Katalogfilterprofil.SpQuelle, "Sole-Wasser")
+            .MitZahl(Katalogfilterprofil.SpNennleistung, 20.0)
+            .MitZahl(Katalogfilterprofil.SpVlMax, 65.0, 0)
+            .MitKennzeichen(Katalogfilterprofil.SpKuehlen, false)
     };
 
     public WaermepumpeStammDialogTests()
@@ -60,7 +76,7 @@ public class WaermepumpeStammDialogTests : BunitContext
         Func<int, IReadOnlyList<KennlinienZeile>>? kennlinien = null,
         Func<int, IReadOnlyList<KennlinienZeile>, bool>? abgleichen = null,
         Func<IReadOnlyList<WaermepumpenKatalogZeile>>? katalog = null,
-        Func<IReadOnlyList<WaermepumpeStammZeile>>? liste = null,
+        Func<IReadOnlyList<Katalogfilterzeile>>? liste = null,
         Action<bool>? geschlossen = null)
         => Render<WaermepumpeStammDialog>(p => p
             .Add(x => x.Liste, liste ?? (() => Liste))
@@ -167,13 +183,48 @@ public class WaermepumpeStammDialogTests : BunitContext
     [Fact]
     public void Ein_Auslieferungssatz_steht_gedimmt_in_der_Liste()
     {
-        // Der Vorlaeufer zeichnete ihn GRAU (listBox_WP_DrawItem:187).
+        // Der Vorlaeufer zeichnete ihn GRAU (listBox_WP_DrawItem:187). Seit
+        // W14a-E-10 traegt die Zelle den Dimmvermerk statt der Zeile: Die Liste
+        // hat jetzt NEUN Spalten, und jede von ihnen soll gedimmt sein.
         var cut = Aufbauen();
         var zeilen = cut.FindAll(".epos-raster tbody tr");
 
-        Assert.Null(zeilen[0].GetAttribute("aria-disabled"));
-        Assert.Equal("true", zeilen[1].GetAttribute("aria-disabled"));
-        Assert.Contains("epos-gesperrt", zeilen[1].QuerySelectorAll("td")[1].ClassName);
+        Assert.Empty(zeilen[0].QuerySelectorAll(".epos-gesperrt"));
+        Assert.NotEmpty(zeilen[1].QuerySelectorAll(".epos-gesperrt"));
+    }
+
+    /// <summary>
+    /// <b>Die Stammliste trägt seit W14a‑E‑10 die NEUN Spalten des Profils</b>
+    /// (Konzept 4.3) — bis dahin eine Namensspalte, während der einzige
+    /// vollständige Filter des Hauses in einer Überlagerung saß (Befund 1.2/4).
+    /// „Kühlen" ist ein Kennzeichen und trägt deshalb nur den Sortierpfeil.
+    /// </summary>
+    [Fact]
+    public void Die_Stammliste_zeigt_die_neun_Spalten_und_acht_Trichter()
+    {
+        var cut = Aufbauen();
+
+        Assert.Equal(9, cut.FindAll(".epos-spaltenkopf").Count);
+        Assert.Equal(8, cut.FindAll(".epos-trichter").Count);
+        Assert.Single(cut.FindAll(".epos-katalog-suchzeile"));
+    }
+
+    /// <summary>
+    /// Der Spaltenfilter engt die Stammliste ein — dieselbe Bedienung wie beim
+    /// Heizkessel und bei den PV-Modulen (der Kern des Entscheids W14a‑E‑10).
+    /// </summary>
+    [Fact]
+    public void Der_Spaltenfilter_engt_die_Stammliste_ein()
+    {
+        var cut = Aufbauen();
+        Assert.Equal(2, cut.FindAll(".epos-raster tbody tr").Count);
+
+        // Quelle ist die dritte Spalte und damit der dritte Trichter.
+        cut.FindAll(".epos-trichter")[2].Click();
+        cut.Find(".epos-spaltenfilter input").Change("Luft");
+
+        Assert.Single(cut.FindAll(".epos-raster tbody tr"));
+        Assert.Equal("1 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
     }
 
     [Fact]
@@ -405,7 +456,8 @@ public class WaermepumpeStammDialogTests : BunitContext
         // A-16: Der Vorlaeufer hatte frei beschreibbare ComboBoxen; ein select wuerde
         // einen unbekannten Wert still verwerfen.
         var cut = Render<WaermepumpeStammDialog>(p => p
-            .Add(x => x.Liste, () => new[] { new WaermepumpeStammZeile(9, "Sonder", false) })
+            .Add(x => x.Liste, () => new[] { new Katalogfilterzeile(9, "Sonder")
+                                                 .MitText(Katalogfilterprofil.SpBezeichner, "Sonder") })
             .Add(x => x.Satz, _ => new WaermepumpeStammDaten
             {
                 Id = 9, Name = "Sonder", Typ = "Abwasser-Wasser", Regelung = "stetig"

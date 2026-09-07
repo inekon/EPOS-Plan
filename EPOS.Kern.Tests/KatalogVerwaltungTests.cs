@@ -374,8 +374,15 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Filterart, Listendarstellung und Schreibschutzanzeige je Auspraegung —
+        /// Spaltenprofil, Listendarstellung und Schreibschutzanzeige je Auspraegung —
         /// die Ausprägungstabelle der Vermessung § 12.1 als Probe.
+        ///
+        /// <para><b>Geändert mit dem Anwenderentscheid W14a‑E‑10</b> (07.09.2026): An
+        /// die Stelle von <c>Filterart</c> (keine / Brennstoff+Leistung /
+        /// Hersteller+Volumen) tritt das <see cref="Katalogfilterprofil"/> — der Filter
+        /// sitzt seither an der SPALTE, und was gefiltert werden kann, sagt die
+        /// Spaltenliste. Der Solarkollektor-Browser, der bis dahin GAR KEINEN Filter
+        /// hatte, bekommt damit denselben wie die anderen drei.</para>
         /// </summary>
         [Fact]
         public void Browserprofil_bildet_die_Auspraegungstabelle_ab()
@@ -385,10 +392,16 @@ namespace EPOS.Kern.Tests
             var solar = KatalogBrowserProfil.Finde(KatalogBrowserArt.Solarkollektoren);
             var puffer = KatalogBrowserProfil.Finde(KatalogBrowserArt.Pufferspeicher);
 
-            Assert.Equal(KatalogFilterArt.BrennstoffUndLeistung, heiz.Filterart);
-            Assert.Equal(KatalogFilterArt.BrennstoffUndLeistung, bhkw.Filterart);
-            Assert.Equal(KatalogFilterArt.Keiner, solar.Filterart);
-            Assert.Equal(KatalogFilterArt.HerstellerUndVolumen, puffer.Filterart);
+            Assert.Equal(Anlagenart.Heizkessel, heiz.Filterprofil.Art);
+            Assert.Equal(Anlagenart.Bhkw, bhkw.Filterprofil.Art);
+            Assert.Equal(Anlagenart.Solarkollektoren, solar.Filterprofil.Art);
+            Assert.Equal(Anlagenart.Pufferspeicher, puffer.Filterprofil.Art);
+
+            // Sechs / acht / sechs / fuenf Spalten (Konzept Kapitel 4).
+            Assert.Equal(6, heiz.Filterprofil.Spalten.Count);
+            Assert.Equal(8, bhkw.Filterprofil.Spalten.Count);
+            Assert.Equal(6, solar.Filterprofil.Spalten.Count);
+            Assert.Equal(5, puffer.Filterprofil.Spalten.Count);
 
             Assert.False(heiz.Zweispaltig);
             Assert.True(bhkw.Zweispaltig);
@@ -877,11 +890,16 @@ namespace EPOS.Kern.Tests
             Assert.Equal(10, wr.Felder.Count(f => f.Gruppe == 2));
             Assert.NotEqual("", wr.GruppeDrei);
 
-            // Als EINZIGE der drei Auspraegungen mit Herstellerfilter (Konzept 6):
-            // Die CEC-Liste bringt ueber zweitausend Geraete.
-            Assert.True(wr.HatHerstellerfilter);
-            Assert.False(sp.HatHerstellerfilter);
-            Assert.False(pv.HatHerstellerfilter);
+            // SEIT W14a-E-10 haben ALLE DREI ein Spaltenprofil: Der Herstellerfilter
+            // war eine Klappliste und nur beim Wechselrichter da, obwohl die zwei
+            // anderen Kataloge nach ihren Importen 20 749 bzw. 6 658 Zeilen fuehren
+            // (Konzept Befund 1.2/3). Sieben / sieben / acht Spalten.
+            Assert.Equal(Anlagenart.Wechselrichter, wr.Filterprofil.Art);
+            Assert.Equal(Anlagenart.Photovoltaik, pv.Filterprofil.Art);
+            Assert.Equal(Anlagenart.Stromspeicher, sp.Filterprofil.Art);
+            Assert.Equal(7, wr.Filterprofil.Spalten.Count);
+            Assert.Equal(7, pv.Filterprofil.Spalten.Count);
+            Assert.Equal(8, sp.Filterprofil.Spalten.Count);
             Assert.Equal(SchemaKatalog.TAB_WECHSELRICHTER_STAMM, wr.Stammtabelle);
 
             // Das EINE Pflichtfeld ist die AC-Nennleistung - wie bei der

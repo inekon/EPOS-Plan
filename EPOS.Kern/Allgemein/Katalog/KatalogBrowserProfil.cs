@@ -29,21 +29,6 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Welche Filterleiste ein Browser fuehrt — 0, 1 oder 2 Klapplisten.
-    /// </summary>
-    public enum KatalogFilterArt
-    {
-        /// <summary>Keine Filterleiste (Solarkollektoren).</summary>
-        Keiner,
-
-        /// <summary>Brennstoffgruppe und Leistungsstufe (Heizkessel, BHKW).</summary>
-        BrennstoffUndLeistung,
-
-        /// <summary>Hersteller und Volumenstufe (Pufferspeicher).</summary>
-        HerstellerUndVolumen
-    }
-
-    /// <summary>
     /// Was fuer ein Feld ein Detailfeld des Browsers ist — davon haengt das
     /// Standardfeld der Oberflaeche ab und, beim Speicherweg, die Zahlregel.
     /// </summary>
@@ -127,7 +112,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Warum es das gibt.</b> Der Bauplan der vier Masken ist derselbe: Liste
     /// links, 0–2 Filterklapplisten, ein Detailblock rechts, „Neu…" / „Bearbeiten…" /
     /// „Löschen" / „OK". Was sie trennt, sind ACHT Werte — Stammtabelle, ein- oder
-    /// zweispaltige Liste samt Textbauplan, Filterart, Detailfeldliste, Editorschluessel,
+    /// zweispaltige Liste samt Textbauplan, Spaltenprofil, Detailfeldliste, Editorschluessel,
     /// Speicherweg, Loeschtext und Hilfeziel. Sie stehen hier; die Komponente gibt es
     /// einmal.</para>
     ///
@@ -156,8 +141,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool Zweispaltig { get; private set; }
 
-        /// <summary>Welche Filterleiste (0, 2 Klapplisten).</summary>
-        public KatalogFilterArt Filterart { get; private set; }
+        /// <summary>
+        /// <b>Die Spalten der Liste</b> (Anwenderentscheid <b>W14a-E-10</b> vom
+        /// 07.09.2026) — <see cref="Katalogfilterprofil"/> zur passenden
+        /// <see cref="Anlagenart"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Es ersetzt die zwei Klapplisten.</b> Bis hierher fuehrte das Profil
+        /// eine <c>Filterart</c> (keine / Brennstoff+Leistung / Hersteller+Volumen) und
+        /// zwei Beschriftungen („Filtern nach Brennstoffart:", „Filtern nach
+        /// Leistung:"); die Liste zeigte dazu EINE Spalte. Seit W14a-E-10 sitzt der
+        /// Filter an der SPALTE, und was gefiltert werden kann, sagt genau diese
+        /// Spaltenliste — „filterbar ist nur, was als Spalte dasteht" (Konzept 5.6).</para>
+        /// <para>Die sechs festen Leistungs- bzw. Volumenstufen entfallen damit als
+        /// Bedienung (Frage Q5): Sortieren nach P_th und der Ausdruck <c>10..60</c>
+        /// leisten dasselbe genauer. <c>HeizkesselStammCtrl.LEISTUNG_SQL</c> und
+        /// <c>PufferSpStammCtrl.VOLUMEN_SQL</c> bleiben stehen — die PROJEKTdialoge
+        /// laufen erst mit Stufe S2 auf das Spaltenmodell.</para>
+        /// </remarks>
+        public Katalogfilterprofil Filterprofil { get; private set; }
 
         /// <summary>Die Detailfelder in der Reihenfolge der Maske (8 / 8 / 8 / 6).</summary>
         public IReadOnlyList<BrowserDetailfeld> Detailfelder { get; private set; }
@@ -230,15 +232,6 @@ namespace WindowsFormsApplication1
         public string MeldungOhneAuswahl { get; private set; }
 
         /// <summary>
-        /// Die Schluessel der beiden Filterklapplisten, bereits uebersetzt;
-        /// <c>null</c> bei <see cref="KatalogFilterArt.Keiner"/>.
-        /// </summary>
-        public string FilterEinsBezeichnung { get; private set; }
-
-        /// <summary>Beschriftung der zweiten Filterklappliste.</summary>
-        public string FilterZweiBezeichnung { get; private set; }
-
-        /// <summary>
         /// Die Bauteile des zweispaltigen Zeilentexts, bereits uebersetzt und in der
         /// Reihenfolge des Vorlaeufers; leer, wenn die Liste einspaltig ist.
         /// </summary>
@@ -301,7 +294,7 @@ namespace WindowsFormsApplication1
                         Art = art,
                         Stammtabelle = HeizkesselStammCtrl.TABLE,
                         Zweispaltig = false,
-                        Filterart = KatalogFilterArt.BrennstoffUndLeistung,
+                        Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Heizkessel, t),
                         HatSpeicherweg = true,
                         ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_Heizkessel_Admin.btn_Help",
@@ -311,8 +304,6 @@ namespace WindowsFormsApplication1
                         Listenbeschriftung = t("KBROW_LISTE_HEIZKESSEL"),
                         Detailueberschrift = t("KBROW_GRUPPE_HEIZKESSEL"),
                         MeldungOhneAuswahl = "",
-                        FilterEinsBezeichnung = t("KBROW_FILTER_BRENNSTOFF"),
-                        FilterZweiBezeichnung = t("KBROW_FILTER_LEISTUNG"),
                         Zeilenbauplan = new string[0],
                         SpalteName = t("KBROW_SPALTE_NAME"),
                         SpalteEigenschaften = "",
@@ -341,7 +332,7 @@ namespace WindowsFormsApplication1
                         Art = art,
                         Stammtabelle = BHKWStammCtrl.TABLE,
                         Zweispaltig = true,
-                        Filterart = KatalogFilterArt.BrennstoffUndLeistung,
+                        Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Bhkw, t),
                         HatSpeicherweg = true,
                         ZeigtSchreibschutz = true,
                         HilfeSchluessel = "Form_BHKWAdmin.btn_Help",
@@ -351,8 +342,6 @@ namespace WindowsFormsApplication1
                         Listenbeschriftung = t("KBROW_LISTE_BHKW"),
                         Detailueberschrift = t("KBROW_GRUPPE_BHKW"),
                         MeldungOhneAuswahl = t("KBROW_MSG_AUSWAHL_BHKW"),
-                        FilterEinsBezeichnung = t("KBROW_FILTER_BRENNSTOFF"),
-                        FilterZweiBezeichnung = t("KBROW_FILTER_LEISTUNG"),
                         Zeilenbauplan = new[]
                         {
                             t("KBROW_ZEILE_BRENNSTOFF"), t("KBROW_ZEILE_PTHERM"), t("KBROW_ZEILE_PEL")
@@ -385,7 +374,7 @@ namespace WindowsFormsApplication1
                         Art = art,
                         Stammtabelle = SolarkollektorenStammCtrl.TABLE,
                         Zweispaltig = true,
-                        Filterart = KatalogFilterArt.Keiner,
+                        Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Solarkollektoren, t),
                         HatSpeicherweg = false,
                         ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_SolarKollektorenAdmin.btn_Help",
@@ -395,8 +384,6 @@ namespace WindowsFormsApplication1
                         Listenbeschriftung = t("KBROW_LISTE_SOLAR"),
                         Detailueberschrift = t("KBROW_GRUPPE_SOLAR"),
                         MeldungOhneAuswahl = t("KBROW_MSG_AUSWAHL_KOLLEKTOR"),
-                        FilterEinsBezeichnung = "",
-                        FilterZweiBezeichnung = "",
                         Zeilenbauplan = new[]
                         {
                             t("KBROW_ZEILE_KOLLEKTORTYP"), t("KBROW_ZEILE_APERTUR")
@@ -428,7 +415,7 @@ namespace WindowsFormsApplication1
                         Art = art,
                         Stammtabelle = PufferSpStammCtrl.TABLE,
                         Zweispaltig = false,
-                        Filterart = KatalogFilterArt.HerstellerUndVolumen,
+                        Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Pufferspeicher, t),
                         HatSpeicherweg = false,
                         ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_PufferSp_Admin.btn_Help",
@@ -438,8 +425,6 @@ namespace WindowsFormsApplication1
                         Listenbeschriftung = t("KBROW_LISTE_PUFFERSP"),
                         Detailueberschrift = t("KBROW_GRUPPE_PUFFERSP"),
                         MeldungOhneAuswahl = "",
-                        FilterEinsBezeichnung = t("KBROW_FILTER_HERSTELLER"),
-                        FilterZweiBezeichnung = t("KBROW_FILTER_VOLUMEN"),
                         Zeilenbauplan = new string[0],
                         SpalteName = t("KBROW_SPALTE_NAME"),
                         SpalteEigenschaften = "",

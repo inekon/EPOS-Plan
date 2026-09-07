@@ -56,9 +56,9 @@ public class KatalograhmenTests : BunitContext
     //  Das Markup
     // =====================================================================
 
-    /// <summary>Zwei Spalten, jede mit ihrem Inhalt — und der Rahmen füllt.</summary>
+    /// <summary>Zwei Blöcke, jeder mit seinem Inhalt — und der Rahmen füllt.</summary>
     [Fact]
-    public void Der_Rahmen_stellt_Liste_und_Eingabe_nebeneinander()
+    public void Der_Rahmen_stellt_Liste_und_Eingabe_untereinander()
     {
         var cut = Aufbauen();
 
@@ -134,50 +134,62 @@ public class KatalograhmenTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Hier fällt die Höchsthöhe aus W9‑B‑2</b> — und nur hier: Die Liste im
-    /// Katalograhmen nimmt die verbleibende Höhe, überall sonst gilt
-    /// <c>--epos-listenhoehe</c> weiter (das prüft <c>ListenrahmenTests</c>).
+    /// <b>Seit W14a‑E‑10 (07.09.2026) trägt die Liste im Katalograhmen wieder eine
+    /// Höchsthöhe</b> — die Ausnahme zu W9‑B‑2 fällt. Steht die Eingabe UNTER der
+    /// Liste statt daneben, schöbe eine lange Liste sie beliebig weit nach unten;
+    /// das Maß ist <b>1,3 × <c>--epos-listenhoehe</c></b> = 458 px = elf Zeilen
+    /// (Konzept_Katalogfilter 5.6.5, im Mockup gemessen).
     /// </summary>
     [Fact]
-    public void Die_Liste_im_Rahmen_verliert_die_Hoechsthoehe()
+    public void Die_Liste_im_Rahmen_traegt_die_Hoechsthoehe_von_elf_Zeilen()
     {
         string block = Stilblock(".epos-katalog-liste .epos-raster-huelle {");
 
-        Assert.Contains("flex: 1 1 auto", block);
-        Assert.Contains("max-height: none", block);
+        Assert.Contains("flex: 0 1 auto", block);
+        Assert.Contains("max-height: calc(var(--epos-listenhoehe) * 1.3)", block);
+        Assert.DoesNotContain("max-height: none", block);
         Assert.Contains("min-height:", block);
     }
 
-    /// <summary>Der Eingabeblock rollt selbst — nie die Seite.</summary>
+    /// <summary>
+    /// <b>Der Eingabeblock rollt NICHT mehr selbst.</b> Er steht unter der Liste und
+    /// ist so hoch wie sein Inhalt; was über die Fensterhöhe hinausgeht, nimmt der
+    /// Rollbalken der MASKE (<c>.epos-katalog-dialog</c>, <c>overflow: auto</c>) —
+    /// ein zweiter Rollbereich mitten im Dialog verbärge die Hälfte der Felder
+    /// hinter einem Balken, den niemand sucht (offener Punkt O‑7).
+    /// </summary>
     [Fact]
-    public void Der_Eingabeblock_rollt_selbst()
+    public void Der_Eingabeblock_rollt_nicht_mehr_selbst()
     {
-        Assert.Contains("overflow-y: auto", Stilblock(".epos-katalog-eingabe {"));
+        Assert.DoesNotContain("overflow-y: auto", Stilblock(".epos-katalog-eingabe {"));
+        Assert.Contains("overflow: auto", Stilblock(".epos-katalog-dialog {"));
     }
 
     /// <summary>
-    /// <b>Der Umbruch ist eine Medienabfrage bei 900 px</b> — derselbe Wert wie
-    /// beim Baustein <c>Zweispaltenauswahl</c> (<c>--epos-zweispalten-umbruch</c>)
-    /// und beim Dublettenbaum. Nicht 1100 px: Der Inhalt der WebView rechnet in
-    /// CSS-Pixeln, das Fenstermaß in Gerätepixeln — bei 150 % Skalierung sind
-    /// 1632 Gerätepixel nur 1088 CSS-Pixel, und der Umbruch träfe genau den
-    /// Anwender, der den Befund gemeldet hat.
+    /// <b>Es gibt nur noch EINE Anordnung: untereinander</b> (Anwenderentscheid
+    /// W14a‑E‑10 — „Liste wie zuvor über ganze Breite, sonst zu schmale Liste").
+    /// Die Medienabfrage bei 900 px entfällt damit ersatzlos; untereinander war
+    /// schon vorher der schmale Fall. Das Token <c>--epos-zweispalten-umbruch</c>
+    /// bleibt — <c>Zweispaltenauswahl</c> und <c>Formularraster</c> benutzen es
+    /// weiter.
     /// </summary>
     [Fact]
-    public void Der_Umbruch_liegt_bei_derselben_Breite_wie_die_Zweispaltenauswahl()
+    public void Es_gibt_nur_noch_eine_Anordnung_untereinander()
     {
+        string block = Stilblock(".epos-katalog-paar {");
+
+        Assert.Contains("grid-template-columns: 1fr", block);
+        Assert.DoesNotContain("minmax(280px", block);
+        Assert.Contains("grid-template-rows: auto auto", block);
+
+        // Der Umbruch war die zweite Anordnung; ohne sie gibt es ihn nicht mehr.
         string css = Stilblatt();
-
         int a = css.IndexOf(".epos-katalog-paar {", StringComparison.Ordinal);
-        Assert.True(a >= 0);
+        int e = css.IndexOf(".epos-katalog-suchzeile {", a, StringComparison.Ordinal);
+        Assert.True(e > a);
+        Assert.DoesNotContain("@media (max-width: 900px)", css.Substring(a, e - a));
 
-        // Die Vorgabe sind ZWEI Spalten; die Medienabfrage macht daraus eine.
-        Assert.Contains("grid-template-columns: minmax(", Stilblock(".epos-katalog-paar {"));
-
-        int m = css.IndexOf("@media (max-width: 900px) {", a, StringComparison.Ordinal);
-        Assert.True(m > a, "hinter .epos-katalog-paar steht keine Medienabfrage bei 900px");
-
-        // Und der Wert steht als Token daneben, damit die zwei nicht auseinanderlaufen.
+        // Das Token bleibt - es traegt weiter die Zweispaltenauswahl.
         Assert.Contains("--epos-zweispalten-umbruch: 900px", Stilblock(":root {"));
     }
 

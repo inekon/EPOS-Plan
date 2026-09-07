@@ -43,7 +43,10 @@ namespace WindowsFormsApplication1
 
             gaben["Wege"] = new ModulKatalogWege
             {
-                Liste = Zeilen,
+                // W14a-E-10: sieben Spalten statt der einen Namensspalte - und der
+                // ERSTE Filter dieses Katalogs, der nach dem CEC-Import 20 749 Zeilen
+                // fuehrt (Konzept Befund 1.2/3).
+                Katalogzeilen = PhotovoltaikStammCtrl.Katalogfilterzeilen,
                 Detail = name => ModulKatalogHuelle.Felder(profil, Anzeige(name)),
                 Speichern = Schreiben,
                 Loeschen = Loeschen
@@ -54,14 +57,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         // Die Datenwege
         // =====================================================================
-
-        private static IReadOnlyList<ModulZeile> Zeilen()
-        {
-            var liste = new List<ModulZeile>();
-            foreach (var z in new PhotovoltaikStammCtrl().Filtern("Alle"))
-                liste.Add(new ModulZeile(z.Id, z.Bezeichner));
-            return liste;
-        }
 
         /// <summary>
         /// Die dreizehn Anzeigefelder eines Katalogmoduls, bereits als Text — der

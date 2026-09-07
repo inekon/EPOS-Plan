@@ -49,16 +49,15 @@ namespace WindowsFormsApplication1
         internal static IReadOnlyDictionary<string, object> Gaben(bool nurLesen = false)
         {
             KatalogBrowserProfil profil = Profil();
-            var ctrl = new PufferSpStammCtrl();
 
             var gaben = KatalogBrowserHuelle.GemeinsameGaben(profil, nurLesen);
 
-            gaben["FilterEins"] = KatalogBrowserHuelle.MitAlle(PufferSpStammCtrl.Hersteller());
-            gaben["FilterZwei"] = KatalogBrowserHuelle.Nummeriert(PufferSpStammCtrl.VolumenTexte());
-
             gaben["Wege"] = new KatalogBrowserWege
             {
-                Liste = (hersteller, volumen) => Zeilen(ctrl, hersteller, volumen),
+                // W14a-E-10: fuenf Spalten statt der einen Namensspalte; die sechs
+                // festen Volumenstufen entfallen zugunsten des Ausdrucks "200..500"
+                // (Frage Q5).
+                Katalogzeilen = PufferSpStammCtrl.Katalogfilterzeilen,
                 Detail = name => KatalogBrowserHuelle.Felder(
                     profil, PufferSpStammCtrl.KatalogsatzAnzeige(name)),
 
@@ -77,18 +76,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         // Die Datenwege
         // =====================================================================
-
-        private static IReadOnlyList<BrowserZeile> Zeilen(PufferSpStammCtrl ctrl,
-                                                          int hersteller, int volumen)
-        {
-            IReadOnlyList<string> namen = PufferSpStammCtrl.Hersteller();
-            string h = hersteller <= 0 || hersteller > namen.Count ? "" : namen[hersteller - 1];
-
-            var liste = new List<BrowserZeile>();
-            foreach (var z in ctrl.Filtern(h, volumen))
-                liste.Add(new BrowserZeile(z.Id, z.Bezeichner));
-            return liste;
-        }
 
         private static KatalogSpeicherErgebnis Loeschen(string name)
         {

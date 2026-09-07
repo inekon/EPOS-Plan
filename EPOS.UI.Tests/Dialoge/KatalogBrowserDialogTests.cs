@@ -51,22 +51,53 @@ public class KatalogBrowserDialogTests : BunitContext
         KatalogBrowserProfil.Finde(art, s => WindowsFormsApplication1.MyResource.Resource
                                                  .ResourceManager.GetString(s) ?? s);
 
-    private static IReadOnlyList<BrowserZeile> Zeilen(KatalogBrowserArt art) => art switch
+    /// <summary>
+    /// Ein kleiner Katalog je Auspraegung. <b>Seit W14a-E-10</b> traegt eine Zeile
+    /// ihre PARAMETERSPALTEN statt eines mehrzeiligen Eigenschaftentextes in EINER
+    /// Zelle (Konzept Befund 1.2/2).
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Zeilen(KatalogBrowserArt art) => art switch
     {
         KatalogBrowserArt.Bhkw => new[]
         {
-            new BrowserZeile(1, "BHKW A", "2-G\nBrennstoff: Erdgas\nPtherm: 250 kW\nPel: 250 kW", true),
-            new BrowserZeile(2, "BHKW B", "Vaillant\nBrennstoff: Erdgas\nPtherm: 20 kW\nPel: 10 kW", false)
+            new Katalogfilterzeile(1, "BHKW A") { Geschuetzt = true }
+                .MitText(Katalogfilterprofil.SpBezeichner, "BHKW A")
+                .MitText(Katalogfilterprofil.SpHersteller, "2-G")
+                .MitText(Katalogfilterprofil.SpBrennstoff, "Erdgas E")
+                .MitZahl(Katalogfilterprofil.SpPel, 250.0)
+                .MitZahl(Katalogfilterprofil.SpPtherm, 250.0),
+            new Katalogfilterzeile(2, "BHKW B")
+                .MitText(Katalogfilterprofil.SpBezeichner, "BHKW B")
+                .MitText(Katalogfilterprofil.SpHersteller, "Vaillant")
+                .MitText(Katalogfilterprofil.SpBrennstoff, "Erdgas E")
+                .MitZahl(Katalogfilterprofil.SpPel, 10.0)
+                .MitZahl(Katalogfilterprofil.SpPtherm, 20.0)
         },
         KatalogBrowserArt.Solarkollektoren => new[]
         {
-            new BrowserZeile(1, "Kollektor A", "Junkers\nKollektortyp: Flachkollektor\nAperturfläche: 1,94 m²"),
-            new BrowserZeile(2, "Kollektor B", "Vaillant\nKollektortyp: Röhrenkollektor\nAperturfläche: 1 m²")
+            new Katalogfilterzeile(1, "Kollektor A")
+                .MitText(Katalogfilterprofil.SpBezeichner, "Kollektor A")
+                .MitText(Katalogfilterprofil.SpHersteller, "Junkers")
+                .MitText(Katalogfilterprofil.SpKollektortyp, "Flachkollektor")
+                .MitZahl(Katalogfilterprofil.SpApertur, 1.94, 2),
+            new Katalogfilterzeile(2, "Kollektor B")
+                .MitText(Katalogfilterprofil.SpBezeichner, "Kollektor B")
+                .MitText(Katalogfilterprofil.SpHersteller, "Vaillant")
+                .MitText(Katalogfilterprofil.SpKollektortyp, "Röhrenkollektor")
+                .MitZahl(Katalogfilterprofil.SpApertur, 1.0, 2)
         },
         _ => new[]
         {
-            new BrowserZeile(1, "Eintrag A"),
-            new BrowserZeile(2, "Eintrag B")
+            new Katalogfilterzeile(1, "Eintrag A")
+                .MitText(Katalogfilterprofil.SpBezeichner, "Eintrag A")
+                .MitText(Katalogfilterprofil.SpHersteller, "Vaillant")
+                .MitText(Katalogfilterprofil.SpBrennstoff, "Erdgas E")
+                .MitZahl(Katalogfilterprofil.SpPtherm, 15.0),
+            new Katalogfilterzeile(2, "Eintrag B")
+                .MitText(Katalogfilterprofil.SpBezeichner, "Eintrag B")
+                .MitText(Katalogfilterprofil.SpHersteller, "Buderus")
+                .MitText(Katalogfilterprofil.SpBrennstoff, "Heizöl EL")
+                .MitZahl(Katalogfilterprofil.SpPtherm, 80.0)
         }
     };
 
@@ -105,7 +136,7 @@ public class KatalogBrowserDialogTests : BunitContext
     {
         var standard = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(art),
+            Katalogzeilen = () => Zeilen(art),
             Detail = name => Felder(art, name),
             Existiert = _ => false,
             Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
@@ -118,8 +149,6 @@ public class KatalogBrowserDialogTests : BunitContext
             .Add(x => x.ProfilVorgabe, Profil(art))
             .Add(x => x.NurLesen, nurLesen)
             .Add(x => x.Wege, wege ?? standard)
-            .Add(x => x.FilterEins, new[] { (0, "Alle"), (1, "Gas") })
-            .Add(x => x.FilterZwei, new[] { (0, "Alle"), (1, "bis 50 kW") })
             .Add(x => x.EditorGaben, editorGaben)
             .Add(x => x.Geschlossen, e => geschlossen?.Invoke(e)));
     }
@@ -156,36 +185,46 @@ public class KatalogBrowserDialogTests : BunitContext
     }
 
     /// <summary>
-    /// Die Filterleiste steht nur, wo der Vorläufer sie hatte: zwei Klapplisten bei
-    /// Heizkessel, BHKW und Pufferspeicher, KEINE bei den Solarkollektoren.
+    /// <b>Die zwei Klapplisten sind weg — in ALLEN VIER Ausprägungen</b>
+    /// (Anwenderentscheid W14a‑E‑10 vom 07.09.2026). Der Filter sitzt seither im
+    /// Spaltenkopf; über der Liste steht nur noch die eine Suchzeile.
     /// </summary>
     [Theory]
-    [InlineData(KatalogBrowserArt.Heizkessel, 2)]
-    [InlineData(KatalogBrowserArt.Bhkw, 2)]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, 0)]
-    [InlineData(KatalogBrowserArt.Pufferspeicher, 2)]
-    public void Die_Filterleiste_steht_nur_wo_der_Vorlaeufer_sie_hatte(
-        KatalogBrowserArt art, int klapplisten)
+    [InlineData(KatalogBrowserArt.Heizkessel)]
+    [InlineData(KatalogBrowserArt.Bhkw)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren)]
+    [InlineData(KatalogBrowserArt.Pufferspeicher)]
+    public void Die_zwei_Klapplisten_sind_dem_Spaltenkopf_gewichen(KatalogBrowserArt art)
     {
         var cut = Aufbauen(art);
-        Assert.Equal(klapplisten, cut.FindAll(".epos-katalogbrowser-filter select").Count);
+
+        Assert.Empty(cut.FindAll(".epos-katalogbrowser-filter"));
+        Assert.Single(cut.FindAll(".epos-katalog-suchzeile"));
+        Assert.NotEmpty(cut.FindAll(".epos-trichter"));
     }
 
     /// <summary>
-    /// Die zweite Rasterspalte steht nur bei den beiden Ausprägungen, die im Vorläufer
-    /// ein <c>DataGridView</c> hatten (BHKW und Solarkollektoren); Heizkessel und
-    /// Pufferspeicher hatten eine <c>ListBox</c> mit nur dem Namen.
+    /// <b>Aus dem mehrzeiligen Eigenschaftentext sind SPALTEN geworden</b> — auch bei
+    /// den zwei Ausprägungen, die im Vorläufer ein <c>DataGridView</c> hatten (BHKW,
+    /// Solarkollektoren). Ein Text in EINER Zelle war weder sortierbar noch
+    /// vergleichbar (Konzept Befund 1.2/2); jetzt trägt jede Ausprägung die Spalten
+    /// ihres Profils.
     /// </summary>
     [Theory]
-    [InlineData(KatalogBrowserArt.Heizkessel, false)]
-    [InlineData(KatalogBrowserArt.Bhkw, true)]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, true)]
-    [InlineData(KatalogBrowserArt.Pufferspeicher, false)]
-    public void Die_zweite_Rasterspalte_steht_nur_bei_den_zweispaltigen(
-        KatalogBrowserArt art, bool zweispaltig)
+    [InlineData(KatalogBrowserArt.Heizkessel, 6)]
+    [InlineData(KatalogBrowserArt.Bhkw, 8)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren, 6)]
+    [InlineData(KatalogBrowserArt.Pufferspeicher, 5)]
+    public void Jede_Auspraegung_zeigt_die_Spalten_ihres_Profils(
+        KatalogBrowserArt art, int spalten)
     {
         var cut = Aufbauen(art);
-        Assert.Equal(zweispaltig, cut.FindAll(".epos-katalogbrowser-eigenschaften").Count > 0);
+
+        Assert.Empty(cut.FindAll(".epos-katalogbrowser-eigenschaften"));
+        Assert.Equal(spalten, cut.FindAll(".epos-spaltenkopf").Count);
+
+        // Die Wahlspalte kommt dazu und traegt weder Sortierpfeil noch Trichter.
+        Assert.Equal(spalten + 1, cut.FindAll("thead th").Count);
     }
 
     /// <summary>
@@ -230,21 +269,35 @@ public class KatalogBrowserDialogTests : BunitContext
     }
 
     [Fact]
-    public void Ein_Filterwechsel_baut_die_Liste_neu()
+    public void Ein_Spaltenfilter_engt_die_Liste_ein_ohne_sie_neu_zu_lesen()
     {
-        int gruppe = -1, stufe = -1;
+        int gelesen = 0;
         var wege = new KatalogBrowserWege
         {
-            Liste = (g, s) => { gruppe = g; stufe = s; return Zeilen(KatalogBrowserArt.Heizkessel); },
+            Katalogzeilen = () => { gelesen++; return Zeilen(KatalogBrowserArt.Heizkessel); },
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name)
         };
         var cut = Aufbauen(wege: wege);
 
-        cut.FindAll(".epos-katalogbrowser-filter select")[0].Change("1");
-        Assert.Equal(1, gruppe);
+        // DIE ZWEI KLAPPLISTEN SIND WEG (W14a-E-10) - an ihrer Stelle steht der
+        // Trichter im Spaltenkopf.
+        Assert.Empty(cut.FindAll(".epos-katalogbrowser-filter"));
+        Assert.NotEmpty(cut.FindAll(".epos-trichter"));
 
-        cut.FindAll(".epos-katalogbrowser-filter select")[1].Change("1");
-        Assert.Equal(1, stufe);
+        int nachDemAufbau = gelesen;
+        Assert.Equal(2, cut.FindAll("tbody tr").Count);
+
+        // Der Brennstofffilter (dritte Spalte) laesst nur "Erdgas E" stehen.
+        cut.FindAll(".epos-trichter")[2].Click();
+        cut.Find(".epos-spaltenfilter input").Change("Erdgas");
+
+        Assert.Single(cut.FindAll("tbody tr"));
+        Assert.Equal("1 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+
+        // GEFILTERT WIRD VOR DEM RASTER, nicht in der Datenbank: Der Weg zum Katalog
+        // wird dabei NICHT noch einmal gerufen (Konzept 5.6.6).
+        Assert.Equal(nachDemAufbau, gelesen);
+        Assert.Equal(2, cut.Instance.Zeilen.Count);
     }
 
     // =================================================================================
@@ -303,7 +356,7 @@ public class KatalogBrowserDialogTests : BunitContext
         string? geloescht = null;
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(art),
+            Katalogzeilen = () => Zeilen(art),
             Detail = name => Felder(art, name),
             Loeschen = n => { geloescht = n; return new KatalogSpeicherErgebnis(true, "", n); }
         };
@@ -325,7 +378,7 @@ public class KatalogBrowserDialogTests : BunitContext
         bool gerufen = false;
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(KatalogBrowserArt.Heizkessel),
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
             Loeschen = n => { gerufen = true; return new KatalogSpeicherErgebnis(true, "", n); }
         };
@@ -343,7 +396,7 @@ public class KatalogBrowserDialogTests : BunitContext
     {
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(KatalogBrowserArt.Bhkw),
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
             Loeschen = _ => new KatalogSpeicherErgebnis(false, "Schreibgeschützt.", "")
         };
@@ -381,7 +434,7 @@ public class KatalogBrowserDialogTests : BunitContext
         bool editor = false;
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(KatalogBrowserArt.Heizkessel),
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
             Existiert = n => n == "Eintrag A"
         };
@@ -410,7 +463,7 @@ public class KatalogBrowserDialogTests : BunitContext
     {
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Array.Empty<BrowserZeile>(),
+            Katalogzeilen = Array.Empty<Katalogfilterzeile>,
             Detail = _ => null
         };
         var cut = Aufbauen(art, wege: wege);
@@ -439,7 +492,7 @@ public class KatalogBrowserDialogTests : BunitContext
         IReadOnlyList<BrowserFeldwert>? gesehen = null;
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(KatalogBrowserArt.Heizkessel),
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
             Speichern = (n, f, _) => { gesehen = f; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
@@ -466,7 +519,7 @@ public class KatalogBrowserDialogTests : BunitContext
         bool? uebergangen = null;
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(KatalogBrowserArt.Bhkw),
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
             IstGeschuetzt = _ => true,
             Speichern = (n, _, u) => { uebergangen = u; return new KatalogSpeicherErgebnis(true, "ok", n); }
@@ -489,7 +542,7 @@ public class KatalogBrowserDialogTests : BunitContext
         bool gerufen = false;
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(KatalogBrowserArt.Bhkw),
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
             IstGeschuetzt = _ => true,
             Speichern = (n, _, __) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
@@ -510,7 +563,7 @@ public class KatalogBrowserDialogTests : BunitContext
         bool gerufen = false;
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(KatalogBrowserArt.Heizkessel),
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
             Speichern = (n, _, __) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
@@ -555,7 +608,7 @@ public class KatalogBrowserDialogTests : BunitContext
         BrowserErgebnis? ergebnis = null;
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(KatalogBrowserArt.Heizkessel),
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
             Speichern = (n, _, __) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
@@ -575,7 +628,7 @@ public class KatalogBrowserDialogTests : BunitContext
         BrowserErgebnis? ergebnis = null;
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => Zeilen(KatalogBrowserArt.Heizkessel),
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
             Speichern = (_, __, ___) => new KatalogSpeicherErgebnis(false, "Schreibgeschützt.", "")
         };

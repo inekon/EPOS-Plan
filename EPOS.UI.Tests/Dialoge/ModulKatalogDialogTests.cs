@@ -45,10 +45,14 @@ public class ModulKatalogDialogTests : BunitContext
         ModulKatalogProfil.Finde(art, s => WindowsFormsApplication1.MyResource.Resource
                                                .ResourceManager.GetString(s) ?? s);
 
-    private static IReadOnlyList<ModulZeile> Zeilen() => new[]
+    private static IReadOnlyList<Katalogfilterzeile> Zeilen() => new[]
     {
-        new ModulZeile(1, "Modul A"),
-        new ModulZeile(2, "Modul B")
+        new Katalogfilterzeile(1, "Modul A")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Modul A")
+            .MitText(Katalogfilterprofil.SpHersteller, "Ablytek"),
+        new Katalogfilterzeile(2, "Modul B")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Modul B")
+            .MitText(Katalogfilterprofil.SpHersteller, "Jinkosolar")
     };
 
     /// <summary>Ein vollständiger Satz nach dem Profil.</summary>
@@ -84,7 +88,7 @@ public class ModulKatalogDialogTests : BunitContext
     {
         var standard = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = name => Felder(art, name),
             Speichern = (f, _, __) => new KatalogSpeicherErgebnis(
                 true, "Datensatz gespeichert",
@@ -269,7 +273,7 @@ public class ModulKatalogDialogTests : BunitContext
         bool? neu = null;
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(ModulKatalogArt.Stromspeicher, n),
             Speichern = (f, n, _) => { neu = n; return new KatalogSpeicherErgebnis(true, "ok", "X"); }
         };
@@ -297,7 +301,7 @@ public class ModulKatalogDialogTests : BunitContext
         bool geschrieben = false;
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(ModulKatalogArt.Stromspeicher, n),
             Speichern = (_, __, ___) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", "X"); }
         };
@@ -321,7 +325,7 @@ public class ModulKatalogDialogTests : BunitContext
         bool geschrieben = false;
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(ModulKatalogArt.Stromspeicher, n),
             Speichern = (_, __, ___) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", "X"); }
         };
@@ -345,7 +349,7 @@ public class ModulKatalogDialogTests : BunitContext
         var geschrieben = new List<bool>();
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(ModulKatalogArt.Photovoltaik, n),
             Speichern = (_, __, ___) => { geschrieben.Add(true); return new KatalogSpeicherErgebnis(true, "ok", "X"); }
         };
@@ -369,7 +373,7 @@ public class ModulKatalogDialogTests : BunitContext
         bool geschrieben = false;
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(ModulKatalogArt.Stromspeicher, n),
             Speichern = (_, __, ___) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", "X"); }
         };
@@ -393,7 +397,7 @@ public class ModulKatalogDialogTests : BunitContext
         string? schluessel = null;
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(ModulKatalogArt.Stromspeicher, n),
             Speichern = (f, _, s) => { gesehen = f; schluessel = s; return new KatalogSpeicherErgebnis(true, "ok", "Modul A"); }
         };
@@ -411,7 +415,7 @@ public class ModulKatalogDialogTests : BunitContext
     {
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(ModulKatalogArt.Stromspeicher, n),
             Speichern = (_, __, ___) => new KatalogSpeicherErgebnis(false, "Schreibgeschützt.", "")
         };
@@ -435,7 +439,7 @@ public class ModulKatalogDialogTests : BunitContext
         string? geloescht = null;
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(art, n),
             Loeschen = n => { geloescht = n; return new KatalogSpeicherErgebnis(true, "", n); }
         };
@@ -456,7 +460,7 @@ public class ModulKatalogDialogTests : BunitContext
         bool gerufen = false;
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(ModulKatalogArt.Stromspeicher, n),
             Loeschen = n => { gerufen = true; return new KatalogSpeicherErgebnis(true, "", n); }
         };
@@ -477,7 +481,7 @@ public class ModulKatalogDialogTests : BunitContext
     {
         var wege = new ModulKatalogWege
         {
-            Liste = Zeilen,
+            Katalogzeilen = Zeilen,
             Detail = n => Felder(ModulKatalogArt.Stromspeicher, n),
             Loeschen = _ => new KatalogSpeicherErgebnis(false, "Der Satz ist schreibgeschützt.", "")
         };
@@ -494,7 +498,7 @@ public class ModulKatalogDialogTests : BunitContext
     {
         var wege = new ModulKatalogWege
         {
-            Liste = () => Array.Empty<ModulZeile>(),
+            Katalogzeilen = Array.Empty<Katalogfilterzeile>,
             Detail = _ => null
         };
         var cut = Aufbauen(wege: wege);

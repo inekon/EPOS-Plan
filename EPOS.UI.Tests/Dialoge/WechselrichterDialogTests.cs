@@ -83,29 +83,31 @@ public class WechselrichterDialogTests : BunitContext
         return liste;
     }
 
-    private static IReadOnlyList<ModulZeile> Alle() => new[]
+    /// <summary>
+    /// Der ganze Katalog mit seinen sieben Spalten. <b>Seit W14a-E-10</b> gibt es die
+    /// zweite, eingeengte Liste nicht mehr: Gefiltert wird VOR dem Raster ueber den
+    /// Spaltenkopf, und der Datenweg liefert alles, was es gibt.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Alle() => new[]
     {
-        new ModulZeile(1, "Alpha 2500TL"),
-        new ModulZeile(2, "Alpha 5000TL"),
-        new ModulZeile(3, "Beta 10K")
+        Zeile(1, "Alpha 2500TL", "Alpha AG", 2.5),
+        Zeile(2, "Alpha 5000TL", "Alpha AG", 5.0),
+        Zeile(3, "Beta 10K", "Beta GmbH", 10.0)
     };
 
-    private static IReadOnlyList<ModulZeile> Gefiltert(string hersteller)
-    {
-        if (string.IsNullOrEmpty(hersteller)) return Alle();
-        return hersteller == "Alpha AG"
-            ? new[] { new ModulZeile(1, "Alpha 2500TL"), new ModulZeile(2, "Alpha 5000TL") }
-            : new[] { new ModulZeile(3, "Beta 10K") };
-    }
+    private static Katalogfilterzeile Zeile(int id, string name, string firma, double pac) =>
+        new Katalogfilterzeile(id, name)
+            .MitText(Katalogfilterprofil.SpBezeichner, name)
+            .MitText(Katalogfilterprofil.SpHersteller, firma)
+            .MitZahl(Katalogfilterprofil.SpPac, pac, 2)
+            .MitText(Katalogfilterprofil.SpHerkunft, DbWerte.WR_HERKUNFT_CEC);
 
     private IRenderedComponent<ModulKatalogDialog> Verwaltung(
         ModulKatalogWege? wege = null, Action<ModulErgebnis>? geschlossen = null)
     {
         ModulKatalogWege standard = new()
         {
-            Liste = Alle,
-            Hersteller = () => new[] { "Alpha AG", "Beta GmbH" },
-            ListeGefiltert = Gefiltert,
+            Katalogzeilen = Alle,
             Detail = Felder,
             Speichern = (f, _, __) => new KatalogSpeicherErgebnis(
                 true, "Datensatz gespeichert",
@@ -156,45 +158,56 @@ public class WechselrichterDialogTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Der Herstellerfilter</b> (Konzept 6): Die dritte Ausprägung ist die einzige
-    /// mit einem — die Wahl engt die Liste ein, „alle" hebt sie wieder auf.
+    /// <b>Aus der Herstellerklappliste ist ein SPALTENFILTER geworden</b>
+    /// (Anwenderentscheid W14a‑E‑10 vom 07.09.2026). Die Klappliste kannte nur
+    /// „Alpha AG" oder „Beta GmbH"; „enthält Alpha" im Spaltenkopf leistet dasselbe
+    /// und trifft nebenbei die Schreibvarianten desselben Hauses (offener Punkt O‑4).
     /// </summary>
     [Fact]
-    public void Der_Herstellerfilter_engt_die_Liste_ein_und_gibt_sie_wieder_frei()
+    public void Der_Herstellerfilter_sitzt_jetzt_im_Spaltenkopf()
     {
         IRenderedComponent<ModulKatalogDialog> cut = Verwaltung();
 
-        // Die Filterzeile steht ueber der Liste und traegt "alle" plus zwei Firmen.
-        var wahl = cut.FindAll(".epos-katalog-liste select")[0];
-        Assert.Equal(3, wahl.QuerySelectorAll("option").Count);
+        // KEINE Klappliste mehr ueber der Liste - nur die eine Suchzeile.
+        Assert.Empty(cut.FindAll(".epos-katalog-liste select"));
+        Assert.Single(cut.FindAll(".epos-katalog-suchzeile"));
         Assert.Equal(3, cut.Instance.Zeilen.Count);
+        Assert.Equal(3, cut.FindAll("tbody tr").Count);
 
-        wahl.Change("1");                       // Alpha AG
-        Assert.Equal("Alpha AG", cut.Instance.GewaehlterHersteller);
-        Assert.Equal(2, cut.Instance.Zeilen.Count);
+        // Der Trichter der Herstellerspalte (die zweite von sieben).
+        cut.FindAll(".epos-trichter")[1].Click();
+        cut.Find(".epos-spaltenfilter input").Change("Alpha");
+        Assert.Equal(2, cut.FindAll("tbody tr").Count);
 
-        wahl.Change("2");                       // Beta GmbH
-        Assert.Equal(1, cut.Instance.Zeilen.Count);
+        cut.FindAll(".epos-trichter")[1].Click();
+        cut.Find(".epos-spaltenfilter input").Change("Beta");
+        Assert.Single(cut.FindAll("tbody tr"));
 
-        wahl.Change("0");                       // alle
-        Assert.Equal("", cut.Instance.GewaehlterHersteller);
+        // "Filter zuruecksetzen" gibt die ganze Liste wieder frei.
+        cut.Find(".epos-katalog-ruecksetzer").Click();
+        Assert.Equal(3, cut.FindAll("tbody tr").Count);
+
+        // Die ungefilterte Menge des Wirtes bleibt unberuehrt - gefiltert wird die
+        // ANZEIGE (5.6.6).
         Assert.Equal(3, cut.Instance.Zeilen.Count);
     }
 
     /// <summary>
-    /// <b>Ohne Delegaten kein Bedienelement</b> — die Hausregel des Dateiwählers gilt
-    /// auch hier: Ein Filter ohne Datenweg wäre eine Liste, die nichts bewirkt.
+    /// <b>Die zwei ANDEREN Ausprägungen bekommen denselben Filter</b> — bis
+    /// W14a‑E‑10 hatten PV-Module und Stromspeicher gar keinen, obwohl sie nach
+    /// ihren Importen 20 749 bzw. 6 658 Zeilen führen (Konzept Befund 1.2/3).
     /// </summary>
     [Fact]
-    public void Ohne_Herstellerweg_gibt_es_keine_Filterzeile()
+    public void Auch_ohne_Herstellerweg_traegt_der_Spaltenkopf_seinen_Trichter()
     {
         IRenderedComponent<ModulKatalogDialog> cut = Verwaltung(new ModulKatalogWege
         {
-            Liste = Alle,
+            Katalogzeilen = Alle,
             Detail = Felder
         });
 
         Assert.Empty(cut.FindAll(".epos-katalog-liste select"));
+        Assert.NotEmpty(cut.FindAll(".epos-trichter"));
         Assert.Equal(3, cut.Instance.Zeilen.Count);
     }
 
@@ -266,9 +279,7 @@ public class WechselrichterDialogTests : BunitContext
 
         IRenderedComponent<ModulKatalogDialog> cut = Verwaltung(new ModulKatalogWege
         {
-            Liste = Alle,
-            Hersteller = () => new[] { "Alpha AG" },
-            ListeGefiltert = Gefiltert,
+            Katalogzeilen = Alle,
             Detail = _ => leer,
             Speichern = (_, __, ___) => new KatalogSpeicherErgebnis(true, "gespeichert", "Alpha 2500TL")
         });
@@ -290,9 +301,7 @@ public class WechselrichterDialogTests : BunitContext
         string? geloescht = null;
         IRenderedComponent<ModulKatalogDialog> cut = Verwaltung(new ModulKatalogWege
         {
-            Liste = Alle,
-            Hersteller = () => new[] { "Alpha AG" },
-            ListeGefiltert = Gefiltert,
+            Katalogzeilen = Alle,
             Detail = Felder,
             Loeschen = n => { geloescht = n; return new KatalogSpeicherErgebnis(true, "", n); }
         });

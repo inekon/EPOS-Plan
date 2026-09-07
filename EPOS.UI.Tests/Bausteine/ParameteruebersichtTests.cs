@@ -241,7 +241,7 @@ public class ParameteruebersichtTests : BunitContext
 
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => new[] { new BrowserZeile(1, "Satz A") },
+            Katalogzeilen = () => new[] { new Katalogfilterzeile(1, "Satz A").MitText(Katalogfilterprofil.SpBezeichner, "Satz A") },
             Detail = name => profil.Detailfelder.Select(f => new BrowserFeldwert
             {
                 Schluessel = f.Schluessel,
@@ -257,8 +257,6 @@ public class ParameteruebersichtTests : BunitContext
             .Add(x => x.Art, art)
             .Add(x => x.ProfilVorgabe, profil)
             .Add(x => x.Wege, wege)
-            .Add(x => x.FilterEins, new[] { (0, "Alle") })
-            .Add(x => x.FilterZwei, new[] { (0, "Alle") })
             .Add(x => x.Uebersicht, _ => Zeilen(anlage)));
     }
 
@@ -288,7 +286,7 @@ public class ParameteruebersichtTests : BunitContext
 
         var wege = new ModulKatalogWege
         {
-            Liste = () => new[] { new ModulZeile(1, "Modul A") },
+            Katalogzeilen = () => new[] { new Katalogfilterzeile(1, "Modul A").MitText(Katalogfilterprofil.SpBezeichner, "Modul A") },
             Detail = name => profil.Felder.Select(f => new ModulFeldwert
             {
                 Schluessel = f.Schluessel,
@@ -335,8 +333,9 @@ public class ParameteruebersichtTests : BunitContext
     public void Der_Waermepumpen_Stammdialog_traegt_die_Uebersicht()
     {
         IRenderedComponent<WaermepumpeStammDialog> k = Render<WaermepumpeStammDialog>(p => p
-            .Add(x => x.Liste, () => (IReadOnlyList<WaermepumpeStammZeile>)
-                 new[] { new WaermepumpeStammZeile(1, "WP A", false) })
+            .Add(x => x.Liste, () => (IReadOnlyList<Katalogfilterzeile>)
+                 new[] { new Katalogfilterzeile(1, "WP A")
+                             .MitText(Katalogfilterprofil.SpBezeichner, "WP A") })
             .Add(x => x.Satz, _ => new WaermepumpeStammDaten { Id = 1, Name = "WP A" })
             .Add(x => x.Uebersicht, _ => Zeilen(Anlagenart.Waermepumpe)));
 
@@ -360,8 +359,7 @@ public class ParameteruebersichtTests : BunitContext
             .Add(x => x.Art, KatalogBrowserArt.Heizkessel)
             .Add(x => x.ProfilVorgabe, profil)
             .Add(x => x.Wege, new KatalogBrowserWege())
-            .Add(x => x.FilterEins, new[] { (0, "Alle") })
-            .Add(x => x.FilterZwei, new[] { (0, "Alle") }));
+            );
 
         Assert.Empty(k.FindAll("div.epos-parameteruebersicht"));
     }

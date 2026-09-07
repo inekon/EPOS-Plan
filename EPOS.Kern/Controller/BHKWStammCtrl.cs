@@ -445,6 +445,68 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // =================================================================================
+        // W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG mit ihren Parameterspalten
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Zeilen der Katalogverwaltung</b> (Anwenderentscheid W14a-E-10,
+        /// Konzept_Katalogfilter 4.2 und S1.5) — ACHT Spalten: Bezeichner, Hersteller,
+        /// Brennstoff, P_el, P_th, σ, η und Motortyp.
+        ///
+        /// <para><b>Die Stromkennzahl σ = P_el / P_th wird HIER gerechnet</b>, einmal je
+        /// Zeile (Konzept 3.2: „Abgeleitete Groessen sind gleichberechtigte Merkmale").
+        /// Sie ist die Kennzahl, nach der ein BHKW ausgewaehlt wird, und sie steht
+        /// NIRGENDS im Katalog; nur weil sie als Spalte dasteht, laesst sich danach
+        /// sortieren und filtern. Ein Satz ohne thermische Leistung bekommt einen
+        /// Halbgeviertstrich statt einer Division durch null.</para>
+        ///
+        /// <para><b>Der Motortyp ist eine Spalte und keine Klappliste</b> — 45
+        /// verschiedene Werte in 79 Saetzen, darunter Schreibvarianten desselben Motors
+        /// (offener Punkt O-3). Als Spalte mit dem Feld „enthaelt…" trifft „Otto" alle
+        /// Schreibweisen; eine Klappliste haette 45 Eintraege.</para>
+        ///
+        /// <para><b>Die Ausschluesse der Auslieferung bleiben sichtbar</b>: In der
+        /// Auslieferungsdatenbank sind alle 79 Saetze geschuetzt, und die Liste zeichnet
+        /// sie gedimmt (<see cref="Katalogfilterzeile.Geschuetzt"/>, Vorlaeufer
+        /// <c>Form_BHKWAdmin.cs:202-203</c>).</para>
+        /// </summary>
+        public IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+
+            DataTable dt = StilleDb.Tabelle("SELECT * FROM " + TABLE + " ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int brennstoff = Katalogfeld.Ganzzahl(r, "Brennstoff");
+                string brennText = (brennstoff >= 1 && brennstoff <= Brennstoffart.Count)
+                                 ? Brennstoffart[brennstoff - 1] : "";
+
+                double? pel = Katalogfeld.Zahl(r, "Pel");
+                double? pth = Katalogfeld.Zahl(r, "Ptherm");
+                string bezeichner = Katalogfeld.Text(r, "Bezeichner");
+
+                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID"), bezeichner)
+                {
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                };
+
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
+                    .MitText(Katalogfilterprofil.SpHersteller, Katalogfeld.Text(r, "Firma"))
+                    .MitText(Katalogfilterprofil.SpBrennstoff, brennText)
+                    .MitZahl(Katalogfilterprofil.SpPel, pel, 1)
+                    .MitZahl(Katalogfilterprofil.SpPtherm, pth, 1)
+                    .MitZahl(Katalogfilterprofil.SpSigma, Katalogfeld.Quotient(pel, pth), 2)
+                    .MitZahl(Katalogfilterprofil.SpEta,
+                             Katalogfeld.WirkungsgradAlsFaktor(Katalogfeld.Zahl(r, "Wirkungsgrad")), 3)
+                    .MitText(Katalogfilterprofil.SpMotortyp, Katalogfeld.Text(r, "Motortyp")));
+            }
+            return liste;
+        }
+
         /// <summary>
         /// Der Primaerschluessel zum Bezeichner, 0 wenn es keinen gibt - Ersatz fuer
         /// <c>DataRepository.GetIdByName</c> in den Aufrufern.

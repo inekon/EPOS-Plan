@@ -418,6 +418,54 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // =================================================================================
+        // W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG mit ihren Parameterspalten
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Zeilen der Katalogverwaltung</b> (Anwenderentscheid W14a-E-10,
+        /// Konzept_Katalogfilter 4.4 und S1.5) — SECHS Spalten: Bezeichner, Hersteller,
+        /// Kollektortyp, Aperturflaeche, η₀ und k1.
+        ///
+        /// <para><b>Der erste Filter dieses Katalogs ueberhaupt.</b> Die Auspraegung
+        /// kannte bis hierher <c>KatalogFilterArt.Keiner</c> — keine Klappliste, keine
+        /// Suche, eine Namensspalte. Sieben Saetze halten das aus; nach einem
+        /// VDI-3805-Import sind es Hunderte.</para>
+        ///
+        /// <para><b>Gerechnet wird mit der APERTUR</b>, nicht mit der Modulflaeche
+        /// (<c>SimulationSolarthermie.cs:232</c>) — deshalb steht sie in der Spalte.
+        /// η₀ ist der Konversionsfaktor <c>h0</c> (<c>:242</c>), k1 der lineare
+        /// Verlustbeiwert (<c>:243</c>).</para>
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, Firma, Kollektortyp, Aperturflaeche, h0, k1, ReadOnly FROM [" +
+                TABLE + "] ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string bezeichner = Katalogfeld.Text(r, "Bezeichner");
+
+                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID"), bezeichner)
+                {
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                };
+
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
+                    .MitText(Katalogfilterprofil.SpHersteller, Katalogfeld.Text(r, "Firma"))
+                    .MitText(Katalogfilterprofil.SpKollektortyp, Katalogfeld.Text(r, "Kollektortyp"))
+                    .MitZahl(Katalogfilterprofil.SpApertur, Katalogfeld.Zahl(r, "Aperturflaeche"), 2)
+                    .MitZahl(Katalogfilterprofil.SpEtaNull, Katalogfeld.Zahl(r, "h0"), 3)
+                    .MitZahl(Katalogfilterprofil.SpK1, Katalogfeld.Zahl(r, "k1"), 3));
+            }
+            return liste;
+        }
+
         /// <summary>
         /// Die acht Anzeigefelder eines Katalogsatzes, bereits als Text — der Detailblock
         /// von <c>Form_SolarKollektorenAdmin.dataGridView1_Click</c> (Z. 101-123).

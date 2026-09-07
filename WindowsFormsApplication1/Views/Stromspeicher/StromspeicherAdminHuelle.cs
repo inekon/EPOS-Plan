@@ -47,7 +47,10 @@ namespace WindowsFormsApplication1
 
             gaben["Wege"] = new ModulKatalogWege
             {
-                Liste = Zeilen,
+                // W14a-E-10: acht Spalten statt der einen Namensspalte, darunter die
+                // abgeleitete C-Rate und der Hersteller aus dem Bezeichnerpraefix
+                // (Befund D-3). Auch dieser Katalog hatte bis hierher KEINEN Filter.
+                Katalogzeilen = StromspeicherStammCtrl.Katalogfilterzeilen,
                 Detail = name => ModulKatalogHuelle.Felder(
                     profil, StromspeicherStammCtrl.KatalogsatzAnzeige(name)),
                 Speichern = Schreiben,
@@ -59,14 +62,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         // Die Datenwege
         // =====================================================================
-
-        private static IReadOnlyList<ModulZeile> Zeilen()
-        {
-            var liste = new List<ModulZeile>();
-            foreach (var z in StromspeicherStammCtrl.KatalogZeilen())
-                liste.Add(new ModulZeile(z.Id, z.Bezeichner));
-            return liste;
-        }
 
         private static KatalogSpeicherErgebnis Schreiben(IReadOnlyList<ModulFeldwert> felder,
                                                          bool neu, string schluessel)

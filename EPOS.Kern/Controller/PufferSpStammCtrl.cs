@@ -357,6 +357,55 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // =================================================================================
+        // W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG mit ihren Parameterspalten
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Zeilen der Katalogverwaltung</b> (Anwenderentscheid W14a-E-10,
+        /// Konzept_Katalogfilter 4.5 und S1.5) — FUENF Spalten: Bezeichner, Hersteller,
+        /// Speichertyp, Gesamtvolumen und Bereitschaftsverluste.
+        ///
+        /// <para><b>Nicht zu verwechseln mit <see cref="Katalogzeilen"/></b>: Jene liefert
+        /// die sieben UEBERNAHMEfelder des PROJEKTdialogs (W10a.0b), diese die
+        /// ANZEIGE- und FILTERwerte der Verwaltung. Zwei Fragen, zwei Abfragen — dieselbe
+        /// Aufteilung, die dort schon begruendet steht.</para>
+        ///
+        /// <para><b>Die sechs festen Volumenstufen entfallen damit als Bedienung</b>
+        /// (Entscheid W14a-E-10, Frage Q5): Sortieren nach V und der Ausdruck
+        /// <c>200..500</c> leisten dasselbe genauer. <see cref="VOLUMEN_SQL"/> bleibt
+        /// stehen, weil <see cref="Filtern"/> es weiter braucht — der PROJEKTdialog
+        /// <c>PufferspeicherDialog</c> laeuft erst mit Stufe S2 auf das Spaltenmodell.</para>
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, Hersteller, Speichertyp, Gesamtvolumen, " +
+                "Bereitschaftsverluste, ReadOnly FROM [" + TABLE + "] ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string bezeichner = Katalogfeld.Text(r, "Bezeichner");
+
+                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID"), bezeichner)
+                {
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                };
+
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
+                    .MitText(Katalogfilterprofil.SpHersteller, Katalogfeld.Text(r, "Hersteller"))
+                    .MitText(Katalogfilterprofil.SpSpeichertyp, Katalogfeld.Text(r, "Speichertyp"))
+                    .MitZahl(Katalogfilterprofil.SpVolumen, Katalogfeld.Zahl(r, "Gesamtvolumen"), 0)
+                    .MitZahl(Katalogfilterprofil.SpVerluste,
+                             Katalogfeld.Zahl(r, "Bereitschaftsverluste"), 2));
+            }
+            return liste;
+        }
+
         /// <summary>
         /// SQL-Praedikat je Volumenstufe, Index 0 = „Alle".
         /// </summary>

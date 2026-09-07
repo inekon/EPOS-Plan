@@ -502,6 +502,67 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
+        // W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG mit ihren Parameterspalten
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Zeilen der Katalogverwaltung</b> (Anwenderentscheid W14a-E-10,
+        /// Konzept_Katalogfilter 4.8 und S1.5) — ACHT Spalten: Bezeichner, Hersteller,
+        /// Typ, Energie, Leistung, C-Rate, η_RT und Zyklen.
+        ///
+        /// <para><b>Der Hersteller kommt aus dem BEZEICHNERPRAEFIX</b> (Befund D-3,
+        /// Frage Q7): <c>Tab_Stromspeicher_STAMM</c> hat keine Spalte <c>Firma</c>. Der
+        /// Import schreibt „Hersteller: Modell"
+        /// (<c>StromspeicherImportSatz.Bezeichner</c>), und
+        /// <see cref="Katalogfeld.HerstellerAusBezeichner"/> gewinnt ihn genauso zurueck,
+        /// wie es der Modulimport tut. Wo kein Doppelpunkt steht — die fuenf von Hand
+        /// gepflegten Saetze der Testdatenbank —, zeigt die Spalte den
+        /// Halbgeviertstrich; der Name selbst steht in der Bezeichnerspalte und wird von
+        /// der Suche ueber alle Spalten gefunden. Die Spalte <c>Firma</c> bleibt ein
+        /// eigener Schemaschritt.</para>
+        ///
+        /// <para><b>Die C-Rate = Leistung / Energie ist abgeleitet</b> und wird hier
+        /// einmal je Zeile gerechnet (Konzept 3.2). Sie trennt Heim- vom Netzspeicher und
+        /// steht heute nirgends im Katalog.</para>
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, Typ, Energie, Leistung, Wirkungsgrad_RT, " +
+                "Zyklen_Zugesichert, ReadOnly FROM [" + TABLE + "] ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string bezeichner = Katalogfeld.Text(r, "Bezeichner");
+                double? energie = Katalogfeld.Zahl(r, "Energie");
+                double? leistung = Katalogfeld.Zahl(r, "Leistung");
+
+                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID"), bezeichner)
+                {
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                };
+
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
+                    .MitText(Katalogfilterprofil.SpHersteller,
+                             Katalogfeld.HerstellerAusBezeichner(bezeichner))
+                    .MitText(Katalogfilterprofil.SpChemie, Katalogfeld.Text(r, "Typ"))
+                    .MitZahl(Katalogfilterprofil.SpEnergie, energie, 1)
+                    .MitZahl(Katalogfilterprofil.SpLeistung, leistung, 1)
+                    .MitZahl(Katalogfilterprofil.SpCrate,
+                             Katalogfeld.Quotient(leistung, energie), 2)
+                    .MitZahl(Katalogfilterprofil.SpEtaRt,
+                             Katalogfeld.Zahl(r, "Wirkungsgrad_RT"), 3)
+                    .MitZahl(Katalogfilterprofil.SpZyklen,
+                             Katalogfeld.Zahl(r, "Zyklen_Zugesichert"), 0));
+            }
+            return liste;
+        }
+
+        // =================================================================================
         // W14a.0e - der EINE Schreibeinstieg des Modulkatalogs
         // =================================================================================
 

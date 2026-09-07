@@ -763,6 +763,75 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // =================================================================================
+        // W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG mit ihren Parameterspalten
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Zeilen der Katalogverwaltung</b> (Anwenderentscheid W14a-E-10,
+        /// Konzept_Katalogfilter 4.1 und S1.5) — sechs Spalten statt <c>ID, Bezeichner</c>:
+        /// Bezeichner, Hersteller, Brennstoff, P_th, η und das Kennzeichen Brennwert.
+        ///
+        /// <para><b>Warum die Liste mehr liefert als frueher.</b> <see cref="Filtern"/>
+        /// liest <c>SELECT ID, Bezeichner</c>; deshalb KONNTE die Liste keine
+        /// Parameterspalten zeigen — die Werte waren gar nicht da (Konzept Befund
+        /// 1.2/2). Ohne Parameterspalten nuetzt ein Parameterfilter wenig, und seit
+        /// W14a-E-10 sitzt der Filter an der Spalte.</para>
+        ///
+        /// <para><b>Der Brennstoff kommt als NAME.</b> <c>Tab_Heizkessel_STAMM.Brennstoff</c>
+        /// ist eine Zahl; in der Spalte steht der Name aus <c>Tab_Brennstoff_Stamm</c>
+        /// (dieselbe Zuordnung wie in <see cref="BHKWStammCtrl.Filtern"/>). „enthaelt Gas"
+        /// trifft damit Stadtgas, Erdgas LL, Erdgas E, Fluessiggas und Biogas — gemessen
+        /// 52 von 63 Saetzen, genau die Menge der bisherigen Klappliste
+        /// „Brennstoffgruppe".</para>
+        ///
+        /// <para><b>η ist der ANGEZEIGTE Wirkungsgrad</b>: <c>Wirkungsgrad_Gas</c>,
+        /// ersatzweise <c>Wirkungsgrad_Öl</c>; ein Wert &gt; 2 gilt als Prozent und wird
+        /// durch 100 geteilt (Befund D-2, Frage Q9,
+        /// <see cref="Katalogfeld.WirkungsgradAlsFaktor"/>).</para>
+        ///
+        /// <para><b>Die Reihenfolge ist die des Bestands</b> — <c>ORDER BY Bezeichner</c>,
+        /// wie in <see cref="Filtern"/>. Sortiert wird danach in der Oberflaeche ueber
+        /// <see cref="Katalogfilter.Sortieren"/>; ohne Sortierspalte bleibt diese
+        /// Reihenfolge stehen.</para>
+        /// </summary>
+        public IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+
+            DataTable dt = StilleDb.Tabelle("SELECT * FROM [" + TABLE + "] ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                double? gas = Katalogfeld.Zahl(r, "Wirkungsgrad_Gas");
+                double? oel = Katalogfeld.Zahl(r, "Wirkungsgrad_Öl");
+                double? eta = Katalogfeld.WirkungsgradAlsFaktor(
+                                  gas != null && gas.Value > 0 ? gas : oel);
+
+                int brennstoff = Katalogfeld.Ganzzahl(r, "Brennstoff");
+                string brennText = (brennstoff >= 1 && brennstoff <= Brennstoffart.Count)
+                                 ? Brennstoffart[brennstoff - 1] : "";
+
+                string bezeichner = Katalogfeld.Text(r, "Bezeichner");
+
+                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID"), bezeichner)
+                {
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                };
+
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
+                    .MitText(Katalogfilterprofil.SpHersteller, Katalogfeld.Text(r, "Firma"))
+                    .MitText(Katalogfilterprofil.SpBrennstoff, brennText)
+                    .MitZahl(Katalogfilterprofil.SpPtherm, Katalogfeld.Zahl(r, "Ptherm"), 1)
+                    .MitZahl(Katalogfilterprofil.SpEta, eta, 3)
+                    .MitKennzeichen(Katalogfilterprofil.SpBrennwert,
+                                    Katalogfeld.Kennzeichen(r, "Brennwert")));
+            }
+            return liste;
+        }
+
         /// <summary>
         /// Der Primaerschluessel zum Bezeichner, 0 wenn es keinen gibt.
         /// </summary>

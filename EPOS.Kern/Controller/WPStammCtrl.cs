@@ -131,6 +131,107 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // =================================================================================
+        // W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG mit ihren Parameterspalten
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Zeilen der Stammverwaltung</b> (Anwenderentscheid W14a-E-10,
+        /// Konzept_Katalogfilter 4.3 und S1.5) — NEUN Spalten: Hersteller, Modell,
+        /// Quelle, Nennleistung, VL min, VL max, Zuheizung, Kuehlen und COP bei A2/W35.
+        ///
+        /// <para><b>Der Kern des Entscheids.</b> „Das Schema des Dialogs sollte immer
+        /// gleich aussehen (Waermepumpe aehnlich wie PV-Module und Heizkessel)" — bis
+        /// hierher zeigte die Stammliste EINE Spalte (den Bezeichner), waehrend der
+        /// vollstaendige Filter des Hauses in einer UEBERLAGERUNG „Modul-Katalog…" sass,
+        /// die der Anwender beim Oeffnen gar nicht sieht (Befund 1.2/4).</para>
+        ///
+        /// <para><b>Drei abgeleitete Groessen aus den Kennlinien</b>, alle aus EINER
+        /// Gruppenabfrage bzw. einem Punktzugriff auf <see cref="CURVE"/> — je Geraet
+        /// einzeln zu fragen waere bei einigen hundert Stammsaetzen genau das, was
+        /// <see cref="KatalogZeilen"/> schon vermeidet:</para>
+        /// <list type="bullet">
+        ///   <item><b>VL min / VL max</b> = <c>Min/Max(Vorlauf)</c> je <c>ID_WP</c>. Ohne
+        ///     Kennlinie bleibt es beim Halbgeviertstrich — der Vorlaeufer schrieb dort
+        ///     0/0 und liess den Satz aus jedem Bereichsfilter mit Untergrenze &gt; 0
+        ///     fallen; als LEERWERT ist derselbe Satz wenigstens sichtbar.</item>
+        ///   <item><b>COP A2/W35</b> = <c>COP</c> bei <c>Vorlauf = 35</c> und
+        ///     <c>Temperatur = 2</c> — die Guetezahl, nach der ein Planer waehlt. Sie
+        ///     steht als Kennlinienpunkt da und nirgends als Spalte.</item>
+        ///   <item><b>Kuehlen</b> = <c>Kuehlleistung &gt; 0</c> („Ja"/„Nein", leer zaehlt
+        ///     als Nein) — das Kennzeichen traegt nur den Sortierpfeil (5.6.2).</item>
+        /// </list>
+        ///
+        /// <para><b>Die Bauart fehlt bewusst</b>: 45 von 51 Saetzen fuehren sie leer
+        /// (Anhang A des Konzepts). Eine Spalte, die fast immer leer ist, kostet Breite
+        /// und traegt nichts.</para>
+        /// </summary>
+        public IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+
+            var kleinster = new Dictionary<int, double?>();
+            var groesster = new Dictionary<int, double?>();
+            DataTable dtv = StilleDb.Tabelle(
+                "SELECT ID_WP, Min(Vorlauf) AS MinV, Max(Vorlauf) AS MaxV FROM " + CURVE +
+                " GROUP BY ID_WP");
+            if (dtv != null)
+            {
+                foreach (DataRow r in dtv.Rows)
+                {
+                    int idWp = Katalogfeld.Ganzzahl(r, "ID_WP");
+                    if (idWp <= 0) continue;
+                    kleinster[idWp] = Katalogfeld.Zahl(r, "MinV");
+                    groesster[idWp] = Katalogfeld.Zahl(r, "MaxV");
+                }
+            }
+
+            var cop = new Dictionary<int, double?>();
+            DataTable dtc = StilleDb.Tabelle(
+                "SELECT ID_WP, COP FROM " + CURVE + " WHERE Vorlauf = 35 AND Temperatur = 2");
+            if (dtc != null)
+            {
+                foreach (DataRow r in dtc.Rows)
+                {
+                    int idWp = Katalogfeld.Ganzzahl(r, "ID_WP");
+                    if (idWp <= 0 || cop.ContainsKey(idWp)) continue;
+                    cop[idWp] = Katalogfeld.Zahl(r, "COP");
+                }
+            }
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, Firma, Typ, Nennleistung, Heizung, Kuehlleistung, " +
+                "ReadOnly FROM " + TABLE + " ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = Katalogfeld.Ganzzahl(r, "ID");
+                string bezeichner = Katalogfeld.Text(r, "Bezeichner");
+                double? kuehl = Katalogfeld.Zahl(r, "Kuehlleistung");
+
+                var zeile = new Katalogfilterzeile(id, bezeichner)
+                {
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                };
+
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpHersteller, Katalogfeld.Text(r, "Firma"))
+                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
+                    .MitText(Katalogfilterprofil.SpQuelle, Katalogfeld.Text(r, "Typ"))
+                    .MitZahl(Katalogfilterprofil.SpNennleistung,
+                             Katalogfeld.Zahl(r, "Nennleistung"), 1)
+                    .MitZahl(Katalogfilterprofil.SpVlMin,
+                             kleinster.ContainsKey(id) ? kleinster[id] : null, 0)
+                    .MitZahl(Katalogfilterprofil.SpVlMax,
+                             groesster.ContainsKey(id) ? groesster[id] : null, 0)
+                    .MitZahl(Katalogfilterprofil.SpZuheizung, Katalogfeld.Zahl(r, "Heizung"), 1)
+                    .MitKennzeichen(Katalogfilterprofil.SpKuehlen, kuehl != null && kuehl.Value > 0)
+                    .MitZahl(Katalogfilterprofil.SpCop, cop.ContainsKey(id) ? cop[id] : null, 2));
+            }
+            return liste;
+        }
+
         /// <summary>
         /// Der Name des Projekts, das diese Waermepumpe VERWENDET — oder <c>null</c>,
         /// wenn keines sie verwendet (iU9-W7.0e).
