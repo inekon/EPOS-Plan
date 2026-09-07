@@ -1,6 +1,7 @@
 # Konzept: Katalogfilter EPOS-Plan — Auswahl und Suche nach den wichtigen Parametern
 
-**Rev. 1 — 07.09.2026 — Befund, Vorschlag und Mockup zur Entscheidung durch den Anwender.
+**Rev. 2 — 07.09.2026 — der Anwender hat entschieden (`W14a‑E‑10`): Der Filter sitzt
+an der SPALTE. Kapitel 5.6 ist der gültige Vorschlag, 5.2–5.5 stehen als Geschichte daneben.
 Nichts davon ist umgesetzt.**
 
 Auftrag (Anwenderwunsch **W14a‑E‑9**, 07.09.2026, im Wortlaut):
@@ -9,6 +10,19 @@ Auftrag (Anwenderwunsch **W14a‑E‑9**, 07.09.2026, im Wortlaut):
 > Heizung, Administration → Strombedarf & Speicher sollen eine Auswahl/Suche erhalten, um die
 > wichtigen Parameter der Komponenten bei der Auswahl eingrenzen zu können. Gebe einen
 > Vorschlag. Evtl. auch anderes Design der Dialogbox."
+
+**Der Entscheid dazu (`W14a‑E‑10`, 07.09.2026, im Wortlaut):**
+
+> „Q1 bis Q12: ändere den Katalogfilter — nur Suche (Screenshot 2), Hersteller, Brennstoff etc.
+> sollte an Spalte mit Sortieren und Suchen (Beispiel Screenshot 1) erfolgen. Das Schema des
+> Dialogs sollte immer gleich aussehen (Wärmepumpe ähnlich wie PV-Module und Heizkessel)."
+> — und: „erstelle aktualisiertes Mockup".
+
+Damit ist die Empfehlung aus Rev. 1 (das **Zonenmodell** 5.2 mit Klapplisten, Bereichsfeldern und
+Chips) **abgelehnt** und die dort verworfene Variante **A4** — Filter am Spaltenkopf — **gewählt**.
+Was bleibt, steht in **Kapitel 5.6**; was fällt, steht als Geschichte in 5.2 bis 5.5. Kapitel 1
+bis 4 gelten **unverändert weiter**: Der Befund ist derselbe, und die Parameter aus Kapitel 4
+werden jetzt **Spalten** statt Feldern einer Leiste.
 
 Mockup: **`Mockups/Katalogfilter_Vorschlag.html`** — drei Reiter (M1 Heizkessel-Verwaltung,
 M2 Wärmepumpen-Projektauswahl, M3 PV-Module mit 20 749 Zeilen), selbständig im Browser, ohne
@@ -272,7 +286,16 @@ Testdatenbank) — siehe Kapitel 4.10 und Frage **Q6**.
 
 ---
 
-## 3. Vorschlag: EIN Baustein `Filterleiste` mit einem Filterprofil je Katalog
+## 3. Vorschlag: EIN Filterprofil je Katalog
+
+> **Nach dem Entscheid W14a‑E‑10 gilt dieses Kapitel weiter — mit EINER Ersetzung.** Die
+> **Daten** (`Katalogfilterprofil`) und die **Rechnung** (`Katalogfilter`) bleiben Wort für Wort,
+> ebenso die Mechanik aus 3.3, die Hausregeln aus 3.4 und die Frage „Speicher oder SQL" aus 3.6.
+> Was entfällt, ist das **Bild**: Statt `EPOS.UI/Bausteine/Filterleiste.razor` bekommt der
+> Standard `EPOS.UI/Standards/Raster.razor` je Spalte ein `ColumnOptions`-Popover, und über der
+> Liste stehen nur noch ein Suchfeld und die Filter-/Trefferzeile (**5.6**). Aus „Klappliste",
+> „Zahlenbereich" und „Merkmalsschalter" wird damit je **eine Spalte mit einem Feld**; die Chips
+> aus 3.5 entfallen zugunsten der Filterzeile.
 
 ### 3.1 Warum einer und nicht vierzehn
 
@@ -287,8 +310,12 @@ die Unterschiede stehen als **Daten im Kern**. Der Vorschlag ist der vierte Zwil
 ```
 EPOS.Kern/Allgemein/Katalog/Katalogfilterprofil.cs   (neu — DATEN, keine Datenbank)
 EPOS.Kern/Allgemein/Katalog/Katalogfilter.cs         (neu — die RECHNUNG, prüfbar ohne Oberfläche)
-EPOS.UI/Bausteine/Filterleiste.razor                 (neu — das BILD, filtert nicht selbst)
+EPOS.Kern/Allgemein/Katalog/Zahlenausdruck.cs        (neu, nach W14a-E-10 — ">10", "10..60", "=15")
+EPOS.UI/Bausteine/Spaltenfilter.razor                (neu — das BILD im ColumnOptions-Popover)
 ```
+
+*Die dritte Zeile hieß in Rev. 1 `EPOS.UI/Bausteine/Filterleiste.razor`; nach dem Entscheid
+W14a‑E‑10 sitzt das Bild im Spaltenkopf des vorhandenen `Raster` (5.6.7).*
 
 Regel **F4** des Wellenplans gilt weiter: *Die Komponente filtert nicht selbst.* Sie sammelt
 die Kriterien ein und ruft `Katalogfilter.Anwenden(zeilen, kriterien)` — genau so, wie es
@@ -325,7 +352,9 @@ ihnen sortieren.
 | Die Klapplistenwerte kommen **aus dem Bestand**, ohne Leerwerte, ohne Dubletten, aufsteigend | `WaermepumpenKatalogFilter.Werte` |
 | Die Vorbelegung zeigt **alles** — eine Vorbelegung, die beim Aufmachen Zeilen verschwinden ließe, ist unerklärlich | Entscheid W13‑E‑2 (Stromspeicherimport) |
 
-### 3.4 Die Hausregeln, die die Leiste einhalten muss
+### 3.4 Die Hausregeln, die der Filter einhalten muss
+
+> *Gilt unverändert; „die Leiste" heißt nach W14a‑E‑10 „der Spaltenkopf und die Zone A".*
 
 | Regel | Herkunft | Folge für den Baustein |
 |---|---|---|
@@ -340,6 +369,8 @@ ihnen sortieren.
 | **Farben nur als Token in `:root`** | W16b‑E‑5 | die Leiste braucht **keine neue Farbe**: `--epos-flaeche`, `--epos-rahmen-leise`, `--epos-text-leise` und die vorhandene Klasse `.epos-chip` genügen |
 
 ### 3.5 Chips, Trefferzähler, Zurücksetzen, Sortierung, Gedächtnis
+
+> *Nach W14a‑E‑10 entfallen die **Chips** und der Knopf **„Zurücksetzen"**; ihre Aufgabe übernimmt die Filter-/Trefferzeile mit „Alle löschen" (5.6.4). **Trefferzähler**, **„Kein Treffer."**, **Sortierung** und **Gedächtnis** gelten wörtlich weiter.*
 
 - **Chips.** Jeder gesetzte Filter erscheint als abwählbarer Chip: „Brennstoff: Gas ×",
   „P_th 10…60 kW ×", „Suche: eco* ×". Er ist die **einzige** Stelle, an der der Anwender den
@@ -376,11 +407,20 @@ SQL-Anweisung geht durch `Werkzeuge/SqlDialektPruefer`.
 
 ---
 
-## 4. Die konkrete Filterzeile je Katalog
+## 4. Die konkreten Filterkriterien je Katalog
 
-Aufbau überall gleich: **Zeile 1** Klapplisten + Suche · **Zeile 2** Zahlenbereiche +
-„Weitere Filter ▾" + „Zurücksetzen" · **Zeile 3** Chips + Trefferzähler.
-„A" = im Aufklapper „Weitere Filter", nicht in der Grundzeile.
+> **Nach dem Entscheid W14a‑E‑10 liest sich diese Tabelle anders, aber sie gilt.** Aus
+> „Klappliste" wird eine **Textspalte** mit dem Feld „enthält…", aus „Bereich" eine
+> **Zahlenspalte** mit einem Feld (`10..60`), aus „Schalter" eine Spalte mit „ja"/„nein" und
+> „enthält ja", aus „Suche" das **eine** Suchfeld über alle Spalten der Zone A. Die Zeile
+> **Spalten** ist damit die eigentliche Aussage jedes Abschnitts; die Zeile **A** („im
+> Aufklapper Weitere Filter") entfällt — was nicht als Spalte dasteht, ist auch nicht
+> filterbar (5.6). Neben dem Eingabeblock haben rund **fünf** Parameterspalten Platz; die
+> übrigen Parameter stehen im Detailblock und in der Parameterübersicht.
+
+Der frühere Aufbau, auf den sich die Zeilen beziehen: **Zeile 1** Klapplisten + Suche ·
+**Zeile 2** Zahlenbereiche + „Weitere Filter ▾" + „Zurücksetzen" · **Zeile 3** Chips +
+Trefferzähler. „A" = im Aufklapper „Weitere Filter", nicht in der Grundzeile.
 
 ### 4.1 Heizkessel (63)
 
@@ -511,10 +551,12 @@ Beschriftung neben dem Feld (iU8‑E‑2 / W14a‑E‑7), die Projekt/Datenbank-
 der **`Zweispaltenauswahl`** (#76), und seit W14a‑E‑8 gibt es unter dem Formular die
 **Parameterübersicht** mit der Verwendung jeder Spalte. Der Rahmen stimmt.
 
-**Was fehlt, ist genau eine Zone.** Zwischen der Überschrift und der Liste ist heute nichts —
+**Was fehlt, sind die Spalten.** Zwischen der Überschrift und der Liste ist heute nichts —
 oder zwei Klapplisten, die aussehen wie Eingabefelder und nicht wie ein Filter. Und die Liste
 selbst ist eine Namensspalte: Sie **zeigt** die Parameter nicht, nach denen der Anwender sucht,
-also kann er auch nicht nach ihnen sortieren.
+also kann er weder nach ihnen sortieren noch — nach dem Entscheid W14a‑E‑10 — an ihnen filtern.
+Der Befund dieses Abschnitts ist damit der eigentliche Grund, warum das Spaltenmodell mehr
+Arbeit an den **Controllern** als an der Oberfläche bedeutet (S1.5).
 
 Drei Sätze zum Bestand, damit die Bewertung nicht besser klingt, als sie ist:
 
@@ -527,7 +569,9 @@ Drei Sätze zum Bestand, damit die Bewertung nicht besser klingt, als sie ist:
    nebeneinander im `epos-zahlenraster` — er ist so breit wie die Maske und braucht selbst eine
    Ordnung.
 
-### 5.2 Der Vorschlag: drei Zonen
+### 5.2 Der Vorschlag von Rev. 1: drei Zonen mit einer Filterleiste
+
+> *Nicht gewählt, Entscheid **W14a‑E‑10**. Der Abschnitt bleibt als Geschichte stehen; der gültige Vorschlag steht in **5.6**.*
 
 **Zone A — die Filterleiste**, über die ganze Breite, direkt unter Titel und Kopfband.
 **Zone B — das Paar**: links die Liste mit drei bis fünf Parameterspalten, rechts der
@@ -562,6 +606,8 @@ Begründung wie bei den Pfeilzeichen der `Zweispaltenauswahl`.
 
 ### 5.3 Was für Verwaltung und Projektauswahl gleich ist — und was nicht
 
+> *Zur Filterleiste aus 5.2 gehörig und damit nicht gewählt (**W14a‑E‑10**). Die Aussage der Tabelle bleibt aber richtig — Zone B, die Listenspalten, die Zone C und die Listenhöhe stehen genauso in 5.6.*
+
 | | Verwaltung (Administration) | Projektauswahl („aus Datenbank übernehmen", Assistent) |
 |---|---|---|
 | Zone A | **identisch** — dasselbe Profil, dieselbe Leiste, dieselben Chips | **identisch**, aber **in der rechten Spalte** der `Zweispaltenauswahl` (#76: „Filter gehören über die Katalogliste in die RECHTE Spalte") |
@@ -576,22 +622,29 @@ hat und dann über „Verwaltung…" in die Administration springt, findet dort 
 Ausschnitt. Das ist der Sinn eines Profils; zwei getrennte Zustände wären wieder zwei
 Wahrheiten.
 
-### 5.4 Alternativen — und warum sie es nicht werden
+### 5.4 Alternativen — und was der Anwender daraus gewählt hat
+
+> *Die Bewertungen sind die von Rev. 1. Der Anwender hat **A4** gewählt; die drei Einwände dagegen sind unten entkräftet, nicht wiederholt.*
 
 | | Alternative | Bewertung |
 |---|---|---|
 | **A1** | **Kartenansicht statt Tabelle** — je Gerät eine `Kachel` mit Name, Hersteller und drei Kennwerten, im `Kachelraster` | **Nein.** Eine Karte braucht das Drei- bis Vierfache der Höhe einer Tabellenzeile; bei 20 743 Modulen sind das rund 60 Bildschirmseiten statt 15. Vor allem aber: Karten **können nicht sortieren** und stellen die Werte nicht untereinander — genau das ist beim Vergleichen die Arbeit. Karten sind im Haus der EINSTIEG (Startseite, Komponentenauswahl), nicht die Auswahl aus einem Katalog |
 | **A2** | **Facettenleiste links** (wie im Webshop): eine schmale Spalte mit allen Filtern, Liste rechts | **Nein.** Sie nimmt 240–280 px genau dort, wo die `Zweispaltenauswahl` schon eine linke Spalte hat (die Projektliste) — der Dialog hätte dann drei Spalten plus Pfeile. Und sie wäre eine **zweite Anordnungssprache** neben `Katalograhmen`; #76 hat das Haus gerade auf eine gebracht |
 | **A3** | **Filterzeile als Aufklapper** — ein Knopf „Filter ▾", der die ganze Leiste zeigt oder verbirgt | **Teilweise ja** — als Staffelung. Die **erste** Zeile (Klapplisten + Suche) steht immer offen, die **zweite** (Zahlenbereiche) und der Rest hängen unter „Weitere Filter ▾". Alles zu verbergen wäre falsch: Ein Filter, den man nicht sieht, erklärt eine kurze Liste nicht — und die **Chips bleiben immer sichtbar**, gerade weil die Felder es nicht sind |
-| **A4** | **Filtersymbol je Spaltenkopf** (Tabellenkalkulations-Art) | **Nein.** Ein Menü am Spaltenkopf ist ein Hover- und Mausbedienelement (iL4 verbietet Hover-Abhängigkeit), der Zustand ist unsichtbar, es gibt keinen Ort für einen Trefferzähler, und `QuickGrid` bringt so etwas nicht mit |
+| **A4** | **Filtersymbol je Spaltenkopf** (Tabellenkalkulations-Art) | **GEWÄHLT — Anwenderentscheid W14a‑E‑10.** Rev. 1 hatte hier „Nein" stehen, mit drei Einwänden. Alle drei sind hinfällig, und zwar nachprüfbar: **(1) kein Hover.** Der Trichter ist ein `<button>` im Kopf, erreichbar mit Maus **und** Tabulator; Enter öffnet, Esc schließt (`QuickGrid.razor.js`, `keyDownHandler`). **(2) Der Zustand ist sichtbar** — an jeder gefilterten Spalte steht ein **gefüllter** Trichter, und über der Liste steht die Filterzeile im Klartext. **(3) Der Trefferzähler hat einen Ort** — dieselbe Zeile, rechts außen. **(4) QuickGrid kann es doch:** `ColumnBase<TGridItem>.ColumnOptions` ist ein `RenderFragment`, das die Zelle als Popover unter dem Kopf zeigt, geöffnet über einen Knopf, den QuickGrid selbst in den Kopf setzt — Fundstellen in 5.6 |
 | **A5** | **Nur mehr Spalten, kein Filter** — die Liste zeigt die Parameter, Sortieren genügt | **Nein**, aber die Hälfte davon ist Teil des Vorschlags: Die Spalten kommen ohnehin. Für 63 Heizkessel würde Sortieren reichen; für 20 743 Module nicht |
 | **A6** | **Alles bleibt, nur die zehn fehlenden Klapplisten werden ergänzt** | **Nein.** Das wären zehn weitere handgeschriebene Filterzeilen — genau der Zustand aus Befund 1.4, nur zehnmal schlimmer |
 
-**Empfehlung: das Zonenmodell aus 5.2 mit der Staffelung aus A3.** Es ändert an den drei
-Bausteinen, die das Haus gerade eingeführt hat (`Katalograhmen`, `Formularraster`,
-`Zweispaltenauswahl`), **nichts** — es setzt einen vierten darüber.
+*Empfehlung von Rev. 1 war das Zonenmodell aus 5.2 mit der Staffelung aus A3.* **Der
+Anwender hat anders entschieden (W14a‑E‑10): A4.** Was beide Wege teilen, gilt weiter — an den
+drei Bausteinen, die das Haus gerade eingeführt hat (`Katalograhmen`, `Formularraster`,
+`Zweispaltenauswahl`), ändert sich **nichts**. Der Unterschied ist, wo der Filter steht: A4
+setzt keinen vierten Baustein darüber, sondern erweitert den Spaltenkopf des vorhandenen
+`Raster`.
 
 ### 5.5 Vergleich von zwei bis drei markierten Zeilen
+
+> *Bleibt gültig — der Vergleich hängt an der Mehrfachwahl, nicht am Filterbild (Q3, Stufe S3).*
 
 Die Mehrfachwahl gibt es seit **W6‑E‑5** (`Zeilenwahl.Mehrfach`, `Zeilenmarkierung` mit
 `Strg`/`Umschalt`). Damit ist der Vergleich fast geschenkt: Sind zwei oder drei Zeilen
@@ -608,81 +661,296 @@ Empfehlung: **ja, aber in Stufe S3** — er hängt an nichts, was S1 und S2 brau
 
 ---
 
+### 5.6 Das Spaltenmodell (Anwenderentscheid W14a‑E‑10)
+
+**Der Entscheid in einem Satz:** *Über* der Liste steht nur noch die **Suche**; alles, wonach
+gefiltert wird, sitzt **an der Spalte**, die es zeigt — mit Sortierung und einem Feld
+„enthält…". Und: **jeder Katalogdialog sieht gleich aus** — die Wärmepumpe wie der Heizkessel
+wie die PV-Module.
+
+#### 5.6.1 Das eine Schema — drei Zonen, aber andere
+
+```
++------------------------------------------------------------------------------+
+|  Verwaltung Heizkessel                                                    [?] |  Titel + InfoKnopf
+|  ZONE A                                                                       |
+|  Suche ueber alle Spalten [                                        ]          |  EIN Feld, * und ?
+|  Filter: Brennstoff enthaelt "Gas" . P_th 10..60 . eta >= 0,95                |
+|          [Alle loeschen]                             15 von 63 Saetzen        |  immer sichtbar
++-----------------------------------+------------------------------------------+
+| ZONE B links - die Liste          | ZONE B rechts - Eingabe / Detail          |
+| +---+--------------+-----------+  |  -- Eingabe der Heizkesseldaten --------- |
+| |Wa | Bezeichner  V| P_th  A  V|  |  Name:        [ecoTEC plus VC 15CS/1-5]   |
+| +---+--------------+-----------+  |  Hersteller:  [Vaillant Deutschland ...]  |
+| | o | ecoTEC ...   |      16,6 |  |  Leistung:    [  16,6] kW                 |
+| | * | ecoCOMPACT   |      15,0 |  |  > Alle Parameter und ihre Verwendung     |
+| +---+--------------+-----------+  |                                           |
+|     ^ Titel+Sortierpfeil  ^ Trichter                                          |
++-----------------------------------+------------------------------------------+
+| ZONE C  [Speichern]     [Neu...] [Kopieren...] [Vergleichen] [Loeschen] [OK]  |
++------------------------------------------------------------------------------+
+```
+
+| Zone | Inhalt | in der **Verwaltung** | in den **Projektdialogen** (#76) |
+|---|---|---|---|
+| **A** | Titel + `InfoKnopf`; **ein** Suchfeld über alle Spalten (`*` und `?` wie in den Importmasken); darunter die **Filter-/Trefferzeile** | über die ganze Breite | über die ganze Breite, aber sie gehört zur **rechten** Liste (Hausregel #76) — die Zeile sagt das im Klartext |
+| **B** | Liste **mit Parameterspalten** + Detail | `Katalograhmen`: Liste links, **Eingabe** rechts (schreibend, `Formularraster`) | `Zweispaltenauswahl`: **Projektliste** links, dieselbe Katalogliste rechts, Pfeile dazwischen; Detailblock **unter** dem Paar, lesend |
+| **C** | Aktionsleiste | Neu…, Kopieren…, Löschen, Vergleichen, Speichern, OK | ◀ Übernehmen / Entfernen ▶, Bearbeiten…, Löschen, Verwaltung…, OK |
+
+Gegenüber 5.2 fallen damit **drei** Dinge weg: die Klapplisten, die Bereichsfeldpaare und die
+Chips. Es kommen **zwei** dazu: der Spaltenkopf und die Filterzeile. Der Rest — `Katalograhmen`,
+`Formularraster`, `Zweispaltenauswahl`, Parameterübersicht, Aktionsleiste — bleibt unangetastet.
+
+#### 5.6.2 Der Spaltenkopf
+
+Vorbild ist der Tabellenkopf aus der Anwendung, die der Anwender als Screenshot 1 gezeigt hat:
+`NR ▼ | STATUS ⇅ ▼ | KUNDE ⇅ ▼`. Je Spalte **zwei** Knöpfe:
+
+| Teil | Zeichen | Verhalten |
+|---|---|---|
+| **Titel + Sortierpfeil** | `⇅` unsortiert, `▲` auf, `▼` ab | Ein `<button>`. Erster Klick sortiert auf, zweiter ab, **dritter hebt die Sortierung auf** und stellt die Reihenfolge des Controllers wieder her. Es ist immer **höchstens eine** Spalte sortiert |
+| **Trichter** | leer = kein Filter, **gefüllt** = gefiltert | Ein zweiter `<button>`, 44 px hoch wie die ganze Kopfzelle. Er öffnet das Popover; Esc, ein Klick daneben und ein Klick auf einen anderen Trichter schließen es |
+
+Das **Popover** trägt genau drei Dinge: den Spaltennamen als Überschrift, **ein** Eingabefeld
+und den Knopf **„Filter löschen"**. Nichts sonst — kein „Übernehmen", kein „Alle auswählen",
+keine Werteliste. Der Filter wirkt beim Tippen (dieselbe Sofortwirkung wie die Suche im
+`EnergietraegerDialog`).
+
+**Eine gefilterte Spalte ist auch in den Zellen erkennbar.** `ColumnBase.Class` setzt die Klasse
+auf Kopf **und** Körperzellen; eine gefilterte Spalte bekommt damit eine leise Tönung
+(`--epos-karte-flaeche-hover`), keine neue Farbe.
+
+#### 5.6.3 Was ein Spaltenfilter versteht
+
+| Spaltenart | Feld | Regel |
+|---|---|---|
+| **Text** (Bezeichner, Hersteller, Brennstoff, Technologie, Quelle, Bauart …) | Platzhalter **„enthält…"** | Teilzeichenkette, **Groß/Klein egal — auch bei Umlauten** („öl" findet „Öl"). Der Vergleich ist `StringComparison.CurrentCultureIgnoreCase`, genau wie `VdiAuswahlFilter.Passt:70`. Kein Platzhalter nötig; `*` und `?` sind trotzdem erlaubt und gehen durch `Suchmuster.Uebersetzen`. **Nicht** umgeschrieben wird die Ersatzschreibweise: „Oel" findet „Öl" nicht — dafür gibt es im Haus keine Regel, und eine neue wäre eine eigene Entscheidung |
+| **Zahl** (P_th, η, P_STC, Volumen, Energie …) | dasselbe **eine** Feld | Es versteht `>10`, `>=10`, `<60`, `<=60`, `=15`, `10..60` und die bloße Zahl `15` (= `=15`). Dezimaltrennzeichen ist das der Kultur. Ein Ausdruck, den es nicht versteht, ist **kein** Filter — dieselbe Regel wie beim kaputten Suchmuster (3.3) → **Frage W14a‑E‑10‑Q1** |
+| **Ja/Nein** (Brennwert, „nur eigene Sätze") | dasselbe Feld | Die Spalte zeigt „ja"/„nein"; „enthält ja" ist der Filter. Kein eigener Schalter mehr |
+
+**Der Filter arbeitet auf dem ANGEZEIGTEN Wert, nicht auf der Datenbankspalte.** Das ist keine
+Feinheit, sondern der Grund, warum das Modell überhaupt trägt: `Tab_Heizkessel_STAMM.Brennstoff`
+ist eine **Zahl**, in der Spalte steht der Name aus `Tab_Brennstoff_Stamm`. „enthält Gas"
+trifft dort Stadtgas, Erdgas LL, Erdgas E, Flüssiggas (Propan/Butan) und Biogas; im
+Heizkesselkatalog sind davon **gemessen 52 von 63 Sätzen** belegt — genau die Menge, die heute
+die Klappliste „Brennstoffgruppe" liefert (die zwei Wege kommen auf dieselbe Zahl, weil
+`HeizkesselStammCtrl` genau diese Kennungen als Gasgruppe führt). Dasselbe gilt für
+abgeleitete Größen (σ, C‑Rate, Modulfläche, COP A2/W35, VL max): Sie werden beim Aufbau der
+Zeilenliste einmal gerechnet (3.2) und sind danach ganz normale Spalten — sortierbar **und**
+filterbar.
+
+**Verknüpfung.** Die Spaltenfilter wirken **UND** (jede gesetzte Spalte muss passen). Das
+Suchfeld der Zone A wirkt **ODER über alle Spalten** (ein Treffer in irgendeiner Spalte genügt)
+und **UND über mehrere Begriffe** — die Regel von `VdiAuswahlFilter.Passt`. Suche und
+Spaltenfilter gelten gleichzeitig und stehen beide in der Filterzeile.
+
+#### 5.6.4 Die Filter-/Trefferzeile
+
+Sie steht **immer** da, auch wenn nichts gefiltert ist (dann: *„kein Spaltenfilter gesetzt"* und
+„63 von 63 Sätzen"). Sie ist der Ersatz für die Chips aus 3.5 und leistet dasselbe an einer
+Stelle:
+
+```
+Filter:  Brennstoff enthaelt "Gas"  .  P_th [kW] 10..60  .  eta >= 0,95   [Alle loeschen]      15 von 63 Saetzen
+```
+
+- **Der Zustand auf einen Blick** — auch für Spalten, die gerade aus dem sichtbaren Ausschnitt
+  gerollt sind. Genau das war der Einwand gegen A4, und er ist damit erledigt.
+- **Der Trefferzähler** rechts außen: „15 von 63 Sätzen" — die Zeile aus W7‑A‑7, jetzt überall.
+- **„Alle löschen"** setzt jede Spalte zurück und ist gesperrt, solange nichts gesetzt ist.
+- **„Kein Treffer."** steht statt einer leeren Liste (`ETV_SUCHE_LEER`, wie im
+  `EnergietraegerDialog`).
+
+#### 5.6.5 Wie viele Spalten — und welche Liste bekommt Filter
+
+**Rund fünf Parameterspalten** haben neben dem Eingabeblock Platz, ohne dass die Liste bei
+1 366 px waagerecht rollt; im Mockup sind es bei M1 und M3 genau fünf. Was darüber hinausgeht,
+steht im **Detailblock** und in der **Parameterübersicht** (W14a‑E‑8). Das ist eine echte Grenze
+des Modells: **Sortieren und Filtern kann man nur nach dem, was als Spalte dasteht** — die Wahl
+der fünf Spalten aus Kapitel 4 ist damit eine fachliche Entscheidung, keine Layoutfrage.
+
+**Nicht jede Liste bekommt Trichter.** Die **Projektliste** in der linken Spalte der
+`Zweispaltenauswahl` führt Zeilen im einstelligen Bereich; sie bekommt sortierbare Spaltenköpfe,
+aber **keine** Spaltenfilter. Die Hausregel dazu steht schon da: *kein Delegat, kein
+Bedienelement* (`ModulKatalogDialog.Filterbar`) — kein Filterprofil, kein Trichter.
+
+#### 5.6.6 Wo gefiltert wird: **vor** dem Raster, nicht im Raster
+
+Das ist der Punkt, an dem eine Umsetzung schiefgehen kann, deshalb steht er hier ausdrücklich.
+
+`Raster.razor` ist eine dünne Hülle um QuickGrid und reicht `Zeilen` als `IQueryable<TZeile>`
+weiter. **QuickGrid filtert nicht.** `ColumnOptions` ist nur ein Ort im Kopf, an dem ein
+Bedienelement stehen darf; was es mit der Eingabe macht, entscheidet der Wirt. Der Weg ist
+deshalb derselbe wie heute beim Wärmepumpenkatalog:
+
+1. Das Popover meldet dem Wirt den neuen Ausdruck (`WertChanged`).
+2. Der Wirt legt ihn in den `Katalogfilterstand` und ruft
+   `…StammCtrl.Katalogzeilen(kriterien)` — der Controller entscheidet Speicher oder `WHERE`
+   (3.6, Frage Q6).
+3. Der Wirt reicht die **bereits eingeschränkte** Menge als `Zeilen` an `Raster`.
+
+Für die 20 749 PV-Module heißt das: Das Raster bekommt nach dem Filtern 15 Zeilen und
+virtualisiert sie gar nicht mehr. **Genau dabei greift der Fix W6‑B‑2**: Der Wirt schaltet
+`Virtualisiert` an der Zeilenzahl (≥ 120), und ein Spaltenfilter führt regelmäßig über diese
+Schwelle hinweg (20 749 → 15). Das `@key` an `(Virtualisiert, Zeilenzahl)` baut das QuickGrid
+dann neu auf, statt den alten Zwischenspeicher zu zeigen — der belegte Fehler aus dem
+Geräteimport („der Filter bei der Herstellerauswahl funktioniert nicht"). Der Spaltenfilter
+darf deshalb **nicht** über `RefreshDataAsync()` gehen; die Begründung steht im Kopf von
+`Raster.razor`.
+
+Nebenwirkung, die man kennen muss: Ein neues QuickGrid heißt auch ein **geschlossenes**
+Popover. Der Filterzustand lebt deshalb im Wirt (`Katalogfilterstand`), nicht im Popover —
+sonst wäre er nach dem ersten Tastendruck weg.
+
+#### 5.6.7 Was QuickGrid dafür mitbringt (Fundstellen)
+
+Paket `Microsoft.AspNetCore.Components.QuickGrid`, **Version 10.0.11** (`Directory.Packages.props`
+Zeile 79). Belege aus dem Paket selbst, damit der Umsetzungsagent nicht rät:
+
+| Was | Fundstelle |
+|---|---|
+| **`ColumnOptions`** — „If specified, indicates that this column has this associated options UI. **A button to display this UI will be included in the header cell by default.**" | `lib/net10.0/Microsoft.AspNetCore.Components.QuickGrid.xml`, Eintrag ``P:…ColumnBase`1.ColumnOptions`` |
+| **`Sortable`**, **`SortBy`**, **`IsDefaultSortColumn`**, **`InitialSortDirection`** | dieselbe Datei, ``P:…ColumnBase`1.Sortable`` ff. |
+| **`ShowColumnOptionsAsync(column)` / `HideColumnOptionsAsync()`** — nötig, wenn man den Kopf über `HeaderTemplate` selbst zeichnet | ``M:…QuickGrid`1.ShowColumnOptionsAsync``, ``M:…QuickGrid`1.HideColumnOptionsAsync`` |
+| **`Class`** setzt die Klasse „in the class attribute of table **header and body cells** for this column" — damit die gefilterte Spalte auch in den Zellen erkennbar wird | ``P:…ColumnBase`1.Class`` |
+| Der Optionsknopf ist ein **`<button>`**, kein Hover-Menü: `th .col-options-button { border: none; padding: 0; width: 1rem; … }`, und der Kommentar daneben lautet „Deep to make it easy for people adding a col-options-button element in a custom HeaderTemplate" | `staticwebassets/Microsoft.AspNetCore.Components.QuickGrid.boiwgh0w5b.bundle.scp.css` |
+| **Esc schließt**, ein Klick daneben schließt, und `checkColumnOptionsPosition` **rückt das Popover in das Raster hinein**, wenn es links oder rechts überhängt | `staticwebassets/QuickGrid.razor.js` (`keyDownHandler`, `bodyClickHandler`, `checkColumnOptionsPosition`) |
+
+Zwei Dinge muss das Haus selbst beisteuern:
+
+1. **Das Bild des Knopfs.** QuickGrid zeichnet vorgabemäßig drei waagerechte Striche
+   (Hamburger), kein Trichter, und `.col-options` malt sich `background: white; border: 1px solid
+   silver` fest ein. Beides wird im Stilblatt überschrieben — mit vorhandenen Token, **ohne neue
+   Farbe** (W16b‑E‑5). Der gefüllte Trichter der gefilterten Spalte ist dabei nur ein `fill`.
+2. **Den Ausdruck.** `>10`, `10..60`, `=15` liest niemand für uns; das ist eine kleine Klasse im
+   Kern (`Zahlenausdruck`), prüfbar ohne Oberfläche — der natürliche Ort für die Kernproben aus
+   S1.1.
+
+#### 5.6.8 Was aus den Hausregeln unverändert gilt
+
+| Regel | Herkunft | im Spaltenmodell |
+|---|---|---|
+| Filter stehen **über** der Tabelle, auf die sie wirken | W6‑O‑4, #76 | Suchfeld und Filterzeile stehen über der Liste; in den Projektdialogen sagen sie, dass sie zur **rechten** Liste gehören |
+| Die gewählte Zeile **bleibt gewählt**, auch wenn der Filter sie ausblendet | `EnergietraegerDialog` (W4) | unverändert — der Filter wirkt auf die Anzeige, nie auf die Auswahl; nach einem Filterwechsel wird die Markierung über `Hinzufuegen` wiederhergestellt (S1.7) |
+| Virtualisierung ab 120 Zeilen, `@key` an (Virtualisiert, Zeilenzahl) | W6‑B‑2 | siehe 5.6.6 — hier wird sie erst wirklich gebraucht |
+| Klicksemantik, Mehrfachwahl mit Strg/Umschalt | W6‑E‑5 | unverändert; sie macht „Vergleichen" frei (5.5) |
+| **44 px** Berührungsziele, **keine Hover-Abhängigkeit** | iL4, `--epos-touchziel` | die Kopfzelle ist 44 px hoch, Titel- und Trichterknopf füllen sie aus |
+| Liste in festem Rahmen mit Rollbalken, außer im `Katalograhmen` | W9‑B‑2 | unverändert |
+| Parameterblock im `Formularraster` | iU8‑E‑2 / W14a‑E‑7 | unverändert |
+| Farben nur als Token in `:root` | W16b‑E‑5 | Trichter, Popover und die Tönung der gefilterten Spalte kommen ohne neue Farbe aus |
+| **Gedächtnis:** Filterzustand je Katalog **für die Sitzung**, gemeinsam für Verwaltung und Projektdialog | Q2 | unverändert — jetzt hält der `Katalogfilterstand` je Spalte einen Ausdruck statt je Feld einen Wert, dazu Sortierspalte und ‑richtung |
+
+---
+
 ## 6. Das Mockup
 
 `Mockups/Katalogfilter_Vorschlag.html` — eine Datei, kein CDN, kein Rahmenwerk, keine
 Schriftdatei von außen. Farben, Maße und Klassennamen sind aus `EPOS.UI/wwwroot/epos-ui.css`
 übernommen (Kopfband `#0F1F3D`, Reiterband AliceBlue `#f0f8ff`, cremefarbene Knöpfe `#f5f4ef`,
-Beschriftungsspalte 12 rem, kurzes Zahlenfeld 8 em, Berührungsziel 44 px, Ecke 6 px). Es ist
-ein **Bild**: Die Eingabefelder sind schreibgeschützt; belegt sind nur der Reiterwechsel und
-das „×" der Chips (dann verschwinden die zugehörigen Zeilen und der Trefferzähler zählt neu).
+Beschriftungsspalte 12 rem, kurzes Zahlenfeld 8 em, Berührungsziel 44 px, Ecke 6 px). Es
+braucht **keine neue Farbe**.
+
+Es ist ein Bild — aber ein bedienbares, damit der Anwender das Modell ausprobieren kann, statt
+es zu glauben:
+
+| bedienbar | tut |
+|---|---|
+| Reiterwechsel | zeigt eines der drei Blätter; `…#m1` / `#m2` / `#m3` in der Adresszeile wählt gleich das gewünschte |
+| **Trichter** | öffnet und schließt das Popover; Esc und ein Klick daneben schließen es, und es rückt in die Liste hinein, wenn es überhängt — genau wie `QuickGrid.razor.js` es tut |
+| **„Filter löschen"** | nimmt den Filter dieser Spalte zurück: der Trichter wird leer, die Spaltentönung geht weg, die Zeilen, die nur an diesem Filter gescheitert waren, erscheinen, und der Trefferzähler nennt die **gemessene** Zahl für den neuen Stand |
+| **„Alle löschen"** | dasselbe für alle Spalten; danach ist der Knopf gesperrt und die Zeile sagt „kein Spaltenfilter gesetzt" |
+| **Klick auf einen Spaltentitel** | sortiert die sichtbaren Zeilen wirklich — auf, ab, aus (dritter Klick stellt die Reihenfolge wieder her). Zahlenspalten werden als Zahlen sortiert, Textspalten mit `localeCompare('de')` |
+
+Die Eingabefelder selbst sind schreibgeschützt; das Blatt rechnet nicht, es zeigt.
 
 | Reiter | zeigt | Datenherkunft |
 |---|---|---|
-| **M1 — Heizkessel (Verwaltung)** | Zone A vollständig, Liste mit sechs Spalten und Sortierpfeil auf „P_th", Detailbereich im `Formularraster`, Parameterübersicht zugeklappt, Aktionsleiste. Filter: Gas · 10…60 kW · η ≥ 0,95 → Trefferzähler **„15 von 63 Sätzen"** | `Tab_Heizkessel_STAMM` (63 Sätze) |
-| **M2 — Wärmepumpe (Projektauswahl)** | `Zweispaltenauswahl`: links die zwei Wärmepumpen des Projekts „Heinestr 15", rechts der Katalog mit der Filterleiste darüber, dazwischen ◀ ▶. Detailblock unter dem Paar. Filter: Luft-Wasser · 5…12 kW · VL max ≥ 60 °C → **„7 von 51 Sätzen"** | `Tab_WP` (Projekt 1008) und `Tab_WP_STAMM` + `Tab_Kenndaten_STAMM` (Vorlaufgrenzen, COP A2/W35) |
-| **M3 — PV-Module (Verwaltung, 20 749 Zeilen)** | derselbe Aufbau wie M1, mit Virtualisierungshinweis und Herstellerklappliste über 258 Werten. Filter: LONGi · 500…600 W · η ≥ 21,5 % → **„15 von 20 749 Sätzen"** | `VDI-3805-Daten/PV/CEC Modules.csv` (20 743 Datenzeilen, 258 Hersteller, 5 Technologien) plus die 6 Sätze aus `Tab_PV_STAMM` |
+| **M1 — Heizkessel (Verwaltung)** | das Schema vollständig: Suchfeld, Filterzeile, fünf Parameterspalten mit Sortierung und Trichter, Detailblock im `Formularraster`, Parameterübersicht, Aktionsleiste. Gefiltert: `Brennstoff` enthält „Gas" · `P_th` `10..60` · `η` `>=0,95`; das Popover ist an **Brennstoff** offen → **„15 von 63 Sätzen"** | `Tab_Heizkessel_STAMM` (63 Sätze) |
+| **M2 — Wärmepumpe (Projektauswahl)** | **denselben** Aufbau in der `Zweispaltenauswahl`: Projektliste links (sortierbar, ohne Trichter), Katalog rechts **mit denselben Spaltenköpfen** wie M1/M3, Pfeile dazwischen, Kenndaten unter dem Paar. Gefiltert: `Quelle` enthält „Luft" · `P_N` `5..12` · `VL max` `>=60`; das Popover ist an **Quelle** offen → **„7 von 51 Sätzen"** | `Tab_WP` (Projekt 1008), `Tab_WP_STAMM` + `Tab_Kenndaten_STAMM` (VL max und COP A2/W35 aus den Kennlinien) |
+| **M3 — PV-Module (Verwaltung, 20 749 Zeilen)** | derselbe Aufbau wie M1. Das Popover ist hier an einer **Zahlenspalte** offen (`P_STC` mit `500..600`) — die Bedienung, zu der **W14a‑E‑10‑Q1** gestellt ist. Gefiltert zusätzlich: `Hersteller` enthält „LONGi" · `η` `>=21,5` → **„15 von 20 749 Sätzen"** | `VDI-3805-Daten/PV/CEC Modules.csv` (20 743 Datenzeilen, 258 Hersteller, 5 Technologien) plus die 6 Sätze aus `Tab_PV_STAMM` |
+
+**Geprüft am Bild, nicht am Gefühl** (Chromium, 1 366 × 768 und 1 920 × 1 080): Die Seite rollt
+bei 1 366 px **nicht** waagerecht (`scrollWidth == clientWidth`), M1 und M3 zeigen ihre fünf
+Spalten ohne Rollbalken, und die Trefferzahlen der Bedienprobe stimmen mit den gemessenen
+Werten überein (15 → 25 → 63 beim Löschen von Brennstoff und dann allem). Die **Katalogliste
+in M2** rollt in sich um 118 px — sie hat in der `Zweispaltenauswahl` nur die halbe Breite;
+siehe offener Punkt **O‑5**.
 
 ---
 
 ## 7. Vorschlag in drei Stufen
 
-### Stufe S1 — der Baustein und die sieben Erzeugerkataloge in der Verwaltung
+Neu geschnitten nach dem Entscheid **W14a‑E‑10**. Der Schnitt folgt jetzt der **Dialogart**
+(Verwaltung → Projekt → Rest), nicht mehr dem Baustein: Es gibt keinen eigenen Filterbaustein
+mehr, der zuerst fertig sein müsste.
+
+### Stufe S1 — der Spaltenfilter und die acht Verwaltungsdialoge
 
 | Schritt | Inhalt |
 |---|---|
-| S1.1 | `Katalogfilterprofil` + `Katalogfilter` im Kern (Daten und Rechnung), mit `Suchmuster` und den Regeln aus 3.3; Kern-Proben |
-| S1.2 | Baustein `EPOS.UI/Bausteine/Filterleiste.razor` (Klapplisten, Suche, Bereiche, Aufklapper, Chips, Trefferzähler, Zurücksetzen) + `bunit`-Test + Stilblattregeln |
-| S1.3 | Die sieben Profile: Heizkessel, BHKW, Solarkollektoren, Pufferspeicher, PV-Modul, Wechselrichter, Stromspeicher |
-| S1.4 | `KatalogBrowserDialog` (4 Ausprägungen) und `ModulKatalogDialog` (3 Ausprägungen) auf die Leiste umstellen; `KatalogFilterArt` und `HatHerstellerfilter` entfallen zugunsten des Profils |
-| S1.5 | **Parameterspalten** in beiden Listen: `…StammCtrl.Katalogzeilen` liefert die Filter- und Anzeigewerte statt `ID, Bezeichner`; abgeleitete Größen (σ, C‑Rate, Fläche) werden dort gerechnet |
-| S1.6 | Sortierung über die Spaltenköpfe; Wiederherstellen der Markierung nach einem Filterwechsel |
-| S1.7 | Ressourcenschlüssel beider Sprachen + `Werkzeuge/ResourceDesigner` ziehen |
+| S1.1 | `Katalogfilterprofil` + `Katalogfilter` im Kern (Daten und Rechnung, Kapitel 3) und die kleine Klasse **`Zahlenausdruck`** (`>10`, `<60`, `10..60`, `=15`; ein unverstandener Ausdruck ist **kein** Filter). Beides ohne Oberfläche prüfbar — Kernproben |
+| S1.2 | **Spaltenfilter im Standard `Raster`**: eine Vorlage `Spaltenfilter.razor` für das `ColumnOptions`-Popover (Spaltenname, ein Feld, „Filter löschen"), dazu die Stilblattregeln für Trichter, Popover und die Tönung der gefilterten Spalte (Klasse über `ColumnBase.Class`) — **ohne neue Farbe**. `bunit`-Test |
+| S1.3 | **Zone A**: das Suchfeld über alle Spalten und die **Filter-/Trefferzeile** (immer sichtbar, „Alle löschen", „x von y Sätzen", „Kein Treffer.") |
+| S1.4 | Die sieben Profile: Heizkessel, BHKW, Solarkollektoren, Pufferspeicher, PV-Modul, Wechselrichter, Stromspeicher — je rund **fünf** Spalten aus Kapitel 4 |
+| S1.5 | **Parameterspalten aus den Controllern**: `…StammCtrl.Katalogzeilen` liefert die Anzeige- und Filterwerte statt `ID, Bezeichner`; abgeleitete Größen (σ, C‑Rate, Modulfläche, COP A2/W35, VL max) werden dort gerechnet. **Sieben Controller — der größte Posten der Stufe** |
+| S1.6 | Die **acht Verwaltungsdialoge** umstellen: `KatalogBrowserDialog` (Heizkessel, BHKW, Solarkollektoren, Pufferspeicher), `ModulKatalogDialog` (PV, Wechselrichter, Stromspeicher), `WaermepumpeStammDialog`. `KatalogFilterArt` und `HatHerstellerfilter` entfallen zugunsten des Profils |
+| S1.7 | Sortierung über die Spaltenköpfe (auf / ab / aus) und **Wiederherstellen der Markierung** nach einem Filterwechsel; `Virtualisiert` und der `@key`-Fix W6‑B‑2 unter dem Filter nachweisen (5.6.6) |
+| S1.8 | Ressourcenschlüssel beider Sprachen + `Werkzeuge/ResourceDesigner` ziehen |
 
-**Aufwand: 12–16 Agentenstunden.**
-**Risiko: gering.** Reine Oberfläche und Leseweg; **der Referenzlauf ist unberührt** (keine
-Rechenspalte wird angefasst). Wächter: `StilblattTests`, `ListenrahmenTests`,
-`KatalogdialogTests`, `FormularrasterTests`, `ParametersatzTests`, neue Kernproben für
-`Katalogfilter`, `SqlDialektPruefer` für jede neue Abfrage.
-Offene Kante: die Umstellung von `SELECT ID, Bezeichner` auf die volle Zeile berührt sieben
-Controller — dort wird gemessen, nicht geschätzt.
+**Aufwand: 10–14 Agentenstunden** (Rev. 1: 12–16). Weniger Oberfläche als beim Zonenmodell —
+es entfallen der Leistenbaustein, die Klapplistenbefüllung, die Bereichsfeldpaare, der
+Aufklapper und die Chips; dazu kommen der Ausdrucksleser und die Stilblattarbeit am
+QuickGrid-Kopf. **S1.5 bleibt unverändert der größte Posten.**
+**Risiko: gering.** Reine Oberfläche und Leseweg; **der Referenzlauf ist unberührt**. Wächter:
+`StilblattTests`, `ListenrahmenTests`, `RasterTests`, `KatalogdialogTests`,
+`FormularrasterTests`, `ParametersatzTests`, neue Kernproben für `Katalogfilter` und
+`Zahlenausdruck`, `SqlDialektPruefer` für jede neue Abfrage.
 
-### Stufe S2 — die Projektauswahl und der Assistent
-
-| Schritt | Inhalt |
-|---|---|
-| S2.1 | Dieselben sieben Profile in den Projektdialogen (`HeizkesselDialog`, `BhkwDialog`, `PufferspeicherDialog`, `PhotovoltaikDialog`, `StromspeicherDialog`, `SolarkollektorenDialog`, `StromganglinieDialog`/`SolarganglinieDialog`) — Leiste in die **rechte** Spalte der `Zweispaltenauswahl` |
-| S2.2 | Wärmepumpe: `WaermepumpenKatalogFilter` wird ein Profil; die Leiste steht auch über der **Stammliste** der Verwaltung; die sieben Klapplisten werden 3 + 4 (Aufklapper) |
-| S2.3 | Spalte und Schalter **„im Projekt verwendet"** (eine Zählabfrage für die ganze Liste, nicht je Zeile) |
-| S2.4 | Der Assistent (Seiten 4, 5, 7) erbt die Leiste über dieselben Komponenten |
-| S2.5 | Filterzustand je Katalog über die Sitzung, gemeinsam für Verwaltung und Projektdialog |
-
-**Aufwand: 8–12 Agentenstunden.** **Risiko: gering–mittel** — elf Dialoge, aber alle auf
-demselben Baustein; `ZweispaltenauswahlTests` ist der Wächter.
-
-### Stufe S3 — Bedarf, Zeitreihen, Vergleich
+### Stufe S2 — die Projektdialoge und der Assistent
 
 | Schritt | Inhalt |
 |---|---|
-| S3.1 | Profile für die drei Bedarfskataloge (Typ, Jahressumme, Beschreibungssuche) — `BedarfAdminDialog` und `BedarfsProfileDialog` |
+| S2.1 | Dieselben Profile in den Projektdialogen über die `Zweispaltenauswahl` — Heizkessel, BHKW, Pufferspeicher, PV, Stromspeicher, Solarkollektoren, **Wärmepumpe**: Katalogliste **rechts**, Suchfeld und Filterzeile darüber (#76) |
+| S2.2 | **Wärmepumpe:** Die elf Bedienelemente des `WaermepumpenKatalogDialog` fallen in die Spalten — 7 Klapplisten (Hersteller, Auslegung, Quelle/`Typ`, Regelung, Bauart, Aufstellung, Zuheizung) werden Textspalten, die 4 Zahlenfelder (VL min/max, P_N min/max) werden **zwei** Zahlenspalten mit je einem Feld. Damit ist der Dialog wie M1 und M3 gebaut — der Kern des Entscheids |
+| S2.3 | Spalte **„im Projekt verwendet"** (eine Zählabfrage für die ganze Liste, nicht je Zeile) — Q12 |
+| S2.4 | Der Assistent (Seiten 4, 5, 7) erbt das Schema über dieselben Komponenten |
+| S2.5 | `Katalogfilterstand` je Katalog über die Sitzung, gemeinsam für Verwaltung und Projektdialog (Q2) — jetzt mit Sortierspalte und ‑richtung |
+| S2.6 | Die Katalogspalte der `Zweispaltenauswahl` breiter als die Projektliste (**O‑5**) |
+
+**Aufwand: 6–9 Agentenstunden** (Rev. 1: 8–12). Die Dialoge erben Zone A und die Spaltenköpfe
+aus S1; neu ist je Dialog nur das Profil.
+**Risiko: gering–mittel** — sieben Dialoge plus Assistent, alle auf demselben Baustein;
+`ZweispaltenauswahlTests` ist der Wächter.
+
+### Stufe S3 — Bedarf, Zeitreihen, Vergleich, Import
+
+| Schritt | Inhalt |
+|---|---|
+| S3.1 | Profile für die drei Bedarfskataloge (Typ, Jahressumme, Beschreibung) — `BedarfAdminDialog` und `BedarfsProfileDialog` |
 | S3.2 | Profile für die drei Zeitreihenkataloge samt Jahresarbeit/Spitze aus **einer** `GROUP BY`-Abfrage |
 | S3.3 | **Vergleich** von zwei bis drei markierten Zeilen als `Ueberlagerung` (5.5) |
-| S3.4 | Dieselbe Leiste in den **Importmasken** (`KatalogImportDialog`, `ModulImportDialog`) — dort löst sie die zwei vorhandenen Fassungen ab; damit gibt es die Mechanik nur noch einmal |
+| S3.4 | Dasselbe Schema in den **Importmasken** (`KatalogImportDialog`, `ModulImportDialog`) — dort löst es die zwei vorhandenen Fassungen ab; damit gibt es die Mechanik nur noch einmal |
 
-**Aufwand: 8–10 Agentenstunden.** **Risiko: mittel** bei S3.4 — die Importmasken sind
+**Aufwand: 7–9 Agentenstunden.** **Risiko: mittel** bei S3.4 — die Importmasken sind
 abgenommen, und ihr Filterverhalten ist bitgleich zum Vorläufer nachgewiesen; die Umstellung
 muss das Verhalten erhalten, nicht angleichen.
 
-**Summe S1–S3: 28–38 Agentenstunden.** Nach **S1** ist der Wunsch W14a‑E‑9 für die drei Köpfe
-erfüllt; S2 und S3 tragen ihn in die Projektseite und in den Rest des Hauses.
+**Summe S1–S3: 23–32 Agentenstunden** (Rev. 1: 28–38). Nach **S1** ist der Wunsch W14a‑E‑9 für
+die drei Köpfe erfüllt; S2 trägt ihn in die Projektseite und macht die Wärmepumpe zum Zwilling
+von Heizkessel und PV-Modul — das, was der Anwender ausdrücklich verlangt hat.
 
-**Reihenfolge:** S1 → S2 → S3. S1 allein ist auslieferbar; S2 ohne S1 ist es nicht (das Profil
-kommt aus S1). S3.4 sollte **nicht** vor S2 kommen: Wer zuerst an den abgenommenen
+**Reihenfolge:** S1 → S2 → S3. S1 allein ist auslieferbar; S2 ohne S1 ist es nicht (Profil und
+Spaltenkopf kommen aus S1). S3.4 sollte **nicht** vor S2 kommen: Wer zuerst an den abgenommenen
 Importmasken arbeitet, riskiert einen Rückschritt an einer Stelle, die schon stimmt.
 
 ---
 
 ## 8. Entscheidungsfragen
+
+> **Die Tabelle steht hier im Wortlaut von Rev. 1** — sie ist das, was der Anwender vorgelegt
+> bekam und mit „Q1 bis Q12: ändere den Katalogfilter …" beantwortet hat. Was jede einzelne
+> Frage **unter dem Spaltenmodell** noch bedeutet, steht in Kapitel 9; einzelne Empfehlungen
+> dieser Tabelle sind dort überholt.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
@@ -699,18 +967,55 @@ Importmasken arbeitet, riskiert einen Rückschritt an einer Stelle, die schon st
 | **Q11** | Gilt die Leiste auch für **Gebäude, Gebäudetypen, Klimadaten, Kosten**? | **Nicht in S1–S3.** Der Wunsch nennt drei Köpfe; `GebaeudeDialog` und `EnergietraegerDialog` haben bereits eine Suche. Wenn die drei Köpfe stehen, ist die Ausweitung eine Stunde je Katalog |
 | **Q12** | Bekommt die Liste eine Spalte **„im Projekt verwendet"**? | **Ja, in S2.3** — aber nur in den **Projektdialogen**; in der Verwaltung wäre sie eine Zählabfrage über alle Projekte ohne Nutzen für die Pflege |
 
+
+### 8.1 Neu aus dem Entscheid: **W14a‑E‑10‑Q1** — ein Feld oder zwei je Zahlenspalte?
+
+**Die Frage.** Textspalten sind klar: ein Feld, „enthält…". Aber eine **Zahlenspalte** soll
+nicht nur „enthält 15" können, sondern einen Bereich. Der Anwender hat gesagt: *„nur Suche"*.
+Was steht im Popover einer Zahlenspalte?
+
+| | Vorschlag | Bewertung |
+|---|---|---|
+| **V1** | **EIN Feld, das einen Ausdruck versteht**: `>10`, `>=10`, `<60`, `<=60`, `=15`, `10..60` und die bloße Zahl `15` | **Empfehlung.** Jedes Popover sieht gleich aus, egal welche Spalte — genau das, was der Entscheid verlangt. Der leere Platzhalter nennt die Formen (`z. B. >10, <60, 10..60, =15`), also muss sie niemand auswendig können. Ein unverstandener Ausdruck ist **kein** Filter, wie ein kaputtes Suchmuster (3.3). Die Ausdruckslesung ist eine kleine Klasse im Kern und ohne Oberfläche prüfbar |
+| **V2** | **Zwei Felder „von / bis"**, wie in den Importmasken (`ImportZahlenfilter`, Obergrenze 0 = keine Obergrenze) | Nein. Das ist die Bedienung, die der Anwender gerade abgewählt hat — sie kommt aus der Filterleiste zurück, nur kleiner. Zwei Felder heißen zwei Tabulatorstopps, zwei leere Zustände und die Sonderregel „0 heißt alles", die man nicht sieht |
+| **V3** | **Zwei Popover-Reihen: eine Klappliste `> < = zwischen` plus Feld(er)** | Nein. Drei Bedienelemente für einen Zahlenvergleich; das Popover wäre kein Popover mehr, sondern ein Formular |
+
+**Empfehlung: V1.** Sie hält den Satz des Anwenders ein („nur Suche"), macht das Popover jeder
+Spalte gleich und kostet eine prüfbare Kernklasse statt einer zweiten Bedienung. Im Mockup ist
+sie an M3 (`P_STC` mit `500..600`) offen gezeichnet, damit man sie ansehen kann, bevor man
+zustimmt.
+
+**Zu entscheiden ist außerdem**, was ohne Vergleichszeichen gilt: `15` = `=15` (Vorschlag) oder
+`15` = `>=15`. Der Vorschlag ist die Gleichheit — sie ist die einzige Lesart, die bei einer
+Textspalte dasselbe bedeutet.
+
 ---
 
 ## 9. Entscheide
-
-*Dieses Kapitel bleibt leer, bis der Anwender entschieden hat.*
 
 **Kennung des Wunsches: `W14a‑E‑9`** (07.09.2026). Die Fragen aus Kapitel 8 tragen die
 Kennungen `W14a‑E‑9‑Q1` … `W14a‑E‑9‑Q12`.
 
 | Kennung | Entscheid | Datum | Umsetzung |
 |---|---|---|---|
-| — | — | — | — |
+| **W14a‑E‑10** | „Q1 bis Q12: ändere den Katalogfilter — nur Suche (Screenshot 2), Hersteller, Brennstoff etc. sollte an Spalte mit Sortieren und Suchen (Beispiel Screenshot 1) erfolgen. Das Schema des Dialogs sollte immer gleich aussehen (Wärmepumpe ähnlich wie PV-Module und Heizkessel)." — dazu: „erstelle aktualisiertes Mockup" | 07.09.2026 | **Konzept 5.6 und Mockup fortgeschrieben** (dieser Stand). Umsetzung: Stufe S1–S3, Kapitel 7. Nichts davon ist gebaut |
+
+### 9.1 Was der Entscheid für jede der zwölf Fragen bedeutet
+
+| Nr. | Stand nach W14a‑E‑10 |
+|---|---|
+| **Q1** — sind die Parameter aus Kapitel 4 die richtigen? | **Ja, unverändert** — sie werden jetzt **Spalten** statt Felder einer Leiste. Neu ist die Grenze: neben dem Eingabeblock haben rund **fünf** Platz (5.6.5), und **filterbar ist nur, was als Spalte dasteht**. Die Auswahl der fünf je Katalog ist damit eine fachliche Entscheidung |
+| **Q2** — Filterzustand merken? | **Unverändert: Sitzung**, je Katalog, gemeinsam für Verwaltung und Projektdialog (S2.5). Der `Katalogfilterstand` hält jetzt je Spalte einen Ausdruck plus Sortierspalte und ‑richtung |
+| **Q3** — Vergleich von zwei bis drei Zeilen? | **Unverändert: ja, in S3.** Er hängt an der Mehrfachwahl (W6‑E‑5), nicht am Filterbild |
+| **Q4** — welche Design-Variante? | **Ersetzt.** Nicht das Zonenmodell aus 5.2, sondern **A4**: Filter und Sortierung am Spaltenkopf (5.6). Klapplisten, Bereichsfeldpaare, „Weitere Filter ▾", „Zurücksetzen" und die Chips entfallen; es bleiben das Suchfeld und die Filter-/Trefferzeile |
+| **Q5** — ersetzen Zahlenbereiche die sechs festen Leistungs- bzw. Volumenstufen? | **Ersetzt: die festen Stufen entfallen ersatzlos.** Rev. 1 wollte sie als Schnellwahl behalten; im Spaltenmodell gibt es keine Klappliste mehr, in die sie passen. **Sortieren nach `P_th` und der Ausdruck `10..60` leisten dasselbe genauer** — und lösen zugleich den Einwand aus 5.1/2 („wer einen 30‑kW-Kessel sucht, bekommt jede Zeile unter 50 kW"). `LEISTUNG_SQL` und `VOLUMEN_SQL` fallen mit S1.5 |
+| **Q6** — wo wird gefiltert, Speicher oder SQL? | **Unverändert: der Controller entscheidet** (bis rund 5 000 Zeilen im Speicher, darüber `WHERE` mit `DbParam`). Wichtiger geworden ist die andere Hälfte der Antwort: Der Filter greift **vor** dem Raster; das Raster bekommt eine bereits eingeschränkte `IQueryable` (5.6.6) |
+| **Q7** — bekommt `Tab_Stromspeicher_STAMM` eine Spalte `Firma` (D‑3)? | **Ja — und dringlicher als in Rev. 1.** „Hersteller" ist jetzt eine **Spalte**, nach der man sortiert und filtert; eine Spalte, die es in der Tabelle gar nicht gibt, kann man nicht sortieren. Bis zum Schemaschritt füllt sie sich aus dem Bezeichnerpräfix (Text vor dem ersten Doppelpunkt), wie der Modulimport es schon tut |
+| **Q8** — wird das Brennwert-Kennzeichen berichtigt (D‑1)? | **Unverändert: ja**, berichtigt werden die **Daten**. Im Spaltenmodell ist „Brennwert" eine Spalte mit „ja"/„nein"; solange die Daten schief sind, findet „enthält ja" 6 von 63 Sätzen, während 46 Beschreibungen „Brennwert" nennen — **die Suche über alle Spalten findet die 46**, und genau daran fällt der Datenfehler auf |
+| **Q9** — Wirkungsgrad in zwei Einheiten (D‑2)? | **Unverändert:** ein Wert **> 2** gilt als Prozent und wird durch 100 geteilt — jetzt schon beim **Anzeigen**, denn der Spaltenfilter arbeitet auf dem angezeigten Wert (5.6.3). Der eine Datensatz (`eloBLOCK VE 10`) wird zusätzlich berichtigt |
+| **Q10** — gilt das auch für die Importmasken? | **Unverändert: ja, in S3.4.** Nicht früher — die Importmasken sind abgenommen |
+| **Q11** — gilt es auch für Gebäude, Gebäudetypen, Klimadaten, Kosten? | **Unverändert: nicht in S1–S3.** Der Wunsch nennt drei Köpfe. Die Ausweitung ist danach eine Stunde je Katalog — im Spaltenmodell eher weniger, weil nur Spalten dazukommen |
+| **Q12** — Spalte „im Projekt verwendet"? | **Unverändert: ja, in S2.3**, und nur in den **Projektdialogen**. Sie ist jetzt eine Spalte wie jede andere: sortierbar und mit „enthält ja" filterbar |
 
 ---
 
@@ -721,7 +1026,9 @@ Kennungen `W14a‑E‑9‑Q1` … `W14a‑E‑9‑Q12`.
 | **O‑1** | Die fünf Wärmepumpenspalten `Laenge`, `Breite`, `Hoehe`, `Gewicht`, `Raum` sind in `ParameterVerwendung` mit **`Keine`** eingestuft — niemand liest sie. Sie stehen weder im Filter noch in den Spalten dieses Vorschlags. Ob sie bleiben, ist eine eigene Frage |
 | **O‑2** | Die **Stromkennzahl** des BHKW, die **C‑Rate** des Stromspeichers und der **COP bei A2/W35** sind hier abgeleitete Anzeigegrößen. Ob sie in den Katalog gehören (gerechnet beim Import, gespeichert), ist eine Datenmodellfrage und keine Oberflächenfrage |
 | **O‑3** | Der `Motortyp` des BHKW führt 45 verschiedene Werte in 79 Sätzen, darunter Schreibvarianten desselben Motors („Gas-Otto-Motor", „Gas-Otto-Motor_ 2G", „Gas-Otto-Motor_2G"). Eine Klappliste darüber wäre unbrauchbar; eine Bereinigung ist eine eigene Aufgabe |
-| **O‑4** | Der Hersteller steht in mehreren Schreibweisen desselben Hauses („EC Power A/S" 10 Sätze, „EC POWER A/S" 7; „2G Energy AG" 21, „2-G Energietechnik GmbH" 17). Die Klappliste zeigt sie als **verschiedene** Hersteller. Eine Zusammenführung gehört zur Dublettenpflege, nicht zum Filter |
+| **O‑4** | Der Hersteller steht in mehreren Schreibweisen desselben Hauses („EC Power A/S" 10 Sätze, „EC POWER A/S" 7; „2G Energy AG" 21, „2-G Energietechnik GmbH" 17). Das Spaltenmodell **entschärft** das: „enthält 2G" trifft beide Schreibweisen, „enthält EC Power" ebenfalls (Groß/Klein egal) — eine Klappliste hätte sie als verschiedene Hersteller geführt. Die Zusammenführung selbst gehört weiter zur Dublettenpflege |
+| **O‑5** | **Die Katalogliste der `Zweispaltenauswahl` hat nur die halbe Breite.** Mit fünf bis sechs Parameterspalten rollt sie bei 1 366 px in sich (im Mockup M2 um 118 px), während die Projektliste links mit drei Spalten und einer Handvoll Zeilen Platz verschenkt. Vorschlag für S2.6: Die linke Spalte bekommt eine Höchstbreite (im Mockup `flex: 0 1 24rem`), die rechte den Rest. Das ist eine Ergänzung an `Zweispaltenauswahl`, **kein** Bruch mit #76 — das Paar bleibt nebeneinander, die Pfeile bleiben dazwischen |
+| **O‑6** | **Ein neues Raster schließt das Popover.** Der `@key`-Fix W6‑B‑2 baut das QuickGrid neu auf, sobald `Virtualisiert` oder die Zeilenzahl wechselt — und beim Filtern wechselt die Zeilenzahl praktisch immer. Der Anwender tippt also in ein Popover, das nach dem ersten Zeichen verschwindet, wenn man nichts tut. Zwei Wege: das Feld erst bei `Enter` oder beim Verlassen wirken lassen, oder den Filterstand im Wirt halten und das Popover nach dem Neuaufbau wieder öffnen. **Vor S1.2 zu entscheiden** |
 
 ---
 
@@ -733,16 +1040,19 @@ Gemessen am 07.09.2026 gegen `Referenzlaeufe/Kenndaten_Test.sqlite` und
 | Größe | Wert |
 |---|---|
 | `Tab_Heizkessel_STAMM` gesamt | 63 |
-| davon Gasbrennstoffe (1…5, 14) und 10 ≤ P_th ≤ 60 kW | 43 |
+| davon `Brennstoff` enthält „Gas" (52) **und** `P_th 10..60` (54) | 43 |
 | Hersteller im Heizkesselkatalog | 5 (Vaillant 57, Buderus 2, Bosch 2, Viessmann 1, ohne 1) |
 | `Tab_WP_STAMM` gesamt | 51 |
-| davon Luft-Wasser **und** stetig **und** 5 ≤ P_N ≤ 12 kW | 24 |
+| davon `Quelle` enthält „Luft" (34) **und** `P_N 5..12` (31) | 24 |
 | Quellenarten | Luft-Wasser 34, Sole-Wasser 14, Wasser-Wasser 1, ohne 2 |
+| Hersteller im Wärmepumpenkatalog | 5 (Bosch 19, Wolf 15, STIEBEL ELTRON 9, „test" 5, MAX WEISHAUPT 3) |
+| `Tab_WP_STAMM.Bauart` gepflegt | **6 von 51** (Split 5, Monoblock 1) — deshalb im Mockup keine Spalte |
 | `Tab_Kenndaten_STAMM` (Kennlinienpunkte) | 1 960 |
 | `Tab_BHKW_STAMM` | 79, 9 Hersteller, 45 Motortypen |
 | `Tab_Pufferspeicher_STAMM` | 13, 4 Hersteller, 3 Speichertypen |
 | `Tab_Solarkollektoren_STAMM` | 7, 2 Typen (Flach 4, Röhre 2) |
 | `Tab_PV_STAMM` | 6 |
+| Zelltechnologien in `CEC Modules.csv` | Mono-c-Si 15 274, Multi-c-Si 5 177, Thin Film 157, CdTe 119, CIGS 16 |
 | `CEC Modules.csv` Datenzeilen / Hersteller / Technologien | **20 743** / 258 / 5 |
 | `CEC Inverters.csv` Geräte / Hersteller | 2 343 / 152 (gemessen 06.09.2026) |
 | CEC Energy Storage System List | 6 654 Zeilen / 130 Hersteller (gemessen 07.09.2026) |
@@ -750,15 +1060,34 @@ Gemessen am 07.09.2026 gegen `Referenzlaeufe/Kenndaten_Test.sqlite` und
 | `Tab_Brauchwasser_STAMM` / `Tab_Prozesswaerme_STAMM` / `Tab_Stromverbraucher_STAMM` | 16 / 32 / 41 |
 | `Tab_Waermebedarf_STAMM` / `Tab_Stromganglinie_STAMM` / `Tab_Solarganglinie_STAMM` | 4 / 3 / 1 |
 
-**Die drei Filterstände des Mockups** — je Reiter der volle Filter und die Zahl, die bleibt,
-wenn genau ein Chip abgewählt wird. Die Chip-Mechanik der HTML-Datei nimmt ihre Zahlen aus
+**Die drei Filterstände des Mockups** — je Reiter die drei Spaltenfilter und die Zahl, die
+bleibt, wenn genau einer gelöscht wird. Die Bedienmechanik der HTML-Datei nimmt ihre Zahlen aus
 dieser Tabelle; die Liste zeigt einen Auszug, der Zähler nennt die gemessene Wahrheit.
 
-| Reiter | alle drei | ohne Klappliste | ohne Bereich 1 | ohne Bereich 2 | gesamt |
+| Reiter | alle drei | ohne 1. Filter | ohne 2. Filter | ohne 3. Filter | gesamt |
 |---|---|---|---|---|---|
-| **M1** Gas · 10…60 kW · η ≥ 0,95 | **15** | 24 (ohne Brennstoff) | 22 (ohne Leistung) | 43 (ohne η) | 63 |
-| **M2** Luft-Wasser · 5…12 kW · VL max ≥ 60 °C | **7** | 10 (ohne Quelle) | 11 (ohne Leistung) | 24 (ohne Vorlauf) | 51 |
-| **M3** LONGi · 500…600 W · η ≥ 21,5 % | **15** | 789 (ohne Hersteller) | 31 (ohne Leistung) | 18 (ohne η) | 20 749 |
+| **M1** `Brennstoff` enthält „Gas" · `P_th` `10..60` · `η` `>=0,95` | **15** | 25 (ohne Brennstoff) | 22 (ohne P_th) | 43 (ohne η) | 63 |
+| **M2** `Quelle` enthält „Luft" · `P_N` `5..12` · `VL max` `>=60` | **7** | 10 (ohne Quelle) | 11 (ohne P_N) | 24 (ohne VL max) | 51 |
+| **M3** `Hersteller` enthält „LONGi" · `P_STC` `500..600` · `η` `>=21,5` | **15** | 789 (ohne Hersteller) | 31 (ohne P_STC) | 18 (ohne η) | 20 749 |
+
+**Jeder Filter für sich**, damit man sieht, was der einzelne Ausdruck leistet:
+
+| Reiter | 1. Filter allein | 2. Filter allein | 3. Filter allein |
+|---|---|---|---|
+| **M1** | Brennstoff enthält „Gas" → **52** | `P_th 10..60` → **54** | `η >=0,95` → **32** |
+| **M2** | Quelle enthält „Luft" → **34** | `P_N 5..12` → **31** | `VL max >=60` → **18** |
+| **M3** | Hersteller enthält „LONGi" → **252** | `P_STC 500..600` → **2 158** | `η >=21,5` → **2 172** |
+
+**Wie die drei Spaltenwerte gebildet werden** (ohne diese Regeln sind die Zahlen nicht
+nachrechenbar):
+
+| Spalte | Bildung |
+|---|---|
+| **M1 `Brennstoff`** | der Name aus `Tab_Brennstoff_Stamm` zur Zahl in `Tab_Heizkessel_STAMM.Brennstoff`. „enthält Gas" trifft Stadtgas (4), Erdgas LL (3), Erdgas E (44), Flüssiggas Propan (1) — 52; nicht getroffen: Elektrische Energie (8), Heizöl EL (3) |
+| **M1 `η`** | `Wirkungsgrad_Gas`, ersatzweise `Wirkungsgrad_Öl`; ein Wert **> 2** gilt als Prozent und wird durch 100 geteilt (D‑2, Q9). Ohne diese Weiche wären es 33 statt 32 Treffer |
+| **M2 `VL max`** | `MAX(Vorlauf)` je `ID_WP` über `Tab_Kenndaten_STAMM` |
+| **M2 `COP A2/W35`** | `COP` aus `Tab_Kenndaten_STAMM` bei `Vorlauf = 35` und `Temperatur = 2`; leer, wo der Punkt fehlt (Halbgeviertstrich, nicht 0 — W6‑E‑1) |
+| **M3 `η [%]`** | gerechnet: `STC / A_c / 10`. Die CEC-Liste führt keine Wirkungsgradspalte; `Tab_PV_STAMM.Wirkungsgrad` entsteht beim Import genauso |
 
 ## Anhang B — Was dieses Papier nicht behandelt
 
