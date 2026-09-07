@@ -2443,6 +2443,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Detailreiter sind Formularblöcke, die zwei Filterleisten `epos-pvimport-filter` über dem Modulgitter nicht;
 > `epos-pvimport-details` samt Regel gefallen). Nachtrag im W13-Protokoll, obwohl die Datei in der P3-Pakettabelle
 > stand.
+>
+> **W13‑E‑2 (Anwenderwunsch 07.09.2026: „es gibt keinen Datenimport für Stromspeicher … folgende Quellen prüfen"),
+> Stufe 0 umgesetzt in `c4cf58f`, zusammengeführt in `8235092`:** Vier Quellen mit Zugriffsbeleg geprüft. Nur die **CEC
+> Energy Storage System List** ist ein Geräteverzeichnis (XLSX, 1 338 305 Byte, 6 654 Geräte, 130 Hersteller, Stand
+> 21.08.2026; kWh/kW zu 100 % belegt, η_RT bei 16,6 %; keine Kosten, Degradation, Zyklen, Standby). **bslib** (HTW Berlin,
+> MIT + CC BY 4.0) liefert vier vermessene Systeme und als einzige den Standby, ihre √η-Konvention ist die von
+> `SpeicherParameter`. **NREL SAM** führt keine Speicherliste, sondern vier generische Zellchemien, **TUM simses** Messreihen
+> einer Zelle und zwei Zellmodelle — beide ohne Gerätebezug, nicht importierbar. Gebaut: Kern-Zerleger `CecSpeicherImport`
+> (XLSX über ClosedXML und CSV), `BslibImport`, `StromspeicherImportSatz` (`NachModell`, geteilte Umrechnungen), vier
+> Zellchemie-Werte in `DbWerte`, zwei echte Proben (`stromspeicher_cec_ess_23.csv`, `stromspeicher_bslib_7.csv`), 28 Fälle;
+> die volle CEC-Mappe läuft durch (6 654 Sätze, keiner ohne Leistung, kein η außerhalb (0…1]). **Keine Maske, kein
+> Menüpunkt, kein Migrationsschritt** — Rechenweg unberührt. `Konzept_Stromspeicherimport_EPOS-Plan.md`: Prüfbericht,
+> Abbildung auf `Tab_Stromspeicher_STAMM`, Stufenplan S1–S3, Mockup, acht Fragen Q1…Q8 mit Empfehlung; die wichtigste ist
+> **Q2**: Die CEC-Nutzungsbedingungen untersagen die kommerzielle Nutzung, und den NREL/BSD-3-Umweg der Modul- und
+> Wechselrichterlisten gibt es für Speicher nicht — Empfehlung: nicht mitliefern, sondern Abrufknopf nach dem Muster von
+> `CecWechselrichterDienst`, bslib ausliefern. Stufe S1 (siebte Ausprägung des `KatalogImportDialog`, Menüpunkt
+> „Stromspeicher…" unter Daten & Import ▸ nach W16c‑E‑7) folgt nach dem Anwenderentscheid. Nachweis: Kern 1672 / UI 3020
+> grün, SQL 0, Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich.
 
 > **Statusblock iU9 — Welle 12 umgesetzt (04.09.2026, Basis `73a4338` nach W11b, zusammengeführt mit `fe22915`)**
 >
