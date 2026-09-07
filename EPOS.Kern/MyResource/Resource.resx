@@ -11359,6 +11359,12 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BHKWV_LBL_GRENZLEISTUNG" xml:space="preserve">
     <value>Untere Grenzleistung des ausgewählten Moduls:</value>
   </data>
+  <data name="BHKWV_HRL_GRENZLEISTUNG_VORGABE" xml:space="preserve">
+    <value>0 = Projektvorgabe ({0} %)</value>
+  </data>
+  <data name="BHKWV_HRL_GRENZLEISTUNG_KEINE" xml:space="preserve">
+    <value>0 = Projektvorgabe (0 %) — keine Untergrenze, das Modul moduliert bis 0.</value>
+  </data>
   <data name="BHKWV_LBL_VORLAUF" xml:space="preserve">
     <value>Vorlauf</value>
   </data>
@@ -13275,7 +13281,10 @@ Alle Eingaben überprüfen!</value>
     <value>Betriebsbereitschaft:</value>
   </data>
   <data name="SIMERG_LBL_UNTERE_LEISTUNGSGRENZE" xml:space="preserve">
-    <value>Untere Leistungsgrenze der Module [30%]</value>
+    <value>Untere Leistungsgrenze der Module</value>
+  </data>
+  <data name="SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" xml:space="preserve">
+    <value>Gilt für jedes Modul, das keine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0.</value>
   </data>
   <data name="SIMERG_GRP_BETRIEBSART" xml:space="preserve">
     <value>Betriebsart</value>

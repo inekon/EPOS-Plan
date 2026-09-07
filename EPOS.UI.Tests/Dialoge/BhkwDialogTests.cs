@@ -56,7 +56,8 @@ public class BhkwDialogTests : BunitContext
         Func<string, IReadOnlyDictionary<string, object>>? editorGaben = null,
         Func<string, IReadOnlyDictionary<string, object>>? editorGabenNeu = null,
         bool wizard = false,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        int? projektvorgabe = null)
     {
         return Render<BhkwDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) })
@@ -82,6 +83,7 @@ public class BhkwDialogTests : BunitContext
                 ["Energietraeger"] = new[] { (3, "Erdgas E") }
             })
             .Add(x => x.Wizard, wizard)
+            .Add(x => x.Projektvorgabe, projektvorgabe)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
 
@@ -246,6 +248,71 @@ public class BhkwDialogTests : BunitContext
 
         Assert.Equal(42, cut.Instance.Projektzeile!.Grenzleistung);
         Assert.Single(uebernommen);
+    }
+
+    // =================================================================================
+    // W6-E-7: die Herleitung unter der Grenzleistung (07.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Steht im Modulfeld eine <b>0</b>, greift die PROJEKTVORGABE durch — und der
+    /// Dialog sagt, welche. Vor W6‑E‑7 fing darunter ein stiller Fallback auf 30 % ab;
+    /// ohne ihn muss der Anwender sehen, womit gerechnet wird.
+    /// </summary>
+    [Fact]
+    public void Bei_Modulwert_0_nennt_die_Herleitung_die_Projektvorgabe()
+    {
+        var zeile = Zeile(1, "Modul A", 100);
+        zeile.Grenzleistung = 0;
+
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile }, projektvorgabe: 30);
+
+        Assert.Equal("0 = Projektvorgabe (30 %)",
+                     cut.Find("p.epos-herleitung").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Ist auch die Projektvorgabe 0, sagt die Zeile ausdrücklich, dass es dann KEINE
+    /// Untergrenze gibt — das ist der Fall, den W6‑E‑7 überhaupt erst möglich macht.
+    /// </summary>
+    [Fact]
+    public void Ist_auch_die_Projektvorgabe_0_nennt_die_Herleitung_die_fehlende_Untergrenze()
+    {
+        var zeile = Zeile(1, "Modul A", 100);
+        zeile.Grenzleistung = 0;
+
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile }, projektvorgabe: 0);
+
+        Assert.Contains("keine Untergrenze",
+                        cut.Find("p.epos-herleitung").TextContent);
+    }
+
+    /// <summary>
+    /// Führt das Modul einen EIGENEN Wert, überstimmt er die Vorgabe — dann steht die
+    /// Zahl im Feld, und die Zeile schweigt.
+    /// </summary>
+    [Fact]
+    public void Mit_eigenem_Modulwert_schweigt_die_Herleitung()
+    {
+        // Zeile(...) legt Grenzleistung = 50 an.
+        var cut = Aufbauen(projektvorgabe: 30);
+
+        Assert.Empty(cut.FindAll("p.epos-herleitung"));
+    }
+
+    /// <summary>
+    /// Ohne Projekt (Assistentenbetrieb) kennt die Hülle die Vorgabe nicht und gibt
+    /// <c>null</c> — dann bleibt die Zeile weg, statt eine Zahl zu behaupten.
+    /// </summary>
+    [Fact]
+    public void Ohne_bekannte_Projektvorgabe_bleibt_die_Herleitung_weg()
+    {
+        var zeile = Zeile(1, "Modul A", 100);
+        zeile.Grenzleistung = 0;
+
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile }, projektvorgabe: null);
+
+        Assert.Empty(cut.FindAll("p.epos-herleitung"));
     }
 
     [Fact]

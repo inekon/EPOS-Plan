@@ -295,6 +295,24 @@ namespace WindowsFormsApplication1
             return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
 
+        /// <summary>
+        /// Die PROJEKTWEITE untere Grenzleistung [%] aus
+        /// <c>Tab_Einstellungen.Leistungsgrenze</c> — der Wert, mit dem ein Modul ohne
+        /// eigenen Wert rechnet (Anwenderentscheid <b>W6‑E‑7</b> vom 07.09.2026).
+        ///
+        /// <para><c>null</c> ohne Projekt (Assistentenbetrieb) und <c>null</c>, wenn der
+        /// Einstellungssatz nicht gelesen werden kann. Der Dialog lässt seine
+        /// Herleitungszeile dann weg — lieber keine Angabe als eine erfundene.</para>
+        /// </summary>
+        private static int? ProjektvorgabeGrenzleistung(int projektId)
+        {
+            if (projektId <= 0) return null;
+
+            var konfig = new KonfigurationCtrl();
+            if (!konfig.ProjektLesen(projektId) || konfig.model == null) return null;
+            return konfig.model.Leistungsgrenze;
+        }
+
         // =================================================================================
         // W6.4 - Projektdialog
         // =================================================================================
@@ -458,6 +476,19 @@ namespace WindowsFormsApplication1
                 ["LabelTraeger"] = Text_("BHKWV_LBL_TRAEGER", "Brennstoff:"),
                 ["LabelGrenzleistung"] = Text_("BHKWV_LBL_GRENZLEISTUNG",
                     "Untere Grenzleistung des ausgewählten Moduls:"),
+
+                // W6-E-7 (07.09.2026): DIE PROJEKTVORGABE, damit der Dialog bei einem
+                // Modulwert von 0 sagen kann, womit gerechnet wird. Sie kommt aus
+                // Tab_Einstellungen.Leistungsgrenze - derselben Spalte, die der
+                // Rechenweg liest, und derselben, die das Parameterblatt "BHKW" der
+                // Simulationskonfiguration pflegt. Ohne Projekt (Assistent) bleibt sie
+                // null; dann zeigt der Dialog keine Herleitungszeile, statt eine Zahl zu
+                // behaupten, die es noch gar nicht gibt.
+                ["Projektvorgabe"] = ProjektvorgabeGrenzleistung(projektId),
+                ["HerleitungVorgabe"] = Text_("BHKWV_HRL_GRENZLEISTUNG_VORGABE",
+                    "0 = Projektvorgabe ({0} %)"),
+                ["HerleitungKeine"] = Text_("BHKWV_HRL_GRENZLEISTUNG_KEINE",
+                    "0 = Projektvorgabe (0 %) — keine Untergrenze, das Modul moduliert bis 0."),
                 ["LabelVorlauf"] = Text_("BHKWV_LBL_VORLAUF", "Vorlauf"),
                 ["LabelRuecklauf"] = Text_("BHKWV_LBL_RUECKLAUF", "Rücklauf"),
                 ["TraegerTitel"] = MyResource.Resource.KAUSW_TITEL,

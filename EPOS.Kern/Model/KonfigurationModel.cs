@@ -23,6 +23,31 @@
         public string m_Ladefuellstand_Max_Auswahl;
         public string m_Ladeleistung_Max_Auswahl;
         public int Betriebsart;
+
+        /// <summary>
+        /// <c>Tab_Einstellungen.Leistungsgrenze</c> [%] — die PROJEKTWEITE untere
+        /// Modulationsgrenze der BHKW-Module. Sie gilt für jedes Modul, dessen
+        /// Katalogzeile keine eigene Grenzleistung führt
+        /// (<c>SimulationBHKW.Moduldaten_Einlesen</c>).
+        ///
+        /// <para><b>0 heißt „keine Untergrenze"</b> und wird seit dem Anwenderentscheid
+        /// <b>W6‑E‑7</b> (07.09.2026) auch so gerechnet — der stille Fallback auf 30 %
+        /// im Rechenweg ist gefallen. Ein NEUES Projekt bekommt deshalb die sichtbare
+        /// Vorgabe <see cref="BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT"/> (unten im
+        /// Konstruktor), und Migrationsschritt 67 hebt die Bestandssätze ohne gepflegten
+        /// Wert einmalig auf dieselbe Zahl.</para>
+        ///
+        /// <para><b>Warum die Vorbelegung KEIN zweiter Fallback ist.</b> Sie greift nur,
+        /// wo <c>Tab_Einstellungen.Leistungsgrenze</c> <c>NULL</c> ist — der Fall „nie
+        /// gepflegt", den <c>KonfigurationCtrl.ZeileUebernehmen</c> gar nicht erst
+        /// überschreibt. Eine GEPFLEGTE 0 kommt aus der Datenbank und bleibt 0
+        /// („wenn 0 dann bleibt es so", W6‑E‑7). Anders als der gefallene Fallback ist
+        /// der Wert außerdem sichtbar und änderbar, statt im Rechenweg zu stecken.</para>
+        ///
+        /// <para><b>Nicht zu verwechseln mit <see cref="m_BHKW_Grenzleistung"/></b>
+        /// (Spalte <c>BHKW_Grenzleistung</c> derselben Tabelle): Die ist eine Altspalte,
+        /// steht im Bestand überall auf 0 und wird von keinem Rechenweg gelesen.</para>
+        /// </summary>
         public int Leistungsgrenze;
 
         /// <summary>
@@ -125,7 +150,14 @@
             m_Ladefuellstand_Max_Auswahl = "";
             m_Ladeleistung_Max_Auswahl = "";
             Betriebsart = 0;
-            Leistungsgrenze = 0;
+
+            // W6-E-7 (07.09.2026): Vorbelegung 30 % statt 0. Der Rechenweg hat den
+            // stillen Fallback verloren - ein neues Projekt startete sonst OHNE
+            // Untergrenze, ohne dass der Anwender das je gewaehlt haette. Die Zahl steht
+            // in BhkwLeistungsgrenzeVorgabe und ist dieselbe, die Migrationsschritt 67
+            // in die Bestandssaetze schreibt; sie ist im Parameterblatt "BHKW" der
+            // Simulationskonfiguration sichtbar und dort aenderbar.
+            Leistungsgrenze = BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT;
             Pendelspeicher = 0;
             Extrapolation_erlaubt = true;   // Vorbelegung: erlaubt (Konzept 13.4, Paket 8)
             // Vorbelegung BRAUCHWASSER;PROZESS;HEIZUNG (Paket K2, F10) - die bis dahin

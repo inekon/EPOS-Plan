@@ -141,6 +141,19 @@
                              AuswahlChanged="BeiTraegerwechsel" />
                 <Zahlenfeld Bezeichnung="@LabelGrenzleistung" Einheit="%"
                             Wert="@_projektZeile.Grenzleistung" WertChanged="BeiGrenzleistung" />
+                @* W6-E-7 (07.09.2026): WOMIT GERECHNET WIRD, wenn hier 0 steht.
+                   Die 0 heisst "kein eigener Wert" und laesst die PROJEKTVORGABE
+                   durchgreifen (SimulationBHKW.Moduldaten_Einlesen). Bis W6-E-7
+                   sprang darunter noch ein stiller Fallback auf 30 % ein; den gibt
+                   es nicht mehr, also muss der Anwender den Projektwert SEHEN -
+                   sonst waere aus dem Dialog heraus nicht erkennbar, ob das Modul
+                   mit 30 % oder ohne Untergrenze rechnet. Die Zeile steht MITTEN im
+                   Raster und ist kein Feld; sie bekommt die volle Breite (Regel
+                   "Formularraster - Paket P1"). *@
+                @if (Grenzleistungherleitung is not null)
+                {
+                    <Herleitungszeile Text="@Grenzleistungherleitung" />
+                }
                 <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C"
                               Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
                 <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
@@ -291,6 +304,26 @@
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
     [Parameter] public string LabelTraeger { get; set; } = "Brennstoff:";
     [Parameter] public string LabelGrenzleistung { get; set; } = "Untere Grenzleistung des ausgewählten Moduls:";
+
+    /// <summary>
+    /// Die PROJEKTWEITE untere Grenzleistung in Prozent
+    /// (<c>Tab_Einstellungen.Leistungsgrenze</c>) — der Wert, mit dem gerechnet wird,
+    /// solange das Modulfeld darüber 0 führt (Anwenderentscheid <b>W6‑E‑7</b> vom
+    /// 07.09.2026).
+    ///
+    /// <para><c>null</c> = die Hülle kennt ihn nicht (Assistentenbetrieb ohne
+    /// gespeichertes Projekt); dann bleibt die Herleitungszeile weg, statt eine Zahl zu
+    /// behaupten. Geändert wird der Wert nicht hier, sondern im Parameterblatt „BHKW"
+    /// der Simulationskonfiguration — dieser Dialog ZEIGT ihn nur.</para>
+    /// </summary>
+    [Parameter] public int? Projektvorgabe { get; set; }
+
+    /// <summary>Text der Herleitungszeile bei Modulwert 0; <c>{0}</c> = die Vorgabe in %.</summary>
+    [Parameter] public string HerleitungVorgabe { get; set; } = "0 = Projektvorgabe ({0} %)";
+
+    /// <summary>Text der Herleitungszeile, wenn auch die Projektvorgabe 0 ist.</summary>
+    [Parameter] public string HerleitungKeine { get; set; } =
+        "0 = Projektvorgabe (0 %) — keine Untergrenze, das Modul moduliert bis 0.";
     [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf";
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf";
     [Parameter] public string TraegerTitel { get; set; } = "Energieträger Variante";
@@ -491,6 +524,35 @@
         if (_projektZeile is null) return;
         _projektZeile.Grenzleistung = wert;
         Uebernehmen?.Invoke(_projektZeile);
+    }
+
+    /// <summary>
+    /// Die Herleitungszeile unter dem Grenzleistungsfeld — <c>null</c> = keine Zeile
+    /// (Anwenderentscheid <b>W6‑E‑7</b> vom 07.09.2026).
+    ///
+    /// <para><b>Sie erscheint genau dann, wenn sie etwas zu sagen hat:</b> Das Modulfeld
+    /// steht auf 0 (leer oder ausdrücklich 0 — beides heißt „kein eigener Wert"), und
+    /// die Hülle hat die <see cref="Projektvorgabe"/> mitgegeben. Steht dort eine Zahl,
+    /// ist das der Wert, mit dem gerechnet wird; ist auch die Vorgabe 0, sagt die zweite
+    /// Fassung ausdrücklich, dass es dann KEINE Untergrenze gibt — seit W6‑E‑7 rechnet
+    /// 0 als 0, und genau das darf nicht unsichtbar bleiben.</para>
+    ///
+    /// <para>Führt das Modul einen eigenen Wert, überstimmt er die Vorgabe; dann steht
+    /// die Zahl im Feld und die Zeile schweigt.</para>
+    /// </summary>
+    private string? Grenzleistungherleitung
+    {
+        get
+        {
+            if (_projektZeile is null) return null;
+            if (Projektvorgabe is null) return null;
+            if ((_projektZeile.Grenzleistung ?? 0) != 0) return null;
+
+            return Projektvorgabe.Value == 0
+                ? HerleitungKeine
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                HerleitungVorgabe, Projektvorgabe.Value);
+        }
     }
 
     private void BeiVorlauf(int? wert)
