@@ -2349,6 +2349,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Nachtrag W14a‑O‑2, entschieden 06.09.2026 (Weg a, Empfehlung):** Die Herleitungszeile sagt seither „aus dem
 > Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt" (en „from the stored catalogue; …"), der Leerhinweis
 > „kein Planwert im Datenbestand"; Ä19 unverändert, Weg (b) nicht beauftragt. 33 Dialogfälle grün in de und en.
+>
+> **W14a‑E‑8‑B3 (Anwenderentscheid 07.09.2026: „Entweder Investitionskosten als Summe/Gesamt oder Investitionskosten auf
+> kW elektrisch × Kosten pro kW elektrisch — umgerechnet je nach Eingabe"), umgesetzt in `e109cca`, zusammengeführt in
+> `a6230e6`:** Der BHKW-Katalogeditor nimmt die Investition auf drei Wegen entgegen — Gesamtsumme [€], Wert je kW
+> elektrisch [€/kW], fünf Einzelposten; die zuletzt geänderte Eingabe führt, das jeweils andere Feld folgt. Die
+> Umrechnung steht im Kern und nur dort (`BHKWKosten`: `Gesamt`, `JeKWel`/`JeKWelEingabe`, `GesamtAusJeKWel`,
+> `ModulAusGesamt`, `Nebenposten`, `NebenpostenUeberschreiten`; Cent für Eurobeträge, 1 €/kW für die Anzeige).
+> **Der Ausgleich läuft immer über `Kosten_Modul`**, die vier Nebenposten bleiben stehen — `TechnikPlanwertCtrl`
+> rechnet unverändert mit den fünf Posten, kein sechster Betrag, Referenzlauf byte-gleich. `Investition_kwel` bleibt die
+> Ableitung und wird vor jedem Schreibvorgang nachgezogen: aus der Dublette (Befund B3) ist die Anzeige eines Eingabewegs
+> geworden. Herleitungszeile mit vier Zuständen (führend mit Rechnung „50 000 € / 40 kW = 1 250 €/kW", unbestimmt bei
+> P_el = 0 → Feld gesperrt, Abweichung, gedeckelt bei Nebenposten > Gesamt → Modul 0,00, das getippte Feld springt nicht
+> zurück); die drei Funktionsparameter `Summe`/`JeKWelBestimmbar`/`JeKWel` des Dialogs sind entfallen, er ruft den Kern
+> unmittelbar. **B2 („Empfehlung"): keine Programmarbeit** — die fünf Maßspalten der Wärmepumpe bleiben als
+> Referenzdaten, gekennzeichnet „ohne Leser". Nachweis: 16 neue Kern-Fälle (`BhkwKostenTests`), 25 bunit-Fälle,
+> Kern 1724 / UI 3064 grün, Designer „abweichend 0", SQL 0, Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich.
+> Doku: `Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` § 4.7, W14a-Protokoll B3 geschlossen, `BHKW.wiki`. Abnahme auf
+> Windows: A‑W14a‑E8‑B3‑1…8.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
