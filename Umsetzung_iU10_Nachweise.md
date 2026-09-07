@@ -473,6 +473,18 @@ geänderten Bedarfsprojekte bleibt der Linux-Läufer (12/12 byte-gleich beim Ein
 und 206 (`67cda00`, `f59047f`, `556d3f9`) sind grün. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
 Migrationsende.
 
+**Sechsunddreißigster Lauf 34145451647 (`ios.yml`, `macos-26`, 07.09.2026, 16:55–17:03 UTC, 8 min 01 s)** auf
+`17ef1e3` — der vierte Tagesstand des 07.09.2026 und der erste Lauf mit der **Katalogfilter-Stufe S1** (W14a‑E‑10:
+Bausteine `Spaltenfilter` und `Katalogliste` im Standard `Raster`, QuickGrid `ColumnOptions`, `Katalograhmen`
+untereinander, 49 neue Ressourcenschlüssel — jede lange Liste der `AppWurzel` läuft über dieses Raster) sowie
+W8‑O‑5d‑Q3/Q4 (Zahlenrand an allen 17 Betriebsschwellen). Workload 24 s, Bau 1 min 17 s (0 Fehler), Simulatorstart
+1 min 35 s, Erststart mit Seed-Kopie (66 MB), Startmarken `SQLite 3.53.3` · `STRICT=117` (Erwartung aus der Seed-Datenbank:
+117) · `Projekte=24` grün, Prüfmodus 1030 in 6 s (22 CSV, 160 Skalare), **iZ6-Vergleich gegen `2026-09-07_R5_Zahlenrand`
+PASS (236 680 Werte)** und **BYTE-GLEICH** (`diff -rq` leer, iOS-Simulator arm64) — die Zahlenränder der drei
+BHKW-Fahrweisen und der Reservemarke ändern auf Apple Silicon ebenso wenig wie auf Linux (12/12 byte-gleich beim
+Merge). Die `kern.yml`-Läufe 207 bis 210 (`3d51daf`, `322f614`, `c98790b`, `17ef1e3`) sind grün. Ausgelöst per
+`workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
