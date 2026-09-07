@@ -2440,6 +2440,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Sitzung; Vergleich in S3; Zonenmodell; Bereiche ergänzen Stufen; Speicher bis 5 000 Zeilen, darüber SQL; Spalte `Firma`
 > als Schemaschritt; Brennwert-Daten berichtigen; Wirkungsgrad > 2 als Prozent; Leiste auch für Importmasken in S3.4;
 > Gebäude/Klima/Kosten nicht; Spalte „im Projekt verwendet" in S2.3).
+>
+> **W14a‑E‑8‑B1, Nachzug (Anwenderwunsch 07.09.2026: „Emissionspunkte § 9.8 und § 9.9: betrachte das Konzept und mache
+> einen Vorschlag zur Umsetzung im jetzigen Zustand"), Vorschlag in `2ae5658`, zusammengeführt in `1a1fbbb` — keine
+> Umsetzung:** Das Emissionskonzept bekommt **Kapitel 11** (487 Z.) mit dem gemessenen Ist-Stand — die zehn `Em_*`-Felder
+> haben repo-weit EINEN Leser (`EmissionsquelleTests`), keine der 17 `Tab_Ergebnis*` führt eine Emissionsspalte,
+> `aggregate.csv` heute 1 722 Skalare über zwölf Projekte —, dem Vorschlag für § 9.8 (**zehn Skalare** `Em.Kessel.*`/
+> `Em.Bhkw.*` mit Einheit im Namen, +70 Schlüssel = +4,1 %, zehn von zwölf Projekten mit Werten ≠ 0, 1007 und 1008 ohne;
+> ein neuer Schlüssel ist im Vergleich ein FAIL, also neue Basis oder `--ohne`) und für § 9.9 (Schritt **68** nach Muster
+> 67 zugeschnitten). **Zwei Befunde schärfen die offenen Punkte:** Weder GEMIS 5.2 noch die UBA-Liste v2.1 führt **CO**
+> (gemessen über alle 15 bzw. 22 Blätter) — Schritt 68 hätte keine Zahl zu säen; und ein Datenschritt allein reichte
+> nicht, weil `EmissionsFaktorSatz` kein Feld `Co` hat und die Zuordnung Art → Feld eine feste if/else-Kette über vier
+> Kürzel ist (`EmissionsFaktorLader.cs:194‑208`). Die vorhergesagten Exportwerte sind gegen B1 belegt (1030 BHKW
+> 251,585 t/a, 1024 70,761, 1017 21,624). **Empfehlungen: § 9.8 als Z1** — dem laufenden `double`-Auftrag W8‑O‑5d
+> mitgeben, bevor R4 einfriert (ein Basiswechsel statt zwei, Zahlen sofort in `double`-Genauigkeit); **§ 9.9 warten**,
+> bis eine Quelle mit CO-Faktoren je Energieträger vorliegt. **Sieben Anwenderfragen offen:** `Em‑9.8‑Q1…Q4`,
+> `Em‑9.9‑Q1…Q3`, je mit Empfehlung in § 11.5. Geändert ist nur das Emissionskonzept; kein Code, keine Migration,
+> Referenzlauf und CI unberührt.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
