@@ -184,7 +184,7 @@ public class AssistentTests : BunitContext
         foreach (string name in new[] { "Katalogprofil", "Katalogzeilen",
                                         "Filtertexte", "Filterstandvorgabe" })
         {
-            System.Reflection.PropertyInfo eigenschaft = typ.GetProperty(name);
+            System.Reflection.PropertyInfo? eigenschaft = typ.GetProperty(name);
             Assert.True(eigenschaft is not null, typ.Name + " kennt " + name + " nicht");
             Assert.True(
                 Attribute.IsDefined(eigenschaft!,
@@ -205,7 +205,7 @@ public class AssistentTests : BunitContext
     {
         Type typ = AssistentSeite.Seitentyp(7);
 
-        System.Reflection.PropertyInfo katalog = typ.GetProperty("Katalog");
+        System.Reflection.PropertyInfo? katalog = typ.GetProperty("Katalog");
         Assert.NotNull(katalog);
         Assert.Equal(typeof(Func<IReadOnlyList<Katalogfilterzeile>>),
                      katalog!.PropertyType);
