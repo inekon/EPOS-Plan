@@ -2110,7 +2110,10 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `#wechselrichter`), Fensterknöpfe und F1 bleiben ohne Anker, der Assistent sieht keine Marke (`AlsKlartext`/`Saeubern`
 > vor dem Tabellengerüst); `action=parse`-Probe aller 14 Seiten: 92 Anker, 0 Formelfehler (H13‑F3‑3 erledigt). Nachweis:
 > Kern 1790 / UI 3102 grün, Formularkarte 122, SQL 0, Gate grün, Referenzlauf byte-gleich. Abnahme auf Windows:
-> A‑H13b‑14…24, A‑H13‑19…21. Upload der 14 Seiten: siehe Folgeeintrag.
+> A‑H13b‑14…24, A‑H13‑19…21. **Upload 07.09.2026:** alle 14 Seiten der Rubrik (13 Rechenwegseiten und die
+> Rubrikstartseite) mit dem Bot-Zugang überschrieben (Zusammenfassung „Stand 07.09.2026, Sprungmarken je Abschnitt"),
+> die 18 Bezüge und die Rubrikzeile waren schon da; Nachprobe über `action=parse`: Anker gerendert (`class="epos-anker"`,
+> `id="rechenweg"` vorhanden), 0 Parserfehler, `<math>` unverändert (Wärmepumpe 155, Photovoltaik 324).
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >
