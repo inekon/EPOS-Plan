@@ -746,7 +746,9 @@ namespace WindowsFormsApplication1
         /// <see cref="DROSSEL_PUNKTE"/>. Punkt, höchstens alle
         /// <see cref="DROSSEL_MS"/> ms, und der letzte Punkt immer. Der Zähler wird
         /// unter einem Schloss geführt, weil die Meldungen aus mehreren Fäden und in
-        /// beliebiger Reihenfolge kommen; RÜCKWÄRTS läuft die Anzeige dadurch nie.</para>
+        /// beliebiger Reihenfolge kommen — und die Weitergabe steht MIT unter dem
+        /// Schloss, sonst überholten sich zwei Fäden zwischen Zähler und Ziel;
+        /// RÜCKWÄRTS läuft die Anzeige dadurch nie.</para>
         /// </remarks>
         private sealed class Drossel : IProgress<OptimiererFortschritt>
         {
@@ -782,14 +784,21 @@ namespace WindowsFormsApplication1
 
                     _zuletzt = stand.Erledigt;
                     _zuletztMs = jetzt;
-                }
 
-                _ziel.Report(new SpeicherOptimierungFortschritt
-                {
-                    Erledigt = stand.Erledigt,
-                    Gesamt = stand.Gesamt > 0 ? stand.Gesamt : _gesamt,
-                    IstFeinraster = stand.IstFeinraster
-                });
+                    // Die Weitergabe bleibt UNTER dem Schloss: Stuende sie dahinter,
+                    // koennten zwei Faeden das Schloss nacheinander mit steigendem Stand
+                    // passieren und das Ziel in umgekehrter Reihenfolge erreichen - die
+                    // Anzeige liefe rueckwaerts (Befund W8-O-5d, 07.09.2026: der Test
+                    // "Der_Fortschritt_kommt_gedrosselt_an" fiel etwa jeden dritten Lauf).
+                    // Das Ziel ist eine Weiterleitung an den Bedienfaden und billig; die
+                    // Drossel laesst ohnehin hoechstens zehn Meldungen je Sekunde durch.
+                    _ziel.Report(new SpeicherOptimierungFortschritt
+                    {
+                        Erledigt = stand.Erledigt,
+                        Gesamt = stand.Gesamt > 0 ? stand.Gesamt : _gesamt,
+                        IstFeinraster = stand.IstFeinraster
+                    });
+                }
             }
         }
     }
