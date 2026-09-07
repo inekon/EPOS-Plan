@@ -980,19 +980,48 @@ body {
    Projekt/DB-Dialoge, das QuickGrid des Bausteins Raster und die
    ProjektListe. Wer eine Liste ausdruecklich ungebremst will, setzt
    .epos-raster-huelle--frei. */
+/* UND SIE HAT EINEN RAHMEN (Anwenderwunsch iU8-E-3, Windows-Abnahme V2 vom
+   07.09.2026: "Allgemein zu Dialogen mit Listen: Zur besseren optischen
+   Abgrenzung sollten Listen einen Rahmen haben"). Gemeldet an der Verwaltung
+   der Photovoltaik-Module, wo beide Listen ohne jede sichtbare Begrenzung im
+   Dialog standen: Ein Rollbalken erscheint erst, wenn es etwas zu rollen gibt,
+   und die Zeilentrennlinien enden am letzten Datensatz - der Anwender sah
+   nicht, wo die Liste aufhoert und der naechste Block anfaengt.
+
+   DIE FARBE IST --epos-rahmen, nicht --epos-rahmen-leise: Das leise Grau
+   traegt bereits die Trennlinie ZWISCHEN zwei Zeilen (.epos-raster th/td,
+   border-bottom). Ein Aussenrand in derselben Farbe waere von einer
+   Zeilentrennlinie nicht zu unterscheiden und begrenzte damit nichts. Es ist
+   dieselbe Rahmenfarbe, die jedes Eingabefeld des Hauses traegt
+   (.epos-eingabe) - eine Liste ist ein Bedienelement wie ein Textfeld und
+   sieht auch so aus.
+
+   Der Rahmen steht an DIESER einen Stelle und gilt damit fuer alle Listen des
+   Hauses: die handgeschriebenen Tabellen der Projekt/DB-Dialoge, das QuickGrid
+   des Bausteins Raster, die ProjektListe und die Katalogverwaltungen. Die
+   Pfeilspalte der Zweispaltenauswahl (.epos-zweispalten-mitte) traegt keine
+   Huelle und rahmt deshalb nicht mit - dort stehen nur Knoepfe. */
 .epos-raster-huelle {
     width: 100%;
     overflow: auto;
     max-height: var(--epos-listenhoehe);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
 }
 
 /* Der Spaltenkopf bleibt beim Rollen stehen - ohne ihn ist eine gerollte
-   Liste nicht mehr zuzuordnen. Dieselbe Regel wie bei --hoch, nur fuer alle. */
+   Liste nicht mehr zuzuordnen. Dieselbe Regel wie bei --hoch, nur fuer alle.
+
+   Er ist seit iU8-E-3 auch INNEN abgesetzt: Zu seiner eigenen Flaeche kommt
+   eine Linie in der RAHMENfarbe darunter. Ohne sie schwamm er beim Rollen ueber
+   die erste Datenzeile hinweg - er liegt ueber ihr, und die leise Trennlinie
+   einer Datenzeile hob ihn nicht davon ab. */
 .epos-raster-huelle .epos-raster thead th {
     position: sticky;
     top: 0;
     z-index: 1;
     background: var(--epos-flaeche);
+    border-bottom: 1px solid var(--epos-rahmen);
 }
 
 /* Ausdruecklich UNGEBREMST - fuer eine Liste, die als Ganzes gelesen oder
@@ -1495,12 +1524,22 @@ body {
    alle Zeilen fluchten, ohne dass eine Zeile ihre Breiten kennt.
    -------------------------------------------------------------------------- */
 
+/* AUCH DAS POSITIONSRASTER STEHT IN EINEM RAHMEN (Anwenderwunsch iU8-E-3,
+   Windows-Abnahme V2 vom 07.09.2026). Es ist die zweite Listenform des Hauses
+   und geht NICHT ueber .epos-raster-huelle - eine Zeile ist hier eine kleine
+   Maske, kein Datensatz -, deshalb braucht es dieselbe Regel noch einmal. Sie
+   nennt dieselben zwei Token; wer die Rahmenfarbe der Listen aendert, aendert
+   beide Stellen an EINER Farbe. Die Polsterung nimmt die Zellen von den
+   Raendern weg, sonst klebte die erste Spalte am Rahmen. */
 .epos-zeilenraster {
     display: grid;
     align-items: center;
     column-gap: 8px;
     row-gap: 2px;
     margin-top: var(--epos-rand);
+    padding: 4px 8px 8px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
 }
 
 .epos-zr-kopf,
