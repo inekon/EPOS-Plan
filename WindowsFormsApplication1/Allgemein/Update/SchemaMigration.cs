@@ -2498,6 +2498,46 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_67_BHKW_LEISTUNGSGRENZE = 67;
 
+        /// <summary>
+        /// <b>Der Hersteller des Stromspeicherkatalogs</b> — Anwenderentscheid
+        /// <b>W14a‑E‑10‑Q7</b> vom 07.09.2026 (Konzept_Katalogfilter Befund D‑3,
+        /// Stufe S2): die Spalte <c>Firma</c> in <c>Tab_Stromspeicher_STAMM</c>
+        /// <b>und</b> in der Projektkopie <c>Tab_Stromspeicher</c>, dazu der
+        /// einmalige Nachtrag aus dem Bezeichnerpräfix. Die DDL steht in
+        /// <see cref="SchemaKatalog.Schritt68_StromspeicherFirma"/>, das DML in
+        /// <see cref="StromspeicherFirmaNachtrag"/> — beide im Kern.
+        ///
+        /// <para><b>Wozu.</b> <c>Tab_Stromspeicher_STAMM</c> war der EINZIGE
+        /// Gerätekatalog des Hauses ohne Herstellerspalte. Solange der Hersteller ein
+        /// Klapplistenwert war, genügte das Bezeichnerpräfix; mit dem Spaltenmodell
+        /// (W14a‑E‑10) ist er eine SPALTE, nach der sortiert und gefiltert wird — und
+        /// „eine Spalte, die es in der Tabelle gar nicht gibt, kann man nicht
+        /// sortieren" (Konzept 9.1, Q7).</para>
+        ///
+        /// <para><b>DDL und DML, und trotzdem ergebnisNEUTRAL.</b> Kein Rechenweg
+        /// liest den Hersteller: <c>SimulationSpeicher</c> und die Wirtschaftlichkeit
+        /// kennen die Spalte nicht, der Speicher wird über Bezeichner und ID gefunden.
+        /// Der Schritt ändert eine ANZEIGE- und SUCHgröße. Der Referenzlauf gegen
+        /// <c>2026-09-07_R5_Zahlenrand</c> bleibt <b>byte-gleich</b>.</para>
+        ///
+        /// <para><b>Der Nachtrag rät nicht.</b> Er trägt nur ein, was im Bezeichner
+        /// schon steht — den Text vor dem ersten Doppelpunkt, wie ihn der Import
+        /// schreibt (<c>StromspeicherImportSatz.Bezeichner</c>) und wie ihn
+        /// <c>CecWechselrichter.HerstellerAus</c> zurückgewinnt. Ein Satz ohne Präfix
+        /// bleibt leer; die Anzeige fällt dort weiter auf das Präfix zurück.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 68
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 67
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem
+        /// Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; das <c>UPDATE</c> trägt sein
+        /// <c>WHERE Firma IS NULL OR Firma = ''</c> selbst und schließt Sätze ohne
+        /// Präfix über <c>instr</c> aus — der Zweitlauf findet nichts.</para>
+        /// </summary>
+        public const int SCHRITT_68_STROMSPEICHER_FIRMA = 68;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4403,6 +4443,11 @@ namespace WindowsFormsApplication1
         /// Strangzuordnung und der sichtbare Wechselrichterweg aus W6‑E‑3);
         /// <see cref="ZIEL_VERSION"/> steht auf 66.</para>
         ///
+        /// <para><b>Seit dem Katalogfilter (07.09.2026) sieben:</b>
+        /// <see cref="SCHRITT_67_BHKW_LEISTUNGSGRENZE"/> (W6‑E‑7) und
+        /// <see cref="SCHRITT_68_STROMSPEICHER_FIRMA"/> (W14a‑E‑10‑Q7, Stufe S2 des
+        /// Konzept_Katalogfilter); <see cref="ZIEL_VERSION"/> steht auf 68.</para>
+        ///
         /// <para><b>Regeln für einen Eintrag hier</b> (dieselbe Reihenfolge, die der
         /// E6-Vorfall vom 29.08.2026 erzwungen hat: erst Schrittkonstante, Methode und
         /// Eintrag, DANN <see cref="ZIEL_VERSION"/>):</para>
@@ -4492,7 +4537,25 @@ namespace WindowsFormsApplication1
                         "OHNE Untergrenze weiter, statt wie bisher mit 30 %: Der stille " +
                         "Fallback im Rechenweg ist mit W6-E-7 entfallen, und dieser " +
                         "Schritt ist es, der den Wert an seine Stelle setzt.",
-                        Schritt_67_BhkwLeistungsgrenze),        };
+                        Schritt_67_BhkwLeistungsgrenze),
+
+            // ANWENDERENTSCHEID W14a-E-10-Q7 vom 07.09.2026 (Konzept_Katalogfilter
+            // Befund D-3, Stufe S2). Begruendung, Ergebnisneutralitaet und
+            // Idempotenzzusage bei der Schrittkonstanten; die DDL steht in
+            // SchemaKatalog.Schritt68_StromspeicherFirma, das DML in
+            // StromspeicherFirmaNachtrag - EINE Quelle fuer Migration, Testdatenbank
+            // und Nachweis.
+            new Schritt(SCHRITT_68_STROMSPEICHER_FIRMA,
+                        "Den Hersteller des Stromspeicherkatalogs anlegen: " +
+                        "Tab_Stromspeicher_STAMM.Firma und Tab_Stromspeicher.Firma, " +
+                        "Nachtrag aus dem Bezeichnerpraefix (W14a-E-10-Q7)",
+                        "Der Speicherkatalog bliebe dann der einzige Geraetekatalog " +
+                        "ohne Herstellerspalte: Die Katalogliste koennte nach dem " +
+                        "Hersteller weder sortieren noch filtern, und die Projektkopie " +
+                        "verloere ihn beim Uebernehmen. Gerechnet wird unveraendert - " +
+                        "kein Rechenweg liest den Hersteller.",
+                        Schritt_68_StromspeicherFirma),
+        };
 
         /// <summary>
         /// Die Schritte, die ein SQLite-Lauf abarbeitet: <see cref="SCHRITTE_SQLITE"/>
@@ -10417,6 +10480,66 @@ namespace WindowsFormsApplication1
                     "bisher ueber den stillen Fallback in SimulationBHKW mit denselben " +
                     "30 %. Eine gepflegte 0 bleibt 0 - sie ist eine Angabe des " +
                     "Anwenders (\"keine Untergrenze\"), keine Luecke.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 68 - der Hersteller des Stromspeicherkatalogs (W14a-E-10-Q7)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 68 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_68_STROMSPEICHER_FIRMA"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene
+        /// Anweisung: die SPALTEN aus
+        /// <see cref="SchemaKatalog.Schritt68_StromspeicherFirma"/>, der NACHTRAG aus
+        /// <see cref="StromspeicherFirmaNachtrag"/>. Aus denselben zwei Quellen
+        /// bedient sich <c>Werkzeuge/Testdatenbankschema</c>.</para>
+        ///
+        /// <para><b>Reihenfolge: erst die Spalten, dann der Nachtrag.</b> Sie ist hier
+        /// NICHT beliebig — das <c>UPDATE</c> nennt <c>Firma</c> und liefe auf einer
+        /// Datenbank ohne die Spalte in einen Fehler.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/> und <see cref="SqliteDml"/>.</b>
+        /// Der Schritt gehört dem SQLite-Zweig; <c>Ddl</c>, <c>TabellenSchema</c> und
+        /// <c>NonQuery</c> arbeiten auf <c>Lauf.Conn</c>, und die ist hier
+        /// <c>null</c>. Der Typ geht wie in Schritt 64 über
+        /// <see cref="StilleDb.SqliteSpaltenTyp"/>.</para>
+        /// </summary>
+        private static bool Schritt_68_StromspeicherFirma(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt68_StromspeicherFirma)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            long vorher = SqliteZahl(StromspeicherFirmaNachtrag.Zaehlung());
+
+            if (!SqliteDml(l, StromspeicherFirmaNachtrag.Nachtrag(),
+                           StromspeicherFirmaNachtrag.TABELLE + "." +
+                           StromspeicherFirmaNachtrag.SPALTE +
+                           ": aus dem Bezeichnerpraefix nachtragen"))
+                return false;
+
+            long nachher = SqliteZahl(StromspeicherFirmaNachtrag.Zaehlung());
+
+            l.Zeile("Schritt 68 - " + StromspeicherFirmaNachtrag.TABELLE + ": Saetze mit " +
+                    "Praefix und ohne Hersteller vorher " + Zahltext(vorher) +
+                    ", nachher " + Zahltext(nachher) + " (Katalog gesamt " +
+                    Zahltext(SqliteZahl(StromspeicherFirmaNachtrag.Gesamtzahl())) + ").");
+
+            l.Notiz("68: Der Stromspeicherkatalog bekommt seine Herstellerspalte " +
+                    "(Entscheid W14a-E-10-Q7) - " +
+                    SchemaKatalog.Schritt68_StromspeicherFirma.Length +
+                    " Spalte(n) sichergestellt (" +
+                    SchemaKatalog.TAB_STROMSPEICHER_STAMM + " und " +
+                    SchemaKatalog.TAB_STROMSPEICHER + "). " +
+                    (vorher == 0
+                        ? "Nachzutragen gab es nichts - kein Satz traegt ein Bezeichnerpraefix."
+                        : vorher.ToString(CultureInfo.InvariantCulture) +
+                          " Satz/Saetze aus dem Bezeichnerpraefix nachgetragen.") +
+                    " KEIN Rechenergebnis aendert sich: Kein Rechenweg liest den " +
+                    "Hersteller - der Speicher wird ueber Bezeichner und ID gefunden.");
             return true;
         }
 

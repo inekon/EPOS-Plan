@@ -916,10 +916,13 @@ namespace EPOS.Kern.Tests
 
             // Merge 5 (Paket A/B des PV-Ertragsmodells): die Photovoltaik traegt dazu die
             // NOCT-Zelltemperatur und die Zelltechnologie (Auswahl) - fuenfzehn Felder.
-            Assert.Equal(13, sp.Felder.Count);
+            // W14a-E-10-Q7 (Migrationsschritt 68, 07.09.2026): Der Stromspeicher
+            // bekommt sein Feld "Firma" - VIERZEHN statt dreizehn, davon acht im
+            // Bestandsblock. Er war der einzige Modulkatalog ohne dieses Feld.
+            Assert.Equal(14, sp.Felder.Count);
             Assert.Equal(15, pv.Felder.Count);
 
-            Assert.Equal(7, sp.Felder.Count(f => f.Gruppe == 0));
+            Assert.Equal(8, sp.Felder.Count(f => f.Gruppe == 0));
             Assert.Equal(6, sp.Felder.Count(f => f.Gruppe == 1));
             Assert.Equal(15, pv.Felder.Count(f => f.Gruppe == 0));
             Assert.Equal("", pv.GruppeZwei);

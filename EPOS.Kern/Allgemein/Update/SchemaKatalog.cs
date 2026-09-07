@@ -1424,6 +1424,58 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_PV_WECHSELRICHTERWEG, "TEXT(20)"),
         };
 
+        // =============================================================================
+        // Schritt 68 - der HERSTELLER des Stromspeichers (W14a-E-10-Q7, Stufe S2)
+        // =============================================================================
+
+        /// <summary>
+        /// Der HERSTELLER eines Stromspeichers (Anwenderentscheid
+        /// <b>W14a-E-10-Q7</b> vom 07.09.2026, Konzept_Katalogfilter Befund D-3).
+        ///
+        /// <para><b>Derselbe Spaltenname wie in den sechs anderen Geraetekatalogen</b>
+        /// — <c>Tab_WP_STAMM</c>, <c>Tab_Heizkessel_STAMM</c>, <c>Tab_BHKW_STAMM</c>,
+        /// <c>Tab_Solarkollektoren_STAMM</c>, <c>Tab_PV_STAMM</c> und
+        /// <c>Tab_Wechselrichter_STAMM</c> fuehren ihn seit jeher bzw. seit
+        /// Schritt 65. Der Stromspeicher war der einzige ohne; der Katalogfilter
+        /// braucht ihn als SPALTE, nach der man sortiert und filtert.</para>
+        /// </summary>
+        public const string SPALTE_SP_FIRMA = "Firma";
+
+        /// <summary>
+        /// Schritt 68 der Migration: die Spalte <c>Firma</c> in
+        /// <c>Tab_Stromspeicher_STAMM</c> <b>und</b> in der Projektkopie
+        /// <c>Tab_Stromspeicher</c>.
+        ///
+        /// <para><b>Warum BEIDE Tabellen.</b> Genau so halten es die sechs anderen
+        /// Geraetekataloge (gemessen am 07.09.2026 auf
+        /// <c>Referenzlaeufe/Kenndaten_Test.sqlite</c>: Firma steht in Stamm UND
+        /// Projektkopie bei Waermepumpe, Heizkessel, BHKW, Solarkollektor und
+        /// Wechselrichter). <c>StromspeicherCtrl.CopyFromStamm</c> kopiert Feld fuer
+        /// Feld; ohne die Spalte in der Kopie ginge der Hersteller beim Uebernehmen in
+        /// das Projekt verloren, und die Projektliste koennte ihn nicht zeigen.</para>
+        ///
+        /// <para><b>KEIN DDL-DEFAULT</b> (Hausregel „kein DDL-DEFAULT auf
+        /// Fachwerten"): Die Spalte bleibt nach <c>ADD COLUMN</c> NULL. Was ein
+        /// Bezeichner schon sagt, traegt der DML-Teil des Schrittes nach — die
+        /// Anweisung steht in <see cref="StromspeicherFirmaNachtrag"/>.</para>
+        ///
+        /// <para><b>Warum in <see cref="Alle"/>.</b> Wie bei
+        /// <see cref="Schritt11_Stromspeicher"/> ist es der SCHREIBER:
+        /// <c>StromspeicherStammCtrl.Insert/Update</c> nennt die Spalte seit S2
+        /// namentlich. Die Rueckfallebene
+        /// <c>StromspeicherCtrl.StelleGeraetespaltenSicher</c> legt sie deshalb an,
+        /// falls die Migration (noch) nicht gelaufen ist.</para>
+        ///
+        /// <para><b>Ordinalposition.</b> Beide Tabellen werden namensbasiert gelesen
+        /// (<c>FillFromRow</c> prueft <c>Columns.Contains</c>); das Anhaengen ist
+        /// gefahrlos.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt68_StromspeicherFirma =
+        {
+            new SchemaSpalte(TAB_STROMSPEICHER_STAMM, SPALTE_SP_FIRMA, "TEXT(255)"),
+            new SchemaSpalte(TAB_STROMSPEICHER,       SPALTE_SP_FIRMA, "TEXT(255)"),
+        };
+
         /// <summary>
         /// Name der Bezugsgröße der Kessel-Wartungskosten (Entscheidung des Anwenders
         /// 18.08.2026, Punkt 1). EINE Wahrheit für Migration, Katalog-Editor
@@ -3755,6 +3807,13 @@ namespace WindowsFormsApplication1
         /// Grenze wie bei <see cref="Z_ANLAGESENKE"/>, und die Rückfallebene übernimmt
         /// dort <c>AnlageStrangCtrl.TabelleVorhanden</c>.
         ///
+        /// <see cref="Schritt68_StromspeicherFirma"/> ist aus demselben Grund aufgeführt
+        /// wie <see cref="Schritt11_Stromspeicher"/>: dem SCHREIBER.
+        /// <c>StromspeicherStammCtrl.Insert/Update</c> und
+        /// <c>StromspeicherCtrl.CopyFromStamm</c> nennen <c>Firma</c> seit Stufe S2
+        /// namentlich; <c>StromspeicherCtrl.StelleGeraetespaltenSicher</c> ist die
+        /// Rückfallebene.
+        ///
         /// <b>Reihenfolge:</b> Die Rückfallebene liest das Tabellenschema neu, sobald
         /// der Tabellenname wechselt (<c>WaermequelleClass.SchemaSicherstellen</c>).
         /// Einträge derselben Tabelle stehen deshalb beieinander — Schritt 64 beginnt
@@ -3772,6 +3831,13 @@ namespace WindowsFormsApplication1
                 foreach (SchemaSpalte s in Schritt6_FeatureFlag) yield return s;
                 foreach (SchemaSpalte s in Schritt8_Energietraeger) yield return s;
                 foreach (SchemaSpalte s in Schritt11_Stromspeicher) yield return s;
+
+                // Schritt 68 haengt an denselben zwei Tabellen und steht deshalb
+                // unmittelbar hinter Schritt 11 (Absatz "Reihenfolge"): Sein erster
+                // Eintrag setzt Tab_Stromspeicher_STAMM fort, mit dem Schritt 11
+                // aufhoert, und die Rueckfallebene liest das Schema nur EINMAL mehr.
+                foreach (SchemaSpalte s in Schritt68_StromspeicherFirma) yield return s;
+
                 foreach (SchemaSpalte s in Schritt13_Mindestfuellstand) yield return s;
                 foreach (SchemaSpalte s in Schritt63_PvAnlagenparameter) yield return s;
 

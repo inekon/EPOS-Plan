@@ -23,7 +23,9 @@ namespace Testdatenbankschema
     /// <c>AnlageStrangSchema</c>, Spalte in
     /// <c>SchemaKatalog.Schritt66_PvWechselrichterweg</c>) und
     /// <c>Schritt_67_BhkwLeistungsgrenze</c> (das eine UPDATE aus
-    /// <c>BhkwLeistungsgrenzeVorgabe</c>) bedienen. Hier steht keine
+    /// <c>BhkwLeistungsgrenzeVorgabe</c>) und <c>Schritt_68_StromspeicherFirma</c>
+    /// (Spalten aus <c>SchemaKatalog.Schritt68_StromspeicherFirma</c>, Nachtrag aus
+    /// <c>StromspeicherFirmaNachtrag</c>) bedienen. Hier steht keine
     /// abgeschriebene DDL und kein abgeschriebenes DML.</para>
     ///
     /// <para><b>Idempotent.</b> Eine vorhandene Spalte wird uebergangen, ein zweiter Lauf
@@ -37,8 +39,11 @@ namespace Testdatenbankschema
     /// einen FACHWERT</b> (<c>Tab_Einstellungen.Leistungsgrenze</c> NULL → 30) — und ist
     /// gerade dadurch ergebnisneutral: Er setzt an die Stelle des stillen Fallbacks in
     /// <c>SimulationBHKW</c>, der mit dem Anwenderentscheid W6-E-7 gefallen ist, genau
-    /// den Wert, mit dem diese Saetze bisher schon gerechnet haben. Der Referenzlauf muss
-    /// vor und nach dem Nachziehen byte-gleiche CSV liefern — das ist die Abnahme.</para>
+    /// den Wert, mit dem diese Saetze bisher schon gerechnet haben. <b>Schritt 68</b>
+    /// legt zwei Spalten an und traegt in eine davon nach, was der Bezeichner schon
+    /// sagt — auch das ergebnisneutral, weil kein Rechenweg den Hersteller liest. Der
+    /// Referenzlauf muss vor und nach dem Nachziehen byte-gleiche CSV liefern — das ist
+    /// die Abnahme.</para>
     /// </summary>
     internal static class Program
     {
@@ -49,7 +54,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 67) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 68) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -148,6 +153,33 @@ namespace Testdatenbankschema
                 ? "nichts zu tun - jeder Satz fuehrt einen gepflegten Wert."
                 : ohneWert + " Satz/Saetze auf " +
                   BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT + " % gehoben."));
+            Console.WriteLine();
+
+            // ---- Schritt 68: der Hersteller des Stromspeicherkatalogs (W14a-E-10-Q7).
+            //      ERST die zwei Spalten, DANN der Nachtrag - das UPDATE nennt Firma
+            //      und liefe auf einer Datenbank ohne die Spalte in einen Fehler. Die
+            //      Quellen sind dieselben, aus denen sich
+            //      SchemaMigration.Schritt_68_StromspeicherFirma bedient:
+            //      SchemaKatalog.Schritt68_StromspeicherFirma und
+            //      StromspeicherFirmaNachtrag. Ergebnisneutral - kein Rechenweg liest
+            //      den Hersteller.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt68_StromspeicherFirma)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 68, trocken);
+
+            if (!trocken)
+            {
+                long ohnePraefix = Zahl(StromspeicherFirmaNachtrag.Zaehlung());
+                Console.WriteLine("Schritt 68 - " + StromspeicherFirmaNachtrag.TABELLE + "." +
+                                  StromspeicherFirmaNachtrag.SPALTE +
+                                  ": nachzutragen " + ohnePraefix + " von " +
+                                  Zahl(StromspeicherFirmaNachtrag.Gesamtzahl()) + ".");
+                if (ohnePraefix > 0)
+                    DataRepository.ExecuteNonQuery(StromspeicherFirmaNachtrag.Nachtrag());
+                Console.WriteLine("Schritt 68: " + (ohnePraefix == 0
+                    ? "nichts zu tun - kein Satz traegt ein Bezeichnerpraefix."
+                    : ohnePraefix + " Satz/Saetze aus dem Bezeichnerpraefix nachgetragen."));
+            }
             Console.WriteLine();
 
             Console.WriteLine();

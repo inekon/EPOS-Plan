@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -116,6 +116,14 @@ namespace WindowsFormsApplication1
         {
             StromspeicherModel m = new StromspeicherModel();
             m.m_szBezeichner = string.IsNullOrWhiteSpace(bezeichner) ? Bezeichner : bezeichner.Trim();
+
+            // ZUSAETZLICH zum Praefix (Migrationsschritt 68, W14a-E-10-Q7): Der
+            // Bezeichner traegt den Hersteller weiterhin als "Hersteller: Modell" -
+            // daran haengt die Wiedererkennung eines Satzes und der Rueckfall der
+            // Anzeige -, und die neue SPALTE traegt ihn noch einmal fuer sich. Wer den
+            // Bezeichner im Konfliktdialog umbenennt, verliert damit den Hersteller
+            // nicht mehr.
+            m.m_szFirma = (Hersteller ?? "").Trim();
             m.m_szTyp = TypAusTechnologie(Technologie);
             m.m_Leistung = LeistungKw;
             m.m_Energie = EnergieKwh;

@@ -76,13 +76,14 @@ namespace WindowsFormsApplication1
             int neueId = DataRepository.GetMaxID(TABLE) + 1;
 
             string sql = @"INSERT INTO [" + TABLE + @"]
-                            (ID, Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
+                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
                              Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
                 new DbParam("@bez", this.m_szBezeichner ?? ""),
+                new DbParam("@fir", (object)(this.m_szFirma ?? "") ),
                 new DbParam("@typ", (object)(this.m_szTyp ?? "") ),
                 new DbParam("@lei", this.m_Leistung),
                 new DbParam("@ene", this.m_Energie),
@@ -117,7 +118,7 @@ namespace WindowsFormsApplication1
             StromspeicherCtrl.StelleGeraetespaltenSicher();   // AP3-Spalten, bevor sie im UPDATE stehen
 
             string sql = @"UPDATE [" + TABLE + @"] SET
-                            Bezeichner = ?, Typ = ?, Leistung = ?, Energie = ?,
+                            Bezeichner = ?, Firma = ?, Typ = ?, Leistung = ?, Energie = ?,
                             Degradation = ?, Ladezustand = ?, Modulkosten = ?,
                             Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Verschleisskosten = ?,
                             Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?
@@ -125,6 +126,7 @@ namespace WindowsFormsApplication1
 
             DbParam[] ps = {
                 new DbParam("@bez", this.m_szBezeichner ?? ""),
+                new DbParam("@fir", (object)(this.m_szFirma ?? "") ),
                 new DbParam("@typ", (object)(this.m_szTyp ?? "") ),
                 new DbParam("@lei", this.m_Leistung),
                 new DbParam("@ene", this.m_Energie),
@@ -190,13 +192,14 @@ namespace WindowsFormsApplication1
                     int neueId = (mx == null || mx == DBNull.Value) ? 1 : Convert.ToInt32(mx) + 1;
 
                     string sql = @"INSERT INTO [" + TABLE + @"]
-                            (ID, Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
+                            (ID, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, ReadOnly,
                              Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                     DbParam[] ps = {
                         new DbParam("@id", neueId),
                         new DbParam("@bez", bezeichner ?? ""),
+                        new DbParam("@fir", (object)(model.m_szFirma ?? "")),
                         new DbParam("@typ", (object)(model.m_szTyp ?? "")),
                         new DbParam("@lei", model.m_Leistung),
                         new DbParam("@ene", model.m_Energie),
@@ -251,11 +254,12 @@ namespace WindowsFormsApplication1
             if (ro != null && ro != DBNull.Value && Convert.ToBoolean(ro)) return false;
 
             string sql = @"UPDATE [" + TABLE + @"] SET
-                            Typ = ?, Leistung = ?, Energie = ?,
+                            Firma = ?, Typ = ?, Leistung = ?, Energie = ?,
                             Wirkungsgrad_RT = ?, Standby_Verbrauch = ?
                           WHERE ID = ?";
 
             DbParam[] ps = {
+                new DbParam("@fir", (object)(this.m_szFirma ?? "")),
                 new DbParam("@typ", (object)(this.m_szTyp ?? "")),
                 new DbParam("@lei", this.m_Leistung),
                 new DbParam("@ene", this.m_Energie),
@@ -300,6 +304,11 @@ namespace WindowsFormsApplication1
         {
             if (row["ID"] != DBNull.Value) t.m_ID = Convert.ToInt32(row["ID"]);
             if (row["Bezeichner"] != DBNull.Value) t.m_szBezeichner = row["Bezeichner"].ToString();
+            // Migrationsschritt 68 (W14a-E-10-Q7): dieselbe Columns.Contains-Wache wie
+            // bei den AP3-Feldern - auf einer Datenbank vor dem Schritt fehlt die Spalte.
+            if (row.Table.Columns.Contains(SchemaKatalog.SPALTE_SP_FIRMA) &&
+                row[SchemaKatalog.SPALTE_SP_FIRMA] != DBNull.Value)
+                t.m_szFirma = row[SchemaKatalog.SPALTE_SP_FIRMA].ToString();
             if (row.Table.Columns.Contains("Typ") && row["Typ"] != DBNull.Value) t.m_szTyp = row["Typ"].ToString();
             if (row.Table.Columns.Contains("Leistung") && row["Leistung"] != DBNull.Value) t.m_Leistung = Convert.ToDouble(row["Leistung"]);
             if (row.Table.Columns.Contains("Energie") && row["Energie"] != DBNull.Value) t.m_Energie = Convert.ToDouble(row["Energie"]);
@@ -510,16 +519,21 @@ namespace WindowsFormsApplication1
         /// Konzept_Katalogfilter 4.8 und S1.5) — ACHT Spalten: Bezeichner, Hersteller,
         /// Typ, Energie, Leistung, C-Rate, η_RT und Zyklen.
         ///
-        /// <para><b>Der Hersteller kommt aus dem BEZEICHNERPRAEFIX</b> (Befund D-3,
-        /// Frage Q7): <c>Tab_Stromspeicher_STAMM</c> hat keine Spalte <c>Firma</c>. Der
-        /// Import schreibt „Hersteller: Modell"
+        /// <para><b>Der Hersteller kommt seit Schritt 68 aus der SPALTE</b>
+        /// (Anwenderentscheid <b>W14a-E-10-Q7</b> vom 07.09.2026, Befund D-3):
+        /// <c>Tab_Stromspeicher_STAMM.Firma</c>. Wo sie leer ist, bleibt das
+        /// BEZEICHNERPRAEFIX der Rueckfall — der Import schreibt „Hersteller: Modell"
         /// (<c>StromspeicherImportSatz.Bezeichner</c>), und
         /// <see cref="Katalogfeld.HerstellerAusBezeichner"/> gewinnt ihn genauso zurueck,
-        /// wie es der Modulimport tut. Wo kein Doppelpunkt steht — die fuenf von Hand
-        /// gepflegten Saetze der Testdatenbank —, zeigt die Spalte den
+        /// wie es der Modulimport tut. Wo weder Spalte noch Praefix etwas hergeben — die
+        /// fuenf von Hand gepflegten Saetze der Testdatenbank —, zeigt die Spalte den
         /// Halbgeviertstrich; der Name selbst steht in der Bezeichnerspalte und wird von
-        /// der Suche ueber alle Spalten gefunden. Die Spalte <c>Firma</c> bleibt ein
-        /// eigener Schemaschritt.</para>
+        /// der Suche ueber alle Spalten gefunden.</para>
+        ///
+        /// <para><b>Warum der Rueckfall bleibt.</b> Der Nachtrag des Schrittes 68 traegt
+        /// nur ein, was am Tag der Migration im Bezeichner steht. Eine Datenbank, die den
+        /// Schritt noch nicht gesehen hat, hat die Spalte gar nicht — und
+        /// <see cref="Katalogfeld.Text"/> liefert dann leer statt zu scheitern.</para>
         ///
         /// <para><b>Die C-Rate = Leistung / Energie ist abgeleitet</b> und wird hier
         /// einmal je Zeile gerechnet (Konzept 3.2). Sie trennt Heim- vom Netzspeicher und
@@ -530,7 +544,7 @@ namespace WindowsFormsApplication1
             var liste = new List<Katalogfilterzeile>();
 
             DataTable dt = StilleDb.Tabelle(
-                "SELECT ID, Bezeichner, Typ, Energie, Leistung, Wirkungsgrad_RT, " +
+                "SELECT ID, Bezeichner, Firma, Typ, Energie, Leistung, Wirkungsgrad_RT, " +
                 "Zyklen_Zugesichert, ReadOnly FROM [" + TABLE + "] ORDER BY Bezeichner");
             if (dt == null) return liste;
 
@@ -548,7 +562,7 @@ namespace WindowsFormsApplication1
                 liste.Add(zeile
                     .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
                     .MitText(Katalogfilterprofil.SpHersteller,
-                             Katalogfeld.HerstellerAusBezeichner(bezeichner))
+                             Hersteller(Katalogfeld.Text(r, SchemaKatalog.SPALTE_SP_FIRMA), bezeichner))
                     .MitText(Katalogfilterprofil.SpChemie, Katalogfeld.Text(r, "Typ"))
                     .MitZahl(Katalogfilterprofil.SpEnergie, energie, 1)
                     .MitZahl(Katalogfilterprofil.SpLeistung, leistung, 1)
@@ -560,6 +574,18 @@ namespace WindowsFormsApplication1
                              Katalogfeld.Zahl(r, "Zyklen_Zugesichert"), 0));
             }
             return liste;
+        }
+
+        /// <summary>
+        /// Der Hersteller EINES Katalogsatzes: die gepflegte Spalte <c>Firma</c>
+        /// (Migrationsschritt 68), sonst das Bezeichnerpraefix „Hersteller: Modell".
+        /// <b>Der gepflegte Wert hat Vorrang</b> — wer ihn im Editor aendert, will
+        /// nicht, dass ein altes Praefix ihn ueberstimmt.
+        /// </summary>
+        public static string Hersteller(string firma, string bezeichner)
+        {
+            string f = (firma ?? "").Trim();
+            return f.Length > 0 ? f : Katalogfeld.HerstellerAusBezeichner(bezeichner);
         }
 
         // =================================================================================
@@ -676,6 +702,7 @@ namespace WindowsFormsApplication1
         private static void Uebernehmen(StromspeicherStammCtrl ziel, StromspeicherModel m)
         {
             ziel.m_szBezeichner = m.m_szBezeichner ?? "";
+            ziel.m_szFirma = m.m_szFirma ?? "";      // Migrationsschritt 68 (W14a-E-10-Q7)
             ziel.m_szTyp = m.m_szTyp ?? "";
             ziel.m_Leistung = m.m_Leistung;
             ziel.m_Energie = m.m_Energie;
@@ -713,6 +740,7 @@ namespace WindowsFormsApplication1
             var werte = new Dictionary<string, string>(StringComparer.Ordinal);
 
             werte[ModulKatalogProfil.FeldBezeichner] = Spaltentext(r, "Bezeichner");
+            werte[ModulKatalogProfil.FeldFirma] = Spaltentext(r, SchemaKatalog.SPALTE_SP_FIRMA);
             werte[ModulKatalogProfil.FeldTyp] = Spaltentext(r, "Typ");
             werte[ModulKatalogProfil.FeldEnergie] = Spaltentext(r, "Energie");
             werte[ModulKatalogProfil.FeldLeistung] = Spaltentext(r, "Leistung");
