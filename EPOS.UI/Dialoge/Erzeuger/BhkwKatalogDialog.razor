@@ -182,6 +182,12 @@
 
     <Gruppenkopf Titel="@GruppeEmissionen">
         <KindInhalt>
+            @* W14a-E-8-B1 (Anwenderentscheid 07.09.2026): Die fuenf Felder darunter
+               sind NUR ANZEIGE. Die Emissionsrechnung nimmt den gepflegten Faktor des
+               ENERGIETRAEGERS aus dem Emissionskatalog - fuer jeden Erzeuger dieselbe
+               Quelle. Die Zeile sagt es an, statt den Anwender Zahlen pflegen zu
+               lassen, von denen er annimmt, dass sie mitrechnen. *@
+            <Herleitungszeile Text="@EmissionHinweis" />
             <Formularraster>
                 <KindInhalt>
                 <Ganzzahlfeld Bezeichnung="CO2:" Einheit="g / MWh" Feldname="CO2-Emission"
@@ -371,6 +377,11 @@
     [Parameter] public string BtnCo2Text { get; set; } = "CO2 BEHG";
 
     [Parameter] public string GruppeEmissionen { get; set; } = "Emissionsfaktoren bezogen auf den Brennstoffverbrauch";
+
+    /// <summary>Die Herleitungszeile ueber den fuenf Emissionsfeldern (W14a-E-8-B1):
+    /// Sie sind nur Anzeige, gerechnet wird mit dem Faktor des Energietraegers.</summary>
+    [Parameter] public string EmissionHinweis { get; set; } =
+        "Nur zur Information — die Emissionsrechnung nimmt den Faktor des Energieträgers aus dem Emissionskatalog.";
     [Parameter] public string LabelStaub { get; set; } = "Staub:";
     [Parameter] public string FeldStaub { get; set; } = "Staub-Emission";
     [Parameter] public string LabelScr { get; set; } = "mit SCR";

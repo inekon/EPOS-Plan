@@ -1,6 +1,8 @@
 # Konzept — Emissionsarten-Katalog und CO₂-Äquivalent (EPOS-Plan)
 
-**Stand:** 29.08.2026 · **Rev. 1.7 — E1 bis E6 umgesetzt; § 5.2 = Saatvorlage E6**
+**Stand:** 07.09.2026 · **Rev. 1.8 — E1 bis E6 umgesetzt; dazu die Entscheide in § 8
+(B1: EINE Emissionsquelle für alle Erzeuger; B2; W11a‑O‑2)** (Rev. 1.7 vom 29.08.2026:
+§ 5.2 = Saatvorlage E6)
 (Nutzerentscheid 29.08.2026 mittags: Luftschadstoffe als gekennzeichnete GEMIS-LCA-Vorlagen) (Rev. 1.2 vom 28.08.2026:
 alle Entscheidungsfragen beantwortet — F3 präzisiert, F4 bestätigt, Luftschadstoffe ohne
 Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
@@ -9,7 +11,7 @@ Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
 > (20 Träger gesetzt), **E2** als Migrationsschritt 57 (`ZIEL_VERSION` 57): sieben
 > Emissionsarten, 139 Vorlagen, 81 aktive Trägerwerte, Berechnungsmodus `CO2` in
 > `Tab_Applikation` und in allen 26 Bestandsprojekten. Zweitlauf beider Schritte:
-> 0 Änderungen. Die **Mapping-Liste** (§ 8 Punkt 5) steht in **§ 5.1** zur Durchsicht.
+> 0 Änderungen. Die **Mapping-Liste** (§ 9 Punkt 5) steht in **§ 5.1** zur Durchsicht.
 >
 > **E3** gliedert den Detailbereich des Energieträger-Dialogs in die Reiter
 > „Preise & Umrechnung" (Bestand, umgehängt statt neu gebaut) und „Emissionen"
@@ -53,6 +55,16 @@ Vorkette, Modus global + Projekt-Override, Artenauswahl global, E1 vor E2)
 > Idempotenzschlüssel führt `quelle_text` mit, sonst kollidierten die drei trägerlosen
 > UBA-Zeilen. Einzelheiten und Belege:
 > [`Allgemein\Update\E6_QuellenSaat_Protokoll.md`](WindowsFormsApplication1/Allgemein/Update/E6_QuellenSaat_Protokoll.md).
+>
+> **B1 (07.09.2026) — EINE Quelle für alle Erzeuger.** Der Anwenderentscheid
+> **W14a‑E‑8‑B1** löst die zwei übrigen Emissionsquellen der SIMULATION ab: Der Heizkessel
+> las `Tab_Brennstoff_Stamm` unmittelbar, das BHKW die fünf Gerätespalten seines Katalogs.
+> Beide lesen seither über den neuen Kern-Dienst
+> `Allgemein\Wirtschaftlichkeit\Emissionsquelle.cs` dieselbe Kette wie die Wirtschaftlichkeit
+> — im Berechnungsmodus des Projekts —, die Gerätespalten sind „nur Anzeige", und die
+> Autarkie-Kachel folgt derselben Quelle (W11a‑O‑2). Der Referenzlauf der zwölf Projekte
+> bleibt **byte-gleich**, weil keine Referenz-CSV eine Emissionsgröße führt (§ 9 Punkt 8);
+> der Nachweis steht in `EPOS.Kern.Tests/EmissionsquelleTests.cs`. Einzelheiten in **§ 8**.
 >
 > Offen bleiben die Sichtabnahme E3–E6 und die Durchsicht der Mapping-Liste § 5.1.
 
@@ -510,7 +522,7 @@ die Werte trägt ein, wer sie braucht und belegt.
 Gesät wird je Schlüssel die **jüngste Jahreszeile mit Status GESICHERT**; VORLAEUFIGE
 und PROGNOSE-Zeilen bleiben außen vor. Alle Zeilen entstehen als **Vorlagen**
 (`ist_aktiv = falsch`, `ist_auslieferung = wahr`) — sie ändern keinen Trägerwert.
-Dies ist die Liste, um deren Durchsicht § 8 Punkt 5 bittet.*
+Dies ist die Liste, um deren Durchsicht § 9 Punkt 5 bittet.*
 
 | Schlüssel | Wert [g/kWh] | ab | `quelle` | `ist_co2e` | Katalogträger |
 |---|---|---|---|---|---|
@@ -607,7 +619,7 @@ erst Schrittkonstante + Methode + `SCHRITTE`-Eintrag, **dann** `ZIEL_VERSION` au
    29.08.2026:** Diese Werte kommen trotzdem in den Katalog, aber ausschließlich als
    Vorlagen mit Systemgrenze im Anzeigetext (`DbWerte.EMISSIONSWERT_TEXT_GEMIS_52_*`
    nennt „inkl. Vorkette (LCA)"); die aktiven Luftschadstoff-Werte bleiben bei der
-   Feuerungssicht aus § 8 Punkt 2. Übernommen werden nur **SO₂ (Spalte C — nicht das
+   Feuerungssicht aus § 9 Punkt 2. Übernommen werden nur **SO₂ (Spalte C — nicht das
    SO₂-Äquivalent in Spalte B!), NOx (D), Staub (E)**; die GEMIS-THG-Spalten bleiben
    außen vor (CO₂/CO₂e ist BAFA-/EBeV-Territorium, CH₄/N₂O kämen mit fremder
    Systemgrenze). **Zuordnung ausschließlich über Spalte A** — die Kommentarspalte B
@@ -750,7 +762,107 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
 
 ---
 
-## 8 Offene Punkte
+## 8 Entscheide
+
+*Anwenderentscheide, die dieses Konzept fortschreiben — jeweils mit Wortlaut, Umsetzung und
+Stand. Sie stehen hier und nicht in § 2, weil § 2 die fachlichen Festlegungen der Rev. 1
+trägt; ein Entscheid, der eine davon ändert, muss als solcher erkennbar bleiben.*
+
+### B1 — EINE Emissionsquelle für alle Erzeuger *(07.09.2026, umgesetzt)*
+
+> „Da CO₂, SO₂, NOₓ, CO und Staub in g/MWh kein CO₂-Äquivalent haben, sind diese Zahlen
+> informativ. ‚Beim BHKW ist es umgekehrt, dort liest die Simulation genau diese
+> Gerätespalten': Es soll der gepflegte CO₂-Wert herangezogen werden — der an dem
+> Energieträger hängt (gilt generell für alle Erzeuger!). Es sollte dazu eine
+> Emissionsdatenbank geben (siehe Konzept)."
+
+**Die Lage vor dem Entscheid.** Dieselbe Anwendung führte **drei** Emissionsquellen:
+
+| Stufe | Quelle vorher | Einheit |
+|---|---|---|
+| Wirtschaftlichkeit (`EmissionsBilanzRechner`), Kennzahlen (`KostenEmissionRechner`) | Emissionskatalog über `EmissionsFaktorLader` (§ 3) | CO₂ g/kWh, SO₂/NOx mg/kWh |
+| Simulation **Heizkessel** (`SimulationSPK.Kesseldaten_Einlesen`) | `Tab_Brennstoff_Stamm` **unmittelbar** über die Brennstoff-ID des Geräts | g/kWh bzw. mg/kWh |
+| Simulation **BHKW** (`SimulationBHKW.Moduldaten_Einlesen`) | die fünf **Gerätespalten** `Tab_BHKW.CO2/SO2/NOX/CO/Staub` | g/MWh |
+
+Damit trug ein und dasselbe BHKW im Rechenlauf und in der Emissionsbilanz verschiedene
+Zahlen, ohne dass irgendeine Anzeige den Unterschied genannt hätte. Der Kessel las die
+Altspalte am Katalog vorbei: kein Projektwert, keine aktive `emissionswert`-Zeile, kein
+Berechnungsmodus.
+
+**Umgesetzt am 07.09.2026.** Ein Kern-Dienst
+`Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs` liefert je Projekt und Energieträger den
+**wirksamen** Faktorsatz — CO₂ nach Modus (F7), dazu SO₂, NOₓ und Staub — samt der Ebene, aus
+der er stammt. Simulation (Kessel und BHKW), Wirtschaftlichkeit, Kennzahlen und die
+Autarkie-Kachel lesen seither über **diese eine Stelle**; die Lesekette selbst ist unverändert
+die aus § 3 (`EmissionsFaktorLader`).
+
+**Zwei Ergänzungen an der Kette, beide klein und begründet:**
+
+* **Staub kommt mit.** `EmissionsFaktorSatz` führt jetzt `Staub`. Die Art ist im
+  Auslieferungsstand **abgewählt** (F5); dann gilt `Tab_Brennstoff_Stamm.Staub` — dieselbe
+  Ebene `STAMM`, die die Kette für die drei Kernarten ohnehin liest. Der Rückfall steht
+  bewusst **außerhalb** der Zeilenliste, damit er weder die CO₂e-Summe (F6) noch die
+  Vollständigkeitsprüfung der Emissionsbilanz verschiebt.
+* **Ein fünftes Glied für Anlagen ohne Energieträger.** `Tab_Energieanlagen.ID_Carrier` ist im
+  Bestand vielfach leer (in der Testdatenbank bei fünf von zwölf Referenzprojekten). Ohne
+  Träger gibt es keinen Weg in den Katalog; statt einer stillen 0 gilt dann der **Brennstoff
+  des Geräts** gegen dieselbe `Tab_Brennstoff_Stamm`, in der die Kette ohnehin endet
+  (Ebene `BRENNSTOFF`). Das ist keine zweite Wahrheit — es ist dieselbe Zeile über einen
+  anderen Schlüssel — und es ist genau das Verhalten, das der Kessel vorher hatte. Das
+  Laufprotokoll nennt jeden solchen Fall, damit die fehlende Zuordnung sichtbar bleibt.
+
+**Die fünf Gerätespalten sind seither „nur Anzeige".** `ParameterVerwendung` stuft sie bei
+**Kessel und BHKW** gleich ein (`Verwendung.Dialog`); beide Katalogeditoren tragen über den
+Feldern eine Herleitungszeile: „Nur zur Information — die Emissionsrechnung nimmt den Faktor
+des Energieträgers aus dem Emissionskatalog." Die Werte bleiben pflegbar; sie sind eine
+Herstellerangabe.
+
+**Was sich dadurch ändert — und was nicht.** Die Emissionsgrößen der Simulation
+(`Em_CO2_SPK`, `Em_CO2_BHKW` …) ändern sich, beim BHKW erheblich: Ein Modul mit
+`Tab_BHKW.CO2 = 0` wies bisher **null** CO₂ aus, obwohl es Erdgas verbrannte. Kein anderes
+Ergebnis ist betroffen — die Emissionswerte der Simulation stehen in **keiner**
+Referenz-CSV und in keiner `Tab_Ergebnis*`-Spalte; der Referenzlauf der zwölf Projekte bleibt
+**byte-gleich** (Nachweis unten, § 9 Punkt 8). Der Nachweis der Änderung steht deshalb in
+`EPOS.Kern.Tests/EmissionsquelleTests.cs`, nicht im Referenzlauf.
+
+**Kein Migrationsschritt.** Die Tabellen `emissionsart`/`emissionswert` reichen; die Saat der
+Schritte 56 bis 58 bleibt unverändert. Ein neuer Schritt wäre nur nötig, wenn eine Art **CO**
+angelegt werden soll — siehe § 9 Punkt 9.
+
+### B2 — Die fünf Maßspalten der Wärmepumpe bleiben *(07.09.2026, Empfehlung angenommen, keine Programmarbeit)*
+
+Zum Befund W14a‑E‑8‑B2 (`Laenge`, `Breite`, `Hoehe`, `Gewicht`, `Raum` in `Tab_WP_STAMM` —
+die einzigen fünf Spalten aller sieben Kataloge mit der Stufe `Keine`) lautet der Entscheid
+**„Empfehlung"**: Sie bleiben als **Referenzdaten** aus dem VDI‑3805‑Import stehen und sind in
+der Parameterübersicht als „nicht verwendet" gekennzeichnet. **Keine Programmarbeit** — der
+Entscheid ist hier vermerkt, damit die Stufe `Keine` nicht eines Tages als Versehen gilt und
+jemand die Spalten löscht.
+
+### W11a‑O‑2 — Die Autarkie-Kachel nimmt dieselbe Quelle *(07.09.2026, umgesetzt)*
+
+Der offene Punkt aus Welle 11a: Die Kachel „CO₂-Ersparnis" der Ergebnisseite rechnete mit zwei
+Literalen aus `DashboardForm.cs:355` — **0,42 kg/kWh** für verdrängten Netzstrom und
+**0,20 kg/kWh** für verdrängte Wärme —, die mit keiner anderen Zahl des Hauses abgestimmt
+waren. Sie sind durch Faktoren aus dem Emissionskatalog ersetzt:
+
+* **Netzstrom** — der dem Projekt zugeordnete Träger mit `pricing_model = 'ELECTRICITY'`
+  (`Emissionsquelle.Netzstrom`). Rückfall ohne Träger: **435 g/kWh**, derselbe Wert wie
+  `KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH` (BAFA EEW, „El. Strom (Effizienzmaßnahme)") —
+  die Zahl steht seither **einmal**, in `Emissionsquelle.NETZSTROM_RUECKFALL_G_JE_KWH`, und
+  wird von beiden Stellen gelesen. Das war der Kern des offenen Punktes: keine zweite
+  Wahrheit.
+* **Wärme** — der Energieträger des ersten Wärmeerzeugers des Projekts (Kessel vor BHKW,
+  `Emissionsquelle.Waerme`). Rückfall ohne solchen Erzeuger: **200 g/kWh**, also die bisherige
+  Kachelzahl.
+
+**Bewusst nicht mitgeändert:** Die Wärmeseite rechnet weiterhin ohne Kesselwirkungsgrad
+(1 kWh Solarwärme gegen 1 kWh Brennstoff). Ein Wirkungsgrad im Nenner wäre fachlich richtiger,
+verschöbe die Kennzahl aber über den Faktortausch hinaus — das ist eine eigene Entscheidung
+und keine Beifracht dieses Punktes.
+
+---
+
+## 9 Offene Punkte
 
 1. ~~Modus-Reichweite~~ — **entschieden 28.08.2026: globale Vorgabe + Projekt-Override**
    (F7).
@@ -772,10 +884,29 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
    GEMIS-Vorlagen aus § 5.2 reicht das; eine formlose Bestätigung schließt die Lücke.
    (Die UBA-Seite ist unkritisch: CC0 1.0 laut Impressum der Datei, Quellenvermerk
    erfüllt durch `quelle_text`.)
+8. **Die Emissionswerte der Simulation stehen in keiner Referenz-CSV** (gemessen
+   07.09.2026 im Zuge von B1). Weder `aggregate.csv` noch eine Vektordatei führt eine
+   Emissionsgröße — `Referenzlauf/Ergebnisexport.cs` schreibt keine, und `Tab_Ergebnis*`
+   hat keine Emissionsspalte. Der Umbau B1 ändert deshalb **kein** Feld der zwölf
+   Referenzprojekte (12/12 byte-gleich gegen `2026-09-06_R3_Straenge`, Toleranzvergleich
+   12/12 PASS, 3 313 002 Werte), und das Regressionsnetz kann eine künftige Änderung an
+   den Emissionsfaktoren **nicht** bemerken. Ob `Em_CO2_*` in den Export gehört, ist eine
+   eigene Entscheidung: Sie erweiterte die Basis um zehn Skalare je Projekt und machte
+   jede Faktoränderung sichtbar — sie zöge aber auch jede Katalogpflege in den
+   Regressionsvergleich. Bis dahin hängt der Nachweis an
+   `EPOS.Kern.Tests/EmissionsquelleTests.cs`.
+9. **Keine Emissionsart „CO"** (Befund 07.09.2026). Der Artenkatalog führt sieben Arten,
+   Kohlenmonoxid ist nicht darunter, und `Tab_Brennstoff_Stamm` hat keine CO-Spalte. Seit
+   B1 ist die CO-Emission von Kessel **und** BHKW deshalb 0; beim BHKW kam sie vorher aus
+   der Gerätespalte. Wer sie zurückhaben will, legt die Art an (Kürzel `CO`, Einheit
+   mg/kWh, Äquivalenzfaktor 0 — kein Treibhausgas nach F2) und sät Trägerwerte; das wäre
+   ein Migrationsschritt nach dem Muster 57/58. **Vorschlag, nicht eigenmächtig gebaut:**
+   Der Katalog trägt heute keinen belegten CO-Wert, und eine Art ohne Werte machte die
+   Bilanz nicht vollständiger, nur länger.
 
 ---
 
-## 9 Verweise
+## 10 Verweise
 
 - [`Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md`](Konzept_CO2-Faktoren_Energietraeger_EPOS-Plan.md) — CO₂-Saat (E1)
 - [`Konzept_Emissionsfaktoren_Quellenwahl_EPOS-Plan.md`](Konzept_Emissionsfaktoren_Quellenwahl_EPOS-Plan.md) — Herkunft/Projektwahl, wird Rev. 2
@@ -785,8 +916,16 @@ Vergleich Modus CO₂ vs. CO₂e an einem Handbeispiel.
 - `Controller\EmissionskatalogCtrl.cs` — Katalogpflege UI-frei: Arten, Werte, Übernehmen, Schutzregeln (E4)
 - `Views\Kosten\Form_Emissionskatalog.cs` — der Katalog-Dialog aus § 4.2 (E4)
 - `Views\Kosten\ucFuelSettings.cs` — Reiter „Preise & Umrechnung" / „Emissionen"; die Felder `numSO2/numCO2/numNOx` sind seit E3 unsichtbare Wertträger des Altschreibwegs
+- `Allgemein\Wirtschaftlichkeit\Emissionsquelle.cs` — DIE eine Emissionsquelle aller
+  Erzeuger samt Herkunft, Brennstoff-Rückfall und den zwei Bezugsgrößen der
+  Autarkie-Kachel (§ 8/B1, W11a‑O‑2)
 - `Allgemein\Wirtschaftlichkeit\EmissionsFaktorLader.cs` — DIE Lesekette je Träger und
-  die CO₂e-Summe für beide Rechner (E5, § 3)
+  die CO₂e-Summe für beide Rechner (E5, § 3); seit B1 auch für die Simulation, mit `Staub`
+- `Allgemein\Simulation\SimulationSPK.cs` (`Kesseldaten_Einlesen`),
+  `Allgemein\Simulation\SimulationBHKW.cs` (`Moduldaten_Einlesen`) — die zwei abgelösten
+  Quellen (§ 8/B1)
+- `Allgemein\Katalog\ParameterVerwendung.cs` — die zehn Emissionsspalten von Kessel und
+  BHKW, seit B1 beide „nur Anzeige"
 - `Allgemein\Bericht\EmissionsAusweis.cs` — Beschriftung nach Modus, eine Quelle für
   Bildschirm, Word und Excel (E5, F7)
 - `Allgemein\Bericht\KostenEmissionRechner.cs` — CO₂-Kette, `STROMMIX_CO2_G_JE_KWH` = 435

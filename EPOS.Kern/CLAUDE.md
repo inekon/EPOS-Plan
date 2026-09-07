@@ -41,7 +41,7 @@ mit seinen beiden WFO1000 löschte).
 |---|---|
 | `Allgemein/` (22) | `BhkwPlan.cs` (der Rechenkern selbst, Namespace `WPPlan.Core`), Zugriffsschicht (`IDatenzugriff`, `SqliteDatenzugriff`, `DataRepository` als Fassade, `DbParam`, `DbVorgang`, `DbWerte`, `RecordSet`), `Meldung` (Melde-Haken), `Sprache`, `ZahlText`, `Zeilenumbruch`, `SolarPVGISCalculator`, `WizardItemClass` (Typ- und Nummernkatalog) — seit iU5-U5 dazu `FileDlgClass` und `chart_test` (`ToolsClass` ist mit iU9-W14b geloescht: ihre beiden Nutzer sind gefallen, das Lesen liegt in `GanglinienTextDatei`, das Oeffnen in `Dienste.Datei`), seit iU9-W6.1 `EmissionsVorgaben` (die Vorgabewerte der beiden Katalogeditoren, vorher dreimal im Oberflächencode; seit iU9‑W11a.5 zusätzlich die beiden SUBSTITUTIONSFAKTOREN der Autarkiekachel — `CO2_NETZSTROM_KG_JE_KWH` 0,42 und `CO2_WAERME_KG_JE_KWH` 0,20, wörtlich aus `DashboardForm.cs:355`, Befund W11‑B31), seit iU9-W9 `Ferienzeit` (die vier Ferienregeln des Gebäudekatalogs samt der Umrechnung Tag/Monat ↔ Jahrestag), `Suchmuster` (die Platzhaltersuche, die zuvor zweimal wortgleich dastand) und `Gebaeudebauweise` (der Rundweg Bauart ↔ Bauweise, Entscheid W9‑O‑2) — seit dem 04.09.2026 dazu `Energieeinheit` und `BedarfEinheitWahl` |
 | `Allgemein/Simulation/` (33) | die vollständige Engine — `SimulationControl` (beide `partial`-Hälften), `Kaskadenschleife`, `SimulationKanaele`, `Init`, `SimulationRunner`, die Module je Erzeuger/Bedarf, `WaermequelleClass`/`WaermesenkeClass`, `Warnkriterien`, `ProfilBedarf`, `StilleDb`. **Mit iU9‑W10a** kommen die Rechen- und Anzeigewege der sieben Simulationsdialoge dazu: `WaermesenkeClass.SenkeAnzeige`/`SENKE_LEER` (sie war eine STATISCHE Methode auf `Form_Waermesenke` mit drei fremden Aufrufern, Befund W10‑B22), `VDI4640Pruefung.Sondenmeter`/`Volllaststunden`, `ErdreichAuswertung.ErdreichLaufErgebnis`/`ErgebnisZuordnen` (die Zuordnung stand doppelt in Maske und Aufrufer, W10‑B8) und die **erzeugte** Datei `KlimazonenPfade.cs` — 15 Zonen als SVG-Pfade, gebaut von `../Werkzeuge/KlimazonenPfade/erzeugen.py`, weil der Vorläufer die Karte zur Laufzeit mit einem Regex aus einer eingebetteten SVG las (W10‑B5). **Mit iU9‑W10b** kommt der Rest der Simulationskonfiguration dazu: `SchemaModell.cs` (unverändert verschoben — die letzte Datei, die noch in der Anwendung lag), `SchemaLayout.cs` (die ANORDNUNG des Schemas, bis dahin GDI+ in `SchemaAnsicht`: Spaltenbreiten, Knotenhöhen, Bézierbögen, Kaskadenband, Legende — headless prüfbar), `Kaskade.cs` (die vier Plätze `Tab_Einstellungen.Tool_1..4` samt den beiden Stromplätzen, bis dahin sechs unsichtbare Steuerelemente) und `WaermequelleClass.QuelleSchreiben` mit dem Satz `QuelleErgebnis` (die sechs Zweige der Quellenwahl als EIN Schreibweg). **Mit iU9‑W11a** kommen `ErgebnisPraesenz` (war `internal` in `Views/Simulation/` und steuert fünf der sechs Ergebnismasken), `Ganglinie` (`Dauerlinie`/`Anzeigewerte` aus `GanglinienDarstellung`; `Stapeltyp`/`StapelEinstellen` arbeiten auf einer WinForms-`Series` und bleiben) und `LaufFortschritt` dazu. **`SimulationControl.Do_Simulation` nimmt seither `IProgress<LaufFortschritt>` und `CancellationToken` entgegen** — ohne die beiden Zusatzangaben unverändert; der Abbruch wird ZWISCHEN den fünf Phasen geprüft (Start, Kaskade, Photovoltaik, Stromspeicher, Abschluss). Eine Meldung je Erzeuger gibt der Rechenweg nicht her: Die Kaskade läuft stundenweise und bedient in jeder Stunde alle Erzeuger nacheinander. **Die vier EIGENANTEILE** (`SimulationRunner.EigenanteilWpMwh`/`…KesselMwh`/`…SolarKwh`/`…BhkwMwh`) und die zwei Ableitungen `RestNachEigenanteil`/`DeckungProzent` sind aus `BaueErgebnis` herausgezogen: Dieselben Ausdrücke standen wortgleich in `Form_Simulation_Detail` |
-| `Allgemein/Wirtschaftlichkeit/` (20) | alle 20 Dateien — `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl`, die KWKG-/EEG-/Steuer-Rechner |
+| `Allgemein/Wirtschaftlichkeit/` (21) | alle 21 Dateien — `KapitalwertRechner` (DIN EN 17463), `EmissionsBilanzRechner`, `StromMatrix`, `WirtschaftlichkeitCtrl`, die KWKG-/EEG-/Steuer-Rechner; **seit dem Anwenderentscheid W14a‑E‑8‑B1 (07.09.2026) `Emissionsquelle`** — DIE eine Emissionsquelle aller Erzeuger (siehe unten) |
 | `Allgemein/Bericht/` (14 + 4) | die **DATEN**-Hälfte: `BerichtTexte`, `BerichtsDaten`, `EmissionsAusweis`, `KostenEmissionRechner`, `ProjektDetails`, `KennzahlenKatalog`, `AbweichungsErmittler`; seit iU7-5 der **Renderer** `ChartRenderer` (seit iU9‑W10a mit `Jahresgang` — 1 304 × 440, zwei Reihen, Monatsachse 0…12, vorzeichenfähige y-Achse, für das Quelltemperaturbild des Erdreichdialogs); seit iU5-U3 die **AUSGABE** `WordBerichtGenerator`, `ExcelBerichtGenerator`, `IBerichtsBaustein`, `BerichtsKonfiguration`, `ZeitreihenExtraktor` und `Bausteine/` (4 Dateien); seit iU9‑W12 `PeakShavingBild` — die drei Reihen und Farben des Vorher/Nachher-Bildes der Lastspitzenkappung. Es ist **kein neuer Renderer**: `ChartRenderer.ErzeugerStapel` trägt seit iU9‑W11a eine Sekundärachse, und genau die braucht der Ladezustand (kWh und kW teilen keine Skala) |
 | `Allgemein/Dienste/` (22) | die **neun Umgebungsdienste** (iU5): `Dienste` (Halter), `IDialogDienst`, `IDateiDienst`, `IPfade`, `IEinstellungen`, `ILizenzAblage`, `IGeraeteId`, `ISprache`, `INavigation`, `IProjektKontext`, ihre Standardfassungen (`StilleDialoge`, `KeineDateiwahl`, `StandardPfade`, `FluechtigeEinstellungen`, `KeineAblage`, `KeineGeraeteId`, `StandardSprache`, `KeineNavigation`, `LeererProjektKontext`) und die sprachneutralen Schlüssel `Masken`, `Ansichten`, `Projektwahl`. **Die Konstantenklasse `Gewerke` und `INavigation.OeffneGewerk` sind mit iU9‑W16b.1 entfallen** — sie existierten ausschließlich für `FormMain` (Befunde W16‑B27/B28) |
 | `Allgemein/Update/` (5) | `Anlagenzeilen`, `ProjektPuffer`, `SchemaKatalog`, `SchemaStand` (Ergebniszustand der Migration und die DDL-Konstanten, die Controller zur Selbstanlage brauchen) — seit iU5-U5 dazu `AnlagenEindeutigkeit`, seit iU9‑W10a `ProjektPuffer.NutzbareKapazitaetKWh` (Volumen × 1,16 × Spreizung ÷ 1000 — die Formel stand in ZWEI Masken, Befund W10‑B12; die Leerregeln bleiben je Maske) |
@@ -342,6 +342,50 @@ Pixelvergleich gegen GDI+ läuft unter Windows.
 in `EPOS.Kern.csproj` und in `EPOS.Kern.Tests.csproj`. Welche Native passt, entscheidet die
 Bauumgebung und nicht das TargetFramework; jede Umgebung zieht genau ihre eigene statt aller
 drei. Win32 steht mit dabei, weil `windows.yml` `dotnet test WP-Plan.Kern.slnf` fährt.
+
+## Eine Emissionsquelle für alle Erzeuger
+
+**Hausregel seit dem Anwenderentscheid W14a‑E‑8‑B1 vom 07.09.2026.** Wer einen Emissionsfaktor
+braucht — gleich ob im Rechenlauf, in der Wirtschaftlichkeit, im Bericht oder auf einer
+Kachel —, holt ihn über `Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs`. Es gibt keine
+zweite Stelle mehr.
+
+Bis zu diesem Entscheid gab es drei: Die Wirtschaftlichkeit las den Emissionskatalog über
+`EmissionsFaktorLader`, der **Heizkessel** las `Tab_Brennstoff_Stamm` unmittelbar über die
+Brennstoff-ID des Geräts, und das **BHKW** las die fünf Gerätespalten seines Katalogs
+(`Tab_BHKW.CO2/SO2/NOX/CO/Staub`, Einheit g/MWh). Dasselbe Modul trug damit im Rechenlauf und
+in der Emissionsbilanz verschiedene Zahlen.
+
+| Was | Aufruf |
+|---|---|
+| Faktorsatz eines Erzeugers | `Emissionsquelle.Fuer(idProjekt, carrierId, idBrennstoffRueckfall, modus)` |
+| Berechnungsmodus des Laufs (F7) | `Emissionsquelle.Modus(idProjekt)` — **einmal je Lauf**, nicht je Erzeuger |
+| Netzstrom (Autarkie-Kachel, Kennzahlen) | `Emissionsquelle.Netzstrom(idProjekt, modus)`, Rückfall `NETZSTROM_RUECKFALL_G_JE_KWH` = 435 |
+| verdrängte Wärme (Autarkie-Kachel) | `Emissionsquelle.Waerme(idProjekt, modus)`, Rückfall `WAERME_RUECKFALL_G_JE_KWH` = 200 |
+| Stromträger des Projekts | `Emissionsquelle.StromTraeger(idProjekt)` |
+
+**Die Lesekette bleibt die des Konzepts** (`Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md`
+§ 3, unverändert in `EmissionsFaktorLader`): Projektwert → aktive `emissionswert`-Zeile →
+`Tab_Brennstoff_Stamm` → Altspalte `energy_carrier`. `Emissionsquelle` legt zwei Dinge darum:
+den **Modus** (im Modus `CO2E` das Äquivalent nach F6) und ein **fünftes Glied** für Anlagen
+ohne `Tab_Energieanlagen.ID_Carrier` — dann gilt der Brennstoff des Geräts gegen dieselbe
+`Tab_Brennstoff_Stamm`, in der die Kette ohnehin endet (Ebene `BRENNSTOFF`), und der Lauf sagt
+es im Protokoll an.
+
+**Einheiten, und warum sie nicht dieselben sind wie am Gerät:** Der Katalog führt CO₂ in
+**g/kWh** und SO₂/NOₓ/Staub in **mg/kWh** (Konzept F4); die Gerätespalten standen in **g/MWh**.
+Beide Simulationsstufen teilen ihre Summe wie bisher durch 1 000 — dadurch stehen `Em_CO2_*`
+seither in **t/a** und `Em_SO2_*`/`Em_NOX_*`/`Em_Staub_*` in **kg/a**, deckungsgleich mit
+`EmissionsBilanzRechner`. Vorher führte die BHKW-Stufe ihr CO₂ in kg/a, die Kesselstufe in t/a.
+
+**Die zehn Gerätespalten von Kessel und BHKW sind „nur Anzeige"** (`ParameterVerwendung`,
+Stufe `Dialog`); beide Katalogeditoren tragen darüber eine Herleitungszeile
+(`HZKK_EMISSION_INFO`). Sie bleiben pflegbar — als Herstellerangabe.
+
+**Nachweis:** `EPOS.Kern.Tests/EmissionsquelleTests.cs`. Der Referenzlauf taugt hier **nicht**
+als Wächter: Keine Referenz-CSV führt eine Emissionsgröße (`Referenzlauf/Ergebnisexport.cs`
+schreibt keine, `Tab_Ergebnis*` hat keine Emissionsspalte), die zwölf Projekte sind nach dem
+Umbau byte-gleich. Wer eine Emissionsgröße ändert, misst sie an dieser Probe.
 
 ## Die Anzeigeeinheit einer Energiemenge
 

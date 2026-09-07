@@ -11141,6 +11141,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur zur Information — die Emissionsrechnung nimmt den Faktor des Energieträgers aus dem Emissionskatalog. ähnelt.
+        /// </summary>
+        public static string HZKK_EMISSION_INFO {
+            get {
+                return ResourceManager.GetString("HZKK_EMISSION_INFO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaftsverluste ähnelt.
         /// </summary>
         public static string HZKK_FELD_BBVERLUST {

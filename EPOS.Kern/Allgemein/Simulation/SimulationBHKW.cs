@@ -94,7 +94,10 @@ namespace WindowsFormsApplication1
         //public float BioErdgasleistung = 0f;
 
 
-        // Emissionswerte
+        // Emissionswerte der BHKW-Stufe. EINHEITEN seit W14a-E-8-B1: CO2 in t/a,
+        // SO2/NOx/CO/Staub in kg/a - dieselbe Konvention wie Kesselstufe und
+        // EmissionsBilanzRechner. Vorher stand CO2 hier in kg/a, weil die Faktoren aus
+        // den Geraetespalten in g/MWh kamen statt aus dem Katalog in g/kWh.
         public float Em_CO2_BHKW = 0f;
         public float Em_SO2_BHKW = 0f;
         public float Em_NOX_BHKW = 0f;
@@ -154,6 +157,10 @@ namespace WindowsFormsApplication1
         private int[] bhkwBrennstoffart = new int[10];
         private float[] bhkwWirkungsgrad = new float[10];
         private float[] bhkwSKZ = new float[10];
+        // Emissionsfaktoren je Modul aus DER EINEN Quelle (Emissionsquelle,
+        // W14a-E-8-B1): CO2 in g/kWh - im Modus CO2E das Aequivalent (F7) -,
+        // SO2/NOx/CO/Staub in mg/kWh. CO bleibt 0, solange der Artenkatalog keine
+        // CO-Art fuehrt (Tab_Brennstoff_Stamm hat keine CO-Spalte).
         private float[] bhkwCO2Factor = new float[10];
         private float[] bhkwSO2Factor = new float[10];
         private float[] bhkwNOXFactor = new float[10];
@@ -308,6 +315,10 @@ namespace WindowsFormsApplication1
             // Pakets BHKW-REGULÄR, der "0 ODER 1" auf 30 hob - mit W6-E-7 ist genau
             // diese Mitnahme der gepflegten 0 nicht mehr gewollt.
 
+            // W14a-E-8-B1: Der Berechnungsmodus (CO2 oder CO2-Aequivalent, Konzept F7)
+            // gilt fuer den ganzen Lauf - EINMAL gelesen, nicht je Modul.
+            string modus = Emissionsquelle.Modus(m_ID_Projekt);
+
             BHKWCtrl ctrl = new BHKWCtrl();
             for (int i = 0; i < anzahl; i++)
             {
@@ -344,13 +355,80 @@ namespace WindowsFormsApplication1
                     // Volllast oder gar nicht.
                     bhkwGrenzL[i] = (float)(ctrl.m_Grenzleistung / 100.0); // Prozent -> Faktor (50 -> 0,5)
 
-                // Emissionsfaktoren aus der DB auslesen (Äquivalent zu Cells(zaehler+2, X))
-                bhkwCO2Factor[i] = (float)ctrl.m_CO2;
-                bhkwSO2Factor[i] = (float)ctrl.m_SO2;
-                bhkwNOXFactor[i] = (float)ctrl.m_NOx;
-                bhkwCOFactor[i] = (float)ctrl.m_CO;
-                bhkwStaubFactor[i] = (float)ctrl.m_Staub;
+                // ANWENDERENTSCHEID W14a-E-8-B1 (07.09.2026): HIER STANDEN DIE FUENF
+                // GERAETESPALTEN, und sie sind als Rechengroesse gefallen.
+                //
+                //     bhkwCO2Factor[i]   = (float)ctrl.m_CO2;     // Tab_BHKW.CO2
+                //     bhkwSO2Factor[i]   = (float)ctrl.m_SO2;
+                //     bhkwNOXFactor[i]   = (float)ctrl.m_NOx;
+                //     bhkwCOFactor[i]    = (float)ctrl.m_CO;
+                //     bhkwStaubFactor[i] = (float)ctrl.m_Staub;
+                //
+                // Der Anwender: "Da CO2, SO2, NOx, CO und Staub in g/MWh kein
+                // CO2-Aequivalent haben, sind diese Zahlen informativ. […] Es soll der
+                // gepflegte CO2-Wert herangezogen werden - der an dem Energietraeger
+                // haengt (gilt generell fuer alle Erzeuger!)."
+                //
+                // SEITHER GILT DIE EINE KETTE (Emissionsquelle -> EmissionsFaktorLader),
+                // dieselbe, aus der Kessel, Emissionsbilanz und Kennzahlen lesen:
+                // Projektwert -> aktive emissionswert-Zeile -> Tab_Brennstoff_Stamm ->
+                // energy_carrier, im Berechnungsmodus des Projekts (F7). Ohne
+                // zugeordneten Energietraeger gilt der Brennstoff des Geraets gegen
+                // dieselbe Tab_Brennstoff_Stamm.
+                //
+                // EINHEITENWECHSEL, mit Absicht: Die Gerätespalten stehen in g/MWh, der
+                // Katalog fuehrt CO2 in g/kWh und SO2/NOx/Staub in mg/kWh (F4). Die
+                // Auswertung teilt wie bisher durch 1 000 - damit steht Em_CO2_BHKW
+                // seither in t/a statt in kg/a und deckt sich mit der Kesselstufe und
+                // mit EmissionsBilanzRechner. Die fuenf Katalogspalten bleiben als
+                // Herstellerangabe erhalten und sind "nur Anzeige"
+                // (ParameterVerwendung, Herleitungszeile im Katalogeditor).
+                Emissionsfaktoren ef = Emissionsquelle.Fuer(
+                    m_ID_Projekt, CarrierZuModul(i), ctrl.m_Brennstoff, modus);
+
+                bhkwCO2Factor[i] = (float)ef.Co2GKwh;
+                bhkwSO2Factor[i] = (float)ef.So2MgKwh;
+                bhkwNOXFactor[i] = (float)ef.NoxMgKwh;
+                bhkwCOFactor[i] = (float)ef.CoMgKwh;
+                bhkwStaubFactor[i] = (float)ef.StaubMgKwh;
+
+                if (ef.CarrierId <= 0)
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "EMISSION_OHNE_TRAEGER_BHKW_" + Modulname(i),
+                        "BHKW: Emissionsfaktoren: Dem Modul „" + Modulname(i) + "\" ist kein " +
+                        "Energieträger zugeordnet - es gilt ersatzweise " + ef.Herkunft +
+                        ". Mit zugeordnetem Energieträger rechnet der Lauf mit dem " +
+                        "gepflegten Wert aus dem Emissionskatalog.");
             }
+        }
+
+        /// <summary>
+        /// Der Energieträger EINES Moduls aus <see cref="bhkw_carrier"/> (W14a-E-8-B1);
+        /// 0 = keiner zugeordnet.
+        ///
+        /// <para>Der Schlüssel ist der Anlagen-Bezeichner aus
+        /// <see cref="bhkw_list_Namen"/> — <see cref="bhkw_list"/> selbst trägt die
+        /// KATALOG-ID und taugt dafür nicht (zwei Module desselben Typs wären nicht zu
+        /// unterscheiden). Der zweite Versuch ohne Randleerzeichen ist die Vorsorge des
+        /// <c>SimulationRunner</c> (:661).</para>
+        /// </summary>
+        private int CarrierZuModul(int index)
+        {
+            string name = Modulname(index);
+            if (bhkw_carrier == null || string.IsNullOrEmpty(name)) return 0;
+
+            int id;
+            if (bhkw_carrier.TryGetValue(name, out id)) return id;
+            if (bhkw_carrier.TryGetValue(name.Trim(), out id)) return id;
+            return 0;
+        }
+
+        /// <summary>Der Anlagen-Bezeichner des Moduls; leer, wenn die Liste kürzer ist
+        /// als die Modulzahl (Altdaten ohne Bezeichner).</summary>
+        private string Modulname(int index)
+        {
+            if (bhkw_list_Namen == null || index < 0 || index >= bhkw_list_Namen.Count) return "";
+            return bhkw_list_Namen[index] ?? "";
         }
 
         /// <summary>
@@ -398,7 +476,10 @@ namespace WindowsFormsApplication1
 
                     BruttoBHKWErzeugung += ModulVerbrauch;
 
-                    // Emissionen addieren und von g in kg oder Tonnen skalieren (/1000)
+                    // Emissionen addieren und umrechnen: CO2 [MWh x g/kWh] -> t/a,
+                    // SO2/NOx/CO/Staub [MWh x mg/kWh] -> kg/a (W14a-E-8-B1; derselbe
+                    // Teiler 1 000 wie bisher, weil die Katalogeinheiten sich um genau
+                    // diesen Faktor unterscheiden).
                     Em_CO2_BHKW += ModulVerbrauch * bhkwCO2Factor[zaehler] / 1000f;
                     Em_SO2_BHKW += ModulVerbrauch * bhkwSO2Factor[zaehler] / 1000f;
                     Em_NOX_BHKW += ModulVerbrauch * bhkwNOXFactor[zaehler] / 1000f;

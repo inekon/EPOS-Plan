@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -56,7 +56,16 @@ namespace WindowsFormsApplication1
         /// § 2.2/§ 3): Sonst rechnete dieselbe Anwendung je nach Datenlage mit 380
         /// oder 435.</para>
         /// </summary>
-        public const double STROMMIX_CO2_G_JE_KWH = 435.0;
+        /// <remarks>
+        /// <b>W14a-E-8-B1 / W11a-O-2 (07.09.2026):</b> Die Zahl steht seither in
+        /// <see cref="Emissionsquelle.NETZSTROM_RUECKFALL_G_JE_KWH"/> und wird hier nur
+        /// noch unter ihrem gewachsenen Namen weitergereicht. Grund: Dieselbe Größe
+        /// braucht seit W11a-O-2 auch die Autarkie-Kachel, und die hatte bis dahin ein
+        /// EIGENES Literal (0,42 kg/kWh) — zwei Vorgabewerte für denselben Netzstrom.
+        /// Alle bisherigen Leser (<c>BerichtsDatenSammler</c>, <c>SchemaMigration</c>,
+        /// <c>WizardCtrl</c>) bleiben unberührt.
+        /// </remarks>
+        public const double STROMMIX_CO2_G_JE_KWH = Emissionsquelle.NETZSTROM_RUECKFALL_G_JE_KWH;
 
         public static void Berechne(VariantenDaten v)
         {
@@ -154,7 +163,7 @@ namespace WindowsFormsApplication1
             // vor (sein Leistungspreis ist die Tarifstruktur, Schritt 21).
             double leistungsAnteil = 0;
             bool leistungGepflegt = false;
-            int stromCarrierId = FindeStromTraeger(v.IdProjekt);
+            int stromCarrierId = Emissionsquelle.StromTraeger(v.IdProjekt);
 
             foreach (KeyValuePair<int, double> kv in verbrauchJeTraeger)
             {
@@ -540,27 +549,11 @@ namespace WindowsFormsApplication1
             return info;
         }
 
-        // Dem Projekt zugeordneter Stromträger (pricing_model ELECTRICITY), 0 = keiner.
-        private static int FindeStromTraeger(int idProjekt)
-        {
-            try
-            {
-                object o = DataRepository.ExecuteScalar(
-                    "SELECT ec.id FROM energy_project_settings AS s " +
-                    "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
-                    "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY' LIMIT 1",
-                    new DbParam("@p", idProjekt));
-                if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
-            }
-            catch { }
-            return 0;
-        }
-
         // ================================================================= ETAPPE H2
         // Zwei schmale Zugänge für den Endenergie-Auflöser der Betriebskosten
         // (EndenergieAufloeser, Konzept_BHKW_Wirtschaftlichkeit § 4.5). Sie nutzen
         // DIESELBEN Bausteine wie die Kostenschleife oben (LadeTraeger,
-        // FindeStromTraeger) — der Arbeitspreis bleibt damit EINE Wahrheit. Die in E3
+        // Emissionsquelle.StromTraeger) — der Arbeitspreis bleibt damit EINE Wahrheit. Die in E3
         // gegen die Referenz gestellte Schleife selbst bleibt unangetastet
         // (Rechenweg-Disziplin); ihre Kostenformel „Verbrauch × 1000 / eff_hi ×
         // Preis" ist mit „Verbrauch × 1000 × ArbeitspreisJeKwh" algebraisch gleich.
@@ -587,7 +580,9 @@ namespace WindowsFormsApplication1
         /// (<c>pricing_model = 'ELECTRICITY'</c>); 0 = keiner gepflegt.</summary>
         internal static int StromTraegerId(int idProjekt)
         {
-            return FindeStromTraeger(idProjekt);
+            // W14a-E-8-B1: Die Abfrage stand hier als private FindeStromTraeger und ist
+            // in Emissionsquelle gezogen - die Autarkie-Kachel braucht denselben Träger.
+            return Emissionsquelle.StromTraeger(idProjekt);
         }
 
         private static double? W(DataRow r, string col)

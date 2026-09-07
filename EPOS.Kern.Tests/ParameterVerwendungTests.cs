@@ -166,7 +166,7 @@ namespace EPOS.Kern.Tests
         [InlineData(Anlagenart.Heizkessel, "Betriebsbereitschaftverlust")]
         [InlineData(Anlagenart.Heizkessel, "Vorlauf")]
         [InlineData(Anlagenart.Bhkw, "Grenzleistung")]
-        [InlineData(Anlagenart.Bhkw, "CO2")]
+        [InlineData(Anlagenart.Bhkw, "Wirkungsgrad")]
         [InlineData(Anlagenart.Waermepumpe, "Heizung")]
         [InlineData(Anlagenart.Waermepumpe, "Nennleistung")]
         [InlineData(Anlagenart.Solarkollektoren, "h0")]
@@ -203,10 +203,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Der Befund des Kessels</b> (W14a-E-8): Seine fuenf Emissionsspalten werden
-        /// gepflegt, aber nicht gerechnet — der Lauf holt die Faktoren aus
-        /// <c>Tab_Brennstoff_Stamm</c> (<c>SimulationSPK.cs:151-158</c>). Faellt dieser
-        /// Fall eines Tages rot aus, hat jemand den Rechenweg umgestellt, und die
-        /// Kennzeichnung muss mit.
+        /// gepflegt, aber nicht gerechnet. Seit dem Anwenderentscheid
+        /// <b>W14a-E-8-B1</b> (07.09.2026) holt der Lauf seine Faktoren aus DER EINEN
+        /// Quelle — dem Emissionskatalog des Energietraegers (<c>Emissionsquelle</c>).
+        /// Faellt dieser Fall eines Tages rot aus, hat jemand den Rechenweg umgestellt,
+        /// und die Kennzeichnung muss mit.
         /// </summary>
         [Theory]
         [InlineData("CO2")]
@@ -219,6 +220,45 @@ namespace EPOS.Kern.Tests
             ParameterEintrag e = Eintrag(Anlagenart.Heizkessel, spalte);
             Assert.False(e.Gerechnet, "Tab_Heizkessel_STAMM." + spalte + " gilt als gerechnet");
             Assert.True(e.Hat(Verwendung.Dialog));
+        }
+
+        /// <summary>
+        /// <b>Der Entscheid W14a-E-8-B1</b> (07.09.2026): Auch die fuenf
+        /// Emissionsspalten des BHKW sind nur noch Pflege. Bis dahin war das BHKW der
+        /// EINZIGE Erzeuger, dessen Rechenweg Geraetespalten als Emissionsfaktoren las
+        /// (<c>SimulationBHKW.Moduldaten_Einlesen</c>) — waehrend die Emissionsbilanz
+        /// desselben Projekts mit dem Katalogwert des Energietraegers rechnete.
+        ///
+        /// <para>Die Spalte heisst hier <c>NOX</c> und beim Kessel <c>NOx</c>; das ist
+        /// kein Schreibfehler, sondern der Bestand der beiden Stammtabellen.</para>
+        /// </summary>
+        [Theory]
+        [InlineData("CO2")]
+        [InlineData("SO2")]
+        [InlineData("NOX")]
+        [InlineData("CO")]
+        [InlineData("Staub")]
+        public void Die_Emissionen_des_BHKW_sind_seit_B1_nur_Pflege(string spalte)
+        {
+            ParameterEintrag e = Eintrag(Anlagenart.Bhkw, spalte);
+            Assert.False(e.Gerechnet, "Tab_BHKW_STAMM." + spalte + " gilt als gerechnet");
+            Assert.True(e.Hat(Verwendung.Dialog));
+        }
+
+        /// <summary>
+        /// Und die Gegenprobe zum Entscheid: Kessel und BHKW sind in der Emissionsfrage
+        /// GLEICH eingestuft. Der Befund B1 war genau der Unterschied zwischen ihnen —
+        /// „zwei Masken, die gleich aussehen"; er darf nicht zurueckkommen.
+        /// </summary>
+        [Theory]
+        [InlineData("CO2")]
+        [InlineData("SO2")]
+        [InlineData("CO")]
+        [InlineData("Staub")]
+        public void Kessel_und_BHKW_stufen_ihre_Emissionen_gleich_ein(string spalte)
+        {
+            Assert.Equal(Eintrag(Anlagenart.Heizkessel, spalte).Gerechnet,
+                         Eintrag(Anlagenart.Bhkw, spalte).Gerechnet);
         }
 
         /// <summary>

@@ -180,6 +180,8 @@ namespace WindowsFormsApplication1
                 ["BehgFluessiggas"] = Text_("HZKK_BEHG_FLUESSIGGAS", "Flüssiggas: 0,0663"),
                 ["BehgErdgas"] = Text_("HZKK_BEHG_ERDGAS", "Erdgas: 0,056"),
                 ["BtnCo2Text"] = Text_("HZKK_BTN_CO2", "CO2 BEHG"),
+                ["EmissionHinweis"] = Text_("HZKK_EMISSION_INFO",
+                    "Nur zur Information — die Emissionsrechnung nimmt den Faktor des Energieträgers aus dem Emissionskatalog."),
                 ["GruppeEmissionen"] = Text_("HZKK_GRP_EMISSIONEN",
                     "Emissionsfaktoren bezogen auf den Brennstoffverbrauch"),
                 ["LabelStaub"] = Text_("HZKK_LBL_STAUB", "Staub:"),

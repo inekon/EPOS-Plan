@@ -133,6 +133,24 @@ das Gate der Orchestrierung zieht getrennt nach.
 > nachgezogen wie üblich mit
 > `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`.
 
+> **Nachtrag 07.09.2026 — W14a‑E‑8‑B1 (eine Emissionsquelle), die Basis bleibt.** Der
+> Anwenderentscheid stellt Kessel und BHKW von zwei eigenen Emissionsquellen auf den
+> Emissionskatalog des Energieträgers um. Er ändert die Emissionsgrößen der Simulation —
+> beim BHKW erheblich (Projekt 1030: `Em_CO2_BHKW` 0 → 251,58 t/a, weil die Gerätespalte
+> `Tab_BHKW.CO2` dort 0 führt) —, **und trotzdem sind alle 312 CSV der zwölf Projekte
+> byte-gleich** (`diff -rq` ohne einen einzigen Unterschied; Toleranzvergleich 12/12 PASS,
+> 3 313 002 Werte).
+>
+> **Der Grund ist eine Lücke des Netzes, keine Wirkungslosigkeit der Änderung:** Weder
+> `aggregate.csv` noch eine Vektordatei führt eine Emissionsgröße — `Ergebnisexport.cs`
+> schreibt keine, und `Tab_Ergebnis*` hat keine Emissionsspalte. **Der Referenzlauf kann
+> eine Änderung an den Emissionsfaktoren nicht bemerken.** Eine neue Basis wäre deshalb
+> eine byte-gleiche Kopie ohne Aussage; `2026-09-06_R3_Straenge` bleibt die Basis, und
+> `kern.yml`, `ios.yml` und `CLAUDE.md` bleiben unverändert. Wer die Emissionsgrößen ins
+> Netz hängen will, erweitert zuerst den Export (offener Punkt § 9.8 des
+> Emissionsarten-Konzepts); der Nachweis der Änderung selbst steht in
+> `EPOS.Kern.Tests/EmissionsquelleTests.cs`.
+
 ### Vorgängerbasis: `2026-09-05_R2_Zeitbasis` (löste `2026-08-30_B3-Kaskade` ab)
 
 **`2026-09-05_R2_Zeitbasis/`** — **elf Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
