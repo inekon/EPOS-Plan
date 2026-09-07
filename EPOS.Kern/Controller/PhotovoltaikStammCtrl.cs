@@ -416,6 +416,62 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Zeile der Katalogliste: Primaerschluessel und Bezeichner.</summary>
         public sealed record KatalogZeile(int Id, string Bezeichner);
 
+        // =================================================================================
+        // W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG mit ihren Parameterspalten
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Zeilen der Katalogverwaltung</b> (Anwenderentscheid W14a-E-10,
+        /// Konzept_Katalogfilter 4.6 und S1.5) — SIEBEN Spalten: Bezeichner, Hersteller,
+        /// P_STC, η, Technologie, Modulflaeche und T_NOCT.
+        ///
+        /// <para><b>Der groesste Katalog des Hauses.</b> Nach dem CEC-Import stehen hier
+        /// 20 749 Zeilen von 258 Herstellern; die Verwaltung hatte bis hierher KEINEN
+        /// Filter und EINE Spalte. Der Filter greift VOR dem Raster
+        /// (<see cref="Katalogfilter.Anwenden"/>, Konzept 5.6.6) — das Raster bekommt
+        /// nach dem Filtern 15 Zeilen und virtualisiert gar nicht mehr.</para>
+        ///
+        /// <para><b>Die Modulflaeche ist abgeleitet</b>: Laenge × Breite (der Wert, mit
+        /// dem <c>SimulationPV.cs:183/480</c> rechnet). Ein Modul mit
+        /// <c>Laenge = Breite = 0</c> — 1 von 6 in der Testdatenbank — bekommt den
+        /// Halbgeviertstrich, nicht die 0 (W6-E-1).</para>
+        ///
+        /// <para><b>η steht hier in PROZENT</b> (Spalte <c>Wirkungsgrad</c>, wie sie der
+        /// Import schreibt: P_STC / A_c / 10) und nicht als Faktor wie beim Heizkessel —
+        /// deshalb traegt die Spalte die Einheit „%".</para>
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, Firma, Leistung, Wirkungsgrad, Technologie, " +
+                "Laenge, Breite, T_NOCT, ReadOnly FROM " + TABLE + " ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string bezeichner = Katalogfeld.Text(r, "Bezeichner");
+
+                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID"), bezeichner)
+                {
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                };
+
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
+                    .MitText(Katalogfilterprofil.SpHersteller, Katalogfeld.Text(r, "Firma"))
+                    .MitZahl(Katalogfilterprofil.SpPstc, Katalogfeld.Zahl(r, "Leistung"), 1)
+                    .MitZahl(Katalogfilterprofil.SpEta, Katalogfeld.Zahl(r, "Wirkungsgrad"), 2)
+                    .MitText(Katalogfilterprofil.SpTechnologie, Katalogfeld.Text(r, "Technologie"))
+                    .MitZahl(Katalogfilterprofil.SpModulflaeche,
+                             Katalogfeld.Produkt(Katalogfeld.Zahl(r, "Laenge"),
+                                                 Katalogfeld.Zahl(r, "Breite")), 2)
+                    .MitZahl(Katalogfilterprofil.SpTnoct, Katalogfeld.Zahl(r, "T_NOCT"), 1));
+            }
+            return liste;
+        }
+
         /// <summary>
         /// Die Hersteller des Katalogs in Anzeigereihenfolge - die Auswahlliste
         /// <c>comboBox_Hersteller</c>.

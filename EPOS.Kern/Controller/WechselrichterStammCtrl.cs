@@ -174,6 +174,56 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
+        //  W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG
+        // =================================================================
+
+        /// <summary>
+        /// <b>Die Zeilen der Katalogverwaltung</b> (Anwenderentscheid W14a-E-10,
+        /// Konzept_Katalogfilter 4.7 und S1.5) — SIEBEN Spalten: Bezeichner, Hersteller,
+        /// P_AC, η_euro, MPPT, U_DC,max und Herkunft.
+        ///
+        /// <para><b>Die Herstellerklappliste entfaellt damit</b> (S1.6): „enthaelt SMA"
+        /// im Spaltenkopf leistet dasselbe und trifft nebenbei die Schreibvarianten
+        /// desselben Hauses (offener Punkt O-4), die eine Klappliste als verschiedene
+        /// Hersteller gefuehrt haette. <see cref="Filtern"/> und
+        /// <see cref="Hersteller"/> bleiben stehen — der Geraeteimport benutzt sie
+        /// weiter.</para>
+        ///
+        /// <para><b>η_euro ist die eine Kennzahl, die zwei Geraete vergleichbar macht</b>
+        /// (Konzept 2.7), <b>MPPT</b> die Ost/West-Frage und <b>Herkunft</b> die Auskunft,
+        /// ob der Satz aus CEC, OND oder von Hand stammt.</para>
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Bezeichner, Firma, P_AC_Nenn, Eta_Euro, Anzahl_Mppt, " +
+                "U_Dc_Max, Herkunft, ReadOnly FROM [" + TABLE + "] ORDER BY Bezeichner");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string bezeichner = Katalogfeld.Text(r, "Bezeichner");
+
+                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID"), bezeichner)
+                {
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                };
+
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
+                    .MitText(Katalogfilterprofil.SpHersteller, Katalogfeld.Text(r, "Firma"))
+                    .MitZahl(Katalogfilterprofil.SpPac, Katalogfeld.Zahl(r, "P_AC_Nenn"), 2)
+                    .MitZahl(Katalogfilterprofil.SpEtaEuro, Katalogfeld.Zahl(r, "Eta_Euro"), 3)
+                    .MitZahl(Katalogfilterprofil.SpMppt, Katalogfeld.Zahl(r, "Anzahl_Mppt"), 0)
+                    .MitZahl(Katalogfilterprofil.SpUdcMax, Katalogfeld.Zahl(r, "U_Dc_Max"), 0)
+                    .MitText(Katalogfilterprofil.SpHerkunft, Katalogfeld.Text(r, "Herkunft")));
+            }
+            return liste;
+        }
+
+        // =================================================================
         //  Schreiben
         // =================================================================
 

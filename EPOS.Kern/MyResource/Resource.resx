@@ -780,6 +780,153 @@
   <data name="KDLG_ET_TAB_PREISE" xml:space="preserve">
     <value>Preise &amp; Umrechnung</value>
   </data>
+  <data name="KFLT_SP_APERTUR" xml:space="preserve">
+    <value>A_ap</value>
+  </data>
+  <data name="KFLT_SP_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichner</value>
+  </data>
+  <data name="KFLT_SP_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="KFLT_SP_BRENNWERT" xml:space="preserve">
+    <value>Brennwert</value>
+  </data>
+  <data name="KFLT_SP_CHEMIE" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="KFLT_SP_COP" xml:space="preserve">
+    <value>COP A2/W35</value>
+  </data>
+  <data name="KFLT_SP_CRATE" xml:space="preserve">
+    <value>C-Rate</value>
+  </data>
+  <data name="KFLT_SP_ENERGIE" xml:space="preserve">
+    <value>E</value>
+  </data>
+  <data name="KFLT_SP_ETA" xml:space="preserve">
+    <value>η</value>
+  </data>
+  <data name="KFLT_SP_ETAEURO" xml:space="preserve">
+    <value>η_euro</value>
+  </data>
+  <data name="KFLT_SP_ETANULL" xml:space="preserve">
+    <value>η₀</value>
+  </data>
+  <data name="KFLT_SP_ETART" xml:space="preserve">
+    <value>η_RT</value>
+  </data>
+  <data name="KFLT_SP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="KFLT_SP_HERSTELLER" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="KFLT_SP_K1" xml:space="preserve">
+    <value>k1</value>
+  </data>
+  <data name="KFLT_SP_KOLLEKTORTYP" xml:space="preserve">
+    <value>Kollektortyp</value>
+  </data>
+  <data name="KFLT_SP_KUEHLEN" xml:space="preserve">
+    <value>Kühlen</value>
+  </data>
+  <data name="KFLT_SP_LEISTUNG" xml:space="preserve">
+    <value>P</value>
+  </data>
+  <data name="KFLT_SP_MODELL" xml:space="preserve">
+    <value>Modell</value>
+  </data>
+  <data name="KFLT_SP_MODULFLAECHE" xml:space="preserve">
+    <value>A_Modul</value>
+  </data>
+  <data name="KFLT_SP_MOTORTYP" xml:space="preserve">
+    <value>Motortyp</value>
+  </data>
+  <data name="KFLT_SP_MPPT" xml:space="preserve">
+    <value>MPPT</value>
+  </data>
+  <data name="KFLT_SP_NENNLEISTUNG" xml:space="preserve">
+    <value>P_N</value>
+  </data>
+  <data name="KFLT_SP_PAC" xml:space="preserve">
+    <value>P_AC</value>
+  </data>
+  <data name="KFLT_SP_PEL" xml:space="preserve">
+    <value>P_el</value>
+  </data>
+  <data name="KFLT_SP_PSTC" xml:space="preserve">
+    <value>P_STC</value>
+  </data>
+  <data name="KFLT_SP_PTHERM" xml:space="preserve">
+    <value>P_th</value>
+  </data>
+  <data name="KFLT_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KFLT_SP_SIGMA" xml:space="preserve">
+    <value>σ</value>
+  </data>
+  <data name="KFLT_SP_SPEICHERTYP" xml:space="preserve">
+    <value>Speichertyp</value>
+  </data>
+  <data name="KFLT_SP_TECHNOLOGIE" xml:space="preserve">
+    <value>Technologie</value>
+  </data>
+  <data name="KFLT_SP_TNOCT" xml:space="preserve">
+    <value>T_NOCT</value>
+  </data>
+  <data name="KFLT_SP_UDCMAX" xml:space="preserve">
+    <value>U_DC,max</value>
+  </data>
+  <data name="KFLT_SP_VERLUSTE" xml:space="preserve">
+    <value>q_B</value>
+  </data>
+  <data name="KFLT_SP_VLMAX" xml:space="preserve">
+    <value>VL max</value>
+  </data>
+  <data name="KFLT_SP_VLMIN" xml:space="preserve">
+    <value>VL min</value>
+  </data>
+  <data name="KFLT_SP_VOLUMEN" xml:space="preserve">
+    <value>V</value>
+  </data>
+  <data name="KFLT_SP_ZUHEIZUNG" xml:space="preserve">
+    <value>Zuheizung</value>
+  </data>
+  <data name="KFLT_SP_ZYKLEN" xml:space="preserve">
+    <value>Zyklen</value>
+  </data>
+  <data name="KFLT_FILTER_LOESCHEN" xml:space="preserve">
+    <value>Filter löschen</value>
+  </data>
+  <data name="KFLT_PLATZ_TEXT" xml:space="preserve">
+    <value>enthält…</value>
+  </data>
+  <data name="KFLT_PLATZ_ZAHL" xml:space="preserve">
+    <value>z. B. &gt;10, &lt;60, 10..60, =15</value>
+  </data>
+  <data name="KFLT_SORTIEREN" xml:space="preserve">
+    <value>Sortieren nach {0}</value>
+  </data>
+  <data name="KFLT_SUCHE" xml:space="preserve">
+    <value>Suche über alle Spalten:</value>
+  </data>
+  <data name="KFLT_SUCHE_PLATZ" xml:space="preserve">
+    <value>Suchen – * und ? erlaubt</value>
+  </data>
+  <data name="KFLT_TREFFER" xml:space="preserve">
+    <value>{0} von {1} Sätzen</value>
+  </data>
+  <data name="KFLT_TRICHTER" xml:space="preserve">
+    <value>Filter: {0}</value>
+  </data>
+  <data name="KFLT_TRICHTER_GESETZT" xml:space="preserve">
+    <value>Filter gesetzt: {0}</value>
+  </data>
+  <data name="KFLT_ZURUECKSETZEN" xml:space="preserve">
+    <value>Filter zurücksetzen</value>
+  </data>
   <data name="KKOMP_BANNER_ZU" xml:space="preserve">
     <value>Hinweis ausblenden</value>
   </data>
