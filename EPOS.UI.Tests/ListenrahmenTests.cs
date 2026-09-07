@@ -102,6 +102,92 @@ public class ListenrahmenTests : BunitContext
     }
 
     // =====================================================================
+    // iU8‑E‑3 — der RAHMEN (Windows-Abnahme V2 vom 07.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Anwenderwunsch iU8‑E‑3</b>: „Allgemein zu Dialogen mit Listen: Zur
+    /// besseren optischen Abgrenzung sollten Listen einen Rahmen haben." Gemeldet an
+    /// der Verwaltung der Photovoltaik-Module, wo beide Listen ohne jede sichtbare
+    /// Begrenzung im Dialog standen.
+    ///
+    /// <para>Der Rahmen steht an derselben EINEN Stelle wie die Höchsthöhe und gilt
+    /// damit für alle Listen des Hauses.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Rasterhuelle_traegt_einen_Rahmen()
+    {
+        string huelle = Stilblock(".epos-raster-huelle {");
+
+        Assert.Contains("border: 1px solid var(--epos-rahmen)", huelle);
+        Assert.Contains("border-radius: var(--epos-ecke)", huelle);
+    }
+
+    /// <summary>
+    /// Die Farbe steht als TOKEN, nicht als Literal (Hausregel „Eine Farbe steht als
+    /// Token in <c>:root</c>") — und es ist <c>--epos-rahmen</c>, nicht das leise
+    /// Grau: Jenes trägt bereits die Trennlinie ZWISCHEN zwei Zeilen, und ein
+    /// Außenrand in derselben Farbe begrenzte nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Rahmenfarbe_ist_ein_Token_und_nicht_die_der_Zeilentrennlinie()
+    {
+        string huelle = Stilblock(".epos-raster-huelle {");
+
+        Assert.DoesNotContain("#", huelle);
+        Assert.DoesNotContain("--epos-rahmen-leise", huelle);
+
+        // Und die Zeilentrennlinie bleibt das leise Grau - sonst waere der
+        // Unterschied wieder weg.
+        Assert.Contains("border-bottom: 1px solid var(--epos-rahmen-leise)",
+                        Stilblock(".epos-raster td {"));
+    }
+
+    /// <summary>
+    /// Der stehende Spaltenkopf liegt beim Rollen ÜBER der ersten Datenzeile — ohne
+    /// eine eigene Linie darunter schwämme er über sie hinweg.
+    /// </summary>
+    [Fact]
+    public void Der_Spaltenkopf_ist_innen_abgesetzt()
+    {
+        Assert.Contains("border-bottom: 1px solid var(--epos-rahmen)",
+                        Stilblock(".epos-raster-huelle .epos-raster thead th {"));
+    }
+
+    /// <summary>
+    /// Die zweite Listenform des Hauses geht NICHT über <c>.epos-raster-huelle</c> —
+    /// im Positionsraster ist eine Zeile eine kleine Maske, kein Datensatz. Sie
+    /// bekommt denselben Rahmen aus denselben zwei Token.
+    /// </summary>
+    [Fact]
+    public void Das_Zeilenraster_traegt_denselben_Rahmen()
+    {
+        string raster = Stilblock(".epos-zeilenraster {");
+
+        Assert.Contains("border: 1px solid var(--epos-rahmen)", raster);
+        Assert.Contains("border-radius: var(--epos-ecke)", raster);
+        Assert.DoesNotContain("#", raster);
+    }
+
+    /// <summary>
+    /// Die Pfeilspalte der Zweispaltenauswahl rahmt NICHT mit: Dort stehen zwei
+    /// Knöpfe und keine Liste, und sie trägt deshalb gar keine Hülle. Geprüft wird
+    /// beides — die Regel (keine Rahmenangabe im Stilblatt) und das Markup.
+    /// </summary>
+    [Fact]
+    public void Die_Pfeilspalte_der_Zweispaltenauswahl_rahmt_nicht_mit()
+    {
+        Assert.DoesNotContain("border", Stilblock(".epos-zweispalten-mitte {"));
+
+        var cut = Render<GebaeudeDialog>(p => p
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
+            .Add(x => x.Baualtersklassen, new[] { "vor 1919" }));
+
+        Assert.Empty(cut.FindAll(".epos-zweispalten-mitte .epos-raster-huelle"));
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
+    }
+
+    // =====================================================================
     // Das Markup, das die Regel treffen muss
     // =====================================================================
 
@@ -162,6 +248,22 @@ public class ListenrahmenTests : BunitContext
 
         Assert.Contains("epos-raster-huelle--frei",
                         cut.Find(".epos-projektliste .epos-raster-huelle").ClassName ?? "");
+    }
+
+    /// <summary>
+    /// Und das Positionsraster trägt seine eigene Hausklasse — die Regel oben trifft
+    /// damit ein Markup, das es wirklich gibt (Lehre W6‑B‑1: Eine bunit-Probe sieht
+    /// die Stilregel nicht, eine Stilregel ohne Markup trifft nichts).
+    /// </summary>
+    [Fact]
+    public void Ein_Zeilenraster_traegt_die_Hausklasse()
+    {
+        var cut = Render<Zeilenraster>(p => p
+            .Add(x => x.Bezeichnung, "Positionen")
+            .Add(x => x.Spalten, new[] { "Bezeichnung", "Betrag" })
+            .Add(x => x.Spaltenmass, "2fr 1fr"));
+
+        Assert.Single(cut.FindAll("div.epos-zeilenraster"));
     }
 
     /// <summary>

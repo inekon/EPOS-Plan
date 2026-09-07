@@ -94,6 +94,45 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Dieselben Reihen aus der PROJEKTKOPIE (<c>Tab_Kenndaten</c>) statt aus dem
+        /// Stammkatalog — <b>Befund W7‑B‑3</b> der Windows-Abnahme V2 vom 07.09.2026:
+        /// „Energieerzeuger → Wärmepumpe (Projekt ‚Stromspeicher mit Wärmepumpe'):
+        /// im Projekt-Wärmepumpen-Dialog keine Kennlinie."
+        ///
+        /// <para><b>Warum es diese zweite Methode braucht.</b>
+        /// <see cref="Reihen(int)"/> liest <c>Tab_Kenndaten_STAMM</c> über
+        /// <c>WPStammCtrl.CURVE</c>; ihre <c>ID_WP</c> ist eine <c>Tab_WP_STAMM.ID</c>.
+        /// Die Anlagenzeile eines Projekts führt in <c>ID_WP</c> aber die Id der
+        /// PROJEKTKOPIE (<c>Tab_WP.ID</c>) — <c>WizardCtrl</c> setzt sie im einen
+        /// Schreibweg aller Erzeuger aus <c>WPCtrl.CopyFromStamm</c>. Beide Zahlen in
+        /// dieselbe Abfrage zu geben liefert im Regelfall NICHTS (die Projekt-Ids
+        /// liegen weit über den Katalog-Ids) und im schlimmsten Fall die Kennlinien
+        /// eines FREMDEN Katalogsatzes, dessen Id zufällig gleich ist.</para>
+        ///
+        /// <para>Der Rechenweg liest dieselbe Tabelle
+        /// (<c>SimulationWaermepumpe.ModuleAufbauen</c>): Was der Dialog zeigt, ist
+        /// damit das, womit gerechnet wird.</para>
+        /// </summary>
+        /// <param name="idWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
+        public static KennlinienSatz ReihenProjekt(int idWp)
+        {
+            var vorlaeufe = new List<int>();
+            DataTable dtv = DataRepository.GetDataTable(
+                "SELECT Vorlauf, ID_WP FROM Tab_Kenndaten GROUP BY Vorlauf, ID_WP HAVING ID_WP = ?",
+                new DbParam("@id", idWp));
+            if (dtv != null)
+                foreach (DataRow r in dtv.Rows)
+                    vorlaeufe.Add(r["Vorlauf"] != DBNull.Value ? Convert.ToInt32(r["Vorlauf"]) : 0);
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Vorlauf, Temperatur, COP, Ptherm FROM Tab_Kenndaten " +
+                "WHERE ID_WP = ? ORDER BY Temperatur ASC",
+                new DbParam("@id", idWp));
+
+            return KennlinienSatz.Bauen(vorlaeufe, dt, "Ptherm");
+        }
+
+        /// <summary>
         /// Die WÄRME-Kennlinien eines STAMMGERÄTS als Zeilenliste (iU9-W7.3) — die
         /// Abfrage, mit der <c>Form_WP.btn_Kenndaten_Click</c> (Z. 479) das
         /// <c>DataSet</c> des Editors füllte, in derselben Spaltenfolge.

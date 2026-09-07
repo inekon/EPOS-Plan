@@ -20,12 +20,44 @@ public sealed record WaermepumpeStammZeile(int Id, string Bezeichner, bool NurLe
                                            string Firma = "");
 
 /// <summary>
+/// Woher die gezeigten Kennlinien stammen — <b>Befund W7‑B‑3</b> der Windows-Abnahme
+/// V2 vom 07.09.2026.
+///
+/// <para>Eine Katalogkennlinie an einer PROJEKT-Anlage ist eine Herleitung und keine
+/// Projektwahrheit: Der Lauf rechnet ausschließlich mit den Projektkennlinien. Wer
+/// sie zeigt, ohne es zu sagen, behauptet einen Stand, den die Simulation nicht
+/// kennt.</para>
+/// </summary>
+public enum Kennlinienherkunft
+{
+    /// <summary>Ohne Aussage — der Stammdialog zeigt ohnehin nur Katalogsätze.</summary>
+    Ohne = 0,
+
+    /// <summary>Aus der Projektkopie (<c>Tab_Kenndaten</c>).</summary>
+    Projekt = 1,
+
+    /// <summary>Aus dem Stammkatalog (<c>Tab_Kenndaten_STAMM</c>) — mit Herleitungszeile.</summary>
+    Katalog = 2
+}
+
+/// <summary>
 /// Die beiden Kennlinienbilder als fertige PNG (iU9-W7.3) — gezeichnet von
 /// <c>ChartRenderer.Kennlinien</c> im Kern, angezeigt von <c>ChartBild</c>.
 /// </summary>
 /// <param name="Cop">Blatt „COP".</param>
 /// <param name="Leistung">Blatt „Leistung".</param>
-public sealed record KennlinienBilder(byte[]? Cop, byte[]? Leistung)
+/// <param name="Herkunft">
+/// Projektkopie oder Katalog (W7‑B‑3). Die Vorbelegung <see cref="Kennlinienherkunft.Ohne"/>
+/// lässt die Aufrufer unverändert, die die Frage nicht stellen — den Stammdialog.
+/// </param>
+/// <param name="Nachholbar">
+/// Lässt sich die fehlende Projektkopie der Kennlinien nachholen? Das setzt eine
+/// vorhandene Gerätekopie im Projekt UND einen Katalogsatz mit Kennlinien voraus.
+/// Nur dann zeigt der Dialog den Knopf — ein Knopf ohne Ziel ist ein Versprechen.
+/// </param>
+public sealed record KennlinienBilder(byte[]? Cop, byte[]? Leistung,
+                                      Kennlinienherkunft Herkunft = Kennlinienherkunft.Ohne,
+                                      bool Nachholbar = false)
 {
     /// <summary>Kein Bild — die Blätter zeigen dann ihren Platzhalter.</summary>
     public static readonly KennlinienBilder Leer = new(null, null);

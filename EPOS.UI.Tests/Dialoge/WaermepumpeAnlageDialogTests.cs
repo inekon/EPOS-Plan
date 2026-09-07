@@ -820,4 +820,126 @@ public class WaermepumpeAnlageDialogTests : BunitContext
         Assert.Contains("Sperrzeit durch Energieversorger", schalter);
         Assert.Contains("Bivalenter Betrieb", schalter);
     }
+
+    // =================================================================================
+    // W7‑B‑3 — Herkunft der Kennlinien (Windows-Abnahme V2 vom 07.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Der Regelfall: Die Bilder kommen aus der PROJEKTKOPIE. Dann sagt der Dialog
+    /// nichts dazu — eine Herleitung, die immer da steht, sagt nichts mehr — und der
+    /// Knopf erscheint nicht.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Projektkennlinien_stehen_ohne_Herleitung_da()
+    {
+        var cut = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Projekt))
+            .Add(x => x.KennlinienUebernehmen, _ => 16));
+
+        Assert.Empty(cut.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.DoesNotContain("Kennlinien aus dem Katalog übernehmen", cut.Markup);
+        Assert.Single(cut.FindAll(".epos-chartbild"));   // der Reiter zeichnet nur das aktive Blatt
+    }
+
+    /// <summary>
+    /// <b>Der Rückfall.</b> Fehlen die Projektkennlinien, zeigt der Dialog die des
+    /// Katalogsatzes — und sagt es in einer Herleitungszeile. Der Lauf rechnet
+    /// ausschließlich mit den Projektkennlinien; eine Katalogkennlinie ohne diesen
+    /// Satz behauptete einen Stand, den die Simulation nicht kennt.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Katalogkennlinien_tragen_ihre_Herleitung()
+    {
+        var cut = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Katalog, true))
+            .Add(x => x.KennlinienUebernehmen, _ => 16));
+
+        Assert.Single(cut.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.Contains("Katalogsatzes gleichen Namens", cut.Find(".epos-wp-kennlinienquelle .epos-herleitung").TextContent);
+        Assert.Single(cut.FindAll(".epos-chartbild"));   // der Reiter zeichnet nur das aktive Blatt
+    }
+
+    /// <summary>
+    /// Der Knopf ruft den Weg mit der GERÄTE-Id und frischt danach auf — beim zweiten
+    /// Zeichnen liefert der Delegat die Projektkennlinien, und die Herleitung ist
+    /// weg. Genau das sieht der Anwender nach dem Druck.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Der_Knopf_holt_die_Kennlinien_und_raeumt_die_Herleitung_weg()
+    {
+        int gerufenMit = 0;
+        bool geholt = false;
+
+        var cut = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Bilder, _ => geholt
+                ? new KennlinienBilder(BildCop, BildLeistung, Kennlinienherkunft.Projekt)
+                : new KennlinienBilder(BildCop, BildLeistung, Kennlinienherkunft.Katalog, true))
+            .Add(x => x.KennlinienUebernehmen, id =>
+            {
+                gerufenMit = id;
+                geholt = true;
+                return 16;
+            }));
+
+        Knopf(cut, "Kennlinien aus dem Katalog übernehmen").Click();
+
+        Assert.Equal(77, gerufenMit);            // die PROJEKT-Geraete-Id, nicht die Stamm-Id
+        Assert.Empty(cut.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.Contains("16 Stützstellen", cut.Markup);
+    }
+
+    /// <summary>
+    /// Ohne Delegat kein Knopf (Hausregel seit W2) — und ohne Gerätekopie im Projekt
+    /// ebenso wenig: Vor dem ersten Speichern gibt es nichts nachzuholen.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Ohne_Ziel_erscheint_der_Knopf_nicht()
+    {
+        var ohneDelegat = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Katalog, true)));
+
+        Assert.Single(ohneDelegat.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.DoesNotContain("Kennlinien aus dem Katalog übernehmen", ohneDelegat.Markup);
+
+        var nichtNachholbar = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Katalog))
+            .Add(x => x.KennlinienUebernehmen, _ => 16));
+
+        Assert.Single(nichtNachholbar.FindAll(".epos-wp-kennlinienquelle .epos-herleitung"));
+        Assert.DoesNotContain("Kennlinien aus dem Katalog übernehmen", nichtNachholbar.Markup);
+    }
+
+    /// <summary>
+    /// Gab es nichts zu holen — kein Katalogsatz gleichen Namens —, meldet der Dialog
+    /// das als WARNUNG statt still nichts zu tun.
+    /// </summary>
+    [Fact]
+    public void W7_B_3_Ohne_Katalogsatz_meldet_der_Knopf_es()
+    {
+        var cut = Render<WaermepumpeAnlageDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Stammliste, () => Stammliste)
+            .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung,
+                                                          Kennlinienherkunft.Katalog, true))
+            .Add(x => x.KennlinienUebernehmen, _ => 0));
+
+        Knopf(cut, "Kennlinien aus dem Katalog übernehmen").Click();
+
+        Assert.Contains("keinen Katalogsatz gleichen Namens", cut.Markup);
+    }
 }

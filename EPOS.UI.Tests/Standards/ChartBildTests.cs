@@ -145,4 +145,102 @@ public class ChartBildTests : BunitContext
 
         Assert.Equal(1, gerufen);
     }
+
+    // =====================================================================
+    // Die MASSREGEL der Anzeige (Windows-Abnahme V2 07.09.2026, W11b‑B‑4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Befund W11b‑B‑4</b> — „Simulation Übersicht: Die Charts sind optisch zu
+    /// groß." Seit W11b‑B‑2 füllt jedes Bild die Breite seines Rahmens; für eine
+    /// Jahresganglinie ist das richtig, für einen Kuchen nicht. Die GESTALT sagt
+    /// die Komponente, das MASS steht im Stilblatt — sonst stünde es an dreißig
+    /// Fundstellen.
+    /// </summary>
+    [Fact]
+    public void Ein_rundes_Bild_traegt_die_Gestaltklasse()
+    {
+        var cut = Render<ChartBild>(p => p
+            .Add(x => x.Png, PngKennung)
+            .Add(x => x.Rund, true));
+
+        Assert.Contains("epos-diagramm--rund", cut.Find("div.epos-diagramm").ClassName ?? "");
+    }
+
+    /// <summary>
+    /// Und ein BREITES Bild trägt sie nicht — die Ganglinien behalten die volle
+    /// Zeilenbreite aus W11b‑B‑2. Ohne diese Gegenprobe wäre die Regel eine
+    /// stille Rücknahme des vorigen Befundes.
+    /// </summary>
+    [Fact]
+    public void Ein_breites_Bild_traegt_sie_nicht()
+    {
+        var cut = Render<ChartBild>(p => p.Add(x => x.Png, PngKennung));
+
+        string klasse = cut.Find("div.epos-diagramm").ClassName ?? "";
+        Assert.DoesNotContain("epos-diagramm--rund", klasse);
+        Assert.Contains("epos-diagramm", klasse);
+    }
+
+    /// <summary>
+    /// Eine bunit-Probe sieht eine Stilregel NICHT (Lehre W6‑B‑1) — geprüft wird
+    /// deshalb auch die REGEL: beide Maße stehen als Token in <c>:root</c>, und
+    /// die runde Grenze ist die kleinere von beiden.
+    /// </summary>
+    [Fact]
+    public void Die_zwei_Masse_stehen_als_Token_im_Stilblatt()
+    {
+        string wurzel = Stilblock(":root {");
+
+        int rund = Mass(wurzel, "--epos-diagramm-rund");
+        int breit = Mass(wurzel, "--epos-diagramm-breit");
+
+        Assert.Equal(560, rund);
+        Assert.Equal(1240, breit);
+        Assert.True(rund < breit, "Ein rundes Bild darf nie breiter erscheinen als ein breites.");
+    }
+
+    /// <summary>
+    /// Die zwei Regeln selbst: der Rahmen nimmt die breite Grenze, die
+    /// Gestaltklasse die runde — beide über das Token, kein Literal.
+    /// </summary>
+    [Fact]
+    public void Der_Rahmen_begrenzt_seine_Anzeigebreite()
+    {
+        Assert.Contains("max-width: var(--epos-diagramm-breit)", Stilblock(".epos-diagramm {"));
+        Assert.Contains("max-width: var(--epos-diagramm-rund)", Stilblock(".epos-diagramm--rund {"));
+
+        // Und die Mindesthoehe der Linienbilder legt dem Kreis keinen weissen
+        // Streifen unter den Rand.
+        Assert.Contains("min-height: 0",
+                        Stilblock(".epos-diagramm--rund .epos-diagramm-flaeche {"));
+    }
+
+    /// <summary>Der Wert eines Tokens in Bildpunkten.</summary>
+    private static int Mass(string block, string token)
+    {
+        System.Text.RegularExpressions.Match m =
+            System.Text.RegularExpressions.Regex.Match(block, token + @":\s*(\d+)px;");
+        Assert.True(m.Success, $"Token {token} steht nicht in :root");
+        return int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>Liest den Rumpf einer Regel aus <c>EPOS.UI/wwwroot/epos-ui.css</c>.</summary>
+    private static string Stilblock(string selektor)
+    {
+        System.IO.DirectoryInfo? d = new System.IO.DirectoryInfo(System.AppContext.BaseDirectory);
+        while (d is not null &&
+               !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        string css = System.IO.File.ReadAllText(
+            System.IO.Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"));
+
+        int a = css.IndexOf(selektor, System.StringComparison.Ordinal);
+        Assert.True(a >= 0, $"Regel {selektor} steht nicht im Stilblatt");
+        int e = css.IndexOf('}', a);
+        Assert.True(e > a);
+        return css.Substring(a + selektor.Length, e - a - selektor.Length);
+    }
 }

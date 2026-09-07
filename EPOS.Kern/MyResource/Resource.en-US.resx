@@ -2941,6 +2941,9 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_WP_KEINE_KENNDATEN" xml:space="preserve">
     <value>For the heat pump '{0}' there is no performance data (performance curve) for a flow temperature of {1} °C. The simulation was aborted.</value>
   </data>
+  <data name="SIMENG_WP_KENNLINIEN_FEHLEN" xml:space="preserve">
+    <value>Heat pump '{0}': the project holds NO performance curves at all for this unit — not merely none for the selected flow temperature. In the dialogue "Energy generators → Heat pump" the button "Take performance curves from the catalogue" copies them from the catalogue record of the same name into the project.</value>
+  </data>
   <data name="SIMQ_ANLAGE_ERSATZNAME" xml:space="preserve">
     <value>Unit {0}</value>
   </data>
@@ -11813,6 +11816,18 @@ Overwrite it anyway?</value>
   </data>
   <data name="WPA_MSG_FELD" xml:space="preserve">
     <value>Please enter {0}.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KATALOG" xml:space="preserve">
+    <value>Shown are the performance curves of the catalogue record of the same name — the project holds none of its own for this unit. The calculation uses the project curves only.</value>
+  </data>
+  <data name="WPA_BTN_KENNLINIEN_KATALOG" xml:space="preserve">
+    <value>Take performance curves from the catalogue</value>
+  </data>
+  <data name="WPA_MSG_KENNLINIEN_UEBERNOMMEN" xml:space="preserve">
+    <value>{0} data points taken from the catalogue into the project.</value>
+  </data>
+  <data name="WPA_MSG_KENNLINIEN_OHNE_KATALOG" xml:space="preserve">
+    <value>There is no catalogue record of the same name — the performance curves cannot be taken over.</value>
   </data>
   <data name="WPA_ERL_ALTERNATIV" xml:space="preserve">
     <value>In the bivalent-alternative mode of operation, the heat requirement is borne solely by the heat pump until the bivalent point is reached. The second heat generator steps in when the bivalence point is undershot and takes over sole heating operation.</value>

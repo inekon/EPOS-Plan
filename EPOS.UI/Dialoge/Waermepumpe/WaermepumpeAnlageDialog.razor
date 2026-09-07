@@ -311,6 +311,37 @@
             @* --- Die beiden Kennlinienbilder ------------------------------- *@
             <h2 class="epos-untergruppe">@LabelKennlinien</h2>
 
+            @* W7-B-3 (Windows-Abnahme V2 07.09.2026): Zeigt der Dialog die
+               Kennlinien des KATALOGSATZES, weil das Projekt fuer dieses Geraet
+               keine eigenen fuehrt, dann sagt er es - und bietet an, sie zu
+               holen. Der Lauf rechnet ausschliesslich mit den Projektkennlinien;
+               eine Katalogkennlinie ohne diesen Satz behauptete einen Stand, den
+               die Simulation nicht kennt. *@
+            @if (_bilder.Herkunft == Kennlinienherkunft.Katalog)
+            {
+                <div class="epos-wp-kennlinienquelle">
+                    <Herleitungszeile Text="@HerleitungKatalog" />
+
+                    @if (_bilder.Nachholbar && KennlinienUebernehmen is not null && !NurLesen)
+                    {
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf"
+                                    @onclick="BeiKennlinienUebernehmen">@BtnKennlinienText</button>
+                        </div>
+                    }
+                </div>
+            }
+
+            @* Die Rueckmeldung steht NACH dem Versuch und verfaellt (Hausregel
+               W16b-E-6) - ein dauerhaftes Band gehoert nur einem Zustand, den der
+               Anwender beheben MUSS. *@
+            @if (_kennlinienMeldung.Length > 0)
+            {
+                <Warnbanner Stufe="@_kennlinienStufe" Text="@_kennlinienMeldung"
+                            Verfaellt="TimeSpan.FromSeconds(6)"
+                            Verfallen="@MeldungVergessen" />
+            }
+
             <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
                 <KindInhalt>
                     <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
@@ -382,8 +413,19 @@
     /// <summary>Die Vorlaufstufen eines Geräts (<c>KenndatenCtrl.ReadVorlauf</c>).</summary>
     [Parameter] public Func<int, IReadOnlyList<int>>? Vorlaeufe { get; set; }
 
-    /// <summary>Die beiden Kennlinienbilder eines Geräts (Wärme).</summary>
+    /// <summary>
+    /// Die beiden Kennlinienbilder eines Geräts (Wärme) samt ihrer HERKUNFT — seit
+    /// Befund <b>W7‑B‑3</b> liest die Hülle Projektkopie vor Stammkatalog.
+    /// </summary>
     [Parameter] public Func<int, KennlinienBilder>? Bilder { get; set; }
+
+    /// <summary>
+    /// Holt die fehlenden Projektkennlinien aus dem Katalog nach
+    /// (<c>WPCtrl.KennlinienAusKatalog</c>, Befund W7‑B‑3) und liefert die Zahl der
+    /// geschriebenen Stützstellen; 0 = nichts zu holen, −1 = Fehler. OHNE Delegat
+    /// erscheint der Knopf nicht — Hausregel seit W2.
+    /// </summary>
+    [Parameter] public Func<int, int>? KennlinienUebernehmen { get; set; }
 
     /// <summary>Die Stammfelder eines Geräts — sie füllen die Anzeigefelder.</summary>
     [Parameter] public Func<int, WaermepumpeStammDaten?>? Stammdaten { get; set; }
@@ -493,6 +535,24 @@
     [Parameter] public string ReiterCop { get; set; } = "COP";
     [Parameter] public string ReiterLeistung { get; set; } = "Leistung";
     [Parameter] public string PlatzhalterBild { get; set; } = "Keine Kennlinien vorhanden";
+
+    /// <summary>
+    /// Die Herleitungszeile, wenn die Bilder aus dem KATALOG kommen
+    /// (<c>WPA_HERLEITUNG_KATALOG</c>, Befund W7‑B‑3).
+    /// </summary>
+    [Parameter] public string HerleitungKatalog { get; set; } =
+        "Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien.";
+
+    /// <summary>Beschriftung des Knopfes (<c>WPA_BTN_KENNLINIEN_KATALOG</c>).</summary>
+    [Parameter] public string BtnKennlinienText { get; set; } = "Kennlinien aus dem Katalog übernehmen";
+
+    /// <summary>Rückmeldung nach dem Übernehmen; <c>{0}</c> ist die Zahl der Stützstellen.</summary>
+    [Parameter] public string TextKennlinienUebernommen { get; set; } =
+        "{0} Stützstellen aus dem Katalog in das Projekt übernommen.";
+
+    /// <summary>Rückmeldung, wenn es nichts zu holen gab.</summary>
+    [Parameter] public string TextKennlinienOhneKatalog { get; set; } =
+        "Es gibt keinen Katalogsatz gleichen Namens — die Kennlinien lassen sich nicht übernehmen.";
     [Parameter] public string EinheitKw { get; set; } = "kW";
     [Parameter] public string EinheitGrad { get; set; } = "°C";
     [Parameter] public string EinheitStundeTag { get; set; } = "h/Tag";
@@ -551,6 +611,10 @@
     private bool _kostenBereit;
     private string _blatt = "COP";
     private string _warnung = "";
+
+    // --- Rueckmeldung des Kennlinien-Nachholens (W7-B-3) ------------------------
+    private string _kennlinienMeldung = "";
+    private WarnStufe _kennlinienStufe = WarnStufe.Hinweis;
 
     // --- Das bemaengelte Feld (W7-B-2) -----------------------------------------
     //
@@ -687,6 +751,36 @@
             ? Bilder(Daten.IdWp) : KennlinienBilder.Leer;
         _kostenBereit = KostenBereit?.Invoke() ?? false;
     }
+
+    /// <summary>
+    /// „Kennlinien aus dem Katalog übernehmen" (Befund <b>W7‑B‑3</b>): Der Weg
+    /// schreibt die Stützstellen des Katalogsatzes gleichen Namens in die
+    /// Projektkopie — in EINER Transaktion, und ohne anzurühren, was schon da ist.
+    /// Danach zeigt der Reiter die PROJEKTkennlinien, und die Herleitungszeile
+    /// verschwindet von selbst.
+    /// </summary>
+    private void BeiKennlinienUebernehmen()
+    {
+        if (KennlinienUebernehmen is null || Daten.IdWp <= 0) return;
+
+        int zeilen = KennlinienUebernehmen(Daten.IdWp);
+
+        if (zeilen > 0)
+        {
+            _kennlinienStufe = WarnStufe.Hinweis;
+            _kennlinienMeldung = string.Format(TextKennlinienUebernommen, zeilen);
+        }
+        else
+        {
+            _kennlinienStufe = WarnStufe.Warnung;
+            _kennlinienMeldung = TextKennlinienOhneKatalog;
+        }
+
+        Auffrischen();
+    }
+
+    /// <summary>Das Band ist verfallen — der Dialog vergisst seine Meldung.</summary>
+    private void MeldungVergessen() => _kennlinienMeldung = "";
 
     /// <summary>
     /// Eine ECHTE Nutzerwahl: Sie wechselt die Geräte-Id auf die Stammkatalog-Id UND
