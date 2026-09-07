@@ -100,6 +100,16 @@
         <Eingabe>
             <Gruppenkopf Titel="@Profil.Detailueberschrift">
                 <KindInhalt>
+                @* H13 / O-H13b-5 (07.09.2026): Der Weg in die Wikirubrik "Berechnung".
+                   Er sitzt HIER und nicht im Dialogkopf, weil dieser Block die Werte
+                   fuehrt, die der Rechenweg spaeter liest - Leistung, Wirkungsgrad,
+                   Temperaturen. Der Fensterknopf oben rechts bleibt die Bedienhilfe
+                   des Katalogs. Schluessel und Seite kommen aus dem Profil, weil EINE
+                   Komponente hier VIER Kataloge bedient. *@
+                <div class="epos-berechnungshilfe">
+                    <InfoKnopf Schluessel="@Profil.BerechnungsSchluessel"
+                               StandardKurztext="@Profil.BerechnungsKurztext" />
+                </div>
                 @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
                    Zahlenfelder kurz mit der Einheit dahinter, zwei Feldpaare je
                    Zeile, sobald die Spalte breit genug ist. *@

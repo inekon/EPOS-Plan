@@ -80,6 +80,17 @@
             @* --- Die Felder, Gruppe 0 ------------------------------------ *@
             <Gruppenkopf Titel="@Profil.GruppeBestand">
                 <KindInhalt>
+                    @* H13 / O-H13b-5 (07.09.2026): Der Weg in die Wikirubrik
+                       "Berechnung". Er sitzt am Kopf der ERSTEN Feldgruppe, weil
+                       dort die Kennwerte stehen, die der Rechenweg spaeter liest.
+                       Der Fensterknopf oben rechts bleibt die Bedienhilfe. Modul
+                       und Wechselrichter fuehren auf dieselbe Seite
+                       "Photovoltaik" - der Wechselrichter ist ein Abschnitt
+                       darauf, keine eigene Seite. *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="@Profil.BerechnungsSchluessel"
+                                   StandardKurztext="@Profil.BerechnungsKurztext" />
+                    </div>
                     @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung NEBEN dem
                        Feld, Zahlenfelder kurz mit der Einheit dahinter, zwei
                        Feldpaare je Zeile, sobald die Spalte breit genug ist.

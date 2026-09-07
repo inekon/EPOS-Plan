@@ -93,6 +93,21 @@
         <div class="epos-auswahlspalte">
             <Gruppenkopf Titel="@GruppeStammdaten">
                 <KindInhalt>
+                    @* H13 / O-H13b-5 (07.09.2026): Der Weg in die Wikirubrik
+                       "Berechnung". Er sitzt HIER, weil dieser Block die Kennwerte
+                       des Stammsatzes fuehrt - Nennleistung, Heizstab, Regelung -,
+                       die der Rechenweg spaeter liest. Der Fensterknopf oben rechts
+                       bleibt die Bedienhilfe.
+
+                       DER SCHLUESSEL TRAEGT DEN ZUSATZ "_Stamm". Den kuerzeren
+                       Namen ohne ihn hat H13b (Abweichung A-1) dem ANLAGENDIALOG
+                       gegeben, weil dessen Fensterschluessel noch
+                       Wizard_WPItem.btn_Help lautet. Zwei Masken, zwei Schluessel -
+                       ein Schluessel gehoert genau einem Dialog. *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_WP_Stamm.Berechnung"
+                                   StandardKurztext="Berechnung: Wärmepumpe" />
+                    </div>
                     @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
                        Feldpaare je Zeile, sobald die Spalte breit genug ist
                        (iU8-E-2, Paket P1). *@

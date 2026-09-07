@@ -669,3 +669,128 @@ Fassung-3-Regeln statt der Fassung-2-Verbote. Ohne Teil A stehen `EPOS.UI.Tests`
 | **O‑H13b‑9** | Der Abschnitt „Schreibweise" auf `_Index.wiki` (Teil A) beschreibt die Unicode-Notation der Fassung 2 und muss auf LaTeX nachgezogen werden — einschließlich der acht zusätzlichen Befehle aus 11.3, der ASCII-Umschrift der Umlaute und der Streichung von `\lvert`/`\rvert`. |
 | **O‑H13b‑10** | Der KI-Klartext (`BerechnungsHilfe.Klartext`, Teil A) löst `<sub>`/`<sup>`/`<big>` auf. Für die Fassung 3 ist zu entscheiden, was der Assistent aus einem `<math>`-Block lesen soll — der LaTeX-Quelltext ist lesbar, aber `\frac{a}{b}` ist kein „a / b". |
 | **O‑H13b‑11** | Die Gleichungsnummern bleiben **seitenlokal** (O‑H13b‑7 gilt fort). Wer eine Gleichung einfügt, nummeriert die folgenden neu **und** zieht die Legende mit; der Wächter fängt eine vergessene Nummer ab, eine vergessene Legende ebenfalls. |
+
+---
+
+## 12. Nachtrag O‑H13b‑5 (07.09.2026) — der Berechnungsknopf in den acht Katalogeditoren
+
+**Anwenderentscheid vom 07.09.2026** („Empfehlung" zu den drei offenen Hilfepunkten): Der Knopf
+„Berechnung", den zehn Projektdialoge seit diesem Paket tragen, kommt **zusätzlich in die
+Katalogeditoren**.
+
+> **Zur Kennung.** Die Orchestrierung führt diesen Punkt als `O‑H13b‑5`. Die Kennung ist in
+> § 10.7 schon einmal vergeben (Abgleich der Zeichentabelle nach der Zusammenführung); jener
+> Punkt ist mit der Fassung 3 erledigt. In diesem Protokoll meint `O‑H13b‑5` ab hier den
+> Berechnungsknopf in den Katalogeditoren.
+
+**Der Grund in einem Satz.** Bis hierher führten nur die PROJEKTdialoge in die Rubrik. Wer einen
+Katalogsatz pflegt, entscheidet aber genauso über den Rechenweg: Der Wirkungsgrad eines Kessels, die
+Stromkennzahl eines BHKW-Moduls, die Kennlinie eines Kollektors und die Zyklenzahl eines
+Stromspeichers kommen aus dem **Stammsatz**, nicht aus dem Projektdialog. Wer dort Zahlen einträgt,
+soll nachlesen können, was das Programm mit ihnen tut.
+
+### 12.1 Es sind ACHT Editoren, und sie hängen an DREI Komponenten
+
+Die Zahl war zu prüfen — der Auftrag nannte „sieben, dazu Pufferspeicher = acht". Es sind acht, aber
+anders geschnitten, als die Aufzählung vermuten ließ:
+
+| Menüpunkt (Administration) | Razor-Komponente | Ausprägung | Schlüssel | Ziel |
+|---|---|---|---|---|
+| Heizkessel | `KatalogBrowserDialog` | `KatalogBrowserArt.Heizkessel` | `Form_Heizkessel_Admin.Berechnung` | `Berechnung/Heizkessel` |
+| BHKW | `KatalogBrowserDialog` | `Bhkw` | `Form_BHKWAdmin.Berechnung` | `Berechnung/BHKW` |
+| Solarkollektoren | `KatalogBrowserDialog` | `Solarkollektoren` | `Form_SolarKollektorenAdmin.Berechnung` | `Berechnung/Solarthermie` |
+| Pufferspeicher | `KatalogBrowserDialog` | `Pufferspeicher` | `Form_PufferSp_Admin.Berechnung` | `Berechnung/Pufferspeicher` |
+| Stromspeicher | `ModulKatalogDialog` | `ModulKatalogArt.Stromspeicher` | `Form_AdminStromspeicher.Berechnung` | `Berechnung/Stromspeicher` |
+| PV Module | `ModulKatalogDialog` | `Pv` | `Form_AdminPV.Berechnung` | `Berechnung/Photovoltaik` |
+| Wechselrichter | `ModulKatalogDialog` | `Wechselrichter` | `Form_AdminWechselrichter.Berechnung` | `Berechnung/Photovoltaik` |
+| Wärmepumpen (Stammdatenpflege) | `WaermepumpeStammDialog` | — | `Form_WP_Stamm.Berechnung` | `Berechnung/Wärmepumpe` |
+
+`KatalogBrowserDialog` führt **Pufferspeicher** und nicht Wärmepumpe — die Wärmepumpen-Stammpflege
+ist eine eigene Komponente (`Masken.WpAdministration` → `WaermepumpeStammHuelle` →
+`WaermepumpeStammDialog`). `PufferSpKatalogDialog` und `HeizkesselKatalogDialog` sind **nicht**
+gemeint: Das sind die Satzeditoren INNERHALB des Browsers, keine Verwaltungen.
+
+**Zwei Abweichungen, beide belegt.**
+
+* **Wechselrichter → `Berechnung/Photovoltaik`.** Der Wechselrichter ist ein **Abschnitt** dieser
+  Seite (`== Wechselrichter ==`, Option 1 und Option 2), keine eigene Seite. Mit den Ankern aus
+  O‑H13b‑3 zielt die Zeile auf diesen Abschnitt.
+* **`Form_WP_Stamm` statt `Form_WP`.** `Form_WP.Berechnung` gehört seit diesem Paket (Abweichung
+  A‑1, § 3) dem **Anlagendialog**, weil dessen Fensterschlüssel noch `Wizard_WPItem.btn_Help`
+  lautet. Zwei Masken, zwei Schlüssel — die Regel „ein Schlüssel gehört genau einem Dialog" bleibt
+  damit unangetastet.
+
+### 12.2 Wo der Schlüssel steht: im Profil, nicht in der Komponente
+
+Drei Komponenten bedienen acht Kataloge. Der Schlüssel gehört deshalb dorthin, wo auch
+`HilfeSchluessel` und `Stammtabelle` stehen — in das **Profil im Kern**:
+
+| Datei | neu |
+|---|---|
+| `EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs` | `BerechnungsSchluessel`, `BerechnungsSeite`, `BerechnungsKurztext` (berechnet); vier Ausprägungen gefüllt |
+| `EPOS.Kern/Allgemein/Katalog/ModulKatalogProfil.cs` | dieselben drei; drei Ausprägungen gefüllt |
+
+Das ist dasselbe Vorgehen wie bei den drei Ausprägungen des `BedarfsProfileDialog`, nur eine Stufe
+tiefer: Dort reicht die Windows-Hülle den Schlüssel herein, hier das Profil — und das gilt unter
+Windows **und** auf iOS.
+
+**Kein neuer Ressourcenschlüssel.** `BerechnungsKurztext` ist
+`BerechnungsHilfe.RUBRIK_KURZ + ": " + BerechnungsSeite`, also wörtlich der Tooltip, den der
+mitgelieferte Startbestand für dieselbe Seite führt („Berechnung: Heizkessel"). Er greift ohnehin
+nur, solange der Katalog den Schlüssel nicht kennt. Damit bleibt die Regel des Profils gewahrt:
+Der Kern kennt keine Anzeigetexte — der Rubrikname ist ein Wikititel, kein Anzeigetext.
+
+### 12.3 Wo der Knopf sitzt
+
+Am Kopf des Blocks, der die Kennwerte führt — nicht im Dialogkopf und **nicht in der Knopfleiste**:
+
+| Komponente | Stelle |
+|---|---|
+| `KatalogBrowserDialog` | im Detailblock (`Gruppenkopf Titel="@Profil.Detailueberschrift"`), über dem Formularraster |
+| `ModulKatalogDialog` | am Kopf der ersten Feldgruppe (`Profil.GruppeBestand`) |
+| `WaermepumpeStammDialog` | am Kopf des Stammdatenblocks (`GruppeStammdaten`) |
+
+Die Bauform ist unverändert die aus § 4: ein `<div class="epos-berechnungshilfe">` mit einem
+`<InfoKnopf>` darin. Die Lehre von damals gilt weiter — die Knopfleiste `.epos-leiste` ist eine
+**Aufzählung von Aktionen**, und mehrere Masken zählen ihre Knöpfe.
+
+### 12.4 Die Wächter
+
+`EPOS.UI.Tests/BerechnungsknopfTests` (10 → **11 Fälle**, mit Theoriezeilen **41/41 grün**):
+
+| Fall | was er hält |
+|---|---|
+| `Jeder_Katalogeditor_fuehrt_auf_seinen_Rechenweg` (8 Zeilen) | jeder der acht Schlüssel hat seine Zeile, sie zeigt auf die Seite **seines** Katalogs, und der Schlüssel steht wirklich im Quelltext |
+| `Jeder_Katalogeditor_traegt_den_Knopf` (3 Zeilen) | die drei Wirte tragen `.epos-berechnungshilfe` mit einem `<InfoKnopf>` — und der steht nicht in der Knopfleiste |
+
+Dazu **eine Erweiterung des Lesers**: `Quelldateien()` liest seit O‑H13b‑5 auch
+`EPOS.Kern/Allgemein/Katalog/*.cs`. Ohne sie meldete `Jeder_Berechnungsschluessel_hat_einen_Infoknopf`
+acht vermeintlich tote Zeilen — der Schlüssel steht ja im Profil und nicht in der Razor-Datei.
+
+**Eine Falle beim Umsetzen.** Der Schlüsselleser (`\bForm_[A-Za-z0-9_]+\.Berechnung\b`) liest auch
+**Kommentare**. Ein erklärender Satz im Kopf von `WaermepumpeStammDialog.razor`, der den Schlüssel
+des Anlagendialogs beim Namen nannte, ließ `Jeder_Schluessel_gehoert_genau_einem_Dialog` rot
+werden — zwei Razor-Dateien für `Form_WP.Berechnung`. Der Satz nennt den Schlüssel jetzt
+umschrieben. Das ist kein Fehler des Wächters: Ein Schlüssel im Kommentar ist genau die Art
+Zeichenkette, die später als echte Verdrahtung missverstanden wird.
+
+### 12.5 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | **0 Fehler**, 6 eindeutige Warnungen — der Stand der Basis, keine neue |
+| `dotnet test EPOS.UI.Tests -c Release` | **3 075 / 3 075 grün** |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 744 / 1 744 grün** |
+| Rechenweg | **unberührt** — kein `.cs` der Simulation angefasst |
+| SQL, Ressourcen, `help_cache.json`, `HelpCatalog.cs`, `.wiki` | **unverändert** |
+
+### 12.6 Abnahmepunkte (Windows)
+
+| Nr. | Was zu prüfen ist | Erwartung |
+|---|---|---|
+| **A‑H13b‑14** | Administration → Wärmebedarf & Heizung → Heizkessel; im Detailblock rechts der zweite Fragezeichenknopf | öffnet `…/Berechnung/Heizkessel`; der Knopf oben rechts öffnet weiterhin die allgemeine Katalogseite |
+| **A‑H13b‑15** | dasselbe in BHKW, Solarkollektoren und Pufferspeicher | je eigene Seite; die Knopfleiste unten zählt unverändert vier bzw. fünf Knöpfe |
+| **A‑H13b‑16** | Administration → Energiesysteme → Photovoltaik → PV Module und → Wechselrichter | **beide** öffnen `…/Berechnung/Photovoltaik` |
+| **A‑H13b‑17** | Administration → Strom → Stromspeicher | öffnet `…/Berechnung/Stromspeicher` |
+| **A‑H13b‑18** | Administration → Wärmebedarf & Heizung → Wärmepumpen, Block „Stammdaten" | öffnet `…/Berechnung/Wärmepumpe` — dieselbe Seite wie der Knopf im Anlagendialog |
+| **A‑H13b‑19** | bei 125 % und 150 % Skalierung | der zweite Knopf sitzt rechtsbündig über seinem Block und verdeckt kein Feld |

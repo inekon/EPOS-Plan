@@ -224,6 +224,84 @@ public sealed class BerechnungsknopfTests
     }
 
     // =====================================================================
+    //  O-H13b-5 — die acht Katalogeditoren
+    // =====================================================================
+
+    /// <summary>
+    /// Die ACHT Katalogverwaltungen und die Rechenwegseite, auf die ihr zweiter
+    /// Knopf führt (Anwenderentscheid O‑H13b‑5 vom 07.09.2026).
+    ///
+    /// <para>Bis dahin führten nur die zehn PROJEKTdialoge in die Rubrik. Wer einen
+    /// Katalogsatz pflegt, entscheidet aber genauso über den Rechenweg — der
+    /// Kesselwirkungsgrad, die Stromkennzahl eines BHKW-Moduls und die Kennlinie
+    /// eines Kollektors kommen aus dem STAMMSATZ.</para>
+    /// </summary>
+    public static TheoryData<string, string> Katalogeditoren => new()
+    {
+        { "Form_Heizkessel_Admin.Berechnung",      "Heizkessel" },
+        { "Form_BHKWAdmin.Berechnung",             "BHKW" },
+        { "Form_WP_Stamm.Berechnung",              "Wärmepumpe" },
+        { "Form_SolarKollektorenAdmin.Berechnung", "Solarthermie" },
+        { "Form_PufferSp_Admin.Berechnung",        "Pufferspeicher" },
+        { "Form_AdminPV.Berechnung",               "Photovoltaik" },
+        { "Form_AdminWechselrichter.Berechnung",   "Photovoltaik" },
+        { "Form_AdminStromspeicher.Berechnung",    "Stromspeicher" },
+    };
+
+    /// <summary>
+    /// Jeder der acht Katalogeditoren hat seine Zeile, und sie zeigt auf die
+    /// Rechenwegseite seines Katalogs. Ein Editor ohne Zeile trüge einen
+    /// abgeschalteten Knopf, ein Editor mit falscher Zeile führte den Anwender vom
+    /// Kollektor auf den Kessel.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Katalogeditoren))]
+    public void Jeder_Katalogeditor_fuehrt_auf_seinen_Rechenweg(string schluessel, string seite)
+    {
+        IReadOnlyDictionary<string, string> zuordnung = Berechnungszuordnungen();
+
+        Assert.True(zuordnung.ContainsKey(schluessel),
+            schluessel + " fehlt in help_mapping.txt (Abschnitt 'Teil C (Katalogeditoren)').");
+
+        // Der Anker hinter '#' gehört nicht zum Seitennamen (seit O-H13b-3).
+        string ziel = zuordnung[schluessel];
+        int raute = ziel.IndexOf('#');
+        if (raute >= 0) ziel = ziel.Substring(0, raute);
+
+        Assert.Equal("Berechnung/" + seite, ziel);
+        Assert.True(SchluesselImQuelltext().ContainsKey(schluessel),
+            schluessel + " steht in keiner Razor-Komponente und in keinem Katalogprofil.");
+    }
+
+    /// <summary>
+    /// Die drei Wirte der acht Editoren tragen den Knopf wirklich — als
+    /// <c>InfoKnopf</c> in der Hülle <c>.epos-berechnungshilfe</c>, nicht in der
+    /// Knopfleiste. Die Knopfleiste des Hauses ist eine AUFZÄHLUNG von Aktionen, und
+    /// mehrere Masken zählen ihre Knöpfe; ein Hilfeknopf darf diese Zahl nicht
+    /// verändern (die Lehre aus H13b § 4).
+    /// </summary>
+    [Theory]
+    [InlineData("EPOS.UI/Dialoge/Erzeuger/KatalogBrowserDialog.razor")]
+    [InlineData("EPOS.UI/Dialoge/Erzeuger/ModulKatalogDialog.razor")]
+    [InlineData("EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor")]
+    public void Jeder_Katalogeditor_traegt_den_Knopf(string teilpfad)
+    {
+        string pfad = Path.Combine(Wurzel(), teilpfad.Replace('/', Path.DirectorySeparatorChar));
+        Assert.True(File.Exists(pfad), "Wirt nicht gefunden: " + pfad);
+
+        string quelltext = File.ReadAllText(pfad);
+
+        Assert.Contains("epos-berechnungshilfe", quelltext, StringComparison.Ordinal);
+        Assert.Contains("<InfoKnopf", quelltext, StringComparison.Ordinal);
+
+        // Der Knopf sitzt NICHT in der Knopfleiste.
+        int huelle = quelltext.IndexOf("epos-berechnungshilfe", StringComparison.Ordinal);
+        int leiste = quelltext.LastIndexOf("epos-leiste", huelle, StringComparison.Ordinal);
+        Assert.True(leiste < 0 || quelltext.IndexOf("</div>", leiste, StringComparison.Ordinal) < huelle,
+            Path.GetFileName(pfad) + ": der Berechnungsknopf steht in der Knopfleiste.");
+    }
+
+    // =====================================================================
     //  Fassung 2 — wohin der Knopf führt
     // =====================================================================
 
@@ -512,7 +590,16 @@ public sealed class BerechnungsknopfTests
 
     /// <summary>
     /// Wo ein Berechnungsschlüssel stehen darf: die Razor-Komponenten von
-    /// <c>EPOS.UI</c> und die Hüllen unter <c>WindowsFormsApplication1/Views</c>.
+    /// <c>EPOS.UI</c>, die Hüllen unter <c>WindowsFormsApplication1/Views</c> und —
+    /// seit O‑H13b‑5 (07.09.2026) — die Katalogprofile im Kern.
+    ///
+    /// <para><b>Warum die Profile dazukommen.</b> Bei den acht Katalogeditoren
+    /// bedienen DREI Razor-Komponenten acht Kataloge; welcher Schlüssel gilt, sagt
+    /// das Profil (<c>KatalogBrowserProfil</c>, <c>ModulKatalogProfil</c>) — genau
+    /// dort, wo auch <c>HilfeSchluessel</c> und <c>Stammtabelle</c> stehen. Stünde
+    /// der Ordner nicht in dieser Liste, meldete
+    /// <see cref="Jeder_Berechnungsschluessel_hat_einen_Infoknopf"/> acht
+    /// vermeintlich tote Zeilen.</para>
     /// </summary>
     private static string[] Quelldateien()
     {
@@ -525,7 +612,11 @@ public sealed class BerechnungsknopfTests
             .EnumerateFiles(Path.Combine(wurzel, "WindowsFormsApplication1", "Views"), "*.cs",
                             SearchOption.AllDirectories);
 
-        return ui.Concat(huellen)
+        IEnumerable<string> profile = Directory
+            .EnumerateFiles(Path.Combine(wurzel, "EPOS.Kern", "Allgemein", "Katalog"), "*.cs",
+                            SearchOption.AllDirectories);
+
+        return ui.Concat(huellen).Concat(profile)
                  .Where(p => p.IndexOf(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar,
                                        StringComparison.Ordinal) < 0
                           && p.IndexOf(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar,

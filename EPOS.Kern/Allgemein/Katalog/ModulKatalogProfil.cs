@@ -162,6 +162,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string HilfeSchluessel { get; private set; }
 
+        /// <summary>
+        /// Der Schluessel des ZWEITEN Infoknopfs — der Weg in die Wikirubrik
+        /// <c>Programm Dokumentation/Berechnung</c> (H13, Anwenderentscheid
+        /// O-H13b-5 vom 07.09.2026). Er steht NEBEN <see cref="HilfeSchluessel"/>
+        /// und sitzt am Kopf des Feldblocks, in dem die Kennwerte stehen, die der
+        /// Rechenweg spaeter liest.
+        /// </summary>
+        public string BerechnungsSchluessel { get; private set; }
+
+        /// <summary>
+        /// Die Seite der Rubrik, auf die der Berechnungsknopf fuehrt — ohne Rubrik
+        /// und ohne Anker. Modul UND Wechselrichter fuehren auf
+        /// <c>Photovoltaik</c>: Der Wechselrichter ist ein ABSCHNITT dieser Seite,
+        /// keine eigene.
+        /// </summary>
+        public string BerechnungsSeite { get; private set; }
+
+        /// <summary>
+        /// Der Kurztext des Berechnungsknopfs, falls der Hilfekatalog den Schluessel
+        /// (noch) nicht kennt — wortgleich zum Tooltip des Startbestandes.
+        /// </summary>
+        public string BerechnungsKurztext =>
+            BerechnungsHilfe.RUBRIK_KURZ + ": " + (BerechnungsSeite ?? "");
+
         /// <summary>Fuehrt der Katalog einen Herstellerfilter? Nur die Photovoltaik.</summary>
         public bool HatHerstellerfilter { get; private set; }
 
@@ -254,6 +278,8 @@ namespace WindowsFormsApplication1
                         GruppeDrei = "",
                         MeldungOhneAuswahl = t("MODK_MSG_AUSWAHL_SPEICHER"),
                         HilfeSchluessel = "Form_AdminStromspeicher.btn_Help",
+                        BerechnungsSchluessel = "Form_AdminStromspeicher.Berechnung",
+                        BerechnungsSeite = "Stromspeicher",
                         HatHerstellerfilter = false,
                         FilterBezeichnung = "",
                         Felder = new[]
@@ -313,6 +339,8 @@ namespace WindowsFormsApplication1
                         GruppeDrei = "",
                         MeldungOhneAuswahl = t("MODK_MSG_AUSWAHL_MODUL"),
                         HilfeSchluessel = "Form_AdminPV.btn_Help",
+                        BerechnungsSchluessel = "Form_AdminPV.Berechnung",
+                        BerechnungsSeite = "Photovoltaik",
                         HatHerstellerfilter = false,
                         FilterBezeichnung = "",
                         Felder = new[]
@@ -359,6 +387,8 @@ namespace WindowsFormsApplication1
                         GruppeDrei = t("WRK_GRUPPE_WIRKUNGSGRAD"),
                         MeldungOhneAuswahl = t("WRK_MSG_AUSWAHL"),
                         HilfeSchluessel = "Form_AdminWechselrichter.btn_Help",
+                        BerechnungsSchluessel = "Form_AdminWechselrichter.Berechnung",
+                        BerechnungsSeite = "Photovoltaik",
                         // ALS EINZIGE der drei Auspraegungen mit Herstellerfilter
                         // (Konzept 6): Die CEC-Liste bringt ueber zweitausend Geraete
                         // von 152 Herstellern; ohne Einengung ist die Liste nicht
