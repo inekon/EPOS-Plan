@@ -5,20 +5,34 @@
    Tab_BHKW_STAMM; schreibgeschuetzte Saetze (ReadOnly) koennen nur nach
    ausdruecklicher Rueckfrage ueberschrieben werden.
 
-   DIE FUENF EINZELPOSTEN FUEHREN (Nutzerentscheid 22.08.2026, Regel in
-   BHKWKosten): Modul + Montage + Lieferung + Schallschutzhaube +
-   Abgasreinigung ergeben die Investition. "Investitionskosten" [EUR/kWel] ist
-   daraus ABGELEITET, nur Anzeige und schreibgeschuetzt. Zuvor fuehrten beide
-   Wege dieselbe Groesse und liefen auseinander (A-Tron_21_F: Posten 0,00 EUR,
+   DREI EINGABEWEGE AUF DIESELBE GROESSE (Anwenderentscheid W14a-E-8-B3 vom
+   07.09.2026: "Entweder Investitionskosten als Summe/Gesamt oder
+   Investitionskosten auf kWh elektrisch x Kosten pro kWh elektrisch (sollte
+   umgerechnet werden, je nach Eingabe)"). Die Investition kommt wahlweise als
+   GESAMTSUMME [EUR], als WERT JE KW ELEKTRISCH [EUR/kWel] oder - wie seit dem
+   Nutzerentscheid vom 22.08.2026 - als die FUENF EINZELPOSTEN herein. Die
+   zuletzt geaenderte Eingabe fuehrt, das jeweils andere Feld folgt; die
+   Umrechnung steht im Kern (BHKWKosten) und nur dort.
+
+   DER AUSGLEICH LAEUFT UEBER DEN MODULPREIS. Wer Gesamt oder je kW eingibt,
+   aendert Kosten_Modul; die vier Nebenposten bleiben stehen. Gespeichert
+   werden immer nur die fuenf Posten, Investition_kwel bleibt ihre Ableitung -
+   deshalb sieht die Kostenplanung (TechnikPlanwertCtrl) keinen sechsten
+   Betrag, der zweimal zaehlen wuerde. Vor B3 war das Feld je kWel nur Anzeige
+   und schreibgeschuetzt; noch frueher fuehrten beide Wege UNGEPRUEFT
+   nebeneinander und liefen auseinander (A-Tron_21_F: Posten 0,00 EUR,
    Investition_kwel 2000 bei Pel 21).
 
-   DREI ZUSTAENDE der Hinweiszeile, wortgleich aus HinweisAnzeigen (Z. 216):
-   * Pel = 0 -> "unbestimmt": Es gibt keinen Wert je kWel, und das wird gesagt
-     statt einer erfundenen 0,00.
+   VIER ZUSTAENDE der Hinweiszeile:
+   * die Nebenposten uebersteigen die eingegebene Gesamtsumme -> "gedeckelt":
+     Das Modul steht auf 0,00 EUR, die Postensumme ist groesser als die
+     Eingabe. Das darf nicht stillschweigend passieren.
+   * Pel = 0 -> "unbestimmt": Es gibt keinen Wert je kW; das Feld ist gesperrt
+     und leer statt mit einer erfundenen 0,00 gefuellt.
    * direkt nach dem Laden und der gespeicherte Wert passt nicht zur Summe ->
      "Abweichung". Der Wert bleibt stehen; nachgezogen wird er erst beim
      Speichern oder sobald sich ein Posten bzw. Pel aendert.
-   * sonst -> "abgeleitet".
+   * sonst -> die Regel: "Die zuletzt geaenderte Eingabe fuehrt."
 
    DER NAME IST IM MODUS BEARBEITEN NUR LESBAR (A-3 des Protokolls W6).
    BHKWStammCtrl.Update filtert per Bezeichner; ein in comboBox_Name
@@ -37,6 +51,8 @@
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Kosten
+@* BHKWKosten - die Umrechnungsregel des Kerns, direkt gerufen (W14a-E-8-B3). *@
+@using WindowsFormsApplication1
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -99,12 +115,27 @@
 
     <Gruppenkopf Titel="@GruppeKosten">
         <KindInhalt>
-            @* Die Feldpaare von Hand entfallen. Die Herleitungszeile zum
-               abgeleiteten Wert je kWel steht MITTEN im Raster und ist kein
-               Feld - sie bekommt keine Rasterzelle neben einem Feld, sondern
-               die volle Breite (Regel "Formularraster - Paket P1"). *@
+            @* DREI EINGABEWEGE, EINE GROESSE (W14a-E-8-B3, 07.09.2026). Die
+               Investition wird wahlweise als Gesamtsumme, als Wert je kW
+               elektrisch oder als die fuenf Einzelposten eingegeben; die
+               zuletzt geaenderte Eingabe fuehrt, das jeweils andere Feld folgt
+               (Umrechnung in BHKWKosten). Die zwei Aggregate stehen deshalb
+               VOR den Posten, aus denen sie entstehen.
+
+               Die Herleitungszeile dazwischen steht MITTEN im Raster und ist
+               kein Feld - sie bekommt keine Rasterzelle neben einem Feld,
+               sondern die volle Breite (Regel "Formularraster - Paket P1"). *@
             <Formularraster>
                 <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@LabelGesamt" Einheit="€" Feldname="@FeldGesamt"
+                                Nachkommastellen="2" Wert="@GesamtWert" WertChanged="BeiGesamt"
+                                FehlerZustand="BeiFehlerZustand" />
+                    <Zahlenfeld Bezeichnung="@LabelInvest" Einheit="€ / kW" Feldname="@FeldInvest"
+                                Nachkommastellen="0" Aktiv="@JeKwBestimmbar"
+                                Wert="@JeKwWert" WertChanged="BeiJeKw"
+                                FehlerZustand="BeiFehlerZustand" />
+                    <Herleitungszeile Text="@InvestHinweis" Formel="@InvestFormel" />
+
                     <Zahlenfeld Bezeichnung="@LabelModul" Einheit="€" Feldname="@FeldModul"
                                 Wert="@Daten.KostenModul" WertChanged="w => BeiPosten(() => Daten.KostenModul = w)"
                                 FehlerZustand="BeiFehlerZustand" />
@@ -122,10 +153,6 @@
                                 Wert="@Daten.KostenAbgasreinigung"
                                 WertChanged="w => BeiPosten(() => Daten.KostenAbgasreinigung = w)"
                                 FehlerZustand="BeiFehlerZustand" />
-                    @* Summe und abgeleiteter Wert - beide nur lesbar, beide von hier gefuellt. *@
-                    <Textfeld Bezeichnung="@LabelSumme" Wert="@SummeText" NurLesen="true" />
-                    <Textfeld Bezeichnung="@LabelInvest" Wert="@InvestText" NurLesen="true" />
-                    <Herleitungszeile Text="@InvestHinweis" />
 
                     <Zahlenfeld Bezeichnung="@LabelRaumbedarf" Einheit="m³" Feldname="@FeldRaumbedarf"
                                 Wert="@Daten.Raumbedarf" WertChanged="w => Daten.Raumbedarf = w"
@@ -252,14 +279,11 @@
     [Parameter] public Func<string, bool, double, (double? SO2, double? CO2, double? NOx, double? CO, double? Staub)>?
         EmissionsVorgabe { get; set; }
 
-    /// <summary>Die Summe der fuenf Posten (<c>BHKWKosten.Summe</c>).</summary>
-    [Parameter] public Func<double, double, double, double, double, double>? Summe { get; set; }
-
-    /// <summary>Ist der Wert je kWel bestimmbar? (<c>BHKWKosten.JeKWelBestimmbar</c>)</summary>
-    [Parameter] public Func<double, bool>? JeKWelBestimmbar { get; set; }
-
-    /// <summary>Der Wert je kWel (<c>BHKWKosten.JeKWel</c>).</summary>
-    [Parameter] public Func<double, double, double>? JeKWel { get; set; }
+    // Die Umrechnung zwischen Gesamtsumme, Wert je kWel und den fuenf Posten steht im
+    // Kern (BHKWKosten) und wird von dort GERUFEN, nicht als Rueckruf hereingereicht:
+    // Bis W14a-E-8-B3 waren es drei Funktionsparameter mit je einer Ersatzrechnung im
+    // Dialog - also eine zweite Fassung derselben Regel. EPOS.UI verweist auf
+    // EPOS.Kern (EPOS.UI.csproj), 64 Komponenten tun das bereits.
 
     /// <summary>Der Name, unter dem der Satz jetzt steht - <c>null</c> bei Abbruch.</summary>
     [Parameter] public EventCallback<string?> Geschlossen { get; set; }
@@ -310,8 +334,10 @@
     [Parameter] public string FeldSchallschutz { get; set; } = "Kosten Schallschutzhaube";
     [Parameter] public string LabelAbgasreinigung { get; set; } = "Abgasreinigung, z. B. Kat:";
     [Parameter] public string FeldAbgasreinigung { get; set; } = "Kosten Abgasreinigung";
-    [Parameter] public string LabelSumme { get; set; } = "Summe der Einzelposten [€]:";
-    [Parameter] public string LabelInvest { get; set; } = "Investitionskosten [€ / kWel]:";
+    [Parameter] public string LabelGesamt { get; set; } = "Investition gesamt:";
+    [Parameter] public string FeldGesamt { get; set; } = "Investition gesamt";
+    [Parameter] public string LabelInvest { get; set; } = "Investition je kW elektrisch:";
+    [Parameter] public string FeldInvest { get; set; } = "Investition je kW elektrisch";
     [Parameter] public string LabelRaumbedarf { get; set; } = "Raumbedarf:";
     [Parameter] public string FeldRaumbedarf { get; set; } = "Raumbedarf";
     [Parameter] public string LabelWartung { get; set; } = "Wartungskosten:";
@@ -320,20 +346,22 @@
     [Parameter] public string FeldNutzungsdauer { get; set; } = "Nutzungsdauer";
     [Parameter] public string EinheitJahre { get; set; } = "Jahre";
 
-    /// <summary>Anzeigetext, wenn Pel = 0 ist (<c>BHKW_INVEST_UNBESTIMMT</c>).</summary>
-    [Parameter] public string InvestUnbestimmt { get; set; } = "unbestimmt";
-
-    /// <summary>Hinweiszeile „abgeleitet" (<c>BHKW_INVEST_HINWEIS_ABGELEITET</c>).</summary>
-    [Parameter] public string HinweisAbgeleitet { get; set; } =
-        "Abgeleitet aus den Einzelposten und der elektrischen Leistung.";
+    /// <summary>Hinweiszeile „die letzte Eingabe fuehrt" (<c>BHKW_INVEST_HINWEIS_FUEHREND</c>).</summary>
+    [Parameter] public string HinweisFuehrend { get; set; } =
+        "Gesamt = Modul + Montage + Lieferung + Schallschutzhaube + Abgasreinigung; " +
+        "je kW = Gesamt / Pel. Die zuletzt geänderte Eingabe führt.";
 
     /// <summary>Hinweiszeile „unbestimmt" (<c>BHKW_INVEST_HINWEIS_UNBESTIMMT</c>).</summary>
     [Parameter] public string HinweisUnbestimmt { get; set; } =
-        "Ohne elektrische Leistung gibt es keinen Wert je kWel.";
+        "Ohne elektrische Leistung gibt es keinen Wert je kW; die Gesamtsumme bleibt erfasst.";
 
     /// <summary>Hinweiszeile „Abweichung" (<c>BHKW_INVEST_HINWEIS_ABWEICHUNG</c>).</summary>
     [Parameter] public string HinweisAbweichung { get; set; } =
         "Der gespeicherte Wert weicht von der Ableitung ab; er wird beim Speichern nachgezogen.";
+
+    /// <summary>Hinweiszeile „gedeckelt" (<c>BHKW_INVEST_HINWEIS_GEDECKELT</c>).</summary>
+    [Parameter] public string HinweisGedeckelt { get; set; } =
+        "Die Nebenposten übersteigen die eingegebene Gesamtsumme; das Modul steht auf 0,00 €.";
 
     [Parameter] public string GruppeBehg { get; set; } = "Emissionen nach BEHG-V";
     [Parameter] public string BehgZeile { get; set; } = "für Heizzwecke in t CO2 / GJ";
@@ -404,62 +432,143 @@
     }
 
     // =================================================================================
-    // Die abgeleitete Investition
+    // Die Investition: drei Eingabewege auf dieselbe Groesse (W14a-E-8-B3)
     // =================================================================================
 
-    private double SummeEinzelposten()
-    {
-        double m = Daten.KostenModul ?? 0, mo = Daten.KostenMontage ?? 0,
-               l = Daten.KostenLieferung ?? 0, s = Daten.KostenSchallschutzhaube ?? 0,
-               a = Daten.KostenAbgasreinigung ?? 0;
+    /// <summary>
+    /// Was zuletzt im Feld „Investition gesamt" stand — <c>null</c>, solange die
+    /// Posten fuehren.
+    ///
+    /// <para><b>Warum der Merker noetig ist.</b> Das Feld darf waehrend der Eingabe
+    /// nicht auf die abgeleitete Summe zurueckspringen: Wer „6" tippt, um „60000" zu
+    /// schreiben, hat nach dem ersten Anschlag eine Gesamtsumme unter den
+    /// Nebenposten — ohne Merker stuende sofort deren Summe im Feld, und weitertippen
+    /// waere unmoeglich. Mit dem Merker zeigt das Feld, was der Anwender getippt hat,
+    /// und die Herleitungszeile sagt, dass es (noch) nicht aufgeht.</para>
+    /// </summary>
+    private double? _gesamtEingabe;
 
-        return Summe is not null ? Summe(m, mo, l, s, a) : m + mo + l + s + a;
-    }
+    /// <summary>Dasselbe fuer das Feld „Investition je kW elektrisch".</summary>
+    private double? _jeKwEingabe;
 
-    private bool Bestimmbar(double pel)
-        => JeKWelBestimmbar is not null ? JeKWelBestimmbar(pel) : pel > 0;
+    private double PelWert => Daten.Pel ?? 0;
 
-    private double JeKWelWert(double summe, double pel)
-        => JeKWel is not null ? JeKWel(summe, pel) : (pel > 0 ? summe / pel : 0);
+    /// <summary>Laesst sich zu dieser elektrischen Leistung ein Wert je kW bilden?</summary>
+    private bool JeKwBestimmbar => BHKWKosten.JeKWelBestimmbar(PelWert);
 
-    /// <summary>Die Summe der Einzelposten, wie <c>SummeAnzeigen</c> sie zeigte.</summary>
-    private string SummeText => SummeEinzelposten().ToString("F2");
+    /// <summary>Die Gesamtsumme, wie sie aus den fuenf Posten folgt.</summary>
+    private double GesamtAusPosten() => BHKWKosten.Gesamt(
+        Daten.KostenModul ?? 0, Daten.KostenMontage ?? 0, Daten.KostenLieferung ?? 0,
+        Daten.KostenSchallschutzhaube ?? 0, Daten.KostenAbgasreinigung ?? 0);
+
+    /// <summary>Der Modulpreis, der zu einer eingegebenen Gesamtsumme gehoert.</summary>
+    private double ModulZu(double gesamt) => BHKWKosten.ModulAusGesamt(
+        gesamt, Daten.KostenMontage ?? 0, Daten.KostenLieferung ?? 0,
+        Daten.KostenSchallschutzhaube ?? 0, Daten.KostenAbgasreinigung ?? 0);
+
+    /// <summary>Der Wert im Feld „Investition gesamt".</summary>
+    private double GesamtWert => _gesamtEingabe ?? GesamtAusPosten();
 
     /// <summary>
-    /// Der Wert je kWel. Solange nichts geaendert wurde, steht der GESPEICHERTE Wert da
-    /// (Bestandsverhalten); danach die Ableitung. Bei Pel = 0 immer „unbestimmt".
+    /// Der Wert im Feld „Investition je kW elektrisch". Ohne elektrische Leistung gibt
+    /// es keinen — das Feld bleibt leer und gesperrt. Solange nichts geaendert wurde,
+    /// steht der GESPEICHERTE Wert da (Bestandsverhalten); danach die Ableitung auf
+    /// dem Eingaberaster von 1 €/kW.
     /// </summary>
-    private string InvestText
+    private double? JeKwWert
     {
         get
         {
-            double pel = Daten.Pel ?? 0;
-            if (!Bestimmbar(pel)) return InvestUnbestimmt;
-            if (_bestand) return (Daten.InvestitionJeKWel ?? 0).ToString("F2");
-            return JeKWelWert(SummeEinzelposten(), pel).ToString("F2");
+            if (!JeKwBestimmbar) return null;
+            if (_jeKwEingabe.HasValue) return _jeKwEingabe;
+            if (_bestand) return Daten.InvestitionJeKWel;
+            return BHKWKosten.JeKWelEingabe(GesamtWert, PelWert);
         }
     }
 
-    /// <summary>Die drei Zustaende der Hinweiszeile (Vorbild <c>HinweisAnzeigen</c>).</summary>
+    /// <summary>
+    /// Die vier Nebenposten uebersteigen die eingegebene Gesamtsumme. Der Modulpreis
+    /// steht dann auf 0, und die Postensumme ist groesser als die Eingabe — das darf
+    /// nicht stillschweigend passieren (Pruefhilfe fuer Tests).
+    /// </summary>
+    public bool Gedeckelt => _gesamtEingabe.HasValue && BHKWKosten.NebenpostenUeberschreiten(
+        _gesamtEingabe.Value, Daten.KostenMontage ?? 0, Daten.KostenLieferung ?? 0,
+        Daten.KostenSchallschutzhaube ?? 0, Daten.KostenAbgasreinigung ?? 0);
+
+    /// <summary>Die vier Zustaende der Hinweiszeile.</summary>
     private string InvestHinweis
     {
         get
         {
-            double pel = Daten.Pel ?? 0;
-            if (!Bestimmbar(pel)) return HinweisUnbestimmt;
+            if (Gedeckelt) return HinweisGedeckelt;
+            if (!JeKwBestimmbar) return HinweisUnbestimmt;
 
             bool abweichung = _bestand &&
-                Math.Abs((Daten.InvestitionJeKWel ?? 0) - JeKWelWert(SummeEinzelposten(), pel)) > 0.005;
+                Math.Abs((Daten.InvestitionJeKWel ?? 0) - BHKWKosten.JeKWel(GesamtWert, PelWert)) > 0.005;
 
-            return abweichung ? HinweisAbweichung : HinweisAbgeleitet;
+            return abweichung ? HinweisAbweichung : HinweisFuehrend;
         }
     }
 
-    /// <summary>Eine Aenderung an Pel oder einem Posten zieht die Ableitung nach.</summary>
+    /// <summary>
+    /// Die Rechnung zur Hinweiszeile: „50000,00 € / 40,00 kW = 1250 € / kW". Ohne
+    /// elektrische Leistung gibt es sie nicht — lieber keine Angabe als eine erfundene.
+    /// </summary>
+    private string InvestFormel
+    {
+        get
+        {
+            if (!JeKwBestimmbar) return "";
+
+            return Zahlen.Anzeigetext(GesamtWert, 2) + " € / " + Zahlen.Anzeigetext(PelWert, 2)
+                 + " kW = " + Zahlen.Anzeigetext(BHKWKosten.JeKWelEingabe(GesamtWert, PelWert), 0)
+                 + " € / kW";
+        }
+    }
+
+    /// <summary>
+    /// „Investition gesamt": Der Ausgleich laeuft ueber den Modulpreis, die vier
+    /// Nebenposten bleiben stehen. Ein GELEERTES Feld aendert nichts an den Posten —
+    /// es fuellt sich aus ihnen wieder auf; wer den Modulpreis loeschen will, loescht
+    /// ihn dort.
+    /// </summary>
+    private void BeiGesamt(double? wert)
+    {
+        _bestand = false;
+        _jeKwEingabe = null;              // je kW folgt jetzt der Gesamtsumme
+        _gesamtEingabe = wert;
+        if (!wert.HasValue) return;
+
+        Daten.KostenModul = ModulZu(wert.Value);
+    }
+
+    /// <summary>
+    /// „Investition je kW elektrisch": erst mit Pel zurueck in eine Gesamtsumme, dann
+    /// derselbe Weg wie bei der Gesamteingabe. Ohne elektrische Leistung ist das Feld
+    /// gesperrt und kann hier gar nicht ankommen.
+    /// </summary>
+    private void BeiJeKw(double? wert)
+    {
+        _bestand = false;
+        _jeKwEingabe = wert;
+
+        if (!wert.HasValue || !JeKwBestimmbar) { _gesamtEingabe = null; return; }
+
+        double gesamt = BHKWKosten.GesamtAusJeKWel(wert.Value, PelWert);
+        _gesamtEingabe = gesamt;          // die Gesamtsumme folgt der Eingabe
+        Daten.KostenModul = ModulZu(gesamt);
+    }
+
+    /// <summary>
+    /// Eine Aenderung an einem Posten fuehrt: Gesamtsumme und Wert je kW folgen ihr,
+    /// die zwei Eingabemerker fallen weg.
+    /// </summary>
     private void BeiPosten(Action setzen)
     {
         setzen();
         _bestand = false;
+        _gesamtEingabe = null;
+        _jeKwEingabe = null;
     }
 
     private void BeiPtherm(double? wert) => Daten.Ptherm = wert;
@@ -468,6 +577,9 @@
     {
         Daten.Pel = wert;
         _bestand = false;
+
+        // Die Gesamtsumme haengt nicht an Pel - der Wert je kW schon.
+        _jeKwEingabe = null;
     }
 
     private void BeiName(string wert)
@@ -535,6 +647,21 @@
         return false;
     }
 
+    /// <summary>
+    /// Zieht <c>Investition_kwel</c> vor jedem Schreibvorgang aus den FUENF POSTEN nach
+    /// — auch dann, wenn der Anwender ihn selbst eingegeben hat: Was er eingab, steht
+    /// laengst in den Posten (<see cref="BeiJeKw"/>), und die Spalte ist ihre Ableitung.
+    /// Ohne elektrische Leistung gibt es keine, dann bleibt sie 0.
+    ///
+    /// <para>Der Kern rechnet in <c>BHKWStammCtrl.Update</c> dasselbe noch einmal; hier
+    /// steht es, damit schon der uebergebene Feldsatz stimmig ist und ein Aufrufer ihn
+    /// nicht mit einem alten Wert weiterreicht.</para>
+    /// </summary>
+    private void AbleitungNachziehen()
+    {
+        Daten.InvestitionJeKWel = BHKWKosten.JeKWel(GesamtAusPosten(), PelWert);
+    }
+
     private async Task BeiUeberschreiben()
     {
         if (Ueberschreiben is null) return;
@@ -556,6 +683,7 @@
 
     private async Task Schreiben(bool schutzUebergehen)
     {
+        AbleitungNachziehen();
         KatalogSpeicherErgebnis ergebnis = Ueberschreiben!(Daten, schutzUebergehen);
         await NachDemSchreiben(ergebnis);
     }
@@ -572,6 +700,7 @@
             return;
         }
 
+        AbleitungNachziehen();
         await NachDemSchreiben(Anlegen(Daten, Daten.Bezeichner));
     }
 
@@ -581,6 +710,7 @@
         if (name is null || Anlegen is null) return;
         if (!EingabenPruefen()) return;
 
+        AbleitungNachziehen();
         await NachDemSchreiben(Anlegen(Daten, name));
     }
 

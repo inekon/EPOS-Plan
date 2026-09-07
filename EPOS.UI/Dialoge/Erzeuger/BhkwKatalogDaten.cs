@@ -4,11 +4,18 @@
 /// Der Feldsatz des BHKW-Katalogeditors — das plattformfreie Abbild von
 /// <c>BHKWStammModel</c> (iU9-W6.2).
 ///
-/// <para><b>Die fünf Einzelposten führen.</b> Modul + Montage + Lieferung +
+/// <para><b>Gespeichert werden die fünf Einzelposten.</b> Modul + Montage + Lieferung +
 /// Schallschutzhaube + Abgasreinigung ergeben die Investition;
-/// <see cref="InvestitionJeKWel"/> [€/kWel] ist daraus ABGELEITET, nur Anzeige und
-/// schreibgeschützt (Nutzerentscheid 22.08.2026, Regel in <c>BHKWKosten</c>). Zuvor
-/// führten beide Wege dieselbe Größe und liefen auseinander.</para>
+/// <see cref="InvestitionJeKWel"/> [€/kWel] ist daraus ABGELEITET (Nutzerentscheid
+/// 22.08.2026, Regel in <c>BHKWKosten</c>). Zuvor führten beide Wege dieselbe Größe
+/// und liefen auseinander.</para>
+///
+/// <para><b>Eingegeben wird sie seit W14a-E-8-B3 (07.09.2026) auf DREI Wegen:</b> als
+/// Gesamtsumme, als Wert je kW elektrisch oder als die fünf Posten — die zuletzt
+/// geänderte Eingabe führt. Der Feldsatz braucht dafür kein zusätzliches Feld: Der
+/// Ausgleich läuft über <see cref="KostenModul"/>, die zwei Aggregate rechnet der
+/// Dialog aus dem, was hier steht (<c>BHKWKosten.Gesamt</c>,
+/// <c>BHKWKosten.GesamtAusJeKWel</c>, <c>BHKWKosten.ModulAusGesamt</c>).</para>
 ///
 /// <para><b>Die Emissionen sind ganzzahlig.</b> <c>BHKWStammModel</c> führt NOx, CO2,
 /// CO, SO2 und Staub als <c>int</c> — anders als der Heizkessel, der sie als
@@ -90,9 +97,11 @@ public sealed class BhkwKatalogDaten
     public int? Nutzungsdauer { get; set; }
 
     /// <summary>
-    /// Der beim Laden gespeicherte Wert je kWel [€/kWel]. Er wird angezeigt, solange
-    /// nichts geändert wurde; passt er nicht zur Summe, benennt die Hinweiszeile das.
-    /// Beim Speichern entsteht der Wert neu aus Posten und Pel.
+    /// Der Wert je kWel [€/kWel]. Beim Laden steht hier der GESPEICHERTE Wert; er wird
+    /// angezeigt, solange nichts geändert wurde, und passt er nicht zur Summe, benennt
+    /// die Hinweiszeile das. Vor jedem Schreibvorgang entsteht er neu aus den Posten
+    /// und Pel — auch dann, wenn der Anwender ihn selbst eingegeben hat: Was er eingab,
+    /// steht dann längst als Modulpreis in <see cref="KostenModul"/>.
     /// </summary>
     public double? InvestitionJeKWel { get; set; }
 

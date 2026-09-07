@@ -105,9 +105,11 @@ namespace WindowsFormsApplication1
                         return (s.SO2, s.CO2, s.NOx, s.CO, s.Staub);
                     }),
 
-                ["Summe"] = new Func<double, double, double, double, double, double>(BHKWKosten.Summe),
-                ["JeKWelBestimmbar"] = new Func<double, bool>(BHKWKosten.JeKWelBestimmbar),
-                ["JeKWel"] = new Func<double, double, double>(BHKWKosten.JeKWel),
+                // Die Umrechnung zwischen Gesamtsumme, Wert je kWel und den fuenf Posten
+                // reicht die Hülle NICHT mehr herein: Seit W14a-E-8-B3 ruft der Dialog
+                // BHKWKosten unmittelbar (EPOS.UI verweist auf EPOS.Kern). Die drei
+                // Funktionsparameter hätten sonst je eine Ersatzrechnung im Dialog
+                // gebraucht — eine zweite Fassung derselben Regel.
 
                 ["TitelText"] = Text_("BHKWK_TITEL", "BHKW Eigenschaften"),
                 ["GruppeBezeichnung"] = Text_("BHKWK_GRP_BEZEICHNUNG", "Modul"),
@@ -141,8 +143,10 @@ namespace WindowsFormsApplication1
                 ["FeldSchallschutz"] = Text_("BHKWK_FELD_SCHALLSCHUTZ", "Kosten Schallschutzhaube"),
                 ["LabelAbgasreinigung"] = Text_("BHKWK_LBL_ABGASREINIGUNG", "Abgasreinigung, z. B. Kat:"),
                 ["FeldAbgasreinigung"] = Text_("BHKWK_FELD_ABGASREINIGUNG", "Kosten Abgasreinigung"),
-                ["LabelSumme"] = MyResource.Resource.BHKW_SUMME_LBL,
-                ["LabelInvest"] = Text_("BHKWK_LBL_INVEST", "Investitionskosten [€ / kWel]:"),
+                ["LabelGesamt"] = MyResource.Resource.BHKW_SUMME_LBL,
+                ["FeldGesamt"] = Text_("BHKW_INVEST_GESAMT_FELD", "Investition gesamt"),
+                ["LabelInvest"] = Text_("BHKWK_LBL_INVEST", "Investition je kW elektrisch:"),
+                ["FeldInvest"] = Text_("BHKW_INVEST_JEKW_FELD", "Investition je kW elektrisch"),
                 ["LabelRaumbedarf"] = Text_("BHKWK_LBL_RAUMBEDARF", "Raumbedarf:"),
                 ["FeldRaumbedarf"] = Text_("BHKWK_FELD_RAUMBEDARF", "Raumbedarf"),
                 ["LabelWartung"] = Text_("BHKWK_LBL_WARTUNG", "Wartungskosten:"),
@@ -150,10 +154,10 @@ namespace WindowsFormsApplication1
                 ["LabelNutzungsdauer"] = Text_("BHKWK_LBL_NUTZUNGSDAUER", "Nutzungsdauer:"),
                 ["FeldNutzungsdauer"] = Text_("BHKWK_FELD_NUTZUNGSDAUER", "Nutzungsdauer"),
                 ["EinheitJahre"] = Text_("BHKWK_EINHEIT_JAHRE", "Jahre"),
-                ["InvestUnbestimmt"] = MyResource.Resource.BHKW_INVEST_UNBESTIMMT,
-                ["HinweisAbgeleitet"] = MyResource.Resource.BHKW_INVEST_HINWEIS_ABGELEITET,
+                ["HinweisFuehrend"] = MyResource.Resource.BHKW_INVEST_HINWEIS_FUEHREND,
                 ["HinweisUnbestimmt"] = MyResource.Resource.BHKW_INVEST_HINWEIS_UNBESTIMMT,
                 ["HinweisAbweichung"] = MyResource.Resource.BHKW_INVEST_HINWEIS_ABWEICHUNG,
+                ["HinweisGedeckelt"] = MyResource.Resource.BHKW_INVEST_HINWEIS_GEDECKELT,
                 ["GruppeBehg"] = Text_("BHKWK_GRP_BEHG", "Emissionen nach BEHG-V"),
                 ["BehgZeile"] = Text_("HZKK_BEHG_ZEILE", "für Heizzwecke in t CO2 / GJ"),
                 ["BehgOel"] = Text_("HZKK_BEHG_OEL", "Heizöl: 0,0808"),

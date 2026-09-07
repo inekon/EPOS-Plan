@@ -334,10 +334,13 @@ Module ohne gepflegte elektrische Nennleistung bleiben in Zähler und Nenner au�
   hinter einer Bedingung eingeschlossen, die für jede Stunde des Jahres wahr ist, und damit
   unerreichbar. Sein Entfernen war ergebnisneutral. Ihn zurückzuholen wäre eine fachliche
   Änderung.
-* '''`Investition je kW elektrisch` ist eine Dublette ohne Leser''' (Befund W14a‑E‑8‑B3): Der Wert
-  wird seit dem 22.08.2026 aus den fünf Einzelposten '''abgeleitet''' und schreibgeschützt
-  angezeigt; die Kostenplanung rechnet mit den Posten selbst. Er ist richtig, aber er geht in keine
-  Rechnung ein.
+* '''`Investition je kW elektrisch` geht in keine Rechnung des Laufs ein''' (Befund
+  W14a‑E‑8‑B3, geschlossen mit dem Anwenderentscheid vom 07.09.2026): Die Investition wird im
+  Katalog wahlweise als '''Gesamtsumme''' [€], als '''Wert je kW elektrisch''' [€/kW] oder als die
+  '''fünf Einzelposten''' eingegeben — die zuletzt geänderte Eingabe führt, das jeweils andere
+  Feld folgt aus ihr, und der Ausgleich läuft immer über den Modulpreis. Gespeichert werden die
+  fünf Posten; `Investition_kwel` bleibt ihre Ableitung (Summe / <math>P_{\mathrm{el}}</math>).
+  Gerechnet wird mit den Posten — in der Kostenplanung, nicht im Simulationslauf.
 * '''Vor- und Rücklauf des Katalogs sind die Vorbelegung:''' Beim Anlegen der Anlage im Projekt
   werden sie aus dem Katalogsatz übernommen und können dort für das Projekt geändert werden.
   Gerechnet wird mit den Werten der Projektzeile (Anlage), nicht mit dem Katalogsatz.
