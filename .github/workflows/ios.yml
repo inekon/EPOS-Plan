@@ -143,10 +143,19 @@ jobs:
           # Prozessnamen voran ("2026-09-03 10:37:08.121 EPOS.iOS[7814:28980] SQLite 3.53.3").
           # Sechster Lauf 33744793453: alle Marken vorhanden, nur die Anker griffen nicht.
           grep -E "SQLite [0-9]+\.[0-9]+\.[0-9]+" artifacts/ios/start.log
-          # Das STRICT-Gate: Die Testdatenbank fuehrt 114 von 115 Tabellen als
-          # STRICT. Steht hier eine kleinere Zahl, hat die App eine andere
-          # SQLite-Fassung erwischt als Windows, Linux und macOS-CI.
-          grep -E "STRICT=114([^0-9]|$)" artifacts/ios/start.log   # [^0-9] faengt auch das \r der pty-Ausgabe (siebter Lauf)
+          # Das STRICT-Gate: Die App zaehlt beim Start die STRICT-Tabellen der
+          # Datenbank (STRICT gibt es erst ab SQLite 3.37). Steht hier eine
+          # kleinere Zahl als in der Seed-Datenbank, hat die App eine andere
+          # SQLite-Fassung erwischt als Windows, Linux und macOS-CI. Die
+          # Erwartung kommt aus der Seed-Datenbank selbst, nicht aus einer
+          # Zahl im Workflow: Lauf 31 (34086413182) brach an "STRICT=114",
+          # nachdem die Migrationsschritte 65 und 66 drei Tabellen ergaenzt
+          # hatten (117 von 118, die 118. ist sqlite_sequence). Eine GROESSERE
+          # Zahl (Seed hinter einem Migrationsschritt der App) ist kein Fehler.
+          ERWARTET=$(sqlite3 "$SEED" "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND sql LIKE '%STRICT%'")
+          IST=$(grep -oE "STRICT=[0-9]+" artifacts/ios/start.log | head -1 | cut -d= -f2)   # ohne Zeilenanker, s. o.; die pty-Ausgabe traegt \r
+          echo "STRICT-Tabellen: erwartet mindestens $ERWARTET (Seed), gemeldet ${IST:-keine}"
+          test -n "$IST" && test "$IST" -ge "$ERWARTET"
           test -f artifacts/ios/pruefung/fertig.txt
 
       # Der eigentliche iZ6-Nachweis: dieselbe Toleranzregel wie in kern.yml

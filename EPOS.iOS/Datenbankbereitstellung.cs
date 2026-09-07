@@ -128,8 +128,11 @@ internal static class Datenbankbereitstellung
     /// Die beiden Auskunftszeilen des Starts: Fassung der SQLite-Bibliothek und
     /// Zahl der STRICT-Tabellen.
     ///
-    /// <para><b>Sie sind das Gate, nicht Schmuck.</b> Die Datenbank fuehrt 114
-    /// STRICT-Tabellen; STRICT gibt es erst ab SQLite 3.37. Weil die Huelle
+    /// <para><b>Sie sind das Gate, nicht Schmuck.</b> Die Datenbank fuehrt alle
+    /// Fachtabellen als STRICT (117 seit den Migrationsschritten 65 und 66,
+    /// Lauf 31 vom 07.09.2026; der CI-Job liest die Erwartung aus der
+    /// Seed-Datenbank, nicht aus einer Zahl im Workflow); STRICT gibt es erst
+    /// ab SQLite 3.37. Weil die Huelle
     /// <c>bundle_e_sqlite3</c> statisch mitlinkt, muss hier auf jedem Geraet
     /// dieselbe Fassung stehen wie auf Windows, Linux und im macOS-CI. Weicht
     /// sie ab, ist die Ursache im Paketgraphen zu suchen und nicht im

@@ -407,6 +407,20 @@ liefert der `AppWurzel` den Zustand für das Lizenzbanner. Bau, Simulatorstart, 
 (Anwenderentscheid 05.09.), `Resource.Designer.cs` per Werkzeug erzeugt, PufferSpProjektDialog im Formularraster,
 Wechselrichter-Konzept. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Einunddreißigster Lauf 34086413182 (`ios.yml`, `macos-26`, 07.09.2026, 05:20–05:25 UTC, 5 min 47 s)** auf
+`5247e73` — der Stand nach den Wellen des 06.09.2026 (W6‑E‑4 Vor-/Rücklauf aus dem Katalog, H13 Fassung 2 und 3,
+W6‑O‑1…O‑9 mit dem Wechselrichterweg S1–S3, dem Importwirt und dem Prüfprojekt 1045, W7‑B‑1/B‑2/E‑2 Wärmepumpe,
+W16c‑E‑6 Administration-Menü): Workload, Bau, Simulatorstart, Erststart mit Seed-Kopie (`EPOS.iOS bereit: Projekte=24` —
+das zwölfte Prüfprojekt 1045 zählt mit) und `SQLite 3.53.3` grün; **rot allein im STRICT-Gate:** Der Workflow verlangte
+wörtlich `STRICT=114`, die Testdatenbank führt seit den Migrationsschritten 65 (Wechselrichterkatalog, zwei Tabellen) und
+66 (`Z_AnlageStrang`) aber **117 STRICT-Tabellen von 118** (die 118. ist `sqlite_sequence`). Prüfmodus und iZ6-Vergleich
+kamen deshalb nicht an die Reihe — die App selbst hatte keinen Fehler. Behebung im Folgecommit (siehe Lauf 32): Das Gate
+leitet die Erwartung aus der Seed-Datenbank ab (`sqlite3 … sql LIKE '%STRICT%'`) und verlangt im Startprotokoll mindestens
+diese Zahl — eine kleinere meldet weiterhin eine fremde SQLite-Fassung, eine nach einem Migrationsschritt gestiegene bricht
+den Lauf nicht mehr. Der Pfad-Adapter `IosPfade` erbt das neue Mitglied `IPfade.Herstellerdaten` (W6‑O‑9) von
+`StandardPfade`; auf iOS findet die Suche keinen Ordner und liefert den leeren Pfad, die Einstellungen fallen auf die Vorgabe
+zurück. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
