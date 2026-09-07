@@ -640,7 +640,8 @@ hatte, und er hebt die Empfehlung **Q6** ausdrücklich auf. Umgestellt sind:
 „Typen"): Bildpunkte des `ChartRenderer` (SkiaSharp rechnet in `float`), Einbettungsvektoren
 des KI-Wissens und Typprüfungen auf boxed Datenbankwerte. Ein dritter Wächter,
 `EPOS.Kern.Tests/DoubleWacheTests`, hält den Rechenweg frei — mit **leerer** Ausnahmeliste.
-Im Kern fällt die Zahl der `float`-Fundstellen von **788 in 42 Dateien** auf **148 in 15**.
+Im Kern fällt die Zahl der `float`-Fundstellen von **788 in 42 Dateien** auf **147 in 14**
+(120 Bildpunkte im `ChartRenderer`, 12 Einbettungen der KI, 10 Typprüfungen, 5 Kommentare).
 
 **Was das am Ergebnis geändert hat.** Die Jahressummen bleiben in allen zwölf Referenzprojekten
 innerhalb **3e‑5** relativ; die erste Differenz einer Stundenreihe liegt bei einer

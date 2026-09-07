@@ -502,6 +502,11 @@ akkumulieren seither in `double`. Die Datenbankgrenze passt damit: SQLite `REAL`
 | Einbettungen | `Allgemein/KI/SemantikIndex.cs`, `SemantikModell.cs` | Vektoren des KI-Wissens, kein Rechenweg (ONNX liefert `Tensor<float>`) |
 | Typprüfungen | `v is float`, `typeof(float)` in `ProjektExportImportCtrl`, `KomponentenUebernahmeCtrl`, `MerkmalUebernahmeCtrl`, `ParameterUebersichtCtrl`, `AnlagenEindeutigkeit`, `DublettenPruefung`, `PufferSpStammCtrl`, `Referenzlauf/Ergebnisexport` | Absicherung gegen einen boxed Wert aus einer Fremdquelle; kein Rechenweg |
 
+Damit fällt die Zahl der `float`-Fundstellen im Kern von **788 in 42 Dateien** auf
+**147 in 14**: 120 Bildpunkte, 12 Einbettungen, 10 Typprüfungen und 5 Kommentare, die die
+Geschichte erzählen. Im Ordner `Allgemein/Simulation/` steht **keine einzige** Stelle mehr, in
+`BhkwPlan.cs` nur noch zwei Kommentarzeilen — genau das prüft der Wächter.
+
 **Ein dritter Wächter hält die Regel** (`EPOS.Kern.Tests/DoubleWacheTests.cs`):
 
 | Wächter | Was er prüft | Ausnahmen |
