@@ -443,6 +443,22 @@ Schemastand 67). Workload 29 s, Bau 1 min 35 s (0 Fehler), Simulatorstart 2 min 
 gefallenem BHKW-Fallback auf iOS byte-gleich — der Beleg, dass Schritt 67 (NULL → 30) die Rechnung des Bestands unverändert
 lässt. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Vierunddreißigster Lauf 34117430636 (`ios.yml`, `macos-26`, 07.09.2026, 11:35–11:41 UTC, 5 min 13 s)** auf
+`c99cdb7` — der zweite Tagesstand des 07.09.2026 und der erste Lauf, der **den Rechenkern in `double`** prüft (W8‑O‑5d:
+Stundenreihen, Akkumulatoren, `BhkwPlan`, Datenbankgrenze, `SpeicherEngine`-Naht), dazu W11b‑B‑5 (die letzte
+WinForms-Fachmaske ist Razor, `Sprungziel` leer, `Sprungbruecke` gelöscht, **`ScottPlot.WinForms` aus
+`Directory.Packages.props`** — der erste Restore der iOS-Hülle ohne dieses Paket), W8‑O‑5c S1 (Einheitenregel, elf
+Hüllen-Umrechnungen im Kern), W14a‑E‑8 B1/B3 (Emissionsquelle, BHKW-Investition) und W7‑B‑3 (Kennlinien der
+Projekt-Wärmepumpe). Workload 17 s, Bau 57 s (0 Fehler), Simulatorstart 1 min 20 s, Erststart mit Seed-Kopie (66 MB),
+Startmarken `SQLite 3.53.3` · `STRICT=117` (Erwartung aus der Seed-Datenbank: 117) · `Projekte=24` grün, Prüfmodus 1030
+in 3 s (22 CSV, 150 Skalare), **iZ6-Vergleich gegen die neue Basis `2026-09-07_R4_Double` PASS (236 670 Werte)** und
+**BYTE-GLEICH** (`diff -rq` leer, iOS-Simulator arm64). Damit ist die R4-Basis, die auf dem Linux-Läufer aus dem
+`double`-Kern eingefroren wurde, auch auf Apple Silicon byte-gleich reproduziert — die Umstellung auf `double` hat die
+Plattformgleichheit nicht angetastet. Der `kern.yml`-Lauf 203 zum selben Commit ist grün; Lauf 202 (`f44e89b`, nur
+Dokumentation) fiel an `Der_Fortschritt_kommt_gedrosselt_an`, dem Wettlauf des Fortschrittsmelders der
+Speicheroptimierung, der in `1fabbd1` behoben ist (Weitergabe unter dem Schloss, zehn Läufe grün). Ausgelöst per
+`workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
