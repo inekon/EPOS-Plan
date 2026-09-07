@@ -219,16 +219,90 @@ public class ModulImportDialogTests : BunitContext
     private static IElement Knopf(IRenderedComponent<ModulImportDialog> cut, string teil)
         => cut.FindAll("button").First(b => b.TextContent.Contains(teil));
 
-    private static void CecLaden(IRenderedComponent<ModulImportDialog> cut)
-        => Knopf(cut, "CEC laden").Click();
+    /// <summary>Der Anfang der Treffermeldung — beide Ausprägungen teilen ihn.</summary>
+    private const string GEFUNDEN = "Filter Auswahl (";
 
-    /// <summary>Der erste Quellenknopf der Leiste — der Netzabruf.</summary>
+    /// <summary>Die GEZEICHNETE Statuszeile des Dialogs.</summary>
+    private static string Statuszeile(IRenderedComponent<ModulImportDialog> cut)
+        => cut.Find(".epos-pvimport-status").TextContent;
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Abschluss eines Ladewegs: Die Statuszeile trägt die
+    /// Trefferzahl („Filter Auswahl (n … gefunden)") statt der Bereitmeldung, und die
+    /// Quellenknöpfe sind wieder bedienbar (<c>_laeuft</c> ist zurück auf <c>false</c>).
+    ///
+    /// <para><b>W6‑B‑2‑O‑1: bunits synchrone Ereignisse warten NICHT.</b> <c>Click()</c>
+    /// und <c>Change()</c> geben das Ereignis nur beim Zeichner ab; nur die
+    /// <c>…Async</c>-Fassungen liefern laut bunit-Dokumentation „a task that completes
+    /// when the event handler is done". Der Zeichnerfaden
+    /// (<c>RendererSynchronizationContext</c>) führt das Ereignis auf dem Prüffaden aus,
+    /// SOLANGE seine Warteschlange frei ist; liegt dort schon ein Werkstück — nach dem
+    /// Laden regelmäßig das <c>OnAfterRenderAsync</c> von QuickGrid und
+    /// <c>Virtualize</c>, das der Ladegang selbst auslöst, sobald die Zeilenzahl die
+    /// Schwelle <c>VIRTUALISIEREN_AB</c> überschreitet —, wird das Ereignis EINGEREIHT,
+    /// und die nächste Zeile des Falls liest den Stand VOR dem Ereignis.
+    /// Verloren ging der Wettlauf im Kern-Lauf <b>216</b>
+    /// (<c>Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers</c>,
+    /// „Expected 5, Actual 155" — genau die ungefilterte Zeilenzahl); derselbe Commit
+    /// war im Lauf 215 grün. Gemessen mit dem WÖRTLICHEN Prüfstand unter Rechenlast:
+    /// altes Muster 68 bis 95 von 400 Läufen rot (zwei Messreihen), neues 0 von 400.</para>
+    /// </summary>
+    private static void Geladen(IRenderedComponent<ModulImportDialog> cut)
+        => cut.WaitForAssertion(() =>
+        {
+            Assert.Contains(GEFUNDEN, Statuszeile(cut));
+            Assert.False(cut.Find(".epos-leiste .epos-knopf--primaer").HasAttribute("disabled"));
+        });
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Stand nach einem Filterschritt: <paramref name="zeilen"/>
+    /// sichtbare Zeilen, und die Statuszeile trägt dieselbe Zahl. Begründung wie bei
+    /// <see cref="Geladen"/> — auch <c>Change()</c> und <c>Input()</c> kehren zurück,
+    /// ohne dass der Behandler gelaufen sein muss.
+    /// </summary>
+    private static void Gefiltert(IRenderedComponent<ModulImportDialog> cut, int zeilen)
+        => cut.WaitForAssertion(() =>
+        {
+            Assert.Equal(zeilen, cut.Instance.SichtbareZeilen);
+            Assert.Contains("(" + zeilen + " ", Statuszeile(cut));
+        });
+
+    /// <summary>„CEC laden" — Klick UND Warten auf den gezeichneten Abschluss.</summary>
+    private static void CecLaden(IRenderedComponent<ModulImportDialog> cut)
+    {
+        Knopf(cut, "CEC laden").Click();
+        Geladen(cut);
+    }
+
+    /// <summary>
+    /// Der erste Quellenknopf der Leiste — der Netzabruf, mit demselben Warten
+    /// (<see cref="Geladen"/>).
+    /// </summary>
     private static void Laden(IRenderedComponent<ModulImportDialog> cut)
-        => cut.Find(".epos-leiste .epos-knopf--primaer").Click();
+    {
+        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
+        Geladen(cut);
+    }
 
     /// <summary>Der Knopf „Übernehmen" der Fußleiste.</summary>
     private static IElement Uebernehmen(IRenderedComponent<ModulImportDialog> cut)
         => cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[0];
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Abschluss eines Schreibgangs: Der Wirt hat gemeldet.
+    /// <c>Schreibgang</c> ist <c>async</c> und läuft über <c>Vorpruefen</c> und
+    /// <c>Anlegen</c> — dieselbe Regel und dieselbe Begründung wie bei
+    /// <see cref="Geladen"/> (W6‑B‑2‑O‑1).
+    /// </summary>
+    private static void Gemeldet(IRenderedComponent<ModulImportDialog> cut, string text)
+        => cut.WaitForAssertion(() => Assert.Contains(text, cut.Instance.Meldung));
+
+    /// <summary>
+    /// Wartet auf die GEZEICHNETE Überlagerung, in die ein Schreibgang abgezweigt ist
+    /// (Konfliktdialog oder Rückfrage). Begründung wie bei <see cref="Geladen"/>.
+    /// </summary>
+    private static void Ueberlagert(IRenderedComponent<ModulImportDialog> cut, string wahl)
+        => cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(wahl)));
 
     // =====================================================================
     // 1 — Feldbestand
@@ -354,11 +428,11 @@ public class ModulImportDialogTests : BunitContext
         Assert.Equal(3, liste.QuerySelectorAll("option").Length);   // (alle) + zwei Hersteller
 
         liste.Change("2");                                          // "Trina Solar"
-        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 1);
         Assert.Contains("Trina TSM-650", cut.Find("tbody").TextContent);
 
         cut.FindAll(".epos-pvimport-filter select")[0].Change("0"); // wieder alle
-        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 3);
     }
 
     /// <summary>
@@ -375,14 +449,14 @@ public class ModulImportDialogTests : BunitContext
         var suche = cut.FindAll(".epos-pvimport-filter input[type='text']")[0];
 
         suche.Input("Ablytek*");
-        Assert.Equal(2, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 2);
 
         cut.FindAll(".epos-pvimport-filter input[type='text']")[0].Input("*650*");
-        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 1);
 
         // Ohne Platzhalter ist es eine Teilsuche.
         cut.FindAll(".epos-pvimport-filter input[type='text']")[0].Input("6MN");
-        Assert.Equal(2, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 2);
     }
 
     /// <summary>
@@ -398,14 +472,14 @@ public class ModulImportDialogTests : BunitContext
         // 8,81 * 30,72 = 270,6 | 10 * 40 = 400 | 17,27 * 37,7 = 651,1
         var felder = cut.FindAll(".epos-pvimport-filter input[inputmode]");
         felder[0].Input("300");
-        Assert.Equal(2, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 2);
 
         cut.FindAll(".epos-pvimport-filter input[inputmode]")[1].Input("500");
-        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 1);
 
         // Obergrenze 0 heisst "keine Obergrenze".
         cut.FindAll(".epos-pvimport-filter input[inputmode]")[1].Input("0");
-        Assert.Equal(2, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 2);
     }
 
     [Fact]
@@ -415,11 +489,11 @@ public class ModulImportDialogTests : BunitContext
         CecLaden(cut);
 
         cut.FindAll(".epos-pvimport-filter input[type='text']")[0].Input("Trina*");
-        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 1);
 
         Knopf(cut, "Zurücksetzen").Click();
 
-        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 3);
         var felder = cut.FindAll(".epos-pvimport-filter input[inputmode]");
         Assert.Equal("999,00", felder[1].GetAttribute("value"));
     }
@@ -512,7 +586,7 @@ public class ModulImportDialogTests : BunitContext
 
         Knopf(cut, "Auswahl übernehmen").Click();
 
-        Assert.Equal("Bitte ein PV-Modul selektieren!", cut.Instance.Meldung);
+        Gemeldet(cut, "Bitte ein PV-Modul selektieren!");
     }
 
     /// <summary>
@@ -532,8 +606,8 @@ public class ModulImportDialogTests : BunitContext
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Knopf(cut, "Auswahl übernehmen").Click();
 
+        Gemeldet(cut, "Datensatz erfolgreich gespeichert.");
         Assert.Equal("Ablytek 6MN6A270", angelegt);
-        Assert.Equal("Datensatz erfolgreich gespeichert.", cut.Instance.Meldung);
         Assert.Empty(cut.FindAll("[role='dialog']"));
     }
 
@@ -552,6 +626,7 @@ public class ModulImportDialogTests : BunitContext
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Knopf(cut, "Auswahl übernehmen").Click();
 
+        Ueberlagert(cut, "[role='dialog']");
         Assert.Single(cut.FindAll("[role='dialog']"));
         Assert.Contains("Import: Konflikte prüfen", cut.Markup);
     }
@@ -567,7 +642,7 @@ public class ModulImportDialogTests : BunitContext
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Knopf(cut, "Auswahl übernehmen").Click();
 
-        Assert.Equal("Fehler beim Speichern des Datensatzes!", cut.Instance.Meldung);
+        Gemeldet(cut, "Fehler beim Speichern des Datensatzes!");
     }
 
     // =====================================================================
@@ -596,6 +671,7 @@ public class ModulImportDialogTests : BunitContext
             });
 
         Knopf(cut, "PAN laden").Click();
+        Geladen(cut);
 
         Assert.Equal(@"D:\module\trina.pan", gelesen);
         Assert.Equal(ModulImportProfil.QuellePan, benutzt!.Schluessel);
@@ -615,8 +691,12 @@ public class ModulImportDialogTests : BunitContext
 
         Knopf(cut, "PAN laden").Click();
 
+        // Der FEHLERWEG setzt keine Statuszeile - er zeichnet ein Warnbanner. Also
+        // wartet der Fall auf das gezeichnete Banner statt auf die Trefferzahl
+        // (Begruendung bei Geladen, W6-B-2-O-1).
+        cut.WaitForAssertion(() =>
+            Assert.Contains("Zugriff verweigert", cut.Find("[role='alert']").TextContent));
         Assert.Contains("Zugriff verweigert", cut.Instance.Meldung);
-        Assert.NotEmpty(cut.FindAll("[role='alert']"));
     }
 
     [Fact]
@@ -627,7 +707,7 @@ public class ModulImportDialogTests : BunitContext
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.False(ergebnis);
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
     }
 
     /// <summary>
@@ -646,9 +726,10 @@ public class ModulImportDialogTests : BunitContext
         CecLaden(cut);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Knopf(cut, "Auswahl übernehmen").Click();
+        Gemeldet(cut, "Datensatz erfolgreich gespeichert.");
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.True(ergebnis);
+        cut.WaitForAssertion(() => Assert.True(ergebnis));
     }
 
     /// <summary>
@@ -735,13 +816,13 @@ public class ModulImportDialogTests : BunitContext
         Assert.Equal(3, hersteller.QuerySelectorAll("option").Length);   // alle + zwei Firmen
 
         hersteller.Change("1");
-        Assert.Equal(2, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 2);
 
         cut.FindAll(".epos-pvimport-filter input[type=text]")[0].Input("*10000*");
-        Assert.Equal(0, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 0);
 
         Knopf(cut, "Zurücksetzen").Click();
-        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 3);
     }
 
     /// <summary>
@@ -789,6 +870,7 @@ public class ModulImportDialogTests : BunitContext
         cut.FindAll(".epos-anlagenwahl")[1].Click();
         Uebernehmen(cut).Click();
 
+        Gemeldet(cut, "Datensatz erfolgreich gespeichert.");
         Assert.Equal("Alpha AG: A-5000", angelegt);
     }
 
@@ -810,8 +892,8 @@ public class ModulImportDialogTests : BunitContext
         cut.FindAll(".epos-anlagenwahl")[0].Click();
         Uebernehmen(cut).Click();
 
+        Gemeldet(cut, "Die Kennlinie taugt nicht.");
         Assert.Null(angelegt);
-        Assert.Contains("Die Kennlinie taugt nicht.", cut.Instance.Meldung);
         Assert.False(cut.Instance.PlausiOffen);
     }
 
@@ -829,11 +911,12 @@ public class ModulImportDialogTests : BunitContext
         cut.FindAll(".epos-anlagenwahl")[0].Click();
         Uebernehmen(cut).Click();
 
+        Ueberlagert(cut, ".epos-rueckfrage");
         Assert.True(cut.Instance.PlausiOffen);
         Assert.Null(angelegt);
 
         cut.FindAll(".epos-rueckfrage .epos-knopf").Last().Click();   // Nein
-        Assert.False(cut.Instance.PlausiOffen);
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.PlausiOffen));
         Assert.Null(angelegt);
     }
 
@@ -860,7 +943,7 @@ public class ModulImportDialogTests : BunitContext
         cut.FindAll(".epos-anlagenwahl")[0].Click();
         Uebernehmen(cut).Click();
 
-        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
+        Ueberlagert(cut, ".epos-ueberlagerung");
     }
 
     /// <summary>
@@ -876,7 +959,7 @@ public class ModulImportDialogTests : BunitContext
 
         cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[1].Click();
 
-        Assert.False(ergebnis);
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
     }
 
     // =====================================================================
@@ -899,6 +982,7 @@ public class ModulImportDialogTests : BunitContext
                 true, new List<object> { Ond() }, new CecFortschritt("OND_MSG_GELESEN", "1"))));
 
         Knopf(cut, "OND laden").Click();
+        Geladen(cut);
 
         Assert.Equal(ModulImportProfil.QuelleOnd, benutzt!.Schluessel);
         Assert.Equal("(*.ond)|*.ond", benutzt.Dateifilter);
@@ -924,6 +1008,7 @@ public class ModulImportDialogTests : BunitContext
                 true, new List<object> { Ond() }, new CecFortschritt("OND_MSG_GELESEN", "1"))));
 
         Knopf(cut, "OND laden").Click();
+        Geladen(cut);
         cut.FindAll(".epos-anlagenwahl")[0].Click();
         cut.FindAll("[role='tab']")[1].Click();
 
@@ -957,6 +1042,7 @@ public class ModulImportDialogTests : BunitContext
                 true, new List<object> { Ond() }, new CecFortschritt("OND_MSG_GELESEN", "1"))));
 
         Knopf(cut, "OND laden").Click();
+        Geladen(cut);
         cut.FindAll(".epos-anlagenwahl")[0].Click();
 
         ImportZeile zeile = cut.Instance.GewaehlteZeile!;
@@ -1007,6 +1093,7 @@ public class ModulImportDialogTests : BunitContext
             });
 
         Knopf(cut, "CEC-Datei laden").Click();
+        Geladen(cut);
 
         Assert.Equal(ModulImportProfil.QuelleCecDatei, benutzt!.Schluessel);
         Assert.Equal("(*.csv)|*.csv", benutzt.Dateifilter);
@@ -1037,6 +1124,15 @@ public class ModulImportDialogTests : BunitContext
     /// laufenden Browser ist die Playwright-Probe im Arbeitsordner (elf Fälle, rot
     /// vor dem Fix), der Wächter am Standard ist
     /// <c>RasterTests.Der_Wechsel_des_Virtualisierungsschalters_baut_das_Raster_neu_auf</c>.</para>
+    ///
+    /// <para><b>Und er wartet auf den GEZEICHNETEN Stand</b> (<b>W6‑B‑2‑O‑1</b>): Genau
+    /// dieser Fall war im Kern-Lauf 216 der einzige rote — „Expected 5, Actual 155",
+    /// also die Zeilenzahl VOR dem Filter, auf demselben Commit, den der Lauf 215 grün
+    /// gerechnet hat. Die Herleitung steht bei <see cref="Geladen"/>; hier wiegt sie
+    /// doppelt, weil der Ladegang mit 155 Zeilen die Schwelle
+    /// <c>VIRTUALISIEREN_AB</c> überschreitet und damit selbst die
+    /// <c>OnAfterRenderAsync</c>-Werkstücke von QuickGrid und <c>Virtualize</c> auf den
+    /// Zeichnerfaden legt — hinter denen das nächste Ereignis wartet.</para>
     /// </summary>
     [Fact]
     public void Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers()
@@ -1048,12 +1144,12 @@ public class ModulImportDialogTests : BunitContext
         var cut = Bauen(ModulImportArt.Wechselrichter, viele);
         Laden(cut);
 
-        Assert.Equal(155, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 155);
 
         // Die zweite Firma der Klappliste: (alle) = 0, "ABB" = 1, "SMA America" = 2.
         cut.FindAll(".epos-pvimport-filter select")[0].Change("2");
 
-        Assert.Equal(5, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 5);
         Assert.Contains("Filter Auswahl (5 Geräte gefunden)", cut.Markup);
 
         string tabelle = cut.Find("tbody").TextContent;
@@ -1125,12 +1221,12 @@ public class ModulImportDialogTests : BunitContext
 
         Uebernehmen(cut).Click();
 
+        Gemeldet(cut, "2 übernommen, 0 übersprungen.");
         Assert.Equal(2, angelegt.Count);
-        Assert.Equal("2 übernommen, 0 übersprungen.", cut.Instance.Meldung);
 
         // Ein dritter Klick auf dieselbe Zeile nimmt sie wieder aus der Wahl.
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
-        Assert.Single(cut.Instance.Gewaehlte);
+        cut.WaitForAssertion(() => Assert.Single(cut.Instance.Gewaehlte));
     }
 
     /// <summary>
@@ -1161,8 +1257,8 @@ public class ModulImportDialogTests : BunitContext
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[2].DoubleClick();
 
+        Gemeldet(cut, "Datensatz erfolgreich gespeichert.");
         Assert.Equal(new[] { "Beta GmbH: B-10000" }, angelegt);
-        Assert.Equal("Datensatz erfolgreich gespeichert.", cut.Instance.Meldung);
 
         // Die doppelt geklickte Zeile steht jetzt MIT in der Wahl, die erste auch.
         Assert.Equal(2, cut.Instance.Gewaehlte.Count);
@@ -1203,6 +1299,7 @@ public class ModulImportDialogTests : BunitContext
 
         // EINE Ueberlagerung mit genau EINER Pruefzeile - die konfliktfreie steht
         // nicht darin, sie braucht keine Entscheidung.
+        Ueberlagert(cut, ".epos-importkonflikte tbody tr");
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
         Assert.Single(cut.FindAll(".epos-importkonflikte tbody tr"));
 
@@ -1211,9 +1308,9 @@ public class ModulImportDialogTests : BunitContext
         cut.Find(".epos-importkonflikte tbody tr").QuerySelectorAll("select")[0].Change("1");
         cut.Find(".epos-importkonflikte .epos-knopf--primaer").Click();
 
+        Gemeldet(cut, "2 übernommen, 0 übersprungen.");
         Assert.Equal(new[] { 7 }, ueberschrieben);
         Assert.Equal(new[] { "Beta GmbH: B-10000" }, angelegt);
-        Assert.Equal("2 übernommen, 0 übersprungen.", cut.Instance.Meldung);
     }
 
     /// <summary>
@@ -1235,6 +1332,7 @@ public class ModulImportDialogTests : BunitContext
 
         Uebernehmen(cut).Click();
 
+        Ueberlagert(cut, ".epos-rueckfrage");
         Assert.True(cut.Instance.PlausiOffen);
         Assert.Single(cut.FindAll(".epos-rueckfrage"));
         Assert.Contains("Alpha AG: A-3000", cut.Find(".epos-rueckfrage").TextContent);
@@ -1265,7 +1363,7 @@ public class ModulImportDialogTests : BunitContext
         // ... dann auf die zweite Firma filtern: die beiden sind unsichtbar,
         // bleiben aber gewaehlt.
         cut.FindAll(".epos-pvimport-filter select")[0].Change("2");
-        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Gefiltert(cut, 1);
         Assert.Equal(2, cut.Instance.Gewaehlte.Count);
         Assert.Empty(cut.FindAll("tbody .epos-knopf--primaer"));   // keine markierte Zeile sichtbar
 

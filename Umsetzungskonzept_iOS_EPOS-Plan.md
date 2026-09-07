@@ -3978,6 +3978,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > und `PhotovoltaikHuelle.cs` sind unberührt (kein Konflikt mit S2). Nachweis: 14 neue Fälle (`PvStraengeFelderTests`
 > 38 → 45, `PvWechselrichterZuordnungTests` 5), Kern 1930 / UI 3202 grün, Gate grün, Referenzlauf byte-gleich gegen R5;
 > Konzept Kapitel 7/7.1/12. Abnahme auf Windows: A‑W6‑B3‑1…10.
+>
+> **W6‑B‑2‑O‑1 erledigt (07.09.2026, `586d8b5`, zusammengeführt in `cd5deb0`) — der flatterhafte Herstellerfilter-Test.**
+> Der Prüffall `ModulImportDialogTests.Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers` fiel im Kern-Lauf
+> **216** (Ereignis `pull_request` des Anwender-PR #1 auf `833ff69`) als einziger von 3 202 aus („Expected 5, Actual
+> 155"), während Lauf **215** auf demselben Commit grün war. Ursache, am wörtlichen Prüfstand gemessen: **bunits
+> synchrone Ereignisse warten nicht** — `Click()`, `Change()`, `Input()` geben das Ereignis nur beim Zeichner ab, und der
+> `RendererSynchronizationContextDispatcher` führt es nur dann auf dem Prüffaden aus, wenn seine Warteschlange frei ist;
+> nach dem Laden von 155 Zeilen liegt dort das `OnAfterRenderAsync` von QuickGrid/`Virtualize` (Schalterwechsel bei
+> `VIRTUALISIEREN_AB` = 120), das Ereignis wird eingereiht und der Fall liest den Stand davor. Die Verdachtshypothese
+> „eine späte Fortsetzung setzt den Filter zurück" ist widerlegt: `ListenAufbauen()` läuft vor `Filtern()` im selben
+> synchronen Zug. **Behebung nur am Test** (Muster W16b‑O‑2, kein Produktcode): Helfer, die auf den GEZEICHNETEN Stand
+> warten — `Geladen`/`Gefiltert`/`Gemeldet`/`Ueberlagert` in `ModulImportDialogTests`,
+> `Einlesen(cut, n)`/`Gezeichnet`/`Markiert`/`Gemeldet` in `KatalogImportDialogTests`; beide Klassen vollständig
+> nachgezogen. Messung: unter Rechenlast (8 Fäden auf 4 Kernen) 68–95 von 400 rot, mit nachgebender Quelle 58 von 60 —
+> nach dem Fix 0 von 400 und 0 von 60; 30/30 in `de` und `en_US.UTF-8`; `EPOS.UI.Tests` 3202 grün in beiden Kulturen,
+> Kern 1930 unberührt, Warnungen unverändert 6. Gate reduziert auf Bau und UI-Tests (nur Test- und Doku-Dateien im
+> Merge). **Hausregel seither (Verschärfung von W16b‑O‑2):** Nach einem synchronen bunit-Ereignis wird auf den
+> gezeichneten Zustand gewartet, nicht sofort geprüft — gilt für `Click()`, `Change()`, `Input()`, `DoubleClick()`
+> gleichermaßen (Protokoll `iU9_W15a_Blazor_Port_Protokoll.md`, Abschnitt W6‑B‑2‑O‑1).
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
