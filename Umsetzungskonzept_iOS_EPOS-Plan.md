@@ -2091,6 +2091,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **2 024 Formeln / 0 Fehler**; Wiki-Probe über `action=parse` gegen die installierte Erweiterung **14/14 Seiten ohne
 > Parserfehler**; Kern 1 590 / UI 2 973 grün, Gate grün, Referenzlauf byte-gleich (der Rechenweg ist unberührt). **Wiki:**
 > Fassung 3 mit `--ueberschreiben` hochgeladen (06.09.2026, 20:33 UTC). H13‑O‑6 und H13‑O‑7 geschlossen.
+>
+> **O‑H13b‑5, H13‑O‑1, O‑H13b‑3 (Anwenderentscheid 07.09.2026: „Empfehlung"), umgesetzt in `b652bba`/`7172ef9`/`285e4c1`,
+> zusammengeführt in `89e2d6a`:** **O‑H13b‑5:** Der Knopf „Berechnung" steht auch in den **acht Katalogverwaltungen**
+> (Heizkessel, BHKW, Solarkollektoren, Pufferspeicher über `KatalogBrowserDialog`; Stromspeicher, PV Module, Wechselrichter
+> über `ModulKatalogDialog`; Wärmepumpen-Stamm über `WaermepumpeStammDialog`); Schlüssel und Zielseite stehen im Profil im
+> Kern neben `HilfeSchluessel`, damit Windows und iOS denselben Weg haben; zwei belegte Abweichungen (Wechselrichter → Seite
+> Photovoltaik, Abschnitt; `Form_WP_Stamm.Berechnung`, weil der kürzere Name dem Anlagendialog gehört); Zuordnung 10 → 18
+> Zeilen, `BerechnungsknopfTests` liest zusätzlich die Katalogprofile. **H13‑O‑1:** Die sieben Erzeugerseiten sprechen im
+> Startbestand (`help_cache.json`, der Text des Infoknopfs ohne Netz) den Anfang ihres Abschnitts „Was berechnet wird" —
+> so viele ganze Sätze, wie in 240 Zeichen passen (Heizkessel 228, Wärmepumpe 51 …); Wächter gegen Drift mit Gegenprobe an
+> der Satzgrenze; die sechs Teil-A-Seiten bleiben außen vor (neuer Punkt **H13‑O‑7**, „Wärmequelle Erdreich" endet im
+> ersten Absatz mit Doppelpunkt vor einer Aufzählung). **O‑H13b‑3:** **92 Sprungmarken** auf allen 13 Rechenwegseiten
+> (`was, eingang, zeichen, rechenweg, grenzen, ergebnisse, bezuege`, Photovoltaik dazu `wechselrichter`) — die Form ist
+> gegen das Wiki belegt: `Vorlage:Anker` existiert (pageid 33), `MediaWiki:Common.css` stellt sie auf null Pixel, die
+> Rubrik „Grundlagen" benutzt sie eine Zeile unter der Überschrift; dieselbe Messung bestätigt MediaWiki 1.46.0 mit
+> Math-Erweiterung (H13‑F3‑1 erledigt). 26 Knopf-Zuordnungen zielen auf `#rechenweg` (Ausnahme Wechselrichterkatalog →
+> `#wechselrichter`), Fensterknöpfe und F1 bleiben ohne Anker, der Assistent sieht keine Marke (`AlsKlartext`/`Saeubern`
+> vor dem Tabellengerüst); `action=parse`-Probe aller 14 Seiten: 92 Anker, 0 Formelfehler (H13‑F3‑3 erledigt). Nachweis:
+> Kern 1790 / UI 3102 grün, Formularkarte 122, SQL 0, Gate grün, Referenzlauf byte-gleich. Abnahme auf Windows:
+> A‑H13b‑14…24, A‑H13‑19…21. Upload der 14 Seiten: siehe Folgeeintrag.
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >
