@@ -637,6 +637,13 @@ public sealed class BerechnungshilfeTests : BunitContext
         {
             string zeile = roh.Trim();
             if (zeile.StartsWith("==", StringComparison.Ordinal)) break;
+
+            // Die Sprungmarke {{Anker|was}} steht seit O-H13b-3 unmittelbar unter
+            // der Ueberschrift. Sie ist Wiki-Technik, kein Satz - und sie beendet
+            // den Absatz auch nicht, sie steht ja vor ihm.
+            if (zeile.StartsWith("{{", StringComparison.Ordinal) &&
+                zeile.EndsWith("}}", StringComparison.Ordinal)) continue;
+
             if (zeile.Length == 0)
             {
                 if (absatz.Count > 0) break;

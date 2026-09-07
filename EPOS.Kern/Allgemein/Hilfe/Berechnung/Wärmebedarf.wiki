@@ -4,6 +4,7 @@
      EPOS.Kern/Allgemein/Simulation/Init.cs -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Der '''Waermebedarf eines Projekts''' als Reihe von 8 760 Stundenwerten [kWh] — das, was
 die Erzeuger anschliessend decken muessen. Er setzt sich aus vier Anteilen zusammen:
@@ -18,6 +19,7 @@ Ausgewiesen werden ausserdem die Jahresmengen je Anteil [MWh], der groesste Stun
 [kWh] und die Jahresdauerlinie.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Groesse !! Einheit !! Herkunft im Programm
@@ -50,6 +52,7 @@ Ausgewiesen werden ausserdem die Jahresmengen je Anteil [MWh], der groesste Stun
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 === Parameter ===
 
@@ -194,6 +197,7 @@ Was die Rechnung selbst bildet:
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 === 1. Klimadaten und Kalender ===
 
@@ -483,6 +487,7 @@ der Kanalsumme aus (22). Eine Kanalzuordnung, die einen Anteil verschluckt oder 
 bucht, faellt damit auf. Der Erwartungswert ist null Abweichungen.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Keine Kuehlung, keine Feuchte.''' Gerechnet wird Heizwaerme; Kuehllast, Entfeuchtung und Luftqualitaet kommen nicht vor.
 * '''Ein Zonenmodell je Gebaeude.''' Das Gebaeude ist EIN Raum mit EINER Solltemperatur je Stunde; einzelne Raeume, Himmelsrichtungen der Nutzung oder Etagen bildet der Rechenkern nicht ab.
@@ -494,6 +499,7 @@ bucht, faellt damit auf. Der Erwartungswert ist null Abweichungen.
 * '''Kein Schaltjahr''' und keine Sommer-/Winterzeit im Bedarf selbst: 365 Tage, 8 760 Stunden auf einer glatten Ortszeitachse.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — Jahresganglinie und Jahresdauerlinie, Jahresmengen fuer Gebaeude, extern, Brauchwasser, Prozess und Netzverluste, dazu die Spitze <math>Q_{\mathrm{max}}</math> nach (24).
 * '''Gebäudedialog''', Knopf „Simulation…" — derselbe Rechenweg fuer EIN Gebaeude; die Zahl dort ist die Zahl des Laufs, nicht eine zweite Rechnung.
@@ -502,6 +508,7 @@ bucht, faellt damit auf. Der Erwartungswert ist null Abweichungen.
 * '''Laufprotokoll''' — uebersprungene Ganglinien, fehlende Tagesverteilungen, unbestimmter Kalender.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]] — Bedienung des Programmschritts
 * [[Programm Dokumentation/Gebäude|Gebäude]] — die Eingabemasken der Gebäudedaten

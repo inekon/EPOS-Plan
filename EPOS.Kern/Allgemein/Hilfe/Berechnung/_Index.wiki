@@ -148,6 +148,51 @@ Namen in der Spalte „Herkunft"; das '''Symbol''' bleibt das der Rubrik.
 <code>\displaystyle …</code> mitten im Satz —, ist die Erweiterung im Wiki nicht aktiv. Das ist
 kein Fehler des Textes; die Formeln erscheinen, sobald sie eingeschaltet ist.
 
+== Sprungmarken ==
+
+Jeder Abschnitt jeder Seite dieser Rubrik traegt eine '''Sprungmarke'''. Sie steht als
+<code><nowiki>{{Anker|<name>}}</nowiki></code> unmittelbar '''unter''' der Ueberschrift — die
+Hausform dieses Wikis, dieselbe wie auf den Seiten der Rubrik „Grundlagen".
+
+Die Namen sind auf allen 13 Seiten '''dieselben''', kleingeschrieben und ohne Umlaut:
+
+{| class="wikitable"
+! Abschnitt !! Sprungmarke
+|-
+| Was berechnet wird || <code>was</code>
+|-
+| Eingangsgroessen || <code>eingang</code>
+|-
+| Formelzeichen und Parameter || <code>zeichen</code>
+|-
+| Rechenweg || <code>rechenweg</code>
+|-
+| Grenzen und Annahmen || <code>grenzen</code>
+|-
+| Ergebnisse und wo sie stehen || <code>ergebnisse</code>
+|-
+| Bezuege || <code>bezuege</code>
+|-
+| Wechselrichter ''(nur Photovoltaik)'' || <code>wechselrichter</code>
+|}
+
+'''Wozu das gut ist.''' Der Knopf „Berechnung" in den Dialogen des Programms zielt auf
+<code>…#rechenweg</code> und bringt den Leser damit unmittelbar zu den Schritten, nicht an den
+Seitenanfang. Die Zuordnungsdatei des Programms (<code>help_mapping.txt</code>) traegt den Anker
+hinter dem Seitennamen; ein ausgeliefertes Programm hat sie eingebettet bei sich und altert bis
+zum naechsten Release.
+
+'''Deshalb gilt: Ueberschriften duerfen sich aendern, Sprungmarken nicht.''' Eine umbenannte
+Ueberschrift wechselt ihren automatischen Anker (aus „Rechenweg" wird <code>#Rechenweg</code>,
+aus „Der Rechenweg" wuerde <code>#Der_Rechenweg</code>) und bricht damit jeden Verweis von
+aussen. Die Sprungmarke bleibt. Wer einen Abschnitt umbenennt, laesst sie stehen; wer einen
+Abschnitt aufteilt, gibt der neuen Haelfte eine eigene und behaelt die alte am urspruenglichen
+Ort.
+
+Die automatischen Ueberschriftenanker von MediaWiki (<code>#Rechenweg</code>,
+<code>#Grenzen_und_Annahmen</code>) bleiben daneben bestehen und sind fuer einen Verweis von
+Hand weiterhin brauchbar.
+
 == Wie diese Seiten zu lesen sind ==
 
 ; Zeitraster

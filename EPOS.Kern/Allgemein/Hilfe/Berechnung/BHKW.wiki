@@ -5,6 +5,7 @@
      EPOS.Kern/Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs (die eine Emissionsquelle, W14a-E-8-B1) -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Ein Blockheizkraftwerk erzeugt Wärme und Strom '''gleichzeitig'''; welche der beiden Größen die
 Maschine führt, entscheidet die '''Betriebsart''' des Projekts. Der Lauf ermittelt Stunde für
@@ -19,6 +20,7 @@ Stroms und die Steuerentlastungen sind Sache der Wirtschaftlichkeit; der Lauf li
 Mengen und die Betriebsstunden.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Größe !! Einheit !! Herkunft im Programm
@@ -51,6 +53,7 @@ Mengen und die Betriebsstunden.
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres
 (1…8&nbsp;760), <math>P</math> eine Leistung, <math>Q</math> eine Wärmemenge, <math>E</math> eine
@@ -139,6 +142,7 @@ Größen, die der Lauf je Stunde oder je Modul bildet.
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
 Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht
@@ -324,6 +328,7 @@ Anlage insgesamt wird die elektrische Kennzahl '''leistungsgewichtet''' gebildet
 Module ohne gepflegte elektrische Nennleistung bleiben in Zähler und Nenner außen vor.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Die Betriebsart gilt für das ganze Projekt.''' Zwei Module mit unterschiedlicher Fahrweise
   lassen sich nicht abbilden.
@@ -371,6 +376,7 @@ Module ohne gepflegte elektrische Nennleistung bleiben in Zähler und Nenner au�
   ermittelten Mengen und Vollbenutzungsstunden und werden in der Wirtschaftlichkeit gerechnet.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Simulationsergebnis, Reiter „BHKW"''' — je Modul Wärme- und Stromproduktion,
   Brennstoffverbrauch, thermische und elektrische Vollbenutzungsstunden, Emissionen; dazu die
@@ -388,6 +394,7 @@ Module ohne gepflegte elektrische Nennleistung bleiben in Zähler und Nenner au�
   Vollbenutzungsstunden sind die Bezugsgrößen der KWK-Rechnung.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/BHKW|BHKW]] — Bedienung des Dialogs, Katalog, Brennstoffvarianten
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Phasen der Stundenschleife, Betriebsart

@@ -764,9 +764,9 @@ nachzieht, liegen im selben Ordner **beide** Fassungen. Deshalb:
 
 | Punkt | was zu tun ist |
 |---|---|
-| **H13‑F3‑1** | Die **Math-Erweiterung** im Wiki muss laufen, bevor die Seiten hochgeladen werden. Solange sie fehlt, sieht der Leser `\displaystyle …` als Klartext — kein Fehler des Textes, aber unbrauchbar. |
+| **H13‑F3‑1** | ~~Die **Math-Erweiterung** im Wiki muss laufen, bevor die Seiten hochgeladen werden.~~ **Erledigt — gemessen am 07.09.2026** (`action=query&meta=siteinfo&siprop=extensions`): MediaWiki 1.46.0 führt den `parserhook` **Math**. |
 | **H13‑F3‑2** | Nach der Zusammenführung von Teil A und Teil B: die zwei `TODO`-Vermerke einlösen — `SeitenDiesesTeils` → `SeitenDerRubrik`, das Oder `<math>`/`<big>` auflösen. |
-| **H13‑F3‑3** | Die Vorschau-Probe über `action=parse` erneut ziehen, sobald die Erweiterung steht — diesmal auf die WIEDERGABE der Formeln, nicht nur auf Tabellen und Abschnitte. |
+| **H13‑F3‑3** | ~~Die Vorschau-Probe über `action=parse` erneut ziehen, sobald die Erweiterung steht.~~ **Erledigt am 07.09.2026** (H13b § 13.6): alle 13 Seiten und `_Index` gerendert — **0 Formelfehler**, dazu die 92 Anker im HTML. |
 
 ### 13.12 Abnahme auf Windows (Nachtrag zu § 9 und § 12.9)
 

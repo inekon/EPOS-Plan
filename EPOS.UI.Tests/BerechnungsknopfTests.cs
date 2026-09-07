@@ -302,6 +302,74 @@ public sealed class BerechnungsknopfTests
     }
 
     // =====================================================================
+    //  O-H13b-3 — die Sprungmarken
+    // =====================================================================
+
+    /// <summary>
+    /// <b>O‑H13b‑3 (Anwenderentscheid 07.09.2026):</b> Jede Zuordnungszeile der
+    /// Rubrik trägt einen Anker, und der Anker steht auf der Zielseite.
+    ///
+    /// <para><b>Was hier schiefgehen kann und sonst niemandem auffiele.</b> Ein Ziel
+    /// <c>Berechnung/Heizkessel#rechenwg</c> öffnet die richtige Seite und springt
+    /// nirgendwohin — der Browser meldet keinen Fehler, der Leser landet am
+    /// Seitenanfang und hält es für die Absicht. Genau deshalb prüft dieser Fall
+    /// beide Hälften: dass der Anker DA ist (ein Knopf ohne Anker führte den Leser
+    /// an den Seitenanfang statt zum Rechenweg) und dass die Seite ihn FÜHRT.</para>
+    ///
+    /// <para>Die Fensterknöpfe <c>&lt;Form&gt;.btn_Help</c> bleiben ohne Anker: Sie
+    /// zeigen auf die allgemeine Seite, und dort ist der Anfang die Antwort.</para>
+    /// </summary>
+    [Fact]
+    public void Jede_Zuordnung_zielt_auf_einen_vorhandenen_Anker()
+    {
+        var fehlend = new List<string>();
+
+        foreach (var paar in Berechnungszuordnungen())
+        {
+            int raute = paar.Value.IndexOf('#');
+
+            if (raute < 0)
+            {
+                fehlend.Add(paar.Key + " → '" + paar.Value + "' trägt keinen Anker.");
+                continue;
+            }
+
+            string seite = paar.Value.Substring("Berechnung/".Length, raute - "Berechnung/".Length);
+            string anker = paar.Value.Substring(raute + 1);
+
+            string pfad = Seitenpfad(seite);
+            if (!File.Exists(pfad))
+            {
+                fehlend.Add(paar.Key + " → die Seite '" + seite + "' fehlt.");
+                continue;
+            }
+
+            if (!File.ReadAllText(pfad).Contains("{{Anker|" + anker + "}}", StringComparison.Ordinal))
+                fehlend.Add(paar.Key + " → '" + seite + "' führt keinen Anker '" + anker + "'.");
+        }
+
+        Assert.True(fehlend.Count == 0,
+            "Diese Zuordnungen zielen ins Leere:\n  " + string.Join("\n  ", fehlend));
+    }
+
+    /// <summary>
+    /// Die Knöpfe der Rubrik zielen auf <c>#rechenweg</c> — die einzige Ausnahme ist
+    /// der Wechselrichterkatalog, dessen Rechenweg ein ABSCHNITT der
+    /// Photovoltaikseite ist.
+    /// </summary>
+    [Fact]
+    public void Die_Knoepfe_zielen_auf_den_Rechenweg()
+    {
+        var abweichend = Berechnungszuordnungen()
+            .Where(p => !p.Value.EndsWith("#rechenweg", StringComparison.Ordinal))
+            .Select(p => p.Key + " → " + p.Value)
+            .ToList();
+
+        Assert.Equal(new[] { "Form_AdminWechselrichter.Berechnung → Berechnung/Photovoltaik#wechselrichter" },
+                     abweichend);
+    }
+
+    // =====================================================================
     //  Fassung 2 — wohin der Knopf führt
     // =====================================================================
 
@@ -325,9 +393,11 @@ public sealed class BerechnungsknopfTests
     public void Jeder_Knopf_fuehrt_auf_eine_Seite_der_Fassung_2(string seitenname)
     {
         // Der Knopf führt wirklich dorthin - sonst prüfte der Fall eine Seite, die
-        // niemand aufruft.
+        // niemand aufruft. Der Anker hinter '#' gehört nicht zum Seitennamen
+        // (O-H13b-3).
         Assert.Contains(Berechnungszuordnungen().Values,
-                        ziel => string.Equals(ziel, "Berechnung/" + seitenname, StringComparison.Ordinal));
+                        ziel => string.Equals(OhneAnker(ziel), "Berechnung/" + seitenname,
+                                              StringComparison.Ordinal));
 
         string pfad = Seitenpfad(seitenname);
         Assert.True(File.Exists(pfad), "Die Seite '" + seitenname + "' fehlt: " + pfad);
@@ -436,6 +506,13 @@ public sealed class BerechnungsknopfTests
         var daten = new TheoryData<string>();
         foreach (string name in SeitenDerRubrik) daten.Add(name);
         return daten;
+    }
+
+    /// <summary>Ein Ziel ohne seine Sprungmarke (O‑H13b‑3).</summary>
+    private static string OhneAnker(string ziel)
+    {
+        int raute = (ziel ?? "").IndexOf('#');
+        return raute < 0 ? ziel! : ziel!.Substring(0, raute);
     }
 
     /// <summary>Der Pfad einer Seitendatei der Rubrik.</summary>

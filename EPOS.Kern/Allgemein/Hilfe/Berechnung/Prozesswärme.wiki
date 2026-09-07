@@ -4,6 +4,7 @@
      EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs, EPOS.Kern/Allgemein/Energieeinheit.cs -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Der '''Prozesswaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der dritte der drei
 Bedarfskanaele. Der Rechenweg ist derselbe wie beim Brauchwasser: je Profil ein Satz aus
@@ -15,6 +16,7 @@ Ein Erzeuger darf Heizung und Brauchwasser decken und die Prozesswaerme nicht �
 umgekehrt. Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Groesse !! Einheit !! Herkunft im Programm
@@ -33,6 +35,7 @@ umgekehrt. Ausgewiesen werden die Jahressumme und die zwoelf Monatssummen.
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 === Parameter ===
 
@@ -79,6 +82,7 @@ Was die Rechnung selbst bildet:
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 === 1. Profile des Projekts sammeln ===
 
@@ -161,6 +165,7 @@ Vorschau um den Faktor 1 000 zu hoch da. Die Umrechnung steht seither an EINER S
 die Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kWh ohne.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Der Prozess ist eine Waermemenge, kein Prozess.''' In (1) bis (6) kommen weder Temperaturniveau noch Vor- und Ruecklauf vor; Gleichzeitigkeit mehrerer Verbraucher und Abwaerme werden hier nicht gerechnet. Welcher Erzeuger den Prozesskanal ueberhaupt bedienen darf, entscheidet die Senkenzuordnung — dort wirkt auch die Temperaturpruefung (Warnkriterium W3).
 * '''Kein Wirkungsgrad, keine Verteilverluste je Prozess.''' Was eingegeben wird, ist die Nutzwaerme am Prozess; Verluste bildet der pauschale Netzverlust ab.
@@ -170,6 +175,7 @@ die Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kW
 * '''Abbruch statt Nullprofil.''' Ein fehlender Typbezug beendet die Prozesswaermerechnung, statt sie mit Nullen fortzusetzen.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Dialog „Prozesswärme"''', Knopf „Simulation…" — Jahresmenge und Monatswerte der ausgewaehlten Profile; „monatlicher Verlauf…" zeigt sie als Balken.
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Prozessanteil im Jahresbedarf.
@@ -177,6 +183,7 @@ die Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kW
 * '''Laufprotokoll''' — uebersprungene Profile und der Abbruchgrund „Typ nicht definiert".
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Prozesswärme|Prozesswärme]] — Bedienung des Dialogs und Katalogpflege
 * [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] — wie der Kanal in den Gesamtbedarf eingeht

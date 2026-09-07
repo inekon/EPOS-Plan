@@ -4,6 +4,7 @@
      Katalogverwendung: EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs (Befund zu Kdfu) -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Ein Solarkollektorfeld wandelt Einstrahlung in Nutzwärme. Der Lauf ermittelt zuerst für jede Stunde
 das '''Bruttopotenzial''' des Feldes — es hängt allein vom Wetter, von der Ausrichtung und von den
@@ -15,6 +16,7 @@ Ergebnisgrößen sind der nutzbare Jahresertrag je Kollektorfeld, seine Aufteilu
 Ladung, der verworfene Überschuss und der Deckungsanteil an der Jahreswärme.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Größe !! Einheit !! Herkunft im Programm
@@ -45,6 +47,7 @@ Ladung, der verworfene Überschuss und der Deckungsanteil an der Jahreswärme.
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres
 (1…8&nbsp;760), <math>G</math> eine Bestrahlungsstärke, <math>q</math> eine flächenbezogene
@@ -137,6 +140,7 @@ Größen, die der Lauf je Stunde oder je Kollektorfeld bildet.
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
 Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht
@@ -258,6 +262,7 @@ Solarthermie erhält davon ihren Anteil. <math>Q_{\mathrm{direkt}}</math> plus d
 100&nbsp;%.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Die Arbeitstemperatur ist fest <math>\vartheta_{\mathrm{Sp}} = 50</math>&nbsp;°C.''' Der
   Wirkungsgrad (5) hängt damit nicht vom tatsächlichen Speicherzustand ab. Ein kalter Speicher am
@@ -288,6 +293,7 @@ Solarthermie erhält davon ihren Anteil. <math>Q_{\mathrm{direkt}}</math> plus d
   Reihe einsetzen will, kann das über diesen Weg heute nicht.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Simulationsergebnis, Reiter „Solarthermie"''' — je Kollektorfeld Name, Gesamtfläche
   <math>A_{\mathrm{ges}}</math>, Anzahl, nutzbarer Jahresertrag und verworfener Überschuss.
@@ -299,6 +305,7 @@ Solarthermie erhält davon ihren Anteil. <math>Q_{\mathrm{direkt}}</math> plus d
 * '''Bericht''' und '''Wirtschaftlichkeit''' — der Ertrag als vermiedene Brennstoffmenge.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Solarthermie|Solarthermie]] — Bedienung von Katalog, Projektdialog und Ganglinienverwaltung
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Phasen der Stundenschleife, Ladeordnung

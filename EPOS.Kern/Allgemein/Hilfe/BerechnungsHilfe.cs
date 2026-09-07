@@ -312,6 +312,19 @@ namespace WindowsFormsApplication1
                 string zeile = rohzeile.TrimEnd();
                 string beschnitten = zeile.Trim();
 
+                // H13 / O-H13b-3 (07.09.2026): Die Sprungmarke {{Anker|rechenweg}}
+                // steht auf einer EIGENEN Zeile unmittelbar unter der Ueberschrift.
+                // Sie ist reine Wikitechnik - im Klartext des Assistenten hat sie
+                // nichts verloren, und ein Anker mitten im Prompt saehe aus wie ein
+                // Wort. Der Fall steht VOR dem Tabellengeruest: "{{" faengt sonst
+                // niemand ab, und "{|" trifft ihn nicht.
+                if (beschnitten.StartsWith("{{", StringComparison.Ordinal) &&
+                    beschnitten.EndsWith("}}", StringComparison.Ordinal))
+                {
+                    ZeileSchliessen(ausgabe, zelle);
+                    continue;
+                }
+
                 // Tabellengeruest: Anfang, Ende und Zeilentrenner.
                 if (beschnitten.StartsWith("{|", StringComparison.Ordinal) ||
                     beschnitten.StartsWith("|}", StringComparison.Ordinal) ||
@@ -385,6 +398,13 @@ namespace WindowsFormsApplication1
             // Ueberschriften: "== Rechenweg ==" -> "Rechenweg"
             Match ueber = Regex.Match(s.Trim(), @"^(={2,6})\s*(.*?)\s*\1$");
             if (ueber.Success) s = ueber.Groups[2].Value;
+
+            // Vorlagenaufrufe: {{Anker|rechenweg}} und Verwandte fallen weg. Der Fall
+            // oben nimmt die Zeilen, die NUR aus einer Vorlage bestehen; hier faellt
+            // eine mitten im Satz. Bewusst ohne Verschachtelung ([^{}]) - die Rubrik
+            // kennt nur einstufige Aufrufe, und ein gieriges Muster fraesse alles
+            // zwischen der ersten und der letzten Klammer der Zeile weg.
+            s = Regex.Replace(s, @"\{\{[^{}]*\}\}", "");
 
             // Verweise: [[Ziel|Text]] -> Text, [[Ziel]] -> Ziel
             s = Regex.Replace(s, @"\[\[([^\]\|]*)\|([^\]]*)\]\]", "$2");
