@@ -85,6 +85,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -16181,6 +16182,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_VERLUSTE {
             get {
                 return ResourceManager.GetString("KFLT_SP_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Projekt verwendet ähnelt.
+        /// </summary>
+        public static string KFLT_SP_VERWENDET {
+            get {
+                return ResourceManager.GetString("KFLT_SP_VERWENDET", resourceCulture);
             }
         }
         
