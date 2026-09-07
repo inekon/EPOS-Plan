@@ -500,6 +500,20 @@ den der Push-Lauf 215 auf demselben Commit grün führt — ein Wettlauf im Test
 dem Muster W16b‑O‑2 läuft als eigene Aufgabe. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis
 Migrationsende.
 
+**Achtunddreißigster Lauf 34161281262 (`ios.yml`, `macos-26`, 07.09.2026, 20:56–21:06 UTC, 9 min 53 s)** auf
+`d4edc85` — der sechste Tagesstand des 07.09.2026 und der erste Lauf mit der Seed-Datenbank auf **Schemastand 69**
+(W6‑B‑5: Schritt 69 repariert die PV-Modulkoeffizienten; die Basis heißt seither `2026-09-07_R6_PvKoeffizienten`),
+dazu W6‑B‑4 (Strangtabelle ohne Rollen, Strangvorbelegung im Kern, `Auswahlfeld` mit `selected` und `@key` je Option)
+und W6‑B‑2‑O‑1 (Wartehelfer der Importtests). Workload 27 s, Bau 1 min 36 s (0 Fehler), Simulatorstart 2 min 28 s,
+Erststart mit Seed-Kopie (66 MB), Startmarken `SQLite 3.53.3` · `STRICT=117` (Erwartung aus der Seed-Datenbank: 117 —
+Schritt 69 ändert Werte, keine Tabelle) · `Projekte=24` grün, Prüfmodus 1030 in 18 s (22 CSV, 160 Skalare),
+**iZ6-Vergleich gegen `2026-09-07_R6_PvKoeffizienten` PASS (236 680 Werte)** und **BYTE-GLEICH** (`diff -rq` leer,
+iOS-Simulator arm64). Projekt 1030 ist in R6 byte-gleich zu R5 — es rechnet mit keinem der reparierten Module; den
+Nachweis der Reparatur selbst führt Projekt 1007 auf Linux (elf von zwölf Projekten byte-gleich, 1007 in acht Dateien
+der PV-Kette, Ursache allein `T_NOCT`, Gegenbeweis im `protokoll.txt` der Basis). Die `kern.yml`-Läufe 223 bis 226
+(`2a4ad5e`, `d4edc85`, je Push und Pull-Request) sind grün. Ausgelöst per `workflow_dispatch` unter der pauschalen
+Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
