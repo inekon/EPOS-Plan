@@ -126,11 +126,77 @@ public class KatalogImportDialogTests : BunitContext
         });
     }
 
-    /// <summary>Klickt „Durchsuchen…" und wartet, bis die Liste steht.</summary>
+    /// <summary>
+    /// Klickt „VDI 3805 Datei…". <b>Ohne Warten</b> — nur für die zwei Fälle, die den
+    /// Dateiwähler ABSICHTLICH offen halten; überall sonst die Fassung mit der
+    /// erwarteten Zeilenzahl.
+    /// </summary>
     private static void Einlesen(IRenderedComponent<KatalogImportDialog> cut)
     {
         cut.FindAll("button").First(b => b.TextContent.Contains("VDI 3805")).Click();
     }
+
+    /// <summary>
+    /// Klickt „VDI 3805 Datei…" und wartet auf den GEZEICHNETEN Abschluss des
+    /// Lesegangs: die Auswahlzeile unter der Liste meldet <paramref name="zeilen"/>
+    /// Einträge.
+    /// </summary>
+    private static void Einlesen(IRenderedComponent<KatalogImportDialog> cut, int zeilen)
+    {
+        Einlesen(cut);
+        Gezeichnet(cut, zeilen);
+    }
+
+    /// <summary>Die GEZEICHNETE Auswahlzeile unter der Liste („n von m Einträgen geladen.").</summary>
+    private static string Auswahlzeile(IRenderedComponent<KatalogImportDialog> cut)
+        => cut.FindAll(".epos-katalogimport > .epos-herleitung")[0].TextContent;
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Stand der Liste: <paramref name="zeilen"/> sichtbare
+    /// Zeilen, und die Auswahlzeile trägt dieselbe Zahl.
+    ///
+    /// <para><b>W6‑B‑2‑O‑1: bunits synchrone Ereignisse warten NICHT.</b> <c>Click()</c>,
+    /// <c>Change()</c> und <c>Input()</c> geben das Ereignis nur beim Zeichner ab; nur
+    /// die <c>…Async</c>-Fassungen liefern laut bunit-Dokumentation „a task that
+    /// completes when the event handler is done". Der Zeichnerfaden
+    /// (<c>RendererSynchronizationContext</c>) führt das Ereignis auf dem Prüffaden
+    /// aus, SOLANGE seine Warteschlange frei ist; liegt dort schon ein Werkstück —
+    /// nach einem Lesegang regelmäßig das <c>OnAfterRenderAsync</c> von QuickGrid —,
+    /// wird das Ereignis EINGEREIHT, und die nächste Zeile des Falls liest den Stand
+    /// VOR dem Ereignis. Verloren ging der Wettlauf im Kern-Lauf <b>216</b>, im
+    /// Zwilling dieser Klasse
+    /// (<c>ModulImportDialogTests.Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers</c>,
+    /// „Expected 5, Actual 155"); derselbe Commit war im Lauf 215 grün. Gemessen mit
+    /// dem wörtlichen Prüfstand unter Rechenlast: altes Muster 68 bis 95 von 400 Läufen
+    /// rot (zwei Messreihen), neues 0 von 400.</para>
+    ///
+    /// <para>Wo ein Lesegang NULL sichtbare Zeilen ergibt — die Solarvorbelegung
+    /// filtert die Probezeilen weg —, trägt erst der nächste Filterschritt den
+    /// Nachweis; dort steht dann dieser Aufruf mit der Zahl, die er erwartet.</para>
+    /// </summary>
+    private static void Gezeichnet(IRenderedComponent<KatalogImportDialog> cut, int zeilen)
+        => cut.WaitForAssertion(() =>
+        {
+            Assert.Equal(zeilen, cut.Instance.SichtbareZeilen);
+            Assert.Contains(" von " + zeilen + " ", Auswahlzeile(cut));
+        });
+
+    /// <summary>
+    /// Wartet, bis genau diese Zeilen markiert sind. Begründung wie bei
+    /// <see cref="Gezeichnet"/> — auch ein Zeilenklick ist ein Ereignis, hinter dem
+    /// <c>Click()</c> nicht wartet.
+    /// </summary>
+    private static void Markiert(IRenderedComponent<KatalogImportDialog> cut, params int[] zeilen)
+        => cut.WaitForAssertion(() => Assert.Equal(zeilen, cut.Instance.Markiert));
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Abschluss eines Schreibgangs: Der Wirt hat gemeldet.
+    /// <c>Schreibgang</c> ist <c>async</c> und läuft über <c>Vorpruefen</c> und
+    /// <c>Ausfuehren</c> — dieselbe Regel und dieselbe Begründung wie bei
+    /// <see cref="Gezeichnet"/>.
+    /// </summary>
+    private static void Gemeldet(IRenderedComponent<KatalogImportDialog> cut, string text)
+        => cut.WaitForAssertion(() => Assert.Contains(text, cut.Instance.Meldung));
 
     // =====================================================================
     // 1 — Feldbestand je Ausprägung
@@ -349,10 +415,9 @@ public class KatalogImportDialogTests : BunitContext
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
 
-        Einlesen(cut);
-
         // Die Vorbelegung 10..200 laesst den 250-kW-Kessel draussen.
-        Assert.Equal(2, cut.Instance.SichtbareZeilen);
+        Einlesen(cut, 2);
+
         Assert.Contains("Kessel klein", cut.Find("tbody").TextContent);
         Assert.DoesNotContain("Kessel gross", cut.Find("tbody").TextContent);
     }
@@ -361,23 +426,23 @@ public class KatalogImportDialogTests : BunitContext
     public void Der_Zahlenfilter_und_der_Suchtext_wirken_zusammen()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut);
+        Einlesen(cut, 2);
 
         // Obergrenze hochsetzen: alle drei
         cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
-        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+        Gezeichnet(cut, 3);
 
         // Suchtext ueber die FIRMA
         cut.FindAll(".epos-katalogimport-filter input")[2].Input("buderus");
-        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Gezeichnet(cut, 1);
         Assert.Contains("Kessel gross", cut.Find("tbody").TextContent);
 
         // Zwei Begriffe wirken als UND ueber beide Spalten
         cut.FindAll(".epos-katalogimport-filter input")[2].Input("kessel buderus");
-        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Gezeichnet(cut, 1);
 
         cut.FindAll(".epos-katalogimport-filter input")[2].Input("kessel wolf");
-        Assert.Equal(0, cut.Instance.SichtbareZeilen);
+        Gezeichnet(cut, 0);
     }
 
     /// <summary>
@@ -391,29 +456,30 @@ public class KatalogImportDialogTests : BunitContext
     public void Mehrere_Zeilen_lassen_sich_markieren()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut);
+        Einlesen(cut, 2);
         cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
+        Gezeichnet(cut, 3);
 
         var wahl = cut.FindAll("tbody .epos-anlagenwahl");
         Assert.Equal(3, wahl.Count);
 
         // Zwei EINFACHE Klicks - und beide Zeilen stehen.
         wahl[0].Click();
-        Assert.Equal(new[] { 0 }, cut.Instance.Markiert);
+        Markiert(cut, 0);
 
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
-        Assert.Equal(new[] { 0, 2 }, cut.Instance.Markiert);
+        Markiert(cut, 0, 2);
 
         // Noch ein Klick auf dieselbe Zeile nimmt sie wieder weg.
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
-        Assert.Equal(new[] { 0 }, cut.Instance.Markiert);
+        Markiert(cut, 0);
 
         // Strg tut dasselbe, Umschalt nimmt den Bereich ab dem Anker dazu.
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click(new MouseEventArgs { CtrlKey = true });
-        Assert.Equal(new[] { 0, 2 }, cut.Instance.Markiert);
+        Markiert(cut, 0, 2);
 
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click(new MouseEventArgs { ShiftKey = true });
-        Assert.Equal(new[] { 0, 1, 2 }, cut.Instance.Markiert);
+        Markiert(cut, 0, 1, 2);
     }
 
     /// <summary>
@@ -424,17 +490,18 @@ public class KatalogImportDialogTests : BunitContext
     public void Die_Markierung_uebersteht_das_Umfiltern()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut);
+        Einlesen(cut, 2);
         cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
+        Gezeichnet(cut, 3);
 
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click(new MouseEventArgs { CtrlKey = true });
-        Assert.Equal(new[] { 0, 2 }, cut.Instance.Markiert);
+        Markiert(cut, 0, 2);
 
         // Obergrenze zurueck auf 200: der 250-kW-Kessel faellt aus Liste UND Markierung.
         cut.FindAll(".epos-katalogimport-filter input")[1].Input("200");
-        Assert.Equal(2, cut.Instance.SichtbareZeilen);
-        Assert.Equal(new[] { 0 }, cut.Instance.Markiert);
+        Gezeichnet(cut, 2);
+        Markiert(cut, 0);
     }
 
     /// <summary>
@@ -445,12 +512,14 @@ public class KatalogImportDialogTests : BunitContext
     public void Ein_Klick_zieht_die_Detailfelder_nach()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut);
+        Einlesen(cut, 2);
 
         var felder = cut.FindAll(".epos-katalogimport-details input, .epos-katalogimport-details textarea");
         Assert.Equal("", felder[0].GetAttribute("value"));
 
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click();
+        cut.WaitForAssertion(() => Assert.Equal("Kessel mittel",
+            cut.FindAll(".epos-katalogimport-details input")[0].GetAttribute("value")));
 
         felder = cut.FindAll(".epos-katalogimport-details input, .epos-katalogimport-details textarea");
         Assert.Equal("Kessel mittel", felder[0].GetAttribute("value"));
@@ -485,12 +554,13 @@ public class KatalogImportDialogTests : BunitContext
     public void Eine_Handkorrektur_am_Bezeichner_erreicht_die_Liste()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut);
+        Einlesen(cut, 2);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
 
         cut.FindAll(".epos-katalogimport-details input")[0].Input("Kessel umbenannt");
 
-        Assert.Contains("Kessel umbenannt", cut.Find("tbody").TextContent);
+        cut.WaitForAssertion(() =>
+            Assert.Contains("Kessel umbenannt", cut.Find("tbody").TextContent));
         Assert.DoesNotContain("Kessel klein", cut.Find("tbody").TextContent);
     }
 
@@ -508,11 +578,11 @@ public class KatalogImportDialogTests : BunitContext
         var cut = Bauen(KatalogImportArt.Waermepumpe, DreiZeilen(),
             vorpruefen: (_, __) => Task.FromResult(Vorpruefung(false)),
             ausfuehren: (_, __, ___, ____, _____) => Task.FromResult(new ImportBilanz()));
-        Einlesen(cut);
+        Einlesen(cut, 2);
 
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
 
-        Assert.Equal("Bitte einen Eintrag wählen.", cut.Instance.Meldung);
+        Gemeldet(cut, "Bitte einen Eintrag wählen.");
     }
 
     /// <summary>
@@ -531,14 +601,15 @@ public class KatalogImportDialogTests : BunitContext
                 new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl }),
             geschlossen: EventCallback.Factory.Create<bool>(this, b => ergebnis = b));
 
-        Einlesen(cut);
+        Einlesen(cut, 2);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click(new MouseEventArgs { CtrlKey = true });
+        Markiert(cut, 0, 1);
 
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
 
+        Gemeldet(cut, "2 von 2 Einträgen geladen.");
         Assert.Equal(new[] { 0, 1 }, gesehen);
-        Assert.Equal("2 von 2 Einträgen geladen.", cut.Instance.Meldung);
         Assert.True(ergebnis);
     }
 
@@ -557,12 +628,12 @@ public class KatalogImportDialogTests : BunitContext
                 new ImportBilanz { Markiert = anzahl, Duplikat = anzahl }),
             geschlossen: EventCallback.Factory.Create<bool>(this, b => ergebnis = b));
 
-        Einlesen(cut);
+        Einlesen(cut, 2);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
 
+        Gemeldet(cut, "Bereits eingelesen (übersprungen): 1");
         Assert.Null(ergebnis);
-        Assert.Contains("Bereits eingelesen (übersprungen): 1", cut.Instance.Meldung);
     }
 
     /// <summary>
@@ -579,12 +650,15 @@ public class KatalogImportDialogTests : BunitContext
 
         Einlesen(cut);
         cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
+        Gezeichnet(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click(new MouseEventArgs { CtrlKey = true });
+        Markiert(cut, 0, 1);
 
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
 
         // Genau EINE Ueberlagerung, im SELBEN Fenster.
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[role='dialog']")));
         Assert.Single(cut.FindAll("[role='dialog']"));
         Assert.Contains("Import: Konflikte prüfen", cut.Markup);
     }
@@ -615,19 +689,21 @@ public class KatalogImportDialogTests : BunitContext
 
         Einlesen(cut);
         // Die Vorbelegungen der vier Filter sind verschieden - die Obergrenze weit
-        // aufmachen, damit alle drei Probezeilen stehen.
+        // aufmachen, damit alle drei Probezeilen stehen. Erst dieser Schritt hat einen
+        // Stand, auf den sich warten laesst: die Solarvorbelegung laesst nach dem Lesen
+        // null Zeilen stehen.
         cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
-        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+        Gezeichnet(cut, 3);
 
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
 
-        Assert.Equal(new[] { 0, 2 }, cut.Instance.Markiert);
+        Markiert(cut, 0, 2);
 
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
 
+        cut.WaitForAssertion(() => Assert.Equal(2, ausgefuehrt));
         Assert.Equal(new[] { 0, 2 }, gesehen);
-        Assert.Equal(2, ausgefuehrt);
     }
 
     /// <summary>
@@ -648,20 +724,22 @@ public class KatalogImportDialogTests : BunitContext
             ausfuehren: (anzahl, _, __, ___, ____) => Task.FromResult(
                 new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl }));
 
-        Einlesen(cut);
+        Einlesen(cut, 2);
         cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
+        Gezeichnet(cut, 3);
 
         // Zeile 0 ist schon markiert - der Doppelklick darf sie nicht verlieren.
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Markiert(cut, 0);
 
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[2].DoubleClick();
 
         // Geschrieben wurde NUR die doppelt geklickte Zeile ...
-        Assert.Equal(new[] { 2 }, gesehen);
+        cut.WaitForAssertion(() => Assert.Equal(new[] { 2 }, gesehen));
         // ... und die uebrige Markierung steht noch, samt der neuen Zeile.
-        Assert.Equal(new[] { 0, 2 }, cut.Instance.Markiert);
+        Markiert(cut, 0, 2);
     }
 
     /// <summary>
@@ -681,10 +759,12 @@ public class KatalogImportDialogTests : BunitContext
         Einlesen(cut);
         // Die Solarvorbelegung filtert bis 5 m² - die Probezeilen liegen darueber.
         cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
+        Gezeichnet(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Markiert(cut, 0);
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
 
-        Assert.True(gefragt, "Auch der Solarimport muss vorpruefen.");
+        cut.WaitForAssertion(() => Assert.True(gefragt, "Auch der Solarimport muss vorpruefen."));
     }
 
     // =====================================================================
@@ -705,9 +785,10 @@ public class KatalogImportDialogTests : BunitContext
 
         Einlesen(cut);
 
-        Assert.Contains("Unbekannter Aufstellungsindex", cut.Instance.Meldung);
+        // Der Lesegang endet hier im WARNBANNER - darauf wartet der Fall.
+        cut.WaitForAssertion(() =>
+            Assert.Contains("Unbekannter Aufstellungsindex", cut.Find("[role='alert']").TextContent));
         Assert.Contains("\"7\"", cut.Instance.Meldung);
-        Assert.NotEmpty(cut.FindAll("[role='alert']"));
     }
 
     // =====================================================================
@@ -755,8 +836,10 @@ public class KatalogImportDialogTests : BunitContext
         Quelle(cut, "CEC-Datei laden");
         Quelle(cut, "bslib laden");
 
-        Assert.Equal(new[] { "CEC_NETZ", "CEC_DATEI", "BSLIB" },
-                     gelesen.Select(g => g.Quelle).ToArray());
+        // Drei Lesegaenge, drei Ereignisse - und keines davon wartet von sich aus
+        // (W6-B-2-O-1, Begruendung bei Gezeichnet).
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "CEC_NETZ", "CEC_DATEI", "BSLIB" },
+                                                gelesen.Select(g => g.Quelle).ToArray()));
         Assert.Equal(new[] { "", "cec.xlsx", "" },
                      gelesen.Select(g => g.Pfad).ToArray());
     }
@@ -788,6 +871,7 @@ public class KatalogImportDialogTests : BunitContext
         var gelesen = new List<(string, string)>();
         var cut = BauenSpeicher(gelesen);
         Quelle(cut, "bslib laden");
+        Gezeichnet(cut, 4);
 
         string[] koepfe = cut.FindAll(".epos-raster thead th")
                              .Select(t => t.TextContent.Trim()).ToArray();
@@ -813,6 +897,7 @@ public class KatalogImportDialogTests : BunitContext
         var gelesen = new List<(string, string)>();
         var cut = BauenSpeicher(gelesen);
         Quelle(cut, "bslib laden");
+        Gezeichnet(cut, 4);
 
         Assert.Equal(9, cut.FindAll(".epos-katalogimport-details label").Count);
 
@@ -859,6 +944,7 @@ public class KatalogImportDialogTests : BunitContext
         var gelesen = new List<(string, string)>();
         var cut = BauenSpeicher(gelesen);
         Quelle(cut, "bslib laden");
+        Gezeichnet(cut, 4);
 
         string leiste = cut.Find(".epos-katalogimport-filter").TextContent;
         Assert.Contains("Kapazität [kWh] von:", leiste);
@@ -885,14 +971,14 @@ public class KatalogImportDialogTests : BunitContext
         var gelesen = new List<(string, string)>();
         var cut = BauenSpeicher(gelesen);
         Quelle(cut, "bslib laden");
-        Assert.Equal(4, cut.Instance.SichtbareZeilen);
+        Gezeichnet(cut, 4);
 
         // Hersteller "KOSTAL" (Zeile 3 der Klappliste, hinter "(alle)").
         cut.Find(".epos-katalogimport-filter select").Change("3");
-        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Gezeichnet(cut, 1);
 
         cut.Find(".epos-katalogimport-filter select").Change("0");
-        Assert.Equal(4, cut.Instance.SichtbareZeilen);
+        Gezeichnet(cut, 4);
     }
 
     /// <summary>
@@ -916,17 +1002,18 @@ public class KatalogImportDialogTests : BunitContext
                 Task.FromResult(new ImportBilanz { Markiert = anzahl, Gespeichert = entscheidungen.Count }));
 
         Quelle(cut, "bslib laden");
+        Gezeichnet(cut, 4);
 
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click();
 
-        Assert.Equal(new[] { 0, 1 }, cut.Instance.Markiert);
+        Markiert(cut, 0, 1);
 
         await cut.InvokeAsync(() =>
             cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click());
 
+        Gemeldet(cut, "2");
         Assert.Equal(new[] { 2 }, uebernommen);
-        Assert.Contains("2", cut.Instance.Meldung);
     }
 
     // =====================================================================
@@ -942,7 +1029,7 @@ public class KatalogImportDialogTests : BunitContext
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.False(ergebnis);
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
     }
 
     [Fact]
@@ -954,7 +1041,7 @@ public class KatalogImportDialogTests : BunitContext
 
         cut.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
 
-        Assert.False(ergebnis);
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
     }
 
     // =====================================================================
