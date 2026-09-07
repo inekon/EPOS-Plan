@@ -691,12 +691,16 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   — `Views/Hauptformular/HauptfensterHuelle.cs` (die Datenseite mit dem EINEN
   `Weg`) — und in `EPOS.UI` die Seite `Seiten/Hauptfenster.razor` samt dem
   Baustein `Bausteine/Menueband.razor` und der **erzeugten** `Menuetabelle.cs`
-  (**54 Punkte in vier Köpfen**, aus dem Designer und den drei `.resx` per
-  Skript, Auflage R‑W16‑8; zwei Zeilen haben keine Designer-Herkunft: der Kopf
+  (**58 Punkte in vier Köpfen**, aus dem Designer und den drei `.resx` per
+  Skript, Auflage R‑W16‑8; vier Zeilen haben keine Designer-Herkunft: der Kopf
   **„Sprache"** aus dem Anwenderentscheid **W16c‑E‑2** vom 04.09.2026 — die
-  zwei Sprachpunkte hängen seither unter ihm statt neben „Hilfe" zu stehen —
-  und die Unterrubrik **„Profile & Lastgänge"** aus **W16c‑E‑6** vom
-  06.09.2026, mit der der Kopf „Administration" umgeordnet ist. Das
+  zwei Sprachpunkte hängen seither unter ihm statt neben „Hilfe" zu stehen —,
+  die Unterrubrik **„Profile & Lastgänge"** aus **W16c‑E‑6** vom
+  06.09.2026, mit der der Kopf „Administration" umgeordnet ist, und die zwei
+  Zwischenknoten **„Photovoltaik"** aus **W16c‑E‑7** vom 07.09.2026, unter
+  denen Modul und Wechselrichter an beiden Stellen dieses Kopfs zusammen
+  stehen — als Katalog unter „Energiesysteme", als Import unter „Daten &
+  Import". Von den 58 Punkten **handeln 44**, 14 klappen nur auf. Das
   Erzeugerskript liegt nicht im Repository; **geändert wird die Tabelle**).
   **Drei Namen, drei Dinge** (Anwenderentscheid **E‑10**, 04.09.2026):
   `Hauptfensterrahmen` ist das WinForms-Fenster mit `Application.Run`, dem

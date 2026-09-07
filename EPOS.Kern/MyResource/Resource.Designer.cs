@@ -79,6 +79,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -22803,6 +22804,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik ähnelt.
+        /// </summary>
+        public static string MENU_PHOTOVOLTAIK {
+            get {
+                return ResourceManager.GetString("MENU_PHOTOVOLTAIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profile &amp; Lastgänge ähnelt.
         /// </summary>
         public static string MENU_PROFILE_LASTGAENGE {
@@ -22893,11 +22903,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Import Photovoltaik CEC/Pan ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV Module (CEC, PAN)... ähnelt.
         /// </summary>
         public static string MENU_PV_IMPORT_CEC {
             get {
                 return ResourceManager.GetString("MENU_PV_IMPORT_CEC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV Module ähnelt.
+        /// </summary>
+        public static string MENU_PV_MODULE {
+            get {
+                return ResourceManager.GetString("MENU_PV_MODULE", resourceCulture);
             }
         }
         

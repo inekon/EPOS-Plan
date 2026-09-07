@@ -41,6 +41,32 @@
 //      bleiben im Katalog stehen, werden vom Menue aber nicht mehr gelesen.
 // Namen, Seitenschluessel, Bilder und Kuerzel der verschobenen Punkte sind
 // unveraendert - es wandert die Zuordnung, nicht die Kennung.
+//
+// ANWENDERENTSCHEID W16c-E-7 (07.09.2026) - zwei Zwischenknoten
+// "Photovoltaik" ("Mache zwei Untermenues Photovoltaik 1. PV Module
+// 2. Wechselrichter"). Das Paar Modul/Wechselrichter steht an ZWEI Stellen des
+// Kopfes "Administration", und der Anwender hat beide gemeint - er arbeitete im
+// Import und stellte richtig: "der Import steht nicht unter Energiesysteme
+// sondern vdi3805 (Wechselrichter)". Also zweimal derselbe Knoten:
+//   1. "Energiesysteme" fuehrt statt zweier Geschwister den Knoten
+//      MenuItem_PV_Gruppe mit "PV Module" (MenuItem_PV) und "Wechselrichter"
+//      (MenuItem_Wechselrichter); "Pufferspeicher" bleibt daneben.
+//   2. "Daten & Import" fuehrt an der Stelle der zwei PV-Punkte den Knoten
+//      MenuItem_PV_Import_Gruppe mit "PV Module (CEC, PAN)..."
+//      (MenuItem_PV_Import_CEC) und "Wechselrichter (CEC, OND)..."
+//      (MenuItem_WR_Import_CEC); die vier uebrigen Importpunkte bleiben.
+// Beide Knoten tragen DENSELBEN Textschluessel MENU_PHOTOVOLTAIK und sind wie
+// der Kopf "Sprache" und die Rubrik "Profile & Lastgaenge" ohne
+// Designer-Herkunft, ohne Bild und ohne Ziel. Die Regel aus W16c-E-6 - kein
+// Untermenue mit nur EINEM Punkt - bleibt gewahrt: Jeder Knoten fuehrt zwei.
+// ZIEL, ARGUMENT UND NAME DER VIER PUNKTE SIND UNVERAENDERT; es wandert ihre
+// Lage im Baum und bei zweien die Beschriftung: MenuItem_PV traegt jetzt
+// MENU_PV_MODULE ("PV Module"), weil "Photovoltaik" ueber ihm steht und die
+// Zeile sonst zweimal dasselbe sagte, und MENU_PV_IMPORT_CEC heisst statt
+// "Import Photovoltaik CEC/Pan" nun "PV Module (CEC, PAN)..." - der Zwilling
+// von "Wechselrichter (CEC, OND)..." unter demselben Knoten. MENU_PV bleibt
+// wie MENU_PC_BEARBEITEN im Katalog stehen und wird vom Menue nicht mehr
+// gelesen.
 
 using System;
 using System.Collections.Generic;
@@ -51,22 +77,25 @@ namespace EPOS.UI.Bausteine;
 /// <summary>
 /// Das Menue des Hauptfensters als DATEN (iU9-W16c.1).
 ///
-/// <para><b>54 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
+/// <para><b>58 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
 /// 9, die dort programmatisch eingehaengt wurden ("damit Designer und
 /// .resx unberuehrt bleiben", MDIMainForm.cs:57, :95, :132, :174, :311, :414,
 /// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es
-/// gleichrangige Zeilen. Dazu kommen die zwei Punkte OHNE Designer-Herkunft:
-/// der Kopf "Sprache" (W16c-E-2) und die Unterrubrik "Profile & Lastgaenge"
-/// (W16c-E-6); dafuer fallen mit W16c-E-6 die zwei Ein-Punkt-Untermenues
-/// MenuItem_PC_Bearbeiten und MenuItem_ST_Bearbeiten weg. Also
-/// 54 Bestandspunkte + 2 - 2 = 54, dazu 8 Trennstriche.</para>
+/// gleichrangige Zeilen. Dazu kommen die Zeilen OHNE Designer-Herkunft:
+/// der Kopf "Sprache" (W16c-E-2), die Unterrubrik "Profile & Lastgaenge"
+/// (W16c-E-6) und die zwei Knoten "Photovoltaik" (W16c-E-7); dafuer fallen
+/// mit W16c-E-6 die zwei Ein-Punkt-Untermenues MenuItem_PC_Bearbeiten und
+/// MenuItem_ST_Bearbeiten weg, und mit W6-E-2 kommen die zwei
+/// Wechselrichterpunkte hinzu. Also 54 Bestandspunkte + 2 - 2 + 2 + 2 = 58,
+/// dazu 8 Trennstriche.</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 54 Punkten handeln <b>42</b>, 12 klappen auf.
-/// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6 unveraendert geblieben: Es
-/// ist kein Ziel entfallen und keines hinzugekommen, es steht nur an einer
-/// anderen Stelle des Baumes.</para>
+/// vier klappen nur auf; von den 58 Punkten handeln <b>44</b>, 14 klappen auf.
+/// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6 und mit W16c-E-7
+/// unveraendert geblieben: Es ist kein Ziel entfallen und keines
+/// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
+/// ist sie allein mit W6-E-2, das zwei ECHTE Wege anlegte (42 -> 44).</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -136,15 +165,24 @@ public static class Menuetabelle
             },
             new Menuepunkt("MenuItem_Energiesysteme", "MENU_ENERGIESYSTEME", "", bild: "Menu3")
             {
-                // W16c-E-6: aus dem Untermenue heraus. Es fuehrte nur
-                // "Bearbeiten" (MenuItem_PC_Bearbeiten); das Ziel ist
-                // unveraendert PvAdmin.
-                new Menuepunkt("MenuItem_PV", "MENU_PV", Seitenschluessel.PvAdmin),
-                // ANWENDERENTSCHEID W6-E-2 (06.09.2026), Stufe S1.4 des
-                // Konzept_Wechselrichter_EPOS-Plan.md: der Wechselrichterkatalog,
-                // NACH "Photovoltaik Module" - er gehoert zur selben Anlage und
-                // wird nach dem Modul gepflegt.
-                new Menuepunkt("MenuItem_Wechselrichter", "MENU_WECHSELRICHTER", Seitenschluessel.WechselrichterAdmin),
+                // W16c-E-7: der Zwischenknoten. Er fasst die zwei Kataloge
+                // EINER Anlage zusammen - das Modul und das Geraet dahinter -
+                // und traegt wie die Rubrik "Profile & Lastgaenge" kein Bild
+                // und kein Ziel.
+                new Menuepunkt("MenuItem_PV_Gruppe", "MENU_PHOTOVOLTAIK", "")
+                {
+                    // W16c-E-6: aus dem Untermenue heraus. Es fuehrte nur
+                    // "Bearbeiten" (MenuItem_PC_Bearbeiten); das Ziel ist
+                    // unveraendert PvAdmin. W16c-E-7: die Beschriftung heisst
+                    // "PV Module" (MENU_PV_MODULE) - "Photovoltaik" steht
+                    // jetzt darueber.
+                    new Menuepunkt("MenuItem_PV", "MENU_PV_MODULE", Seitenschluessel.PvAdmin),
+                    // ANWENDERENTSCHEID W6-E-2 (06.09.2026), Stufe S1.4 des
+                    // Konzept_Wechselrichter_EPOS-Plan.md: der Wechselrichterkatalog,
+                    // NACH "PV Module" - er gehoert zur selben Anlage und
+                    // wird nach dem Modul gepflegt.
+                    new Menuepunkt("MenuItem_Wechselrichter", "MENU_WECHSELRICHTER", Seitenschluessel.WechselrichterAdmin),
+                },
                 // W16c-E-6: aus "Waermebedarf & Heizung" hierher.
                 new Menuepunkt("MenuItem_PufferSp", "MENU_PUFFER_SP", Seitenschluessel.PufferSpAdmin),
             },
@@ -157,13 +195,20 @@ public static class Menuetabelle
                 new Menuepunkt("MenuItem_Import_Heizkessel", "MENU_IMPORT_HEIZKESSEL", Seitenschluessel.HeizkesselImport),
                 new Menuepunkt("MenuItem_PufferSp_VDI3805", "MENU_PUFFER_SP_VDI3805", Seitenschluessel.PufferSpImport),
                 new Menuepunkt("MeniItem_VDI3805", "MENU_VDI3805", Seitenschluessel.WpImport),
-                new Menuepunkt("MenuItem_PV_Import_CEC", "MENU_PV_IMPORT_CEC", Seitenschluessel.PvImport, argument: "CEC"),
-                // W6-E-2/S1.5 und W6-O-1: die CEC-Wechselrichterliste (Netz oder
-                // Auslieferungsdatei, W6-O-3) und PVsyst .OND - neben dem
-                // Modulimport, mit dem sie sich seit W6-O-1 EINEN Wirt teilt.
-                // OHNE Argument: Der eine Menuepunkt macht mit der Vorgabequelle
-                // (CEC) auf; die zwei anderen Quellen sind Knoepfe IN der Maske.
-                new Menuepunkt("MenuItem_WR_Import_CEC", "MENU_WR_IMPORT_CEC", Seitenschluessel.WechselrichterImport),
+                // W16c-E-7: derselbe Zwischenknoten wie unter
+                // "Energiesysteme", an der Stelle der zwei PV-Importpunkte -
+                // der Anwender hat ihn ausdruecklich HIER gemeint ("der Import
+                // steht nicht unter Energiesysteme sondern vdi3805").
+                new Menuepunkt("MenuItem_PV_Import_Gruppe", "MENU_PHOTOVOLTAIK", "")
+                {
+                    new Menuepunkt("MenuItem_PV_Import_CEC", "MENU_PV_IMPORT_CEC", Seitenschluessel.PvImport, argument: "CEC"),
+                    // W6-E-2/S1.5 und W6-O-1: die CEC-Wechselrichterliste (Netz oder
+                    // Auslieferungsdatei, W6-O-3) und PVsyst .OND - neben dem
+                    // Modulimport, mit dem sie sich seit W6-O-1 EINEN Wirt teilt.
+                    // OHNE Argument: Der eine Menuepunkt macht mit der Vorgabequelle
+                    // (CEC) auf; die zwei anderen Quellen sind Knoepfe IN der Maske.
+                    new Menuepunkt("MenuItem_WR_Import_CEC", "MENU_WR_IMPORT_CEC", Seitenschluessel.WechselrichterImport),
+                },
                 new Menuepunkt("MenuItem_ST_Import", "MENU_ST_IMPORT", Seitenschluessel.SolarkollektorenImport),
             },
             new Menuepunkt("MenuItem_KostenVerwaltung", "MENU_KOSTEN_VERWALTUNG", "")

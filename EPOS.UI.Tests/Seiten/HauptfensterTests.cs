@@ -530,6 +530,38 @@ public class HauptfensterTests : BunitContext
     }
 
     [Fact]
+    public async Task Ein_Punkt_der_VIERTEN_Ebene_landet_im_selben_Handler()
+    {
+        // ANWENDERENTSCHEID W16c-E-7 (07.09.2026): Der Knoten "Photovoltaik"
+        // legt unter "Energiesysteme" eine Klappe mehr uebereinander -
+        // Administration ▸ Energiesysteme ▸ Photovoltaik ▸ Wechselrichter.
+        // Geprueft wird ueber AusHuelle, also mit dem Parametersatz, den
+        // BlazorSeite<Hauptfenster> unter Windows uebergibt: Der Weg muss BIS
+        // ZUM SCHLUSS im einen Handler landen, sonst hat der Anwender ein
+        // Menue, das aufklappt und nichts tut (Muster W16c-B13).
+        string? gemeldet = null;
+        var gaben = Huellengaben(new SeitenZustand());
+        gaben["Weg"] = new Func<string, string, Task<bool>>(
+            (ziel, _) => { gemeldet = ziel; return Task.FromResult(true); });
+
+        var cut = AusHuelle(gaben);
+
+        cut.Find("#menue-Administration").Click();
+        cut.Find("#menue-MenuItem_Energiesysteme").Click();
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Wechselrichter"));
+
+        cut.Find("#menue-MenuItem_PV_Gruppe").Click();
+        cut.Find("#menue-MenuItem_Wechselrichter").Click();
+
+        await Task.Yield();
+
+        Assert.Equal(Seitenschluessel.WechselrichterAdmin, gemeldet);
+
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
+        Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
+    }
+
+    [Fact]
     public void Der_Klick_neben_das_Menue_schliesst_es_im_Fenster()
     {
         // Der Ersatz fuer das gestrichene @onfocusout (W16c-B13): Solange ein

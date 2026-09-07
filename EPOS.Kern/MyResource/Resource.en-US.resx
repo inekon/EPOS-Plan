@@ -14659,6 +14659,9 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="MENU_PC_BEARBEITEN" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="MENU_PHOTOVOLTAIK" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
   <data name="MENU_PROFILE_LASTGAENGE" xml:space="preserve">
     <value>Profiles &amp; load curves</value>
   </data>
@@ -14690,7 +14693,10 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>Photovoltaics</value>
   </data>
   <data name="MENU_PV_IMPORT_CEC" xml:space="preserve">
-    <value>Import photovoltaics CEC/Pan</value>
+    <value>PV modules (CEC, PAN)...</value>
+  </data>
+  <data name="MENU_PV_MODULE" xml:space="preserve">
+    <value>PV modules</value>
   </data>
   <data name="MENU_SOLARKOLLEKTOREN" xml:space="preserve">
     <value>Solar panels</value>

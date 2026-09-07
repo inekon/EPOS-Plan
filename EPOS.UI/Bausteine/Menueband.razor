@@ -6,14 +6,19 @@
    drei Ebenen. Zwei Anwenderentscheide haben daran gerechnet und kommen auf
    dieselbe Summe: W16c-E-2 (04.09.2026) bringt den Kopf "Sprache", W16c-E-6
    (06.09.2026) die Unterrubrik "Profile & Lastgaenge" und loest dafuer die
-   zwei Untermenues mit nur einem Punkt "Bearbeiten" auf — 54 Punkte in VIER
-   Koepfen der obersten Ebene, davon 42 handelnde.
+   zwei Untermenues mit nur einem Punkt "Bearbeiten" auf. Danach kamen zwei
+   Erweiterungen: W6-E-2 (06.09.2026) haengt den Wechselrichterkatalog und
+   seinen Import an — die zwei EINZIGEN neuen Ziele seit W16c —, und W16c-E-7
+   (07.09.2026) stellt das Paar Modul/Wechselrichter an beiden Stellen des
+   Kopfes "Administration" unter einen Zwischenknoten "Photovoltaik". Also
+   58 Punkte in VIER Koepfen der obersten Ebene, davon 44 handelnde — und
+   VIER Ebenen tief, seit W16c-E-6 die erste Unterrubrik gebracht hat.
 
    ES IST DIE SCHALE, NICHT DIE WURZEL (Entscheid E-1, Vermessung § 9.3). Die
    Wurzel beider Plattformen ist AppWurzel; darueber steht je Plattform eine
    Schale. Unter Windows ist das dieses Band, auf dem iPad nichts weiter — iL5
    sagt ausdruecklich "kein MDI, keine modalen Ketten", und eine Menueleiste mit
-   54 Punkten ist auf Touch unbedienbar. Deshalb ist das Band ein Baustein und
+   58 Punkten ist auf Touch unbedienbar. Deshalb ist das Band ein Baustein und
    kein Teil der Wurzel.
 
    DIE TABELLE IST DATEN. Eintraege kommt aus Menuetabelle (erzeugt aus dem
@@ -24,8 +29,10 @@
 
    JEDE EBENE FUEHRT IHREN EIGENEN OFFEN-ZUSTAND — und zwar als EIN PFAD
    (_pfad). _pfad[0] ist der aufgeklappte Kopf, _pfad[1] der aufgeklappte Punkt
-   darin, _pfad[2] der der dritten Ebene. Daraus folgt beides, was ein Menue
-   ausmacht: Ein Punkt ist offen, wenn er auf SEINER Ebene im Pfad steht
+   darin, _pfad[2] der der dritten Ebene, und so fort. Die Liste ist
+   TIEFENUNABHAENGIG - die vierte Ebene aus W16c-E-7 (der Knoten
+   "Photovoltaik") hat hier keine Zeile gekostet. Daraus folgt beides, was ein
+   Menue ausmacht: Ein Punkt ist offen, wenn er auf SEINER Ebene im Pfad steht
    (Offen(p, ebene)), und Geschwister schliessen einander aus, weil eine Ebene
    nur EINEN Eintrag traegt. Bis zum Befund W16c-B13 stand die zweite Ebene in
    einem flachen HashSet ueber NAMEN neben einem Feld _offen fuer die oberste —
