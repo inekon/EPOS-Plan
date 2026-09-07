@@ -320,9 +320,15 @@ namespace WindowsFormsApplication1
         /// <remarks>
         /// <b>Der Befund dieser Tabelle:</b> <c>Investition_kwel</c> ist seit dem
         /// Nutzerentscheid vom 22.08.2026 ABGELEITET (<c>BHKWKosten.JeKWel</c> aus den
-        /// fuenf Einzelposten) und hat im ganzen Bestand keinen Leser mehr — die
-        /// Kostenplanung rechnet mit <c>Kosten_Modul</c> und den vier Nebenposten
-        /// (<c>TechnikPlanwertCtrl.cs:317-325</c>). Er bleibt <c>Dialog</c>.
+        /// fuenf Einzelposten) und hat im Rechenweg keinen Leser — die Kostenplanung
+        /// rechnet mit <c>Kosten_Modul</c> und den vier Nebenposten
+        /// (<c>TechnikPlanwertCtrl.cs:317-325</c>). Seit dem Anwenderentscheid
+        /// <b>W14a-E-8-B3</b> vom 07.09.2026 ist er aber keine Dublette mehr, sondern
+        /// die ANZEIGE EINES EINGABEWEGS: Der Katalogeditor nimmt die Investition
+        /// wahlweise als Gesamtsumme, als Wert je kWel oder als die fuenf Posten
+        /// entgegen und rechnet um (<c>BHKWKosten.GesamtAusJeKWel</c>,
+        /// <c>BHKWKosten.ModulAusGesamt</c>); gespeichert wird immer nur, was in den
+        /// Posten steht. Er bleibt <c>Dialog</c>.
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Bhkw(Func<string, string> t)
         {
@@ -344,8 +350,10 @@ namespace WindowsFormsApplication1
                   "SimulationBHKW.cs:286; WirtschaftlichkeitCtrl.cs:4263"),
                 E("Wirkungsgrad", t("BHKWK_LBL_WIRKUNGSGRAD"), "", SIM_WIRT_BER,
                   "SimulationBHKW.cs:287; KostenEmissionRechner.cs:352; AbweichungsErmittler.cs:90"),
-                E("Investition_kwel", t("BHKWK_LBL_INVEST"), "", DLG,
-                  "BhkwKatalogDialog.razor:127 — abgeleitet (BHKWKosten.JeKWel), kein Leser im Rechenweg"),
+                E("Investition_kwel", t("BHKWK_LBL_INVEST"), "€ / kWel", DLG,
+                  "BhkwKatalogDialog.razor — Eingabeweg und Anzeige (W14a-E-8-B3): abgeleitet " +
+                  "aus den Posten (BHKWKosten.JeKWel), als Eingabe umgerechnet " +
+                  "(BHKWKosten.GesamtAusJeKWel); kein Leser im Rechenweg"),
                 E("Raumbedarf", t("BHKWK_LBL_RAUMBEDARF"), "m³", DLG,
                   "BhkwKatalogDialog.razor:130"),
                 E("Wartungskosten_kwhel", t("BHKWK_LBL_WARTUNG"), "€ / kWhel", WIRT,

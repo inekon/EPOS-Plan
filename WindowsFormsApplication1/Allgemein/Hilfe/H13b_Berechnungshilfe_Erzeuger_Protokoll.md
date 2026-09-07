@@ -103,7 +103,7 @@ Lücken: die Betriebsart gilt **projektweit**; ein Wirkungsgrad ohne Teillastken
 unveränderter Stromkennzahl in Teillast; keine Taktung, keine Bereitschaftsverluste. Der
 **Sommerbetrieb des Vorläufers** (Tagesstunden 11…21 samt zwei Notschaltungen) ist als
 unerreichbarer Zweig entfallen — das steht als Grenze auf der Seite, weil es sonst niemand mehr
-nachlesen kann. Dazu die **Dublette `Investition_kwel`** ohne Leser (Befund W14a‑E‑8‑B3).
+nachlesen kann. Dazu `Investition_kwel`, das in **keine Rechnung des Laufs** eingeht (Befund W14a‑E‑8‑B3; seit dem Anwenderentscheid vom 07.09.2026 keine Dublette mehr, sondern die Ableitung eines von drei Eingabewegen der Investition).
 
 ### 2.4 `Wärmepumpe` (240 Zeilen)
 

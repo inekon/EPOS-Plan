@@ -412,6 +412,15 @@ namespace WindowsFormsApplication1
         /// <see cref="BASIS_MODULPREIS"/>; eine Auswahl entsteht hier nicht mehr.
         /// </para>
         /// <para>
+        /// <b>Der Anwenderentscheid W14a-E-8-B3 (07.09.2026) ändert daran nichts.</b> Der
+        /// Katalogeditor nimmt die Investition seither wahlweise als Gesamtsumme, als Wert je
+        /// kWel oder als die fünf Posten entgegen — der Ausgleich läuft aber immer über
+        /// <c>Kosten_Modul</c> (<c>BHKWKosten.ModulAusGesamt</c>), die vier Nebenposten bleiben
+        /// stehen. Es entsteht KEIN sechster Betrag, den diese Klasse zusätzlich lesen müsste;
+        /// die zwei neuen Eingabewege landen vollständig in den fünf Spalten, die hier ohnehin
+        /// schon gelesen werden.
+        /// </para>
+        /// <para>
         /// <b>Stromspeicher</b> führt drei Kostenfelder, die zusammen EINE Formel bilden:
         /// <c>Modulkosten</c> ist entgegen dem Namen ein SPEZIFISCHER Preis in €/kWh
         /// (AP0-Entscheid vom 16.08.2026, umgesetzt in

@@ -82,6 +82,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -2678,7 +2679,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten [€ / kWel]: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition je kW elektrisch: ähnelt.
         /// </summary>
         public static string BHKWK_LBL_INVEST {
             get {
@@ -3128,11 +3129,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die €/kWel: abgeleitet aus Summe / Pel ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition gesamt ähnelt.
         /// </summary>
-        public static string BHKW_INVEST_HINWEIS_ABGELEITET {
+        public static string BHKW_INVEST_GESAMT_FELD {
             get {
-                return ResourceManager.GetString("BHKW_INVEST_HINWEIS_ABGELEITET", resourceCulture);
+                return ResourceManager.GetString("BHKW_INVEST_GESAMT_FELD", resourceCulture);
             }
         }
         
@@ -3146,7 +3147,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die €/kWel: nicht bestimmbar (Pel = 0) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamt = Modul + Montage + Lieferung + Schallschutzhaube + Abgasreinigung; je kW = Gesamt / Pel. Die zuletzt geänderte Eingabe führt. ähnelt.
+        /// </summary>
+        public static string BHKW_INVEST_HINWEIS_FUEHREND {
+            get {
+                return ResourceManager.GetString("BHKW_INVEST_HINWEIS_FUEHREND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nebenposten übersteigen die eingegebene Gesamtsumme; das Modul steht auf 0,00 €. ähnelt.
+        /// </summary>
+        public static string BHKW_INVEST_HINWEIS_GEDECKELT {
+            get {
+                return ResourceManager.GetString("BHKW_INVEST_HINWEIS_GEDECKELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne elektrische Leistung gibt es keinen Wert je kW; die Gesamtsumme bleibt erfasst. ähnelt.
         /// </summary>
         public static string BHKW_INVEST_HINWEIS_UNBESTIMMT {
             get {
@@ -3155,34 +3174,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einzelposten führen: Investitionskosten je kWel = Summe der Einzelposten geteilt durch die elektrische Leistung. Das Feld ist deshalb nicht änderbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition je kW elektrisch ähnelt.
         /// </summary>
-        public static string BHKW_INVEST_TIP {
+        public static string BHKW_INVEST_JEKW_FELD {
             get {
-                return ResourceManager.GetString("BHKW_INVEST_TIP", resourceCulture);
+                return ResourceManager.GetString("BHKW_INVEST_JEKW_FELD", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die elektrische Leistung ist 0. Investitionskosten je kWel sind damit nicht bestimmbar. Gespeichert wird die Summe der Einzelposten; Speichern bleibt möglich. ähnelt.
-        /// </summary>
-        public static string BHKW_INVEST_TIP_UNBESTIMMT {
-            get {
-                return ResourceManager.GetString("BHKW_INVEST_TIP_UNBESTIMMT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die n. b. ähnelt.
-        /// </summary>
-        public static string BHKW_INVEST_UNBESTIMMT {
-            get {
-                return ResourceManager.GetString("BHKW_INVEST_UNBESTIMMT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Einzelposten: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition gesamt: ähnelt.
         /// </summary>
         public static string BHKW_SUMME_LBL {
             get {

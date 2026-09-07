@@ -8428,25 +8428,19 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
 Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Microsoft Access Database Engine ({0}).</value>
   </data>
   <data name="BHKW_SUMME_LBL" xml:space="preserve">
-    <value>Summe Einzelposten:</value>
+    <value>Investition gesamt:</value>
   </data>
-  <data name="BHKW_INVEST_UNBESTIMMT" xml:space="preserve">
-    <value>n. b.</value>
-  </data>
-  <data name="BHKW_INVEST_HINWEIS_ABGELEITET" xml:space="preserve">
-    <value>&#8364;/kWel: abgeleitet aus Summe / Pel</value>
+  <data name="BHKW_INVEST_HINWEIS_FUEHREND" xml:space="preserve">
+    <value>Gesamt = Modul + Montage + Lieferung + Schallschutzhaube + Abgasreinigung; je kW = Gesamt / Pel. Die zuletzt geänderte Eingabe führt.</value>
   </data>
   <data name="BHKW_INVEST_HINWEIS_UNBESTIMMT" xml:space="preserve">
-    <value>&#8364;/kWel: nicht bestimmbar (Pel = 0)</value>
+    <value>Ohne elektrische Leistung gibt es keinen Wert je kW; die Gesamtsumme bleibt erfasst.</value>
   </data>
   <data name="BHKW_INVEST_HINWEIS_ABWEICHUNG" xml:space="preserve">
     <value>&#8364;/kWel: Bestand weicht ab, wird beim Speichern nachgezogen</value>
   </data>
-  <data name="BHKW_INVEST_TIP" xml:space="preserve">
-    <value>Die Einzelposten f&#252;hren: Investitionskosten je kWel = Summe der Einzelposten geteilt durch die elektrische Leistung. Das Feld ist deshalb nicht &#228;nderbar.</value>
-  </data>
-  <data name="BHKW_INVEST_TIP_UNBESTIMMT" xml:space="preserve">
-    <value>Die elektrische Leistung ist 0. Investitionskosten je kWel sind damit nicht bestimmbar. Gespeichert wird die Summe der Einzelposten; Speichern bleibt m&#246;glich.</value>
+  <data name="BHKW_INVEST_HINWEIS_GEDECKELT" xml:space="preserve">
+    <value>Die Nebenposten übersteigen die eingegebene Gesamtsumme; das Modul steht auf 0,00 €.</value>
   </data>
   <data name="KI_REG_ERL_SUCHTEXT" xml:space="preserve">
     <value>Wortteil aus Projektname oder Kundenname, so wie ihn der Anwender genannt hat; Groß- und Kleinschreibung ist gleichgültig.</value>
@@ -11053,7 +11047,13 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Kosten Abgasreinigung</value>
   </data>
   <data name="BHKWK_LBL_INVEST" xml:space="preserve">
-    <value>Investitionskosten [€ / kWel]:</value>
+    <value>Investition je kW elektrisch:</value>
+  </data>
+  <data name="BHKW_INVEST_GESAMT_FELD" xml:space="preserve">
+    <value>Investition gesamt</value>
+  </data>
+  <data name="BHKW_INVEST_JEKW_FELD" xml:space="preserve">
+    <value>Investition je kW elektrisch</value>
   </data>
   <data name="BHKWK_LBL_RAUMBEDARF" xml:space="preserve">
     <value>Raumbedarf:</value>

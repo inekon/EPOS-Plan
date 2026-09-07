@@ -1003,6 +1003,36 @@ Nutzerentscheid vom 22.08.2026 wird der Wert aus den fünf Kostenposten ABGELEIT
 `Kosten_Modul` und den vier Nebenposten (`TechnikPlanwertCtrl.cs:317‑325`). Er bleibt —
 als Anzeigewert ist er richtig —, trägt aber die Stufe „nur Anzeige".
 
+> **Stand 07.09.2026 — GESCHLOSSEN durch den Anwenderentscheid W14a‑E‑8‑B3.** Im Wortlaut:
+> „Entweder Investitionskosten als Summe/Gesamt oder Investitionskosten auf kWh elektrisch ×
+> Kosten pro kWh elektrisch (sollte umgerechnet werden, je nach Eingabe)."
+>
+> **Was daraus wurde.** Der Katalogeditor nimmt die Investition wahlweise als **Gesamtsumme**
+> [€], als **Wert je kW elektrisch** [€/kW] oder — wie bisher — als die **fünf Einzelposten**
+> entgegen; die zuletzt geänderte Eingabe führt, das jeweils andere Feld folgt. Die Umrechnung
+> steht im Kern und nur dort (`EPOS.Kern/Model/BHKWKosten.cs`: `Gesamt`, `JeKWel`,
+> `JeKWelEingabe`, `GesamtAusJeKWel`, `ModulAusGesamt`, `Nebenposten`,
+> `NebenpostenUeberschreiten`). Der **Ausgleich läuft immer über `Kosten_Modul`**, die vier
+> Nebenposten bleiben stehen — deshalb rechnet `TechnikPlanwertCtrl` unverändert mit den Posten,
+> und der Referenzlauf ist byte‑gleich.
+>
+> **Die Stufe bleibt „nur Anzeige"** (`Dialog`), aber die Begründung ist eine andere:
+> `Investition_kwel` ist keine Dublette mehr, sondern die **Ableitung eines Eingabewegs** — sie
+> wird beim Speichern aus den Posten nachgezogen (`BHKWStammCtrl.Update`, `BHKWCtrl.Update`,
+> `BhkwKatalogDialog.AbleitungNachziehen`) und im Rechenweg weiterhin nicht gelesen.
+> `ParameterVerwendung` sagt das seither so.
+>
+> **Zwei Randfälle stehen ausdrücklich in der Maske:** ohne elektrische Leistung ist das Feld je
+> kW gesperrt und leer (keine erfundene 0,00), und eine Gesamtsumme unter den Nebenposten deckelt
+> den Modulpreis bei 0 statt ihn negativ werden zu lassen — beides sagt die Herleitungszeile, die
+> damit **vier** Zustände trägt (führend, unbestimmt, Abweichung, gedeckelt) statt drei.
+>
+> **Nachweise:** `EPOS.Kern.Tests/BhkwKostenTests` (16 Fälle: beide Richtungen, Rundung auf Cent
+> und auf 1 €/kW, Deckel, P_el = 0, Hin‑und‑zurück) und
+> `EPOS.UI.Tests/Dialoge/BhkwKatalogDialogTests` (25 Fälle, darunter die drei Eingabewege, der
+> Deckel, die Eingabe ohne Zurückspringen und das Speichern der fünf Posten samt Ableitung).
+> Konzept: `Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` § 4.7.
+
 ### 3 Die optionale Anzeige: `Parameteruebersicht`
 
 `EPOS.UI/Bausteine/Parameteruebersicht.razor` — **ein** Baustein für alle sieben

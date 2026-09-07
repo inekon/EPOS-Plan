@@ -8421,25 +8421,19 @@ The seat becomes available for another device; a new activation is required to c
 Please run the EPOS-Plan setup again or install the Microsoft Access Database Engine ({0}).</value>
   </data>
   <data name="BHKW_SUMME_LBL" xml:space="preserve">
-    <value>Sum of items:</value>
+    <value>Total investment:</value>
   </data>
-  <data name="BHKW_INVEST_UNBESTIMMT" xml:space="preserve">
-    <value>n/a</value>
-  </data>
-  <data name="BHKW_INVEST_HINWEIS_ABGELEITET" xml:space="preserve">
-    <value>&#8364;/kWel: derived from sum / Pel</value>
+  <data name="BHKW_INVEST_HINWEIS_FUEHREND" xml:space="preserve">
+    <value>Total = module + installation + delivery + acoustic hood + exhaust treatment; per kW = total / Pel. The most recent entry leads.</value>
   </data>
   <data name="BHKW_INVEST_HINWEIS_UNBESTIMMT" xml:space="preserve">
-    <value>&#8364;/kWel: not determinable (Pel = 0)</value>
+    <value>Without electrical power there is no value per kW; the total is still recorded.</value>
   </data>
   <data name="BHKW_INVEST_HINWEIS_ABWEICHUNG" xml:space="preserve">
     <value>&#8364;/kWel: stored value differs, updated on save</value>
   </data>
-  <data name="BHKW_INVEST_TIP" xml:space="preserve">
-    <value>The individual items lead: investment cost per kWel = sum of the individual items divided by the electrical power. The field is therefore not editable.</value>
-  </data>
-  <data name="BHKW_INVEST_TIP_UNBESTIMMT" xml:space="preserve">
-    <value>The electrical power is 0, so the investment cost per kWel cannot be determined. The sum of the individual items is stored; saving remains possible.</value>
+  <data name="BHKW_INVEST_HINWEIS_GEDECKELT" xml:space="preserve">
+    <value>The additional items exceed the total entered; the module is set to 0.00 €.</value>
   </data>
   <data name="KI_REG_ERL_SUCHTEXT" xml:space="preserve">
     <value>Part of the project or customer name as the user stated it; upper and lower case do not matter.</value>
@@ -11046,7 +11040,13 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>exhaust treatment costs</value>
   </data>
   <data name="BHKWK_LBL_INVEST" xml:space="preserve">
-    <value>Investment costs [€ / kWel]:</value>
+    <value>Investment per kW electrical:</value>
+  </data>
+  <data name="BHKW_INVEST_GESAMT_FELD" xml:space="preserve">
+    <value>total investment</value>
+  </data>
+  <data name="BHKW_INVEST_JEKW_FELD" xml:space="preserve">
+    <value>investment per kW electrical</value>
   </data>
   <data name="BHKWK_LBL_RAUMBEDARF" xml:space="preserve">
     <value>Space requirements:</value>

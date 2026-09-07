@@ -10,9 +10,15 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// Katalogeditor BHKW (iU9-W6.2). Soll ist die Feldkarte von <c>Form_DBBHKW</c>:
-/// fuenf Gruppen, 24 Eingabefelder, die abgeleitete Investition mit ihren drei
-/// Hinweiszustaenden, die Rueckfrage vor dem Ueberschreiben eines Katalogsatzes
-/// und die beiden Vorgabewertknoepfe.
+/// fuenf Gruppen, die Rueckfrage vor dem Ueberschreiben eines Katalogsatzes und die
+/// beiden Vorgabewertknoepfe.
+///
+/// <para><b>Seit dem Anwenderentscheid W14a-E-8-B3 (07.09.2026)</b> dazu die DREI
+/// EINGABEWEGE der Investition — Gesamtsumme, Wert je kW elektrisch, fuenf
+/// Einzelposten — mit ihren vier Hinweiszustaenden. Die Umrechnung selbst prueft
+/// <c>EPOS.Kern.Tests/BhkwKostenTests</c>; hier steht, dass der Dialog sie richtig
+/// herum ruft, die Eingabe nicht zurueckspringt und das Ergebnis in den Posten
+/// landet.</para>
 /// </summary>
 public class BhkwKatalogDialogTests : BunitContext
 {
@@ -75,9 +81,6 @@ public class BhkwKatalogDialogTests : BunitContext
             .Add(x => x.Anlegen, anlegen ?? ((_, n) => new KatalogSpeicherErgebnis(true, "ok", n)))
             .Add(x => x.Co2Vorgabe, co2)
             .Add(x => x.EmissionsVorgabe, emissionen)
-            .Add(x => x.Summe, (a, b, c, d, e) => a + b + c + d + e)
-            .Add(x => x.JeKWelBestimmbar, pel => pel > 0)
-            .Add(x => x.JeKWel, (s, pel) => pel > 0 ? s / pel : 0)
             .Add(x => x.Geschlossen, n => geschlossen?.Invoke(n)));
     }
 
@@ -106,15 +109,15 @@ public class BhkwKatalogDialogTests : BunitContext
 
         // Die 24 TextBox der Karte plus der Modulname, der im Vorlaeufer eine ComboBox
         // war (A-3: im EDIT nur lesbar, im NEU ein Textfeld) - zusammen 25 Felder:
-        // 11 Zahlen (Ptherm, Pel, Wirkungsgrad, Grenzleistung, die fuenf Posten,
-        // Raumbedarf, Wartung), 8 Ganzzahlen (Vorlauf, Ruecklauf, Nutzungsdauer und die
-        // fuenf Emissionen), 5 Texte (drei Eingaben + die zwei nur lesbaren
-        // Anzeigefelder Summe und Investition) und 1 mehrzeilige Beschreibung.
-        Assert.Equal(11, cut.FindAll("input[inputmode=decimal]").Count);
+        // 13 Zahlen (Ptherm, Pel, Wirkungsgrad, Grenzleistung, Gesamtsumme und Wert je
+        // kW, die fuenf Posten, Raumbedarf, Wartung), 8 Ganzzahlen (Vorlauf, Ruecklauf,
+        // Nutzungsdauer und die fuenf Emissionen), 3 Texte und 1 mehrzeilige
+        // Beschreibung. Die zwei ANZEIGEFELDER Summe und Investition je kWel waren bis
+        // W14a-E-8-B3 nur lesbare Textfelder; seither sind sie Zahlen-EINGABEfelder.
+        Assert.Equal(13, cut.FindAll("input[inputmode=decimal]").Count);
         Assert.Equal(8, cut.FindAll("input[inputmode=numeric]").Count);
-        // Fuenf reine Textfelder: Modulname, Hersteller, Motortyp und die zwei NUR
-        // LESBAREN Anzeigefelder Summe und Investition je kWel.
-        Assert.Equal(5, cut.FindAll("input[type=text]:not([inputmode])").Count);
+        // Drei reine Textfelder: Modulname, Hersteller, Motortyp.
+        Assert.Equal(3, cut.FindAll("input[type=text]:not([inputmode])").Count);
         Assert.Single(cut.FindAll("textarea"));
         Assert.Single(cut.FindAll("select"));
         Assert.Single(cut.FindAll("input[type=checkbox]"));
@@ -127,6 +130,8 @@ public class BhkwKatalogDialogTests : BunitContext
         Assert.Contains("Elektrische Leistung:", texte);
         Assert.Contains("Ges. Wirkungsgrad:", texte);
         Assert.Contains("Untere Grenzleistung:", texte);
+        Assert.Contains("Investition gesamt:", texte);
+        Assert.Contains("Investition je kW elektrisch:", texte);
         Assert.Contains("Modul:", texte);
         Assert.Contains("Montage und Inbetriebnahme:", texte);
         Assert.Contains("Lieferung (50 km Umkreis):", texte);
@@ -136,18 +141,40 @@ public class BhkwKatalogDialogTests : BunitContext
     }
 
     // =================================================================================
-    // Die abgeleitete Investition
+    // Die Investition: drei Eingabewege auf dieselbe Groesse (W14a-E-8-B3)
     // =================================================================================
+    //
+    // Die Reihenfolge der 13 Zahlenfelder - sie traegt jeden Fall dieses Abschnitts:
+    //   0 Ptherm   1 Pel   2 Wirkungsgrad   3 Grenzleistung
+    //   4 GESAMT   5 JE KW
+    //   6 Modul    7 Montage   8 Lieferung   9 Schallschutz   10 Abgasreinigung
+    //  11 Raumbedarf  12 Wartung
+    // Der Bestandssatz traegt 40 000 + 5 000 + 1 000 + 3 000 + 1 000 = 50 000 EUR bei
+    // Pel = 40 kW, also 1 250 EUR/kW; die vier Nebenposten sind zusammen 10 000 EUR.
+
+    private const int FELD_GESAMT = 4;
+    private const int FELD_JE_KW = 5;
+    private const int FELD_MODUL = 6;
+
+    private static string Wert(IRenderedComponent<BhkwKatalogDialog> cut, int feld)
+        => cut.FindAll("input[inputmode=decimal]")[feld].GetAttribute("value") ?? "";
+
+    private static string Hinweis(IRenderedComponent<BhkwKatalogDialog> cut)
+        => cut.FindAll(".epos-herleitung-text")[0].TextContent;
 
     [Fact]
-    public void Beim_Laden_steht_der_gespeicherte_Wert_und_die_Zeile_sagt_abgeleitet()
+    public void Beim_Laden_stehen_Gesamtsumme_und_Wert_je_kW_und_die_Zeile_nennt_die_Regel()
     {
-        // BestandHinweisAnzeigen: 50 000 / 40 = 1 250 - der gespeicherte Wert passt.
+        // 50 000 / 40 = 1 250 - der gespeicherte Wert passt zur Summe.
         var cut = Aufbauen();
 
-        Assert.Equal("50000,00", cut.FindAll("input[type=text]:not([inputmode])[readonly]")[1].GetAttribute("value"));
-        Assert.Equal("1250,00", cut.FindAll("input[type=text]:not([inputmode])[readonly]")[2].GetAttribute("value"));
-        Assert.Contains("Abgeleitet", cut.FindAll(".epos-herleitung-text")[0].TextContent);
+        Assert.Equal("50000,00", Wert(cut, FELD_GESAMT));
+        Assert.Equal("1250", Wert(cut, FELD_JE_KW));
+        Assert.Contains("zuletzt geänderte Eingabe führt", Hinweis(cut));
+
+        // Die Rechnung steht daneben, mit Zahlen statt mit Buchstaben.
+        Assert.Equal("50000,00 € / 40,00 kW = 1250 € / kW",
+                     cut.FindAll(".epos-herleitung-formel")[0].TextContent);
     }
 
     [Fact]
@@ -157,32 +184,138 @@ public class BhkwKatalogDialogTests : BunitContext
         daten.InvestitionJeKWel = 2000;    // passt NICHT zu 50 000 / 40
         var cut = Aufbauen(daten);
 
-        Assert.Equal("2000,00", cut.FindAll("input[type=text]:not([inputmode])[readonly]")[2].GetAttribute("value"));
-        Assert.Contains("weicht", cut.FindAll(".epos-herleitung-text")[0].TextContent);
+        Assert.Equal("2000", Wert(cut, FELD_JE_KW));
+        Assert.Contains("weicht", Hinweis(cut));
     }
 
     [Fact]
-    public void Ohne_elektrische_Leistung_ist_der_Wert_unbestimmt()
+    public void Ohne_elektrische_Leistung_ist_das_Feld_je_kW_leer_und_gesperrt()
     {
         var daten = Bestand();
         daten.Pel = 0;
         var cut = Aufbauen(daten);
 
-        Assert.Equal("unbestimmt", cut.FindAll("input[type=text]:not([inputmode])[readonly]")[2].GetAttribute("value"));
-        Assert.Contains("keinen Wert je kWel", cut.FindAll(".epos-herleitung-text")[0].TextContent);
+        var jeKw = cut.FindAll("input[inputmode=decimal]")[FELD_JE_KW];
+        Assert.Equal("", jeKw.GetAttribute("value"));
+        Assert.True(jeKw.HasAttribute("disabled"));
+
+        // Die Gesamtsumme bleibt erfasst - nur die Kennzahl je kW faellt weg.
+        Assert.Equal("50000,00", Wert(cut, FELD_GESAMT));
+        Assert.Contains("keinen Wert je kW", Hinweis(cut));
+
+        // Und es steht KEINE erfundene Rechnung daneben.
+        Assert.Null(cut.FindAll(".epos-herleitung")[0].QuerySelector(".epos-herleitung-formel"));
     }
 
     [Fact]
-    public void Eine_Aenderung_an_einem_Posten_zieht_Summe_und_Ableitung_nach()
+    public void Eine_Aenderung_an_einem_Posten_zieht_Gesamtsumme_und_Wert_je_kW_nach()
     {
         var cut = Aufbauen();
 
-        // Modul ist das fuenfte Zahlenfeld (Ptherm, Pel, Wirkungsgrad, Grenzleistung, Modul).
-        cut.FindAll("input[inputmode=decimal]")[4].Input("60000");
+        cut.FindAll("input[inputmode=decimal]")[FELD_MODUL].Input("60000");
 
-        Assert.Equal("70000,00", cut.FindAll("input[type=text]:not([inputmode])[readonly]")[1].GetAttribute("value"));
-        Assert.Equal("1750,00", cut.FindAll("input[type=text]:not([inputmode])[readonly]")[2].GetAttribute("value"));
-        Assert.Contains("Abgeleitet", cut.FindAll(".epos-herleitung-text")[0].TextContent);
+        Assert.Equal("70000,00", Wert(cut, FELD_GESAMT));
+        Assert.Equal("1750", Wert(cut, FELD_JE_KW));
+        Assert.Contains("zuletzt geänderte Eingabe führt", Hinweis(cut));
+    }
+
+    [Fact]
+    public void Eine_Gesamteingabe_verteilt_sich_auf_den_Modulpreis()
+    {
+        var daten = Bestand();
+        var cut = Aufbauen(daten);
+
+        cut.FindAll("input[inputmode=decimal]")[FELD_GESAMT].Input("60000");
+
+        // 60 000 - 10 000 Nebenposten = 50 000 fuer das Modul; die vier Nebenposten
+        // bleiben unberuehrt (der Ausgleich laeuft NUR ueber den Modulpreis).
+        Assert.Equal(50000.0, daten.KostenModul!.Value, 10);
+        Assert.Equal(5000.0, daten.KostenMontage!.Value, 10);
+        Assert.Equal(1000.0, daten.KostenLieferung!.Value, 10);
+        Assert.Equal(3000.0, daten.KostenSchallschutzhaube!.Value, 10);
+        Assert.Equal(1000.0, daten.KostenAbgasreinigung!.Value, 10);
+
+        // Das getippte Feld behaelt SEINEN Text (kein Zurueckspringen auf "60000,00" -
+        // die Anzeigeformatierung wuerde sonst mitten in der Eingabe zuschlagen), und
+        // der Wert je kW folgt: 60 000 / 40.
+        Assert.Equal("60000", Wert(cut, FELD_GESAMT));
+        Assert.Equal("1500", Wert(cut, FELD_JE_KW));
+    }
+
+    [Fact]
+    public void Eine_Eingabe_je_kW_wird_ueber_Pel_in_die_Gesamtsumme_umgerechnet()
+    {
+        var daten = Bestand();
+        var cut = Aufbauen(daten);
+
+        cut.FindAll("input[inputmode=decimal]")[FELD_JE_KW].Input("1500");
+
+        // 1 500 EUR/kW x 40 kW = 60 000 EUR gesamt, davon 10 000 Nebenposten.
+        Assert.Equal(50000.0, daten.KostenModul!.Value, 10);
+        Assert.Equal(5000.0, daten.KostenMontage!.Value, 10);
+        Assert.Equal("60000,00", Wert(cut, FELD_GESAMT));
+        Assert.Equal("1500", Wert(cut, FELD_JE_KW));
+    }
+
+    [Fact]
+    public void Eine_Gesamtsumme_unter_den_Nebenposten_deckelt_das_Modul_und_sagt_es()
+    {
+        var daten = Bestand();
+        var cut = Aufbauen(daten);
+
+        cut.FindAll("input[inputmode=decimal]")[FELD_GESAMT].Input("3000");
+
+        Assert.Equal(0.0, daten.KostenModul!.Value, 10);
+        Assert.True(cut.Instance.Gedeckelt);
+
+        // Die Eingabe bleibt stehen - und die Zeile sagt, warum sie nicht aufgeht.
+        Assert.Equal("3000", Wert(cut, FELD_GESAMT));
+        Assert.Contains("übersteigen", Hinweis(cut));
+    }
+
+    [Fact]
+    public void Die_Eingabe_der_Gesamtsumme_springt_nicht_zurueck()
+    {
+        // Kein Rueckruf im Kreis: Wer "60000" tippt, tippt vier Zwischenstaende, von
+        // denen die ersten unter den Nebenposten liegen. Spraenge das Feld dabei auf
+        // die abgeleitete Summe, waere weitertippen unmoeglich.
+        var daten = Bestand();
+        var cut = Aufbauen(daten);
+
+        foreach (string stufe in new[] { "6", "60", "600", "6000", "60000" })
+        {
+            cut.FindAll("input[inputmode=decimal]")[FELD_GESAMT].Input(stufe);
+            Assert.Equal(stufe, Wert(cut, FELD_GESAMT));
+        }
+
+        Assert.Equal(50000.0, daten.KostenModul!.Value, 10);
+        Assert.False(cut.Instance.Gedeckelt);
+    }
+
+    [Fact]
+    public void Speichern_schreibt_die_fuenf_Posten_und_den_abgeleiteten_Wert_je_kW()
+    {
+        BhkwKatalogDaten? geschrieben = null;
+        var daten = Bestand();
+        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        {
+            geschrieben = d;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
+        });
+
+        cut.FindAll("input[inputmode=decimal]")[FELD_JE_KW].Input("1500");
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.NotNull(geschrieben);
+        Assert.Equal(50000.0, geschrieben!.KostenModul!.Value, 10);
+        Assert.Equal(5000.0, geschrieben.KostenMontage!.Value, 10);
+        Assert.Equal(1000.0, geschrieben.KostenLieferung!.Value, 10);
+        Assert.Equal(3000.0, geschrieben.KostenSchallschutzhaube!.Value, 10);
+        Assert.Equal(1000.0, geschrieben.KostenAbgasreinigung!.Value, 10);
+
+        // Investition_kwel ist die ABLEITUNG der Posten, nicht das Eingabefeld:
+        // 60 000 / 40 = 1 500.
+        Assert.Equal(1500.0, geschrieben.InvestitionJeKWel!.Value, 10);
     }
 
     // =================================================================================
