@@ -2457,6 +2457,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > bis eine Quelle mit CO-Faktoren je Energieträger vorliegt. **Sieben Anwenderfragen offen:** `Em‑9.8‑Q1…Q4`,
 > `Em‑9.9‑Q1…Q3`, je mit Empfehlung in § 11.5. Geändert ist nur das Emissionskonzept; kein Code, keine Migration,
 > Referenzlauf und CI unberührt.
+>
+> **W14a‑E‑10 (Anwenderentscheid 07.09.2026: „Q1 bis Q12: ändere den Katalogfilter — nur Suche, Hersteller, Brennstoff etc.
+> sollte an Spalte mit Sortieren und Suchen erfolgen. Das Schema des Dialogs sollte immer gleich aussehen (Wärmepumpe
+> ähnlich wie PV-Module und Heizkessel)"), Konzept Rev. 2 und Mockup in `79c2cad`, zusammengeführt in `04acbbb` — nichts
+> umgesetzt:** Die Empfehlung **Q4** (Zonenmodell mit Filterleiste, Klapplisten, Bereichsfeldern, Chips) ist abgelehnt,
+> die in Rev. 1 verworfene Variante **A4** gewählt. Neues **Kapitel 5.6 „Das Spaltenmodell"**: Zone A trägt nur noch EIN
+> Suchfeld über alle Spalten und die immer sichtbare Filter-/Trefferzeile; jede Spalte hat einen Sortierpfeil (auf → ab →
+> aus) und einen Trichter mit Popover aus Spaltenname, einem Feld „enthält…" und „Filter löschen"; gefilterte Spalten
+> tragen den gefüllten Trichter. Die drei Einwände gegen A4 sind entkräftet: `ColumnOptions`/`Sortable`/`Class`/
+> `ShowColumnOptionsAsync` in **QuickGrid 10.0.11** (Fundstellen in 5.6.7), der Optionsknopf ist ein `<button>`,
+> `QuickGrid.razor.js` schließt bei Esc und rückt das Popover ins Raster. Gefiltert wird VOR dem Raster (der Controller
+> reicht eine eingeschränkte `IQueryable`), weil der `@key`-Fix W6‑B‑2 sonst beim Sprung 20 749 → 15 die alte Liste
+> zeigte. **Stufenplan neu:** S1 Spaltenfilter + `Zahlenausdruck` + sieben Profile + Parameterspalten aus sieben
+> Controllern + die acht Verwaltungsdialoge (10–14 h) → S2 die sieben Projektdialoge samt Wärmepumpe, deren elf
+> Bedienelemente in die Spalten fallen (6–9 h) → S3 Bedarf/Zeitreihen/Vergleich/Import (7–9 h); Summe 23–32 statt
+> 28–38 h. **Q5 ersetzt:** die sechs festen Leistungs-/Volumenstufen entfallen; **Q7** (Spalte `Firma` im
+> Stromspeicher-Stamm) wird dringlicher. Mockup bedienbar (Trichter, Filter löschen, echtes Sortieren), bei 1 366 px ohne
+> waagerechtes Rollen geprüft, Trefferzahlen gemessen 15/63, 7/51, 15/20 749. **Neu offen:** W14a‑E‑10‑Q1 (ein Feld je
+> Zahlenspalte mit `>10`/`<60`/`10..60`/`=15`; Empfehlung ja), O‑5 (Katalogliste der `Zweispaltenauswahl` nur halbe
+> Breite), O‑6 (ein neu aufgebautes Raster schließt das Popover — vor S1.2 zu entscheiden).
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
@@ -3292,6 +3312,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > „alles in double, ist kein Nachteil und systematisch; Summenfunktionen aus Original BHKW-Plan ebenfalls double") folgt
 > als eigenes Paket mit neuer Basis R4, nach der Speicheroptimierung (W11b‑B‑5). Abnahme auf Windows: A‑W8‑O5c‑1…6 (Ringe
 > und Torte der Übersicht, Eigenanteilsraster, Brennstoffmengen, PV-Vergütung — alle Zahlen unverändert).
+>
+> **W8‑O‑5d (Anwenderentscheid 07.09.2026: „alles in double, ist kein Nachteil und systematisch. Summenfunktionen aus
+> Original BHKW-Plan ebenfalls double"), umgesetzt in `6272845`/`1b67538`/`0d21993`, zusammengeführt in `7bc2b15`:**
+> **Der Rechenkern rechnet in `double`.** Umgestellt sind alle Stundenreihen, Akkumulatoren, Zwischenwerte und Rückgaben
+> der Simulation, `BhkwPlan.cs` vollständig (die Nachbildung des FPU-Verhaltens der Original-DLL ist aufgegeben), die
+> Datenbankgrenze (`Convert.ToSingle` → `ToDouble`; SQLite `REAL` IST `double`) und die Naht zur `SpeicherEngine`
+> (`RasterAdapter` nimmt `double[]`, `ZuFloat`/`ZuDouble` entfallen). Die Empfehlung **Q6** des Einheitenkonzepts ist
+> damit überholt, der Typteil der Stufe S2 umfassender erledigt als geplant. `float` bleibt an drei belegten Grenzen
+> (SkiaSharp-Bildpunkte, KI-Einbettungen, Typprüfungen auf Datenbankwerte) — **147 statt 788 Fundstellen**, im Ordner
+> `Simulation/` keine; ein dritter Wächter `DoubleWacheTests` mit leerer Ausnahmeliste hält den Rechenweg frei.
+> **Neue Basis `Referenzlaeufe/2026-09-07_R4_Double`** (zwölf Projekte, 312 CSV), R3 rückt in die Geschichte; `kern.yml`,
+> `ios.yml`, beide `CLAUDE.md`, `LIESMICH.md`, das Einheitenkonzept und das Gate der Orchestrierung sind nachgezogen.
+> **Elf der zwölf Projekte weichen gewollt von R3 ab** (nur 1030 PASS unter iF15): Die Eingangsgrößen ändern sich nur im
+> letzten `float`-Bit (Jahressummen des Wärmebedarfs innerhalb 3e‑5), aber drei Schwellen des Modells entscheiden am
+> letzten Bit — die Speicherhysterese `SOC ≥ Q_max · SchwelleAus` gegen einen Stand, den `Ladefaehigkeit` genau auf diese
+> Grenze fährt (bistabil, Projekt 1018: Umsatz gegen Durchfluss verschoben, Bedarf/Produktion/SOC/Verluste identisch), die
+> Volllast/Modulations-Grenze in `Motorlauf_Waermegefuehrt` (1024: Fahrweise **+11,2 % BHKW / −14,4 % WP / −10,8 % Kessel**
+> bei gleichem Gesamtbedarf) und die drei `int`-Rückgaben in `BhkwPlan` (1041: Tagesheizlast um eine Einheit). Der neue
+> Stand ist der richtige — die Brauchwasser-Jahressumme trifft die Katalogmenge jetzt exakt (742,9000 statt 742,9008 kWh).
+> Determinismus 12/12 byte-gleich, Laufzeit 3 s statt 4 s. **Nebenbefund behoben:** der Fortschrittsmelder der
+> Speicheroptimierung (W11b‑B‑5) gab außerhalb des Schlosses weiter, zwei Fäden überholten sich — Weitergabe jetzt unter
+> dem Schloss. **Offen (Anwender):** W8‑O‑5d‑Q1 Zahlenrand an den drei Schwellen (fachliche Änderung, Empfehlung: ja,
+> `1e‑9` wie `SchichtTemperatur`), W8‑O‑5d‑Q2 die `int`-Abschneidung in `BhkwPlan` (Treue zur DLL oder Genauigkeit).
+> Nachweis: Kern 1828 / UI 3126 grün, SpeicherEngine 337, KiKern 469, Formularkarte 122, ChartProben 44, SQL 0, Gate grün
+> gegen R4 byte-gleich. Abnahme auf Windows: A‑W8‑O5d‑1…8.
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >
