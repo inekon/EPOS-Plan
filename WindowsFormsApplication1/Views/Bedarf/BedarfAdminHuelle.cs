@@ -74,7 +74,12 @@ namespace WindowsFormsApplication1
             {
                 ["Art"] = art,
 
-                ["Katalog"] = new Func<IReadOnlyList<string>>(() => BedarfStammCtrl.Bezeichner(art)),
+                // W14a-E-10 / S3.1: die Liste traegt seither FUENF Spalten - Bezeichner,
+                // Typ, Jahressumme, Beschreibung, Auslieferung - und kommt aus EINER
+                // Abfrage. Vorher war es die blosse Namensliste BedarfStammCtrl.Bezeichner.
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    () => BedarfStammCtrl.Katalogfilterzeilen(art)),
+                ["Katalogprofil"] = Katalogfilterprofil.FuerBedarf(art, Filtertext),
                 ["Kopf"] = new Func<string, (string, string)?>(name => BedarfStammCtrl.Kopf(art, name)),
                 ["Jahressumme"] = new Func<string, string>(name => JahressummeText(art, name)),
                 ["Loeschen"] = new Func<string, BedarfLoeschAusgang>(name => Loeschen(art, name)),
@@ -99,7 +104,6 @@ namespace WindowsFormsApplication1
                 ["LabelBeschreibung"] = MyResource.Resource.BADM_LBL_BESCHREIBUNG,
                 ["LabelTyp"] = MyResource.Resource.BADM_LBL_TYP,
                 ["SpalteWahlText"] = MyResource.Resource.KFAK_SP_WAHL,
-                ["SpalteBezeichnerText"] = MyResource.Resource.WBAD_SPALTE_BEZEICHNER,
 
                 ["BtnAendernText"] = BtnAendern(art),
                 ["BtnNeuText"] = BtnNeu(art),
@@ -289,6 +293,19 @@ namespace WindowsFormsApplication1
                 case BedarfsArt.Prozesswaerme:    return MyResource.Resource.BADM_MSG_KEINE_WAHL_PROZESS;
                 default:                          return MyResource.Resource.BADM_MSG_KEINE_WAHL_BRAUCHWASSER;
             }
+        }
+
+        /// <summary>
+        /// Der Übersetzer, den <see cref="Katalogfilterprofil.FuerBedarf"/> entgegennimmt:
+        /// Schlüssel rein, Text raus — ein fehlender Schlüssel bleibt als Schlüssel stehen,
+        /// damit er auffällt (Muster <c>KatalogBrowserProfil.Finde</c>).
+        /// </summary>
+        internal static string Filtertext(string schluessel)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? schluessel : t;
         }
 
         /// <summary>Die Hilfeadressen aus <c>help_mapping.txt</c>, unverändert.</summary>

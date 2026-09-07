@@ -86,6 +86,8 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -15889,6 +15891,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferung ähnelt.
+        /// </summary>
+        public static string KFLT_SP_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string KFLT_SP_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
         /// </summary>
         public static string KFLT_SP_BEZEICHNER {
@@ -16006,6 +16026,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeit ähnelt.
+        /// </summary>
+        public static string KFLT_SP_JAHRESARBEIT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_JAHRESARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string KFLT_SP_JAHRESSUMME {
+            get {
+                return ResourceManager.GetString("KFLT_SP_JAHRESSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die k1 ähnelt.
         /// </summary>
         public static string KFLT_SP_K1 {
@@ -16056,6 +16094,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_MODULFLAECHE {
             get {
                 return ResourceManager.GetString("KFLT_SP_MODULFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string KFLT_SP_MONAT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_MONAT", resourceCulture);
             }
         }
         
@@ -16150,6 +16197,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitze ähnelt.
+        /// </summary>
+        public static string KFLT_SP_SPITZE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Technologie ähnelt.
         /// </summary>
         public static string KFLT_SP_TECHNOLOGIE {
@@ -16164,6 +16220,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_TNOCT {
             get {
                 return ResourceManager.GetString("KFLT_SP_TNOCT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
+        /// </summary>
+        public static string KFLT_SP_TYP {
+            get {
+                return ResourceManager.GetString("KFLT_SP_TYP", resourceCulture);
             }
         }
         
@@ -16218,6 +16283,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_VOLUMEN {
             get {
                 return ResourceManager.GetString("KFLT_SP_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitintervall ähnelt.
+        /// </summary>
+        public static string KFLT_SP_ZEITINTERVALL {
+            get {
+                return ResourceManager.GetString("KFLT_SP_ZEITINTERVALL", resourceCulture);
             }
         }
         

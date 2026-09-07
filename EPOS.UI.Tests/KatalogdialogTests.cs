@@ -148,7 +148,14 @@ public class KatalogdialogTests : BunitContext
     private IRenderedComponent<BedarfAdminDialog> Bedarfsverwaltung() =>
         Render<BedarfAdminDialog>(p => p
             .Add(x => x.Art, BedarfsArt.Stromverbraucher)
-            .Add(x => x.Katalog, () => (IReadOnlyList<string>)new[] { "Verbraucher A" }));
+            .Add(x => x.Katalogzeilen, () => (IReadOnlyList<Katalogfilterzeile>)new[]
+            {
+                new Katalogfilterzeile(1, "Verbraucher A")
+                    .MitText(Katalogfilterprofil.SpBezeichner, "Verbraucher A")
+            })
+            .Add(x => x.Katalogprofil,
+                 Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, s => s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
     private IRenderedComponent<KlimadatenDialog> Klimaregionen() =>
         Render<KlimadatenDialog>(p => p

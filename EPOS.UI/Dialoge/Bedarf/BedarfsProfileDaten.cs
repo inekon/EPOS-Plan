@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Bedarf;
+﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// EINE Zuordnung „Bedarfsprofil ↔ Projekt" (iU9-W9.5) — das plattformfreie Abbild von
@@ -24,15 +24,6 @@ public sealed class BedarfsProfilZeile
     /// <summary>Der Jahresverbrauch dieser Zuordnung.</summary>
     public double Summe { get; set; }
 }
-
-/// <summary>
-/// EINE Zeile des Profilkatalogs (iU9-W9.5). Prozesswärme und Brauchwasser zeigen Name
-/// UND Typ in einem Raster, der Stromverbraucher nur den Namen in einer Liste — der
-/// Unterschied ist Bestand und bleibt.
-/// </summary>
-/// <param name="Name">Der Bezeichner.</param>
-/// <param name="Typ">Der Profiltyp; beim Stromverbraucher nicht angezeigt.</param>
-public sealed record BedarfsKatalogZeile(string Name, string Typ);
 
 /// <summary>
 /// Der Infoblock zu einem Profil (iU9-W9.5) — <c>SetProzessInfo</c> der drei Vorläufer.

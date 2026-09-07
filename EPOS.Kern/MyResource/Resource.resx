@@ -783,6 +783,12 @@
   <data name="KFLT_SP_APERTUR" xml:space="preserve">
     <value>A_ap</value>
   </data>
+  <data name="KFLT_SP_AUSLIEFERUNG" xml:space="preserve">
+    <value>Auslieferung</value>
+  </data>
+  <data name="KFLT_SP_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
   <data name="KFLT_SP_BEZEICHNER" xml:space="preserve">
     <value>Bezeichner</value>
   </data>
@@ -822,6 +828,12 @@
   <data name="KFLT_SP_HERSTELLER" xml:space="preserve">
     <value>Hersteller</value>
   </data>
+  <data name="KFLT_SP_JAHRESARBEIT" xml:space="preserve">
+    <value>Jahresarbeit</value>
+  </data>
+  <data name="KFLT_SP_JAHRESSUMME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
   <data name="KFLT_SP_K1" xml:space="preserve">
     <value>k1</value>
   </data>
@@ -839,6 +851,9 @@
   </data>
   <data name="KFLT_SP_MODULFLAECHE" xml:space="preserve">
     <value>A_Modul</value>
+  </data>
+  <data name="KFLT_SP_MONAT" xml:space="preserve">
+    <value>Monat</value>
   </data>
   <data name="KFLT_SP_MOTORTYP" xml:space="preserve">
     <value>Motortyp</value>
@@ -870,11 +885,17 @@
   <data name="KFLT_SP_SPEICHERTYP" xml:space="preserve">
     <value>Speichertyp</value>
   </data>
+  <data name="KFLT_SP_SPITZE" xml:space="preserve">
+    <value>Spitze</value>
+  </data>
   <data name="KFLT_SP_TECHNOLOGIE" xml:space="preserve">
     <value>Technologie</value>
   </data>
   <data name="KFLT_SP_TNOCT" xml:space="preserve">
     <value>T_NOCT</value>
+  </data>
+  <data name="KFLT_SP_TYP" xml:space="preserve">
+    <value>Typ</value>
   </data>
   <data name="KFLT_SP_UDCMAX" xml:space="preserve">
     <value>U_DC,max</value>
@@ -893,6 +914,9 @@
   </data>
   <data name="KFLT_SP_VOLUMEN" xml:space="preserve">
     <value>V</value>
+  </data>
+  <data name="KFLT_SP_ZEITINTERVALL" xml:space="preserve">
+    <value>Zeitintervall</value>
   </data>
   <data name="KFLT_SP_ZUHEIZUNG" xml:space="preserve">
     <value>Zuheizung</value>

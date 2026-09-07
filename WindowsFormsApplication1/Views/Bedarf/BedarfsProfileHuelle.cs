@@ -229,7 +229,13 @@ namespace WindowsFormsApplication1
                 ["Wizard"] = wizard,
                 ["Geaendert"] = geaendert,
 
-                ["Katalog"] = new Func<IReadOnlyList<BedarfsKatalogZeile>>(() => Katalog(art)),
+                // W14a-E-10 / S3.1: die Katalogliste des Hauses statt der zwei- bis
+                // dreispaltigen Tabelle. Sie kommt aus EINER Abfrage und traegt fuenf
+                // Spalten plus "im Projekt verwendet" (Q12).
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    () => BedarfStammCtrl.Katalogfilterzeilen(art)),
+                ["Katalogprofil"] = Katalogfilterprofil.FuerBedarf(art, BedarfAdminHuelle.Filtertext)
+                                                       .MitVerwendungsspalte(BedarfAdminHuelle.Filtertext),
                 ["Info"] = new Func<string, BedarfsProfilInfo>(name => Info(art, name)),
                 ["Jahressumme"] = new Func<string, double>(
                     name => BedarfStammCtrl.Jahressumme(art, name)),
@@ -411,39 +417,6 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Wege hinter den Delegaten
         // =================================================================================
-
-        private static IReadOnlyList<BedarfsKatalogZeile> Katalog(BedarfsArt art)
-        {
-            var zeilen = new List<BedarfsKatalogZeile>();
-
-            switch (art)
-            {
-                case BedarfsArt.Stromverbraucher:
-                    var s = new StromverbraucherStammCtrl();
-                    s.ReadAll();
-                    for (int i = 0; i < s.rows; i++)
-                        zeilen.Add(new BedarfsKatalogZeile(s.items[i].m_szBezeichner ?? "",
-                                                           s.items[i].m_szTyp ?? ""));
-                    break;
-
-                case BedarfsArt.Prozesswaerme:
-                    var p = new ProzesswaermeStammCtrl();
-                    p.ReadAll();
-                    for (int i = 0; i < p.rows; i++)
-                        zeilen.Add(new BedarfsKatalogZeile(p.items[i].m_szProzessname ?? "",
-                                                           p.items[i].m_szTyp ?? ""));
-                    break;
-
-                default:
-                    var b = new BrauchwasserStammCtrl();
-                    b.ReadAll();
-                    for (int i = 0; i < b.rows; i++)
-                        zeilen.Add(new BedarfsKatalogZeile(b.items[i].m_szBezeichner ?? "",
-                                                           b.items[i].m_szTyp ?? ""));
-                    break;
-            }
-            return zeilen;
-        }
 
         private static BedarfsProfilInfo Info(BedarfsArt art, string name)
         {
