@@ -70,3 +70,16 @@ EPOS.Kern.Tests/Proben/Ganglinien/** -text
 # umschreiben und damit genau das aendern, was hier bewiesen werden soll.
 ###############################################################################
 Referenzlaeufe/Importproben/** -text
+
+###############################################################################
+# Auslieferungsdatei der Welle iU9-W13 (W13-E-2, Entscheid Q2)
+#
+# bslib_database.csv wird UNVERAENDERT weitergegeben (CC BY 4.0) und ist
+# byte-gleich zur Importprobe stromspeicher_bslib_7.csv - genau das prueft
+# StromspeicherUebernahmeTests. Die Probe ist oben schon eingefroren, die
+# Auslieferung fiel aber unter "* text=auto": Ein Auschecken mit autocrlf
+# haengte acht CR an (2 737 statt 2 729 Byte), und die Datei fiel gegen ihre
+# eigene Probe durch. Nur die CSV - die LIESMICH_bslib.md daneben ist
+# gepflegter Text und bleibt normalisiert.
+###############################################################################
+VDI-3805-Daten/Stromspeicher/bslib_database.csv -text
