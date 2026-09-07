@@ -1032,23 +1032,49 @@ unverändert der größte Posten.**
 
 ### Stufe S2 — die Projektdialoge und der Assistent
 
+> **UMGESETZT am 07.09.2026** (Zweig `w145-katalogfilter-s2`, sechs Commits: `11e1316`
+> Schemaschritt 68 · `9fc285e` `Zweispaltenauswahl` untereinander · `84bd1a0`
+> Filterregister und Verwendungsspalte · `e3c4a51` die sechs Erzeuger-Projektdialoge ·
+> `5370b5a` die Wärmepumpe im Spaltenmodell · `df07e18` der Assistent). Drei Dinge heißen
+> anders, als hier steht: **S2.3** stempelt die Spalte aus der **lebenden Projektliste**
+> statt aus einer Zählabfrage (die Dialoge schreiben erst beim OK zurück — eine Abfrage
+> wäre nach der ersten Übernahme veraltet; die Forderung „einmal für die ganze Liste"
+> bleibt wörtlich erfüllt, siehe 9.1 Q12); **S2.5** heißt `Katalogfilterregister` und liegt
+> im Kern neben `Katalogfilter`; und **S2.6** betrifft **elf** Wirte, nicht acht — **fünf**
+> davon ohne Katalog (Gebäude, Bedarfsprofile, Wärmebedarf extern, Stromganglinie,
+> Solarganglinie), die nur die neue Anordnung erben.
+
 | Schritt | Inhalt |
 |---|---|
-| S2.1 | Dieselben Profile in den Projektdialogen — Heizkessel, BHKW, Pufferspeicher, PV, Stromspeicher, Solarkollektoren, **Wärmepumpe**: Katalogliste über die ganze Breite, Suchzeile unmittelbar darüber (#76) |
-| S2.2 | **Wärmepumpe:** Die elf Bedienelemente des `WaermepumpenKatalogDialog` fallen in die Spalten — 7 Klapplisten (Hersteller, Auslegung, Quelle/`Typ`, Regelung, Bauart, Aufstellung, Zuheizung) werden Textspalten, die 4 Zahlenfelder (VL min/max, P_N min/max) werden **zwei** Zahlenspalten mit je einem Feld. Damit ist der Dialog wie M1 und M3 gebaut — der Kern des Entscheids |
-| S2.3 | Spalte **„im Projekt verwendet"** (eine Zählabfrage für die ganze Liste, nicht je Zeile) — Q12 |
-| S2.4 | Der Assistent (Seiten 4, 5, 7) erbt das Schema über dieselben Komponenten |
-| S2.5 | `Katalogfilterstand` je Katalog über die Sitzung, gemeinsam für Verwaltung und Projektdialog (Q2 aus Kapitel 8) — jetzt mit Sortierspalte und ‑richtung |
-| S2.6 | **`Zweispaltenauswahl` von nebeneinander auf untereinander** (Frage **W14a‑E‑10‑Q2**, 8.2): Projektliste oben mit Höhengrenze, Übernahmeleiste mit den zwei Pfeilknöpfen als Textzeile, Katalogliste darunter. Die Umbruchregel bei 900 px, die den Baustein heute schon senkrecht stellt, wird damit zur **einzigen** Anordnung — der Baustein wird eher kleiner. `ZweispaltenauswahlTests` ist der Wächter, und **acht** Dialoge benutzen ihn (nicht nur die sieben Kataloge) |
+| S2.1 | Dieselben Profile in den Projektdialogen — Heizkessel, BHKW, Pufferspeicher, PV, Stromspeicher, Solarkollektoren, **Wärmepumpe**: Katalogliste über die ganze Breite, Suchzeile unmittelbar darüber (#76). **Umgesetzt** in `e3c4a51` (sechs Dialoge) und `5370b5a` (Wärmepumpe). Die zwei Filterklapplisten je Hülle sind gefallen — Q5 |
+| S2.2 | **Wärmepumpe:** Die elf Bedienelemente des `WaermepumpenKatalogDialog` fallen in die Spalten — 7 Klapplisten (Hersteller, Auslegung, Quelle/`Typ`, Regelung, Bauart, Aufstellung, Zuheizung) werden Textspalten, die 4 Zahlenfelder (VL min/max, P_N min/max) werden **zwei** Zahlenspalten mit je einem Feld. Damit ist der Dialog wie M1 und M3 gebaut — der Kern des Entscheids. **Umgesetzt** in `5370b5a`: neun Spalten, **vier** der elf werden KEINE Spalte (Bauart 45/51 leer, Auslegung ist dieselbe Aussage wie „Kühlen", Regelung und Aufstellung stehen im Kenndatenblock — alles gemessen, siehe 9.2). Dabei fällt auch der Knopf „Modul-Katalog…" im `WaermepumpeStammDialog`: Er zeigte danach dieselbe Liste, die dahinter schon steht |
+| S2.3 | Spalte **„im Projekt verwendet"** (eine Zählabfrage für die ganze Liste, nicht je Zeile) — Q12. **Umgesetzt** in `84bd1a0` als `Katalogverwendung.Stempeln` — **aus der lebenden Projektliste** statt aus einer Abfrage; damit entsteht keine neue SQL und die Spalte stimmt auch nach der ersten Übernahme (9.1 Q12) |
+| S2.4 | Der Assistent (Seiten 4, 5, 7) erbt das Schema über dieselben Komponenten. **Umgesetzt** in `df07e18` — und zwar ohne eine Zeile Anwendungscode: Die Seitentabelle nennt seit iU9‑W16a.5 die Komponenten selbst. Drei Wächterfälle halten das fest |
+| S2.5 | `Katalogfilterstand` je Katalog über die Sitzung, gemeinsam für Verwaltung und Projektdialog (Q2 aus Kapitel 8) — jetzt mit Sortierspalte und ‑richtung. **Umgesetzt** in `84bd1a0` als `EPOS.Kern/Allgemein/Katalog/Katalogfilterregister.cs` (kein `static` in einer Razor-Komponente); `Filterstandvorgabe` ist der benannte Rückweg je Dialog |
+| S2.6 | **`Zweispaltenauswahl` von nebeneinander auf untereinander** (Frage **W14a‑E‑10‑Q2**, 8.2): Projektliste oben mit Höhengrenze, Übernahmeleiste mit den zwei Pfeilknöpfen als Textzeile, Katalogliste darunter. Die Umbruchregel bei 900 px, die den Baustein heute schon senkrecht stellt, wird damit zur **einzigen** Anordnung — der Baustein wird eher kleiner. `ZweispaltenauswahlTests` ist der Wächter. **Umgesetzt** in `9fc285e`; es sind **elf** Wirte, nicht acht — **sechs** mit Katalog und **fünf** ohne. Gefallen sind die Medienabfrage, die schmale Mittelspalte samt Token `--epos-zweispalten-mitte` und das waagerechte Pfeilpaar ◀▶; neu ist `--epos-projektlistenhoehe` |
+| **Q7** | **Nicht im ursprünglichen Schnitt**, aber Voraussetzung für S2.1 beim Stromspeicher: **Schemaschritt 68** legt `Firma` in `Tab_Stromspeicher_STAMM` und der Projektkopie an und trägt den Bezeichnerpräfix einmalig nach (Befund D‑3). Eine Spalte, die es in der Tabelle nicht gibt, kann man nicht sortieren. **Umgesetzt** in `11e1316`, `SchemaStand.Zielversion` 67 → 68 |
 
-**Aufwand: 7–10 Agentenstunden** (Rev. 2: 6–9, Rev. 1: 8–12). **Eine Stunde mehr als in Rev. 2**:
-S2.6 war dort eine Breitenkorrektur an einer Spalte (**O‑5**), jetzt ist es der Umbau des
-Bausteins samt der Pfeilknöpfe, ihrer Beschriftung und beider Ressourcenschlüssel. Alles andere
-erbt Zone A und die Spaltenköpfe aus S1; neu ist je Dialog nur das Profil.
+**Aufwand: soll 7–10 Agentenstunden** (Rev. 2: 6–9, Rev. 1: 8–12) — **ist rund 9**, also im
+oberen Drittel des Ansatzes. Die Verteilung ist eine andere als geschätzt:
+
+| Schritt | Ansatz | Ist | Warum |
+|---|---|---|---|
+| S2.1 | groß | **groß** | wie geschätzt: sechs Dialoge, sechs Hüllen, 30 neue Prüffälle |
+| S2.2 | mittel | **mittel** | der Dialog ist kleiner geworden, aber sein Prüfstand war vollständig neu zu schreiben (18 Fälle auf die elf Bedienelemente gebaut) |
+| S2.3 | mittel | **klein** | die Abfrage entfiel: die Projektliste steht schon da |
+| S2.4 | klein | **sehr klein** | nichts zu bauen, nur zu belegen |
+| S2.5 | klein | **klein** | eine Klasse, 13 Prüffälle |
+| S2.6 | mittel | **mittel** | wie in Rev. 3 vorhergesagt; die elf Wirte brauchten keine Änderung |
+| **Q7** | *nicht angesetzt* | **mittel** | Schemaschritt, Nachtrag, Editorfeld, zwei Importwege, Testdatenbank — der einzige Posten, der über den Ansatz hinausgeht |
+
+Die Überschreitung ist damit **vollständig Q7 zuzurechnen**: Rev. 3 hat den Schemaschritt als
+Frage geführt (9.1 Q7), nicht als Schritt der Stufe. Alles andere hat Zone A und die
+Spaltenköpfe aus S1 geerbt, wie geplant.
 **Risiko: gering–mittel** — sieben Dialoge plus Assistent, alle auf demselben Baustein.
-**Das neue Risiko liegt in S2.6**: Die `Zweispaltenauswahl` steht auch außerhalb der Kataloge;
-jeder Wirt muss danach nachgesehen werden. Deshalb ist Q2 vor S2.6 zu entscheiden, nicht
-währenddessen.
+**Das neue Risiko lag in S2.6**: Die `Zweispaltenauswahl` steht auch außerhalb der Kataloge;
+jeder Wirt musste danach nachgesehen werden. Deshalb war Q2 vor S2.6 zu entscheiden, nicht
+währenddessen — **eingetreten ist es nicht**: Die Anordnung steckt im Baustein, und keiner der
+elf Wirte brauchte eine Änderung.
 
 ### Stufe S3 — Bedarf, Zeitreihen, Vergleich, Import
 
@@ -1149,6 +1175,28 @@ Kennungen `W14a‑E‑9‑Q1` … `W14a‑E‑9‑Q12`.
 | **W14a‑E‑10‑Q1** | „Katalogfilter: Empfehlung jeweils ja" — **EIN Feld je Zahlenspalte** (V1 aus 8.1): Es versteht `>10`, `>=10`, `<60`, `<=60`, `=15`, `10..60` und die bloße Zahl `15` (= `=15`); ein unverstandener Ausdruck ist **kein** Filter | 07.09.2026 | **Umgesetzt** als `EPOS.Kern/Allgemein/Katalog/Zahlenausdruck.cs`, geprüft ohne Oberfläche in `EPOS.Kern.Tests/ZahlenausdruckTests` (alle sieben Formen, zwei unverstandene, de‑DE und en‑US) |
 | **W14a‑E‑10‑Q2** | dieselbe Antwort: **untereinander** (V1 aus 8.2) — Projektliste oben, Übernahmeleiste, Katalogliste, Detailblock | 07.09.2026 | Betrifft **Stufe S2** (Schritt S2.6, `Zweispaltenauswahl`). In S1 ist der Zwilling erledigt: Der `Katalograhmen` steht seit S1.7 untereinander |
 
+**Stufe S2 ist umgesetzt** — Zweig `w145-katalogfilter-s2`, sechs Commits:
+`11e1316` (**Q7**: Schemaschritt 68, `Firma` in `Tab_Stromspeicher_STAMM` und der
+Projektkopie, Nachtrag aus dem Bezeichnerpräfix, `SchemaStand.Zielversion` 67 → 68),
+`9fc285e` (**S2.6**: die `Zweispaltenauswahl` steht untereinander — **Q2 = ja**),
+`84bd1a0` (**S2.5** `Katalogfilterregister` und **S2.3** `Katalogverwendung` — **Q12 = ja**),
+`e3c4a51` (**S2.1**: die sechs Erzeuger-Projektdialoge auf der `Katalogliste`),
+`5370b5a` (**S2.2**: die Wärmepumpe im Spaltenmodell — **der Kern des Entscheids**) und
+`df07e18` (**S2.4**: der Assistent). **Q2 = ja, Q7 = ja, Q12 = ja.** Der Rechenweg ist
+unberührt: Referenzlauf 1030/1007/1017/1045 byte-gleich gegen
+`Referenzlaeufe/2026-09-07_R5_Zahlenrand` — auch nach Schemaschritt 68, denn kein
+Rechenweg liest den Hersteller.
+
+**Entscheid #76 ist durch Q2 ERGÄNZT, nicht abgelöst.** Die Regel „Projekt ↔ Datenbank
+immer über `Zweispaltenauswahl`" gilt unverändert und für dieselben **elf** Wirte; was sich
+ändert, ist ihre ANORDNUNG — aus nebeneinander (Projekt links, Katalog rechts, zwei Knöpfe
+in einer schmalen Mittelspalte) wird untereinander (Projektliste oben mit Höhengrenze,
+Übernahmeleiste als Textzeile, Katalogliste unten über die ganze Breite). Der Kern von #76
+bleibt wörtlich stehen: **ein** Baustein, kein Dialog baut das Muster selbst, und der Filter
+steht über der Liste, auf die er wirkt — jetzt sogar unmittelbar darüber statt im Klartext
+zugewiesen. Die Parameternamen `Links`/`Rechts` bleiben ebenfalls: Sie benennen die Rolle
+(Projekt- und Katalogblock), nicht den Platz.
+
 **Stufe S1 ist umgesetzt** — Zweig `w140-katalogfilter-s1`, drei Commits:
 `78b0f1e` (Kern: `Katalogfilterprofil`, `Katalogfilter`, `Zahlenausdruck`, acht
 `…StammCtrl.Katalogfilterzeilen`, 49 Ressourcenschlüssel), `ce43d2a` (Bausteine
@@ -1162,17 +1210,52 @@ unberührt: Referenzlauf 1030/1007/1017/1045 byte-gleich gegen
 | Nr. | Stand nach W14a‑E‑10 |
 |---|---|
 | **Q1** — sind die Parameter aus Kapitel 4 die richtigen? | **Ja, unverändert** — sie werden jetzt **Spalten** statt Felder einer Leiste. Die Grenze ist mit Rev. 3 weiter außen: über die ganze Breite haben **sechs bis neun** Platz statt fünf (5.6.5), damit stehen die **Spalten**-Zeilen aus Kapitel 4 vollständig da. Es bleibt: **filterbar ist nur, was als Spalte dasteht** — und was gemessen fast nie gepflegt ist (Vorlauf/Rücklauf beim Kessel, Bauart bei der Wärmepumpe), fällt heraus |
-| **Q2** — Filterzustand merken? | **Unverändert: Sitzung**, je Katalog, gemeinsam für Verwaltung und Projektdialog (S2.5). Der `Katalogfilterstand` hält jetzt je Spalte einen Ausdruck plus Sortierspalte und ‑richtung |
+| **Q2** — Filterzustand merken? | **Unverändert: Sitzung**, je Katalog, gemeinsam für Verwaltung und Projektdialog (S2.5). Der `Katalogfilterstand` hält jetzt je Spalte einen Ausdruck plus Sortierspalte und ‑richtung. **Erledigt mit S2.5** (`84bd1a0`): `EPOS.Kern/Allgemein/Katalog/Katalogfilterregister.cs` hält je `Anlagenart` **eine** Instanz unter einem Schloss. Es wird **nichts geschrieben** — kein `Dienste.Einstellungen`, keine Datei; `Leeren()` ist der einzige Weg hinaus. Der **Projektwechsel räumt nicht auf**: Der Filter hängt am KATALOG, und der ist projektübergreifend |
 | **Q3** — Vergleich von zwei bis drei Zeilen? | **Unverändert: ja, in S3.** Er hängt an der Mehrfachwahl (W6‑E‑5), nicht am Filterbild |
 | **Q4** — welche Design-Variante? | **Ersetzt.** Nicht das Zonenmodell aus 5.2, sondern **A4**: Filter und Sortierung am Spaltenkopf (5.6). Klapplisten, Bereichsfeldpaare, „Weitere Filter ▾" und die Chips entfallen — und mit Rev. 3 auch die **Filter-/Trefferzeile**. Es bleibt **eine** Zeile über der Liste: Suchfeld links, Trefferzahl rechts, dazu der Rücksetzer, sobald etwas gesetzt ist (5.6.4). Dazu kommt die **Anordnung**: Liste über die ganze Breite, Eingabe darunter (5.6.1) |
 | **Q5** — ersetzen Zahlenbereiche die sechs festen Leistungs- bzw. Volumenstufen? | **Ersetzt: die festen Stufen entfallen ersatzlos.** Rev. 1 wollte sie als Schnellwahl behalten; im Spaltenmodell gibt es keine Klappliste mehr, in die sie passen. **Sortieren nach `P_th` und der Ausdruck `10..60` leisten dasselbe genauer** — und lösen zugleich den Einwand aus 5.1/2 („wer einen 30‑kW-Kessel sucht, bekommt jede Zeile unter 50 kW"). `LEISTUNG_SQL` und `VOLUMEN_SQL` fallen mit S1.5 |
 | **Q6** — wo wird gefiltert, Speicher oder SQL? | **Unverändert: der Controller entscheidet** (bis rund 5 000 Zeilen im Speicher, darüber `WHERE` mit `DbParam`). Wichtiger geworden ist die andere Hälfte der Antwort: Der Filter greift **vor** dem Raster; das Raster bekommt eine bereits eingeschränkte `IQueryable` (5.6.6) |
-| **Q7** — bekommt `Tab_Stromspeicher_STAMM` eine Spalte `Firma` (D‑3)? | **Ja — und dringlicher als in Rev. 1.** „Hersteller" ist jetzt eine **Spalte**, nach der man sortiert und filtert; eine Spalte, die es in der Tabelle gar nicht gibt, kann man nicht sortieren. Bis zum Schemaschritt füllt sie sich aus dem Bezeichnerpräfix (Text vor dem ersten Doppelpunkt), wie der Modulimport es schon tut |
+| **Q7** — bekommt `Tab_Stromspeicher_STAMM` eine Spalte `Firma` (D‑3)? | **Ja — und dringlicher als in Rev. 1.** „Hersteller" ist jetzt eine **Spalte**, nach der man sortiert und filtert; eine Spalte, die es in der Tabelle gar nicht gibt, kann man nicht sortieren. **Erledigt mit Schemaschritt 68** (`11e1316`): `Firma` steht in **beiden** Tabellen (Stamm und Projektkopie, wie es die sechs anderen Kataloge halten), `SchemaStand.Zielversion` 67 → **68**, die Testdatenbank ist eingespielt (STRICT‑Tabellen bleiben **117** — eine Spalte, keine Tabelle). Der Nachtrag trägt den Text vor dem ersten Doppelpunkt einmalig nach und **rät nicht**: Was kein Präfix hat, bleibt leer — im Auslieferungskatalog sind das **alle fünf** Altsätze. Das **Bezeichnerpräfix bleibt Rückfall** (`StromspeicherStammCtrl.Hersteller`), die gepflegte Spalte schlägt es; beide Importwege (CEC, bslib) schreiben `Firma` **zusätzlich** zum Präfix, damit ein umbenannter Bezeichner den Hersteller nicht verliert |
 | **Q8** — wird das Brennwert-Kennzeichen berichtigt (D‑1)? | **Unverändert: ja**, berichtigt werden die **Daten**. Im Spaltenmodell ist „Brennwert" eine Spalte mit „ja"/„nein"; solange die Daten schief sind, findet „enthält ja" 6 von 63 Sätzen, während 46 Beschreibungen „Brennwert" nennen — **die Suche über alle Spalten findet die 46**, und genau daran fällt der Datenfehler auf |
 | **Q9** — Wirkungsgrad in zwei Einheiten (D‑2)? | **Unverändert:** ein Wert **> 2** gilt als Prozent und wird durch 100 geteilt — jetzt schon beim **Anzeigen**, denn der Spaltenfilter arbeitet auf dem angezeigten Wert (5.6.3). Der eine Datensatz (`eloBLOCK VE 10`) wird zusätzlich berichtigt |
 | **Q10** — gilt das auch für die Importmasken? | **Unverändert: ja, in S3.4.** Nicht früher — die Importmasken sind abgenommen |
 | **Q11** — gilt es auch für Gebäude, Gebäudetypen, Klimadaten, Kosten? | **Unverändert: nicht in S1–S3.** Der Wunsch nennt drei Köpfe. Die Ausweitung ist danach eine Stunde je Katalog — im Spaltenmodell eher weniger, weil nur Spalten dazukommen |
-| **Q12** — Spalte „im Projekt verwendet"? | **Unverändert: ja, in S2.3**, und nur in den **Projektdialogen**. Sie ist jetzt eine Spalte wie jede andere: sortierbar und mit „enthält ja" filterbar |
+| **Q12** — Spalte „im Projekt verwendet"? | **Unverändert: ja, in S2.3**, und nur in den **Projektdialogen**. **Erledigt** (`84bd1a0`) — mit **einer begründeten Abweichung vom Wortlaut**: Rev. 3 nennt „eine Zählabfrage für die ganze Liste"; die Quelle ist statt dessen die **lebende Projektliste** des Dialogs. Grund: Die Projektdialoge schreiben erst beim OK zurück (der Aufrufer löscht danach die `Tab_Energieanlagen` dieses Typs und schreibt die Liste neu) — eine Zählabfrage wäre in dem Augenblick veraltet, in dem der Anwender die erste Zeile übernimmt oder entfernt. Die Forderung „**einmal** für die ganze Liste, nicht je Zeile" bleibt wörtlich erfüllt: Die Namen wandern in ein `HashSet`, danach ist jede Zeile ein Nachschlagen in konstanter Zeit — für die 20 749 PV‑Module **ein** Durchlauf. Und es entsteht dadurch **keine neue SQL**. Die Spalte ist **sortierbar ohne Trichter** (ein Freitextfeld auf zwei Werten wäre ein Bedienelement für nichts) und steht am **Ende** des Profils; sie sortiert wie eine Zahl (0/1), damit „Ja" in beiden Sprachen an derselben Stelle steht |
+
+### 9.2 Die Spaltenwahl der Wärmepumpe (S2.2) — was gemessen wurde
+
+Der Entscheid nennt sieben Klapplisten und vier Zahlenfelder. **Neun** davon werden Spalten,
+**vier** nicht. Die Zahlen sind gegen `Referenzlaeufe/Kenndaten_Test.sqlite` gemessen (51
+Stammsätze) und stehen als Prüffall in `EPOS.Kern.Tests/KatalogspaltenfilterTests`:
+
+| Bedienelement | wird | Begründung |
+|---|---|---|
+| Hersteller | **Textspalte** mit Trichter | gepflegt |
+| Quelle (`Typ`) | **Textspalte** mit Trichter | gepflegt; „enthält Luft" trifft 34 von 51 |
+| Zuheizung | **Zahlenspalte** | `Tab_WP_STAMM.Heizung` [kW] |
+| P_N min **+** max | **eine** Zahlenspalte | ein Feld statt zweier Kästen — Q1; `5..12` trifft 31 |
+| VL min | **Zahlenspalte** | `Min(Vorlauf)` je `ID_WP` aus `Tab_Kenndaten_STAMM` |
+| VL max | **Zahlenspalte** | `Max(Vorlauf)` je `ID_WP`; `>=60` trifft 18 |
+| **Bauart** | *keine Spalte* | **45 von 51 Sätzen leer** (5 Split, 1 Monoblock). Eine Spalte, die fast immer leer ist, kostet Breite und trägt nichts — sie steht im Kenndatenblock |
+| **Auslegung** | *keine Spalte* | „Heizen"/„Heizen/Kühlen" ist **gerechnet** aus `Kuehlleistung > 0` — und genau das sagt die Spalte „Kühlen" schon. Die zwei Mengen sind Satz für Satz gleich (**15 von 51**) |
+| **Regelung** | *keine Spalte* | im Kenndatenblock; der Planer sucht nicht danach |
+| **Aufstellung** | *keine Spalte* | ebenso |
+
+Dazu die zwei Spalten, die der Katalog schon in der Verwaltung führt (Modell, Kennzeichen
+Kühlen) und der abgeleitete **COP bei A2/W35** — zusammen **neun**. Der Filterstand des
+Mockups M2 (Quelle „Luft" **und** P_N `5..12` **und** VL max `>=60`) trifft damit **7 von
+51** — dieselbe Zahl wie über die elf Bedienelemente des Vorläufers; der Vergleich beider
+Wege steht als Prüffall
+`Waermepumpe_Spalten_treffen_dieselbe_Menge_wie_die_elf_Bedienelemente`.
+
+**Deshalb bleiben `WaermepumpenKatalogFilter` und `WPStammCtrl.KatalogZeilen` stehen**,
+obwohl sie seit S2.2 keinen Wirt mehr haben: Sie sind die Gegenprobe. Dasselbe gilt für
+`HeizkesselStammCtrl.Filtern`+`LEISTUNG_SQL`, `PufferSpStammCtrl.Filtern`+`VOLUMEN_SQL`,
+`BHKWStammCtrl.Filtern`+`LeistungFilterText` und `BHKWCtrl.LeistungFilterText` — alle vier
+mit einem ausdrücklichen Markierungsblock im Quelltext. Noch **einen Wirt** haben
+`PhotovoltaikStammCtrl.Filtern` (`PhotovoltaikHuelle.ModulEintraege`, W6‑O‑6) und
+`WechselrichterStammCtrl.Filtern` (`WechselrichterEintraege`, W6‑O‑4): Sie füllen die
+Gerätewahl der PV‑Maske, nicht einen Katalogfilter.
 
 ---
 
@@ -1186,7 +1269,9 @@ unberührt: Referenzlauf 1030/1007/1017/1045 byte-gleich gegen
 | **O‑4** | Der Hersteller steht in mehreren Schreibweisen desselben Hauses („EC Power A/S" 10 Sätze, „EC POWER A/S" 7; „2G Energy AG" 21, „2-G Energietechnik GmbH" 17). Das Spaltenmodell **entschärft** das: „enthält 2G" trifft beide Schreibweisen, „enthält EC Power" ebenfalls (Groß/Klein egal) — eine Klappliste hätte sie als verschiedene Hersteller geführt. Die Zusammenführung selbst gehört weiter zur Dublettenpflege |
 | **O‑5** | ~~Die Katalogliste der `Zweispaltenauswahl` hat nur die halbe Breite.~~ **Erledigt mit Rev. 3 (07.09.2026).** Der Anwender hat die Ursache gestrichen, nicht das Symptom: Die Liste läuft über die **ganze** Breite, die zwei Listen stehen untereinander. Gemessen rollt die Katalogliste in M2 jetzt um **0 px** statt um 118 px — und das mit **neun** Parameterspalten statt sechs. Die Höchstbreite der linken Spalte (`flex: 0 1 24rem`) wird damit gegenstandslos; an ihre Stelle tritt der Umbau des Bausteins, zu dem **Frage W14a‑E‑10‑Q2** (8.2) gestellt ist |
 | **O‑6** | ~~**Ein neues Raster schließt das Popover.**~~ **Entschieden und belegt mit S1.2 (07.09.2026).** Gemessen in `EPOS.UI.Tests/Bausteine/SpaltenfilterTests.O6_Ein_neu_aufgebautes_Raster_schliesst_das_Popover`: Führt QuickGrid das Popover selbst über `ColumnOptions`, steht es nach einem Klick auf den Optionsknopf da — und ist nach einem Wechsel der Zeilenzahl **weg**; der `@key`-Fix W6‑B‑2 baut das Raster neu auf, und die neue Instanz beginnt ohne Zustand. **Gewählt ist der erste der zwei Wege: Das Feld wirkt bei ENTER oder beim VERLASSEN, nicht beim Tippen.** Tippen ändert nur den Text in `Spaltenfilter` (`@oninput`), die Zeilenmenge bleibt unberührt, das Raster wird nicht neu gebaut und das Popover steht mit seinem Schreibzeiger. Enter, ein Feldwechsel (`onchange`) und das Verlassen (`onfocusout`) übernehmen und schließen; Esc schließt ohne zu übernehmen. **Der zweite Weg** — „Filterstand im Wirt halten und das Popover nach dem Neuaufbau wieder öffnen" — ist zur Hälfte trotzdem gebaut (der Stand liegt im `Katalogfilterstand` des Wirtes, sonst wäre er nach dem ersten Zeichen weg), löste den Schreibzeiger aber **nicht**: Das Eingabefeld wäre nach dem Neuaufbau ein NEUES DOM-Element, der Fokus damit fort, und der Anwender tippte nach jedem Zeichen ins Leere |
-| **O‑7** | **Der Dialog wird höher, als ein 768‑px‑Fenster fasst.** Steht die Eingabe unter statt neben der Liste, misst der Dialog gemessen 1 152 px (M1), 1 225 px (M3) und 1 228 px (M2) bei 1 366 px Breite; der Eingabeblock beginnt 674 px unter der Oberkante, in M2 der Kenndatenblock erst bei 825 px. Bei 768 px Fensterhöhe braucht man dafür den Rollbalken der **Maske**. Das ist kein Bruch mit W9‑B‑2 — die **Liste** rollt in sich und schluckt die Seite nicht mehr —, aber es ist der Preis der Anordnung und gehört auf den Tisch. Drei Stellschrauben, falls es stört: die Listenhöhe (heute elf Zeilen), die Parameterübersicht (ist schon zugeklappt), und in M2 der Kenndatenblock, den man ebenfalls als Aufklapper führen könnte. **Nach der Abnahme des Mockups zu entscheiden**, nicht vorher — es hängt daran, wie der Anwender die Maske tatsächlich benutzt.<br><br>**Stand nach S1.7 (07.09.2026): unverändert offen, und die Zahlen sind die des MOCKUPS geblieben.** Eine Dialoghöhe ist im bunit-Markup **nicht messbar** — bunit rechnet kein CSS aus (Lehre W6‑B‑1); geprüft ist deshalb nur die REGEL im Stilblatt: Die Liste trägt `max-height: calc(var(--epos-listenhoehe) * 1.3)` = 458 px = elf Zeilen und rollt in sich, der Eingabeblock rollt nicht mehr selbst, und der Rollbalken der Maske sitzt an `.epos-katalog-dialog` (`overflow: auto`). Die Höhe misst der **Anwender** an der Windows-Abnahme — Abnahmepunkte A‑W14a‑E10‑11 und ‑12 |
+| **O‑7** | **Der Dialog wird höher, als ein 768‑px‑Fenster fasst.** Steht die Eingabe unter statt neben der Liste, misst der Dialog gemessen 1 152 px (M1), 1 225 px (M3) und 1 228 px (M2) bei 1 366 px Breite; der Eingabeblock beginnt 674 px unter der Oberkante, in M2 der Kenndatenblock erst bei 825 px. Bei 768 px Fensterhöhe braucht man dafür den Rollbalken der **Maske**. Das ist kein Bruch mit W9‑B‑2 — die **Liste** rollt in sich und schluckt die Seite nicht mehr —, aber es ist der Preis der Anordnung und gehört auf den Tisch. Drei Stellschrauben, falls es stört: die Listenhöhe (heute elf Zeilen), die Parameterübersicht (ist schon zugeklappt), und in M2 der Kenndatenblock, den man ebenfalls als Aufklapper führen könnte. **Nach der Abnahme des Mockups zu entscheiden**, nicht vorher — es hängt daran, wie der Anwender die Maske tatsächlich benutzt.<br><br>**Stand nach S1.7 (07.09.2026): unverändert offen, und die Zahlen sind die des MOCKUPS geblieben.** Eine Dialoghöhe ist im bunit-Markup **nicht messbar** — bunit rechnet kein CSS aus (Lehre W6‑B‑1); geprüft ist deshalb nur die REGEL im Stilblatt: Die Liste trägt `max-height: calc(var(--epos-listenhoehe) * 1.3)` = 458 px = elf Zeilen und rollt in sich, der Eingabeblock rollt nicht mehr selbst, und der Rollbalken der Maske sitzt an `.epos-katalog-dialog` (`overflow: auto`). Die Höhe misst der **Anwender** an der Windows-Abnahme — Abnahmepunkte A‑W14a‑E10‑11 und ‑12.<br><br>**Stand nach S2 (07.09.2026): unverändert offen.** S2.6 hat die Frage von den Verwaltungs- auf die PROJEKTdialoge ausgeweitet — dort stehen jetzt Projektliste, Übernahmeleiste, Katalogliste und Detailblock untereinander, also **vier** Blöcke statt zwei. Gegengerechnet ist dabei die Projektliste: Sie trägt seit S2.6 `--epos-projektlistenhoehe` (12 rem = vier Zeilen) und wächst nicht mehr mit ihrem Bestand. Auch das ist im Markup nicht messbar; es gehört zu denselben zwei Abnahmepunkten |
+| **O‑8** | **Die Spalte „im Projekt verwendet" hängt an der lebenden Liste, nicht an der Datenbank** (9.1 Q12). Das ist innerhalb eines Dialogs richtig und dort auch die einzig richtige Quelle. Was sie NICHT sagt, ist, ob ein Katalogsatz in einem **anderen** Projekt verwendet wird — die Frage, die bei der Katalogpflege („darf ich den löschen?") interessiert. Dafür gäbe es sie in der VERWALTUNG, und dort wäre sie tatsächlich eine Zählabfrage über alle Projekte. Q12 hat sie ausdrücklich auf die Projektdialoge beschränkt; ob die Verwaltung eine zweite, anders gemeinte Spalte bekommt, ist eine eigene Frage. Der Löschweg ist davon unberührt — er fragt weiter `GesperrtDurchProjekt` |
+| **O‑9** | **Vier Wärmepumpenmerkmale sind jetzt nur noch über die Detailansicht erreichbar** (9.2): Bauart, Regelung, Aufstellung und die abgeleitete Auslegung. Solange Bauart in 45 von 51 Sätzen leer ist, kostet eine Spalte mehr, als sie trägt — **wird der Katalog gepflegt, kehrt sich das um**. Die Spalte wäre dann eine Zeile in `Katalogfilterprofil` und sonst nichts; die Zahlen dafür stehen in `KatalogspaltenfilterTests` und fallen rot aus, sobald sich der Datenbestand ändert |
 
 ---
 
