@@ -514,6 +514,20 @@ der PV-Kette, Ursache allein `T_NOCT`, Gegenbeweis im `protokoll.txt` der Basis)
 (`2a4ad5e`, `d4edc85`, je Push und Pull-Request) sind grün. Ausgelöst per `workflow_dispatch` unter der pauschalen
 Freigabe bis Migrationsende.
 
+**Neununddreißigster Lauf 34164138879 (`ios.yml`, `macos-26`, 07.09.2026, 21:43–21:52 UTC, 9 min 37 s)** auf
+`c53b39b` — der siebte Tagesstand des 07.09.2026 und der erste Lauf mit der **Katalogfilter-Stufe S3** (W14a‑E‑10:
+Bedarfs- und Zeitreihenkataloge im Spaltenmodell, Jahresarbeit und Spitze aus einer Gruppenabfrage, Vergleich von zwei
+bis drei markierten Zeilen im Baustein, beide Importmasken auf der `Katalogliste` — 21 Dialoge in 16 Komponenten auf
+EINER Liste, alle in der `AppWurzel` erreichbar) sowie dem Anwender-Merge 7 (`159f3f8`: PV-Reiter der Ergebnisseite,
+W11b‑B‑6 bis B‑10 — Erzeugung statt genutztem Anteil, W/m², Flächenschätzung, Diagrammbreite). Workload 24 s, Bau
+1 min 10 s (0 Fehler), Simulatorstart 1 min 56 s, Erststart mit Seed-Kopie (66 MB, Schemastand 69), Startmarken
+`SQLite 3.53.3` · `STRICT=117` (Erwartung aus der Seed-Datenbank: 117) · `Projekte=24` grün, Prüfmodus 1030 in 22 s
+(22 CSV, 160 Skalare), **iZ6-Vergleich gegen `2026-09-07_R6_PvKoeffizienten` PASS (236 680 Werte)** und
+**BYTE-GLEICH** (`diff -rq` leer, iOS-Simulator arm64) — die drei Aggregatabfragen der Zeitreihenkataloge und der
+Vergleich sind Anzeige, kein Rechenweg. Die `kern.yml`-Läufe 227 bis 234 (`b2ee331`, `ba6f8d5`, `c53b39b`, `8a6ca2b`,
+je Push und Pull-Request) sind grün; das Gate auf Linux zählt seit S3 Kern 2 033 und UI 3 239 Fälle. Ausgelöst per
+`workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
