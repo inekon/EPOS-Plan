@@ -4,6 +4,7 @@
      Wirtschaftlichkeit, Amortisation, SpeicherParameter, GanglinienPruefung, SpeicherOptimierer) -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Der elektrische Speicher wird '''nach''' Photovoltaik und BHKW gerechnet: Er sieht die Last, die
 Erzeugung und die Preise als Zeitreihen und entscheidet je Viertelstunde, ob geladen oder entladen
@@ -16,6 +17,7 @@ wirft die Rechnung, landet das als Hinweis oder Warnung im Protokoll, und die Ke
 Speicherwirkung weiter.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Größe !! Einheit !! Herkunft im Programm
@@ -81,6 +83,7 @@ Am Rechenweg ändert der Import nichts: Er schreibt in dieselben Katalogfelder, 
 Eingabe von Hand auch beschreibt.
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 Diese Seite rechnet als '''einzige''' der Rubrik nicht in Stunden, sondern in '''Viertelstunden''':
 Der Laufindex heißt <math>k</math> und läuft von 1 bis 35&nbsp;040, die Intervalldauer ist
@@ -202,6 +205,7 @@ Größen, die der Lauf je Intervall oder je Lauf bildet.
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 Gerechnet wird '''viertelstündlich''' — <math>K = 35\,040</math> Intervalle,
 <math>\Delta t = 0{,}25</math>&nbsp;h; <math>k</math> ist in allen Gleichungen dieser Seite das
@@ -424,6 +428,7 @@ Der Verschleißterm über <math>c_{\mathrm{ver}}</math> ist wählbar und '''stan
 Rasterpunkt. Das Ergebnis ist unabhängig davon, auf wie vielen Fäden gerechnet wurde.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Der Speicher rechnet nach den Erzeugern.''' Er verändert den ausgewiesenen PV-Ertrag nicht; die
   Speicherwirkung wird getrennt bilanziert.
@@ -447,6 +452,7 @@ Rasterpunkt. Das Ergebnis ist unabhängig davon, auf wie vielen Fäden gerechnet
   Simulationsergebnis.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Simulationsergebnis, Reiter „Stromspeicher"''' — der Verlauf <math>\mathrm{SOC}(k)</math>,
   Lade- und Entladeenergie, äquivalente Vollzyklen <math>z_{\mathrm{aeq}}</math>, Geldwert und die
@@ -460,6 +466,7 @@ Rasterpunkt. Das Ergebnis ist unabhängig davon, auf wie vielen Fäden gerechnet
   Ersatz-SoC-Band, nicht umgesetzte Berechnungsart) und jede Rasterabweichung.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Stromspeicher|Stromspeicher]] — Bedienung von Katalog, Projektdialog und Varianten
 * [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]] — Herkunft von Überschuss und Reststrom

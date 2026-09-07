@@ -517,25 +517,69 @@ UcBericht.lblZiel      = Bericht#zielordner
 # H13_Berechnungshilfe_Protokoll.md). Bis dahin traegt der mitgelieferte
 # Startbestand help_cache.json Kurztext und Adresse; ein erfolgreicher
 # Onlineabruf loescht sie nicht (WikiHelpCatalog.BerechnungsRueckfallErgaenzen).
+#
+# JEDES ZIEL TRAEGT SEIT O-H13b-3 (07.09.2026) EINEN ANKER. Die Knoepfe dieser
+# Rubrik fuehren auf "#rechenweg" und damit auf den Abschnitt, der die Rechnung
+# beschreibt - nicht auf den Seitenanfang. Das ist der Unterschied zum
+# Fensterknopf <Form>.btn_Help: Der zeigt weiter auf die allgemeine Seite OHNE
+# Anker, denn dort ist der Anfang die Antwort.
+#
+# Die Anker sind auf jeder der 13 Seiten dieselben sieben, kleingeschrieben und
+# ohne Umlaut: was, eingang, zeichen, rechenweg, grenzen, ergebnisse, bezuege;
+# die Photovoltaikseite fuehrt achtens "wechselrichter". Gesetzt werden sie im
+# Wiki mit {{Anker|<name>}} unmittelbar UNTER der Ueberschrift (Vorlage:Anker,
+# Hausform dieses Wikis, gemessen am 07.09.2026). Wer eine Ueberschrift
+# umbenennt, laesst den Anker stehen - genau dafuer gibt es ihn.
 
 # Teil A (Ablauf und Bedarf)
-Form_Simulation_Config.Berechnung      = Berechnung/Simulationsablauf
-Form_Gebaeude.Berechnung               = Berechnung/Wärmebedarf
-Form_Waermebedarf.Berechnung           = Berechnung/Wärmebedarf
-Form_Brauchwasser.Berechnung           = Berechnung/Brauchwasser
-Form_Prozesswaerme.Berechnung          = Berechnung/Prozesswärme
-Form_Stromverbraucher.Berechnung       = Berechnung/Strombedarf
-Form_Stromganglinie.Berechnung         = Berechnung/Strombedarf
-Form_QuelleErdreich.Berechnung         = Berechnung/Wärmequelle Erdreich
+Form_Simulation_Config.Berechnung      = Berechnung/Simulationsablauf#rechenweg
+Form_Gebaeude.Berechnung               = Berechnung/Wärmebedarf#rechenweg
+Form_Waermebedarf.Berechnung           = Berechnung/Wärmebedarf#rechenweg
+Form_Brauchwasser.Berechnung           = Berechnung/Brauchwasser#rechenweg
+Form_Prozesswaerme.Berechnung          = Berechnung/Prozesswärme#rechenweg
+Form_Stromverbraucher.Berechnung       = Berechnung/Strombedarf#rechenweg
+Form_Stromganglinie.Berechnung         = Berechnung/Strombedarf#rechenweg
+Form_QuelleErdreich.Berechnung         = Berechnung/Wärmequelle Erdreich#rechenweg
 
 # Teil B (Erzeuger und Speicher)
-Form_Heizkessel.Berechnung       = Berechnung/Heizkessel
-Form_BHKWEing.Berechnung         = Berechnung/BHKW
-Form_WP.Berechnung               = Berechnung/Wärmepumpe
-Form_Betriebsmodus.Berechnung    = Berechnung/Wärmepumpe
-Form_PufferSp.Berechnung         = Berechnung/Pufferspeicher
-Form_PufferSp_Projekt.Berechnung = Berechnung/Pufferspeicher
-Form_SolarKollektoren.Berechnung = Berechnung/Solarthermie
-Form_Solarganglinie.Berechnung   = Berechnung/Solarthermie
-Form_PV.Berechnung               = Berechnung/Photovoltaik
-Form_Stromspeicher.Berechnung    = Berechnung/Stromspeicher
+Form_Heizkessel.Berechnung       = Berechnung/Heizkessel#rechenweg
+Form_BHKWEing.Berechnung         = Berechnung/BHKW#rechenweg
+Form_WP.Berechnung               = Berechnung/Wärmepumpe#rechenweg
+Form_Betriebsmodus.Berechnung    = Berechnung/Wärmepumpe#rechenweg
+Form_PufferSp.Berechnung         = Berechnung/Pufferspeicher#rechenweg
+Form_PufferSp_Projekt.Berechnung = Berechnung/Pufferspeicher#rechenweg
+Form_SolarKollektoren.Berechnung = Berechnung/Solarthermie#rechenweg
+Form_Solarganglinie.Berechnung   = Berechnung/Solarthermie#rechenweg
+Form_PV.Berechnung               = Berechnung/Photovoltaik#rechenweg
+Form_Stromspeicher.Berechnung    = Berechnung/Stromspeicher#rechenweg
+
+# Teil C (Katalogeditoren) - Anwenderentscheid O-H13b-5 vom 07.09.2026
+# ---------------------------------------------------------------------------
+# Bis hierher fuehrten nur die PROJEKTdialoge in die Rubrik. Wer einen
+# Katalogsatz pflegt, entscheidet aber genauso ueber den Rechenweg: Der
+# Wirkungsgrad eines Kessels, die Stromkennzahl eines BHKW-Moduls und die
+# Kennlinie eines Kollektors kommen aus dem STAMMSATZ. Die acht Verwaltungen
+# tragen deshalb denselben zweiten Knopf am Kopf ihres Detailblocks.
+#
+# DREI RAZOR-KOMPONENTEN, ACHT SCHLUESSEL. KatalogBrowserDialog bedient vier
+# Auspraegungen (Heizkessel, BHKW, Solarkollektoren, Pufferspeicher),
+# ModulKatalogDialog drei (Stromspeicher, PV Module, Wechselrichter);
+# WaermepumpeStammDialog steht fuer sich. Welcher Schluessel gilt, sagt in den
+# ersten beiden Faellen das Profil im Kern (KatalogBrowserProfil bzw.
+# ModulKatalogProfil) - dasselbe Vorgehen wie bei den drei Auspraegungen des
+# BedarfsProfileDialog.
+#
+# ZWEI ABWEICHUNGEN, beide belegt:
+#   Form_AdminWechselrichter zeigt auf die Seite Photovoltaik - der
+#   Wechselrichter ist ein ABSCHNITT darauf und keine eigene Seite.
+#   Form_WP_Stamm statt Form_WP: Form_WP.Berechnung gehoert seit H13b
+#   (Abweichung A-1) dem Anlagendialog, weil dessen Fensterschluessel noch
+#   Wizard_WPItem.btn_Help lautet.
+Form_Heizkessel_Admin.Berechnung    = Berechnung/Heizkessel#rechenweg
+Form_BHKWAdmin.Berechnung           = Berechnung/BHKW#rechenweg
+Form_WP_Stamm.Berechnung            = Berechnung/Wärmepumpe#rechenweg
+Form_SolarKollektorenAdmin.Berechnung = Berechnung/Solarthermie#rechenweg
+Form_PufferSp_Admin.Berechnung      = Berechnung/Pufferspeicher#rechenweg
+Form_AdminPV.Berechnung             = Berechnung/Photovoltaik#rechenweg
+Form_AdminWechselrichter.Berechnung = Berechnung/Photovoltaik#wechselrichter
+Form_AdminStromspeicher.Berechnung  = Berechnung/Stromspeicher#rechenweg

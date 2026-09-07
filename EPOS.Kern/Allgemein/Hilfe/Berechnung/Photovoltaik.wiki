@@ -6,6 +6,7 @@
      Wechselrichter: Konzept_Wechselrichter_EPOS-Plan.md, Kapitel 3 und 4 -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Der Photovoltaik-Zweig rechnet für jede PV-Anlage des Projekts den Wechselstromertrag Stunde für
 Stunde über ein volles Jahr und verrechnet ihn anschließend mit dem Strombedarf. Ergebnisgrößen sind
@@ -19,6 +20,7 @@ linearer Temperaturgang, pauschaler Wechselrichter-Wirkungsgrad) und '''erweiter
 Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld, Wechselrichterkennlinie mit Clipping).
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Größe !! Einheit !! Herkunft im Programm
@@ -65,6 +67,7 @@ Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld, Wechselrichterkennli
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres
 (1…8&nbsp;760), <math>P</math> eine Leistung, <math>G</math> eine Bestrahlungsstärke,
@@ -209,6 +212,7 @@ Größen, die der Lauf je Stunde oder je Anlage bildet.
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
 Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht
@@ -487,6 +491,7 @@ vorgelagerten Kaskadenstufe. Er ist keine PV-Erzeugung, wird deshalb in (24) auf
 getrennt ausgewiesen — sonst würde er als PV-Einspeisung vergütet.
 
 == Wechselrichter ==
+{{Anker|wechselrichter}}
 
 Für den Wechselrichter gibt es zwei Wege. Welcher gilt, ist ein Anwenderentscheid (W6‑E‑3 vom
 06.09.2026).
@@ -684,6 +689,7 @@ steht '''und''' eine Strangzeile mit Gerät führt, rechnet sie Zeichen für Zei
 beide Bedingungen zusammen schalten den Strangweg ein.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Keine Verschattung.''' Weder Horizont noch Eigenverschattung der Modulreihen gehen ein.
 * '''Eine Ausrichtung je Anlage — außer im Weg „mit Wechselrichter".''' <math>\beta</math> und
@@ -717,6 +723,7 @@ beide Bedingungen zusammen schalten den Strangweg ein.
   ausgewiesenen PV-Ertrag nicht.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Simulationsergebnis, Reiter „Photovoltaik"''' — je Modulfeld Name, Gesamtfläche, Anzahl und
   Jahresertrag; im erweiterten Modell zusätzlich das DC/AC-Verhältnis, der Clipping-Verlust und der
@@ -737,6 +744,7 @@ beide Bedingungen zusammen schalten den Strangweg ein.
   Vergütungsrechnung bauen auf denselben Zahlen auf.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Photovoltaik|Photovoltaik]] — Bedienung des Dialogs, Modulkatalog, Import
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Reihenfolge der Erzeuger, Kaskade und Stundenschleife

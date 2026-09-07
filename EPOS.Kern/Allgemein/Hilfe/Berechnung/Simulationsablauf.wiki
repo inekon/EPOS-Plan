@@ -6,6 +6,7 @@
      EPOS.Kern/Allgemein/Simulation/Init.cs -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Ein Simulationslauf rechnet ein '''volles Jahr''' durch und beantwortet damit die Frage,
 welcher Erzeuger wann wie viel deckt. Ergebnis sind die Stundenganglinien von Bedarf,
@@ -17,6 +18,7 @@ Der Lauf rechnet '''nicht''' die Waerme- und Strommengen selbst, sondern setzt s
 Zuerst wird der Bedarf gebildet, dann arbeiten die Erzeuger ihn ab.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Groesse !! Einheit !! Herkunft im Programm
@@ -45,6 +47,7 @@ Zuerst wird der Bedarf gebildet, dann arbeiten die Erzeuger ihn ab.
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 === Parameter ===
 
@@ -103,6 +106,7 @@ Was der Lauf selbst bildet:
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 === 1. Zeitraster ===
 
@@ -300,6 +304,7 @@ Danach bildet der Lauf die Speicherkennzahlen (mittlerer und maximaler Fuellstan
 Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Ein Jahr, keine Alterung.''' Gerechnet wird ein einziges Jahr mit dem Klimadatensatz der gewaehlten Region. Degradation, Verschleiss und Betriebsjahre kommen erst in der Wirtschaftlichkeitsrechnung vor.
 * '''Kein Schaltjahr.''' 365 Tage, 8 760 Stunden — fest.
@@ -310,6 +315,7 @@ Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen
 * '''Kein Ergebnis bei Abbruch.''' Bricht eine Stufe ab, wird nichts gespeichert — statt eines halben Ergebnisses gibt es eine Meldung im Laufprotokoll.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Simulationsergebnis''', Reiter „Parameter" — die Einstellungen, mit denen gerechnet wurde.
 * '''Simulationsergebnis''', Reiter „Übersicht" — Jahresmengen und Deckungsgrade je Erzeuger, <math>Q_{\mathrm{Rest}}</math> nach (8) und <math>E_{\mathrm{Rest}}</math> nach (9).
@@ -319,6 +325,7 @@ Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen
 * '''Bericht und Wirtschaftlichkeit''' rechnen auf denselben Jahresmengen weiter.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Simulation|Simulation]] — Bedienung des Simulationsdialogs
 * [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]] — die Reiter des Ergebnisfensters

@@ -324,7 +324,7 @@ Wissensabschnitt für den KI-Assistenten (`HilfeWissen`) ist ebenfalls Teil A.
 |---|---|
 | **O‑H13b‑1** | Die Seiten liegen im Repository, im Wiki noch nicht. Bis Schritt 6.2 getan ist, laufen die zehn Knöpfe ins Leere — der Katalog kennt das Ziel dann nicht und schaltet den Knopf ab (Verhalten seit H2, kein Fehler). |
 | **O‑H13b‑2** | Der Ausblick „Option 2 — mit Wechselrichter" trägt den Stand 06.09.2026. **Wenn die Umsetzung kommt, ist die Photovoltaikseite mitzuführen** — Rechenweg, die acht Prüfungen und die Kennzahlen stehen dort bereits im Wortlaut des Konzepts. |
-| **O‑H13b‑3** | Anker je Abschnitt (`{{Anker|…}}`) sind nicht gesetzt. Ein Knopf könnte damit unmittelbar auf „Rechenweg, Schritt 4" springen statt an den Seitenanfang; das Format von `help_mapping.txt` kann es seit H2 (`Slug#Anker`). Lohnt sich, sobald die Seiten im Wiki stehen und ihre Abschnitte stabil sind. |
+| **O‑H13b‑3** | ~~Anker je Abschnitt (`{{Anker|…}}`) sind nicht gesetzt. Ein Knopf könnte damit unmittelbar auf „Rechenweg, Schritt 4" springen statt an den Seitenanfang; das Format von `help_mapping.txt` kann es seit H2 (`Slug#Anker`).~~ **Erledigt am 07.09.2026, § 13** — 92 Marken auf 13 Seiten, 26 Zuordnungszeilen mit Anker, zwei Wächter. Die Feinstufe „Rechenweg, **Schritt 4**" ist bewusst NICHT gesetzt: Die Schrittnummern ändern sich beim Umschreiben einer Seite, die sieben Abschnitte nicht. |
 | **O‑H13b‑4** | Die drei Bedarfsseiten und die Rubrik-Startseite kommen aus Teil A. Die Bezüge dieser sieben Seiten zeigen bereits darauf (`Berechnung/Simulationsablauf`, `Berechnung/Wärmebedarf`, `Berechnung/Strombedarf`) — nach der Zusammenführung ist zu prüfen, dass die Seitennamen wörtlich übereinstimmen. |
 
 ---
@@ -669,3 +669,265 @@ Fassung-3-Regeln statt der Fassung-2-Verbote. Ohne Teil A stehen `EPOS.UI.Tests`
 | **O‑H13b‑9** | Der Abschnitt „Schreibweise" auf `_Index.wiki` (Teil A) beschreibt die Unicode-Notation der Fassung 2 und muss auf LaTeX nachgezogen werden — einschließlich der acht zusätzlichen Befehle aus 11.3, der ASCII-Umschrift der Umlaute und der Streichung von `\lvert`/`\rvert`. |
 | **O‑H13b‑10** | Der KI-Klartext (`BerechnungsHilfe.Klartext`, Teil A) löst `<sub>`/`<sup>`/`<big>` auf. Für die Fassung 3 ist zu entscheiden, was der Assistent aus einem `<math>`-Block lesen soll — der LaTeX-Quelltext ist lesbar, aber `\frac{a}{b}` ist kein „a / b". |
 | **O‑H13b‑11** | Die Gleichungsnummern bleiben **seitenlokal** (O‑H13b‑7 gilt fort). Wer eine Gleichung einfügt, nummeriert die folgenden neu **und** zieht die Legende mit; der Wächter fängt eine vergessene Nummer ab, eine vergessene Legende ebenfalls. |
+
+---
+
+## 12. Nachtrag O‑H13b‑5 (07.09.2026) — der Berechnungsknopf in den acht Katalogeditoren
+
+**Anwenderentscheid vom 07.09.2026** („Empfehlung" zu den drei offenen Hilfepunkten): Der Knopf
+„Berechnung", den zehn Projektdialoge seit diesem Paket tragen, kommt **zusätzlich in die
+Katalogeditoren**.
+
+> **Zur Kennung.** Die Orchestrierung führt diesen Punkt als `O‑H13b‑5`. Die Kennung ist in
+> § 10.7 schon einmal vergeben (Abgleich der Zeichentabelle nach der Zusammenführung); jener
+> Punkt ist mit der Fassung 3 erledigt. In diesem Protokoll meint `O‑H13b‑5` ab hier den
+> Berechnungsknopf in den Katalogeditoren.
+
+**Der Grund in einem Satz.** Bis hierher führten nur die PROJEKTdialoge in die Rubrik. Wer einen
+Katalogsatz pflegt, entscheidet aber genauso über den Rechenweg: Der Wirkungsgrad eines Kessels, die
+Stromkennzahl eines BHKW-Moduls, die Kennlinie eines Kollektors und die Zyklenzahl eines
+Stromspeichers kommen aus dem **Stammsatz**, nicht aus dem Projektdialog. Wer dort Zahlen einträgt,
+soll nachlesen können, was das Programm mit ihnen tut.
+
+### 12.1 Es sind ACHT Editoren, und sie hängen an DREI Komponenten
+
+Die Zahl war zu prüfen — der Auftrag nannte „sieben, dazu Pufferspeicher = acht". Es sind acht, aber
+anders geschnitten, als die Aufzählung vermuten ließ:
+
+| Menüpunkt (Administration) | Razor-Komponente | Ausprägung | Schlüssel | Ziel |
+|---|---|---|---|---|
+| Heizkessel | `KatalogBrowserDialog` | `KatalogBrowserArt.Heizkessel` | `Form_Heizkessel_Admin.Berechnung` | `Berechnung/Heizkessel` |
+| BHKW | `KatalogBrowserDialog` | `Bhkw` | `Form_BHKWAdmin.Berechnung` | `Berechnung/BHKW` |
+| Solarkollektoren | `KatalogBrowserDialog` | `Solarkollektoren` | `Form_SolarKollektorenAdmin.Berechnung` | `Berechnung/Solarthermie` |
+| Pufferspeicher | `KatalogBrowserDialog` | `Pufferspeicher` | `Form_PufferSp_Admin.Berechnung` | `Berechnung/Pufferspeicher` |
+| Stromspeicher | `ModulKatalogDialog` | `ModulKatalogArt.Stromspeicher` | `Form_AdminStromspeicher.Berechnung` | `Berechnung/Stromspeicher` |
+| PV Module | `ModulKatalogDialog` | `Pv` | `Form_AdminPV.Berechnung` | `Berechnung/Photovoltaik` |
+| Wechselrichter | `ModulKatalogDialog` | `Wechselrichter` | `Form_AdminWechselrichter.Berechnung` | `Berechnung/Photovoltaik` |
+| Wärmepumpen (Stammdatenpflege) | `WaermepumpeStammDialog` | — | `Form_WP_Stamm.Berechnung` | `Berechnung/Wärmepumpe` |
+
+`KatalogBrowserDialog` führt **Pufferspeicher** und nicht Wärmepumpe — die Wärmepumpen-Stammpflege
+ist eine eigene Komponente (`Masken.WpAdministration` → `WaermepumpeStammHuelle` →
+`WaermepumpeStammDialog`). `PufferSpKatalogDialog` und `HeizkesselKatalogDialog` sind **nicht**
+gemeint: Das sind die Satzeditoren INNERHALB des Browsers, keine Verwaltungen.
+
+**Zwei Abweichungen, beide belegt.**
+
+* **Wechselrichter → `Berechnung/Photovoltaik`.** Der Wechselrichter ist ein **Abschnitt** dieser
+  Seite (`== Wechselrichter ==`, Option 1 und Option 2), keine eigene Seite. Mit den Ankern aus
+  O‑H13b‑3 zielt die Zeile auf diesen Abschnitt.
+* **`Form_WP_Stamm` statt `Form_WP`.** `Form_WP.Berechnung` gehört seit diesem Paket (Abweichung
+  A‑1, § 3) dem **Anlagendialog**, weil dessen Fensterschlüssel noch `Wizard_WPItem.btn_Help`
+  lautet. Zwei Masken, zwei Schlüssel — die Regel „ein Schlüssel gehört genau einem Dialog" bleibt
+  damit unangetastet.
+
+### 12.2 Wo der Schlüssel steht: im Profil, nicht in der Komponente
+
+Drei Komponenten bedienen acht Kataloge. Der Schlüssel gehört deshalb dorthin, wo auch
+`HilfeSchluessel` und `Stammtabelle` stehen — in das **Profil im Kern**:
+
+| Datei | neu |
+|---|---|
+| `EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs` | `BerechnungsSchluessel`, `BerechnungsSeite`, `BerechnungsKurztext` (berechnet); vier Ausprägungen gefüllt |
+| `EPOS.Kern/Allgemein/Katalog/ModulKatalogProfil.cs` | dieselben drei; drei Ausprägungen gefüllt |
+
+Das ist dasselbe Vorgehen wie bei den drei Ausprägungen des `BedarfsProfileDialog`, nur eine Stufe
+tiefer: Dort reicht die Windows-Hülle den Schlüssel herein, hier das Profil — und das gilt unter
+Windows **und** auf iOS.
+
+**Kein neuer Ressourcenschlüssel.** `BerechnungsKurztext` ist
+`BerechnungsHilfe.RUBRIK_KURZ + ": " + BerechnungsSeite`, also wörtlich der Tooltip, den der
+mitgelieferte Startbestand für dieselbe Seite führt („Berechnung: Heizkessel"). Er greift ohnehin
+nur, solange der Katalog den Schlüssel nicht kennt. Damit bleibt die Regel des Profils gewahrt:
+Der Kern kennt keine Anzeigetexte — der Rubrikname ist ein Wikititel, kein Anzeigetext.
+
+### 12.3 Wo der Knopf sitzt
+
+Am Kopf des Blocks, der die Kennwerte führt — nicht im Dialogkopf und **nicht in der Knopfleiste**:
+
+| Komponente | Stelle |
+|---|---|
+| `KatalogBrowserDialog` | im Detailblock (`Gruppenkopf Titel="@Profil.Detailueberschrift"`), über dem Formularraster |
+| `ModulKatalogDialog` | am Kopf der ersten Feldgruppe (`Profil.GruppeBestand`) |
+| `WaermepumpeStammDialog` | am Kopf des Stammdatenblocks (`GruppeStammdaten`) |
+
+Die Bauform ist unverändert die aus § 4: ein `<div class="epos-berechnungshilfe">` mit einem
+`<InfoKnopf>` darin. Die Lehre von damals gilt weiter — die Knopfleiste `.epos-leiste` ist eine
+**Aufzählung von Aktionen**, und mehrere Masken zählen ihre Knöpfe.
+
+### 12.4 Die Wächter
+
+`EPOS.UI.Tests/BerechnungsknopfTests` (10 → **11 Fälle**, mit Theoriezeilen **41/41 grün**):
+
+| Fall | was er hält |
+|---|---|
+| `Jeder_Katalogeditor_fuehrt_auf_seinen_Rechenweg` (8 Zeilen) | jeder der acht Schlüssel hat seine Zeile, sie zeigt auf die Seite **seines** Katalogs, und der Schlüssel steht wirklich im Quelltext |
+| `Jeder_Katalogeditor_traegt_den_Knopf` (3 Zeilen) | die drei Wirte tragen `.epos-berechnungshilfe` mit einem `<InfoKnopf>` — und der steht nicht in der Knopfleiste |
+
+Dazu **eine Erweiterung des Lesers**: `Quelldateien()` liest seit O‑H13b‑5 auch
+`EPOS.Kern/Allgemein/Katalog/*.cs`. Ohne sie meldete `Jeder_Berechnungsschluessel_hat_einen_Infoknopf`
+acht vermeintlich tote Zeilen — der Schlüssel steht ja im Profil und nicht in der Razor-Datei.
+
+**Eine Falle beim Umsetzen.** Der Schlüsselleser (`\bForm_[A-Za-z0-9_]+\.Berechnung\b`) liest auch
+**Kommentare**. Ein erklärender Satz im Kopf von `WaermepumpeStammDialog.razor`, der den Schlüssel
+des Anlagendialogs beim Namen nannte, ließ `Jeder_Schluessel_gehoert_genau_einem_Dialog` rot
+werden — zwei Razor-Dateien für `Form_WP.Berechnung`. Der Satz nennt den Schlüssel jetzt
+umschrieben. Das ist kein Fehler des Wächters: Ein Schlüssel im Kommentar ist genau die Art
+Zeichenkette, die später als echte Verdrahtung missverstanden wird.
+
+### 12.5 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | **0 Fehler**, 6 eindeutige Warnungen — der Stand der Basis, keine neue |
+| `dotnet test EPOS.UI.Tests -c Release` | **3 075 / 3 075 grün** |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 744 / 1 744 grün** |
+| Rechenweg | **unberührt** — kein `.cs` der Simulation angefasst |
+| SQL, Ressourcen, `help_cache.json`, `HelpCatalog.cs`, `.wiki` | **unverändert** |
+
+### 12.6 Abnahmepunkte (Windows)
+
+| Nr. | Was zu prüfen ist | Erwartung |
+|---|---|---|
+| **A‑H13b‑14** | Administration → Wärmebedarf & Heizung → Heizkessel; im Detailblock rechts der zweite Fragezeichenknopf | öffnet `…/Berechnung/Heizkessel`; der Knopf oben rechts öffnet weiterhin die allgemeine Katalogseite |
+| **A‑H13b‑15** | dasselbe in BHKW, Solarkollektoren und Pufferspeicher | je eigene Seite; die Knopfleiste unten zählt unverändert vier bzw. fünf Knöpfe |
+| **A‑H13b‑16** | Administration → Energiesysteme → Photovoltaik → PV Module und → Wechselrichter | **beide** öffnen `…/Berechnung/Photovoltaik` |
+| **A‑H13b‑17** | Administration → Strom → Stromspeicher | öffnet `…/Berechnung/Stromspeicher` |
+| **A‑H13b‑18** | Administration → Wärmebedarf & Heizung → Wärmepumpen, Block „Stammdaten" | öffnet `…/Berechnung/Wärmepumpe` — dieselbe Seite wie der Knopf im Anlagendialog |
+| **A‑H13b‑19** | bei 125 % und 150 % Skalierung | der zweite Knopf sitzt rechtsbündig über seinem Block und verdeckt kein Feld |
+
+---
+
+## 13. Nachtrag O‑H13b‑3 (07.09.2026) — eine Sprungmarke je Abschnitt
+
+**Anwenderentscheid vom 07.09.2026** („Empfehlung" zu den drei offenen Hilfepunkten): Jeder
+Standardabschnitt aller 13 Rechenwegseiten bekommt einen **Anker**, die Knöpfe zielen auf
+`…#rechenweg`, und ein Wächter hält beides zusammen.
+
+### 13.1 Die Ankerregel — belegt, nicht vermutet
+
+Der offene Punkt § 9 nannte `{{Anker|…}}` mit dem Zusatz, die Vorlage sei „nicht sicher
+installiert". Sie ist es. Gemessen am 07.09.2026 gegen `wiki.epos-plan.de`:
+
+| Messung | Befehl | Ergebnis |
+|---|---|---|
+| Fassung | `action=query&meta=siteinfo&siprop=general\|extensions` | MediaWiki **1.46.0**; unter den `parserhook`-Erweiterungen steht **Math** (damit ist H13‑F3‑1 erledigt) |
+| Vorlage vorhanden? | `action=query&titles=Vorlage:Anker` | **pageid 33** — vorhanden. (`Vorlage:Anchor` fehlt.) |
+| Was sie setzt | `action=parse&page=Vorlage:Anker&prop=wikitext` | `<includeonly><span class="epos-anker" id="{{{1\|}}}"></span>…` — bis zu **drei** Namen für dieselbe Stelle |
+| Wie sie benutzt wird | `action=query&list=embeddedin&eititle=Vorlage:Anker` | die Seiten der Rubrik **Grundlagen** — dort steht sie je **eine Zeile UNTER** der Überschrift |
+| Wie sie aussieht | `MediaWiki:Common.css` | `.epos-anker { display:inline-block; width:0; height:0; overflow:hidden; }` — sie nimmt keinen Platz ein |
+
+**Entschieden ist damit die Hausform, nicht eine Neuerfindung:**
+
+> `{{Anker|<name>}}` auf einer eigenen Zeile **unmittelbar unter** der Überschrift.
+
+`<span id="…">` wäre gleichwertig gerendert, aber es gäbe zwei Schreibweisen im selben Wiki. Die
+**automatischen Überschriftenanker** von MediaWiki (`#Rechenweg`, `#Grenzen_und_Annahmen`)
+bleiben daneben bestehen — nur taugen sie als Ziel eines ausgelieferten Programms nicht: Sie
+wechseln mit der Überschrift, und `help_mapping.txt` liegt eingebettet in der EXE und altert bis
+zum nächsten Release. Genau dafür gibt es die Marke.
+
+Die Regel steht auf der Rubrikstartseite: `_Index.wiki`, neuer Abschnitt **„Sprungmarken"** mit
+der Namenstabelle, der Begründung und dem Satz, der beim nächsten Umbau zählt — *Überschriften
+dürfen sich ändern, Sprungmarken nicht.*
+
+### 13.2 Die Namen
+
+Auf allen 13 Seiten dieselben sieben, kleingeschrieben und ohne Umlaut:
+
+| Abschnitt | Marke |
+|---|---|
+| Was berechnet wird | `was` |
+| Eingangsgrößen | `eingang` |
+| Formelzeichen und Parameter | `zeichen` |
+| Rechenweg | `rechenweg` |
+| Grenzen und Annahmen | `grenzen` |
+| Ergebnisse und wo sie stehen | `ergebnisse` |
+| Bezüge | `bezuege` |
+| **Wechselrichter** (nur Photovoltaik) | `wechselrichter` |
+
+**92 Marken** in 13 Dateien: 12 × 7 + 8.
+
+### 13.3 Die Zuordnungen zielen auf den Rechenweg
+
+Alle **26** Zeilen `<Form>.Berechnung` bekommen einen Anker — die acht aus Teil A, die zehn aus
+Teil B und die acht aus O‑H13b‑5. Fünfundzwanzig zeigen auf `#rechenweg`; die einzige Ausnahme ist
+`Form_AdminWechselrichter.Berechnung → Berechnung/Photovoltaik#wechselrichter`, weil der Rechenweg
+des Wechselrichters ein **Abschnitt** dieser Seite ist.
+
+**Die Fensterknöpfe `<Form>.btn_Help` bleiben ohne Anker.** Sie zeigen auf die allgemeine Seite,
+und dort ist der Anfang die Antwort — dasselbe gilt für F1.
+
+Getragen wird der Anker vom Bestand, ohne eine Zeile Programmtext: `HelpExtender.ZielFuer` trennt
+ihn mit `AnkerAbtrennen` ab, löst die Seite auf und hängt ihn in `MitAnker` wieder an die Adresse
+(seit H2). Der iOS-Dienst tut dasselbe in `IosHilfeDienst.Adresse`. Geprüft, nicht angenommen.
+
+### 13.4 Der Assistent sieht keine Marke
+
+`BerechnungsHilfe` bekommt zwei Zeilen: In `AlsKlartext` fällt eine Zeile weg, die **nur** aus
+einer Vorlage besteht (der Regelfall — die Marke steht allein), in `Saeubern` fällt eine
+Vorlage **mitten im Satz**. Beide stehen vor dem Tabellengerüst bzw. vor der Verweisauflösung:
+`{{` trifft der Test auf `{|` nicht, und ein gieriges Muster fräße in einer Tabellenzeile alles
+zwischen der ersten und der letzten Klammer.
+
+### 13.5 Die Wächter
+
+`EPOS.Kern.Tests/BerechnungsHilfeTests` — **28 neue Theoriezeilen/Fälle**:
+
+| Fall | was er hält |
+|---|---|
+| `Jeder_Abschnitt_traegt_seine_Sprungmarke` (13 Zeilen) | je Seite: alle sieben Marken, jede **unmittelbar unter** ihrer Überschrift |
+| `Die_Photovoltaikseite_traegt_die_Marke_des_Wechselrichters` | der achte Abschnitt und sein Ziel |
+| `Der_Klartext_traegt_keine_Sprungmarke` (13 Zeilen) | kein `{{` im Klartext — **mit Gegenprobe**, dass das Markup sie führt |
+| `Der_Klartext_entfernt_eine_Sprungmarke_ohne_den_Satz_zu_kuerzen` | die Marke fällt, der Satz bleibt, und eine Tabelle bleibt eine Tabelle |
+
+`EPOS.UI.Tests/BerechnungsknopfTests` — **zwei neue Fälle**:
+
+| Fall | was er hält |
+|---|---|
+| `Jede_Zuordnung_zielt_auf_einen_vorhandenen_Anker` | jede der 26 Zeilen trägt einen Anker, und die Zielseite führt ihn wirklich |
+| `Die_Knoepfe_zielen_auf_den_Rechenweg` | 25 × `#rechenweg`, genau eine belegte Ausnahme |
+
+**Warum die zweite Hälfte wichtig ist:** Ein Ziel `…#rechenwg` öffnet die richtige Seite und
+springt nirgendwohin. Der Browser meldet nichts, der Leser landet am Seitenanfang und hält es für
+die Absicht. Der Wächter hält beide Hälften.
+
+Angepasst hat sich dabei `Jeder_Knopf_fuehrt_auf_eine_Seite_der_Fassung_2`: Er verglich das Ziel
+zeichengleich mit `Berechnung/<Seite>` und schneidet den Anker jetzt ab (`OhneAnker`).
+
+### 13.6 Wiki-Probe (ohne Upload)
+
+Jede der 13 Seiten und die Rubrikstartseite wurden mit ihrem Dateiinhalt über `action=parse` gegen
+das Wiki gerendert — **nichts hochgeladen**, nur gerendert:
+
+| Seiten | Anker im HTML | Formelfehler |
+|---|---|---|
+| die zwölf ohne Wechselrichter | je 7 × `<span class="epos-anker" id="…">` | **0** |
+| Photovoltaik | 8 | **0** |
+| `_Index` | 0 (die Startseite führt keine Standardabschnitte) | **0** |
+
+### 13.7 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | **0 Fehler**, 6 eindeutige Warnungen — Stand der Basis |
+| `dotnet test EPOS.UI.Tests -c Release` | **3 085 / 3 085 grün** |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 772 / 1 772 grün** |
+| Rechenweg | **unberührt** — kein `.cs` der Simulation angefasst |
+| SQL, Ressourcen, `help_cache.json` | **unverändert** |
+
+### 13.8 Was der Anwender im Wiki tun muss
+
+**Alle 14 Seiten sind neu hochzuladen** — die 13 Rechenwegseiten und die Rubrikstartseite
+`Programm Dokumentation/Berechnung` (sie trägt den neuen Abschnitt „Sprungmarken"). Der Text ist
+sonst unverändert; wer die Anker nicht einspielt, hat Knöpfe, die auf den Seitenanfang führen —
+kein Fehler, nur der Zustand von vorher.
+
+### 13.9 Abnahme auf Windows
+
+| Punkt | Was zu prüfen ist | Erwartung |
+|---|---|---|
+| **A‑H13b‑20** | Nach dem Upload: im Heizkesseldialog den Berechnungsknopf drücken | der Browser öffnet `…/Berechnung/Heizkessel#rechenweg` und steht beim Abschnitt „Rechenweg", nicht am Seitenanfang |
+| **A‑H13b‑21** | Administration → Energiesysteme → Photovoltaik → Wechselrichter, Berechnungsknopf | steht beim Abschnitt „Wechselrichter" |
+| **A‑H13b‑22** | Denselben Dialog mit dem Knopf **oben rechts** öffnen | die allgemeine Seite, **ohne** Sprung — der Anker gehört nur dem Berechnungsknopf |
+| **A‑H13b‑23** | Eine Berechnungsseite im Wiki ansehen | zwischen Überschrift und erstem Satz steht **kein sichtbarer Zwischenraum** (`.epos-anker` ist null Pixel hoch) |
+| **A‑H13b‑24** | Hilfe-Assistent nach einem Rechenweg fragen | die Antwort enthält **kein** `{{Anker|…}}` |

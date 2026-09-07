@@ -79,6 +79,40 @@ namespace EPOS.Kern.Tests
         };
 
         /// <summary>
+        /// Die SPRUNGMARKEN der Bauform (O‑H13b‑3, Anwenderentscheid 07.09.2026):
+        /// Überschrift → Ankername. Ein Anker steht unmittelbar UNTER seiner
+        /// Überschrift.
+        ///
+        /// <para><b>Warum überhaupt Anker.</b> Der Knopf „Berechnung" der Dialoge
+        /// zielt auf <c>…#rechenweg</c> und bringt den Leser damit zu den Schritten
+        /// statt an den Seitenanfang. Ohne eigene Marke bliebe nur der AUTOMATISCHE
+        /// Überschriftenanker von MediaWiki — und der wechselt, sobald jemand die
+        /// Überschrift umbenennt („Rechenweg" → <c>#Rechenweg</c>, „Der Rechenweg" →
+        /// <c>#Der_Rechenweg</c>). Ein ausgeliefertes Programm trägt
+        /// <c>help_mapping.txt</c> eingebettet bei sich und altert bis zum nächsten
+        /// Release; sein Ziel muss die Umbenennung überleben.</para>
+        ///
+        /// <para><b>Warum <c>{{Anker|…}}</c> und nicht <c>&lt;span id&gt;</c>.</b>
+        /// Gemessen am 07.09.2026 gegen <c>wiki.epos-plan.de</c>: Die Vorlage
+        /// existiert (<c>Vorlage:Anker</c>, Seite 33), setzt
+        /// <c>&lt;span class="epos-anker" id="…"&gt;&lt;/span&gt;</c>, ist in
+        /// <c>MediaWiki:Common.css</c> auf Größe null gestellt und wird von den
+        /// Seiten der Rubrik „Grundlagen" bereits so benutzt — eine Zeile
+        /// unmittelbar unter der Überschrift. Die Rubrik „Berechnung" folgt der
+        /// Hausform, statt eine zweite zu erfinden.</para>
+        /// </summary>
+        private static readonly (string Ueberschrift, string Anker)[] Sprungmarken =
+        {
+            ("== Was berechnet wird ==",           "was"),
+            ("== Eingangsgrößen ==",               "eingang"),
+            ("== Formelzeichen und Parameter ==",  "zeichen"),
+            ("== Rechenweg ==",                    "rechenweg"),
+            ("== Grenzen und Annahmen ==",         "grenzen"),
+            ("== Ergebnisse und wo sie stehen ==", "ergebnisse"),
+            ("== Bezüge ==",                       "bezuege")
+        };
+
+        /// <summary>
         /// Eine Anzeige-Gleichung: eingerückte Zeile mit der laufenden Nummer am
         /// Zeilenende, gesetzt in <c>&lt;math&gt;</c> (Fassung 3) ODER in
         /// <c>&lt;big&gt;</c> (Fassung 2).
@@ -460,6 +494,108 @@ namespace EPOS.Kern.Tests
                 seitenname + ": die Parametertabelle fehlt (Kopfzeile '" + KOPF_PARAMETER + "').");
             Assert.True(seite.Markup.IndexOf(KOPF_VARIABLEN, StringComparison.Ordinal) >= 0,
                 seitenname + ": die Variablentabelle fehlt (Kopfzeile '" + KOPF_VARIABLEN + "').");
+        }
+
+        // ===============================================================
+        //  O-H13b-3 - die Sprungmarken
+        // ===============================================================
+
+        /// <summary>
+        /// <b>O‑H13b‑3:</b> Jeder Standardabschnitt jeder Seite trägt seine
+        /// Sprungmarke, und sie steht unmittelbar UNTER der Überschrift.
+        ///
+        /// <para>„Unmittelbar darunter" ist keine Schönheitsfrage: Ein Anker, der
+        /// irgendwo im Abschnitt steht, springt an eine beliebige Stelle darin, und
+        /// ein Anker VOR der Überschrift liefe beim nächsten Einfügen einer Zeile in
+        /// den vorigen Abschnitt hinein. Die Stelle ist die Hausform dieses Wikis
+        /// (<c>Vorlage:Anker</c>, so benutzt auf den Seiten der Rubrik
+        /// „Grundlagen").</para>
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(AlleSeitenDerRubrik))]
+        public void Jeder_Abschnitt_traegt_seine_Sprungmarke(string seitenname)
+        {
+            BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
+            Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
+
+            string[] zeilen = seite!.Markup.Replace("\r\n", "\n").Split('\n');
+
+            foreach ((string ueberschrift, string anker) in Sprungmarken)
+            {
+                int stelle = Array.FindIndex(zeilen, z => z.Trim() == ueberschrift);
+
+                Assert.True(stelle >= 0, seitenname + ": '" + ueberschrift + "' fehlt.");
+                Assert.True(stelle + 1 < zeilen.Length,
+                    seitenname + ": nach '" + ueberschrift + "' steht nichts mehr.");
+
+                Assert.Equal("{{Anker|" + anker + "}}", zeilen[stelle + 1].Trim());
+            }
+        }
+
+        /// <summary>
+        /// Die Photovoltaikseite führt den ACHTEN Abschnitt der Rubrik — der
+        /// Wechselrichter ist ein Abschnitt dieser Seite und keine eigene Seite —,
+        /// und der Katalogeditor „Wechselrichter" zielt genau darauf.
+        /// </summary>
+        [Fact]
+        public void Die_Photovoltaikseite_traegt_die_Marke_des_Wechselrichters()
+        {
+            BerechnungsSeite seite = BerechnungsHilfe.Seite("Photovoltaik");
+            Assert.True(seite != null, "Seite 'Photovoltaik' nicht gefunden.");
+
+            string[] zeilen = seite!.Markup.Replace("\r\n", "\n").Split('\n');
+            int stelle = Array.FindIndex(zeilen, z => z.Trim() == "== Wechselrichter ==");
+
+            Assert.True(stelle >= 0, "Photovoltaik: der Abschnitt 'Wechselrichter' fehlt.");
+            Assert.Equal("{{Anker|wechselrichter}}", zeilen[stelle + 1].Trim());
+        }
+
+        /// <summary>
+        /// Der Assistent sieht KEINE Sprungmarke. Sie ist Wikitechnik; im Prompt
+        /// stünde sie als sinnloses Wort zwischen Überschrift und erstem Satz, und
+        /// der Klartext ist genau die Zeichenkette, die in den Prompt geht.
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(AlleSeitenDerRubrik))]
+        public void Der_Klartext_traegt_keine_Sprungmarke(string seitenname)
+        {
+            BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
+            Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
+
+            Assert.DoesNotContain("{{", seite!.Klartext, StringComparison.Ordinal);
+            Assert.DoesNotContain("Anker|", seite.Klartext, StringComparison.Ordinal);
+
+            // Gegenprobe: Das Markup FUEHRT sie - sonst prüfte der Fall nichts.
+            Assert.Contains("{{Anker|rechenweg}}", seite.Markup, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe:</b> Die Marke fällt weg, der Satz bleibt — auch wenn sie
+        /// mitten in einer Zeile steht. Und eine Tabellenzeile, die mit
+        /// <c>{|</c> beginnt, wird davon nicht angetastet.
+        /// </summary>
+        [Fact]
+        public void Der_Klartext_entfernt_eine_Sprungmarke_ohne_den_Satz_zu_kuerzen()
+        {
+            string markup =
+                "== Rechenweg ==\n" +
+                "{{Anker|rechenweg}}\n" +
+                "\n" +
+                "Der Kessel {{Anker|kessel}} deckt die Spitze.\n" +
+                "\n" +
+                "{| class=\"wikitable\"\n" +
+                "! Größe !! Wert\n" +
+                "|-\n" +
+                "| Leistung || 50 kW\n" +
+                "|}\n";
+
+            string klartext = BerechnungsHilfe.AlsKlartext(markup);
+
+            Assert.DoesNotContain("{{", klartext, StringComparison.Ordinal);
+            Assert.Contains("Rechenweg", klartext, StringComparison.Ordinal);
+            Assert.Contains("Der Kessel  deckt die Spitze.", klartext, StringComparison.Ordinal);
+            Assert.Contains("Größe | Wert", klartext, StringComparison.Ordinal);
+            Assert.Contains("Leistung | 50 kW", klartext, StringComparison.Ordinal);
         }
 
         /// <summary>Alle dreizehn Seiten der Rubrik als Theoriedaten.</summary>

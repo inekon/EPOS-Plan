@@ -4,6 +4,7 @@
      Kaskade.cs, Hydraulikbild.cs, Update/ProjektPuffer.cs (nutzbare Kapazität) -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Ein thermischer Pufferspeicher entkoppelt Erzeugung und Bedarf. Der Lauf führt für jede Stunde
 seinen '''Füllstand''', die '''Ladung''', die '''Entladung''', die '''Bereitschaftsverluste''' und —
@@ -16,6 +17,7 @@ Bedarfsdeckung. Wer wann in ihn lädt, entscheidet die '''Ladeordnung'''; wer wa
 die '''Entladereihenfolge''' seines Kanals.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Größe !! Einheit !! Herkunft im Programm
@@ -48,6 +50,7 @@ die '''Entladereihenfolge''' seines Kanals.
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres
 (1…8&nbsp;760), <math>Q</math> eine Wärmemenge, <math>\vartheta</math> eine Temperatur in Grad
@@ -162,6 +165,7 @@ Größen, die der Lauf je Stunde oder je Speicher bildet.
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
 Gleichungen dieser Seite die laufende Stunde des Jahres und <math>i</math> der Schichtindex — beide
@@ -384,6 +388,7 @@ Der '''Umsatz''' <math>U_{\mathrm{a}}</math> hängt von der Rolle des Speichers 
 <math>Q_{\mathrm{max}} \le 0</math> ergibt <math>z_{\mathrm{V}} = 0</math>.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Ein Energiebilanzmodell, kein Strömungsmodell.''' Es gibt keine Massenströme, keine
   Rohrleitungen, keine Wärmeübertrager. <math>P_{\mathrm{lad,max}}</math> und
@@ -406,6 +411,7 @@ Der '''Umsatz''' <math>U_{\mathrm{a}}</math> hängt von der Rolle des Speichers 
 * '''Kein interner Wärmeübertrager''', kein Frischwassermodul, keine Legionellenschaltung.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Simulationsergebnis, Reiter „Übersicht"''' — je Speicher Ladung, Entladung, Verluste und
   Vollzyklen <math>z_{\mathrm{V}}</math>; dazu die Ganglinie des Füllstands
@@ -420,6 +426,7 @@ Der '''Umsatz''' <math>U_{\mathrm{a}}</math> hängt von der Rolle des Speichers 
   Speicher ohne Lader.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] — Bedienung von Katalog und Projektdialog
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — die Phasen A bis G einer Stunde und die Kaskade

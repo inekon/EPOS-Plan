@@ -5,6 +5,7 @@
      EPOS.Kern/Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs (die eine Emissionsquelle, W14a-E-8-B1) -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Der Heizkessel ist die Spitzenlast- und Rückfallstufe der Wärmeversorgung. In jeder Stunde deckt er
 den Bedarf, der nach den vorgelagerten Erzeugern noch offen ist, und lädt — als letzter Lader der
@@ -18,6 +19,7 @@ einer Stunde, folgt sein Verbrauch dem Wirkungsgrad; steht er, wird ihm der ante
 Bereitschaftsverlust angelastet.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Größe !! Einheit !! Herkunft im Programm
@@ -46,6 +48,7 @@ Bereitschaftsverlust angelastet.
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres
 (1…8&nbsp;760), <math>Q</math> eine Wärmemenge, <math>P</math> eine Leistung,
@@ -143,6 +146,7 @@ Größen, die der Lauf je Stunde oder je Kessel bildet.
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
 Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht
@@ -334,6 +338,7 @@ Stand der Kessel das ganze Jahr — <math>Q_{\mathrm{K,a}} = 0</math> oder
 unter dem Volllastwirkungsgrad des Katalogs, und zwar umso deutlicher, je kürzer der Kessel läuft.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Die fünf Emissionsspalten des Kesselkatalogs rechnen nicht mit''' (Befund W14a‑E‑8‑B1 vom
   06.09.2026, entschieden am 07.09.2026). CO₂, SO₂, NOₓ, CO und Staub lassen sich am Kessel
@@ -365,6 +370,7 @@ unter dem Volllastwirkungsgrad des Katalogs, und zwar umso deutlicher, je kürze
   Laufs; der Lauf liefert ihr die Mengen.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Simulationsergebnis, Reiter „Heizkessel"''' — je Kessel Nutzwärme, Brennstoffverbrauch,
   Jahresnutzungsgrad <math>\eta_{\mathrm{a}}</math>, Deckungsanteil und Emissionen; dazu die
@@ -379,6 +385,7 @@ unter dem Volllastwirkungsgrad des Katalogs, und zwar umso deutlicher, je kürze
   <math>P_{\mathrm{Gas,max}}</math> und Emissionen gehen von hier in die Kosten- und CO₂-Rechnung.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Heizkessel|Heizkessel]] — Bedienung des Dialogs, Katalog, Brennstoffvarianten
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Stundenschleife, Reihenfolge der Erzeuger

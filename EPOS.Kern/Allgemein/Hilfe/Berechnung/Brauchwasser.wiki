@@ -4,6 +4,7 @@
      EPOS.Kern/Controller/BedarfsVorschauCtrl.cs, EPOS.Kern/Allgemein/Energieeinheit.cs -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Der '''Brauchwasserwaermebedarf''' als Reihe von 8 760 Stundenwerten [kWh] — der zweite der
 drei Bedarfskanaele. Grundlage ist je Profil ein Satz aus '''zwoelf Monatswerten''' und einem
@@ -14,6 +15,7 @@ Trinkwassers, die Zirkulation und die Speicherverluste rechnet '''diese''' Seite
 stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Groesse !! Einheit !! Herkunft im Programm
@@ -32,6 +34,7 @@ stecken in den Katalogwerten bzw. gehoeren zum Pufferspeicher.
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 === Parameter ===
 
@@ -94,6 +97,7 @@ Was die Rechnung selbst bildet:
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 === 1. Profile des Projekts sammeln ===
 
@@ -229,6 +233,7 @@ gedaempften Waermewelle im Erdreich (Verlegetiefe 2,0 m, Temperaturleitfaehigkei
 Waermebedarfs, in denen der Effekt schon steckt.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Kein Zapfmodell.''' Gerechnet werden Stundenmittelwerte, keine einzelnen Zapfungen. Gleichzeitigkeit, Spitzenzapfung und Bereitschaftsvolumen nach VDI 6002 sind damit '''nicht''' abgedeckt — die Auslegung eines Speichers ist eine andere Rechnung als dieser Bedarf.
 * '''Keine Temperaturen im Rechenweg.''' In (1) bis (6) kommt keine Temperatur vor: Der Bedarf kommt als Energiemenge herein. Trinkwarmwassertemperatur, Kaltwassertemperatur und Spreizung stecken in den Katalogwerten — sie stehen nur in (7), also in der HERLEITUNG der Monatswerte. Wer bei anderer Spreizung rechnet, aendert die Monatswerte.
@@ -240,6 +245,7 @@ Waermebedarfs, in denen der Effekt schon steckt.
 * '''Der Auslieferungskatalog kann bei einer Datenbankmigration verlorengehen''' — die neuen VDI-Typen sind kein Bestandteil des alten Migrationsskripts. Vor einer Migration Sicherung anlegen.
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Dialog „Brauchwasserwärme"''', Knopf „Simulation…" — Jahresmenge und die zwoelf Monatswerte der ausgewaehlten Profile, dazu der monatliche Verlauf.
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — der Brauchwasseranteil im Jahresbedarf.
@@ -247,6 +253,7 @@ Waermebedarfs, in denen der Effekt schon steckt.
 * '''Laufprotokoll''' — uebersprungene Profile (kein Kopfsatz, kein Wochenprofil, Monatssumme null, Typ nicht definiert).
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Brauchwasser|Brauchwasser]] — Bedienung des Dialogs und Katalogpflege
 * [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] — wie der Kanal in den Gesamtbedarf eingeht

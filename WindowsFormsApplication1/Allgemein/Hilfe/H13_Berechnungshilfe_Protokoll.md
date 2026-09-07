@@ -372,7 +372,8 @@ tritt zurück.
 
 | Kennung | Punkt |
 |---|---|
-| **H13‑O‑1** | Teil B (`#110b`) liefert die sieben Erzeugerseiten. Ihre Einträge stehen bereits im Startbestand (§ 3.4) mit einer neutralen Beschreibung — wer die Seiten schreibt, darf sie dort an den Wortlaut von „Was berechnet wird" angleichen. |
+| **H13‑O‑1** | ~~Teil B (`#110b`) liefert die sieben Erzeugerseiten. Ihre Einträge stehen bereits im Startbestand (§ 3.4) mit einer neutralen Beschreibung — wer die Seiten schreibt, darf sie dort an den Wortlaut von „Was berechnet wird" angleichen.~~ **Erledigt am 07.09.2026, § 14** — angeglichen und durch einen Wächter gebunden. |
+| **H13‑O‑7** | *(neu, § 14.2)* Die **sechs** Seiten des Teils A behalten ihre von Hand geschriebenen Beschreibungen; der Wächter aus § 14.3 gilt nur für die sieben Erzeugerseiten. Wer die Regel auf alle 13 ausdehnen will, muss zuerst „Wärmequelle Erdreich" umschreiben: Ihr erster Absatz endet mit einem Doppelpunkt vor einer Aufzählung und liefert damit keinen Satz, sondern eine Ankündigung. |
 | **H13‑O‑2** | Die Rubrikseite `Programm Dokumentation` nennt die neue Unterrubrik noch nicht (§ 8, Punkt 4) — Handgriff des Anwenders. |
 | **H13‑O‑3** | `_Bezuege.wiki` führt Blöcke für alle 18 allgemeinen Seiten; ob der Anwender sie alle einfügt, entscheidet er beim Einpflegen. |
 | **H13‑O‑4** | Die Kurztexte der Rechenweg-Knöpfe stehen als deutscher Rückfall im Quelltext. Sobald der Katalog den Schlüssel kennt, gewinnt sein Tooltip; für eine englische Oberfläche ohne Katalog wäre je Knopf ein Ressourcenschlüssel nachzuziehen. |
@@ -763,9 +764,9 @@ nachzieht, liegen im selben Ordner **beide** Fassungen. Deshalb:
 
 | Punkt | was zu tun ist |
 |---|---|
-| **H13‑F3‑1** | Die **Math-Erweiterung** im Wiki muss laufen, bevor die Seiten hochgeladen werden. Solange sie fehlt, sieht der Leser `\displaystyle …` als Klartext — kein Fehler des Textes, aber unbrauchbar. |
+| **H13‑F3‑1** | ~~Die **Math-Erweiterung** im Wiki muss laufen, bevor die Seiten hochgeladen werden.~~ **Erledigt — gemessen am 07.09.2026** (`action=query&meta=siteinfo&siprop=extensions`): MediaWiki 1.46.0 führt den `parserhook` **Math**. |
 | **H13‑F3‑2** | Nach der Zusammenführung von Teil A und Teil B: die zwei `TODO`-Vermerke einlösen — `SeitenDiesesTeils` → `SeitenDerRubrik`, das Oder `<math>`/`<big>` auflösen. |
-| **H13‑F3‑3** | Die Vorschau-Probe über `action=parse` erneut ziehen, sobald die Erweiterung steht — diesmal auf die WIEDERGABE der Formeln, nicht nur auf Tabellen und Abschnitte. |
+| **H13‑F3‑3** | ~~Die Vorschau-Probe über `action=parse` erneut ziehen, sobald die Erweiterung steht.~~ **Erledigt am 07.09.2026** (H13b § 13.6): alle 13 Seiten und `_Index` gerendert — **0 Formelfehler**, dazu die 92 Anker im HTML. |
 
 ### 13.12 Abnahme auf Windows (Nachtrag zu § 9 und § 12.9)
 
@@ -775,3 +776,89 @@ nachzieht, liegen im selben Ordner **beide** Fassungen. Deshalb:
 | **A‑H13‑16** | Unter einer beliebigen Gleichung die Legende lesen | jedes Zeichen der Gleichung steht darunter, mit Einheit; Konstanten mit ihrem Wert |
 | **A‑H13‑17** | Hilfe-Assistent: „Wie rechnet EPOS-Plan den Netzverlust?" — auch ohne Netz | die Antwort gibt `q_NV = (Q_a,vor · p)/(876000)` in lesbaren Zeichen wieder, nicht als `\frac{…}{…}` |
 | **A‑H13‑18** | Auf der Rubrikstartseite den Abschnitt „Schreibweise" lesen | das Beispiel rendert; die Zeichentabelle stimmt mit den Symbolen der sechs Seiten überein |
+
+---
+
+## 14. Nachtrag H13‑O‑1 (07.09.2026) — der Startbestand spricht den Text der Seite
+
+**Anwenderentscheid vom 07.09.2026** („Empfehlung" zu den drei offenen Hilfepunkten): Die
+Beschreibungen der sieben Erzeugerseiten im Startbestand werden **wortgleich** zum Anfang des
+Abschnitts „Was berechnet wird" der jeweiligen `.wiki`, und ein Wächter hält sie dort.
+
+### 14.1 Was schief war
+
+§ 3.4 legte den Startbestand auf 46 Einträge an — die 32 allgemeinen Seiten, die Rubrikseite und
+die 13 Rechenwegseiten. Die sechs Seiten des Teils A bekamen dabei eine von Hand geschriebene
+Beschreibung; die sieben Erzeugerseiten kamen erst mit Teil B und trugen bis hierher einen
+**neutralen Platzhalter**, siebenmal derselbe Satzbau:
+
+> „Der Rechenweg des Heizkessels im Stundenraster - Eingangsgroessen, Formeln, Vorgabewerte und
+> Grenzen."
+
+Das ist der Text, den der Infoknopf zeigt, **solange das Wiki die Seite noch nicht führt oder das
+Programm ohne Netz läuft** (§ 3.2) — also genau dann, wenn der Anwender ihn am nötigsten braucht.
+Er sagte über den Heizkessel nichts, was er über den Stromspeicher nicht auch gesagt hätte.
+
+### 14.2 Die Regel
+
+> Aus dem **ersten Absatz** des Abschnitts „Was berechnet wird", befreit von Auszeichnung, so
+> viele **ganze Sätze**, wie in **240 Zeichen** passen — mindestens aber der erste.
+
+Ganze Sätze, weil ein abgeschnittener Satz im Popup schlimmer aussieht als ein kurzer. 240 Zeichen,
+weil das Popup darunter noch Kapitelnamen, Adresse und Knopfzeile trägt.
+
+| Seite | Zeichen | Beschreibung im Startbestand (neu) |
+|---|---:|---|
+| Heizkessel | 228 | „Der Heizkessel ist die Spitzenlast- und Rückfallstufe der Wärmeversorgung. In jeder Stunde deckt er den Bedarf, der nach den vorgelagerten Erzeugern noch offen ist, und lädt — als letzter Lader der Kaskade — Pufferspeicher nach." |
+| BHKW | 147 | „Ein Blockheizkraftwerk erzeugt Wärme und Strom gleichzeitig; welche der beiden Größen die Maschine führt, entscheidet die Betriebsart des Projekts." |
+| Wärmepumpe | 51 | „Die Wärmepumpe hebt Umweltwärme auf Nutztemperatur." |
+| Pufferspeicher | 63 | „Ein thermischer Pufferspeicher entkoppelt Erzeugung und Bedarf." |
+| Solarthermie | 57 | „Ein Solarkollektorfeld wandelt Einstrahlung in Nutzwärme." |
+| Photovoltaik | 177 | „Der Photovoltaik-Zweig rechnet für jede PV-Anlage des Projekts den Wechselstromertrag Stunde für Stunde über ein volles Jahr und verrechnet ihn anschließend mit dem Strombedarf." |
+| Stromspeicher | 195 | „Der elektrische Speicher wird nach Photovoltaik und BHKW gerechnet: Er sieht die Last, die Erzeugung und die Preise als Zeitreihen und entscheidet je Viertelstunde, ob geladen oder entladen wird." |
+
+Drei der sieben bleiben **ein** Satz: Bei Wärmepumpe, Pufferspeicher und Solarthermie ist der zweite
+Satz des Absatzes für sich schon länger als 240 Zeichen. Das ist kein Mangel der Regel, sondern ihr
+Zweck — sie schneidet nicht.
+
+**Die Schreibweise der Datei bleibt.** `help_cache.json` ist ASCII mit BOM und führt jedes
+Nicht-ASCII-Zeichen als `\uXXXX`; die neuen Umlaute stehen genauso da. Geändert sind **sieben
+Zeichenketten** in sieben Zeilen, sonst nichts. `System.Text.Json` liest die Escapes.
+
+**Einsprachig, wie der Startbestand.** Er führt je Seite **einen** Eintrag; eine englische Spalte
+gibt es dort nicht, und englische Wikiseiten gibt es nicht (Entscheid 7.1a) — die Seite geht in der
+englischen Oberfläche durch den Übersetzungs-Proxy auf.
+
+### 14.3 Der Wächter
+
+`EPOS.UI.Tests/BerechnungshilfeTests` — zwei neue Fälle, **8 Theoriezeilen**:
+
+| Fall | was er hält |
+|---|---|
+| `Der_Startbestand_spricht_den_Text_der_Seite` (7 Zeilen) | je Erzeugerseite: die Beschreibung im Startbestand ist zeichengleich zum Anfang von „Was berechnet wird", und der ist höchstens 240 Zeichen lang |
+| `Der_Waechter_schneidet_an_der_Satzgrenze` | Gegenprobe: zwei Sätze, wenn sie passen; einer, wenn der zweite die Grenze sprengt; alles, wenn kein Satzzeichen da ist; und die Auszeichnung fällt weg, ohne ein Wort zu ändern |
+
+Er liest den Startbestand von der **Platte** (`WindowsFormsApplication1/…/help_cache.json`) —
+derselbe Weg wie zur Zuordnungsdatei, weil das WinForms-Projekt `net10.0-windows` ist und ein
+Verweis darauf weder auf ubuntu noch auf macOS liefe.
+
+**Damit driften sie nie wieder:** Wer den Abschnitt „Was berechnet wird" einer Erzeugerseite
+umschreibt, ohne den Startbestand nachzuziehen, bekommt einen roten Fall mit beiden Texten
+nebeneinander.
+
+### 14.4 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet test EPOS.UI.Tests -c Release` | **3 083 / 3 083 grün** (3 075 + 8) |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 744 / 1 744 grün** |
+| `help_cache.json` | weiterhin 46 Einträge, gültiges JSON, ASCII + BOM |
+| Rechenweg, SQL, Ressourcen, `.wiki`, `help_mapping.txt` | **unverändert** |
+
+### 14.5 Abnahme auf Windows
+
+| Punkt | Was zu prüfen ist | Erwartung |
+|---|---|---|
+| **A‑H13‑19** | **Ohne Netz starten**, im Heizkesseldialog den Berechnungsknopf überfahren | Das Popup zeigt „Der Heizkessel ist die Spitzenlast- und Rückfallstufe …" statt des alten Platzhalters |
+| **A‑H13‑20** | Dasselbe für BHKW, Wärmepumpe, Pufferspeicher, Solarthermie, Photovoltaik und Stromspeicher | je der Anfang der eigenen Seite; keine zwei gleichlautenden Texte mehr |
+| **A‑H13‑21** | Mit Netz starten, nachdem die Seiten im Wiki stehen | die Wikifassung gewinnt (F6); der Text ist derselbe, weil beide aus demselben Absatz stammen |

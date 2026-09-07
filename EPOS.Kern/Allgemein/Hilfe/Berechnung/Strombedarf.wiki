@@ -5,6 +5,7 @@
      EPOS.Kern/Allgemein/Simulation/SimulationControl.cs -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Der '''Strombedarf eines Projekts''' als Reihe von '''35 040 Viertelstundenwerten''' — die
 Last, gegen die Photovoltaik, BHKW und Stromspeicher anschliessend rechnen. Er entsteht aus
@@ -19,6 +20,7 @@ ein Heizstab oder eine Kesselhilfsenergie zieht, entsteht erst im Lauf und kommt
 Bedarf hinzu.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Groesse !! Einheit !! Herkunft im Programm
@@ -39,6 +41,7 @@ Bedarf hinzu.
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 === Parameter ===
 
@@ -101,6 +104,7 @@ Was die Rechnung selbst bildet:
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 === 1. Stromverbraucherprofile ===
 
@@ -248,6 +252,7 @@ noch ihre Ergebnisse. Der Ausgabeweg ist CSV. Sie veraendert damit keinen
 Simulationsbedarf und kein Simulationsergebnis.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Viertelstunden ohne Unterstruktur.''' Gleichung (1) setzt alle vier Viertel gleich hoch; eine Spitze von 15 Minuten Dauer, die in einer Stundenreihe steckt, laesst sich daraus nicht zurueckgewinnen.
 * '''Keine Blindleistung, keine Phasen, keine Spannungsebene.''' P(k) ist Wirkleistung.
@@ -258,6 +263,7 @@ Simulationsbedarf und kein Simulationsergebnis.
 * '''Die Peak-Shaving-Maske schreibt nicht''' (siehe Schritt 7).
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — <math>E_{\mathrm{a}}</math> nach (4), der Anteil aus Profilen, der Anteil aus Ganglinien, die Spitze <math>P_{\mathrm{max}}</math> nach (6), Jahresganglinie und Jahresdauerlinie.
 * '''Dialog „Standard Stromprofil"''', Knopf „Simulation…" — die Kennzahlen der ausgewaehlten Profile; „monatlicher Verlauf…" zeigt die zwoelf Monatssummen nach (5).
@@ -266,6 +272,7 @@ Simulationsbedarf und kein Simulationsergebnis.
 * '''Laufprotokoll''' — uebersprungene Profile, Rasterfehler einer Ganglinie, Abbruchgruende.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Strombedarf|Strombedarf]] — Bedienung des Programmschritts
 * [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]] — Profile und Katalogpflege

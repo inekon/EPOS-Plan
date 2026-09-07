@@ -184,6 +184,36 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string HilfeSchluessel { get; private set; }
 
+        /// <summary>
+        /// Der Schluessel des ZWEITEN Infoknopfs — der Weg in die Wikirubrik
+        /// <c>Programm Dokumentation/Berechnung</c> (H13, Anwenderentscheid
+        /// O-H13b-5 vom 07.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para>Er steht NEBEN <see cref="HilfeSchluessel"/> und ersetzt ihn nicht:
+        /// Der Fensterknopf oben rechts bleibt die Bedienhilfe des Katalogs, der
+        /// zweite Knopf sitzt am Kopf des Detailblocks — also dort, wo die Werte
+        /// stehen, die der Rechenweg spaeter liest.</para>
+        /// <para>Er ist SPRACHNEUTRAL wie <see cref="Stammtabelle"/> und
+        /// <see cref="HilfeSchluessel"/>; die Anzeigetexte kommen weiterhin ueber
+        /// den Uebersetzer von <see cref="Finde"/>.</para>
+        /// </remarks>
+        public string BerechnungsSchluessel { get; private set; }
+
+        /// <summary>
+        /// Die Seite der Rubrik, auf die der Berechnungsknopf fuehrt — ohne Rubrik
+        /// und ohne Anker (z. B. <c>Heizkessel</c>, <c>Solarthermie</c>).
+        /// </summary>
+        public string BerechnungsSeite { get; private set; }
+
+        /// <summary>
+        /// Der Kurztext des Berechnungsknopfs, falls der Hilfekatalog den Schluessel
+        /// (noch) nicht kennt — WORTGLEICH zum Tooltip des mitgelieferten
+        /// Startbestandes, damit beide Wege denselben Namen zeigen.
+        /// </summary>
+        public string BerechnungsKurztext =>
+            BerechnungsHilfe.RUBRIK_KURZ + ": " + (BerechnungsSeite ?? "");
+
         /// <summary>Fenstertitel, bereits uebersetzt.</summary>
         public string Titel { get; private set; }
 
@@ -275,6 +305,8 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_Heizkessel_Admin.btn_Help",
+                        BerechnungsSchluessel = "Form_Heizkessel_Admin.Berechnung",
+                        BerechnungsSeite = "Heizkessel",
                         Titel = t("KBROW_TITEL_HEIZKESSEL"),
                         Listenbeschriftung = t("KBROW_LISTE_HEIZKESSEL"),
                         Detailueberschrift = t("KBROW_GRUPPE_HEIZKESSEL"),
@@ -313,6 +345,8 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = true,
                         ZeigtSchreibschutz = true,
                         HilfeSchluessel = "Form_BHKWAdmin.btn_Help",
+                        BerechnungsSchluessel = "Form_BHKWAdmin.Berechnung",
+                        BerechnungsSeite = "BHKW",
                         Titel = t("KBROW_TITEL_BHKW"),
                         Listenbeschriftung = t("KBROW_LISTE_BHKW"),
                         Detailueberschrift = t("KBROW_GRUPPE_BHKW"),
@@ -355,6 +389,8 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = false,
                         ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_SolarKollektorenAdmin.btn_Help",
+                        BerechnungsSchluessel = "Form_SolarKollektorenAdmin.Berechnung",
+                        BerechnungsSeite = "Solarthermie",
                         Titel = t("KBROW_TITEL_SOLAR"),
                         Listenbeschriftung = t("KBROW_LISTE_SOLAR"),
                         Detailueberschrift = t("KBROW_GRUPPE_SOLAR"),
@@ -396,6 +432,8 @@ namespace WindowsFormsApplication1
                         HatSpeicherweg = false,
                         ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_PufferSp_Admin.btn_Help",
+                        BerechnungsSchluessel = "Form_PufferSp_Admin.Berechnung",
+                        BerechnungsSeite = "Pufferspeicher",
                         Titel = t("KBROW_TITEL_PUFFERSP"),
                         Listenbeschriftung = t("KBROW_LISTE_PUFFERSP"),
                         Detailueberschrift = t("KBROW_GRUPPE_PUFFERSP"),

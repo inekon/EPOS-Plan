@@ -3,6 +3,7 @@
      EPOS.Kern/Allgemein/Simulation/ErdreichAuswertung.cs, EPOS.Kern/Allgemein/Simulation/WaermequelleClass.cs -->
 
 == Was berechnet wird ==
+{{Anker|was}}
 
 Zwei Dinge, die zusammengehoeren, aber getrennt laufen:
 
@@ -14,6 +15,7 @@ die Auslegungspruefung folgt '''VDI 4640 Blatt 2:2019-06''' (Weissdruck), Anhaen
 Der Entwurfsstand von Blatt 1 ist bewusst gewaehlt und wird hier ausdruecklich genannt.
 
 == Eingangsgrößen ==
+{{Anker|eingang}}
 
 {| class="wikitable"
 ! Groesse !! Einheit !! Herkunft im Programm
@@ -38,6 +40,7 @@ Der Entwurfsstand von Blatt 1 ist bewusst gewaehlt und wird hier ausdruecklich g
 |}
 
 == Formelzeichen und Parameter ==
+{{Anker|zeichen}}
 
 === Parameter ===
 
@@ -132,6 +135,7 @@ Was die Rechnung selbst bildet:
 |}
 
 == Rechenweg ==
+{{Anker|rechenweg}}
 
 === 1. Den Jahresgang der Aussenluft bestimmen ===
 
@@ -424,6 +428,7 @@ verletzt die Grenzwerte aus (12), (13) und (16) also nicht. Die Frostbedingung (
 eine ZUSAETZLICHE, strengere Anzeige.
 
 == Grenzen und Annahmen ==
+{{Anker|grenzen}}
 
 * '''Keine Rueckwirkung des Entzugs auf die Temperatur.''' In (6) und (7) kommt <math>P_{\mathrm{Q}}(t)</math> nicht vor: Das Modell liefert den ungestoerten Jahresgang des Erdreichs; dass die Waermepumpe den Boden abkuehlt, ist '''nicht''' abgebildet. Auch die Regeneration (durch Solarthermie, Abwaerme oder den Sommer) wird nicht gerechnet. Genau dafuer gibt es die Auslegungspruefung: Sie haelt den Entzug gegen die Grenzwerte, unter denen die Norm eine dauerhaft tragfaehige Quelle erwartet.
 * '''Keine Langzeitbetrachtung.''' Ein Jahr, kein Absinken ueber 20 oder 50 Betriebsjahre.
@@ -436,6 +441,7 @@ eine ZUSAETZLICHE, strengere Anzeige.
 * '''Die Ergebnisse der Pruefung werden nicht gespeichert.''' Sie gelten fuer den Lauf der laufenden Sitzung; nach einem Programmstart steht im Dialog wieder „noch kein Simulationslauf".
 
 == Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
 
 * '''Dialog „Wärmequelle Erdreich"''', Abschnitt „Jahresgang der Quelltemperatur" — das Bild von <math>\vartheta_{\mathrm{Q}}(t)</math> nach (6) bzw. (7), darunter Minimum, Maximum und Mittel samt Monat; ein Hinweis sagt an, wenn mit den Ersatzwerten aus Schritt 1 gerechnet wurde.
 * '''Dialog „Wärmequelle Erdreich"''', Abschnitt „Auslegungsprüfung nach VDI 4640 Blatt 2" — Istwert gegen Grenzwert je Pruefzeile (12), (13) bzw. (16), die Grundlage (Klimazone und Bodenart bzw. <math>\lambda</math>, Sondenzahl, Volllaststunden), der Hinweis mit der erforderlichen Flaeche nach (14) bzw. Sondenlaenge nach (17), dazu Vorbehalt und Frostmeldung nach (19).
@@ -443,6 +449,7 @@ eine ZUSAETZLICHE, strengere Anzeige.
 * '''Laufprotokoll''' — die Warnung bei unstimmiger Tiefe (Schritt 5) und die Meldung, wenn eine Quelle nicht geprueft werden kann.
 
 == Bezüge ==
+{{Anker|bezuege}}
 
 * [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]] — Bedienung des Dialogs
 * [[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]] — wie die Quelltemperatur in Kennlinie und Leistungszahl eingeht
