@@ -21,11 +21,12 @@ namespace EPOS.UI.Dialoge.Import
     public sealed class KatalogZeile
     {
         public KatalogZeile(string name, string firma, double filterwert,
-                            IDictionary<string, string> werte)
+                            IDictionary<string, string> werte, double filterwert2 = 0.0)
         {
             Name = name ?? "";
             Firma = firma ?? "";
             Filterwert = filterwert;
+            Filterwert2 = filterwert2;
             Werte = werte ?? new Dictionary<string, string>();
         }
 
@@ -37,6 +38,13 @@ namespace EPOS.UI.Dialoge.Import
 
         /// <summary>Der Wert des Zahlenfilters (Leistung, Volumen, Aperturflaeche).</summary>
         public double Filterwert { get; }
+
+        /// <summary>
+        /// Der Wert des ZWEITEN Zahlenfilters, wenn die Auspraegung einen fuehrt
+        /// (<c>KatalogImportProfil.Zweitfilter</c>) — beim Stromspeicher die
+        /// Leistung [kW] neben der Kapazitaet [kWh]. Sonst 0 und unbenutzt.
+        /// </summary>
+        public double Filterwert2 { get; }
 
         /// <summary>Die Detailtexte, Schluessel → Anzeigetext.</summary>
         public IDictionary<string, string> Werte { get; }
@@ -113,6 +121,8 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_FILTER_LEISTUNG": return Resource.IMP_KAT_FILTER_LEISTUNG;
                 case "IMP_KAT_FILTER_VOLUMEN": return Resource.IMP_KAT_FILTER_VOLUMEN;
                 case "IMP_KAT_FILTER_APERTUR": return Resource.IMP_KAT_FILTER_APERTUR;
+                case "IMP_KAT_FILTER_ENERGIE": return Resource.IMP_KAT_FILTER_ENERGIE;
+                case "IMP_KAT_FILTER_LEISTUNG_KW": return Resource.IMP_KAT_FILTER_LEISTUNG_KW;
 
                 case "IMP_KAT_FELD_NAME": return Resource.IMP_KAT_FELD_NAME;
                 case "IMP_KAT_FELD_FIRMA": return Resource.IMP_KAT_FELD_FIRMA;
@@ -138,6 +148,27 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_FELD_MAXVORLAUF": return Resource.IMP_KAT_FELD_MAXVORLAUF;
                 case "IMP_KAT_FELD_KUEHLLEISTUNG": return Resource.IMP_KAT_FELD_KUEHLLEISTUNG;
 
+                // W13-E-2 (07.09.2026), Stufe S1 — der Stromspeicherimport.
+                case "IMP_KAT_FELD_MODELL": return Resource.IMP_KAT_FELD_MODELL;
+                case "IMP_KAT_FELD_CHEMIE": return Resource.IMP_KAT_FELD_CHEMIE;
+                case "IMP_KAT_FELD_ENERGIE": return Resource.IMP_KAT_FELD_ENERGIE;
+                case "IMP_KAT_FELD_LEISTUNG": return Resource.IMP_KAT_FELD_LEISTUNG;
+                case "IMP_KAT_FELD_ETA_RT": return Resource.IMP_KAT_FELD_ETA_RT;
+                case "IMP_KAT_FELD_STANDBY": return Resource.IMP_KAT_FELD_STANDBY;
+                case "IMP_KAT_FELD_QUELLE": return Resource.IMP_KAT_FELD_QUELLE;
+                case "IMP_KAT_SP_QUELLE": return Resource.IMP_KAT_SP_QUELLE;
+                case "IMP_KAT_SP_HERSTELLER": return Resource.IMP_KAT_SP_HERSTELLER;
+                case "IMP_KAT_SP_MODELL": return Resource.IMP_KAT_SP_MODELL;
+                case "IMP_KAT_SP_CHEMIE": return Resource.IMP_KAT_SP_CHEMIE;
+                case "IMP_KAT_SP_ENERGIE": return Resource.IMP_KAT_SP_ENERGIE;
+                case "IMP_KAT_SP_LEISTUNG": return Resource.IMP_KAT_SP_LEISTUNG;
+                case "IMP_KAT_SP_ETA": return Resource.IMP_KAT_SP_ETA;
+                case "IMP_KAT_QUELLE_CEC_NETZ": return Resource.IMP_KAT_QUELLE_CEC_NETZ;
+                case "IMP_KAT_QUELLE_CEC_DATEI": return Resource.IMP_KAT_QUELLE_CEC_DATEI;
+                case "IMP_KAT_QUELLE_BSLIB": return Resource.IMP_KAT_QUELLE_BSLIB;
+                case "IMP_KAT_HINWEIS_KOSTEN": return Resource.IMP_KAT_HINWEIS_KOSTEN;
+                case "IMP_KAT_HINWEIS_STUFEN": return Resource.IMP_KAT_HINWEIS_STUFEN;
+
                 case "IMP_KAT_EINH_KWTH": return Resource.IMP_KAT_EINH_KWTH;
                 case "IMP_KAT_EINH_KW": return Resource.IMP_KAT_EINH_KW;
                 case "IMP_KAT_EINH_PROZENT": return Resource.IMP_KAT_EINH_PROZENT;
@@ -147,6 +178,8 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_EINH_WM2": return Resource.IMP_KAT_EINH_WM2;
                 case "IMP_KAT_EINH_WM2K": return Resource.IMP_KAT_EINH_WM2K;
                 case "IMP_KAT_EINH_KWCOOL": return Resource.IMP_KAT_EINH_KWCOOL;
+                case "IMP_KAT_EINH_KWH": return Resource.IMP_KAT_EINH_KWH;
+                case "IMP_KAT_EINH_W": return Resource.IMP_KAT_EINH_W;
 
                 case "IMP_KAT_PROT_LESEN": return Resource.IMP_KAT_PROT_LESEN;
                 case "IMP_KAT_PROT_GELESEN": return Resource.IMP_KAT_PROT_GELESEN;
@@ -160,6 +193,26 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_TXT_LEERZEILE": return Resource.IMP_TXT_LEERZEILE;
                 case "IMP_TXT_TRENNZEICHEN": return Resource.IMP_TXT_TRENNZEICHEN;
 
+                // Die Rueckmeldungen der zwei Stromspeicher-Zerleger und des
+                // CEC-Abrufs (SpeicherImportMeldung im Kern, W13-E-2).
+                case "SPIMP_MSG_GELADEN": return Resource.SPIMP_MSG_GELADEN;
+                case "SPIMP_MSG_KOPFZEILE": return Resource.SPIMP_MSG_KOPFZEILE;
+                case "SPIMP_MSG_DATEI_FEHLT": return Resource.SPIMP_MSG_DATEI_FEHLT;
+                case "SPIMP_MSG_LEER": return Resource.SPIMP_MSG_LEER;
+                case "SPIMP_MSG_KEINE_SAETZE": return Resource.SPIMP_MSG_KEINE_SAETZE;
+                case "SPIMP_MSG_FORMAT_ALT": return Resource.SPIMP_MSG_FORMAT_ALT;
+                case "SPIMP_MSG_FEHLER": return Resource.SPIMP_MSG_FEHLER;
+                case "SPIMP_MSG_STAND": return Resource.SPIMP_MSG_STAND;
+                case "SPIMP_MSG_UEBERGANGEN": return Resource.SPIMP_MSG_UEBERGANGEN;
+                case "SPIMP_MSG_CEC_SUCHEN": return Resource.SPIMP_MSG_CEC_SUCHEN;
+                case "SPIMP_MSG_CEC_CACHE": return Resource.SPIMP_MSG_CEC_CACHE;
+                case "SPIMP_MSG_CEC_VERBINDEN": return Resource.SPIMP_MSG_CEC_VERBINDEN;
+                case "SPIMP_MSG_CEC_GEHOLT": return Resource.SPIMP_MSG_CEC_GEHOLT;
+                case "SPIMP_MSG_CEC_LEER": return Resource.SPIMP_MSG_CEC_LEER;
+                case "SPIMP_MSG_CEC_FEHLER": return Resource.SPIMP_MSG_CEC_FEHLER;
+                case "SPIMP_MSG_CEC_ALT": return Resource.SPIMP_MSG_CEC_ALT;
+                case "SPIMP_MSG_CEC_KEINE_QUELLE": return Resource.SPIMP_MSG_CEC_KEINE_QUELLE;
+
                 default: return schluessel;
             }
         }
@@ -169,6 +222,15 @@ namespace EPOS.UI.Dialoge.Import
         {
             if (meldung == null) return "";
             string vorlage = Zu(meldung.Schluessel) ?? meldung.Schluessel;
+            return meldung.Werte.Length == 0
+                ? vorlage
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture, vorlage, meldung.Werte);
+        }
+
+        /// <summary>Eine <see cref="SpeicherImportMeldung"/> als fertiger Satz.</summary>
+        public static string Zu(SpeicherImportMeldung meldung)
+        {
+            string vorlage = Zu(meldung.Schluessel);
             return meldung.Werte.Length == 0
                 ? vorlage
                 : string.Format(System.Globalization.CultureInfo.CurrentCulture, vorlage, meldung.Werte);

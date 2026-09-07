@@ -80,6 +80,8 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -12722,6 +12724,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWh ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_KWH {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kWh/d ähnelt.
         /// </summary>
         public static string IMP_KAT_EINH_KWHD {
@@ -12763,6 +12774,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_EINH_PROZENT {
             get {
                 return ResourceManager.GetString("IMP_KAT_EINH_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die W ähnelt.
+        /// </summary>
+        public static string IMP_KAT_EINH_W {
+            get {
+                return ResourceManager.GetString("IMP_KAT_EINH_W", resourceCulture);
             }
         }
         
@@ -12848,6 +12868,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zellchemie: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_CHEMIE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_CHEMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_ENERGIE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Round-Trip-Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_ETA_RT {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_ETA_RT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Firma: ähnelt.
         /// </summary>
         public static string IMP_KAT_FELD_FIRMA {
@@ -12893,6 +12940,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_LEISTUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die max. Vorlauf: ähnelt.
         /// </summary>
         public static string IMP_KAT_FELD_MAXVORLAUF {
@@ -12902,11 +12958,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_MODELL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name: ähnelt.
         /// </summary>
         public static string IMP_KAT_FELD_NAME {
             get {
                 return ResourceManager.GetString("IMP_KAT_FELD_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_QUELLE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_QUELLE", resourceCulture);
             }
         }
         
@@ -12925,6 +12999,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_FELD_SPITZENLEISTUNG {
             get {
                 return ResourceManager.GetString("IMP_KAT_FELD_SPITZENLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby-Verbrauch: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_STANDBY {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_STANDBY", resourceCulture);
             }
         }
         
@@ -12992,6 +13075,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (alle) ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FILTER_ALLE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FILTER_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche [m²] von: ähnelt.
         /// </summary>
         public static string IMP_KAT_FILTER_APERTUR {
@@ -13010,11 +13102,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] von: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FILTER_ENERGIE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FILTER_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FILTER_HERSTELLER {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FILTER_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Th. Leistung [kW] von: ähnelt.
         /// </summary>
         public static string IMP_KAT_FILTER_LEISTUNG {
             get {
                 return ResourceManager.GetString("IMP_KAT_FILTER_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] von: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FILTER_LEISTUNG_KW {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FILTER_LEISTUNG_KW", resourceCulture);
             }
         }
         
@@ -13042,6 +13161,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_GRP_EIGENSCHAFTEN {
             get {
                 return ResourceManager.GetString("IMP_KAT_GRP_EIGENSCHAFTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle liefert keine Kosten, keine Degradation und keine Zyklenzusage. Diese Felder bleiben leer und sind vor der Wirtschaftlichkeitsrechnung in der Verwaltung „Stromspeicher“ zu ergänzen. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_HINWEIS_KOSTEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_HINWEIS_KOSTEN", resourceCulture);
             }
         }
         
@@ -13078,6 +13206,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_MSG_KEINE_AUSWAHL {
             get {
                 return ResourceManager.GetString("IMP_KAT_MSG_KEINE_AUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es wurde keine Datei gewählt — es ist nichts eingelesen worden. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_MSG_KEINE_QUELLDATEI {
+            get {
+                return ResourceManager.GetString("IMP_KAT_MSG_KEINE_QUELLDATEI", resourceCulture);
             }
         }
         
@@ -13145,11 +13282,101 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bslib laden ähnelt.
+        /// </summary>
+        public static string IMP_KAT_QUELLE_BSLIB {
+            get {
+                return ResourceManager.GetString("IMP_KAT_QUELLE_BSLIB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CEC-Datei laden ähnelt.
+        /// </summary>
+        public static string IMP_KAT_QUELLE_CEC_DATEI {
+            get {
+                return ResourceManager.GetString("IMP_KAT_QUELLE_CEC_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CEC-Liste abrufen ähnelt.
+        /// </summary>
+        public static string IMP_KAT_QUELLE_CEC_NETZ {
+            get {
+                return ResourceManager.GetString("IMP_KAT_QUELLE_CEC_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zellchemie ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_CHEMIE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_CHEMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eintrag ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_EINTRAG {
             get {
                 return ResourceManager.GetString("IMP_KAT_SP_EINTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWh ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_ENERGIE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die η_RT ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_ETA {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_ETA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_HERSTELLER {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kW ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modell ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_MODELL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_QUELLE", resourceCulture);
             }
         }
         
@@ -13177,6 +13404,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_TITEL_SOLAR {
             get {
                 return ResourceManager.GetString("IMP_KAT_TITEL_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher Einlesen ähnelt.
+        /// </summary>
+        public static string IMP_KAT_TITEL_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("IMP_KAT_TITEL_STROMSPEICHER", resourceCulture);
             }
         }
         
@@ -22962,6 +23198,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_SPRACHE {
             get {
                 return ResourceManager.GetString("MENU_SPRACHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher (CEC, bslib)... ähnelt.
+        /// </summary>
+        public static string MENU_SP_IMPORT {
+            get {
+                return ResourceManager.GetString("MENU_SP_IMPORT", resourceCulture);
             }
         }
         
@@ -37904,6 +38149,159 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SPD_TITEL {
             get {
                 return ResourceManager.GetString("SPD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Netz — die zwischengespeicherte CEC-Liste wird gelesen. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_CEC_ALT {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_CEC_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwischengespeicherte CEC-Liste wird gelesen. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_CEC_CACHE {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_CEC_CACHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Abruf schlug fehl: {0} ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_CEC_FEHLER {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_CEC_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CEC-Liste geholt ({0} Byte). ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_CEC_GEHOLT {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_CEC_GEHOLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die CEC-Liste ließ sich weder abrufen noch aus dem Zwischenspeicher lesen. Bitte die Datei von solarequipment.energy.ca.gov herunterladen und über „CEC-Datei laden“ einlesen. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_CEC_KEINE_QUELLE {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_CEC_KEINE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gegenstelle lieferte nur {0} Byte — das ist keine Speicherliste. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_CEC_LEER {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_CEC_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwischenspeicher wird gesucht… ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_CEC_SUCHEN {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_CEC_SUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbindung zur California Energy Commission… ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_CEC_VERBINDEN {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_CEC_VERBINDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ wurde nicht gefunden. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ließ sich nicht lesen: {0} ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Format „{0}“ wird nicht gelesen; bitte als *.xlsx oder *.csv speichern. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_FORMAT_ALT {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_FORMAT_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Geräte gelesen. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_GELADEN {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_GELADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keinen Speicher mit einer nutzbaren Kapazität. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_KEINE_SAETZE {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_KEINE_SAETZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kopfzeile der Datei fehlt oder ist unvollständig; nicht gefunden: {0}. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_KOPFZEILE {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_KOPFZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist leer. ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_LEER {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand der Liste: {0} ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_STAND {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeile(n) übergangen (kein Speicher): {1} ähnelt.
+        /// </summary>
+        public static string SPIMP_MSG_UEBERGANGEN {
+            get {
+                return ResourceManager.GetString("SPIMP_MSG_UEBERGANGEN", resourceCulture);
             }
         }
         

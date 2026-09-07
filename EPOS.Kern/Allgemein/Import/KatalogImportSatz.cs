@@ -42,6 +42,14 @@ namespace WindowsFormsApplication1
         public abstract double Filterwert { get; }
 
         /// <summary>
+        /// Der Wert des ZWEITEN Zahlenfilters, wenn die Auspraegung einen fuehrt
+        /// (<see cref="KatalogImportProfil.Zweitfilter"/>). Die vier
+        /// VDI-Auspraegungen fuehren keinen und bleiben bei 0 — die Maske fragt
+        /// den Wert dann gar nicht ab.
+        /// </summary>
+        public virtual double Filterwert2 => 0.0;
+
+        /// <summary>
         /// Die Anzeigetexte der Detailfelder, Schluessel → Text. Die Schluessel sind
         /// die aus <see cref="KatalogImportProfil.Detailfelder"/>.
         /// </summary>
@@ -536,6 +544,110 @@ namespace WindowsFormsApplication1
             _parser.KennlinienZu(_index, out kenn, out kuehl);
 
             return ctrl.UeberschreibeMitKennlinien(bestandsId, kenn, kuehl)
+                ? VdiUebernahmeErgebnis.Ueberschrieben
+                : VdiUebernahmeErgebnis.Fehler;
+        }
+    }
+
+    // ==================================================================
+    // Stromspeicher — CEC Energy Storage System List und bslib
+    // ==================================================================
+
+    /// <summary>
+    /// Ein Speicher aus einer der zwei tabellarischen Quellen — die FUENFTE
+    /// Auspraegung und die erste ohne VDI 3805 (Stufe S1 des
+    /// <c>Konzept_Stromspeicherimport_EPOS-Plan.md</c>, Anwenderentscheid
+    /// <b>W13-E-2</b> vom 07.09.2026).
+    ///
+    /// <para><b>Er rechnet nichts.</b> Die ganze Umrechnung — Watt nach Kilowatt,
+    /// Prozent nach Bruch, englischer Zellchemietext nach deutschem
+    /// Persistenzwert, vier Standby-Messwerte auf eine Zahl — steht im
+    /// <see cref="StromspeicherImportSatz"/> und ist dort seit dem Zerlegerschritt
+    /// geprueft (28 Faelle). Diese Klasse ist die BRUECKE zum Katalog: Sie zeigt
+    /// an, vergleicht und schreibt.</para>
+    ///
+    /// <para><b>Was leer bleibt und warum</b> (Entscheide Q3 und Q6): Kosten,
+    /// Degradation, Start-Ladezustand und zugesicherte Zyklen fuehrt keine der
+    /// vier geprueften Quellen. Sie bleiben 0 und fallen im Rechenweg auf die
+    /// Fachvorgaben zurueck; die Maske sagt es in ihrer Herleitungszeile. Die
+    /// vier Kostenspalten sind im Katalog ohnehin <c>AusschlussSpalten</c>
+    /// (<see cref="KatalogRegistry"/>) und zaehlen beim Dublettenvergleich
+    /// nicht mit.</para>
+    /// </summary>
+    public sealed class StromspeicherKatalogSatz : KatalogImportSatz
+    {
+        private readonly StromspeicherImportSatz _satz;
+        private readonly string _quelle;
+
+        /// <param name="satz">Der gelesene Satz in EPOS-Einheiten.</param>
+        /// <param name="quelle">
+        /// Die Beschriftung der Quelle (Persistenzfrei, nur Anzeige) — sie steht
+        /// in der Liste als eigene Spalte, weil ein Speicher aus 6 654 CEC-Zeilen
+        /// und einer aus vier vermessenen bslib-Saetzen fachlich nicht dasselbe
+        /// Gewicht haben.
+        /// </param>
+        public StromspeicherKatalogSatz(StromspeicherImportSatz satz, string quelle)
+        {
+            _satz = satz ?? throw new ArgumentNullException(nameof(satz));
+            _quelle = quelle ?? "";
+        }
+
+        /// <summary>Der gelesene Satz — fuer Pruefungen und den Schreibweg.</summary>
+        public StromspeicherImportSatz Quellsatz => _satz;
+
+        /// <summary>Der Bezeichner „Hersteller: Modell" (Entscheid W13-E-2-Q5).</summary>
+        public override string Name => _satz.Bezeichner;
+
+        public override string Firma => _satz.Hersteller ?? "";
+
+        /// <summary>Erster Zahlenfilter: die Kapazitaet [kWh].</summary>
+        public override double Filterwert => _satz.EnergieKwh;
+
+        /// <summary>Zweiter Zahlenfilter: die Leistung [kW].</summary>
+        public override double Filterwert2 => _satz.LeistungKw;
+
+        public override IDictionary<string, string> Detailwerte => new Dictionary<string, string>
+        {
+            { KatalogImportProfil.FeldName,   _satz.Bezeichner },
+            { KatalogImportProfil.FeldFirma,  _satz.Hersteller ?? "" },
+            { "MODELL",   _satz.Modell ?? "" },
+            // Der uebersetzte Persistenzwert, nicht der englische Rohtext: In der
+            // Spalte Typ steht spaeter genau dieser Text.
+            { "TYP",      StromspeicherImportSatz.TypAusTechnologie(_satz.Technologie) },
+            { "ENERGIE",  Text(_satz.EnergieKwh) },
+            { "LEISTUNG", Text(_satz.LeistungKw) },
+            // 0 heisst „liefert die Quelle nicht" - und wird deshalb NICHT als
+            // 0 gezeigt, sondern gar nicht. Eine 0 laese sich als gemessener
+            // Wirkungsgrad missverstehen.
+            { "ETA",      _satz.WirkungsgradRt > 0 ? Text(_satz.WirkungsgradRt) : "" },
+            { "STANDBY",  _satz.StandbyW > 0 ? Text(_satz.StandbyW) : "" },
+            { KatalogImportProfil.FeldQuelle, _quelle }
+        };
+
+        public override IDictionary<string, object> Vergleichswerte(string bezeichner)
+        {
+            return _satz.Vergleichswerte(bezeichner);
+        }
+
+        public override VdiUebernahmeErgebnis Anlegen(string bezeichner)
+        {
+            return new StromspeicherStammCtrl().ImportUebernehmen(_satz.NachModell(bezeichner));
+        }
+
+        public override VdiUebernahmeErgebnis Ueberschreiben(int bestandsId)
+        {
+            // Wie bei den vier VDI-Auspraegungen: Der Controller erbt vom Modell,
+            // UpdateImport schreibt genau die Importfelder - ID, Bezeichner und
+            // die Anwenderfelder (Kosten, Degradation, Zyklen) bleiben stehen.
+            StromspeicherStammCtrl stamm = new StromspeicherStammCtrl();
+            StromspeicherModel m = _satz.NachModell(Name);
+            stamm.m_szTyp = m.m_szTyp;
+            stamm.m_Leistung = m.m_Leistung;
+            stamm.m_Energie = m.m_Energie;
+            stamm.m_WirkungsgradRT = m.m_WirkungsgradRT;
+            stamm.m_StandbyVerbrauch = m.m_StandbyVerbrauch;
+
+            return stamm.UpdateImport(bestandsId)
                 ? VdiUebernahmeErgebnis.Ueberschrieben
                 : VdiUebernahmeErgebnis.Fehler;
         }

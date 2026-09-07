@@ -61,6 +61,13 @@ namespace EPOS.UI.Tests.Bausteine;
 /// <c>Ein_neues_Untermenue_fuehrt_nie_nur_einen_einzigen_Punkt</c> gilt ab
 /// hier OHNE Ausnahme.</para>
 ///
+/// <para>ANWENDERWUNSCH W13-E-2 (07.09.2026): Der STROMSPEICHERIMPORT kommt
+/// als Punkt <c>MenuItem_SP_Import</c> in „Daten &amp; Import" — der erste
+/// NEUE Weg seit W6-E-2 und damit der erste Entscheid seit langem, der die
+/// wichtigste Zahl BEWEGT: <b>45 handelnde Punkte</b> (58 gesamt,
+/// 13 aufklappend). Er steht hinter dem Knoten „Photovoltaik" und vor
+/// „Import Solarkollektoren".</para>
+///
 /// <para>Die Sprache wird JE FALL gepinnt (Regel seit iU9-W8): Die
 /// Beschriftungen kommen aus <c>MyResource</c>, und der Windows-Laeufer laeuft
 /// englisch. Der Zweisprachenfall setzt die Kultur selbst und stellt sie
@@ -131,7 +138,11 @@ public class MenuebandTests : BunitContext
         // faellt - er fuehrte als einziges Kind MenuItem_Klimadaten, und der
         // steht jetzt an seiner Stelle. EIN aufklappender Punkt weniger, also
         // 57 Punkte bei unveraendert 44 Handlungen.
-        Assert.Equal(57, Punkte.Count);
+        //
+        // ANWENDERWUNSCH W13-E-2 (07.09.2026): EIN handelnder Punkt kommt
+        // hinzu - der Stromspeicherimport unter "Daten & Import". Also
+        // 58 Punkte und 45 Handlungen.
+        Assert.Equal(58, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -312,6 +323,9 @@ public class MenuebandTests : BunitContext
             "MenuItem_PufferSp_VDI3805",
             "MeniItem_VDI3805",
             "MenuItem_PV_Import_Gruppe",
+            // W13-E-2 (07.09.2026): der Stromspeicherimport, hinter dem Knoten
+            // "Photovoltaik" und vor den Solarkollektoren.
+            "MenuItem_SP_Import",
             "MenuItem_ST_Import",
         }, Kinder(daten));
 
@@ -458,6 +472,55 @@ public class MenuebandTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
     }
 
+    // =====================================================================
+    //  ANWENDERWUNSCH W13-E-2 (07.09.2026) — der Stromspeicherimport
+    // =====================================================================
+
+    [Fact]
+    public void Der_Stromspeicherimport_steht_hinter_der_Photovoltaik_im_Datenimport()
+    {
+        // WORTLAUT des Anwenders: "Es gibt keinen Datenimport fuer
+        // Stromspeicher. Dieser muss noch hinzugefuegt werden (Administration
+        // -> Datenimport)." Der Punkt HANDELT unmittelbar - eine Quelle waehlt
+        // der Anwender IN der Maske, nicht im Menue -, steht hinter dem Knoten
+        // "Photovoltaik" und traegt wie die vier uebrigen Importpunkte kein
+        // eigenes Bild.
+        Menuepunkt daten = Rubrik("MenuItem_DatImport");
+        Menuepunkt punkt = daten.Untereintraege.Single(p => p.Name == "MenuItem_SP_Import");
+
+        Assert.False(punkt.Klappt);
+        Assert.Equal(Seitenschluessel.StromspeicherImport, punkt.Ziel);
+        Assert.Equal("MENU_SP_IMPORT", punkt.TextSchluessel);
+        Assert.Equal("", punkt.Argument);
+        Assert.Equal("", punkt.Bild);
+
+        string[] kinder = Kinder(daten);
+        Assert.Equal("MenuItem_PV_Import_Gruppe", kinder[3]);
+        Assert.Equal("MenuItem_SP_Import", kinder[4]);
+        Assert.Equal("MenuItem_ST_Import", kinder[5]);
+
+        // Und es gibt ihn GENAU EINMAL - der Katalog "Stromspeicher" steht
+        // schon unter "Strombedarf & Speicher", sein IMPORT nur hier.
+        Assert.Single(Menuetabelle.Alle, p => p.Ziel == Seitenschluessel.StromspeicherImport);
+    }
+
+    [Fact]
+    public void Der_Stromspeicherimport_nennt_seine_zwei_Quellen_in_beiden_Sprachen()
+    {
+        // Die Beschriftung sagt, WORAUS eingelesen wird - so wie beim Zwilling
+        // "PV Module (CEC, PAN)...". Die drei Punkte am Ende sind die Zusage
+        // des Bestands: Es geht noch ein Fenster auf.
+        Menuepunkt punkt = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_SP_Import");
+
+        Kultur("de-DE");
+        Assert.Equal("Stromspeicher (CEC, bslib)...", punkt.Text);
+
+        Kultur("en-US");
+        Assert.Equal("Battery storage (CEC, bslib)...", punkt.Text);
+
+        Kultur("de-DE");
+    }
+
     [Fact]
     public void Die_vier_Ziele_der_Photovoltaik_sind_genau_einmal_erreichbar()
     {
@@ -523,6 +586,9 @@ public class MenuebandTests : BunitContext
         cut.Find("#menue-MenuItem_DatImport").Click();
 
         Assert.Single(cut.FindAll("#menue-MenuItem_ST_Import"));
+        // W13-E-2: Der Stromspeicherimport steht auf DERSELBEN Ebene wie die
+        // vier uebrigen Importe - ein Klick, kein Knoten davor.
+        Assert.Single(cut.FindAll("#menue-MenuItem_SP_Import"));
         Assert.Empty(cut.FindAll("#menue-MenuItem_WR_Import_CEC"));
 
         cut.Find("#menue-MenuItem_PV_Import_Gruppe").Click();
@@ -651,7 +717,8 @@ public class MenuebandTests : BunitContext
         // DIE EIGENTLICHE ZUSICHERUNG der Umordnung: Es ist kein Weg
         // verlorengegangen und keiner hinzugekommen. Geprueft wird die MENGE
         // der Ziele unter "Administration" - der Baum darueber darf sich
-        // umsortieren, die Ziele nicht. Seit W6-E-2 sind es 30 statt 28.
+        // umsortieren, die Ziele nicht. Seit W6-E-2 sind es 30 statt 28, seit
+        // W13-E-2 sind es 31.
         var ziele = Flach(Administration.Untereintraege)
                     .Where(p => !p.Trenner && !p.Klappt)
                     .Select(p => p.Ziel)
@@ -685,6 +752,9 @@ public class MenuebandTests : BunitContext
             Seitenschluessel.SolarkollektorenImport,
             Seitenschluessel.StromganglinieAdmin,
             Seitenschluessel.StromspeicherAdmin,
+            // W13-E-2 (07.09.2026): das NEUE Ziel dieser Menge - der einzige
+            // Katalog, der bis dahin ohne Einlesepunkt dastand.
+            Seitenschluessel.StromspeicherImport,
             Seitenschluessel.StromverbraucherAdmin,
             Seitenschluessel.WaermebedarfExternAdmin,
             // W6-E-2 (06.09.2026), Stufe S1: die zwei NEUEN Ziele. Sie sind
@@ -816,8 +886,12 @@ public class MenuebandTests : BunitContext
         // W16c-O-7 (07.09.2026) nimmt EINEN aufklappenden wieder weg
         // (MenuItem_Klima) und laesst die 44 abermals unberuehrt: Sein einziges
         // Kind haelt sein Ziel und steht nur eine Ebene hoeher.
+        //
+        // W13-E-2 (07.09.2026) legt dagegen einen ECHTEN neuen Weg an: den
+        // Stromspeicherimport. Er ist - nach den zwei Punkten aus W6-E-2 - der
+        // dritte Zuwachs dieser Zahl ueberhaupt (44 -> 45).
         Assert.Equal(13, Punkte.Count(p => p.Klappt));
-        Assert.Equal(44, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(45, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

@@ -222,6 +222,9 @@ public static class Seitenschluessel
     /// <summary>Herstellerdaten Wechselrichter einlesen, CEC (Razor seit W6-E-2 / Stufe S1.5).</summary>
     public const string WechselrichterImport = WindowsFormsApplication1.Masken.WechselrichterImport;
 
+    /// <summary>Herstellerdaten Stromspeicher einlesen, CEC und bslib (Razor seit W13-E-2 / Stufe S1).</summary>
+    public const string StromspeicherImport = WindowsFormsApplication1.Masken.StromspeicherImport;
+
     /// <summary>„Speichern unter…" - dupliziert ein Projekt (Razor seit W15a.4).</summary>
     public const string ProjektSpeichernUnter = WindowsFormsApplication1.Masken.ProjektSpeichernUnter;
 
@@ -321,6 +324,7 @@ public static class Seitenschluessel
         WpImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,
         SolarkollektorenImport, PvImport, WechselrichterAdmin, WechselrichterImport,
+        StromspeicherImport,
         ProjektSpeichernUnter,
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,

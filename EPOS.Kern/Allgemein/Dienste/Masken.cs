@@ -86,6 +86,18 @@
         /// der Schluessel deshalb heute nicht.
         /// </summary>
         public const string WechselrichterImport = "Form_WechselrichterImport";
+
+        /// <summary>
+        /// Herstellerdaten Stromspeicher einlesen — die CEC Energy Storage System
+        /// List und <c>bslib</c> (W13-E-2, Stufe S1).
+        ///
+        /// <para>Der Schluessel traegt den Namen einer Maske, die es im Bestand nie
+        /// gab: Fuer Stromspeicher fuehrte das Menue KEINEN Import. Die Schreibweise
+        /// folgt trotzdem den vier VDI-Einlesemasken, damit <c>help_mapping.txt</c>
+        /// und die Protokolle eine Form kennen. Die drei Quellen sind Knoepfe IN der
+        /// Maske; ein Argument braucht der Schluessel deshalb nicht.</para>
+        /// </summary>
+        public const string StromspeicherImport = "Form_Stromspeicher_einlesen";
         /// <summary>„Speichern unter…" — dupliziert ein Projekt.</summary>
         public const string ProjektSpeichernUnter = "Form_ProjektSpeichernUnter";
 

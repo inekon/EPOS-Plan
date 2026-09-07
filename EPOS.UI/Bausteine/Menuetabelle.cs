@@ -82,6 +82,16 @@
 // Untermenue mehr nur einen Punkt, und der Waechter
 // Ein_neues_Untermenue_fuehrt_nie_nur_einen_einzigen_Punkt gilt ohne jede
 // Ausnahme.
+//
+// ANWENDERWUNSCH W13-E-2 (07.09.2026) - der STROMSPEICHERIMPORT. Er ist der
+// erste NEUE Weg seit W6-E-2 und der Grund, warum die Zahl der handelnden
+// Punkte auf 45 steigt: "Es gibt keinen Datenimport fuer Stromspeicher. Dieser
+// muss noch hinzugefuegt werden (Administration -> Datenimport)." Der Punkt
+// MenuItem_SP_Import (MENU_SP_IMPORT, Seitenschluessel.StromspeicherImport)
+// steht in "Daten & Import" HINTER dem Knoten "Photovoltaik" und VOR
+// "Import Solarkollektoren"; die Maske ist die fuenfte Auspraegung des
+// KatalogImportDialog (Stufe S1 des Konzept_Stromspeicherimport_EPOS-Plan.md,
+// Entscheide Q1...Q8 = Empfehlung).
 
 using System;
 using System.Collections.Generic;
@@ -92,7 +102,7 @@ namespace EPOS.UI.Bausteine;
 /// <summary>
 /// Das Menue des Hauptfensters als DATEN (iU9-W16c.1).
 ///
-/// <para><b>57 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
+/// <para><b>58 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
 /// 9, die dort programmatisch eingehaengt wurden ("damit Designer und
 /// .resx unberuehrt bleiben", MDIMainForm.cs:57, :95, :132, :174, :311, :414,
 /// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es
@@ -102,16 +112,19 @@ namespace EPOS.UI.Bausteine;
 /// mit W16c-E-6 die zwei Ein-Punkt-Untermenues MenuItem_PC_Bearbeiten und
 /// MenuItem_ST_Bearbeiten weg, und mit W6-E-2 kommen die zwei
 /// Wechselrichterpunkte hinzu; mit W16c-O-7 faellt das dritte und letzte
-/// Ein-Punkt-Untermenue MenuItem_Klima. Also 54 Bestandspunkte
-/// + 2 - 2 + 2 + 2 - 1 = 57, dazu 8 Trennstriche.</para>
+/// Ein-Punkt-Untermenue MenuItem_Klima, mit W13-E-2 kommt der
+/// Stromspeicherimport hinzu. Also 54 Bestandspunkte
+/// + 2 - 2 + 2 + 2 - 1 + 1 = 58, dazu 8 Trennstriche.</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 57 Punkten handeln <b>44</b>, 13 klappen auf.
+/// vier klappen nur auf; von den 58 Punkten handeln <b>45</b>, 13 klappen auf.
 /// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6, mit W16c-E-7 und mit
 /// W16c-O-7 unveraendert geblieben: Es ist kein Ziel entfallen und keines
 /// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
-/// ist sie allein mit W6-E-2, das zwei ECHTE Wege anlegte (42 -> 44).</para>
+/// ist sie zweimal, und beide Male um einen ECHTEN neuen Weg: mit W6-E-2 um
+/// den Wechselrichterkatalog und seinen Import (42 -> 44), mit W13-E-2 um den
+/// Stromspeicherimport (44 -> 45).</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -226,6 +239,13 @@ public static class Menuetabelle
                     // (CEC) auf; die zwei anderen Quellen sind Knoepfe IN der Maske.
                     new Menuepunkt("MenuItem_WR_Import_CEC", "MENU_WR_IMPORT_CEC", Seitenschluessel.WechselrichterImport),
                 },
+                // ANWENDERWUNSCH W13-E-2 (07.09.2026), Stufe S1: der
+                // Stromspeicherimport. Er stand als EINZIGER Katalog ohne
+                // Einlesepunkt da; die Rubrik fuehrte sechs Importe und keinen
+                // fuer Tab_Stromspeicher_STAMM. Seine Stelle ist HINTER dem
+                // Knoten "Photovoltaik" - Stromspeicher und PV gehoeren zur
+                // selben Anlage - und VOR den Solarkollektoren.
+                new Menuepunkt("MenuItem_SP_Import", "MENU_SP_IMPORT", Seitenschluessel.StromspeicherImport),
                 new Menuepunkt("MenuItem_ST_Import", "MENU_ST_IMPORT", Seitenschluessel.SolarkollektorenImport),
             },
             new Menuepunkt("MenuItem_KostenVerwaltung", "MENU_KOSTEN_VERWALTUNG", "")

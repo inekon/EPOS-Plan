@@ -17,12 +17,19 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Katalogimport VDI 3805 (iU9-W13.1) — EINE Komponente, VIER Ausprägungen.
+/// Katalogimport (iU9-W13.1) — EINE Komponente, FÜNF Ausprägungen.
 ///
 /// <para>Soll sind die Feldkarten von <c>Form_Heizkessel_einlesen</c> (17 Zeilen),
 /// <c>Form_PufferSp_einlesen</c> (14), <c>Form_SolarKollektoren_einlesen</c> (11 + 11
 /// im Gruppenrahmen) und <c>Form_WP_einlesen</c> (34). Der Abgleich läuft je
 /// AUSPRÄGUNG, nicht je Komponente (Muster W8) — deshalb vier Feldbestandsfälle.</para>
+///
+/// <para>Die FÜNFTE Ausprägung — der <b>Stromspeicher</b> aus W13‑E‑2
+/// (07.09.2026, Stufe S1) — hat keine Feldkarte, weil sie keinen Vorläufer hat:
+/// Der Bestand kannte für Stromspeicher gar keinen Import. Geprüft wird deshalb
+/// gegen das PROFIL — die drei Quellknöpfe, die sieben Listenspalten, der zweite
+/// Zahlenbereich, die Herstellerklappliste und die Herleitungszeile zu den
+/// fehlenden Kosten (Entscheid Q3).</para>
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt: Die Erwartungswerte sind deutsche
 /// Beschriftungen, und der Windows-Läufer läuft mit englischer Oberfläche.</para>
@@ -105,8 +112,8 @@ public class KatalogImportDialogTests : BunitContext
             p.Add(x => x.Art, art);
             p.Add(x => x.ProfilVorgabe, KatalogImportProfil.Finde(art, Texte.Zu));
             p.Add(x => x.DateiWaehlen, (Func<string, Task<string?>>)(_ => Task.FromResult<string?>("probe.vdi")));
-            p.Add(x => x.Lesen, (Func<string, IProgress<ImportFortschritt>, CancellationToken,
-                                      Task<KatalogLeseErgebnis>>)((_, __, ___) =>
+            p.Add(x => x.Lesen, (Func<string, string, IProgress<ImportFortschritt>, CancellationToken,
+                                      Task<KatalogLeseErgebnis>>)((_, __, ___, ____) =>
                 Task.FromResult(new KatalogLeseErgebnis(
                     zeilen ?? new List<KatalogZeile>(),
                     meldungen ?? Array.Empty<PruefMeldung>()))));
@@ -282,8 +289,8 @@ public class KatalogImportDialogTests : BunitContext
             p.Add(x => x.Art, KatalogImportArt.Heizkessel);
             p.Add(x => x.ProfilVorgabe, KatalogImportProfil.Finde(KatalogImportArt.Heizkessel, Texte.Zu));
             p.Add(x => x.DateiWaehlen, (Func<string, Task<string?>>)(_ => waehler.Task));
-            p.Add(x => x.Lesen, (Func<string, IProgress<ImportFortschritt>, CancellationToken,
-                                      Task<KatalogLeseErgebnis>>)((_, __, ___) =>
+            p.Add(x => x.Lesen, (Func<string, string, IProgress<ImportFortschritt>, CancellationToken,
+                                      Task<KatalogLeseErgebnis>>)((_, __, ___, ____) =>
                 Task.FromResult(new KatalogLeseErgebnis(
                     DreiZeilen(), Array.Empty<PruefMeldung>()))));
             p.Add(x => x.Meldungstext, (Func<PruefMeldung, string>)Texte.Zu);
@@ -318,8 +325,8 @@ public class KatalogImportDialogTests : BunitContext
             p.Add(x => x.Art, KatalogImportArt.Heizkessel);
             p.Add(x => x.ProfilVorgabe, KatalogImportProfil.Finde(KatalogImportArt.Heizkessel, Texte.Zu));
             p.Add(x => x.DateiWaehlen, (Func<string, Task<string?>>)(_ => waehler.Task));
-            p.Add(x => x.Lesen, (Func<string, IProgress<ImportFortschritt>, CancellationToken,
-                                      Task<KatalogLeseErgebnis>>)((_, __, ___) =>
+            p.Add(x => x.Lesen, (Func<string, string, IProgress<ImportFortschritt>, CancellationToken,
+                                      Task<KatalogLeseErgebnis>>)((_, __, ___, ____) =>
             {
                 gelesen = true;
                 return Task.FromResult(new KatalogLeseErgebnis(
@@ -704,6 +711,225 @@ public class KatalogImportDialogTests : BunitContext
     }
 
     // =====================================================================
+    // 5b — Die fuenfte Auspraegung: Stromspeicher (W13-E-2, Stufe S1)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Drei Quellknöpfe statt eines Dateiwählers.</b> Der Stromspeicher liest
+    /// aus zwei Listen und auf drei Wegen; die vier VDI-Ausprägungen kennen nur
+    /// eine <c>.vdi</c>-Datei und behalten ihren Wähler.
+    /// </summary>
+    [Fact]
+    public void Stromspeicher_zeigt_drei_Quellknoepfe_statt_des_Dateiwaehlers()
+    {
+        var gelesen = new List<(string, string)>();
+        var cut = BauenSpeicher(gelesen);
+
+        Assert.Equal("Stromspeicher Einlesen", cut.Find(".epos-dialog-titel").TextContent);
+
+        string[] knoepfe = cut.Find(".epos-katalogimport-quellen")
+                              .QuerySelectorAll("button")
+                              .Select(b => b.TextContent.Trim()).ToArray();
+
+        Assert.Equal(new[] { "CEC-Liste abrufen", "CEC-Datei laden", "bslib laden" }, knoepfe);
+
+        // Der Dateiwaehler der vier VDI-Auspraegungen steht NICHT daneben - es
+        // gaebe sonst zwei Wege zu derselben Sache.
+        Assert.Empty(cut.FindAll(".epos-dateiwahl"));
+    }
+
+    /// <summary>
+    /// <b>Jeder Knopf meldet SEINE Quelle.</b> Daran hängt im Kern die Wahl des
+    /// Zerlegers — <c>bslib_database.csv</c> und eine ausgeleitete CEC-CSV sind
+    /// an der Endung nicht zu unterscheiden. Und nur „CEC-Datei laden" öffnet
+    /// den Wähler; die zwei anderen kommen mit leerem Pfad, weil die Hülle die
+    /// Datei selbst beschafft (Netzabruf, Auslieferungsdatei).
+    /// </summary>
+    [Fact]
+    public void Jeder_Quellknopf_meldet_seinen_Schluessel_und_nur_einer_waehlt_eine_Datei()
+    {
+        var gelesen = new List<(string Quelle, string Pfad)>();
+        var cut = BauenSpeicher(gelesen);
+
+        Quelle(cut, "CEC-Liste abrufen");
+        Quelle(cut, "CEC-Datei laden");
+        Quelle(cut, "bslib laden");
+
+        Assert.Equal(new[] { "CEC_NETZ", "CEC_DATEI", "BSLIB" },
+                     gelesen.Select(g => g.Quelle).ToArray());
+        Assert.Equal(new[] { "", "cec.xlsx", "" },
+                     gelesen.Select(g => g.Pfad).ToArray());
+    }
+
+    /// <summary>
+    /// Ein ABGEBROCHENER Wähler liest nichts — der Anwender hat gerade selbst
+    /// entschieden, es zu lassen (dieselbe Regel wie bei den vier VDI-Masken).
+    /// </summary>
+    [Fact]
+    public void Ein_abgebrochener_Waehler_liest_auch_beim_Stromspeicher_nichts()
+    {
+        var gelesen = new List<(string, string)>();
+        var cut = BauenSpeicher(gelesen, waehlerPfad: "");
+
+        Quelle(cut, "CEC-Datei laden");
+
+        Assert.Empty(gelesen);
+        Assert.Equal(0, cut.Instance.SichtbareZeilen);
+    }
+
+    /// <summary>
+    /// <b>Die Liste zeigt die Kennwerte in der ZEILE.</b> Sieben Spalten neben
+    /// dem Bezeichner — Quelle, Hersteller, Modell, kWh, kW, η_RT und Chemie;
+    /// die zwei Bestandsspalten der VDI-Masken reichen für 6 654 Geräte nicht.
+    /// </summary>
+    [Fact]
+    public void Stromspeicher_zeigt_seine_sieben_Listenspalten()
+    {
+        var gelesen = new List<(string, string)>();
+        var cut = BauenSpeicher(gelesen);
+        Quelle(cut, "bslib laden");
+
+        string[] koepfe = cut.FindAll(".epos-raster thead th")
+                             .Select(t => t.TextContent.Trim()).ToArray();
+
+        Assert.Equal(new[] { "Wahl", "Eintrag", "Quelle", "Hersteller", "Modell",
+                             "kWh", "kW", "η_RT", "Zellchemie" }, koepfe);
+
+        // Und die WERTE stehen darin - die Zeile aus bslib traegt ihren
+        // gemessenen Wirkungsgrad, die aus der CEC-Liste ohne Angabe nichts.
+        string liste = cut.Find(".epos-raster").TextContent;
+        Assert.Contains("Junelight Smart Battery 9,9", liste);
+        Assert.Contains("0.9687", liste);
+        Assert.Contains("Lithium-Eisen-Phosphat", liste);
+    }
+
+    /// <summary>
+    /// <b>Neun Detailfelder, und nur der Bezeichner ist änderbar</b> — dieselbe
+    /// Regel wie bei den vier VDI-Ausprägungen (Befund W13‑B26).
+    /// </summary>
+    [Fact]
+    public void Stromspeicher_zeigt_neun_Detailfelder_und_nur_der_Bezeichner_ist_aenderbar()
+    {
+        var gelesen = new List<(string, string)>();
+        var cut = BauenSpeicher(gelesen);
+        Quelle(cut, "bslib laden");
+
+        Assert.Equal(9, cut.FindAll(".epos-katalogimport-details label").Count);
+
+        string felder = cut.Find(".epos-katalogimport-details").TextContent;
+        Assert.Contains("Modell:", felder);
+        Assert.Contains("Zellchemie:", felder);
+        Assert.Contains("Kapazität: [kWh]", felder);
+        Assert.Contains("Leistung: [kW]", felder);
+        Assert.Contains("Round-Trip-Wirkungsgrad:", felder);
+        Assert.Contains("Standby-Verbrauch: [W]", felder);
+        Assert.Contains("Quelle:", felder);
+
+        // Acht der neun Felder sind gesperrt; das eine offene ist der Bezeichner.
+        var eingaben = cut.Find(".epos-katalogimport-details").QuerySelectorAll("input");
+        Assert.Equal(8, eingaben.Count(e => e.HasAttribute("readonly")));
+    }
+
+    /// <summary>
+    /// <b>Die Maske sagt, was die Quelle NICHT liefert</b> (Entscheid
+    /// W13‑E‑2‑Q3): Kosten, Degradation und Zyklenzusage bleiben leer. Eine
+    /// erfundene Zahl in einer Wirtschaftlichkeitsrechnung wäre schlimmer als
+    /// eine fehlende — ein Speicher mit 0 EUR/kWh ist gratis und damit immer die
+    /// beste Lösung.
+    /// </summary>
+    [Fact]
+    public void Stromspeicher_traegt_die_Herleitungszeile_zu_den_fehlenden_Kosten()
+    {
+        var gelesen = new List<(string, string)>();
+        var cut = BauenSpeicher(gelesen);
+
+        Assert.Contains("Die Quelle liefert keine Kosten", cut.Markup);
+        Assert.Contains("Stromspeicher", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Zwei Zahlenbereiche und eine Herstellerklappliste.</b> Eine Liste von
+    /// 1 bis 10 032 kWh und 0,4 bis 4 904 kW ist mit EINEM Filter nicht
+    /// einzugrenzen; und die Klappliste entsteht aus den gelesenen Sätzen —
+    /// „(alle)" voran, jeder Hersteller einmal, alphabetisch.
+    /// </summary>
+    [Fact]
+    public void Die_Filterleiste_fuehrt_zwei_Zahlenbereiche_und_die_Hersteller()
+    {
+        var gelesen = new List<(string, string)>();
+        var cut = BauenSpeicher(gelesen);
+        Quelle(cut, "bslib laden");
+
+        string leiste = cut.Find(".epos-katalogimport-filter").TextContent;
+        Assert.Contains("Kapazität [kWh] von:", leiste);
+        Assert.Contains("Leistung [kW] von:", leiste);
+        Assert.Contains("Hersteller:", leiste);
+
+        string[] hersteller = cut.Find(".epos-katalogimport-filter")
+                                 .QuerySelector("select")!
+                                 .QuerySelectorAll("option")
+                                 .Select(o => o.TextContent.Trim()).ToArray();
+
+        Assert.Equal(new[] { "(alle)", "Alpha ESS Co., Ltd.", "BYD", "KOSTAL", "Siemens" },
+                     hersteller);
+    }
+
+    /// <summary>
+    /// <b>Der Herstellerfilter zeigt nur noch die Zeilen des Herstellers</b> —
+    /// und der zweite Zahlenbereich wirkt auf die LEISTUNG, nicht auf die
+    /// Kapazität.
+    /// </summary>
+    [Fact]
+    public void Die_zwei_neuen_Filter_greifen_auf_ihre_je_eigene_Groesse()
+    {
+        var gelesen = new List<(string, string)>();
+        var cut = BauenSpeicher(gelesen);
+        Quelle(cut, "bslib laden");
+        Assert.Equal(4, cut.Instance.SichtbareZeilen);
+
+        // Hersteller "KOSTAL" (Zeile 3 der Klappliste, hinter "(alle)").
+        cut.Find(".epos-katalogimport-filter select").Change("3");
+        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+
+        cut.Find(".epos-katalogimport-filter select").Change("0");
+        Assert.Equal(4, cut.Instance.SichtbareZeilen);
+    }
+
+    /// <summary>
+    /// <b>Mehrfachwahl kommt aus dem WIRT</b> (W6‑E‑5) — hier wird nur belegt,
+    /// dass die fünfte Ausprägung sie erbt: zwei Klicks, zwei Sätze in EINEM
+    /// Schreibgang mit EINER Sammelmeldung.
+    /// </summary>
+    [Fact]
+    public async Task Zwei_Klicks_uebernehmen_zwei_Speicher_in_einem_Schreibgang()
+    {
+        var gelesen = new List<(string, string)>();
+        var uebernommen = new List<int>();
+
+        var cut = BauenSpeicher(gelesen,
+            vorpruefen: (markiert, _) =>
+            {
+                uebernommen.Add(markiert.Count);
+                return Task.FromResult(SpeicherVorpruefung(markiert.ToArray()));
+            },
+            ausfuehren: (anzahl, entscheidungen, _, __, ___) =>
+                Task.FromResult(new ImportBilanz { Markiert = anzahl, Gespeichert = entscheidungen.Count }));
+
+        Quelle(cut, "bslib laden");
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[1].Click();
+
+        Assert.Equal(new[] { 0, 1 }, cut.Instance.Markiert);
+
+        await cut.InvokeAsync(() =>
+            cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click());
+
+        Assert.Equal(new[] { 2 }, uebernommen);
+        Assert.Contains("2", cut.Instance.Meldung);
+    }
+
+    // =====================================================================
     // 6 — Tastatur
     // =====================================================================
 
@@ -734,6 +960,97 @@ public class KatalogImportDialogTests : BunitContext
     // =====================================================================
     // Hilfen
     // =====================================================================
+
+    /// <summary>
+    /// Vier Speicherzeilen, wie sie aus den zwei Quellen kämen — zwei aus der
+    /// CEC-Liste (mit und ohne Wirkungsgrad) und zwei aus bslib (mit Standby).
+    /// Die Zahlen sind ECHTE Werte der zwei Importproben.
+    /// </summary>
+    private static List<KatalogZeile> VierSpeicher() => new()
+    {
+        Speicher("Alpha ESS Co., Ltd.: SMILE-SP7.6", "Alpha ESS Co., Ltd.",
+                 "SMILE-SP7.6", "Lithium-Eisen-Phosphat", 8.2, 7.6, "", "", "CEC_DATEI"),
+        Speicher("BYD: Battery-Box Premium HVS 10.2", "BYD",
+                 "Battery-Box Premium HVS 10.2", "Lithium-Eisen-Phosphat", 10.2, 9.0,
+                 "0.93", "", "CEC_DATEI"),
+        Speicher("Siemens: Junelight Smart Battery 9,9", "Siemens",
+                 "Junelight Smart Battery 9,9", "", 8.85, 3.507, "0.9687", "15", "BSLIB"),
+        Speicher("KOSTAL: PLENTICORE plus 10 / BYD Battery-Box H11.5", "KOSTAL",
+                 "PLENTICORE plus 10 / BYD Battery-Box H11.5", "", 10.51, 5.776,
+                 "0.9528", "9.18", "BSLIB")
+    };
+
+    private static KatalogZeile Speicher(string bezeichner, string firma, string modell,
+                                         string chemie, double kwh, double kw,
+                                         string eta, string standby, string quelle) =>
+        new(bezeichner, firma, kwh, new Dictionary<string, string>
+        {
+            { KatalogImportProfil.FeldName, bezeichner },
+            { KatalogImportProfil.FeldFirma, firma },
+            { "MODELL", modell },
+            { "TYP", chemie },
+            { "ENERGIE", kwh.ToString(CultureInfo.InvariantCulture) },
+            { "LEISTUNG", kw.ToString(CultureInfo.InvariantCulture) },
+            { "ETA", eta },
+            { "STANDBY", standby },
+            { KatalogImportProfil.FeldQuelle, quelle }
+        }, kw);
+
+    /// <summary>
+    /// Baut die Stromspeicher-Ausprägung. Anders als bei den vier VDI-Masken
+    /// merkt sich der Prüfstand, mit welchem QUELLSCHLÜSSEL und mit welchem PFAD
+    /// gelesen wurde — genau das unterscheidet die drei Knöpfe.
+    /// </summary>
+    private IRenderedComponent<KatalogImportDialog> BauenSpeicher(
+        List<(string Quelle, string Pfad)> gelesen,
+        List<KatalogZeile>? zeilen = null,
+        IReadOnlyList<PruefMeldung>? meldungen = null,
+        string waehlerPfad = "cec.xlsx",
+        Func<IReadOnlyList<int>, IReadOnlyDictionary<int, string>, Task<KatalogVorpruefung>>? vorpruefen = null,
+        Func<int, List<KonfliktEntscheidung>, IReadOnlyDictionary<int, string>,
+             IProgress<ImportFortschritt>, CancellationToken, Task<ImportBilanz>>? ausfuehren = null,
+        EventCallback<bool>? geschlossen = null)
+    {
+        return Render<KatalogImportDialog>(p =>
+        {
+            p.Add(x => x.Art, KatalogImportArt.Stromspeicher);
+            p.Add(x => x.ProfilVorgabe,
+                  KatalogImportProfil.Finde(KatalogImportArt.Stromspeicher, Texte.Zu));
+            p.Add(x => x.DateiWaehlen,
+                  (Func<string, Task<string?>>)(_ => Task.FromResult<string?>(waehlerPfad)));
+            p.Add(x => x.Lesen, (Func<string, string, IProgress<ImportFortschritt>, CancellationToken,
+                                      Task<KatalogLeseErgebnis>>)((quelle, pfad, __, ___) =>
+            {
+                gelesen.Add((quelle, pfad));
+                return Task.FromResult(new KatalogLeseErgebnis(
+                    zeilen ?? VierSpeicher(), meldungen ?? Array.Empty<PruefMeldung>()));
+            }));
+            p.Add(x => x.Vorpruefen, vorpruefen);
+            p.Add(x => x.Ausfuehren, ausfuehren);
+            p.Add(x => x.Sammelmeldung, (Func<ImportBilanz, string>)VdiAuswahlFilter.LadeMeldung);
+            p.Add(x => x.Meldungstext, (Func<PruefMeldung, string>)Texte.Zu);
+            p.Add(x => x.Fortschrittstext, (Func<ImportFortschritt, string>)Texte.Zu);
+            if (geschlossen.HasValue) p.Add(x => x.Geschlossen, geschlossen.Value);
+        });
+    }
+
+    /// <summary>Klickt einen der drei Quellknöpfe an seiner Beschriftung.</summary>
+    private static void Quelle(IRenderedComponent<KatalogImportDialog> cut, string beschriftung) =>
+        cut.Find(".epos-katalogimport-quellen").QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == beschriftung).Click();
+
+    /// <summary>Die Vorprüfung einer Speicherauswahl — n Kandidaten, alle neu.</summary>
+    private static KatalogVorpruefung SpeicherVorpruefung(params int[] indizes)
+    {
+        var pruefungen = indizes.Select(i => new ImportPruefung
+        {
+            Kandidat = new ImportKandidat { Name = "Satz " + i, Tag = i },
+            Befund = ImportBefund.Neu
+        }).ToList();
+
+        return new KatalogVorpruefung(pruefungen, Array.Empty<string>(), false,
+                                      KatalogImportAblauf.AllesImportieren(pruefungen));
+    }
 
     private static KatalogVorpruefung Vorpruefung(bool konflikt)
     {

@@ -285,6 +285,7 @@ Form_Stromganglinie.btn_Help = Strombedarf
 Form_Stromganglinie.btn_Help_Import = Strombedarf
 Form_Stromganglinie_Admin.btn_Help = Strombedarf
 Form_AdminStromspeicher.btn_Help = Stromspeicher
+Form_Stromspeicher_einlesen.btn_Help = Stromspeicher
 Form_PeakShaving.btn_Help = Stromspeicher
 Form_SpeicherOptimierung.btn_Help = Stromspeicher
 Form_SpeicherVariantenVergleich.btn_Help = Stromspeicher
