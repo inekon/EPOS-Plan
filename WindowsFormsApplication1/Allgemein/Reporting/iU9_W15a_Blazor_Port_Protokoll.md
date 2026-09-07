@@ -785,3 +785,108 @@ sein — deshalb blieb es bei diesen vier Stellen.
 | ganze `ProjektTransferDialogTests`, je 30 Läufe `de` und `en_US.UTF-8` | — | **je 30 von 30 grün** |
 | Wettlauf-Nachweis mit 400 ms Rechenzeit, 15 Läufe | 12 von 15 rot | **0 von 15 rot** |
 | gesamte `EPOS.UI.Tests` | — | **2 721 grün, 0 rot** |
+
+
+## W6‑B‑2‑O‑1 (07.09.2026) — die ZWEITE Fundstelle desselben Musters
+
+Der Kern-Lauf **216** (`kern.yml`, Ereignis `pull_request`, Head `833ff69`) war rot mit
+genau einem Fall von 3 202:
+`ModulImportDialogTests.Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers`,
+`Assert.Equal(5, cut.Instance.SichtbareZeilen)` — „Expected 5, Actual 155". Der
+Push-Lauf **215** auf DEMSELBEN Commit war grün. Wieder **kein Fehler des Dialogs**,
+wieder ein Wettlauf im Test — aber **eine Stufe allgemeiner als W16b‑O‑2**.
+
+### Ursache
+
+W16b‑O‑2 nannte zwei Wettläufe; der zweite war „bunits synchrones `Click()` wartet
+nicht auf den Ereignisbehandler". Genau der ist es hier, und er gilt **für jedes
+synchrone bunit-Ereignis** — `Click()`, `Change()`, `Input()`, `DoubleClick()`. Die
+XML-Dokumentation des Pakets sagt es: Nur die `…Async`-Fassungen tragen den Satz
+„A task that completes when the event handler is done"; den synchronen fehlt er.
+
+Wann das gutgeht und wann nicht, entscheidet der **Zeichnerfaden**. bunits Zeichner
+führt `Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContextDispatcher`
+(nachgemessen; `CheckAccess()` ist auf dem Prüffaden `false`). Dieser Zusammenhang
+arbeitet ein Werkstück **auf dem aufrufenden Faden ab, solange seine Warteschlange
+leer ist** — dann läuft der Ereignisbehandler noch innerhalb von `Click()`, und das
+`Assert` dahinter stimmt. Liegt dort aber schon ein Werkstück, wird das Ereignis
+**eingereiht**, `Click()` kehrt sofort zurück, und die nächste Zeile liest den Stand
+**vor** dem Ereignis.
+
+Im Geräteimport legt der Ladegang dieses Werkstück selbst hin: 155 Zeilen liegen über
+der Schwelle `VIRTUALISIEREN_AB` (120), das Raster schaltet auf `Virtualize`, und
+QuickGrid und `Virtualize` melden sich mit `OnAfterRenderAsync` samt JS-Aufruf zurück.
+Zwischen „geladen" und „gefiltert" ist der Zeichnerfaden deshalb regelmäßig besetzt —
+und der Fall greift den Zwischenstand ab: 155, die ungefilterte Zeilenzahl. Genau die
+stand im Lauf 216 im Fehlertext.
+
+### Nachweis der Ursache
+
+Eine temporäre Prüfklasse (`ZZ_WettlaufNachweis`, nach der Messung gelöscht) mit dem
+**wörtlichen** Prüfstand des Falls — `Netz` gibt eine FERTIGE Aufgabe zurück:
+
+| Muster | Bedingung | Laden | Filter |
+|---|---|---|---|
+| alt: klicken, sofort lesen | ohne Fremdlast, 600 Läufe | 0 rot | 0 rot |
+| alt | 8 Rechenfäden auf 4 Kernen, 400 Läufe | **23 von 400 rot** | **68–95 von 400 rot** (gemessen: 0 und 155) |
+| alt | Quelle gibt EINMAL nach (`Task.Yield`), 60 Läufe | **59 von 60 rot** | **58 von 60 rot** |
+| neu: auf den gezeichneten Stand warten | 8 Rechenfäden, 400 Läufe | 0 rot | **0 von 400 rot** |
+| neu | Quelle gibt einmal nach, 60 Läufe | 0 rot | **0 von 60 rot** |
+
+Die dritte Zeile ist der Beleg für die *Art* der Ursache: Sobald der Ladeweg
+überhaupt nachgibt — und die echte Quelle tut das, sie ruft das Netz —, fällt das
+alte Muster fast immer um. Die zweite Zeile ist der Beleg für die *Häufigkeit* im
+Feld: Auf einer freien Maschine ist der Fall grün (Lauf 215), unter Last nicht
+(Lauf 216).
+
+### Behebung — nur am Test
+
+Vier Helfer in `ModulImportDialogTests`, drei in `KatalogImportDialogTests`; jeder
+wartet auf den **gezeichneten** Stand, nicht auf ein Feld der Komponente allein:
+
+| Helfer | wartet auf |
+|---|---|
+| `Geladen(cut)` | Statuszeile trägt „Filter Auswahl (…)" statt der Bereitmeldung **und** die Quellenknöpfe sind wieder bedienbar |
+| `Gefiltert(cut, n)` | `SichtbareZeilen == n` **und** die Statuszeile trägt dieselbe Zahl |
+| `Gemeldet(cut, text)` | die Meldung des Wirts nach dem `async` `Schreibgang` |
+| `Ueberlagert(cut, wahl)` | die gezeichnete Überlagerung (Konflikt, Rückfrage) |
+| `Einlesen(cut, n)` / `Gezeichnet(cut, n)` (Katalog) | Auswahlzeile „… von n Einträgen geladen." |
+| `Markiert(cut, …)` (Katalog) | die Markierung nach einem Zeilenklick |
+
+`Laden(cut)` und `CecLaden(cut)` klicken UND warten; die drei Dateiwege (PAN, OND,
+CEC-Datei) rufen `Geladen(cut)` unmittelbar nach dem Klick. Der FEHLERWEG setzt keine
+Statuszeile — dort wartet der Fall auf das gezeichnete Warnbanner. Die zwei Fälle,
+die den Dateiwähler absichtlich offen halten, benutzen weiterhin die Fassung **ohne**
+Warten; das ist ihr Prüfgegenstand.
+
+**Kein Produktcode.** `ModulImportDialog` und `KatalogImportDialog` bleiben
+unverändert: Der Ladeweg setzt `_zeilen`, baut die Listen auf, filtert und zeichnet —
+in dieser Reihenfolge, ohne späte Fortsetzung, die den Anwenderfilter zurücksetzte.
+Die Hypothese, `ListenAufbauen()` könne den vom Anwender gesetzten Hersteller später
+auf „alle" zurückstellen, ist widerlegt: `ListenAufbauen()` läuft **vor** `Filtern()`
+im selben synchronen Zug, und nach dem Ladeweg ruft ihn nichts mehr.
+
+### Gleichartige Muster im Bestand
+
+Die Regel aus W16b‑O‑2 heißt seither allgemeiner: **Nach einem synchronen bunit-Ereignis
+wird auf den GEZEICHNETEN Zustand gewartet, nicht sofort geprüft.** Durchgesehen und
+nachgezogen wurden beide Importklassen vollständig — Ladewege, Filterschritte,
+Zeilenklicks und Schreibgänge.
+
+| Fundstelle | Befund | Stand |
+|---|---|---|
+| `ModulImportDialogTests` (Ladewege, Filter, Schreibgänge) | derselbe Wettlauf | **berichtigt** |
+| `KatalogImportDialogTests` (Lesegänge, Filter, Markierung, Schreibgänge) | derselbe Wettlauf, nur bisher nicht rot geworden | **berichtigt** |
+| `ProjektTransferDialogTests` | mit `c3b1513` berichtigt | unverändert |
+
+### Wiederholungsnachweis
+
+| Lauf | vorher | nachher |
+|---|---|---|
+| `Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers`, 30 Läufe, `de` | Kern-CI 216 rot | **30 von 30 grün** |
+| derselbe Fall, 30 Läufe, `en_US.UTF-8` | — | **30 von 30 grün** |
+| `ModulImportDialogTests` + `KatalogImportDialogTests`, je 30 Läufe `de` und `en_US.UTF-8`, unter Rechenlast | — | **je 30 von 30 grün** |
+| Wettlauf-Nachweis, wörtlicher Prüfstand unter Rechenlast, 400 Läufe | 68 von 400 rot | **0 von 400 rot** |
+| Wettlauf-Nachweis, nachgebende Quelle, 60 Läufe | 58 von 60 rot | **0 von 60 rot** |
+| gesamte `EPOS.UI.Tests`, `de` und `en_US.UTF-8` | — | **je 3 202 grün, 0 rot** |
+| `dotnet build WP-Plan.sln -c Release --no-incremental` | 6 eindeutige Warnungen (Kern und UI) | **unverändert 6** |
