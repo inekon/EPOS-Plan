@@ -2392,6 +2392,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Entscheide, W14a-Protokoll B1–B3, `Heizkessel.wiki`/`BHKW.wiki`, `EPOS.Kern/CLAUDE.md`, `Referenzlaeufe/LIESMICH.md`.
 > Abnahme auf Windows: A‑W14a‑E8‑1…7 — darunter A‑W14a‑E8‑5 (die CO₂-Ersparnis der Autarkie-Kachel bewegt sich mit
 > dem Katalogfaktor des Stromträgers) und A‑W14a‑E8‑6 (Modus CO₂-Äquivalent hebt Kessel- und BHKW-Faktor).
+>
+> **W14a‑E‑9 (Anwenderwunsch 07.09.2026: „Die Dialoge unter Administration → Energiesysteme / Wärmebedarf & Heizung /
+> Strombedarf & Speicher sollen eine Auswahl/Suche erhalten, um die wichtigen Parameter der Komponenten bei der Auswahl
+> eingrenzen zu können. Gebe einen Vorschlag. Evtl. auch anderes Design der Dialogbox."), Konzept und Mockup in `36c0c27`,
+> zusammengeführt in `0748d94` — nichts umgesetzt:** Befund über die 15 Menüpunkte der drei Köpfe (14 Katalogverwaltungen,
+> eine Rechenmaske): **zehn von vierzehn** Verwaltungen haben keinen Filter, **zwölf von vierzehn** Listen zeigen nur den
+> Namen, die drei größten Kataloge (PV 20 743 Module, Stromspeicher 6 658, Wechselrichter 2 343 nach Import) haben den
+> schwächsten Filter; der einzige vollständige Filter sitzt in der Wärmepumpen-Überlagerung statt über der Stammliste; der
+> PV-Katalog hat im Projektdialog einen Herstellerfilter, in der Verwaltung nicht. Drei Datenbefunde: Brennwert-Kennzeichen
+> bei 6 von 63 Kesseln gepflegt (46 Beschreibungen nennen es), `Wirkungsgrad_Gas` in zwei Einheiten, `Tab_Stromspeicher_STAMM`
+> ohne `Firma`. **Vorschlag:** EIN Baustein `Filterleiste` mit einem `Katalogfilterprofil` je Katalog im Kern — der vierte
+> Zwilling zu `KatalogImportProfil`/`KatalogBrowserProfil`/`ModulKatalogProfil`, damit Import, Verwaltung und Projektauswahl
+> eine Mechanik haben (Klapplisten, Suche mit `*`-Mustern, zwei Zahlenbereiche, „Weitere Filter", Chips, Trefferzähler,
+> Sortierung über Spaltenköpfe, Zustand je Sitzung) — und ein Dialogbild in **drei Zonen** (Filterleiste über die Breite,
+> Liste mit drei bis fünf sortierbaren Parameterspalten links und Detail rechts, Aktionsleiste unten; Umbruch bei 900 px;
+> im Projektdialog steht die Leiste in der Katalogspalte der `Zweispaltenauswahl`). Abgelehnt mit Begründung: Kartenansicht,
+> Facettenleiste links, Spaltenkopf-Filter, „nur mehr Spalten". Empfohlene Filterzeile je Katalog in Kapitel 4 (z. B.
+> Wärmepumpe: Hersteller · Quelle · Auslegung, Nennleistung · max. Vorlauf, Spalte COP A2/W35). Papier
+> `Konzept_Katalogfilter_EPOS-Plan.md` (772 Zeilen), Mockup `Mockups/Katalogfilter_Vorschlag.html` (drei Reiter mit echten
+> Namen und gemessenen Trefferzahlen 15/63, 7/51, 15/20 749). Stufenplan S1 (Baustein, Profile, beide Verwaltungskomponenten,
+> 12–16 h) → S2 (elf Projektdialoge, Assistent, „im Projekt verwendet", 8–12 h) → S3 (Bedarfs-/Zeitreihenkataloge, Vergleich,
+> Importmasken, 8–10 h), Referenzlauf in allen Stufen unberührt. **Offen: Q1…Q12** (Parameter je Katalog; Zustand je
+> Sitzung; Vergleich in S3; Zonenmodell; Bereiche ergänzen Stufen; Speicher bis 5 000 Zeilen, darüber SQL; Spalte `Firma`
+> als Schemaschritt; Brennwert-Daten berichtigen; Wirkungsgrad > 2 als Prozent; Leiste auch für Importmasken in S3.4;
+> Gebäude/Klima/Kosten nicht; Spalte „im Projekt verwendet" in S2.3).
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
