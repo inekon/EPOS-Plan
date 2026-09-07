@@ -96,9 +96,15 @@
 
             @* Das Kuchendiagramm steht ueber BEIDE Spalten (Befund W11b-B-2); die
                zwei RINGE darunter bleiben nebeneinander - sie sind 720 Bildpunkte
-               breit und nebeneinander gedacht. *@
+               breit und nebeneinander gedacht.
+
+               RUND (Befund W11b-B-4, Windows-Abnahme V2 07.09.2026): Die Zeile
+               bleibt die ganze Breite, das BILD darin nicht - ein Kuchen wird
+               hoechstens --epos-diagramm-rund breit angezeigt. Ueber beide
+               Spalten zu stehen und die ganze Breite auszufuellen sind zwei
+               verschiedene Dinge; W11b-B-2 wollte das erste. *@
             <section class="epos-simerg-block epos-simerg-diagrammzeile">
-                <ChartBild Png="@Kuchen" Alt="@Resource.CHART_LEGENDE_WAERMEBEDARFSDECKUNG"
+                <ChartBild Png="@Kuchen" Rund="true" Alt="@Resource.CHART_LEGENDE_WAERMEBEDARFSDECKUNG"
                            PlatzhalterText="@Resource.SIMERG_MSG_OHNE_BEDARF" />
             </section>
 
@@ -111,7 +117,7 @@
         <section class="epos-simerg-block">
             @if (Daten.WaermebedarfVorhanden)
             {
-                <ChartBild Png="@RingWaerme" Alt="@Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG" />
+                <ChartBild Png="@RingWaerme" Rund="true" Alt="@Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG" />
             }
             else
             {
@@ -122,7 +128,7 @@
         <section class="epos-simerg-block">
             @if (Daten.StrombedarfVorhanden)
             {
-                <ChartBild Png="@RingStrom" Alt="@Resource.SIMERG_KACHEL_STROMDECKUNG" />
+                <ChartBild Png="@RingStrom" Rund="true" Alt="@Resource.SIMERG_KACHEL_STROMDECKUNG" />
             }
             else
             {

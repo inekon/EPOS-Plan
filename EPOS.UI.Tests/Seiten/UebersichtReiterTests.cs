@@ -205,6 +205,35 @@ public class UebersichtReiterTests : BunitContext
         Assert.Single(seite.FindAll("table.epos-raster"));
     }
 
+    /// <summary>
+    /// <b>Befund W11b‑B‑4</b> (Windows-Abnahme V2 vom 07.09.2026): „Simulation
+    /// Übersicht: Die Charts sind optisch zu groß." Alle DREI Bilder dieses
+    /// Reiters sind rund — der Kuchen 960 × 600, die zwei Ringe je 720 × 560 —
+    /// und tragen deshalb die Maßmarke. Sie stehen weiter über beide Spalten
+    /// (W11b‑B‑2 bleibt); begrenzt ist die ANZEIGEBREITE des Bildes, nicht die
+    /// Zeile, in der es steht.
+    /// </summary>
+    [Fact]
+    public void Alle_drei_Bilder_des_Reiters_sind_rund_bemessen()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Equal(3, seite.FindAll("div.epos-diagramm--rund").Count);
+        Assert.Equal(3, seite.FindAll("div.epos-diagramm--rund img").Count);
+
+        // Und die Zeile des Kuchens bleibt die volle Breite (W11b-B-2).
+        Assert.Single(seite.FindAll("section.epos-simerg-diagrammzeile"));
+    }
+
+    /// <summary>In der Navigatorrolle bleiben es die zwei Ringe — beide rund.</summary>
+    [Fact]
+    public void Auch_die_Navigatorrolle_bemisst_ihre_Ringe()
+    {
+        var seite = Zeichnen(Daten(), nurNavigator: true);
+
+        Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund").Count);
+    }
+
     /// <summary>Kein Rueckruf = kein Knopf (Hausregel seit W2).</summary>
     [Fact]
     public void Ohne_Rueckruf_bleibt_der_Bedarfsknopf_weg()

@@ -37,7 +37,7 @@
 @implements IAsyncDisposable
 @inject IJSRuntime Js
 
-<div class="epos-diagramm">
+<div class="@Rahmenklasse">
 
     <div class="epos-diagramm-leiste">
         <span class="epos-diagramm-stufe" aria-live="polite">@Stufentext</span>
@@ -97,8 +97,22 @@
     [Parameter] public string BereichHilfe { get; set; }
         = "Einen Achsenbereich aufziehen (mit der Maus auch Umschalt + Ziehen)";
 
+    /// <summary>
+    /// Eine ZUSATZKLASSE am Rahmen — die MASSREGEL der Anzeige (Befund
+    /// <b>W11b-B-4</b> der Windows-Abnahme V2 vom 07.09.2026). Sie sagt, welche
+    /// GESTALT das Bild hat; wie breit eine Gestalt hoechstens erscheint, steht
+    /// als EINE Regel im Stilblatt und nicht an dreissig Fundstellen.
+    /// Heute gibt es genau eine: <c>epos-diagramm--rund</c> fuer Kuchen und Ring.
+    /// </summary>
+    [Parameter] public string Zusatzklasse { get; set; } = "";
+
     /// <summary>Steht der Umschalter „Bereich" an? (Pruefhilfe)</summary>
     public bool Bereichsmodus => _bereich;
+
+    /// <summary>Die Klasse des Rahmens — Hausklasse plus etwaige Zusatzklasse.</summary>
+    private string Rahmenklasse => string.IsNullOrWhiteSpace(Zusatzklasse)
+        ? "epos-diagramm"
+        : "epos-diagramm " + Zusatzklasse.Trim();
 
     /// <summary>Die angezeigte Zoomstufe (Pruefhilfe).</summary>
     public double Stufe => _stufe;
