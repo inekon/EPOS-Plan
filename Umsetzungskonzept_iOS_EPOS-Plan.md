@@ -2492,6 +2492,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > entscheiden) und **O‑7** (Dialoghöhe 1 152–1 228 px, die Liste ist auf elf Zeilen begrenzt und rollt in sich, der
 > Eingabeblock beginnt bei 674 bzw. 825 px). Aufwand: S1 10–14 h unverändert, S2 7–10 h (+1 h Umbau der
 > `Zweispaltenauswahl`), Summe S1–S3 24–33 h.
+>
+> **Em‑9.8 / Em‑9.9 (Anwenderentscheid 07.09.2026: „Sieben Fragen: Empfehlung. 9.8 und 9.9: Empfehlung"), umgesetzt in
+> `880a9de`, Basis in `3d60d7e`, zusammengeführt in `9aa038f`:** `Referenzlauf/Ergebnisexport.cs` schreibt die **zehn
+> Emissionsgrößen** als Skalare `Em.Kessel.*` / `Em.Bhkw.*` — Einheit im Namen (`Co2T` t/a, `So2Kg`/`NoxKg`/`CoKg`/
+> `StaubKg` kg/a), **mit** CO, obwohl es strukturell 0 ist (ein späterer Trägerwert ändert dann eine Zahl statt einen
+> Schlüssel hinzuzufügen), und nur, wenn die Stufe gelaufen ist (1007 und 1008 bekommen keinen). +70 Schlüssel wie in
+> § 11.2.3 vorhergesagt (1 722 → 1 792); der iOS-Prüfmodus meldet für 1030 künftig 160 statt 150 Skalare. **Q1 = Z1**
+> auf der Basis R5 statt R4 (R4 war beim Entscheid schon gepusht) — es bleibt bei einem Basiswechsel. **§ 9 Punkt 9 ist
+> geschlossen als „bewusst nicht":** Schritt 68 wird gebaut, sobald eine Quelle mit CO-Faktoren je Energieträger
+> vorliegt (weder UBA v2.1 noch GEMIS 5.2 führt CO), keine leere Art, keine Saat aus den Gerätespalten. **Neue
+> Hausregel (Q4)** in `LIESMICH.md` und der Wurzel-`CLAUDE.md`: Wer einen gesäten Emissionsfaktor der Testdatenbank
+> ändert, friert die Basis im selben Schritt neu ein; Vorlagen bleiben frei. Konzept fortgeschrieben: § 8 trägt die
+> sieben Entscheide, § 9 Punkt 8 und 9 sind geschlossen, § 11.5 die Antworten. `EmissionsquelleTests` 10 → 12 (alle
+> zehn Größen für 1030, dazu ein Wächter, der jeden Schlüssel im Quelltext an SEIN Feld gebunden findet). Abnahme auf
+> Windows: A‑Em‑98‑1…4 (1030 zeigt die zehn Werte, 1007 keinen; Bericht und Kacheln unverändert; sieben Arten).
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
@@ -3352,6 +3367,32 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `1e‑9` wie `SchichtTemperatur`), W8‑O‑5d‑Q2 die `int`-Abschneidung in `BhkwPlan` (Treue zur DLL oder Genauigkeit).
 > Nachweis: Kern 1828 / UI 3126 grün, SpeicherEngine 337, KiKern 469, Formularkarte 122, ChartProben 44, SQL 0, Gate grün
 > gegen R4 byte-gleich. Abnahme auf Windows: A‑W8‑O5d‑1…8.
+>
+> **W8‑O‑5d‑Q1/Q2 (Anwenderentscheid 07.09.2026: „W8‑O‑5d‑Q2: keine Treue zur alten DLL, Empfehlung. W8‑O‑5d‑Q1:
+> Empfehlung"), umgesetzt in `8cbbff6`, Basis in `3d60d7e`, zusammengeführt in `9aa038f`:** **Q1** — die zwei
+> Betriebsschwellen, die bei der `double`-Umstellung am letzten Bit entschieden, tragen einen **benannten Zahlenrand**
+> (`Allgemein/Simulation/Rechenrand.cs`: `1e‑9 + 1e‑12 · |Schwelle|`, absolut UND relativ, weil die Schwellen kWh über
+> mehrere Größenordnungen tragen; vier Größenordnungen unter der Vergleichstoleranz der Suite). Angewandt an
+> `HystereseFortschreiben` (Abschaltschwelle; die Einschaltschwelle bleibt bewusst ohne Rand, auf sie steuert kein
+> Rechenweg den Füllstand) und an beiden Stufen von `Motorlauf_Waermegefuehrt`. **Q2** — `TaeglHeizlastWG`,
+> `SolareGewinneC` und `SpezWaermeverlusteC` geben `double` zurück, das Borland-`_ftol` fällt; der Aufrufer zieht mit
+> (dort war `/ 100` eine GANZZAHLIGE Division — zwei Abschneidungen hintereinander). **Neue Basis
+> `Referenzlaeufe/2026-09-07_R5_Zahlenrand`** (zwölf Projekte, 312 CSV, 1 792 statt 1 722 Skalare), R4 rückt in die
+> Geschichte; `kern.yml`, `ios.yml`, beide `CLAUDE.md`, `LIESMICH.md` und das Gate der Orchestrierung sind nachgezogen.
+> **Elf der zwölf Projekte weichen gewollt von R4 ab, Ursache ist Q2:** Der spezifische Wärmeverlustkoeffizient landete
+> auf **ganzen W/K** (1007: 194,5722 → 194, −0,29 %; 1041: 811,0302 → 811) und die Tagesheizlast auf ganzen
+> Wattstunden — in R4 sind 257 von 365 Tagessummen in 1041 exakt ganzzahlig, in R5 keine. Die Jahressumme des
+> Gebäudewärmebedarfs verschiebt sich um **−1,15e‑3 … +4,43e‑3** (je kleiner das Gebäude, desto mehr), an einem milden
+> Tag um bis zu +13,2 % (1041, 2. Mai; Verstärker ist die Verzweigung „Sollwert < Vortemperatur → Stunde zählt nicht"
+> des instationären Modells). **Gegenbeweis: 1030** (kein Gebäudebedarf) ist in 21 von 22 Dateien byte-gleich zu R4.
+> Die zwei R4-Verschiebungen bleiben und werden eindeutig statt zufällig: 1024 BHKW 179 470 → 179 519 kWh (+2,7e‑4),
+> 1018 Umsatz/Durchfluss auf dem R4-Stand, weil der Rand `Q_max · SchwelleAus` sicher als erreicht liest. Determinismus
+> 12/12 byte-gleich, 3 313 072 Werte PASS. Nachweise: `RechenrandTests` (6, je Schwelle Grenze und ein ulp darunter,
+> Bistabilität, Gegenproben), `BhkwPlanRueckgabeTests` (5); Kern 1841 / UI 3126 grün, SpeicherEngine 337, KiKern 469,
+> Formularkarte 122, ChartProben 44, SQL 0, Gate grün gegen R5 byte-gleich. **Notiert, nicht geändert (neue Fragen
+> W8‑O‑5d‑Q3/Q4):** neun Vergleiche derselben Bauart in `Motorlauf_Stromgefuehrt`/`_OhneEinspeisung` und
+> `EntnahmeObergrenze` tragen den Rand nicht — die Entscheide nannten sie nicht; Empfehlung: nachziehen, Referenzlauf
+> bleibt dann voraussichtlich byte-gleich (die zwölf Projekte fahren wärmegeführt). Abnahme auf Windows: A‑W8‑O5d‑Q‑1…6.
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >
