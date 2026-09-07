@@ -83,8 +83,14 @@ namespace WindowsFormsApplication1
 
                 ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
                 ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(VorlaeufeZu),
-                ["Bilder"] = new Func<int, KennlinienBilder>(
-                    idWp => WaermepumpeStammHuelle.BilderZu(idWp, kuehlung: false)),
+
+                // W7-B-3 (Windows-Abnahme V2 07.09.2026): NICHT mehr
+                // WaermepumpeStammHuelle.BilderZu - jene liest Tab_Kenndaten_STAMM,
+                // und Daten.IdWp ist bei einer gespeicherten Anlage die Id der
+                // PROJEKTKOPIE. Der eigene Weg unten liest Projektkopie vor Katalog.
+                ["Bilder"] = new Func<int, KennlinienBilder>(BilderZuAnlage),
+                ["KennlinienUebernehmen"] = new Func<int, int>(KennlinienNachholen),
+
                 ["Stammdaten"] = new Func<int, WaermepumpeStammDaten>(StammdatenZu),
 
                 ["TemperaturenPruefen"] = new Func<int?, int?, string>(TemperaturenPruefen),
@@ -141,6 +147,14 @@ namespace WindowsFormsApplication1
                 ["LabelAbschalttemp"] = Text_("WPA_LBL_ABSCHALTTEMP", "Bivalenztemperatur"),
                 ["LabelAbschalttempKurz"] = Text_("WPA_LBL_ABSCHALTTEMP", "Bivalenztemperatur"),
                 ["LabelKennlinien"] = Text_("WPS_LBL_KENNLINIEN", "Kenndaten Kennlinien:"),
+                ["HerleitungKatalog"] = Text_("WPA_HERLEITUNG_KATALOG",
+                    "Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien."),
+                ["BtnKennlinienText"] = Text_("WPA_BTN_KENNLINIEN_KATALOG",
+                    "Kennlinien aus dem Katalog übernehmen"),
+                ["TextKennlinienUebernommen"] = Text_("WPA_MSG_KENNLINIEN_UEBERNOMMEN",
+                    "{0} Stützstellen aus dem Katalog in das Projekt übernommen."),
+                ["TextKennlinienOhneKatalog"] = Text_("WPA_MSG_KENNLINIEN_OHNE_KATALOG",
+                    "Es gibt keinen Katalogsatz gleichen Namens — die Kennlinien lassen sich nicht übernehmen."),
                 ["ReiterCop"] = Text_("WPS_REITER_COP", "COP"),
                 ["ReiterLeistung"] = Text_("WPS_REITER_LEISTUNG", "Leistung"),
                 ["PlatzhalterBild"] = Text_("WPS_PLATZHALTER_BILD", "Keine Kennlinien vorhanden"),
@@ -185,10 +199,62 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Die Vorlaufstufen eines Geräts (<c>FillVorlaufCombo</c>:125).</summary>
+        /// <summary>
+        /// Die Vorlaufstufen eines Geräts (<c>FillVorlaufCombo</c>:125) — seit
+        /// <b>W7‑B‑3</b> aus der PROJEKTKOPIE, mit dem Katalog als Rückfall. Die
+        /// Klappliste hing an derselben falschen Tabelle wie die Bilder und blieb
+        /// bei jeder gespeicherten Anlage leer.
+        /// </summary>
         private static IReadOnlyList<int> VorlaeufeZu(int idWp)
         {
-            return KenndatenCtrl.Reihen(idWp).Vorlaeufe;
+            return WaermepumpeKennlinienCtrl.VorlaeufeFuerAnlage(idWp);
+        }
+
+        /// <summary>
+        /// Die beiden Kennlinienbilder einer ANLAGE — <b>Befund W7‑B‑3</b> der
+        /// Windows-Abnahme V2 vom 07.09.2026: „Energieerzeuger → Wärmepumpe (Projekt
+        /// ‚Stromspeicher mit Wärmepumpe'): Hier im Beispiel T800-2, im
+        /// Projekt-Wärmepumpen-Dialog keine Kennlinie."
+        ///
+        /// <para><b>Der Unterschied zu <see cref="WaermepumpeStammHuelle.BilderZu"/>
+        /// ist die TABELLE.</b> Jene liest <c>Tab_Kenndaten_STAMM</c> und ist damit für
+        /// den Katalogdialog richtig; hier kommt <c>Daten.IdWp</c> herein, und das ist
+        /// bei einer gespeicherten Anlage die Id der Projektkopie (<c>Tab_WP.ID</c>) —
+        /// <c>WizardCtrl</c> setzt sie im einen Schreibweg aller Erzeuger aus
+        /// <c>WPCtrl.CopyFromStamm</c>. Die Reihenfolge ist deshalb Projektkopie vor
+        /// Stammkatalog, wie überall im Haus.</para>
+        ///
+        /// <para>Gezeichnet wird beides gleich; nur die HERKUNFT geht mit, damit der
+        /// Dialog eine Katalogkennlinie als Herleitung ausweisen kann.</para>
+        /// </summary>
+        private static KennlinienBilder BilderZuAnlage(int idWp)
+        {
+            WaermepumpeKennlinienCtrl.Quelle quelle = WaermepumpeKennlinienCtrl.FuerAnlage(idWp);
+            if (quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Ohne)
+                return KennlinienBilder.Leer;
+
+            string yLeistung = Text_("WPS_REITER_LEISTUNG", "Leistung");
+
+            return new KennlinienBilder(
+                ChartRenderer.Kennlinien(Text_("WPS_REITER_COP", "COP"),
+                    Text_("WPS_REITER_COP", "COP"), Text_("WPS_ACHSE_TEMPERATUR", "Temperatur"),
+                    quelle.Satz.Cop, ChartRenderer.Kennlinienmarke.Kreis),
+                ChartRenderer.Kennlinien(yLeistung, yLeistung,
+                    Text_("WPS_ACHSE_TEMPERATUR", "Temperatur"),
+                    quelle.Satz.Leistung, ChartRenderer.Kennlinienmarke.Kreuz),
+                quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Katalog
+                    ? Kennlinienherkunft.Katalog : Kennlinienherkunft.Projekt,
+                quelle.Nachholbar);
+        }
+
+        /// <summary>
+        /// „Kennlinien aus dem Katalog übernehmen" (W7‑B‑3) — der Schreibweg in EINER
+        /// Transaktion. Rückgabe wie <c>WPCtrl.KennlinienAusKatalog</c>: Zahl der
+        /// geschriebenen Stützstellen, 0 = nichts zu holen, −1 = Fehler.
+        /// </summary>
+        private static int KennlinienNachholen(int idWp)
+        {
+            return new WPCtrl().KennlinienAusKatalog(idWp);
         }
 
         private static WaermepumpeStammDaten StammdatenZu(int idWp)

@@ -83,6 +83,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -32157,6 +32158,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe '{0}': Das Projekt führt für dieses Gerät ÜBERHAUPT keine Kennlinien — nicht nur keine für den eingestellten Vorlauf. Im Dialog „Energieerzeuger → Wärmepumpe&quot; holt der Knopf „Kennlinien aus dem Katalog übernehmen&quot; sie aus dem Katalogsatz gleichen Namens in das Projekt. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_KENNLINIEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_KENNLINIEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
         /// </summary>
         public static string SIMERG_ACHSE_MONAT {
@@ -44393,6 +44403,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinien aus dem Katalog übernehmen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_KENNLINIEN_KATALOG {
+            get {
+                return ResourceManager.GetString("WPA_BTN_KENNLINIEN_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Parameter Bearbeiten... ähnelt.
         /// </summary>
         public static string WPA_BTN_PARAMETER {
@@ -44470,6 +44489,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_GRP_SPITZENLAST {
             get {
                 return ResourceManager.GetString("WPA_GRP_SPITZENLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien. ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_KATALOG {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_KATALOG", resourceCulture);
             }
         }
         
@@ -44623,6 +44651,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_MSG_FELD {
             get {
                 return ResourceManager.GetString("WPA_MSG_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keinen Katalogsatz gleichen Namens — die Kennlinien lassen sich nicht übernehmen. ähnelt.
+        /// </summary>
+        public static string WPA_MSG_KENNLINIEN_OHNE_KATALOG {
+            get {
+                return ResourceManager.GetString("WPA_MSG_KENNLINIEN_OHNE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Stützstellen aus dem Katalog in das Projekt übernommen. ähnelt.
+        /// </summary>
+        public static string WPA_MSG_KENNLINIEN_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("WPA_MSG_KENNLINIEN_UEBERNOMMEN", resourceCulture);
             }
         }
         

@@ -6522,6 +6522,17 @@ body {
     flex: 1 1 400px;
 }
 
+/* Die HERKUNFT der Kennlinien (Windows-Abnahme V2 07.09.2026, Befund     */
+/* W7-B-3): Herleitungszeile und der Knopf "Kennlinien aus dem Katalog    */
+/* uebernehmen" stehen als EIN Block ueber den zwei Blaettern - sie       */
+/* gehoeren zusammen und erscheinen nur, wenn das Projekt fuer dieses     */
+/* Geraet keine eigenen Kennlinien fuehrt.                                */
+.epos-wp-kennlinienquelle {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 /* Ueberschrift und "Modul-Katalog..." stehen in EINER Zeile - im        */
 /* Vorbild label_WP bei 16/13 und btn_Katalog bei 286/10.                */
 .epos-wp-auswahl-kopf {

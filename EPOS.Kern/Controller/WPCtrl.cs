@@ -349,6 +349,134 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Holt die KENNLINIEN einer bereits vorhandenen Gerätekopie aus dem
+        /// Stammkatalog nach — <b>Befund W7‑B‑3</b> der Windows-Abnahme V2 vom
+        /// 07.09.2026, der Knopf „Kennlinien aus dem Katalog übernehmen".
+        ///
+        /// <para><b>Warum es diesen Weg neben <see cref="CopyFromStamm(int,int)"/>
+        /// gibt.</b> Jene Methode legt die Gerätekopie SAMT Kennlinien an und kehrt bei
+        /// einer bereits vorhandenen Kopie sofort mit deren Id zurück
+        /// (<c>if (vorhanden &gt; 0) return vorhanden;</c>) — sie rührt die Kennlinien
+        /// dann nicht mehr an. Ein Gerät, dessen Kopie ohne Kennlinien entstanden ist
+        /// (Altbestand, eine abgebrochene Kopie, ein Katalogsatz, der seine
+        /// Stützstellen erst später bekam), bleibt damit für immer ohne — und der Lauf
+        /// bricht mit <c>SIMENG_WP_KEINE_KENNDATEN</c> ab.</para>
+        ///
+        /// <para><b>Was schon da ist, bleibt unangetastet.</b> Geschrieben wird nur in
+        /// eine Tabelle, die für dieses Gerät KEINE Zeile führt; die vom Anwender
+        /// gepflegten Stützstellen einer vorhandenen Kopie kann der Knopf damit nicht
+        /// überschreiben. Wärme und Kühlung werden getrennt betrachtet — es gibt
+        /// Geräte mit dem einen und ohne das andere.</para>
+        /// </summary>
+        /// <param name="projektWpId">Die Gerätekopie (<c>Tab_WP.ID</c>).</param>
+        /// <returns>
+        /// Die Zahl der geschriebenen Stützstellen (Wärme und Kühlung zusammen);
+        /// 0, wenn es nichts zu holen gab (kein Katalogsatz gleichen Bezeichners oder
+        /// bereits vollständig), −1 bei einem Fehler — dann ist nichts geschrieben.
+        /// </returns>
+        public int KennlinienAusKatalog(int projektWpId)
+        {
+            if (projektWpId <= 0) return -1;
+
+            try
+            {
+                DataTable kopf = DataRepository.GetDataTable(
+                    "SELECT Bezeichner FROM Tab_WP WHERE ID = ?", new DbParam("@id", projektWpId));
+                if (kopf == null || kopf.Rows.Count == 0) return -1;
+
+                string bez = kopf.Rows[0]["Bezeichner"] == DBNull.Value
+                    ? "" : kopf.Rows[0]["Bezeichner"].ToString();
+
+                int stammId = DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", bez);
+                if (stammId <= 0) return 0;
+
+                bool waermeFehlt = Zeilenzahl("SELECT COUNT(*) FROM Tab_Kenndaten WHERE ID_WP = ?", projektWpId) == 0;
+                bool kuehlFehlt = Zeilenzahl("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = ?", projektWpId) == 0;
+                if (!waermeFehlt && !kuehlFehlt) return 0;
+
+                DataTable cw = waermeFehlt
+                    ? DataRepository.GetDataTable(
+                        "SELECT * FROM " + WPStammCtrl.CURVE + " WHERE ID_WP = ? ORDER BY ID",
+                        new DbParam("@id", stammId))
+                    : null;
+                DataTable ck = kuehlFehlt
+                    ? DataRepository.GetDataTable(
+                        "SELECT * FROM " + WPStammCtrl.CURVE_K + " WHERE ID_WP = ? ORDER BY ID",
+                        new DbParam("@id", stammId))
+                    : null;
+
+                if ((cw == null || cw.Rows.Count == 0) && (ck == null || ck.Rows.Count == 0)) return 0;
+
+                int geschrieben = 0;
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    try
+                    {
+                        // Id-Vergabe wie in CopyFromStamm: EINMAL Max(ID) je Tabelle,
+                        // danach hochzaehlen - innerhalb des Vorgangs gelesen.
+                        if (cw != null && cw.Rows.Count > 0)
+                        {
+                            int cid;
+                            { object m = v.Skalar("SELECT Max(ID) FROM Tab_Kenndaten"); cid = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1; }
+                            foreach (DataRow r in cw.Rows)
+                            {
+                                List<DbParam> p = new List<DbParam>();
+                                p.Add(new DbParam("@id", cid++));
+                                p.Add(new DbParam("@wp", projektWpId));
+                                p.Add(P(r, "Vorlauf"));
+                                p.Add(P(r, "Temperatur"));
+                                p.Add(P(r, "COP"));
+                                p.Add(P(r, "Ptherm"));
+                                v.Ausfuehren("INSERT INTO Tab_Kenndaten (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)", p.ToArray());
+                                geschrieben++;
+                            }
+                        }
+
+                        if (ck != null && ck.Rows.Count > 0)
+                        {
+                            int ckid;
+                            { object m = v.Skalar("SELECT Max(ID) FROM Tab_Kenndaten_Kuehlung"); ckid = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1; }
+                            foreach (DataRow r in ck.Rows)
+                            {
+                                List<DbParam> p = new List<DbParam>();
+                                p.Add(new DbParam("@id", ckid++));
+                                p.Add(new DbParam("@wp", projektWpId));
+                                p.Add(P(r, "Vorlauf"));
+                                p.Add(P(r, "Temperatur"));
+                                p.Add(P(r, "COP"));
+                                p.Add(P(r, "Pkuehl"));
+                                p.Add(P(r, "Last"));
+                                v.Ausfuehren("INSERT INTO Tab_Kenndaten_Kuehlung (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)", p.ToArray());
+                                geschrieben++;
+                            }
+                        }
+
+                        v.Commit();
+                        return geschrieben;
+                    }
+                    catch (Exception ex)
+                    {
+                        try { v.Rollback(); } catch { }
+                        Console.WriteLine("Fehler beim Nachholen der WP-Kennlinien: " + ex.Message);
+                        return -1;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Nachholen der WP-Kennlinien: " + ex.Message);
+                return -1;
+            }
+        }
+
+        /// <summary>Zeilenzahl einer Zaehlabfrage mit einer Geraete-Id.</summary>
+        private static int Zeilenzahl(string sql, int id)
+        {
+            object v = DataRepository.ExecuteScalar(sql, new DbParam("@id", id));
+            return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
+        }
+
         // Parameter aus Spaltenwert (DBNull, falls Spalte fehlt).
         private static DbParam P(DataRow row, string col)
         {

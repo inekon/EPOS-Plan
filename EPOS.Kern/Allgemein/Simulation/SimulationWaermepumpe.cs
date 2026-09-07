@@ -598,6 +598,29 @@ namespace WindowsFormsApplication1
                 if (anz == 0)
                 {
                     Meldung.Warten(false);
+
+                    // W7-B-3 (Windows-Abnahme V2 07.09.2026): ZWEI verschiedene Lagen
+                    // fuehren hierher, und die Meldung nennt bisher nur die eine.
+                    // (a) Das Geraet HAT Kennlinien, aber keine fuer den eingestellten
+                    //     Vorlauf - eine Konfigurationsfrage.
+                    // (b) Das Geraet hat im Projekt UEBERHAUPT keine - dann ist die
+                    //     Geraetekopie unvollstaendig, und der Anwender kann sie im
+                    //     Dialog mit einem Knopf aus dem Katalog nachholen. Ohne diesen
+                    //     Hinweis suchte er im Vorlauffeld nach einer Ursache, die
+                    //     dort nicht liegt.
+                    // Der Lauf rechnet in KEINEM der beiden Faelle still mit 0 - er
+                    // bricht ab; nur der Weg zur Behebung ist ein anderer.
+                    RecordSet rsGesamt = new RecordSet();
+                    rsGesamt.Open("SELECT Count(*) FROM Tab_Kenndaten WHERE Tab_Kenndaten.ID_WP=" + model.ID_WP);
+                    rsGesamt.Next();
+                    int gesamt = (int)rsGesamt.Read(0);
+                    rsGesamt.Close();
+
+                    if (gesamt == 0)
+                        SimulationProtokoll.Aktuell.Hinweis(
+                            MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE +
+                            string.Format(MyResource.Resource.SIMENG_WP_KENNLINIEN_FEHLEN, model.Bezeichner));
+
                     Fehlertext = string.Format(MyResource.Resource.SIMENG_WP_KEINE_KENNDATEN,
                                                model.Bezeichner, model.Vorlauf);
                     SimulationProtokoll.Aktuell.Fehlermeldung(
