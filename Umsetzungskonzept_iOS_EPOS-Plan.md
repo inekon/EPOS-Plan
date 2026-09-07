@@ -2739,6 +2739,17 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 >
 > **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `ParameterReiter` der Simulationsseite (Klasse B, 23 Felder, neun Raster, alle einspaltig —
 > unter jeder Zahl steht ihre Entsprechung; `Daten.Unterblaetter` und Grafikreiter bleiben).
+>
+> **W11b‑B‑4 (Windows-Abnahme V2, PDF 07.09.2026: „Die Charts sind optisch zu groß"), behoben in `a7c5052`, zusammengeführt
+> in `e8f2bb3`:** Seit W11b‑B‑2 füllte jedes Renderer-Bild die Breite seines Rahmens; auf 1 920 px stand der 960 × 600
+> gezeichnete Kuchen der Übersicht auf 1 850 × 1 156 Bildpunkten. Jetzt gilt EINE Maßregel im Stilblatt: Kein Renderer-Bild
+> wird über die Breite hinaus gedehnt, in der es gezeichnet wurde — `--epos-diagramm-breit: 1240px` an `.epos-diagramm`,
+> `--epos-diagramm-rund: 560px` an `.epos-diagramm--rund`; die 560 sind gerechnet (kleinste Schrift ≥ 11 px: Kuchen 19 px
+> auf 960 → 556, Ring 16 px auf 720 → 495, der größere Wert für beide). `ChartBild` bekommt `Rund="true"`, `Diagramm` eine
+> `Zusatzklasse`; die Bilder bleiben 960 bzw. 720 px breit (ChartProben unverändert), der Zoom bleibt, die Kuchenzeile
+> steht weiter über beide Spalten. Wachen: `ChartBildTests` (4), `UebersichtReiterTests` (2). Nachweis: Kern 1762 / UI
+> 3081 grün, Gate grün, Referenzlauf byte-gleich. Abnahme: A‑W11b‑B4‑1…5 (1 920 und 1 366 px ohne Rollen, Zoom, Ganglinien
+> der übrigen Reiter höchstens 1 240 px, zwei Ringe je höchstens 560 px).
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
@@ -2901,6 +2912,17 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > der Entnahmehöhen, der jetzt der Titel seiner Gruppe ist. Eine Selektorzeile im Stilblatt, fünf Ressourcenschlüssel
 > de/en, `Resource.Designer.cs` mit `Werkzeuge/ResourceDesigner` erzeugt (4 870 → 4 875). `EPOS.UI.Tests`
 > 2 679 → 2 683, grün unter de und en. **iU8‑O‑1 ist geschlossen.** Fünf Abnahmepunkte A‑iU8‑O‑1 im W10a-Protokoll.
+>
+> **iU8‑E‑3 (Anwenderwunsch, Windows-Abnahme V2 07.09.2026: „Zur besseren optischen Abgrenzung sollten Listen einen Rahmen
+> haben"), umgesetzt in `ebc512c`, zusammengeführt in `e8f2bb3`:** Der Rahmen steht an denselben zwei Stellen wie die
+> Höchsthöhe aus W9‑B‑2 — `.epos-raster-huelle` und `.epos-zeilenraster` tragen `border: 1px solid var(--epos-rahmen)` und
+> `border-radius: var(--epos-ecke)`, der stehende Spaltenkopf ist innen mit derselben Linie abgesetzt. Damit rahmen alle
+> Listen des Hauses: Raster/QuickGrid (auch `--frei`, `--hoch`), ProjektListe, die handgeschriebenen Projekt/DB-Tabellen,
+> die Katalogverwaltungen, das Positionsraster; die Pfeilspalte der Zweispaltenauswahl rahmt nicht mit (Regel und Markup
+> geprüft). Farbe bewusst `--epos-rahmen` (#b4b2a9), nicht `--epos-rahmen-leise`, weil jenes schon die Zeilentrennlinie
+> trägt — ein Außenrand in derselben Farbe begrenzte nichts; es ist die Farbe jedes Eingabefelds. Nicht gerahmt: die
+> Wertetabellen der Ergebnisreiter (Berichtsblöcke). iOS lädt dasselbe Stilblatt. Wachen: `ListenrahmenTests` (14 Fälle),
+> `StilblattTests` grün. Abnahme: A‑iU8‑E3‑1…6.
 
 > **Statusblock iU9 — Welle 9 umgesetzt (03.09.2026, Basis `8995d3e` nach W8, zusammengeführt mit `1cf3dbf`)**
 >
@@ -3295,6 +3317,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Titel steht einmal (`TitelText=""`), die Überlagerung ist breit (`Ueberlagerung.Zusatzklasse`, Wunschmaß 1 280 × 860), kein
 > innerer Rollbalken bei 1 400 × 900. Nachweis: Kern 1 640 / UI 2 998 grün (+21 Kern, +11 UI), Formularkarte 122, Designer
 > „abweichend 0", SQL 0, Gate grün, Referenzlauf byte-gleich. Abnahmepunkte A‑W7‑B12‑1…9 in der Sitzungsmeldung.
+>
+> **W7‑B‑3 (Windows-Abnahme V2, PDF 07.09.2026: „im Projekt-Wärmepumpen-Dialog keine Kennlinie", T800-2), behoben in
+> `bd606ec`, zusammengeführt in `e8f2bb3`:** Ursache war die **falsche Tabelle** im `Bilder`-Delegaten der Anlagenhülle
+> (`WaermepumpeAnlageHuelle.cs:86`): Er ging über `KenndatenCtrl.Reihen` auf `Tab_Kenndaten_STAMM`, bekam aber
+> `Daten.IdWp` — bei einer gespeicherten Anlage die Id der Projektkopie (`Tab_WP.ID`, gesetzt in `WizardCtrl` aus
+> `WPCtrl.CopyFromStamm`). Gemessen an `Kenndaten_Test.sqlite`: T 800-2 im Projekt 1006 hat Id 1006020 und 16 Stützstellen
+> in `Tab_Kenndaten` (Vorlauf 35/45/55/65), in `Tab_Kenndaten_STAMM` keine einzige — das galt für **alle 38 Gerätekopien**,
+> betroffen war jede gespeicherte Anlage, ebenso die leere Vorlauf-Klappliste; bei kleiner Projekt-Id hätte der Weg sogar
+> die Kennlinien eines fremden Katalogsatzes gezeigt. Neu: `KenndatenCtrl.ReihenProjekt` (dieselbe Tabelle wie der Lauf),
+> `WaermepumpeKennlinienCtrl.FuerAnlage` (Projektkopie vor Stammkatalog, mit Herkunft) und `WPCtrl.KennlinienAusKatalog`
+> (Nachholen in einer Transaktion, nur in eine Tabelle ohne Zeilen für dieses Gerät). Der Dialog weist eine Katalogkennlinie
+> als Herleitung aus und bietet „Kennlinien aus dem Katalog übernehmen" an; der Lauf rechnete nie still mit 0 (Abbruch
+> `SIMENG_WP_KEINE_KENNDATEN`), schreibt jetzt zusätzlich den Hinweis `SIMENG_WP_KENNLINIEN_FEHLEN`, wenn das Gerät im Projekt
+> gar keine Kennlinien führt. Fünf Schlüssel in beiden `.resx`. Wachen: `WaermepumpeKennlinienTests` (9),
+> `WaermepumpeAnlageDialogTests` (5). Referenzlauf byte-gleich (die vier Projekte erreichen den Zweig nie). Abnahme:
+> A‑W7‑B3‑1…7 (Kurven für vier Vorlaufstufen, gefüllte Vorlauf-Klappliste, Herleitung und Knopf bei fehlenden
+> Projektkennlinien, „16 Stützstellen übernommen", Lauf danach durch, Protokollhinweis, Katalogdialog unverändert).
 
 > **Statusblock iU9 — Welle 6 umgesetzt (03.09.2026, Basis `740c73e`, zusammengeführt mit W5 `ddaea70` und iF22–iF28 `f7fefdf`)**
 >
