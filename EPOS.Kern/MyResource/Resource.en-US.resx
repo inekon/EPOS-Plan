@@ -10910,6 +10910,9 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="HZKK_BTN_CO2" xml:space="preserve">
     <value>CO2 BEHG</value>
   </data>
+  <data name="HZKK_EMISSION_INFO" xml:space="preserve">
+    <value>For information only — the emission calculation uses the energy carrier factor from the emission catalogue.</value>
+  </data>
   <data name="HZKK_GRP_EMISSIONEN" xml:space="preserve">
     <value>Emission factors related to fuel consumption</value>
   </data>

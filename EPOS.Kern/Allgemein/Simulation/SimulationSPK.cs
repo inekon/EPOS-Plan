@@ -69,14 +69,19 @@ namespace WindowsFormsApplication1
         public double Pellets_SPK = 0;
         public double TierischeFette_SPK = 0;
 
-        // Emissionen gesamt in kg
+        // Emissionen gesamt der Kesselstufe. EINHEITEN, seit W14a-E-8-B1 benannt statt
+        // pauschal "kg": CO2 in t/a, SO2/NOx/CO/Staub in kg/a - dieselbe Konvention wie
+        // EmissionsBilanzRechner (MWh x g/kWh / 1000 = t; MWh x mg/kWh / 1000 = kg).
         public double Em_CO2_SPK = 0;
         public double Em_CO_SPK = 0;
         public double Em_SO2_SPK = 0;
         public double Em_NOX_SPK = 0;
         public double Em_Staub_SPK = 0;
 
-        // Emissionen je Kessel
+        // Emissionsfaktoren je Kessel aus DER EINEN Quelle (Emissionsquelle,
+        // W14a-E-8-B1): CO2 in g/kWh - im Modus CO2E das Aequivalent (F7) -,
+        // SO2/NOx/CO/Staub in mg/kWh. CO bleibt 0, solange der Artenkatalog keine
+        // CO-Art fuehrt.
         public double[] CO2_SPK = new double[MAX_SPK];
         public double[] CO_SPK = new double[MAX_SPK];
         public double[] SO2_SPK = new double[MAX_SPK];
@@ -124,6 +129,10 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private bool Kesseldaten_Einlesen(HeizkesselCtrl heizkesselctrl, int Anzahl)
         {
+            // W14a-E-8-B1: Der Berechnungsmodus (CO2 oder CO2-Aequivalent, Konzept F7)
+            // gilt fuer den ganzen Lauf - EINMAL gelesen, nicht je Kessel.
+            string modus = Emissionsquelle.Modus(m_ID_Projekt);
+
             for (int i = 0; i < Anzahl; i++)
             {
                 // B0-3: Projektfilter — gleicher Kesselname in mehreren Projekten lieferte
@@ -147,16 +156,50 @@ namespace WindowsFormsApplication1
                 Kessel_Name[i] = heizkesselctrl.items[0].Name;
                 Kessel_Leistung_Spk[i] = heizkesselctrl.items[0].Ptherm;
 
-                // Emissionen aus Brennstoff Tabelle laden
-                DataTable dt = DataRepository.GetDataTable("select * from Tab_Brennstoff_Stamm where ID=?", new DbParam("@s1", heizkesselctrl.items[0].Brennstoff));
-                if (dt.Rows.Count > 0)
-                {
-                    DataRow row = dt.Rows[0];
-                    CO2_SPK[i] = row["CO2"] != DBNull.Value ? Convert.ToDouble(row["CO2"]) : 0;
-                    SO2_SPK[i] = row["SO2"] != DBNull.Value ? Convert.ToDouble(row["SO2"]) : 0;
-                    NOX_SPK[i] = row["NOX"] != DBNull.Value ? Convert.ToDouble(row["NOX"]) : 0;
-                    Staub_SPK[i] = row["Staub"] != DBNull.Value ? Convert.ToDouble(row["Staub"]) : 0;
-                }
+                // ANWENDERENTSCHEID W14a-E-8-B1 (07.09.2026): HIER STAND DIE ZWEITE
+                // EMISSIONSQUELLE DES HAUSES, und sie ist gefallen.
+                //
+                //     DataTable dt = DataRepository.GetDataTable(
+                //         "select * from Tab_Brennstoff_Stamm where ID=?", ...Brennstoff);
+                //     CO2_SPK[i] = row["CO2"] ... SO2 ... NOX ... Staub
+                //
+                // Der Kessel las damit die ALTE Brennstofftabelle unmittelbar, am
+                // Emissionskatalog vorbei: kein Projektwert, keine aktive
+                // emissionswert-Zeile, kein Berechnungsmodus. Die Wirtschaftlichkeit
+                // desselben Projekts rechnete zur selben Zeit mit dem Katalogwert -
+                // zwei Zahlen fuer dieselbe Anlage, und keine Anzeige, die den
+                // Unterschied genannt haette.
+                //
+                // SEITHER GILT DIE EINE KETTE (Emissionsquelle -> EmissionsFaktorLader):
+                // Projektwert -> aktive emissionswert-Zeile -> Tab_Brennstoff_Stamm ->
+                // energy_carrier, im Modus des Projekts (F7). Hat die Anlage keinen
+                // Energieträger, gilt der Brennstoff des Geraets gegen dieselbe
+                // Tab_Brennstoff_Stamm - das ist das bisherige Verhalten und wird
+                // protokolliert, damit die fehlende Zuordnung sichtbar bleibt.
+                //
+                // EINHEITEN: CO2 in g/kWh, SO2/NOx/Staub in mg/kWh (Katalogeinheiten,
+                // Konzept F4) - dieselben Groessen, die EmissionsBilanzRechner fuehrt.
+                // Die fuenf Emissionsspalten des KESSELKATALOGS (Tab_Heizkessel.CO2 …
+                // .Staub) rechnen weiterhin nicht mit; sie sind seit B1 ausdruecklich
+                // "nur Anzeige" (ParameterVerwendung).
+                Emissionsfaktoren ef = Emissionsquelle.Fuer(
+                    m_ID_Projekt, CarrierZuKessel(spk_list[i]),
+                    heizkesselctrl.items[0].Brennstoff, modus);
+
+                CO2_SPK[i] = ef.Co2GKwh;
+                SO2_SPK[i] = ef.So2MgKwh;
+                NOX_SPK[i] = ef.NoxMgKwh;
+                CO_SPK[i] = ef.CoMgKwh;
+                Staub_SPK[i] = ef.StaubMgKwh;
+
+                if (ef.CarrierId <= 0)
+                    SimulationProtokoll.Aktuell.HinweisEinmal(
+                        "EMISSION_OHNE_TRAEGER_KESSEL_" + spk_list[i],
+                        MyResource.Resource.SIMENG_PRAEFIX_HEIZKESSEL +
+                        "Emissionsfaktoren: Der Kessel „" + spk_list[i] + "\" hat keinen " +
+                        "Energieträger zugeordnet - es gilt ersatzweise " + ef.Herkunft +
+                        ". Mit zugeordnetem Energieträger rechnet der Lauf mit dem " +
+                        "gepflegten Wert aus dem Emissionskatalog.");
 
                 // Wirkungsgrade einlesen
                 Kessel_Wirk_Gas_Spk[i] = heizkesselctrl.items[0].Wirkungsgrad_Gas;
@@ -182,6 +225,27 @@ namespace WindowsFormsApplication1
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Der Energieträger EINES Kessels aus <see cref="spk_carrier"/> (W14a-E-8-B1);
+        /// 0 = keiner zugeordnet.
+        ///
+        /// <para>Der Schlüssel ist der Anlagen-Bezeichner — dieselbe Spalte, aus der
+        /// <c>SimulationControl.SPK_Liste_Laden</c> die <see cref="spk_list"/> füllt und
+        /// aus der <c>EnergietraegerZuordnungLesen</c> das Verzeichnis baut. Der zweite
+        /// Versuch OHNE Randleerzeichen ist die Vorsorge des
+        /// <c>SimulationRunner</c> (:751), wo derselbe Zugriff seit jeher
+        /// <c>Trim()</c> nutzt.</para>
+        /// </summary>
+        private int CarrierZuKessel(string bezeichner)
+        {
+            if (spk_carrier == null || string.IsNullOrEmpty(bezeichner)) return 0;
+
+            int id;
+            if (spk_carrier.TryGetValue(bezeichner, out id)) return id;
+            if (spk_carrier.TryGetValue(bezeichner.Trim(), out id)) return id;
+            return 0;
         }
 
         /// <summary>
@@ -236,7 +300,9 @@ namespace WindowsFormsApplication1
                 Em_Staub_SPK += Kessel_Gesamtverbrauch_MWh * Staub_SPK[i];
             }
 
-            // Emissionen final herunterskalieren (in kg)
+            // Umrechnung der Summen: CO2 [MWh x g/kWh] -> t/a, SO2/NOx/CO/Staub
+            // [MWh x mg/kWh] -> kg/a. Beide Male derselbe Teiler 1 000, weil die
+            // Katalogeinheiten sich um genau diesen Faktor unterscheiden (F4).
             Em_CO2_SPK /= 1000;
             Em_SO2_SPK /= 1000;
             Em_NOX_SPK /= 1000;

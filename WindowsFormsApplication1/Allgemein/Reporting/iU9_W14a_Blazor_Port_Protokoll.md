@@ -968,13 +968,18 @@ Die fünf Stufen sind trennscharf definiert:
 | Pufferspeicher | `Tab_Pufferspeicher_STAMM` | 8 | 5 | 2 | 3 | 2 | 0 |
 | **Summe** | | **128** | **56** | **33** | **37** | **36** | **5** |
 
+*Die Tabelle ist die Vermessung vom 06.09.2026. Seit dem Anwenderentscheid
+**W14a‑E‑8‑B1** (07.09.2026) sind die fünf Emissionsspalten des BHKW von „Simulation"
+auf „Dialog" gewandert — BHKW damit 7 / 11 / 8 / 10 / 0, die Summenzeile 51 / 33 / 37 /
+41 / 5. Der Kessel stand schon vorher so.*
+
 **Die gerechneten Spalten im Wortlaut** (Simulation oder Wirtschaftlichkeit; `ID` ist der
 Fremdschlüssel aus `Tab_Energieanlagen`, über den der Rechenweg das Gerät findet):
 
 | Anlagenart | gerechnet | Spalten |
 |---|---:|---|
 | Heizkessel | 12 | `ID`, `Bezeichner`, `Ptherm`, `Brennstoff`, `Wirkungsgrad_Gas`, `Wirkungsgrad_Öl`, `Investitionskosten`, `Wartungskosten`, `Wartungskosten_Einheit`, `Betriebsbereitschaftverlust`, `Vorlauf`, `Ruecklauf` |
-| BHKW | 18 | `ID`, `Bezeichner`, `Ptherm`, `Pel`, `Brennstoff`, `Wirkungsgrad`, `Grenzleistung`, `Wartungskosten_kwhel`, `Kosten_Modul`, `Kosten_Montage`, `Kosten_Lieferung`, `Kosten_Schallschutzhaube`, `Kosten_Abgasreinigung`, `CO2`, `SO2`, `NOX`, `CO`, `Staub` |
+| BHKW | 18 → **13** | `ID`, `Bezeichner`, `Ptherm`, `Pel`, `Brennstoff`, `Wirkungsgrad`, `Grenzleistung`, `Wartungskosten_kwhel`, `Kosten_Modul`, `Kosten_Montage`, `Kosten_Lieferung`, `Kosten_Schallschutzhaube`, `Kosten_Abgasreinigung`; ~~`CO2`, `SO2`, `NOX`, `CO`, `Staub`~~ sind seit W14a‑E‑8‑B1 (07.09.2026) „nur Anzeige" |
 | Wärmepumpe | 6 | `ID`, `Bezeichner`, `Typ`, `Nennleistung`, `Heizung`, `Modulkosten` |
 | Solarkollektoren | 8 | `ID`, `Bezeichner`, `Aperturflaeche`, `h0`, `k1`, `k2`, `Kdir`, `Investitionskosten` |
 | Photovoltaik | 10 | `ID`, `Bezeichner`, `Leistung`, `Wirkungsgrad`, `gamma_PMP`, `T_NOCT`, `Laenge`, `Breite`, `Modulkosten`, `Technologie` |
@@ -992,16 +997,48 @@ diese fünf Spalten des Geräts. Zwei Masken, die gleich aussehen, und ein Unter
 den bis hierher nichts anzeigte. Die Übersicht zeigt ihn jetzt: „nur Anzeige" beim
 Kessel, „Simulation" beim BHKW.
 
+> **Stand: ENTSCHIEDEN UND UMGESETZT am 07.09.2026.** Der Anwender: „Es soll der
+> gepflegte CO₂-Wert herangezogen werden — der an dem Energieträger hängt (gilt generell
+> für alle Erzeuger!)." Damit ist die Frage nicht, welche der zwei Quellen gilt — beide
+> sind abgelöst: Kessel **und** BHKW lesen seither den Emissionskatalog des
+> Energieträgers über den neuen Kern-Dienst
+> `EPOS.Kern/Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs` (Lesekette
+> `EmissionsFaktorLader`, Berechnungsmodus des Projekts). Die **zehn** Gerätespalten von
+> Kessel und BHKW sind in `ParameterVerwendung` gleich eingestuft — `Dialog`, „nur
+> Anzeige" —, und beide Katalogeditoren tragen über den Feldern die Herleitungszeile
+> „Nur zur Information — die Emissionsrechnung nimmt den Faktor des Energieträgers aus
+> dem Emissionskatalog."
+>
+> **Die Zahlenwirkung.** Beim BHKW ist sie groß: Ein Modul mit `Tab_BHKW.CO2 = 0` — im
+> Bestand der Regelfall — wies bisher **null** CO₂ aus, obwohl es Erdgas verbrannte
+> (Projekt 1030: 0 statt 251,58 t/a). Beim Kessel ist sie klein, weil die alte Quelle
+> das letzte Glied derselben Kette ist. **Kein anderes Ergebnis ändert sich**: Die
+> Emissionswerte der Simulation stehen in keiner Referenz-CSV und in keiner
+> `Tab_Ergebnis*`-Spalte; die zwölf Referenzprojekte sind byte-gleich zu
+> `2026-09-06_R3_Straenge`. Einzelheiten:
+> `Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md` § 8/B1; Nachweis
+> `EPOS.Kern.Tests/EmissionsquelleTests.cs`.
+
 **W14a‑E‑8‑B2 — Fünf Spalten der Wärmepumpe hat kein Leser.** `Laenge`, `Breite`, `Hoehe`,
 `Gewicht` und `Raum` stehen in `Tab_WP_STAMM`, werden vom VDI‑3805‑Import gefüllt, von
 `WPCtrl` ins Projekt kopiert — und im ganzen Bestand nirgends gelesen. Sie sind die
 einzigen fünf Spalten aller sieben Kataloge mit der Stufe `Keine`.
+
+> **Stand: ENTSCHIEDEN am 07.09.2026 — „Empfehlung", keine Programmarbeit.** Die fünf
+> Maßspalten bleiben als **Referenzdaten** aus dem VDI‑3805‑Import stehen und sind in der
+> Parameterübersicht als „nicht verwendet" gekennzeichnet. Der Entscheid ist vermerkt,
+> damit die Stufe `Keine` nicht eines Tages als Versehen gilt und jemand die Spalten
+> löscht.
 
 **W14a‑E‑8‑B3 — `Investition_kwel` des BHKW ist eine Dublette ohne Leser.** Seit dem
 Nutzerentscheid vom 22.08.2026 wird der Wert aus den fünf Kostenposten ABGELEITET
 (`BHKWKosten.JeKWel`) und schreibgeschützt angezeigt; die Kostenplanung rechnet mit
 `Kosten_Modul` und den vier Nebenposten (`TechnikPlanwertCtrl.cs:317‑325`). Er bleibt —
 als Anzeigewert ist er richtig —, trägt aber die Stufe „nur Anzeige".
+
+> **Stand: bleibt als Auskunft stehen, ohne Handlungsbedarf** (07.09.2026). Der Befund
+> beschreibt keinen Fehler, sondern eine Dublette mit richtigem Inhalt; er steht hier,
+> damit niemand die Spalte als Rechengröße wieder aufnimmt.
 
 ### 3 Die optionale Anzeige: `Parameteruebersicht`
 

@@ -1,7 +1,8 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: BHKW | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationBHKW.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs
      (BHKW_Liste_Laden, Betriebsart, Protokollmeldungen), EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs,
-     EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs (Spaltenverwendung, Befund W14a-E-8-B3) -->
+     EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs (Spaltenverwendung, Befunde W14a-E-8-B1/B3),
+     EPOS.Kern/Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs (die eine Emissionsquelle, W14a-E-8-B1) -->
 
 == Was berechnet wird ==
 
@@ -40,7 +41,7 @@ Mengen und die Betriebsstunden.
 |-
 | Brennstoff (Energieträger) || — || BHKW-Katalog; im Projekt änderbar über „Brennstoff Variante"
 |-
-| Emissionsfaktoren CO₂, SO₂, NOₓ, CO, Staub || g/MWh || '''BHKW-Katalog''' — beim BHKW zählen die Gerätewerte, anders als beim Heizkessel
+| Emissionsfaktoren CO₂ bzw. SO₂, NOₓ, Staub || g/kWh bzw. mg/kWh || '''Emissionskatalog des Energieträgers''' — seit W14a‑E‑8‑B1 dieselbe Quelle wie beim Heizkessel; die fünf Spalten des BHKW-Katalogs sind „nur Anzeige"
 |-
 | Vorlauf, Rücklauf || °C || Dialog „BHKW", Abschnitt „Modul"
 |-
@@ -80,7 +81,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>\mathrm{ID}_{\mathrm{B}}</math> || Kennung des Brennstoffs || — || BHKW-Katalog; im Projekt über „Brennstoff Variante" änderbar
 |-
-| <math>f_{\mathrm{E}}</math> || Emissionsfaktor je Schadstoff (CO₂, SO₂, NO<sub>x</sub>, CO, Staub) || g/MWh || '''BHKW-Katalog''' — die Gerätewerte, nicht der Energieträgerkatalog
+| <math>f_{\mathrm{E}}</math> || Emissionsfaktor je Schadstoff (CO₂, SO₂, NO<sub>x</sub>, Staub) || g/kWh (CO₂) bzw. mg/kWh || '''Emissionskatalog des Energieträgers''' — nicht die Gerätewerte des BHKW-Katalogs
 |-
 | <math>\vartheta_{\mathrm{VL}}</math>, <math>\vartheta_{\mathrm{RL}}</math> || Vorlauf- und Rücklauftemperatur des Moduls || °C || Dialog „BHKW", Abschnitt „Modul" (Projektzeile); der Katalogsatz ist die Vorbelegung
 |-
@@ -146,9 +147,14 @@ ein; sie werden in jeder Stunde in ihrer Listenreihenfolge nacheinander zugescha
 
 === Schritt 1 — Kennwerte auflösen ===
 
-Je Modul werden thermische und elektrische Nennleistung, der Gesamtwirkungsgrad, der Brennstoff und
-die fünf Emissionsfaktoren aus dem Katalog gelesen. Die '''Stromkennzahl''' ist das Verhältnis der
-beiden Nennleistungen:
+Je Modul werden thermische und elektrische Nennleistung, der Gesamtwirkungsgrad und der Brennstoff
+aus dem Katalog gelesen, dazu die Emissionsfaktoren seines '''Energieträgers''' aus dem
+Emissionskatalog — dieselbe Lesekette wie beim Heizkessel und in der Wirtschaftlichkeit
+(Anwenderentscheid W14a‑E‑8‑B1 vom 07.09.2026): Projektwert → aktive Katalogzeile →
+Brennstoffkatalog → Energieträgerspalte, im '''Berechnungsmodus''' des Projekts (CO₂ oder
+CO₂-Äquivalent). Ist dem Modul kein Energieträger zugeordnet, gilt ersatzweise sein Brennstoff
+gegen den Brennstoffkatalog; das Laufprotokoll sagt es an. Die '''Stromkennzahl''' ist das
+Verhältnis der beiden Nennleistungen:
 
 : <math>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</math> &nbsp;&nbsp;(1)
 :: <math>\mathrm{SKZ}</math> – Stromkennzahl des Moduls [–]
@@ -272,13 +278,13 @@ Aus den Jahressummen je Modul:
 :: <math>E_{\mathrm{a}}</math> – Stromproduktion des Moduls im Jahr [MWh]
 :: <math>\eta</math> – Gesamtwirkungsgrad, elektrisch und thermisch zusammen [–]
 
-Die Emissionen folgen diesem Verbrauch, mit den Faktoren des '''Geräts''':
+Die Emissionen folgen diesem Verbrauch, mit den Faktoren des '''Energieträgers''':
 
 : <math>\displaystyle m_{\mathrm{E}} = \frac{Q_{\mathrm{B,a}} \cdot f_{\mathrm{E}}}{1\,000}</math> &nbsp;&nbsp;(9)
-:: <math>m_{\mathrm{E}}</math> – Jahresemission je Schadstoff [kg]
+:: <math>m_{\mathrm{E}}</math> – Jahresemission [t für CO₂, kg für SO₂, NO<sub>x</sub> und Staub]
 :: <math>Q_{\mathrm{B,a}}</math> – Brennstoffverbrauch des Moduls im Jahr [MWh]
-:: <math>f_{\mathrm{E}}</math> – Emissionsfaktor des Geräts je Schadstoff [g/MWh]
-:: <math>1\,000</math> – Umrechnung von g in kg [g/kg]
+:: <math>f_{\mathrm{E}}</math> – Emissionsfaktor des Energieträgers [g/kWh für CO₂, mg/kWh für die übrigen]
+:: <math>1\,000</math> – Umrechnung; derselbe Teiler für beide Fälle, weil sich die zwei Katalogeinheiten um genau diesen Faktor unterscheiden
 
 Der Verbrauch geht auf denselben Satz Brennstoffzähler wie beim Heizkessel (Gas 1…5 und 14, Öl 6…9
 und 18…22, Koks 10, Kohle 11, Holz 12, Pellets 15, Rapsöl 16, tierische Fette 17, alles Übrige auf
@@ -334,6 +340,18 @@ Module ohne gepflegte elektrische Nennleistung bleiben in Zähler und Nenner au�
   hinter einer Bedingung eingeschlossen, die für jede Stunde des Jahres wahr ist, und damit
   unerreichbar. Sein Entfernen war ergebnisneutral. Ihn zurückzuholen wäre eine fachliche
   Änderung.
+* '''Die fünf Emissionsspalten des BHKW-Katalogs rechnen seit W14a‑E‑8‑B1 nicht mehr mit'''
+  (Anwenderentscheid 07.09.2026). Bis dahin war das BHKW der einzige Erzeuger, dessen Lauf
+  Gerätewerte als Emissionsfaktoren las — während die Emissionsbilanz desselben Projekts mit dem
+  Katalogwert des Energieträgers rechnete. Der Anwender hat das aufgelöst: '''ein''' Faktor, der
+  des Energieträgers, für alle Erzeuger. CO₂, SO₂, NOₓ, CO und Staub bleiben am Gerät pflegbar und
+  sind als Herstellerangabe „nur Anzeige"; der Katalogdialog sagt es an.
+* '''Der Faktor folgt dem Berechnungsmodus.''' Steht das Projekt auf „CO₂-Äquivalent", ist
+  <math>f_{\mathrm{E}}</math> für CO₂ die gewichtete Summe der ausgewählten Emissionsarten
+  (GWP₁₀₀) statt des reinen CO₂; SO₂, NOₓ und Staub bleiben in beiden Modi unverändert.
+* '''Kein CO in der Bilanz.''' Der Emissionsarten-Katalog führt keine Art „CO", und der
+  Brennstoffkatalog hat keine CO-Spalte; die CO-Emission des BHKW ist deshalb 0. Vor dem Entscheid
+  kam sie aus der Gerätespalte.
 * '''`Investition je kW elektrisch` ist eine Dublette ohne Leser''' (Befund W14a‑E‑8‑B3): Der Wert
   wird seit dem 22.08.2026 aus den fünf Einzelposten '''abgeleitet''' und schreibgeschützt
   angezeigt; die Kostenplanung rechnet mit den Posten selbst. Er ist richtig, aber er geht in keine
@@ -371,7 +389,7 @@ Module ohne gepflegte elektrische Nennleistung bleiben in Zähler und Nenner au�
 * [[Programm Dokumentation/BHKW|BHKW]] — Bedienung des Dialogs, Katalog, Brennstoffvarianten
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Phasen der Stundenschleife, Betriebsart
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Bilanzraum, Ladeordnung und Speicherentladung
-* [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]] — der nachrangige Erzeuger, und der Gegenfall bei den Emissionsfaktoren
+* [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]] — der nachrangige Erzeuger; seit W14a‑E‑8‑B1 mit derselben Emissionsquelle
 * [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]] — wohin der BHKW-Stromüberschuss geht
 * [[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]] — der Überschuss als Ladequelle
 * [[Programm Dokumentation/Emissionen|Emissionen]] — Herkunft und Pflege der Emissionsfaktoren

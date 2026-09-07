@@ -515,8 +515,13 @@ namespace WindowsFormsApplication1
             d.NutzungsgradStProzent = stPotenzial > 0 ? stGenutzt / stPotenzial * 100.0 : 0.0;
 
             // Die beiden Substitutionsfaktoren stehen seit iU9-W11a.5 im Kern
-            // (EmissionsVorgaben, Befund W11-B31) - Werte unverändert.
-            d.Co2ErsparnisKg = EmissionsVorgaben.Co2ErsparnisKg(pvDirekt + pvSpeicher, stGenutzt);
+            // (EmissionsVorgaben, Befund W11-B31). Seit dem Anwenderentscheid W11a-O-2
+            // vom 07.09.2026 kommen sie aus dem EMISSIONSKATALOG des Projekts (Träger
+            // des Netzstroms bzw. des ersten Wärmeerzeugers, Berechnungsmodus F7) statt
+            // aus zwei Literalen; ohne zugeordneten Träger gelten die dokumentierten
+            // Rückfallwerte. Deshalb geht hier die Projekt-ID mit.
+            d.Co2ErsparnisKg = EmissionsVorgaben.Co2ErsparnisKg(
+                sim.m_ID_Projekt, pvDirekt + pvSpeicher, stGenutzt);
             d.SpeichernutzenKwh = pvSpeicher;
 
             _autarkieLast = RasterAdapter.ZuViertelstundenDouble(stromBedarf);

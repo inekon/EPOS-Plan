@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
@@ -115,22 +115,46 @@ namespace EPOS.Kern.Tests
         // ------------------------------------------------------------ CO2 (W11-B31)
 
         /// <summary>
-        /// Die beiden Substitutionsfaktoren der Autarkie-Kachel — WOERTLICH aus
-        /// <c>DashboardForm.cs:355</c> uebernommen (iU9-W11a.5, Befund W11-B31).
+        /// Die beiden RUECKFALLWERTE der Autarkie-Kachel.
+        ///
+        /// <para>Bis zum Anwenderentscheid <b>W11a-O-2</b> (07.09.2026) waren es die
+        /// zwei Literale aus <c>DashboardForm.cs:355</c> — 0,42 und 0,20 —, und sie
+        /// galten IMMER. Seither holt die Kachel ihre Faktoren aus dem
+        /// Emissionskatalog des Projekts; die Konstanten greifen nur noch, wenn dem
+        /// Projekt kein Traeger zugeordnet ist. Der NETZSTROMWERT ist dabei auf den
+        /// BAFA-Faktor gezogen, mit dem der Rest des Hauses rechnet
+        /// (<c>KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH</c> = 435 g/kWh) — genau
+        /// das war der Inhalt des offenen Punktes: keine zweite Wahrheit.</para>
         /// </summary>
         [Fact]
-        public void Co2Faktoren_sind_die_Werte_des_Dashboards()
+        public void Co2Rueckfallwerte_kommen_aus_der_Emissionsquelle()
         {
-            Assert.Equal(0.42, EmissionsVorgaben.CO2_NETZSTROM_KG_JE_KWH);
+            Assert.Equal(0.435, EmissionsVorgaben.CO2_NETZSTROM_KG_JE_KWH);
             Assert.Equal(0.20, EmissionsVorgaben.CO2_WAERME_KG_JE_KWH);
+
+            // Dieselbe Zahl wie im Kennzahlenrechner - EINE Quelle (W11a-O-2).
+            Assert.Equal(KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH / 1000.0,
+                         EmissionsVorgaben.CO2_NETZSTROM_KG_JE_KWH, 9);
         }
 
         [Fact]
         public void Co2ErsparnisKg_rechnet_wie_die_Kachel()
         {
-            Assert.Equal(1000.0 * 0.42 + 500.0 * 0.20,
+            Assert.Equal(1000.0 * 0.435 + 500.0 * 0.20,
                          EmissionsVorgaben.Co2ErsparnisKg(1000.0, 500.0), 9);
             Assert.Equal(0.0, EmissionsVorgaben.Co2ErsparnisKg(0.0, 0.0), 9);
+        }
+
+        /// <summary>
+        /// OHNE Projekt (Id 0) ist die Fassung MIT Projekt zeichengleich zur Fassung
+        /// ohne: Es gibt keinen Traeger, also gelten beide Rueckfallwerte (W11a-O-2).
+        /// Der Fall braucht keine Datenbank — genau deshalb steht er hier.
+        /// </summary>
+        [Fact]
+        public void Co2ErsparnisKg_ohne_Projekt_nimmt_die_Rueckfallwerte()
+        {
+            Assert.Equal(EmissionsVorgaben.Co2ErsparnisKg(1000.0, 500.0),
+                         EmissionsVorgaben.Co2ErsparnisKg(0, 1000.0, 500.0), 9);
         }
 
         private sealed class DeutscheOberflaeche : IDisposable

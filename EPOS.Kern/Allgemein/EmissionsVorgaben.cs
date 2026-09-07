@@ -32,39 +32,74 @@ namespace WindowsFormsApplication1
     {
         // =====================================================================
         //  SUBSTITUTIONSFAKTOREN der Autarkie-Kachel (iU9-W11a.5, Befund W11-B31)
+        //  -> abgeloest durch den Emissionskatalog (W11a-O-2, entschieden 07.09.2026)
         // =====================================================================
         //
-        // WOHER SIE KOMMEN. DashboardForm.cs:355 rechnete
+        // WOHER SIE KAMEN. DashboardForm.cs:355 rechnete
         //
         //     co2Saved = (pvDirekt + pvSpeicher) * 0.42 + stGenutzt * 0.20
         //
-        // mit zwei Faktoren als LITERALE in der Oberflaeche. Sie stehen jetzt hier.
+        // mit zwei Faktoren als LITERALE in der Oberflaeche. Mit iU9-W11a.5 standen sie
+        // hier - unveraendert, aber mit keiner anderen Zahl des Hauses abgestimmt; das
+        // war der offene Punkt W11a-O-2.
         //
-        // SIE HABEN IN DIESER KLASSE KEIN GEGENSTUECK. Die drei Zahlen darunter sind
-        // CO2-Frachten je BRENNSTOFFVERBRAUCH in g/MWh (290 880 / 201 600 / 238 680) und
-        // damit eine andere Groesse; ein Substitutionsfaktor fuer verdraengten Netzstrom
-        // bzw. verdraengte Waerme gab es im Kern bisher nicht. Uebernommen sind deshalb
-        // WOERTLICH die Werte des Dashboards - der Abgleich mit den BEHG-Faktoren und
-        // dem jeweils geltenden Strommix ist eine Fachfrage (offener Punkt W11a-O-2).
+        // SEIT DEM ANWENDERENTSCHEID VOM 07.09.2026 (W11a-O-2, im Zuge von W14a-E-8-B1)
+        // holt die Kachel BEIDE Faktoren aus dem Emissionskatalog - denselben, aus dem
+        // Simulation, Emissionsbilanz und Kennzahlen lesen: den zugeordneten
+        // Stromtraeger des Projekts fuer den verdraengten Netzstrom, den Energietraeger
+        // des ersten Waermeerzeugers fuer die verdraengte Waerme, jeweils im
+        // Berechnungsmodus des Projekts (F7). Damit ist die Kachel erweiterbar (ein
+        // anderer Faktorsatz wird im Katalog gepflegt, nicht im Quelltext) und hat
+        // keine zweite Wahrheit mehr.
+        //
+        // DIE ZWEI KONSTANTEN BLEIBEN ALS RUECKFALL. Ein Projekt ohne zugeordneten
+        // Traeger bekaeme sonst 0 kg Ersparnis - eine Verschlechterung gegenueber dem
+        // Bestand. Sie stehen deshalb in Emissionsquelle, in g/kWh und dort mit dem
+        // uebrigen Haus abgeglichen: Netzstrom 435 statt 420 (der BAFA-Wert, den
+        // KostenEmissionRechner seit E5 als STROMMIX_CO2_G_JE_KWH fuehrt), Waerme
+        // unveraendert 200. Die zwei Felder hier bleiben als benannte Groessen stehen -
+        // sie sind die dokumentierte Herkunft der Zahl.
 
         /// <summary>
-        /// Verdraengter NETZSTROM: 0,42 kg CO2 je kWh. Woertlich aus
-        /// <c>DashboardForm.cs:355</c>.
+        /// Verdraengter NETZSTROM [kg CO2 je kWh] — der RUECKFALL der Kachel, wenn dem
+        /// Projekt kein Stromtraeger zugeordnet ist. Seit W11a-O-2 (07.09.2026)
+        /// derselbe Wert wie <see cref="KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH"/>
+        /// (BAFA EEW, „El. Strom (Effizienzmassnahme)"): 0,435 statt der frueheren
+        /// 0,42 aus <c>DashboardForm.cs:355</c>.
         /// </summary>
-        public const double CO2_NETZSTROM_KG_JE_KWH = 0.42;
+        public const double CO2_NETZSTROM_KG_JE_KWH =
+            Emissionsquelle.NETZSTROM_RUECKFALL_G_JE_KWH / 1000.0;
 
         /// <summary>
-        /// Verdraengte WAERME: 0,20 kg CO2 je kWh. Woertlich aus
-        /// <c>DashboardForm.cs:355</c>.
+        /// Verdraengte WAERME [kg CO2 je kWh] — der RUECKFALL der Kachel, wenn das
+        /// Projekt keinen Waermeerzeuger mit Energietraeger fuehrt. Woertlich der Wert
+        /// aus <c>DashboardForm.cs:355</c> (0,20), gefuehrt in
+        /// <see cref="Emissionsquelle.WAERME_RUECKFALL_G_JE_KWH"/>.
         /// </summary>
-        public const double CO2_WAERME_KG_JE_KWH = 0.20;
+        public const double CO2_WAERME_KG_JE_KWH =
+            Emissionsquelle.WAERME_RUECKFALL_G_JE_KWH / 1000.0;
 
         /// <summary>
         /// Die CO2-Ersparnis der Autarkie-Kachel [kg/a] aus verdraengtem Netzstrom und
-        /// verdraengter Waerme — dieselbe Formel wie bisher, nur an einer Stelle.
+        /// verdraengter Waerme — dieselbe Formel wie bisher, mit den Faktoren des
+        /// PROJEKTS aus dem Emissionskatalog (W11a-O-2).
         /// </summary>
+        /// <param name="idProjekt">Das Projekt, dessen Traeger und Berechnungsmodus
+        /// gelten; 0 rechnet mit den beiden Rueckfallwerten.</param>
         /// <param name="stromKwh">Eigenverbrauchter PV-Strom (direkt + aus dem Speicher).</param>
         /// <param name="waermeKwh">Genutzte Solarwaerme.</param>
+        public static double Co2ErsparnisKg(int idProjekt, double stromKwh, double waermeKwh)
+        {
+            string modus = Emissionsquelle.Modus(idProjekt);
+            double strom = Emissionsquelle.Netzstrom(idProjekt, modus).Co2GKwh / 1000.0;
+            double waerme = Emissionsquelle.Waerme(idProjekt, modus).Co2GKwh / 1000.0;
+            return stromKwh * strom + waermeKwh * waerme;
+        }
+
+        /// <summary>
+        /// Dieselbe Rechnung OHNE Projekt — die zwei Rueckfallwerte. Sie steht fuer
+        /// Aufrufer, die kein Projekt haben (Proben, Vorschau).
+        /// </summary>
         public static double Co2ErsparnisKg(double stromKwh, double waermeKwh)
         {
             return stromKwh * CO2_NETZSTROM_KG_JE_KWH + waermeKwh * CO2_WAERME_KG_JE_KWH;

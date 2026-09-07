@@ -28,6 +28,22 @@ namespace WindowsFormsApplication1
         /// unverändert wie bisher, NICHT modusabhängig.</summary>
         public double? Nox;
 
+        /// <summary>
+        /// Gesamtstaub in der Einheit der Art (Auslieferung mg/kWh); NICHT
+        /// modusabhängig. <b>Neu mit W14a-E-8-B1:</b> Seit die SIMULATION ihre
+        /// Faktoren aus dieser Kette holt, braucht sie auch den Staub — Kessel und
+        /// BHKW führen ihn seit jeher in ihrer Emissionsbilanz.
+        ///
+        /// <para>STAUB ist eine ABWÄHLBARE Art (Auslieferung: abgewählt, Konzept F5).
+        /// Ist sie nicht ausgewählt, steht in der Kette keine Zeile für sie; dann gilt
+        /// die Spalte <c>Tab_Brennstoff_Stamm.Staub</c> — dieselbe Ebene <c>STAMM</c>,
+        /// die die Kette für die drei Kernarten ohnehin liest. Die CO₂e-Summe (F6)
+        /// bleibt davon unberührt: Staub trägt den Äquivalenzfaktor 0, und der
+        /// Rückfall läuft AUSSERHALB der Zeilenliste, damit er die
+        /// Vollständigkeitsprüfung der Summe nicht verschiebt.</para>
+        /// </summary>
+        public double? Staub;
+
         /// <summary>Der CO₂-Wert ist selbst schon ein Äquivalent (F3) — dann IST die
         /// Summe genau dieser Wert.</summary>
         public bool Co2IstAequivalent;
@@ -52,7 +68,9 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// DIE Lesekette der Emissionsfaktoren je Träger — eine einzige Fassung für
     /// <see cref="KostenEmissionRechner"/> und <see cref="EmissionsBilanzRechner"/>
-    /// (Etappe E5, Konzept § 3).
+    /// (Etappe E5, Konzept § 3) und seit dem Anwenderentscheid <b>W14a-E-8-B1</b>
+    /// (07.09.2026) auch für die SIMULATION: Kessel und BHKW erreichen sie über
+    /// <see cref="Emissionsquelle"/>.
     ///
     /// <para><b>Lesekette je Emissionsart:</b></para>
     /// <list type="number">
@@ -186,10 +204,21 @@ namespace WindowsFormsApplication1
                     satz.So2 = wert;
                 else if (string.Equals(a.Kuerzel, DbWerte.EMISSIONSART_NOX, StringComparison.OrdinalIgnoreCase))
                     satz.Nox = wert;
+                else if (string.Equals(a.Kuerzel, DbWerte.EMISSIONSART_STAUB, StringComparison.OrdinalIgnoreCase))
+                    satz.Staub = wert;
             }
 
             // CO2e-Summe nach F6, Sonderfall F3 - dieselbe Fassung wie im Reiter.
             if (irgendeinWert) satz.Co2eGKwh = EmissionenCtrl.SummeCo2eGKwh(zeilen);
+
+            // STAUB, wenn die Art ABGEWAEHLT ist (Auslieferungsstand): Rueckfall auf
+            // Tab_Brennstoff_Stamm.Staub - dieselbe Ebene STAMM wie bei den Kernarten.
+            // BEWUSST HINTER der Summe und AUSSERHALB der Zeilenliste: Er darf weder
+            // irgendeinWert noch die CO2e-Summe verschieben, sonst bekaeme ein Traeger
+            // ohne CO2, aber mit Staubwert im Modus CO2E ploetzlich die Summe 0 statt
+            // gar keiner - und die Emissionsbilanz haelte ihre Spalte faelschlich fuer
+            // vollstaendig (W14a-E-8-B1).
+            if (!satz.Staub.HasValue) satz.Staub = Gepflegt(stamm, DbWerte.EMISSIONSART_STAUB);
             return satz;
         }
 
@@ -230,7 +259,10 @@ namespace WindowsFormsApplication1
 
         private static Dictionary<string, double?> AltwerteStamm(int carrierId)
         {
-            return Lies("SELECT bs.CO2 AS co2, bs.SO2 AS so2, bs.NOx AS nox " +
+            // staub kommt seit W14a-E-8-B1 mit: Nur diese eine der vier Quellen fuehrt
+            // eine Staubspalte - energy_carrier und energy_project_settings haben keine
+            // (Lies liest deshalb nur, was die jeweilige Abfrage liefert).
+            return Lies("SELECT bs.CO2 AS co2, bs.SO2 AS so2, bs.NOx AS nox, bs.Staub AS staub " +
                         "FROM energy_carrier AS ec " +
                         "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
                         "WHERE ec.id = ?",
@@ -254,6 +286,7 @@ namespace WindowsFormsApplication1
                 d[DbWerte.EMISSIONSART_CO2] = D(r, "co2");
                 d[DbWerte.EMISSIONSART_SO2] = D(r, "so2");
                 d[DbWerte.EMISSIONSART_NOX] = D(r, "nox");
+                d[DbWerte.EMISSIONSART_STAUB] = D(r, "staub");   // nur Tab_Brennstoff_Stamm
             }
             catch { }
             return d;

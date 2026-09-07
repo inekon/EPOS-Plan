@@ -254,11 +254,15 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <remarks>
-        /// <b>Der Befund dieser Tabelle:</b> Die fuenf Emissionsspalten des Kessels
-        /// (<c>CO2</c> … <c>Staub</c>) werden GEPFLEGT, aber nicht gerechnet — der
-        /// Rechenweg holt die Emissionsfaktoren aus <c>Tab_Brennstoff_Stamm</c>
-        /// (<c>SimulationSPK.cs:151-158</c>). Sie sind deshalb <c>Dialog</c> und nicht
-        /// <c>Simulation</c>.
+        /// <b>Der Befund dieser Tabelle</b> (W14a-E-8-B1, entschieden 07.09.2026): Die
+        /// fuenf Emissionsspalten des Kessels (<c>CO2</c> … <c>Staub</c>) werden
+        /// GEPFLEGT, aber nicht gerechnet. Der Rechenweg holt seine Faktoren seit dem
+        /// Entscheid aus DER EINEN Quelle — dem Emissionskatalog des Energietraegers
+        /// (<c>Emissionsquelle</c> ueber <c>EmissionsFaktorLader</c>) —, und die fuenf
+        /// Katalogspalten sind ausdruecklich <b>nur Anzeige</b>: Sie stehen in g/MWh,
+        /// haben kein CO2-Aequivalent und keine Herkunft. Sie bleiben als
+        /// Herstellerangabe erhalten; der Katalogeditor sagt es mit einer
+        /// Herleitungszeile an.
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Heizkessel(Func<string, string> t)
         {
@@ -289,15 +293,15 @@ namespace WindowsFormsApplication1
                 E("Nutzungsdauer", t("HZKK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
                   "HeizkesselKatalogDialog.razor:137"),
                 E("CO2", "CO2:", "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:164 — der Lauf nimmt Tab_Brennstoff_Stamm (SimulationSPK.cs:155)"),
+                  "HeizkesselKatalogDialog.razor:164 — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("SO2", "SO2:", "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:167 — der Lauf nimmt Tab_Brennstoff_Stamm (SimulationSPK.cs:156)"),
+                  "HeizkesselKatalogDialog.razor:167 — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("NOx", "NOx:", "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:170 — der Lauf nimmt Tab_Brennstoff_Stamm (SimulationSPK.cs:157)"),
+                  "HeizkesselKatalogDialog.razor:170 — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("CO", "CO:", "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:173 — Tab_Brennstoff_Stamm fuehrt kein CO"),
+                  "HeizkesselKatalogDialog.razor:173 — nur Anzeige (W14a-E-8-B1); der Artenkatalog fuehrt kein CO"),
                 E("Staub", t("HZKK_LBL_STAUB"), "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:176 — der Lauf nimmt Tab_Brennstoff_Stamm (SimulationSPK.cs:158)"),
+                  "HeizkesselKatalogDialog.razor:176 — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("Betriebsbereitschaftverlust", t("HZKK_LBL_BBVERLUST"), "%", SIM,
                   "SimulationSPK.cs:178"),
                 E("Brennwert", t("HZKK_LBL_BRENNWERT"), "", BER,
@@ -323,6 +327,16 @@ namespace WindowsFormsApplication1
         /// fuenf Einzelposten) und hat im ganzen Bestand keinen Leser mehr — die
         /// Kostenplanung rechnet mit <c>Kosten_Modul</c> und den vier Nebenposten
         /// (<c>TechnikPlanwertCtrl.cs:317-325</c>). Er bleibt <c>Dialog</c>.
+        ///
+        /// <para><b>Der zweite Befund, seit W14a-E-8-B1 (07.09.2026):</b> Die fuenf
+        /// Emissionsspalten (<c>CO2</c>, <c>SO2</c>, <c>NOX</c>, <c>CO</c>,
+        /// <c>Staub</c>) sind von <c>Simulation</c> auf <c>Dialog</c> gefallen. Bis
+        /// dahin war das BHKW der EINZIGE Erzeuger, dessen Lauf Geraetespalten als
+        /// Emissionsfaktoren las (<c>SimulationBHKW.Moduldaten_Einlesen</c>) — waehrend
+        /// die Emissionsbilanz desselben Projekts mit dem Katalogwert des
+        /// Energietraegers rechnete. Der Anwender hat das aufgeloest: EIN Faktor, der
+        /// des Energietraegers; die Geraetespalten bleiben als Herstellerangabe und
+        /// sind „nur Anzeige".</para>
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Bhkw(Func<string, string> t)
         {
@@ -352,11 +366,16 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.cs:706 (Betriebskosten-Planwert)"),
                 E("Nutzungsdauer", t("BHKWK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
                   "BhkwKatalogDialog.razor:137"),
-                E("NOX", "NOx:", "g / MWh", SIM, "SimulationBHKW.cs:317"),
-                E("SO2", "SO2:", "g / MWh", SIM, "SimulationBHKW.cs:316"),
-                E("CO", "CO:", "g / MWh", SIM, "SimulationBHKW.cs:318"),
-                E("CO2", "CO2:", "g / MWh", SIM, "SimulationBHKW.cs:315"),
-                E("Staub", t("HZKK_LBL_STAUB"), "g / MWh", SIM, "SimulationBHKW.cs:319"),
+                E("NOX", "NOx:", "g / MWh", DLG,
+                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                E("SO2", "SO2:", "g / MWh", DLG,
+                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                E("CO", "CO:", "g / MWh", DLG,
+                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Artenkatalog fuehrt kein CO"),
+                E("CO2", "CO2:", "g / MWh", DLG,
+                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                E("Staub", t("HZKK_LBL_STAUB"), "g / MWh", DLG,
+                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("Motortyp", t("BHKWK_LBL_MOTORTYP"), "", BER,
                   "AbweichungsErmittler.cs:87"),
                 E("Grenzleistung", t("BHKWK_LBL_GRENZLEISTUNG"), "%", SIM,

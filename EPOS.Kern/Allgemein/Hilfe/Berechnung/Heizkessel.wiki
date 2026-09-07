@@ -1,7 +1,8 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Heizkessel | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationSPK.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs
      (Kesselzweig, Kessel-Kaskade), EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs,
-     EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs (Spaltenverwendung, Befund W14a-E-8-B1) -->
+     EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs (Spaltenverwendung, Befund W14a-E-8-B1),
+     EPOS.Kern/Allgemein/Wirtschaftlichkeit/Emissionsquelle.cs (die eine Emissionsquelle, W14a-E-8-B1) -->
 
 == Was berechnet wird ==
 
@@ -33,7 +34,7 @@ Bereitschaftsverlust angelastet.
 |-
 | Betriebsbereitschaftsverlust || % || Kesselkatalog, Feld „Betriebsbereitschaftsverlust"
 |-
-| Emissionsfaktoren CO₂, SO₂, NOₓ, Staub || g/MWh || '''Energieträgerkatalog''' (Brennstoff) — nicht der Kesselkatalog, siehe „Grenzen und Annahmen"
+| Emissionsfaktoren CO₂ bzw. SO₂, NOₓ, Staub || g/kWh bzw. mg/kWh || '''Emissionskatalog des Energieträgers''' — nicht der Kesselkatalog, siehe „Grenzen und Annahmen"
 |-
 | Vorlauf, Rücklauf || °C || Dialog „Heizkessel", Abschnitt „Modul", Felder „Vorlauf" und „Rücklauf" (nur für den Quellbezug aus einem Puffer)
 |-
@@ -70,7 +71,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>\mathrm{ID}_{\mathrm{B}}</math> || Kennung des Brennstoffs || — || Kesselkatalog, Feld „Energieträger"; im Projekt über „Brennstoff Variante" änderbar
 |-
-| <math>f_{\mathrm{E}}</math> || Emissionsfaktor je Schadstoff (CO₂, SO₂, NO<sub>x</sub>, Staub) || g/MWh || '''Energieträgerkatalog''' — nicht der Kesselkatalog
+| <math>f_{\mathrm{E}}</math> || Emissionsfaktor je Schadstoff (CO₂, SO₂, NO<sub>x</sub>, Staub) || g/kWh (CO₂) bzw. mg/kWh || '''Emissionskatalog des Energieträgers''' — nicht der Kesselkatalog
 |-
 | <math>\vartheta_{\mathrm{VL}}</math> || Vorlauftemperatur des Kessels || °C || Dialog „Heizkessel", Abschnitt „Modul", Feld „Vorlauf"
 |-
@@ -151,8 +152,13 @@ ein.
 === Schritt 1 — Kesseldaten auflösen ===
 
 Je Kessel werden Nennleistung, Brennstoff, die beiden Wirkungsgrade und der
-Bereitschaftsverlust gelesen, dazu die Emissionsfaktoren des '''Brennstoffs'''. Zwei Werte werden
-dabei auf ihre Einheit geprüft:
+Bereitschaftsverlust gelesen, dazu die Emissionsfaktoren seines '''Energieträgers''' aus dem
+Emissionskatalog — dieselbe Lesekette, aus der Wirtschaftlichkeit und Kennzahlen lesen
+(Anwenderentscheid W14a‑E‑8‑B1 vom 07.09.2026): Projektwert → aktive Katalogzeile →
+Brennstoffkatalog → Energieträgerspalte, jeweils im '''Berechnungsmodus''' des Projekts
+(CO₂ oder CO₂-Äquivalent). Ist der Anlage kein Energieträger zugeordnet, gilt ersatzweise der
+Brennstoff des Geräts gegen den Brennstoffkatalog; das Laufprotokoll sagt es an. Zwei Werte
+werden dabei auf ihre Einheit geprüft:
 
 : <math>\displaystyle \eta > s_{\eta} \; \to \; \eta = \frac{\eta}{100} \quad \left( \eta_{\mathrm{Gas}} \; \mathrm{und} \; \eta_{\mathrm{Oel}} \right)</math> &nbsp;&nbsp;(1)
 :: <math>\eta</math> – Wirkungsgrad des Kessels, wie ihn der Katalog führt [–]
@@ -301,10 +307,10 @@ Brennstoffzähler seiner Gruppe:
 Die Emissionen folgen dem '''gemessenen''' Jahresverbrauch:
 
 : <math>\displaystyle m_{\mathrm{E}} = \frac{Q_{\mathrm{B,a}} \cdot f_{\mathrm{E}}}{1\,000}</math> &nbsp;&nbsp;(14)
-:: <math>m_{\mathrm{E}}</math> – Jahresemission je Schadstoff [kg]
+:: <math>m_{\mathrm{E}}</math> – Jahresemission [t für CO₂, kg für SO₂, NO<sub>x</sub> und Staub]
 :: <math>Q_{\mathrm{B,a}}</math> – Brennstoffverbrauch des Kessels im Jahr [MWh]
-:: <math>f_{\mathrm{E}}</math> – Emissionsfaktor des Brennstoffs je Schadstoff [g/MWh]
-:: <math>1\,000</math> – Umrechnung von g in kg [g/kg]
+:: <math>f_{\mathrm{E}}</math> – Emissionsfaktor des Energieträgers [g/kWh für CO₂, mg/kWh für die übrigen]
+:: <math>1\,000</math> – Umrechnung; derselbe Teiler für beide Fälle, weil sich die zwei Katalogeinheiten um genau diesen Faktor unterscheiden
 
 Der Jahresnutzungsgrad wird aus den Jahressummen gebildet, nicht aus Volllastwerten. Im Zähler steht
 dabei die '''brennstoffbasierte''' Nutzwärme <math>Q_{\mathrm{K,a}}</math> — bei einem Kessel mit
@@ -330,12 +336,17 @@ unter dem Volllastwirkungsgrad des Katalogs, und zwar umso deutlicher, je kürze
 == Grenzen und Annahmen ==
 
 * '''Die fünf Emissionsspalten des Kesselkatalogs rechnen nicht mit''' (Befund W14a‑E‑8‑B1 vom
-  06.09.2026). CO₂, SO₂, NOₓ, CO und Staub lassen sich am Kessel pflegen, der Lauf holt die Faktoren
-  <math>f_{\mathrm{E}}</math> aber aus dem '''Energieträgerkatalog'''. Beim BHKW ist es umgekehrt:
-  Dort zählen die Gerätewerte. Zwei Masken, die gleich aussehen, mit einem Unterschied, der im
-  Katalogdialog jetzt als „nur Anzeige" beziehungsweise „Simulation" ausgewiesen ist.
-* '''Kein CO in der Bilanz.''' Der Energieträgerkatalog führt keinen CO-Faktor; die CO-Emission des
-  Kessels ist deshalb immer 0.
+  06.09.2026, entschieden am 07.09.2026). CO₂, SO₂, NOₓ, CO und Staub lassen sich am Kessel
+  pflegen, der Lauf holt die Faktoren <math>f_{\mathrm{E}}</math> aber aus dem
+  '''Emissionskatalog des Energieträgers'''. Beim BHKW war es bis zum Entscheid umgekehrt — dort
+  zählten die Gerätewerte; seither gilt für '''beide''' dieselbe Quelle, und die fünf Spalten
+  sind in beiden Katalogdialogen als „nur Anzeige" ausgewiesen. Sie bleiben als Herstellerangabe
+  erhalten.
+* '''Der Faktor folgt dem Berechnungsmodus.''' Steht das Projekt auf „CO₂-Äquivalent", ist
+  <math>f_{\mathrm{E}}</math> für CO₂ die gewichtete Summe der ausgewählten Emissionsarten
+  (GWP₁₀₀) statt des reinen CO₂; SO₂, NOₓ und Staub bleiben in beiden Modi unverändert.
+* '''Kein CO in der Bilanz.''' Der Emissionsarten-Katalog führt keine Art „CO", und der
+  Brennstoffkatalog hat keine CO-Spalte; die CO-Emission des Kessels ist deshalb immer 0.
 * '''Kein Teillastwirkungsgrad.''' <math>\eta</math> ist ein Wert je Brennstoffart, unabhängig von
   der Auslastung der Stunde. Ein modulierender Kessel wird damit nicht besser und nicht schlechter
   gerechnet als ein voll laufender.
@@ -372,7 +383,7 @@ unter dem Volllastwirkungsgrad des Katalogs, und zwar umso deutlicher, je kürze
 * [[Programm Dokumentation/Heizkessel|Heizkessel]] — Bedienung des Dialogs, Katalog, Brennstoffvarianten
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Stundenschleife, Reihenfolge der Erzeuger
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Ladeordnung, Schwellen und der Quellbezug der Kessel-Kaskade
-* [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]] — der Erzeuger, der vor dem Kessel lädt, und der die Gerätewerte für die Emissionen nutzt
+* [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]] — der Erzeuger, der vor dem Kessel lädt; seit W14a‑E‑8‑B1 mit derselben Emissionsquelle
 * [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] — woher der Bedarf kommt, den der Kessel deckt
 * [[Programm Dokumentation/Emissionen|Emissionen]] — Herkunft und Pflege der Emissionsfaktoren
 * [[Programm Dokumentation/Wirtschaftlichkeit|Wirtschaftlichkeit]] — Brennstoffkosten, Wartung und Kapitaldienst
