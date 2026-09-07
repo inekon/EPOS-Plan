@@ -1163,6 +1163,14 @@ Leer heisst: der Strang rechnet mit dem Modul der Anlage.
   Clipping" (bzw. mit den gepflegten Anlagenwerten), und dahinter der Knopf „Wechselrichter der
   Anlage…", der die heutige Überlagerung öffnet. **Der bestehende Weg bleibt also erreichbar** —
   er ist nur nicht mehr der einzige und nicht mehr gesperrt.
+  > **Nachgezogen mit W6‑B‑3 (07.09.2026).** Der Satz gilt weiter, aber der Abschnitt zeigt
+  > bei „mit Wechselrichter" **auch ohne Strang** die ganze Zuordnung: Herstellerfilter,
+  > eine **Klappliste der Katalog-Wechselrichter** („Wechselrichter aus dem Katalog:", sie
+  > gilt dem NÄCHSTEN Strang) und den Knopf **„Strang anlegen"**, der das gewählte Gerät
+  > mitnimmt. Ist der Katalog **leer** (der Auslieferungszustand, W6‑O‑3), steht statt der
+  > Klappliste der Weg zum Import. Der Rückfallknopf heisst seither **„Anlagenwerte
+  > (Rückfall)…"** und steht in einer eigenen Zeile am Fuss — nicht dort, wo der Anwender
+  > die Katalogwahl erwartet.
 * **Die Wechselrichterspalte ist eine Klappliste aus dem Katalog**, mit demselben
   Herstellerfilter wie die Modulliste. Ein Gerät, das im Projekt noch nicht liegt, wird beim
   Übernehmen kopiert (`CopyFromStamm`) — genau wie ein Modul. **Der Filter steht als eigene Zeile
@@ -1342,13 +1350,20 @@ Migrationsschritt hat und nicht zwei.
 > ohne Entscheidung erfindet keine Entscheidung, und der Roundtrip macht aus einer nie
 > gepflegten Zeile keine gepflegte (dieselbe Regel wie bei `PV_Modell`).
 >
-> Die **weiche Sperre** aus W16b‑E‑6 steht wie beschrieben: „mit Wechselrichter" ohne
-> Strangzeile bleibt anklickbar, trägt `aria-disabled="true"` und den Grund als `title`,
-> und der Versuch MELDET sich über ein `Warnbanner` mit `Verfaellt` = 3 s — er handelt
-> nicht. Dafür hat der Baustein `Optionsgruppe` zwei neue Gaben bekommen
-> (`WeichGesperrt`, `Verweigert`), wörtlich nach `Reiterblatt.Sperrgrund` /
-> `Reiter.Verweigert`; die Stilregel nennt `:disabled` und `[aria-disabled="true"]` in
-> EINEM Selektor, weil ein Anwender „geht nicht" nicht nach der Bauart unterscheidet.
+> Die **weiche Sperre** aus W16b‑E‑6 stand hier bis zum 07.09.2026: „mit Wechselrichter"
+> ohne Strangzeile blieb anklickbar, trug `aria-disabled="true"` und den Grund als `title`,
+> und der Versuch MELDETE sich über ein `Warnbanner` mit `Verfaellt` = 3 s — er handelte
+> nicht. Dafür hat der Baustein `Optionsgruppe` zwei Gaben bekommen (`WeichGesperrt`,
+> `Verweigert`), wörtlich nach `Reiterblatt.Sperrgrund` / `Reiter.Verweigert`.
+>
+> **Sie ist mit Befund W6‑B‑3 ersatzlos gefallen, und der Grund ist eine Verwechslung von
+> Voraussetzung und Folge.** „Noch kein Strang" ist keine Bedingung, unter der die Wahl
+> unzulässig wäre — es ist der ERSTE ZUSTAND NACH der Wahl. Angelegt wird ein Strang
+> ausschliesslich INNERHALB des Katalogweges; die Sperre verschloss damit genau den Weg, auf
+> dem ihre eigene Bedingung erfüllbar gewesen wäre. Eine frische Anlage kam nie hinein
+> (Einzelheiten in Kapitel 12, **W6‑B‑3**). Der Satz steht seither als Hinweis IM Abschnitt,
+> wo er etwas erklärt statt etwas zu verhindern. Die zwei Gaben der `Optionsgruppe` bleiben —
+> sie sind ein allgemeiner Baustein und tragen die Reiter der Startseite weiter.
 >
 > Und der Schalter **parkt**, er löscht nicht: Zurück auf „vereinfacht" lässt die
 > Strangzeilen stehen — genau der Grund 1 der Empfehlung.
@@ -1638,6 +1653,11 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 
 ## 12. Offene Punkte
 
+**Stand 07.09.2026 (Nachtrag):** Aus der Windows-Abnahme desselben Tages ist der Befund
+**W6‑B‑3** dazugekommen — *„die gesamte Zuordnung Wechselrichter zum PV-Modul und Strang
+funktioniert nicht (Auswahl Wechselrichter, siehe Screenshot) nicht vorhanden"*. Er steht in
+der Tabelle unten und ist behoben.
+
 **Stand 07.09.2026:** **Alle zehn Punkte sind geschlossen.** **W6‑O‑2** durch
 Anwenderentscheid („Empfehlung": nur die eingesetzten Geräte von Hand nachpflegen, keine
 Programmarbeit), die übrigen neun durch Umsetzung — zuletzt **W6‑E‑6** (die Vorauswahl des
@@ -1649,6 +1669,7 @@ der Befund **W6‑B‑2** und der Anwenderentscheid **W6‑E‑5**; alle drei si
 
 | Nr. | Punkt | Stand |
 |---|---|---|
+| **W6‑B‑3** | **Der Weg „mit Wechselrichter“ war von einer frischen Anlage aus unerreichbar.** Windows-Abnahme 07.09.2026, wörtlich: „die gesamte Zuordnung Wechselrichter zum PV-Modul und Strang funktioniert nicht (Auswahl Wechselrichter, siehe Screenshot) nicht vorhanden.“ Das Bildschirmfoto zeigt die Option **„mit Wechselrichter“ angeklickt** — und darunter trotzdem den vereinfachten Weg mit seinem einen Knopf, der die Überlagerung „Wechselrichter — &lt;Anlage&gt;“ mit vier Pauschalfeldern öffnet. Kein Herstellerfilter, keine Klappliste, keine Strangtabelle. | **URSACHE BELEGT und BEHOBEN.** Es war die **weiche Sperre** aus W16b‑E‑6 auf genau dieser Option: `PvStraengeFelder` setzte `WeichGesperrt` für „mit Wechselrichter“, solange `Zeile.Straenge.Count == 0` — der Klick MELDETE „Es ist noch kein Strang zugeordnet“ und schaltete nicht. Angelegt wird ein Strang aber ausschliesslich **im Katalogweg** („Strang anlegen“ stand INNERHALB des `@if (Zeile.MitWechselrichter)`), also war die Bedingung der Sperre nur hinter der Sperre erfüllbar — eine geschlossene Schleife. **Warum es im Bild trotzdem gewählt aussieht:** Der Browser setzt beim Klick die `checked`-Eigenschaft im DOM; Blazor zeichnet danach denselben Baum (die Auswahl hat sich ja nicht geändert), emittiert also keine Änderung am Attribut und stellt das Kästchen nicht zurück. Der bunit-Beleg zeigt nach `Change("1")` `MitWechselrichter = False` und `checked` weiterhin an Option 0; im Markup stehen dann exakt die zwei Dinge des Bildschirmfotos — der Satz „Die Anlage rechnet mit dem Wirkungsgrad 0,950 und ohne Clipping.“ und EIN Knopf, damals „Wechselrichter der Anlage…“. **Die Hülle war unschuldig:** `PvWechselrichterZuordnungTests` misst gegen `Kenndaten_Test.sqlite`, dass `WechselrichterHersteller()` und `WechselrichterEintraege(…, "")` gefüllt ankommen. **Behoben in vier Schritten:** (1) die weiche Sperre fällt ersatzlos — die Option ist immer wählbar, `PVS_SPERRE_OHNE_STRANG` ist gelöscht; (2) der Abschnitt zeigt bei „mit Wechselrichter“ IMMER Herstellerfilter, **Klappliste der Katalog-Wechselrichter** (`PVS_LBL_GERAETEWAHL`, sie gilt dem nächsten Strang) und „Strang anlegen“, das das gewählte Gerät über `CopyFromStamm` mitnimmt; (3) beim LEEREN Katalog steht statt der Klappliste der Importweg „Administration → Daten &amp; Import → Photovoltaik → ‚Wechselrichter (CEC, OND)…‘“ (`PVS_HINWEIS_KATALOG_LEER`) — der Auslieferungskatalog ist leer (W6‑O‑3), und ein stummer Abschnitt wäre derselbe Befund noch einmal; (4) der Rückfallknopf heisst **„Anlagenwerte (Rückfall)…“** statt „Wechselrichter der Anlage…“ und steht in einer eigenen Zeile am Fuss, mit dem Satz „…sie rechnen nur ohne Strangzuordnung.“ — auch die Überlagerung selbst heisst so (`PVM_DLG_TITEL`). **Der Titel „Verwaltung Photovoltaik Module“ bleibt:** Er ist der historische Fenstertitel von `Form_PV` (`this.Text`, Designer Z. 500) und folgt dem Hausschema — „Verwaltung Heizkessel“, „Verwaltung BHKW“ für den Projektdialog, „Administration Photovoltaik Module“ für den Katalog. Nachweise: **neun bunit-Fälle** in `PvStraengeFelderTests` (die Gegenprobe zum gefallenen Sperrfall, leerer Katalog, „vereinfacht“ zeigt nur den Rückfall, das Gerät wandert in den neuen Strang, Filterwechsel setzt eine unsichtbare Vormerkung zurück) und **fünf Hüllenfälle** in `EPOS.Kern.Tests/PvWechselrichterZuordnungTests` gegen die Testdatenbank; Referenzlauf 1030/1007/1017/1045 byte-gleich gegen R5 |
 | **W6‑B‑2** | **Der Herstellerfilter zeigte die alten Zeilen.** Windows, 07.09.2026, „Administration → Datenimport → Wechselrichter (CEC, OND)…": Klappliste auf „SMA America", Statuszeile richtig „Filter Auswahl (109 Geräte gefunden)" — und im Raster standen weiter die ABB-Zeilen der ungefilterten Liste. Die Filterrechnung stimmte; es war die Anzeige. | **URSACHE BELEGT und UMGESETZT in `202b867`.** Nicht das Virtualisieren ist schuld — ein virtualisiertes QuickGrid nimmt eine neue Zeilenmenge sehr wohl an —, sondern der **Wechsel des Schalters**: Die Wirte virtualisieren ab 120 Zeilen, und der Herstellerfilter fällt darunter (2 343 → 109). QuickGrid 10.0.11 trägt beide Wege in EINER Instanz; `_currentNonVirtualizedViewItems` wird nur im flachen Zweig gefüllt, und zwar genau EINMAL — beim ersten Datenabruf, als das `@ref` auf das `Virtualize`-Kind noch `null` war, ohne Pagination also mit der GANZEN Liste. Danach ist das `@ref` gesetzt und wird beim Entfernen des Kindes nicht zurückgesetzt, der flache Zwischenspeicher altert ungestört. Fällt der Schalter, zeichnet QuickGrid genau diesen Stand. **Fix im Standard `Raster`, nicht im Wirt:** ein `@key` an (`Virtualisiert`, Zeilenzahl) — eine geänderte Kennung baut das Gitter neu auf, und die Liste steht nach einem Filterwechsel wieder am Anfang. Alle virtualisierten Listen des Hauses haben den Fix damit. Nachweise: Playwright-Probe mit reinem QuickGrid (elf Fälle, drei rot vor dem Fix, alle grün danach), drei `RasterTests` und `ModulImportDialogTests.Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers`. **Nebenbefund mit erledigt:** Der Spaltenkopf hieß „Hersteller:" — eine Feldbeschriftung als Spaltentitel; eigene Schlüssel `PVIMP_SP_HERSTELLER`/`PVIMP_SP_TECHNOLOGIE` (Spalte, ohne Doppelpunkt) und `PVIMP_LBL_MODULNAME`/`WRK_IMP_LBL_GERAET` (Feld, mit) |
 | **W6‑E‑5** | **Mehrfachauswahl und Doppelklick in ALLEN Importen.** Anwender am 07.09.2026: „die Mehrfachauswahl funktioniert nicht (Wechselrichter)", „und die Auswahl per Doppelklick geht nicht", „der Mehrfachimport soll grundsätzlich für alle Importe möglich sein → prüfen". Der Geräteimport hatte bewusst EINE Zeilenwahl (`MultiSelect = false` in beiden Vorläufern); der Katalogimport konnte mehrere Sätze, führte aber die Semantik der `ListBox` mit `MultiExtended` — ein einfacher Klick ERSETZTE die Wahl, obwohl die Spalte ein Kontrollkästchen zeigt. | **UMGESETZT** (Commit mit Präfix `W6-E-5:`, 07.09.2026). **Eine Klickregel für alle sechs Importe**, im Baustein `Zeilenmarkierung` und nicht je Wirt: Klick schaltet um, `Strg` ebenso, `Umschalt` nimmt den Bereich ab dem Anker dazu. **Doppelklick** nimmt die Zeile in die Wahl und übernimmt SIE sofort, ohne die übrige Wahl zu löschen (`Zeilenwahl.Doppelklick`; der Browser schickt davor zwei Klicks, die sich aufheben — deshalb `Hinzufuegen` statt `Anklicken`). Der `ModulImportDialog` schreibt jetzt **alle gewählten Sätze in einem Zug**: Vorprüfung je Satz, EINE Rückfrage für alle Plausibilitätswarnungen mit der Liste der betroffenen Geräte, EIN `ImportKonflikteDialog`, Abschlussbilanz „n übernommen, m übersprungen"; ein einzelner Satz verhält sich wie vorher. Seine Wahl hängt an den SÄTZEN und überlebt das Umfiltern (Statuszeile „n gewählt", „Zurücksetzen" leert sie). Nachweise: je Ausprägung ein Fall „zwei einfache Klicks → beide geschrieben" (vier im `KatalogImportDialogTests`, zwei im `ModulImportDialogTests` mit `cec_module_50.csv` und `cec_wechselrichter_21.csv`), dazu Doppelklick, Konflikt unter zweien, EINE Rückfrage für zwei Warnungen und „Umfiltern behält die Wahl". Einzelheiten in 5.5 |
 | **W6‑O‑1** | **Ein Importwirt statt zwei.** `PvModulImportDialog` (771 Z.) und `WechselrichterImportDialog` (655 Z.) teilten Abrufapparat, Vorprüfung, Konfliktweg und sämtliche Bausteine, aber nicht die `.razor`-Datei (5.5). Die Zusammenlegung verlangte eine neutrale Zeilen- und Detailform (Spalten und Felder als DATEN, wie `ModulFeldwert` im Modulkatalog) und damit den Umbau einer getesteten Maske samt 594 Zeilen bunit-Fällen. | **UMGESETZT in `9ef8ca5`** — Anwenderentscheid vom 06.09.2026: „der OND-Import soll umgesetzt werden. baue daher den Modulimport schon jetzt um (Modulimport und Wechselrichter Import zwei Masken)". Es ist genau der Zeitpunkt, den dieser Punkt selbst benannt hatte. `ModulImportDialog` (669 Z. statt 771 + 655) ist der eine Wirt, `ModulImportProfil` im Kern trägt die Daten, `ImportZeile` die neutrale Zeilenform; die zwei Hüllen sind eine, die beiden alten `.razor` samt `Daten.cs` sind gelöscht, die 594 Zeilen bunit-Fälle sind mitgewandert und grün. Details in 5.5 |
