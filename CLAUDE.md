@@ -34,7 +34,7 @@ Projekt führt `EPOS.Kern/Controller/ProjektKontextCtrl`. Damit sind auch die zw
 Simulationsseiten aus ihren modalen Hüllen heraus — die Konfiguration als freie Ansicht, das
 Ergebnis als `Ueberlagerung` derselben WebView (Entscheid E‑5; R‑W10b‑1 und R‑W11‑1 geschlossen).
 **Seit iU9‑W16c ist auch das HAUPTFENSTER eine Razor-Seite**
-(`EPOS.UI/Seiten/Hauptfenster.razor`): Menüband mit 58 Punkten in **vier Köpfen** aus der
+(`EPOS.UI/Seiten/Hauptfenster.razor`): Menüband mit 57 Punkten in **vier Köpfen** aus der
 erzeugten `Menuetabelle`, Kopfband PRODUKTNAME/GATTUNG/CLAIM/Version und darunter
 `AppWurzel` — **die gemeinsame Wurzel von Windows und iOS** (Entscheid E‑1: eine Wurzel,
 zwei Schalen). Zwei Anwenderentscheide vom 04.09.2026 stecken darin: die zwei Sprachpunkte
@@ -49,7 +49,11 @@ am 07.09.2026 dazu: **W16c‑E‑7** stellt das Paar Modul/Wechselrichter an BEI
 des Kopfs „Administration" unter einen Zwischenknoten **„Photovoltaik"** — unter
 „Energiesysteme" die zwei Kataloge („PV Module", „Wechselrichter"), unter „Daten & Import"
 die zwei Einlesewege („PV Module (CEC, PAN)…", „Wechselrichter (CEC, OND)…"); Ziel,
-Argument und Kennung der vier Punkte bleiben, es wandert ihre Lage im Baum. **Das Menü ist
+Argument und Kennung der vier Punkte bleiben, es wandert ihre Lage im Baum. Ein fünfter
+kam am selben Tag dazu: **W16c‑O‑7** löst das LETZTE Ein-Punkt-Untermenü auf — der Knoten
+„Klimadaten" führte ein einziges Kind derselben Beschriftung, und der Punkt steht seither
+unmittelbar im Kopf, mit dem Bild `Menu4` des gefallenen Knotens; damit gilt die Regel aus
+W16c‑E‑6 („kein Untermenü mit nur EINEM Punkt") ohne Ausnahme. **Das Menü ist
 Daten, und `Menuetabelle.cs` ist seit W16c die Quelle:** Der Designer ist gelöscht, das
 Erzeugerskript liegt nicht im Repository — wer das Menü ändert, ändert diese Datei.
 Die WinForms-Seite ist seither die **Hülle ohne Designer** (129 Zeilen) und heißt seit dem

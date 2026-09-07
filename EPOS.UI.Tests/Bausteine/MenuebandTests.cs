@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests.Bausteine;
 /// aufgibt: die VOLLZAEHLIGKEIT der Punkte, ihre BESCHRIFTUNG in beiden
 /// Sprachen und die Zusicherung, dass jeder Klick einen
 /// <see cref="Seitenschluessel"/> meldet — und nichts sonst. Fiele einer der
-/// 58 Punkte beim Umzug aus, saehe man es an keiner anderen Stelle mehr; der
+/// 57 Punkte beim Umzug aus, saehe man es an keiner anderen Stelle mehr; der
 /// Designer, der ihn bisher belegte, ist mit W16c.3 geloescht.</para>
 ///
 /// <para>ANWENDERENTSCHEID W16c-E-2 (04.09.2026): Die zwei Sprachpunkte
@@ -50,6 +50,16 @@ namespace EPOS.UI.Tests.Bausteine;
 /// BESCHRIFTUNGEN — „Photovoltaik Module" heisst unter dem gleichnamigen Knoten
 /// „PV Module" (MENU_PV_MODULE), und der Modulimport heisst wie sein Zwilling
 /// „PV Module (CEC, PAN)…" statt „Import Photovoltaik CEC/Pan".</para>
+///
+/// <para>ANWENDERENTSCHEID W16c-O-7 (07.09.2026): Das LETZTE
+/// Ein-Punkt-Untermenue ist aufgeloest — „Klimadaten" (MenuItem_Klima) fuehrte
+/// als einziges Kind einen Punkt derselben Beschriftung. Der Punkt
+/// MenuItem_Klimadaten steht seither unmittelbar im Kopf „Administration" und
+/// traegt das Bild Menu4 des gefallenen Knotens. Wieder bleibt die wichtigste
+/// Zahl stehen: <b>44 handelnde Punkte</b> — es faellt ein Punkt, der nur
+/// aufklappte (14 → 13), also 57 statt 58. Und der Waechter
+/// <c>Ein_neues_Untermenue_fuehrt_nie_nur_einen_einzigen_Punkt</c> gilt ab
+/// hier OHNE Ausnahme.</para>
 ///
 /// <para>Die Sprache wird JE FALL gepinnt (Regel seit iU9-W8): Die
 /// Beschriftungen kommen aus <c>MyResource</c>, und der Windows-Laeufer laeuft
@@ -116,7 +126,12 @@ public class MenuebandTests : BunitContext
         // "Photovoltaik" kommen hinzu - einer unter "Energiesysteme", einer
         // unter "Daten & Import". Sie KLAPPEN nur auf, also 58 Punkte bei
         // unveraendert 44 Handlungen.
-        Assert.Equal(58, Punkte.Count);
+        //
+        // ANWENDERENTSCHEID W16c-O-7 (07.09.2026): Der Knoten MenuItem_Klima
+        // faellt - er fuehrte als einziges Kind MenuItem_Klimadaten, und der
+        // steht jetzt an seiner Stelle. EIN aufklappender Punkt weniger, also
+        // 57 Punkte bei unveraendert 44 Handlungen.
+        Assert.Equal(57, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -370,17 +385,77 @@ public class MenuebandTests : BunitContext
         // MenuItem_PC_Bearbeiten/MenuItem_ST_Bearbeiten aufgeloest worden. Die
         // zwei Knoten aus W16c-E-7 fuehren je ZWEI Punkte und wahren sie.
         //
-        // EINE BENANNTE AUSNAHME steht im Baum: "Klimadaten" (MenuItem_Klima)
-        // fuehrt seit dem Bestand genau einen Punkt. W16c-E-6 hat sie NICHT
-        // angefasst - der Anwender hat sie nicht genannt, und ein Menuepunkt,
-        // den niemand beanstandet hat, wird nicht nebenbei umgebaut. Sie steht
-        // hier namentlich, damit eine ZWEITE nicht unbemerkt entsteht.
+        // SEIT W16c-O-7 GILT DIE REGEL OHNE AUSNAHME. Die eine, die hier
+        // namentlich stand, war "Klimadaten" (MenuItem_Klima): ein Untermenue
+        // mit genau einem Kind DERSELBEN Beschriftung. W16c-E-6 hatte sie nicht
+        // angefasst, weil der Anwender sie nicht genannt hatte; auf Rueckfrage
+        // hat er am 07.09.2026 "ja" gesagt. Die Liste ist deshalb LEER - und
+        // muss es bleiben.
         string[] einzelgaenger = Menuetabelle.Alle
             .Where(p => p.Klappt && p.Untereintraege.Count(k => !k.Trenner) < 2)
             .Select(p => p.Name)
             .ToArray();
 
-        Assert.Equal(new[] { "MenuItem_Klima" }, einzelgaenger);
+        Assert.Empty(einzelgaenger);
+    }
+
+    // =====================================================================
+    //  ANWENDERENTSCHEID W16c-O-7 (07.09.2026) — "Klimadaten" steht direkt im
+    //  Kopf
+    // =====================================================================
+
+    [Fact]
+    public void Klimadaten_steht_ohne_Untermenue_unmittelbar_im_Kopf_Administration()
+    {
+        // Der Knoten MenuItem_Klima ist WEG - er fuehrte genau ein Kind, und
+        // das trug dieselbe Beschriftung. Was bleibt, steht an SEINER Stelle
+        // im Kopf: zwischen "Energiesysteme" und "Daten & Import".
+        Assert.DoesNotContain(Menuetabelle.Alle, p => p.Name == "MenuItem_Klima");
+
+        Menuepunkt klimadaten = Administration.Untereintraege
+                                .Single(p => p.Name == "MenuItem_Klimadaten");
+
+        // Er HANDELT jetzt selbst - mit unveraendertem Ziel und Textschluessel.
+        Assert.False(klimadaten.Klappt);
+        Assert.Empty(klimadaten.Untereintraege);
+        Assert.Equal(Seitenschluessel.Klimadaten, klimadaten.Ziel);
+        Assert.Equal("MENU_KLIMADATEN", klimadaten.TextSchluessel);
+
+        // Und er traegt das Bild des gefallenen Knotens - im Kopf steht sonst
+        // eine Zeile ohne Sinnbild zwischen lauter bebilderten Rubriken.
+        Assert.Equal("Menu4", klimadaten.Bild);
+
+        // Die Stelle im Kopf ist die des Knotens: vierter Eintrag, direkt vor
+        // "Daten & Import".
+        string[] rubriken = Kinder(Administration);
+        Assert.Equal("MenuItem_Energiesysteme", rubriken[2]);
+        Assert.Equal("MenuItem_Klimadaten", rubriken[3]);
+        Assert.Equal("MenuItem_DatImport", rubriken[4]);
+    }
+
+    [Fact]
+    public void Das_Band_fuehrt_ohne_Zwischenklick_zu_den_Klimadaten()
+    {
+        // Der eingesparte Klick, gezeichnet: Ein Klick auf "Administration"
+        // zeigt "Klimadaten" schon im DOM - vorher lag dort der Knoten, und
+        // der Punkt kam erst nach einem zweiten Klick.
+        Menuepunkt? gemeldet = null;
+        var cut = Render<Menueband>(p => p
+            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
+
+        cut.Find("#menue-Administration").Click();
+
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Klima"));
+        Assert.Single(cut.FindAll("#menue-MenuItem_Klimadaten"));
+        Assert.Equal("Klimadaten",
+                     cut.Find("#menue-MenuItem_Klimadaten").TextContent.Trim());
+
+        cut.Find("#menue-MenuItem_Klimadaten").Click();
+
+        Assert.NotNull(gemeldet);
+        Assert.Equal(Seitenschluessel.Klimadaten, gemeldet!.Ziel);
+        Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
     }
 
     [Fact]
@@ -737,7 +812,11 @@ public class MenuebandTests : BunitContext
         // "Photovoltaik") und laesst die 44 unberuehrt - genau wie W16c-E-2
         // und W16c-E-6: kein Ziel entfallen, keines hinzugekommen, nur eine
         // Stelle im Baum weiter unten.
-        Assert.Equal(14, Punkte.Count(p => p.Klappt));
+        //
+        // W16c-O-7 (07.09.2026) nimmt EINEN aufklappenden wieder weg
+        // (MenuItem_Klima) und laesst die 44 abermals unberuehrt: Sein einziges
+        // Kind haelt sein Ziel und steht nur eine Ebene hoeher.
+        Assert.Equal(13, Punkte.Count(p => p.Klappt));
         Assert.Equal(44, Punkte.Count(p => !p.Klappt));
     }
 

@@ -691,7 +691,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   — `Views/Hauptformular/HauptfensterHuelle.cs` (die Datenseite mit dem EINEN
   `Weg`) — und in `EPOS.UI` die Seite `Seiten/Hauptfenster.razor` samt dem
   Baustein `Bausteine/Menueband.razor` und der **erzeugten** `Menuetabelle.cs`
-  (**58 Punkte in vier Köpfen**, aus dem Designer und den drei `.resx` per
+  (**57 Punkte in vier Köpfen**, aus dem Designer und den drei `.resx` per
   Skript, Auflage R‑W16‑8; vier Zeilen haben keine Designer-Herkunft: der Kopf
   **„Sprache"** aus dem Anwenderentscheid **W16c‑E‑2** vom 04.09.2026 — die
   zwei Sprachpunkte hängen seither unter ihm statt neben „Hilfe" zu stehen —,
@@ -700,7 +700,11 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Zwischenknoten **„Photovoltaik"** aus **W16c‑E‑7** vom 07.09.2026, unter
   denen Modul und Wechselrichter an beiden Stellen dieses Kopfs zusammen
   stehen — als Katalog unter „Energiesysteme", als Import unter „Daten &
-  Import". Von den 58 Punkten **handeln 44**, 14 klappen nur auf. Das
+  Import". Dazu kommt **W16c‑O‑7** vom selben Tag, das keine Zeile anlegt,
+  sondern eine wegnimmt: Der Knoten „Klimadaten" führte als einziges Kind
+  einen Punkt derselben Beschriftung; der Punkt steht jetzt an seiner Stelle
+  im Kopf und trägt sein Bild `Menu4`. Von den 57 Punkten **handeln 44**,
+  13 klappen nur auf. Das
   Erzeugerskript liegt nicht im Repository; **geändert wird die Tabelle**).
   **Drei Namen, drei Dinge** (Anwenderentscheid **E‑10**, 04.09.2026):
   `Hauptfensterrahmen` ist das WinForms-Fenster mit `Application.Run`, dem

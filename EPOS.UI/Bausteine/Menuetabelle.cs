@@ -67,6 +67,21 @@
 // von "Wechselrichter (CEC, OND)..." unter demselben Knoten. MENU_PV bleibt
 // wie MENU_PC_BEARBEITEN im Katalog stehen und wird vom Menue nicht mehr
 // gelesen.
+//
+// ANWENDERENTSCHEID W16c-O-7 (07.09.2026) - das letzte Ein-Punkt-Untermenue
+// ist aufgeloest. Die Regel aus W16c-E-6 ("kein Untermenue mit nur EINEM
+// Punkt") war im Kopf "Administration" noch einmal verletzt: Der Knoten
+// MenuItem_Klima ("Klimadaten") fuehrte als einziges Kind den Punkt
+// MenuItem_Klimadaten ("Klimadaten") - dieselbe Beschriftung zweimal, ein
+// Klick zuviel. Der Anwender hat auf Rueckfrage "ja" gesagt; der Punkt steht
+// jetzt an der Stelle des Knotens unmittelbar im Kopf und traegt dessen Bild
+// Menu4. Sein Name, sein Textschluessel (MENU_KLIMADATEN) und sein Ziel
+// (Seitenschluessel.Klimadaten) sind unveraendert - help_mapping.txt und die
+// Huelle greifen weiter. MENU_KLIMA bleibt wie MENU_PC_BEARBEITEN und MENU_PV
+// im Katalog stehen und wird vom Menue nicht mehr gelesen. Damit fuehrt KEIN
+// Untermenue mehr nur einen Punkt, und der Waechter
+// Ein_neues_Untermenue_fuehrt_nie_nur_einen_einzigen_Punkt gilt ohne jede
+// Ausnahme.
 
 using System;
 using System.Collections.Generic;
@@ -77,7 +92,7 @@ namespace EPOS.UI.Bausteine;
 /// <summary>
 /// Das Menue des Hauptfensters als DATEN (iU9-W16c.1).
 ///
-/// <para><b>58 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
+/// <para><b>57 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
 /// 9, die dort programmatisch eingehaengt wurden ("damit Designer und
 /// .resx unberuehrt bleiben", MDIMainForm.cs:57, :95, :132, :174, :311, :414,
 /// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es
@@ -86,14 +101,15 @@ namespace EPOS.UI.Bausteine;
 /// (W16c-E-6) und die zwei Knoten "Photovoltaik" (W16c-E-7); dafuer fallen
 /// mit W16c-E-6 die zwei Ein-Punkt-Untermenues MenuItem_PC_Bearbeiten und
 /// MenuItem_ST_Bearbeiten weg, und mit W6-E-2 kommen die zwei
-/// Wechselrichterpunkte hinzu. Also 54 Bestandspunkte + 2 - 2 + 2 + 2 = 58,
-/// dazu 8 Trennstriche.</para>
+/// Wechselrichterpunkte hinzu; mit W16c-O-7 faellt das dritte und letzte
+/// Ein-Punkt-Untermenue MenuItem_Klima. Also 54 Bestandspunkte
+/// + 2 - 2 + 2 + 2 - 1 = 57, dazu 8 Trennstriche.</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 58 Punkten handeln <b>44</b>, 14 klappen auf.
-/// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6 und mit W16c-E-7
-/// unveraendert geblieben: Es ist kein Ziel entfallen und keines
+/// vier klappen nur auf; von den 57 Punkten handeln <b>44</b>, 13 klappen auf.
+/// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6, mit W16c-E-7 und mit
+/// W16c-O-7 unveraendert geblieben: Es ist kein Ziel entfallen und keines
 /// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
 /// ist sie allein mit W6-E-2, das zwei ECHTE Wege anlegte (42 -> 44).</para>
 ///
@@ -186,10 +202,11 @@ public static class Menuetabelle
                 // W16c-E-6: aus "Waermebedarf & Heizung" hierher.
                 new Menuepunkt("MenuItem_PufferSp", "MENU_PUFFER_SP", Seitenschluessel.PufferSpAdmin),
             },
-            new Menuepunkt("MenuItem_Klima", "MENU_KLIMA", "", bild: "Menu4")
-            {
-                new Menuepunkt("MenuItem_Klimadaten", "MENU_KLIMADATEN", Seitenschluessel.Klimadaten),
-            },
+            // W16c-O-7: der Punkt stand bis zum 07.09.2026 als EINZIGES Kind
+            // im Untermenue MenuItem_Klima ("Klimadaten" ueber "Klimadaten").
+            // Er traegt jetzt an dessen Stelle das Bild Menu4 des gefallenen
+            // Knotens; Name, Textschluessel und Ziel sind unveraendert.
+            new Menuepunkt("MenuItem_Klimadaten", "MENU_KLIMADATEN", Seitenschluessel.Klimadaten, bild: "Menu4"),
             new Menuepunkt("MenuItem_DatImport", "MENU_DAT_IMPORT", "", bild: "Menue5")
             {
                 new Menuepunkt("MenuItem_Import_Heizkessel", "MENU_IMPORT_HEIZKESSEL", Seitenschluessel.HeizkesselImport),
