@@ -190,7 +190,15 @@ namespace WindowsFormsApplication1
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
 
-                ["Katalog"] = new Func<IReadOnlyList<KatalogZeile>>(Katalogzeilen),
+                // W14a-E-10 / S2.1: Der Kollektorkatalog bekommt seine SECHS Spalten -
+                // er hatte als einziger neben dem Speicher gar keinen Filter, und nach
+                // dem VDI-Import werden aus sieben Saetzen Hunderte. Dazu die Spalte
+                // "im Projekt verwendet" (Q12).
+                ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
+                    Anlagenart.Solarkollektoren, Text_),
+
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    SolarkollektorenStammCtrl.Katalogfilterzeilen),
                 ["Detail"] = new Func<string, ErzeugerDetail>(DetailZu),
                 ["Modulflaeche"] = new Func<string, double>(ModulflaecheZu),
 
@@ -221,7 +229,6 @@ namespace WindowsFormsApplication1
                 ["LabelKatalogliste"] = Text_("SKV_LBL_KATALOGLISTE", "Auswahl in DB:"),
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
                 ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
-                ["SpalteEigenschaften"] = Text_("BHKWV_SP_EIGENSCHAFTEN", "Eigenschaften"),
                 ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
@@ -340,26 +347,6 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>
-        /// Die Katalogzeilen samt der zweiten Spalte — im Vorläufer Firma, Kollektortyp,
-        /// Modulfläche und Aperturfläche untereinander (<c>SetDBList</c>:181).
-        /// </summary>
-        private static IReadOnlyList<KatalogZeile> Katalogzeilen()
-        {
-            var ctrl = new SolarkollektorenStammCtrl();
-            ctrl.ReadAll();
-
-            var liste = new List<KatalogZeile>();
-            for (int i = 0; i < ctrl.rows; i++)
-            {
-                SolarkollektorenModel k = ctrl.items[i];
-                liste.Add(new KatalogZeile(k.m_ID, k.m_szKollektorname,
-                    k.m_szFirma + "\nKollektortyp: " + k.m_szKollektortyp +
-                    "\nModulfläche: " + k.m_Modulfläche + " m²" +
-                    "\nAperturfläche: " + k.m_Aperturfläche + " m²"));
-            }
-            return liste;
-        }
 
         /// <summary>Der Detailblock (<c>ApplySelectedSolar</c>:324) — immer aus dem Katalog.</summary>
         private static ErzeugerDetail DetailZu(string name)
@@ -506,6 +493,18 @@ namespace WindowsFormsApplication1
                 m_Vorlauf = d.Vorlauf ?? 0,
                 m_Ruecklauf = d.Ruecklauf ?? 0
             };
+        }
+
+
+        /// <summary>
+        /// Der Uebersetzer, den <see cref="Katalogfilterprofil.MitVerwendung"/>
+        /// entgegennimmt: Schluessel rein, Text raus — ein fehlender Schluessel bleibt
+        /// als Schluessel stehen, damit er auffaellt (Muster
+        /// <c>KatalogBrowserProfil.Finde</c>).
+        /// </summary>
+        private static string Text_(string schluessel)
+        {
+            return Text_(schluessel, schluessel);
         }
 
         private static string Text_(string schluessel, string rueckfall)

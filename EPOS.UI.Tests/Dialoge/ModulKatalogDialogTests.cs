@@ -22,6 +22,14 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class ModulKatalogDialogTests : BunitContext
 {
+
+    /// <summary>
+    /// Der Filterstand DIESES Prüfstands. Ohne ihn nähme der Dialog den aus dem
+    /// <c>Katalogfilterregister</c> — der lebt prozessweit, und xunit fährt
+    /// Testklassen nebeneinander. Dass das Register wirklich teilt, prüft
+    /// <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
     public ModulKatalogDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -98,6 +106,7 @@ public class ModulKatalogDialogTests : BunitContext
 
         return Render<ModulKatalogDialog>(p => p
             .Add(x => x.Art, art)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.ProfilVorgabe, Profil(art))
             .Add(x => x.Wege, wege ?? standard)
             .Add(x => x.Geschlossen, e => geschlossen?.Invoke(e)));

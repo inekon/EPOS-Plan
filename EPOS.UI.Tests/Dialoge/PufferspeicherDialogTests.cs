@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
+using System.Collections.Generic;
+using System.Linq;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
+
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
@@ -16,12 +21,37 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class PufferspeicherDialogTests : BunitContext
 {
-    private static readonly string[] Hersteller = { "Alle", "Musterwerk" };
-    private static readonly string[] Volumen = { "Alle", "bis 100 l", "100 bis 200 l" };
 
-    private static readonly KatalogZeile[] Katalog =
+    /// <summary>
+    /// Der Filterstand DIESES Prüfstands. Ohne ihn nähme der Dialog den aus dem
+    /// <c>Katalogfilterregister</c> — der lebt prozessweit, und xunit fährt
+    /// Testklassen nebeneinander. Dass das Register wirklich teilt, prüft
+    /// <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
+    /// <summary>
+    /// Das PROFIL des Projektdialogs (W14a-E-10 / S2.1): dieselben fünf Spalten wie
+    /// in der Verwaltung, dazu die sechste „im Projekt verwendet" (Q12).
+    /// </summary>
+    private static readonly Katalogfilterprofil Profil =
+        Katalogfilterprofil.MitVerwendung(Anlagenart.Pufferspeicher,
+            s => Resource.ResourceManager.GetString(s) ?? s);
+
+    private static IReadOnlyList<Katalogfilterzeile> Katalogzeilen() => new[]
     {
-        new(51, "Speicher 600 Ltr"), new(52, "Speicher 800 Ltr")
+        new Katalogfilterzeile(51, "Speicher 600 Ltr")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Speicher 600 Ltr")
+            .MitText(Katalogfilterprofil.SpHersteller, "Musterwerk")
+            .MitText(Katalogfilterprofil.SpSpeichertyp, "stehend")
+            .MitZahl(Katalogfilterprofil.SpVolumen, 600.0, 0)
+            .MitZahl(Katalogfilterprofil.SpVerluste, 1.8, 2),
+
+        new Katalogfilterzeile(52, "Speicher 800 Ltr")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Speicher 800 Ltr")
+            .MitText(Katalogfilterprofil.SpHersteller, "Musterwerk")
+            .MitText(Katalogfilterprofil.SpSpeichertyp, "stehend")
+            .MitZahl(Katalogfilterprofil.SpVolumen, 800.0, 0)
+            .MitZahl(Katalogfilterprofil.SpVerluste, 2.1, 2),
     };
 
     public PufferspeicherDialogTests()
@@ -53,9 +83,9 @@ public class PufferspeicherDialogTests : BunitContext
     {
         return Render<PufferspeicherDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Speicher 600 Liter", 51) })
-            .Add(x => x.Hersteller, Hersteller)
-            .Add(x => x.Volumenstufen, Volumen)
-            .Add(x => x.Filtern, (_, _) => Katalog)
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.KatalogDetail, id => Detail("Speicher " + id))
             .Add(x => x.ProjektDetail, projektDetail ?? (id => Detail("Projektkopie " + id)))
             .Add(x => x.Dublettenfrage, dublettenfrage ?? (_ => ""))
@@ -78,25 +108,42 @@ public class PufferspeicherDialogTests : BunitContext
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
-        Assert.Equal(2, cut.FindAll("select").Count);        // Hersteller, Volumen
+
+        // W14a-E-10 / S2.1: Die zwei Klapplisten sind weg - Hersteller und
+        // Speichertyp sind Spalten mit Trichter, und "200..500" im Volumenfeld
+        // leistet genauer, was die sechs festen Stufen ungefaehr taten.
+        Assert.Empty(cut.FindAll("select"));
 
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
-        Assert.Contains("Filtern nach Hersteller:", texte);
-        Assert.Contains("Filtern nach Volumen:", texte);
+        Assert.DoesNotContain("Filtern nach Hersteller:", texte);
+        Assert.DoesNotContain("Filtern nach Volumen:", texte);
+        Assert.Single(cut.FindAll(".epos-katalog-suchzeile"));
 
         // Sechs NUR LESBARE Anzeigefelder: Name, Hersteller, Typ, Verluste, Volumen,
         // Investitionskosten.
         Assert.Equal(6, cut.FindAll(".epos-gruppenkopf-koerper input[readonly]").Count);
     }
 
+    /// <summary>
+    /// <b>Die sechs festen Volumenstufen sind gefallen</b> (Frage Q5, Stufe S2.1):
+    /// „Sortieren nach Volumen und der Ausdruck <c>200..500</c> leisten dasselbe
+    /// genauer" — und lösen den Einwand, dass eine Stufe „bis 500 l" für einen
+    /// 480‑l‑Speicher jede Zeile darunter mitbringt. An ihre Stelle tritt die
+    /// Zahlenspalte mit ihrem Trichter.
+    /// </summary>
     [Fact]
-    public void Die_sechs_Volumenstufen_stehen_als_Auswahl()
+    public void Die_Volumenspalte_traegt_einen_Trichter_statt_sechs_Stufen()
     {
         var cut = Aufbauen();
 
-        var eintraege = cut.FindAll("select")[1].QuerySelectorAll("option")
-                           .Select(e => e.TextContent).ToList();
-        Assert.Equal(Volumen, eintraege);
+        var kopf = cut.FindAll(".epos-raster")[1].QuerySelectorAll("th")
+                      .Select(e => e.TextContent.Trim()).ToList();
+
+        Assert.Contains(kopf, k => k.Contains("[l]"));     // die Volumenspalte, Kopf „V [l]"
+        Assert.Equal(Profil.Spalten.Count + 1, kopf.Count);
+
+        // Fuenf Trichter: alles ausser der Wahlspalte und dem Kennzeichen Q12.
+        Assert.Equal(Profil.Spalten.Count(x => x.Filterbar), cut.FindAll(".epos-trichter").Count);
     }
 
     /// <summary>
@@ -310,5 +357,133 @@ public class PufferspeicherDialogTests : BunitContext
         var raster = cut.FindAll(".epos-formularraster");
         Assert.NotEmpty(raster);
         Assert.Contains(raster, r => r.QuerySelectorAll(".epos-feld").Length > 0);
+    }
+
+    // =================================================================================
+    //  Stufe S2.1 / S2.3 / S2.5 - Anwenderentscheid W14a-E-10 vom 07.09.2026
+    // =================================================================================
+
+    /// <summary>Die Katalogliste - das UNTERE der beiden Raster.</summary>
+    private static IReadOnlyList<AngleSharp.Dom.IElement> Katalogzeilen(
+        IRenderedComponent<PufferspeicherDialog> cut)
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr").ToList();
+
+    /// <summary>
+    /// <b>S2.1 — der Filter sitzt im SPALTENKOPF.</b> Der Ausdruck steht im
+    /// <c>Katalogfilterstand</c> des Wirtes, <c>Katalogfilter.Anwenden</c>
+    /// schränkt die Menge im Kern ein, und das Raster bekommt die BEREITS
+    /// eingeschränkte Liste (5.6.6 — gefiltert wird vor dem Raster, nie im Raster).
+    /// </summary>
+    [Fact]
+    public void S2_1_Der_Spaltenfilter_schraenkt_die_Katalogliste_ein()
+    {
+        var cut = Aufbauen();
+        Assert.Equal(2, Katalogzeilen(cut).Count);
+        Assert.Equal("2 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+
+        _filterstand.Setzen(Katalogfilterprofil.SpVolumen, "700..900");
+        cut.Render();
+
+        Assert.Single(Katalogzeilen(cut));
+        Assert.Equal("1 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Assert.Contains("Speicher 800 Ltr", Katalogzeilen(cut)[0].TextContent);
+
+        // Der Trichter dieser Spalte ist jetzt GEFUELLT - im Markup, nicht nur
+        // in der Farbe (Auflage des Anwenders zu Rev. 3).
+        Assert.Contains(cut.FindAll(".epos-trichter-bild path"),
+                        e => e.GetAttribute("fill") == "currentColor");
+
+        // Und der Ruecksetzer der Suchzeile holt alles zurueck.
+        cut.Find(".epos-katalog-ruecksetzer").Click();
+        Assert.Equal(2, Katalogzeilen(cut).Count);
+    }
+
+    /// <summary>
+    /// <b>S2.1 — jede Parameterspalte sortiert</b>, im Zyklus auf → ab → aus
+    /// (höchstens eine Spalte zugleich, 5.6.2).
+    /// </summary>
+    [Fact]
+    public void S2_1_Die_Katalogliste_laesst_sich_ueber_den_Spaltenkopf_sortieren()
+    {
+        var cut = Aufbauen();
+
+        _filterstand.Sortieren(Katalogfilterprofil.SpVolumen);
+        cut.Render();
+        Assert.Contains("Speicher 600 Ltr", Katalogzeilen(cut)[0].TextContent);
+
+        _filterstand.Sortieren(Katalogfilterprofil.SpVolumen);
+        cut.Render();
+        Assert.False(_filterstand.Aufsteigend);
+        Assert.Contains("Speicher 800 Ltr", Katalogzeilen(cut)[0].TextContent);
+
+        _filterstand.Sortieren(Katalogfilterprofil.SpVolumen);
+        Assert.Equal("", _filterstand.Sortierspalte);
+    }
+
+    /// <summary>
+    /// <b>S2.1 — die Markierung hängt am BEZEICHNER.</b> Sie bleibt stehen, auch
+    /// wenn ein Filter die Zeile ausblendet; der Übernahmeknopf bleibt frei und
+    /// nimmt DENSELBEN Satz auf (Hausregel aus dem <c>EnergietraegerDialog</c>, W4).
+    /// </summary>
+    [Fact]
+    public void S2_1_Die_Markierung_ueberlebt_einen_Filterwechsel()
+    {
+        var cut = Aufbauen();
+
+        Katalogzeilen(cut)[0].QuerySelector(".epos-anlagenwahl")!.Click();
+        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+
+        // Ein Filter, der GENAU diese Zeile ausblendet.
+        _filterstand.Setzen(Katalogfilterprofil.SpVolumen, "700..900");
+        cut.Render();
+
+        Assert.Single(Katalogzeilen(cut));
+        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>S2.3 / Frage Q12 — „im Projekt verwendet".</b> EINMAL für die ganze Liste
+    /// aus der Projektliste des Dialogs gestempelt, nicht je Zeile und nicht aus
+    /// der Datenbank: Der Dialog schreibt erst beim OK zurück, eine Zählabfrage
+    /// wäre nach der ersten Übernahme veraltet.
+    /// </summary>
+    [Fact]
+    public void S2_3_Die_Spalte_im_Projekt_verwendet_zaehlt_die_Projektliste()
+    {
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { Zeile(1, "Speicher 600 Ltr", 51) });
+
+        var kopf = cut.FindAll(".epos-raster")[1]
+                      .QuerySelectorAll("th").Select(e => e.TextContent.Trim()).ToList();
+        Assert.Contains(kopf, k => k.StartsWith("im Projekt verwendet"));
+
+        var zeilen = Katalogzeilen(cut);
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal(1, zeilen.Count(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja"));
+
+        var traegt = zeilen.First(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja");
+        Assert.Contains("Speicher 600 Ltr", traegt.TextContent);
+    }
+
+    /// <summary>
+    /// <b>S2.5 / Frage Q2 — der Filterstand überlebt Schließen und Öffnen.</b>
+    /// Hier steht dafür ein EIGENER Stand statt des <c>Katalogfilterregister</c>
+    /// (xunit fährt Testklassen nebeneinander); dass das Register ihn wirklich
+    /// zwischen Verwaltung und Projektdialog teilt, prüft
+    /// <c>EPOS.Kern.Tests/KatalogfilterstandTests</c>.
+    /// </summary>
+    [Fact]
+    public void S2_5_Der_Filterstand_ueberlebt_einen_zweiten_Aufbau()
+    {
+        var ersterAufbau = Aufbauen();
+        _filterstand.Setzen(Katalogfilterprofil.SpVolumen, "700..900");
+        ersterAufbau.Render();
+        Assert.Single(Katalogzeilen(ersterAufbau));
+
+        // Der Dialog geht zu und wieder auf - derselbe Stand, dieselbe Sicht.
+        var zweiterAufbau = Aufbauen();
+
+        Assert.Single(Katalogzeilen(zweiterAufbau));
+        Assert.Equal("1 von 2 Sätzen", zweiterAufbau.Find(".epos-katalog-treffer").TextContent);
+        Assert.Single(zweiterAufbau.FindAll(".epos-katalog-ruecksetzer"));
     }
 }

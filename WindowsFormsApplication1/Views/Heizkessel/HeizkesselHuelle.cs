@@ -324,6 +324,17 @@ namespace WindowsFormsApplication1
             return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
 
+        /// <summary>
+        /// Der Uebersetzer, den <see cref="Katalogfilterprofil.MitVerwendung"/>
+        /// entgegennimmt: Schluessel rein, Text raus — ein fehlender Schluessel bleibt
+        /// als Schluessel stehen, damit er auffaellt (Muster
+        /// <c>KatalogBrowserProfil.Finde</c>).
+        /// </summary>
+        private static string Text_(string schluessel)
+        {
+            return Text_(schluessel, schluessel);
+        }
+
         // =================================================================================
         // W6.3 - Projektdialog
         // =================================================================================
@@ -416,13 +427,14 @@ namespace WindowsFormsApplication1
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
 
-                // Filter: "Alle" voran, dann die Gruppen bzw. die fünf Leistungsstufen -
-                // dieselbe Reihenfolge wie Form_Heizkessel_Load.
-                ["Gruppen"] = Gruppen(stamm),
-                ["Leistungsstufen"] = Leistungsstufen(),
+                // W14a-E-10 / S2.1: DAS PROFIL statt der zwei Klapplisten. Es ist
+                // dasselbe, das die Verwaltung fuehrt - nur mit der Spalte "im
+                // Projekt verwendet" hinten dran (Q12, nur im Projektdialog).
+                ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
+                    Anlagenart.Heizkessel, Text_),
 
-                ["Filtern"] = new Func<string, int, IReadOnlyList<KatalogZeile>>(
-                    (gruppe, stufe) => KatalogZeilen(stamm.Filtern(gruppe, stufe))),
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    stamm.Katalogfilterzeilen),
 
                 ["KatalogDetail"] = new Func<string, ErzeugerDetail>(
                     name => DetailZu(projekt.KatalogDetail(name))),
@@ -485,8 +497,6 @@ namespace WindowsFormsApplication1
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
                 ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
-                ["LabelFilterBrennstoff"] = Text_("HZK_LBL_FILTER_BRENNSTOFF", "Filtern nach Brennstoffart:"),
-                ["LabelFilterLeistung"] = Text_("HZK_LBL_FILTER_LEISTUNG", "Filtern nach Leistung:"),
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
                 ["BtnAdminText"] = Text_("HZK_BTN_ADMIN", "Administration..."),
@@ -663,35 +673,8 @@ namespace WindowsFormsApplication1
                                       (Text_("HZKK_LBL_BRENNWERT", "Brennwertkessel"), d.Brennwert));
         }
 
-        private static IReadOnlyList<KatalogZeile> KatalogZeilen(
-            IReadOnlyList<HeizkesselStammCtrl.KatalogZeile> quelle)
-        {
-            var liste = new List<KatalogZeile>();
-            foreach (var z in quelle) liste.Add(new KatalogZeile(z.Id, z.Bezeichner));
-            return liste;
-        }
 
-        /// <summary>„Alle" voran, dann die Brennstoffgruppen — wie <c>Form_Heizkessel_Load</c>.</summary>
-        private static IReadOnlyList<string> Gruppen(HeizkesselStammCtrl stamm)
-        {
-            var liste = new List<string> { "Alle" };
-            liste.AddRange(stamm.Brennstoffart_Gruppe);
-            return liste;
-        }
 
-        /// <summary>Die sechs Leistungsstufen in der Reihenfolge von <c>LEISTUNG_SQL</c>.</summary>
-        private static IReadOnlyList<string> Leistungsstufen()
-        {
-            return new[]
-            {
-                Text_("HZK_STUFE_ALLE", "Alle"),
-                Text_("HZK_STUFE_BIS50", "bis 50 kW"),
-                Text_("HZK_STUFE_50_200", ">50 bis 200 kW"),
-                Text_("HZK_STUFE_200_500", ">200 bis 500 kW"),
-                Text_("HZK_STUFE_500_1000", ">500 bis 1.000 kW"),
-                Text_("HZK_STUFE_UEBER1000", "über 1.000 kW")
-            };
-        }
 
         /// <summary>
         /// Der Parametersatz des Trägerdialogs — dieselben Werte, die
