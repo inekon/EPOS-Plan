@@ -3088,6 +3088,36 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Formularraster, Paket P3 (iU8‑E‑2, 05.09.2026, `d3fccf1`):** `BedarfsProfileDialog` (Block „Jahresverbrauch": zwei Felder in einer Zeile,
 > „Übernehmen" darunter) und `TypStammDialog` (die zwölf Monatswerte in zwei Spalten zu sechs statt zwölf voller
 > Zeilen) hängen im Raster; `TypProfilDialog` und `BedarfErgebnisDialog` bleiben, wie sie heute abgenommen wurden.
+>
+> **W8‑O‑5b (Anwenderentscheid 07.09.2026: „Nehme die Umrechnung in den Dialogen vor"), umgesetzt in `6839a7a`,
+> zusammengeführt in `0a4a207`:** `SimulationWaermebedarf.Waermebedarf_Brauchwasser` stand im Lauf in MWh (Formel (6),
+> `:336`) und in der Vorschau in kWh (`BedarfsVorschauCtrl:131/:164`); die Ergebnishülle nahm immer kWh an und teilte
+> den Wert des Laufs ein zweites Mal — **Simulation → „Wärmebedarf-Details" zeigte den Brauchwasserbedarf um Faktor
+> 1 000 zu klein.** Beide Wege gehen jetzt über `BrauchwassersummeUebernehmen()` (Bauform `ProzesssummeUebernehmen`
+> aus W9‑O‑3), die Hülle nennt für jede Energiekennzahl MWh, umgerechnet wird nur noch in der Anzeige über
+> `Energieeinheit`; die Vorschauzahl bleibt unverändert, die des Laufs wird richtig. Drei neue Fälle (Kern: Vorschau
+> und Lauf weisen für Projekt 1007 dieselbe Menge aus — auf 1e‑6, denn beide Wege verteilen die Monatsmenge nach
+> verschiedenen Wochentagskonventionen und die Summe von 8 760 `float`-Werten landet auf benachbarten Stufen, gemessen
+> 1 ULP; zwei bunit), `Brauchwasser.wiki` ohne die offene Unstimmigkeit. Nachweis: Kern 1708 / UI 3059 grün, SQL 0,
+> Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich (das Feld ist reine Anzeigegröße, die Ergebnisspalte kommt
+> aus dem Kanalvektor). Abnahme auf Windows: A‑W8‑O5b‑1…6.
+>
+> **W8‑O‑5c (Anwenderauftrag 07.09.2026: „Prüfe, ob es nicht sinnvoll ist, die gesamten Berechnungen in kWh
+> auszuführen und erst in der Anzeige umzurechnen … oder Vereinheitlichen in MWh — je nach Sinnhaftigkeit, aber
+> einheitlich"), Prüfbericht in `ca34870`:** `Konzept_Einheiten_EPOS-Plan.md` — Inventar von **242 Umrechnungsstellen
+> in 43 Dateien** (die 217 der Grobzählung sind eine Untergrenze; vier weitere Schreibweisen, darunter
+> `BhkwPlan.MonatsSumme`/`VectorSumme`), je Stelle klassifiziert mit Datei:Zeile: 127 Energie (68 davon in
+> `SimulationErgebnisCtrl` und `SimulationRunner`), 28 Leistung, 24 Emission, 20 Preis, 8 Vollbenutzungsstunden,
+> 5 Volumen, 30 Kommentare; acht Unstimmigkeiten U1–U8; Einheit je Rechenstufe; gemessene Gleitkommaprobe (`float`
+> rundet relativ, kWh 1,17e‑6 gegen MWh 3,82e‑7 bei 30 MWh — die Einheitenfrage und die `float`/`double`-Frage sind
+> zwei Fragen, neun Größenordnungen bringt der `double`-Akkumulator). **Empfehlung: keine einzige Recheneinheit,
+> sondern die Regel des Bestands festschreiben** — Zeitreihen kWh, Ausweisungen MWh, die Einheit am Namen, umgerechnet
+> an genau zwei Nähten; falls doch eine Einheit gewünscht: kWh (Stundenbasis, Ganglinien, 300 der 312 Referenz-CSV;
+> Gegenbefund: die Profilkataloge speichern MWh). Stufenplan S1 (~76 Stellen, Anzeigegrenze härten, byte-gleich; S1.1
+> in `6839a7a` erledigt), S2 (~133, Kern je Stufe, neue Basis R4 nötig), S3 (~120, Ergebnistabellen — Empfehlung:
+> bewusst nicht). **Offen: Q1…Q8** (Q1 Regel festschreiben statt Einheit wechseln; Q2 Ergebnistabellen bleiben; Q3
+> CSV-Export bleibt; Q4 Reihenfolge S2; Q5 `float` → `double` als eigenes Paket; Q6 Stundenreihen nicht; Q7
+> CSV-Schlüssel bleibt; Q8 falscher Kommentar an `Strombedarf_Max` sofort).
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >
