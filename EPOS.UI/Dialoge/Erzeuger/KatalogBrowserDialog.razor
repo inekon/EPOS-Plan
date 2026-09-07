@@ -63,38 +63,18 @@
            um - dann steht die Liste oben. *@
     <Katalograhmen>
         <Liste>
-            @* Die Filter stehen UEBER der Liste, auf die sie wirken (Hausregel
-               aus Anwenderentscheid #76). Im Vorbild sassen sie darunter; oben
-               bleiben sie sichtbar, ohne der Liste Hoehe zu nehmen. *@
-            @if (Profil.Filterart != KatalogFilterArt.Keiner)
-            {
-                <div class="epos-katalogbrowser-filter">
-                    <Auswahlfeld Bezeichnung="@Profil.FilterEinsBezeichnung" Eintraege="@FilterEins"
-                                 Auswahl="@_filterEins" AuswahlChanged="BeiFilterEins" />
-                    <Auswahlfeld Bezeichnung="@Profil.FilterZweiBezeichnung" Eintraege="@FilterZwei"
-                                 Auswahl="@_filterZwei" AuswahlChanged="BeiFilterZwei" />
-                </div>
-            }
-
             <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
 
-            <Raster TZeile="BrowserZeile" Zeilen="@_zeilen.AsQueryable()">
-                <KindInhalt>
-                    <TemplateColumn TGridItem="BrowserZeile" Title="@SpalteWahlText">
-                        <Zeilenwahl Gewaehlt="@(context.Bezeichner == _gewaehlt)"
-                                    Kurztext="@SpalteWahlText"
-                                    Gewaehltwerden="@(() => BeiZeile(context))" />
-                    </TemplateColumn>
-                    <PropertyColumn TGridItem="BrowserZeile" TProp="string"
-                                    Property="@(z => z.Bezeichner)" Title="@Profil.SpalteName" />
-                    @if (Profil.Zweispaltig)
-                    {
-                        <TemplateColumn TGridItem="BrowserZeile" Title="@Profil.SpalteEigenschaften">
-                            <span class="epos-katalogbrowser-eigenschaften @(context.Geschuetzt && Profil.ZeigtSchreibschutz ? "epos-katalogbrowser-geschuetzt" : "")">@context.Eigenschaften</span>
-                        </TemplateColumn>
-                    }
-                </KindInhalt>
-            </Raster>
+            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, 07.09.2026):
+               Suche ueber alle Spalten, Trefferzahl, und der Filter sitzt im
+               Spaltenkopf. Die zwei Klapplisten "Filtern nach Brennstoffart:"
+               und "Filtern nach Leistung:" sind damit weg - sie standen ohne
+               Rahmen, ohne Trefferzahl und ohne Ruecksetzer ueber der Liste,
+               und ihre sechs FESTEN Leistungsstufen fanden fuer einen
+               30-kW-Kessel jede Zeile unter 50 kW (Konzept 5.1). *@
+            <Katalogliste Profil="@Profil.Filterprofil" Zeilen="@_zeilen"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" />
         </Liste>
 
         <Eingabe>
@@ -248,13 +228,12 @@
     /// </summary>
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Uebersicht { get; set; }
 
-    /// <summary>Die Eintraege der ersten Filterklappliste (Brennstoffgruppe / Hersteller).</summary>
-    [Parameter] public IReadOnlyList<(int Id, string Text)> FilterEins { get; set; }
-        = Array.Empty<(int, string)>();
-
-    /// <summary>Die Eintraege der zweiten Filterklappliste (Leistungs- / Volumenstufe).</summary>
-    [Parameter] public IReadOnlyList<(int Id, string Text)> FilterZwei { get; set; }
-        = Array.Empty<(int, string)>();
+    /// <summary>
+    /// Die Beschriftungen der Katalogliste (Suche, Trefferzahl, „Filter zurücksetzen",
+    /// „Kein Treffer.", Trichter). Sie füllen sich selbst aus <c>MyResource</c>; die
+    /// Hülle überschreibt nur, was sie zusammensetzt.
+    /// </summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
 
     /// <summary>
     /// Der Katalogeditor als Inhaltsbaustein — der Wirt entscheidet, welche Komponente
@@ -310,13 +289,17 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private IReadOnlyList<BrowserZeile> _zeilen = Array.Empty<BrowserZeile>();
+    private IReadOnlyList<Katalogfilterzeile> _zeilen = Array.Empty<Katalogfilterzeile>();
     private List<BrowserFeldwert> _felder = new();
     private IReadOnlyList<Parameterwert> _uebersicht = Array.Empty<Parameterwert>();
     private string _gewaehlt = "";
 
-    private int? _filterEins = 0;
-    private int? _filterZwei = 0;
+    /// <summary>
+    /// Der Filterzustand — er gehört dem WIRT und nicht dem Popover (offener Punkt
+    /// O‑6): Der <c>@key</c>-Fix W6‑B‑2 baut das Raster beim Filtern neu auf, und ein
+    /// Zustand in der Rasterinstanz wäre danach weg.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
@@ -334,7 +317,10 @@
     private readonly List<string> _fehlerhaft = new();
 
     /// <summary>Die Zeilen der Liste (Prüfhilfe für Tests).</summary>
-    public IReadOnlyList<BrowserZeile> Zeilen => _zeilen;
+    public IReadOnlyList<Katalogfilterzeile> Zeilen => _zeilen;
+
+    /// <summary>Der Filterzustand der Liste (Prüfhilfe für Tests).</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
 
     /// <summary>Der gewählte Bezeichner (Prüfhilfe für Tests).</summary>
     public string Gewaehlt => _gewaehlt;
@@ -360,6 +346,10 @@
     {
         if (ProfilVorgabe is null && (_profil is null || _profil.Art != Art))
             _profil = KatalogBrowserProfil.Finde(Art);
+
+        // Der Kopf der WAHLSPALTE kommt weiter über den eigenen Text der Hülle
+        // (KFAK_SP_WAHL) — dasselbe Wort in allen neun Katalogdialogen.
+        Filtertexte.SpalteWahl = SpalteWahlText;
     }
 
     protected override void OnInitialized()
@@ -380,14 +370,18 @@
     // =====================================================================
 
     /// <summary>
-    /// Baut die Liste neu und stellt die Markierung auf denselben Satz zurück. Fällt er
-    /// durch den Filter, bleibt keine Markierung übrig — dann sperrt sich der
-    /// Speichern-Knopf wieder (wortgleich <c>Form_BHKWAdmin.ListeAktualisieren</c>).
+    /// Baut die Liste neu und stellt die Markierung auf denselben Satz zurück
+    /// (wortgleich <c>Form_BHKWAdmin.ListeAktualisieren</c>).
     /// </summary>
+    /// <remarks>
+    /// Der FILTER ruft sie nicht mehr: Er wirkt auf die ANZEIGE, nie auf die Auswahl
+    /// (Hausregel aus dem <c>EnergietraegerDialog</c>, W4) — das erledigt seit
+    /// W14a‑E‑10 die <c>Katalogliste</c> auf der ungefilterten Menge. Hier wird nur
+    /// nach einem SCHREIBweg neu gelesen (Speichern, Löschen, Editor).
+    /// </remarks>
     private void ListeAufbauen()
     {
-        _zeilen = Wege.Liste?.Invoke(_filterEins ?? 0, _filterZwei ?? 0)
-                  ?? Array.Empty<BrowserZeile>();
+        _zeilen = Wege.Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
 
         if (_gewaehlt.Length > 0 && _zeilen.Any(z => z.Bezeichner == _gewaehlt)) return;
 
@@ -410,25 +404,11 @@
         _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<BrowserFeldwert>()).ToList();
     }
 
-    private void BeiZeile(BrowserZeile zeile)
+    private void BeiZeile(string bezeichner)
     {
-        _gewaehlt = zeile.Bezeichner;
+        _gewaehlt = bezeichner ?? "";
         _meldung = "";
         DetailLaden();
-    }
-
-    private void BeiFilterEins(int? wert)
-    {
-        _filterEins = wert ?? 0;
-        _gewaehlt = "";
-        ListeAufbauen();
-    }
-
-    private void BeiFilterZwei(int? wert)
-    {
-        _filterZwei = wert ?? 0;
-        _gewaehlt = "";
-        ListeAufbauen();
     }
 
     // =====================================================================

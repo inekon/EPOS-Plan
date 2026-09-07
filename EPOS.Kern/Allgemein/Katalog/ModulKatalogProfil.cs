@@ -186,11 +186,26 @@ namespace WindowsFormsApplication1
         public string BerechnungsKurztext =>
             BerechnungsHilfe.RUBRIK_KURZ + ": " + (BerechnungsSeite ?? "");
 
-        /// <summary>Fuehrt der Katalog einen Herstellerfilter? Nur die Photovoltaik.</summary>
-        public bool HatHerstellerfilter { get; private set; }
-
-        /// <summary>Beschriftung des Herstellerfilters, bereits uebersetzt.</summary>
-        public string FilterBezeichnung { get; private set; }
+        /// <summary>
+        /// <b>Die Spalten der Liste</b> (Anwenderentscheid <b>W14a-E-10</b> vom
+        /// 07.09.2026) - <see cref="Katalogfilterprofil"/> zur passenden
+        /// <see cref="Anlagenart"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Es ersetzt die Herstellerklappliste.</b> Bis hierher fuehrte das
+        /// Profil ein <c>HatHerstellerfilter</c> - <c>true</c> nur beim
+        /// Wechselrichter - und eine Beschriftung dazu; die zwei anderen
+        /// Auspraegungen hatten GAR KEINEN Filter, obwohl die PV-Module nach dem
+        /// CEC-Import 20 749 Zeilen fuehren und der Stromspeicher 6 658 (Konzept
+        /// Befund 1.2/3: "Die drei groessten Kataloge haben den schwaechsten
+        /// Filter").</para>
+        /// <para>"enthaelt SMA" im Spaltenkopf leistet dasselbe wie die Klappliste und
+        /// trifft nebenbei die Schreibvarianten desselben Hauses (offener Punkt O-4),
+        /// die eine Klappliste als verschiedene Hersteller gefuehrt haette.
+        /// <c>WechselrichterStammCtrl.Hersteller</c> und <c>...Filtern</c> bleiben
+        /// stehen - der Geraeteimport benutzt sie weiter.</para>
+        /// </remarks>
+        public Katalogfilterprofil Filterprofil { get; private set; }
 
         // ==================================================================
         // Die Schluessel der Felder
@@ -280,8 +295,7 @@ namespace WindowsFormsApplication1
                         HilfeSchluessel = "Form_AdminStromspeicher.btn_Help",
                         BerechnungsSchluessel = "Form_AdminStromspeicher.Berechnung",
                         BerechnungsSeite = "Stromspeicher",
-                        HatHerstellerfilter = false,
-                        FilterBezeichnung = "",
+                        Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Stromspeicher, t),
                         Felder = new[]
                         {
                             new ModulKatalogFeld(FeldBezeichner, t("MODK_LBL_BEZEICHNER"), "",
@@ -341,8 +355,7 @@ namespace WindowsFormsApplication1
                         HilfeSchluessel = "Form_AdminPV.btn_Help",
                         BerechnungsSchluessel = "Form_AdminPV.Berechnung",
                         BerechnungsSeite = "Photovoltaik",
-                        HatHerstellerfilter = false,
-                        FilterBezeichnung = "",
+                        Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Photovoltaik, t),
                         Felder = new[]
                         {
                             new ModulKatalogFeld(FeldBezeichner, t("MODK_LBL_BEZEICHNER_PV"), "",
@@ -393,8 +406,7 @@ namespace WindowsFormsApplication1
                         // (Konzept 6): Die CEC-Liste bringt ueber zweitausend Geraete
                         // von 152 Herstellern; ohne Einengung ist die Liste nicht
                         // bedienbar.
-                        HatHerstellerfilter = true,
-                        FilterBezeichnung = t("WRK_LBL_FIRMA"),
+                        Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Wechselrichter, t),
                         Felder = new[]
                         {
                             // --- Gruppe 0: Geraet ---------------------------------

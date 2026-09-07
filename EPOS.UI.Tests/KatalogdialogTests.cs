@@ -74,7 +74,11 @@ public class KatalogdialogTests : BunitContext
 
         var wege = new KatalogBrowserWege
         {
-            Liste = (_, __) => new[] { new BrowserZeile(1, "Kollektor A"), new BrowserZeile(2, "Kollektor B") },
+            Katalogzeilen = () => new[]
+            {
+                new Katalogfilterzeile(1, "Kollektor A").MitText(Katalogfilterprofil.SpBezeichner, "Kollektor A"),
+                new Katalogfilterzeile(2, "Kollektor B").MitText(Katalogfilterprofil.SpBezeichner, "Kollektor B")
+            },
             Detail = name => profil.Detailfelder.Select(f => new BrowserFeldwert
             {
                 Schluessel = f.Schluessel,
@@ -95,8 +99,7 @@ public class KatalogdialogTests : BunitContext
             .Add(x => x.ProfilVorgabe, profil)
             .Add(x => x.Wege, wege)
             .Add(x => x.SpalteWahlText, Resource.KFAK_SP_WAHL)
-            .Add(x => x.FilterEins, new[] { (0, "Alle") })
-            .Add(x => x.FilterZwei, new[] { (0, "Alle") }));
+            );
     }
 
     private IRenderedComponent<ModulKatalogDialog> Modulkatalog(
@@ -107,7 +110,7 @@ public class KatalogdialogTests : BunitContext
 
         var wege = new ModulKatalogWege
         {
-            Liste = () => new[] { new ModulZeile(1, "Modul A") },
+            Katalogzeilen = () => new[] { new Katalogfilterzeile(1, "Modul A").MitText(Katalogfilterprofil.SpBezeichner, "Modul A") },
             Detail = name => profil.Felder.Select(f => new ModulFeldwert
             {
                 Schluessel = f.Schluessel,

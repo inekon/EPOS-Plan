@@ -1,23 +1,7 @@
 ﻿using System.Collections.Generic;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dialoge.Erzeuger;
-
-/// <summary>
-/// Eine Zeile der Katalogliste (iU9-W14a.1).
-/// </summary>
-/// <param name="Id">Primärschlüssel im Katalog — der Anker der Auswahl.</param>
-/// <param name="Bezeichner">Erste Spalte; zugleich der Schlüssel jeder Aktion.</param>
-/// <param name="Eigenschaften">
-/// Zweite Spalte, mehrzeilig. Leer, wo die Liste einspaltig ist (Heizkessel,
-/// Pufferspeicher — im Vorläufer eine <c>ListBox</c> statt eines
-/// <c>DataGridView</c>).
-/// </param>
-/// <param name="Geschuetzt">
-/// Schreibgeschützter Auslieferungssatz. Nur der BHKW-Browser zeichnet ihn grau
-/// (<c>Form_BHKWAdmin.cs:202-203</c>); die drei anderen kennen die Kennzeichnung nicht.
-/// </param>
-public sealed record BrowserZeile(int Id, string Bezeichner, string Eigenschaften = "",
-                                  bool Geschuetzt = false);
 
 /// <summary>
 /// Ein Detailfeld mit seinem aktuellen Wert.
@@ -75,8 +59,19 @@ public sealed record BrowserErgebnis(bool Bestaetigt, string Bezeichner);
 /// </remarks>
 public sealed class KatalogBrowserWege
 {
-    /// <summary>Die Liste zu den beiden Filterstellungen (Index in die Klapplisten).</summary>
-    public Func<int, int, IReadOnlyList<BrowserZeile>>? Liste { get; init; }
+    /// <summary>
+    /// <b>Die vollständige, UNGEFILTERTE Katalogliste</b> mit ihren Parameterspalten —
+    /// <c>…StammCtrl.Katalogfilterzeilen()</c> (Anwenderentscheid W14a-E-10 vom
+    /// 07.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// <para>Bis hierher hieß der Weg <c>Liste(filterEins, filterZwei)</c> und nahm die
+    /// zwei Klapplistenstellungen entgegen; er lieferte <c>ID, Bezeichner</c>, und
+    /// deshalb KONNTE die Liste keine Parameterspalten zeigen (Konzept Befund 1.2/2).
+    /// Gefiltert wird seither VOR dem Raster in <c>Katalogliste</c> über
+    /// <c>Katalogfilter.Anwenden</c> — der Weg hierher liefert alles, was es gibt.</para>
+    /// </remarks>
+    public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; init; }
 
     /// <summary>Die Detailfelder eines Eintrags; <c>null</c>, wenn es ihn nicht gibt.</summary>
     public Func<string, IReadOnlyList<BrowserFeldwert>?>? Detail { get; init; }

@@ -43,12 +43,13 @@ namespace WindowsFormsApplication1
             ModulKatalogProfil profil = Profil();
             Dictionary<string, object> gaben = ModulKatalogHuelle.GemeinsameGaben(profil);
 
-            gaben["TextAlle"] = MyResource.Resource.PVIMP_ALLE;
             gaben["Wege"] = new ModulKatalogWege
             {
-                Liste = () => Zeilen(""),
-                Hersteller = Hersteller,
-                ListeGefiltert = Zeilen,
+                // W14a-E-10: Die Herstellerklappliste faellt zugunsten der Spalte -
+                // "enthaelt SMA" trifft nebenbei die Schreibvarianten desselben
+                // Hauses (offener Punkt O-4), die eine Klappliste getrennt gefuehrt
+                // haette.
+                Katalogzeilen = WechselrichterStammCtrl.Katalogfilterzeilen,
                 Detail = name => ModulKatalogHuelle.Felder(profil, Anzeige(name)),
                 Speichern = Schreiben,
                 Loeschen = Loeschen
@@ -59,20 +60,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         // Die Datenwege
         // =====================================================================
-
-        private static IReadOnlyList<string> Hersteller()
-        {
-            return WechselrichterStammCtrl.Hersteller();
-        }
-
-        private static IReadOnlyList<ModulZeile> Zeilen(string hersteller)
-        {
-            var liste = new List<ModulZeile>();
-            foreach (WechselrichterStammCtrl.KatalogZeile z in
-                     new WechselrichterStammCtrl().Filtern(hersteller))
-                liste.Add(new ModulZeile(z.Id, z.Bezeichner));
-            return liste;
-        }
 
         /// <summary>
         /// Die Anzeigefelder eines Katalogsatzes, bereits als Text.

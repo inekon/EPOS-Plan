@@ -46,12 +46,11 @@ namespace WindowsFormsApplication1
 
             var gaben = KatalogBrowserHuelle.GemeinsameGaben(profil);
 
-            gaben["FilterEins"] = KatalogBrowserHuelle.MitAlle(ctrl.Brennstoffart_Gruppe);
-            gaben["FilterZwei"] = Leistungsstufen();
-
             gaben["Wege"] = new KatalogBrowserWege
             {
-                Liste = (gruppe, leistung) => Zeilen(profil, ctrl, gruppe, leistung),
+                // W14a-E-10: acht Spalten statt der vierzeiligen Eigenschaftenzelle;
+                // die Stromkennzahl sigma rechnet der Controller mit.
+                Katalogzeilen = () => ctrl.Katalogfilterzeilen(),
                 Detail = name => KatalogBrowserHuelle.Felder(profil,
                                                              BHKWStammCtrl.KatalogsatzAnzeige(name)),
                 Existiert = name => BHKWStammCtrl.IdZu(name) > 0,
@@ -69,44 +68,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         // Die Datenwege
         // =====================================================================
-
-        /// <summary>
-        /// Die zweispaltige Liste. Der vierzeilige Eigenschaftentext stand im Vorläufer
-        /// mit drei deutschen Literalen IM DATENSTROM (<c>Z. 196-200</c>); die
-        /// Beschriftungen kommen jetzt aus dem Profil und damit aus dem Textkatalog.
-        /// </summary>
-        private static IReadOnlyList<BrowserZeile> Zeilen(KatalogBrowserProfil profil,
-                                                          BHKWStammCtrl ctrl,
-                                                          int gruppe, int leistung)
-        {
-            string g = gruppe <= 0 || gruppe > ctrl.Brennstoffart_Gruppe.Count
-                     ? "Alle" : ctrl.Brennstoffart_Gruppe[gruppe - 1];
-
-            var liste = new List<BrowserZeile>();
-            foreach (var z in ctrl.Filtern(g, leistung))
-            {
-                string text = z.Firma
-                            + "\n" + profil.Zeilenbauplan[0] + z.Brennstoff
-                            + "\n" + profil.Zeilenbauplan[1] + z.Ptherm + " kW"
-                            + "\n" + profil.Zeilenbauplan[2] + z.Pel + " kW";
-
-                liste.Add(new BrowserZeile(z.Id, z.Bezeichner, text,
-                                           BHKWStammCtrl.IstSchreibgeschuetzt(z.Bezeichner)));
-            }
-            return liste;
-        }
-
-        /// <summary>
-        /// Die NEUN Filterstufen: „Alle" voran, dann die acht aus
-        /// <c>BHKWStammCtrl.LeistungText</c>. Der Index ist der Steuerwert.
-        /// </summary>
-        private static IReadOnlyList<(int Id, string Text)> Leistungsstufen()
-        {
-            var texte = new List<string> { MyResource.Resource.PSP_FILTER_ALLE };
-            foreach (string t in BHKWStammCtrl.LeistungText)
-                if (!string.IsNullOrEmpty(t)) texte.Add(t);
-            return KatalogBrowserHuelle.Nummeriert(texte);
-        }
 
         private static KatalogSpeicherErgebnis Loeschen(string name)
         {

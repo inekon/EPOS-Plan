@@ -242,23 +242,10 @@ namespace WindowsFormsApplication1
             foreach (var paar in gaben) yield return paar;
         }
 
-        /// <summary>
-        /// Die Filterliste „Alle" plus die Einträge des Katalogs — Id ist der INDEX
-        /// und damit der Steuerwert (Regel seit Paket 9 / B0-10).
-        /// </summary>
-        internal static IReadOnlyList<(int Id, string Text)> MitAlle(IReadOnlyList<string> eintraege)
-        {
-            var liste = new List<(int, string)> { (0, MyResource.Resource.PSP_FILTER_ALLE) };
-            for (int i = 0; i < eintraege.Count; i++) liste.Add((i + 1, eintraege[i]));
-            return liste;
-        }
-
-        /// <summary>Eine Filterliste, deren erster Eintrag schon „Alle" ist.</summary>
-        internal static IReadOnlyList<(int Id, string Text)> Nummeriert(IReadOnlyList<string> eintraege)
-        {
-            var liste = new List<(int, string)>();
-            for (int i = 0; i < eintraege.Count; i++) liste.Add((i, eintraege[i]));
-            return liste;
-        }
+        // Die zwei Bauer der FILTERKLAPPLISTEN (MitAlle, Nummeriert) sind mit dem
+        // Anwenderentscheid W14a-E-10 vom 07.09.2026 entfallen: Der Filter sitzt
+        // seither im Spaltenkopf, und die vier Auspraegungen liefern statt zweier
+        // Klapplistenstellungen die volle Liste mit ihren Parameterspalten
+        // (KatalogBrowserWege.Katalogzeilen).
     }
 }

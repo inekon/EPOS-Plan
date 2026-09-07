@@ -41,7 +41,10 @@ namespace WindowsFormsApplication1
 
             gaben["Wege"] = new KatalogBrowserWege
             {
-                Liste = (_, __) => Zeilen(profil),
+                // W14a-E-10: sechs Spalten statt der dreizeiligen Eigenschaftenzelle -
+                // und der ERSTE Filter dieses Katalogs ueberhaupt (bis hierher
+                // KatalogFilterArt.Keiner).
+                Katalogzeilen = SolarkollektorenStammCtrl.Katalogfilterzeilen,
                 Detail = name => KatalogBrowserHuelle.Felder(
                     profil, SolarkollektorenStammCtrl.KatalogsatzAnzeige(name)),
                 Existiert = name => new SolarkollektorenStammCtrl().Exists(name),
@@ -57,24 +60,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         // Die Datenwege
         // =====================================================================
-
-        /// <summary>
-        /// Die zweispaltige Liste. Der dreizeilige Eigenschaftentext stand im Vorläufer
-        /// mit zwei deutschen Literalen IM DATENSTROM (<c>Z. 96</c>); die Beschriftungen
-        /// kommen jetzt aus dem Profil.
-        /// </summary>
-        private static IReadOnlyList<BrowserZeile> Zeilen(KatalogBrowserProfil profil)
-        {
-            var liste = new List<BrowserZeile>();
-            foreach (var z in SolarkollektorenStammCtrl.KatalogZeilen())
-            {
-                string text = z.Firma
-                            + "\n" + profil.Zeilenbauplan[0] + z.Kollektortyp
-                            + "\n" + profil.Zeilenbauplan[1] + z.Aperturflaeche + " m²";
-                liste.Add(new BrowserZeile(z.Id, z.Bezeichner, text));
-            }
-            return liste;
-        }
 
         private static KatalogSpeicherErgebnis Loeschen(string name)
         {

@@ -73,7 +73,13 @@ namespace WindowsFormsApplication1
             {
                 ["Daten"] = daten,
 
-                ["Liste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
+                // W14a-E-10 (07.09.2026): NEUN Spalten statt einer Namensspalte -
+                // Hersteller, Modell, Quelle, P_N, VL min, VL max, Zuheizung, Kuehlen
+                // und COP bei A2/W35. Der Controller rechnet die drei abgeleiteten
+                // Groessen aus Tab_Kenndaten_STAMM einmal je Liste.
+                ["Liste"] = new Func<IReadOnlyList<Katalogfilterzeile>>(Stammliste),
+                ["Filterprofil"] = Katalogfilterprofil.Finde(Anlagenart.Waermepumpe,
+                                                             KatalogBrowserHuelle.Text),
                 ["Satz"] = new Func<int, WaermepumpeStammDaten>(SatzZu),
                 ["Bilder"] = new Func<int, bool, KennlinienBilder>(BilderZu),
                 ["HatKuehlung"] = new Func<int, bool>(KenndatenKuehlungCtrl.HatKenndaten),
@@ -156,15 +162,9 @@ namespace WindowsFormsApplication1
         // Die Wege hinter den Delegaten
         // =================================================================================
 
-        private static IReadOnlyList<WaermepumpeStammZeile> Stammliste()
+        private static IReadOnlyList<Katalogfilterzeile> Stammliste()
         {
-            var ctrl = new WPStammCtrl();
-            ctrl.ReadAll();
-
-            var liste = new List<WaermepumpeStammZeile>();
-            foreach (WPModel m in ctrl.items)
-                liste.Add(new WaermepumpeStammZeile(m.ID, m.WPName ?? "", m.m_bReadOnly));
-            return liste;
+            return new WPStammCtrl().Katalogfilterzeilen();
         }
 
         private static WaermepumpeStammDaten SatzZu(int id)

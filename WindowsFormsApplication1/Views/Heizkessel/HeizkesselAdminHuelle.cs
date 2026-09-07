@@ -49,13 +49,11 @@ namespace WindowsFormsApplication1
 
             var gaben = KatalogBrowserHuelle.GemeinsameGaben(profil);
 
-            gaben["FilterEins"] = KatalogBrowserHuelle.MitAlle(ctrl.Brennstoffart_Gruppe);
-            gaben["FilterZwei"] = Leistungsstufen();
-
             gaben["Wege"] = new KatalogBrowserWege
             {
-                // Filterstufe 0 = „Alle"; die Gruppenliste beginnt danach.
-                Liste = (gruppe, leistung) => Zeilen(ctrl, gruppe, leistung),
+                // W14a-E-10: die VOLLSTAENDIGE Liste mit ihren sechs Spalten;
+                // gefiltert wird im Spaltenkopf, nicht mehr ueber zwei Klapplisten.
+                Katalogzeilen = () => ctrl.Katalogfilterzeilen(),
                 Detail = name => KatalogBrowserHuelle.Felder(profil, ctrl.KatalogsatzAnzeige(name)),
                 Existiert = name => new HeizkesselStammCtrl().Exists(name),
                 Loeschen = Loeschen,
@@ -71,37 +69,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         // Die Datenwege
         // =====================================================================
-
-        private static IReadOnlyList<BrowserZeile> Zeilen(HeizkesselStammCtrl ctrl,
-                                                          int gruppe, int leistung)
-        {
-            string g = gruppe <= 0 || gruppe > ctrl.Brennstoffart_Gruppe.Count
-                     ? "Alle" : ctrl.Brennstoffart_Gruppe[gruppe - 1];
-
-            var liste = new List<BrowserZeile>();
-            foreach (var z in ctrl.Filtern(g, leistung))
-                liste.Add(new BrowserZeile(z.Id, z.Bezeichner));
-            return liste;
-        }
-
-        /// <summary>
-        /// Die sechs Leistungsstufen. Der Vorläufer trug sie als deutsche Literale im
-        /// Code (<c>Form_Heizkessel_Admin.cs:31-36</c>) und verglich gegen den
-        /// ANGEZEIGTEN Text; hier ist der INDEX der Steuerwert und die Beschriftung
-        /// kommt aus dem Katalog.
-        /// </summary>
-        private static IReadOnlyList<(int Id, string Text)> Leistungsstufen()
-        {
-            return KatalogBrowserHuelle.Nummeriert(new[]
-            {
-                MyResource.Resource.HZK_STUFE_ALLE,
-                MyResource.Resource.HZK_STUFE_BIS50,
-                MyResource.Resource.HZK_STUFE_50_200,
-                MyResource.Resource.HZK_STUFE_200_500,
-                MyResource.Resource.HZK_STUFE_500_1000,
-                MyResource.Resource.HZK_STUFE_UEBER1000
-            });
-        }
 
         private static KatalogSpeicherErgebnis Loeschen(string name)
         {
