@@ -895,6 +895,9 @@ und keine Beifracht dieses Punktes.
    jede Faktoränderung sichtbar — sie zöge aber auch jede Katalogpflege in den
    Regressionsvergleich. Bis dahin hängt der Nachweis an
    `EPOS.Kern.Tests/EmissionsquelleTests.cs`.
+   **→ Kapitel 11** (Umsetzungsvorschlag vom 07.09.2026: gemessener Ist-Stand, die zehn
+   vorgeschlagenen Skalare, die drei Zeitvarianten Z1/Z2/Z3 und die Fragen
+   `Em‑9.8‑Q1` bis `Em‑9.8‑Q4`).
 9. **Keine Emissionsart „CO"** (Befund 07.09.2026). Der Artenkatalog führt sieben Arten,
    Kohlenmonoxid ist nicht darunter, und `Tab_Brennstoff_Stamm` hat keine CO-Spalte. Seit
    B1 ist die CO-Emission von Kessel **und** BHKW deshalb 0; beim BHKW kam sie vorher aus
@@ -903,6 +906,10 @@ und keine Beifracht dieses Punktes.
    ein Migrationsschritt nach dem Muster 57/58. **Vorschlag, nicht eigenmächtig gebaut:**
    Der Katalog trägt heute keinen belegten CO-Wert, und eine Art ohne Werte machte die
    Bilanz nicht vollständiger, nur länger.
+   **→ Kapitel 11** (Umsetzungsvorschlag vom 07.09.2026: die gemessene Quellenlage —
+   weder UBA v2.1 noch GEMIS 5.2 führt CO —, der Zuschnitt des Schritts **68**, der Befund
+   „ein Datenschritt reicht nicht", der Aufwand und die Fragen `Em‑9.9‑Q1` bis
+   `Em‑9.9‑Q3`).
 
 ---
 
@@ -932,3 +939,517 @@ und keine Beifracht dieses Punktes.
 - `Allgemein\Wirtschaftlichkeit\EmissionsBilanzRechner.cs:20` — Einheiten-Beleg mg/kWh
 - `Allgemein\Wirtschaftlichkeit\GesetzKatalog.cs` — Saat `EF_BILANZ`/`EF_NACHWEIS`
 - IPCC AR6 GWP₁₀₀ (CH₄ 29,8/27,0 · N₂O 273); BAFA EEW 3.4; EBeV 2030 Anlage 2; UBA CLIMATE CHANGE 16/2026; GEMIS (IINAS); UBA TEXTE 97/2025
+
+**Die zwei archivierten Quelldateien und die Blätter, die zählen** (`Quellen\Emissionsfaktoren\`,
+Belegstellen aus § 5.2 und Kapitel 11):
+
+- `UBA_Liste_EF_THG_Bilanzierung_v2.1_2024.xlsx` (22 Blätter) — Saatblatt
+  **`01_Stationäre_Verbrennung`** (57 Zeilen; Spaltenköpfe in Z. 6: `A` ID … `H` Einheit,
+  **`I` kg CO2e · `J` kg CO2 · `K` kg CH4 · `L` kg N2O**, `M` Bezugsjahr, `O` Quelle);
+  Feuerung ohne Vorkette, Hu (Z. A3/A4). Nicht gesät: `07_Stat._Verbr. V. & m.V`
+  (zweite Systemgrenze), `Außerhalb der Scopes` (biogenes CO₂), Spalte `I` (fremde
+  GWP-Basis, `Allgemeine_Hinweise!A16`). Lizenz: `Impressum`. **Kein CO** (Kapitel 11.1.5)
+- `IINAS-2025-GEMIS-5.2-Ergebnisse.xlsx` (15 Blätter) — Saatblätter
+  **`Wärme-end 2020`** (je kWh Endenergie, B1/B5) und
+  **`Strom-lokal DE 2000-2024`** (Niederspannung inkl. Netzverluste). Jedes Ergebnisblatt
+  trägt zwei Schadstoffblöcke mit fester Spaltenbelegung: **Luftschadstoffe** (Kopf Z. 30/31 —
+  `B` SO₂-Äquivalent, `C` SO₂, `D` NOx, `E` Staub) und **Treibhausgase** (Kopf Z. 53/54 —
+  `B` CO₂-Äquivalent, `C` CO₂, `D` CH₄, `E` N₂O); ab Z. 77 KEA/KEV. Zuordnung ausschließlich
+  über Spalte A. Nicht gesät: `Heizen (en) 2020` (je kWh **Nutz**wärme, anderer Nenner).
+  **Kein CO** (Kapitel 11.1.5)
+- `Referenzlaeufe\Kenndaten_Test.sqlite` — die Messgrundlage von Kapitel 11
+  (Schemastand 67: sieben Arten, 305 `emissionswert`-Zeilen, davon 81 aktiv; 27 Träger;
+  zwölf Referenzprojekte, alle im Modus `CO2`)
+- `Referenzlauf\Ergebnisexport.cs` / `Referenzlauf\Vergleich.cs` — der Export der Skalare
+  und der Toleranzvergleich; beide tragen § 9.8 (Kapitel 11.2)
+- `EPOS.Kern\Allgemein\Update\BhkwLeistungsgrenzeVorgabe.cs` — das Muster eines kleinen
+  Datenschritts (Schritt 67), nach dem Kapitel 11.3.2 den Schritt **68** zuschneidet
+
+---
+
+## 11 Umsetzungsvorschlag § 9.8 und § 9.9 (07.09.2026)
+
+*Anwenderwunsch vom 07.09.2026: „Emissionspunkte § 9.8 und § 9.9: betrachte das Konzept und
+mache einen Vorschlag zur Umsetzung im jetzigen Zustand."*
+
+**Dies ist ein Vorschlag — nichts davon ist gebaut.** Kein C#, keine Migration, keine
+Datenbankänderung. Jede Zahl dieses Kapitels ist am Stand `9d206e5` gemessen (Zweig
+`ios_migration`, 07.09.2026) und nennt ihre Fundstelle: Datei mit Zeile, Blatt mit Zelle,
+Tabelle mit Abfrage. Wo eine Zahl abgeleitet ist, steht die Rechnung dabei.
+
+### 11.1 Was gemessen wurde
+
+#### 11.1.1 Die zehn Emissionsgrößen der Simulation — und ihre Leser
+
+Kessel und BHKW führen seit B1 je fünf Jahressummen. Sie entstehen als
+`Verbrauch [MWh] × Faktor / 1000`; der Teiler ist beide Male derselbe, weil der Katalog CO₂
+in g/kWh und die übrigen Arten in mg/kWh führt (F4).
+
+| Feld | Klasse (Zeile) | Typ | Einheit | Bildung |
+|---|---|---|---|---|
+| `Em_CO2_SPK` | `SimulationSPK.cs:75` | `double` | **t/a** | `SimulationSPK.cs:296`, Teiler `:306` |
+| `Em_CO_SPK` | `SimulationSPK.cs:76` | `double` | kg/a | `:299` — **immer 0**, es gibt keine Art `CO` |
+| `Em_SO2_SPK` | `SimulationSPK.cs:77` | `double` | kg/a | `:297` |
+| `Em_NOX_SPK` | `SimulationSPK.cs:78` | `double` | kg/a | `:298` |
+| `Em_Staub_SPK` | `SimulationSPK.cs:79` | `double` | kg/a | `:300` |
+| `Em_CO2_BHKW` | `SimulationBHKW.cs:101` | `float` | **t/a** | `SimulationBHKW.cs:483` |
+| `Em_SO2_BHKW` | `SimulationBHKW.cs:102` | `float` | kg/a | `:484` |
+| `Em_NOX_BHKW` | `SimulationBHKW.cs:103` | `float` | kg/a | `:485` |
+| `Em_CO_BHKW` | `SimulationBHKW.cs:104` | `float` | kg/a | `:486` — **immer 0** |
+| `Em_Staub_BHKW` | `SimulationBHKW.cs:105` | `float` | kg/a | `:487` |
+
+Die Faktoren kommen bei beiden aus `Emissionsquelle.Fuer(…)` — Kette Projekt → Katalog →
+Stamm → Carrier, fünftes Glied Brennstoff, im Modus des Projekts (§ 8/B1).
+
+**Die Leser (repo-weite Suche über alle `.cs`/`.razor`):** Außerhalb der beiden Klassen
+selbst nennt **eine einzige Datei** eines dieser zehn Felder —
+`EPOS.Kern.Tests/EmissionsquelleTests.cs` (Zeilen 233, 234, 252, 253, 269, 270). Keine
+Ergebnistabelle, kein Bericht, keine Kachel, keine Referenz-CSV. Die Ergebnistabellen sind
+gegengeprüft: Von den **17** Tabellen `Tab_Ergebnis*` der Testdatenbank führt **keine** eine
+Emissionsspalte; die einzige Spalte, deren Name an CO₂ erinnert, ist
+`Tab_ErgebnisWirtschaftlichkeit.CO2Abgabe` — die BEHG-Abgabe in €, eine Kostengröße.
+
+> Damit ist § 9 Punkt 8 in beide Richtungen belegt: Die Zahlen entstehen, und sie werden
+> von nichts gelesen außer der Probe, die eigens dafür geschrieben wurde. **Der Rechenweg
+> hat ein Ergebnis ohne Abnehmer.**
+
+#### 11.1.2 Was `aggregate.csv` heute führt und wie ein Skalar hinzukommt
+
+Gemessen an der Basis `Referenzlaeufe/2026-09-06_R3_Straenge` (312 CSV, zwölf Projekte):
+
+| Projekt | Skalare | CSV-Dateien | | Projekt | Skalare | CSV-Dateien |
+|---|---:|---:|---|---|---:|---:|
+| 1007 | 99 | 29 | | 1030 | 150 | 22 |
+| 1008 | 101 | 21 | | 1039 | 149 | 25 |
+| 1017 | 114 | 21 | | 1040 | 164 | 30 |
+| 1018 | 141 | 22 | | 1041 | 150 | 27 |
+| 1023 | 136 | 25 | | 1042 | 197 | 34 |
+| 1024 | 157 | 26 | | 1045 | 164 | 30 |
+| | | | | **Summe** | **1 722** | **312** |
+
+Die Schlüssel tragen elf Präfixe (Beispiel 1042): `Vektor.` 33, `Heizkessel.` 22,
+`Pufferspeicher[i].` 3 × 19, `Waermepumpe.` 13, `Sim.` 10, `Ergebnis.` 10,
+`HeizkesselModul[0].` 9, `Energiebedarf.` 9, `Solarthermie.` 8, `Puffer.` 7,
+`Photovoltaik.` 6, `Lauf.` 1. Zwei Herkünfte: `Ergebnis.`/`Energiebedarf.`/`Heizkessel.`/…
+entstehen aus `SELECT * FROM Tab_Ergebnis*` (`Ergebnisexport.cs:253 ff.`), die übrigen
+schreibt der Export von Hand.
+
+**Ein Skalar kommt mit einer Zeile hinzu** — in `Referenzlauf/Ergebnisexport.cs`,
+Block „Skalare" ab `:170`:
+
+```csharp
+skalare.Add(Neu("Em.Kessel.Co2T", Zahl(spk.Em_CO2_SPK)));
+```
+
+`Zahl(double)` (`Ergebnisexport.cs:361`) formatiert **`G9`, invariant** — dieselbe Fassung,
+die jede andere Zahl der Datei trägt; sie liegt weit unter der Vergleichstoleranz. Das
+Vorbild für einen bedingten Block ist der Erdreich-Abschnitt (`:201–233`): **Kein Eintrag,
+wenn es nichts gibt** — „ein `Erdreich.Anzahl = 0` wäre in jeder `aggregate.csv`
+aufgetaucht, ohne etwas auszusagen."
+
+#### 11.1.3 Die sieben Arten und die gesäten Trägerwerte
+
+`Referenzlaeufe/Kenndaten_Test.sqlite` (Schemastand 67), `SELECT * FROM emissionsart`:
+
+| Kürzel | Name | Einheit | GWP₁₀₀ | Quelle des Äquivalents | Pflicht | ausgewählt | aktive Trägerwerte | Vorlagen |
+|---|---|---|---:|---|:-:|:-:|---:|---:|
+| `CO2` | Kohlendioxid | g/kWh | 1 | — | ja | **ja** | **27** | 84 |
+| `SO2` | Schwefeldioxid | mg/kWh | 0 | — | nein | **ja** | **27** | 36 |
+| `NOX` | Stickoxide | mg/kWh | 0 | — | nein | **ja** | **27** | 36 |
+| `CH4_FOSSIL` | Methan (fossil) | mg/kWh | 29,8 | IPCC AR6, GWP100 | nein | nein | 0 | 8 |
+| `CH4_BIOGEN` | Methan (biogen) | mg/kWh | 27,0 | IPCC AR6, GWP100 | nein | nein | 0 | 8 |
+| `N2O` | Lachgas | mg/kWh | 273 | IPCC AR6, GWP100 | nein | nein | 0 | 16 |
+| `STAUB` | Staub (Gesamtstaub) | mg/kWh | 0 | — | nein | nein | 0 | 36 |
+
+**305 Zeilen** in `emissionswert`, davon **81 aktiv** (27 Träger × drei Kernarten — jeder der
+27 Träger führt einen aktiven CO₂-Wert) und **224 Vorlagen**. Nach Quelle:
+
+| Quelle | Zeilen | davon aktiv | | Quelle | Zeilen | davon aktiv |
+|---|---:|---:|---|---|---:|---:|
+| `STAMM_ALT` | 88 | 25 | | `EIGENER_WERT` | 36 | 36 |
+| `BAFA_EEW` | 47 | 20 | | `GEG_NACHWEIS` | 25 | 0 |
+| `GEMIS_52` | 45 | 0 | | `EBEV_2030` | 15 | 0 |
+| `UBA_2024` | 40 | 0 | | `UBA_STROMMIX` | 9 | 0 |
+
+Die Saat E6 (85 Zeilen, § 5.2) ist damit vollständig als Vorlage vorhanden und rührt keinen
+aktiven Wert an — genau wie zugesagt. **Alle zwölf Referenzprojekte und die globale Vorgabe
+stehen auf Modus `CO2`** (`Tab_Projekt.Emission_Berechnungsmodus`, 24 Sätze; `Tab_Applikation`,
+1 Satz).
+
+#### 11.1.4 Die zwölf Referenzprojekte: wer bekäme überhaupt Werte?
+
+Gemessen aus `Tab_Energieanlagen` (`ID_Type` 10 = Kessel, 11 = BHKW), der Kette aus § 3 und
+den Verbrauchszahlen der Basis R3. Der Verbrauch ist die Summe der neun Brennstoffzähler der
+Stufe (`Heizkessel.Gasverbrauch` …); die Emissionsspalten sind die Rechnung
+`Verbrauch × Faktor / 1000`.
+
+| Projekt | Stufe | Träger bzw. Brennstoff | CO₂ g/kWh (Ebene) | SO₂ | NOₓ | Staub | Verbrauch MWh | **CO₂ t/a** | SO₂ kg/a | NOₓ kg/a | Staub kg/a |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1007 | — | *Kessel- und BHKW-Stufe laufen nicht* | | | | | | — | — | — | — |
+| 1008 | — | *Kessel- und BHKW-Stufe laufen nicht* | | | | | | — | — | — | — |
+| 1017 | Kessel | Brennstoff „Elektrische Energie" | 560 (BRENNSTOFF) | 200 | 280 | 12 | 8,89 ¹ | 4,978 | 1,778 | 2,489 | 0,107 |
+| 1017 | BHKW | Brennstoff „Stadtgas" | 240 (BRENNSTOFF) | 0,3 | 110 | 0,5 | 90,10 | **21,624** | 0,027 | 9,911 | 0,045 |
+| 1018 | Kessel | Brennstoff „Erdgas E" | 240 (BRENNSTOFF) | 0,3 | 110 | 0,5 | 16,75 | 4,020 | 0,005 | 1,843 | 0,008 |
+| 1018 | BHKW | Erdgas E | 240 (PROJEKT) | 0,3 | 110 | 0,5 | 1,56 | 0,374 | 0,000 | 0,172 | 0,001 |
+| 1023 | Kessel | Brennstoff „Erdgas E" | 240 (BRENNSTOFF) | 0,3 | 110 | 0,5 | 78,57 | 18,857 | 0,024 | 8,643 | 0,039 |
+| 1024 | Kessel | Brennstoff „Elektrische Energie" | 560 (BRENNSTOFF) | 200 | 280 | 12 | 53,18 ¹ | 29,781 | 10,636 | 14,890 | 0,638 |
+| 1024 | BHKW | Heizöl L var | 310 (PROJEKT) | 200 | 150 | 8 | 228,26 | **70,761** | 45,652 | 34,239 | 1,826 |
+| 1030 | Kessel | Erdgas E | 240 (PROJEKT) | 0,3 | 110 | 0,5 | 5 403,10 | **1 296,744** | 1,621 | 594,341 | 2,702 |
+| 1030 | BHKW | Erdgas E | 240 (PROJEKT) | 0,3 | 110 | 0,5 | 1 048,27 | **251,585** | 0,314 | 115,310 | 0,524 |
+| 1039 | Kessel | Erdgas E | 240 (PROJEKT) | 0,3 | 110 | 0,5 | 224,91 | 53,978 | 0,067 | 24,740 | 0,112 |
+| 1040 | Kessel | Erdgas E | 240 (PROJEKT) | 0,3 | 110 | 0,5 | 16,16 | 3,878 | 0,005 | 1,778 | 0,008 |
+| 1041 | Kessel | Erdgas E | 240 (PROJEKT) | 0,3 | 110 | 0,5 | 133,29 | 31,990 | 0,040 | 14,662 | 0,067 |
+| 1042 | Kessel | Erdgas E | 240 (PROJEKT) | 0,3 | 110 | 0,5 | 13,79 | 3,310 | 0,004 | 1,517 | 0,007 |
+| 1045 | Kessel | Erdgas E | 240 (PROJEKT) | 0,3 | 110 | 0,5 | 16,16 | 3,878 | 0,005 | 1,778 | 0,008 |
+
+¹ Elektrokessel: Der Brennstoffzähler ist 0, der Verbrauch läuft auf `Heizkessel.Stromverbrauch`.
+Die Zeile ist deshalb eine **Näherung** — die drei Zahlen der Zeile sind die einzigen der
+Tabelle, die nicht auf die dritte Stelle genau vorhergesagt sind.
+
+**Die Tabelle ist gegen die Wirklichkeit geprüft:** Die drei fett gesetzten BHKW-Werte
+stimmen auf die zweite Nachkommastelle mit den Zahlen überein, die der Umbau B1 tatsächlich
+erzeugt hat und die in `Referenzlaeufe/LIESMICH.md` und im Statusblock des
+Umsetzungskonzepts stehen (1030: 251,58/251,59 · 1024: 70,76 · 1017: 21,62). Die Rechnung
+oben ist damit belegt und nicht nur plausibel.
+
+**Befund:** **Zehn** der zwölf Projekte bekämen Werte ≠ 0. **1007 und 1008 bekämen gar
+keinen Skalar** — bei ihnen stehen `Sim.bSimulationKessel` und `Sim.bSimulationBHKW` beide
+auf `False`, die Stufen laufen nicht. Von den zwölf Projekten führen **zehn** eine
+Kesselstufe und **vier** (1017, 1018, 1024, 1030) eine BHKW-Stufe.
+
+#### 11.1.5 CO in den Quellen: die Suche und ihr Ergebnis
+
+**GEMIS 5.2 (`Quellen/Emissionsfaktoren/IINAS-2025-GEMIS-5.2-Ergebnisse.xlsx`, 15 Blätter).**
+Jedes Ergebnisblatt führt genau zwei Schadstoffblöcke, beide mit fester Spaltenbelegung —
+belegt an `Wärme-end 2020`:
+
+| Block | Kopfzeile | B | C | D | E |
+|---|---|---|---|---|---|
+| Luftschadstoffe | Z. 30/31 | SO₂-**Äquivalent** | **SO₂** | **NOx** | **Staub** |
+| Treibhausgase | Z. 53/54 | CO₂-**Äquivalent** | **CO₂** | **CH₄** | **N₂O** |
+
+Dieselben zwei Blöcke an denselben Zeilen in `Strom-lokal DE 2000-2024` und
+`Heizen (en) 2020`. Eine Suche über **alle Textzellen aller 15 Blätter** nach `CO`,
+`Kohlenmonoxid` oder `carbon monoxide` findet **keinen einzigen Treffer**. Die Datei kennt
+sieben Schadstoffgrößen — Kohlenmonoxid ist keine davon.
+
+**UBA-Liste v2.1 (`UBA_Liste_EF_THG_Bilanzierung_v2.1_2024.xlsx`, 22 Blätter).** Blatt
+`01_Stationäre_Verbrennung` führt in Zeile 6 die Spaltenköpfe: `A` ID, `B` Scope,
+`C…G` Level 1–5, `H` Einheit, **`I` kg CO2e, `J` kg CO2, `K` kg CH4, `L` kg N2O**, `M`
+Bezugsjahr, `N` Veröffentlichungsjahr, `O` Quelle, `P` Anmerkungen. Über **alle 22 Blätter**
+kommen als Gas-Spaltennamen ausschließlich `kg CO2e`, `kg CO2`, `kg CH4`, `kg N2O` (und zwei
+verkehrsbezogene CO₂e-Spalten) vor. **Kein CO.** Das ist keine Lücke der Datei, sondern ihr
+Gegenstand: Sie heißt „Emissionsfaktoren zur **THG**-Bilanzierung", und Kohlenmonoxid ist
+kein Treibhausgas.
+
+> **Ergebnis: Beide archivierten Quellen führen CO nicht.** Ein Migrationsschritt „CO säen"
+> hätte im jetzigen Zustand **keine einzige belegte Zahl** zu säen.
+
+**Was der Bestand an CO-Zahlen hat** (Testdatenbank, Einheit laut
+`ParameterVerwendung.cs:301/381` **g/MWh** — zahlengleich zu mg/kWh):
+
+| Tabelle | Sätze | `CO` gepflegt | `CO ≠ 0` | Spannweite | Häufigste Werte |
+|---|---:|---:|---:|---|---|
+| `Tab_BHKW_STAMM` | 79 | 79 | **69** | 1 … 1 000 | 214 (21×), 368 (8×), 250 (8×), 150 (8×) |
+| `Tab_BHKW` (Projektgeräte) | 6 | 6 | 5 | 70 … 214 | 214, 150, 70 |
+| `Tab_Heizkessel_STAMM` | 63 | 62 | **2** | 2 … 10 | 2,0 · 10,0 |
+| `Tab_Heizkessel` (Projektgeräte) | 26 | 26 | 13 | 2 … 10 | 10,0 |
+
+**Drei Beispielwerte** aus dem Katalog: `2G 250kw.el Gas` CO 214 · `A-Tron_21_G` CO 150 ·
+`Vitocrossal 200 CM2` CO 10,0 — alle in g/MWh. **`Tab_Brennstoff_Stamm` hat keine
+CO-Spalte** (25 Sätze; Spalten `CO2`, `SO2`, `NOx`, `Staub`, `PE_Faktor`). Die vorhandenen
+CO-Zahlen hängen also durchweg am **Gerät**, nicht am **Energieträger** — und damit an
+genau der Stelle, die B1 zur reinen Anzeige erklärt hat.
+
+### 11.2 Vorschlag zu § 9.8 — die Emissionsgrößen ins Regressionsnetz
+
+#### 11.2.1 Wohin: zwei Wege, einer davon abzulehnen
+
+**Weg A — Skalare in `aggregate.csv`** (Vorschlag). Zehn Zeilen in `Ergebnisexport.cs`, sonst
+nichts. Kein Schema, keine Migration, keine gespeicherte Zahl.
+
+**Weg B — Spalten in `Tab_ErgebnisHeizkessel` / `Tab_ErgebnisBHKW`.** Der Export nähme sie
+über `SELECT *` von selbst mit, und der Bericht könnte sie lesen. **Er ist abzulehnen, und
+zwar mit dem Argument, das dieses Konzept bereits geführt hat** (Umsetzungsklärung zu F7):
+Eine gespeicherte Emissionszahl beschriebe einen Zustand, der bei jedem Bericht neu gerechnet
+wird — sie liefe auseinander, sobald jemand zwischen Lauf und Druck den Modus oder einen
+Katalogwert ändert. Genau deshalb trägt `Tab_Ergebnis*` heute keine Emissionsspalte. Weg B
+kostete zusätzlich einen Migrationsschritt und zwei Ergebnisschreibwege — für eine Zahl, die
+das Konzept bewusst nicht persistiert.
+
+#### 11.2.2 Die zehn Skalare
+
+Je Erzeugerklasse fünf Arten, **kein** Gesamt: Eine Summe `Em.Gesamt.*` wäre die Addition
+zweier Zahlen, die beide schon in derselben Datei stehen — der Vergleich prüft ohnehin jeden
+Wert einzeln, und eine abgeleitete Größe brächte keine zusätzliche Aussage, aber fünf weitere
+Schlüssel.
+
+| Skalar | Quelle | Einheit | in der Testdatenbank |
+|---|---|---|---|
+| `Em.Kessel.Co2T` | `SimulationSPK.Em_CO2_SPK` | t/a | 10 Projekte, alle ≠ 0 |
+| `Em.Kessel.So2Kg` | `Em_SO2_SPK` | kg/a | 10 Projekte, alle ≠ 0 |
+| `Em.Kessel.NoxKg` | `Em_NOX_SPK` | kg/a | 10 Projekte, alle ≠ 0 |
+| `Em.Kessel.StaubKg` | `Em_Staub_SPK` | kg/a | 10 Projekte, alle ≠ 0 |
+| `Em.Kessel.CoKg` | `Em_CO_SPK` | kg/a | 10 Projekte, **alle 0** (keine Art `CO`) |
+| `Em.Bhkw.Co2T` | `SimulationBHKW.Em_CO2_BHKW` | t/a | 4 Projekte, alle ≠ 0 |
+| `Em.Bhkw.So2Kg` | `Em_SO2_BHKW` | kg/a | 4 Projekte, alle ≠ 0 |
+| `Em.Bhkw.NoxKg` | `Em_NOX_BHKW` | kg/a | 4 Projekte, alle ≠ 0 |
+| `Em.Bhkw.StaubKg` | `Em_Staub_BHKW` | kg/a | 4 Projekte, alle ≠ 0 |
+| `Em.Bhkw.CoKg` | `Em_CO_BHKW` | kg/a | 4 Projekte, **alle 0** |
+
+**Die Einheit steht im Namen** — Hausregel des Rechenkerns, Punkt 3
+(`EPOS.Kern/CLAUDE.md`, „Einheiten: die Regel des Rechenkerns", Anwenderentscheid W8‑O‑5c
+Q1). Sie steht dort, weil die zehn Felder **nicht** dieselbe Einheit führen: CO₂ in t/a, die
+vier übrigen in kg/a. Ein Schlüssel `Em.Kessel.Co2` ohne Einheit wäre genau der Fehler, den
+diese Regel verhindern soll — und der Export darf die Zahl nicht umrechnen: Umgerechnet wird
+im Haus an genau **zwei** Nähten (`SimulationErgebnisCtrl` und `SimulationRunner`, Regel
+Punkt 4); ein Teiler in `Ergebnisexport.cs` wäre eine dritte.
+
+**Eigenes Präfix `Em.` statt `Heizkessel.`/`BHKW.`:** Diese beiden Präfixe stehen für
+„Spalte einer `Tab_Ergebnis*`-Zeile" (`SELECT *`). Ein handgeschriebener Skalar darunter
+verwischte die Herkunft; `Em.` sagt „Emissionsgröße der Simulation, nicht persistiert".
+
+**Bedingung wie bei den Vektoren:** Der Block läuft nur, wenn die Stufe gelaufen ist
+(`sim.bSimulationKessel && sim.simulation_spk != null` bzw. das BHKW-Gegenstück) — dieselbe
+Bedingung, unter der schon `kessel_waermebedarf.csv` und `bhkw_strom.csv` entstehen, und
+dasselbe Muster wie beim Erdreich-Block. **1007 und 1008 bekommen dadurch keinen einzigen
+neuen Schlüssel**, statt zehn Nullen zu tragen.
+
+#### 11.2.3 Wie viel wächst die Basis, und was wird bewacht
+
+| | heute | mit § 9.8 |
+|---|---:|---:|
+| Skalare über zwölf Projekte | 1 722 | **1 792** (+70, +4,1 %) |
+| Skalare je Projekt | 99 … 197 | 99 … 207 |
+| CSV-Dateien | 312 | 312 (unverändert) |
+| Projekte mit neuen Schlüsseln | — | 10 von 12 (je 5 oder 10) |
+
+Von den 70 neuen Schlüsseln:
+
+* **32** tragen einen Betrag ≥ 1 und fallen damit unter die **relative** Toleranz (1e‑4) —
+  sie sind wirksame Wächter: Der Sprung des BHKW-CO₂ von 0 auf 251,585 t/a in Projekt 1030
+  wäre ein Vielfaches der Toleranz gewesen.
+* **24** liegen unter 1 (SO₂- und Staubwerte der Gasprojekte, z. B. `Em.Kessel.So2Kg` = 0,005
+  bei 1040) und fallen unter die **absolute** Toleranz von 0,01 — dort bewacht der Vergleich
+  nur grobe Änderungen. Das ist kein Fehler des Vorschlags, sondern die Größenordnung der
+  Sache: 0,3 mg/kWh SO₂ auf 16 MWh sind nun einmal 5 Gramm im Jahr.
+* **14** sind die CO-Schlüssel und stehen strukturell auf 0 (siehe § 11.3).
+
+**In der CI** (`kern.yml`: 1030, 1007, 1017, 1045) kämen **25** Schlüssel dazu — 1030 und
+1017 je zehn, 1045 fünf, 1007 keinen.
+
+#### 11.2.4 Wirkung auf den Toleranzvergleich — der Punkt, an dem es weh tut
+
+`Referenzlauf/Vergleich.cs:248–255` behandelt einen Schlüssel, den nur der neue Lauf trägt,
+als **Abweichung mit `Schwere = double.MaxValue`**: „Eintrag nur im Vergleichslauf". Das ist
+ein FAIL, kein Hinweis. Gegen die eingefrorene Basis R3 fielen mit § 9.8 also **zehn der
+zwölf Projekte durch** — nicht weil sich eine Zahl geändert hätte, sondern weil zehn Dateien
+mehr Zeilen haben als vorher.
+
+Es gibt genau zwei saubere Umgänge damit, und `Vergleich.cs` kennt beide:
+
+1. **Neue Basis einfrieren.** Der Regelweg. Danach vergleicht jeder Lauf gegen einen Stand,
+   der die Schlüssel kennt.
+2. **`--ohne <Schlüsselliste>`** (`Vergleich.cs:44–61`, Etappe D4). Der Ausschluss ist
+   ausdrücklich als „Werkzeug für einen ERKLÄRTEN Unterschied" gedacht, nicht als Weg,
+   Abweichungen wegzuschalten — er wirkt nur auf benannte Schlüssel und nennt sie in der
+   Ausgabe. Für den Übergangslauf „sind die ALTEN Werte unverändert?" ist er das richtige
+   Mittel; als Dauerzustand wäre er die Verlängerung der Lücke, die § 9.8 schließen soll.
+
+`Plausibilitaet.Pruefen` (`Referenzlauf/Plausibilitaet.cs`) ist unberührt: Es prüft nur, ob
+zu einem vorhandenen Schlüssel die geforderte Vektordatei existiert; neue Skalare fordern
+keine.
+
+#### 11.2.5 Wann: drei Varianten
+
+| | **Z1 — jetzt, im Zuge von R4** | **Z2 — eigener Schritt nach R4, Basis R5** | **Z3 — nicht exportieren** |
+|---|---|---|---|
+| Was geschieht | Der laufende Auftrag W8‑O‑5d (Kern auf `double`) bekommt die zehn Zeilen als Ergänzung, **bevor** er `2026-09-07_R4_Double` einfriert | Nach R4 ein eigener Lauf, zwölf Projekte neu, Basis `R5` einfrieren | Nichts. § 9.8 bleibt offen, der Nachweis bleibt bei `EmissionsquelleTests` |
+| Zu ändern | `Referenzlauf/Ergebnisexport.cs` (+10 Zeilen), ein Absatz in `Referenzlaeufe/LIESMICH.md` | dieselben zehn Zeilen **plus** neue Basis, LIESMICH-Abschnitt, `CLAUDE.md` (Wurzel) und `EPOS.Kern/CLAUDE.md`, Prüfung von `kern.yml`/`ios.yml` | — |
+| Aufwand | **1–2 Agentenstunden** obendrauf (der R4-Lauf steht ohnehin an) | **3–4 Agentenstunden** | 0 |
+| Zahl der Basiswechsel | **einer** (R4) | **zwei** (R4, dann R5) | keiner |
+| Risiko | Erweiterung des Auftrags eines laufenden Agenten | Die 312 CSV der R4 sind nach wenigen Stunden schon wieder veraltet | Jede Faktoränderung bleibt unbemerkt; § 9.8 wandert ins nächste Paket |
+| Präzision der Zahlen | **richtig auf Anhieb**: `Em_*_BHKW` ist heute `float` (`SimulationBHKW.cs:101–105`); W8‑O‑5d hebt es auf `double`. Wer **nach** der Umstellung exportiert, friert die endgültigen Stellen ein | R5 trägt dieselben Zahlen wie Z1 — R4 hat sie nur nicht | — |
+
+**Ein Einwand, der bei Z1 nicht greift:** „Zwei Ursachen in einer Basis lassen sich nicht
+auseinanderhalten." Das gilt für Schlüssel, die auf beiden Seiten stehen — die zehn neuen
+stehen in R3 nicht. Es gibt nichts zu verwechseln: Die Umstellung auf `double` zeigt sich an
+den 1 722 alten Schlüsseln, die zehn neuen haben keine Vorgeschichte.
+
+> **Empfehlung: Z1.** Sie kostet einen Basiswechsel statt zwei, sie trifft die einzige
+> Gelegenheit, an der die Zahlen sofort in ihrer endgültigen Genauigkeit entstehen, und der
+> Eingriff ist auf zehn Zeilen einer Datei begrenzt, die derselbe Agent ohnehin in der Hand
+> hat (`Referenzlauf/*`). **Nicht Z3:** § 9 Punkt 8 hat den Befund selbst als Lücke des
+> Netzes benannt — „das Regressionsnetz kann eine künftige Änderung an den Emissionsfaktoren
+> **nicht** bemerken". Eine benannte Lücke, die man offen lässt, wird eines Tages zu einer
+> stillen Zahlenänderung, die niemandem auffällt. Der Nachweis in `EmissionsquelleTests`
+> prüft die **Kette**; er prüft nicht, ob ein Rechenlauf über 8 760 Stunden am Ende dieselbe
+> Jahressumme trägt.
+
+#### 11.2.6 Der Preis von § 9.8: eine neue Regel
+
+Mit § 9.8 wird `Kenndaten_Test.sqlite` an einer Stelle regressionsrelevant, an der sie es
+heute nicht ist — die **Emissionsfaktoren**. Daraus folgt eine Regel, die vorher keine war:
+
+> **Wer einen gesäten Faktor der Testdatenbank ändert, friert im selben Schritt die Basis
+> neu ein und begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`.** Betroffen ist jede
+> Änderung an `emissionsart` (Auswahl, Äquivalenzfaktor), an einem **aktiven**
+> `emissionswert` (81 Zeilen), an `Tab_Brennstoff_Stamm.CO2/SO2/NOx/Staub` (25 Sätze), an
+> `energy_project_settings.co2/so2/nox` der zwölf Projekte und am Berechnungsmodus eines
+> Projekts. **Nicht** betroffen ist die Pflege von **Vorlagen** (`ist_aktiv = falsch`,
+> 224 Zeilen) — sie erreichen die Kette nicht. Der Migrationsschritt 58 (E6) hat genau
+> deshalb 85 Vorlagen gesät und keinen aktiven Wert angefasst.
+
+Das ist der Einwand aus § 9 Punkt 8 — „sie zöge auch jede Katalogpflege in den
+Regressionsvergleich" — und er ist berechtigt. Er trifft aber **nicht** die Katalogpflege
+des Anwenders (dessen Produktiv-DB ist nicht die Testdatenbank), sondern nur die Pflege der
+**Testdatenbank**; und die geschieht ohnehin nur über Migrationsschritte oder das Werkzeug
+`Werkzeuge/Testdatenbankschema`, also an einer Stelle, an der ein Basiswechsel ohnehin
+mitgedacht wird (Vorbild: der Nachtrag zu Schritt 67 in `LIESMICH.md`).
+
+### 11.3 Vorschlag zu § 9.9 — die Emissionsart „CO"
+
+#### 11.3.1 Die Quellenlage ist der ganze Punkt
+
+§ 5 dieses Konzepts trägt eine Hausregel, übernommen aus dem Quellenwahl-Konzept: belegte
+Quelle, „**erst nach Vorlage der Fundstelle, keine Zahlen aus dem Gedächtnis**". § 11.1.5
+hat gemessen, dass die beiden archivierten Quellen **kein CO führen**. Damit ist die Lage
+eindeutig:
+
+| Möglicher Ursprung | Trägt CO? | Taugt als Saat? |
+|---|---|---|
+| UBA-Liste v2.1, Blatt 01 | **nein** — nur `kg CO2e/CO2/CH4/N2O` | nein |
+| GEMIS 5.2, alle 15 Blätter | **nein** — SO₂-Äq., SO₂, NOx, Staub, CO₂-Äq., CO₂, CH₄, N₂O | nein |
+| `Tab_BHKW_STAMM.CO` (69 Sätze ≠ 0) | ja, g/MWh | **nein** — Geräte-, kein Trägerwert. Ein Katalogwert daraus hinge am Modul, nicht am Energieträger, und kehrte damit genau die Zuordnung um, die B1 hergestellt hat |
+| 1. BImSchV / TA Luft | ja, als **Grenzwert** | **nein** — ein Grenzwert ist die Obergrenze einer Genehmigung, kein Emissionsfaktor. Er sagt, was eine Anlage höchstens ausstoßen darf, nicht, was sie ausstößt. Eine Bilanz aus Grenzwerten wäre systematisch zu hoch und trüge doch das Etikett „belegt" |
+| UBA TEXTE 97/2025 „Ermittlung von Emissionsfaktoren" | **wahrscheinlich** — die Reihe deckt Luftschadstoffe kleiner und mittlerer Feuerungsanlagen ab und war in § 5 als Quelle vorgesehen, bevor der Nutzer am 29.08.2026 UBA v2.1 und GEMIS lieferte | **zu prüfen** — die Datei liegt **nicht** unter `Quellen/Emissionsfaktoren/`. Ohne sie im Haus wird hier keine Zahl genannt |
+
+> **Damit steht der Vorschlag aus § 9 Punkt 9 auf eigenen Füßen:** „Der Katalog trägt heute
+> keinen belegten CO-Wert, und eine Art ohne Werte machte die Bilanz nicht vollständiger,
+> nur länger." Das ist jetzt **gemessen** statt vermutet.
+
+#### 11.3.2 Wie der Schritt 68 aussähe — wenn die Quelle da ist
+
+Nummer **68** (`SchemaStand.Zielversion` steht auf **67**, vergeben durch
+`SCHRITT_67_BHKW_LEISTUNGSGRENZE` vom 07.09.2026). Reihenfolge zwingend, seit dem Vorfall
+vom 29.08. 09:25: **erst** Schrittkonstante, Methode und `SCHRITTE`-Eintrag, **dann**
+`Zielversion` auf 68.
+
+**Die eine Zeile für `emissionsart`:**
+
+| Feld | Wert | Begründung |
+|---|---|---|
+| `kuerzel` | `CO` | § 3 nennt es bereits in der Liste der möglichen Kürzel |
+| `name` | „Kohlenmonoxid" | Muster der sechs übrigen (`Schwefeldioxid`, `Lachgas (Distickstoffmonoxid)`) |
+| `einheit` | `mg/kWh` | F4 — alles außer CO₂ |
+| `co2_aequivalent` | **0** | F2: kein Treibhausgas |
+| `aequivalent_quelle` | leer | F2: „leer bei 0" |
+| `ist_pflicht` | falsch | nur CO₂ |
+| `ausgewaehlt` | **falsch** | siehe 11.3.3 — eine ausgewählte Art ohne Werte verlängerte jeden Emissions-Reiter um eine leere Zeile |
+| `ist_auslieferung` | wahr | wie die sieben übrigen: abwählbar, nicht löschbar |
+| `sortierung` | **35** | zwischen `NOX` (30) und `CH4_FOSSIL` (40) — bei den Luftschadstoffen, nicht bei den Treibhausgasen |
+
+**Idempotenz** nach dem Muster 57/58: Schlüssel ist `kuerzel`; ein Zweitlauf findet die Zeile
+und legt nichts an. **Trägerwerte:** im jetzigen Zustand **keine** — es gibt keine belegte
+Zahl (11.3.1). Der Schritt legte also **eine** Zeile an, sonst nichts.
+
+**Drei Leser, eine Quelle** — Muster `BhkwLeistungsgrenzeVorgabe.cs` (Schritt 67): Die
+SQL-Texte gehören nach `EPOS.Kern/Allgemein/Update/`, weil sie
+`WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` (Access-Zweig, deshalb nicht
+im Kern), `Werkzeuge/Testdatenbankschema` und `EPOS.Kern.Tests` gemeinsam brauchen.
+Sicherung, `laccdb`-Prüfung und Protokoll laufen wie bei jedem Schritt mit.
+
+#### 11.3.3 Ein Datenschritt reicht **nicht** — der gemessene Befund
+
+§ 9 Punkt 9 sagt: „das wäre ein Migrationsschritt nach dem Muster 57/58". **Das ist zu
+knapp.** Gemessen an `EmissionsFaktorLader.cs`:
+
+1. **`EmissionsFaktorSatz` hat kein Feld `Co`** (`:16–61`: `Co2GKwh`, `Co2eGKwh`, `So2`,
+   `Nox`, `Staub`).
+2. **Die Zuordnung Art → Feld ist eine feste if/else-Kette über vier Kürzel**
+   (`:194–208`). Eine Art `CO` liefe durch die Schleife, landete in der Zeilenliste — und in
+   **keinem** Feld.
+3. **`Emissionsquelle.Fuer` füllt `CoMgKwh` deshalb nirgends**; das Feld ist im Quelltext
+   ausdrücklich als „heute immer 0" dokumentiert (`Emissionsquelle.cs:39–45`).
+
+**Ohne diese drei Stellen bliebe `Em_CO_SPK` und `Em_CO_BHKW` auch nach dem Schritt 68 auf
+0** — der Migrationsschritt allein änderte gar nichts. Es sind drei kleine, aber
+unvermeidliche Eingriffe im Kern.
+
+**Und ein vierter Punkt, den man leicht übersieht:** Würde die Art `ausgewaehlt = wahr`
+gesetzt, träte sie in die Zeilenliste der Summe F6 ein. Ein Träger **ohne** gepflegtes CO₂,
+aber **mit** CO-Wert bekäme dann `irgendeinWert = true` und damit eine CO₂e-Summe von **0**
+statt `null` — `Wirksam("CO2E")` gäbe 0 zurück, `Co2Gepflegt` würde wahr, und die
+Emissionsbilanz hielte ihre CO₂-Spalte für vollständig, obwohl der Wert fehlt. Genau diese
+Falle hat der Staub-Rückfall bei B1 umgangen, indem er **außerhalb** der Zeilenliste läuft
+(`EmissionsFaktorLader.cs:214–221`). In der Testdatenbank bisse sie nicht — **alle 27 Träger
+führen einen aktiven CO₂-Wert** —, aber sie ist da. Deshalb oben `ausgewaehlt = falsch`.
+
+#### 11.3.4 Was sich sonst änderte
+
+| Stelle | Wirkung | gemessen |
+|---|---|---|
+| Emissions-Reiter (E3) | **automatisch**, sobald `ausgewaehlt` gesetzt wird: `EmissionenCtrl` baut die Zeilen aus `EmissionskatalogCtrl.Arten(true)` (`EmissionenCtrl.cs:147`). Im **Projektkontext** wäre die Zeile **nur lesend** (`:165`, `NurLesend = Projektkontext && !IstKernart`) — CO hat keine Altspalte | ja |
+| Katalog-Dialog (E4) | zeigt die Art ohne Zutun; Werte pflegbar als `EIGENER_WERT` | ja |
+| Emissionsbilanz der Wirtschaftlichkeit | **keine** — `EmissionsBilanzRechner.cs:206/207` führt SO₂ und NOₓ, sonst nichts. Für eine CO-Zeile im Bericht wäre eine eigene Erweiterung nötig | ja |
+| Autarkie-Kachel | **keine** — sie rechnet nur mit CO₂ | ja |
+| `EmissionsquelleTests` | heute **10 Fälle**, keiner nennt CO. Zwei kämen dazu: „Art vorhanden, kein Wert → Faktor bleibt 0" und „Wert gepflegt → er erreicht Kessel und BHKW" | ja |
+| Referenzlauf | **byte-gleich**, solange § 9.8 nicht umgesetzt ist. **Mit** § 9.8: Die 14 CO-Schlüssel blieben 0, solange kein Trägerwert gesät ist — der Schritt 68 allein änderte auch dann keine Zahl | ja |
+| `.wpx`-Projekttransfer | Pakete auf Stand 67 würden abgewiesen — die eingebaute Zusage des Formats, wie bei jedem Schritt | ja |
+
+**Die fünf Gerätespalten bleiben, wie B1 sie hinterlassen hat:** informative Herstellerangabe,
+`Verwendung.Dialog`, Herleitungszeile im Katalogeditor. Sie werden **nicht** zur Saatquelle
+(11.3.1) und **nicht** gelöscht.
+
+#### 11.3.5 Aufwand und die ehrliche Gegenfrage
+
+| Teil | Agentenstunden |
+|---|---:|
+| Migrationsschritt 68 (Konstante, Methode, `SCHRITTE`, `Zielversion`, SQL-Texte im Kern) | 1,0 |
+| Kern: `EmissionsFaktorSatz.Co`, if/else-Zweig, `Emissionsquelle.Fuer` | 1,0 |
+| `Werkzeuge/Testdatenbankschema` nachziehen, Testdatenbank auf Stand 68 | 0,5 |
+| `EmissionsquelleTests` um zwei Fälle, Prüflauf | 1,0 |
+| Doku: § 3-Tabelle, § 6-Etappenzeile, `Heizkessel.wiki`/`BHKW.wiki` („Kein CO in der Bilanz" fällt), `EPOS.Kern/CLAUDE.md` | 1,0 |
+| **Summe** | **4,5** |
+
+Nicht enthalten: die **Beschaffung der Quelle** und die Extraktion der Trägerwerte — das ist
+der Teil, den kein Agent leisten kann. Erst mit ihr kämen Saatzeilen und ein Nachweis nach
+dem Muster § 5.2 dazu (weitere ~2 Stunden je nach Trägerzahl).
+
+**Die Gegenfrage.** Lohnt eine Art, deren Werte im Bericht nur „informativ" stehen? Der
+Entscheid B1 hat sie selbst gestellt: „Da CO₂, SO₂, NOₓ, CO und Staub in g/MWh kein
+CO₂-Äquivalent haben, sind diese Zahlen informativ." SO₂ und NOₓ stehen trotzdem im Katalog
+und in der Bilanz — weil sie die klassischen Feuerungsgrößen der Immissionsschutz-Sicht sind
+und weil belegte Zahlen vorlagen. **Bei CO fehlt der zweite Grund.** Eine Art anlegen, für
+die kein Wert existiert, hieße: Der Reiter bekäme eine Zeile mehr, der Katalog einen Eintrag
+mehr, die Bilanz eine Null mehr — und die einzige CO-Zahl, die das Haus je hatte, bliebe die
+Gerätespalte, die B1 gerade zur Anzeige erklärt hat.
+
+> **Empfehlung: warten, nicht bauen.** § 9 Punkt 9 bleibt als Vorschlag stehen; der Schritt
+> 68 wird gebaut, **sobald der Anwender eine Quelle mit CO-Emissionsfaktoren je
+> Energieträger beibringt** — dann in einem Zug: Art, Trägerwerte, drei Kernstellen und
+> Nachweis. Bis dahin ist das Feld `CoMgKwh` vorbereitet, die Rechenwege führen es mit, und
+> es kostet nichts, dass es 0 ist. **Der Weg über die Gerätespalte oder über
+> 1.-BImSchV-Grenzwerte wird ausdrücklich nicht empfohlen** — beide brächten eine Zahl mit
+> falscher Bedeutung in einen Katalog, dessen ganzer Wert seine Belegbarkeit ist.
+
+### 11.4 Reihenfolge
+
+1. **Antwort auf `Em‑9.8‑Q1`** (Zeitpunkt). Bei Z1 sofort, weil das Zeitfenster mit dem
+   Einfrieren von R4 zugeht.
+2. § 9.8 bauen und die Basis einfrieren; `LIESMICH.md` bekommt den Absatz mit den zehn
+   Schlüsseln und der Regel aus 11.2.6.
+3. § 9.9 **ruht**, bis eine Quelle vorliegt (`Em‑9.9‑Q1`). Die Reihenfolge ist nicht
+   umkehrbar: Käme CO zuerst, änderte es die Schlüsselmenge des Exports ein zweites Mal.
+
+### 11.5 Fragen an den Anwender
+
+| Kennung | Frage | Empfehlung |
+|---|---|---|
+| **Em‑9.8‑Q1** | **Wann** kommen die Emissionsgrößen in den Referenzexport — **Z1** (jetzt, als Ergänzung des laufenden `double`-Auftrags, eine Basis R4), **Z2** (eigener Schritt danach, zwei Basiswechsel) oder **Z3** (gar nicht, Nachweis bleibt bei `EmissionsquelleTests`)? | **Z1.** Ein Basiswechsel statt zwei, die Zahlen entstehen sofort in `double`-Genauigkeit, Eingriff = zehn Zeilen in einer Datei, die derselbe Agent ohnehin hält |
+| **Em‑9.8‑Q2** | **Wie viele** Skalare: die zehn aus 11.2.2 — oder zusätzlich fünf `Em.Gesamt.*`, oder ohne die zwei CO-Schlüssel (dann acht)? | **Zehn.** Kein `Gesamt` (ableitbar, keine zusätzliche Aussage); **mit** CO, damit § 9.9 später eine Zahl **ändert** statt einen Schlüssel **hinzuzufügen** — eine Wertänderung meldet der Vergleich mit Zahlen, ein neuer Schlüssel nur als „nur im Vergleichslauf" |
+| **Em‑9.8‑Q3** | **Einheit im Namen** (`Em.Kessel.Co2T` in t/a, `…So2Kg` in kg/a — kein Rechnen im Export) oder **alles in kg/a** mit einheitlichem Namen (`…Co2Kg`, CO₂ × 1000)? | **Einheit im Namen.** Ein Faktor 1 000 in `Ergebnisexport.cs` wäre eine dritte Umrechnungsnaht neben den zwei erlaubten (Hausregel Rechenkern, Punkt 4) |
+| **Em‑9.8‑Q4** | Wird die **Regel aus 11.2.6** angenommen (wer einen aktiven Faktor der Testdatenbank ändert, friert die Basis im selben Schritt neu ein)? | **Ja.** Ohne sie fällt die CI beim nächsten Katalogschritt rot aus, ohne dass jemand mit dem Zusammenhang rechnet. Vorlagen (`ist_aktiv = falsch`) bleiben ausdrücklich frei |
+| **Em‑9.9‑Q1** | Gibt es eine **Quelle mit CO-Emissionsfaktoren je Energieträger** (Feuerung ohne Vorkette, mg/kWh)? UBA TEXTE 97/2025 wäre der Kandidat, liegt aber nicht im Haus | **Erst mit Quelle bauen.** Ohne sie hätte Schritt 68 keine einzige Zahl zu säen (gemessen: weder UBA v2.1 noch GEMIS 5.2 führt CO) |
+| **Em‑9.9‑Q2** | Falls **keine** Quelle beizubringen ist: Art `CO` trotzdem **leer** anlegen (Reiter und Katalog zeigen sie, Werte trägt ein, wer sie hat) — oder § 9 Punkt 9 geschlossen als „bewusst nicht" führen? | **Geschlossen als „bewusst nicht".** Eine Art ohne Werte macht die Bilanz nicht vollständiger, nur länger — und `CoMgKwh` ist im Rechenweg bereits vorbereitet, falls sich die Lage ändert |
+| **Em‑9.9‑Q3** | Sollen die **Gerätespalten** `Tab_BHKW_STAMM.CO` (69 Sätze ≠ 0) und `Tab_Heizkessel_STAMM.CO` als Notbehelf in den Katalog übernommen werden? | **Nein.** Sie hängen am Gerät, nicht am Energieträger — das kehrte die Zuordnung um, die B1 gerade hergestellt hat. Sie bleiben Herstellerangabe und „nur Anzeige" |
