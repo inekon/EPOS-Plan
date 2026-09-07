@@ -3997,6 +3997,38 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Merge). **Hausregel seither (Verschärfung von W16b‑O‑2):** Nach einem synchronen bunit-Ereignis wird auf den
 > gezeichneten Zustand gewartet, nicht sofort geprüft — gilt für `Click()`, `Change()`, `Input()`, `DoubleClick()`
 > gleichermaßen (Protokoll `iU9_W15a_Blazor_Port_Protokoll.md`, Abschnitt W6‑B‑2‑O‑1).
+>
+> **W6‑B‑4 (Windows-Abnahme 07.09.2026: „Anzahl Module fehlt? Welche Werte?"), behoben in `9aa6970` (D) · `f2676b0` (C) ·
+> `945a8a7` (A und B) · `937f631` (Doku), zusammengeführt in `cd6d529`.** Vier Beobachtungen an EINEM Bildschirmfoto des
+> PV-Dialogs „Wechselrichter und Stränge". **(A)** Die Strangtabelle war bei 1 100 px Fensterbreite **1 974 px** breit
+> gegen 1 046 px sichtbar — sechs der elf Spalten (Gerät, MPPT, Module in Reihe, Stränge parallel, Neigung, Azimut)
+> standen daneben: die zwei `<select>` so breit wie ihr längster Eintrag (302 px), die Zahlenfelder so breit wie ein
+> `<input>` von Haus aus (je 196 px), die Köpfe ohne Umbruch. Behoben durch die Spaltenfolge „alles Schmale zuerst, die
+> zwei elastischen Listen zuletzt" und drei Regeln im Hausblatt (Deckel 11 rem + `text-overflow: ellipsis` mit vollem
+> Namen im `title`, 4 rem auf den Zahlenfeldern, `th.klasse, td.klasse` für den Kopfumbruch — eine bloße Klasse verliert
+> gegen `.epos-raster th` (0,1,1)). **Nachher 1 046 px, `scrollWidth == clientWidth`** (Playwright-Probe, bunit misst
+> keine Breite — Lehre W6‑B‑1). **(B)** Ein neuer Strang begann mit „0 Module in Reihe"; die Vorbelegung rechnet
+> seither der Kern (`Strangvorbelegung.FuerNeuenStrang`): erster Strang = Modulzahl der Anlage, jeder weitere = der
+> Rest (mindestens 1), parallel 1, Gerät 1, MPPT = nächster freier Tracker (`WechselrichterStammCtrl.TrackerZahl`,
+> `null` = 1); nur beim Anlegen, nie beim Laden — Projekt 1045 bleibt byte-gleich. **(C)** Die Meldung nannte ein Paar
+> mit „oder", obwohl `StrangPlausibilitaet` jeden Wert einzeln abfragt, und klagte über Modulwerte, wenn nur „Module in
+> Reihe" fehlte (`SpannungReihe` gibt auch bei `reihe = 0` `null`). Neu: `Fehlliste` — je Wert eine Meldung, jeder
+> höchstens einmal, dahinter EIN Satz mit dem Pflegeweg (`PVS_PFLEGEWEG`: PV Module → Bearbeiten, Felder alpha_SC,
+> beta_OC, T_NOCT, oder Neuimport aus „CEC Modules.csv"), nur bei einem echten Modulwert; sechs neue Texte beider
+> Sprachen, kein bestehender geändert; die Parameterübersicht schreibt „– nicht gepflegt" statt nur „–". **(D)** Die
+> Klappliste zeigte einen Namen, den die Zeile nicht trug: Ein `<select>` hat im DOM kein `value`-Attribut, Blazor
+> setzt `element.value` **nur beim Erzeugen** nach — ein späterer Austausch der Einträge lässt die Wahl unter einem
+> fremden Eintrag stehen (gemessen: Strang mit „SMA America: SB30-1SP-US-40 {240V}" zeigte nach einem Filterwechsel
+> „ABB: PVI-3.0-OUTD-S-US-A {208V}"). Der Standard `Auswahlfeld` gibt jeder `<option>` seither `selected` **und** ein
+> `@key`; beides zusammen ist nötig (mit `selected` allein fiel der Rückweg „ABB → Alle" auf „(kein Gerät)"). **bunit
+> sieht das nicht** (Htmlizer schreibt `selected` aus dem `value` heraus) — der Beleg ist die Playwright-Probe.
+> Nachweis: 12 neue UI-Fälle (`PvStraengeFelderTests` 45 → 55, `StilblattTests` +2) und 27 neue Kernfälle
+> (`StrangvorbelegungTests` 17, `StrangPlausibilitaetTests` 7, `PvModulparameterTests` 2), Kern 1957 / UI 3214 grün,
+> Warnungen unverändert 6, SQL 0, Designer „abweichend 0", ChartProben 44, Formularkarte 122, Gate grün, Referenzlauf
+> 1030/1007/1017/1045 byte-gleich gegen R5; Konzept Kapitel 7/12, zwei Hausregeln in `EPOS.UI/CLAUDE.md` (Klapplisten in
+> Tabellen mit Deckel; jede `<option>` mit `selected` und `@key`). Die drei alten Paartexte `PVS_FEHLT_UOC/_UMPP/_ISC`
+> stehen ungenutzt und fallen in einem Aufräumlauf. Abnahme auf Windows: **A‑W6‑B4‑1…9**. Der Datenbefund dahinter —
+> die verdorbenen Koeffizienten des Bestands (A1) — läuft als **W6‑B‑5** (Schemaschritt 69).
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
