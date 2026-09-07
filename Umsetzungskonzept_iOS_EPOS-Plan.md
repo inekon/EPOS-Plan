@@ -1548,6 +1548,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > dreistufige Weg (PV ▸ Bearbeiten) ist durch „Profile & Lastgänge" ersetzt, der Wächter über W16c‑B13 bleibt. Neun
 > neue bunit-Fälle, 2 704 in beiden Kulturen. Zur Kennung: `W16c‑E‑5` war seit dem 05.09.2026 die Farbgebung
 > (`04d5ac6`), deshalb E‑6; die Abnahmepunkte im W16c-Protokoll heißen A‑W16c‑E‑5‑1 … ‑7.
+>
+> **W16c‑E‑7 (Anwenderentscheid 07.09.2026: „Mache zwei Untermenüs Photovoltaik 1. PV Module 2. Wechselrichter", dazu
+> die Richtigstellung „der Import steht nicht unter Energiesysteme sondern vdi3805"), umgesetzt in `5a378d7`/`4ff7e32`,
+> zusammengeführt in `28da824`:** Das Paar Modul/Wechselrichter steht an ZWEI Stellen des Kopfs „Administration" — als
+> Katalog unter „Energiesysteme", als Import unter „Daten & Import" — und beide führen es jetzt unter einem eigenen Knoten
+> **„Photovoltaik"** (`MenuItem_PV_Gruppe`, `MenuItem_PV_Import_Gruppe`, EIN Textschlüssel `MENU_PHOTOVOLTAIK`). Ziel,
+> Argument und Kennung der vier Punkte sind unverändert; neu sind zwei Beschriftungen, weil der Knoten den Begriff schon
+> trägt: „Photovoltaik Module" → **„PV Module"** (`MENU_PV_MODULE`), „Import Photovoltaik CEC/Pan" → **„PV Module (CEC,
+> PAN)…"**, beides in beiden Sprachen. Die Regel aus W16c‑E‑6 („kein Untermenü mit nur einem Punkt") bleibt gewahrt: je
+> zwei. **Die vierte Menüstufe musste nicht gebaut werden** — der Offen-Zustand des Bandes ist seit W16c‑B13 ein
+> tiefenunabhängiger Pfad, `Untermenue` ruft sich mit `ebene + 1` selbst, `.epos-menueband-klappe--tief` gilt ab der dritten
+> Ebene; `Menueband.razor` und das Stilblatt sind unverändert, nachgewiesen mit Maus, Tastatur (→ öffnet, ← schließt genau
+> eine Ebene) und über die Hülle. Menüzahlen **58 Punkte / 44 handelnd / 14 aufklappend** (vorher 56/44/12); die vier
+> `CLAUDE.md` standen noch auf 54/42 aus der Zeit vor W6‑E‑2 und sind mitgezogen. **Nebenbefund W16c‑O‑7:** „Klimadaten"
+> ist das einzige verbliebene Ein-Punkt-Untermenü des Bestands — unangetastet, im Wächter namentlich festgehalten;
+> Anwenderfrage, ob es nach der W16c‑E‑6-Regel aufgelöst wird. Nachweis: elf neue bunit-Fälle, Kern 1644 / UI 3020 grün,
+> Designer „abweichend 0", SQL 0, Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich. Abnahme auf Windows:
+> A‑W16c‑E7‑1…10 (beide Knoten, vier Ziele, Tastaturweg, Schließfläche, englische Texte, 58 Punkte ohne Leerweg).
 
 > **Statusblock iU9 — Teilwelle 16b umgesetzt (04.09.2026, Basis `84d7c16` nach W16a, zusammengeführt mit `d4a7632` nach dem einundzwanzigsten iOS-Lauf)**
 >
