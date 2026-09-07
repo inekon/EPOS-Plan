@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using WindowsFormsApplication1;
@@ -322,12 +322,14 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die zwei Wärmewege dürfen sich nicht verschlechtern</b> (W9‑B‑4/B‑5,
-        /// W8‑O‑5): Die Projektvorschau der Prozesswärme führt ihre Summe in MWh, die
-        /// des Brauchwassers in kWh — beides unverändert, nur jetzt aus dem Kern.
+        /// <b>Die zwei Wärmewege führen DIESELBE Einheit</b> (W9‑B‑4/B‑5, W8‑O‑5 und
+        /// seit dem 07.09.2026 W8‑O‑5b): Die Projektvorschau weist Prozesswärme UND
+        /// Brauchwasser in MWh aus — bis W8‑O‑5b stand das Brauchwasser hier als nackte
+        /// Stundensumme in kWh, also um den Faktor 1000 daneben. Die Stundenreihe selbst
+        /// (4 059,700 kWh) ist unverändert; nur ihre Ausweisung folgt jetzt dem Lauf.
         /// </summary>
         [Fact]
-        public void Die_beiden_Waermewege_der_Projektvorschau_bleiben_wie_sie_waren()
+        public void Die_beiden_Waermewege_der_Projektvorschau_fuehren_MWh()
         {
             if (!_db.Vorhanden) return;
 
@@ -340,8 +342,91 @@ namespace EPOS.Kern.Tests
             BedarfsVorschau b = BedarfsVorschauCtrl.ProjektVorschau(
                 BedarfsArt.Brauchwasser, 1007, BrauchwasserNamen(1007));
             Assert.True(b.Erfolgreich);
-            Assert.Equal(4059.700, b.Waerme.Waermebedarf_Brauchwasser, 1); // kWh
+            Assert.Equal(4059.700, b.Waerme.brauchwasserwerte.Sum(), 1);   // kWh, die Reihe
+            Assert.Equal(4.0597, b.Waerme.Waermebedarf_Brauchwasser, 4);   // MWh, die Ausweisung
             Assert.Equal(0.552, b.Waerme.Waermebedarf_Brauchwasser_Monat[0], 3);
+        }
+
+        // ==================================================================
+        //  4 - W8-O-5b: Vorschau und Lauf weisen DIESELBE Menge aus
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Der Nachweis zu W8‑O‑5b</b> (Anwenderentscheid vom 07.09.2026): Die
+        /// Vorschau des Bedarfsdialogs und der LAUF weisen für dasselbe Projekt
+        /// dieselbe Brauchwassermenge aus — in derselben EINHEIT (MWh) und in
+        /// derselben Zahl.
+        ///
+        /// <para><b>Was vorher war.</b> Der Lauf teilte durch 1000 und wies MWh aus,
+        /// die Vorschau übernahm die nackte Stundensumme und wies kWh aus. Die
+        /// Ergebnisanzeige konnte nur EINE der beiden Angaben glauben; sie glaubte kWh
+        /// und zeigte den Wert des Laufs deshalb um den Faktor 1000 zu klein
+        /// (<c>Simulation → „Wärmebedarf-Details“</c>). Seit W8‑O‑5b setzen beide Wege
+        /// das Feld über <c>SimulationWaermebedarf.BrauchwassersummeUebernehmen</c>.</para>
+        ///
+        /// <para><b>Die Einheitenprobe läuft auf 1e‑9 relativ</b> — sie vergleicht die
+        /// ausgewiesene Menge mit der EIGENEN Stundenreihe des jeweiligen Weges und ist
+        /// damit reine Arithmetik: Steht dort ein Faktor 1000 daneben, fällt der Fall
+        /// sofort.</para>
+        ///
+        /// <para><b>Der Vergleich der beiden Wege läuft auf 1e‑6 relativ</b>, und das
+        /// ist keine Nachlässigkeit, sondern die Auflösung von <c>float</c>: Vorschau
+        /// und Lauf verteilen die Monatsmenge nach VERSCHIEDENEN Wochentagskonventionen
+        /// auf die 8 760 Stunden (F3). Die Jahresmenge bleibt dieselbe — sie wird je
+        /// Monat auf den Katalogwert normiert —, aber die Summe von 8 760
+        /// <c>float</c>-Werten landet je nach Verteilung auf der einen oder der anderen
+        /// Seite derselben <c>float</c>-Stufe. Gemessen: 4 059,700 68 gegen
+        /// 4 059,700 44 kWh, ein Abstand von 1 ULP (rund 6e‑8 relativ). Das ist der
+        /// Beleg für Frage Q5 des Konzepts <c>Konzept_Einheiten_EPOS-Plan.md</c>
+        /// (<c>float</c> gegen <c>double</c> im Kern) und keine Einheitenfrage.</para>
+        /// </summary>
+        [Fact]
+        public void Vorschau_und_Lauf_weisen_dieselbe_Brauchwassermenge_aus()
+        {
+            if (!_db.Vorhanden) return;
+
+            BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(
+                BedarfsArt.Brauchwasser, 1007, BrauchwasserNamen(1007));
+            Assert.True(v.Erfolgreich);
+
+            var lauf = new SimulationWaermebedarf();
+            lauf.Waermebedarf_berechnen(1007, Klimaregion(1007));
+
+            double ausVorschau = v.Waerme.Waermebedarf_Brauchwasser;
+            double ausLauf = lauf.Waermebedarf_Brauchwasser;
+            Assert.True(ausLauf > 0, "Der Lauf muss eine Brauchwassermenge ausweisen.");
+
+            // 1) DIE EINHEIT: beide Wege weisen ihre eigene Stundenreihe [kWh] in MWh
+            //    aus - exakt, bis auf 1e-9 relativ.
+            Assert.True(Abweichung(ausVorschau,
+                            v.Waerme.brauchwasserwerte.Sum() / 1000.0) < 1e-9,
+                "Die Vorschau weist " + ausVorschau + " zu einer Stundenreihe von " +
+                v.Waerme.brauchwasserwerte.Sum() + " kWh aus (W8-O-5b).");
+            Assert.True(Abweichung(ausLauf,
+                            lauf.brauchwasserwerte.Sum() / 1000.0) < 1e-9,
+                "Der Lauf weist " + ausLauf + " zu einer Stundenreihe von " +
+                lauf.brauchwasserwerte.Sum() + " kWh aus (W8-O-5b).");
+
+            // 2) DIE ZAHL: dieselbe Menge auf beiden Wegen - bis auf die float-Stufe
+            //    der Stundenverteilung (Begruendung im Kopf).
+            Assert.True(Abweichung(ausVorschau, ausLauf) < 1e-6,
+                "Vorschau " + ausVorschau + " und Lauf " + ausLauf +
+                " fuehren verschiedene Brauchwassermengen (W8-O-5b).");
+        }
+
+        /// <summary>Der relative Abstand zweier Zahlen; bei 0 der absolute.</summary>
+        private static double Abweichung(double a, double b)
+        {
+            double nenner = Math.Max(Math.Abs(a), Math.Abs(b));
+            return nenner > 0 ? Math.Abs(a - b) / nenner : 0.0;
+        }
+
+        /// <summary>Die Klimaregion des Projekts — der Lauf holt sie ebenso.</summary>
+        private static int Klimaregion(int idProjekt)
+        {
+            var ctrl = new ProjektCtrl();
+            ctrl.ReadSingle(idProjekt);
+            return ctrl.m_ID_Klimaregion;
         }
     }
 

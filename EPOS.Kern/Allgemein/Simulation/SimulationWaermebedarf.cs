@@ -333,7 +333,10 @@ namespace WindowsFormsApplication1
             // Brauchwasserwärme
             Brauchwasserwaerme_berechnen();
             //Waermebedarf_Brauchwasser = com.I_vector_summe(brauchwasserwerte);
-            Waermebedarf_Brauchwasser = brauchwasserwerte.Sum() / 1000;
+            // W8-O-5b (07.09.2026): EINE Zeile fuer beide Wege - der Lauf ruft
+            // dieselbe Methode wie die Vorschau, damit das Feld nicht mehr je nach
+            // Herkunft kWh oder MWh fuehrt. Begruendung an der Methode.
+            BrauchwassersummeUebernehmen();
             //com.CSharp_I_vectoren_addieren(brauchwasserwerte, Waermebedarf);
             WPPlan.Core.BhkwPlan.VectorenAddieren(brauchwasserwerte, _kanaele.Brauchwasser);
             for (int h = 0; h < 8760; h++) probe[h] += brauchwasserwerte[h];
@@ -993,6 +996,33 @@ namespace WindowsFormsApplication1
             }
             // Protokollkanal-Nachzug: WARNUNG, siehe Prozesswärme-Zweig.
             catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
+        }
+
+        /// <summary>
+        /// Weist die gerechnete Stundenreihe <see cref="brauchwasserwerte"/> [kWh] als
+        /// Energiemenge <see cref="Waermebedarf_Brauchwasser"/> aus — <b>in MWh</b>, der
+        /// Einheit, die dieses Feld führt.
+        ///
+        /// <para><b>Warum es die Methode gibt (Anwenderentscheid W8‑O‑5b vom
+        /// 07.09.2026).</b> Das Feld trug bis hierher ZWEI Einheiten, je nachdem, wer es
+        /// gefüllt hatte: <see cref="Waermebedarf_berechnen"/> teilte durch 1000 und wies
+        /// MWh aus, die beiden Vorschauwege (<c>BedarfsVorschauCtrl</c>) übernahmen die
+        /// nackte Summe und wiesen kWh aus. Die Ergebnisanzeige konnte nur EINE der
+        /// beiden Angaben glauben; sie glaubte kWh und teilte deshalb den Wert des Laufs
+        /// ein zweites Mal — „Wärmebedarf Brauchwasser" stand in
+        /// <c>Simulation → Wärmebedarf-Details</c> um den Faktor 1000 zu klein. Die
+        /// Umrechnung steht jetzt einmal, an dem Feld, das sie betrifft, und geht über
+        /// <see cref="Energieeinheit"/> statt über einen Teiler im Aufrufer — dieselbe
+        /// Bauform wie <see cref="ProzesssummeUebernehmen"/> (Entscheid W9‑O‑3).</para>
+        ///
+        /// <para><b>Der Rechenweg bleibt unberührt.</b> Das Feld ist eine reine ANZEIGE:
+        /// Kein Erzeuger, keine Bilanz und keine Ergebnistabelle liest es — die
+        /// Brauchwasserspalte von <c>Tab_ErgebnisEnergiebedarf</c> kommt aus dem
+        /// Kanalvektor, nicht von hier. Der Referenzlauf bleibt byte-gleich.</para>
+        /// </summary>
+        public void BrauchwassersummeUebernehmen()
+        {
+            Waermebedarf_Brauchwasser = Energieeinheit.MWh.AusKWh(brauchwasserwerte.Sum());
         }
     }
 }

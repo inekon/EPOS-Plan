@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -434,9 +434,12 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(v.Waerme);
             Assert.Null(v.Strom);
 
-            // OHNE Teiler - der Wert liegt in kWh (Befund W14-B49 / Entscheid W8-O-5).
-            Assert.Equal(v.Waerme.brauchwasserwerte.Sum(), v.Waerme.Waermebedarf_Brauchwasser, 6);
-            Assert.Equal(742.9008, v.Waerme.Waermebedarf_Brauchwasser, 3);
+            // MIT Teiler seit W8-O-5b (07.09.2026): Die Stundenreihe liegt in kWh, die
+            // ausgewiesene Menge in MWh - wie im Lauf. Bis dahin stand hier die nackte
+            // Summe (Befund W14-B49), und die Ergebnisanzeige musste zwei Einheiten
+            // auseinanderhalten.
+            Assert.Equal(742.9008, v.Waerme.brauchwasserwerte.Sum(), 3);
+            Assert.Equal(0.7429008, v.Waerme.Waermebedarf_Brauchwasser, 7);
             Assert.Equal(0.0706, v.Waerme.Waermebedarf_Brauchwasser_Monat[0], 5);
             Assert.Equal(0.0683, v.Waerme.Waermebedarf_Brauchwasser_Monat[11], 5);
         }

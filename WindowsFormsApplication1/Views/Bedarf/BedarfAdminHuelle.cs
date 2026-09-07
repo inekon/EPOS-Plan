@@ -165,9 +165,11 @@ namespace WindowsFormsApplication1
         /// <c>false, Reiter 1</c>, Stromverbraucher die Stromüberladung mit Reiter 1.
         ///
         /// <para><b>Der Sonderteiler des Brauchwassers ist weg</b> (Entscheid W8‑O‑5 vom
-        /// 04.09.2026): Die Ergebnishülle nennt seit dem die Einheit AM WERT, und
-        /// <c>Waermebedarf_Brauchwasser</c> liegt in kWh. Ein Teiler in der Vorschau
-        /// würde die Zahl ein zweites Mal teilen.</para>
+        /// 04.09.2026): Die Ergebnishülle nennt seit dem die Einheit AM WERT. Seit
+        /// W8‑O‑5b (07.09.2026) ist diese Einheit für ALLE Energiekennzahlen MWh — der
+        /// Kern übernimmt die Brauchwassersumme in
+        /// <c>SimulationWaermebedarf.BrauchwassersummeUebernehmen</c> selbst, auf dem
+        /// Vorschauweg wie im Lauf. Die hier angezeigte Zahl bleibt dieselbe.</para>
         ///
         /// <para>Das Projekt ist 0 — die drei Verwaltungen wurden nie mit einem Projekt
         /// geöffnet (<c>SetControls("")</c> in allen drei Aufrufwegen).</para>
