@@ -651,5 +651,232 @@ namespace EPOS.Kern.Tests
                 AnzahlModuleAnlage = anzahlModuleAnlage
             });
         }
+
+        // =================================================================================
+        // W6-B-4 (Windows-Abnahme 07.09.2026): die Meldung nennt den EINEN fehlenden
+        // Wert und den Weg, auf dem man ihn pflegt
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Fehlt allein <c>alpha_SC</c>, nennt der Satz allein <c>alpha_SC</c></b>
+        /// (W6‑B‑4). Bis hierher hiess es „Kurzschlussstrom oder alpha_SC des Moduls" —
+        /// ein Paar mit „oder", obwohl der Prüfstand jeden der beiden Werte einzeln
+        /// abfragt. Der Anwender fragte darauf: „Welche Werte?"
+        /// </summary>
+        [Fact]
+        public void W6B4_Ein_fehlendes_alpha_SC_wird_einzeln_benannt()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_alpha_SC = 0;                      // 0 heisst "nicht gepflegt"
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                string fehlt = Fehlteil(b.Geraete[0].Satz);
+                Assert.Contains("alpha_SC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("oder", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("Kurzschlussstrom", fehlt, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// Dasselbe für den Kurzschlussstrom: Fehlt <c>I_SC</c>, steht <c>I_SC</c> da —
+        /// und nicht der Koeffizient, der gepflegt ist.
+        /// </summary>
+        [Fact]
+        public void W6B4_Ein_fehlender_Kurzschlussstrom_wird_einzeln_benannt()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_I_Kurzschluss = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                string fehlt = Fehlteil(b.Geraete[0].Satz);
+                Assert.Contains("I_SC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("alpha_SC", fehlt, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Fehlt <c>beta_OC</c>, steht es EINMAL da</b> — obwohl es zwei Prüfungen
+        /// unbrauchbar macht (P1 über <c>U_OC</c> und P2/P3 über <c>U_MPP</c>). Das ist
+        /// das Muster <c>FehltEinmal</c>: je Wert eine Meldung, nicht je Prüfung.
+        /// </summary>
+        [Fact]
+        public void W6B4_Ein_fehlendes_beta_OC_steht_genau_einmal_im_Satz()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_beta_OC = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                string fehlt = Fehlteil(b.Straenge[0].Satz);
+                Assert.Equal(1, Zaehle(fehlt, "beta_OC"));
+                Assert.DoesNotContain("U_OC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("U_MPP", fehlt, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Fehlt die Leerlaufspannung, steht sie da — und beta_OC nicht.</b>
+        /// </summary>
+        [Fact]
+        public void W6B4_Eine_fehlende_Leerlaufspannung_wird_einzeln_benannt()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_U_Leerlauf = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                string fehlt = Fehlteil(b.Straenge[0].Satz);
+                Assert.Contains("U_OC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("beta_OC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("U_MPP", fehlt, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Ohne „Module in Reihe" klagt die Meldung NICHT über die Modulwerte.</b>
+        /// Genau das stand im Bildschirmfoto des Anwenders: „Werte fehlen: Module in
+        /// Reihe, Leerlaufspannung oder beta_OC des Moduls, MPP-Spannung oder beta_OC
+        /// des Moduls" — die zwei letzten Angaben waren gepflegt, nur die Reihe fehlte.
+        /// <c>SpannungReihe</c> liefert eben auch dann <c>null</c>, wenn allein die
+        /// Reihe 0 ist.
+        /// </summary>
+        [Fact]
+        public void W6B4_Ohne_Module_in_Reihe_klagt_die_Meldung_nur_ueber_die_Reihe()
+        {
+            MitSprache("de-DE", () =>
+            {
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 0, parallel: 1,
+                                                       anzahlModuleAnlage: 10);
+
+                string fehlt = Fehlteil(b.Straenge[0].Satz);
+                Assert.Equal("Module in Reihe", fehlt);
+                Assert.DoesNotContain("PV Module", b.Straenge[0].Satz, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Fehlt ein MODULWERT, nennt der Satz den PFLEGEWEG</b> (W6‑B‑4) — genau
+        /// EINMAL je Strangzeile und nur dann, wenn wirklich ein Modulwert fehlt. Die
+        /// zweite Frage des Anwenders war „wo pflege ich das?"; ohne diesen Satz steht
+        /// die Antwort nur im Konzept.
+        /// </summary>
+        [Fact]
+        public void W6B4_Der_Satz_nennt_den_Pflegeweg_genau_einmal()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_alpha_SC = 0;
+                modul.m_beta_OC = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                Assert.Equal(1, Zaehle(b.Straenge[0].Satz, "PV Module"));
+                Assert.Contains("alpha_SC, beta_OC, T_NOCT", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.Contains("CEC Modules.csv", b.Straenge[0].Satz, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Ohne fehlenden Modulwert steht der Pflegeweg NICHT da.</b> Ein Hinweis,
+        /// der immer dasteht, wird nicht gelesen — der Fall des Anhangs A ist grün und
+        /// bleibt still.
+        /// </summary>
+        [Fact]
+        public void W6B4_Ohne_fehlenden_Modulwert_bleibt_der_Pflegeweg_fort()
+        {
+            MitSprache("de-DE", () =>
+            {
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10);
+
+                Assert.DoesNotContain("PV Module", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+            });
+        }
+
+        /// <summary>
+        /// <b>Auch auf Englisch</b> — die Sätze stehen in beiden Ressourcen, und der
+        /// Windows-Läufer der CI steht auf <c>en-US</c> (Lehre aus
+        /// <c>Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker</c>).
+        /// </summary>
+        [Fact]
+        public void W6B4_Der_Pflegeweg_steht_auch_auf_Englisch()
+        {
+            MitSprache("en-US", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_beta_OC = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                Assert.Contains("beta_OC", Fehlteil(b.Straenge[0].Satz), StringComparison.Ordinal);
+                Assert.Contains("CEC Modules.csv", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.DoesNotContain(" or ", Fehlteil(b.Straenge[0].Satz), StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// Der Abschnitt „Werte fehlen: …" eines Satzes — OHNE den Pflegeweg dahinter.
+        /// Der nennt alpha_SC, beta_OC und T_NOCT selbst; eine Prüfung „steht nicht im
+        /// Satz" träfe ihn sonst mit.
+        /// </summary>
+        private static string Fehlteil(string satz)
+        {
+            string kopf = WindowsFormsApplication1.MyResource.Resource.PVS_WERTE_FEHLEN;
+            int marke = kopf.IndexOf("{0}", StringComparison.Ordinal);
+            string vorspann = marke > 0 ? kopf.Substring(0, marke) : kopf;
+
+            int a = satz.IndexOf(vorspann, StringComparison.Ordinal);
+            Assert.True(a >= 0, "Der Satz nennt keine fehlenden Werte: " + satz);
+            a += vorspann.Length;
+
+            int e = satz.IndexOf(WindowsFormsApplication1.MyResource.Resource.PVS_TRENNER, a, StringComparison.Ordinal);
+            return (e < 0 ? satz.Substring(a) : satz.Substring(a, e - a)).Trim();
+        }
+
+        /// <summary>Kultur pinnen und im <c>finally</c> zurücklegen (Hausregel seit W8).</summary>
+        private static void MitSprache(string kuerzel, Action fall)
+        {
+            System.Globalization.CultureInfo vorherUi = System.Globalization.CultureInfo.CurrentUICulture;
+            System.Globalization.CultureInfo vorher = System.Globalization.CultureInfo.CurrentCulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo(kuerzel);
+                System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo(kuerzel);
+                fall();
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = vorherUi;
+                System.Globalization.CultureInfo.CurrentCulture = vorher;
+            }
+        }
+
+        /// <summary>Wie oft <paramref name="teil"/> in <paramref name="satz"/> steht.</summary>
+        private static int Zaehle(string satz, string teil)
+        {
+            int n = 0;
+            for (int i = satz.IndexOf(teil, StringComparison.Ordinal); i >= 0;
+                 i = satz.IndexOf(teil, i + teil.Length, StringComparison.Ordinal))
+                n++;
+            return n;
+        }
     }
 }

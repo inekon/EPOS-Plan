@@ -714,3 +714,47 @@ in der Feldzeile.
 Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
 als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
 Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.
+
+---
+
+## Windows-Abnahme V3 07.09.2026 — der Photovoltaik-Reiter (W11b‑B‑6 bis B‑10)
+
+**Anlass.** Bildschirmfoto des Anwenders, Projekt mit einer PV-Anlage (20 Module
+„Philadelphia Solar PS‑M144(HCBF)‑530W") und ohne Strombedarf: „Die PV-Simulation
+scheint nicht zu funktionieren bzw. wird im Dialog nicht dargestellt." Auf dem Reiter
+standen **Gesamte Stromerzeugung 0,00**, **Überschuss 13,26**, in der Modultabelle
+**Stromprod. 13,26** und **Fläche 0,00**, die Jahresganglinie war leer, die Einheit
+hinter „Maximale solare Leistung [W/m²]" hieß **kW**; dazu „Verbesserte Darstellung:
+doppelte Bezeichnung *Detaillierte Simulation* (Info‑Button muss bleiben), Dialog zu
+groß, Grafik zu groß."
+
+**Der Kern rechnet richtig; die Anzeige griff auf die falsche Reihe.** `SimulationPV`
+trennt seit April (`c3b3e44`) `Stromproduktion_Theoretisch` (Erzeugung nach
+Wechselrichter) von `Stromproduktion` = min(Erzeugung, Bedarf), dem GENUTZTEN Anteil.
+Ohne Strombedarf ist der genutzte Anteil 0 — und genau den zeigten die Zeile „Gesamte
+Stromerzeugung" (`SimulationErgebnisCtrl.Photovoltaik`, `Stromproduktion.Sum()`) und die
+Kurve „Photovoltaik" (`BildPv`, `Stromproduktion_viertelstunde`), während Überschuss und
+Modultabelle die Erzeugung summierten. Der Vorläufer `Form_Simulation_Detail` (:4551,
+:4574) hatte dieselben Reihen: **Der Port war wörtlich, die Beschriftung war es nie.**
+Keine Merge-5-Regression — die Merge-4-Basis `b0d3d86` trägt dieselben Zeilen.
+
+| Befund | Was war | Was ist |
+|---|---|---|
+| **W11b‑B‑6** Erzeugung/Kurve | genutzter Anteil unter der Beschriftung „Gesamte Stromerzeugung"; Kurve leer ohne Bedarf | DTO: `StromproduktionMwh` = Erzeugung, neu `GenutztMwh` = genutzt; Reiter zeigt beide Zeilen; `BildPv` zeichnet die Erzeugung (`Stundenwerte_zu_viertelstunden(Stromproduktion_Theoretisch)`). Deckungsgrad bleibt am genutzten Anteil |
+| **W11b‑B‑7** Einheit | Beschriftung W/m², Einheitsspalte kW, Feld `MaxLeistungKw` | Feld `MaxEinstrahlungWm2`, Einheit W/m², Text „Maximale solare Einstrahlung [W/m²]:" (de/en) — `MaxPSolar` ist die Einstrahlung auf die Modulebene |
+| **W11b‑B‑8** Fläche 0,00 | Katalog ohne Länge/Breite (CEC-Import führt nur `A_c`), Fläche = 0 × 0 × 20 | `SimulationPV.FlaecheZurAnzeige`: Katalogmaße, sonst A = P_STC / (η · 1 kW/m²) = 51,2 m²; als geschätzt markiert (`≈`, Tooltip). **Nur Anzeige** — Rechenweg und Referenzlauf unberührt |
+| **W11b‑B‑9** doppelter Titel | Seite und Überlagerung trugen beide „Detaillierte Simulation" | Seite ohne eigenen Titel; Hilfeknopf bleibt, rechts (`epos-simerg-kopf--ohnetitel`) |
+| **W11b‑B‑10** Größe | Bild in voller Zeilenbreite; auf 1280 × 800 bei 150 % (853 × 501 logische Bildpunkte) füllt es den sichtbaren Reiter | `.epos-simerg-diagrammzeile .epos-diagramm { max-width: min(var(--epos-diagramm-breit), 75%) }` — 590 × 267 auf diesem Schirm; Zoom (A‑1) für mehr. Die Überlagerung selbst ist auf diesem Schirm ohnehin durch den Bildschirm begrenzt (`min(92vw, 900px)`, 90vh) |
+
+**Zum „Dialog zu groß".** Die Ergebnisseite steht seit E‑5 in der Überlagerung der
+Startseite; deren Maß ist `min(92vw, 900px)` bei `max-height: 90vh`. Auf dem Rechner
+der Abnahme (1280 × 800, 150 %) ist das die ganze Arbeitsfläche — kleiner wird der Rahmen
+nur mit weniger Inhalt, deshalb greift B‑10 am Bild. `SimulationErgebnisHuelle.MASS`
+(1474 × 821) ist seit E‑5 ohne Wirkung und bleibt als Vermerk stehen.
+
+**Nachweis.** `SimulationErgebnisCtrlTests.Photovoltaik_1030…` prüft jetzt Erzeugung,
+genutzten Anteil und Einstrahlung getrennt; `PvModulparameterTests` drei Fälle zu
+`FlaecheZurAnzeige` (Katalogmaße, Schätzung 51,2 m², kein Wert ohne Nennleistung oder
+Wirkungsgrad); `ErzeugerReiterTests` drei Proben (zwei Zeilen, W/m² ohne kW, `≈` mit
+Tooltip). `StilblattTests` über die zwei neuen Regeln. Referenzlauf unberührt: kein
+Rechenweg geändert.

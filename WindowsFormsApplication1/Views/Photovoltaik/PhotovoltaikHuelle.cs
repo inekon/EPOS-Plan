@@ -199,6 +199,12 @@ namespace WindowsFormsApplication1
                     new Func<string, IReadOnlyList<(int Id, string Text)>>(
                         hersteller => WechselrichterEintraege(wrStamm, hersteller)),
 
+                // W6-B-4: Anzahl_Mppt des KATALOGgeraets - der neue Strang bekommt
+                // damit den naechsten freien Tracker statt immer den ersten. Die
+                // CEC-Liste fuehrt die Angabe nicht (W6-O-2); dann kommt null zurueck,
+                // und es bleibt bei Tracker 1.
+                ["Trackerzahl"] = new Func<int, int?>(WechselrichterStammCtrl.TrackerZahl),
+
                 // W6-E-6 (Anwenderentscheid 07.09.2026): der Hersteller des Moduls der
                 // gewaehlten Anlage - die VORAUSWAHL des Herstellerfilters. Die Huelle
                 // liest nur den Katalogsatz; ob es dazu ein Geraet gibt und was daraus

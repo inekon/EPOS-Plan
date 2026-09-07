@@ -2816,6 +2816,18 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 
 > **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
 >
+> **Nachtrag Windows-Abnahme V3 (07.09.2026) — der Photovoltaik-Reiter, W11b‑B‑6 bis B‑10, umgesetzt in
+> `159f3f8` (Merge 7 `e6803a6`).** „Die PV-Simulation scheint nicht zu funktionieren": Reiter und Kurve zeigten den
+> GENUTZTEN Anteil (`Stromproduktion` = min(Erzeugung, Bedarf), ohne Strombedarf 0), Überschuss und Modultabelle die
+> Erzeugung — der Port war wörtlich (`:4551`, `:4574`), die Beschriftung nie. **B‑6** DTO trägt Erzeugung
+> (`Stromproduktion_Theoretisch`) und genutzten Anteil getrennt, `BildPv` zeichnet die Erzeugung; **B‑7** Einheit
+> W/m² statt kW (`MaxEinstrahlungWm2`); **B‑8** Fläche eines CEC-Moduls ohne Katalogmaße aus P_STC/η geschätzt und
+> als `≈` gekennzeichnet (`SimulationPV.FlaecheZurAnzeige`, nur Anzeige); **B‑9** kein eigener Seitentitel unter dem
+> Titel der Überlagerung, Hilfeknopf bleibt rechts; **B‑10** Diagramm auf drei Viertel der Zeile
+> (`min(--epos-diagramm-breit, 75%)`) — auf 1280 × 800 bei 150 % füllte es den sichtbaren Reiter. Nachweis:
+> `ErzeugerReiterTests` +3, `PvModulparameterTests` +3, `SimulationErgebnisCtrlTests` erweitert, Referenzlauf
+> unberührt (Protokoll W11b, Abschnitt „Windows-Abnahme V3").
+>
 > Der zweite Lauf der Welle 11: **`Form_Simulation_Detail` (7 766 Zeilen + 3 082 Designer), `DashboardForm`,
 > `NavigatorUebersicht`, `NavigatorStrom`, `NavigatorWaerme` und `Form_SpeicherVariantenVergleich` → eine
 > Razor-Seite `SimulationErgebnisSeite`** (`EPOS.UI/Seiten/Simulation/`) mit **zehn** Blättern (R3 „Simulation“
@@ -3997,6 +4009,65 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Merge). **Hausregel seither (Verschärfung von W16b‑O‑2):** Nach einem synchronen bunit-Ereignis wird auf den
 > gezeichneten Zustand gewartet, nicht sofort geprüft — gilt für `Click()`, `Change()`, `Input()`, `DoubleClick()`
 > gleichermaßen (Protokoll `iU9_W15a_Blazor_Port_Protokoll.md`, Abschnitt W6‑B‑2‑O‑1).
+>
+> **W6‑B‑4 (Windows-Abnahme 07.09.2026: „Anzahl Module fehlt? Welche Werte?"), behoben in `9aa6970` (D) · `f2676b0` (C) ·
+> `945a8a7` (A und B) · `937f631` (Doku), zusammengeführt in `cd6d529`.** Vier Beobachtungen an EINEM Bildschirmfoto des
+> PV-Dialogs „Wechselrichter und Stränge". **(A)** Die Strangtabelle war bei 1 100 px Fensterbreite **1 974 px** breit
+> gegen 1 046 px sichtbar — sechs der elf Spalten (Gerät, MPPT, Module in Reihe, Stränge parallel, Neigung, Azimut)
+> standen daneben: die zwei `<select>` so breit wie ihr längster Eintrag (302 px), die Zahlenfelder so breit wie ein
+> `<input>` von Haus aus (je 196 px), die Köpfe ohne Umbruch. Behoben durch die Spaltenfolge „alles Schmale zuerst, die
+> zwei elastischen Listen zuletzt" und drei Regeln im Hausblatt (Deckel 11 rem + `text-overflow: ellipsis` mit vollem
+> Namen im `title`, 4 rem auf den Zahlenfeldern, `th.klasse, td.klasse` für den Kopfumbruch — eine bloße Klasse verliert
+> gegen `.epos-raster th` (0,1,1)). **Nachher 1 046 px, `scrollWidth == clientWidth`** (Playwright-Probe, bunit misst
+> keine Breite — Lehre W6‑B‑1). **(B)** Ein neuer Strang begann mit „0 Module in Reihe"; die Vorbelegung rechnet
+> seither der Kern (`Strangvorbelegung.FuerNeuenStrang`): erster Strang = Modulzahl der Anlage, jeder weitere = der
+> Rest (mindestens 1), parallel 1, Gerät 1, MPPT = nächster freier Tracker (`WechselrichterStammCtrl.TrackerZahl`,
+> `null` = 1); nur beim Anlegen, nie beim Laden — Projekt 1045 bleibt byte-gleich. **(C)** Die Meldung nannte ein Paar
+> mit „oder", obwohl `StrangPlausibilitaet` jeden Wert einzeln abfragt, und klagte über Modulwerte, wenn nur „Module in
+> Reihe" fehlte (`SpannungReihe` gibt auch bei `reihe = 0` `null`). Neu: `Fehlliste` — je Wert eine Meldung, jeder
+> höchstens einmal, dahinter EIN Satz mit dem Pflegeweg (`PVS_PFLEGEWEG`: PV Module → Bearbeiten, Felder alpha_SC,
+> beta_OC, T_NOCT, oder Neuimport aus „CEC Modules.csv"), nur bei einem echten Modulwert; sechs neue Texte beider
+> Sprachen, kein bestehender geändert; die Parameterübersicht schreibt „– nicht gepflegt" statt nur „–". **(D)** Die
+> Klappliste zeigte einen Namen, den die Zeile nicht trug: Ein `<select>` hat im DOM kein `value`-Attribut, Blazor
+> setzt `element.value` **nur beim Erzeugen** nach — ein späterer Austausch der Einträge lässt die Wahl unter einem
+> fremden Eintrag stehen (gemessen: Strang mit „SMA America: SB30-1SP-US-40 {240V}" zeigte nach einem Filterwechsel
+> „ABB: PVI-3.0-OUTD-S-US-A {208V}"). Der Standard `Auswahlfeld` gibt jeder `<option>` seither `selected` **und** ein
+> `@key`; beides zusammen ist nötig (mit `selected` allein fiel der Rückweg „ABB → Alle" auf „(kein Gerät)"). **bunit
+> sieht das nicht** (Htmlizer schreibt `selected` aus dem `value` heraus) — der Beleg ist die Playwright-Probe.
+> Nachweis: 12 neue UI-Fälle (`PvStraengeFelderTests` 45 → 55, `StilblattTests` +2) und 27 neue Kernfälle
+> (`StrangvorbelegungTests` 17, `StrangPlausibilitaetTests` 7, `PvModulparameterTests` 2), Kern 1957 / UI 3214 grün,
+> Warnungen unverändert 6, SQL 0, Designer „abweichend 0", ChartProben 44, Formularkarte 122, Gate grün, Referenzlauf
+> 1030/1007/1017/1045 byte-gleich gegen R5; Konzept Kapitel 7/12, zwei Hausregeln in `EPOS.UI/CLAUDE.md` (Klapplisten in
+> Tabellen mit Deckel; jede `<option>` mit `selected` und `@key`). Die drei alten Paartexte `PVS_FEHLT_UOC/_UMPP/_ISC`
+> stehen ungenutzt und fallen in einem Aufräumlauf. Abnahme auf Windows: **A‑W6‑B4‑1…9**. Der Datenbefund dahinter —
+> die verdorbenen Koeffizienten des Bestands (A1) — läuft als **W6‑B‑5** (Schemaschritt 69).
+>
+> **W6‑B‑5 — die verdorbenen PV‑Modulkoeffizienten (Anwenderentscheid 07.09.2026, Q1–Q3 = Empfehlung), umgesetzt in
+> `651894f` (Schritt 69 + 35 Tests) · `15defad` (Testdatenbank) · `373447a` (Basis R6, `kern.yml`/`ios.yml`, LIESMICH) ·
+> `17f2bfb` (Doku, Einfrierregel) · `ace49bc`, zusammengeführt in `9489d85`.** Paket‑A‑Befund A1 ist geschlossen:
+> `alpha_SC`, `beta_OC` und `T_NOCT` trugen in 3 von 6 Stammsätzen und 7 von 9 Projektkopien der Testdatenbank den Wert
+> von `I_Kurzschluss` (der Kopierfehler des alten Editors), ein Satz Nullen. Migrationsschritt **69**
+> (`EPOS.Kern/Allgemein/Update/PvKoeffizientenReparatur.cs`, `SchemaStand.Zielversion` 68 → 69) erkennt die
+> **Giftsignatur** (Wert = `I_Kurzschluss` auf 1e‑6 genau oder außerhalb des physikalischen Fensters; die 0 liegt in
+> jedem der vier Fenster außerhalb), repariert **aus der CEC‑Liste** über `CECDataService` — die vier ausgelieferten
+> Module eingebettet, weil `VDI-3805-Daten` seit W6‑O‑9 abwählbar ist; liegt die Datei am Herstellerdatenpfad, kommt sie
+> dazu (gemessen 4 + 20 197) —, nimmt die Projektkopien `Tab_PV` mit (**Q2**) und setzt alles ohne Treffer auf `NULL`
+> mit einer Protokollzeile je Satz (Jinkosolar JKM 260P‑60 und LG 320 N1K‑A5 stehen nicht in der Liste, nur
+> Schwesterzeilen eines anderen Prüflabors); idempotent, gesunde Werte bleiben Satz für Satz unberührt. Testdatenbank
+> auf Stand 69: 4 von 6 Katalog‑ und 7 von 9 Projektsätzen geändert, STRICT 117, Größe unverändert. **Q3 eingelöst:**
+> neue Basis **`Referenzlaeufe/2026-09-07_R6_PvKoeffizienten`** (12 Projekte, 312 CSV, 1 792 Skalare) — elf Projekte
+> byte‑gleich zu R5, nur **1007** weicht ab (acht Dateien der PV‑Kette, theoretische PV‑Erzeugung −0,69 %, Überschuss
+> −2,2 %), Ursache allein `T_NOCT` (Rückfall 45 °C → Katalogwert 47,4 °C; +2,4 K Zelltemperatur bei 800 W/m² mit
+> γ = −0,4509 %/K); `alpha_SC`/`beta_OC` liest kein Rechenweg. Gegenbeweis im `protokoll.txt`: `T_NOCT` allein zurück
+> auf 45 → 1007 byte‑gleich zu R5. 1040 (Jinkosolar, `NULL` → Rückfall wie vorher) und 1045 (gesund) byte‑gleich.
+> `kern.yml`/`ios.yml`/`gate.sh` zeigen auf R6, R5 bleibt zur Geschichte liegen. **Zweite Einfrierregel** (analog
+> Em‑9.8‑Q4): Wer einen Modulkoeffizienten der Testdatenbank ändert, friert die Basis neu ein (`CLAUDE.md`,
+> `Referenzlaeufe/LIESMICH.md`). Die Handläufe unter `sql/pv_katalog/` bleiben als Beleg liegen (neue `LIESMICH.md`
+> dort: der eine gewollte Unterschied — das Skript trug PAN‑Werte für Jinkosolar/LG ein, Schritt 69 setzt `NULL`, weil
+> Q1 die CEC‑Liste als Quelle nennt). Nachweis: 35 Fälle in `PvKoeffizientenReparaturTests`, Kern 1992 / UI 3214
+> grün, SpeicherEngine 337, KiKern 469, Formularkarte 122, SQL 0, Designer 0, ChartProben 44, Gate grün, Referenzlauf
+> 1030/1007/1017/1045 byte‑gleich gegen R6. Abnahme auf Windows: **A‑W6‑B5‑1…9** — **Update-Hinweis: Schemastand 69,
+> die Produktivdatenbank wird beim nächsten Start mit Sicherung migriert, ein `.wpx` auf Stand 68 wird abgewiesen.**
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >

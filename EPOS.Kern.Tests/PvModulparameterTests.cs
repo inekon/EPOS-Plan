@@ -38,7 +38,12 @@ namespace EPOS.Kern.Tests
 
         private const string MODUL = "Ablytek 6MN6A275";
         private const string MODUL_MIT_NULL = "LG Electronics LG 320 N1K-A5";
-        private const string STRICH = PhotovoltaikStammCtrl.PARAMETER_LEER;
+        /// <summary>
+        /// Was ein nicht gepflegter Wert anzeigt — seit <b>W6‑B‑4</b> der Strich UND
+        /// das Wort („– nicht gepflegt", <c>PVS_NICHT_GEPFLEGT</c>). Er hängt damit an
+        /// der Sprache und wird IM Fall geholt, nicht beim Laden der Klasse.
+        /// </summary>
+        private static string Strich() => PhotovoltaikStammCtrl.ParameterNichtGepflegt;
 
         private static void MitSprache(string kuerzel, Action fall)
         {
@@ -186,10 +191,16 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Nicht gepflegt heißt „–", nicht 0.</b> Der Katalog führt beides — NULL
-        /// (LG 320: alpha_SC, beta_OC, T_NOCT) und die 0 des Bestands (Modulkosten,
-        /// Technologie leer) —, und beides ist dieselbe Aussage: Der Wert steht nicht in
-        /// der Datenbank. Eine angezeigte 0 wäre eine Behauptung.
+        /// <b>Nicht gepflegt heißt „– nicht gepflegt", nicht 0.</b> Der Katalog führt
+        /// beides — NULL (LG 320: alpha_SC, beta_OC, T_NOCT) und die 0 des Bestands
+        /// (Modulkosten, Technologie leer) —, und beides ist dieselbe Aussage: Der Wert
+        /// steht nicht in der Datenbank. Eine angezeigte 0 wäre eine Behauptung.
+        ///
+        /// <para><b>Seit W6‑B‑4 trägt die Zeile das WORT dazu</b> (Windows-Abnahme
+        /// 07.09.2026). Der Anwender stand vor „Werte fehlen: … alpha_SC des Moduls"
+        /// und fragte „Welche Werte?"; der Aufklapper zeigte die drei Koeffizienten
+        /// bereits, aber mit einem blossen Halbgeviertstrich daneben — und ein Strich
+        /// liest sich als „hier steht nichts", nicht als „nicht gepflegt".</para>
         /// </summary>
         [Fact]
         public void Ein_nicht_gepflegter_Wert_zeigt_den_Strich()
@@ -202,18 +213,51 @@ namespace EPOS.Kern.Tests
                     PhotovoltaikStammCtrl.Detail(MODUL_MIT_NULL));
 
                 // NULL in der Datenbank
-                Assert.Equal(STRICH, Wert(lg, "ALPHA_SC"));
-                Assert.Equal(STRICH, Wert(lg, "BETA_OC"));
-                Assert.Equal(STRICH, Wert(lg, ModulKatalogProfil.FeldTNoct));
+                Assert.Equal(Strich(), Wert(lg, "ALPHA_SC"));
+                Assert.Equal(Strich(), Wert(lg, "BETA_OC"));
+                Assert.Equal(Strich(), Wert(lg, ModulKatalogProfil.FeldTNoct));
 
                 // 0 in der Datenbank - dieselbe Aussage
-                Assert.Equal(STRICH, Wert(lg, ModulKatalogProfil.FeldModulkosten));
+                Assert.Equal(Strich(), Wert(lg, ModulKatalogProfil.FeldModulkosten));
 
                 // leere Technologie
-                Assert.Equal(STRICH, Wert(lg, ModulKatalogProfil.FeldTechnologie));
+                Assert.Equal(Strich(), Wert(lg, ModulKatalogProfil.FeldTechnologie));
 
                 // Und was gepflegt ist, steht da.
                 Assert.Equal("18,68", Wert(lg, ModulKatalogProfil.FeldWirkungsgrad));
+            });
+        }
+
+        /// <summary>
+        /// <b>W6‑B‑4: die drei Koeffizienten der Strangprüfung sind gekennzeichnet.</b>
+        /// <c>alpha_SC</c>, <c>beta_OC</c> und <c>T_NOCT</c> sind genau die Werte, deren
+        /// Fehlen die Ampel der Strangtabelle meldet — und der Aufklapper sagt an
+        /// derselben Stelle, dass sie nicht gepflegt sind. Beide Sprachen.
+        /// </summary>
+        [Theory]
+        [InlineData("de-DE", "nicht gepflegt")]
+        [InlineData("en-US", "not maintained")]
+        public void W6B4_Die_drei_Koeffizienten_sind_als_nicht_gepflegt_gekennzeichnet(
+            string sprache, string wort)
+        {
+            if (!_db.Vorhanden) return;
+
+            MitSprache(sprache, () =>
+            {
+                var lg = PhotovoltaikStammCtrl.Parameterzeilen(
+                    PhotovoltaikStammCtrl.Detail(MODUL_MIT_NULL));
+
+                foreach (string schluessel in new[] { "ALPHA_SC", "BETA_OC",
+                                                      ModulKatalogProfil.FeldTNoct })
+                {
+                    Assert.Contains(wort, Wert(lg, schluessel), StringComparison.Ordinal);
+                    Assert.Contains(PhotovoltaikStammCtrl.PARAMETER_LEER,
+                                    Wert(lg, schluessel), StringComparison.Ordinal);
+                }
+
+                // Ein GEPFLEGTER Wert trägt das Wort nicht.
+                Assert.DoesNotContain(wort, Wert(lg, ModulKatalogProfil.FeldWirkungsgrad),
+                                      StringComparison.Ordinal);
             });
         }
 
@@ -345,7 +389,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("-0.4509", Wert(zeilen, ModulKatalogProfil.FeldTempKoeff));
 
                 // Der Strich ist sprachneutral.
-                Assert.Equal(STRICH, Wert(zeilen, ModulKatalogProfil.FeldModulkosten));
+                Assert.Equal(Strich(), Wert(zeilen, ModulKatalogProfil.FeldModulkosten));
             });
         }
 
@@ -459,6 +503,38 @@ namespace EPOS.Kern.Tests
             try { t = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(schluessel); }
             catch { }
             return string.IsNullOrEmpty(t) ? schluessel : t;
+        }
+
+        // ---- W11b-B-8 (Windows-Abnahme V3 07.09.2026): die Flaeche der Ergebnisliste,
+        //      wenn der Katalog keine Masse fuehrt --------------------------------------
+
+        [Fact]
+        public void Flaeche_zur_Anzeige_nimmt_die_Katalogmasse_wenn_es_sie_gibt()
+        {
+            bool geschaetzt;
+            Assert.Equal(34.0, SimulationPV.FlaecheZurAnzeige(34.0, 10.6, 0.207, out geschaetzt), 9);
+            Assert.False(geschaetzt);
+        }
+
+        [Fact]
+        public void Flaeche_zur_Anzeige_schaetzt_aus_Nennleistung_und_Wirkungsgrad()
+        {
+            // Philadelphia Solar PS-M144(HCBF)-530W: 530,785 W, 20,73 %, 20 Module,
+            // Laenge und Breite 0 (CEC-Import) -> 10,6157 kWp / 0,2073 = 51,2 m2.
+            bool geschaetzt;
+            double f = SimulationPV.FlaecheZurAnzeige(0.0, 530.785 * 20 / 1000.0, 0.20733789, out geschaetzt);
+            Assert.True(geschaetzt);
+            Assert.Equal(51.2, f, 1);
+        }
+
+        [Fact]
+        public void Flaeche_zur_Anzeige_bleibt_null_ohne_Nennleistung_oder_Wirkungsgrad()
+        {
+            bool geschaetzt;
+            Assert.Equal(0.0, SimulationPV.FlaecheZurAnzeige(0.0, 0.0, 0.2, out geschaetzt));
+            Assert.False(geschaetzt);
+            Assert.Equal(0.0, SimulationPV.FlaecheZurAnzeige(0.0, 5.0, 0.0, out geschaetzt));
+            Assert.False(geschaetzt);
         }
     }
 }

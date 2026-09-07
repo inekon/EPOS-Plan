@@ -38,8 +38,12 @@
 
 <div class="epos-simerg">
 
-    <div class="epos-simerg-kopf">
-        <span class="epos-simerg-titel">@Resource.SIMERG_TITEL</span>
+    @* W11b-B-9 (Windows-Abnahme V3, 07.09.2026): KEIN eigener Titel mehr. Die Seite
+       steht seit E-5 in einer Ueberlagerung, die den Titel schon traegt (unter
+       Windows die der Startseite, auf iOS die Kopfleiste der AppWurzel) - er stand
+       zweimal untereinander. Der Hilfeknopf bleibt und steht rechts, wie der
+       Hilfeknopf eines Dialogs ohne Titel (epos-dialog-kopf--ohnetitel). *@
+    <div class="epos-simerg-kopf epos-simerg-kopf--ohnetitel">
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 

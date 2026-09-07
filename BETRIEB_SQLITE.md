@@ -276,8 +276,9 @@ hier auf, nicht erst beim Anwender.
 
 ### 6.5 Die Messlatte selbst — `Referenzlaeufe/Kenndaten_Test.sqlite`
 
-**Stand 07.09.2026: Schemastand 68** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
-66 Stränge, 67 BHKW-Leistungsgrenze, 68 `Firma` im Stromspeicherkatalog), 70 012 928 Byte (66,8 MB). Nachzusehen ist er jederzeit:
+**Stand 07.09.2026: Schemastand 69** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
+66 Stränge, 67 BHKW-Leistungsgrenze, 68 `Firma` im Stromspeicherkatalog, 69 PV-Koeffizienten
+repariert), 70 012 928 Byte (66,8 MB). Nachzusehen ist er jederzeit:
 
 ```
 sqlite3 -readonly Referenzlaeufe/Kenndaten_Test.sqlite "SELECT SchemaVersion FROM Tab_Applikation;"
@@ -308,6 +309,14 @@ zweite Schreibweise derselben Spalte — genau das, was die Typübersetzung verh
 > `EPOS.Referenzlauf lauf --projekte 1030,1007,1017` **vor und nach** dem Nachziehen läuft und
 > `diff -r` über beide Zielordner nur `protokoll.txt` meldet (Zeitstempel, Zielordner,
 > Dateigröße, Laufdauer). Jede abweichende CSV ist ein Befund.
+>
+> **Die eine Ausnahme, und sie ist benannt: Schritt 69** (Befund W6‑B‑5, Anwenderentscheide
+> Q1–Q3 vom 07.09.2026). Er repariert die verdorbenen PV-Modulkoeffizienten, und `T_NOCT`
+> geht in beide PV-Modelle — Projekt 1007 weicht dadurch gewollt ab. Für einen solchen
+> Schritt heisst die Abnahme nicht „byte-gleich", sondern „**erklärte** Abweichung plus neu
+> eingefrorene Basis": `Referenzlaeufe/2026-09-07_R6_PvKoeffizienten` mit der Herleitung im
+> `protokoll.txt`. Wer den Weg geht, braucht dafür einen Anwenderentscheid — die stillschweigende
+> Regel bleibt: eine Schemamigration verschiebt keinen Rechenwert.
 
 Wächst die Datei über die Zeit, ist der Weg zurück
 [`sql/tools/Reduziere-Testdatenbank.sql`](sql/tools/Reduziere-Testdatenbank.sql): Es schneidet

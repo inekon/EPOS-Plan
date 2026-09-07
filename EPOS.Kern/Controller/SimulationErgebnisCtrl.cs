@@ -670,8 +670,13 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>Eine Zeile der PV-Modultabelle.</summary>
+        /// <param name="FlaecheGeschaetzt">
+        /// W11b‑B‑8: Die Fläche ist aus Nennleistung und Wirkungsgrad geschätzt, weil der
+        /// Katalog keine Modulmaße führt (CEC-Import ohne Länge und Breite).
+        /// </param>
         public sealed record PvModulZeile(string Name, double FlaecheM2, long Anzahl,
-                                          double StromproduktionMwh);
+                                          double StromproduktionMwh,
+                                          bool FlaecheGeschaetzt = false);
 
         /// <summary>
         /// Eine Zeile der WECHSELRICHTER-Tabelle des PV-Reiters (Stufe S3 des
@@ -698,12 +703,27 @@ namespace WindowsFormsApplication1
 
         public sealed class PhotovoltaikErgebnis
         {
+            /// <summary>
+            /// Die ERZEUGUNG der Module nach Wechselrichter [MWh/a] — dieselbe Reihe, die
+            /// die Modultabelle summiert (<c>Stromproduktion_Theoretisch</c>; W11b‑B‑6).
+            /// </summary>
             public double StromproduktionMwh;
+
+            /// <summary>Davon im Projekt direkt genutzt [MWh/a]: min(Erzeugung, Bedarf) je Stunde.</summary>
+            public double GenutztMwh;
+
             public double UeberschussMwh;
             public double DeckungProzent;
             public double StrombedarfMwh;
             public double ReststrombedarfMwh;
-            public double MaxLeistungKw;
+
+            /// <summary>
+            /// Maximale solare Einstrahlung auf die Modulebene [W/m²]
+            /// (<c>SimulationPV.MaxPSolar</c>). Hieß bis W11b‑B‑7 „MaxLeistungKw" und
+            /// stand im Reiter mit der Einheit kW neben einer Beschriftung in W/m².
+            /// </summary>
+            public double MaxEinstrahlungWm2;
+
             public List<PvModulZeile> Module = new List<PvModulZeile>();
 
             /// <summary>
@@ -729,21 +749,32 @@ namespace WindowsFormsApplication1
             SimulationPV pv = sim.simulation_pv;
             PhotovoltaikErgebnis e = new PhotovoltaikErgebnis();
 
-            double produktionKwh = pv.Stromproduktion.Sum();
+            // W11b-B-6 (Windows-Abnahme V3, 07.09.2026): "Gesamte Stromerzeugung der
+            // Module" ist die ERZEUGUNG - Stromproduktion_Theoretisch, nach Wechselrichter
+            // und vor dem Abgleich mit dem Bedarf; dieselbe Reihe, die die Modultabelle
+            // summiert. Stromproduktion ist der GENUTZTE Anteil min(Erzeugung, Bedarf):
+            // Ohne Strombedarf stand die Zeile damit auf 0,00, waehrend Ueberschuss und
+            // Tabelle 13,26 MWh zeigten. Der Vorlaeufer (:4551) hatte dieselbe Reihe;
+            // der Port war woertlich, die Beschriftung nicht. Der Deckungsgrad bleibt
+            // am genutzten Anteil - das ist seine Definition.
+            double erzeugungKwh = pv.Stromproduktion_Theoretisch.Sum();
+            double genutztKwh = pv.Stromproduktion.Sum();
             double bedarfKwh = pv.Strombedarf_stuendlich.Sum();
 
-            e.StromproduktionMwh = produktionKwh / 1000.0;
+            e.StromproduktionMwh = erzeugungKwh / 1000.0;
+            e.GenutztMwh = genutztKwh / 1000.0;
             e.UeberschussMwh = pv.Ueberschuss.Sum() / 1000.0;
-            e.DeckungProzent = bedarfKwh > 0 ? produktionKwh * 100.0 / bedarfKwh : 0.0;
+            e.DeckungProzent = bedarfKwh > 0 ? genutztKwh * 100.0 / bedarfKwh : 0.0;
             e.StrombedarfMwh = pv.Strombedarf.Sum() / 4000.0;
             e.ReststrombedarfMwh = sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
-            e.MaxLeistungKw = pv.MaxPSolar;
+            e.MaxEinstrahlungWm2 = pv.MaxPSolar;
 
             if (pv.Modul_Ergebnisse != null)
                 foreach (var m in pv.Modul_Ergebnisse)
                 {
                     e.Module.Add(new PvModulZeile(m.Name, m.Flaeche, m.Anzahl,
-                                                  m.StromproduktionKwh / 1000.0));
+                                                  m.StromproduktionKwh / 1000.0,
+                                                  m.FlaecheGeschaetzt));
 
                     // Stufe S3: je Geraet eine Zeile - und nur, wenn diese Anlage auf
                     // der Strangebene gerechnet hat. Ohne Zuordnung bleibt die Liste

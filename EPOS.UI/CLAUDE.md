@@ -297,6 +297,29 @@ entgegen — sie ist damit austauschbar.
   Arbeitsbereichs** (85 % Breite × 90 % Höhe, gedeckelt auf 92 %), eine
   `Dialogart.Klein`e Maske bleibt bei ihrem Wunschmaß. Wer eine Größe braucht, holt sie
   hier — eine zweite Fassung der Zahlen läuft irgendwann auseinander.
+- **Eine Klappliste IN einer Tabelle wird gedeckelt und schneidet ab** (Hausregel seit
+  Befund **W6‑B‑4**, Windows-Abnahme 07.09.2026). Ein `<select>` ist so breit wie sein
+  längster Eintrag — „SMA America: SB30-1SP-US-40 {240V}" sind 302 px —, und in einer
+  Tabelle schiebt es damit jede Spalte rechts von sich aus dem Bild. Die Spalte bekommt
+  deshalb eine Klasse mit `max-width`, `overflow: hidden` und `text-overflow: ellipsis`,
+  und die Zelle trägt den vollen Namen im `title`. **Elastische Spalten stehen HINTEN**,
+  Zahlenfelder vorn: Was gedeckelt werden muss, kostet am Ende am wenigsten, und keine
+  Zahl kann davon nach rechts geschoben werden. Zwei Fallen dabei: Die Hausregel
+  `.epos-raster th, .epos-raster td { white-space: nowrap }` wiegt **(0,1,1)** und
+  schlägt eine blosse Klasse — wer einen Spaltenkopf umbrechen lassen will, schreibt
+  `th.klasse, td.klasse`; und ein `<input>` ist ohne Vorgabe rund 196 px breit, also
+  bekommt jedes Zahlenfeld in einer Tabelle eine feste kleine `width`. **bunit misst
+  keine Breite** (Lehre W6‑B‑1): Der Nachweis ist eine Playwright-Probe im Laufordner,
+  im Repository steht die REGEL als `StilblattTests`-Fall und die Spaltenfolge als
+  bunit-Fall auf das Markup.
+- **Die gewählte `<option>` trägt `selected`, und jede `<option>` trägt ein `@key`**
+  (`Standards/Auswahlfeld.razor`, seit W6‑B‑4). Ein `<select>` hat im DOM kein
+  `value`-Attribut; Blazor merkt sich den Wert beim Einhängen und setzt `element.value`
+  danach nach — **genau einmal, beim Erzeugen des Elements**. Wird die Eintragsliste
+  später ausgetauscht (ein Herstellerfilter tut das), patcht Blazor die `<option>` an Ort
+  und Stelle, der Browser behält seinen `selectedIndex`, und die Zeile zeigt den Namen,
+  der zufällig an diesem Platz gelandet ist. Wer eine eigene Liste baut, macht es wie
+  `Auswahlfeld`: `selected` ins Markup, `@key` an jede Option.
 - Bezeichner und Kommentare deutsch; neue `.razor`/`.cs` UTF-8 **mit** BOM, LF.
 - Jeder Baustein bekommt einen `bunit`-Test in `EPOS.UI.Tests` (Darstellung, Callback,
   Zustandsklasse).

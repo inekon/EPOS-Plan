@@ -449,7 +449,11 @@ namespace EPOS.Kern.Tests
 
             Assert.False(double.IsNaN(pv.DeckungProzent));
             Assert.False(double.IsInfinity(pv.DeckungProzent));
-            Assert.Equal(l.sim.simulation_pv.Stromproduktion.Sum() / 1000.0, pv.StromproduktionMwh, 9);
+            // W11b-B-6: Erzeugung und genutzter Anteil sind zwei Zahlen.
+            Assert.Equal(l.sim.simulation_pv.Stromproduktion_Theoretisch.Sum() / 1000.0, pv.StromproduktionMwh, 9);
+            Assert.Equal(l.sim.simulation_pv.Stromproduktion.Sum() / 1000.0, pv.GenutztMwh, 9);
+            Assert.True(pv.StromproduktionMwh >= pv.GenutztMwh);
+            Assert.Equal(l.sim.simulation_pv.MaxPSolar, pv.MaxEinstrahlungWm2, 9);
             Assert.Equal(l.sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0, pv.ReststrombedarfMwh, 9);
         }
 
