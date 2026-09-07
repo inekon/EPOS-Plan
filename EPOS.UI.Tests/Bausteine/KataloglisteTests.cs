@@ -110,11 +110,10 @@ public class KataloglisteTests : BunitContext
         var cut = Aufbauen();
 
         cut.Find(".epos-katalog-suchzeile input").Input("vaillant");
-        Assert.Equal("2 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
-        Assert.Equal(2, cut.FindAll("tbody tr").Count);
+        Gezeichnet(cut, "2 von 3 Sätzen", 2);
 
         cut.Find(".epos-katalog-suchzeile input").Input("vaillant erdgas");
-        Assert.Equal("1 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Gezeichnet(cut, "1 von 3 Sätzen", 1);
     }
 
     /// <summary>
@@ -129,9 +128,8 @@ public class KataloglisteTests : BunitContext
 
         cut.Find(".epos-katalog-suchzeile input").Input("gibtesnicht");
 
-        Assert.Equal("0 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Gezeichnet(cut, "0 von 3 Sätzen", 0);
         Assert.Single(cut.FindAll(".epos-katalog-leer"));
-        Assert.Empty(cut.FindAll("tbody tr"));
     }
 
     /// <summary>
@@ -145,14 +143,18 @@ public class KataloglisteTests : BunitContext
         var cut = Aufbauen(stand: stand);
         Assert.Empty(cut.FindAll(".epos-katalog-ruecksetzer"));
 
+        // Erst den gezeichneten Sucherfolg abwarten - eine Prüfung auf ABWESENHEIT
+        // wäre sonst auch dann grün, wenn das Ereignis noch in der Warteschlange
+        // liegt (W6-B-2-O-1, siehe Gezeichnet).
         cut.Find(".epos-katalog-suchzeile input").Input("vaillant");
+        Gezeichnet(cut, "2 von 3 Sätzen", 2);
         Assert.Empty(cut.FindAll(".epos-katalog-ruecksetzer"));
 
         Filter(cut, Katalogfilterprofil.SpBrennstoff, "Gas");
-        Assert.Single(cut.FindAll(".epos-katalog-ruecksetzer"));
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-katalog-ruecksetzer")));
 
         cut.Find(".epos-katalog-ruecksetzer").Click();
-        Assert.Empty(cut.FindAll(".epos-katalog-ruecksetzer"));
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-katalog-ruecksetzer")));
         Assert.False(stand.Gesetzt);
 
         // Die SUCHE bleibt - der Knopf ist der Ruecksetzer der Trichter.
@@ -207,9 +209,10 @@ public class KataloglisteTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-trichter--gesetzt"));
 
         Filter(cut, Katalogfilterprofil.SpBrennstoff, "Gas");
+        cut.WaitForAssertion(() =>
+            Assert.Single(cut.FindAll(".epos-trichter--gesetzt .epos-trichter-bild path")));
 
         var gefuellt = cut.FindAll(".epos-trichter--gesetzt .epos-trichter-bild path");
-        Assert.Single(gefuellt);
         Assert.Equal("currentColor", gefuellt[0].GetAttribute("fill"));
         Assert.Equal("2", gefuellt[0].GetAttribute("stroke-width"));
     }
@@ -225,15 +228,21 @@ public class KataloglisteTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-spaltenfilter"));
 
         cut.FindAll(".epos-trichter")[2].Click();          // Brennstoff
-        Assert.Single(cut.FindAll(".epos-spaltenfilter"));
-        Assert.Equal(Katalogfilterprofil.SpBrennstoff, cut.Instance.OffenesPopover);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Single(cut.FindAll(".epos-spaltenfilter"));
+            Assert.Equal(Katalogfilterprofil.SpBrennstoff, cut.Instance.OffenesPopover);
+        });
 
         cut.FindAll(".epos-trichter")[3].Click();          // P_th
-        Assert.Single(cut.FindAll(".epos-spaltenfilter"));
-        Assert.Equal(Katalogfilterprofil.SpPtherm, cut.Instance.OffenesPopover);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Single(cut.FindAll(".epos-spaltenfilter"));
+            Assert.Equal(Katalogfilterprofil.SpPtherm, cut.Instance.OffenesPopover);
+        });
 
         cut.FindAll(".epos-trichter")[3].Click();          // derselbe -> zu
-        Assert.Empty(cut.FindAll(".epos-spaltenfilter"));
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-spaltenfilter")));
     }
 
     /// <summary>
@@ -246,12 +255,13 @@ public class KataloglisteTests : BunitContext
         var cut = Aufbauen();
 
         cut.FindAll(".epos-trichter")[0].Click();          // Bezeichner (Text)
-        Assert.Equal("enthält…", cut.Find(".epos-spaltenfilter input").GetAttribute("placeholder"));
+        Assert.Equal("enthält…",
+                     cut.WaitForElement(".epos-spaltenfilter input").GetAttribute("placeholder"));
         Assert.Empty(cut.FindAll(".epos-spaltenfilter-hinweis"));
 
         cut.FindAll(".epos-trichter")[3].Click();          // P_th (Zahl)
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-spaltenfilter-hinweis")));
         Assert.Contains("10..60", cut.Find(".epos-spaltenfilter input").GetAttribute("placeholder"));
-        Assert.Single(cut.FindAll(".epos-spaltenfilter-hinweis"));
     }
 
     /// <summary>
@@ -266,8 +276,7 @@ public class KataloglisteTests : BunitContext
 
         Filter(cut, Katalogfilterprofil.SpBrennstoff, "Gas");
 
-        Assert.Equal("2 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
-        Assert.Equal(2, cut.FindAll("tbody tr").Count);
+        Gezeichnet(cut, "2 von 3 Sätzen", 2);
 
         Assert.Single(cut.FindAll("thead th.epos-spalte--gefiltert"));
         Assert.Equal(2, cut.FindAll("tbody td.epos-spalte--gefiltert").Count);
@@ -283,15 +292,15 @@ public class KataloglisteTests : BunitContext
         var cut = Aufbauen();
 
         Filter(cut, Katalogfilterprofil.SpPtherm, "10..50");
-        Assert.Equal("2 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Gezeichnet(cut, "2 von 3 Sätzen", 2);
 
         Filter(cut, Katalogfilterprofil.SpEta, ">=0,975");
-        Assert.Equal("1 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Gezeichnet(cut, "1 von 3 Sätzen", 1);
         Assert.Contains("Gamma", cut.Find("tbody").TextContent);
 
         // Unverstanden = kein Filter: die Zeilen bleiben, wie sie waren.
         Filter(cut, Katalogfilterprofil.SpEta, ">=");
-        Assert.Equal("2 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Gezeichnet(cut, "2 von 3 Sätzen", 2);
     }
 
     /// <summary>
@@ -305,16 +314,13 @@ public class KataloglisteTests : BunitContext
         Assert.Contains("⇅", cut.FindAll(".epos-sortierpfeil")[3].TextContent);
 
         cut.FindAll(".epos-spaltenkopf-titel")[3].Click();          // P_th auf
-        Assert.Contains("▲", cut.FindAll(".epos-sortierpfeil")[3].TextContent);
-        Assert.Equal(new[] { "Alpha", "Gamma", "Beta" }, Namen(cut));
+        Sortiert(cut, "▲", "Alpha", "Gamma", "Beta");
 
         cut.FindAll(".epos-spaltenkopf-titel")[3].Click();          // ab
-        Assert.Contains("▼", cut.FindAll(".epos-sortierpfeil")[3].TextContent);
-        Assert.Equal(new[] { "Beta", "Gamma", "Alpha" }, Namen(cut));
+        Sortiert(cut, "▼", "Beta", "Gamma", "Alpha");
 
         cut.FindAll(".epos-spaltenkopf-titel")[3].Click();          // aus
-        Assert.Contains("⇅", cut.FindAll(".epos-sortierpfeil")[3].TextContent);
-        Assert.Equal(new[] { "Alpha", "Beta", "Gamma" }, Namen(cut));
+        Sortiert(cut, "⇅", "Alpha", "Beta", "Gamma");
     }
 
     // =====================================================================
@@ -334,7 +340,7 @@ public class KataloglisteTests : BunitContext
         var cut = Aufbauen(stand: stand, gewaehltGeaendert: w => gewaehlt = w);
 
         cut.FindAll("tbody tr")[1].QuerySelector("button")!.Click();     // Beta
-        Assert.Equal("Beta", gewaehlt);
+        cut.WaitForAssertion(() => Assert.Equal("Beta", gewaehlt));
 
         cut.Render(p => p
             .Add(x => x.Profil, Profil())
@@ -344,13 +350,16 @@ public class KataloglisteTests : BunitContext
 
         // "Gas" blendet Beta (Heizoel) aus - die Auswahl des Wirtes bleibt.
         Filter(cut, Katalogfilterprofil.SpBrennstoff, "Gas");
+        cut.WaitForAssertion(() => Assert.DoesNotContain("Beta", cut.Find("tbody").TextContent));
         Assert.Equal("Beta", gewaehlt);
-        Assert.DoesNotContain("Beta", cut.Find("tbody").TextContent);
 
         // Und beim Zuruecknehmen steht sie wieder markiert da.
         cut.Find(".epos-katalog-ruecksetzer").Click();
-        Assert.Contains("Beta", cut.Find("tbody").TextContent);
-        Assert.Single(cut.FindAll("tbody button[aria-pressed=\"true\"]"));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Contains("Beta", cut.Find("tbody").TextContent);
+            Assert.Single(cut.FindAll("tbody button[aria-pressed=\"true\"]"));
+        });
     }
 
     // =====================================================================
@@ -391,11 +400,12 @@ public class KataloglisteTests : BunitContext
 
         Filter(cut, Katalogfilterprofil.SpHersteller, "LONGi");
 
-        Assert.Equal("15 von 20.749 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        // Erst der GEZEICHNETE Stand, dann die Prüfungen (W6-B-2-O-1, siehe
+        // Gezeichnet): Trefferzeile UND fuenfzehn Zeilen im Koerper.
+        Gezeichnet(cut, "15 von 20.749 Sätzen", 15);
         Assert.False(cut.Instance.Virtualisiert);
 
         // DIE ZEILEN SIND WIRKLICH DIE NEUEN - nicht der alte Zwischenspeicher.
-        Assert.Equal(15, cut.FindAll("tbody tr").Count);
         Assert.DoesNotContain("Andere M-", cut.Find("tbody").TextContent);
         Assert.Contains("LONGi LR5-00000", cut.Find("tbody").TextContent);
     }
@@ -404,7 +414,17 @@ public class KataloglisteTests : BunitContext
     //  Hilfen
     // =====================================================================
 
-    /// <summary>Öffnet den Trichter der Spalte, tippt den Ausdruck und übernimmt ihn.</summary>
+    /// <summary>
+    /// Öffnet den Trichter der Spalte, tippt den Ausdruck und übernimmt ihn.
+    ///
+    /// <para><b>Auf das GEZEICHNETE Popover warten, nicht auf den Klick</b>
+    /// (W6‑B‑2‑O‑1): Zwischen dem <c>Click()</c> auf den Trichter und dem
+    /// <c>Change()</c> im Feld liegt ein Zeichenlauf, den bunits synchrones
+    /// <c>Click()</c> nicht abwartet — die Begründung steht bei
+    /// <see cref="Gezeichnet"/>. <c>Find</c> würfe hier sofort
+    /// <c>ElementNotFound</c>; <c>WaitForElement</c> wartet auf den nächsten
+    /// Zeichenlauf.</para>
+    /// </summary>
     private static void Filter(IRenderedComponent<Katalogliste> cut, string schluessel,
                                string ausdruck)
     {
@@ -417,8 +437,61 @@ public class KataloglisteTests : BunitContext
         }
 
         cut.FindAll(".epos-trichter")[index].Click();
-        cut.Find(".epos-spaltenfilter input").Change(ausdruck);
+        cut.WaitForElement(".epos-spaltenfilter input").Change(ausdruck);
     }
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Stand der Liste: Die Trefferzeile trägt
+    /// <paramref name="trefferzeile"/>, und im Körper stehen <paramref name="zeilen"/>
+    /// Zeilen.
+    ///
+    /// <para><b>W6‑B‑2‑O‑1: bunits synchrone Ereignisse warten NICHT.</b>
+    /// <c>Click()</c>, <c>Change()</c> und <c>Input()</c> geben das Ereignis nur beim
+    /// Zeichner ab; nur die <c>…Async</c>-Fassungen liefern laut bunit-Dokumentation
+    /// „a task that completes when the event handler is done". Der Zeichnerfaden
+    /// (<c>RendererSynchronizationContext</c>) arbeitet ein Werkstück auf dem
+    /// AUFRUFENDEN Faden ab, solange seine Warteschlange frei ist; liegt dort schon
+    /// eines, wird das Ereignis EINGEREIHT, der Aufruf kehrt sofort zurück, und die
+    /// nächste Zeile des Falls liest den Stand VOR dem Ereignis.</para>
+    ///
+    /// <para><b>In dieser Liste legt der <c>@key</c>-Fix W6‑B‑2 das Werkstück
+    /// selbst hin.</b> Der Schlüssel des Rasters ist <c>(Virtualisiert,
+    /// Zeilenzahl)</c> (<c>Raster.razor</c>); beim Übergang 20 749 → 15 ändern sich
+    /// beide, Blazor verwirft das alte QuickGrid und baut ein NEUES — mitsamt
+    /// dessen <c>OnAfterRenderAsync</c> und dem asynchronen Datenabruf, aus dem die
+    /// fünfzehn Zeilen erst in einem SPÄTEREN Zeichenlauf fallen als die
+    /// Trefferzeile. Deshalb wartet dieser Helfer auf BEIDES.</para>
+    ///
+    /// <para>GEMESSEN am wörtlichen Prüfstand (temporäre Klasse, nach der Messung
+    /// gelöscht): ohne Fremdlast 0 von 60 rot; mit 8 Rechenfäden auf 4 Kernen
+    /// 1 von 60 rot, und zwar mit genau dem gemeldeten Bild — Trefferzeile
+    /// „20.749 von 20.749 Sätzen" statt „15 von 20.749 Sätzen". Mit einer von einem
+    /// fremden Faden BELEGTEN Warteschlange fällt das alte Muster in 15 von 15
+    /// Läufen um, das neue in 0 von 15. Das ist der Befund aus der
+    /// Windows-Sandbox vom 07.09.2026: „flackert unter Last und ist allein
+    /// grün".</para>
+    /// </summary>
+    private static void Gezeichnet(IRenderedComponent<Katalogliste> cut, string trefferzeile,
+                                   int zeilen)
+        => cut.WaitForAssertion(() =>
+        {
+            Assert.Equal(trefferzeile, cut.Find(".epos-katalog-treffer").TextContent);
+            Assert.Equal(zeilen, cut.FindAll("tbody tr").Count);
+        });
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Sortierpfeil der Spalte P_th und auf die
+    /// zugehörige Reihenfolge. Begründung wie bei <see cref="Gezeichnet"/> — auch ein
+    /// Klick auf den Spaltenkopf ist ein Ereignis, hinter dem <c>Click()</c> nicht
+    /// wartet.
+    /// </summary>
+    private static void Sortiert(IRenderedComponent<Katalogliste> cut, string pfeil,
+                                 params string[] namen)
+        => cut.WaitForAssertion(() =>
+        {
+            Assert.Contains(pfeil, cut.FindAll(".epos-sortierpfeil")[3].TextContent);
+            Assert.Equal(namen, Namen(cut));
+        });
 
     private static string[] Namen(IRenderedComponent<Katalogliste> cut) =>
         cut.Instance.Angezeigt.Select(z => z.Bezeichner).ToArray();

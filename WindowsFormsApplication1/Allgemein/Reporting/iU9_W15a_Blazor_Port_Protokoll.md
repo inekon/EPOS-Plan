@@ -890,3 +890,94 @@ Zeilenklicks und Schreibgänge.
 | Wettlauf-Nachweis, nachgebende Quelle, 60 Läufe | 58 von 60 rot | **0 von 60 rot** |
 | gesamte `EPOS.UI.Tests`, `de` und `en_US.UTF-8` | — | **je 3 202 grün, 0 rot** |
 | `dotnet build WP-Plan.sln -c Release --no-incremental` | 6 eindeutige Warnungen (Kern und UI) | **unverändert 6** |
+
+## W14a‑E‑10‑O‑13 (07.09.2026) — flatterhafter Fall der Katalogliste
+
+Die Windows-Sandbox meldete am 07.09.2026 `EPOS.UI.Tests` **3 216 von 3 217 grün**;
+der eine Fall war `EPOS.UI.Tests/Bausteine/KataloglisteTests.cs`
+`Zwanzigtausend_Zeilen_werden_zu_fuenfzehn_und_das_Raster_zeigt_sie` — „flackert unter
+Last und ist allein grün" (`Referenzlaeufe/LIESMICH.md`, Abschnitt M7). Auf Linux ist
+er in jedem Gate grün. Der Fall ist geschlossen: Es war **kein Fehler der
+`Katalogliste`**, sondern **derselbe Wettlauf im Test** wie in W16b‑O‑2 (`c3b1513`)
+und W6‑B‑2‑O‑1 (`586d8b5`) — die dritte Fundstelle derselben Regel.
+
+### Ursache
+
+**Bunits synchrone Ereignisse warten nicht.** `Click()`, `Change()` und `Input()`
+geben das Ereignis nur beim Zeichner ab; nur die `…Async`-Fassungen liefern laut
+bunit-Dokumentation „a task that completes when the event handler is done". Der
+Zeichnerfaden (`RendererSynchronizationContext`) arbeitet ein Werkstück auf dem
+AUFRUFENDEN Faden ab, **solange seine Warteschlange frei ist**; liegt dort schon
+eines, wird das Ereignis EINGEREIHT, der Aufruf kehrt sofort zurück, und die nächste
+Zeile des Falls liest den Stand VOR dem Ereignis.
+
+**Das Werkstück legt in DIESEM Fall der `@key`-Fix W6‑B‑2 selbst hin.** Der Schlüssel
+des Rasters ist `(Virtualisiert, Zeilenzahl)` (`EPOS.UI/Standards/Raster.razor:92`,
+`Rasterstand`). Beim Übergang **20 749 → 15** ändern sich **beide** Werte: Blazor
+verwirft das alte QuickGrid und baut ein **neues** auf — mitsamt dessen
+`OnAfterRenderAsync` (Modulimport und `init`) und dem asynchronen Datenabruf, aus dem
+die fünfzehn Körperzeilen erst in einem **späteren** Zeichenlauf fallen als die
+Trefferzeile, die `Katalogliste` selbst zeichnet. Genau der Übergang, für den es den
+Fall gibt, ist also zugleich der Übergang, der ihn flattern lässt.
+
+Verloren geht der Wettlauf mit dem gemeldeten Bild: Die Trefferzeile trägt noch
+„20.749 von 20.749 Sätzen" statt „15 von 20.749 Sätzen".
+
+### Nachweis der Ursache
+
+Mit einer temporären Prüfklasse am **wörtlichen** Prüfstand (`ZZ_Wettlauf151`, nach
+der Messung gelöscht), die den Fall in einer Schleife fährt:
+
+| Messreihe | Ergebnis |
+|---|---|
+| altes Muster, ohne Fremdlast, 60 Läufe | **0 rot** |
+| altes Muster, 8 Rechenfäden auf 4 Kernen, 60 Läufe | **1 rot** — „Trefferzeile = 20.749 von 20.749 Sätzen" |
+| altes Muster, 8 Rechenfäden, 300 Läufe | 0 rot |
+| altes Muster, 16 Rechenfäden, 200 Läufe | 0 rot |
+| altes Muster, **belegte Warteschlange**, 15 Läufe | **15 von 15 rot** |
+| neues Muster, **belegte Warteschlange**, 15 Läufe | **0 von 15 rot** |
+
+Die zweite Zeile belegt die **Häufigkeit** im Feld — auf dieser Linux-Maschine ein
+Treffer in 560 Läufen, auf der Windows-Sandbox unter Last sichtbar. Die zwei letzten
+Zeilen belegen die **Art** der Ursache: Belegt ein FREMDER Faden die Warteschlange des
+Zeichners (`cut.InvokeAsync` mit einem Sperrobjekt, aus einem `Task.Run` gestellt),
+fällt das alte Muster **immer** um und das neue **nie**. Das ist dieselbe Gegenprobe
+wie die „nachgebende Quelle" in W6‑B‑2‑O‑1.
+
+### Behebung — nur am Test, kein Produktcode
+
+`Katalogliste.razor` und `Raster.razor` bleiben unverändert. In
+`KataloglisteTests` warten jetzt drei Stellen auf den GEZEICHNETEN Zustand:
+
+| Helfer | wartet auf |
+|---|---|
+| `Filter(cut, spalte, ausdruck)` | das gezeichnete Popover zwischen Trichterklick und `Change()` (`WaitForElement` statt `Find`) |
+| `Gezeichnet(cut, trefferzeile, zeilen)` | die Trefferzeile UND die Zahl der Körperzeilen |
+| `Sortiert(cut, pfeil, namen…)` | den gezeichneten Sortierpfeil und die Reihenfolge |
+
+Nachgezogen sind alle Stellen der Klasse, an denen hinter einem synchronen Ereignis
+sofort geprüft wurde — Suche, Rücksetzer, Trichter, Popover, Spaltenfilter,
+Zahlenausdruck, Sortierzyklus, Markierung und der flatterhafte Fall selbst. Wo eine
+Prüfung auf **Abwesenheit** folgt (der Rücksetzer steht NICHT da), wartet der Fall
+zuerst auf den gezeichneten Sucherfolg: Eine Abwesenheitsprüfung wäre sonst auch dann
+grün, wenn das Ereignis noch in der Warteschlange liegt, und beweist damit nichts.
+
+### Gleichartige Muster im Bestand
+
+| Fundstelle | Befund | Stand |
+|---|---|---|
+| `KataloglisteTests` (Suche, Filter, Sortierung, Markierung, 20 749 → 15) | derselbe Wettlauf | **berichtigt** |
+| `SpaltenfilterTests` | **kein** Wettlauf: Jede Liste dort bleibt unter `VirtualisierenAb` = 120, das Raster wird nie neu aufgebaut, und die neun Popover-Fälle zeichnen `Spaltenfilter` ganz ohne Raster | unverändert |
+| `ModulImportDialogTests`, `KatalogImportDialogTests` | mit `586d8b5` berichtigt | unverändert |
+| `ProjektTransferDialogTests` | mit `c3b1513` berichtigt | unverändert |
+
+### Wiederholungsnachweis
+
+| Lauf | vorher | nachher |
+|---|---|---|
+| `Zwanzigtausend_Zeilen_werden_zu_fuenfzehn_und_das_Raster_zeigt_sie`, 30 Läufe unter Rechenlast, `de` | Windows-Sandbox flatterhaft | **30 von 30 grün** |
+| derselbe Fall, 30 Läufe unter Rechenlast, `en_US.UTF-8` | — | **30 von 30 grün** |
+| Wettlauf-Nachweis, belegte Warteschlange, 15 Läufe | 15 von 15 rot | **0 von 15 rot** |
+| `KataloglisteTests` + `SpaltenfilterTests`, `de` und `en_US.UTF-8` | — | **je 29 grün, 0 rot** |
+| gesamte `EPOS.UI.Tests`, `de` und `en_US.UTF-8` | — | **je 3 239 grün, 0 rot** |
+| `dotnet build WP-Plan.sln -c Release` | 6 eindeutige Warnungen (Kern und UI) | **unverändert 6** |
