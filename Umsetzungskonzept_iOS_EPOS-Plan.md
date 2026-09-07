@@ -2477,6 +2477,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > waagerechtes Rollen geprüft, Trefferzahlen gemessen 15/63, 7/51, 15/20 749. **Neu offen:** W14a‑E‑10‑Q1 (ein Feld je
 > Zahlenspalte mit `>10`/`<60`/`10..60`/`=15`; Empfehlung ja), O‑5 (Katalogliste der `Zweispaltenauswahl` nur halbe
 > Breite), O‑6 (ein neu aufgebautes Raster schließt das Popover — vor S1.2 zu entscheiden).
+>
+> **W14a‑E‑10 Rev. 3 (zweite Rückmeldung des Anwenders 07.09.2026: „Die Filter sollten über den Spaltennamen sitzen …
+> und nicht separat, außer ‚Suche' über alle Felder. Liste wie zuvor über ganze Breite, sonst zu schmale Liste."),
+> Konzept Rev. 3 und Mockup in `ee7f025`, zusammengeführt in `0b1b4c7` — nichts umgesetzt:** Trichter und Sortierzeichen
+> stehen **im Spaltenkopf neben dem Namen** (Vorbild: der Tabellenkopf der Projektanwendung des Anwenders), die
+> **Filterzeile fällt** — ein gesetzter Filter ist am gefüllten Trichter erkennbar (gefüllt gegen Umriss, nicht nur
+> Farbe), die Trefferzahl steht rechts in der Suchzeile, ein Rücksetzer erscheint nur bei gesetztem Filter. Die **Liste
+> läuft über die ganze Breite**, der Eingabeblock darunter im `Formularraster`: sechs (Heizkessel), sieben (PV-Module)
+> bzw. neun (Wärmepumpen-Katalog) Parameterspalten statt fünf; gefallen sind nur Spalten mit gemessen leeren Daten
+> (Vor-/Rücklauf 0 von 63, Investition 4 von 63, WP-Bauart 45 von 51 leer). Gemessen mit Chromium bei 1 366 und 1 920 px
+> (sechs PNG): keine Seite und **keine Liste** rollt waagerecht — **O‑5 gegenstandslos**. Neu: **W14a‑E‑10‑Q2**
+> (Projektliste und Katalog untereinander statt nebeneinander, Änderung an #76; Empfehlung „untereinander", vor S2.6 zu
+> entscheiden) und **O‑7** (Dialoghöhe 1 152–1 228 px, die Liste ist auf elf Zeilen begrenzt und rollt in sich, der
+> Eingabeblock beginnt bei 674 bzw. 825 px). Aufwand: S1 10–14 h unverändert, S2 7–10 h (+1 h Umbau der
+> `Zweispaltenauswahl`), Summe S1–S3 24–33 h.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
