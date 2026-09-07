@@ -15,14 +15,20 @@ namespace EPOS.Kern.Tests
     /// Kette wie für Wirtschaftlichkeit und Kennzahlen —
     /// <see cref="Emissionsquelle"/> über <see cref="EmissionsFaktorLader"/>.</para>
     ///
-    /// <para><b>Warum es hier geprüft wird und nicht im Referenzlauf.</b> Die
-    /// Emissionswerte der Simulation stehen in KEINER Referenz-CSV: Weder
-    /// <c>aggregate.csv</c> noch eine Vektordatei führt eine Emissionsgröße
-    /// (<c>Referenzlauf/Ergebnisexport.cs</c> schreibt sie nicht, und
-    /// <c>Tab_Ergebnis*</c> hat keine Emissionsspalte). Der Referenzlauf ist nach dem
-    /// Umbau deshalb byte-gleich — und genau darum ist er hier KEIN Nachweis. Die
-    /// Faktoren selbst und ihre Wirkung auf <c>Em_CO2_*</c> stehen nur in dieser
-    /// Probe.</para>
+    /// <para><b>Warum es hier geprüft wird — und seit Em‑9.8 auch im Referenzlauf.</b>
+    /// Bis zum 07.09.2026 standen die Emissionswerte der Simulation in KEINER
+    /// Referenz-CSV: Weder <c>aggregate.csv</c> noch eine Vektordatei führte eine
+    /// Emissionsgröße, und <c>Tab_Ergebnis*</c> hat bis heute keine Emissionsspalte
+    /// (Weg B des Konzepts, 11.2.1, ist ausdrücklich abgelehnt — eine gespeicherte
+    /// Emissionszahl liefe gegen den Bericht auseinander). Der Referenzlauf war nach
+    /// dem Umbau B1 deshalb byte-gleich, und diese Probe war der EINZIGE Nachweis.
+    /// <b>Mit dem Anwenderentscheid Em‑9.8 (07.09.2026, „Empfehlung") schreibt
+    /// <c>Referenzlauf/Ergebnisexport.cs</c> die zehn Jahressummen als Skalare
+    /// <c>Em.Kessel.*</c> / <c>Em.Bhkw.*</c></b>; die Basis
+    /// <c>2026-09-07_R5_Zahlenrand</c> friert sie ein. Beide Nachweise bleiben und
+    /// prüfen Verschiedenes: Diese Probe prüft die KETTE (welcher Faktor gilt und
+    /// warum), der Referenzlauf prüft die ZAHL am Ende von 8 760 Stunden. Abschnitt 5
+    /// unten hält die Naht zwischen beiden.</para>
     ///
     /// <para>Eine Arbeitskopie je Klasse (Regel seit iU9-W11a); fehlt die Datei,
     /// schweigen die Fälle. <c>[Collection("Testdatenbank")]</c>, weil
@@ -328,8 +334,117 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // 5 — Die zehn Skalare des Referenzexports (Em-9.8)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Nachweis zu Em‑9.8‑Q2.</b> Projekt 1030 fährt Kessel UND BHKW; alle
+        /// zehn Größen entstehen, und acht davon sind ≠ 0. Die zwei CO-Größen sind 0 —
+        /// nicht aus Versehen, sondern weil es die Emissionsart <c>CO</c> nicht gibt
+        /// (Em‑9.9: „bewusst nicht", bis eine Quelle mit CO-Faktoren je Energieträger
+        /// vorliegt). Genau deshalb stehen sie trotzdem im Export: So ÄNDERT ein
+        /// späterer Trägerwert eine Zahl, statt einen Schlüssel hinzuzufügen.
+        /// </summary>
+        [Fact]
+        public void Die_zehn_Emissionsgroessen_entstehen_und_acht_davon_sind_ungleich_null()
+        {
+            if (!_db.Vorhanden) return;
+
+            var lauf = new SimulationRunner();
+            string fehler;
+            Assert.True(lauf.Simuliere(PROJEKT, out fehler), fehler);
+
+            Assert.True(lauf.sim.bSimulationKessel && lauf.sim.simulation_spk != null,
+                        "Prüfprojekt ohne Kesselstufe - der Fall prüft dann die halbe Sache.");
+            Assert.True(lauf.sim.bSimulationBHKW && lauf.sim.simulation_bhkw != null,
+                        "Prüfprojekt ohne BHKW-Stufe - der Fall prüft dann die halbe Sache.");
+
+            SimulationSPK spk = lauf.sim.simulation_spk;
+            SimulationBHKW bh = lauf.sim.simulation_bhkw;
+
+            Assert.True(spk.Em_CO2_SPK    > 0, "Em.Kessel.Co2T ist 0.");
+            Assert.True(spk.Em_SO2_SPK    > 0, "Em.Kessel.So2Kg ist 0.");
+            Assert.True(spk.Em_NOX_SPK    > 0, "Em.Kessel.NoxKg ist 0.");
+            Assert.True(spk.Em_Staub_SPK  > 0, "Em.Kessel.StaubKg ist 0.");
+            Assert.True(bh.Em_CO2_BHKW    > 0, "Em.Bhkw.Co2T ist 0.");
+            Assert.True(bh.Em_SO2_BHKW    > 0, "Em.Bhkw.So2Kg ist 0.");
+            Assert.True(bh.Em_NOX_BHKW    > 0, "Em.Bhkw.NoxKg ist 0.");
+            Assert.True(bh.Em_Staub_BHKW  > 0, "Em.Bhkw.StaubKg ist 0.");
+
+            // Em-9.9: keine Emissionsart "CO", also strukturell 0 - auf beiden Seiten.
+            Assert.Equal(0.0, spk.Em_CO_SPK, 9);
+            Assert.Equal(0.0, bh.Em_CO_BHKW, 9);
+            Assert.Equal(0, Ganzzahl("SELECT count(*) FROM emissionsart WHERE kuerzel = 'CO'"));
+        }
+
+        /// <summary>
+        /// <b>Der Wächter über die Naht.</b> Jeder der zehn Schlüssel steht in
+        /// <c>Referenzlauf/Ergebnisexport.cs</c>, und zwar gebunden an SEIN Feld: Ein
+        /// vertauschtes Paar (<c>Em.Kessel.NoxKg</c> an <c>Em_SO2_SPK</c>) fiele im
+        /// Referenzvergleich nie auf, weil beide Zahlen von da an einfach so
+        /// dastünden. Geprüft wird der Quelltext, weil die Testprojekte das Werkzeug
+        /// nicht referenzieren — dieselbe Bauart wie <see cref="DoubleWacheTests"/>.
+        ///
+        /// <para>Mitgeprüft wird die Einheit im Namen (Em‑9.8‑Q3): CO₂ endet auf
+        /// <c>T</c> (t/a), die vier übrigen auf <c>Kg</c> (kg/a) — und im Export steht
+        /// kein Faktor 1 000, der die eine in die andere umrechnete.</para>
+        /// </summary>
+        [Fact]
+        public void Der_Export_bindet_jeden_der_zehn_Schluessel_an_sein_Feld()
+        {
+            string quelle = Ergebnisexportquelle();
+
+            var paare = new (string Schluessel, string Feld)[]
+            {
+                ("Em.Kessel.Co2T",    "Em_CO2_SPK"),
+                ("Em.Kessel.So2Kg",   "Em_SO2_SPK"),
+                ("Em.Kessel.NoxKg",   "Em_NOX_SPK"),
+                ("Em.Kessel.CoKg",    "Em_CO_SPK"),
+                ("Em.Kessel.StaubKg", "Em_Staub_SPK"),
+                ("Em.Bhkw.Co2T",      "Em_CO2_BHKW"),
+                ("Em.Bhkw.So2Kg",     "Em_SO2_BHKW"),
+                ("Em.Bhkw.NoxKg",     "Em_NOX_BHKW"),
+                ("Em.Bhkw.CoKg",      "Em_CO_BHKW"),
+                ("Em.Bhkw.StaubKg",   "Em_Staub_BHKW")
+            };
+
+            foreach (var p in paare)
+            {
+                string zeile = System.Linq.Enumerable.FirstOrDefault(
+                    quelle.Replace("\r\n", "\n").Split('\n'),
+                    z => z.Contains("\"" + p.Schluessel + "\"", StringComparison.Ordinal));
+
+                Assert.True(zeile != null, "Der Schluessel " + p.Schluessel + " fehlt im Export.");
+                Assert.Contains(p.Feld, zeile, StringComparison.Ordinal);
+            }
+
+            // Die Bedingung nach 11.2.2: ohne gelaufene Stufe KEIN Schluessel.
+            Assert.Contains("sim.bSimulationKessel && sim.simulation_spk != null", quelle, StringComparison.Ordinal);
+            Assert.Contains("sim.bSimulationBHKW && sim.simulation_bhkw != null", quelle, StringComparison.Ordinal);
+        }
+
+        // =================================================================================
         //  Hilfsmittel
         // =================================================================================
+
+        /// <summary>
+        /// Der Quelltext von <c>Referenzlauf/Ergebnisexport.cs</c> — derselbe Weg zur
+        /// Wurzel des Arbeitsbaums wie in <see cref="DoubleWacheTests"/>. Die Datei ist
+        /// EINE Fassung für drei Werkzeuge (<c>Referenzlauf</c>, <c>EPOS.Referenzlauf</c>
+        /// und den iOS-Prüfmodus); wer sie ändert, ändert alle drei.
+        /// </summary>
+        private static string Ergebnisexportquelle(
+            [System.Runtime.CompilerServices.CallerFilePath] string eigeneDatei = null)
+        {
+            string ordner = System.IO.Path.GetDirectoryName(eigeneDatei);
+            string wurzel = ordner == null ? null : System.IO.Path.GetDirectoryName(ordner);
+            Assert.True(wurzel != null && System.IO.File.Exists(System.IO.Path.Combine(wurzel, "WP-Plan.sln")),
+                        "Die Wurzel des Arbeitsbaums (WP-Plan.sln) ist nicht zu finden.");
+
+            string datei = System.IO.Path.Combine(wurzel, "Referenzlauf", "Ergebnisexport.cs");
+            Assert.True(System.IO.File.Exists(datei), "Datei nicht gefunden: " + datei);
+            return System.IO.File.ReadAllText(datei);
+        }
 
         private static int Ganzzahl(string sql)
         {

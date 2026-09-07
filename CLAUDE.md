@@ -110,6 +110,17 @@ Migrationsschritte"); danach wird jeder Aufruf vorher mit dem Anwender abgestimm
 gegen `Referenzlaeufe/2026-09-07_R4_Double` gehalten (**zwölf Projekte, 312 CSV**, aus dem plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite`; eingefroren am 07.09.2026 nach dem Anwenderentscheid **W8‑O‑5d** „alles in double": Stundenreihen, Akkumulatoren und die Summenfunktionen des BHKW-Plan-Ports rechnen und speichern seither in `double`, die float-Nachbildung des FPU-Verhaltens der alten `BHKWPLAN.DLL` ist aufgegeben. **Elf der zwölf Projekte weichen gewollt von der Vorgängerbasis ab** — die Jahressummen bleiben innerhalb 3e‑5, aber drei Schwellen des Modells (die Speicherhysterese `SOC >= Q_max · SchwelleAus`, die Volllast/Modulations-Grenze des BHKW und die drei `int`-Rückgaben in `BhkwPlan`) entscheiden am letzten Bit und tragen das Ergebnis weiter; die Begründung mit Zahlen steht im `protokoll.txt` der Basis. Die Vorgängerbasis `2026-09-06_R3_Straenge` (Entscheid **W6‑O‑7**, Prüfprojekt **1045 „Prüfprojekt Ost/West Stränge"** für den Strangweg der Stufe S3) bleibt zur Geschichte liegen, ebenso `2026-09-05_R2_Zeitbasis` und `2026-08-30_B3-Kaskade`, deren Projekte 1011 und 1021 nicht in der Testdatenbank stehen); die CI rechnet bei
 jedem Push die Projekte 1030, 1007, 1017 und 1045 gegen dieselbe Basis.
 
+**Die Basis führt seit dem Anwenderentscheid Em‑9.8 (07.09.2026) auch zehn
+Emissionsskalare** je Projekt mit Kessel- bzw. BHKW-Stufe (`Em.Kessel.Co2T` in t/a,
+`…So2Kg`/`…NoxKg`/`…CoKg`/`…StaubKg` in kg/a, dieselben fünf für `Em.Bhkw.`). Damit ist die
+Testdatenbank an einer Stelle regressionsrelevant, an der sie es vorher nicht war — den
+Emissionsfaktoren —, und daraus folgt die **Einfrierregel (Em‑9.8‑Q4): Wer einen gesäten
+Emissionsfaktor der Testdatenbank ändert — `emissionsart`, einen AKTIVEN `emissionswert`,
+`Tab_Brennstoff_Stamm.CO2/SO2/NOx/Staub`, `energy_project_settings.co2/so2/nox` oder den
+Berechnungsmodus eines Referenzprojekts —, friert im selben Schritt die Basis neu ein und
+begründet den Wechsel in [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md).
+Vorlagen (`ist_aktiv = falsch`) bleiben ausdrücklich frei.**
+
 C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build zwingend
 **x64**. Bis 22.08.2026 x86; Umstellungsplan, offene Pakete und Rückweg
 (Git-Tag `letzter-x86-stand`) in

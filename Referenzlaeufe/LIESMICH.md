@@ -10,6 +10,31 @@ gesetzt — oder ein Fehler.
 Grundlage: `WindowsFormsApplication1/Allgemein/Simulation/Konzept_Simulation_QuellenSenken.md`,
 Paket B1, Kapitel 9.
 
+## Die Einfrierregel (Anwenderentscheid Em‑9.8‑Q4 vom 07.09.2026)
+
+Seit dem Entscheid **Em‑9.8** führt `aggregate.csv` zehn Emissionsskalare je Projekt mit
+Kessel- bzw. BHKW-Stufe (`Em.Kessel.Co2T`, `…So2Kg`, `…NoxKg`, `…CoKg`, `…StaubKg` und
+dieselben fünf für `Em.Bhkw.`). Damit ist `Kenndaten_Test.sqlite` an einer Stelle
+regressionsrelevant, an der sie es vorher nicht war — den **Emissionsfaktoren**. Daraus
+folgt eine Regel, die vorher keine war:
+
+> **Wer einen gesäten Emissionsfaktor der Testdatenbank ändert, friert im selben Schritt
+> die Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen ist jede Änderung an `emissionsart` (Auswahl, Äquivalenzfaktor), an einem
+> **aktiven** `emissionswert` (81 Zeilen), an `Tab_Brennstoff_Stamm.CO2/SO2/NOx/Staub`
+> (25 Sätze), an `energy_project_settings.co2/so2/nox` der zwölf Referenzprojekte und am
+> Berechnungsmodus (`Tab_Projekt.Emission_Berechnungsmodus`) eines von ihnen.
+>
+> **Nicht** betroffen ist die Pflege von **Vorlagen** (`ist_aktiv = falsch`, 224 Zeilen) —
+> sie erreichen die Lesekette gar nicht. Der Migrationsschritt 58 (E6) hat genau deshalb
+> 85 Vorlagen gesät und keinen aktiven Wert angefasst.
+
+Ohne diese Regel fiele die CI beim nächsten Katalogschritt rot aus, ohne dass jemand mit
+dem Zusammenhang rechnete. Herleitung und Messung stehen in
+[`Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md`](../Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md)
+§ 11.2.6; der Entscheid selbst in § 8 („Em‑9.8 / Em‑9.9 — die sieben Fragen aus § 11.5").
+
 ## Aktuelle Basis
 
 **`2026-09-05_M5_nach-Merge5/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
