@@ -302,7 +302,7 @@ namespace WindowsFormsApplication1
             };
 
             var teile = new List<string>();
-            var fehlt = new List<string>();
+            var fehlt = new Fehlliste();
 
             int reihe = s.Module_Reihe ?? 0;
             if (reihe <= 0) fehlt.Add(MyResource.Resource.PVS_FEHLT_REIHE);
@@ -317,7 +317,9 @@ namespace WindowsFormsApplication1
             double? uoc = SpannungReihe(reihe, modul?.m_U_Leerlauf, modul?.m_beta_OC, T_KALT);
             sb.UocKalt = uoc;
 
-            if (!uoc.HasValue) FehltEinmal(fehlt, modul, MyResource.Resource.PVS_FEHLT_UOC);
+            if (!uoc.HasValue)
+                SpannungsWerteFehlen(fehlt, modul, modul?.m_U_Leerlauf,
+                                     MyResource.Resource.PVS_FEHLT_UOC_WERT);
             else if (g != null && Gesetzt(g.m_U_Dc_Max))
             {
                 if (uoc.Value > g.m_U_Dc_Max.Value)
@@ -339,7 +341,9 @@ namespace WindowsFormsApplication1
             sb.UmppHeiss = heiss;
             sb.UmppKalt = kalt;
 
-            if (!heiss.HasValue) FehltEinmal(fehlt, modul, MyResource.Resource.PVS_FEHLT_UMPP);
+            if (!heiss.HasValue)
+                SpannungsWerteFehlen(fehlt, modul, modul?.m_U_Mpp,
+                                     MyResource.Resource.PVS_FEHLT_UMPP_WERT);
             else if (g != null && (Gesetzt(g.m_U_Mpp_Min) || Gesetzt(g.m_U_Mpp_Max)))
             {
                 bool p2Verletzt = Gesetzt(g.m_U_Mpp_Min) && heiss.Value < g.m_U_Mpp_Min.Value;
@@ -368,8 +372,7 @@ namespace WindowsFormsApplication1
             if (fehlt.Count > 0)
             {
                 sb.Farbe = Schlechter(sb.Farbe, Ampel.Gelb);
-                teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_WERTE_FEHLEN,
-                                        string.Join(", ", fehlt)));
+                fehlt.Anhaengen(teile);
             }
 
             sb.Satz = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_SATZ_STRANG,
@@ -457,15 +460,20 @@ namespace WindowsFormsApplication1
             // Summe waere schlimmer als keine.
             bool stromBekannt = true;
 
+            // W6-B-4: WELCHER Wert fehlt, sagt die Meldung einzeln - je Wert einmal,
+            // auch wenn mehrere Straenge dasselbe Modul fuehren.
+            var fehlt = new Fehlliste();
+
             foreach (AnlageStrangModel s in straenge)
             {
                 int t = mpptBekannt ? s.MpptOderEins : 1;
                 if (!jeMppt.ContainsKey(t)) { jeMppt[t] = 0; stromJeMppt[t] = 0.0; reihenfolge.Add(t); }
                 jeMppt[t] += s.ParallelOderEins;
 
-                double? js = StromJeStrang(ModulDesStrangs(s, gaben));
+                PhotovoltaikModel m = ModulDesStrangs(s, gaben);
+                double? js = StromJeStrang(m);
                 if (js.HasValue) stromJeMppt[t] += s.ParallelOderEins * js.Value;
-                else stromBekannt = false;
+                else { stromBekannt = false; StromWerteFehlen(fehlt, m); }
             }
 
             reihenfolge.Sort();
@@ -510,8 +518,7 @@ namespace WindowsFormsApplication1
             if (!stromBekannt)
             {
                 gb.Farbe = Schlechter(gb.Farbe, Ampel.Gelb);
-                teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_WERTE_FEHLEN,
-                                        MyResource.Resource.PVS_FEHLT_ISC));
+                fehlt.Anhaengen(teile);
             }
             else if (!p4Gemeldet && Gesetzt(g.m_I_Dc_Max))
             {
@@ -668,14 +675,91 @@ namespace WindowsFormsApplication1
         /// <summary>Dasselbe für eine Modulzahl, die als <c>double</c> im Modell steht.</summary>
         private static bool Gesetzt(double wert) => Math.Abs(wert) > 1e-12;
 
+        // =================================================================
+        //  W6-B-4 — was genau fehlt, und wo man es pflegt
+        // =================================================================
+
         /// <summary>
-        /// Nimmt eine fehlende MODULangabe genau EINMAL auf: Fehlt das Modul ganz, ist
-        /// nicht die einzelne Spalte der Befund, sondern das Modul.
+        /// <b>Die Sammelstelle der fehlenden Angaben einer Meldung</b> — Befund
+        /// <b>W6‑B‑4</b> der Windows-Abnahme vom 07.09.2026.
+        ///
+        /// <para><b>Der Befund.</b> Die Meldung nannte ein PAAR mit „oder"
+        /// („Leerlaufspannung oder beta_OC des Moduls"), obwohl der Prüfstand jeden der
+        /// beiden Werte einzeln abfragt — er WEISS, welcher fehlt, und sagte es nicht.
+        /// Der Anwender fragte darauf: „Welche Werte?"</para>
+        ///
+        /// <para><b>Zwei Regeln stecken hier drin.</b> Erstens: jede Angabe genau
+        /// EINMAL, auch wenn sie mehrere Prüfungen unbrauchbar macht (<c>beta_OC</c>
+        /// trägt P1, P2 und P3) oder mehrere Stränge dasselbe Modul führen. Zweitens:
+        /// Steht ein MODULwert in der Liste, folgt der PFLEGEWEG — ein Satz, der sagt,
+        /// wo man den Wert einträgt. Ein Hinweis, der immer dasteht, wird nicht
+        /// gelesen; deshalb hängt er an <see cref="Modulwert"/> und nicht an der
+        /// Zeilenzahl.</para>
         /// </summary>
-        private static void FehltEinmal(List<string> fehlt, PhotovoltaikModel modul, string spalte)
+        private sealed class Fehlliste
         {
-            string text = modul == null ? MyResource.Resource.PVS_FEHLT_MODUL : spalte;
-            if (!fehlt.Contains(text)) fehlt.Add(text);
+            private readonly List<string> _angaben = new List<string>();
+
+            /// <summary>Ist ein MODULwert darunter? Nur dann folgt der Pflegeweg.</summary>
+            public bool Modulwert;
+
+            /// <summary>Wie viele Angaben fehlen.</summary>
+            public int Count { get { return _angaben.Count; } }
+
+            /// <summary>Nimmt eine Angabe auf — genau einmal.</summary>
+            public void Add(string text)
+            {
+                if (!string.IsNullOrEmpty(text) && !_angaben.Contains(text)) _angaben.Add(text);
+            }
+
+            /// <summary>Nimmt einen MODULwert auf und merkt sich, dass es einer war.</summary>
+            public void Modul(string text)
+            {
+                Add(text);
+                Modulwert = true;
+            }
+
+            /// <summary>
+            /// Hängt „Werte fehlen: …" und — bei einem Modulwert — den Pflegeweg an die
+            /// Satzteile an.
+            /// </summary>
+            public void Anhaengen(List<string> teile)
+            {
+                if (_angaben.Count == 0) return;
+
+                teile.Add(string.Format(CultureInfo.CurrentCulture,
+                                        MyResource.Resource.PVS_WERTE_FEHLEN,
+                                        string.Join(", ", _angaben)));
+
+                if (Modulwert) teile.Add(MyResource.Resource.PVS_PFLEGEWEG);
+            }
+        }
+
+        /// <summary>
+        /// Welche MODULwerte fehlen der Spannungsrechnung? Fehlt das Modul ganz, ist
+        /// nicht die einzelne Spalte der Befund, sondern das Modul.
+        ///
+        /// <para><b>Die Reihe meldet sich selbst.</b> <see cref="SpannungReihe"/>
+        /// liefert auch dann <c>null</c>, wenn allein „Module in Reihe" 0 ist — genau
+        /// das stand im Bildschirmfoto des Anwenders, dessen Modul die zwei Spannungen
+        /// sehr wohl führte. Deshalb wird hier nur nachgesehen, was am MODUL fehlt.</para>
+        /// </summary>
+        private static void SpannungsWerteFehlen(Fehlliste fehlt, PhotovoltaikModel modul,
+                                                 double? spannung, string spannungstext)
+        {
+            if (modul == null) { fehlt.Add(MyResource.Resource.PVS_FEHLT_MODUL); return; }
+
+            if (!Gesetzt(spannung)) fehlt.Modul(spannungstext);
+            if (!Gesetzt(modul.m_beta_OC)) fehlt.Modul(MyResource.Resource.PVS_FEHLT_BETA_OC);
+        }
+
+        /// <summary>Dasselbe für die Stromrechnung: <c>I_SC</c> und <c>alpha_SC</c>.</summary>
+        private static void StromWerteFehlen(Fehlliste fehlt, PhotovoltaikModel modul)
+        {
+            if (modul == null) { fehlt.Add(MyResource.Resource.PVS_FEHLT_MODUL); return; }
+
+            if (!Gesetzt(modul.m_I_Kurzschluss)) fehlt.Modul(MyResource.Resource.PVS_FEHLT_ISC_WERT);
+            if (!Gesetzt(modul.m_alpha_SC)) fehlt.Modul(MyResource.Resource.PVS_FEHLT_ALPHA_SC);
         }
 
         private static string Grenze(double? wert)

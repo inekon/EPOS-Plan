@@ -15779,6 +15779,27 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Leer heisst: der Strang rechnet mit dem Modul der Anlage. Ein eigener Modultyp gilt nur für diesen Strang.</value>
   </data>
+  <data name="PVS_FEHLT_UOC_WERT" xml:space="preserve">
+    <value>Leerlaufspannung U_OC des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_UMPP_WERT" xml:space="preserve">
+    <value>MPP-Spannung U_MPP des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_ISC_WERT" xml:space="preserve">
+    <value>Kurzschlussstrom I_SC des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_ALPHA_SC" xml:space="preserve">
+    <value>Temperaturkoeffizient alpha_SC des Moduls</value>
+  </data>
+  <data name="PVS_FEHLT_BETA_OC" xml:space="preserve">
+    <value>Temperaturkoeffizient beta_OC des Moduls</value>
+  </data>
+  <data name="PVS_PFLEGEWEG" xml:space="preserve">
+    <value>Pflege: Administration → Energiesysteme → Photovoltaik → PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus „CEC Modules.csv“</value>
+  </data>
+  <data name="PVS_NICHT_GEPFLEGT" xml:space="preserve">
+    <value>– nicht gepflegt</value>
+  </data>
   <data name="IMP_GER_BTN_CEC_DATEI" xml:space="preserve">
     <value>📄 CEC-Datei laden ▶</value>
   </data>
