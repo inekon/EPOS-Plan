@@ -190,6 +190,17 @@ namespace WindowsFormsApplication1
                     new Func<string, IReadOnlyList<(int Id, string Text)>>(
                         hersteller => WechselrichterEintraege(wrStamm, hersteller)),
 
+                // W6-E-6 (Anwenderentscheid 07.09.2026): der Hersteller des Moduls der
+                // gewaehlten Anlage - die VORAUSWAHL des Herstellerfilters. Die Huelle
+                // liest nur den Katalogsatz; ob es dazu ein Geraet gibt und was daraus
+                // folgt, entscheidet die Komponente an ihrer Herstellerliste.
+                ["Modulhersteller"] = new Func<ErzeugerZeile, string>(
+                    zeile =>
+                    {
+                        PhotovoltaikStammCtrl.ModulDetail d = ModulDer(zeile);
+                        return d == null ? "" : (d.Firma ?? "");
+                    }),
+
                 // W6-O-6: die Modulspalte je Strang. Die Klappliste zeigt den
                 // MODULKATALOG, die Strangzeile traegt die Projektkopie - genau wie
                 // beim Wechselrichter.

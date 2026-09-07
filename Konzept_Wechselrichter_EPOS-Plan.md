@@ -1109,7 +1109,8 @@ Neigung [°]    30        Azimut [°]    0        Anzahl Module   10   (abgeleit
 Rechenmodell   Einfach ▾      Systemverluste [%]   12,00
 ─────────────────────────────────────────────────────────────────────────────
 Wechselrichter und Stränge                              DC/AC 1,10   ● grün
-Filtern nach Hersteller:  Alle ▾
+Filtern nach Hersteller:  Muster ▾
+Vorauswahl: Hersteller des Moduls (Muster). Jeder Hersteller ist wählbar.
 ┌──────┬──────────────────────┬──────────────────┬──────┬──────┬───────┬──────┬───────┬────────┐
 │ Rang │ Modul                │ Wechselrichter   │ Ger. │ MPPT │ Reihe │ Par. │ Neig. │ Azimut │
 ├──────┼──────────────────────┼──────────────────┼──────┼──────┼───────┼──────┼───────┼────────┤
@@ -1134,6 +1135,11 @@ Leer heisst: der Strang rechnet mit dem Modul der Anlage.
   ÜBER der Tabelle** (W6‑O‑4) und wirkt auf die Klappliste aller Zeilen; ein bereits gewähltes
   Gerät bleibt in SEINER Zeile sichtbar, auch wenn der Filter es ausschliesst. Er ist vom
   Modulfilter unabhängig — der Gerätehersteller kann ein anderer sein als der Modulhersteller.
+* **Der Filter STEHT beim Aufmachen auf dem Hersteller des Anlagenmoduls** (W6‑E‑6), sofern der
+  Wechselrichterkatalog überhaupt ein Gerät dieses Herstellers führt; sonst auf „Alle". Er
+  **sperrt nichts**: Jeder andere Hersteller ist eine Klapplistenwahl entfernt, und eine schon
+  gewählte Zeile behält ihr Gerät. Unter der Filterzeile sagt eine Herleitung, woher die
+  Vorauswahl kommt — und im selben Satz, dass jeder Hersteller wählbar bleibt.
 * **Die Modulspalte ist eine Klappliste aus dem Modulkatalog** (W6‑O‑6), mit
   „(Modul der Anlage)" als Vorgabe. Sie wird gebraucht, wenn eine Anlage mit einem zweiten
   Modultyp erweitert wurde; ohne Eintrag rechnet der Strang mit dem Modul der Anlage.
@@ -1182,6 +1188,34 @@ Anlagenrückfall ohne Zuordnung.
 > Strangzeilen. **Ein bereits gewähltes Gerät bleibt sichtbar**, auch wenn der Filter es
 > ausschliesst — sonst stünde in der Zeile nichts, und der Anwender hielte die Zuordnung für
 > verloren. Ohne Herstellerliste zeichnet die Komponente keine Filterzeile.
+>
+> **Seine VORAUSWAHL steht seit dem 07.09.2026 auf dem Modulhersteller** (Anwenderentscheid
+> **W6‑E‑6**): Der Filter zeigt beim Aufmachen den Hersteller des ANLAGENmoduls, sofern der
+> Wechselrichterkatalog mindestens ein Gerät dieses Herstellers führt — sonst „Alle". **Er
+> sperrt weiterhin nichts**; das war die ausdrückliche Auflage („Der Wechselrichter soll
+> beliebig wählbar sein und nur die Vorauswahl auf den Modulhersteller verweisen"), und sie
+> gilt schon deshalb, weil die Klappliste jeder Zeile den Katalog **zum eingestellten Filter**
+> zeigt und der Filter frei umstellbar bleibt. Die Trefferprüfung sitzt in der **Komponente**,
+> nicht in der Hülle: Sie fragt allein die Liste `Hersteller`, die ohnehin hereinkommt, und
+> damit hat iOS denselben Weg ohne eine zweite Fassung derselben Regel; die Hülle reicht nur
+> den Namen (`PhotovoltaikStammCtrl.ModulDetail.Firma`) über den Delegaten
+> `PhotovoltaikDialog.Modulhersteller` herein.
+>
+> **Der Namensabgleich ist zweistufig**, weil Modul- und Gerätekatalog aus verschiedenen
+> Quellen kommen und denselben Hersteller verschieden schreiben: erst **Gleichheit** ohne
+> Rücksicht auf Gross-/Kleinschreibung und Randleerzeichen, dann **„der eine Name beginnt mit
+> dem anderen"** in beide Richtungen (Modul „SMA" trifft „SMA America", Modul
+> „SMA Solar Technology" trifft „SMA"). Der zweite Versuch verlangt **drei Zeichen** — ein
+> Präfix von einem oder zwei Buchstaben träfe zu viel, „S" stünde auf „Siemens" so gut wie auf
+> „SMA". Bei mehreren Treffern gilt der ERSTE der Katalogliste; sie ist sortiert, die
+> Vorauswahl damit wiederholbar.
+>
+> **Vorgestellt wird beim ersten Zeichnen und bei jedem WECHSEL des Anlagenmoduls, sonst
+> nie.** Die Hülle setzt die Parameter nach jeder Zellenänderung neu (jede Änderung meldet
+> `Geaendert`); ein Vorstellen bei jedem Durchlauf nähme dem Anwender seine Filterwahl im
+> selben Augenblick wieder ab, in dem er sie trifft. Die Komponente merkt sich deshalb, WOFÜR
+> zuletzt vorgestellt wurde. Eine schon gewählte Zeile behält ihr Gerät — die Vorauswahl ist
+> eine Anzeigehilfe und ändert keine Zuordnung.
 >
 > **Die Modulspalte je Strang steht seit demselben Tag daneben** (**W6‑O‑6**): Klappliste über
 > den Modulkatalog, „(Modul der Anlage)" als Id 0 voran, die Zeile trägt die Projektkopie, und
@@ -1570,10 +1604,11 @@ N4.3). Die hier genannten Größenordnungen sind damit verträglich.
 
 ## 12. Offene Punkte
 
-**Stand 06.09.2026:** **Alle neun Punkte sind geschlossen.** **W6‑O‑2** durch
+**Stand 07.09.2026:** **Alle zehn Punkte sind geschlossen.** **W6‑O‑2** durch
 Anwenderentscheid („Empfehlung": nur die eingesetzten Geräte von Hand nachpflegen, keine
-Programmarbeit), die übrigen acht durch Umsetzung — zuletzt **W6‑O‑8** (Schwellwert der
-Teillast-Regel) und der neue Punkt **W6‑O‑9** (der Ordner `VDI-3805-Daten` im Setup).
+Programmarbeit), die übrigen neun durch Umsetzung — zuletzt **W6‑E‑6** (die Vorauswahl des
+Herstellerfilters auf den Modulhersteller) nach **W6‑O‑8** (Schwellwert der Teillast-Regel)
+und **W6‑O‑9** (der Ordner `VDI-3805-Daten` im Setup).
 
 | Nr. | Punkt | Stand |
 |---|---|---|
@@ -1586,6 +1621,7 @@ Teillast-Regel) und der neue Punkt **W6‑O‑9** (der Ordner `VDI-3805-Daten` i
 | **W6‑O‑9** | **Der Ordner `VDI-3805-Daten` wurde nicht ausgeliefert.** Die Importmasken lesen aus dem Herstellerdatenpfad; die Datensätze und die zwei CEC-Listen (`CEC Modules.csv`, `CEC Inverters.csv`) lagen aber nur im Repository. Ein frisch installierter Kunde stand damit vor leeren Masken — und ausgerechnet W6‑O‑3 hatte den Auslieferungskatalog auf „Liste als Datei" umgestellt. | **ENTSCHIEDEN und UMGESETZT in `de5da29`** — Anwenderentscheid vom 06.09.2026: „ja". `Setup/EPOS-Plan.iss` liefert den Ordner (rund **186 MB**: WP 134, KWK 25, PV 13, SPK 10, Pufferspeicher 4,4, Solarthermie 1,1) als eigene Komponente **„Herstellerdaten (VDI 3805, CEC)"** aus — im Assistenten **vorgewählt** und **abwählbar** (neue Abschnitte `[Types]`/`[Components]`). Ziel ist `{app}\VDI-3805-Daten`, **neben dem Programm und nicht unter `%ProgramData%`**: Die Masken LESEN nur, damit gehört der Bestand in die Zeile „nur das Setup schreibt" der Rechtetabelle — dieselbe Lage und derselbe Grund wie bei der Vorlagendatenbank unter `{app}\Vorlage`; ein Update ersetzt ihn, die Deinstallation nimmt ihn mit, während `%ProgramData%\EPOS_PLAN` absichtlich stehen bleibt. **Der Herstellerdatenpfad findet ihn ohne Zutun:** `IPfade.Herstellerdaten` sucht `VDI-3805-Daten` von der laufenden Anwendung aus aufwärts (installiert: erste Stufe; Entwicklungsstand: Repowurzel als Rückfall), `EinstellungenCtrl.HerstellerdatenpfadOderVorgabe` legt die Reihenfolge fest — gespeicherte Einstellung, sonst Auslieferung, sonst der alte Vorgabeordner. `build-setup.ps1` bricht ohne den Ordner mit der Bezugsquelle ab, `EPOS-Plan.iss` über `#error`. Konzept und Begründung: `Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md`, Entscheidung **E10** |
 | **W6‑O‑7** | **Referenzbasis mit Strängen?** Die Basis `2026-09-05_R2_Zeitbasis` blieb gültig und byte-gleich: Kein Referenzprojekt führte eine Strangzeile, und genau das war der Nachweis der Vorrangregel. Ein PRÜFPROJEKT mit Strängen in `Kenndaten_Test.sqlite` rechnet den Strangweg dagegen in jedem Referenzlauf mit — und ist damit die Wache gegen eine spätere stille Änderung am Strangweg, wie sie die elf Projekte für den Anlagenweg sind. Kosten: eine neu einzufrierende Basis. | **umgesetzt in `5fa9960`** — Anwenderentscheid vom 06.09.2026, wörtlich: „Empfehlung". Neue Basis `2026-09-06_R3_Straenge` (zwölf Projekte, 312 CSV); die elf alten **byte-gleich** zu R2. Das zwölfte, **1045 „Prüfprojekt Ost/West Stränge"**, hängt an einem „Muster 2500TL" (Anhang A) zwei Stränge zu 6 Modulen — Ost (Azimut −90) und West (+90) —, der Weststrang mit SEINEM eigenen Modul (W6‑O‑6). **Kennzahlen im Simulationsprotokoll:** DC/AC 1,36 (3,39 kWp gegen 2,50 kW), Jahresertrag 3 545,5 kWh (1 418 Volllaststunden AC), Clipping-Verlust 2,0 kWh (0,06 %), Jahresnutzungsgrad 0,9629, Nachtverbrauch 9,3 kWh in 4 669 Stunden; Ampel P1–P8 **grün**. **Zwei begründete Abweichungen von Anhang A:** zwei MPP-Tracker statt einem (zwei Stränge an EINEM Tracker sind dort die Gegenprobe zu P4 — 19,1 A > 12,0 A; die Clipping-Grenze bleibt eine, Q7) und Neigung 10° statt 30° (bei 30° überlappen die zwei Tagesgänge so wenig, dass das Gerät in keiner Stunde klippt). **Und ein Befund dazu:** Solange die Ampel grün bleiben soll, deckelt P6 das Verhältnis bei DC/AC 1,5 — mit der Ost/West-Spitze von nur 0,69 kW je kWp bleibt für die Kappung wenig Raum. Das ist die Aussage des Falls: Ein Ost/West-Feld an einem knapp ausgelegten Gerät verliert fast nichts. Sichtbar würde es erst bei 7 + 7 Modulen (60,4 kWh, 1,46 %) — dann meldet P6 Gelb. Wiederholbar über `Referenzlaeufe/Skripte/pruefprojekt_1045_ost_west.py` |
 | **W6‑O‑5** | **Das Modul der Ampel war das der ERSTEN Projektzeile.** `StrangPlausibilitaet` prüfte gegen EIN Modul; die Hülle nahm dafür das erste, das der Katalog kennt. Führt ein Projekt mehrere PV-Zeilen mit VERSCHIEDENEN Modulen, prüfte die Ampel gegen das falsche. | **umgesetzt in `35a48eb`** — Anwenderentscheid vom 06.09.2026, wörtlich: „Modul der gewählten Zeile." Der Delegat `Pruefen` bekommt die gewählte Projektzeile mit, `PhotovoltaikHuelle.ModulDer(zeile)` liest deren Modul, und `StrangPlausibilitaet.Gaben` trägt zusätzlich die Strangmodule je `Tab_PV.ID` (W6‑O‑6): Jeder Strang prüft gegen SEIN Modul — Spannung, Strom und Nennleistung —, P8 bleibt eine Anlagenprüfung. Drei Kernfälle, ein bunit-Fall |
+| **W6‑E‑6** | **Der Herstellerfilter über der Strangtabelle stand immer auf „Alle".** Wer Module eines Herstellers verbaut, der auch Wechselrichter baut, suchte sein Gerät jedes Mal von Hand aus dem ganzen Katalog — bei 152 Herstellern im CEC-Bestand ist das der überwiegende Teil der Klappliste. | **umgesetzt in `<SHA>`** — Anwenderentscheid vom 07.09.2026, wörtlich: „Der Wechselrichter soll beliebig wählbar sein und nur die Vorauswahl auf den Modulhersteller verweisen (falls Wechselrichter von dem Modulhersteller verfügbar)." Der Filter steht beim Aufmachen auf dem Hersteller des ANLAGENmoduls, sofern der Wechselrichterkatalog ein Gerät dieses Herstellers führt — sonst auf „Alle"; er **sperrt nichts**, jeder andere Hersteller bleibt eine Klapplistenwahl entfernt, und eine schon gewählte Zeile behält ihr Gerät. Der Namensabgleich ist zweistufig (Gleichheit ohne Rücksicht auf Gross-/Kleinschreibung und Randleerzeichen, dann „beginnt mit" in beide Richtungen ab drei Zeichen); vorgestellt wird beim ersten Zeichnen und bei jedem WECHSEL des Anlagenmoduls, sonst nie — sonst nähme jedes Neuzeichnen dem Anwender seine Filterwahl ab. Die Trefferprüfung sitzt in `PvStraengeFelder` und fragt allein die Liste `Hersteller`, damit iOS denselben Weg hat. Eine Herleitungszeile unter dem Filter nennt die Vorauswahl und die freie Wahl. **Elf bunit-Fälle**, darunter die Gegenprobe zum zu kurzen Präfix und der Nachweis, dass ein fremdes Gerät nach der Vorauswahl wählbar bleibt und sich in die Zeile einträgt |
 
 ---
 

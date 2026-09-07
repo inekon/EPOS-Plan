@@ -15478,6 +15478,15 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="PVS_FILTER_HERSTELLER" xml:space="preserve">
     <value>Filter by manufacturer:</value>
   </data>
+  <data name="PVS_HERLEITUNG_FILTER" xml:space="preserve">
+    <value>Preselection: manufacturer of the module ({0}). Every manufacturer can be selected.</value>
+  </data>
+  <data name="PVS_HERLEITUNG_FILTER_OHNE" xml:space="preserve">
+    <value>No inverter by the module manufacturer ({0}) in the catalogue — the filter is set to “All”. Every manufacturer can be selected.</value>
+  </data>
+  <data name="PVS_HERLEITUNG_FILTER_FREI" xml:space="preserve">
+    <value>Every manufacturer can be selected.</value>
+  </data>
   <data name="PVS_BTN_ANLEGEN" xml:space="preserve">
     <value>Create string</value>
   </data>

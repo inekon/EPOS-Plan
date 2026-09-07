@@ -172,6 +172,7 @@
                                   GeraetUebernehmen="@WechselrichterUebernehmen"
                                   Hersteller="@WechselrichterHersteller"
                                   GeraeteFiltern="@WechselrichterFiltern"
+                                  Modulhersteller="@ModulherstellerDer(_projektZeile)"
                                   Module="@Strangmodule"
                                   ModulUebernehmen="@ModulUebernehmen"
                                   Pruefen="@StraengePruefen"
@@ -327,6 +328,19 @@
 
     /// <summary>Die Geräteliste zu einem Hersteller (<c>WechselrichterStammCtrl.Filtern</c>).</summary>
     [Parameter] public Func<string, IReadOnlyList<(int Id, string Text)>>? WechselrichterFiltern { get; set; }
+
+    /// <summary>
+    /// Der HERSTELLER des Moduls einer Projektzeile — die Vorauswahl des
+    /// Herstellerfilters über der Strangtabelle (Anwenderentscheid <b>W6‑E‑6</b> vom
+    /// 07.09.2026). Ohne Delegat gibt es keine Vorauswahl, und der Filter steht wie
+    /// bisher auf „Alle".
+    ///
+    /// <para><b>Warum ein Delegat und kein Text.</b> Die Vorauswahl gilt dem Modul der
+    /// MARKIERTEN Projektzeile; welche das ist, wechselt mit jedem Klick in die linke
+    /// Liste. Dieselbe Bauart wie <see cref="AnlagenKwp"/>, das aus demselben
+    /// Katalogsatz liest.</para>
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, string>? Modulhersteller { get; set; }
 
     /// <summary>
     /// Die PV-Module des KATALOGS für die Modulspalte der Strangtabelle
@@ -522,6 +536,14 @@
 
     private double KwpDer(ErzeugerZeile? zeile)
         => zeile is null || AnlagenKwp is null ? 0.0 : AnlagenKwp(zeile);
+
+    /// <summary>
+    /// Der Hersteller des Moduls dieser Projektzeile (<b>W6‑E‑6</b>); leer, solange
+    /// keine Zeile markiert ist oder die Hülle den Delegaten nicht mitgibt. Was daraus
+    /// wird, entscheidet der Abschnitt selbst — er hält die Herstellerliste.
+    /// </summary>
+    private string ModulherstellerDer(ErzeugerZeile? zeile)
+        => zeile is null || Modulhersteller is null ? "" : (Modulhersteller(zeile) ?? "");
 
     // =================================================================================
     // Filter und Listen
