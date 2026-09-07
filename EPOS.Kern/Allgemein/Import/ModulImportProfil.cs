@@ -122,39 +122,9 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Ein Zahlenbereichsfilter der Filterleiste („von … bis"). Eine Obergrenze von 0
-    /// zählt als „keine Obergrenze" — wörtlich <c>ApplyFilter</c> des Vorläufers.
-    /// </summary>
-    public sealed class ImportZahlenfilter
-    {
-        public ImportZahlenfilter(string bezeichnungVon, string bezeichnungBis,
-                                  string einheit, double min, double max,
-                                  double? vorgabeVon, double? vorgabeBis,
-                                  int nachkommastellen = 2)
-        {
-            BezeichnungVon = bezeichnungVon;
-            BezeichnungBis = bezeichnungBis;
-            Einheit = einheit ?? "";
-            Min = min;
-            Max = max;
-            VorgabeVon = vorgabeVon;
-            VorgabeBis = vorgabeBis;
-            Nachkommastellen = nachkommastellen;
-        }
-
-        public string BezeichnungVon { get; }
-        public string BezeichnungBis { get; }
-        public string Einheit { get; }
-        public double Min { get; }
-        public double Max { get; }
-        public double? VorgabeVon { get; }
-        public double? VorgabeBis { get; }
-        public int Nachkommastellen { get; }
-    }
-
-    /// <summary>
     /// EINE Zeile des Imports in NEUTRALER Form — Zellwerte und Detailwerte als
-    /// Zeichenketten, dazu die Größen, nach denen die Filterleiste einengt.
+    /// Zeichenketten, dazu die ein bis zwei Größen, auf die ein Zahlenausdruck der
+    /// <c>Katalogliste</c> wirken kann.
     /// </summary>
     /// <remarks>
     /// <para><b>Das ist der Kern des einen Wirts</b> (offener Punkt W6‑O‑1, jetzt
@@ -187,16 +157,10 @@ namespace WindowsFormsApplication1
         /// <summary>Der Name, gegen den das Suchmuster läuft.</summary>
         public string Name { get; set; } = "";
 
-        /// <summary>Der Hersteller für die erste Klappliste.</summary>
-        public string Hersteller { get; set; } = "";
-
-        /// <summary>Die Technologie für die zweite Klappliste; leer = die Ausprägung führt keine.</summary>
-        public string Technologie { get; set; } = "";
-
-        /// <summary>Die Größe des ersten Zahlenfilters (PV: Pmp; WR: AC-Nennleistung).</summary>
+        /// <summary>Die Größe des ersten Zahlenausdrucks (PV: Pmp; WR: AC-Nennleistung).</summary>
         public double Zahl1 { get; set; }
 
-        /// <summary>Die Größe des zweiten Zahlenfilters (PV: Effizienz); 0, wenn es keinen gibt.</summary>
+        /// <summary>Die Größe des zweiten Zahlenausdrucks (PV: Effizienz); 0, wenn es keinen gibt.</summary>
         public double Zahl2 { get; set; }
 
         /// <summary>Die Zellwerte je Spaltenschlüssel, fertig formatiert.</summary>
@@ -228,9 +192,10 @@ namespace WindowsFormsApplication1
     /// <para>Zwilling zu <see cref="ModulKatalogProfil"/>, dieselbe Bauart und dieselbe
     /// Begründung: Der Bauplan gibt es einmal, die Werte je Ausprägung. Gemeinsam sind
     /// damit Netzabruf mit Fortschritt und Abbruch, Zwischenspeicher, Dateiwähler,
-    /// virtualisiertes Raster, Zeilenwahl, Filterleiste, Detailfeldblock, Vorprüfung,
-    /// Plausibilitätsrückfrage und Konfliktdialog; verschieden sind Spaltensatz,
-    /// Detailfelder, Filter, Quellen, Zieltabelle und Beschriftungen.</para>
+    /// virtualisiertes Raster, Zeilenwahl, Spaltenfilter und Suche der
+    /// <c>Katalogliste</c>, Detailfeldblock, Vorprüfung, Plausibilitätsrückfrage und
+    /// Konfliktdialog; verschieden sind Spaltensatz, Detailfelder, Zahlengrößen,
+    /// Quellen, Zieltabelle und Beschriftungen.</para>
     ///
     /// <para><b>Warum nicht eine fünfte <see cref="KatalogImportArt"/>:</b> Deren vier
     /// Ausprägungen sind VDI‑3805-Dateiimporte mit gemeinsamem Parser und gemeinsamer
@@ -369,33 +334,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die Detailfelder; <see cref="ImportFeld.Reiter"/> sagt, wohin.</summary>
         public IReadOnlyList<ImportFeld> Felder { get; private set; }
 
-        /// <summary>Beschriftung der Herstellerklappliste.</summary>
-        public string FilterHersteller { get; private set; }
-
-        /// <summary>
-        /// Beschriftung der Technologieklappliste; leer = die Ausprägung führt keine
-        /// (der Wechselrichter hat keine Technologie).
-        /// </summary>
-        public string FilterTechnologie { get; private set; }
-
-        /// <summary>Beschriftung des Suchfeldes.</summary>
-        public string FilterSuche { get; private set; }
-
-        /// <summary>Platzhalter im Suchfeld.</summary>
-        public string SuchePlatzhalter { get; private set; }
-
-        /// <summary>Die Zahlenbereichsfilter (PV: zwei, Wechselrichter: einer).</summary>
-        public IReadOnlyList<ImportZahlenfilter> Zahlenfilter { get; private set; }
-
         // ==================================================================
         // Stufe S3.4 - die Kandidatenliste im Spaltenmodell
         // ==================================================================
 
         /// <summary>
-        /// Die Spalten hinter den <see cref="Zahlenfilter"/>n, in derselben
-        /// Reihenfolge: Stelle 0 traegt <c>ImportZeile.Zahl1</c>, Stelle 1
-        /// <c>ImportZeile.Zahl2</c>. Sie werden im <see cref="Listenprofil"/> zu
-        /// ZAHLENspalten.
+        /// Die Spalten der ein bis zwei gefilterten Groessen, in der Reihenfolge
+        /// der gefallenen Zahlenleiste: Stelle 0 traegt <c>ImportZeile.Zahl1</c>,
+        /// Stelle 1 <c>ImportZeile.Zahl2</c>. Sie werden im
+        /// <see cref="Listenprofil"/> zu ZAHLENspalten.
         /// </summary>
         public IReadOnlyList<string> Zahlspalten { get; private set; } = new string[0];
 
@@ -435,9 +382,6 @@ namespace WindowsFormsApplication1
 
         /// <summary>Anzeigetext „nein".</summary>
         private string _nein = "Nein";
-
-        /// <summary>Der erste Eintrag jeder Klappliste („(alle)") — ein STEUERWERT.</summary>
-        public string TextAlle { get; private set; }
 
         // ==================================================================
         // Die zwei Auspraegungen
@@ -510,7 +454,6 @@ namespace WindowsFormsApplication1
                 Kopfband = t("PVIMP_KOPFBAND"),
                 HilfeSchluessel = "Main_PV_Test.btn_Help",
                 Strich = "-",
-                TextAlle = t("PVIMP_ALLE"),
                 _ja = t("ALLG_BTN_JA"),
                 _nein = t("ALLG_BTN_NEIN"),
 
@@ -526,23 +469,7 @@ namespace WindowsFormsApplication1
                                      dateifilter: "(*.pan)|*.pan", unterordner: "PAN")
                 },
 
-                FilterHersteller = t("PVIMP_LBL_HERSTELLER"),
-                FilterTechnologie = t("PVIMP_LBL_TECHNOLOGIE"),
-                FilterSuche = t("PVIMP_LBL_SUCHE"),
-                SuchePlatzhalter = t("PVIMP_PLATZHALTER_SUCHE"),
-
-                // Woertlich die Vorbelegung des Vorlaeufers:
-                // Nud(num_PMin, 0, 999, 0, 2), Nud(num_PMax, 0, 999, 999, 2),
-                // Nud(num_EffMin, 0, 100, 0, 2), Nud(num_EffMax, 0, 100, 50, 2).
-                Zahlenfilter = new[]
-                {
-                    new ImportZahlenfilter(t("PVIMP_LBL_LEISTUNG_VON"), t("IMP_KAT_FILTER_BIS"),
-                                           t("PVIMP_EINH_W"), 0, 999, 0, 999),
-                    new ImportZahlenfilter(t("PVIMP_LBL_EFFIZIENZ_VON"), t("IMP_KAT_FILTER_BIS"),
-                                           t("IMP_KAT_EINH_PROZENT"), 0, 100, 0, 50)
-                },
-
-                // S3.4: die zwei Groessen der Zahlenleiste als SPALTEN.
+                // S3.4: die zwei Groessen der gefallenen Zahlenleiste als SPALTEN.
                 Zahlspalten = new[] { SpaltePmp, SpalteEffizienz },
 
                 Spalten = new[]
@@ -610,7 +537,6 @@ namespace WindowsFormsApplication1
                 Kopfband = t("WRK_IMP_KOPFBAND"),
                 HilfeSchluessel = "Form_WechselrichterImport.btn_Help",
                 Strich = ParameterVerwendung.LEER,
-                TextAlle = t("PVIMP_ALLE"),
                 _ja = t("ALLG_BTN_JA"),
                 _nein = t("ALLG_BTN_NEIN"),
 
@@ -623,21 +549,7 @@ namespace WindowsFormsApplication1
                                      dateifilter: "(*.ond)|*.ond", unterordner: "PV")
                 },
 
-                FilterHersteller = t("WRK_LBL_FIRMA"),
-                FilterTechnologie = "",
-                FilterSuche = t("PVIMP_LBL_SUCHE"),
-                SuchePlatzhalter = t("PVIMP_PLATZHALTER_SUCHE"),
-
-                // Die AC-Nennleistungen der CEC-Liste reichen von 0,2 kW
-                // (Modulwechselrichter) bis ueber 1 000 kW (Zentralgeraete); die
-                // Obergrenze 0 heisst deshalb "keine Obergrenze".
-                Zahlenfilter = new[]
-                {
-                    new ImportZahlenfilter(t("WRK_IMP_LBL_P_AC_VON"), t("IMP_KAT_FILTER_BIS"),
-                                           "kW", 0, 10000, 0, 0)
-                },
-
-                // S3.4: die eine Groesse der Zahlenleiste als SPALTE.
+                // S3.4: die eine Groesse der gefallenen Zahlenleiste als SPALTE.
                 Zahlspalten = new[] { SpaltePAc },
 
                 Spalten = new[]
@@ -721,8 +633,6 @@ namespace WindowsFormsApplication1
             var z = new ImportZeile(nummer, m)
             {
                 Name = m.Name ?? "",
-                Hersteller = m.Manufacturer ?? "",
-                Technologie = m.Technology ?? "",
                 // Die Leistung des Filters ist I_mp · V_mp und nicht STC - woertlich
                 // ApplyFilter :228 (Befund W13-B40, offener Punkt W13-O-3).
                 Zahl1 = m.Pmp,
@@ -780,7 +690,6 @@ namespace WindowsFormsApplication1
             var z = new ImportZeile(nummer, g)
             {
                 Name = g.Name ?? "",
-                Hersteller = g.Hersteller ?? "",
                 Zahl1 = kw
             };
 
@@ -825,7 +734,6 @@ namespace WindowsFormsApplication1
             var z = new ImportZeile(nummer, g)
             {
                 Name = g.Name ?? "",
-                Hersteller = g.Hersteller ?? "",
                 Zahl1 = g.PNomConv
             };
 
