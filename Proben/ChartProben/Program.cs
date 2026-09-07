@@ -547,6 +547,40 @@ namespace ChartProben
                             },
                             minAuto: true));
 
+            // =========================================================================
+            // 37/38 - die ZWEI BILDER DER AUSLEGUNGSOPTIMIERUNG (W11b-B-5)
+            // =========================================================================
+            //
+            // Sie loesen ScottPlot ab - bis zur Windows-Abnahme V2 (07.09.2026) war
+            // Form_SpeicherOptimierung der einzige Ort des Programms, an dem eine
+            // zweite Zeichenbibliothek lief. Ihre Heatmap sammelte je Lauf eine
+            // Farbskala an (Plot.Clear raeumt Plottables, keine Panels); nach sieben
+            // Laeufen war die Zeichenflaeche auf null Bildpunkte geschrumpft. Hier gibt
+            // es keinen Zeichenzustand mehr - jeder Aufruf liefert ein volles PNG.
+            //
+            // Das Raster laeuft bewusst ins Negative: Ein zu grosser Speicher traegt
+            // seinen Kapitaldienst nicht mehr, und genau das soll die Skala zeigen.
+            double[] rasterCRaten = { 0.5, 1.0, 1.5, 2.0, 2.5, 3.0 };
+            double[] rasterKapazitaeten = new double[10];
+            for (int i = 0; i < 10; i++) rasterKapazitaeten[i] = 500.0 + i * 500.0;
+            double[][] rasterWerte = Rasterfeld(rasterKapazitaeten, rasterCRaten);
+
+            Pruefe(ziel, "optimierungsraster", 860, 560,
+                   new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
+                           ChartRenderer.C_RASTER_GUT, SKColors.Black },
+                   () => ChartRenderer.Optimierungsraster("Jahresüberschuss ΔJ [€/a]",
+                            "C-Rate [1/h]", "Kapazität [kWh]", "ΔJ [€/a]",
+                            rasterCRaten, rasterKapazitaeten, rasterWerte,
+                            RASTER_BESTE_ZEILE, RASTER_BESTE_SPALTE));
+
+            Pruefe(ziel, "schnittkurve", 720, 460,
+                   new[] { ChartRenderer.C_STAMM, ChartRenderer.C_RASTER_SCHLECHT },
+                   () => ChartRenderer.Schnittkurve("Schnittkurve bei 1,5 C",
+                            "Kapazität [kWh]", "ΔJ [€/a]",
+                            rasterKapazitaeten, Rasterspalte(rasterWerte, RASTER_BESTE_SPALTE),
+                            rasterKapazitaeten[RASTER_BESTE_ZEILE],
+                            rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
+
             // --- Der Ausschnitt muss auch WIRKEN --------------------------------------
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn der
@@ -590,6 +624,33 @@ namespace ChartProben
                         "Strombedarf [kW]", SKColors.SteelBlue, fensterWoche),
                 () => ChartRenderer.Jahresverlauf("Strombedarf Ganglinie", jahresverlauf,
                         "Strombedarf [kW]", SKColors.SteelBlue, fensterTag));
+
+
+            // Dasselbe fuer die ZWEI OPTIMIERUNGSBILDER (W11b-B-5): Beide tragen eine
+            // MARKE fuer das Optimum, und beide bestuenden Mass-, Farb- und
+            // Determinismuspruefung auch dann, wenn die Marke stillschweigend
+            // wegfiele - das Optimum ist genau die Aussage dieser Bilder. Geprueft
+            // wird deshalb, dass "mit Marke" und "ohne Marke" zwei verschiedene
+            // Bilder sind.
+            Unterschiedlich("optimierungsraster_marke",
+                () => ChartRenderer.Optimierungsraster("Jahresüberschuss ΔJ [€/a]",
+                        "C-Rate [1/h]", "Kapazität [kWh]", "ΔJ [€/a]",
+                        rasterCRaten, rasterKapazitaeten, rasterWerte, -1, -1),
+                () => ChartRenderer.Optimierungsraster("Jahresüberschuss ΔJ [€/a]",
+                        "C-Rate [1/h]", "Kapazität [kWh]", "ΔJ [€/a]",
+                        rasterCRaten, rasterKapazitaeten, rasterWerte,
+                        RASTER_BESTE_ZEILE, RASTER_BESTE_SPALTE));
+
+            Unterschiedlich("schnittkurve_marke",
+                () => ChartRenderer.Schnittkurve("Schnittkurve bei 1,5 C",
+                        "Kapazität [kWh]", "ΔJ [€/a]",
+                        rasterKapazitaeten, Rasterspalte(rasterWerte, RASTER_BESTE_SPALTE),
+                        double.NaN, double.NaN),
+                () => ChartRenderer.Schnittkurve("Schnittkurve bei 1,5 C",
+                        "Kapazität [kWh]", "ΔJ [€/a]",
+                        rasterKapazitaeten, Rasterspalte(rasterWerte, RASTER_BESTE_SPALTE),
+                        rasterKapazitaeten[RASTER_BESTE_ZEILE],
+                        rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
@@ -669,6 +730,46 @@ namespace ChartProben
                 p.Add((t, Math.Max(0, grund * (1.0 - 0.25 * reihe) + streuung)));
             }
             return p;
+        }
+
+        /// <summary>
+        /// Das Optimum des synthetischen Rasters: Kapazitaetszeile 4 (2 500 kWh) und
+        /// C-Raten-Spalte 2 (1,5 C) - der Scheitel der Flaeche in <see cref="Rasterfeld"/>.
+        /// </summary>
+        private const int RASTER_BESTE_ZEILE = 4;
+
+        /// <summary>Siehe <see cref="RASTER_BESTE_ZEILE"/>.</summary>
+        private const int RASTER_BESTE_SPALTE = 2;
+
+        /// <summary>
+        /// Ein synthetisches Optimierungsraster: eine nach unten geoeffnete Flaeche mit
+        /// dem Scheitel bei 2 500 kWh und 1,5 C. Die Raender laufen ins Negative - ein
+        /// zu grosser Speicher traegt seinen Kapitaldienst nicht mehr, und die
+        /// Dreifarbskala soll genau das zeigen.
+        /// </summary>
+        private static double[][] Rasterfeld(double[] kapazitaeten, double[] cRaten)
+        {
+            var feld = new double[kapazitaeten.Length][];
+            for (int i = 0; i < kapazitaeten.Length; i++)
+            {
+                feld[i] = new double[cRaten.Length];
+                for (int s = 0; s < cRaten.Length; s++)
+                {
+                    double c = kapazitaeten[i], r = cRaten[s];
+                    feld[i][s] = 4000.0
+                               - 0.0009 * (c - 2500.0) * (c - 2500.0)
+                               - 900.0 * (r - 1.5) * (r - 1.5);
+                }
+            }
+            return feld;
+        }
+
+        /// <summary>Eine Spalte des Rasters - die Schnittkurve bei fester C-Rate.</summary>
+        private static double[] Rasterspalte(double[][] feld, int spalte)
+        {
+            var w = new double[feld.Length];
+            for (int i = 0; i < feld.Length; i++) w[i] = feld[i][spalte];
+            return w;
         }
 
         // =================================================================================

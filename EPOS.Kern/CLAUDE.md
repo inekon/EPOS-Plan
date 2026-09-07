@@ -287,6 +287,23 @@ Mindestspanne von 5 K). `Reihe` trägt dafür seit W11a.6 `Stapelgruppe`, `Gestr
 aus W11a.6 bedienen dort alle 17 Zeichenflächen der sechs abgelösten Masken. Neu ist
 daran nichts; die Welle 11b fasst den Renderer nicht an (ChartProben unverändert 30).
 
+**Seit W11b‑B‑5 zeichnet er die AUSLEGUNGSOPTIMIERUNG — und löst damit die letzte
+fremde Zeichenbibliothek ab.** `ChartRenderer.Optimierungsraster` (860 × 560 — eine
+Zelle je Rasterpunkt in der Dreifarbskala Rot/Gold/Grün, das Optimum als offenes
+schwarzes Quadrat, ein senkrechter Farbbalken rechts) und `ChartRenderer.Schnittkurve`
+(720 × 460 — ΔJ über der Kapazität bei der besten C-Rate, y-Achse mit Vorzeichen und
+gestrichelter Nulllinie, das Optimum als roter Kreis). Bis dahin zeichnete das
+`ScottPlot.WinForms` in `Form_SpeicherOptimierung`, dem einzigen Ort des Programms mit
+einer zweiten Zeichenbibliothek — **und genau dort stürzte der Dialog ab**: Jeder Lauf
+hängte über `Plot.Add.ColorBar` eine weitere Farbskala an denselben Plot, `Plot.Clear()`
+räumt aber nur Plottables und keine Panels; die Zeichenfläche schrumpfte je Lauf um rund
+78 Bildpunkte und war ab dem achten Lauf null. Ein Renderer ohne Zustand kennt das
+Problem nicht. **Nicht endliche Werte fallen hier weg** statt das Bild zu Fall zu
+bringen — ein einziges ±∞ in der Matrix beendete ScottPlot beim RENDERN („min must be a
+real number"), also im Anstrich des Steuerelements und damit unfangbar. Der Aufrufer ist
+`Controller/SpeicherOptimierungCtrl`; die Proben stehen in `ChartProben` (38 Bilder,
+sechs Gegenproben) und in `EPOS.Kern.Tests/SpeicherOptimierungCtrlTests`.
+
 **Die vier BERICHTSBILDER bleiben unangetastet.** `JahresverlaufWaerme` und
 `DauerlinieWaerme` sind zwei feste Ausprägungen von `ErzeugerStapel`,
 `StrombilanzMonate`/`MonatsSaeulen` zwei von `MonatsStapel`, `Speichertemperaturen` eine

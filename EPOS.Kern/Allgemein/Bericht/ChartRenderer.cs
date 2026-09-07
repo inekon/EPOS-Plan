@@ -2301,6 +2301,355 @@ namespace WindowsFormsApplication1
         /// <summary>Mindestspanne der Temperaturachse [K] — woertlich aus dem Vorlaeufer.</summary>
         private const double TEMPERATUR_MINDESTSPANNE = 5.0;
 
+        // ============================================ Auslegungsoptimierung (W11b-B-5)
+
+        /// <summary>
+        /// Der schlechteste Rasterwert der Auslegungsoptimierung — Firebrick, wörtlich
+        /// die Farbe der abgelösten ScottPlot-Skala.
+        /// </summary>
+        public static readonly SKColor C_RASTER_SCHLECHT = new SKColor(0xB2, 0x22, 0x22);
+
+        /// <summary>Der mittlere Rasterwert — Gold.</summary>
+        public static readonly SKColor C_RASTER_MITTE = new SKColor(0xFF, 0xD7, 0x00);
+
+        /// <summary>Der beste Rasterwert — ForestGreen.</summary>
+        public static readonly SKColor C_RASTER_GUT = new SKColor(0x22, 0x8B, 0x22);
+
+        /// <summary>Stufen der Farbskala rechts. UNGERADE, damit die Mitte exakt Gold trifft.</summary>
+        private const int FARBSKALA_STUFEN = 21;
+
+        /// <summary>
+        /// <b>B8 — RASTERKARTE der Auslegungsoptimierung</b> (Windows-Abnahme V2 vom
+        /// 07.09.2026, W11b‑B‑5): der Jahresüberschuss ΔJ über Kapazität × C-Rate.
+        ///
+        /// <para><b>Vorbild und Ablösung.</b> Bis hierher zeichnete das
+        /// <c>ScottPlot.WinForms</c> in <c>Form_SpeicherOptimierung</c> — der einzige
+        /// Ort des Programms, an dem ScottPlot lief. Der Dialog stürzte dabei ab: Jeder
+        /// Lauf hängte über <c>Plot.Add.ColorBar</c> eine weitere Farbskala an den Plot,
+        /// und <c>Plot.Clear()</c> räumt Plottables, aber KEINE Panels — nach sieben
+        /// Läufen war die Zeichenfläche auf 0 Bildpunkte geschrumpft. Hier gibt es
+        /// keinen Zustand: Jeder Aufruf zeichnet ein vollständiges PNG aus den
+        /// übergebenen Zahlen.</para>
+        ///
+        /// <para><b>Zellen statt Interpolation.</b> Gezeichnet wird ein Feld aus
+        /// Rechtecken — eine Zelle je Rasterpunkt, in ihrer vollen Farbe. Das ist die
+        /// ehrliche Darstellung einer Rastersuche: Zwischen zwei Stützstellen ist nichts
+        /// gerechnet worden, und eine weiche Fläche behauptete das Gegenteil (die
+        /// abgelöste Maske stellte <c>Smooth = false</c> aus demselben Grund).</para>
+        ///
+        /// <para><b>Die Kapazität wächst nach OBEN</b> — Zeile 0 der Matrix liegt unten.
+        /// In der ScottPlot-Fassung musste die Matrix dafür umgedreht befüllt werden;
+        /// hier rechnet die Zeichnung selbst von unten nach oben.</para>
+        ///
+        /// <para><b>Nicht endliche Werte fallen weg.</b> Ein einziges ±∞ in der Matrix
+        /// brachte ScottPlot beim RENDERN zu Fall („min must be a real number") — und
+        /// zwar im Anstrich des Steuerelements, also unfangbar. Werte, die keine Zahl
+        /// sind, bekommen hier die Farbe des schlechtesten Punktes und gehen nicht in
+        /// die Skala ein.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift, z. B. „Jahresüberschuss ΔJ [€/a]".</param>
+        /// <param name="xTitel">Beschriftung der C-Raten-Achse.</param>
+        /// <param name="yTitel">Beschriftung der Kapazitätsachse.</param>
+        /// <param name="skalaTitel">Beschriftung der Farbskala rechts.</param>
+        /// <param name="cRaten">Die C-Raten der Spalten [1/h], aufsteigend.</param>
+        /// <param name="kapazitaetenKwh">Die Kapazitäten der Zeilen [kWh], aufsteigend.</param>
+        /// <param name="werte">Zielfunktionswerte <c>[iKapazität][iCRate]</c> [€/a].</param>
+        /// <param name="besteZeile">Zeile des Optimums, oder -1 für „keine Marke".</param>
+        /// <param name="besteSpalte">Spalte des Optimums, oder -1 für „keine Marke".</param>
+        public static byte[] Optimierungsraster(string titel, string xTitel, string yTitel,
+                                                string skalaTitel,
+                                                IReadOnlyList<double> cRaten,
+                                                IReadOnlyList<double> kapazitaetenKwh,
+                                                double[][] werte,
+                                                int besteZeile, int besteSpalte)
+        {
+            int W = 860, H = 560;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+
+                int zeilen = kapazitaetenKwh?.Count ?? 0;
+                int spalten = cRaten?.Count ?? 0;
+                var rc = SKRect.Create(120f, 96f, W - 300f, 380f);
+
+                if (zeilen < 1 || spalten < 1 || werte == null || werte.Length < zeilen)
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                double min = double.MaxValue, max = double.MinValue;
+                for (int i = 0; i < zeilen; i++)
+                    for (int s = 0; s < spalten && s < werte[i].Length; s++)
+                    {
+                        double v = werte[i][s];
+                        if (double.IsNaN(v) || double.IsInfinity(v)) continue;
+                        if (v < min) min = v;
+                        if (v > max) max = v;
+                    }
+                if (min > max) { min = 0.0; max = 0.0; }
+
+                float breite = rc.Width / spalten;
+                float hoehe = rc.Height / zeilen;
+
+                for (int i = 0; i < zeilen; i++)
+                    for (int s = 0; s < spalten; s++)
+                    {
+                        double v = s < werte[i].Length ? werte[i][s] : double.NaN;
+                        SKColor farbe = Rasterfarbe(v, min, max);
+
+                        // Zeile 0 unten: die Kapazitaet waechst nach oben.
+                        float x = rc.Left + s * breite;
+                        float y = rc.Bottom - (i + 1) * hoehe;
+                        using (var b = Fuellung(farbe)) g.DrawRect(x, y, breite, hoehe, b);
+                    }
+
+                using (var netz = Strich(SKColors.White, 1f))
+                {
+                    for (int i = 0; i <= zeilen; i++)
+                        g.DrawLine(rc.Left, rc.Bottom - i * hoehe, rc.Right, rc.Bottom - i * hoehe, netz);
+                    for (int s = 0; s <= spalten; s++)
+                        g.DrawLine(rc.Left + s * breite, rc.Top, rc.Left + s * breite, rc.Bottom, netz);
+                }
+
+                // Das Optimum: ein offenes schwarzes Quadrat auf der Zellmitte -
+                // dieselbe Marke, die die abgeloeste Maske setzte.
+                if (besteZeile >= 0 && besteZeile < zeilen && besteSpalte >= 0 && besteSpalte < spalten)
+                    using (var marke = Strich(SKColors.Black, 3f))
+                    {
+                        float mx = rc.Left + (besteSpalte + 0.5f) * breite;
+                        float my = rc.Bottom - (besteZeile + 0.5f) * hoehe;
+                        float k = Math.Min(breite, hoehe) * 0.36f;
+                        g.DrawRect(mx - k, my - k, 2f * k, 2f * k, marke);
+                    }
+
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                {
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+                }
+
+                // Achsenmarken an den Zellmitten. Bei vielen Stuetzstellen wird
+                // ausgeduennt, damit sich die Beschriftungen nicht beruehren.
+                using (var f = Schrift(14f))
+                {
+                    int xJede = Math.Max(1, (int)Math.Ceiling(spalten * 46f / rc.Width));
+                    for (int s = 0; s < spalten; s += xJede)
+                    {
+                        string lab = cRaten[s].ToString("0.##", DE);
+                        float x = rc.Left + (s + 0.5f) * breite;
+                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+
+                    int yJede = Math.Max(1, (int)Math.Ceiling(zeilen * 22f / rc.Height));
+                    for (int i = 0; i < zeilen; i += yJede)
+                    {
+                        string lab = kapazitaetenKwh[i].ToString("0.#", DE);
+                        float y = rc.Bottom - (i + 0.5f) * hoehe;
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 8f,
+                             y - TextHoehe(f) / 2f);
+                    }
+                }
+
+                using (var f = Schrift(15f))
+                {
+                    Text(g, xTitel ?? "", f, SKColors.DimGray,
+                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
+                }
+
+                Farbskala(g, SKRect.Create(rc.Right + 34f, rc.Top, 26f, rc.Height),
+                          min, max, skalaTitel);
+
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>
+        /// Die Dreifarbskala eines Rasterwerts: Rot für den schlechtesten, Gold für den
+        /// mittleren, Grün für den besten. Die Skala ist REIN RELATIV zum gezeigten
+        /// Raster — sie sagt nichts darüber, ob der beste Punkt wirtschaftlich ist.
+        /// </summary>
+        private static SKColor Rasterfarbe(double wert, double min, double max)
+        {
+            if (double.IsNaN(wert) || double.IsInfinity(wert)) return C_RASTER_SCHLECHT;
+            double spanne = max - min;
+            double t = spanne > 1e-12 ? (wert - min) / spanne : 0.5;
+            return Farbstufe(t);
+        }
+
+        /// <summary>Farbe zum Anteil 0…1 — exakt Rot bei 0, Gold bei 0,5 und Grün bei 1.</summary>
+        private static SKColor Farbstufe(double t)
+        {
+            if (t <= 0.0) return C_RASTER_SCHLECHT;
+            if (t >= 1.0) return C_RASTER_GUT;
+            return t < 0.5
+                ? Mischung(C_RASTER_SCHLECHT, C_RASTER_MITTE, t * 2.0)
+                : Mischung(C_RASTER_MITTE, C_RASTER_GUT, (t - 0.5) * 2.0);
+        }
+
+        private static SKColor Mischung(SKColor a, SKColor b, double t)
+        {
+            return new SKColor(
+                (byte)Math.Round(a.Red + (b.Red - a.Red) * t),
+                (byte)Math.Round(a.Green + (b.Green - a.Green) * t),
+                (byte)Math.Round(a.Blue + (b.Blue - a.Blue) * t));
+        }
+
+        /// <summary>Der senkrechte Farbbalken rechts neben der Rasterkarte.</summary>
+        private static void Farbskala(SKCanvas g, SKRect rc, double min, double max, string titel)
+        {
+            float stufe = rc.Height / FARBSKALA_STUFEN;
+            for (int i = 0; i < FARBSKALA_STUFEN; i++)
+            {
+                double t = (double)i / (FARBSKALA_STUFEN - 1);
+                using (var b = Fuellung(Farbstufe(t)))
+                    g.DrawRect(rc.Left, rc.Bottom - (i + 1) * stufe, rc.Width, stufe + 1f, b);
+            }
+            using (var rahmen = Strich(SKColors.DimGray, 1f))
+                g.DrawRect(rc.Left, rc.Top, rc.Width, rc.Height, rahmen);
+
+            using (var f = Schrift(14f))
+            {
+                Text(g, max.ToString("N0", DE), f, SKColors.DimGray, rc.Right + 6f, rc.Top - 2f);
+                Text(g, min.ToString("N0", DE), f, SKColors.DimGray, rc.Right + 6f,
+                     rc.Bottom - TextHoehe(f) + 2f);
+            }
+            using (var f = Schrift(15f))
+                Text(g, titel ?? "", f, SKColors.DimGray, rc.Left - 10f, rc.Top - 26f);
+        }
+
+        /// <summary>
+        /// <b>B9 — SCHNITTKURVE der Auslegungsoptimierung</b> (W11b‑B‑5): ΔJ über der
+        /// Kapazität bei der besten C-Rate, mit markiertem Optimum.
+        ///
+        /// <para>Die Kurve läuft ins Negative — ein zu großer Speicher trägt seinen
+        /// Kapitaldienst nicht mehr. Die y-Achse beginnt deshalb NICHT bei null, und
+        /// eine gestrichelte Nulllinie zeigt, wo der Überschuss kippt. Genau das ist die
+        /// Aussage des Bildes; eine bei null abgeschnittene Achse verschwiege sie.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift, z. B. „Schnittkurve bei 1,5 C".</param>
+        /// <param name="xTitel">Beschriftung der Kapazitätsachse.</param>
+        /// <param name="yTitel">Beschriftung der Wertachse.</param>
+        /// <param name="kapazitaetenKwh">Die Kapazitäten [kWh], aufsteigend.</param>
+        /// <param name="werte">Die Zielfunktionswerte [€/a] dazu.</param>
+        /// <param name="optimumKwh">Kapazität des Optimums; wird als Kreis markiert.</param>
+        /// <param name="optimumEur">Zielfunktionswert des Optimums.</param>
+        public static byte[] Schnittkurve(string titel, string xTitel, string yTitel,
+                                          IReadOnlyList<double> kapazitaetenKwh,
+                                          IReadOnlyList<double> werte,
+                                          double optimumKwh, double optimumEur)
+        {
+            int W = 720, H = 460;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+
+                var rc = SKRect.Create(110f, 92f, W - 170f, 280f);
+
+                int n = Math.Min(kapazitaetenKwh?.Count ?? 0, werte?.Count ?? 0);
+                var xw = new List<double>();
+                var yw = new List<double>();
+                for (int i = 0; i < n; i++)
+                {
+                    double x = kapazitaetenKwh[i], y = werte[i];
+                    if (double.IsNaN(x) || double.IsInfinity(x)) continue;
+                    if (double.IsNaN(y) || double.IsInfinity(y)) continue;
+                    xw.Add(x); yw.Add(y);
+                }
+
+                if (xw.Count < 2)
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                double xMin = xw.Min(), xMax = xw.Max();
+                if (xMax - xMin < 1e-9) xMax = xMin + 1.0;
+
+                double yRoh0 = yw.Min(), yRoh1 = yw.Max();
+                double yStufe = RundeStufe(Math.Max(1e-9, (yRoh1 - yRoh0) / 5.0));
+                double yMin = Math.Floor(yRoh0 / yStufe) * yStufe;
+                double yMax = Math.Ceiling(yRoh1 / yStufe) * yStufe;
+                if (yMax - yMin < 1e-9) yMax = yMin + yStufe;
+
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(14f))
+                    for (double wert = yMin; wert <= yMax + yStufe * 1e-6; wert += yStufe)
+                    {
+                        float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
+                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                             y - TextHoehe(f) / 2f);
+                    }
+
+                // Die Nulllinie, wo die Achse sie enthaelt - dieselbe Strichelung wie
+                // im Jahresgang.
+                if (yMin < 0.0 && yMax > 0.0)
+                    using (var strichel = SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f))
+                    using (var nulllinie = Strich(SKColors.DimGray, 1.5f))
+                    {
+                        nulllinie.PathEffect = strichel;
+                        float y = (float)(rc.Bottom + yMin / (yMax - yMin) * rc.Height);
+                        g.DrawLine(rc.Left, y, rc.Right, y, nulllinie);
+                    }
+
+                double xStufe = RundeStufe((xMax - xMin) / 6.0);
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(14f))
+                    for (double wert = Math.Ceiling(xMin / xStufe) * xStufe;
+                         wert <= xMax + xStufe * 1e-6; wert += xStufe)
+                    {
+                        float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                {
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+                }
+
+                var punkte = new SKPoint[xw.Count];
+                for (int i = 0; i < xw.Count; i++)
+                    punkte[i] = new SKPoint(
+                        rc.Left + (float)((xw[i] - xMin) / (xMax - xMin)) * rc.Width,
+                        (float)(rc.Bottom - (yw[i] - yMin) / (yMax - yMin) * rc.Height));
+
+                using (var stift = Strich(C_STAMM, 2.5f))
+                {
+                    stift.StrokeJoin = SKStrokeJoin.Round;
+                    Linienzug(g, punkte, stift);
+                }
+                using (var b = Fuellung(C_STAMM))
+                    foreach (SKPoint p in punkte) g.DrawCircle(p.X, p.Y, 3.5f, b);
+
+                if (!double.IsNaN(optimumKwh) && !double.IsInfinity(optimumKwh)
+                    && !double.IsNaN(optimumEur) && !double.IsInfinity(optimumEur))
+                    using (var marke = Strich(C_RASTER_SCHLECHT, 3f))
+                    {
+                        float x = rc.Left + (float)((optimumKwh - xMin) / (xMax - xMin)) * rc.Width;
+                        float y = (float)(rc.Bottom - (optimumEur - yMin) / (yMax - yMin) * rc.Height);
+                        if (x >= rc.Left - 20f && x <= rc.Right + 20f)
+                            g.DrawCircle(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)), 9f, marke);
+                    }
+
+                using (var f = Schrift(15f))
+                {
+                    Text(g, xTitel ?? "", f, SKColors.DimGray,
+                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
+                }
+
+                return Png(flaeche);
+            }
+        }
+
         // ------------------------------------------------------- geteilte Helfer
 
         /// <summary>Die Reihen, die etwas zu zeichnen haben.</summary>

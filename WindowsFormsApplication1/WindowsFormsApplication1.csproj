@@ -144,7 +144,6 @@
     <PackageReference Include="JsonSchema.Net.Generation" />
     <PackageReference Include="MathNet.Numerics" />
     <PackageReference Include="Mscc.GenerativeAI" />
-    <PackageReference Include="ScottPlot.WinForms" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.HarfBuzz" />
     <PackageReference Include="SkiaSharp.Views.WindowsForms" />

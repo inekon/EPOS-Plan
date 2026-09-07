@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <!--
     Zentrale Paketversionen (NuGet Central Package Management) fuer alle
     Projekte unter dieser Wurzel - Umsetzungskonzept iOS, Paket iU1 / iE1.
@@ -43,7 +43,12 @@
   <!-- Charts und Grafik (Windows-Huelle; SkiaSharp-Kern ist plattformfrei) -->
   <ItemGroup>
     <PackageVersion Include="WinForms.DataVisualization" Version="1.10.2" />
-    <PackageVersion Include="ScottPlot.WinForms" Version="5.1.57" />
+    <!-- ScottPlot.WinForms 5.1.57 ist mit W11b-B-5 (07.09.2026) ENTFALLEN. Es lief
+         an genau EINER Stelle - der Heatmap und der Schnittkurve von
+         Form_SpeicherOptimierung - und brachte den Dialog dort zu Fall: Jeder
+         Lauf haengte ueber Plot.Add.ColorBar eine weitere Farbskala an denselben
+         Plot, und Plot.Clear() raeumt Plottables, aber keine Panels. Beide Bilder
+         zeichnet jetzt ChartRenderer (SkiaSharp) im Kern. -->
     <PackageVersion Include="SkiaSharp" Version="3.119.0" />
     <PackageVersion Include="SkiaSharp.HarfBuzz" Version="3.119.0" />
     <PackageVersion Include="SkiaSharp.Views.WindowsForms" Version="3.119.0" />

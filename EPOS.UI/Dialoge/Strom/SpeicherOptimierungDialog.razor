@@ -1,0 +1,464 @@
+@* Die AUSLEGUNGSOPTIMIERUNG des Stromspeichers (W11b‑B‑5, Windows-Abnahme V2
+   vom 07.09.2026).
+
+   VORBILD UND ABLOESUNG. WindowsFormsApplication1/Views/Stromspeicher/
+   Form_SpeicherOptimierung.cs (1 325 Zeilen) — die LETZTE WinForms-Fachmaske
+   des Programms. Der Anwender hat sie mit zwei Befunden zurueckgegeben:
+   „Texte ueberschneiden sich" und „Dialog stuerzt nach kurzer Zeit ab". Nach
+   der Arbeitsregel iZ5 wird ein anzufassender Dialog eine Razor-Komponente und
+   seine WinForms-Fassung faellt im selben Schritt.
+
+   BEFUND 1 — DIE UEBERSCHNEIDUNG. In der abgeloesten Maske lagen zwei Labels
+   derselben Zeile uebereinander: lbl_Aktuell auf x = 14…414 und der Erklaertext
+   zur Zielfunktion (hinweisZiel) auf x = 310…1140, beide bei y = 108
+   (Form_SpeicherOptimierung.cs:247-259). Der Erklaertext ragte zudem 8
+   Bildpunkte ueber die GroupBox hinaus (Hoehe 132) und war unten abgeschnitten.
+   Hier steht er als HERLEITUNGSZEILE unter der Gruppe — ueber die volle Breite,
+   umbrechend, und damit weder ueber noch unter einem anderen Text.
+
+   BEFUND 2 — DER ABSTURZ. Die Maske zeichnete Heatmap und Schnittkurve mit
+   ScottPlot.WinForms und haengte dabei bei JEDEM Lauf ueber Plot.Add.ColorBar
+   eine weitere Farbskala an denselben Plot (:851). Plot.Clear() raeumt
+   Plottables, aber KEINE Panels; die Zeichenflaeche schrumpfte deshalb je Lauf
+   um rund 78 Bildpunkte und war ab dem achten Lauf null. Dazu kam, dass ein
+   nicht endlicher Rasterwert ScottPlot erst beim RENDERN zu Fall bringt
+   („min must be a real number") — also im Anstrich des Steuerelements und damit
+   unfangbar. Beides ist hier strukturell weg: Die Bilder kommen als fertige PNG
+   aus dem Kern (ChartRenderer), es gibt keinen Zeichenzustand, der sich
+   ansammeln koennte, und SpeicherOptimierungCtrl.Rechnen wirft nicht, sondern
+   meldet.
+
+   DER FORTSCHRITT IST GEDROSSELT. Die Engine meldet je Rasterpunkt aus ihrem
+   Parallel.For heraus — 120 Punkte in 0,3 s sind 400 Meldungen je Sekunde.
+   SpeicherOptimierungCtrl leitet hoechstens jede zehnte und hoechstens alle
+   100 ms weiter; hier kommt also schon wenig an, und was ankommt, laeuft ueber
+   InvokeAsync in den Bedienfaden.
+
+   WAS ER NICHT TUT. Er rechnet die Simulation nicht neu, wenn der Bestpunkt
+   uebernommen wird — das entscheidet der Anwender (woertlich wie im
+   Vorlaeufer). Die Rueckfrage sagt es. *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using WindowsFormsApplication1
+@using SpeicherEngine
+
+<div class="epos-speicheropt">
+
+    <div class="epos-simerg-kopf">
+        <span class="epos-simerg-titel">@Resource.OPT_TITEL</span>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @* ---------------------------------------------------------- Suchraum *@
+    <Formularraster>
+        <KindInhalt>
+            <Formulargruppe Titel="@Resource.OPT_GRP_SUCHRAUM">
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_CMIN" Wert="@_eingaben.CMinKwh"
+                                Aktiv="@(!_laeuft)" Min="0"
+                                WertChanged="@(w => Setzen(v => _eingaben.CMinKwh = v, w))" />
+
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_CMAX" Wert="@_eingaben.CMaxKwh"
+                                Aktiv="@(!_laeuft)" Min="0"
+                                WertChanged="@(w => Setzen(v => _eingaben.CMaxKwh = v, w))" />
+
+                    <Ganzzahlfeld Bezeichnung="@Resource.OPT_LBL_STUETZSTELLEN"
+                                  Wert="@_eingaben.Stuetzstellen" Aktiv="@(!_laeuft)"
+                                  Min="@SpeicherOptimierungCtrl.STUETZSTELLEN_MIN"
+                                  Max="@SpeicherOptimierungCtrl.STUETZSTELLEN_MAX"
+                                  WertChanged="@(w => SetzenGanz(v => _eingaben.Stuetzstellen = v, w))" />
+
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_RMIN" Wert="@_eingaben.RMin"
+                                Aktiv="@(!_laeuft)" Min="0"
+                                WertChanged="@(w => Setzen(v => _eingaben.RMin = v, w))" />
+
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_RMAX" Wert="@_eingaben.RMax"
+                                Aktiv="@(!_laeuft)" Min="0"
+                                WertChanged="@(w => Setzen(v => _eingaben.RMax = v, w))" />
+
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_RSCHRITT" Wert="@_eingaben.RSchritt"
+                                Aktiv="@(!_laeuft)" Min="0"
+                                WertChanged="@(w => Setzen(v => _eingaben.RSchritt = v, w))" />
+
+                    <Auswahlfeld Bezeichnung="@Resource.OPT_LBL_STRATEGIE"
+                                 Eintraege="@STRATEGIEN" Auswahl="@((int)_eingaben.Strategie)"
+                                 Aktiv="@(!_laeuft)" AuswahlChanged="StrategieGewaehlt" />
+
+                    <Schalter Bezeichnung="@Resource.OPT_CHK_FEINRASTER" Wert="@_eingaben.Feinraster"
+                              Aktiv="@(!_laeuft)"
+                              WertChanged="@(w => { _eingaben.Feinraster = w; Nachrechnen(); })" />
+
+                    <Schalter Bezeichnung="@Resource.OPT_CHK_KVER" Wert="@_eingaben.KVerInZielfunktion"
+                              Aktiv="@(!_laeuft)"
+                              WertChanged="@(w => { _eingaben.KVerInZielfunktion = w; Nachrechnen(); })" />
+                </KindInhalt>
+            </Formulargruppe>
+        </KindInhalt>
+    </Formularraster>
+
+    @* DIE ERKLAERUNG STEHT UNTER DER GRUPPE, nicht neben der Klappliste — genau
+       das war Befund 1 der Abnahme V2. *@
+    <Herleitungszeile Text="@Resource.OPT_HINWEIS_SUCHRAUM" />
+    <Herleitungszeile Text="@Resource.OPT_HINWEIS_ZIELFUNKTION" />
+
+    @if (_eingaben.KVerInZielfunktion)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.OPT_HINWEIS_KVER" />
+    }
+
+    <p class="epos-speicheropt-zeile">
+        @if (!string.IsNullOrEmpty(_aktuelleAuslegung))
+        {
+            <span class="epos-speicheropt-aktuell">@_aktuelleAuslegung</span>
+        }
+        <span class="epos-speicheropt-punkte">@Punktetext</span>
+    </p>
+
+    @* ---------------------------------------------------------- Aktionen *@
+    <div class="epos-speicheropt-leiste">
+        <button type="button" class="epos-simerg-knopf" @onclick="Starten"
+                disabled="@(_laeuft || !LaufMoeglich)">@Resource.OPT_BTN_START</button>
+
+        <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
+                     Abbrechen="@(Abbrechen.HasDelegate ? Abbrechen : (EventCallback?)null)"
+                     AbbrechenText="@Resource.OPT_BTN_ABBRUCH" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(_fehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+
+    @* Die Meldung der Huelle - „Die Auslegung wurde uebernommen" ist ein ERFOLG und
+       gehoert nicht in ein rotes Band; „konnte nicht geschrieben werden" schon. *@
+    @if (!string.IsNullOrEmpty(Meldung))
+    {
+        <Warnbanner Stufe="@(MeldungErfolg ? WarnStufe.Erfolg : WarnStufe.Fehler)" Text="@Meldung" />
+    }
+
+    @if (_ergebnis is not null && _ergebnis.Erfolg)
+    {
+        <p class="epos-simerg-status">@_ergebnis.Statuszeile</p>
+
+        @foreach (string hinweis in _ergebnis.Hinweise)
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@hinweis" />
+        }
+
+        <div class="epos-simerg-spalten">
+
+            @* Beide Bilder stehen ueber die volle Breite (Befund W11b-B-2 der
+               Abnahme vom 05.09.2026: ein Diagramm in einer halben Rasterspalte
+               ist nicht mehr zu lesen). ChartBild bringt den Zoom mit. *@
+            <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                <ChartBild Png="@_ergebnis.RasterBild" Alt="@Resource.OPT_CHART_HEATMAP_TITEL" />
+            </section>
+
+            <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                <ChartBild Png="@_ergebnis.SchnittBild" Alt="@_ergebnis.SchnittTitel" />
+            </section>
+
+            <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                <table class="epos-simerg-kennzahlen epos-speicheropt-kennzahlen">
+                    <thead>
+                        <tr>
+                            <th scope="col">@Resource.OPT_SP_GROESSE</th>
+                            <th scope="col">@Resource.OPT_SP_WERT</th>
+                            <th scope="col">@Resource.OPT_SP_EINHEIT</th>
+                        </tr>
+                    </thead>
+                    @foreach (string gruppe in GRUPPEN)
+                    {
+                        string g = gruppe;
+                        <tbody>
+                            <tr><th colspan="3" scope="colgroup">@Gruppentitel(g)</th></tr>
+                            @foreach (SpeicherOptimierungKennzahl z in Zeilen(g))
+                            {
+                                <tr>
+                                    <td>@z.Bezeichnung</td>
+                                    <td class="@(z.Negativ ? "epos-simerg-zahl epos-simerg-warn" : "epos-simerg-zahl")">@z.Wert</td>
+                                    <td>@z.Einheit</td>
+                                </tr>
+                            }
+                        </tbody>
+                    }
+                </table>
+            </section>
+
+        </div>
+    }
+
+    <div class="epos-simerg-fuss">
+        <button type="button" @onclick="UebernehmenFragen"
+                disabled="@(_laeuft || !ErgebnisDa || !Uebernehmen.HasDelegate)">
+            @Resource.OPT_BTN_UEBERNEHMEN
+        </button>
+
+        @if (Csv.HasDelegate)
+        {
+            <button type="button" @onclick="CsvSchreiben" disabled="@(_laeuft || !ErgebnisDa)">
+                @Resource.OPT_BTN_CSV
+            </button>
+        }
+
+        <button type="button" @onclick="Geschlossen" disabled="@_laeuft">
+            @Resource.OPT_BTN_SCHLIESSEN
+        </button>
+    </div>
+
+    <Rueckfrage Offen="@_frage" TitelText="@Resource.OPT_TITEL" Frage="@_frageText"
+                Beantwortet="FrageBeantwortet" />
+
+</div>
+
+@code {
+    /// <summary>
+    /// Die zwei Betriebsstrategien als Eintraege der Klappliste. Die Id ist der
+    /// Zahlenwert von <see cref="OptimiererStrategie"/> — Anzeigetext und Steuerwert
+    /// bleiben getrennt (dieselbe Trennung, die der StrategieEintrag der abgeloesten
+    /// Maske von Hand baute).
+    /// </summary>
+    private static readonly IReadOnlyList<(int Id, string Text)> STRATEGIEN =
+        SpeicherOptimierungCtrl.Strategien()
+            .Select((text, i) => (Id: i, Text: text))
+            .ToList();
+
+    private static readonly string[] GRUPPEN =
+    {
+        SpeicherOptimierungCtrl.GRUPPE_AUSLEGUNG,
+        SpeicherOptimierungCtrl.GRUPPE_WIRTSCHAFT,
+        SpeicherOptimierungCtrl.GRUPPE_SPEICHER
+    };
+
+    // =====================================================================
+    // Parameter
+    // =====================================================================
+
+    /// <summary>
+    /// Die Vorbelegung des Suchraums samt der aktuellen Auslegung. Ohne Delegat
+    /// steht der Vorschlag des Fachkonzepts da (500 … 5.000 kWh).
+    /// </summary>
+    [Parameter] public Func<SpeicherOptimierungVorgaben>? Vorgaben { get; set; }
+
+    /// <summary>
+    /// Rechnet die Rastersuche im Hintergrund. <c>melder</c> bekommt Anteil und Text;
+    /// OHNE Delegat bleibt der Startknopf gesperrt — die Rastersuche braucht Lastgang
+    /// und Erzeugungsreihen eines gelaufenen Durchgangs.
+    /// </summary>
+    [Parameter]
+    public Func<SpeicherOptimierungEingaben, Action<double?, string>,
+                Task<SpeicherOptimierungErgebnis>>? Rechnen { get; set; }
+
+    /// <summary>Bricht einen laufenden Suchlauf ab; ohne Rueckruf kein Knopf.</summary>
+    [Parameter] public EventCallback Abbrechen { get; set; }
+
+    /// <summary>
+    /// Uebernimmt Kapazitaet und Leistung des Bestpunkts in die Geraetedaten
+    /// (kWh, kW). Ohne Rueckruf ist der Knopf gesperrt.
+    /// </summary>
+    [Parameter] public EventCallback<(double Kwh, double Kw)> Uebernehmen { get; set; }
+
+    /// <summary>Schreibt das Raster als CSV; ohne Rueckruf kein Knopf.</summary>
+    [Parameter] public EventCallback<string> Csv { get; set; }
+
+    /// <summary>Die Ueberlagerung moechte geschlossen werden.</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>
+    /// Meldung der Huelle — der Ausgang von „Bestpunkt uebernehmen" oder des
+    /// CSV-Schreibens. Leer = keine.
+    /// </summary>
+    [Parameter] public string Meldung { get; set; } = "";
+
+    /// <summary>Ist <see cref="Meldung"/> eine ERFOLGSmeldung? Sonst steht sie rot.</summary>
+    [Parameter] public bool MeldungErfolg { get; set; }
+
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_SpeicherOptimierung.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private SpeicherOptimierungEingaben _eingaben = new SpeicherOptimierungEingaben();
+    private string _aktuelleAuslegung = "";
+
+    private bool _laeuft;
+    private double? _anteil;
+    private string _fortschrittText = "";
+    private string _fehler = "";
+
+    private SpeicherOptimierungErgebnis? _ergebnis;
+
+    private bool _frage;
+    private string _frageText = "";
+
+    /// <summary>Der Suchraum (Pruefhilfe).</summary>
+    public SpeicherOptimierungEingaben Eingaben => _eingaben;
+
+    /// <summary>Laeuft die Rastersuche gerade? (Pruefhilfe)</summary>
+    public bool Laeuft => _laeuft;
+
+    /// <summary>Das Ergebnis des letzten Laufs (Pruefhilfe); <c>null</c> = keines.</summary>
+    public SpeicherOptimierungErgebnis? Ergebnis => _ergebnis;
+
+    private bool LaufMoeglich => Rechnen is not null;
+
+    private bool ErgebnisDa => _ergebnis is not null && _ergebnis.Erfolg;
+
+    private string Punktetext => string.Format(
+        System.Globalization.CultureInfo.CurrentCulture, Resource.OPT_LBL_PUNKTE,
+        SpeicherOptimierungCtrl.Punktzahl(_eingaben));
+
+    // =====================================================================
+    // Laden
+    // =====================================================================
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        SpeicherOptimierungVorgaben? vorgaben = Vorgaben?.Invoke();
+        if (vorgaben is null) return;
+
+        _eingaben = vorgaben.Eingaben.Kopie();
+        _aktuelleAuslegung = vorgaben.AktuelleAuslegung;
+    }
+
+    // =====================================================================
+    // Eingaben
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Zahlenfeld hat geschrieben. Ein LEERES Feld (<c>null</c>) laesst den
+    /// bisherigen Wert stehen; gepruefte Grenzen gibt es erst beim Start — waehrend
+    /// des Tippens ist „Kapazität von" zwischenzeitlich immer groesser als „bis".
+    /// </summary>
+    private void Setzen(Action<double> schreiben, double? wert)
+    {
+        if (wert.HasValue) schreiben(wert.Value);
+        Nachrechnen();
+    }
+
+    private void SetzenGanz(Action<int> schreiben, int? wert)
+    {
+        if (wert.HasValue) schreiben(wert.Value);
+        Nachrechnen();
+    }
+
+    private void StrategieGewaehlt(int? index)
+    {
+        _eingaben.Strategie = index == 1 ? OptimiererStrategie.Nachtnutzung
+                                         : OptimiererStrategie.Dauernutzung;
+        Nachrechnen();
+    }
+
+    /// <summary>Ein geaenderter Suchraum entwertet den Fehlertext und die Punktzahl.</summary>
+    private void Nachrechnen() => _fehler = "";
+
+    // =====================================================================
+    // Der Lauf
+    // =====================================================================
+
+    private async Task Starten()
+    {
+        if (_laeuft || Rechnen is null) return;
+
+        IReadOnlyList<string> maengel = SpeicherOptimierungCtrl.Pruefe(_eingaben);
+        if (maengel.Count > 0)
+        {
+            // Eingabefehler SPERREN den Lauf - er beginnt gar nicht erst.
+            _fehler = string.Join(Environment.NewLine, maengel);
+            _ergebnis = null;
+            return;
+        }
+
+        _laeuft = true;
+        _fehler = "";
+        _ergebnis = null;
+        _anteil = 0.0;
+        _fortschrittText = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+            Resource.OPT_STATUS_PUNKT, 0, SpeicherOptimierungCtrl.Punktzahl(_eingaben));
+        StateHasChanged();
+
+        SpeicherOptimierungErgebnis antwort;
+        try
+        {
+            antwort = await Rechnen(_eingaben.Kopie(), Melden);
+        }
+        finally
+        {
+            _laeuft = false;
+        }
+
+        if (antwort is null || !antwort.Erfolg)
+        {
+            _ergebnis = null;
+            _fehler = antwort?.Meldung ?? Resource.OPT_MSG_KEIN_ERGEBNIS;
+        }
+        else
+        {
+            _ergebnis = antwort;
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Die gedrosselte Fortschrittsmeldung. Sie kommt aus dem Hintergrundfaden;
+    /// <c>InvokeAsync</c> setzt den Zeichenlauf auf den Bedienfaden.
+    /// </summary>
+    private void Melden(double? anteil, string text)
+    {
+        _anteil = anteil;
+        _fortschrittText = text ?? "";
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    // =====================================================================
+    // Uebernehmen und CSV
+    // =====================================================================
+
+    private void UebernehmenFragen()
+    {
+        if (!ErgebnisDa || !Uebernehmen.HasDelegate) return;
+
+        System.Globalization.CultureInfo k = System.Globalization.CultureInfo.CurrentCulture;
+        _frageText = string.Format(k, Resource.OPT_MSG_UEBERNAHME_FRAGE,
+            _ergebnis!.KapazitaetKwh.ToString("0.#", k),
+            _ergebnis!.LeistungKw.ToString("0.#", k));
+        _frage = true;
+    }
+
+    private async Task FrageBeantwortet(bool? antwort)
+    {
+        _frage = false;
+        if (antwort != true || _ergebnis is null) return;
+
+        await Uebernehmen.InvokeAsync((_ergebnis.KapazitaetKwh, _ergebnis.LeistungKw));
+    }
+
+    private async Task CsvSchreiben()
+    {
+        if (!ErgebnisDa || !Csv.HasDelegate) return;
+        await Csv.InvokeAsync(_ergebnis!.RasterCsv);
+    }
+
+    // =====================================================================
+    // Kennzahlen
+    // =====================================================================
+
+    private IEnumerable<SpeicherOptimierungKennzahl> Zeilen(string gruppe)
+    {
+        if (_ergebnis is null) yield break;
+
+        foreach (SpeicherOptimierungKennzahl z in _ergebnis.Kennzahlen)
+            if (string.Equals(z.Gruppe, gruppe, StringComparison.Ordinal)) yield return z;
+    }
+
+    private static string Gruppentitel(string gruppe) => gruppe switch
+    {
+        SpeicherOptimierungCtrl.GRUPPE_AUSLEGUNG => Resource.OPT_KZ_GRUPPE_AUSLEGUNG,
+        SpeicherOptimierungCtrl.GRUPPE_WIRTSCHAFT => Resource.OPT_KZ_GRUPPE_WIRTSCHAFT,
+        SpeicherOptimierungCtrl.GRUPPE_SPEICHER => Resource.OPT_KZ_GRUPPE_SPEICHER,
+        _ => gruppe
+    };
+}

@@ -24385,6 +24385,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Suchraum ergibt {0} Rasterpunkte; zulässig sind höchstens {1}. Bitte die Stützstellen verringern oder die Schrittweite der C-Rate vergrößern. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_PUNKTE_MAX {
+            get {
+                return ResourceManager.GetString("OPT_MSG_PUNKTE_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die obere C-Rate darf nicht unter der unteren liegen. ähnelt.
         /// </summary>
         public static string OPT_MSG_RMAX {
@@ -24417,6 +24426,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string OPT_MSG_STUETZSTELLEN {
             get {
                 return ResourceManager.GetString("OPT_MSG_STUETZSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kapazitätsachse verträgt höchstens {0} Stützstellen — jede ist ein vollständiger Jahreslauf. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_STUETZSTELLEN_MAX {
+            get {
+                return ResourceManager.GetString("OPT_MSG_STUETZSTELLEN_MAX", resourceCulture);
             }
         }
         

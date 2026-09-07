@@ -6672,6 +6672,51 @@ body {
 }
 
 /* ==================================================================== */
+/* AUSLEGUNGSOPTIMIERUNG DES STROMSPEICHERS - W11b-B-5 (07.09.2026)      */
+/*                                                                      */
+/* Der Befund des Anwenders war eine UEBERSCHNEIDUNG: In der abgeloesten */
+/* WinForms-Maske lagen zwei Labels derselben Zeile uebereinander (die   */
+/* aktuelle Auslegung auf x = 14…414, der Erklaertext zur Zielfunktion   */
+/* auf x = 310…1140, beide bei y = 108), und der Erklaertext ragte 8     */
+/* Bildpunkte ueber seine GroupBox hinaus. Genau dagegen steht hier      */
+/* nichts Kunstvolles, sondern der Verzicht auf feste Koordinaten: Die   */
+/* Erklaerung ist eine Herleitungszeile ueber die volle Breite, und      */
+/* diese Zeile hier bricht um, statt zu ueberdecken.                    */
+/* ==================================================================== */
+.epos-speicheropt {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.epos-speicheropt-zeile {
+    margin: 2px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+    align-items: baseline;
+}
+
+.epos-speicheropt-aktuell { color: var(--epos-text-leise); }
+.epos-speicheropt-punkte { font-weight: 600; }
+
+.epos-speicheropt-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Der Fortschritt steht NEBEN dem Startknopf und nimmt den Rest der Zeile;
+   ohne die Mindestbreite schrumpfte der Balken auf die Breite seines Textes. */
+.epos-speicheropt-leiste > .epos-fortschritt {
+    flex: 1 1 320px;
+    min-width: 0;
+}
+
+.epos-speicheropt-kennzahlen { width: 100%; }
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
@@ -6849,4 +6894,3 @@ body {
 .epos-formularraster > .epos-formulargruppe > .epos-herleitung {
     grid-column: 1 / -1;
 }
-

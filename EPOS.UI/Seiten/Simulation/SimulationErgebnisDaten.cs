@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EPOS.UI.Bausteine;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Seiten.Simulation;
 
@@ -528,8 +529,42 @@ public sealed class SimulationErgebnisDienste
     /// <summary>Schreibt die Vergleichstabelle als CSV.</summary>
     public Func<Task<Rueckmeldung>>? VergleichCsv;
 
-    /// <summary>Die Sprungbruecke — heute nur <c>Sprungziel.SpeicherOptimierung</c>.</summary>
-    public Func<string, Task<bool>>? Sprung;
+    // ---- Die Auslegungsoptimierung des Stromspeichers (W11b-B-5) ----
+    //
+    // Bis zur Windows-Abnahme V2 (07.09.2026) stand hier EIN Delegat: die
+    // Sprungbruecke (Func<string, Task<bool>> Sprung) mit dem einzigen Schluessel
+    // Sprungziel.SpeicherOptimierung. Sie oeffnete Form_SpeicherOptimierung modal
+    // ueber der WebView. Die Maske ist gefallen (Befunde „Texte ueberschneiden
+    // sich" und „Dialog stuerzt nach kurzer Zeit ab"); an ihre Stelle tritt die
+    // Ueberlagerung SpeicherOptimierungDialog, und aus dem einen Schluessel werden
+    // diese fuenf benannten Wege. Damit ist auch das letzte Sprungziel weg.
+
+    /// <summary>
+    /// Liest den Vorschlag fuer den Suchraum samt der aktuellen Auslegung
+    /// (Datenbankzugriff, Bedienfaden). Ohne Delegat steht der Vorschlag des
+    /// Fachkonzepts da.
+    /// </summary>
+    public Func<SpeicherOptimierungVorgaben>? OptimierungVorgaben;
+
+    /// <summary>
+    /// Rechnet die Rastersuche im Hintergrund; <paramref name="melder"/> bekommt
+    /// Anteil und Text. OHNE Delegat gibt es die Optimierung gar nicht — die
+    /// Rastersuche braucht einen gelaufenen Simulationsdurchgang.
+    /// </summary>
+    public Func<SpeicherOptimierungEingaben, Action<double?, string>,
+                Task<SpeicherOptimierungErgebnis>>? OptimierungRechnen;
+
+    /// <summary>Bricht einen laufenden Suchlauf ab; ohne Delegat kein Knopf.</summary>
+    public Action? OptimierungAbbrechen;
+
+    /// <summary>
+    /// Uebernimmt Kapazitaet [kWh] und Leistung [kW] des Bestpunkts in die
+    /// Geraetedaten. Neu gerechnet wird bewusst nicht.
+    /// </summary>
+    public Func<double, double, Rueckmeldung>? OptimierungUebernehmen;
+
+    /// <summary>Schreibt den uebergebenen CSV-Text in eine Datei; ohne Delegat kein Knopf.</summary>
+    public Func<string, Task<Rueckmeldung>>? OptimierungCsv;
 
     // ---- Die vier CSV-Exporte ----
 

@@ -232,7 +232,16 @@ namespace WindowsFormsApplication1
                 VarianteAktivSetzen = VarianteAktivSetzen,
                 VergleichCsv = VergleichCsv,
 
-                Sprung = schluessel => Sprungbruecke.Fuer(_fenster, sim, m_ID_Projekt)(schluessel),
+                // W11b-B-5: Hier stand EIN Delegat - die Sprungbruecke mit dem
+                // einzigen Schluessel Sprungziel.SpeicherOptimierung, die
+                // Form_SpeicherOptimierung modal ueber der WebView oeffnete. Die
+                // Maske ist gefallen; die fuenf Wege stehen in
+                // SimulationErgebnisHuelle.Optimierung.cs.
+                OptimierungVorgaben = OptimierungVorgaben,
+                OptimierungRechnen = OptimierungRechnen,
+                OptimierungAbbrechen = OptimierungAbbrechen,
+                OptimierungUebernehmen = OptimierungUebernehmen,
+                OptimierungCsv = OptimierungCsv,
 
                 CsvBedarf = CsvBedarf,
                 CsvWaermepumpe = CsvWaermepumpe,

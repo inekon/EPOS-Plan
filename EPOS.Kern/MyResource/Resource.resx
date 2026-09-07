@@ -4989,6 +4989,12 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
   <data name="OPT_MSG_STUETZSTELLEN" xml:space="preserve">
     <value>Die Kapazitätsachse braucht mindestens 2 Stützstellen.</value>
   </data>
+  <data name="OPT_MSG_STUETZSTELLEN_MAX" xml:space="preserve">
+    <value>Die Kapazitätsachse verträgt höchstens {0} Stützstellen — jede ist ein vollständiger Jahreslauf.</value>
+  </data>
+  <data name="OPT_MSG_PUNKTE_MAX" xml:space="preserve">
+    <value>Der Suchraum ergibt {0} Rasterpunkte; zulässig sind höchstens {1}. Bitte die Stützstellen verringern oder die Schrittweite der C-Rate vergrößern.</value>
+  </data>
   <data name="OPT_MSG_RMIN" xml:space="preserve">
     <value>Die untere C-Rate muss größer als 0 sein.</value>
   </data>

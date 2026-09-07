@@ -396,9 +396,13 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Kacheln` (ihr einziger Nutzer war `NavigatorUebersicht`), **bleibt aber**:
   `Form_Klimadaten` und `Form_PeakShaving` führen weiter interaktive
   WinForms-Charts. **`Views/Simulation` führt seither KEINE Designer-Maske mehr**;
-  `Form_SpeicherOptimierung` bleibt WinForms (iF22) und ist über die
-  **Sprungbrücke** (`Sprungziel.SpeicherOptimierung`) zu erreichen — das erste
-  Brückenziel mit Parameter und mit einer fachlichen Rückgabe statt `DialogResult`.
+  `Form_SpeicherOptimierung` blieb bis zur Windows-Abnahme V2 (07.09.2026) WinForms
+  (iF22) und war über die **Sprungbrücke** (`Sprungziel.SpeicherOptimierung`) zu
+  erreichen — das erste Brückenziel mit Parameter und mit einer fachlichen Rückgabe
+  statt `DialogResult`. **Mit W11b‑B‑5 ist sie gefallen** (Befunde „Texte
+  überschneiden sich" und „Dialog stürzt nach kurzer Zeit ab"); an ihre Stelle tritt
+  die Überlagerung `EPOS.UI/Dialoge/Strom/SpeicherOptimierungDialog.razor`, und mit
+  ihr sind **Sprungziel und Sprungbrücke leer beziehungsweise gelöscht**.
   Protokoll:
   [`Allgemein/Reporting/iU9_W11b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W11b_Blazor_Port_Protokoll.md).
   **Mit iU9‑W11a ist KEINE Maske verschwunden** — die Welle verlegt, was ohne
@@ -567,9 +571,11 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   schreibende Weg zu `Properties.Settings` außerhalb einer Maske (Befund W14c‑B57).
   **Die Sprungbrücke verliert ihre letzten zwei ablösbaren Ziele** (`Gesetzesparameter`,
   `GesetzesparameterCo2`): Beide Aufrufer waren schon Razor, aus jedem Sprung wird eine
-  Überlagerung im selben Fenster (Risiko R2). **`Sprungziel` führt danach EINE Konstante und
-  `Sprungbruecke` EINEN Zweig — `SpeicherOptimierung`, und das ist ein ENTSCHEID, kein Rest
-  (iF22): Wer sie „aufräumt", bricht die letzte WinForms-Maske hinter einem Blazor-Dialog.**
+  Überlagerung im selben Fenster (Risiko R2). `Sprungziel` führte danach EINE Konstante und
+  `Sprungbruecke` EINEN Zweig — `SpeicherOptimierung`, und das war ein Entscheid, kein Rest
+  (iF22). **Mit W11b‑B‑5 (07.09.2026) ist auch dieser Entscheid überholt**: Der Anwender hat
+  die Maske in der Abnahme V2 zurückgegeben, sie ist eine Razor-Überlagerung geworden,
+  `Sprungziel` ist LEER und `Allgemein/Blazor/Sprungbruecke.cs` gelöscht.
   Der Nachweis der Welle entsteht ZUERST (`EPOS.Kern.Tests/KatalogpflegeTests.cs`, 104 Fälle):
   Für die acht berührten Kerntypen gab es bis dahin keinen einzigen Test (Befund W14c‑B62);
   die TMY-Antwort des einzigen Netzzugriffs kommt darin aus einer eingefrorenen Datei.
@@ -864,9 +870,12 @@ Diese Konventionen beim Erweitern beibehalten.
 
 ## Wichtige Pakete
 
-`WinForms.DataVisualization` (Chart-Port mit Original-Namespace) · `ScottPlot.WinForms` —
-seit iU7/iU8 nur noch für **interaktive** Bildschirm-Charts, heute genau eine Maske
-(`Form_SpeicherOptimierung`); Bericht und Blazor bekommen PNG-Bytes aus dem Kern-Renderer ·
+`WinForms.DataVisualization` (Chart-Port mit Original-Namespace) · **`ScottPlot.WinForms` ist
+mit W11b‑B‑5 (07.09.2026) ENTFALLEN** — es lief an genau einer Stelle, der Heatmap und der
+Schnittkurve von `Form_SpeicherOptimierung`, und brachte den Dialog dort zu Fall: Jeder Lauf
+hängte über `Plot.Add.ColorBar` eine weitere Farbskala an denselben Plot, und `Plot.Clear()`
+räumt Plottables, aber keine Panels; ab dem achten Lauf war die Zeichenfläche 0 Bildpunkte
+breit. Beide Bilder zeichnet jetzt `ChartRenderer` (SkiaSharp) im Kern ·
 `SkiaSharp` · `MathNet.Numerics` · `System.Security.Cryptography.ProtectedData` (DPAPI hinter
 `Dienste.Lizenzablage`) · `System.Data.OleDb` (**nur** noch für den Access-Zweig der
 Erststart-Migration) · `Mscc.GenerativeAI` · seit iU8
@@ -889,14 +898,20 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   beim Bearbeiten den vorhandenen Zustand je Datei beibehalten. Die frühere Kodierungsfalle
   (cp1252 ohne BOM, Umlautschaden beim Speichern) ist damit Geschichte.
 - **Nebenläufigkeit: DREI Rechnungen laufen im Hintergrund, sonst keine.**
-  `Form_SpeicherOptimierung` seit iF22 (Rastersuche), seit **iU9‑W11a.4** der
+  Die Rastersuche der Auslegungsoptimierung seit iF22 (seit W11b‑B‑5 in
+  `SimulationErgebnisHuelle.Optimierung.cs`), seit **iU9‑W11a.4** der
   Simulationslauf der Ergebnisseite und seit **iU9‑W12.6** die
   Lastspitzenkappung (`PeakShavingHuelle`: Kappungslauf, Schwellensuche, das
   Lesen der Ganglinienwerte und das Zeichnen — Befund W12‑B22; in einer WebView
-  ist der Renderfaden derselbe Faden). Beide folgen derselben Aufteilung
-  (Klassenkopf `Form_SpeicherOptimierung.cs:29–46`): **Der Bedienfaden liest die
+  ist der Renderfaden derselbe Faden). Alle drei folgen derselben Aufteilung
+  (sie stammt aus dem Klassenkopf der abgelösten `Form_SpeicherOptimierung`):
+  **Der Bedienfaden liest die
   Datenbank**, der Hintergrund rechnet, das Marshalling besorgt `Progress<T>` (auf
-  dem Bedienfaden erzeugt, übernimmt dessen `SynchronizationContext`). In der
+  dem Bedienfaden erzeugt, übernimmt dessen `SynchronizationContext`).
+  **Seit W11b‑B‑5 ist der Fortschritt zusätzlich GEDROSSELT** — die Engine meldet je
+  Rasterpunkt aus ihrem `Parallel.For` heraus, das sind bei 120 Punkten in 0,3 s
+  vierhundert Meldungen je Sekunde; `SpeicherOptimierungCtrl` lässt höchstens jede
+  zehnte und höchstens alle 100 ms durch. In der
   Detailansicht heißt das: `SimulationLaufCtrl.Vorpruefen`/`Bedarf`/`Bestuecken`
   auf dem Bedienfaden, `Laufen` in `Task.Run`, danach die Anzeige wieder auf dem
   Bedienfaden. Ein `Entsorgt()`-Test steht in **jedem** Zweig nach dem `await` —
@@ -913,8 +928,8 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   ohnehin im richtigen Kontext entsteht, braucht keine Insel. Bis dahin lief die Anwendung
   DpiUnaware, weil die gewachsenen WinForms-Masken fest gerechnete Pixelkoordinaten hatten;
   nach Welle 16 gibt es sie nicht mehr. **Abnahmepunkt am Gerät** bei 100 / 125 / 150 %,
-  besonders `Form_HelpPopup` und `Form_SpeicherOptimierung` — die zwei letzten
-  WinForms-Fenster (`Umsetzung_iU9_Nachweise.md` § 12.1). Der `PerMonitorV2`-Kommentar im
+  besonders `Form_HelpPopup` — seit W11b‑B‑5 das LETZTE WinForms-Fenster neben dem
+  `Hauptfensterrahmen` (`Umsetzung_iU9_Nachweise.md` § 12.1). Der `PerMonitorV2`-Kommentar im
   `.csproj` stimmt seither.
 - **WebView2 ist ab iU8 eine Laufzeitvoraussetzung — und seit iU9‑W15c eine HARTE.**
   `dotnet publish` bringt nur das SDK (`Microsoft.Web.WebView2.Core.dll`,
