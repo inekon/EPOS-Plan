@@ -111,6 +111,27 @@ namespace WindowsFormsApplication1
             return (v == null || v == DBNull.Value) ? "" : v.ToString();
         }
 
+        /// <summary>
+        /// <b>Die Zahl der MPP-Tracker eines Katalogsatzes</b> (<c>Anzahl_Mppt</c>);
+        /// <c>null</c>, wenn es die Zeile nicht gibt oder die Spalte NULL führt.
+        ///
+        /// <para>Gebraucht für die Vorbelegung eines neuen Strangs (<b>W6‑B‑4</b>):
+        /// Der zweite Strang an demselben Gerät bekommt den nächsten freien Tracker.
+        /// <b>NULL ist der Regelfall</b> — die CEC-Liste führt die Angabe nicht
+        /// (offener Punkt W6‑O‑2), und dann bleibt es bei Tracker 1, genau wie bei der
+        /// Prüfung P4/P5.</para>
+        /// </summary>
+        public static int? TrackerZahl(int stammId)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Anzahl_Mppt FROM [" + TABLE + "] WHERE ID = ?",
+                new DbParam("@id", stammId));
+            if (v == null || v == DBNull.Value) return null;
+
+            int n = Convert.ToInt32(v);
+            return n >= 1 ? n : (int?)null;
+        }
+
         // =================================================================
         //  Der Herstellerfilter der Verwaltung (Konzept 6)
         // =================================================================

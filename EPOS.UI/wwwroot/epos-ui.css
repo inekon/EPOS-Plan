@@ -6685,6 +6685,85 @@ body {
     min-height: 0;
 }
 
+/* ==========================================================================
+   W6-B-4 (Windows-Abnahme 07.09.2026): ELF SPALTEN IN 1 048 px
+
+   Der Befund: "Anzahl Module fehlt?" - sie fehlte nicht, sie lag ausserhalb
+   des sichtbaren Bereichs. Gemessen mit einer Playwright-Probe bei 1 100 px
+   Fensterbreite (der Dialog laesst davon 1 046 px): Die Tabelle war 1 974 px
+   breit und rollte um 928 px waagerecht; sechs der elf Spalten - Geraet,
+   MPPT, Module in Reihe, Straenge parallel, Neigung, Azimut - standen
+   vollstaendig rechts daneben.
+
+   DREI URSACHEN, drei Regeln:
+
+   1. Die zwei KLAPPLISTEN waren so breit wie ihr laengster Eintrag. Ein
+      <select> traegt als Mindestbreite den laengsten Optionstext, und
+      "SMA America: SB30-1SP-US-40 {240V}" sind 302 px. Sie bekommen einen
+      DECKEL und schneiden mit Auslassungspunkten ab; der volle Name steht im
+      title der Zelle.
+
+   2. Die ZAHLENFELDER waren so breit wie ein <input> von Haus aus ist (rund
+      196 px je Spalte, sechsmal). Sie bekommen eine feste, kleine Breite -
+      vier Zeichen reichen fuer jede Modulzahl, die ein Strang traegt.
+
+   3. Die SPALTENKOEPFE brachen nicht um (.epos-raster th { white-space:
+      nowrap }). "Module in Reihe" und "Straenge parallel" hielten damit
+      allein je 196 px offen. In DIESER Tabelle darf ein Kopf umbrechen: Er
+      steht ueber einem Zahlenfeld, nicht ueber einem Satz.
+
+   Die Rechnung nach der Umstellung: 52 (Wahl) + 43 (Rang) + 144 (Bezeichner)
+   + 6 x 72 (Zahlen) + 2 x 185 (Listen) = 1 046 px. Sie passt, und die Probe
+   misst sie nach (scrollWidth == clientWidth).
+   ========================================================================== */
+
+/* Der Spaltenkopf polstert wie die Zelle darunter - 8 px links und rechts
+   waeren bei elf Spalten allein 88 px. */
+.epos-strangtabelle th {
+    padding: 4px;
+}
+
+/* Die sechs ZAHLENSPALTEN: schmal, und ihr Kopf darf umbrechen. width: 1%
+   heisst in einer Tabelle "so schmal wie moeglich" - die Spalte nimmt dann
+   genau ihre Mindestbreite.
+
+   DER SELEKTOR NENNT th UND td, und das ist kein Zierat: Die Hausregel
+   .epos-raster th, .epos-raster td { white-space: nowrap } wiegt (0,1,1) und
+   schlaegt eine blosse Klasse (0,1,0). Gemessen am 07.09.2026: Mit
+   ".epos-strangtabelle-zahl { white-space: normal }" allein blieben
+   "Module in Reihe" und "Straenge parallel" einzeilig und hielten je 126 px
+   offen - die Tabelle kam auf 1 180 statt 1 041 px. */
+.epos-strangtabelle th.epos-strangtabelle-zahl,
+.epos-strangtabelle td.epos-strangtabelle-zahl {
+    width: 1%;
+    white-space: normal;
+}
+
+.epos-strangtabelle-zahl .epos-eingabe {
+    flex: 0 0 auto;
+    width: 4rem;
+    min-width: 0;
+    padding: 0 4px;
+}
+
+/* Die zwei KLAPPLISTEN: gedeckelt und abgeschnitten. text-overflow wirkt auf
+   einem <select> in Chromium/WebView2 auf den angezeigten Eintrag; ohne
+   overflow: hidden greift es nicht. */
+.epos-strangtabelle-liste .epos-eingabe {
+    max-width: 11rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Der Bezeichner ist Freitext und braucht Platz - aber nicht die 196 px, die
+   ein <input> von sich aus beansprucht. */
+.epos-strangtabelle-text .epos-eingabe {
+    min-width: 0;
+    max-width: 8.5rem;
+}
+
 /* Die AMPELZEILEN stehen UNTER der Tabelle, nicht in einer eigenen Spalte:
    Sie tragen einen Satz mit Zahlen, und ein Satz braucht Breite (Konzept 7). */
 .epos-ampelzeilen {

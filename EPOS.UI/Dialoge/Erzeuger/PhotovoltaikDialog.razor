@@ -169,6 +169,7 @@
                                   GeraetUebernehmen="@WechselrichterUebernehmen"
                                   Hersteller="@WechselrichterHersteller"
                                   GeraeteFiltern="@WechselrichterFiltern"
+                                  TrackerZahl="@Trackerzahl"
                                   Modulhersteller="@ModulherstellerDer(_projektZeile)"
                                   Module="@Strangmodule"
                                   ModulUebernehmen="@ModulUebernehmen"
@@ -361,6 +362,13 @@
     /// Katalogsatz liest.</para>
     /// </summary>
     [Parameter] public Func<ErzeugerZeile, string>? Modulhersteller { get; set; }
+
+    /// <summary>
+    /// Die Zahl der MPP-Tracker eines KATALOGgeräts (<c>Anzahl_Mppt</c>) — für die
+    /// Vorbelegung eines neuen Strangs (<b>W6‑B‑4</b>). Ohne Delegat bleibt es bei
+    /// Tracker 1.
+    /// </summary>
+    [Parameter] public Func<int, int?>? Trackerzahl { get; set; }
 
     /// <summary>
     /// Die PV-Module des KATALOGS für die Modulspalte der Strangtabelle
