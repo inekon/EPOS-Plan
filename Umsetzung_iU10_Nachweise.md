@@ -421,6 +421,16 @@ den Lauf nicht mehr. Der Pfad-Adapter `IosPfade` erbt das neue Mitglied `IPfade.
 `StandardPfade`; auf iOS findet die Suche keinen Ordner und liefert den leeren Pfad, die Einstellungen fallen auf die Vorgabe
 zurück. Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
 
+**Zweiunddreißigster Lauf 34087446473 (`ios.yml`, `macos-26`, 07.09.2026, 05:36–05:46 UTC, 9 min 23 s)** auf
+`7885947` — derselbe Programmstand wie Lauf 31, dazu das umgestellte STRICT-Gate: Workload 19 s, Bau 2 min 9 s
+(0 Fehler, 12 Warnungen des Bestands), Simulatorstart 1 min 18 s, Erststart mit Seed-Kopie (66 MB), `SQLite 3.53.3`,
+**`STRICT=117`** gegen „erwartet mindestens 117 (Seed)", `EPOS.iOS bereit: Projekte=24`, Prüfmodus 1030 in 24 s
+(22 CSV, 150 Skalare), iZ6-Vergleich gegen `2026-09-06_R3_Straenge` **PASS (236 670 Werte)** und **BYTE-GLEICH**
+(`diff -rq` leer, iOS-Simulator arm64). Damit ist der gesamte Stand des 06.09.2026 — Wechselrichterweg S1–S3 mit
+Strangmodell und Clipping, Modul je Strang, Importwirt mit OND, Prüfprojekt 1045 in der Seed-Datenbank, Vor-/Rücklauf-
+Vorbelegung, Wärmepumpen-Umbau, Administration-Menü — auf iOS gebaut, gestartet und im Rechenweg byte-gleich nachgewiesen.
+Ausgelöst per `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
