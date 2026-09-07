@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Bunit;
 using EPOS.UI.Bausteine;
@@ -529,6 +531,183 @@ public sealed class BerechnungshilfeTests : BunitContext
         Assert.True(funde.Count == 0,
                     "Diese Schlüssel stehen nicht in genau einem Razor-Dialog:\n  " +
                     string.Join("\n  ", funde));
+    }
+
+    // =====================================================================
+    //  2b. Der Startbestand spricht den Text der Seite (H13-O-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Der mitgelieferte Startbestand, relativ zur Repowurzel. Er liegt im
+    /// WinForms-Projekt (<c>net10.0-windows</c>) und wird deshalb — wie die
+    /// Zuordnungsdatei — von der PLATTE gelesen und nicht referenziert.
+    /// </summary>
+    private static readonly string[] Startbestandsdatei =
+        { "WindowsFormsApplication1", "Allgemein", "Hilfe", "help_cache.json" };
+
+    /// <summary>Die sieben Erzeugerseiten dieses Teils.</summary>
+    public static TheoryData<string> ErzeugerseitenDatenn()
+    {
+        var daten = new TheoryData<string>();
+        foreach (string name in new[] { "Heizkessel", "BHKW", "Wärmepumpe", "Pufferspeicher",
+                                        "Solarthermie", "Photovoltaik", "Stromspeicher" })
+            daten.Add(name);
+        return daten;
+    }
+
+    /// <summary>
+    /// <b>H13‑O‑1 (Anwenderentscheid 07.09.2026).</b> Die Beschreibung einer
+    /// Erzeugerseite im mitgelieferten Startbestand ist WORTGLEICH der Anfang ihres
+    /// Abschnitts „Was berechnet wird".
+    ///
+    /// <para><b>Warum das ein Wächter ist und keine einmalige Angleichung.</b> Der
+    /// Startbestand trug bis hierher je Seite denselben neutralen Platzhalter („Der
+    /// Rechenweg des … im Stundenraster"). Er ist das, was der Infoknopf zeigt,
+    /// solange das Wiki die Seite noch nicht führt oder das Programm ohne Netz
+    /// läuft — also genau dann, wenn der Anwender den Text am nötigsten braucht.
+    /// Zwei Texte über dieselbe Sache driften auseinander, sobald einer von beiden
+    /// angefasst wird; dieser Fall bindet sie aneinander.</para>
+    ///
+    /// <para><b>Die Regel, wörtlich.</b> Aus dem ERSTEN Absatz des Abschnitts,
+    /// befreit von Auszeichnung, so viele GANZE Sätze, wie in 240 Zeichen passen,
+    /// mindestens aber einer. Ganze Sätze, weil ein abgeschnittener Satz im Popup
+    /// schlimmer aussieht als ein kurzer; 240 Zeichen, weil das Popup darunter
+    /// Kapitel, Adresse und Knopfzeile trägt.</para>
+    ///
+    /// <para><b>Die sechs Seiten des Teils A bleiben außen vor</b> (H13‑O‑7): Ihre
+    /// Beschreibungen sind zusammen mit den Seiten von Hand geschrieben und keine
+    /// Platzhalter, und der erste Absatz von „Wärmequelle Erdreich" endet mit einem
+    /// Doppelpunkt vor einer Aufzählung — die Regel liefert dort keinen Satz,
+    /// sondern eine Ankündigung.</para>
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(ErzeugerseitenDatenn))]
+    public void Der_Startbestand_spricht_den_Text_der_Seite(string seite)
+    {
+        string erwartet = AnfangVonWasBerechnetWird(seite);
+
+        Assert.False(string.IsNullOrWhiteSpace(erwartet),
+                     seite + ": der Abschnitt 'Was berechnet wird' liefert keinen Satz.");
+        Assert.True(erwartet.Length <= 240,
+                    seite + ": der Anfang ist " + erwartet.Length + " Zeichen lang (höchstens 240).");
+
+        string gefunden = BeschreibungImStartbestand(seite);
+
+        Assert.Equal(erwartet, gefunden);
+    }
+
+    /// <summary>
+    /// <b>Gegenprobe:</b> Der Leser schneidet wirklich an einer Satzgrenze, nimmt
+    /// den zweiten Satz mit, solange er passt, und lässt ihn weg, wenn er die
+    /// Grenze sprengt. Ohne diese Probe liefe der Fall oben womöglich über einen
+    /// Text, den niemand geprüft hat.
+    /// </summary>
+    [Fact]
+    public void Der_Waechter_schneidet_an_der_Satzgrenze()
+    {
+        Assert.Equal("Ein Satz. Und noch einer.",
+                     ErsteSaetze("Ein Satz. Und noch einer.", 240));
+        Assert.Equal("Ein Satz.",
+                     ErsteSaetze("Ein Satz. " + new string('x', 240) + ".", 240));
+        Assert.Equal("Ohne Punkt bleibt alles stehen",
+                     ErsteSaetze("Ohne Punkt bleibt alles stehen", 240));
+
+        // Auszeichnung faellt weg, das Wort bleibt.
+        Assert.Equal("Der Kessel deckt die Spitze.",
+                     Absatztext("Der '''Kessel''' deckt die [[Spitzenlast|Spitze]]."));
+    }
+
+    /// <summary>
+    /// Der Anfang des Abschnitts „Was berechnet wird" einer Seite — die
+    /// Zeichenkette, die im Startbestand als <c>Beschreibung</c> stehen muss.
+    /// </summary>
+    private static string AnfangVonWasBerechnetWird(string seite)
+    {
+        string text = File.ReadAllText(Seitendatei(seite)).Replace("\r\n", "\n");
+
+        int stelle = text.IndexOf("== Was berechnet wird ==", StringComparison.Ordinal);
+        Assert.True(stelle >= 0, seite + ": der Abschnitt 'Was berechnet wird' fehlt.");
+        stelle = text.IndexOf('\n', stelle) + 1;
+
+        // Der ERSTE Absatz: Fliesstextzeilen bis zur naechsten Leerzeile. Eine
+        // Ueberschrift, eine Liste, eine Tabelle oder eine Formelzeile beenden ihn
+        // ebenfalls - sie sind kein Satz.
+        var absatz = new List<string>();
+        foreach (string roh in text.Substring(stelle).Split('\n'))
+        {
+            string zeile = roh.Trim();
+            if (zeile.StartsWith("==", StringComparison.Ordinal)) break;
+            if (zeile.Length == 0)
+            {
+                if (absatz.Count > 0) break;
+                continue;
+            }
+            if ("*#:;|{!".IndexOf(zeile[0]) >= 0) break;
+            absatz.Add(zeile);
+        }
+
+        return ErsteSaetze(Absatztext(string.Join(" ", absatz)), 240);
+    }
+
+    /// <summary>Nimmt einem Absatz die Wiki-Auszeichnung, ohne ein Wort zu ändern.</summary>
+    private static string Absatztext(string roh)
+    {
+        string s = roh ?? "";
+
+        s = Regex.Replace(s, @"\[\[([^\]\|]*)\|([^\]]*)\]\]", "$2");
+        s = Regex.Replace(s, @"\[\[([^\]]*)\]\]", "$1");
+        s = s.Replace("'''", "").Replace("''", "");
+        s = Regex.Replace(s, @"<[^>]{1,40}>", "");
+        s = s.Replace("&nbsp;", " ");
+
+        return Regex.Replace(s, @"\s+", " ").Trim();
+    }
+
+    /// <summary>
+    /// So viele ganze Sätze, wie in <paramref name="grenze"/> Zeichen passen —
+    /// mindestens der erste. Ohne Satzzeichen bleibt der Text stehen.
+    /// </summary>
+    private static string ErsteSaetze(string text, int grenze)
+    {
+        var saetze = Regex.Matches(text, @"[^.!?]*[.!?]")
+                          .Select(m => m.Value.Trim())
+                          .Where(s => s.Length > 0)
+                          .ToList();
+
+        if (saetze.Count == 0) return text.Length <= grenze ? text : text.Substring(0, grenze).Trim();
+
+        string ergebnis = saetze[0];
+        foreach (string satz in saetze.Skip(1))
+        {
+            string kandidat = ergebnis + " " + satz;
+            if (kandidat.Length > grenze) break;
+            ergebnis = kandidat;
+        }
+
+        return ergebnis;
+    }
+
+    /// <summary>
+    /// Die Beschreibung, die der mitgelieferte Startbestand für eine Seite der
+    /// Rubrik führt. Der Schlüssel ist der KLEINGESCHRIEBENE Pfad mit Unterstrich
+    /// statt Leerzeichen — so bildet MediaWiki den Titel auf die Adresse ab.
+    /// </summary>
+    private static string BeschreibungImStartbestand(string seite)
+    {
+        string pfad = Path.Combine(new[] { Wurzel() }.Concat(Startbestandsdatei).ToArray());
+        Assert.True(File.Exists(pfad), "help_cache.json nicht gefunden: " + pfad);
+
+        string schluessel = "/wiki/programm_dokumentation/berechnung/" +
+                            seite.ToLowerInvariant().Replace(' ', '_') + "/";
+
+        using JsonDocument dok = JsonDocument.Parse(File.ReadAllText(pfad).TrimStart('﻿'));
+
+        Assert.True(dok.RootElement.TryGetProperty(schluessel, out JsonElement eintrag),
+                    "Der Startbestand führt keinen Eintrag " + schluessel + ".");
+        Assert.True(eintrag.TryGetProperty("Beschreibung", out JsonElement beschreibung),
+                    schluessel + " trägt keine Beschreibung.");
+
+        return beschreibung.GetString() ?? "";
     }
 
     // =====================================================================
