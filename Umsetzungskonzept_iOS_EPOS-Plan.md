@@ -3512,6 +3512,27 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `cec_wechselrichter_21.csv`), dazu Doppelklick, Konflikt unter zweien, zwei Warnungen → eine Rückfrage, Umfiltern behält
 > die Wahl. Nachweis: Kern 1672 / UI 3038 grün, Designer „abweichend 0", SQL 0, Gate grün, Referenzlauf
 > 1030/1007/1017/1045 byte-gleich. Abnahme: A‑W6‑E5‑1…7.
+>
+> **W6‑E‑7 (Anwenderentscheid 07.09.2026, revidiert PAKET BHKW-REGULÄR Punkt 2 vom 17.08.2026: „Es soll kein Fallback
+> geben, wenn 0 dann bleibt es so, oder es soll in der Einstellung sichtbar sein"), umgesetzt in `b5dae54`, zusammengeführt
+> in `e039e4e`:** In `SimulationBHKW.Moduldaten_Einlesen` fällt die stille Rücklage `Leistungsgrenze 0 → 30 %`; 0 rechnet als 0
+> (keine Untergrenze, das Modul moduliert bis 0 — schärfster neuer Fall: 10 kW elektrisch bei 2 kW Bedarf steht mit 30 % still
+> und moduliert mit 0 auf genau 2 kW). **Migrationsschritt 67** hebt `Tab_Einstellungen.Leistungsgrenze` **NULL → 30** — nur
+> NULL, eine gepflegte 0 bleibt 0 —, damit ein Bestandsprojekt ohne gepflegten Wert nicht anders rechnet; die eine Anweisung
+> steht in `BhkwLeistungsgrenzeVorgabe`, aus der sich Migration, `Werkzeuge/Testdatenbankschema` und der Nachweis bedienen
+> (Testdatenbank: 1007/1008/1009/1017 NULL → 30, 1039 bleibt 0, 1024 bleibt 10, Schemastand 66 → 67). **Port-Befund
+> mitbehoben:** Das sichtbare Feld der Simulationskonfiguration schrieb seit dem Blazor-Port (W10a) in die tote Altspalte
+> `BHKW_Grenzleistung` statt in `Leistungsgrenze` — der Vorläufer `Form_Simulation_Detail` (`numericUpDown_UnteresteLG`) tat es
+> richtig; der interaktive Lauf hing damit allein am Fallback, der Stapellauf nahm den gepflegten Wert. Beide Wege lesen und
+> schreiben jetzt `Leistungsgrenze`. Sichtbar: Parameterblatt „BHKW" der Simulationskonfiguration, Feld „Untere Leistungsgrenze
+> der Module" in %, Herleitung „0 = keine Untergrenze, das BHKW moduliert bis 0"; `BhkwDialog` zeigt bei Modulwert 0 „0 =
+> Projektvorgabe (n %)"; ein neues Projekt startet mit 30 % (`KonfigurationModel`). Der Kommentar nannte „Schritt 13" (das ist
+> die Puffer-Notreserve), gemeint war der Access-Teilschritt 13b des Pakets — berichtigt; `BHKW.wiki` Gleichung (3) neu gefasst
+> (Wächter: gemeinsamer Stand aller 13 Seiten, `\wedge` nicht im Befehlsvorrat → `\text{und}`). Nachweis: 12 Kern-, 6 UI-Fälle,
+> Kern 1684 / UI 3044 grün, Designer „abweichend 0", SQL 0, Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich, alle
+> zwölf Projekte 312/312 CSV byte-gleich. Abnahme auf Windows: A‑W6‑E7‑1…7 — darunter A‑W6‑E7‑2 (Wert ändern und simulieren
+> bewegt das Ergebnis; vor der Behebung nicht) und A‑W6‑E7‑7 (`.wpx`-Pakete auf Stand 66 werden abgewiesen, beide Rechner
+> müssen auf 67).
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
