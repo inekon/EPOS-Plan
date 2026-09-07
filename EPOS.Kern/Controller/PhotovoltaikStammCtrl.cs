@@ -630,6 +630,28 @@ namespace WindowsFormsApplication1
         public const string PARAMETER_LEER = "–";
 
         /// <summary>
+        /// <b>Was ein nicht gepflegter Wert ANZEIGT</b> — seit Befund <b>W6‑B‑4</b>
+        /// (Windows-Abnahme 07.09.2026) der Strich UND das Wort: „– nicht gepflegt"
+        /// (<c>PVS_NICHT_GEPFLEGT</c>, beide Sprachen).
+        ///
+        /// <para><b>Warum das Wort dazukam.</b> Der Anwender stand vor der Meldung
+        /// „Werte fehlen: … alpha_SC des Moduls" und fragte „Welche Werte?". Der
+        /// Aufklapper darunter FÜHRTE die drei Koeffizienten bereits — aber mit einem
+        /// blossen Halbgeviertstrich daneben, und ein Strich ist keine Auskunft: Er
+        /// liest sich als „hier steht nichts", nicht als „dieser Wert ist nicht
+        /// gepflegt, und deshalb entfällt die Prüfung". Die Zeile beantwortet die Frage
+        /// jetzt an der Stelle, an der der Anwender ohnehin nachsieht.</para>
+        ///
+        /// <para><see cref="PARAMETER_LEER"/> bleibt als ZEICHEN stehen — es ist der
+        /// Rückfall, wenn der Ressourcenkatalog fehlt, und dasselbe Zeichen führt
+        /// <c>ParameterVerwendung.LEER</c> in der Parameterübersicht.</para>
+        /// </summary>
+        public static string ParameterNichtGepflegt
+        {
+            get { return Text("PVS_NICHT_GEPFLEGT", PARAMETER_LEER); }
+        }
+
+        /// <summary>
         /// <b>Alle Eigenschaften eines PV-Moduls als Anzeigezeilen</b> (Anwenderwunsch
         /// W6-E-1, Windows-Abnahme 05.09.2026).
         /// </summary>
@@ -693,7 +715,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string Zahl(double? wert, string format = null)
         {
-            if (!wert.HasValue || wert.Value == 0.0) return PARAMETER_LEER;
+            if (!wert.HasValue || wert.Value == 0.0) return ParameterNichtGepflegt;
 
             return format == null
                 ? wert.Value.ToString(System.Globalization.CultureInfo.CurrentCulture)
@@ -707,7 +729,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string TechnologieText(string code)
         {
-            if (string.IsNullOrWhiteSpace(code)) return PARAMETER_LEER;
+            if (string.IsNullOrWhiteSpace(code)) return ParameterNichtGepflegt;
 
             foreach (var o in ModulKatalogProfil.Technologien(Uebersetzt))
                 if (string.Equals(o.Wert, code, StringComparison.Ordinal)) return o.Text;

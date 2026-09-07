@@ -86,6 +86,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -30627,6 +30628,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturkoeffizient alpha_SC des Moduls ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_ALPHA_SC {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_ALPHA_SC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperaturkoeffizient beta_OC des Moduls ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_BETA_OC {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_BETA_OC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die der Wechselrichter ähnelt.
         /// </summary>
         public static string PVS_FEHLT_GERAET {
@@ -30641,6 +30660,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_FEHLT_ISC {
             get {
                 return ResourceManager.GetString("PVS_FEHLT_ISC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurzschlussstrom I_SC des Moduls ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_ISC_WERT {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_ISC_WERT", resourceCulture);
             }
         }
         
@@ -30690,11 +30718,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MPP-Spannung U_MPP des Moduls ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_UMPP_WERT {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_UMPP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leerlaufspannung oder beta_OC des Moduls ähnelt.
         /// </summary>
         public static string PVS_FEHLT_UOC {
             get {
                 return ResourceManager.GetString("PVS_FEHLT_UOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leerlaufspannung U_OC des Moduls ähnelt.
+        /// </summary>
+        public static string PVS_FEHLT_UOC_WERT {
+            get {
+                return ResourceManager.GetString("PVS_FEHLT_UOC_WERT", resourceCulture);
             }
         }
         
@@ -30834,6 +30880,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die – nicht gepflegt ähnelt.
+        /// </summary>
+        public static string PVS_NICHT_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("PVS_NICHT_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die — ähnelt.
         /// </summary>
         public static string PVS_OHNE_GRENZE {
@@ -30965,6 +31020,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_P8_GELB {
             get {
                 return ResourceManager.GetString("PVS_P8_GELB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflege: Administration → Energiesysteme → Photovoltaik → PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus „CEC Modules.csv“ ähnelt.
+        /// </summary>
+        public static string PVS_PFLEGEWEG {
+            get {
+                return ResourceManager.GetString("PVS_PFLEGEWEG", resourceCulture);
             }
         }
         

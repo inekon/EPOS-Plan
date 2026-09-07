@@ -409,4 +409,65 @@ public sealed class StilblattTests
             n++;
         return n;
     }
+
+    // ---------------------------------------------------------------------
+    //  W6-B-4: die Regeln, die die Strangtabelle in den Dialog passen lassen
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// <b>Die zwei Klapplisten der Strangtabelle sind gedeckelt und lassen aus</b>
+    /// (Befund <b>W6‑B‑4</b>, Windows-Abnahme 07.09.2026). Ein Gerätename wie
+    /// „SMA America: SB30-1SP-US-40 {240V}" trieb seine Spalte auf 302 px und die
+    /// Tabelle auf 1 974 px — bei 1 046 px Platz lagen sechs Zahlenspalten ausserhalb
+    /// des sichtbaren Bereichs. Die Regel deckelt beide Listen und schneidet den
+    /// Namen mit Auslassungspunkten ab; der volle Name steht im Werkzeugtipp.
+    ///
+    /// <para>Denselben Weg geht die Wache zu W5‑B‑1: bunit rechnet keine Stilblätter
+    /// aus (Lehre W6‑B‑1), also liest der Fall die REGEL. Ob sie wirkt, misst die
+    /// Playwright-Probe im Laufordner.</para>
+    /// </summary>
+    [Fact]
+    public void W6B4_Die_Klapplisten_der_Strangtabelle_sind_gedeckelt()
+    {
+        string block = Regelblock(".epos-strangtabelle-liste .epos-eingabe");
+
+        Assert.Contains("max-width:", block, StringComparison.Ordinal);
+        Assert.Contains("text-overflow: ellipsis", block, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Die fünf Zahlenspalten bleiben schmal und dürfen ihren Kopf umbrechen</b>
+    /// (W6‑B‑4). „Module in Reihe" und „Stränge parallel" stehen unter
+    /// <c>.epos-raster th { white-space: nowrap }</c> in EINER Zeile und belegten
+    /// damit je 196 px — mehr als das Zahlenfeld darunter je braucht.
+    /// </summary>
+    [Fact]
+    public void W6B4_Die_Zahlenspalten_der_Strangtabelle_duerfen_umbrechen()
+    {
+        // Der Selektor nennt th UND td - eine blosse Klasse (0,1,0) verloere gegen
+        // die Hausregel .epos-raster th, .epos-raster td { white-space: nowrap }
+        // (0,1,1). Gemessen: ohne th/td blieben "Module in Reihe" und "Straenge
+        // parallel" einzeilig und hielten je 126 statt 72 px offen.
+        string block = Regelblock(".epos-strangtabelle th.epos-strangtabelle-zahl");
+
+        Assert.Contains("white-space: normal", block, StringComparison.Ordinal);
+        Assert.Contains("width: 1%", block, StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.Contains(".epos-strangtabelle td.epos-strangtabelle-zahl", css, StringComparison.Ordinal);
+    }
+
+    /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
+    private static string Regelblock(string selektor)
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+
+        int a = css.IndexOf("\n" + selektor, StringComparison.Ordinal);
+        Assert.True(a >= 0, "Die Regel \"" + selektor + "\" steht nicht in epos-ui.css");
+
+        int auf = css.IndexOf('{', a);
+        int zu = css.IndexOf('}', auf);
+        Assert.True(auf > 0 && zu > auf, "Die Regel \"" + selektor + "\" hat keinen Rumpf");
+        return css.Substring(auf + 1, zu - auf - 1);
+    }
 }

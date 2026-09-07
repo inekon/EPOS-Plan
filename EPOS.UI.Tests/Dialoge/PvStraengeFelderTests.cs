@@ -1072,4 +1072,203 @@ public class PvStraengeFelderTests : BunitContext
         Assert.Null(zeile.WrEta50);
         Assert.False(cut.Instance.WechselrichterOffen);
     }
+
+    // =================================================================================
+    // 6 - W6-B-4 (Windows-Abnahme 07.09.2026): die Tabelle, die Vorbelegung und die
+    //     Klappliste, die zeigt, was die Zeile wirklich traegt
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Die ZAHLENSPALTEN stehen vor den zwei Klapplisten</b> (W6‑B‑4). Der Anwender
+    /// fragte „Anzahl Module fehlt?" — sie stand da, nur 757 px rechts ausserhalb des
+    /// sichtbaren Bereichs, hinter zwei breiten <c>&lt;select&gt;</c>. bunit misst keine
+    /// Breite (Lehre W6‑B‑1); geprüft wird die REIHENFOLGE, die den Ausschlag gibt:
+    /// alles Schmale zuerst, die zwei elastischen Listen zuletzt.
+    /// </summary>
+    [Fact]
+    public void W6B4_Die_Zahlenspalten_stehen_vor_den_Klapplisten()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        var cut = Aufbauen(zeile, module: MODULE);
+
+        string[] koepfe = cut.FindAll("table.epos-strangtabelle thead th")
+                             .Select(th => th.TextContent.Trim()).ToArray();
+
+        Assert.Equal(
+            new[]
+            {
+                "Wahl", "Rang", "Bezeichner", "Gerät", "MPPT", "Module in Reihe",
+                "Stränge parallel", "Neigung [°]", "Azimut [°]", "Modul", "Wechselrichter"
+            },
+            koepfe);
+    }
+
+    /// <summary>
+    /// <b>Die Spaltenklassen tragen die Stilregel</b> (W6‑B‑4): Die fünf Zahlenspalten
+    /// heissen <c>epos-strangtabelle-zahl</c> (schmal, Kopf darf umbrechen), die zwei
+    /// Klapplisten <c>epos-strangtabelle-liste</c> (gedeckelt, Auslassung). Ohne die
+    /// Klassen im Markup greift keine Regel des Stilblatts — der Fall dazu steht in
+    /// <c>StilblattTests</c>.
+    /// </summary>
+    [Fact]
+    public void W6B4_Die_Spaltenklassen_stehen_im_Markup()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        var cut = Aufbauen(zeile, module: MODULE);
+
+        Assert.Equal(6, cut.FindAll("table.epos-strangtabelle thead th.epos-strangtabelle-zahl").Count);
+        Assert.Equal(6, cut.FindAll("table.epos-strangtabelle tbody td.epos-strangtabelle-zahl").Count);
+        Assert.Equal(2, cut.FindAll("table.epos-strangtabelle thead th.epos-strangtabelle-liste").Count);
+        Assert.Equal(2, cut.FindAll("table.epos-strangtabelle tbody td.epos-strangtabelle-liste").Count);
+    }
+
+    /// <summary>
+    /// <b>Der ERSTE Strang trägt die Modulzahl der Anlage</b> (W6‑B‑4). Bis hierher
+    /// begann jeder neue Strang mit „0 Module in Reihe, 1 parallel" — die Anlage KENNT
+    /// ihre Modulzahl, und der erste Strang ist im Regelfall die ganze Anlage.
+    /// Gerechnet wird die Vorbelegung im Kern (<c>Strangvorbelegung</c>); hier steht,
+    /// dass die Komponente sie ruft und das Ergebnis in die Zeile schreibt.
+    /// </summary>
+    [Fact]
+    public void W6B4_Der_erste_Strang_traegt_die_Modulzahl_der_Anlage()
+    {
+        var zeile = Zeile(true);                       // AnzahlModule = 10, kein Strang
+        var cut = Aufbauen(zeile);
+
+        cut.Find(".epos-knopf--primaer").Click();
+
+        StrangZeile s = Assert.Single(zeile.Straenge);
+        Assert.Equal(10, s.ModuleReihe);
+        Assert.Equal(1, s.StraengeParallel);
+        Assert.Equal(1, s.Mppt);
+        Assert.Equal(1, s.Geraetenummer);
+        Assert.Equal(10, s.Modulzahl);
+    }
+
+    /// <summary>
+    /// <b>Jeder WEITERE Strang bekommt die noch nicht zugeordneten Module</b> — und die
+    /// Summe stimmt danach mit der „Anzahl Module" der Anlage überein, also bleibt P8
+    /// grün (der Nachweis dazu steht im Kern).
+    /// </summary>
+    [Fact]
+    public void W6B4_Der_zweite_Strang_bekommt_die_noch_freien_Module()
+    {
+        var zeile = Zeile(true, new StrangZeile
+        {
+            Rang = 1, ModuleReihe = 6, StraengeParallel = 1, Mppt = 1, Geraetenummer = 1
+        });
+        var cut = Aufbauen(zeile);
+
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.Equal(2, zeile.Straenge.Count);
+        Assert.Equal(4, zeile.Straenge[1].ModuleReihe);          // 10 − 6
+        Assert.Equal(1, zeile.Straenge[1].StraengeParallel);
+        Assert.Equal(10, zeile.Straenge[0].Modulzahl + zeile.Straenge[1].Modulzahl);
+    }
+
+    /// <summary>
+    /// <b>Die Modulklappliste zeigt „(Modul der Anlage)" als GEWÄHLT</b> (W6‑B‑4).
+    /// Der Anwender sah dort den ersten Katalogeintrag, obwohl der Strang mit dem Modul
+    /// der Anlage rechnet: Das <c>&lt;option&gt;</c> trug kein <c>selected</c>, und die
+    /// Auswahl hing allein an der Wertzuweisung, die der Blazor-Zeichner NACH dem
+    /// Einhängen nachreicht — sie überlebt kein Auswechseln der Einträge.
+    /// </summary>
+    [Fact]
+    public void W6B4_Die_Modulklappliste_traegt_selected_am_Modul_der_Anlage()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        var cut = Aufbauen(zeile, module: MODULE);
+
+        var gewaehlt = Klappliste(cut, "Modul").QuerySelectorAll("option[selected]");
+
+        Assert.Single(gewaehlt);
+        Assert.Equal("(Modul der Anlage)", gewaehlt[0].TextContent);
+    }
+
+    /// <summary>
+    /// Die Gegenprobe: Trägt der Strang einen EIGENEN Modultyp, steht <c>selected</c>
+    /// an ihm — und nicht mehr am Rückfall.
+    /// </summary>
+    [Fact]
+    public void W6B4_Ein_eigener_Modultyp_traegt_das_selected()
+    {
+        var zeile = Zeile(true, new StrangZeile
+        {
+            Rang = 1, ModuleReihe = 10, ModulId = 5150, ModulName = "Jinkosolar JKM 260P-60"
+        });
+        var cut = Aufbauen(zeile, module: MODULE);
+
+        var gewaehlt = Klappliste(cut, "Modul").QuerySelectorAll("option[selected]");
+
+        Assert.Single(gewaehlt);
+        Assert.Equal("Jinkosolar JKM 260P-60", gewaehlt[0].TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Ampel prüft gegen das Modul der ANLAGE</b>, solange der Strang keinen
+    /// eigenen Modultyp trägt (W6‑O‑5/O‑6) — auch dann, wenn der Katalog ein anderes
+    /// Modul an erster Stelle führt. Der Prüfstand bekommt <c>ModulId == 0</c> zu
+    /// sehen, und genau daran erkennt der Kern den Rückfall.
+    /// </summary>
+    [Fact]
+    public void W6B4_Ohne_eigenen_Modultyp_prueft_die_Ampel_gegen_das_Anlagenmodul()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        zeile.Bezeichner = "Jinkosolar JKM 260P-60";
+        int gesehen = -1;
+
+        var cut = Aufbauen(zeile, module: MODULE, pruefen: (z, s) =>
+        {
+            gesehen = s[0].ModulId;
+            return new StrangBefund(
+                new[] { new Ampelzeile(Ampelfarbe.Gelb, "Strang 1: Modul " + z.Bezeichner) },
+                Array.Empty<Ampelzeile>(), 10);
+        });
+
+        Assert.Equal(0, gesehen);                                    // der Rueckfall, nicht "Ablytek"
+        Assert.Contains("Modul Jinkosolar JKM 260P-60", cut.Markup, StringComparison.Ordinal);
+    }
+
+
+    /// <summary>
+    /// <b>Der MPPT-Eingang wandert weiter, wenn das Gerät mehrere Tracker führt</b>
+    /// (W6‑B‑4): Der zweite Strang am SELBEN Gerät bekommt Tracker 2. Ohne bekannte
+    /// Trackerzahl bleibt es bei 1 — dem konservativen Fall, auf dem auch die Ampel
+    /// rechnet (W6‑O‑2).
+    /// </summary>
+    [Theory]
+    [InlineData(2, 2)]
+    [InlineData(1, 1)]
+    [InlineData(null, 1)]
+    public async Task W6B4_Der_zweite_Strang_nimmt_den_naechsten_freien_Tracker(
+        int? tracker, int erwartet)
+    {
+        var zeile = Zeile(true, new StrangZeile
+        {
+            Rang = 1, ModuleReihe = 6, StraengeParallel = 1, Mppt = 1, Geraetenummer = 1,
+            WechselrichterId = 4711, WechselrichterName = "Muster 2500TL"
+        });
+
+        var cut = Render<PvStraengeFelder>(p => p
+            .Add(x => x.Zeile, zeile)
+            .Add(x => x.Geraete, KATALOG)
+            .Add(x => x.GeraetUebernehmen, id => new GeraetWahl(4711, Name(id)))
+            .Add(x => x.TrackerZahl, _ => tracker));
+
+        // Das Geraet der Katalogwahl ist DASSELBE, das der erste Strang traegt.
+        var wahl = Wahl(cut, "Wechselrichter aus dem Katalog:");
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(7));
+
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.Equal(2, zeile.Straenge.Count);
+        Assert.Equal(4711, zeile.Straenge[1].WechselrichterId);
+        Assert.Equal(erwartet, zeile.Straenge[1].Mppt);
+    }
+
+    /// <summary>Das <c>&lt;select&gt;</c> einer Strangzeile über sein <c>aria-label</c>.</summary>
+    private static AngleSharp.Dom.IElement Klappliste(
+        IRenderedComponent<PvStraengeFelder> cut, string kurzname, int zeile = 0)
+        => cut.FindAll("table.epos-strangtabelle tbody select[aria-label=\"" + kurzname + "\"]")[zeile];
 }
