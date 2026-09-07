@@ -1,4 +1,4 @@
-@* Das SIMULATIONSERGEBNIS als Seite (iU9-W11b.13).
+﻿@* Das SIMULATIONSERGEBNIS als Seite (iU9-W11b.13).
 
    VORBILD. WindowsFormsApplication1/Views/Simulation/Form_Simulation_Detail
    (7 629 Z. + 3 082 Designer) samt DashboardForm, NavigatorUebersicht,
@@ -78,7 +78,7 @@
                     <KindInhalt>
                         <ParameterReiter Daten="@_daten.Parameter" Dienste="@Dienste"
                                          Gesperrt="@_daten.Gesperrt"
-                                         OptimierungMoeglich="@(Dienste?.Sprung is not null)"
+                                         OptimierungMoeglich="@(Dienste?.OptimierungRechnen is not null)"
                                          Optimierung="Optimierung" />
                     </KindInhalt>
                 </Reiterblatt>
@@ -254,6 +254,33 @@
         </Ueberlagerung>
     }
 
+    @* Die AUSLEGUNGSOPTIMIERUNG (W11b-B-5). Bis zur Windows-Abnahme V2 sprang der
+       Knopf hier ueber die Sprungbruecke in Form_SpeicherOptimierung - ein modales
+       WinForms-Fenster ueber der WebView. Die Maske ist gefallen (Texte
+       ueberschneiden sich, Dialog stuerzt ab); das Ziel ist jetzt selbst Razor und
+       erscheint als Ueberlagerung im selben Fenster (Muster W4/W10a, Risiko R2). *@
+    @if (_optimierungOffen)
+    {
+        <Ueberlagerung Offen="true" Titel="@Resource.OPT_TITEL"
+                       Zusatzklasse="epos-ueberlagerung--breit"
+                       Geschlossen="OptimierungSchliessen">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Strom.SpeicherOptimierungDialog
+                    Vorgaben="@Dienste?.OptimierungVorgaben"
+                    Rechnen="@Dienste?.OptimierungRechnen"
+                    Abbrechen="@(Dienste?.OptimierungAbbrechen is null ? default
+                                 : EventCallback.Factory.Create(this, Dienste.OptimierungAbbrechen))"
+                    Uebernehmen="@(Dienste?.OptimierungUebernehmen is null ? default
+                                   : EventCallback.Factory.Create<(double Kwh, double Kw)>(this, OptimierungUebernehmen))"
+                    Csv="@(Dienste?.OptimierungCsv is null ? default
+                           : EventCallback.Factory.Create<string>(this, OptimierungCsv))"
+                    Meldung="@_optimierungMeldung"
+                    MeldungErfolg="@_optimierungErfolg"
+                    Geschlossen="OptimierungSchliessen" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
     @if (_vergleichOffen)
     {
         <Ueberlagerung Offen="true" Titel="@Resource.VAR_VGL_TITEL" Geschlossen="VergleichSchliessen">
@@ -331,6 +358,10 @@
     private IReadOnlyDictionary<string, object>? _konfiguration;
     private IReadOnlyDictionary<string, object>? _bedarf;
     private IReadOnlyDictionary<string, object>? _waermepumpe;
+
+    private bool _optimierungOffen;
+    private string _optimierungMeldung = "";
+    private bool _optimierungErfolg;
 
     private bool _vergleichOffen;
     private bool _vergleichLaeuft;
@@ -515,16 +546,49 @@
         Neuladen();
     }
 
-    private async Task Optimierung()
+    /// <summary>
+    /// Oeffnet die Auslegungsoptimierung als UEBERLAGERUNG (W11b-B-5). Bis zur
+    /// Windows-Abnahme V2 sprang sie ueber <c>Dienste.Sprung</c> in ein modales
+    /// WinForms-Fenster.
+    /// </summary>
+    private void Optimierung()
     {
-        if (Dienste?.Sprung is null) return;
+        if (Dienste?.OptimierungRechnen is null) return;
 
-        bool uebernommen = await Dienste.Sprung(
-            EPOS.UI.Dialoge.Allgemein.Sprungziel.SpeicherOptimierung);
+        _optimierungMeldung = "";
+        _optimierungErfolg = false;
+        _optimierungOffen = true;
+    }
 
-        // Nach einer Uebernahme des Bestpunkts die Variante neu lesen; NEU
-        // GERECHNET wird bewusst nicht - das entscheidet der Anwender (:5985-5990).
-        if (uebernommen) Neuladen();
+    private void OptimierungSchliessen()
+    {
+        _optimierungOffen = false;
+        _optimierungMeldung = "";
+        _optimierungErfolg = false;
+    }
+
+    /// <summary>
+    /// Der Bestpunkt geht in die Geraetedaten. Danach liest die Seite die
+    /// Speichervariante neu; NEU GERECHNET wird bewusst nicht - das entscheidet der
+    /// Anwender (woertlich wie im Vorlaeufer, :5985-5990).
+    /// </summary>
+    private void OptimierungUebernehmen((double Kwh, double Kw) auslegung)
+    {
+        Rueckmeldung antwort = Dienste?.OptimierungUebernehmen?.Invoke(auslegung.Kwh, auslegung.Kw)
+                               ?? Rueckmeldung.Still;
+
+        _optimierungMeldung = antwort.Text;
+        _optimierungErfolg = antwort.Erfolg;
+        if (antwort.Erfolg) Neuladen();
+    }
+
+    private async Task OptimierungCsv(string csv)
+    {
+        if (Dienste?.OptimierungCsv is null) return;
+
+        Rueckmeldung antwort = await Dienste.OptimierungCsv(csv);
+        _optimierungMeldung = antwort.Text;
+        _optimierungErfolg = antwort.Erfolg;
     }
 
     private async Task VergleichOeffnen()

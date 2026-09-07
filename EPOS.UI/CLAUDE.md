@@ -325,7 +325,7 @@ steht daneben.
 `data:`-URL).
 
 **Hausregel seit der Windows-Abnahme 05.09.2026: Jedes Renderer-Bild steht im Baustein
-`Diagramm`.** `ChartBild` ist die eine Stelle, durch die alle 36 Bilder des
+`Diagramm`.** `ChartBild` ist die eine Stelle, durch die alle 38 Bilder des
 `ChartRenderer` gehen, und es setzt sein `<img>` seither in den Zoomrahmen. Wer irgendwo
 ein `<img>` mit einer `data:image`-URL an `ChartBild` vorbei schreibt, baut ein Diagramm
 ohne Zoom — genau den Zustand, den der Anwender beanstandet hat. Der Wächter dazu ist der
@@ -556,6 +556,7 @@ migrierte Dialog (Vorbild `Views/Kosten/Form_Kosten_Auswahl`).
 | `Strom/StromganglinieAdminDialog` | `Form_Stromganglinie_Admin` (iU9‑W12.4) | `Views/Stromverbraucher/StromganglinieAdminHuelle.cs` → `StromganglinieStammCtrl`, `GanglinienImportAblauf`; **drei** Überlagerungen der Importkette |
 | `Strom/StromganglinieDialog` | `Form_Stromganglinie` (iU9‑W12.5) | `Views/Stromverbraucher/StromganglinieHuelle.cs` → `Z_ProjektStromganglinieCtrl`, `StromganglinieStammCtrl`; Verwaltung als Überlagerung, Assistentenschnitt für W16 |
 | `Strom/PeakShavingDialog` | `Form_PeakShaving` (iU9‑W12.6) | `Views/Stromspeicher/PeakShavingHuelle.cs` → `PeakShavingCtrl`, `PeakShavingEingaben`, `PeakShavingKennzahlenBlock`, `PeakShavingBild`; **beide Rechenläufe** in `Task.Run` mit `Fortschritt` |
+| `Strom/SpeicherOptimierungDialog` | `Form_SpeicherOptimierung` (1 325 Z., **W11b‑B‑5**, Windows-Abnahme V2 vom 07.09.2026) — die LETZTE WinForms-Fachmaske. Der Anwender gab sie mit zwei Befunden zurück: „Texte überschneiden sich" (zwei Labels derselben Zeile lagen übereinander, der Erklärtext ragte aus seiner GroupBox) und „Dialog stürzt nach kurzer Zeit ab" (jeder Lauf hängte über `Plot.Add.ColorBar` eine weitere ScottPlot-Farbskala an denselben Plot; `Plot.Clear()` räumt Plottables, aber keine Panels — die Zeichenfläche schrumpfte je Lauf um rund 78 Bildpunkte und war ab dem achten Lauf null). Beides ist hier strukturell weg: Die Erklärung ist eine `Herleitungszeile` UNTER der Gruppe, die zwei Bilder kommen als fertige PNG aus dem Kern, und es gibt keinen Zeichenzustand, der sich ansammeln könnte | `Views/Simulation/SimulationErgebnisHuelle.Optimierung.cs` → `EPOS.Kern/Controller/SpeicherOptimierungCtrl`, `ChartRenderer.Optimierungsraster`/`.Schnittkurve`; er erscheint als **Überlagerung** der Ergebnisseite, der Lauf geht in `Task.Run` und sein Fortschritt kommt GEDROSSELT an (höchstens jeder 10. Punkt, höchstens alle 100 ms) |
 | `Import/KatalogImportDialog` | **vier** Masken: `Form_Heizkessel_einlesen`, `Form_PufferSp_einlesen`, `Form_SolarKollektoren_einlesen`, `Form_WP_einlesen` (iU9‑W13.1) — und seit **W13‑E‑2** (07.09.2026, Stufe S1) eine **FÜNFTE Ausprägung ohne Vorläufer: der Stromspeicher**. Sie bringt fünf Profilteile mit, die bei den vier VDI-Ausprägungen leer bleiben und dort nichts ändern: **`Quellen`** (drei Knöpfe statt des Dateiwählers — „CEC-Liste abrufen" über `CecSpeicherDienst` aus dem Netz, „CEC-Datei laden" für XLSX/CSV, „bslib laden" für die Auslieferungsdatei `VDI-3805-Daten/Stromspeicher/bslib_database.csv`), **`Listenspalten`** (Quelle, Hersteller, Modell, kWh, kW, η_RT, Chemie — zwei Spalten reichen für 6 654 Geräte nicht), **`Zweitfilter`** (ein zweiter Zahlenbereich: kWh UND kW), **`HerstellerFilter`** (130 Hersteller in EINER Datei) und **`Hinweis`** (die Zeile „Die Quelle liefert keine Kosten…" aus Entscheid Q3 — dorthin ist auch der Stufenhinweis der Wärmepumpe gewandert, damit es nicht zwei Wege zu einer Zeile gibt). **Der QUELLSCHLÜSSEL wählt den Zerleger, nicht die Dateiendung** — `bslib_database.csv` und eine ausgeleitete CEC-CSV sehen gleich aus; deshalb trägt der `Lesen`-Delegat ihn als ersten Parameter. Mehrfachwahl, Doppelklick, Konfliktdialog und Sammelmeldung kommen unverändert aus dem Wirt (W6‑E‑5) | `Views/Import/KatalogImportHuelle.cs` → `KatalogImportProfil`, `KatalogImportAblauf`; EINE Hülle für alle fünf Maskenschlüssel, Lesen und Schreiben in `Task.Run`. **Beim Stromspeicher beschafft die HÜLLE die Datei** für die zwei Quellen ohne Wähler: `CecSpeicherDienst.LadenAsync` (30‑Tage‑Zwischenspeicher) bzw. der Herstellerdatenpfad mit Rückfall auf den Wähler — Plattformsache, nicht Sache der Komponente |
 | `Bedarf/WaermebedarfAdminDialog` | `Form_AdminWaermeeinlesen` (iU9‑W13.2) | `Views/Wärmebedarf/WaermebedarfAdminHuelle.cs` → `WaermebedarfStammCtrl`, `GanglinienTextDatei`, `DublettenPruefung`; erscheint auch als Überlagerung in `WaermebedarfExternDialog` |
 | `Photovoltaik/ModulImportDialog` | `Form_CECImport` / Klasse `Main_PV_Test` (iU9‑W13.3) **und** `WechselrichterImportDialog` (W6‑E‑2/S1.5) — seit **W6‑O‑1** (06.09.2026) EINE Komponente mit ZWEI Ausprägungen: Modul (CEC, CEC-Datei, PAN) und Wechselrichter (CEC, CEC-Datei, OND) | `Views/Photovoltaik/ModulImportHuelle.cs` → `CECDataService`, `PanDataService`, `CecWechselrichterDienst`, `OndWechselrichterDienst`, `PhotovoltaikStammCtrl`, `WechselrichterStammCtrl`; Spalten, Detailfelder, Reiter, Filter und Quellen als DATEN in `ModulImportProfil` (Zwilling zu `ModulKatalogProfil`), eine Zeile ist eine `ImportZeile`; Netzabruf mit `Fortschritt` und Abbrechen, 20 746 bzw. 2 343 Zeilen im virtualisierten `Raster`. **Seit W6‑E‑5** (07.09.2026) Mehrfachwahl mit Kontrollkästchen: „Übernehmen“ schreibt alle gewählten Sätze in einem Zug (EINE Rückfrage für alle Warnungen, EIN Konfliktdialog, Bilanz „n übernommen, m übersprungen“), Doppelklick übernimmt sofort NUR diese Zeile, und die Wahl hängt an den **Sätzen** — sie überlebt das Umfiltern, damit man über mehrere Hersteller hinweg sammeln kann |
@@ -812,10 +813,19 @@ schreiben — die Komponente kennt die Fachklassen des Kerns nicht.
 **Weiterführen aus einem Dialog** (iU9‑W2.2): Ein Dialog, der ein anderes Fenster öffnen soll,
 nimmt `[Parameter] Func<string, Task<bool>>? Sprung` und ruft ihn mit einem Schlüssel aus
 `Dialoge/Allgemein/Sprungziel.cs`. Was erscheint, entscheidet die Plattformhülle — unter
-Windows `Sprungbruecke` (Schlüssel → `Form`, modal über dem Dialog). **Nur für
-WinForms-Ziele.** Ist das Ziel selbst eine Blazor-Hülle, bleibt der Sprung *nachgelagert*
-(schließen → Ziel → wieder öffnen, Muster `BhkwWirtschaftlichkeitHuelle.TarifOeffnen`): zwei
-WebViews übereinander sind Risiko R2 des Wellenplans. Kein Delegat = kein Knopf.
+Windows bis W11b‑B‑5 die `Sprungbruecke` (Schlüssel → `Form`, modal über dem Dialog).
+**Nur für WinForms-Ziele.** Ist das Ziel selbst eine Blazor-Hülle, wird daraus eine
+`Ueberlagerung` im selben Fenster: zwei WebViews übereinander sind Risiko R2 des
+Wellenplans. Kein Delegat = kein Knopf.
+
+**Seit W11b‑B‑5 (Windows-Abnahme V2, 07.09.2026) ist `Sprungziel` LEER und
+`Sprungbruecke.cs` gelöscht.** Zehn Ziele hat der Mechanismus getragen; jedes ist
+gefallen, sobald sein Ziel selbst Razor wurde. Das letzte war
+`SpeicherOptimierung` — das einzige mit einem Parameter (dem gerechneten Lauf) und
+das einzige, dessen Antwort nicht „mit OK geschlossen" hieß. Die Klasse bleibt als
+Registerstelle des Musters stehen, damit ein künftiges WinForms-Ziel seinen
+Schlüssel wieder dort anlegt; solange `WindowsFormsApplication1` keine Fachmaske
+mehr führt, gibt es dafür keinen Anlass.
 
 **Tastatur:** Esc schließt überall. **Enter** bestätigt nur in reinen OK-Dialogen; wo ein Knopf
 sofort schreibt (Übernahme, Katalog, Verlauf), bleibt Enter unbelegt — ein versehentliches Enter

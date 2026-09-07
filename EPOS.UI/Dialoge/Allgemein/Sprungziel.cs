@@ -4,72 +4,53 @@
 /// Die SPRUNGZIELE — sprachneutrale ASCII-Schlüssel für Fenster, die eine
 /// Razor-Komponente öffnen lassen möchte, ohne sie zu kennen (iU9-W2.2).
 ///
-/// <para><b>Das Problem.</b> Manche Dialoge führen weiter: Der
-/// Wirtschaftlichkeits-Parameterdialog hat einen Knopf „CO₂-Preispfad
-/// pflegen…", der in den Gesetzeskatalog springt. Der Katalog ist (bis
-/// Welle 14c) eine WinForms-Maske. Eine Komponente in dieser Bibliothek darf
-/// WinForms nicht kennen — sie darf es nicht einmal übersetzen
-/// (<c>EnableWindowsTargeting=false</c>).</para>
+/// <para><b>Die Liste ist LEER, und das ist das Ergebnis, nicht ein Rest.</b>
+/// Der Mechanismus hat zehn Ziele getragen; jedes davon ist gefallen, sobald
+/// sein Ziel selbst eine Razor-Komponente wurde — aus jedem Sprung ist eine
+/// <c>Ueberlagerung</c> im selben Fenster geworden (Risiko R2: zwei WebViews
+/// übereinander kosten Speicher, Aufbauzeit und eine Fokusreihenfolge, die
+/// niemand mehr erklären kann).</para>
 ///
-/// <para><b>Die Lösung: ein Delegat mit Schlüssel.</b> Die Komponente nimmt
-/// einen Parameter
+/// <para><b>Der Weg dorthin</b>, damit niemand ihn zweimal geht:</para>
+/// <list type="bullet">
+///   <item><description>iU9-W13.2 — <c>WaermebedarfExternAdmin</c>; das Ziel wurde
+///     selbst Blazor.</description></item>
+///   <item><description>iU9-W14a.4 — die fünf Katalogverwaltungen der Erzeuger
+///     (<c>HeizkesselAdmin</c>, <c>StromspeicherAdmin</c>, <c>PvAdmin</c>,
+///     <c>PufferSpAdmin</c>, <c>PufferSpAdminNurLesen</c>).</description></item>
+///   <item><description>iU9-W14b.2 — <c>SolarganglinieAdmin</c>.</description></item>
+///   <item><description>iU9-W14c.3 — die zwei Gesetzesziele
+///     (<c>Gesetzesparameter</c>, <c>GesetzesparameterCo2</c>).</description></item>
+///   <item><description><b>W11b‑B‑5</b> (Windows-Abnahme V2 vom 07.09.2026) —
+///     <c>SpeicherOptimierung</c>, das letzte. Es war das einzige Ziel MIT
+///     Parameter (dem gerechneten Lauf) und das einzige, dessen Antwort nicht
+///     „mit OK geschlossen" hieß, sondern
+///     <c>Form_SpeicherOptimierung.AuslegungUebernommen</c>. Der Entscheid
+///     iF22 („die Maske bleibt WinForms, sie ist der einzige Ort des Programms,
+///     an dem ScottPlot läuft") ist mit zwei Befunden des Anwenders überholt
+///     worden — „Texte überschneiden sich" und „Dialog stürzt nach kurzer Zeit
+///     ab" —, und nach der Arbeitsregel iZ5 wurde daraus die Überlagerung
+///     <c>EPOS.UI/Dialoge/Strom/SpeicherOptimierungDialog.razor</c>. Mit ihm ist
+///     auch die Windows-Seite gefallen:
+///     <c>WindowsFormsApplication1/Allgemein/Blazor/Sprungbruecke.cs</c> hatte
+///     keinen Zweig mehr.</description></item>
+/// </list>
+///
+/// <para><b>Wozu die Klasse dann noch steht.</b> Sie ist die Registerstelle des
+/// Musters, nicht sein Rest: Käme je wieder eine Razor-Komponente, die ein
+/// <b>WinForms</b>-Fenster öffnen lassen muss, gehört ihr Schlüssel hierher —
+/// und die Windows-Brücke dazu wieder neu angelegt. Solange
+/// <c>WindowsFormsApplication1</c> keine Fachmaske mehr führt, gibt es dafür
+/// keinen Anlass. <b>Ein Blazor-Ziel gehört ausdrücklich NICHT hierher</b>: Es
+/// wird eine <c>Ueberlagerung</c> im selben Fenster.</para>
+///
+/// <para><b>Das Muster, falls es wiederkommt.</b> Die Komponente nimmt
 /// <code>[Parameter] public Func&lt;string, Task&lt;bool&gt;&gt;? Sprung { get; set; }</code>
-/// und ruft ihn mit einem der Schlüssel dieser Klasse. Was daraufhin erscheint,
-/// entscheidet allein die Plattformhülle: unter Windows
-/// <c>WindowsFormsApplication1.Sprungbruecke</c> (Schlüssel → <c>Form</c>,
-/// Muster <c>Dienste.Navigation</c>/<c>Masken</c>), auf iOS später ein
-/// Seitenwechsel. Die Antwort ist <c>true</c>, wenn das Ziel mit OK geschlossen
-/// wurde — dann lädt der Dialog nach, was sich geändert haben kann.</para>
-///
-/// <para><b>Kein Delegat ist kein Fehler.</b> Ist <c>Sprung</c> nicht gesetzt
-/// (Prüfstand, iOS ohne dieses Ziel), zeigt der Dialog den Knopf gar nicht
-/// erst. Ein Knopf, der nichts tut, wäre eine Behauptung, die nicht stimmt.</para>
-///
-/// <para><b>Grenze (Risiko R1 des Wellenplans).</b> Unter Windows läuft der
-/// Rückruf im Oberflächenfaden — das Zielfenster öffnet eine VERSCHACHTELTE
-/// Nachrichtenschleife über dem Blazor-Dialog, genau wie ein
-/// <c>OpenFileDialog</c> in einem Click-Ereignis. Für ein WinForms-Ziel ist das
-/// erprobt. Wo das Ziel selbst eine Blazor-Hülle ist, bleibt es beim
-/// NACHGELAGERTEN Sprung (schließen → Ziel → wieder öffnen, Muster
-/// <c>BhkwWirtschaftlichkeitHuelle.TarifOeffnen</c>): Zwei WebViews
-/// übereinander sind Risiko R2, und dafür gibt es bis Welle 4 keinen
-/// Baustein.</para>
+/// und ruft ihn mit einem Schlüssel dieser Klasse; was daraufhin erscheint,
+/// entscheidet allein die Plattformhülle. <b>Kein Delegat ist kein Fehler</b> —
+/// dann zeigt der Dialog den Knopf gar nicht erst; ein Knopf, der nichts tut,
+/// wäre eine Behauptung, die nicht stimmt.</para>
 /// </summary>
 public static class Sprungziel
 {
-    // iU9-W14c.3: Die ZWEI Gesetzeszweige sind hier weg - Gesetzesparameter und
-    // GesetzesparameterCo2. Sie waren die letzten zwei abloesbaren Schluessel
-    // ueberhaupt: Beide Sprungquellen waren schon vorher Razor (Befund W14c-B13),
-    // aus jedem Sprung ist eine UEBERLAGERUNG im selben Fenster geworden, und die
-    // Vorwahl der Klasse CO2_PREIS reicht der Wirt als Parameter hinein.
-    //
-    // WAS BLEIBT, IST EIN ENTSCHEID, KEIN REST (R-W14c-11): SpeicherOptimierung
-    // steht bis Welle 16. Form_SpeicherOptimierung bleibt WinForms (iF22) - sie ist
-    // der einzige Ort des Programms, an dem ScottPlot laeuft. Wer Sprungziel und
-    // Sprungbruecke jetzt "aufraeumt", bricht sie.
-
-    // iU9-W14a.4: Die FUENF Katalogverwaltungen der Erzeuger sind hier weg -
-    // HeizkesselAdmin, StromspeicherAdmin, PvAdmin, PufferSpAdmin und
-    // PufferSpAdminNurLesen. Ihre Ziele sind selbst Blazor geworden; aus jedem
-    // Sprung ist eine UEBERLAGERUNG im selben Fenster geworden (Muster W4/W10a,
-    // Risiko R2), und der Aufrufer bekommt den Parametersatz der Verwaltung
-    // statt eines Schluessels. Die Sprungbruecke bleibt fuer die WinForms-Ziele.
-
-    /// <summary>
-    /// „Auslegung optimieren …" — die Rastersuche des Stromspeichers
-    /// (<c>Form_SpeicherOptimierung</c>, Vorläufer
-    /// <c>Form_Simulation_Detail.SpOptimierung_Click</c>:5992, iU9-W11b.0).
-    ///
-    /// <para><b>Warum sie eine Brücke braucht und keine Überlagerung.</b> Die Maske
-    /// bleibt WinForms (Entscheid iF22): Sie ist der einzige Ort des Programms, an dem
-    /// <c>ScottPlot.WinForms</c> läuft — Heatmap und Schnittkurve der Rastersuche. Eine
-    /// Razor-Fassung gibt es dafür bis auf Weiteres nicht.</para>
-    ///
-    /// <para><b>Was die Antwort bedeutet.</b> <c>true</c> heißt hier NICHT „mit OK
-    /// geschlossen", sondern <c>Form_SpeicherOptimierung.AuslegungUebernommen</c> —
-    /// der Anwender hat den Bestpunkt übernommen, und damit hat sich die Speichervariante
-    /// geändert. Die Seite liest sie danach neu; neu gerechnet wird bewusst nicht
-    /// (wörtlich wie im Vorläufer).</para>
-    /// </summary>
-    public const string SpeicherOptimierung = "SPEICHER_OPTIMIERUNG";
 }
