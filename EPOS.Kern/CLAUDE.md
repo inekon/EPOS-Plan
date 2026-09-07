@@ -517,13 +517,59 @@ Geschichte erzählen. Im Ordner `Allgemein/Simulation/` steht **keine einzige** 
 Zahlen im `protokoll.txt` dort): Die Jahressummen bleiben in allen zwölf Projekten innerhalb
 3e‑5 relativ, die erste Differenz einer Stundenreihe liegt bei einer `float`-Stufe (rund
 1e‑7). **Elf der zwölf Projekte reißen trotzdem die Toleranz iF15**, weil drei Schwellen des
-Modells am letzten Bit entscheiden und ihr Ergebnis über Stunden weitertragen: die
+Modells am letzten Bit entschieden und ihr Ergebnis über Stunden weitertrugen: die
 Speicherhysterese `SOC >= Q_max · SchwelleAus` (`SimulationPufferspeicher`, bistabil), die
 Volllast/Modulations-Grenze `bhkwWaermeLeistung[motor] < restWaerme + restSpeicher`
 (`SimulationBHKW.Motorlauf_Waermegefuehrt`) und die drei `int`-Rückgaben von `BhkwPlan`
 (`TaeglHeizlastWG`, `SolareGewinneC`, `SpezWaermeverlusteC` — Borland `_ftol`, Abschneiden).
 **Wer eine solche Schwelle anfasst, ändert den Rechenweg fachlich** und braucht dafür einen
-eigenen Entscheid; der Typumbau hat keine davon berührt.
+eigenen Entscheid; der Typumbau hat keine davon berührt. **Zwei Entscheide vom 07.09.2026
+haben genau das dann getan** — siehe die nächsten zwei Abschnitte; die Basis dazu ist
+`2026-09-07_R5_Zahlenrand`.
+
+## Vergleiche an Betriebsschwellen tragen den Zahlenrand
+
+**Anwenderentscheid W8‑O‑5d‑Q1 vom 07.09.2026 („Empfehlung").** Ein Vergleich, der eine
+BETRIEBSSCHWELLE entscheidet, darf nicht am letzten Bit kippen. Der Rand steht **einmal** in
+`Allgemein/Simulation/Rechenrand.cs`:
+
+```csharp
+Rand    = Rechenrand.ABSOLUT (1e-9) + Rechenrand.RELATIV (1e-12) · |Schwelle|
+erreicht = Rechenrand.SchwelleErreicht(wert, schwelle)   //  wert >= schwelle - Rand
+```
+
+Er ist **absolut UND relativ**, weil die Schwellen Energien in kWh tragen und mehrere
+Größenordnungen spannen: ein rein absoluter Rand wäre bei 100 000 kWh zu knapp, ein rein
+relativer verschwände an einer Schwelle von 0. Beide Zahlen sind so gewählt, dass der Rand
+**vier Größenordnungen unter der schärfsten Vergleichstoleranz der Referenzsuite** (rel. 1e‑4)
+bleibt — er kann keine Abweichung erzeugen, die ein Referenzvergleich noch sähe.
+
+**Angewandt an den zwei Schwellen des Befunds:**
+
+| Stelle | alte Bauart | warum sie am letzten Bit entschied |
+|---|---|---|
+| `SimulationPufferspeicher.HystereseFortschreiben` | `SOC >= Q_max · SchwelleAus` | `Ladefaehigkeit` fährt den Speicher auf **genau** `Q_max · grenze`, und `a + (b − a)` ist nicht bitgleich `b`. Bistabil — der Fehltritt trug über Stunden |
+| `SimulationBHKW.Motorlauf_Waermegefuehrt` (beide Stufen) | `P_th < restWaerme + restSpeicher` bzw. `P_th · x_min <= …` | Wärmeraum und Nennleistung liegen an der Kante gleichauf; kippt der Vergleich, springt die Stundenproduktion |
+
+Die **Einschaltschwelle** des Speichers bleibt bewusst ohne Rand: Kein Rechenweg fährt den
+Füllstand auf genau `Q_max · SchwelleEin`. **Wer eine neue Betriebsschwelle einführt, nimmt
+`Rechenrand.SchwelleErreicht` — nicht `>=`.** Nachweis: `EPOS.Kern.Tests/RechenrandTests`
+(je Schwelle ein Stand genau auf der Grenze und einer ein ulp darunter, dazu die
+Bistabilitätsprobe und je eine Gegenprobe mit dem blanken Vergleich).
+
+## Keine `(int)`-Abschneidung auf einer Rechengröße
+
+**Anwenderentscheid W8‑O‑5d‑Q2 vom 07.09.2026: „keine Treue zur alten DLL".** Die drei
+Physik-Funktionen des BHKW-Plan-Ports — `BhkwPlan.TaeglHeizlastWG`, `SolareGewinneC`,
+`SpezWaermeverlusteC` — gaben `int` zurück, weil die native `BHKWPLAN.DLL` das tat (Borland
+`_ftol`). Seither geben sie `double` zurück und schneiden nicht mehr ab; die Aufrufer in
+`SimulationWaermebedarf` folgen mit (`/ 100` war dort eine GANZZAHLIGE Division und heißt
+jetzt `/ 100.0` — es waren zwei Abschneidungen hintereinander). Der Faktor 100 selbst bleibt:
+Er gehört zur Schnittstelle der Funktion, nicht zur Physik.
+
+**Die Regel daraus:** Auf einer Rechengröße steht keine `(int)`-Wandlung. Wer eine Zahl
+ganzzahlig braucht (Indizes, Zähler, Stundennummern), wandelt sie dort, wo sie ein Index
+wird — nicht auf dem Weg dorthin. Nachweis: `EPOS.Kern.Tests/BhkwPlanRueckgabeTests`.
 
 ## Vorschau und Lauf lesen dieselben Tabellen
 

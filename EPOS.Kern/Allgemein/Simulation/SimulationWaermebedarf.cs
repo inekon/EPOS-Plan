@@ -732,6 +732,19 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // ANWENDERENTSCHEID W8-O-5d-Q2 (07.09.2026): "keine Treue zur alten DLL".
+            // Die drei Physik-Funktionen des BHKW-Plan-Ports gaben bis hierher int zurueck
+            // (Borland _ftol, Abschneiden Richtung Null); seither geben sie double zurueck.
+            // Zwei Stellen ziehen damit mit:
+            //
+            //   * Die Division "/ 100" hinter SpezWaermeverlusteC war GANZZAHLIG, solange
+            //     die Funktion int lieferte - also ein zweites Abschneiden hinter dem
+            //     ersten. Sie steht jetzt als "/ 100.0" da und ist eine double-Division.
+            //   * Die Division hinter SolareGewinneC war schon immer eine double-Division;
+            //     "(double)100" ist nur noch "100.0" geschrieben - derselbe Wert.
+            //
+            // Der Faktor 100 selbst BLEIBT: Er gehoert zur Schnittstelle der DLL-Funktion
+            // (sie liefert das Hundertfache), nicht zur Physik.
             for (int Tag = 350; Tag < 365; Tag++)
             {
                 /*
@@ -741,7 +754,7 @@ namespace WindowsFormsApplication1
                 */
                 Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
                         (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
-                        (double)item.Fensterdurchlassgrad) / (double)100;
+                        (double)item.Fensterdurchlassgrad) / 100.0;
 
                 /*
                 SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
@@ -758,7 +771,7 @@ namespace WindowsFormsApplication1
                        (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
                        (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
                        (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
-                       (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
+                       (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100.0;
 
                 WE_Absenkung = 0;
                 if ((double)item.Raumsolltemperatur_Wochenende > 5)
@@ -811,7 +824,7 @@ namespace WindowsFormsApplication1
                 */
                 Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
                     (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
-                    (double)item.Fensterdurchlassgrad) / (double)100;
+                    (double)item.Fensterdurchlassgrad) / 100.0;
                 /*
                 SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
                         (double)item.k_Wert_Fenster, (double)item.gesamte_Fensterflaeche, (double)item.k_Wert_Dachflaeche,
@@ -827,7 +840,7 @@ namespace WindowsFormsApplication1
                      (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
                      (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
                      (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
-                     (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
+                     (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100.0;
 
                 WE_Absenkung = 0;
                 if ((double)item.Raumsolltemperatur_Wochenende > 5)

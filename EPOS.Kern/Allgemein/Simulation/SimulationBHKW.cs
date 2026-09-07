@@ -604,7 +604,24 @@ namespace WindowsFormsApplication1
                 // dort nie gelesen und ist mit der Weichenhülle entfallen.)
                 double restSpeicher = kapazitaetPendelspeicher - speicher;
 
-                if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
+                // ZAHLENRAND an der Volllast/Modulations-Grenze (Anwenderentscheid
+                // W8-O-5d-Q1 vom 07.09.2026). Die ALTE Bauart lautete
+                //     if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
+                // und entschied am letzten Bit: Der Waermeraum restWaerme + restSpeicher
+                // entsteht aus dem Bedarf und dem freien Puffer, die Nennleistung steht
+                // dem als eine Zahl gegenueber - liegen beide gleichauf, kippt die
+                // Bedingung mit einer Differenz von 2e-16 relativ, und die
+                // Stundenproduktion springt sprunghaft (Projekt 1024 ab Stunde 312:
+                // 41,83 -> 46,00 kWh, in der Jahressumme BHKW +11,2 %).
+                //
+                // SchwelleErreicht dreht den Vergleich auf die Frage "erreicht der
+                // Waermeraum die Nennleistung?" und laesst dabei den Rand zu. Der Fall
+                // GLEICHHEIT wechselt damit von der Modulation in die Volllast - beide
+                // Zweige rechnen dort dasselbe Ergebnis (Waerme P_th, Strom P_el,
+                // Speicher auf kapazitaetPendelspeicher), sie unterscheiden sich nur in
+                // der Reihenfolge der Summanden. Das Wiki-Blatt BHKW.wiki nennt die
+                // Volllast ohnehin fuer P_th <= R_Q(t) + S(t).
+                if (Rechenrand.SchwelleErreicht(restWaerme + restSpeicher, bhkwWaermeLeistung[motor]))
                 {
                     waermeproduktion[stunde] += bhkwWaermeLeistung[motor];
                     s_waerme[motor] += bhkwWaermeLeistung[motor];
@@ -618,7 +635,14 @@ namespace WindowsFormsApplication1
                         restWaerme = 0.0;
                     }
                 }
-                else if (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor] <= restWaerme + restSpeicher)
+                // Dieselbe Schwelle eine Stufe tiefer: Modulation gegen "Motor bleibt
+                // aus". Die alte Bauart war
+                //     else if (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor] <= restWaerme + restSpeicher)
+                // - derselbe Vergleich, nur mit der Modulationsgrenze als Schwelle. Er
+                // traegt denselben Rand, damit die zwei Stufen derselben Weiche nicht
+                // nach zweierlei Mass entscheiden.
+                else if (Rechenrand.SchwelleErreicht(restWaerme + restSpeicher,
+                                                     bhkwWaermeLeistung[motor] * bhkwGrenzL[motor]))
                 {
                     waermeproduktion[stunde] += restWaerme + restSpeicher;
                     s_waerme[motor] += restWaerme + restSpeicher;

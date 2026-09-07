@@ -284,6 +284,15 @@ Solange nachgeladen wird, deckt der Speicher '''keinen''' Bedarf vorab (Phase A 
 Die '''Nachentladung''' (Phase E) greift davon unabhängig — genau wie im Bestand die Entladung vor
 Heizstab und nachfolgendem Erzeuger.
 
+Der Vergleich (8) trägt einen '''Zahlenrand''': Er gilt bereits als erfüllt, wenn der Füllstand die
+Abschaltschwelle bis auf 10<sup>−9</sup> kWh zuzüglich 10<sup>−12</sup> ihres eigenen Betrages
+erreicht hat. Das ist keine Fachtoleranz, sondern Rechentechnik — die Nachladung füllt den Speicher
+auf '''genau''' diese Schwelle, und in Gleitkommaarithmetik trifft eine Summe ihren Zielwert nicht
+immer im letzten Bit. Ohne den Rand hinge es an dieser letzten Stelle, ob die Nachladung endet; da
+die Regelung bistabil ist, trüge sie den Fehltritt über Stunden weiter. Die '''Einschaltschwelle'''
+(7) braucht den Rand nicht: Auf sie wird der Füllstand von keiner Rechnung angesteuert, er sinkt
+durch Entnahme und Bereitschaftsverluste auf einen beliebigen Wert.
+
 === Schritt 5 — Bereitschaftsverluste, einmal je Stunde ===
 
 Am Stundenende, nach Bedarfsdeckung, Ladung und Nachentladung:
