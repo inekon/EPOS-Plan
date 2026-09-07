@@ -85,13 +85,20 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Zielstand steht auf 68. Er ist zugleich die Zusage des
-        /// <c>.wpx</c>-Formats: Ein Paket auf Stand 67 wird beim Import abgewiesen.
+        /// Der Zielstand hat die 68 ERREICHT — von da an gibt es die Spalte. Er steht
+        /// seit W6‑B‑5 (Schritt 69, die PV-Modulkoeffizienten) darüber, und deshalb prüft
+        /// dieser Fall „mindestens": Die Zusage dieses SCHRITTES ist, dass eine Datenbank
+        /// auf dem Zielstand die Herstellerspalte führt, nicht dass der Zielstand für
+        /// immer 68 bleibt.
+        ///
+        /// <para>Die jeweils aktuelle Zahl prüft der Nachweis des jüngsten Schrittes —
+        /// zurzeit <c>PvKoeffizientenReparaturTests.Der_Zielstand_steht_auf_69</c>.</para>
         /// </summary>
         [Fact]
-        public void Der_Zielstand_steht_auf_68()
+        public void Der_Zielstand_hat_die_68_erreicht()
         {
-            Assert.Equal(68, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= 68,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 68.");
         }
 
         // =================================================================================
