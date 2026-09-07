@@ -2600,6 +2600,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Aufruf prüft die Wiederholbarkeit selbst („+0; unveraendert"). Nachweis: Kern 2033 / UI 3239 grün (de und en),
 > Warnungen 6, Gate grün, Referenzlauf byte-gleich gegen R6. Abnahme auf Windows: den Fall 10× unter Last laufen
 > lassen (10/10 grün), `designer_neu.py schreiben` zweimal — `git status` bleibt sauber.
+>
+> **O‑12 erledigt (07.09.2026, `7c196c5` + `69ef1cb`), zusammengeführt in `8960ed3`.** Die zwei Importprofile führen
+> keine Daten mehr, die keine Maske liest: gefallen sind aus `KatalogImportProfil` `FilterBezeichnung`, `FilterVon`,
+> `FilterBis`, `FilterMaximum` und `HerstellerFilter` samt ihren Setzern in allen fünf Ausprägungen, aus
+> `KatalogFilterbereich` seine vier Leistenteile, aus `ModulImportProfil` `FilterHersteller`, `FilterTechnologie`,
+> `FilterSuche`, `SuchePlatzhalter`, `TextAlle` und `Zahlenfilter` samt dem Hilfstyp `ImportZahlenfilter`, dazu
+> `ImportZeile.Hersteller`/`.Technologie` und fünf tote Fälle in `Texte.Zu` — **−146 Zeilen**. **Die Aufzählung in O‑12
+> war eine Verdachtsliste:** gemessen wurde jedes Feld einzeln (Lesegraph über `*.cs` und `*.razor`, Tabelle im
+> Protokoll `iU9_W15a_Blazor_Port_Protokoll.md`, Abschnitt „W14a‑E‑10‑O‑12"), und **`Zweitfilter` lebt** —
+> `KatalogImportDialog.razor:629` liest seine Nachkommastellen für die zweite Zahlenspalte des Stromspeicherimports
+> (W13‑E‑2); ebenso bleiben `FilterNachkommastellen`, `FilterSpaltentitel`/`-einheit` (sie bauen Kopf und Einheit der
+> Zahlenspalte in `BaueListenprofil`) und `KatalogImportAblauf.Anzeigeindex`, dessen Prüffall die einzige Zusicherung
+> gegen eine echte VDI-Datei hält. **Kein Prüffall ist entfallen, keiner dazugekommen** — fünf beschnitten, zwei
+> umbenannt. Gate grün: 0 Fehler / 6 eindeutige Warnungen, Kern 2 033 / UI 3 239 / SpeicherEngine 337 / KiKern 469
+> grün in `de` und `en_US`, Formularkarte 122, SQL 0 Fundstellen (1 297 Texte), ChartProben 44, Referenzlauf
+> 1030/1007/1017/1045 **4 × PASS und byte-gleich** gegen `2026-09-07_R6_PvKoeffizienten`, kein Schema. Kein Verhalten
+> ändert sich — Abnahme auf Windows: **A‑W14a‑E10‑O12‑1** (die sieben Importmasken verhalten sich unverändert; beim
+> Stromspeicher zusätzlich: „Energie [kWh]" und „Leistung [kW]" mit **einer** Nachkommastelle und Zahlenausdruck
+> `10..60`).
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
