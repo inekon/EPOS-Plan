@@ -102,8 +102,14 @@ namespace WindowsFormsApplication1
                 // ReadOnly-Kennzeichen. Bis dahin baute diese Huelle eine eigene
                 // Namensliste, und ein Auslieferungssatz war im Dialog nicht als
                 // solcher zu erkennen (derselbe Befund wie W12-E-1 beim Strom).
-                ["Katalog"] = new Func<Task<List<WaermebedarfAdminDialog.Katalogzeile>>>(
+                // W14a-E-10 / S3.2: dieselbe Katalogliste wie in der Verwaltung, mit
+                // Jahresarbeit und Spitze aus EINER Gruppenabfrage - und der Spalte
+                // "im Projekt verwendet" (Q12), die es nur im Projektdialog gibt.
+                ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(
                     WaermebedarfAdminHuelle.KatalogLesen),
+                ["Katalogprofil"] = Katalogfilterprofil
+                    .FuerZeitreihe(Zeitreihenart.Waermebedarf, BedarfAdminHuelle.Filtertext)
+                    .MitVerwendungsspalte(BedarfAdminHuelle.Filtertext),
                 ["Aufnehmen"] = new Func<string, WaermebedarfExternZeile>(
                     name => Aufnehmen(name, projektId)),
                 ["HatProjektzuordnung"] = new Func<string, bool>(

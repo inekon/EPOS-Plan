@@ -76,7 +76,12 @@ namespace WindowsFormsApplication1
             {
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
-                ["Katalog"] = new Func<Task<List<GanglinienKatalogZeile>>>(KatalogLesen),
+                // W14a-E-10 / S3.2: dieselbe Katalogliste wie in der Verwaltung - mit
+                // der Spalte "im Projekt verwendet" (Q12), die es nur hier gibt.
+                ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(KatalogLesen),
+                ["Katalogprofil"] = Katalogfilterprofil
+                    .FuerZeitreihe(Zeitreihenart.Stromganglinie, BedarfAdminHuelle.Filtertext)
+                    .MitVerwendungsspalte(BedarfAdminHuelle.Filtertext),
                 ["Verwaltung"] = StromganglinieAdminHuelle.Gaben(),
 
                 // iU9-W12-E-1: die Datenbankseite des Dialogs. Die vier Wege sind
@@ -206,7 +211,7 @@ namespace WindowsFormsApplication1
         /// Schleife ein zweites Mal zu schreiben, ruft sie jetzt
         /// <see cref="StromganglinieAdminHuelle.KatalogLesen"/>.</para>
         /// </summary>
-        private static Task<List<GanglinienKatalogZeile>> KatalogLesen()
+        private static Task<IReadOnlyList<Katalogfilterzeile>> KatalogLesen()
             => StromganglinieAdminHuelle.KatalogLesen();
 
         /// <summary>

@@ -89,7 +89,14 @@ namespace WindowsFormsApplication1
             {
                 ["Zeilen"] = zeilen,
 
-                ["Katalog"] = new Func<IReadOnlyList<KatalogZeile>>(Katalogzeilen),
+                // W14a-E-10 / S3.2: dieselbe Katalogliste wie in der Verwaltung, mit
+                // Beschreibung, Jahresarbeit und Spitze - und der Spalte "im Projekt
+                // verwendet" (Q12), die es nur im Projektdialog gibt.
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    () => ZeitreihenKatalogCtrl.Katalogfilterzeilen(Zeitreihenart.Solarganglinie)),
+                ["Katalogprofil"] = Katalogfilterprofil
+                    .FuerZeitreihe(Zeitreihenart.Solarganglinie, BedarfAdminHuelle.Filtertext)
+                    .MitVerwendungsspalte(BedarfAdminHuelle.Filtertext),
 
                 ["Aufnehmen"] = new Func<int, ErzeugerZeile>(
                     ganglinieId => Aufnehmen(projektId, liste, zuModell, zaehler, ganglinieId)),
@@ -164,19 +171,6 @@ namespace WindowsFormsApplication1
         /// Der Ganglinienkatalog. Die Beschreibung reist in <c>Eigenschaften</c> mit —
         /// der Vorläufer hatte ein Beschreibungsfeld, füllte es aber nie (A-27).
         /// </summary>
-        private static IReadOnlyList<KatalogZeile> Katalogzeilen()
-        {
-            var ctrl = new SolarganglinieStammCtrl();
-            ctrl.ReadAll();
-
-            var liste = new List<KatalogZeile>();
-            for (int i = 0; i < ctrl.rows; i++)
-                liste.Add(new KatalogZeile(ctrl.items[i].ID,
-                                           ctrl.items[i].m_szBezeichner ?? "",
-                                           ctrl.items[i].m_szBeschreibung ?? ""));
-            return liste;
-        }
-
         private static ErzeugerZeile ZeileZu(Z_ProjektSolarganglinieModel m)
         {
             return new ErzeugerZeile

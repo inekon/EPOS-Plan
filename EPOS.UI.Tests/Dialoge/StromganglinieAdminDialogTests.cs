@@ -46,14 +46,10 @@ public class StromganglinieAdminDialogTests : BunitContext
         CultureInfo.CurrentUICulture = de;
     }
 
-    private static List<GanglinienKatalogZeile> Katalog() => new()
-    {
-        new GanglinienKatalogZeile("Werk Nord", 4, false),
-        new GanglinienKatalogZeile("Auslieferung", 1, true)
-    };
+    private static IReadOnlyList<Katalogfilterzeile> Katalog() => Zeitreihenproben.Stromganglinien();
 
     private IRenderedComponent<StromganglinieAdminDialog> Zeige(
-        Func<Task<List<GanglinienKatalogZeile>>>? katalog = null,
+        Func<Task<IReadOnlyList<Katalogfilterzeile>>>? katalog = null,
         Func<string, Task<bool>>? loeschen = null,
         Func<string, Task<string?>>? waehlen = null,
         Func<string, GanglinienRaster, GanglinienImportRueckrufe,
@@ -61,7 +57,9 @@ public class StromganglinieAdminDialogTests : BunitContext
         Action<bool>? geschlossen = null)
     {
         return Render<StromganglinieAdminDialog>(p => p
-            .Add(x => x.Katalog, katalog ?? (() => Task.FromResult(Katalog())))
+            .Add(x => x.Katalogzeilen, katalog ?? (() => Task.FromResult(Katalog())))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Loeschen, loeschen ?? (n => Task.FromResult(true)))
             .Add(x => x.DateiWaehlen, waehlen)
             .Add(x => x.Einlesen, einlesen)

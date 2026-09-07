@@ -1,5 +1,7 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -66,12 +68,22 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class GanglinienQuelle
     {
-        private GanglinienQuelle(string datenStamm, string datenProjekt, Func<string, int> stammId)
+        private GanglinienQuelle(Zeitreihenart art, string kopfStamm,
+                                 string datenStamm, string datenProjekt,
+                                 Func<string, int> stammId)
         {
+            Art = art;
+            KopfStamm = kopfStamm;
             DatenStamm = datenStamm;
             DatenProjekt = datenProjekt;
             StammId = stammId;
         }
+
+        /// <summary>Welcher der drei Zeitreihenkataloge (Stufe S3.2).</summary>
+        internal Zeitreihenart Art { get; }
+
+        /// <summary>Die KOPFtabelle des Auslieferungskatalogs (<c>Tab_*_STAMM</c>).</summary>
+        internal string KopfStamm { get; }
 
         /// <summary>Die Werttabelle des Auslieferungskatalogs.</summary>
         internal string DatenStamm { get; }
@@ -84,15 +96,76 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Stromganglinien (<c>Tab_Stromganglinie*</c>).</summary>
         internal static readonly GanglinienQuelle Strom = new GanglinienQuelle(
+            Zeitreihenart.Stromganglinie,
+            StromganglinieStammCtrl.HEAD_STAMM,
             StromganglinieStammCtrl.DATA_STAMM,
             StromganglinieStammCtrl.DATA_PROJ,
             name => new StromganglinieStammCtrl().GetStammId(name));
 
         /// <summary>Der externe Wärmebedarf (<c>Tab_Waermebedarf*</c>).</summary>
         internal static readonly GanglinienQuelle Waermebedarf = new GanglinienQuelle(
+            Zeitreihenart.Waermebedarf,
+            WaermebedarfStammCtrl.HEAD_STAMM,
             WaermebedarfStammCtrl.DATA_STAMM,
             WaermebedarfStammCtrl.DATA_PROJ,
             name => new WaermebedarfStammCtrl().GetStammId(name));
+
+        /// <summary>
+        /// Die Solarthermieganglinie (<c>Tab_Solarganglinie*</c>) — seit Stufe
+        /// <b>S3.2</b> des <c>Konzept_Katalogfilter</c>.
+        ///
+        /// <para><b>Sie hat keine Grafik im Dialog</b> (anders als Strom und
+        /// Wärmebedarf); gebraucht wird sie für die zwei Spalten Jahresarbeit und
+        /// Spitze der Katalogliste. Sie steht trotzdem HIER und nicht als vierte
+        /// Sonderabfrage in <c>SolarganglinieStammCtrl</c>: Es gibt EINEN Leseweg für
+        /// eine Ganglinie, und der ist dieser.</para>
+        /// </summary>
+        internal static readonly GanglinienQuelle Solarganglinie = new GanglinienQuelle(
+            Zeitreihenart.Solarganglinie,
+            SolarganglinieStammCtrl.HEAD_STAMM,
+            SolarganglinieStammCtrl.DATA_STAMM,
+            SolarganglinieStammCtrl.DATA_PROJ,
+            name => new SolarganglinieStammCtrl().GetStammId(name));
+
+        /// <summary>Die Auspraegung zu einer <see cref="Zeitreihenart"/> (Stufe S3.2).</summary>
+        internal static GanglinienQuelle Zu(Zeitreihenart art)
+        {
+            switch (art)
+            {
+                case Zeitreihenart.Stromganglinie: return Strom;
+                case Zeitreihenart.Solarganglinie: return Solarganglinie;
+                default:                           return Waermebedarf;
+            }
+        }
+    }
+
+    /// <summary>
+    /// <b>Die zwei Kennzahlen EINER Ganglinie für die Katalogliste</b> (Stufe
+    /// <b>S3.2</b>, Konzept_Katalogfilter 4.10).
+    /// </summary>
+    /// <param name="Stunden">
+    /// Wie viele Stundenwerte die Reihe ergibt — 8 760 bei einer brauchbaren Reihe.
+    /// Alles andere heißt: Die Reihe passt nicht ins Raster des Rechenkerns, und
+    /// beide Kennzahlen bleiben Leerwerte (dieselbe Regel wie
+    /// <c>GanglinienAuswertungCtrl.AufStunden</c>).
+    /// </param>
+    /// <param name="JahresarbeitMwh">Σ der Stundenleistungen [kW] ÷ 1 000.</param>
+    /// <param name="SpitzeKw">Der Höchstwert der STUNDENreihe.</param>
+    internal readonly struct GanglinienKennzahl
+    {
+        internal GanglinienKennzahl(int stunden, double jahresarbeitMwh, double spitzeKw)
+        {
+            Stunden = stunden;
+            JahresarbeitMwh = jahresarbeitMwh;
+            SpitzeKw = spitzeKw;
+        }
+
+        internal int Stunden { get; }
+        internal double JahresarbeitMwh { get; }
+        internal double SpitzeKw { get; }
+
+        /// <summary>Passt die Reihe ins Stundenraster des Rechenkerns?</summary>
+        internal bool Brauchbar => Stunden == GanglinienAuswertungCtrl.STUNDEN_JAHR;
     }
 
     /// <summary>
@@ -176,6 +249,84 @@ namespace WindowsFormsApplication1
                 Auswerten(quelle.DatenProjekt, idGanglinie, bezeichner);
 
             return ergebnis.Erfolgreich ? ergebnis : AusKatalog(quelle, bezeichner);
+        }
+
+        // ==================================================================
+        //  S3.2 - die Kennzahlen des GANZEN Katalogs in EINER Abfrage
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Jahresarbeit und Spitze ALLER Ganglinien eines Katalogs</b>
+        /// (Anwenderentscheid W14a-E-10, Konzept_Katalogfilter 4.10 und Stufe S3.2) —
+        /// EINE Gruppenabfrage beim Aufbau der Liste, nicht eine je Zeile.
+        ///
+        /// <para><b>Warum das noetig ist.</b> Die zwei fachlich richtigen
+        /// Filtergroessen einer Zeitreihe stehen nicht am Kopfsatz, sondern in der
+        /// Wertetabelle: 78 840 Zeilen beim Strom, 35 040 beim Waermebedarf. Je Zeile
+        /// zu fragen hiesse, die ganze Tabelle so oft zu lesen, wie der Katalog
+        /// Saetze hat — dasselbe, was <see cref="WPStammCtrl.KatalogZeilen"/> fuer die
+        /// Vorlaufgrenzen der Waermepumpe schon vermeidet.</para>
+        ///
+        /// <para><b>Die Abfrage rechnet die VERDICHTUNG mit</b>, und das ist der Punkt,
+        /// an dem eine einfache Gruppierung nicht genuegt haette. Eine
+        /// Viertelstundenreihe wird im Dialog ueber
+        /// <c>Viertelstunden_zu_Stundenwerte_Mittelwert</c> auf Stunden gebracht; ihre
+        /// Spitze ist danach der Hoechstwert der STUNDENmittel und nicht der der
+        /// Viertelstundenwerte (gemessen: 1 513,5 kW statt 4 590 kW bei der
+        /// Ganglinie 21 der Testdatenbank). Der innere Teil der Abfrage bildet deshalb
+        /// zuerst Stunden — die Stundennummer ist
+        /// <c>(Platz − 1) · 8760 ÷ Wertzahl</c>, was bei 8 760 Werten jeden Wert
+        /// allein laesst und bei 35 040 je vier zusammenfasst —, der aeussere summiert
+        /// und maximiert darueber. Damit stehen in der Liste dieselben Zahlen, die die
+        /// Grafik der Dialoge seit W9-E-3/W12-E-2 zeigt; es gibt keinen zweiten
+        /// Rechenweg.</para>
+        ///
+        /// <para><b>Der Platz kommt aus <c>ROW_NUMBER</c>, nicht aus der Id.</b> Eine
+        /// Luecke in den Ids — ein geloeschter und neu eingelesener Satz — verschoebe
+        /// sonst die Stundengrenzen. <c>ORDER BY ID</c> ist dabei dieselbe Bedingung,
+        /// die <c>CopyGanglinieToProjekt</c> und der Leseweg unten stellen: Die
+        /// Zeitreihe steht in Einfuegereihenfolge.</para>
+        ///
+        /// <para><b>Gelesen, nicht gerechnet.</b> Der Rechenweg der Simulation ist
+        /// unberuehrt; das hier ist eine Anzeige.</para>
+        /// </summary>
+        /// <param name="quelle">Die Ausprägung (Strom, Wärmebedarf, Solarganglinie).</param>
+        /// <param name="ausProjekt">
+        /// <c>true</c> liest die Projektkopien statt des Auslieferungskatalogs.
+        /// </param>
+        internal static IReadOnlyDictionary<int, GanglinienKennzahl> Kennzahlen(
+            GanglinienQuelle quelle, bool ausProjekt = false)
+        {
+            var werte = new Dictionary<int, GanglinienKennzahl>();
+            if (quelle == null) return werte;
+
+            string tabelle = ausProjekt ? quelle.DatenProjekt : quelle.DatenStamm;
+
+            // Der Tabellenname kommt aus GanglinienQuelle und nicht aus einer Eingabe.
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID_Ganglinie, COUNT(*) AS Stunden, SUM(Stundenwert) AS Summe, " +
+                "MAX(Stundenwert) AS Spitze FROM (" +
+                "  SELECT ID_Ganglinie, AVG(Wert) AS Stundenwert FROM (" +
+                "    SELECT ID_Ganglinie, Wert, " +
+                "           ((ROW_NUMBER() OVER (PARTITION BY ID_Ganglinie ORDER BY ID) - 1) * " +
+                STUNDEN_JAHR.ToString(CultureInfo.InvariantCulture) + ") " +
+                "           / COUNT(*) OVER (PARTITION BY ID_Ganglinie) AS Stunde " +
+                "    FROM [" + tabelle + "]" +
+                "  ) GROUP BY ID_Ganglinie, Stunde" +
+                ") GROUP BY ID_Ganglinie");
+            if (dt == null) return werte;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = Katalogfeld.Ganzzahl(r, "ID_Ganglinie");
+                if (id <= 0) continue;
+
+                werte[id] = new GanglinienKennzahl(
+                    Katalogfeld.Ganzzahl(r, "Stunden"),
+                    (Katalogfeld.Zahl(r, "Summe") ?? 0.0) / 1000.0,
+                    Katalogfeld.Zahl(r, "Spitze") ?? 0.0);
+            }
+            return werte;
         }
 
         // ==================================================================

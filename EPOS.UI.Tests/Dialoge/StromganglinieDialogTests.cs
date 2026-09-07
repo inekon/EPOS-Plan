@@ -47,23 +47,20 @@ public class StromganglinieDialogTests : BunitContext
         CultureInfo.CurrentUICulture = de;
     }
 
-    private static List<GanglinienKatalogZeile> Katalog() => new()
-    {
-        new GanglinienKatalogZeile("Werk Nord", 4, false),
-        new GanglinienKatalogZeile("Auslieferung", 1, true)
-    };
+    private static List<Katalogfilterzeile> Katalog()
+        => new List<Katalogfilterzeile>(Zeitreihenproben.Stromganglinien());
 
     /// <summary>Ein Satz Gaben für die Verwaltung — mehr als „nicht null" braucht der Test nicht.</summary>
     private static IReadOnlyDictionary<string, object> VerwaltungsGaben() =>
         new Dictionary<string, object>
         {
-            ["Katalog"] = new Func<Task<List<GanglinienKatalogZeile>>>(
-                () => Task.FromResult(Katalog()))
+            ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(
+                () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)Katalog()))
         };
 
     private IRenderedComponent<StromganglinieDialog> Zeige(
         List<GanglinienProjektZeile>? zeilen = null,
-        Func<Task<List<GanglinienKatalogZeile>>>? katalog = null,
+        Func<Task<IReadOnlyList<Katalogfilterzeile>>>? katalog = null,
         IReadOnlyDictionary<string, object>? verwaltung = null,
         bool wizard = false,
         Action<bool>? geschlossen = null,
@@ -71,7 +68,10 @@ public class StromganglinieDialogTests : BunitContext
     {
         return Render<StromganglinieDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<GanglinienProjektZeile>())
-            .Add(x => x.Katalog, katalog ?? (() => Task.FromResult(Katalog())))
+            .Add(x => x.Katalogzeilen,
+                 katalog ?? (() => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)Katalog())))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Verwaltung, verwaltung ?? VerwaltungsGaben())
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Geaendert, geaendert)
@@ -84,7 +84,7 @@ public class StromganglinieDialogTests : BunitContext
     /// deshalb sind die Vorgaben hier gesetzt und nicht null.
     /// </summary>
     private IRenderedComponent<StromganglinieDialog> ZeigeMitKatalogpflege(
-        List<GanglinienKatalogZeile>? katalog = null,
+        List<Katalogfilterzeile>? katalog = null,
         Func<string, Task<bool>>? loeschen = null,
         Func<string, Task<bool>>? zuordnung = null,
         Func<string, string, Task<bool>>? kopieren = null,
@@ -92,11 +92,14 @@ public class StromganglinieDialogTests : BunitContext
         Func<string, GanglinienRaster, GanglinienImportRueckrufe,
              Task<GanglinienImportErgebnis>>? einlesen = null)
     {
-        List<GanglinienKatalogZeile> liste = katalog ?? Katalog();
+        List<Katalogfilterzeile> liste = katalog ?? Katalog();
 
         return Render<StromganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
-            .Add(x => x.Katalog, () => Task.FromResult(liste))
+            .Add(x => x.Katalogzeilen,
+                 () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)liste))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Verwaltung, VerwaltungsGaben())
             .Add(x => x.Loeschen, loeschen ?? (n => Task.FromResult(true)))
             .Add(x => x.HatProjektzuordnung, zuordnung ?? (n => Task.FromResult(false)))
@@ -185,7 +188,9 @@ public class StromganglinieDialogTests : BunitContext
     {
         var cut = Render<StromganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
-            .Add(x => x.Katalog, () => Task.FromResult(Katalog())));
+            .Add(x => x.Katalogzeilen, () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)Katalog()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
         Assert.Null(Spalte(cut, 1).QuerySelector(".epos-leiste button"));
     }
@@ -438,14 +443,18 @@ public class StromganglinieDialogTests : BunitContext
     {
         var ohneAlles = Render<StromganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
-            .Add(x => x.Katalog, () => Task.FromResult(Katalog())));
+            .Add(x => x.Katalogzeilen, () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)Katalog()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
         Assert.Empty(Spalte(ohneAlles, 1).QuerySelectorAll(".epos-leiste button"));
         Assert.Empty(ohneAlles.FindAll(".epos-formathinweis"));
 
         // Ein Dateiwähler OHNE Einlesekette ist kein Importweg.
         var halb = Render<StromganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
-            .Add(x => x.Katalog, () => Task.FromResult(Katalog()))
+            .Add(x => x.Katalogzeilen, () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)Katalog()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.DateiWaehlen, (Func<string, Task<string?>>)(f => Task.FromResult<string?>(null))));
         Assert.Empty(halb.FindAll(".epos-formathinweis"));
     }
@@ -505,7 +514,9 @@ public class StromganglinieDialogTests : BunitContext
         var liste = Katalog();
         var cut = Render<StromganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
-            .Add(x => x.Katalog, () => { katalogLaeufe++; return Task.FromResult(liste); })
+            .Add(x => x.Katalogzeilen, () => { katalogLaeufe++; return Task.FromResult((IReadOnlyList<Katalogfilterzeile>)liste); })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.DateiWaehlen, (Func<string, Task<string?>>)(f => waehler.Task))
             .Add(x => x.Einlesen, (Func<string, GanglinienRaster, GanglinienImportRueckrufe,
                                         Task<GanglinienImportErgebnis>>)((pfad, raster, r) =>
@@ -708,7 +719,8 @@ public class StromganglinieDialogTests : BunitContext
             kopieren: (q, z) =>
             {
                 kopien.Add((q, z));
-                liste.Add(new GanglinienKatalogZeile(z, 4, false));
+                liste.Add(Zeitreihenproben.Zeile(3, z, zeitintervall: 4,
+                                                 jahresarbeitMwh: 1.0, spitzeKw: 2.0));
                 return Task.FromResult(true);
             });
 
@@ -786,7 +798,9 @@ public class StromganglinieDialogTests : BunitContext
 
         return Render<StromganglinieDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<GanglinienProjektZeile>())
-            .Add(x => x.Katalog, () => Task.FromResult(Katalog()))
+            .Add(x => x.Katalogzeilen, () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)Katalog()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Kennzahlen, (GanglinienWahl w) =>
                 Task.FromResult(zahlen.TryGetValue(w.Bezeichner, out GanglinienKennzahlen? k)
                                 ? k : null))
@@ -1036,7 +1050,9 @@ public class StromganglinieDialogTests : BunitContext
         bool? ergebnis = null;
         var cut = Render<StromganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<GanglinienProjektZeile>())
-            .Add(x => x.Katalog, () => Task.FromResult(Katalog()))
+            .Add(x => x.Katalogzeilen, () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)Katalog()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Loeschen, (Func<string, Task<bool>>)(n => Task.FromResult(true)))
             .Add(x => x.Kopieren, (Func<string, string, Task<bool>>)((q, z) => Task.FromResult(true)))
             .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));

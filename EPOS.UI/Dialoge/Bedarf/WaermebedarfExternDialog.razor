@@ -161,29 +161,15 @@
         </Links>
 
         <Rechts>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <thead>
-                        <tr>
-                            <th>@SpalteWahl</th>
-                            <th>@SpalteName</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (WaermebedarfAdminDialog.Katalogzeile eintrag in _katalog)
-                        {
-                            WaermebedarfAdminDialog.Katalogzeile k = eintrag;
-                            <tr class="@(k == _katalogZeile ? "epos-zeile--markiert" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(k == _katalogZeile)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => KatalogZeileWaehlen(k)" />
-                                </td>
-                                <td>@k.Bezeichner</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.2):
+               Suchzeile unmittelbar ueber der Liste (#76 woertlich), Filter im
+               Spaltenkopf, dazu die zwei Kennzahlen Jahresarbeit und Spitze aus
+               EINER Gruppenabfrage - dieselben Zahlen, die die Grafik darunter
+               fuer den markierten Satz zeigt (W9-E-3). Das PROFIL traegt die
+               Spalte "im Projekt verwendet" (Q12). *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen" />
 
             <div class="epos-leiste">
                 @if (ImportMoeglich)
@@ -295,7 +281,20 @@
     /// Auslieferungssatz war hier nicht als solcher zu erkennen. Denselben Weg
     /// nahm der Stromdialog mit W12‑E‑1.</para>
     /// </summary>
-    [Parameter] public Func<Task<List<WaermebedarfAdminDialog.Katalogzeile>>>? Katalog { get; set; }
+    [Parameter] public Func<Task<IReadOnlyList<Katalogfilterzeile>>>? Katalogzeilen { get; set; }
+
+    /// <summary>
+    /// Die Spalten des Katalogs —
+    /// <c>Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Waermebedarf, …)</c>, mit
+    /// der Spalte „im Projekt verwendet" (Q12).
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers (Muster der neun Katalogdialoge).</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>Legt aus einem Katalogbezeichner eine neue Zuordnung an („◀").</summary>
     [Parameter] public Func<string, WaermebedarfExternZeile?>? Aufnehmen { get; set; }
@@ -505,8 +504,12 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private List<WaermebedarfAdminDialog.Katalogzeile> _katalog = new();
-    private WaermebedarfAdminDialog.Katalogzeile? _katalogZeile;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+    private Katalogfilterzeile? _katalogZeile;
+
+    /// <summary>Der Bezeichner der gewählten Katalogzeile — die Markierung hängt am NAMEN.</summary>
+    private string _katalogGewaehlt = "";
     private WaermebedarfExternZeile? _gewaehlt;
     private bool _loeschfrage;
 
@@ -538,7 +541,10 @@
     public string? Katalogname => _katalogZeile?.Bezeichner;
 
     /// <summary>Die Katalogzeilen — Prüfhilfe für die Tests.</summary>
-    public IReadOnlyList<WaermebedarfAdminDialog.Katalogzeile> Katalogliste => _katalog;
+    public IReadOnlyList<Katalogfilterzeile> Katalogliste => _katalog;
+
+    /// <summary>Der Filterstand der Katalogliste — Prüfhilfe für die Tests.</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
 
     /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
     public string Meldung => _meldung;
@@ -564,7 +570,7 @@
     /// Projektzuordnung ist es nicht (sie fragt die Datenbank); sie meldet sich
     /// nach dem Versuch als Banner (Staffelung W16b‑E‑6).
     /// </summary>
-    private string? LoeschenGrund => _katalogZeile?.NurLesen == true ? TextSchreibgeschuetzt : null;
+    private string? LoeschenGrund => _katalogZeile?.Geschuetzt == true ? TextSchreibgeschuetzt : null;
 
     /// <summary>
     /// Der Kanal der markierten Zeile. Ein leerer oder unbekannter Wert fällt auf den
@@ -593,8 +599,19 @@
         }
     }
 
+    protected override void OnParametersSet()
+    {
+        // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes.
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
+
     protected override void OnInitialized()
     {
+        // S2.5/S3.2: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit der
+        // Verwaltung desselben Katalogs (Frage Q2).
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
+            Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.Waermebedarf));
+
         if (Zeilen.Count > 0) _gewaehlt = Zeilen[0];
     }
 
@@ -611,14 +628,26 @@
     /// <summary>Lädt den Katalog neu — beim Aufbau und nach jedem Katalogeingriff.</summary>
     public async Task KatalogLaden()
     {
-        if (Katalog is null) return;
-        _katalog = await Katalog() ?? new List<WaermebedarfAdminDialog.Katalogzeile>();
-        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile))
+        if (Katalogzeilen is null) return;
+        _katalog = await Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
+        VerwendungStempeln();
+
+        if (_katalogZeile is null) return;
+
+        _katalogZeile = _katalog.FirstOrDefault(z => z.Bezeichner == _katalogGewaehlt);
+        if (_katalogZeile is null)
         {
-            _katalogZeile = null;
+            _katalogGewaehlt = "";
             GrafikVerwerfen();      // die geloeschte Zeile nimmt ihre Grafik mit
         }
     }
+
+    /// <summary>
+    /// Die Spalte „im Projekt verwendet" (Q12) — EINMAL für die ganze Liste aus der
+    /// LEBENDEN Projektliste; der Dialog schreibt erst beim OK zurück.
+    /// </summary>
+    private void VerwendungStempeln()
+        => Katalogverwendung.Stempeln(_katalog, Zeilen.Select(z => z.Bezeichner));
 
     // =================================================================================
     // Markierung und Grafik (W9-E-3)
@@ -628,12 +657,17 @@
     {
         _gewaehlt = zeile;
         _katalogZeile = null;
+        _katalogGewaehlt = "";
         return GrafikLaden(WahlZu(zeile));
     }
 
-    private Task KatalogZeileWaehlen(WaermebedarfAdminDialog.Katalogzeile zeile)
+    private Task KatalogZeileWaehlen(string bezeichner)
     {
+        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == bezeichner);
+        if (zeile is null) return Task.CompletedTask;
+
         _katalogZeile = zeile;
+        _katalogGewaehlt = zeile.Bezeichner;
         _gewaehlt = null;
         _meldung = "";
         return GrafikLaden(new GanglinienWahl(true, zeile.Id, zeile.Bezeichner));
@@ -815,7 +849,7 @@
 
         // Sperre 2: Auslieferungssaetze bleiben stehen. Delete prueft es selbst;
         // hier steht es davor, damit die Rueckfrage gar nicht erst kommt.
-        if (_katalogZeile.NurLesen)
+        if (_katalogZeile.Geschuetzt)
         {
             Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
             return;
@@ -833,7 +867,7 @@
         string name = _katalogZeile.Bezeichner;
         bool weg = KatalogLoeschen(name);
 
-        if (weg) _katalogZeile = null;
+        if (weg) { _katalogZeile = null; _katalogGewaehlt = ""; }
         await KatalogLaden();
         Melden(weg ? string.Format(VorlageGeloescht, name) : TextSchreibgeschuetzt,
                weg ? WarnStufe.Erfolg : WarnStufe.Warnung);

@@ -72,16 +72,15 @@
         <Liste>
             <Gruppenkopf Titel="@LabelKatalog" />
 
-            <Raster TZeile="Katalogzeile" Zeilen="@Katalogzeilen">
-                <KindInhalt>
-                    <TemplateColumn TGridItem="Katalogzeile" Title="@SpalteWahlText">
-                        <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahlText"
-                                    Gewaehltwerden="() => Waehlen(context)" />
-                    </TemplateColumn>
-                    <PropertyColumn TGridItem="Katalogzeile" TProp="string"
-                                    Property="@(z => z.Bezeichner)" Title="@SpalteBezeichnerText" />
-                </KindInhalt>
-            </Raster>
+            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.2):
+               Suche ueber alle Spalten, Trefferzahl, Filter im Spaltenkopf. Neu
+               sind die zwei Kennzahlen JAHRESARBEIT und SPITZE - sie stehen nicht
+               am Kopfsatz, sondern in der Wertetabelle (35 040 Zeilen) und kommen
+               aus EINER Gruppenabfrage beim Aufbau der Liste. Es sind dieselben
+               Zahlen, die die Grafik der Ganglinien-Dialoge zeigt (W9-E-3). *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" />
         </Liste>
 
         <Eingabe>
@@ -136,15 +135,31 @@
 </div>
 
 @code {
-    /// <summary>Eine Zeile des Ganglinienkatalogs.</summary>
-    public sealed record Katalogzeile(int Id, string Bezeichner, bool NurLesen);
 
     // =====================================================================
     // Delegaten — die Datenseite liegt in der Huelle
     // =====================================================================
 
-    /// <summary>Der Katalog (<c>WaermebedarfStammCtrl.ReadAll</c>).</summary>
-    [Parameter] public Func<Task<List<Katalogzeile>>>? Katalog { get; set; }
+    /// <summary>
+    /// Der Katalog samt Parameterspalten
+    /// (<c>ZeitreihenKatalogCtrl.Katalogfilterzeilen</c>, Stufe S3.2) — bis dahin die
+    /// blosse Liste aus Id, Bezeichner und Schreibschutz.
+    /// </summary>
+    [Parameter] public Func<Task<IReadOnlyList<Katalogfilterzeile>>>? Katalogzeilen { get; set; }
+
+    /// <summary>
+    /// Die Spalten des Katalogs —
+    /// <c>Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Waermebedarf, …)</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// Ein eigener Filterstand statt des Registers (Muster der neun Katalogdialoge).
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>
     /// Gibt es zu dieser Ganglinie eine Projektzuordnung?
@@ -196,7 +211,6 @@
 
     [Parameter] public string TitelText { get; set; } = Resource.WBAD_TITEL;
     [Parameter] public string LabelKatalog { get; set; } = Resource.WBAD_LBL_KATALOG;
-    [Parameter] public string SpalteBezeichnerText { get; set; } = Resource.WBAD_SPALTE_BEZEICHNER;
     [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
     [Parameter] public string GruppeEinlesenText { get; set; } = Resource.WBAD_GRP_EINLESEN;
     [Parameter] public string HinweisStundenwerte { get; set; } = Resource.WBAD_LBL_STUNDENWERTE;
@@ -235,7 +249,8 @@
     private bool _laeuft;
     private GanglinienImportLauf? _import;
 
-    private List<Katalogzeile> _katalog = new();
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
     private string _gewaehlt = "";
 
     /// <summary>
@@ -252,7 +267,11 @@
     private bool _loeschfrageOffen;
     private string _loeschfrage = "";
 
-    private IQueryable<Katalogzeile> Katalogzeilen => _katalog.AsQueryable();
+    /// <summary>Die Zeilen des Katalogs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Der Filterstand der Liste (Prüfhilfe für Tests).</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
 
     /// <summary>Der gewaehlte Katalogeintrag (Pruefhilfe fuer Tests).</summary>
     public string Gewaehlt => _gewaehlt;
@@ -271,6 +290,20 @@
     // Aufbau
     // =====================================================================
 
+    protected override void OnParametersSet()
+    {
+        // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes.
+        Filtertexte.SpalteWahl = SpalteWahlText;
+    }
+
+    protected override void OnInitialized()
+    {
+        // S2.5/S3.2: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit dem
+        // Projektdialog desselben Katalogs (Frage Q2).
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
+            Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.Waermebedarf));
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || !_ersterAufbau) return;
@@ -283,14 +316,14 @@
     /// <summary>Laedt den Katalog neu (<c>SetControls</c> des Vorlaeufers).</summary>
     public async Task KatalogLaden()
     {
-        if (Katalog is null) return;
-        _katalog = await Katalog() ?? new List<Katalogzeile>();
+        if (Katalogzeilen is null) return;
+        _katalog = await Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
         if (_katalog.All(z => z.Bezeichner != _gewaehlt)) _gewaehlt = "";
     }
 
-    private void Waehlen(Katalogzeile zeile)
+    private void Waehlen(string bezeichner)
     {
-        _gewaehlt = zeile.Bezeichner;
+        _gewaehlt = bezeichner ?? "";
         _meldung = "";
     }
 
@@ -302,7 +335,7 @@
     {
         if (!LoeschenErlaubt) return;
 
-        Katalogzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
         if (zeile is null) return;
 
         // Pruefregel 1, woertlich: Eine zugeordnete Ganglinie bleibt stehen.
@@ -314,7 +347,7 @@
 
         // Pruefregel 2: Auslieferungssaetze bleiben stehen. Delete prueft es
         // selbst; hier steht es davor, damit die Rueckfrage gar nicht erst kommt.
-        if (zeile.NurLesen)
+        if (zeile.Geschuetzt)
         {
             Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
             return;
