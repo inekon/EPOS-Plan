@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
 
                     // V1: BHKW-Überschuss als eigene Reihe — er stand bis P1 in der
                     // PV-Überschussreihe (falsches Etikett).
-                    if (sim.simulation_pv.BhkwUeberschuss_gesamt > 0.5f)
+                    if (sim.simulation_pv.BhkwUeberschussGesamtKwh > 0.5f)
                         z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] =
                             D(sim.simulation_pv.BhkwUeberschuss);
                 }

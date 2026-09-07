@@ -57,7 +57,7 @@ namespace WindowsFormsApplication1
                                                 ErgebnisPraesenz p)
         {
             double wbGesamt = _waermebedarf.Waermebedarf_Gesamt;
-            double sbGesamt = StrombedarfGesamt();
+            double sbGesamt = k.StrombedarfMitEigenverbrauchMwh;
 
             var d = new UebersichtDaten
             {
@@ -76,7 +76,7 @@ namespace WindowsFormsApplication1
                 // auf 100 — hier bleibt er 0, und die Seite zeigt statt des Rings den
                 // Satz, dass sich ohne Bedarf keine Deckung ausweisen lässt.
                 WaermedeckungProzent = wbGesamt > 0 ? k.WaermeGesamtMwh * 100.0 / wbGesamt : 0.0,
-                StromdeckungProzent = sbGesamt > 0 ? StromgedecktMwh() * 100.0 / sbGesamt : 0.0,
+                StromdeckungProzent = sbGesamt > 0 ? k.StromGesamtMwh * 100.0 / sbGesamt : 0.0,
 
                 ReststromMwh = k.ReststromMwh,
                 // Anwenderentscheid 04.09.2026 (W11a-O-1): EINE Restwärmezahl.
@@ -92,27 +92,19 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Nenner des Strom-Rings — wörtlich aus <c>NavigatorUebersicht</c>
-        /// :355-359: der Projektstrombedarf PLUS die Eigenverbräuche der Wärmeerzeuger.
+        /// Die Übersichtszahlen des Laufs — ALLE in MWh, alle mit der Einheit am
+        /// Namen.
+        ///
+        /// <para><b>W8‑O‑5c / S1.2 (Befund U6).</b> Hier standen bis dahin zwei eigene
+        /// Rechnungen — <c>StrombedarfGesamt()</c> (Nenner des Strom-Rings) und
+        /// <c>StromgedecktMwh()</c> (sein Zähler) —, die mit eigenen Teilern <c>/
+        /// 1000</c> am DTO vorbei auf <c>sim.simulation_*</c> zugriffen. Sie sind nach
+        /// <see cref="SimulationErgebnisCtrl.Uebersicht"/> gewandert und heißen dort
+        /// <c>StrombedarfMitEigenverbrauchMwh</c> und <c>StromGesamtMwh</c>.</para>
         /// </summary>
-        private double StrombedarfGesamt()
+        private SimulationErgebnisCtrl.UebersichtKennzahlen Kennzahlen()
         {
-            return _strombedarf.Strombedarf_gesamt
-                   + sim.simulation_wp.WP_Strombedarf_gesamt / 1000.0
-                   + sim.simulation_wp.Heizstab_gesamt / 1000.0
-                   + sim.simulation_spk.Stromverbrauch_Spk;
-        }
-
-        /// <summary>Die gedeckte Strommenge: PV, BHKW und die Speicherentladung.</summary>
-        private double StromgedecktMwh()
-        {
-            double gedeckt = sim.simulation_pv.Stromproduktion_gesamt / 1000.0
-                             + sim.simulation_bhkw.Stromproduktion_BHKW_MWh;
-
-            if (sim.Speicherergebnis != null)
-                gedeckt += sim.Speicherergebnis.EntladeenergieKwh / 1000.0;
-
-            return gedeckt;
+            return SimulationErgebnisCtrl.Uebersicht(sim, _waermebedarf, _strombedarf);
         }
 
         private static string[] EigenanteilSpalten()
@@ -173,8 +165,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Eine Ergebniszeile: Erzeuger, Produktion [MWh/a] und der Eigenanteil je Kanal
-        /// (Paket E1). Der Kanalvektor kommt in kWh aus der Engine-Buchführung und wird
-        /// hier auf MWh gebracht — wörtlich <c>NavigatorUebersicht.Zeile</c> :159-168.
+        /// (Paket E1). Der Kanalvektor kommt in kWh aus der Engine-Buchführung; die
+        /// Umrechnung auf MWh macht seit W8‑O‑5c der Kern
+        /// (<see cref="SimulationErgebnisCtrl.KanalMwh"/>) und nicht mehr diese Zeile —
+        /// wörtlich <c>NavigatorUebersicht.Zeile</c> :159-168.
         /// </summary>
         private static Rasterzeile Eigenanteilzeile(string name, double produktionMwh,
                                                     double[] eigenanteilKanalKwh)
@@ -184,8 +178,9 @@ namespace WindowsFormsApplication1
                 name,
                 produktionMwh.ToString("F2", CultureInfo.CurrentCulture)
             };
+            double[] kanalMwh = SimulationErgebnisCtrl.KanalMwh(eigenanteilKanalKwh);
             for (int k = 0; k < Kanal.ANZAHL; k++)
-                zellen.Add((eigenanteilKanalKwh[k] / 1000.0).ToString("F2", CultureInfo.CurrentCulture));
+                zellen.Add(kanalMwh[k].ToString("F2", CultureInfo.CurrentCulture));
 
             return new Rasterzeile(zellen);
         }
@@ -235,16 +230,16 @@ namespace WindowsFormsApplication1
 
             double[] werte =
             {
-                sim.simulation_spk.Gasverbrauch_SPK,
-                sim.simulation_spk.Oelverbrauch_SPK,
-                sim.simulation_spk.Koks_SPK,
-                sim.simulation_spk.Kohle_SPK,
-                sim.simulation_spk.Holzverbrauch_SPK,
-                sim.simulation_spk.Pellets_SPK,
-                sim.simulation_spk.Rapsoelverbrauch_SPK,
-                sim.simulation_spk.Stromverbrauch_Spk,
-                sim.simulation_spk.TierischeFette_SPK,
-                sim.simulation_spk.Sonstigverbrauch_SPK
+                sim.simulation_spk.GasverbrauchSpkMwh,
+                sim.simulation_spk.OelverbrauchSpkMwh,
+                sim.simulation_spk.KoksSpkMwh,
+                sim.simulation_spk.KohleSpkMwh,
+                sim.simulation_spk.HolzverbrauchSpkMwh,
+                sim.simulation_spk.PelletsSpkMwh,
+                sim.simulation_spk.RapsoelverbrauchSpkMwh,
+                sim.simulation_spk.StromverbrauchSpkMwh,
+                sim.simulation_spk.TierischeFetteSpkMwh,
+                sim.simulation_spk.SonstigverbrauchSpkMwh
             };
 
             HashSet<int> arten = HeizkesselStammCtrl.BrennstoffartenJeProjekt(m_ID_Projekt);
@@ -304,15 +299,15 @@ namespace WindowsFormsApplication1
                 if (wert > 0) zeilen.Add(new Brennstoffzeile(name, wert, true));
             }
 
-            Zeile(MyResource.Resource.SIM_LABEL_GASVERBRAUCH, b.Gasverbrauch_BHKW);
-            Zeile(MyResource.Resource.SIM_LABEL_OELVERBRAUCH, b.Oelverbrauch_BHKW);
-            Zeile(MyResource.Resource.SIM_LABEL_HOLZVERBRAUCH, b.Holzmenge_BHKW);
-            Zeile(MyResource.Resource.SIM_LABEL_PELLETS, b.Pellets_BHKW);
-            Zeile(MyResource.Resource.SIM_LABEL_RAPSOEL, b.Rapsoelverbrauch_BHKW);
-            Zeile(MyResource.Resource.SIM_LABEL_TIERISCHE_FETTE, b.TierischeFette_BHKW);
-            Zeile(MyResource.Resource.SIM_LABEL_KOKS, b.Koks_BHKW);
-            Zeile(MyResource.Resource.SIM_LABEL_KOHLE, b.Kohle_BHKW);
-            Zeile(MyResource.Resource.SIM_LABEL_SONSTIGE, b.Sonstigemenge_BHKW);
+            Zeile(MyResource.Resource.SIM_LABEL_GASVERBRAUCH, b.GasverbrauchBhkwMwh);
+            Zeile(MyResource.Resource.SIM_LABEL_OELVERBRAUCH, b.OelverbrauchBhkwMwh);
+            Zeile(MyResource.Resource.SIM_LABEL_HOLZVERBRAUCH, b.HolzmengeBhkwMwh);
+            Zeile(MyResource.Resource.SIM_LABEL_PELLETS, b.PelletsBhkwMwh);
+            Zeile(MyResource.Resource.SIM_LABEL_RAPSOEL, b.RapsoelverbrauchBhkwMwh);
+            Zeile(MyResource.Resource.SIM_LABEL_TIERISCHE_FETTE, b.TierischeFetteBhkwMwh);
+            Zeile(MyResource.Resource.SIM_LABEL_KOKS, b.KoksBhkwMwh);
+            Zeile(MyResource.Resource.SIM_LABEL_KOHLE, b.KohleBhkwMwh);
+            Zeile(MyResource.Resource.SIM_LABEL_SONSTIGE, b.SonstigemengeBhkwMwh);
 
             return zeilen;
         }

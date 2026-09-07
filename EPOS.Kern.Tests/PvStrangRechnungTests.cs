@@ -789,7 +789,7 @@ namespace EPOS.Kern.Tests
 
         private static double Ertrag(SimulationPV pv, string name)
         {
-            return Zeile(pv, name).Stromproduktion;
+            return Zeile(pv, name).StromproduktionKwh;
         }
 
         private static double Jahresertrag(string name)

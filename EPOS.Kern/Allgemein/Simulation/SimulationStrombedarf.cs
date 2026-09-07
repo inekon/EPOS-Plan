@@ -39,7 +39,7 @@ namespace WindowsFormsApplication1
 
         public float Strombedarf_Gebaeude_gesamt;
         public float Stromganglinie_gesamt;
-        public float Strombedarf_gesamt;
+        public float StrombedarfGesamtMwh;
         public float Strombedarf_Max;
 
         public float[] Dauerlinie = new float[8760 * 4];
@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
 
             Strombedarf_Gebaeude_gesamt = 0;
             Stromganglinie_gesamt = 0;
-            Strombedarf_gesamt = 0;
+            StrombedarfGesamtMwh = 0;
             Strombedarf_Max = 0;
 
             Array.Clear(Strombedarf_viertelStundenwerte, 0, Strombedarf_viertelStundenwerte.Length);
@@ -180,8 +180,13 @@ namespace WindowsFormsApplication1
 
             Stromganglinie_gesamt = Stromganglinie_gesamt / 4000f; // MWh
             Strombedarf_monat = MonatsSumme_MW(Strombedarf_viertelStundenwerte, mo_anfang, mo_ende); // in MWh
-            Strombedarf_Max = Maximaler_Strombedarf(Strombedarf_viertelStundenwerte); // in kWh
-            Strombedarf_gesamt = Strombedarf_viertelStundenwerte.Sum() / 4000f; // in MWh 
+            // W8-O-5c / Q8 (Befund U7): Der Kommentar nannte hier seit dem Bestand
+            // "kWh". Der Wert ist eine LEISTUNG in kW - das Maximum der
+            // Viertelstundenreihe, die kW fuehrt -, und genau so beschriftet die
+            // Anzeige ihn seit W8-E-2 ("max. Leistung [kW]"). Ein Kommentar kann die
+            // Einheit nicht halten; deshalb steht sie seit W8-O-5c am Namen.
+            Strombedarf_Max = Maximaler_Strombedarf(Strombedarf_viertelStundenwerte); // in kW
+            StrombedarfGesamtMwh = Strombedarf_viertelStundenwerte.Sum() / 4000f; // in MWh 
             Strombedarf_sortiert = (float[])Strombedarf_viertelStundenwerte.Clone();
             Dauerlinie_nicht_sortiert = Strombedarf_viertelStundenwerte;
             Strombedarf_sortiert = NormVector(Strombedarf_sortiert, Strombedarf_Max);
@@ -287,7 +292,7 @@ namespace WindowsFormsApplication1
         /// 05.09.2026).</b> Die Vorschauwege setzten die vier Kennzahlen jeder für sich
         /// zusammen, und in der Fassung des Bedarfsprofildialogs fehlte genau EINE Zeile:
         /// <see cref="Strombedarf_Gebaeude_gesamt"/> wurde nie belegt und blieb 0 — worauf
-        /// die Zeile darunter <see cref="Strombedarf_gesamt"/> mit derselben 0
+        /// die Zeile darunter <see cref="StrombedarfGesamtMwh"/> mit derselben 0
         /// überschrieb. Die Ergebnisanzeige zeigte „Gesamter Strombedarf 0" und
         /// „Strombedarf Gebäude 0", während „max. Strombedarf" mit 3,72 kW dastand —
         /// dieselbe Klasse Fehler wie W9‑B‑4/B‑5: eine von Hand nachgezogene Abschrift
@@ -317,7 +322,7 @@ namespace WindowsFormsApplication1
             Array.Clear(Strombedarf_viertelStundenwerte, 0, Strombedarf_viertelStundenwerte.Length);
             Strombedarf_Gebaeude_gesamt = 0;
             Stromganglinie_gesamt = 0;
-            Strombedarf_gesamt = 0;
+            StrombedarfGesamtMwh = 0;
             Strombedarf_Max = 0;
             Array.Clear(Strombedarf_monat, 0, Strombedarf_monat.Length);
             Stuetzstellen = 0;
@@ -333,7 +338,7 @@ namespace WindowsFormsApplication1
 
             // DIE ZEILE, DIE IM BEDARFSPROFILDIALOG FEHLTE (W8-B-3).
             Strombedarf_Gebaeude_gesamt = stundenreihe.Sum() / 1000;
-            Strombedarf_gesamt = Strombedarf_Gebaeude_gesamt + Stromganglinie_gesamt;
+            StrombedarfGesamtMwh = Strombedarf_Gebaeude_gesamt + Stromganglinie_gesamt;
 
             WPPlan.Core.BhkwPlan.MonatsSumme(Strombedarf_viertelStundenwerte, Strombedarf_monat,
                                              mo_anfang, mo_ende);

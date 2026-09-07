@@ -505,10 +505,15 @@
 
     // Merge 5 (PB1c): Eigenverbrauch des Basisjahres und Strompreis gehen wie in der
     // WinForms-Vorschau mit - sonst fehlte der Vorschau der vermiedene Bezug.
+    //
+    // W8-O-5c / S1.2 (Befund U6): Der Rechner erwartet den Eigenverbrauch in kWh, der
+    // Dialog fuehrt MWh. Umgerechnet wird ueber Energieeinheit - in EPOS.UI steht auf
+    // einer Energiemenge kein nackter Faktor 1000 (Waechter EinheitenWacheTests).
     private PvErloesErgebnis Erloes => PvErloesRechner.Rechne(
         Modell, KwpRechnerisch, EinspeisungMWh, null, null, 20,
         Katalog, Jahresmarktwert ?? (jahr => null), Kultur,
-        Math.Max(0.0, (ErzeugungMWh - EinspeisungMWh) * 1000.0), StrompreisEurKwh ?? 0.0);
+        Energieeinheit.KWh.AusMWh(Math.Max(0.0, ErzeugungMWh - EinspeisungMWh)),
+        StrompreisEurKwh ?? 0.0);
 
     /// <summary>Die Vorschauzeile (Pruefhilfe fuer Tests).</summary>
     public string VorschauText

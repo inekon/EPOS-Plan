@@ -323,7 +323,7 @@ namespace WindowsFormsApplication1
             return new Zusammenfassung(
                 _kontext.Name,
                 _bedarf.Waerme.Waermebedarf_Gesamt.ToString("F2") + " MWh/a",
-                _bedarf.Strom.Strombedarf_gesamt.ToString("F2") + " MWh/a",
+                _bedarf.Strom.StrombedarfGesamtMwh.ToString("F2") + " MWh/a",
                 Technologien());
         }
 

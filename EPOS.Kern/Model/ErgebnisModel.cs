@@ -60,8 +60,8 @@ namespace WindowsFormsApplication1
         public double Waermelast_Max;         // kW
         public double Strombedarf_Gesamt;     // MWh
         public double Strombedarf_Max;        // kW
-        public double Waermerestbedarf;       // MWh (Restwärmebedarf nach allen Erzeugern, sim.Restwaerme)
-        public double Stromrestbedarf;        // MWh (Reststrombedarf/Netzbezug, sim.Reststrom)
+        public double Waermerestbedarf;       // MWh (Restwärmebedarf nach allen Erzeugern, sim.RestwaermeMwh)
+        public double Stromrestbedarf;        // MWh (Reststrombedarf/Netzbezug, sim.ReststromMwh)
 
         /// <summary>
         /// PAKET E1 (Konzept 4.4): Jahres-Wärmebedarf JE KANAL [MWh], indiziert mit
@@ -247,7 +247,7 @@ namespace WindowsFormsApplication1
         public double Gasspitze;                // kW
 
         // ETAPPE D4: Wärme, die die Kessel in der Kaskade aus ihrem QUELLPUFFER bezogen
-        // haben (SimulationSPK.Quellwaerme_gesamt, hier in MWh/a wie die übrigen
+        // haben (SimulationSPK.QuellwaermeGesamtKwh, hier in MWh/a wie die übrigen
         // Wärmegrößen dieser Zeile). Ohne Quellbezug exakt 0.
         public double Quellwaerme;              // MWh/a
         // Brennstoffverbrauch je Traeger (MWh/a)

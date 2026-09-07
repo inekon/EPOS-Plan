@@ -170,8 +170,14 @@ namespace WindowsFormsApplication1.Referenzlauf
             // --- Skalare -----------------------------------------------------------------
             var skalare = new List<KeyValuePair<string, string>>();
             skalare.Add(Neu("Lauf.ID_Projekt", idProjekt.ToString(CultureInfo.InvariantCulture)));
-            skalare.Add(Neu("Sim.Restwaerme", Zahl(sim.Restwaerme)));
-            skalare.Add(Neu("Sim.Reststrom", Zahl(sim.Reststrom)));
+            // ANWENDERENTSCHEID W8-O-5c / Q7 (07.09.2026): Die zwei SCHLUESSEL bleiben
+            // hart verdrahtet, obwohl die Felder mit S1.3 ihren Einheitennamen bekommen
+            // haben (RestwaermeMwh / ReststromMwh). Der Schluessel steht in den 312 CSV
+            // der eingefrorenen Basis 2026-09-06_R3_Straenge; wuerde er mitwandern,
+            // waere kein Vergleich gegen eine aeltere Basis mehr moeglich. Die Einheit
+            // ist unveraendert MWh - benannt wurde das Feld, nicht die Spalte.
+            skalare.Add(Neu("Sim.Restwaerme", Zahl(sim.RestwaermeMwh)));
+            skalare.Add(Neu("Sim.Reststrom", Zahl(sim.ReststromMwh)));
             skalare.Add(Neu("Sim.bSimulationWP", sim.bSimulationWP.ToString()));
             skalare.Add(Neu("Sim.bSimulationKessel", sim.bSimulationKessel.ToString()));
             skalare.Add(Neu("Sim.bSimulationSolarthermie", sim.bSimulationSolarthermie.ToString()));

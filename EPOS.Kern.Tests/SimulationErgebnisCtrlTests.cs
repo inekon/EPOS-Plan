@@ -55,19 +55,19 @@ namespace EPOS.Kern.Tests
             var l = Lauf();
             var u = SimulationErgebnisCtrl.Uebersicht(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
 
-            Assert.Equal(l.simulation_Strombedarf.Strombedarf_gesamt, u.StrombedarfGesamtMwh);
+            Assert.Equal(l.simulation_Strombedarf.StrombedarfGesamtMwh, u.StrombedarfGesamtMwh);
             Assert.Equal(l.simulation_Waermebedarf.Waermebedarf_Gesamt, u.WaermebedarfGesamtMwh);
-            Assert.Equal(l.sim.Restwaerme, u.RestwaermeMwh);
-            Assert.Equal(l.sim.Reststrom, u.ReststromMwh);
-            Assert.Equal(l.sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000.0, u.WpWaermeproduktionMwh);
-            Assert.Equal(l.sim.simulation_wp.WP_Strombedarf_gesamt / 1000.0, u.WpStromverbrauchMwh);
-            Assert.Equal(l.sim.simulation_spk.S_Waerme_spk, u.KesselWaermeproduktionMwh);
-            Assert.Equal(l.sim.simulation_wp.Heizstab_gesamt / 1000.0, u.HeizstabStromverbrauchMwh);
-            Assert.Equal(l.sim.simulation_spk.Stromverbrauch_Spk, u.KesselStromverbrauchMwh);
+            Assert.Equal(l.sim.RestwaermeMwh, u.RestwaermeMwh);
+            Assert.Equal(l.sim.ReststromMwh, u.ReststromMwh);
+            Assert.Equal(l.sim.simulation_wp.WpWaermeproduktionGesamtKwh / 1000.0, u.WpWaermeproduktionMwh);
+            Assert.Equal(l.sim.simulation_wp.WpStrombedarfGesamtKwh / 1000.0, u.WpStromverbrauchMwh);
+            Assert.Equal(l.sim.simulation_spk.SWaermeSpkMwh, u.KesselWaermeproduktionMwh);
+            Assert.Equal(l.sim.simulation_wp.HeizstabGesamtKwh / 1000.0, u.HeizstabStromverbrauchMwh);
+            Assert.Equal(l.sim.simulation_spk.StromverbrauchSpkMwh, u.KesselStromverbrauchMwh);
             Assert.Equal(l.sim.simulation_bhkw.Waermeproduktion_BHKW_MWh, u.BhkwWaermeproduktionMwh);
             Assert.Equal(l.sim.simulation_bhkw.Stromproduktion_BHKW_MWh, u.BhkwStromproduktionMwh);
-            Assert.Equal(l.sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000.0, u.SolarWaermeproduktionMwh);
-            Assert.Equal(l.sim.simulation_pv.Stromproduktion_gesamt / 1000.0, u.PvStromproduktionMwh);
+            Assert.Equal(l.sim.simulation_solarthermie.WaermeproduktionGesamtKwh / 1000.0, u.SolarWaermeproduktionMwh);
+            Assert.Equal(l.sim.simulation_pv.StromproduktionGesamtKwh / 1000.0, u.PvStromproduktionMwh);
         }
 
         /// <summary>
@@ -112,9 +112,75 @@ namespace EPOS.Kern.Tests
             var u = SimulationErgebnisCtrl.Uebersicht(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
 
             Assert.Equal(u.RestwaermeMwh, u.RestwaermebedarfMwh);
-            Assert.Equal(l.sim.Restwaerme, u.RestwaermebedarfMwh);
+            Assert.Equal(l.sim.RestwaermeMwh, u.RestwaermebedarfMwh);
             Assert.True(u.RestwaermebedarfMwh >= 0.0,
                         "Eine negative Restwaerme zeigt eine falsche Zuordnung zu den Erzeugern.");
+        }
+
+        /// <summary>
+        /// <b>W8‑O‑5c / S1.2 (Befund U6/U5).</b> Die vier Groessen, die die
+        /// Windows-Huelle bis dahin SELBST gerechnet hat, stehen jetzt im DTO — und sie
+        /// tragen exakt dieselbe Zahl.
+        ///
+        /// <para>Die rechte Seite jeder Zusicherung ist der Ausdruck, der bis W8‑O‑5c
+        /// woertlich in <c>SimulationErgebnisHuelle.Anzeige.cs</c> und
+        /// <c>…Bilder.cs</c> stand: <c>StrombedarfGesamt()</c> (der Nenner des
+        /// Strom-Rings, <c>NavigatorUebersicht</c> :355-359), <c>StromgedecktMwh()</c>
+        /// (sein Zaehler) und die zwei Segmente des Rings, die die Huelle selbst durch
+        /// 1000 teilte. Geprueft wird auf Bit-Gleichheit (<c>Assert.Equal</c> ohne
+        /// Stellenangabe): Die Summanden und ihre Reihenfolge sind uebernommen, also
+        /// darf sich die angezeigte Zahl NICHT bewegen.</para>
+        /// </summary>
+        [Fact]
+        public void Uebersicht_fuehrt_die_vier_Groessen_der_Huelle_zahlengleich()
+        {
+            if (!_db.Vorhanden) return;
+
+            var l = Lauf();
+            var u = SimulationErgebnisCtrl.Uebersicht(l.sim, l.simulation_Waermebedarf, l.simulation_Strombedarf);
+
+            // Der Heizstab: EINE Reihe, zwei Lesarten (Wirkungsgrad 1).
+            Assert.Equal(u.HeizstabStromverbrauchMwh, u.HeizstabWaermeproduktionMwh);
+            Assert.Equal(l.sim.simulation_wp.HeizstabGesamtKwh / 1000.0, u.HeizstabWaermeproduktionMwh);
+
+            // Die Speicherentladung — in der Huelle: sim.Speicherergebnis.EntladeenergieKwh / 1000.0
+            double speicherMwh = l.sim.Speicherergebnis != null
+                ? l.sim.Speicherergebnis.EntladeenergieKwh / 1000.0 : 0.0;
+            Assert.Equal(speicherMwh, u.StromspeicherEntladungMwh);
+
+            // Der Nenner des Strom-Rings — in der Huelle: StrombedarfGesamt()
+            Assert.Equal(l.simulation_Strombedarf.StrombedarfGesamtMwh
+                         + l.sim.simulation_wp.WpStrombedarfGesamtKwh / 1000.0
+                         + l.sim.simulation_wp.HeizstabGesamtKwh / 1000.0
+                         + l.sim.simulation_spk.StromverbrauchSpkMwh,
+                         u.StrombedarfMitEigenverbrauchMwh);
+
+            // Der Zaehler des Strom-Rings — in der Huelle: StromgedecktMwh()
+            Assert.Equal(l.sim.simulation_pv.StromproduktionGesamtKwh / 1000.0
+                         + l.sim.simulation_bhkw.Stromproduktion_BHKW_MWh
+                         + speicherMwh,
+                         u.StromGesamtMwh);
+        }
+
+        /// <summary>
+        /// <b>W8‑O‑5c / S1.2.</b> <see cref="SimulationErgebnisCtrl.KanalMwh"/> ist die
+        /// Umrechnung, die bis dahin als <c>eigenanteilKanalKwh[k] / 1000.0</c> in der
+        /// Huelle stand — je Kanal geteilt, nicht summiert, und zahlengleich.
+        /// </summary>
+        [Fact]
+        public void KanalMwh_teilt_je_Kanal_und_bleibt_zahlengleich()
+        {
+            double[] kwh = { 1234.5, 0.0, -7.25 };
+            double[] mwh = SimulationErgebnisCtrl.KanalMwh(kwh);
+
+            Assert.Equal(kwh.Length, mwh.Length);
+            for (int k = 0; k < kwh.Length; k++) Assert.Equal(kwh[k] / 1000.0, mwh[k]);
+
+            // Die Summe der Kanalzeile ist der Wert des Eigenanteilsrasters.
+            Assert.Equal(Kanalsumme(kwh), mwh.Sum(), 12);
+
+            Assert.Null(SimulationErgebnisCtrl.KanalMwh(null));
+            Assert.Empty(SimulationErgebnisCtrl.KanalMwh(new double[0]));
         }
 
         /// <summary>Summe einer Kanalzeile [kWh] als [MWh].</summary>
@@ -252,12 +318,12 @@ namespace EPOS.Kern.Tests
 
             double eigen = SimulationRunner.EigenanteilKesselMwh(l.sim.simulation_spk);
 
-            Assert.Equal(l.sim.simulation_spk.Waermebedarf_gesamt, hk.StufeneingangMwh, 9);
+            Assert.Equal(l.sim.simulation_spk.WaermebedarfGesamtMwh, hk.StufeneingangMwh, 9);
             Assert.Equal(SimulationRunner.RestNachEigenanteil(hk.StufeneingangMwh, eigen),
                          hk.RestwaermeMwh, 9);
             Assert.Equal(SimulationRunner.DeckungProzent(eigen, l.simulation_Waermebedarf.Waermebedarf_Gesamt),
                          hk.DeckungProzent, 9);
-            Assert.Equal(l.sim.simulation_spk.S_Waerme_spk, hk.WaermeproduktionMwh, 9);
+            Assert.Equal(l.sim.simulation_spk.SWaermeSpkMwh, hk.WaermeproduktionMwh, 9);
             Assert.Equal(l.sim.simulation_spk.spk_list.Count, hk.Module.Count);
         }
 
@@ -298,8 +364,8 @@ namespace EPOS.Kern.Tests
         {
             var sim = new SimulationControl();
             sim.bSimulationSolarthermie = true;
-            sim.simulation_solarthermie.Waermeproduktion_gesamt = 40_000.0;   // kWh
-            sim.simulation_solarthermie.Waermebedarf_gesamt = 100_000.0;      // kWh (Stufeneingang)
+            sim.simulation_solarthermie.WaermeproduktionGesamtKwh = 40_000.0;   // kWh
+            sim.simulation_solarthermie.WaermebedarfGesamtKwh = 100_000.0;      // kWh (Stufeneingang)
 
             var wb = new SimulationWaermebedarf();
             wb.Waermebedarf_Gesamt = 200.0f;                                  // MWh (Projekt)
@@ -334,7 +400,7 @@ namespace EPOS.Kern.Tests
 
             double eigen = SimulationRunner.EigenanteilBhkwMwh(l.sim.simulation_bhkw);
 
-            Assert.Equal(l.sim.simulation_bhkw.Waermebedarf_gesamt / 1000.0, bh.StufeneingangMwh, 9);
+            Assert.Equal(l.sim.simulation_bhkw.WaermebedarfGesamtKwh / 1000.0, bh.StufeneingangMwh, 9);
             Assert.Equal(SimulationRunner.RestNachEigenanteil(bh.StufeneingangMwh, eigen),
                          bh.RestwaermeMwh, 9);
             Assert.Equal(SimulationRunner.DeckungProzent(eigen, l.simulation_Waermebedarf.Waermebedarf_Gesamt),
@@ -400,7 +466,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(l.simulation_Waermebedarf.Waermebedarf_Max, b.WaermelastMaxKw);
             Assert.Equal(l.simulation_Waermebedarf.Waermebedarf_Gesamt, b.WaermebedarfGesamtMwh);
             Assert.Equal(l.simulation_Strombedarf.Strombedarf_Max, b.StrombedarfMaxKw);
-            Assert.Equal(l.simulation_Strombedarf.Strombedarf_gesamt, b.StrombedarfGesamtMwh);
+            Assert.Equal(l.simulation_Strombedarf.StrombedarfGesamtMwh, b.StrombedarfGesamtMwh);
             Assert.Equal(Kanal.ANZAHL, b.KanalMwh.Count);
         }
 

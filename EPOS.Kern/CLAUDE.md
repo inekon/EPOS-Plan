@@ -415,6 +415,52 @@ nennt deshalb die **Einheit am Wert** (`ErgebnisKennzahl.QuelleEinheit`, `Monats
 statt sie vorher passend zu machen. Wer einen zweiten Teiler einbaut, verschiebt eine bereits
 umgerechnete Zahl um Faktor 1 000 — das war Befund W8‑B4 und der Nachtrag W9‑O‑3.
 
+## Einheiten: die Regel des Rechenkerns
+
+**Anwenderentscheid W8‑O‑5c vom 07.09.2026, Frage Q1: „Regel festschreiben".** Der Kern
+rechnete die Regel seit jeher zu rund 90 %, aber sie stand nirgends — und genau dort, wo es
+darauf ankam, fehlte die Einheit am Namen: Die sechs Erzeuger- und Speicherklassen führten
+**31 Jahressummen** als `…_gesamt` oder `…_summe`, keine einzige mit Einheit, obwohl einige
+kWh und andere MWh trugen. Herleitung, Inventar (242 Fundstellen), die Gleitkommaprobe und der
+verworfene Vollumbau stehen in
+[`Konzept_Einheiten_EPOS-Plan.md`](../Konzept_Einheiten_EPOS-Plan.md).
+
+1. **Zeitreihen führen kWh**, Viertelstundenreihen kW — immer, ohne Ausnahme. Das ist die
+   Einheit der 300 Vektordateien der Referenzbasis.
+2. **Jahres- und Monatssummen, die den Kern VERLASSEN, führen MWh** — an Anzeige, Bericht,
+   Datenbank und CSV. 15 der 17 `Tab_Ergebnis*` speichern MWh, die zwei Speichertabellen kWh.
+3. **Jede Größe, die den Kern verlässt, trägt ihre Einheit im NAMEN** — `…Kwh`, `…Mwh`, `…Kw` —
+   oder sie führt sie im DTO (`Energieeinheit` am Wert). Ein Kommentar hält die Einheit nicht:
+   Der Kommentar an `SimulationStrombedarf.Strombedarf_Max` nannte seit dem Bestand „kWh" für
+   eine Leistung in kW (Befund U7).
+4. **Umgerechnet wird an genau ZWEI Nähten:** `Controller/SimulationErgebnisCtrl` (Anzeige) und
+   `Allgemein/Simulation/SimulationRunner` (Datenbank). Außerhalb dieser beiden Dateien und der
+   `Energieeinheit` steht in `EPOS.UI` und in den Windows-Hüllen **kein** Faktor 1 000 auf einer
+   Energiemenge.
+5. **Kein Wechsel der Recheneinheit.** Wo heute MWh in einem Rechenobjekt steht
+   (`SWaermeSpkMwh`, `Waermeproduktion_BHKW_MWh`, `RestwaermeMwh`, die 19 Brennstoffzähler),
+   bleibt es MWh und heißt so. Eine Vereinheitlichung auf EINE Recheneinheit ist geprüft und
+   **abgelehnt** (Q1): Sie behebt die Ursache nicht — die war die ungenannte Einheit, nicht die
+   zweite —, sie bringt keine Genauigkeit (`float` rundet relativ; die Messung steht in Kapitel
+   4.3 des Konzepts) und sie kostet eine neue Referenzbasis R4.
+
+**Zwei Wächter halten die Regel** (`EPOS.Kern.Tests/EinheitenWacheTests.cs`, Stufe S1.4):
+
+| Wächter | Was er prüft | Ausnahmen |
+|---|---|---|
+| `In_Anzeige_und_Huellen_steht_kein_Faktor_1000_auf_einer_Energiemenge` | In `EPOS.UI/**` und `WindowsFormsApplication1/Views/**` steht keine der sieben Schreibweisen `/ 1000`, `* 1000`, `/= 1000`, `*= 1000`, `/ 4000`, `0.001`, `1e-3` auf einer Energiemenge. Meldet Datei:Zeile | **fünf**, alle LEISTUNG (W → kWp) bzw. eine kWp-Untergrenze, je mit Grund in `AusnahmenAnzeige` |
+| `Jede_Jahressumme_der_Simulationsklassen_traegt_ihre_Einheit_im_Namen` | Jedes `public`/`internal` Skalarfeld und jede Property vom Typ `double`/`float` in den sieben Simulationsklassen, deren Name `Bedarf`, `Verbrauch`, `Produktion`, `Ertrag`, `Summe`, `gesamt` oder `Rest` enthält, endet auf `Kwh`/`Mwh` | **13**: vier Leistungsspitzen [kW], eine Vollbenutzungsstundenzahl [h] und die acht `…_gesamt` des Pufferspeichers, deren Namen als CSV-Schlüssel in der eingefrorenen Basis stehen |
+
+Eine Suche nach `/ 1000` allein genügt **nicht**: `BhkwPlan.VectorSumme` und
+`BhkwPlan.MonatsSumme` — die Routinen, aus denen jede Monatsreihe und jede Jahressumme des
+Bestands entsteht — schreiben `0.001`, und die Viertelstundenreihen teilen durch 4 000.
+
+**Was die CSV-Schlüssel angeht (Q7):** `Sim.Restwaerme` und `Sim.Reststrom` in
+`Referenzlauf/Ergebnisexport.cs` bleiben hart verdrahtet, obwohl die Felder `RestwaermeMwh` und
+`ReststromMwh` heißen. Der Schlüssel steht in 312 Dateien der Basis `2026-09-06_R3_Straenge`;
+wandert er mit, ist kein Vergleich gegen eine ältere Basis mehr möglich. Dasselbe gilt für
+`Puffer.Ladung_gesamt`, `Puffer.Entladung_gesamt` und `Puffer.Verluste_gesamt`.
+
 ## Vorschau und Lauf lesen dieselben Tabellen
 
 **Hausregel (seit Befund W9‑B‑4/B‑5 der Windows-Abnahme vom 05.09.2026): Ob eine Profilrechnung

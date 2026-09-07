@@ -757,7 +757,7 @@ namespace WindowsFormsApplication1
         /// (Etappe D4, Aufgabe 4; D5b-Restpunkt 3).
         ///
         /// <b>Was sie trägt.</b> Die Wärme, die ein Spitzenkessel in der Kaskade aus
-        /// seinem QUELLPUFFER bezogen hat (<c>SimulationSPK.Quellwaerme_gesamt</c>, hier
+        /// seinem QUELLPUFFER bezogen hat (<c>SimulationSPK.QuellwaermeGesamtKwh</c>, hier
         /// in MWh/a wie alle übrigen Wärmegrößen dieser Tabelle). Ohne Quellbezug ist sie
         /// exakt 0 — der Rechenkern setzt sie in diesem Fall nirgends ungleich null.
         ///

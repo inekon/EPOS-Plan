@@ -46,7 +46,7 @@ namespace WindowsFormsApplication1
             // --- die 13 Felder (FuelleUebersicht :3764-3784) ---
             public double StrombedarfGesamtMwh;
             public double WaermebedarfGesamtMwh;
-            /// <summary>Der Restwärmebedarf des LAUFS (<c>SimulationControl.Restwaerme</c>) —
+            /// <summary>Der Restwärmebedarf des LAUFS (<c>SimulationControl.RestwaermeMwh</c>) —
             /// dieselbe Größe, die <c>SimulationRunner.BaueErgebnis</c> nach
             /// <c>Tab_Ergebnis</c> schreibt.</summary>
             public double RestwaermeMwh;
@@ -60,6 +60,41 @@ namespace WindowsFormsApplication1
             public double BhkwStromproduktionMwh;
             public double SolarWaermeproduktionMwh;
             public double PvStromproduktionMwh;
+
+            // --- W8-O-5c / S1.2: die vier Größen, für die die Windows-Hülle bis
+            //     hierher am DTO VORBEI gerechnet hat (Befund U6 des Einheitenkonzepts).
+            //     Sie stehen jetzt hier, in MWh und mit der Einheit am Namen; die Hülle
+            //     liest sie und teilt nicht mehr selbst durch 1000.
+
+            /// <summary>
+            /// Die WÄRME des Heizstabs [MWh/a] — zahlengleich mit
+            /// <see cref="HeizstabStromverbrauchMwh"/>.
+            ///
+            /// <para>Der Heizstab setzt Strom mit dem Wirkungsgrad 1 in Wärme um; der
+            /// Lauf führt für beides dieselbe Reihe
+            /// (<c>SimulationWaermepumpe.HeizstabGesamtKwh</c>). Das Feld steht
+            /// trotzdem eigens da, weil die Wärmebedarfstorte eine WÄRMEmenge zeigt:
+            /// Eine Torte, die ihren Heizstabanteil aus einem Feld namens
+            /// „Stromverbrauch" holt, liest sich falsch, und genau solche stillen
+            /// Gleichsetzungen sind der Grund für W8‑O‑5c.</para>
+            /// </summary>
+            public double HeizstabWaermeproduktionMwh;
+
+            /// <summary>Die Entladung des Stromspeichers [MWh/a]; 0 ohne Speicher.</summary>
+            public double StromspeicherEntladungMwh;
+
+            /// <summary>
+            /// Der NENNER des Strom-Rings [MWh/a]: der Projektstrombedarf PLUS die
+            /// Eigenverbräuche der Wärmeerzeuger (Wärmepumpe, Heizstab, Kessel) —
+            /// wörtlich <c>NavigatorUebersicht</c> :355-359.
+            /// </summary>
+            public double StrombedarfMitEigenverbrauchMwh;
+
+            /// <summary>
+            /// Die GEDECKTE Strommenge [MWh/a]: Photovoltaik, BHKW und die
+            /// Speicherentladung — der Zähler des Strom-Rings.
+            /// </summary>
+            public double StromGesamtMwh;
 
             // --- die sechs Summen (Ergebnisblock und Eigenanteilsraster) ---
             //
@@ -84,7 +119,7 @@ namespace WindowsFormsApplication1
             /// rechnerisch nicht entstehen — sie zeigt eine falsche Zuordnung zu den
             /// Erzeugern. Geklemmt wird sie deshalb NICHT; die Übersicht führt EINE
             /// Restwärmezahl, und das ist die Bilanzgröße des Laufs
-            /// (<c>SimulationControl.Restwaerme</c>, gespeichert als
+            /// (<c>SimulationControl.RestwaermeMwh</c>, gespeichert als
             /// <c>Tab_Ergebnis.Waermerestbedarf</c>).</para>
             ///
             /// <para>Übersteigt die Produktion eines Erzeugers seine Deckung, ist das ein
@@ -103,13 +138,13 @@ namespace WindowsFormsApplication1
         /// <list type="number">
         ///   <item><b>Die Kesselwärme.</b> Die Detailansicht summierte
         ///   <c>s_waerme_Gas_Spk[i] + s_waerme_Oel_Spk[i]</c> über die Kesselliste, der
-        ///   Navigator nahm <c>S_Waerme_spk</c>. Das ist KEINE Abweichung: <c>S_Waerme_spk</c>
+        ///   Navigator nahm <c>SWaermeSpkMwh</c>. Das ist KEINE Abweichung: <c>SWaermeSpkMwh</c>
         ///   entsteht in <c>SimulationSPK.Bilanz_und_Nutzungsgrad</c> aus genau dieser Summe
         ///   über genau diese Liste. Zwei Wege, ein Wert — hier steht der kürzere.</item>
         ///   <item><b>Das BHKW.</b> Der Navigator zählt <c>waerme_bhkw</c> in die Summe, die
         ///   Detailansicht nicht. DAS ist die echte Abweichung. Genommen wird die
         ///   NAVIGATOR-Fassung: Das BHKW ist eine Kaskadenstufe wie die anderen, und
-        ///   <c>SimulationControl.Restwaerme</c> — die Wahrheit des Referenzlaufs — zieht
+        ///   <c>SimulationControl.RestwaermeMwh</c> — die Wahrheit des Referenzlaufs — zieht
         ///   seine Lieferung ebenfalls ab. Die Detailansicht wies ohne den Term für jedes
         ///   Projekt mit BHKW einen zu großen Rest aus (Projekt 1030: 734,46 MWh statt
         ///   −1,76 MWh; der Lauf selbst meldet 0,00 MWh).</item>
@@ -139,19 +174,35 @@ namespace WindowsFormsApplication1
 
             UebersichtKennzahlen u = new UebersichtKennzahlen();
 
-            u.StrombedarfGesamtMwh = sb != null ? sb.Strombedarf_gesamt : 0.0;
+            u.StrombedarfGesamtMwh = sb != null ? sb.StrombedarfGesamtMwh : 0.0;
             u.WaermebedarfGesamtMwh = wb != null ? wb.Waermebedarf_Gesamt : 0.0;
-            u.RestwaermeMwh = sim.Restwaerme;
-            u.ReststromMwh = sim.Reststrom;
-            u.WpWaermeproduktionMwh = sim.simulation_wp.WP_Waermeproduktion_gesamt / 1000.0;
-            u.WpStromverbrauchMwh = sim.simulation_wp.WP_Strombedarf_gesamt / 1000.0;
-            u.KesselWaermeproduktionMwh = sim.simulation_spk.S_Waerme_spk;
-            u.HeizstabStromverbrauchMwh = sim.simulation_wp.Heizstab_gesamt / 1000.0;
-            u.KesselStromverbrauchMwh = sim.simulation_spk.Stromverbrauch_Spk;
+            u.RestwaermeMwh = sim.RestwaermeMwh;
+            u.ReststromMwh = sim.ReststromMwh;
+            u.WpWaermeproduktionMwh = sim.simulation_wp.WpWaermeproduktionGesamtKwh / 1000.0;
+            u.WpStromverbrauchMwh = sim.simulation_wp.WpStrombedarfGesamtKwh / 1000.0;
+            u.KesselWaermeproduktionMwh = sim.simulation_spk.SWaermeSpkMwh;
+            u.HeizstabStromverbrauchMwh = sim.simulation_wp.HeizstabGesamtKwh / 1000.0;
+            u.KesselStromverbrauchMwh = sim.simulation_spk.StromverbrauchSpkMwh;
             u.BhkwWaermeproduktionMwh = sim.simulation_bhkw.Waermeproduktion_BHKW_MWh;
             u.BhkwStromproduktionMwh = sim.simulation_bhkw.Stromproduktion_BHKW_MWh;
-            u.SolarWaermeproduktionMwh = sim.simulation_solarthermie.Waermeproduktion_gesamt / 1000.0;
-            u.PvStromproduktionMwh = sim.simulation_pv.Stromproduktion_gesamt / 1000.0;
+            u.SolarWaermeproduktionMwh = sim.simulation_solarthermie.WaermeproduktionGesamtKwh / 1000.0;
+            u.PvStromproduktionMwh = sim.simulation_pv.StromproduktionGesamtKwh / 1000.0;
+
+            // W8-O-5c / S1.2 (Befund U6): Die vier Groessen standen bis hierher in der
+            // Windows-Huelle - StrombedarfGesamt() und StromgedecktMwh() der
+            // Ergebnisseite rechneten dort mit eigenen Teilern am DTO vorbei. Die
+            // Summanden und ihre Reihenfolge sind woertlich uebernommen, damit die
+            // angezeigte Zahl dieselbe bleibt.
+            u.HeizstabWaermeproduktionMwh = u.HeizstabStromverbrauchMwh;
+            u.StromspeicherEntladungMwh = sim.Speicherergebnis != null
+                ? sim.Speicherergebnis.EntladeenergieKwh / 1000.0 : 0.0;
+            u.StrombedarfMitEigenverbrauchMwh = u.StrombedarfGesamtMwh
+                                              + u.WpStromverbrauchMwh
+                                              + u.HeizstabStromverbrauchMwh
+                                              + u.KesselStromverbrauchMwh;
+            u.StromGesamtMwh = u.PvStromproduktionMwh
+                             + u.BhkwStromproduktionMwh
+                             + u.StromspeicherEntladungMwh;
 
             // ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): DECKUNG statt Produktion.
             // Dieselben Summanden, aus denen NavigatorUebersicht.FillTableWithData seine
@@ -192,6 +243,30 @@ namespace WindowsFormsApplication1
 
             foreach (double k in kanalKwh) summe += k;
             return summe / 1000.0;
+        }
+
+        /// <summary>
+        /// Eine Kanalzeile [kWh] als Kanalzeile [MWh] — je Kanal geteilt, nicht
+        /// summiert (W8‑O‑5c / S1.2).
+        ///
+        /// <para><b>Warum das hier steht und nicht in der Hülle.</b> Das
+        /// Eigenanteilsraster der Ergebnisseite zeigt drei Kanalspalten in MWh; die
+        /// Engine-Buchführung (<c>Direktdeckung_Kanal</c>,
+        /// <c>Speicherentladung_Kanal</c>, <c>Heizstab_Kanal</c>) führt kWh. Die
+        /// Umrechnung war bis W8‑O‑5c die letzte Energie-Division in
+        /// <c>SimulationErgebnisHuelle</c> (Befund U6). Sie gehört an die
+        /// Kerngrenze, damit die Regel „außerhalb der zwei Nähte steht in der Hülle
+        /// kein Faktor 1000 auf einer Energiemenge" ohne Ausnahme gilt.</para>
+        ///
+        /// <para><c>null</c> ergibt <c>null</c>; ein leeres Feld bleibt leer.</para>
+        /// </summary>
+        public static double[] KanalMwh(double[] kanalKwh)
+        {
+            if (kanalKwh == null) return null;
+
+            double[] mwh = new double[kanalKwh.Length];
+            for (int k = 0; k < kanalKwh.Length; k++) mwh[k] = kanalKwh[k] / 1000.0;
+            return mwh;
         }
 
         // =================================================================
@@ -267,7 +342,7 @@ namespace WindowsFormsApplication1
             SimulationWaermepumpe wp = sim.simulation_wp;
             WaermepumpeErgebnis e = new WaermepumpeErgebnis();
 
-            e.StufeneingangMwh = wp.Waermebedarf_gesamt / 1000.0;
+            e.StufeneingangMwh = wp.WaermebedarfGesamtKwh / 1000.0;
             double eigen = SimulationRunner.EigenanteilWpMwh(wp);
             e.RestwaermeMwh = SimulationRunner.RestNachEigenanteil(e.StufeneingangMwh, eigen);
             e.DeckungProzent = SimulationRunner.DeckungProzent(
@@ -276,9 +351,9 @@ namespace WindowsFormsApplication1
             e.BivalenzpunktVorhanden = wp.Bivalenzpunkt != -100;
             e.Bivalenzpunkt = wp.Bivalenzpunkt;
 
-            e.StromverbrauchMwh = wp.WP_Strombedarf_gesamt / 1000.0;
-            e.HeizstabStromverbrauchMwh = wp.Heizstab_gesamt / 1000.0;
-            e.WaermeproduktionMwh = wp.WP_Waermeproduktion_gesamt / 1000.0;
+            e.StromverbrauchMwh = wp.WpStrombedarfGesamtKwh / 1000.0;
+            e.HeizstabStromverbrauchMwh = wp.HeizstabGesamtKwh / 1000.0;
+            e.WaermeproduktionMwh = wp.WpWaermeproduktionGesamtKwh / 1000.0;
 
             // W11-B15: Nullprüfung wie im Runner.
             e.Vollbenutzungsstunden = wp.wp_list.Count > 0 ? wp.WP_Laufzeit / wp.wp_list.Count : 0.0;
@@ -399,29 +474,29 @@ namespace WindowsFormsApplication1
             HeizkesselErgebnis e = new HeizkesselErgebnis();
 
             double eigen = SimulationRunner.EigenanteilKesselMwh(spk);
-            e.StufeneingangMwh = spk.Waermebedarf_gesamt;
+            e.StufeneingangMwh = spk.WaermebedarfGesamtMwh;
             e.RestwaermeMwh = SimulationRunner.RestNachEigenanteil(e.StufeneingangMwh, eigen);
             e.DeckungProzent = SimulationRunner.DeckungProzent(
                 eigen, wb != null ? wb.Waermebedarf_Gesamt : 0.0);
 
-            e.WaermeproduktionMwh = spk.S_Waerme_spk;
-            e.StrombedarfMwh = spk.Strombedarf_gesamt / 1000.0;
-            e.ReststrombedarfMwh = spk.Strombedarf_gesamt / 1000.0 + spk.Stromverbrauch_Spk;
+            e.WaermeproduktionMwh = spk.SWaermeSpkMwh;
+            e.StrombedarfMwh = spk.StrombedarfGesamtKwh / 1000.0;
+            e.ReststrombedarfMwh = spk.StrombedarfGesamtKwh / 1000.0 + spk.StromverbrauchSpkMwh;
 
-            e.GasMwh = spk.Gasverbrauch_SPK;
-            e.OelMwh = spk.Oelverbrauch_SPK;
-            e.KoksMwh = spk.Koks_SPK;
-            e.RapsoelMwh = spk.Rapsoelverbrauch_SPK;
-            e.HolzMwh = spk.Holzverbrauch_SPK;
-            e.KohleMwh = spk.Kohle_SPK;
-            e.StromMwh = spk.Stromverbrauch_Spk;
-            e.SonstigeMwh = spk.Sonstigverbrauch_SPK;
-            e.PelletsMwh = spk.Pellets_SPK;
-            e.TierischeFetteMwh = spk.TierischeFette_SPK;
+            e.GasMwh = spk.GasverbrauchSpkMwh;
+            e.OelMwh = spk.OelverbrauchSpkMwh;
+            e.KoksMwh = spk.KoksSpkMwh;
+            e.RapsoelMwh = spk.RapsoelverbrauchSpkMwh;
+            e.HolzMwh = spk.HolzverbrauchSpkMwh;
+            e.KohleMwh = spk.KohleSpkMwh;
+            e.StromMwh = spk.StromverbrauchSpkMwh;
+            e.SonstigeMwh = spk.SonstigverbrauchSpkMwh;
+            e.PelletsMwh = spk.PelletsSpkMwh;
+            e.TierischeFetteMwh = spk.TierischeFetteSpkMwh;
 
             e.MaxKesselleistungKw = spk.Maximale_Kesselleistung_Spk;
             e.GasspitzeKw = spk.Gasspitze_Spk;
-            e.QuellwaermeMwh = spk.Quellwaerme_gesamt / 1000.0;
+            e.QuellwaermeMwh = spk.QuellwaermeGesamtKwh / 1000.0;
 
             for (int i = 0; i < spk.spk_list.Count; i++)
                 e.Module.Add(new KesselModulZeile(
@@ -493,23 +568,23 @@ namespace WindowsFormsApplication1
             SolarthermieErgebnis e = new SolarthermieErgebnis();
 
             double eigenKwh = SimulationRunner.EigenanteilSolarKwh(st);
-            e.StufeneingangMwh = st.Waermebedarf_gesamt / 1000.0;
+            e.StufeneingangMwh = st.WaermebedarfGesamtKwh / 1000.0;
             // In kWh klemmen und erst danach umrechnen - wortgleich mit Maske und
             // Runner, die beide (Stufeneingang - Eigenanteil) / 1000 rechnen.
             e.RestwaermeMwh = SimulationRunner.RestNachEigenanteil(
-                                  st.Waermebedarf_gesamt, eigenKwh) / 1000.0;
+                                  st.WaermebedarfGesamtKwh, eigenKwh) / 1000.0;
             e.DeckungBekannt = wb != null && wb.Waermebedarf_Gesamt > 0;
             e.DeckungProzent = SimulationRunner.DeckungProzent(
                 eigenKwh / 1000.0, wb != null ? wb.Waermebedarf_Gesamt : 0.0);
 
-            e.WaermeproduktionMwh = st.Waermeproduktion_gesamt / 1000.0;
-            e.UeberschussMwh = st.Ueberschuss_summe / 1000.0;
+            e.WaermeproduktionMwh = st.WaermeproduktionGesamtKwh / 1000.0;
+            e.UeberschussMwh = st.UeberschussSummeKwh / 1000.0;
 
             if (st.Kollektor_Ergebnisse != null)
                 foreach (var k in st.Kollektor_Ergebnisse)
                     e.Module.Add(new SolarModulZeile(k.Name, k.Flaeche, k.Anzahl,
-                                                     k.Waermeproduktion / 1000.0,
-                                                     k.Ueberschuss / 1000.0));
+                                                     k.WaermeproduktionKwh / 1000.0,
+                                                     k.UeberschussKwh / 1000.0));
 
             return e;
         }
@@ -561,7 +636,7 @@ namespace WindowsFormsApplication1
             e.VbhElektrischBekannt = bh.VbhElektrischGesamt > 0;
             e.VbhElektrisch = bh.VbhElektrischGesamt;
 
-            e.StufeneingangMwh = bh.Waermebedarf_gesamt / 1000.0;
+            e.StufeneingangMwh = bh.WaermebedarfGesamtKwh / 1000.0;
             e.StrombedarfMwh = bh.strombedarf.Sum() / 1000.0;
             e.WaermeproduktionMwh = bh.Waermeproduktion_BHKW_MWh;
             e.StromproduktionMwh = bh.Stromproduktion_BHKW_MWh;
@@ -572,15 +647,15 @@ namespace WindowsFormsApplication1
                 eigen, wb != null ? wb.Waermebedarf_Gesamt : 0.0);
 
             e.ReststrombedarfMwh = e.StrombedarfMwh - bh.Stromproduktion_BHKW_MWh;
-            e.WaermeueberschussMwh = bh.Waermeueberschuss / 1000.0;
-            e.SpeicherladungMwh = bh.Speicherladung_gesamt / 1000.0;
+            e.WaermeueberschussMwh = bh.WaermeueberschussKwh / 1000.0;
+            e.SpeicherladungMwh = bh.SpeicherladungGesamtKwh / 1000.0;
             e.SpeicherdeckungMwh = bh.Speicherentladung_Anteil / 1000.0;
 
             // Die Stromdeckung ist die PRODUKTION, nicht der Eigenanteil - Strom kennt
             // keine Speicherzurechnung dieser Art (der Stromspeicher rechnet eigens).
             // Wortgleich mit SimulationRunner: b.Strombedarfsdeckung.
-            e.StromdeckungProzent = (sb != null && sb.Strombedarf_gesamt > 0)
-                ? bh.Stromproduktion_BHKW_MWh * 100.0 / sb.Strombedarf_gesamt
+            e.StromdeckungProzent = (sb != null && sb.StrombedarfGesamtMwh > 0)
+                ? bh.Stromproduktion_BHKW_MWh * 100.0 / sb.StrombedarfGesamtMwh
                 : 0.0;
 
             for (int i = 0; i < bh.bhkw_list.Count; i++)
@@ -668,7 +743,7 @@ namespace WindowsFormsApplication1
                 foreach (var m in pv.Modul_Ergebnisse)
                 {
                     e.Module.Add(new PvModulZeile(m.Name, m.Flaeche, m.Anzahl,
-                                                  m.Stromproduktion / 1000.0));
+                                                  m.StromproduktionKwh / 1000.0));
 
                     // Stufe S3: je Geraet eine Zeile - und nur, wenn diese Anlage auf
                     // der Strangebene gerechnet hat. Ohne Zuordnung bleibt die Liste
@@ -712,7 +787,7 @@ namespace WindowsFormsApplication1
             if (sb != null)
             {
                 e.StrombedarfMaxKw = sb.Strombedarf_Max;
-                e.StrombedarfGesamtMwh = sb.Strombedarf_gesamt;
+                e.StrombedarfGesamtMwh = sb.StrombedarfGesamtMwh;
             }
             return e;
         }
