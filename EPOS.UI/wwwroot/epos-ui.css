@@ -145,15 +145,20 @@
        das, mit dem W11b-B-2 gerechnet hat; darunter aendert sich nichts. */
     --epos-diagramm-breit: 1240px;
 
-    /* Die Projekt/Datenbank-Auswahl (Anwenderentscheid #76, 05.09.2026).
-       Breite der Mittelspalte mit den zwei Richtungsknoepfen - im Bestand
-       63 px (Form_Gebaeude) bis 88 px (Form_Heizkessel), hier etwas mehr,
-       weil die Knoepfe seit Befund W9-B-3 ihre Aufgabe im Klartext tragen
-       und nicht nur ein Dreieck.
-       Die UMBRUCHBREITE steht daneben auch in der Medienabfrage des
-       Blocks "Zweispaltenauswahl" - eine Medienabfrage kann kein Token
-       lesen. ZweispaltenauswahlTests haelt die zwei Werte gegeneinander. */
-    --epos-zweispalten-mitte: 10rem;
+    /* Die Projekt/Datenbank-Auswahl (Anwenderentscheid #76, 05.09.2026;
+       Anordnung seit W14a-E-10-Q2 vom 07.09.2026 UNTEREINANDER).
+       HOEHE DER PROJEKTLISTE: Sie ist kurz - im Pruefprojekt zwei Zeilen -
+       und bleibt es. 12 rem = 192 px, bei 45 px Kopfzelle und 37 px
+       Zeilenhoehe VIER Zeilen (Konzept_Katalogfilter 5.6.5, im Mockup
+       gemessen). Ohne die Grenze schoebe eine lange Projektliste den
+       Katalog beliebig weit nach unten.
+       DIE BREITE DER MITTELSPALTE (--epos-zweispalten-mitte) IST MIT Q2
+       ENTFALLEN: Es gibt keine Mittelspalte mehr, sondern eine
+       Uebernahmeleiste als Textzeile.
+       --epos-zweispalten-umbruch bleibt: Der Baustein braucht es seit Q2
+       nicht mehr (er hat nur noch EINE Anordnung), das Formularraster, der
+       Dublettenbaum und die Kennzahlzeile benutzen es weiter. */
+    --epos-projektlistenhoehe: 12rem;
     --epos-zweispalten-umbruch: 900px;
 
     /* Das FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026:
@@ -999,8 +1004,9 @@ body {
    Der Rahmen steht an DIESER einen Stelle und gilt damit fuer alle Listen des
    Hauses: die handgeschriebenen Tabellen der Projekt/DB-Dialoge, das QuickGrid
    des Bausteins Raster, die ProjektListe und die Katalogverwaltungen. Die
-   Pfeilspalte der Zweispaltenauswahl (.epos-zweispalten-mitte) traegt keine
-   Huelle und rahmt deshalb nicht mit - dort stehen nur Knoepfe. */
+   Uebernahmeleiste der Zweispaltenauswahl (.epos-zweispalten-uebernahme)
+   traegt keine Huelle und rahmt deshalb nicht mit - dort stehen nur
+   Knoepfe. */
 .epos-raster-huelle {
     width: 100%;
     overflow: auto;
@@ -1878,8 +1884,8 @@ body {
 /* Zwei gleichrangige Spalten nebeneinander, die auf schmalem Schirm     */
 /* umbrechen. Bis zum Anwenderentscheid #76 (05.09.2026) trug das auch   */
 /* die Projekt/Datenbank-Dialoge; die stehen seither in                  */
-/* .epos-zweispalten (Baustein Zweispaltenauswahl), weil dort die        */
-/* Pfeilrichtung am Umbruch haengt und ein flex-wrap davon nichts weiss. */
+/* .epos-zweispalten (Baustein Zweispaltenauswahl), der seit             */
+/* W14a-E-10-Q2 nur noch EINE Anordnung kennt: untereinander.            */
 /*                                                                      */
 /* Geblieben sind die Masken OHNE Pfeile, bei denen der Umbruch          */
 /* folgenlos ist: GebaeudetypDialog, TypProfilDialog,                    */
@@ -1904,34 +1910,40 @@ body {
 }
 
 /* ==================================================================== */
-/* ZWEISPALTENAUSWAHL - Anwenderentscheid #76 vom 05.09.2026             */
+/* ZWEISPALTENAUSWAHL - Anwenderentscheid #76 vom 05.09.2026,            */
+/* in seiner ANORDNUNG geaendert durch W14a-E-10-Q2 vom 07.09.2026       */
 /*                                                                      */
-/* Der EINE Aufbau aller Projekt/Datenbank-Dialoge: links die Liste des  */
-/* Projekts, rechts der Katalog, dazwischen eine SCHMALE Spalte mit den  */
-/* zwei Richtungsknoepfen. So stand es im BHKW-PLAN (Form_Gebaeude:      */
-/* Liste 252 px, Knoepfe 63 px, Katalog 436 px; Form_Heizkessel:         */
-/* 316 / 88 / 313), und so hat es der Anwender nach der Windows-Abnahme  */
-/* wieder bestellt.                                                      */
+/* Der EINE Aufbau aller Projekt/Datenbank-Dialoge. #76 bleibt in        */
+/* seiner Aussage: zwei Listen, Uebernahmeknoepfe dazwischen, der Filter */
+/* ueber der Liste, auf die er wirkt. Geaendert hat sich, WO sie stehen: */
+/* seit Q2 UNTEREINANDER - oben die kurze Projektliste, darunter die     */
+/* Uebernahmeleiste, darunter der Katalog ueber die GANZE Breite.        */
 /*                                                                      */
-/* AUF SCHMALEM SCHIRM BRICHT DAS PAAR UM: Projektliste oben, Pfeile     */
-/* dazwischen, Katalog unten - das Schema, das der Gebaeudedialog seit   */
-/* W9 hatte. Der Umbruch ist KEIN flex-wrap, sondern eine Medienabfrage: */
-/* Nur so weiss das Blatt, welches Pfeilzeichen gilt (◀▶ nebeneinander,  */
-/* ▲▼ untereinander). Bei flex-wrap kaeme die Reihe um, ohne dass eine   */
-/* Regel es merkt, und die Pfeile zeigten ins Leere.                     */
+/* "Liste wie zuvor ueber ganze Breite, sonst zu schmale Liste." Gemessen*/
+/* im Mockup (Chromium, Reiter M2, 1 366 px): nebeneinander rollte die   */
+/* Katalogliste schon mit SECHS Parameterspalten um 118 px in sich       */
+/* (offener Punkt O-5), untereinander traegt sie NEUN und rollt um 0 px. */
+/* Die Projektliste fuehrte dabei zwei Zeilen und verschenkte die halbe  */
+/* Breite.                                                               */
 /*                                                                      */
-/* DIE UMBRUCHBREITE STEHT ZWEIMAL: als Token --epos-zweispalten-umbruch */
-/* und in der Medienabfrage darunter. Eine Medienabfrage kann kein Token */
-/* lesen (das Bedingungsfeld wird vor der Kaskade ausgewertet). Damit    */
-/* die zwei Werte nicht auseinanderlaufen, haelt                         */
-/* ZweispaltenauswahlTests.Die_Umbruchbreite_steht_als_Token sie         */
-/* gegeneinander.                                                        */
+/* DIE MEDIENABFRAGE BEI 900 px ENTFAELLT - dieselbe Bewegung wie beim   */
+/* Katalograhmen in S1.7: Es gibt nur noch EINE Anordnung, und die ist   */
+/* die schmale. Damit faellt auch die schmale Mittelspalte               */
+/* (--epos-zweispalten-mitte) und das waagerechte Pfeilpaar ◀▶; jeder    */
+/* Knopf traegt nur noch EIN Zeichen. Das Token                          */
+/* --epos-zweispalten-umbruch bleibt - das Formularraster, der           */
+/* Dublettenbaum und die Kennzahlzeile benutzen es weiter.               */
+/*                                                                      */
+/* DIE PROJEKTLISTE IST HOEHENBEGRENZT (Konzept 5.6.5): 12 rem = 192 px, */
+/* bei 45 px Kopfzelle und 37 px Zeilenhoehe VIER Zeilen. Ohne die       */
+/* Grenze schoebe eine lange Projektliste den Katalog beliebig weit nach */
+/* unten - genau der Grund, aus dem die Katalogliste ihre eigene Grenze  */
+/* aus dem Katalograhmen mitbringt.                                      */
 /* ==================================================================== */
 
 .epos-zweispalten {
     display: flex;
-    flex-direction: row;
-    align-items: stretch;
+    flex-direction: column;
     gap: var(--epos-rand);
     margin-top: var(--epos-rand);
 }
@@ -1940,7 +1952,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    flex: 1 1 0;
     min-width: 0;                           /* laesst das Raster waagerecht rollen */
 }
 
@@ -1948,27 +1959,34 @@ body {
     margin-top: 0;
 }
 
-.epos-zweispalten-mitte {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 8px;
-    flex: 0 0 var(--epos-zweispalten-mitte);
-    width: var(--epos-zweispalten-mitte);
+/* Die PROJEKTliste ist kurz und bleibt es: vier Zeilen, danach rollt sie
+   in sich (Konzept 5.6.5). Der Katalog darunter hat seine eigene Grenze. */
+.epos-zweispalten-spalte--oben .epos-raster-huelle {
+    flex: 0 1 auto;
+    max-height: var(--epos-projektlistenhoehe);
 }
 
-/* Zeichen ueber Wort - so bleibt die Mittelspalte schmal und der Knopf
-   sagt trotzdem, was er tut (Befund W9-B-3). */
-.epos-zweispalten-knopf {
+/* DIE UEBERNAHMELEISTE - eine Textzeile, keine Spalte mehr. Sie bricht um
+   wie jede Knopfleiste des Hauses (Befund W12-B-1). */
+.epos-zweispalten-uebernahme {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Zeichen VOR dem Wort, in einer Zeile - untereinander sagt der Pfeil die
+   Richtung, und der Text sagt, was passiert (Befund W9-B-3). */
+.epos-zweispalten-knopf {
+    display: inline-flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    width: 100%;
+    gap: 6px;
     min-width: 0;
-    padding: 6px 8px;
-    text-align: center;
+    padding: 0 12px;
+    text-align: left;
 }
 
 .epos-zweispalten-pfeil {
@@ -1979,42 +1997,6 @@ body {
 .epos-zweispalten-knopftext {
     font-size: var(--epos-schriftgroesse);
     line-height: 1.2;
-}
-
-/* Nebeneinander gilt ◀▶; das senkrechte Paar bleibt im Markup stehen und
-   wird erst nach dem Umbruch sichtbar. */
-.epos-zweispalten-pfeil--schmal {
-    display: none;
-}
-
-@media (max-width: 900px) {
-
-    .epos-zweispalten {
-        flex-direction: column;
-    }
-
-    .epos-zweispalten-mitte {
-        flex: 0 0 auto;
-        width: auto;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-    }
-
-    .epos-zweispalten-knopf {
-        flex-direction: row;
-        gap: 6px;
-        width: auto;
-        padding: 0 12px;
-    }
-
-    .epos-zweispalten-pfeil--breit {
-        display: none;
-    }
-
-    .epos-zweispalten-pfeil--schmal {
-        display: inline;
-    }
 }
 
 /* Mehrzeiliger Zellinhalt (iU9-W6.4). Die Spalte "Eigenschaften" der
@@ -5534,8 +5516,9 @@ body {
 /*                                                                      */
 /* DIE MEDIENABFRAGE BEI 900 px ENTFAELLT: Es gibt nur noch EINE         */
 /* Anordnung, und die ist die schmale. Das Token                         */
-/* --epos-zweispalten-umbruch bleibt - die Zweispaltenauswahl und das    */
-/* Formularraster benutzen es weiter.                                    */
+/* --epos-zweispalten-umbruch bleibt - das Formularraster, der           */
+/* Dublettenbaum und die Kennzahlzeile benutzen es weiter (die           */
+/* Zweispaltenauswahl seit W14a-E-10-Q2 nicht mehr).                     */
 /* ==================================================================== */
 .epos-katalog-paar {
     display: grid;
@@ -7105,8 +7088,9 @@ body {
 }
 
 /* Unter 900 CSS-Pixeln faellt die Beschriftung wieder UEBER das Feld und
-   der Raster auf eine Spalte - dieselbe Umbruchbreite wie bei
-   Zweispaltenauswahl und Katalograhmen (--epos-zweispalten-umbruch).
+   der Raster auf eine Spalte - dieselbe Umbruchbreite, die Katalograhmen
+   und Zweispaltenauswahl trugen, bis W14a-E-10 sie auf EINE Anordnung
+   festlegte (--epos-zweispalten-umbruch; der Name des Tokens bleibt).
    Grund dort wie hier: Die WebView rechnet in CSS-Pixeln, das Fenstermass
    in Geraetepixeln, und bei 150 % sind 1632 Geraetepixel nur 1088
    CSS-Pixel. */

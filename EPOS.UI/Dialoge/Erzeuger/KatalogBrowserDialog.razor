@@ -236,6 +236,17 @@
     [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
 
     /// <summary>
+    /// <b>Ein eigener Filterstand statt des Registers</b> — dasselbe Muster wie
+    /// <c>ProfilVorgabe</c>. Ohne ihn holt der Dialog seinen Stand aus dem
+    /// <c>Katalogfilterregister</c> (S2.5: je Katalog EINER, für die Sitzung,
+    /// gemeinsam mit den anderen Dialogen desselben Katalogs). Ein Prüfstand gibt
+    /// hier seinen eigenen herein und bleibt damit von den anderen Fällen getrennt;
+    /// dass das Register wirklich teilt, prüft <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+
+    /// <summary>
     /// Der Katalogeditor als Inhaltsbaustein — der Wirt entscheidet, welche Komponente
     /// erscheint, und splattet den Parametersatz. Ohne ihn bleiben „Neu…" und
     /// „Bearbeiten…" wirkungslos.
@@ -298,8 +309,14 @@
     /// Der Filterzustand — er gehört dem WIRT und nicht dem Popover (offener Punkt
     /// O‑6): Der <c>@key</c>-Fix W6‑B‑2 baut das Raster beim Filtern neu auf, und ein
     /// Zustand in der Rasterinstanz wäre danach weg.
+    ///
+    /// <para><b>Seit S2.5 kommt er aus dem <see cref="Katalogfilterregister"/></b>
+    /// (Frage Q2 = Sitzung, je Katalog, GEMEINSAM für Verwaltung und
+    /// Projektdialog): Wer im Projektdialog filtert, hier bearbeitet und
+    /// zurückkommt, findet seinen Filter wieder — es ist derselbe Katalog. Das Feld
+    /// hält nur die Verweisung; der Stand selbst gehört dem Register.</para>
     /// </summary>
-    private readonly Katalogfilterstand _filterstand = new();
+    private Katalogfilterstand _filterstand = new();
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
@@ -355,6 +372,7 @@
     protected override void OnInitialized()
     {
         if (ProfilVorgabe is null) _profil = KatalogBrowserProfil.Finde(Art);
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Filterprofil.Art);
         ListeAufbauen();
     }
 

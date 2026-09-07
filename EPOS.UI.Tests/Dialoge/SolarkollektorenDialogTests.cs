@@ -8,6 +8,11 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
+using System.Collections.Generic;
+using System.Linq;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
+
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
@@ -17,10 +22,39 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class SolarkollektorenDialogTests : BunitContext
 {
-    private static readonly KatalogZeile[] Katalog =
+
+    /// <summary>
+    /// Der Filterstand DIESES Prüfstands. Ohne ihn nähme der Dialog den aus dem
+    /// <c>Katalogfilterregister</c> — der lebt prozessweit, und xunit fährt
+    /// Testklassen nebeneinander. Dass das Register wirklich teilt, prüft
+    /// <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
+    /// <summary>
+    /// Das PROFIL des Projektdialogs (W14a-E-10 / S2.1): dieselben sechs Spalten wie
+    /// in der Verwaltung, dazu die siebte „im Projekt verwendet" (Q12).
+    /// </summary>
+    private static readonly Katalogfilterprofil Profil =
+        Katalogfilterprofil.MitVerwendung(Anlagenart.Solarkollektoren,
+            s => Resource.ResourceManager.GetString(s) ?? s);
+
+    private static IReadOnlyList<Katalogfilterzeile> Katalogzeilen() => new[]
     {
-        new(11, "Vitosol 200", "Viessmann\nKollektortyp: Flach\nModulfläche: 2,51 m²\nAperturfläche: 2,31 m²"),
-        new(12, "Vitosol 300", "Viessmann\nKollektortyp: Röhre\nModulfläche: 3,2 m²\nAperturfläche: 3 m²")
+        new Katalogfilterzeile(11, "Vitosol 200")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Vitosol 200")
+            .MitText(Katalogfilterprofil.SpHersteller, "Viessmann")
+            .MitText(Katalogfilterprofil.SpKollektortyp, "Flach")
+            .MitZahl(Katalogfilterprofil.SpApertur, 2.31, 2)
+            .MitZahl(Katalogfilterprofil.SpEtaNull, 0.8, 3)
+            .MitZahl(Katalogfilterprofil.SpK1, 3.5, 2),
+
+        new Katalogfilterzeile(12, "Vitosol 300")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Vitosol 300")
+            .MitText(Katalogfilterprofil.SpHersteller, "Viessmann")
+            .MitText(Katalogfilterprofil.SpKollektortyp, "Röhre")
+            .MitZahl(Katalogfilterprofil.SpApertur, 3.0, 2)
+            .MitZahl(Katalogfilterprofil.SpEtaNull, 0.64, 3)
+            .MitZahl(Katalogfilterprofil.SpK1, 1.0, 2),
     };
 
     public SolarkollektorenDialogTests()
@@ -59,7 +93,9 @@ public class SolarkollektorenDialogTests : BunitContext
         Action<bool>? geschlossen = null)
         => Render<SolarkollektorenDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Vitosol 200") })
-            .Add(x => x.Katalog, () => Katalog)
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Detail, Detail)
             .Add(x => x.Modulflaeche, _ => 2.5)
             .Add(x => x.Aufnehmen, aufnehmen ?? (_ => new AufnahmeErgebnis(Zeile(9, "Vitosol 300", 12))))
@@ -83,7 +119,7 @@ public class SolarkollektorenDialogTests : BunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-zweispalten-mitte button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("Auswahl in Projekt:", ueberschriften);
@@ -128,7 +164,9 @@ public class SolarkollektorenDialogTests : BunitContext
     {
         var cut = Render<SolarkollektorenDialog>(p => p
             .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Vitosol 200") })
-            .Add(x => x.Katalog, () => Katalog)
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Detail, Detail)
             .Add(x => x.TitelText, "Entering the solar panels")
             .Add(x => x.LabelAnzahl, "Modules:")
@@ -200,7 +238,7 @@ public class SolarkollektorenDialogTests : BunitContext
     public void Der_linke_Pfeil_ist_ohne_Katalogwahl_gesperrt()
     {
         var cut = Aufbauen();
-        var pfeile = cut.FindAll(".epos-zweispalten-mitte button");
+        var pfeile = cut.FindAll(".epos-zweispalten-uebernahme button");
 
         Assert.True(pfeile[0].HasAttribute("disabled"));    // ◀ ohne Katalogwahl
         Assert.False(pfeile[1].HasAttribute("disabled"));   // ▶ mit Projektzeile
@@ -218,7 +256,7 @@ public class SolarkollektorenDialogTests : BunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();  // Katalogzeile 2
-        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
 
         Assert.Equal(12, gerufen);
         Assert.Equal(2, zeilen.Count);
@@ -233,7 +271,7 @@ public class SolarkollektorenDialogTests : BunitContext
             new AufnahmeErgebnis(null, "Der Datensatz konnte nicht in das Projekt übernommen werden.", true));
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[0].Click();
-        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
 
         Assert.Single(zeilen);
         Assert.Contains("nicht in das Projekt", cut.Find(".epos-warnbanner").TextContent);
@@ -251,7 +289,7 @@ public class SolarkollektorenDialogTests : BunitContext
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[1]
            .QuerySelector("button")!.Click();
-        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
 
         Assert.Single(zeilen);
         Assert.Same(a, zeilen[0]);
@@ -424,5 +462,133 @@ public class SolarkollektorenDialogTests : BunitContext
         var raster = cut.FindAll(".epos-formularraster");
         Assert.NotEmpty(raster);
         Assert.Contains(raster, r => r.QuerySelectorAll(".epos-feld").Length > 0);
+    }
+
+    // =================================================================================
+    //  Stufe S2.1 / S2.3 / S2.5 - Anwenderentscheid W14a-E-10 vom 07.09.2026
+    // =================================================================================
+
+    /// <summary>Die Katalogliste - das UNTERE der beiden Raster.</summary>
+    private static IReadOnlyList<AngleSharp.Dom.IElement> Katalogzeilen(
+        IRenderedComponent<SolarkollektorenDialog> cut)
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr").ToList();
+
+    /// <summary>
+    /// <b>S2.1 — der Filter sitzt im SPALTENKOPF.</b> Der Ausdruck steht im
+    /// <c>Katalogfilterstand</c> des Wirtes, <c>Katalogfilter.Anwenden</c>
+    /// schränkt die Menge im Kern ein, und das Raster bekommt die BEREITS
+    /// eingeschränkte Liste (5.6.6 — gefiltert wird vor dem Raster, nie im Raster).
+    /// </summary>
+    [Fact]
+    public void S2_1_Der_Spaltenfilter_schraenkt_die_Katalogliste_ein()
+    {
+        var cut = Aufbauen();
+        Assert.Equal(2, Katalogzeilen(cut).Count);
+        Assert.Equal("2 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+
+        _filterstand.Setzen(Katalogfilterprofil.SpKollektortyp, "Röhre");
+        cut.Render();
+
+        Assert.Single(Katalogzeilen(cut));
+        Assert.Equal("1 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Assert.Contains("Vitosol 300", Katalogzeilen(cut)[0].TextContent);
+
+        // Der Trichter dieser Spalte ist jetzt GEFUELLT - im Markup, nicht nur
+        // in der Farbe (Auflage des Anwenders zu Rev. 3).
+        Assert.Contains(cut.FindAll(".epos-trichter-bild path"),
+                        e => e.GetAttribute("fill") == "currentColor");
+
+        // Und der Ruecksetzer der Suchzeile holt alles zurueck.
+        cut.Find(".epos-katalog-ruecksetzer").Click();
+        Assert.Equal(2, Katalogzeilen(cut).Count);
+    }
+
+    /// <summary>
+    /// <b>S2.1 — jede Parameterspalte sortiert</b>, im Zyklus auf → ab → aus
+    /// (höchstens eine Spalte zugleich, 5.6.2).
+    /// </summary>
+    [Fact]
+    public void S2_1_Die_Katalogliste_laesst_sich_ueber_den_Spaltenkopf_sortieren()
+    {
+        var cut = Aufbauen();
+
+        _filterstand.Sortieren(Katalogfilterprofil.SpApertur);
+        cut.Render();
+        Assert.Contains("Vitosol 200", Katalogzeilen(cut)[0].TextContent);
+
+        _filterstand.Sortieren(Katalogfilterprofil.SpApertur);
+        cut.Render();
+        Assert.False(_filterstand.Aufsteigend);
+        Assert.Contains("Vitosol 300", Katalogzeilen(cut)[0].TextContent);
+
+        _filterstand.Sortieren(Katalogfilterprofil.SpApertur);
+        Assert.Equal("", _filterstand.Sortierspalte);
+    }
+
+    /// <summary>
+    /// <b>S2.1 — die Markierung hängt am BEZEICHNER.</b> Sie bleibt stehen, auch
+    /// wenn ein Filter die Zeile ausblendet; der Übernahmeknopf bleibt frei und
+    /// nimmt DENSELBEN Satz auf (Hausregel aus dem <c>EnergietraegerDialog</c>, W4).
+    /// </summary>
+    [Fact]
+    public void S2_1_Die_Markierung_ueberlebt_einen_Filterwechsel()
+    {
+        var cut = Aufbauen();
+
+        Katalogzeilen(cut)[0].QuerySelector(".epos-anlagenwahl")!.Click();
+        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+
+        // Ein Filter, der GENAU diese Zeile ausblendet.
+        _filterstand.Setzen(Katalogfilterprofil.SpKollektortyp, "Röhre");
+        cut.Render();
+
+        Assert.Single(Katalogzeilen(cut));
+        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>S2.3 / Frage Q12 — „im Projekt verwendet".</b> EINMAL für die ganze Liste
+    /// aus der Projektliste des Dialogs gestempelt, nicht je Zeile und nicht aus
+    /// der Datenbank: Der Dialog schreibt erst beim OK zurück, eine Zählabfrage
+    /// wäre nach der ersten Übernahme veraltet.
+    /// </summary>
+    [Fact]
+    public void S2_3_Die_Spalte_im_Projekt_verwendet_zaehlt_die_Projektliste()
+    {
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { Zeile(1, "Vitosol 200") });
+
+        var kopf = cut.FindAll(".epos-raster")[1]
+                      .QuerySelectorAll("th").Select(e => e.TextContent.Trim()).ToList();
+        Assert.Contains(kopf, k => k.StartsWith("im Projekt verwendet"));
+
+        var zeilen = Katalogzeilen(cut);
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal(1, zeilen.Count(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja"));
+
+        var traegt = zeilen.First(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja");
+        Assert.Contains("Vitosol 200", traegt.TextContent);
+    }
+
+    /// <summary>
+    /// <b>S2.5 / Frage Q2 — der Filterstand überlebt Schließen und Öffnen.</b>
+    /// Hier steht dafür ein EIGENER Stand statt des <c>Katalogfilterregister</c>
+    /// (xunit fährt Testklassen nebeneinander); dass das Register ihn wirklich
+    /// zwischen Verwaltung und Projektdialog teilt, prüft
+    /// <c>EPOS.Kern.Tests/KatalogfilterstandTests</c>.
+    /// </summary>
+    [Fact]
+    public void S2_5_Der_Filterstand_ueberlebt_einen_zweiten_Aufbau()
+    {
+        var ersterAufbau = Aufbauen();
+        _filterstand.Setzen(Katalogfilterprofil.SpKollektortyp, "Röhre");
+        ersterAufbau.Render();
+        Assert.Single(Katalogzeilen(ersterAufbau));
+
+        // Der Dialog geht zu und wieder auf - derselbe Stand, dieselbe Sicht.
+        var zweiterAufbau = Aufbauen();
+
+        Assert.Single(Katalogzeilen(zweiterAufbau));
+        Assert.Equal("1 von 2 Sätzen", zweiterAufbau.Find(".epos-katalog-treffer").TextContent);
+        Assert.Single(zweiterAufbau.FindAll(".epos-katalog-ruecksetzer"));
     }
 }

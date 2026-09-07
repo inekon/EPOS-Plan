@@ -300,6 +300,14 @@ namespace WindowsFormsApplication1
                         {
                             new ModulKatalogFeld(FeldBezeichner, t("MODK_LBL_BEZEICHNER"), "",
                                                  BrowserFeldArt.Text, true, 0, gesperrt: true, vorgabe: ""),
+
+                            // W14a-E-10-Q7 (Migrationsschritt 68): der Hersteller als
+                            // eigenes Feld. Bis dahin war er nur das Praefix des
+                            // Bezeichners und im Editor gar nicht pflegbar - der
+                            // Speicher war der EINZIGE Geraetekatalog ohne dieses Feld.
+                            // Leer erlaubt: Die fuenf Altsaetze fuehren keinen.
+                            new ModulKatalogFeld(FeldFirma, t("MODK_LBL_FIRMA"), "",
+                                                 BrowserFeldArt.Text, true, 0, false, vorgabe: ""),
                             new ModulKatalogFeld(FeldTyp, t("MODK_LBL_TYP"), "",
                                                  BrowserFeldArt.Text, false, 0, false,
                                                  // W14a.0f: der Persistenzwert steht jetzt in DbWerte.

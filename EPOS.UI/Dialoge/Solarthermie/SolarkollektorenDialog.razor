@@ -34,6 +34,7 @@
 @namespace EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Erzeuger
+@using WindowsFormsApplication1
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -82,31 +83,14 @@
         </Links>
 
         <Rechts>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <thead>
-                        <tr>
-                            <th>@SpalteWahl</th>
-                            <th>@SpalteName</th>
-                            <th>@SpalteEigenschaften</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (KatalogZeile zeile in _katalog)
-                        {
-                            KatalogZeile k = zeile;
-                            <tr class="@(k == _katalogZeile ? "epos-zeile--markiert" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(k == _katalogZeile)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => KatalogZeileWaehlen(k)" />
-                                </td>
-                                <td>@k.Bezeichner</td>
-                                <td><span class="epos-mehrzeilig">@k.Eigenschaften</span></td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+            @* DIE EINE KATALOGLISTE (W14a-E-10, Stufe S2.1). Der Kollektorkatalog
+               hatte gar keinen Filter - bei sieben Saetzen fiel das nicht auf,
+               nach dem VDI-Import (Hunderte) schon. Statt der Sammelspalte
+               "Eigenschaften" stehen jetzt SECHS Spalten mit Sortierpfeil und
+               Trichter. *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen" />
 
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
@@ -214,8 +198,31 @@
     /// </summary>
     [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
 
-    /// <summary>Die Katalogliste (<c>SolarkollektorenStammCtrl.ReadAll</c>).</summary>
-    [Parameter] public Func<IReadOnlyList<KatalogZeile>>? Katalog { get; set; }
+    /// <summary>
+    /// <b>Die Spalten der Katalogliste</b> — <c>Katalogfilterprofil.MitVerwendung(
+    /// Anlagenart.Solarkollektoren, uebersetzer)</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>
+    /// Die Zeilen des Katalogs, UNGEFILTERT —
+    /// <c>SolarkollektorenStammCtrl.Katalogfilterzeilen()</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste; sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// <b>Ein eigener Filterstand statt des Registers</b> — dasselbe Muster wie
+    /// <c>ProfilVorgabe</c>. Ohne ihn holt der Dialog seinen Stand aus dem
+    /// <c>Katalogfilterregister</c> (S2.5: je Katalog EINER, für die Sitzung,
+    /// gemeinsam mit den anderen Dialogen desselben Katalogs). Ein Prüfstand gibt
+    /// hier seinen eigenen herein und bleibt damit von den anderen Fällen getrennt;
+    /// dass das Register wirklich teilt, prüft <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
 
     /// <summary>Der Detailblock zu einem Kollektor — für beide Listen dieselbe Quelle.</summary>
     [Parameter] public Func<string, ErzeugerDetail?>? Detail { get; set; }
@@ -254,9 +261,13 @@
     [Parameter] public string KopfbandText { get; set; } = "Eingabe der Solarkollektoren";
     [Parameter] public string LabelProjektliste { get; set; } = "Auswahl in Projekt:";
     [Parameter] public string LabelKatalogliste { get; set; } = "Auswahl in DB:";
-    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+
+    /// <summary>
+    /// Kopf der NAMENSSPALTE der Projektliste. Die Katalogliste braucht ihn seit
+    /// S2.1 nicht mehr — dort kommen die Spaltenköpfe aus dem <c>Katalogprofil</c>.
+    /// </summary>
     [Parameter] public string SpalteName { get; set; } = "Name";
-    [Parameter] public string SpalteEigenschaften { get; set; } = "Eigenschaften";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
     [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
     [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
     [Parameter] public string GruppeModul { get; set; } = "Modul";
@@ -287,8 +298,14 @@
     private bool _ersterAufbau = true;
 
     private ErzeugerZeile? _projektZeile;
-    private KatalogZeile? _katalogZeile;
-    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private Katalogfilterzeile? _katalogZeile;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>Der gewählte Bezeichner der KATALOGliste — die Markierung hängt am NAMEN.</summary>
+    private string _katalogGewaehlt = "";
+
+    /// <summary>Der Filterstand je Katalog über die Sitzung (S2.5, Frage Q2).</summary>
+    private Katalogfilterstand _filterstand = new();
     private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
     private double _modulflaeche;
 
@@ -304,7 +321,13 @@
     public ErzeugerZeile? Projektzeile => _projektZeile;
 
     /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
-    public KatalogZeile? Katalogzeile => _katalogZeile;
+    public Katalogfilterzeile? Katalogzeile => _katalogZeile;
+
+    /// <summary>Die Zeilen des Katalogs (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Der Filterzustand des Katalogs (Pruefhilfe fuer Tests).</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
 
     /// <summary>Steht der Katalogeditor? Prüfhilfe für die Tests.</summary>
     public bool EditorOffen => _editorGaben is not null;
@@ -312,8 +335,15 @@
     /// <summary>Die Gesamtfläche — Modulfläche mal Anzahl, live (<c>textBox_Anzahl_TextChanged</c>:367).</summary>
     private string Gesamtflaeche => (_modulflaeche * (_anzahl ?? 0)).ToString();
 
+    protected override void OnParametersSet()
+    {
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
+
     protected override void OnInitialized()
     {
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Katalogprofil?.Art ?? Anlagenart.Solarkollektoren);
+
         KatalogNeuLaden();
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
     }
@@ -325,10 +355,30 @@
         await _wurzel.FocusAsync();
     }
 
+    /// <summary>
+    /// Liest den Katalog neu — nach einem SCHREIBweg (Editor, Neu…, Löschen). Der
+    /// FILTER ruft sie nicht: Er wirkt auf die Anzeige, nie auf die Auswahl.
+    /// </summary>
     private void KatalogNeuLaden()
     {
-        _katalog = Katalog?.Invoke() ?? Array.Empty<KatalogZeile>();
-        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        VerwendungStempeln();
+
+        _katalogZeile = Katalogsatz(_katalogGewaehlt);
+        if (_katalogZeile is null) _katalogGewaehlt = "";
+    }
+
+    /// <summary>Die Spalte „im Projekt verwendet" (Q12) — EINMAL für die ganze Liste.</summary>
+    private void VerwendungStempeln()
+        => Katalogverwendung.Stempeln(_katalog, Zeilen.Select(z => z.Bezeichner));
+
+    /// <summary>Der Katalogsatz zu einem Bezeichner; <c>null</c>, wenn es ihn nicht gibt.</summary>
+    private Katalogfilterzeile? Katalogsatz(string bezeichner)
+    {
+        if (string.IsNullOrEmpty(bezeichner)) return null;
+        foreach (Katalogfilterzeile z in _katalog)
+            if (z.Bezeichner == bezeichner) return z;
+        return null;
     }
 
     private void DetailSetzen(string name)
@@ -342,6 +392,7 @@
     {
         _projektZeile = zeile;
         _katalogZeile = null;
+        _katalogGewaehlt = "";
         _meldung = "";
         DetailSetzen(zeile.Bezeichner);
 
@@ -353,12 +404,13 @@
     }
 
     /// <summary>Katalogzeile: nur das Detail, KEINE Kollektorgruppe (<c>dataGridView1_Click</c>:289).</summary>
-    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    private void KatalogZeileWaehlen(string bezeichner)
     {
-        _katalogZeile = zeile;
+        _katalogGewaehlt = bezeichner ?? "";
+        _katalogZeile = Katalogsatz(_katalogGewaehlt);
         _projektZeile = null;
         _meldung = "";
-        DetailSetzen(zeile.Bezeichner);
+        DetailSetzen(_katalogGewaehlt);
     }
 
     // =================================================================================
@@ -378,6 +430,7 @@
         if (aufnahme.Zeile is null) return;
 
         Zeilen.Add(aufnahme.Zeile);
+        VerwendungStempeln();                 // Q12
         ProjektZeileWaehlen(aufnahme.Zeile);
     }
 
@@ -393,12 +446,13 @@
         ErzeugerZeile zeile = _projektZeile;
         Zeilen.Remove(zeile);
         Entfernen?.Invoke(zeile);
+        VerwendungStempeln();                 // Q12
 
         _projektZeile = null;
         _meldung = "";
 
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
-        else if (_katalog.Count > 0) KatalogZeileWaehlen(_katalog[0]);
+        else if (_katalog.Count > 0) KatalogZeileWaehlen(_katalog[0].Bezeichner);
         else _detail = new ErzeugerDetail("", "", Array.Empty<(string, string)>());
     }
 
@@ -460,6 +514,7 @@
 
         if (!KatalogLoeschen(_katalogZeile.Bezeichner)) return;
         _katalogZeile = null;
+        _katalogGewaehlt = "";
         KatalogNeuLaden();
     }
 

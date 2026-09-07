@@ -217,6 +217,17 @@
     /// </summary>
     [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
 
+    /// <summary>
+    /// <b>Ein eigener Filterstand statt des Registers</b> — dasselbe Muster wie
+    /// <c>ProfilVorgabe</c>. Ohne ihn holt der Dialog seinen Stand aus dem
+    /// <c>Katalogfilterregister</c> (S2.5: je Katalog EINER, für die Sitzung,
+    /// gemeinsam mit den anderen Dialogen desselben Katalogs). Ein Prüfstand gibt
+    /// hier seinen eigenen herein und bleibt damit von den anderen Fällen getrennt;
+    /// dass das Register wirklich teilt, prüft <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+
     /// <summary>Rückfrage vor dem Löschen; <c>{0}</c> nimmt den Bezeichner auf.</summary>
     [Parameter] public string FrageLoeschen { get; set; } = "Soll {0} wirklich gelöscht werden ?";
     [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
@@ -246,8 +257,12 @@
     /// <summary>
     /// Der Filterzustand — er gehört dem WIRT und nicht dem Popover (offener Punkt
     /// O‑6): Der <c>@key</c>-Fix W6‑B‑2 baut das Raster beim Filtern neu auf.
+    ///
+    /// <para><b>Seit S2.5 kommt er aus dem <see cref="Katalogfilterregister"/></b>
+    /// (Frage Q2 = Sitzung, je Katalog, gemeinsam für Verwaltung und
+    /// Projektdialog).</para>
     /// </summary>
-    private readonly Katalogfilterstand _filterstand = new();
+    private Katalogfilterstand _filterstand = new();
 
     private List<ModulFeldwert> _felder = new();
     private IReadOnlyList<Parameterwert> _uebersicht = Array.Empty<Parameterwert>();
@@ -302,6 +317,7 @@
     protected override void OnInitialized()
     {
         if (ProfilVorgabe is null) _profil = ModulKatalogProfil.Finde(Art);
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Filterprofil.Art);
         ListeAufbauen();
     }
 

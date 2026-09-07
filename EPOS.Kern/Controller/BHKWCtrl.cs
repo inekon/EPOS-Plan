@@ -11,6 +11,11 @@ namespace WindowsFormsApplication1
         // --- Statische Texte (beibehalten) ---
         public static string[] BrennstoffartText = { "Öl", "Gas", "Biogas", "Rapsöl", "Holz/Pellet", "Sonstiges", "", "", "Flüssiggas", "", "", "Bioerdgas", "", "", "", "Strom" };
         public static string[] LeistungText = { "kleiner 20 kW", "20 bis 40 kW", "40 bis 80 kW", "80 bis 200 kW", "200 bis 500 kW", "500 bis 800 kW", "800 bis 1200 kW", "größer 1200 kW" };
+        // OHNE WIRT SEIT STUFE S2.1 (W14a-E-10, Frage Q5): Die festen Stufen sind
+        // abgeschafft - "Sortieren nach der Spalte und ein Ausdruck wie 200..500
+        // leisten dasselbe genauer". Seit S1.6 (Verwaltung) und S2.1 (Projekt) ruft
+        // KEIN Wirt mehr hierher; was bleibt, ist die GEGENPROBE des Spaltenfilters
+        // in EPOS.Kern.Tests. Wer das loescht, loescht den Beweis mit.
         public static string[] LeistungFilterText = { "Ptherm LIKE '%'", "Ptherm<20", "Ptherm>=20 and Ptherm<40", "Ptherm>=40 and Ptherm<80", "Ptherm>=80 and Ptherm<200",
                                                       "Ptherm>=200 and Ptherm<500", "Ptherm>=500 and Ptherm<800", "Ptherm>=800 and Ptherm<1200", "Ptherm>=1200" };
 

@@ -124,10 +124,10 @@ public class StromganglinieDialogTests : BunitContext
         => Zeilen(cut, spalte)[zeile].QuerySelector("button")!.Click();
 
     private static IElement Hinzu(IRenderedComponent<StromganglinieDialog> cut)
-        => cut.FindAll(".epos-zweispalten-mitte button")[0];
+        => cut.FindAll(".epos-zweispalten-uebernahme button")[0];
 
     private static IElement Entfernen(IRenderedComponent<StromganglinieDialog> cut)
-        => cut.FindAll(".epos-zweispalten-mitte button")[1];
+        => cut.FindAll(".epos-zweispalten-uebernahme button")[1];
 
     private static IElement Fussknopf(IRenderedComponent<StromganglinieDialog> cut, int i)
         => cut.FindAll(".epos-dialog > .epos-leiste button")[i];
@@ -143,17 +143,16 @@ public class StromganglinieDialogTests : BunitContext
 
         Assert.Equal("Stromganglinien", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte").Count);
-        Assert.Equal(2, cut.FindAll(".epos-zweispalten-mitte button").Count);
-        // Entscheid #76: Jeder Knopf traegt BEIDE Zeichen im Markup - das Stilblatt
-        // zeigt je nach Anordnung eines davon - und dazu seine Aufgabe im Klartext.
-        Assert.Equal("◀", cut.FindAll(".epos-zweispalten-mitte button")[0].QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
-        Assert.Equal("▲", cut.FindAll(".epos-zweispalten-mitte button")[0].QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
-        Assert.Equal("▶", cut.FindAll(".epos-zweispalten-mitte button")[1].QuerySelector(".epos-zweispalten-pfeil--breit")!.TextContent);
-        Assert.Equal("▼", cut.FindAll(".epos-zweispalten-mitte button")[1].QuerySelector(".epos-zweispalten-pfeil--schmal")!.TextContent);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
+        // Entscheid #76, Anordnung seit W14a-E-10-Q2 untereinander: Jeder Knopf
+        // traegt EIN Zeichen (▲ hinauf ins Projekt, ▼ hinunter in den Katalog)
+        // und dazu seine Aufgabe im Klartext.
+        Assert.Equal("▲", cut.FindAll(".epos-zweispalten-uebernahme button")[0].QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
+        Assert.Equal("▼", cut.FindAll(".epos-zweispalten-uebernahme button")[1].QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
         Assert.Equal("In das Projekt übernehmen",
-                     cut.FindAll(".epos-zweispalten-mitte button")[0].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
+                     cut.FindAll(".epos-zweispalten-uebernahme button")[0].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
         Assert.Equal("Aus dem Projekt entfernen",
-                     cut.FindAll(".epos-zweispalten-mitte button")[1].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
+                     cut.FindAll(".epos-zweispalten-uebernahme button")[1].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
 
         // "Bearbeiten..." steht unter der Katalogliste, OK und Abbrechen im Fuss.
         // OHNE die Gaben der Katalogpflege (W12-E-1) ist es der EINZIGE Knopf dort —
@@ -360,7 +359,7 @@ public class StromganglinieDialogTests : BunitContext
         var cut = Zeige(wizard: true, geschlossen: b => ergebnis = b);
 
         Assert.Empty(cut.FindAll(".epos-dialog > .epos-leiste"));
-        Assert.Equal(2, cut.FindAll(".epos-zweispalten-mitte button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(ergebnis);

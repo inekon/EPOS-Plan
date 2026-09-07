@@ -53,10 +53,12 @@ namespace WindowsFormsApplication1
         /// 06.09.2026, Stufe S1) auf 65; mit der Strangzuordnung und dem sichtbaren
         /// Wechselrichterweg (Schritt 66, W6-E-2 / W6-E-3, Stufe S2) auf 66 und mit der
         /// sichtbaren BHKW-Leistungsuntergrenze (Schritt 67, W6-E-7 vom 07.09.2026) auf
-        /// 67. Der Freeze-Stand bleibt bei 61. Der Kern kennt nur das
+        /// 67; mit dem Hersteller des Stromspeicherkatalogs (Schritt 68,
+        /// W14a-E-10-Q7 vom 07.09.2026, Stufe S2) auf <b>68</b>. Der Freeze-Stand
+        /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 67;
+        public const int Zielversion = 68;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

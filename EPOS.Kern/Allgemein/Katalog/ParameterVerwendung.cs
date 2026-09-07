@@ -629,7 +629,16 @@ namespace WindowsFormsApplication1
                 E("Investition_Fix", t("SP_LABEL_INVESTITION_FIX"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:334; StromspeicherSimCtrl.cs:1114"),
                 E("Standby_Verbrauch", t("SP_LABEL_STANDBY"), "W", SIM,
-                  "StromspeicherSimCtrl.cs:1115 (Eigenverbrauch der Leistungselektronik)")
+                  "StromspeicherSimCtrl.cs:1115 (Eigenverbrauch der Leistungselektronik)"),
+
+                // Migrationsschritt 68 (Anwenderentscheid W14a-E-10-Q7 vom 07.09.2026).
+                // Die Spalte steht am ENDE der Tabelle, weil ALTER TABLE ADD COLUMN sie
+                // dort anhaengt - die Reihenfolge dieses Katalogs ist die der Tabelle.
+                // Verwendung DLG wie beim Wechselrichter: Kein Rechenweg liest den
+                // Hersteller, er sortiert und filtert die Katalogliste.
+                E("Firma", t("MODK_LBL_FIRMA"), "", DLG,
+                  "StromspeicherStammCtrl.Hersteller (Spalte \"Hersteller\" der Katalogliste); " +
+                  "StromspeicherCtrl.CopyFromStamm (Quelle der Projektkopie)")
             };
         }
 

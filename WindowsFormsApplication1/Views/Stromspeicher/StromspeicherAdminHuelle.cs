@@ -69,6 +69,7 @@ namespace WindowsFormsApplication1
             var m = new StromspeicherModel
             {
                 m_szBezeichner = ModulKatalogHuelle.Wert(felder, ModulKatalogProfil.FeldBezeichner),
+                m_szFirma = ModulKatalogHuelle.Wert(felder, ModulKatalogProfil.FeldFirma),
                 m_szTyp = ModulKatalogHuelle.Wert(felder, ModulKatalogProfil.FeldTyp),
                 m_Energie = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldEnergie),
                 m_Leistung = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldLeistung),

@@ -114,10 +114,10 @@ public class BedarfsProfileDialogTests : BunitContext
     /// eigenes Element neben dem Text.
     /// </summary>
     private static IElement Uebernehmen(IRenderedComponent<BedarfsProfileDialog> cut)
-        => cut.FindAll(".epos-zweispalten-mitte button")[0];
+        => cut.FindAll(".epos-zweispalten-uebernahme button")[0];
 
     private static IElement Entfernen(IRenderedComponent<BedarfsProfileDialog> cut)
-        => cut.FindAll(".epos-zweispalten-mitte button")[1];
+        => cut.FindAll(".epos-zweispalten-uebernahme button")[1];
 
     // =================================================================================
     // Feldbestand JE AUSPRAEGUNG
@@ -653,9 +653,9 @@ public class BedarfsProfileDialogTests : BunitContext
                           .Select(e => e.ClassName ?? "").ToList();
 
         Assert.Equal(3, bereiche.Count);
-        Assert.Contains("epos-zweispalten-spalte--links", bereiche[0]);
-        Assert.Contains("epos-zweispalten-mitte", bereiche[1]);
-        Assert.Contains("epos-zweispalten-spalte--rechts", bereiche[2]);
+        Assert.Contains("epos-zweispalten-spalte--oben", bereiche[0]);
+        Assert.Contains("epos-zweispalten-uebernahme", bereiche[1]);
+        Assert.Contains("epos-zweispalten-spalte--unten", bereiche[2]);
 
         // Beide Listen stehen weiterhin in ihrem Rahmen (Befund W9-B-2).
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);

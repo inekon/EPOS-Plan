@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -299,6 +299,17 @@ namespace WindowsFormsApplication1
         public const string SpKuehlen = "KUEHLEN";
         public const string SpCop = "COP";
 
+        /// <summary>
+        /// <b>„im Projekt verwendet"</b> (Frage <b>Q12</b>, Stufe S2.3) — die einzige
+        /// Spalte, die es NUR in den Projektdialogen gibt. In der Verwaltung waere
+        /// sie eine Zaehlung ueber alle Projekte ohne Nutzen fuer die Pflege.
+        /// <para>Sie ist ein KENNZEICHEN und traegt deshalb nur den Sortierpfeil
+        /// (5.6.2): Ein Feld „enthaelt ja" fuer zwei Werte ist ein Bedienelement ohne
+        /// Gewinn — die Sortierung stellt die verwendeten Saetze ohnehin
+        /// zusammen.</para>
+        /// </summary>
+        public const string SpVerwendet = "VERWENDET";
+
         /// <summary>Welche der acht Anlagenarten.</summary>
         public Anlagenart Art { get; private set; }
 
@@ -495,6 +506,36 @@ namespace WindowsFormsApplication1
             }
 
             throw new ArgumentOutOfRangeException(nameof(art));
+        }
+
+        /// <summary>
+        /// <b>Dieselbe Auspraegung MIT der Spalte „im Projekt verwendet"</b> (Frage
+        /// <b>Q12</b>, Stufe S2.3) — sie haengt hinten an und gilt NUR fuer die sieben
+        /// Projektdialoge.
+        ///
+        /// <para><b>Warum eine zweite Fabrikmethode und kein zweites Profil.</b> Die
+        /// Spalten sind dieselben; es kommt EINE dazu. Ein eigener Satz je
+        /// Projektdialog waere die vierzehnte Wahrheit darueber, was ein Katalog
+        /// zeigt — genau das, was Kapitel 3.1 vermeidet.</para>
+        ///
+        /// <para><b>Sie steht HINTEN.</b> Vorne stuenden die Parameter, nach denen
+        /// gesucht wird, weiter hinten; und der Anwender liest die Liste von links
+        /// nach rechts als Geraetebeschreibung. „Verwendet" ist eine Auskunft ueber
+        /// das PROJEKT, keine ueber das Geraet.</para>
+        /// </summary>
+        public static Katalogfilterprofil MitVerwendung(Anlagenart art,
+                                                        Func<string, string> text = null)
+        {
+            Func<string, string> t = text ?? (s => s);
+
+            Katalogfilterprofil grund = Finde(art, text);
+            var spalten = new List<Katalogspalte>(grund.Spalten)
+            {
+                new Katalogspalte(SpVerwendet, t("KFLT_SP_VERWENDET"), "",
+                                  Katalogspaltenart.JaNein)
+            };
+
+            return new Katalogfilterprofil { Art = art, Spalten = spalten };
         }
 
         /// <summary>Alle acht Auspraegungen — fuer Stapelpruefungen.</summary>

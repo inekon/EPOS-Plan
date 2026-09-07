@@ -90,9 +90,6 @@ namespace WindowsFormsApplication1
                 ["Kennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(KennlinienZu),
                 ["KennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
                     (idWp, zeilen) => KenndatenCtrl.Abgleichen(idWp, NachModell(zeilen))),
-                ["Katalog"] = new Func<IReadOnlyList<WaermepumpenKatalogZeile>>(
-                    () => new WPStammCtrl().KatalogZeilen()),
-
                 // W14a-E-8 (06.09.2026): der Aufklapper „Alle Parameter und ihre
                 // Verwendung anzeigen" unter dem Stammdatenblock. Er ist hier die
                 // Auskunft, die im Bestand fehlte: Die Maske zeigt elf der achtzehn
@@ -141,7 +138,6 @@ namespace WindowsFormsApplication1
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
                 ["BtnNeuText"] = Text_("WPS_BTN_NEU", "Neu"),
                 ["BtnLoeschenText"] = Text_("WPS_BTN_LOESCHEN", "Löschen"),
-                ["BtnKatalogText"] = Text_("WPK_BTN_KATALOG", "📋  Modul-Katalog..."),
                 ["BtnBeendenText"] = MyResource.Resource.WP_BTN_BEENDEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
                 ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,

@@ -87,7 +87,14 @@ namespace WindowsFormsApplication1
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
 
-                ["Katalog"] = new Func<IReadOnlyList<KatalogZeile>>(Katalogzeilen),
+                // W14a-E-10 / S2.1: Der Speicherkatalog bekommt seine ACHT Spalten -
+                // er hatte als einziger gar keinen Filter. Dazu die Spalte "im
+                // Projekt verwendet" (Q12).
+                ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
+                    Anlagenart.Stromspeicher, Text_),
+
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    StromspeicherStammCtrl.Katalogfilterzeilen),
                 ["Detail"] = new Func<string, ErzeugerDetail>(DetailZu),
 
                 ["Aufnehmen"] = new Func<int, AufnahmeErgebnis>(
@@ -113,8 +120,6 @@ namespace WindowsFormsApplication1
                 ["LabelProjektliste"] = Text_("SPD_LBL_PROJEKTLISTE", "ausgewählte Stromspeicher:"),
                 ["LabelKatalogliste"] = Text_("SPD_LBL_KATALOGLISTE", "Stromspeicher aus Datenbank:"),
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
-                ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
-                ["SpalteEigenschaften"] = Text_("BHKWV_SP_EIGENSCHAFTEN", "Eigenschaften"),
                 ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
@@ -179,21 +184,6 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>
-        /// Die Katalogzeilen samt der zweiten Spalte — im Vorläufer „Leistung kW" und
-        /// darunter der Typ (<c>SetDBList</c>, Z. 109).
-        /// </summary>
-        private static IReadOnlyList<KatalogZeile> Katalogzeilen()
-        {
-            var ctrl = new StromspeicherStammCtrl();
-            ctrl.ReadAll();
-
-            var liste = new List<KatalogZeile>();
-            foreach (StromspeicherModel s in ctrl.items)
-                liste.Add(new KatalogZeile(s.m_ID, s.m_szBezeichner,
-                                           s.m_Leistung + " kW\n" + s.m_szTyp));
-            return liste;
-        }
 
         /// <summary>
         /// Der Detailblock (<c>listBox_SP_SelectedIndexChanged</c>, Z. 206). Er kommt
@@ -218,6 +208,18 @@ namespace WindowsFormsApplication1
             };
 
             return new ErzeugerDetail(s.m_szBezeichner ?? "", "", felder);
+        }
+
+
+        /// <summary>
+        /// Der Uebersetzer, den <see cref="Katalogfilterprofil.MitVerwendung"/>
+        /// entgegennimmt: Schluessel rein, Text raus — ein fehlender Schluessel bleibt
+        /// als Schluessel stehen, damit er auffaellt (Muster
+        /// <c>KatalogBrowserProfil.Finde</c>).
+        /// </summary>
+        private static string Text_(string schluessel)
+        {
+            return Text_(schluessel, schluessel);
         }
 
         private static string Text_(string schluessel, string rueckfall)

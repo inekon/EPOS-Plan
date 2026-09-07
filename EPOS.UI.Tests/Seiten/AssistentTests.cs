@@ -124,6 +124,96 @@ public class AssistentTests : BunitContext
         Assert.Equal(typ, AssistentSeite.Seitentyp(nr).Name);
     }
 
+    // =====================================================================
+    // Stufe S2.4 - der Assistent ERBT das Schema
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Stufe S2.4 des Anwenderentscheids W14a‑E‑10:</b> „Der Assistent erbt das
+    /// Schema über dieselben Komponenten; keine zweite Fassung der Liste."
+    ///
+    /// <para>Der Nachweis ist die Seitentabelle selbst. Die sechs Erzeugerschritte
+    /// 7 bis 12 nennen GENAU die sechs Komponenten, die auch das Menü öffnet —
+    /// nicht eine Assistentenfassung daneben. Was S2.1 bis S2.3 an ihnen ändert
+    /// (Katalogliste über die volle Breite, Trichter im Spaltenkopf, Spalte „im
+    /// Projekt verwendet"), steht damit im Assistenten, ohne dass hier eine Zeile
+    /// dafür geschrieben würde.</para>
+    ///
+    /// <para>Dasselbe gilt für die zwei Bedarfsschritte 4 und 5: EINE Komponente
+    /// mit der Ausprägung <c>BedarfsArt</c>, zweimal aufgerufen (Muster aus W8).</para>
+    /// </summary>
+    [Fact]
+    public void S2_4_Die_Erzeugerschritte_sind_dieselben_Komponenten_wie_im_Menue()
+    {
+        // Die sieben Projektdialoge der Stufe S2.1 - sechs stehen im Assistenten,
+        // der Pufferspeicher wird aus der Simulationskonfiguration geoeffnet.
+        Assert.Same(typeof(EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog),
+                    AssistentSeite.Seitentyp(7));
+        Assert.Same(typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorenDialog),
+                    AssistentSeite.Seitentyp(8));
+        Assert.Same(typeof(EPOS.UI.Dialoge.Erzeuger.PhotovoltaikDialog),
+                    AssistentSeite.Seitentyp(9));
+        Assert.Same(typeof(EPOS.UI.Dialoge.Erzeuger.StromspeicherDialog),
+                    AssistentSeite.Seitentyp(10));
+        Assert.Same(typeof(EPOS.UI.Dialoge.Erzeuger.HeizkesselDialog),
+                    AssistentSeite.Seitentyp(11));
+        Assert.Same(typeof(EPOS.UI.Dialoge.Erzeuger.BhkwDialog),
+                    AssistentSeite.Seitentyp(12));
+
+        // Die zwei Bedarfsschritte sind DIESELBE Komponente (Ausprägung BedarfsArt).
+        Assert.Same(AssistentSeite.Seitentyp(4), AssistentSeite.Seitentyp(5));
+    }
+
+    /// <summary>
+    /// <b>Und die Liste kommt über den Baustein, nicht neben ihm.</b> Jeder der
+    /// sechs Erzeugerschritte trägt die vier Parameter, über die S2.1 die
+    /// Katalogliste füllt — <c>Katalogprofil</c>, <c>Katalogzeilen</c>,
+    /// <c>Filtertexte</c> und <c>Filterstandvorgabe</c>. Fehlte einer, hätte der
+    /// Schritt eine eigene Liste; genau das verbietet S2.4.
+    /// </summary>
+    [Theory]
+    [InlineData(8)]
+    [InlineData(9)]
+    [InlineData(10)]
+    [InlineData(11)]
+    [InlineData(12)]
+    public void S2_4_Jeder_Erzeugerschritt_fuellt_die_Katalogliste_ueber_dieselben_Parameter(int nr)
+    {
+        Type typ = AssistentSeite.Seitentyp(nr);
+
+        foreach (string name in new[] { "Katalogprofil", "Katalogzeilen",
+                                        "Filtertexte", "Filterstandvorgabe" })
+        {
+            System.Reflection.PropertyInfo eigenschaft = typ.GetProperty(name);
+            Assert.True(eigenschaft is not null, typ.Name + " kennt " + name + " nicht");
+            Assert.True(
+                Attribute.IsDefined(eigenschaft!,
+                                    typeof(Microsoft.AspNetCore.Components.ParameterAttribute)),
+                typ.Name + "." + name + " ist kein [Parameter]");
+        }
+    }
+
+    /// <summary>
+    /// Der Wärmepumpenschritt geht denselben Weg, nur über den KATALOGDIALOG:
+    /// <c>Katalog</c> liefert die <c>Katalogfilterzeile</c>n,
+    /// <c>Katalogprofil</c> die Spalten (mit „im Projekt verwendet", Q12) — seit
+    /// S2.2 gibt es dort keine eigene Filterleiste mehr, aus der eine zweite
+    /// Fassung entstehen könnte.
+    /// </summary>
+    [Fact]
+    public void S2_4_Der_Waermepumpenschritt_reicht_Katalogzeilen_und_Profil_durch()
+    {
+        Type typ = AssistentSeite.Seitentyp(7);
+
+        System.Reflection.PropertyInfo katalog = typ.GetProperty("Katalog");
+        Assert.NotNull(katalog);
+        Assert.Equal(typeof(Func<IReadOnlyList<Katalogfilterzeile>>),
+                     katalog!.PropertyType);
+
+        Assert.Equal(typeof(Katalogfilterprofil),
+                     typ.GetProperty("Katalogprofil")!.PropertyType);
+    }
+
     [Fact]
     public void Der_Assistent_beginnt_auf_dem_Komponentenschritt()
     {

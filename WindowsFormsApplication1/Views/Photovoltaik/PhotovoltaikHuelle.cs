@@ -97,10 +97,15 @@ namespace WindowsFormsApplication1
             {
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
-                ["Hersteller"] = Hersteller(),
+                // W14a-E-10 / S2.1: DAS PROFIL statt der Herstellerklappliste, plus
+                // die Spalte "im Projekt verwendet" (Q12). Bei 20 749 CEC-Modulen ist
+                // das der Unterschied zwischen einer Klappliste mit 258 Eintraegen
+                // und einem Feld "enthaelt ...".
+                ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
+                    Anlagenart.Photovoltaik, Text_),
 
-                ["Filtern"] = new Func<string, IReadOnlyList<KatalogZeile>>(
-                    hersteller => KatalogZeilen(stamm.Filtern(hersteller))),
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    PhotovoltaikStammCtrl.Katalogfilterzeilen),
 
                 ["Detail"] = new Func<string, ErzeugerDetail>(DetailZu),
 
@@ -228,7 +233,6 @@ namespace WindowsFormsApplication1
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
                 ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
-                ["LabelFilterHersteller"] = Text_("PVD_LBL_FILTER_HERSTELLER", "Filtern nach Hersteller:"),
                 ["BtnBearbeitenText"] = Text_("PVD_BTN_BEARBEITEN", "Modul Bearbeiten..."),
                 ["BtnLoeschenText"] = Text_("PVD_BTN_LOESCHEN", "Modul Löschen"),
                 ["GruppeAnlage"] = Text_("PVD_GRP_ANLAGE", "PV Anlage Eigenschaften:"),
@@ -653,21 +657,18 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        private static IReadOnlyList<KatalogZeile> KatalogZeilen(
-            IReadOnlyList<PhotovoltaikStammCtrl.KatalogZeile> quelle)
-        {
-            var liste = new List<KatalogZeile>();
-            foreach (var z in quelle) liste.Add(new KatalogZeile(z.Id, z.Bezeichner));
-            return liste;
-        }
 
-        /// <summary>„Alle" voran, dann die Hersteller — wie <c>Form_PV_Load</c>.</summary>
-        private static IReadOnlyList<string> Hersteller()
+
+
+        /// <summary>
+        /// Der Uebersetzer, den <see cref="Katalogfilterprofil.MitVerwendung"/>
+        /// entgegennimmt: Schluessel rein, Text raus — ein fehlender Schluessel bleibt
+        /// als Schluessel stehen, damit er auffaellt (Muster
+        /// <c>KatalogBrowserProfil.Finde</c>).
+        /// </summary>
+        private static string Text_(string schluessel)
         {
-            var liste = new List<string> { Text_("HZK_STUFE_ALLE", "Alle") };
-            foreach (string h in PhotovoltaikStammCtrl.Hersteller())
-                if (h.Length > 0) liste.Add(h);
-            return liste;
+            return Text_(schluessel, schluessel);
         }
 
         private static string Text_(string schluessel, string rueckfall)

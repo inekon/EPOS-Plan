@@ -90,6 +90,16 @@ namespace WindowsFormsApplication1
         /// aus jedem Bereichsfilter mit einer Untergrenze &gt; 0 heraus. Das ist das
         /// Verhalten des Vorlaeufers.</para>
         /// </summary>
+        // ==================================================================
+        // OHNE WIRT SEIT STUFE S2.2 (Anwenderentscheid W14a-E-10, Frage Q5)
+        //
+        // Diese Methode fuellte den WaermepumpenKatalogDialog mit den elf
+        // Merkmalen seiner Filterleiste. Seit S2.2 holt er seine Zeilen ueber
+        // Katalogfilterzeilen() - denselben Weg wie die Verwaltung, dieselben
+        // neun Spalten. Gemessen am 07.09.2026 ruft nur noch
+        // WaermepumpenKatalogTests hierher; sie bleibt als Gegenprobe stehen,
+        // zusammen mit WaermepumpenKatalogFilter und WaermepumpenKatalogZeile.
+        // ==================================================================
         public IReadOnlyList<WaermepumpenKatalogZeile> KatalogZeilen()
         {
             ReadAll();   // alle Stamm-WP (Tab_WP_STAMM), sortiert nach Bezeichner

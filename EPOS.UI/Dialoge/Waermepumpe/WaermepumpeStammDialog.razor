@@ -65,8 +65,18 @@
        sass, die der Anwender beim Oeffnen gar nicht sieht (Konzept Befund 1.2/4).
        Jetzt stehen NEUN Spalten hier - Hersteller, Modell, Quelle, P_N, VL min,
        VL max, Zuheizung, Kuehlen und COP bei A2/W35 -, jede sortierbar und (bis auf
-       das Kennzeichen "Kuehlen") mit Trichter. Der Knopf "Modul-Katalog..." bleibt:
-       Die Ueberlagerung ist der Weg in den KATALOG, nicht in einen zweiten Filter. *@
+       das Kennzeichen "Kuehlen") mit Trichter.
+
+       UND MIT STUFE S2.2 FAELLT DER KNOPF "MODUL-KATALOG...". S1 hat ihn stehen
+       lassen mit der Begruendung "die Ueberlagerung ist der Weg in den KATALOG,
+       nicht in einen zweiten Filter" - das galt, solange der Katalogdialog seine
+       eigene Filterleiste mit elf Bedienelementen hatte. Seit S2.2 zeigt er
+       DIESELBE Liste mit DENSELBEN neun Spalten aus DEMSELBEN Weg
+       (WPStammCtrl.Katalogfilterzeilen), und diese Maske IST der Katalog:
+       Tab_WP_STAMM steht schon da. Zwei Fassungen derselben Liste uebereinander
+       waeren genau das, was die Hausregel seit iZ5 verbietet - "nie zwei Fassungen
+       derselben Maske". Die zwei anderen Wirte des Katalogdialogs (Waermepumpen-
+       verwaltung, Anlagenmaske) haben keine eigene Katalogliste und behalten ihn. *@
     <Katalograhmen>
         <Liste>
             <h2 class="epos-untergruppe">@LabelListe</h2>
@@ -74,10 +84,6 @@
             <Katalogliste Profil="@Spaltenprofil" Zeilen="@_liste"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" />
-
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf" @onclick="BeiKatalog">@BtnKatalogText</button>
-            </div>
         </Liste>
 
         <Eingabe>
@@ -235,17 +241,6 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung 2: der Modulkatalog ----------------------------------- *@
-    <Ueberlagerung Offen="@_katalogOffen" Schliessbar="false"
-                   Titel="@BtnKatalogText" Geschlossen="() => _katalogOffen = false">
-        <KindInhalt>
-            @if (_katalogOffen)
-            {
-                <WaermepumpenKatalogDialog Zeilen="@_katalog" Geschlossen="KatalogFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
-
     <Rueckfrage Offen="@_loeschfrage" Frage="@FrageLoeschen" TitelText="@BtnLoeschenText"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
 </div>
@@ -270,6 +265,14 @@
 
     /// <summary>Die Beschriftungen der Katalogliste — EIN Bündel.</summary>
     [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// <b>Ein eigener Filterstand statt des Registers</b> — dasselbe Muster wie
+    /// <c>ProfilVorgabe</c>. Ohne ihn holt der Dialog seinen Stand aus dem
+    /// <c>Katalogfilterregister</c> (S2.5: je Katalog EINER, für die Sitzung,
+    /// gemeinsam mit dem Projektdialog).
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>
     /// Das Spaltenprofil, das die Liste wirklich benutzt: die Vorgabe der Hülle,
@@ -310,9 +313,6 @@
 
     /// <summary>Schreibt den Editorstand zurück (<c>KenndatenCtrl.Abgleichen</c>).</summary>
     [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>, bool>? KennlinienAbgleichen { get; set; }
-
-    /// <summary>Der Katalog für die Überlagerung „Modul-Katalog…".</summary>
-    [Parameter] public Func<IReadOnlyList<WaermepumpenKatalogZeile>>? Katalog { get; set; }
 
     /// <summary><c>true</c> = mit „Beenden" geschlossen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
@@ -401,7 +401,6 @@
     [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
     [Parameter] public string BtnNeuText { get; set; } = "Neu";
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
-    [Parameter] public string BtnKatalogText { get; set; } = "📋  Modul-Katalog...";
     [Parameter] public string BtnBeendenText { get; set; } = "Beenden";
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
@@ -425,14 +424,18 @@
     private bool _ersterAufbau = true;
 
     private IReadOnlyList<Katalogfilterzeile> _liste = Array.Empty<Katalogfilterzeile>();
-    private IReadOnlyList<WaermepumpenKatalogZeile> _katalog = Array.Empty<WaermepumpenKatalogZeile>();
     private KennlinienBilder _bilder = KennlinienBilder.Leer;
     private IReadOnlyList<Parameterwert> _uebersicht = Array.Empty<Parameterwert>();
 
     /// <summary>
     /// Der Filterzustand der Stammliste — er gehört dem WIRT (offener Punkt O‑6).
+    ///
+    /// <para><b>Seit S2.5 kommt er aus dem <see cref="Katalogfilterregister"/></b>
+    /// (Frage Q2 = Sitzung, je Katalog, GEMEINSAM für Verwaltung und
+    /// Projektdialog): Der Wärmepumpenkatalog ist derselbe, gleich ob man ihn hier
+    /// pflegt oder im Projekt daraus wählt.</para>
     /// </summary>
-    private readonly Katalogfilterstand _filterstand = new();
+    private Katalogfilterstand _filterstand = new();
 
     /// <summary>
     /// Der gewählte BEZEICHNER. Die Markierung der <c>Katalogliste</c> hängt am Namen
@@ -448,7 +451,6 @@
     private string _blatt = "COP";
 
     private List<KennlinienZeile>? _kennlinien;
-    private bool _katalogOffen;
     private bool _loeschfrage;
 
     private string _meldung = "";
@@ -491,6 +493,10 @@
 
     protected override void OnInitialized()
     {
+        // S2.5: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit dem
+        // Projektdialog (Frage Q2). Ein Pruefstand gibt seinen eigenen herein.
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Anlagenart.Waermepumpe);
+
         ListeNeuLaden();
         // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus.
         if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
@@ -693,29 +699,10 @@
         BilderNeuZeichnen();                            // Chart aktualisieren (Z. 549)
     }
 
-    private void BeiKatalog()
-    {
-        _katalog = Katalog?.Invoke() ?? Array.Empty<WaermepumpenKatalogZeile>();
-        _katalogOffen = true;
-    }
-
-    /// <summary>
-    /// Der Katalog liefert einen Bezeichner; der Vorläufer setzte damit
-    /// <c>listBox_WP.Text</c> und löste so die Auswahl aus (<c>btn_Katalog_Click</c>:573).
-    /// </summary>
-    private void KatalogFertig(string? bezeichner)
-    {
-        _katalogOffen = false;
-        if (bezeichner is null) return;
-
-        Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == bezeichner);
-        if (zeile is not null) ZeileWaehlen(zeile);
-    }
-
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen und die Rueckfrage werten Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || _kennlinien is not null || _katalogOffen || _loeschfrage)
+        if (e.Key != "Escape" || _kennlinien is not null || _loeschfrage)
             return Task.CompletedTask;
         return Geschlossen.InvokeAsync(false);
     }

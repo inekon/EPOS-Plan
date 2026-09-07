@@ -22,6 +22,14 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class ModulKatalogDialogTests : BunitContext
 {
+
+    /// <summary>
+    /// Der Filterstand DIESES Prüfstands. Ohne ihn nähme der Dialog den aus dem
+    /// <c>Katalogfilterregister</c> — der lebt prozessweit, und xunit fährt
+    /// Testklassen nebeneinander. Dass das Register wirklich teilt, prüft
+    /// <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
     public ModulKatalogDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -98,6 +106,7 @@ public class ModulKatalogDialogTests : BunitContext
 
         return Render<ModulKatalogDialog>(p => p
             .Add(x => x.Art, art)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.ProfilVorgabe, Profil(art))
             .Add(x => x.Wege, wege ?? standard)
             .Add(x => x.Geschlossen, e => geschlossen?.Invoke(e)));
@@ -108,7 +117,7 @@ public class ModulKatalogDialogTests : BunitContext
     // =================================================================================
 
     [Theory]
-    [InlineData(ModulKatalogArt.Stromspeicher, "Administration Stromspeicher", 13)]
+    [InlineData(ModulKatalogArt.Stromspeicher, "Administration Stromspeicher", 14)]
     [InlineData(ModulKatalogArt.Photovoltaik, "Administration Photovoltaik Module", 14)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Felder(
         ModulKatalogArt art, string titel, int felder)
@@ -407,7 +416,9 @@ public class ModulKatalogDialogTests : BunitContext
 
         Assert.NotNull(gesehen);
         Assert.Equal("Modul A", schluessel);
-        Assert.Equal(13, gesehen!.Count);
+        // VIERZEHN seit W14a-E-10-Q7 (Migrationsschritt 68): der Stromspeicher
+        // fuehrt jetzt auch das Feld "Firma".
+        Assert.Equal(14, gesehen!.Count);
     }
 
     [Fact]

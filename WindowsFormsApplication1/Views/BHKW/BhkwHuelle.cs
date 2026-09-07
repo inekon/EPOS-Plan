@@ -293,6 +293,18 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+
+        /// <summary>
+        /// Der Uebersetzer, den <see cref="Katalogfilterprofil.MitVerwendung"/>
+        /// entgegennimmt: Schluessel rein, Text raus — ein fehlender Schluessel bleibt
+        /// als Schluessel stehen, damit er auffaellt (Muster
+        /// <c>KatalogBrowserProfil.Finde</c>).
+        /// </summary>
+        private static string Text_(string schluessel)
+        {
+            return Text_(schluessel, schluessel);
+        }
+
         private static string Text_(string schluessel, string rueckfall)
         {
             string t = null;
@@ -397,11 +409,13 @@ namespace WindowsFormsApplication1
             {
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
-                ["Gruppen"] = Gruppen(stamm),
-                ["Leistungsstufen"] = Leistungsstufen(),
+                // W14a-E-10 / S2.1: DAS PROFIL statt der zwei Klapplisten - dasselbe,
+                // das die Verwaltung fuehrt, plus die Spalte "im Projekt verwendet"
+                // (Q12, nur im Projektdialog).
+                ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(Anlagenart.Bhkw, Text_),
 
-                ["Filtern"] = new Func<string, int, IReadOnlyList<KatalogZeile>>(
-                    (gruppe, stufe) => KatalogZeilen(stamm.Filtern(gruppe, stufe))),
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    stamm.Katalogfilterzeilen),
 
                 ["KatalogDetail"] = new Func<string, ErzeugerDetail>(
                     name => DetailZu(BHKWCtrl.StammDetail(name))),
@@ -466,13 +480,9 @@ namespace WindowsFormsApplication1
                 ["LabelProjektliste"] = Text_("BHKWV_LBL_PROJEKTLISTE", "Ausgewählte Module:"),
                 ["LabelKatalogliste"] = Text_("BHKWV_LBL_KATALOGLISTE", "Module in Datenbank:"),
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
-                ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
-                ["SpalteEigenschaften"] = Text_("BHKWV_SP_EIGENSCHAFTEN", "Eigenschaften"),
                 ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["LabelSumme"] = Text_("BHKWV_LBL_SUMME", "Summe aller ausgewählten Module [kWth]:"),
-                ["LabelFilterBrennstoff"] = Text_("BHKWV_LBL_FILTER_BRENNSTOFF", "Filtern nach Brennstoffart"),
-                ["LabelFilterLeistung"] = Text_("BHKWV_LBL_FILTER_LEISTUNG", "Filtern nach Leistung"),
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["BtnNeuText"] = Text_("BHKWV_BTN_NEU", "Neu.."),
                 ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
@@ -684,41 +694,8 @@ namespace WindowsFormsApplication1
             return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
         }
 
-        /// <summary>
-        /// Die Katalogzeilen samt der zweiten Spalte „Eigenschaften" — vier Zeilen in
-        /// einer Zelle, genau wie im <c>DataGridView</c> des Vorläufers (Z. 205-209).
-        /// </summary>
-        private static IReadOnlyList<KatalogZeile> KatalogZeilen(
-            IReadOnlyList<BHKWStammCtrl.KatalogZeile> quelle)
-        {
-            var liste = new List<KatalogZeile>();
-            foreach (var z in quelle)
-                liste.Add(new KatalogZeile(z.Id, z.Bezeichner,
-                    z.Firma + "\n" + Text_("BHKWV_ZELLE_BRENNSTOFF", "Brennstoff:") + " " + z.Brennstoff +
-                    "\nPtherm: " + z.Ptherm + " kW" +
-                    "\nPel: " + z.Pel + " kW"));
-            return liste;
-        }
 
-        /// <summary>„Alle" voran, dann die Brennstoffgruppen — wie <c>SetControls</c>.</summary>
-        private static IReadOnlyList<string> Gruppen(BHKWStammCtrl stamm)
-        {
-            var liste = new List<string> { "Alle" };
-            liste.AddRange(stamm.Brennstoffart_Gruppe);
-            return liste;
-        }
 
-        /// <summary>
-        /// „Alle" voran, dann die acht Stufen aus <c>BHKWStammCtrl.LeistungText</c> —
-        /// der Index passt damit auf <c>LeistungFilterText</c>.
-        /// </summary>
-        private static IReadOnlyList<string> Leistungsstufen()
-        {
-            var liste = new List<string> { Text_("HZK_STUFE_ALLE", "Alle") };
-            foreach (string t in BHKWStammCtrl.LeistungText)
-                if (t.Length > 0) liste.Add(t);
-            return liste;
-        }
 
         private static IReadOnlyDictionary<string, object> TraegerGaben(TraegerVorbereitung vor)
         {

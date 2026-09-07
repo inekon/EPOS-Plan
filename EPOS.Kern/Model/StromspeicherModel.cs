@@ -5,6 +5,15 @@
     {
         public int m_ID;
         public string m_szBezeichner;
+
+        /// <summary>
+        /// Der Hersteller (<c>Firma</c>) — Anwenderentscheid <b>W14a-E-10-Q7</b> vom
+        /// 07.09.2026, Migrationsschritt 68. Bis dahin war der Speicher der EINZIGE
+        /// Geraetekatalog ohne Herstellerfeld; die Oberflaeche gewann ihn aus dem
+        /// Bezeichnerpraefix („Hersteller: Modell"). Der Rueckfall bleibt fuer
+        /// Altsaetze, der gepflegte Wert hat Vorrang.
+        /// </summary>
+        public string m_szFirma;
         public double m_Energie;        // C_nom, nutzbare Nennkapazitaet [kWh]
         public double m_Leistung;       // P, gemeinsame Lade-/Entladeleistung [kW]
         public double m_Degradation;    // d, Kapazitaetsverlust [%/a]
@@ -48,6 +57,7 @@
         {
             m_ID = 0;
             m_szBezeichner = string.Empty;
+            m_szFirma = string.Empty;
             m_Energie = 0;
             m_Leistung = 0;
             m_Degradation = 0.0;

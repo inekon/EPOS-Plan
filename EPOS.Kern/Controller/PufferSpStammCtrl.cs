@@ -425,6 +425,11 @@ namespace WindowsFormsApplication1
         /// Herstellerfilter gehaengt wird.
         /// </para>
         /// </remarks>
+        // OHNE WIRT SEIT STUFE S2.1 (W14a-E-10, Frage Q5): Die festen Stufen sind
+        // abgeschafft - "Sortieren nach der Spalte und ein Ausdruck wie 200..500
+        // leisten dasselbe genauer". Seit S1.6 (Verwaltung) und S2.1 (Projekt) ruft
+        // KEIN Wirt mehr hierher; was bleibt, ist die GEGENPROBE des Spaltenfilters
+        // in EPOS.Kern.Tests. Wer das loescht, loescht den Beweis mit.
         public static readonly string[] VOLUMEN_SQL =
         {
             "(Gesamtvolumen IS NULL OR Gesamtvolumen Like '%')",

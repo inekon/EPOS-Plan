@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
+using System.Collections.Generic;
+using System.Linq;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
+
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
@@ -17,13 +22,47 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class BhkwDialogTests : BunitContext
 {
-    private static readonly string[] Gruppen = { "Alle", "Gas", "Öl" };
-    private static readonly string[] Stufen = { "Alle", "kleiner 20 kW", "20 bis 40 kW" };
 
-    private static readonly KatalogZeile[] Katalog =
+    /// <summary>
+    /// Der Filterstand DIESES Prüfstands. Ohne ihn nähme der Dialog den aus dem
+    /// <c>Katalogfilterregister</c> — der lebt prozessweit, und xunit fährt
+    /// Testklassen nebeneinander. Dass das Register wirklich teilt, prüft
+    /// <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
+    /// <summary>
+    /// Das PROFIL des Projektdialogs (W14a-E-10 / S2.1): dieselben acht Spalten wie
+    /// in der Verwaltung, dazu die neunte „im Projekt verwendet" (Q12).
+    /// </summary>
+    private static readonly Katalogfilterprofil Profil =
+        Katalogfilterprofil.MitVerwendung(Anlagenart.Bhkw,
+            s => Resource.ResourceManager.GetString(s) ?? s);
+
+    /// <summary>
+    /// Die Katalogzeilen. Was der Vorlaeufer als Mehrzeiler in EINE Zelle schrieb
+    /// (Firma, Brennstoff, Ptherm, Pel), steht jetzt als eigene, sortierbare Spalte.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Katalogzeilen() => new[]
     {
-        new(21, "Modul A", "Musterwerk\nBrennstoff: Erdgas E\nPtherm: 80 kW\nPel: 40 kW"),
-        new(22, "Modul B", "Musterwerk\nBrennstoff: Erdgas LL\nPtherm: 120 kW\nPel: 60 kW")
+        new Katalogfilterzeile(21, "Modul A")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Modul A")
+            .MitText(Katalogfilterprofil.SpHersteller, "Musterwerk")
+            .MitText(Katalogfilterprofil.SpBrennstoff, "Erdgas E")
+            .MitZahl(Katalogfilterprofil.SpPel, 40.0)
+            .MitZahl(Katalogfilterprofil.SpPtherm, 80.0)
+            .MitZahl(Katalogfilterprofil.SpSigma, 0.5, 2)
+            .MitZahl(Katalogfilterprofil.SpEta, 0.9, 3)
+            .MitText(Katalogfilterprofil.SpMotortyp, "Gas-Otto-Motor"),
+
+        new Katalogfilterzeile(22, "Modul B")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Modul B")
+            .MitText(Katalogfilterprofil.SpHersteller, "Musterwerk")
+            .MitText(Katalogfilterprofil.SpBrennstoff, "Erdgas LL")
+            .MitZahl(Katalogfilterprofil.SpPel, 60.0)
+            .MitZahl(Katalogfilterprofil.SpPtherm, 120.0)
+            .MitZahl(Katalogfilterprofil.SpSigma, 0.5, 2)
+            .MitZahl(Katalogfilterprofil.SpEta, 0.9, 3)
+            .MitText(Katalogfilterprofil.SpMotortyp, "Gas-Otto-Motor"),
     };
 
     public BhkwDialogTests()
@@ -61,9 +100,9 @@ public class BhkwDialogTests : BunitContext
     {
         return Render<BhkwDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) })
-            .Add(x => x.Gruppen, Gruppen)
-            .Add(x => x.Leistungsstufen, Stufen)
-            .Add(x => x.Filtern, (_, _) => Katalog)
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.KatalogDetail, n => Detail(n))
             .Add(x => x.ProjektDetail, n => Detail(n))
             .Add(x => x.Varianten, _ => new[] { (5, "Erdgas E Variante"), (6, "Erdgas LL Variante") })
@@ -97,7 +136,7 @@ public class BhkwDialogTests : BunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-zweispalten-mitte button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("Ausgewählte Module:", ueberschriften);
@@ -105,29 +144,41 @@ public class BhkwDialogTests : BunitContext
 
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
         Assert.Contains("Summe aller ausgewählten Module [kWth]:", texte);
-        Assert.Contains("Filtern nach Brennstoffart", texte);
-        Assert.Contains("Filtern nach Leistung", texte);
+
+        // W14a-E-10 / S2.1: Die zwei Klapplisten sind weg; an ihrer Stelle steht
+        // die EINE Suchzeile, und der Filter sitzt im Spaltenkopf.
+        Assert.DoesNotContain("Filtern nach Brennstoffart", texte);
+        Assert.DoesNotContain("Filtern nach Leistung", texte);
+        Assert.Single(cut.FindAll(".epos-katalog-suchzeile"));
         Assert.Contains("Brennstoff:", texte);
         Assert.Contains("Untere Grenzleistung des ausgewählten Moduls:", texte);
         Assert.Contains("Vorlauf", texte);
         Assert.Contains("Rücklauf", texte);
     }
 
+    /// <summary>
+    /// <b>Aus der Sammelspalte werden SPALTEN</b> (W14a-E-10 / S2.1). Der Vorläufer
+    /// trug im DataGridView „Name" und einen Mehrzeiler „Eigenschaften" (Firma,
+    /// Brennstoff, Ptherm, Pel) — vier Werte in EINER Zelle, nach keinem davon
+    /// sortierbar. Jetzt stehen sie einzeln, jede mit Sortierpfeil.
+    /// </summary>
     [Fact]
-    public void Die_Katalogliste_hat_die_zweite_Spalte_Eigenschaften()
+    public void Die_Katalogliste_zeigt_die_Spalten_des_Profils()
     {
-        // Der Vorlaeufer trug im DataGridView "Name" und einen Mehrzeiler
-        // "Eigenschaften" (Firma, Brennstoff, Ptherm, Pel).
         var cut = Aufbauen();
 
         var kopf = cut.FindAll(".epos-raster")[1].QuerySelectorAll("th")
                       .Select(e => e.TextContent.Trim()).ToList();
-        Assert.Contains("Name", kopf);
-        Assert.Contains("Eigenschaften", kopf);
 
-        var zellen = cut.FindAll(".epos-mehrzeilig");
-        Assert.Equal(2, zellen.Count);
-        Assert.Contains("Ptherm: 80 kW", zellen[0].TextContent);
+        // Wahl + acht Parameterspalten + „im Projekt verwendet" (Q12).
+        Assert.Equal(Profil.Spalten.Count + 1, kopf.Count);
+        Assert.Contains(kopf, k => k.StartsWith("Hersteller"));
+        Assert.Contains(kopf, k => k.StartsWith("Brennstoff"));
+        Assert.Contains(kopf, k => k.Contains("P_el"));
+        Assert.Contains(kopf, k => k.Contains("Motortyp"));
+
+        // Der Mehrzeiler ist ersatzlos gefallen.
+        Assert.Empty(cut.FindAll(".epos-mehrzeilig"));
     }
 
     [Fact]
@@ -181,7 +232,7 @@ public class BhkwDialogTests : BunitContext
         var cut = Aufbauen();
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
 
         Assert.True(cut.Instance.Traegerwahl);
     }
@@ -195,7 +246,7 @@ public class BhkwDialogTests : BunitContext
 
         int vorher = rufe;
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-mitte button")[0].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
         cut.Find(".epos-ueberlagerung input[type=text]").Input("Erdgas E Variante");
         cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
 
@@ -211,7 +262,7 @@ public class BhkwDialogTests : BunitContext
         var zeilen = new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) };
         var cut = Aufbauen(zeilen);
 
-        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
 
         Assert.Empty(zeilen);
         Assert.Null(cut.Instance.Projektzeile);
@@ -227,7 +278,7 @@ public class BhkwDialogTests : BunitContext
         var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z));
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
-        cut.FindAll(".epos-zweispalten-mitte button")[1].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
 
         Assert.Single(zeilen);
         Assert.Equal(1, zeilen[0].Schluessel);
@@ -322,7 +373,8 @@ public class BhkwDialogTests : BunitContext
         var cut = Aufbauen(traegerWechseln: (_, n) => gemeldet = n);
 
         // Filter Brennstoff, Filter Leistung, Trägerwahl.
-        cut.FindAll("select")[2].Change("6");
+        // Seit S2.1 gibt es nur noch EINE Klappliste: die Trägerwahl.
+        cut.FindAll("select")[0].Change("6");
 
         Assert.Equal(6, gemeldet);
         Assert.Equal(6, cut.Instance.Projektzeile!.CarrierId);
@@ -470,5 +522,133 @@ public class BhkwDialogTests : BunitContext
 
         // Die Beschreibung ist mehrzeilig und meldet sich als LANG.
         Assert.NotEmpty(block.QuerySelectorAll(".epos-feld--breit textarea"));
+    }
+
+    // =================================================================================
+    //  Stufe S2.1 / S2.3 / S2.5 - Anwenderentscheid W14a-E-10 vom 07.09.2026
+    // =================================================================================
+
+    /// <summary>Die Katalogliste - das UNTERE der beiden Raster.</summary>
+    private static IReadOnlyList<AngleSharp.Dom.IElement> Katalogzeilen(
+        IRenderedComponent<BhkwDialog> cut)
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr").ToList();
+
+    /// <summary>
+    /// <b>S2.1 — der Filter sitzt im SPALTENKOPF.</b> Der Ausdruck steht im
+    /// <c>Katalogfilterstand</c> des Wirtes, <c>Katalogfilter.Anwenden</c>
+    /// schränkt die Menge im Kern ein, und das Raster bekommt die BEREITS
+    /// eingeschränkte Liste (5.6.6 — gefiltert wird vor dem Raster, nie im Raster).
+    /// </summary>
+    [Fact]
+    public void S2_1_Der_Spaltenfilter_schraenkt_die_Katalogliste_ein()
+    {
+        var cut = Aufbauen();
+        Assert.Equal(2, Katalogzeilen(cut).Count);
+        Assert.Equal("2 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+
+        _filterstand.Setzen(Katalogfilterprofil.SpBrennstoff, "Erdgas LL");
+        cut.Render();
+
+        Assert.Single(Katalogzeilen(cut));
+        Assert.Equal("1 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Assert.Contains("Modul B", Katalogzeilen(cut)[0].TextContent);
+
+        // Der Trichter dieser Spalte ist jetzt GEFUELLT - im Markup, nicht nur
+        // in der Farbe (Auflage des Anwenders zu Rev. 3).
+        Assert.Contains(cut.FindAll(".epos-trichter-bild path"),
+                        e => e.GetAttribute("fill") == "currentColor");
+
+        // Und der Ruecksetzer der Suchzeile holt alles zurueck.
+        cut.Find(".epos-katalog-ruecksetzer").Click();
+        Assert.Equal(2, Katalogzeilen(cut).Count);
+    }
+
+    /// <summary>
+    /// <b>S2.1 — jede Parameterspalte sortiert</b>, im Zyklus auf → ab → aus
+    /// (höchstens eine Spalte zugleich, 5.6.2).
+    /// </summary>
+    [Fact]
+    public void S2_1_Die_Katalogliste_laesst_sich_ueber_den_Spaltenkopf_sortieren()
+    {
+        var cut = Aufbauen();
+
+        _filterstand.Sortieren(Katalogfilterprofil.SpPel);
+        cut.Render();
+        Assert.Contains("Modul A", Katalogzeilen(cut)[0].TextContent);
+
+        _filterstand.Sortieren(Katalogfilterprofil.SpPel);
+        cut.Render();
+        Assert.False(_filterstand.Aufsteigend);
+        Assert.Contains("Modul B", Katalogzeilen(cut)[0].TextContent);
+
+        _filterstand.Sortieren(Katalogfilterprofil.SpPel);
+        Assert.Equal("", _filterstand.Sortierspalte);
+    }
+
+    /// <summary>
+    /// <b>S2.1 — die Markierung hängt am BEZEICHNER.</b> Sie bleibt stehen, auch
+    /// wenn ein Filter die Zeile ausblendet; der Übernahmeknopf bleibt frei und
+    /// nimmt DENSELBEN Satz auf (Hausregel aus dem <c>EnergietraegerDialog</c>, W4).
+    /// </summary>
+    [Fact]
+    public void S2_1_Die_Markierung_ueberlebt_einen_Filterwechsel()
+    {
+        var cut = Aufbauen();
+
+        Katalogzeilen(cut)[0].QuerySelector(".epos-anlagenwahl")!.Click();
+        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+
+        // Ein Filter, der GENAU diese Zeile ausblendet.
+        _filterstand.Setzen(Katalogfilterprofil.SpBrennstoff, "Erdgas LL");
+        cut.Render();
+
+        Assert.Single(Katalogzeilen(cut));
+        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>S2.3 / Frage Q12 — „im Projekt verwendet".</b> EINMAL für die ganze Liste
+    /// aus der Projektliste des Dialogs gestempelt, nicht je Zeile und nicht aus
+    /// der Datenbank: Der Dialog schreibt erst beim OK zurück, eine Zählabfrage
+    /// wäre nach der ersten Übernahme veraltet.
+    /// </summary>
+    [Fact]
+    public void S2_3_Die_Spalte_im_Projekt_verwendet_zaehlt_die_Projektliste()
+    {
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) });
+
+        var kopf = cut.FindAll(".epos-raster")[1]
+                      .QuerySelectorAll("th").Select(e => e.TextContent.Trim()).ToList();
+        Assert.Contains(kopf, k => k.StartsWith("im Projekt verwendet"));
+
+        var zeilen = Katalogzeilen(cut);
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal(1, zeilen.Count(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja"));
+
+        var traegt = zeilen.First(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja");
+        Assert.Contains("Modul A", traegt.TextContent);
+    }
+
+    /// <summary>
+    /// <b>S2.5 / Frage Q2 — der Filterstand überlebt Schließen und Öffnen.</b>
+    /// Hier steht dafür ein EIGENER Stand statt des <c>Katalogfilterregister</c>
+    /// (xunit fährt Testklassen nebeneinander); dass das Register ihn wirklich
+    /// zwischen Verwaltung und Projektdialog teilt, prüft
+    /// <c>EPOS.Kern.Tests/KatalogfilterstandTests</c>.
+    /// </summary>
+    [Fact]
+    public void S2_5_Der_Filterstand_ueberlebt_einen_zweiten_Aufbau()
+    {
+        var ersterAufbau = Aufbauen();
+        _filterstand.Setzen(Katalogfilterprofil.SpBrennstoff, "Erdgas LL");
+        ersterAufbau.Render();
+        Assert.Single(Katalogzeilen(ersterAufbau));
+
+        // Der Dialog geht zu und wieder auf - derselbe Stand, dieselbe Sicht.
+        var zweiterAufbau = Aufbauen();
+
+        Assert.Single(Katalogzeilen(zweiterAufbau));
+        Assert.Equal("1 von 2 Sätzen", zweiterAufbau.Find(".epos-katalog-treffer").TextContent);
+        Assert.Single(zweiterAufbau.FindAll(".epos-katalog-ruecksetzer"));
     }
 }

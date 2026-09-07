@@ -873,7 +873,7 @@ einzeln, weil zwei davon Regeln setzen, die man später nachschlagen können mus
 | **Em‑9.8‑Q2** | **Zehn Skalare** — Kessel und BHKW je fünf Arten, **mit** CO, **ohne** `Em.Gesamt.*` | umgesetzt in `Referenzlauf/Ergebnisexport.cs` (§ 11.2.2). CO steht bewusst dabei, obwohl es 0 ist: So **ändert** ein späterer Trägerwert eine Zahl, statt einen Schlüssel **hinzuzufügen** |
 | **Em‑9.8‑Q3** | **Einheit im Namen** — `Em.Kessel.Co2T` in t/a, `…So2Kg`/`…NoxKg`/`…CoKg`/`…StaubKg` in kg/a | umgesetzt; der Export rechnet **nicht** um. Ein Faktor 1 000 dort wäre eine dritte Umrechnungsnaht neben den zwei erlaubten (Hausregel Rechenkern, Punkt 4) |
 | **Em‑9.8‑Q4** | **Die Einfrierregel aus § 11.2.6 gilt** | festgeschrieben in `Referenzlaeufe/LIESMICH.md` und im Absatz „Regressionsnetz" der Wurzel-`CLAUDE.md` |
-| **Em‑9.9‑Q1** | **Erst mit Quelle bauen** — Schritt 68 ruht, bis eine Quelle mit CO-Faktoren **je Energieträger** vorliegt | keine Programmarbeit. Gemessen (§ 11.1.5): weder UBA v2.1 noch GEMIS 5.2 führt CO |
+| **Em‑9.9‑Q1** | **Erst mit Quelle bauen** — der Datenschritt ruht, bis eine Quelle mit CO-Faktoren **je Energieträger** vorliegt | keine Programmarbeit. Gemessen (§ 11.1.5): weder UBA v2.1 noch GEMIS 5.2 führt CO |
 | **Em‑9.9‑Q2** | **§ 9 Punkt 9 wird geschlossen als „bewusst nicht"** — keine leere Art `CO` | Punkt 9 unten entsprechend geschlossen. `CoMgKwh` bleibt im Rechenweg vorbereitet und kostet nichts, solange es 0 ist |
 | **Em‑9.9‑Q3** | **Keine Saat aus den Gerätespalten** `Tab_BHKW_STAMM.CO` / `Tab_Heizkessel_STAMM.CO` | keine Programmarbeit. Sie hängen am Gerät, nicht am Energieträger — das kehrte die Zuordnung um, die B1 gerade hergestellt hat. Sie bleiben Herstellerangabe und „nur Anzeige" |
 
@@ -948,7 +948,7 @@ ohnehin nur über Migrationsschritte oder `Werkzeuge/Testdatenbankschema`.
    `Emissionsquelle.Fuer`) und der Nachweis — der Zuschnitt steht fertig in § 11.3.
    Seit Em‑9.8 führt der Referenzexport die zwei CO-Schlüssel bereits mit; ein Trägerwert
    **ändert** dann eine Zahl, statt einen Schlüssel hinzuzufügen.
-   **→ Kapitel 11.3** (Quellenlage, Schritt 68, „ein Datenschritt reicht nicht", Aufwand).
+   **→ Kapitel 11.3** (Quellenlage, der Datenschritt, „ein Datenschritt reicht nicht", Aufwand).
 
 ---
 
@@ -1367,12 +1367,14 @@ eindeutig:
 > keinen belegten CO-Wert, und eine Art ohne Werte machte die Bilanz nicht vollständiger,
 > nur länger." Das ist jetzt **gemessen** statt vermutet.
 
-#### 11.3.2 Wie der Schritt 68 aussähe — wenn die Quelle da ist
+#### 11.3.2 Wie der Datenschritt aussähe — wenn die Quelle da ist
 
-Nummer **68** (`SchemaStand.Zielversion` steht auf **67**, vergeben durch
-`SCHRITT_67_BHKW_LEISTUNGSGRENZE` vom 07.09.2026). Reihenfolge zwingend, seit dem Vorfall
+Nummer: **der nächste freie Schritt**. Eine feste Zahl steht hier bewusst nicht mehr — sie
+war bis zum 07.09.2026 die 68 und ist seither vergeben (`SCHRITT_68_STROMSPEICHER_FIRMA`,
+Anwenderentscheid W14a‑E‑10‑Q7; `SchemaStand.Zielversion` steht damit auf **68**). Wer den
+Schritt baut, nimmt die dann nächste freie Nummer. Reihenfolge zwingend, seit dem Vorfall
 vom 29.08. 09:25: **erst** Schrittkonstante, Methode und `SCHRITTE`-Eintrag, **dann**
-`Zielversion` auf 68.
+`Zielversion` um eins anheben.
 
 **Die eine Zeile für `emissionsart`:**
 
@@ -1411,7 +1413,7 @@ knapp.** Gemessen an `EmissionsFaktorLader.cs`:
 3. **`Emissionsquelle.Fuer` füllt `CoMgKwh` deshalb nirgends**; das Feld ist im Quelltext
    ausdrücklich als „heute immer 0" dokumentiert (`Emissionsquelle.cs:39–45`).
 
-**Ohne diese drei Stellen bliebe `Em_CO_SPK` und `Em_CO_BHKW` auch nach dem Schritt 68 auf
+**Ohne diese drei Stellen bliebe `Em_CO_SPK` und `Em_CO_BHKW` auch nach diesem Datenschritt auf
 0** — der Migrationsschritt allein änderte gar nichts. Es sind drei kleine, aber
 unvermeidliche Eingriffe im Kern.
 
@@ -1433,7 +1435,7 @@ führen einen aktiven CO₂-Wert** —, aber sie ist da. Deshalb oben `ausgewaeh
 | Emissionsbilanz der Wirtschaftlichkeit | **keine** — `EmissionsBilanzRechner.cs:206/207` führt SO₂ und NOₓ, sonst nichts. Für eine CO-Zeile im Bericht wäre eine eigene Erweiterung nötig | ja |
 | Autarkie-Kachel | **keine** — sie rechnet nur mit CO₂ | ja |
 | `EmissionsquelleTests` | heute **10 Fälle**, keiner nennt CO. Zwei kämen dazu: „Art vorhanden, kein Wert → Faktor bleibt 0" und „Wert gepflegt → er erreicht Kessel und BHKW" | ja |
-| Referenzlauf | **byte-gleich**, solange § 9.8 nicht umgesetzt ist. **Mit** § 9.8: Die 14 CO-Schlüssel blieben 0, solange kein Trägerwert gesät ist — der Schritt 68 allein änderte auch dann keine Zahl | ja |
+| Referenzlauf | **byte-gleich**, solange § 9.8 nicht umgesetzt ist. **Mit** § 9.8: Die 14 CO-Schlüssel blieben 0, solange kein Trägerwert gesät ist — der Datenschritt allein änderte auch dann keine Zahl | ja |
 | `.wpx`-Projekttransfer | Pakete auf Stand 67 würden abgewiesen — die eingebaute Zusage des Formats, wie bei jedem Schritt | ja |
 
 **Die fünf Gerätespalten bleiben, wie B1 sie hinterlassen hat:** informative Herstellerangabe,
@@ -1499,6 +1501,6 @@ bei **einem** zusätzlichen Basiswechsel, und die Zahlen entstehen wie empfohlen
 | **Em‑9.8‑Q2** | **Wie viele** Skalare: die zehn aus 11.2.2 — oder zusätzlich fünf `Em.Gesamt.*`, oder ohne die zwei CO-Schlüssel (dann acht)? | **Zehn.** Kein `Gesamt` (ableitbar, keine zusätzliche Aussage); **mit** CO, damit § 9.9 später eine Zahl **ändert** statt einen Schlüssel **hinzuzufügen** — eine Wertänderung meldet der Vergleich mit Zahlen, ein neuer Schlüssel nur als „nur im Vergleichslauf" | **Zehn**, mit CO, ohne `Gesamt` — gebaut |
 | **Em‑9.8‑Q3** | **Einheit im Namen** (`Em.Kessel.Co2T` in t/a, `…So2Kg` in kg/a — kein Rechnen im Export) oder **alles in kg/a** mit einheitlichem Namen (`…Co2Kg`, CO₂ × 1000)? | **Einheit im Namen.** Ein Faktor 1 000 in `Ergebnisexport.cs` wäre eine dritte Umrechnungsnaht neben den zwei erlaubten (Hausregel Rechenkern, Punkt 4) | **Einheit im Namen** — gebaut, kein Teiler im Export |
 | **Em‑9.8‑Q4** | Wird die **Regel aus 11.2.6** angenommen (wer einen aktiven Faktor der Testdatenbank ändert, friert die Basis im selben Schritt neu ein)? | **Ja.** Ohne sie fällt die CI beim nächsten Katalogschritt rot aus, ohne dass jemand mit dem Zusammenhang rechnet. Vorlagen (`ist_aktiv = falsch`) bleiben ausdrücklich frei | **Ja** — die Regel steht in `Referenzlaeufe/LIESMICH.md` und in der Wurzel-`CLAUDE.md` |
-| **Em‑9.9‑Q1** | Gibt es eine **Quelle mit CO-Emissionsfaktoren je Energieträger** (Feuerung ohne Vorkette, mg/kWh)? UBA TEXTE 97/2025 wäre der Kandidat, liegt aber nicht im Haus | **Erst mit Quelle bauen.** Ohne sie hätte Schritt 68 keine einzige Zahl zu säen (gemessen: weder UBA v2.1 noch GEMIS 5.2 führt CO) | **Erst mit Quelle** — Schritt 68 ruht; § 9 Punkt 9 nennt den fertigen Zuschnitt |
+| **Em‑9.9‑Q1** | Gibt es eine **Quelle mit CO-Emissionsfaktoren je Energieträger** (Feuerung ohne Vorkette, mg/kWh)? UBA TEXTE 97/2025 wäre der Kandidat, liegt aber nicht im Haus | **Erst mit Quelle bauen.** Ohne sie hätte der Datenschritt keine einzige Zahl zu säen (gemessen: weder UBA v2.1 noch GEMIS 5.2 führt CO) | **Erst mit Quelle** — der Datenschritt ruht; § 9 Punkt 9 nennt den fertigen Zuschnitt |
 | **Em‑9.9‑Q2** | Falls **keine** Quelle beizubringen ist: Art `CO` trotzdem **leer** anlegen (Reiter und Katalog zeigen sie, Werte trägt ein, wer sie hat) — oder § 9 Punkt 9 geschlossen als „bewusst nicht" führen? | **Geschlossen als „bewusst nicht".** Eine Art ohne Werte macht die Bilanz nicht vollständiger, nur länger — und `CoMgKwh` ist im Rechenweg bereits vorbereitet, falls sich die Lage ändert | **Geschlossen als „bewusst nicht"** — § 9 Punkt 9 |
 | **Em‑9.9‑Q3** | Sollen die **Gerätespalten** `Tab_BHKW_STAMM.CO` (69 Sätze ≠ 0) und `Tab_Heizkessel_STAMM.CO` als Notbehelf in den Katalog übernommen werden? | **Nein.** Sie hängen am Gerät, nicht am Energieträger — das kehrte die Zuordnung um, die B1 gerade hergestellt hat. Sie bleiben Herstellerangabe und „nur Anzeige" | **Nein** — die Gerätespalten bleiben Herstellerangabe und „nur Anzeige" |

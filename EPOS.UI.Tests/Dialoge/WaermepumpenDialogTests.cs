@@ -39,10 +39,29 @@ public class WaermepumpenDialogTests : BunitContext
         HeizstabLeistung = 6
     };
 
-    private static readonly WaermepumpenKatalogZeile[] Katalog =
+    /// <summary>
+    /// Der Katalog des Weges „Neu..". Seit W14a‑E‑10 / S2.2 ist er eine
+    /// <see cref="Katalogfilterzeile"/> wie in jedem anderen Katalog des Hauses —
+    /// vorher eine eigene <c>WaermepumpenKatalogZeile</c> mit elf Feldern für elf
+    /// Bedienelemente.
+    /// </summary>
+    private static readonly Katalogfilterzeile[] Katalog =
     {
-        new("Alpha", "WP Neu", "Split", "Außen", 60, 35, 20, 9, "Sole-Wasser", "einstufig", "Heizen")
+        new Katalogfilterzeile(1, "WP Neu")
+            .MitText(Katalogfilterprofil.SpHersteller, "Alpha")
+            .MitText(Katalogfilterprofil.SpBezeichner, "WP Neu")
+            .MitText(Katalogfilterprofil.SpQuelle, "Sole-Wasser")
+            .MitZahl(Katalogfilterprofil.SpNennleistung, 20, 1)
+            .MitZahl(Katalogfilterprofil.SpVlMin, 35, 0)
+            .MitZahl(Katalogfilterprofil.SpVlMax, 60, 0)
+            .MitZahl(Katalogfilterprofil.SpZuheizung, 9, 1)
+            .MitKennzeichen(Katalogfilterprofil.SpKuehlen, false)
+            .MitZahl(Katalogfilterprofil.SpCop, 4.1, 2)
     };
+
+    /// <summary>Die neun Spalten MIT „im Projekt verwendet" (Q12) — wie in der Hülle.</summary>
+    private static readonly Katalogfilterprofil Katalogprofil =
+        Katalogfilterprofil.MitVerwendung(Anlagenart.Waermepumpe);
 
     /// <summary>Der Parametersatz der Detailansicht — hier ohne Datenbank.</summary>
     private static IReadOnlyDictionary<string, object> AnlageGaben(WaermepumpeAnlageDaten daten)
@@ -64,6 +83,7 @@ public class WaermepumpenDialogTests : BunitContext
         => Render<WaermepumpenDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") })
             .Add(x => x.Katalog, () => Katalog)
+            .Add(x => x.Katalogprofil, Katalogprofil)
             .Add(x => x.AnlageGaben, AnlageGaben)
             .Add(x => x.Anlegen, anlegen ?? (n => Zeile(n, 20)))
             .Add(x => x.Uebernehmen, uebernehmen)

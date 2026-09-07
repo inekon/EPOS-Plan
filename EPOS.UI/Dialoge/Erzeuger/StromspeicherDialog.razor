@@ -34,6 +34,7 @@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -76,19 +77,15 @@
         </Links>
 
         <Rechts>
-            <Raster TZeile="KatalogZeile" Zeilen="@_katalog.AsQueryable()">
-                <KindInhalt>
-                    <TemplateColumn TGridItem="KatalogZeile" Title="@SpalteWahl">
-                        <Zeilenwahl Gewaehlt="@(_katalogZeile == context)" Kurztext="@SpalteWahl"
-                                    Gewaehltwerden="() => KatalogZeileWaehlen(context)" />
-                    </TemplateColumn>
-                    <PropertyColumn TGridItem="KatalogZeile" TProp="string"
-                                    Property="@(z => z.Bezeichner)" Title="@SpalteName" />
-                    <TemplateColumn TGridItem="KatalogZeile" Title="@SpalteEigenschaften">
-                        <span class="epos-mehrzeilig">@context.Eigenschaften</span>
-                    </TemplateColumn>
-                </KindInhalt>
-            </Raster>
+            @* DIE EINE KATALOGLISTE (W14a-E-10, Stufe S2.1). Der Speicherkatalog
+               hatte als einziger gar keinen Filter - bei fuenf Saetzen fiel das
+               nicht auf, bei den 6 654 der CEC-Liste (W13-E-2) schon. Statt der
+               Sammelspalte "Eigenschaften" mit ihren Zeilen in EINER Zelle stehen
+               jetzt ACHT Spalten, jede sortierbar; der Hersteller kommt seit
+               Schritt 68 aus der Spalte Firma (Q7). *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen" />
 
             @if (VerwaltungGaben is not null)
             {
@@ -136,8 +133,31 @@
     /// <summary>Die Zeilen der linken Liste — sie gehört der Hülle und wird in place bearbeitet.</summary>
     [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
 
-    /// <summary>Die Katalogliste (<c>StromspeicherStammCtrl.ReadAll</c>).</summary>
-    [Parameter] public Func<IReadOnlyList<KatalogZeile>>? Katalog { get; set; }
+    /// <summary>
+    /// <b>Die Spalten der Katalogliste</b> — <c>Katalogfilterprofil.MitVerwendung(
+    /// Anlagenart.Stromspeicher, uebersetzer)</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>
+    /// Die Zeilen des Katalogs, UNGEFILTERT —
+    /// <c>StromspeicherStammCtrl.Katalogfilterzeilen()</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste; sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// <b>Ein eigener Filterstand statt des Registers</b> — dasselbe Muster wie
+    /// <c>ProfilVorgabe</c>. Ohne ihn holt der Dialog seinen Stand aus dem
+    /// <c>Katalogfilterregister</c> (S2.5: je Katalog EINER, für die Sitzung,
+    /// gemeinsam mit den anderen Dialogen desselben Katalogs). Ein Prüfstand gibt
+    /// hier seinen eigenen herein und bleibt damit von den anderen Fällen getrennt;
+    /// dass das Register wirklich teilt, prüft <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
 
     /// <summary>Der Detailblock zu einem Speicher — für beide Listen dieselbe Quelle.</summary>
     [Parameter] public Func<string, ErzeugerDetail?>? Detail { get; set; }
@@ -185,8 +205,6 @@
     [Parameter] public string LabelProjektliste { get; set; } = "ausgewählte Stromspeicher:";
     [Parameter] public string LabelKatalogliste { get; set; } = "Stromspeicher aus Datenbank:";
     [Parameter] public string SpalteWahl { get; set; } = "Wahl";
-    [Parameter] public string SpalteName { get; set; } = "Name";
-    [Parameter] public string SpalteEigenschaften { get; set; } = "Eigenschaften";
     [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
     [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
     [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
@@ -202,18 +220,37 @@
     private bool _ersterAufbau = true;
 
     private ErzeugerZeile? _projektZeile;
-    private KatalogZeile? _katalogZeile;
-    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private Katalogfilterzeile? _katalogZeile;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>Der gewählte Bezeichner der KATALOGliste — die Markierung hängt am NAMEN.</summary>
+    private string _katalogGewaehlt = "";
+
+    /// <summary>Der Filterstand je Katalog über die Sitzung (S2.5, Frage Q2).</summary>
+    private Katalogfilterstand _filterstand = new();
     private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
 
     /// <summary>Die gewaehlte Projektzeile (Pruefhilfe fuer Tests).</summary>
     public ErzeugerZeile? Projektzeile => _projektZeile;
 
     /// <summary>Die gewaehlte Katalogzeile (Pruefhilfe fuer Tests).</summary>
-    public KatalogZeile? Katalogzeile => _katalogZeile;
+    public Katalogfilterzeile? Katalogzeile => _katalogZeile;
+
+    /// <summary>Die Zeilen des Katalogs (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Der Filterzustand des Katalogs (Pruefhilfe fuer Tests).</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
+
+    protected override void OnParametersSet()
+    {
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
 
     protected override void OnInitialized()
     {
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Katalogprofil?.Art ?? Anlagenart.Stromspeicher);
+
         KatalogNeuLaden();
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
     }
@@ -225,25 +262,46 @@
         await _wurzel.FocusAsync();
     }
 
+    /// <summary>
+    /// Liest den Katalog neu — nach einem SCHREIBweg (Verwaltung). Der FILTER ruft
+    /// sie nicht: Er wirkt auf die Anzeige, nie auf die Auswahl.
+    /// </summary>
     private void KatalogNeuLaden()
     {
-        if (Katalog is null) return;
-        _katalog = Katalog();
-        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        VerwendungStempeln();
+
+        _katalogZeile = Katalogsatz(_katalogGewaehlt);
+        if (_katalogZeile is null) _katalogGewaehlt = "";
+    }
+
+    /// <summary>Die Spalte „im Projekt verwendet" (Q12) — EINMAL für die ganze Liste.</summary>
+    private void VerwendungStempeln()
+        => Katalogverwendung.Stempeln(_katalog, Zeilen.Select(z => z.Bezeichner));
+
+    /// <summary>Der Katalogsatz zu einem Bezeichner; <c>null</c>, wenn es ihn nicht gibt.</summary>
+    private Katalogfilterzeile? Katalogsatz(string bezeichner)
+    {
+        if (string.IsNullOrEmpty(bezeichner)) return null;
+        foreach (Katalogfilterzeile z in _katalog)
+            if (z.Bezeichner == bezeichner) return z;
+        return null;
     }
 
     private void ProjektZeileWaehlen(ErzeugerZeile zeile)
     {
         _projektZeile = zeile;
         _katalogZeile = null;
+        _katalogGewaehlt = "";
         _detail = (Detail is not null ? Detail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
     }
 
-    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    private void KatalogZeileWaehlen(string bezeichner)
     {
-        _katalogZeile = zeile;
+        _katalogGewaehlt = bezeichner ?? "";
+        _katalogZeile = Katalogsatz(_katalogGewaehlt);
         _projektZeile = null;
-        _detail = (Detail is not null ? Detail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+        _detail = (Detail is not null ? Detail(_katalogGewaehlt) : null) ?? Leer(_katalogGewaehlt);
     }
 
     private static ErzeugerDetail Leer(string name)
@@ -258,6 +316,7 @@
         if (aufnahme.Zeile is null) return;
 
         Zeilen.Add(aufnahme.Zeile);
+        VerwendungStempeln();                 // Q12
         ProjektZeileWaehlen(aufnahme.Zeile);
     }
 
@@ -274,12 +333,13 @@
         ErzeugerZeile zeile = _projektZeile;
         Zeilen.Remove(zeile);
         Entfernen?.Invoke(zeile);
+        VerwendungStempeln();                 // Q12
 
         _projektZeile = null;
         _detail = Leer("");
 
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
-        else if (_katalog.Count > 0) KatalogZeileWaehlen(_katalog[0]);
+        else if (_katalog.Count > 0) KatalogZeileWaehlen(_katalog[0].Bezeichner);
     }
 
     private async Task BeiBearbeiten()

@@ -664,6 +664,24 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public sealed record KatalogZeile(int Id, string Bezeichner);
 
+        // ==================================================================
+        // OHNE WIRT SEIT STUFE S2.1 (Anwenderentscheid W14a-E-10, Frage Q5)
+        //
+        // Q5 hat die festen Stufen abgeschafft: "Sortieren nach P_th und der
+        // Ausdruck "10..60" leisten dasselbe genauer." Seit die acht Verwaltungs-
+        // dialoge (S1.6) und die sieben Projektdialoge (S2.1) auf der
+        // Katalogliste stehen, ruft KEIN Wirt mehr hierher - gemessen am
+        // 07.09.2026 ueber das ganze Repository.
+        //
+        // WARUM ES TROTZDEM STEHT: Es ist die GEGENPROBE des Spaltenfilters.
+        // KatalogspaltenfilterTests haelt "enthaelt Gas" gegen
+        // HeizkesselStammCtrl.Filtern("Gas", 0) und belegt damit, dass die
+        // Spalte dieselbe Menge trifft wie die abgeloeste Klappliste (52 von
+        // 63 Saetzen). Mit dieser Methode faellt der Beweis, nicht nur der
+        // Code. Wer sie loescht, loescht die Gegenprobe mit - und sollte das
+        // ausdruecklich entscheiden.
+        // ==================================================================
+
         /// <summary>
         /// Die sechs Leistungsstufen des Filters, Index 0 = „Alle".
         /// </summary>

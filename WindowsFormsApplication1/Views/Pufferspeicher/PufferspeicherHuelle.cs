@@ -88,11 +88,13 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Zeilen"] = zeilen,
-                ["Hersteller"] = Hersteller(),
-                ["Volumenstufen"] = Volumenstufen(),
+                // W14a-E-10 / S2.1: DAS PROFIL statt Herstellerklappliste und
+                // Volumenstufen, plus die Spalte "im Projekt verwendet" (Q12).
+                ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
+                    Anlagenart.Pufferspeicher, Text_),
 
-                ["Filtern"] = new Func<string, int, IReadOnlyList<KatalogZeile>>(
-                    (hersteller, stufe) => KatalogZeilen(stamm.Filtern(hersteller, stufe))),
+                ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    PufferSpStammCtrl.Katalogfilterzeilen),
 
                 ["KatalogDetail"] = new Func<int, ErzeugerDetail>(
                     id => DetailZu(PufferSpStammCtrl.Detail(id))),
@@ -134,8 +136,6 @@ namespace WindowsFormsApplication1
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
                 ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
-                ["LabelFilterHersteller"] = Text_("PSPD_LBL_FILTER_HERSTELLER", "Filtern nach Hersteller:"),
-                ["LabelFilterVolumen"] = Text_("PSPD_LBL_FILTER_VOLUMEN", "Filtern nach Volumen:"),
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
                 ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
@@ -246,29 +246,19 @@ namespace WindowsFormsApplication1
             return new ErzeugerDetail(d.Bezeichner, "", felder);
         }
 
-        private static IReadOnlyList<KatalogZeile> KatalogZeilen(
-            IReadOnlyList<PufferSpStammCtrl.KatalogZeile> quelle)
-        {
-            var liste = new List<KatalogZeile>();
-            foreach (var z in quelle) liste.Add(new KatalogZeile(z.Id, z.Bezeichner));
-            return liste;
-        }
 
-        /// <summary>„Alle" voran, dann die Hersteller des Katalogs.</summary>
-        private static IReadOnlyList<string> Hersteller()
-        {
-            var liste = new List<string> { MyResource.Resource.PSP_FILTER_ALLE };
-            foreach (string h in PufferSpStammCtrl.Hersteller()) liste.Add(h);
-            return liste;
-        }
+
+
 
         /// <summary>
-        /// Die sechs Volumenstufen in der Reihenfolge von <c>VOLUMEN_SQL</c> — der Index
-        /// ist der Steuerwert (Paket 9 / L5, Bestandsfehler B0-10).
+        /// Der Uebersetzer, den <see cref="Katalogfilterprofil.MitVerwendung"/>
+        /// entgegennimmt: Schluessel rein, Text raus — ein fehlender Schluessel bleibt
+        /// als Schluessel stehen, damit er auffaellt (Muster
+        /// <c>KatalogBrowserProfil.Finde</c>).
         /// </summary>
-        private static IReadOnlyList<string> Volumenstufen()
+        private static string Text_(string schluessel)
         {
-            return new List<string>(PufferSpStammCtrl.VolumenTexte());
+            return Text_(schluessel, schluessel);
         }
 
         private static string Text_(string schluessel, string rueckfall)

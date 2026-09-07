@@ -397,7 +397,8 @@
         <KindInhalt>
             @if (_katalogOffen)
             {
-                <WaermepumpenKatalogDialog Zeilen="@_katalog" Geschlossen="KatalogFertig" />
+                <WaermepumpenKatalogDialog Zeilen="@_katalog" Profil="@Katalogprofil"
+                                           Geschlossen="KatalogFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -446,8 +447,15 @@
     /// <summary>Öffnet die Kostenverwaltung; ohne Delegat kein Knopf.</summary>
     [Parameter] public Func<Task>? KostenOeffnen { get; set; }
 
-    /// <summary>Der Katalog für die Überlagerung „Modul-Katalog…".</summary>
-    [Parameter] public Func<IReadOnlyList<WaermepumpenKatalogZeile>>? Katalog { get; set; }
+    /// <summary>
+    /// Der Katalog für die Überlagerung „Modul-Katalog…" —
+    /// <c>WPStammCtrl.Katalogfilterzeilen()</c>, seit Stufe S2.2 derselbe Weg wie
+    /// in der Verwaltung. Die neun Spalten und ihre Trichter kommen aus dem Profil.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalog { get; set; }
+
+    /// <summary>Die Spalten des Katalogs — die Hülle reicht das übersetzte Profil herein.</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
 
     /// <summary>Der Parametersatz des Stammdialogs für „Parameter Bearbeiten…".</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? StammGaben { get; set; }
@@ -603,7 +611,7 @@
 
     private IReadOnlyList<WaermepumpeStammZeile> _stammliste = Array.Empty<WaermepumpeStammZeile>();
     private IReadOnlyList<int> _vorlaufstufen = Array.Empty<int>();
-    private IReadOnlyList<WaermepumpenKatalogZeile> _katalog = Array.Empty<WaermepumpenKatalogZeile>();
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private KennlinienBilder _bilder = KennlinienBilder.Leer;
 
     private IReadOnlyDictionary<string, object>? _stammGaben;
@@ -834,7 +842,7 @@
 
     private void BeiKatalog()
     {
-        _katalog = Katalog?.Invoke() ?? Array.Empty<WaermepumpenKatalogZeile>();
+        _katalog = Katalog?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
         _katalogOffen = true;
     }
 

@@ -271,15 +271,20 @@ namespace WindowsFormsApplication1
                 // AP3: die sechs Geraetefelder wandern mit - sie beschreiben das Geraet und
                 // muessen in der Projektkopie stehen, sonst rechnete die Simulation mit den
                 // Nullen der Kopie statt mit den Katalogwerten.
+                // Migrationsschritt 68 (W14a-E-10-Q7): Der Hersteller wandert mit - ohne
+                // ihn verloere die Projektkopie den Namen, den der Katalog fuehrt, und die
+                // Projektliste koennte ihn nicht zeigen. ColOrNull faengt eine Datenbank
+                // vor dem Schritt ab.
                 string sql = @"INSERT INTO Tab_Stromspeicher
-                    (ID, ID_Projekt, Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten,
+                    (ID, ID_Projekt, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten,
                      Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
                     new DbParam("@idProj", idProjekt),
                     P("@bez", s["Bezeichner"]),
+                    P("@fir", ColOrNull(s, SchemaKatalog.SPALTE_SP_FIRMA)),
                     P("@typ", ColOrNull(s, "Typ")),
                     P("@lei", ColOrNull(s, "Leistung")),
                     P("@ene", ColOrNull(s, "Energie")),
@@ -384,6 +389,12 @@ namespace WindowsFormsApplication1
             try
             {
                 foreach (SchemaSpalte sp in SchemaKatalog.Schritt11_Stromspeicher)
+                    WaermequelleClass.SpalteSicherstellen(sp.Tabelle, sp.Name, sp.TypDefinition);
+
+                // Migrationsschritt 68 (W14a-E-10-Q7): Firma in BEIDEN Tabellen. Sie steht
+                // seit S2 namentlich in INSERT und UPDATE - dieselbe Lage wie bei den
+                // AP3-Spalten darueber.
+                foreach (SchemaSpalte sp in SchemaKatalog.Schritt68_StromspeicherFirma)
                     WaermequelleClass.SpalteSicherstellen(sp.Tabelle, sp.Name, sp.TypDefinition);
             }
             catch { /* best effort - die Spalten existieren dann ggf. schon */ }
