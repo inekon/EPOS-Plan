@@ -10,6 +10,11 @@ der Gross-/Kleinschreibung, Doc-Kommentar mit XML-Escapes (&, <, >, "), Werte ue
 512 Zeichen abgeschnitten, BOM und LF wie bisher. Nicht-String-Eintraege (Color1, Bitmap1,
 Icon1) tragen im Kern keine Eigenschaft.
 
+DER LAUF IST WIEDERHOLBAR: Aendert sich kein Schluessel, laesst ein zweiter Lauf die Datei
+byte-gleich liegen (Befund #152). Jeder Aufruf prueft das selbst - er setzt den Erzeuger ein
+zweites Mal auf sein eigenes Ergebnis an und bricht ab, wenn dabei etwas anderes herauskommt.
+Der Trockenlauf nennt dazu die Zeichenbilanz gegen die Datei auf der Platte.
+
 Aufruf (Repowurzel):
     python3 Werkzeuge/ResourceDesigner/designer_neu.py            # nur pruefen (Trockenlauf)
     python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben  # Datei neu schreiben
@@ -44,10 +49,27 @@ def block(n,w):
             f'        public static string {n} {{\n            get {{\n'
             f'                return ResourceManager.GetString("{n}", resourceCulture);\n'
             '            }\n        }\n')
-kopf_ende=alt.index('        /// <summary>\n        ///   Sucht eine lokalisierte Zeichenfolge')
-kopf=alt[:kopf_ende].rstrip(' ')  # endet nach der Culture-Eigenschaft mit "        }\n"
-assert kopf.rstrip().endswith('}'), 'Kopf unerwartet'
-neu=kopf.rstrip('\n')+'\n'+''.join(block(n,w) for n,w in eintraege)+'    }\n}\n'
+def erzeugen(alt):
+    """Baut den Dateiinhalt aus dem KOPF der vorhandenen Datei und den resx-Eintraegen.
+
+    DER KOPF ENDET NACH DER CULTURE-EIGENSCHAFT MIT "        }" - und keinen Zeichen
+    mehr. Die Leerzeile davor ("        \\n", acht Leerzeichen und Umbruch) gehoert
+    schon zu block(): Sie ist dessen erste Zeile. Wer sie im Kopf stehen laesst,
+    schreibt sie zweimal, und weil der naechste Lauf denselben Kopf wieder einliest,
+    haengt JEDER Lauf neun Zeichen an (Befund #152, 07.09.2026: 1 823 894 ->
+    1 823 903 -> 1 823 912 Byte, "Bloecke gleich 5207, abweichend 0" bei jedem Lauf).
+    Darum rstrip() OHNE Argument: es nimmt Leerzeichen UND Umbrueche.
+    """
+    kopf_ende=alt.index('        /// <summary>\n        ///   Sucht eine lokalisierte Zeichenfolge')
+    kopf=alt[:kopf_ende].rstrip()
+    assert kopf.endswith('}'), 'Kopf unerwartet'
+    return kopf+'\n'+''.join(block(n,w) for n,w in eintraege)+'    }\n}\n'
+neu=erzeugen(alt)
+# SELBSTPROBE DER WIEDERHOLBARKEIT (Befund #152): Ein zweiter Lauf, angesetzt auf das
+# Ergebnis des ersten, muss ZEICHENGLEICH sein - sonst waechst die Datei bei jedem
+# Aufruf. Die Probe kostet nichts und laeuft auch im Trockenlauf mit.
+nochmal=erzeugen(neu)
+assert nochmal==neu, f'nicht wiederholbar: zweiter Lauf {len(nochmal)-len(neu):+d} Zeichen'
 # Vergleich mit den vorhandenen Bloecken
 alte={}
 for m in re.finditer(r'(        /// <summary>\n        ///   Sucht eine lokalisierte Zeichenfolge.*?\n        /// </summary>\n        public static string (\w+) \{\n.*?\n        \}\n)',alt,re.S):
@@ -62,5 +84,11 @@ for n,w in eintraege:
             if len(beispiele)<4: beispiele.append((n,alte[n][:220],b[:220]))
 print(f'Eintraege: {len(eintraege)} (vorher {len(alte)}); Bloecke gleich {gleich}, abweichend {abw}, neu {len(eintraege)-len(alte)}')
 for n,a,b in beispiele: print('---',n); print('ALT:',repr(a)); print('NEU:',repr(b))
+# Die Zeichenbilanz sagt VOR dem Schreiben, was ein Schreiblauf aendern wuerde; "0"
+# heisst, die Datei ist auf dem Stand und der Lauf laesst sie byte-gleich liegen.
+unterschied=len(neu)-len(alt)
+print(f'Datei {len(alt)} Zeichen, erzeugt {len(neu)} ({unterschied:+d}); '
+      + ('unveraendert' if unterschied==0 and neu==alt else 'ABWEICHEND')
+      + '; zweiter Lauf +0 (wiederholbar)')
 if len(sys.argv)>1 and sys.argv[1]=='schreiben':
     open(pfad+'Resource.Designer.cs','w',encoding='utf-8',newline='\n').write(neu); print('geschrieben', len(neu), 'Zeichen')
