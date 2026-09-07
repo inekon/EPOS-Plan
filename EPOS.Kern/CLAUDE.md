@@ -458,8 +458,10 @@ verworfene Vollumbau stehen in
    (`SWaermeSpkMwh`, `Waermeproduktion_BHKW_MWh`, `RestwaermeMwh`, die 19 Brennstoffzähler),
    bleibt es MWh und heißt so. Eine Vereinheitlichung auf EINE Recheneinheit ist geprüft und
    **abgelehnt** (Q1): Sie behebt die Ursache nicht — die war die ungenannte Einheit, nicht die
-   zweite —, sie bringt keine Genauigkeit (`float` rundet relativ; die Messung steht in Kapitel
-   4.3 des Konzepts) und sie kostet eine neue Referenzbasis R4.
+   zweite —, sie bringt keine Genauigkeit (die Messung steht in Kapitel 4.3 des Konzepts) und
+   sie kostet eine neue Referenzbasis. (Der Klammersatz nannte bis W8‑O‑5d `float`; die
+   Typfrage ist seither anders entschieden — siehe unten —, die Ablehnung des
+   EINHEITENumbaus bleibt davon unberührt.)
 
 **Zwei Wächter halten die Regel** (`EPOS.Kern.Tests/EinheitenWacheTests.cs`, Stufe S1.4):
 
@@ -474,9 +476,49 @@ Bestands entsteht — schreiben `0.001`, und die Viertelstundenreihen teilen dur
 
 **Was die CSV-Schlüssel angeht (Q7):** `Sim.Restwaerme` und `Sim.Reststrom` in
 `Referenzlauf/Ergebnisexport.cs` bleiben hart verdrahtet, obwohl die Felder `RestwaermeMwh` und
-`ReststromMwh` heißen. Der Schlüssel steht in 312 Dateien der Basis `2026-09-06_R3_Straenge`;
+`ReststromMwh` heißen. Der Schlüssel steht in 312 Dateien der Basis `2026-09-07_R4_Double`;
 wandert er mit, ist kein Vergleich gegen eine ältere Basis mehr möglich. Dasselbe gilt für
 `Puffer.Ladung_gesamt`, `Puffer.Entladung_gesamt` und `Puffer.Verluste_gesamt`.
+
+## Typen: der Rechenkern rechnet in `double`
+
+**Anwenderentscheid W8‑O‑5d vom 07.09.2026:** „alles in double, ist kein Nachteil und
+systematisch. Summenfunktionen aus Original BHKW-Plan ebenfalls double." Damit ist die
+Empfehlung **Q6** des Einheitenkonzepts („die 59 Stundenreihen bleiben `float`") überholt.
+
+Der ganze Rechenweg — Stundenreihen (8 760 / 35 040 / 365 / 168 / 12), Akkumulatoren,
+Zwischenwerte, Felder, Eigenschaften, Parameter und Rückgaben — führt `double`, und zwar
+auch dort, wo bis dahin in `double` GERECHNET und in `float` GESPEICHERT wurde. Das war die
+bewusste Nachbildung des FPU-Verhaltens der alten `BHKWPLAN.DLL` (80-Bit-Zwischenwert,
+32-Bit-Speicherzelle); sie ist aufgegeben. `BhkwPlan.VectorSumme` und `BhkwPlan.MonatsSumme`
+akkumulieren seither in `double`. Die Datenbankgrenze passt damit: SQLite `REAL` **ist**
+`double`, und der Lesepfad verliert keine Stellen mehr.
+
+**`float` steht nur noch an drei Grenzen:**
+
+| Grenze | Wo | Warum |
+|---|---|---|
+| Bildpunkte | `Allgemein/Bericht/ChartRenderer.cs` (120 Stellen), die Strichstärke in `SimulationErgebnisHuelle.Bilder` | SkiaSharp rechnet in `float`. Die **Datenreihen**, die der Renderer annimmt, waren immer `double` und bleiben es — `ChartRenderer` führt kein einziges `float[]` |
+| Einbettungen | `Allgemein/KI/SemantikIndex.cs`, `SemantikModell.cs` | Vektoren des KI-Wissens, kein Rechenweg (ONNX liefert `Tensor<float>`) |
+| Typprüfungen | `v is float`, `typeof(float)` in `ProjektExportImportCtrl`, `KomponentenUebernahmeCtrl`, `MerkmalUebernahmeCtrl`, `ParameterUebersichtCtrl`, `AnlagenEindeutigkeit`, `DublettenPruefung`, `PufferSpStammCtrl`, `Referenzlauf/Ergebnisexport` | Absicherung gegen einen boxed Wert aus einer Fremdquelle; kein Rechenweg |
+
+**Ein dritter Wächter hält die Regel** (`EPOS.Kern.Tests/DoubleWacheTests.cs`):
+
+| Wächter | Was er prüft | Ausnahmen |
+|---|---|---|
+| `Im_Rechenweg_steht_kein_float_mehr` | In `EPOS.Kern/Allgemein/Simulation/**` und `BhkwPlan.cs` steht keine der Schreibweisen `float` (Typname, `(float)`, `float.Parse`, `float.Epsilon`), `Convert.ToSingle`, `MathF.` und kein Zahlenliteral mit `f`-Suffix. Meldet Datei:Zeile | **keine** — die Liste ist leer, und eine Gegenprobe hält fest, dass jede eingetragene Ausnahme wirklich existieren müsste |
+
+**Was der Umbau am Ergebnis geändert hat** (Basis `2026-09-07_R4_Double`, Begründung mit
+Zahlen im `protokoll.txt` dort): Die Jahressummen bleiben in allen zwölf Projekten innerhalb
+3e‑5 relativ, die erste Differenz einer Stundenreihe liegt bei einer `float`-Stufe (rund
+1e‑7). **Elf der zwölf Projekte reißen trotzdem die Toleranz iF15**, weil drei Schwellen des
+Modells am letzten Bit entscheiden und ihr Ergebnis über Stunden weitertragen: die
+Speicherhysterese `SOC >= Q_max · SchwelleAus` (`SimulationPufferspeicher`, bistabil), die
+Volllast/Modulations-Grenze `bhkwWaermeLeistung[motor] < restWaerme + restSpeicher`
+(`SimulationBHKW.Motorlauf_Waermegefuehrt`) und die drei `int`-Rückgaben von `BhkwPlan`
+(`TaeglHeizlastWG`, `SolareGewinneC`, `SpezWaermeverlusteC` — Borland `_ftol`, Abschneiden).
+**Wer eine solche Schwelle anfasst, ändert den Rechenweg fachlich** und braucht dafür einen
+eigenen Entscheid; der Typumbau hat keine davon berührt.
 
 ## Vorschau und Lauf lesen dieselben Tabellen
 

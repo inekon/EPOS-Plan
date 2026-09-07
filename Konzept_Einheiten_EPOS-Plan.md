@@ -1,13 +1,17 @@
-# Konzept: Energieeinheiten in EPOS-Plan — Inventar, Bewertung kWh gegen MWh, Stufenplan
+﻿# Konzept: Energieeinheiten in EPOS-Plan — Inventar, Bewertung kWh gegen MWh, Stufenplan
 
 **Rev. 2 — 07.09.2026 — entschieden und Stufe S1 umgesetzt.** Der Anwender hat Q1 mit
 **„Regel festschreiben"** und Q2…Q8 mit **„Empfehlung"** beantwortet (Kennung **W8‑O‑5c**,
 Wortlaut in Kapitel 9.1). Damit ist die Einheitenregel Hausregel
 (`EPOS.Kern/CLAUDE.md`, Abschnitt „Einheiten"), zwei Wächter halten sie, und **der
-Rechenkern ist nicht umgebaut**: 12 von 12 Referenzprojekten und 312 von 312 CSV sind
-byte-gleich zur Basis `2026-09-06_R3_Straenge` geblieben. **S2 entfällt, S3 bleibt bewusst
-liegen**; die einzige offene Maßnahme mit fachlichem Gewinn ist der Typwechsel der
-Akkumulatoren — eigenes Paket **W8‑O‑5d**.
+Rechenkern ist von der EINHEITENregel nicht umgebaut**: 12 von 12 Referenzprojekten und
+312 von 312 CSV blieben byte-gleich zur damaligen Basis `2026-09-06_R3_Straenge`. **S2
+entfällt, S3 bleibt bewusst liegen.**
+
+**Nachtrag vom selben Tag:** Die TYPfrage ist getrennt und weiter entschieden worden —
+**W8‑O‑5d, „alles in double"** (Kapitel 9.2). Sie ist **umgesetzt** und hat die Basis auf
+`2026-09-07_R4_Double` gehoben; elf der zwölf Projekte weichen dort gewollt ab. Der
+EINHEITENteil dieses Papiers bleibt davon unberührt.
 
 *Rev. 1 (07.09.2026) war der Prüfbericht, der die Fragen stellte; Kapitel 1 bis 8 stehen
 unverändert auf dem Stand von Commit `6839a7a`.*
@@ -164,13 +168,13 @@ sie erwarten würde**.
 > | Nr. | Stand | Wodurch |
 > |---|---|---|
 > | U1 | **behoben** | W8‑O‑5b, Commit `6839a7a` |
-> | U2 | **offen, harmlos** | Zwei Rundungen derselben Größe, Abstand ≤ 1 ULP `float`. Die Berichtigung säße in `SimulationWaermebedarf:327` und damit im Rechenweg — sie kostet die Byte-Gleichheit der Basis, ohne eine sichtbare Zahl zu ändern. Bleibt liegen, bis eine neue Basis ohnehin ansteht (W8‑O‑5d) |
+> | U2 | **offen, harmlos** | Zwei Rundungen derselben Größe, Abstand jetzt ≤ 1 ULP `double`. Die Berichtigung säße in `SimulationWaermebedarf:327` und damit im Rechenweg. **W8‑O‑5d hat die neue Basis gebracht, den Punkt aber bewusst NICHT mitgenommen** — der Auftrag lautete „nur der Typ, keine Gelegenheitsverbesserung". Der Abstand ist mit `double` um sieben Größenordnungen kleiner geworden; ein eigener Entscheid kann ihn jederzeit schließen |
 > | U3 | **entschärft** | Die zwei Teiler bleiben (sie sind beide richtig: Viertelstunden- gegen Stundenraster), aber das Feld heißt jetzt `StrombedarfGesamtMwh` und nennt damit die Einheit, um die es ging. Welches RASTER die Reihe hat, sagt weiterhin `Stuetzstellen` |
 > | U4 | **behoben** | S1.3: `SimulationSPK` führt `StrombedarfGesamtKwh` neben `StromverbrauchSpkMwh`, `SWaermeSpkMwh`, `WaermebedarfGesamtMwh`, `QuellwaermeGesamtKwh`, `SpeicherladungGesamtKwh`, `BruttoWaermeSpkErzeugungMwh` — jede Jahressumme mit ihrer Einheit am Namen |
 > | U5 | **behoben** | S1.2: Torte und Stromring lesen dieselben `…Mwh`-Felder wie der Wärmering — EINE Konvention statt drei |
 > | U6 | **behoben** | S1.2: Die elf Energie-Umrechnungen sind aus der Hülle heraus; Wächter 1 hält die Grenze |
 > | U7 | **behoben** | Q8: Der Kommentar an `Strombedarf_Max` nennt kW |
-> | U8 | **halb behoben** | Die Felder heißen `RestwaermeMwh`/`ReststromMwh` und nennen ihre Einheit. Sie bleiben `float` — der Typwechsel ist Q5 und damit das eigene Paket **W8‑O‑5d** |
+> | U8 | **behoben** | Die Felder heißen `RestwaermeMwh`/`ReststromMwh` und nennen ihre Einheit; seit **W8‑O‑5d** (07.09.2026) sind sie `double` |
 
 ### U1 — Brauchwasser: ein Feld, zwei Einheiten *(behoben, W8‑O‑5b)*
 
@@ -521,11 +525,16 @@ Abweichung unsichtbar.
 > sie kostet die Byte-Gleichheit von 312 CSV und damit eine neue Basis R4. Die Tabelle bleibt
 > als Aufwandsschätzung stehen, falls der Entscheid je zurückgenommen wird.
 
-**Was von Q5 bleibt:** Der Wechsel der AKKUMULATOREN von `float` auf `double` ist die einzige
-Maßnahme dieses Papiers, die Genauigkeit bringt (neun Größenordnungen, Kapitel 4.3). Er ist
-KEIN Teil von S2 und hat seit dem 07.09.2026 eine eigene Kennung: **W8‑O‑5d — „Akkumulatoren
-`double`", offen.** Er braucht eine neue Basis R4 und trifft `BhkwPlan.VectorSumme` /
-`BhkwPlan.MonatsSumme`, die das Verhalten der abgelösten Original-DLL absichtlich nachbilden.
+**Was aus Q5 wurde:** Der Wechsel der AKKUMULATOREN von `float` auf `double` ist die einzige
+Maßnahme dieses Papiers, die Genauigkeit bringt (neun Größenordnungen, Kapitel 4.3). Er war
+KEIN Teil von S2 und bekam am 07.09.2026 die eigene Kennung **W8‑O‑5d**. Der Anwender hat sie
+noch am selben Tag **weiter gefasst als gefragt**: „alles in double, ist kein Nachteil und
+systematisch. Summenfunktionen aus Original BHKW-Plan ebenfalls double." Damit ist der TYPTEIL
+der Stufe S2 **umfassender erledigt als geplant** — nicht nur die Akkumulatoren, sondern auch
+die 59 Stundenreihen (Q6 überholt) und `BhkwPlan.VectorSumme`/`MonatsSumme`, die das Verhalten
+der abgelösten Original-DLL absichtlich nachbildeten. Der EINHEITENteil von S2 bleibt
+unausgeführt; daran ändert der Typentscheid nichts. Basis: `2026-09-07_R4_Double`, Einzelheiten
+in Kapitel 9.2.
 
 *Die folgende Tabelle ist die Schätzung von Rev. 1 und wird nicht ausgeführt:*
 
@@ -590,7 +599,7 @@ ist Q2.
 | **W9‑O‑3** | 04.09.2026 | Die Prozesssumme der Vorschau geht über die Einheitenklasse in die Einheit, die der Kern führt (MWh). | **umgesetzt** (`SimulationWaermebedarf.ProzesssummeUebernehmen`) |
 | **W8‑O‑5b** | 07.09.2026 | „Nehme die Umrechnung in den Dialogen vor." — Die Brauchwassermenge steht auf BEIDEN Wegen in MWh; jede Übergabe an einen Dialog trägt ihre Einheit, der Dialog rechnet über `Energieeinheit` um. | **umgesetzt** in Commit `6839a7a` |
 | **W8‑O‑5c** | 07.09.2026 | „Prüfe, ob es nicht sinnvoll ist, die gesamten Berechnungen in kWh auszuführen … oder Vereinheitlichen der Berechnung in MWh — aber einheitlich." | **beantwortet** — Q1 „Regel festschreiben", Q2…Q8 „Empfehlung"; **Stufe S1 umgesetzt in `5b80a8e`** |
-| **W8‑O‑5d** | 07.09.2026 | Die Akkumulatoren des Kerns von `float` auf `double` (Q5) — als EIGENES Paket, nicht in S1. | **offen** |
+| **W8‑O‑5d** | 07.09.2026 | „alles in double, ist kein Nachteil und systematisch. Summenfunktionen aus Original BHKW-Plan ebenfalls double." — **umfassender als Q5 gefragt hatte**: nicht nur die Akkumulatoren, sondern der GANZE Rechenweg samt der 59 Stundenreihen (Q6 damit überholt) und samt `BhkwPlan.VectorSumme`/`MonatsSumme`. | **umgesetzt**, neue Basis `Referenzlaeufe/2026-09-07_R4_Double` |
 
 ### 9.1 Die Antworten auf Q1…Q8 (Anwender, 07.09.2026)
 
@@ -600,10 +609,56 @@ ist Q2.
 | **Q2** | „Empfehlung" | Die 17 `Tab_Ergebnis*` bleiben, wie sie sind (15 MWh, zwei kWh); umgerechnet wird an der SCHREIBGRENZE, also dort, wo es heute schon geschieht. Kein Migrationsschritt über Anwenderbestände |
 | **Q3** | „Empfehlung" | Der CSV-Export der Referenzläufe wechselt **nicht** die Einheit. Er ist ein Regressionsnetz; seine Einheit muss über Jahre stabil bleiben |
 | **Q4** | „Empfehlung" | **Entfällt** — ohne S2 gibt es keine Reihenfolge zu bestimmen |
-| **Q5** | „Empfehlung" | `float` → `double` der Akkumulatoren ist ein **eigenes späteres Paket** mit eigener Basis R4 und trägt die Kennung **W8‑O‑5d**. In S1 wurde **kein** Typ angefasst |
-| **Q6** | „Empfehlung" | Die 59 Stundenreihen bleiben `float` — sie stehen in 300 der 312 CSV der Basis |
+| **Q5** | „Empfehlung" | `float` → `double` der Akkumulatoren ist ein **eigenes späteres Paket** mit eigener Basis R4 und trägt die Kennung **W8‑O‑5d**. In S1 wurde **kein** Typ angefasst. **Diese Empfehlung ist ÜBERHOLT** — der Anwender hat W8‑O‑5d am 07.09.2026 weiter gefasst als hier gefragt: nicht nur die Akkumulatoren, der ganze Rechenweg (siehe 9.2) |
+| **Q6** | „Empfehlung" | Die 59 Stundenreihen bleiben `float` — sie stehen in 300 der 312 CSV der Basis. **ÜBERHOLT** — der Anwenderentscheid W8‑O‑5d vom 07.09.2026 stellt sie ausdrücklich auf `double`; die Basis ist neu (`2026-09-07_R4_Double`, siehe 9.2) |
 | **Q7** | „Empfehlung" | Die CSV-Schlüssel `Sim.Restwaerme` und `Sim.Reststrom` bleiben **hart verdrahtet**; nur die Felder bekommen ihren Einheitennamen (`RestwaermeMwh`, `ReststromMwh`). Ein Kommentar an der Exportzeile in `Referenzlauf/Ergebnisexport.cs` sagt, warum. Dieselbe Regel gilt für `Puffer.Ladung_gesamt`, `Puffer.Entladung_gesamt` und `Puffer.Verluste_gesamt` |
 | **Q8** | „Empfehlung" | U7 ist **sofort** berichtigt: Der Kommentar an `SimulationStrombedarf.Strombedarf_Max` nennt jetzt kW statt kWh |
+
+### 9.2 W8‑O‑5d — der Rechenkern rechnet in `double` (07.09.2026)
+
+**Wortlaut des Anwenders:** „W8‑O‑5d: alles in double, ist kein Nachteil und systematisch.
+Summenfunktionen aus Original BHKW-Plan ebenfalls double."
+
+Der Entscheid fällt **weiter aus als die Frage Q5**, die nur nach den Akkumulatoren gefragt
+hatte, und er hebt die Empfehlung **Q6** ausdrücklich auf. Umgestellt sind:
+
+* alle Stundenreihen des Laufs (8 760 / 35 040 / 365 / 168 / 12) — die 59 Reihen des
+  `ZeitreihenSatz` und der Simulationsklassen,
+* alle Akkumulatoren, Zwischenwerte, Felder, Eigenschaften, Parameter und Rückgaben in
+  `EPOS.Kern/Allgemein/Simulation/**`, `Ganglinie`, `ProfilBedarf`, `ErdreichTemperatur`,
+  `WaermequelleClass`, `Kanalsatz`, `SimulationRunner`, `ZeitreihenExtraktor`,
+  `CsvExportClass` und den Controllern, die Reihen liefern oder verbrauchen,
+* **`BhkwPlan.cs` vollständig** samt `VectorSumme` und `MonatsSumme`: Die bewusste
+  Nachbildung des FPU-Verhaltens der Original-DLL (Zwischenwert in `double`, Ergebnis auf
+  `float` zurückgeschrieben) ist aufgegeben,
+* die Datenbank- und Dateigrenze: `Convert.ToSingle`/`(float)` beim Lesen wird
+  `Convert.ToDouble` — SQLite `REAL` **ist** `double`,
+* die Nahtstelle zur `SpeicherEngine`: `RasterAdapter.ZuViertelstundenDouble` nimmt
+  `double[]`, `ZuFloat`/`ZuDouble` sind entfallen.
+
+**`float` bleibt an drei Grenzen** (die Tabelle steht in `EPOS.Kern/CLAUDE.md`, Abschnitt
+„Typen"): Bildpunkte des `ChartRenderer` (SkiaSharp rechnet in `float`), Einbettungsvektoren
+des KI-Wissens und Typprüfungen auf boxed Datenbankwerte. Ein dritter Wächter,
+`EPOS.Kern.Tests/DoubleWacheTests`, hält den Rechenweg frei — mit **leerer** Ausnahmeliste.
+Im Kern fällt die Zahl der `float`-Fundstellen von **788 in 42 Dateien** auf **148 in 15**.
+
+**Was das am Ergebnis geändert hat.** Die Jahressummen bleiben in allen zwölf Referenzprojekten
+innerhalb **3e‑5** relativ; die erste Differenz einer Stundenreihe liegt bei einer
+`float`-Stufe (rund 1e‑7). **Elf der zwölf Projekte reißen trotzdem die Toleranz iF15**, weil
+drei Schwellen des Modells am letzten Bit entscheiden und ihr Ergebnis über Stunden
+weitertragen: die Speicherhysterese `SOC >= Q_max · SchwelleAus` (bistabil), die
+Volllast/Modulations-Grenze des BHKW und die drei `int`-Rückgaben in `BhkwPlan` (Borland
+`_ftol`). Die Energie bleibt dabei erhalten — in Projekt 1018 sind Bedarf, Produktion, SOC und
+Verluste identisch und nur die Aufteilung des Puffers zwischen Umsatz und Durchfluss
+verschoben; in Projekt 1024 verschiebt sich die Fahrweise zwischen BHKW (+11,2 %), Wärmepumpe
+(−14,4 %) und Kessel (−10,8 %) bei unverändertem Gesamtbedarf. Zahlen, Tabelle je Projekt und
+Herleitung stehen im `protokoll.txt` der Basis `Referenzlaeufe/2026-09-07_R4_Double` und in
+`Referenzlaeufe/LIESMICH.md`.
+
+**Der Beleg, dass der neue Stand der richtige ist**, steht außerhalb des Referenznetzes: Die
+Brauchwasser-Jahressumme in `EPOS.Kern.Tests/BedarfVerwaltungTests` trifft die Katalogmenge
+jetzt exakt — **742,9000 kWh statt 742,9008** bei 0,7429 MWh Katalogwert. Die 0,0008 kWh waren
+die Rundung der 8 760 `float`-Zellen.
 
 ---
 
