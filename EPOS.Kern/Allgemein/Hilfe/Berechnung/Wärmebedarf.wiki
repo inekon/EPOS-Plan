@@ -343,6 +343,13 @@ Die Tagessumme wird zuletzt von der Kataloggroesse auf die Projektgroesse skalie
 :: <math>A_{\mathrm{ges}}</math> – Flaeche, mit der das Gebaeude im Projekt rechnet [m²]
 :: <math>A_{\mathrm{Wohn}}</math> – Wohnflaeche des Katalogeintrags [m²]
 :: <math>24</math> – Stunden je Tag [h]
+Die drei Groessen (2), (7) und (12) werden '''ungerundet''' weitergereicht. Bis zum 07.09.2026
+schnitt der Rechenkern sie auf ganze Einheiten ab — eine Nachbildung der alten Rechenbibliothek,
+die in ganzen Zahlen zurueckgab. Weil (2) und (7) dabei als Hundertfaches durch die Schnittstelle
+gingen, war das ein Raster von einem Hundertstel auf den solaren Gewinnen und dem
+Waermeverlustkoeffizienten, und bei (12) ein Raster von einer Wattstunde auf der Tagessumme
+'''nach''' der Flaechenskalierung. Zwei Gebaeude, deren Flaechen sich geringfuegig unterschieden,
+lieferten dadurch dieselbe Tageslast. Das Abschneiden ist ersatzlos entfallen.
 === 3. Vom Tag zur Stunde ===
 
 Die 365 Tageslasten werden ueber '''typtagbezogene 24-Stunden-Profile''' verteilt. Je

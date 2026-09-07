@@ -232,6 +232,61 @@ namespace WindowsFormsApplication1.Referenzlauf
                 }
             }
 
+            // --- Emissionsgroessen der Simulation (Anwenderentscheid Em-9.8, 07.09.2026) --
+            // Kessel und BHKW fuehren je fuenf Jahressummen (Verbrauch [MWh] x Faktor
+            // / 1000), gebildet ueber Emissionsquelle.Fuer - die Kette Projekt ->
+            // Katalog -> Stamm -> Carrier -> Brennstoff (Konzept B1). Bis zu diesem
+            // Entscheid las sie NICHTS ausser der Probe EmissionsquelleTests: keine
+            // Ergebnistabelle, kein Bericht, keine Kachel, keine Referenz-CSV. Damit
+            // haette das Regressionsnetz eine Aenderung an einem Emissionsfaktor nicht
+            // bemerken koennen (Konzept, Paragraph 9 Punkt 8).
+            //
+            // WEG A des Konzepts (11.2.1): Skalare hier, KEINE Spalte in Tab_Ergebnis*.
+            // Eine gespeicherte Emissionszahl beschriebe einen Zustand, der bei jedem
+            // Bericht neu gerechnet wird; sie liefe auseinander, sobald jemand zwischen
+            // Lauf und Druck den Modus oder einen Katalogwert aendert.
+            //
+            // DIE EINHEIT STEHT IM NAMEN (Em-9.8-Q3): CO2 fuehrt t/a, die vier uebrigen
+            // kg/a - die zehn Felder haben also NICHT dieselbe Einheit. Ein Teiler hier
+            // waere eine dritte Umrechnungsnaht neben den zwei erlaubten (Hausregel
+            // Rechenkern, Punkt 4); der Export rechnet nicht um.
+            //
+            // EIGENES PRAEFIX "Em.": "Heizkessel." und "BHKW." stehen fuer "Spalte einer
+            // Tab_Ergebnis*-Zeile" (SELECT *). Ein handgeschriebener Skalar darunter
+            // verwischte die Herkunft.
+            //
+            // BEDINGUNG WIE BEI DEN VEKTOREN (11.2.2): Der Block laeuft nur, wenn die
+            // Stufe gelaufen ist - dieselbe Bedingung, unter der schon
+            // kessel_waermebedarf.csv und bhkw_strom.csv entstehen, und dasselbe Muster
+            // wie beim Erdreich-Block. Die Projekte 1007 und 1008 fahren weder Kessel-
+            // noch BHKW-Stufe und bekommen deshalb KEINEN der zehn Schluessel, statt
+            // zehn Nullen zu tragen.
+            //
+            // CO ist mit Absicht dabei, obwohl es heute strukturell 0 ist (es gibt keine
+            // Emissionsart "CO", Paragraph 9 Punkt 9 / Em-9.9): So AENDERT ein spaeterer
+            // Traegerwert eine Zahl, statt einen Schluessel HINZUZUFUEGEN - eine
+            // Wertaenderung meldet der Vergleich mit Zahlen, ein neuer Schluessel nur
+            // als "nur im Vergleichslauf".
+            if (sim.bSimulationKessel && sim.simulation_spk != null)
+            {
+                SimulationSPK spk = sim.simulation_spk;
+                skalare.Add(Neu("Em.Kessel.Co2T",    Zahl(spk.Em_CO2_SPK)));
+                skalare.Add(Neu("Em.Kessel.So2Kg",   Zahl(spk.Em_SO2_SPK)));
+                skalare.Add(Neu("Em.Kessel.NoxKg",   Zahl(spk.Em_NOX_SPK)));
+                skalare.Add(Neu("Em.Kessel.CoKg",    Zahl(spk.Em_CO_SPK)));
+                skalare.Add(Neu("Em.Kessel.StaubKg", Zahl(spk.Em_Staub_SPK)));
+            }
+
+            if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
+            {
+                SimulationBHKW bh = sim.simulation_bhkw;
+                skalare.Add(Neu("Em.Bhkw.Co2T",    Zahl(bh.Em_CO2_BHKW)));
+                skalare.Add(Neu("Em.Bhkw.So2Kg",   Zahl(bh.Em_SO2_BHKW)));
+                skalare.Add(Neu("Em.Bhkw.NoxKg",   Zahl(bh.Em_NOX_BHKW)));
+                skalare.Add(Neu("Em.Bhkw.CoKg",    Zahl(bh.Em_CO_BHKW)));
+                skalare.Add(Neu("Em.Bhkw.StaubKg", Zahl(bh.Em_Staub_BHKW)));
+            }
+
             skalare.AddRange(ErgebnisTabellenLesen(kopfId));
 
             foreach (var s in summen)

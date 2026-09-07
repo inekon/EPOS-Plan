@@ -212,6 +212,14 @@ Direktdeckung.
 :: <math>Q(t)</math> – Wärmeproduktion des Moduls in der Stunde [kWh]
 :: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des Moduls [kW]
 
+Beide Grenzen dieser Tabelle tragen einen '''Zahlenrand''': Als erreicht gilt der Wärmeraum schon
+dann, wenn er die Nennleistung beziehungsweise die Modulationsgrenze bis auf 10<sup>−9</sup> kWh
+zuzüglich 10<sup>−12</sup> ihres eigenen Betrages erreicht. Das ist Rechentechnik, keine
+Fachtoleranz: Wärmeraum und Nennleistung liegen an der Kante zwischen zwei Betriebszuständen
+gleichauf, und ohne den Rand entschiede die letzte Stelle einer Gleitkommazahl darüber, ob ein
+Modul auf Volllast läuft, moduliert oder stehen bleibt. Der Rand liegt vier Größenordnungen unter
+der Toleranz, mit der die Regressionsprüfung Zahlen überhaupt unterscheidet.
+
 '''Stromgeführt (Wirtschaftlich).''' Die Module folgen dem '''Strombedarf'''; die Wärme ist
 Koppelprodukt. Eine Speichergrenze gibt es in der Zuschaltung nicht — was über den Wärmebedarf
 hinaus entsteht, geht in die Ladephase und, wenn dort nichts mehr aufnimmt, in den

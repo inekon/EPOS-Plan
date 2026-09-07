@@ -23,9 +23,14 @@ namespace WPPlan.Core
     ///    <c>double</c>, Zwischenwert und Speicherzelle haben dieselbe Breite.
     ///  * Arrays werden IN-PLACE überschrieben – exakt wie die native Seite (die Rückgabe-int
     ///    wird vom Aufrufer fast überall ignoriert).
-    ///  * Die drei Physik-Funktionen geben int zurück (Borland _ftol = Abschneiden Richtung Null,
-    ///    entspricht dem C#-(int)-Cast). Der WP-Plan-Aufrufer teilt SpezWaermeverlusteC und
-    ///    SolareGewinneC anschließend durch 100 (siehe XML-Doc der jeweiligen Methode).
+    ///  * Die drei Physik-Funktionen geben seit dem Anwenderentscheid W8-O-5d-Q2 (07.09.2026)
+    ///    double zurück. Die DLL gab int zurück (Borland _ftol = Abschneiden Richtung Null,
+    ///    entspricht dem C#-(int)-Cast); das war bis dahin nachgebildet. Der Entscheid lautet
+    ///    "keine Treue zur alten DLL": Eine Stelle hinter dem Komma entschied über eine ganze
+    ///    Einheit, und weil der WP-Plan-Aufrufer SpezWaermeverlusteC und SolareGewinneC
+    ///    anschließend durch 100 teilt, wanderte die Quantisierung als Hundertstel in die
+    ///    Tagesheizlast (Projekt 1041: 0,39 % über einen ganzen Januartag). Es wird nicht mehr
+    ///    abgeschnitten.
     ///
     /// Jede Methode nennt in der Doku die RVA der Originalfunktion und die belegten Konstanten.
     /// Vor produktivem Einsatz gegen die Original-DLL golden-mastern (siehe README).
@@ -284,7 +289,8 @@ namespace WPPlan.Core
         }
 
         // =========================================================================================
-        // Gruppe B – Physik (Wärmebedarf). Rückgabe int (Borland _ftol = Trunkierung Richtung 0).
+        // Gruppe B – Physik (Wärmebedarf). Rückgabe double: die Trunkierung der DLL
+        // (Borland _ftol, Richtung 0) ist mit W8-O-5d-Q2 gefallen.
         // =========================================================================================
 
         /// <summary>
@@ -295,14 +301,20 @@ namespace WPPlan.Core
         /// Bemerkung: Ost- und West-Einstrahlung (Eo, Ew) werden gemittelt und mit EINER
         /// Ost-/West-Fensterfläche (Awo) multipliziert; die West-Fensterfläche existiert nicht
         /// als eigenes Argument. Der WP-Plan-Aufrufer teilt das Ergebnis anschließend durch 100.
+        ///
+        /// <para><b>Rückgabe double seit W8-O-5d-Q2</b> (07.09.2026, „keine Treue zur alten
+        /// DLL"). Die DLL schnitt hier mit <c>_ftol</c> auf eine ganze Zahl ab; nach der
+        /// Division durch 100 beim Aufrufer war das ein Raster von 0,01 W auf den solaren
+        /// Gewinnen eines Tages. Der Faktor 100 selbst bleibt stehen — er gehört zur
+        /// Schnittstelle, die der Aufrufer bedient.</para>
         /// </summary>
-        public static int SolareGewinneC(double en, double an, double ew, double eo,
-                                         double awo, double es, double uAs, double transmissionsgrad)
+        public static double SolareGewinneC(double en, double an, double ew, double eo,
+                                            double awo, double es, double uAs, double transmissionsgrad)
         {
             double tmp = ((double)eo + ew) * 0.5;
             double s = (double)en * an + tmp * awo + (double)es * uAs;
             s = s * transmissionsgrad * 100.0;
-            return (int)s; // _ftol: Trunkierung Richtung Null
+            return s; // W8-O-5d-Q2: kein _ftol mehr
         }
 
         /// <summary>
@@ -319,8 +331,15 @@ namespace WPPlan.Core
         ///
         /// Argumentnamen wie in SimpleObject.cs; "u_As" ist die FLÄCHE sonstiger Bauteile.
         /// Der WP-Plan-Aufrufer teilt das Ergebnis anschließend durch 100.
+        ///
+        /// <para><b>Rückgabe double seit W8-O-5d-Q2</b> (07.09.2026). Die Trunkierung der DLL
+        /// rasterte den Wärmeverlustkoeffizienten auf 0,01 W/K — und weil er in der
+        /// Tagesheizlast mit der Temperaturdifferenz multipliziert wird, wuchs das Raster dort
+        /// auf ein Vielfaches an. <b>Der Aufrufer folgt mit:</b>
+        /// <c>SimulationWaermebedarf</c> teilte das int-Ergebnis mit <c>/ 100</c>, also
+        /// GANZZAHLIG — zwei Abschneidungen hintereinander. Beide sind gefallen.</para>
         /// </summary>
-        public static int SpezWaermeverlusteC(
+        public static double SpezWaermeverlusteC(
             double kw, double aw, double kf, double af, double kd, double ad, double kg, double ag,
             double ks, double uAs, double kwb1, double lwb1, double kwb2, double lwb2, double kwb3,
             double lwb3, double aussenTemp, double wohnflaeche, double raumhoehe, double lwr)
@@ -339,13 +358,20 @@ namespace WPPlan.Core
             else
                 lueftung = (double)wohnflaeche * raumhoehe * 1.2 * lwr * 0.2777777777777778;
 
-            return (int)((transmission + bruecken + lueftung) * 100.0); // _ftol
+            return (transmission + bruecken + lueftung) * 100.0; // W8-O-5d-Q2: kein _ftol mehr
         }
 
         /// <summary>
         /// TaeglHeizlastWG @0x4150E0 – tägliche Heizlast eines Wohngebäudes über ein instationäres
-        /// 24-Stunden-Kapazitätsmodell (Handbuch Gl. 1.1.12/1.1.13). Rückgabe int (Wh/Tag ·
+        /// 24-Stunden-Kapazitätsmodell (Handbuch Gl. 1.1.12/1.1.13). Rückgabe double (Wh/Tag ·
         /// Gesamtflaeche/Wohnflaeche). ret 0x3C (15 Argumente).
+        ///
+        /// <para><b>Rückgabe double seit W8-O-5d-Q2</b> (07.09.2026, „keine Treue zur alten
+        /// DLL"). Die DLL schnitt die Tagesheizlast auf ganze Wh ab. Das klingt klein, war es
+        /// aber nicht: Die Tagessumme geht über das Tagesprofil in 24 Stundenwerte, und die
+        /// Schwellen des Modells (Speicherhysterese, Volllastgrenze des BHKW) tragen eine
+        /// Verschiebung über Stunden weiter. In Projekt 1041 verschob eine Stelle hinter dem
+        /// Komma die Tagesheizlast eines Januartags um 0,39 %.</para>
         ///
         /// Zustandsführung: Die "Vortemperatur" wird in einer globalen Variablen (0x4211F8,
         /// hier <see cref="_prevRoomTemp"/>) über Stunden UND Tagesaufrufe hinweg mitgeführt.
@@ -359,7 +385,7 @@ namespace WPPlan.Core
         ///   sonst 7 &lt;= h &lt;= 22 → Tag-Sollwert; sonst Nacht-Sollwert.
         /// Solargewinn wirkt nur in den Stunden 9..14 (mit Faktor 4.0).
         /// </summary>
-        public static int TaeglHeizlastWG(
+        public static double TaeglHeizlastWG(
             int day, int weAbsenkung, double weTemp, int ferienAbsenkung, double ferienTemp,
             double raumsolltempTag, double raumsolltempNacht, double innereGewinne, double solareGewinne,
             double spezWaermeverluste, double gebaeudeKapazitaet, double aussenTemp, double maxRaumtemp,
@@ -406,7 +432,7 @@ namespace WPPlan.Core
 
             _prevRoomTemp = tPrev; // globalen Zustand fortschreiben (0x4211F8)
 
-            return (int)(acc * gesamtflaeche / wohnflaeche); // _ftol
+            return acc * gesamtflaeche / wohnflaeche; // W8-O-5d-Q2: kein _ftol mehr
         }
     }
 }

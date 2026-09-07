@@ -1058,13 +1058,30 @@ namespace WindowsFormsApplication1
         /// Abschaltschwelle endet sie. Solange nachgeladen wird, deckt der Speicher keinen
         /// Bedarf vorab (Phase A) — die Nachentladung (Phase E) greift davon unabhängig,
         /// genau wie heute die Entladung vor Heizstab und Folge-Erzeuger.
+        ///
+        /// <para><b>Die Abschaltschwelle trägt den Zahlenrand</b> (Anwenderentscheid
+        /// W8‑O‑5d‑Q1 vom 07.09.2026). Die ALTE Bauart <c>SOC &gt;= Q_max · SchwelleAus</c>
+        /// entschied am letzten Bit, und zwar systematisch: Die Ladung fährt den Speicher
+        /// über <see cref="Ladefaehigkeit"/> auf GENAU <c>Q_max · grenze</c> — und in
+        /// Gleitkomma ist <c>a + (b − a)</c> nicht bitgleich <c>b</c>. Fiel der Vergleich
+        /// deshalb um ein ulp falsch aus, blieb die Regelung im Ladezustand, der Speicher
+        /// deckte in Phase A nicht vor, und weil die Hysterese BISTABIL ist, trug sie den
+        /// Fehltritt über Stunden weiter. Fünf der zwölf Referenzprojekte (1008, 1018,
+        /// 1023, 1039, 1042) rissen daran bei der Umstellung auf <c>double</c> die
+        /// Toleranz.</para>
+        ///
+        /// <para><b>Die EINSCHALTSCHWELLE bleibt ohne Rand</b>, und das ist Absicht: Kein
+        /// Rechenweg fährt den Füllstand auf genau <c>Q_max · SchwelleEin</c>. Sie sinkt
+        /// durch Entnahme und Bereitschaftsverluste auf einen beliebigen Wert und
+        /// entscheidet damit nicht am letzten Bit. Ein Rand ohne diesen Grund wäre eine
+        /// Verhaltensänderung ohne Anlass.</para>
         /// </summary>
         public bool HystereseFortschreiben()
         {
             if (Q_max <= 0) return false;
 
             if (!LaedtGerade && SOC <= Q_max * SchwelleEin) LaedtGerade = true;
-            if (LaedtGerade && SOC >= Q_max * SchwelleAus) LaedtGerade = false;
+            if (LaedtGerade && Rechenrand.SchwelleErreicht(SOC, Q_max * SchwelleAus)) LaedtGerade = false;
 
             return !LaedtGerade;
         }
