@@ -476,7 +476,7 @@ Bestands entsteht — schreiben `0.001`, und die Viertelstundenreihen teilen dur
 
 **Was die CSV-Schlüssel angeht (Q7):** `Sim.Restwaerme` und `Sim.Reststrom` in
 `Referenzlauf/Ergebnisexport.cs` bleiben hart verdrahtet, obwohl die Felder `RestwaermeMwh` und
-`ReststromMwh` heißen. Der Schlüssel steht in 312 Dateien der Basis `2026-09-07_R4_Double`;
+`ReststromMwh` heißen. Der Schlüssel steht in 312 Dateien der Basis `2026-09-07_R5_Zahlenrand`;
 wandert er mit, ist kein Vergleich gegen eine ältere Basis mehr möglich. Dasselbe gilt für
 `Puffer.Ladung_gesamt`, `Puffer.Entladung_gesamt` und `Puffer.Verluste_gesamt`.
 
@@ -513,7 +513,7 @@ Geschichte erzählen. Im Ordner `Allgemein/Simulation/` steht **keine einzige** 
 |---|---|---|
 | `Im_Rechenweg_steht_kein_float_mehr` | In `EPOS.Kern/Allgemein/Simulation/**` und `BhkwPlan.cs` steht keine der Schreibweisen `float` (Typname, `(float)`, `float.Parse`, `float.Epsilon`), `Convert.ToSingle`, `MathF.` und kein Zahlenliteral mit `f`-Suffix. Meldet Datei:Zeile | **keine** — die Liste ist leer, und eine Gegenprobe hält fest, dass jede eingetragene Ausnahme wirklich existieren müsste |
 
-**Was der Umbau am Ergebnis geändert hat** (Basis `2026-09-07_R4_Double`, Begründung mit
+**Was der Umbau am Ergebnis geändert hat** (Basis `2026-09-07_R4_Double` — die damalige; seit den Entscheiden Q1/Q2 ist es `2026-09-07_R5_Zahlenrand`, Begründung mit
 Zahlen im `protokoll.txt` dort): Die Jahressummen bleiben in allen zwölf Projekten innerhalb
 3e‑5 relativ, die erste Differenz einer Stundenreihe liegt bei einer `float`-Stufe (rund
 1e‑7). **Elf der zwölf Projekte reißen trotzdem die Toleranz iF15**, weil drei Schwellen des

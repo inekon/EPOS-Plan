@@ -918,8 +918,8 @@ ohnehin nur über Migrationsschritte oder `Werkzeuge/Testdatenbankschema`.
    (Die UBA-Seite ist unkritisch: CC0 1.0 laut Impressum der Datei, Quellenvermerk
    erfüllt durch `quelle_text`.)
 8. ~~Die Emissionswerte der Simulation stehen in keiner Referenz-CSV~~ —
-   **entschieden 07.09.2026 („Sieben Fragen: Empfehlung"): Z1, umgesetzt auf dem Zweig
-   `w143-r5`, Basis `2026-09-07_R5_Zahlenrand`.** Der Befund war richtig: Weder
+   **entschieden 07.09.2026 („Sieben Fragen: Empfehlung"): Z1, umgesetzt in
+   `880a9de`, Basis `2026-09-07_R5_Zahlenrand`.** Der Befund war richtig: Weder
    `aggregate.csv` noch eine Vektordatei führte eine Emissionsgröße, und `Tab_Ergebnis*`
    hat bis heute keine Emissionsspalte (Weg B ist in § 11.2.1 ausdrücklich abgelehnt).
    Der Umbau B1 änderte deshalb **kein** Feld der zwölf Referenzprojekte (12/12

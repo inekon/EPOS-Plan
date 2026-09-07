@@ -74,13 +74,105 @@ heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Wa
 > & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 
-### CI-Basis auf Linux: `2026-09-07_R4_Double` (löst `2026-09-06_R3_Straenge` ab)
+### CI-Basis auf Linux: `2026-09-07_R5_Zahlenrand` (löst `2026-09-07_R4_Double` ab)
+
+**`2026-09-07_R5_Zahlenrand/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018, 1023,
+1024, 1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, jetzt **1 792 Skalare** (vorher 1 722),
+gerechnet mit dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
+(Schemastand 67). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045)
+jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach.
+
+> **Anlass: drei Anwenderentscheide vom 07.09.2026, alle „Empfehlung".**
+>
+> * **W8‑O‑5d‑Q1** — die zwei Betriebsschwellen, die bei der Umstellung auf `double` am letzten
+>   Bit entschieden, tragen einen **Zahlenrand**
+>   (`EPOS.Kern/Allgemein/Simulation/Rechenrand.cs`: `1e-9 + 1e-12 · |Schwelle|`, absolut UND
+>   relativ, vier Größenordnungen unter der Vergleichstoleranz dieser Suite).
+> * **W8‑O‑5d‑Q2** — „keine Treue zur alten DLL": Die drei Physik-Funktionen des
+>   BHKW-Plan-Ports geben `double` zurück, die `(int)`-Abschneidung (Borland `_ftol`) fällt.
+> * **Em‑9.8** — die zehn Emissionsgrößen der Simulation kommen als Skalare in
+>   `aggregate.csv` (siehe „Die Einfrierregel" oben).
+>
+> **Diese Basis ist NICHT byte-gleich zur Vorgängerbasis — und die Ursache ist Q2.** Drei
+> Raster fallen weg: die Tagesheizlast auf ganze Wattstunden **nach** der Flächenskalierung,
+> die solaren Gewinne auf Hundertstel Watt und — die schwerste — der spezifische
+> Wärmeverlustkoeffizient auf **ganze W/K**. Bei ihm wirkte das Abschneiden doppelt: Die
+> Funktion gab `(int)(L · 100)`, und der Aufrufer teilte dieses `int` **ganzzahlig** durch 100.
+>
+> | Projekt | Werte | Abw. über Toleranz | größte rel. | größte abs. |
+> |---|---|---|---|---|
+> | 1007 | 324 219 | 78 561 | 1,00e+00 (`heizstab[168]` 0 → 0,00208) | 234 242 Wh |
+> | 1008 | 227 861 | 43 740 | 1,00e+00 (`puffer_soc[7]` 0 → 5,060) | 63 183 Wh |
+> | 1017 | 254 154 | 48 481 | 1,00e+00 (`bhkw_restwaerme[1368]` 0 → 0,00173) | 56 560 Wh |
+> | 1018 | 236 661 | 52 380 | 9,98e‑01 (`kessel_restwaerme[8687]` 0,0179 → 9,401) | 12 142 Wh |
+> | 1023 | 262 936 | 44 700 | 1,00e+00 (`heizstab[1728]` 0 → 0,328) | 66 814 Wh |
+> | 1024 | 271 717 | 52 571 | 1,00e+00 (`heizstab[176]` 0 → 0,00203) | 66 814 Wh |
+> | 1030 | 236 670 | **0** | — | **byte-gleich in 21 von 22 Dateien** |
+> | 1039 | 262 949 | 66 548 | 9,87e‑01 (`puffer_soc[7824]` 32,93 → 0,425) | 126 917 Wh |
+> | 1040 | 306 764 | 82 247 | 1,00e+00 (`kessel_leistung[410]` 0 → 0,00272) | 41 210 Wh |
+> | 1041 | 280 470 | 38 457 | 1,17e‑01 (`waermebedarf_gebaeude[2919]` 1 101,94 → 1 247,44 Wh) | 41 210 Wh |
+> | 1042 | 341 837 | 67 592 | 1,00e+00 (`kessel_leistung[233]` 0 → 0,00269) | 41 210 Wh |
+> | 1045 | 306 764 | 83 044 | 1,00e+00 (`kessel_leistung[410]` 0 → 0,00272) | 41 210 Wh |
+>
+> Die größte **absolute** Abweichung ist in jedem der elf Projekte dieselbe Größe: die
+> Jahressumme des Gebäudewärmebedarfs. Sie verschiebt sich um **−1,15e‑3 … +4,43e‑3** relativ,
+> und zwar umso stärker, je KLEINER das Gebäude ist — genau so, wie es die Abschneidung eines
+> Wärmeverlustkoeffizienten auf ganze W/K erwarten lässt: **1007** (74 m², L = 194,5722 →
+> 194 W/K, −0,29 %) verschiebt sich um +4,43e‑3, **1041** (201 m², L = 811,0302 → 811 W/K,
+> −0,004 %) nur um +6,95e‑4.
+>
+> Die größte **relative** Abweichung auf einem beidseitig echten Zahlenpaar steht in 1041 am
+> 2. Mai: Tagessumme 31 484 → 35 641 Wh (**+13,2 %**). Der Verstärker ist das instationäre
+> 24-Stunden-Modell — es trägt die Raumtemperatur über die TAGE fort und enthält die diskrete
+> Verzweigung „Sollwert < Vortemperatur → diese Stunde zählt nicht". An einem milden Tag sitzt
+> der Raum genau auf dieser Kante. Über das Jahr mittelt es sich weg: In 1041 liegt der Median
+> der Tagesabweichung bei 7,0e‑4 und nur **zwei** von 326 Bedarfstagen reißen 1 %.
+>
+> **Der Gegenbeweis:** Projekt **1030** ist das einzige ohne Gebäudewärmebedarf (der Bedarf
+> kommt aus einer Ganglinie). Q2 hat dort keinen Angriffspunkt — und prompt sind 21 der
+> 22 Dateien **byte-gleich** zu R4; die 22. (`aggregate.csv`) unterscheidet sich in genau den
+> zehn neuen Emissionszeilen. Der Zahlenrand allein bewegt also kein Projekt, dessen
+> Vergleiche nicht wirklich auf der Kante sitzen.
+>
+> **Was aus den zwei Verschiebungen der R4-Basis wurde:** Beide BLEIBEN — der Zahlenrand nimmt
+> sie nicht zurück, er macht sie eindeutig. In **1024** (BHKW +11,2 % gegen R3) bewegt sich von
+> R4 auf R5 nur noch, was der um 1,7e‑4 gewachsene Bedarf mitbringt (`bhkw_waerme`
+> 179 470,12 → 179 519,32 kWh, +2,7e‑4). In **1018** bleibt die Aufteilung des Puffers zwischen
+> Umsatz und Durchfluss die des R4-Standes (`Ladung_gesamt` 33 744,81 → 33 505,33,
+> `Durchsatz_Geladen` 14 292,62 → 14 544,23 kWh) — und sie ist jetzt zwingend statt zufällig:
+> Die Ladung fährt den Speicher auf genau `Q_max · SchwelleAus`, und der Zahlenrand sorgt
+> dafür, dass die Hysterese das auch dann als erreicht liest, wenn die Summe ihren Zielwert im
+> letzten Bit verfehlt.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes 12/12 **byte-gleich** (`diff -rq`
+> ohne einen einzigen Unterschied in 312 CSV), Toleranzvergleich 12/12 PASS (3 313 072 Werte —
+> 70 mehr als in R4, das sind genau die zehn neuen Skalare über die zehn Projekte mit Kessel-
+> bzw. BHKW-Stufe). **Laufzeit** 00:00:04.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045 \
+>   --ziel Referenzlaeufe/2026-09-07_R5_Zahlenrand
+> ```
+>
+> Der Vergleich gegen R4 braucht `--ohne` für die zehn neuen Schlüssel — sonst meldet er sie
+> als „Eintrag nur im Vergleichslauf" und verdeckt die eigentliche Frage:
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- vergleich \
+>   Referenzlaeufe/2026-09-07_R4_Double Referenzlaeufe/2026-09-07_R5_Zahlenrand \
+>   --ohne Em.Kessel.Co2T,Em.Kessel.So2Kg,Em.Kessel.NoxKg,Em.Kessel.CoKg,Em.Kessel.StaubKg,\
+> Em.Bhkw.Co2T,Em.Bhkw.So2Kg,Em.Bhkw.NoxKg,Em.Bhkw.CoKg,Em.Bhkw.StaubKg
+> ```
+
+### Vorgängerbasis: `2026-09-07_R4_Double` (löste `2026-09-06_R3_Straenge` ab)
 
 **`2026-09-07_R4_Double/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, gerechnet mit dem plattformfreien
-`EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (Schemastand 67). Gegen diese Basis
-hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045) jeden Push, `ios.yml` den
-iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach.
+`EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (Schemastand 67). Sie war bis zum
+07.09.2026 die CI-Basis und bleibt zur Geschichte liegen; abgelöst hat sie
+`2026-09-07_R5_Zahlenrand` (Anwenderentscheide W8‑O‑5d‑Q1/Q2 und Em‑9.8).
 
 > **Anlass (Anwenderentscheid W8‑O‑5d vom 07.09.2026):** „alles in double, ist kein Nachteil und
 > systematisch. Summenfunktionen aus Original BHKW-Plan ebenfalls double." Der Rechenkern führte
@@ -154,7 +246,7 @@ iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach.
 >   --ziel Referenzlaeufe/2026-09-07_R4_Double
 > ```
 
-### Vorgängerbasis: `2026-09-06_R3_Straenge` (löste `2026-09-05_R2_Zeitbasis` ab)
+### Ältere Basis: `2026-09-06_R3_Straenge` (löste `2026-09-05_R2_Zeitbasis` ab)
 
 **`2026-09-06_R3_Straenge/`** — **zwölf Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030,
 1039, 1040, 1041, 1042 und **neu 1045**), **312 CSV** (282 + 30), gerechnet mit dem
