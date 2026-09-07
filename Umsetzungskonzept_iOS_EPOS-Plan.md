@@ -3186,6 +3186,27 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > bewusst nicht). **Offen: Q1…Q8** (Q1 Regel festschreiben statt Einheit wechseln; Q2 Ergebnistabellen bleiben; Q3
 > CSV-Export bleibt; Q4 Reihenfolge S2; Q5 `float` → `double` als eigenes Paket; Q6 Stundenreihen nicht; Q7
 > CSV-Schlüssel bleibt; Q8 falscher Kommentar an `Strombedarf_Max` sofort).
+>
+> **W8‑O‑5c Stufe S1 (Anwenderentscheid 07.09.2026: Q1 „Regel festschreiben", Q2–Q8 „Empfehlung"), umgesetzt in
+> `5b80a8e`/`3c738e2`, zusammengeführt in `edde16c`:** Die Einheitenregel des Bestands ist festgeschrieben — Zeitreihen
+> kWh, Ausweisungen MWh, **die Einheit steht im Feldnamen**, umgerechnet wird an genau zwei Nähten
+> (`SimulationErgebnisCtrl`, `SimulationRunner`) und sonst nur in der Anzeige über `Energieeinheit`; kein Wechsel der
+> Recheneinheit, keine Migration, keine neue Basis. Umgesetzt: die elf Energie-Umrechnungen der Ergebnisseite sind aus der
+> Windows-Hülle in den Kern gewandert (U6), die zwei Ringdiagramme führen eine Konvention statt drei (U5), **43 Namen /
+> 51 Deklarationen / 412 Fundstellen** tragen ihre Einheit (U4/U8: `Restwaerme`→`RestwaermeMwh`,
+> `Stromverbrauch_Spk`→`StromverbrauchSpkMwh`, `WP_Waermeproduktion_gesamt`→`WpWaermeproduktionGesamtKwh`, …; bewusst
+> nicht: `Speicherentladung_Anteil` überall kWh, `ErgebnisModel.Waermeueberschuss` als DB-Modell in MWh), der Kommentar an
+> `Strombedarf_Max` nennt kW (U7); sechs der acht Unstimmigkeiten sind erledigt, der CSV-Schlüssel `Sim.Restwaerme` bleibt
+> (Q7, Kommentar an der Exportzeile). **Zwei Wächter** in `EinheitenWacheTests` (7 Fälle): kein Faktor 1000 auf einer
+> Energiemenge in `EPOS.UI` und `Views` (sieben Schreibweisen, fünf Ausnahmen — alle Leistung, mit Gegenprobe, dass jede
+> noch existiert) und Einheit am Namen jeder Jahressumme der sieben Simulationsklassen (13 begründete Ausnahmen:
+> Leistungsspitzen, Vollbenutzungsstunden, acht Puffer-Schlüssel der eingefrorenen Basis); beide je einmal als rot belegt.
+> Hausregel in `EPOS.Kern/CLAUDE.md`, ein Satz in `EPOS.UI/CLAUDE.md`. Nachweis: Kern 1753 / UI 3064 grün, 0 eindeutige
+> Warnungen, Designer „abweichend 0", SQL 0, Gate grün, Referenzlauf **12 von 12 Projekten, 312 von 312 CSV byte-gleich**.
+> Konzept Kapitel 7 und 9: S1 erledigt, S2 entfällt, S3 bleibt bewusst liegen; **W8‑O‑5d** (Anwenderentscheid 07.09.2026:
+> „alles in double, ist kein Nachteil und systematisch; Summenfunktionen aus Original BHKW-Plan ebenfalls double") folgt
+> als eigenes Paket mit neuer Basis R4, nach der Speicheroptimierung (W11b‑B‑5). Abnahme auf Windows: A‑W8‑O5c‑1…6 (Ringe
+> und Torte der Übersicht, Eigenanteilsraster, Brennstoffmengen, PV-Vergütung — alle Zahlen unverändert).
 
 > **Statusblock iU9 — Welle 7 umgesetzt (03.09.2026, Basis `198506f` nach W6, zusammengeführt mit `98ebe81`)**
 >
