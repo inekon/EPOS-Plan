@@ -2555,6 +2555,34 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Verwendungsspalte sagt nichts über andere Projekte) und **O‑9** (vier Wärmepumpenmerkmale nur noch in der
 > Detailansicht); O‑7 bleibt. Abnahme auf Windows: A‑W14a‑E10‑S2‑1…12 — **Update-Hinweis: Schemastand 68, ein `.wpx`
 > auf Stand 67 wird abgewiesen.** Nächster Schritt: Stufe S3 (Bedarf, Zeitreihen, Vergleich, Importmasken).
+>
+> **W14a‑E‑10 Stufe S3 (Anwenderentscheid 07.09.2026: „S3 starten"), umgesetzt in `92854e1` (S3.1) · `1b02bce` (S3.2) ·
+> `df34bc5` (S3.3) · `2186ab9` (S3.4) · `daf86c0` (Doku), zusammengeführt in `19f3f39` — Bedarf, Zeitreihen, Vergleich,
+> Importmasken.** **S3.1:** `Katalogfilterprofil.FuerBedarf` für Brauchwasser (16), Prozesswärme (32) und
+> Stromverbraucher (41) — Bezeichner · Typ · Jahressumme [MWh] · Beschreibung · Auslieferung aus EINER Abfrage
+> (`BedarfStammCtrl.Katalogfilterzeilen`; die Monatswerte stehen in MWh, kein Faktor 1000); `BedarfAdminDialog` und
+> `BedarfsProfileDialog` auf der `Katalogliste`, „Standard Stromprofil" führt in denselben Dialog. **S3.2:**
+> `Katalogfilterprofil.FuerZeitreihe`; `GanglinienAuswertungCtrl.Kennzahlen` liefert Jahresarbeit und Spitze je Katalog
+> aus EINER `GROUP BY`-Abfrage — mit Fensterfunktion (`ROW_NUMBER() OVER (PARTITION BY …)`, Eimer auf 8 760 Stunden),
+> weil die naive Abfrage für eine Viertelstundenreihe 4 590 kW Spitze meldete, die Grafik desselben Dialogs aber 1 513,5 kW
+> (Stundenmittel) — eine Wahrheit; Preis: Stromganglinie 191 ms (78 840 Wertzeilen), Wärmebedarf 85 ms, Solarganglinie
+> 21 ms, konstant in der Zeilenzahl. **S3.3, Q3 = ja:** der Vergleich lebt im Baustein `Katalogliste` und gilt damit in
+> allen Wirten — Strg-/Umschalt-Klick auf den Wahlknopf markiert bis zu drei Zeilen (kein blanker Klick, keine zweite
+> Spalte), „Vergleichen (n markiert)" öffnet eine breite `Ueberlagerung` mit einer Zeile je Parameter aus
+> `ParameterUebersichtCtrl.Werte` (Bedarf: `BedarfStammCtrl.Vergleichszeilen` mit zwölf Monatswerten; Zeitreihen: die
+> Profilspalten), Abweichungen mit Wort UND Farbe; die vierte Markierung fällt mit Hinweis. **S3.4, Q10 = ja:**
+> `KatalogImportDialog` (fünf Ausprägungen) und `ModulImportDialog` (zwei) auf der `Katalogliste` in der Betriebsart
+> `Mehrfach` (Kontrollkästchen, Doppelklick); die Wirte filtern weiter selbst mit `Katalogfilter.Anwenden` auf demselben
+> Filterstand, damit Zeilenmarkierung und Statuszeile bei ihrer Regel bleiben. Erhalten: Mehrfachwahl W6‑E‑5 samt
+> gesammelter Wahl, Statuszeile, Virtualisierung ab 120, `@key`-Fix W6‑B‑2, Übernehmen mit Vorprüfung, „Hersteller" ohne
+> Doppelpunkt. **Damit tragen 21 Dialoge in 16 Komponenten die eine Katalogliste; die Filtermechanik gibt es im Haus
+> genau einmal.** Bewusst geändert: die Filtervorbelegung der Zahlenleisten der Importmasken entfällt (**O‑10**, Rückweg
+> benannt), die Importsuche läuft über alle Spalten (**O‑11**), Altdaten in `KatalogImportProfil`/`ModulImportProfil`
+> bleiben bis zur Abnahme (**O‑12**). Nachweis: Kern 2033 / UI 3239 grün (de und en), SpeicherEngine 337, KiKern 469,
+> Formularkarte 122, SQL 0, Designer 0, ChartProben 44, Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich gegen
+> `2026-09-07_R6_PvKoeffizienten` (der Zweig hat #150 vor S3.4 aufgenommen), kein Schema. Abnahme auf Windows:
+> **A‑W14a‑E10‑S3‑1…10**. Nebenbefund am Werkzeug: `designer_neu.py schreiben` hängt je Lauf eine Leerzeile an
+> (nicht idempotent) — eigene Aufgabe.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
