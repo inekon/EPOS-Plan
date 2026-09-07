@@ -1566,6 +1566,17 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Anwenderfrage, ob es nach der W16c‑E‑6-Regel aufgelöst wird. Nachweis: elf neue bunit-Fälle, Kern 1644 / UI 3020 grün,
 > Designer „abweichend 0", SQL 0, Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich. Abnahme auf Windows:
 > A‑W16c‑E7‑1…10 (beide Knoten, vier Ziele, Tastaturweg, Schließfläche, englische Texte, 58 Punkte ohne Leerweg).
+>
+> **W16c‑O‑7 (Anwenderentscheid 07.09.2026: „ja"), umgesetzt in `4cfa018`, zusammengeführt in `e88cdab`:** Das letzte
+> Ein-Punkt-Untermenü ist aufgelöst. Der Knoten „Klimadaten" führte als einziges Kind einen Punkt derselben Beschriftung —
+> dieselbe Lage, die W16c‑E‑6 bei den zwei „Bearbeiten"-Untermenüs beseitigt hat. Der Punkt steht jetzt an der Stelle des
+> Knotens unmittelbar im Kopf „Administration" und trägt dessen Bild `Menu4`; Name, `MENU_KLIMADATEN` und
+> `Seitenschluessel.Klimadaten` unverändert, `MENU_KLIMA` bleibt ungelesen im Katalog. Zahlen 57 Punkte / 44 handelnd /
+> 13 aufklappend (nach dem Stromspeicher-Menüpunkt aus W13‑E‑2 S1 im selben Merge: 58 / 45 / 13). Die Regel „kein
+> Untermenü mit nur einem Punkt" gilt damit **ohne Ausnahme** — `MenuebandTests` hält die Liste der Einzelgänger leer
+> statt einen namentlich zu führen; zwei neue Fälle belegen Lage, Bild und den eingesparten Klick am gezeichneten Band.
+> Abnahme auf Windows: A‑W16c‑O7‑1…4 (Zeile mit Sinnbild zwischen „Energiesysteme" und „Daten & Import", Tastaturweg ohne
+> →, F1-Hilfe, englisch „Climate data").
 
 > **Statusblock iU9 — Teilwelle 16b umgesetzt (04.09.2026, Basis `84d7c16` nach W16a, zusammengeführt mit `d4a7632` nach dem einundzwanzigsten iOS-Lauf)**
 >
@@ -2461,6 +2472,30 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `CecWechselrichterDienst`, bslib ausliefern. Stufe S1 (siebte Ausprägung des `KatalogImportDialog`, Menüpunkt
 > „Stromspeicher…" unter Daten & Import ▸ nach W16c‑E‑7) folgt nach dem Anwenderentscheid. Nachweis: Kern 1672 / UI 3020
 > grün, SQL 0, Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich.
+>
+> **W13‑E‑2 Stufe S1 (Anwenderentscheid 07.09.2026: Q1…Q8 = „Empfehlung"), umgesetzt in `d3cd643`, zusammengeführt in
+> `e88cdab`:** Der einzige Katalog ohne Einlesepunkt hat einen. `KatalogImportArt.Stromspeicher` ist die **fünfte
+> Ausprägung** des `KatalogImportDialog` und die erste ohne VDI 3805: drei Quellknöpfe statt des Dateiwählers („CEC-Liste
+> abrufen", „CEC-Datei laden" XLSX/CSV, „bslib laden"), sieben Listenspalten, zwei Zahlenbereiche (kWh und kW),
+> Herstellerklappliste, Herleitungszeile zu den fehlenden Kosten (Q3: leer, in der Verwaltung pflegen); dorthin ist auch
+> der Stufenhinweis der Wärmepumpe gewandert (`Hinweis` im Profil statt eines zweiten Markup-Zweigs). Mehrfachwahl,
+> Doppelklick und Konfliktdialog kommen unverändert aus dem Wirt (W6‑E‑5). **Der Quellschlüssel wählt den Zerleger, nicht
+> die Dateiendung** — `bslib_database.csv` und eine ausgeleitete CEC-CSV sehen gleich aus (`Lesen`-Delegat mit
+> Quellschlüssel). Die CEC-Liste wird **nicht** mitgeliefert (Q2, Nutzungsbedingungen); `CecSpeicherDienst` holt sie nach
+> dem Muster von `CecWechselrichterDienst` — Bytes statt Text (XLSX), zerlegt nichts, `HttpMessageHandler` und Ablageort
+> einlegbar, Zwischenspeicher unter `%LocalAppData%`, ohne Netz Warnbanner bzw. Rückgriff auf den Zwischenspeicher.
+> **bslib wird ausgeliefert** (`VDI-3805-Daten/Stromspeicher/bslib_database.csv`, CC BY 4.0, 2 729 Byte byte-gleich zur
+> Importprobe und zu PyPI-, FZJ- und HTW-Quelle, `LIESMICH_bslib.md`); `Setup/EPOS-Plan.iss` bleibt unverändert, weil die
+> Komponente `herstellerdaten` rekursiv liefert. Übernahme über `StromspeicherStammCtrl.ImportUebernehmen`/`UpdateImport`
+> (Q4 Standby = max(voll, leer) je AC+DC, Q5 Bezeichner „Hersteller: Modell", Q6 keine Zyklen-Vorbelegung; Überschreiben
+> frischt Kapazität, Leistung, η und Standby auf und lässt von Hand gepflegte Kosten, Degradation und Zyklen stehen).
+> Menüpunkt „Stromspeicher (CEC, bslib)…" unter Administration ▸ Daten & Import hinter dem Knoten „Photovoltaik" (58 Punkte,
+> 45 handelnd — der erste neue Weg seit W6‑E‑2), F1 auf den Abschnitt „Datenimport" der `Stromspeicher.wiki`. Kein
+> Migrationsschritt, Rechenweg unberührt. Nachweis: 23 neue Kern-Fälle (`StromspeicherUebernahmeTests`, Transaktion mit
+> Rollback), 11 bunit-Fälle, Kern 1707 / UI 3057 grün, Designer „abweichend 0", SQL 0, Gate grün, Referenzlauf
+> 1030/1007/1017/1045 byte-gleich. Q7 (Standby im Rechenweg, Stufe S3) bleibt als spätere Stufe im Konzept. Abnahme auf
+> Windows: A‑W13‑E2‑1…15 — darunter der Netzabruf mit und ohne Verbindung (A‑W13‑E2‑5…7), Abbruch während des Abrufs,
+> bslib ohne Dateiwähler nach Installation mit der Komponente „Herstellerdaten" (vier Sätze, drei übergangene Zeilen).
 
 > **Statusblock iU9 — Welle 12 umgesetzt (04.09.2026, Basis `73a4338` nach W11b, zusammengeführt mit `fe22915`)**
 >
