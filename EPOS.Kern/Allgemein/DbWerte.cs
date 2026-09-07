@@ -1743,6 +1743,25 @@ namespace WindowsFormsApplication1
         /// <summary>Vorbelegung der Zelltechnologie eines neuen Speicher-Katalogsatzes.</summary>
         public const string SP_TYP_LITHIUM_IONEN = "Lithium-Ionen";
 
+        //   W13-E-2 (07.09.2026): Der Stromspeicherimport uebersetzt den englischen
+        //   Technologietext der Quellliste in DIESE Werte
+        //   (StromspeicherImportSatz.TypAusTechnologie). "Lithium-Eisen-Phosphat"
+        //   fuehrt der Bestand bereits (Tab_Stromspeicher_STAMM, IDs 13 und 15) und
+        //   stand bis dahin nirgends als Konstante; die drei uebrigen kommen mit dem
+        //   Import dazu. Freitext bleibt die Spalte trotzdem.
+
+        /// <summary>Zelltechnologie LFP — im Bestand bereits vergeben.</summary>
+        public const string SP_TYP_LITHIUM_EISEN_PHOSPHAT = "Lithium-Eisen-Phosphat";
+
+        /// <summary>Zelltechnologie LTO (Lithium-Titanat).</summary>
+        public const string SP_TYP_LITHIUM_TITANAT = "Lithium-Titanat";
+
+        /// <summary>Zelltechnologie NMC (Lithium-Nickel-Mangan-Kobalt).</summary>
+        public const string SP_TYP_LITHIUM_NMC = "Lithium-Nickel-Mangan-Kobalt";
+
+        /// <summary>Eisen-Redox-Flow-Batterie.</summary>
+        public const string SP_TYP_EISEN_REDOX_FLOW = "Eisen-Redox-Flow";
+
         // =====================================================================
         // Stromspeicher — Berechnungsart
         //   Tab_StromspeicherVariante.Berechnungsart
