@@ -3960,6 +3960,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > zwölf Projekte 312/312 CSV byte-gleich. Abnahme auf Windows: A‑W6‑E7‑1…7 — darunter A‑W6‑E7‑2 (Wert ändern und simulieren
 > bewegt das Ergebnis; vor der Behebung nicht) und A‑W6‑E7‑7 (`.wpx`-Pakete auf Stand 66 werden abgewiesen, beide Rechner
 > müssen auf 67).
+>
+> **W6‑B‑3 (Windows-Abnahme 07.09.2026: „Die gesamte Zuordnung Wechselrichter zum PV-Modul und Strang funktioniert nicht —
+> Auswahl Wechselrichter nicht vorhanden"), behoben in `70fb00e`/`f52b30e`, zusammengeführt in `29bd5c5`:** Die Ursache
+> war die **weiche Sperre W16b‑E‑6 auf der Option „mit Wechselrichter"** in `PvStraengeFelder`: Sie verlangte einen
+> Strang, bevor sie den Weg freigab — angelegt wird ein Strang aber nur INNERHALB dieses Weges; eine frische Anlage kam
+> nie hinein. Belegt mit bunit in der Lage des Anwenders (Klick auf die Option wird verweigert, gerendert bleibt der
+> Rückfallzweig „Die Anlage rechnet mit dem Wirkungsgrad 0,950 …" mit EINEM Knopf, der die Pauschalen öffnet — Zeichen
+> für Zeichen das Bildschirmfoto; der Browser lässt das Kästchen gewählt aussehen, weil Blazor bei unveränderter Auswahl
+> nichts zurückstellt) und hüllennah gegen die Testdatenbank (die Hülle liefert Hersteller, Geräte und Modulhersteller —
+> H4 widerlegt). Die Sperre fällt ersatzlos (`PVS_SPERRE_OHNE_STRANG` gelöscht); bei „mit Wechselrichter" stehen jetzt
+> **immer** Herstellerfilter, die Klappliste „Wechselrichter aus dem Katalog" und „Strang anlegen" (das gewählte Gerät
+> geht über `CopyFromStamm` in den neuen Strang), bei leerem Katalog der Importweg „Administration → Daten & Import →
+> Photovoltaik → Wechselrichter (CEC, OND)…" statt eines stummen Abschnitts; der Rückfall heißt „Anlagenwerte
+> (Rückfall)…" und steht getrennt am Fuß, auch die Überlagerung trägt den Namen. Der Titel „Verwaltung Photovoltaik
+> Module" bleibt — historischer Titel von `Form_PV` und Hausschema („Verwaltung Heizkessel"). `PhotovoltaikDialog.razor`
+> und `PhotovoltaikHuelle.cs` sind unberührt (kein Konflikt mit S2). Nachweis: 14 neue Fälle (`PvStraengeFelderTests`
+> 38 → 45, `PvWechselrichterZuordnungTests` 5), Kern 1930 / UI 3202 grün, Gate grün, Referenzlauf byte-gleich gegen R5;
+> Konzept Kapitel 7/7.1/12. Abnahme auf Windows: A‑W6‑B3‑1…10.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
