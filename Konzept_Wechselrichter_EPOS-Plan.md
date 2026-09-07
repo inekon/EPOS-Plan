@@ -1022,11 +1022,38 @@ seither „PV Module (CEC, PAN)…" statt „Import Photovoltaik CEC/Pan".)
 > die Fälle der Wechselrichterausprägung (Abschnitt 6, aus `WechselrichterDialogTests`
 > hierher geholt), der OND-Zweig (7) und der Dateiweg der Auslieferungsliste (8).
 >
-> **Eine Zeilenwahl, kein Mehrfachimport.** Beide Vorläufer hatten `MultiSelect = false`
-> und schrieben genau EINEN Satz; `ImportVorpruefung` trägt deshalb einen Befund und keine
-> Liste. Geteilt ist der Baustein `Zeilenwahl` (der einen Mehrfachmodus kann), die
-> Semantik bleibt die des Bestands — ein Mehrfachimport wäre eine Fachänderung und kein
-> Zusammenlegen.
+> **Mehrfachwahl und Doppelklick — für ALLE sechs Importe dieselbe Regel**
+> (Anwenderentscheid **W6‑E‑5** vom 07.09.2026: „die Mehrfachauswahl funktioniert nicht
+> (Wechselrichter)", „und die Auswahl per Doppelklick geht nicht", „der Mehrfachimport
+> soll grundsätzlich für alle Importe möglich sein"). Bis dahin galt hier: EINE
+> Zeilenwahl, kein Mehrfachimport — beide Vorläufer hatten `MultiSelect = false`. Der
+> `KatalogImportDialog` konnte zwar mehrere Sätze, führte aber die Semantik der `ListBox`
+> mit `MultiExtended`: Ein einfacher Klick ERSETZTE die Wahl, nur `Strg` nahm eine Zeile
+> dazu. Die Wahlspalte zeigt jedoch ein Kontrollkästchen (☐/☑), und ein Kästchen
+> verspricht Umschalten; wer zwei Zeilen anklickte, hatte am Ende eine. Seither gilt in
+> beiden Wirten:
+>
+> * **Klick schaltet die Zeile um**, `Strg` ebenso, **`Umschalt` nimmt den Bereich ab dem
+>   Anker DAZU** — die Regel steht einmal im Baustein `Zeilenmarkierung`, nicht je Wirt.
+> * **Doppelklick übernimmt genau diese Zeile sofort**, ohne die übrige Wahl zu löschen.
+>   Der Browser schickt davor zwei Klicks, die sich mit der Umschaltregel aufheben —
+>   deshalb `Zeilenmarkierung.Hinzufuegen` statt `Anklicken`.
+> * **„Übernehmen" schreibt ALLE gewählten Sätze in einem Zug.** `ImportVorpruefung` trägt
+>   weiterhin EINEN Befund; der `ModulImportDialog` ruft `Wege.Vorpruefen` je Satz und
+>   führt die Befunde zu EINER Rückfrage (Plausibilitätswarnungen, mit der Liste der
+>   betroffenen Geräte) und EINEM `ImportKonflikteDialog` zusammen — wie die vier
+>   VDI‑Importe. Ein Plausibilitätsfehler sperrt nur SEINEN Satz. Abschluss ist die Bilanz
+>   „n übernommen, m übersprungen" (`IMP_MSG_BILANZ`); **ein einzelner Satz verhält sich
+>   wie vorher**, mit derselben Meldung.
+> * **Die Wahl des Geräteimports hängt an den SÄTZEN, nicht an den Anzeigezeilen:** Wer
+>   nacheinander mehrere Hersteller filtert und sammelt, behält die früher gewählten
+>   Geräte, obwohl sie gerade unsichtbar sind. Die Statuszeile nennt deshalb „n gewählt"
+>   (`IMP_STATUS_GEWAEHLT`), und „Zurücksetzen" leert die Wahl. Die Detailreiter zeigen
+>   die **zuletzt angeklickte** Zeile.
+>
+> Grenze davon: `DublettenPruefung` sieht je Aufruf nur einen Kandidaten, also bleibt
+> `NameDoppeltInAuswahl` (zwei gewählte Sätze mit demselben Namen) im Geräteimport
+> unbesetzt; die vier VDI‑Importe prüfen die Auswahl weiterhin als Ganzes.
 >
 > **Eine benannte Abweichung bleibt:** Das Zeichen für „führt die Quelle nicht" ist
 > BITGLEICH aus dem Bestand übernommen — der Modulimport zeigt den Bindestrich seines
@@ -1619,8 +1646,13 @@ und **W6‑O‑9** (der Ordner `VDI-3805-Daten` im Setup). Die Tabelle führt da
 **Anwenderentscheide zur Oberfläche**, die den Wechselrichter betreffen, ohne offener Punkt
 gewesen zu sein — bislang einer: **W16c‑E‑7**.
 
+**Stand 07.09.2026:** Aus der Windows-Abnahme des Geräteimports kommen ein Befund
+(**W6‑B‑2**) und ein Anwenderentscheid (**W6‑E‑5**) dazu; beide sind umgesetzt.
+
 | Nr. | Punkt | Stand |
 |---|---|---|
+| **W6‑B‑2** | **Der Herstellerfilter zeigte die alten Zeilen.** Windows, 07.09.2026, „Administration → Datenimport → Wechselrichter (CEC, OND)…": Klappliste auf „SMA America", Statuszeile richtig „Filter Auswahl (109 Geräte gefunden)" — und im Raster standen weiter die ABB-Zeilen der ungefilterten Liste. Die Filterrechnung stimmte; es war die Anzeige. | **URSACHE BELEGT und UMGESETZT in `202b867`.** Nicht das Virtualisieren ist schuld — ein virtualisiertes QuickGrid nimmt eine neue Zeilenmenge sehr wohl an —, sondern der **Wechsel des Schalters**: Die Wirte virtualisieren ab 120 Zeilen, und der Herstellerfilter fällt darunter (2 343 → 109). QuickGrid 10.0.11 trägt beide Wege in EINER Instanz; `_currentNonVirtualizedViewItems` wird nur im flachen Zweig gefüllt, und zwar genau EINMAL — beim ersten Datenabruf, als das `@ref` auf das `Virtualize`-Kind noch `null` war, ohne Pagination also mit der GANZEN Liste. Danach ist das `@ref` gesetzt und wird beim Entfernen des Kindes nicht zurückgesetzt, der flache Zwischenspeicher altert ungestört. Fällt der Schalter, zeichnet QuickGrid genau diesen Stand. **Fix im Standard `Raster`, nicht im Wirt:** ein `@key` an (`Virtualisiert`, Zeilenzahl) — eine geänderte Kennung baut das Gitter neu auf, und die Liste steht nach einem Filterwechsel wieder am Anfang. Alle virtualisierten Listen des Hauses haben den Fix damit. Nachweise: Playwright-Probe mit reinem QuickGrid (elf Fälle, drei rot vor dem Fix, alle grün danach), drei `RasterTests` und `ModulImportDialogTests.Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers`. **Nebenbefund mit erledigt:** Der Spaltenkopf hieß „Hersteller:" — eine Feldbeschriftung als Spaltentitel; eigene Schlüssel `PVIMP_SP_HERSTELLER`/`PVIMP_SP_TECHNOLOGIE` (Spalte, ohne Doppelpunkt) und `PVIMP_LBL_MODULNAME`/`WRK_IMP_LBL_GERAET` (Feld, mit) |
+| **W6‑E‑5** | **Mehrfachauswahl und Doppelklick in ALLEN Importen.** Anwender am 07.09.2026: „die Mehrfachauswahl funktioniert nicht (Wechselrichter)", „und die Auswahl per Doppelklick geht nicht", „der Mehrfachimport soll grundsätzlich für alle Importe möglich sein → prüfen". Der Geräteimport hatte bewusst EINE Zeilenwahl (`MultiSelect = false` in beiden Vorläufern); der Katalogimport konnte mehrere Sätze, führte aber die Semantik der `ListBox` mit `MultiExtended` — ein einfacher Klick ERSETZTE die Wahl, obwohl die Spalte ein Kontrollkästchen zeigt. | **UMGESETZT** (Commit mit Präfix `W6-E-5:`, 07.09.2026). **Eine Klickregel für alle sechs Importe**, im Baustein `Zeilenmarkierung` und nicht je Wirt: Klick schaltet um, `Strg` ebenso, `Umschalt` nimmt den Bereich ab dem Anker dazu. **Doppelklick** nimmt die Zeile in die Wahl und übernimmt SIE sofort, ohne die übrige Wahl zu löschen (`Zeilenwahl.Doppelklick`; der Browser schickt davor zwei Klicks, die sich aufheben — deshalb `Hinzufuegen` statt `Anklicken`). Der `ModulImportDialog` schreibt jetzt **alle gewählten Sätze in einem Zug**: Vorprüfung je Satz, EINE Rückfrage für alle Plausibilitätswarnungen mit der Liste der betroffenen Geräte, EIN `ImportKonflikteDialog`, Abschlussbilanz „n übernommen, m übersprungen"; ein einzelner Satz verhält sich wie vorher. Seine Wahl hängt an den SÄTZEN und überlebt das Umfiltern (Statuszeile „n gewählt", „Zurücksetzen" leert sie). Nachweise: je Ausprägung ein Fall „zwei einfache Klicks → beide geschrieben" (vier im `KatalogImportDialogTests`, zwei im `ModulImportDialogTests` mit `cec_module_50.csv` und `cec_wechselrichter_21.csv`), dazu Doppelklick, Konflikt unter zweien, EINE Rückfrage für zwei Warnungen und „Umfiltern behält die Wahl". Einzelheiten in 5.5 |
 | **W6‑O‑1** | **Ein Importwirt statt zwei.** `PvModulImportDialog` (771 Z.) und `WechselrichterImportDialog` (655 Z.) teilten Abrufapparat, Vorprüfung, Konfliktweg und sämtliche Bausteine, aber nicht die `.razor`-Datei (5.5). Die Zusammenlegung verlangte eine neutrale Zeilen- und Detailform (Spalten und Felder als DATEN, wie `ModulFeldwert` im Modulkatalog) und damit den Umbau einer getesteten Maske samt 594 Zeilen bunit-Fällen. | **UMGESETZT in `9ef8ca5`** — Anwenderentscheid vom 06.09.2026: „der OND-Import soll umgesetzt werden. baue daher den Modulimport schon jetzt um (Modulimport und Wechselrichter Import zwei Masken)". Es ist genau der Zeitpunkt, den dieser Punkt selbst benannt hatte. `ModulImportDialog` (669 Z. statt 771 + 655) ist der eine Wirt, `ModulImportProfil` im Kern trägt die Daten, `ImportZeile` die neutrale Zeilenform; die zwei Hüllen sind eine, die beiden alten `.razor` samt `Daten.cs` sind gelöscht, die 594 Zeilen bunit-Fälle sind mitgewandert und grün. Details in 5.5 |
 | **W6‑O‑2** | **MPPT-Zahl und Scheinleistung fehlen im CEC-Bestand.** Die Liste führt weder `Anzahl_Mppt` noch `S_AC_Max`; beide bleiben nach dem Import NULL, und die Prüfungen P4/P5 rechnen dann auf EINEM MPPT. Ob der Auslieferungskatalog von Hand nachgepflegt wird (und für welche Geräte), ist eine Anwenderfrage. | **entschieden am 06.09.2026 — „Empfehlung"**: Nachgepflegt werden **nur die eingesetzten Geräte**, von Hand im Katalogeditor (MPPT-Zahl, Scheinleistung). **Kein Programm nötig** — der Umgang mit der Lücke steht seit S2: Die Prüfung rechnet auf EINEM Tracker, die Ampel wird GELB, und der Satz sagt „Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem" (Fall `Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker`) |
 | **W6‑O‑3** | **Der Auslieferungsbestand ist leer.** Schritt 65 legt die Tabellen ohne DML an (das ist die Ergebnisneutralität). Ob EPOS-Plan künftig mit einem vorbefüllten Wechselrichterkatalog ausgeliefert wird — und wenn ja, mit welchen Geräten und mit `ReadOnly = 1` — ist ein eigener Entscheid. | **ENTSCHIEDEN und UMGESETZT in `9ef8ca5`** — Anwenderentscheid vom 06.09.2026: „hole die Wechselrichterdaten für den Import", bestätigt als „Liste als Datei und dann über Import (aus Admin-Menü)". **Damit ist die Frage anders beantwortet als gestellt:** Der Katalog bleibt bei der Auslieferung LEER (Schritt 65 unverändert, kein DML, keine `ReadOnly`-Sätze) — ausgeliefert wird die LISTE als Datei, `VDI-3805-Daten/PV/CEC Inverters.csv` neben `CEC Modules.csv` (2 346 Zeilen, 2 343 Geräte, 152 Hersteller; Quelle, Abrufdatum und Lizenz in `LIESMICH_CEC_Inverters.md`). Eingelesen wird sie über **Administration → Daten & Import → Photovoltaik → „Wechselrichter (CEC, OND)…" → „CEC-Datei laden"** (der Zwischenknoten „Photovoltaik" seit W16c‑E‑7); der Dateiwähler macht im Herstellerdatenordner auf. Nachweis: `EPOS.Kern.Tests/CecWechselrichterAuslieferungTests` liest die volle Datei — alle 2 343 Geräte bekommen sechs Stützstellen, Plausibilität **2 040 grün / 303 gelb / 0 rot** |

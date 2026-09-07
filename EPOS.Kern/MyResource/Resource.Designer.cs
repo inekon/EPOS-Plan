@@ -13415,6 +13415,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} übernommen, {1} übersprungen. ähnelt.
+        /// </summary>
+        public static string IMP_MSG_BILANZ {
+            get {
+                return ResourceManager.GetString("IMP_MSG_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} gewählt ähnelt.
+        /// </summary>
+        public static string IMP_STATUS_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("IMP_STATUS_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es wurde keine Datei gewählt. ähnelt.
         /// </summary>
         public static string IMP_TXT_KEIN_PFAD {
@@ -29271,6 +29289,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulname: ähnelt.
+        /// </summary>
+        public static string PVIMP_LBL_MODULNAME {
+            get {
+                return ResourceManager.GetString("PVIMP_LBL_MODULNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pmp [W]: ähnelt.
         /// </summary>
         public static string PVIMP_LBL_PMP {
@@ -29451,6 +29478,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_HERSTELLER {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Isc [A] ähnelt.
         /// </summary>
         public static string PVIMP_SP_ISC {
@@ -29469,7 +29505,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulname: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulname ähnelt.
         /// </summary>
         public static string PVIMP_SP_MODULNAME {
             get {
@@ -29492,6 +29528,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVIMP_SP_QUELLE {
             get {
                 return ResourceManager.GetString("PVIMP_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technologie ähnelt.
+        /// </summary>
+        public static string PVIMP_SP_TECHNOLOGIE {
+            get {
+                return ResourceManager.GetString("PVIMP_SP_TECHNOLOGIE", resourceCulture);
             }
         }
         
@@ -45124,6 +45169,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WRK_IMP_LBL_CEC_DATUM {
             get {
                 return ResourceManager.GetString("WRK_IMP_LBL_CEC_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät: ähnelt.
+        /// </summary>
+        public static string WRK_IMP_LBL_GERAET {
+            get {
+                return ResourceManager.GetString("WRK_IMP_LBL_GERAET", resourceCulture);
             }
         }
         

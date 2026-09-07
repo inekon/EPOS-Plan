@@ -28,6 +28,13 @@
    (Klick / Strg / Umschalt) liegt im Baustein Zeilenmarkierung (W13.0l). Das
    Raster ist virtualisiert - ein Herstellerkatalog bringt bis zu 190 Saetze.
 
+   SEIT W6-E-5 (Anwender, 07.09.2026) SCHALTET DER EINFACHE KLICK UM, statt die
+   Wahl zu ersetzen: Ein Kontrollkaestchen verspricht das, und wer zwei Zeilen
+   anklickte, hatte vorher am Ende eine ("die Mehrfachauswahl funktioniert
+   nicht"). Die Regel steht im Baustein, also gilt sie fuer alle sechs Importe
+   auf einen Schlag. Dazu kommt der DOPPELKLICK: Er nimmt die Zeile in die
+   Markierung und uebernimmt SIE sofort, ohne die uebrige Markierung zu leeren.
+
    ABWEICHUNGEN gegenueber den vier Vorlaeufern stehen im Portprotokoll
    iU9_W13_Blazor_Port_Protokoll.md als A-Zeilen; die vier wichtigsten:
    Solar bekommt Dublettenpruefung und Konfliktdialog (es war die einzige ohne,
@@ -80,7 +87,8 @@
             <TemplateColumn TGridItem="Anzeigezeile" Title="@SpalteWahlText">
                 <Zeilenwahl Mehrfach="true" Gewaehlt="@_wahl.IstGewaehlt(context.Zeile)"
                             Kurztext="@SpalteWahlText"
-                            Tastenwahl="@(k => Anklicken(context.Zeile, k))" />
+                            Tastenwahl="@(k => Anklicken(context.Zeile, k))"
+                            Doppelklick="@(() => BeiDoppelklick(context.Zeile))" />
             </TemplateColumn>
             <PropertyColumn TGridItem="Anzeigezeile" TProp="string"
                             Property="@(z => z.Name)" Title="@SpalteEintragText" />
@@ -409,7 +417,7 @@
 
         _wahl.Leeren();
         for (int zeile = 0; zeile < _anzeige.Count; zeile++)
-            if (vorher.Contains(_anzeige[zeile].Quelle)) _wahl.Anklicken(zeile, true, false);
+            if (vorher.Contains(_anzeige[zeile].Quelle)) _wahl.Hinzufuegen(zeile);
 
         // Die Detailfelder auf die verbleibende Markierung nachziehen, damit sie
         // nicht auf einen ausgefilterten Eintrag zeigen.
@@ -418,6 +426,12 @@
             _detailSatz = _anzeige.First(z => _wahl.IstGewaehlt(z.Zeile)).Quelle;
     }
 
+    /// <summary>
+    /// Ein Klick auf die Wahlzelle. Die Regel — Klick schaltet um, <c>Umschalt</c>
+    /// nimmt den Bereich dazu (W6‑E‑5) — steht im Baustein
+    /// <see cref="Zeilenmarkierung"/> und gilt damit für alle sechs Importe gleich.
+    /// Die Detailfelder zeigen die ZULETZT angeklickte Zeile.
+    /// </summary>
     private void Anklicken(int zeile, Zeilenwahl.Zeilenklick klick)
     {
         _wahl.Anklicken(zeile, klick.Strg, klick.Umschalt);
@@ -458,9 +472,9 @@
     // Uebernehmen (btn_Uebernehmen_Click)
     // =====================================================================
 
-    private async Task BeiUebernehmen()
+    private Task BeiUebernehmen()
     {
-        if (!UebernehmenErlaubt || Vorpruefen is null || Ausfuehren is null) return;
+        if (!UebernehmenErlaubt || Vorpruefen is null || Ausfuehren is null) return Task.CompletedTask;
 
         List<int> markiert = _wahl.QuellIndizes(_anzeige.Select(z => z.Quelle).ToList());
         if (markiert.Count == 0)
@@ -468,8 +482,40 @@
             // A-ZEILE: Die Waermepumpe brach hier WORTLOS ab (Befund W13-B29);
             // die drei anderen meldeten je einen eigenen Text. Jetzt einer fuer alle.
             Melden(KeineAuswahlText, WarnStufe.Hinweis);
-            return;
+            return Task.CompletedTask;
         }
+
+        return Schreibgang(markiert);
+    }
+
+    /// <summary>
+    /// Der Doppelklick: diese Zeile in die Markierung NEHMEN und sie sofort
+    /// übernehmen — die übrige Markierung bleibt stehen (Anwenderentscheid
+    /// <b>W6‑E‑5</b>, 07.09.2026: „und die Auswahl per Doppelklick geht nicht").
+    ///
+    /// <para>Der Browser schickt vor dem Doppelklick zwei einfache Klicks; mit der
+    /// Umschaltregel heben die sich auf. Deshalb <c>Hinzufuegen</c> statt
+    /// <c>Anklicken</c> — sonst stünde die Zeile danach zufällig da.</para>
+    /// </summary>
+    private Task BeiDoppelklick(int zeile)
+    {
+        if (_laeuft || Vorpruefen is null || Ausfuehren is null) return Task.CompletedTask;
+        if (zeile < 0 || zeile >= _anzeige.Count) return Task.CompletedTask;
+
+        _wahl.Hinzufuegen(zeile);
+        _detailSatz = _anzeige[zeile].Quelle;
+        _meldung = "";
+
+        return Schreibgang(new List<int> { _anzeige[zeile].Quelle });
+    }
+
+    /// <summary>
+    /// Der Schreibgang über eine Auswahl — aus „Übernehmen" mit allen markierten
+    /// Sätzen, aus dem Doppelklick mit genau einem.
+    /// </summary>
+    private async Task Schreibgang(List<int> markiert)
+    {
+        if (Vorpruefen is null || Ausfuehren is null) return;
 
         _laeuft = true;
         _meldung = "";

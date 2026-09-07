@@ -152,6 +152,118 @@ public class RasterTests : BunitContext
         Assert.Single(cut.FindAll("tbody tr"));
     }
 
+    // =====================================================================
+    // Eine neue Zeilenmenge bekommt ein neues Raster (Befund W6-B-2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Waechter zum Befund W6‑B‑2</b> (Windows 07.09.2026, „der Filter bei der
+    /// Herstellerauswahl funktioniert nicht"): QuickGrid traegt den virtualisierten und
+    /// den flachen Weg in EINER Instanz, und der flache Zwischenspeicher
+    /// (<c>_currentNonVirtualizedViewItems</c>) wird nur EINMAL gefuellt — beim ersten
+    /// Datenabruf, als das <c>@ref</c> auf das Virtualize-Kind noch <c>null</c> war,
+    /// und ohne Pagination mit der GANZEN Liste. Faellt der Schalter danach auf
+    /// <c>false</c> (2 343 Zeilen → 109 nach einem Herstellerfilter), zeichnet
+    /// QuickGrid genau diesen uralten Stand.
+    ///
+    /// <para>Der Fix ist ein <c>@key</c> an (Schalter, Zeilenzahl). Geprueft wird
+    /// deshalb die IDENTITAET der Rasterkomponente: Nach dem Wechsel muss es eine
+    /// ANDERE Instanz sein — eine frische faengt mit leerem Zustand an.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Wechsel_des_Virtualisierungsschalters_baut_das_Raster_neu_auf()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var viele = Enumerable.Range(0, 2343)
+                              .Select(i => new Zeile(i, "ABB " + i))
+                              .AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, viele)
+            .Add(x => x.Virtualisiert, true)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        QuickGrid<Zeile> vorher = cut.FindComponent<QuickGrid<Zeile>>().Instance;
+        Assert.Equal((true, 2343), cut.Instance.Rasterstand);
+
+        // Der Herstellerfilter: 2 343 -> 109, und damit faellt der Schalter.
+        var wenige = Enumerable.Range(0, 109)
+                               .Select(i => new Zeile(i, "SMA America " + i))
+                               .AsQueryable();
+
+        cut.Render(p => p
+            .Add(x => x.Zeilen, wenige)
+            .Add(x => x.Virtualisiert, false)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        QuickGrid<Zeile> nachher = cut.FindComponent<QuickGrid<Zeile>>().Instance;
+
+        Assert.Equal((false, 109), cut.Instance.Rasterstand);
+        Assert.NotSame(vorher, nachher);
+
+        // ... und in der Tabelle stehen die NEUEN Zeilen, keine einzige alte.
+        string tabelle = cut.Find("tbody").TextContent;
+        Assert.Contains("SMA America", tabelle);
+        Assert.DoesNotContain("ABB", tabelle);
+    }
+
+    /// <summary>
+    /// Auch ohne Wechsel des Schalters bekommt eine andere Zeilenzahl ein neues
+    /// Raster — so steht die Liste nach einem Filterwechsel wieder am ANFANG statt
+    /// im Nirgendwo der alten Rollposition.
+    /// </summary>
+    [Fact]
+    public void Eine_andere_Zeilenzahl_baut_das_Raster_neu_auf()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var drei = new[] { new Zeile(1, "a"), new Zeile(2, "b"), new Zeile(3, "c") }.AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, drei)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        QuickGrid<Zeile> vorher = cut.FindComponent<QuickGrid<Zeile>>().Instance;
+
+        cut.Render(p => p
+            .Add(x => x.Zeilen, new[] { new Zeile(2, "b") }.AsQueryable())
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.NotSame(vorher, cut.FindComponent<QuickGrid<Zeile>>().Instance);
+        Assert.Single(cut.FindAll("tbody tr"));
+    }
+
+    /// <summary>
+    /// <b>Und die Gegenprobe:</b> Bleiben Schalter und Zeilenzahl gleich, BLEIBT das
+    /// Raster dieselbe Instanz. Das ist keine Feinheit — ein Raster mit
+    /// Bedienelementen in den Zellen (<c>Bearbeitbar</c>) wuerde dem Anwender sonst
+    /// mitten in der Eingabe unter den Fingern neu aufgebaut, und der Eingabepunkt
+    /// waere weg. Deshalb haengt der Schluessel an der ZAHL und nicht an der
+    /// Zeilenmenge: Beim Tippen in einer Zelle aendert sie sich nicht.
+    /// </summary>
+    [Fact]
+    public void Dieselbe_Zeilenzahl_behaelt_die_Rasterinstanz()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var erst = new[] { new Zeile(1, "Erdgas"), new Zeile(2, "Heizoel") }.AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, erst)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        QuickGrid<Zeile> vorher = cut.FindComponent<QuickGrid<Zeile>>().Instance;
+
+        // Ein neuer AsQueryable-Aufruf ueber DIESELBEN Zeilen - genau das, was ein
+        // Wirt bei jedem Render hereinreicht.
+        cut.Render(p => p
+            .Add(x => x.Zeilen, new[] { new Zeile(1, "Erdgas"), new Zeile(2, "Heizoel") }.AsQueryable())
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Same(vorher, cut.FindComponent<QuickGrid<Zeile>>().Instance);
+    }
+
     private static RenderFragment Bezeichnerspalte() => bau =>
     {
         bau.OpenComponent<PropertyColumn<Zeile, string>>(0);

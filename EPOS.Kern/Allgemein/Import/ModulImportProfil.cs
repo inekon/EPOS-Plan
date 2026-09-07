@@ -499,8 +499,8 @@ namespace WindowsFormsApplication1
                 {
                     new ImportSpalte(SpalteQuelle, t("PVIMP_SP_QUELLE")),
                     new ImportSpalte(SpalteName, t("PVIMP_SP_MODULNAME")),
-                    new ImportSpalte(SpalteHersteller, t("PVIMP_LBL_HERSTELLER")),
-                    new ImportSpalte(SpalteTechnologie, t("PVIMP_LBL_TECHNOLOGIE")),
+                    new ImportSpalte(SpalteHersteller, t("PVIMP_SP_HERSTELLER")),
+                    new ImportSpalte(SpalteTechnologie, t("PVIMP_SP_TECHNOLOGIE")),
                     new ImportSpalte(SpaltePmp, t("PVIMP_SP_PMP")),
                     new ImportSpalte(SpalteEffizienz, t("PVIMP_SP_EFFIZIENZ")),
                     new ImportSpalte(SpalteIsc, t("PVIMP_SP_ISC")),
@@ -518,7 +518,7 @@ namespace WindowsFormsApplication1
 
                 Felder = new[]
                 {
-                    new ImportFeld(FeldName, t("PVIMP_SP_MODULNAME"), 0),
+                    new ImportFeld(FeldName, t("PVIMP_LBL_MODULNAME"), 0),
                     new ImportFeld(FeldHersteller, t("PVIMP_LBL_HERSTELLER"), 0),
                     new ImportFeld(FeldTechnologie, t("PVIMP_LBL_TECHNOLOGIE"), 0),
                     new ImportFeld(FeldLeistung, t("PVIMP_LBL_LEISTUNG"), 0),
@@ -591,7 +591,7 @@ namespace WindowsFormsApplication1
                 {
                     new ImportSpalte(SpalteQuelle, t("PVIMP_SP_QUELLE")),
                     new ImportSpalte(SpalteName, t("WRK_IMP_SP_GERAET")),
-                    new ImportSpalte(SpalteHersteller, t("WRK_LBL_FIRMA")),
+                    new ImportSpalte(SpalteHersteller, t("PVIMP_SP_HERSTELLER")),
                     new ImportSpalte(SpaltePAc, t("WRK_IMP_SP_P_AC")),
                     new ImportSpalte(SpalteEtaEuro, t("WRK_IMP_SP_ETA_EURO")),
                     new ImportSpalte(SpalteMpp, t("WRK_IMP_SP_MPP")),
@@ -607,7 +607,7 @@ namespace WindowsFormsApplication1
 
                 Felder = new[]
                 {
-                    new ImportFeld(FeldName, t("WRK_IMP_SP_GERAET"), 0),
+                    new ImportFeld(FeldName, t("WRK_IMP_LBL_GERAET"), 0),
                     new ImportFeld(FeldHersteller, t("WRK_LBL_FIRMA"), 0),
                     new ImportFeld(FeldPAcNenn, t("WRK_LBL_P_AC_NENN"), 0),
                     new ImportFeld(FeldSAcMax, t("WRK_LBL_S_AC_MAX"), 0),

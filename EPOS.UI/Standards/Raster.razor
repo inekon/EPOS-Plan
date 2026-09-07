@@ -42,12 +42,54 @@
    W9-B-2 "Liste zu lang"). Die Hoechsthoehe --epos-listenhoehe steht im
    Stilblatt an .epos-raster-huelle und gilt damit fuer ALLE Listen des
    Hauses; eine kurze Liste bleibt kurz. Begrenzt="false" nimmt den Rahmen
-   ausdruecklich weg - fuer eine Tabelle, die als GANZES gelesen wird. *@
+   ausdruecklich weg - fuer eine Tabelle, die als GANZES gelesen wird.
+
+   EINE NEUE ZEILENMENGE BEKOMMT EIN NEUES RASTER (Befund W6-B-2, Windows
+   07.09.2026: "der Filter bei der Herstellerauswahl funktioniert nicht").
+   Der Anwender waehlte im Geraeteimport "SMA America", der Status meldete
+   richtig "109 Geraete gefunden" - und die Tabelle zeigte weiter die
+   ABB-Zeilen der ungefilterten Liste.
+
+   URSACHE, gemessen an QuickGrid 10.0.11 (Playwright-Probe, sieben Faelle):
+   Nicht das Virtualisieren ist schuld - ein virtualisiertes QuickGrid nimmt
+   eine neue Zeilenmenge sehr wohl an. Schuld ist der WECHSEL des Schalters.
+   Die Wirte schalten Virtualisiert an der ZEILENZAHL (>= 120), und ein
+   Herstellerfilter faellt unter diese Schwelle: 2 343 -> 109. QuickGrid
+   traegt beide Wege in EINER Instanz (@if (Virtualize) im eigenen Markup),
+   und die zwei Wege haben getrennte Zustaende:
+
+     * _currentNonVirtualizedViewItems wird nur im FLACHEN Zweig gefuellt.
+       Gefuellt wurde es genau EINMAL - beim ersten Datenabruf
+       (ColumnsFirstCollected), als das @ref auf das Virtualize-Kind noch
+       null war; ohne Pagination holt dieser Abruf die GANZE Liste.
+     * Danach ist _virtualizeComponent gesetzt und wird nie wieder null -
+       ein @ref wird beim Entfernen des Kindes nicht zurueckgesetzt. Jeder
+       weitere Abruf laeuft deshalb ueber das (inzwischen entfernte)
+       Virtualize-Kind, und der flache Zwischenspeicher altert ungestoert.
+
+   Faellt der Schalter also auf false, zeichnet QuickGrid diesen uralten
+   Zwischenspeicher: die ungefilterte Liste vom Anfang. Kein Warten hilft,
+   und ein weiterer Filterwechsel auch nicht (Probe J).
+
+   DER FIX ist ein @key an (Virtualisiert, Zeilenzahl): Aendert sich einer der
+   beiden Werte, baut Blazor das QuickGrid NEU auf, und die neue Instanz
+   beginnt mit leerem Zustand. Das deckt den Wechsel des Schalters ab - den
+   belegten Fehler - und laesst die Liste nach einem Filterwechsel zugleich an
+   den ANFANG springen, statt im Nirgendwo der alten Rollposition zu stehen.
+   Absichtlich NICHT an der Zeilenmenge selbst: Die Wirte reichen bei jedem
+   Render ein frisches AsQueryable() herein, und ein Vergleich Zeile fuer
+   Zeile wuerde ein Raster mit Bedienelementen (Bearbeitbar) mitten in einer
+   Eingabe neu aufbauen. Die Zahl aendert sich beim Tippen in einer Zelle
+   nicht, beim Filtern praktisch immer.
+
+   NICHT gewaehlt wurde der Weg ueber ein @ref und RefreshDataAsync(): Der
+   Aufruf landet in genau dem Zweig, der den Fehler traegt (dem entfernten
+   Virtualize-Kind), und ruehrt den flachen Zwischenspeicher nicht an. *@
 
 @typeparam TZeile
 
 <div class="@HuellenKlasse">
-    <QuickGrid Items="@Zeilen" Class="@Klasse"
+    <QuickGrid @key="@Rasterstand" Items="@Zeilen" Class="@Klasse"
                Virtualize="@Virtualisiert" ItemSize="@Zeilenhoehe">
         @KindInhalt
     </QuickGrid>
@@ -86,6 +128,29 @@
     /// Rahmen ausdrücklich weg.
     /// </summary>
     [Parameter] public bool Begrenzt { get; set; } = true;
+
+    /// <summary>
+    /// Die Kennung, an der das QuickGrid hängt (<c>@key</c>) — Schalter und
+    /// Zeilenzahl. Ändert sie sich, baut Blazor das Raster neu auf; die
+    /// Begründung steht im Kopf dieser Datei (Befund <b>W6‑B‑2</b>).
+    /// </summary>
+    public (bool Virtualisiert, int Zeilenzahl) Rasterstand => (Virtualisiert, Zeilenzahl);
+
+    /// <summary>
+    /// Die Zahl der Zeilen — bewusst über <see cref="IEnumerable{T}"/> und damit
+    /// über LINQ‑to‑Objects gezählt. <c>Zeilen.Count()</c> bände an
+    /// <c>Queryable.Count</c>, das für jeden Aufruf einen Ausdrucksbaum
+    /// übersetzt; die Wirte reichen ohnehin nur Listen herein.
+    /// </summary>
+    private int Zeilenzahl
+    {
+        get
+        {
+            if (Zeilen is null) return 0;
+            IEnumerable<TZeile> folge = Zeilen;
+            return folge is ICollection<TZeile> menge ? menge.Count : folge.Count();
+        }
+    }
 
     private string Klasse => Bearbeitbar ? "epos-raster epos-raster--bearbeitbar" : "epos-raster";
 

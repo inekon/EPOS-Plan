@@ -40,7 +40,8 @@
         role="@(Mehrfach ? "checkbox" : null)"
         aria-checked="@(Mehrfach ? (Gewaehlt ? "true" : "false") : null)"
         aria-pressed="@(Mehrfach ? null : (Gewaehlt ? "true" : "false"))"
-        title="@Kurztext" disabled="@(!Aktiv)" @onclick="BeiKlick">@Zeichen@Etikett</button>
+        title="@Kurztext" disabled="@(!Aktiv)"
+        @onclick="BeiKlick" @ondblclick="BeiDoppelklick">@Zeichen@Etikett</button>
 
 @code {
     /// <summary>Ist die Zeile die gewaehlte?</summary>
@@ -110,6 +111,20 @@
         }
     }
 
+    /// <summary>
+    /// Der Doppelklick auf die Zeile — im Bestand der schnelle Weg „waehlen und
+    /// uebernehmen" (Anwenderbefund 07.09.2026, Entscheid <b>W6‑E‑5</b>: „und die
+    /// Auswahl per Doppelklick geht nicht").
+    ///
+    /// <para><b>Vorher kommen ZWEI Klicks.</b> Der Browser meldet bei einem
+    /// Doppelklick erst <c>click</c>, <c>click</c> und dann <c>dblclick</c>; mit der
+    /// Umschaltregel des Mehrfachmodus heben sich die beiden Klicks auf. Der Wirt
+    /// muss die Zeile deshalb im Doppelklick ausdrueckich in die Wahl NEHMEN
+    /// (<see cref="Zeilenmarkierung.Hinzufuegen"/>) statt sie umzuschalten — und
+    /// darf die uebrige Wahl dabei nicht anfassen.</para>
+    /// </summary>
+    [Parameter] public EventCallback Doppelklick { get; set; }
+
     private async Task BeiKlick(MouseEventArgs e)
     {
         if (Tastenwahl.HasDelegate)
@@ -117,6 +132,9 @@
         if (Gewaehltwerden.HasDelegate)
             await Gewaehltwerden.InvokeAsync();
     }
+
+    private Task BeiDoppelklick(MouseEventArgs e)
+        => Doppelklick.HasDelegate ? Doppelklick.InvokeAsync() : Task.CompletedTask;
 
     /// <summary>Ein Klick auf eine Wahlzelle samt der gedrueckten Zusatztasten.</summary>
     public readonly record struct Zeilenklick(bool Strg, bool Umschalt);
