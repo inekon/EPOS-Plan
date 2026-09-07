@@ -2816,6 +2816,18 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 
 > **Statusblock iU9 — Welle 11b umgesetzt (04.09.2026, Basis `81a04ec` nach W11a, zusammengeführt mit `604d1f6`)**
 >
+> **Nachtrag Windows-Abnahme V3 (07.09.2026) — der Photovoltaik-Reiter, W11b‑B‑6 bis B‑10, umgesetzt in
+> `159f3f8` (Merge 7 `e6803a6`).** „Die PV-Simulation scheint nicht zu funktionieren": Reiter und Kurve zeigten den
+> GENUTZTEN Anteil (`Stromproduktion` = min(Erzeugung, Bedarf), ohne Strombedarf 0), Überschuss und Modultabelle die
+> Erzeugung — der Port war wörtlich (`:4551`, `:4574`), die Beschriftung nie. **B‑6** DTO trägt Erzeugung
+> (`Stromproduktion_Theoretisch`) und genutzten Anteil getrennt, `BildPv` zeichnet die Erzeugung; **B‑7** Einheit
+> W/m² statt kW (`MaxEinstrahlungWm2`); **B‑8** Fläche eines CEC-Moduls ohne Katalogmaße aus P_STC/η geschätzt und
+> als `≈` gekennzeichnet (`SimulationPV.FlaecheZurAnzeige`, nur Anzeige); **B‑9** kein eigener Seitentitel unter dem
+> Titel der Überlagerung, Hilfeknopf bleibt rechts; **B‑10** Diagramm auf drei Viertel der Zeile
+> (`min(--epos-diagramm-breit, 75%)`) — auf 1280 × 800 bei 150 % füllte es den sichtbaren Reiter. Nachweis:
+> `ErzeugerReiterTests` +3, `PvModulparameterTests` +3, `SimulationErgebnisCtrlTests` erweitert, Referenzlauf
+> unberührt (Protokoll W11b, Abschnitt „Windows-Abnahme V3").
+>
 > Der zweite Lauf der Welle 11: **`Form_Simulation_Detail` (7 766 Zeilen + 3 082 Designer), `DashboardForm`,
 > `NavigatorUebersicht`, `NavigatorStrom`, `NavigatorWaerme` und `Form_SpeicherVariantenVergleich` → eine
 > Razor-Seite `SimulationErgebnisSeite`** (`EPOS.UI/Seiten/Simulation/`) mit **zehn** Blättern (R3 „Simulation“

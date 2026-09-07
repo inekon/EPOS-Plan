@@ -59,6 +59,45 @@ die Jahreserzeugung eines Projekts.
 
 ## Aktuelle Basis
 
+**`2026-09-07_M7_nach-Merge7/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **69**.
+Der Stand **nach dem siebten Merge von `origin/ios_migration`** (`d4edc85`, **14** Commits:
+W6‑B‑4 PV-Strangtabelle, W6‑B‑5 Schemaschritt 69 samt Linux-Basis R6) auf den Befund-Commit
+`159f3f8` (Windows-Abnahme V3 vom 07.09.2026, der PV-Reiter der Ergebnisseite, W11b‑B‑6 bis
+B‑10) — konfliktfrei, Merge-Commit `e6803a6`.
+
+> **Der Nachweis ist die Linux-Basis der Gegenseite.** Der Kern-Lauf des Merge-7-Baums mit dem
+> plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite` (Schemastand 69, die zwölf
+> CI-Projekte) ist **312/312 byte-gleich zu `2026-09-07_R6_PvKoeffizienten`** — der
+> Windows-Build rechnet, was die CI rechnet. Sandbox: `WP-Plan.sln` 0 Fehler, `EPOS.Kern.Tests`
+> 1 995/1 995, `EPOS.UI.Tests` 3 216/3 217 (`KataloglisteTests.Zwanzigtausend_Zeilen…` flackert
+> unter Last und ist allein grün). `pruefen` auf M7: plausibel, dieselben Bestandshinweise.
+>
+> **Gegen M5 ist sie NICHT byte-gleich (83 gleich, 272 ungleich, keine Datei einseitig;
+> Toleranzvergleich 14/14 FAIL, Projekt 1030 mit 10, die übrigen mit 22 000 bis 89 500
+> Abweichungen) — und das ist erwartet, nicht Befund dieses Merges.** Zwischen M5 (`4cdc462`,
+> Schemastand 64) und diesem Stand liegen die Kernänderungen der Gegenseite vom 06./07.09.2026,
+> auf Linux mit R3 → R4 → R5 → R6 nachgewiesen und dort mit denselben Vorzeichen: **R4** rechnet
+> und speichert den ganzen Weg in `double` statt `float` (W8‑O‑5d — deshalb weichen auch
+> `stundentemperatur.csv`, `waermebedarf*.csv` und `wp_*.csv` in allen vierzehn Projekten ab, und
+> auf Linux rissen elf von zwölf Projekten die Toleranz), **R5** der Zahlenrand der Betriebs-
+> schwellen und die zehn Emissionsskalare in `aggregate.csv` (Em‑9.8), **R6** Schemaschritt 69
+> (PV-Modulkoeffizienten; `T_NOCT` rechnet). Unverändert blieben die Reihen ohne Rechenweg im
+> Kern: `waermebedarf_extern.csv` (14/14) und `waermebedarf_prozess.csv` (13/13). Der
+> Befund-Commit `159f3f8` selbst trägt keinen Rechenweg — Anzeige-DTO in
+> `SimulationErgebnisCtrl`, `SimulationPV.FlaecheZurAnzeige` für die Ergebnisliste (steht in
+> keiner CSV), Hülle, Razor, Stilblatt.
+>
+> **Codestand:** Merge-Commit `e6803a6` (Eltern `159f3f8` lokal und `d4edc85` remote); Sicherung
+> `sicherung/vor-merge7-2026-09-07`, Anker `merge7/ios-2026-09-07`. Die produktive Datei blieb
+> unberührt; die Arbeitskopie des Laufs migriert **61 → 69**.
+>
+> ```powershell
+> & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-05_M5_nach-Merge5`
+
 **`2026-09-05_M5_nach-Merge5/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
 1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **64**.
 Der Stand **nach dem fünften Merge von `origin/ios_migration`** (`4cdc462`, **555** Commits:
