@@ -100,8 +100,13 @@ namespace WindowsFormsApplication1
                 ["Kostensumme"] = new Func<(double, double)>(() => Kostensumme(modell)),
                 ["KostenOeffnen"] = new Func<Task>(() => KostenOeffnen(besitzer, modell)),
 
-                ["Katalog"] = new Func<IReadOnlyList<WaermepumpenKatalogZeile>>(
-                    () => new WPStammCtrl().KatalogZeilen()),
+                // W14a-E-10 / S2.2: derselbe Weg wie in der Verwaltung. OHNE die
+                // Spalte "im Projekt verwendet" - diese Maske fuehrt keine
+                // Projektliste, aus der sie sich ergaebe (Q12).
+                ["Katalog"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    () => new WPStammCtrl().Katalogfilterzeilen()),
+                ["Katalogprofil"] = Katalogfilterprofil.Finde(
+                    Anlagenart.Waermepumpe, KatalogBrowserHuelle.Text),
                 ["StammGaben"] = new Func<IReadOnlyDictionary<string, object>>(
                     WaermepumpeStammHuelle.Gaben),
 

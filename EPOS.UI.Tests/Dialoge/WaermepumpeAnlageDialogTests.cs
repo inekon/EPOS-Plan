@@ -101,9 +101,20 @@ public class WaermepumpeAnlageDialogTests : BunitContext
             .Add(x => x.KostenOeffnen, kostenOeffnen)
             .Add(x => x.Katalog, () => new[]
             {
-                new WaermepumpenKatalogZeile("Beta", "WP Beta", "Split", "Außen",
-                                             60, 35, 25, 9, "Sole-Wasser", "einstufig", "Heizen")
+                // W14a-E-10 / S2.2: eine gewoehnliche Katalogfilterzeile, wie in
+                // jedem anderen Katalog des Hauses.
+                new Katalogfilterzeile(1, "WP Beta")
+                    .MitText(Katalogfilterprofil.SpHersteller, "Beta")
+                    .MitText(Katalogfilterprofil.SpBezeichner, "WP Beta")
+                    .MitText(Katalogfilterprofil.SpQuelle, "Sole-Wasser")
+                    .MitZahl(Katalogfilterprofil.SpNennleistung, 25, 1)
+                    .MitZahl(Katalogfilterprofil.SpVlMin, 35, 0)
+                    .MitZahl(Katalogfilterprofil.SpVlMax, 60, 0)
+                    .MitZahl(Katalogfilterprofil.SpZuheizung, 9, 1)
+                    .MitKennzeichen(Katalogfilterprofil.SpKuehlen, false)
+                    .MitZahl(Katalogfilterprofil.SpCop, 4.1, 2)
             })
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.Finde(Anlagenart.Waermepumpe))
             .Add(x => x.StammGaben, stammGaben)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 

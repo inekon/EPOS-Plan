@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -478,6 +478,89 @@ namespace EPOS.Kern.Tests
             // 15 von 51 Saetzen tragen eine Kuehlleistung > 0 (Anhang A).
             Assert.Equal(15, zeilen.Count(z => z.Text(Katalogfilterprofil.SpKuehlen) ==
                                                WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_JA));
+        }
+
+        /// <summary>
+        /// <b>Stufe S2.2 — die elf Bedienelemente treffen dieselbe Menge wie die
+        /// Spalten.</b> Der <c>WaermepumpenKatalogDialog</c> hatte bis zum
+        /// Anwenderentscheid <b>W14a-E-10</b> eine eigene Filterleiste: sieben
+        /// Klapplisten und vier Zahlenfelder, bedient von
+        /// <see cref="WaermepumpenKatalogFilter"/> ueber
+        /// <c>WPStammCtrl.KatalogZeilen()</c>. Dieser Fall haelt den ALTEN Weg
+        /// gegen den NEUEN — dieselbe Datenbank, derselbe Filterstand des
+        /// Mockups M2, dieselbe Zahl.
+        ///
+        /// <para>Er ist die GEGENPROBE, um derentwillen der alte Filter stehen
+        /// bleibt, obwohl er seit S2.2 keinen Wirt mehr hat: Ohne ihn liesse sich
+        /// nicht mehr belegen, dass die Spalten treffen, was die Bedienelemente
+        /// getroffen haben.</para>
+        /// </summary>
+        [Fact]
+        public void Waermepumpe_Spalten_treffen_dieselbe_Menge_wie_die_elf_Bedienelemente()
+        {
+            if (!_db.Vorhanden) return;
+
+            var ctrl = new WPStammCtrl();
+
+            // (a) DER ALTE WEG: elf Bedienelemente, hier drei davon belegt -
+            //     Quelle = "Luft-Wasser", P_N 5..12 kW, VL max ab 60 Grad.
+            //     Die uebrigen stehen auf "Alle" (null) bzw. auf ihrem Anschlag.
+            var alt = WaermepumpenKatalogFilter.Anwenden(
+                ctrl.KatalogZeilen(),
+                new WaermepumpenKatalogFilter.Kriterien(
+                    Funktionsprinzip: "Luft-Wasser",
+                    LeistungMin: 5, LeistungMax: 12,
+                    VorlaufMin: 60, VorlaufMax: 1000));
+
+            // (b) DER NEUE WEG: dieselben drei Aussagen als Spaltenausdruecke.
+            Katalogfilterprofil profil = Katalogfilterprofil.Finde(Anlagenart.Waermepumpe);
+            int neu = Treffer(profil, ctrl.Katalogfilterzeilen(),
+                              (Katalogfilterprofil.SpQuelle, "Luft-Wasser"),
+                              (Katalogfilterprofil.SpNennleistung, "5..12"),
+                              (Katalogfilterprofil.SpVlMax, ">=60"));
+
+            Assert.Equal(7, alt.Count);
+            Assert.Equal(alt.Count, neu);
+        }
+
+        /// <summary>
+        /// <b>Warum Bauart, Auslegung, Regelung und Aufstellung KEINE Spalte
+        /// werden</b> (S2.2) — das ist gemessen, nicht vergessen.
+        ///
+        /// <para><b>Bauart</b> ist in 45 von 51 Saetzen leer; eine Spalte, die
+        /// fast immer leer ist, kostet Breite und traegt nichts. <b>Auslegung</b>
+        /// („Heizen" / „Heizen/Kuehlen") ist GERECHNET aus
+        /// <c>Kuehlleistung &gt; 0</c> — dieselbe Aussage wie die Spalte „Kuehlen",
+        /// und die zwei Mengen sind hier Satz fuer Satz gleich. Regelung und
+        /// Aufstellung stehen im Kenndatenblock der Detailansicht.</para>
+        /// </summary>
+        [Fact]
+        public void Waermepumpe_Bauart_ist_fast_leer_und_Auslegung_sagt_dasselbe_wie_Kuehlen()
+        {
+            if (!_db.Vorhanden) return;
+
+            var alt = new WPStammCtrl().KatalogZeilen();
+            Assert.Equal(51, alt.Count);
+
+            // Bauart: 45 von 51 leer.
+            Assert.Equal(45, alt.Count(z => string.IsNullOrWhiteSpace(z.Bauart)));
+
+            // Auslegung == Spalte "Kuehlen": dieselbe Menge, Satz fuer Satz.
+            var mitKuehlung = alt
+                .Where(z => z.Auslegung == WaermepumpenKatalogZeile.AUSLEGUNG_HEIZEN_KUEHLEN)
+                .Select(z => z.Bezeichnung)
+                .OrderBy(x => x, StringComparer.Ordinal)
+                .ToList();
+
+            var spalteJa = new WPStammCtrl().Katalogfilterzeilen()
+                .Where(z => z.Text(Katalogfilterprofil.SpKuehlen) ==
+                            WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_JA)
+                .Select(z => z.Bezeichner)
+                .OrderBy(x => x, StringComparer.Ordinal)
+                .ToList();
+
+            Assert.Equal(15, mitKuehlung.Count);
+            Assert.Equal(mitKuehlung, spalteJa);
         }
 
         /// <summary>

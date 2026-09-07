@@ -102,7 +102,11 @@
         <KindInhalt>
             @if (_katalogOffen)
             {
-                <WaermepumpenKatalogDialog Zeilen="@_katalog" Geschlossen="KatalogFertig" />
+                @* Q12: Die Bezeichner der Projektliste gehen mit - der Katalog
+                   stempelt daraus die Spalte "im Projekt verwendet". *@
+                <WaermepumpenKatalogDialog Zeilen="@_katalog" Profil="@Katalogprofil"
+                                           ImProjektVerwendet="@Zeilen.Select(z => z.Bezeichner).ToList()"
+                                           Geschlossen="KatalogFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -137,8 +141,18 @@
     /// </summary>
     [Parameter] public List<WaermepumpeAnlageDaten> Zeilen { get; set; } = new();
 
-    /// <summary>Der Katalog für den Weg „Neu..".</summary>
-    [Parameter] public Func<IReadOnlyList<WaermepumpenKatalogZeile>>? Katalog { get; set; }
+    /// <summary>
+    /// Der Katalog für den Weg „Neu.." — <c>WPStammCtrl.Katalogfilterzeilen()</c>,
+    /// seit Stufe S2.2 derselbe Weg wie in der Verwaltung.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalog { get; set; }
+
+    /// <summary>
+    /// Die Spalten des Katalogs. Hier ist es das Profil MIT der Spalte „im Projekt
+    /// verwendet" (Q12) — dieser Dialog ist der einzige der drei Wirte mit einer
+    /// Projektliste.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
 
     /// <summary>
     /// Der Parametersatz der Detailansicht zu einer Zeile. Die Hülle baut ihn samt der
@@ -204,7 +218,7 @@
     private bool _ersterAufbau = true;
 
     private WaermepumpeAnlageDaten? _gewaehlt;
-    private IReadOnlyList<WaermepumpenKatalogZeile> _katalog = Array.Empty<WaermepumpenKatalogZeile>();
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private bool _katalogOffen;
 
     private IReadOnlyDictionary<string, object>? _anlageGaben;
@@ -241,7 +255,7 @@
     private void BeiNeu()
     {
         _meldung = "";
-        _katalog = Katalog?.Invoke() ?? Array.Empty<WaermepumpenKatalogZeile>();
+        _katalog = Katalog?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
         _katalogOffen = true;
     }
 

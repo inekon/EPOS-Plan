@@ -28,6 +28,23 @@ namespace WindowsFormsApplication1
     /// dieselbe Trennung wie bei <c>Sprungziel</c> und <c>DbWerte</c>. Am Verhalten
     /// aendert das nichts (Abweichung A-2 des Protokolls W7).</para>
     /// </summary>
+    // ======================================================================
+    // OHNE WIRT SEIT STUFE S2.2 (Anwenderentscheid W14a-E-10, Frage Q5)
+    //
+    // Der WaermepumpenKatalogDialog war der EINZIGE Wirt dieses Filters. Seit
+    // S2.2 steht er auf der Katalogliste: neun Spalten mit Trichter, jeder
+    // Ausdruck im Kern (Katalogfilter/Zahlenausdruck), die Zeilen aus
+    // WPStammCtrl.Katalogfilterzeilen(). Gemessen am 07.09.2026 ueber das
+    // ganze Repository ruft nur noch WaermepumpenKatalogTests hierher.
+    //
+    // WARUM ES TROTZDEM STEHT: dieselbe Begruendung wie bei
+    // HeizkesselStammCtrl.Filtern - es ist die GEGENPROBE. Die 34 Faelle in
+    // WaermepumpenKatalogFilterTests halten fest, WAS die elf Bedienelemente
+    // getroffen haben; ohne sie liesse sich nicht mehr belegen, dass die
+    // Spalten dieselbe Menge treffen. Wer den Filter loescht, loescht den
+    // Beweis mit - und sollte das ausdruecklich entscheiden.
+    // ======================================================================
+
     public static class WaermepumpenKatalogFilter
     {
         /// <summary>

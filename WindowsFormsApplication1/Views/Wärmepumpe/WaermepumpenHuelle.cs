@@ -105,8 +105,15 @@ namespace WindowsFormsApplication1
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
 
-                ["Katalog"] = new Func<IReadOnlyList<WaermepumpenKatalogZeile>>(
-                    () => new WPStammCtrl().KatalogZeilen()),
+                // W14a-E-10 / S2.2: Der Katalog kommt aus DEMSELBEN Weg wie in der
+                // Verwaltung - neun Spalten mit Trichter statt elf Bedienelementen in
+                // einer Filterleiste. Hier ist es das Profil MIT der Spalte "im
+                // Projekt verwendet" (Q12): Dieser Dialog ist der einzige der drei
+                // Katalogwirte mit einer Projektliste.
+                ["Katalog"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
+                    () => new WPStammCtrl().Katalogfilterzeilen()),
+                ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
+                    Anlagenart.Waermepumpe, KatalogBrowserHuelle.Text),
 
                 ["AnlageGaben"] = new Func<WaermepumpeAnlageDaten, IReadOnlyDictionary<string, object>>(
                     daten => WaermepumpeAnlageHuelle.Gaben(

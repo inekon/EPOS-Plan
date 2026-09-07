@@ -18,6 +18,14 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class WaermepumpeStammDialogTests : BunitContext
 {
+
+    /// <summary>
+    /// Der Filterstand DIESES Prüfstands. Ohne ihn nähme der Dialog den aus dem
+    /// <c>Katalogfilterregister</c> — der lebt prozessweit, und xunit fährt
+    /// Testklassen nebeneinander. Dass das Register wirklich teilt, prüft
+    /// <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
     private static readonly byte[] BildCop = { 1, 2, 3 };
     private static readonly byte[] BildLeistung = { 4, 5, 6 };
 
@@ -75,10 +83,10 @@ public class WaermepumpeStammDialogTests : BunitContext
         Func<int, bool>? hatKuehlung = null,
         Func<int, IReadOnlyList<KennlinienZeile>>? kennlinien = null,
         Func<int, IReadOnlyList<KennlinienZeile>, bool>? abgleichen = null,
-        Func<IReadOnlyList<WaermepumpenKatalogZeile>>? katalog = null,
         Func<IReadOnlyList<Katalogfilterzeile>>? liste = null,
         Action<bool>? geschlossen = null)
         => Render<WaermepumpeStammDialog>(p => p
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Liste, liste ?? (() => Liste))
             .Add(x => x.Satz, Satz)
             .Add(x => x.Bilder, (id, kuehl) => new KennlinienBilder(
@@ -92,11 +100,6 @@ public class WaermepumpeStammDialogTests : BunitContext
                 new() { Id = 1, Vorlauf = 35, Temperatur = -7, Cop = 2.8, Ptherm = 6.1 }
             }))
             .Add(x => x.KennlinienAbgleichen, abgleichen ?? ((_, _) => true))
-            .Add(x => x.Katalog, katalog ?? (() => new[]
-            {
-                new WaermepumpenKatalogZeile("Beta", "WP Ausliefer", "Split", "Außen",
-                                             60, 35, 20, 9, "Sole-Wasser", "einstufig", "Heizen")
-            }))
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
     private static IElement Knopf(IRenderedComponent<WaermepumpeStammDialog> cut, string text)
@@ -119,7 +122,9 @@ public class WaermepumpeStammDialogTests : BunitContext
         Assert.Equal(4, gruppe.QuerySelectorAll("select").Length);
 
         var knopftexte = cut.FindAll(".epos-leiste button").Select(b => b.TextContent.Trim()).ToList();
-        Assert.Contains("📋  Modul-Katalog...", knopftexte);
+        // W14a-E-10 / S2.2: Der Knopf "Modul-Katalog..." ist GEFALLEN - siehe
+        // Der_Modulkatalog_ist_mit_S2_2_gefallen.
+        Assert.DoesNotContain("📋  Modul-Katalog...", knopftexte);
         Assert.Contains("Kennliniendaten Ansicht/Bearbeiten...", knopftexte);
         Assert.Contains("Speichern", knopftexte);
         Assert.Contains("Neu", knopftexte);
@@ -157,6 +162,7 @@ public class WaermepumpeStammDialogTests : BunitContext
     public void Die_englischen_Texte_lassen_sich_setzen()
     {
         var cut = Render<WaermepumpeStammDialog>(p => p
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Liste, () => Liste)
             .Add(x => x.Satz, Satz)
             .Add(x => x.TitelText, "Heat pump database")
@@ -429,19 +435,31 @@ public class WaermepumpeStammDialogTests : BunitContext
         Assert.Equal(0, geschrieben);
     }
 
+    /// <summary>
+    /// <b>W14a‑E‑10 / S2.2 — der Knopf „Modul-Katalog…" ist gefallen.</b>
+    ///
+    /// <para>Er öffnete eine Überlagerung mit dem <c>WaermepumpenKatalogDialog</c>
+    /// darin. Solange der seine eigene Filterleiste mit elf Bedienelementen hatte,
+    /// war das ein zweiter Weg mit einer zweiten Bedienung; seit S2.2 zeigt er
+    /// DIESELBE Liste mit DENSELBEN neun Spalten aus DEMSELBEN Weg
+    /// (<c>WPStammCtrl.Katalogfilterzeilen</c>) — und DIESE Maske ist der Katalog,
+    /// <c>Tab_WP_STAMM</c> steht schon da. Zwei Fassungen derselben Liste
+    /// übereinander verbietet die Hausregel seit iZ5.</para>
+    ///
+    /// <para>Die zwei anderen Wirte des Katalogdialogs — Wärmepumpenverwaltung und
+    /// Anlagenmaske — haben keine eigene Katalogliste und behalten ihn.</para>
+    /// </summary>
     [Fact]
-    public void Der_Modulkatalog_waehlt_die_Zeile()
+    public void Der_Modulkatalog_ist_mit_S2_2_gefallen()
     {
         var cut = Aufbauen();
 
-        Knopf(cut, "📋  Modul-Katalog...").Click();
-        Assert.Single(cut.FindAll(".epos-ueberlagerung"));
+        Assert.DoesNotContain(cut.FindAll("button"),
+                              b => b.TextContent.Contains("Modul-Katalog"));
 
-        var ueberlagerung = cut.Find(".epos-ueberlagerung");
-        ueberlagerung.QuerySelector(".epos-raster tbody tr button")!.Click();
-        ueberlagerung.QuerySelectorAll("button")
-                     .First(b => b.TextContent.Trim() == "✔ Auswahl übernehmen").Click();
-
+        // Die Zeile wird in der Liste DIESER Maske gewählt - der Weg, den der
+        // Knopf umständlich nachgebaut hat.
+        cut.FindAll(".epos-raster tbody tr button")[1].Click();
         Assert.Equal(2, cut.Instance.GewaehlteId);              // "WP Ausliefer"
         Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
     }
@@ -456,6 +474,7 @@ public class WaermepumpeStammDialogTests : BunitContext
         // A-16: Der Vorlaeufer hatte frei beschreibbare ComboBoxen; ein select wuerde
         // einen unbekannten Wert still verwerfen.
         var cut = Render<WaermepumpeStammDialog>(p => p
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Liste, () => new[] { new Katalogfilterzeile(9, "Sonder")
                                                  .MitText(Katalogfilterprofil.SpBezeichner, "Sonder") })
             .Add(x => x.Satz, _ => new WaermepumpeStammDaten
@@ -501,7 +520,8 @@ public class WaermepumpeStammDialogTests : BunitContext
         bool? ergebnis = null;
         var cut = Aufbauen(geschlossen: b => ergebnis = b);
 
-        Knopf(cut, "📋  Modul-Katalog...").Click();
+        // Seit S2.2 ist der Kennlinien-Editor die verbliebene Ueberlagerung.
+        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(ergebnis);
@@ -630,6 +650,7 @@ public class WaermepumpeStammDialogTests : BunitContext
     public void Die_Modulkostenzeilen_stehen_auch_englisch()
     {
         var cut = Render<WaermepumpeStammDialog>(p => p
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Liste, () => Liste)
             .Add(x => x.Satz, Satz)
             .Add(x => x.LabelModulkosten, "Module costs")
@@ -684,6 +705,7 @@ public class WaermepumpeStammDialogTests : BunitContext
                                            new[] { Verwendung.Wirtschaftlichkeit },
                                            "TechnikPlanwertCtrl.cs:345");
         var cut = Render<WaermepumpeStammDialog>(p => p
+            .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Liste, () => Liste)
             .Add(x => x.Satz, Satz)
             .Add(x => x.Uebersicht, _ => new[] { new Parameterwert(eintrag, "4000") }));
