@@ -2507,6 +2507,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > sieben Entscheide, § 9 Punkt 8 und 9 sind geschlossen, § 11.5 die Antworten. `EmissionsquelleTests` 10 → 12 (alle
 > zehn Größen für 1030, dazu ein Wächter, der jeden Schlüssel im Quelltext an SEIN Feld gebunden findet). Abnahme auf
 > Windows: A‑Em‑98‑1…4 (1030 zeigt die zehn Werte, 1007 keinen; Bericht und Kacheln unverändert; sieben Arten).
+>
+> **W14a‑E‑10 Stufe S1 (Anwenderentscheid 07.09.2026: „Katalogfilter: Empfehlung jeweils ja" — S1 starten, Q1 = ja,
+> Q2 = ja), umgesetzt in `78b0f1e`/`ce43d2a`/`f842465`/`4d52b3b`/`7479d83`, zusammengeführt in `9d5fabf` — der
+> Katalogfilter sitzt an der Spalte.** Die **acht Verwaltungsdialoge** (Heizkessel, BHKW, Solarkollektoren,
+> Pufferspeicher, PV-Module, Wechselrichter, Stromspeicher, Wärmepumpe) tragen dasselbe Schema: EINE Suchzeile mit
+> Trefferzahl, die Liste über die ganze Breite mit 5 bis 9 Parameterspalten, Filter und Sortierung im Spaltenkopf, der
+> Eingabeblock darunter. **Kern:** `Katalogfilterprofil` (acht Ausprägungen), `Katalogfilter` mit `Katalogfilterstand`,
+> **`Zahlenausdruck`** (Q1: ein Feld je Zahlenspalte versteht `>10`, `>=10`, `<60`, `<=60`, `=15`, `10..60`, `15`) und
+> `Katalogfeld`; acht `…StammCtrl.Katalogfilterzeilen()` liefern Anzeige- und Filterwerte statt `ID, Bezeichner` und
+> rechnen σ, C‑Rate, Modulfläche, VL min/max und COP A2/W35 einmal mit. **Oberfläche:** Bausteine `Spaltenfilter`
+> (QuickGrid `ColumnOptions`, Trichter gefüllt gegen Umriss, Kennzeichenspalten nur sortierbar) und `Katalogliste`;
+> der `Katalograhmen` steht **untereinander**, die Liste mit Höhengrenze 1,3 × `--epos-listenhoehe` (elf Zeilen).
+> Entfallen: `KatalogFilterArt`, `HatHerstellerfilter`, die vier Klapplisten, `BrowserZeile`/`ModulZeile`;
+> `LEISTUNG_SQL`/`VOLUMEN_SQL` bleiben für die Projektdialoge bis S2. **O‑6 entschieden und gemessen:** Ein Neuaufbau
+> des Rasters (`@key`-Fix W6‑B‑2) schließt ein QuickGrid-eigenes Popover — das Feld wirkt deshalb bei Enter oder
+> Verlassen, nicht beim Tippen; Esc schließt ohne zu übernehmen. **O‑7 bleibt offen** (Dialoghöhe im bunit-Markup nicht
+> messbar, misst der Anwender). Trefferzahlen gegen die Testdatenbank decken sich exakt mit Anhang A des Konzepts
+> (Heizkessel „Gas" 52, `10..60` 54, `>=0,95` 32 → 15 von 63; Wärmepumpe 7 von 51); der M3-Fall 20 749 → 15 ist als
+> bunit-Probe unter `Virtualisiert` belegt. Nachweis: Kern 1891 / UI 3157 grün, SpeicherEngine 337, KiKern 469,
+> Formularkarte 122, ChartProben 44, SQL 0, Designer 0 (49 neue Schlüssel), Gate grün, Referenzlauf byte-gleich gegen R5.
+> **Offen (Anwender): W14a‑E‑10‑Q7** — die Spalte `Firma` für `Tab_Stromspeicher_STAMM`: das Bezeichnerpräfix trägt in
+> der Testdatenbank 0 von 5 (handgepflegte Altsätze), in beiden Importwegen dagegen jeden Satz; der Schemaschritt (68,
+> `Zielversion` 67 → 68, Testdatenbank ändert sich) wurde bewusst nicht in dieser Welle genommen — Empfehlung: mit S2.
+> Abnahme auf Windows: A‑W14a‑E10‑1…13. S2 (die sieben Projektdialoge samt Wärmepumpe untereinander, Q2) ist der
+> nächste Schritt.
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
