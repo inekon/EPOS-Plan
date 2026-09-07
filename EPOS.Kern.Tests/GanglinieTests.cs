@@ -19,7 +19,7 @@ namespace EPOS.Kern.Tests
     /// <para>Zwei Rasterlaengen, weil der Bestand beide fuehrt: 8 760 Stundenwerte
     /// (Waermeseite) und 35 040 Viertelstundenwerte (Stromseite).</para>
     ///
-    /// <para>Ohne Datenbank — reine Rechnung auf <c>float[]</c>.</para>
+    /// <para>Ohne Datenbank — reine Rechnung auf <c>double[]</c>.</para>
     /// </summary>
     public class GanglinieTests
     {
@@ -27,19 +27,19 @@ namespace EPOS.Kern.Tests
         private const int VIERTELSTUNDEN_JAHR = 8760 * 4;
 
         /// <summary>Ein wiederholbarer Pseudozufallsvektor — fester Startwert, kein Rauschen im Test.</summary>
-        private static float[] Reihe(int laenge, int startwert)
+        private static double[] Reihe(int laenge, int startwert)
         {
             Random r = new Random(startwert);
-            float[] werte = new float[laenge];
-            for (int i = 0; i < laenge; i++) werte[i] = (float)(r.NextDouble() * 500.0);
+            double[] werte = new double[laenge];
+            for (int i = 0; i < laenge; i++) werte[i] = (double)(r.NextDouble() * 500.0);
             return werte;
         }
 
         [Fact]
         public void Dauerlinie_faellt_monoton_ueber_8760_Stunden()
         {
-            float[] werte = Reihe(STUNDEN_JAHR, 1030);
-            float[] dauer = Ganglinie.Dauerlinie(werte);
+            double[] werte = Reihe(STUNDEN_JAHR, 1030);
+            double[] dauer = Ganglinie.Dauerlinie(werte);
 
             Assert.Equal(STUNDEN_JAHR, dauer.Length);
             for (int i = 1; i < dauer.Length; i++)
@@ -50,8 +50,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Dauerlinie_faellt_monoton_ueber_35040_Viertelstunden()
         {
-            float[] werte = Reihe(VIERTELSTUNDEN_JAHR, 1007);
-            float[] dauer = Ganglinie.Dauerlinie(werte);
+            double[] werte = Reihe(VIERTELSTUNDEN_JAHR, 1007);
+            double[] dauer = Ganglinie.Dauerlinie(werte);
 
             Assert.Equal(VIERTELSTUNDEN_JAHR, dauer.Length);
             for (int i = 1; i < dauer.Length; i++)
@@ -65,8 +65,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Dauerlinie_haelt_die_Summe()
         {
-            float[] werte = Reihe(STUNDEN_JAHR, 1017);
-            float[] dauer = Ganglinie.Dauerlinie(werte);
+            double[] werte = Reihe(STUNDEN_JAHR, 1017);
+            double[] dauer = Ganglinie.Dauerlinie(werte);
 
             double vorher = werte.Sum(x => (double)x);
             double nachher = dauer.Sum(x => (double)x);
@@ -79,8 +79,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Dauerlinie_laesst_den_Quellvektor_unberuehrt()
         {
-            float[] werte = Reihe(64, 42);
-            float[] abzug = (float[])werte.Clone();
+            double[] werte = Reihe(64, 42);
+            double[] abzug = (double[])werte.Clone();
 
             Ganglinie.Dauerlinie(werte);
 
@@ -100,15 +100,15 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Anzeigewerte_liefert_unsortiert_denselben_Vektor()
         {
-            float[] werte = Reihe(128, 7);
+            double[] werte = Reihe(128, 7);
             Assert.Same(werte, Ganglinie.Anzeigewerte(werte, false));
         }
 
         [Fact]
         public void Anzeigewerte_liefert_sortiert_die_Dauerlinie()
         {
-            float[] werte = Reihe(128, 8);
-            float[] anzeige = Ganglinie.Anzeigewerte(werte, true);
+            double[] werte = Reihe(128, 8);
+            double[] anzeige = Ganglinie.Anzeigewerte(werte, true);
 
             Assert.NotSame(werte, anzeige);
             for (int i = 1; i < anzeige.Length; i++)

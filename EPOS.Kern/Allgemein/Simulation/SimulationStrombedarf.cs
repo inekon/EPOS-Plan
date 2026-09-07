@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
 
         public int[] mo_anfang = new int[12];
         public int[] mo_ende = new int[12];
-        public float[] prozesswerte = new float[8760 *4 ];
+        public double[] prozesswerte = new double[8760 *4 ];
 
         /// <summary>
         /// Wochentag des 1. Januar für die Profilkachelung (Montag = 0 … Sonntag = 6,
@@ -32,18 +32,18 @@ namespace WindowsFormsApplication1
         /// <summary>Zwischengespeicherter Kalender des Projekts <see cref="_kalenderProjekt"/>.</summary>
         private int _kalenderWert = ProfilBedarf.WOCHENTAG_ALTKONVENTION;
 
-        public float[] Strombedarf_viertelStundenwerte = new float[8760 * 4];
-        private float[] Strombedarf_sortiert = new float[8760 * 4];
-        public float[] Stromganglinie = new float[8760 *4];
-        public float[] Strombedarf_monat = new float[12];
+        public double[] Strombedarf_viertelStundenwerte = new double[8760 * 4];
+        private double[] Strombedarf_sortiert = new double[8760 * 4];
+        public double[] Stromganglinie = new double[8760 *4];
+        public double[] Strombedarf_monat = new double[12];
 
-        public float Strombedarf_Gebaeude_gesamt;
-        public float Stromganglinie_gesamt;
-        public float StrombedarfGesamtMwh;
-        public float Strombedarf_Max;
+        public double Strombedarf_Gebaeude_gesamt;
+        public double Stromganglinie_gesamt;
+        public double StrombedarfGesamtMwh;
+        public double Strombedarf_Max;
 
-        public float[] Dauerlinie = new float[8760 * 4];
-        public float[] Dauerlinie_nicht_sortiert = new float[8760 * 4];
+        public double[] Dauerlinie = new double[8760 * 4];
+        public double[] Dauerlinie_nicht_sortiert = new double[8760 * 4];
 
         /// <summary>
         /// Wie viele Plätze von <see cref="Strombedarf_viertelStundenwerte"/> BELEGT sind
@@ -117,7 +117,7 @@ namespace WindowsFormsApplication1
             // auf 1/4 Stundenwerte umrechnen
             prozesswerte = Stundenwerte_zu_viertelstunden(prozesswerte);
 
-            Strombedarf_viertelStundenwerte = (float[])prozesswerte.Clone();
+            Strombedarf_viertelStundenwerte = (double[])prozesswerte.Clone();
 
             Strombedarf_Gebaeude_gesamt += prozesswerte.Sum() / 4000;
 
@@ -145,7 +145,7 @@ namespace WindowsFormsApplication1
                 {
                     Interval = (int)rs.Read("Zeitinterval");
                     wert = (double)rs.Read("Wert");
-                    if (index < Stromganglinie.Length) Stromganglinie[index] = (float)wert;
+                    if (index < Stromganglinie.Length) Stromganglinie[index] = (double)wert;
                     index++;
                 }
                 rs.Close();
@@ -178,7 +178,7 @@ namespace WindowsFormsApplication1
                 Stromganglinie_gesamt += Stromganglinie.Sum();
             }
 
-            Stromganglinie_gesamt = Stromganglinie_gesamt / 4000f; // MWh
+            Stromganglinie_gesamt = Stromganglinie_gesamt / 4000.0; // MWh
             Strombedarf_monat = MonatsSumme_MW(Strombedarf_viertelStundenwerte, mo_anfang, mo_ende); // in MWh
             // W8-O-5c / Q8 (Befund U7): Der Kommentar nannte hier seit dem Bestand
             // "kWh". Der Wert ist eine LEISTUNG in kW - das Maximum der
@@ -186,8 +186,8 @@ namespace WindowsFormsApplication1
             // Anzeige ihn seit W8-E-2 ("max. Leistung [kW]"). Ein Kommentar kann die
             // Einheit nicht halten; deshalb steht sie seit W8-O-5c am Namen.
             Strombedarf_Max = Maximaler_Strombedarf(Strombedarf_viertelStundenwerte); // in kW
-            StrombedarfGesamtMwh = Strombedarf_viertelStundenwerte.Sum() / 4000f; // in MWh 
-            Strombedarf_sortiert = (float[])Strombedarf_viertelStundenwerte.Clone();
+            StrombedarfGesamtMwh = Strombedarf_viertelStundenwerte.Sum() / 4000.0; // in MWh 
+            Strombedarf_sortiert = (double[])Strombedarf_viertelStundenwerte.Clone();
             Dauerlinie_nicht_sortiert = Strombedarf_viertelStundenwerte;
             Strombedarf_sortiert = NormVector(Strombedarf_sortiert, Strombedarf_Max);
             Dauerlinie_nicht_sortiert = NormVector(Dauerlinie_nicht_sortiert, Strombedarf_Max);
@@ -242,9 +242,9 @@ namespace WindowsFormsApplication1
         /// Rückgabe <c>null</c> = Abbruch (wie bisher): Der Aufrufer macht daraus den
         /// Fehlertext des Laufs, damit kein Ergebnis mit leerem Stromprofil entsteht.
         /// </summary>
-        public float[] Stromprofil_Strombedarf_berechnen(List<string> list = null)
+        public double[] Stromprofil_Strombedarf_berechnen(List<string> list = null)
         {
-            float[] summe = new float[8760];
+            double[] summe = new double[8760];
 
             // NACHARBEIT PAKET 8, BEFUND N6: Das gerade bearbeitete Stromprofil, damit der
             // Sammel-catch unten sagen kann, WORAN es lag. Die häufigste Ursache ist eine
@@ -317,7 +317,7 @@ namespace WindowsFormsApplication1
         /// Die Stundenwerte aus <see cref="Stromprofil_Strombedarf_berechnen"/> [kWh];
         /// <c>null</c> lässt alles auf null.
         /// </param>
-        public void ProfilbedarfUebernehmen(float[] stundenreihe)
+        public void ProfilbedarfUebernehmen(double[] stundenreihe)
         {
             Array.Clear(Strombedarf_viertelStundenwerte, 0, Strombedarf_viertelStundenwerte.Length);
             Strombedarf_Gebaeude_gesamt = 0;
@@ -345,9 +345,9 @@ namespace WindowsFormsApplication1
             Strombedarf_Max = Maximaler_Strombedarf(Strombedarf_viertelStundenwerte);
         }
 
-        public float Maximaler_Strombedarf(float[] Strombedarf)
+        public double Maximaler_Strombedarf(double[] Strombedarf)
         {
-            float Strombedarf_Max;
+            double Strombedarf_Max;
 
             Strombedarf_Max = 0;
             for (int i = 0; i < Strombedarf.Length; i++)
@@ -358,9 +358,9 @@ namespace WindowsFormsApplication1
             return Strombedarf_Max;
         }
 
-        public float[] MonatsSumme_MW(float[] werte_array, int[] mo_anfang, int[] mo_ende)
+        public double[] MonatsSumme_MW(double[] werte_array, int[] mo_anfang, int[] mo_ende)
         {
-            float[] z = new float[12];
+            double[] z = new double[12];
             for (int indexMonat = 0; indexMonat < 12; indexMonat++)
             {
                 //var result = werte_array..GetRange(mo_anfang[indexMonat], mo_ende[indexMonat] - mo_anfang[indexMonat] + 1);
@@ -370,28 +370,28 @@ namespace WindowsFormsApplication1
                     z[indexMonat] += werte_array[n]; // Addiert numbers[1], numbers[2], numbers[3]
                 }
 
-                z[indexMonat] = z[indexMonat] / 4000.0f;
+                z[indexMonat] = z[indexMonat] / 4000.0;
             }
             return z;
         }
 
-        public float[] NormVector(float[] array1, float value)
+        public double[] NormVector(double[] array1, double value)
         {
             // sort numbers in vector
-            float[] z = array1.Select(x => (x / value) * 100).ToArray();
+            double[] z = array1.Select(x => (x / value) * 100).ToArray();
             return z;
         }
 
-        public float[] SortVector(float[] array1)
+        public double[] SortVector(double[] array1)
         {
             // sort numbers in vector
-            float[] z = array1.OrderBy(x => x).ToArray();
+            double[] z = array1.OrderBy(x => x).ToArray();
             return z;
         }
 
-        public float[] Stundenwerte_zu_viertelstunden(float[] stundenwerte)
+        public double[] Stundenwerte_zu_viertelstunden(double[] stundenwerte)
         {  
-            float[] viertelstundenwerte = new float[8760 * 4];
+            double[] viertelstundenwerte = new double[8760 * 4];
             for (int i = 0; i < 8760; i++)
             {
                 viertelstundenwerte[i * 4] = stundenwerte[i];
@@ -402,12 +402,12 @@ namespace WindowsFormsApplication1
             return viertelstundenwerte;
         }
         
-        public float[] AddVectors(float[] array1, float[] array2)
+        public double[] AddVectors(double[] array1, double[] array2)
         {
             if (array1.Length != array2.Length)
                 throw new ArgumentException("Arrays must be of the same length.");
 
-            float[] result = new float[array1.Length];
+            double[] result = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
                 result[i] = array1[i] + array2[i];

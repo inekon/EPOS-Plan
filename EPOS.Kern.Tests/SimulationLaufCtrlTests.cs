@@ -166,7 +166,7 @@ namespace EPOS.Kern.Tests
             var a = new SimulationRunner();
             string fehler;
             Assert.True(a.Simuliere(PROJEKT, out fehler), fehler);
-            float restA = a.sim.RestwaermeMwh;
+            double restA = a.sim.RestwaermeMwh;
 
             var b = new SimulationRunner();
             Assert.True(b.Simuliere(PROJEKT, out fehler), fehler);
@@ -230,7 +230,7 @@ namespace EPOS.Kern.Tests
             var a = new SimulationRunner();
             string fehler;
             Assert.True(a.Simuliere(PROJEKT, out fehler), fehler);
-            float restEigen = a.sim.RestwaermeMwh;
+            double restEigen = a.sim.RestwaermeMwh;
 
             var b = new SimulationRunner();
             Assert.True(b.Simuliere(PROJEKT, out fehler), fehler);

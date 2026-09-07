@@ -42,11 +42,11 @@ namespace WindowsFormsApplication1
 
         public int m_ID_Projekt = 0;
         public double Max_Waermebedarf;
-        public float[] Waermebedarf = new float[8760];
-        public float[] Restwaerme = new float[8760];
-        public float[] Strombedarf_stuendlich = new float[8760];
-        public float[] Stromverbrauch_stuendlich = new float[8760];
-        public float[] Kesselleistung_stuendlich = new float[8760];
+        public double[] Waermebedarf = new double[8760];
+        public double[] Restwaerme = new double[8760];
+        public double[] Strombedarf_stuendlich = new double[8760];
+        public double[] Stromverbrauch_stuendlich = new double[8760];
+        public double[] Kesselleistung_stuendlich = new double[8760];
         public int Vorgabe_Betriebsbereitschaft;
 
         // Globale Ergebnisse
@@ -286,7 +286,7 @@ namespace WindowsFormsApplication1
                     StromverbrauchSpkMwh += Kessel_Nutzkraft_Jahr;
                     // B0-2: auch hier kein Aliasing — sonst bleibt der Strom-Vektor ab dem
                     // zweiten Lauf dauerhaft an die Kessel-Ganglinie gebunden.
-                    Stromverbrauch_stuendlich = (float[])Kesselleistung_stuendlich.Clone();
+                    Stromverbrauch_stuendlich = (double[])Kesselleistung_stuendlich.Clone();
                 }
                 else if (Brennstoff_Art[i] == 15) PelletsSpkMwh += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 16) RapsoelverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
@@ -459,7 +459,7 @@ namespace WindowsFormsApplication1
         /// Quelltemperatur-Ganglinie je gekoppeltem Kessel [°C] — LAUFERGEBNIS
         /// (Konzept 8.4). <c>null</c> für jeden Kessel ohne Kopplung.
         /// </summary>
-        private readonly float[][] _quellTemperatur = new float[MAX_SPK][];
+        private readonly double[][] _quellTemperatur = new double[MAX_SPK][];
 
         /// <summary>Stunden je Kessel, in denen der gekoppelte Puffer nicht über den Rücklauf kam.</summary>
         private readonly int[] _quellZuKalt = new int[MAX_SPK];
@@ -474,7 +474,7 @@ namespace WindowsFormsApplication1
         /// Quelltemperatur-Ganglinie eines gekoppelten Kessels [°C]; <c>null</c> ohne
         /// Kopplung (Paket B1) — Lesezugriff für Anzeige und Zeitreihen-Export.
         /// </summary>
-        public float[] Quelltemperaturen(int index)
+        public double[] Quelltemperaturen(int index)
         {
             return (index >= 0 && index < MAX_SPK) ? _quellTemperatur[index] : null;
         }
@@ -506,7 +506,7 @@ namespace WindowsFormsApplication1
             _quellRuecklauf[index] = ruecklauf;
             _quellHoehe[index] = anschlusshoehe;
             _quellKopplung[index] = true;
-            _quellTemperatur[index] = new float[8760];
+            _quellTemperatur[index] = new double[8760];
 
             // Startwert aus dem aktuellen Zustand; die Stundenabfrage übersteuert ihn vor
             // jeder Phase B. Ohne diese Zeile stünde bis zur ersten Abfrage ein Anteil
@@ -566,7 +566,7 @@ namespace WindowsFormsApplication1
 
                 // PAKET Q1: an der gepflegten Quell-Entnahmehöhe statt fest oben.
                 double tQuelle = q.QuellEntnahmeTemperatur(_quellHoehe[i]);
-                if (_quellTemperatur[i] != null) _quellTemperatur[i][stunde] = (float)tQuelle;
+                if (_quellTemperatur[i] != null) _quellTemperatur[i][stunde] = (double)tQuelle;
 
                 double anteil = AnteilAus(tQuelle, i);
                 _quellAnteil[i] = anteil;
@@ -590,11 +590,11 @@ namespace WindowsFormsApplication1
             {
                 if (!_quellKopplung[i] || _quellTemperatur[i] == null) continue;
 
-                float min = float.MaxValue, max = float.MinValue;
+                double min = double.MaxValue, max = double.MinValue;
                 double summe = 0;
                 for (int h = 0; h < 8760; h++)
                 {
-                    float v = _quellTemperatur[i][h];
+                    double v = _quellTemperatur[i][h];
                     if (v < min) min = v;
                     if (v > max) max = v;
                     summe += v;
@@ -953,7 +953,7 @@ namespace WindowsFormsApplication1
 
             double eingang = Kaskadenschleife.RestSumme(rest);
             if (eingang < 0) eingang = 0;
-            if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = (float)eingang;
+            if (stunde >= 0 && stunde < 8760) Waermebedarf[stunde] = (double)eingang;
             if (Max_Waermebedarf < eingang) Max_Waermebedarf = eingang;
         }
 
@@ -1034,7 +1034,7 @@ namespace WindowsFormsApplication1
             }
 
             if (stunde >= 0 && stunde < 8760)
-                Restwaerme[stunde] = (float)Kaskadenschleife.RestSumme(rest);
+                Restwaerme[stunde] = (double)Kaskadenschleife.RestSumme(rest);
         }
 
         /// <summary>
@@ -1161,7 +1161,7 @@ namespace WindowsFormsApplication1
                 Kessel_Verbrauch_MWh_Spk[i] += stuendlicherBrennstoffverbrauchKW;
 
                 if (stunde >= 0 && stunde < 8760)
-                    Kesselleistung_stuendlich[stunde] += (float)KesselLeistung;
+                    Kesselleistung_stuendlich[stunde] += (double)KesselLeistung;
             }
         }
 
@@ -1212,19 +1212,19 @@ namespace WindowsFormsApplication1
                 Stunde_Abschluss(stunde);
 
                 for (int k = 0; k < Kanal.ANZAHL; k++)
-                    kanaele.Bedarf[k][stunde] = (float)rest[k];
+                    kanaele.Bedarf[k][stunde] = (double)rest[k];
             }
 
             Abschluss_Zweikanalig();
             return true;
         }
 
-        public float[] AddVectors(float[] array1, float[] array2)
+        public double[] AddVectors(double[] array1, double[] array2)
         {
             if (array1.Length != array2.Length)
                 throw new ArgumentException("Arrays müssen die gleiche Länge aufweisen.");
 
-            float[] result = new float[array1.Length];
+            double[] result = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++) { result[i] = array1[i] + array2[i]; }
             return result;
         }

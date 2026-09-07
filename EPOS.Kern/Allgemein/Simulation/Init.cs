@@ -11,7 +11,7 @@ namespace WindowsFormsApplication1.Classes.Simulation
         /// Rechenbasis der Monatsgrenzen (V0-6). Bewusst ein festes NICHT-Schaltjahr und
         /// bewusst nicht <c>DateTime.Today.Year</c>: Der Rechenkern ist fest auf 8760
         /// Stunden bzw. 365 Tage verdrahtet. In einem Schaltjahr ergäbe sich
-        /// <c>mo_ende[11] = 8783</c> auf <c>float[8760]</c>-Vektoren, und jeder Lauf wäre
+        /// <c>mo_ende[11] = 8783</c> auf <c>double[8760]</c>-Vektoren, und jeder Lauf wäre
         /// in <c>BhkwPlan.MonatsSumme</c> mit einer IndexOutOfRangeException abgebrochen
         /// (ab 2028 sicher eintretend). Die Grenzen eines Nicht-Schaltjahres sind für alle
         /// Nicht-Schaltjahre identisch — das bisherige Verhalten bleibt damit unverändert.

@@ -13,49 +13,49 @@ namespace WindowsFormsApplication1
         public int m_ID_Projekt = 0;
 
         // Solare Wärme        
-        private float[] Sol_N = new float[365];
-        private float[] Sol_w = new float[365];
-        private float[] Sol_O = new float[365];
-        private float[] Sol_S = new float[365];
-        private float[] A_Temp = new float[365];
+        private double[] Sol_N = new double[365];
+        private double[] Sol_w = new double[365];
+        private double[] Sol_O = new double[365];
+        private double[] Sol_S = new double[365];
+        private double[] A_Temp = new double[365];
         private bool[] WE = new bool[365];
 
         private int[] TagTyp_W = new int[365];
         private int[] TagTyp_NW = new int[365];
-        public float[] Solare_Gewinne = new float[365];
+        public double[] Solare_Gewinne = new double[365];
 
         // Gebäudeprofil Wärmebedarf
-        public float[] Waermebedarf = new float[8760];
-        public float[] Waermebedarf_Gebaeude = new float[8760];
-        public float[] Waermebedarf_Gebaeude_Monat = new float[12];
-        public float[] HeizwaermebedarfGeb = new float[100];
-        public float[] Waermebedarf_sortiert = new float[8760];
-        public float Waermebedarf_Max = 0;
-        public float Waermebedarf_Gesamt = 0;
+        public double[] Waermebedarf = new double[8760];
+        public double[] Waermebedarf_Gebaeude = new double[8760];
+        public double[] Waermebedarf_Gebaeude_Monat = new double[12];
+        public double[] HeizwaermebedarfGeb = new double[100];
+        public double[] Waermebedarf_sortiert = new double[8760];
+        public double Waermebedarf_Max = 0;
+        public double Waermebedarf_Gesamt = 0;
         public double Waermebedarf_Gebaeude_Gesamt = 0;
 
 
         // Brauchwasser Wärmeenergie 
-        public float[] Waermebedarf_Brauchwasser_Monat = new float[12];
+        public double[] Waermebedarf_Brauchwasser_Monat = new double[12];
         public double Waermebedarf_Brauchwasser = 0;
 
         // Lastgang Gebäude
-        public float[] Waermebedarf_Extern = new float[8760];
+        public double[] Waermebedarf_Extern = new double[8760];
         public double Waermebedarf_Extern_Gesamt = 0;
 
         // Prozesswärme
-        public float[] Waermebedarf_Prozess_Monat = new float[12];
+        public double[] Waermebedarf_Prozess_Monat = new double[12];
         public double Waermebedarf_Prozess = 0;
 
         // Temperaturgang Klimaregion
-        public float[] Stundentemperatur = new float[8760];
+        public double[] Stundentemperatur = new double[8760];
 
-        private float[] SpezWaermeverluste = new float[365];
-        private float[] Heizlast = new float[365];
-        private float[] TagesVerteilung = new float[240];
-        private float[] MaxP = new float[100];
-        public float[] Dauerlinie = new float[8760];
-        public float[] Dauerlinie_nicht_sortiert = new float[8760];
+        private double[] SpezWaermeverluste = new double[365];
+        private double[] Heizlast = new double[365];
+        private double[] TagesVerteilung = new double[240];
+        private double[] MaxP = new double[100];
+        public double[] Dauerlinie = new double[8760];
+        public double[] Dauerlinie_nicht_sortiert = new double[8760];
         private bool[] F_Absenkung = new bool[365];
 
         // Netzverluste
@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
         /// dagegen der reine Profilanteil — sie sind die Bedarfsmeldung des Anwenders,
         /// nicht die Kanalbilanz.
         /// </summary>
-        public float[] prozesswerte = new float[8760];
+        public double[] prozesswerte = new double[8760];
 
         /// <summary>
         /// BRAUCHWASSERKANAL je Stunde [kWh] — dieselbe K1-Änderung wie bei
@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
         /// mehr netzverlustfrei. Die WW-Deckungsgrade ändern sich dadurch in jedem Projekt
         /// mit Brauchwasseranteil (dokumentierte Ergebnisänderung, Konzept 11.2).
         /// </summary>
-        public float[] brauchwasserwerte = new float[8760];
+        public double[] brauchwasserwerte = new double[8760];
 
         /// <summary>
         /// Wochentag des 1. Januar aus den Klimadaten (Montag = 0 … Sonntag = 6,
@@ -163,7 +163,7 @@ namespace WindowsFormsApplication1
             // entsteht der Summenvektor Waermebedarf.
             // ---------------------------------------------------------------
             _kanaele = new Kanalsatz();
-            float[] kanalHeizung = _kanaele.Heizung;
+            double[] kanalHeizung = _kanaele.Heizung;
 
             // ENERGIEPROBE (Konzept 11.3): eine UNABHÄNGIGE Summe aller Bedarfsanteile,
             // in double und ohne Kanalzuordnung mitgeführt. Sie ist der Gegenwert, an dem
@@ -185,7 +185,7 @@ namespace WindowsFormsApplication1
             // Waermebedarf UND einmal auf Waermebedarf_Gebaeude geht. Waermebedarf_Gebaeude
             // bleibt damit wie bisher die Summe aller Gebäude. Bei einem Gebäude ist das
             // Ergebnis bitgleich zum bisherigen Verhalten.
-            float[] Waermebedarf_EinGebaeude = new float[8760];
+            double[] Waermebedarf_EinGebaeude = new double[8760];
 
             for (int i = 0; i < ctrl.rows; i++)
             {
@@ -239,8 +239,8 @@ namespace WindowsFormsApplication1
             // der Schleife genullt wurde: Reststunden einer längeren Vorgänger-Ganglinie
             // blieben stehen und gingen ein zweites Mal in die Summe ein. Der Rohpuffer ist
             // auf das Viertelstundenraster ausgelegt, damit auch 35.040 Werte hineinpassen.
-            float[] ganglinie_roh = new float[8760 * 4];
-            float[] ganglinie = new float[8760];
+            double[] ganglinie_roh = new double[8760 * 4];
+            double[] ganglinie = new double[8760];
 
             for (int n = 0; n < waectrl.rows; n++)
             {
@@ -262,7 +262,7 @@ namespace WindowsFormsApplication1
                     // V0-5 (c): Indexschutz. Eine zu lange Reihe (z. B. Minutenwerte) lief
                     // bisher ungefangen in eine IndexOutOfRangeException; gezählt wird
                     // weiter, damit die Rasterprüfung unten die wahre Wertzahl meldet.
-                    if (index < ganglinie_roh.Length) ganglinie_roh[index] = (float)wert;
+                    if (index < ganglinie_roh.Length) ganglinie_roh[index] = (double)wert;
                     index++;
                 }
                 rs.Close();
@@ -289,7 +289,7 @@ namespace WindowsFormsApplication1
                     // WirtschaftlichkeitCtrl.ViertelstundenZuStundenMittel. Der Rechenkern
                     // kennt nur das Stundenraster.
                     for (int h = 0; h < 8760; h++)
-                        ganglinie[h] = (float)((ganglinie_roh[h * 4] + ganglinie_roh[h * 4 + 1]
+                        ganglinie[h] = (double)((ganglinie_roh[h * 4] + ganglinie_roh[h * 4 + 1]
                                               + ganglinie_roh[h * 4 + 2] + ganglinie_roh[h * 4 + 3]) / 4.0);
                 }
 
@@ -349,15 +349,15 @@ namespace WindowsFormsApplication1
             Waermebedarf_Gesamt = Waermebedarf.Sum() / 1000;
 
 
-            float stundl_netzverluste = 0;
+            double stundl_netzverluste = 0;
             if (Netzverluste_Einheit == "%")
             {
-                stundl_netzverluste = (Waermebedarf_Gesamt * 1000 * Netzverluste) / (float)876000;
+                stundl_netzverluste = (Waermebedarf_Gesamt * 1000 * Netzverluste) / (double)876000;
                 Waermebedarf_Netzverluste = (Waermebedarf_Gesamt * Netzverluste) / 100;
             }
             else
             {
-                stundl_netzverluste = (float)Netzverluste / (float)8760;
+                stundl_netzverluste = (double)Netzverluste / (double)8760;
 
                 // V0-8: Auch bei absoluter Einheit ("kWh/a") die tatsächlich
                 // aufgeschlagene Jahresmenge ausweisen - in MWh, derselben Einheit wie im
@@ -438,7 +438,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void SummenvektorAusKanaelen()
         {
-            float[] summe = _kanaele.Summe();
+            double[] summe = _kanaele.Summe();
             Array.Copy(summe, Waermebedarf, Kanalsatz.STUNDEN_JAHR);
         }
 
@@ -448,7 +448,7 @@ namespace WindowsFormsApplication1
         /// externe Lastgänge, Prozess- und Brauchwasserprofile, Netzverluste.
         ///
         /// Der Maßstab ist die 1-ULP-Klasse (<see cref="Kanalsatz.ErhaltungOk"/>), gefasst
-        /// über die <see cref="Kanalsatz.ERHALTUNG_SCHRITTE_SUMME"/> float-Speicherungen,
+        /// über die <see cref="Kanalsatz.ERHALTUNG_SCHRITTE_SUMME"/> double-Speicherungen,
         /// die eine double-Referenzsumme von der Kanalsumme trennen; die verbleibende
         /// Abweichung ist allein diese Rundung. Gemeldet wird EINMAL je Lauf mit der Zahl
         /// der betroffenen Stunden — ein struktureller Fehler (ein verschluckter oder
@@ -516,11 +516,11 @@ namespace WindowsFormsApplication1
             ctrl_klima.ReadAll(ID_Klimaregion);
             for (int i = 0; i < ctrl_klima.rows; i++)
             {
-                Sol_N[i] = (float)ctrl_klima.items[i].m_Sol_Nord;
-                Sol_w[i] = (float)ctrl_klima.items[i].m_Sol_West;
-                Sol_O[i] = (float)ctrl_klima.items[i].m_Sol_Ost;
-                Sol_S[i] = (float)ctrl_klima.items[i].m_Sol_Sued;
-                A_Temp[i] = (float)ctrl_klima.items[i].m_nTemperatur;
+                Sol_N[i] = (double)ctrl_klima.items[i].m_Sol_Nord;
+                Sol_w[i] = (double)ctrl_klima.items[i].m_Sol_West;
+                Sol_O[i] = (double)ctrl_klima.items[i].m_Sol_Ost;
+                Sol_S[i] = (double)ctrl_klima.items[i].m_Sol_Sued;
+                A_Temp[i] = (double)ctrl_klima.items[i].m_nTemperatur;
                 WE[i] = (bool)ctrl_klima.items[i].m_WE;
                 TagTyp_W[i] = (int)ctrl_klima.items[i].m_TagTyp_W;
                 TagTyp_NW[i] = (int)ctrl_klima.items[i].m_TagTyp_NW;
@@ -563,7 +563,7 @@ namespace WindowsFormsApplication1
         /// macht der Aufrufer.</param>
         /// <returns><c>false</c>, wenn zum Gebäudetyp keine Tagesverteilung hinterlegt
         /// ist — der Lauf bricht dann ab, wie bisher.</returns>
-        internal bool HeizwaermeEinesGebaeudes(ProjektGebaeudeModel item, int index, float[] ziel)
+        internal bool HeizwaermeEinesGebaeudes(ProjektGebaeudeModel item, int index, double[] ziel)
         {
             // wenn die Einheit nicht als "Wohnfläche [m²]" angegeben ist...Wohnfläche und Anzahl Bewohner berechnen
             if (item.Einheit == "Wohnfläche [m²]")
@@ -655,9 +655,9 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private float[] DBTagesVeteilung(string TagV_Type, int ID_Gebaeude, ref bool tagv_found)
+        private double[] DBTagesVeteilung(string TagV_Type, int ID_Gebaeude, ref bool tagv_found)
         {
-            float[] tagv = new float[192];
+            double[] tagv = new double[192];
             RecordSet rs = new RecordSet();
 
             try
@@ -672,7 +672,7 @@ namespace WindowsFormsApplication1
                 while (rs.Next())
                 {
                     double val = (double)rs.Read("Verteilung");
-                    tagv[n] = (float)val;
+                    tagv[n] = (double)val;
                     n++;
                 }
                 if (n > 0) tagv_found = true;
@@ -735,33 +735,33 @@ namespace WindowsFormsApplication1
             for (int Tag = 350; Tag < 365; Tag++)
             {
                 /*
-                Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (float)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                        (float)item.Fensterflaeche_Ost, Sol_S[Tag], (float)item.Fensterflaeche_Sued,
-                        (float)item.Fensterdurchlassgrad) / (float)100;
+                Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
+                        (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
+                        (double)item.Fensterdurchlassgrad) / (double)100;
                 */
-                Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (float)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                        (float)item.Fensterflaeche_Ost, Sol_S[Tag], (float)item.Fensterflaeche_Sued,
-                        (float)item.Fensterdurchlassgrad) / (float)100;
+                Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
+                        (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
+                        (double)item.Fensterdurchlassgrad) / (double)100;
 
                 /*
-                SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((float)item.k_Wert_Außenwand, (float)item.Flaeche_Außenwand,
-                        (float)item.k_Wert_Fenster, (float)item.gesamte_Fensterflaeche, (float)item.k_Wert_Dachflaeche,
-                        (float)item.Dachflaeche, (float)item.k_Wert_Grundflaeche, (float)item.Grundflaeche,
-                        (float)item.k_Wert_Sonstiges, (float)item.Sonstige_Flaechen, (float)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
-                        (float)item.Abmessung_Anschluß_Fenster_Wand, (float)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (float)item.Abmessung_Anschluß_Wand_Dach,
-                        (float)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (float)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (float)item.Wohnflaeche,
-                        (float)item.Raumhoehe, (float)item.Luftwechselrate) / 100;
+                SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
+                        (double)item.k_Wert_Fenster, (double)item.gesamte_Fensterflaeche, (double)item.k_Wert_Dachflaeche,
+                        (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
+                        (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
+                        (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
+                        (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
+                        (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
                 */
-                SpezWaermeverluste[Tag] = WPPlan.Core.BhkwPlan.SpezWaermeverlusteC((float)item.k_Wert_Außenwand, (float)item.Flaeche_Außenwand,
-                       (float)item.k_Wert_Fenster, (float)item.gesamte_Fensterflaeche, (float)item.k_Wert_Dachflaeche,
-                       (float)item.Dachflaeche, (float)item.k_Wert_Grundflaeche, (float)item.Grundflaeche,
-                       (float)item.k_Wert_Sonstiges, (float)item.Sonstige_Flaechen, (float)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
-                       (float)item.Abmessung_Anschluß_Fenster_Wand, (float)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (float)item.Abmessung_Anschluß_Wand_Dach,
-                       (float)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (float)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (float)item.Wohnflaeche,
-                       (float)item.Raumhoehe, (float)item.Luftwechselrate) / 100;
+                SpezWaermeverluste[Tag] = WPPlan.Core.BhkwPlan.SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
+                       (double)item.k_Wert_Fenster, (double)item.gesamte_Fensterflaeche, (double)item.k_Wert_Dachflaeche,
+                       (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
+                       (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
+                       (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
+                       (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
+                       (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
 
                 WE_Absenkung = 0;
-                if ((float)item.Raumsolltemperatur_Wochenende > 5)
+                if ((double)item.Raumsolltemperatur_Wochenende > 5)
                 {
                     if (WE[Tag]) WE_Absenkung = 1; else WE_Absenkung = 0;
                 }
@@ -769,35 +769,35 @@ namespace WindowsFormsApplication1
                 /*
                 Heizlast[Tag] = com.I_TaeglHeizlastWG(Tag + 1,
                         WE_Absenkung,
-                        (float)item.Raumsolltemperatur_Wochenende,
+                        (double)item.Raumsolltemperatur_Wochenende,
                         Ferien_Absenkung,
-                        (float)item.Raumsolltemperatur_Ferien,
-                        (float)item.Raumsolltemperatur_Tag,
-                        (float)item.Raumsolltemperatur_Nachtabsenkung,
-                        (float)item.Interne_Waermegewinne,
-                        (float)Solare_Gewinne[Tag],
-                        (float)SpezWaermeverluste[Tag],
-                        (float)item.Bauweise,
-                        (float)A_Temp[Tag],
-                        (float)item.Maximaleraumtemperatur,
-                        (float)item.Z_AuswahlWohnflaeche,
-                        (float)item.Wohnflaeche);
+                        (double)item.Raumsolltemperatur_Ferien,
+                        (double)item.Raumsolltemperatur_Tag,
+                        (double)item.Raumsolltemperatur_Nachtabsenkung,
+                        (double)item.Interne_Waermegewinne,
+                        (double)Solare_Gewinne[Tag],
+                        (double)SpezWaermeverluste[Tag],
+                        (double)item.Bauweise,
+                        (double)A_Temp[Tag],
+                        (double)item.Maximaleraumtemperatur,
+                        (double)item.Z_AuswahlWohnflaeche,
+                        (double)item.Wohnflaeche);
                 */
                 Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(Tag + 1,
                         WE_Absenkung,
-                        (float)item.Raumsolltemperatur_Wochenende,
+                        (double)item.Raumsolltemperatur_Wochenende,
                         Ferien_Absenkung,
-                        (float)item.Raumsolltemperatur_Ferien,
-                        (float)item.Raumsolltemperatur_Tag,
-                        (float)item.Raumsolltemperatur_Nachtabsenkung,
-                        (float)item.Interne_Waermegewinne,
-                        (float)Solare_Gewinne[Tag],
-                        (float)SpezWaermeverluste[Tag],
-                        (float)item.Bauweise,
-                        (float)A_Temp[Tag],
-                        (float)item.Maximaleraumtemperatur,
-                        (float)item.Z_AuswahlWohnflaeche,
-                        (float)item.Wohnflaeche);
+                        (double)item.Raumsolltemperatur_Ferien,
+                        (double)item.Raumsolltemperatur_Tag,
+                        (double)item.Raumsolltemperatur_Nachtabsenkung,
+                        (double)item.Interne_Waermegewinne,
+                        (double)Solare_Gewinne[Tag],
+                        (double)SpezWaermeverluste[Tag],
+                        (double)item.Bauweise,
+                        (double)A_Temp[Tag],
+                        (double)item.Maximaleraumtemperatur,
+                        (double)item.Z_AuswahlWohnflaeche,
+                        (double)item.Wohnflaeche);
             }
 
             HeizwaermebedarfGeb[GebaeudeNr] = 0;
@@ -805,78 +805,78 @@ namespace WindowsFormsApplication1
             for (int Tag = 0; Tag < 365; Tag++)
             {
                 /*
-                Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (float)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                        (float)item.Fensterflaeche_Ost, Sol_S[Tag], (float)item.Fensterflaeche_Sued,
-                        (float)item.Fensterdurchlassgrad) / 100;
+                Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
+                        (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
+                        (double)item.Fensterdurchlassgrad) / 100;
                 */
-                Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (float)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                    (float)item.Fensterflaeche_Ost, Sol_S[Tag], (float)item.Fensterflaeche_Sued,
-                    (float)item.Fensterdurchlassgrad) / (float)100;
+                Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
+                    (double)item.Fensterflaeche_Ost, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
+                    (double)item.Fensterdurchlassgrad) / (double)100;
                 /*
-                SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((float)item.k_Wert_Außenwand, (float)item.Flaeche_Außenwand,
-                        (float)item.k_Wert_Fenster, (float)item.gesamte_Fensterflaeche, (float)item.k_Wert_Dachflaeche,
-                        (float)item.Dachflaeche, (float)item.k_Wert_Grundflaeche, (float)item.Grundflaeche,
-                        (float)item.k_Wert_Sonstiges, (float)item.Sonstige_Flaechen, (float)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
-                        (float)item.Abmessung_Anschluß_Fenster_Wand, (float)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (float)item.Abmessung_Anschluß_Wand_Dach,
-                        (float)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (float)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (float)item.Wohnflaeche,
-                        (float)item.Raumhoehe, (float)item.Luftwechselrate) / 100;
+                SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
+                        (double)item.k_Wert_Fenster, (double)item.gesamte_Fensterflaeche, (double)item.k_Wert_Dachflaeche,
+                        (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
+                        (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
+                        (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
+                        (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
+                        (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
                 */
-                SpezWaermeverluste[Tag] = WPPlan.Core.BhkwPlan.SpezWaermeverlusteC((float)item.k_Wert_Außenwand, (float)item.Flaeche_Außenwand,
-                     (float)item.k_Wert_Fenster, (float)item.gesamte_Fensterflaeche, (float)item.k_Wert_Dachflaeche,
-                     (float)item.Dachflaeche, (float)item.k_Wert_Grundflaeche, (float)item.Grundflaeche,
-                     (float)item.k_Wert_Sonstiges, (float)item.Sonstige_Flaechen, (float)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
-                     (float)item.Abmessung_Anschluß_Fenster_Wand, (float)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (float)item.Abmessung_Anschluß_Wand_Dach,
-                     (float)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (float)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (float)item.Wohnflaeche,
-                     (float)item.Raumhoehe, (float)item.Luftwechselrate) / 100;
+                SpezWaermeverluste[Tag] = WPPlan.Core.BhkwPlan.SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
+                     (double)item.k_Wert_Fenster, (double)item.gesamte_Fensterflaeche, (double)item.k_Wert_Dachflaeche,
+                     (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
+                     (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
+                     (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
+                     (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
+                     (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
 
                 WE_Absenkung = 0;
-                if ((float)item.Raumsolltemperatur_Wochenende > 5)
+                if ((double)item.Raumsolltemperatur_Wochenende > 5)
                 {
                     if (WE[Tag]) WE_Absenkung = 1; else WE_Absenkung = 0;
                 }
 
                 /*
-                Heizlast[Tag] = (float)com.I_TaeglHeizlastWG(
+                Heizlast[Tag] = (double)com.I_TaeglHeizlastWG(
                     Tag+1,
                     WE_Absenkung,
-                    (float)item.Raumsolltemperatur_Wochenende,
+                    (double)item.Raumsolltemperatur_Wochenende,
                     Ferien_Absenkung,
-                    (float)item.Raumsolltemperatur_Ferien,
-                    (float)item.Raumsolltemperatur_Tag,
-                    (float)item.Raumsolltemperatur_Nachtabsenkung,
-                    (float)item.Interne_Waermegewinne,
-                    (float)Solare_Gewinne[Tag],
-                    (float)SpezWaermeverluste[Tag],
-                    (float)item.Bauweise,
-                    (float)A_Temp[Tag],
-                    (float)item.Maximaleraumtemperatur,
-                    (float)item.Z_AuswahlWohnflaeche,
-                    (float)item.Wohnflaeche);
+                    (double)item.Raumsolltemperatur_Ferien,
+                    (double)item.Raumsolltemperatur_Tag,
+                    (double)item.Raumsolltemperatur_Nachtabsenkung,
+                    (double)item.Interne_Waermegewinne,
+                    (double)Solare_Gewinne[Tag],
+                    (double)SpezWaermeverluste[Tag],
+                    (double)item.Bauweise,
+                    (double)A_Temp[Tag],
+                    (double)item.Maximaleraumtemperatur,
+                    (double)item.Z_AuswahlWohnflaeche,
+                    (double)item.Wohnflaeche);
                 */
                 Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(Tag + 1,
                       WE_Absenkung,
-                      (float)item.Raumsolltemperatur_Wochenende,
+                      (double)item.Raumsolltemperatur_Wochenende,
                       Ferien_Absenkung,
-                      (float)item.Raumsolltemperatur_Ferien,
-                      (float)item.Raumsolltemperatur_Tag,
-                      (float)item.Raumsolltemperatur_Nachtabsenkung,
-                      (float)item.Interne_Waermegewinne,
-                      (float)Solare_Gewinne[Tag],
-                      (float)SpezWaermeverluste[Tag],
-                      (float)item.Bauweise,
-                      (float)A_Temp[Tag],
-                      (float)item.Maximaleraumtemperatur,
-                      (float)item.Z_AuswahlWohnflaeche,
-                      (float)item.Wohnflaeche);
+                      (double)item.Raumsolltemperatur_Ferien,
+                      (double)item.Raumsolltemperatur_Tag,
+                      (double)item.Raumsolltemperatur_Nachtabsenkung,
+                      (double)item.Interne_Waermegewinne,
+                      (double)Solare_Gewinne[Tag],
+                      (double)SpezWaermeverluste[Tag],
+                      (double)item.Bauweise,
+                      (double)A_Temp[Tag],
+                      (double)item.Maximaleraumtemperatur,
+                      (double)item.Z_AuswahlWohnflaeche,
+                      (double)item.Wohnflaeche);
 
                 HeizwaermebedarfGeb[GebaeudeNr] = HeizwaermebedarfGeb[GebaeudeNr] + Heizlast[Tag];
             }
 
         }
 
-        private float Maximaler_Waermebedarf(float[] Waermebedarf)
+        private double Maximaler_Waermebedarf(double[] Waermebedarf)
         {
-            float Waermebedarf_Max;
+            double Waermebedarf_Max;
 
             Waermebedarf_Max = 0;
             for (int i = 0; i < 8760; i++)
@@ -903,7 +903,7 @@ namespace WindowsFormsApplication1
 
             int stunden = Math.Min(ctrldat.rows, Stundentemperatur.Length);
             for (int i = 0; i < stunden; i++)
-                Stundentemperatur[i] = (float)ctrldat.items[i].Außen_Temp;
+                Stundentemperatur[i] = (double)ctrldat.items[i].Außen_Temp;
         }
 
         /// <summary>

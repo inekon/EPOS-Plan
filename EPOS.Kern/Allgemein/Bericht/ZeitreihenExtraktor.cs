@@ -74,7 +74,7 @@ namespace WindowsFormsApplication1
 
                     // V1: BHKW-Überschuss als eigene Reihe — er stand bis P1 in der
                     // PV-Überschussreihe (falsches Etikett).
-                    if (sim.simulation_pv.BhkwUeberschussGesamtKwh > 0.5f)
+                    if (sim.simulation_pv.BhkwUeberschussGesamtKwh > 0.5)
                         z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] =
                             D(sim.simulation_pv.BhkwUeberschuss);
                 }
@@ -186,7 +186,7 @@ namespace WindowsFormsApplication1
 
             for (int k = 0; k < Kanal.ANZAHL; k++)
             {
-                float[] bedarf = SimulationControl.BedarfKanalStuendlich(runner.simulation_Waermebedarf, k);
+                double[] bedarf = SimulationControl.BedarfKanalStuendlich(runner.simulation_Waermebedarf, k);
 
                 double summe = 0;
                 for (int h = 0; h < bedarf.Length; h++) summe += bedarf[h];
@@ -209,7 +209,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Eine Deckungsreihe eintragen — nur, wenn sie überhaupt Werte trägt.</summary>
-        private static void Kanalreihe(ZeitreihenSatz z, string erzeuger, int kanal, float[] werte)
+        private static void Kanalreihe(ZeitreihenSatz z, string erzeuger, int kanal, double[] werte)
         {
             if (werte == null) return;
 
@@ -249,7 +249,7 @@ namespace WindowsFormsApplication1
 
                 for (int i = 0; i < anlagen.Count; i++)
                 {
-                    float[] reihe = sim.simulation_spk.Quelltemperaturen(i);
+                    double[] reihe = sim.simulation_spk.Quelltemperaturen(i);
                     if (reihe == null) continue;
                     ReiheQuelltemperatur(z, anlagen[i], reihe,
                                          sim.simulation_spk.KesselName(i));
@@ -258,7 +258,7 @@ namespace WindowsFormsApplication1
         }
 
         private static void ReiheQuelltemperatur(ZeitreihenSatz z, int idAnlage,
-                                                 float[] werte, string bezeichner)
+                                                 double[] werte, string bezeichner)
         {
             if (idAnlage <= 0 || werte == null) return;
 
@@ -271,15 +271,9 @@ namespace WindowsFormsApplication1
                 " " + MyResource.Resource.SIM_REIHE_QUELLTEMPERATUR;
         }
 
-        // float[] → double[] (Kopie; Aliasing-sicher).
-        private static double[] D(float[] q)
-        {
-            if (q == null) return null;
-            var r = new double[q.Length];
-            for (int i = 0; i < q.Length; i++) r[i] = q[i];
-            return r;
-        }
-
+        // Kopie einer Reihe (Aliasing-sicher: mehrere Felder der Simulation zeigen auf
+        // dasselbe Array). Bis W8-O-5d gab es hier zwei Ueberladungen, float[] und double[];
+        // seit der Kern durchgehend in double rechnet, bleibt eine.
         private static double[] D(double[] q)
         {
             if (q == null) return null;
@@ -290,7 +284,7 @@ namespace WindowsFormsApplication1
 
         // 35040 → 8760 über das Stundenmittel (kW-Mittel = kWh je Stunde);
         // 8760er-Eingaben werden nur kopiert.
-        private static double[] Stunden(SimulationControl sim, float[] viertel)
+        private static double[] Stunden(SimulationControl sim, double[] viertel)
         {
             if (viertel == null) return null;
             if (viertel.Length == ZeitreihenSatz.Stunden) return D(viertel);

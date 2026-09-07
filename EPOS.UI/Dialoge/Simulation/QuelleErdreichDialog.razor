@@ -594,7 +594,7 @@
             k.Daempfungstiefe.ToString("0.00", ci),
             VDI4640Pruefung.BodenartAusBodentyp(boden));
 
-        float[] profil = Profil();
+        double[] profil = Profil();
         ErdreichTemperatur.Kennwerte kw = ErdreichTemperatur.ProfilKennwerte(profil);
         ErdreichTemperatur.Jahresgang jg =
             ErdreichTemperatur.AnalysiereJahresgang(Daten.Aussentemperatur);
@@ -605,7 +605,7 @@
     }
 
     /// <summary>Das Quelltemperaturprofil des gewählten Zweigs.</summary>
-    private float[] Profil()
+    private double[] Profil()
         => _sonde
             ? ErdreichTemperatur.JahresprofilSonde(Daten.Aussentemperatur, _laenge ?? 0)
             : ErdreichTemperatur.JahresprofilKollektor(Daten.Aussentemperatur, _tiefe ?? 0, Bodentyp);
@@ -681,12 +681,12 @@
     {
         if (Jahresgangbild is null) return;
 
-        float[] profil = Profil();
+        double[] profil = Profil();
         var quelle = new double[profil.Length];
         for (int i = 0; i < profil.Length; i++) quelle[i] = profil[i];
 
         double[]? aussen = null;
-        float[]? a = Daten.Aussentemperatur;
+        double[]? a = Daten.Aussentemperatur;
         if (a is not null && a.Length >= ErdreichTemperatur.STUNDEN_JAHR)
         {
             aussen = new double[ErdreichTemperatur.STUNDEN_JAHR];

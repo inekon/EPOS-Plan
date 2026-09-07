@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
     /// <c>WindowsFormsApplication1/Views/Simulation/GanglinienDarstellung.cs</c>, zusammen
     /// mit <c>Stapeltyp</c>/<c>StapelEinstellen</c>. Die beiden letzten arbeiten auf einer
     /// WinForms-<c>Series</c> und bleiben deshalb dort; die beiden hier rechnen nur auf
-    /// <c>float[]</c> und gehören in den Kern — der Renderer (B1/B2) und die
+    /// <c>double[]</c> und gehören in den Kern — der Renderer (B1/B2) und die
     /// Razor-Ergebnisseite brauchen sie ebenso wie die WinForms-Masken.
     ///
     /// Reine Darstellung: hier wird nichts gerechnet, was in ein Ergebnis einginge, und
@@ -25,11 +25,11 @@ namespace WindowsFormsApplication1
         /// Originalvektor, mit dem CSV-Export, Skalierung und das Zurückschalten in die
         /// chronologische Darstellung weiterarbeiten.
         /// </summary>
-        public static float[] Dauerlinie(float[] werte)
+        public static double[] Dauerlinie(double[] werte)
         {
             if (werte == null) return null;
 
-            float[] kopie = (float[])werte.Clone();
+            double[] kopie = (double[])werte.Clone();
             Array.Sort(kopie);
             Array.Reverse(kopie);
             return kopie;
@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
         /// kommt der ORIGINALVEKTOR zurück (keine Kopie) — das Zurückschalten stellt
         /// damit bitgleich denselben Kurvenverlauf her.
         /// </summary>
-        public static float[] Anzeigewerte(float[] werte, bool sortiert)
+        public static double[] Anzeigewerte(double[] werte, bool sortiert)
         {
             return sortiert ? Dauerlinie(werte) : werte;
         }

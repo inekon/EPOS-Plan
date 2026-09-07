@@ -391,7 +391,7 @@ namespace WindowsFormsApplication1
         private static byte[] Bedarfsbild(GebaeudeBedarfErgebnis ergebnis, bool sortiert,
                                           Diagrammbereich bereich)
         {
-            float[] werte = ergebnis.Stundenwerte;
+            double[] werte = ergebnis.Stundenwerte;
 
             var reihen = new List<ChartRenderer.Reihe>
             {

@@ -16,9 +16,11 @@ namespace WPPlan.Core
     /// Treue-Prinzipien:
     ///  * Feldgrößen fest wie im Binär: 8760 (Jahresstunden), 168 (Wochenstunden),
     ///    365 (Tage), 12 (Monate), 24 (Tagesstunden).
-    ///  * Datentyp der Vektoren ist float (Single) – wie in der DLL. Zwischenrechnungen laufen
-    ///    in double, das Ergebnis wird jeweils auf float zurückgeschrieben, um das FPU-Verhalten
-    ///    (80-bit-Zwischenwert, float-Speicherung) möglichst genau nachzubilden.
+    ///  * Datentyp der Vektoren ist seit dem Anwenderentscheid W8‑O‑5d (07.09.2026) durchgehend
+    ///    <c>double</c>. Die DLL führte die Vektoren in <c>float</c> (Single) und rundete nach
+    ///    jeder Rechnung auf die Speicherzelle zurück; dieses FPU-Verhalten wurde bis dahin
+    ///    nachgebildet. Es ist bewusst aufgegeben: der ganze Rechenweg rechnet und speichert in
+    ///    <c>double</c>, Zwischenwert und Speicherzelle haben dieselbe Breite.
     ///  * Arrays werden IN-PLACE überschrieben – exakt wie die native Seite (die Rückgabe-int
     ///    wird vom Aufrufer fast überall ignoriert).
     ///  * Die drei Physik-Funktionen geben int zurück (Borland _ftol = Abschneiden Richtung Null,
@@ -41,19 +43,19 @@ namespace WPPlan.Core
         // DllMain (DLL_PROCESS_ATTACH). TaeglHeizlastWG liest/schreibt diese Variable über die
         // 24-Stunden-Schleife UND über aufeinanderfolgende Tagesaufrufe hinweg. Für bit-nahe
         // Ergebnisse muss dieser Zustand exakt so mitgeführt werden.
-        private static float _prevRoomTemp; // Spiegelt DATA:0x4211F8
+        private static double _prevRoomTemp; // Spiegelt DATA:0x4211F8
 
         /// <summary>Setzt den globalen Zustand zurück (entspricht DllMain/DLL_PROCESS_ATTACH: 0).</summary>
-        public static void ResetState() => _prevRoomTemp = 0f;
+        public static void ResetState() => _prevRoomTemp = 0.0;
 
         // =========================================================================================
         // Gruppe A – Vektor-/Struktur-Primitive (trivial, direkt aus Disassembly)
         // =========================================================================================
 
         /// <summary>vector_init @0x4163CC – nullt die 8760 Elemente. ret 4.</summary>
-        public static int VectorInit(float[] v)
+        public static int VectorInit(double[] v)
         {
-            for (int i = 0; i < Hours; i++) v[i] = 0f;
+            for (int i = 0; i < Hours; i++) v[i] = 0.0;
             return 0;
         }
 
@@ -61,9 +63,9 @@ namespace WPPlan.Core
         /// Watt_To_kW @0x41600F – multipliziert jedes der 8760 Elemente mit 0.001 (W→kW). ret 4.
         /// Konstante 0.001 (f80 @0x416033).
         /// </summary>
-        public static int WattToKw(float[] v)
+        public static int WattToKw(double[] v)
         {
-            for (int i = 0; i < Hours; i++) v[i] = (float)((double)v[i] * 0.001);
+            for (int i = 0; i < Hours; i++) v[i] = v[i] * 0.001;
             return 0;
         }
 
@@ -72,22 +74,22 @@ namespace WPPlan.Core
         /// Native fld [ziel]; fadd [quelle]; fstp [ziel]. Argumentreihenfolge des Wrappers
         /// CSharp_I_vectoren_addieren(Quelle, Ziel): Quelle wird addiert, Ziel modifiziert.
         /// </summary>
-        public static long VectorenAddieren(float[] quelle, float[] ziel)
+        public static long VectorenAddieren(double[] quelle, double[] ziel)
         {
-            for (int i = 0; i < Hours; i++) ziel[i] = (float)((double)ziel[i] + quelle[i]);
+            for (int i = 0; i < Hours; i++) ziel[i] = ziel[i] + quelle[i];
             return 0;
         }
 
         /// <summary>
         /// vector_summe @0x41603F – Summe aller 8760 Elemente, danach ×0.001. ret 8.
-        /// WICHTIG: Die DLL akkumuliert in einer float-Speicherzelle (jede Addition rundet auf
-        /// float). Das wird hier bewusst nachgebildet. Konstante 0.001 (f80 @0x41606F).
+        /// Die DLL akkumulierte in einer float-Speicherzelle (jede Addition rundete auf float);
+        /// seit W8‑O‑5d läuft die Akkumulation in <c>double</c>. Konstante 0.001 (f80 @0x41606F).
         /// </summary>
-        public static int VectorSumme(float[] v, ref float summe)
+        public static int VectorSumme(double[] v, ref double summe)
         {
-            float acc = 0f; // float-Akkumulator wie im Binär
-            for (int i = 0; i < Hours; i++) acc = (float)((double)acc + v[i]);
-            summe = (float)((double)acc * 0.001);
+            double acc = 0.0;
+            for (int i = 0; i < Hours; i++) acc = acc + v[i];
+            summe = acc * 0.001;
             return 0;
         }
 
@@ -95,9 +97,9 @@ namespace WPPlan.Core
         /// normieren @0x415FE3 – v[i] = v[i] / maxWert * 100 (Prozent). ret 8.
         /// Konstante 100.0 (f32 @0x41600B).
         /// </summary>
-        public static int Normieren(float[] v, float maxWert)
+        public static int Normieren(double[] v, double maxWert)
         {
-            for (int i = 0; i < Hours; i++) v[i] = (float)((double)v[i] / maxWert * 100.0);
+            for (int i = 0; i < Hours; i++) v[i] = v[i] / maxWert * 100.0;
             return 0;
         }
 
@@ -105,25 +107,25 @@ namespace WPPlan.Core
         /// netzverlustec @0x4153C0 – addiert den konstanten stündlichen Netzverlust auf alle
         /// 8760 Elemente (Grundlast-Offset). ret 8.
         /// </summary>
-        public static int NetzverlusteC(float[] v, float stundlNetzverluste)
+        public static int NetzverlusteC(double[] v, double stundlNetzverluste)
         {
-            for (int i = 0; i < Hours; i++) v[i] = (float)((double)v[i] + stundlNetzverluste);
+            for (int i = 0; i < Hours; i++) v[i] = v[i] + stundlNetzverluste;
             return 0;
         }
 
         /// <summary>
         /// monats_summe @0x416266 – Summiert Stundenwerte je Monat in sum[12], jeweils ×0.001.
         /// moAnfang/moEnde sind Stundenindizes [0..8759]; die obere Grenze ist INKLUSIVE
-        /// (native: while d &lt;= moEnde). Akkumulation in float. Konstante 0.001 (f80 @0x4162AE).
+        /// (native: while d &lt;= moEnde). Akkumulation in double. Konstante 0.001 (f80 @0x4162AE).
         /// ret 0x10.
         /// </summary>
-        public static int MonatsSumme(float[] value, float[] sum, int[] moAnfang, int[] moEnde)
+        public static int MonatsSumme(double[] value, double[] sum, int[] moAnfang, int[] moEnde)
         {
             for (int m = 0; m < Months; m++)
             {
-                sum[m] = 0f;
+                sum[m] = 0.0;
                 for (int d = moAnfang[m]; d <= moEnde[m]; d++)
-                    sum[m] = (float)(0.001 * value[d] + sum[m]);
+                    sum[m] = 0.001 * value[d] + sum[m];
             }
             return 0;
         }
@@ -151,7 +153,7 @@ namespace WPPlan.Core
         /// Der WP-Plan-Aufrufer führt anschließend Array.Reverse(dst) aus → absteigende
         /// Jahresdauerlinie. ret 8.
         /// </summary>
-        public static int Heapsort(float[] src, float[] dst)
+        public static int Heapsort(double[] src, double[] dst)
         {
             for (int i = 0; i < Hours; i++) dst[i] = src[i];
             Array.Sort(dst); // aufsteigend – identische Ordnung wie das native Heapsort
@@ -174,10 +176,10 @@ namespace WPPlan.Core
         /// Phase 1 (Kachelung): out[0..23] = wo[144..167] (Sonntag zuerst → Kalenderausrichtung
         /// 1. Januar), danach 52× wo[0..167] angehängt (24 + 52·168 = 8760).
         /// Phase 2 (Monatsnormierung): pro Monat sum = Σ out[Monat]; out[h] = out[h]/sum ·
-        /// monatsverbrauch[m] · 1000. sum in float akkumuliert. Konstante 1000.0 (f32 @0x41635E).
+        /// monatsverbrauch[m] · 1000. sum in double akkumuliert. Konstante 1000.0 (f32 @0x41635E).
         /// Monatsgrenzen (moAnfang/moEnde) sind Stundenindizes, obere Grenze inklusive.
         /// </summary>
-        public static int StromWocheToJahr(float[] wo, float[] monatsverbrauch, float[] outJahr,
+        public static int StromWocheToJahr(double[] wo, double[] monatsverbrauch, double[] outJahr,
                                            int[] moAnfang, int[] moEnde)
         {
             return StromWocheToJahr(wo, monatsverbrauch, outJahr, moAnfang, moEnde, 6);
@@ -211,7 +213,7 @@ namespace WPPlan.Core
         /// Stundenverteilung innerhalb des Monats, nicht die Monatsmenge.
         /// </summary>
         /// <param name="wochentagJan1">Wochentag des 1. Januar, Montag = 0 … Sonntag = 6.</param>
-        public static int StromWocheToJahr(float[] wo, float[] monatsverbrauch, float[] outJahr,
+        public static int StromWocheToJahr(double[] wo, double[] monatsverbrauch, double[] outJahr,
                                            int[] moAnfang, int[] moEnde, int wochentagJan1)
         {
             // Phase 1 – Kachelung ab dem Wochentag des 1. Januar. Der Modulo auf 7 faengt
@@ -223,11 +225,11 @@ namespace WPPlan.Core
             // Phase 2 – Monatsnormierung
             for (int m = 0; m < Months; m++)
             {
-                float sum = 0f;
+                double sum = 0.0;
                 for (int h = moAnfang[m]; h <= moEnde[m]; h++)
-                    sum = (float)((double)sum + outJahr[h]);
+                    sum = sum + outJahr[h];
                 for (int h = moAnfang[m]; h <= moEnde[m]; h++)
-                    outJahr[h] = (float)((double)outJahr[h] / sum * monatsverbrauch[m] * 1000.0);
+                    outJahr[h] = outJahr[h] / sum * monatsverbrauch[m] * 1000.0;
             }
             return 0;
         }
@@ -249,7 +251,7 @@ namespace WPPlan.Core
         ///     waermebedarf[d*24+h] = tageslast[d] · tagesgang[(tagTyp[d]-1)*24 + h] + (bisheriger Wert)
         ///     → additiv auf den vorhandenen Inhalt von waermebedarf.
         /// </summary>
-        public static int StdWerte(float[] waermebedarf, int[] tagTyp, float[] tagesgang, float[] tageslast)
+        public static int StdWerte(double[] waermebedarf, int[] tagTyp, double[] tagesgang, double[] tageslast)
         {
             // 1. maximaler Tagtyp
             int maxTyp = 0;
@@ -259,12 +261,12 @@ namespace WPPlan.Core
             // 2. Tagesprofile je Typ auf Summe 1 normieren (in-place)
             for (int t = 1; t <= maxTyp; t++)
             {
-                float sumcol = 0f;
+                double sumcol = 0.0;
                 int baseIdx = (t - 1) * HoursPerDay;
                 for (int h = 0; h < HoursPerDay; h++)
-                    sumcol = (float)((double)sumcol + tagesgang[baseIdx + h]);
+                    sumcol = sumcol + tagesgang[baseIdx + h];
                 for (int h = 0; h < HoursPerDay; h++)
-                    tagesgang[baseIdx + h] = (float)((double)tagesgang[baseIdx + h] / sumcol);
+                    tagesgang[baseIdx + h] = tagesgang[baseIdx + h] / sumcol;
             }
 
             // 3. Verteilung, additiv auf vorhandenen Inhalt
@@ -272,10 +274,10 @@ namespace WPPlan.Core
             {
                 for (int h = 0; h < HoursPerDay; h++)
                 {
-                    float basewert = waermebedarf[d * HoursPerDay + h];
+                    double basewert = waermebedarf[d * HoursPerDay + h];
                     int profIdx = (tagTyp[d] - 1) * HoursPerDay + h;
-                    float val = (float)((double)tageslast[d] * tagesgang[profIdx]);
-                    waermebedarf[d * HoursPerDay + h] = (float)((double)val + basewert);
+                    double val = tageslast[d] * tagesgang[profIdx];
+                    waermebedarf[d * HoursPerDay + h] = val + basewert;
                 }
             }
             return 0;
@@ -294,8 +296,8 @@ namespace WPPlan.Core
         /// Ost-/West-Fensterfläche (Awo) multipliziert; die West-Fensterfläche existiert nicht
         /// als eigenes Argument. Der WP-Plan-Aufrufer teilt das Ergebnis anschließend durch 100.
         /// </summary>
-        public static int SolareGewinneC(float en, float an, float ew, float eo,
-                                         float awo, float es, float uAs, float transmissionsgrad)
+        public static int SolareGewinneC(double en, double an, double ew, double eo,
+                                         double awo, double es, double uAs, double transmissionsgrad)
         {
             double tmp = ((double)eo + ew) * 0.5;
             double s = (double)en * an + tmp * awo + (double)es * uAs;
@@ -319,9 +321,9 @@ namespace WPPlan.Core
         /// Der WP-Plan-Aufrufer teilt das Ergebnis anschließend durch 100.
         /// </summary>
         public static int SpezWaermeverlusteC(
-            float kw, float aw, float kf, float af, float kd, float ad, float kg, float ag,
-            float ks, float uAs, float kwb1, float lwb1, float kwb2, float lwb2, float kwb3,
-            float lwb3, float aussenTemp, float wohnflaeche, float raumhoehe, float lwr)
+            double kw, double aw, double kf, double af, double kd, double ad, double kg, double ag,
+            double ks, double uAs, double kwb1, double lwb1, double kwb2, double lwb2, double kwb3,
+            double lwb3, double aussenTemp, double wohnflaeche, double raumhoehe, double lwr)
         {
             double transmission = 0.83 * kw * aw
                                 + (double)kf * af
@@ -332,7 +334,7 @@ namespace WPPlan.Core
             double bruecken = ((double)kwb1 * lwb1 + (double)kwb2 * lwb2 + (double)kwb3 * lwb3) * 0.83;
 
             double lueftung;
-            if (aussenTemp < 0f)
+            if (aussenTemp < 0.0)
                 lueftung = ((double)aussenTemp * 0.025 + 1.0) * wohnflaeche * raumhoehe * 1.2 * lwr * 0.2777777777777778;
             else
                 lueftung = (double)wohnflaeche * raumhoehe * 1.2 * lwr * 0.2777777777777778;
@@ -358,10 +360,10 @@ namespace WPPlan.Core
         /// Solargewinn wirkt nur in den Stunden 9..14 (mit Faktor 4.0).
         /// </summary>
         public static int TaeglHeizlastWG(
-            int day, int weAbsenkung, float weTemp, int ferienAbsenkung, float ferienTemp,
-            float raumsolltempTag, float raumsolltempNacht, float innereGewinne, float solareGewinne,
-            float spezWaermeverluste, float gebaeudeKapazitaet, float aussenTemp, float maxRaumtemp,
-            float gesamtflaeche, float wohnflaeche)
+            int day, int weAbsenkung, double weTemp, int ferienAbsenkung, double ferienTemp,
+            double raumsolltempTag, double raumsolltempNacht, double innereGewinne, double solareGewinne,
+            double spezWaermeverluste, double gebaeudeKapazitaet, double aussenTemp, double maxRaumtemp,
+            double gesamtflaeche, double wohnflaeche)
         {
             double L = spezWaermeverluste;
             double C = gebaeudeKapazitaet;
@@ -402,7 +404,7 @@ namespace WPPlan.Core
                 if (tPrev > maxRaumtemp) tPrev = maxRaumtemp; // Kappung auf Maximaltemperatur
             }
 
-            _prevRoomTemp = (float)tPrev; // globalen Zustand fortschreiben (0x4211F8)
+            _prevRoomTemp = tPrev; // globalen Zustand fortschreiben (0x4211F8)
 
             return (int)(acc * gesamtflaeche / wohnflaeche); // _ftol
         }

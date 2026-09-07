@@ -146,7 +146,7 @@ namespace WindowsFormsApplication1
         {
             if (simulation == null) return null;
 
-            float[] reihe = simulation.Strombedarf_viertelStundenwerte;
+            double[] reihe = simulation.Strombedarf_viertelStundenwerte;
             int belegt = Math.Min(simulation.Stuetzstellen, reihe == null ? 0 : reihe.Length);
             if (belegt < 48) return null;
 
@@ -395,7 +395,7 @@ namespace WindowsFormsApplication1
         /// nicht umrechnen, und die Komponente ruft keinen Renderer (Risiko
         /// R‑W8‑2).</para>
         /// </summary>
-        private static Monatssicht Sicht(string bezeichnung, float[] monat, string bildtitel,
+        private static Monatssicht Sicht(string bezeichnung, double[] monat, string bildtitel,
                                          SKColor farbe, bool istBrauchwasser = false)
         {
             if (monat == null || monat.Length < 12)
@@ -428,7 +428,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Formatierung der Vorläufer: <c>ToString("F2")</c> in der Anzeigekultur.</summary>
         private static string F2(double wert) => wert.ToString("F2", CultureInfo.CurrentCulture);
 
-        private static double[] AlsDouble(float[] reihe)
+        private static double[] AlsDouble(double[] reihe)
         {
             if (reihe == null) return null;
             var d = new double[reihe.Length];

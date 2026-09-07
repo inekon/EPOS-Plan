@@ -184,7 +184,7 @@ namespace WindowsFormsApplication1
         {
             return (betriebsart, werte) => Task.Run(() =>
             {
-                float[] profil = QuellprofilCtrl.Jahresprofil(betriebsart, werte);
+                double[] profil = QuellprofilCtrl.Jahresprofil(betriebsart, werte);
                 if (profil == null) return null;
 
                 var jahr = new double[profil.Length];

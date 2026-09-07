@@ -116,13 +116,16 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static double[] Alsdouble(float[] werte)
-            => werte == null ? new double[0] : Array.ConvertAll(werte, x => (double)x);
+        /// <summary>Null-sichere Kopie einer Reihe (bis W8-O-5d die Weitung float -&gt; double).</summary>
+        private static double[] Kopie(double[] werte)
+            => werte == null ? new double[0] : (double[])werte.Clone();
 
-        private static ChartRenderer.Reihe Reihe(string name, float[] werte, SKColor farbe,
+        // breite ist eine STRICHSTAERKE in Bildpunkten - SkiaSharp rechnet in float,
+        // deshalb bleibt der Parameter float (W8-O-5d, Grenze 2a).
+        private static ChartRenderer.Reihe Reihe(string name, double[] werte, SKColor farbe,
                                                  ChartRenderer.Stapelart art = ChartRenderer.Stapelart.Keine,
                                                  float breite = 0f)
-            => new ChartRenderer.Reihe(name, Alsdouble(werte), farbe, art, false, breite);
+            => new ChartRenderer.Reihe(name, Kopie(werte), farbe, art, false, breite);
 
         /// <summary>
         /// DER DATENZOOM (Windows-Abnahme 05.09.2026, Befund A-1). Der Baustein
@@ -176,7 +179,7 @@ namespace WindowsFormsApplication1
 
         private byte[] BildBedarfStrom(Bildauftrag a)
         {
-            float[] werte = _strombedarf.Strombedarf_viertelStundenwerte;
+            double[] werte = _strombedarf.Strombedarf_viertelStundenwerte;
             var reihen = new List<ChartRenderer.Reihe>
             {
                 Reihe(MyResource.Resource.CHART_ACHSE_STROMBEDARF, werte, F_BEDARF)
@@ -198,7 +201,7 @@ namespace WindowsFormsApplication1
         /// <para><b>W8‑O‑5c / S1.2 — EINE Konvention (Befund U5).</b> Die fünf Segmente
         /// kamen bis dahin aus DREI Konventionen: Wärmepumpe und Heizstab in kWh, hier
         /// geteilt; Heizkessel und BHKW schon in MWh; der Rest als
-        /// <c>float</c>-Bilanzgröße. Das Bild stimmte, weil jemand jede der fünf Größen
+        /// <c>double</c>-Bilanzgröße. Das Bild stimmte, weil jemand jede der fünf Größen
         /// einzeln nachgesehen hatte. Jetzt kommen alle fünf aus
         /// <see cref="SimulationErgebnisCtrl.UebersichtKennzahlen"/> — in MWh, mit der
         /// Einheit am Namen und in derselben Konvention wie die zwei Ringe.</para>
@@ -312,9 +315,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private byte[] BildWpProduktion(bool sortiert)
         {
-            float[] bedarf = sim.simulation_wp.Waermebedarf_stuendlich;
-            float[] ww = SimulationErgebnisCtrl.WarmwasserAnteil(_waermebedarf, bedarf);
-            float[] heizung = new float[Kanalsatz.STUNDEN_JAHR];
+            double[] bedarf = sim.simulation_wp.Waermebedarf_stuendlich;
+            double[] ww = SimulationErgebnisCtrl.WarmwasserAnteil(_waermebedarf, bedarf);
+            double[] heizung = new double[Kanalsatz.STUNDEN_JAHR];
             for (int n = 0; n < Kanalsatz.STUNDEN_JAHR && n < bedarf.Length; n++)
                 heizung[n] = bedarf[n] - ww[n];
 
@@ -341,12 +344,12 @@ namespace WindowsFormsApplication1
 
         private byte[] BildWpStrom()
         {
-            float[] gesamt = _strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich,
+            double[] gesamt = _strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich,
                                                      sim.simulation_wp.Heizstab_stuendlich);
 
             return ChartRenderer.Jahresverlauf(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE,
-                Alsdouble(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, F_BEDARF);
+                Kopie(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, F_BEDARF);
         }
 
         /// <summary>
@@ -363,10 +366,10 @@ namespace WindowsFormsApplication1
             var produktion = new List<(double, double)>();
             var heizstab = new List<(double, double)>();
 
-            float[] t = sim.simulation_wp.Temperatur;
-            float[] prod = sim.simulation_wp.WP_Waermeproduktion_stuendlich;
-            float[] bed = sim.simulation_wp.Waermebedarf_stuendlich;
-            float[] hs = sim.simulation_wp.Heizstab_stuendlich;
+            double[] t = sim.simulation_wp.Temperatur;
+            double[] prod = sim.simulation_wp.WP_Waermeproduktion_stuendlich;
+            double[] bed = sim.simulation_wp.Waermebedarf_stuendlich;
+            double[] hs = sim.simulation_wp.Heizstab_stuendlich;
 
             for (int n = 0; n < Kanalsatz.STUNDEN_JAHR && n < t.Length; n++)
             {
@@ -397,7 +400,7 @@ namespace WindowsFormsApplication1
         {
             var reihen = new List<ChartRenderer.Reihe>();
             foreach (Temperaturreihe r in Temperaturreihen())
-                reihen.Add(new ChartRenderer.Reihe(r.Legende, Alsdouble(r.Werte), r.Farbe,
+                reihen.Add(new ChartRenderer.Reihe(r.Legende, Kopie(r.Werte), r.Farbe,
                                                    ChartRenderer.Stapelart.Keine, r.Gestrichelt));
 
             return ChartRenderer.Temperaturverlauf(
@@ -459,7 +462,7 @@ namespace WindowsFormsApplication1
                       F_PRODUKTION, ChartRenderer.Stapelart.Saeule, sortiert ? 4f : 0f)
             };
 
-            float[] ladung = Array.ConvertAll(b.Speicherladung_stuendlich, x => (float)x);
+            double[] ladung = Array.ConvertAll(b.Speicherladung_stuendlich, x => (double)x);
 
             var linien = new List<ChartRenderer.Reihe>
             {
@@ -514,7 +517,7 @@ namespace WindowsFormsApplication1
         {
             return ChartRenderer.Jahresverlauf(
                 MyResource.Resource.SP_CHART_TITEL_SOC,
-                Alsdouble(sim.Speicherfuellstand_viertelstuendlich),
+                Kopie(sim.Speicherfuellstand_viertelstuendlich),
                 MyResource.Resource.SP_CHART_ACHSE_SOC, F_SPEICHER);
         }
 
@@ -577,7 +580,7 @@ namespace WindowsFormsApplication1
             int kanal = a.Kanal;
             IReadOnlyList<string> wahl = a.Reihen ?? new List<string>();
 
-            float[] Vektor(string schluessel)
+            double[] Vektor(string schluessel)
             {
                 switch (schluessel)
                 {
@@ -592,7 +595,7 @@ namespace WindowsFormsApplication1
                                          : sim.DeckungKanalStuendlich(ProjektPuffer.TYP_KESSEL, kanal);
                     case "SOLARTHERMIE":
                         return kanal < 0
-                            ? Array.ConvertAll(sim.simulation_solarthermie.Waermeproduktion, x => (float)x)
+                            ? Array.ConvertAll(sim.simulation_solarthermie.Waermeproduktion, x => (double)x)
                             : sim.DeckungKanalStuendlich(ProjektPuffer.TYP_SOLARTHERMIE, kanal);
                     case "BHKW_WAERME":
                         return kanal < 0 ? sim.simulation_bhkw.waermeproduktion
@@ -613,7 +616,7 @@ namespace WindowsFormsApplication1
             foreach (Ganglinienreihe r in WaermegangDaten(ErgebnisPraesenz.Ermitteln(sim)).Erzeuger)
             {
                 if (!r.Vorhanden || !wahl.Contains(r.Schluessel)) continue;
-                float[] werte = Vektor(r.Schluessel);
+                double[] werte = Vektor(r.Schluessel);
                 if (werte == null) continue;
                 stapel.Add(Reihe(r.Text, werte, farben[r.Schluessel],
                                  ChartRenderer.Stapelart.Saeule, a.Sortiert ? 4f : 0f));
@@ -652,7 +655,7 @@ namespace WindowsFormsApplication1
             ChartRenderer.Reihe zweite = null;
             if (wahl.Contains("WAERMEBEDARF"))
             {
-                float[] bedarf = kanal < 0
+                double[] bedarf = kanal < 0
                     ? _waermebedarf.Waermebedarf
                     : SimulationControl.BedarfKanalStuendlich(_waermebedarf, kanal);
                 zweite = Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, bedarf, SKColors.DarkCyan);
@@ -678,10 +681,10 @@ namespace WindowsFormsApplication1
         {
             IReadOnlyList<string> wahl = a.Reihen ?? new List<string>();
 
-            float[] Viertel(float[] stunden) => sim.Stundenwerte_zu_viertelstunden(stunden);
+            double[] Viertel(double[] stunden) => sim.Stundenwerte_zu_viertelstunden(stunden);
 
             var stapel = new List<ChartRenderer.Reihe>();
-            void Stapel(string schluessel, string name, float[] werte, SKColor farbe)
+            void Stapel(string schluessel, string name, double[] werte, SKColor farbe)
             {
                 if (wahl.Contains(schluessel) && werte != null)
                     stapel.Add(Reihe(name, werte, farbe, ChartRenderer.Stapelart.Saeule,
@@ -709,14 +712,14 @@ namespace WindowsFormsApplication1
             ChartRenderer.Reihe kontur = null;
             if (wahl.Contains("GESAMT"))
             {
-                float[] gesamt = _strombedarf.AddVectors(
+                double[] gesamt = _strombedarf.AddVectors(
                     _strombedarf.AddVectors(_strombedarf.Strombedarf_viertelStundenwerte,
                                             Viertel(sim.simulation_wp.WP_Strombedarf_stuendlich)),
                     _strombedarf.AddVectors(Viertel(sim.simulation_wp.Heizstab_stuendlich),
                                             Viertel(sim.simulation_spk.Strombedarf_stuendlich)));
 
                 kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_GESAMT,
-                                                 Alsdouble(gesamt), F_GESAMT,
+                                                 Kopie(gesamt), F_GESAMT,
                                                  ChartRenderer.Stapelart.Keine, false, 2f);
             }
 

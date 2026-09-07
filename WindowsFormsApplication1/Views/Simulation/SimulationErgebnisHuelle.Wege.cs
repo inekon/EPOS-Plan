@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
             // normierte Prozentkurve des Diagramms (Begründung :2714-2721).
             for (int k = 0; k < Kanal.ANZAHL; k++)
             {
-                float[] werte = SimulationControl.BedarfKanalStuendlich(_waermebedarf, k);
+                double[] werte = SimulationControl.BedarfKanalStuendlich(_waermebedarf, k);
                 if (werte == null || Jahressumme(werte) <= 0) continue;
                 spalten.Add(new CsvSpalte(
                     MyResource.Resource.CHART_CSV_WAERMELAST + " " + KANALNAMEN[k], werte));
@@ -149,10 +149,10 @@ namespace WindowsFormsApplication1
 
             var spalten = new List<CsvSpalte>
             {
-                new CsvSpalte(MyResource.Resource.SP_CSV_SOC, RasterAdapter.ZuFloat(erg.SoCKwh)),
-                new CsvSpalte(MyResource.Resource.SP_CSV_LADUNG, RasterAdapter.ZuFloat(erg.LadungAcKwh)),
-                new CsvSpalte(MyResource.Resource.SP_CSV_ENTLADUNG, RasterAdapter.ZuFloat(erg.EntladungAcKwh)),
-                new CsvSpalte(MyResource.Resource.SP_CSV_GELDWERT, RasterAdapter.ZuFloat(erg.GeldwertEur))
+                new CsvSpalte(MyResource.Resource.SP_CSV_SOC, erg.SoCKwh),
+                new CsvSpalte(MyResource.Resource.SP_CSV_LADUNG, erg.LadungAcKwh),
+                new CsvSpalte(MyResource.Resource.SP_CSV_ENTLADUNG, erg.EntladungAcKwh),
+                new CsvSpalte(MyResource.Resource.SP_CSV_GELDWERT, erg.GeldwertEur)
             };
 
             ArbitrageErgebnis arb = sim.Speicherkontext != null
@@ -160,9 +160,9 @@ namespace WindowsFormsApplication1
             if (arb != null)
             {
                 spalten.Add(new CsvSpalte(MyResource.Resource.ARB_CSV_LADUNG_NETZ,
-                                          RasterAdapter.ZuFloat(arb.LadungNetzAcKwh)));
+                                          arb.LadungNetzAcKwh));
                 spalten.Add(new CsvSpalte(MyResource.Resource.ARB_CSV_VERKAUF,
-                                          RasterAdapter.ZuFloat(arb.VerkaufAcKwh)));
+                                          arb.VerkaufAcKwh));
             }
 
             CsvExportClass.Export(
@@ -191,7 +191,7 @@ namespace WindowsFormsApplication1
 
             foreach (string s in erzeuger ?? new List<string>())
             {
-                float[] werte = WaermegangVektor(s, kanal);
+                double[] werte = WaermegangVektor(s, kanal);
                 if (werte == null) continue;
                 spalten.Add(new CsvSpalte(WaermegangName(s) + zusatz, werte));
             }
@@ -219,7 +219,7 @@ namespace WindowsFormsApplication1
                 _waermebedarf.Stundentemperatur, spalten, false);
         }
 
-        private float[] WaermegangVektor(string schluessel, int kanal)
+        private double[] WaermegangVektor(string schluessel, int kanal)
         {
             switch (schluessel)
             {
@@ -234,7 +234,7 @@ namespace WindowsFormsApplication1
                                      : sim.DeckungKanalStuendlich(ProjektPuffer.TYP_KESSEL, kanal);
                 case "SOLARTHERMIE":
                     return kanal < 0
-                        ? Array.ConvertAll(sim.simulation_solarthermie.Waermeproduktion, x => (float)x)
+                        ? Array.ConvertAll(sim.simulation_solarthermie.Waermeproduktion, x => (double)x)
                         : sim.DeckungKanalStuendlich(ProjektPuffer.TYP_SOLARTHERMIE, kanal);
                 case "BHKW_WAERME":
                     return kanal < 0 ? sim.simulation_bhkw.waermeproduktion
@@ -631,11 +631,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Jahressumme einer Stundenganglinie.</summary>
-        private static double Jahressumme(float[] werte)
+        private static double Jahressumme(double[] werte)
         {
             double summe = 0.0;
             if (werte == null) return summe;
-            foreach (float w in werte) summe += w;
+            foreach (double w in werte) summe += w;
             return summe;
         }
 

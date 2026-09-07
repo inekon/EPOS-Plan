@@ -129,7 +129,7 @@ namespace EPOS.Kern.Tests
             double hoechster = 0;
             foreach (System.Data.DataRow r in dt.Rows)
             {
-                float w = System.Convert.ToSingle(r[0]);
+                double w = System.Convert.ToDouble(r[0]);
                 summe += w;
                 if (w > hoechster) hoechster = w;
             }

@@ -178,20 +178,23 @@ namespace SpeicherEngine.Tests
         }
 
         /// <summary>
-        /// Die Expansion bleibt bitgenau, wo der Umweg ueber <c>float</c> rundet -
-        /// die Begruendung fuer die eigene <c>double</c>-Ueberladung.
+        /// Bis W8-O-5d (07.09.2026) lief der Weg ueber den <see cref="RasterAdapter"/>
+        /// durch <c>float</c> und rundete dabei - das war die Begruendung fuer die eigene
+        /// Ueberladung hier. Seit der Kern durchgehend in <c>double</c> rechnet, liefern
+        /// BEIDE Wege denselben, exakten Wert; der Test haelt das fest.
         /// </summary>
         [Fact]
-        public void Doubleweg_Ist_Genauer_Als_Der_Floatweg()
+        public void Beide_Expansionswege_Liefern_Denselben_Exakten_Wert()
         {
             double[] stunden = new double[RasterAdapter.StundenJahr];
             for (int i = 0; i < stunden.Length; i++) stunden[i] = 0.001;   // in float nicht exakt
 
             double[] direkt = PreisModell.ZuViertelstunden(stunden);
-            double[] ueberFloat = RasterAdapter.ZuViertelstundenDouble(RasterAdapter.ZuFloat(stunden));
+            double[] ueberAdapter = RasterAdapter.ZuViertelstundenDouble(stunden);
 
             Assert.Equal(0.001, direkt[0]);
-            Assert.NotEqual(0.001, ueberFloat[0]);
+            Assert.Equal(0.001, ueberAdapter[0]);
+            Assert.Equal(direkt, ueberAdapter);
         }
 
         [Fact]

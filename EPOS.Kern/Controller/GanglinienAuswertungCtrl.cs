@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
         /// Die <b>8 760 Stundenwerte in kW</b>. Eine Viertelstundenreihe ist hier
         /// bereits verdichtet (siehe <see cref="GanglinienAuswertungCtrl"/>).
         /// </summary>
-        internal float[] Stundenwerte = new float[0];
+        internal double[] Stundenwerte = new double[0];
 
         /// <summary>Die Jahresarbeit in <b>MWh</b> — Σ der Stundenleistungen ÷ 1 000.</summary>
         internal double JahresarbeitMwh;
@@ -114,10 +114,10 @@ namespace WindowsFormsApplication1
     /// Der Preis ist ein <see cref="SimulationControl"/>-Objekt je Verdichtung; es
     /// entsteht nur bei einer Viertelstundenreihe und wird sofort wieder frei.</para>
     ///
-    /// <para><b>Warum die Werte als <c>float</c> gelesen werden.</b> Genau so liest
+    /// <para><b>Warum die Werte als <c>double</c> gelesen werden.</b> Genau so liest
     /// sie der Lauf (<c>SimulationStrombedarf</c>: <c>Stromganglinie[index] =
-    /// (float)wert</c>, <c>SimulationWaermebedarf</c>: <c>ganglinie_roh[index] =
-    /// (float)wert</c>). Wer sie hier in <c>double</c> führte, zeigte im Dialog eine
+    /// (double)wert</c>, <c>SimulationWaermebedarf</c>: <c>ganglinie_roh[index] =
+    /// (double)wert</c>). Wer sie hier in <c>double</c> führte, zeigte im Dialog eine
     /// Zahl, die der Lauf so nie sieht.</para>
     ///
     /// <para><b>Das Raster ergibt sich aus der WERTZAHL</b>, nicht aus dem Feld
@@ -202,14 +202,14 @@ namespace WindowsFormsApplication1
 
             if (dt == null || dt.Rows.Count == 0) return ergebnis;
 
-            float[] roh = new float[dt.Rows.Count];
+            double[] roh = new double[dt.Rows.Count];
             for (int i = 0; i < roh.Length; i++)
             {
                 object v = dt.Rows[i][0];
-                roh[i] = v != DBNull.Value ? Convert.ToSingle(v) : 0f;
+                roh[i] = v != DBNull.Value ? Convert.ToDouble(v) : 0.0;
             }
 
-            float[] stunden = AufStunden(roh);
+            double[] stunden = AufStunden(roh);
             if (stunden == null) return ergebnis;
 
             ergebnis.Stundenwerte = stunden;
@@ -224,7 +224,7 @@ namespace WindowsFormsApplication1
         /// über <see cref="SimulationControl.Viertelstunden_zu_Stundenwerte_Mittelwert"/>
         /// verdichtet, alles andere ergibt <c>null</c>.
         /// </summary>
-        private static float[] AufStunden(float[] roh)
+        private static double[] AufStunden(double[] roh)
         {
             if (roh.Length == STUNDEN_JAHR) return roh;
             if (roh.Length != VIERTELSTUNDEN_JAHR) return null;
@@ -234,10 +234,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Σ der Stundenleistungen [kW] × 1 h ÷ 1 000 = MWh. Summiert wird in
-        /// <c>double</c>: 8 760 Additionen in <c>float</c> verlieren am Ende Stellen,
+        /// <c>double</c>: 8 760 Additionen in <c>double</c> verlieren am Ende Stellen,
         /// die der Anwender abliest.
         /// </summary>
-        private static double Jahresarbeit(float[] stunden)
+        private static double Jahresarbeit(double[] stunden)
         {
             double summe = 0;
             for (int i = 0; i < stunden.Length; i++) summe += stunden[i];
@@ -245,9 +245,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der Höchstwert der Reihe — wie <c>Maximaler_Strombedarf</c>.</summary>
-        private static double Hoechstwert(float[] werte)
+        private static double Hoechstwert(double[] werte)
         {
-            float max = 0;
+            double max = 0;
             for (int i = 0; i < werte.Length; i++) if (max < werte[i]) max = werte[i];
             return max;
         }

@@ -31,23 +31,23 @@ namespace WindowsFormsApplication1
 
         public int m_ID_Projekt = 0;
 
-        public float[] waermebedarf = new float[8760];
-        public float[] strombedarf = new float[8760];
-        public float[] stromproduktion = new float[8760];
-        public float[] waermerestbedarf = new float[8760];
-        public float[] waermeproduktion = new float[8760];
+        public double[] waermebedarf = new double[8760];
+        public double[] strombedarf = new double[8760];
+        public double[] stromproduktion = new double[8760];
+        public double[] waermerestbedarf = new double[8760];
+        public double[] waermeproduktion = new double[8760];
 
-        public float[] s_waerme_MWh = new float[10]; // Summenzähler für Wärme (10 Module laut VBA-Code)
-        public float[] s_strom_MWh = new float[10];  // Summenzähler für Strom (10 Module laut VBA-Code)
-        public float[] s_waerme_ueberschuss = new float[10]; // Summenzähler für Wärmeüberschuss (10 Module laut VBA-Code)
+        public double[] s_waerme_MWh = new double[10]; // Summenzähler für Wärme (10 Module laut VBA-Code)
+        public double[] s_strom_MWh = new double[10];  // Summenzähler für Strom (10 Module laut VBA-Code)
+        public double[] s_waerme_ueberschuss = new double[10]; // Summenzähler für Wärmeüberschuss (10 Module laut VBA-Code)
 
         public int modeBHKW;
 
-        float[] bhkwWaermeLeistung = new float[10];
-        float[] bhkwStromLeistung = new float[10];
-        public float[] bhkwGrenzL = new float[10];
-        public float bhkwGrenzleistungAllgemein = 0;
-        public float WaermeueberschussKwh = 0f;
+        double[] bhkwWaermeLeistung = new double[10];
+        double[] bhkwStromLeistung = new double[10];
+        public double[] bhkwGrenzL = new double[10];
+        public double bhkwGrenzleistungAllgemein = 0;
+        public double WaermeueberschussKwh = 0.0;
 
         // PAKET BHKW-REGULÄR: Hier standen die drei Solar-Felder (solarVorhanden,
         // solarSpeicher, solarWaerme) des einkanaligen Altpfads. Sie waren eine
@@ -67,42 +67,42 @@ namespace WindowsFormsApplication1
         /// <c>SimulationControl</c> setzt das Feld beim Vorbereiten ausdrücklich auf 0,
         /// damit ein versehentlicher Rückgriff auf einen Vorlaufwert sofort auffiele.
         /// </summary>
-        public float kapazitaetPendelspeicher = 0.0f; // Pendelspeicher = 0
+        public double kapazitaetPendelspeicher = 0.0; // Pendelspeicher = 0
 
         int anzahlBhkw = 0;
 
         // --- Neue Ergebnis- und Verbrauchsvariablen aus VBA ---
-        public float BruttoBHKWErzeugung = 0f;
-        public float Waermeproduktion_BHKW_MWh = 0f;
-        public float Stromproduktion_BHKW_MWh = 0f;
-        public float Gasspitze_BHKW = 0f;
+        public double BruttoBHKWErzeugung = 0.0;
+        public double Waermeproduktion_BHKW_MWh = 0.0;
+        public double Stromproduktion_BHKW_MWh = 0.0;
+        public double Gasspitze_BHKW = 0.0;
 
-        public float GasverbrauchBhkwMwh = 0f;
-        public float OelverbrauchBhkwMwh = 0f;
-        public float RapsoelverbrauchBhkwMwh = 0f;
-        public float HolzmengeBhkwMwh = 0f;
-        public float SonstigemengeBhkwMwh = 0f;
+        public double GasverbrauchBhkwMwh = 0.0;
+        public double OelverbrauchBhkwMwh = 0.0;
+        public double RapsoelverbrauchBhkwMwh = 0.0;
+        public double HolzmengeBhkwMwh = 0.0;
+        public double SonstigemengeBhkwMwh = 0.0;
         public double KoksBhkwMwh = 0;
         public double KohleBhkwMwh = 0;
         public double PelletsBhkwMwh = 0;
         public double TierischeFetteBhkwMwh = 0;
-        public float StromverbrauchBhkwMwh = 0f; // Nie befüllt, nirgends gelesen — Brennstoff 13 (Strom) läuft in Auswertung() in den Sammelposten SonstigemengeBhkwMwh
+        public double StromverbrauchBhkwMwh = 0.0; // Nie befüllt, nirgends gelesen — Brennstoff 13 (Strom) läuft in Auswertung() in den Sammelposten SonstigemengeBhkwMwh
 
-        //public float Biogasverbrauch_BHKW = 0f;
-        //public float Fluessiggasverbrauch_BHKW = 0f;
-        //public float BioErdgasverbrauch = 0f;
-        //public float BioErdgasleistung = 0f;
+        //public double Biogasverbrauch_BHKW = 0.0;
+        //public double Fluessiggasverbrauch_BHKW = 0.0;
+        //public double BioErdgasverbrauch = 0.0;
+        //public double BioErdgasleistung = 0.0;
 
 
         // Emissionswerte der BHKW-Stufe. EINHEITEN seit W14a-E-8-B1: CO2 in t/a,
         // SO2/NOx/CO/Staub in kg/a - dieselbe Konvention wie Kesselstufe und
         // EmissionsBilanzRechner. Vorher stand CO2 hier in kg/a, weil die Faktoren aus
         // den Geraetespalten in g/MWh kamen statt aus dem Katalog in g/kWh.
-        public float Em_CO2_BHKW = 0f;
-        public float Em_SO2_BHKW = 0f;
-        public float Em_NOX_BHKW = 0f;
-        public float Em_CO_BHKW = 0f;
-        public float Em_Staub_BHKW = 0f;
+        public double Em_CO2_BHKW = 0.0;
+        public double Em_SO2_BHKW = 0.0;
+        public double Em_NOX_BHKW = 0.0;
+        public double Em_CO_BHKW = 0.0;
+        public double Em_Staub_BHKW = 0.0;
 
         // Laufzeiten
         //
@@ -119,9 +119,9 @@ namespace WindowsFormsApplication1
         // nicht umbenannt (Tab_ErgebnisBHKW.Betriebsstunden_Gesamt haengt daran); die
         // ANZEIGE benennt die Groesse seit E2 richtig, und die neuen Felder darunter
         // tragen die Groesse, an der der KWK-Zuschlag haengt.
-        public float Betriebsstunden = 0f;
-        public float dLaufzeiten = 0f;
-        public float[] Laufzeiten = new float[10];
+        public double Betriebsstunden = 0.0;
+        public double dLaufzeiten = 0.0;
+        public double[] Laufzeiten = new double[10];
 
         /// <summary>
         /// ETAPPE E2 — ELEKTRISCHE Vollbenutzungsstunden je Modul [h/a]:
@@ -135,7 +135,7 @@ namespace WindowsFormsApplication1
         /// <para>0, solange <see cref="bhkwStromLeistung"/> des Moduls 0 ist — dann ist
         /// P_el im Katalog nicht gepflegt und eine Vbh-Zahl waere frei erfunden.</para>
         /// </summary>
-        public float[] VbhElektrisch = new float[10];
+        public double[] VbhElektrisch = new double[10];
 
         /// <summary>
         /// ETAPPE E2 — LEISTUNGSGEWICHTETE elektrische Vollbenutzungsstunden der ganzen
@@ -151,21 +151,21 @@ namespace WindowsFormsApplication1
         ///
         /// <para>0, wenn keine elektrische Leistung gepflegt ist.</para>
         /// </summary>
-        public float VbhElektrischGesamt = 0f;
+        public double VbhElektrischGesamt = 0.0;
 
         // Arrays für die Modulkonfigurationen zur späteren Berechnung
         private int[] bhkwBrennstoffart = new int[10];
-        private float[] bhkwWirkungsgrad = new float[10];
-        private float[] bhkwSKZ = new float[10];
+        private double[] bhkwWirkungsgrad = new double[10];
+        private double[] bhkwSKZ = new double[10];
         // Emissionsfaktoren je Modul aus DER EINEN Quelle (Emissionsquelle,
         // W14a-E-8-B1): CO2 in g/kWh - im Modus CO2E das Aequivalent (F7) -,
         // SO2/NOx/CO/Staub in mg/kWh. CO bleibt 0, solange der Artenkatalog keine
         // CO-Art fuehrt (Tab_Brennstoff_Stamm hat keine CO-Spalte).
-        private float[] bhkwCO2Factor = new float[10];
-        private float[] bhkwSO2Factor = new float[10];
-        private float[] bhkwNOXFactor = new float[10];
-        private float[] bhkwCOFactor = new float[10];
-        private float[] bhkwStaubFactor = new float[10];
+        private double[] bhkwCO2Factor = new double[10];
+        private double[] bhkwSO2Factor = new double[10];
+        private double[] bhkwNOXFactor = new double[10];
+        private double[] bhkwCOFactor = new double[10];
+        private double[] bhkwStaubFactor = new double[10];
 
         public SimulationBHKW()
         {
@@ -176,9 +176,9 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < anzahlBhkw; i++)
             {
                 ctrl.ReadSingle(bhkw_list[i]);
-                bhkwWaermeLeistung[i] = (float)ctrl.m_Ptherm;
-                bhkwStromLeistung[i] = (float)ctrl.m_Pel;
-                //hkwGrenzL[i] = (float)ctrl.m_Grenzleistung;
+                bhkwWaermeLeistung[i] = (double)ctrl.m_Ptherm;
+                bhkwStromLeistung[i] = (double)ctrl.m_Pel;
+                //hkwGrenzL[i] = (double)ctrl.m_Grenzleistung;
             }
         }
 
@@ -221,26 +221,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Kennzahlen_Zuruecksetzen()
         {
-            BruttoBHKWErzeugung = 0f;
-            Waermeproduktion_BHKW_MWh = 0f;
-            Stromproduktion_BHKW_MWh = 0f;
-            GasverbrauchBhkwMwh = 0f;
-            OelverbrauchBhkwMwh = 0f;
-            Gasspitze_BHKW = 0f;
-            //Biogasverbrauch_BHKW = 0f;
-            RapsoelverbrauchBhkwMwh = 0f;
-            HolzmengeBhkwMwh = 0f;
-            SonstigemengeBhkwMwh = 0f;
-            //Fluessiggasverbrauch_BHKW = 0f;
-            //BioErdgasverbrauch = 0f;
-            //BioErdgasleistung = 0f;
-            StromverbrauchBhkwMwh = 0f;
-            Em_CO2_BHKW = 0f;
-            Em_SO2_BHKW = 0f;
-            Em_NOX_BHKW = 0f;
-            Em_CO_BHKW = 0f;
-            Em_Staub_BHKW = 0f;
-            dLaufzeiten = 0f;
+            BruttoBHKWErzeugung = 0.0;
+            Waermeproduktion_BHKW_MWh = 0.0;
+            Stromproduktion_BHKW_MWh = 0.0;
+            GasverbrauchBhkwMwh = 0.0;
+            OelverbrauchBhkwMwh = 0.0;
+            Gasspitze_BHKW = 0.0;
+            //Biogasverbrauch_BHKW = 0.0;
+            RapsoelverbrauchBhkwMwh = 0.0;
+            HolzmengeBhkwMwh = 0.0;
+            SonstigemengeBhkwMwh = 0.0;
+            //Fluessiggasverbrauch_BHKW = 0.0;
+            //BioErdgasverbrauch = 0.0;
+            //BioErdgasleistung = 0.0;
+            StromverbrauchBhkwMwh = 0.0;
+            Em_CO2_BHKW = 0.0;
+            Em_SO2_BHKW = 0.0;
+            Em_NOX_BHKW = 0.0;
+            Em_CO_BHKW = 0.0;
+            Em_Staub_BHKW = 0.0;
+            dLaufzeiten = 0.0;
 
             // NACHARBEIT PAKET 6, BEFUND N9: Zustandsrest des Wärmeüberschusses.
             // Die Größe wurde bisher NIRGENDS auf den Laufanfang gesetzt - nur die
@@ -249,7 +249,7 @@ namespace WindowsFormsApplication1
             // Form_Simulation_Detail der Normalfall - meldete deshalb ein Folgelauf den
             // Überschuss seines Vorlaufs.
             //
-            // NACHWEISLICH BYTE-NEUTRAL: Das Feld ist mit 0f initialisiert, und diese
+            // NACHWEISLICH BYTE-NEUTRAL: Das Feld ist mit 0.0 initialisiert, und diese
             // Methode ist in beiden Rechenwegen der erste Schritt des Laufs. Beim ERSTEN
             // Lauf einer Instanz - dem Fall jedes Referenzlaufs (ein Prozess je Projekt) -
             // setzt die Zeile 0 auf 0.
@@ -258,7 +258,7 @@ namespace WindowsFormsApplication1
             // Wert im Altpfad still auf 0 gezwungen und damit den Überschuss der
             // stromgeführten Fahrweise aus Tab_ErgebnisBHKW entfernt - eine echte
             // Altpfad-Regression.
-            WaermeueberschussKwh = 0f;
+            WaermeueberschussKwh = 0.0;
         }
 
         /// <summary>
@@ -282,7 +282,7 @@ namespace WindowsFormsApplication1
             // ANWENDERENTSCHEID W6-E-7 (07.09.2026): HIER STAND EIN STILLER FALLBACK,
             // und er ist ersatzlos gefallen.
             //
-            //     if (bhkwGrenzleistungAllgemein == 0) bhkwGrenzleistungAllgemein = 0.3f;
+            //     if (bhkwGrenzleistungAllgemein == 0) bhkwGrenzleistungAllgemein = 0.3;
             //
             // Er kam aus PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026,
             // Punkt 2: "Fallback 50 % -> 30 %") und griff, sobald das Projekt keine
@@ -323,19 +323,19 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < anzahl; i++)
             {
                 ctrl.ReadSingle(bhkw_list[i]);
-                bhkwWaermeLeistung[i] = (float)ctrl.m_Ptherm;
-                bhkwStromLeistung[i] = (float)ctrl.m_Pel;
+                bhkwWaermeLeistung[i] = (double)ctrl.m_Ptherm;
+                bhkwStromLeistung[i] = (double)ctrl.m_Pel;
 
                 // Neue Werte für die Verbrauchs- und Emissionsberechnung mappen:
                 bhkwBrennstoffart[i] = ctrl.m_Brennstoff; // oder passendes Feld aus deiner BHKWCtrl
-                bhkwWirkungsgrad[i] = (float)ctrl.m_Wirkungsgrad; // Gesamtwirkungsgrad (Elektrisch + Thermisch)
+                bhkwWirkungsgrad[i] = (double)ctrl.m_Wirkungsgrad; // Gesamtwirkungsgrad (Elektrisch + Thermisch)
                 bhkwSKZ[i] = bhkwStromLeistung[i] / bhkwWaermeLeistung[i];
 
-                if ((float)ctrl.m_Grenzleistung == 0)
+                if ((double)ctrl.m_Grenzleistung == 0)
                     bhkwGrenzL[i] = bhkwGrenzleistungAllgemein; // Grenzleistung als Faktor (z.B. 0.8 für 80% Modulation)
                 else
                     // PAKET BHKW-REGULÄR — EINHEITEN-FIX. Hier stand der Katalogwert OHNE
-                    // Division: bhkwGrenzL[i] = (float)ctrl.m_Grenzleistung.
+                    // Division: bhkwGrenzL[i] = (double)ctrl.m_Grenzleistung.
                     //
                     // DER BRUCH. bhkwGrenzL ist ein FAKTOR (0,3 = 30 % Teillast) - so
                     // wird das Feld in allen drei Motorläufen benutzt
@@ -353,16 +353,16 @@ namespace WindowsFormsApplication1
                     // „bhkwWaermeLeistung * bhkwGrenzL <= Wärmeraum" war damit praktisch
                     // nie erfüllt - der Teillastzweig fiel aus, das Modul lief nur noch
                     // Volllast oder gar nicht.
-                    bhkwGrenzL[i] = (float)(ctrl.m_Grenzleistung / 100.0); // Prozent -> Faktor (50 -> 0,5)
+                    bhkwGrenzL[i] = (double)(ctrl.m_Grenzleistung / 100.0); // Prozent -> Faktor (50 -> 0,5)
 
                 // ANWENDERENTSCHEID W14a-E-8-B1 (07.09.2026): HIER STANDEN DIE FUENF
                 // GERAETESPALTEN, und sie sind als Rechengroesse gefallen.
                 //
-                //     bhkwCO2Factor[i]   = (float)ctrl.m_CO2;     // Tab_BHKW.CO2
-                //     bhkwSO2Factor[i]   = (float)ctrl.m_SO2;
-                //     bhkwNOXFactor[i]   = (float)ctrl.m_NOx;
-                //     bhkwCOFactor[i]    = (float)ctrl.m_CO;
-                //     bhkwStaubFactor[i] = (float)ctrl.m_Staub;
+                //     bhkwCO2Factor[i]   = (double)ctrl.m_CO2;     // Tab_BHKW.CO2
+                //     bhkwSO2Factor[i]   = (double)ctrl.m_SO2;
+                //     bhkwNOXFactor[i]   = (double)ctrl.m_NOx;
+                //     bhkwCOFactor[i]    = (double)ctrl.m_CO;
+                //     bhkwStaubFactor[i] = (double)ctrl.m_Staub;
                 //
                 // Der Anwender: "Da CO2, SO2, NOx, CO und Staub in g/MWh kein
                 // CO2-Aequivalent haben, sind diese Zahlen informativ. […] Es soll der
@@ -386,11 +386,11 @@ namespace WindowsFormsApplication1
                 Emissionsfaktoren ef = Emissionsquelle.Fuer(
                     m_ID_Projekt, CarrierZuModul(i), ctrl.m_Brennstoff, modus);
 
-                bhkwCO2Factor[i] = (float)ef.Co2GKwh;
-                bhkwSO2Factor[i] = (float)ef.So2MgKwh;
-                bhkwNOXFactor[i] = (float)ef.NoxMgKwh;
-                bhkwCOFactor[i] = (float)ef.CoMgKwh;
-                bhkwStaubFactor[i] = (float)ef.StaubMgKwh;
+                bhkwCO2Factor[i] = (double)ef.Co2GKwh;
+                bhkwSO2Factor[i] = (double)ef.So2MgKwh;
+                bhkwNOXFactor[i] = (double)ef.NoxMgKwh;
+                bhkwCOFactor[i] = (double)ef.CoMgKwh;
+                bhkwStaubFactor[i] = (double)ef.StaubMgKwh;
 
                 if (ef.CarrierId <= 0)
                     SimulationProtokoll.Aktuell.HinweisEinmal(
@@ -447,13 +447,13 @@ namespace WindowsFormsApplication1
                 // Laufzeitberechnung des Moduls
                 if (bhkwWaermeLeistung[zaehler] > 0)
                 {
-                    // s_waerme ist am Ende bereits in MWh umgerechnet worden (laut deinem Code-Ende / 1000f),
+                    // s_waerme ist am Ende bereits in MWh umgerechnet worden (laut deinem Code-Ende / 1000.0),
                     // für die Stundenlaufzeit multiplizieren wir wieder mit 1000, um auf kWh/kW zu kommen.
-                    Laufzeiten[zaehler] = (s_waerme_MWh[zaehler] / bhkwWaermeLeistung[zaehler]) * 1000f;
+                    Laufzeiten[zaehler] = (s_waerme_MWh[zaehler] / bhkwWaermeLeistung[zaehler]) * 1000.0;
                 }
                 else
                 {
-                    Laufzeiten[zaehler] = 0f;
+                    Laufzeiten[zaehler] = 0.0;
                 }
                 dLaufzeiten += Laufzeiten[zaehler];
 
@@ -464,15 +464,15 @@ namespace WindowsFormsApplication1
                 // ausschliesslich in die Ergebniszeilen geschrieben.
                 if (bhkwStromLeistung[zaehler] > 0)
                     VbhElektrisch[zaehler] =
-                        (s_strom_MWh[zaehler] / bhkwStromLeistung[zaehler]) * 1000f;
+                        (s_strom_MWh[zaehler] / bhkwStromLeistung[zaehler]) * 1000.0;
                 else
-                    VbhElektrisch[zaehler] = 0f;   // P_el nicht gepflegt -> keine Zahl erfinden
+                    VbhElektrisch[zaehler] = 0.0;   // P_el nicht gepflegt -> keine Zahl erfinden
 
                 // Verbrauch & Emissionen
                 if (bhkwWirkungsgrad[zaehler] > 0)
                 {
                     // Verbrauch berechnen (Wärme + Strom) / Wirkungsgrad
-                    float ModulVerbrauch = (s_waerme_MWh[zaehler] + s_strom_MWh[zaehler]) / bhkwWirkungsgrad[zaehler];
+                    double ModulVerbrauch = (s_waerme_MWh[zaehler] + s_strom_MWh[zaehler]) / bhkwWirkungsgrad[zaehler];
 
                     BruttoBHKWErzeugung += ModulVerbrauch;
 
@@ -480,11 +480,11 @@ namespace WindowsFormsApplication1
                     // SO2/NOx/CO/Staub [MWh x mg/kWh] -> kg/a (W14a-E-8-B1; derselbe
                     // Teiler 1 000 wie bisher, weil die Katalogeinheiten sich um genau
                     // diesen Faktor unterscheiden).
-                    Em_CO2_BHKW += ModulVerbrauch * bhkwCO2Factor[zaehler] / 1000f;
-                    Em_SO2_BHKW += ModulVerbrauch * bhkwSO2Factor[zaehler] / 1000f;
-                    Em_NOX_BHKW += ModulVerbrauch * bhkwNOXFactor[zaehler] / 1000f;
-                    Em_CO_BHKW += ModulVerbrauch * bhkwCOFactor[zaehler] / 1000f;
-                    Em_Staub_BHKW += ModulVerbrauch * bhkwStaubFactor[zaehler] / 1000f;
+                    Em_CO2_BHKW += ModulVerbrauch * bhkwCO2Factor[zaehler] / 1000.0;
+                    Em_SO2_BHKW += ModulVerbrauch * bhkwSO2Factor[zaehler] / 1000.0;
+                    Em_NOX_BHKW += ModulVerbrauch * bhkwNOXFactor[zaehler] / 1000.0;
+                    Em_CO_BHKW += ModulVerbrauch * bhkwCOFactor[zaehler] / 1000.0;
+                    Em_Staub_BHKW += ModulVerbrauch * bhkwStaubFactor[zaehler] / 1000.0;
 
                     // Brennstoffarten-Verzweigung
 
@@ -503,7 +503,7 @@ namespace WindowsFormsApplication1
                     if ((art >= 1 && art <= 5) || art == 14)
                     {
                         GasverbrauchBhkwMwh += ModulVerbrauch;
-                        Gasspitze_BHKW += bhkwWaermeLeistung[zaehler] * (1f + bhkwSKZ[zaehler]) / bhkwWirkungsgrad[zaehler];
+                        Gasspitze_BHKW += bhkwWaermeLeistung[zaehler] * (1.0 + bhkwSKZ[zaehler]) / bhkwWirkungsgrad[zaehler];
                     }
                     else if ((art >= 6 && art <= 9) || (art >= 18 && art <= 22)) OelverbrauchBhkwMwh += ModulVerbrauch;
                     else if (art == 10) KoksBhkwMwh += ModulVerbrauch;
@@ -530,15 +530,15 @@ namespace WindowsFormsApplication1
             // Nennleistungen; Module ohne gepflegtes P_el bleiben in BEIDEN Summen
             // aussen vor, sonst zoege ihre Stromproduktion (die es ohne P_el ohnehin
             // nicht gibt) den Wert nach oben.
-            float summeStromMWh = 0f;
-            float summePelKW = 0f;
+            double summeStromMWh = 0.0;
+            double summePelKW = 0.0;
             for (int i = 0; i < anzahl; i++)
             {
                 if (bhkwStromLeistung[i] <= 0) continue;
                 summeStromMWh += s_strom_MWh[i];
                 summePelKW += bhkwStromLeistung[i];
             }
-            VbhElektrischGesamt = (summePelKW > 0) ? (summeStromMWh / summePelKW) * 1000f : 0f;
+            VbhElektrischGesamt = (summePelKW > 0) ? (summeStromMWh / summePelKW) * 1000.0 : 0.0;
         }
 
 
@@ -576,7 +576,7 @@ namespace WindowsFormsApplication1
         /// Mit den Zweigen entfielen ihre Parameter: <c>stdTag</c> und <c>strombedarf</c>
         /// (nur im Sommerbetrieb gelesen), <c>bhkwGrenzleistung</c> (nur in der
         /// 10-%-Notschaltung) und <c>solarSpeicher</c> — letzterer trug seit dem Rückbau
-        /// des Altpfads ohnehin konstant <c>0f</c>, sodass die Terme
+        /// des Altpfads ohnehin konstant <c>0.0</c>, sodass die Terme
         /// <c>kapazitaetPendelspeicher - solarSpeicher - speicher</c> bitgleich zu
         /// <c>kapazitaetPendelspeicher - speicher</c> sind.</para>
         ///
@@ -590,11 +590,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Motorlauf_Waermegefuehrt(
             int stunde, int anzahl,
-            float[] stromproduktion, float[] waermeproduktion,
-            float[] s_waerme, float[] s_strom,
-            float[] bhkwWaermeLeistung, float[] bhkwStromLeistung, float[] bhkwGrenzL,
-            float kapazitaetPendelspeicher,
-            ref float speicher, ref float restWaerme)
+            double[] stromproduktion, double[] waermeproduktion,
+            double[] s_waerme, double[] s_strom,
+            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double[] bhkwGrenzL,
+            double kapazitaetPendelspeicher,
+            ref double speicher, ref double restWaerme)
         {
             for (int motor = 0; motor < anzahl; motor++)
             {
@@ -602,7 +602,7 @@ namespace WindowsFormsApplication1
                 // weil der vorige den Füllstand verändert haben kann. (Die frühere
                 // Fassung hatte dieselbe Zuweisung zusätzlich vor der Schleife; sie wurde
                 // dort nie gelesen und ist mit der Weichenhülle entfallen.)
-                float restSpeicher = kapazitaetPendelspeicher - speicher;
+                double restSpeicher = kapazitaetPendelspeicher - speicher;
 
                 if (bhkwWaermeLeistung[motor] < restWaerme + restSpeicher)
                 {
@@ -615,7 +615,7 @@ namespace WindowsFormsApplication1
                     if (restWaerme < 0)
                     {
                         speicher -= restWaerme;
-                        restWaerme = 0f;
+                        restWaerme = 0.0;
                     }
                 }
                 else if (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor] <= restWaerme + restSpeicher)
@@ -625,7 +625,7 @@ namespace WindowsFormsApplication1
                     stromproduktion[stunde] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
                     s_strom[motor] += (restWaerme + restSpeicher) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
                     speicher = kapazitaetPendelspeicher;
-                    restWaerme = 0f;
+                    restWaerme = 0.0;
                 }
             }
         }
@@ -656,10 +656,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Motorlauf_Stromgefuehrt(
             int stunde, int anzahl,
-            float[] stromproduktion, float[] waermeproduktion,
-            float[] s_waerme, float[] s_strom,
-            float[] bhkwWaermeLeistung, float[] bhkwStromLeistung, float bhkwGrenzleistung,
-            ref float restStrom, ref float restWaerme)
+            double[] stromproduktion, double[] waermeproduktion,
+            double[] s_waerme, double[] s_strom,
+            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double bhkwGrenzleistung,
+            ref double restStrom, ref double restWaerme)
         {
             for (int motor = 0; motor < anzahl; motor++)
             {
@@ -681,14 +681,14 @@ namespace WindowsFormsApplication1
                     stromproduktion[stunde] += restStrom;
 
                     // Anteilige Wärmeproduktion berechnen (Dreisatz über den elektrischen Wirkungsgrad)
-                    float anteiligeWaerme = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
+                    double anteiligeWaerme = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
                     waermeproduktion[stunde] += anteiligeWaerme;
 
                     s_strom[motor] += restStrom;
                     s_waerme[motor] += anteiligeWaerme;
 
                     restWaerme -= anteiligeWaerme;
-                    restStrom = 0f;
+                    restStrom = 0.0;
                 }
             }
         }
@@ -713,15 +713,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Motorlauf_OhneEinspeisung(
             int stunde, int anzahl,
-            float[] stromproduktion, float[] waermeproduktion,
-            float[] s_waerme, float[] s_strom,
-            float[] bhkwWaermeLeistung, float[] bhkwStromLeistung, float bhkwGrenzleistung,
-            float kapazitaetPendelspeicher,
-            ref float speicher, ref float restWaerme, ref float restStrom)
+            double[] stromproduktion, double[] waermeproduktion,
+            double[] s_waerme, double[] s_strom,
+            double[] bhkwWaermeLeistung, double[] bhkwStromLeistung, double bhkwGrenzleistung,
+            double kapazitaetPendelspeicher,
+            ref double speicher, ref double restWaerme, ref double restStrom)
         {
-            float restSpeicher = kapazitaetPendelspeicher - speicher;
-            float wLeistung = 0f;
-            float sLeistung = 0f;
+            double restSpeicher = kapazitaetPendelspeicher - speicher;
+            double wLeistung = 0.0;
+            double sLeistung = 0.0;
 
             {
                 for (int motor = 0; motor < anzahl; motor++)
@@ -744,8 +744,8 @@ namespace WindowsFormsApplication1
                         else
                         {
                             // Strombedarf zu gering -> Motor darf nicht einspeisen und bleibt aus/regelt ab
-                            sLeistung = 0f;
-                            wLeistung = 0f;
+                            sLeistung = 0.0;
+                            wLeistung = 0.0;
                         }
 
                         waermeproduktion[stunde] += wLeistung;
@@ -759,7 +759,7 @@ namespace WindowsFormsApplication1
                         if (restWaerme < 0)
                         {
                             speicher -= restWaerme; // restWaerme ist negativ, erhöht den Speicher
-                            restWaerme = 0f;
+                            restWaerme = 0.0;
                         }
                     }
                     // Fall W2: Modulierter Betrieb bis zur Füllung des Speichers
@@ -778,8 +778,8 @@ namespace WindowsFormsApplication1
                         }
                         else
                         {
-                            sLeistung = 0f;
-                            wLeistung = 0f;
+                            sLeistung = 0.0;
+                            wLeistung = 0.0;
                         }
 
                         waermeproduktion[stunde] += wLeistung;
@@ -795,7 +795,7 @@ namespace WindowsFormsApplication1
                         if (restWaerme < 0)
                         {
                             speicher -= restWaerme;
-                            restWaerme = 0f;
+                            restWaerme = 0.0;
                         }
                     }
                 }
@@ -817,7 +817,7 @@ namespace WindowsFormsApplication1
                         if (restWaerme < 0)
                         {
                             speicher -= restWaerme;
-                            restWaerme = 0f;
+                            restWaerme = 0.0;
                         }
                     }
                     // Fall S2: Teillastbetrieb exakt auf den Reststrombedarf geregelt
@@ -827,17 +827,17 @@ namespace WindowsFormsApplication1
                         stromproduktion[stunde] += restStrom;
                         s_strom[motor] += restStrom;
 
-                        float anteiligeWaerme = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
+                        double anteiligeWaerme = restStrom / bhkwStromLeistung[motor] * bhkwWaermeLeistung[motor];
                         waermeproduktion[stunde] += anteiligeWaerme;
                         s_waerme[motor] += anteiligeWaerme;
 
                         restWaerme -= anteiligeWaerme;
-                        restStrom = 0f;
+                        restStrom = 0.0;
 
                         if (restWaerme < 0)
                         {
                             speicher -= restWaerme;
-                            restWaerme = 0f;
+                            restWaerme = 0.0;
                         }
                     }
                     // Fall S3: Teillastbetrieb bis zur thermischen Speichergrenze
@@ -847,11 +847,11 @@ namespace WindowsFormsApplication1
                         waermeproduktion[stunde] += (restSpeicher + restWaerme);
                         s_waerme[motor] += (restSpeicher + restWaerme);
 
-                        float berechneterStrom = (restSpeicher + restWaerme) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
+                        double berechneterStrom = (restSpeicher + restWaerme) / bhkwWaermeLeistung[motor] * bhkwStromLeistung[motor];
                         stromproduktion[stunde] += berechneterStrom;
                         s_strom[motor] += berechneterStrom;
 
-                        restWaerme = 0f;
+                        restWaerme = 0.0;
                         restStrom -= berechneterStrom;
                         speicher = kapazitaetPendelspeicher;
                     }
@@ -862,7 +862,7 @@ namespace WindowsFormsApplication1
 
 
         // PAKET BHKW-REGULÄR: Hier stand SolareErzeugung(int stunde) - eine
-        // Platzhalter-Methode aus der VBA-Übersetzung, die immer 0f zurückgab. Ihr
+        // Platzhalter-Methode aus der VBA-Übersetzung, die immer 0.0 zurückgab. Ihr
         // einziger Aufrufer war der Solar-Vorlauf der entfallenen wärmegeführten
         // Jahresschleife; sie ist mit ihm entfallen.
 
@@ -1104,7 +1104,7 @@ namespace WindowsFormsApplication1
             DirektdeckungGesamtKwh = 0;
             Speicherentladung_Anteil = 0;
             WaermebedarfGesamtKwh = 0;
-            WaermeueberschussKwh = 0f;
+            WaermeueberschussKwh = 0.0;
 
             // K2: die Kanalaufschlüsselung derselben Größen (Konzept 4.4).
             Array.Clear(Direktdeckung_Kanal, 0, Kanal.ANZAHL);
@@ -1122,17 +1122,17 @@ namespace WindowsFormsApplication1
             // Ausgangsarray der Vorstufe (Aliasing wie B0-2); im zweikanaligen Weg
             // SCHREIBT das Modul hier stündlich hinein - auf einem geerbten Alias würde
             // das den Bedarfsvektor des Projekts überschreiben.
-            waermebedarf = new float[8760];
+            waermebedarf = new double[8760];
 
-            VbhElektrischGesamt = 0f;
+            VbhElektrischGesamt = 0.0;
 
             for (int i = 0; i < MAX_BHKW; i++)
             {
-                s_waerme_MWh[i] = 0f;
-                s_strom_MWh[i] = 0f;
-                s_waerme_ueberschuss[i] = 0f;
-                Laufzeiten[i] = 0f;
-                VbhElektrisch[i] = 0f;
+                s_waerme_MWh[i] = 0.0;
+                s_strom_MWh[i] = 0.0;
+                s_waerme_ueberschuss[i] = 0.0;
+                Laufzeiten[i] = 0.0;
+                VbhElektrisch[i] = 0.0;
             }
         }
 
@@ -1258,8 +1258,8 @@ namespace WindowsFormsApplication1
         {
             if (stunde >= 0 && stunde < 8760)
             {
-                stromproduktion[stunde] = 0f;
-                waermeproduktion[stunde] = 0f;
+                stromproduktion[stunde] = 0.0;
+                waermeproduktion[stunde] = 0.0;
             }
             _ueberschussStunde = 0;
             _direktStunde = 0;
@@ -1267,7 +1267,7 @@ namespace WindowsFormsApplication1
 
             double eingang = Kanalabzug.Summe(rest);
             if (eingang < 0) eingang = 0;
-            if (stunde >= 0 && stunde < 8760) waermebedarf[stunde] = (float)eingang;
+            if (stunde >= 0 && stunde < 8760) waermebedarf[stunde] = (double)eingang;
             WaermebedarfGesamtKwh += eingang;
         }
 
@@ -1636,7 +1636,7 @@ namespace WindowsFormsApplication1
         {
             if (_ueberschussStunde > 0)
             {
-                WaermeueberschussKwh += (float)_ueberschussStunde;
+                WaermeueberschussKwh += (double)_ueberschussStunde;
                 if (stunde >= 0 && stunde < 8760)
                     Ueberschuss_stuendlich[stunde] += _ueberschussStunde;
                 _ueberschussStunde = 0;
@@ -1646,7 +1646,7 @@ namespace WindowsFormsApplication1
             {
                 double rest = waermebedarf[stunde] - _direktStunde - entladungsAnteilStunde;
                 if (rest < 0) rest = 0;
-                waermerestbedarf[stunde] = (float)rest;
+                waermerestbedarf[stunde] = (double)rest;
             }
 
             _direktStunde = 0;
@@ -1670,13 +1670,13 @@ namespace WindowsFormsApplication1
         {
             if (speicherraum < 0) speicherraum = 0;
 
-            float speicher = 0f;
-            float restWaerme = (float)bedarf;
-            float kapazitaet = (float)speicherraum;
+            double speicher = 0.0;
+            double restWaerme = (double)bedarf;
+            double kapazitaet = (double)speicherraum;
 
             if (modeBHKW == 1)
             {
-                float restStrom = (stunde >= 0 && stunde < strombedarf.Length) ? strombedarf[stunde] : 0f;
+                double restStrom = (stunde >= 0 && stunde < strombedarf.Length) ? strombedarf[stunde] : 0.0;
                 Motorlauf_Stromgefuehrt(stunde, _anzahlZweikanalig, stromproduktion, waermeproduktion,
                                         s_waerme_MWh, s_strom_MWh, bhkwWaermeLeistung, bhkwStromLeistung,
                                         bhkwGrenzleistungAllgemein, ref restStrom, ref restWaerme);
@@ -1686,12 +1686,12 @@ namespace WindowsFormsApplication1
                 if (restWaerme < 0)
                 {
                     speicher = -restWaerme;
-                    restWaerme = 0f;
+                    restWaerme = 0.0;
                 }
             }
             else if (modeBHKW == 2)
             {
-                float restStrom = (stunde >= 0 && stunde < strombedarf.Length) ? strombedarf[stunde] : 0f;
+                double restStrom = (stunde >= 0 && stunde < strombedarf.Length) ? strombedarf[stunde] : 0.0;
                 Motorlauf_OhneEinspeisung(stunde, _anzahlZweikanalig, stromproduktion, waermeproduktion,
                                           s_waerme_MWh, s_strom_MWh, bhkwWaermeLeistung, bhkwStromLeistung,
                                           bhkwGrenzleistungAllgemein, kapazitaet,
@@ -1700,7 +1700,7 @@ namespace WindowsFormsApplication1
             else
             {
                 // PAKET BHKW-REGULÄR: Die Argumente stdTag, strombedarf,
-                // bhkwGrenzleistungAllgemein und der Solar-Speicheranteil 0f sind
+                // bhkwGrenzleistungAllgemein und der Solar-Speicheranteil 0.0 sind
                 // entfallen - sie speisten ausschließlich die toten Sommer- und
                 // Notschaltungszweige des Motorlaufs (Begründung dort).
                 Motorlauf_Waermegefuehrt(stunde, _anzahlZweikanalig, stromproduktion, waermeproduktion,
@@ -1737,8 +1737,8 @@ namespace WindowsFormsApplication1
         {
             for (int j = 0; j < _anzahlZweikanalig; j++)
             {
-                s_waerme_MWh[j] /= 1000f;
-                s_strom_MWh[j] /= 1000f;
+                s_waerme_MWh[j] /= 1000.0;
+                s_strom_MWh[j] /= 1000.0;
             }
 
             Auswertung(_anzahlZweikanalig);
@@ -1748,7 +1748,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Probe „Produktion = Direktdeckung + Speicherladung + Überschuss" über die
         /// Jahressumme und über jede Stunde (Befund N8). Die Toleranz trägt die
-        /// <c>float</c>-Ganglinien: 1 kWh im Jahr, 0,01 kWh je Stunde.
+        /// <c>double</c>-Ganglinien: 1 kWh im Jahr, 0,01 kWh je Stunde.
         ///
         /// ENTWICKLER-SELBSTTEST (Kategorie c des Protokollkanal-Nachzugs): Die Probe
         /// prüft die Bilanz des Moduls gegen sich selbst und sagt dem Anwender nichts
@@ -1822,7 +1822,7 @@ namespace WindowsFormsApplication1
                 Stunde_Ende(stunde, 0);
 
                 for (int k = 0; k < Kanal.ANZAHL; k++)
-                    kanaele.Bedarf[k][stunde] = (float)rest[k];
+                    kanaele.Bedarf[k][stunde] = (double)rest[k];
             }
 
             Abschluss_Zweikanalig();

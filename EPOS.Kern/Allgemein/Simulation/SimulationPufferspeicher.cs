@@ -228,9 +228,9 @@ namespace WindowsFormsApplication1
         public int Abschluesse = 0;
 
         // Ganglinien für Auswertung, Charts und CSV-Export
-        public float[] SOC_stuendlich = new float[8760];
-        public float[] Ladung_stuendlich = new float[8760];
-        public float[] Entladung_stuendlich = new float[8760];
+        public double[] SOC_stuendlich = new double[8760];
+        public double[] Ladung_stuendlich = new double[8760];
+        public double[] Entladung_stuendlich = new double[8760];
 
         // Jahressummen [kWh]
         public double Ladung_gesamt = 0;
@@ -297,10 +297,10 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------------
 
         /// <summary>Durchgeflossene Wärme je Stunde [kWh] (Aufnahme über Q_max hinaus).</summary>
-        public float[] Durchsatz_Ladung_stuendlich = new float[8760];
+        public double[] Durchsatz_Ladung_stuendlich = new double[8760];
 
         /// <summary>Wieder abgegebener Durchfluss je Stunde [kWh].</summary>
-        public float[] Durchsatz_Entladung_stuendlich = new float[8760];
+        public double[] Durchsatz_Entladung_stuendlich = new double[8760];
 
         /// <summary>Jahressumme der durchgeflossenen Aufnahme [kWh]; ohne Durchlass exakt 0.</summary>
         public double Durchsatz_Ladung_gesamt = 0;
@@ -555,8 +555,8 @@ namespace WindowsFormsApplication1
             Durchsatz_Ladung_gesamt += durchfluss;
             if (stunde >= 0 && stunde < 8760)
             {
-                Ladung_stuendlich[stunde] += (float)umsatz;
-                if (durchfluss > 0) Durchsatz_Ladung_stuendlich[stunde] += (float)durchfluss;
+                Ladung_stuendlich[stunde] += (double)umsatz;
+                if (durchfluss > 0) Durchsatz_Ladung_stuendlich[stunde] += (double)durchfluss;
             }
 
             if (LadeleistungMax > 0) _ladebudget -= ladung;
@@ -629,8 +629,8 @@ namespace WindowsFormsApplication1
 
             if (stunde >= 0 && stunde < 8760)
             {
-                Entladung_stuendlich[stunde] += (float)umsatz;
-                if (durchfluss > 0) Durchsatz_Entladung_stuendlich[stunde] += (float)durchfluss;
+                Entladung_stuendlich[stunde] += (double)umsatz;
+                if (durchfluss > 0) Durchsatz_Entladung_stuendlich[stunde] += (double)durchfluss;
             }
 
             if (EntladeleistungMax > 0) _entladebudget -= entnahme;
@@ -698,7 +698,7 @@ namespace WindowsFormsApplication1
                 Schicht_Inversion();
             }
 
-            if (stunde >= 0 && stunde < 8760) SOC_stuendlich[stunde] = (float)SOC;
+            if (stunde >= 0 && stunde < 8760) SOC_stuendlich[stunde] = (double)SOC;
 
             // PAKET P1: Die Schicht-Invariante Σ Schichtenergie == min(SOC, Q_max)
             // (Konzept 7.3) am Ende JEDER Stunde nachziehen und - im Debug-Build -
@@ -1242,10 +1242,10 @@ namespace WindowsFormsApplication1
         public double EinspeisehoeheAktuell = 1.0;
 
         /// <summary>Stundenganglinie der obersten Schicht [°C]; 0, wo keine Schichtrechnung läuft.</summary>
-        public float[] T_oben_stuendlich = new float[8760];
+        public double[] T_oben_stuendlich = new double[8760];
 
         /// <summary>Stundenganglinie der untersten Schicht [°C]; siehe <see cref="T_oben_stuendlich"/>.</summary>
-        public float[] T_unten_stuendlich = new float[8760];
+        public double[] T_unten_stuendlich = new double[8760];
 
         /// <summary>
         /// Jahresmittel der obersten Schichttemperatur [°C]; <c>null</c> = nicht erhoben
@@ -1855,8 +1855,8 @@ namespace WindowsFormsApplication1
             if (stunde < 0 || stunde >= 8760) return;
             if (IstQuelle || Q_max <= 0 || VL_eff <= RL_eff) return;
 
-            T_oben_stuendlich[stunde] = (float)T_oben;
-            T_unten_stuendlich[stunde] = (float)T_unten;
+            T_oben_stuendlich[stunde] = (double)T_oben;
+            T_unten_stuendlich[stunde] = (double)T_unten;
         }
 
         /// <summary>

@@ -386,8 +386,8 @@ namespace WindowsFormsApplication1
             int betriebsStunden = 0;
             var laeuft = new bool[8760];
 
-            float[] therm = wp.WP_Waermeproduktion_stuendlich;
-            float[] el = wp.WP_Strombedarf_stuendlich;
+            double[] therm = wp.WP_Waermeproduktion_stuendlich;
+            double[] el = wp.WP_Strombedarf_stuendlich;
             if (therm != null && el != null)
             {
                 int n = Math.Min(therm.Length, el.Length);
@@ -556,7 +556,7 @@ namespace WindowsFormsApplication1
             var profile = wp.Quelltemperaturen;
             if (profile == null || index >= profile.Count) return;
 
-            float[] quelltemp = profile[index];
+            double[] quelltemp = profile[index];
             if (quelltemp == null || quelltemp.Length == 0) return;
             if (laeuft == null || betriebsStunden <= 0) return;
 

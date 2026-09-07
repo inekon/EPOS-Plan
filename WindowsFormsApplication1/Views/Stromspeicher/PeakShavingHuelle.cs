@@ -164,11 +164,11 @@ namespace WindowsFormsApplication1
 
             List<CsvSpalte> spalten = new List<CsvSpalte>
             {
-                new CsvSpalte(MyResource.Resource.PEAK_CSV_PALT, RasterAdapter.ZuFloat(r.PAltKw)),
-                new CsvSpalte(MyResource.Resource.PEAK_CSV_PNEU, RasterAdapter.ZuFloat(r.PNeuKw)),
-                new CsvSpalte(MyResource.Resource.PEAK_CSV_SOC, RasterAdapter.ZuFloat(r.SoCKwh)),
-                new CsvSpalte(MyResource.Resource.PEAK_CSV_LADUNG, RasterAdapter.ZuFloat(r.LadungAcKwh)),
-                new CsvSpalte(MyResource.Resource.PEAK_CSV_ENTLADUNG, RasterAdapter.ZuFloat(r.EntladungAcKwh))
+                new CsvSpalte(MyResource.Resource.PEAK_CSV_PALT, r.PAltKw),
+                new CsvSpalte(MyResource.Resource.PEAK_CSV_PNEU, r.PNeuKw),
+                new CsvSpalte(MyResource.Resource.PEAK_CSV_SOC, r.SoCKwh),
+                new CsvSpalte(MyResource.Resource.PEAK_CSV_LADUNG, r.LadungAcKwh),
+                new CsvSpalte(MyResource.Resource.PEAK_CSV_ENTLADUNG, r.EntladungAcKwh)
             };
 
             CsvExportClass.Export(MyResource.Resource.PEAK_DATEI, null, spalten,

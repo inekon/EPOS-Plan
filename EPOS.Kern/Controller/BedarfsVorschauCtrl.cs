@@ -194,7 +194,7 @@ namespace WindowsFormsApplication1
         {
             var sim = new SimulationStrombedarf { m_ID_Projekt = idProjekt };
 
-            float[] reihe = sim.Stromprofil_Strombedarf_berechnen(liste);
+            double[] reihe = sim.Stromprofil_Strombedarf_berechnen(liste);
             if (reihe == null) return ergebnis;
 
             sim.ProfilbedarfUebernehmen(reihe);

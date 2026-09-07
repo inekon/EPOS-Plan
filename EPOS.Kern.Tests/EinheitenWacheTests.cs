@@ -141,7 +141,7 @@ namespace EPOS.Kern.Tests
             Assert.Matches(Faktor, "Restwaerme /= 1000f;");
             Assert.Matches(Faktor, "summe *= 1000.0;");
             Assert.Matches(Faktor, "double mwh = reihe.Sum() / 4000;");
-            Assert.Matches(Faktor, "summe = (float)((double)acc * 0.001);");
+            Assert.Matches(Faktor, "summe = acc * 0.001;");
             Assert.Matches(Faktor, "double x = wert * 1e-3;");
 
             // Keine Umrechnung: eine Zahl 1000 ohne Operator, ein Feldname, ein Text.
@@ -209,7 +209,7 @@ namespace EPOS.Kern.Tests
         /// Ein <c>public</c>/<c>internal</c> SKALARFELD oder eine Property vom Typ
         /// <c>double</c> oder <c>float</c>.
         ///
-        /// <para>Die Stundenreihen (<c>float[8760]</c>, <c>double[]</c>) sind bewusst
+        /// <para>Die Stundenreihen (<c>double[8760]</c>) sind bewusst
         /// draußen: Sie führen nach der Regel IMMER kWh, sie stehen in 300 der 312
         /// CSV-Dateien der Referenzbasis, und ihr Name ist dort der Dateiname. Eine
         /// Umbenennung würde die Basis kosten, ohne eine Zweideutigkeit zu beheben.</para>

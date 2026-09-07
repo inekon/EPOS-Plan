@@ -14,9 +14,9 @@ namespace WindowsFormsApplication1
     public class CsvSpalte
     {
         public string Name;
-        public float[] Werte;
+        public double[] Werte;
 
-        public CsvSpalte(string name, float[] werte)
+        public CsvSpalte(string name, double[] werte)
         {
             Name = name;
             Werte = werte;
@@ -72,7 +72,7 @@ namespace WindowsFormsApplication1
         /// <param name="temperaturStuendlich">Außentemperatur als Stundenwerte (8760), darf null sein</param>
         /// <param name="spalten">Wertspalten (mindestens eine)</param>
         /// <param name="viertelstundenwerte">true = 35040 Zeilen (15-min-Raster), false = 8760 Zeilen (Stundenraster)</param>
-        public static void Export(string vorschlagDateiname, float[] temperaturStuendlich, List<CsvSpalte> spalten, bool viertelstundenwerte = false)
+        public static void Export(string vorschlagDateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten, bool viertelstundenwerte = false)
         {
             if (spalten == null || spalten.Count == 0)
             {
@@ -109,7 +109,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static void Schreiben(string dateiname, float[] temperaturStuendlich, List<CsvSpalte> spalten, bool viertelstundenwerte)
+        private static void Schreiben(string dateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten, bool viertelstundenwerte)
         {
             CultureInfo kultur = new CultureInfo("de-DE");
             const string SEP = ";";
@@ -204,9 +204,9 @@ namespace WindowsFormsApplication1
         /// Liefert den Wert einer Ganglinie für die Zeile i im Ziel-Zeitraster und
         /// rechnet bei Bedarf zwischen Stunden- und Viertelstundenraster um.
         /// </summary>
-        private static float WertHolen(float[] werte, int i, bool viertelstundenwerte)
+        private static double WertHolen(double[] werte, int i, bool viertelstundenwerte)
         {
-            if (werte == null || werte.Length == 0) return 0f;
+            if (werte == null || werte.Length == 0) return 0.0;
 
             bool quelleViertelstunden = werte.Length >= STUNDEN_JAHR * 4;
 
@@ -214,7 +214,7 @@ namespace WindowsFormsApplication1
             {
                 // Ziel: Viertelstundenraster
                 int index = quelleViertelstunden ? i : i / 4;
-                return index < werte.Length ? werte[index] : 0f;
+                return index < werte.Length ? werte[index] : 0.0;
             }
             else
             {
@@ -223,10 +223,10 @@ namespace WindowsFormsApplication1
                 {
                     // Stundenmittel aus 4 Viertelstundenwerten (Leistungsmittelwert)
                     int basis = i * 4;
-                    if (basis + 3 >= werte.Length) return 0f;
-                    return (werte[basis] + werte[basis + 1] + werte[basis + 2] + werte[basis + 3]) / 4f;
+                    if (basis + 3 >= werte.Length) return 0.0;
+                    return (werte[basis] + werte[basis + 1] + werte[basis + 2] + werte[basis + 3]) / 4.0;
                 }
-                return i < werte.Length ? werte[i] : 0f;
+                return i < werte.Length ? werte[i] : 0.0;
             }
         }
     }

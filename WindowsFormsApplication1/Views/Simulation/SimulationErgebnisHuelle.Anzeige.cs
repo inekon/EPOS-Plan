@@ -480,16 +480,16 @@ namespace WindowsFormsApplication1
             d.HatPv = p.Photovoltaik;
             d.HatSolarthermie = p.Solarthermie;
 
-            float[] pvProd = sim.simulation_pv.pvPotentialGesamt_stuendlich;
-            float[] stromBedarf = sim.simulation_pv.Strombedarf_stuendlich;
+            double[] pvProd = sim.simulation_pv.pvPotentialGesamt_stuendlich;
+            double[] stromBedarf = sim.simulation_pv.Strombedarf_stuendlich;
 
-            float[] stProd = new float[Kanalsatz.STUNDEN_JAHR];
+            double[] stProd = new double[Kanalsatz.STUNDEN_JAHR];
             for (int i = 0; i < Kanalsatz.STUNDEN_JAHR; i++)
-                stProd[i] = (float)(sim.simulation_solarthermie.Waermeproduktion[i]
+                stProd[i] = (double)(sim.simulation_solarthermie.Waermeproduktion[i]
                                     + sim.simulation_solarthermie.Ueberschuss[i]);
 
-            float[] waermeBedarf = Array.ConvertAll<double, float>(
-                sim.simulation_solarthermie.Waermebedarf, x => (float)x);
+            double[] waermeBedarf = Array.ConvertAll<double, double>(
+                sim.simulation_solarthermie.Waermebedarf, x => (double)x);
 
             SpeicherErgebnis speicher = AutarkieSpeicher(stromBedarf, pvProd, kwh);
 
@@ -534,7 +534,7 @@ namespace WindowsFormsApplication1
         /// Die Speicherwirkung der eingestellten Kapazität über dieselbe Engine, die auch
         /// die Simulationskette rechnet (wörtlich <c>RechneSpeicher</c> :414-423).
         /// </summary>
-        private static SpeicherErgebnis AutarkieSpeicher(float[] last, float[] pv, double kwh)
+        private static SpeicherErgebnis AutarkieSpeicher(double[] last, double[] pv, double kwh)
         {
             double[] lastKw = RasterAdapter.ZuViertelstundenDouble(last);
             double[] pvKw = RasterAdapter.ZuViertelstundenDouble(pv);
@@ -594,7 +594,7 @@ namespace WindowsFormsApplication1
 
             for (int k = 0; k < Kanal.ANZAHL; k++)
             {
-                float[] werte = SimulationControl.BedarfKanalStuendlich(_waermebedarf, k);
+                double[] werte = SimulationControl.BedarfKanalStuendlich(_waermebedarf, k);
                 if (werte == null || Jahressumme(werte) <= 0) continue;
                 liste.Add((k, KANALNAMEN[k]));
             }
@@ -626,7 +626,7 @@ namespace WindowsFormsApplication1
         private sealed class Temperaturreihe
         {
             internal string Legende;
-            internal float[] Werte;
+            internal double[] Werte;
             internal SKColor Farbe;
             internal bool Gestrichelt;
             internal string Schluessel;
@@ -698,7 +698,7 @@ namespace WindowsFormsApplication1
                 var anlagen = sim.simulation_spk.spk_anlagen_ids;
                 for (int i = 0; i < anlagen.Count; i++)
                 {
-                    float[] reihe = sim.simulation_spk.Quelltemperaturen(i);
+                    double[] reihe = sim.simulation_spk.Quelltemperaturen(i);
                     if (reihe == null) continue;
                     Quellreihe(liste, anlagen[i], reihe, sim.simulation_spk.KesselName(i));
                 }
@@ -709,7 +709,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Hängt eine Quelltemperatur-Reihe an; doppelte Anlagen-IDs übergeht sie.</summary>
         private static void Quellreihe(List<Temperaturreihe> liste, int idAnlage,
-                                       float[] werte, string bezeichner)
+                                       double[] werte, string bezeichner)
         {
             if (idAnlage <= 0 || werte == null) return;
 

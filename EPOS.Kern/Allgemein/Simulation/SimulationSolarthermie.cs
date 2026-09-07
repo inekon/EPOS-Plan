@@ -653,7 +653,7 @@ namespace WindowsFormsApplication1
                 Stunde_Ende(stunde);
 
                 for (int k = 0; k < Kanal.ANZAHL; k++)
-                    kanaele.Bedarf[k][stunde] = (float)rest[k];
+                    kanaele.Bedarf[k][stunde] = (double)rest[k];
             }
 
             Abschluss_Zweikanalig();

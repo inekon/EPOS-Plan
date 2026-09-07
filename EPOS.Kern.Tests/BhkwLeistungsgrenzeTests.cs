@@ -55,17 +55,17 @@ namespace EPOS.Kern.Tests
         private const double EIGENER_WERT_PROZENT = 15.0;
 
         /// <summary>Elektrische Leistung der Zeile <see cref="MODUL_OHNE_EIGENEN_WERT"/> [kW].</summary>
-        private const float PEL_MODUL = 10f;
+        private const double PEL_MODUL = 10.0;
 
         /// <summary>Thermische Leistung derselben Zeile [kW].</summary>
-        private const float PTHERM_MODUL = 19f;
+        private const double PTHERM_MODUL = 19.0;
 
         /// <summary>
         /// Strombedarf der Probestunde [kWh] — <b>kleiner als 30 % von
         /// <see cref="PEL_MODUL"/></b> (2 &lt; 3) und damit genau der Bereich, in dem
         /// sich Grenze 0 und Grenze 30 % unterscheiden.
         /// </summary>
-        private const float KLEINER_STROMBEDARF = 2f;
+        private const double KLEINER_STROMBEDARF = 2.0;
 
         // =================================================================================
         // 1 — Die zwei Ebenen im Rechenweg (kein stiller Fallback mehr)
@@ -80,7 +80,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            Assert.Equal(0f, Grenzfaktor(MODUL_OHNE_EIGENEN_WERT, projektwertProzent: 0));
+            Assert.Equal(0.0, Grenzfaktor(MODUL_OHNE_EIGENEN_WERT, projektwertProzent: 0));
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            Assert.Equal(0.3f, Grenzfaktor(MODUL_OHNE_EIGENEN_WERT, projektwertProzent: 30), 5);
+            Assert.Equal(0.3, Grenzfaktor(MODUL_OHNE_EIGENEN_WERT, projektwertProzent: 30), 5);
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            Assert.Equal(0.1f, Grenzfaktor(MODUL_OHNE_EIGENEN_WERT, projektwertProzent: 10), 5);
+            Assert.Equal(0.1, Grenzfaktor(MODUL_OHNE_EIGENEN_WERT, projektwertProzent: 10), 5);
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            float erwartet = (float)(EIGENER_WERT_PROZENT / 100.0);
+            double erwartet = (double)(EIGENER_WERT_PROZENT / 100.0);
 
             Assert.Equal(erwartet, Grenzfaktor(MODUL_MIT_EIGENEM_WERT, projektwertProzent: 30), 5);
             Assert.Equal(erwartet, Grenzfaktor(MODUL_MIT_EIGENEM_WERT, projektwertProzent: 0), 5);
@@ -144,7 +144,7 @@ namespace EPOS.Kern.Tests
 
             // Mit 30 % bleibt der Motor stehen: Er kann 2 kW nicht liefern, ohne unter
             // seine Untergrenze von 3 kW zu gehen.
-            Assert.Equal(0f, mitGrenze30.stromproduktion[0]);
+            Assert.Equal(0.0, mitGrenze30.stromproduktion[0]);
 
             // Ohne Untergrenze deckt er den Bedarf genau.
             Assert.Equal(KLEINER_STROMBEDARF, ohneGrenze.stromproduktion[0], 3);
@@ -172,7 +172,7 @@ namespace EPOS.Kern.Tests
             sim.modeBHKW = betriebsart;
             sim.strombedarf[0] = KLEINER_STROMBEDARF;
 
-            Assert.Equal(0f, sim.bhkwGrenzL[0]);
+            Assert.Equal(0.0, sim.bhkwGrenzL[0]);
 
             double[] rest = new double[Kanal.ANZAHL];
             for (int k = 0; k < rest.Length; k++) rest[k] = 50.0;
@@ -181,12 +181,12 @@ namespace EPOS.Kern.Tests
             sim.Stunde_Bedarf(0, false, rest);
             sim.Stunde_Ende(0, 0.0);
 
-            Assert.True(float.IsFinite(sim.waermeproduktion[0]),
+            Assert.True(double.IsFinite(sim.waermeproduktion[0]),
                         "Waermeproduktion ist keine endliche Zahl.");
-            Assert.True(float.IsFinite(sim.stromproduktion[0]),
+            Assert.True(double.IsFinite(sim.stromproduktion[0]),
                         "Stromproduktion ist keine endliche Zahl.");
-            Assert.True(sim.waermeproduktion[0] >= 0f);
-            Assert.True(sim.stromproduktion[0] >= 0f);
+            Assert.True(sim.waermeproduktion[0] >= 0.0);
+            Assert.True(sim.stromproduktion[0] >= 0.0);
 
             foreach (double wert in rest)
                 Assert.True(double.IsFinite(wert), "Ein Restbedarf ist keine endliche Zahl.");
@@ -289,7 +289,7 @@ namespace EPOS.Kern.Tests
         /// (<c>Vorbereiten_Zweikanalig</c>) und gibt den aufgelösten Faktor des ersten
         /// Moduls zurück.
         /// </summary>
-        private static float Grenzfaktor(int idModul, int projektwertProzent)
+        private static double Grenzfaktor(int idModul, int projektwertProzent)
         {
             return Vorbereitet(idModul, projektwertProzent).bhkwGrenzL[0];
         }

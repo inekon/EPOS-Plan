@@ -323,12 +323,15 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(8760, sim.brauchwasserwerte.Length);
 
+            // W8-O-5d (07.09.2026): 742,9008 war der float-Stand. Seit die Reihe in
+            // double gefuehrt wird, trifft die Summe die Katalogmenge exakt - 742,9000
+            // statt 742,9008; die 0,0008 kWh waren die Rundung der 8 760 float-Zellen.
             double summe = sim.brauchwasserwerte.Sum();
-            Assert.Equal(742.9008, summe, 3);
+            Assert.Equal(742.9000, summe, 3);
 
             // Die Jahressumme des Katalogs in MWh mal 1000 — der Beleg, dass die Reihe
             // in kWh vorliegt und der Teiler in der Maske fehlte. Zwei Stellen: Die Reihe
-            // ist float und wird 8 760-mal aufsummiert.
+            // ist double und wird 8 760-mal aufsummiert.
             Assert.Equal(BedarfStammCtrl.Jahressumme(BedarfsArt.Brauchwasser, "EFH Wohnen, 1 Person") * 1000,
                          summe, 2);
 
@@ -371,7 +374,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             var sim = new SimulationStrombedarf { m_ID_Projekt = 0 };
-            float[] ergebnis = sim.Stromprofil_Strombedarf_berechnen(new List<string> { "Büro_Konst" });
+            double[] ergebnis = sim.Stromprofil_Strombedarf_berechnen(new List<string> { "Büro_Konst" });
 
             Assert.NotNull(ergebnis);
             Assert.Equal(8760, ergebnis.Length);
@@ -409,7 +412,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, p.prozesswerte.Sum(), 6);
 
             var s = new SimulationStrombedarf { m_ID_Projekt = 0 };
-            float[] ergebnis = s.Stromprofil_Strombedarf_berechnen(new List<string> { "gibt-es-nicht" });
+            double[] ergebnis = s.Stromprofil_Strombedarf_berechnen(new List<string> { "gibt-es-nicht" });
             Assert.NotNull(ergebnis);
             Assert.Equal(0.0, ergebnis.Sum(), 6);
         }
@@ -438,8 +441,9 @@ namespace EPOS.Kern.Tests
             // ausgewiesene Menge in MWh - wie im Lauf. Bis dahin stand hier die nackte
             // Summe (Befund W14-B49), und die Ergebnisanzeige musste zwei Einheiten
             // auseinanderhalten.
-            Assert.Equal(742.9008, v.Waerme.brauchwasserwerte.Sum(), 3);
-            Assert.Equal(0.7429008, v.Waerme.Waermebedarf_Brauchwasser, 7);
+            // W8-O-5d: float-Stand war 742,9008 bzw. 0,7429008 (siehe Vorrechnung oben).
+            Assert.Equal(742.9000, v.Waerme.brauchwasserwerte.Sum(), 3);
+            Assert.Equal(0.7429000, v.Waerme.Waermebedarf_Brauchwasser, 7);
             Assert.Equal(0.0706, v.Waerme.Waermebedarf_Brauchwasser_Monat[0], 5);
             Assert.Equal(0.0683, v.Waerme.Waermebedarf_Brauchwasser_Monat[11], 5);
         }

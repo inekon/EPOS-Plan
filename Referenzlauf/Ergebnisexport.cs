@@ -375,15 +375,6 @@ namespace WindowsFormsApplication1.Referenzlauf
             File.WriteAllText(datei, sb.ToString(), new UTF8Encoding(true));
         }
 
-        private static int Vektor(string ordner, string datei, float[] werte,
-                                  List<KeyValuePair<string, double>> summen)
-        {
-            if (werte == null || werte.Length == 0) return 0;
-            var d = new double[werte.Length];
-            for (int i = 0; i < werte.Length; i++) d[i] = werte[i];
-            return Vektor(ordner, datei, d, summen);
-        }
-
         private static int Vektor(string ordner, string datei, double[] werte,
                                   List<KeyValuePair<string, double>> summen)
         {

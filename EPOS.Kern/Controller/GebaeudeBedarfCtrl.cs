@@ -27,7 +27,7 @@ namespace WindowsFormsApplication1
         internal string Name = "";
 
         /// <summary>Die 8 760 Stundenwerte der Heizwärme in <b>kW</b>.</summary>
-        internal float[] Stundenwerte = new float[8760];
+        internal double[] Stundenwerte = new double[8760];
 
         /// <summary>Die Jahressumme in <b>MWh</b>.</summary>
         internal double HeizwaermeMwh;
@@ -36,7 +36,7 @@ namespace WindowsFormsApplication1
         internal double MaxLastKw;
 
         /// <summary>Die zwölf Monatssummen in <b>MWh</b>.</summary>
-        internal float[] MonatswerteMwh = new float[12];
+        internal double[] MonatswerteMwh = new double[12];
 
         /// <summary>
         /// Die Vollbenutzungsstunden [h/a] — Jahresarbeit durch Höchstlast. Bei
@@ -113,7 +113,7 @@ namespace WindowsFormsApplication1
 
             // Der Merkplatz 0 in HeizwaermebedarfGeb - eine Rechnung fuer EIN Gebaeude
             // braucht keinen Rang, siehe HeizwaermeEinesGebaeudes.
-            var werte = new float[STUNDEN_JAHR];
+            var werte = new double[STUNDEN_JAHR];
             if (!sim.HeizwaermeEinesGebaeudes(gebaeude, 0, werte)) return ergebnis;
 
             // Dieselbe Umrechnung wie im Lauf: der Heizkanal geht als WATT in die
@@ -124,7 +124,7 @@ namespace WindowsFormsApplication1
             ergebnis.Stundenwerte = werte;
 
             // ZEICHENGLEICH zum Lauf: dort steht "kanalHeizung.Sum() / 1000" - eine
-            // float-Summe durch eine GANZE Zahl, also eine float-Division. Ein
+            // double-Summe durch eine GANZE Zahl, also eine double-Division. Ein
             // "/ 1000.0" waere eine double-Division und ergaebe eine andere neunte
             // Stelle; der Anwender legt die zwei Zahlen nebeneinander.
             ergebnis.HeizwaermeMwh = werte.Sum() / 1000;
@@ -154,9 +154,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der Höchstwert der Stundenreihe — wie <c>Maximaler_Waermebedarf</c>.</summary>
-        private static double Hoechstwert(float[] werte)
+        private static double Hoechstwert(double[] werte)
         {
-            float max = 0;
+            double max = 0;
             for (int i = 0; i < werte.Length; i++) if (max < werte[i]) max = werte[i];
             return max;
         }
