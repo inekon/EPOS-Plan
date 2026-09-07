@@ -356,8 +356,13 @@ public class BedarfErgebnisDialogTests : BunitContext
 
     /// <summary>
     /// Ein Wärmedatensatz, wie ihn die Hülle seit dem Entscheid baut: jede
-    /// Energiekennzahl mit ihrer QUELLENEINHEIT. Der Brauchwasserwert kommt aus
-    /// <c>brauchwasserwerte.Sum()</c> und liegt deshalb in kWh, alle übrigen in MWh.
+    /// Energiekennzahl mit ihrer QUELLENEINHEIT.
+    ///
+    /// <para><b>Die dritte Zeile ist eine PROBE, kein Bestandsfall.</b> Seit W8‑O‑5b
+    /// (07.09.2026) liefert die Hülle jede Energiekennzahl in MWh — die einzige
+    /// kWh-Quelle war das Brauchwasser, und der Kern weist es jetzt selbst in MWh
+    /// aus. Der Umrechner muss beide Richtungen können; genau dafür steht die Zeile
+    /// hier.</para>
     /// </summary>
     private static BedarfErgebnisDaten WaermeMitEinheiten(bool mitBrauchwasser = true)
     {
@@ -382,7 +387,7 @@ public class BedarfErgebnisDialogTests : BunitContext
                 {
                     Energie = 900, QuelleEinheit = Energieeinheit.MWh
                 },
-                new ErgebnisKennzahl("Wärmebedarf Brauchwasser:", "97,00", "MWh")
+                new ErgebnisKennzahl("Probe aus einer kWh-Quelle:", "97,00", "MWh")
                 {
                     Energie = 97000, QuelleEinheit = Energieeinheit.KWh
                 }
@@ -406,8 +411,8 @@ public class BedarfErgebnisDialogTests : BunitContext
         Assert.Contains("kW", zeilen[0].TextContent);
         Assert.Contains("900,00", zeilen[1].TextContent);
         Assert.Contains("MWh", zeilen[1].TextContent);
-        // 97 000 kWh sind die 97,00 MWh des Bestands - der frueher nur in EINER der
-        // beiden Ansichten gezogene Teiler 1000 steht jetzt als Einheit am Wert.
+        // 97 000 kWh sind 97,00 MWh - der frueher nur in EINER der beiden Ansichten
+        // gezogene Teiler 1000 steht jetzt als Einheit am Wert.
         Assert.Contains("97,00", zeilen[2].TextContent);
         Assert.Contains("MWh", zeilen[2].TextContent);
     }
@@ -664,5 +669,96 @@ public class BedarfErgebnisDialogTests : BunitContext
         // Die drei Sichten und der Schalter „Jahresverlauf" stehen unveraendert da.
         Assert.Equal(3, cut.FindAll(".epos-option").Count);
         Assert.Single(cut.FindAll("input[type=checkbox]"));
+    }
+
+    // =================================================================================
+    // W8-O-5b: Vorschau und Lauf zeigen DIESELBE Brauchwassermenge (07.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Brauchwasserkennzahl, wie die Hülle sie seit W8‑O‑5b baut — der Wert kommt
+    /// aus dem KERN, nicht aus einer im Test gerechneten Zahl:
+    /// <c>SimulationWaermebedarf.BrauchwassersummeUebernehmen</c> ist die eine Stelle,
+    /// die aus der Stundenreihe [kWh] die ausgewiesene Menge [MWh] macht — auf dem
+    /// Vorschauweg wie im Lauf.
+    /// </summary>
+    private static BedarfErgebnisDaten BrauchwasserAus(float[] stundenreihe)
+    {
+        var sim = new SimulationWaermebedarf();
+        Array.Copy(stundenreihe, sim.brauchwasserwerte,
+                   Math.Min(stundenreihe.Length, sim.brauchwasserwerte.Length));
+        sim.BrauchwassersummeUebernehmen();
+
+        return new BedarfErgebnisDaten
+        {
+            Sicht = ErgebnisSicht.Waerme,
+            MitBrauchwasser = true,
+            Kennzahlen = new[]
+            {
+                new ErgebnisKennzahl("Wärmebedarf Brauchwasser:",
+                                     sim.Waermebedarf_Brauchwasser.ToString("F2",
+                                         new CultureInfo("de-DE")), "MWh")
+                {
+                    Energie = sim.Waermebedarf_Brauchwasser,
+                    QuelleEinheit = Energieeinheit.MWh
+                }
+            },
+            Sichten = new[] { new Monatssicht("Brauchwasser", Reihe(40), BILD, true) }
+        };
+    }
+
+    /// <summary>Eine Stundenreihe mit einer bekannten Jahressumme in kWh.</summary>
+    private static float[] Stundenreihe(double jahressummeKWh)
+    {
+        var reihe = new float[8760];
+        for (int h = 0; h < reihe.Length; h++) reihe[h] = (float)(jahressummeKWh / 8760.0);
+        return reihe;
+    }
+
+    /// <summary>
+    /// <b>Der Fall, den der Anwender gesehen hat</b> (W8‑O‑5b): 4 380 kWh
+    /// Brauchwasserbedarf standen in <c>Simulation → „Wärmebedarf-Details"</c> als
+    /// „0,00 MWh" statt als „4,38 MWh" — die Hülle nahm den bereits geteilten Wert des
+    /// Laufs ein zweites Mal als kWh entgegen. Jetzt trägt die Übergabe ihre Einheit,
+    /// und der Dialog rechnet nur noch von MWh auf die gewählte Anzeigeeinheit um.
+    /// </summary>
+    [Fact]
+    public void Die_Brauchwassermenge_wird_nicht_ein_zweites_Mal_geteilt()
+    {
+        var cut = Aufbauen(BrauchwasserAus(Stundenreihe(4380.0)));
+
+        var zeile = cut.FindAll(".epos-raster tbody tr")[0];
+        Assert.Contains("Wärmebedarf Brauchwasser", zeile.TextContent);
+        Assert.Contains("4,38", zeile.TextContent);
+        Assert.Contains("MWh", zeile.TextContent);
+        Assert.DoesNotContain("0,00", zeile.TextContent);
+    }
+
+    /// <summary>
+    /// <b>Vorschau und Lauf zeigen dieselbe Zahl.</b> Beide Wege füllen dieselbe
+    /// Stundenreihe und gehen durch dieselbe Kernmethode; der Dialog zeigt deshalb
+    /// zweimal denselben Text — in MWh wie in kWh.
+    /// </summary>
+    [Fact]
+    public void Vorschau_und_Lauf_zeigen_dieselbe_Brauchwassermenge()
+    {
+        float[] reihe = Stundenreihe(4059.7);
+
+        var vorschau = Aufbauen(BrauchwasserAus(reihe));
+        var lauf = Aufbauen(BrauchwasserAus(reihe));
+
+        string ausVorschau = vorschau.FindAll(".epos-raster tbody tr")[0].TextContent;
+        string ausLauf = lauf.FindAll(".epos-raster tbody tr")[0].TextContent;
+        Assert.Equal(ausVorschau, ausLauf);
+        Assert.Contains("4,06", ausVorschau);
+
+        Einheitenfeld(vorschau).Change("1");
+        Einheitenfeld(lauf).Change("1");
+
+        ausVorschau = vorschau.FindAll(".epos-raster tbody tr")[0].TextContent;
+        ausLauf = lauf.FindAll(".epos-raster tbody tr")[0].TextContent;
+        Assert.Equal(ausVorschau, ausLauf);
+        Assert.Contains("4060", ausVorschau);
+        Assert.Contains("kWh", ausVorschau);
     }
 }

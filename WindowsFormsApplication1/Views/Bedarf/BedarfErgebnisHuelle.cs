@@ -25,10 +25,16 @@ namespace WindowsFormsApplication1
     /// je Kennzahl die EINHEIT, IN DER IHR WERT VORLIEGT, und die Komponente rechnet auf
     /// die gewählte Anzeigeeinheit um (<see cref="Energieeinheit"/>). Der nackte Teiler
     /// 1000, den nur die Brauchwasserfassung hatte (Befund W8‑B4), ist damit
-    /// verschwunden: <c>Waermebedarf_Brauchwasser</c> kommt aus
-    /// <c>brauchwasserwerte.Sum()</c> und liegt in kWh, alle übrigen Energiekennzahlen
-    /// liegen in MWh. Bei der Vorgabe MWh sind die angezeigten Zahlen zeichengleich zum
-    /// Bestand.</para>
+    /// verschwunden.</para>
+    ///
+    /// <para><b>Seit W8‑O‑5b (07.09.2026) liegt JEDE Energiekennzahl in MWh.</b> Bis
+    /// dahin nahm die Hülle <c>Waermebedarf_Brauchwasser</c> als kWh an — richtig für
+    /// die Vorschau, falsch für den Lauf, der dasselbe Feld schon in MWh führte. Der
+    /// Weg <c>Simulation → „Wärmebedarf-Details"</c> zeigte den Brauchwasserbedarf
+    /// deshalb um den Faktor 1000 zu klein. Der Kern setzt das Feld jetzt auf BEIDEN
+    /// Wegen über <c>SimulationWaermebedarf.BrauchwassersummeUebernehmen</c>, also in
+    /// MWh; hier steht nur noch eine Einheit. Bei der Vorgabe MWh sind die angezeigten
+    /// Zahlen zeichengleich zum Bestand.</para>
     ///
     /// <para><b>W8‑O‑5, Entscheid des Anwenders vom 04.09.2026:</b> MWh als Vorgabe, kWh
     /// wählbar, konsistent in den Ansichten. Die Wahl liegt in
@@ -235,11 +241,11 @@ namespace WindowsFormsApplication1
                     // abgesetzte Summe am Fuss - er stand bisher als ZWEITE Zeile
                     // mitten unter seinen eigenen Bestandteilen.
                     //
-                    // Die Posten liegen in MWh - bis auf das Brauchwasser in kWh: Es
-                    // kommt aus brauchwasserwerte.Sum(), waehrend SimulationWaermebedarf
-                    // jede andere Groesse selbst durch 1000 teilt (Befund W8-B4). Genau
-                    // das war der Sonderteiler, den nur die Brauchwasserfassung hatte;
-                    // seit W8-O-5 steht die Einheit am Wert.
+                    // ALLE Posten liegen in MWh - auch das Brauchwasser (W8-O-5b vom
+                    // 07.09.2026). Es kam frueher als nackte Summe in kWh herein, aber
+                    // NUR aus der Vorschau; nach einem Lauf lag dasselbe Feld in MWh und
+                    // wurde hier ein zweites Mal geteilt. Der Kern fuehrt es jetzt auf
+                    // beiden Wegen in MWh.
                     new ErgebnisKennzahl(Text_("BERG_LBL_MAX_WAERMELAST", "max. Wärmelast:"),
                                  F2(simulation.Waermebedarf_Max), EINHEIT_KW)
                     { Art = Kennzahlart.Leistung },
@@ -254,7 +260,7 @@ namespace WindowsFormsApplication1
                     Energie(mitBrauchwasser
                                 ? Text_("BERG_LBL_WAERME_BRAUCHWASSER", "Wärmebedarf Brauchwasser:")
                                 : Text_("BERG_LBL_DAVON_BRAUCHWASSER", "davon Brauchwasser:"),
-                            simulation.Waermebedarf_Brauchwasser, Energieeinheit.KWh),
+                            simulation.Waermebedarf_Brauchwasser, Energieeinheit.MWh),
                     Energie(Text_("BERG_LBL_WAERME_GESAMT", "Gesamter Wärmebedarf:"),
                             simulation.Waermebedarf_Gesamt, Energieeinheit.MWh,
                             Kennzahlart.Summe)

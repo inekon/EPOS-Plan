@@ -38,15 +38,16 @@ namespace WindowsFormsApplication1
     /// Teiler und Nachlauf. Alle vier hängen an <see cref="BedarfsArt"/>, und damit
     /// gehört die Rechnung dorthin, wo die Ausprägung schon liegt: in den Kern.</para>
     ///
-    /// <para><b>Bitgleich je Art.</b> Was hier steht, ist Zeile für Zeile das, was die
-    /// drei Masken taten — einschließlich des FEHLENDEN Teilers beim Brauchwasser
-    /// (Befund W14‑B49): <c>Waermebedarf_Brauchwasser</c> ist die nackte Summe der
-    /// Stundenreihe und liegt damit in KILOWATTSTUNDEN, während jede andere Größe der
-    /// Klasse in MWh vorliegt. Das ist kein Versehen, das hier zu beheben wäre,
-    /// sondern die Grundlage des Anwenderentscheids W8‑O‑5 vom 04.09.2026: Die
-    /// Einheit steht seither AM WERT (<see cref="Energieeinheit"/>), und der
-    /// Ergebnisdialog rechnet um. Würde die Vorschau hier durch 1000 teilen, wäre die
-    /// Zahl anschließend ein zweites Mal geteilt.</para>
+    /// <para><b>Bitgleich je Art — mit EINER Ausnahme, dem Brauchwasser.</b> Was hier
+    /// steht, ist Zeile für Zeile das, was die drei Masken taten. Der FEHLENDE Teiler
+    /// beim Brauchwasser (Befund W14‑B49) ist seit dem Anwenderentscheid <b>W8‑O‑5b</b>
+    /// vom 07.09.2026 nicht mehr dabei: <c>Waermebedarf_Brauchwasser</c> lag hier in
+    /// kWh und im Lauf in MWh, und die Ergebnisanzeige konnte nur eine der beiden
+    /// Angaben glauben — sie teilte den Wert des Laufs deshalb ein zweites Mal. Beide
+    /// Wege setzen das Feld jetzt über <c>SimulationWaermebedarf.BrauchwassersummeUebernehmen</c>,
+    /// also in MWh, und die Anzeige rechnet von dort über <see cref="Energieeinheit"/>
+    /// in die gewählte Einheit um. Die ANGEZEIGTE Zahl der Vorschau bleibt damit
+    /// unverändert; die des Laufs wird richtig.</para>
     ///
     /// <para><b>Der Nachweis</b> steht in
     /// <c>EPOS.Kern.Tests/BedarfVerwaltungTests.cs</c>: Die drei Vorrechnungen sind
@@ -122,13 +123,12 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                // BEWUSST unveraendert und damit NICHT symmetrisch zum Zweig darueber:
-                // Waermebedarf_Brauchwasser liegt hier in kWh, und genau so nimmt die
-                // Ergebnishuelle es an (Energieeinheit.KWh, Entscheid W8-O-5). Die
-                // Unstimmigkeit ist als W8-O-5b notiert und braucht einen eigenen
-                // Anwenderentscheid.
+                // W8-O-5b (07.09.2026): symmetrisch zum Prozesszweig darueber - die
+                // Summe geht ueber die EINHEITENKLASSE in die Einheit, die der Kern
+                // fuer Waermebedarf_Brauchwasser fuehrt (MWh). Vorher stand hier die
+                // nackte Summe in kWh, waehrend der Lauf MWh auswies.
                 sim.Brauchwasserwaerme_berechnen(liste);
-                sim.Waermebedarf_Brauchwasser = sim.brauchwasserwerte.Sum();
+                sim.BrauchwassersummeUebernehmen();
                 WPPlan.Core.BhkwPlan.MonatsSumme(sim.brauchwasserwerte,
                                                  sim.Waermebedarf_Brauchwasser_Monat,
                                                  sim.mo_anfang, sim.mo_ende);
@@ -158,10 +158,12 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                // Form_Brauchwasser_Admin:82-85 - OHNE Teiler (Befund W14-B49): Der Wert
-                // liegt in kWh, und genau so nennt ihn die Ergebnishuelle seit W8-O-5.
+                // Form_Brauchwasser_Admin:82-85 stand OHNE Teiler da (Befund W14-B49) -
+                // der Wert lag in kWh. Seit W8-O-5b uebernimmt der Kern die Summe in
+                // MWh, wie im Prozesszweig und wie im Lauf; die angezeigte Zahl bleibt
+                // dieselbe, weil die Anzeige die Einheit AM WERT liest.
                 sim.Brauchwasserwaerme_berechnen(liste);
-                sim.Waermebedarf_Brauchwasser = sim.brauchwasserwerte.Sum();
+                sim.BrauchwassersummeUebernehmen();
                 WPPlan.Core.BhkwPlan.MonatsSumme(sim.brauchwasserwerte, sim.Waermebedarf_Brauchwasser_Monat,
                                                  sim.mo_anfang, sim.mo_ende);
             }
