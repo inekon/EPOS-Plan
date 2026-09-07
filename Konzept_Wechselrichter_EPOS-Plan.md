@@ -1704,6 +1704,20 @@ Aus dem Kern-CI-Lauf 216 kam als Nachlauf zu W6‑B‑2 der Punkt **W6‑B‑2�
 Prüffall des Herstellerfilters war flatterhaft) — er ist erledigt und steht ebenfalls in
 der Tabelle.
 
+**Nachtrag 07.09.2026 (Stufe S3.4 des Katalogfilterkonzepts): kein Punkt dieser Tabelle
+wird geöffnet oder geschlossen.** Der Geräteimport hat seine zwei Filterleisten gegen die
+`Katalogliste` getauscht (Klapplisten Hersteller/Technologie, Suchfeld und die
+von/bis-Paare sind Spalten mit Trichter geworden). Die drei Punkte, die daran hängen,
+bleiben gültig: **W6‑B‑2** — der `@key`-Fix sitzt im Standard `Raster` und trägt damit
+auch die neue Liste; sein Prüffall
+`ModulImportDialogTests.Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers`
+läuft unverändert, nur setzt er den Hersteller jetzt über den Spaltentrichter.
+**W6‑B‑2‑O‑1** — die Wartehelfer `Geladen`/`Gefiltert`/`Gemeldet` sind übernommen und
+nicht umgangen. **W6‑E‑5** — die Klickregel liegt weiter im Baustein `Zeilenmarkierung`
+und beim Wirt; die `Katalogliste` meldet den Klick nur weiter. **W6‑E‑6** betrifft
+`PvStraengeFelder` und nicht die Importmaske — gemessen: der Wechselrichterimport belegte
+seinen Herstellerfilter nie vor, es gab dort nichts zu erhalten.
+
 | Nr. | Punkt | Stand |
 |---|---|---|
 | **W6‑B‑5** | **Die Modulkoeffizienten des Bestands waren verdorben — die Ampel blieb grau.** Paket‑A‑Befund **A1** (`Konzept_Photovoltaik_Ertragsmodell` N3.3): Der alte Katalogeditor `Form_AdminPV` schrieb `alpha_SC`, `beta_OC` und `T_NOCT` beim Speichern mit 0 zurück, ein älterer Schreibweg hatte sie mit dem Wert von `I_Kurzschluss` gefüllt (also etwa 9,014 A/K statt 0,0034). Der Schreibweg ist seit Schemastand 62 repariert, die **Daten** waren es nie — genau an ihnen hängen aber P1–P4 dieses Papiers (Kapitel 10, Punkt 7). | **UMGESETZT** (Commit mit Präfix `W6-B-5:`, 07.09.2026) — Anwenderentscheide **Q1–Q3**, wörtlich „Q1‑Q3: Empfehlung". **Q1 = ja:** Reparatur als **Migrationsschritt 69** mit Werten **aus der CEC-Liste** (`VDI-3805-Daten/PV/CEC Modules.csv`), gelesen mit `CECDataService` — der Leseroutine des Imports, keiner zweiten. Die vier ausgelieferten Module, die die Liste führt, sind im Schritt **eingebettet** (der Ordner ist seit W6‑O‑9 abwählbare Setup-Komponente und kann fehlen); ein Test misst die Einbettung gegen die Datei. **Q2 = ja:** die Projektkopien `Tab_PV` mit — und zusätzlich holt sich eine Projektzeile den GESUNDEN Wert ihres Stammsatzes. **Q3 = ja:** neue Referenzbasis. Die Regel erkennt die **Giftsignatur** statt IDs zu raten (Wert = `I_Kurzschluss` auf 1e‑6 genau, oder ausserhalb des physikalischen Fensters — die 0 liegt in jedem der vier ausserhalb); was keinen Treffer hat, wird **NULL** mit einer Protokollzeile je Satz, nie ein erfundener Wert. In `Kenndaten_Test.sqlite`: 4 von 6 Katalog- und 7 von 9 Projektsätzen geändert, die drei Ablytek-Module bekommen `T_NOCT` = 47,4 °C. **Nicht ergebnisneutral, und das war der Zweck:** Projekt 1007 verliert 0,69 % theoretische PV-Erzeugung (Rückfall 45 °C → Katalogwert 47,4 °C), elf der zwölf Projekte bleiben byte-gleich; neue Basis `Referenzlaeufe/2026-09-07_R6_PvKoeffizienten`, Gegenbeweis im `protokoll.txt`. Nachweise: 35 Fälle in `EPOS.Kern.Tests/PvKoeffizientenReparaturTests` |

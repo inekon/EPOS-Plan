@@ -198,6 +198,23 @@ public class KatalogImportDialogTests : BunitContext
     private static void Gemeldet(IRenderedComponent<KatalogImportDialog> cut, string text)
         => cut.WaitForAssertion(() => Assert.Contains(text, cut.Instance.Meldung));
 
+    /// <summary>
+    /// Setzt den Filter einer Spalte über ihren TRICHTER (Stufe S3.4). Er ersetzt
+    /// das von/bis-Paar und die Herstellerklappliste: <paramref name="trichter"/>
+    /// zählt die filterbaren Spalten von links, <paramref name="ausdruck"/> ist ein
+    /// <c>Zahlenausdruck</c> („10..200") bzw. „enthält…".
+    /// </summary>
+    private static void Spaltenfilter(IRenderedComponent<KatalogImportDialog> cut,
+                                      int trichter, string ausdruck)
+    {
+        cut.FindAll(".epos-trichter")[trichter].Click();
+        cut.Find(".epos-spaltenfilter input").Change(ausdruck);
+    }
+
+    /// <summary>Tippt in das EINE Suchfeld über allen Spalten (Stufe S3.4).</summary>
+    private static void Suchen(IRenderedComponent<KatalogImportDialog> cut, string text)
+        => cut.Find(".epos-katalog-suchzeile input").Input(text);
+
     // =====================================================================
     // 1 — Feldbestand je Ausprägung
     // =====================================================================
@@ -223,7 +240,9 @@ public class KatalogImportDialogTests : BunitContext
         Assert.Contains("Wirkungsgrad: [%]", felder);
         Assert.Contains("Bereitschaftsverluste: [kW]", felder);
 
-        Assert.Contains("Th. Leistung [kW] von:", cut.Find(".epos-katalogimport-filter").TextContent);
+        // S3.4: Die gefilterte Groesse ist eine SPALTE geworden - der Kopf traegt
+        // sie ohne "von:", denn ein Spaltenkopf ist keine Feldbeschriftung.
+        Assert.Contains("Th. Leistung [kW]", cut.Find("thead").TextContent);
     }
 
     /// <summary><b>Pufferspeicher</b> (Blatt 20): fünf Detailfelder, Volumenfilter.</summary>
@@ -241,7 +260,7 @@ public class KatalogImportDialogTests : BunitContext
         Assert.Contains("Bereitschaftsverluste: [kWh/d]", felder);
         Assert.DoesNotContain("Brennstoff:", felder);
 
-        Assert.Contains("Volumen [l] von:", cut.Find(".epos-katalogimport-filter").TextContent);
+        Assert.Contains("Volumen [l]", cut.Find("thead").TextContent);
     }
 
     /// <summary>
@@ -267,7 +286,7 @@ public class KatalogImportDialogTests : BunitContext
         Assert.Contains("Einfallswinkel-Korrekturfaktor für die Direktstrahlung:", felder);
         Assert.Contains("Korrekturfaktor für diffuse Strahlung:", felder);
 
-        Assert.Contains("Aperturfläche [m²] von:", cut.Find(".epos-katalogimport-filter").TextContent);
+        Assert.Contains("Aperturfläche [m²]", cut.Find("thead").TextContent);
     }
 
     /// <summary>
@@ -307,22 +326,28 @@ public class KatalogImportDialogTests : BunitContext
     // =====================================================================
 
     /// <summary>
-    /// Die Vorbelegung der beiden Filterfelder ist die des Designers und muss
-    /// bitgleich bleiben — sie ist das, was der Anwender beim Öffnen sieht.
+    /// <b>Die Filtervorbelegung des Designers ist mit Stufe S3.4 entfallen</b>
+    /// (10…200 kW, 0…1000 l, 0…5 m², 0…100 kW). Sie war die Vorbelegung von ZWEI
+    /// Zahlenfeldern; im Spaltenmodell gibt es kein Feld, das etwas vorbelegen
+    /// könnte — und eine Vorbelegung, die beim Aufmachen Zeilen verschwinden ließe,
+    /// war schon beim Stromspeicherimport als unerklärlich verworfen worden
+    /// (Entscheid W13‑E‑2). <b>Nach dem Lesen steht jetzt alles da</b>; wer
+    /// eingrenzen will, schreibt „10..200" in den Trichter der Spalte.
     /// </summary>
     [Theory]
-    [InlineData(KatalogImportArt.Heizkessel, "10,0", "200,0")]
-    [InlineData(KatalogImportArt.Pufferspeicher, "0", "1000")]
-    [InlineData(KatalogImportArt.Solarkollektoren, "0,00", "5,00")]
-    [InlineData(KatalogImportArt.Waermepumpe, "0", "100")]
-    public void Die_Filtervorbelegung_ist_die_des_Designers(
-        KatalogImportArt art, string von, string bis)
+    [InlineData(KatalogImportArt.Heizkessel)]
+    [InlineData(KatalogImportArt.Pufferspeicher)]
+    [InlineData(KatalogImportArt.Solarkollektoren)]
+    [InlineData(KatalogImportArt.Waermepumpe)]
+    public void Ohne_Filter_steht_nach_dem_Lesen_die_ganze_Datei(KatalogImportArt art)
     {
-        var cut = Bauen(art);
-        var felder = cut.FindAll(".epos-katalogimport-filter input");
+        var cut = Bauen(art, DreiZeilen());
 
-        Assert.Equal(von, felder[0].GetAttribute("value"));
-        Assert.Equal(bis, felder[1].GetAttribute("value"));
+        Einlesen(cut, 3);
+
+        // Kein Zahlenfeld mehr in der Maske - die zwei Filterleisten sind gefallen.
+        Assert.Empty(cut.FindAll(".epos-katalogimport-filter"));
+        Assert.Contains("Kessel gross", cut.Find("tbody").TextContent);
     }
 
     // =====================================================================
@@ -371,7 +396,7 @@ public class KatalogImportDialogTests : BunitContext
         // Jetzt antwortet er - so wie der Bedienfaden hinter dem Ereignis.
         await cut.InvokeAsync(() => waehler.SetResult("probe.vdi"));
 
-        cut.WaitForAssertion(() => Assert.Equal(2, cut.Instance.SichtbareZeilen));
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.Instance.SichtbareZeilen));
         Assert.Contains("Kessel klein", cut.Find("tbody").TextContent);
     }
 
@@ -415,10 +440,16 @@ public class KatalogImportDialogTests : BunitContext
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
 
-        // Die Vorbelegung 10..200 laesst den 250-kW-Kessel draussen.
-        Einlesen(cut, 2);
+        // S3.4: ohne Vorbelegung stehen ALLE drei da.
+        Einlesen(cut, 3);
 
         Assert.Contains("Kessel klein", cut.Find("tbody").TextContent);
+        Assert.Contains("Kessel gross", cut.Find("tbody").TextContent);
+
+        // Der Zahlenausdruck der SPALTE laesst den 250-kW-Kessel draussen -
+        // dasselbe, was vorher die Vorbelegung 10..200 tat.
+        Spaltenfilter(cut, 2, "10..200");
+        Gezeichnet(cut, 2);
         Assert.DoesNotContain("Kessel gross", cut.Find("tbody").TextContent);
     }
 
@@ -426,23 +457,26 @@ public class KatalogImportDialogTests : BunitContext
     public void Der_Zahlenfilter_und_der_Suchtext_wirken_zusammen()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut, 2);
+        Einlesen(cut, 3);
 
-        // Obergrenze hochsetzen: alle drei
-        cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
-        Gezeichnet(cut, 3);
-
-        // Suchtext ueber die FIRMA
-        cut.FindAll(".epos-katalogimport-filter input")[2].Input("buderus");
+        // Die Suche steht als EIN Feld ueber allen Spalten - hier trifft sie die FIRMA.
+        Suchen(cut, "buderus");
         Gezeichnet(cut, 1);
         Assert.Contains("Kessel gross", cut.Find("tbody").TextContent);
 
-        // Zwei Begriffe wirken als UND ueber beide Spalten
-        cut.FindAll(".epos-katalogimport-filter input")[2].Input("kessel buderus");
+        // Zwei Begriffe wirken als UND ueber alle Spalten
+        Suchen(cut, "kessel buderus");
         Gezeichnet(cut, 1);
 
-        cut.FindAll(".epos-katalogimport-filter input")[2].Input("kessel wolf");
+        Suchen(cut, "kessel wolf");
         Gezeichnet(cut, 0);
+
+        // Und der Spaltenfilter wirkt ZUSAETZLICH (UND) zur Suche.
+        Suchen(cut, "vaillant");
+        Gezeichnet(cut, 2);
+        Spaltenfilter(cut, 2, ">50");
+        Gezeichnet(cut, 1);
+        Assert.Contains("Kessel mittel", cut.Find("tbody").TextContent);
     }
 
     /// <summary>
@@ -456,9 +490,7 @@ public class KatalogImportDialogTests : BunitContext
     public void Mehrere_Zeilen_lassen_sich_markieren()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut, 2);
-        cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
-        Gezeichnet(cut, 3);
+        Einlesen(cut, 3);
 
         var wahl = cut.FindAll("tbody .epos-anlagenwahl");
         Assert.Equal(3, wahl.Count);
@@ -490,16 +522,14 @@ public class KatalogImportDialogTests : BunitContext
     public void Die_Markierung_uebersteht_das_Umfiltern()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut, 2);
-        cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
-        Gezeichnet(cut, 3);
+        Einlesen(cut, 3);
 
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click(new MouseEventArgs { CtrlKey = true });
         Markiert(cut, 0, 2);
 
-        // Obergrenze zurueck auf 200: der 250-kW-Kessel faellt aus Liste UND Markierung.
-        cut.FindAll(".epos-katalogimport-filter input")[1].Input("200");
+        // Spaltenfilter "<=200": der 250-kW-Kessel faellt aus Liste UND Markierung.
+        Spaltenfilter(cut, 2, "<=200");
         Gezeichnet(cut, 2);
         Markiert(cut, 0);
     }
@@ -512,7 +542,7 @@ public class KatalogImportDialogTests : BunitContext
     public void Ein_Klick_zieht_die_Detailfelder_nach()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut, 2);
+        Einlesen(cut, 3);
 
         var felder = cut.FindAll(".epos-katalogimport-details input, .epos-katalogimport-details textarea");
         Assert.Equal("", felder[0].GetAttribute("value"));
@@ -554,7 +584,7 @@ public class KatalogImportDialogTests : BunitContext
     public void Eine_Handkorrektur_am_Bezeichner_erreicht_die_Liste()
     {
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
-        Einlesen(cut, 2);
+        Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
 
         cut.FindAll(".epos-katalogimport-details input")[0].Input("Kessel umbenannt");
@@ -578,7 +608,7 @@ public class KatalogImportDialogTests : BunitContext
         var cut = Bauen(KatalogImportArt.Waermepumpe, DreiZeilen(),
             vorpruefen: (_, __) => Task.FromResult(Vorpruefung(false)),
             ausfuehren: (_, __, ___, ____, _____) => Task.FromResult(new ImportBilanz()));
-        Einlesen(cut, 2);
+        Einlesen(cut, 3);
 
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
 
@@ -601,7 +631,7 @@ public class KatalogImportDialogTests : BunitContext
                 new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl }),
             geschlossen: EventCallback.Factory.Create<bool>(this, b => ergebnis = b));
 
-        Einlesen(cut, 2);
+        Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click(new MouseEventArgs { CtrlKey = true });
         Markiert(cut, 0, 1);
@@ -628,7 +658,7 @@ public class KatalogImportDialogTests : BunitContext
                 new ImportBilanz { Markiert = anzahl, Duplikat = anzahl }),
             geschlossen: EventCallback.Factory.Create<bool>(this, b => ergebnis = b));
 
-        Einlesen(cut, 2);
+        Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
 
@@ -648,9 +678,7 @@ public class KatalogImportDialogTests : BunitContext
             ausfuehren: (anzahl, _, __, ___, ____) => Task.FromResult(
                 new ImportBilanz { Markiert = anzahl, Ueberschrieben = anzahl }));
 
-        Einlesen(cut);
-        cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
-        Gezeichnet(cut, 3);
+        Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click(new MouseEventArgs { CtrlKey = true });
         Markiert(cut, 0, 1);
@@ -687,13 +715,9 @@ public class KatalogImportDialogTests : BunitContext
                 return Task.FromResult(new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl });
             });
 
-        Einlesen(cut);
-        // Die Vorbelegungen der vier Filter sind verschieden - die Obergrenze weit
-        // aufmachen, damit alle drei Probezeilen stehen. Erst dieser Schritt hat einen
-        // Stand, auf den sich warten laesst: die Solarvorbelegung laesst nach dem Lesen
-        // null Zeilen stehen.
-        cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
-        Gezeichnet(cut, 3);
+        // S3.4: Es gibt keine Filtervorbelegung mehr - nach dem Lesen stehen bei
+        // allen vier Auspraegungen alle drei Probezeilen da.
+        Einlesen(cut, 3);
 
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
@@ -724,9 +748,7 @@ public class KatalogImportDialogTests : BunitContext
             ausfuehren: (anzahl, _, __, ___, ____) => Task.FromResult(
                 new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl }));
 
-        Einlesen(cut, 2);
-        cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
-        Gezeichnet(cut, 3);
+        Einlesen(cut, 3);
 
         // Zeile 0 ist schon markiert - der Doppelklick darf sie nicht verlieren.
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
@@ -756,10 +778,7 @@ public class KatalogImportDialogTests : BunitContext
             ausfuehren: (anzahl, _, __, ___, ____) => Task.FromResult(
                 new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl }));
 
-        Einlesen(cut);
-        // Die Solarvorbelegung filtert bis 5 m² - die Probezeilen liegen darueber.
-        cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
-        Gezeichnet(cut, 3);
+        Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Markiert(cut, 0);
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
@@ -873,8 +892,12 @@ public class KatalogImportDialogTests : BunitContext
         Quelle(cut, "bslib laden");
         Gezeichnet(cut, 4);
 
+        // S3.4: Der Kopf traegt jetzt Sortierpfeil und Trichter; der NAME steht im
+        // eigenen Element - die Wahlspalte hat keinen Sortierknopf und traegt ihn
+        // unmittelbar.
         string[] koepfe = cut.FindAll(".epos-raster thead th")
-                             .Select(t => t.TextContent.Trim()).ToArray();
+                             .Select(t => (t.QuerySelector(".epos-spaltenkopf-text")
+                                           ?? t).TextContent.Trim()).ToArray();
 
         Assert.Equal(new[] { "Wahl", "Eintrag", "Quelle", "Hersteller", "Modell",
                              "kWh", "kW", "η_RT", "Zellchemie" }, koepfe);
@@ -933,51 +956,66 @@ public class KatalogImportDialogTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Zwei Zahlenbereiche und eine Herstellerklappliste.</b> Eine Liste von
-    /// 1 bis 10 032 kWh und 0,4 bis 4 904 kW ist mit EINEM Filter nicht
-    /// einzugrenzen; und die Klappliste entsteht aus den gelesenen Sätzen —
-    /// „(alle)" voran, jeder Hersteller einmal, alphabetisch.
+    /// <b>Aus zwei Zahlenbereichen und einer Herstellerklappliste sind drei
+    /// SPALTEN geworden</b> (Stufe S3.4). Die Aussage bleibt: Eine Liste von 1 bis
+    /// 10 032 kWh und 0,4 bis 4 904 kW ist mit EINEM Filter nicht einzugrenzen —
+    /// beide Größen tragen deshalb einen eigenen Trichter, und der Hersteller
+    /// ebenso.
+    ///
+    /// <para><b>Die Klappliste mit „(alle)" ist damit entfallen</b>: Sie zählte die
+    /// 130 Hersteller der CEC-Liste auf, weil es keinen anderen Weg gab, einen
+    /// davon zu treffen. Ein Feld „enthält…" trifft ihn mit vier Zeichen und
+    /// braucht die Aufzählung nicht — und es kann etwas, das die Klappliste nie
+    /// konnte: einen Namensteil.</para>
     /// </summary>
     [Fact]
-    public void Die_Filterleiste_fuehrt_zwei_Zahlenbereiche_und_die_Hersteller()
+    public void Die_drei_Filtergroessen_sind_Spalten_mit_Trichter()
     {
         var gelesen = new List<(string, string)>();
         var cut = BauenSpeicher(gelesen);
         Quelle(cut, "bslib laden");
         Gezeichnet(cut, 4);
 
-        string leiste = cut.Find(".epos-katalogimport-filter").TextContent;
-        Assert.Contains("Kapazität [kWh] von:", leiste);
-        Assert.Contains("Leistung [kW] von:", leiste);
-        Assert.Contains("Hersteller:", leiste);
+        // Keine Filterleiste und keine Klappliste mehr.
+        Assert.Empty(cut.FindAll(".epos-katalogimport-filter"));
+        Assert.Empty(cut.FindAll(".epos-katalogimport select"));
 
-        string[] hersteller = cut.Find(".epos-katalogimport-filter")
-                                 .QuerySelector("select")!
-                                 .QuerySelectorAll("option")
-                                 .Select(o => o.TextContent.Trim()).ToArray();
+        // Die drei Groessen stehen als Spalte da - jede mit ihrem Trichter.
+        string kopf = cut.Find(".epos-raster thead").TextContent;
+        Assert.Contains("Hersteller", kopf);
+        Assert.Contains("kWh", kopf);
+        Assert.Contains("kW", kopf);
 
-        Assert.Equal(new[] { "(alle)", "Alpha ESS Co., Ltd.", "BYD", "KOSTAL", "Siemens" },
-                     hersteller);
+        // Acht Spalten sind filterbar (alle ausser der Wahlspalte).
+        Assert.Equal(8, cut.FindAll(".epos-raster thead .epos-trichter").Count);
     }
 
     /// <summary>
     /// <b>Der Herstellerfilter zeigt nur noch die Zeilen des Herstellers</b> —
-    /// und der zweite Zahlenbereich wirkt auf die LEISTUNG, nicht auf die
-    /// Kapazität.
+    /// jetzt als Spaltenfilter „enthält…" statt als Klappliste — und die zwei
+    /// Zahlenspalten greifen auf ihre je eigene Größe: kWh auf die Kapazität,
+    /// kW auf die Leistung.
     /// </summary>
     [Fact]
-    public void Die_zwei_neuen_Filter_greifen_auf_ihre_je_eigene_Groesse()
+    public void Die_drei_Filter_greifen_auf_ihre_je_eigene_Groesse()
     {
         var gelesen = new List<(string, string)>();
         var cut = BauenSpeicher(gelesen);
         Quelle(cut, "bslib laden");
         Gezeichnet(cut, 4);
 
-        // Hersteller "KOSTAL" (Zeile 3 der Klappliste, hinter "(alle)").
-        cut.Find(".epos-katalogimport-filter select").Change("3");
+        // Trichter 2 ist die Spalte "Hersteller" (nach Eintrag und Quelle).
+        Spaltenfilter(cut, 2, "KOSTAL");
         Gezeichnet(cut, 1);
 
-        cut.Find(".epos-katalogimport-filter select").Change("0");
+        Spaltenfilter(cut, 2, "");
+        Gezeichnet(cut, 4);
+
+        // Trichter 4 ist "kWh", Trichter 5 ist "kW" - zwei Groessen, zwei Filter.
+        Spaltenfilter(cut, 4, ">100");
+        Gezeichnet(cut, 0);
+
+        Spaltenfilter(cut, 4, "");
         Gezeichnet(cut, 4);
     }
 

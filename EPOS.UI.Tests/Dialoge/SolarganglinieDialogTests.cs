@@ -7,6 +7,7 @@ using EPOS.UI.Dialoge.Solarthermie;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -18,10 +19,19 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class SolarganglinieDialogTests : BunitContext
 {
-    private static readonly KatalogZeile[] Katalog =
+    /// <summary>
+    /// Der Katalog als <see cref="Katalogfilterzeile"/> — seit Stufe S3.2
+    /// (W14a-E-10) traegt die Liste Beschreibung, Jahresarbeit und Spitze und steht
+    /// im Baustein <c>Katalogliste</c>.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Katalog => new[]
     {
-        new(21, "Ganglinie Nord", "Messreihe 2024, Standort Nord"),
-        new(22, "Ganglinie Süd", "Messreihe 2024, Standort Süd")
+        Zeitreihenproben.Zeile(21, "Ganglinie Nord",
+                               beschreibung: "Messreihe 2024, Standort Nord",
+                               jahresarbeitMwh: 3.9, spitzeKw: 5.4),
+        Zeitreihenproben.Zeile(22, "Ganglinie Süd",
+                               beschreibung: "Messreihe 2024, Standort Süd",
+                               jahresarbeitMwh: 4.2, spitzeKw: 6.0)
     };
 
     public SolarganglinieDialogTests()
@@ -48,11 +58,13 @@ public class SolarganglinieDialogTests : BunitContext
         Func<int, ErzeugerZeile?>? aufnehmen = null,
         Action<ErzeugerZeile>? entfernen = null,
         IReadOnlyDictionary<string, object>? verwaltungGaben = null,
-        Func<IReadOnlyList<KatalogZeile>>? katalog = null,
+        Func<IReadOnlyList<Katalogfilterzeile>>? katalog = null,
         Action<bool>? geschlossen = null)
         => Render<SolarganglinieDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Ganglinie Nord", 21) })
-            .Add(x => x.Katalog, katalog ?? (() => Katalog))
+            .Add(x => x.Katalogzeilen, katalog ?? (() => Katalog))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Aufnehmen, aufnehmen ?? (id => Zeile(100000, "Ganglinie Süd", id)))
             .Add(x => x.Entfernen, entfernen)
             .Add(x => x.VerwaltungGaben, verwaltungGaben)
@@ -101,7 +113,9 @@ public class SolarganglinieDialogTests : BunitContext
     {
         var cut = Render<SolarganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<ErzeugerZeile>())
-            .Add(x => x.Katalog, () => Katalog)
+            .Add(x => x.Katalogzeilen, () => Katalog)
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.TitelText, "Solar thermal energy curves")
             .Add(x => x.LabelProjektliste, "Selected in the project")
             .Add(x => x.LabelBeschreibung, "Description:"));

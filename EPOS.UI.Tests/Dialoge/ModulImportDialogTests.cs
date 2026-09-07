@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -260,6 +260,23 @@ public class ModulImportDialogTests : BunitContext
     /// <see cref="Geladen"/> — auch <c>Change()</c> und <c>Input()</c> kehren zurück,
     /// ohne dass der Behandler gelaufen sein muss.
     /// </summary>
+    /// <summary>
+    /// Setzt den Filter einer Spalte über ihren TRICHTER (Stufe S3.4). Er ersetzt die
+    /// zwei Klapplisten und die ein bis zwei von/bis-Paare: <paramref name="trichter"/>
+    /// zählt die Spalten von links (die Wahlspalte trägt keinen),
+    /// <paramref name="ausdruck"/> ist „enthält…" bzw. ein <c>Zahlenausdruck</c>.
+    /// </summary>
+    private static void Spaltenfilter(IRenderedComponent<ModulImportDialog> cut,
+                                      int trichter, string ausdruck)
+    {
+        cut.FindAll(".epos-trichter")[trichter].Click();
+        cut.Find(".epos-spaltenfilter input").Change(ausdruck);
+    }
+
+    /// <summary>Tippt in das EINE Suchfeld über allen Spalten (Stufe S3.4).</summary>
+    private static void Suchen(IRenderedComponent<ModulImportDialog> cut, string text)
+        => cut.Find(".epos-katalog-suchzeile input").Input(text);
+
     private static void Gefiltert(IRenderedComponent<ModulImportDialog> cut, int zeilen)
         => cut.WaitForAssertion(() =>
         {
@@ -344,21 +361,28 @@ public class ModulImportDialogTests : BunitContext
     }
 
     /// <summary>
-    /// Die Vorbelegung der vier Zahlenfelder ist wörtlich die des Vorläufers:
-    /// <c>Nud(num_PMin, 0, 999, 0, 2)</c>, <c>Nud(num_PMax, 0, 999, 999, 2)</c>,
-    /// <c>Nud(num_EffMin, 0, 100, 0, 2)</c>, <c>Nud(num_EffMax, 0, 100, 50, 2)</c> —
-    /// jetzt als DATEN im Profil (<c>ModulImportProfil.Zahlenfilter</c>).
+    /// <b>Die vier Zahlenfelder und ihre Vorbelegung sind mit Stufe S3.4 entfallen</b>
+    /// (0…999 W, 0…50 %). Ihre AUFGABE bleibt: Leistung und Effizienz sind
+    /// ZAHLENspalten mit Trichter, und darin steht ein <c>Zahlenausdruck</c>
+    /// („&gt;300", „300..500") statt zweier Felder. Der Gewinn ist nicht nur Platz —
+    /// die Größe ist jetzt auch SICHTBAR, wonach gefiltert wird.
     /// </summary>
     [Fact]
-    public void Die_Filtervorbelegung_ist_die_des_Vorlaeufers()
+    public void Die_zwei_Groessen_sind_Zahlenspalten_statt_Feldpaare()
     {
         var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
 
-        var felder = cut.FindAll(".epos-pvimport-filter input[inputmode]");
-        Assert.Equal("0,00", felder[0].GetAttribute("value"));
-        Assert.Equal("999,00", felder[1].GetAttribute("value"));
-        Assert.Equal("0,00", felder[2].GetAttribute("value"));
-        Assert.Equal("50,00", felder[3].GetAttribute("value"));
+        // Keine Filterleiste mehr - und kein Zahlenfeld.
+        Assert.Empty(cut.FindAll(".epos-pvimport-filter"));
+        Assert.Empty(cut.FindAll(".epos-katalogliste input[inputmode]"));
+
+        // Zehn Spalten, alle mit Trichter.
+        Assert.Equal(10, cut.FindAll(".epos-raster thead .epos-trichter").Count);
+
+        // Und der Zahlenausdruck wirkt auf die Leistung: 270,6 | 400 | 651,1 W
+        Spaltenfilter(cut, 4, ">300");
+        Gefiltert(cut, 2);
     }
 
     /// <summary>
@@ -412,26 +436,28 @@ public class ModulImportDialogTests : BunitContext
     }
 
     /// <summary>
-    /// <b>„(alle)" ist ein STEUERWERT, kein Anzeigetext</b> (Befund W13-B39,
-    /// Abweichung A-22): Der Vorläufer verglich gegen die Zeichenkette „(alle)";
-    /// eine Übersetzung hätte den Filter still zerrissen. Hier ist es der
-    /// Listenplatz 0.
+    /// <b>Aus der Herstellerklappliste ist ein Spaltenfilter „enthält…" geworden</b>
+    /// (Stufe S3.4). Damit ist auch die Frage nach dem STEUERWERT „(alle)" erledigt,
+    /// die den Vorläufer beschäftigte (Befund W13‑B39): Ein leerer Ausdruck IST
+    /// „alle" — es gibt keinen Anzeigetext mehr, gegen den verglichen würde und den
+    /// eine Übersetzung still zerreißen könnte.
+    ///
+    /// <para>Und er kann etwas, das die Klappliste nie konnte: einen NAMENSTEIL.
+    /// Bei 258 Herstellern der CEC-Liste ist das der Unterschied zwischen Suchen
+    /// und Finden.</para>
     /// </summary>
     [Fact]
-    public void Der_Herstellerfilter_laeuft_ueber_den_Listenplatz()
+    public void Der_Herstellerfilter_ist_eine_Spalte_mit_Trichter()
     {
         var cut = Bauen(saetze: DreiModule());
         CecLaden(cut);
 
-        var liste = cut.FindAll(".epos-pvimport-filter select")[0];
-        Assert.Equal("(alle)", liste.QuerySelectorAll("option")[0].TextContent);
-        Assert.Equal(3, liste.QuerySelectorAll("option").Length);   // (alle) + zwei Hersteller
-
-        liste.Change("2");                                          // "Trina Solar"
+        // Trichter 2 ist die Spalte "Hersteller" (nach Quelle und Modulname).
+        Spaltenfilter(cut, 2, "Trina");
         Gefiltert(cut, 1);
         Assert.Contains("Trina TSM-650", cut.Find("tbody").TextContent);
 
-        cut.FindAll(".epos-pvimport-filter select")[0].Change("0"); // wieder alle
+        Spaltenfilter(cut, 2, "");
         Gefiltert(cut, 3);
     }
 
@@ -446,16 +472,16 @@ public class ModulImportDialogTests : BunitContext
         var cut = Bauen(saetze: DreiModule());
         CecLaden(cut);
 
-        var suche = cut.FindAll(".epos-pvimport-filter input[type='text']")[0];
-
-        suche.Input("Ablytek*");
+        // S3.4: Es ist das EINE Suchfeld der Katalogliste - dieselben Platzhalter,
+        // denn Katalogfilter ruft dasselbe Suchmuster.
+        Suchen(cut, "Ablytek*");
         Gefiltert(cut, 2);
 
-        cut.FindAll(".epos-pvimport-filter input[type='text']")[0].Input("*650*");
+        Suchen(cut, "*650*");
         Gefiltert(cut, 1);
 
         // Ohne Platzhalter ist es eine Teilsuche.
-        cut.FindAll(".epos-pvimport-filter input[type='text']")[0].Input("6MN");
+        Suchen(cut, "6MN");
         Gefiltert(cut, 2);
     }
 
@@ -470,32 +496,40 @@ public class ModulImportDialogTests : BunitContext
         CecLaden(cut);
 
         // 8,81 * 30,72 = 270,6 | 10 * 40 = 400 | 17,27 * 37,7 = 651,1
-        var felder = cut.FindAll(".epos-pvimport-filter input[inputmode]");
-        felder[0].Input("300");
+        // S3.4: EIN Zahlenausdruck in der Spalte statt zweier Felder. Die Regel
+        // "Obergrenze 0 heisst keine Obergrenze" braucht es damit nicht mehr -
+        // ">=300" IST der offene Bereich.
+        Spaltenfilter(cut, 4, ">=300");
         Gefiltert(cut, 2);
 
-        cut.FindAll(".epos-pvimport-filter input[inputmode]")[1].Input("500");
+        Spaltenfilter(cut, 4, "300..500");
         Gefiltert(cut, 1);
 
-        // Obergrenze 0 heisst "keine Obergrenze".
-        cut.FindAll(".epos-pvimport-filter input[inputmode]")[1].Input("0");
+        Spaltenfilter(cut, 4, ">=300");
         Gefiltert(cut, 2);
     }
 
+    /// <summary>
+    /// „Zurücksetzen" gibt die Liste wieder frei — Suche UND Spaltenfilter. Er
+    /// bleibt als eigener Knopf neben dem „Filter zurücksetzen" der Katalogliste
+    /// stehen, weil nur ER auch die WAHL leert (W6‑E‑5).
+    /// </summary>
     [Fact]
-    public void Zuruecksetzen_stellt_die_Vorbelegung_wieder_her()
+    public void Zuruecksetzen_gibt_die_Liste_wieder_frei()
     {
         var cut = Bauen(saetze: DreiModule());
         CecLaden(cut);
 
-        cut.FindAll(".epos-pvimport-filter input[type='text']")[0].Input("Trina*");
+        Suchen(cut, "Trina*");
+        Gefiltert(cut, 1);
+
+        Spaltenfilter(cut, 2, "Trina");
         Gefiltert(cut, 1);
 
         Knopf(cut, "Zurücksetzen").Click();
 
         Gefiltert(cut, 3);
-        var felder = cut.FindAll(".epos-pvimport-filter input[inputmode]");
-        Assert.Equal("999,00", felder[1].GetAttribute("value"));
+        Assert.Equal("", cut.Find(".epos-katalog-suchzeile input").GetAttribute("value"));
     }
 
     // =====================================================================
@@ -749,9 +783,10 @@ public class ModulImportDialogTests : BunitContext
 
         Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
 
-        // Die Filterleiste ist KEIN Raster geworden.
-        Assert.NotEmpty(cut.FindAll(".epos-pvimport-filter"));
-        Assert.Empty(cut.FindAll(".epos-pvimport-filter .epos-formularraster"));
+        // S3.4: Die zwei Filterleisten sind gefallen - und die Katalogliste ist
+        // KEIN Formularraster geworden.
+        Assert.Empty(cut.FindAll(".epos-pvimport-filter"));
+        Assert.Empty(cut.FindAll(".epos-katalog-suchzeile .epos-formularraster"));
     }
 
     // =====================================================================
@@ -796,9 +831,9 @@ public class ModulImportDialogTests : BunitContext
 
         Assert.DoesNotContain("Bifazial", kopf);
 
-        // EINE Klappliste (Hersteller) und EIN Zahlenbereich (AC-Nennleistung).
-        Assert.Single(cut.FindAll(".epos-pvimport-filter select"));
-        Assert.Equal(2, cut.FindAll(".epos-pvimport-filter input[inputmode]").Count);
+        // S3.4: SIEBEN Spalten mit Trichter - keine Klappliste, kein Zahlenfeld.
+        Assert.Equal(7, cut.FindAll(".epos-raster thead .epos-trichter").Count);
+        Assert.Empty(cut.FindAll(".epos-pvimport-filter"));
     }
 
     /// <summary>
@@ -812,13 +847,12 @@ public class ModulImportDialogTests : BunitContext
         var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete());
         Laden(cut);
 
-        var hersteller = cut.FindAll(".epos-pvimport-filter select")[0];
-        Assert.Equal(3, hersteller.QuerySelectorAll("option").Length);   // alle + zwei Firmen
-
-        hersteller.Change("1");
+        // S3.4: Der Hersteller ist Spalte 2 - "Alpha" trifft die zwei Geraete.
+        Spaltenfilter(cut, 2, "Alpha");
         Gefiltert(cut, 2);
 
-        cut.FindAll(".epos-pvimport-filter input[type=text]")[0].Input("*10000*");
+        // Suche UND Spaltenfilter gelten gleichzeitig: "*10000*" liegt bei Beta.
+        Suchen(cut, "*10000*");
         Gefiltert(cut, 0);
 
         Knopf(cut, "Zurücksetzen").Click();
@@ -1146,8 +1180,8 @@ public class ModulImportDialogTests : BunitContext
 
         Gefiltert(cut, 155);
 
-        // Die zweite Firma der Klappliste: (alle) = 0, "ABB" = 1, "SMA America" = 2.
-        cut.FindAll(".epos-pvimport-filter select")[0].Change("2");
+        // S3.4: der Hersteller als Spaltenfilter statt als Klappliste.
+        Spaltenfilter(cut, 2, "SMA America");
 
         Gefiltert(cut, 5);
         Assert.Contains("Filter Auswahl (5 Geräte gefunden)", cut.Markup);
@@ -1362,7 +1396,7 @@ public class ModulImportDialogTests : BunitContext
 
         // ... dann auf die zweite Firma filtern: die beiden sind unsichtbar,
         // bleiben aber gewaehlt.
-        cut.FindAll(".epos-pvimport-filter select")[0].Change("2");
+        Spaltenfilter(cut, 2, "Beta");
         Gefiltert(cut, 1);
         Assert.Equal(2, cut.Instance.Gewaehlte.Count);
         Assert.Empty(cut.FindAll("tbody .epos-knopf--primaer"));   // keine markierte Zeile sichtbar

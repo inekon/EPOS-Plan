@@ -68,7 +68,11 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
-                ["Katalog"] = new Func<Task<List<GanglinienKatalogZeile>>>(KatalogLesen),
+                // W14a-E-10 / S3.2: die Katalogliste des Hauses, mit Jahresarbeit und
+                // Spitze aus EINER Gruppenabfrage ueber die 78 840 Wertzeilen.
+                ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(KatalogLesen),
+                ["Katalogprofil"] = Katalogfilterprofil.FuerZeitreihe(
+                    Zeitreihenart.Stromganglinie, BedarfAdminHuelle.Filtertext),
                 ["Loeschen"] = new Func<string, Task<bool>>(Loeschen),
                 ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen),
                 ["Einlesen"] = new Func<string, GanglinienRaster, GanglinienImportRueckrufe,
@@ -82,26 +86,20 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Katalog samt ReadOnly-Kennzeichen.
+        /// Der Katalog samt seinen Parameterspalten (Stufe S3.2) — Bezeichner,
+        /// Zeitintervall, Jahresarbeit [MWh] und Spitze [kW]; das ReadOnly-Kennzeichen
+        /// steht als <c>Katalogfilterzeile.Geschuetzt</c> mit darin.
         ///
-        /// <para><b>Seit iU9-W12-E-1 aus dem Modell</b>: <c>ReadAll</c> liest die
-        /// Spalte mit, und der frühere Aufruf <c>ctrl.IsReadOnly(bezeichner)</c> je
-        /// Zeile war eine zweite Abfrage pro Katalogeintrag (N+1). Die Werte sind
-        /// dieselben — es ist dieselbe Spalte derselben Tabelle.</para>
+        /// <para><b>Die zwei Kennzahlen kosten EINE Gruppenabfrage je Liste</b>
+        /// (<c>GanglinienAuswertungCtrl.Kennzahlen</c>) — die Wertetabelle fuehrt
+        /// 78 840 Zeilen, und je Katalogsatz zu fragen hiesse sie dreimal zu lesen.
+        /// Dass N+1 hier teuer ist, war schon der Befund von W12-E-1: Der Vorlaeufer
+        /// rief <c>ctrl.IsReadOnly(bezeichner)</c> je Zeile.</para>
         /// </summary>
-        internal static Task<List<GanglinienKatalogZeile>> KatalogLesen()
+        internal static Task<IReadOnlyList<Katalogfilterzeile>> KatalogLesen()
         {
-            StromganglinieStammCtrl ctrl = new StromganglinieStammCtrl();
-            ctrl.ReadAll();
-
-            List<GanglinienKatalogZeile> liste = new List<GanglinienKatalogZeile>();
-            for (int i = 0; i < ctrl.rows; i++)
-            {
-                StromganglinieModel m = ctrl.items[i];
-                liste.Add(new GanglinienKatalogZeile(m.m_szBezeichner, m.m_Zeitinterval,
-                                                     m.m_bReadOnly));
-            }
-            return Task.FromResult(liste);
+            return Task.FromResult(
+                ZeitreihenKatalogCtrl.Katalogfilterzeilen(Zeitreihenart.Stromganglinie));
         }
 
         /// <summary>

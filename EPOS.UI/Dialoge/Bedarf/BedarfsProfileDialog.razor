@@ -95,37 +95,16 @@
         </Links>
 
         <Rechts>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <thead>
-                        <tr>
-                            <th>@SpalteWahl</th>
-                            <th>@SpalteName</th>
-                            @if (MitTypspalte)
-                            {
-                                <th>@SpalteTyp</th>
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (BedarfsKatalogZeile zeile in _katalog)
-                        {
-                            BedarfsKatalogZeile k = zeile;
-                            <tr class="@(k == _katalogzeile ? "epos-zeile--markiert" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(k == _katalogzeile)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => KatalogzeileWaehlen(k)" />
-                                </td>
-                                <td>@k.Name</td>
-                                @if (MitTypspalte)
-                                {
-                                    <td>@k.Typ</td>
-                                }
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.1):
+               Suchzeile unmittelbar ueber der Liste (#76 woertlich), Spaltenkoepfe
+               mit Sortierpfeil und Trichter, die Liste ueber die ganze Breite. Bis
+               hierher trug sie zwei bis drei Spalten (Wahl, Name, bei zwei der drei
+               Auspraegungen der Typ) und gar keinen Filter. Das PROFIL traegt die
+               Spalte "im Projekt verwendet" (Q12). *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogzeileWaehlen"
+                          Vergleichsparameter="@Vergleichsparameter" />
 
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf"
@@ -251,8 +230,36 @@
     /// </summary>
     [Parameter] public List<BedarfsProfilZeile> Zeilen { get; set; } = new();
 
-    /// <summary>Der Profilkatalog.</summary>
-    [Parameter] public Func<IReadOnlyList<BedarfsKatalogZeile>>? Katalog { get; set; }
+    /// <summary>
+    /// Der Profilkatalog samt Parameterspalten
+    /// (<c>BedarfStammCtrl.Katalogfilterzeilen</c>, Stufe S3.1) — bis dahin eine Liste
+    /// aus Name und Typ.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>
+    /// Die Spalten des Katalogs —
+    /// <c>Katalogfilterprofil.FuerBedarf(art, …).MitVerwendungsspalte(…)</c>; die
+    /// Spalte „im Projekt verwendet" gehört zu den PROJEKTdialogen (Q12).
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+    /// <summary>
+    /// <b>Die Zeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) — derselbe Weg,
+    /// aus dem die Parameterübersicht (W14a‑E‑8) ihre Zeilen holt. Ohne ihn
+    /// vergleicht die <c>Katalogliste</c> ihre eigenen Spalten.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// Ein eigener Filterstand statt des Registers (Muster der neun Katalogdialoge).
+    /// Ohne ihn holt der Dialog seinen Stand aus dem <c>Katalogfilterregister</c> —
+    /// je Katalog EINER, für die Sitzung, gemeinsam mit der Verwaltung.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>Der Infoblock zu einem Profil.</summary>
     [Parameter] public Func<string, BedarfsProfilInfo?>? Info { get; set; }
@@ -427,9 +434,13 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private IReadOnlyList<BedarfsKatalogZeile> _katalog = Array.Empty<BedarfsKatalogZeile>();
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
     private BedarfsProfilZeile? _gewaehlt;
-    private BedarfsKatalogZeile? _katalogzeile;
+    private Katalogfilterzeile? _katalogzeile;
+
+    /// <summary>Der Bezeichner der gewählten Katalogzeile — die Markierung hängt am NAMEN.</summary>
+    private string _katalogGewaehlt = "";
 
     private string _infoName = "";
     private string _infoBeschreibung = "";
@@ -458,7 +469,13 @@
     public BedarfsProfilZeile? Gewaehlt => _gewaehlt;
 
     /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
-    public BedarfsKatalogZeile? Katalogzeile => _katalogzeile;
+    public Katalogfilterzeile? Katalogzeile => _katalogzeile;
+
+    /// <summary>Die Zeilen des Katalogs — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Der Filterstand der Katalogliste — Prüfhilfe für die Tests.</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
 
     /// <summary>Die stehende Meldung — Prüfhilfe für die Tests.</summary>
     public string Meldung => _meldung;
@@ -482,12 +499,9 @@
     /// <summary>Steht das Wochen-Stundenprofil? Prüfhilfe für die Tests.</summary>
     public bool TypProfilOffen => _typProfilOffen;
 
-    /// <summary>Der Stromverbraucherkatalog ist eine LISTE ohne Typspalte (Bestand).</summary>
-    private bool MitTypspalte => Art != BedarfsArt.Stromverbraucher;
-
     private string Gesamtsumme => _einheit.Formatiere(_einheit.AusMWh(Summe()));
 
-    private string Loeschfrage => string.Format(MeldungLoeschfrage, _katalogzeile?.Name ?? "");
+    private string Loeschfrage => string.Format(MeldungLoeschfrage, _katalogzeile?.Bezeichner ?? "");
 
     /// <summary>Die beiden Einheiten als Auswahlliste — MWh zuerst.</summary>
     private IReadOnlyList<(int Id, string Text)> Einheitenwahl
@@ -511,9 +525,21 @@
         }
     }
 
+    protected override void OnParametersSet()
+    {
+        // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes.
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
+
     protected override void OnInitialized()
     {
         _einheit = Einheit ?? Energieeinheit.Vorgabe;
+
+        // S2.5/S3.1: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit der
+        // Verwaltung desselben Bedarfs (Frage Q2).
+        _filterstand = Filterstandvorgabe
+            ?? Katalogfilterregister.Stand(Katalogprofil?.Schluessel ?? ("BEDARF_" + Art));
+
         KatalogLaden();
         if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
     }
@@ -546,8 +572,31 @@
 
     private void KatalogLaden()
     {
-        _katalog = Katalog?.Invoke() ?? Array.Empty<BedarfsKatalogZeile>();
-        if (_katalogzeile is not null && !_katalog.Contains(_katalogzeile)) _katalogzeile = null;
+        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        VerwendungStempeln();
+
+        if (_katalogzeile is null) return;
+
+        // Die gewaehlte Zeile kann aus dem Katalog verschwunden sein (Loeschen).
+        _katalogzeile = Katalogsatz(_katalogGewaehlt);
+        if (_katalogzeile is null) _katalogGewaehlt = "";
+    }
+
+    /// <summary>
+    /// Die Spalte „im Projekt verwendet" (Q12) — EINMAL für die ganze Liste aus der
+    /// LEBENDEN Projektliste, nicht je Zeile und nicht aus der Datenbank: Der Dialog
+    /// schreibt erst beim OK zurück.
+    /// </summary>
+    private void VerwendungStempeln()
+        => Katalogverwendung.Stempeln(_katalog, Zeilen.Select(z => z.Name));
+
+    /// <summary>Der Katalogsatz zu einem Bezeichner; <c>null</c>, wenn es ihn nicht gibt.</summary>
+    private Katalogfilterzeile? Katalogsatz(string bezeichner)
+    {
+        if (string.IsNullOrEmpty(bezeichner)) return null;
+        foreach (Katalogfilterzeile z in _katalog)
+            if (z.Bezeichner == bezeichner) return z;
+        return null;
     }
 
     private double Summe()
@@ -569,6 +618,7 @@
     {
         _gewaehlt = z;
         _katalogzeile = null;
+        _katalogGewaehlt = "";
         _jahresverbrauchMWh = z.Summe;
         InfoSetzen(z.Name);
     }
@@ -577,12 +627,16 @@
     /// Eine KATALOGZEILE zeigt die Summe der zwölf Monatswerte
     /// (<c>listBox_*_DB_SelectedIndexChanged</c>).
     /// </summary>
-    private void KatalogzeileWaehlen(BedarfsKatalogZeile k)
+    private void KatalogzeileWaehlen(string bezeichner)
     {
+        Katalogfilterzeile? k = Katalogsatz(bezeichner);
+        if (k is null) return;
+
         _katalogzeile = k;
+        _katalogGewaehlt = k.Bezeichner;
         _gewaehlt = null;
-        _jahresverbrauchMWh = Jahressumme?.Invoke(k.Name) ?? 0;
-        InfoSetzen(k.Name);
+        _jahresverbrauchMWh = Jahressumme?.Invoke(k.Bezeichner) ?? 0;
+        InfoSetzen(k.Bezeichner);
     }
 
     private void InfoSetzen(string name)
@@ -603,7 +657,7 @@
     {
         if (_katalogzeile is null || Aufnehmen is null) return;
 
-        BedarfsProfilZeile? neu = Aufnehmen(_katalogzeile.Name);
+        BedarfsProfilZeile? neu = Aufnehmen(_katalogzeile.Bezeichner);
         if (neu is null) return;
 
         Zeilen.Add(neu);
@@ -620,7 +674,7 @@
         _gewaehlt = Zeilen.Count > 0 ? Zeilen[0] : null;
 
         if (_gewaehlt is not null) ProjektzeileWaehlen(_gewaehlt);
-        else if (_katalog.Count > 0) KatalogzeileWaehlen(_katalog[0]);
+        else if (_katalog.Count > 0) KatalogzeileWaehlen(_katalog[0].Bezeichner);
 
         Geaendert?.Invoke();
         _meldung = "";
@@ -756,7 +810,7 @@
         _loeschfrage = false;
         if (antwort != true || _katalogzeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogzeile.Name)) return;
+        if (!KatalogLoeschen(_katalogzeile.Bezeichner)) return;
 
         _katalogzeile = null;
         KatalogLaden();

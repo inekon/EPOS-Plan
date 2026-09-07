@@ -432,6 +432,10 @@ namespace WindowsFormsApplication1
                 // Projekt verwendet" hinten dran (Q12, nur im Projektdialog).
                 ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
                     Anlagenart.Heizkessel, Text_),
+                // W14a-E-10 / S3.3: die Zeilen des Vergleichs kommen aus DERSELBEN
+                // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
+                ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    n => ParameterUebersichtCtrl.Werte(Anlagenart.Heizkessel, n, Text_)),
 
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     stamm.Katalogfilterzeilen),

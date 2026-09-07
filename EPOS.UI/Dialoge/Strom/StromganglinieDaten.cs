@@ -4,18 +4,6 @@ using WindowsFormsApplication1;
 namespace EPOS.UI.Dialoge.Strom;
 
 /// <summary>
-/// Eine Zeile des Stromganglinien-KATALOGS (<c>Tab_Stromganglinie_STAMM</c>).
-///
-/// <para>Die Komponente sieht das Modell des Kerns nicht: <c>StromganglinieModel</c>
-/// ist dort <c>internal</c>. Sie bekommt deshalb diesen Satz — Name, Raster und das
-/// Auslieferungskennzeichen, mehr braucht die Liste nicht.</para>
-/// </summary>
-/// <param name="Bezeichner">Der Name; er ist zugleich der Schluessel des Katalogs.</param>
-/// <param name="Zeitinterval">Intervalle je Stunde: 1 = Stunde, 4 = Viertelstunde.</param>
-/// <param name="NurLesen">Auslieferungssatz — er darf nicht geloescht werden.</param>
-public sealed record GanglinienKatalogZeile(string Bezeichner, int Zeitinterval, bool NurLesen);
-
-/// <summary>
 /// Eine Zeile der PROJEKTauswahl — eine dem Projekt zugeordnete Stromganglinie.
 ///
 /// <para><c>Schluessel</c> ist die Zuordnungs-Id (<c>Z_ProjektStromganglinie.ID</c>),

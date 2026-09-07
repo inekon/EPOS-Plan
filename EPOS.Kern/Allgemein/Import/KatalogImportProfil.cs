@@ -285,6 +285,50 @@ namespace WindowsFormsApplication1
         public KatalogDefinition Katalog => KatalogRegistry.Finde(Katalogschluessel);
 
         // ==================================================================
+        // Stufe S3.4 - die Kandidatenliste im Spaltenmodell
+        // ==================================================================
+
+        /// <summary>Schluessel der Spalte „Eintrag" (der Bezeichner des Kandidaten).</summary>
+        public const string SpalteEintrag = "EINTRAG";
+
+        /// <summary>
+        /// Schluessel der ZAHLENspalte der vier VDI-Auspraegungen — die Groesse, auf
+        /// die der Zahlenfilter wirkt (<c>KatalogZeile.Filterwert</c>).
+        /// </summary>
+        public const string SpalteFilterwert = "FILTERWERT";
+
+        /// <summary>
+        /// Die Spalten der Kandidatenliste (Stufe S3.4). <see cref="Finde"/> setzt es;
+        /// es ist NIE <c>null</c>.
+        /// </summary>
+        public Katalogfilterprofil Listenprofil { get; private set; }
+
+        /// <summary>
+        /// Titel der Spalte, auf die der ERSTE Zahlenfilter wirkt — ohne „von:", denn
+        /// ein Spaltenkopf ist keine Feldbeschriftung. Bei den vier VDI-Auspraegungen
+        /// gesetzt; beim Stromspeicher leer, dort ist es eine der
+        /// <see cref="Listenspalten"/>.
+        /// </summary>
+        public string FilterSpaltentitel { get; private set; } = "";
+
+        /// <summary>Einheit dieser Spalte (kW, l, m²); leer, wo es keine gibt.</summary>
+        public string FilterSpalteneinheit { get; private set; } = "";
+
+        /// <summary>
+        /// Der Schluessel der Spalte hinter dem ERSTEN Zahlenfilter. Bei den vier
+        /// VDI-Auspraegungen <see cref="SpalteFilterwert"/>, beim Stromspeicher
+        /// <c>ENERGIE</c> — der Wert kommt in beiden Faellen aus
+        /// <c>KatalogZeile.Filterwert</c>.
+        /// </summary>
+        public string Filterspalte { get; private set; } = SpalteFilterwert;
+
+        /// <summary>
+        /// Der Schluessel der Spalte hinter dem ZWEITEN Zahlenfilter
+        /// (<c>KatalogZeile.Filterwert2</c>); leer, wo es keinen gibt.
+        /// </summary>
+        public string Zweitfilterspalte { get; private set; } = "";
+
+        // ==================================================================
         // Die vier Auspraegungen
         // ==================================================================
 
@@ -296,7 +340,62 @@ namespace WindowsFormsApplication1
         public static KatalogImportProfil Finde(KatalogImportArt art, Func<string, string> text = null)
         {
             Func<string, string> t = text ?? (s => s);
+            KatalogImportProfil p = Bauen(art, t);
+            p.Listenprofil = BaueListenprofil(p, t);
+            return p;
+        }
 
+        /// <summary>
+        /// <b>Die Spalten der Kandidatenliste als <see cref="Katalogfilterprofil"/></b>
+        /// (Stufe <b>S3.4</b> des Katalogfilterkonzepts, Frage Q10).
+        ///
+        /// <para>Sie sind dieselben, die die Maske vorher von Hand baute — nur stehen
+        /// sie jetzt als DATEN da, und damit tragen sie Trichter, Sortierpfeil und das
+        /// eine Suchfeld der <c>Katalogliste</c>. Der Aufbau:</para>
+        /// <list type="bullet">
+        /// <item>„Eintrag" — der Bezeichner des Kandidaten (bei den vier VDI-Importen
+        /// vom Anwender aenderbar).</item>
+        /// <item>Ohne eigene <see cref="Listenspalten"/>: „Hersteller" und die
+        /// GEFILTERTE Groesse als ZAHLENspalte. Sie stand vorher nur in der
+        /// Filterleiste („Th. Leistung [kW] von: … bis: …"), war also filterbar, ohne
+        /// sichtbar zu sein; als Spalte ist sie beides.</item>
+        /// <item>Mit eigenen Listenspalten (Stromspeicher): diese, wobei die zwei
+        /// Groessen der beiden Zahlenfilter (<see cref="Filterspalte"/>,
+        /// <see cref="Zweitfilterspalte"/>) ZAHLENspalten werden — sonst liesse sich
+        /// „10..60" darauf nicht schreiben.</item>
+        /// </list>
+        /// </summary>
+        private static Katalogfilterprofil BaueListenprofil(KatalogImportProfil p, Func<string, string> t)
+        {
+            var spalten = new List<Katalogspalte>
+            {
+                new Katalogspalte(SpalteEintrag, t("IMP_KAT_SP_EINTRAG"))
+            };
+
+            if (p.Listenspalten.Count == 0)
+            {
+                // Ein SPALTENKOPF traegt keinen Doppelpunkt (dieselbe Regel wie beim
+                // Stromspeicher) - IMP_KAT_FELD_FIRMA ist die Feldbeschriftung.
+                spalten.Add(new Katalogspalte(FeldFirma, t("IMP_KAT_SP_HERSTELLER")));
+                spalten.Add(new Katalogspalte(SpalteFilterwert, p.FilterSpaltentitel,
+                                              p.FilterSpalteneinheit, Katalogspaltenart.Zahl));
+            }
+            else
+            {
+                foreach (KatalogImportSpalte s in p.Listenspalten)
+                {
+                    bool zahl = s.Schluessel == p.Filterspalte || s.Schluessel == p.Zweitfilterspalte;
+                    spalten.Add(new Katalogspalte(
+                        s.Schluessel, s.Titel, "",
+                        zahl ? Katalogspaltenart.Zahl : Katalogspaltenart.Text));
+                }
+            }
+
+            return Katalogfilterprofil.AusSpalten("IMPORT_" + p.Art, spalten);
+        }
+
+        private static KatalogImportProfil Bauen(KatalogImportArt art, Func<string, string> t)
+        {
             switch (art)
             {
                 case KatalogImportArt.Heizkessel:
@@ -308,6 +407,9 @@ namespace WindowsFormsApplication1
                         UnterordnerRueckfall = "",
                         Dateifilter = VdiFilter,
                         FilterBezeichnung = t("IMP_KAT_FILTER_LEISTUNG"),
+                        // S3.4: dieselbe Groesse als SPALTE - der Kopf traegt kein "von:".
+                        FilterSpaltentitel = t("IMP_KAT_SP_LEISTUNG_TH"),
+                        FilterSpalteneinheit = t("IMP_KAT_EINH_KW"),
                         FilterNachkommastellen = 1,
                         FilterVon = 10,
                         FilterBis = 200,
@@ -334,6 +436,8 @@ namespace WindowsFormsApplication1
                         UnterordnerRueckfall = "",
                         Dateifilter = VdiFilter,
                         FilterBezeichnung = t("IMP_KAT_FILTER_VOLUMEN"),
+                        FilterSpaltentitel = t("IMP_KAT_SP_VOLUMEN"),
+                        FilterSpalteneinheit = t("IMP_KAT_EINH_LITER"),
                         FilterNachkommastellen = 0,
                         FilterVon = 0,
                         FilterBis = 1000,
@@ -358,6 +462,8 @@ namespace WindowsFormsApplication1
                         UnterordnerRueckfall = "",
                         Dateifilter = VdiFilter,
                         FilterBezeichnung = t("IMP_KAT_FILTER_APERTUR"),
+                        FilterSpaltentitel = t("IMP_KAT_SP_APERTUR"),
+                        FilterSpalteneinheit = t("IMP_KAT_EINH_M2"),
                         FilterNachkommastellen = 2,
                         FilterVon = 0,
                         FilterBis = 5,
@@ -391,6 +497,8 @@ namespace WindowsFormsApplication1
                         UnterordnerRueckfall = "VDI",
                         Dateifilter = VdiFilter,
                         FilterBezeichnung = t("IMP_KAT_FILTER_LEISTUNG"),
+                        FilterSpaltentitel = t("IMP_KAT_SP_LEISTUNG_TH"),
+                        FilterSpalteneinheit = t("IMP_KAT_EINH_KW"),
                         FilterNachkommastellen = 0,
                         FilterVon = 0,
                         FilterBis = 100,
@@ -428,6 +536,9 @@ namespace WindowsFormsApplication1
                         UnterordnerRueckfall = "",
                         Dateifilter = TabellenFilter,
                         FilterBezeichnung = t("IMP_KAT_FILTER_ENERGIE"),
+                        // S3.4: hier sind es zwei der Listenspalten, kein eigener Kopf.
+                        Filterspalte = "ENERGIE",
+                        Zweitfilterspalte = "LEISTUNG",
                         FilterNachkommastellen = 1,
                         // Die Vorbelegung zeigt ALLES. Bei den vier VDI-Importen
                         // stand hier die Zahl aus dem Designer; hier gibt es

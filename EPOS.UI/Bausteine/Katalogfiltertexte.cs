@@ -69,4 +69,42 @@ public sealed class Katalogfiltertexte
 
     /// <summary>Kopf der Wahlspalte (<c>KBROW_SPALTE_WAHL</c> bzw. der Wirt).</summary>
     public string SpalteWahl { get; set; } = "Wahl";
+
+    // =====================================================================
+    //  Der VERGLEICH (Frage Q3, Stufe S3.3)
+    // =====================================================================
+
+    /// <summary>Der Knopf „Vergleichen" in der Suchzeile (<c>KFLT_VERGLEICHEN</c>).</summary>
+    public string Vergleichen { get; set; } = Resource.KFLT_VERGLEICHEN;
+
+    /// <summary>Überschrift der Vergleichs-Überlagerung (<c>KFLT_VERGLEICH_TITEL</c>).</summary>
+    public string VergleichTitel { get; set; } = Resource.KFLT_VERGLEICH_TITEL;
+
+    /// <summary>
+    /// Der Kurztext am gesperrten Knopf: <b>wie</b> man markiert
+    /// (<c>KFLT_VERGLEICH_HINWEIS</c>). Strg-Klick ist unsichtbar; ohne diesen Satz
+    /// fände ihn niemand.
+    /// </summary>
+    public string VergleichHinweis { get; set; } = Resource.KFLT_VERGLEICH_HINWEIS;
+
+    /// <summary>Die Meldung bei der VIERTEN Markierung (<c>KFLT_VERGLEICH_GRENZE</c>).</summary>
+    public string VergleichGrenze { get; set; } = Resource.KFLT_VERGLEICH_GRENZE;
+
+    /// <summary>„{0} markiert" — der Zusatz am Knopf (<c>KFLT_VERGLEICH_MARKIERT</c>).</summary>
+    public string VergleichMarkiert { get; set; } = Resource.KFLT_VERGLEICH_MARKIERT;
+
+    /// <summary>Kopf der ersten Spalte des Vergleichs (<c>KFLT_VERGLEICH_SP_PARAMETER</c>).</summary>
+    public string VergleichSpalteParameter { get; set; } = Resource.KFLT_VERGLEICH_SP_PARAMETER;
+
+    /// <summary>
+    /// „abweichend" (<c>KFLT_VERGLEICH_ABWEICHEND</c>) — die Kennzeichnung trägt
+    /// WORTE und nicht nur Farbe (dieselbe Auflage wie beim Trichter).
+    /// </summary>
+    public string VergleichAbweichend { get; set; } = Resource.KFLT_VERGLEICH_ABWEICHEND;
+
+    /// <summary>„stimmig" (<c>KFLT_VERGLEICH_STIMMIG</c>).</summary>
+    public string VergleichStimmig { get; set; } = Resource.KFLT_VERGLEICH_STIMMIG;
+
+    /// <summary>Kurztext des ✕ (<c>KFLT_VERGLEICH_SCHLIESSEN</c>).</summary>
+    public string VergleichSchliessen { get; set; } = Resource.KFLT_VERGLEICH_SCHLIESSEN;
 }

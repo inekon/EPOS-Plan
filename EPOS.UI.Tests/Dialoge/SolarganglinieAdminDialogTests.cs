@@ -26,11 +26,20 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class SolarganglinieAdminDialogTests : BunitContext
 {
-    private static readonly List<SolarganglinieAdminDialog.Katalogzeile> KATALOG = new()
+    /// <summary>
+    /// Der Katalog als <see cref="Katalogfilterzeile"/> — seit Stufe S3.2
+    /// (W14a-E-10) traegt die Liste Jahresarbeit und Spitze und steht im Baustein
+    /// <c>Katalogliste</c>.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> KATALOG => new[]
     {
-        new(1, "Tsol1", "Leistung Solarsystem [W]", false),
-        new(2, "Auslieferung Sued", "Referenzjahr 2020", true),
-        new(3, "Messreihe Nord", "Standort Nord", false)
+        Zeitreihenproben.Zeile(1, "Tsol1", beschreibung: "Leistung Solarsystem [W]",
+                               jahresarbeitMwh: 3.9, spitzeKw: 5.4),
+        Zeitreihenproben.Zeile(2, "Auslieferung Sued", geschuetzt: true,
+                               beschreibung: "Referenzjahr 2020",
+                               jahresarbeitMwh: 4.2, spitzeKw: 6.0),
+        Zeitreihenproben.Zeile(3, "Messreihe Nord", beschreibung: "Standort Nord",
+                               jahresarbeitMwh: 2.5, spitzeKw: 3.1)
     };
 
     public SolarganglinieAdminDialogTests()
@@ -62,13 +71,15 @@ public class SolarganglinieAdminDialogTests : BunitContext
         Func<string, Task<AblageErgebnis>>? ablegen = null,
         Func<string, Task<bool>>? mitSystem = null,
         Func<string, IProgress<ImportFortschritt>, Task<SolarganglinieImportErgebnis>>? einlesen = null,
-        List<SolarganglinieAdminDialog.Katalogzeile>? katalog = null,
+        IReadOnlyList<Katalogfilterzeile>? katalog = null,
         Action<bool>? geschlossen = null)
     {
-        List<SolarganglinieAdminDialog.Katalogzeile> liste = katalog ?? KATALOG;
+        IReadOnlyList<Katalogfilterzeile> liste = katalog ?? KATALOG;
 
         return Render<SolarganglinieAdminDialog>(p => p
-            .Add(x => x.Katalog, () => Task.FromResult(new List<SolarganglinieAdminDialog.Katalogzeile>(liste)))
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(liste))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.HatProjektzuordnung, hatZuordnung ?? (_ => Task.FromResult(false)))
             .Add(x => x.Loeschen, loeschen ?? (_ => Task.FromResult(true)))
             .Add(x => x.DateiWaehlen, dateiWaehlen)
@@ -209,7 +220,7 @@ public class SolarganglinieAdminDialogTests : BunitContext
     [Fact]
     public void Ja_loescht_und_meldet()
     {
-        var rest = new List<SolarganglinieAdminDialog.Katalogzeile>(KATALOG);
+        var rest = new List<Katalogfilterzeile>(KATALOG);
         var cut = Aufbauen(katalog: rest,
                            loeschen: n =>
                            {
@@ -318,13 +329,14 @@ public class SolarganglinieAdminDialogTests : BunitContext
     [Fact]
     public void Ein_erfolgreicher_Import_laedt_den_Katalog_neu()
     {
-        var liste = new List<SolarganglinieAdminDialog.Katalogzeile>(KATALOG);
+        var liste = new List<Katalogfilterzeile>(KATALOG);
         var cut = Aufbauen(
             katalog: liste,
             dateiWaehlen: _ => Task.FromResult<string?>(@"D:\VDI-3805-Daten\Solarthermie\Tsol2.txt"),
             einlesen: (p, m) =>
             {
-                liste.Add(new SolarganglinieAdminDialog.Katalogzeile(4, "Tsol2", "Neu", false));
+                liste.Add(Zeitreihenproben.Zeile(4, "Tsol2", beschreibung: "Neu",
+                                                 jahresarbeitMwh: 1.0, spitzeKw: 2.0));
                 return Task.FromResult(new SolarganglinieImportErgebnis
                 {
                     Erfolgreich = true,

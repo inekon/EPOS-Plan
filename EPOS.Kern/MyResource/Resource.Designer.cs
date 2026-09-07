@@ -87,6 +87,13 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
+        
+        
+        
+        
+        
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -13341,6 +13348,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_APERTUR {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_APERTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zellchemie ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_CHEMIE {
@@ -13395,6 +13411,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Th. Leistung ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_LEISTUNG_TH {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_LEISTUNG_TH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modell ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_MODELL {
@@ -13409,6 +13434,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_SP_QUELLE {
             get {
                 return ResourceManager.GetString("IMP_KAT_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_VOLUMEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_VOLUMEN", resourceCulture);
             }
         }
         
@@ -15890,6 +15924,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferung ähnelt.
+        /// </summary>
+        public static string KFLT_SP_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string KFLT_SP_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("KFLT_SP_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner ähnelt.
         /// </summary>
         public static string KFLT_SP_BEZEICHNER {
@@ -16007,6 +16059,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeit ähnelt.
+        /// </summary>
+        public static string KFLT_SP_JAHRESARBEIT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_JAHRESARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string KFLT_SP_JAHRESSUMME {
+            get {
+                return ResourceManager.GetString("KFLT_SP_JAHRESSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die k1 ähnelt.
         /// </summary>
         public static string KFLT_SP_K1 {
@@ -16057,6 +16127,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_MODULFLAECHE {
             get {
                 return ResourceManager.GetString("KFLT_SP_MODULFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string KFLT_SP_MONAT {
+            get {
+                return ResourceManager.GetString("KFLT_SP_MONAT", resourceCulture);
             }
         }
         
@@ -16151,6 +16230,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitze ähnelt.
+        /// </summary>
+        public static string KFLT_SP_SPITZE {
+            get {
+                return ResourceManager.GetString("KFLT_SP_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Technologie ähnelt.
         /// </summary>
         public static string KFLT_SP_TECHNOLOGIE {
@@ -16165,6 +16253,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_TNOCT {
             get {
                 return ResourceManager.GetString("KFLT_SP_TNOCT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
+        /// </summary>
+        public static string KFLT_SP_TYP {
+            get {
+                return ResourceManager.GetString("KFLT_SP_TYP", resourceCulture);
             }
         }
         
@@ -16219,6 +16316,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_SP_VOLUMEN {
             get {
                 return ResourceManager.GetString("KFLT_SP_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitintervall ähnelt.
+        /// </summary>
+        public static string KFLT_SP_ZEITINTERVALL {
+            get {
+                return ResourceManager.GetString("KFLT_SP_ZEITINTERVALL", resourceCulture);
             }
         }
         
@@ -16282,6 +16388,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_TRICHTER_GESETZT {
             get {
                 return ResourceManager.GetString("KFLT_TRICHTER_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleichen ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICHEN {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abweichend ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es lassen sich höchstens drei Zeilen vergleichen. ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_GRENZE {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strg-Klick markiert eine Zeile zum Vergleich – zwei oder drei. ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_HINWEIS {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} markiert ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_MARKIERT {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_MARKIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich schließen ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_SP_PARAMETER {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_SP_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die stimmig ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_STIMMIG {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_STIMMIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich ähnelt.
+        /// </summary>
+        public static string KFLT_VERGLEICH_TITEL {
+            get {
+                return ResourceManager.GetString("KFLT_VERGLEICH_TITEL", resourceCulture);
             }
         }
         
@@ -33005,7 +33192,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale solare Leistung [W/m²]: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale solare Einstrahlung [W/m²]: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_MAX_SOLARE_LEISTUNG {
             get {
@@ -33068,6 +33255,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon direkt genutzt [MWh/a]: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_PV_GENUTZT {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_PV_GENUTZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gesamte Stromerzeugung der Module [MWh/a]: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_PV_GESAMT {
@@ -33082,24 +33278,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_PV_REST {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_PV_REST", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die davon direkt genutzt [MWh/a]: ähnelt.
-        /// </summary>
-        public static string SIMERG_LBL_PV_GENUTZT {
-            get {
-                return ResourceManager.GetString("SIMERG_LBL_PV_GENUTZT", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche aus Nennleistung und Wirkungsgrad geschätzt, der Katalog führt für dieses Modul keine Maße. ähnelt.
-        /// </summary>
-        public static string SIMERG_TIP_FLAECHE_GESCHAETZT {
-            get {
-                return ResourceManager.GetString("SIMERG_TIP_FLAECHE_GESCHAETZT", resourceCulture);
             }
         }
         
@@ -33505,6 +33683,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TAB_WP_STROM {
             get {
                 return ResourceManager.GetString("SIMERG_TAB_WP_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche aus Nennleistung und Wirkungsgrad geschätzt, der Katalog führt für dieses Modul keine Maße. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_FLAECHE_GESCHAETZT {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_FLAECHE_GESCHAETZT", resourceCulture);
             }
         }
         

@@ -40,8 +40,8 @@ namespace WindowsFormsApplication1
     {
         private static readonly object _schloss = new object();
 
-        private static readonly Dictionary<Anlagenart, Katalogfilterstand> _staende =
-            new Dictionary<Anlagenart, Katalogfilterstand>();
+        private static readonly Dictionary<string, Katalogfilterstand> _staende =
+            new Dictionary<string, Katalogfilterstand>(StringComparer.Ordinal);
 
         /// <summary>
         /// Der Stand dieses Katalogs — beim ersten Zugriff ein frischer, danach
@@ -50,13 +50,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static Katalogfilterstand Stand(Anlagenart art)
         {
+            return Stand("ANLAGE_" + art);
+        }
+
+        /// <summary>
+        /// Derselbe Weg ueber den sprachneutralen KATALOGSCHLUESSEL
+        /// (<see cref="Katalogfilterprofil.Schluessel"/>) — seit Stufe S3, in der sechs
+        /// Kataloge dazukommen, die keine <see cref="Anlagenart"/> sind (drei Bedarfe,
+        /// drei Zeitreihen). Fuer die acht Anlagenkataloge liefert
+        /// <see cref="Stand(Anlagenart)"/> denselben Eintrag; das gemeinsame
+        /// Gedaechtnis aus S2.5 bleibt unberuehrt.
+        /// </summary>
+        public static Katalogfilterstand Stand(string katalog)
+        {
+            string schluessel = katalog ?? "";
+
             lock (_schloss)
             {
                 Katalogfilterstand s;
-                if (!_staende.TryGetValue(art, out s))
+                if (!_staende.TryGetValue(schluessel, out s))
                 {
                     s = new Katalogfilterstand();
-                    _staende[art] = s;
+                    _staende[schluessel] = s;
                 }
                 return s;
             }
@@ -67,7 +82,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static bool Bekannt(Anlagenart art)
         {
-            lock (_schloss) { return _staende.ContainsKey(art); }
+            return Bekannt("ANLAGE_" + art);
+        }
+
+        /// <summary>Dieselbe Pruefhilfe ueber den Katalogschluessel (Stufe S3).</summary>
+        public static bool Bekannt(string katalog)
+        {
+            lock (_schloss) { return _staende.ContainsKey(katalog ?? ""); }
         }
 
         /// <summary>

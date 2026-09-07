@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -387,6 +387,24 @@ namespace WindowsFormsApplication1
         /// <summary>Die Zahlenbereichsfilter (PV: zwei, Wechselrichter: einer).</summary>
         public IReadOnlyList<ImportZahlenfilter> Zahlenfilter { get; private set; }
 
+        // ==================================================================
+        // Stufe S3.4 - die Kandidatenliste im Spaltenmodell
+        // ==================================================================
+
+        /// <summary>
+        /// Die Spalten hinter den <see cref="Zahlenfilter"/>n, in derselben
+        /// Reihenfolge: Stelle 0 traegt <c>ImportZeile.Zahl1</c>, Stelle 1
+        /// <c>ImportZeile.Zahl2</c>. Sie werden im <see cref="Listenprofil"/> zu
+        /// ZAHLENspalten.
+        /// </summary>
+        public IReadOnlyList<string> Zahlspalten { get; private set; } = new string[0];
+
+        /// <summary>
+        /// Die Spalten der Kandidatenliste (Stufe S3.4). <see cref="Finde"/> setzt es;
+        /// es ist NIE <c>null</c>.
+        /// </summary>
+        public Katalogfilterprofil Listenprofil { get; private set; }
+
         /// <summary>Statuszeile vor dem ersten Laden.</summary>
         public string StatusBereit { get; private set; }
 
@@ -434,13 +452,42 @@ namespace WindowsFormsApplication1
         {
             Func<string, string> t = text ?? (s => s);
 
+            ModulImportProfil p;
             switch (art)
             {
-                case ModulImportArt.Photovoltaik: return Photovoltaik(t);
-                case ModulImportArt.Wechselrichter: return Wechselrichter(t);
+                case ModulImportArt.Photovoltaik: p = Photovoltaik(t); break;
+                case ModulImportArt.Wechselrichter: p = Wechselrichter(t); break;
+                default: throw new ArgumentOutOfRangeException(nameof(art));
             }
 
-            throw new ArgumentOutOfRangeException(nameof(art));
+            p.Listenprofil = BaueListenprofil(p);
+            return p;
+        }
+
+        /// <summary>
+        /// <b>Die Spalten der Kandidatenliste als <see cref="Katalogfilterprofil"/></b>
+        /// (Stufe <b>S3.4</b> des Katalogfilterkonzepts, Frage Q10).
+        ///
+        /// <para>Es sind DIESELBEN <see cref="Spalten"/> wie bisher — sie tragen jetzt
+        /// nur Trichter und Sortierpfeil. Die ein bis zwei Groessen der Zahlenleiste
+        /// (<see cref="Zahlspalten"/>) werden dabei ZAHLENspalten, sonst liesse sich
+        /// „10..60" nicht darauf schreiben; alle uebrigen bleiben Text.</para>
+        /// </summary>
+        private static Katalogfilterprofil BaueListenprofil(ModulImportProfil p)
+        {
+            var spalten = new List<Katalogspalte>(p.Spalten.Count);
+            foreach (ImportSpalte s in p.Spalten)
+            {
+                bool zahl = false;
+                for (int i = 0; i < p.Zahlspalten.Count; i++)
+                    if (p.Zahlspalten[i] == s.Schluessel) zahl = true;
+
+                spalten.Add(new Katalogspalte(
+                    s.Schluessel, s.Titel, "",
+                    zahl ? Katalogspaltenart.Zahl : Katalogspaltenart.Text));
+            }
+
+            return Katalogfilterprofil.AusSpalten("IMPORT_" + p.Art, spalten);
         }
 
         /// <summary>Beide Ausprägungen — für Stapelprüfungen.</summary>
@@ -494,6 +541,9 @@ namespace WindowsFormsApplication1
                     new ImportZahlenfilter(t("PVIMP_LBL_EFFIZIENZ_VON"), t("IMP_KAT_FILTER_BIS"),
                                            t("IMP_KAT_EINH_PROZENT"), 0, 100, 0, 50)
                 },
+
+                // S3.4: die zwei Groessen der Zahlenleiste als SPALTEN.
+                Zahlspalten = new[] { SpaltePmp, SpalteEffizienz },
 
                 Spalten = new[]
                 {
@@ -586,6 +636,9 @@ namespace WindowsFormsApplication1
                     new ImportZahlenfilter(t("WRK_IMP_LBL_P_AC_VON"), t("IMP_KAT_FILTER_BIS"),
                                            "kW", 0, 10000, 0, 0)
                 },
+
+                // S3.4: die eine Groesse der Zahlenleiste als SPALTE.
+                Zahlspalten = new[] { SpaltePAc },
 
                 Spalten = new[]
                 {

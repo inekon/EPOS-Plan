@@ -70,16 +70,17 @@
         <Liste>
             <Gruppenkopf Titel="@LabelKatalog" />
 
-            <Raster TZeile="Katalogzeile" Zeilen="@Katalogzeilen">
-                <KindInhalt>
-                    <TemplateColumn TGridItem="Katalogzeile" Title="@SpalteWahlText">
-                        <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahlText"
-                                    Gewaehltwerden="() => Waehlen(context)" />
-                    </TemplateColumn>
-                    <PropertyColumn TGridItem="Katalogzeile" TProp="string"
-                                    Property="@(z => z.Bezeichner)" Title="@SpalteBezeichnerText" />
-                </KindInhalt>
-            </Raster>
+            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.1):
+               Suche ueber alle Spalten, Trefferzahl, und der Filter sitzt im
+               Spaltenkopf. Bis hierher zeigte die Liste EINE Spalte - den
+               Bezeichner -, und Typ, Jahressumme und Beschreibung standen erst
+               im Detailblock des angeklickten Satzes (Konzept Befund 1.2/2).
+               Wer die 41 Stromverbraucher vergleichen wollte, klickte sie
+               einzeln durch. *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
+                          Vergleichsparameter="@Vergleichsparameter" />
         </Liste>
 
         <Eingabe>
@@ -165,9 +166,6 @@
 </div>
 
 @code {
-    /// <summary>Eine Zeile des Katalogs.</summary>
-    public sealed record Katalogzeile(string Bezeichner);
-
     /// <summary>
     /// Welcher der drei Bedarfskataloge. Sie bestimmt Beschriftungen UND Rechenweg —
     /// beides liefert die Hülle, hier hängt nur die Hilfeadresse daran.
@@ -178,8 +176,40 @@
     // Delegaten — die Datenseite liegt in der Huelle
     // =====================================================================
 
-    /// <summary>Die Liste (<c>BedarfStammCtrl.Bezeichner</c>).</summary>
-    [Parameter] public Func<IReadOnlyList<string>>? Katalog { get; set; }
+    /// <summary>
+    /// Die Zeilen des Katalogs samt Parameterspalten
+    /// (<c>BedarfStammCtrl.Katalogfilterzeilen</c>, Stufe S3.1). Bis dahin war es die
+    /// blosse Namensliste <c>BedarfStammCtrl.Bezeichner</c>; die Reihenfolge ist
+    /// dieselbe (<c>ORDER BY Bezeichner</c>).
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>
+    /// Die Spalten des Katalogs — <c>Katalogfilterprofil.FuerBedarf(art, …)</c>. Ohne
+    /// Profil zeichnet die <see cref="Katalogliste"/> nichts.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+    /// <summary>
+    /// <b>Die Zeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) — derselbe Weg,
+    /// aus dem die Parameterübersicht (W14a‑E‑8) ihre Zeilen holt. Ohne ihn
+    /// vergleicht die <c>Katalogliste</c> ihre eigenen Spalten.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+
+    /// <summary>
+    /// Die Beschriftungen der Katalogliste (Suche, Trefferzahl, „Filter zurücksetzen",
+    /// „Kein Treffer.", Trichter). Sie füllen sich selbst aus <c>MyResource</c>.
+    /// </summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// Ein eigener Filterstand statt des Registers — dasselbe Muster wie in den acht
+    /// Verwaltungsdialogen (S2.5). Ohne ihn holt der Dialog seinen Stand aus dem
+    /// <c>Katalogfilterregister</c>: je Katalog EINER, für die Sitzung, gemeinsam mit
+    /// dem Projektdialog desselben Bedarfs.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>
     /// Beschreibung und Typ eines Satzes (<c>BedarfStammCtrl.Kopf</c>); <c>null</c>,
@@ -231,7 +261,6 @@
     [Parameter] public string LabelBeschreibung { get; set; } = Resource.BADM_LBL_BESCHREIBUNG;
     [Parameter] public string LabelTyp { get; set; } = Resource.BADM_LBL_TYP;
     [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
-    [Parameter] public string SpalteBezeichnerText { get; set; } = Resource.WBAD_SPALTE_BEZEICHNER;
 
     [Parameter] public string BtnAendernText { get; set; } = "";
     [Parameter] public string BtnNeuText { get; set; } = "";
@@ -262,7 +291,8 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private List<Katalogzeile> _katalog = new();
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
     private string _gewaehlt = "";
     private string _beschreibung = "";
     private string _typ = "";
@@ -278,9 +308,13 @@
     private IReadOnlyDictionary<string, object>? _typStammGaben;
     private IReadOnlyDictionary<string, object>? _ergebnisGaben;
 
-    private IQueryable<Katalogzeile> Katalogzeilen => _katalog.AsQueryable();
-
     private bool ZeileGewaehlt => _gewaehlt.Length > 0;
+
+    /// <summary>Die Zeilen des Katalogs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Der Filterstand der Liste (Prüfhilfe für Tests).</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
 
     /// <summary>Der gewählte Satz (Prüfhilfe für Tests).</summary>
     public string Gewaehlt => _gewaehlt;
@@ -301,7 +335,22 @@
     // Aufbau
     // =====================================================================
 
-    protected override void OnInitialized() => KatalogLaden();
+    protected override void OnParametersSet()
+    {
+        // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes -
+        // dasselbe Wort in allen Katalogdialogen.
+        Filtertexte.SpalteWahl = SpalteWahlText;
+    }
+
+    protected override void OnInitialized()
+    {
+        // S2.5/S3.1: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit dem
+        // Projektdialog desselben Bedarfs (Frage Q2).
+        _filterstand = Filterstandvorgabe
+            ?? Katalogfilterregister.Stand(Katalogprofil?.Schluessel ?? ("BEDARF_" + Art));
+
+        KatalogLaden();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -317,23 +366,24 @@
     /// </summary>
     public void KatalogLaden()
     {
-        if (Katalog is null) return;
+        if (Katalogzeilen is null) return;
 
-        IReadOnlyList<string> namen = Katalog() ?? Array.Empty<string>();
-        _katalog = namen.Select(n => new Katalogzeile(n)).ToList();
+        _katalog = Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
 
         if (_katalog.Count == 0) { Leeren(); return; }
-        if (_katalog.All(z => z.Bezeichner != _gewaehlt)) Waehlen(_katalog[0]);
-        else Waehlen(new Katalogzeile(_gewaehlt));
+        if (_katalog.All(z => z.Bezeichner != _gewaehlt)) Waehlen(_katalog[0].Bezeichner);
+        else Waehlen(_gewaehlt);
     }
+
+    private void BeiZeile(string bezeichner) => Waehlen(bezeichner);
 
     /// <summary>
     /// Eine Zeile wählen — <c>listBox_*_SelectedIndexChanged</c> des Vorläufers:
     /// Jahressumme rechnen und den Kopf zeigen.
     /// </summary>
-    private void Waehlen(Katalogzeile zeile)
+    private void Waehlen(string bezeichner)
     {
-        _gewaehlt = zeile.Bezeichner;
+        _gewaehlt = bezeichner ?? "";
         _meldung = "";
 
         _jahressumme = Jahressumme is not null ? Jahressumme(_gewaehlt) ?? "" : "";

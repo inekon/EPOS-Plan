@@ -133,22 +133,40 @@ public class KatalogdialogTests : BunitContext
 
     private IRenderedComponent<SolarganglinieAdminDialog> Solarganglinienverwaltung() =>
         Render<SolarganglinieAdminDialog>(p => p
-            .Add(x => x.Katalog, () => Task.FromResult(new List<SolarganglinieAdminDialog.Katalogzeile>
-            {
-                new(1, "Ganglinie A", "Beschreibung", false)
-            })));
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(
+                (IReadOnlyList<Katalogfilterzeile>)new[]
+                {
+                    new Katalogfilterzeile(1, "Ganglinie A")
+                        .MitText(Katalogfilterprofil.SpBezeichner, "Ganglinie A")
+                        .MitText(Katalogfilterprofil.SpBeschreibung, "Beschreibung")
+                }))
+            .Add(x => x.Katalogprofil,
+                 Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Solarganglinie, s => s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
     private IRenderedComponent<WaermebedarfAdminDialog> Waermebedarfsverwaltung() =>
         Render<WaermebedarfAdminDialog>(p => p
-            .Add(x => x.Katalog, () => Task.FromResult(new List<WaermebedarfAdminDialog.Katalogzeile>
-            {
-                new(1, "Bedarf A", false)
-            })));
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(
+                (IReadOnlyList<Katalogfilterzeile>)new[]
+                {
+                    new Katalogfilterzeile(1, "Bedarf A")
+                        .MitText(Katalogfilterprofil.SpBezeichner, "Bedarf A")
+                }))
+            .Add(x => x.Katalogprofil,
+                 Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Waermebedarf, s => s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
     private IRenderedComponent<BedarfAdminDialog> Bedarfsverwaltung() =>
         Render<BedarfAdminDialog>(p => p
             .Add(x => x.Art, BedarfsArt.Stromverbraucher)
-            .Add(x => x.Katalog, () => (IReadOnlyList<string>)new[] { "Verbraucher A" }));
+            .Add(x => x.Katalogzeilen, () => (IReadOnlyList<Katalogfilterzeile>)new[]
+            {
+                new Katalogfilterzeile(1, "Verbraucher A")
+                    .MitText(Katalogfilterprofil.SpBezeichner, "Verbraucher A")
+            })
+            .Add(x => x.Katalogprofil,
+                 Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, s => s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
     private IRenderedComponent<KlimadatenDialog> Klimaregionen() =>
         Render<KlimadatenDialog>(p => p
