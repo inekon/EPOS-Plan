@@ -35,6 +35,28 @@ dem Zusammenhang rechnete. Herleitung und Messung stehen in
 [`Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md`](../Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md)
 § 11.2.6; der Entscheid selbst in § 8 („Em‑9.8 / Em‑9.9 — die sieben Fragen aus § 11.5").
 
+## Die zweite Einfrierregel: PV-Modulkoeffizienten (Befund W6‑B‑5, 07.09.2026)
+
+Dieselbe Klasse von Falle, andere Spalte. Seit dem Schemaschritt **69** stehen in
+`Tab_PV_STAMM` und `Tab_PV` quellrichtige Temperaturkoeffizienten — und **`T_NOCT` geht in
+beide PV-Modelle**: `SimulationPV.NoctDesModuls` nimmt den Katalogwert, sobald er im Fenster
+20…60 °C liegt, und sonst den Rückfall 45 °C. Ein einziger geänderter NOCT verschiebt damit
+die Jahreserzeugung eines Projekts.
+
+> **Wer einen gesäten Modulkoeffizienten der Testdatenbank ändert, friert im selben Schritt
+> die Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen ist jede Änderung an `alpha_SC`, `beta_OC`, `gamma_PMP` oder `T_NOCT` in
+> `Tab_PV_STAMM` (6 Sätze) und `Tab_PV` (9 Sätze) — und ebenso das Anlegen eines neuen
+> PV-Moduls, das ein Referenzprojekt benutzt.
+>
+> **Rechenwirkung hat davon nur `T_NOCT`** (und `gamma_PMP`, das aber in keinem
+> Referenzprojekt verdorben war). `alpha_SC` und `beta_OC` liest kein Rechenweg — sie
+> speisen die Strangplausibilität (die Ampel des PV-Dialogs) und die Importprüfung. Der
+> Gegenbeweis dazu steht im `protokoll.txt` der Basis `2026-09-07_R6_PvKoeffizienten`: Setzt
+> man allein `T_NOCT` auf den alten Rückfallwert zurück und lässt die drei anderen Spalten
+> repariert, ist Projekt 1007 wieder **byte-gleich zu R5**.
+
 ## Aktuelle Basis
 
 **`2026-09-05_M5_nach-Merge5/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
@@ -74,13 +96,80 @@ heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Wa
 > & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 
-### CI-Basis auf Linux: `2026-09-07_R5_Zahlenrand` (löst `2026-09-07_R4_Double` ab)
+### CI-Basis auf Linux: `2026-09-07_R6_PvKoeffizienten` (löst `2026-09-07_R5_Zahlenrand` ab)
+
+**`2026-09-07_R6_PvKoeffizienten/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018,
+1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, unverändert **1 792 Skalare**
+(kein Schlüssel neu, keiner entfallen), gerechnet mit dem plattformfreien `EPOS.Referenzlauf`
+auf Linux gegen `Kenndaten_Test.sqlite` (**Schemastand 69**). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045) jeden Push, `ios.yml` den
+iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach.
+
+> **Anlass: der Befund W6‑B‑5 mit den drei Entscheiden Q1–Q3 vom 07.09.2026, alle
+> „Empfehlung"** — Schemaschritt **69** repariert die verdorbenen PV-Modulkoeffizienten
+> (Paket‑A‑Befund **A1**, `Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md` N3.3): Der alte
+> Katalogeditor `Form_AdminPV` schrieb `alpha_SC`, `beta_OC` und `T_NOCT` mit 0 zurück, ein
+> älterer Schreibweg hatte sie mit dem Wert von `I_Kurzschluss` gefüllt. Der Schreibweg ist
+> seit Schemastand 62 repariert — die **Daten** waren es nie.
+>
+> **Elf der zwölf Projekte sind BYTE-GLEICH zu R5.** Nur **1007** weicht ab, und dort nur die
+> acht Dateien der PV-Kette (`aggregate`, `pv_produktion`, `pv_produktion_theoretisch`,
+> `pv_reststrom`, `pv_speicherfuellstand`, `pv_ueberschuss`, `reststrom_viertelstunde`,
+> `ssp_gespeichert_viertelstunde`); die 21 übrigen Dateien des Projekts sind byte-gleich.
+>
+> | Projekt | Werte | Abw. über Toleranz | Ursache |
+> |---|---|---|---|
+> | 1007 | 324 219 | 19 198 | `Tab_PV.T_NOCT` 9,34 (Rückfall 45 °C) → **47,4** aus der CEC-Liste |
+> | alle übrigen | — | **0** | byte-gleich |
+>
+> **Die Ursache ist genau eine Spalte.** Von den vier reparierten liest der Rechenweg nur
+> `T_NOCT`: `T_Zelle = T_amb + (G/800)·(NOCT − 20)`. Der Sprung 45 → 47,4 °C hebt die
+> Zelltemperatur bei 800 W/m² um 2,4 K; mit `gamma_PMP` = −0,4509 %/K sind das −1,08 % in
+> der vollen Sonne und über das Jahr **−0,69 %** theoretische Erzeugung (6 055,97 →
+> 6 014,29 kWh). `alpha_SC` und `beta_OC` liest **kein** Rechenweg — nur
+> `StrangPlausibilitaet` (die Ampel des PV-Dialogs) und die Importprüfung.
+>
+> | Skalar (Projekt 1007) | R5 | R6 | rel. |
+> |---|---|---|---|
+> | `Vektor.pv_produktion_theoretisch.Summe` | 6 055,971 | 6 014,289 | −6,88e‑3 |
+> | `Vektor.pv_produktion.Summe` | 5 148,297 | 5 126,662 | −4,20e‑3 |
+> | `Vektor.pv_ueberschuss.Summe` | 907,674 | 887,627 | −2,21e‑2 |
+> | `Vektor.pv_speicherfuellstand.Summe` | 13 949,031 | 13 879,119 | −5,01e‑3 |
+> | `Sim.Reststrom` | 50,5102403 | 50,5386766 | +5,63e‑4 |
+>
+> **Der Gegenbeweis:** Auf einer Kopie der reparierten Datenbank allein `T_NOCT` der zwei
+> Zeilen 1007005/1007006 zurück auf 45,0 gesetzt — `alpha_SC`, `beta_OC` und `gamma_PMP`
+> bleiben repariert. Ergebnis: **29 von 29 Dateien byte-gleich zu R5**. Die Abweichung dieser
+> Basis kommt ausschliesslich aus `T_NOCT`; der Rechenweg selbst ist unangetastet.
+>
+> **Warum 1040 und 1045 nicht abweichen, obwohl sie PV führen:** 1040 fährt das
+> Jinkosolar-Modul, dessen `T_NOCT` von 9,014 (ausserhalb des Fensters → Rückfall 45) auf
+> `NULL` geht — der Leseweg liest `NULL` als 0, und 0 liegt ebenfalls ausserhalb: derselbe
+> Rückfall vorher wie nachher. 1045 führt die zwei von Hand gepflegten Zeilen aus **W6‑O‑7**
+> (`T_NOCT` 45,0); sie sind gesund und werden vom Schritt nicht angefasst.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes 12/12 **byte-gleich**
+> (`diff -rq` ohne einen einzigen Unterschied in 312 CSV), Toleranzvergleich 12/12 PASS
+> (3 313 072 Werte). **Laufzeit** 00:00:04. Der Schemaschritt selbst ist ebenfalls
+> wiederholbar: Ein zweiter Lauf meldet „verdorbene Saetze vorher 0" und ändert keine Zeile.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045 \
+>   --ziel Referenzlaeufe/2026-09-07_R6_PvKoeffizienten
+> ```
+>
+> Die vollständige Vorher-/Nachher-Tabelle der 6 + 9 Katalogsätze, die Herleitung der
+> −0,69 % und der Gegenbeweis stehen im `protokoll.txt` der Basis.
+
+### Vorgängerbasis: `2026-09-07_R5_Zahlenrand` (löste `2026-09-07_R4_Double` ab)
 
 **`2026-09-07_R5_Zahlenrand/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018, 1023,
-1024, 1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, jetzt **1 792 Skalare** (vorher 1 722),
+1024, 1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, **1 792 Skalare** (vorher 1 722),
 gerechnet mit dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(Schemastand 67). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045)
-jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach.
+(Schemastand 67). Sie war bis zum 07.09.2026 die CI-Basis und bleibt zur Geschichte liegen;
+abgelöst hat sie `2026-09-07_R6_PvKoeffizienten` (Befund W6‑B‑5, Entscheide Q1–Q3).
 
 > **Anlass: drei Anwenderentscheide vom 07.09.2026, alle „Empfehlung".**
 >

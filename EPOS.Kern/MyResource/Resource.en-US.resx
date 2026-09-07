@@ -15778,6 +15778,27 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="PVS_HERLEITUNG_MODUL" xml:space="preserve">
     <value>Empty means the string is calculated with the module of the system. A separate module type applies to this string only.</value>
   </data>
+  <data name="PVS_FEHLT_UOC_WERT" xml:space="preserve">
+    <value>open-circuit voltage U_OC of the module</value>
+  </data>
+  <data name="PVS_FEHLT_UMPP_WERT" xml:space="preserve">
+    <value>MPP voltage U_MPP of the module</value>
+  </data>
+  <data name="PVS_FEHLT_ISC_WERT" xml:space="preserve">
+    <value>short-circuit current I_SC of the module</value>
+  </data>
+  <data name="PVS_FEHLT_ALPHA_SC" xml:space="preserve">
+    <value>temperature coefficient alpha_SC of the module</value>
+  </data>
+  <data name="PVS_FEHLT_BETA_OC" xml:space="preserve">
+    <value>temperature coefficient beta_OC of the module</value>
+  </data>
+  <data name="PVS_PFLEGEWEG" xml:space="preserve">
+    <value>Maintain here: Administration → Energy systems → Photovoltaics → PV modules → Edit (fields alpha_SC, beta_OC, T_NOCT), alternatively re-import from “CEC Modules.csv”</value>
+  </data>
+  <data name="PVS_NICHT_GEPFLEGT" xml:space="preserve">
+    <value>– not maintained</value>
+  </data>
   <data name="IMP_GER_BTN_CEC_DATEI" xml:space="preserve">
     <value>📄 Load CEC file ▶</value>
   </data>

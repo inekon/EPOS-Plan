@@ -6,7 +6,25 @@
    was der Bestand als SelectedValue las.
 
    <select> ist auf Touchgeraeten ein Gewinn: Edge oeffnet dafuer eine
-   fingerfreundliche Liste, ohne dass die Komponente etwas dafuer tun muss. *@
+   fingerfreundliche Liste, ohne dass die Komponente etwas dafuer tun muss.
+
+   DIE GEWAEHLTE OPTION TRAEGT selected (Befund W6-B-4, Windows-Abnahme
+   07.09.2026). Bis hierher stand die Wahl AUSSCHLIESSLICH im Attribut value
+   des <select> - und ein <select> hat im DOM gar kein value-Attribut: Der
+   Blazor-Zeichner merkt sich den Wert beim Einhaengen und setzt danach die
+   Eigenschaft element.value nach (_blazorDeferredValue). Das geschieht GENAU
+   EINMAL, beim Erzeugen des Elements. Werden die <option> spaeter
+   AUSGETAUSCHT - der Herstellerfilter ueber der Strangtabelle tut das in jeder
+   Zeile -, patcht Blazor sie an Ort und Stelle, der Browser behaelt seinen
+   selectedIndex, und in der Zeile steht danach der Name, der zufaellig an
+   diesem Platz gelandet ist. Gemessen am 07.09.2026 mit einer Playwright-Probe:
+   Ein Strang mit "SMA America: SB30-1SP-US-40 {240V}" zeigte nach einem
+   Filterwechsel "ABB: PVI-3.0-OUTD-S-US-A {208V}" - ein Geraet, das er nie
+   hatte. Mit selected im Markup steht die Wahl DA, wo der Browser sie ohnehin
+   liest; sie haengt an keiner nachgereichten Zuweisung mehr.
+
+   Der Wert bleibt trotzdem am <select>: Er ist der Weg, den Blazor beim
+   ERSTEN Zeichnen geht, und er kostet nichts. *@
 
 <label class="epos-feld">
     @if (!string.IsNullOrEmpty(Bezeichnung))
@@ -19,17 +37,25 @@
                 disabled="@(!Aktiv)" @onchange="BeiAuswahl">
             @if (Platzhalter is not null)
             {
-                <option value="">@Platzhalter</option>
+                <option @key="PLATZHALTERSCHLUESSEL" value=""
+                        selected="@(!Auswahl.HasValue)">@Platzhalter</option>
             }
             @foreach (var eintrag in Eintraege)
             {
-                <option value="@eintrag.Id">@eintrag.Text</option>
+                <option @key="eintrag.Id" value="@eintrag.Id"
+                        selected="@(Auswahl.HasValue && eintrag.Id == Auswahl.Value)">@eintrag.Text</option>
             }
         </select>
     </span>
 </label>
 
 @code {
+    /// <summary>
+    /// Schluessel der leeren Zeile im <c>@@key</c> der Optionen. Er muss von jeder
+    /// Eintrags-Id verschieden sein; <c>int.MinValue</c> kommt als Katalog-Id nicht vor.
+    /// </summary>
+    private const int PLATZHALTERSCHLUESSEL = int.MinValue;
+
     /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "";
 

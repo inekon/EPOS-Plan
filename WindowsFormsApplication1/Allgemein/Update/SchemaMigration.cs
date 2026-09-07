@@ -2538,6 +2538,57 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_68_STROMSPEICHER_FIRMA = 68;
 
+        /// <summary>
+        /// <b>Die Reparatur der verdorbenen PV-Modulkoeffizienten</b> — Befund
+        /// <b>W6‑B‑5</b> mit den Anwenderentscheiden <b>Q1 bis Q3</b> vom 07.09.2026
+        /// („Q1‑Q3: Empfehlung"): <c>alpha_SC</c>, <c>beta_OC</c>, <c>gamma_PMP</c> und
+        /// <c>T_NOCT</c> in <c>Tab_PV_STAMM</c> <b>und</b> in der Projektkopie
+        /// <c>Tab_PV</c>. Die Regel, die Fenster, die eingebetteten Werte und alle
+        /// Anweisungen stehen in <see cref="PvKoeffizientenReparatur"/> im Kern.
+        ///
+        /// <para><b>Wozu.</b> Paket‑A‑Befund <b>A1</b>
+        /// (<c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c> N3.3): Der alte
+        /// Katalogeditor <c>Form_AdminPV</c> schrieb die drei Koeffizienten beim
+        /// Speichern mit 0 zurück, ein älterer Schreibweg hatte sie mit dem Wert von
+        /// <c>I_Kurzschluss</c> gefüllt. Der SCHREIBWEG ist seit Schemastand 62
+        /// repariert — die DATEN waren es nie („sie brauchen Neuimport oder
+        /// Handpflege"). Dieser Schritt ist die Handpflege, als Programm.</para>
+        ///
+        /// <para><b>Q1: aus der CEC-Liste, nicht bloß leer.</b> Die Werte kommen aus
+        /// <c>VDI-3805-Daten/PV/CEC Modules.csv</c> — die vier ausgelieferten Module,
+        /// die dort stehen, sind im Schritt EINGEBETTET (der Ordner ist seit W6‑O‑9 eine
+        /// abwählbare Setup-Komponente und kann fehlen), und liegt die Datei am
+        /// Herstellerdatenpfad, kommt der ganze Rest der Liste dazu. Gelesen wird sie
+        /// mit <c>CECDataService</c>, also mit der Leseroutine des Imports.</para>
+        ///
+        /// <para><b>Q2: die Projektkopien mit.</b> <c>Tab_PV</c> trägt dieselbe
+        /// Giftsignatur; zusätzlich holt sich eine Projektzeile den GESUNDEN Wert ihres
+        /// Stammsatzes, wenn die Liste sie nicht kennt.</para>
+        ///
+        /// <para><b>Q3: nicht ergebnisneutral — und das ist der Zweck.</b>
+        /// <c>alpha_SC</c> und <c>beta_OC</c> liest kein Rechenweg (nur
+        /// <c>StrangPlausibilitaet</c> und die Importprüfung). <c>T_NOCT</c> dagegen geht
+        /// in beide PV-Modelle: Wo der Katalogwert ausserhalb des Fensters 20…60 °C lag,
+        /// rechnete <c>SimulationPV.NoctDesModuls</c> mit dem Rückfall 45 °C; steht dort
+        /// nach dem Schritt der Listenwert, rechnet sie mit ihm. Der Rechenweg bleibt
+        /// Zeichen für Zeichen — die ZAHLEN ändern sich, und dafür führt
+        /// <c>Referenzlaeufe/</c> eine neue Basis.</para>
+        ///
+        /// <para><b>Nie ein erfundener Wert.</b> Was verdorben ist und keinen Treffer
+        /// hat, wird <c>NULL</c>; je Satz nennt der Bericht eine Zeile mit Grund. NULL
+        /// heisst „nicht gepflegt": Die Ampel des PV-Dialogs sagt „fehlt", die Simulation
+        /// nimmt den NOCT-Rückfall.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 69
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 68
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Repariert wird nur, was nicht gesund ist, geleert nur,
+        /// was verdorben ist. Nach dem ersten Lauf ist jede angefasste Spalte gesund oder
+        /// <c>NULL</c> — beides schliesst die Bedingung des zweiten Laufs aus.</para>
+        /// </summary>
+        public const int SCHRITT_69_PV_KOEFFIZIENTEN = 69;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4448,6 +4499,11 @@ namespace WindowsFormsApplication1
         /// <see cref="SCHRITT_68_STROMSPEICHER_FIRMA"/> (W14a‑E‑10‑Q7, Stufe S2 des
         /// Konzept_Katalogfilter); <see cref="ZIEL_VERSION"/> steht auf 68.</para>
         ///
+        /// <para><b>Seit der Katalogpflege der PV-Module (07.09.2026) acht:</b>
+        /// <see cref="SCHRITT_69_PV_KOEFFIZIENTEN"/> (Befund W6‑B‑5, Entscheide Q1–Q3);
+        /// <see cref="ZIEL_VERSION"/> steht auf 69. Er ist der erste Schritt des
+        /// SQLite-Zweigs, der ein Rechenergebnis ÄNDERT — mit Absicht (Q3).</para>
+        ///
         /// <para><b>Regeln für einen Eintrag hier</b> (dieselbe Reihenfolge, die der
         /// E6-Vorfall vom 29.08.2026 erzwungen hat: erst Schrittkonstante, Methode und
         /// Eintrag, DANN <see cref="ZIEL_VERSION"/>):</para>
@@ -4555,6 +4611,21 @@ namespace WindowsFormsApplication1
                         "verloere ihn beim Uebernehmen. Gerechnet wird unveraendert - " +
                         "kein Rechenweg liest den Hersteller.",
                         Schritt_68_StromspeicherFirma),
+
+            // BEFUND W6-B-5 mit den ANWENDERENTSCHEIDEN Q1 bis Q3 vom 07.09.2026
+            // ("Q1-Q3: Empfehlung"). Begruendung, die drei Entscheide und die
+            // Idempotenzzusage bei der Schrittkonstanten; Regel, Fenster, eingebettete
+            // Werte und saemtliche Anweisungen stehen in PvKoeffizientenReparatur -
+            // EINE Quelle fuer Migration, Testdatenbank und Nachweis.
+            new Schritt(SCHRITT_69_PV_KOEFFIZIENTEN,
+                        "Die verdorbenen PV-Modulkoeffizienten reparieren: alpha_SC, " +
+                        "beta_OC, gamma_PMP und T_NOCT in Tab_PV_STAMM und Tab_PV aus " +
+                        "der CEC-Liste (W6-B-5)",
+                        "Der Modulkatalog fuehrte dann weiter den Kurzschlussstrom in " +
+                        "seinen drei Temperaturkoeffizienten: Die Strangampel des " +
+                        "PV-Dialogs bliebe grau, und die Simulation rechnete mit dem " +
+                        "NOCT-Rueckfall 45 Grad C statt mit dem Katalogwert.",
+                        Schritt_69_PvKoeffizienten),
         };
 
         /// <summary>
@@ -4819,6 +4890,29 @@ namespace WindowsFormsApplication1
                 if (wert == null || wert == DBNull.Value) return -1;
                 try { return Convert.ToInt64(wert, CultureInfo.InvariantCulture); }
                 catch { return -1; }
+            }
+        }
+
+        /// <summary>
+        /// Ein TEXT des SQLite-Zweigs — dasselbe wie <see cref="SqliteZahl"/>, nur ohne
+        /// die Wandlung in eine Zahl. <c>""</c>, wenn nichts zu lesen war.
+        ///
+        /// <para>Angelegt für Schritt 69 (W6‑B‑5): Der SQLite-Zweig kann nur Skalare
+        /// lesen, und der Schritt braucht ZEILEN — die Bezeichner der zu reparierenden
+        /// Module und die Protokollzeilen der geleerten Sätze. Beide kommen deshalb als
+        /// EIN Text mit Zeilenumbrüchen (<c>group_concat</c>) und werden vom Aufrufer
+        /// mit <c>PvKoeffizientenReparatur.Zerlege</c> zerlegt.</para>
+        /// </summary>
+        private static string SqliteText(string sql)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                object wert = DataRepository.ExecuteScalar(sql);
+                DataRepository.StilleFehlerAbholen();
+
+                if (wert == null || wert == DBNull.Value) return "";
+                return Convert.ToString(wert, CultureInfo.InvariantCulture) ?? "";
             }
         }
 
@@ -10540,6 +10634,114 @@ namespace WindowsFormsApplication1
                           " Satz/Saetze aus dem Bezeichnerpraefix nachgetragen.") +
                     " KEIN Rechenergebnis aendert sich: Kein Rechenweg liest den " +
                     "Hersteller - der Speicher wird ueber Bezeichner und ID gefunden.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 69 - die verdorbenen PV-Modulkoeffizienten (Befund W6-B-5, Q1 bis Q3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 69 — Anlass, die drei Entscheide, die Nicht-Ergebnisneutralität und
+        /// die Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_69_PV_KOEFFIZIENTEN"/>.
+        ///
+        /// <para><b>Eine Quelle, im KERN</b>: <see cref="PvKoeffizientenReparatur"/>. Von
+        /// dort kommen die Wertequelle (eingebettete Auslieferungsmodule und, wenn sie
+        /// da ist, die CEC-Datei), die Giftsignatur als SQL-Bedingung und alle
+        /// Anweisungen. Aus derselben Quelle bedient sich
+        /// <c>Werkzeuge/Testdatenbankschema</c>, und der Nachweis in
+        /// <c>EPOS.Kern.Tests</c> prüft sie.</para>
+        ///
+        /// <para><b>Die Reihenfolge ist tragend</b>: erst <c>Tab_PV_STAMM</c>, dann
+        /// <c>Tab_PV</c> — die Übernahme aus dem Stammsatz (Regel d) fände sonst einen
+        /// noch nicht reparierten Stand vor. Und je Tabelle: reparieren, übernehmen,
+        /// Protokoll lesen, leeren — das Protokoll VOR dem Leeren, danach ist seine
+        /// Bedingung falsch.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteDml"/>, <see cref="SqliteZahl"/> und
+        /// <see cref="SqliteText"/>.</b> Der Schritt gehört dem SQLite-Zweig;
+        /// <c>NonQuery</c> und <c>Scalar</c> arbeiten auf <c>Lauf.Conn</c>, und die ist
+        /// hier <c>null</c>.</para>
+        /// </summary>
+        private static bool Schritt_69_PvKoeffizienten(Lauf l)
+        {
+            PvKoeffizientenquelle quelle = PvKoeffizientenReparatur.Quelle();
+
+            l.Zeile("Schritt 69 - Wertequelle: " +
+                    quelle.Eingebettet.ToString(CultureInfo.InvariantCulture) +
+                    " eingebettete Auslieferungsmodule" +
+                    (quelle.DateiGelesen
+                         ? ", dazu " + quelle.AusDerDatei.ToString(CultureInfo.InvariantCulture) +
+                           " aus der CEC-Liste (" + quelle.Dateipfad + ")"
+                         : " (die CEC-Liste liegt nicht am Herstellerdatenpfad" +
+                           (string.IsNullOrEmpty(quelle.Dateipfad) ? "" : ": " + quelle.Dateipfad) +
+                           " - es gelten die eingebetteten Werte)") + ".");
+
+            long geheilt = 0, geleert = 0;
+
+            foreach (string tabelle in PvKoeffizientenReparatur.TABELLEN)
+            {
+                long vorher = SqliteZahl(PvKoeffizientenReparatur.ZaehlungVerdorben(tabelle));
+
+                // a) und b) - reparieren, was die Wertequelle kennt.
+                foreach (string bezeichner in PvKoeffizientenReparatur.Zerlege(
+                             SqliteText(PvKoeffizientenReparatur.BezeichnerAbfrage(tabelle))))
+                {
+                    if (!quelle.Finde(bezeichner, null, out PvModulKoeffizienten satz)) continue;
+
+                    string sql = PvKoeffizientenReparatur.Reparatur(tabelle, satz);
+                    if (sql == null) continue;   // die Liste fuehrt fuer diesen Satz nichts Brauchbares
+
+                    if (!SqliteDml(l, sql,
+                                   tabelle + " \"" + bezeichner + "\": Koeffizienten aus der CEC-Liste"))
+                        return false;
+                }
+
+                // c) - die Projektkopie holt sich, was der Stammsatz gesund fuehrt.
+                if (tabelle == PvKoeffizientenReparatur.TAB_PROJEKT)
+                {
+                    foreach (string spalte in PvKoeffizientenReparatur.SPALTEN)
+                        if (!SqliteDml(l, PvKoeffizientenReparatur.UebernahmeAusStamm(spalte),
+                                       tabelle + "." + spalte + ": aus dem Stammsatz uebernehmen"))
+                            return false;
+                }
+
+                // d) - je Satz eine Protokollzeile, DANN leeren.
+                foreach (string zeile in PvKoeffizientenReparatur.Zerlege(
+                             SqliteText(PvKoeffizientenReparatur.Protokollabfrage(tabelle))))
+                    l.Zeile("Schritt 69 - " + zeile);
+
+                foreach (string spalte in PvKoeffizientenReparatur.SPALTEN)
+                    if (!SqliteDml(l, PvKoeffizientenReparatur.Leerung(tabelle, spalte),
+                                   tabelle + "." + spalte + ": verdorbene Werte ohne Treffer auf leer"))
+                        return false;
+
+                long nachher = SqliteZahl(PvKoeffizientenReparatur.ZaehlungVerdorben(tabelle));
+
+                l.Zeile("Schritt 69 - " + tabelle + ": Saetze mit verdorbenem Koeffizienten " +
+                        "vorher " + Zahltext(vorher) + ", nachher " + Zahltext(nachher) +
+                        " (Katalog gesamt " +
+                        Zahltext(SqliteZahl(PvKoeffizientenReparatur.Gesamtzahl(tabelle))) + ").");
+
+                if (vorher > 0) geheilt += vorher;
+                if (nachher > 0) geleert += nachher;
+            }
+
+            l.Notiz("69: Die verdorbenen PV-Modulkoeffizienten sind repariert " +
+                    "(Befund W6-B-5, Entscheide Q1 bis Q3). " +
+                    (geheilt == 0
+                        ? "Es gab nichts zu tun - kein Satz fuehrte einen verdorbenen Wert."
+                        : geheilt.ToString(CultureInfo.InvariantCulture) +
+                          " Satz/Saetze angefasst, in Stammtabelle und Projektkopie.") +
+                    " Was keinen Treffer in der CEC-Liste hat, steht jetzt auf leer - " +
+                    "der Modulkatalog sagt \"nicht gepflegt\", statt den Kurzschlussstrom " +
+                    "als Temperaturkoeffizient auszugeben. " +
+                    "ANDERS ALS DIE SCHRITTE 62 BIS 68 ist dieser NICHT ergebnisneutral: " +
+                    "T_NOCT geht in beide PV-Modelle, und wo der Katalogwert bisher " +
+                    "ausserhalb des Fensters 20 bis 60 Grad C lag, rechnete die " +
+                    "Simulation mit dem Rueckfall 45 Grad C. Genau das war der Zweck " +
+                    "(Entscheid Q3).");
             return true;
         }
 

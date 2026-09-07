@@ -87,6 +87,9 @@
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Bausteine
 @using System.Globalization
+@* W6-B-4: die Vorbelegung eines neuen Strangs rechnet der Kern
+   (WindowsFormsApplication1.Strangvorbelegung) - eine Wahrheit fuer Windows und iOS. *@
+@using WindowsFormsApplication1
 
 <div class="epos-straenge">
 
@@ -156,21 +159,39 @@
         }
         else
         {
+            @* --- W6-B-4: die Spaltenfolge --------------------------------------
+               Bis zur Windows-Abnahme vom 07.09.2026 standen die zwei breiten
+               Klapplisten VOR den Zahlen. Ein Geraetename wie "SMA America:
+               SB30-1SP-US-40 {240V}" trieb seine Spalte auf 302 px und die Tabelle
+               auf 1 974 px; bei 1 046 px Platz im Dialog lagen Geraet, MPPT, Module
+               in Reihe, Straenge parallel, Neigung und Azimut ausserhalb des
+               sichtbaren Bereichs. Der Anwender fragte: "Anzahl Module fehlt?"
+
+               Seither stehen ALLE schmalen Spalten vorn und die zwei ELASTISCHEN
+               zuletzt. Der Grund ist der Unterschied ihrer Natur: Ein Zahlenfeld hat
+               eine feste, kleine Breite; eine Klappliste ist so breit wie ihr
+               laengster Eintrag und laesst sich nur deckeln (max-width) und
+               abschneiden (text-overflow). Was gedeckelt werden MUSS, gehoert ans
+               Ende - dort kostet das Abschneiden am wenigsten, und keine Zahl kann
+               davon nach rechts geschoben werden.
+
+               Geraet und MPPT bleiben beim Paar: "Geraet 1, Tracker 2" ist eine
+               Angabe in zwei Spalten. *@
             <div class="epos-raster-huelle">
                 <table class="epos-raster epos-strangtabelle">
                     <thead>
                         <tr>
                             <th>@Texte.SpalteWahl</th>
                             <th>@Texte.SpalteRang</th>
-                            <th>@Texte.SpalteBezeichner</th>
-                            <th>@Texte.SpalteModul</th>
-                            <th>@Texte.SpalteWechselrichter</th>
-                            <th>@Texte.SpalteGeraet</th>
-                            <th>@Texte.SpalteMppt</th>
-                            <th>@Texte.SpalteReihe</th>
-                            <th>@Texte.SpalteParallel</th>
-                            <th>@Texte.SpalteNeigung</th>
-                            <th>@Texte.SpalteAzimut</th>
+                            <th class="epos-strangtabelle-text">@Texte.SpalteBezeichner</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteGeraet</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteMppt</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteReihe</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteParallel</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteNeigung</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteAzimut</th>
+                            <th class="epos-strangtabelle-liste">@Texte.SpalteModul</th>
+                            <th class="epos-strangtabelle-liste">@Texte.SpalteWechselrichter</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -184,43 +205,47 @@
                                                 Gewaehltwerden="() => _gewaehlt = s" />
                                 </td>
                                 <td>@s.Rang</td>
-                                <td>
+                                <td class="epos-strangtabelle-text">
                                     <Textfeld Wert="@s.Bezeichner"
                                               WertChanged="@(w => Setzen(s, () => s.Bezeichner = w ?? ""))" />
                                 </td>
-                                <td title="@Texte.HerleitungModul">
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.Geraetenummer" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.Geraetenummer = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.Mppt" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.Mppt = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.ModuleReihe" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.ModuleReihe = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.StraengeParallel" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.StraengeParallel = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.Neigung" Platzhalter="@Geerbt(NeigungAnlage)"
+                                                  WertChanged="@(w => Setzen(s, () => s.Neigung = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.Azimut" Platzhalter="@Geerbt(AzimutAnlage)"
+                                                  WertChanged="@(w => Setzen(s, () => s.Azimut = w))" />
+                                </td>
+                                @* Der volle Name steht im Werkzeugtipp - die Spalte
+                                   schneidet ab, die Auskunft geht nicht verloren. *@
+                                <td class="epos-strangtabelle-liste"
+                                    title="@Modultipp(s)">
                                     <Auswahlfeld Eintraege="@Modulwahl(s)" Auswahl="@ModulAuswahl(s)"
                                                  AuswahlChanged="@(id => BeiModul(s, id))"
                                                  Kurzname="@Texte.SpalteModul" />
                                 </td>
-                                <td>
+                                <td class="epos-strangtabelle-liste"
+                                    title="@(s.WechselrichterName.Length > 0 ? s.WechselrichterName : Texte.KeinGeraet)">
                                     <Auswahlfeld Eintraege="@Geraetewahl(s)" Auswahl="@GeraetAuswahl(s)"
                                                  AuswahlChanged="@(id => BeiGeraet(s, id))"
                                                  Kurzname="@Texte.SpalteWechselrichter" />
-                                </td>
-                                <td>
-                                    <Ganzzahlfeld Wert="@s.Geraetenummer" Min="1"
-                                                  WertChanged="@(w => Setzen(s, () => s.Geraetenummer = w))" />
-                                </td>
-                                <td>
-                                    <Ganzzahlfeld Wert="@s.Mppt" Min="1"
-                                                  WertChanged="@(w => Setzen(s, () => s.Mppt = w))" />
-                                </td>
-                                <td>
-                                    <Ganzzahlfeld Wert="@s.ModuleReihe" Min="1"
-                                                  WertChanged="@(w => Setzen(s, () => s.ModuleReihe = w))" />
-                                </td>
-                                <td>
-                                    <Ganzzahlfeld Wert="@s.StraengeParallel" Min="1"
-                                                  WertChanged="@(w => Setzen(s, () => s.StraengeParallel = w))" />
-                                </td>
-                                <td>
-                                    <Ganzzahlfeld Wert="@s.Neigung" Platzhalter="@Geerbt(NeigungAnlage)"
-                                                  WertChanged="@(w => Setzen(s, () => s.Neigung = w))" />
-                                </td>
-                                <td>
-                                    <Ganzzahlfeld Wert="@s.Azimut" Platzhalter="@Geerbt(AzimutAnlage)"
-                                                  WertChanged="@(w => Setzen(s, () => s.Azimut = w))" />
                                 </td>
                             </tr>
                         }
@@ -330,6 +355,16 @@
     /// Delegat bleibt die Klappliste wirkungslos.
     /// </summary>
     [Parameter] public Func<int, GeraetWahl>? GeraetUebernehmen { get; set; }
+
+    /// <summary>
+    /// <b>Die Zahl der MPP-Tracker eines KATALOGgeräts</b> (<c>Anzahl_Mppt</c>) —
+    /// gebraucht für die Vorbelegung eines neuen Strangs (<b>W6‑B‑4</b>): Der zweite
+    /// Strang an demselben Gerät bekommt den nächsten freien Tracker. <c>null</c> als
+    /// Rückgabe und ein fehlender Delegat sind derselbe Fall: Die Angabe ist unbekannt
+    /// (die CEC-Liste führt sie nicht, W6‑O‑2), und dann bleibt es bei Tracker 1 —
+    /// demselben konservativen Fall, auf dem auch die Prüfung P4/P5 rechnet.
+    /// </summary>
+    [Parameter] public Func<int, int?>? TrackerZahl { get; set; }
 
     /// <summary>
     /// Die Hersteller des WECHSELRICHTERkatalogs, „Alle" voran (Index 0) — die
@@ -528,12 +563,16 @@
         // W6-B-3: Der neue Strang traegt das Geraet der Katalogwahl - das ist der
         // Sinn der Zeile darueber. "(kein Geraet)" legt wie bisher eine leere Zeile
         // an; die Ampel sagt dann, was fehlt.
+        int? trackerzahl = null;
         if (_neuesGeraet is int stammId && stammId > 0 && GeraetUebernehmen is not null)
         {
             GeraetWahl wahl = GeraetUebernehmen(stammId);
             neu.WechselrichterId = wahl.Id;
             neu.WechselrichterName = wahl.Name;
+            trackerzahl = TrackerZahl?.Invoke(stammId);
         }
+
+        Vorbelegen(neu, trackerzahl);
 
         Zeile.Straenge.Add(neu);
         _gewaehlt = neu;
@@ -544,6 +583,42 @@
 
         Nachpruefen();
         return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// <b>Womit der neue Strang anfängt</b> (<b>W6‑B‑4</b>). Bis zur Windows-Abnahme
+    /// vom 07.09.2026 waren alle vier Zahlenfelder leer, und die Ampel meldete
+    /// darunter „0 Module in Reihe … Werte fehlen: Module in Reihe" — der Anwender las
+    /// das als Fehler und fragte „Anzahl Module fehlt?".
+    ///
+    /// <para><b>Gerechnet wird im KERN</b> (<c>Strangvorbelegung.FuerNeuenStrang</c>);
+    /// die Komponente sammelt nur, was der Kern wissen muss: die Modulzahl der Anlage,
+    /// die Zahl der bestehenden Stränge, ihre Modulsumme und den höchsten schon
+    /// belegten Tracker AM SELBEN Gerät.</para>
+    /// </summary>
+    private void Vorbelegen(StrangZeile neu, int? trackerzahl)
+    {
+        int belegteModule = 0;
+        int hoechsterMppt = 0;
+
+        foreach (StrangZeile s in Zeile.Straenge)
+        {
+            belegteModule += s.Modulzahl;
+
+            // Nur Stränge AM SELBEN Gerät belegen dessen Tracker.
+            if (s.WechselrichterId == neu.WechselrichterId &&
+                (s.Geraetenummer ?? 1) == 1 && (s.Mppt ?? 1) > hoechsterMppt)
+                hoechsterMppt = s.Mppt ?? 1;
+        }
+
+        Strangvorbelegung.Vorschlag v = Strangvorbelegung.FuerNeuenStrang(
+            Zeile.AnzahlModule ?? 0.0, Zeile.Straenge.Count, belegteModule,
+            hoechsterMppt, trackerzahl);
+
+        neu.ModuleReihe = v.ModuleReihe;
+        neu.StraengeParallel = v.StraengeParallel;
+        neu.Mppt = v.Mppt;
+        neu.Geraetenummer = v.Geraetenummer;
     }
 
     private Task StrangEntfernen()
@@ -753,6 +828,14 @@
         var liste = new List<(int, string)>(_modulwahl) { (-1, s.ModulName) };
         return liste;
     }
+
+    /// <summary>
+    /// Der Werkzeugtipp der Modulspalte (<b>W6‑B‑4</b>): der volle Modulname, wenn der
+    /// Strang einen eigenen trägt — sonst der Satz, was „leer" bedeutet. Die Spalte ist
+    /// gedeckelt und schneidet ab; die Auskunft darf dabei nicht verlorengehen.
+    /// </summary>
+    private string Modultipp(StrangZeile s)
+        => s.ModulName.Length > 0 ? s.ModulName : Texte.HerleitungModul;
 
     /// <summary>
     /// Der gewaehlte Eintrag der Modulklappliste; 0 heisst „das Modul der Anlage".

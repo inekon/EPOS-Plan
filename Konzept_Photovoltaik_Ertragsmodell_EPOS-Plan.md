@@ -453,6 +453,22 @@ Umsetzungsprotokoll mit allen Zahlen, Fundstellen und Nebenbefunden:
   `alpha_SC`, `beta_OC` und `T_NOCT` mit 0 zurück und löschte damit die Werte des CEC-Imports.
   Das erklärt zugleich den vergifteten Katalog aus Befund A1. Der Schreibweg ist repariert; die
   **vorhandenen Daten** sind es nicht — sie brauchen Neuimport oder Handpflege.
+  **Nachtrag 07.09.2026 — erledigt, und zwar als Programm:** Befund **W6‑B‑5** mit den
+  Anwenderentscheiden **Q1–Q3** („Q1‑Q3: Empfehlung") macht aus der Handpflege den
+  **Migrationsschritt 69** (`EPOS.Kern/Allgemein/Update/PvKoeffizientenReparatur.cs`,
+  `SchemaStand.Zielversion` 68 → 69). Er erkennt die Giftsignatur statt IDs zu raten (Wert
+  = `I_Kurzschluss` auf 1e‑6 genau, oder ausserhalb des physikalischen Fensters — die 0 liegt
+  in jedem der vier Fenster ausserhalb), repariert aus der ausgelieferten CEC-Liste
+  (`VDI-3805-Daten/PV/CEC Modules.csv`; die vier dort geführten Auslieferungsmodule sind
+  eingebettet, weil der Ordner seit W6‑O‑9 abwählbar ist), nimmt die **Projektkopien**
+  `Tab_PV` mit (Q2) und setzt alles ohne Treffer auf **NULL** — mit einer Protokollzeile je
+  Satz, nie mit einem erfundenen Wert. In `Kenndaten_Test.sqlite` sind das 4 von 6
+  Katalog- und 7 von 9 Projektsätzen; die drei Ablytek-Module bekommen `T_NOCT` = 47,4 °C,
+  „Jinkosolar JKM 260P‑60" und „LG Electronics LG 320 N1K‑A5" werden leer (die CEC-Liste
+  führt nur Schwesterzeilen eines anderen Prüflabors). **Nicht ergebnisneutral, und das war
+  der Zweck (Q3):** `T_NOCT` geht in beide Modelle, Projekt 1007 verliert 0,69 % theoretische
+  Erzeugung, die Basis heisst seither `Referenzlaeufe/2026-09-07_R6_PvKoeffizienten`.
+  `alpha_SC` und `beta_OC` liest kein Rechenweg — ihre Reparatur ist für die Strangampel.
 * **`SQL_ANLAGE_INSERT` verliert weiterhin die KWKG-Spalten (Schritt 22) und die drei
   B3-Spalten (Schritt 61).** Beim Löschen + Neuanlegen gehen sie still verloren — dieselbe
   Fehlerklasse, die Paket 1 für die Quellen-/Senken-Konfiguration geschlossen hat. **Nur
@@ -460,6 +476,10 @@ Umsetzungsprotokoll mit allen Zahlen, Fundstellen und Nebenbefunden:
   die Anweisung wird an fünf Stellen benutzt).
 * **`gamma_PMP = 0`** beim Jinkosolar-Modul: 1011, 1026, 1028, 1029 rechnen ohne
   Temperaturgang. E1.5 meldet es, ändert aber nichts.
+  **Nachtrag 07.09.2026:** Schritt 69 macht daraus `NULL` — „nicht gepflegt" statt „0", weil
+  die CEC-Liste dieses Modul nicht führt. Am Rechenergebnis ändert das nichts
+  (`PhotovoltaikCtrl` liest `NULL` als 0), an der Aussage schon: Der Katalog behauptet jetzt
+  keinen Temperaturkoeffizienten mehr, den er nicht hat.
 
 ### N3.4 Referenzbasis und Abnahmestand für Paket B
 
