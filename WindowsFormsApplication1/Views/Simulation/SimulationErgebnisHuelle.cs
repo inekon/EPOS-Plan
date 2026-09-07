@@ -124,8 +124,30 @@ namespace WindowsFormsApplication1
         /// <summary>Die BHKW-Betriebsart der Bedienelemente (0/1/2).</summary>
         private int _bhkwBetriebsart;
 
-        /// <summary>Die unterste Leistungsgrenze der BHKW-Module.</summary>
-        private int _grenzleistungBhkw = 30;
+        /// <summary>
+        /// Die unterste Leistungsgrenze der BHKW-Module [%] —
+        /// <c>Tab_Einstellungen.Leistungsgrenze</c>.
+        ///
+        /// <para><b>BEFUND W6‑E‑7 (07.09.2026), hier behoben.</b> Der Blazor-Port
+        /// (iU9‑W10a) las und schrieb diesen Wert in <c>m_BHKW_Grenzleistung</c> — die
+        /// Spalte <c>BHKW_Grenzleistung</c> derselben Tabelle. Das ist die FALSCHE:
+        /// Der Rechenweg liest <c>Leistungsgrenze</c> (<c>SimulationRunner</c>), und der
+        /// Vorläufer <c>Form_Simulation_Detail</c> tat es auch
+        /// (<c>numericUpDown_UnteresteLG</c> ↔ <c>ctrl.model.Leistungsgrenze</c>, Z. 5370
+        /// und 5387). <c>BHKW_Grenzleistung</c> steht im gesamten Bestand auf 0 und wird
+        /// von keinem Rechenweg gelesen — das Feld schrieb also ins Leere, und der
+        /// interaktive Lauf bekam als Grenze stets die 0. Solange der stille Fallback in
+        /// <c>SimulationBHKW</c> stand, fiel das nicht auf (0 → 30 %); ohne ihn liefe der
+        /// interaktive Lauf ohne Untergrenze, während der Stapellauf mit dem gepflegten
+        /// Wert rechnet. Seit W6‑E‑7 lesen und schreiben beide Wege dieselbe
+        /// Spalte.</para>
+        ///
+        /// <para>Die Vorbelegung steht bei <c>KonfigurationModel</c>
+        /// (<c>BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT</c>) und gilt für ein Projekt
+        /// ohne gepflegten Wert; Migrationsschritt 67 schreibt sie in die
+        /// Bestandssätze.</para>
+        /// </summary>
+        private int _grenzleistungBhkw = BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT;
 
         /// <summary>Die Was-wäre-wenn-Kapazität der Autarkiekachel (NICHT persistiert).</summary>
         private double _autarkieKwh;
@@ -143,7 +165,10 @@ namespace WindowsFormsApplication1
 
             ctrl.ProjektLesen(idProjekt);
             _bhkwBetriebsart = ctrl.model != null ? ctrl.model.Betriebsart : 0;
-            _grenzleistungBhkw = ctrl.model != null ? (int)ctrl.model.m_BHKW_Grenzleistung : 30;
+            // W6-E-7: Leistungsgrenze, NICHT m_BHKW_Grenzleistung - Begruendung am Feld.
+            _grenzleistungBhkw = ctrl.model != null
+                ? ctrl.model.Leistungsgrenze
+                : BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT;
 
             VarianteLesen();
         }
@@ -184,8 +209,10 @@ namespace WindowsFormsApplication1
                 },
                 LeistungsgrenzeSchreiben = wert =>
                 {
+                    // W6-E-7: in Leistungsgrenze, NICHT in m_BHKW_Grenzleistung -
+                    // Begruendung am Feld _grenzleistungBhkw.
                     _grenzleistungBhkw = wert;
-                    KonfigSchreiben(m => m.m_BHKW_Grenzleistung = wert);
+                    KonfigSchreiben(m => m.Leistungsgrenze = wert);
                 },
                 HeizstabSchreiben = wert => KonfigSchreiben(m => m.m_WP_Heizstab = wert),
                 BereitschaftSchreiben = wert =>

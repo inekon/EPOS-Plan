@@ -19,10 +19,12 @@ namespace Testdatenbankschema
     /// <c>SchemaMigration.Schritt_62_KlimaWaisen</c>,
     /// <c>Schritt_63_PvAnlagenparameter</c>, <c>Schritt_64_PvModellwahl</c>,
     /// <c>Schritt_65_Wechselrichterkatalog</c> (dessen zwei CREATE TABLE stehen in
-    /// <c>WechselrichterSchema</c>) und <c>Schritt_66_Strangzuordnung</c> (Tabelle in
+    /// <c>WechselrichterSchema</c>), <c>Schritt_66_Strangzuordnung</c> (Tabelle in
     /// <c>AnlageStrangSchema</c>, Spalte in
-    /// <c>SchemaKatalog.Schritt66_PvWechselrichterweg</c>) bedienen. Hier steht keine
-    /// abgeschriebene DDL.</para>
+    /// <c>SchemaKatalog.Schritt66_PvWechselrichterweg</c>) und
+    /// <c>Schritt_67_BhkwLeistungsgrenze</c> (das eine UPDATE aus
+    /// <c>BhkwLeistungsgrenzeVorgabe</c>) bedienen. Hier steht keine
+    /// abgeschriebene DDL und kein abgeschriebenes DML.</para>
     ///
     /// <para><b>Idempotent.</b> Eine vorhandene Spalte wird uebergangen, ein zweiter Lauf
     /// aendert nichts mehr. Rueckgabe 0 = Datei steht auf dem Zielstand.</para>
@@ -31,8 +33,12 @@ namespace Testdatenbankschema
     /// an, Schritt 65 zwei LEERE Tabellen, Schritt 66 eine LEERE Tabelle und eine
     /// NULL-Spalte, und keiner von ihnen schreibt einen Wert (NULL heisst im Rechenweg genau die bisher fest
     /// verdrahtete Vorbelegung); Schritt 62 loescht nur Zeilen ohne Kopfsatz, die ueber
-    /// keine Abfrage des Programms erreichbar sind. Der Referenzlauf muss vor und nach
-    /// dem Nachziehen byte-gleiche CSV liefern — das ist die Abnahme.</para>
+    /// keine Abfrage des Programms erreichbar sind. <b>Schritt 67 schreibt als einziger
+    /// einen FACHWERT</b> (<c>Tab_Einstellungen.Leistungsgrenze</c> NULL → 30) — und ist
+    /// gerade dadurch ergebnisneutral: Er setzt an die Stelle des stillen Fallbacks in
+    /// <c>SimulationBHKW</c>, der mit dem Anwenderentscheid W6-E-7 gefallen ist, genau
+    /// den Wert, mit dem diese Saetze bisher schon gerechnet haben. Der Referenzlauf muss
+    /// vor und nach dem Nachziehen byte-gleiche CSV liefern — das ist die Abnahme.</para>
     /// </summary>
     internal static class Program
     {
@@ -43,7 +49,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 66) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 67) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -123,6 +129,26 @@ namespace Testdatenbankschema
             foreach (SchemaSpalte s in SchemaKatalog.Schritt66_PvWechselrichterweg)
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 66, trocken);
+
+            // ---- Schritt 67: die sichtbare BHKW-Leistungsuntergrenze (W6-E-7).
+            //      DAS ERSTE DML DIESES WERKZEUGS mit einem FACHWERT - anders als die
+            //      Schritte 63 bis 66, die nur Spalten und leere Tabellen anlegen. Es
+            //      ist trotzdem ergebnisneutral: Genau die Saetze, die es anfasst,
+            //      rechneten bisher ueber den stillen Fallback in SimulationBHKW mit
+            //      denselben 30 %. Die Anweisung kommt aus BhkwLeistungsgrenzeVorgabe -
+            //      DIESELBE Quelle, aus der sich SchemaMigration.Schritt_67_
+            //      BhkwLeistungsgrenze bedient. Idempotent ueber ihr eigenes IS NULL.
+            long ohneWert = Zahl(BhkwLeistungsgrenzeVorgabe.Zaehlung());
+            Console.WriteLine("Schritt 67 - " + BhkwLeistungsgrenzeVorgabe.TABELLE + "." +
+                              BhkwLeistungsgrenzeVorgabe.SPALTE + ": ohne gepflegten Wert " +
+                              ohneWert + ".");
+            if (!trocken && ohneWert > 0)
+                DataRepository.ExecuteNonQuery(BhkwLeistungsgrenzeVorgabe.Anhebung());
+            Console.WriteLine("Schritt 67: " + (ohneWert == 0
+                ? "nichts zu tun - jeder Satz fuehrt einen gepflegten Wert."
+                : ohneWert + " Satz/Saetze auf " +
+                  BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT + " % gehoben."));
+            Console.WriteLine();
 
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");

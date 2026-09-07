@@ -121,6 +121,18 @@ das Gate der Orchestrierung zieht getrennt nach.
 >   --ziel Referenzlaeufe/2026-09-06_R3_Straenge
 > ```
 
+> **Nachtrag 07.09.2026 — Schemastand 67 (W6‑E‑7), die Basis bleibt.** Migrationsschritt 67
+> hebt `Tab_Einstellungen.Leistungsgrenze` von `NULL` auf **30** (nur `NULL`; eine gepflegte 0
+> bleibt 0) und ist damit der Gegenpart zum gefallenen stillen Fallback in `SimulationBHKW`.
+> In der Testdatenbank betrifft er **vier** Sätze — 1007, 1008, 1009 und 1017 —, und nur
+> **1017** davon führt ein BHKW; dessen Katalogzeile hat keine eigene Grenzleistung, greift
+> also auf den Projektwert durch. Vorher rechnete es über die Rücklage mit 0,30, nachher über
+> die gepflegten 30 % mit derselben 0,30. **Alle 312 CSV der zwölf Projekte sind byte-gleich**
+> (`diff -rq` gegen diese Basis ohne einen einzigen Unterschied; nur `protokoll.txt` weicht mit
+> seinem Zeitstempel ab). Die Datei `Kenndaten_Test.sqlite` steht seither auf **Schemastand 67**;
+> nachgezogen wie üblich mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`.
+
 ### Vorgängerbasis: `2026-09-05_R2_Zeitbasis` (löste `2026-08-30_B3-Kaskade` ab)
 
 **`2026-09-05_R2_Zeitbasis/`** — **elf Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,

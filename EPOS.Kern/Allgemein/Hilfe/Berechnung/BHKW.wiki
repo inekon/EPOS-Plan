@@ -36,7 +36,7 @@ Mengen und die Betriebsstunden.
 |-
 | Grenzleistung (Modulationsgrenze) || % || BHKW-Katalog, Feld „Grenzleistung"; ersatzweise das Feld „Grenzleistung" der Projektzeile im Dialog „BHKW"
 |-
-| Projektweite Leistungsuntergrenze || % || Simulationskonfiguration; Vorgabe 30&nbsp;%, wenn nicht gepflegt
+| Projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Parameterblatt „BHKW", Feld „Untere Leistungsgrenze der Module"; ein neues Projekt startet mit 30&nbsp;%, '''0 heisst „keine Untergrenze"'''
 |-
 | Brennstoff (Energieträger) || — || BHKW-Katalog; im Projekt änderbar über „Brennstoff Variante"
 |-
@@ -74,9 +74,9 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>x_{\mathrm{Kat}}</math> || Grenzleistung des Geräts (kleinste zulässige Teillast) || % || BHKW-Katalog, Feld „Grenzleistung"
 |-
-| <math>x_{\mathrm{Proj}}</math> || projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Feld „Grenzleistung" der Projektzeile
+| <math>x_{\mathrm{Proj}}</math> || projektweite Leistungsuntergrenze || % || Simulationskonfiguration, Parameterblatt „BHKW", Feld „Untere Leistungsgrenze der Module"
 |-
-| <math>x_{0}</math> || Modulationsgrenze, wenn keine der beiden gepflegt ist || — || '''Vorgabe: 0,30''' (30&nbsp;%)
+| <math>x_{0}</math> || Vorgabe der projektweiten Leistungsuntergrenze in einem NEUEN Projekt || % || '''30''' — sichtbar im Feld, nicht im Rechenweg
 |-
 | <math>\mathrm{ID}_{\mathrm{B}}</math> || Kennung des Brennstoffs || — || BHKW-Katalog; im Projekt über „Brennstoff Variante" änderbar
 |-
@@ -164,10 +164,18 @@ sofern dort ein Wert steht; sonst gilt die projektweite Leistungsuntergrenze. Be
 :: <math>x_{\mathrm{Kat}}</math> – Grenzleistung des Geräts aus dem BHKW-Katalog [%]
 :: <math>x_{\mathrm{Proj}}</math> – projektweite Leistungsuntergrenze der Simulationskonfiguration [%]
 
-: <math>\displaystyle x_{\mathrm{Proj}} = 0 \; \to \; x_{\mathrm{min}} = x_{0} = 0{,}30</math> &nbsp;&nbsp;(3)
+: <math>\displaystyle x_{\mathrm{Kat}} = 0 \;\text{und}\; x_{\mathrm{Proj}} = 0 \; \to \; x_{\mathrm{min}} = 0</math> &nbsp;&nbsp;(3)
 :: <math>x_{\mathrm{min}}</math> – Modulationsgrenze als Faktor [–]
+:: <math>x_{\mathrm{Kat}}</math> – Grenzleistung des Geräts aus dem BHKW-Katalog [%]
 :: <math>x_{\mathrm{Proj}}</math> – projektweite Leistungsuntergrenze [%]
-:: <math>x_{0}</math> – Modulationsgrenze, wenn weder Katalog noch Projekt einen Wert führen [–], Vorgabe 0,30
+
+Führt weder der Katalog noch das Projekt einen Wert, gibt es '''keine Untergrenze''': Das Modul
+moduliert bis 0 herunter. Bis zum 07.09.2026 sprang hier eine stille Rücklage von 30&nbsp;% ein; sie ist
+mit dem Anwenderentscheid W6-E-7 entfallen, weil sie im Rechenweg stand und in keiner Maske sichtbar war.
+An ihre Stelle tritt der '''sichtbare''' Wert: Ein neues Projekt startet mit
+<math>x_{\mathrm{Proj}} = 30</math>&nbsp;%, und Migrationsschritt 67 schreibt dieselben 30&nbsp;% in jedes
+Bestandsprojekt, das bis dahin keinen gepflegten Wert hatte — es rechnet damit weiter wie zuvor, sieht
+seine Untergrenze aber jetzt. Eine ausdrücklich gepflegte 0 bleibt 0.
 
 === Schritt 2 — Die drei Fahrweisen ===
 

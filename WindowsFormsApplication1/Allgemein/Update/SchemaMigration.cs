@@ -2459,6 +2459,45 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_66_ANLAGESTRANG = 66;
 
+        /// <summary>
+        /// <b>Die sichtbare BHKW-Leistungsuntergrenze</b> — Anwenderentscheid
+        /// <b>W6‑E‑7</b> vom 07.09.2026 (er revidiert PAKET BHKW-REGULÄR vom 17.08.2026,
+        /// Punkt 2): <c>Tab_Einstellungen.Leistungsgrenze</c> <b>NULL → 30</b>. Die eine
+        /// Anweisung steht in <see cref="BhkwLeistungsgrenzeVorgabe"/> im Kern.
+        ///
+        /// <para><b>Wozu.</b> <c>SimulationBHKW.Moduldaten_Einlesen</c> trug bis hierher
+        /// einen STILLEN Fallback: War die projektweite Untergrenze 0 (oder NULL, was
+        /// <c>KonfigurationCtrl</c> als 0 liest), rechnete der Lauf mit 30 %. Der
+        /// Anwender hat das revidiert — „Es soll kein Fallback geben, wenn 0 dann bleibt
+        /// es so oder es soll in der Einstellung sichtbar sein". Der Fallback ist
+        /// gefallen; 0 rechnet seither als 0 (keine Untergrenze).</para>
+        ///
+        /// <para><b>DML, und genau deshalb ergebnisNEUTRAL.</b> Er ist der Preis dafür,
+        /// dass der Fallback fallen kann, ohne ein Bestandsprojekt anders rechnen zu
+        /// lassen: Ein Satz OHNE gepflegten Wert lief bisher über die Rücklage mit 30 %
+        /// und trägt danach dieselben 30 % — nur eben sichtbar in der
+        /// Simulationskonfiguration statt unsichtbar im Rechenweg. Der Referenzlauf
+        /// gegen <c>2026-09-06_R3_Straenge</c> bleibt <b>byte-gleich</b>; der Nachweis
+        /// ist Projekt 1017, das einzige Projekt der Testdatenbank mit BHKW UND ohne
+        /// gepflegten Wert (sein Modul führt keine eigene Grenzleistung, greift also auf
+        /// den Projektwert durch).</para>
+        ///
+        /// <para><b>Nur <c>IS NULL</c>, nicht die 0.</b> Eine gepflegte 0 ist eine
+        /// ANGABE („keine Untergrenze") und bleibt unangetastet. Der Access-Teilschritt
+        /// 13b des Pakets BHKW-REGULÄR hob noch „0 ODER 1" mit an — mit W6‑E‑7 ist
+        /// genau das nicht mehr gewollt.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 67
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 66
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem
+        /// Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Das <c>UPDATE</c> trägt sein <c>WHERE … IS NULL</c>
+        /// selbst; nach dem ersten Lauf gibt es keine NULL-Zeile mehr, der Zweitlauf
+        /// findet nichts und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_67_BHKW_LEISTUNGSGRENZE = 67;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4439,7 +4478,21 @@ namespace WindowsFormsApplication1
                         "die Wahl zwischen vereinfachter Rechnung und Wechselrichter. " +
                         "Gerechnet wird unveraendert mit den Wechselrichterzahlen an " +
                         "der Anlagenzeile.",
-                        Schritt_66_Strangzuordnung),        };
+                        Schritt_66_Strangzuordnung),
+
+            // ANWENDERENTSCHEID W6-E-7 vom 07.09.2026 (er revidiert PAKET BHKW-REGULAER
+            // vom 17.08.2026, Punkt 2). Begruendung, Ergebnisneutralitaet und
+            // Idempotenzzusage bei der Schrittkonstanten; die eine Anweisung steht in
+            // BhkwLeistungsgrenzeVorgabe - EINE Quelle fuer Migration, Testdatenbank und
+            // Nachweis.
+            new Schritt(SCHRITT_67_BHKW_LEISTUNGSGRENZE,
+                        "Die projektweite BHKW-Leistungsuntergrenze sichtbar machen: " +
+                        "Tab_Einstellungen.Leistungsgrenze NULL -> 30 (W6-E-7)",
+                        "Projekte ohne gepflegte Leistungsuntergrenze rechneten dann " +
+                        "OHNE Untergrenze weiter, statt wie bisher mit 30 %: Der stille " +
+                        "Fallback im Rechenweg ist mit W6-E-7 entfallen, und dieser " +
+                        "Schritt ist es, der den Wert an seine Stelle setzt.",
+                        Schritt_67_BhkwLeistungsgrenze),        };
 
         /// <summary>
         /// Die Schritte, die ein SQLite-Lauf abarbeitet: <see cref="SCHRITTE_SQLITE"/>
@@ -10310,6 +10363,60 @@ namespace WindowsFormsApplication1
                     "KEIN DML: die Tabelle ist nach dem Schritt LEER, die Spalte bleibt " +
                     "NULL, und NULL heisst \"vereinfacht\" - der Rechenweg von heute, " +
                     "Zeichen fuer Zeichen. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 67 - die sichtbare BHKW-Leistungsuntergrenze (Entscheid W6-E-7)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 67 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_67_BHKW_LEISTUNGSGRENZE"/>.
+        ///
+        /// <para><b>Eine DML-Anweisung, KEIN DDL</b> — und sie kommt aus
+        /// <see cref="BhkwLeistungsgrenzeVorgabe"/> im Kern, damit der Nachweis in
+        /// <c>EPOS.Kern.Tests</c> und das Werkzeug <c>Werkzeuge/Testdatenbankschema</c>
+        /// DENSELBEN Text fahren und nicht zwei Abschriften. Dieselbe Bauart wie
+        /// Schritt 62, der seine zwei <c>DELETE</c> aus
+        /// <see cref="KlimaWaisenBereinigung"/> holt.</para>
+        ///
+        /// <para><b>Die Zahlen stehen im Bericht</b>: Sätze ohne gepflegten Wert vor und
+        /// nach dem Lauf. Sie sind Auskunft, keine Bedingung — lässt sich eine Zählung
+        /// nicht lesen, meldet der Bericht „unbekannt" und der Schritt läuft
+        /// trotzdem.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteDml"/>.</b> Der Schritt gehört dem SQLite-Zweig;
+        /// <c>NonQuery</c> arbeitet auf <c>Lauf.Conn</c>, und die ist hier
+        /// <c>null</c>.</para>
+        /// </summary>
+        private static bool Schritt_67_BhkwLeistungsgrenze(Lauf l)
+        {
+            long vorher = SqliteZahl(BhkwLeistungsgrenzeVorgabe.Zaehlung());
+
+            if (!SqliteDml(l, BhkwLeistungsgrenzeVorgabe.Anhebung(),
+                           BhkwLeistungsgrenzeVorgabe.TABELLE + "." +
+                           BhkwLeistungsgrenzeVorgabe.SPALTE + ": NULL auf " +
+                           BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT + " anheben"))
+                return false;
+
+            long nachher = SqliteZahl(BhkwLeistungsgrenzeVorgabe.Zaehlung());
+
+            l.Zeile("Schritt 67 - " + BhkwLeistungsgrenzeVorgabe.TABELLE + ": Saetze ohne " +
+                    "gepflegte Leistungsgrenze vorher " + Zahltext(vorher) +
+                    ", nachher " + Zahltext(nachher) + ".");
+
+            l.Notiz("67: Die projektweite BHKW-Leistungsuntergrenze wird sichtbar " +
+                    "(Entscheid W6-E-7). " +
+                    (vorher == 0
+                        ? "Es gab nichts zu tun - jeder Satz fuehrt einen gepflegten Wert."
+                        : vorher.ToString(CultureInfo.InvariantCulture) +
+                          " Satz/Saetze ohne gepflegten Wert auf " +
+                          BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT + " % gehoben.") +
+                    " KEIN Rechenergebnis aendert sich: Genau diese Saetze rechneten " +
+                    "bisher ueber den stillen Fallback in SimulationBHKW mit denselben " +
+                    "30 %. Eine gepflegte 0 bleibt 0 - sie ist eine Angabe des " +
+                    "Anwenders (\"keine Untergrenze\"), keine Luecke.");
             return true;
         }
 

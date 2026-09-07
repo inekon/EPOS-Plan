@@ -139,9 +139,17 @@
                        Eintraege="@BETRIEBSARTEN" Auswahl="@Daten.Betriebsart"
                        Aktiv="@(!Gesperrt)" AuswahlChanged="BetriebsartGesetzt" />
 
-        <Ganzzahlfeld Bezeichnung="@Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE"
+        @* W6-E-7 (07.09.2026): DIE PROJEKTWEITE UNTERGRENZE - hier und nur hier.
+           Sie war schon vor diesem Entscheid dieses Feld, schrieb aber in die
+           falsche Spalte (Befund am Feld _grenzleistungBhkw der Huelle) und trug
+           die feste "[30%]" in der Beschriftung. Beides ist berichtigt: Das Feld
+           fuehrt jetzt Tab_Einstellungen.Leistungsgrenze, traegt seine Einheit
+           am Feld und sagt in der Herleitungszeile, was 0 bedeutet - denn seit
+           W6-E-7 rechnet 0 als 0 und nicht mehr still als 30 %. *@
+        <Ganzzahlfeld Bezeichnung="@Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE" Einheit="%"
                       Wert="@Daten.UntersteLeistungsgrenze" Min="0" Max="100"
                       Aktiv="@(!Gesperrt)" WertChanged="LeistungsgrenzeGesetzt" />
+        <Herleitungszeile Text="@Resource.SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" />
 
         <p class="epos-simerg-info">@Resource.SIMERG_INFO_BHKW</p>
             </KindInhalt>

@@ -3,6 +3,7 @@ using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -186,6 +187,47 @@ public class ParameterReiterTests : BunitContext
 
         Assert.Single(_betriebsart);
         Assert.Equal(2, _betriebsart[0]);
+    }
+
+    /// <summary>
+    /// <b>Die projektweite BHKW-Untergrenze steht hier — und nur hier</b>
+    /// (Anwenderentscheid <b>W6‑E‑7</b> vom 07.09.2026). Sie zeigt den gepflegten Wert,
+    /// trägt ihre Einheit am Feld und schreibt sofort.
+    ///
+    /// <para>Die Beschriftung nennt <b>keine feste Prozentzahl mehr</b>: Bis W6‑E‑7 hieß
+    /// sie „… der Module [30%]" und behauptete damit einen Wert, den der Rechenweg als
+    /// stillen Fallback trug. Der Fallback ist gefallen; im Feld steht, was gilt.</para>
+    /// </summary>
+    [Fact]
+    public void Die_projektweite_Untergrenze_zeigt_ihren_Wert_und_schreibt_sofort()
+    {
+        var seite = Zeichnen(Alles());
+        seite.Find("button[role='tab'][id='reiter-BHKW']").Click();
+
+        Assert.DoesNotContain("[30%]", seite.Markup);
+        Assert.Contains(Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE, seite.Markup);
+
+        var feld = seite.Find("input[type='text']");
+        Assert.Equal("30", feld.GetAttribute("value"));
+
+        feld.Input("12");
+
+        Assert.Equal(new[] { 12 }, _grenze);
+    }
+
+    /// <summary>
+    /// Und darunter steht, was eine <b>0</b> bedeutet — seit W6‑E‑7 rechnet sie als 0
+    /// und nicht mehr still als 30 %. Ohne diese Zeile wäre der Unterschied aus der
+    /// Maske heraus nicht erkennbar.
+    /// </summary>
+    [Fact]
+    public void Unter_der_Untergrenze_steht_ihre_Herleitung()
+    {
+        var seite = Zeichnen(Alles());
+        seite.Find("button[role='tab'][id='reiter-BHKW']").Click();
+
+        Assert.Contains(Resource.SIMERG_HRL_UNTERE_LEISTUNGSGRENZE,
+                        seite.Find("p.epos-herleitung").TextContent);
     }
 
     [Fact]

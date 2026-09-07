@@ -11367,6 +11367,12 @@ Overwrite it anyway?</value>
   <data name="BHKWV_LBL_GRENZLEISTUNG" xml:space="preserve">
     <value>Lower limit output of the selected module:</value>
   </data>
+  <data name="BHKWV_HRL_GRENZLEISTUNG_VORGABE" xml:space="preserve">
+    <value>0 = project default ({0} %)</value>
+  </data>
+  <data name="BHKWV_HRL_GRENZLEISTUNG_KEINE" xml:space="preserve">
+    <value>0 = project default (0 %) — no lower limit, the module modulates down to 0.</value>
+  </data>
   <data name="BHKWV_LBL_VORLAUF" xml:space="preserve">
     <value>Flow</value>
   </data>
@@ -13283,7 +13289,10 @@ Please check all entries!</value>
     <value>Standby:</value>
   </data>
   <data name="SIMERG_LBL_UNTERE_LEISTUNGSGRENZE" xml:space="preserve">
-    <value>Lower power limit of the modules [30%]</value>
+    <value>Lower power limit of the modules</value>
+  </data>
+  <data name="SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" xml:space="preserve">
+    <value>Applies to every module without a limit of its own. 0 = no lower limit, the CHP unit modulates down to 0.</value>
   </data>
   <data name="SIMERG_GRP_BETRIEBSART" xml:space="preserve">
     <value>Operating mode</value>

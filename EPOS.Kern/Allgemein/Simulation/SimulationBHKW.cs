@@ -261,19 +261,52 @@ namespace WindowsFormsApplication1
         /// ACHTUNG, Bestandsverhalten: <see cref="bhkwGrenzleistungAllgemein"/> wird
         /// hier IN PLACE durch 100 geteilt. Ein zweiter Aufruf auf derselben Instanz
         /// teilte erneut — deshalb ruft der Rechenweg diese Methode genau einmal.
+        ///
+        /// <para><b>ZWEI EBENEN, seit W6‑E‑7 ohne stille dritte.</b> Der Katalogwert des
+        /// Moduls (<c>Tab_BHKW.Grenzleistung</c>) gilt, sobald er ungleich 0 ist; sonst
+        /// gilt der PROJEKTWERT (<c>Tab_Einstellungen.Leistungsgrenze</c>), und ist auch
+        /// der 0, dann gibt es keine Untergrenze. Der frühere Fallback auf 30 % ist
+        /// gefallen — die Begründung steht im Rumpf.</para>
         /// </summary>
         private void Moduldaten_Einlesen(int anzahl)
         {
             bhkwGrenzleistungAllgemein /= 100;
 
-            // PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026, Punkt 2):
-            // Fallback 50 % -> 30 %. Er greift, wenn das Projekt keine
-            // Leistungsuntergrenze gepflegt hat (Tab_Einstellungen.Leistungsgrenze = 0).
-            // Migrationsschritt 13 hebt genau diese Sätze auf 30 an, sodass Migration und
-            // Fallback denselben Wert nennen; der Fallback bleibt trotzdem stehen, weil
-            // eine Datenbank ohne gelaufene Migration nicht plötzlich anders rechnen soll
-            // als eine mit.
-            if (bhkwGrenzleistungAllgemein == 0) bhkwGrenzleistungAllgemein = 0.3f;
+            // ANWENDERENTSCHEID W6-E-7 (07.09.2026): HIER STAND EIN STILLER FALLBACK,
+            // und er ist ersatzlos gefallen.
+            //
+            //     if (bhkwGrenzleistungAllgemein == 0) bhkwGrenzleistungAllgemein = 0.3f;
+            //
+            // Er kam aus PAKET BHKW-REGULÄR (Entscheidung des Anwenders 17.08.2026,
+            // Punkt 2: "Fallback 50 % -> 30 %") und griff, sobald das Projekt keine
+            // Leistungsuntergrenze gepflegt hatte (Tab_Einstellungen.Leistungsgrenze = 0
+            // oder NULL - KonfigurationCtrl liest NULL als 0). Der Anwender hat das am
+            // 07.09.2026 revidiert: "Es soll kein Fallback geben, wenn 0 dann bleibt es
+            // so oder es soll in der Einstellung sichtbar sein (30 % Default-Wert im
+            // Eingabedialog)."
+            //
+            // SEITHER RECHNET 0 ALS 0 - keine Untergrenze, das Modul moduliert bis 0.
+            // bhkwGrenzL ist ausschliesslich MULTIPLIKATOR der Motorläufe
+            // (bhkwWaermeLeistung[motor] * bhkwGrenzL[motor], Waermegefuehrt/
+            // Stromgefuehrt/OhneEinspeisung); es wird nirgends durch die Grenze geteilt
+            // und nirgends als Schleifenbedingung gelesen. Der Faktor 0 macht die
+            // Teillastbedingung damit immer wahr - das Modul darf beliebig weit
+            // heruntermodulieren - und kann weder eine Division durch Null noch eine
+            // Endlosschleife erzeugen.
+            //
+            // DAMIT BESTANDSPROJEKTE NICHT ANDERS RECHNEN, hebt Migrationsschritt 67
+            // (BhkwLeistungsgrenzeVorgabe, SCHRITT_67_BHKW_LEISTUNGSGRENZE) die Saetze
+            // OHNE gepflegten Wert (NULL) einmalig auf 30 an; eine gepflegte 0 bleibt 0.
+            // Der Wert steht seither SICHTBAR im Parameterblatt "BHKW" der
+            // Simulationskonfiguration (EPOS.UI/Seiten/Simulation/ParameterReiter.razor)
+            // und ein neues Projekt startet mit 30 % (KonfigurationModel).
+            //
+            // BERICHTIGUNG. Der frühere Kommentar an dieser Stelle nannte
+            // "Migrationsschritt 13" als den Schritt, der die Sätze anhebt. Das ist
+            // falsch: Schritt 13 ist die NOTRESERVE DES PUFFERSPEICHERS
+            // (SCHRITT_13_MINDESTFUELLSTAND). Gemeint war der Access-Teilschritt 13b des
+            // Pakets BHKW-REGULÄR, der "0 ODER 1" auf 30 hob - mit W6-E-7 ist genau
+            // diese Mitnahme der gepflegten 0 nicht mehr gewollt.
 
             BHKWCtrl ctrl = new BHKWCtrl();
             for (int i = 0; i < anzahl; i++)

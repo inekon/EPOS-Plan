@@ -80,6 +80,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -2915,6 +2916,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWV_FRAGE_LOESCHEN {
             get {
                 return ResourceManager.GetString("BHKWV_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0 = Projektvorgabe (0 %) — keine Untergrenze, das Modul moduliert bis 0. ähnelt.
+        /// </summary>
+        public static string BHKWV_HRL_GRENZLEISTUNG_KEINE {
+            get {
+                return ResourceManager.GetString("BHKWV_HRL_GRENZLEISTUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0 = Projektvorgabe ({0} %) ähnelt.
+        /// </summary>
+        public static string BHKWV_HRL_GRENZLEISTUNG_VORGABE {
+            get {
+                return ResourceManager.GetString("BHKWV_HRL_GRENZLEISTUNG_VORGABE", resourceCulture);
             }
         }
         
@@ -31974,6 +31993,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für jedes Modul, das keine eigene Grenzleistung führt. 0 = keine Untergrenze, das BHKW moduliert bis 0. ähnelt.
+        /// </summary>
+        public static string SIMERG_HRL_UNTERE_LEISTUNGSGRENZE {
+            get {
+                return ResourceManager.GetString("SIMERG_HRL_UNTERE_LEISTUNGSGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmegeführt (Standard)
         ///Das BHKW richtet sich nach dem Heiz- und Warmwasserbedarf. Erzeugter Strom deckt den Eigenbedarf, Überschüsse werden in das öffentliche Netz eingespeist.
         ///
@@ -32386,7 +32414,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Leistungsgrenze der Module [30%] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Leistungsgrenze der Module ähnelt.
         /// </summary>
         public static string SIMERG_LBL_UNTERE_LEISTUNGSGRENZE {
             get {
