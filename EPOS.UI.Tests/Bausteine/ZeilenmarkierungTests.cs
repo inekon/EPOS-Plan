@@ -6,15 +6,24 @@ using Xunit;
 namespace EPOS.UI.Tests.Bausteine;
 
 /// <summary>
-/// Zeilenmarkierung (iU9-W13.0l) — die Markierungsregel der vier Einlesemasken.
-/// Vorbild ist <c>SelectionMode.MultiExtended</c> der <c>ListBox</c>: ein Klick
-/// waehlt eine Zeile, <c>Strg</c> nimmt dazu oder weg, <c>Umschalt</c> waehlt
-/// den Bereich ab dem Anker.
+/// Zeilenmarkierung (iU9-W13.0l) — die Markierungsregel aller sechs Importe.
+///
+/// <para><b>Seit W6‑E‑5 (07.09.2026) schaltet der einfache Klick um.</b> Vorbild
+/// war bis dahin <c>SelectionMode.MultiExtended</c> der <c>ListBox</c>: ein Klick
+/// ersetzte die Wahl, nur <c>Strg</c> nahm dazu. Die Wahlspalte zeigt aber ein
+/// Kontrollkaestchen, und ein Kaestchen verspricht Umschalten — der Anwender
+/// waehlte eine zweite Zeile und sah die erste verschwinden („die Mehrfachauswahl
+/// funktioniert nicht"). Jetzt gilt: Klick schaltet um, <c>Strg</c> ebenso,
+/// <c>Umschalt</c> nimmt den Bereich ab dem Anker DAZU.</para>
 /// </summary>
 public class ZeilenmarkierungTests
 {
+    /// <summary>
+    /// <b>Der Kern von W6‑E‑5:</b> Zwei einfache Klicks wählen ZWEI Zeilen, ein
+    /// dritter Klick auf dieselbe Zeile nimmt sie wieder weg.
+    /// </summary>
     [Fact]
-    public void Ein_einfacher_Klick_waehlt_genau_eine_Zeile()
+    public void Ein_einfacher_Klick_schaltet_die_Zeile_um()
     {
         var w = new Zeilenmarkierung();
 
@@ -23,8 +32,34 @@ public class ZeilenmarkierungTests
         Assert.Equal(3, w.Anker);
 
         w.Anklicken(7, false, false);
-        Assert.Equal(new[] { 7 }, w.Gewaehlt);
+        Assert.Equal(new[] { 3, 7 }, w.Gewaehlt);
         Assert.Equal(7, w.Anker);
+
+        w.Anklicken(3, false, false);
+        Assert.Equal(new[] { 7 }, w.Gewaehlt);
+        Assert.Equal(3, w.Anker);
+    }
+
+    /// <summary>
+    /// <c>Hinzufuegen</c> nimmt die Zeile in die Wahl, ohne umzuschalten — der
+    /// Doppelklick braucht das (der Browser schickt davor zwei Klicks, die sich
+    /// gegenseitig aufheben), und der Filterwechsel stellt damit die gemerkte
+    /// Wahl wieder her.
+    /// </summary>
+    [Fact]
+    public void Hinzufuegen_schaltet_nicht_um()
+    {
+        var w = new Zeilenmarkierung();
+
+        w.Hinzufuegen(2);
+        w.Hinzufuegen(2);
+        w.Hinzufuegen(5);
+
+        Assert.Equal(new[] { 2, 5 }, w.Gewaehlt);
+        Assert.Equal(5, w.Anker);
+
+        w.Hinzufuegen(-1);
+        Assert.Equal(new[] { 2, 5 }, w.Gewaehlt);
     }
 
     [Fact]
@@ -44,8 +79,13 @@ public class ZeilenmarkierungTests
         Assert.False(w.IstGewaehlt(5));
     }
 
+    /// <summary>
+    /// Umschalt nimmt den Bereich ab dem Anker DAZU — es leert die Wahl nicht mehr
+    /// (W6‑E‑5). Der Anker bleibt stehen, so dass sich der Bereich mit weiteren
+    /// Umschalt-Klicks in beide Richtungen erweitern lässt.
+    /// </summary>
     [Fact]
-    public void Umschalt_waehlt_den_Bereich_ab_dem_Anker_in_beide_Richtungen()
+    public void Umschalt_nimmt_den_Bereich_ab_dem_Anker_dazu()
     {
         var w = new Zeilenmarkierung();
 
@@ -53,13 +93,9 @@ public class ZeilenmarkierungTests
         w.Anklicken(7, false, true);
         Assert.Equal(new[] { 4, 5, 6, 7 }, w.Gewaehlt);
 
-        // Der Anker bleibt stehen: ein zweiter Umschalt-Klick verkleinert.
-        w.Anklicken(5, false, true);
-        Assert.Equal(new[] { 4, 5 }, w.Gewaehlt);
-
-        // ... und greift auch nach oben.
+        // Der Anker bleibt stehen - und der Bereich waechst nach oben.
         w.Anklicken(1, false, true);
-        Assert.Equal(new[] { 1, 2, 3, 4 }, w.Gewaehlt);
+        Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, 7 }, w.Gewaehlt);
         Assert.Equal(4, w.Anker);
     }
 

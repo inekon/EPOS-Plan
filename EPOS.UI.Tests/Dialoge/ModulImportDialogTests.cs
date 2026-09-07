@@ -1091,6 +1091,213 @@ public class ModulImportDialogTests : BunitContext
     }
 
     // =====================================================================
+    // 10 — Mehrfachwahl und Doppelklick (Anwenderentscheid W6‑E‑5)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Kern von W6‑E‑5</b> („die Mehrfachauswahl funktioniert nicht"): Zwei
+    /// EINFACHE Klicks wählen zwei Geräte, und „Übernehmen" schreibt beide in einem
+    /// Zug. Vorher ersetzte der zweite Klick die Wahl des ersten — und der Wirt
+    /// schrieb ohnehin nur einen Satz.
+    ///
+    /// <para>Geprüft wird mit den ausgelieferten Importproben
+    /// <c>cec_module_50.csv</c> und <c>cec_wechselrichter_21.csv</c>, also mit
+    /// denselben Sätzen, die der Anwender über „CEC-Datei laden" bekommt.</para>
+    /// </summary>
+    [Theory]
+    [InlineData(ModulImportArt.Photovoltaik)]
+    [InlineData(ModulImportArt.Wechselrichter)]
+    public void Zwei_einfache_Klicks_uebernehmen_zwei_Saetze(ModulImportArt art)
+    {
+        var angelegt = new List<string>();
+        var cut = Bauen(art, AusDerProbe(art),
+            vorpruefen: _ => Task.FromResult(new ImportVorpruefung(ImportBefund.Neu, null, null)),
+            anlegen: (_, name) => { angelegt.Add(name); return Task.FromResult(true); });
+
+        Laden(cut);
+        Assert.True(cut.Instance.SichtbareZeilen >= 3);
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+
+        Assert.Equal(2, cut.Instance.Gewaehlte.Count);
+        Assert.Contains("2 gewählt", cut.Markup);
+
+        Uebernehmen(cut).Click();
+
+        Assert.Equal(2, angelegt.Count);
+        Assert.Equal("2 übernommen, 0 übersprungen.", cut.Instance.Meldung);
+
+        // Ein dritter Klick auf dieselbe Zeile nimmt sie wieder aus der Wahl.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Assert.Single(cut.Instance.Gewaehlte);
+    }
+
+    /// <summary>
+    /// <b>Der Doppelklick</b> (W6‑E‑5, „und die Auswahl per Doppelklick geht nicht"):
+    /// Er nimmt die Zeile in die Wahl und übernimmt SIE sofort — die übrige Wahl
+    /// bleibt stehen.
+    ///
+    /// <para>Der Fall schickt die Ereignisfolge des Browsers: <c>click</c>,
+    /// <c>click</c>, <c>dblclick</c>. Mit der Umschaltregel heben sich die zwei
+    /// Klicks auf; deshalb muss der Wirt die Zeile im Doppelklick ausdrücklich
+    /// HINZUFÜGEN.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_Doppelklick_uebernimmt_genau_diese_Zeile()
+    {
+        var angelegt = new List<string>();
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: _ => Task.FromResult(new ImportVorpruefung(ImportBefund.Neu, null, null)),
+            anlegen: (_, name) => { angelegt.Add(name); return Task.FromResult(true); });
+
+        Laden(cut);
+
+        // Zeile 0 ist schon gewaehlt - sie darf der Doppelklick nicht verlieren.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+
+        var zeile = cut.FindAll("tbody .epos-anlagenwahl")[2];
+        zeile.Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[2].DoubleClick();
+
+        Assert.Equal(new[] { "Beta GmbH: B-10000" }, angelegt);
+        Assert.Equal("Datensatz erfolgreich gespeichert.", cut.Instance.Meldung);
+
+        // Die doppelt geklickte Zeile steht jetzt MIT in der Wahl, die erste auch.
+        Assert.Equal(2, cut.Instance.Gewaehlte.Count);
+    }
+
+    /// <summary>
+    /// <b>Ein Konflikt unter zweien</b>: EIN Konfliktdialog für die ganze Auswahl,
+    /// und die Antwort steuert je Satz — der eine wird überschrieben, der andere
+    /// ganz normal angelegt.
+    /// </summary>
+    [Fact]
+    public void Ein_Konflikt_unter_zweien_steuert_je_Satz()
+    {
+        var angelegt = new List<string>();
+        var ueberschrieben = new List<int>();
+
+        var pruefung = new ImportPruefung
+        {
+            Kandidat = new ImportKandidat { Name = "Alpha AG: A-3000" },
+            Befund = ImportBefund.NameVorhanden,
+            Vorhanden = new KatalogSatz { Id = 7, Name = "Alpha AG: A-3000" }
+        };
+
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: satz => Task.FromResult(
+                ((CecWechselrichter)satz).Name == "Alpha AG: A-3000"
+                    ? new ImportVorpruefung(ImportBefund.NameVorhanden,
+                                            new[] { pruefung }, new[] { "alpha ag: a-3000" })
+                    : new ImportVorpruefung(ImportBefund.Neu, null, null)),
+            anlegen: (_, name) => { angelegt.Add(name); return Task.FromResult(true); },
+            ueberschreiben: (_, id) => { ueberschrieben.Add(id); return Task.FromResult(true); });
+
+        Laden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();   // Alpha AG: A-3000 (Konflikt)
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();   // Beta GmbH: B-10000 (neu)
+
+        Uebernehmen(cut).Click();
+
+        // EINE Ueberlagerung mit genau EINER Pruefzeile - die konfliktfreie steht
+        // nicht darin, sie braucht keine Entscheidung.
+        Assert.Single(cut.FindAll(".epos-ueberlagerung"));
+        Assert.Single(cut.FindAll(".epos-importkonflikte tbody tr"));
+
+        // "Ueberschreiben" waehlen (Auslassen = 0, Ueberschreiben = 1, Umbenennen = 2)
+        // und mit OK bestaetigen.
+        cut.Find(".epos-importkonflikte tbody tr").QuerySelectorAll("select")[0].Change("1");
+        cut.Find(".epos-importkonflikte .epos-knopf--primaer").Click();
+
+        Assert.Equal(new[] { 7 }, ueberschrieben);
+        Assert.Equal(new[] { "Beta GmbH: B-10000" }, angelegt);
+        Assert.Equal("2 übernommen, 0 übersprungen.", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// <b>Warnungen fragen EINMAL für alle zurück</b>, mit der Liste der betroffenen
+    /// Geräte — nicht je Satz eine Rückfrage. „Nein" schreibt gar nichts.
+    /// </summary>
+    [Fact]
+    public void Zwei_Warnungen_fragen_nur_einmal_zurueck()
+    {
+        var angelegt = new List<string>();
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: _ => Task.FromResult(new ImportVorpruefung(
+                ImportBefund.Neu, null, null, "Die MPPT-Zahl fehlt.", false)),
+            anlegen: (_, name) => { angelegt.Add(name); return Task.FromResult(true); });
+
+        Laden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[1].Click();
+
+        Uebernehmen(cut).Click();
+
+        Assert.True(cut.Instance.PlausiOffen);
+        Assert.Single(cut.FindAll(".epos-rueckfrage"));
+        Assert.Contains("Alpha AG: A-3000", cut.Find(".epos-rueckfrage").TextContent);
+        Assert.Contains("Alpha AG: A-5000", cut.Find(".epos-rueckfrage").TextContent);
+        Assert.Empty(angelegt);
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf").Last().Click();     // Nein
+        Assert.Empty(angelegt);
+    }
+
+    /// <summary>
+    /// <b>Die Wahl überlebt das Umfiltern</b> (W6‑E‑5): Der Anwender geht
+    /// nacheinander mehrere Hersteller durch und sammelt; ein ausgefilterter Satz
+    /// fällt NICHT heraus. „Zurücksetzen" leert die Wahl — und die Detailreiter
+    /// zeigen immer die zuletzt angeklickte Zeile.
+    /// </summary>
+    [Fact]
+    public void Umfiltern_behaelt_die_Wahl_und_Zuruecksetzen_leert_sie()
+    {
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete());
+        Laden(cut);
+
+        // Zwei Geraete der Firma "Alpha AG" waehlen ...
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[1].Click();
+        Assert.Equal(2, cut.Instance.Gewaehlte.Count);
+
+        // ... dann auf die zweite Firma filtern: die beiden sind unsichtbar,
+        // bleiben aber gewaehlt.
+        cut.FindAll(".epos-pvimport-filter select")[0].Change("2");
+        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Assert.Equal(2, cut.Instance.Gewaehlte.Count);
+        Assert.Empty(cut.FindAll("tbody .epos-knopf--primaer"));   // keine markierte Zeile sichtbar
+
+        // Das dritte Geraet dazu - jetzt sind es drei.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Assert.Equal(3, cut.Instance.Gewaehlte.Count);
+        Assert.Contains("3 gewählt", cut.Markup);
+
+        // Die Detailreiter zeigen die ZULETZT angeklickte Zeile.
+        Assert.Equal("Beta GmbH: B-10000", ((CecWechselrichter)cut.Instance.Gewaehlt!).Name);
+
+        Knopf(cut, "Zurücksetzen").Click();
+        Assert.Empty(cut.Instance.Gewaehlte);
+        Assert.DoesNotContain("gewählt", cut.Markup);
+    }
+
+    /// <summary>Die Sätze der ausgelieferten Importprobe zur Ausprägung.</summary>
+    private static List<object> AusDerProbe(ModulImportArt art)
+    {
+        if (art == ModulImportArt.Photovoltaik)
+        {
+            var svc = new CECDataService();
+            Assert.True(svc.LoadFromFile(Probe("cec_module_50.csv")).success);
+            return svc.AllModules.Select(m => (object)UnifiedModule.FromPanCec(m)).ToList();
+        }
+
+        var wr = new CecWechselrichterDienst();
+        Assert.True(wr.AusDatei(Probe("cec_wechselrichter_21.csv")).Erfolg);
+        return wr.AlleGeraete.Select(g => (object)g).ToList();
+    }
+
+    // =====================================================================
     // Hilfen
     // =====================================================================
 

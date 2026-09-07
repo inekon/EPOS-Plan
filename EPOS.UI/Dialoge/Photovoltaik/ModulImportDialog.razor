@@ -25,10 +25,30 @@
    ausgeliefert liegen. Ohne Delegat kein Knopf - dieselbe Hausregel wie beim
    PAN-Knopf des Vorlaeufers.
 
-   EINE ZEILENWAHL, KEIN MEHRFACHIMPORT. Beide Vorlaeufer hatten
-   MultiSelect = false und schrieben genau EINEN Satz; ImportVorpruefung traegt
-   deshalb einen Befund und keine Liste. Der Baustein Zeilenwahl ist geteilt, die
-   Semantik bleibt die des Bestands.
+   MEHRFACHWAHL UND DOPPELKLICK (Anwenderentscheid W6-E-5 vom 07.09.2026: "die
+   Mehrfachauswahl funktioniert nicht (Wechselrichter)" und "die Auswahl per
+   Doppelklick geht nicht"). Bis dahin hatte der Wirt EINE Zeilenwahl - beide
+   Vorlaeufer standen auf MultiSelect = false. Jetzt traegt die Wahlspalte
+   Kontrollkaestchen (Zeilenwahl Mehrfach), und "Uebernehmen" schreibt ALLE
+   gewaehlten Saetze in einem Zug. Drei Zusagen dahinter:
+
+     * Die Wahl haengt an den SAETZEN, nicht an den Anzeigezeilen: Wer
+       nacheinander mehrere Hersteller filtert und sammelt, verliert die frueher
+       gewaehlten Geraete nicht, obwohl sie gerade nicht sichtbar sind. Die
+       Statuszeile sagt deshalb, wie viele gewaehlt sind. "Zuruecksetzen" leert
+       die Wahl.
+     * Ein Doppelklick nimmt die Zeile in die Wahl und uebernimmt SIE sofort -
+       ohne die uebrige Wahl anzutasten. (Der Browser schickt davor zwei Klicks,
+       die sich mit der Umschaltregel aufheben; deshalb Hinzufuegen und nicht
+       Anklicken.)
+     * EIN Satz verhaelt sich wie bisher: dieselbe Meldung, derselbe Weg. Erst ab
+       zwei Saetzen meldet der Dialog die Bilanz "n uebernommen, m uebersprungen".
+
+   Die Vorpruefung bleibt EIN Satz je Aufruf (ImportVorpruefung traegt einen
+   Befund); der Wirt ruft sie je gewaehltem Satz und fuehrt die Befunde zu EINER
+   Rueckfrage und EINEM Konfliktdialog zusammen - wie die vier VDI-Importe.
+   Grenze davon: DublettenPruefung sieht je Aufruf nur einen Kandidaten, also
+   bleibt NameDoppeltInAuswahl (zwei gewaehlte Saetze mit gleichem Namen) unbesetzt.
 
    LANGE LISTEN stehen in einem VIRTUALISIERTEN Raster (ab 120 Zeilen): 20 746
    Module, 2 343 Wechselrichter.
@@ -105,8 +125,10 @@
     <Raster TZeile="ImportZeile" Zeilen="@Zeilen" Virtualisiert="@Virtualisieren">
         <KindInhalt>
             <TemplateColumn TGridItem="ImportZeile" Title="@SpalteWahlText">
-                <Zeilenwahl Gewaehlt="@Istgewaehlt(context)" Kurztext="@SpalteWahlText"
-                            Gewaehltwerden="() => Waehlen(context)" />
+                <Zeilenwahl Mehrfach="true" Gewaehlt="@Istgewaehlt(context)"
+                            Kurztext="@SpalteWahlText"
+                            Tastenwahl="@(k => Anklicken(context.Nummer, k))"
+                            Doppelklick="@(() => BeiDoppelklick(context.Nummer))" />
             </TemplateColumn>
             @foreach (ImportSpalte spalte in Profil.Spalten)
             {
@@ -220,6 +242,12 @@
     [Parameter] public string TextSchreibfehler { get; set; } = Resource.PVIMP_MSG_SCHREIBFEHLER;
     [Parameter] public string TextBereitsEingelesen { get; set; } = Resource.IMP_KAT_MSG_BEREITS_EINGELESEN;
 
+    /// <summary>„{0} gewählt" — der Zusatz der Statuszeile (W6‑E‑5).</summary>
+    [Parameter] public string GewaehltText { get; set; } = Resource.IMP_STATUS_GEWAEHLT;
+
+    /// <summary>„{0} übernommen, {1} übersprungen." — die Bilanz ab zwei Sätzen.</summary>
+    [Parameter] public string BilanzText { get; set; } = Resource.IMP_MSG_BILANZ;
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -232,7 +260,19 @@
 
     private List<ImportZeile> _zeilen = new();
     private List<ImportZeile> _anzeige = new();
-    private object? _gewaehlt;
+
+    /// <summary>Die Markierung der SICHTBAREN Zeilen — Klick, Strg, Umschalt.</summary>
+    private readonly Zeilenmarkierung _wahl = new();
+
+    /// <summary>
+    /// Die gewählten SÄTZE, in der Reihenfolge des Wählens. Sie überleben das
+    /// Umfiltern: Wer nacheinander mehrere Hersteller durchgeht und sammelt, behält
+    /// die früher gewählten Geräte (W6‑E‑5).
+    /// </summary>
+    private readonly List<object> _gewaehlte = new();
+
+    /// <summary>Die zuletzt angeklickte Zeile — sie füllt die Detailreiter.</summary>
+    private object? _zuletzt;
 
     private IReadOnlyList<(int Id, string Text)> _herstellerliste = Array.Empty<(int, string)>();
     private IReadOnlyList<(int Id, string Text)> _technologieliste = Array.Empty<(int, string)>();
@@ -275,12 +315,18 @@
             ? Wege.Netz is not null
             : Wege.DateiWaehlen is not null && Wege.DateiLaden is not null);
 
-    /// <summary>Der gewählte Satz, oder <c>null</c> (Prüfhilfe für Tests).</summary>
-    public object? Gewaehlt => _gewaehlt;
+    /// <summary>
+    /// Der ZULETZT ANGEKLICKTE Satz, oder <c>null</c> — er füllt die Detailreiter
+    /// (Prüfhilfe für Tests). Die ganze Wahl steht in <see cref="Gewaehlte"/>.
+    /// </summary>
+    public object? Gewaehlt => _zuletzt;
 
-    /// <summary>Die Zeile des gewählten Satzes (Prüfhilfe für Tests).</summary>
+    /// <summary>Alle gewählten Sätze, auch die gerade ausgefilterten (Prüfhilfe).</summary>
+    public IReadOnlyList<object> Gewaehlte => _gewaehlte;
+
+    /// <summary>Die Zeile des zuletzt angeklickten Satzes (Prüfhilfe für Tests).</summary>
     public ImportZeile? GewaehlteZeile =>
-        _gewaehlt is null ? null : _anzeige.FirstOrDefault(z => ReferenceEquals(z.Satz, _gewaehlt));
+        _zuletzt is null ? null : _anzeige.FirstOrDefault(z => ReferenceEquals(z.Satz, _zuletzt));
 
     /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
     public string Meldung => _meldung;
@@ -291,11 +337,25 @@
     /// <summary>Steht die Plausibilitäts-Rückfrage? (Prüfhilfe für Tests.)</summary>
     public bool PlausiOffen => _plausiOffen;
 
-    private string StatusText => _status.Length > 0 ? _status : Profil.StatusBereit;
+    /// <summary>
+    /// Die Statuszeile: die Trefferzahl des Filters und — sobald etwas gewählt ist —
+    /// die Zahl der gewählten Sätze. Die Wahl kann Sätze enthalten, die der Filter
+    /// gerade nicht zeigt; genau deshalb muss sie dastehen (W6‑E‑5).
+    /// </summary>
+    private string StatusText
+    {
+        get
+        {
+            string text = _status.Length > 0 ? _status : Profil.StatusBereit;
+            return _gewaehlte.Count == 0
+                ? text
+                : text + " · " + string.Format(GewaehltText, _gewaehlte.Count);
+        }
+    }
 
-    private bool UebernehmenErlaubt => !_laeuft && _gewaehlt is not null && Wege.Vorpruefen is not null;
+    private bool UebernehmenErlaubt => !_laeuft && _gewaehlte.Count > 0 && Wege.Vorpruefen is not null;
 
-    private bool Istgewaehlt(ImportZeile zeile) => ReferenceEquals(zeile.Satz, _gewaehlt);
+    private bool Istgewaehlt(ImportZeile zeile) => _wahl.IstGewaehlt(zeile.Nummer);
 
     private string Quellenklasse(ImportQuelle q) =>
         string.Equals(q.Schluessel, Quelle, StringComparison.OrdinalIgnoreCase)
@@ -435,7 +495,7 @@
             if (z is not null) _zeilen.Add(z);
         }
 
-        _gewaehlt = null;
+        WahlLeeren();
         ListenAufbauen();
         Filtern();
     }
@@ -469,11 +529,17 @@
     private void BeiTechnologie(int? i) { _iTechnologie = i ?? 0; Filtern(); }
     private void BeiSuche(string t) { _suche = t ?? ""; Filtern(); }
 
+    /// <summary>
+    /// „Zurücksetzen" gibt die Liste wieder frei — und LEERT die Wahl (W6‑E‑5).
+    /// Das ist der eine Knopf, mit dem der Anwender eine über mehrere Filterschritte
+    /// gesammelte Auswahl wieder loswird.
+    /// </summary>
     private void Zuruecksetzen()
     {
         _suche = "";
         _iHersteller = 0;
         _iTechnologie = 0;
+        WahlLeeren();
         Vorbelegen();
         Filtern();
     }
@@ -481,8 +547,12 @@
     /// <summary>
     /// Die Filterrechnung, wörtlich <c>ApplyFilter</c> :198‑246: Suchmuster,
     /// Klapplisten und Zahlenbereiche, und eine Obergrenze von 0 zählt als „keine
-    /// Obergrenze". Die Auswahl überlebt das Umfiltern, solange die Zeile sichtbar
-    /// bleibt.
+    /// Obergrenze".
+    ///
+    /// <para><b>Die Wahl überlebt das Umfiltern vollständig</b> (W6‑E‑5): Sie hängt
+    /// an den Sätzen, nicht an den Anzeigezeilen, und ein ausgefilterter Satz FÄLLT
+    /// NICHT heraus — der Anwender geht nacheinander mehrere Hersteller durch und
+    /// sammelt. Neu aufgebaut wird nur die Markierung der sichtbaren Zeilen.</para>
     /// </summary>
     private void Filtern()
     {
@@ -508,8 +578,7 @@
             _anzeige.Add(z);
         }
 
-        if (_gewaehlt is not null && !_anzeige.Any(z => ReferenceEquals(z.Satz, _gewaehlt)))
-            _gewaehlt = null;
+        MarkierungAusWahl();
 
         _status = string.Format(Profil.StatusGefunden, _anzeige.Count);
     }
@@ -526,24 +595,108 @@
         return true;
     }
 
-    private void Waehlen(ImportZeile zeile)
+    // =====================================================================
+    // Die Wahl (W6-E-5)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Klick auf die Wahlzelle. Die Regel — Klick schaltet um, Umschalt nimmt den
+    /// Bereich dazu — steht im Baustein <see cref="Zeilenmarkierung"/> und gilt damit
+    /// für alle Importe gleich.
+    /// </summary>
+    private void Anklicken(int zeile, Zeilenwahl.Zeilenklick klick)
     {
-        _gewaehlt = zeile.Satz;
+        _wahl.Anklicken(zeile, klick.Strg, klick.Umschalt);
+        if (zeile >= 0 && zeile < _anzeige.Count) _zuletzt = _anzeige[zeile].Satz;
+        WahlSpeichern();
         _meldung = "";
+    }
+
+    /// <summary>Die Markierung der sichtbaren Zeilen aus der gemerkten Wahl aufbauen.</summary>
+    private void MarkierungAusWahl()
+    {
+        _wahl.Leeren();
+        if (_gewaehlte.Count == 0) return;
+
+        var menge = new HashSet<object>(_gewaehlte, ReferenceEqualityComparer.Instance);
+        for (int i = 0; i < _anzeige.Count; i++)
+            if (menge.Contains(_anzeige[i].Satz)) _wahl.Hinzufuegen(i);
+    }
+
+    /// <summary>
+    /// Die Markierung der sichtbaren Zeilen zurück in die gemerkte Wahl schreiben:
+    /// Was gerade sichtbar ist, wird aus der Wahl genommen und nach der Markierung
+    /// neu hineingelegt — die unsichtbaren Sätze bleiben unangetastet.
+    /// </summary>
+    private void WahlSpeichern()
+    {
+        var sichtbar = new HashSet<object>(_anzeige.Select(z => z.Satz),
+                                           ReferenceEqualityComparer.Instance);
+        _gewaehlte.RemoveAll(s => sichtbar.Contains(s));
+
+        foreach (int i in _wahl.Gewaehlt)
+            if (i >= 0 && i < _anzeige.Count) _gewaehlte.Add(_anzeige[i].Satz);
+    }
+
+    private void WahlLeeren()
+    {
+        _gewaehlte.Clear();
+        _wahl.Leeren();
+        _zuletzt = null;
     }
 
     // =====================================================================
     // Uebernehmen
     // =====================================================================
 
-    private async Task BeiUebernehmen()
+    /// <summary>Ein gewählter Satz samt seiner Vorprüfung.</summary>
+    private sealed record Kandidat(object Satz, string Name, ImportVorpruefung Vor);
+
+    private Task BeiUebernehmen()
     {
-        object? satz = _gewaehlt;
-        if (satz is null || Wege.Vorpruefen is null)
+        if (_gewaehlte.Count == 0 || Wege.Vorpruefen is null)
         {
             Melden(Profil.MeldungOhneAuswahl, WarnStufe.Hinweis);
-            return;
+            return Task.CompletedTask;
         }
+
+        return Schreibgang(new List<object>(_gewaehlte));
+    }
+
+    /// <summary>
+    /// Der Doppelklick: diese Zeile in die Wahl NEHMEN und sie sofort übernehmen —
+    /// die übrige Wahl bleibt stehen (W6‑E‑5).
+    ///
+    /// <para>Der Browser schickt vor dem Doppelklick zwei einfache Klicks; mit der
+    /// Umschaltregel heben die sich auf. Deshalb <c>Hinzufuegen</c> und nicht
+    /// <c>Anklicken</c> — sonst stünde die Zeile danach zufällig da.</para>
+    /// </summary>
+    private Task BeiDoppelklick(int zeile)
+    {
+        if (_laeuft || zeile < 0 || zeile >= _anzeige.Count) return Task.CompletedTask;
+
+        object satz = _anzeige[zeile].Satz;
+        _wahl.Hinzufuegen(zeile);
+        _zuletzt = satz;
+        WahlSpeichern();
+        _meldung = "";
+
+        return Wege.Vorpruefen is null ? Task.CompletedTask
+                                       : Schreibgang(new List<object> { satz });
+    }
+
+    /// <summary>
+    /// Der Schreibgang über eine Auswahl. Reihenfolge wie bei den vier VDI-Importen:
+    /// je Satz vorprüfen, DANN eine Rückfrage für alle Warnungen, DANN ein
+    /// Konfliktdialog für alle Konflikte, dann schreiben.
+    ///
+    /// <para><b>Ein einzelner Satz verhält sich wie vorher</b> — dieselbe Meldung,
+    /// derselbe gesperrte Ausstieg. Erst ab zwei Sätzen meldet der Dialog die
+    /// Bilanz.</para>
+    /// </summary>
+    private async Task Schreibgang(List<object> saetze)
+    {
+        bool einzeln = saetze.Count == 1;
 
         _laeuft = true;
         _meldung = "";
@@ -551,47 +704,89 @@
 
         try
         {
-            ImportVorpruefung vor = await Wege.Vorpruefen(satz);
+            var namen = Namensliste();
+            var kandidaten = new List<Kandidat>();
+            var warnungen = new List<Kandidat>();
+            var gesperrt = new List<string>();
 
-            // Plausibilitaet der Gerätewerte: ein Fehler sperrt die Uebernahme, eine
-            // Warnung wird zurueckgefragt - der Anwender hat die Werte im Detailblock
-            // vor sich.
-            if (vor.Gesperrt)
+            foreach (object satz in saetze)
             {
-                Melden(vor.Plausibilitaet, WarnStufe.Fehler);
-                return;
+                ImportVorpruefung vor = await Wege.Vorpruefen!(satz);
+                string name = namen.TryGetValue(satz, out string? n) ? n : "";
+
+                // Plausibilitaet: ein Fehler SPERRT den Satz, eine Warnung wird
+                // zurueckgefragt - der Anwender hat die Werte im Detailblock vor sich.
+                if (vor.Gesperrt)
+                {
+                    if (einzeln) { Melden(vor.Plausibilitaet, WarnStufe.Fehler); return; }
+                    gesperrt.Add(name);
+                    continue;
+                }
+
+                var k = new Kandidat(satz, name, vor);
+                kandidaten.Add(k);
+                if (vor.Plausibilitaet.Length > 0) warnungen.Add(k);
             }
-            if (vor.Plausibilitaet.Length > 0 && !await PlausiFragen(vor.Plausibilitaet)) return;
 
-            string name = GewaehlteZeile?.Name ?? "";
+            if (warnungen.Count > 0 && !await PlausiFragen(warnungen)) return;
+            if (kandidaten.Count == 0) { Bilanz(0, gesperrt.Count, einzeln); return; }
 
-            if (vor.Befund == ImportBefund.Neu)
+            // EIN Konfliktdialog fuer alle Saetze, die schon im Katalog stehen.
+            var konflikte = new List<ImportPruefung>();
+            var zuKandidat = new Dictionary<ImportPruefung, Kandidat>();
+            foreach (Kandidat k in kandidaten.Where(k => k.Vor.Befund != ImportBefund.Neu))
+                foreach (ImportPruefung p in k.Vor.Pruefungen)
+                {
+                    konflikte.Add(p);
+                    zuKandidat[p] = k;
+                }
+
+            var entscheidung = new Dictionary<Kandidat, KonfliktEntscheidung>();
+            if (konflikte.Count > 0)
             {
-                await Schreiben(satz, name, neu: true);
-                return;
+                List<KonfliktEntscheidung>? gewaehlt = await KonflikteFragen(
+                    konflikte, kandidaten.SelectMany(k => k.Vor.VergebeneNamen).Distinct().ToList());
+                if (gewaehlt is null || gewaehlt.Count == 0) return;   // Abbruch: nichts schreiben
+
+                foreach (KonfliktEntscheidung e in gewaehlt)
+                    if (e.Pruefung is not null && zuKandidat.TryGetValue(e.Pruefung, out Kandidat? k))
+                        entscheidung[k] = e;
             }
 
-            List<KonfliktEntscheidung>? entscheidungen =
-                await KonflikteFragen(vor.Pruefungen, vor.VergebeneNamen);
-            if (entscheidungen is null || entscheidungen.Count == 0) return;   // Abbruch
+            int uebernommen = 0, uebersprungen = gesperrt.Count;
 
-            KonfliktEntscheidung ent = entscheidungen[0];
-            switch (ent.Aktion)
+            foreach (Kandidat k in kandidaten)
             {
-                case KonfliktAktion.Ueberschreiben:
-                    await Schreiben(satz, name, neu: false, bestandsId: ent.Pruefung.Vorhanden.Id);
-                    break;
-                case KonfliktAktion.Umbenennen:
-                    await Schreiben(satz, ent.NeuerName, neu: true);
-                    break;
-                case KonfliktAktion.Importieren:
-                    // Bei InhaltsGleich: gewollte Variante trotzdem anlegen.
-                    await Schreiben(satz, name, neu: true);
-                    break;
-                default:
-                    Melden(TextBereitsEingelesen, WarnStufe.Hinweis);
-                    break;
+                if (!entscheidung.TryGetValue(k, out KonfliktEntscheidung? e))
+                {
+                    if (await Schreiben(k.Satz, k.Name, neu: true, 0, einzeln)) uebernommen++;
+                    else uebersprungen++;
+                    continue;
+                }
+
+                switch (e.Aktion)
+                {
+                    case KonfliktAktion.Ueberschreiben:
+                        if (await Schreiben(k.Satz, k.Name, false, e.Pruefung.Vorhanden.Id, einzeln)) uebernommen++;
+                        else uebersprungen++;
+                        break;
+                    case KonfliktAktion.Umbenennen:
+                        if (await Schreiben(k.Satz, e.NeuerName, true, 0, einzeln)) uebernommen++;
+                        else uebersprungen++;
+                        break;
+                    case KonfliktAktion.Importieren:
+                        // Bei InhaltsGleich: gewollte Variante trotzdem anlegen.
+                        if (await Schreiben(k.Satz, k.Name, true, 0, einzeln)) uebernommen++;
+                        else uebersprungen++;
+                        break;
+                    default:
+                        if (einzeln) Melden(TextBereitsEingelesen, WarnStufe.Hinweis);
+                        uebersprungen++;
+                        break;
+                }
             }
+
+            Bilanz(uebernommen, uebersprungen, einzeln);
         }
         finally
         {
@@ -599,23 +794,53 @@
         }
     }
 
-    private async Task Schreiben(object satz, string name, bool neu, int bestandsId = 0)
+    /// <summary>Satz → Bezeichner, über die ganze Sitzungsliste (auch ausgefilterte).</summary>
+    private Dictionary<object, string> Namensliste()
+    {
+        var namen = new Dictionary<object, string>(ReferenceEqualityComparer.Instance);
+        foreach (ImportZeile z in _zeilen) namen[z.Satz] = z.Name;
+        return namen;
+    }
+
+    /// <summary>
+    /// Die Abschlussmeldung. Bei EINEM Satz hat <see cref="Schreiben"/> schon gemeldet
+    /// — dieselbe Meldung wie vor W6‑E‑5.
+    /// </summary>
+    private void Bilanz(int uebernommen, int uebersprungen, bool einzeln)
+    {
+        if (einzeln) return;
+        Melden(string.Format(BilanzText, uebernommen, uebersprungen),
+               uebernommen > 0 ? WarnStufe.Erfolg : WarnStufe.Warnung);
+    }
+
+    private async Task<bool> Schreiben(object satz, string name, bool neu, int bestandsId, bool melden)
     {
         bool ok = neu
             ? (Wege.Anlegen is not null && await Wege.Anlegen(satz, name))
             : (Wege.Ueberschreiben is not null && await Wege.Ueberschreiben(satz, bestandsId));
 
-        Melden(ok ? (neu ? TextGespeichert : TextAktualisiert) : TextSchreibfehler,
-               ok ? WarnStufe.Erfolg : WarnStufe.Fehler);
+        if (melden)
+            Melden(ok ? (neu ? TextGespeichert : TextAktualisiert) : TextSchreibfehler,
+                   ok ? WarnStufe.Erfolg : WarnStufe.Fehler);
 
         // Wie im Bestand bleibt der Dialog OFFEN - er ist ein Katalogfenster, aus dem
         // der Anwender mehrere Sätze nacheinander uebernimmt.
         if (ok) _geschrieben = true;
+        return ok;
     }
 
-    private async Task<bool> PlausiFragen(string text)
+    /// <summary>
+    /// EINE Rückfrage für alle Warnungen der Auswahl, mit der Liste der betroffenen
+    /// Geräte (W6‑E‑5). Bei einem einzelnen Satz steht wörtlich der Text von vorher.
+    /// </summary>
+    private async Task<bool> PlausiFragen(List<Kandidat> warnungen)
     {
-        _plausiText = text + " " + PlausiFrage;
+        _plausiText = warnungen.Count == 1
+            ? warnungen[0].Vor.Plausibilitaet + " " + PlausiFrage
+            : string.Join(Environment.NewLine,
+                  warnungen.Select(k => k.Name + ": " + k.Vor.Plausibilitaet))
+              + Environment.NewLine + PlausiFrage;
+
         _plausiOffen = true;
         _plausiWartet = new TaskCompletionSource<bool>();
         await InvokeAsync(StateHasChanged);

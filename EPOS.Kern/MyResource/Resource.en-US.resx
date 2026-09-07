@@ -552,6 +552,12 @@
   <data name="IMP_LADE_UMBENANNT" xml:space="preserve">
     <value>Under new name: {0}</value>
   </data>
+  <data name="IMP_MSG_BILANZ" xml:space="preserve">
+    <value>{0} imported, {1} skipped.</value>
+  </data>
+  <data name="IMP_STATUS_GEWAEHLT" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
   <data name="IMP_TXT_KEIN_PFAD" xml:space="preserve">
     <value>No file selected.</value>
   </data>

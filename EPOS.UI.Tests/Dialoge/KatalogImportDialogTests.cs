@@ -374,8 +374,11 @@ public class KatalogImportDialogTests : BunitContext
     }
 
     /// <summary>
-    /// Die Mehrfachmarkierung: Klick wählt eine, <c>Strg</c> nimmt dazu — der
-    /// Ersatz für <c>SelectionMode.MultiExtended</c> der ListBox.
+    /// Die Mehrfachmarkierung. <b>Seit dem Anwenderentscheid W6‑E‑5 (07.09.2026)
+    /// schaltet der EINFACHE Klick um</b> — bis dahin ersetzte er die Wahl (Semantik
+    /// der <c>ListBox</c> mit <c>MultiExtended</c>), obwohl die Spalte ein
+    /// Kontrollkästchen zeigt; wer zwei Zeilen anklickte, hatte am Ende eine.
+    /// <c>Strg</c> tut dasselbe, <c>Umschalt</c> nimmt den Bereich ab dem Anker DAZU.
     /// </summary>
     [Fact]
     public void Mehrere_Zeilen_lassen_sich_markieren()
@@ -387,14 +390,23 @@ public class KatalogImportDialogTests : BunitContext
         var wahl = cut.FindAll("tbody .epos-anlagenwahl");
         Assert.Equal(3, wahl.Count);
 
+        // Zwei EINFACHE Klicks - und beide Zeilen stehen.
         wahl[0].Click();
         Assert.Equal(new[] { 0 }, cut.Instance.Markiert);
 
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+        Assert.Equal(new[] { 0, 2 }, cut.Instance.Markiert);
+
+        // Noch ein Klick auf dieselbe Zeile nimmt sie wieder weg.
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+        Assert.Equal(new[] { 0 }, cut.Instance.Markiert);
+
+        // Strg tut dasselbe, Umschalt nimmt den Bereich ab dem Anker dazu.
         cut.FindAll("tbody .epos-anlagenwahl")[2].Click(new MouseEventArgs { CtrlKey = true });
         Assert.Equal(new[] { 0, 2 }, cut.Instance.Markiert);
 
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click(new MouseEventArgs { ShiftKey = true });
-        Assert.Equal(new[] { 1, 2 }, cut.Instance.Markiert);
+        Assert.Equal(new[] { 0, 1, 2 }, cut.Instance.Markiert);
     }
 
     /// <summary>
@@ -568,6 +580,81 @@ public class KatalogImportDialogTests : BunitContext
         // Genau EINE Ueberlagerung, im SELBEN Fenster.
         Assert.Single(cut.FindAll("[role='dialog']"));
         Assert.Contains("Import: Konflikte prüfen", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Der Nachweis zu W6‑E‑5 für alle vier Ausprägungen</b>: Zwei EINFACHE Klicks
+    /// wählen zwei Sätze, und „Speichern" schreibt beide in einem Zug. Vor dem
+    /// Entscheid ersetzte der zweite Klick die Wahl des ersten — der Anwender
+    /// beschrieb das als „die Mehrfachauswahl funktioniert nicht".
+    /// </summary>
+    [Theory]
+    [InlineData(KatalogImportArt.Heizkessel)]
+    [InlineData(KatalogImportArt.Pufferspeicher)]
+    [InlineData(KatalogImportArt.Solarkollektoren)]
+    [InlineData(KatalogImportArt.Waermepumpe)]
+    public void Zwei_einfache_Klicks_uebernehmen_zwei_Saetze(KatalogImportArt art)
+    {
+        List<int>? gesehen = null;
+        int ausgefuehrt = 0;
+
+        var cut = Bauen(art, DreiZeilen(),
+            vorpruefen: (markiert, _) => { gesehen = markiert.ToList(); return Task.FromResult(Vorpruefung(false)); },
+            ausfuehren: (anzahl, _, __, ___, ____) =>
+            {
+                ausgefuehrt = anzahl;
+                return Task.FromResult(new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl });
+            });
+
+        Einlesen(cut);
+        // Die Vorbelegungen der vier Filter sind verschieden - die Obergrenze weit
+        // aufmachen, damit alle drei Probezeilen stehen.
+        cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
+        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+
+        Assert.Equal(new[] { 0, 2 }, cut.Instance.Markiert);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+
+        Assert.Equal(new[] { 0, 2 }, gesehen);
+        Assert.Equal(2, ausgefuehrt);
+    }
+
+    /// <summary>
+    /// <b>Der Doppelklick</b> (W6‑E‑5): Er nimmt die Zeile in die Markierung und
+    /// übernimmt SIE sofort — die übrige Markierung bleibt stehen.
+    ///
+    /// <para>Der Fall schickt die Ereignisfolge des Browsers: <c>click</c>,
+    /// <c>click</c>, <c>dblclick</c>. Die zwei Klicks heben sich mit der Umschaltregel
+    /// auf, deshalb muss der Wirt die Zeile ausdrücklich hinzufügen.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_Doppelklick_uebernimmt_genau_diese_Zeile()
+    {
+        List<int>? gesehen = null;
+
+        var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen(),
+            vorpruefen: (markiert, _) => { gesehen = markiert.ToList(); return Task.FromResult(Vorpruefung(false)); },
+            ausfuehren: (anzahl, _, __, ___, ____) => Task.FromResult(
+                new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl }));
+
+        Einlesen(cut);
+        cut.FindAll(".epos-katalogimport-filter input")[1].Input("100000");
+
+        // Zeile 0 ist schon markiert - der Doppelklick darf sie nicht verlieren.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[2].DoubleClick();
+
+        // Geschrieben wurde NUR die doppelt geklickte Zeile ...
+        Assert.Equal(new[] { 2 }, gesehen);
+        // ... und die uebrige Markierung steht noch, samt der neuen Zeile.
+        Assert.Equal(new[] { 0, 2 }, cut.Instance.Markiert);
     }
 
     /// <summary>

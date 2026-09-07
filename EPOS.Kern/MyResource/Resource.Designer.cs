@@ -79,6 +79,7 @@ namespace WindowsFormsApplication1.MyResource {
         
         
         
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
@@ -13410,6 +13411,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_LADE_UMBENANNT {
             get {
                 return ResourceManager.GetString("IMP_LADE_UMBENANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} übernommen, {1} übersprungen. ähnelt.
+        /// </summary>
+        public static string IMP_MSG_BILANZ {
+            get {
+                return ResourceManager.GetString("IMP_MSG_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} gewählt ähnelt.
+        /// </summary>
+        public static string IMP_STATUS_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("IMP_STATUS_GEWAEHLT", resourceCulture);
             }
         }
         

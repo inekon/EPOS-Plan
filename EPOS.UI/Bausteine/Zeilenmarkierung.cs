@@ -16,6 +16,12 @@ namespace EPOS.UI.Bausteine
     /// einmal hier statt zweimal in <c>KatalogImportDialog</c> und
     /// <c>ModulImportDialog</c> (bis W6-O-1: <c>PvModulImportDialog</c>).</para>
     ///
+    /// <para><b>Seit W6‑E‑5 (07.09.2026) schaltet der einfache Klick um</b>, statt
+    /// die Wahl zu ersetzen — die Begruendung steht bei <see cref="Anklicken"/>.
+    /// Weil die Regel hier steht und nicht im Wirt, gilt sie fuer ALLE sechs
+    /// Importe unter „Administration → Datenimport" auf einen Schlag; genau
+    /// dafuer gibt es diesen Baustein.</para>
+    ///
     /// <para><b>Sie zaehlt Indizes, keine Zeilen.</b> Der Index ist der Platz in
     /// der GEFILTERTEN Anzeigeliste; welcher Quellsatz dahintersteht, weiss der
     /// Wirt (im Bestand die Zuordnung <c>_anzeigeIndex</c>). Damit bleibt die
@@ -49,12 +55,21 @@ namespace EPOS.UI.Bausteine
         /// <summary>
         /// Ein Klick auf die Zeile <paramref name="index"/>.
         ///
-        /// <para>Ohne Zusatztaste: nur diese Zeile, der Anker steht hier.
-        /// Mit <paramref name="strg"/>: diese Zeile umschalten, der Anker steht
-        /// hier. Mit <paramref name="umschalt"/>: der Bereich vom Anker bis
-        /// hierher, der Anker BLEIBT stehen — so laesst sich der Bereich mit
-        /// weiteren Umschalt-Klicks vergroessern und verkleinern, wie in der
-        /// <c>ListBox</c>.</para>
+        /// <para><b>Ein Kontrollkaestchen schaltet um</b> (Anwenderbefund vom
+        /// 07.09.2026, Entscheid <b>W6‑E‑5</b>: „die Mehrfachauswahl funktioniert
+        /// nicht"). Bis dahin galt hier die Semantik der <c>ListBox</c> mit
+        /// <c>MultiExtended</c>: Ein EINFACHER Klick ersetzte die ganze Wahl, nur
+        /// <c>Strg</c> nahm eine Zeile dazu. Die Wahlspalte zeigt aber ein
+        /// Kaestchen (☐/☑), und ein Kaestchen verspricht: Klick setzt den Haken,
+        /// noch ein Klick nimmt ihn weg. Wer das nicht weiss, waehlt eine zweite
+        /// Zeile und sieht die erste verschwinden — genau die Beschwerde.</para>
+        ///
+        /// <para>Seither gilt fuer alle sechs Importe dieselbe Regel: <b>Klick
+        /// schaltet die Zeile um</b>, <paramref name="strg"/> tut dasselbe (die
+        /// gewohnte Taste bleibt gueltig), und <paramref name="umschalt"/> nimmt
+        /// den Bereich vom Anker bis hierher DAZU, ohne die uebrige Wahl zu
+        /// leeren. Der Anker bleibt beim Bereich stehen, so dass er sich mit
+        /// weiteren Umschalt-Klicks vergroessern laesst.</para>
         ///
         /// <para>Umschalt ohne Anker verhaelt sich wie ein einfacher Klick.</para>
         /// </summary>
@@ -66,19 +81,27 @@ namespace EPOS.UI.Bausteine
             {
                 int von = Math.Min(_anker.Value, index);
                 int bis = Math.Max(_anker.Value, index);
-                _gewaehlt.Clear();
                 for (int i = von; i <= bis; i++) _gewaehlt.Add(i);
                 return;
             }
 
-            if (strg)
-            {
-                if (!_gewaehlt.Remove(index)) _gewaehlt.Add(index);
-                _anker = index;
-                return;
-            }
+            if (!_gewaehlt.Remove(index)) _gewaehlt.Add(index);
+            _anker = index;
+        }
 
-            _gewaehlt.Clear();
+        /// <summary>
+        /// Diese Zeile ist gewaehlt — ohne Umschalten und ohne die uebrige Wahl
+        /// anzutasten.
+        ///
+        /// <para>Zwei Wirte brauchen das: der Filterwechsel, der die Markierung aus
+        /// der gemerkten Auswahl WIEDERHERSTELLT, und der Doppelklick, der die
+        /// angeklickte Zeile sofort uebernimmt. Ein Doppelklick liefert im Browser
+        /// vorher ZWEI Klicks; die heben sich mit der Umschaltregel gegenseitig auf,
+        /// und ohne diese Zusage stuende die Zeile am Ende zufaellig da.</para>
+        /// </summary>
+        public void Hinzufuegen(int index)
+        {
+            if (index < 0) return;
             _gewaehlt.Add(index);
             _anker = index;
         }
