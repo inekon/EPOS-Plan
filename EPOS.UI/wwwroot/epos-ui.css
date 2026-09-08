@@ -3006,6 +3006,21 @@ body {
 }
 
 .epos-speicherkachel--hervor { border-color: var(--epos-quelle-rahmen); border-width: 2px; padding: 7px 9px; }
+/* W10b-B-2 (08.09.2026): der Stromspeicher in "Speicher im Projekt" - eine ruhige Kachel
+   mit Name und Kennwerten; bearbeitet wird er links unter "Energiespeicher". */
+.epos-stromspeicherkachel {
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 8px;
+    background: var(--epos-karte-flaeche);
+}
+.epos-stromspeicherkachel-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
 
 .epos-speicherkachel-kopf {
     display: flex;
@@ -7030,6 +7045,25 @@ body {
 /* Seite.                                                                */
 .epos-wp-anlage {
     max-width: none;
+}
+/* W7-B-3 (08.09.2026): die Detailansicht eingebettet in der Waermepumpen
+   Verwaltung - kein zweiter Dialograhmen, ein Strich trennt sie von der Auswahl. */
+/* W10b-B-3 (08.09.2026): der Extrapolationsschalter bei den Kennlinien der Waermepumpe. */
+.epos-wp-extrapolation {
+    margin: 2px 0 10px;
+}
+/* W7-B-3 Nachtrag: "Markierte auf diese Waermepumpe umstellen" unter dem Katalog. */
+.epos-wp-umstellen {
+    justify-content: flex-end;
+    margin-top: 6px;
+}
+.epos-dialog--eingebettet {
+    padding: 0;
+    max-width: none;
+}
+.epos-wp-eingebettet {
+    border-top: 1px solid var(--epos-rahmen-leise);
+    padding-top: var(--epos-rand);
 }
 
 /* Ohne Titel steht im Kopf nur der Hilfeknopf - er gehoert nach rechts, */

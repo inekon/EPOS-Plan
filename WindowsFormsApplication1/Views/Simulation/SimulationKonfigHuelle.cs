@@ -228,15 +228,12 @@ namespace WindowsFormsApplication1
                 ["TipSpeicherAufklappen"] = MyResource.Resource.SIM_KARTE_TIP_AUFKLAPPEN,
                 ["BtnPufferVerwalten"] = MyResource.Resource.PSP_BTN_PUFFER_VERWALTEN,
 
-                ["ExtrapolationText"] = MyResource.Resource.SIM_EXTRAPOLATION_SCHALTER,
                 ["LesepunktText"] = MyResource.Resource.SIM_BOOSTER_LESEPUNKT_SCHALTER,
 
                 ["BtnSpeichern"] = MyResource.Resource.SIM_KONFIG_BTN_SPEICHERN,
                 ["BtnBeenden"] = MyResource.Resource.SIM_KONFIG_BTN_BEENDEN,
 
                 ["StatusGespeichert"] = MyResource.Resource.SIM_STATUS_KONFIG_GESPEICHERT,
-                ["StatusExtrapolationEin"] = MyResource.Resource.SIM_STATUS_EXTRAPOLATION_EIN,
-                ["StatusExtrapolationAus"] = MyResource.Resource.SIM_STATUS_EXTRAPOLATION_AUS,
                 ["StatusLesepunktDavor"] = MyResource.Resource.SIM_STATUS_LESEPUNKT_DAVOR,
                 ["StatusLesepunktDanach"] = MyResource.Resource.SIM_STATUS_LESEPUNKT_DANACH,
                 ["StatusEinstellungFehler"] = MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER,
@@ -308,9 +305,6 @@ namespace WindowsFormsApplication1
                     Kaskade.StromAuswahl(_konfiguration, platz, dbWert),
 
                 Speichern = Speichern,
-                ExtrapolationSchreiben = wert =>
-                    m_ID_Projekt > 0 &&
-                    KonfigurationCtrl.ExtrapolationErlaubtSchreiben(m_ID_Projekt, wert),
                 LesepunktSchreiben = LesepunktSchreiben,
 
                 BetriebsmodusGaben = idAnlage =>
@@ -417,11 +411,9 @@ namespace WindowsFormsApplication1
                 ? MyResource.Resource.PSP_KARTE_KEIN_SPEICHER
                 : MyResource.Resource.PSP_FUSSZEILE_OHNE_PROJEKT;
 
-            d.ExtrapolationMoeglich = m_ID_Projekt > 0;
-            // Ohne Projekt bleibt die Vorbelegung stehen - nicht „aus", denn das wäre
-            // die Aussage „Extrapolation verboten", und die trifft nicht zu (:189-192).
-            d.ExtrapolationErlaubt = m_ID_Projekt <= 0 ||
-                                     KonfigurationCtrl.ExtrapolationErlaubtLesen(m_ID_Projekt);
+            // W10b-B-3 (08.09.2026): Der Schalter "Extrapolation der WP-Kennlinie erlauben"
+            // steht in der Detailansicht der Waermepumpe (WaermepumpeAnlageHuelle.Gaben);
+            // Speichern() unten haelt die Abwahl weiter ueber Delete/Insert hinweg.
 
             d.BoosterSichtbar = m_ID_Projekt > 0 && _boosterAnlagen.Count > 0;
             d.BoosterDavor = !d.BoosterSichtbar ||

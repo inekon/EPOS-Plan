@@ -35,7 +35,6 @@ public class SimulationKonfigSeiteTests : BunitContext
     private readonly List<string> _entfernt = new();
     private readonly List<(int Platz, string Wert)> _strom = new();
     private int _gespeichert;
-    private readonly List<bool> _extrapolation = new();
     private readonly List<bool> _lesepunkt = new();
     private int _schemaGeholt;
 
@@ -165,8 +164,6 @@ public class SimulationKonfigSeiteTests : BunitContext
                 }
             },
             SpeicherLeerText = "Dieses Projekt führt keinen Pufferspeicher.",
-            ExtrapolationMoeglich = true,
-            ExtrapolationErlaubt = true,
             BoosterSichtbar = mitBooster,
             BoosterDavor = true,
             PvGewaehlt = true
@@ -183,7 +180,6 @@ public class SimulationKonfigSeiteTests : BunitContext
             Entfernen = w => _entfernt.Add(w),
             StromAuswahl = (p, w) => _strom.Add((p, w)),
             Speichern = () => { _gespeichert++; return true; },
-            ExtrapolationSchreiben = w => { _extrapolation.Add(w); return true; },
             LesepunktSchreiben = w => { _lesepunkt.Add(w); return true; },
             BetriebsmodusGaben = _ => new Dictionary<string, object>
             {
@@ -213,6 +209,16 @@ public class SimulationKonfigSeiteTests : BunitContext
         => Render<SimulationKonfigSeite>(p => p
             .Add(x => x.Dienste, Dienste(gesperrt, mitBooster))
             .Add(x => x.StartProjekt, 1030));
+
+    /// <summary>Die Seite mit GENAU diesen Daten (W10b-B-2).</summary>
+    private IRenderedComponent<SimulationKonfigSeite> Zeige(SimulationKonfigDaten daten)
+    {
+        SimulationKonfigDienste dienste = Dienste();
+        dienste.Laden = _ => daten;
+        return Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, dienste)
+            .Add(x => x.StartProjekt, 1030));
+    }
 
     // ================================================================== Aufbau
 
@@ -450,15 +456,14 @@ public class SimulationKonfigSeiteTests : BunitContext
 
     // ================================================================== Fußzeile
 
+    /// <summary>
+    /// W10b‑B‑3 (08.09.2026): „Extrapolation der WP-Kennlinie erlauben" steht in der
+    /// Detailansicht der Wärmepumpe bei „Kenndaten Kennlinien" — hier nicht mehr.
+    /// </summary>
     [Fact]
-    public void Der_Extrapolationsschalter_schreibt_sofort_und_meldet()
+    public void Der_Extrapolationsschalter_steht_nicht_mehr_in_der_Konfiguration()
     {
-        var cut = Seite();
-
-        cut.FindAll("input[type=checkbox]")[0].Change(false);
-
-        Assert.Equal(new[] { false }, _extrapolation);
-        Assert.Contains("abgewählt", cut.Find(".epos-warnbanner").TextContent);
+        Assert.DoesNotContain("Extrapolation", Seite().Markup);
     }
 
     /// <summary>
@@ -468,8 +473,8 @@ public class SimulationKonfigSeiteTests : BunitContext
     [Fact]
     public void Der_Booster_Lesepunkt_erscheint_nur_mit_Booster()
     {
-        Assert.Equal(2, Seite().FindAll("input[type=checkbox]").Count);
-        Assert.Single(Seite(mitBooster: false).FindAll("input[type=checkbox]"));
+        Assert.Single(Seite().FindAll("input[type=checkbox]"));
+        Assert.Empty(Seite(mitBooster: false).FindAll("input[type=checkbox]"));
     }
 
     [Fact]
@@ -640,5 +645,35 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(cut.FindAll("div.epos-erzeugerkachel"));
         Assert.Empty(cut.FindAll("div.epos-speicherkachel"));
         Assert.NotEmpty(cut.FindAll("div.epos-simkonfig-spalten"));
+    }
+
+    // =====================================================================
+    //  W10b-B-2 (08.09.2026): der Stromspeicher in "Speicher im Projekt"
+    // =====================================================================
+
+    [Fact]
+    public void Ein_aufgenommener_Stromspeicher_steht_auch_unter_Speicher_im_Projekt()
+    {
+        SimulationKonfigDaten daten = Daten();
+        ErzeugerZeile speicher = daten.Gruppen.First(g => g.Titel == "Energiespeicher").Zeilen[0];
+        speicher.Kachel.Zustand = Kachelzustand.Aufgenommen;
+        speicher.Kachel.Chips = new[]
+        {
+            new ChipDaten("Kapazität 10,20 kWh"), new ChipDaten("Leistung 11,04 kW"),
+            new ChipDaten("η_RT 0,90"), new ChipDaten("Typ Lithium-Eisen-Phosphat")
+        };
+        var cut = Zeige(daten);
+
+        var kachel = cut.Find(".epos-stromspeicherkachel");
+        Assert.Contains("Stromspeicher", kachel.TextContent);
+        Assert.Equal(3, kachel.QuerySelectorAll(".epos-chip").Length);       // die ersten drei Kennwerte
+        Assert.Equal(2, cut.FindAll("div.epos-speicherkachel").Count);      // die Puffer bleiben, wie sie sind
+    }
+
+    [Fact]
+    public void Ein_nur_verfuegbarer_Stromspeicher_steht_nicht_unter_Speicher_im_Projekt()
+    {
+        var cut = Zeige(Daten());                                            // Zustand Verfuegbar
+        Assert.Empty(cut.FindAll(".epos-stromspeicherkachel"));
     }
 }

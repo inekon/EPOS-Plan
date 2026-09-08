@@ -11,8 +11,8 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Wärmepumpen Verwaltung (iU9-W7.5). Soll ist die Feldkarte von
-/// <c>Form_WPAuswahl</c>: acht Zeilen und ein <c>ListView</c> mit fünf Spalten.
+/// Wärmepumpen Verwaltung — seit W7‑B‑3 (08.09.2026) EIN Dialog: links die Wärmepumpen des
+/// Projekts, rechts der Katalog, darunter die Detailansicht der markierten Anlage eingebettet.
 /// </summary>
 public class WaermepumpenDialogTests : BunitContext
 {
@@ -39,12 +39,6 @@ public class WaermepumpenDialogTests : BunitContext
         HeizstabLeistung = 6
     };
 
-    /// <summary>
-    /// Der Katalog des Weges „Neu..". Seit W14a‑E‑10 / S2.2 ist er eine
-    /// <see cref="Katalogfilterzeile"/> wie in jedem anderen Katalog des Hauses —
-    /// vorher eine eigene <c>WaermepumpenKatalogZeile</c> mit elf Feldern für elf
-    /// Bedienelemente.
-    /// </summary>
     private static readonly Katalogfilterzeile[] Katalog =
     {
         new Katalogfilterzeile(1, "WP Neu")
@@ -59,18 +53,18 @@ public class WaermepumpenDialogTests : BunitContext
             .MitZahl(Katalogfilterprofil.SpCop, 4.1, 2)
     };
 
-    /// <summary>Die neun Spalten MIT „im Projekt verwendet" (Q12) — wie in der Hülle.</summary>
     private static readonly Katalogfilterprofil Katalogprofil =
         Katalogfilterprofil.MitVerwendung(Anlagenart.Waermepumpe);
 
-    /// <summary>Der Parametersatz der Detailansicht — hier ohne Datenbank.</summary>
-    private static IReadOnlyDictionary<string, object> AnlageGaben(WaermepumpeAnlageDaten daten)
+    /// <summary>Der Parametersatz der eingebetteten Detailansicht; <paramref name="mangel"/> = Temperaturprüfung schlägt an.</summary>
+    private static IReadOnlyDictionary<string, object> AnlageGaben(WaermepumpeAnlageDaten daten, string? mangel = null)
         => new Dictionary<string, object>
         {
             ["Daten"] = daten,
             ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(
-                () => new[] { new WaermepumpeStammZeile(1, daten.Bezeichner, false) }),
-            ["TemperaturenPruefen"] = new Func<int?, int?, string?>((_, _) => null)
+                () => new[] { new WaermepumpeStammZeile(1, daten.Bezeichner, false),
+                              new WaermepumpeStammZeile(2, "WP Neu", false) }),
+            ["TemperaturenPruefen"] = new Func<int?, int?, string?>((_, _) => mangel)
         };
 
     private IRenderedComponent<WaermepumpenDialog> Aufbauen(
@@ -79,12 +73,13 @@ public class WaermepumpenDialogTests : BunitContext
         Action<WaermepumpeAnlageDaten>? uebernehmen = null,
         Action<WaermepumpeAnlageDaten>? entfernen = null,
         bool wizard = false,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        string? mangel = null)
         => Render<WaermepumpenDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") })
             .Add(x => x.Katalog, () => Katalog)
             .Add(x => x.Katalogprofil, Katalogprofil)
-            .Add(x => x.AnlageGaben, AnlageGaben)
+            .Add(x => x.AnlageGaben, d => AnlageGaben(d, mangel))
             .Add(x => x.Anlegen, anlegen ?? (n => Zeile(n, 20)))
             .Add(x => x.Uebernehmen, uebernehmen)
             .Add(x => x.Entfernen, entfernen)
@@ -94,47 +89,58 @@ public class WaermepumpenDialogTests : BunitContext
     private static IElement Knopf(IRenderedComponent<WaermepumpenDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
+    /// <summary>Die Zeilenwahl der PROJEKTliste (das erste Raster).</summary>
+    private static IElement Projektwahl(IRenderedComponent<WaermepumpenDialog> cut, int index)
+        => cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[index];
+
+    /// <summary>Die Zeilenwahl der KATALOGliste (das zweite Raster).</summary>
+    private static IElement Katalogwahl(IRenderedComponent<WaermepumpenDialog> cut, int index)
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[index];
+
+    private static IElement Pfeil(IRenderedComponent<WaermepumpenDialog> cut, int index)
+        => cut.FindAll(".epos-zweispalten-uebernahme button")[index];
+
     // =================================================================================
     // Feldbestand
     // =================================================================================
 
-    /// <summary>
-    /// <b>W7‑B‑1</b> (Windows-Abnahme 06.09.2026): „Anstelle Name sollte Typ stehen,
-    /// es fehlt der Hersteller (vor Typ)." Aus der einen Spalte „Name" sind damit
-    /// zwei geworden — Hersteller (<c>Firma</c>) und Typ (die Modellbezeichnung
-    /// <c>Bezeichner</c>); der Wärmepumpentyp „Luft-Wasser" bleibt im
-    /// Kenndatenblock der Detailansicht.
-    /// </summary>
     [Fact]
-    public void Die_fuenf_Spalten_der_Karte_stehen()
+    public void Die_Spalten_der_Projektliste_stehen()
     {
         var cut = Aufbauen();
-        var kopf = cut.FindAll(".epos-raster th").Select(e => e.TextContent.Trim()).ToList();
+        var kopf = cut.FindAll(".epos-raster")[0].QuerySelectorAll("th")
+                      .Select(e => e.TextContent.Trim()).ToList();
 
-        // Wahl und Aktion sind die beiden Zugaben: die Zeilenmarkierung, die ein
-        // Raster nicht kennt, und der Knopf, der den Doppelklick ersetzt.
         Assert.Equal(new[] { "Wahl", "Hersteller", "Typ", "Leistung [kW]", "Vorlauf [°C]",
-                             "Rücklauf [°C]", "Betriebsart", "Aktion" }, kopf);
+                             "Rücklauf [°C]", "Betriebsart" }, kopf);
     }
 
     [Fact]
-    public void Die_drei_Knoepfe_der_Karte_stehen()
+    public void Zwei_Listen_zwei_Pfeile_und_die_OK_Leiste_stehen()
     {
         var cut = Aufbauen();
-        var knoepfe = cut.FindAll(".epos-leiste button").Select(b => b.TextContent.Trim()).ToList();
 
-        Assert.Contains("➕ Neu..", knoepfe);
-        Assert.Contains("✏️ Ändern..", knoepfe);
-        Assert.Contains("🗑️ Löschen", knoepfe);
+        Assert.Equal(2, cut.FindAll(".epos-raster").Count);
+        var pfeile = cut.FindAll(".epos-zweispalten-uebernahme button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(2, pfeile.Count);
+        Assert.Contains(pfeile, t => t.Contains("In das Projekt übernehmen"));
+        Assert.Contains(pfeile, t => t.Contains("Aus dem Projekt entfernen"));
+
+        var knoepfe = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("OK", knoepfe);
         Assert.Contains("❌Abbrechen", knoepfe);
+        // Die Wege des Vorlaeufers sind weg: kein "Neu..", kein "Aendern..", keine Ueberlagerung.
+        Assert.DoesNotContain("➕ Neu..", knoepfe);
+        Assert.DoesNotContain("✏️ Ändern..", knoepfe);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
     }
 
     [Fact]
     public void Die_Zeile_zeigt_die_Werte_der_Anlage()
     {
         var cut = Aufbauen();
-        var zellen = cut.FindAll(".epos-raster tbody td").Select(e => e.TextContent.Trim()).ToList();
+        var zellen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody td")
+                        .Select(e => e.TextContent.Trim()).ToList();
 
         Assert.Contains("Bosch", zellen);            // Hersteller (W7-B-1)
         Assert.Contains("WP Alpha", zellen);         // Typ = Modellbezeichnung
@@ -144,7 +150,6 @@ public class WaermepumpenDialogTests : BunitContext
         Assert.Contains(DbWerte.WP_BETRIEBSART_PARALLEL, zellen);
     }
 
-    /// <summary>Die Maske ist lokalisiert (10 englische Texte, W7.9).</summary>
     [Fact]
     public void Die_englischen_Texte_lassen_sich_setzen()
     {
@@ -152,11 +157,11 @@ public class WaermepumpenDialogTests : BunitContext
             .Add(x => x.Zeilen, new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") })
             .Add(x => x.TitelText, "Heat pump management")
             .Add(x => x.KopfbandText, "Enter the heat pump data")
-            .Add(x => x.BtnAendernText, "Change..."));
+            .Add(x => x.LabelHinzu, "Add to project"));
 
         Assert.Equal("Heat pump management", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Equal("Enter the heat pump data", cut.Find(".epos-kontextzeile").TextContent.Trim());
-        Assert.Contains("Change...", cut.FindAll("button").Select(b => b.TextContent.Trim()));
+        Assert.Contains(cut.FindAll("button").Select(b => b.TextContent.Trim()), t => t.Contains("Add to project"));
     }
 
     [Fact]
@@ -167,165 +172,98 @@ public class WaermepumpenDialogTests : BunitContext
     }
 
     // =================================================================================
-    // Neu: Katalog, dann Detailansicht
+    // Die eingebettete Detailansicht
     // =================================================================================
 
     [Fact]
-    public void Neu_zeigt_erst_den_Katalog()
+    public void Die_erste_Zeile_ist_gewaehlt_und_ihre_Detailansicht_steht_eingebettet()
     {
-        var cut = Aufbauen();
-        Knopf(cut, "➕ Neu..").Click();
+        var zeilen = new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") };
+        var cut = Aufbauen(zeilen);
 
-        Assert.True(cut.Instance.KatalogOffen);
-        Assert.False(cut.Instance.DetailOffen);
-    }
-
-    [Fact]
-    public void Nach_der_Katalogwahl_erscheint_die_Detailansicht()
-    {
-        var cut = Aufbauen();
-        Knopf(cut, "➕ Neu..").Click();
-
-        var katalog = cut.Find(".epos-ueberlagerung");
-        katalog.QuerySelector(".epos-raster tbody tr button")!.Click();
-        katalog.QuerySelectorAll("button")
-               .First(b => b.TextContent.Trim() == "✔ Auswahl übernehmen").Click();
-
-        Assert.False(cut.Instance.KatalogOffen);
+        Assert.Same(zeilen[0], cut.Instance.Gewaehlt);
         Assert.True(cut.Instance.DetailOffen);
+        Assert.Single(cut.FindAll(".epos-wp-eingebettet"));
+        // Die Detailansicht traegt kein eigenes OK - nur die Verwaltung hat eines.
+        Assert.Single(cut.FindAll("button").Where(b => b.TextContent.Trim() == "OK"));
     }
 
     [Fact]
-    public void Erst_das_OK_der_Detailansicht_haengt_die_Zeile_an()
+    public void Ohne_Zeile_steht_der_Leersatz()
+    {
+        var cut = Aufbauen(new List<WaermepumpeAnlageDaten>());
+
+        Assert.False(cut.Instance.DetailOffen);
+        Assert.Contains("Links eine Wärmepumpe markieren", cut.Markup);
+        Assert.True(Pfeil(cut, 1).HasAttribute("disabled"));     // nichts zu entfernen
+    }
+
+    [Fact]
+    public void Uebernehmen_aus_der_Datenbank_haengt_die_Zeile_an_und_waehlt_sie()
     {
         var zeilen = new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") };
         var uebernommen = new List<WaermepumpeAnlageDaten>();
         var cut = Aufbauen(zeilen, uebernehmen: d => uebernommen.Add(d));
 
-        Knopf(cut, "➕ Neu..").Click();
-        var katalog = cut.Find(".epos-ueberlagerung");
-        katalog.QuerySelector(".epos-raster tbody tr button")!.Click();
-        katalog.QuerySelectorAll("button")
-               .First(b => b.TextContent.Trim() == "✔ Auswahl übernehmen").Click();
-
-        Assert.Single(zeilen);                                    // noch nicht angehaengt
-
-        cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
-           .First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.True(Pfeil(cut, 0).HasAttribute("disabled"));     // ohne Katalogwahl gesperrt
+        Katalogwahl(cut, 0).Click();
+        Pfeil(cut, 0).Click();
 
         Assert.Equal(2, zeilen.Count);
         Assert.Equal("WP Neu", zeilen[1].Bezeichner);
-        Assert.Single(uebernommen);
-    }
-
-    [Fact]
-    public void Ein_Abbruch_in_der_Detailansicht_haengt_nichts_an()
-    {
-        var zeilen = new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") };
-        var cut = Aufbauen(zeilen);
-
-        Knopf(cut, "➕ Neu..").Click();
-        var katalog = cut.Find(".epos-ueberlagerung");
-        katalog.QuerySelector(".epos-raster tbody tr button")!.Click();
-        katalog.QuerySelectorAll("button")
-               .First(b => b.TextContent.Trim() == "✔ Auswahl übernehmen").Click();
-
-        cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
-           .First(b => b.TextContent.Trim() == "Abbrechen").Click();
-
-        Assert.Single(zeilen);
-        Assert.False(cut.Instance.DetailOffen);
-    }
-
-    [Fact]
-    public void Ein_Abbruch_im_Katalog_oeffnet_die_Detailansicht_nicht()
-    {
-        var cut = Aufbauen();
-        Knopf(cut, "➕ Neu..").Click();
-
-        cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
-           .First(b => b.TextContent.Trim() == "Abbrechen").Click();
-
-        Assert.False(cut.Instance.KatalogOffen);
-        Assert.False(cut.Instance.DetailOffen);
-    }
-
-    // =================================================================================
-    // Aendern und Ansicht
-    // =================================================================================
-
-    [Fact]
-    public void Aendern_ist_ohne_Zeile_gesperrt()
-    {
-        var cut = Aufbauen(new List<WaermepumpeAnlageDaten>());
-
-        Assert.True(Knopf(cut, "✏️ Ändern..").HasAttribute("disabled"));
-        Assert.True(Knopf(cut, "🗑️ Löschen").HasAttribute("disabled"));
-    }
-
-    [Fact]
-    public void Aendern_oeffnet_die_Detailansicht_bedienbar()
-    {
-        var cut = Aufbauen();
-        Knopf(cut, "✏️ Ändern..").Click();
-
-        Assert.True(cut.Instance.DetailOffen);
-        // Bedienbar: die OK-Leiste ist da.
-        Assert.Contains(cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
-                           .Select(b => b.TextContent.Trim()), t => t == "OK");
-    }
-
-    [Fact]
-    public void Ansicht_zeigt_die_Zeile_NUR_LESEND()
-    {
-        // A-22: Der Vorlaeufer oeffnete denselben Dialog voll bedienbar und warf das
-        // Ergebnis weg - ein Formular, dessen Eingaben still verfallen.
-        var cut = Aufbauen();
-        cut.Find(".epos-raster tbody tr td:last-child button").Click();
-
-        Assert.True(cut.Instance.DetailOffen);
-
-        var knoepfe = cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
-                         .Select(b => b.TextContent.Trim()).ToList();
-        Assert.DoesNotContain("OK", knoepfe);
-        Assert.Contains("Schließen", knoepfe);
-    }
-
-    [Fact]
-    public void Ansicht_nimmt_die_Zeile_und_nicht_die_Datenbank()
-    {
-        // Die Namenssuche des Vorlaeufers war projektuebergreifend mehrdeutig und
-        // uebersah ungespeicherte Zeilen. Hier steht die zweite Zeile da, obwohl sie
-        // dieselbe Bezeichnung traegt wie die erste.
-        var zeilen = new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha", 12), Zeile("WP Alpha", 30) };
-        var cut = Aufbauen(zeilen);
-
-        cut.FindAll(".epos-raster tbody tr td:last-child button")[1].Click();
-
         Assert.Same(zeilen[1], cut.Instance.Gewaehlt);
+        // Die bisherige Zeile ging beim Wechsel ins Modell, die neue sofort.
+        Assert.Equal(2, uebernommen.Count);
+        Assert.Same(zeilen[1], uebernommen[1]);
+    }
+
+    [Fact]
+    public void Ein_Zeilenwechsel_uebernimmt_die_bisherige_Zeile()
+    {
+        var a = Zeile("WP Alpha");
+        var b = Zeile("WP Beta");
+        var uebernommen = new List<WaermepumpeAnlageDaten>();
+        var cut = Aufbauen(new List<WaermepumpeAnlageDaten> { a, b }, uebernehmen: d => uebernommen.Add(d));
+
+        Projektwahl(cut, 1).Click();
+
+        Assert.Same(b, cut.Instance.Gewaehlt);
+        Assert.Same(a, uebernommen.Single());
+    }
+
+    [Fact]
+    public void Ein_Mangel_haelt_den_Zeilenwechsel_an_und_das_Band_nennt_ihn()
+    {
+        var a = Zeile("WP Alpha");
+        var b = Zeile("WP Beta");
+        var uebernommen = new List<WaermepumpeAnlageDaten>();
+        var cut = Aufbauen(new List<WaermepumpeAnlageDaten> { a, b },
+                           uebernehmen: d => uebernommen.Add(d),
+                           mangel: "Die Vorlauftemperatur muss über der Rücklauftemperatur liegen.");
+
+        Projektwahl(cut, 1).Click();
+
+        Assert.Same(a, cut.Instance.Gewaehlt);
+        Assert.Empty(uebernommen);
+        Assert.Contains("Vorlauftemperatur", cut.Instance.Meldung);
+        Assert.Contains("WP Alpha", cut.Instance.Meldung);
     }
 
     // =================================================================================
-    // Loeschen
+    // Entfernen
     // =================================================================================
 
     [Fact]
-    public void Loeschen_trifft_die_ZEILE_und_nicht_den_Index()
+    public void Entfernen_trifft_die_ZEILE_und_nicht_den_Index()
     {
-        // Der Vorlaeufer nahm list_werzmodel.RemoveAt(listView.SelectedIndex) - im
-        // Assistenten fuehrt dieselbe Liste alle Erzeugertypen, und der Anzeigeindex
-        // traf dort eine fremde Anlage.
         var a = Zeile("WP Alpha");
         var b = Zeile("WP Beta");
         var zeilen = new List<WaermepumpeAnlageDaten> { a, b };
-
         var entfernt = new List<WaermepumpeAnlageDaten>();
         var cut = Aufbauen(zeilen, entfernen: d => entfernt.Add(d));
 
-        // Jede Zeile traegt ZWEI Knoepfe (Zeilenwahl und "Ansicht") - deshalb die
-        // Wahl ueber die Zeile und nicht ueber einen fortlaufenden Knopfindex.
-        cut.FindAll(".epos-raster tbody tr")[1].QuerySelector("button")!.Click();
-        Knopf(cut, "🗑️ Löschen").Click();
+        Projektwahl(cut, 1).Click();
+        Pfeil(cut, 1).Click();
 
         Assert.Single(zeilen);
         Assert.Same(a, zeilen[0]);
@@ -333,16 +271,17 @@ public class WaermepumpenDialogTests : BunitContext
     }
 
     [Fact]
-    public void Nach_dem_Loeschen_wandert_die_Wahl_auf_die_erste_Zeile()
+    public void Nach_dem_Entfernen_wandert_die_Wahl_auf_die_erste_Zeile()
     {
         var zeilen = new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha"), Zeile("WP Beta") };
         var cut = Aufbauen(zeilen);
 
-        Knopf(cut, "🗑️ Löschen").Click();
+        Pfeil(cut, 1).Click();
         Assert.Same(zeilen[0], cut.Instance.Gewaehlt);
 
-        Knopf(cut, "🗑️ Löschen").Click();
+        Pfeil(cut, 1).Click();
         Assert.Null(cut.Instance.Gewaehlt);
+        Assert.False(cut.Instance.DetailOffen);
     }
 
     // =================================================================================
@@ -350,32 +289,65 @@ public class WaermepumpenDialogTests : BunitContext
     // =================================================================================
 
     [Fact]
-    public void OK_und_Abbrechen_melden_das_Ergebnis()
+    public void OK_uebernimmt_die_markierte_Zeile_und_meldet_true()
     {
         bool? ergebnis = null;
-        var cut = Aufbauen(geschlossen: b => ergebnis = b);
-        Knopf(cut, "OK").Click();
-        Assert.True(ergebnis);
+        var zeilen = new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") };
+        var uebernommen = new List<WaermepumpeAnlageDaten>();
+        var cut = Aufbauen(zeilen, uebernehmen: d => uebernommen.Add(d), geschlossen: b => ergebnis = b);
 
-        ergebnis = null;
-        var cut2 = Aufbauen(geschlossen: b => ergebnis = b);
-        Knopf(cut2, "❌Abbrechen").Click();
-        Assert.False(ergebnis);
+        Knopf(cut, "OK").Click();
+
+        Assert.True(ergebnis);
+        Assert.Same(zeilen[0], uebernommen.Single());
     }
 
     [Fact]
-    public void Esc_schliesst_nur_wenn_keine_Ueberlagerung_offen_ist()
+    public void OK_mit_Mangel_schliesst_nicht()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b, mangel: "Temperaturen prüfen.");
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Null(ergebnis);
+        Assert.Contains("Temperaturen prüfen.", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void Abbrechen_und_Esc_melden_false()
     {
         bool? ergebnis = null;
         var cut = Aufbauen(geschlossen: b => ergebnis = b);
-
-        Knopf(cut, "➕ Neu..").Click();
-        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.Null(ergebnis);
+        Knopf(cut, "❌Abbrechen").Click();
+        Assert.False(ergebnis);
 
         bool? zweites = null;
         var cut2 = Aufbauen(geschlossen: b => zweites = b);
         cut2.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(zweites);
+    }
+
+    // =====================================================================
+    //  W7-B-3 Nachtrag (08.09.2026): Umstellen statt Innenliste
+    // =====================================================================
+
+    [Fact]
+    public void Umstellen_macht_die_markierte_Zeile_zur_Katalogzeile_ohne_neue_Zeile()
+    {
+        var zeilen = new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") };
+        var cut = Aufbauen(zeilen);
+
+        Assert.True(Knopf(cut, "Markierte auf diese Wärmepumpe umstellen").HasAttribute("disabled"));
+
+        Katalogwahl(cut, 0).Click();                                   // "WP Neu" markieren
+        var umstellen = Knopf(cut, "Markierte auf diese Wärmepumpe umstellen");
+        Assert.False(umstellen.HasAttribute("disabled"));
+        umstellen.Click();
+
+        Assert.Single(zeilen);                                         // keine neue Zeile
+        Assert.Equal("WP Neu", zeilen[0].Bezeichner);
+        Assert.Contains("WP Neu", cut.FindAll(".epos-raster")[0].TextContent);
+        Assert.Equal(2, cut.FindAll(".epos-raster").Count);            // die Innenliste steht nicht
     }
 }

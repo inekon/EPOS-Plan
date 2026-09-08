@@ -867,3 +867,30 @@ statt `Bogen`, die drei neuen Felder).
 **Tests** (3): `EPOS.Kern.Tests/SchemaLayoutTests.cs`,
 `EPOS.Kern.Tests/SchemaModellTests.cs` (neu),
 `EPOS.UI.Tests/Bausteine/SchemaTests.cs`.
+
+---
+
+## Anwenderwunsch 08.09.2026 — W10b‑B‑2: der Stromspeicher in „Speicher im Projekt"
+
+**Wortlaut:** „Dialog Simulation Konfiguration — Nehme (falls vorhanden) den Stromspeicher auf
+die Spalte ‚Speicher im Projekt'."
+
+**Umsetzung.** Die rechte Spalte führt nach den Pufferkacheln je AUFGENOMMENEN Stromspeicher
+(Gruppenzeile mit `IdType == 4` = `WizardItemClass.SP_TYP` und Zustand `Aufgenommen`) eine
+Kachel `.epos-stromspeicherkachel` mit Name und den ersten drei Kennwerten (Chips der
+Erzeugerkachel: Kapazität, Leistung, Wirkungsgrad). Bearbeitet wird er weiter links unter
+„Energiespeicher" (Werkzeugtipp `StromspeicherHinweis`). Ein nur VERFÜGBARER Stromspeicher
+steht dort nicht — er ist nicht „im Projekt".
+
+**Nachweis:** `SimulationKonfigSeiteTests` +2 (aufgenommen: Kachel mit Name und drei Chips,
+die zwei Pufferkacheln bleiben; nur verfügbar: keine Kachel). Sandbox: Kern **2062/2062**, UI
+**3278/3278**.
+
+## Anwenderwunsch 08.09.2026 — W10b‑B‑3: Schalter „Extrapolation der WP-Kennlinie erlauben" ausgezogen
+
+Der Schalter steht seit heute in der Detailansicht der Wärmepumpe bei „Kenndaten Kennlinien"
+(Beschreibung und Nachweis im W7-Protokoll, Abschnitt W10b‑B‑3). Hier entfallen: der Schalter
+in der Fußzeile, die Parameter `ExtrapolationText`/`StatusExtrapolationEin`/`…Aus`,
+`SimulationKonfigDaten.ExtrapolationErlaubt`/`ExtrapolationMoeglich`,
+`SimulationKonfigDienste.ExtrapolationSchreiben` und die zugehörigen Gaben der Hülle. Die
+Fußzeile führt nur noch den Booster-Lesepunkt (sichtbar mit Booster).

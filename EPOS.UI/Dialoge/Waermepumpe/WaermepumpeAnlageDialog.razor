@@ -91,7 +91,7 @@
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
 
-<div class="epos-dialog epos-wp-anlage" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+<div class="epos-dialog epos-wp-anlage @(Eingebettet ? "epos-dialog--eingebettet" : "")" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
         @if (!string.IsNullOrEmpty(TitelText))
@@ -106,6 +106,14 @@
         @* ================= LINKS: Auswahl, Spitzenlast, Betrieb ============ *@
         <div class="epos-wp-spalte epos-wp-spalte--links">
 
+            @* EINGEBETTET (W7-B-3 Nachtrag, 08.09.2026): In der Waermepumpen
+               Verwaltung ist der Katalog rechts DIE Auswahl - die Innenliste hier
+               und die Ueberlagerung "Modul-Katalog..." zeigten dieselben Zeilen ein
+               zweites Mal. Der Wirt stellt eine Projektzeile ueber "Markierte auf
+               diese Waermepumpe umstellen" um (WaermepumpeUmstellen). Frei stehend
+               (Assistent, Altweg) bleibt die Liste, wie sie war. *@
+            @if (!Eingebettet)
+            {
             <div class="epos-wp-auswahl">
                 <div class="epos-wp-auswahl-kopf">
                     <h2 class="epos-untergruppe">@LabelWpAuswahl</h2>
@@ -143,6 +151,7 @@
                     </table>
                 </div>
             </div>
+            }
 
             <Gruppenkopf Titel="@GruppeSpitzenlast">
                 <KindInhalt>
@@ -327,6 +336,21 @@
             @* --- Die beiden Kennlinienbilder ------------------------------- *@
             <h2 class="epos-untergruppe">@LabelKennlinien</h2>
 
+            @* W10b-B-3 (Windows-Abnahme 08.09.2026): "Extrapolation der WP-Kennlinie
+               erlauben" steht seit heute HIER, bei den Kennlinien, und nicht mehr in
+               der Simulationskonfiguration - eine PROJEKTEINSTELLUNG
+               (Tab_Einstellungen.Extrapolation_erlaubt), vorbelegt "an", sofort
+               geschrieben (wie zuvor dort), fuer alle Waermepumpen des Projekts.
+               Ohne Schreibweg (kein Delegat, nur lesen) ist der Schalter gesperrt. *@
+            @* @key: Nach einem fehlgeschlagenen Schreiben wird der Schalter NEU aufgebaut -
+               der Baustein haelt seinen Wert selbst, und ein unveraenderter Parameter
+               zeichnet ihn nicht um (so stuende das Kaestchen leer bei "an"). *@
+            <div class="epos-wp-extrapolation" title="@HinweisExtrapolation" @key="_extrapolationSchluessel">
+                <Schalter Bezeichnung="@LabelExtrapolation" Wert="@_extrapolation"
+                          WertChanged="ExtrapolationGesetzt"
+                          Aktiv="@(!NurLesen && ExtrapolationSchreiben is not null)" />
+            </div>
+
             @* W7-B-3 (Windows-Abnahme V2 07.09.2026): Zeigt der Dialog die
                Kennlinien des KATALOGSATZES, weil das Projekt fuer dieses Geraet
                keine eigenen fuehrt, dann sagt er es - und bietet an, sie zu
@@ -382,7 +406,13 @@
             <Warnbanner Stufe="WarnStufe.Warnung" Text="@_warnung" />
         }
 
-        @if (NurLesen)
+        @if (Eingebettet)
+        {
+            @* EINGEBETTET in der Waermepumpen Verwaltung (W7-B-3, 08.09.2026): OK und
+               Abbrechen gehoeren dem Wirt; er ruft Pruefen(), bevor er die Zeile wechselt
+               oder schliesst. Das Warnband oben bleibt - es nennt das Feld. *@
+        }
+        else if (NurLesen)
         {
             @* Nur ansehen: EIN Knopf, der schliesst - kein OK, das nichts uebernimmt. *@
             <div class="epos-leiste">
@@ -501,6 +531,28 @@
     /// </summary>
     [Parameter] public bool NurLesen { get; set; }
 
+    /// <summary>
+    /// EINGEBETTET (W7‑B‑3, 08.09.2026): Die Ansicht steht als Abschnitt in der
+    /// Wärmepumpen Verwaltung unter der Auswahl — ohne eigenen Dialograhmen, ohne
+    /// OK/Abbrechen, ohne Esc. Der Wirt ruft <see cref="Pruefen"/> und übernimmt die Zeile.
+    /// </summary>
+    [Parameter] public bool Eingebettet { get; set; }
+
+    /// <summary>
+    /// W10b‑B‑3 (08.09.2026): Vorbelegung des Schalters „Extrapolation der WP-Kennlinie
+    /// erlauben" — die Projekteinstellung <c>Tab_Einstellungen.Extrapolation_erlaubt</c>,
+    /// von der Hülle beim Aufbau gelesen; ohne Projekt „an".
+    /// </summary>
+    [Parameter] public bool ExtrapolationErlaubt { get; set; } = true;
+
+    /// <summary>
+    /// Schreibt die Projekteinstellung SOFORT
+    /// (<c>KonfigurationCtrl.ExtrapolationErlaubtSchreiben</c>); <c>false</c> = fehlgeschlagen,
+    /// der Schalter bleibt, wie er war, und das Band sagt es. Ohne Delegat ist der Schalter
+    /// gesperrt („Kein Delegat ist kein Knopf").
+    /// </summary>
+    [Parameter] public Func<bool, bool>? ExtrapolationSchreiben { get; set; }
+
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
@@ -572,6 +624,17 @@
     [Parameter] public string LabelAbschalttemp { get; set; } = "Bivalenztemperatur";
     [Parameter] public string LabelAbschalttempKurz { get; set; } = "Bivalenztemperatur";
     [Parameter] public string LabelKennlinien { get; set; } = "Kenndaten Kennlinien:";
+
+    /// <summary>Beschriftung des Extrapolationsschalters (<c>SIM_EXTRAPOLATION_SCHALTER</c>).</summary>
+    [Parameter] public string LabelExtrapolation { get; set; } = "Extrapolation der WP-Kennlinie erlauben";
+
+    /// <summary>Werkzeugtipp des Schalters (<c>WPA_HINWEIS_EXTRAPOLATION</c>).</summary>
+    [Parameter] public string HinweisExtrapolation { get; set; } =
+        "Projekteinstellung — gilt für alle Wärmepumpen des Projekts und wird sofort gespeichert.";
+
+    /// <summary>Meldung, wenn das Schreiben fehlschlägt (<c>WPA_MSG_EXTRAPOLATION_FEHLER</c>).</summary>
+    [Parameter] public string WarnungExtrapolation { get; set; } =
+        "Die Einstellung „Extrapolation der WP-Kennlinie erlauben“ ließ sich nicht speichern.";
     [Parameter] public string ReiterCop { get; set; } = "COP";
     [Parameter] public string ReiterLeistung { get; set; } = "Leistung";
     [Parameter] public string PlatzhalterBild { get; set; } = "Keine Kennlinien vorhanden";
@@ -645,6 +708,8 @@
     private IReadOnlyList<int> _vorlaufstufen = Array.Empty<int>();
     private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private KennlinienBilder _bilder = KennlinienBilder.Leer;
+    private bool _extrapolation = true;          // W10b-B-3, Vorbelegung "an"
+    private int _extrapolationSchluessel;        // @key des Schalters (Neuaufbau nach Fehlschlag)
 
     private IReadOnlyDictionary<string, object>? _stammGaben;
     private bool _katalogOffen;
@@ -769,6 +834,7 @@
     protected override void OnInitialized()
     {
         _stammliste = Stammliste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
+        _extrapolation = ExtrapolationErlaubt;
 
         // W7-B-2: Ein Altwert aus Tab_Energieanlagen wird auf den Steuerwert
         // gezogen - sonst zeigte die Klappliste nichts und die Engine laese
@@ -888,9 +954,40 @@
     {
         _katalogOffen = false;
         if (bezeichner is null) return;
+        WaermepumpeUmstellen(bezeichner);
+    }
 
+    /// <summary>
+    /// Stellt die Anlage auf die Wärmepumpe <paramref name="bezeichner"/> der Stammliste um —
+    /// derselbe Weg wie die Innenliste und „Modul-Katalog…", für den Wirt der eingebetteten
+    /// Ansicht (W7‑B‑3 Nachtrag: „Markierte auf diese Wärmepumpe umstellen"). Die
+    /// Betriebsdaten der Zeile (Sperrzeit, Bivalenz, Heizstab, Kosten) bleiben.
+    /// <c>false</c> = kein Stammsatz dieses Namens.
+    /// </summary>
+    public bool WaermepumpeUmstellen(string bezeichner)
+    {
         WaermepumpeStammZeile? zeile = _stammliste.FirstOrDefault(z => z.Bezeichner == bezeichner);
-        if (zeile is not null) WaermepumpeWaehlen(zeile);
+        if (zeile is null) return false;
+        WaermepumpeWaehlen(zeile);
+        StateHasChanged();
+        return true;
+    }
+
+    /// <summary>
+    /// W10b‑B‑3: schreibt die Projekteinstellung sofort; bei Fehlschlag bleibt der Schalter,
+    /// wie er war, und das Band bei den Kennlinien sagt es.
+    /// </summary>
+    private void ExtrapolationGesetzt(bool wert)
+    {
+        if (ExtrapolationSchreiben is null) return;
+        if (ExtrapolationSchreiben(wert))
+        {
+            _extrapolation = wert;
+            return;
+        }
+        _extrapolationSchluessel++;                 // der Schalter zeigt wieder den gespeicherten Stand
+        _kennlinienMeldung = WarnungExtrapolation;
+        _kennlinienStufe = WarnStufe.Fehler;
     }
 
     private void BeiStammdialog()
@@ -953,6 +1050,19 @@
         return (null, "");
     }
 
+    /// <summary>
+    /// EINGEBETTET (W7‑B‑3): die Prüfung des OK-Knopfs als Aufruf für den Wirt — er ruft sie,
+    /// bevor er die Zeile wechselt oder schließt. <c>null</c> = alles steht; sonst der Wortlaut,
+    /// und das bemängelte Feld trägt die Mangelklasse wie beim OK.
+    /// </summary>
+    public string? Pruefen()
+    {
+        (string? fehler, string feld) = ErsterFehler();
+        _warnung = fehler ?? "";
+        _mangel = feld;
+        return fehler;
+    }
+
     private async Task BeiErgebnis(bool ok)
     {
         if (!ok)
@@ -972,7 +1082,7 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || _stammGaben is not null || _katalogOffen) return Task.CompletedTask;
+        if (e.Key != "Escape" || Eingebettet || _stammGaben is not null || _katalogOffen) return Task.CompletedTask;
         return Geschlossen.InvokeAsync(false);
     }
 }

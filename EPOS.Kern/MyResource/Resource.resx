@@ -15980,6 +15980,30 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="WPV_SP_HERSTELLER" xml:space="preserve">
     <value>Hersteller</value>
   </data>
+  <data name="WPV_MANGEL" xml:space="preserve">
+    <value>„{0}“: {1}</value>
+  </data>
+  <data name="WPA_MSG_EXTRAPOLATION_FEHLER" xml:space="preserve">
+    <value>Die Einstellung „Extrapolation der WP-Kennlinie erlauben“ ließ sich nicht speichern.</value>
+  </data>
+  <data name="WPA_HINWEIS_EXTRAPOLATION" xml:space="preserve">
+    <value>Projekteinstellung — gilt für alle Wärmepumpen des Projekts und wird sofort gespeichert.</value>
+  </data>
+  <data name="WPV_TIP_UMSTELLEN" xml:space="preserve">
+    <value>Die links markierte Wärmepumpe durch die rechts markierte ersetzen — Betriebsdaten und Kosten der Zeile bleiben.</value>
+  </data>
+  <data name="WPV_BTN_UMSTELLEN" xml:space="preserve">
+    <value>Markierte auf diese Wärmepumpe umstellen</value>
+  </data>
+  <data name="WPV_LEER" xml:space="preserve">
+    <value>Links eine Wärmepumpe markieren oder rechts eine aus der Datenbank übernehmen.</value>
+  </data>
+  <data name="WPV_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>Wärmepumpen aus Datenbank:</value>
+  </data>
+  <data name="WPV_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>ausgewählte Wärmepumpen:</value>
+  </data>
   <data name="WPV_SP_TYP" xml:space="preserve">
     <value>Typ</value>
   </data>

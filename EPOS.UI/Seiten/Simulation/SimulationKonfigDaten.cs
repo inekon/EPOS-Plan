@@ -95,12 +95,6 @@ public sealed class SimulationKonfigDaten
     /// <summary>Text, wenn kein Speicher da ist (mit bzw. ohne Projekt).</summary>
     public string SpeicherLeerText = "";
 
-    /// <summary>Der Schalter „Extrapolation der WP-Kennlinie erlauben".</summary>
-    public bool ExtrapolationErlaubt = true;
-
-    /// <summary>Ohne Projekt ist er gesperrt — die Vorbelegung bleibt trotzdem „an".</summary>
-    public bool ExtrapolationMoeglich;
-
     /// <summary>
     /// Der Booster-Lesepunkt erscheint erst, wenn das Projekt einen gekoppelten
     /// Booster fuehrt (PAKET B2).
@@ -153,9 +147,6 @@ public sealed class SimulationKonfigDienste
 
     /// <summary>Schreibt <c>Tool_1..6</c> weg; <c>false</c> = fehlgeschlagen.</summary>
     public Func<bool>? Speichern;
-
-    /// <summary>Schreibt die Extrapolationseinstellung SOFORT; <c>false</c> = fehlgeschlagen.</summary>
-    public Func<bool, bool>? ExtrapolationSchreiben;
 
     /// <summary>Schreibt den Booster-Lesepunkt SOFORT; <c>false</c> = fehlgeschlagen.</summary>
     public Func<bool, bool>? LesepunktSchreiben;

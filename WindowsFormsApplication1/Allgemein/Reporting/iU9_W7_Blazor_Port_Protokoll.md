@@ -763,3 +763,88 @@ Anzeigefeld das ist — die Probe hängt am Wert, nicht an der Beschriftung.
 
 Der `WaermepumpenKatalogDialog` (W7.1) bleibt aus demselben Grund wie oben außen vor: Seine
 zwölf Felder sind eine **Filterzeile** über einer Liste, keine Komponentendaten.
+
+---
+
+## Anwenderwunsch 08.09.2026 — W7‑B‑3: Wärmepumpen Verwaltung und Detailansicht zusammengeführt
+
+**Wortlaut:** „Der Dialog Wärmepumpenverwaltung und der Dialog unter Ändern (Detailansicht)
+sollten zusammengeführt werden. Es kann genauso in einer Darstellung mit einer Auswahl an
+Wärmepumpen stattfinden. Die im Projekt ausgewählten sollen dann in der Liste der ausgewählten
+sichtbar sein."
+
+**Umsetzung — EIN Dialog nach dem Muster Photovoltaik/Stromspeicher (`WaermepumpenDialog`):**
+
+| Bereich | Vorher | Nachher |
+|---|---|---|
+| Liste | Tabelle der Projekt-Wärmepumpen mit Knöpfen „➕ Neu..", „✏️ Ändern..", „🗑️ Löschen", je Zeile „Ansicht" | `Zweispaltenauswahl`: LINKS die Wärmepumpen des Projekts (Hersteller, Typ, Leistung, Vorlauf, Rücklauf, Betriebsart), RECHTS der Katalog (`Katalogliste`, Filterzeile, Spalte „im Projekt verwendet"), dazwischen „In das Projekt übernehmen" / „Aus dem Projekt entfernen" |
+| Detail | Überlagerung „Detailansicht" nach „Ändern.." / nach der Katalogwahl, eigenes OK/Abbrechen | dieselbe Komponente `WaermepumpeAnlageDialog` **eingebettet** unter der Auswahl (`Eingebettet="true"`: kein Rahmen, keine Fußleiste, kein Esc), je markierter Zeile eine Instanz (`@key`) |
+| Prüfen/Übernehmen | beim OK der Überlagerung | `Pruefen()` der eingebetteten Ansicht vor jedem Zeilenwechsel, vor „übernehmen" und beim OK; ein Mangel hält die Wahl an, das Band nennt Zeile und Feld; fehlerfrei geht die Zeile ins Modell (`Uebernehmen`). Aus dem Katalog übernommene Zeilen stehen sofort in Liste und Modell (wie `Aufnehmen` bei PV). Assistent: beim Verlassen der Seite (`Dispose`), wenn fehlerfrei |
+
+Entfallen: `TitelDetail`, `SpalteAktion`, `BtnNeuText`, `BtnAendernText`, `BtnLoeschenText`,
+`BtnAnsichtText`, `BtnKatalogText`, der `WaermepumpenKatalogDialog` als Überlagerung dieses
+Wirts, die Nur-lesen-„Ansicht". Neu: `LabelProjektliste`, `LabelKatalogliste`, `LabelHinzu`,
+`LabelEntfernen`, `LeerText`, `MangelFormat`, `Filtertexte`, `Filterstandvorgabe`; Texte
+`WPV_LBL_PROJEKTLISTE`, `WPV_LBL_KATALOGLISTE`, `WPV_LEER`, `WPV_MANGEL`; Stil
+`.epos-dialog--eingebettet`, `.epos-wp-eingebettet`.
+
+**Nachweis:** `WaermepumpenDialogTests` neu geschrieben (15 Fälle: Spalten, zwei Listen und
+Pfeile, eingebettete Detailansicht mit genau EINEM OK, Leersatz, Übernahme aus der Datenbank,
+Zeilenwechsel übernimmt, Mangel hält an, Entfernen trifft die Zeile, Wahl wandert, OK/Abbrechen/
+Esc), `WaermepumpeAnlageDialogTests` +2 (eingebettet ohne Leiste und Esc, `Pruefen`).
+Sandbox: Kern **2062/2062**, UI **3278/3278**. Abnahme am Gerät: Projekt 1026 → Wärmepumpen: links
+die CS3400i, rechts der Katalog; Katalogzeile markieren → „In das Projekt übernehmen" → die neue
+Wärmepumpe steht links und ihre Detailansicht darunter; Vorlauf unter Rücklauf setzen → Zeile
+wechseln → das Band nennt den Mangel, die Wahl bleibt.
+
+---
+
+## Windows-Abnahme 08.09.2026 — W7‑B‑3 (Nachtrag): eingebettet ohne Innenliste, Umstellen durch den Wirt
+
+**Befund (Sandbox-Test):** `WaermepumpenDialogTests.Zwei_Listen_zwei_Pfeile_und_die_OK_Leiste_stehen`
+zählte DREI Raster — die eingebettete Detailansicht brachte ihre eigene Liste „Wärmepumpen
+Auswahl:" samt „Modul-Katalog…" mit, dieselben Zeilen wie der Katalog rechts ein zweites Mal.
+
+**Änderung.** Eingebettet (`Eingebettet="true"`) zeigt `WaermepumpeAnlageDialog` die Innenliste
+und den Katalogknopf nicht mehr; der Katalog rechts ist DIE Auswahl (Wortlaut des Wunsches:
+„eine Darstellung mit einer Auswahl an Wärmepumpen"). Frei stehend (Assistent, Altweg) bleibt
+die Liste. Damit der Wechsel des Geräts einer bestehenden Zeile nicht verloren geht — die
+Innenliste war der Weg, eine Anlage auf ein anderes Gerät zu stellen und Sperrzeit, Bivalenz,
+Heizstab und Kosten zu behalten —, bekommt der Wirt unter dem Katalog den Knopf **„Markierte
+auf diese Wärmepumpe umstellen"** (`WPV_BTN_UMSTELLEN`, Tipp `WPV_TIP_UMSTELLEN`): frei bei
+markierter Projekt- UND Katalogzeile; er ruft `WaermepumpeAnlageDialog.WaermepumpeUmstellen`
+(derselbe Weg wie Innenliste und „Modul-Katalog…", zieht Stammfelder, Vorlaufstufen und
+Kennlinien nach). „In das Projekt übernehmen" legt weiter eine NEUE Zeile an. Stil
+`.epos-wp-umstellen`.
+
+**Nachweis:** `WaermepumpeAnlageDialogTests` +2 (eingebettet keine Innenliste/kein Katalogknopf,
+frei stehend schon; Umstellen wechselt Gerät und Id, behält Sperrzeit und Bivalenz, unbekannter
+Name = false), `WaermepumpenDialogTests` +1 (Knopf gesperrt ohne Katalogwahl; Umstellen macht
+die markierte Zeile zur Katalogzeile ohne neue Zeile, zwei Raster). Sandbox: Kern **2062/2062**,
+UI **3278/3278**.
+
+## Anwenderwunsch 08.09.2026 — W10b‑B‑3: „Extrapolation der WP-Kennlinie erlauben" bei den Kennlinien
+
+**Wortlaut:** „Im Dialog Simulation Konfiguration: Nehme die Checkbox ‚Extrapolation der
+WP-Kennlinie erlauben' raus, soll nur in der Konfiguration (Detailansicht der Wärmepumpe) sein,
+fehlt dort jetzt. Default: Checkbox selektiert. Position bei ‚Kenndaten Kennlinien'."
+
+**Umsetzung.** Der Schalter steht in `WaermepumpeAnlageDialog` direkt unter der Überschrift
+„Kenndaten Kennlinien:" (`.epos-wp-extrapolation`), Beschriftung `SIM_EXTRAPOLATION_SCHALTER`,
+Werkzeugtipp `WPA_HINWEIS_EXTRAPOLATION` („Projekteinstellung — gilt für alle Wärmepumpen des
+Projekts und wird sofort gespeichert."). Es bleibt die PROJEKTEINSTELLUNG
+`Tab_Einstellungen.Extrapolation_erlaubt` (Paket 8 / Konzept 13.4): Die Hülle
+(`WaermepumpeAnlageHuelle.Gaben`) liest sie mit `KonfigurationCtrl.ExtrapolationErlaubtLesen`
+(ohne Projekt „an" = Vorbelegung) und schreibt sie SOFORT mit `ExtrapolationErlaubtSchreiben`
+(`ExtrapolationSchreiben`); schlägt das Schreiben fehl, bleibt der Schalter, wie er war, und
+das Band bei den Kennlinien sagt es (`WPA_MSG_EXTRAPOLATION_FEHLER`). Ohne Schreibweg (nur
+lesen) ist er gesperrt. Aus der Simulationskonfiguration ist der Schalter samt Parametern,
+Daten und Hüllen-Gaben ausgezogen (`SimulationKonfigSeite`, `SimulationKonfigDaten`,
+`SimulationKonfigHuelle`); `Speichern()` dort hält die Abwahl weiter über Delete/Insert hinweg
+(FRAGE 23).
+
+**Nachweis:** `WaermepumpeAnlageDialogTests` +4 (steht rechts unter der Kennlinien-Überschrift,
+vorbelegt „an", schreibt sofort; Vorbelegung „aus" kommt an; ohne Schreibweg gesperrt;
+Fehlschlag lässt den Schalter und meldet), `SimulationKonfigSeiteTests` angepasst (kein
+„Extrapolation" mehr auf der Seite; Kästchenzählung 1/0 statt 2/1). Sandbox: Kern
+**2062/2062**, UI **3278/3278**.

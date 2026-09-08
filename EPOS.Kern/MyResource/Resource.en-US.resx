@@ -15973,6 +15973,30 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="WPV_SP_HERSTELLER" xml:space="preserve">
     <value>Manufacturer</value>
   </data>
+  <data name="WPV_MANGEL" xml:space="preserve">
+    <value>“{0}”: {1}</value>
+  </data>
+  <data name="WPA_MSG_EXTRAPOLATION_FEHLER" xml:space="preserve">
+    <value>The setting “Allow extrapolation of the heat pump characteristic curve” could not be saved.</value>
+  </data>
+  <data name="WPA_HINWEIS_EXTRAPOLATION" xml:space="preserve">
+    <value>Project setting — applies to all heat pumps of the project and is saved immediately.</value>
+  </data>
+  <data name="WPV_TIP_UMSTELLEN" xml:space="preserve">
+    <value>Replace the heat pump selected on the left with the one selected on the right — operating data and costs of the row are kept.</value>
+  </data>
+  <data name="WPV_BTN_UMSTELLEN" xml:space="preserve">
+    <value>Switch the selected one to this heat pump</value>
+  </data>
+  <data name="WPV_LEER" xml:space="preserve">
+    <value>Select a heat pump on the left or take one from the database on the right.</value>
+  </data>
+  <data name="WPV_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>heat pumps from database:</value>
+  </data>
+  <data name="WPV_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>selected heat pumps:</value>
+  </data>
   <data name="WPV_SP_TYP" xml:space="preserve">
     <value>Type</value>
   </data>

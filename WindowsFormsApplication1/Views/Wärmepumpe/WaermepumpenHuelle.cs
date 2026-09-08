@@ -151,7 +151,18 @@ namespace WindowsFormsApplication1
 
                 ["TitelText"] = Text_("WPV_TITEL", "Wärmepumpen Verwaltung"),
                 ["KopfbandText"] = Text_("WPV_KOPFBAND", "Geben Sie die Daten der Wärmepumpe ein"),
-                ["TitelDetail"] = Text_("WPA_TITEL", "Detailansicht"),
+                // W7-B-3 (08.09.2026): EIN Dialog - Auswahl links, Katalog rechts, Detail
+                // darunter. Die Texte der Zweispaltenauswahl sind die der Nachbardialoge.
+                ["LabelProjektliste"] = Text_("WPV_LBL_PROJEKTLISTE", "ausgewählte Wärmepumpen:"),
+                ["LabelKatalogliste"] = Text_("WPV_LBL_KATALOGLISTE", "Wärmepumpen aus Datenbank:"),
+                ["LabelUmstellen"] = Text_("WPV_BTN_UMSTELLEN", "Markierte auf diese Wärmepumpe umstellen"),
+                ["TipUmstellen"] = Text_("WPV_TIP_UMSTELLEN",
+                    "Die links markierte Wärmepumpe durch die rechts markierte ersetzen — Betriebsdaten und Kosten der Zeile bleiben."),
+                ["LabelHinzu"] = Text_("HZK_TIP_HINZU", "In das Projekt übernehmen"),
+                ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
+                ["LeerText"] = Text_("WPV_LEER",
+                    "Links eine Wärmepumpe markieren oder rechts eine aus der Datenbank übernehmen."),
+                ["MangelFormat"] = Text_("WPV_MANGEL", "„{0}“: {1}"),
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
 
                 // W7-B-1 (Windows-Abnahme 06.09.2026): "Anstelle Name sollte Typ
@@ -163,12 +174,6 @@ namespace WindowsFormsApplication1
                 ["SpalteVorlauf"] = Text_("WPV_SP_VORLAUF", "Vorlauf [°C]"),
                 ["SpalteRuecklauf"] = Text_("WPV_SP_RUECKLAUF", "Rücklauf [°C]"),
                 ["SpalteBetriebsart"] = Text_("WPA_LBL_BETRIEBSART", "Betriebsart"),
-                ["SpalteAktion"] = Text_("WPV_SP_AKTION", "Aktion"),
-                ["BtnNeuText"] = Text_("WPV_BTN_NEU", "➕ Neu.."),
-                ["BtnAendernText"] = Text_("WPV_BTN_AENDERN", "✏️ Ändern.."),
-                ["BtnLoeschenText"] = Text_("WPV_BTN_LOESCHEN", "🗑️ Löschen"),
-                ["BtnAnsichtText"] = Text_("WPV_BTN_ANSICHT", "Ansicht"),
-                ["BtnKatalogText"] = Text_("WPK_BTN_KATALOG", "📋  Modul-Katalog..."),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
             };

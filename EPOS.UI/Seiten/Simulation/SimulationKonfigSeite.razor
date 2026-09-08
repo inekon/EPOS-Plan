@@ -130,6 +130,26 @@
                                         Ausgewaehlt="SpeicherAusgewaehlt" />
                     }
 
+                    @* Anwenderwunsch 08.09.2026 (W10b-B-2): "Nehme (falls vorhanden) den
+                       Stromspeicher auf die Spalte 'Speicher im Projekt'" - alle Speicher des
+                       Projekts stehen hier, nicht nur die Puffer. Die Betriebsfuehrung des
+                       Stromspeichers (Variante, SoC-Band, Netzentladung) bleibt links unter
+                       "Energiespeicher"; hier stehen Name und die ersten Kennwerte. *@
+                    @foreach (ErzeugerZeile z in Stromspeicher)
+                    {
+                        <div class="epos-stromspeicherkachel" title="@StromspeicherHinweis">
+                            <div class="epos-speicherkachel-kopf">
+                                <span class="epos-speicherkachel-name">@z.Kachel.Titel</span>
+                            </div>
+                            <div class="epos-stromspeicherkachel-chips">
+                                @foreach (Bausteine.ChipDaten chip in z.Kachel.Chips.Take(3))
+                                {
+                                    <span class="epos-chip" title="@chip.Hinweis">@chip.Text</span>
+                                }
+                            </div>
+                        </div>
+                    }
+
                     @if (_daten.Speicher.Count == 0)
                     {
                         <p class="epos-simkonfig-hinweis">@_daten.SpeicherLeerText</p>
@@ -145,9 +165,9 @@
     <div class="epos-simkonfig-fuss">
 
         <div class="epos-simkonfig-schalter">
-            <Schalter Bezeichnung="@ExtrapolationText" Aktiv="@ExtrapolationBedienbar"
-                      Wert="@_daten.ExtrapolationErlaubt"
-                      WertChanged="ExtrapolationGesetzt" />
+            @* Der Schalter "Extrapolation der WP-Kennlinie erlauben" steht seit W10b-B-3
+               (08.09.2026) in der Detailansicht der Waermepumpe bei "Kenndaten
+               Kennlinien" (WaermepumpeAnlageDialog) - hier nicht mehr. *@
 
             @if (_daten.BoosterSichtbar)
             {
@@ -322,6 +342,10 @@
     [Parameter] public string KopfErzeuger { get; set; } = "Komponenten der Simulation";
     [Parameter] public string KopfSpeicher { get; set; } = "Speicher im Projekt";
 
+    /// <summary>Werkzeugtipp der Stromspeicherkachel rechts (W10b‑B‑2).</summary>
+    [Parameter] public string StromspeicherHinweis { get; set; }
+        = "Stromspeicher des Projekts — Betriebsführung links unter „Energiespeicher“.";
+
     [Parameter] public string AnlageHinzuText { get; set; }
         = "+ Anlage hinzufügen: Anlagen werden über die Projektseite angelegt.";
 
@@ -343,8 +367,6 @@
     [Parameter] public string TipSpeicherAufklappen { get; set; } = "Einzelheiten anzeigen";
     [Parameter] public string BtnPufferVerwalten { get; set; } = "Pufferspeicher anlegen / verwalten…";
 
-    [Parameter] public string ExtrapolationText { get; set; }
-        = "Extrapolation der WP-Kennlinie erlauben";
     [Parameter] public string LesepunktText { get; set; }
         = "Booster liest Speicherzustand vom Stundenanfang (konservativ)";
 
@@ -353,10 +375,6 @@
 
     [Parameter] public string StatusGespeichert { get; set; }
         = "✔ Konfiguration erfolgreich gespeichert";
-    [Parameter] public string StatusExtrapolationEin { get; set; }
-        = "Extrapolation der WP-Kennlinie erlaubt.";
-    [Parameter] public string StatusExtrapolationAus { get; set; }
-        = "Extrapolation der WP-Kennlinie abgewählt.";
     [Parameter] public string StatusLesepunktDavor { get; set; }
         = "Der Booster liest den Speicherzustand vom Stundenanfang.";
     [Parameter] public string StatusLesepunktDanach { get; set; }
@@ -471,8 +489,6 @@
 
     /// <summary>Der ausgewaehlte Knotenschluessel (Pruefhilfe).</summary>
     public string Auswahl => _auswahl;
-
-    private bool ExtrapolationBedienbar => !_daten.Gesperrt && _daten.ExtrapolationMoeglich;
 
     // =====================================================================
     // Laden
@@ -643,6 +659,14 @@
     // Die Speicherspalte
     // =====================================================================
 
+    /// <summary>
+    /// W10b‑B‑2: die AUFGENOMMENEN Stromspeicher des Projekts (Typ 4 = <c>WizardItemClass.SP_TYP</c>)
+    /// für die Spalte „Speicher im Projekt".
+    /// </summary>
+    private IEnumerable<ErzeugerZeile> Stromspeicher
+        => _daten.Gruppen.SelectMany(g => g.Zeilen)
+                 .Where(z => z.IdType == 4 && z.Kachel.Zustand == Bausteine.Kachelzustand.Aufgenommen);
+
     private void SpeicherUmschalten(int idPuffer)
     {
         _offenerSpeicher = _offenerSpeicher == idPuffer ? 0 : idPuffer;
@@ -657,25 +681,6 @@
     // =====================================================================
     // Fusszeile
     // =====================================================================
-
-    /// <summary>
-    /// Schreibt SOFORT — die Einstellung gehoert nicht zu dem Satz, den
-    /// „Konfiguration speichern" wegschreibt. Bei Fehlschlag wird der Schalter
-    /// zurueckgenommen (woertlich :197-219).
-    /// </summary>
-    private void ExtrapolationGesetzt(bool wert)
-    {
-        if (IdProjekt <= 0) return;
-
-        if (Dienste?.ExtrapolationSchreiben?.Invoke(wert) == true)
-        {
-            _daten.ExtrapolationErlaubt = wert;
-            Melden(wert ? StatusExtrapolationEin : StatusExtrapolationAus, WarnStufe.Erfolg);
-            return;
-        }
-
-        Melden(StatusEinstellungFehler, WarnStufe.Fehler);
-    }
 
     private void LesepunktGesetzt(bool davor)
     {

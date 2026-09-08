@@ -46510,6 +46510,78 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("WPV_SP_HERSTELLER", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string WPV_MANGEL {
+            get {
+                return ResourceManager.GetString("WPV_MANGEL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einstellung „Extrapolation der WP-Kennlinie erlauben“ ließ sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string WPA_MSG_EXTRAPOLATION_FEHLER {
+            get {
+                return ResourceManager.GetString("WPA_MSG_EXTRAPOLATION_FEHLER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung — gilt für alle Wärmepumpen des Projekts und wird sofort gespeichert. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_EXTRAPOLATION {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_EXTRAPOLATION", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die links markierte Wärmepumpe durch die rechts markierte ersetzen — Betriebsdaten und Kosten der Zeile bleiben. ähnelt.
+        /// </summary>
+        public static string WPV_TIP_UMSTELLEN {
+            get {
+                return ResourceManager.GetString("WPV_TIP_UMSTELLEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Markierte auf diese Wärmepumpe umstellen ähnelt.
+        /// </summary>
+        public static string WPV_BTN_UMSTELLEN {
+            get {
+                return ResourceManager.GetString("WPV_BTN_UMSTELLEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Links eine Wärmepumpe markieren oder rechts eine aus der Datenbank übernehmen. ähnelt.
+        /// </summary>
+        public static string WPV_LEER {
+            get {
+                return ResourceManager.GetString("WPV_LEER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen aus Datenbank: ähnelt.
+        /// </summary>
+        public static string WPV_LBL_KATALOGLISTE {
+            get {
+                return ResourceManager.GetString("WPV_LBL_KATALOGLISTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ausgewählte Wärmepumpen: ähnelt.
+        /// </summary>
+        public static string WPV_LBL_PROJEKTLISTE {
+            get {
+                return ResourceManager.GetString("WPV_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.

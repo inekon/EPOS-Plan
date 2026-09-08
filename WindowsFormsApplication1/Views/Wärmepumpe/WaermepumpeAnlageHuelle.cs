@@ -95,6 +95,19 @@ namespace WindowsFormsApplication1
                 ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
                 ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(VorlaeufeZu),
 
+                // W10b-B-3 (08.09.2026): Der Schalter "Extrapolation der WP-Kennlinie
+                // erlauben" steht bei den Kennlinien dieser Ansicht - die Projekteinstellung
+                // Tab_Einstellungen.Extrapolation_erlaubt, sofort geschrieben, wie zuvor in
+                // der Simulationskonfiguration (KonfigurationCtrl, Paket 8 / Konzept 13.4).
+                ["ExtrapolationErlaubt"] = KonfigurationCtrl.ExtrapolationErlaubtLesen(projektId),
+                ["ExtrapolationSchreiben"] = new Func<bool, bool>(
+                    wert => projektId > 0 && KonfigurationCtrl.ExtrapolationErlaubtSchreiben(projektId, wert)),
+                ["LabelExtrapolation"] = MyResource.Resource.SIM_EXTRAPOLATION_SCHALTER,
+                ["HinweisExtrapolation"] = Text_("WPA_HINWEIS_EXTRAPOLATION",
+                    "Projekteinstellung — gilt für alle Wärmepumpen des Projekts und wird sofort gespeichert."),
+                ["WarnungExtrapolation"] = Text_("WPA_MSG_EXTRAPOLATION_FEHLER",
+                    "Die Einstellung „Extrapolation der WP-Kennlinie erlauben“ ließ sich nicht speichern."),
+
                 // W7-B-3 (Windows-Abnahme V2 07.09.2026): NICHT mehr
                 // WaermepumpeStammHuelle.BilderZu - jene liest Tab_Kenndaten_STAMM,
                 // und Daten.IdWp ist bei einer gespeicherten Anlage die Id der

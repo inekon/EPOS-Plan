@@ -89,10 +89,16 @@ public class WaermepumpeAnlageDialogTests : BunitContext
         Func<Task>? kostenOeffnen = null,
         Func<IReadOnlyDictionary<string, object>>? stammGaben = null,
         Action<bool>? geschlossen = null,
-        IReadOnlyList<EnergietraegerWahl.Eintrag>? traegerkatalog = null)
+        IReadOnlyList<EnergietraegerWahl.Eintrag>? traegerkatalog = null,
+        bool eingebettet = false,
+        Func<bool, bool>? extrapolationSchreiben = null,
+        bool extrapolationErlaubt = true)
         => Render<WaermepumpeAnlageDialog>(p => p
             .Add(x => x.Daten, daten ?? Voll())
             .Add(x => x.Traegerkatalog, traegerkatalog ?? Array.Empty<EnergietraegerWahl.Eintrag>())
+            .Add(x => x.Eingebettet, eingebettet)
+            .Add(x => x.ExtrapolationSchreiben, extrapolationSchreiben)
+            .Add(x => x.ExtrapolationErlaubt, extrapolationErlaubt)
             .Add(x => x.Stammliste, () => Stammliste)
             .Add(x => x.Vorlaeufe, _ => new[] { 35, 45, 55 })
             .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung))
@@ -991,5 +997,121 @@ public class WaermepumpeAnlageDialogTests : BunitContext
     {
         var cut = Aufbauen();
         Assert.Empty(cut.FindAll(".epos-traegerwahl"));
+    }
+
+    // =================================================================================
+    // Eingebettet in der Waermepumpen Verwaltung (W7-B-3, 08.09.2026)
+    // =================================================================================
+
+    [Fact]
+    public void Eingebettet_hat_keine_eigene_OK_Leiste_und_Esc_schliesst_nicht()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(eingebettet: true, geschlossen: b => ergebnis = b);
+
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()), t => t == "OK");
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()), t => t == "Abbrechen");
+        Assert.Contains("epos-dialog--eingebettet", cut.Find(".epos-dialog").ClassName);
+
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Null(ergebnis);
+    }
+
+    [Fact]
+    public void Pruefen_meldet_den_Mangel_und_null_wenn_alles_steht()
+    {
+        var cut = Aufbauen(eingebettet: true);
+        Assert.Null(cut.Instance.Pruefen());
+
+        WaermepumpeAnlageDaten ohne = Voll();
+        ohne.Bezeichner = "";
+        var cut2 = Aufbauen(ohne, eingebettet: true);
+        string? fehler = cut2.Instance.Pruefen();
+        Assert.NotNull(fehler);
+        cut2.Render();
+        Assert.Contains(fehler!, cut2.Markup);
+    }
+
+    // =================================================================================
+    // W7-B-3 Nachtrag (08.09.2026): eingebettet ohne Innenliste, Umstellen durch den Wirt
+    // =================================================================================
+
+    [Fact]
+    public void Eingebettet_steht_keine_Innenliste_und_kein_Modul_Katalog()
+    {
+        var cut = Aufbauen(eingebettet: true);
+
+        Assert.Empty(cut.FindAll(".epos-wp-auswahl"));
+        Assert.Empty(cut.FindAll(".epos-raster"));
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Contains("Modul-Katalog"));
+
+        Assert.NotEmpty(Aufbauen().FindAll(".epos-wp-auswahl .epos-raster"));   // frei stehend bleibt sie
+    }
+
+    [Fact]
+    public async Task Umstellen_wechselt_die_Waermepumpe_und_behaelt_die_Betriebsdaten()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        daten.SperrzeitVon = 14;
+        daten.SperrzeitBis = 17;
+        daten.BivalenterBetrieb = true;
+        var cut = Aufbauen(daten, eingebettet: true);
+
+        Assert.True(await cut.InvokeAsync(() => cut.Instance.WaermepumpeUmstellen("WP Beta")));
+        Assert.Equal("WP Beta", daten.Bezeichner);
+        Assert.Equal(2, daten.IdWp);
+        Assert.Equal(14, daten.SperrzeitVon);
+        Assert.True(daten.BivalenterBetrieb);
+
+        Assert.False(await cut.InvokeAsync(() => cut.Instance.WaermepumpeUmstellen("gibt es nicht")));
+        Assert.Equal("WP Beta", daten.Bezeichner);
+    }
+
+    // =================================================================================
+    // W10b-B-3 (08.09.2026): der Extrapolationsschalter steht bei den Kennlinien
+    // =================================================================================
+
+    [Fact]
+    public void Der_Extrapolationsschalter_steht_bei_den_Kennlinien_und_ist_vorbelegt()
+    {
+        var geschrieben = new List<bool>();
+        var cut = Aufbauen(extrapolationSchreiben: w => { geschrieben.Add(w); return true; });
+
+        var schalter = cut.Find(".epos-wp-spalte--rechts .epos-wp-extrapolation");
+        Assert.Contains("Extrapolation der WP-Kennlinie erlauben", schalter.TextContent);
+        Assert.Equal("H2", schalter.PreviousElementSibling?.TagName);
+        Assert.Contains("Kenndaten Kennlinien", schalter.PreviousElementSibling!.TextContent);
+
+        var kasten = schalter.QuerySelector("input[type=checkbox]")!;
+        Assert.True(kasten.HasAttribute("checked"));
+        Assert.False(kasten.HasAttribute("disabled"));
+
+        kasten.Change(false);
+        Assert.Equal(new[] { false }, geschrieben);
+        Assert.False(cut.Find(".epos-wp-extrapolation input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    [Fact]
+    public void Die_Vorbelegung_des_Projekts_kommt_am_Extrapolationsschalter_an()
+    {
+        var cut = Aufbauen(extrapolationSchreiben: _ => true, extrapolationErlaubt: false);
+        Assert.False(cut.Find(".epos-wp-extrapolation input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    [Fact]
+    public void Ohne_Schreibweg_ist_der_Extrapolationsschalter_gesperrt()
+    {
+        var cut = Aufbauen();
+        Assert.True(cut.Find(".epos-wp-extrapolation input[type=checkbox]").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Ein_Fehlschlag_beim_Schreiben_laesst_den_Schalter_und_sagt_es()
+    {
+        var cut = Aufbauen(extrapolationSchreiben: _ => false);
+        cut.Find(".epos-wp-extrapolation input[type=checkbox]").Change(false);
+
+        Assert.True(cut.Find(".epos-wp-extrapolation input[type=checkbox]").HasAttribute("checked"));
+        Assert.Contains("ließ sich nicht speichern", cut.Find(".epos-warnbanner").TextContent);
     }
 }
