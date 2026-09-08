@@ -234,6 +234,32 @@ namespace WindowsFormsApplication1
         /// Der Ring „Wärmedeckung" (B5) — Segmente NUR für vorhandene Erzeuger, Werte
         /// und Farben gemeinsam gefiltert (<c>NavigatorUebersicht</c> :304-333).
         /// </summary>
+        /// <summary>
+        /// W11b‑B‑11 (Windows-Abnahme 08.09.2026, „Zahlen fehlen im Diagramm — Prozent und
+        /// absolut"): Die Legende der zwei Ringe nennt je Segment den Wert in MWh und seinen
+        /// Anteil an der Summe aller Segmente — die Zahlen, die bis dahin nur der Kuchen der
+        /// Wärmebedarfsdeckung nannte (der seither entfällt, er zeigte dieselbe Deckung wie
+        /// der Ring). Segmente ohne Wert behalten ihren Namen; der Renderer lässt
+        /// Nullsegmente ohnehin aus.
+        /// </summary>
+        private static List<ChartRenderer.Ringsegment> MitZahlen(List<ChartRenderer.Ringsegment> segmente)
+        {
+            double summe = 0;
+            foreach (ChartRenderer.Ringsegment s in segmente) if (s.Wert > 0) summe += s.Wert;
+            var mit = new List<ChartRenderer.Ringsegment>(segmente.Count);
+            foreach (ChartRenderer.Ringsegment s in segmente)
+                mit.Add(new ChartRenderer.Ringsegment(Ringtext(s.Name, s.Wert, summe), s.Wert, s.Farbe));
+            return mit;
+        }
+
+        private static string Ringtext(string name, double wert, double summe)
+        {
+            if (wert <= 0) return name;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string prozent = summe > 0 ? (wert * 100.0 / summe).ToString("N1", k) + " %" : "";
+            return name + "  " + wert.ToString("N2", k) + " MWh" + (prozent.Length > 0 ? "  (" + prozent + ")" : "");
+        }
+
         private byte[] BildRingWaerme()
         {
             ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
@@ -264,7 +290,7 @@ namespace WindowsFormsApplication1
             double mitte = wbGesamt > 0 ? k.WaermeGesamtMwh * 100.0 / wbGesamt : 0.0;
 
             return ChartRenderer.Ring(MyResource.Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG,
-                                      segmente, mitte, "%");
+                                      MitZahlen(segmente), mitte, "%");
         }
 
         /// <summary>
@@ -299,7 +325,7 @@ namespace WindowsFormsApplication1
             double mitte = sbGesamt > 0 ? k.StromGesamtMwh * 100.0 / sbGesamt : 0.0;
 
             return ChartRenderer.Ring(MyResource.Resource.CHART_KACHEL_STROMBEDARFSDECKUNG,
-                                      segmente, mitte, "%");
+                                      MitZahlen(segmente), mitte, "%");
         }
 
         // ---- Die Wärmepumpenseite ---------------------------------------

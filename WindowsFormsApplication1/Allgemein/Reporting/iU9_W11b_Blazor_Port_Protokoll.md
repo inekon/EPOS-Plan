@@ -758,3 +758,22 @@ genutzten Anteil und Einstrahlung getrennt; `PvModulparameterTests` drei Fälle 
 Wirkungsgrad); `ErzeugerReiterTests` drei Proben (zwei Zeilen, W/m² ohne kW, `≈` mit
 Tooltip). `StilblattTests` über die zwei neuen Regeln. Referenzlauf unberührt: kein
 Rechenweg geändert.
+
+---
+
+## Windows-Abnahme 08.09.2026 — W11b‑B‑11: Übersichtsreiter der Simulation
+
+**Wortlaut:** „Zahlen fehlen im Diagramm (Prozent und absolut). Wärmebedarfsdeckung ist doppelt
+als Diagramm. Stelle die Diagramme nebeneinander. Das Fenster lässt sich nicht vergrößern."
+
+| Punkt | Befund | Änderung |
+|---|---|---|
+| doppelt | Der Kuchen (`ueb_chart`, Zeile über beide Spalten) und der Ring „Wärmebedarfsdeckung" zeigten dieselbe Deckung | Der Kuchen entfällt (`UebersichtReiter`: keine `epos-simerg-diagrammzeile` mehr; der Parameter `Kuchen` bleibt für die Hülle, wird nicht gezeichnet) |
+| Zahlen | Die Ringlegende nannte nur die Namen der Segmente | `SimulationErgebnisHuelle.Bilder.MitZahlen`: je Segment „Name  12,34 MWh  (56,7 %)" — Prozent = Anteil an der Summe der gezeichneten Segmente; Nullsegmente behalten den Namen (der Renderer lässt sie ohnehin aus) |
+| nebeneinander | Die Ringe standen bereits in `.epos-simerg-spalten` nebeneinander, darüber der Kuchen | Ohne Kuchen stehen die zwei Ringe als einzige Zeile nebeneinander |
+| vergrößern | Die Ergebnisseite lief in der Standard-Überlagerung (min(92 vw, 900 px)) | `Startseite`: `Zusatzklasse="epos-ueberlagerung--breit"` (96 vw bis 1 400 px, 94 vh) — dieselbe Klasse wie die Detailansicht der Wärmepumpe (W7‑E‑2) |
+
+**Nachweis:** `UebersichtReiterTests` angepasst (zwei Bilder statt drei, keine
+Diagrammzeile, eine Spaltenzeile; ohne Bedarf kein Bild; beide Ringe rund bemessen).
+Sandbox: Kern **2062/2062**, UI **3278/3278**. Abnahme am Gerät: Simulation → Übersicht: zwei
+Ringe nebeneinander, Legende mit MWh und Prozent, Fenster fast bildschirmbreit.

@@ -278,7 +278,12 @@ else
        Modal bleibt es, weil der Lauf beim Oeffnen von selbst startet und die
        beiden Bedarfsrechnungen des Projekts dabei fortgeschrieben werden
        (BedarfsZustand, Befund W16-B29). *@
+    @* BREIT (Befund W11b-B-11, 08.09.2026: "Das Fenster laesst sich nicht
+       vergroessern"): Die Ergebnisseite mit ihren Reitern, Diagrammen und
+       Tabellen bekommt die breite Ueberlagerung (96 vw, bis 1400 px, 94 vh) -
+       dieselbe Klasse wie die Detailansicht der Waermepumpe (W7-E-2). *@
     <Ueberlagerung Offen="@(_ergebnis is not null)" Titel="@ErgebnisTitelText"
+                   Zusatzklasse="epos-ueberlagerung--breit"
                    Geschlossen="ErgebnisSchliessen">
         <KindInhalt>
             @if (_ergebnis is not null)

@@ -148,12 +148,18 @@ public class UebersichtReiterTests : BunitContext
         Assert.Contains("Reststrombedarf", seite.Markup);
     }
 
-    /// <summary>Kuchen, zwei Ringe — drei Bilder in der vollen Rolle.</summary>
+    /// <summary>
+    /// Zwei Ringe, nebeneinander — der Kuchen entfällt seit W11b‑B‑11 (08.09.2026): er
+    /// zeigte dieselbe Wärmebedarfsdeckung wie der Ring.
+    /// </summary>
     [Fact]
-    public void Die_volle_Rolle_zeigt_drei_Bilder()
+    public void Die_volle_Rolle_zeigt_zwei_Ringe_und_keinen_Kuchen()
     {
         var seite = Zeichnen(Daten());
-        Assert.Equal(3, seite.FindAll("img").Count);
+        Assert.Equal(2, seite.FindAll("img").Count);
+        Assert.Empty(seite.FindAll("section.epos-simerg-diagrammzeile"));
+        // beide Ringe in EINER Spaltenzeile nebeneinander
+        Assert.Contains(seite.FindAll("div.epos-simerg-spalten"), z => z.QuerySelectorAll("img").Length == 2);
     }
 
     /// <summary>
@@ -165,7 +171,7 @@ public class UebersichtReiterTests : BunitContext
     {
         var seite = Zeichnen(Daten(waermebedarf: false, strombedarf: false));
 
-        Assert.Single(seite.FindAll("img"));           // nur noch der Kuchen
+        Assert.Empty(seite.FindAll("img"));            // kein Ring - und keinen Kuchen gibt es mehr
         Assert.Equal(2, seite.FindAll("p.epos-simerg-hinweis").Count);
     }
 
@@ -214,15 +220,12 @@ public class UebersichtReiterTests : BunitContext
     /// Zeile, in der es steht.
     /// </summary>
     [Fact]
-    public void Alle_drei_Bilder_des_Reiters_sind_rund_bemessen()
+    public void Beide_Ringe_des_Reiters_sind_rund_bemessen()
     {
         var seite = Zeichnen(Daten());
 
-        Assert.Equal(3, seite.FindAll("div.epos-diagramm--rund").Count);
-        Assert.Equal(3, seite.FindAll("div.epos-diagramm--rund img").Count);
-
-        // Und die Zeile des Kuchens bleibt die volle Breite (W11b-B-2).
-        Assert.Single(seite.FindAll("section.epos-simerg-diagrammzeile"));
+        Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund").Count);
+        Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund img").Count);
     }
 
     /// <summary>In der Navigatorrolle bleiben es die zwei Ringe — beide rund.</summary>
