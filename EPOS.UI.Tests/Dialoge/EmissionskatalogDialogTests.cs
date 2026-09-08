@@ -396,8 +396,13 @@ public class EmissionskatalogDialogTests : BunitContext
     // Werte
     // =====================================================================
 
+    /// <summary>
+    /// EMK‑B‑1 (08.09.2026): ohne Markierung gesperrt; ein AUSGELIEFERTER Wert lässt die
+    /// Knöpfe frei, und der Klick sagt, warum nichts geht — ein stummer, gesperrter Knopf
+    /// hieß für den Anwender „funktioniert nicht".
+    /// </summary>
     [Fact]
-    public void Bearbeiten_und_Loeschen_bleiben_ohne_eigenen_Wert_gesperrt()
+    public void Bearbeiten_und_Loeschen_sind_ohne_Markierung_gesperrt_und_erklaeren_einen_Auslieferungswert()
     {
         var cut = Zeige();
 
@@ -405,12 +410,18 @@ public class EmissionskatalogDialogTests : BunitContext
         Assert.True(WerteKnoepfe(cut)[2].HasAttribute("disabled"));
         Assert.True(WerteKnoepfe(cut)[3].HasAttribute("disabled"));
 
-        // Ausgelieferter Wert markiert
+        // Ausgelieferter Wert markiert: frei, der Klick erklaert
         var ersteZeile = cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[0];
         ersteZeile.QuerySelector("button.epos-anlagenwahl")!.Click();
 
-        Assert.True(WerteKnoepfe(cut)[2].HasAttribute("disabled"));
-        Assert.True(WerteKnoepfe(cut)[3].HasAttribute("disabled"));
+        Assert.False(WerteKnoepfe(cut)[2].HasAttribute("disabled"));
+        Assert.False(WerteKnoepfe(cut)[3].HasAttribute("disabled"));
+
+        WerteKnoepfe(cut)[2].Click();
+        Assert.Contains("unveränderlich", cut.Instance.Meldung);
+
+        WerteKnoepfe(cut)[3].Click();
+        Assert.Contains("unveränderlich", cut.Instance.Meldung);
     }
 
     [Fact]

@@ -251,27 +251,39 @@ namespace WindowsFormsApplication1
             if (artId <= 0) return liste;
             try
             {
-                string sql =
-                    "SELECT id, emissionsart_id, carrier_id, quelle, quelle_text, wert, " +
-                    "       ist_co2e, ist_aktiv, herkunft_id, ist_auslieferung, gueltig_ab " +
-                    "FROM " + SchemaKatalog.TAB_EMISSIONSWERT +
-                    " WHERE emissionsart_id = " + Ganz(artId) + " AND (carrier_id IS NULL";
-                if (carrierId > 0) sql += " OR carrier_id = " + Ganz(carrierId);
-
-                // Der GELTENDE Wert steht oben. NICHT über „ist_aktiv DESC":
-                // Access führt WAHR als -1 und sortiert absteigend deshalb FALSCH
-                // (0) zuerst - der aktive Wert landete ans Listenende, wo ihn
-                // niemand sucht (Befund 29.08.2026 am Sichtbeleg). IIF macht die
-                // Absicht unabhängig von der Kodierung lesbar.
-                sql += ") ORDER BY IIF(ist_aktiv, 0, 1), quelle, wert";
-
-                DataTable dt = DataRepository.GetDataTable(sql);
-                if (dt == null) return liste;
-
-                foreach (DataRow r in dt.Rows) liste.Add(WertAus(r));
+                // EMK-B-1 (Windows-Abnahme 08.09.2026): Mit Traegerkontext NUR die Werte
+                // DIESES Traegers. Bis hierher kamen die traegerlosen Vorlagen immer mit
+                // (Brennstoffvorlagen "BAFA EEW - Klaerschlamm, Klaergas, Deponiegas,
+                // Biodiesel", "EBeV - Erdgas", "GModG - Biogas ..."), nach Quelle
+                // einsortiert - die sechs Stromwerte standen zwischen und unter ihnen.
+                // Die Vorlagen bleiben der Rueckfall fuer einen Traeger OHNE eigene Werte
+                // und die Sicht des Verwaltungsmodus ohne Traeger (Paragraph 4.2).
+                if (carrierId > 0)
+                {
+                    WerteLesen(liste, "emissionsart_id = " + Ganz(artId) +
+                                      " AND carrier_id = " + Ganz(carrierId));
+                    if (liste.Count > 0) return liste;
+                }
+                WerteLesen(liste, "emissionsart_id = " + Ganz(artId) + " AND carrier_id IS NULL");
             }
             catch { }
             return liste;
+        }
+
+        private static void WerteLesen(List<EmissionswertModel> liste, string bedingung)
+        {
+            // Der GELTENDE Wert steht oben. NICHT über „ist_aktiv DESC":
+            // Access führt WAHR als -1 und sortiert absteigend deshalb FALSCH
+            // (0) zuerst - der aktive Wert landete ans Listenende, wo ihn
+            // niemand sucht (Befund 29.08.2026 am Sichtbeleg). IIF macht die
+            // Absicht unabhängig von der Kodierung lesbar.
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT id, emissionsart_id, carrier_id, quelle, quelle_text, wert, " +
+                "       ist_co2e, ist_aktiv, herkunft_id, ist_auslieferung, gueltig_ab " +
+                "FROM " + SchemaKatalog.TAB_EMISSIONSWERT +
+                " WHERE " + bedingung + " ORDER BY IIF(ist_aktiv, 0, 1), quelle, wert");
+            if (dt == null) return;
+            foreach (DataRow r in dt.Rows) liste.Add(WertAus(r));
         }
 
         /// <summary>Die AKTIVEN Werte eines Trägers, nach Art-ID abrufbar — der

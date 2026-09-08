@@ -278,9 +278,10 @@ namespace WindowsFormsApplication1
                     "Ausgelieferter Katalogwert — unveränderlich. Übernehmen ist möglich."),
                 ["HinweisText"] = traeger > 0
                     ? Text_("EMK_HINWEIS_TRAEGER",
-                        "„Übernehmen“ kopiert den markierten Wert als geltenden Trägerwert und " +
-                        "vermerkt die Herkunft. Eine spätere Katalogänderung wirkt NICHT zurück. " +
-                        "Werte ohne Träger sind Vorlagen für alle Träger.")
+                        "Gezeigt werden die Werte dieses Trägers. „Übernehmen“ macht den markierten " +
+                        "Wert zum geltenden Trägerwert und vermerkt die Herkunft; eine spätere " +
+                        "Katalogänderung wirkt NICHT zurück. Ausgelieferte Werte sind unveränderlich — " +
+                        "„Neu…“ legt einen eigenen Wert an.")
                     : Text_("EMK_HINWEIS_VERWALTUNG",
                         "Ohne Trägerkontext zeigt der Katalog die Arten und die " +
                         "trägerunabhängigen Vorlagen. Ausgelieferte Einträge sind " +

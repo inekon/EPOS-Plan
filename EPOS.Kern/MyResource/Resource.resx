@@ -10924,7 +10924,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Werte: {0}{1}</value>
   </data>
   <data name="EMK_HINWEIS_TRAEGER" xml:space="preserve">
-    <value>„Übernehmen“ kopiert den markierten Wert als geltenden Trägerwert und vermerkt die Herkunft. Eine spätere Katalogänderung wirkt NICHT zurück. Werte ohne Träger sind Vorlagen für alle Träger.</value>
+    <value>Gezeigt werden die Werte dieses Trägers. „Übernehmen“ macht den markierten Wert zum geltenden Trägerwert und vermerkt die Herkunft; eine spätere Katalogänderung wirkt NICHT zurück. Ausgelieferte Werte sind unveränderlich — „Neu…“ legt einen eigenen Wert an.</value>
   </data>
   <data name="EMK_HINWEIS_VERWALTUNG" xml:space="preserve">
     <value>Ohne Trägerkontext zeigt der Katalog die Arten und die trägerunabhängigen Vorlagen. Ausgelieferte Einträge sind unveränderlich — abwählen statt löschen.</value>

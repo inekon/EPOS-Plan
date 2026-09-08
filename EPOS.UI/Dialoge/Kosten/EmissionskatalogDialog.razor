@@ -136,11 +136,14 @@
                 <button type="button" class="epos-knopf"
                         disabled="@(EditorOffen || GewaehlteArt is null)"
                         @onclick="WertNeu">@WertNeuText</button>
+                @* EMK-B-1 (08.09.2026): Die Knoepfe sind bei markiertem Wert FREI - ein
+                   ausgelieferter Wert erklaert beim Klick, warum er bleibt (der stumme,
+                   gesperrte Knopf hiess fuer den Anwender "funktioniert nicht"). *@
                 <button type="button" class="epos-knopf"
-                        disabled="@(EditorOffen || !WertAenderbar)"
+                        disabled="@(EditorOffen || GewaehlterWert is null)"
                         @onclick="WertBearbeiten">@WertBearbeitenText</button>
                 <button type="button" class="epos-knopf"
-                        disabled="@(EditorOffen || !WertAenderbar)"
+                        disabled="@(EditorOffen || GewaehlterWert is null)"
                         @onclick="WertLoeschen">@WertLoeschenText</button>
             </div>
         </KindInhalt>

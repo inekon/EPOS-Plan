@@ -85,3 +85,29 @@ Stichtagsregel der Simulation kann keine Monats-/Trägerreihe küren.
   — Etappe KD6; bis dahin Übergangsknopf in `Form_Kosten`.
 - E2E-Lauf über `KostenEmissionRechner.Berechne` mit Simulationsergebnis: der
   Anteilsblock (8 Zeilen) ist über die Bausteintests + Handrechnung belegt.
+
+---
+
+## Windows-Abnahme 08.09.2026 — EMK‑B‑1: Emissionsfaktor-Katalog, Werte je Träger
+
+**Wortlaut:** „Bei Auswahl Energieträger Strom sind in der Auswahl der Quelle keine für
+Energieträger Strom, sondern nur fossile Energieträger. Es sollten Emissionswerte für Strom zur
+Auswahl sein → sind ganz unten. Es sollten bei Auswahl elektrische Energie nur diese zur Auswahl
+sein, ebenfalls bei fossilen Energieträgern nur jeweils für den ausgewählten. Löschen und
+Bearbeiten funktioniert nicht."
+
+**Befund.** `EmissionskatalogCtrl.Werte(art, träger)` lieferte die eigenen Zeilen des Trägers UND
+alle trägerlosen Vorlagen (`carrier_id IS NULL` — die Brennstoffvorlagen „BAFA EEW — Klärschlamm,
+Klärgas, Deponiegas, Biodiesel", „EBeV — Erdgas brennwertbezogen", „GModG — Biogas …"), sortiert
+nach Quelle: Die sechs Stromwerte (BAFA 435, UBA 379/387/442, GModG 100, GEMIS) standen zwischen
+und unter den Vorlagen. „Bearbeiten"/„Löschen" waren für AUSGELIEFERTE Werte gesperrt (Konzept:
+unveränderlich) — der Knopf schwieg, statt es zu sagen.
+
+**Änderung.** Mit Trägerkontext liefert `Werte` NUR die Zeilen dieses Trägers (geltender Wert
+zuerst); die trägerlosen Vorlagen erscheinen nur noch, wenn der Träger selbst keine Werte
+führt (Rückfall), und im Verwaltungsmodus ohne Träger wie bisher. Die Knöpfe „Bearbeiten…" und
+„Löschen" sind bei markiertem Wert frei; bei einem ausgelieferten Wert erklärt der Klick
+(„Ausgelieferte Katalogwerte sind unveränderlich — … Legen Sie einen eigenen Wert an"), eigene
+Werte lassen sich ändern und löschen. Hinweistext `EMK_HINWEIS_TRAEGER` angepasst (de/en).
+Nachweis: `EmissionskatalogCtrlTests` (neu, 3), `EmissionskatalogDialogTests` angepasst (1).
+Sandbox: Kern **2062/2062**, UI **3278/3278**.

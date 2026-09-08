@@ -10917,7 +10917,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Values: {0}{1}</value>
   </data>
   <data name="EMK_HINWEIS_TRAEGER" xml:space="preserve">
-    <value>“Apply” copies the selected value as the carrier value in force and records its origin. A later catalogue change does NOT propagate back. Values without a carrier are templates for all carriers.</value>
+    <value>The list shows the values of this carrier. “Apply” makes the selected value the carrier value in force and records its origin; a later catalogue change does NOT propagate back. Delivered values are immutable — “New…” creates your own value.</value>
   </data>
   <data name="EMK_HINWEIS_VERWALTUNG" xml:space="preserve">
     <value>Without a carrier context the catalogue shows the types and the carrier-independent templates. Shipped entries are read-only — deselect instead of deleting.</value>
