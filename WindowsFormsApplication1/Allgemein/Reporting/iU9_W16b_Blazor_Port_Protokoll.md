@@ -779,3 +779,36 @@ Dialog meldet nichts. Ohne Delegat steht kein Knopf („Kein Delegat ist kein Kn
 2. Die Variante wählen → „Umbenennen…" (jetzt frei) → „Probe 2" → Banner „Die Variante ‚Probe'
    heißt jetzt ‚Probe 2'", Kopfband und Fenstertitel tragen den neuen Projektnamen.
 3. Den Stamm wählen → „Umbenennen…" ist gesperrt, der Werkzeugtipp nennt „Speichern unter…".
+
+### 13.5 Windows-Abnahme 08.09.2026 — zweite Fassung: Einträge im Auswahlfeld, Dialog eine Nachricht später
+
+**Befund (Bildschirmfoto):** „Variante anlegen und umbenennen funktioniert nicht" — das Fenster
+„Als Variante speichern" ging auf und blieb LEER. Ursache ist der Wiedereintritt aus W16b‑B‑1:
+Der Knopf war ein Blazor-Ereignis, die Hülle öffnete den Namensdialog (eine zweite WebView2)
+synchron INNERHALB des `WebMessageReceived`-Rückrufs der ersten — genau der Fall, für den
+`Blazorsprung` gebaut wurde; die zwei neuen Wege gingen an ihm vorbei.
+
+**Wunsch:** „Wäre besser innerhalb des Dropdown Umbenennung und neue Variante anlegen."
+
+**Umsetzung.**
+- Die zwei Knöpfe entfallen. Am Ende des Auswahlfelds „Projekt:" stehen hinter einem Trennstrich
+  die Einträge **„➕ Neue Variante anlegen…"** und — nur wenn das offene Projekt eine Variante
+  ist — **„✏️ Variante umbenennen…"** (Werte −1/−2, keine Projekt-Id ist negativ). Wer einen wählt,
+  löst die Aktion aus; das Feld springt auf das offene Projekt zurück (`@key`-Neuaufbau des
+  `<select>`, denn ein `<select>` hat kein nachsetzbares `value`, Befund W6‑B‑4).
+- Die Hülle öffnet den Namensdialog **eine Nachricht später** (`Blazorsprung.Verzoegert`) und
+  meldet ohne Rückgabewert: Erfolg als Kurzhinweis der Seite über den Zustand
+  (`_kurzhinweis` → `Kurzhinweis` → Banner, 3 s), Fehler als MessageBox wie im Menüweg
+  „Als Variante speichern…". Die Razor-Parameter `VarianteAnlegen`/`VarianteUmbenennen` sind
+  jetzt `Action`.
+- Texte `START_BTN_VARIANTE_ANLEGEN`/`_UMBENENNEN` tragen die Eintragsbezeichnungen (de/en).
+
+**Nachweis.** `StartseiteTests`: die drei Knopf-Fälle ersetzt durch vier Eintrags-Fälle (ohne
+Delegaten keine Einträge; „Neue Variante" ruft die Hülle und das Feld zeigt wieder das Projekt;
+„Umbenennen" nur bei einer Variante; ohne offenes Projekt keine Einträge). `EPOS.UI.Tests`
+**3 270/3 270**; Sandbox-Bau 0 Fehler. Die Hüllenseite (Verzögerung, Kurzhinweis) hat keinen
+automatischen Test — Abnahme am Gerät: (1) Auswahlfeld öffnen → „➕ Neue Variante anlegen…"
+→ das Fenster „Als Variante speichern" zeigt Hinweis und Feld, OK legt an, das Auswahlfeld
+führt die neue Variante, das Banner meldet es; (2) Variante wählen → „✏️ Variante
+umbenennen…" → Feld vorbelegt, OK benennt um, Kopfband und Fenstertitel tragen den neuen Namen;
+(3) beim Stamm fehlt der Umbenennen-Eintrag.

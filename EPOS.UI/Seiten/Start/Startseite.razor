@@ -133,7 +133,7 @@ else
                    gegen x=53), nicht hinter dem Feld. *@
                 <span class="@Statusklasse" aria-label="@ProjektLabelText">@Statuszeichen</span>
                 <label for="epos-start-variante">@ProjektLabelText</label>
-                <select id="epos-start-variante" class="epos-eingabe"
+                <select id="epos-start-variante" class="epos-eingabe" @key="_wahlfeldSchluessel"
                         value="@_varianteGewaehlt.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                         @onchange="BeiVariante">
                     @if (_varianten.Count == 0)
@@ -144,22 +144,27 @@ else
                     {
                         <option value="@eintrag.Id.ToString(System.Globalization.CultureInfo.InvariantCulture)">@eintrag.Name</option>
                     }
+                    @* VARIANTE ANLEGEN UND UMBENENNEN IM AUSWAHLFELD (Anwenderwunsch 08.09.2026,
+                       zweite Fassung: "waere besser innerhalb des Dropdown"): zwei Eintraege
+                       am Ende der Liste statt zweier Knoepfe daneben. Wer einen waehlt, loest
+                       die Aktion aus - die Huelle fragt den Bezeichner in einem eigenen
+                       Fenster ab, eine Nachricht spaeter (Blazorsprung, W16b-B-1) -, und das
+                       Feld springt auf das offene Projekt zurueck: @key baut das <select> neu
+                       auf, denn ein <select> hat kein value-Attribut, das sich nachsetzen
+                       liesse (Befund W6-B-4). Ohne Delegat steht kein Eintrag. *@
+                    @if (MitAktionen)
+                    {
+                        <option disabled value="">──────────</option>
+                    }
+                    @if (ProjektOffen && VarianteAnlegen is not null)
+                    {
+                        <option value="@AKTION_ANLEGEN">@VarianteAnlegenText</option>
+                    }
+                    @if (ProjektOffen && VarianteUmbenennen is not null && UmbenennenMoeglich)
+                    {
+                        <option value="@AKTION_UMBENENNEN">@VarianteUmbenennenText</option>
+                    }
                 </select>
-                @* VARIANTE ANLEGEN UND UMBENENNEN am Kopfband (Anwenderwunsch 08.09.2026:
-                   "eine Projektvariante soll auch aus dem Dropdown oder in seinem Umfeld
-                   angelegt und umbenannt werden koennen"). Die Huelle fragt den Bezeichner
-                   im Namensdialog ab und meldet als Banner; ohne Delegat steht kein Knopf. *@
-                @if (VarianteAnlegen is not null)
-                {
-                    <button type="button" class="epos-knopf" disabled="@(!ProjektOffen)"
-                            @onclick="VarianteAnlegenJetzt">@VarianteAnlegenText</button>
-                }
-                @if (VarianteUmbenennen is not null)
-                {
-                    <button type="button" class="epos-knopf" disabled="@(!UmbenennenMoeglich)"
-                            title="@VarianteUmbenennenTipp"
-                            @onclick="VarianteUmbenennenJetzt">@VarianteUmbenennenText</button>
-                }
             </div>
         </div>
     </header>
@@ -317,18 +322,21 @@ else
     /// <summary>Im Kopfband wurde eine andere Variante gewählt.</summary>
     [Parameter] public Action<int>? VarianteGewaehlt { get; set; }
 
-    /// <summary>Variante anlegen am Kopfband (08.09.2026): zurück kommt die Meldung, leer = abgebrochen.</summary>
-    [Parameter] public Func<string>? VarianteAnlegen { get; set; }
+    /// <summary>
+    /// Variante anlegen — Eintrag im Auswahlfeld „Projekt:" (08.09.2026). Die Hülle fragt den
+    /// Bezeichner eine Nachricht später in einem eigenen Fenster ab und zieht die Anzeige über
+    /// den Zustand nach; Rückmeldung als Kurzhinweis. Kein Rückgabewert (Blazorsprung).
+    /// </summary>
+    [Parameter] public Action? VarianteAnlegen { get; set; }
 
-    /// <summary>Die geöffnete Variante umbenennen: zurück kommt die Meldung, leer = abgebrochen.</summary>
-    [Parameter] public Func<string>? VarianteUmbenennen { get; set; }
+    /// <summary>Die geöffnete Variante umbenennen — Eintrag im Auswahlfeld; wie <see cref="VarianteAnlegen"/>.</summary>
+    [Parameter] public Action? VarianteUmbenennen { get; set; }
 
     /// <summary>Ist die Id eine Variante? Nur die lässt sich umbenennen, ein Stamm nicht.</summary>
     [Parameter] public Func<int, bool>? IstVariante { get; set; }
 
-    [Parameter] public string VarianteAnlegenText { get; set; } = "Variante anlegen…";
-    [Parameter] public string VarianteUmbenennenText { get; set; } = "Umbenennen…";
-    [Parameter] public string VarianteUmbenennenTipp { get; set; } = "Die geöffnete Variante umbenennen (ein Stammprojekt über Speichern unter…)";
+    [Parameter] public string VarianteAnlegenText { get; set; } = "➕ Neue Variante anlegen…";
+    [Parameter] public string VarianteUmbenennenText { get; set; } = "✏️ Variante umbenennen…";
 
     /// <summary>Die wählbaren Klimaregionen des Katalogs.</summary>
     [Parameter] public Func<IReadOnlyList<string>>? Klimaregionen { get; set; }
@@ -677,27 +685,31 @@ else
     private bool UmbenennenMoeglich
         => ProjektOffen && (IstVariante?.Invoke(ProjektId?.Invoke() ?? 0) ?? false);
 
-    private void VarianteAnlegenJetzt()
-    {
-        if (VarianteAnlegen is null) return;
-        string meldung = VarianteAnlegen();
-        Laden();
-        if (!string.IsNullOrEmpty(meldung)) Melden(meldung, WarnStufe.Hinweis, TimeSpan.FromSeconds(10));
-    }
+    /// <summary>Die Werte der zwei Aktionseinträge im Auswahlfeld — keine Projekt-Id ist negativ.</summary>
+    private const int AKTION_ANLEGEN = -1;
+    private const int AKTION_UMBENENNEN = -2;
 
-    private void VarianteUmbenennenJetzt()
-    {
-        if (VarianteUmbenennen is null) return;
-        string meldung = VarianteUmbenennen();
-        Laden();
-        if (!string.IsNullOrEmpty(meldung)) Melden(meldung, WarnStufe.Hinweis, TimeSpan.FromSeconds(10));
-    }
+    /// <summary>Steht wenigstens ein Aktionseintrag? Dann trennt ein Strich ihn von den Versionen.</summary>
+    private bool MitAktionen
+        => ProjektOffen && (VarianteAnlegen is not null || (VarianteUmbenennen is not null && UmbenennenMoeglich));
+
+    /// <summary>Zähler für <c>@key</c> des Auswahlfelds: erhöht = neu aufgebaut = zeigt wieder das Projekt.</summary>
+    private int _wahlfeldSchluessel;
 
     private void BeiVariante(ChangeEventArgs e)
     {
         string wert = e.Value?.ToString() ?? "";
         if (!int.TryParse(wert, System.Globalization.NumberStyles.Integer,
                           System.Globalization.CultureInfo.InvariantCulture, out int id)) return;
+
+        if (id == AKTION_ANLEGEN || id == AKTION_UMBENENNEN)
+        {
+            _wahlfeldSchluessel++;                       // das Feld zeigt wieder das offene Projekt
+            if (id == AKTION_ANLEGEN) VarianteAnlegen?.Invoke();
+            else VarianteUmbenennen?.Invoke();
+            return;
+        }
+
         if (id <= 0 || id == (ProjektId?.Invoke() ?? 0)) return;
 
         // Woertlich comboBox_Varianten_SelectedIndexChanged (:2260-2271): Der

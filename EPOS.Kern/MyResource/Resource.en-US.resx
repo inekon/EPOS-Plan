@@ -8665,10 +8665,10 @@ The seat becomes available for another device; a new activation is required to c
     <value>Rename variant</value>
   </data>
   <data name="START_BTN_VARIANTE_UMBENENNEN" xml:space="preserve">
-    <value>Rename…</value>
+    <value>✏️ Rename variant…</value>
   </data>
   <data name="START_BTN_VARIANTE_ANLEGEN" xml:space="preserve">
-    <value>Create variant…</value>
+    <value>➕ New variant…</value>
   </data>
   <data name="START_ACE_FEHLT_TITEL" xml:space="preserve">
     <value>Database component missing</value>

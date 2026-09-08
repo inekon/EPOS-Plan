@@ -8672,10 +8672,10 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Variante umbenennen</value>
   </data>
   <data name="START_BTN_VARIANTE_UMBENENNEN" xml:space="preserve">
-    <value>Umbenennen…</value>
+    <value>✏️ Variante umbenennen…</value>
   </data>
   <data name="START_BTN_VARIANTE_ANLEGEN" xml:space="preserve">
-    <value>Variante anlegen…</value>
+    <value>➕ Neue Variante anlegen…</value>
   </data>
   <data name="START_ACE_FEHLT_TITEL" xml:space="preserve">
     <value>Datenbank-Komponente fehlt</value>

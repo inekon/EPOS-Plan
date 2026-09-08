@@ -89,8 +89,8 @@ namespace WindowsFormsApplication1
                 // derselbe Weg wie das Menue "Als Variante speichern…", nur meldet er als
                 // Banner der Seite statt als MessageBox.
                 ["IstVariante"] = new Func<int, bool>(IstVariante),
-                ["VarianteAnlegen"] = new Func<string>(VarianteAnlegen),
-                ["VarianteUmbenennen"] = new Func<string>(VarianteUmbenennen),
+                ["VarianteAnlegen"] = new Action(VarianteAnlegen),
+                ["VarianteUmbenennen"] = new Action(VarianteUmbenennen),
                 ["VarianteAnlegenText"] = MyResource.Resource.START_BTN_VARIANTE_ANLEGEN,
                 ["VarianteUmbenennenText"] = MyResource.Resource.START_BTN_VARIANTE_UMBENENNEN,
                 ["Klimaregionen"] = new Func<IReadOnlyList<string>>(StartseiteCtrl.Klimaregionen),
@@ -286,70 +286,107 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Variante anlegen am Kopfband (08.09.2026) — Bezeichner im Namensdialog erfragen,
-        /// <c>VariantenCtrl.AnlegenAusStamm</c>, Anzeige nachziehen. Zurück kommt die Meldung
-        /// für das Banner; leer = abgebrochen.
+        /// Variante anlegen — Eintrag im Auswahlfeld „Projekt:" (08.09.2026, zweite Fassung).
+        /// Der Namensdialog öffnet EINE NACHRICHT SPÄTER (<see cref="Blazorsprung"/>): Aus dem
+        /// Blazor-Klick heraus blieb sein Fenster leer (Wiedereintritt, Befund W16b‑B‑1 — der
+        /// Anwender sah am 08.09.2026 „Als Variante speichern" als leere Fläche). Deshalb kein
+        /// Rückgabewert: Erfolg kommt als Kurzhinweis über den Zustand, ein Fehler als
+        /// MessageBox wie im Menüweg <c>AlsVarianteHuelle</c>.
         /// </summary>
-        private string VarianteAnlegen()
+        private void VarianteAnlegen()
         {
+            Blazorsprung.Verzoegert(_besitzer?.Invoke(), VarianteAnlegenJetzt);
+        }
+
+        private void VarianteAnlegenJetzt()
+        {
+            IWin32Window besitzer = _besitzer?.Invoke();
             int idProjekt = _kontext.Id;
-            if (idProjekt <= 0) return MyResource.Resource.VAR_MSG_KEIN_PROJEKT;
+            if (idProjekt <= 0) { Warnen(besitzer, MyResource.Resource.VAR_MSG_KEIN_PROJEKT); return; }
             VariantenCtrl ctrl = new VariantenCtrl();
             int idStamm = ctrl.StammRefDerVariante(idProjekt);
             if (idStamm <= 0) idStamm = idProjekt;
             string stammName = StartseiteCtrl.Projektname(idStamm);
-            if (string.IsNullOrWhiteSpace(stammName)) return MyResource.Resource.BK_MSG_KEIN_STAMM;
+            if (string.IsNullOrWhiteSpace(stammName)) { Warnen(besitzer, MyResource.Resource.BK_MSG_KEIN_STAMM); return; }
 
             string bezeichner = NamensDialogHuelle.FragenMitHinweis(
-                _besitzer?.Invoke(),
+                besitzer,
                 MyResource.Resource.VAR_DLG_TITEL,
                 string.Format(MyResource.Resource.VAR_DLG_HINWEIS, stammName),
                 MyResource.Resource.BK_LBL_BEZEICHNER,
                 MyResource.Resource.BK_BTN_ANLEGEN,
                 MyResource.Resource.SIM_BTN_ABBRECHEN);
-            if (bezeichner == null) return "";
+            if (bezeichner == null) return;
             try
             {
                 string fehler;
                 int neueId = ctrl.AnlegenAusStamm(idStamm, stammName, bezeichner, out fehler);
                 if (neueId <= 0)
-                    return string.IsNullOrEmpty(fehler) ? MyResource.Resource.BK_MSG_ANLEGEN_FEHLGESCHLAGEN : fehler;
+                {
+                    Warnen(besitzer, string.IsNullOrEmpty(fehler)
+                        ? MyResource.Resource.BK_MSG_ANLEGEN_FEHLGESCHLAGEN : fehler);
+                    return;
+                }
+                _kurzhinweis = string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, bezeichner.Trim());
                 VariantenAnzeigeAktualisieren();
-                return string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, bezeichner.Trim());
             }
             catch (Exception ex)
             {
-                return string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message);
+                Warnen(besitzer, string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message));
             }
         }
 
         /// <summary>
-        /// Die geöffnete Variante umbenennen (08.09.2026): bisheriger Bezeichner vorbelegt,
-        /// <c>VariantenCtrl.Umbenennen</c>, danach der Kontext auf den neuen Namen — er hängt
-        /// am Projektnamen. Zurück kommt die Meldung; leer = abgebrochen.
+        /// Die geöffnete Variante umbenennen — Eintrag im Auswahlfeld (08.09.2026): bisheriger
+        /// Bezeichner vorbelegt, <c>VariantenCtrl.Umbenennen</c>, danach der Kontext auf den
+        /// neuen Namen — er hängt am Projektnamen. Eine Nachricht später, wie
+        /// <see cref="VarianteAnlegen"/>.
         /// </summary>
-        private string VarianteUmbenennen()
+        private void VarianteUmbenennen()
         {
+            Blazorsprung.Verzoegert(_besitzer?.Invoke(), VarianteUmbenennenJetzt);
+        }
+
+        private void VarianteUmbenennenJetzt()
+        {
+            IWin32Window besitzer = _besitzer?.Invoke();
             int idProjekt = _kontext.Id;
-            if (idProjekt <= 0) return MyResource.Resource.VAR_MSG_KEIN_PROJEKT;
+            if (idProjekt <= 0) { Warnen(besitzer, MyResource.Resource.VAR_MSG_KEIN_PROJEKT); return; }
             VariantenCtrl ctrl = new VariantenCtrl();
             int idStamm = ctrl.StammRefDerVariante(idProjekt);
-            if (idStamm <= 0) return MyResource.Resource.VAR_MSG_NUR_VARIANTE;
+            if (idStamm <= 0) { Warnen(besitzer, MyResource.Resource.VAR_MSG_NUR_VARIANTE); return; }
 
             string bisher = "";
             foreach (VariantenCtrl.VarianteInfo vi in ctrl.LadeGruppe(idStamm, StartseiteCtrl.Projektname(idStamm)))
                 if (vi.IdProjekt == idProjekt) { bisher = vi.Variantenname ?? ""; break; }
 
             string neu = NamensDialogHuelle.FragenMitVorbelegung(
-                _besitzer?.Invoke(),
+                besitzer,
                 MyResource.Resource.VAR_DLG_UMBENENNEN_TITEL,
                 string.Format(MyResource.Resource.VAR_DLG_UMBENENNEN_HINWEIS, bisher),
                 MyResource.Resource.BK_LBL_BEZEICHNER,
                 bisher,
                 MyResource.Resource.VAR_BTN_UMBENENNEN,
                 MyResource.Resource.SIM_BTN_ABBRECHEN);
-            if (neu == null) return "";
-            return ProjektUmbenennen(idProjekt, neu, bisher);
+            if (neu == null) return;
+
+            string fehler, neuerName;
+            if (!new VariantenCtrl().Umbenennen(idProjekt, neu, out fehler, out neuerName))
+            {
+                Warnen(besitzer, fehler ?? "");
+                return;
+            }
+            _kontext.Setzen(neuerName);
+            _kurzhinweis = string.Format(MyResource.Resource.VAR_MSG_UMBENANNT, bisher, neu.Trim());
+            VariantenAnzeigeAktualisieren();
+        }
+
+        /// <summary>Ein Fehler des Variantenwegs — im Fenster, wie im Menüweg <c>AlsVarianteHuelle</c>.</summary>
+        private static void Warnen(IWin32Window besitzer, string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            MessageBox.Show(besitzer, text, MyResource.Resource.VAR_DLG_TITEL,
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         /// <summary>

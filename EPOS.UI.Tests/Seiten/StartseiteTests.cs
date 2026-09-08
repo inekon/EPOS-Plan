@@ -1174,18 +1174,21 @@ public class StartseiteTests : BunitContext
     }
 
     // =====================================================================
-    //  Variante anlegen und umbenennen am Kopfband (08.09.2026)
+    //  Variante anlegen und umbenennen IM Auswahlfeld (08.09.2026, zweite Fassung)
     // =====================================================================
 
     [Fact]
-    public void Ohne_Delegaten_stehen_keine_Variantenknoepfe_am_Kopfband()
+    public void Ohne_Delegaten_stehen_keine_Aktionseintraege_im_Auswahlfeld()
     {
         var cut = Zeige(idProjekt: 1030);
+
+        Assert.Empty(cut.FindAll("#epos-start-variante option[value='-1']"));
+        Assert.Empty(cut.FindAll("#epos-start-variante option[value='-2']"));
         Assert.Empty(cut.FindAll(".epos-startseite-projekt button"));
     }
 
     [Fact]
-    public void Der_Anlegeknopf_ruft_die_Huelle_und_meldet()
+    public void Der_Eintrag_Neue_Variante_ruft_die_Huelle_und_das_Feld_zeigt_wieder_das_Projekt()
     {
         int gerufen = 0;
         var cut = Render<Startseite>(p => p
@@ -1195,22 +1198,22 @@ public class StartseiteTests : BunitContext
             .Add(x => x.Klimaregionen, () => new[] { "München" })
             .Add(x => x.Klimaregion, () => "München")
             .Add(x => x.Bericht, Bereitschaft)
-            .Add(x => x.VarianteAnlegen, () => { gerufen++; return "Variante „Kessel groß“ wurde angelegt."; })
-            .Add(x => x.VarianteUmbenennen, () => "")
+            .Add(x => x.VarianteAnlegen, () => gerufen++)
+            .Add(x => x.VarianteUmbenennen, () => { })
             .Add(x => x.IstVariante, id => false));
 
-        var knoepfe = cut.FindAll(".epos-startseite-projekt button");
-        Assert.Equal(2, knoepfe.Count);
-        Assert.False(knoepfe[0].HasAttribute("disabled"));
-        Assert.True(knoepfe[1].HasAttribute("disabled"));   // ein Stamm laesst sich nicht umbenennen
+        Assert.Single(cut.FindAll("#epos-start-variante option[value='-1']"));
+        Assert.Empty(cut.FindAll("#epos-start-variante option[value='-2']"));   // ein Stamm laesst sich nicht umbenennen
+        Assert.Contains("Neue Variante anlegen", cut.Find("#epos-start-variante").TextContent);
 
-        knoepfe[0].Click();
+        cut.Find("#epos-start-variante").Change("-1");
+
         Assert.Equal(1, gerufen);
-        Assert.Contains("wurde angelegt", cut.Markup);
+        Assert.Equal("1030", cut.Find("#epos-start-variante").GetAttribute("value"));
     }
 
     [Fact]
-    public void Der_Umbenennknopf_ist_nur_fuer_eine_Variante_frei()
+    public void Der_Eintrag_Umbenennen_steht_nur_bei_einer_Variante()
     {
         int gerufen = 0;
         var cut = Render<Startseite>(p => p
@@ -1220,13 +1223,32 @@ public class StartseiteTests : BunitContext
             .Add(x => x.Klimaregionen, () => new[] { "München" })
             .Add(x => x.Klimaregion, () => "München")
             .Add(x => x.Bericht, Bereitschaft)
-            .Add(x => x.VarianteUmbenennen, () => { gerufen++; return "Die Variante „V2“ heißt jetzt „V3“."; })
+            .Add(x => x.VarianteUmbenennen, () => gerufen++)
             .Add(x => x.IstVariante, id => id == 1031));
 
-        var knopf = cut.Find(".epos-startseite-projekt button");
-        Assert.False(knopf.HasAttribute("disabled"));
-        knopf.Click();
+        Assert.Single(cut.FindAll("#epos-start-variante option[value='-2']"));
+        Assert.Contains("Variante umbenennen", cut.Find("#epos-start-variante").TextContent);
+
+        cut.Find("#epos-start-variante").Change("-2");
+
         Assert.Equal(1, gerufen);
-        Assert.Contains("heißt jetzt", cut.Markup);
+        Assert.Equal("1031", cut.Find("#epos-start-variante").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Ohne_offenes_Projekt_gibt_es_keine_Aktionseintraege()
+    {
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 0)
+            .Add(x => x.Varianten, () => Array.Empty<(int, string)>())
+            .Add(x => x.Klimaregionen, () => new[] { "München" })
+            .Add(x => x.Klimaregion, () => "München")
+            .Add(x => x.Bericht, Bereitschaft)
+            .Add(x => x.VarianteAnlegen, () => { })
+            .Add(x => x.VarianteUmbenennen, () => { }));
+
+        Assert.Empty(cut.FindAll("#epos-start-variante option[value='-1']"));
+        Assert.Empty(cut.FindAll("#epos-start-variante option[value='-2']"));
     }
 }
