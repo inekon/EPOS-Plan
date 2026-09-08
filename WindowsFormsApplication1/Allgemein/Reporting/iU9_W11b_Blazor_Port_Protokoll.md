@@ -1007,3 +1007,94 @@ Regeln (ausgeglichene Klammern, keine Verschachtelung).
 
 Sandbox: Build **0 Fehler**, Kern **2073/2073**, UI **3301/3301** (vorher 2073 bzw. 3291; +10 UI, Kern
 unverändert). Kein Rechenweg berührt — dieselben Zahlen aus demselben DTO, nur anders sortiert und anders gesetzt.
+
+## Anwenderwunsch 08.09.2026 — W11b‑B‑16: EIN Schalter „sortiert" im Reiter „Wärme-/Strombedarf"
+
+**Wortlaut:** „Schiebe die Checkbox unten nach oben — es braucht nur eine Checkbox sortiert." (Dialog
+„Detaillierte Simulation", Reiter Bedarf. Davor gemeldet als: die Checkbox „funktioniert nicht".)
+
+**Befund — zwei Schalter mit demselben Namen in zwei Spalten.** Der Reiter führte ZWEI Zustände
+`SIM_CHK_SORTIERT`: `_waermeSortiert` in der Schalterzeile der Wärmespalte (bei „Gesamt" und den
+Bedarfskanälen) und `_stromSortiert` allein in der Stromspalte. Das Zwei-Spalten-Raster stellt die zweite
+Spalte NEBEN die erste — der Strom-Schalter kam damit optisch neben den Unterabschnitt „Wärmebedarf je
+Bedarfsart" zu stehen. Der Anwender hielt ihn für den der Wärme, hakte ihn an und sah die Wärmeganglinie
+unverändert: Aus seiner Sicht war der Schalter kaputt. Er war es nicht — er gehörte nur sichtbar zum falschen
+Bild. Zwei gleich beschriftete Schalter in einem Reiter sind schon für sich eine Zumutung; welcher welchen
+Graphen meint, stand nirgends.
+
+### Änderung
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| Zustand | `_waermeSortiert` **und** `_stromSortiert` | **ein** `_sortiert` |
+| Ort | je einer in seiner Spalte | **einer ganz oben**, über beiden Spalten (erstes Kind von `.epos-simerg-block`, vor `.epos-simerg-spalten`) |
+| Wirkung | je ein Bildauftrag | **beide** Bildaufträge (`Bilder.BedarfWaerme`, `Bilder.BedarfStrom`) tragen `Sortiert = true` |
+| Prüfhilfe | keine | `BedarfReiter.Sortiert` |
+| Reihenschalter | „Gesamt / Heizung / Brauchwasser" bei der Wärme | unverändert dort — sie wählen REIHEN, nicht die Darstellungsart |
+
+Beschriftung (`SIM_CHK_SORTIERT`), Bildaufträge, Zwischenspeicherschlüssel, Datenzoom und der CSV-Export
+bleiben, wie sie waren; kein neuer Ressourcenschlüssel, keine CSS-Regel. Die Schalterzeile steht außerhalb des
+Rasters und ist damit schon von sich aus so breit wie der Reiter — `.epos-simerg-schalter` genügt.
+
+### Nachweis
+
+**UI**, `BedarfReiterTests`: `Der_Sortiertschalter_wechselt_den_Bildauftrag` heißt jetzt
+`Der_eine_Sortiertschalter_wechselt_beide_Bildauftraege` und prüft dreierlei — genau EIN Kästchen mit der
+Beschriftung „sortiert" (vorher zwei), `Instance.Sortiert` nach dem Klick, und **beide** Bildaufträge mit
+`Sortiert = true`. `Die_Kanalschalter_stehen_im_Bildauftrag` hält die Indexordnung fest: `[0]` sortiert (der
+eine, ganz oben), `[1]` Gesamt, `[2]` Heizung, `[3]` Brauchwasser — und dass der Reiter **vier** Kästchen hat,
+nicht mehr fünf.
+
+## Anwenderwunsch 08.09.2026 — W11b‑B‑17: Reihen der zwei Wärmepumpen-Diagramme wählbar
+
+**Wortlaut:** „Die Graphen der Diagramme sollten auswählbar sein (select) für beide Grafiken." (Dialog
+„Detaillierte Simulation", Reiter Wärmepumpe.)
+
+**Befund.** Der Reiter zeigt zwei Bilder mit drei bzw. vier Reihen: die Streuwolke „Leistung über
+Außentemperatur" (Wärmebedarf, Heizstab, Wärmeproduktion) und die Jahresganglinie „Wärmelast" (Heizwärmebedarf,
+Warmwasserbedarf, Wärmeproduktion, Heizstab). Beide zeichneten IMMER alles. In der Streuwolke liegen drei
+Punktwolken zu je 8 760 Punkten übereinander — halbtransparent, aber wer die Wärmeproduktion allein sehen will,
+kann sie nicht freistellen. Der Bedarfsreiter (Paket E2) und der Photovoltaikreiter konnten das längst; hier
+fehlte es.
+
+### Änderung
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| Auswahl | keine | je Bild eine **Schalterzeile direkt über dem Bild**, je Reihe ein `Schalter`, **alle vorbelegt an** |
+| Beschriftung | — | **dieselbe Ressource wie die Legende** des Bildes: `CHART_LEGENDE_WAERMEBEDARF`, `CHART_SEGMENT_HEIZSTAB`, `CHART_LEGENDE_WAERMEPRODUKTION` bzw. `CHART_LEGENDE_HEIZWAERMEBEDARF`, `CHART_LEGENDE_WARMWASSERBEDARF`, `CHART_LEGENDE_WAERMEPRODUKTION`, `CHART_SEGMENT_HEIZSTAB` |
+| Bildauftrag | `new Bildauftrag(Bilder.WpLeistungTemperatur)` bzw. `(Bilder.WpProduktion, _sortiert)` | dazu `Reihen` — sprachneutral `WAERMEBEDARF`/`HEIZSTAB`/`WAERMEPRODUKTION` bzw. `HEIZWAERMEBEDARF`/`WARMWASSERBEDARF`/`WAERMEPRODUKTION`/`HEIZSTAB` |
+| Hülle | `BildStreuwolke()`, `BildWpProduktion(bool sortiert)` | `BildStreuwolke(Bildauftrag a)`, `BildWpProduktion(Bildauftrag a)` — die Reihen entstehen nur, wenn sie gewählt sind |
+| Prüfhilfen | `Sortiert` | dazu `GewaehlteReihenStreuwolke`, `GewaehlteReihenProduktion` |
+| „sortiert" | in der Schalterzeile des Produktionsblattes | bleibt dort, aber in EIGENER Zeile über den Reihen — dieselbe Trennung wie in W11b‑B‑16: der eine wählt die Darstellungsart, die anderen die Reihen |
+
+**Leer heißt keine, nicht alle.** Die übrigen Bilder werten `Bildauftrag.Reihen` nach dem Muster
+`wahl.Count == 0 || wahl.Contains(…)` aus — eine leere Liste heißt dort „alle". Das ginge hier nicht: Wer das
+letzte Häkchen wegnimmt, bekäme das volle Bild zurück. Die zwei neuen Helfer `Alle(a)`/`Gewaehlt(a, alle, …)`
+der Hülle unterscheiden deshalb **`null`** (keine Angabe → alle Reihen; so rufen die Bilder ohne Auswahl und so
+rief die Wärmepumpenseite bis heute) von der **leeren Liste** (der Anwender hat alles abgewählt → keine Reihe).
+Der Renderer zeichnet daraus seinen Leerhinweis (`ErzeugerStapel` bzw. `Streuwolke` prüfen das selbst) — kein
+Sonderfall, keine Ausnahme. Achsen, Skalierung, Farben, Halbtransparenz (`WithAlpha(120)`) und die kumulierte
+Heizstabwolke bleiben unangetastet; der Zwischenspeicherschlüssel trennt die Auswahlstände schon
+(`Bildauftrag.Schluessel` führt die Reihenliste mit).
+
+### Nachweis
+
+**UI**, `WaermepumpeReiterTests` — neu: `Beide_Diagramme_tragen_je_Reihe_einen_Schalter` (drei bzw. vier
+Beschriftungen wörtlich in der Reihenfolge des Bildes, alle Reihen-Kästchen an, „sortiert" aus, die zwei
+Prüfhilfen), `Die_Abwahl_nimmt_die_Reihe_aus_dem_Bildauftrag` (Heizstab der Streuwolke und Heizwärmebedarf der
+Ganglinie ab — jedes Bild führt seine eigene Wahl), `Alle_Reihen_abgewaehlt_geben_eine_leere_Liste` (leere
+Reihenliste im Auftrag, keine Ausnahme). Angepasst: `Der_Sortiertschalter_wechselt_nur_den_Bildauftrag` greift
+das Kästchen jetzt über seine Schalterzeile (die Streuwolke steht davor) und prüft zusätzlich, dass die vier
+Reihen beim Umschalten dieselben bleiben — Befund W11-B18 unverändert gewahrt.
+
+**Nicht durch Tests gedeckt:** die Reihenfilterung IN der Hülle. `SimulationErgebnisHuelle.Bilder.cs` liegt in
+`WindowsFormsApplication1`; es gibt kein Testprojekt, das dort ein Bild zeichnet (auch die vorhandene
+Reihenwahl von `BildBedarfWaerme`, `BildPv`, `BildWaermegang` und `BildStromgang` ist nur über die Seite
+geprüft). Die Filterung folgt zeichengleich diesen vier Vorbildern; die Sichtabnahme am Programm steht aus.
+
+### Zahlen
+
+Sandbox: Build **0 Fehler**, Kern **2073/2073**, UI **3304/3304** (vorher 3301; +3 UI aus W11b‑B‑17,
+W11b‑B‑16 kommt ohne neuen Fall aus). Kein Rechenweg berührt — dieselben Reihen aus demselben Lauf, nur
+wählbar.

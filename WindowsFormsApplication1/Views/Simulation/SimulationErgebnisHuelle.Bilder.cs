@@ -92,9 +92,9 @@ namespace WindowsFormsApplication1
                     case Bilder.UebersichtKuchen: return BildKuchen();
                     case Bilder.RingWaerme: return BildRingWaerme();
                     case Bilder.RingStrom: return BildRingStrom();
-                    case Bilder.WpProduktion: return BildWpProduktion(a.Sortiert);
+                    case Bilder.WpProduktion: return BildWpProduktion(a);
                     case Bilder.WpStromverbrauch: return BildWpStrom();
-                    case Bilder.WpLeistungTemperatur: return BildStreuwolke();
+                    case Bilder.WpLeistungTemperatur: return BildStreuwolke(a);
                     case Bilder.Speichertemperaturen: return BildTemperaturen();
                     case Bilder.Heizkessel: return BildKessel(a.Sortiert);
                     case Bilder.Solarthermie: return BildSolar();
@@ -115,6 +115,22 @@ namespace WindowsFormsApplication1
                 return null;
             }
         }
+
+        /// <summary>
+        /// W11b‑B‑17 — WAEHLBARE REIHEN. Traegt der Auftrag KEINE Reihenliste
+        /// (<c>null</c>), sind alle Reihen gemeint: So rufen die Bilder, die keine
+        /// Auswahl kennen, und so rief die Waermepumpenseite vor dem Anwenderwunsch
+        /// vom 08.09.2026.
+        ///
+        /// <para>Eine LEERE Liste ist etwas anderes als keine: Sie heisst „keine
+        /// Reihe" — der Anwender hat alle abgewaehlt. Der Renderer zeichnet dann
+        /// seinen Leerhinweis; das ist kein Sonderfall und keine Ausnahme.</para>
+        /// </summary>
+        private static bool Alle(Bildauftrag a) => a == null || a.Reihen == null;
+
+        /// <summary>Gehoert diese Reihe zur Wahl? (Siehe <see cref="Alle"/>.)</summary>
+        private static bool Gewaehlt(Bildauftrag a, bool alle, string schluessel)
+            => alle || a.Reihen.Contains(schluessel);
 
         /// <summary>Null-sichere Kopie einer Reihe (bis W8-O-5d die Weitung float -&gt; double).</summary>
         private static double[] Kopie(double[] werte)
@@ -339,7 +355,7 @@ namespace WindowsFormsApplication1
         /// „WP-Produktion + Heizstab", chronologisch als eigenen Anteil — zwei Größen
         /// unter demselben Serienschlüssel.</para>
         /// </summary>
-        private byte[] BildWpProduktion(bool sortiert)
+        private byte[] BildWpProduktion(Bildauftrag a)
         {
             double[] bedarf = sim.simulation_wp.Waermebedarf_stuendlich;
             double[] ww = SimulationErgebnisCtrl.WarmwasserAnteil(_waermebedarf, bedarf);
@@ -347,25 +363,29 @@ namespace WindowsFormsApplication1
             for (int n = 0; n < Kanalsatz.STUNDEN_JAHR && n < bedarf.Length; n++)
                 heizung[n] = bedarf[n] - ww[n];
 
-            var stapel = new List<ChartRenderer.Reihe>
-            {
-                Reihe(MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF, heizung, F_BEDARF,
-                      ChartRenderer.Stapelart.Flaeche),
-                Reihe(MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF, ww, F_WARMWASSER,
-                      ChartRenderer.Stapelart.Flaeche),
-                Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
-                      sim.simulation_wp.WP_Waermeproduktion_stuendlich, F_PRODUKTION,
-                      ChartRenderer.Stapelart.Saeule),
-                Reihe(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                      sim.simulation_wp.Heizstab_stuendlich, F_HEIZSTAB,
-                      ChartRenderer.Stapelart.Saeule)
-            };
+            bool alle = Alle(a);
+            var stapel = new List<ChartRenderer.Reihe>();
+
+            if (Gewaehlt(a, alle, "HEIZWAERMEBEDARF"))
+                stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF, heizung,
+                                 F_BEDARF, ChartRenderer.Stapelart.Flaeche));
+            if (Gewaehlt(a, alle, "WARMWASSERBEDARF"))
+                stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF, ww,
+                                 F_WARMWASSER, ChartRenderer.Stapelart.Flaeche));
+            if (Gewaehlt(a, alle, "WAERMEPRODUKTION"))
+                stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
+                                 sim.simulation_wp.WP_Waermeproduktion_stuendlich, F_PRODUKTION,
+                                 ChartRenderer.Stapelart.Saeule));
+            if (Gewaehlt(a, alle, "HEIZSTAB"))
+                stapel.Add(Reihe(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
+                                 sim.simulation_wp.Heizstab_stuendlich, F_HEIZSTAB,
+                                 ChartRenderer.Stapelart.Saeule));
 
             return ChartRenderer.ErzeugerStapel(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 stapel, new List<ChartRenderer.Reihe>(), null,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
-                ChartRenderer.Achse.Jahresstunden, sortiert);
+                ChartRenderer.Achse.Jahresstunden, a != null && a.Sortiert);
         }
 
         private byte[] BildWpStrom()
@@ -386,8 +406,13 @@ namespace WindowsFormsApplication1
         /// „ein Wert je Temperatur" war auskommentiert, und die drei Kopierschleifen
         /// kopierten Array in Array gleicher Länge — 40 Zeilen totes Programm.</para>
         /// </summary>
-        private byte[] BildStreuwolke()
+        private byte[] BildStreuwolke(Bildauftrag a)
         {
+            bool alle = Alle(a);
+            bool mitBedarf = Gewaehlt(a, alle, "WAERMEBEDARF");
+            bool mitHeizstab = Gewaehlt(a, alle, "HEIZSTAB");
+            bool mitProduktion = Gewaehlt(a, alle, "WAERMEPRODUKTION");
+
             var bedarf = new List<(double, double)>();
             var produktion = new List<(double, double)>();
             var heizstab = new List<(double, double)>();
@@ -400,20 +425,21 @@ namespace WindowsFormsApplication1
             for (int n = 0; n < Kanalsatz.STUNDEN_JAHR && n < t.Length; n++)
             {
                 double x = Math.Round(t[n], 1);
-                bedarf.Add((x, bed[n]));
-                produktion.Add((x, prod[n]));
-                heizstab.Add((x, hs[n] > 0 ? prod[n] + hs[n] : 0.0));
+                if (mitBedarf) bedarf.Add((x, bed[n]));
+                if (mitProduktion) produktion.Add((x, prod[n]));
+                if (mitHeizstab) heizstab.Add((x, hs[n] > 0 ? prod[n] + hs[n] : 0.0));
             }
 
-            var reihen = new List<ChartRenderer.Punktreihe>
-            {
-                new ChartRenderer.Punktreihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF,
-                                             bedarf, F_BEDARF.WithAlpha(120)),
-                new ChartRenderer.Punktreihe(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                                             heizstab, F_HEIZSTAB.WithAlpha(120)),
-                new ChartRenderer.Punktreihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
-                                             produktion, F_PRODUKTION.WithAlpha(120))
-            };
+            var reihen = new List<ChartRenderer.Punktreihe>();
+            if (mitBedarf)
+                reihen.Add(new ChartRenderer.Punktreihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF,
+                                                        bedarf, F_BEDARF.WithAlpha(120)));
+            if (mitHeizstab)
+                reihen.Add(new ChartRenderer.Punktreihe(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
+                                                        heizstab, F_HEIZSTAB.WithAlpha(120)));
+            if (mitProduktion)
+                reihen.Add(new ChartRenderer.Punktreihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
+                                                        produktion, F_PRODUKTION.WithAlpha(120)));
 
             return ChartRenderer.Streuwolke(
                 MyResource.Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR,

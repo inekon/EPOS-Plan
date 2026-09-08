@@ -18,6 +18,9 @@ namespace EPOS.UI.Tests.Seiten;
 /// Pufferkapazitaetszeile NUR ohne Speicherliste, das dritte Unterblatt nur mit
 /// Temperaturreihen, der Erdreich-Warnbanner, der Doppelklick auf eine
 /// Modulzeile und der Sortiertumschalter.</para>
+/// <para>Seit dem Anwenderwunsch 08.09.2026 (<b>W11b‑B‑17</b>) dazu die WAHL DER
+/// REIHEN: je Bild eine Schalterzeile, alle vorbelegt an, die Wahl im
+/// Bildauftrag.</para>
 /// </summary>
 public class WaermepumpeReiterTests : BunitContext
 {
@@ -83,6 +86,29 @@ public class WaermepumpeReiterTests : BunitContext
             if (modul is not null) p.Add(x => x.ModulOeffnen, EventCallback.Factory.Create(this, modul));
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
         });
+
+    // Die DREI Schalterzeilen in der Reihenfolge des Markups: die Streuwolke
+    // steht ueber den Unterblaettern, im Blatt „Wärmeproduktion" folgen erst
+    // „sortiert" (die Darstellungsart) und dann die vier Reihen (W11b‑B‑17).
+    private const int STREUWOLKE = 0;
+    private const int SORTIERT = 1;
+    private const int GANGLINIE = 2;
+
+    /// <summary>Die Beschriftungen einer Schalterzeile, in ihrer Reihenfolge.</summary>
+    private static string[] Zeile(IRenderedComponent<WaermepumpeReiter> seite, int nr)
+        => seite.FindAll("div.epos-simerg-schalter")[nr]
+                .QuerySelectorAll("label.epos-schalter")
+                .Select(l => l.TextContent.Trim()).ToArray();
+
+    /// <summary>
+    /// Das Kaestchen Nr. <paramref name="k"/> der Schalterzeile Nr.
+    /// <paramref name="nr"/>. Ueber die ZEILE und nicht ueber die Beschriftung,
+    /// weil „Wärmeproduktion" und „Heizstab" in BEIDEN Bildern vorkommen.
+    /// </summary>
+    private static AngleSharp.Dom.IElement Kasten(
+        IRenderedComponent<WaermepumpeReiter> seite, int nr, int k)
+        => seite.FindAll("div.epos-simerg-schalter")[nr]
+                .QuerySelectorAll("input[type=checkbox]")[k];
 
     // =====================================================================
 
@@ -221,10 +247,85 @@ public class WaermepumpeReiterTests : BunitContext
         var seite = Zeichnen(Erg());
         _auftraege.Clear();
 
-        seite.Find("input[type='checkbox']").Change(true);
+        Kasten(seite, SORTIERT, 0).Change(true);
 
         Assert.True(seite.Instance.Sortiert);
-        Assert.Contains(_auftraege, a => a.Bild == Bilder.WpProduktion && a.Sortiert);
+
+        Bildauftrag gang = _auftraege.Last(a => a.Bild == Bilder.WpProduktion);
+        Assert.True(gang.Sortiert);
+        Assert.Equal(new[] { "HEIZWAERMEBEDARF", "WARMWASSERBEDARF", "WAERMEPRODUKTION", "HEIZSTAB" },
+                     gang.Reihen!.ToArray());
+    }
+
+    // =====================================================================
+    //  W11b‑B‑17 — „Die Graphen der Diagramme sollten auswählbar sein (select)
+    //  für beide Grafiken." (Anwenderwunsch 08.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Je Reihe ein Schalter, die Beschriftung DIESELBE wie in der Legende des
+    /// Bildes — der Anwender hakt ab, was er dort liest. Alle stehen beim Aufbau
+    /// AN: Das Bild sieht aus wie bisher, bis er etwas abwählt.
+    /// </summary>
+    [Fact]
+    public void Beide_Diagramme_tragen_je_Reihe_einen_Schalter()
+    {
+        var seite = Zeichnen(Erg());
+
+        Assert.Equal(new[] { "Wärmebedarf", "Heizstab", "Wärmeproduktion" },
+                     Zeile(seite, STREUWOLKE));
+        Assert.Equal(new[] { "sortiert" }, Zeile(seite, SORTIERT));
+        Assert.Equal(new[] { "Heizwärmebedarf", "Warmwasserbedarf", "Wärmeproduktion", "Heizstab" },
+                     Zeile(seite, GANGLINIE));
+
+        // Alle REIHEN stehen an — „sortiert" ist keine Reihe, sondern die
+        // Darstellungsart, und bleibt aus wie bisher.
+        foreach (int zeile in new[] { STREUWOLKE, GANGLINIE })
+            Assert.All(seite.FindAll("div.epos-simerg-schalter")[zeile]
+                            .QuerySelectorAll("input[type=checkbox]"),
+                       k => Assert.True(k.HasAttribute("checked")));
+        Assert.False(Kasten(seite, SORTIERT, 0).HasAttribute("checked"));
+
+        Assert.Equal(new[] { "WAERMEBEDARF", "HEIZSTAB", "WAERMEPRODUKTION" },
+                     seite.Instance.GewaehlteReihenStreuwolke.ToArray());
+        Assert.Equal(new[] { "HEIZWAERMEBEDARF", "WARMWASSERBEDARF", "WAERMEPRODUKTION", "HEIZSTAB" },
+                     seite.Instance.GewaehlteReihenProduktion.ToArray());
+    }
+
+    /// <summary>
+    /// Die Abwahl gibt den Bildauftrag OHNE diesen Schluessel weiter — und nur
+    /// diesen: Jedes der zwei Bilder führt seine eigene Wahl.
+    /// </summary>
+    [Fact]
+    public void Die_Abwahl_nimmt_die_Reihe_aus_dem_Bildauftrag()
+    {
+        var seite = Zeichnen(Erg());
+        _auftraege.Clear();
+
+        Kasten(seite, STREUWOLKE, 1).Change(false);      // Heizstab der Streuwolke
+        Kasten(seite, GANGLINIE, 0).Change(false);       // Heizwärmebedarf der Ganglinie
+
+        Assert.Equal(new[] { "WAERMEBEDARF", "WAERMEPRODUKTION" },
+                     _auftraege.Last(a => a.Bild == Bilder.WpLeistungTemperatur).Reihen!.ToArray());
+        Assert.Equal(new[] { "WARMWASSERBEDARF", "WAERMEPRODUKTION", "HEIZSTAB" },
+                     _auftraege.Last(a => a.Bild == Bilder.WpProduktion).Reihen!.ToArray());
+    }
+
+    /// <summary>
+    /// ALLE abgewählt heisst KEINE Reihe und nicht „alle": Der Auftrag trägt eine
+    /// LEERE Liste, aus der die Hülle den Leerhinweis des Renderers zeichnet.
+    /// Keine Ausnahme, kein Sonderfall.
+    /// </summary>
+    [Fact]
+    public void Alle_Reihen_abgewaehlt_geben_eine_leere_Liste()
+    {
+        var seite = Zeichnen(Erg());
+        _auftraege.Clear();
+
+        for (int k = 0; k < 3; k++) Kasten(seite, STREUWOLKE, k).Change(false);
+
+        Assert.Empty(seite.Instance.GewaehlteReihenStreuwolke);
+        Assert.Empty(_auftraege.Last(a => a.Bild == Bilder.WpLeistungTemperatur).Reihen!);
     }
 
     [Fact]

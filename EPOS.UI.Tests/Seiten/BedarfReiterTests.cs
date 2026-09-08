@@ -133,16 +133,28 @@ public class BedarfReiterTests : BunitContext
     /// <summary>
     /// Befund W11-B14: EINE Fuelllogik. „Sortiert" wechselt nur den
     /// Bildauftrag; derselbe Schalterstand ergibt denselben Schluessel.
+    ///
+    /// <para><b>Anwenderwunsch 08.09.2026 (W11b‑B‑16):</b> und zwar EIN Schalter
+    /// für BEIDE Ganglinien. Bis dahin trug jede Spalte einen eigenen; der der
+    /// Stromspalte kam im Zwei-Spalten-Raster neben „Wärmebedarf je Bedarfsart"
+    /// zu stehen, und der Anwender meldete ihn als „funktioniert nicht" — er
+    /// hakte ihn an und sah die WÄRME-Ganglinie unverändert.</para>
     /// </summary>
     [Fact]
-    public void Der_Sortiertschalter_wechselt_den_Bildauftrag()
+    public void Der_eine_Sortiertschalter_wechselt_beide_Bildauftraege()
     {
         var seite = Zeichnen(Daten());
-        _auftraege.Clear();
 
+        // Genau EINER — vor W11b‑B‑16 stand in jeder Spalte einer.
+        Assert.Single(seite.FindAll("label.epos-schalter")
+                           .Where(s => s.TextContent.Trim() == "sortiert"));
+
+        _auftraege.Clear();
         seite.FindAll("input[type='checkbox']")[0].Change(true);
 
+        Assert.True(seite.Instance.Sortiert);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.BedarfWaerme && a.Sortiert);
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.BedarfStrom && a.Sortiert);
     }
 
     /// <summary>
@@ -154,8 +166,11 @@ public class BedarfReiterTests : BunitContext
     {
         var seite = Zeichnen(Daten());
 
-        // [0] sortiert, [1] Gesamt, [2] Heizung, [3] Brauchwasser
-        seite.FindAll("input[type='checkbox']")[2].Change(true);
+        // [0] sortiert (W11b‑B‑16: der EINE, ganz oben), [1] Gesamt,
+        // [2] Heizung, [3] Brauchwasser — mehr Kästchen hat der Reiter nicht.
+        var kaesten = seite.FindAll("input[type='checkbox']");
+        Assert.Equal(4, kaesten.Count);
+        kaesten[2].Change(true);
 
         Assert.Contains("KANAL_0", seite.Instance.GewaehlteReihen);
         Assert.Contains("GESAMT", seite.Instance.GewaehlteReihen);

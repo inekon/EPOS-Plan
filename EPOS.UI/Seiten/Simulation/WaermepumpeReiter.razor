@@ -20,7 +20,19 @@
 
    DIE SEITE „SPEICHERTEMPERATUREN" haengt sich nur ein, wenn der Lauf
    mindestens eine Temperaturreihe hat - und wieder aus, wenn nicht
-   (SpeichertemperaturAnzeigen :2587-2597). *@
+   (SpeichertemperaturAnzeigen :2587-2597).
+
+   WAEHLBARE REIHEN (Anwenderwunsch 08.09.2026, W11b‑B‑17: „Die Graphen der
+   Diagramme sollten auswaehlbar sein (select) fuer beide Grafiken."). Beide
+   Bilder dieses Reiters tragen jetzt ueber sich eine Schalterzeile, je Reihe
+   einen Schalter, alle vorbelegt AN - das Bild sieht damit aus wie bisher,
+   bis der Anwender etwas abwaehlt. Die Beschriftung ist DIESELBE Ressource,
+   die auch in der Legende des Bildes steht: Man hakt ab, was man dort liest.
+   Die Wahl geht als sprachneutrale Reihenliste in den Bildauftrag, genau wie
+   im Bedarfsreiter (Paket E2); der Zwischenspeicherschluessel unterscheidet
+   sie schon (Bildauftrag.Schluessel). ALLE ABGEWAEHLT heisst KEINE Reihe und
+   nicht „alle": Die Huelle zeichnet dann den Leerhinweis des Renderers - kein
+   Sonderfall, keine Ausnahme. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 
@@ -85,6 +97,16 @@
                halben Spalte lief sie rechts aus dem Fenster und legte sich ueber die
                Modultabelle darunter. *@
             <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                @* W11b‑B‑17: die drei Punktreihen der Streuwolke, jede abwaehlbar. *@
+                <div class="epos-simerg-schalter">
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF"
+                              Wert="@_swBedarf" WertChanged="@(w => _swBedarf = w)" />
+                    <Schalter Bezeichnung="@Resource.CHART_SEGMENT_HEIZSTAB"
+                              Wert="@_swHeizstab" WertChanged="@(w => _swHeizstab = w)" />
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION"
+                              Wert="@_swProduktion" WertChanged="@(w => _swProduktion = w)" />
+                </div>
+
                 <ChartBild Png="@BildStreuwolke"
                            Alt="@Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR" />
             </section>
@@ -179,6 +201,22 @@
                             <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
                                       WertChanged="@(w => _sortiert = w)" />
                         </div>
+
+                        @* W11b‑B‑17: die vier Reihen des Stapels. Sie stehen in einer
+                           EIGENEN Zeile unter „sortiert" - der waehlt die Darstellungs-
+                           art, diese waehlen die Reihen (dieselbe Trennung wie im
+                           Bedarfsreiter, W11b‑B‑16). *@
+                        <div class="epos-simerg-schalter">
+                            <Schalter Bezeichnung="@Resource.CHART_LEGENDE_HEIZWAERMEBEDARF"
+                                      Wert="@_pgHeizwaerme" WertChanged="@(w => _pgHeizwaerme = w)" />
+                            <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WARMWASSERBEDARF"
+                                      Wert="@_pgWarmwasser" WertChanged="@(w => _pgWarmwasser = w)" />
+                            <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION"
+                                      Wert="@_pgProduktion" WertChanged="@(w => _pgProduktion = w)" />
+                            <Schalter Bezeichnung="@Resource.CHART_SEGMENT_HEIZSTAB"
+                                      Wert="@_pgHeizstab" WertChanged="@(w => _pgHeizstab = w)" />
+                        </div>
+
                         <ChartBild Png="@BildProduktion"
                                    Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
                     </KindInhalt>
@@ -249,14 +287,58 @@
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;
 
+    /// <summary>Die gewaehlten Reihen der Streuwolke (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihenStreuwolke => ReihenStreuwolke();
+
+    /// <summary>Die gewaehlten Reihen der Jahresganglinie (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihenProduktion => ReihenProduktion();
+
     private Reiter? _reiter;
     private string _blatt = "";
     private bool _sortiert;
 
+    // W11b‑B‑17: je Reihe ein Zustand, ALLE vorbelegt an.
+    private bool _swBedarf = true;
+    private bool _swHeizstab = true;
+    private bool _swProduktion = true;
+    private bool _pgHeizwaerme = true;
+    private bool _pgWarmwasser = true;
+    private bool _pgProduktion = true;
+    private bool _pgHeizstab = true;
+
     private Task ModulGewaehlt() => ModulOeffnen.InvokeAsync();
 
-    private byte[]? BildStreuwolke => Bild?.Invoke(new Bildauftrag(Bilder.WpLeistungTemperatur));
-    private byte[]? BildProduktion => Bild?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert));
+    /// <summary>
+    /// Die Serienschluessel der Streuwolke - sprachneutral, die Beschriftung
+    /// setzt die Huelle. Eine LEERE Liste heisst „keine Reihe": Der Auftrag
+    /// traegt immer eine Liste, deshalb kann die Huelle leer von „ohne Angabe"
+    /// (<c>null</c>) unterscheiden.
+    /// </summary>
+    private IReadOnlyList<string> ReihenStreuwolke()
+    {
+        var liste = new List<string>();
+        if (_swBedarf) liste.Add("WAERMEBEDARF");
+        if (_swHeizstab) liste.Add("HEIZSTAB");
+        if (_swProduktion) liste.Add("WAERMEPRODUKTION");
+        return liste;
+    }
+
+    /// <summary>Dasselbe fuer die vier Reihen der Jahresganglinie.</summary>
+    private IReadOnlyList<string> ReihenProduktion()
+    {
+        var liste = new List<string>();
+        if (_pgHeizwaerme) liste.Add("HEIZWAERMEBEDARF");
+        if (_pgWarmwasser) liste.Add("WARMWASSERBEDARF");
+        if (_pgProduktion) liste.Add("WAERMEPRODUKTION");
+        if (_pgHeizstab) liste.Add("HEIZSTAB");
+        return liste;
+    }
+
+    private byte[]? BildStreuwolke =>
+        Bild?.Invoke(new Bildauftrag(Bilder.WpLeistungTemperatur, false, -1, ReihenStreuwolke()));
+
+    private byte[]? BildProduktion =>
+        Bild?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert, -1, ReihenProduktion()));
     private byte[]? BildStrom => Bild?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch));
     private byte[]? BildTemperaturen => Bild?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen));
 
