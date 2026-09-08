@@ -31337,6 +31337,96 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PVS_EMPF_GERAET_KEINE", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — ähnelt.
+        /// </summary>
+        public static string PVS_BEW_TRENNER {
+            get {
+                return ResourceManager.GetString("PVS_BEW_TRENNER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DC/AC {0} ähnelt.
+        /// </summary>
+        public static string PVS_BEW_DCAC {
+            get {
+                return ResourceManager.GetString("PVS_BEW_DCAC", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Gerät ähnelt.
+        /// </summary>
+        public static string PVS_BEW_GERAET {
+            get {
+                return ResourceManager.GetString("PVS_BEW_GERAET", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Geräte ähnelt.
+        /// </summary>
+        public static string PVS_BEW_GERAETE {
+            get {
+                return ResourceManager.GetString("PVS_BEW_GERAETE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die passt nicht ähnelt.
+        /// </summary>
+        public static string PVS_BEW_UNPASSEND {
+            get {
+                return ResourceManager.GetString("PVS_BEW_UNPASSEND", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung vorschlagen ähnelt.
+        /// </summary>
+        public static string PVS_BTN_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("PVS_BTN_VORSCHLAG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag: {0}, {1}, DC/AC {2} — die Strangtabelle wurde ersetzt. ähnelt.
+        /// </summary>
+        public static string PVS_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("PVS_VORSCHLAG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je {0} Strang mit {1} Modulen in Reihe ähnelt.
+        /// </summary>
+        public static string PVS_VORSCHLAG_STRANG {
+            get {
+                return ResourceManager.GetString("PVS_VORSCHLAG_STRANG", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je {0} Stränge mit {1} Modulen in Reihe ähnelt.
+        /// </summary>
+        public static string PVS_VORSCHLAG_STRAENGE {
+            get {
+                return ResourceManager.GetString("PVS_VORSCHLAG_STRAENGE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag: {0} ähnelt.
+        /// </summary>
+        public static string PVS_VORSCHLAG_KEIN {
+            get {
+                return ResourceManager.GetString("PVS_VORSCHLAG_KEIN", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pflege: Administration → Energiesysteme → Photovoltaik → PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus „CEC Modules.csv“ ähnelt.

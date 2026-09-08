@@ -15745,6 +15745,36 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="PVS_EMPF_GERAET_KEINE" xml:space="preserve">
     <value>no module array fits this device</value>
   </data>
+  <data name="PVS_BEW_TRENNER" xml:space="preserve">
+    <value> — </value>
+  </data>
+  <data name="PVS_BEW_DCAC" xml:space="preserve">
+    <value>DC/AC {0}</value>
+  </data>
+  <data name="PVS_BEW_GERAET" xml:space="preserve">
+    <value>{0} device</value>
+  </data>
+  <data name="PVS_BEW_GERAETE" xml:space="preserve">
+    <value>{0} devices</value>
+  </data>
+  <data name="PVS_BEW_UNPASSEND" xml:space="preserve">
+    <value>does not fit</value>
+  </data>
+  <data name="PVS_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Propose layout</value>
+  </data>
+  <data name="PVS_VORSCHLAG" xml:space="preserve">
+    <value>Proposal: {0}, {1}, DC/AC {2} — the string table has been replaced.</value>
+  </data>
+  <data name="PVS_VORSCHLAG_STRANG" xml:space="preserve">
+    <value>{0} string of {1} modules in series each</value>
+  </data>
+  <data name="PVS_VORSCHLAG_STRAENGE" xml:space="preserve">
+    <value>{0} strings of {1} modules in series each</value>
+  </data>
+  <data name="PVS_VORSCHLAG_KEIN" xml:space="preserve">
+    <value>No proposal: {0}</value>
+  </data>
   <data name="PVS_WERTE_FEHLEN" xml:space="preserve">
     <value>Values missing: {0}</value>
   </data>

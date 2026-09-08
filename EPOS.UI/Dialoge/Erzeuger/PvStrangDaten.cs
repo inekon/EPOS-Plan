@@ -138,6 +138,44 @@ public sealed record StrangBefund(
 }
 
 /// <summary>
+/// EINE Zeile, die die Auslegungshilfe vorschlägt (Anwenderwunsch 08.09.2026,
+/// <b>W6‑B‑8</b>) — die vier Zahlen, die eine <see cref="StrangZeile"/> ausmachen.
+///
+/// <para><b>Warum nicht gleich eine <see cref="StrangZeile"/>.</b> Der Vorschlag kommt
+/// aus dem KERN (<c>StrangAuslegung.Aufteilen</c>) und weiß nichts von Projektkopien:
+/// Welches Gerät die Zeilen tragen, entscheidet die Komponente beim Übernehmen des
+/// Katalogsatzes, und Neigung und Azimut bleiben leer — sie heißen dann „der
+/// Anlagenwert".</para>
+/// </summary>
+/// <param name="Geraetenummer">Welches physische Gerät, 1…n.</param>
+/// <param name="Mppt">MPP-Tracker dieses Geräts, 1…m.</param>
+/// <param name="ModuleReihe">Module in Reihe.</param>
+/// <param name="StraengeParallel">Parallel geschaltete Stränge an diesem Tracker.</param>
+public sealed record StrangVorgabe(int Geraetenummer, int Mppt, int ModuleReihe,
+                                   int StraengeParallel);
+
+/// <summary>
+/// Was die Auslegungshilfe zu einem Katalogsatz sagt (<b>W6‑B‑8</b>) — das Ergebnis des
+/// Delegaten <c>PvStraengeFelder.AuslegungVorschlagen</c>.
+///
+/// <para><b>Gerechnet hat der Kern</b> (<c>StrangAuslegung.Vorschlagen</c> und
+/// <c>Aufteilen</c>), <b>formuliert die Hülle</b>: Die Komponente ersetzt bei
+/// <paramref name="Moeglich"/> ihre Tabelle durch die <paramref name="Zeilen"/> und
+/// zeigt den <paramref name="Satz"/>; sonst bleibt die Tabelle stehen, und der Satz
+/// nennt den Grund.</para>
+/// </summary>
+/// <param name="Moeglich">Es gibt eine Aufteilung.</param>
+/// <param name="Zeilen">Die vorgeschlagene Strangtabelle; leer, wenn nicht möglich.</param>
+/// <param name="Satz">Der fertig formulierte Satz — Vorschlag oder Grund.</param>
+public sealed record StrangVorschlag(bool Moeglich, IReadOnlyList<StrangVorgabe> Zeilen,
+                                     string Satz)
+{
+    /// <summary>Kein Vorschlag und kein Satz — der Stand ohne Delegat.</summary>
+    public static readonly StrangVorschlag Leer =
+        new(false, Array.Empty<StrangVorgabe>(), "");
+}
+
+/// <summary>
 /// Das Ergebnis des Übernehmens eines Katalogsatzes in das Projekt
 /// (<c>WechselrichterCtrl.CopyFromStamm</c>).
 /// </summary>
@@ -299,6 +337,13 @@ public sealed class PvStrangTexte
 
     /// <summary>Knopf „Strang anlegen" — <c>PVS_BTN_ANLEGEN</c>.</summary>
     public string BtnAnlegen { get; set; } = T("PVS_BTN_ANLEGEN", "Strang anlegen");
+
+    /// <summary>
+    /// Knopf „Auslegung vorschlagen" — <c>PVS_BTN_VORSCHLAG</c> (Anwenderwunsch
+    /// 08.09.2026, <b>W6‑B‑8</b>). Er füllt die Strangtabelle aus dem Vorschlag des
+    /// Kerns (<c>StrangAuslegung.Vorschlagen</c>).
+    /// </summary>
+    public string BtnVorschlag { get; set; } = T("PVS_BTN_VORSCHLAG", "Auslegung vorschlagen");
 
     /// <summary>Knopf „Entfernen" — <c>PVS_BTN_ENTFERNEN</c>.</summary>
     public string BtnEntfernen { get; set; } = T("PVS_BTN_ENTFERNEN", "Entfernen");

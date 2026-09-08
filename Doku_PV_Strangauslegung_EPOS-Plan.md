@@ -111,6 +111,7 @@ Die Farbe des Abschnitts ist die schlechteste seiner Zeilen.
 | `ModuleJeGeraet(modul, geraet)` | Module je Gerät (P6-Band, P7) |
 | `Vorschlagen(modul, geraet, anzahlModule)` | eine Aufteilung: Reihe, Stränge je Gerät, Gerätezahl, DC/AC — wenige Geräte zuerst, dann DC/AC nahe 1,25, dann lange Reihen |
 | `GeraeteBewerten(modul, anzahlModule, katalog)` | alle Geräte des Katalogs, passende zuerst |
+| `Aufteilen(vorschlag, mppts)` | derselbe Vorschlag als **Tabelle**: je Gerät und belegtem Tracker eine Zeile (Gerät, MPPT, Reihe, parallel) |
 | `ReiheEmpfehlung`, `GeraetEmpfehlung` | die Sätze der Ampel |
 
 Die Sätze stehen seit dem 08.09.2026 in der Ampel des PV-Dialogs hinter jedem roten oder
@@ -118,10 +119,55 @@ gelben Befund an P1–P3 bzw. P6/P7 („… · passend wären 4…14 Module in R
 `EPOS.Kern.Tests/StrangAuslegungTests.cs` (Anhang-A-Modul und -Gerät, Zahl für Zahl gegen die
 Prüfung) und drei Fälle in `StrangPlausibilitaetTests`.
 
-**Noch nicht in der Oberfläche:** `Vorschlagen` und `GeraeteBewerten` sind Kernmethoden. Der
-nächste Schritt wäre, das Auswahlfeld „Wechselrichter aus dem Katalog" nach `GeraeteBewerten`
-zu sortieren und passende Geräte mit ihrem DC/AC zu beschriften, und ein Knopf „Auslegung
-vorschlagen", der die Strangtabelle aus `Vorschlagen` füllt.
+### In der Oberfläche (seit 08.09.2026, **W6‑B‑8**)
+
+`Vorschlagen`, `Aufteilen` und `GeraeteBewerten` sind im PV-Dialog bedienbar — Abschnitt
+„Wechselrichter und Stränge", Weg „mit Wechselrichter":
+
+**1. Die Katalogwahl ist sortiert und beschriftet.** Das Auswahlfeld „Wechselrichter aus dem
+Katalog" listet die (nach Hersteller gefilterten) Geräte in der Reihenfolge von
+`GeraeteBewerten` — passende zuerst, unter ihnen wenige Geräte vor vielen und DC/AC nahe 1,25
+vor entfernterem. Passende Geräte tragen ihre Zahlen im Text:
+
+| Eintrag | Bedeutung |
+|---|---|
+| `Muster 2500TL — DC/AC 1,10 · 1 Gerät` | passt: ein Gerät, DC/AC 1,10 im Band 1,0…1,5 |
+| `Muster 5000TL-2M — DC/AC 1,22 · 2 Geräte` | passt, braucht aber zwei Geräte |
+| `Gross 100TL — passt nicht` | keine Aufteilung: Spannungsfenster, Strom oder DC/AC‑Band gehen nicht auf |
+
+Gemessen wird am **Modul der markierten Projektzeile** und an ihrer **Modulzahl** (steht eine
+Strangtabelle, gilt deren abgeleitete Summe). Fehlt eines von beiden, bleibt die Liste
+alphabetisch und unbeschriftet — ohne Modulfeld gibt es nichts zu bewerten. Die Klapplisten
+**je Strangzeile** bleiben in jedem Fall alphabetisch und ohne Zusatz: Dort steht das Gerät
+eines einzelnen Strangs.
+
+**2. Der Knopf „Auslegung vorschlagen"** steht neben „Strang anlegen". Er ist frei, sobald ein
+Katalogsatz gewählt ist und Modul und Modulzahl feststehen. Sein Klick
+
+* rechnet `Vorschlagen(modul, gerät, modulzahl)` und legt das Ergebnis mit
+  `Aufteilen(vorschlag, Anzahl_Mppt)` in Zeilen — je Gerät und belegtem Tracker eine, die
+  Stränge so gleichmäßig auf die Tracker verteilt, wie die Zahl es zulässt;
+* nimmt den Katalogsatz in das Projekt auf (dieselbe Kopie wie „Strang anlegen");
+* **ersetzt** die Strangtabelle durch die Vorgaben (Ränge neu ab 1; Neigung und Azimut bleiben
+  leer, also der Anlagenwert) und meldet darunter, was geschehen ist:
+  `Vorschlag: 2 Geräte, je 1 Strang mit 10 Modulen in Reihe, DC/AC 1,10 — die Strangtabelle
+  wurde ersetzt.`
+
+Gibt es keine Aufteilung, **bleibt die Tabelle stehen**, und der Grund erscheint als Warnung:
+`Kein Vorschlag: Die Modulzahl lässt sich nicht in gleich lange Stränge und gleich belegte
+Geräte teilen.` (weitere Gründe: „Keine Reihe passt zu diesem Gerät (Spannungsfenster)",
+„Spannungswerte des Moduls oder Grenzen des Geräts fehlen", „Modul oder Gerät fehlt",
+„Keine Module").
+
+Ersetzt und nicht ergänzt wird, weil ein Vorschlag eine **ganze** Aufteilung des Modulfelds ist
+— gleich lange Stränge, gleich belegte Geräte; an bestehende Zeilen angehängt ergäbe er eine
+Anlage mit der doppelten Modulzahl.
+
+Gerechnet wird im Kern (`StrangAuslegung`), formatiert in der Windows-Hülle
+(`PhotovoltaikHuelle`), gezeigt in `EPOS.UI/Dialoge/Erzeuger/PvStraengeFelder.razor`. Ohne die
+beiden Delegaten bleibt alles beim Stand davor — die iOS-Hülle bekommt sie später, ohne dass
+die Maske sich ändert. Nachweise: `EPOS.Kern.Tests/StrangAuslegungTests.cs` (`Aufteilen`) und
+`EPOS.UI.Tests/Dialoge/PvStraengeFelderTests.cs` (Abschnitt 6).
 
 ## 6 Grenzen
 

@@ -181,6 +181,8 @@
                                   GeraetUebernehmen="@WechselrichterUebernehmen"
                                   Hersteller="@WechselrichterHersteller"
                                   GeraeteFiltern="@WechselrichterFiltern"
+                                  GeraeteBewerten="@WechselrichterBewerten"
+                                  AuslegungVorschlagen="@AuslegungVorschlagen"
                                   TrackerZahl="@Trackerzahl"
                                   Modulhersteller="@ModulherstellerDer(_projektZeile)"
                                   Module="@Strangmodule"
@@ -391,6 +393,26 @@
     /// Katalogsatz liest.</para>
     /// </summary>
     [Parameter] public Func<ErzeugerZeile, string>? Modulhersteller { get; set; }
+
+    /// <summary>
+    /// <b>Die Geräteliste in der Reihenfolge der AUSLEGUNGSHILFE</b> (Anwenderwunsch
+    /// 08.09.2026, <b>W6‑B‑8</b>): Projektzeile und Herstellerfilter hinein, die
+    /// Klapplisteneinträge des Feldes „Wechselrichter aus dem Katalog" heraus —
+    /// passende Geräte zuerst, beschriftet mit DC/AC und Gerätezahl.
+    ///
+    /// <para>Gerechnet wird im Kern (<c>StrangAuslegung.GeraeteBewerten</c>),
+    /// formatiert in der Hülle. Ohne Delegat bleibt es bei
+    /// <see cref="WechselrichterFiltern"/>.</para>
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, string, IReadOnlyList<(int Id, string Text)>>? WechselrichterBewerten { get; set; }
+
+    /// <summary>
+    /// <b>Der Vorschlag für eine ganze Strangtabelle</b> (<b>W6‑B‑8</b>): Projektzeile
+    /// und KATALOGSATZ hinein, die Aufteilung heraus
+    /// (<c>StrangAuslegung.Vorschlagen</c> + <c>Aufteilen</c>). Ohne Delegat gibt es
+    /// den Knopf „Auslegung vorschlagen" nicht.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, int, StrangVorschlag>? AuslegungVorschlagen { get; set; }
 
     /// <summary>
     /// Die Zahl der MPP-Tracker eines KATALOGgeräts (<c>Anzahl_Mppt</c>) — für die

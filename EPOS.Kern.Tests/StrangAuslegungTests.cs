@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using WindowsFormsApplication1;
 using Xunit;
@@ -113,6 +114,69 @@ namespace EPOS.Kern.Tests
             StrangAuslegung.Vorschlag v = StrangAuslegung.Vorschlagen(Modul(), Geraet(uMppMin: 590.0), 20);
             Assert.False(v.Moeglich);
             Assert.Contains("Reihe", v.Grund);
+        }
+
+        /// <summary>
+        /// <b>W6‑B‑8</b> (Anwenderwunsch 08.09.2026): Der Vorschlag wird zur TABELLE —
+        /// je Gerät und belegtem Tracker eine Zeile. Zwanzig Module an einem
+        /// Ein-Tracker-Gerät sind zwei Geräte zu je einem Strang; die Tabelle nennt sie
+        /// als Gerät 1/MPPT 1 und Gerät 2/MPPT 1.
+        /// </summary>
+        [Fact]
+        public void Die_Aufteilung_gibt_je_Geraet_und_Tracker_eine_Zeile()
+        {
+            StrangAuslegung.Vorschlag v = StrangAuslegung.Vorschlagen(Modul(), Geraet(), 20);
+            List<StrangAuslegung.Strangvorgabe> zeilen = StrangAuslegung.Aufteilen(v, 1);
+
+            Assert.Equal(2, zeilen.Count);
+            Assert.Equal(new[] { 1, 2 }, zeilen.Select(z => z.Geraetenummer).ToArray());
+            Assert.Equal(new[] { 1, 1 }, zeilen.Select(z => z.Mppt).ToArray());
+            Assert.All(zeilen, z => Assert.Equal(10, z.ModuleReihe));
+            Assert.All(zeilen, z => Assert.Equal(1, z.StraengeParallel));
+
+            // Ohne Vorschlag gibt es keine Tabelle - die bestehende bleibt stehen.
+            Assert.Empty(StrangAuslegung.Aufteilen(
+                StrangAuslegung.Vorschlagen(Modul(), Geraet(uMppMin: 590.0), 20), 1));
+            Assert.Empty(StrangAuslegung.Aufteilen(null, 1));
+        }
+
+        /// <summary>
+        /// <b>W6‑B‑8:</b> Zwei Stränge an EINEM Gerät mit zwei MPP-Trackern bekommen
+        /// Tracker 1 und 2 — die Aufteilung verteilt so gleichmäßig wie möglich und
+        /// hält damit die Grenze aus <c>ParallelJeMppt</c> von selbst ein. Geht die Zahl
+        /// nicht auf, bekommen die VORDEREN Tracker den Strang mehr.
+        /// </summary>
+        [Fact]
+        public void Zwei_Tracker_teilen_sich_die_Straenge_eines_Geraets()
+        {
+            // 20 Module, 5 kW, zwei Tracker, 30 A: ein Geraet mit zwei Straengen zu zehn.
+            StrangAuslegung.Vorschlag v = StrangAuslegung.Vorschlagen(
+                Modul(), Geraet(pAc: 5.0, iDcMax: 30.0, mppt: 2), 20);
+            Assert.True(v.Moeglich, v.Grund);
+            Assert.Equal(1, v.Geraete);
+            Assert.Equal(2, v.Parallel);
+
+            List<StrangAuslegung.Strangvorgabe> zeilen = StrangAuslegung.Aufteilen(v, 2);
+            Assert.Equal(2, zeilen.Count);
+            Assert.All(zeilen, z => Assert.Equal(1, z.Geraetenummer));
+            Assert.Equal(new[] { 1, 2 }, zeilen.Select(z => z.Mppt).ToArray());
+            Assert.All(zeilen, z => Assert.Equal(1, z.StraengeParallel));
+            Assert.All(zeilen, z => Assert.Equal(10, z.ModuleReihe));
+
+            // Drei Straenge auf zwei Tracker: 2 und 1, nicht 3 und 0.
+            var ungerade = new StrangAuslegung.Vorschlag
+            {
+                Moeglich = true, Reihe = 10, Parallel = 3, Geraete = 1, Straenge = 3
+            };
+            Assert.Equal(new[] { 2, 1 },
+                         StrangAuslegung.Aufteilen(ungerade, 2).Select(z => z.StraengeParallel).ToArray());
+
+            // Mehr Tracker als Straenge lassen die ueberzaehligen unbelegt.
+            Assert.Single(StrangAuslegung.Aufteilen(
+                new StrangAuslegung.Vorschlag
+                {
+                    Moeglich = true, Reihe = 10, Parallel = 1, Geraete = 1, Straenge = 1
+                }, 4));
         }
 
         [Fact]

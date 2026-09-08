@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
 using Microsoft.AspNetCore.Components;
@@ -74,6 +75,10 @@ namespace WindowsFormsApplication1
         {
             var stamm = new PhotovoltaikStammCtrl();
             var wrStamm = new WechselrichterStammCtrl();
+
+            // W6-B-8: die KATALOGSAETZE als Kernmodelle, an denen die Auslegungshilfe
+            // rechnet. Sie werden EINMAL je Dialoglauf gelesen (siehe Geraetespeicher).
+            var wrKatalog = new Geraetespeicher();
 
             var zeilen = new List<ErzeugerZeile>();
             var zuModell = new Dictionary<int, WErzeugerModel>();
@@ -203,6 +208,19 @@ namespace WindowsFormsApplication1
                 ["WechselrichterFiltern"] =
                     new Func<string, IReadOnlyList<(int Id, string Text)>>(
                         hersteller => WechselrichterEintraege(wrStamm, hersteller)),
+
+                // W6-B-8 (Anwenderwunsch 08.09.2026): die Auslegungshilfe in der
+                // Oberflaeche. Die Klappliste ueber der Strangtabelle steht in der
+                // Reihenfolge von StrangAuslegung.GeraeteBewerten und traegt DC/AC und
+                // Geraetezahl im Text; der Knopf "Auslegung vorschlagen" fuellt die
+                // Tabelle aus Vorschlagen + Aufteilen. Gerechnet wird im KERN,
+                // formatiert HIER - die Komponente zeigt nur.
+                ["WechselrichterBewerten"] =
+                    new Func<ErzeugerZeile, string, IReadOnlyList<(int Id, string Text)>>(
+                        (zeile, hersteller) => Bewerten(wrStamm, wrKatalog, zeile, hersteller)),
+
+                ["AuslegungVorschlagen"] = new Func<ErzeugerZeile, int, StrangVorschlag>(
+                    (zeile, stammId) => Auslegen(wrKatalog, zeile, stammId)),
 
                 // W6-B-4: Anzahl_Mppt des KATALOGgeraets - der neue Strang bekommt
                 // damit den naechsten freien Tracker statt immer den ersten. Die
@@ -493,6 +511,174 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // =================================================================================
+        // W6-B-8: die Auslegungshilfe in der Oberflaeche (Anwenderwunsch 08.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Gerätekatalog in der Reihenfolge der AUSLEGUNGSHILFE</b>, beschriftet
+        /// mit DC/AC und Gerätezahl — die Klappliste „Wechselrichter aus dem Katalog"
+        /// über der Strangtabelle (<b>W6‑B‑8</b>).
+        ///
+        /// <para><b>Gerechnet wird im Kern</b> (<c>StrangAuslegung.GeraeteBewerten</c>):
+        /// passende Geräte zuerst, unter ihnen wenige Geräte vor vielen und DC/AC nahe
+        /// der Bandmitte vor entfernterem; unpassende am Ende. Die Hülle bildet nur ab
+        /// und formatiert (Hausregel: rechnen tut der Kern, die Komponente zeigt).</para>
+        ///
+        /// <para><b>Ohne Modul oder ohne Modulzahl bleibt die Liste, wie sie ist</b> —
+        /// alphabetisch und unbeschriftet: Ohne diese zwei Angaben hat die Hilfe nichts,
+        /// woran sie messen könnte, und eine erfundene Rangfolge wäre schlechter als
+        /// gar keine.</para>
+        ///
+        /// <para>Die Ids bleiben <c>Tab_Wechselrichter_STAMM.ID</c> — Übernehmen
+        /// (<c>CopyFromStamm</c>) und Trackerzahl lesen unverändert weiter.</para>
+        /// </summary>
+        private static IReadOnlyList<(int Id, string Text)> Bewerten(
+            WechselrichterStammCtrl stamm, Geraetespeicher katalog,
+            ErzeugerZeile zeile, string hersteller)
+        {
+            IReadOnlyList<(int Id, string Text)> roh = WechselrichterEintraege(stamm, hersteller);
+
+            PhotovoltaikModel modul = ModulModell(ModulDer(zeile));
+            int module = Modulzahl(zeile);
+            if (modul == null || module <= 0 || roh.Count == 0) return roh;
+
+            // Der Name kommt aus der KATALOGLISTE, nicht aus dem Modell: Beide tragen
+            // denselben Bezeichner, und so bleibt die Liste Zeichen fuer Zeichen die,
+            // die der Anwender ohne Bewertung saehe.
+            var namen = new Dictionary<int, string>();
+            var geraete = new List<WechselrichterModel>();
+            foreach (var e in roh)
+            {
+                WechselrichterModel g = katalog.Modell(e.Id);
+                if (g == null || namen.ContainsKey(e.Id)) continue;
+                namen[e.Id] = e.Text;
+                geraete.Add(g);
+            }
+            if (geraete.Count == 0) return roh;
+
+            var liste = new List<(int, string)>();
+            foreach (StrangAuslegung.Bewertung b in
+                     StrangAuslegung.GeraeteBewerten(modul, module, geraete))
+            {
+                string name;
+                if (b.Geraet == null || !namen.TryGetValue(b.Geraet.m_ID, out name)) continue;
+                liste.Add((b.Geraet.m_ID, Beschriften(name, b.Vorschlag)));
+            }
+
+            // Ein Katalogsatz, den der Zwischenspeicher nicht (mehr) kennt, faellt sonst
+            // aus der Klappliste - er kommt unbeschriftet ans Ende.
+            foreach (var e in roh)
+                if (!namen.ContainsKey(e.Id)) liste.Add(e);
+
+            return liste;
+        }
+
+        /// <summary>
+        /// Der Klapplisteneintrag eines bewerteten Geräts: „Muster 2500TL — DC/AC 1,10 ·
+        /// 1 Gerät" bzw. „Gross 100TL — passt nicht". Zahlen in der Kultur des Anwenders,
+        /// DC/AC mit zwei Nachkommastellen wie in der Ampel.
+        /// </summary>
+        private static string Beschriften(string name, StrangAuslegung.Vorschlag v)
+        {
+            string zusatz;
+            if (v == null || !v.Moeglich)
+            {
+                zusatz = MyResource.Resource.PVS_BEW_UNPASSEND;
+            }
+            else
+            {
+                zusatz = string.Format(CultureInfo.CurrentCulture,
+                             MyResource.Resource.PVS_BEW_DCAC, Komma(v.DcAc))
+                       + MyResource.Resource.PVS_TRENNER
+                       + Geraetezahl(v.Geraete);
+            }
+            return name + MyResource.Resource.PVS_BEW_TRENNER + zusatz;
+        }
+
+        /// <summary>
+        /// <b>Der Vorschlag für eine ganze Strangtabelle</b> (<b>W6‑B‑8</b>): Der Kern
+        /// rechnet die Aufteilung (<c>StrangAuslegung.Vorschlagen</c>) und legt sie in
+        /// Zeilen (<c>Aufteilen</c>, je Gerät und Tracker eine); die Hülle formuliert den
+        /// Satz, den die Maske darunter zeigt.
+        ///
+        /// <para><b>Ohne Aufteilung bleibt die Tabelle stehen</b>, und der Satz nennt den
+        /// Grund des Kerns — „Kein Vorschlag: Die Modulzahl lässt sich nicht in gleich
+        /// lange Stränge und gleich belegte Geräte teilen."</para>
+        /// </summary>
+        private static StrangVorschlag Auslegen(Geraetespeicher katalog, ErzeugerZeile zeile,
+                                                int stammId)
+        {
+            PhotovoltaikModel modul = ModulModell(ModulDer(zeile));
+            WechselrichterModel geraet = katalog.Modell(stammId);
+
+            StrangAuslegung.Vorschlag v = StrangAuslegung.Vorschlagen(modul, geraet, Modulzahl(zeile));
+            if (!v.Moeglich)
+                return new StrangVorschlag(false, new List<StrangVorgabe>(),
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.PVS_VORSCHLAG_KEIN, v.Grund));
+
+            // Dieselbe konservative Annahme wie bei der Pruefung P4/P5: Fehlt die Zahl
+            // der Tracker (die CEC-Liste fuehrt sie nicht, W6-O-2), wird auf EINEM
+            // gerechnet.
+            int mppts = geraet != null && geraet.m_Anzahl_Mppt.HasValue
+                        && geraet.m_Anzahl_Mppt.Value >= 1
+                      ? geraet.m_Anzahl_Mppt.Value : 1;
+
+            var zeilen = new List<StrangVorgabe>();
+            foreach (StrangAuslegung.Strangvorgabe g in StrangAuslegung.Aufteilen(v, mppts))
+                zeilen.Add(new StrangVorgabe(g.Geraetenummer, g.Mppt, g.ModuleReihe,
+                                             g.StraengeParallel));
+
+            return new StrangVorschlag(true, zeilen, Vorschlagsatz(v));
+        }
+
+        /// <summary>
+        /// „Vorschlag: 2 Geräte, je 1 Strang mit 10 Modulen in Reihe, DC/AC 1,10 — die
+        /// Strangtabelle wurde ersetzt." Ein und Mehrzahl haben eigene Schlüssel; „1
+        /// Geräte" wäre kein Satz.
+        /// </summary>
+        private static string Vorschlagsatz(StrangAuslegung.Vorschlag v)
+        {
+            string straenge = string.Format(CultureInfo.CurrentCulture,
+                v.Parallel == 1 ? MyResource.Resource.PVS_VORSCHLAG_STRANG
+                                : MyResource.Resource.PVS_VORSCHLAG_STRAENGE,
+                Ganz(v.Parallel), Ganz(v.Reihe));
+
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_VORSCHLAG,
+                                 Geraetezahl(v.Geraete), straenge, Komma(v.DcAc));
+        }
+
+        /// <summary>„1 Gerät" oder „3 Geräte" — die Zahl mit ihrem Wort.</summary>
+        private static string Geraetezahl(int geraete)
+        {
+            return string.Format(CultureInfo.CurrentCulture,
+                                 geraete == 1 ? MyResource.Resource.PVS_BEW_GERAET
+                                              : MyResource.Resource.PVS_BEW_GERAETE,
+                                 Ganz(geraete));
+        }
+
+        private static string Ganz(int wert) => wert.ToString("N0", CultureInfo.CurrentCulture);
+
+        private static string Komma(double wert) => wert.ToString("N2", CultureInfo.CurrentCulture);
+
+        /// <summary>
+        /// Die Modulzahl, gegen die die Auslegungshilfe rechnet: die ABGELEITETE Summe
+        /// der Stränge, sobald eine Strangtabelle steht — sonst der Anlagenwert.
+        /// Dieselbe Regel wie bei der Ampel (Entscheidungsfrage <b>Q9</b>), damit
+        /// Bewertung, Vorschlag und Prüfung auf derselben Zahl stehen.
+        /// </summary>
+        private static int Modulzahl(ErzeugerZeile zeile)
+        {
+            if (zeile == null) return 0;
+            if (zeile.Straenge == null || zeile.Straenge.Count == 0)
+                return (int)Math.Round(zeile.AnzahlModule ?? 0.0, MidpointRounding.AwayFromZero);
+
+            int summe = 0;
+            foreach (StrangZeile s in zeile.Straenge) summe += s.Modulzahl;
+            return summe;
+        }
+
         /// <summary>
         /// Die Hersteller des WECHSELRICHTERkatalogs, „Alle" voran — Bauart
         /// <see cref="Hersteller"/> ueber der Modulliste (W6‑O‑4).
@@ -720,6 +906,46 @@ namespace WindowsFormsApplication1
             try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        /// <summary>
+        /// <b>Die Katalogsätze der Wechselrichter als Kernmodelle</b> — der
+        /// Zwischenspeicher der Auslegungshilfe (<b>W6‑B‑8</b>).
+        ///
+        /// <para><b>Warum ein Speicher.</b> <c>StrangAuslegung</c> rechnet an den
+        /// VOLLEN Katalogsätzen (Spannungsfenster, Ströme, Leistungen); die Klappliste
+        /// kennt nur Id und Bezeichner. Die Maske zeichnet nach JEDER Zellenänderung
+        /// neu, und die Bewertung läuft dabei jedes Mal — ohne Speicher wären das
+        /// ebenso viele <c>SELECT *</c> über den ganzen Gerätekatalog (die CEC-Liste
+        /// bringt über zweitausend Sätze mit). Gelesen wird deshalb EINMAL je
+        /// Dialoglauf, beim ersten Bedarf: Wer den Katalogweg nie öffnet, liest gar
+        /// nichts.</para>
+        ///
+        /// <para>Ein Satz, der während des Dialogs im Katalog entsteht, fehlt dem
+        /// Speicher — er erscheint dann unbeschriftet am Ende der Klappliste
+        /// (<see cref="Bewerten"/>) und bleibt wählbar. Der Gerätekatalog ist aus dem
+        /// PV-Dialog heraus nicht zu ändern; für den Import gilt ohnehin ein neuer
+        /// Dialoglauf.</para>
+        /// </summary>
+        private sealed class Geraetespeicher
+        {
+            private Dictionary<int, WechselrichterModel> _satz;
+
+            /// <summary>Der Katalogsatz zu einer Stamm-Id; <c>null</c>, wenn es ihn nicht gibt.</summary>
+            internal WechselrichterModel Modell(int stammId)
+            {
+                if (_satz == null)
+                {
+                    _satz = new Dictionary<int, WechselrichterModel>();
+                    var ctrl = new WechselrichterStammCtrl();
+                    ctrl.ReadAll();
+                    foreach (WechselrichterModel g in ctrl.items)
+                        if (g != null && !_satz.ContainsKey(g.m_ID)) _satz[g.m_ID] = g;
+                }
+
+                WechselrichterModel m;
+                return _satz.TryGetValue(stammId, out m) ? m : null;
+            }
         }
 
         /// <summary>

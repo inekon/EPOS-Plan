@@ -25,6 +25,8 @@ namespace WindowsFormsApplication1
     ///     Modulzahl — Module in Reihe, Stränge parallel, Zahl der Geräte.</description></item>
     ///   <item><description><see cref="GeraeteBewerten"/>: alle Geräte eines Katalogs für ein
     ///     Modulfeld, sortiert nach Eignung (DC/AC nahe 1,2, wenige Geräte).</description></item>
+    ///   <item><description><see cref="Aufteilen"/>: derselbe Vorschlag als TABELLE — je
+    ///     Gerät und MPP-Tracker eine Zeile (<b>W6‑B‑8</b>).</description></item>
     /// </list>
     ///
     /// <para><b>Dieselben Temperaturen, dieselbe Näherung.</b> −10 °C für den kalten, +70 °C
@@ -87,6 +89,29 @@ namespace WindowsFormsApplication1
             public Vorschlag Vorschlag;
             /// <summary>Abstand des DC/AC-Verhältnisses zur Mitte des Bandes (1,25) — je kleiner, desto besser.</summary>
             public double Abstand;
+        }
+
+        /// <summary>
+        /// EINE Zeile der vorgeschlagenen Strangtabelle: welches Gerät, welcher Tracker,
+        /// wie viele Module in Reihe und wie viele Stränge parallel
+        /// (Anwenderwunsch 08.09.2026, <b>W6‑B‑8</b>).
+        ///
+        /// <para><b>Warum eine eigene Klasse und nicht die Strangzeile der Maske.</b>
+        /// Der Kern kennt die Oberfläche nicht; er nennt nur die vier Zahlen, die eine
+        /// Strangzeile ausmachen. Bezeichner, Gerätekopie und die geerbten Werte
+        /// Neigung/Azimut setzt die Maske — sie bleiben leer und heißen damit
+        /// „der Anlagenwert".</para>
+        /// </summary>
+        public sealed class Strangvorgabe
+        {
+            /// <summary>Welches physische Gerät, 1…n.</summary>
+            public int Geraetenummer;
+            /// <summary>MPP-Tracker dieses Geräts, 1…m.</summary>
+            public int Mppt;
+            /// <summary>Module in Reihe.</summary>
+            public int ModuleReihe;
+            /// <summary>Parallel geschaltete Stränge an diesem Tracker.</summary>
+            public int StraengeParallel;
         }
 
         /// <summary>Die Mitte des DC/AC-Bandes, an der die Rangfolge misst.</summary>
@@ -228,6 +253,57 @@ namespace WindowsFormsApplication1
             double ak = Math.Abs(k.DcAc - DCAC_MITTE), ab = Math.Abs(best.DcAc - DCAC_MITTE);
             if (Math.Abs(ak - ab) > 1e-9) return ak < ab;
             return k.Reihe > best.Reihe;
+        }
+
+        /// <summary>
+        /// <b>Der Vorschlag als TABELLE</b> — je Gerät und MPP-Tracker eine Zeile
+        /// (Anwenderwunsch 08.09.2026, <b>W6‑B‑8</b>: der Knopf „Auslegung vorschlagen"
+        /// füllt damit die Strangtabelle der Maske).
+        ///
+        /// <para><b>Gleichmäßig auf die Tracker.</b> <see cref="Vorschlag.Parallel"/>
+        /// nennt die Stränge JE GERÄT; sie verteilen sich auf die
+        /// <paramref name="mppts"/> Tracker des Geräts so gleichmäßig wie möglich —
+        /// die ersten Tracker bekommen einen Strang mehr, wenn die Zahl nicht aufgeht.
+        /// Damit hält die Aufteilung die Grenze aus <see cref="ParallelJeMppt"/> von
+        /// selbst ein: <see cref="Vorschlagen"/> hat bereits geprüft, dass
+        /// <c>Parallel ≤ ParallelJeMppt · mppts</c> gilt, und die größte Belegung eines
+        /// Trackers ist danach ⌈Parallel ÷ mppts⌉ — also höchstens
+        /// <c>ParallelJeMppt</c>. Ein zusätzlicher Deckel wäre eine zweite Wahrheit.</para>
+        ///
+        /// <para><b>Kein leerer Tracker.</b> Mehr Tracker als Stränge lassen die
+        /// überzähligen unbelegt: Ein Gerät mit vier Trackern und einem Strang bekommt
+        /// EINE Zeile, nicht vier. Zeilen ohne Modul hätte die Ampel sonst als „Werte
+        /// fehlen: Module in Reihe" zu melden.</para>
+        /// </summary>
+        /// <param name="vorschlag">Das Ergebnis von <see cref="Vorschlagen"/>.</param>
+        /// <param name="mppts">Zahl der MPP-Tracker des Geräts; kleiner als 1 gilt als 1.</param>
+        /// <returns>
+        /// Die Zeilen in Lesereihenfolge (Gerät 1 Tracker 1, Gerät 1 Tracker 2, …);
+        /// leer, wenn es keinen Vorschlag gibt.
+        /// </returns>
+        public static List<Strangvorgabe> Aufteilen(Vorschlag vorschlag, int mppts)
+        {
+            var zeilen = new List<Strangvorgabe>();
+            if (vorschlag == null || !vorschlag.Moeglich) return zeilen;
+            if (vorschlag.Geraete < 1 || vorschlag.Parallel < 1 || vorschlag.Reihe < 1) return zeilen;
+
+            int tracker = mppts >= 1 ? mppts : 1;
+            if (tracker > vorschlag.Parallel) tracker = vorschlag.Parallel;
+
+            int grund = vorschlag.Parallel / tracker;
+            int rest = vorschlag.Parallel % tracker;
+
+            for (int geraet = 1; geraet <= vorschlag.Geraete; geraet++)
+                for (int m = 1; m <= tracker; m++)
+                    zeilen.Add(new Strangvorgabe
+                    {
+                        Geraetenummer = geraet,
+                        Mppt = m,
+                        ModuleReihe = vorschlag.Reihe,
+                        StraengeParallel = grund + (m <= rest ? 1 : 0)
+                    });
+
+            return zeilen;
         }
 
         /// <summary>Alle Geräte eines Katalogs für ein Modulfeld, beste zuerst; unpassende am Ende.</summary>

@@ -1149,6 +1149,7 @@ außerhalb 1,0…1,5 · **passend wären 12…16 Module je Gerät**". Sieben neu
 **Noch nicht in der Oberfläche:** `Vorschlagen`/`GeraeteBewerten` — das Auswahlfeld
 „Wechselrichter aus dem Katalog" könnte danach sortieren und ein Knopf „Auslegung vorschlagen"
 die Strangtabelle füllen (Entscheid des Anwenders, siehe Doku Abschnitt 5).
+**→ Umgesetzt am selben Tag mit W6‑B‑8 (Abschnitt unten).**
 
 ### 3. Nachweise
 
@@ -1173,3 +1174,114 @@ Beide Reihen liefen in einem Zug hintereinander, ohne Lastflackern (Kern 1 min 9
    ab · passend wären 17…18 Module in Reihe" und am Chip „DC/AC 0,05 … · passend wären
    190…284 Module je Gerät" (Zahlen aus den Katalogwerten des Geräts).
 4. **A‑W6‑B‑7.4** Englisch: „… · 12…16 modules per device would fit".
+
+---
+
+## Anwenderwunsch 08.09.2026 — W6‑B‑8: Auslegungshilfe in der Oberfläche
+
+**Wortlaut** (aus `Doku_PV_Strangauslegung_EPOS-Plan.md`, Abschnitt 5, offener Punkt aus
+W6‑B‑7): „`Vorschlagen` und `GeraeteBewerten` sind Kernmethoden. Der nächste Schritt wäre, das
+Auswahlfeld „Wechselrichter aus dem Katalog" nach `GeraeteBewerten` zu sortieren und passende
+Geräte mit ihrem DC/AC zu beschriften, und ein Knopf „Auslegung vorschlagen", der die
+Strangtabelle aus `Vorschlagen` füllt."
+
+Mit W6‑B‑7 rechnete der Kern die Auslegung bereits rückwärts, sichtbar war davon aber nur der
+Satz hinter einem roten oder gelben Ampelbefund („… · passend wären 4…14 Module in Reihe").
+Der Anwender musste ihn selbst umsetzen — Gerät suchen, Reihe eintippen, Geräte zählen.
+Seit W6‑B‑8 tut die Maske beides.
+
+### 1. Die sortierte, beschriftete Katalogwahl
+
+Das Auswahlfeld **„Wechselrichter aus dem Katalog"** über der Strangtabelle steht in der
+Reihenfolge von `StrangAuslegung.GeraeteBewerten` — gemessen am **Modul der markierten
+Projektzeile** und an ihrer **Modulzahl** (steht eine Strangtabelle, gilt deren abgeleitete
+Summe — dieselbe Zahl, gegen die die Ampel prüft, Q9). Passende Geräte tragen ihre Zahlen im
+Text, unpassende einen knappen Zusatz:
+
+| Eintrag | Fall |
+|---|---|
+| `Muster 2500TL — DC/AC 1,10 · 1 Gerät` | passt |
+| `Muster 5000TL-2M — DC/AC 1,22 · 2 Geräte` | passt, braucht zwei Geräte |
+| `Gross 100TL — passt nicht` | keine Aufteilung möglich |
+
+**Ohne Modul oder ohne Modulzahl bleibt die Liste alphabetisch und unbeschriftet** — ohne
+Modulfeld gibt es nichts zu bewerten, und eine erfundene Rangfolge wäre schlechter als keine.
+Die Klapplisten **je Strangzeile** bleiben in jedem Fall unverändert: Dort steht das Gerät
+EINES Strangs, und ihr Band zur Zeile ist der reine `Bezeichner` — eine Beschriftung würde
+genau dieses Band zerschneiden (`GeraetAuswahl`). Die Komponente hält seither zwei Listen:
+`_gefiltert` (Zeilenklapplisten, unverändert) und `_bewertet`/`_katalogliste` (die Wahl
+darüber). Die Ids bleiben `Tab_Wechselrichter_STAMM.ID`, damit Übernehmen und Trackerzahl
+weiter greifen.
+
+### 2. Der Knopf „Auslegung vorschlagen"
+
+Er steht neben „Strang anlegen" und ist frei, sobald ein Katalogsatz gewählt ist UND das Modul
+der Anlage UND eine Modulzahl > 0 feststehen. **Ohne Delegat gibt es ihn nicht** — dieselbe
+Regel wie überall in diesem Abschnitt seit dem Befund W6‑B‑3: Ein Bedienelement, das nichts tun
+kann, ist schlimmer als keines. Sein Klick
+
+1. rechnet `Vorschlagen(modul, gerät, modulzahl)` und legt das Ergebnis mit der **neuen
+   Kernmethode** `Aufteilen(vorschlag, mppts)` in Zeilen — je Gerät und **belegtem** Tracker
+   eine, die Stränge so gleichmäßig auf die Tracker verteilt, wie die Zahl es zulässt. Ein
+   zusätzlicher Deckel auf `ParallelJeMppt` wäre eine zweite Wahrheit: `Vorschlagen` hat
+   `Parallel ≤ ParallelJeMppt · mppts` bereits geprüft, und die größte Belegung eines Trackers
+   ist danach ⌈Parallel ÷ mppts⌉;
+2. nimmt den Katalogsatz in das Projekt auf (`CopyFromStamm`, wie „Strang anlegen");
+3. **ersetzt** die Strangtabelle durch die Vorgaben — Ränge neu ab 1, Neigung und Azimut leer
+   (also der Anlagenwert) — und zeigt darunter
+   `Vorschlag: 2 Geräte, je 1 Strang mit 10 Modulen in Reihe, DC/AC 1,10 — die Strangtabelle
+   wurde ersetzt.` (Warnbanner, Stufe **Hinweis**).
+
+**Ersetzt und nicht ergänzt**, weil ein Vorschlag eine GANZE Aufteilung des Modulfelds ist —
+gleich lange Stränge, gleich belegte Geräte; angehängt ergäbe er eine Anlage mit der doppelten
+Modulzahl. Der Satz sagt es ausdrücklich. **Ohne Aufteilung bleibt die Tabelle stehen**, und
+der Grund des Kerns erscheint als **Warnung** („Kein Vorschlag: …"): Die Tabelle hat der
+Anwender gebaut, und ein Grund ist kein Anlass, sie zu verwerfen.
+
+### 3. Wer was tut
+
+| Ort | Aufgabe |
+|---|---|
+| `EPOS.Kern/Allgemein/Import/StrangAuslegung.cs` | rechnet: `Vorschlagen`, `GeraeteBewerten` (beide seit W6‑B‑7) und **neu** `Aufteilen(Vorschlag, mppts)` samt Datensatz `Strangvorgabe` |
+| `WindowsFormsApplication1/Views/Photovoltaik/PhotovoltaikHuelle.cs` | formatiert: `Bewerten`, `Beschriften`, `Auslegen`, `Vorschlagsatz`, `Modulzahl`; der Zwischenspeicher `Geraetespeicher` liest die Katalogsätze EINMAL je Dialoglauf (die CEC-Liste bringt über zweitausend Geräte, und die Maske zeichnet nach jeder Zellenänderung neu) |
+| `EPOS.UI/Dialoge/Erzeuger/PvStraengeFelder.razor` | zeigt: zwei neue Parameter `GeraeteBewerten` und `AuslegungVorschlagen`, Knopf, Banner, `Auslegen()` — keine Rechnung, keine Formatierung |
+| `EPOS.UI/Dialoge/Erzeuger/PvStrangDaten.cs` | die UI-Datensätze `StrangVorgabe` und `StrangVorschlag`, Knopftext `BtnVorschlag` |
+| `EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor` | reicht `WechselrichterBewerten` und `AuslegungVorschlagen` durch |
+
+**Zehn neue Ressourcenschlüssel** (de/en/Designer): `PVS_BEW_TRENNER`, `PVS_BEW_DCAC`,
+`PVS_BEW_GERAET`, `PVS_BEW_GERAETE`, `PVS_BEW_UNPASSEND`, `PVS_BTN_VORSCHLAG`,
+`PVS_VORSCHLAG`, `PVS_VORSCHLAG_STRANG`, `PVS_VORSCHLAG_STRAENGE`, `PVS_VORSCHLAG_KEIN`.
+Ein- und Mehrzahl haben eigene Schlüssel — „1 Geräte" wäre kein Satz. Kein Rechenweg der
+Simulation ist berührt.
+
+### 4. Nachweise
+
+| Was | Wo | Ergebnis |
+|---|---|---|
+| `Aufteilen`: 20 Module an einem Ein-Tracker-Gerät → Gerät 1/MPPT 1 und Gerät 2/MPPT 1; ohne Vorschlag und ohne Eingabe leer; zwei Tracker teilen sich zwei Stränge (MPPT 1 und 2); drei Stränge auf zwei Tracker → 2 und 1; mehr Tracker als Stränge lassen die überzähligen unbelegt | `EPOS.Kern.Tests/StrangAuslegungTests.cs` | **2** neue Fälle |
+| Katalogwahl in der Reihenfolge des Delegaten samt Beschriftung (Zeilenklapplisten unberührt), ohne Delegat die gefilterte Liste, „kein Delegat ist kein Knopf", Sperre ohne Katalogwahl/Modulzahl/Modul, der Klick ersetzt die Tabelle mit Rängen und meldet sich, `!Moeglich` lässt die Tabelle stehen und warnt | `EPOS.UI.Tests/Dialoge/PvStraengeFelderTests.cs` (Abschnitt 6) | **6** neue Fälle, Helfer `Aufbauen` erweitert |
+| Sandbox-Bau `WP-Plan.sln` x64 Debug (MSBuild VS 18) | `K:\imp\src` | **0 Fehler** |
+| `EPOS.Kern.Tests` | `dotnet test --no-build` | **2 064/2 064 (+2)** |
+| `EPOS.UI.Tests` | `dotnet test --no-build` | **3 284/3 284 (+6)** |
+| Referenzlauf | — | unberührt, keine Zeile des Rechenwegs angefasst |
+
+### 5. Abnahmepunkte am Gerät — A‑W6‑B‑8
+
+1. **A‑W6‑B‑8.1** PV-Dialog, Modul mit gepflegten Koeffizienten, „Anzahl Module" 20, Weg „mit
+   Wechselrichter": Die Klappliste „Wechselrichter aus dem Katalog" führt oben Geräte mit
+   „— DC/AC …·… Gerät(e)", unten welche mit „— passt nicht".
+2. **A‑W6‑B‑8.2** Modulzahl leeren: Die Liste steht wieder alphabetisch und ohne Zusatz, der
+   Knopf „Auslegung vorschlagen" ist grau.
+3. **A‑W6‑B‑8.3** Ein passendes Gerät wählen und „Auslegung vorschlagen" drücken: Die
+   Strangtabelle steht mit den vorgeschlagenen Zeilen (Ränge 1…n, Gerät/MPPT gefüllt, Neigung
+   und Azimut leer), darunter der blaue Satz „Vorschlag: … — die Strangtabelle wurde ersetzt.",
+   und die Ampel darüber ist grün.
+4. **A‑W6‑B‑8.4** Ein Gerät mit „passt nicht" wählen und drücken: Die Tabelle bleibt, darunter
+   steht die Warnung „Kein Vorschlag: …".
+5. **A‑W6‑B‑8.5** Eine Strangzeile-Klappliste aufziehen: Die Namen stehen dort weiter OHNE
+   Zusatz, und die vorhandene Zuordnung bleibt gewählt.
+6. **A‑W6‑B‑8.6** Englisch: „Propose layout", „… — DC/AC 1.10 · 1 device", „Proposal: … — the
+   string table has been replaced."
+7. **A‑W6‑B‑8.7** Herstellerfilter umstellen: Die bewertete Liste zeigt nur noch dessen Geräte,
+   in ihrer eigenen Rangfolge; eine unsichtbar gewordene Katalogwahl fällt auf „(kein Gerät)"
+   zurück und sperrt den Knopf.

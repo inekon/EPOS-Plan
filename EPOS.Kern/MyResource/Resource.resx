@@ -15752,6 +15752,36 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="PVS_EMPF_GERAET_KEINE" xml:space="preserve">
     <value>kein Modulfeld passt zu diesem Gerät</value>
   </data>
+  <data name="PVS_BEW_TRENNER" xml:space="preserve">
+    <value> — </value>
+  </data>
+  <data name="PVS_BEW_DCAC" xml:space="preserve">
+    <value>DC/AC {0}</value>
+  </data>
+  <data name="PVS_BEW_GERAET" xml:space="preserve">
+    <value>{0} Gerät</value>
+  </data>
+  <data name="PVS_BEW_GERAETE" xml:space="preserve">
+    <value>{0} Geräte</value>
+  </data>
+  <data name="PVS_BEW_UNPASSEND" xml:space="preserve">
+    <value>passt nicht</value>
+  </data>
+  <data name="PVS_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Auslegung vorschlagen</value>
+  </data>
+  <data name="PVS_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag: {0}, {1}, DC/AC {2} — die Strangtabelle wurde ersetzt.</value>
+  </data>
+  <data name="PVS_VORSCHLAG_STRANG" xml:space="preserve">
+    <value>je {0} Strang mit {1} Modulen in Reihe</value>
+  </data>
+  <data name="PVS_VORSCHLAG_STRAENGE" xml:space="preserve">
+    <value>je {0} Stränge mit {1} Modulen in Reihe</value>
+  </data>
+  <data name="PVS_VORSCHLAG_KEIN" xml:space="preserve">
+    <value>Kein Vorschlag: {0}</value>
+  </data>
   <data name="PVS_WERTE_FEHLEN" xml:space="preserve">
     <value>Werte fehlen: {0}</value>
   </data>

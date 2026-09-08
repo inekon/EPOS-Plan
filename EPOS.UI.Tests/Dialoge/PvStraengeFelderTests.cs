@@ -60,7 +60,9 @@ public class PvStraengeFelderTests : BunitContext
         Func<string, IReadOnlyList<(int Id, string Text)>>? filtern = null,
         IReadOnlyList<(int Id, string Text)>? module = null,
         Func<int, GeraetWahl>? modulUebernehmen = null,
-        string modulhersteller = "")
+        string modulhersteller = "",
+        Func<ErzeugerZeile, string, IReadOnlyList<(int Id, string Text)>>? bewerten = null,
+        Func<ErzeugerZeile, int, StrangVorschlag>? vorschlagen = null)
         => Render<PvStraengeFelder>(p => p
             .Add(x => x.Zeile, zeile)
             .Add(x => x.NeigungAnlage, zeile.Neigung)
@@ -70,6 +72,8 @@ public class PvStraengeFelderTests : BunitContext
             .Add(x => x.GeraetUebernehmen, uebernehmen ?? (id => new GeraetWahl(1000 + id, Name(id))))
             .Add(x => x.Hersteller, hersteller ?? Array.Empty<string>())
             .Add(x => x.GeraeteFiltern, filtern)
+            .Add(x => x.GeraeteBewerten, bewerten)
+            .Add(x => x.AuslegungVorschlagen, vorschlagen)
             .Add(x => x.Modulhersteller, modulhersteller)
             .Add(x => x.Module, module ?? Array.Empty<(int, string)>())
             .Add(x => x.ModulUebernehmen,
@@ -1265,6 +1269,230 @@ public class PvStraengeFelderTests : BunitContext
         Assert.Equal(2, zeile.Straenge.Count);
         Assert.Equal(4711, zeile.Straenge[1].WechselrichterId);
         Assert.Equal(erwartet, zeile.Straenge[1].Mppt);
+    }
+
+    // =================================================================================
+    // 6 - W6-B-8: die Auslegungshilfe in der Oberflaeche (Anwenderwunsch 08.09.2026)
+    // =================================================================================
+    //
+    // "Vorschlagen und GeraeteBewerten sind Kernmethoden. Der naechste Schritt waere,
+    // das Auswahlfeld 'Wechselrichter aus dem Katalog' nach GeraeteBewerten zu sortieren
+    // und passende Geraete mit ihrem DC/AC zu beschriften, und ein Knopf 'Auslegung
+    // vorschlagen', der die Strangtabelle aus Vorschlagen fuellt."
+    //
+    // GEPRUEFT WIRD, WAS DIE KOMPONENTE ENTSCHEIDET: dass sie die Liste des
+    // Bewertungsdelegaten UNVERAENDERT zeigt (Reihenfolge und Beschriftung kommen aus
+    // Kern und Huelle), dass der Knopf ohne Delegat fehlt und ohne Wahl gesperrt ist,
+    // und was sein Klick mit der Tabelle macht. Die BEWERTUNG selbst rechnet der Kern
+    // (StrangAuslegungTests).
+
+    /// <summary>
+    /// Die bewertete Katalogliste, wie die Hülle sie liefert: passende Geräte zuerst,
+    /// beschriftet mit DC/AC und Gerätezahl, unpassende am Ende. Die Reihenfolge ist
+    /// bewusst eine ANDERE als die alphabetische von <see cref="Filtern"/> — nur so
+    /// zeigt der Fall, dass die Komponente sie übernimmt und nicht neu sortiert.
+    /// </summary>
+    private static IReadOnlyList<(int Id, string Text)> Bewerten(ErzeugerZeile zeile, string firma)
+        => new List<(int, string)>
+        {
+            (8, "Muster 5000TL-2M — DC/AC 1,10 · 1 Gerät"),
+            (7, "Muster 2500TL — DC/AC 2,20 · 2 Geräte"),
+            (9, "Fremd 3000X — passt nicht")
+        };
+
+    /// <summary>Der Vorschlag der Hülle: zwei Geräte zu je einem Strang mit zehn Modulen.</summary>
+    private static readonly StrangVorschlag VORSCHLAG = new(
+        true,
+        new[] { new StrangVorgabe(1, 1, 10, 1), new StrangVorgabe(2, 1, 10, 1) },
+        "Vorschlag: 2 Geräte, je 1 Strang mit 10 Modulen in Reihe, DC/AC 1,10 — "
+        + "die Strangtabelle wurde ersetzt.");
+
+    /// <summary>
+    /// <b>Die Katalogwahl über der Tabelle kommt vom BEWERTUNGSDELEGATEN</b> — in
+    /// seiner Reihenfolge und mit seiner Beschriftung. „(kein Gerät)" bleibt als Id 0
+    /// vorn: Ein Strang ohne Gerät ist weiter ein zulässiger Zwischenstand.
+    ///
+    /// <para><b>Die Klapplisten JE ZEILE bleiben unberührt</b> — alphabetisch und
+    /// unbeschriftet. Dort steht das Gerät EINES Strangs, und ihr Band zur Zeile ist der
+    /// reine Bezeichner; eine Beschriftung würde genau dieses Band zerschneiden.</para>
+    /// </summary>
+    [Fact]
+    public void W6B8_Die_Katalogwahl_steht_in_der_Reihenfolge_der_Bewertung()
+    {
+        var cut = Aufbauen(Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 }),
+                           hersteller: HERSTELLER, filtern: Filtern, bewerten: Bewerten);
+
+        var oben = Wahl(cut, "Wechselrichter aus dem Katalog:").Instance.Eintraege;
+        Assert.Equal(4, oben.Count);
+        Assert.Equal(0, oben[0].Id);
+        Assert.Equal(new[] { 8, 7, 9 }, oben.Skip(1).Select(e => e.Id).ToArray());
+        Assert.Contains("DC/AC 1,10", oben[1].Text, StringComparison.Ordinal);
+        Assert.Contains("1 Gerät", oben[1].Text, StringComparison.Ordinal);
+        Assert.Contains("2 Geräte", oben[2].Text, StringComparison.Ordinal);
+        Assert.Contains("passt nicht", oben[3].Text, StringComparison.Ordinal);
+
+        // Die Zeilenklappliste: dieselben Geraete, alphabetisch und ohne Zusatz.
+        var inZeile = Wahl(cut, "Wechselrichter").Instance.Eintraege;
+        Assert.Equal(new[] { 0, 7, 8, 9 }, inZeile.Select(e => e.Id).ToArray());
+        Assert.DoesNotContain(inZeile, e => e.Text.Contains("DC/AC", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// <b>Ohne Bewertungsdelegat bleibt die Liste, wie sie war</b> — die gefilterte,
+    /// alphabetische von W6‑O‑4. Die Gegenprobe zum Fall darüber: Der Umbau darf den
+    /// Stand ohne Auslegungshilfe nicht antasten (iOS bekommt sie später).
+    /// </summary>
+    [Fact]
+    public void W6B8_Ohne_Bewertung_bleibt_die_gefilterte_Liste()
+    {
+        var cut = Aufbauen(Zeile(true), hersteller: HERSTELLER, filtern: Filtern);
+
+        var oben = Wahl(cut, "Wechselrichter aus dem Katalog:").Instance.Eintraege;
+        Assert.Equal(new[] { 0, 7, 8, 9 }, oben.Select(e => e.Id).ToArray());
+        Assert.DoesNotContain(oben, e => e.Text.Contains("DC/AC", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// <b>„Kein Delegat ist kein Knopf".</b> Ohne <c>AuslegungVorschlagen</c> steht
+    /// „Auslegung vorschlagen" gar nicht in der Leiste — dieselbe Regel wie überall in
+    /// diesem Abschnitt: Ein Bedienelement, das nichts tun kann, ist schlimmer als
+    /// keines (Befund W6‑B‑3).
+    /// </summary>
+    [Fact]
+    public void W6B8_Kein_Delegat_ist_kein_Knopf()
+    {
+        var cut = Aufbauen(Zeile(true), hersteller: HERSTELLER, filtern: Filtern,
+                           bewerten: Bewerten);
+
+        Assert.Empty(cut.FindAll(".epos-straenge-vorschlag"));
+        Assert.Equal(2, cut.FindAll(".epos-leiste .epos-knopf").Count);
+        Assert.DoesNotContain("Auslegung vorschlagen", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Knopf braucht alle drei Angaben</b>: einen gewählten Katalogsatz, das
+    /// Modul der Anlage und eine Modulzahl. Ohne sie hätte der Kern nichts, woraus er
+    /// eine Aufteilung rechnen könnte — und ein Knopf, der eine leere Antwort holt,
+    /// sähe aus wie ein Fehler.
+    /// </summary>
+    [Fact]
+    public async Task W6B8_Der_Knopf_ist_ohne_Katalogwahl_gesperrt()
+    {
+        var cut = Aufbauen(Zeile(true), hersteller: HERSTELLER, filtern: Filtern,
+                           bewerten: Bewerten, vorschlagen: (z, id) => VORSCHLAG);
+
+        Assert.True(cut.Find(".epos-straenge-vorschlag").HasAttribute("disabled"));
+        Assert.False(cut.Instance.VorschlagFrei);
+
+        var wahl = Wahl(cut, "Wechselrichter aus dem Katalog:");
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(7));
+
+        Assert.True(cut.Instance.VorschlagFrei);
+        Assert.False(cut.Find(".epos-straenge-vorschlag").HasAttribute("disabled"));
+
+        // Ohne Modulzahl bleibt er gesperrt, auch mit gewaehltem Geraet.
+        var ohne = Zeile(true);
+        ohne.AnzahlModule = null;
+        var cut2 = Aufbauen(ohne, hersteller: HERSTELLER, filtern: Filtern,
+                            bewerten: Bewerten, vorschlagen: (z, id) => VORSCHLAG);
+        var wahl2 = Wahl(cut2, "Wechselrichter aus dem Katalog:");
+        await cut2.InvokeAsync(() => wahl2.Instance.AuswahlChanged.InvokeAsync(7));
+        Assert.False(cut2.Instance.VorschlagFrei);
+
+        // Und ohne Modul der Anlage ebenso.
+        var ohneModul = Zeile(true);
+        ohneModul.Bezeichner = "";
+        var cut3 = Aufbauen(ohneModul, hersteller: HERSTELLER, filtern: Filtern,
+                            bewerten: Bewerten, vorschlagen: (z, id) => VORSCHLAG);
+        var wahl3 = Wahl(cut3, "Wechselrichter aus dem Katalog:");
+        await cut3.InvokeAsync(() => wahl3.Instance.AuswahlChanged.InvokeAsync(7));
+        Assert.False(cut3.Instance.VorschlagFrei);
+    }
+
+    /// <summary>
+    /// <b>Der Klick ERSETZT die Strangtabelle</b> durch die Vorgaben des Kerns, vergibt
+    /// die Ränge lückenlos neu, nimmt den Katalogsatz in das Projekt auf
+    /// (<c>CopyFromStamm</c>, genau wie „Strang anlegen") und meldet sich beim Wirt.
+    /// Der Satz darunter sagt, was geschehen ist.
+    ///
+    /// <para><b>Neigung und Azimut bleiben leer</b> — sie heissen dann „der
+    /// Anlagenwert" (Konzept 3.4). Ein Vorschlag weiss nichts über Teilfelder.</para>
+    /// </summary>
+    [Fact]
+    public async Task W6B8_Der_Vorschlag_ersetzt_die_Strangtabelle()
+    {
+        int gemeldet = 0;
+        int uebernommen = 0;
+        ErzeugerZeile? gesehen = null;
+        int gesehenId = 0;
+
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, Bezeichner = "Alt", ModuleReihe = 7 });
+        var cut = Aufbauen(zeile, () => gemeldet++, hersteller: HERSTELLER, filtern: Filtern,
+                           uebernehmen: id => { uebernommen++; return new GeraetWahl(4711, GeraetName(id)); },
+                           bewerten: Bewerten,
+                           vorschlagen: (z, id) => { gesehen = z; gesehenId = id; return VORSCHLAG; });
+
+        var wahl = Wahl(cut, "Wechselrichter aus dem Katalog:");
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(7));
+
+        cut.Find(".epos-straenge-vorschlag").Click();
+
+        // Die Huelle bekommt die Projektzeile und den KATALOGsatz.
+        Assert.Same(zeile, gesehen);
+        Assert.Equal(7, gesehenId);
+        Assert.Equal(1, uebernommen);
+
+        Assert.Equal(2, zeile.Straenge.Count);
+        Assert.DoesNotContain(zeile.Straenge, s => s.Bezeichner == "Alt");
+        Assert.Equal(new[] { 1, 2 }, zeile.Straenge.Select(s => s.Rang).ToArray());
+        Assert.Equal(new int?[] { 1, 2 }, zeile.Straenge.Select(s => s.Geraetenummer).ToArray());
+        Assert.Equal(new int?[] { 1, 1 }, zeile.Straenge.Select(s => s.Mppt).ToArray());
+        Assert.All(zeile.Straenge, s => Assert.Equal(10, s.ModuleReihe));
+        Assert.All(zeile.Straenge, s => Assert.Equal(1, s.StraengeParallel));
+        Assert.All(zeile.Straenge, s => Assert.Equal(4711, s.WechselrichterId));
+        Assert.All(zeile.Straenge, s => Assert.Equal("Muster 2500TL", s.WechselrichterName));
+        Assert.All(zeile.Straenge, s => Assert.Null(s.Neigung));
+        Assert.All(zeile.Straenge, s => Assert.Null(s.Azimut));
+
+        Assert.Equal(1, gemeldet);
+        Assert.Null(cut.Instance.Gewaehlt);
+
+        var banner = cut.FindComponent<Warnbanner>();
+        Assert.Equal(WarnStufe.Hinweis, banner.Instance.Stufe);
+        Assert.Contains("Vorschlag: 2 Geräte", banner.Instance.Text, StringComparison.Ordinal);
+        Assert.Contains("die Strangtabelle wurde ersetzt", cut.Instance.Vorschlagsatz,
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Ohne Aufteilung bleibt die Tabelle stehen</b>, und der Grund des Kerns
+    /// erscheint als WARNUNG. Die Tabelle hat der Anwender gebaut — ein Grund ist kein
+    /// Anlass, sie zu verwerfen; und der Wirt hört nichts, weil sich nichts geändert hat.
+    /// </summary>
+    [Fact]
+    public async Task W6B8_Ohne_Vorschlag_bleibt_die_Tabelle_stehen()
+    {
+        int gemeldet = 0;
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, Bezeichner = "Alt", ModuleReihe = 7 });
+        var kein = new StrangVorschlag(false, Array.Empty<StrangVorgabe>(),
+            "Kein Vorschlag: Keine Reihe passt zu diesem Gerät (Spannungsfenster).");
+
+        var cut = Aufbauen(zeile, () => gemeldet++, hersteller: HERSTELLER, filtern: Filtern,
+                           bewerten: Bewerten, vorschlagen: (z, id) => kein);
+
+        var wahl = Wahl(cut, "Wechselrichter aus dem Katalog:");
+        await cut.InvokeAsync(() => wahl.Instance.AuswahlChanged.InvokeAsync(9));
+
+        cut.Find(".epos-straenge-vorschlag").Click();
+
+        Assert.Single(zeile.Straenge);
+        Assert.Equal("Alt", zeile.Straenge[0].Bezeichner);
+        Assert.Equal(7, zeile.Straenge[0].ModuleReihe);
+        Assert.Equal(0, gemeldet);
+
+        var banner = cut.FindComponent<Warnbanner>();
+        Assert.Equal(WarnStufe.Warnung, banner.Instance.Stufe);
+        Assert.Contains("Kein Vorschlag", banner.Instance.Text, StringComparison.Ordinal);
     }
 
     /// <summary>Das <c>&lt;select&gt;</c> einer Strangzeile über sein <c>aria-label</c>.</summary>
