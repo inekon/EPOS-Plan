@@ -118,19 +118,25 @@ namespace EPOS.Kern.Tests
         /// Zähler <c>-ln(1) = -0</c>, und ein negatives Null bleibt in IEEE 754 negativ.
         /// <c>"N1"</c> schrieb dafür ein Minuszeichen vor eine Null.
         /// </summary>
-        [Theory]
-        [InlineData(0.0)]
-        [InlineData(-0.0)]
-        [InlineData(-0.04)]
-        public void AmortisationText_schreibt_kein_negatives_Null(double jahre)
+        [Fact]
+        public void AmortisationText_schreibt_kein_negatives_Null()
         {
             using var _ = new DeutscheZahlen();
 
-            string t = SpeicherAnzeigeCtrl.AmortisationText(Amortisation.Jahreswert(jahre));
+            // GENAU die Zahl, die die Engine bei I = 0 liefert: -ln(1 - 0)/ln(1 + i).
+            // Als [InlineData(-0.0)] taugt sie nicht - der Analysator haelt sie fuer
+            // eine Dublette von 0.0 (xUnit1025), obwohl das Bitmuster ein anderes ist.
+            double negativNull = -System.Math.Log(1.0) / System.Math.Log(1.05);
+            Assert.True(double.IsNegative(negativNull),
+                        "Ohne negatives Null pruefte der Fall nichts");
 
-            Assert.DoesNotContain("-", t);
-            Assert.DoesNotContain("\u2212", t);
-            Assert.Equal("0,0", t);
+            foreach (double jahre in new[] { negativNull, -0.04, 0.0 })
+            {
+                string t = SpeicherAnzeigeCtrl.AmortisationText(Amortisation.Jahreswert(jahre));
+                Assert.DoesNotContain("-", t);
+                Assert.DoesNotContain("\u2212", t);
+                Assert.Equal("0,0", t);
+            }
         }
 
         /// <summary>

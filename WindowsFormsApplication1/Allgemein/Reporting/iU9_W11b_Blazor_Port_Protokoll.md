@@ -787,3 +787,146 @@ Ringe nebeneinander, Legende mit MWh und Prozent, Fenster fast bildschirmbreit.
 **Änderung:** Im Navigatorteil des Übersichtsreiters (`UebersichtReiter.razor`) stand die Kachelreihe unter den zwei Ringen (links Wärmebedarfsdeckung, rechts Strombedarfsdeckung) verkehrt: links „Reststrombedarf", rechts „Restwärmebedarf". Getauscht wurde nur die Reihenfolge der zwei `<Kennzahlkachel>`-Elemente im `Kachelraster` — kein Text, keine neue Ressource: links jetzt „Restwärmebedarf" (unter dem Wärmering), rechts „Reststrombedarf" (unter dem Stromring).
 
 **Nachweis:** Neuer Fall `Die_Kacheln_stehen_in_der_Reihenfolge_der_Ringe` (`UebersichtReiterTests`) sichert die Reihenfolge: erste Kachel „Restwärmebedarf", zweite „Reststrombedarf". Sandbox: Kern **2064/2064**, UI **3285/3285** (Build 0 Fehler).
+
+---
+
+## Anwenderwunsch 08.09.2026 — W11b‑B‑13: Kennzahlenlisten der Ergebnisreiter
+
+**Wortlaut:** „Verbessere die Darstellung im Dialog Detaillierte Simulation." (Bildschirmfoto: die Kennzahlenliste
+des Wärmepumpenreiters.)
+
+**Befund.** Die Listen aller Ergebnisreiter (`dl.epos-simerg-werte` in `Bedarf-`, `Bhkw-`, `Heizkessel-`,
+`Photovoltaik-`, `Solarthermie-`, `Uebersicht-` und `WaermepumpeReiter`) waren ein dreispaltiges Raster mit
+`gap: 2px 10px`, **ohne jede Zeilenlinie**, mit der Beschriftung in `--epos-text-leise` und dem Wert daneben in
+der Textfarbe. Zwei Fehler auf einmal: Bei zehn Zeilen ohne Trennung fand das Auge die Zahl zur Beschriftung nur
+noch mit dem Finger, und leise war ausgerechnet die Beschriftung — also die Information, während die Einheit
+gleich laut danebenstand wie der Wert. Dazu formatierten alle Reiter mit `F2`/`F0`: **ohne Tausendertrennung**, im
+Bildschirmfoto „4485 h/a".
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| Zeilenraster | `gap: 2px 10px`, keine Linie | `padding: 4px 0 5px` je Zelle, `border-bottom: 1px solid var(--epos-rahmen-leise)` |
+| Beschriftung | `--epos-text-leise` | `--epos-text` — sie ist die Information |
+| Einheit | `--epos-text-sehr-leise`, rechtsbündig | bleibt leise, jetzt linksbündig an ihrer Spalte (ein kurzes „%" wanderte sonst von der Zahl weg, sobald irgendwo „MWh/a" stand) |
+| Spalten | `minmax(180px, max-content) max-content max-content` | `minmax(180px, 1fr) minmax(90px, max-content) max-content` — die Wertspalte hat eine Mindestbreite, die Liste nutzt die Blockbreite |
+| Zahlen | `F2` bzw. `F0` | `N2` bzw. `N0`, Kultur unverändert (`Kultur` = `CultureInfo.CurrentCulture`) |
+
+Betroffen vom Formatwechsel sind die `Zahl()`-Helfer der fünf Reiter mit eigenem Helfer, die Wertzeile des
+`BedarfReiter`, `Zahl(wert, "N2")` im `UebersichtReiter`, die Stundenzeilen (Vollbenutzungsstunden,
+Vbh thermisch/elektrisch, Volllaststunden AC) und die kWh-Spalten der Pufferrubrik. Nichts Buntes, kein neuer
+Text, keine neue Ressource — die Änderung ist Ruhe.
+
+**Nachweis.** Die vier Proben, die auf dem alten Format bestanden, sind nachgezogen und prüfen jetzt die
+Tausendertrennung: `WaermepumpeReiterTests` („1.856" statt „1856"), `BedarfReiterTests` („1.234,50"),
+`ErzeugerReiterTests` zweimal („1.505" Vbh thermisch, „1.058,93" W/m²). Alle übrigen Zahlen der Proben liegen
+unter 1 000 und sind unverändert. `StilblattTests` (keine Verschachtelung, ausgeglichene Klammern) über die neuen
+Regeln.
+
+---
+
+## Anwenderwunsch 08.09.2026 — W11b‑B‑14: Stromspeicher, Wirtschaftsblock
+
+**Wortlaut:** „verbessere die Darstellung Detaillierte Simulation → Stromspeicher, insbesondere der
+Wirtschaftlichkeit."
+
+### Befund 1 — die ganze Tabelle war grau
+
+`StromspeicherReiter.Stufenklasse` gab auch für `KennzahlStufe.Unbestimmt` eine Klasse zurück
+(`epos-stufe-unbestimmt`), und `epos-ui.css` legte darunter `rgb(240,240,240)`. **Unbestimmt ist die Vorgabe von
+`KennzahlStufe`** und damit die Stufe von 37 der 39 Zeilen: Das Grau lag unter der gesamten Tabelle, und die drei
+Warnfarben (grün/gelb/rot der Zyklen- und der Budgetzeile) — die einzigen, um die es überhaupt geht — gingen darin
+unter. **Änderung:** `Unbestimmt` bekommt gar keine Klasse (leerer String → Blazor lässt das Attribut weg), die
+CSS-Regel `tr.epos-stufe-unbestimmt` ist gestrichen. Keine Aussage ist keine Warnung.
+
+### Befund 2 — vierzehn Wirtschaftszeilen ohne Gliederung
+
+Die Zeilen standen in der Reihenfolge des Vorläufers, in der die **Verschleißkosten mitten zwischen den
+Summanden** lagen und weder Summe noch Ergebnis erkennbar war. Der Kern (`SpeicherKennzahlenBlock.Zeile`) trägt
+jetzt drei zusätzliche Angaben mit Vorgabewerten — `Untergruppe` (fertig übersetzte Zwischenüberschrift),
+`Art` (`KennzahlArt`: Normal/Summe/Ergebnis/Nachrichtlich) und `Hinweis` (Werkzeugtipp) —, sodass **jeder
+bisherige Aufruf unverändert bleibt**. Die neue Reihenfolge:
+
+| # | Zeile | Unterabschnitt | Art |
+|---|---|---|---|
+| 1 | Ertrag: vermiedener Netzbezug | Referenzjahr | Posten (+) |
+| 2 | Abzug: entgangene Einspeisevergütung | Referenzjahr | Posten (−) |
+| 3 | Ertrag: Verkauf ins Netz | Referenzjahr | Posten (+) |
+| 4 | Kosten: Netzladung | Referenzjahr | Posten (**neu −**) |
+| 5 | Ertrag: Leistungspreisersparnis | Referenzjahr | Posten (+, bis AP7 fest 0) |
+| 6 | **Ertrag Referenzjahr E_a,1** | Referenzjahr | **Summe** |
+| 7 | Investition I | Über die Nutzungsdauer | Posten |
+| 8 | Ertrag degradationsäquivalent E_a,äq | Über die Nutzungsdauer | Posten (+) |
+| 9 | Annuität A | Über die Nutzungsdauer | Posten (**neu −**) |
+| 10 | **Jahresüberschuss ΔJ** | Über die Nutzungsdauer | **Summe** |
+| 11 | Amortisation statisch | Über die Nutzungsdauer | Posten |
+| 12 | Amortisation dynamisch | Über die Nutzungsdauer | Posten |
+| 13 | **Kapitalwert (NPV)** | Über die Nutzungsdauer | **Ergebnis** |
+| 14 | Betriebskosten: Verschleiß K_ver | Nachrichtlich | **Nachrichtlich** |
+
+**Beleg aus dem Kern für die Vorzeichen — nur, was der Kern wirklich rechnet.**
+`SpeicherEngine.Arbitrage` (:309‑325) baut die Zeitschrittbewertung als
+`eur[k] = +Bezugsersparnis − Vergütung − Ladekosten + Netzerlös`; `E_a,1 = summeF = Σ eur[k]`
+(`Wirtschaftlichkeit` :139/:153). Ohne Preissteuerung teilt `StromspeicherSimCtrl.AlsErgebnismodell` (:1487‑1510)
+dieselbe Reihe in ihren positiven und ihren negativen Anteil, und Netzerlös, Ladekosten und
+Leistungspreisersparnis sind 0. **Die Netzladung geht also negativ in E_a,1 ein** und steht deshalb jetzt mit
+Minuszeichen — die Beschriftung „Kosten: Netzladung" bleibt, wie sie im Katalog steht, genau wie „Abzug:
+entgangene Einspeisevergütung", die es schon immer so hielt. Ebenso `ΔJ = E_a,äq − A` (`Wirtschaftlichkeit` :158)
+→ die Annuität steht mit Minuszeichen. **Nicht als Summe gekennzeichnet ist der Kapitalwert**
+(`NPV = E_a,1 · RBF_deg − I`, :161): Er ist ein Ergebnis derselben Rechnung, aber keine Summe der Spalte darüber —
+dafür gibt es `KennzahlArt.Ergebnis`. K_ver bleibt außerhalb: „K_ver fliesst NICHT in summeF und nicht in ΔJ"
+(`Dauernutzung` :379, `Arbitrage` :396, `Nachtnutzung` :331).
+
+### Befund 3 — „0,0 a" und „−0,0 a"
+
+`Wirtschaftlichkeit.StatischeAmortisation` liefert bei `I = 0` den Jahreswert `0/E = 0`, die dynamische über
+`−ln(1−0)/ln(1+i)` ein **negatives Null** (IEEE 754: `−0.0 / x` bleibt negativ), und `"N1"` schreibt dafür
+„−0,0". Beides ist keine Aussage: Ohne Investition gibt es nichts zurückzuverdienen, und `I = 0` heißt in der
+Sache fast immer, dass die Kosten nicht gepflegt sind. **Änderung:** `SpeicherAnzeigeCtrl.AmortisationText`
+normalisiert Beträge unter einem halben Zehntel **vor** dem Formatieren auf glatt 0 (dieselbe Zahl, die `"N1"`
+ohnehin anzeigt, nur ohne das irreführende Minus); die neue Überladung
+`AmortisationText(Amortisation, double investitionEur)` gibt bei `I ≤ 0` den Gedankenstrich `UNBESTIMMT` zurück,
+den die Seite für jede andere unbestimmte Kennzahl führt, samt Werkzeugtipp „Ohne Investition (I = 0) ist die
+Amortisation nicht bestimmbar." **Die Amortisationskachel des Kernblocks nutzt dieselbe Überladung**, sonst sagte
+die Kachel „0,0" und die Zeile darunter „–".
+
+### Befund 4 — Werkzeugtipps, Ampel, Breite
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| Kürzel | ΔJ, E_a,1, E_a,äq, N_zyk, n_zyk, K_ver, NPV standen unerklärt da | sieben Werkzeugtipps als `title` an der Zeile, Text aus dem Kern (`SP_ERG_TIP_*`, de/en) |
+| Zyklenampel | loser Absatz `p.epos-simerg-hinweis` **unter der ganzen Tabelle** — also unter der Wirtschaft, über die sie nichts sagt | Zeile über alle Spalten am Ende der Gruppe **Speicher**; Warnfärbung und `white-space: pre-line` (der Text kann mehrzeilig sein) unverändert |
+| Breite | die Liste saß in **einer** Spalte des `auto-fit`-Rasters `minmax(320px, 1fr)` und war auf 320 Bildpunkte gequetscht, rechts daneben stand nichts | `.epos-simerg-kennzahlenzeile { grid-column: 1 / -1 }` — dieselbe Lösung wie beim Diagramm (W11b‑B‑2) |
+| Tabellenform | keine Linien, `padding: 3px 8px` | Zeilenlinien (Zebra hätte mit den drei Warnflächen gestritten), `4px 10px`, Gruppen- und Unterabschnittskopf unterscheidbar, Zahlenspalten `min-width: 96px`, Einheit leise mit `width: 1%` |
+| Summen | nicht erkennbar | Summe fett mit Linie darüber, Ergebnis fett und eingerahmt, Nachrichtliches leise/kursiv |
+
+Die **Vergleichsspalte** (`Daten.MitVergleich`) trägt weiter alle vier Spalten und ist mitgeprüft.
+
+### Neue Ressourcenschlüssel (de/en)
+
+`SP_ERG_UG_REFERENZJAHR`, `SP_ERG_UG_NUTZUNGSDAUER`, `SP_ERG_UG_NACHRICHTLICH`, `SP_ERG_TIP_E_A1`,
+`SP_ERG_TIP_E_AEQ`, `SP_ERG_TIP_DELTA_J`, `SP_ERG_TIP_NPV`, `SP_ERG_TIP_K_VER`, `SP_ERG_TIP_N_ZYK`,
+`SP_ERG_TIP_N_ZYK_AEQ`, `SP_ERG_TIP_AMORT_OHNE_INVEST` — elf Schlüssel in `Resource.resx`,
+`Resource.en-US.resx` und `Resource.Designer.cs`.
+
+### Nachweis
+
+**Kern** (`SpeicherKennzahlenBlockTests`): `Der_Wirtschaftsblock_steht_in_drei_Unterabschnitten` (14 Zeilen,
+6/7/1, jeder Abschnitt in einem Stück), `Summe_Ergebnis_und_Nachrichtliches_sind_gekennzeichnet`,
+`Die_Posten_des_Referenzjahrs_addieren_sich_zur_Summenzeile` (die fünf Posten ergeben E_a,1),
+`Abzuege_und_Kosten_stehen_mit_Minuszeichen` (−60 Vergütung, −20 Netzladung, −700 Annuität),
+`Ohne_Investition_ist_die_Amortisation_unbestimmt`, `Die_Kuerzel_tragen_ihren_Werkzeugtipp` (sieben Zeilen),
+`Energie_und_Speicher_bleiben_ungegliedert` (25 Zeilen ohne Untergruppe und mit `KennzahlArt.Normal` — der
+Rückwärtsnachweis der Vorgabewerte). `SpeicherAnzeigeCtrlTests`:
+`AmortisationText_schreibt_kein_negatives_Null` (mit der Zahl, die die Engine wirklich liefert),
+`AmortisationText_ohne_Investition_ist_unbestimmt`.
+
+**UI** (`StromspeicherReiterTests`): `Die_Warnstufe_faerbt_die_Zeile` nachgezogen (keine Stufenklasse bei
+unbestimmt), neu `Jeder_Unterabschnitt_bekommt_eine_Zwischenueberschrift` (genau eine je Abschnitt, auch bei
+mehreren Zeilen), `Summe_Ergebnis_und_Nachrichtliches_tragen_ihre_Klasse`,
+`Der_Werkzeugtipp_steht_an_seiner_Zeile` (kein `title=""` ohne Hinweis),
+`Die_Zyklenampel_steht_unter_der_Gruppe_Speicher` (zweiter `tbody`, kein loser Absatz mehr),
+`Ohne_Ampeltext_bleibt_die_Ampelzeile_weg`, `Die_Kennzahlenliste_steht_ueber_die_ganze_Zeile`.
+
+Sandbox: Build **0 Fehler**, Kern **2073/2073**, UI **3291/3291** (vorher 2064 bzw. 3285; +9 Kern, +6 UI).
+Kein Rechenweg geändert — der Referenzlauf ist unberührt: Die Vorzeichen sind eine Sache der Anzeige, die
+Engine rechnete schon vorher so.

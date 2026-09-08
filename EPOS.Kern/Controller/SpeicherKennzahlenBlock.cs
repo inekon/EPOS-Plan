@@ -221,7 +221,7 @@ namespace WindowsFormsApplication1
         /// keine Spaltensumme.</item>
         /// <item><b>Nachrichtlich.</b> Der Verschleiß K_ver fließt ausdrücklich weder in
         /// <c>summeF</c> noch in <c>ΔJ</c> ein (Fachkonzept 5.4, Kommentar in
-        /// <c>Dauernutzung</c> :396) — er stand bisher mitten zwischen den Summanden.</item>
+        /// <c>Dauernutzung</c> :379, <c>Arbitrage</c> :396) — er stand bisher mitten zwischen den Summanden.</item>
         /// </list>
         ///
         /// <para><b>Amortisation ohne Investition.</b>

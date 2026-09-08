@@ -811,6 +811,18 @@ allen Strategien**, mit Kennzeichnung, ob sie in ΔJ eingerechnet sind; Investit
 statische und dynamische Amortisation, Kapitalwert. Zusätzlich ausgewiesen: der unskalierte Referenzjahresertrag
 E_a,1 neben E_a,äq sowie die verwendete Preisversion (4.1).
 
+**Gliederung der Anzeige (Anwenderwunsch 08.09.2026, W11b‑B‑14).** Der Wirtschaftsblock steht auf dem
+Bildschirm in drei Unterabschnitten, die dem Rechenweg oben folgen und nicht der Reihenfolge des Vorläufers:
+*Referenzjahr* (vermiedener Bezug, entgangene Vergütung, Netzerlös, Netzladung, Leistungspreisersparnis →
+Summenzeile **E_a,1**), *Über die Nutzungsdauer* (Investition I, E_a,äq, Annuität A → Summenzeile **ΔJ**, danach
+T_stat, T_dyn und als Ergebniszeile **NPV**) und *Nachrichtlich* (K_ver). **Abzüge und Kosten stehen mit
+Minuszeichen**, damit die Spalte sich zur Summe addiert — die Engine führt sie in `Σ F` bzw. in `ΔJ = E_a,äq − A`
+ebenfalls negativ. K_ver bleibt außerhalb jeder Summe, solange die Option „in ΔJ" nicht gesetzt ist; deshalb steht
+er nachrichtlich und nicht mehr zwischen den Summanden. **Ohne Investition (I = 0)** zeigen beide
+Amortisationszeilen den Gedankenstrich statt „0,0 a" bzw. „−0,0 a": `T_stat = I/E_a,äq` ist dann 0 und
+`T_dyn = −ln(1−0)/ln(1+i)` ein negatives Null — keine Aussage über den Speicher, sondern eine über eine leere
+Kosteneingabe.
+
 Persistiert werden diese Kennzahlen in einem neuen `ErgebnisStromspeicherModel` mit der Tabelle
 `Tab_ErgebnisStromspeicher` (bei Varianten zusätzlich eine Modulliste, exakt nach dem Muster
 `Tab_ErgebnisPhotovoltaik(+Modul)`). Das Flag `Sim_Stromspeicher` in `Tab_Ergebnis` **existiert bereits** und
