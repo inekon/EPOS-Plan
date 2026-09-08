@@ -81,6 +81,25 @@ public class BedarfReiterTests : BunitContext
     }
 
     /// <summary>
+    /// <b>Anwenderrückmeldung 08.09.2026 (W11b‑B‑15).</b> Die Ordnung „Wärme
+    /// links, Strom rechts" stand hier nur als Kommentar im Quelltext — auf dem
+    /// Schirm zwei namenlose Listen nebeneinander. Die zwei Balken sind
+    /// dieselben wie in der Übersicht; „Wärmebedarf je Bedarfsart" wird damit
+    /// zum Unterabschnitt der Wärme (ein Balken im Balken wäre eine Hierarchie,
+    /// die es nicht gibt).
+    /// </summary>
+    [Fact]
+    public void Die_zwei_Spalten_tragen_die_Koepfe_Waerme_und_Strom()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Equal(new[] { "Wärme", "Strom" },
+                     seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
+        Assert.Equal("Wärmebedarf je Bedarfsart",
+                     seite.Find("h3.epos-untergruppe").TextContent.Trim());
+    }
+
+    /// <summary>
     /// Ein Kanal, den der Lauf nicht fuehrt, hat weder Zeile noch Schalter
     /// (<c>_bedarfKanalDa</c> im Vorlaeufer).
     /// </summary>

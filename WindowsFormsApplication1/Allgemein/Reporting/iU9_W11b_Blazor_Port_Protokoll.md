@@ -930,3 +930,80 @@ mehreren Zeilen), `Summe_Ergebnis_und_Nachrichtliches_tragen_ihre_Klasse`,
 Sandbox: Build **0 Fehler**, Kern **2073/2073**, UI **3291/3291** (vorher 2064 bzw. 3285; +9 Kern, +6 UI).
 Kein Rechenweg geändert — der Referenzlauf ist unberührt: Die Vorzeichen sind eine Sache der Anzeige, die
 Engine rechnete schon vorher so.
+
+---
+
+## Anwender-Rückmeldung 08.09.2026 — W11b‑B‑15: Kennzahlenlisten kompakt und nach Wärme/Strom gruppiert
+
+**Wortlaut:** „Die Darstellung ist schlechter geworden — zu weit auseinandergezogen zwischen Text und Zahl. Es
+sollte nach Kategorie Strom und Wärme gruppiert werden und die Darstellung übersichtlicher werden. Prüfe auch die
+anderen Dialoge." (Dialog „Detaillierte Simulation", Reiter Übersicht.)
+
+**Befund — zwei Sachen auf einmal.** Die Nacharbeit W11b‑B‑13 hatte die Listen mit
+`grid-template-columns: minmax(180px, 1fr) …` auf die **ganze Blockbreite** gestellt. Auf einem breiten Fenster
+liegen zwischen „Strombedarf:" und „120,50" mehrere hundert Bildpunkte, und die frisch eingeführte Zeilenlinie
+lief quer durch die leere Mitte — sie machte den Riss erst sichtbar. Zweitens standen im Übersichtsreiter zwei
+Balken **untereinander**: „Energiebedarf" mit zwei Zeilen und „Ergebnisse" mit neun, in denen sich Wärme- und
+Stromgrößen abwechselten (WP-Wärme, BHKW-Wärme, Solar, SPK-Wärme, dann WP-Strom, Heizstab, BHKW-Strom, PV,
+SPK-Strom). Wer wissen wollte, was die Wärme macht, las jede zweite Zeile — und darunter standen zwei Ringe, die
+genau diese Trennung schon vorführten: links Wärme, rechts Strom.
+
+### Änderung 1 — die Liste ist nur so breit wie ihr Inhalt
+
+| Punkt | Was war (B‑13) | Was ist (B‑15) |
+|---|---|---|
+| Breite | `width: auto` (volle Blockbreite) | `width: max-content; max-width: 100%` |
+| Spalten | `minmax(180px, 1fr) minmax(90px, max-content) max-content` | `max-content minmax(7ch, max-content) max-content` |
+| Spaltenluft | `gap: 0 12px` | `gap: 0 20px` |
+| Beschriftung | durfte umbrechen | `white-space: nowrap` — „durchschnittliche Vollbenutzungsstunden:" bleibt einzeilig, die Wertspalte bündig |
+| Zu schmaler Block | Umbruch bzw. Überlagerung | `overflow-x: auto` — die Liste rollt in sich selbst, statt sich zu überlagern |
+| Zeilenlinie | über die Blockbreite | nur unter der Liste selbst |
+| Abschlusszeile | gab es nicht | `.epos-simerg-abschluss`: fett, `border-top: 2px solid var(--epos-rahmen)` — dieselbe Sprache wie `tr.epos-simerg-summe` der Stromspeichertabelle |
+
+Zeilenlinien, Luft (`4px 0 5px`), `tabular-nums`, Textfarbe der Beschriftung und die leise Einheit bleiben
+unverändert — sie waren nicht der Befund.
+
+### Änderung 2 — die Reiter, Punkt für Punkt
+
+| Reiter | Was geändert |
+|---|---|
+| **Übersicht** (`UebersichtReiter`) | Statt „Energiebedarf"/„Ergebnisse" untereinander **zwei Gruppen nebeneinander** im vorhandenen Raster `.epos-simerg-spalten`: **Wärme** (Bedarf Nahwärmenetz → WP → BHKW → solare Wärme → Spitzenkessel → **Restwärmebedarf**) und **Strom** (Strombedarf → Verbrauch WP → Heizstab → SPK → Produktion BHKW → PV → **Reststrombedarf**). Gruppenköpfe sind die vorhandenen dunklen Balken (`Gruppenkopf`) mit den neuen Texten. Der Stromverbrauch SPK stand vorher hinter den Erzeugerzeilen; er gehört zu den Verbrauchern, aus denen sich die Restzahl ergibt. Keine Zahl entfällt, keine Beschriftung ändert sich, die Präsenzregel bleibt. |
+| **Wärmepumpe** (`WaermepumpeReiter`) | Zehn Zeilen in **drei Unterabschnitten** (`h3.epos-untergruppe`, **kein** zweiter Balken): Wärme (Deckung, Wärmebedarf, Produktion WP, **Restwärme**), Strom (Verbrauch WP, Heizstab), Auslegung (Bivalenzpunkt, Vollbenutzungsstunden, min. Spitzenkesselleistung, Pufferkapazität). |
+| **Heizkessel** (`HeizkesselReiter`) | Drei Unterabschnitte: Wärme (Deckung, Wärmebedarf, Produktion SPK, Quellwärme, **Restwärme**), Strom (Strombedarf, **Reststrom**), Auslegung (Gesamtleistung, max. Gasbezug). Die Restwärme stand vorher **vor** der Produktion, aus der sie sich ergibt. Der Brennstoffblock behält seinen dunklen Balken — er ist eine eigene Gruppe, kein Unterabschnitt. |
+| **BHKW** (`BhkwReiter`) | Drei Unterabschnitte: Wärme (Bedarf, Produktion, Überschuß, Speicherladung, Speicherdeckung, Deckung, **Restwärme**), Strom (Bedarf, Produktion, Deckung, **Reststrom**), Betrieb (Vbh thermisch Summe/Mittel, Vbh elektrisch). Vorher fünfzehn Zeilen in einer Liste. Brennstoffblock unverändert. |
+| **Bedarf** (`BedarfReiter`) | Die zwei Spalten trugen ihre Ordnung nur als Quelltextkommentar; sie bekommen die **gleichen zwei Balken** „Wärme"/„Strom" wie die Übersicht. „Wärmebedarf je Bedarfsart" wird dadurch zum **Unterabschnitt** (`h3`) der Wärme — ein Balken im Balken wäre eine Hierarchie, die es nicht gibt. Keine Zeile, keine Zahl geändert. |
+| **Solarthermie** (`SolarthermieReiter`) | **Nicht gruppiert.** Fünf Zeilen, alle Wärme — nichts zu trennen. Nur die kompakte Liste (CSS). |
+| **Photovoltaik** (`PhotovoltaikReiter`) | **Nicht gruppiert.** Sieben Zeilen, alle Strom bzw. Einstrahlung. Nur die kompakte Liste (CSS). |
+| **Stromspeicher** (`StromspeicherReiter`) | Unberührt — seine Kennzahlen stehen in `table.epos-simerg-kennzahlen` und waren mit W11b‑B‑14 gerade gegliedert worden. |
+
+### Neue Ressourcenschlüssel (de/en)
+
+`SIMERG_GRP_WAERME` (Wärme / Heat), `SIMERG_GRP_STROM` (Strom / Electricity), `SIMERG_GRP_AUSLEGUNG`
+(Auslegung / Sizing), `SIMERG_GRP_BETRIEB` (Betrieb / Operation) — vier Schlüssel in `Resource.resx`,
+`Resource.en-US.resx` und `Resource.Designer.cs`. `SIMERG_LBL_ENERGIEBEDARF` und `SIMERG_LBL_ERGEBNISSE` bleiben
+als Text im Katalog stehen (keine Umbenennung), werden von der Oberfläche aber nicht mehr gerufen.
+
+### Bauweise
+
+`Wertzeile` bekommt in den vier geänderten Reitern einen vierten Parameter `betont` (Vorgabe `false`). Die
+Klasse kommt aus `Zeilenklasse(bool)`, das **`null`** zurückgibt, wenn nicht betont — Blazor lässt das Attribut
+dann ganz weg, die gewöhnliche Zeile bleibt zeichengleich `<dt>…</dt><dd>…</dd>` wie vorher (die Probe
+`Bhkw_zeigt_ohne_Nennleistung_einen_Gedankenstrich` prüft `<dd>—</dd>` wörtlich und bleibt grün).
+
+### Nachweis
+
+**UI**, neu — `UebersichtReiterTests`: `Die_Kennzahlen_stehen_in_den_zwei_Gruppen_Waerme_und_Strom` (zwei
+Balken „Wärme"/„Strom", die alten zwei Texte nirgends mehr), `Die_zwei_Gruppen_stehen_nebeneinander` (beide
+Listen in EINER Spaltenzeile), `Die_Waermegruppe_fuehrt_Bedarf_Erzeuger_und_Rest` und
+`Die_Stromgruppe_fuehrt_Bedarf_Verbraucher_Erzeuger_und_Rest` (die Zeilenfolge je Gruppe, wörtlich),
+`Die_Restzeile_schliesst_jede_Gruppe_betont_ab` (zwei `dt.epos-simerg-abschluss`, vier `dd`, neun Zeilen im
+Ganzen, und **kein** leeres Klassenattribut an den übrigen). `WaermepumpeReiterTests`:
+`Die_zehn_Felder_stehen_in_drei_Unterabschnitten` (drei `h3`, kein Balken, die drei Zeilenfolgen wörtlich),
+`Die_Restwaerme_schliesst_die_Waermegruppe_betont_ab`. `ErzeugerReiterTests`:
+`Kessel_gliedert_seine_Felder_in_Waerme_Strom_und_Auslegung`,
+`Bhkw_gliedert_seine_Felder_in_Waerme_Strom_und_Betrieb` (je vier Listen: drei Gruppen + Brennstoffblock).
+`BedarfReiterTests`: `Die_zwei_Spalten_tragen_die_Koepfe_Waerme_und_Strom`. `StilblattTests` über die neuen
+Regeln (ausgeglichene Klammern, keine Verschachtelung).
+
+Sandbox: Build **0 Fehler**, Kern **2073/2073**, UI **3301/3301** (vorher 2073 bzw. 3291; +10 UI, Kern
+unverändert). Kein Rechenweg berührt — dieselben Zahlen aus demselben DTO, nur anders sortiert und anders gesetzt.

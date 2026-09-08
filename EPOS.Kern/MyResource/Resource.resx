@@ -13640,6 +13640,18 @@ Alle Eingaben überprüfen!</value>
   <data name="SIMERG_GRP_BETRIEBSART" xml:space="preserve">
     <value>Betriebsart</value>
   </data>
+  <data name="SIMERG_GRP_WAERME" xml:space="preserve">
+    <value>Wärme</value>
+  </data>
+  <data name="SIMERG_GRP_STROM" xml:space="preserve">
+    <value>Strom</value>
+  </data>
+  <data name="SIMERG_GRP_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegung</value>
+  </data>
+  <data name="SIMERG_GRP_BETRIEB" xml:space="preserve">
+    <value>Betrieb</value>
+  </data>
   <data name="SIMERG_OPT_WAERMEGEFUEHRT" xml:space="preserve">
     <value>Wärmegeführt</value>
   </data>

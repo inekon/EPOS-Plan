@@ -34,20 +34,40 @@
     {
         <div class="epos-simerg-spalten">
 
+            @* NACH WAERME, STROM UND AUSLEGUNG GEGLIEDERT (Anwenderrueckmeldung
+               08.09.2026, W11b‑B‑15). Die zehn Zeilen standen in EINER Liste, in
+               der sich Waermemengen, Stromverbraeuche und Auslegungsgroessen
+               (Bivalenzpunkt, Vollbenutzungsstunden, Mindest-Spitzenkesselleistung,
+               Pufferkapazitaet) abwechselten. Drei Unterabschnitte trennen sie;
+               es ist ein <h3 class="epos-untergruppe"> und KEIN dunkler Balken —
+               ein Balken im Balken waere eine Hierarchie, die es fachlich nicht
+               gibt (dieselbe Regel wie in .epos-untergruppe). Keine Zahl faellt
+               weg, keine Beschriftung aendert sich. *@
+
             <section class="epos-simerg-block">
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_WAERME</h3>
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG, Zahl(Daten.DeckungProzent), "%")
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
+                </dl>
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_STROM</h3>
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, Zahl(Daten.StromverbrauchMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, Zahl(Daten.HeizstabStromverbrauchMwh), MWH)
+                </dl>
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_AUSLEGUNG</h3>
+                <dl class="epos-simerg-werte">
                     @* „-" statt einer Zahl, wenn der Lauf keinen Bivalenzpunkt kennt
                        (woertlich :4374). *@
                     @Wertzeile(Resource.SIMERG_LBL_BIVALENZPUNKT,
                                Daten.BivalenzpunktVorhanden ? Zahl(Daten.Bivalenzpunkt) : "-", "°C")
-                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, Zahl(Daten.StromverbrauchMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, Zahl(Daten.HeizstabStromverbrauchMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN,
                                Daten.Vollbenutzungsstunden.ToString("N0", Kultur), "h/a")
-                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_MIN_SPK_LEISTUNG, Zahl(Daten.MinSpkLeistungKw), "kW")
 
                     @* Ohne Speicherliste bleibt es beim Altausdruck der Rubrik
@@ -58,6 +78,7 @@
                                    Daten.PufferVolumenKwh.ToString(Kultur), "kWh")
                     }
                 </dl>
+
             </section>
 
             @* Die Streuwolke steht ueber BEIDE Spalten (Befund W11b-B-2). In der
@@ -246,9 +267,21 @@
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
-    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
-        <dt>@text</dt>
-        <dd>@wert</dd>
-        <dd class="epos-simerg-einheit">@einheit</dd>
+    /// <summary>
+    /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
+    /// die ABSCHLUSSZEILE einer Gruppe — den Rest, der nach allen Erzeugern uebrig
+    /// bleibt (W11b‑B‑15); ohne den Schalter bleibt das Markup unveraendert.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, string wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@wert</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
+
+    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 }

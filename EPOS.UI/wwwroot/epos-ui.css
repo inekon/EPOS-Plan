@@ -3267,20 +3267,41 @@ body {
    WAS IST: eine ruhige Tabellenform. Luft (4/5 px) und eine hauchduenne
    Trennlinie zwischen den Zeilen, die Beschriftung in der TEXTFARBE, die
    Wertspalte rechtsbuendig mit tabellarischen Ziffern und einer Mindestbreite,
-   die Einheit weiter leise. Die Liste nimmt die Breite ihres Blocks (1fr
-   statt max-content), damit Beschriftung und Zahl auseinanderruecken.
-   Nichts Buntes - die Aenderung ist Ruhe, keine Farbe. */
+   die Einheit weiter leise.
+   Nichts Buntes - die Aenderung ist Ruhe, keine Farbe.
+
+   NACHARBEIT W11b-B-15 (Anwenderrueckmeldung 08.09.2026): "Die Darstellung ist
+   schlechter geworden - zu weit auseinandergezogen zwischen Text und Zahl."
+   Die Liste nahm mit minmax(180px, 1fr) die GANZE Blockbreite; auf einem
+   breiten Fenster lagen zwischen "Strombedarf" und "120,50" mehrere hundert
+   Bildpunkte, und die Zeilenlinie lief quer durch die leere Mitte. Jetzt ist
+   die Liste nur so breit wie ihr Inhalt (width: max-content, gedeckelt auf die
+   Blockbreite), die Beschriftungsspalte ebenfalls max-content, die Wertspalte
+   traegt eine Mindestbreite in Ziffernbreiten (7ch ~ "1.234,56") - damit steht
+   die Zahl neben ihrer Beschriftung und die Linie nur unter der Liste selbst,
+   nicht ueber den ganzen Block. Zwischen den Spalten stehen 20 px Luft.
+
+   KEIN UMBRUCH IN DER BESCHRIFTUNG: "durchschnittliche Vollbenutzungsstunden:"
+   ist laenger als jede Zahl daneben; braeche sie um, verlieren die Wertspalten
+   ihre gemeinsame Grundlinie. white-space: nowrap haelt die Zeile zusammen und
+   macht das min-content der Spalte so gross wie ihren Inhalt; wird der Block
+   dennoch zu schmal (sehr kleines Fenster), schiebt sich die Liste in ihren
+   eigenen waagerechten Rollbalken, statt sich zu ueberlagern. */
 .epos-simerg-werte {
     display: grid;
-    grid-template-columns: minmax(180px, 1fr) minmax(90px, max-content) max-content;
-    gap: 0 12px;
+    grid-template-columns: max-content minmax(7ch, max-content) max-content;
+    gap: 0 20px;
     align-items: baseline;
+    width: max-content;
+    max-width: 100%;
+    overflow-x: auto;
 }
 
 .epos-simerg-werte dt,
 .epos-simerg-werte dd {
     padding: 4px 0 5px;
     border-bottom: 1px solid var(--epos-rahmen-leise);
+    white-space: nowrap;
 }
 
 .epos-simerg-werte dt { color: var(--epos-text); }
@@ -3292,6 +3313,17 @@ body {
 .epos-simerg-werte .epos-simerg-einheit {
     color: var(--epos-text-sehr-leise);
     text-align: left;
+}
+
+/* DIE ABSCHLUSSZEILE einer Gruppe (W11b-B-15): der Restbedarf, der nach allen
+   Erzeugern uebrig bleibt. Er ist keine weitere Zeile der Aufstellung, sondern
+   ihr Ergebnis - fett und mit einer kraeftigeren Linie DARUEBER abgesetzt,
+   dieselbe Sprache, die die Kennzahlentabelle des Stromspeichers fuer ihre
+   Summen spricht (tr.epos-simerg-summe). */
+.epos-simerg-werte .epos-simerg-abschluss {
+    font-weight: 700;
+    border-top: 2px solid var(--epos-rahmen);
+    padding-top: 6px;
 }
 
 .epos-simerg-block { display: flex; flex-direction: column; gap: 6px; }

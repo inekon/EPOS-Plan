@@ -1,7 +1,7 @@
 ﻿@* Der UEBERSICHTS-Reiter der Ergebnisseite (R2 + NavigatorUebersicht, iU9-W11b.2).
 
    ZWEI ROLLEN, EINE KOMPONENTE. Sie erscheint als Hauptreiter „Uebersicht"
-   (voll: Energiebedarf, Ergebnisblock, Kuchen UND der Navigatorteil) und als
+   (voll: die zwei Kennzahlengruppen Waerme und Strom UND der Navigatorteil) und als
    erstes Blatt des Ergebnisreiters (NurNavigator: nur die zwei Ringe, die zwei
    Kacheln und das Eigenanteilsraster). Dieselbe Ueberlegung wie beim
    PufferSpProjektDialog aus W10a, der in drei Rollen erscheint: Zwei Fassungen
@@ -30,15 +30,28 @@
     {
         <div class="epos-simerg-spalten">
 
+            @* NACH WAERME UND STROM GEGLIEDERT (Anwenderrueckmeldung 08.09.2026,
+               W11b‑B‑15): „Es sollte nach Kategorie Strom und Wärme gruppiert werden."
+               Der Vorlaeufer und die erste Fassung dieses Reiters fuehrten ZWEI
+               Balken untereinander — „Energiebedarf" mit den beiden Bedarfszahlen
+               und „Ergebnisse" mit neun Zeilen, in denen sich Waerme- und
+               Stromgroessen abwechselten. Wer wissen wollte, was die Waerme macht,
+               las jede zweite Zeile. Jetzt stehen die zwei Gruppen NEBENEINANDER,
+               in derselben Ordnung wie die zwei Ringe darunter: links Waerme,
+               rechts Strom. Jede Gruppe beginnt mit ihrem BEDARF, listet die
+               Erzeuger bzw. Verbraucher und schliesst mit dem REST — der einen
+               Zahl, die nach allem uebrig bleibt und deshalb betont steht.
+
+               Die Praesenzregel je Zeile bleibt unveraendert (W11-B21: keine
+               Nullzeilen fuer Komponenten, die das Projekt nicht hat), die
+               Ressourcentexte bleiben dieselben, und es verschwindet keine Zahl:
+               dieselben 13 Groessen, nur auf zwei Spalten sortiert. *@
+
             <section class="epos-simerg-block">
-                <Gruppenkopf Titel="@Resource.SIMERG_LBL_ENERGIEBEDARF" />
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF_NETZ, K.WaermebedarfGesamtMwh, MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, K.StrombedarfGesamtMwh, MWH)
-                </dl>
 
-                <Gruppenkopf Titel="@Resource.SIMERG_LBL_ERGEBNISSE" />
-                <dl class="epos-simerg-werte">
                     @* Die vier Waermezeilen in der Reihenfolge des Entwurfs
                        (UebersichtZeilenVorbereiten :4067-4072). *@
                     @if (Daten.Waermepumpe)
@@ -58,7 +71,27 @@
                         @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, K.KesselWaermeproduktionMwh, MWH)
                     }
 
-                    @* … und die fuenf Stromzeilen (:4075-4081). *@
+                    @* Die Restzeile beschreibt das PROJEKT und nicht eine Komponente -
+                       sie bleibt immer stehen und schliesst die Gruppe ab.
+
+                       ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): Es gibt nur noch EINE
+                       Restwaermezahl. Der Vorlaeufer fuehrte zwei - das Feld
+                       „Restwaermebedarf" (sim.RestwaermeMwh) und den Ergebnisblock
+                       (Bedarf minus PRODUKTION), und die zweite konnte negativ werden.
+                       Beide Felder des DTO tragen jetzt denselben Wert; die Kachel
+                       unten zeigt dieselbe Zahl. *@
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, K.RestwaermeMwh, MWH, betont: true)
+                </dl>
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_STROM" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, K.StrombedarfGesamtMwh, MWH)
+
+                    @* Erst die drei VERBRAUCHER (:4075-4081), dann die zwei
+                       ERZEUGER - in der Gruppe Strom ist das die Ordnung, in der
+                       sich die Restzahl darunter ergibt. *@
                     @if (Daten.Waermepumpe)
                     {
                         @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, K.WpStromverbrauchMwh, MWH)
@@ -66,6 +99,10 @@
                     @if (Daten.Heizstab)
                     {
                         @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, K.HeizstabStromverbrauchMwh, MWH)
+                    }
+                    @if (Daten.Heizkessel)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_SPK, K.KesselStromverbrauchMwh, MWH)
                     }
                     @if (Daten.Bhkw)
                     {
@@ -75,22 +112,8 @@
                     {
                         @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION_PV, K.PvStromproduktionMwh, MWH)
                     }
-                    @if (Daten.Heizkessel)
-                    {
-                        @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_SPK, K.KesselStromverbrauchMwh, MWH)
-                    }
 
-                    @* Die beiden Restzeilen beschreiben das PROJEKT und nicht eine
-                       Komponente - sie bleiben immer stehen.
-
-                       ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): Es gibt nur noch EINE
-                       Restwaermezahl. Der Vorlaeufer fuehrte zwei - das Feld
-                       „Restwaermebedarf" (sim.RestwaermeMwh) und den Ergebnisblock
-                       (Bedarf minus PRODUKTION), und die zweite konnte negativ werden.
-                       Beide Felder des DTO tragen jetzt denselben Wert; die Kachel
-                       unten zeigt dieselbe Zahl. *@
-                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, K.RestwaermeMwh, MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, K.ReststromMwh, MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, K.ReststromMwh, MWH, betont: true)
                 </dl>
             </section>
 
@@ -201,8 +224,8 @@
     [Parameter] public byte[]? RingStrom { get; set; }
 
     /// <summary>
-    /// Nur der Navigatorteil — die Rolle im Ergebnisreiter. Voll: mit
-    /// Energiebedarf, Ergebnisblock und Kuchen.
+    /// Nur der Navigatorteil — die Rolle im Ergebnisreiter. Voll: mit den
+    /// zwei Kennzahlengruppen Waerme und Strom davor.
     /// </summary>
     [Parameter] public bool NurNavigator { get; set; }
 
@@ -213,14 +236,30 @@
         Kennzahlen ?? new WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen();
 
     /// <summary>
-    /// Eine Wertzeile: Beschriftung, Zahl, Einheit. Format „F2" woertlich wie
-    /// <c>FuelleUebersicht</c> :3936-3954.
+    /// Eine Wertzeile: Beschriftung, Zahl, Einheit. Format „N2" (W11b‑B‑13,
+    /// vorher „F2" woertlich wie <c>FuelleUebersicht</c> :3936-3954).
     /// </summary>
-    private RenderFragment Wertzeile(string text, double wert, string einheit) => @<text>
-        <dt>@text</dt>
-        <dd>@Zahl(wert, "N2")</dd>
-        <dd class="epos-simerg-einheit">@einheit</dd>
+    /// <param name="betont">
+    /// Die ABSCHLUSSZEILE einer Gruppe — der Rest, der nach allen Erzeugern
+    /// uebrig bleibt (W11b‑B‑15). Sie steht fett und mit einer Linie darueber;
+    /// ohne den Schalter bleibt die Zeile ohne Klasse, das Markup also
+    /// unveraendert.
+    /// </param>
+    private RenderFragment Wertzeile(string text, double wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@Zahl(wert, "N2")</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
+
+    /// <summary>
+    /// Klasse der betonten Zeile — <c>null</c> laesst Blazor das Attribut ganz
+    /// weg, damit die gewoehnliche Zeile kein leeres <c>class=""</c> traegt.
+    /// </summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 
     private static string Zahl(double wert, string format)
         => wert.ToString(format, System.Globalization.CultureInfo.CurrentCulture);

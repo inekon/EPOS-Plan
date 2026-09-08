@@ -215,7 +215,7 @@ public class UebersichtReiterTests : BunitContext
 
     /// <summary>
     /// Die zweite Rolle: im Ergebnisreiter zeigt dieselbe Komponente NUR den
-    /// Navigatorteil — kein Energiebedarf, kein Ergebnisblock, kein Kuchen.
+    /// Navigatorteil — keine Kennzahlengruppen, kein Kuchen.
     /// </summary>
     [Fact]
     public void Die_Navigatorrolle_zeigt_nur_Ringe_Kacheln_und_Raster()
@@ -251,6 +251,101 @@ public class UebersichtReiterTests : BunitContext
         var seite = Zeichnen(Daten(), nurNavigator: true);
 
         Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund").Count);
+    }
+
+    // =====================================================================
+    //  Anwenderrueckmeldung 08.09.2026 — W11b‑B‑15: nach Wärme und Strom
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Anwenderrückmeldung 08.09.2026 (W11b‑B‑15).</b> „Es sollte nach
+    /// Kategorie Strom und Wärme gruppiert werden." Statt der zwei Balken
+    /// „Energiebedarf" und „Ergebnisse" untereinander stehen zwei Gruppen
+    /// NEBENEINANDER — in derselben Ordnung wie die zwei Ringe darunter.
+    /// </summary>
+    [Fact]
+    public void Die_Kennzahlen_stehen_in_den_zwei_Gruppen_Waerme_und_Strom()
+    {
+        var seite = Zeichnen(Daten());
+        var koepfe = seite.FindAll("h2.epos-gruppenkopf-titel");
+
+        Assert.Equal(2, koepfe.Count);
+        Assert.Equal("Wärme", koepfe[0].TextContent.Trim());
+        Assert.Equal("Strom", koepfe[1].TextContent.Trim());
+
+        // Die zwei alten Balken gibt es nicht mehr.
+        Assert.DoesNotContain("Energiebedarf", seite.Markup);
+        Assert.DoesNotContain("Ergebnisse", seite.Markup);
+    }
+
+    /// <summary>
+    /// Die zwei Gruppen stehen in EINER Spaltenzeile — nebeneinander, wie die
+    /// zwei Ringe; untereinander wären es wieder zwei Balken.
+    /// </summary>
+    [Fact]
+    public void Die_zwei_Gruppen_stehen_nebeneinander()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Contains(seite.FindAll("div.epos-simerg-spalten"),
+                        z => z.QuerySelectorAll("dl.epos-simerg-werte").Length == 2);
+    }
+
+    /// <summary>
+    /// Die Wärmegruppe: erst der BEDARF, dann die Erzeuger in der Reihenfolge
+    /// des Entwurfs (WP, BHKW, Solar, SPK), zuletzt der REST. Das Projekt der
+    /// Probe hat Wärmepumpe und Kessel — BHKW und Solarthermie fehlen nach der
+    /// Präsenzregel.
+    /// </summary>
+    [Fact]
+    public void Die_Waermegruppe_fuehrt_Bedarf_Erzeuger_und_Rest()
+    {
+        var seite = Zeichnen(Daten());
+        var listen = seite.FindAll("dl.epos-simerg-werte");
+
+        Assert.Equal(2, listen.Count);
+        Assert.Equal(
+            new[] { "Wärmebedarf des Nahwärmenetzes:", "Wärmeproduktion WP:",
+                    "Wärmeproduktion der Spitzenkessel:", "Restwärmebedarf:" },
+            listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// Die Stromgruppe: BEDARF, die drei Verbraucher, die Erzeuger, REST. Der
+    /// Stromverbrauch SPK stand vorher HINTER den Erzeugerzeilen; er gehört zu
+    /// den Verbrauchern, aus denen sich die Restzahl ergibt.
+    /// </summary>
+    [Fact]
+    public void Die_Stromgruppe_fuehrt_Bedarf_Verbraucher_Erzeuger_und_Rest()
+    {
+        var seite = Zeichnen(Daten());
+        var listen = seite.FindAll("dl.epos-simerg-werte");
+
+        Assert.Equal(
+            new[] { "Strombedarf:", "Stromverbrauch WP:", "Stromverbrauch Heizstab:",
+                    "Stromverbrauch SPK:", "Reststrombedarf:" },
+            listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// Der Rest ist keine weitere Zeile der Aufstellung, sondern ihr Ergebnis:
+    /// Er trägt in allen drei Zellen die Abschlusskennzeichnung (fett, Linie
+    /// darüber). Keine andere Zeile trägt sie — und keine gewöhnliche Zeile
+    /// bekommt ein leeres Klassenattribut (<c>Zeilenklasse</c> gibt <c>null</c>).
+    /// </summary>
+    [Fact]
+    public void Die_Restzeile_schliesst_jede_Gruppe_betont_ab()
+    {
+        var seite = Zeichnen(Daten());
+        var betont = seite.FindAll("dt.epos-simerg-abschluss");
+
+        Assert.Equal(2, betont.Count);
+        Assert.Equal("Restwärmebedarf:", betont[0].TextContent.Trim());
+        Assert.Equal("Reststrombedarf:", betont[1].TextContent.Trim());
+
+        Assert.Equal(4, seite.FindAll("dd.epos-simerg-abschluss").Count);   // Wert und Einheit je Zeile
+        Assert.Equal(9, seite.FindAll("dl.epos-simerg-werte dt").Count);    // 4 Wärme + 5 Strom
+        Assert.Equal(2, seite.FindAll("dl.epos-simerg-werte dt[class]").Count);
     }
 
     /// <summary>Kein Rueckruf = kein Knopf (Hausregel seit W2).</summary>

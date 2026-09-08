@@ -25,8 +25,18 @@
 
     <div class="epos-simerg-spalten">
 
-        @* ---- Waerme ---- *@
+        @* ---- Waerme ----
+
+           DIE ZWEI SPALTEN TRAGEN SEIT W11b‑B‑15 IHREN NAMEN
+           (Anwenderrueckmeldung 08.09.2026). Die Ordnung Waerme links, Strom
+           rechts stand hier schon immer, aber nur als Kommentar im Quelltext:
+           Auf dem Schirm standen zwei namenlose Listen nebeneinander. Die zwei
+           Balken sind dieselben wie in der Uebersicht — derselbe Reiterstapel,
+           dieselben zwei Kategorien. „Bedarf je Kanal" wird damit zum
+           UNTERABSCHNITT der Waerme (h3), denn ein Balken im Balken waere eine
+           Hierarchie, die es nicht gibt. *@
         <section class="epos-simerg-block">
+            <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
             <dl class="epos-simerg-werte">
                 @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF_NETZ, Daten.WaermebedarfGesamtMwh, MWH)
                 @Wertzeile(Resource.SIMERG_LBL_MAX_WAERMELAST, Daten.WaermelastMaxKw, "kW")
@@ -37,7 +47,7 @@
                der Lauf fuehrt. *@
             @if (KanalzeilenDa)
             {
-                <Gruppenkopf Titel="@Resource.SIM_LABEL_BEDARF_JE_KANAL" />
+                <h3 class="epos-untergruppe">@Resource.SIM_LABEL_BEDARF_JE_KANAL</h3>
                 <dl class="epos-simerg-werte">
                     @for (int k = 0; k < Daten.KanalMwh.Count; k++)
                     {
@@ -67,6 +77,7 @@
 
         @* ---- Strom ---- *@
         <section class="epos-simerg-block">
+            <Gruppenkopf Titel="@Resource.SIMERG_GRP_STROM" />
             <dl class="epos-simerg-werte">
                 @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Daten.StrombedarfGesamtMwh, MWH)
                 @Wertzeile(Resource.SIMERG_LBL_MAX_STROMBEDARF, Daten.StrombedarfMaxKw, "kW")

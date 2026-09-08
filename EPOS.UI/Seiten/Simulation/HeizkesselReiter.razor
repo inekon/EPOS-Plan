@@ -32,26 +32,44 @@
     {
         <div class="epos-simerg-spalten">
 
+            @* NACH WAERME, STROM UND AUSLEGUNG GEGLIEDERT (Anwenderrueckmeldung
+               08.09.2026, W11b‑B‑15). Neun Zeilen in EINER Liste mischten Waerme,
+               Strom und die zwei Leistungen der Auslegung; die Restwaerme stand
+               noch VOR der Produktion, aus der sie sich ergibt. Drei
+               Unterabschnitte, und der Rest schliesst seine Gruppe ab. *@
+
             <section class="epos-simerg-block">
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_WAERME</h3>
                 <dl class="epos-simerg-werte">
                     @* Ohne Projektbedarf steht hier „0" und nicht „NaN" - woertlich
                        aus :4530. *@
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
                                BedarfVorhanden ? Zahl(Daten.DeckungProzent) : "0", "%")
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, Zahl(Daten.WaermeproduktionMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_KESSEL, Zahl(Daten.MaxKesselleistungKw), "kW")
-                    @Wertzeile(Resource.SIMERG_LBL_MAX_GASBEZUG, Zahl(Daten.GasspitzeKw), "kW")
 
                     @* ETAPPE D4: Die Quellwaerme der Kaskade. Ohne Quellbezug steht dort
                        0,00 - die Zeile bleibt sichtbar, denn „der Kessel bezieht nichts
                        aus einem Puffer" ist die Antwort auf genau diese Frage. *@
                     @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh),
                                Resource.SIM_KESSEL_QUELLWAERME_EINHEIT)
+
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
                 </dl>
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_STROM</h3>
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH, betont: true)
+                </dl>
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_AUSLEGUNG</h3>
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_KESSEL, Zahl(Daten.MaxKesselleistungKw), "kW")
+                    @Wertzeile(Resource.SIMERG_LBL_MAX_GASBEZUG, Zahl(Daten.GasspitzeKw), "kW")
+                </dl>
+
             </section>
 
             <section class="epos-simerg-block">
@@ -149,9 +167,21 @@
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
-    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
-        <dt>@text</dt>
-        <dd>@wert</dd>
-        <dd class="epos-simerg-einheit">@einheit</dd>
+    /// <summary>
+    /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
+    /// die ABSCHLUSSZEILE einer Gruppe (W11b‑B‑15); ohne den Schalter bleibt das
+    /// Markup unveraendert.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, string wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@wert</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
+
+    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 }

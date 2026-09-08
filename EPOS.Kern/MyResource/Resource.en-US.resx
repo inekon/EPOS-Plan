@@ -13633,6 +13633,18 @@ Please check all entries!</value>
   <data name="SIMERG_GRP_BETRIEBSART" xml:space="preserve">
     <value>Operating mode</value>
   </data>
+  <data name="SIMERG_GRP_WAERME" xml:space="preserve">
+    <value>Heat</value>
+  </data>
+  <data name="SIMERG_GRP_STROM" xml:space="preserve">
+    <value>Electricity</value>
+  </data>
+  <data name="SIMERG_GRP_AUSLEGUNG" xml:space="preserve">
+    <value>Sizing</value>
+  </data>
+  <data name="SIMERG_GRP_BETRIEB" xml:space="preserve">
+    <value>Operation</value>
+  </data>
   <data name="SIMERG_OPT_WAERMEGEFUEHRT" xml:space="preserve">
     <value>Heat-led</value>
   </data>

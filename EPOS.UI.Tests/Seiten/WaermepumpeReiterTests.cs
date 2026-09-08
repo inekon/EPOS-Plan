@@ -98,6 +98,48 @@ public class WaermepumpeReiterTests : BunitContext
         Assert.Contains("20,22", text);       // Mindest-Spitzenkesselleistung
     }
 
+    /// <summary>
+    /// <b>Anwenderrückmeldung 08.09.2026 (W11b‑B‑15).</b> Die zehn Zeilen standen
+    /// in EINER Liste, in der sich Wärmemengen, Stromverbräuche und
+    /// Auslegungsgrößen abwechselten. Drei Unterabschnitte trennen sie — als
+    /// <c>h3.epos-untergruppe</c> und NICHT als zweiter dunkler Balken.
+    /// </summary>
+    [Fact]
+    public void Die_zehn_Felder_stehen_in_drei_Unterabschnitten()
+    {
+        var seite = Zeichnen(Erg(puffer: false));
+
+        Assert.Equal(new[] { "Wärme", "Strom", "Auslegung" },
+                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
+        Assert.Empty(seite.FindAll("h2.epos-gruppenkopf-titel"));
+
+        var listen = seite.FindAll("dl.epos-simerg-werte");
+        Assert.Equal(3, listen.Count);
+
+        Assert.Equal(
+            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion WP:", "Restwärmebedarf:" },
+            listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Stromverbrauch WP:", "Stromverbrauch Heizstab:" },
+            listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Bivalenzpunkt:", "durchschnittliche Vollbenutzungsstunden:",
+                    "Minimale Spitzenkesselleistung:", "Kapazität des Pufferspeichers:" },
+            listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>Die Restwärme schliesst die Wärmegruppe betont ab (W11b‑B‑15).</summary>
+    [Fact]
+    public void Die_Restwaerme_schliesst_die_Waermegruppe_betont_ab()
+    {
+        var seite = Zeichnen(Erg());
+        var betont = seite.FindAll("dt.epos-simerg-abschluss");
+
+        Assert.Single(betont);
+        Assert.Equal("Restwärmebedarf:", betont[0].TextContent.Trim());
+        Assert.Equal(2, seite.FindAll("dd.epos-simerg-abschluss").Count);
+    }
+
     /// <summary>„-" statt einer Zahl, wenn der Lauf keinen Bivalenzpunkt kennt.</summary>
     [Fact]
     public void Ohne_Bivalenzpunkt_steht_ein_Strich()

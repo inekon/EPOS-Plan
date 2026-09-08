@@ -33214,11 +33214,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_BETRIEB {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
         /// </summary>
         public static string SIMERG_GRP_BETRIEBSART {
             get {
                 return ResourceManager.GetString("SIMERG_GRP_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_STROM {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_WAERME {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_WAERME", resourceCulture);
             }
         }
         

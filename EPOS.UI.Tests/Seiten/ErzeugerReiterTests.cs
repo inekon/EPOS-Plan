@@ -117,6 +117,39 @@ public class ErzeugerReiterTests : BunitContext
         Assert.DoesNotContain("Pellets", seite.Markup);
     }
 
+    /// <summary>
+    /// <b>Anwenderrückmeldung 08.09.2026 (W11b‑B‑15).</b> Neun Zeilen in EINER
+    /// Liste mischten Wärme, Strom und die zwei Leistungen der Auslegung; die
+    /// Restwärme stand noch VOR der Produktion, aus der sie sich ergibt. Drei
+    /// Unterabschnitte, und der Rest schliesst seine Gruppe betont ab. Der
+    /// Brennstoffblock bleibt eine eigene Gruppe mit dunklem Balken.
+    /// </summary>
+    [Fact]
+    public void Kessel_gliedert_seine_Felder_in_Waerme_Strom_und_Auslegung()
+    {
+        var seite = KesselZeichnen(Kessel());
+
+        Assert.Equal(new[] { "Wärme", "Strom", "Auslegung" },
+                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
+
+        var listen = seite.FindAll("dl.epos-simerg-werte");
+        Assert.Equal(4, listen.Count);          // drei Gruppen + der Brennstoffblock
+
+        Assert.Equal(
+            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion der Spitzenkessel:",
+                    "Quellwärme aus Kaskade:", "Restwärmebedarf:" },
+            listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Strombedarf:", "Reststrombedarf:" },
+            listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Gesamte Wärmeleistung der Heizkessel:", "Maximaler Gasbezug:" },
+            listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+
+        Assert.Equal(new[] { "Restwärmebedarf:", "Reststrombedarf:" },
+                     seite.FindAll("dt.epos-simerg-abschluss").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
     /// <summary>Ohne Projektbedarf steht „0" und nicht „NaN" (woertlich :4530).</summary>
     [Fact]
     public void Kessel_zeigt_ohne_Bedarf_eine_Null()
@@ -264,6 +297,40 @@ public class ErzeugerReiterTests : BunitContext
         Assert.Contains("Vbh thermisch, Summe Module", seite.Markup);
         Assert.Contains("Vbh thermisch, Mittel Module", seite.Markup);
         Assert.Contains("1.505", seite.Markup);   // N0 (W11b-B-13)
+    }
+
+    /// <summary>
+    /// <b>Anwenderrückmeldung 08.09.2026 (W11b‑B‑15).</b> Fünfzehn Zeilen in
+    /// EINER Liste: drei Stundenzeilen, dann Wärme und Strom im Wechsel, die
+    /// Restzahlen in der Mitte, die zwei Deckungsgrade ganz unten. Jetzt tragen
+    /// drei Unterabschnitte die Ordnung, jede Gruppe schliesst mit ihrem Rest.
+    /// </summary>
+    [Fact]
+    public void Bhkw_gliedert_seine_Felder_in_Waerme_Strom_und_Betrieb()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+
+        Assert.Equal(new[] { "Wärme", "Strom", "Betrieb" },
+                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
+
+        var listen = seite.FindAll("dl.epos-simerg-werte");
+        Assert.Equal(4, listen.Count);          // drei Gruppen + der Brennstoffblock
+
+        Assert.Equal(
+            new[] { "Wärmebedarf:", "Wärmeproduktion:", "Wärmeüberschuß (*):",
+                    "davon in den Speicher:", "aus dem Speicher gedeckt:",
+                    "Wärmebedarfsdeckung:", "Restwärmebedarf:" },
+            listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Strombedarf:", "Stromproduktion:", "Strombedarfsdeckung:", "Reststrombedarf:" },
+            listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Vbh thermisch, Summe Module", "Vbh thermisch, Mittel Module",
+                    "Vollbenutzungsstunden elektrisch:" },
+            listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+
+        Assert.Equal(new[] { "Restwärmebedarf:", "Reststrombedarf:" },
+                     seite.FindAll("dt.epos-simerg-abschluss").Select(z => z.TextContent.Trim()).ToArray());
     }
 
     /// <summary>Ohne elektrische Nennleistung steht „—" und keine erfundene Zahl.</summary>

@@ -35,26 +35,20 @@
     {
         <div class="epos-simerg-spalten">
 
-            <section class="epos-simerg-block">
-                <dl class="epos-simerg-werte">
-                    @Wertzeile(Resource.SIM_BHKW_VBH_TH_SUMME,
-                               Daten.BetriebsstundenThermisch.ToString("N0", Kultur), "h/a")
-                    @Wertzeile(Resource.SIM_BHKW_VBH_TH_MITTEL,
-                               Daten.BetriebsstundenDurchschnitt.ToString("N0", Kultur), "h/a")
-                    @if (Praesent)
-                    {
-                        @Wertzeile(Resource.SIM_BHKW_VBH_EL,
-                                   Daten.VbhElektrischBekannt
-                                       ? Daten.VbhElektrisch.ToString("N0", Kultur)
-                                       : "—", "h/a")
-                    }
+            @* NACH WAERME, STROM UND BETRIEB GEGLIEDERT (Anwenderrueckmeldung
+               08.09.2026, W11b‑B‑15). Fuenfzehn Zeilen in EINER Liste: drei
+               Stundenzeilen, dann Waerme und Strom im Wechsel, die Restzahlen in
+               der Mitte und die zwei Deckungsgrade ganz unten. Jetzt tragen die
+               drei Unterabschnitte die Ordnung; jede Gruppe schliesst mit ihrem
+               Rest. Der Brennstoffblock rechts behaelt seinen dunklen Balken —
+               er ist eine eigene Gruppe, kein Unterabschnitt. *@
 
+            <section class="epos-simerg-block">
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_WAERME</h3>
+                <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION, Zahl(Daten.WaermeproduktionMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION, Zahl(Daten.StromproduktionMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEUEBERSCHUSS, Zahl(Daten.WaermeueberschussMwh), MWH)
 
                     @* Der Speicherbeitrag, im Vorlaeufer bis Live-Test 1 nirgends
@@ -68,9 +62,33 @@
 
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
                                WaermebedarfVorhanden ? Zahl(Daten.WaermedeckungProzent) : "0", "%")
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
+                </dl>
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_STROM</h3>
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION, Zahl(Daten.StromproduktionMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_STROMBEDARFSDECKUNG,
                                StrombedarfVorhanden ? Zahl(Daten.StromdeckungProzent) : "0", "%")
+                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH, betont: true)
                 </dl>
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_BETRIEB</h3>
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIM_BHKW_VBH_TH_SUMME,
+                               Daten.BetriebsstundenThermisch.ToString("N0", Kultur), "h/a")
+                    @Wertzeile(Resource.SIM_BHKW_VBH_TH_MITTEL,
+                               Daten.BetriebsstundenDurchschnitt.ToString("N0", Kultur), "h/a")
+                    @if (Praesent)
+                    {
+                        @Wertzeile(Resource.SIM_BHKW_VBH_EL,
+                                   Daten.VbhElektrischBekannt
+                                       ? Daten.VbhElektrisch.ToString("N0", Kultur)
+                                       : "—", "h/a")
+                    }
+                </dl>
+
             </section>
 
             <section class="epos-simerg-block">
@@ -186,9 +204,21 @@
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
-    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
-        <dt>@text</dt>
-        <dd>@wert</dd>
-        <dd class="epos-simerg-einheit">@einheit</dd>
+    /// <summary>
+    /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
+    /// die ABSCHLUSSZEILE einer Gruppe (W11b‑B‑15); ohne den Schalter bleibt das
+    /// Markup unveraendert.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, string wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@wert</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
+
+    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 }
