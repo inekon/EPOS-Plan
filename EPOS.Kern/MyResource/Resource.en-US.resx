@@ -15659,7 +15659,7 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>Inverter from the catalogue:</value>
   </data>
   <data name="PVS_HERLEITUNG_GERAETEWAHL" xml:space="preserve">
-    <value>The selected device is assigned to the next string. It can be changed per string in the table.</value>
+    <value>The selected device is assigned to the next string. It can be changed per string in the table. Device and MPPT are numbers, blank means 1: strings with the same device number share ONE inverter; a second inverter of the same type gets device 2.</value>
   </data>
   <data name="PVS_HINWEIS_KATALOG_LEER" xml:space="preserve">
     <value>The inverter catalogue is empty. Import devices via: Administration → Data &amp; import → Photovoltaics → “Inverters (CEC, OND)…”.</value>

@@ -1078,3 +1078,27 @@ Beide Testreihen laufen unter `LANG=de_DE.UTF-8` **und** `LANG=en_US.UTF-8` grü
    **2,752** — nicht mehr 2751,912. Anzahl ändern: Der Wert zieht sofort nach.
 4. **A‑W6‑O‑5.4** Auf Englisch umschalten: „Module power [W]:" und „Total power [kW]:",
    die Zahl mit Punkt („2.752").
+
+---
+
+## Windows-Abnahme 07.09.2026 — W6‑B‑6: ein zweiter Wechselrichter desselben Typs
+
+**Anlass (Anwender, Bildschirmfoto „Verwaltung Photovoltaik Module"):** „Wird zum Beispiel zwei
+Mal der gleiche Wechselrichter für zwei Stränge gewählt, so wird nur ein Wechselrichter
+ausgewählt. Es soll aber auch die Möglichkeit für mehrere Wechselrichter desselben Typs geben.
+Diese Auswahl fehlt."
+
+**Befund.** Die Möglichkeit gibt es seit S3 — ein Gerät ist das Paar (Wechselrichtertyp,
+Gerätenummer), Spalte „Gerät" der Strangtabelle. Sie war nur nicht zu sehen: Das Feld stand
+LEER (leer heißt 1), und kein Satz auf der Seite sagte, dass zwei Stränge mit derselben Nummer
+an EINEM Gerät hängen. Beide Stränge landeten stumm auf Gerät 1, die Ampel meldete folgerichtig
+DC/AC 1,77 und 10,6 kWp über der DC-Eingangsgrenze.
+
+**Änderung (nur Anzeige, kein Rechenweg):** Platzhalter „1" in den Spalten Gerät und MPPT
+(`PvStraengeFelder.razor`); der Herleitungssatz der Gerätewahl (`PVS_HERLEITUNG_GERAETEWAHL`,
+de/en, Rückfall in `PvStrangDaten.cs`) erklärt die Nummern: „Stränge mit derselben Gerätenummer
+hängen an EINEM Wechselrichter; ein zweiter Wechselrichter desselben Typs bekommt Gerät 2."
+Nachweis: `EPOS.UI.Tests` 3 217/3 217 im Sandbox-Lauf.
+
+**Offen (Vorschlag):** Die Gerätewahl könnte beim Zuweisen eines schon belegten Typs die
+nächste freie Nummer vorschlagen — das wäre ein Entscheid zur Vorbelegung, kein Befund.

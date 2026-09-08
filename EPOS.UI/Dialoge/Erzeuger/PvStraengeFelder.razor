@@ -210,11 +210,15 @@
                                               WertChanged="@(w => Setzen(s, () => s.Bezeichner = w ?? ""))" />
                                 </td>
                                 <td class="epos-strangtabelle-zahl">
-                                    <Ganzzahlfeld Wert="@s.Geraetenummer" Min="1"
+                                    @* Leer heisst 1 - und das steht seit der Windows-Abnahme
+                                       vom 07.09.2026 als Platzhalter IM Feld: Zwei Straenge auf
+                                       demselben Typ landeten stumm auf Geraet 1, der Anwender
+                                       fand keinen Weg zu einem zweiten Geraet desselben Typs. *@
+                                    <Ganzzahlfeld Wert="@s.Geraetenummer" Min="1" Platzhalter="1"
                                                   WertChanged="@(w => Setzen(s, () => s.Geraetenummer = w))" />
                                 </td>
                                 <td class="epos-strangtabelle-zahl">
-                                    <Ganzzahlfeld Wert="@s.Mppt" Min="1"
+                                    <Ganzzahlfeld Wert="@s.Mppt" Min="1" Platzhalter="1"
                                                   WertChanged="@(w => Setzen(s, () => s.Mppt = w))" />
                                 </td>
                                 <td class="epos-strangtabelle-zahl">

@@ -15666,7 +15666,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>Wechselrichter aus dem Katalog:</value>
   </data>
   <data name="PVS_HERLEITUNG_GERAETEWAHL" xml:space="preserve">
-    <value>Das gewählte Gerät bekommt der nächste Strang. In der Tabelle lässt es sich je Strang ändern.</value>
+    <value>Das gewählte Gerät bekommt der nächste Strang. In der Tabelle lässt es sich je Strang ändern. Gerät und MPPT sind Nummern, leer heißt 1: Stränge mit derselben Gerätenummer hängen an EINEM Wechselrichter; ein zweiter Wechselrichter desselben Typs bekommt Gerät 2.</value>
   </data>
   <data name="PVS_HINWEIS_KATALOG_LEER" xml:space="preserve">
     <value>Der Wechselrichterkatalog ist leer. Geräte einlesen über: Administration → Daten &amp; Import → Photovoltaik → „Wechselrichter (CEC, OND)…“.</value>

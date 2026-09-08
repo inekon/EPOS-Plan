@@ -203,7 +203,7 @@ public sealed class PvStrangTexte
     /// <summary>Die Herleitung unter der Katalogwahl — <c>PVS_HERLEITUNG_GERAETEWAHL</c>.</summary>
     public string HerleitungGeraetewahl { get; set; } =
         T("PVS_HERLEITUNG_GERAETEWAHL",
-          "Das gewählte Gerät bekommt der nächste Strang. In der Tabelle lässt es sich je Strang ändern.");
+          "Das gewählte Gerät bekommt der nächste Strang. In der Tabelle lässt es sich je Strang ändern. Gerät und MPPT sind Nummern, leer heißt 1: Stränge mit derselben Gerätenummer hängen an EINEM Wechselrichter; ein zweiter Wechselrichter desselben Typs bekommt Gerät 2.");
 
     /// <summary>
     /// Der Weg zum Import, wenn der Wechselrichterkatalog LEER ist —
