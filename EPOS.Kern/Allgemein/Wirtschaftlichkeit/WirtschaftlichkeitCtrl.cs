@@ -4483,6 +4483,11 @@ namespace WindowsFormsApplication1
                 // Anlage→Komponente→Projekt); „die Investition steigt um 10 %" heißt in
                 // diesem Modell, dass diese Bemessungsbasis um 10 % steigt. Neu
                 // aufgelöst wird nichts — die Kostenwelt kennt den Ausschlag nicht.
+                // W5‑B‑8 (09.09.2026): Diese Bemessungsbasis ist seither die
+                // Investitionskaskade (satzbasierte Zeilen und Prozentzeilen zählen
+                // mit), nicht mehr die rohe Spaltensumme. Der Ausschlag skaliert damit
+                // dieselbe Investition, die die Kachel und I₀ zeigen — die Modellannahme
+                // selbst (linear im Faktor) ist unverändert.
                 //
                 // WIE skaliert wird: als ADDITIVE Korrektur auf den fertigen
                 // Betriebs-Topf, betrieb = e.Betrieb + (f − 1) × Anteil. Das ist
@@ -5283,6 +5288,9 @@ namespace WindowsFormsApplication1
                 // gebaut — und nur, wenn eine Position ihn wirklich braucht.
                 EndenergieAufloeser endenergie = null;
                 bool endenergieVersucht = false;
+                // W5‑B‑8: die Investitionskaskade des Projekts — höchstens EINMAL je
+                // Leseschleife, und nur, wenn eine Zeile sie wirklich braucht.
+                Dictionary<KeyValuePair<int, int>, double> investSummen = null;
 
                 foreach (DataRow r in dt.Rows)
                 {
@@ -5336,7 +5344,8 @@ namespace WindowsFormsApplication1
                             else if (IstRueckfallErmittelbareArt(bem))
                             {
                                 double? frisch = RueckfallMenge(idProjekt, r, bem,
-                                                                ref endenergie, ref endenergieVersucht);
+                                                                ref endenergie, ref endenergieVersucht,
+                                                                ref investSummen);
                                 if (frisch.HasValue) menge = frisch;
                             }
 
@@ -5440,6 +5449,8 @@ namespace WindowsFormsApplication1
                 // Nachweisliste muss deren Summe treffen (E7-Probe).
                 EndenergieAufloeser endenergie = null;
                 bool endenergieVersucht = false;
+                // W5‑B‑8: dieselbe Kaskade wie in der Summenschleife, einmal je Lesepass.
+                Dictionary<KeyValuePair<int, int>, double> investSummen = null;
 
                 foreach (DataRow r in dt.Rows)
                 {
@@ -5460,7 +5471,8 @@ namespace WindowsFormsApplication1
                     else if (IstRueckfallErmittelbareArt(bem))
                     {
                         double? frisch = RueckfallMenge(idProjekt, r, bem,
-                                                        ref endenergie, ref endenergieVersucht);
+                                                        ref endenergie, ref endenergieVersucht,
+                                                        ref investSummen);
                         if (frisch.HasValue) menge = frisch;
                     }
 
@@ -5649,15 +5661,29 @@ namespace WindowsFormsApplication1
         /// Menge-Spalte, die nach Konzept § 4.5 reine Ausweisgröße ist („Stand des
         /// Laufs"); die Konserve gilt nur noch, wenn hier nichts ermittelbar ist.
         /// null = keine Basis (kein Lauf, kein Gerät, keine Investsumme).
+        /// <para><b>ANWENDERENTSCHEID W5‑B‑8 (09.09.2026):</b> Die Investitionssumme kommt
+        /// seither aus der <see cref="InvestKaskade"/> statt aus
+        /// <c>SUM(EingegebenerWert)</c> — satzbasierte Zeilen und Prozentzeilen der
+        /// Investseite zählen also mit. <paramref name="investSummen"/> ist der Merker
+        /// dieser Kaskade für die LAUFENDE Leseschleife (null = noch nicht gelesen):
+        /// Ohne ihn liefe der ganze Rechenweg der Kategorie 1 je Betriebskostenzeile
+        /// erneut — dasselbe Muster wie <paramref name="aufloeser"/>/<paramref name="versucht"/>
+        /// beim Endenergie-Auflöser.</para>
         /// </summary>
         private static double? RueckfallMenge(int idProjekt, DataRow r, string bem,
-                                              ref EndenergieAufloeser aufloeser, ref bool versucht)
+                                              ref EndenergieAufloeser aufloeser, ref bool versucht,
+                                              ref Dictionary<KeyValuePair<int, int>, double> investSummen)
         {
             int komponente, idAnlage;
             KomponenteUndAnlage(r, out komponente, out idAnlage);
 
             if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
-                return BetriebskostenCtrl.InvestSummeFuer(idProjekt, komponente, idAnlage);
+            {
+                if (investSummen == null)
+                    investSummen = BetriebskostenCtrl.Kaskadensummen(idProjekt);
+                return BetriebskostenCtrl.InvestSummeFuer(idProjekt, komponente, idAnlage,
+                                                          investSummen);
+            }
 
             // PAKET FX2 (B-4): „je Stunde" holt seine Stundenzahl aus dem Lauf — sonst
             // wie die kWh-Arten. Die Gerätewelt kennt die Art nicht; sie darf deshalb
@@ -5693,6 +5719,11 @@ namespace WindowsFormsApplication1
         /// Art (die Menge bleibt Eingabewert, z. B. „je kWh") oder Zeile unauffindbar.
         /// „% der Investition" in Kategorie 1 bemisst sich an der KASKADE (H4b,
         /// Runde 3), nicht an der Kostenwelt-Summe — dort kein Einzelzeilen-Ausweis.
+        /// <para><b>W5‑B‑8 (09.09.2026):</b> In KATEGORIE 2 wird für dieselbe
+        /// Bemessungsart seither die KASKADENSUMME ausgewiesen (vorher die rohe
+        /// Spaltensumme <c>SUM(EingegebenerWert)</c>) — dieselbe Zahl, mit der der
+        /// Rechenweg den Betrag bildet. Der Ausweis bleibt damit das, was er sein soll:
+        /// die tatsächlich angesetzte Bezugsgröße, nicht eine zweite Rechnung.</para>
         /// <para>PAKET FX2 (Anwenderentscheid B-4): „je Stunde" zählt seither zu den
         /// ermittelbaren Arten und ist hier OHNE weitere Änderung mitgedeckt — die
         /// Methode fragt <see cref="IstRueckfallErmittelbareArt"/>; ausgewiesen wird
@@ -5727,9 +5758,13 @@ namespace WindowsFormsApplication1
 
                 EndenergieAufloeser aufloeser = null;
                 bool versucht = false;
+                // W5‑B‑8: EINE Zeile, also auch nur ein Kaskadenlesen — der Merker steht
+                // hier nur, weil RueckfallMenge ihn führt.
+                Dictionary<KeyValuePair<int, int>, double> investSummen = null;
                 menge = endenergie
                     ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht)
-                    : RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht);
+                    : RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht,
+                                     ref investSummen);
 
                 var p = new DbParam("@m", DbParamTyp.Double);
                 p.Wert = menge.HasValue ? (object)menge.Value : DBNull.Value;

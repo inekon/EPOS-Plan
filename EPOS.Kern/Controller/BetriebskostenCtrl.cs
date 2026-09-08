@@ -37,6 +37,14 @@ namespace WindowsFormsApplication1
     /// Kostenverwaltung und in den Komponentensummen sichtbar; welche Größe ihn trägt,
     /// steht in <c>Menge</c> und im Dialog.
     /// </para>
+    ///
+    /// <para>
+    /// <b>ANWENDERENTSCHEID W5‑B‑8 (09.09.2026): „x % der Investitionssumme" rechnet auf
+    /// die KASKADE.</b> Die Bezugsgröße <c>INVEST_*</c> kommt seither aus
+    /// <see cref="InvestKaskade"/> statt aus <c>SUM(EingegebenerWert)</c> — siehe
+    /// <see cref="InvestSummeFuer"/>. Damit ist der VIERTE Leseweg der Kategorie-1-Zeilen
+    /// geschlossen, den W5‑B‑7 auf der Investseite bereits abgeschafft hatte.
+    /// </para>
     /// </summary>
     internal static class BetriebskostenCtrl
     {
@@ -421,9 +429,12 @@ namespace WindowsFormsApplication1
         {
             var b = new Bezugsgroessen();
 
-            b.InvestGesamt = InvestSumme(projektID, 0);
-            b.InvestBhkw = InvestSumme(projektID, KOMPONENTE_BHKW);
-            b.InvestKessel = InvestSumme(projektID, KOMPONENTE_HEIZKESSEL);
+            // W5‑B‑8: die Kaskade EINMAL lesen und dreimal staffeln — sonst liefe der
+            // ganze Rechenweg der Kategorie 1 je Bezugsgröße erneut.
+            Dictionary<KeyValuePair<int, int>, double> kaskade = Kaskadensummen(projektID);
+            b.InvestGesamt = InvestSumme(projektID, 0, 0, kaskade);
+            b.InvestBhkw = InvestSumme(projektID, KOMPONENTE_BHKW, 0, kaskade);
+            b.InvestKessel = InvestSumme(projektID, KOMPONENTE_HEIZKESSEL, 0, kaskade);
 
             int idErgebnis = LetztesErgebnis(projektID, out b.Laufstand);
             if (idErgebnis > 0)
@@ -445,8 +456,79 @@ namespace WindowsFormsApplication1
         internal const int KOMPONENTE_BHKW = 7;
 
         /// <summary>
-        /// Summe der Investitionspositionen (Kategorie 1). <paramref name="komponentenID"/>
-        /// = 0 heißt „ganzes Projekt".
+        /// ANWENDERENTSCHEID W5‑B‑8 (09.09.2026): die Kaskadensummen eines Projekts,
+        /// geschlüsselt nach (Komponenten-Id, Anlagen-Id) — EINMAL gelesen, mehrfach
+        /// gestaffelt. Nie <c>null</c>: eine LEERE Karte heißt „der Rechenweg hat nichts
+        /// anzubieten" (Datenbank ohne die Spalten aus Schritt 19, oder keine
+        /// Kategorie-1-Zeile) und schaltet in <see cref="InvestSumme"/> den
+        /// dokumentierten SQL-Rückfall ein — dieselbe Vorsorge wie in
+        /// <c>KostenSummenCtrl.Rechenwegsummen</c>.
+        /// </summary>
+        internal static Dictionary<KeyValuePair<int, int>, double> Kaskadensummen(int projektID)
+        {
+            try { return InvestKaskade.Summen(projektID, WirtschaftlichkeitSzenario.ERWARTET); }
+            catch { return new Dictionary<KeyValuePair<int, int>, double>(); }
+        }
+
+        /// <summary>
+        /// Summe der Investitionspositionen (Kategorie 1) aus dem RECHENWEG.
+        /// <paramref name="komponentenID"/> = 0 heißt „ganzes Projekt",
+        /// <paramref name="idAnlage"/> = 0 „ohne Anlagenfilter".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>ANWENDERENTSCHEID W5‑B‑8 (09.09.2026) — die Basis ist die KASKADE.</b> Bis
+        /// hierher summierte diese Methode roh <c>SUM(EingegebenerWert)</c> der
+        /// Kategorie-1-Zeilen. Damit bemaß sich „x % der Investitionssumme" auf der
+        /// BETRIEBSSEITE an einer Zahl, die satzbasierte Zeilen (Menge × Satz) und alle
+        /// Prozentzeilen der Investseite gar nicht enthielt — der VIERTE Leseweg
+        /// derselben Zeilen, den W5‑B‑7 auf der Investseite abgeschafft, hier aber
+        /// bewusst stehen gelassen hatte (er verändert die Kapitalwertrechnung und
+        /// gehörte deshalb vor eine Entscheidung). Seit dem Entscheid ist die
+        /// Bezugsgröße die Summe der <see cref="InvestKaskade"/> — dieselbe Stufung
+        /// Anlage → Komponente → Projekt wie deren Runde 3, dieselbe Zahl wie Kachel,
+        /// Dialog und Anlagentabelle.
+        /// </para>
+        /// <para>
+        /// <b>Wie SQL zählt.</b> Trifft der Filter keine einzige Gruppe, ist das Ergebnis
+        /// <c>null</c> — genau wie <c>SUM(...)</c> über keine Zeile. Nur so geht
+        /// <see cref="InvestSummeFuer"/> eine Stufe höher, statt eine 0 auszuweisen.
+        /// </para>
+        /// <para>
+        /// <b>Zuschuss.</b> <see cref="InvestKaskade.Summen"/> trägt eine Zuschusszeile mit
+        /// Beitrag 0, legt ihren Schlüssel aber an. Eine Komponente mit AUSSCHLIESSLICH
+        /// Zuschusszeilen liefert hier deshalb 0,00 statt <c>null</c> — für die
+        /// Staffelung ist das gleichwertig (auch die 0 lässt
+        /// <see cref="InvestSummeFuer"/> weiterlaufen), und die K5-Regel „vor
+        /// Zuschussabzug" bleibt Wort für Wort erhalten.
+        /// </para>
+        /// </remarks>
+        private static double? InvestSumme(int projektID, int komponentenID, int idAnlage,
+                                           Dictionary<KeyValuePair<int, int>, double> kaskade)
+        {
+            if (kaskade != null && kaskade.Count > 0)
+            {
+                double summe = 0;
+                bool getroffen = false;
+                foreach (KeyValuePair<KeyValuePair<int, int>, double> e in kaskade)
+                {
+                    if (komponentenID > 0 && e.Key.Key != komponentenID) continue;
+                    if (idAnlage > 0 && e.Key.Value != idAnlage) continue;
+                    summe += e.Value;
+                    getroffen = true;
+                }
+                return getroffen ? summe : (double?)null;
+            }
+            return InvestSummeSql(projektID, komponentenID, idAnlage);
+        }
+
+        /// <summary>
+        /// DER DOKUMENTIERTE RÜCKFALL (W5‑B‑8): die rohe Spaltensumme, wie sie bis zum
+        /// 09.09.2026 der einzige Weg war. Sie gilt nur noch, wenn die Kaskade nichts
+        /// anzubieten hat — also auf einer Datenbank ohne die Spalten aus Schritt 19.
+        /// Auf so einer Datenbank rechnet die Kaskade ohnehin Zeile für Zeile
+        /// <c>EingegebenerWert</c>, weil es dort weder Bemessung noch Satz noch
+        /// Kostenart gibt; die beiden Wege fallen dann zusammen.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -470,15 +552,7 @@ namespace WindowsFormsApplication1
         /// In einer solchen Datenbank kann es keine Zuschusszeile geben.
         /// </para>
         /// </remarks>
-        private static double? InvestSumme(int projektID, int komponentenID)
-        {
-            return InvestSumme(projektID, komponentenID, 0);
-        }
-
-        /// <summary>ETAPPE H4a: dieselbe Abfrage mit optionalem Anlagenfilter
-        /// (Schritt 45) — der Kern beider Überladungen; K5-Zuschussausschluss und
-        /// Kostenart-Toleranz unverändert.</summary>
-        private static double? InvestSumme(int projektID, int komponentenID, int idAnlage)
+        private static double? InvestSummeSql(int projektID, int komponentenID, int idAnlage)
         {
             bool mitKostenart = false;
             try { mitKostenart = KostenPositionCtrl.StelleSpaltenSicher(); }
@@ -537,20 +611,34 @@ namespace WindowsFormsApplication1
         /// Trägt die Position eine Anlage und existieren Investitionszeilen an genau
         /// dieser Anlage, zählt deren Summe; sonst die Komponentensumme (die
         /// dokumentierte Regel), notfalls das ganze Projekt. null = nichts erfasst.
+        /// <para><b>W5‑B‑8 (09.09.2026):</b> Gestaffelt wird seither über die
+        /// <see cref="InvestKaskade"/> statt über <c>SUM(EingegebenerWert)</c> —
+        /// dieselbe Stufung, dieselbe Reihenfolge, andere (vollständige) Basis.</para>
         /// </summary>
         internal static double? InvestSummeFuer(int projektID, int komponentenID, int idAnlage)
         {
+            return InvestSummeFuer(projektID, komponentenID, idAnlage, Kaskadensummen(projektID));
+        }
+
+        /// <summary>W5‑B‑8: dieselbe Staffelung mit BEREITS GELESENER Kaskade — für
+        /// Leseschleifen, die viele Positionen desselben Projekts abarbeiten
+        /// (<c>WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe</c> /
+        /// <c>LiesBetriebskostenPositionen</c>). Ohne diese Überladung liefe der ganze
+        /// Rechenweg der Kategorie 1 je Betriebskostenzeile erneut.</summary>
+        internal static double? InvestSummeFuer(int projektID, int komponentenID, int idAnlage,
+                                                Dictionary<KeyValuePair<int, int>, double> kaskade)
+        {
             if (idAnlage > 0)
             {
-                double? anlage = InvestSumme(projektID, komponentenID, idAnlage);
+                double? anlage = InvestSumme(projektID, komponentenID, idAnlage, kaskade);
                 if (anlage.HasValue && anlage.Value != 0) return anlage;
             }
             if (komponentenID > 0)
             {
-                double? komponente = InvestSumme(projektID, komponentenID);
+                double? komponente = InvestSumme(projektID, komponentenID, 0, kaskade);
                 if (komponente.HasValue && komponente.Value != 0) return komponente;
             }
-            return InvestSumme(projektID, 0);
+            return InvestSumme(projektID, 0, 0, kaskade);
         }
 
         /// <summary>ID und Zeitstempel des jüngsten Simulationslaufs, 0 = keiner.</summary>

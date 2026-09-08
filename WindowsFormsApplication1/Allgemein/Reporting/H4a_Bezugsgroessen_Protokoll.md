@@ -56,6 +56,22 @@ die Scratchpad-Kopie mit den H3-Pflichtzeilen):
 | H4b | Gerätewelt-Arten (je kW Leistung/Heizleistung/elektrisch, je kWp, je kWh Kapazität, je m² Kollektorfläche — Leseketten über die Anlagen-Geräteverweise) und „% der Erzeugerkosten" samt Investitionsraster-Lesepunkt |
 | H2-1 | Mengen-Ausweis beim Dialog-Speichern („Stand des Laufs vom …") — Dialogetappe |
 
+## 3a Nachtrag 09.09.2026 (W5‑B‑8) — die Bezugsgröße „% der Investition" kommt aus der KASKADE
+
+`InvestSummeFuer` staffelte bis hierher über `SUM(EingegebenerWert)` der Kategorie-1-Zeilen. Seit
+dem Anwenderentscheid W5‑B‑8 staffelt es über `InvestKaskade.Summen(projektID, ERWARTET)` —
+**dieselbe Stufung Anlage → Komponente → Projekt, dieselbe Reihenfolge, dieselbe K5-Regel
+„vor Zuschussabzug"**; nur die Zahl, auf die gestaffelt wird, ist jetzt die vollständige
+(satzbasierte Zeilen Menge × Satz und die Prozentzeilen der Investseite zählen mit). Der alte
+Weg lebt als `InvestSummeSql` weiter und gilt nur noch, wenn die Kaskade nichts anzubieten hat —
+also auf einer Datenbank ohne die Spalten aus Schritt 19.
+
+`RueckfallMenge` (WirtschaftlichkeitCtrl) führt die Kaskade seither als Merker der laufenden
+Leseschleife, damit der Rechenweg der Kategorie 1 nicht je Betriebskostenzeile erneut läuft —
+dasselbe Muster wie beim Endenergie-Auflöser. Nachweis, Beispiel und Regressionsliste:
+`iU9_W5_Blazor_Port_Protokoll.md`, Abschnitt „Anwenderentscheid 09.09.2026 — W5‑B‑8";
+Fälle in `EPOS.Kern.Tests/BetriebskostenBasisTests.cs`.
+
 ## 4 Geänderte Dateien
 
 ```

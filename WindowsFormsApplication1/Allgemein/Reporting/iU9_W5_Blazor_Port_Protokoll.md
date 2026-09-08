@@ -1086,12 +1086,157 @@ das Ergebnis hängt nicht an der Lesereihenfolge (die Abfrage trägt kein `ORDER
 
 ### 4. Offene Punkte
 
-- **Kategorie 2, Basis „% der Investition".** `BetriebskostenCtrl.InvestSummeFuer` (H4a) summiert
+- ~~**Kategorie 2, Basis „% der Investition".** `BetriebskostenCtrl.InvestSummeFuer` (H4a) summiert
   weiterhin `SUM(EingegebenerWert)` — die Betriebszeile „x % der Investitionssumme" bemisst sich
   also an der ROHEN Spaltensumme, nicht an der Kaskade. Das ist ein VIERTER Leseweg derselben
   Zahlen und damit derselbe Befund auf der Betriebsseite. Er ist hier bewusst nicht angefasst:
   Er würde die Kapitalwertrechnung selbst verändern (Betriebskosten p. a., Kapitalwert,
-  Sensitivität FX5‑a) und gehört deshalb vor eine Anwenderentscheidung.
+  Sensitivität FX5‑a) und gehört deshalb vor eine Anwenderentscheidung.~~ →
+  **entschieden und umgesetzt am 09.09.2026, siehe W5‑B‑8 unten.**
 - **Sichtabnahme** des Werkzeugtipps und des Summenfußes im Projektmodus (Dialog
   Kostenverwaltung, Reiter Investition und Betrieb).
 
+
+## Anwenderentscheid 09.09.2026 — W5‑B‑8: Betriebskosten-Basis aus der Kaskade
+
+**Wortlaut des Anwenders:** Die Betriebskosten-Bemessung „x % der Investitionssumme"
+(Kategorie 2) rechnet auf die **Kaskade**.
+
+### 1. Der vierte Leseweg — was W5‑B‑7 offen gelassen hatte
+
+W5‑B‑7 machte die H4b-Kaskade (`EPOS.Kern/Controller/InvestKaskade.cs`) zur einen Wahrheit der
+Kategorie 1: Kapitalwertrechnung, Dialog Kostenverwaltung und Seite „Berichte & Kosten" lesen
+seither dieselben Beträge. `BetriebskostenCtrl.InvestSummeFuer` (H4a) blieb dabei ausdrücklich
+unberührt — es war der **vierte** Leseweg derselben Zeilen und hätte die Kapitalwertrechnung
+selbst verändert.
+
+Er summierte roh `SUM(EingegebenerWert)` der Kategorie-1-Zeilen. Eine Betriebszeile
+„x % der Investitionssumme" (Wartung, Instandhaltung, Versicherung, Verwaltung — im Bestand die
+häufigste Kategorie-2-Bemessung) bemaß sich damit an einer Zahl, die
+
+- **satzbasierte Investitionszeilen** (Menge × Satz, z. B. „200 €/kW el × 14,5 kW el") und
+- **alle Prozentzeilen der Investseite** („% der Erzeugerkosten", „% der Investition")
+
+gar nicht enthielt. Dieselbe Anlage konnte in der Kachel „Investition" 58.049,84 € zeigen und
+ihre Instandhaltung mit 45.312,50 € bemessen.
+
+### 2. Änderung — dieselbe Stufung, vollständige Basis
+
+1. **`EPOS.Kern/Controller/BetriebskostenCtrl.cs`.**
+   `InvestSumme(projektID, komponentenID, idAnlage, kaskade)` staffelt jetzt die Summen aus
+   `InvestKaskade.Summen(projektID, ERWARTET)` — Anlage → Komponente → Projekt, genau die
+   Stufung der Runde 3 der Investseite. `InvestSummeFuer` ist unverändert in Ablauf und
+   Reihenfolge; nur die Zahl, auf die es staffelt, ist jetzt die vollständige.
+   `LiesBezugsgroessen` (`InvestGesamt`, `InvestBhkw`, `InvestKessel`) liest dieselbe Kaskade.
+   Zuschusszeilen bleiben außen vor — **K5 gilt Wort für Wort weiter** („% der Investitionssumme
+   rechnet VOR Zuschussabzug"): `InvestKaskade.Summen` trägt eine Zuschusszeile mit Beitrag 0.
+2. **Der Rückfall bleibt.** `InvestSummeSql` ist der alte Weg unter neuem Namen und gilt nur
+   noch, wenn die Kaskade nichts anzubieten hat — also auf einer Datenbank ohne die Spalten aus
+   Schritt 19. Dort rechnet die Kaskade ohnehin Zeile für Zeile `EingegebenerWert` (es gibt weder
+   Bemessung noch Satz noch Kostenart); die beiden Wege fallen dann zusammen. Dasselbe Muster wie
+   `KostenSummenCtrl.Rechenwegsummen`.
+3. **`WirtschaftlichkeitCtrl`.** `RueckfallMenge` führt die Kaskade als Merker der laufenden
+   Leseschleife (`ref Dictionary<KeyValuePair<int,int>, double> investSummen`, null = noch nicht
+   gelesen) — dasselbe Muster wie der Endenergie-Auflöser. Ohne ihn liefe der ganze Rechenweg der
+   Kategorie 1 **je Betriebskostenzeile** erneut. Die drei Aufrufer sind
+   `LiesBetriebskostenTopfe` (Summenschleife), `LiesBetriebskostenPositionen` (Nachweisliste, E7)
+   und `MengeAusweisen` (Ausweis nach `Tab_ProjektWerte.Menge`).
+4. **Kein fünfter Weg.** Nach der Änderung verwendet keine Lesestelle mehr
+   `SUM(EingegebenerWert)` als Investitionssumme außer den dokumentierten Rückfällen
+   (`BetriebskostenCtrl.InvestSummeSql`, die drei Rückfälle in `KostenSummenCtrl`).
+
+### 3. Was sich dadurch ändert
+
+| Anzeige / Rechnung | vorher | nachher |
+|---|---|---|
+| Dialog Kostenverwaltung, Reiter Betrieb, Zeile „% der Investition" | Betrag auf der rohen Spaltensumme | Betrag auf der Kaskadensumme |
+| Werkzeugtipp / Herleitung derselben Zeile (`Menge`) | rohe Spaltensumme | Kaskadensumme |
+| Kachel „Betrieb" und Anlagentabelle der Kostenseite (Kategorie 2) | ” | ” |
+| Betriebskosten p. a., Kapitalwert, Annuität, Amortisation | ” | ” |
+| Sensitivität „Investition Variante ±10 %" (FX5‑a, investgekoppelter Anteil) | ” | ” |
+| Investseite (Kachel, Dialog, Anlagentabelle, I₀, Zuschuss) | — | **unverändert** |
+
+### 4. Nachweis
+
+**Das Beispiel** steht am BHKW des Projekts 1018 (Komponente 7, Anlage 11327) — der einzigen
+Anlage der Testdatenbank, die sowohl die Kategorie-1-Kaskade als auch Kategorie-2-Zeilen
+„% der Investition" führt. `Tab_BHKW.Pel` = 14,5 kW el liefert die Baugröße der satzbasierten
+Zeile, damit nichts geraten ist.
+
+| Kategorie-1-Zeile | Bemessung | Betrag |
+|---|---|---|
+| BHKW (Hauptposition) | Betrag | 45.312,50 € |
+| BHKW-Modul | 200,00 €/kW el × 14,5 kW el | 2.900,00 € |
+| MSR-Technik | 5 % der Erzeugerkosten (Runde 2) | 2.265,625 € |
+| **Basis der Runde 3** | | **50.478,125 €** |
+| Montage und Einbringung | 10 % der Investition | 5.047,8125 € |
+| Planung / Baunebenkosten | 5 % der Investition | 2.523,90625 € |
+| **Kaskadensumme der Anlage** | | **58.049,84375 €** |
+
+| Kategorie-2-Zeile | vorher | nachher |
+|---|---|---|
+| „Instandhaltung BHKW", 2 % der Investitionssumme | Basis 45.312,50 € → **906,25 €/a** | Basis 58.049,84375 € → **1.160,996875 €/a** |
+| `LiesBetriebskosten(1018)` | 906,25 €/a | **1.160,996875 €/a** |
+| `AnlagenSumme(1018, Kategorie 2, 11327)` | 906,25 €/a | **1.160,996875 €/a** |
+| investgekoppelter Ausweis (FX5‑a) | 906,25 €/a | **1.160,996875 €/a** |
+
+**Regressionsprobe über alle Projekte der Testdatenbank**
+(`Betriebskosten_je_Projekt_vorher_und_nachher`, Ausgabe des Testlaufs):
+
+```
+Projekt | Betriebskosten p. a. vorher | nachher | Abweichung
+--------|-----------------------------|---------|-----------
+   1007 |                        0,00 |    0,00 |      0,00
+   1018 |                        0,00 |    0,00 |      0,00
+   1019 |                       99,00 |   99,00 |      0,00
+   1023 |                       99,00 |   99,00 |      0,00
+   1024 |                       99,00 |   99,00 |      0,00
+   1026 |                        0,00 |    0,00 |      0,00
+   1028 |                        0,00 |    0,00 |      0,00
+   1029 |                        0,00 |    0,00 |      0,00
+   1030 |                   20.000,00 | 20.000,00 |      0,00
+   1031 |                        0,00 |    0,00 |      0,00
+   1032 |                        0,00 |    0,00 |      0,00
+   1040 |                        0,00 |    0,00 |      0,00
+   1041 |                        0,00 |    0,00 |      0,00
+   1042 |                        0,00 |    0,00 |      0,00
+   1043 |                        0,00 |    0,00 |      0,00
+   1044 |                        0,00 |    0,00 |      0,00
+```
+
+**Keine Abweichung — und zwar nachweisbar, nicht zufällig.** Keine einzige Kostenzeile der
+unberührten `Kenndaten_Test.sqlite` trägt einen Satz: `Einheitpreis` ist in **allen 175**
+Kategorie-1/2-Zeilen NULL, `Menge` ebenso. Ohne Satz ist die Ableitung nach Anwenderentscheid
+I‑2 gar nicht rechenbar — es gilt der erfasste Wert (0,00 bzw. 99,00 bzw. 20.000,00 €),
+unabhängig von der Basis. Die Umstellung wird erst sichtbar, sobald ein Satz gepflegt ist; genau
+das zeigen die sechs Fälle oben. **Bestandsprojekte des Anwenders mit gepflegten Sätzen ändern
+sich dagegen** — die Änderung ist ausdrücklich akzeptiert.
+
+Wie „vorher" in der Liste entsteht: Nur die Bemessungsart „% der Investition" der Kategorie 2
+ändert ihre Bezugsgröße, alles andere ist unberührt. Der Fall bildet die ALTE Regel (rohe
+Spaltensumme, stufig, ohne Zuschuss) noch einmal nach, rechnet jede solche Zeile mit beiden Basen
+über denselben `BetriebskostenCtrl.Betrag` und zieht die Differenz vom heutigen Ergebnis ab. Das
+ist exakt, weil der Betrag linear in der Basis ist.
+
+| Prüfung | Ort | Ergebnis |
+|---|---|---|
+| Kaskadenbasis (satzbasierte Zeile + Prozentzeilen), Betrag, Jahressumme, Anlagensumme | `BetriebskostenBasisTests` (neu) | **7** Fälle |
+| Zuschuss außen vor (K5), Stufung Anlage → Komponente, Mengenausweis | dieselbe Datei | in den 7 enthalten |
+| Regressionsliste vorher/nachher, 16 Projekte | `BetriebskostenBasisTests.Betriebskosten_je_Projekt_vorher_und_nachher` | **0,00 Abweichung** je Projekt |
+| Sandbox-Bau `WP-Plan.sln` x64 Debug | `K:\imp2\src` | **0 Fehler** |
+| `EPOS.Kern.Tests` / `EPOS.UI.Tests` | `dotnet test --no-build` | **2 103/2 103** / **3 301/3 301** |
+
+**Bestehende Erwartungswerte mussten NICHT angepasst werden.** Kein Fall der beiden Testprojekte
+prüfte einen Betriebskostenwert, der sich durch die neue Basis verschiebt — die 2 096 Fälle vor
+der Änderung laufen unverändert grün, die 7 neuen kommen hinzu.
+
+### 5. Offene Punkte
+
+- **Sichtabnahme** im Dialog Kostenverwaltung, Reiter Betrieb: Betrag und Herleitungstext einer
+  Zeile „% der Investitionssumme" an einer Komponente mit satzbasierten oder prozentualen
+  Investitionszeilen.
+- **Nachbar, bewusst nicht angefasst:** `TechnikPlanwertCtrl` (Kessel-/WP-Wartung, Einheit „%/a")
+  bemisst sich auf die **Hauptposition** der Komponente (`KostenPositionCtrl.LiesBetrag` einer
+  EINZELNEN Zeile), nicht auf eine Summe. Das ist eine andere Größe mit eigener Herleitungszeile
+  im Gerätedialog und keine `SUM(EingegebenerWert)` — eine Umstellung auf die Kaskade wäre eine
+  eigene Fachentscheidung.

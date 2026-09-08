@@ -738,8 +738,43 @@ Die Kategorie 2 liest an denselben drei Stellen die Nachweisliste
 - Auf einer Datenbank ohne die Spalten aus Schritt 19 fällt alles auf den Bestandsweg
   (`SUM(EingegebenerWert)`) zurück.
 
-**Offen (vor eine Anwenderentscheidung gestellt):** Die Bezugsgröße der KATEGORIE‑2‑Bemessung
+~~**Offen (vor eine Anwenderentscheidung gestellt):** Die Bezugsgröße der KATEGORIE‑2‑Bemessung
 „x % der Investitionssumme" kommt weiterhin aus `BetriebskostenCtrl.InvestSummeFuer`, also aus
 der rohen Spaltensumme statt aus der Kaskade. Eine Umstellung veränderte die Betriebskosten
 p. a. und damit Kapitalwert und Sensitivität (FX5‑a) — sie ist deshalb hier bewusst
-unterblieben.
+unterblieben.~~ → **entschieden am 09.09.2026, siehe Nachtrag W5‑B‑8 unten.**
+
+## Nachtrag 09.09.2026 (W5‑B‑8) — § 5.3/§ 7.4: die KATEGORIE‑2‑Basis „% der Investitionssumme"
+
+**Anwenderentscheid.** Die Betriebskosten-Bemessung „x % der Investitionssumme" (Kategorie 2)
+rechnet auf die **Kaskade** — nicht mehr auf die rohe Spaltensumme.
+
+**Festlegung.** Die Bezugsgröße einer Kategorie-2-Zeile mit `PROZENT_INVESTITION` ist die Summe
+der `InvestKaskade` (§ 5.3), in derselben Stufung wie deren Runde 3:
+
+| Stufe | Bezugsgröße |
+|---|---|
+| Die Betriebszeile trägt eine Anlage, an der Investitionszeilen hängen | Kaskadensumme **dieser Anlage** |
+| sonst, wenn sie eine Komponente trägt | Kaskadensumme **der Komponente** |
+| sonst | Kaskadensumme **des Projekts** |
+
+Damit zählen satzbasierte Investitionszeilen (Menge × Satz) und die Prozentzeilen der Investseite
+(„% der Erzeugerkosten", „% der Investition") in der Basis mit — genau die Beträge, die die
+Kachel „Investition", der Dialog und die Anlagentabelle seit W5‑B‑7 zeigen.
+
+**Was unverändert gilt:**
+
+- **§ 7.4 / K5 — vor Zuschussabzug.** Zuschusszeilen tragen 0 zur Kaskadensumme bei; die
+  prozentuale Instandhaltung bemisst sich weiter an der Anlage, nicht am Eigenanteil.
+- **Die Investseite selbst.** Kachel, Dialog, Anlagentabelle, I₀ und der Zuschussausweis rechnen
+  Zahl für Zahl wie vorher — geändert hat sich nur, WORAUF sich die Betriebsseite bezieht.
+- **Rückfall.** Ohne die Spalten aus Schritt 19 gilt der Bestandsweg `SUM(EingegebenerWert)`.
+  Auf so einer Datenbank rechnet die Kaskade ohnehin Zeile für Zeile `EingegebenerWert`; die
+  beiden Wege fallen dort zusammen.
+
+**Folge, ausdrücklich:** Betriebskosten p. a., Kapitalwert, Annuität, Amortisation und die
+Sensitivität „Investition ±10 %" (FX5‑a) ändern sich in Projekten, deren Investitionszeilen
+satzbasiert oder prozentual bemessen sind. Der Anwender hat das akzeptiert. Nachweis, Beispiel
+und Regressionsliste stehen im Protokoll
+`WindowsFormsApplication1/Allgemein/Reporting/iU9_W5_Blazor_Port_Protokoll.md`, Abschnitt
+„Anwenderentscheid 09.09.2026 — W5‑B‑8".
