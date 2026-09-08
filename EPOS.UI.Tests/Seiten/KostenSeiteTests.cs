@@ -68,6 +68,22 @@ public class KostenSeiteTests : BunitContext
     {
         Projektzeile = "Projekt: Musterhaus",
         Bedienbar = bedienbar,
+        Versionen = new[]
+        {
+            new VarianteZeile { IdProjekt = 1030, Art = "Stamm", Bezeichner = "(Stammprojekt)",
+                                Projektname = "Musterhaus", IstStamm = true },
+            new VarianteZeile { IdProjekt = 1031, Art = "Variante", Bezeichner = "WP klein",
+                                Projektname = "Musterhaus - WP klein" }
+        },
+        GewaehlteVarianten = new[] { 1030, 1031 },
+        VergleichTitel = "Kosten im Vergleich — Stammprojekt und Varianten",
+        VergleichSpalten = new[] { "Kennzahl", "Stamm", "WP klein" },
+        Vergleich = new[]
+        {
+            new MatrixZeile { Titel = "Investition [€]", Zellen = new[] { "12.001,00 €", "9.500,00 €" } },
+            new MatrixZeile { Titel = "Betrieb [€/a]", Zellen = new[] { "—", "120,00 €/a" } },
+            new MatrixZeile { Titel = "Energie [€/a]", Zellen = new[] { "3.400,00 €/a", "—" } }
+        },
         Kacheln = new[]
         {
             new KachelZeile { Titel = "Investition", Wert = "12.001,00 €",
@@ -475,5 +491,49 @@ public class KostenSeiteTests : BunitContext
         int e = css.IndexOf('}', a);
         Assert.True(e > a);
         return css.Substring(a + selektor.Length, e - a - selektor.Length);
+    }
+
+    // =====================================================================
+    //  Kosten im Vergleich (Anwenderwunsch 08.09.2026, W5-B-5)
+    // =====================================================================
+
+    [Fact]
+    public void Die_Kostengegenueberstellung_stellt_die_gewaehlten_Versionen_nebeneinander()
+    {
+        var cut = Zeige(p => p.Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { }));
+
+        var tabelle = cut.Find(".epos-kostenvergleich");
+        Assert.Equal(new[] { "Kennzahl", "Stamm", "WP klein" },
+                     tabelle.QuerySelectorAll("thead th").Select(t => t.TextContent).ToArray());
+        Assert.Equal(3, tabelle.QuerySelectorAll("tbody tr").Length);
+        Assert.Equal("9.500,00 €", tabelle.QuerySelectorAll("tbody tr")[0].QuerySelectorAll("td")[1].TextContent);
+        Assert.Contains("Kosten im Vergleich", cut.Markup);
+    }
+
+    [Fact]
+    public void Die_Vergleichswahl_der_Kostenseite_meldet_und_liest_neu()
+    {
+        IReadOnlyList<int>? gemeldet = null;
+        var cut = Zeige(p => p.Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => gemeldet = l));
+
+        var haken = cut.FindAll(".epos-vergleichswahl input[type=checkbox]");
+        Assert.Equal(2, haken.Count);
+        Assert.True(haken[0].HasAttribute("disabled"));
+        haken[1].Change(false);
+
+        Assert.Equal(new[] { 1030 }, gemeldet);
+        Assert.Equal(2, _geladen);
+    }
+
+    [Fact]
+    public void Ohne_Gruppe_bleibt_die_Gegenueberstellung_weg()
+    {
+        KostenStand stand = Standard();
+        stand.Versionen = System.Array.Empty<VarianteZeile>();
+        stand.Vergleich = System.Array.Empty<MatrixZeile>();
+        var cut = Zeige(p => p.Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { }), stand);
+
+        Assert.Empty(cut.FindAll(".epos-kostenvergleich"));
+        Assert.Empty(cut.FindAll(".epos-vergleichswahl"));
     }
 }

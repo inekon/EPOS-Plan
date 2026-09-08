@@ -99,6 +99,17 @@
         }
     </p>
 
+    @* DIE VERGLEICHSWAHL (Anwenderwunsch 08.09.2026, W5-B-5): welche Versionen in
+       der Gegenueberstellung - und auf den Seiten Kosten und Wirtschaftlichkeit -
+       nebeneinander stehen. EINE Auswahl fuer alle drei Seiten; sie lebt in der
+       Huelle. Ohne Delegat und ohne Varianten steht sie nicht. *@
+    @if (VergleichGewaehlt is not null && _stand.Zeilen.Count > 1)
+    {
+        <Vergleichswahl Bezeichnung="@LabelVergleich" Eintraege="@Vergleichseintraege"
+                        Gewaehlt="@_stand.GewaehlteVarianten" FestTipp="@StammFestTipp"
+                        GewaehltChanged="BeiVergleich" />
+    }
+
     @* --------------------------------------------- Komponentenbereich *@
     <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
 
@@ -201,6 +212,12 @@
     /// <summary>Eine andere Version wurde gewählt (Projekt-Id).</summary>
     [Parameter] public Action<int>? ZeileMarkiert { get; set; }
 
+    /// <summary>
+    /// Die Vergleichswahl hat gewechselt (Ids der Versionen im Vergleich, Stamm
+    /// eingeschlossen) — die Hülle merkt sie sich für alle drei Seiten (W5‑B‑5).
+    /// </summary>
+    [Parameter] public Action<IReadOnlyList<int>>? VergleichGewaehlt { get; set; }
+
     /// <summary>Legt eine Variante an und liefert die Meldung.</summary>
     [Parameter] public Func<string, string>? VarianteAnlegen { get; set; }
 
@@ -259,6 +276,12 @@
 
     /// <summary>Beschriftung der Versionswahl (Anwenderwunsch 05.09.2026, W5‑E‑1).</summary>
     [Parameter] public string LabelVariante { get; set; } = "Variante:";
+
+    /// <summary>Beschriftung der Vergleichswahl (W5‑B‑5).</summary>
+    [Parameter] public string LabelVergleich { get; set; } = "Im Vergleich:";
+
+    /// <summary>Werkzeugtipp am festen Stamm-Schalter der Vergleichswahl.</summary>
+    [Parameter] public string StammFestTipp { get; set; } = "Das Stammprojekt ist die Referenz und immer enthalten.";
 
     [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";
 
@@ -482,6 +505,31 @@
     {
         if (id is null) return;
         ZeileMarkiert?.Invoke(id.Value);
+        Auffrischen();
+    }
+
+    // =====================================================================
+    // Die Vergleichswahl (Anwenderwunsch 08.09.2026, W5-B-5)
+    // =====================================================================
+
+    /// <summary>Die Versionen der Gruppe als Eintraege der Vergleichswahl; der Stamm fest.</summary>
+    private IReadOnlyList<Vergleichswahl.Eintrag> Vergleichseintraege
+    {
+        get
+        {
+            var l = new List<Vergleichswahl.Eintrag>();
+            foreach (VarianteZeile z in _stand.Zeilen)
+                l.Add(new Vergleichswahl.Eintrag(z.IdProjekt,
+                    z.IstStamm ? z.Art : (string.IsNullOrEmpty(z.Bezeichner) ? z.Projektname : z.Bezeichner),
+                    z.IstStamm));
+            return l;
+        }
+    }
+
+    /// <summary>Die Wahl geht an die Huelle; die Gegenueberstellung kommt aus dem neuen Stand.</summary>
+    private void BeiVergleich(IReadOnlyList<int> ids)
+    {
+        VergleichGewaehlt?.Invoke(ids);
         Auffrischen();
     }
 

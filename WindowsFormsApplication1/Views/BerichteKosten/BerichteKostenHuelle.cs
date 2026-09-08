@@ -41,6 +41,13 @@ namespace WindowsFormsApplication1
         private int _idStamm = -1;
         private string _stammName = "";
 
+        /// <summary>
+        /// DIE EINE Vergleichswahl der Seiten Übersicht, Kosten und Wirtschaftlichkeit
+        /// (Anwenderwunsch 08.09.2026, W5‑B‑5): welche Versionen der Gruppe nebeneinander
+        /// stehen. Sie lebt so lange wie diese Hülle; die Vorgabe ist „alle".
+        /// </summary>
+        private readonly Vergleichsauswahl _vergleich = new Vergleichsauswahl();
+
         internal BerichteKostenHuelle(Func<Form> besitzer)
         {
             _besitzer = besitzer;
@@ -100,7 +107,7 @@ namespace WindowsFormsApplication1
             {
                 if (_uebersicht == null)
                 {
-                    _uebersicht = new UebersichtSeiteGaben();
+                    _uebersicht = new UebersichtSeiteGaben { Vergleich = _vergleich };
                     _uebersicht.StammGewechselt += StammWechsel;
                     _uebersicht.ProjektMarkiert += Markierung;
                 }
@@ -112,7 +119,7 @@ namespace WindowsFormsApplication1
         {
             get
             {
-                if (_kosten == null) _kosten = new KostenSeiteGaben(_besitzer);
+                if (_kosten == null) _kosten = new KostenSeiteGaben(_besitzer) { Vergleich = _vergleich };
                 return _kosten;
             }
         }
@@ -129,13 +136,17 @@ namespace WindowsFormsApplication1
                     // Reiter betritt und ohne Umweg ueber die Uebersicht auf
                     // "Kosten" geht, bekaeme sonst -1 (SichereMarkierung).
                     SichereMarkierung();
+                    Kosten.SetzeGruppe(_idStamm, _stammName);
                     Kosten.SetzeProjekt(Uebersicht.IdMarkiert, Uebersicht.NameMarkiert);
                     return Kosten.Gaben();
 
                 case BerichteKostenSeite.SEITE_WIRTSCHAFT:
                     if (_idStamm <= 0) return null;
                     if (_wirtschaft == null)
-                        _wirtschaft = new WirtschaftlichkeitSeiteGaben(_idStamm, _stammName, _besitzer);
+                        _wirtschaft = new WirtschaftlichkeitSeiteGaben(_idStamm, _stammName, _besitzer)
+                        {
+                            Vergleich = _vergleich
+                        };
                     return _wirtschaft.Gaben();
 
                 case BerichteKostenSeite.SEITE_BERICHT:

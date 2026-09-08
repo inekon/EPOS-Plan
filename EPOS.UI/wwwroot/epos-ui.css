@@ -2444,6 +2444,22 @@ body {
     margin-left: 6px;
 }
 
+/* Die Vergleichswahl (W5-B-5, 08.09.2026): eine Zeile Schalter ueber der
+   Tabelle, die sie steuert - Uebersicht, Kosten und Wirtschaftlichkeit. */
+.epos-vergleichswahl {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 20px;
+    margin: 0 0 var(--epos-rand) 0;
+}
+.epos-vergleichswahl-titel {
+    color: var(--epos-text-leise);
+}
+.epos-vergleichswahl-eintrag {
+    display: inline-flex;
+}
+
 /* Die Unterschiedstabelle bekommt die frei gewordene Hoehe. Hausregel W9-B-2
    bleibt: fester Rahmen, innerer Rollbalken, stehender Spaltenkopf - nur die
    HOECHSTHOEHE ist eine andere, denn sie ist der Inhalt dieser Seite und nicht

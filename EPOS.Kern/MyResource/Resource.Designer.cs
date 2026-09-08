@@ -5547,6 +5547,24 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("BK_LBL_VARIANTEN_GEKAPPT", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten im Vergleich — Stammprojekt und Varianten ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_LBL_VERGLEICH {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_LBL_VERGLEICH", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Vergleich: ähnelt.
+        /// </summary>
+        public static string BK_LBL_VERGLEICHSWAHL {
+            get {
+                return ResourceManager.GetString("BK_LBL_VERGLEICHSWAHL", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Anlegen: {0} ähnelt.
@@ -44553,6 +44571,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_STATUS_STAND {
             get {
                 return ResourceManager.GetString("WIRT_STATUS_STAND", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht berechnet — bitte „Berechnen“ ähnelt.
+        /// </summary>
+        public static string WIRT_MSG_NICHT_BERECHNET {
+            get {
+                return ResourceManager.GetString("WIRT_MSG_NICHT_BERECHNET", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für {0} gewählte Version(en) liegt kein gespeichertes Ergebnis vor — bitte „Berechnen“. ähnelt.
+        /// </summary>
+        public static string WIRT_STATUS_FEHLEND {
+            get {
+                return ResourceManager.GetString("WIRT_STATUS_FEHLEND", resourceCulture);
             }
         }
         

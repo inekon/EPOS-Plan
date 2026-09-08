@@ -40,6 +40,12 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<int, string> _namen = new Dictionary<int, string>();
         private readonly Dictionary<int, EmissionsBilanz> _bilanzen = new Dictionary<int, EmissionsBilanz>();
 
+        /// <summary>Die Ids der Gruppe in Listenreihenfolge (Stamm zuerst) — für die Vergleichswahl (W5‑B‑5).</summary>
+        private readonly List<int> _gruppe = new List<int>();
+
+        /// <summary>Die geteilte Vergleichswahl der drei Seiten (W5‑B‑5); die Rahmenhülle setzt sie.</summary>
+        internal Vergleichsauswahl Vergleich { get; set; } = new Vergleichsauswahl();
+
         private WirtschaftlichkeitParameter _parameterCache;
         private TarifParameter _tarifCache;
 
@@ -76,6 +82,7 @@ namespace WindowsFormsApplication1
                 ["Anzeigen"] = new Func<int, ErgebnisAnsicht>(Ansicht),
                 ["Berechnen"] = new Func<IReadOnlyList<int>, Action<Laufschritt>, Task<LaufErgebnis>>(Berechnen),
                 ["Abbrechen"] = new Action(Abbrechen),
+                ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
                 ["Gaben"] = new Func<WirtschaftlichkeitSeite.Unterdialog,
                                      IReadOnlyDictionary<string, object>>(Unterdialog),
                 ["Nachlauf"] = new Func<WirtschaftlichkeitSeite.Unterdialog, bool, string>(Nachlauf),
@@ -112,8 +119,8 @@ namespace WindowsFormsApplication1
             var stand = new WirtschaftlichkeitStand();
 
             var zeilen = new List<VarianteZeile>();
-            var gewaehlt = new List<int>();
             _namen.Clear();
+            _gruppe.Clear();
             try
             {
                 foreach (BerichtsDatenSammler.VariantenStatus st in
@@ -131,8 +138,7 @@ namespace WindowsFormsApplication1
                         IstStamm = st.IstStamm,
                         Auffaellig = !st.SimStand.HasValue || st.Veraltet
                     });
-                    // Vorgabe: standardmaessig alle Varianten der Gruppe vergleichen.
-                    gewaehlt.Add(st.IdProjekt);
+                    _gruppe.Add(st.IdProjekt);
                     _namen[st.IdProjekt] = st.IstStamm
                         ? MyResource.Resource.BK_ART_STAMM
                         : (string.IsNullOrEmpty(st.Variantenname) ? st.Projektname : st.Variantenname);
@@ -140,6 +146,11 @@ namespace WindowsFormsApplication1
             }
             catch { }
             stand.Varianten = zeilen;
+
+            // Die Vergleichswahl ist die GETEILTE der drei Seiten (W5-B-5, 08.09.2026):
+            // Vorgabe alle Versionen der Gruppe (Vorbild AktualisiereListe), abgewaehlt
+            // bleibt abgewaehlt - auch ueber Uebersicht und Kosten hinweg.
+            List<int> gewaehlt = Vergleich.Gewaehlte(_gruppe, _idStamm);
             stand.GewaehlteVarianten = gewaehlt;
 
             var szenarien = new List<ValueTuple<int, string>>();
@@ -152,7 +163,10 @@ namespace WindowsFormsApplication1
 
             // Persistierte Ergebnisse anzeigen, solange sie zum Simulationsstand
             // passen (Vorbild LadeDaten).
-            try { _ergebnisse = _ctrl.LadeErgebnisse(new List<int>(gewaehlt)); }
+            // Geladen werden die Ergebnisse ALLER Versionen der Gruppe; die Wahl
+            // filtert erst in Ansicht() - so folgt die Tabelle einem Haken sofort,
+            // ohne die Datenbank erneut zu lesen.
+            try { _ergebnisse = _ctrl.LadeErgebnisse(new List<int>(_gruppe)); }
             catch { _ergebnisse = new List<WirtschaftlichkeitErgebnis>(); }
 
             bool veraltet = _ergebnisse.Count > 0 &&
@@ -166,6 +180,17 @@ namespace WindowsFormsApplication1
                     ? T("WIRT_STATUS_VERALTET", "⚠ Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand — bitte „Berechnen“.")
                     : string.Format(T("WIRT_STATUS_STAND", "Gespeicherte Ergebnisse vom {0}."),
                                     _ergebnisse[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm"));
+
+            // W5-B-5: Eine gewaehlte Version OHNE gespeichertes Ergebnis fehlte bis
+            // hierher stumm in der Tabelle ("Andere WP" in der Windows-Abnahme vom
+            // 08.09.2026). Jetzt sagt die Statuszeile, wie viele es sind.
+            int fehlend = 0;
+            foreach (int id in gewaehlt)
+                if (!_ergebnisse.Any(x => x.IdProjekt == id && x.Szenario == SZENARIEN[0])) fehlend++;
+            if (fehlend > 0 && _ergebnisse.Count > 0)
+                stand.Statuszeile += " " + string.Format(
+                    T("WIRT_STATUS_FEHLEND", "Für {0} gewählte Version(en) liegt kein gespeichertes Ergebnis vor — bitte „Berechnen“."),
+                    fehlend);
 
             WirtschaftlichkeitCtrl.ErzeugerFlags flags = null;
             try { flags = _ctrl.ErzeugerDerGruppe(_idStamm); }
@@ -185,6 +210,12 @@ namespace WindowsFormsApplication1
         /// Der AUSWEIS der Bilanzierungsregeln steht NEBEN dem Parameternachweis,
         /// nicht in ihm (L12/L13): eigene Herkunft, eigene Lokalisierung.
         /// </summary>
+        /// <summary>Die Vergleichswahl der Seite (W5‑B‑5) in die geteilte Auswahl.</summary>
+        private void VergleichSetzen(IReadOnlyList<int> gewaehlt)
+        {
+            Vergleich.Setzen(gewaehlt, _gruppe, _idStamm);
+        }
+
         private string Parameterzeile()
         {
             try
@@ -208,18 +239,44 @@ namespace WindowsFormsApplication1
             string szenario = SZENARIEN[Math.Max(0, Math.Min(SZENARIEN.Length - 1, szenarioId))];
             CultureInfo kultur = BerichtTexte.Kultur;
 
-            List<WirtschaftlichkeitErgebnis> zeilen = _ergebnisse
-                .Where(x => x.Szenario == szenario)
-                .OrderByDescending(x => x.IstStamm)
-                .ToList();
+            // W5-B-5 (08.09.2026): EINE Spalte je GEWAEHLTER Version - auch ohne
+            // gespeichertes Ergebnis. Bis hierher stand nur da, wofuer ein Ergebnis
+            // lag; eine nie gerechnete Variante fehlte stumm ("Andere WP" in der
+            // Windows-Abnahme). Jetzt steht sie mit "—" und dem Hinweis "nicht
+            // berechnet" in der Tabelle, und eine abgewaehlte Version verschwindet.
+            List<int> gewaehlt = Vergleich.Gewaehlte(_gruppe, _idStamm);
+            var spaltenErg = new List<WirtschaftlichkeitErgebnis>();   // je Spalte; null = kein Ergebnis
+            var zeilen = new List<WirtschaftlichkeitErgebnis>();       // die vorhandenen Ergebnisse
+            foreach (int id in gewaehlt)
+            {
+                WirtschaftlichkeitErgebnis e = _ergebnisse
+                    .FirstOrDefault(x => x.Szenario == szenario && x.IdProjekt == id);
+                spaltenErg.Add(e);
+                if (e != null) zeilen.Add(e);
+            }
+            if (gewaehlt.Count == 0)
+            {
+                // Ohne Gruppenliste (Laden fehlgeschlagen): wie bisher alles, was da ist.
+                foreach (WirtschaftlichkeitErgebnis e in _ergebnisse
+                             .Where(x => x.Szenario == szenario).OrderByDescending(x => x.IstStamm))
+                {
+                    spaltenErg.Add(e);
+                    zeilen.Add(e);
+                }
+            }
 
             var ansicht = new ErgebnisAnsicht { Kacheln = Kacheln(zeilen, kultur) };
             if (zeilen.Count == 0) return ansicht;
 
             var spalten = new List<string> { T("WIRT_SP_KENNZAHL", "Kennzahl") };
-            foreach (WirtschaftlichkeitErgebnis erg in zeilen)
-                spalten.Add(_namen.ContainsKey(erg.IdProjekt) ? _namen[erg.IdProjekt]
+            for (int i = 0; i < spaltenErg.Count; i++)
+            {
+                WirtschaftlichkeitErgebnis erg = spaltenErg[i];
+                int id = erg != null ? erg.IdProjekt : gewaehlt[i];
+                spalten.Add(_namen.ContainsKey(id) ? _namen[id]
+                            : erg == null ? id.ToString(CultureInfo.InvariantCulture)
                             : (erg.IstStamm ? MyResource.Resource.BK_ART_STAMM : erg.Anzeige));
+            }
 
             var matrixzeilen = new List<MatrixZeile>();
 
@@ -238,7 +295,7 @@ namespace WindowsFormsApplication1
                     ? !string.IsNullOrEmpty(z.Text(x))
                     : (x.IstStamm && z.StammAnzeige != null) || (z.Wert != null && z.Wert(x).HasValue));
                 if (!hatWert) continue;
-                matrixzeilen.Add(Zeile(z.Titel, zeilen, x => z.Anzeige(x, kultur)));
+                matrixzeilen.Add(Zeile(z.Titel, spaltenErg, x => z.Anzeige(x, kultur)));
             }
 
             // W3: CO₂-Vermeidung gegenueber getrennter Erzeugung (aus dem Cache;
@@ -246,7 +303,7 @@ namespace WindowsFormsApplication1
             if (_bilanzen.Values.Any(x => x != null && x.CO2VermeidungT.HasValue))
                 matrixzeilen.Add(Zeile(
                     EmissionsAusweis.BilanzVermeidung(EmissionsAusweis.ModusAusBilanzen(_bilanzen.Values)),
-                    zeilen, x =>
+                    spaltenErg, x =>
                     {
                         EmissionsBilanz b = _bilanzen.ContainsKey(x.IdProjekt) ? _bilanzen[x.IdProjekt] : null;
                         return b == null ? "—" : W(b.CO2VermeidungT, "N1", kultur);
@@ -255,11 +312,20 @@ namespace WindowsFormsApplication1
             // Hinweiszeilen (nicht-fatal W3 / unvollstaendige Rechnungen).
             string hinweis = T("WIRT_ZEILE_HINWEIS", "Hinweis");
             if (zeilen.Any(x => x.Hinweis != null))
-                matrixzeilen.Add(Zeile(hinweis, zeilen, x => x.Hinweis != null ? "⚠ " + x.Hinweis : ""));
+                matrixzeilen.Add(Zeile(hinweis, spaltenErg, x => x.Hinweis != null ? "⚠ " + x.Hinweis : ""));
             if (zeilen.Any(x => x.Fehlgrund != null))
-                matrixzeilen.Add(Zeile(hinweis, zeilen, x => x.Fehlgrund != null ? "⚠ " + x.Fehlgrund : ""));
+                matrixzeilen.Add(Zeile(hinweis, spaltenErg, x => x.Fehlgrund != null ? "⚠ " + x.Fehlgrund : ""));
 
-            KohaerenzZeilen(zeilen, matrixzeilen);
+            // W5-B-5: die gewaehlte Version ohne Ergebnis sagt es in ihrer Spalte.
+            if (spaltenErg.Any(e => e == null))
+            {
+                string nichtBerechnet = "⚠ " + T("WIRT_MSG_NICHT_BERECHNET", "nicht berechnet — bitte „Berechnen“");
+                var zellen = new List<string>();
+                foreach (WirtschaftlichkeitErgebnis e in spaltenErg) zellen.Add(e == null ? nichtBerechnet : "");
+                matrixzeilen.Add(new MatrixZeile { Titel = hinweis, Zellen = zellen });
+            }
+
+            KohaerenzZeilen(spaltenErg, matrixzeilen);
 
             ansicht.Matrix = new ErgebnisMatrix { Spalten = spalten, Zeilen = matrixzeilen };
             return ansicht;
@@ -269,7 +335,7 @@ namespace WindowsFormsApplication1
                                          Func<WirtschaftlichkeitErgebnis, string> wert)
         {
             var zellen = new List<string>();
-            foreach (WirtschaftlichkeitErgebnis erg in zeilen) zellen.Add(wert(erg));
+            foreach (WirtschaftlichkeitErgebnis erg in zeilen) zellen.Add(erg == null ? "—" : wert(erg));
             return new MatrixZeile { Titel = titel, Zellen = zellen };
         }
 
@@ -282,7 +348,7 @@ namespace WindowsFormsApplication1
         {
             int hoechste = 0;
             foreach (WirtschaftlichkeitErgebnis x in zeilen)
-                if (x.KohaerenzHinweise != null && x.KohaerenzHinweise.Count > hoechste)
+                if (x != null && x.KohaerenzHinweise != null && x.KohaerenzHinweise.Count > hoechste)
                     hoechste = x.KohaerenzHinweise.Count;
             if (hoechste == 0) return;
 

@@ -34,6 +34,16 @@ namespace WindowsFormsApplication1
 
         private readonly WirtschaftlichkeitCtrl _wirt = new WirtschaftlichkeitCtrl();
 
+        /// <summary>Die Vergleichsgruppe (W5‑B‑5): der Stamm, von der Rahmenhülle gesetzt.</summary>
+        private int _idStamm = -1;
+        private string _stammName = "";
+
+        /// <summary>Die Ids der Gruppe in Listenreihenfolge (Stamm zuerst) — für die Vergleichswahl.</summary>
+        private readonly List<int> _gruppe = new List<int>();
+
+        /// <summary>Die geteilte Vergleichswahl der drei Seiten (W5‑B‑5); die Rahmenhülle setzt sie.</summary>
+        internal Vergleichsauswahl Vergleich { get; set; } = new Vergleichsauswahl();
+
         // Befundlisten der Fußzeile — wortgleich zum Vorläufer.
         private readonly List<string> _ohnePosition = new List<string>();
         private readonly List<string> _nichtVerbaut = new List<string>();
@@ -58,6 +68,13 @@ namespace WindowsFormsApplication1
             _projektname = projektname ?? "";
         }
 
+        /// <summary>Setzt die Vergleichsgruppe (den Stamm) für die Kostengegenüberstellung (W5‑B‑5).</summary>
+        internal void SetzeGruppe(int idStamm, string stammName)
+        {
+            _idStamm = idStamm;
+            _stammName = stammName ?? "";
+        }
+
         /// <summary>Der Parametersatz der Seite.</summary>
         internal IReadOnlyDictionary<string, object> Gaben()
         {
@@ -69,6 +86,9 @@ namespace WindowsFormsApplication1
                 ["TraegerGaben"] = new Func<IReadOnlyDictionary<string, object>>(TraegerGaben),
                 ["LoeschFrage"] = new Func<KostenZeile, string>(LoeschFrage),
                 ["Loeschen"] = new Func<KostenZeile, string>(Loeschen),
+                ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
+                ["LabelVergleich"] = MyResource.Resource.BK_LBL_VERGLEICHSWAHL,
+                ["StammFestTipp"] = MyResource.Resource.BK_BER_MSG_STAMM_REFERENZ,
 
                 ["LabelKomponenten"] = MyResource.Resource.BK_KOSTEN_LBL_KOMPONENTEN,
                 ["LabelTraeger"] = MyResource.Resource.BK_KOSTEN_LBL_TRAEGER,
@@ -111,85 +131,203 @@ namespace WindowsFormsApplication1
 
             CultureInfo kultur = BerichtTexte.Kultur;
 
-            // --- Kategorie 1: Investition (Leselogik der Kapitalwertrechnung) ---
-            double invest = 0, zuschuss = 0;
-            int investPositionen = 0;
-            try
-            {
-                // ETAPPE K5: dieselbe Leseueberladung wie der Rechenkern — die
-                // Zuschusszeilen kommen getrennt heraus.
-                var positionen = WirtschaftlichkeitCtrl.LiesInvestitionen(
-                    _idProjekt, WirtschaftlichkeitSzenario.ERWARTET, out zuschuss);
-                investPositionen = positionen.Count;
-                foreach (KapitalwertRechner.InvestPosition p in positionen) invest += p.Betrag;
-            }
-            catch { }
+            // Die drei Kategorien des Projekts - dieselbe Leselogik wie die
+            // Gegenueberstellung der Gruppe (W5-B-5), EINMAL geschrieben (Kostenwerte).
+            Kostenwerte w = Kostenwerte.Lies(_wirt, _idProjekt);
+            int investPositionen = w.InvestPositionen;
+            string energieHinweis = w.EnergieHinweis;
+            bool energieNull = w.EnergieNull;
 
             var kInvest = new KachelZeile
             {
                 Titel = MyResource.Resource.BK_KOSTEN_INVEST,
-                Wert = investPositionen > 0
-                    ? invest.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR
-                    : "—",
-                Quelle = zuschuss > 0
-                    ? string.Format(MyResource.Resource.BK_KOSTEN_ZUSCHUSS, zuschuss.ToString("N2", kultur))
+                Wert = w.InvestText(kultur),
+                Quelle = w.Zuschuss > 0
+                    ? string.Format(MyResource.Resource.BK_KOSTEN_ZUSCHUSS, w.Zuschuss.ToString("N2", kultur))
                     : MyResource.Resource.BK_KOSTEN_INVEST_HINT
             };
-
-            // --- Kategorie 2: Betrieb ---
-            double betrieb = 0;
-            int betriebPositionen = 0;
-            try
-            {
-                betrieb = WirtschaftlichkeitCtrl.LiesBetriebskosten(
-                    _idProjekt, WirtschaftlichkeitSzenario.ERWARTET);
-                DataTable bt = KostenSummenCtrl.LiesKomponentenSummen(
-                    _idProjekt, KostenSummenCtrl.KATEGORIE_BETRIEB);
-                betriebPositionen = bt != null ? bt.Rows.Count : 0;
-            }
-            catch { }
-
             var kBetrieb = new KachelZeile
             {
                 Titel = MyResource.Resource.BK_KOSTEN_BETRIEB,
-                Wert = betriebPositionen > 0
-                    ? betrieb.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A
-                    : "—",
+                Wert = w.BetriebText(kultur),
                 Quelle = MyResource.Resource.BK_KOSTEN_BETRIEB_HINT
             };
-
-            // --- Energie: zuletzt GESPEICHERTER Wert der Wirtschaftlichkeit ---
-            var kEnergie = new KachelZeile { Titel = MyResource.Resource.BK_KOSTEN_ENERGIE };
-            string energieHinweis = "";
-            bool energieNull = true;
-            try
+            var kEnergie = new KachelZeile
             {
-                WirtschaftlichkeitErgebnis erg = _wirt
-                    .LadeErgebnisse(new List<int> { _idProjekt })
-                    .FirstOrDefault(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
-                if (erg == null || !erg.EnergiekostenJahr.HasValue)
-                {
-                    kEnergie.Wert = "—";
-                    energieHinweis = MyResource.Resource.BK_KOSTEN_ENERGIE_FEHLT;
-                }
-                else
-                {
-                    kEnergie.Wert = erg.EnergiekostenJahr.Value.ToString("N2", kultur) + " " +
-                                    MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A;
-                    energieNull = Math.Abs(erg.EnergiekostenJahr.Value) < 0.005;
-                    energieHinweis = string.Format(MyResource.Resource.BK_KOSTEN_STAND,
-                        erg.Zeitstempel.ToString("dd.MM.yyyy HH:mm"));
-                }
-            }
-            catch { kEnergie.Wert = "—"; }
-            kEnergie.Quelle = MyResource.Resource.BK_KOSTEN_ENERGIE_HINT;
+                Titel = MyResource.Resource.BK_KOSTEN_ENERGIE,
+                Wert = w.EnergieText(kultur),
+                Quelle = MyResource.Resource.BK_KOSTEN_ENERGIE_HINT
+            };
 
             stand.Kacheln = new List<KachelZeile> { kInvest, kBetrieb, kEnergie };
+            Gegenueberstellung(stand, kultur, w);
             stand.Komponenten = Komponenten(kultur);
             stand.TraegerSpalten = Traegerspalten();
             stand.Traeger = Traeger(kultur);
             stand.Statuszeile = Statuszeile(investPositionen, energieHinweis, energieNull);
             return stand;
+        }
+
+        /// <summary>
+        /// KOSTEN IM VERGLEICH (Anwenderwunsch 08.09.2026, W5‑B‑5): die drei Kategorien je
+        /// Version der Gruppe nebeneinander, Stamm zuerst — nur die Versionen der geteilten
+        /// Vergleichswahl. Ohne Gruppe (kein Stamm bekannt) bleibt der Block leer. Die Werte
+        /// des angezeigten Projekts kommen aus derselben Lesung wie seine Karten.
+        /// </summary>
+        private void Gegenueberstellung(KostenStand stand, CultureInfo kultur, Kostenwerte werteProjekt)
+        {
+            _gruppe.Clear();
+            if (_idStamm <= 0) return;
+
+            var versionen = new List<VarianteZeile>();
+            try
+            {
+                foreach (VariantenCtrl.VarianteInfo vi in new VariantenCtrl().LadeGruppe(_idStamm, _stammName))
+                {
+                    versionen.Add(new VarianteZeile
+                    {
+                        IdProjekt = vi.IdProjekt,
+                        Art = vi.IstStamm ? MyResource.Resource.BK_ART_STAMM
+                                          : MyResource.Resource.BK_ART_VARIANTE,
+                        Bezeichner = vi.IstStamm ? MyResource.Resource.BK_ART_STAMMPROJEKT
+                                                 : vi.Variantenname,
+                        Projektname = vi.Projektname,
+                        IstStamm = vi.IstStamm
+                    });
+                    _gruppe.Add(vi.IdProjekt);
+                }
+            }
+            catch { }
+            stand.Versionen = versionen;
+            List<int> gewaehlt = Vergleich.Gewaehlte(_gruppe, _idStamm);
+            stand.GewaehlteVarianten = gewaehlt;
+            if (versionen.Count == 0) return;
+
+            stand.VergleichTitel = MyResource.Resource.BK_KOSTEN_LBL_VERGLEICH;
+            var spalten = new List<string> { T("WIRT_SP_KENNZAHL", "Kennzahl") };
+            var invest = new List<string>();
+            var betrieb = new List<string>();
+            var energie = new List<string>();
+            foreach (VarianteZeile v in versionen)
+            {
+                if (!gewaehlt.Contains(v.IdProjekt)) continue;
+                spalten.Add(v.IstStamm ? v.Art
+                            : (string.IsNullOrEmpty(v.Bezeichner) ? v.Projektname : v.Bezeichner));
+                Kostenwerte w = v.IdProjekt == _idProjekt ? werteProjekt : Kostenwerte.Lies(_wirt, v.IdProjekt);
+                invest.Add(w.InvestText(kultur));
+                betrieb.Add(w.BetriebText(kultur));
+                energie.Add(w.EnergieText(kultur));
+            }
+            stand.VergleichSpalten = spalten;
+            stand.Vergleich = new List<MatrixZeile>
+            {
+                new MatrixZeile
+                {
+                    Titel = MyResource.Resource.BK_KOSTEN_INVEST + " [" + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR + "]",
+                    Zellen = invest
+                },
+                new MatrixZeile
+                {
+                    Titel = MyResource.Resource.BK_KOSTEN_BETRIEB + " [" + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A + "]",
+                    Zellen = betrieb
+                },
+                new MatrixZeile
+                {
+                    Titel = MyResource.Resource.BK_KOSTEN_ENERGIE + " [" + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A + "]",
+                    Zellen = energie
+                }
+            };
+        }
+
+        /// <summary>Die Vergleichswahl der Seite (W5‑B‑5) in die geteilte Auswahl.</summary>
+        private void VergleichSetzen(IReadOnlyList<int> gewaehlt)
+        {
+            Vergleich.Setzen(gewaehlt, _gruppe, _idStamm);
+        }
+
+        /// <summary>
+        /// Die drei Kategorien EINES Projekts, gelesen wie die Karten des Vorläufers
+        /// (<c>UcBkKosten.Aktualisiere</c>): Investition und Betrieb über die Leselogik der
+        /// Kapitalwertrechnung (Kategorie 1 und 2, Szenario „Erwartet"), Energie als zuletzt
+        /// GESPEICHERTER Wert der Wirtschaftlichkeit. Seit W5‑B‑5 auch je Version der Gruppe.
+        /// </summary>
+        private sealed class Kostenwerte
+        {
+            internal double Invest, Zuschuss, Betrieb;
+            internal int InvestPositionen, BetriebPositionen;
+            internal double? Energie;
+            internal string EnergieHinweis = "";
+            internal bool EnergieNull = true;
+
+            internal static Kostenwerte Lies(WirtschaftlichkeitCtrl wirt, int idProjekt)
+            {
+                var w = new Kostenwerte();
+
+                // --- Kategorie 1: Investition (Leselogik der Kapitalwertrechnung) ---
+                try
+                {
+                    // ETAPPE K5: dieselbe Leseueberladung wie der Rechenkern — die
+                    // Zuschusszeilen kommen getrennt heraus.
+                    double zuschuss;
+                    var positionen = WirtschaftlichkeitCtrl.LiesInvestitionen(
+                        idProjekt, WirtschaftlichkeitSzenario.ERWARTET, out zuschuss);
+                    w.Zuschuss = zuschuss;
+                    w.InvestPositionen = positionen.Count;
+                    foreach (KapitalwertRechner.InvestPosition p in positionen) w.Invest += p.Betrag;
+                }
+                catch { }
+
+                // --- Kategorie 2: Betrieb ---
+                try
+                {
+                    w.Betrieb = WirtschaftlichkeitCtrl.LiesBetriebskosten(
+                        idProjekt, WirtschaftlichkeitSzenario.ERWARTET);
+                    DataTable bt = KostenSummenCtrl.LiesKomponentenSummen(
+                        idProjekt, KostenSummenCtrl.KATEGORIE_BETRIEB);
+                    w.BetriebPositionen = bt != null ? bt.Rows.Count : 0;
+                }
+                catch { }
+
+                // --- Energie: zuletzt GESPEICHERTER Wert der Wirtschaftlichkeit ---
+                try
+                {
+                    WirtschaftlichkeitErgebnis erg = wirt
+                        .LadeErgebnisse(new List<int> { idProjekt })
+                        .FirstOrDefault(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                    if (erg == null || !erg.EnergiekostenJahr.HasValue)
+                        w.EnergieHinweis = MyResource.Resource.BK_KOSTEN_ENERGIE_FEHLT;
+                    else
+                    {
+                        w.Energie = erg.EnergiekostenJahr.Value;
+                        w.EnergieNull = Math.Abs(erg.EnergiekostenJahr.Value) < 0.005;
+                        w.EnergieHinweis = string.Format(MyResource.Resource.BK_KOSTEN_STAND,
+                            erg.Zeitstempel.ToString("dd.MM.yyyy HH:mm"));
+                    }
+                }
+                catch { }
+                return w;
+            }
+
+            internal string InvestText(CultureInfo kultur)
+            {
+                return InvestPositionen > 0
+                    ? Invest.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR
+                    : "—";
+            }
+
+            internal string BetriebText(CultureInfo kultur)
+            {
+                return BetriebPositionen > 0
+                    ? Betrieb.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A
+                    : "—";
+            }
+
+            internal string EnergieText(CultureInfo kultur)
+            {
+                return Energie.HasValue
+                    ? Energie.Value.ToString("N2", kultur) + " " + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A
+                    : "—";
+            }
         }
 
         private List<KachelZeile> LeereKacheln()

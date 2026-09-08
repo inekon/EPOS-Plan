@@ -904,3 +904,70 @@ Versionstabelle zurück (Übersicht aller Varianten mit Simulationsstand, zusät
 Auswahlfeld), (b) die Unterschiede ALLER Varianten nebeneinander (eine Spalte je Variante), oder
 (c) die Wirtschaftlichkeits-/Kostenwerte je Variante in der Übersicht. Bis zur Antwort bleibt
 W5‑E‑1 stehen.
+
+---
+
+## Anwenderwunsch 08.09.2026 — W5‑B‑5 umgesetzt: EINE Vergleichswahl für Übersicht, Kosten und Wirtschaftlichkeit
+
+**Antwort des Anwenders auf die Rückfrage oben:** „Es geht dabei nur um die Darstellung in der
+Übersicht, Kosten, Wirtschaftlichkeit (Beispiel Wirtschaftlichkeit → sollten alle ausgewählten
+Varianten im Vergleich stehen). Es soll ausgewählt werden können, welche Varianten dargestellt
+werden."
+
+### 1. Befund (Bildschirmfoto Wirtschaftlichkeit: Spalten „Stamm" und „Erdwärme", „Andere WP" fehlt)
+
+Die Kennzahltabelle der Wirtschaftlichkeit baute ihre Spalten aus den GESPEICHERTEN Ergebnissen
+(`LadeErgebnisse` über alle Gruppenmitglieder) — nicht aus den Haken der Liste darüber. Die Haken
+wirkten erst beim nächsten „Berechnen". Eine Variante ohne gespeichertes Ergebnis („Andere WP",
+nie gerechnet) fehlte deshalb stumm; die Übersicht stellte immer ALLE Varianten gegenüber, und
+die Kostenseite zeigte genau ein Projekt. Im August (`UcWirtschaftlichkeit`) gab es die Liste mit
+Haken nur auf der Wirtschaftlichkeitsseite (Stamm fest, Vorgabe alle).
+
+### 2. Was jetzt gilt
+
+**EINE Vergleichswahl für die drei Seiten** — `Vergleichsauswahl` (Kern,
+`EPOS.Kern/Allgemein/Bericht/Vergleichsauswahl.cs`), gehalten in der Rahmenhülle
+`BerichteKostenHuelle` und an die Gaben von Übersicht, Kosten und Wirtschaftlichkeit gereicht.
+Gemerkt wird das ABGEWÄHLTE (Vorbild `AktualisiereListe`): Vorgabe alle Versionen, der Stamm
+immer, eine neue Variante ist von selbst dabei, ein Stammwechsel braucht kein Zurücksetzen.
+
+| Seite | Bedienelement | Wirkung |
+|---|---|---|
+| **Übersicht** | neue Zeile „Im Vergleich:" (Baustein `Vergleichswahl`: je Version ein Schalter, der Stamm gesetzt und gesperrt mit Werkzeugtipp) unter der Simulationszeile | die Gegenüberstellung „Komponenten im Vergleich" führt nur noch die gewählten Varianten als Spalten (`UebersichtStand.GewaehlteVarianten`) |
+| **Kosten** | dieselbe Zeile „Im Vergleich:" und darunter NEU **„Kosten im Vergleich — Stammprojekt und Varianten"**: Investition [€], Betrieb [€/a], Energie [€/a] je gewählter Version (`KostenStand.Versionen/GewaehlteVarianten/VergleichSpalten/Vergleich`, Lesung `Kostenwerte` = dieselbe Leselogik wie die drei Karten) | Karten und Detailtabellen bleiben dem Projekt der Projektzeile; die Rahmenhülle reicht der Kostenseite die Gruppe (`SetzeGruppe`) |
+| **Wirtschaftlichkeit** | die vorhandenen Haken der Liste | wirken SOFORT auf Kacheln und Tabelle (`VergleichGewaehlt` → `Anzeigen`); die Tabelle führt **eine Spalte je gewählter Version, auch ohne Ergebnis** („—" und Hinweiszeile „⚠ nicht berechnet — bitte „Berechnen“"); die Statuszeile nennt die Zahl der gewählten Versionen ohne gespeichertes Ergebnis; geladen werden die Ergebnisse aller Gruppenmitglieder, die Wahl filtert in `Ansicht()` |
+
+Der Bericht behält seine eigene, persistierte Auswahl (`Berichtskonfiguration.VariantenIds`) —
+er ist nicht Teil des Wunsches.
+
+### 3. Was wo liegt
+
+| Schicht | Datei | Änderung |
+|---|---|---|
+| Kern | `EPOS.Kern/Allgemein/Bericht/Vergleichsauswahl.cs` | neu: `IstGewaehlt`, `Gewaehlte(gruppe, idStamm)`, `Setzen(gewaehlt, gruppe, idStamm)`, `Geaendert` |
+| Baustein | `EPOS.UI/Bausteine/Vergleichswahl.razor`, Stil `.epos-vergleichswahl*` | neu |
+| Übersicht | `UebersichtDaten.cs`, `UebersichtSeite.razor`, `UebersichtSeiteGaben.cs` | `GewaehlteVarianten`, Parameter `VergleichGewaehlt`, Filter in `Gegenueberstellung` |
+| Kosten | `KostenDaten.cs`, `KostenSeite.razor`, `KostenSeiteGaben.cs` | Versionen, Gegenüberstellung, `Kostenwerte`, `SetzeGruppe` |
+| Wirtschaftlichkeit | `WirtschaftlichkeitSeite.razor`, `WirtschaftlichkeitSeiteGaben.cs` | `VergleichGewaehlt`, Spalten je gewählter Version, fehlende Ergebnisse sichtbar |
+| Rahmen | `BerichteKostenHuelle.cs` | die eine `Vergleichsauswahl` für alle drei Gaben |
+| Texte | `Resource.resx`/`.en-US.resx`/Designer | `BK_LBL_VERGLEICHSWAHL`, `BK_KOSTEN_LBL_VERGLEICH`, `WIRT_STATUS_FEHLEND`, `WIRT_MSG_NICHT_BERECHNET` |
+
+### 4. Nachweise
+
+| Was | Wo | Ergebnis |
+|---|---|---|
+| Vergleichsauswahl: Vorgabe alle, Stamm immer, Abgewähltes bleibt, Neues dabei, Ereignis nur bei echter Änderung, andere Gruppen unberührt | `EPOS.Kern.Tests/VergleichsauswahlTests.cs` | **5** neue Fälle |
+| Baustein: je Version ein Schalter, Stamm gesetzt und gesperrt, Ab-/Anwahl meldet die vollständige Liste in Reihenfolge, Werkzeugtipp, `Aktiv=false` | `EPOS.UI.Tests/Bausteine/VergleichswahlTests.cs` | **4** neue Fälle |
+| Übersicht: ohne Delegat keine Zeile; Abwahl meldet `[1030]` und liest den Stand neu | `UebersichtSeiteTests` | **2** neue Fälle |
+| Kosten: Gegenüberstellung mit Köpfen/Zeilen, Abwahl meldet und liest neu, ohne Gruppe kein Block | `KostenSeiteTests` | **3** neue Fälle |
+| Wirtschaftlichkeit: der Haken meldet die Wahl und zeigt die Tabelle neu | `WirtschaftlichkeitSeiteTests` | **1** neuer Fall |
+| Sandbox-Bau `WP-Plan.sln` x64 Debug | `K:\imp\src` | **0 Fehler** |
+| `EPOS.Kern.Tests` / `EPOS.UI.Tests` | `dotnet test --no-build` | **2 051/2 051** / **3 258/3 258** |
+| Referenzlauf | — | unberührt (Anzeige und Auswahl, kein Rechenweg) |
+
+### 5. Abnahmepunkte — A‑W5‑B‑5
+
+1. Übersicht, Stamm „Beispiel WP WG 1" gewählt: Zeile „Im Vergleich: ☑ Stamm ☑ Andere WP ☑ Erdwärme"; „Erdwärme" abhaken → die Spalte verschwindet aus „Komponenten im Vergleich".
+2. Auf „Kosten" wechseln: dieselbe Zeile zeigt „Erdwärme" abgewählt; „Kosten im Vergleich" führt Stamm und „Andere WP" mit Investition/Betrieb/Energie.
+3. Auf „Wirtschaftlichkeit" wechseln: der Haken von „Erdwärme" ist aus; „Andere WP" steht als Spalte mit „—" und „⚠ nicht berechnet — bitte „Berechnen“", die Statuszeile nennt „Für 1 gewählte Version(en) liegt kein gespeichertes Ergebnis vor". „Erdwärme" wieder anhaken → die Spalte erscheint sofort, ohne Rechenlauf.
+4. „Berechnen" rechnet die gehakten Varianten; danach sind alle gewählten Spalten gefüllt.

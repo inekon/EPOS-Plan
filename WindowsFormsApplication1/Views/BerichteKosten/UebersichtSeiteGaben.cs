@@ -46,6 +46,15 @@ namespace WindowsFormsApplication1
 
         private readonly VariantenCtrl _ctrl = new VariantenCtrl();
 
+        /// <summary>
+        /// Die Vergleichswahl der drei Seiten (Anwenderwunsch 08.09.2026, W5‑B‑5) — die
+        /// Rahmenhülle reicht EINE Instanz an Übersicht, Kosten und Wirtschaftlichkeit.
+        /// </summary>
+        internal Vergleichsauswahl Vergleich { get; set; } = new Vergleichsauswahl();
+
+        /// <summary>Die Ids der Gruppe in Listenreihenfolge (Stamm zuerst) — für die Vergleichswahl.</summary>
+        private readonly List<int> _gruppe = new List<int>();
+
         private int _aktuellesProjekt = -1;
         private int _stammId = -1;
         private string _stammName = "";
@@ -112,6 +121,9 @@ namespace WindowsFormsApplication1
                 ["StammGewechselt"] = new Action<int>(StammSetzen),
                 ["FilterGewechselt"] = new Action<bool>(FilterSetzen),
                 ["ZeileMarkiert"] = new Action<int>(ZeileSetzen),
+                ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
+                ["LabelVergleich"] = MyResource.Resource.BK_LBL_VERGLEICHSWAHL,
+                ["StammFestTipp"] = MyResource.Resource.BK_BER_MSG_STAMM_REFERENZ,
                 ["VarianteAnlegen"] = new Func<string, string>(VarianteAnlegen),
                 ["VarianteUmbenennen"] = new Func<string, string>(VarianteUmbenennen),
                 ["UmbenennenText"] = MyResource.Resource.VAR_BTN_UMBENENNEN,
@@ -237,6 +249,12 @@ namespace WindowsFormsApplication1
             }
             stand.Zeilen = zeilen;
 
+            // Die Vergleichswahl (W5-B-5): die GETEILTE Auswahl der drei Seiten,
+            // Vorgabe alle Versionen, der Stamm immer.
+            _gruppe.Clear();
+            foreach (VarianteZeile z in zeilen) _gruppe.Add(z.IdProjekt);
+            stand.GewaehlteVarianten = Vergleich.Gewaehlte(_gruppe, _stammId);
+
             // Markierung: die vorgemerkte Zeile, sonst das GEOEFFNETE Projekt,
             // sonst der Stamm (Vorbild WaehleZeile).
             if (zeilen.Count > 0)
@@ -327,7 +345,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void Gegenueberstellung(UebersichtStand stand, ProjektDetails ds)
         {
-            List<VarianteZeile> varianten = stand.Zeilen.Where(z => !z.IstStamm).ToList();
+            // Nur die Versionen der Vergleichswahl bekommen eine Spalte (W5-B-5).
+            List<VarianteZeile> varianten = stand.Zeilen
+                .Where(z => !z.IstStamm && stand.GewaehlteVarianten.Contains(z.IdProjekt))
+                .ToList();
             int ausgelassen = Math.Max(0, varianten.Count - MAX_VARIANTENSPALTEN);
             if (ausgelassen > 0) varianten = varianten.GetRange(0, MAX_VARIANTENSPALTEN);
 
@@ -492,6 +513,12 @@ namespace WindowsFormsApplication1
             _markiert = idProjekt;
             Action<int, string> h = ProjektMarkiert;
             if (h != null) h(idProjekt, _markiertName);
+        }
+
+        /// <summary>Die Vergleichswahl der Seite (W5‑B‑5) in die geteilte Auswahl.</summary>
+        private void VergleichSetzen(IReadOnlyList<int> gewaehlt)
+        {
+            Vergleich.Setzen(gewaehlt, _gruppe, _stammId);
         }
 
         private void Melde()

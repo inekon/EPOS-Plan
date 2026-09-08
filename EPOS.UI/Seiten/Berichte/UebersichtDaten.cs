@@ -73,6 +73,13 @@ public sealed class UebersichtStand
     /// <summary>Die markierte Zeile (<c>Tab_Projekt.ID</c>); -1 = keine.</summary>
     public int MarkierteId { get; set; } = -1;
 
+    /// <summary>
+    /// Die Versionen im Vergleich (Ids, Stamm eingeschlossen) — Anwenderwunsch 08.09.2026,
+    /// W5‑B‑5. Nur sie bekommen in der Gegenüberstellung eine Spalte; dieselbe Wahl gilt
+    /// auf den Seiten Kosten und Wirtschaftlichkeit.
+    /// </summary>
+    public IReadOnlyList<int> GewaehlteVarianten { get; set; } = Array.Empty<int>();
+
     /// <summary>Vorbelegung des Bezeichnerfeldes für „Variante anlegen".</summary>
     public string Bezeichnervorschlag { get; set; } = "";
 

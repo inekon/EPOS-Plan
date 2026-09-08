@@ -338,4 +338,25 @@ public class WirtschaftlichkeitSeiteTests : BunitContext
 
         Assert.Equal("UcWirtschaftlichkeit.btn_Help", cut.Instance.HilfeSchluessel);
     }
+
+    // =====================================================================
+    //  Die Vergleichswahl (Anwenderwunsch 08.09.2026, W5-B-5)
+    // =====================================================================
+
+    [Fact]
+    public void Der_Haken_einer_Variante_meldet_die_Vergleichswahl_und_zeigt_die_Tabelle_neu()
+    {
+        IReadOnlyList<int>? gemeldet = null;
+        int angezeigt = 0;
+        var cut = Zeige(p => p
+            .Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => gemeldet = l)
+            .Add(x => x.Anzeigen, (int id) => { angezeigt++; return Ansicht("1 €"); }));
+
+        cut.FindAll(".epos-raster tbody input[type=checkbox]")[1].Change(false);
+
+        Assert.Equal(new[] { 1030 }, gemeldet);
+        Assert.Equal(1, angezeigt);
+        Assert.Equal(new[] { 1030 }, cut.Instance.Gewaehlte);
+        Assert.Contains("1 €", cut.Markup);
+    }
 }

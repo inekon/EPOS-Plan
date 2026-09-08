@@ -87,6 +87,21 @@ public sealed class KostenStand
     /// <summary>„Projekt: &lt;Name&gt;" bzw. der Satz „kein Projekt gewählt".</summary>
     public string Projektzeile { get; set; } = "";
 
+    /// <summary>Stamm und Varianten der Gruppe, Stamm zuerst (W5‑B‑5) — leer ohne Gruppe.</summary>
+    public IReadOnlyList<VarianteZeile> Versionen { get; set; } = Array.Empty<VarianteZeile>();
+
+    /// <summary>Die Versionen im Vergleich (Ids, Stamm eingeschlossen) — die geteilte Vergleichswahl.</summary>
+    public IReadOnlyList<int> GewaehlteVarianten { get; set; } = Array.Empty<int>();
+
+    /// <summary>Überschrift der Kostengegenüberstellung.</summary>
+    public string VergleichTitel { get; set; } = "";
+
+    /// <summary>Die Spaltenköpfe der Kostengegenüberstellung: „Kennzahl" und je Version einer.</summary>
+    public IReadOnlyList<string> VergleichSpalten { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die Zeilen der Kostengegenüberstellung (Investition, Betrieb, Energie).</summary>
+    public IReadOnlyList<MatrixZeile> Vergleich { get; set; } = Array.Empty<MatrixZeile>();
+
     /// <summary>Gibt es ein Projekt? <c>false</c> sperrt die beiden Knöpfe.</summary>
     public bool Bedienbar { get; set; }
 

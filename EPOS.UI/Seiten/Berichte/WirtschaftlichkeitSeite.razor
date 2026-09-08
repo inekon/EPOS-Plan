@@ -255,6 +255,13 @@
     [Parameter] public Action? Abbrechen { get; set; }
 
     /// <summary>
+    /// Die Vergleichswahl hat gewechselt (Ids der Versionen im Vergleich, Stamm
+    /// eingeschlossen) — die Hülle merkt sie sich für alle drei Seiten (W5‑B‑5), und
+    /// die Tabelle folgt ihr sofort über <see cref="Anzeigen"/>.
+    /// </summary>
+    [Parameter] public Action<IReadOnlyList<int>>? VergleichGewaehlt { get; set; }
+
+    /// <summary>
     /// Der Parametersatz eines Unterdialogs. <c>null</c> heißt „geht gerade
     /// nicht" — dann bleibt der Bereich zu und die Hülle hat ihren Grund in
     /// die Statuszeile geschrieben.
@@ -366,6 +373,13 @@
 
         if (an) { if (!_gewaehlt.Contains(z.IdProjekt)) _gewaehlt.Add(z.IdProjekt); }
         else _gewaehlt.Remove(z.IdProjekt);
+
+        // W5-B-5 (08.09.2026): Der Haken wirkt SOFORT auf die Tabelle und gilt
+        // auch fuer Uebersicht und Kosten - bis hierher wirkte er erst beim
+        // naechsten Rechenlauf, und die Spalten folgten den gespeicherten
+        // Ergebnissen statt der Wahl.
+        VergleichGewaehlt?.Invoke(new List<int>(_gewaehlt));
+        if (Anzeigen is not null) _stand.Ansicht = Anzeigen(_stand.SzenarioId);
     }
 
     private void BeiSzenario(int? id)

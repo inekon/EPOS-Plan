@@ -60,6 +60,45 @@
         }
     </div>
 
+    @* KOSTEN IM VERGLEICH (Anwenderwunsch 08.09.2026, W5-B-5): die drei Kategorien
+       je Version der Gruppe nebeneinander, gesteuert von derselben Vergleichswahl
+       wie Uebersicht und Wirtschaftlichkeit. Die Karten und Tabellen darunter
+       gehoeren weiter dem EINEN Projekt der Projektzeile. *@
+    @if (VergleichGewaehlt is not null && _stand.Versionen.Count > 1)
+    {
+        <Vergleichswahl Bezeichnung="@LabelVergleich" Eintraege="@Vergleichseintraege"
+                        Gewaehlt="@_stand.GewaehlteVarianten" FestTipp="@StammFestTipp"
+                        GewaehltChanged="BeiVergleich" />
+    }
+    @if (_stand.Vergleich.Count > 0)
+    {
+        <p class="epos-untergruppe">@_stand.VergleichTitel</p>
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-matrix epos-kostenvergleich">
+                <thead>
+                    <tr>
+                        @foreach (string kopf in _stand.VergleichSpalten)
+                        {
+                            <th scope="col">@kopf</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (MatrixZeile z in _stand.Vergleich)
+                    {
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@z.Titel</th>
+                            @foreach (string zelle in z.Zellen)
+                            {
+                                <td class="epos-matrix-zelle">@zelle</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
     @* ---------------------------------------------------- Kategorie-Karten *@
     <Kachelraster Mindestbreite="240">
         <KindInhalt>
@@ -213,6 +252,18 @@
     [Parameter] public Func<KostenStand>? Laden { get; set; }
 
     /// <summary>
+    /// Die Vergleichswahl hat gewechselt (Ids der Versionen im Vergleich, Stamm
+    /// eingeschlossen) — die Hülle merkt sie sich für alle drei Seiten (W5‑B‑5).
+    /// </summary>
+    [Parameter] public Action<IReadOnlyList<int>>? VergleichGewaehlt { get; set; }
+
+    /// <summary>Beschriftung der Vergleichswahl (W5‑B‑5).</summary>
+    [Parameter] public string LabelVergleich { get; set; } = "Im Vergleich:";
+
+    /// <summary>Werkzeugtipp am festen Stamm-Schalter der Vergleichswahl.</summary>
+    [Parameter] public string StammFestTipp { get; set; } = "Das Stammprojekt ist die Referenz und immer enthalten.";
+
+    /// <summary>
     /// Der Parametersatz der Kostenverwaltung. Die gewählte Anlagenzeile geht
     /// mit — der Vorläufer wählte damit die Komponente vor (Ä19); <c>null</c>
     /// heißt „geht gerade nicht".
@@ -310,6 +361,31 @@
     /// <summary>
     /// Ä19: Die Auswahl einer Anlage kennzeichnet rechts ihren Energieträger.
     /// </summary>
+    // =====================================================================
+    // Die Vergleichswahl (Anwenderwunsch 08.09.2026, W5-B-5)
+    // =====================================================================
+
+    /// <summary>Die Versionen der Gruppe als Eintraege der Vergleichswahl; der Stamm fest.</summary>
+    private IReadOnlyList<Vergleichswahl.Eintrag> Vergleichseintraege
+    {
+        get
+        {
+            var l = new List<Vergleichswahl.Eintrag>();
+            foreach (VarianteZeile z in _stand.Versionen)
+                l.Add(new Vergleichswahl.Eintrag(z.IdProjekt,
+                    z.IstStamm ? z.Art : (string.IsNullOrEmpty(z.Bezeichner) ? z.Projektname : z.Bezeichner),
+                    z.IstStamm));
+            return l;
+        }
+    }
+
+    /// <summary>Die Wahl geht an die Huelle; die Gegenueberstellung kommt aus dem neuen Stand.</summary>
+    private void BeiVergleich(IReadOnlyList<int> ids)
+    {
+        VergleichGewaehlt?.Invoke(ids);
+        Auffrischen();
+    }
+
     private void AnlageWaehlen(KostenZeile z)
     {
         _anlage = z.Schluessel;

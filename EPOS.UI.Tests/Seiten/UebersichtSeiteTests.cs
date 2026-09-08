@@ -69,6 +69,7 @@ public class UebersichtSeiteTests : BunitContext
         StammId = 1030,
         Zeilen = Zeilen(),
         MarkierteId = 1030,
+        GewaehlteVarianten = new[] { 1030, 1031 },
         KomponentenTitel = "Komponenten der Gruppe im Vergleich",
         Spalten = new[] { "Gewerk", "Merkmal", "Stamm", "WP klein" },
         Vergleich = new[]
@@ -795,5 +796,34 @@ public class UebersichtSeiteTests : BunitContext
         int e = css.IndexOf('}', a);
         Assert.True(e > a);
         return css.Substring(a + selektor.Length, e - a - selektor.Length);
+    }
+
+    // =====================================================================
+    //  Die Vergleichswahl (Anwenderwunsch 08.09.2026, W5-B-5)
+    // =====================================================================
+
+    [Fact]
+    public void Ohne_Delegaten_steht_keine_Vergleichswahl()
+    {
+        var cut = Zeige();
+        Assert.Empty(cut.FindAll(".epos-vergleichswahl"));
+    }
+
+    [Fact]
+    public void Die_Vergleichswahl_nennt_jede_Version_und_meldet_die_Abwahl()
+    {
+        IReadOnlyList<int>? gemeldet = null;
+        var cut = Zeige(p => p.Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => gemeldet = l));
+
+        var haken = cut.FindAll(".epos-vergleichswahl input[type=checkbox]");
+        Assert.Equal(2, haken.Count);
+        Assert.True(haken[0].HasAttribute("disabled"));      // der Stamm: Referenz, fest
+        Assert.True(haken[1].HasAttribute("checked"));
+        Assert.Contains("WP klein", cut.Find(".epos-vergleichswahl").TextContent);
+
+        haken[1].Change(false);
+
+        Assert.Equal(new[] { 1030 }, gemeldet);
+        Assert.Equal(2, _geladen);                            // die Seite liest den Stand neu
     }
 }

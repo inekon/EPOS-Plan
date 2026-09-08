@@ -5703,6 +5703,12 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_LBL_VARIANTEN_GEKAPPT" xml:space="preserve">
     <value>nur die ersten {0} Varianten dargestellt, {1} weitere ausgeblendet</value>
   </data>
+  <data name="BK_KOSTEN_LBL_VERGLEICH" xml:space="preserve">
+    <value>Kosten im Vergleich — Stammprojekt und Varianten</value>
+  </data>
+  <data name="BK_LBL_VERGLEICHSWAHL" xml:space="preserve">
+    <value>Im Vergleich:</value>
+  </data>
   <data name="BK_MSG_VERGLEICH_UMFANG" xml:space="preserve">
     <value>{0} Komponentenzeile(n) für das Stammprojekt und {1} Variante(n).</value>
   </data>
@@ -11553,6 +11559,12 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="WIRT_STATUS_STAND" xml:space="preserve">
     <value>Gespeicherte Ergebnisse vom {0}.</value>
+  </data>
+  <data name="WIRT_MSG_NICHT_BERECHNET" xml:space="preserve">
+    <value>nicht berechnet — bitte „Berechnen“</value>
+  </data>
+  <data name="WIRT_STATUS_FEHLEND" xml:space="preserve">
+    <value>Für {0} gewählte Version(en) liegt kein gespeichertes Ergebnis vor — bitte „Berechnen“.</value>
   </data>
   <data name="WIRT_STATUS_BERECHNET" xml:space="preserve">
     <value>Berechnet am {0} — Ergebnisse gespeichert (Basis für den Berichts-Baustein Wirtschaftlichkeit).</value>
