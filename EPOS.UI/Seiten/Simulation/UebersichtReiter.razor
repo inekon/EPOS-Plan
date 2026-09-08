@@ -131,12 +131,15 @@
         </section>
     </div>
 
+    @* ANWENDERWUNSCH 08.09.2026 (W11b-B-12): Restwaerme unter dem Waermering,
+       Reststrom unter dem Stromring - die Kachelreihe tauscht die Reihenfolge,
+       damit sie zu den zwei Ringen darueber passt (links Waerme, rechts Strom). *@
     <Kachelraster>
         <KindInhalt>
-            <Kennzahlkachel Titel="@Resource.SIM_KACHEL_RESTSTROMBEDARF"
-                            Wert="@Zahl(Daten.ReststromMwh, "N2")" Quelle="@MWH" />
             <Kennzahlkachel Titel="@Resource.SIM_KACHEL_RESTWAERMEBEDARF"
                             Wert="@Zahl(Daten.RestwaermeMwh, "N2")" Quelle="@MWH" />
+            <Kennzahlkachel Titel="@Resource.SIM_KACHEL_RESTSTROMBEDARF"
+                            Wert="@Zahl(Daten.ReststromMwh, "N2")" Quelle="@MWH" />
         </KindInhalt>
     </Kachelraster>
 

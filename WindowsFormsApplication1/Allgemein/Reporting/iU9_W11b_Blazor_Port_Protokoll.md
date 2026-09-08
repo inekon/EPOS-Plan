@@ -777,3 +777,13 @@ als Diagramm. Stelle die Diagramme nebeneinander. Das Fenster lässt sich nicht 
 Diagrammzeile, eine Spaltenzeile; ohne Bedarf kein Bild; beide Ringe rund bemessen).
 Sandbox: Kern **2062/2062**, UI **3278/3278**. Abnahme am Gerät: Simulation → Übersicht: zwei
 Ringe nebeneinander, Legende mit MWh und Prozent, Fenster fast bildschirmbreit.
+
+---
+
+## Anwenderwunsch 08.09.2026 — W11b‑B‑12: Restwärme unter dem Wärmering, Reststrom unter dem Stromring
+
+**Wortlaut:** „Vertausche Reststrombedarf und Restwärmebedarf im Dialog Detaillierte Simulation."
+
+**Änderung:** Im Navigatorteil des Übersichtsreiters (`UebersichtReiter.razor`) stand die Kachelreihe unter den zwei Ringen (links Wärmebedarfsdeckung, rechts Strombedarfsdeckung) verkehrt: links „Reststrombedarf", rechts „Restwärmebedarf". Getauscht wurde nur die Reihenfolge der zwei `<Kennzahlkachel>`-Elemente im `Kachelraster` — kein Text, keine neue Ressource: links jetzt „Restwärmebedarf" (unter dem Wärmering), rechts „Reststrombedarf" (unter dem Stromring).
+
+**Nachweis:** Neuer Fall `Die_Kacheln_stehen_in_der_Reihenfolge_der_Ringe` (`UebersichtReiterTests`) sichert die Reihenfolge: erste Kachel „Restwärmebedarf", zweite „Reststrombedarf". Sandbox: Kern **2064/2064**, UI **3285/3285** (Build 0 Fehler).

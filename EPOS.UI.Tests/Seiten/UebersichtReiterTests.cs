@@ -187,6 +187,22 @@ public class UebersichtReiterTests : BunitContext
         Assert.Contains("30,00", text);
     }
 
+    /// <summary>
+    /// <b>Anwenderwunsch 08.09.2026 (W11b‑B‑12).</b> Die Kachelreihe folgt
+    /// jetzt den Ringen darüber — links Restwärme (unter dem Wärmering),
+    /// rechts Reststrom (unter dem Stromring); vorher stand Reststrom links.
+    /// </summary>
+    [Fact]
+    public void Die_Kacheln_stehen_in_der_Reihenfolge_der_Ringe()
+    {
+        var seite = Zeichnen(Daten());
+        var kacheln = seite.FindAll("div.epos-kennzahlkachel");
+
+        Assert.Equal(2, kacheln.Count);
+        Assert.Contains("Restwärmebedarf", kacheln[0].TextContent);
+        Assert.Contains("Reststrombedarf", kacheln[1].TextContent);
+    }
+
     /// <summary>Das Eigenanteilsraster: Kopfzeile und je Erzeuger eine Zeile.</summary>
     [Fact]
     public void Das_Eigenanteilsraster_zeigt_je_Erzeuger_eine_Zeile()
