@@ -411,8 +411,29 @@ namespace WindowsFormsApplication1
             foreach (int kategorie in new[] { DbWerte.KOSTEN_KATEGORIE_INVESTITION,
                                               DbWerte.KOSTEN_KATEGORIE_BETRIEB })
                 foreach (Zeile z in Lies(projektId, komponentenId, kategorie, 0))
-                    if (Loeschen(z.Raster.Id)) geloescht++;
+                    if (VerwaisteLoeschen(z.Raster.Id)) geloescht++;
             return geloescht;
+        }
+
+        /// <summary>
+        /// Windows-Abnahme 08.09.2026 (W5‑B‑6, „das Löschen der gelb hinterlegten Anlage ohne
+        /// Zuordnung funktioniert nicht"): Die losen Positionen sind zum größten Teil
+        /// PFLICHTPOSITIONEN (H3) einer Anlagenzeile, die es nicht mehr gibt — der Anwender hat
+        /// die Wärmepumpe getauscht, der Del+Add-Speicherweg legte die Zeile neu an, die Heilung
+        /// über den Geräteanker fand kein Ziel (anderes Gerät), und
+        /// <c>PflichtpositionenSicherstellen</c> versorgte die neue Anlage mit eigenen
+        /// Pflichtzeilen. <see cref="Loeschen"/> schützt Pflichtzeilen — zu Recht bei einer
+        /// lebenden Anlage, hier aber der Grund, warum die gelbe Zeile blieb: 0 von 3 gelöscht,
+        /// und die Fußzeile sagte es nur leise. Eine Position OHNE Anlage hat keinen
+        /// Pflichtgrund mehr; die ausdrückliche Pflege „Positionen ohne Anlagenzuordnung
+        /// löschen" darf sie wegnehmen. <see cref="Lies"/> mit 0 liefert nur solche Zeilen
+        /// (NULL oder verwaister Verweis) — der Schutz der lebenden Anlagen bleibt.
+        /// </summary>
+        private static bool VerwaisteLoeschen(int id)
+        {
+            return id > 0 && DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_ProjektWerte WHERE ID = ?",
+                new DbParam("@id", id));
         }
 
         /// <summary>Neue Projektposition (Muster der Übernahme-Mechanik, § 8);

@@ -971,3 +971,22 @@ er ist nicht Teil des Wunsches.
 2. Auf „Kosten" wechseln: dieselbe Zeile zeigt „Erdwärme" abgewählt; „Kosten im Vergleich" führt Stamm und „Andere WP" mit Investition/Betrieb/Energie.
 3. Auf „Wirtschaftlichkeit" wechseln: der Haken von „Erdwärme" ist aus; „Andere WP" steht als Spalte mit „—" und „⚠ nicht berechnet — bitte „Berechnen“", die Statuszeile nennt „Für 1 gewählte Version(en) liegt kein gespeichertes Ergebnis vor". „Erdwärme" wieder anhaken → die Spalte erscheint sofort, ohne Rechenlauf.
 4. „Berechnen" rechnet die gehakten Varianten; danach sind alle gewählten Spalten gefüllt.
+
+---
+
+## Windows-Abnahme 08.09.2026 — W5‑B‑6: „das Löschen der gelb hinterlegten Anlage ohne Zuordnung funktioniert nicht"
+
+**Befund an der produktiven Datenbank (Projekt 1026, Wärmepumpe):** vier verwaiste Positionen
+(`ID_Anlage` NULL, Geräteanker 1672017 = die getauschte Wärmepumpe CS6800iAW), drei davon
+**Pflichtpositionen** (Betrieb, H3). Der Anwender hat die Wärmepumpe getauscht (jetzt CS3400i,
+Anlagenzeile 14987); der Del+Add-Speicherweg legte die Zeile neu an, die Heilung über den
+Geräteanker fand kein Ziel (anderes Gerät), `PflichtpositionenSicherstellen` versorgte die neue
+Anlage mit eigenen Pflichtzeilen — und die alten blieben als gelbe Zeile „Wärmepumpe — ohne
+Anlagenzuordnung" stehen. `LoseLoeschen` rief `Loeschen(id)`, das Pflichtzeilen SCHÜTZT:
+0 von 3 gelöscht, die Fußzeile sagte es nur leise.
+
+**Änderung:** `KostenProjektPositionenCtrl.LoseLoeschen` löscht verwaiste Zeilen ohne den
+Pflichtschutz (`VerwaisteLoeschen`) — `Lies(…, 0)` liefert nur Zeilen ohne (gültige) Anlage,
+der Schutz der lebenden Anlagen bleibt. Nachweis: `KostenProjektPositionenCtrlTests` (neu, 2:
+alle verwaisten Wärmepumpen-Positionen von 1026 gehen weg; eine Pflichtzeile einer lebenden
+Anlage bleibt geschützt). Sandbox: Kern **2062/2062**, UI **3278/3278**.
