@@ -8647,6 +8647,30 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
     <value>Es ist kein Projekt ge&#246;ffnet. &#214;ffnen Sie zuerst ein Projekt, das als Variante gesichert werden soll.</value>
   </data>
+  <data name="VAR_MSG_BEZEICHNER_LEER" xml:space="preserve">
+    <value>Bitte einen Bezeichner für die Variante eingeben.</value>
+  </data>
+  <data name="VAR_MSG_NUR_VARIANTE" xml:space="preserve">
+    <value>Nur eine Variante lässt sich hier umbenennen. Ein Stammprojekt bekommt seinen Namen über „Speichern unter…“.</value>
+  </data>
+  <data name="VAR_MSG_UMBENANNT" xml:space="preserve">
+    <value>Die Variante „{0}“ heißt jetzt „{1}“.</value>
+  </data>
+  <data name="VAR_BTN_UMBENENNEN" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="VAR_DLG_UMBENENNEN_HINWEIS" xml:space="preserve">
+    <value>Neuer Bezeichner für die Variante „{0}“. Der Projektname wird zu „Stammprojekt - Bezeichner“.</value>
+  </data>
+  <data name="VAR_DLG_UMBENENNEN_TITEL" xml:space="preserve">
+    <value>Variante umbenennen</value>
+  </data>
+  <data name="START_BTN_VARIANTE_UMBENENNEN" xml:space="preserve">
+    <value>Umbenennen…</value>
+  </data>
+  <data name="START_BTN_VARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Variante anlegen…</value>
+  </data>
   <data name="START_ACE_FEHLT_TITEL" xml:space="preserve">
     <value>Datenbank-Komponente fehlt</value>
   </data>
@@ -15676,6 +15700,27 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="PVS_P8_GELB" xml:space="preserve">
     <value>Modulsumme {0} weicht von „Anzahl Module" {1} ab</value>
+  </data>
+  <data name="PVS_EMPF_REIHE" xml:space="preserve">
+    <value>passend wären {0}…{1} Module in Reihe</value>
+  </data>
+  <data name="PVS_EMPF_REIHE_MIN" xml:space="preserve">
+    <value>passend wären mindestens {0} Module in Reihe</value>
+  </data>
+  <data name="PVS_EMPF_REIHE_KEINE" xml:space="preserve">
+    <value>keine Reihe passt zu diesem Gerät, anderes Gerät wählen</value>
+  </data>
+  <data name="PVS_EMPF_GERAET" xml:space="preserve">
+    <value>passend wären {0}…{1} Module je Gerät</value>
+  </data>
+  <data name="PVS_EMPF_GERAET_MIN" xml:space="preserve">
+    <value>passend wären mindestens {0} Module je Gerät</value>
+  </data>
+  <data name="PVS_EMPF_GERAET_MAX" xml:space="preserve">
+    <value>passend wären höchstens {0} Module je Gerät</value>
+  </data>
+  <data name="PVS_EMPF_GERAET_KEINE" xml:space="preserve">
+    <value>kein Modulfeld passt zu diesem Gerät</value>
   </data>
   <data name="PVS_WERTE_FEHLEN" xml:space="preserve">
     <value>Werte fehlen: {0}</value>

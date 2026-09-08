@@ -164,6 +164,8 @@ namespace WindowsFormsApplication1
 
             /// <summary>Der Satz unter der Zeile — fertig, in der Oberflächensprache.</summary>
             public string Satz = "";
+            /// <summary>Was passen würde (Auslegungshilfe, 08.09.2026) — leer, wenn der Strang grün ist.</summary>
+            public string Empfehlung = "";
 
             /// <summary>P1: Leerlaufspannung des Strangs bei −10 °C [V]; <c>null</c> = nicht prüfbar.</summary>
             public double? UocKalt;
@@ -217,6 +219,8 @@ namespace WindowsFormsApplication1
 
             /// <summary>Der Satz im Kopf des Abschnitts — fertig.</summary>
             public string Satz = "";
+            /// <summary>Was passen würde (Auslegungshilfe, 08.09.2026) — leer ohne Befund an P6/P7.</summary>
+            public string Empfehlung = "";
 
             /// <summary>Die Tracker dieses Geräts, nach Nummer.</summary>
             public List<Mpptbefund> Mppts = new List<Mpptbefund>();
@@ -375,6 +379,11 @@ namespace WindowsFormsApplication1
                 fehlt.Anhaengen(teile);
             }
 
+            // AUSLEGUNGSHILFE (08.09.2026): Wer P1 bis P3 reisst, bekommt gesagt, welche
+            // Reihe passen wuerde - dieselben Regeln, rueckwaerts gerechnet.
+            if (sb.Farbe != Ampel.Gruen && g != null && modul != null)
+                sb.Empfehlung = StrangAuslegung.ReiheEmpfehlung(modul, g);
+
             sb.Satz = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_SATZ_STRANG,
                                     Ganz(s.Rang),
                                     string.IsNullOrEmpty(s.Bezeichner) ? "" : s.Bezeichner,
@@ -427,7 +436,7 @@ namespace WindowsFormsApplication1
                 else
                 {
                     MpptPruefen(straenge, g, gaben, gb, teile);
-                    DcAcPruefen(g, gb, teile);
+                    DcAcPruefen(g, gb, teile, straenge.Count > 0 ? ModulDesStrangs(straenge[0], gaben) : null);
                 }
 
                 gb.Satz = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_SATZ_GERAET,
@@ -534,7 +543,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>P6 (DC/AC-Verhältnis, gelb) und P7 (DC-Eingangsleistung, gelb).</summary>
-        private static void DcAcPruefen(WechselrichterModel g, Geraetebefund gb, List<string> teile)
+        private static void DcAcPruefen(WechselrichterModel g, Geraetebefund gb, List<string> teile,
+                                        PhotovoltaikModel modul)
         {
             if (!Gesetzt(g.m_P_AC_Nenn))
             {
@@ -551,6 +561,7 @@ namespace WindowsFormsApplication1
                     gb.Farbe = Schlechter(gb.Farbe, Ampel.Gelb);
                     teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_P6_GELB,
                                             Z(gb.DcAc.Value, 2), Z(DCAC_MIN, 1), Z(DCAC_MAX, 1)));
+                    if (modul != null) gb.Empfehlung = StrangAuslegung.GeraetEmpfehlung(modul, g);
                 }
                 else
                 {
@@ -565,6 +576,8 @@ namespace WindowsFormsApplication1
                 gb.Farbe = Schlechter(gb.Farbe, Ampel.Gelb);
                 teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_P7_GELB,
                                         Z(gb.Kwp, 3), Z(g.m_P_DC_Max.Value, 2)));
+                if (modul != null && gb.Empfehlung.Length == 0)
+                    gb.Empfehlung = StrangAuslegung.GeraetEmpfehlung(modul, g);
             }
         }
 

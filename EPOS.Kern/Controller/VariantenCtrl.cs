@@ -166,6 +166,70 @@ namespace WindowsFormsApplication1
         /// Schema der generische Kopierlauf nicht abdeckt.
         /// </para>
         /// </summary>
+        // ------------------------------------------------------------- Umbenennen
+
+        /// <summary>
+        /// Benennt eine VARIANTE um (Anwenderwunsch 08.09.2026, Kopfband der Startseite und
+        /// Übersicht): neuer Bezeichner in <c>Tab_Variante</c>, neuer Projektname
+        /// „&lt;Stamm&gt; - &lt;Bezeichner&gt;" in <c>Tab_Projekt</c> (eindeutig, ggf. mit
+        /// Zähler wie beim Anlegen), und der Zeiger des geöffneten Projekts
+        /// (<c>Tab_Applikation.Projektname</c>) zieht mit — der Projektkontext hängt am Namen.
+        ///
+        /// <para>Ein STAMMPROJEKT lehnt die Methode ab: Sein Name ist der Schlüssel der
+        /// Gruppe (er steckt in den Projektnamen aller Varianten) und wird über
+        /// „Speichern unter…" vergeben.</para>
+        /// </summary>
+        /// <returns><c>true</c> bei Erfolg; sonst <paramref name="fehler"/>.</returns>
+        public bool Umbenennen(int idProjekt, string neuerBezeichner, out string fehler,
+                               out string neuerProjektname)
+        {
+            fehler = null;
+            neuerProjektname = null;
+            neuerBezeichner = (neuerBezeichner ?? "").Trim();
+            if (idProjekt <= 0) { fehler = "Kein Projekt angegeben."; return false; }
+            if (neuerBezeichner.Length == 0) { fehler = "Bitte einen Bezeichner für die Variante eingeben."; return false; }
+
+            int idStamm = StammRefDerVariante(idProjekt);
+            if (idStamm <= 0)
+            {
+                fehler = "Nur eine Variante lässt sich hier umbenennen; ein Stammprojekt bekommt seinen Namen über „Speichern unter…\".";
+                return false;
+            }
+            string stammName = StartseiteCtrl.Projektname(idStamm);
+            string alterName = StartseiteCtrl.Projektname(idProjekt);
+            if (string.IsNullOrWhiteSpace(stammName)) { fehler = "Das Stammprojekt der Variante wurde nicht gefunden."; return false; }
+
+            string basisName = stammName + " - " + neuerBezeichner;
+            string neuerName = basisName;
+            int n = 2;
+            while (!string.Equals(neuerName, alterName, StringComparison.Ordinal) && ProjektnameExistiert(neuerName))
+            {
+                neuerName = basisName + " (" + n + ")";
+                n++;
+            }
+
+            try
+            {
+                DataRepository.ExecuteSQL("UPDATE Tab_Projekt SET Projektname = ? WHERE ID = ?",
+                    new DbParam("@name", neuerName),
+                    new DbParam("@id", idProjekt));
+                DataRepository.ExecuteSQL("UPDATE " + TAB_VARIANTE + " SET Variantenname = ? WHERE ID_Projekt = ?",
+                    new DbParam("@name", neuerBezeichner),
+                    new DbParam("@proj", idProjekt));
+                if (!string.IsNullOrEmpty(alterName) && !string.Equals(alterName, neuerName, StringComparison.Ordinal))
+                    DataRepository.ExecuteSQL("UPDATE Tab_Applikation SET Projektname = ? WHERE Projektname = ?",
+                        new DbParam("@neu", neuerName),
+                        new DbParam("@alt", alterName));
+                neuerProjektname = neuerName;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                fehler = "Fehler beim Umbenennen: " + ex.Message;
+                return false;
+            }
+        }
+
         public void KopiereEnergieEinstellungen(int vonProjekt, int nachProjekt)
         {
             try

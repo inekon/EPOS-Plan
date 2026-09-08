@@ -733,3 +733,49 @@ es war die Farbe.
 | 1 | **Wiedereintritt**: die zweite WebView2 baut sich innerhalb des `WebMessageReceived`-Rückrufs der ersten auf und kommt nicht hoch | A1–A3 nach `8d1256e`; bleibt es leer, sagt der Text der Wache „CoreWebView2: FEHLT" |
 | 2 | **Umgebung der WebView2** beim Anwender — Profilordner `%LOCALAPPDATA%\WP-Plan\WebView2` nicht beschreibbar, Richtlinie, Virenschutz | Der Text der Wache trägt dann die `InitializationException` im Wortlaut (`IsSuccess == false`) |
 | 3 | **Fehlende statische Web-Anteile** im Installationsordner (`wwwroot`, `_framework`, `_content/EPOS.UI`) | „CoreWebView2: steht / Blazor angemeldet: NEIN"; Gegenprobe im Ordner |
+
+---
+
+## 13 — Anwenderwunsch 08.09.2026 (W16b‑B‑3): Variante anlegen und umbenennen am Projekt-Auswahlfeld
+
+**Wortlaut:** „Eine Projektvariante soll auch aus dem Dropdown (oder im Umfeld des Dropdowns)
+angelegt (und umbenannt) werden können."
+
+### 13.1 Was jetzt da ist
+
+Rechts neben dem Auswahlfeld „Projekt:" der Startseite stehen zwei Knöpfe:
+
+| Knopf | Tut | Frei wenn |
+|---|---|---|
+| **Variante anlegen…** | fragt den Bezeichner im Namensdialog (derselbe Dialog wie im Menü „Als Variante speichern…", Hinweis „Neue Variante von ‚Stamm'"), legt sie mit `VariantenCtrl.AnlegenAusStamm` an — auch aus einer geöffneten Variante heraus (Stamm über `StammRefDerVariante`) — und füllt das Auswahlfeld nach | ein Projekt ist offen |
+| **Umbenennen…** | zeigt den bisherigen Bezeichner vorbelegt (`NamensDialogHuelle.FragenMitVorbelegung`, neu), `VariantenCtrl.Umbenennen` (neu) setzt Bezeichner in `Tab_Variante`, Projektname „Stamm - Bezeichner" in `Tab_Projekt` (eindeutig, Zähler wie beim Anlegen) und zieht `Tab_Applikation.Projektname` nach; danach `ProjektKontextCtrl.Setzen(neuerName)` — der Kontext hängt am Namen | das offene Projekt ist eine **Variante** (`IstVariante`); ein Stamm bekommt seinen Namen über „Speichern unter…", der Werkzeugtipp sagt es |
+
+Rückmeldung als Banner der Seite (`Melden`, zehn Sekunden): „Variante ‚Kessel groß' wurde
+angelegt." / „Die Variante ‚V2' heißt jetzt ‚V3'." / der Fehlertext des Kerns. Abbrechen im
+Dialog meldet nichts. Ohne Delegat steht kein Knopf („Kein Delegat ist kein Knopf").
+
+### 13.2 Was wo liegt
+
+| Schicht | Datei | Änderung |
+|---|---|---|
+| Kern | `EPOS.Kern/Controller/VariantenCtrl.cs` | `Umbenennen(idProjekt, bezeichner, out fehler, out neuerName)` — nur Varianten |
+| Hülle | `WindowsFormsApplication1/Views/Hauptformular/StartseiteHuelle.cs` | Gaben `IstVariante`, `VarianteAnlegen`, `VarianteUmbenennen`, Knopftexte; `ProjektUmbenennen` als gemeinsamer Weg mit der Übersicht |
+| Hülle | `WindowsFormsApplication1/Allgemein/Blazor/NamensDialogHuelle.cs` | `FragenMitVorbelegung` |
+| Seite | `EPOS.UI/Seiten/Start/Startseite.razor` | Parameter, zwei Knöpfe hinter dem `<select>`, Handler |
+| Texte | `Resource.resx`, `Resource.en-US.resx`, Designer | `START_BTN_VARIANTE_ANLEGEN`, `START_BTN_VARIANTE_UMBENENNEN`, `VAR_DLG_UMBENENNEN_TITEL/_HINWEIS`, `VAR_BTN_UMBENENNEN`, `VAR_MSG_UMBENANNT`, `VAR_MSG_NUR_VARIANTE`, `VAR_MSG_BEZEICHNER_LEER` |
+
+### 13.3 Nachweise
+
+| Was | Wo | Ergebnis |
+|---|---|---|
+| Ohne Delegaten keine Knöpfe; Anlegen ruft die Hülle und zeigt die Meldung; Umbenennen nur für eine Variante frei, ruft die Hülle | `EPOS.UI.Tests/Seiten/StartseiteTests.cs` | **3** neue Fälle |
+| Umbenennen auf der Testdatenbank: Bezeichner und Projektname „Stamm - Neuer Bezeichner" neu, Stamm unverändert, Stamm nicht umbenennbar | `EPOS.Kern.Tests/ProjektpflegeTests.cs` | **1** neuer Fall |
+| Sandbox-Bau, `EPOS.Kern.Tests`, `EPOS.UI.Tests` | s. W6‑B‑7 (derselbe Lauf) | 0 Fehler, **2 046/2 046 (+13: StrangAuslegungTests 9, StrangPlausibilitaetTests 3, ProjektpflegeTests 1)**, **3 248/3 248 (+4: StartseiteTests 3, UebersichtSeiteTests 1; BerichtSeiteTests angepasst)** |
+
+### 13.4 Abnahmepunkte — A‑W16b‑B‑3
+
+1. Projekt öffnen → „Variante anlegen…" → Bezeichner „Probe" → Banner „Variante ‚Probe' wurde
+   angelegt", das Auswahlfeld führt „Probe — <Stamm> - Probe".
+2. Die Variante wählen → „Umbenennen…" (jetzt frei) → „Probe 2" → Banner „Die Variante ‚Probe'
+   heißt jetzt ‚Probe 2'", Kopfband und Fenstertitel tragen den neuen Projektnamen.
+3. Den Stamm wählen → „Umbenennen…" ist gesperrt, der Werkzeugtipp nennt „Speichern unter…".

@@ -1102,3 +1102,74 @@ Nachweis: `EPOS.UI.Tests` 3 217/3 217 im Sandbox-Lauf.
 
 **Offen (Vorschlag):** Die Gerätewahl könnte beim Zuweisen eines schon belegten Typs die
 nächste freie Nummer vorschlagen — das wäre ein Entscheid zur Vorbelegung, kein Befund.
+
+---
+
+## Anwenderwunsch 08.09.2026 — W6‑B‑7: Dokumentation und Auslegungshilfe für Modul, Strang und Wechselrichter
+
+**Wortlaut:** „Wie sind die Regeln/Anforderungen, damit Module und Wechselrichter zusammenpassen?
+Was für Meldungen kann es geben, und wie muss die Konfiguration sein, damit Wechselrichter, Strang
+und Modul zusammenpassen? Erstelle 1. eine Dokumentation und 2. eine Methode zur Unterstützung
+der passenden Auswahl." — mit den Bildschirmfotos „SMA Sunny Boy 6.0-1AV-41 (Gerät 1): I 13,72 A
+≤ 30,0 A · DC/AC 0,88 liegt außerhalb 1,0…1,5" und „Strang 1: 10 Module in Reihe, 1 parallel ·
+U_oc(−10 °C) 537 V ≤ 1.000 V · MPP im Sommer 357 V < 590 V — der Strang regelt ab".
+
+### 1. Die Dokumentation
+
+`Doku_PV_Strangauslegung_EPOS-Plan.md` (Wurzel): Begriffe (Modul, Strang, MPPT, Gerät, DC/AC),
+die acht Regeln P1–P8 mit Formel und Farbe, **jede Meldung der Ampel mit Bedeutung und Abhilfe**
+(je Strang und je Gerät), das Vorgehen in sieben Schritten, die drei Fälle der Bildschirmfotos
+(zwei Sunny Boy 6.0 für 20 × 530 W; SHP100 mit DC/AC 0,05 und Fenster ab 590 V; zehn Module
+grün am 6.0) und die Grenzen der Prüfung. Quelle bleibt Kapitel 4.2 des
+`Konzept_Wechselrichter_EPOS-Plan.md`; die Doku ist die Anwenderfassung.
+
+### 2. Die Methode — `StrangAuslegung` (Kern, plattformfrei)
+
+Dieselben Regeln **rückwärts** gerechnet (`EPOS.Kern/Allgemein/Import/StrangAuslegung.cs`),
+mit denselben Temperaturen und derselben Näherung wie `StrangPlausibilitaet`:
+
+| Methode | Antwort |
+|---|---|
+| `Reihe(modul, gerät)` | Bereich „Module in Reihe": Min = ⌈U_Mpp_Min / U_mpp(70 °C)⌉ (P2), Max = min(⌊U_Dc_Max / U_oc(−10 °C)⌋ (P1), ⌊U_Mpp_Max / U_mpp(−10 °C)⌋ (P3)) |
+| `ParallelJeMppt(modul, gerät)` | ⌊I_Dc_Max / I_sc(70 °C)⌋ (P4), gedeckelt durch `Straenge_Je_Mppt` (P5) |
+| `ModuleJeGeraet(modul, gerät)` | ⌈1,0 · P_AC / P_Modul⌉ … ⌊min(1,5 · P_AC, P_Dc_Max) / P_Modul⌋ (P6, P7) |
+| `Vorschlagen(modul, gerät, n)` | eine Aufteilung für n Module: wenige Geräte zuerst, dann DC/AC nahe 1,25, dann lange Reihen; gleich lange Stränge, gleich belegte Geräte; sonst `Grund` |
+| `GeraeteBewerten(modul, n, katalog)` | alle Geräte, passende zuerst |
+| `ReiheEmpfehlung`, `GeraetEmpfehlung` | die Sätze für die Ampel |
+
+**Sichtbar in der Ampel:** `Strangbefund.Empfehlung` und `Geraetebefund.Empfehlung` (neu);
+`StrangPruefen` setzt die Reihen-Empfehlung bei jedem nicht-grünen Strang, `DcAcPruefen` die
+Geräte-Empfehlung bei P6/P7 (dafür reicht `GeraetePruefen` das Modul des ersten Strangs durch).
+Die Hülle (`PhotovoltaikHuelle.MitEmpfehlung`) hängt sie mit dem Trenner „ · " an den Satz:
+„Strang 1: 10 Module in Reihe, 1 parallel · … · MPP im Sommer 357 V < 590 V — der Strang regelt
+ab · **passend wären 17…18 Module in Reihe**" bzw. „… DC/AC 1,77 liegt
+außerhalb 1,0…1,5 · **passend wären 12…16 Module je Gerät**". Sieben neue Schlüssel `PVS_EMPF_*`
+(de/en, Designer). Kein Rechenweg der Simulation ist berührt.
+
+**Noch nicht in der Oberfläche:** `Vorschlagen`/`GeraeteBewerten` — das Auswahlfeld
+„Wechselrichter aus dem Katalog" könnte danach sortieren und ein Knopf „Auslegung vorschlagen"
+die Strangtabelle füllen (Entscheid des Anwenders, siehe Doku Abschnitt 5).
+
+### 3. Nachweise
+
+| Was | Wo | Ergebnis |
+|---|---|---|
+| Auslegungshilfe am Anhang-A-Modul und -Gerät: Reihe 4…14, ein Strang je Tracker, 10…13 Module je Gerät, Vorschlag 10 Module → 10 × 1 an einem Gerät (DC/AC 1,10076), 20 Module → zwei Geräte, unerreichbares Fenster mit Grund, Rangfolge der Bewertung, die Sätze auf de-DE | `EPOS.Kern.Tests/StrangAuslegungTests.cs` | **9** neue Fälle |
+| Der Befund trägt die Empfehlung: rot (2 in Reihe) → „4…14", grün → leer, gelb (14 Module, DC/AC 1,54) → „10…13" | `EPOS.Kern.Tests/StrangPlausibilitaetTests.cs` | **3** neue Fälle |
+| Sandbox-Bau `WP-Plan.sln` x64 Debug (MSBuild VS 18) | `K:\imp\src` | **0 Fehler** |
+| `EPOS.Kern.Tests` | `dotnet test --no-build` | **2 046/2 046 (+13: StrangAuslegungTests 9, StrangPlausibilitaetTests 3, ProjektpflegeTests 1)** |
+| `EPOS.UI.Tests` | `dotnet test --no-build` | **3 248/3 248 (+4: StartseiteTests 3, UebersichtSeiteTests 1; BerichtSeiteTests angepasst)** |
+| Referenzlauf | — | unberührt, keine Zeile des Rechenwegs angefasst |
+
+Beide Reihen liefen in einem Zug hintereinander, ohne Lastflackern (Kern 1 min 9 s, UI 29 s). Die Windows-Hülle (`WindowsFormsApplication1`) baut mit; die Hüllenmethoden `VarianteAnlegen`/`VarianteUmbenennen`/`ProjektUmbenennen` haben keinen automatischen Test (Namensdialog, Projektkontext) — Abnahme am Gerät, Punkte unten.
+
+### 4. Abnahmepunkte am Gerät — A‑W6‑B‑7
+
+1. **A‑W6‑B‑7.1** Projekt mit dem Sunny Boy 6.0 und beiden Strängen auf Gerät 1: Der Chip sagt
+   „DC/AC 1,77 liegt außerhalb 1,0…1,5 · passend wären 12…16 Module je Gerät".
+2. **A‑W6‑B‑7.2** Strang 2 auf Gerät 2: beide Chips grün oder gelb mit „DC/AC 0,88 … · passend
+   wären 12…16 Module je Gerät" — zwölf Module je Strang machen es grün.
+3. **A‑W6‑B‑7.3** SHP100 wählen: „Strang 1: … MPP im Sommer 357 V < 590 V — der Strang regelt
+   ab · passend wären 17…18 Module in Reihe" und am Chip „DC/AC 0,05 … · passend wären
+   190…284 Module je Gerät" (Zahlen aus den Katalogwerten des Geräts).
+4. **A‑W6‑B‑7.4** Englisch: „… · 12…16 modules per device would fit".

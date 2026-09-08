@@ -31202,6 +31202,69 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("PVS_P8_GELB", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die passend wären {0}…{1} Module in Reihe ähnelt.
+        /// </summary>
+        public static string PVS_EMPF_REIHE {
+            get {
+                return ResourceManager.GetString("PVS_EMPF_REIHE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die passend wären mindestens {0} Module in Reihe ähnelt.
+        /// </summary>
+        public static string PVS_EMPF_REIHE_MIN {
+            get {
+                return ResourceManager.GetString("PVS_EMPF_REIHE_MIN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Reihe passt zu diesem Gerät, anderes Gerät wählen ähnelt.
+        /// </summary>
+        public static string PVS_EMPF_REIHE_KEINE {
+            get {
+                return ResourceManager.GetString("PVS_EMPF_REIHE_KEINE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die passend wären {0}…{1} Module je Gerät ähnelt.
+        /// </summary>
+        public static string PVS_EMPF_GERAET {
+            get {
+                return ResourceManager.GetString("PVS_EMPF_GERAET", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die passend wären mindestens {0} Module je Gerät ähnelt.
+        /// </summary>
+        public static string PVS_EMPF_GERAET_MIN {
+            get {
+                return ResourceManager.GetString("PVS_EMPF_GERAET_MIN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die passend wären höchstens {0} Module je Gerät ähnelt.
+        /// </summary>
+        public static string PVS_EMPF_GERAET_MAX {
+            get {
+                return ResourceManager.GetString("PVS_EMPF_GERAET_MAX", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Modulfeld passt zu diesem Gerät ähnelt.
+        /// </summary>
+        public static string PVS_EMPF_GERAET_KEINE {
+            get {
+                return ResourceManager.GetString("PVS_EMPF_GERAET_KEINE", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pflege: Administration → Energiesysteme → Photovoltaik → PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus „CEC Modules.csv“ ähnelt.
@@ -42150,6 +42213,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VAR_MSG_KEIN_PROJEKT {
             get {
                 return ResourceManager.GetString("VAR_MSG_KEIN_PROJEKT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen… ähnelt.
+        /// </summary>
+        public static string START_BTN_VARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("START_BTN_VARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umbenennen… ähnelt.
+        /// </summary>
+        public static string START_BTN_VARIANTE_UMBENENNEN {
+            get {
+                return ResourceManager.GetString("START_BTN_VARIANTE_UMBENENNEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante umbenennen ähnelt.
+        /// </summary>
+        public static string VAR_DLG_UMBENENNEN_TITEL {
+            get {
+                return ResourceManager.GetString("VAR_DLG_UMBENENNEN_TITEL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Bezeichner für die Variante „{0}“. Der Projektname wird zu „Stammprojekt - Bezeichner“. ähnelt.
+        /// </summary>
+        public static string VAR_DLG_UMBENENNEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("VAR_DLG_UMBENENNEN_HINWEIS", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umbenennen ähnelt.
+        /// </summary>
+        public static string VAR_BTN_UMBENENNEN {
+            get {
+                return ResourceManager.GetString("VAR_BTN_UMBENENNEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante „{0}“ heißt jetzt „{1}“. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_UMBENANNT {
+            get {
+                return ResourceManager.GetString("VAR_MSG_UMBENANNT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur eine Variante lässt sich hier umbenennen. Ein Stammprojekt bekommt seinen Namen über „Speichern unter…“. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_NUR_VARIANTE {
+            get {
+                return ResourceManager.GetString("VAR_MSG_NUR_VARIANTE", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Bezeichner für die Variante eingeben. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_BEZEICHNER_LEER {
+            get {
+                return ResourceManager.GetString("VAR_MSG_BEZEICHNER_LEER", resourceCulture);
             }
         }
         

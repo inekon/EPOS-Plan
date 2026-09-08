@@ -878,5 +878,39 @@ namespace EPOS.Kern.Tests
                 n++;
             return n;
         }
+
+        // =================================================================================
+        // Auslegungshilfe (08.09.2026): Der Befund sagt, was passen wuerde
+        // =================================================================================
+
+        [Fact]
+        public void Ein_roter_Strang_traegt_die_Empfehlung_zur_Reihe()
+        {
+            // Zwei Module: 2 · 26,09 = 52,2 V < 80 V -> P2 rot; passend waeren 4…14.
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 2, parallel: 1, anzahlModuleAnlage: 2);
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, s.Farbe);
+            Assert.Contains("4", s.Empfehlung);
+            Assert.Contains("14", s.Empfehlung);
+        }
+
+        [Fact]
+        public void Ein_gruener_Strang_traegt_keine_Empfehlung()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10);
+            Assert.Equal("", Assert.Single(b.Straenge).Empfehlung);
+            Assert.Equal("", Assert.Single(b.Geraete).Empfehlung);
+        }
+
+        [Fact]
+        public void Ein_gelbes_Geraet_traegt_die_Empfehlung_je_Geraet()
+        {
+            // 14 Module: DC/AC 1,54 > 1,5 -> P6 gelb; passend waeren 10…13 Module je Geraet.
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 14, parallel: 1, anzahlModuleAnlage: 14);
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, g.Farbe);
+            Assert.Contains("10", g.Empfehlung);
+            Assert.Contains("13", g.Empfehlung);
+        }
     }
 }

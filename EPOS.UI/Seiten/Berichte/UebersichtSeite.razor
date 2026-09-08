@@ -44,10 +44,9 @@
 
 <div class="epos-seite" tabindex="-1" @ref="_wurzel">
 
-    <div class="epos-seite-kopf">
-        <span class="epos-seite-titel">@TitelText</span>
-        <InfoKnopf Schluessel="@HilfeSchluessel" />
-    </div>
+    @* KEIN EIGENER KOPF (Windows-Abnahme 08.09.2026): Der Rahmen BerichteKostenSeite
+       traegt Titel und Hilfeknopf der Seite - hier stand beides ein zweites Mal
+       untereinander. Der Hilfeschluessel wandert in den Rahmen (HilfeJeSeite). *@
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
@@ -76,6 +75,14 @@
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 disabled="@(!_stand.SimulierenMoeglich || _laeuft)"
                 @onclick="Simulieren">@SimulierenText</button>
+        @* UMBENENNEN (08.09.2026): der Bezeichner im Feld wird der neue Name der
+           gewaehlten Variante. Hinter den drei Bestandsknoepfen, damit deren Reihenfolge
+           (Anlegen, Loeschen, Simulieren) fuer Anwender und Proben dieselbe bleibt. *@
+        @if (VarianteUmbenennen is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar || _laeuft)"
+                    @onclick="Umbenennen">@UmbenennenText</button>
+        }
     </div>
 
     @* Der Simulationsstand der gewaehlten Version - das, was die
@@ -196,6 +203,13 @@
 
     /// <summary>Legt eine Variante an und liefert die Meldung.</summary>
     [Parameter] public Func<string, string>? VarianteAnlegen { get; set; }
+
+    /// <summary>
+    /// Die gewählte Variante umbenennen (08.09.2026): Bezeichner aus dem Feld hinein, die
+    /// Meldung heraus. Nur eine Variante ist umbenennbar — dieselbe Bedingung wie Löschen.
+    /// </summary>
+    [Parameter] public Func<string, string>? VarianteUmbenennen { get; set; }
+    [Parameter] public string UmbenennenText { get; set; } = "Umbenennen";
 
     /// <summary>Die Frage vor dem Löschen; leer = nicht möglich.</summary>
     [Parameter] public Func<string>? LoeschFrage { get; set; }
@@ -480,6 +494,14 @@
         if (VarianteAnlegen is null) return;
 
         string meldung = VarianteAnlegen(_bezeichner ?? "");
+        Auffrischen();
+        if (!string.IsNullOrEmpty(meldung)) _status = meldung;
+    }
+
+    private void Umbenennen()
+    {
+        if (VarianteUmbenennen is null) return;
+        string meldung = VarianteUmbenennen(_bezeichner ?? "");
         Auffrischen();
         if (!string.IsNullOrEmpty(meldung)) _status = meldung;
     }

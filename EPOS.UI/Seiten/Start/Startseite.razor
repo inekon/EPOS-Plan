@@ -145,6 +145,21 @@ else
                         <option value="@eintrag.Id.ToString(System.Globalization.CultureInfo.InvariantCulture)">@eintrag.Name</option>
                     }
                 </select>
+                @* VARIANTE ANLEGEN UND UMBENENNEN am Kopfband (Anwenderwunsch 08.09.2026:
+                   "eine Projektvariante soll auch aus dem Dropdown oder in seinem Umfeld
+                   angelegt und umbenannt werden koennen"). Die Huelle fragt den Bezeichner
+                   im Namensdialog ab und meldet als Banner; ohne Delegat steht kein Knopf. *@
+                @if (VarianteAnlegen is not null)
+                {
+                    <button type="button" class="epos-knopf" disabled="@(!ProjektOffen)"
+                            @onclick="VarianteAnlegenJetzt">@VarianteAnlegenText</button>
+                }
+                @if (VarianteUmbenennen is not null)
+                {
+                    <button type="button" class="epos-knopf" disabled="@(!UmbenennenMoeglich)"
+                            title="@VarianteUmbenennenTipp"
+                            @onclick="VarianteUmbenennenJetzt">@VarianteUmbenennenText</button>
+                }
             </div>
         </div>
     </header>
@@ -301,6 +316,19 @@ else
 
     /// <summary>Im Kopfband wurde eine andere Variante gewählt.</summary>
     [Parameter] public Action<int>? VarianteGewaehlt { get; set; }
+
+    /// <summary>Variante anlegen am Kopfband (08.09.2026): zurück kommt die Meldung, leer = abgebrochen.</summary>
+    [Parameter] public Func<string>? VarianteAnlegen { get; set; }
+
+    /// <summary>Die geöffnete Variante umbenennen: zurück kommt die Meldung, leer = abgebrochen.</summary>
+    [Parameter] public Func<string>? VarianteUmbenennen { get; set; }
+
+    /// <summary>Ist die Id eine Variante? Nur die lässt sich umbenennen, ein Stamm nicht.</summary>
+    [Parameter] public Func<int, bool>? IstVariante { get; set; }
+
+    [Parameter] public string VarianteAnlegenText { get; set; } = "Variante anlegen…";
+    [Parameter] public string VarianteUmbenennenText { get; set; } = "Umbenennen…";
+    [Parameter] public string VarianteUmbenennenTipp { get; set; } = "Die geöffnete Variante umbenennen (ein Stammprojekt über Speichern unter…)";
 
     /// <summary>Die wählbaren Klimaregionen des Katalogs.</summary>
     [Parameter] public Func<IReadOnlyList<string>>? Klimaregionen { get; set; }
@@ -644,6 +672,26 @@ else
     // =====================================================================
     //  Kopfband
     // =====================================================================
+
+    /// <summary>Umbenennen geht nur für eine Variante des offenen Projekts.</summary>
+    private bool UmbenennenMoeglich
+        => ProjektOffen && (IstVariante?.Invoke(ProjektId?.Invoke() ?? 0) ?? false);
+
+    private void VarianteAnlegenJetzt()
+    {
+        if (VarianteAnlegen is null) return;
+        string meldung = VarianteAnlegen();
+        Laden();
+        if (!string.IsNullOrEmpty(meldung)) Melden(meldung, WarnStufe.Hinweis, TimeSpan.FromSeconds(10));
+    }
+
+    private void VarianteUmbenennenJetzt()
+    {
+        if (VarianteUmbenennen is null) return;
+        string meldung = VarianteUmbenennen();
+        Laden();
+        if (!string.IsNullOrEmpty(meldung)) Melden(meldung, WarnStufe.Hinweis, TimeSpan.FromSeconds(10));
+    }
 
     private void BeiVariante(ChangeEventArgs e)
     {

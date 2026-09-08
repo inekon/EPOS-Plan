@@ -8640,6 +8640,30 @@ The seat becomes available for another device; a new activation is required to c
   <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
     <value>No project is open. Please open the project you want to save as a variant first.</value>
   </data>
+  <data name="VAR_MSG_BEZEICHNER_LEER" xml:space="preserve">
+    <value>Please enter an identifier for the variant.</value>
+  </data>
+  <data name="VAR_MSG_NUR_VARIANTE" xml:space="preserve">
+    <value>Only a variant can be renamed here. A base project is named via “Save as…”.</value>
+  </data>
+  <data name="VAR_MSG_UMBENANNT" xml:space="preserve">
+    <value>Variant “{0}” is now called “{1}”.</value>
+  </data>
+  <data name="VAR_BTN_UMBENENNEN" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="VAR_DLG_UMBENENNEN_HINWEIS" xml:space="preserve">
+    <value>New identifier for variant “{0}”. The project name becomes “base project - identifier”.</value>
+  </data>
+  <data name="VAR_DLG_UMBENENNEN_TITEL" xml:space="preserve">
+    <value>Rename variant</value>
+  </data>
+  <data name="START_BTN_VARIANTE_UMBENENNEN" xml:space="preserve">
+    <value>Rename…</value>
+  </data>
+  <data name="START_BTN_VARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Create variant…</value>
+  </data>
   <data name="START_ACE_FEHLT_TITEL" xml:space="preserve">
     <value>Database component missing</value>
   </data>
@@ -15669,6 +15693,27 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="PVS_P8_GELB" xml:space="preserve">
     <value>Module total {0} differs from “Number of modules” {1}</value>
+  </data>
+  <data name="PVS_EMPF_REIHE" xml:space="preserve">
+    <value>{0}…{1} modules in series would fit</value>
+  </data>
+  <data name="PVS_EMPF_REIHE_MIN" xml:space="preserve">
+    <value>at least {0} modules in series would fit</value>
+  </data>
+  <data name="PVS_EMPF_REIHE_KEINE" xml:space="preserve">
+    <value>no series count fits this device, choose another device</value>
+  </data>
+  <data name="PVS_EMPF_GERAET" xml:space="preserve">
+    <value>{0}…{1} modules per device would fit</value>
+  </data>
+  <data name="PVS_EMPF_GERAET_MIN" xml:space="preserve">
+    <value>at least {0} modules per device would fit</value>
+  </data>
+  <data name="PVS_EMPF_GERAET_MAX" xml:space="preserve">
+    <value>at most {0} modules per device would fit</value>
+  </data>
+  <data name="PVS_EMPF_GERAET_KEINE" xml:space="preserve">
+    <value>no module array fits this device</value>
   </data>
   <data name="PVS_WERTE_FEHLEN" xml:space="preserve">
     <value>Values missing: {0}</value>

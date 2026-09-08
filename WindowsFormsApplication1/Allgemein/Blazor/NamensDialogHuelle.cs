@@ -135,6 +135,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Wie <see cref="FragenMitHinweis"/>, mit VORBELEGUNG des Feldes — das Umbenennen einer
+        /// Variante (08.09.2026) zeigt den bisherigen Bezeichner zum Ändern.
+        /// </summary>
+        internal static string FragenMitVorbelegung(IWin32Window besitzer, string titel,
+                                                    string hinweis, string frage, string vorbelegung,
+                                                    string okText, string abbrechenText)
+        {
+            string zusatz;
+            return Zeigen(besitzer, titel, frage, vorbelegung: vorbelegung, meldungLeer: null,
+                          hinweis: hinweis, zusatzFrage: null, zusatzVorbelegung: null,
+                          okText: okText, abbrechenText: abbrechenText, okNurMitText: true,
+                          zusatz: out zusatz);
+        }
+
+        /// <summary>
         /// Dieselbe Abfrage als PARAMETERSATZ statt als Fenster (iU9-W4.0).
         ///
         /// <para>Seit es den Baustein <c>Ueberlagerung</c> gibt, zeigt ein

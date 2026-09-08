@@ -83,7 +83,10 @@ public class BerichtSeiteTests : BunitContext
     {
         var cut = Zeige(p => p.Add(x => x.TitelText, "Bericht — Stamm: Musterhaus"));
 
-        Assert.Equal("Bericht — Stamm: Musterhaus", cut.Find(".epos-dialog-titel").TextContent);
+        // Den Titel traegt seit dem 08.09.2026 der Rahmen BerichteKostenSeite; die Seite
+        // selbst zeigt keinen zweiten Kopf mehr (doppelter Titel in der Windows-Abnahme).
+        Assert.Equal("Bericht — Stamm: Musterhaus", cut.Instance.TitelText);
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
 
         // Variantenliste: vier Spalten plus die Wahlspalte.
         Assert.Equal(5, cut.FindAll(".epos-raster thead th").Count);

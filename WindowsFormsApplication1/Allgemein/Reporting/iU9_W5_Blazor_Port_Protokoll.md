@@ -870,3 +870,37 @@ Möglichkeit, eine geänderte Vorlauftemperatur zurückzuholen. Der Befund vom 0
 das Bild der Gegenüberstellung; wenn der Anwender die Unterschiedsansicht ebenfalls auf
 Komponenten verkürzt haben will, ist das ein eigener Entscheid mit eigener Folge für die
 Übernahme.
+
+---
+
+## Windows-Abnahme 08.09.2026 — W5‑B‑3 Umbenennen in der Übersicht, W5‑B‑4 doppelte Titel
+
+**W5‑B‑3 (mit W16b‑B‑3).** In der Variantenzeile der Übersicht steht als vierter Knopf
+**„Umbenennen"**: Der Bezeichner im Feld wird der neue Name der gewählten Variante
+(`UebersichtSeite.VarianteUmbenennen`, Gaben in `UebersichtSeiteGaben.VarianteUmbenennen`,
+gemeinsamer Weg `StartseiteHuelle.ProjektUmbenennen` → `VariantenCtrl.Umbenennen`, danach
+`VerwirfDetails()` und die Anzeige der Startseite). Frei unter derselben Bedingung wie Löschen
+(eine Variante ist gewählt). Der Knopf steht HINTER Anlegen, Löschen, Simulieren, damit deren
+Reihenfolge für Anwender und Proben bleibt. Nachweis: `UebersichtSeiteTests` **+1**
+(Bezeichner geht durch, Meldung kommt zurück).
+
+**W5‑B‑4 — „Übersicht — Stammprojekt und Varianten" stand zweimal untereinander** (Bildschirmfoto:
+einmal im Rahmen mit „· Beispiel WP WG 1", einmal als Seitenkopf mit Hilfeknopf). Der Rahmen
+`BerichteKostenSeite` trägt jetzt allein Titel und Hilfeknopf, und zwar den **Schlüssel der
+gezeigten Seite** (`HilfeJeSeite`: UEBERSICHT → `UcBkUebersicht.btn_Help`, KOSTEN →
+`UcBkKosten.btn_Help`, WIRTSCHAFT → `UcWirtschaftlichkeit.btn_Help`, BERICHT →
+`UcBericht.btn_Help`). Die Seitenköpfe von Übersicht, Wirtschaftlichkeit und Bericht sind weg;
+die Kostenseite behält ihre Projektzeile („Projekt: …" — sie nennt das Projekt, nicht den
+Stamm) ohne zweiten Hilfeknopf. `BerichtSeiteTests` prüft den Titel jetzt am Parameter und
+das Fehlen des zweiten Kopfs. Sandbox, Kern- und UI-Tests: s. W6‑B‑7 (**2 046/2 046 (+13: StrangAuslegungTests 9, StrangPlausibilitaetTests 3, ProjektpflegeTests 1)**, **3 248/3 248 (+4: StartseiteTests 3, UebersichtSeiteTests 1; BerichtSeiteTests angepasst)**).
+
+**Offen — Rückfrage an den Anwender (W5‑B‑5):** „Im Bereich Berichte & Kosten sollen die
+Varianten mit den Vergleichen/Daten jeweils angezeigt werden (wie auch schon in der Version
+branch version_august_2026)." Im August stand in der Übersicht die **Versionstabelle** (Art,
+Bezeichner, Projektname, Simulationsstand je Zeile), die W5‑E‑1 am 05.09.2026 auf Anwenderwunsch
+(„als Dropdown, damit weniger Platz verwendet wird") durch das Auswahlfeld ersetzt hat; die
+Unterschiedstabelle zeigt seither die Abweichungen der GEWÄHLTEN Variante. Zu klären: (a) die
+Versionstabelle zurück (Übersicht aller Varianten mit Simulationsstand, zusätzlich zum
+Auswahlfeld), (b) die Unterschiede ALLER Varianten nebeneinander (eine Spalte je Variante), oder
+(c) die Wirtschaftlichkeits-/Kostenwerte je Variante in der Übersicht. Bis zur Antwort bleibt
+W5‑E‑1 stehen.

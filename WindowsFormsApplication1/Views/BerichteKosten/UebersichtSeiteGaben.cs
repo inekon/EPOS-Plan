@@ -113,6 +113,8 @@ namespace WindowsFormsApplication1
                 ["FilterGewechselt"] = new Action<bool>(FilterSetzen),
                 ["ZeileMarkiert"] = new Action<int>(ZeileSetzen),
                 ["VarianteAnlegen"] = new Func<string, string>(VarianteAnlegen),
+                ["VarianteUmbenennen"] = new Func<string, string>(VarianteUmbenennen),
+                ["UmbenennenText"] = MyResource.Resource.VAR_BTN_UMBENENNEN,
                 ["LoeschFrage"] = new Func<string>(LoeschFrage),
                 ["VarianteLoeschen"] = new Func<bool, string>(VarianteLoeschen),
 
@@ -582,6 +584,39 @@ namespace WindowsFormsApplication1
             {
                 return string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Umbenennen der markierten Variante (08.09.2026): der Bezeichner aus dem Feld; der
+        /// gemeinsame Weg liegt in der Startseitenhuelle, weil dort der Projektkontext haengt.
+        /// </summary>
+        private string VarianteUmbenennen(string bezeichner)
+        {
+            if (_markiert <= 0) return MyResource.Resource.BK_MSG_KEIN_STAMM;
+            bezeichner = (bezeichner ?? "").Trim();
+            if (bezeichner.Length == 0) return MyResource.Resource.VAR_MSG_BEZEICHNER_LEER;
+            string bisher = "";
+            foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(_stammId, _stammName))
+                if (vi.IdProjekt == _markiert) { bisher = vi.Variantenname ?? ""; break; }
+            try
+            {
+                string meldung = StartseiteHuelle.Aktuelle != null
+                    ? StartseiteHuelle.Aktuelle.ProjektUmbenennen(_markiert, bezeichner, bisher)
+                    : UmbenennenOhneStartseite(bezeichner, bisher);
+                VerwirfDetails();
+                return meldung;
+            }
+            catch (Exception ex)
+            {
+                return string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message);
+            }
+        }
+
+        private string UmbenennenOhneStartseite(string bezeichner, string bisher)
+        {
+            string fehler, neuerName;
+            if (!_ctrl.Umbenennen(_markiert, bezeichner, out fehler, out neuerName)) return fehler ?? "";
+            return string.Format(MyResource.Resource.VAR_MSG_UMBENANNT, bisher, bezeichner);
         }
 
         private string LoeschFrage()

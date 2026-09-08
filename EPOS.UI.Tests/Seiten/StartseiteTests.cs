@@ -1172,4 +1172,61 @@ public class StartseiteTests : BunitContext
         Assert.True(e > a);
         return css.Substring(a + selektor.Length, e - a - selektor.Length);
     }
+
+    // =====================================================================
+    //  Variante anlegen und umbenennen am Kopfband (08.09.2026)
+    // =====================================================================
+
+    [Fact]
+    public void Ohne_Delegaten_stehen_keine_Variantenknoepfe_am_Kopfband()
+    {
+        var cut = Zeige(idProjekt: 1030);
+        Assert.Empty(cut.FindAll(".epos-startseite-projekt button"));
+    }
+
+    [Fact]
+    public void Der_Anlegeknopf_ruft_die_Huelle_und_meldet()
+    {
+        int gerufen = 0;
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 1030)
+            .Add(x => x.Varianten, () => new[] { (1030, "Referenzprojekt") })
+            .Add(x => x.Klimaregionen, () => new[] { "München" })
+            .Add(x => x.Klimaregion, () => "München")
+            .Add(x => x.Bericht, Bereitschaft)
+            .Add(x => x.VarianteAnlegen, () => { gerufen++; return "Variante „Kessel groß“ wurde angelegt."; })
+            .Add(x => x.VarianteUmbenennen, () => "")
+            .Add(x => x.IstVariante, id => false));
+
+        var knoepfe = cut.FindAll(".epos-startseite-projekt button");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.False(knoepfe[0].HasAttribute("disabled"));
+        Assert.True(knoepfe[1].HasAttribute("disabled"));   // ein Stamm laesst sich nicht umbenennen
+
+        knoepfe[0].Click();
+        Assert.Equal(1, gerufen);
+        Assert.Contains("wurde angelegt", cut.Markup);
+    }
+
+    [Fact]
+    public void Der_Umbenennknopf_ist_nur_fuer_eine_Variante_frei()
+    {
+        int gerufen = 0;
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 1031)
+            .Add(x => x.Varianten, () => new[] { (1030, "Referenzprojekt"), (1031, "Referenzprojekt - V2") })
+            .Add(x => x.Klimaregionen, () => new[] { "München" })
+            .Add(x => x.Klimaregion, () => "München")
+            .Add(x => x.Bericht, Bereitschaft)
+            .Add(x => x.VarianteUmbenennen, () => { gerufen++; return "Die Variante „V2“ heißt jetzt „V3“."; })
+            .Add(x => x.IstVariante, id => id == 1031));
+
+        var knopf = cut.Find(".epos-startseite-projekt button");
+        Assert.False(knopf.HasAttribute("disabled"));
+        knopf.Click();
+        Assert.Equal(1, gerufen);
+        Assert.Contains("heißt jetzt", cut.Markup);
+    }
 }

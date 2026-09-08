@@ -615,5 +615,34 @@ namespace EPOS.Kern.Tests
             object o = DataRepository.ExecuteScalar(sql);
             return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
         }
+
+        // =============================================================================
+        //  Variante umbenennen (08.09.2026)
+        // =============================================================================
+
+        [Fact]
+        public void Eine_Variante_bekommt_beim_Umbenennen_Bezeichner_und_Projektnamen_neu()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            var ctrl = new VariantenCtrl();
+            int stamm = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Assert.True(stamm > 0);
+
+            string fehler;
+            int variante = ctrl.AnlegenAusStamm(stamm, PROJEKT, "Umbenennprobe", out fehler);
+            Assert.True(variante > 0, fehler);
+
+            string neuerName;
+            Assert.True(ctrl.Umbenennen(variante, "Neuer Bezeichner", out fehler, out neuerName), fehler);
+            Assert.Equal(PROJEKT + " - Neuer Bezeichner", neuerName);
+            Assert.Equal(neuerName, StartseiteCtrl.Projektname(variante));
+            Assert.Contains(ctrl.LadeGruppe(stamm, PROJEKT),
+                            v => v.IdProjekt == variante && v.Variantenname == "Neuer Bezeichner");
+            // Der Stamm der Gruppe ist unveraendert, und ein Stamm laesst sich nicht umbenennen.
+            Assert.Equal(PROJEKT, StartseiteCtrl.Projektname(stamm));
+            Assert.False(ctrl.Umbenennen(stamm, "Egal", out fehler, out neuerName));
+            Assert.Contains("Variante", fehler);
+        }
     }
 }

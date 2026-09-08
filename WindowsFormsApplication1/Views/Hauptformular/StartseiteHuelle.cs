@@ -85,6 +85,14 @@ namespace WindowsFormsApplication1
                 ["ProjektId"] = new Func<int>(() => _kontext.Id),
                 ["Varianten"] = new Func<IReadOnlyList<(int Id, string Name)>>(Varianten),
                 ["VarianteGewaehlt"] = new Action<int>(VarianteWechseln),
+                // Variante anlegen und umbenennen AM KOPFBAND (Anwenderwunsch 08.09.2026):
+                // derselbe Weg wie das Menue "Als Variante speichern…", nur meldet er als
+                // Banner der Seite statt als MessageBox.
+                ["IstVariante"] = new Func<int, bool>(IstVariante),
+                ["VarianteAnlegen"] = new Func<string>(VarianteAnlegen),
+                ["VarianteUmbenennen"] = new Func<string>(VarianteUmbenennen),
+                ["VarianteAnlegenText"] = MyResource.Resource.START_BTN_VARIANTE_ANLEGEN,
+                ["VarianteUmbenennenText"] = MyResource.Resource.START_BTN_VARIANTE_UMBENENNEN,
                 ["Klimaregionen"] = new Func<IReadOnlyList<string>>(StartseiteCtrl.Klimaregionen),
                 ["Klimaregion"] = new Func<string>(() => _kontext.Klimazone),
                 ["KlimaSpeichern"] = new Func<string, (bool Fehler, string Text)>(KlimaSpeichern),
@@ -270,6 +278,92 @@ namespace WindowsFormsApplication1
             // merkte sich einen Variantenwechsel ausdruecklich NICHT.
             string name = StartseiteCtrl.Projektname(idProjekt);
             if (!string.IsNullOrEmpty(name)) _kontext.Setzen(name);
+        }
+
+        private static bool IstVariante(int idProjekt)
+        {
+            return idProjekt > 0 && new VariantenCtrl().StammRefDerVariante(idProjekt) > 0;
+        }
+
+        /// <summary>
+        /// Variante anlegen am Kopfband (08.09.2026) — Bezeichner im Namensdialog erfragen,
+        /// <c>VariantenCtrl.AnlegenAusStamm</c>, Anzeige nachziehen. Zurück kommt die Meldung
+        /// für das Banner; leer = abgebrochen.
+        /// </summary>
+        private string VarianteAnlegen()
+        {
+            int idProjekt = _kontext.Id;
+            if (idProjekt <= 0) return MyResource.Resource.VAR_MSG_KEIN_PROJEKT;
+            VariantenCtrl ctrl = new VariantenCtrl();
+            int idStamm = ctrl.StammRefDerVariante(idProjekt);
+            if (idStamm <= 0) idStamm = idProjekt;
+            string stammName = StartseiteCtrl.Projektname(idStamm);
+            if (string.IsNullOrWhiteSpace(stammName)) return MyResource.Resource.BK_MSG_KEIN_STAMM;
+
+            string bezeichner = NamensDialogHuelle.FragenMitHinweis(
+                _besitzer?.Invoke(),
+                MyResource.Resource.VAR_DLG_TITEL,
+                string.Format(MyResource.Resource.VAR_DLG_HINWEIS, stammName),
+                MyResource.Resource.BK_LBL_BEZEICHNER,
+                MyResource.Resource.BK_BTN_ANLEGEN,
+                MyResource.Resource.SIM_BTN_ABBRECHEN);
+            if (bezeichner == null) return "";
+            try
+            {
+                string fehler;
+                int neueId = ctrl.AnlegenAusStamm(idStamm, stammName, bezeichner, out fehler);
+                if (neueId <= 0)
+                    return string.IsNullOrEmpty(fehler) ? MyResource.Resource.BK_MSG_ANLEGEN_FEHLGESCHLAGEN : fehler;
+                VariantenAnzeigeAktualisieren();
+                return string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, bezeichner.Trim());
+            }
+            catch (Exception ex)
+            {
+                return string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Die geöffnete Variante umbenennen (08.09.2026): bisheriger Bezeichner vorbelegt,
+        /// <c>VariantenCtrl.Umbenennen</c>, danach der Kontext auf den neuen Namen — er hängt
+        /// am Projektnamen. Zurück kommt die Meldung; leer = abgebrochen.
+        /// </summary>
+        private string VarianteUmbenennen()
+        {
+            int idProjekt = _kontext.Id;
+            if (idProjekt <= 0) return MyResource.Resource.VAR_MSG_KEIN_PROJEKT;
+            VariantenCtrl ctrl = new VariantenCtrl();
+            int idStamm = ctrl.StammRefDerVariante(idProjekt);
+            if (idStamm <= 0) return MyResource.Resource.VAR_MSG_NUR_VARIANTE;
+
+            string bisher = "";
+            foreach (VariantenCtrl.VarianteInfo vi in ctrl.LadeGruppe(idStamm, StartseiteCtrl.Projektname(idStamm)))
+                if (vi.IdProjekt == idProjekt) { bisher = vi.Variantenname ?? ""; break; }
+
+            string neu = NamensDialogHuelle.FragenMitVorbelegung(
+                _besitzer?.Invoke(),
+                MyResource.Resource.VAR_DLG_UMBENENNEN_TITEL,
+                string.Format(MyResource.Resource.VAR_DLG_UMBENENNEN_HINWEIS, bisher),
+                MyResource.Resource.BK_LBL_BEZEICHNER,
+                bisher,
+                MyResource.Resource.VAR_BTN_UMBENENNEN,
+                MyResource.Resource.SIM_BTN_ABBRECHEN);
+            if (neu == null) return "";
+            return ProjektUmbenennen(idProjekt, neu, bisher);
+        }
+
+        /// <summary>
+        /// Der gemeinsame Umbenennweg von Kopfband und Übersicht: Kern, dann der Kontext,
+        /// wenn das umbenannte Projekt das geöffnete ist, dann die Anzeige.
+        /// </summary>
+        internal string ProjektUmbenennen(int idProjekt, string neuerBezeichner, string bisher)
+        {
+            string fehler, neuerName;
+            if (!new VariantenCtrl().Umbenennen(idProjekt, neuerBezeichner, out fehler, out neuerName))
+                return fehler ?? "";
+            if (idProjekt == _kontext.Id) _kontext.Setzen(neuerName);
+            VariantenAnzeigeAktualisieren();
+            return string.Format(MyResource.Resource.VAR_MSG_UMBENANNT, bisher ?? "", (neuerBezeichner ?? "").Trim());
         }
 
         private IReadOnlyList<(int Id, string Name)> Varianten()

@@ -66,7 +66,10 @@
                         @onclick="() => Geschlossen.InvokeAsync()">@ZurueckText</button>
             }
             <span>@Kopfzeile</span>
-            <InfoKnopf Schluessel="@HilfeSchluessel" />
+            @* Der Hilfeknopf der JEWEILIGEN Seite (08.09.2026): Bis hierher trug der
+               Rahmen einen allgemeinen Schluessel und jede Seite darunter noch einmal
+               Titel und Knopf - beides stand doppelt. *@
+            <InfoKnopf Schluessel="@HilfeJeSeite" />
         </div>
 
         @if (_gaben is null)
@@ -198,6 +201,16 @@
     };
 
     private string Kopfzeile => Kopf?.Invoke(_seite) ?? "";
+
+    /// <summary>Der Hilfeschlüssel der gezeigten Seite — die Schlüssel der alten Masken.</summary>
+    private string HilfeJeSeite => _seite switch
+    {
+        SEITE_UEBERSICHT => "UcBkUebersicht.btn_Help",
+        SEITE_KOSTEN => "UcBkKosten.btn_Help",
+        SEITE_WIRTSCHAFT => "UcWirtschaftlichkeit.btn_Help",
+        SEITE_BERICHT => "UcBericht.btn_Help",
+        _ => HilfeSchluessel
+    };
 
     protected override void OnInitialized()
     {

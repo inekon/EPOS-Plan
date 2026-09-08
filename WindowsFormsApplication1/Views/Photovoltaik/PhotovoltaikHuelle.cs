@@ -594,16 +594,27 @@ namespace WindowsFormsApplication1
 
             var straenge = new List<Ampelzeile>();
             foreach (StrangPlausibilitaet.Strangbefund s in b.Straenge)
-                straenge.Add(new Ampelzeile(Farbe(s.Farbe), s.Satz));
+                straenge.Add(new Ampelzeile(Farbe(s.Farbe), MitEmpfehlung(s.Satz, s.Empfehlung)));
 
             var chips = new List<Ampelzeile>();
             foreach (StrangPlausibilitaet.Geraetebefund g in b.Geraete)
-                chips.Add(new Ampelzeile(Farbe(g.Farbe), g.Satz));
+                chips.Add(new Ampelzeile(Farbe(g.Farbe), MitEmpfehlung(g.Satz, g.Empfehlung)));
 
             return new StrangBefund(straenge, chips, b.Modulsumme, b.NaeherungMpp);
         }
 
         /// <summary>Der Katalogsatz des Moduls als Kernmodell; <c>null</c> bleibt <c>null</c>.</summary>
+        /// <summary>
+        /// Der Befund und dahinter, was passen wuerde (Auslegungshilfe 08.09.2026,
+        /// <c>StrangAuslegung</c>) - mit demselben Trenner wie die Teile des Satzes.
+        /// </summary>
+        private static string MitEmpfehlung(string satz, string empfehlung)
+        {
+            return string.IsNullOrEmpty(empfehlung)
+                ? satz
+                : satz + MyResource.Resource.PVS_TRENNER + empfehlung;
+        }
+
         private static PhotovoltaikModel ModulModell(PhotovoltaikStammCtrl.ModulDetail d)
         {
             if (d == null) return null;

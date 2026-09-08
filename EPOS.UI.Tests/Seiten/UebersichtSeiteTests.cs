@@ -520,6 +520,26 @@ public class UebersichtSeiteTests : BunitContext
     // Variante anlegen und löschen
     // =====================================================================
 
+    /// <summary>Umbenennen (08.09.2026): der Bezeichner aus dem Feld geht an die Hülle, die Meldung kommt zurück.</summary>
+    [Fact]
+    public void Umbenennen_gibt_den_Bezeichner_weiter_und_meldet()
+    {
+        string? bezeichner = null;
+        var cut = Zeige(p => p.Add(x => x.VarianteUmbenennen, (string b) =>
+        {
+            bezeichner = b;
+            return "Die Variante „V2“ heißt jetzt „Kessel klein“.";
+        }));
+
+        cut.Find(".epos-variantenzeile input[type=text]").Input("Kessel klein");
+        var knoepfe = Pflegeknoepfe(cut);
+        Assert.Equal(4, knoepfe.Count);
+        knoepfe[3].Click();
+
+        Assert.Equal("Kessel klein", bezeichner);
+        Assert.Contains("heißt jetzt", cut.Instance.Status);
+    }
+
     [Fact]
     public void Anlegen_gibt_den_Bezeichner_weiter_und_meldet()
     {

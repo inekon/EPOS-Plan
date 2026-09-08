@@ -32,10 +32,8 @@
 
 <div class="epos-seite" tabindex="-1" @ref="_wurzel">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
-        <InfoKnopf Schluessel="@HilfeSchluessel" />
-    </div>
+    @* KEIN EIGENER KOPF (08.09.2026): Titel und Hilfeknopf traegt der Rahmen
+       BerichteKostenSeite - hier standen beide ein zweites Mal. *@
 
     @if (!string.IsNullOrEmpty(_fehler))
     {
