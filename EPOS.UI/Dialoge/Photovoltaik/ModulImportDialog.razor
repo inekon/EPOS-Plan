@@ -1,4 +1,4 @@
-@* Geraeteimport - EINE Komponente, ZWEI Auspraegungen (Anwenderentscheid W6-O-1
+﻿@* Geraeteimport - EINE Komponente, ZWEI Auspraegungen (Anwenderentscheid W6-O-1
    vom 06.09.2026: "der OND-Import soll umgesetzt werden. baue daher den
    Modulimport schon jetzt um").
 
@@ -57,6 +57,7 @@
    ab. Enter ist NICHT belegt - der Uebernehmen-Knopf schreibt sofort. *@
 
 @namespace EPOS.UI.Dialoge.Photovoltaik
+@using System.Globalization
 @using System.Threading
 @using WindowsFormsApplication1
 
@@ -91,54 +92,32 @@
                  AbbrechenText="@AbbrechenText" />
 
     @* --- Die Filterleiste: Klapplisten und Suche -------------------------- *@
-    <div class="epos-pvimport-filter">
-        <Auswahlfeld Bezeichnung="@Profil.FilterHersteller" Eintraege="@_herstellerliste"
-                     Auswahl="@_iHersteller" AuswahlChanged="BeiHersteller" Aktiv="@(!_laeuft)" />
-        @if (Profil.FilterTechnologie.Length > 0)
-        {
-            <Auswahlfeld Bezeichnung="@Profil.FilterTechnologie" Eintraege="@_technologieliste"
-                         Auswahl="@_iTechnologie" AuswahlChanged="BeiTechnologie" Aktiv="@(!_laeuft)" />
-        }
-        <Textfeld Bezeichnung="@Profil.FilterSuche" Wert="@_suche" WertChanged="BeiSuche"
-                  Platzhalter="@Profil.SuchePlatzhalter" />
-    </div>
+    @* --- Die Kandidatenliste ---------------------------------------------
+       STUFE S3.4 (Anwenderentscheid W14a-E-10, Frage Q10): Die zwei Filterleisten
+       - Klappliste Hersteller, Klappliste Technologie, Suchfeld und ein bis zwei
+       von/bis-Paare - sind SPALTEN geworden. Der Hersteller traegt einen Trichter
+       "enthaelt ..." (er trifft mit vier Zeichen, was die Klappliste erst nach
+       258 Eintraegen hergab), Leistung und Effizienz einen Zahlenausdruck
+       (">300", "300..500"), und die Suche steht als EIN Feld ueber allen Spalten -
+       mit denselben Platzhaltern * und ?, denn Katalogfilter ruft dasselbe
+       Suchmuster wie vorher diese Maske.
 
-    @* --- Die Filterleiste: Zahlenbereiche --------------------------------- *@
-    <div class="epos-pvimport-filter">
-        @for (int i = 0; i < Profil.Zahlenfilter.Count; i++)
-        {
-            int n = i;
-            ImportZahlenfilter f = Profil.Zahlenfilter[n];
-            <Zahlenfeld Bezeichnung="@f.BezeichnungVon" Wert="@_von[n]"
-                        WertChanged="@(w => { _von[n] = w; Filtern(); })"
-                        Min="@f.Min" Max="@f.Max" Nachkommastellen="@f.Nachkommastellen"
-                        Einheit="@f.Einheit" Aktiv="@(!_laeuft)" />
-            <Zahlenfeld Bezeichnung="@f.BezeichnungBis" Wert="@_bis[n]"
-                        WertChanged="@(w => { _bis[n] = w; Filtern(); })"
-                        Min="@f.Min" Max="@f.Max" Nachkommastellen="@f.Nachkommastellen"
-                        Einheit="@f.Einheit" Aktiv="@(!_laeuft)" />
-        }
+       WAS BLEIBT: die Mehrfachwahl mit ihrer Klicksemantik (W6-E-5) samt der ueber
+       mehrere Filterschritte GESAMMELTEN Wahl, die Statuszeile darunter, die
+       Virtualisierung ab 120 Zeilen (jetzt an der GEFILTERTEN Zahl) und der
+       Knopf "Zuruecksetzen", der als einziger auch die WAHL leert. *@
+    @* KEINE epos-leiste: Die Schlussleiste unten ist die zweite des Dialogs, und
+       ein dritter Leistenkasten dazwischen verschoebe sie. *@
+    <div class="epos-pvimport-ruecksetzer">
         <button type="button" class="epos-knopf" @onclick="Zuruecksetzen">@ZuruecksetzenText</button>
     </div>
 
-    @* --- Das Raster: Spalten aus dem Profil ------------------------------- *@
-    <Raster TZeile="ImportZeile" Zeilen="@Zeilen" Virtualisiert="@Virtualisieren">
-        <KindInhalt>
-            <TemplateColumn TGridItem="ImportZeile" Title="@SpalteWahlText">
-                <Zeilenwahl Mehrfach="true" Gewaehlt="@Istgewaehlt(context)"
-                            Kurztext="@SpalteWahlText"
-                            Tastenwahl="@(k => Anklicken(context.Nummer, k))"
-                            Doppelklick="@(() => BeiDoppelklick(context.Nummer))" />
-            </TemplateColumn>
-            @foreach (ImportSpalte spalte in Profil.Spalten)
-            {
-                string s = spalte.Schluessel;
-                <TemplateColumn TGridItem="ImportZeile" Title="@spalte.Titel">
-                    @context.Spalte(s)
-                </TemplateColumn>
-            }
-        </KindInhalt>
-    </Raster>
+    <Katalogliste Profil="@Profil.Listenprofil" Zeilen="@_katalogzeilen"
+                  Filterstand="@_filterstand" Texte="@Filtertexte"
+                  Mehrfach="true" IstGewaehlt="@Gewaehltzeile"
+                  Mehrfachwahl="BeiMehrfachwahl" Doppelklick="BeiDoppelklickZeile"
+                  Gefiltert="Filtern"
+                  VirtualisierenAb="@VIRTUALISIEREN_AB" />
 
     @* --- Die Detailfelder in den Reitern des Profils ---------------------- *@
     <Reiter Bezeichnung="@Profil.Titel">
@@ -274,12 +253,23 @@
     /// <summary>Die zuletzt angeklickte Zeile — sie füllt die Detailreiter.</summary>
     private object? _zuletzt;
 
-    private IReadOnlyList<(int Id, string Text)> _herstellerliste = Array.Empty<(int, string)>();
-    private IReadOnlyList<(int Id, string Text)> _technologieliste = Array.Empty<(int, string)>();
-    private int _iHersteller, _iTechnologie;
-    private string _suche = "";
-    private double?[] _von = Array.Empty<double?>();
-    private double?[] _bis = Array.Empty<double?>();
+    /// <summary>
+    /// Die Kandidaten als Katalogzeilen (Stufe S3.4) — der SCHLUESSEL ist die Stelle
+    /// in <c>_zeilen</c>: Die CEC-Liste bringt 20 743 Module, darunter
+    /// Namensdubletten, und ein Kandidat ist erst nach dem Uebernehmen ein
+    /// Katalogsatz.
+    /// </summary>
+    private IReadOnlyList<Katalogfilterzeile> _katalogzeilen = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>
+    /// Der Filterstand dieser Liste. Er gehoert dem WIRT und NICHT dem
+    /// <c>Katalogfilterregister</c>: Der Import zeigt Kandidaten aus einer QUELLE,
+    /// keinen Katalog — ein Filter, der eine Sitzung lang stehenbliebe, verstellte
+    /// beim naechsten Abruf den Blick auf eine ganz andere Menge.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
+
+    private readonly Katalogfiltertexte _filtertexte = new();
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
@@ -295,7 +285,70 @@
     private IReadOnlyCollection<string>? _konfliktNamen;
     private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
 
-    private IQueryable<ImportZeile> Zeilen => _anzeige.AsQueryable();
+    /// <summary>Die Beschriftungen der Katalogliste; „Wahl" kommt vom Wirt.</summary>
+    private Katalogfiltertexte Filtertexte
+    {
+        get
+        {
+            _filtertexte.SpalteWahl = SpalteWahlText;
+            return _filtertexte;
+        }
+    }
+
+    /// <summary>Ist dieser Kandidat markiert? (Rueckfrage der Katalogliste, S3.4.)</summary>
+    private bool Gewaehltzeile(Katalogfilterzeile k)
+        => k.Id >= 0 && k.Id < _zeilen.Count && _gewaehlte.Contains(_zeilen[k.Id].Satz);
+
+    /// <summary>Die Stelle eines Kandidaten in der ANGEZEIGTEN Liste; −1, wenn ausgefiltert.</summary>
+    private int Anzeigeindex(Katalogfilterzeile k)
+    {
+        if (k.Id < 0 || k.Id >= _zeilen.Count) return -1;
+        object satz = _zeilen[k.Id].Satz;
+        for (int i = 0; i < _anzeige.Count; i++)
+            if (ReferenceEquals(_anzeige[i].Satz, satz)) return i;
+        return -1;
+    }
+
+    /// <summary>
+    /// Der Klick, den die <c>Katalogliste</c> meldet (S3.4). Sie nennt die Stelle in
+    /// der GEFILTERTEN Liste — und genau darauf rechnet <c>Zeilenmarkierung</c>.
+    /// </summary>
+    private void BeiMehrfachwahl(Katalogliste.Mehrfachklick klick)
+        => Anklicken(klick.Index, new Zeilenwahl.Zeilenklick(klick.Strg, klick.Umschalt));
+
+    /// <summary>Der Doppelklick der <c>Katalogliste</c> — auf den Anzeigeindex umgesetzt.</summary>
+    private Task BeiDoppelklickZeile(Katalogfilterzeile k) => BeiDoppelklick(Anzeigeindex(k));
+
+    /// <summary>
+    /// <b>Die Kandidaten als Katalogzeilen</b> (Stufe S3.4). Der ANZEIGETEXT jeder
+    /// Zelle bleibt Zeichen fuer Zeichen der, den <c>ModulImportProfil.Zeile</c>
+    /// geformt hat; die ein bis zwei Groessen der frueheren Zahlenleiste bekommen
+    /// zusaetzlich ihre ZAHL, damit ein Zahlenausdruck darauf wirken kann.
+    /// </summary>
+    private void KatalogzeilenAufbauen()
+    {
+        var liste = new List<Katalogfilterzeile>(_zeilen.Count);
+        for (int i = 0; i < _zeilen.Count; i++)
+        {
+            ImportZeile z = _zeilen[i];
+            var k = new Katalogfilterzeile(i, z.Name)
+            {
+                Schluessel = i.ToString(CultureInfo.InvariantCulture)
+            };
+
+            foreach (ImportSpalte sp in Profil.Spalten)
+            {
+                double? zahl = null;
+                for (int n = 0; n < Profil.Zahlspalten.Count; n++)
+                    if (Profil.Zahlspalten[n] == sp.Schluessel) zahl = n == 0 ? z.Zahl1 : z.Zahl2;
+
+                k.Mit(sp.Schluessel, new Katalogwert(z.Spalte(sp.Schluessel), zahl));
+            }
+
+            liste.Add(k);
+        }
+        _katalogzeilen = liste;
+    }
 
     /// <summary>
     /// Ab wie vielen Zeilen sich das Virtualisieren lohnt. Die CEC-Modulliste bringt
@@ -304,7 +357,6 @@
     /// </summary>
     private const int VIRTUALISIEREN_AB = 120;
 
-    private bool Virtualisieren => _anzeige.Count >= VIRTUALISIEREN_AB;
 
     private EventCallback AbbrechenCallback =>
         EventCallback.Factory.Create(this, () => _abbruch?.Cancel());
@@ -369,37 +421,17 @@
 
     protected override void OnParametersSet()
     {
-        if (ProfilVorgabe is null && (_profil is null || _profil.Art != Art))
-            Aufbauen();
-        else if (_von.Length != Profil.Zahlenfilter.Count)
-            Vorbelegen();
+        if (ProfilVorgabe is null && (_profil is null || _profil.Art != Art)) Aufbauen();
     }
 
     protected override void OnInitialized()
     {
         if (ProfilVorgabe is null && _profil is null) Aufbauen();
-        else Vorbelegen();
-
-        ListenAufbauen();
     }
 
     private void Aufbauen()
     {
         _profil = ModulImportProfil.Finde(Art, ImportTexte.Zu);
-        Vorbelegen();
-    }
-
-    /// <summary>Die Vorbelegung der Zahlenfilter — wörtlich die des Vorläufers.</summary>
-    private void Vorbelegen()
-    {
-        int n = Profil.Zahlenfilter.Count;
-        _von = new double?[n];
-        _bis = new double?[n];
-        for (int i = 0; i < n; i++)
-        {
-            _von[i] = Profil.Zahlenfilter[i].VorgabeVon;
-            _bis[i] = Profil.Zahlenfilter[i].VorgabeBis;
-        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -496,7 +528,7 @@
         }
 
         WahlLeeren();
-        ListenAufbauen();
+        KatalogzeilenAufbauen();
         Filtern();
     }
 
@@ -505,42 +537,15 @@
     // =====================================================================
 
     /// <summary>
-    /// Die beiden Auswahllisten. Der erste Eintrag steht für „alle" — und zwar als
-    /// STEUERWERT (Listenplatz 0), nicht als Anzeigetext, gegen den verglichen wird
-    /// (Befund W13‑B39: Eine Übersetzung hätte den Filter still zerrissen).
-    /// </summary>
-    private void ListenAufbauen()
-    {
-        var hersteller = new List<(int, string)> { (0, Profil.TextAlle) };
-        var technologie = new List<(int, string)> { (0, Profil.TextAlle) };
-
-        foreach (string h in _zeilen.Select(z => z.Hersteller).Distinct().OrderBy(x => x))
-            if (h.Length > 0) hersteller.Add((hersteller.Count, h));
-        foreach (string t in _zeilen.Select(z => z.Technologie).Distinct().OrderBy(x => x))
-            if (t.Length > 0) technologie.Add((technologie.Count, t));
-
-        _herstellerliste = hersteller;
-        _technologieliste = technologie;
-        _iHersteller = 0;
-        _iTechnologie = 0;
-    }
-
-    private void BeiHersteller(int? i) { _iHersteller = i ?? 0; Filtern(); }
-    private void BeiTechnologie(int? i) { _iTechnologie = i ?? 0; Filtern(); }
-    private void BeiSuche(string t) { _suche = t ?? ""; Filtern(); }
-
-    /// <summary>
     /// „Zurücksetzen" gibt die Liste wieder frei — und LEERT die Wahl (W6‑E‑5).
     /// Das ist der eine Knopf, mit dem der Anwender eine über mehrere Filterschritte
     /// gesammelte Auswahl wieder loswird.
     /// </summary>
     private void Zuruecksetzen()
     {
-        _suche = "";
-        _iHersteller = 0;
-        _iTechnologie = 0;
+        _filterstand.Zuruecksetzen();
+        _filterstand.Suche = "";
         WahlLeeren();
-        Vorbelegen();
         Filtern();
     }
 
@@ -556,24 +561,19 @@
     /// </summary>
     private void Filtern()
     {
-        System.Text.RegularExpressions.Regex? muster = Suchmuster.Uebersetzen(_suche);
+        // S3.4: GEFILTERT WIRD IM KERN, mit DERSELBEN reinen Funktion und DEMSELBEN
+        // Filterstand, mit denen die Katalogliste ihre Zeilen bestimmt - die
+        // Reihenfolge ist deshalb Zeile fuer Zeile dieselbe. Der Wirt braucht sie,
+        // weil an ihr seine Markierung und die Statuszeile haengen; er liest sie
+        // nicht aus der Komponente zurueck, sondern rechnet sie selbst.
+        IReadOnlyList<Katalogfilterzeile> sichtbar =
+            Katalogfilter.Anwenden(Profil.Listenprofil, _katalogzeilen, _filterstand);
 
-        string? hersteller = _iHersteller > 0 && _iHersteller < _herstellerliste.Count
-            ? _herstellerliste[_iHersteller].Text : null;
-        string? technologie = _iTechnologie > 0 && _iTechnologie < _technologieliste.Count
-            ? _technologieliste[_iTechnologie].Text : null;
-
-        _anzeige = new List<ImportZeile>();
-
-        foreach (ImportZeile z in _zeilen)
+        _anzeige = new List<ImportZeile>(sichtbar.Count);
+        foreach (Katalogfilterzeile k in sichtbar)
         {
-            if (muster is not null && !muster.IsMatch(z.Name)) continue;
-            if (hersteller is not null
-                && !string.Equals(z.Hersteller, hersteller, StringComparison.OrdinalIgnoreCase)) continue;
-            if (technologie is not null
-                && !string.Equals(z.Technologie, technologie, StringComparison.OrdinalIgnoreCase)) continue;
-            if (!ImBereich(z)) continue;
-
+            if (k.Id < 0 || k.Id >= _zeilen.Count) continue;
+            ImportZeile z = _zeilen[k.Id];
             z.Nummer = _anzeige.Count;
             _anzeige.Add(z);
         }
@@ -581,18 +581,6 @@
         MarkierungAusWahl();
 
         _status = string.Format(Profil.StatusGefunden, _anzeige.Count);
-    }
-
-    /// <summary>Liegt die Zeile in allen Zahlenbereichen der Filterleiste?</summary>
-    private bool ImBereich(ImportZeile z)
-    {
-        for (int i = 0; i < Profil.Zahlenfilter.Count && i < _von.Length; i++)
-        {
-            double wert = i == 0 ? z.Zahl1 : z.Zahl2;
-            double min = _von[i] ?? 0, max = _bis[i] ?? 0;
-            if (!(wert >= min && (max <= 0 || wert <= max))) return false;
-        }
-        return true;
     }
 
     // =====================================================================

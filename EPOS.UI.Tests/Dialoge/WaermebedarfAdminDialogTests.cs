@@ -27,11 +27,17 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class WaermebedarfAdminDialogTests : BunitContext
 {
-    private static readonly List<WaermebedarfAdminDialog.Katalogzeile> KATALOG = new()
+    /// <summary>
+    /// Der Katalog als <see cref="Katalogfilterzeile"/> — seit Stufe S3.2
+    /// (W14a-E-10) traegt die Liste Jahresarbeit und Spitze und steht im Baustein
+    /// <c>Katalogliste</c>.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Katalog() => new[]
     {
-        new(1, "Buerohaus 2024", false),
-        new(2, "Auslieferung Standard", true),
-        new(3, "Werkhalle Nord", false)
+        Zeitreihenproben.Zeile(1, "Buerohaus 2024", jahresarbeitMwh: 6137.6, spitzeKw: 2206.0),
+        Zeitreihenproben.Zeile(2, "Auslieferung Standard", geschuetzt: true,
+                               jahresarbeitMwh: 4724.7, spitzeKw: 1098.0),
+        Zeitreihenproben.Zeile(3, "Werkhalle Nord", jahresarbeitMwh: 65.4, spitzeKw: 47.6)
     };
 
     public WaermebedarfAdminDialogTests()
@@ -66,7 +72,9 @@ public class WaermebedarfAdminDialogTests : BunitContext
              Task<GanglinienImportErgebnis>>? einlesen = null,
         Action<bool>? geschlossen = null)
         => Render<WaermebedarfAdminDialog>(p => p
-            .Add(x => x.Katalog, () => Task.FromResult(new List<WaermebedarfAdminDialog.Katalogzeile>(KATALOG)))
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Katalog()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Waermebedarf))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.HatProjektzuordnung, hatZuordnung ?? (_ => Task.FromResult(false)))
             .Add(x => x.Loeschen, loeschen ?? (_ => Task.FromResult(true)))
             .Add(x => x.DateiWaehlen, dateiWaehlen)

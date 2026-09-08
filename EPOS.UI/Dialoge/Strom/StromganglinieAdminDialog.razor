@@ -44,18 +44,14 @@
 
     <Gruppenkopf Titel="@LabelKatalog" />
 
-    <Raster TZeile="GanglinienKatalogZeile" Zeilen="@Katalogzeilen">
-        <KindInhalt>
-            <TemplateColumn TGridItem="GanglinienKatalogZeile" Title="@SpalteWahl">
-                <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Bezeichner)" Kurztext="@SpalteWahl"
-                            Gewaehltwerden="() => Waehlen(context)" />
-            </TemplateColumn>
-            <PropertyColumn TGridItem="GanglinienKatalogZeile" TProp="string"
-                            Property="@(z => z.Bezeichner)" Title="@SpalteBezeichner" />
-            <PropertyColumn TGridItem="GanglinienKatalogZeile" TProp="int"
-                            Property="@(z => z.Zeitinterval)" Title="@LabelZeitinterval" />
-        </KindInhalt>
-    </Raster>
+    @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.2): Suche
+       ueber alle Spalten, Trefferzahl, Filter im Spaltenkopf. Zum Bezeichner und
+       zum Zeitintervall kommen die zwei Kennzahlen JAHRESARBEIT und SPITZE - sie
+       stehen nicht am Kopfsatz, sondern in der Wertetabelle (78 840 Zeilen) und
+       kommen aus EINER Gruppenabfrage beim Aufbau der Liste. *@
+    <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                  Filterstand="@_filterstand" Texte="@Filtertexte"
+                  Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" />
 
     <Gruppenkopf Titel="@GruppeEinlesen" />
 
@@ -92,7 +88,19 @@
     // =====================================================================
 
     /// <summary>Der Katalog (<c>StromganglinieStammCtrl.ReadAll</c>).</summary>
-    [Parameter] public Func<Task<List<GanglinienKatalogZeile>>>? Katalog { get; set; }
+    [Parameter] public Func<Task<IReadOnlyList<Katalogfilterzeile>>>? Katalogzeilen { get; set; }
+
+    /// <summary>
+    /// Die Spalten des Katalogs —
+    /// <c>Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Stromganglinie, …)</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers (Muster der neun Katalogdialoge).</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>
     /// Loescht einen Katalogeintrag (<c>StromganglinieStammCtrl.Delete</c>).
@@ -124,7 +132,6 @@
 
     [Parameter] public string TitelText { get; set; } = Resource.IMPORT_TITEL_ADMIN;
     [Parameter] public string LabelKatalog { get; set; } = Resource.IMPORT_LBL_KATALOG;
-    [Parameter] public string SpalteBezeichner { get; set; } = Resource.STROMGL_SPALTE_BEZEICHNER;
     [Parameter] public string SpalteWahl { get; set; } = Resource.KFAK_SP_WAHL;
     [Parameter] public string LabelZeitinterval { get; set; } = Resource.IMPORT_LBL_ZEITINTERVAL;
     [Parameter] public string GruppeEinlesen { get; set; } = Resource.IMPORT_GRP_EINLESEN;
@@ -148,7 +155,8 @@
     private bool _ersterAufbau = true;
     private bool _laeuft;
 
-    private List<GanglinienKatalogZeile> _katalog = new();
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
     private string _gewaehlt = "";
     private int _iRaster;
     private string _pfad = "";
@@ -167,7 +175,11 @@
 
     private IReadOnlyList<(int Id, string Text)> _rasterliste = Array.Empty<(int, string)>();
 
-    private IQueryable<GanglinienKatalogZeile> Katalogzeilen => _katalog.AsQueryable();
+    /// <summary>Die Zeilen des Katalogs (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Der Filterstand der Liste (Pruefhilfe fuer Tests).</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
 
     /// <summary>Der gewaehlte Katalogeintrag (Pruefhilfe fuer Tests).</summary>
     public string Gewaehlt => _gewaehlt;
@@ -182,8 +194,19 @@
     // Aufbau
     // =====================================================================
 
+    protected override void OnParametersSet()
+    {
+        // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes.
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
+
     protected override void OnInitialized()
     {
+        // S2.5/S3.2: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit dem
+        // Projektdialog desselben Katalogs (Frage Q2).
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
+            Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.Stromganglinie));
+
         // ZWEI Eintraege, wie comboBox_Zeitinterval des Vorlaeufers - der dritte
         // Fall der Abbildung (Minute) bleibt unerreichbar (Befund W12-B15).
         List<(int, string)> liste = new();
@@ -204,14 +227,14 @@
     /// <summary>Laedt den Katalog neu (<c>SetControls</c> des Vorlaeufers).</summary>
     public async Task KatalogLaden()
     {
-        if (Katalog is null) return;
-        _katalog = await Katalog() ?? new List<GanglinienKatalogZeile>();
+        if (Katalogzeilen is null) return;
+        _katalog = await Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
         if (_katalog.All(z => z.Bezeichner != _gewaehlt)) _gewaehlt = "";
     }
 
-    private void Waehlen(GanglinienKatalogZeile zeile)
+    private void Waehlen(string bezeichner)
     {
-        _gewaehlt = zeile.Bezeichner;
+        _gewaehlt = bezeichner ?? "";
         _meldung = "";
     }
 
@@ -223,11 +246,11 @@
     {
         if (!LoeschenErlaubt) return;
 
-        GanglinienKatalogZeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
         if (zeile is null) return;
 
         // Pruefregel 1, woertlich: Auslieferungssaetze bleiben stehen.
-        if (zeile.NurLesen)
+        if (zeile.Geschuetzt)
         {
             Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
             return;

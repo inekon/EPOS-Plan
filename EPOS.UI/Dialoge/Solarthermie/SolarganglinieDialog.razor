@@ -29,6 +29,7 @@
 @namespace EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Erzeuger
+@using WindowsFormsApplication1
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -70,29 +71,13 @@
         </Links>
 
         <Rechts>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <thead>
-                        <tr>
-                            <th>@SpalteWahl</th>
-                            <th>@SpalteName</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (KatalogZeile zeile in _katalog)
-                        {
-                            KatalogZeile k = zeile;
-                            <tr class="@(k == _katalogZeile ? "epos-zeile--markiert" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(k == _katalogZeile)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => KatalogZeileWaehlen(k)" />
-                                </td>
-                                <td>@k.Bezeichner</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.2):
+               Suchzeile unmittelbar ueber der Liste (#76 woertlich), Filter im
+               Spaltenkopf, dazu Beschreibung, Jahresarbeit und Spitze. Das PROFIL
+               traegt die Spalte "im Projekt verwendet" (Q12). *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen" />
 
             @if (VerwaltungGaben is not null)
             {
@@ -151,7 +136,20 @@
     /// Der Ganglinienkatalog (<c>SolarganglinieStammCtrl.ReadAll</c>).
     /// <c>Eigenschaften</c> trägt die Beschreibung.
     /// </summary>
-    [Parameter] public Func<IReadOnlyList<KatalogZeile>>? Katalog { get; set; }
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>
+    /// Die Spalten des Katalogs —
+    /// <c>Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Solarganglinie, …)</c>, mit
+    /// der Spalte „im Projekt verwendet" (Q12).
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers (Muster der neun Katalogdialoge).</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>Nimmt die Ganglinie in das Projekt auf („◀").</summary>
     [Parameter] public Func<int, ErzeugerZeile?>? Aufnehmen { get; set; }
@@ -192,8 +190,12 @@
     private bool _ersterAufbau = true;
 
     private ErzeugerZeile? _projektZeile;
-    private KatalogZeile? _katalogZeile;
-    private IReadOnlyList<KatalogZeile> _katalog = Array.Empty<KatalogZeile>();
+    private Katalogfilterzeile? _katalogZeile;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+
+    /// <summary>Der Bezeichner der gewählten Katalogzeile — die Markierung hängt am NAMEN.</summary>
+    private string _katalogGewaehlt = "";
     private string _name = "";
     private string _beschreibung = "";
 
@@ -207,9 +209,29 @@
     public ErzeugerZeile? Projektzeile => _projektZeile;
 
     /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
-    public KatalogZeile? Katalogzeile => _katalogZeile;
+    public Katalogfilterzeile? Katalogzeile => _katalogZeile;
 
-    protected override void OnInitialized() => KatalogNeuLaden();
+    /// <summary>Die Zeilen des Katalogs — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Der Filterstand der Katalogliste — Prüfhilfe für die Tests.</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
+
+    protected override void OnParametersSet()
+    {
+        // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes.
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
+
+    protected override void OnInitialized()
+    {
+        // S2.5/S3.2: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit der
+        // Verwaltung desselben Katalogs (Frage Q2).
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
+            Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.Solarganglinie));
+
+        KatalogNeuLaden();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -220,8 +242,13 @@
 
     private void KatalogNeuLaden()
     {
-        _katalog = Katalog?.Invoke() ?? Array.Empty<KatalogZeile>();
-        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile)) _katalogZeile = null;
+        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        Katalogverwendung.Stempeln(_katalog, Zeilen.Select(z => z.Bezeichner));
+
+        if (_katalogZeile is null) return;
+
+        _katalogZeile = _katalog.FirstOrDefault(z => z.Bezeichner == _katalogGewaehlt);
+        if (_katalogZeile is null) _katalogGewaehlt = "";
     }
 
     /// <summary>
@@ -233,22 +260,28 @@
     {
         _projektZeile = zeile;
         _katalogZeile = null;
+        _katalogGewaehlt = "";
         _name = zeile.Bezeichner;
         _beschreibung = BeschreibungZu(zeile.Bezeichner);
     }
 
-    private void KatalogZeileWaehlen(KatalogZeile zeile)
+    private void KatalogZeileWaehlen(string bezeichner)
     {
+        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == bezeichner);
+        if (zeile is null) return;
+
         _katalogZeile = zeile;
+        _katalogGewaehlt = zeile.Bezeichner;
         _projektZeile = null;
         _name = zeile.Bezeichner;
-        _beschreibung = zeile.Eigenschaften;
+        _beschreibung = zeile.Text(Katalogfilterprofil.SpBeschreibung);
     }
 
     private string BeschreibungZu(string bezeichner)
     {
-        foreach (KatalogZeile k in _katalog)
-            if (string.Equals(k.Bezeichner, bezeichner, StringComparison.Ordinal)) return k.Eigenschaften;
+        foreach (Katalogfilterzeile k in _katalog)
+            if (string.Equals(k.Bezeichner, bezeichner, StringComparison.Ordinal))
+                return k.Text(Katalogfilterprofil.SpBeschreibung);
         return "";
     }
 
@@ -291,6 +324,7 @@
 
         _projektZeile = null;
         _katalogZeile = null;
+        _katalogGewaehlt = "";
         _verwaltungOffen = true;
     }
 

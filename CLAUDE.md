@@ -10,10 +10,10 @@ Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
 Der **Rechenkern liegt seit dem 03.09.2026 (Paket iU4) in einem eigenen Projekt**
-[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **374 `.cs`-Dateien**, `net10.0` **ohne**
+[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **383 `.cs`-Dateien**, `net10.0` **ohne**
 WinForms und **ohne `System.Data.OleDb`**: Simulation, Wirtschaftlichkeit, Modelle,
 Zugriffsschicht (`IDatenzugriff`/`SqliteDatenzugriff`), Bericht mit Ausgabe **und**
-Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 116 Controller. Die
+Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 117 Controller. Die
 Windows-Anwendung referenziert das Projekt und übersetzt diese Dateien nicht mehr. **Eine
 Fachänderung am Rechenkern wird dort gemacht, nicht in `WindowsFormsApplication1/`.**
 
@@ -103,7 +103,7 @@ Migrationsschritte"); danach wird jeder Aufruf vorher mit dem Anwender abgestimm
 | `Proben/ChartProben` | zeichnet die **38** Bilder (Bericht, Eingabemasken, seit iU9‑W11a die Ergebnisseite, seit iU9‑W14c die zwei Klimadiagramme, seit der Windows-Abnahme 05.09.2026 die zwei Bilder des Datenzooms und die Wochen- und Tagesstufe des Jahresverlaufs, W8‑E‑2, seit der Abnahme V2 vom 07.09.2026 die Rasterkarte und die Schnittkurve der Auslegungsoptimierung, W11b‑B‑5) aus synthetischen Reihen und prüft Maße, Farben und Determinismus — dazu **sechs Gegenproben**, die belegen, dass ein Achsenausschnitt beziehungsweise die Marke des Optimums das Bild wirklich ändert; ohne Datenbank, ohne Oberfläche. Fällt rot aus, sobald der Renderer eine Windows-API braucht oder sich ein Bild ändert | `dotnet run --project Proben/ChartProben -c Release` |
 | `EPOS.Referenzlauf` | der plattformfreie Rechennachweis gegen die eingefrorene Basis; läuft auf Linux, macOS und in der CI | `dotnet run --project EPOS.Referenzlauf -- lauf …` bzw. `… vergleich <ref> <neu>` |
 | `Referenzlauf` (Windows) | die vollständige Suite mit den Modi `lauf`, `projekt`, `vergleich`, `pruefen` (dazu `liste` und `migration`). Der frühere Modus `bildvergleich` ist mit iF23 (03.09.2026) samt dem GDI+-Renderer gelöscht | `Referenzlauf.exe <modus> …` |
-| `Werkzeuge/ResourceDesigner` | erzeugt `EPOS.Kern/MyResource/Resource.Designer.cs` vollständig neu aus der neutralen `.resx` (Format des StronglyTypedResourceBuilder). **Nach jedem neuen Ressourcenschlüssel ziehen** statt die Designer-Datei von Hand zu ergänzen — ohne Visual Studio gibt es keinen anderen Generator | `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` (ohne Argument: nur prüfen) |
+| `Werkzeuge/ResourceDesigner` | erzeugt `EPOS.Kern/MyResource/Resource.Designer.cs` vollständig neu aus der neutralen `.resx` (Format des StronglyTypedResourceBuilder). **Nach jedem neuen Ressourcenschlüssel ziehen** statt die Designer-Datei von Hand zu ergänzen — ohne Visual Studio gibt es keinen anderen Generator. Der Lauf ist **wiederholbar** (seit #152, 07.09.2026): Ändert sich kein Schlüssel, lässt ein zweiter Lauf die Datei byte-gleich liegen, und jeder Aufruf prüft das selbst | `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` (ohne Argument: nur prüfen — nennt die Zeichenbilanz) |
 | `Werkzeuge/SqlDialektPruefer` | hält **jeden** SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Access-Verbotsliste (`UPDATE … JOIN`, `Nz`, `TOP n`, `LIKE '*'`, `&`, Umlaut-Schreibweise). **Nach jeder neuen oder geänderten SQL-Anweisung ziehen** — der Referenzlauf deckt nur den Rechenweg ab, nicht die Dialog- und Pflegepfade. Regeln in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) Abschnitt 6 | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
 
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird

@@ -65,6 +65,17 @@
 
         <span class="epos-katalog-treffer">@Trefferzeile</span>
 
+        @* VERGLEICHEN (Frage Q3, Stufe S3.3): frei, sobald ZWEI oder DREI Zeilen
+           markiert sind. Der Knopf steht IMMER da - waere er nur bei Markierung
+           sichtbar, faende niemand den Weg dorthin; der Kurztext sagt, wie man
+           markiert (Strg-Klick ist unsichtbar). *@
+        @if (!Mehrfach)
+        {
+            <button type="button" class="epos-katalog-vergleichknopf"
+                    disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
+                    @onclick="BeiVergleichen">@Vergleichtext</button>
+        }
+
         @if (Stand.Gesetzt)
         {
             <button type="button" class="epos-katalog-ruecksetzer"
@@ -72,15 +83,45 @@
         }
     </div>
 
+    @if (_markierhinweis.Length > 0)
+    {
+        <p class="epos-katalog-markierhinweis" role="alert">@_markierhinweis</p>
+    }
+
     @* ---------------- ZONE B oben - die Liste ---------------------------- *@
     <Raster TZeile="Katalogfilterzeile" Zeilen="@_gefiltert.AsQueryable()"
             Virtualisiert="@Virtualisiert">
         <KindInhalt>
             <TemplateColumn TGridItem="Katalogfilterzeile" Title="@Texte.SpalteWahl"
                             Class="epos-spalte-wahl">
-                <Zeilenwahl Gewaehlt="@(context.Bezeichner == Gewaehlt)"
-                            Kurztext="@Texte.SpalteWahl"
-                            Gewaehltwerden="@(() => BeiZeile(context))" />
+                @* EIN Klickziel, zwei Bedeutungen (S3.3): Ein blanker Klick waehlt
+                   die Zeile fuer den Detailblock - wie seit S1. Strg oder Umschalt
+                   MARKIEREN sie fuer den Vergleich und lassen die Wahl in Ruhe;
+                   Zeilenwahl meldet die Zusatztasten ueber Tastenwahl, und der
+                   Rueckruf laeuft VOR Gewaehltwerden. Eine zweite Spalte mit
+                   Kaestchen haette alle fuenfzehn Wirte um eine Spalte
+                   verbreitert - fuer eine Wahl, die man selten trifft. *@
+                @if (Mehrfach)
+                {
+                    @* MEHRFACHWAHL (Stufe S3.4): das Kontrollkaestchen der zwei
+                       Importmasken. Die REGEL - Klick schaltet um, Umschalt nimmt
+                       den Bereich dazu (W6-E-5) - bleibt beim Wirt: Sie haengt an
+                       seiner Zeilenmarkierung und an den QUELLindizes, die nur er
+                       kennt. Die Liste meldet, WAS angeklickt wurde. *@
+                    <Zeilenwahl Mehrfach="true"
+                                Gewaehlt="@(IstGewaehlt is not null && IstGewaehlt(context))"
+                                Kurztext="@Texte.SpalteWahl"
+                                Tastenwahl="@(k => BeiMehrfachwahl(context, k))"
+                                Doppelklick="@(() => Doppelklick.InvokeAsync(context))" />
+                }
+                else
+                {
+                    <Zeilenwahl Gewaehlt="@(context.Schluessel == Gewaehlt)"
+                                Kurztext="@Wahlkurztext(context)"
+                                Zusatzklasse="@Wahlklasse(context)"
+                                Tastenwahl="@(k => BeiTastenwahl(context, k))"
+                                Gewaehltwerden="@(() => BeiZeile(context))" />
+                }
             </TemplateColumn>
 
             @for (int i = 0; i < Profil.Spalten.Count; i++)
@@ -154,6 +195,52 @@
     {
         <p class="epos-katalog-leer">@Texte.KeinTreffer</p>
     }
+
+    @* --------- ZONE C: der VERGLEICH als Ueberlagerung (5.5, Q3) ---------
+       EINE Zeile je Parameter, EINE Spalte je Geraet. Abweichende Werte stehen
+       hervorgehoben, gleiche leise - dieselbe Anmutung wie die Kohaerenzzeile
+       ("stimmig"/"abweichend"), und die Kennzeichnung traegt WORTE, nicht nur
+       Farbe. Breit, weil drei Geraetespalten plus Parameterspalte in die
+       Regelbreite von 900 px nicht passen (epos-ueberlagerung--breit, W7-E-2). *@
+    <Ueberlagerung Offen="@_vergleichOffen" Titel="@Texte.VergleichTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit"
+                   SchliessenText="@Texte.VergleichSchliessen"
+                   Geschlossen="() => _vergleichOffen = false">
+        <KindInhalt>
+            @if (_vergleichOffen)
+            {
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster epos-vergleich">
+                        <thead>
+                            <tr>
+                                <th scope="col">@Texte.VergleichSpalteParameter</th>
+                                @foreach (Katalogfilterzeile z in Vergleichszeilen())
+                                {
+                                    <th scope="col">@z.Bezeichner</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Vergleichzeile v in _vergleich)
+                            {
+                                <tr class="@Vergleichsklasse(v)">
+                                    <th scope="row" class="epos-vergleich-name">
+                                        <span class="epos-vergleich-zeichen" aria-hidden="true">@(v.Abweichend ? "≠" : "✓")</span>
+                                        <span>@v.Name</span>
+                                        <span class="epos-vergleich-stufe">@(v.Abweichend ? Texte.VergleichAbweichend : Texte.VergleichStimmig)</span>
+                                    </th>
+                                    @foreach (string wert in v.Werte)
+                                    {
+                                        <td>@wert</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 }
 
@@ -177,8 +264,65 @@
     /// <summary>Der gewählte Bezeichner — die Markierung hängt am NAMEN, nicht an der Zeilennummer.</summary>
     [Parameter] public string Gewaehlt { get; set; } = "";
 
+    /// <summary>
+    /// <b>Die Parameterzeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) —
+    /// derselbe Weg, aus dem die Parameterübersicht aus W14a‑E‑8 ihre Zeilen holt
+    /// (<c>ParameterUebersichtCtrl.Werte</c>): alle verfügbaren Parameter des
+    /// Katalogs, die im Rechenweg verwendeten gekennzeichnet. <b>Keine zweite
+    /// Liste.</b>
+    ///
+    /// <para><b>Ohne den Delegaten vergleicht die Liste ihre eigenen SPALTEN.</b>
+    /// Die Bedarfs- und Zeitreihenkataloge aus S3.1/S3.2 haben keine
+    /// Parameterübersicht — sie sind keine Anlagen. Für sie reicht ein Wirt den
+    /// Weg <c>BedarfStammCtrl.Vergleichszeilen</c> herein (Typ, Beschreibung,
+    /// Jahressumme und die zwölf MONATSWERTE — der Monatsgang ist der Grund, warum
+    /// zwei Profile mit derselben Jahressumme verschieden rechnen); wo auch das
+    /// fehlt, stehen die Profilspalten, und das ist immer noch mehr, als der
+    /// Bestand zeigte.</para>
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
     /// <summary>Eine Zeile wurde gewählt.</summary>
     [Parameter] public EventCallback<string> GewaehltChanged { get; set; }
+
+    // =====================================================================
+    //  Mehrfachwahl (Stufe S3.4 — die zwei Importmasken)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Wahlspalte trägt Kontrollkästchen statt des einen Wahlknopfes</b>
+    /// (Stufe S3.4). Damit steht die Kandidatenliste der zwei Importmasken in
+    /// derselben Liste wie die fünfzehn Katalogwirte — mit Suchfeld,
+    /// Spaltentrichtern und Sortierpfeil.
+    ///
+    /// <para><b>Die REGEL bleibt beim Wirt</b> (W6‑E‑5: Klick schaltet um,
+    /// Umschalt nimmt den Bereich dazu, Doppelklick übernimmt sofort). Sie hängt
+    /// an seiner <c>Zeilenmarkierung</c> und an den QUELLindizes, über die er die
+    /// Wahl durch einen Filterwechsel rettet — beides weiß die Liste nicht. Sie
+    /// meldet, was angeklickt wurde, und fragt über <see cref="IstGewaehlt"/>
+    /// zurück, was gewählt ist.</para>
+    ///
+    /// <para><b>Der Vergleich (S3.3) entfällt in dieser Betriebsart</b>: Strg und
+    /// Umschalt bedeuten hier die Mehrfachwahl, und zwei Bedeutungen auf einer
+    /// Taste wären keine.</para>
+    /// </summary>
+    [Parameter] public bool Mehrfach { get; set; }
+
+    /// <summary>Ist diese Zeile gewählt? Nur bei <see cref="Mehrfach"/>.</summary>
+    [Parameter] public Func<Katalogfilterzeile, bool>? IstGewaehlt { get; set; }
+
+    /// <summary>Ein Klick auf ein Kästchen — mit Zeile, ANZEIGEindex und Zusatztasten.</summary>
+    [Parameter] public EventCallback<Mehrfachklick> Mehrfachwahl { get; set; }
+
+    /// <summary>Ein Doppelklick auf eine Zeile („wählen und übernehmen", W6‑E‑5).</summary>
+    [Parameter] public EventCallback<Katalogfilterzeile> Doppelklick { get; set; }
+
+    /// <summary>
+    /// Ein Klick in der Mehrfachwahl. <paramref name="Index"/> ist die Stelle in der
+    /// GEFILTERTEN Liste — genau das, worauf <c>Zeilenmarkierung</c> rechnet.
+    /// </summary>
+    public sealed record Mehrfachklick(Katalogfilterzeile Zeile, int Index,
+                                       bool Strg, bool Umschalt);
 
     /// <summary>Der Filter oder die Sortierung haben sich geändert (der Wirt merkt sich den Stand).</summary>
     [Parameter] public EventCallback Gefiltert { get; set; }
@@ -199,6 +343,42 @@
 
     /// <summary>Der Schlüssel der Spalte, deren Popover offen steht; leer = keines.</summary>
     private string _offen = "";
+
+    // =====================================================================
+    //  Der Vergleich (Frage Q3, Stufe S3.3)
+    // =====================================================================
+
+    /// <summary>Höchstens DREI Geräte (5.5): Vier Spalten plus Parameterspalte passen nicht.</summary>
+    public const int HOECHSTENS = 3;
+
+    /// <summary>Die markierten SCHLÜSSEL, in der Reihenfolge des Markierens.</summary>
+    private readonly List<string> _markiert = new();
+
+    /// <summary>
+    /// Trug der letzte Klick eine Zusatztaste? Dann markiert er, statt zu wählen.
+    /// <c>Zeilenwahl</c> ruft <c>Tastenwahl</c> VOR <c>Gewaehltwerden</c>.
+    /// </summary>
+    private bool _tastenklick;
+
+    private string _markierhinweis = "";
+    private bool _vergleichOffen;
+
+    private List<Vergleichzeile> _vergleich = new();
+
+    /// <summary>Eine Zeile des Vergleichs: ein Parameter über alle markierten Geräte.</summary>
+    public sealed record Vergleichzeile(string Name, IReadOnlyList<string> Werte, bool Abweichend);
+
+    /// <summary>Die markierten Schlüssel (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Markiert => _markiert;
+
+    /// <summary>Steht die Vergleichs-Überlagerung? (Prüfhilfe für Tests.)</summary>
+    public bool VergleichOffen => _vergleichOffen;
+
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichzeile> Vergleich => _vergleich;
+
+    /// <summary>Der Hinweis unter der Suchzeile (Prüfhilfe für Tests).</summary>
+    public string Markierhinweis => _markierhinweis;
 
     /// <summary>Die angezeigten Zeilen (Prüfhilfe für Tests).</summary>
     public IReadOnlyList<Katalogfilterzeile> Angezeigt => _gefiltert;
@@ -328,7 +508,187 @@
 
     private Task BeiZeile(Katalogfilterzeile zeile)
     {
-        Gewaehlt = zeile.Bezeichner;
-        return GewaehltChanged.InvokeAsync(zeile.Bezeichner);
+        // Der Klick trug Strg oder Umschalt - er hat MARKIERT, nicht gewaehlt.
+        if (_tastenklick) { _tastenklick = false; return Task.CompletedTask; }
+
+        Gewaehlt = zeile.Schluessel;
+        return GewaehltChanged.InvokeAsync(zeile.Schluessel);
     }
+
+    /// <summary>
+    /// Der Klick in der Mehrfachwahl geht UNVERÄNDERT an den Wirt — samt der Stelle
+    /// in der gefilterten Liste, denn darauf rechnet seine <c>Zeilenmarkierung</c>.
+    /// </summary>
+    private Task BeiMehrfachwahl(Katalogfilterzeile zeile, Zeilenwahl.Zeilenklick klick)
+    {
+        int i = -1;
+        for (int n = 0; n < _gefiltert.Count; n++)
+            if (ReferenceEquals(_gefiltert[n], zeile)) { i = n; break; }
+
+        return Mehrfachwahl.InvokeAsync(
+            new Mehrfachklick(zeile, i, klick.Strg, klick.Umschalt));
+    }
+
+    // =====================================================================
+    //  Der Vergleich (Frage Q3, Stufe S3.3)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Klick MIT Zusatztaste markiert die Zeile für den Vergleich — und schaltet
+    /// dabei um, wie ein Kontrollkästchen (dieselbe Regel wie
+    /// <see cref="Zeilenmarkierung.Anklicken"/> seit W6‑E‑5).
+    ///
+    /// <para><b>Umschalt tut hier dasselbe wie Strg</b> und wählt KEINEN Bereich: Bei
+    /// höchstens drei Geräten wäre ein Bereich in aller Regel schon zu groß, und ein
+    /// Bedienelement, das meistens an seiner eigenen Grenze scheitert, ist keine
+    /// Hilfe.</para>
+    ///
+    /// <para><b>Die VIERTE Markierung fällt, nicht die älteste</b> (Auflage 5.5,
+    /// „bei vier Markierungen: Hinweis"): Wer drei Geräte nebeneinandergelegt hat,
+    /// hat sie ausgesucht — ihm still das erste wegzunehmen wäre die
+    /// überraschendere Antwort. Der Hinweis sagt, was zu tun ist.</para>
+    /// </summary>
+    private void BeiTastenwahl(Katalogfilterzeile zeile, Zeilenwahl.Zeilenklick klick)
+    {
+        _tastenklick = klick.Strg || klick.Umschalt;
+        if (!_tastenklick) return;
+
+        _markierhinweis = "";
+        string schluessel = zeile.Schluessel;
+
+        if (_markiert.Remove(schluessel)) return;
+
+        if (_markiert.Count >= HOECHSTENS)
+        {
+            _markierhinweis = Texte.VergleichGrenze;
+            return;
+        }
+        _markiert.Add(schluessel);
+    }
+
+    /// <summary>Zwei oder drei markierte Zeilen machen den Knopf frei (5.5).</summary>
+    private bool VergleichFrei => _markiert.Count >= 2 && _markiert.Count <= HOECHSTENS;
+
+    private string Vergleichtext => _markiert.Count == 0
+        ? Texte.Vergleichen
+        : Texte.Vergleichen + " (" +
+          string.Format(CultureInfo.CurrentCulture, Texte.VergleichMarkiert, _markiert.Count) + ")";
+
+    /// <summary>
+    /// Am gesperrten Knopf steht, WIE man markiert — Strg-Klick sieht man nicht.
+    /// </summary>
+    private string Vergleichkurztext => VergleichFrei ? Texte.Vergleichen : Texte.VergleichHinweis;
+
+    /// <summary>Die markierten Zeilen in der Reihenfolge des Markierens.</summary>
+    private IReadOnlyList<Katalogfilterzeile> Vergleichszeilen()
+    {
+        var liste = new List<Katalogfilterzeile>();
+        foreach (string s in _markiert)
+            foreach (Katalogfilterzeile z in Zeilen)
+                if (z.Schluessel == s) { liste.Add(z); break; }
+        return liste;
+    }
+
+    /// <summary>
+    /// Baut die Vergleichstabelle und öffnet die Überlagerung. Gerechnet wird EINMAL
+    /// beim Öffnen, nicht je Zeichendurchgang: Hinter
+    /// <see cref="Vergleichsparameter"/> steht ein Datenbankzugriff je Gerät.
+    /// </summary>
+    private void BeiVergleichen()
+    {
+        if (!VergleichFrei) return;
+
+        IReadOnlyList<Katalogfilterzeile> geraete = Vergleichszeilen();
+        if (geraete.Count < 2) return;
+
+        _vergleich = Vergleichsparameter is null
+            ? AusSpalten(geraete)
+            : AusParametern(geraete);
+
+        _markierhinweis = "";
+        _vergleichOffen = true;
+    }
+
+    /// <summary>
+    /// Der Vergleich über die PARAMETERÜBERSICHT (W14a‑E‑8) — alle verfügbaren
+    /// Parameter des Katalogs. Die Reihenfolge ist die des ERSTEN Geräts; ein
+    /// Parameter, den ein anderes Gerät nicht führt, bleibt dort leer.
+    /// </summary>
+    private List<Vergleichzeile> AusParametern(IReadOnlyList<Katalogfilterzeile> geraete)
+    {
+        var saetze = new List<IReadOnlyList<Parameterwert>>();
+        foreach (Katalogfilterzeile z in geraete)
+            saetze.Add(Vergleichsparameter!(z.Bezeichner) ?? Array.Empty<Parameterwert>());
+
+        var zeilen = new List<Vergleichzeile>();
+        foreach (Parameterwert p in saetze[0])
+        {
+            var werte = new List<string>();
+            foreach (IReadOnlyList<Parameterwert> satz in saetze)
+                werte.Add(Wert(satz, p.Eintrag.Spalte));
+
+            zeilen.Add(new Vergleichzeile(Beschriftung(p.Eintrag), werte, Abweichend(werte)));
+        }
+        return zeilen;
+    }
+
+    private static string Wert(IReadOnlyList<Parameterwert> satz, string spalte)
+    {
+        foreach (Parameterwert p in satz)
+            if (p.Eintrag.Spalte == spalte) return p.Wert;
+        return ParameterVerwendung.LEER;
+    }
+
+    private static string Beschriftung(ParameterEintrag eintrag)
+        => eintrag.Einheit.Length > 0
+            ? eintrag.Anzeigetext + " [" + eintrag.Einheit + "]"
+            : eintrag.Anzeigetext;
+
+    /// <summary>
+    /// Der Vergleich über die SPALTEN des Profils — der Rückfall für einen Katalog
+    /// ohne Parameterübersicht.
+    /// </summary>
+    private List<Vergleichzeile> AusSpalten(IReadOnlyList<Katalogfilterzeile> geraete)
+    {
+        var zeilen = new List<Vergleichzeile>();
+        foreach (Katalogspalte spalte in Profil!.Spalten)
+        {
+            var werte = new List<string>();
+            foreach (Katalogfilterzeile z in geraete) werte.Add(z.Text(spalte.Schluessel));
+
+            zeilen.Add(new Vergleichzeile(spalte.Kopftext, werte, Abweichend(werte)));
+        }
+        return zeilen;
+    }
+
+    /// <summary>Weichen die Werte voneinander ab? Zeichengenau, wie sie dastehen.</summary>
+    private static bool Abweichend(IReadOnlyList<string> werte)
+    {
+        for (int i = 1; i < werte.Count; i++)
+            if (!string.Equals(werte[0], werte[i], StringComparison.Ordinal)) return true;
+        return false;
+    }
+
+    private static string Vergleichsklasse(Vergleichzeile v)
+        => v.Abweichend ? "epos-vergleich--abweichend" : "epos-vergleich--stimmig";
+
+    /// <summary>
+    /// Eine markierte Zeile ist am WAHLKNOPF erkennbar — ein Rahmen in der Warnfarbe,
+    /// keine neue Farbe.
+    ///
+    /// <para><b>Warum am Knopf und nicht an der Zelle:</b> <c>ColumnBase.Class</c>
+    /// gilt der ganzen SPALTE, nicht einer Zeile; eine Markierung je Zeile ist damit
+    /// nicht zu setzen. <c>Zeilenwahl.Zusatzklasse</c> gibt es genau dafür.</para>
+    /// </summary>
+    private string Wahlklasse(Katalogfilterzeile zeile)
+        => _markiert.Contains(zeile.Schluessel) ? "epos-anlagenwahl--markiert" : "";
+
+    /// <summary>
+    /// Der Kurztext der Wahlzelle nennt die Markierung — sie trägt sonst nur eine
+    /// Tönung, und die hört eine Sprachausgabe nicht.
+    /// </summary>
+    private string Wahlkurztext(Katalogfilterzeile zeile)
+        => _markiert.Contains(zeile.Schluessel)
+            ? Texte.SpalteWahl + " · " + Texte.VergleichTitel
+            : Texte.SpalteWahl;
 }

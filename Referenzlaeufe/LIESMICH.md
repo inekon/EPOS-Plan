@@ -71,7 +71,9 @@ B‑10) — konfliktfrei, Merge-Commit `e6803a6`.
 > CI-Projekte) ist **312/312 byte-gleich zu `2026-09-07_R6_PvKoeffizienten`** — der
 > Windows-Build rechnet, was die CI rechnet. Sandbox: `WP-Plan.sln` 0 Fehler, `EPOS.Kern.Tests`
 > 1 995/1 995, `EPOS.UI.Tests` 3 216/3 217 (`KataloglisteTests.Zwanzigtausend_Zeilen…` flackert
-> unter Last und ist allein grün). `pruefen` auf M7: plausibel, dieselben Bestandshinweise.
+> unter Last und ist allein grün — **behoben am 07.09.2026 als O‑13**: ein Wettlauf im Test,
+> kein Fehler der `Katalogliste`; Herleitung im Protokoll `iU9_W15a_Blazor_Port_Protokoll.md`).
+> `pruefen` auf M7: plausibel, dieselben Bestandshinweise.
 >
 > **Gegen M5 ist sie NICHT byte-gleich (83 gleich, 272 ungleich, keine Datei einseitig;
 > Toleranzvergleich 14/14 FAIL, Projekt 1030 mit 10, die übrigen mit 22 000 bis 89 500

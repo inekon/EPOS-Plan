@@ -167,29 +167,15 @@
         </Links>
 
         <Rechts>
-            <div class="epos-raster-huelle">
-                <table class="epos-raster">
-                    <thead>
-                        <tr>
-                            <th>@SpalteWahl</th>
-                            <th>@SpalteName</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (GanglinienKatalogZeile zeile in _katalog)
-                        {
-                            GanglinienKatalogZeile k = zeile;
-                            <tr class="@(k == _katalogZeile ? "epos-zeile--markiert" : null)">
-                                <td>
-                                    <Zeilenwahl Gewaehlt="@(k == _katalogZeile)" Kurztext="@SpalteWahl"
-                                                Gewaehltwerden="() => KatalogZeileWaehlen(k)" />
-                                </td>
-                                <td>@k.Bezeichner</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.2):
+               Suchzeile unmittelbar ueber der Liste (#76 woertlich), Filter im
+               Spaltenkopf, dazu Zeitintervall, Jahresarbeit und Spitze - dieselben
+               zwei Kennzahlen, die die Grafik darunter fuer den markierten Satz
+               zeigt (W12-E-2). Das PROFIL traegt die Spalte "im Projekt
+               verwendet" (Q12). *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen" />
 
             @if (ImportMoeglich || KopierenMoeglich || LoeschenMoeglich || Verwaltung is not null)
             {
@@ -295,7 +281,20 @@
     [Parameter] public List<GanglinienProjektZeile> Zeilen { get; set; } = new();
 
     /// <summary>Der Katalog (<c>StromganglinieStammCtrl.ReadAll</c>).</summary>
-    [Parameter] public Func<Task<List<GanglinienKatalogZeile>>>? Katalog { get; set; }
+    [Parameter] public Func<Task<IReadOnlyList<Katalogfilterzeile>>>? Katalogzeilen { get; set; }
+
+    /// <summary>
+    /// Die Spalten des Katalogs —
+    /// <c>Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Stromganglinie, …)</c>, mit
+    /// der Spalte „im Projekt verwendet" (Q12).
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers (Muster der neun Katalogdialoge).</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>
     /// Der Parametersatz der Stammdatenverwaltung
@@ -511,8 +510,12 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    private List<GanglinienKatalogZeile> _katalog = new();
-    private GanglinienKatalogZeile? _katalogZeile;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+    private Katalogfilterzeile? _katalogZeile;
+
+    /// <summary>Der Bezeichner der gewählten Katalogzeile — die Markierung hängt am NAMEN.</summary>
+    private string _katalogGewaehlt = "";
     private GanglinienProjektZeile? _projektZeile;
     private int _naechsterSchluessel = StartIndex;
     private bool _verwaltungOffen;
@@ -540,13 +543,16 @@
     private GanglinienWahl? _wahl;
 
     /// <summary>Die Katalogzeilen (Prüfhilfe für die Tests).</summary>
-    public IReadOnlyList<GanglinienKatalogZeile> Katalogliste => _katalog;
+    public IReadOnlyList<Katalogfilterzeile> Katalogliste => _katalog;
+
+    /// <summary>Der Filterstand der Katalogliste — Prüfhilfe für die Tests.</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
 
     /// <summary>Die gewählte Projektzeile (Prüfhilfe für die Tests).</summary>
     public GanglinienProjektZeile? Projektzeile => _projektZeile;
 
     /// <summary>Die gewählte Katalogzeile (Prüfhilfe für die Tests).</summary>
-    public GanglinienKatalogZeile? Katalogzeile => _katalogZeile;
+    public Katalogfilterzeile? Katalogzeile => _katalogZeile;
 
     /// <summary>Der Text des Warnbanners (Prüfhilfe für die Tests).</summary>
     public string Meldung => _meldung;
@@ -571,7 +577,21 @@
     /// Projektzuordnung ist es nicht (sie fragt die Datenbank); sie meldet sich
     /// nach dem Versuch als Banner (Staffelung W16b-E-6).
     /// </summary>
-    private string? LoeschenGrund => _katalogZeile?.NurLesen == true ? TextSchreibgeschuetzt : null;
+    private string? LoeschenGrund => _katalogZeile?.Geschuetzt == true ? TextSchreibgeschuetzt : null;
+
+    protected override void OnParametersSet()
+    {
+        // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes.
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
+
+    protected override void OnInitialized()
+    {
+        // S2.5/S3.2: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit der
+        // Verwaltung desselben Katalogs (Frage Q2).
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
+            Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.Stromganglinie));
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -585,25 +605,42 @@
     /// <summary>Lädt den Katalog neu — beim Aufbau und nach jedem Katalogeingriff.</summary>
     public async Task KatalogLaden()
     {
-        if (Katalog is null) return;
-        _katalog = await Katalog() ?? new List<GanglinienKatalogZeile>();
-        if (_katalogZeile is not null && !_katalog.Contains(_katalogZeile))
+        if (Katalogzeilen is null) return;
+        _katalog = await Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
+        VerwendungStempeln();
+
+        if (_katalogZeile is null) return;
+
+        _katalogZeile = _katalog.FirstOrDefault(z => z.Bezeichner == _katalogGewaehlt);
+        if (_katalogZeile is null)
         {
-            _katalogZeile = null;
+            _katalogGewaehlt = "";
             GrafikVerwerfen();       // W12-E-2: die geloeschte Zeile nimmt ihre Grafik mit
         }
     }
+
+    /// <summary>
+    /// Die Spalte „im Projekt verwendet" (Q12) — EINMAL für die ganze Liste aus der
+    /// LEBENDEN Projektliste; der Dialog schreibt erst beim OK zurück.
+    /// </summary>
+    private void VerwendungStempeln()
+        => Katalogverwendung.Stempeln(_katalog, Zeilen.Select(z => z.Bezeichner));
 
     private Task ProjektZeileWaehlen(GanglinienProjektZeile zeile)
     {
         _projektZeile = zeile;
         _katalogZeile = null;
+        _katalogGewaehlt = "";
         return GrafikLaden(new GanglinienWahl(false, zeile.GanglinieId, zeile.Bezeichner));
     }
 
-    private Task KatalogZeileWaehlen(GanglinienKatalogZeile zeile)
+    private Task KatalogZeileWaehlen(string bezeichner)
     {
+        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == bezeichner);
+        if (zeile is null) return Task.CompletedTask;
+
         _katalogZeile = zeile;
+        _katalogGewaehlt = zeile.Bezeichner;
         _projektZeile = null;
         _meldung = "";
         return GrafikLaden(new GanglinienWahl(true, 0, zeile.Bezeichner));
@@ -739,7 +776,7 @@
     {
         if (!LoeschenErlaubt || Loeschen is null) return;
 
-        GanglinienKatalogZeile? zeile = _katalogZeile;
+        Katalogfilterzeile? zeile = _katalogZeile;
         if (zeile is null) return;
 
         // Sperre 1: eine zugeordnete Ganglinie bleibt stehen (Muster W14b).
@@ -751,7 +788,7 @@
 
         // Sperre 2: Auslieferungssaetze bleiben stehen. Delete prueft es selbst;
         // hier steht es davor, damit die Rueckfrage gar nicht erst kommt.
-        if (zeile.NurLesen)
+        if (zeile.Geschuetzt)
         {
             Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
             return;

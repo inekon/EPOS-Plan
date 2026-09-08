@@ -55,24 +55,27 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// Die Filtervorbelegungen und Nachkommastellen sind WOERTLICH die der vier
-        /// Designer und muessen bitgleich bleiben — sie sind das, was der Anwender
-        /// beim Oeffnen sieht.
+        /// Die Nachkommastellen der gefilterten Groesse sind WOERTLICH die der vier
+        /// Designer und muessen bitgleich bleiben — sie sind es, mit denen die Zahl
+        /// in ihrer Spalte steht.
+        ///
+        /// <para>Die VORBELEGUNGEN der zwei Zahlenfelder (10…200, 0…1000, 0…5,
+        /// 0…100, Obergrenze 100 000) sind mit Stufe S3.4 gefallen — die
+        /// <c>Katalogliste</c> zeigt beim Oeffnen alle Saetze (Entscheid
+        /// <b>O-10</b>), und mit ihnen faellt die Zusicherung darauf
+        /// (offener Punkt <b>O-12</b>).</para>
         /// </summary>
         [Theory]
-        [InlineData(KatalogImportArt.Heizkessel,       10.0,  200.0, 1)]
-        [InlineData(KatalogImportArt.Pufferspeicher,    0.0, 1000.0, 0)]
-        [InlineData(KatalogImportArt.Solarkollektoren,  0.0,    5.0, 2)]
-        [InlineData(KatalogImportArt.Waermepumpe,       0.0,  100.0, 0)]
-        public void DasProfilTraegtDieFiltervorbelegungDesDesigners(
-            KatalogImportArt art, double von, double bis, int nachkomma)
+        [InlineData(KatalogImportArt.Heizkessel, 1)]
+        [InlineData(KatalogImportArt.Pufferspeicher, 0)]
+        [InlineData(KatalogImportArt.Solarkollektoren, 2)]
+        [InlineData(KatalogImportArt.Waermepumpe, 0)]
+        public void DasProfilTraegtDieNachkommastellenUndDenDateifilterDesDesigners(
+            KatalogImportArt art, int nachkomma)
         {
             KatalogImportProfil p = KatalogImportProfil.Finde(art);
 
-            Assert.Equal(von, p.FilterVon);
-            Assert.Equal(bis, p.FilterBis);
             Assert.Equal(nachkomma, p.FilterNachkommastellen);
-            Assert.Equal(100000.0, p.FilterMaximum);
             Assert.Equal("(*.vdi)|*.vdi", p.Dateifilter);
         }
 
@@ -148,7 +151,7 @@ namespace EPOS.Kern.Tests
             KatalogImportProfil uebersetzt = KatalogImportProfil.Finde(
                 KatalogImportArt.Heizkessel, s => "[" + s + "]");
             Assert.Equal("[IMP_KAT_FELD_NAME]", uebersetzt.Detailfelder[0].Bezeichnung);
-            Assert.Equal("[IMP_KAT_FILTER_LEISTUNG]", uebersetzt.FilterBezeichnung);
+            Assert.Equal("[IMP_KAT_SP_LEISTUNG_TH]", uebersetzt.FilterSpaltentitel);
         }
 
         // ==================================================================

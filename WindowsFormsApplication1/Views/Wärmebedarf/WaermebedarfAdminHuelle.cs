@@ -73,7 +73,11 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
-                ["Katalog"] = new Func<Task<List<WaermebedarfAdminDialog.Katalogzeile>>>(KatalogLesen),
+                // W14a-E-10 / S3.2: die Katalogliste des Hauses statt des zweispaltigen
+                // Rasters - mit Jahresarbeit und Spitze aus EINER Gruppenabfrage.
+                ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(KatalogLesen),
+                ["Katalogprofil"] = Katalogfilterprofil.FuerZeitreihe(
+                    Zeitreihenart.Waermebedarf, BedarfAdminHuelle.Filtertext),
                 ["HatProjektzuordnung"] = new Func<string, Task<bool>>(
                     name => Task.FromResult(new WaermebedarfStammCtrl().HatProjektzuordnung(name))),
                 ["Loeschen"] = new Func<string, Task<bool>>(
@@ -109,18 +113,19 @@ namespace WindowsFormsApplication1
             return GanglinienImportAblauf.AblageOrdner(GanglinienZiel.Waermebedarf);
         }
 
-        /// <summary>Der Katalog samt ReadOnly-Kennzeichen.</summary>
-        internal static Task<List<WaermebedarfAdminDialog.Katalogzeile>> KatalogLesen()
+        /// <summary>
+        /// Der Katalog samt seinen Parameterspalten (Stufe S3.2) — Bezeichner,
+        /// Jahresarbeit [MWh] und Spitze [kW]. Das ReadOnly-Kennzeichen steht als
+        /// <c>Katalogfilterzeile.Geschuetzt</c> mit darin.
+        ///
+        /// <para><b>Die zwei Kennzahlen kosten EINE Gruppenabfrage je Liste</b>
+        /// (<c>GanglinienAuswertungCtrl.Kennzahlen</c>), nicht eine je Zeile —
+        /// die Wertetabelle fuehrt 35 040 Zeilen.</para>
+        /// </summary>
+        internal static Task<IReadOnlyList<Katalogfilterzeile>> KatalogLesen()
         {
-            WaermebedarfStammCtrl ctrl = new WaermebedarfStammCtrl();
-            ctrl.ReadAll();
-
-            var liste = new List<WaermebedarfAdminDialog.Katalogzeile>();
-            foreach (WaermebedarfModel m in ctrl.items)
-                liste.Add(new WaermebedarfAdminDialog.Katalogzeile(
-                    m.ID, m.m_szBezeichner, ctrl.IsReadOnly(m.m_szBezeichner)));
-
-            return Task.FromResult(liste);
+            return Task.FromResult(
+                ZeitreihenKatalogCtrl.Katalogfilterzeilen(Zeitreihenart.Waermebedarf));
         }
 
         /// <summary>

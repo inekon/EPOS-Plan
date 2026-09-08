@@ -30,11 +30,17 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class WaermebedarfExternDialogTests : BunitContext
 {
-    private static readonly List<WaermebedarfAdminDialog.Katalogzeile> KATALOG = new()
+    /// <summary>
+    /// Der Katalog als <see cref="Katalogfilterzeile"/> — seit Stufe S3.2
+    /// (W14a-E-10) traegt die Liste Jahresarbeit und Spitze und steht im Baustein
+    /// <c>Katalogliste</c>.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Katalog() => new[]
     {
-        new WaermebedarfAdminDialog.Katalogzeile(1, "Ganglinie A", false),
-        new WaermebedarfAdminDialog.Katalogzeile(2, "Ganglinie B", true),
-        new WaermebedarfAdminDialog.Katalogzeile(3, "Ganglinie C", false)
+        Zeitreihenproben.Zeile(1, "Ganglinie A", jahresarbeitMwh: 1234.5, spitzeKw: 500.0),
+        Zeitreihenproben.Zeile(2, "Ganglinie B", geschuetzt: true,
+                               jahresarbeitMwh: 1000.0, spitzeKw: 250.0),
+        Zeitreihenproben.Zeile(3, "Ganglinie C", jahresarbeitMwh: 42.0, spitzeKw: 12.0)
     };
 
     private static readonly (string Wert, string Text)[] KANAELE =
@@ -85,7 +91,7 @@ public class WaermebedarfExternDialogTests : BunitContext
         Func<string, bool>? hatZuordnung = null,
         Func<string, bool>? katalogLoeschen = null,
         IReadOnlyDictionary<string, object>? verwaltung = null,
-        Func<Task<List<WaermebedarfAdminDialog.Katalogzeile>>>? katalog = null,
+        Func<Task<IReadOnlyList<Katalogfilterzeile>>>? katalog = null,
         Func<string, Task<string?>>? dateiWaehlen = null,
         Func<string, GanglinienRaster, GanglinienImportRueckrufe,
              Task<GanglinienImportErgebnis>>? einlesen = null,
@@ -95,8 +101,9 @@ public class WaermebedarfExternDialogTests : BunitContext
         => Render<WaermebedarfExternDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<WaermebedarfExternZeile> { Zeile(1) })
             .Add(x => x.Wizard, wizard)
-            .Add(x => x.Katalog, katalog ?? (() => Task.FromResult(
-                new List<WaermebedarfAdminDialog.Katalogzeile>(KATALOG))))
+            .Add(x => x.Katalogzeilen, katalog ?? (() => Task.FromResult(Katalog())))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Waermebedarf))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Aufnehmen, n => new WaermebedarfExternZeile
             {
                 IdZ = 0, IdGanglinie = 9, Bezeichner = n, Kanal = "HEIZUNG"
@@ -125,8 +132,9 @@ public class WaermebedarfExternDialogTests : BunitContext
 
         return Render<WaermebedarfExternDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<WaermebedarfExternZeile> { Zeile(1) })
-            .Add(x => x.Katalog, () => Task.FromResult(
-                new List<WaermebedarfAdminDialog.Katalogzeile>(KATALOG)))
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Katalog()))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Waermebedarf))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Aufnehmen, n => new WaermebedarfExternZeile
             {
                 IdZ = 0, IdGanglinie = 9, Bezeichner = n, Kanal = "HEIZUNG"

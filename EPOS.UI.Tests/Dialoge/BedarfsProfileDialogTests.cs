@@ -23,11 +23,29 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class BedarfsProfileDialogTests : BunitContext
 {
-    private static readonly BedarfsKatalogZeile[] KATALOG =
+    /// <summary>
+    /// Der Profilkatalog als <see cref="Katalogfilterzeile"/> — seit Stufe S3.1
+    /// (W14a-E-10) traegt die Liste fuenf Spalten statt zweier und steht im Baustein
+    /// <c>Katalogliste</c>.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Katalogzeilen() => new[]
     {
-        new("Profil A", "Typ 1"),
-        new("Profil B", "Typ 2")
+        Katalogzeile(1, "Profil A", "Typ 1", 42.0, "Beschreibung A"),
+        Katalogzeile(2, "Profil B", "Typ 2", 7.5, "Beschreibung B")
     };
+
+    private static Katalogfilterzeile Katalogzeile(int id, string name, string typ,
+                                                   double summe, string beschreibung)
+        => new Katalogfilterzeile(id, name)
+            .MitText(Katalogfilterprofil.SpBezeichner, name)
+            .MitText(Katalogfilterprofil.SpTyp, typ)
+            .MitZahl(Katalogfilterprofil.SpJahressummeMwh, summe, 3)
+            .MitText(Katalogfilterprofil.SpBeschreibung, beschreibung)
+            .MitKennzeichen(Katalogfilterprofil.SpAuslieferung, false);
+
+    /// <summary>Das Profil mit der Spalte „im Projekt verwendet" (Q12).</summary>
+    private static Katalogfilterprofil Profil(BedarfsArt art)
+        => Katalogfilterprofil.FuerBedarf(art, s => s).MitVerwendungsspalte(s => s);
 
     public BedarfsProfileDialogTests()
     {
@@ -81,7 +99,9 @@ public class BedarfsProfileDialogTests : BunitContext
             .Add(x => x.Art, art)
             .Add(x => x.Zeilen, zeilen ?? new List<BedarfsProfilZeile> { Zeile(1) })
             .Add(x => x.Wizard, wizard)
-            .Add(x => x.Katalog, () => KATALOG)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Katalogprofil, Profil(art))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Info, n => new BedarfsProfilInfo(n, "Beschreibung " + n, "Typ 1"))
             .Add(x => x.Jahressumme, _ => jahressumme)
             .Add(x => x.Aufnehmen, n => new BedarfsProfilZeile
@@ -137,8 +157,12 @@ public class BedarfsProfileDialogTests : BunitContext
         Assert.Equal(4, cut.FindAll("input[type=text][readonly]").Count);
         Assert.Single(cut.FindAll("textarea[readonly]"));
 
-        // Prozess und Brauchwasser zeigen den Katalog als Raster MIT Typspalte.
-        Assert.Contains("Typ</th>", cut.Markup);
+        // Seit Stufe S3.1 zeigen ALLE DREI Auspraegungen dieselben fuenf Spalten
+        // (Konzept_Katalogfilter 4.9) - die drei Kataloge sind Drillinge DERSELBEN
+        // Tabellenform. Vorher trugen Prozess und Brauchwasser eine Typspalte und der
+        // Stromverbraucher keine; der Unterschied war Bestand, keine Fachaussage.
+        Assert.Equal(7, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Contains("KFLT_SP_TYP", cut.Markup);
 
         foreach (string t in new[] { "Prozess in DB ändern", "Prozess in DB neu",
                                      "Prozess in DB löschen", "Simulation",
@@ -150,8 +174,16 @@ public class BedarfsProfileDialogTests : BunitContext
         Assert.Contains("Aus dem Projekt entfernen", Entfernen(cut).TextContent);
     }
 
+    /// <summary>
+    /// <b>Stufe S3.1 (W14a-E-10):</b> Auch der Stromverbraucher zeigt seit dem
+    /// Spaltenmodell die Typspalte. Bis dahin führte seine Liste NUR den Namen —
+    /// „der Unterschied ist Bestand und bleibt" hieß es hier; er war es aber nicht:
+    /// Die drei Kataloge sind Drillinge derselben Tabellenform, und der Typ ist bei
+    /// allen dreien die Profilzuordnung, also der Grund, warum zwei gleich große
+    /// Bedarfe verschieden rechnen (Konzept 2.9).
+    /// </summary>
     [Fact]
-    public void Stromverbraucher_zeigt_den_Katalog_OHNE_Typspalte()
+    public void Stromverbraucher_zeigt_dieselben_Spalten_wie_die_beiden_anderen()
     {
         var cut = Aufbauen(BedarfsArt.Stromverbraucher,
                            labelJahresverbrauch: "jährlicher Strombedarf:",
@@ -161,7 +193,8 @@ public class BedarfsProfileDialogTests : BunitContext
 
         Assert.Contains("jährlicher Strombedarf:", cut.Markup);
         Assert.Contains("Summe aller ausgewählten Strombedarfe:", cut.Markup);
-        Assert.DoesNotContain("Typ</th>", cut.Markup);
+        Assert.Equal(7, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Stromverbraucher ändern..."));
     }
 
@@ -176,7 +209,8 @@ public class BedarfsProfileDialogTests : BunitContext
 
         Assert.Contains("jährlicher Wärmebedarf:", cut.Markup);
         Assert.Contains("Summe Brauchwasserprofile:", cut.Markup);
-        Assert.Contains("Typ</th>", cut.Markup);
+        Assert.Equal(7, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Profil in DB ändern"));
     }
 

@@ -890,3 +890,225 @@ Zeilenklicks und Schreibgänge.
 | Wettlauf-Nachweis, nachgebende Quelle, 60 Läufe | 58 von 60 rot | **0 von 60 rot** |
 | gesamte `EPOS.UI.Tests`, `de` und `en_US.UTF-8` | — | **je 3 202 grün, 0 rot** |
 | `dotnet build WP-Plan.sln -c Release --no-incremental` | 6 eindeutige Warnungen (Kern und UI) | **unverändert 6** |
+
+## W14a‑E‑10‑O‑13 (07.09.2026) — flatterhafter Fall der Katalogliste
+
+Die Windows-Sandbox meldete am 07.09.2026 `EPOS.UI.Tests` **3 216 von 3 217 grün**;
+der eine Fall war `EPOS.UI.Tests/Bausteine/KataloglisteTests.cs`
+`Zwanzigtausend_Zeilen_werden_zu_fuenfzehn_und_das_Raster_zeigt_sie` — „flackert unter
+Last und ist allein grün" (`Referenzlaeufe/LIESMICH.md`, Abschnitt M7). Auf Linux ist
+er in jedem Gate grün. Der Fall ist geschlossen: Es war **kein Fehler der
+`Katalogliste`**, sondern **derselbe Wettlauf im Test** wie in W16b‑O‑2 (`c3b1513`)
+und W6‑B‑2‑O‑1 (`586d8b5`) — die dritte Fundstelle derselben Regel.
+
+### Ursache
+
+**Bunits synchrone Ereignisse warten nicht.** `Click()`, `Change()` und `Input()`
+geben das Ereignis nur beim Zeichner ab; nur die `…Async`-Fassungen liefern laut
+bunit-Dokumentation „a task that completes when the event handler is done". Der
+Zeichnerfaden (`RendererSynchronizationContext`) arbeitet ein Werkstück auf dem
+AUFRUFENDEN Faden ab, **solange seine Warteschlange frei ist**; liegt dort schon
+eines, wird das Ereignis EINGEREIHT, der Aufruf kehrt sofort zurück, und die nächste
+Zeile des Falls liest den Stand VOR dem Ereignis.
+
+**Das Werkstück legt in DIESEM Fall der `@key`-Fix W6‑B‑2 selbst hin.** Der Schlüssel
+des Rasters ist `(Virtualisiert, Zeilenzahl)` (`EPOS.UI/Standards/Raster.razor:92`,
+`Rasterstand`). Beim Übergang **20 749 → 15** ändern sich **beide** Werte: Blazor
+verwirft das alte QuickGrid und baut ein **neues** auf — mitsamt dessen
+`OnAfterRenderAsync` (Modulimport und `init`) und dem asynchronen Datenabruf, aus dem
+die fünfzehn Körperzeilen erst in einem **späteren** Zeichenlauf fallen als die
+Trefferzeile, die `Katalogliste` selbst zeichnet. Genau der Übergang, für den es den
+Fall gibt, ist also zugleich der Übergang, der ihn flattern lässt.
+
+Verloren geht der Wettlauf mit dem gemeldeten Bild: Die Trefferzeile trägt noch
+„20.749 von 20.749 Sätzen" statt „15 von 20.749 Sätzen".
+
+### Nachweis der Ursache
+
+Mit einer temporären Prüfklasse am **wörtlichen** Prüfstand (`ZZ_Wettlauf151`, nach
+der Messung gelöscht), die den Fall in einer Schleife fährt:
+
+| Messreihe | Ergebnis |
+|---|---|
+| altes Muster, ohne Fremdlast, 60 Läufe | **0 rot** |
+| altes Muster, 8 Rechenfäden auf 4 Kernen, 60 Läufe | **1 rot** — „Trefferzeile = 20.749 von 20.749 Sätzen" |
+| altes Muster, 8 Rechenfäden, 300 Läufe | 0 rot |
+| altes Muster, 16 Rechenfäden, 200 Läufe | 0 rot |
+| altes Muster, **belegte Warteschlange**, 15 Läufe | **15 von 15 rot** |
+| neues Muster, **belegte Warteschlange**, 15 Läufe | **0 von 15 rot** |
+
+Die zweite Zeile belegt die **Häufigkeit** im Feld — auf dieser Linux-Maschine ein
+Treffer in 560 Läufen, auf der Windows-Sandbox unter Last sichtbar. Die zwei letzten
+Zeilen belegen die **Art** der Ursache: Belegt ein FREMDER Faden die Warteschlange des
+Zeichners (`cut.InvokeAsync` mit einem Sperrobjekt, aus einem `Task.Run` gestellt),
+fällt das alte Muster **immer** um und das neue **nie**. Das ist dieselbe Gegenprobe
+wie die „nachgebende Quelle" in W6‑B‑2‑O‑1.
+
+### Behebung — nur am Test, kein Produktcode
+
+`Katalogliste.razor` und `Raster.razor` bleiben unverändert. In
+`KataloglisteTests` warten jetzt drei Stellen auf den GEZEICHNETEN Zustand:
+
+| Helfer | wartet auf |
+|---|---|
+| `Filter(cut, spalte, ausdruck)` | das gezeichnete Popover zwischen Trichterklick und `Change()` (`WaitForElement` statt `Find`) |
+| `Gezeichnet(cut, trefferzeile, zeilen)` | die Trefferzeile UND die Zahl der Körperzeilen |
+| `Sortiert(cut, pfeil, namen…)` | den gezeichneten Sortierpfeil und die Reihenfolge |
+
+Nachgezogen sind alle Stellen der Klasse, an denen hinter einem synchronen Ereignis
+sofort geprüft wurde — Suche, Rücksetzer, Trichter, Popover, Spaltenfilter,
+Zahlenausdruck, Sortierzyklus, Markierung und der flatterhafte Fall selbst. Wo eine
+Prüfung auf **Abwesenheit** folgt (der Rücksetzer steht NICHT da), wartet der Fall
+zuerst auf den gezeichneten Sucherfolg: Eine Abwesenheitsprüfung wäre sonst auch dann
+grün, wenn das Ereignis noch in der Warteschlange liegt, und beweist damit nichts.
+
+### Gleichartige Muster im Bestand
+
+| Fundstelle | Befund | Stand |
+|---|---|---|
+| `KataloglisteTests` (Suche, Filter, Sortierung, Markierung, 20 749 → 15) | derselbe Wettlauf | **berichtigt** |
+| `SpaltenfilterTests` | **kein** Wettlauf: Jede Liste dort bleibt unter `VirtualisierenAb` = 120, das Raster wird nie neu aufgebaut, und die neun Popover-Fälle zeichnen `Spaltenfilter` ganz ohne Raster | unverändert |
+| `ModulImportDialogTests`, `KatalogImportDialogTests` | mit `586d8b5` berichtigt | unverändert |
+| `ProjektTransferDialogTests` | mit `c3b1513` berichtigt | unverändert |
+
+### Wiederholungsnachweis
+
+| Lauf | vorher | nachher |
+|---|---|---|
+| `Zwanzigtausend_Zeilen_werden_zu_fuenfzehn_und_das_Raster_zeigt_sie`, 30 Läufe unter Rechenlast, `de` | Windows-Sandbox flatterhaft | **30 von 30 grün** |
+| derselbe Fall, 30 Läufe unter Rechenlast, `en_US.UTF-8` | — | **30 von 30 grün** |
+| Wettlauf-Nachweis, belegte Warteschlange, 15 Läufe | 15 von 15 rot | **0 von 15 rot** |
+| `KataloglisteTests` + `SpaltenfilterTests`, `de` und `en_US.UTF-8` | — | **je 29 grün, 0 rot** |
+| gesamte `EPOS.UI.Tests`, `de` und `en_US.UTF-8` | — | **je 3 239 grün, 0 rot** |
+| `dotnet build WP-Plan.sln -c Release` | 6 eindeutige Warnungen (Kern und UI) | **unverändert 6** |
+
+---
+
+## W14a‑E‑10‑O‑12 (07.09.2026) — die toten Filterfelder der zwei Importprofile
+
+Mit Stufe **S3.4** (Frage Q10 des Anwenderentscheids W14a‑E‑10) sind die sieben
+Importmasken auf die gemeinsame `Katalogliste` umgestellt worden; ihre
+handgeschriebenen Filterleisten — zwei Zahlenleisten, eine Herstellerklappliste, ein
+Technologiefilter, ein eigenes Suchfeld — sind gefallen (Entscheide **O‑10**: keine
+Filtervorbelegung mehr, **O‑11**: Suche über alle Spalten). Die zwei Importprofile im
+Kern trugen die zugehörigen Daten weiter. Offener Punkt **O‑12** hat sie aufgezählt.
+
+**Die Aufzählung in O‑12 war eine Verdachtsliste, keine Streichliste.** Gemessen
+wurde deshalb zuerst, geschnitten danach.
+
+### Die Messung
+
+Repositoryweit über `*.cs` **und** `*.razor`, ohne `obj/` und `bin/`; „Leser“ heißt
+lesender Zugriff, nicht die Erwähnung in einem Kommentar. Zwei Namen der Liste
+kollidieren mit gleichnamigen Dingen aus anderen Zusammenhängen — sie sind in der
+Tabelle ausdrücklich getrennt.
+
+| Feld / Typ | Setzer | Leser | Urteil |
+|---|---|---|---|
+| `KatalogImportProfil.FilterBezeichnung` | 5 Fabrikmethoden | nur `KatalogImportAblaufTests:151` | **tot → gefallen** |
+| `KatalogImportProfil.FilterVon` | 5 Fabrikmethoden | nur `KatalogImportAblaufTests:72`, `StromspeicherUebernahmeTests:121` | **tot → gefallen** |
+| `KatalogImportProfil.FilterBis` | 5 Fabrikmethoden | nur `KatalogImportAblaufTests:73`, `StromspeicherUebernahmeTests:122` | **tot → gefallen** |
+| `KatalogImportProfil.FilterMaximum` | 5 Fabrikmethoden | nur `KatalogImportAblaufTests:75` | **tot → gefallen** |
+| `KatalogImportProfil.HerstellerFilter` | 1 (Stromspeicher) | nur `StromspeicherUebernahmeTests:116,148` | **tot → gefallen** |
+| `KatalogFilterbereich.Bezeichnung` | 1 (Stromspeicher) | keiner | **tot → gefallen** |
+| `KatalogFilterbereich.Von` / `.Bis` | 1 (Stromspeicher) | nur `StromspeicherUebernahmeTests:123,124` | **tot → gefallen** |
+| `KatalogFilterbereich.Maximum` | 1 (Stromspeicher) | keiner | **tot → gefallen** |
+| `KatalogFilterbereich` (der Typ) | — | Halter `Zweitfilter` **lebt** | **bleibt**, auf `Nachkommastellen` verkürzt |
+| `KatalogImportProfil.Zweitfilter` | 1 (Stromspeicher) | **`KatalogImportDialog.razor:629`** (`Zweitfilter?.Nachkommastellen ?? 1`) | **lebendig → bleibt** |
+| `KatalogImportProfil.FilterNachkommastellen` | 5 Fabrikmethoden | **`KatalogImportDialog.razor:619,626`** | **lebendig → bleibt** |
+| `KatalogImportProfil.FilterSpaltentitel` / `.FilterSpalteneinheit` | 4 Fabrikmethoden | **`BaueListenprofil:380/381`** → Kopf und Einheit der Zahlenspalte | **mittelbar lebendig → bleibt** |
+| `KatalogImportProfil.Filterspalte` / `.Zweitfilterspalte` | 5 bzw. 1 | **`KatalogImportDialog.razor:625,627`**, `BaueListenprofil` | **lebendig → bleibt** |
+| `KatalogImportProfil.Quellen` / `.Listenspalten` / `.Hinweis` | 5 | **`KatalogImportDialog.razor:84,615,146`** | **lebendig → bleibt** |
+| `ModulImportProfil.FilterHersteller` | 2 Fabrikmethoden | keiner (`PvStrangDaten.FilterHersteller` und `PvStraengeFelder.razor` sind **ein anderer Typ**, W6‑O‑4) | **tot → gefallen** |
+| `ModulImportProfil.FilterTechnologie` | 2 Fabrikmethoden | keiner | **tot → gefallen** |
+| `ModulImportProfil.FilterSuche` | 2 Fabrikmethoden | keiner | **tot → gefallen** |
+| `ModulImportProfil.SuchePlatzhalter` | 2 Fabrikmethoden | keiner (`Katalogfiltertexte.SuchePlatzhalter` ist **der neue** Spaltenfilter) | **tot → gefallen** |
+| `ModulImportProfil.TextAlle` | 2 Fabrikmethoden | keiner (`GebaeudeDialog.TextAlle` und `GebaeudeHuelle` sind **ein anderer Zusammenhang**) | **tot → gefallen** |
+| `ModulImportProfil.Zahlenfilter` | 2 Fabrikmethoden (3 Bereiche) | nur `OndImportTests:476` (`NotEmpty`) | **tot → gefallen** |
+| `ImportZahlenfilter` (der Typ, 8 Eigenschaften) | 3 Konstruktionen | Halter `Zahlenfilter` fällt → **kein Halter mehr** | **tot → gefallen** |
+| `ImportZeile.Hersteller` | `ZeilePv`, `ZeileCec`, `ZeileOnd` | keiner (der Wert steht zweitens in `Spalten["HERSTELLER"]`, und die liest der Dialog) | **tot → gefallen** |
+| `ImportZeile.Technologie` | `ZeilePv` | keiner (zweitens in `Spalten["TECHNOLOGIE"]`) | **tot → gefallen** |
+| `ModulImportProfil.Zahlspalten` | 2 Fabrikmethoden | **`ModulImportDialog.razor:342,343`**, `BaueListenprofil` | **lebendig → bleibt** |
+| `ImportZeile.Zahl1` / `.Zahl2` | 3 Zeilenbauer | **`ModulImportDialog.razor:343`** | **lebendig → bleibt** |
+| `Texte.Zu`, 5 × `case "IMP_KAT_FILTER_*"` | — | einziger Aufrufer war `FilterBezeichnung` | **tot → gefallen** |
+| `KatalogImportAblauf.Anzeigeindex(von, bis, suchtext)` | — | kein Produktcode, nur `KatalogImportAblaufTests:483…497` | **fachlich tot → bewusst stehen gelassen**, siehe unten |
+
+### Was mit Begründung stehen geblieben ist
+
+**`Zweitfilter`** ist der Punkt, an dem die Verdachtsliste irrt: Der zweite
+Zahlenbereich des Stromspeicherimports (W13‑E‑2) hat einen lebenden Leser im
+Razor-Dialog. Gefallen sind nur die vier Teile des Bereichs, die die alte
+Zahlenleiste beschrieben — Beschriftung „Leistung [kW] von:“, Vorbelegung 0…100 000
+und die Obergrenze; geblieben ist die eine Nachkommastelle, mit der die zweite
+Zahlenspalte ihre Zahl zeigt, und die Tatsache, dass es sie überhaupt gibt
+(`null` = die Ausprägung führt nur eine Größe).
+
+**`FilterSpaltentitel` und `FilterSpalteneinheit`** sind der Fall, den O‑12 als
+Möglichkeit vorwegnimmt: Sie werden nur noch in `BaueListenprofil` gelesen und
+erzeugen dort einen Spaltenkopf. Ein Feld mit einem Leser ist kein totes Feld; sie
+könnten in die Erzeugungsstelle eingezogen werden, aber dann stünden vier
+Ausprägungswerte nicht mehr bei den anderen vier Ausprägungswerten. Sie bleiben, wo
+sie sind.
+
+**`KatalogImportAblauf.Anzeigeindex`** hat im Produktcode keinen Aufrufer mehr — die
+`Katalogliste` filtert seit S3.4 selbst. Er bleibt trotzdem stehen, weil sein
+einziger Prüffall (`DerFilterVerbindetZahlenbereichUndSuchtext`) der einzige Ort ist,
+an dem die Regel „Zahlenbereich UND Suchtext“ gegen eine **echte** VDI-Datei
+zugesichert wird: `pufferspeicher_vaillant.vdi` mit 9 Sätzen, davon 7 unter 1 000 l
+und 6 mit „exclusiv“ im Namen. Die `Katalogliste` erbringt dasselbe, aber ihr
+Zeilenaufbau steht im Razor-Dialog und nicht im Kern; ein Kern-Prüffall müsste ihn
+nachbauen. Eine Zusicherung gegen eine echte Datei gegen eine nachgebaute
+einzutauschen wäre ein schlechter Tausch — und O‑12 ist eine Aufräum-, keine
+Umbauaufgabe.
+
+**Die Ressourcenschlüssel bleiben.** `IMP_KAT_FILTER_LEISTUNG`, `…_VOLUMEN`,
+`…_APERTUR`, `…_ENERGIE`, `…_LEISTUNG_KW`, `IMP_KAT_FILTER_BIS`,
+`PVIMP_LBL_HERSTELLER`, `PVIMP_LBL_TECHNOLOGIE`, `PVIMP_LBL_SUCHE`,
+`PVIMP_PLATZHALTER_SUCHE`, `PVIMP_ALLE`, `PVIMP_LBL_LEISTUNG_VON`,
+`PVIMP_LBL_EFFIZIENZ_VON` und `WRK_IMP_LBL_P_AC_VON` stehen weiter in beiden `.resx`.
+Sie zu streichen hieße, `Resource.Designer.cs` neu zu erzeugen und Übersetzungen zu
+verlieren, ohne dass am laufenden Programm irgendetwas anders würde; das ist eine
+eigene Aufgabe. (`WRK_LBL_FIRMA` wird ohnehin weiter gebraucht — `ModulKatalogProfil`
+liest ihn.)
+
+### Die Prüffälle
+
+| Fall | Behandlung |
+|---|---|
+| `KatalogImportAblaufTests.DasProfilTraegtDieFiltervorbelegungDesDesigners` | **nur beschnitten** und umbenannt in `DasProfilTraegtDieNachkommastellenUndDenDateifilterDesDesigners`. Gefallen sind die Zusicherungen auf `FilterVon`/`FilterBis`/`FilterMaximum` und damit die Zahlen 10…200, 0…1000, 0…5, 0…100 und 100 000 — die Vorbelegung, die es seit **O‑10** nicht mehr gibt. Geblieben sind die vier Ausprägungen mit ihren Nachkommastellen (1 / 0 / 2 / 0) und der Dateifilter |
+| `KatalogImportAblaufTests.DerUebersetzerGehtDurchAlleBeschriftungen` | **nur beschnitten**: `FilterBezeichnung` heraus, an seine Stelle tritt `FilterSpaltentitel` — dieselbe Zusicherung („der Übersetzer greift auch außerhalb der Detailfelder“) an einem lebenden Feld |
+| `StromspeicherUebernahmeTests.DasProfilFuehrtDreiQuellenSiebenSpaltenUndZweiZahlenbereiche` | **nur beschnitten** (der Fall prüft neun lebendige Dinge mit): `HerstellerFilter`, `FilterVon`, `FilterBis`, `Zweitfilter.Von`, `Zweitfilter.Bis` heraus; dafür herein `Filterspalte`, `Zweitfilterspalte`, `FilterNachkommastellen` und `Zweitfilter.Nachkommastellen` — die zwei Zahlengrößen sind damit weiter zugesichert, jetzt über das, was die Maske wirklich liest |
+| `StromspeicherUebernahmeTests.DieVierVdiAuspraegungenBleibenOhneQuellknoepfeUndZweitfilter` | **nur beschnitten**: `Assert.False(p.HerstellerFilter)` heraus, `Assert.Equal("", p.Zweitfilterspalte)` herein |
+| `OndImportTests.Beide_Auspraegungen_sind_vollstaendig` | **nur beschnitten**: `Assert.NotEmpty(p.Zahlenfilter)` → `Assert.NotEmpty(p.Zahlspalten)`. Dieselbe Zusage („jede Ausprägung führt mindestens eine Zahlengröße“) am Nachfolger |
+| `KatalogfilterImportTests` (5 Fälle) | **unverändert** — sie decken seit S3.4 ab, was die gefallenen Felder beschrieben: Spaltenkopf samt Einheit für alle vier VDI-Ausprägungen, `Katalogspaltenart.Zahl`, die sieben Listenspalten des Stromspeichers und die `Zahlspalten` beider Geräteimporte. Ein neuer Fall war deshalb nicht zu schreiben |
+
+**Kein Prüffall ist ersatzlos entfallen, und keiner ist dazugekommen** — die
+Fallzahlen bleiben bei 2 033 / 3 239 / 337 / 469.
+
+### Nachweis
+
+| Lauf | vorher (`601c0b8`) | nachher |
+|---|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler | **0 Fehler**, Warnungsmenge unverändert |
+| `EPOS.Kern.Tests`, `de` / `en_US.UTF-8` | 2 033 | **2 033 / 2 033 grün** |
+| `EPOS.UI.Tests`, `de` / `en_US.UTF-8` | 3 239 | **3 239 / 3 239 grün** |
+| `SpeicherEngine.Tests`, `de` / `en_US.UTF-8` | 337 | **337 / 337 grün** |
+| `KiKern.Tests`, `de` / `en_US.UTF-8` | 469 | **469 / 469 grün** |
+| `Werkzeuge/Formularkarte` | 122 | **122 grün** |
+| `Werkzeuge/SqlDialektPruefer` | 0 Fundstellen | **0 Fundstellen** (1 297 SQL-Texte) |
+| `Proben/ChartProben` | 44 Bilder | **44 grün, 0 Verstöße** |
+| `EPOS.Referenzlauf`, Projekte 1030 / 1007 / 1017 / 1045 gegen `2026-09-07_R6_PvKoeffizienten` | Basis | **4 × PASS**, 102 Dateien, 1 121 832 Werte |
+
+Der Referenzlauf war nicht zwingend — angefasst sind zwei Datenklassen der
+Importmasken und drei Prüffälle, kein Rechenweg —, ist aber gefahren worden, weil
+die Änderung im Kern liegt.
+
+### Zeilenbilanz
+
+| Datei | Zeilen |
+|---|---|
+| `EPOS.Kern/Allgemein/Import/ModulImportProfil.cs` | −92 |
+| `EPOS.Kern/Allgemein/Import/KatalogImportProfil.cs` | −51 |
+| `EPOS.UI/Dialoge/Import/KatalogImportDaten.cs` | −6 |
+| `EPOS.Kern.Tests` (3 Dateien) | +3 |
+| **Summe** | **−146** |

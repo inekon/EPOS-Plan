@@ -114,6 +114,10 @@ namespace WindowsFormsApplication1
                     () => new WPStammCtrl().Katalogfilterzeilen()),
                 ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
                     Anlagenart.Waermepumpe, KatalogBrowserHuelle.Text),
+                // W14a-E-10 / S3.3: die Zeilen des Vergleichs kommen aus DERSELBEN
+                // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
+                ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    n => ParameterUebersichtCtrl.Werte(Anlagenart.Waermepumpe, n, KatalogBrowserHuelle.Text)),
 
                 ["AnlageGaben"] = new Func<WaermepumpeAnlageDaten, IReadOnlyDictionary<string, object>>(
                     daten => WaermepumpeAnlageHuelle.Gaben(

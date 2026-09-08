@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -473,7 +473,7 @@ namespace EPOS.Kern.Tests
                 Assert.NotEmpty(p.Spalten);
                 Assert.NotEmpty(p.Reiter);
                 Assert.NotEmpty(p.Felder);
-                Assert.NotEmpty(p.Zahlenfilter);
+                Assert.NotEmpty(p.Zahlspalten);
                 Assert.False(string.IsNullOrEmpty(p.HilfeSchluessel));
 
                 foreach (ImportFeld feld in p.Felder)

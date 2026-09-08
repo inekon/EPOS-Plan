@@ -30,6 +30,27 @@ public class BedarfAdminDialogTests : BunitContext
 {
     private static readonly string[] KATALOG = { "Alpha", "Beta", "Gamma" };
 
+    /// <summary>
+    /// Die Namensliste als <see cref="Katalogfilterzeile"/> — seit Stufe S3.1
+    /// (W14a-E-10) traegt die Verwaltung die <c>Katalogliste</c> mit fuenf Spalten
+    /// statt eines Rasters mit dem blossen Bezeichner.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Zeilen(IReadOnlyList<string> namen)
+    {
+        var liste = new List<Katalogfilterzeile>();
+        for (int i = 0; i < namen.Count; i++)
+            liste.Add(new Katalogfilterzeile(i + 1, namen[i])
+                .MitText(Katalogfilterprofil.SpBezeichner, namen[i])
+                .MitText(Katalogfilterprofil.SpTyp, "Typ " + namen[i])
+                .MitZahl(Katalogfilterprofil.SpJahressummeMwh, 12.5 + i, 3)
+                .MitText(Katalogfilterprofil.SpBeschreibung, "Beschreibung " + namen[i])
+                .MitKennzeichen(Katalogfilterprofil.SpAuslieferung, false));
+        return liste;
+    }
+
+    private static Katalogfilterprofil Profil(BedarfsArt art)
+        => Katalogfilterprofil.FuerBedarf(art, s => s);
+
     public BedarfAdminDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -100,7 +121,9 @@ public class BedarfAdminDialogTests : BunitContext
 
         return Render<BedarfAdminDialog>(p => p
             .Add(x => x.Art, art)
-            .Add(x => x.Katalog, () => liste)
+            .Add(x => x.Katalogzeilen, () => Zeilen(liste))
+            .Add(x => x.Katalogprofil, Profil(art))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Kopf, (Func<string, (string, string)?>)(n =>
                 n.Length > 0 ? ("Beschreibung " + n, "Typ " + n) : null))
             .Add(x => x.Jahressumme, jahressumme ?? (n => n.Length > 0 ? "123,45" : ""))
@@ -290,7 +313,9 @@ public class BedarfAdminDialogTests : BunitContext
         var rest = new List<string> { "Alpha", "Beta", "Gamma" };
         var cut = Render<BedarfAdminDialog>(p => p
             .Add(x => x.Art, BedarfsArt.Prozesswaerme)
-            .Add(x => x.Katalog, () => rest)
+            .Add(x => x.Katalogzeilen, () => Zeilen(rest))
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Prozesswaerme))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Kopf, (Func<string, (string, string)?>)(n => ("B " + n, "T " + n)))
             .Add(x => x.Jahressumme, n => "1")
             .Add(x => x.Loeschen, n => { rest.Remove(n); return BedarfLoeschAusgang.Geloescht; })
@@ -354,7 +379,9 @@ public class BedarfAdminDialogTests : BunitContext
     {
         var cut = Render<BedarfAdminDialog>(p => p
             .Add(x => x.Art, BedarfsArt.Stromverbraucher)
-            .Add(x => x.Katalog, () => KATALOG)
+            .Add(x => x.Katalogzeilen, () => Zeilen(KATALOG))
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Stromverbraucher))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Kopf, (Func<string, (string, string)?>)(n => ("B", "T")))
             .Add(x => x.Jahressumme, n => "1")
             .Add(x => x.Exists, n => n == "Alpha")

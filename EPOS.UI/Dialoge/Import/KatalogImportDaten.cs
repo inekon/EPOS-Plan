@@ -118,12 +118,6 @@ namespace EPOS.UI.Dialoge.Import
         {
             switch (schluessel)
             {
-                case "IMP_KAT_FILTER_LEISTUNG": return Resource.IMP_KAT_FILTER_LEISTUNG;
-                case "IMP_KAT_FILTER_VOLUMEN": return Resource.IMP_KAT_FILTER_VOLUMEN;
-                case "IMP_KAT_FILTER_APERTUR": return Resource.IMP_KAT_FILTER_APERTUR;
-                case "IMP_KAT_FILTER_ENERGIE": return Resource.IMP_KAT_FILTER_ENERGIE;
-                case "IMP_KAT_FILTER_LEISTUNG_KW": return Resource.IMP_KAT_FILTER_LEISTUNG_KW;
-
                 case "IMP_KAT_FELD_NAME": return Resource.IMP_KAT_FELD_NAME;
                 case "IMP_KAT_FELD_FIRMA": return Resource.IMP_KAT_FELD_FIRMA;
                 case "IMP_KAT_FELD_BAUART": return Resource.IMP_KAT_FELD_BAUART;
@@ -156,6 +150,12 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_FELD_ETA_RT": return Resource.IMP_KAT_FELD_ETA_RT;
                 case "IMP_KAT_FELD_STANDBY": return Resource.IMP_KAT_FELD_STANDBY;
                 case "IMP_KAT_FELD_QUELLE": return Resource.IMP_KAT_FELD_QUELLE;
+                // S3.4: die Spaltenkoepfe der Kandidatenliste - ohne Doppelpunkt,
+                // ein Kopf ist keine Feldbeschriftung.
+                case "IMP_KAT_SP_EINTRAG": return Resource.IMP_KAT_SP_EINTRAG;
+                case "IMP_KAT_SP_LEISTUNG_TH": return Resource.IMP_KAT_SP_LEISTUNG_TH;
+                case "IMP_KAT_SP_VOLUMEN": return Resource.IMP_KAT_SP_VOLUMEN;
+                case "IMP_KAT_SP_APERTUR": return Resource.IMP_KAT_SP_APERTUR;
                 case "IMP_KAT_SP_QUELLE": return Resource.IMP_KAT_SP_QUELLE;
                 case "IMP_KAT_SP_HERSTELLER": return Resource.IMP_KAT_SP_HERSTELLER;
                 case "IMP_KAT_SP_MODELL": return Resource.IMP_KAT_SP_MODELL;

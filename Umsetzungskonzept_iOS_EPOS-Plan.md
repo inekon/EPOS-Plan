@@ -2555,6 +2555,70 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Verwendungsspalte sagt nichts über andere Projekte) und **O‑9** (vier Wärmepumpenmerkmale nur noch in der
 > Detailansicht); O‑7 bleibt. Abnahme auf Windows: A‑W14a‑E10‑S2‑1…12 — **Update-Hinweis: Schemastand 68, ein `.wpx`
 > auf Stand 67 wird abgewiesen.** Nächster Schritt: Stufe S3 (Bedarf, Zeitreihen, Vergleich, Importmasken).
+>
+> **W14a‑E‑10 Stufe S3 (Anwenderentscheid 07.09.2026: „S3 starten"), umgesetzt in `92854e1` (S3.1) · `1b02bce` (S3.2) ·
+> `df34bc5` (S3.3) · `2186ab9` (S3.4) · `daf86c0` (Doku), zusammengeführt in `19f3f39` — Bedarf, Zeitreihen, Vergleich,
+> Importmasken.** **S3.1:** `Katalogfilterprofil.FuerBedarf` für Brauchwasser (16), Prozesswärme (32) und
+> Stromverbraucher (41) — Bezeichner · Typ · Jahressumme [MWh] · Beschreibung · Auslieferung aus EINER Abfrage
+> (`BedarfStammCtrl.Katalogfilterzeilen`; die Monatswerte stehen in MWh, kein Faktor 1000); `BedarfAdminDialog` und
+> `BedarfsProfileDialog` auf der `Katalogliste`, „Standard Stromprofil" führt in denselben Dialog. **S3.2:**
+> `Katalogfilterprofil.FuerZeitreihe`; `GanglinienAuswertungCtrl.Kennzahlen` liefert Jahresarbeit und Spitze je Katalog
+> aus EINER `GROUP BY`-Abfrage — mit Fensterfunktion (`ROW_NUMBER() OVER (PARTITION BY …)`, Eimer auf 8 760 Stunden),
+> weil die naive Abfrage für eine Viertelstundenreihe 4 590 kW Spitze meldete, die Grafik desselben Dialogs aber 1 513,5 kW
+> (Stundenmittel) — eine Wahrheit; Preis: Stromganglinie 191 ms (78 840 Wertzeilen), Wärmebedarf 85 ms, Solarganglinie
+> 21 ms, konstant in der Zeilenzahl. **S3.3, Q3 = ja:** der Vergleich lebt im Baustein `Katalogliste` und gilt damit in
+> allen Wirten — Strg-/Umschalt-Klick auf den Wahlknopf markiert bis zu drei Zeilen (kein blanker Klick, keine zweite
+> Spalte), „Vergleichen (n markiert)" öffnet eine breite `Ueberlagerung` mit einer Zeile je Parameter aus
+> `ParameterUebersichtCtrl.Werte` (Bedarf: `BedarfStammCtrl.Vergleichszeilen` mit zwölf Monatswerten; Zeitreihen: die
+> Profilspalten), Abweichungen mit Wort UND Farbe; die vierte Markierung fällt mit Hinweis. **S3.4, Q10 = ja:**
+> `KatalogImportDialog` (fünf Ausprägungen) und `ModulImportDialog` (zwei) auf der `Katalogliste` in der Betriebsart
+> `Mehrfach` (Kontrollkästchen, Doppelklick); die Wirte filtern weiter selbst mit `Katalogfilter.Anwenden` auf demselben
+> Filterstand, damit Zeilenmarkierung und Statuszeile bei ihrer Regel bleiben. Erhalten: Mehrfachwahl W6‑E‑5 samt
+> gesammelter Wahl, Statuszeile, Virtualisierung ab 120, `@key`-Fix W6‑B‑2, Übernehmen mit Vorprüfung, „Hersteller" ohne
+> Doppelpunkt. **Damit tragen 21 Dialoge in 16 Komponenten die eine Katalogliste; die Filtermechanik gibt es im Haus
+> genau einmal.** Bewusst geändert: die Filtervorbelegung der Zahlenleisten der Importmasken entfällt (**O‑10**, Rückweg
+> benannt), die Importsuche läuft über alle Spalten (**O‑11**), Altdaten in `KatalogImportProfil`/`ModulImportProfil`
+> bleiben bis zur Abnahme (**O‑12**). Nachweis: Kern 2033 / UI 3239 grün (de und en), SpeicherEngine 337, KiKern 469,
+> Formularkarte 122, SQL 0, Designer 0, ChartProben 44, Gate grün, Referenzlauf 1030/1007/1017/1045 byte-gleich gegen
+> `2026-09-07_R6_PvKoeffizienten` (der Zweig hat #150 vor S3.4 aufgenommen), kein Schema. Abnahme auf Windows:
+> **A‑W14a‑E10‑S3‑1…10**. Nebenbefund am Werkzeug: `designer_neu.py schreiben` hängt je Lauf eine Leerzeile an
+> (nicht idempotent) — eigene Aufgabe.
+>
+> **O‑13 erledigt (07.09.2026, `1cf0e1e`) und ResourceDesigner wiederholbar (`ff6a724`), zusammengeführt in `bd83486`.**
+> Der in der Windows-Sandbox flatterhafte Fall `KataloglisteTests.Zwanzigtausend_Zeilen_werden_zu_fuenfzehn_und_das_Raster_zeigt_sie`
+> (3 216 von 3 217, M7-Nachweis) war ein Wettlauf im Test, kein Fehler der `Katalogliste` — die dritte Fundstelle der
+> Regel aus W16b‑O‑2 / W6‑B‑2‑O‑1: Der `@key`-Fix W6‑B‑2 schlüsselt das Raster mit `(Virtualisiert, Zeilenzahl)`, beim
+> Übergang 20 749 → 15 wechseln beide Teile, Blazor baut das QuickGrid neu (mit `OnAfterRenderAsync` und asynchronem
+> Datenabruf), und bunits synchrones Ereignis wird dahinter eingereiht — der Übergang, für den es den Fall gibt, lässt ihn
+> flattern. Behoben nur am Test: drei wartende Helfer (`Filter` auf das gezeichnete Popover, `Gezeichnet` auf
+> Trefferzeile UND Körperzeilen, `Sortiert` auf Pfeil und Reihenfolge), alle Wartestellen der Klasse nachgezogen;
+> `SpaltenfilterTests` bleibt (unter 120 Zeilen, kein Neuaufbau). Messung: unter Last 1 rot in 560 Läufen, mit belegter
+> Warteschlange 15/15 rot → 0/15; der Fall 30/30 grün unter Last in `de` und `en_US.UTF-8`. **ResourceDesigner:**
+> `designer_neu.py schreiben` hängte je Lauf neun Zeichen an `Resource.Designer.cs` an — `rstrip('\n')` ließ die acht
+> Leerzeichen der Trennzeile stehen, `block()` schrieb sie ein zweites Mal; 34 angesammelte Leerzeilen einmalig
+> begradigt (1 823 894 → 1 823 588 Byte, 34 Löschungen, kein Schlüssel berührt), Lauf 2 und 3 ändern 0 Byte, jeder
+> Aufruf prüft die Wiederholbarkeit selbst („+0; unveraendert"). Nachweis: Kern 2033 / UI 3239 grün (de und en),
+> Warnungen 6, Gate grün, Referenzlauf byte-gleich gegen R6. Abnahme auf Windows: den Fall 10× unter Last laufen
+> lassen (10/10 grün), `designer_neu.py schreiben` zweimal — `git status` bleibt sauber.
+>
+> **O‑12 erledigt (07.09.2026, `7c196c5` + `69ef1cb`), zusammengeführt in `8960ed3`.** Die zwei Importprofile führen
+> keine Daten mehr, die keine Maske liest: gefallen sind aus `KatalogImportProfil` `FilterBezeichnung`, `FilterVon`,
+> `FilterBis`, `FilterMaximum` und `HerstellerFilter` samt ihren Setzern in allen fünf Ausprägungen, aus
+> `KatalogFilterbereich` seine vier Leistenteile, aus `ModulImportProfil` `FilterHersteller`, `FilterTechnologie`,
+> `FilterSuche`, `SuchePlatzhalter`, `TextAlle` und `Zahlenfilter` samt dem Hilfstyp `ImportZahlenfilter`, dazu
+> `ImportZeile.Hersteller`/`.Technologie` und fünf tote Fälle in `Texte.Zu` — **−146 Zeilen**. **Die Aufzählung in O‑12
+> war eine Verdachtsliste:** gemessen wurde jedes Feld einzeln (Lesegraph über `*.cs` und `*.razor`, Tabelle im
+> Protokoll `iU9_W15a_Blazor_Port_Protokoll.md`, Abschnitt „W14a‑E‑10‑O‑12"), und **`Zweitfilter` lebt** —
+> `KatalogImportDialog.razor:629` liest seine Nachkommastellen für die zweite Zahlenspalte des Stromspeicherimports
+> (W13‑E‑2); ebenso bleiben `FilterNachkommastellen`, `FilterSpaltentitel`/`-einheit` (sie bauen Kopf und Einheit der
+> Zahlenspalte in `BaueListenprofil`) und `KatalogImportAblauf.Anzeigeindex`, dessen Prüffall die einzige Zusicherung
+> gegen eine echte VDI-Datei hält. **Kein Prüffall ist entfallen, keiner dazugekommen** — fünf beschnitten, zwei
+> umbenannt. Gate grün: 0 Fehler / 6 eindeutige Warnungen, Kern 2 033 / UI 3 239 / SpeicherEngine 337 / KiKern 469
+> grün in `de` und `en_US`, Formularkarte 122, SQL 0 Fundstellen (1 297 Texte), ChartProben 44, Referenzlauf
+> 1030/1007/1017/1045 **4 × PASS und byte-gleich** gegen `2026-09-07_R6_PvKoeffizienten`, kein Schema. Kein Verhalten
+> ändert sich — Abnahme auf Windows: **A‑W14a‑E10‑O12‑1** (die sieben Importmasken verhalten sich unverändert; beim
+> Stromspeicher zusätzlich: „Energie [kWh]" und „Leistung [kW]" mit **einer** Nachkommastelle und Zahlenausdruck
+> `10..60`).
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >

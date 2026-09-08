@@ -92,6 +92,10 @@ namespace WindowsFormsApplication1
                 // Volumenstufen, plus die Spalte "im Projekt verwendet" (Q12).
                 ["Katalogprofil"] = Katalogfilterprofil.MitVerwendung(
                     Anlagenart.Pufferspeicher, Text_),
+                // W14a-E-10 / S3.3: die Zeilen des Vergleichs kommen aus DERSELBEN
+                // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
+                ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
+                    n => ParameterUebersichtCtrl.Werte(Anlagenart.Pufferspeicher, n, Text_)),
 
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     PufferSpStammCtrl.Katalogfilterzeilen),

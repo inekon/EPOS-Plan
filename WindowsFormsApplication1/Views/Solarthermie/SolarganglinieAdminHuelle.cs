@@ -75,7 +75,11 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
-                ["Katalog"] = new Func<Task<List<SolarganglinieAdminDialog.Katalogzeile>>>(KatalogLesen),
+                // W14a-E-10 / S3.2: die Katalogliste des Hauses, mit Jahresarbeit und
+                // Spitze aus EINER Gruppenabfrage ueber die 8 760 Wertzeilen.
+                ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(KatalogLesen),
+                ["Katalogprofil"] = Katalogfilterprofil.FuerZeitreihe(
+                    Zeitreihenart.Solarganglinie, BedarfAdminHuelle.Filtertext),
                 ["HatProjektzuordnung"] = new Func<string, Task<bool>>(
                     name => Task.FromResult(new SolarganglinieStammCtrl().HatProjektzuordnung(name))),
                 ["Loeschen"] = new Func<string, Task<bool>>(
@@ -104,21 +108,15 @@ namespace WindowsFormsApplication1
             return Path.Combine(basis, UNTERORDNER);
         }
 
-        /// <summary>Der Katalog samt Beschreibung und ReadOnly-Kennzeichen.</summary>
-        private static Task<List<SolarganglinieAdminDialog.Katalogzeile>> KatalogLesen()
+        /// <summary>
+        /// Der Katalog samt seinen Parameterspalten (Stufe S3.2) — Bezeichner,
+        /// Beschreibung, Jahresarbeit [MWh] und Spitze [kW]; das ReadOnly-Kennzeichen
+        /// steht als <c>Katalogfilterzeile.Geschuetzt</c> mit darin.
+        /// </summary>
+        internal static Task<IReadOnlyList<Katalogfilterzeile>> KatalogLesen()
         {
-            SolarganglinieStammCtrl ctrl = new SolarganglinieStammCtrl();
-            ctrl.ReadAll();
-
-            var liste = new List<SolarganglinieAdminDialog.Katalogzeile>();
-            for (int i = 0; i < ctrl.rows; i++)
-            {
-                SolarganglinieModel m = ctrl.items[i];
-                liste.Add(new SolarganglinieAdminDialog.Katalogzeile(
-                    m.ID, m.m_szBezeichner ?? "", m.m_szBeschreibung ?? "",
-                    ctrl.IsReadOnly(m.m_szBezeichner)));
-            }
-            return Task.FromResult(liste);
+            return Task.FromResult(
+                ZeitreihenKatalogCtrl.Katalogfilterzeilen(Zeitreihenart.Solarganglinie));
         }
 
         /// <summary>
