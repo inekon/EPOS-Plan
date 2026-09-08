@@ -85,6 +85,14 @@ namespace WindowsFormsApplication1
         /// Amortisationszeit als Text: die Jahre, oder der Klartext des Sonderfalls
         /// (Fachkonzept 7.1 — die V7-Mappe schrieb beides in dieselbe Zelle, die Engine
         /// trennt Zustand und Zahl).
+        ///
+        /// <para><b>Kein negatives Null</b> (Anwenderwunsch 08.09.2026, W11b‑B‑14). Die
+        /// dynamische Amortisation rechnet <c>-ln(1 - I·i/E)/ln(1+i)</c>; bei
+        /// <c>I = 0</c> ist der Zähler <c>-ln(1) = -0</c>, und <c>(-0)/x</c> bleibt in
+        /// IEEE 754 ein negatives Null. <c>"N1"</c> schreibt dafür „−0,0“ — ein
+        /// Vorzeichen ohne Gegenstand. Der Betrag unter einem halben Zehntel wird
+        /// deshalb VOR dem Formatieren auf glatt 0 gezogen; das ist dieselbe Zahl, die
+        /// <c>"N1"</c> ohnehin anzeigt, nur ohne das irreführende Minus.</para>
         /// </summary>
         public static string AmortisationText(Amortisation a)
         {
@@ -95,8 +103,28 @@ namespace WindowsFormsApplication1
                 case AmortisationStatus.UeberNutzungsdauer:
                     return MyResource.Resource.SP_ERG_UEBER_NUTZUNGSDAUER;
                 default:
-                    return a.Jahre.ToString("N1", CultureInfo.CurrentCulture);
+                    double jahre = System.Math.Abs(a.Jahre) < 0.05 ? 0.0 : a.Jahre;
+                    return jahre.ToString("N1", CultureInfo.CurrentCulture);
             }
+        }
+
+        /// <summary>
+        /// Dieselbe Angabe, aber mit der Investition als Prüfstein (Anwenderwunsch
+        /// 08.09.2026, W11b‑B‑14).
+        ///
+        /// <para><b>Ohne Investition ist die Amortisation nicht bestimmbar.</b> Die Engine
+        /// rechnet <c>T_stat = I / E_a,äq</c> und liefert bei <c>I = 0</c> folgerichtig
+        /// 0 — auf dem Schirm „0,0 a“, was wie „amortisiert sich sofort“ aussieht. In
+        /// der Sache heißt <c>I = 0</c> aber fast immer: Die Kosten sind nicht gepflegt.
+        /// Eine Amortisationszeit zu behaupten, wo es nichts zurückzuverdienen gibt, ist
+        /// keine Aussage über den Speicher, sondern eine über eine leere Eingabe;
+        /// deshalb steht hier der Gedankenstrich, den die Seite schon für jede andere
+        /// unbestimmte Kennzahl führt.</para>
+        /// </summary>
+        public static string AmortisationText(Amortisation a, double investitionEur)
+        {
+            if (investitionEur <= 0.0) return SpeicherKennzahlenBlock.UNBESTIMMT;
+            return AmortisationText(a);
         }
     }
 }

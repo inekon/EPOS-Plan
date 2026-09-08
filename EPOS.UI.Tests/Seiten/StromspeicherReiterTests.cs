@@ -47,8 +47,12 @@ public class StromspeicherReiterTests : BunitContext
 
     private static SpeicherKennzahlenBlock.Zeile Z(string gruppe, string name, string wert,
                                                    string vergleich = "",
-                                                   KennzahlStufe stufe = KennzahlStufe.Unbestimmt)
-        => new SpeicherKennzahlenBlock.Zeile(gruppe, name, wert, vergleich, "kWh/a", stufe);
+                                                   KennzahlStufe stufe = KennzahlStufe.Unbestimmt,
+                                                   string untergruppe = "",
+                                                   KennzahlArt art = KennzahlArt.Normal,
+                                                   string hinweis = "")
+        => new SpeicherKennzahlenBlock.Zeile(gruppe, name, wert, vergleich, "kWh/a", stufe,
+                                             untergruppe, art, hinweis);
 
     private static SpeicherErgebnisDaten Daten(bool lauf = true, bool vergleich = false,
                                                bool mehrere = true, string hinweis = "")
@@ -144,8 +148,13 @@ public class StromspeicherReiterTests : BunitContext
     }
 
     /// <summary>
-    /// Die Warnstufe faerbt die Zeile - dieselben vier Werte, die
-    /// <c>SpWarnfarbe</c> als <c>Color.FromArgb</c> setzte.
+    /// Die Warnstufe faerbt die Zeile - dieselben Werte, die <c>SpWarnfarbe</c> als
+    /// <c>Color.FromArgb</c> setzte.
+    ///
+    /// <para><b>Ausser „unbestimmt“</b> (Anwenderwunsch 08.09.2026, W11b‑B‑14):
+    /// Sie ist die Vorgabe von <c>KennzahlStufe</c> und damit die Stufe von 37 der 39
+    /// Zeilen; die Klasse legte Grau unter die GANZE Tabelle, und die drei Warnfarben
+    /// gingen darin unter. Eine Zeile ohne Aussage traegt jetzt gar keine Klasse.</para>
     /// </summary>
     [Fact]
     public void Die_Warnstufe_faerbt_die_Zeile()
@@ -154,7 +163,8 @@ public class StromspeicherReiterTests : BunitContext
 
         Assert.Single(seite.FindAll("tr.epos-stufe-knapp"));
         Assert.Single(seite.FindAll("tr.epos-stufe-ok"));
-        Assert.Single(seite.FindAll("tr.epos-stufe-unbestimmt"));
+        Assert.Empty(seite.FindAll("tr.epos-stufe-unbestimmt"));
+        Assert.DoesNotContain("epos-stufe-unbestimmt", seite.Markup);
     }
 
     /// <summary>Ohne Vergleichslauf gibt es die Vergleichsspalte gar nicht.</summary>
@@ -198,5 +208,134 @@ public class StromspeicherReiterTests : BunitContext
 
         Assert.Equal(1, csv);
         Assert.Equal(1, vgl);
+    }
+
+    // =====================================================================
+    // Anwenderwunsch 08.09.2026, W11b-B-14: der gegliederte Wirtschaftsblock
+    // =====================================================================
+
+    private const string UG_JAHR = "Referenzjahr";
+    private const string UG_DAUER = "\u00dcber die Nutzungsdauer";
+    private const string UG_NACH = "Nachrichtlich";
+
+    /// <summary>
+    /// Ein Wirtschaftsblock, wie ihn der Kern seit W11b-B-14 liefert: drei
+    /// Unterabschnitte, eine Summe, ein Ergebnis, eine nachrichtliche Zeile.
+    /// </summary>
+    private static SpeicherErgebnisDaten Gegliedert()
+    {
+        var d = Daten();
+        d.Kennzahlen = new[]
+        {
+            Z(SpeicherKennzahlenBlock.GRUPPE_ENERGIE, "Last", "12.000"),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Ertrag: vermiedener Netzbezug",
+              "244,88", untergruppe: UG_JAHR),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Kosten: Netzladung",
+              "-12,00", untergruppe: UG_JAHR),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Ertrag Referenzjahr E_a,1",
+              "177,29", untergruppe: UG_JAHR, art: KennzahlArt.Summe,
+              hinweis: "E_a,1 \u2014 Ertrag des Referenzjahrs"),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Investition I",
+              "0,00", untergruppe: UG_DAUER),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Kapitalwert (NPV)",
+              "2.604,13", untergruppe: UG_DAUER, art: KennzahlArt.Ergebnis),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Betriebskosten: Verschlei\u00df K_ver",
+              "40,33", untergruppe: UG_NACH, art: KennzahlArt.Nachrichtlich)
+        };
+        return d;
+    }
+
+    /// <summary>
+    /// Jeder Unterabschnitt bekommt GENAU EINE Zwischenueberschrift - auch wenn
+    /// mehrere Zeilen dieselbe Untergruppe tragen.
+    /// </summary>
+    [Fact]
+    public void Jeder_Unterabschnitt_bekommt_eine_Zwischenueberschrift()
+    {
+        var seite = Zeichnen(Gegliedert());
+
+        var koepfe = seite.FindAll("tr.epos-simerg-untergruppe th");
+        Assert.Equal(3, koepfe.Count);
+        Assert.Equal(UG_JAHR, koepfe[0].TextContent.Trim());
+        Assert.Equal(UG_DAUER, koepfe[1].TextContent.Trim());
+        Assert.Equal(UG_NACH, koepfe[2].TextContent.Trim());
+
+        // Ohne Untergruppe keine Ueberschrift: Die Energiezeile bekommt keine.
+        Assert.Equal(3, seite.FindAll("table.epos-simerg-kennzahlen tbody").Count);
+    }
+
+    /// <summary>
+    /// Summe, Ergebnis und Nachrichtliches tragen ihre Klasse. WAS sie sind, sagt der
+    /// Kern (<c>KennzahlArt</c>) - hier steht nur, dass die Klasse ankommt.
+    /// </summary>
+    [Fact]
+    public void Summe_Ergebnis_und_Nachrichtliches_tragen_ihre_Klasse()
+    {
+        var seite = Zeichnen(Gegliedert());
+
+        Assert.Single(seite.FindAll("tr.epos-simerg-summe"));
+        Assert.Single(seite.FindAll("tr.epos-simerg-ergebnis"));
+        Assert.Single(seite.FindAll("tr.epos-simerg-nachrichtlich"));
+
+        Assert.Contains("Ertrag Referenzjahr", seite.Find("tr.epos-simerg-summe").TextContent);
+        Assert.Contains("NPV", seite.Find("tr.epos-simerg-ergebnis").TextContent);
+    }
+
+    /// <summary>Der Werkzeugtipp des Kerns steht als <c>title</c> an seiner Zeile.</summary>
+    [Fact]
+    public void Der_Werkzeugtipp_steht_an_seiner_Zeile()
+    {
+        var seite = Zeichnen(Gegliedert());
+
+        Assert.Equal("E_a,1 \u2014 Ertrag des Referenzjahrs",
+                     seite.Find("tr.epos-simerg-summe").GetAttribute("title"));
+
+        // Eine Zeile ohne Hinweis bekommt gar kein Attribut - nicht title="".
+        var ohne = seite.FindAll("tr.epos-simerg-nachrichtlich")[0];
+        Assert.Null(ohne.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// Die Zyklenampel gehoert unter die Gruppe SPEICHER, ueber die sie etwas sagt -
+    /// und nicht als loser Absatz unter die ganze Tabelle, also unter die Wirtschaft.
+    /// </summary>
+    [Fact]
+    public void Die_Zyklenampel_steht_unter_der_Gruppe_Speicher()
+    {
+        var seite = Zeichnen(Daten());
+
+        var ampel = seite.Find("tr.epos-simerg-ampelzeile");
+        Assert.Contains("180 von 250 Zyklen", ampel.TextContent);
+
+        var koerper = seite.FindAll("table.epos-simerg-kennzahlen tbody");
+        Assert.Contains("epos-simerg-ampelzeile", koerper[1].InnerHtml);
+        Assert.DoesNotContain("epos-simerg-ampelzeile", koerper[0].InnerHtml);
+        Assert.DoesNotContain("epos-simerg-ampelzeile", koerper[2].InnerHtml);
+
+        // Kein loser Absatz mehr.
+        Assert.Empty(seite.FindAll("p.epos-simerg-hinweis"));
+    }
+
+    /// <summary>Ohne Ampeltext gibt es die Zeile gar nicht.</summary>
+    [Fact]
+    public void Ohne_Ampeltext_bleibt_die_Ampelzeile_weg()
+    {
+        var d = Daten();
+        d.Ampel = "";
+
+        Assert.Empty(Zeichnen(d).FindAll("tr.epos-simerg-ampelzeile"));
+    }
+
+    /// <summary>
+    /// Die Kennzahlenliste steht ueber die GANZE Zeile des Spaltenrasters (W11b-B-14).
+    /// In einer Spalte war sie auf die Mindestbreite von 320 Bildpunkten gequetscht.
+    /// </summary>
+    [Fact]
+    public void Die_Kennzahlenliste_steht_ueber_die_ganze_Zeile()
+    {
+        var seite = Zeichnen(Daten());
+
+        var abschnitt = seite.Find("section.epos-simerg-kennzahlenzeile");
+        Assert.NotNull(abschnitt.QuerySelector("table.epos-simerg-kennzahlen"));
     }
 }

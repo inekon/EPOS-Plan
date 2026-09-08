@@ -68,7 +68,12 @@
                 }
             </section>
 
-            <section class="epos-simerg-block">
+            @* DIE KENNZAHLENLISTE STEHT UEBER DIE GANZE ZEILE (Anwenderwunsch
+               08.09.2026, W11b-B-14). Sie sass in EINER Spalte des auto-fit-Rasters
+               und war damit auf die 320 Bildpunkte der Mindestbreite gequetscht -
+               vierzehn Wirtschaftszeilen brachen dort dreimal um. Das Diagramm
+               darueber nimmt ohnehin schon die ganze Zeile. *@
+            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
                 <table class="epos-simerg-kennzahlen">
                     <thead>
                         <tr>
@@ -87,29 +92,42 @@
                     {
                         string g = gruppe;
                         <tbody>
-                            <tr><th colspan="@Spalten" scope="colgroup">@Gruppentitel(g)</th></tr>
-                            @foreach (var z in Zeilen(g))
+                            <tr class="epos-simerg-gruppenkopf">
+                                <th colspan="@Spalten" scope="colgroup">@Gruppentitel(g)</th>
+                            </tr>
+                            @foreach (var e in Gegliedert(g))
                             {
-                                <tr class="@Stufenklasse(z.Stufe)">
-                                    <td>@z.Bezeichnung</td>
-                                    <td class="epos-simerg-zahl">@z.Wert</td>
+                                if (e.Ueberschrift.Length > 0)
+                                {
+                                    <tr class="epos-simerg-untergruppe">
+                                        <th colspan="@Spalten" scope="colgroup">@e.Ueberschrift</th>
+                                    </tr>
+                                }
+                                <tr class="@Zeilenklasse(e.Zeile)" title="@Werkzeugtipp(e.Zeile)">
+                                    <td>@e.Zeile.Bezeichnung</td>
+                                    <td class="epos-simerg-zahl">@e.Zeile.Wert</td>
                                     @if (Daten.MitVergleich)
                                     {
-                                        <td class="epos-simerg-zahl">@z.Vergleich</td>
+                                        <td class="epos-simerg-zahl">@e.Zeile.Vergleich</td>
                                     }
-                                    <td>@z.Einheit</td>
+                                    <td class="epos-simerg-einheit">@e.Zeile.Einheit</td>
+                                </tr>
+                            }
+                            @* DIE ZYKLENAMPEL GEHOERT UNTER IHRE GRUPPE (W11b-B-14). Sie
+                               stand als loser Absatz unter der ganzen Tabelle - also
+                               unter der Wirtschaft, ueber die sie nichts sagt. *@
+                            @if (Ampelgruppe(g))
+                            {
+                                <tr class="epos-simerg-ampelzeile">
+                                    <td colspan="@Spalten"
+                                        class="@(Daten.AmpelWarnung ? "epos-simerg-hinweis epos-simerg-warn" : "epos-simerg-hinweis")">
+                                        @Daten.Ampel
+                                    </td>
                                 </tr>
                             }
                         </tbody>
                     }
                 </table>
-
-                @if (!string.IsNullOrEmpty(Daten.Ampel))
-                {
-                    <p class="@(Daten.AmpelWarnung ? "epos-simerg-hinweis epos-simerg-warn" : "epos-simerg-hinweis")">
-                        @Daten.Ampel
-                    </p>
-                }
             </section>
 
         </div>
@@ -141,11 +159,38 @@
 
     private byte[]? BildSoc => Bild?.Invoke(new Bildauftrag(Bilder.SpeicherSoc));
 
-    private IEnumerable<WindowsFormsApplication1.SpeicherKennzahlenBlock.Zeile> Zeilen(string gruppe)
+    /// <summary>
+    /// Die Zeilen EINER Gruppe, jede mit der Ueberschrift des Unterabschnitts, den
+    /// sie EROEFFNET (leer, wenn sie in einem laufenden Unterabschnitt steht).
+    ///
+    /// <para>Die Gliederung selbst kommt aus dem Kern
+    /// (<c>SpeicherKennzahlenBlock.Zeile.Untergruppe</c>); hier wird nur gezaehlt,
+    /// wo sie wechselt. Das gehoert nicht ins Markup - eine Laufvariable zwischen
+    /// zwei Razor-Bloecken ist genau die Art Zustand, die man dort nicht sieht.</para>
+    /// </summary>
+    private IEnumerable<(string Ueberschrift,
+                         WindowsFormsApplication1.SpeicherKennzahlenBlock.Zeile Zeile)> Gegliedert(string gruppe)
     {
+        string letzte = "";
         foreach (var z in Daten.Kennzahlen)
-            if (string.Equals(z.Gruppe, gruppe, StringComparison.Ordinal)) yield return z;
+        {
+            if (!string.Equals(z.Gruppe, gruppe, StringComparison.Ordinal)) continue;
+
+            string kopf = "";
+            if (z.Untergruppe.Length > 0 && !string.Equals(z.Untergruppe, letzte, StringComparison.Ordinal))
+            {
+                kopf = z.Untergruppe;
+                letzte = z.Untergruppe;
+            }
+            yield return (kopf, z);
+        }
     }
+
+    /// <summary>Steht die Zyklenampel unter DIESER Gruppe? (Sie gehoert zum Speicher.)</summary>
+    private bool Ampelgruppe(string gruppe)
+        => !string.IsNullOrEmpty(Daten.Ampel)
+           && string.Equals(gruppe, WindowsFormsApplication1.SpeicherKennzahlenBlock.GRUPPE_SPEICHER,
+                            StringComparison.Ordinal);
 
     private static string Gruppentitel(string gruppe) => gruppe switch
     {
@@ -156,14 +201,47 @@
     };
 
     /// <summary>
-    /// Die Warnstufe einer Zeile als Klasse — dieselben vier Werte, die
+    /// Die Warnstufe einer Zeile als Klasse — dieselben Werte, die
     /// <c>SpWarnfarbe</c> als <c>Color.FromArgb</c> setzte.
+    ///
+    /// <para><b>UNBESTIMMT BEKOMMT KEINE KLASSE</b> (Anwenderwunsch 08.09.2026,
+    /// W11b‑B‑14). Sie war die Vorgabe von <c>KennzahlStufe</c> und damit die Stufe
+    /// von 37 der 39 Zeilen; die Regel <c>tr.epos-stufe-unbestimmt</c> legte grau
+    /// (240,240,240) unter die GANZE Tabelle, und die drei Warnfarben, um die es
+    /// geht, verschwanden darin. „Keine Aussage“ ist keine Warnung — sie braucht
+    /// keine Farbe.</para>
     /// </summary>
     private static string Stufenklasse(WindowsFormsApplication1.KennzahlStufe stufe) => stufe switch
     {
         WindowsFormsApplication1.KennzahlStufe.Ueberschritten => "epos-stufe-ueberschritten",
         WindowsFormsApplication1.KennzahlStufe.Knapp => "epos-stufe-knapp",
         WindowsFormsApplication1.KennzahlStufe.Ok => "epos-stufe-ok",
-        _ => "epos-stufe-unbestimmt"
+        _ => ""
     };
+
+    /// <summary>Summe, Ergebnis oder Nachrichtliches — die Art der Zeile als Klasse.</summary>
+    private static string Artklasse(WindowsFormsApplication1.KennzahlArt art) => art switch
+    {
+        WindowsFormsApplication1.KennzahlArt.Summe => "epos-simerg-summe",
+        WindowsFormsApplication1.KennzahlArt.Ergebnis => "epos-simerg-ergebnis",
+        WindowsFormsApplication1.KennzahlArt.Nachrichtlich => "epos-simerg-nachrichtlich",
+        _ => ""
+    };
+
+    /// <summary>
+    /// Beide Klassen einer Zeile; <c>null</c> — und damit gar kein Attribut —, wenn
+    /// sie weder eine Warnstufe noch eine besondere Art hat.
+    /// </summary>
+    private static string? Zeilenklasse(WindowsFormsApplication1.SpeicherKennzahlenBlock.Zeile z)
+    {
+        string klassen = (Stufenklasse(z.Stufe) + " " + Artklasse(z.Art)).Trim();
+        return klassen.Length > 0 ? klassen : null;
+    }
+
+    /// <summary>
+    /// Der Werkzeugtipp einer Zeile — die Bedeutung der Kuerzel (ΔJ, E_a,1, E_a,äq,
+    /// N_zyk, n_zyk, K_ver, NPV) kommt aus dem Kern. <c>null</c> heisst: kein Attribut.
+    /// </summary>
+    private static string? Werkzeugtipp(WindowsFormsApplication1.SpeicherKennzahlenBlock.Zeile z)
+        => z.Hinweis.Length > 0 ? z.Hinweis : null;
 }

@@ -220,7 +220,7 @@
 
     private RenderFragment Wertzeile(string text, double wert, string einheit) => @<text>
         <dt>@text</dt>
-        <dd>@wert.ToString("F2", System.Globalization.CultureInfo.CurrentCulture)</dd>
+        <dd>@wert.ToString("N2", System.Globalization.CultureInfo.CurrentCulture)</dd>
         <dd class="epos-simerg-einheit">@einheit</dd>
     </text>;
 }

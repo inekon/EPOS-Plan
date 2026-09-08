@@ -33,6 +33,29 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Was eine Kennzahlzeile IST — Einzelposten, Summe der Posten darüber,
+    /// Ergebnis der Rechnung oder eine Zahl, die nur nachrichtlich dabeisteht
+    /// (Anwenderwunsch 08.09.2026, W11b‑B‑14).
+    ///
+    /// <para><b>Warum im Kern.</b> Ob „Ertrag Referenzjahr E_a,1" eine SUMME der fünf
+    /// Zeilen darüber ist, weiß die Wirtschaftlichkeitsrechnung
+    /// (<c>SpeicherEngine.Wirtschaftlichkeit.Berechne</c>) und nicht die Oberfläche.
+    /// Die Fettschrift und die Linie darüber sind die Darstellung dieser Aussage —
+    /// dieselbe Trennung wie bei <see cref="KennzahlStufe"/>.</para>
+    /// </summary>
+    public enum KennzahlArt
+    {
+        /// <summary>Ein Einzelposten.</summary>
+        Normal = 0,
+        /// <summary>Summe der Posten ihres Unterabschnitts.</summary>
+        Summe = 1,
+        /// <summary>Ergebnis der Rechnung — hervorgehoben, aber KEINE Spaltensumme.</summary>
+        Ergebnis = 2,
+        /// <summary>Zahl, die nur nachrichtlich dabeisteht und in keine Summe eingeht.</summary>
+        Nachrichtlich = 3
+    }
+
+    /// <summary>
     /// Die 39 Kennzahlzeilen des Stromspeicher-Ergebnisses — eine Wahrheit für
     /// Bildschirm, Bericht und Razor-Seite (iU9-W11a.3).
     ///
@@ -81,8 +104,19 @@ namespace WindowsFormsApplication1
         /// <param name="Vergleich">Der formatierte Wert des Vergleichslaufs; leer ohne Vergleich.</param>
         /// <param name="Einheit">Die Einheit; <c>"-"</c> für dimensionslose Zahlen.</param>
         /// <param name="Stufe">Warnfärbung der Zeile.</param>
+        /// <param name="Untergruppe">
+        /// Überschrift des Unterabschnitts INNERHALB der Gruppe, bereits übersetzt
+        /// (leer = kein Unterabschnitt). Die Gruppenschlüssel sind sprachneutral, weil
+        /// sie die Reihenfolge der drei Blöcke steuern; die Untergruppe steuert nichts,
+        /// sie ist nur eine Zwischenüberschrift — deshalb steht hier, wie in
+        /// <paramref name="Bezeichnung"/>, der fertige Text.
+        /// </param>
+        /// <param name="Art">Einzelposten, Summe, Ergebnis oder nachrichtlich.</param>
+        /// <param name="Hinweis">Werkzeugtipp der Zeile; leer = keiner.</param>
         public sealed record Zeile(string Gruppe, string Bezeichnung, string Wert,
-                                   string Vergleich, string Einheit, KennzahlStufe Stufe);
+                                   string Vergleich, string Einheit, KennzahlStufe Stufe,
+                                   string Untergruppe = "", KennzahlArt Art = KennzahlArt.Normal,
+                                   string Hinweis = "");
 
         /// <summary>
         /// Baut den vollständigen Kennzahlenblock.
@@ -140,7 +174,8 @@ namespace WindowsFormsApplication1
 
             Zahl(zeilen, GRUPPE_ENERGIE, MyResource.Resource.SP_ERG_AUTARKIE, k.Autarkiegrad, Vgl(kv, x => x.Autarkiegrad), "N1", "%");
 
-            Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.SP_ERG_VOLLZYKLEN, k.Vollzyklen, Vgl(kv, x => x.Vollzyklen), "N1", "1/a");
+            Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.SP_ERG_VOLLZYKLEN, k.Vollzyklen, Vgl(kv, x => x.Vollzyklen), "N1", "1/a",
+                 hinweis: MyResource.Resource.SP_ERG_TIP_N_ZYK_AEQ);
             Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.SP_ERG_SOC_MIN, k.SoC_Min, Vgl(kv, x => x.SoC_Min), "N1", "kWh");
             Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.SP_ERG_SOC_MITTEL, k.SoC_Mittel, Vgl(kv, x => x.SoC_Mittel), "N1", "kWh");
             Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.SP_ERG_SOC_MAX, k.SoC_Max, Vgl(kv, x => x.SoC_Max), "N1", "kWh");
@@ -148,43 +183,132 @@ namespace WindowsFormsApplication1
             Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.SP_ERG_ZEITANTEIL_OBEN, k.Zeitanteil_Obergrenze, Vgl(kv, x => x.Zeitanteil_Obergrenze), "N1", "%");
             Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.SP_ERG_ZYKLEN_HOCHRECHNUNG,
                  k.Zyklen_Hochrechnung, Vgl(kv, x => x.Zyklen_Hochrechnung), "N0", "-",
-                 Zyklenstufe(k, kontext));
+                 Zyklenstufe(k, kontext), hinweis: MyResource.Resource.SP_ERG_TIP_N_ZYK);
             // Zugesicherte Zyklen sind ein Gerätedatum, kein Ergebnis - hier gibt es
             // nichts zu vergleichen.
             Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.SP_ERG_ZYKLEN_ZUGESICHERT,
-                 kontext != null ? kontext.ZyklenZugesichert : 0.0, null, "N0", "-");
+                 kontext != null ? kontext.ZyklenZugesichert : 0.0, null, "N0", "-",
+                 hinweis: MyResource.Resource.SP_ERG_TIP_N_ZYK);
 
             Budgetzeilen(zeilen, kontext);
 
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_BEZUG, k.Ertrag_Bezugsersparnis, Vgl(kv, x => x.Ertrag_Bezugsersparnis), "N2", EUR_A);
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_VERGUETUNG, -k.Ertrag_Verguetung_Entgangen, Vgl(kv, x => -x.Ertrag_Verguetung_Entgangen), "N2", EUR_A);
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_NETZ, k.Ertrag_Netzerloes, Vgl(kv, x => x.Ertrag_Netzerloes), "N2", EUR_A);
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_KOSTEN_LADUNG, k.Kosten_Ladung, Vgl(kv, x => x.Kosten_Ladung), "N2", EUR_A);
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_LEISTUNGSPREIS, k.Ertrag_Leistungspreis, Vgl(kv, x => x.Ertrag_Leistungspreis), "N2", EUR_A);
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_VERSCHLEISS, k.Verschleisskosten, Vgl(kv, x => x.Verschleisskosten), "N2", EUR_A);
+            Wirtschaftszeilen(zeilen, k, erg, kv, vergleich);
+
+            return zeilen;
+        }
+
+        /// <summary>
+        /// Der GEGLIEDERTE Wirtschaftsblock (Anwenderwunsch 08.09.2026, W11b‑B‑14):
+        /// vierzehn Zeilen wie bisher, aber in drei Unterabschnitten und mit
+        /// gekennzeichneten Summen.
+        ///
+        /// <para><b>Die Gliederung ist keine Erfindung der Anzeige.</b> Sie folgt
+        /// <c>SpeicherEngine.Wirtschaftlichkeit.Berechne</c> Zeile für Zeile:</para>
+        /// <list type="bullet">
+        /// <item><b>Referenzjahr.</b> Die Engine bildet <c>E_a,1 = summeF</c> als Summe der
+        /// Zeitschrittbewertung <c>eur[k]</c>. Deren vier Summanden führt
+        /// <c>Arbitrage</c> (:309-325) getrennt mit: <c>+</c> Bezugsersparnis,
+        /// <c>−</c> entgangene Vergütung, <c>−</c> Ladekosten, <c>+</c> Netzerlös. Ohne
+        /// Preissteuerung teilt <c>StromspeicherSimCtrl.AlsErgebnismodell</c> dieselbe
+        /// Reihe in ihren positiven und ihren negativen Anteil, und die übrigen drei
+        /// Posten sind 0. <b>Deshalb steht die Netzladung hier mit MINUSZEICHEN</b> — die
+        /// Spalte addiert sich zur Summenzeile, so wie der Kern rechnet. Die
+        /// Leistungspreisersparnis ist bis AP7 fest 0 und stört die Summe nicht.</item>
+        /// <item><b>Über die Nutzungsdauer.</b> <c>ΔJ = E_a,äq − A</c>
+        /// (<c>Wirtschaftlichkeit</c> :158) — die Annuität steht deshalb ebenfalls mit
+        /// Minuszeichen. Investition, Amortisationen und Kapitalwert gehören zum selben
+        /// Zeitraum; der Kapitalwert (<c>NPV = E_a,1 · RBF_deg − I</c>) ist ERGEBNIS,
+        /// keine Spaltensumme.</item>
+        /// <item><b>Nachrichtlich.</b> Der Verschleiß K_ver fließt ausdrücklich weder in
+        /// <c>summeF</c> noch in <c>ΔJ</c> ein (Fachkonzept 5.4, Kommentar in
+        /// <c>Dauernutzung</c> :396) — er stand bisher mitten zwischen den Summanden.</item>
+        /// </list>
+        ///
+        /// <para><b>Amortisation ohne Investition.</b>
+        /// <c>Wirtschaftlichkeit.StatischeAmortisation</c> liefert bei <c>I = 0</c> den
+        /// Jahreswert <c>0/E = 0</c>, die dynamische über <c>-ln(1-0)/ln(1+i)</c> ein
+        /// NEGATIVES Null — auf dem Schirm „0,0 a“ und „−0,0 a“. Beides ist keine
+        /// Aussage: Ohne Investition gibt es nichts zurückzuverdienen. Beide Zeilen
+        /// zeigen dann den Gedankenstrich und sagen im Werkzeugtipp, warum.</para>
+        /// </summary>
+        private static void Wirtschaftszeilen(List<Zeile> zeilen, ErgebnisStromspeicherModel k,
+                                              SpeicherErgebnis erg,
+                                              ErgebnisStromspeicherModel kv,
+                                              SpeicherErgebnis vergleich)
+        {
+            string ugJahr = MyResource.Resource.SP_ERG_UG_REFERENZJAHR;
+            string ugDauer = MyResource.Resource.SP_ERG_UG_NUTZUNGSDAUER;
+            string ugNach = MyResource.Resource.SP_ERG_UG_NACHRICHTLICH;
+
+            // ---- Unterabschnitt 1: die fünf Posten des Referenzjahrs und ihre Summe ---
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_BEZUG,
+                 k.Ertrag_Bezugsersparnis, Vgl(kv, x => x.Ertrag_Bezugsersparnis), "N2", EUR_A,
+                 untergruppe: ugJahr);
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_VERGUETUNG,
+                 -k.Ertrag_Verguetung_Entgangen, Vgl(kv, x => -x.Ertrag_Verguetung_Entgangen), "N2", EUR_A,
+                 untergruppe: ugJahr);
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_NETZ,
+                 k.Ertrag_Netzerloes, Vgl(kv, x => x.Ertrag_Netzerloes), "N2", EUR_A,
+                 untergruppe: ugJahr);
+            // MINUSZEICHEN: Die Ladekosten gehen in eur[k] mit "-" ein (Arbitrage :324).
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_KOSTEN_LADUNG,
+                 -k.Kosten_Ladung, Vgl(kv, x => -x.Kosten_Ladung), "N2", EUR_A,
+                 untergruppe: ugJahr);
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_LEISTUNGSPREIS,
+                 k.Ertrag_Leistungspreis, Vgl(kv, x => x.Ertrag_Leistungspreis), "N2", EUR_A,
+                 untergruppe: ugJahr);
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_JAHR1,
+                 k.Ertrag_Jahr1, Vgl(kv, x => x.Ertrag_Jahr1), "N2", EUR_A,
+                 untergruppe: ugJahr, art: KennzahlArt.Summe,
+                 hinweis: MyResource.Resource.SP_ERG_TIP_E_A1);
+
+            // ---- Unterabschnitt 2: die Nutzungsdauer ---------------------------------
             // Investition und Annuität hängen allein an den Parametern, nicht an der
             // Betriebsstrategie - sie stehen in beiden Spalten gleich und bekommen
             // deshalb keinen Vergleichswert.
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_INVESTITION, k.Investition, null, "N2", "€");
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ANNUITAET, k.Annuitaet, null, "N2", EUR_A);
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_JAHRESUEBERSCHUSS, k.Jahresueberschuss, Vgl(kv, x => x.Jahresueberschuss), "N2", EUR_A);
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_JAHR1, k.Ertrag_Jahr1, Vgl(kv, x => x.Ertrag_Jahr1), "N2", EUR_A);
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_AEQUIVALENT, k.Ertrag_Aequivalent, Vgl(kv, x => x.Ertrag_Aequivalent), "N2", EUR_A);
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_INVESTITION,
+                 k.Investition, null, "N2", "€", untergruppe: ugDauer);
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ERTRAG_AEQUIVALENT,
+                 k.Ertrag_Aequivalent, Vgl(kv, x => x.Ertrag_Aequivalent), "N2", EUR_A,
+                 untergruppe: ugDauer, hinweis: MyResource.Resource.SP_ERG_TIP_E_AEQ);
+            // MINUSZEICHEN: dJ = E_a,aeq - A (Wirtschaftlichkeit :158).
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_ANNUITAET,
+                 -k.Annuitaet, null, "N2", EUR_A, untergruppe: ugDauer);
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_JAHRESUEBERSCHUSS,
+                 k.Jahresueberschuss, Vgl(kv, x => x.Jahresueberschuss), "N2", EUR_A,
+                 untergruppe: ugDauer, art: KennzahlArt.Summe,
+                 hinweis: MyResource.Resource.SP_ERG_TIP_DELTA_J);
 
             // Amortisation direkt aus dem Engine-Ergebnis: Es kennt die beiden Fälle
             // "nicht amortisierbar" und "> Nutzungsdauer", die der gespeicherte Satz als
             // 0 führen muss (Access nimmt kein Infinity entgegen).
-            zeilen.Add(new Zeile(GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_AMORT_STATISCH,
-                                 AmortisationText(erg.Wirtschaftlichkeit.StatischeAmortisation),
-                                 vergleich != null ? AmortisationText(vergleich.Wirtschaftlichkeit.StatischeAmortisation) : "",
-                                 "a", KennzahlStufe.Unbestimmt));
-            zeilen.Add(new Zeile(GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_AMORT_DYNAMISCH,
-                                 AmortisationText(erg.Wirtschaftlichkeit.DynamischeAmortisation),
-                                 vergleich != null ? AmortisationText(vergleich.Wirtschaftlichkeit.DynamischeAmortisation) : "",
-                                 "a", KennzahlStufe.Unbestimmt));
-            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_KAPITALWERT, k.Kapitalwert, Vgl(kv, x => x.Kapitalwert), "N2", "€");
+            double investVgl = kv != null ? kv.Investition : k.Investition;
+            string amortTip = k.Investition <= 0.0
+                ? MyResource.Resource.SP_ERG_TIP_AMORT_OHNE_INVEST : "";
 
-            return zeilen;
+            zeilen.Add(new Zeile(GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_AMORT_STATISCH,
+                                 SpeicherAnzeigeCtrl.AmortisationText(erg.Wirtschaftlichkeit.StatischeAmortisation, k.Investition),
+                                 vergleich != null
+                                     ? SpeicherAnzeigeCtrl.AmortisationText(vergleich.Wirtschaftlichkeit.StatischeAmortisation, investVgl)
+                                     : "",
+                                 "a", KennzahlStufe.Unbestimmt, ugDauer, KennzahlArt.Normal, amortTip));
+            zeilen.Add(new Zeile(GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_AMORT_DYNAMISCH,
+                                 SpeicherAnzeigeCtrl.AmortisationText(erg.Wirtschaftlichkeit.DynamischeAmortisation, k.Investition),
+                                 vergleich != null
+                                     ? SpeicherAnzeigeCtrl.AmortisationText(vergleich.Wirtschaftlichkeit.DynamischeAmortisation, investVgl)
+                                     : "",
+                                 "a", KennzahlStufe.Unbestimmt, ugDauer, KennzahlArt.Normal, amortTip));
+
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_KAPITALWERT,
+                 k.Kapitalwert, Vgl(kv, x => x.Kapitalwert), "N2", "€",
+                 untergruppe: ugDauer, art: KennzahlArt.Ergebnis,
+                 hinweis: MyResource.Resource.SP_ERG_TIP_NPV);
+
+            // ---- Unterabschnitt 3: was in keine Summe eingeht -------------------------
+            Zahl(zeilen, GRUPPE_WIRTSCHAFT, MyResource.Resource.SP_ERG_VERSCHLEISS,
+                 k.Verschleisskosten, Vgl(kv, x => x.Verschleisskosten), "N2", EUR_A,
+                 untergruppe: ugNach, art: KennzahlArt.Nachrichtlich,
+                 hinweis: MyResource.Resource.SP_ERG_TIP_K_VER);
         }
 
         /// <summary>
@@ -206,7 +330,8 @@ namespace WindowsFormsApplication1
             Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.ARB_ERG_BUDGET, a.ZyklenbudgetDcKwhProA, null, "N0", "kWh/a");
             Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.ARB_ERG_BUDGET_AUSLASTUNG,
                  a.BudgetauslastungProzent, null, "N1", "%", Budgetstufe(a));
-            Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.ARB_ERG_KVER, a.VerschleissCtKwh, null, "N3", "ct/kWh");
+            Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.ARB_ERG_KVER, a.VerschleissCtKwh, null, "N3", "ct/kWh",
+                 hinweis: MyResource.Resource.SP_ERG_TIP_K_VER);
             Zahl(zeilen, GRUPPE_SPEICHER, MyResource.Resource.ARB_ERG_PAARE,
                  a.PaareAngenommen + a.VerkaufsslotsAngenommen, null, "N0", "-");
         }
@@ -264,13 +389,15 @@ namespace WindowsFormsApplication1
 
         private static void Zahl(List<Zeile> zeilen, string gruppe, string bezeichnung,
                                  double wert, double? vergleich, string format, string einheit,
-                                 KennzahlStufe stufe = KennzahlStufe.Unbestimmt)
+                                 KennzahlStufe stufe = KennzahlStufe.Unbestimmt,
+                                 string untergruppe = "", KennzahlArt art = KennzahlArt.Normal,
+                                 string hinweis = "")
         {
             zeilen.Add(new Zeile(
                 gruppe, bezeichnung,
                 wert.ToString(format, CultureInfo.CurrentCulture),
                 vergleich.HasValue ? vergleich.Value.ToString(format, CultureInfo.CurrentCulture) : "",
-                einheit, stufe));
+                einheit, stufe, untergruppe, art, hinweis));
         }
     }
 }

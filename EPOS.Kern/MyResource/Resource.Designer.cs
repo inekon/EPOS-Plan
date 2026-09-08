@@ -39706,6 +39706,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Referenzjahr ähnelt.
+        /// </summary>
+        public static string SP_ERG_UG_REFERENZJAHR {
+            get {
+                return ResourceManager.GetString("SP_ERG_UG_REFERENZJAHR", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Über die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string SP_ERG_UG_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("SP_ERG_UG_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachrichtlich ähnelt.
+        /// </summary>
+        public static string SP_ERG_UG_NACHRICHTLICH {
+            get {
+                return ResourceManager.GetString("SP_ERG_UG_NACHRICHTLICH", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die E_a,1 — Ertrag des Referenzjahrs: Summe der Posten darüber. Vermiedener Netzbezug abzüglich entgangener Einspeisevergütung, zuzüglich Netzverkauf, abzüglich Netzladung. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_E_A1 {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_E_A1", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die E_a,äq — degradationsäquivalenter Jahresertrag: E_a,1, über die Nutzungsdauer mit dem jährlichen Kapazitätsverlust d gewichtet. Ohne Degradation gleich E_a,1. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_E_AEQ {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_E_AEQ", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔJ — Jahresüberschuss nach Kapitaldienst: E_a,äq abzüglich der Annuität A. Der Verschleiß K_ver geht nicht ein. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_DELTA_J {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_DELTA_J", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die NPV — Kapitalwert über die Nutzungsdauer: E_a,1 mal degradiertem Rentenbarwertfaktor, abzüglich der Investition I. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_NPV {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_NPV", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die K_ver — Verschleißkosten: rechnerischer Wertverlust der Zellen je ausgespeicherter kWh. Reiner Ausweis — er geht weder in E_a,1 noch in ΔJ ein. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_K_VER {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_K_VER", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die N_zyk — die vom Hersteller zugesicherte Zyklenzahl über die Lebensdauer. Ohne sie ist keine Budgetbewertung möglich. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_N_ZYK {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_N_ZYK", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die n_zyk — äquivalente Vollzyklen je Jahr: ausgespeicherte Energie geteilt durch die nutzbare Kapazität. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_N_ZYK_AEQ {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_N_ZYK_AEQ", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Investition (I = 0) ist die Amortisation nicht bestimmbar. ähnelt.
+        /// </summary>
+        public static string SP_ERG_TIP_AMORT_OHNE_INVEST {
+            get {
+                return ResourceManager.GetString("SP_ERG_TIP_AMORT_OHNE_INVEST", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Speicherrechnung – bitte die Simulation starten. ähnelt.
         /// </summary>
         public static string SP_ERG_KEIN_LAUF {

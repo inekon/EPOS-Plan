@@ -94,7 +94,12 @@
 
     private byte[]? BildSolar => Bild?.Invoke(new Bildauftrag(Bilder.Solarthermie));
 
-    private static string Zahl(double wert) => wert.ToString("F2", Kultur);
+    /// <summary>
+    /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
+    /// 08.09.2026 (W11b‑B‑13): F2 schreibt „4485", N2 schreibt „4.485" — dieselbe
+    /// Zahl, aber ab vier Stellen ohne Zaehlen lesbar. Die Kultur bleibt.
+    /// </summary>
+    private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
     private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
         <dt>@text</dt>

@@ -3998,6 +3998,39 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
   <data name="SP_ERG_KAPITALWERT" xml:space="preserve">
     <value>Kapitalwert (NPV)</value>
   </data>
+  <data name="SP_ERG_UG_REFERENZJAHR" xml:space="preserve">
+    <value>Referenzjahr</value>
+  </data>
+  <data name="SP_ERG_UG_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Über die Nutzungsdauer</value>
+  </data>
+  <data name="SP_ERG_UG_NACHRICHTLICH" xml:space="preserve">
+    <value>Nachrichtlich</value>
+  </data>
+  <data name="SP_ERG_TIP_E_A1" xml:space="preserve">
+    <value>E_a,1 — Ertrag des Referenzjahrs: Summe der Posten darüber. Vermiedener Netzbezug abzüglich entgangener Einspeisevergütung, zuzüglich Netzverkauf, abzüglich Netzladung.</value>
+  </data>
+  <data name="SP_ERG_TIP_E_AEQ" xml:space="preserve">
+    <value>E_a,äq — degradationsäquivalenter Jahresertrag: E_a,1, über die Nutzungsdauer mit dem jährlichen Kapazitätsverlust d gewichtet. Ohne Degradation gleich E_a,1.</value>
+  </data>
+  <data name="SP_ERG_TIP_DELTA_J" xml:space="preserve">
+    <value>ΔJ — Jahresüberschuss nach Kapitaldienst: E_a,äq abzüglich der Annuität A. Der Verschleiß K_ver geht nicht ein.</value>
+  </data>
+  <data name="SP_ERG_TIP_NPV" xml:space="preserve">
+    <value>NPV — Kapitalwert über die Nutzungsdauer: E_a,1 mal degradiertem Rentenbarwertfaktor, abzüglich der Investition I.</value>
+  </data>
+  <data name="SP_ERG_TIP_K_VER" xml:space="preserve">
+    <value>K_ver — Verschleißkosten: rechnerischer Wertverlust der Zellen je ausgespeicherter kWh. Reiner Ausweis — er geht weder in E_a,1 noch in ΔJ ein.</value>
+  </data>
+  <data name="SP_ERG_TIP_N_ZYK" xml:space="preserve">
+    <value>N_zyk — die vom Hersteller zugesicherte Zyklenzahl über die Lebensdauer. Ohne sie ist keine Budgetbewertung möglich.</value>
+  </data>
+  <data name="SP_ERG_TIP_N_ZYK_AEQ" xml:space="preserve">
+    <value>n_zyk — äquivalente Vollzyklen je Jahr: ausgespeicherte Energie geteilt durch die nutzbare Kapazität.</value>
+  </data>
+  <data name="SP_ERG_TIP_AMORT_OHNE_INVEST" xml:space="preserve">
+    <value>Ohne Investition (I = 0) ist die Amortisation nicht bestimmbar.</value>
+  </data>
   <data name="SP_ERG_NICHT_AMORTISIERBAR" xml:space="preserve">
     <value>nicht amortisierbar</value>
   </data>

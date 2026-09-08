@@ -74,7 +74,7 @@ public class BedarfReiterTests : BunitContext
         var seite = Zeichnen(Daten());
         string text = seite.Markup;
 
-        Assert.Contains("1234,50", text);
+        Assert.Contains("1.234,50", text);    // N2 mit Tausendertrennung (W11b-B-13)
         Assert.Contains("480,25", text);
         Assert.Contains("88,75", text);
         Assert.Contains("120,50", text);

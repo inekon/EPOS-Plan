@@ -94,7 +94,7 @@ public class WaermepumpeReiterTests : BunitContext
 
         Assert.Contains("62,50", text);       // Deckungsgrad
         Assert.Contains("-3,50", text);       // Bivalenzpunkt
-        Assert.Contains("1856", text);        // Vollbenutzungsstunden, F0
+        Assert.Contains("1.856", text);       // Vollbenutzungsstunden, N0 (W11b-B-13)
         Assert.Contains("20,22", text);       // Mindest-Spitzenkesselleistung
     }
 

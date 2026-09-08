@@ -3255,16 +3255,44 @@ body {
     max-width: 640px;
 }
 
+/* DIE KENNZAHLENLISTEN DER ERGEBNISREITER (Anwenderwunsch 08.09.2026, Befund
+   W11b-B-13: "Verbessere die Darstellung im Dialog Detaillierte Simulation").
+
+   WAS WAR: ein dreispaltiges Raster mit 2 px Zeilenabstand, ohne jede Linie,
+   die BESCHRIFTUNG in der leisen Farbe und der Wert daneben in der Textfarbe.
+   Auf dem Schirm liefen die Zeilen ineinander; welche Zahl zu welcher Zeile
+   gehoerte, fand das Auge bei zehn Zeilen nur noch mit dem Finger - und die
+   Beschriftung, also die eigentliche Information, war der leise Teil.
+
+   WAS IST: eine ruhige Tabellenform. Luft (4/5 px) und eine hauchduenne
+   Trennlinie zwischen den Zeilen, die Beschriftung in der TEXTFARBE, die
+   Wertspalte rechtsbuendig mit tabellarischen Ziffern und einer Mindestbreite,
+   die Einheit weiter leise. Die Liste nimmt die Breite ihres Blocks (1fr
+   statt max-content), damit Beschriftung und Zahl auseinanderruecken.
+   Nichts Buntes - die Aenderung ist Ruhe, keine Farbe. */
 .epos-simerg-werte {
     display: grid;
-    grid-template-columns: minmax(180px, max-content) max-content max-content;
-    gap: 2px 10px;
+    grid-template-columns: minmax(180px, 1fr) minmax(90px, max-content) max-content;
+    gap: 0 12px;
     align-items: baseline;
 }
 
-.epos-simerg-werte dt { color: var(--epos-text-leise); }
+.epos-simerg-werte dt,
+.epos-simerg-werte dd {
+    padding: 4px 0 5px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-simerg-werte dt { color: var(--epos-text); }
 .epos-simerg-werte dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
-.epos-simerg-werte .epos-simerg-einheit { color: var(--epos-text-sehr-leise); }
+
+/* Die Einheit steht links an ihrer Spalte: Sie gehoert zur Zahl davor, und
+   rechtsbuendig in einer max-content-Spalte wanderte ein kurzes "%" von der
+   Zahl weg, sobald irgendwo "MWh/a" stand. */
+.epos-simerg-werte .epos-simerg-einheit {
+    color: var(--epos-text-sehr-leise);
+    text-align: left;
+}
 
 .epos-simerg-block { display: flex; flex-direction: column; gap: 6px; }
 
@@ -3349,16 +3377,102 @@ body {
 
 /* Die Kennzahlenliste des Stromspeichers: drei Gruppen, vier Spalten, die
    Vergleichsspalte nur mit Vergleichslauf. Die Warnstufe faerbt die Zeile -
-   dieselben vier Werte wie SpWarnfarbe im Vorlaeufer. */
+   dieselben Werte wie SpWarnfarbe im Vorlaeufer.
+
+   ANWENDERWUNSCH 08.09.2026, Befund W11b-B-14 ("verbessere die Darstellung
+   Detaillierte Simulation -> Stromspeicher, insbesondere der
+   Wirtschaftlichkeit"):
+
+   1. DIE REGEL tr.epos-stufe-unbestimmt IST FORT. "Unbestimmt" ist die
+      Vorgabe von KennzahlStufe und damit die Stufe von 37 der 39 Zeilen; das
+      Grau (240,240,240) lag deshalb unter der GANZEN Tabelle, und die drei
+      Warnfarben, um die es geht, gingen darin unter. Keine Aussage ist keine
+      Warnung - sie braucht keine Farbe.
+   2. ZEILENLINIEN statt Flaeche. Zebrastreifen waeren mit den drei
+      Warnflaechen ins Gehege gekommen; eine Linie kommt ihnen nicht in die
+      Quere.
+   3. GRUPPENKOPF und UNTERABSCHNITTSKOPF sind unterscheidbar: der eine mit
+      Abstand und kraeftiger Linie, der andere leise und eingerueckt.
+   4. SUMMEN (Ertrag Referenzjahr E_a,1, Jahresueberschuss dJ) fett mit Linie
+      darueber, das ERGEBNIS (Kapitalwert) zusaetzlich eingerahmt,
+      NACHRICHTLICHES (Verschleiss K_ver) leise und kursiv. Welche Zeile was
+      ist, sagt der Kern (KennzahlArt) - hier steht nur, wie es aussieht. */
 .epos-simerg-kennzahlen { width: 100%; border-collapse: collapse; }
 .epos-simerg-kennzahlen th,
-.epos-simerg-kennzahlen td { padding: 3px 8px; text-align: left; }
-.epos-simerg-kennzahlen td.epos-simerg-zahl { text-align: right; font-variant-numeric: tabular-nums; }
+.epos-simerg-kennzahlen td { padding: 4px 10px; text-align: left; }
+
+.epos-simerg-kennzahlen thead th {
+    border-bottom: 1px solid var(--epos-rahmen);
+    color: var(--epos-text-leise);
+    font-weight: 600;
+}
+
+.epos-simerg-kennzahlen tbody td { border-bottom: 1px solid var(--epos-rahmen-leise); }
+
+.epos-simerg-kennzahlen td.epos-simerg-zahl {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    min-width: 96px;
+    white-space: nowrap;
+}
+
+.epos-simerg-kennzahlen td.epos-simerg-einheit {
+    color: var(--epos-text-sehr-leise);
+    white-space: nowrap;
+    width: 1%;
+}
+
 .epos-simerg-kennzahlen tr.epos-stufe-ok { background: rgb(215, 245, 215); }
 .epos-simerg-kennzahlen tr.epos-stufe-knapp { background: rgb(255, 240, 190); }
 .epos-simerg-kennzahlen tr.epos-stufe-ueberschritten { background: rgb(255, 205, 205); }
-.epos-simerg-kennzahlen tr.epos-stufe-unbestimmt { background: rgb(240, 240, 240); }
+
 .epos-simerg-kennzahlen tbody th { font-weight: 600; padding-top: 10px; }
+
+.epos-simerg-kennzahlen tr.epos-simerg-gruppenkopf th {
+    padding-top: 18px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--epos-rahmen);
+}
+
+.epos-simerg-kennzahlen tr.epos-simerg-untergruppe th {
+    padding-top: 12px;
+    padding-bottom: 2px;
+    padding-left: 18px;
+    color: var(--epos-text-leise);
+    font-weight: 600;
+}
+
+.epos-simerg-kennzahlen tr.epos-simerg-summe td {
+    font-weight: 700;
+    border-top: 1px solid var(--epos-text-leise);
+}
+
+.epos-simerg-kennzahlen tr.epos-simerg-ergebnis td {
+    font-weight: 700;
+    border-top: 2px solid var(--epos-rahmen);
+    border-bottom: 2px solid var(--epos-rahmen);
+}
+
+.epos-simerg-kennzahlen tr.epos-simerg-nachrichtlich td {
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+/* Die Zyklenampel steht seit W11b-B-14 UNTER IHRER GRUPPE in der Tabelle und
+   nicht mehr als loser Absatz unter allem. */
+.epos-simerg-kennzahlen tr.epos-simerg-ampelzeile td {
+    border-bottom: 0;
+    padding-top: 6px;
+}
+
+/* Die Kennzahlenliste nimmt die GANZE Zeile des Spaltenrasters (W11b-B-14).
+   Ohne das sass sie in EINER Spalte des auto-fit-Rasters und war auf dessen
+   Mindestbreite von 320 Bildpunkten gequetscht, waehrend rechts daneben nichts
+   stand - das Diagramm darueber belegt ohnehin schon die ganze Zeile. */
+.epos-simerg-kennzahlenzeile {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
 
 /* Der Variantenvergleich: beste Zeile gruen hinterlegt (FARBE_BESTE
    ARGB(222,241,222)), aktive fett, Fehlerzeile in Firebrick. */

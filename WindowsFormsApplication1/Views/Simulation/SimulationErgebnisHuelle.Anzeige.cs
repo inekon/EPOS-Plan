@@ -389,8 +389,12 @@ namespace WindowsFormsApplication1
                  string.IsNullOrEmpty(k.Berechnungsart) ? un : k.Berechnungsart),
                 (MyResource.Resource.SP_ERG_KERN_ERTRAG, k.Ertrag_Aequivalent.ToString("N2", kultur)),
                 (MyResource.Resource.SP_ERG_KERN_UEBERSCHUSS, k.Jahresueberschuss.ToString("N2", kultur)),
+                // Die Kachel nennt dieselbe Angabe wie die Kennzahlenzeile darunter - mit
+                // der Investition als Prüfstein, damit nicht die eine „0,0" und die andere
+                // „–" sagt (Anwenderwunsch 08.09.2026, W11b‑B‑14).
                 (MyResource.Resource.SP_ERG_KERN_AMORTISATION,
-                 SpeicherAnzeigeCtrl.AmortisationText(erg.Wirtschaftlichkeit.StatischeAmortisation)),
+                 SpeicherAnzeigeCtrl.AmortisationText(erg.Wirtschaftlichkeit.StatischeAmortisation,
+                                                      k.Investition)),
                 (MyResource.Resource.SP_ERG_KERN_VOLLZYKLEN, k.Vollzyklen.ToString("N1", kultur)),
                 // Ohne Erzeugung ist die Eigenverbrauchsquote unbestimmt (0/0), nicht null.
                 (MyResource.Resource.SP_ERG_KERN_EIGENVERBRAUCH,

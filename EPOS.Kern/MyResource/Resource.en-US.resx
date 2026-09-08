@@ -3982,6 +3982,39 @@ Please run the simulation with the boiler first.</value>
   <data name="SP_ERG_KAPITALWERT" xml:space="preserve">
     <value>Net present value (NPV)</value>
   </data>
+  <data name="SP_ERG_UG_REFERENZJAHR" xml:space="preserve">
+    <value>Reference year</value>
+  </data>
+  <data name="SP_ERG_UG_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Over the service life</value>
+  </data>
+  <data name="SP_ERG_UG_NACHRICHTLICH" xml:space="preserve">
+    <value>For information</value>
+  </data>
+  <data name="SP_ERG_TIP_E_A1" xml:space="preserve">
+    <value>E_a,1 — reference-year yield: the sum of the items above. Avoided grid purchase less forgone feed-in payment, plus grid sales, less grid charging.</value>
+  </data>
+  <data name="SP_ERG_TIP_E_AEQ" xml:space="preserve">
+    <value>E_a,eq — degradation-equivalent annual yield: E_a,1 weighted over the service life by the annual capacity loss d. Without degradation it equals E_a,1.</value>
+  </data>
+  <data name="SP_ERG_TIP_DELTA_J" xml:space="preserve">
+    <value>dJ — annual surplus after capital service: E_a,eq less the annuity A. Wear K_wear is not included.</value>
+  </data>
+  <data name="SP_ERG_TIP_NPV" xml:space="preserve">
+    <value>NPV — net present value over the service life: E_a,1 times the degraded annuity factor, less the investment I.</value>
+  </data>
+  <data name="SP_ERG_TIP_K_VER" xml:space="preserve">
+    <value>K_wear — wear cost: the calculated loss in cell value per kWh discharged. Shown for information only — it enters neither E_a,1 nor dJ.</value>
+  </data>
+  <data name="SP_ERG_TIP_N_ZYK" xml:space="preserve">
+    <value>N_cyc — the number of cycles guaranteed by the manufacturer over the service life. Without it no budget assessment is possible.</value>
+  </data>
+  <data name="SP_ERG_TIP_N_ZYK_AEQ" xml:space="preserve">
+    <value>n_cyc — equivalent full cycles per year: energy discharged divided by the usable capacity.</value>
+  </data>
+  <data name="SP_ERG_TIP_AMORT_OHNE_INVEST" xml:space="preserve">
+    <value>Without an investment (I = 0) the payback period cannot be determined.</value>
+  </data>
   <data name="SP_ERG_NICHT_AMORTISIERBAR" xml:space="preserve">
     <value>not amortisable</value>
   </data>

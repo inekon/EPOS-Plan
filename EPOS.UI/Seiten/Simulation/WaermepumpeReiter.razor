@@ -46,7 +46,7 @@
                     @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, Zahl(Daten.StromverbrauchMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, Zahl(Daten.HeizstabStromverbrauchMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN,
-                               Daten.Vollbenutzungsstunden.ToString("F0", Kultur), "h/a")
+                               Daten.Vollbenutzungsstunden.ToString("N0", Kultur), "h/a")
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_MIN_SPK_LEISTUNG, Zahl(Daten.MinSpkLeistungKw), "kW")
 
@@ -123,9 +123,9 @@
                             <td>@sp.Bezeichner</td>
                             <td>@sp.Rolle</td>
                             <td class="epos-simerg-zahl">@sp.KapazitaetKwh.ToString("F1", Kultur)</td>
-                            <td class="epos-simerg-zahl">@sp.LadungKwh.ToString("F0", Kultur)</td>
-                            <td class="epos-simerg-zahl">@sp.EntladungKwh.ToString("F0", Kultur)</td>
-                            <td class="epos-simerg-zahl">@sp.VerlusteKwh.ToString("F0", Kultur)</td>
+                            <td class="epos-simerg-zahl">@sp.LadungKwh.ToString("N0", Kultur)</td>
+                            <td class="epos-simerg-zahl">@sp.EntladungKwh.ToString("N0", Kultur)</td>
+                            <td class="epos-simerg-zahl">@sp.VerlusteKwh.ToString("N0", Kultur)</td>
                             @* ETAPPE D4: Beim KOMBISPEICHER laufen beide Kanaele ueber EINEN
                                Vorrat; die Kennzahl misst dann den Jahresdurchsatz. Der
                                gespeicherte Wert bleibt unveraendert, die Anzeige markiert
@@ -239,7 +239,12 @@
     private byte[]? BildStrom => Bild?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch));
     private byte[]? BildTemperaturen => Bild?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen));
 
-    private static string Zahl(double wert) => wert.ToString("F2", Kultur);
+    /// <summary>
+    /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
+    /// 08.09.2026 (W11b‑B‑13): F2 schreibt „4485", N2 schreibt „4.485" — dieselbe
+    /// Zahl, aber ab vier Stellen ohne Zaehlen lesbar. Die Kultur bleibt.
+    /// </summary>
+    private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
     private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
         <dt>@text</dt>

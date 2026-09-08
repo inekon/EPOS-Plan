@@ -263,7 +263,7 @@ public class ErzeugerReiterTests : BunitContext
 
         Assert.Contains("Vbh thermisch, Summe Module", seite.Markup);
         Assert.Contains("Vbh thermisch, Mittel Module", seite.Markup);
-        Assert.Contains("1505", seite.Markup);
+        Assert.Contains("1.505", seite.Markup);   // N0 (W11b-B-13)
     }
 
     /// <summary>Ohne elektrische Nennleistung steht „—" und keine erfundene Zahl.</summary>
@@ -354,7 +354,7 @@ public class ErzeugerReiterTests : BunitContext
     {
         var seite = PvZeichnen();
         Assert.Contains("W/m²", seite.Markup);
-        Assert.Contains("1058,93", seite.Markup);
+        Assert.Contains("1.058,93", seite.Markup);   // N2 (W11b-B-13)
         Assert.DoesNotContain(">kW<", seite.Markup);
     }
 

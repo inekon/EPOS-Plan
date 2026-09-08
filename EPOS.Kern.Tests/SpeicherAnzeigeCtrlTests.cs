@@ -112,6 +112,74 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("amort", t.ToLowerInvariant());
         }
 
+        /// <summary>
+        /// <b>Kein „−0,0“</b> (Anwenderwunsch 08.09.2026, W11b‑B‑14). Die dynamische
+        /// Amortisation rechnet <c>-ln(1 - I·i/E)/ln(1+i)</c>; bei <c>I = 0</c> ist der
+        /// Zähler <c>-ln(1) = -0</c>, und ein negatives Null bleibt in IEEE 754 negativ.
+        /// <c>"N1"</c> schrieb dafür ein Minuszeichen vor eine Null.
+        /// </summary>
+        [Theory]
+        [InlineData(0.0)]
+        [InlineData(-0.0)]
+        [InlineData(-0.04)]
+        public void AmortisationText_schreibt_kein_negatives_Null(double jahre)
+        {
+            using var _ = new DeutscheZahlen();
+
+            string t = SpeicherAnzeigeCtrl.AmortisationText(Amortisation.Jahreswert(jahre));
+
+            Assert.DoesNotContain("-", t);
+            Assert.DoesNotContain("\u2212", t);
+            Assert.Equal("0,0", t);
+        }
+
+        /// <summary>
+        /// Eine Amortisationszeit von „0,0 a“ behauptet, der Speicher habe sich sofort
+        /// bezahlt gemacht. Ohne Investition (I = 0) ist sie gar nicht bestimmbar — die
+        /// Überladung mit der Investition sagt das mit dem Gedankenstrich, den die Seite
+        /// für jede andere unbestimmte Kennzahl führt.
+        /// </summary>
+        [Fact]
+        public void AmortisationText_ohne_Investition_ist_unbestimmt()
+        {
+            using var _ = new DeutscheZahlen();
+
+            Assert.Equal(SpeicherKennzahlenBlock.UNBESTIMMT,
+                         SpeicherAnzeigeCtrl.AmortisationText(Amortisation.Jahreswert(0.0), 0.0));
+            Assert.Equal(SpeicherKennzahlenBlock.UNBESTIMMT,
+                         SpeicherAnzeigeCtrl.AmortisationText(Amortisation.Jahreswert(7.25), -1.0));
+
+            // Mit Investition bleibt es bei der Zahl bzw. beim Klartext des Sonderfalls.
+            Assert.Equal("12,5", SpeicherAnzeigeCtrl.AmortisationText(Amortisation.Jahreswert(12.5), 9000.0));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_ERG_NICHT_AMORTISIERBAR,
+                         SpeicherAnzeigeCtrl.AmortisationText(Amortisation.NichtAmortisierbar, 9000.0));
+        }
+
+        /// <summary>
+        /// Wie <see cref="DeutscheOberflaeche"/>, aber mit der ZAHLENkultur dazu — die
+        /// Amortisation wird mit <c>CultureInfo.CurrentCulture</c> formatiert.
+        /// </summary>
+        private sealed class DeutscheZahlen : IDisposable
+        {
+            private readonly System.Globalization.CultureInfo _oberflaeche =
+                System.Threading.Thread.CurrentThread.CurrentUICulture;
+            private readonly System.Globalization.CultureInfo _zahlen =
+                System.Threading.Thread.CurrentThread.CurrentCulture;
+
+            public DeutscheZahlen()
+            {
+                var de = new System.Globalization.CultureInfo("de-DE");
+                System.Threading.Thread.CurrentThread.CurrentUICulture = de;
+                System.Threading.Thread.CurrentThread.CurrentCulture = de;
+            }
+
+            public void Dispose()
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture = _oberflaeche;
+                System.Threading.Thread.CurrentThread.CurrentCulture = _zahlen;
+            }
+        }
+
         // ------------------------------------------------------------ CO2 (W11-B31)
 
         /// <summary>
