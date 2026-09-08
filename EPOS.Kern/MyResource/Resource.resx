@@ -16226,4 +16226,46 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="IMP_KAT_SP_CHEMIE" xml:space="preserve">
     <value>Zellchemie</value>
   </data>
+  <data name="PVS_P1_OHNE_BETA" xml:space="preserve">
+    <value>ohne beta_OC mit Faktor {0} gerechnet</value>
+  </data>
+  <data name="PVS_HINWEIS_ISC_125" xml:space="preserve">
+    <value>DC-Leitungen, Sicherungen und Schalter sind mit dem 1,25-fachen Kurzschlussstrom zu bemessen; das pr&#252;ft dieses Werkzeug nicht &#8212; P4 rechnet allein die thermische Korrektur.</value>
+  </data>
+  <data name="PVS_P4_ROT_ISC" xml:space="preserve">
+    <value>I {0} A &gt; {1} A am MPPT {2} &#8212; &#252;ber dem Kurzschlussstrom des Eingangs, das Ger&#228;t kann Schaden nehmen</value>
+  </data>
+  <data name="PVS_P4_GELB" xml:space="preserve">
+    <value>I {0} A &gt; {1} A am MPPT {2} &#8212; Leistung wird abgeregelt</value>
+  </data>
+  <data name="WRK_LBL_I_SC_MAX" xml:space="preserve">
+    <value>max. Kurzschlussstrom je MPPT:</value>
+  </data>
+  <data name="PVS_LBL_TEMPERATUREN" xml:space="preserve">
+    <value>Auslegungstemperaturen:</value>
+  </data>
+  <data name="PVS_LBL_T_KALT" xml:space="preserve">
+    <value>kalt [&#176;C]</value>
+  </data>
+  <data name="PVS_LBL_T_HEISS" xml:space="preserve">
+    <value>hei&#223; [&#176;C]</value>
+  </data>
+  <data name="PVS_TIP_TEMPERATUREN" xml:space="preserve">
+    <value>Der kalte Fall bestimmt die h&#246;chste Strangspannung (P1, P3), der hei&#223;e Fall die niedrigste MPP-Spannung und den h&#246;chsten Strom (P2, P4). Leer hei&#223;t: &#8722;10 &#176;C und +70 &#176;C Zelltemperatur.</value>
+  </data>
+  <data name="PVS_BTN_TVORSCHLAG" xml:space="preserve">
+    <value>Vorschlag aus Klimadaten &#252;bernehmen</value>
+  </data>
+  <data name="PVS_TEMP_HERLEITUNG" xml:space="preserve">
+    <value>Vorschlag aus den Klimadaten: kalt = Jahresminimum der Au&#223;entemperatur {0} &#176;C; hei&#223; = {1} &#176;C (Jahresmaximum) + (T_NOCT {2} &#176;C &#8722; 20) &#183; 1000/800 = {3} &#176;C Zelltemperatur.</value>
+  </data>
+  <data name="PVS_TEMP_OHNE_KLIMA" xml:space="preserve">
+    <value>Die Klimadaten des Projekts f&#252;hren keine Au&#223;entemperaturreihe &#8212; kein Vorschlag m&#246;glich.</value>
+  </data>
+  <data name="PVS_TEMP_GELTEND" xml:space="preserve">
+    <value>Es gelten {0} &#176;C kalt und {1} &#176;C hei&#223; (leer = Vorgabe {2} &#176;C / {3} &#176;C).</value>
+  </data>
+  <data name="PVS_LAUF_VORSPANN" xml:space="preserve">
+    <value>PV-Anlage &#8222;{0}&#8220;: {1}</value>
+  </data>
 </root>

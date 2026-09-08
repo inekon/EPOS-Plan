@@ -1,22 +1,41 @@
 ﻿# Modul, Strang und Wechselrichter — Regeln, Meldungen, Auslegung
 
-**Stand 08.09.2026, Rev. 2.** Rev. 1 (ebenfalls 08.09.2026) beantwortete den Anwenderwunsch
+**Stand 09.09.2026, Rev. 3.** Rev. 1 (08.09.2026) beantwortete den Anwenderwunsch
 „Wie sind die Regeln, damit Module und Wechselrichter zusammenpassen; welche Meldungen kann es
 geben; erstelle eine Dokumentation und eine Methode zur Unterstützung der passenden Auswahl".
-Rev. 2 ergänzt die **Grundlagen** (Kennwerte, STC, Temperaturgang mit Einheiten), den
-**Normbezug**, ein durchgerechnetes **Zahlenbeispiel** und die **offenen Punkte**; sie
-berichtigt die Meldungstexte auf den Stand nach Befund W6‑B‑4 und dient zugleich als
-Hintergrundtext für die Programmhilfe im Wiki.
+Rev. 2 (08.09.2026) ergänzte die **Grundlagen** (Kennwerte, STC, Temperaturgang mit Einheiten),
+den **Normbezug**, ein durchgerechnetes **Zahlenbeispiel** und die **offenen Punkte**.
+
+**Rev. 3 schreibt fünf umgesetzte Änderungen fest** (Anwenderentscheid vom 09.09.2026: „setze
+Empfehlungen 1–5 um", Kennungen **W6‑B‑9** bis **W6‑B‑13**, Migrationsschritt **70**):
+
+| Kennung | Was sich geändert hat | war offener Punkt |
+|---|---|---|
+| **W6‑B‑9** | **P1 rechnet ohne `beta_OC` weiter** — mit dem Rückfall `U_oc,kalt = 1,15 · U_oc,STC`. Der Satz sagt es. Dazu ein Werkzeugtipp, dass die Bemessung mit 1,25 · I_sc ausserhalb dieses Werkzeugs liegt. | O‑4 (und O‑1, soweit dokumentierbar) |
+| **W6‑B‑10** | **P4 ist zweistufig**: über dem neuen Katalogfeld `I_Sc_Max` rot, nur über `I_Dc_Max` gelb („Leistung wird abgeregelt"). Ohne `I_Sc_Max` wie bisher. | O‑9 |
+| **W6‑B‑11** | **Die zwei Auslegungstemperaturen sind Projektparameter** mit den bisherigen Werten als Vorgabe, dazu ein Knopf „Vorschlag aus Klimadaten übernehmen". | O‑3 |
+| **W6‑B‑12** | **P8 prüft gegen den gespeicherten Anlagenwert** und kann damit anschlagen. | O‑8 |
+| **W6‑B‑13** | **Die Prüfung läuft auch beim Simulationsstart** und schreibt rote Befunde als Warnung, gelbe als Hinweis in die Laufhinweise. | O‑6 |
+
+Offen bleiben **O‑1** (Sicherheitsfaktor 1,25 als eigene Prüfung), **O‑2**, **O‑5**, **O‑7**
+und **O‑10**; die Tabelle in Abschnitt 10 führt den Stand jedes Punktes.
+
+**Die Word-Fassung wird nicht mehr gepflegt** (Anwenderentscheid 09.09.2026). „Auslegung Und
+Prüfung Von PV-Anlagen.docx" bleibt als Ausdruck des Standes vom 08.09.2026 liegen; ihre
+Formeln sind Bilder und damit für Wiki, Suche und Programmhilfe nicht verwendbar, und ihre
+Einheiten- und Normaussagen sind an mehreren Stellen falsch (Prüfbericht A1 bis A6, A14 bis
+A19). **Führende Fassung ist dieses Dokument.**
 
 Grundlage ist Kapitel 4.2 des `Konzept_Wechselrichter_EPOS-Plan.md`; gerechnet wird in
-`EPOS.Kern/Allgemein/Import/StrangPlausibilitaet.cs` (die Prüfung) und
-`EPOS.Kern/Allgemein/Import/StrangAuslegung.cs` (die Auslegungshilfe). Der Abgleich dieser
-Fassung gegen den Code und gegen die Word-Fassung „Auslegung Und Prüfung Von PV-Anlagen.docx"
-steht in `K:\pv2\pv_pruefbericht.md`.
+`EPOS.Kern/Allgemein/Import/StrangPlausibilitaet.cs` (die Prüfung),
+`EPOS.Kern/Allgemein/Import/StrangAuslegung.cs` (die Auslegungshilfe) und
+`EPOS.Kern/Allgemein/Import/Auslegungstemperaturen.cs` (der Klimadatenvorschlag). Der Abgleich
+der Fassung Rev. 2 gegen den Code und gegen die Word-Fassung steht in
+`K:\pv2\pv_pruefbericht.md`.
 
 *Gliederung gegenüber Rev. 1: 1 Begriffe (erweitert) · 2 Grundlagen (neu) · 3 Normbezug (neu) ·
 4 = alt 2 · 5 Rechenbeispiel (neu) · 6 = alt 3 · 7 = alt 4 · 8 = alt 5 · 9 = alt 6 ·
-10 Offene Punkte (neu).*
+10 Offene Punkte (neu). Rev. 3 ändert 1, 4, 6, 9 und 10 und ergänzt 4.1.*
 
 ## 1 Die Begriffe
 
@@ -28,10 +47,15 @@ steht in `K:\pv2\pv_pruefbericht.md`.
 | **Gerät** | ein physischer Wechselrichter; Stränge mit derselben **Gerätenummer** hängen am selben Gerät, ein zweites Gerät desselben Typs bekommt Gerät 2 | Spalte „Gerät" |
 | **DC/AC** | Σ P_STC der Module am Gerät ÷ AC-Nennleistung des Geräts | Ampel je Gerät |
 
-Zwei Auslegungstemperaturen nach üblicher Praxis: **−10 °C** ist der kalte Fall (höchste
-Spannung), **+70 °C Zelltemperatur** der heiße (niedrigste Spannung, höchster Strom). Für die
+Zwei Auslegungstemperaturen: **−10 °C** ist der kalte Fall (höchste Spannung), **+70 °C
+Zelltemperatur** der heiße (niedrigste Spannung, höchster Strom). **Seit W6‑B‑11 sind das
+Vorgaben, keine Konstanten** — beide stehen als Projektparameter in
+`Tab_Einstellungen.Ausleg_T_Kalt` und `…Ausleg_T_Heiss` und lassen sich im Abschnitt
+„Wechselrichter und Stränge" ändern; leer heisst „Vorgabe" (Abschnitt 4.1). Für die
 MPP-Spannung setzt EPOS-Plan `beta_OC` ein; der Katalog führt keinen eigenen Koeffizienten.
-Das ist die Näherung im Werkzeugtipp jeder Ampelzeile.
+Das ist die Näherung im Werkzeugtipp jeder Ampelzeile — dort steht seit W6‑B‑9 auch der Satz,
+dass die Bemessung von DC-Leitungen, Sicherungen und Schaltern mit dem 1,25-fachen
+Kurzschlussstrom ausserhalb dieses Werkzeugs liegt.
 
 ## 2 Grundlagen: Kennwerte, STC und Temperaturgang
 
@@ -171,10 +195,10 @@ Ein **fehlender Wert** (0 oder leer) macht die betroffene Prüfung **gelb** und 
 
 | Nr. | Prüfung | Formel | Farbe bei Verletzung |
 |---|---|---|---|
-| **P1** | Leerlaufspannung im kalten Fall | n · [U_oc + beta_OC·(−10 − 25)] ≤ U_Dc_Max | **rot** — das Gerät kann bei Frost und Sonne Schaden nehmen |
-| **P2** | MPP-Fenster im heißen Fall | n · [U_mpp + beta_OC·(70 − 25)] ≥ U_Mpp_Min | **rot** — der Strang regelt im Sommer ab |
-| **P3** | MPP-Fenster im kalten Fall | n · [U_mpp + beta_OC·(−10 − 25)] ≤ U_Mpp_Max | **gelb** — das Gerät regelt an der Grenze |
-| **P4** | Eingangsstrom je MPPT | Σ p · [I_sc + alpha_SC·(70 − 25)] ≤ I_Dc_Max | **rot** |
+| **P1** | Leerlaufspannung im kalten Fall | n · [U_oc + beta_OC·(T_kalt − 25)] ≤ U_Dc_Max<br>**ohne `beta_OC`:** n · U_oc · **1,15** | **rot** — das Gerät kann bei Frost und Sonne Schaden nehmen |
+| **P2** | MPP-Fenster im heißen Fall | n · [U_mpp + beta_OC·(T_heiss − 25)] ≥ U_Mpp_Min | **rot** — der Strang regelt im Sommer ab |
+| **P3** | MPP-Fenster im kalten Fall | n · [U_mpp + beta_OC·(T_kalt − 25)] ≤ U_Mpp_Max | **gelb** — das Gerät regelt an der Grenze |
+| **P4** | Eingangsstrom je MPPT | Σ p · [I_sc + alpha_SC·(T_heiss − 25)] ≤ **I_Sc_Max**<br>und ≤ I_Dc_Max | **rot** über `I_Sc_Max`; **gelb** nur über `I_Dc_Max`<br>ohne `I_Sc_Max`: **rot** über `I_Dc_Max` |
 | **P5** | Strangzahl je MPPT | Σ p ≤ Stränge_je_MPPT | **gelb** |
 | **P6** | DC/AC-Verhältnis | 1,0 ≤ Σ P_STC ÷ P_AC_Nenn ≤ 1,5 | **gelb**, in beide Richtungen |
 | **P7** | DC-Eingangsleistung | Σ P_STC ≤ P_Dc_Max | **gelb** |
@@ -183,18 +207,58 @@ Ein **fehlender Wert** (0 oder leer) macht die betroffene Prüfung **gelb** und 
 P1 bis P3 laufen **je Strang**, P4 bis P7 **je Gerät** (P4/P5 je Tracker), P8 je Anlage.
 Die Farbe des Abschnitts ist die schlechteste seiner Zeilen.
 
+`T_kalt` und `T_heiss` sind seit **W6‑B‑11** die Auslegungstemperaturen des Projekts mit den
+Vorgaben −10 °C und +70 °C (Abschnitt 4.1). Die Prüfung läuft seit **W6‑B‑13** nicht nur als
+Ampel im Dialog, sondern auch **beim Simulationsstart**: Rote Befunde stehen als *Warnung*,
+gelbe als *Hinweis* in den Laufhinweisen, mit dem Vorspann „PV-Anlage „…":" vor demselben
+Satz, den die Ampel zeigt. Sie blockiert nichts.
+
 **Was jede Regel bedeutet und wie man sie einhält:**
 
 | Nr. | Warum sie da ist | Abhilfe bei Verletzung |
 |---|---|---|
-| **P1** | Die höchste Spannung der Anlage überhaupt. Wird `U_Dc_Max` überschritten, ist die Eingangsstufe des Geräts gefährdet, und die Herstellergarantie erlischt. Die einzige zerstörungsrelevante Prüfung — deshalb rot. | weniger Module in Reihe; oder ein Gerät mit höherer `U_Dc_Max` |
+| **P1** | Die höchste Spannung der Anlage überhaupt. Wird `U_Dc_Max` überschritten, ist die Eingangsstufe des Geräts gefährdet, und die Herstellergarantie erlischt. Die einzige zerstörungsrelevante Prüfung — deshalb rot. **Fehlt `beta_OC`, entfällt sie seit W6‑B‑9 NICHT mehr**: Sie rechnet dann mit `1,15 · U_oc,STC`, dem in der Auslegungspraxis für kristallines Silizium üblichen Rückfall, und der Satz sagt „ohne beta_OC mit Faktor 1,15 gerechnet". Fehlt auch `U_oc`, bleibt es bei „Werte fehlen". | weniger Module in Reihe; oder ein Gerät mit höherer `U_Dc_Max`; `beta_OC` im Modulkatalog pflegen |
 | **P2** | Fällt die Strangspannung im Sommer unter die untere Fenstergrenze, findet der Tracker keinen Arbeitspunkt: Das Gerät drosselt oder speist gar nicht mehr ein — und das genau in den ertragsstärksten Monaten. Rot, weil es den Ertragszweck der Anlage trifft. | mehr Module in Reihe; oder ein Gerät mit niedrigerer `U_Mpp_Min` |
 | **P3** | Über der oberen Fenstergrenze regelt das Gerät den Arbeitspunkt künstlich ab. Nichts geht kaputt (`U_Dc_Max` hält, das prüft P1), es kostet nur Ertrag — deshalb gelb. | weniger Module in Reihe |
-| **P4** | Der Strom aller parallelen Stränge eines Trackers addiert sich. Über `I_Dc_Max` werden Leiterbahnen und Klemmen thermisch überlastet. Rot. | weniger Stränge parallel am Tracker; Stränge auf mehrere Tracker verteilen (Spalte MPPT); zweites Gerät |
+| **P4** | Der Strom aller parallelen Stränge eines Trackers addiert sich. **Seit W6‑B‑10 zweistufig**, weil Datenblätter zwei Ströme je Tracker führen: über dem **Kurzschlussstrom** `I_Sc_Max` werden Leiterbahnen und Klemmen thermisch überlastet — das Gerät kann Schaden nehmen (**rot**); nur über dem **Arbeitsstrom** `I_Dc_Max` regelt es die Leistung ab — ein Ertragsverlust, kein Schaden (**gelb**). Ist `I_Sc_Max` nicht gepflegt — der Regelfall, denn weder die CEC-Liste noch das OND-Format führen ihn —, trägt `I_Dc_Max` beide Bedeutungen und die Überschreitung bleibt **rot**. | weniger Stränge parallel am Tracker; Stränge auf mehrere Tracker verteilen (Spalte MPPT); zweites Gerät; `I_Sc_Max` aus dem Datenblatt nachpflegen |
 | **P5** | Zahl der Anschlussklemmen je Tracker. Mehr Stränge erfordern eine externe Parallelverschaltung mit eigener Absicherung — eine Bauentscheidung, keine Rechengröße. Gelb. | Stränge auf Tracker verteilen |
 | **P6** | Das Inverter Load Ratio. Unter 1,0 ist das Gerät überdimensioniert (bezahlte, ungenutzte AC-Leistung); über 1,5 wird zu viel Mittagsspitze abgeschnitten (Clipping). Gelb in beide Richtungen; das Band ist eine Empfehlung, keine Grenze. | Modulzahl am Gerät ändern; anderes Gerät |
 | **P7** | Absolute DC-Anschlussgrenze des Herstellers, meist wegen der Dauerwärme im Gehäuse. Überschreitung kostet oft die Garantie. Gelb, weil elektrisch bereits P1 und P4 greifen. | weniger Module am Gerät; zweites Gerät |
-| **P8** | Zusicherung: Die Strangtabelle und der Anlagenwert „Anzahl Module" dürfen nicht auseinanderlaufen. Seit Entscheid Q9 leitet die Maske den Anlagenwert ohnehin aus der Tabelle ab. Gelb. | Strangtabelle oder Anlagenwert angleichen |
+| **P8** | Zusicherung: Die Strangtabelle und der Anlagenwert „Anzahl Module" dürfen nicht auseinanderlaufen. **Seit W6‑B‑12 vergleicht sie gegen den GESPEICHERTEN Anlagenwert** und kann damit anschlagen; bis dahin gab die Maske die abgeleitete Summe herein, und der Vergleich war immer erfüllt. Sie trifft damit genau den Fall, für den sie gedacht ist: einen Altbestand, dessen zwei Zahlen auseinandergelaufen sind. Der Q9-Abgleich (jede Änderung schreibt die Summe zurück) macht sie beim nächsten Handgriff wieder still. Gelb. | Strangtabelle oder Anlagenwert angleichen |
+
+### 4.1 Die Auslegungstemperaturen (seit 09.09.2026, **W6‑B‑11**)
+
+`T_kalt` und `T_heiss` waren bis Rev. 2 zwei Konstanten für jedes Projekt. Das war der Grund
+des offenen Punkts O‑3: IEC 62548 verlangt die **am Standort niedrigste zu erwartende
+Temperatur**, keine feste Zahl — −10 °C sind für Norddeutschland großzügig und für das
+Alpenvorland knapp.
+
+Seither sind es **Projektparameter** (`Tab_Einstellungen.Ausleg_T_Kalt` und
+`…Ausleg_T_Heiss`, Migrationsschritt 70). **Leer heisst Vorgabe**: −10 °C und +70 °C — eine
+Datenbank ohne gepflegte Werte verhält sich Zeichen für Zeichen wie vorher. Bedient werden sie
+im Abschnitt „Wechselrichter und Stränge" in der Zeile *Auslegungstemperaturen: kalt [°C] ·
+heiß [°C]*; darunter steht, welche Werte gerade gelten. Eine Änderung wirkt **sofort** auf die
+Ampel.
+
+**Der Knopf „Vorschlag aus Klimadaten übernehmen"** rechnet aus dem Klimadatensatz des
+Projekts:
+
+| | Vorschlag | Herkunft |
+|---|---|---|
+| **kalt** | Minimum der Außentemperatur der Jahresreihe | `Tab_Solar`, 8 760 Stundenwerte des Projekt-Klimadatensatzes |
+| **heiß** | `T_amb,max + (T_NOCT − 20) · 1000/800` | Jahresmaximum der Außentemperatur und `T_NOCT` des **Anlagenmoduls** |
+
+Das ist dieselbe Zelltemperaturformel, mit der auch die Ertragsrechnung arbeitet
+(`T_Zelle = T_Aussen + G/800 · (T_NOCT − 20)`), nur bei Volleinstrahlung 1 000 W/m². Ein
+`T_NOCT` ausserhalb von 20…60 °C gilt als nicht gepflegt und wird durch **45 °C** ersetzt —
+dieselbe Regel wie im Rechenweg, und aus demselben Grund: Der Modulbestand führt dort
+nachweislich den Kurzschlussstrom (Paket‑A‑Befund A1).
+
+Der Knopf **schlägt vor und übernimmt erst auf Druck**; eine Herleitungszeile nennt alle vier
+Zahlen. Die Auslegungstemperatur ist eine Entscheidung des Planers, keine Ableitung: Das
+Jahresminimum eines Testreferenzjahres ist nicht dieselbe Größe wie die standortbezogen
+niedrigste zu erwartende Temperatur, und eine unbelüftete Dachfläche wird heißer als jede
+Formel sagt. Ohne Klimareihe bleibt es beim alten Wert, und der Satz nennt den Grund.
 
 ## 5 Das Rechenbeispiel
 
@@ -275,6 +339,7 @@ weiter auf ⌊3000 ÷ 275,19⌋ = **10** Module je Gerät.
 | `MPP 357…460 V im Fenster 210…500 V` | P2 und P3 eingehalten | — |
 | `MPP im Sommer 357 V < 590 V — der Strang regelt ab` | P2 verletzt: im Sommer sinkt die Strangspannung unter das Fenster, das Gerät findet keinen Arbeitspunkt | mehr Module in Reihe oder Gerät mit niedrigerem U_Mpp_Min |
 | `MPP im Winter … V > … V — das Gerät regelt an der Grenze` | P3 verletzt | weniger Module in Reihe |
+| `ohne beta_OC mit Faktor 1,15 gerechnet` | **W6‑B‑9**: steht hinter dem P1-Befund, wenn der Temperaturkoeffizient fehlt und P1 über den Rückfall gerechnet wurde | `beta_OC` im Modulkatalog pflegen |
 | `Werte fehlen: …` | nicht prüfbar — siehe die Liste unten | Katalogwerte pflegen |
 | `passend wären 4…14 Module in Reihe` (auch: `mindestens 4`) | **Auslegungshilfe**, steht hinter einem roten oder gelben Strangbefund | die genannte Reihe wählen |
 | `keine Reihe passt zu diesem Gerät, anderes Gerät wählen` | Untergrenze aus P2 liegt über der Obergrenze aus P1/P3 | anderes Gerät |
@@ -298,7 +363,9 @@ PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus �
 | Text | Bedeutung | Abhilfe |
 |---|---|---|
 | `I 13,72 A ≤ 30,0 A` | P4 eingehalten (größter Trackerstrom) | — |
-| `I … A > … A am MPPT n` | P4 verletzt | weniger Stränge parallel am Tracker, Stränge auf Tracker verteilen (Spalte MPPT), zweites Gerät |
+| `I … A > … A am MPPT n` | P4 verletzt (**rot**) — ohne gepflegten `I_Sc_Max` | weniger Stränge parallel am Tracker, Stränge auf Tracker verteilen (Spalte MPPT), zweites Gerät |
+| `I … A > … A am MPPT n — über dem Kurzschlussstrom des Eingangs, das Gerät kann Schaden nehmen` | **W6‑B‑10**: P4 Stufe 1 (**rot**) — der Strom liegt über `I_Sc_Max` | wie oben |
+| `I … A > … A am MPPT n — Leistung wird abgeregelt` | **W6‑B‑10**: P4 Stufe 2 (**gelb**) — über `I_Dc_Max`, aber unter `I_Sc_Max`; kein Schaden, nur Ertragsverlust | wie oben, oder hinnehmen |
 | `3 Stränge am MPPT 1, zulässig sind 2` | P5 verletzt | Stränge auf Tracker verteilen |
 | `DC/AC 1,10` | P6 eingehalten | — |
 | `DC/AC 0,88 liegt außerhalb 1,0…1,5` | P6 verletzt: das Gerät ist zu groß (< 1,0) oder zu klein (> 1,5) für die Module | Modulzahl am Gerät ändern oder anderes Gerät |
@@ -307,6 +374,13 @@ PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus �
 | `Angabe fehlt: Zahl der MPP-Tracker — gerechnet wird auf einem` | konservative Annahme | Gerätekatalog pflegen |
 | `Kein Wechselrichter zugeordnet` | Strangzeile ohne Gerät | Gerät wählen |
 | `passend wären 10…13 Module je Gerät` (auch: `mindestens 10`, `höchstens 13`, `kein Modulfeld passt zu diesem Gerät`) | **Auslegungshilfe** hinter P6/P7 | Aufteilung entsprechend |
+
+**Beim Simulationsstart** (seit 09.09.2026, **W6‑B‑13**) stehen dieselben Sätze in den
+Laufhinweisen — mit dem Vorspann `PV-Anlage „Dach Süd": ` davor. Rote Befunde erscheinen als
+**Warnung**, gelbe als **Hinweis**; grüne schweigen. Geprüft wird jede PV-Anlage, die auf „mit
+Wechselrichter" steht und Strangzeilen führt. Die Meldung **blockiert nicht**: Ein Projekt mit
+roter Ampel rechnet weiter — es sagt jetzt nur, was es tut. Je Befund entsteht genau eine
+Zeile je Lauf.
 
 ## 7 So wird die Konfiguration passend
 
@@ -347,8 +421,8 @@ PV Module → Bearbeiten (Felder alpha_SC, beta_OC, T_NOCT) oder Neuimport aus �
 
 | Methode | Antwort |
 |---|---|
-| `Reihe(modul, geraet)` | Bereich für „Module in Reihe" (Min aus P2, Max aus P1/P3) |
-| `ParallelJeMppt(modul, geraet)` | Stränge je Tracker (P4, P5) |
+| `Reihe(modul, geraet[, T_kalt, T_heiss])` | Bereich für „Module in Reihe" (Min aus P2, Max aus P1/P3). Kennt seit **W6‑B‑9** denselben 1,15-Rückfall wie P1 und nimmt seit **W6‑B‑11** die Auslegungstemperaturen des Projekts entgegen — die Hilfe rät auf derselben Grundlage, auf der die Ampel prüft |
+| `ParallelJeMppt(modul, geraet[, T_heiss])` | Stränge je Tracker (P4, P5). Die Stromgrenze ist seit **W6‑B‑10** `I_Sc_Max`, wenn gepflegt, sonst `I_Dc_Max` |
 | `ModuleJeGeraet(modul, geraet)` | Module je Gerät (P6-Band, P7) |
 | `Vorschlagen(modul, geraet, anzahlModule)` | eine Aufteilung: Reihe, Stränge je Gerät, Gerätezahl, DC/AC — wenige Geräte zuerst, dann DC/AC nahe 1,25, dann lange Reihen |
 | `GeraeteBewerten(modul, anzahlModule, katalog)` | alle Geräte des Katalogs, passende zuerst |
@@ -455,19 +529,30 @@ Rat, kein Rechenergebnis.
 
 Dazu, ausdrücklich benannt:
 
-* **Kein Sicherheitsfaktor.** P4 rechnet nur die thermische Korrektur (rund +2 %), nicht den in
-  der Auslegungspraxis üblichen Faktor 1,25 auf den Kurzschlussstrom (siehe Abschnitt 3 und
-  O‑1). Wer nahe an `I_Dc_Max` auslegt, sollte den Abstand selbst wahren.
-* **Feste Auslegungstemperaturen.** −10 °C und +70 °C gelten für jedes Projekt, unabhängig von
-  Klimaregion, Montageart und `T_NOCT` des Moduls (O‑3).
-* **Kein Rückfall ohne Koeffizienten.** Fehlt `beta_OC`, entfällt P1 vollständig — die Ampel
-  wird nur gelb. Ein Ersatzweg über einen Sicherheitsfaktor auf U_oc besteht nicht (O‑4).
+* **Kein Sicherheitsfaktor auf den STROM.** P4 rechnet nur die thermische Korrektur (rund +2 %),
+  nicht den in der Auslegungspraxis üblichen Faktor 1,25 auf den Kurzschlussstrom (siehe
+  Abschnitt 3 und O‑1). Seit **W6‑B‑9** sagt der **Werkzeugtipp** der Ampel das ausdrücklich:
+  DC-Leitungen, Sicherungen und Schalter sind mit 1,25 · I_sc zu bemessen, und das liegt
+  ausserhalb dieses Werkzeugs. Wer nahe an `I_Dc_Max` auslegt, sollte den Abstand selbst
+  wahren.
+* **Die Auslegungstemperaturen sind eine Annahme, kein Messwert.** Sie sind seit **W6‑B‑11**
+  je Projekt einstellbar (Abschnitt 4.1) — welche Zahl richtig ist, entscheidet der Planer.
+  Der Klimadatenvorschlag nennt das Jahresminimum eines Testreferenzjahres; das ist nicht
+  dieselbe Größe wie die standortbezogen niedrigste zu erwartende Temperatur nach IEC 62548.
+* **Der Rückfall ohne `beta_OC` ist eine Ersatzannahme.** `1,15 · U_oc,STC` (**W6‑B‑9**) gilt
+  für kristallines Silizium und ist an sehr kalten Standorten knapp — dort sind 1,25
+  gebräuchlich. Der Faktor ist bewusst nicht einstellbar: Er ist der Ersatz für einen
+  fehlenden Katalogwert, nicht ein zweiter Auslegungsparameter. Der richtige Weg bleibt, den
+  Koeffizienten zu pflegen; der Satz der Ampel sagt es bei jedem Befund.
+* **`I_Sc_Max` kommt aus keinem Import.** Weder die CEC-Wechselrichterliste noch das
+  OND-Format (PVsyst) führen einen Kurzschlussstrom je Eingang — die CEC-Liste kennt nur
+  `Idcmax`, OND nur `IMaxDC` (Betriebsstrom) und `IMaxAC`. Das Feld bleibt nach jedem Import
+  leer und wird im Katalogdialog von Hand gepflegt; solange es leer ist, prüft P4 wie vor
+  W6‑B‑10.
 * **Die Einschaltspannung wird nicht geprüft.** `U_Start` steht im Gerätekatalog, geht aber in
   keine der acht Regeln ein (O‑5).
 * **Keine absolute Systemspannung.** Geprüft wird ausschließlich gegen `U_Dc_Max` des Geräts,
   nicht gegen 1 000 V oder 1 500 V.
-* **Die Prüfung läuft nur im Dialog.** Ein Projekt mit roter Ampel rechnet in der Simulation
-  ohne Protokollhinweis durch (O‑6).
 * **Fehlende Modulnennleistung bleibt stumm.** Ohne `m_Leistung` entfallen P6 und P7 ohne
   Meldung und ohne Gelbfärbung — die einzige Lücke in der Regel „ein fehlender Wert macht
   gelb" (O‑7).
@@ -475,17 +560,28 @@ Dazu, ausdrücklich benannt:
 ## 10 Offene Punkte
 
 Ergebnis des Abgleichs vom 08.09.2026 gegen Code und Word-Fassung
-(`K:\pv2\pv_pruefbericht.md`, dort mit Belegstellen). Nichts davon ist umgesetzt.
+(`K:\pv2\pv_pruefbericht.md`, dort mit Belegstellen). **Fünf davon sind mit dem
+Anwenderentscheid vom 09.09.2026 umgesetzt** („setze Empfehlungen 1–5 um"); die Spalte *Stand*
+sagt, welche.
 
-| Nr. | Punkt | Art |
+| Nr. | Punkt | Stand |
 |---|---|---|
-| **O‑1** | Soll P4 einen Sicherheitsfaktor (1,25 · I_sc) bekommen — als zusätzliche gelbe Prüfung oder als Einstellung? P4 rot zu verschärfen würde Bestandsprojekte umfärben. | Entscheid des Anwenders |
-| **O‑2** | `Vorschlagen` behandelt das weiche DC/AC-Band als harte Bedingung und scheitert dann mit der Begründung „lässt sich nicht in gleich lange Stränge teilen", die den wahren Grund verschweigt (Beispiel Sunny Boy 6.0 mit 20 Modulen). | Codeänderung vorgeschlagen |
-| **O‑3** | Feste −10/+70 °C beibehalten oder an Klimaregion und `T_NOCT` koppeln? Die Zuordnung dieser Zahlen zu IEC 62548 in der Word-Fassung ist ungeklärt. | Entscheid des Anwenders |
-| **O‑4** | Rückfall für P1 ohne `beta_OC` über einen Sicherheitsfaktor auf U_oc (1,15 bzw. 1,25)? P1 ist die einzige zerstörungsrelevante Prüfung, und der Katalogbestand ist an dieser Stelle bekanntermaßen lückenhaft. | Entscheid des Anwenders |
-| **O‑5** | Einschaltspannung `U_Start` als gelbe Prüfung gegen die Strangspannung im heißen Fall aufnehmen? | Codeänderung vorgeschlagen |
-| **O‑6** | Prüfmeldung beim Simulationsstart nachrüsten — oder die entsprechende Aussage in Konzept 4.2 und im Wiki streichen? | Entscheid des Anwenders |
-| **O‑7** | Fehlende Modulnennleistung soll gelb machen (heute stumm). | Codeänderung vorgeschlagen |
-| **O‑8** | P8 kann über den einzigen Aufrufer nie anschlagen, weil die Maske die abgeleitete Summe als Anlagenwert übergibt (Entscheid Q9). Gegen den gespeicherten Wert prüfen oder P8 als reine Zusicherung führen? | Entscheid des Anwenders |
-| **O‑9** | Trägt `I_Dc_Max` im Katalog den Kurzschluss- oder den Nennstrom je Tracker? Davon hängt ab, ob P4 zu streng oder zu lasch ist. | Entscheid des Anwenders |
-| **O‑10** | Die Word-Fassung „Auslegung Und Prüfung Von PV-Anlagen.docx" enthält Einheitenfehler (Koeffizienten als %/K), unbelegte Normaussagen, eine erfundene Architekturbeschreibung und ein falsch aufgelöstes Praxisbeispiel; ihre Formeln liegen als Bilder vor und sind weder durchsuchbar noch weiterverwendbar. Berichtigen oder aus dieser Markdown-Fassung neu erzeugen? | Entscheid des Anwenders |
+| **O‑1** | Soll P4 einen Sicherheitsfaktor (1,25 · I_sc) bekommen — als zusätzliche gelbe Prüfung oder als Einstellung? P4 rot zu verschärfen würde Bestandsprojekte umfärben. | **teilweise erledigt** (W6‑B‑9): Der Faktor ist KEINE Prüfung geworden, aber der Werkzeugtipp sagt jetzt, dass die Bemessung mit 1,25 · I_sc ausserhalb dieses Werkzeugs liegt. Eine eigene Prüfung P4b bleibt **offen** — Entscheid des Anwenders |
+| **O‑2** | `Vorschlagen` behandelt das weiche DC/AC-Band als harte Bedingung und scheitert dann mit der Begründung „lässt sich nicht in gleich lange Stränge teilen", die den wahren Grund verschweigt (Beispiel Sunny Boy 6.0 mit 20 Modulen). | **offen** — Codeänderung vorgeschlagen |
+| **O‑3** | Feste −10/+70 °C beibehalten oder an Klimaregion und `T_NOCT` koppeln? | **erledigt 09.09.2026** (W6‑B‑11): Projektparameter mit den bisherigen Werten als Vorgabe, dazu ein Vorschlag aus den Klimadaten — Abschnitt 4.1 |
+| **O‑4** | Rückfall für P1 ohne `beta_OC` über einen Sicherheitsfaktor auf U_oc (1,15 bzw. 1,25)? | **erledigt 09.09.2026** (W6‑B‑9): Faktor **1,15**, rot bei Überschreitung, im Satz benannt |
+| **O‑5** | Einschaltspannung `U_Start` als gelbe Prüfung gegen die Strangspannung im heißen Fall aufnehmen? | **offen** — Codeänderung vorgeschlagen |
+| **O‑6** | Prüfmeldung beim Simulationsstart nachrüsten — oder die entsprechende Aussage in Konzept 4.2 und im Wiki streichen? | **erledigt 09.09.2026** (W6‑B‑13): nachgerüstet, rot = Warnung, gelb = Hinweis, nicht blockierend |
+| **O‑7** | Fehlende Modulnennleistung soll gelb machen (heute stumm). | **offen** — Codeänderung vorgeschlagen |
+| **O‑8** | P8 kann über den einzigen Aufrufer nie anschlagen, weil die Maske die abgeleitete Summe als Anlagenwert übergibt (Entscheid Q9). | **erledigt 09.09.2026** (W6‑B‑12): Die Hülle übergibt den gespeicherten Anlagenwert; P8 trifft Altdaten |
+| **O‑9** | Trägt `I_Dc_Max` im Katalog den Kurzschluss- oder den Nennstrom je Tracker? | **erledigt 09.09.2026** (W6‑B‑10): Die Frage ist aufgelöst, statt beantwortet zu werden — `I_Dc_Max` bleibt der Arbeitsstrom, der Kurzschlussstrom bekommt ein eigenes Feld `I_Sc_Max`, und P4 unterscheidet beide |
+| **O‑10** | Die Word-Fassung „Auslegung Und Prüfung Von PV-Anlagen.docx" enthält Einheitenfehler (Koeffizienten als %/K), unbelegte Normaussagen, eine erfundene Architekturbeschreibung und ein falsch aufgelöstes Praxisbeispiel; ihre Formeln liegen als Bilder vor. | **entschieden 09.09.2026**: Die Word-Fassung wird **nicht mehr gepflegt**; führend ist dieses Dokument. Ob die Docx aus ihm neu erzeugt oder gelöscht wird, bleibt **offen** |
+
+**Was der Migrationsschritt 70 anlegt** (Stand 69 → **70**, ergebnisneutral, alle vier Spalten
+bleiben NULL und NULL heisst „wie bisher"):
+
+| Spalte | Tabelle | Bedeutung |
+|---|---|---|
+| `I_Sc_Max` | `Tab_Wechselrichter_STAMM` und `Tab_Wechselrichter` | max. Kurzschlussstrom je MPPT [A] (W6‑B‑10) |
+| `Ausleg_T_Kalt` | `Tab_Einstellungen` | Auslegungstemperatur kalt [°C]; NULL = −10 (W6‑B‑11) |
+| `Ausleg_T_Heiss` | `Tab_Einstellungen` | Auslegungstemperatur heiß [°C]; NULL = +70 (W6‑B‑11) |

@@ -66,15 +66,22 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>
-        /// Der Zielstand steht auf 69. Er ist zugleich die Zusage des
-        /// <c>.wpx</c>-Formats: Ein Paket auf Stand 68 wird beim Import abgewiesen —
+        /// Der Zielstand liegt bei <b>mindestens</b> 69 — dem Stand, den DIESER Schritt
+        /// erreicht. Er ist zugleich die Zusage des <c>.wpx</c>-Formats: Ein Paket auf
+        /// dem vorigen Stand wird beim Import abgewiesen —
         /// <c>ProjekttransferTests.P5_Ein_Paket_mit_fremdem_Schemastand_wird_abgelehnt…</c>
         /// prüft das gegen <c>Zielversion - 1</c> und zieht damit von selbst mit.
+        ///
+        /// <para><b>„Mindestens" und nicht „genau"</b> — dieselbe Fassung wie in
+        /// <c>StromspeicherFirmaTests</c>: Die Zusage dieses Schrittes ist, dass eine
+        /// Datenbank ihn hinter sich hat, nicht dass er der letzte des Hauses ist. Mit
+        /// Schritt 70 (PV-Strangprüfung, W6‑B‑10/W6‑B‑11) steht das Ziel auf 70.</para>
         /// </summary>
         [Fact]
         public void Der_Zielstand_steht_auf_69()
         {
-            Assert.Equal(69, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= 69,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 69.");
         }
 
         /// <summary>

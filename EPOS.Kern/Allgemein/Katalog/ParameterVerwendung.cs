@@ -795,7 +795,17 @@ namespace WindowsFormsApplication1
                 E("Herkunft", t("WRK_LBL_HERKUNFT"), "", DLG,
                   "CecWechselrichter.NachModell (CEC); ModulKatalogProfil (gesperrtes Feld)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
-                  "WechselrichterStammCtrl.Update/Delete (Auslieferungssatz)")
+                  "WechselrichterStammCtrl.Update/Delete (Auslieferungssatz)"),
+                // W6-B-10 (09.09.2026), Migrationsschritt 70: der KURZSCHLUSSstrom je
+                // MPPT. Er steht hinter ReadOnly, weil die Spalte im Bestand ueber
+                // ADD COLUMN ans Ende der Tabelle kommt und dieser Katalog der
+                // TABELLENREIHENFOLGE folgt. Kein Import fuellt ihn - weder die
+                // CEC-Liste noch das OND-Format fuehren einen Kurzschlussstrom je
+                // Eingang.
+                E("I_Sc_Max", t("WRK_LBL_I_SC_MAX"), "A", DLG,
+                  "ModulKatalogProfil (Gruppe Eingang) - JE MPPT, Handpflege; " +
+                  "StrangPlausibilitaet.MpptPruefen (P4 rot); " +
+                  "StrangAuslegung.ParallelJeMppt (Grenze)")
             };
         }
     }

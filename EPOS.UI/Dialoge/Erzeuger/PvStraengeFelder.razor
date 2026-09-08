@@ -134,6 +134,31 @@
             }
         </div>
 
+        @* --- W6-B-11: die AUSLEGUNGSTEMPERATUREN des Projekts ---------------- *@
+        @* Sie stehen im Kopf des Abschnitts, weil sie fuer ALLE Straenge gelten und
+           weil die Ampel darunter mit ihnen prueft: Wer die Zahl aendert, sieht die
+           Wirkung in derselben Ansicht. Leer heisst Vorgabe - die Herleitungszeile
+           sagt, welche Werte gerade gelten. *@
+        <div class="epos-strangtemperaturen" title="@Texte.TipTemperaturen">
+            <span class="epos-strangkopf-titel">@Texte.LabelTemperaturen</span>
+            <Zahlenfeld Bezeichnung="@Texte.LabelTKalt" Wert="@_tKalt"
+                        WertChanged="BeiTKalt" Min="-60" Max="40" Nachkommastellen="1"
+                        Feldname="AuslegTKalt" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelTHeiss" Wert="@_tHeiss"
+                        WertChanged="BeiTHeiss" Min="0" Max="120" Nachkommastellen="1"
+                        Feldname="AuslegTHeiss" />
+            @* "Kein Delegat ist kein Knopf" - dieselbe Regel wie bei der
+               Auslegungshilfe (W6-B-8). Ohne Klimadatenweg gaebe es nichts
+               vorzuschlagen. *@
+            @if (TemperaturenVorschlagen is not null)
+            {
+                <button type="button" class="epos-knopf epos-straenge-tvorschlag"
+                        @onclick="TemperaturVorschlagen">@Texte.BtnTemperaturvorschlag</button>
+            }
+        </div>
+
+        <p class="epos-herleitung">@Temperaturzeile</p>
+
         @* --- W6-O-4: die Filterzeile UEBER der Tabelle, nicht in ihr ---------- *@
         @if (Hersteller.Count > 0)
         {
@@ -510,6 +535,42 @@
     /// </summary>
     [Parameter] public Func<ErzeugerZeile, int, StrangVorschlag>? AuslegungVorschlagen { get; set; }
 
+    /// <summary>
+    /// <b>Auslegungstemperatur kalt [°C]</b> des Projekts (<b>W6‑B‑11</b>);
+    /// <c>null</c> = die Vorgabe <see cref="TKaltVorgabe"/>. Sie kommt aus
+    /// <c>Tab_Einstellungen.Ausleg_T_Kalt</c> und wird über
+    /// <see cref="TemperaturenSetzen"/> zurückgeschrieben.
+    /// </summary>
+    [Parameter] public double? TKalt { get; set; }
+
+    /// <summary>
+    /// <b>Auslegungstemperatur heiß [°C]</b>, Zelltemperatur (<b>W6‑B‑11</b>);
+    /// <c>null</c> = die Vorgabe <see cref="THeissVorgabe"/>.
+    /// </summary>
+    [Parameter] public double? THeiss { get; set; }
+
+    /// <summary>Die Vorgabe des kalten Falls [°C] — für die Herleitungszeile.</summary>
+    [Parameter] public double TKaltVorgabe { get; set; } = -10.0;
+
+    /// <summary>Die Vorgabe des heißen Falls [°C] — für die Herleitungszeile.</summary>
+    [Parameter] public double THeissVorgabe { get; set; } = 70.0;
+
+    /// <summary>
+    /// Schreibt die zwei Auslegungstemperaturen in die Projekteinstellungen
+    /// (<c>KonfigurationCtrl.AuslegungstemperaturenSchreiben</c>). Ohne Delegat
+    /// bleiben die Felder bedienbar, aber flüchtig — die Ampel prüft trotzdem sofort
+    /// mit dem neuen Wert, denn den holt sie sich beim nächsten
+    /// <see cref="Pruefen"/> aus der Hülle.
+    /// </summary>
+    [Parameter] public Action<double?, double?>? TemperaturenSetzen { get; set; }
+
+    /// <summary>
+    /// Der VORSCHLAG aus den Klimadaten des Projekts (<b>W6‑B‑11</b>) — gerechnet im
+    /// Kern (<c>AuslegungstemperaturVorschlag</c>), hereingereicht von der Hülle.
+    /// <b>Ohne Delegat gibt es den Knopf NICHT</b> („kein Delegat ist kein Knopf").
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, Temperaturvorschlag>? TemperaturenVorschlagen { get; set; }
+
     /// <summary>Meldet jede Aenderung — die Huelle schreibt dann in das Modell.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
 
@@ -564,6 +625,20 @@
     private StrangBefund _befund = StrangBefund.Leer;
     private StrangZeile? _gewaehlt;
 
+    /// <summary>Die zwei Auslegungstemperaturen der Maske; <c>null</c> = Vorgabe (W6‑B‑11).</summary>
+    private double? _tKalt, _tHeiss;
+
+    /// <summary>
+    /// Sind die zwei Temperaturen schon aus den Parametern geholt? Sie werden GENAU
+    /// EINMAL übernommen: Jede Zellenänderung meldet <c>Geaendert</c>, der Wirt
+    /// zeichnet neu, und ein zweites Übernehmen nähme dem Anwender seine Eingabe
+    /// wieder ab — dieselbe Falle wie bei <c>_vorgestelltFuer</c> (W6‑E‑6).
+    /// </summary>
+    private bool _temperaturenGeholt;
+
+    /// <summary>Die Herleitung des zuletzt gerechneten Vorschlags; leer = keiner (W6‑B‑11).</summary>
+    private string _temperatursatz = "";
+
     private bool _offen;
     private double? _nenn, _eta10, _eta50, _eta100;
 
@@ -590,6 +665,26 @@
 
     /// <summary>Der Satz der Auslegungshilfe; leer = keiner (Pruefhilfe fuer Tests).</summary>
     public string Vorschlagsatz => _vorschlagsatz;
+
+    /// <summary>Die Auslegungstemperatur kalt der Maske (Pruefhilfe fuer Tests).</summary>
+    public double? AuslegungKalt => _tKalt;
+
+    /// <summary>Die Auslegungstemperatur heiss der Maske (Pruefhilfe fuer Tests).</summary>
+    public double? AuslegungHeiss => _tHeiss;
+
+    /// <summary>
+    /// Die Zeile unter den zwei Temperaturfeldern: die Herleitung des zuletzt
+    /// gerechneten Vorschlags, solange es einen gibt — sonst der Satz, welche Werte
+    /// gerade gelten und was leer bedeutet (Pruefhilfe fuer Tests).
+    /// </summary>
+    public string Temperaturzeile
+        => _temperatursatz.Length > 0
+            ? _temperatursatz
+            : string.Format(CultureInfo.CurrentCulture, Texte.HerleitungTemperaturen,
+                            Grad(_tKalt ?? TKaltVorgabe), Grad(_tHeiss ?? THeissVorgabe),
+                            Grad(TKaltVorgabe), Grad(THeissVorgabe));
+
+    private static string Grad(double wert) => wert.ToString("N1", CultureInfo.CurrentCulture);
 
     /// <summary>
     /// <b>Ist „Auslegung vorschlagen" frei?</b> (W6‑B‑8, zugleich Pruefhilfe fuer
@@ -651,6 +746,15 @@
         var module = new List<(int, string)> { (0, Texte.ModulDerAnlage) };
         foreach (var m in Module) module.Add(m);
         _modulwahl = module;
+
+        // W6-B-11: die zwei Auslegungstemperaturen GENAU EINMAL aus den Parametern -
+        // Begruendung bei _temperaturenGeholt.
+        if (!_temperaturenGeholt)
+        {
+            _tKalt = TKalt;
+            _tHeiss = THeiss;
+            _temperaturenGeholt = true;
+        }
 
         Nachpruefen();
     }
@@ -1099,6 +1203,58 @@
             s.WechselrichterName = wahl.Name;
         }
 
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    // =================================================================================
+    // W6-B-11: die Auslegungstemperaturen
+    // =================================================================================
+
+    /// <summary>
+    /// Ein geaenderter kalter Fall. ERST schreiben, DANN pruefen: Die Ampel holt sich
+    /// die Temperatur beim naechsten <see cref="Pruefen"/> aus der Huelle, und die
+    /// kennt sie erst nach <see cref="TemperaturenSetzen"/>.
+    /// </summary>
+    private Task BeiTKalt(double? wert)
+    {
+        _tKalt = wert;
+        return TemperaturUebernehmen();
+    }
+
+    /// <summary>Ein geaenderter heisser Fall — dieselbe Reihenfolge.</summary>
+    private Task BeiTHeiss(double? wert)
+    {
+        _tHeiss = wert;
+        return TemperaturUebernehmen();
+    }
+
+    private Task TemperaturUebernehmen()
+    {
+        // Eine Handeingabe ersetzt die Herleitung des letzten Vorschlags: Sie erklaerte
+        // Zahlen, die jetzt nicht mehr dastehen.
+        _temperatursatz = "";
+        TemperaturenSetzen?.Invoke(_tKalt, _tHeiss);
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Der Knopf „Vorschlag aus Klimadaten uebernehmen" (<b>W6‑B‑11</b>): Der Kern
+    /// rechnet, die Maske traegt die zwei Zahlen ein und zeigt die Herleitung. Gibt es
+    /// keinen Vorschlag, bleiben die Felder stehen und der Satz nennt den Grund.
+    /// </summary>
+    private Task TemperaturVorschlagen()
+    {
+        if (TemperaturenVorschlagen is null) return Task.CompletedTask;
+
+        Temperaturvorschlag v = TemperaturenVorschlagen(Zeile);
+        _temperatursatz = v.Satz;
+        if (!v.Moeglich) return Task.CompletedTask;
+
+        _tKalt = Math.Round(v.Kalt, 1, MidpointRounding.AwayFromZero);
+        _tHeiss = Math.Round(v.Heiss, 1, MidpointRounding.AwayFromZero);
+        TemperaturenSetzen?.Invoke(_tKalt, _tHeiss);
         Nachpruefen();
         return Geaendert.InvokeAsync();
     }

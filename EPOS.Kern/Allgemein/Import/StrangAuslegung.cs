@@ -24,16 +24,24 @@ namespace WindowsFormsApplication1
     ///   <item><description><see cref="Vorschlagen"/>: eine ganze Aufteilung für eine
     ///     Modulzahl — Module in Reihe, Stränge parallel, Zahl der Geräte.</description></item>
     ///   <item><description><see cref="GeraeteBewerten"/>: alle Geräte eines Katalogs für ein
-    ///     Modulfeld, sortiert nach Eignung (DC/AC nahe 1,2, wenige Geräte).</description></item>
+    ///     Modulfeld, sortiert nach Eignung (wenige Geräte, DC/AC nahe
+    ///     <see cref="DCAC_MITTE"/>).</description></item>
     ///   <item><description><see cref="Aufteilen"/>: derselbe Vorschlag als TABELLE — je
     ///     Gerät und MPP-Tracker eine Zeile (<b>W6‑B‑8</b>).</description></item>
     /// </list>
     ///
-    /// <para><b>Dieselben Temperaturen, dieselbe Näherung.</b> −10 °C für den kalten, +70 °C
-    /// für den heißen Fall (<see cref="StrangPlausibilitaet.T_KALT"/>,
-    /// <see cref="StrangPlausibilitaet.T_HEISS"/>), und für die MPP-Spannung steht
-    /// <c>beta_OC</c> ein (<c>Befund.NaeherungMpp</c>). Ein fehlender Wert macht den
-    /// betroffenen Bereich „nicht prüfbar" — die Hilfe rät dann nicht.</para>
+    /// <para><b>Dieselben Temperaturen, dieselbe Näherung.</b> Vorgabe sind −10 °C für den
+    /// kalten und +70 °C für den heißen Fall (<see cref="StrangPlausibilitaet.T_KALT"/>,
+    /// <see cref="StrangPlausibilitaet.T_HEISS"/>); seit <b>W6‑B‑11</b> nehmen
+    /// <see cref="Reihe(PhotovoltaikModel, WechselrichterModel, double, double)"/> und
+    /// <see cref="ParallelJeMppt(PhotovoltaikModel, WechselrichterModel, double)"/> die
+    /// AUSLEGUNGSTEMPERATUREN des Projekts entgegen — die Hilfe rät auf derselben
+    /// Grundlage, auf der die Ampel prüft. Für die MPP-Spannung steht <c>beta_OC</c> ein
+    /// (<c>Befund.NaeherungMpp</c>); für die Leerlaufspannung ohne <c>beta_OC</c> steht
+    /// seit <b>W6‑B‑9</b> der Faktor 1,15 ein
+    /// (<see cref="StrangPlausibilitaet.FAKTOR_UOC_OHNE_KOEFFIZIENT"/>). Ein fehlender
+    /// Wert macht den betroffenen Bereich „nicht prüfbar" — die Hilfe rät dann
+    /// nicht.</para>
     ///
     /// <para><b>Die Sätze</b> (<see cref="ReiheEmpfehlung"/>, <see cref="GeraetEmpfehlung"/>)
     /// stehen in der Ampel unter der Strangtabelle hinter dem Befund, in der Kultur des
@@ -121,14 +129,33 @@ namespace WindowsFormsApplication1
         //  Module in Reihe (P1, P2, P3)
         // -----------------------------------------------------------------
 
+        /// <summary>
+        /// Der Reihenbereich bei den VORGABE-Temperaturen — der Weg von bisher.
+        /// </summary>
         public static Reihenbereich Reihe(PhotovoltaikModel modul, WechselrichterModel geraet)
+        {
+            return Reihe(modul, geraet, StrangPlausibilitaet.T_KALT, StrangPlausibilitaet.T_HEISS);
+        }
+
+        /// <summary>
+        /// Der Reihenbereich bei den AUSLEGUNGSTEMPERATUREN des Projekts
+        /// (<b>W6‑B‑11</b>) — dieselben Regeln P1 bis P3, rückwärts gerechnet.
+        ///
+        /// <para><b>P1 kennt denselben Rückfall wie die Ampel</b> (<b>W6‑B‑9</b>):
+        /// Fehlt <c>beta_OC</c>, rechnet die Obergrenze mit
+        /// <c>1,15 · U_oc,STC</c> statt zu entfallen. Eine Hilfe, die eine Grenze
+        /// verschweigt, die die Ampel prüft, schickte den Anwender in genau das Rot,
+        /// das sie vermeiden soll.</para>
+        /// </summary>
+        public static Reihenbereich Reihe(PhotovoltaikModel modul, WechselrichterModel geraet,
+                                          double tKalt, double tHeiss)
         {
             var r = new Reihenbereich();
             if (modul == null || geraet == null) return r;
 
-            double? uoc = StrangPlausibilitaet.SpannungReihe(1, modul.m_U_Leerlauf, modul.m_beta_OC, StrangPlausibilitaet.T_KALT);
-            double? heiss = StrangPlausibilitaet.SpannungReihe(1, modul.m_U_Mpp, modul.m_beta_OC, StrangPlausibilitaet.T_HEISS);
-            double? kalt = StrangPlausibilitaet.SpannungReihe(1, modul.m_U_Mpp, modul.m_beta_OC, StrangPlausibilitaet.T_KALT);
+            double? uoc = StrangPlausibilitaet.UocKaltReihe(1, modul.m_U_Leerlauf, modul.m_beta_OC, tKalt);
+            double? heiss = StrangPlausibilitaet.SpannungReihe(1, modul.m_U_Mpp, modul.m_beta_OC, tHeiss);
+            double? kalt = StrangPlausibilitaet.SpannungReihe(1, modul.m_U_Mpp, modul.m_beta_OC, tKalt);
 
             if (uoc.HasValue && uoc.Value > 0.0 && Gesetzt(geraet.m_U_Dc_Max))
                 r.MaxUoc = (int)Math.Floor(geraet.m_U_Dc_Max.Value / uoc.Value + 1e-9);
@@ -148,14 +175,31 @@ namespace WindowsFormsApplication1
         //  Stränge je MPP-Tracker (P4, P5)
         // -----------------------------------------------------------------
 
-        /// <summary>Wie viele Stränge ein Tracker verträgt; null, wenn Strom oder Grenze fehlen.</summary>
+        /// <summary>Wie viele Stränge ein Tracker verträgt, bei der Vorgabetemperatur.</summary>
         public static int? ParallelJeMppt(PhotovoltaikModel modul, WechselrichterModel geraet)
         {
+            return ParallelJeMppt(modul, geraet, StrangPlausibilitaet.T_HEISS);
+        }
+
+        /// <summary>
+        /// Wie viele Stränge ein Tracker verträgt; <c>null</c>, wenn Strom oder Grenze
+        /// fehlen.
+        ///
+        /// <para><b>Die Grenze ist der KURZSCHLUSSSTROM, wenn er gepflegt ist</b>
+        /// (<b>W6‑B‑10</b>): <c>I_Sc_Max</c> ist die Grenze, ab der das Gerät Schaden
+        /// nimmt — die Auslegungshilfe darf nicht mehr Stränge vorschlagen, als das
+        /// Gerät verträgt. Ohne <c>I_Sc_Max</c> bleibt es bei <c>I_Dc_Max</c> wie
+        /// bisher. Der Deckel aus P5 (<c>Straenge_Je_Mppt</c>) gilt zusätzlich.</para>
+        /// </summary>
+        public static int? ParallelJeMppt(PhotovoltaikModel modul, WechselrichterModel geraet,
+                                          double tHeiss)
+        {
             if (modul == null || geraet == null) return null;
-            double? js = StrangPlausibilitaet.StromJeStrang(modul);
+            double? js = StrangPlausibilitaet.StromJeStrang(modul, tHeiss);
+            double? grenze = Gesetzt(geraet.m_I_Sc_Max) ? geraet.m_I_Sc_Max : geraet.m_I_Dc_Max;
             int? p = null;
-            if (js.HasValue && js.Value > 0.0 && Gesetzt(geraet.m_I_Dc_Max))
-                p = Math.Max(0, (int)Math.Floor(geraet.m_I_Dc_Max.Value / js.Value + 1e-9));
+            if (js.HasValue && js.Value > 0.0 && Gesetzt(grenze))
+                p = Math.Max(0, (int)Math.Floor(grenze.Value / js.Value + 1e-9));
             if (geraet.m_Straenge_Je_Mppt.HasValue && geraet.m_Straenge_Je_Mppt.Value >= 1)
                 p = p.HasValue ? Math.Min(p.Value, geraet.m_Straenge_Je_Mppt.Value) : geraet.m_Straenge_Je_Mppt.Value;
             return p;
@@ -337,10 +381,20 @@ namespace WindowsFormsApplication1
         //  Die Sätze der Ampel (Kultur des Anwenders, wie StrangPlausibilitaet)
         // -----------------------------------------------------------------
 
-        /// <summary>„passend wären 4…14 Module in Reihe" — leer, wenn nichts prüfbar ist.</summary>
+        /// <summary>„passend wären 4…14 Module in Reihe" — bei den Vorgabetemperaturen.</summary>
         public static string ReiheEmpfehlung(PhotovoltaikModel modul, WechselrichterModel geraet)
         {
-            Reihenbereich r = Reihe(modul, geraet);
+            return ReiheEmpfehlung(modul, geraet, StrangPlausibilitaet.T_KALT, StrangPlausibilitaet.T_HEISS);
+        }
+
+        /// <summary>
+        /// „passend wären 4…14 Module in Reihe" bei den AUSLEGUNGSTEMPERATUREN des
+        /// Projekts (<b>W6‑B‑11</b>) — leer, wenn nichts prüfbar ist.
+        /// </summary>
+        public static string ReiheEmpfehlung(PhotovoltaikModel modul, WechselrichterModel geraet,
+                                             double tKalt, double tHeiss)
+        {
+            Reihenbereich r = Reihe(modul, geraet, tKalt, tHeiss);
             if (!r.Pruefbar) return "";
             if (!r.Moeglich) return MyResource.Resource.PVS_EMPF_REIHE_KEINE;
             if (r.Max.HasValue)

@@ -54,8 +54,10 @@ namespace EPOS.Kern.Tests
             List<string> stamm = Spalten(WechselrichterStammCtrl.TABLE);
             List<string> projekt = Spalten(WechselrichterCtrl.TABLE);
 
-            Assert.Equal(34, stamm.Count);
-            Assert.Equal(34, projekt.Count);
+            // 35 seit Migrationsschritt 70 (W6-B-10): I_Sc_Max kommt in BEIDEN
+            // Tabellen dazu - der maximale Kurzschlussstrom je MPPT.
+            Assert.Equal(35, stamm.Count);
+            Assert.Equal(35, projekt.Count);
 
             Assert.Equal(new[] { "ReadOnly" }, stamm.Except(projekt, Vergleich).ToArray());
             Assert.Equal(new[] { "ID_Projekt" }, projekt.Except(stamm, Vergleich).ToArray());
@@ -95,8 +97,8 @@ namespace EPOS.Kern.Tests
             foreach (KeyValuePair<string, string> a in WechselrichterSchema.Anweisungen)
                 Assert.True(DataRepository.ExecuteSQL(a.Value), a.Key + ": Zweitlauf schlug fehl");
 
-            Assert.Equal(34, Spalten(WechselrichterStammCtrl.TABLE).Count);
-            Assert.Equal(34, Spalten(WechselrichterCtrl.TABLE).Count);
+            Assert.Equal(35, Spalten(WechselrichterStammCtrl.TABLE).Count);
+            Assert.Equal(35, Spalten(WechselrichterCtrl.TABLE).Count);
 
             var nachher = new WechselrichterStammCtrl();
             nachher.ReadSingle("Idempotenzprobe");

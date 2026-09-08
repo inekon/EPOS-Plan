@@ -320,6 +320,76 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
+        // --- Auslegungstemperaturen der PV-Strangpruefung (W6-B-11, 09.09.2026) --------
+
+        /// <summary>
+        /// <b>Die zwei Auslegungstemperaturen eines Projekts</b> —
+        /// <c>Tab_Einstellungen.Ausleg_T_Kalt</c> und <c>…Ausleg_T_Heiss</c>
+        /// (Anwenderentscheid <b>W6‑B‑11</b> vom 09.09.2026, Migrationsschritt 70).
+        ///
+        /// <para><b><c>null</c> heisst „die Vorgabe"</b> — <c>StrangPlausibilitaet.T_KALT</c>
+        /// (−10 °C) bzw. <c>T_HEISS</c> (+70 °C). Fehlende Spalte, fehlende Zeile und
+        /// NULL liefern gleichermaßen <c>null</c>: Alle drei bedeuten „nicht
+        /// gepflegt", und das ist der Stand von heute.</para>
+        ///
+        /// <para><b>Dialogfrei und namensbasiert.</b> Dasselbe Muster wie
+        /// <see cref="ExtrapolationErlaubtLesen"/>: <c>Tab_Einstellungen</c> wird in
+        /// <see cref="ReadSingle(string)"/> ORDINAL gelesen, die zwei Spalten sind
+        /// deshalb angehängt und werden hier einzeln geholt. Die Ordinalkette bleibt
+        /// unberührt.</para>
+        /// </summary>
+        public static Auslegungstemperaturen AuslegungstemperaturenLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return new Auslegungstemperaturen(null, null);
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT [" + SchemaKatalog.SPALTE_AUSLEG_T_KALT + "], [" +
+                SchemaKatalog.SPALTE_AUSLEG_T_HEISS + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                new DbParam("?", idProjekt));
+
+            if (dt == null || dt.Rows.Count == 0) return new Auslegungstemperaturen(null, null);
+
+            DataRow r = dt.Rows[0];
+            return new Auslegungstemperaturen(Grad(r, 0), Grad(r, 1));
+        }
+
+        /// <summary>Ein Temperaturfeld; <c>DBNull</c> und ein unlesbarer Wert werden <c>null</c>.</summary>
+        private static double? Grad(DataRow r, int spalte)
+        {
+            if (r == null || spalte >= r.Table.Columns.Count) return null;
+            if (r[spalte] == null || r[spalte] == DBNull.Value) return null;
+            try { return Convert.ToDouble(r[spalte]); }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Schreibt die zwei Auslegungstemperaturen eines Projekts; <c>null</c> setzt
+        /// die Spalte auf NULL und damit auf die Vorgabe zurück.
+        ///
+        /// <para>Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
+        /// <see cref="Update"/> — dieselbe Begründung wie bei
+        /// <see cref="ExtrapolationErlaubtSchreiben"/>: Auf einer Datenbank ohne die
+        /// Spalten würde ein erweitertes UPDATE das Speichern der GESAMTEN
+        /// Konfiguration scheitern lassen.</para>
+        ///
+        /// <para>Rückgabe <c>false</c>, wenn keine Zeile getroffen wurde oder die
+        /// Spalten fehlen.</para>
+        /// </summary>
+        public static bool AuslegungstemperaturenSchreiben(int idProjekt, double? kalt, double? heiss)
+        {
+            if (idProjekt <= 0) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" + SchemaKatalog.SPALTE_AUSLEG_T_KALT + "] = ?, [" +
+                SchemaKatalog.SPALTE_AUSLEG_T_HEISS + "] = ? WHERE ID_Projekt = ?",
+                StilleDb.Par("@kalt", DbParamTyp.Double, (object)kalt ?? DBNull.Value),
+                StilleDb.Par("@heiss", DbParamTyp.Double, (object)heiss ?? DBNull.Value),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
         // --- Kanal-Knappheitsreihenfolge (Paket K2, Konzept 4.3, Entscheidung F10) -----
 
         /// <summary>

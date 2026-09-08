@@ -642,23 +642,31 @@ Sie laufen **beim Bearbeiten der Strangzeile** (Ampel in der Oberfläche, Abschn
 **beim Simulationsstart** (Protokollmeldung), nicht in der Stundenschleife. Grundlage sind die
 Modulwerte aus 1.5 und die Gerätewerte aus 3.1.
 
-Auslegungstemperaturen nach üblicher Praxis: **−10 °C** für den kalten Fall (höchste Spannung),
-**+70 °C** Zelltemperatur für den heißen Fall (niedrigste Spannung, höchster Strom).
+Auslegungstemperaturen: **−10 °C** für den kalten Fall (höchste Spannung), **+70 °C**
+Zelltemperatur für den heißen Fall (niedrigste Spannung, höchster Strom). **Seit W6‑B‑11
+(09.09.2026) sind das VORGABEN, keine Konstanten**: `T_kalt` und `T_heiss` stehen als
+Projektparameter in `Tab_Einstellungen.Ausleg_T_Kalt` und `…Ausleg_T_Heiss`
+(Migrationsschritt 70); NULL heißt Vorgabe.
 
 | Nr. | Prüfung | Formel | Verletzung |
 |---|---|---|---|
-| **P1** | Leerlaufspannung im kalten Fall | `Module_Reihe · [ U_Leerlauf + β_OC·(−10 − 25) ] ≤ U_Dc_Max` | **rot** — das Gerät kann zerstört werden |
-| **P2** | MPP-Fenster im heißen Fall | `Module_Reihe · [ U_Mpp + β_OC·(70 − 25) ] ≥ U_Mpp_Min` | **rot** — der Strang regelt im Sommer ab |
-| **P3** | MPP-Fenster im kalten Fall | `Module_Reihe · [ U_Mpp + β_OC·(−10 − 25) ] ≤ U_Mpp_Max` | **gelb** — das Gerät regelt an der Grenze |
-| **P4** | Eingangsstrom je MPPT | `Σ_{s∈MPPT} Straenge_Parallel_s · [ I_Kurzschluss + α_SC·(70 − 25) ] ≤ I_Dc_Max` | **rot** |
+| **P1** | Leerlaufspannung im kalten Fall | `Module_Reihe · [ U_Leerlauf + β_OC·(T_kalt − 25) ] ≤ U_Dc_Max`<br>ohne `β_OC`: `Module_Reihe · U_Leerlauf · 1,15` | **rot** — das Gerät kann zerstört werden |
+| **P2** | MPP-Fenster im heißen Fall | `Module_Reihe · [ U_Mpp + β_OC·(T_heiss − 25) ] ≥ U_Mpp_Min` | **rot** — der Strang regelt im Sommer ab |
+| **P3** | MPP-Fenster im kalten Fall | `Module_Reihe · [ U_Mpp + β_OC·(T_kalt − 25) ] ≤ U_Mpp_Max` | **gelb** — das Gerät regelt an der Grenze |
+| **P4** | Eingangsstrom je MPPT | `Σ_{s∈MPPT} Straenge_Parallel_s · [ I_Kurzschluss + α_SC·(T_heiss − 25) ] ≤ I_Sc_Max` **und** `≤ I_Dc_Max` | **rot** über `I_Sc_Max`; **gelb** nur über `I_Dc_Max`; ohne gepflegten `I_Sc_Max` **rot** über `I_Dc_Max` (wie vor W6‑B‑10) |
 | **P5** | Strangzahl je MPPT | `Σ_{s∈MPPT} Straenge_Parallel_s ≤ Straenge_Je_Mppt` | **gelb** |
 | **P6** | DC/AC-Verhältnis | `1,0 ≤ Σ P_STC,ger / P_AC_Nenn ≤ 1,5` | **gelb** außerhalb |
 | **P7** | DC-Eingangsleistung | `Σ P_STC,ger ≤ P_Dc_Max` | **gelb** |
-| **P8** | Modulsumme gegen Anlagenwert | `Σ_s (Module_Reihe_s · Straenge_Parallel_s) = PV_Leistung` | **gelb** (siehe Q9) |
+| **P8** | Modulsumme gegen **gespeicherter** Anlagenwert | `Σ_s (Module_Reihe_s · Straenge_Parallel_s) = PV_Leistung` | **gelb** (siehe Q9 und W6‑B‑12) |
 
 `β_OC` ist negativ (V/K), `α_SC` positiv (A/K) — die Vorzeichen stehen so in
 `PvModulPlausibilitaet.cs:20-24` und werden dort schon geprüft. **Fehlt ein Modulwert (0 oder
-NULL), entfällt die Prüfung und wird als „nicht prüfbar" gemeldet — sie schlägt nicht fehl.** Der
+NULL), entfällt die Prüfung und wird als „nicht prüfbar" gemeldet — sie schlägt nicht fehl.**
+**Eine Ausnahme seit W6‑B‑9:** Fehlt allein `β_OC`, entfällt **P1 nicht** — sie rechnet dann
+über den Rückfall `1,15 · U_oc,STC` (Auslegungspraxis für kristallines Silizium) und nennt das
+im Satz. P1 ist die einzige zerstörungsrelevante Prüfung, und genau an dieser Stelle ist der
+Katalogbestand lückenhaft; eine Prüfung, die dort schweigt, schweigt im Regelfall. Fehlt auch
+`U_Leerlauf`, bleibt es bei „Werte fehlen". Der
 Katalogbestand ist an dieser Stelle nachweislich vergiftet (Paket-A-Befund A1: in allen sechs
 Referenzmodulen steht der Kurzschlussstrom in `alpha_SC`, `beta_OC` und `T_NOCT`), und eine
 Prüfung, die auf schlechten Daten rot leuchtet, wird weggeklickt statt gelesen.
@@ -668,6 +676,23 @@ die MPP-Spannung. P2 und P3 setzen dafür `β_OC` ein — die Auslegungspraxis t
 Fehler liegt bei wenigen Prozent und auf der sicheren Seite. Das gehört in den Werkzeugtipp der
 Ampel, nicht nur ins Protokoll.
 
+**Und eine GRENZE ist zu benennen (W6‑B‑9):** P4 rechnet ausschließlich die thermische
+Korrektur, **nicht** den in der Auslegungspraxis üblichen Faktor 1,25 auf den Kurzschlussstrom.
+Der gehört zur Bemessung von DC-Leitungen, Sicherungen und Schaltern und liegt außerhalb dieses
+Werkzeugs. Auch dieser Satz steht im Werkzeugtipp der Ampel — die Word-Fassung behauptete an
+genau dieser Stelle, der Faktor sei „impliziter Bestandteil der thermischen Korrektur", und das
+trifft nicht zu (Prüfbericht A2).
+
+> **Nachtrag 09.09.2026 (W6‑B‑9 bis W6‑B‑13, Anwenderentscheid „setze Empfehlungen 1–5
+> um"):** Der Satz oben, die Prüfungen liefen „beim Bearbeiten **und beim Simulationsstart**",
+> war bis dahin nur zur Hälfte wahr — `Pruefe` hatte außerhalb des Prüfstands genau einen
+> Aufrufer, die PV-Hülle (Prüfbericht A12). Seit **W6‑B‑13** ruft `SimulationPV` die Prüfung
+> für jede PV-Anlage mit Wechselrichterweg und schreibt rote Befunde als **Warnung**, gelbe als
+> **Hinweis** in die Laufhinweise — mit dem Vorspann „PV-Anlage „…":" vor demselben Satz, den
+> die Ampel zeigt. Nicht blockierend. Die übrigen vier Punkte stehen in der Tabelle oben
+> (P1-Rückfall, zweistufiges P4, Temperaturparameter, P8 gegen den gespeicherten Wert); die
+> ausführliche Fassung führt `Doku_PV_Strangauslegung_EPOS-Plan.md` Rev. 3.
+>
 > **Umgesetzt (S2, 06.09.2026):** `EPOS.Kern/Allgemein/Import/StrangPlausibilitaet.cs`.
 > Sie steht bei ihren zwei Geschwistern — `PvModulPlausibilitaet` prüft einen Modulsatz,
 > `WechselrichterPlausibilitaet` einen Gerätesatz, diese hier die ZUORDNUNG beider; alle

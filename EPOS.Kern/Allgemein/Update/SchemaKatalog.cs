@@ -1476,6 +1476,92 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_STROMSPEICHER,       SPALTE_SP_FIRMA, "TEXT(255)"),
         };
 
+        // =============================================================================
+        // Schritt 70 - die PV-Strangpruefung: Kurzschlussstrom je MPPT und die
+        //              Auslegungstemperaturen (W6-B-10 und W6-B-11, 09.09.2026)
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Auslegungstemperatur KALT [°C]</b> je Projekt —
+        /// <c>Tab_Einstellungen.Ausleg_T_Kalt</c> (<b>W6‑B‑11</b>, Anwenderentscheid
+        /// vom 09.09.2026). <b>NULL = die Vorgabe</b>
+        /// <c>StrangPlausibilitaet.T_KALT</c> (−10 °C), also der Stand von heute; kein
+        /// DDL-DEFAULT (Hausregel „kein DDL-DEFAULT auf Fachwerten").
+        ///
+        /// <para><b>Wozu.</b> IEC 62548 verlangt die am STANDORT niedrigste zu
+        /// erwartende Temperatur, nicht eine feste Zahl. −10 °C sind für Deutschland
+        /// eine verbreitete Planungsannahme und für das Alpenvorland knapp — an einem
+        /// Standort mit −20 °C läge P1 auf der unsicheren Seite (Prüfbericht 2.1,
+        /// offener Punkt <b>O‑3</b>).</para>
+        ///
+        /// <para><b>Nur zielgenau schreiben.</b> Dasselbe Muster wie
+        /// <see cref="SPALTE_EXTRAPOLATION_ERLAUBT"/> und
+        /// <see cref="SPALTE_BOOSTER_LESEPUNKT"/>: <c>Tab_Einstellungen</c> wird in
+        /// <c>KonfigurationCtrl.ReadSingle</c> ORDINAL gelesen; die Spalte wird deshalb
+        /// ANGEHÄNGT, NAMENSBASIERT gelesen
+        /// (<c>KonfigurationCtrl.AuslegungstemperaturenLesen</c>) und über ein eigenes
+        /// UPDATE geschrieben (<c>…Schreiben</c>).</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/>: dieselbe
+        /// Begründung wie bei <see cref="SPALTE_BOOSTER_LESEPUNKT"/>.</para>
+        /// </summary>
+        public const string SPALTE_AUSLEG_T_KALT = "Ausleg_T_Kalt";
+
+        /// <summary>
+        /// <b>Auslegungstemperatur HEISS [°C], ZELLtemperatur</b> je Projekt —
+        /// <c>Tab_Einstellungen.Ausleg_T_Heiss</c> (<b>W6‑B‑11</b>). <b>NULL = die
+        /// Vorgabe</b> <c>StrangPlausibilitaet.T_HEISS</c> (+70 °C). Alles Übrige wie
+        /// bei <see cref="SPALTE_AUSLEG_T_KALT"/>.
+        /// </summary>
+        public const string SPALTE_AUSLEG_T_HEISS = "Ausleg_T_Heiss";
+
+        /// <summary>
+        /// Schritt 70 der Migration, SPALTENTEIL <b>Wechselrichter</b>: der maximale
+        /// Kurzschlussstrom je MPPT (<c>I_Sc_Max</c>) in
+        /// <c>Tab_Wechselrichter_STAMM</c> <b>und</b> in der Projektkopie
+        /// <c>Tab_Wechselrichter</c> (<b>W6‑B‑10</b>, 09.09.2026).
+        ///
+        /// <para><b>Warum BEIDE Tabellen.</b> Dieselbe Hausregel wie bei Schritt 65:
+        /// „Katalog und Projektkopie im selben Schritt, Spalte für Spalte gleich —
+        /// eine Spalte nur auf einer Seite ist beim <c>CopyFromStamm</c> sofort ein
+        /// Datenverlust." Der Name steht in
+        /// <see cref="WechselrichterSchema.SPALTE_I_SC_MAX"/>, dort auch die
+        /// Bedeutung; die CREATE-Anweisungen des Schritts 65 führen die Spalte
+        /// seither mit, damit eine frisch angelegte Datenbank ohne diesen Schritt
+        /// auskommt.</para>
+        ///
+        /// <para><b>KEIN DML und ergebnisNEUTRAL.</b> Die Spalte bleibt NULL, und NULL
+        /// heisst „keine Prüfung" — P4 färbt dann wie bisher. Kein Rechenweg liest
+        /// sie; sie geht ausschliesslich in die Ampel des PV-Dialogs.</para>
+        ///
+        /// <para><b>Warum NICHT in <see cref="Alle"/>.</b> Wie die zwei Tabellen des
+        /// Schritts 65 selbst: Die stille Rückfallebene
+        /// <c>WaermequelleClass.SchemaSicherstellen</c> kennt den
+        /// Wechselrichterkatalog nicht — er entsteht ausschliesslich über die
+        /// Migration.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt70_WrKurzschlussstrom =
+        {
+            new SchemaSpalte(TAB_WECHSELRICHTER_STAMM, WechselrichterSchema.SPALTE_I_SC_MAX, "DOUBLE"),
+            new SchemaSpalte(TAB_WECHSELRICHTER,       WechselrichterSchema.SPALTE_I_SC_MAX, "DOUBLE"),
+        };
+
+        /// <summary>
+        /// Schritt 70 der Migration, SPALTENTEIL <b>Projekteinstellungen</b>: die zwei
+        /// Auslegungstemperaturen an <c>Tab_Einstellungen</c> (<b>W6‑B‑11</b>).
+        /// Begründung, Vorbelegung und Leseweg stehen bei
+        /// <see cref="SPALTE_AUSLEG_T_KALT"/>.
+        ///
+        /// <para><b>KEIN DML</b> — beide Spalten bleiben NULL, und NULL ist die
+        /// Vorgabe. Der Referenzlauf bleibt byte-gleich: Kein Rechenweg liest sie, die
+        /// Ampel ist keine Rechnung.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt70_Auslegungstemperaturen =
+        {
+            new SchemaSpalte(TAB_EINSTELLUNGEN, SPALTE_AUSLEG_T_KALT,  "DOUBLE"),  // nur anhängen!
+            new SchemaSpalte(TAB_EINSTELLUNGEN, SPALTE_AUSLEG_T_HEISS, "DOUBLE"),  // nur anhängen!
+        };
+
         /// <summary>
         /// Name der Bezugsgröße der Kessel-Wartungskosten (Entscheidung des Anwenders
         /// 18.08.2026, Punkt 1). EINE Wahrheit für Migration, Katalog-Editor
@@ -3809,6 +3895,14 @@ namespace WindowsFormsApplication1
         ///
         /// <see cref="Schritt68_StromspeicherFirma"/> ist aus demselben Grund aufgeführt
         /// wie <see cref="Schritt11_Stromspeicher"/>: dem SCHREIBER.
+        ///
+        /// <see cref="Schritt70_WrKurzschlussstrom"/> und
+        /// <see cref="Schritt70_Auslegungstemperaturen"/> sind BEWUSST NICHT aufgeführt.
+        /// Beim ersten aus demselben Grund wie bei den zwei Tabellen des Schritts 65:
+        /// Die Rückfallebene kennt den Wechselrichterkatalog gar nicht. Beim zweiten
+        /// aus dem Grund, der bei <see cref="SPALTE_BOOSTER_LESEPUNKT"/> steht:
+        /// <c>Tab_Einstellungen</c> wird ordinal gelesen und darf nur angehängt,
+        /// namensbasiert gelesen und zielgenau geschrieben werden.
         /// <c>StromspeicherStammCtrl.Insert/Update</c> und
         /// <c>StromspeicherCtrl.CopyFromStamm</c> nennen <c>Firma</c> seit Stufe S2
         /// namentlich; <c>StromspeicherCtrl.StelleGeraetespaltenSicher</c> ist die

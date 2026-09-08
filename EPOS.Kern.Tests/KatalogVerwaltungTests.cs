@@ -882,11 +882,11 @@ namespace EPOS.Kern.Tests
             var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);
             var wr = ModulKatalogProfil.Finde(ModulKatalogArt.Wechselrichter);
 
-            // Der Wechselrichter: acht Felder "Geraet", sieben "Eingang", zehn
-            // "Wirkungsgrad".
-            Assert.Equal(25, wr.Felder.Count);
+            // Der Wechselrichter: acht Felder "Geraet", ACHT "Eingang" (seit W6-B-10
+            // der Kurzschlussstrom je MPPT), zehn "Wirkungsgrad".
+            Assert.Equal(26, wr.Felder.Count);
             Assert.Equal(8, wr.Felder.Count(f => f.Gruppe == 0));
-            Assert.Equal(7, wr.Felder.Count(f => f.Gruppe == 1));
+            Assert.Equal(8, wr.Felder.Count(f => f.Gruppe == 1));
             Assert.Equal(10, wr.Felder.Count(f => f.Gruppe == 2));
             Assert.NotEqual("", wr.GruppeDrei);
 

@@ -56,11 +56,14 @@ namespace WindowsFormsApplication1
         /// 67; mit dem Hersteller des Stromspeicherkatalogs (Schritt 68,
         /// W14a-E-10-Q7 vom 07.09.2026, Stufe S2) auf 68; mit der Reparatur der
         /// verdorbenen PV-Modulkoeffizienten (Schritt 69, Befund W6-B-5 und die
-        /// Entscheide Q1 bis Q3 vom 07.09.2026) auf <b>69</b>. Der Freeze-Stand
+        /// Entscheide Q1 bis Q3 vom 07.09.2026) auf 69; mit der PV-Strangprüfung
+        /// (Schritt 70 — der Kurzschlussstrom je MPPT und die zwei
+        /// Auslegungstemperaturen, Anwenderentscheide W6-B-10 und W6-B-11 vom
+        /// 09.09.2026) auf <b>70</b>. Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 69;
+        public const int Zielversion = 70;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

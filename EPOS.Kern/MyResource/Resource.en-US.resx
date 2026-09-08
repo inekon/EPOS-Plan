@@ -16219,4 +16219,46 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="IMP_KAT_SP_CHEMIE" xml:space="preserve">
     <value>Cell chemistry</value>
   </data>
+  <data name="PVS_P1_OHNE_BETA" xml:space="preserve">
+    <value>calculated without beta_OC, using factor {0}</value>
+  </data>
+  <data name="PVS_HINWEIS_ISC_125" xml:space="preserve">
+    <value>DC cables, fuses and switches must be rated for 1.25 times the short-circuit current; this tool does not check that &#8212; P4 applies the thermal correction only.</value>
+  </data>
+  <data name="PVS_P4_ROT_ISC" xml:space="preserve">
+    <value>I {0} A &gt; {1} A at MPPT {2} &#8212; above the input&#8217;s short-circuit rating, the device may be damaged</value>
+  </data>
+  <data name="PVS_P4_GELB" xml:space="preserve">
+    <value>I {0} A &gt; {1} A at MPPT {2} &#8212; power will be curtailed</value>
+  </data>
+  <data name="WRK_LBL_I_SC_MAX" xml:space="preserve">
+    <value>max. short-circuit current per MPPT:</value>
+  </data>
+  <data name="PVS_LBL_TEMPERATUREN" xml:space="preserve">
+    <value>Design temperatures:</value>
+  </data>
+  <data name="PVS_LBL_T_KALT" xml:space="preserve">
+    <value>cold [&#176;C]</value>
+  </data>
+  <data name="PVS_LBL_T_HEISS" xml:space="preserve">
+    <value>hot [&#176;C]</value>
+  </data>
+  <data name="PVS_TIP_TEMPERATUREN" xml:space="preserve">
+    <value>The cold case sets the highest string voltage (P1, P3), the hot case the lowest MPP voltage and the highest current (P2, P4). Empty means &#8722;10 &#176;C and +70 &#176;C cell temperature.</value>
+  </data>
+  <data name="PVS_BTN_TVORSCHLAG" xml:space="preserve">
+    <value>Apply proposal from climate data</value>
+  </data>
+  <data name="PVS_TEMP_HERLEITUNG" xml:space="preserve">
+    <value>Proposal from climate data: cold = annual minimum ambient temperature {0} &#176;C; hot = {1} &#176;C (annual maximum) + (T_NOCT {2} &#176;C &#8722; 20) &#183; 1000/800 = {3} &#176;C cell temperature.</value>
+  </data>
+  <data name="PVS_TEMP_OHNE_KLIMA" xml:space="preserve">
+    <value>The project&#8217;s climate data carry no ambient temperature series &#8212; no proposal available.</value>
+  </data>
+  <data name="PVS_TEMP_GELTEND" xml:space="preserve">
+    <value>In effect: {0} &#176;C cold and {1} &#176;C hot (empty = default {2} &#176;C / {3} &#176;C).</value>
+  </data>
+  <data name="PVS_LAUF_VORSPANN" xml:space="preserve">
+    <value>PV system &#8220;{0}&#8221;: {1}</value>
+  </data>
 </root>

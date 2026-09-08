@@ -2589,6 +2589,56 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_69_PV_KOEFFIZIENTEN = 69;
 
+        /// <summary>
+        /// <b>Die PV-Strangprüfung</b> — Anwenderentscheide <b>W6‑B‑10</b> und
+        /// <b>W6‑B‑11</b> vom 09.09.2026 („setze Empfehlungen 1–5 um", Prüfbericht
+        /// vom 08.09.2026, offene Punkte <b>O‑3</b> und <b>O‑9</b>). Vier Spalten in
+        /// drei Tabellen:
+        ///
+        /// <list type="bullet">
+        ///   <item><description><c>Tab_Wechselrichter_STAMM.I_Sc_Max</c> und
+        ///     <c>Tab_Wechselrichter.I_Sc_Max</c> — der maximale KURZSCHLUSSstrom je
+        ///     MPPT [A] (W6‑B‑10). DDL in
+        ///     <see cref="SchemaKatalog.Schritt70_WrKurzschlussstrom"/>.</description></item>
+        ///   <item><description><c>Tab_Einstellungen.Ausleg_T_Kalt</c> und
+        ///     <c>…Ausleg_T_Heiss</c> — die zwei Auslegungstemperaturen je Projekt
+        ///     [°C] (W6‑B‑11). DDL in
+        ///     <see cref="SchemaKatalog.Schritt70_Auslegungstemperaturen"/>.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Wozu.</b> P4 verglich den temperaturkorrigierten Strangstrom
+        /// gegen <c>I_Dc_Max</c> und färbte ROT — ohne zu wissen, ob der Katalog dort
+        /// den Arbeits- oder den Kurzschlussstrom führt (Prüfbericht V6). Mit der
+        /// neuen Spalte ist P4 zweistufig: über <c>I_Sc_Max</c> rot (Schaden), nur
+        /// über <c>I_Dc_Max</c> gelb (Abregeln). Und die Auslegungstemperaturen waren
+        /// zwei Konstanten für jedes Projekt, obwohl IEC 62548 die STANDORTbezogen
+        /// niedrigste Temperatur verlangt (Prüfbericht 2.1 und V7).</para>
+        ///
+        /// <para><b>KEIN DML, ergebnisNEUTRAL.</b> Alle vier Spalten bleiben nach
+        /// <c>ADD COLUMN</c> NULL, und NULL heisst bei allen vieren „wie bisher":
+        /// keine Prüfung gegen den Kurzschlussstrom, −10 °C und +70 °C als
+        /// Auslegungstemperaturen. Kein Rechenweg liest eine davon — die
+        /// Strangprüfung ist eine Ampel, kein Rechenergebnis. Der Referenzlauf bleibt
+        /// <b>byte-gleich</b>.</para>
+        ///
+        /// <para><b>Warum die zwei Wechselrichterspalten NACHgetragen werden, obwohl
+        /// Schritt 65 die Tabellen anlegt.</b> <c>CREATE TABLE IF NOT EXISTS</c> lässt
+        /// eine vorhandene Tabelle unberührt; eine Datenbank, die Schritt 65 schon
+        /// hinter sich hat, bekäme die Spalte sonst nie.
+        /// <see cref="WechselrichterSchema"/> führt sie trotzdem im CREATE mit —
+        /// dann bekommt eine frisch angelegte Datenbank sie in EINEM Zug, und beide
+        /// Wege enden bei demselben Schema.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 70
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 69
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; ein DML, das ein zweites Mal etwas täte, gibt es
+        /// nicht.</para>
+        /// </summary>
+        public const int SCHRITT_70_PV_STRANGPRUEFUNG = 70;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4626,6 +4676,25 @@ namespace WindowsFormsApplication1
                         "PV-Dialogs bliebe grau, und die Simulation rechnete mit dem " +
                         "NOCT-Rueckfall 45 Grad C statt mit dem Katalogwert.",
                         Schritt_69_PvKoeffizienten),
+
+            // ANWENDERENTSCHEIDE W6-B-10 und W6-B-11 vom 09.09.2026 ("setze
+            // Empfehlungen 1-5 um"). Begruendung, Ergebnisneutralitaet und
+            // Idempotenzzusage bei der Schrittkonstanten; die DDL steht in
+            // SchemaKatalog.Schritt70_WrKurzschlussstrom und
+            // SchemaKatalog.Schritt70_Auslegungstemperaturen - EINE Quelle fuer
+            // Migration, Testdatenbank und Nachweis.
+            new Schritt(SCHRITT_70_PV_STRANGPRUEFUNG,
+                        "Die PV-Strangpruefung: den Kurzschlussstrom je MPPT " +
+                        "(Tab_Wechselrichter(_STAMM).I_Sc_Max) und die zwei " +
+                        "Auslegungstemperaturen (Tab_Einstellungen.Ausleg_T_Kalt/" +
+                        "Ausleg_T_Heiss) anlegen (W6-B-10, W6-B-11)",
+                        "Die Strangampel bliebe dann bei den Regeln von bisher: P4 " +
+                        "faerbt jede Ueberschreitung von I_Dc_Max rot, auch wo das " +
+                        "Geraet nur abregelt, und die Auslegungstemperaturen blieben " +
+                        "fuer jedes Projekt bei minus 10 und plus 70 Grad C. Gerechnet " +
+                        "wird unveraendert - keine der vier Spalten geht in einen " +
+                        "Rechenweg.",
+                        Schritt_70_PvStrangpruefung),
         };
 
         /// <summary>
@@ -10742,6 +10811,53 @@ namespace WindowsFormsApplication1
                     "ausserhalb des Fensters 20 bis 60 Grad C lag, rechnete die " +
                     "Simulation mit dem Rueckfall 45 Grad C. Genau das war der Zweck " +
                     "(Entscheid Q3).");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 70 - die PV-Strangpruefung (W6-B-10 und W6-B-11)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 70 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_70_PV_STRANGPRUEFUNG"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene
+        /// Anweisung: <see cref="SchemaKatalog.Schritt70_WrKurzschlussstrom"/> und
+        /// <see cref="SchemaKatalog.Schritt70_Auslegungstemperaturen"/>. Aus denselben
+        /// zwei Quellen bedienen sich <c>Werkzeuge/Testdatenbankschema</c> und der
+        /// Nachweis in <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/>.</b> Der Schritt gehört dem
+        /// SQLite-Zweig; <c>Ddl</c> und <c>NonQuery</c> arbeiten auf <c>Lauf.Conn</c>,
+        /// und die ist hier <c>null</c>. Der Typ geht wie in Schritt 68 über
+        /// <see cref="StilleDb.SqliteSpaltenTyp"/> — <c>DOUBLE</c> wird dort zu
+        /// <c>REAL</c>, dem einzigen Fliesskommatyp einer STRICT-Tabelle.</para>
+        /// </summary>
+        private static bool Schritt_70_PvStrangpruefung(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt70_WrKurzschlussstrom)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt70_Auslegungstemperaturen)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("70: Die PV-Strangpruefung bekommt ihre vier Spalten " +
+                    "(Entscheide W6-B-10 und W6-B-11) - " +
+                    SchemaKatalog.Schritt70_WrKurzschlussstrom.Length +
+                    " am Wechselrichter (" + WechselrichterSchema.SPALTE_I_SC_MAX +
+                    " in Katalog und Projektkopie) und " +
+                    SchemaKatalog.Schritt70_Auslegungstemperaturen.Length +
+                    " an " + SchemaKatalog.TAB_EINSTELLUNGEN + " (" +
+                    SchemaKatalog.SPALTE_AUSLEG_T_KALT + ", " +
+                    SchemaKatalog.SPALTE_AUSLEG_T_HEISS + "). Alle vier bleiben NULL, " +
+                    "und NULL heisst bei allen vieren \"wie bisher\": keine Pruefung " +
+                    "gegen den Kurzschlussstrom, minus 10 und plus 70 Grad C als " +
+                    "Auslegungstemperaturen. KEIN Rechenergebnis aendert sich - die " +
+                    "Strangpruefung ist eine Ampel im Dialog und ein Laufhinweis, " +
+                    "keine Rechnung.");
             return true;
         }
 

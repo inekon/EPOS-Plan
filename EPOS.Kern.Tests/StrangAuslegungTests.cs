@@ -30,13 +30,15 @@ namespace EPOS.Kern.Tests
         private static WechselrichterModel Geraet(double pAc = 2.5, double uMppMin = 80.0,
                                                   double uMppMax = 500.0, double uDcMax = 600.0,
                                                   double iDcMax = 12.0, int? mppt = 1,
-                                                  double? pDcMax = null, int? straengeJeMppt = null)
+                                                  double? pDcMax = null, int? straengeJeMppt = null,
+                                                  double? iScMax = null)
         {
             return new WechselrichterModel
             {
                 m_ID = 7, m_szName = "Muster 2500TL", m_P_AC_Nenn = pAc, m_U_Mpp_Min = uMppMin,
                 m_U_Mpp_Max = uMppMax, m_U_Dc_Max = uDcMax, m_I_Dc_Max = iDcMax,
-                m_Anzahl_Mppt = mppt, m_P_DC_Max = pDcMax, m_Straenge_Je_Mppt = straengeJeMppt
+                m_Anzahl_Mppt = mppt, m_P_DC_Max = pDcMax, m_Straenge_Je_Mppt = straengeJeMppt,
+                m_I_Sc_Max = iScMax
             };
         }
 
@@ -214,6 +216,199 @@ namespace EPOS.Kern.Tests
                 Thread.CurrentThread.CurrentCulture = alt;
                 Thread.CurrentThread.CurrentUICulture = alt;
             }
+        }
+
+        // =================================================================================
+        // W6-B-9 / W6-B-10 / W6-B-11 (Anwenderentscheide 09.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die Hilfe kennt denselben Rückfall wie die Ampel</b> (<b>W6‑B‑9</b>): Ohne
+        /// <c>beta_OC</c> ist die Obergrenze aus P1 <c>⌊600 / (38,4 · 1,15)⌋ = ⌊13,59⌋
+        /// = 13</c> — vorher entfiel sie ganz, und die Hilfe schickte den Anwender in
+        /// genau das Rot, das sie vermeiden soll.
+        /// </summary>
+        [Fact]
+        public void W6B9_Ohne_beta_OC_rechnet_die_Obergrenze_mit_dem_Faktor()
+        {
+            PhotovoltaikModel modul = Modul();
+            modul.m_beta_OC = 0;
+
+            StrangAuslegung.Reihenbereich r = StrangAuslegung.Reihe(modul, Geraet());
+
+            Assert.Equal(13, r.MaxUoc);
+            Assert.Null(r.MinMpp);      // P2 braucht den Koeffizienten wirklich
+            Assert.Null(r.MaxMpp);
+            Assert.True(r.Pruefbar);
+            Assert.Equal(13, r.Max);
+        }
+
+        /// <summary>
+        /// <b>Die Grenze der Strangzahl ist der KURZSCHLUSSstrom, wenn er gepflegt
+        /// ist</b> (<b>W6‑B‑10</b>): <c>⌊25,0 / 9,5515⌋ = 2</c> statt
+        /// <c>⌊12,0 / 9,5515⌋ = 1</c>. Ohne ihn bleibt es bei <c>I_Dc_Max</c>.
+        /// </summary>
+        [Fact]
+        public void W6B10_ParallelJeMppt_nimmt_den_Kurzschlussstrom_als_Grenze()
+        {
+            Assert.Equal(1, StrangAuslegung.ParallelJeMppt(Modul(), Geraet()));
+            Assert.Equal(2, StrangAuslegung.ParallelJeMppt(Modul(), Geraet(iScMax: 25.0)));
+
+            // Der Deckel aus P5 gilt zusaetzlich - er ist die haertere Grenze.
+            Assert.Equal(1, StrangAuslegung.ParallelJeMppt(
+                                Modul(), Geraet(iScMax: 25.0, straengeJeMppt: 1)));
+        }
+
+        /// <summary>
+        /// <b>Die Auslegungstemperaturen des Projekts gehen mit</b> (<b>W6‑B‑11</b>) —
+        /// die Hilfe rät auf derselben Grundlage, auf der die Ampel prüft. Bei −20 °C
+        /// ist <c>U_oc = 38,4 + (−0,118)·(−45) = 43,71 V</c> und die Obergrenze aus P1
+        /// damit <c>⌊600 / 43,71⌋ = 13</c> statt 14.
+        /// </summary>
+        [Fact]
+        public void W6B11_Die_Auslegungstemperaturen_verschieben_den_Reihenbereich()
+        {
+            StrangAuslegung.Reihenbereich kalt =
+                StrangAuslegung.Reihe(Modul(), Geraet(), -20.0, StrangPlausibilitaet.T_HEISS);
+            Assert.Equal(13, kalt.MaxUoc);
+
+            // Ein heisserer Fall hebt die UNTERgrenze aus P2. An einem Geraet mit
+            // MPP-Fenster ab 110 V: U_mpp(70 °C) = 26,09 V -> 110/26,09 = 4,22 -> 5;
+            // U_mpp(110 °C) = 21,37 V -> 110/21,37 = 5,15 -> 6.
+            Assert.Equal(5, StrangAuslegung.Reihe(Modul(), Geraet(uMppMin: 110.0)).MinMpp);
+            Assert.Equal(6, StrangAuslegung.Reihe(Modul(), Geraet(uMppMin: 110.0),
+                                                  StrangPlausibilitaet.T_KALT, 110.0).MinMpp);
+        }
+
+        /// <summary>
+        /// <b>Ohne Temperaturangabe rechnet die Hilfe wie bisher</b> — die Zusicherung,
+        /// an der die Ergebnisneutralität hängt.
+        /// </summary>
+        [Fact]
+        public void W6B11_Ohne_Temperaturangabe_bleibt_der_Bereich_vier_bis_vierzehn()
+        {
+            StrangAuslegung.Reihenbereich a = StrangAuslegung.Reihe(Modul(), Geraet());
+            StrangAuslegung.Reihenbereich b = StrangAuslegung.Reihe(
+                Modul(), Geraet(), StrangPlausibilitaet.T_KALT, StrangPlausibilitaet.T_HEISS);
+
+            Assert.Equal(a.Min, b.Min);
+            Assert.Equal(a.Max, b.Max);
+            Assert.Equal(4, b.Min);
+            Assert.Equal(14, b.Max);
+        }
+    }
+
+    /// <summary>
+    /// <b>Der Vorschlag für die zwei Auslegungstemperaturen</b>
+    /// (<c>AuslegungstemperaturVorschlag</c>, <b>W6‑B‑11</b>, Anwenderentscheid vom
+    /// 09.09.2026).
+    ///
+    /// <para>Geprüft wird der DATENBANKFREIE Kern der Rechnung
+    /// (<see cref="AuslegungstemperaturVorschlag.Aus"/>): die Zelltemperaturformel und
+    /// der NOCT-Rückfall. Das Lesen der Klimareihe hat keinen eigenen Fall — es ist
+    /// eine Abfrage, keine Regel.</para>
+    /// </summary>
+    public class AuslegungstemperaturVorschlagTests
+    {
+        /// <summary>
+        /// <b>Die Zelltemperatur bei Volleinstrahlung</b>:
+        /// <c>T_amb,max + (T_NOCT − 20) · 1000/800</c>. Mit 32,5 °C und T_NOCT 45 °C
+        /// sind das <c>32,5 + 25 · 1,25 = 63,75 °C</c>. Der kalte Fall ist das
+        /// Jahresminimum, unverändert.
+        /// </summary>
+        [Fact]
+        public void Der_heisse_Fall_ist_die_Zelltemperatur_bei_1000_W()
+        {
+            AuslegungstemperaturVorschlag.Vorschlag v =
+                AuslegungstemperaturVorschlag.Aus(-12.3, 32.5, 45.0);
+
+            Assert.True(v.Moeglich);
+            Assert.Equal(-12.3, v.Kalt, 6);
+            Assert.Equal(63.75, v.Heiss, 6);
+        }
+
+        /// <summary>
+        /// <b>Ein NOCT ausserhalb des Fensters 20…60 °C ergibt den Rückfall 45 °C</b> —
+        /// dieselbe Regel wie im Rechenweg (<c>SimulationPV.NoctDesModuls</c>). Der
+        /// Modulbestand führt in <c>T_NOCT</c> nachweislich den Kurzschlussstrom
+        /// (Paket‑A‑Befund A1); ein Vorschlag, der daraus 9 °C Zelltemperatur
+        /// errechnet, wäre schlimmer als keiner.
+        /// </summary>
+        [Theory]
+        [InlineData(null)]
+        [InlineData(0.0)]
+        [InlineData(9.014)]
+        [InlineData(75.0)]
+        public void Ein_unplausibler_NOCT_faellt_auf_45_Grad_zurueck(double? noct)
+        {
+            Assert.Equal(45.0, AuslegungstemperaturVorschlag.NoctOderRueckfall(noct), 6);
+
+            AuslegungstemperaturVorschlag.Vorschlag v =
+                AuslegungstemperaturVorschlag.Aus(-10.0, 30.0, noct);
+            Assert.Equal(61.25, v.Heiss, 6);      // 30 + 25 · 1,25
+        }
+
+        /// <summary>
+        /// <b>Ein gepflegter NOCT wird genommen</b>: 48 °C ergeben
+        /// <c>30 + 28 · 1,25 = 65,00 °C</c>.
+        /// </summary>
+        [Fact]
+        public void Ein_plausibler_NOCT_geht_in_die_Rechnung()
+        {
+            Assert.Equal(48.0, AuslegungstemperaturVorschlag.NoctOderRueckfall(48.0), 6);
+            Assert.Equal(65.0, AuslegungstemperaturVorschlag.Aus(-10.0, 30.0, 48.0).Heiss, 6);
+        }
+
+        /// <summary>
+        /// <b>Der Rückfall ist derselbe wie im Rechenweg</b> — zwei Zahlen, die
+        /// auseinanderlaufen dürfen, laufen auseinander.
+        /// </summary>
+        [Fact]
+        public void Der_NOCT_Rueckfall_deckt_sich_mit_dem_Rechenweg()
+        {
+            Assert.Equal(SimulationPV.NOCT_RUECKFALL, AuslegungstemperaturVorschlag.NOCT_RUECKFALL);
+            Assert.Equal(SimulationPV.NOCT_MIN, AuslegungstemperaturVorschlag.NOCT_MIN);
+            Assert.Equal(SimulationPV.NOCT_MAX, AuslegungstemperaturVorschlag.NOCT_MAX);
+        }
+
+        /// <summary>
+        /// <b>Die Herleitung nennt alle vier Zahlen</b> — sie ist das, was der Anwender
+        /// liest, bevor er übernimmt.
+        /// </summary>
+        [Fact]
+        public void Die_Herleitung_nennt_die_vier_Zahlen()
+        {
+            CultureInfo alt = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
+            try
+            {
+                string satz = AuslegungstemperaturVorschlag.Aus(-12.3, 32.5, 45.0).Satz;
+
+                Assert.Contains("-12,3", satz, System.StringComparison.Ordinal);
+                Assert.Contains("32,5", satz, System.StringComparison.Ordinal);
+                Assert.Contains("45,0", satz, System.StringComparison.Ordinal);
+                Assert.Contains("63,8", satz, System.StringComparison.Ordinal);   // N1 rundet
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = alt;
+                Thread.CurrentThread.CurrentUICulture = alt;
+            }
+        }
+
+        /// <summary>
+        /// <b><c>null</c> heisst „die Vorgabe"</b> — in beiden Richtungen.
+        /// </summary>
+        [Fact]
+        public void Ohne_gepflegten_Wert_gilt_die_Vorgabe()
+        {
+            Assert.Equal(StrangPlausibilitaet.T_KALT, Auslegungstemperaturen.Vorgabe.KaltOderVorgabe);
+            Assert.Equal(StrangPlausibilitaet.T_HEISS, Auslegungstemperaturen.Vorgabe.HeissOderVorgabe);
+
+            var eigen = new Auslegungstemperaturen(-20.0, 80.0);
+            Assert.Equal(-20.0, eigen.KaltOderVorgabe);
+            Assert.Equal(80.0, eigen.HeissOderVorgabe);
         }
     }
 }

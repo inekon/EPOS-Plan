@@ -176,6 +176,30 @@ public sealed record StrangVorschlag(bool Moeglich, IReadOnlyList<StrangVorgabe>
 }
 
 /// <summary>
+/// Was der Knopf „Vorschlag aus Klimadaten übernehmen" anbietet (<b>W6‑B‑11</b>,
+/// Anwenderentscheid vom 09.09.2026) — das Ergebnis des Delegaten
+/// <c>PvStraengeFelder.TemperaturenVorschlagen</c>.
+///
+/// <para><b>Gerechnet hat der KERN</b> (<c>AuslegungstemperaturVorschlag.Fuer</c>):
+/// kalt = Jahresminimum der Außentemperatur des Klimadatensatzes, heiß =
+/// Zelltemperatur bei 1 000 W/m² aus dem Jahresmaximum und <c>T_NOCT</c> des
+/// Anlagenmoduls. Die Komponente trägt die zwei Zahlen in ihre Felder und zeigt den
+/// <paramref name="Satz"/> als Herleitung — sie rechnet nichts.</para>
+///
+/// <para><b>Übernommen wird nur per Knopf</b>: Die Auslegungstemperatur ist eine
+/// Entscheidung des Planers, keine Ableitung (Begründung im Kern).</para>
+/// </summary>
+/// <param name="Moeglich">Die Klimadaten lieferten eine Reihe.</param>
+/// <param name="Kalt">Vorgeschlagene Auslegungstemperatur kalt [°C].</param>
+/// <param name="Heiss">Vorgeschlagene Auslegungstemperatur heiß [°C].</param>
+/// <param name="Satz">Die Herleitung — oder der Grund, wenn es keinen Vorschlag gibt.</param>
+public sealed record Temperaturvorschlag(bool Moeglich, double Kalt, double Heiss, string Satz)
+{
+    /// <summary>Kein Vorschlag und kein Satz — der Stand ohne Delegat.</summary>
+    public static readonly Temperaturvorschlag Leer = new(false, 0.0, 0.0, "");
+}
+
+/// <summary>
 /// Das Ergebnis des Übernehmens eines Katalogsatzes in das Projekt
 /// (<c>WechselrichterCtrl.CopyFromStamm</c>).
 /// </summary>
@@ -334,6 +358,42 @@ public sealed class PvStrangTexte
     /// </summary>
     public string HerleitungFilterFrei { get; set; } =
         T("PVS_HERLEITUNG_FILTER_FREI", "Jeder Hersteller ist wählbar.");
+
+    /// <summary>
+    /// Beschriftung der Zeile „Auslegungstemperaturen" — <c>PVS_LBL_TEMPERATUREN</c>
+    /// (<b>W6‑B‑11</b>).
+    /// </summary>
+    public string LabelTemperaturen { get; set; } =
+        T("PVS_LBL_TEMPERATUREN", "Auslegungstemperaturen:");
+
+    /// <summary>Beschriftung des kalten Falls — <c>PVS_LBL_T_KALT</c>.</summary>
+    public string LabelTKalt { get; set; } = T("PVS_LBL_T_KALT", "kalt [°C]");
+
+    /// <summary>Beschriftung des heißen Falls — <c>PVS_LBL_T_HEISS</c>.</summary>
+    public string LabelTHeiss { get; set; } = T("PVS_LBL_T_HEISS", "heiß [°C]");
+
+    /// <summary>
+    /// Werkzeugtipp der Temperaturzeile — <c>PVS_TIP_TEMPERATUREN</c>: was die zwei
+    /// Zahlen bewirken und was ein leeres Feld heißt.
+    /// </summary>
+    public string TipTemperaturen { get; set; } =
+        T("PVS_TIP_TEMPERATUREN",
+          "Der kalte Fall bestimmt die höchste Strangspannung (P1, P3), der heiße Fall die niedrigste MPP-Spannung und den höchsten Strom (P2, P4). Leer heißt: −10 °C und +70 °C Zelltemperatur.");
+
+    /// <summary>
+    /// Knopf „Vorschlag aus Klimadaten übernehmen" — <c>PVS_BTN_TVORSCHLAG</c>
+    /// (<b>W6‑B‑11</b>). Ohne Delegat gibt es ihn NICHT.
+    /// </summary>
+    public string BtnTemperaturvorschlag { get; set; } =
+        T("PVS_BTN_TVORSCHLAG", "Vorschlag aus Klimadaten übernehmen");
+
+    /// <summary>
+    /// Die Zeile unter den zwei Feldern, solange kein Vorschlag gerechnet wurde —
+    /// <c>PVS_TEMP_GELTEND</c> mit {0} kalt, {1} heiß, {2} und {3} den Vorgaben.
+    /// </summary>
+    public string HerleitungTemperaturen { get; set; } =
+        T("PVS_TEMP_GELTEND",
+          "Es gelten {0} °C kalt und {1} °C heiß (leer = Vorgabe {2} °C / {3} °C).");
 
     /// <summary>Knopf „Strang anlegen" — <c>PVS_BTN_ANLEGEN</c>.</summary>
     public string BtnAnlegen { get; set; } = T("PVS_BTN_ANLEGEN", "Strang anlegen");

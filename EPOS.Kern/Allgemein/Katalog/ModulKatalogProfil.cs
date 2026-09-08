@@ -252,6 +252,7 @@ namespace WindowsFormsApplication1
         public const string FeldUDcMax = WechselrichterSchema.SPALTE_U_DC_MAX;
         public const string FeldUStart = WechselrichterSchema.SPALTE_U_START;
         public const string FeldIDcMax = WechselrichterSchema.SPALTE_I_DC_MAX;
+        public const string FeldIScMax = WechselrichterSchema.SPALTE_I_SC_MAX;
         public const string FeldAnzahlMppt = WechselrichterSchema.SPALTE_ANZAHL_MPPT;
         public const string FeldStraengeJeMppt = WechselrichterSchema.SPALTE_STRAENGE_JE_MPPT;
         public const string FeldEta05 = WechselrichterSchema.SPALTE_ETA05;
@@ -449,6 +450,14 @@ namespace WindowsFormsApplication1
                             // JE MPPT, nicht je Geraet - so fuehrt es die CEC-Liste,
                             // und so braucht es die Auslegungspruefung P4.
                             new ModulKatalogFeld(FeldIDcMax, t("WRK_LBL_I_DC_MAX"), "A",
+                                                 BrowserFeldArt.Zahl, true, 1),
+                            // W6-B-10 (09.09.2026): der KURZSCHLUSSstrom je MPPT -
+                            // die Grenze, ab der das Geraet Schaden nimmt. Er steht
+                            // unmittelbar hinter dem Arbeitsstrom, weil beide dieselbe
+                            // Einheit tragen und nur zusammen zu verstehen sind. WEDER
+                            // CEC NOCH OND FUEHREN IHN; das Feld bleibt nach jedem
+                            // Import leer und wird hier von Hand gepflegt.
+                            new ModulKatalogFeld(FeldIScMax, t("WRK_LBL_I_SC_MAX"), "A",
                                                  BrowserFeldArt.Zahl, true, 1),
                             new ModulKatalogFeld(FeldAnzahlMppt, t("WRK_LBL_ANZAHL_MPPT"), "",
                                                  BrowserFeldArt.Ganzzahl, true, 1),

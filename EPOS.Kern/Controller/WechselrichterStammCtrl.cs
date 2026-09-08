@@ -546,6 +546,7 @@ namespace WindowsFormsApplication1
                 case WechselrichterSchema.SPALTE_U_DC_MAX: return m_U_Dc_Max;
                 case WechselrichterSchema.SPALTE_U_START: return m_U_Start;
                 case WechselrichterSchema.SPALTE_I_DC_MAX: return m_I_Dc_Max;
+                case WechselrichterSchema.SPALTE_I_SC_MAX: return m_I_Sc_Max;
                 case WechselrichterSchema.SPALTE_ANZAHL_MPPT: return m_Anzahl_Mppt;
                 case WechselrichterSchema.SPALTE_STRAENGE_JE_MPPT: return m_Straenge_Je_Mppt;
                 case WechselrichterSchema.SPALTE_ETA05: return m_Eta05;
@@ -624,6 +625,7 @@ namespace WindowsFormsApplication1
             m.m_U_Dc_Max = Zahl(row, WechselrichterSchema.SPALTE_U_DC_MAX);
             m.m_U_Start = Zahl(row, WechselrichterSchema.SPALTE_U_START);
             m.m_I_Dc_Max = Zahl(row, WechselrichterSchema.SPALTE_I_DC_MAX);
+            m.m_I_Sc_Max = Zahl(row, WechselrichterSchema.SPALTE_I_SC_MAX);
             m.m_Anzahl_Mppt = Ganz(row, WechselrichterSchema.SPALTE_ANZAHL_MPPT);
             m.m_Straenge_Je_Mppt = Ganz(row, WechselrichterSchema.SPALTE_STRAENGE_JE_MPPT);
             m.m_Eta05 = Zahl(row, WechselrichterSchema.SPALTE_ETA05);

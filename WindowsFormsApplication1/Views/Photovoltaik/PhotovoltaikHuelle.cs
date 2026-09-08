@@ -100,6 +100,15 @@ namespace WindowsFormsApplication1
             var wrKopien = new WechselrichterCtrl();
             wrKopien.ReadAll(projektId);
 
+            // W6-B-11 (09.09.2026): die zwei AUSLEGUNGSTEMPERATUREN des Projekts. Sie
+            // werden EINMAL gelesen und hier gehalten; "AuslegungstemperaturenSetzen"
+            // schreibt sie in die Einstellungen UND legt den neuen Stand hier ab, damit
+            // die naechste Ampelpruefung sofort mit ihm rechnet. Ein zweites Lesen je
+            // Tastendruck waere eine Abfrage fuer eine Zahl, die die Maske gerade selbst
+            // gesetzt hat.
+            Auslegungstemperaturen temperaturen =
+                KonfigurationCtrl.AuslegungstemperaturenLesen(projektId);
+
             var zaehler = new Zaehler();
             foreach (var m in modelle) if (m.ID >= zaehler.Naechster) zaehler.Naechster = m.ID + 1;
 
@@ -249,8 +258,31 @@ namespace WindowsFormsApplication1
 
                 // W6-O-5: die GEWAEHLTE Projektzeile geht mit - sie sagt, gegen welches
                 // Modul die Ampel prueft.
+                // W6-B-12: und sie sagt den GESPEICHERTEN Anlagenwert, gegen den P8
+                // prueft - nicht mehr die abgeleitete Summe.
                 ["StraengePruefen"] = new Func<ErzeugerZeile, IReadOnlyList<StrangZeile>, StrangBefund>(
-                    (zeile, straenge) => Pruefen(straenge, ModulDer(zeile), wrKopien)),
+                    (zeile, straenge) => Pruefen(straenge, zeile, ModulDer(zeile), wrKopien,
+                                                 temperaturen)),
+
+                // --- W6-B-11: die Auslegungstemperaturen des Projekts ---------------
+                ["AuslegungKalt"] = temperaturen.Kalt,
+                ["AuslegungHeiss"] = temperaturen.Heiss,
+                ["AuslegungKaltVorgabe"] = StrangPlausibilitaet.T_KALT,
+                ["AuslegungHeissVorgabe"] = StrangPlausibilitaet.T_HEISS,
+
+                ["AuslegungstemperaturenSetzen"] = new Action<double?, double?>(
+                    (kalt, heiss) =>
+                    {
+                        temperaturen = new Auslegungstemperaturen(kalt, heiss);
+                        KonfigurationCtrl.AuslegungstemperaturenSchreiben(projektId, kalt, heiss);
+                    }),
+
+                // Gerechnet wird im KERN (AuslegungstemperaturVorschlag): Die
+                // Klimareihe liest SolardatenCtrl, und der ist dort internal. Die
+                // Huelle steuert nur bei, was der Kern nicht wissen kann - T_NOCT des
+                // Anlagenmoduls der GEWAEHLTEN Zeile.
+                ["Temperaturvorschlag"] = new Func<ErzeugerZeile, Temperaturvorschlag>(
+                    zeile => Temperaturen(projektId, zeile)),
 
                 // Die Modulverwaltung ist bis Welle 14 eine WinForms-Maske.
                 // iU9-W14a.3: Der Modulkatalog ist die Razor-Komponente
@@ -766,15 +798,15 @@ namespace WindowsFormsApplication1
         /// das Ergebnis auf die Anzeigezeilen ab. Gerechnet wird hier nichts.
         /// </summary>
         private static StrangBefund Pruefen(IReadOnlyList<StrangZeile> zeilen,
+                                            ErzeugerZeile zeile,
                                             PhotovoltaikStammCtrl.ModulDetail modul,
-                                            WechselrichterCtrl kopien)
+                                            WechselrichterCtrl kopien,
+                                            Auslegungstemperaturen temperaturen)
         {
             var geraete = new Dictionary<int, WechselrichterModel>();
             foreach (WechselrichterModel g in kopien.items)
                 if (g != null && !geraete.ContainsKey(g.m_ID)) geraete[g.m_ID] = g;
 
-            int module = 0;
-            foreach (StrangZeile z in zeilen) module += z.Modulzahl;
 
             // W6-O-6: die ABWEICHENDEN Modultypen der Straenge. Der Katalogsatz wird
             // ueber den Bezeichner geholt - dieselbe Quelle wie beim Anlagenmodul, und
@@ -794,10 +826,21 @@ namespace WindowsFormsApplication1
                     Modul = ModulModell(modul),
                     Module = strangmodule,
                     Geraete = geraete,
-                    // P8 vergleicht gegen die ABGELEITETE Zahl: Die Maske schreibt sie
-                    // ohnehin in den Anlagenwert zurueck (Q9), und waehrend des
-                    // Bearbeitens ist der Anlagenwert noch der alte.
-                    AnzahlModuleAnlage = module
+
+                    // W6-B-12 (Anwenderentscheid 09.09.2026): P8 vergleicht gegen den
+                    // GESPEICHERTEN Anlagenwert. Bis dahin gab die Huelle hier die
+                    // abgeleitete Summe herein - dieselbe Zahl, aus derselben Liste,
+                    // nach derselben Formel; P8 konnte deshalb nie anschlagen (Befund
+                    // A11 des Pruefberichts). Der Q9-Abgleich der Maske
+                    // (BeiStrangaenderung schreibt die Summe zurueck) bleibt: Die
+                    // Meldung trifft damit Altdaten und ist nach dem naechsten
+                    // Handgriff wieder still.
+                    AnzahlModuleAnlage = zeile?.AnzahlModule ?? 0.0,
+
+                    // W6-B-11: die Auslegungstemperaturen des Projekts; null heisst
+                    // Vorgabe, und die kennt der Kern selbst.
+                    TKalt = temperaturen?.Kalt,
+                    THeiss = temperaturen?.Heiss
                 });
 
             var straenge = new List<Ampelzeile>();
@@ -808,7 +851,22 @@ namespace WindowsFormsApplication1
             foreach (StrangPlausibilitaet.Geraetebefund g in b.Geraete)
                 chips.Add(new Ampelzeile(Farbe(g.Farbe), MitEmpfehlung(g.Satz, g.Empfehlung)));
 
-            return new StrangBefund(straenge, chips, b.Modulsumme, b.NaeherungMpp);
+            return new StrangBefund(straenge, chips, b.Modulsumme, b.Werkzeugtipp);
+        }
+
+        /// <summary>
+        /// <b>Der Vorschlag fuer die zwei Auslegungstemperaturen</b> (<b>W6‑B‑11</b>) —
+        /// gerechnet im Kern (<c>AuslegungstemperaturVorschlag.Fuer</c>), der die
+        /// Klimareihe des Projekts liest. Die Huelle steuert nur <c>T_NOCT</c> des
+        /// Anlagenmoduls bei; ohne gepflegten Wert nimmt der Kern seinen Rueckfall.
+        /// </summary>
+        private static Temperaturvorschlag Temperaturen(int projektId, ErzeugerZeile zeile)
+        {
+            PhotovoltaikStammCtrl.ModulDetail d = ModulDer(zeile);
+            AuslegungstemperaturVorschlag.Vorschlag v =
+                AuslegungstemperaturVorschlag.Fuer(projektId, d?.TNoct);
+
+            return new Temperaturvorschlag(v.Moeglich, v.Kalt, v.Heiss, v.Satz);
         }
 
         /// <summary>Der Katalogsatz des Moduls als Kernmodell; <c>null</c> bleibt <c>null</c>.</summary>

@@ -3,6 +3,9 @@ using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Standards;
+// W6-B-12: der Pruefdelegat rechnet mit dem KERN (StrangPlausibilitaet) statt mit
+// einem Rueckgabewert von Hand - nur so prueft der Fall wirklich P8.
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -62,7 +65,11 @@ public class PvStraengeFelderTests : BunitContext
         Func<int, GeraetWahl>? modulUebernehmen = null,
         string modulhersteller = "",
         Func<ErzeugerZeile, string, IReadOnlyList<(int Id, string Text)>>? bewerten = null,
-        Func<ErzeugerZeile, int, StrangVorschlag>? vorschlagen = null)
+        Func<ErzeugerZeile, int, StrangVorschlag>? vorschlagen = null,
+        double? tKalt = null,
+        double? tHeiss = null,
+        Action<double?, double?>? temperaturenSetzen = null,
+        Func<ErzeugerZeile, Temperaturvorschlag>? temperaturvorschlag = null)
         => Render<PvStraengeFelder>(p => p
             .Add(x => x.Zeile, zeile)
             .Add(x => x.NeigungAnlage, zeile.Neigung)
@@ -79,6 +86,10 @@ public class PvStraengeFelderTests : BunitContext
             .Add(x => x.ModulUebernehmen,
                  modulUebernehmen ?? (id => new GeraetWahl(2000 + id, Modulname(id))))
             .Add(x => x.Pruefen, pruefen)
+            .Add(x => x.TKalt, tKalt)
+            .Add(x => x.THeiss, tHeiss)
+            .Add(x => x.TemperaturenSetzen, temperaturenSetzen)
+            .Add(x => x.TemperaturenVorschlagen, temperaturvorschlag)
             .Add(x => x.Geaendert, () => geaendert?.Invoke()));
 
     private static string Name(int stammId)
@@ -1062,9 +1073,16 @@ public class PvStraengeFelderTests : BunitContext
         Assert.True(cut.Instance.WechselrichterOffen);
         Assert.Contains("kein Clipping", cut.Instance.DcAcText, StringComparison.OrdinalIgnoreCase);
 
+        // Die Felder werden ueber ihren FELDNAMEN gegriffen und nicht ueber die
+        // Reihenfolge: Seit W6-B-11 stehen zwei Zahlenfelder (die Auslegungs-
+        // temperaturen) VOR der Ueberlagerung, und ein Index waere damit eine Falle
+        // fuer jeden weiteren Zusatz.
         var felder = cut.FindComponents<Zahlenfeld>();
-        await cut.InvokeAsync(() => felder[0].Instance.WertChanged.InvokeAsync(2.5));
-        await cut.InvokeAsync(() => felder[1].Instance.WertChanged.InvokeAsync(0.94));
+        Zahlenfeld Feld(string name)
+            => felder.First(f => f.Instance.Feldname == name).Instance;
+
+        await cut.InvokeAsync(() => Feld("WrNennleistung").WertChanged.InvokeAsync(2.5));
+        await cut.InvokeAsync(() => Feld("WrEta10").WertChanged.InvokeAsync(0.94));
         Assert.Contains("1,10", cut.Instance.DcAcText, StringComparison.Ordinal);  // 2,752 auf 2,50
         Assert.Null(zeile.WrNennleistungKw);                                        // noch nicht geschrieben
 
@@ -1350,6 +1368,210 @@ public class PvStraengeFelderTests : BunitContext
         var oben = Wahl(cut, "Wechselrichter aus dem Katalog:").Instance.Eintraege;
         Assert.Equal(new[] { 0, 7, 8, 9 }, oben.Select(e => e.Id).ToArray());
         Assert.DoesNotContain(oben, e => e.Text.Contains("DC/AC", StringComparison.Ordinal));
+    }
+
+    // =================================================================================
+    // W6-B-11 (Anwenderentscheid 09.09.2026): die Auslegungstemperaturen
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Die Temperaturzeile steht im Abschnitt</b> — zwei Zahlenfelder mit den
+    /// Werten des Projekts. Sie gehören zum ganzen Abschnitt und nicht zu einer
+    /// Strangzeile: Die Ampel darunter prüft mit ihnen.
+    /// </summary>
+    [Fact]
+    public void W6B11_Die_Temperaturzeile_zeigt_die_Werte_des_Projekts()
+    {
+        var cut = Aufbauen(Zeile(true), tKalt: -18.0, tHeiss: 75.0);
+
+        Assert.Single(cut.FindAll(".epos-strangtemperaturen"));
+        Assert.Equal(-18.0, cut.Instance.AuslegungKalt);
+        Assert.Equal(75.0, cut.Instance.AuslegungHeiss);
+        Assert.Contains("Auslegungstemperaturen", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Leer heisst Vorgabe, und die Zeile sagt es.</b> Ohne gepflegte Werte stehen
+    /// die zwei Felder leer; die Herleitung nennt trotzdem, welche Temperaturen
+    /// gerade gelten — sonst müsste der Anwender sie raten.
+    /// </summary>
+    [Fact]
+    public void W6B11_Ohne_gepflegte_Werte_nennt_die_Zeile_die_Vorgabe()
+    {
+        var cut = Aufbauen(Zeile(true));
+
+        Assert.Null(cut.Instance.AuslegungKalt);
+        Assert.Null(cut.Instance.AuslegungHeiss);
+        Assert.Contains("-10,0", cut.Instance.Temperaturzeile, StringComparison.Ordinal);
+        Assert.Contains("70,0", cut.Instance.Temperaturzeile, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Eine Handeingabe wird sofort geschrieben und sofort geprüft</b>: Der Delegat
+    /// legt den neuen Stand in der Hülle ab, und erst danach fragt die Komponente die
+    /// Ampel — die Reihenfolge ist tragend.
+    /// </summary>
+    [Fact]
+    public async Task W6B11_Eine_Handeingabe_schreibt_und_prueft_neu()
+    {
+        double? kalt = null, heiss = null;
+        int gemeldet = 0, geprueft = 0;
+
+        var cut = Aufbauen(Zeile(true),
+                           geaendert: () => gemeldet++,
+                           pruefen: (z, s) => { geprueft++; return StrangBefund.Leer; },
+                           temperaturenSetzen: (k, h) => { kalt = k; heiss = h; });
+
+        var feld = cut.FindComponents<Zahlenfeld>()
+                      .First(f => f.Instance.Feldname == "AuslegTKalt").Instance;
+        await cut.InvokeAsync(() => feld.WertChanged.InvokeAsync(-22.0));
+
+        Assert.Equal(-22.0, kalt);
+        Assert.Null(heiss);
+        Assert.Equal(-22.0, cut.Instance.AuslegungKalt);
+        Assert.Equal(1, gemeldet);
+        Assert.True(geprueft >= 2);   // erstes Zeichnen + nach der Eingabe
+    }
+
+    /// <summary>
+    /// <b>„Kein Delegat ist kein Knopf"</b> — dieselbe Regel wie bei der
+    /// Auslegungshilfe (W6‑B‑8). Ohne Klimadatenweg gäbe es nichts vorzuschlagen.
+    /// </summary>
+    [Fact]
+    public void W6B11_Ohne_Delegat_gibt_es_den_Vorschlagsknopf_nicht()
+    {
+        var cut = Aufbauen(Zeile(true));
+
+        Assert.Empty(cut.FindAll(".epos-straenge-tvorschlag"));
+        Assert.DoesNotContain("Vorschlag aus Klimadaten", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Knopf übernimmt die zwei Zahlen und zeigt die Herleitung.</b> Übernommen
+    /// wird NUR per Knopf: Die Auslegungstemperatur ist eine Entscheidung des Planers,
+    /// keine Ableitung.
+    /// </summary>
+    [Fact]
+    public void W6B11_Der_Vorschlag_traegt_die_Werte_ein()
+    {
+        double? kalt = null, heiss = null;
+        var cut = Aufbauen(Zeile(true),
+                           temperaturenSetzen: (k, h) => { kalt = k; heiss = h; },
+                           temperaturvorschlag: z => new Temperaturvorschlag(
+                               true, -12.34, 63.75, "Vorschlag aus den Klimadaten: …"));
+
+        cut.Find(".epos-straenge-tvorschlag").Click();
+
+        Assert.Equal(-12.3, cut.Instance.AuslegungKalt);
+        Assert.Equal(63.8, cut.Instance.AuslegungHeiss);
+        Assert.Equal(-12.3, kalt);
+        Assert.Equal(63.8, heiss);
+        Assert.Equal("Vorschlag aus den Klimadaten: …", cut.Instance.Temperaturzeile);
+    }
+
+    /// <summary>
+    /// <b>Ohne Vorschlag bleiben die Felder stehen</b>, und der Satz nennt den Grund —
+    /// ein Knopf, der die Eingabe leert, wäre schlimmer als einer, der nichts tut.
+    /// </summary>
+    [Fact]
+    public void W6B11_Ohne_Vorschlag_bleiben_die_Felder_stehen()
+    {
+        var cut = Aufbauen(Zeile(true), tKalt: -18.0, tHeiss: 75.0,
+                           temperaturvorschlag: z => new Temperaturvorschlag(
+                               false, 0.0, 0.0, "Die Klimadaten des Projekts führen keine Reihe."));
+
+        cut.Find(".epos-straenge-tvorschlag").Click();
+
+        Assert.Equal(-18.0, cut.Instance.AuslegungKalt);
+        Assert.Equal(75.0, cut.Instance.AuslegungHeiss);
+        Assert.Contains("keine Reihe", cut.Instance.Temperaturzeile, StringComparison.Ordinal);
+    }
+
+    // =================================================================================
+    // W6-B-12 (Anwenderentscheid 09.09.2026): P8 gegen den gespeicherten Anlagenwert
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Ein Anlagenwert, der von der Strangsumme abweicht, macht die erste Zeile
+    /// GELB</b> (<b>W6‑B‑12</b>). Der Delegat rechnet hier wie die Hülle: Er gibt den
+    /// GESPEICHERTEN Anlagenwert an den Kern, nicht die abgeleitete Summe — genau das
+    /// ist die Änderung.
+    /// </summary>
+    [Fact]
+    public void W6B12_Ein_abweichender_Anlagenwert_macht_die_erste_Zeile_gelb()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        zeile.AnzahlModule = 12;                       // Altbestand: Summe 10, Anlage 12
+
+        var cut = Aufbauen(zeile, pruefen: WieDieHuelle);
+
+        Ampelzeile erste = cut.Instance.Befund.Straenge[0];
+        Assert.Equal(Ampelfarbe.Gelb, erste.Farbe);
+        Assert.Contains("12", erste.Satz, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Nach dem Q9-Abgleich ist die Meldung wieder still.</b> Die Maske schreibt
+    /// die Summe in den Anlagenwert zurück; P8 trifft damit nur Altdaten.
+    /// </summary>
+    [Fact]
+    public void W6B12_Nach_dem_Abgleich_bleibt_P8_still()
+    {
+        var zeile = Zeile(true, new StrangZeile { Rang = 1, ModuleReihe = 10 });
+        zeile.AnzahlModule = 10;
+
+        var cut = Aufbauen(zeile, pruefen: WieDieHuelle);
+
+        Assert.Equal(Ampelfarbe.Gruen, cut.Instance.Befund.Straenge[0].Farbe);
+    }
+
+    /// <summary>
+    /// Der Prüfdelegat, wie ihn die Hülle stellt (<c>PhotovoltaikHuelle.Pruefen</c>):
+    /// Der KERN prüft, die Zeile liefert Modul, Gerät und den GESPEICHERTEN
+    /// Anlagenwert. Anhang-A-Modul an Anhang-A-Gerät.
+    /// </summary>
+    private static StrangBefund WieDieHuelle(ErzeugerZeile zeile,
+                                             IReadOnlyList<StrangZeile> zeilen)
+    {
+        var modul = new PhotovoltaikModel
+        {
+            m_szName = "Ablytek 6MN6A275", m_Leistung = 275.19, m_U_Leerlauf = 38.4,
+            m_U_Mpp = 31.4, m_I_Kurzschluss = 9.34, m_beta_OC = -0.118, m_alpha_SC = 0.0047
+        };
+        var geraet = new WechselrichterModel
+        {
+            m_ID = 7, m_szName = "Muster 2500TL", m_P_AC_Nenn = 2.5, m_U_Mpp_Min = 80.0,
+            m_U_Mpp_Max = 500.0, m_U_Dc_Max = 600.0, m_I_Dc_Max = 12.0, m_Anzahl_Mppt = 1
+        };
+
+        var straenge = new List<AnlageStrangModel>();
+        foreach (StrangZeile z in zeilen)
+            straenge.Add(new AnlageStrangModel
+            {
+                Rang = z.Rang,
+                ID_Wechselrichter = 7,
+                Module_Reihe = z.ModuleReihe,
+                Straenge_Parallel = z.StraengeParallel
+            });
+
+        StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+            new StrangPlausibilitaet.Gaben
+            {
+                Straenge = straenge,
+                Modul = modul,
+                Geraete = new Dictionary<int, WechselrichterModel> { { 7, geraet } },
+                AnzahlModuleAnlage = zeile.AnzahlModule ?? 0.0
+            });
+
+        var zeilenAmpel = new List<Ampelzeile>();
+        foreach (StrangPlausibilitaet.Strangbefund s in b.Straenge)
+            zeilenAmpel.Add(new Ampelzeile(
+                s.Farbe == StrangPlausibilitaet.Ampel.Rot ? Ampelfarbe.Rot
+                : s.Farbe == StrangPlausibilitaet.Ampel.Gelb ? Ampelfarbe.Gelb
+                : Ampelfarbe.Gruen, s.Satz));
+
+        return new StrangBefund(zeilenAmpel, Array.Empty<Ampelzeile>(), b.Modulsumme,
+                                b.Werkzeugtipp);
     }
 
     /// <summary>

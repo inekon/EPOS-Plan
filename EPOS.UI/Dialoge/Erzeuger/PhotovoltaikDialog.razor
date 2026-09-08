@@ -188,6 +188,12 @@
                                   Module="@Strangmodule"
                                   ModulUebernehmen="@ModulUebernehmen"
                                   Pruefen="@StraengePruefen"
+                                  TKalt="@AuslegungKalt"
+                                  THeiss="@AuslegungHeiss"
+                                  TKaltVorgabe="@AuslegungKaltVorgabe"
+                                  THeissVorgabe="@AuslegungHeissVorgabe"
+                                  TemperaturenSetzen="@AuslegungstemperaturenSetzen"
+                                  TemperaturenVorschlagen="@Temperaturvorschlag"
                                   Geaendert="BeiStrangaenderung" />
             </KindInhalt>
         </Gruppenkopf>
@@ -444,6 +450,33 @@
     /// welches Modul die Ampel prüft.</para>
     /// </summary>
     [Parameter] public Func<ErzeugerZeile, IReadOnlyList<StrangZeile>, StrangBefund>? StraengePruefen { get; set; }
+
+    /// <summary>
+    /// Auslegungstemperatur kalt [°C] des Projekts (<b>W6‑B‑11</b>); <c>null</c> =
+    /// Vorgabe. Sie geht unverändert an <c>PvStraengeFelder</c> weiter.
+    /// </summary>
+    [Parameter] public double? AuslegungKalt { get; set; }
+
+    /// <summary>Auslegungstemperatur heiß [°C] des Projekts; <c>null</c> = Vorgabe.</summary>
+    [Parameter] public double? AuslegungHeiss { get; set; }
+
+    /// <summary>Die Vorgabe des kalten Falls [°C] — für die Herleitungszeile.</summary>
+    [Parameter] public double AuslegungKaltVorgabe { get; set; } = -10.0;
+
+    /// <summary>Die Vorgabe des heißen Falls [°C] — für die Herleitungszeile.</summary>
+    [Parameter] public double AuslegungHeissVorgabe { get; set; } = 70.0;
+
+    /// <summary>
+    /// Schreibt die zwei Auslegungstemperaturen in die Projekteinstellungen
+    /// (<b>W6‑B‑11</b>). Ohne Delegat bleiben sie flüchtig.
+    /// </summary>
+    [Parameter] public Action<double?, double?>? AuslegungstemperaturenSetzen { get; set; }
+
+    /// <summary>
+    /// Der Vorschlag aus den Klimadaten des Projekts (<b>W6‑B‑11</b>) — ohne Delegat
+    /// gibt es den Knopf nicht.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, Temperaturvorschlag>? Temperaturvorschlag { get; set; }
 
     /// <summary>
     /// Der Parametersatz der MODULVERWALTUNG. Sie erscheint seit iU9-W14a als

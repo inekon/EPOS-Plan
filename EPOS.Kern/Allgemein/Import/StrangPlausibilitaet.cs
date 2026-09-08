@@ -55,11 +55,43 @@ namespace WindowsFormsApplication1
         //  Auslegungstemperaturen und Grenzen (Konzept 4.2)
         // =================================================================
 
-        /// <summary>Kalter Fall [°C] — höchste Spannung. Übliche Auslegungspraxis.</summary>
+        /// <summary>
+        /// Kalter Fall [°C] — höchste Spannung. Übliche Auslegungspraxis und die
+        /// <b>VORGABE</b> des Projektparameters (<see cref="Gaben.TKalt"/>,
+        /// <b>W6‑B‑11</b>, Anwenderentscheid vom 09.09.2026).
+        /// </summary>
         public const double T_KALT = -10.0;
 
-        /// <summary>Heisser Fall, ZELLtemperatur [°C] — niedrigste Spannung, höchster Strom.</summary>
+        /// <summary>
+        /// Heisser Fall, ZELLtemperatur [°C] — niedrigste Spannung, höchster Strom;
+        /// die <b>VORGABE</b> des Projektparameters (<see cref="Gaben.THeiss"/>,
+        /// <b>W6‑B‑11</b>).
+        /// </summary>
         public const double T_HEISS = 70.0;
+
+        /// <summary>
+        /// <b>Der Rückfall von P1, wenn <c>beta_OC</c> fehlt</b> — Anwenderentscheid
+        /// <b>W6‑B‑9</b> vom 09.09.2026 (Vorschlag V4 des Prüfberichts vom 08.09.2026,
+        /// offener Punkt <b>O‑4</b>).
+        ///
+        /// <para><b>Woher die Zahl kommt.</b> Die Auslegungspraxis für kristallines
+        /// Silizium rechnet die Leerlaufspannung im kalten Fall ersatzweise als
+        /// <c>1,15 · U_oc,STC</c>, wenn kein Temperaturkoeffizient vorliegt (IEC 62548
+        /// bzw. DIN VDE 0100-712 in ihrer verbreiteten Anwendung; für sehr kalte
+        /// Standorte ist 1,25 gebräuchlich). Sie ersetzt die Koeffizientenrechnung
+        /// nicht — sie ist der Wert, mit dem man rechnet, solange der Koeffizient
+        /// fehlt.</para>
+        ///
+        /// <para><b>Warum überhaupt ein Rückfall.</b> P1 ist die einzige
+        /// zerstörungsrelevante Prüfung, und der Modulbestand ist an genau dieser
+        /// Stelle nachweislich lückenhaft (Paket-A-Befund A1). Ohne Rückfall entfiel
+        /// P1 im Regelfall ganz und der Strang wurde nur gelb — die Ampel schwieg
+        /// also genau dort, wo ein Gerät Schaden nehmen kann. Der Satz sagt
+        /// ausdrücklich, dass ohne Koeffizient gerechnet wurde
+        /// (<c>PVS_P1_OHNE_BETA</c>), damit niemand die Zahl für eine Messung
+        /// hält.</para>
+        /// </summary>
+        public const double FAKTOR_UOC_OHNE_KOEFFIZIENT = 1.15;
 
         /// <summary>Bezugstemperatur der Katalogwerte [°C] (STC).</summary>
         public const double T_STC = 25.0;
@@ -145,8 +177,47 @@ namespace WindowsFormsApplication1
             /// <summary>
             /// „Anzahl Module" der Anlagenzeile (<c>Tab_Energieanlagen.PV_Leistung</c>)
             /// — die Bezugsgrösse von P8.
+            ///
+            /// <para><b>Der GESPEICHERTE Anlagenwert, nicht die abgeleitete Summe</b>
+            /// (<b>W6‑B‑12</b>, Anwenderentscheid vom 09.09.2026; Befund A11 des
+            /// Prüfberichts, offener Punkt <b>O‑8</b>). Bis dahin gab der einzige
+            /// Aufrufer — die PV-Hülle — dieselbe Summe herein, aus der der Kern seine
+            /// <see cref="Befund.Modulsumme"/> bildet; der Vergleich war damit immer
+            /// erfüllt und P8 unerreichbar. Seither trifft P8 genau den Fall, für den
+            /// sie gedacht ist: einen ALTBESTAND, dessen Anlagenwert und Strangtabelle
+            /// auseinandergelaufen sind. Der Q9-Abgleich der Maske (jede Änderung
+            /// schreibt die Summe in den Anlagenwert zurück) macht die Meldung im
+            /// nächsten Zug wieder still.</para>
             /// </summary>
             public double AnzahlModuleAnlage;
+
+            /// <summary>
+            /// <b>Auslegungstemperatur kalt [°C]</b> — Projektparameter
+            /// <c>Tab_Einstellungen.Ausleg_T_Kalt</c> (<b>W6‑B‑11</b>,
+            /// Anwenderentscheid vom 09.09.2026; Vorschlag V7 des Prüfberichts,
+            /// offener Punkt <b>O‑3</b>). <c>null</c> = die Vorgabe
+            /// <see cref="T_KALT"/>.
+            ///
+            /// <para><b>Warum ein Parameter und keine Konstante mehr.</b> IEC 62548
+            /// verlangt die am STANDORT niedrigste zu erwartende Temperatur, nicht
+            /// eine feste Zahl; −10 °C ist eine für Deutschland verbreitete
+            /// Planungsannahme und für das Alpenvorland knapp. Wer den Wert setzt,
+            /// verschiebt P1 und P3 — und nur diese beiden.</para>
+            /// </summary>
+            public double? TKalt;
+
+            /// <summary>
+            /// <b>Auslegungstemperatur heiss [°C], ZELLtemperatur</b> — Projektparameter
+            /// <c>Tab_Einstellungen.Ausleg_T_Heiss</c> (<b>W6‑B‑11</b>). <c>null</c> =
+            /// die Vorgabe <see cref="T_HEISS"/>. Sie verschiebt P2 und P4.
+            /// </summary>
+            public double? THeiss;
+
+            /// <summary>Der kalte Fall, den diese Prüfung rechnet — Parameter oder Vorgabe.</summary>
+            public double TKaltOderVorgabe => TKalt ?? T_KALT;
+
+            /// <summary>Der heisse Fall, den diese Prüfung rechnet — Parameter oder Vorgabe.</summary>
+            public double THeissOderVorgabe => THeiss ?? T_HEISS;
         }
 
         // =================================================================
@@ -167,8 +238,15 @@ namespace WindowsFormsApplication1
             /// <summary>Was passen würde (Auslegungshilfe, 08.09.2026) — leer, wenn der Strang grün ist.</summary>
             public string Empfehlung = "";
 
-            /// <summary>P1: Leerlaufspannung des Strangs bei −10 °C [V]; <c>null</c> = nicht prüfbar.</summary>
+            /// <summary>P1: Leerlaufspannung des Strangs im kalten Fall [V]; <c>null</c> = nicht prüfbar.</summary>
             public double? UocKalt;
+
+            /// <summary>
+            /// P1 wurde ÜBER DEN FAKTOR gerechnet, weil <c>beta_OC</c> fehlt
+            /// (<b>W6‑B‑9</b>): <c>U_oc,kalt = 1,15 · U_oc,STC</c>. Der Satz sagt es
+            /// mit; hier steht es als Zahl für den Prüfstand.
+            /// </summary>
+            public bool UocOhneKoeffizient;
 
             /// <summary>P2: MPP-Spannung des Strangs bei 70 °C [V]; <c>null</c> = nicht prüfbar.</summary>
             public double? UmppHeiss;
@@ -192,7 +270,7 @@ namespace WindowsFormsApplication1
             /// <summary>Summe der parallelen Stränge an diesem Tracker.</summary>
             public int Straenge;
 
-            /// <summary>P4: Eingangsstrom bei 70 °C [A]; <c>null</c> = nicht prüfbar.</summary>
+            /// <summary>P4: Eingangsstrom im heissen Fall [A]; <c>null</c> = nicht prüfbar.</summary>
             public double? Strom;
         }
 
@@ -255,6 +333,37 @@ namespace WindowsFormsApplication1
             /// MPP-Koeffizienten) — für den Werkzeugtipp der Ampel.
             /// </summary>
             public string NaeherungMpp = "";
+
+            /// <summary>
+            /// <b>Was die Prüfung NICHT bemisst</b> (<b>W6‑B‑9</b>, Anwenderentscheid
+            /// vom 09.09.2026): P4 rechnet ausschliesslich die thermische Korrektur
+            /// (<c>I_sc + alpha_SC · ΔT</c>, rund +2 %), <b>ohne</b> den in der Praxis
+            /// üblichen Faktor 1,25. Dieser Faktor gehört zur Bemessung von
+            /// DC-Leitungen, Sicherungen und Schaltern — und die liegt ausserhalb
+            /// dieses Werkzeugs.
+            ///
+            /// <para>Der Satz steht im Werkzeugtipp, weil die Word-Fassung genau hier
+            /// eine falsche Zusicherung machte („der 1,25-fache Kurzschlussstrom ist
+            /// impliziter Bestandteil der thermischen Korrektur" — Befund A2 des
+            /// Prüfberichts vom 08.09.2026). Er behauptet keine Norm; er sagt, wo die
+            /// Grenze dieses Werkzeugs verläuft.</para>
+            /// </summary>
+            public string HinweisStrombemessung = "";
+
+            /// <summary>
+            /// Der vollständige Werkzeugtipp der Ampel: die Näherung von P2/P3 und der
+            /// Hinweis zur Strombemessung, durch ein Leerzeichen getrennt. Leere Teile
+            /// entfallen.
+            /// </summary>
+            public string Werkzeugtipp
+            {
+                get
+                {
+                    if (string.IsNullOrEmpty(NaeherungMpp)) return HinweisStrombemessung ?? "";
+                    if (string.IsNullOrEmpty(HinweisStrombemessung)) return NaeherungMpp;
+                    return NaeherungMpp + " " + HinweisStrombemessung;
+                }
+            }
         }
 
         // =================================================================
@@ -271,6 +380,10 @@ namespace WindowsFormsApplication1
             if (gaben == null || gaben.Straenge == null || gaben.Straenge.Count == 0) return b;
 
             b.NaeherungMpp = MyResource.Resource.PVS_NAEHERUNG_MPP;
+
+            // W6-B-9: Was P4 NICHT tut - der Faktor 1,25 der Leitungs- und
+            // Sicherungsbemessung steht ausserhalb dieses Werkzeugs.
+            b.HinweisStrombemessung = MyResource.Resource.PVS_HINWEIS_ISC_125;
 
             foreach (AnlageStrangModel s in gaben.Straenge)
             {
@@ -318,8 +431,12 @@ namespace WindowsFormsApplication1
                                     Ganz(reihe), Ganz(s.ParallelOderEins)));
 
             // --- P1: Leerlaufspannung im kalten Fall -> ROT ---------------------------
-            double? uoc = SpannungReihe(reihe, modul?.m_U_Leerlauf, modul?.m_beta_OC, T_KALT);
+            // W6-B-9: Fehlt beta_OC, entfaellt P1 NICHT mehr - dann rechnet sie ueber
+            // den Faktor 1,15 (FAKTOR_UOC_OHNE_KOEFFIZIENT), und der Satz sagt es.
+            double? uoc = UocKaltReihe(reihe, modul?.m_U_Leerlauf, modul?.m_beta_OC,
+                                       gaben.TKaltOderVorgabe);
             sb.UocKalt = uoc;
+            sb.UocOhneKoeffizient = uoc.HasValue && !Gesetzt(modul?.m_beta_OC);
 
             if (!uoc.HasValue)
                 SpannungsWerteFehlen(fehlt, modul, modul?.m_U_Leerlauf,
@@ -337,11 +454,20 @@ namespace WindowsFormsApplication1
                     teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_P1,
                                             Z(uoc.Value, 0), Z(g.m_U_Dc_Max.Value, 0)));
                 }
+
+                // Der Zusatz steht HINTER dem Befund, nicht statt seiner: Die Farbe
+                // gilt, die Herkunft der Zahl steht dabei.
+                if (sb.UocOhneKoeffizient)
+                    teile.Add(string.Format(CultureInfo.CurrentCulture,
+                                            MyResource.Resource.PVS_P1_OHNE_BETA,
+                                            Z(FAKTOR_UOC_OHNE_KOEFFIZIENT, 2)));
             }
 
             // --- P2 und P3: das MPP-Fenster ------------------------------------------
-            double? heiss = SpannungReihe(reihe, modul?.m_U_Mpp, modul?.m_beta_OC, T_HEISS);
-            double? kalt = SpannungReihe(reihe, modul?.m_U_Mpp, modul?.m_beta_OC, T_KALT);
+            double? heiss = SpannungReihe(reihe, modul?.m_U_Mpp, modul?.m_beta_OC,
+                                          gaben.THeissOderVorgabe);
+            double? kalt = SpannungReihe(reihe, modul?.m_U_Mpp, modul?.m_beta_OC,
+                                         gaben.TKaltOderVorgabe);
             sb.UmppHeiss = heiss;
             sb.UmppKalt = kalt;
 
@@ -382,7 +508,9 @@ namespace WindowsFormsApplication1
             // AUSLEGUNGSHILFE (08.09.2026): Wer P1 bis P3 reisst, bekommt gesagt, welche
             // Reihe passen wuerde - dieselben Regeln, rueckwaerts gerechnet.
             if (sb.Farbe != Ampel.Gruen && g != null && modul != null)
-                sb.Empfehlung = StrangAuslegung.ReiheEmpfehlung(modul, g);
+                sb.Empfehlung = StrangAuslegung.ReiheEmpfehlung(modul, g,
+                                                                gaben.TKaltOderVorgabe,
+                                                                gaben.THeissOderVorgabe);
 
             sb.Satz = string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_SATZ_STRANG,
                                     Ganz(s.Rang),
@@ -447,7 +575,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// P4 (Eingangsstrom je MPPT, rot) und P5 (Strangzahl je MPPT, gelb).
+        /// P4 (Eingangsstrom je MPPT) und P5 (Strangzahl je MPPT, gelb).
+        ///
+        /// <para><b>P4 ist seit <b>W6‑B‑10</b> ZWEISTUFIG</b> (Anwenderentscheid vom
+        /// 09.09.2026, Vorschlag V6 des Prüfberichts, offener Punkt <b>O‑9</b>). Viele
+        /// Datenblätter führen zwei Ströme je Tracker: den maximalen
+        /// <b>Kurzschluss</b>strom, ab dem das Gerät Schaden nehmen kann
+        /// (<c>I_Sc_Max</c>), und den maximalen <b>Arbeits</b>strom, ab dem es
+        /// abregelt (<c>I_Dc_Max</c>). Danach:</para>
+        ///
+        /// <list type="bullet">
+        ///   <item><description>über <c>I_Sc_Max</c> → <b>ROT</b>: das Gerät kann
+        ///     Schaden nehmen.</description></item>
+        ///   <item><description>nur über <c>I_Dc_Max</c> → <b>GELB</b>: Leistung wird
+        ///     abgeregelt — ein Ertragsverlust, kein Schaden.</description></item>
+        ///   <item><description><b>Ohne</b> gepflegten <c>I_Sc_Max</c> bleibt es beim
+        ///     Verhalten von bisher: über <c>I_Dc_Max</c> → ROT. Bestandsprojekte
+        ///     färben damit nicht um — den Unterschied macht erst der gepflegte neue
+        ///     Wert.</description></item>
+        /// </list>
         ///
         /// <para><b>Fehlt <c>Anzahl_Mppt</c></b> — die CEC-Liste führt sie nicht,
         /// offener Punkt <b>W6‑O‑2</b> —, wird auf EINEM Tracker gerechnet: dem
@@ -480,7 +626,7 @@ namespace WindowsFormsApplication1
                 jeMppt[t] += s.ParallelOderEins;
 
                 PhotovoltaikModel m = ModulDesStrangs(s, gaben);
-                double? js = StromJeStrang(m);
+                double? js = StromJeStrang(m, gaben.THeissOderVorgabe);
                 if (js.HasValue) stromJeMppt[t] += s.ParallelOderEins * js.Value;
                 else { stromBekannt = false; StromWerteFehlen(fehlt, m); }
             }
@@ -498,15 +644,39 @@ namespace WindowsFormsApplication1
 
                 if (mb.Strom.HasValue && mb.Strom.Value > groesster) groesster = mb.Strom.Value;
 
-                // --- P4: Eingangsstrom je MPPT -> ROT --------------------------------
-                if (mb.Strom.HasValue && Gesetzt(g.m_I_Dc_Max) && mb.Strom.Value > g.m_I_Dc_Max.Value)
+                // --- P4: Eingangsstrom je MPPT, ZWEISTUFIG (W6-B-10) -----------------
+                if (mb.Strom.HasValue)
                 {
-                    gb.Farbe = Schlechter(gb.Farbe, Ampel.Rot);
-                    if (!p4Gemeldet)
+                    bool hatIsc = Gesetzt(g.m_I_Sc_Max);
+                    bool hatIdc = Gesetzt(g.m_I_Dc_Max);
+
+                    if (hatIsc && mb.Strom.Value > g.m_I_Sc_Max.Value)
                     {
-                        teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_P4_ROT,
-                                                Z(mb.Strom.Value, 2), Z(g.m_I_Dc_Max.Value, 1), Ganz(t)));
-                        p4Gemeldet = true;
+                        // Stufe 1: ueber dem Kurzschlussstrom - das Geraet kann Schaden nehmen.
+                        gb.Farbe = Schlechter(gb.Farbe, Ampel.Rot);
+                        if (!p4Gemeldet)
+                        {
+                            teile.Add(string.Format(CultureInfo.CurrentCulture,
+                                                    MyResource.Resource.PVS_P4_ROT_ISC,
+                                                    Z(mb.Strom.Value, 2), Z(g.m_I_Sc_Max.Value, 1), Ganz(t)));
+                            p4Gemeldet = true;
+                        }
+                    }
+                    else if (hatIdc && mb.Strom.Value > g.m_I_Dc_Max.Value)
+                    {
+                        // Stufe 2: ueber dem Arbeitsstrom. MIT gepflegtem I_Sc_Max ist das
+                        // Abregeln, also gelb; OHNE ihn bleibt es beim Rot von bisher -
+                        // dann traegt I_Dc_Max beide Bedeutungen und darf nicht
+                        // stillschweigend entschaerft werden.
+                        gb.Farbe = Schlechter(gb.Farbe, hatIsc ? Ampel.Gelb : Ampel.Rot);
+                        if (!p4Gemeldet)
+                        {
+                            teile.Add(string.Format(CultureInfo.CurrentCulture,
+                                                    hatIsc ? MyResource.Resource.PVS_P4_GELB
+                                                           : MyResource.Resource.PVS_P4_ROT,
+                                                    Z(mb.Strom.Value, 2), Z(g.m_I_Dc_Max.Value, 1), Ganz(t)));
+                            p4Gemeldet = true;
+                        }
                     }
                 }
 
@@ -529,10 +699,14 @@ namespace WindowsFormsApplication1
                 gb.Farbe = Schlechter(gb.Farbe, Ampel.Gelb);
                 fehlt.Anhaengen(teile);
             }
-            else if (!p4Gemeldet && Gesetzt(g.m_I_Dc_Max))
+            else if (!p4Gemeldet && (Gesetzt(g.m_I_Dc_Max) || Gesetzt(g.m_I_Sc_Max)))
             {
+                // Der gruene Satz nennt die Grenze, an der der Strom als naechstes
+                // anschlagen wuerde: den Arbeitsstrom, wenn er gepflegt ist, sonst den
+                // Kurzschlussstrom.
+                double grenze = Gesetzt(g.m_I_Dc_Max) ? g.m_I_Dc_Max.Value : g.m_I_Sc_Max.Value;
                 teile.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_P4,
-                                        Z(groesster, 2), Z(g.m_I_Dc_Max.Value, 1)));
+                                        Z(groesster, 2), Z(grenze, 1)));
             }
 
             if (!mpptBekannt)
@@ -594,6 +768,16 @@ namespace WindowsFormsApplication1
         /// und schreibt den Anlagenwert mit, sobald ein Strang besteht. P8 darf deshalb
         /// nur noch anschlagen, wenn ein Bestand von Hand auseinandergelaufen ist — und
         /// genau dafür gibt es sie.</para>
+        ///
+        /// <para><b>Und genau dafür kann sie es seit <b>W6‑B‑12</b> auch</b>
+        /// (Anwenderentscheid vom 09.09.2026, Befund A11 des Prüfberichts). Bis dahin
+        /// gab die Hülle die ABGELEITETE Summe als <see cref="Gaben.AnzahlModuleAnlage"/>
+        /// herein — dieselbe Zahl, aus derselben Liste, nach derselben Formel. Der
+        /// Vergleich war damit immer erfüllt, und die Meldung
+        /// <c>PVS_P8_GELB</c> war über die Oberfläche unerreichbar. Seither übergibt
+        /// die Hülle den GESPEICHERTEN Anlagenwert; P8 trifft damit ausschliesslich
+        /// Altdaten, und der Q9-Abgleich macht sie beim nächsten Handgriff wieder
+        /// still.</para>
         /// </summary>
         private static void ModulsummePruefen(Gaben gaben, Befund b)
         {
@@ -633,14 +817,45 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Kurzschlussstrom EINES Strangs im heissen Fall [A], oder <c>null</c>.
-        /// <para><c>I(70 °C) = I_sc + alpha_SC · (70 − 25)</c>; <c>alpha_SC</c> ist
-        /// positiv (A/K).</para>
+        /// <b>Die Leerlaufspannung eines Strangs im KALTEN Fall [V]</b> — mit
+        /// Koeffizient, und ohne ihn über den Faktor
+        /// <see cref="FAKTOR_UOC_OHNE_KOEFFIZIENT"/> (<b>W6‑B‑9</b>).
+        ///
+        /// <para><c>beta_OC</c> gesetzt: <c>Reihe · [U_oc + beta_OC · (T − 25)]</c> —
+        /// unverändert. <c>beta_OC</c> fehlt: <c>Reihe · U_oc · 1,15</c>, unabhängig
+        /// von der Auslegungstemperatur; der Faktor IST die Ersatzannahme über den
+        /// kalten Fall und lässt sich nicht noch einmal temperieren.</para>
+        ///
+        /// <para><c>null</c> nur noch, wenn die Reihe oder <c>U_oc</c> selbst
+        /// fehlt — dann meldet der Satz „Werte fehlen", wie bisher.</para>
+        /// </summary>
+        public static double? UocKaltReihe(int reihe, double? uOc, double? betaOc, double tKalt)
+        {
+            if (reihe <= 0 || !Gesetzt(uOc)) return null;
+            if (Gesetzt(betaOc)) return reihe * (uOc.Value + betaOc.Value * (tKalt - T_STC));
+            return reihe * uOc.Value * FAKTOR_UOC_OHNE_KOEFFIZIENT;
+        }
+
+        /// <summary>
+        /// Der Kurzschlussstrom EINES Strangs im heissen Fall [A] bei der VORGABE
+        /// <see cref="T_HEISS"/>, oder <c>null</c>.
         /// </summary>
         public static double? StromJeStrang(PhotovoltaikModel modul)
         {
+            return StromJeStrang(modul, T_HEISS);
+        }
+
+        /// <summary>
+        /// Der Kurzschlussstrom EINES Strangs bei <paramref name="tHeiss"/> [A], oder
+        /// <c>null</c>.
+        /// <para><c>I(T) = I_sc + alpha_SC · (T − 25)</c>; <c>alpha_SC</c> ist
+        /// positiv (A/K). Die Temperatur ist seit <b>W6‑B‑11</b> ein
+        /// Projektparameter.</para>
+        /// </summary>
+        public static double? StromJeStrang(PhotovoltaikModel modul, double tHeiss)
+        {
             if (modul == null || !Gesetzt(modul.m_I_Kurzschluss) || !Gesetzt(modul.m_alpha_SC)) return null;
-            return modul.m_I_Kurzschluss + modul.m_alpha_SC * (T_HEISS - T_STC);
+            return modul.m_I_Kurzschluss + modul.m_alpha_SC * (tHeiss - T_STC);
         }
 
         /// <summary>Die Nennleistung eines Strangs [kWp]; 0 ohne Modulleistung.</summary>
@@ -773,6 +988,25 @@ namespace WindowsFormsApplication1
 
             if (!Gesetzt(modul.m_I_Kurzschluss)) fehlt.Modul(MyResource.Resource.PVS_FEHLT_ISC_WERT);
             if (!Gesetzt(modul.m_alpha_SC)) fehlt.Modul(MyResource.Resource.PVS_FEHLT_ALPHA_SC);
+        }
+
+        /// <summary>
+        /// <b>Der Satz eines Befunds als LAUFHINWEIS</b> (<b>W6‑B‑13</b>,
+        /// Anwenderentscheid vom 09.09.2026): „PV-Anlage „Dach Süd": Strang 2: …".
+        ///
+        /// <para>Er steht HIER und nicht im Rechenweg, weil die Sätze hier entstehen:
+        /// Der Laufhinweis wiederholt den Befund der Ampel Wort für Wort und setzt nur
+        /// den Vorspann davor. Zwei Formulierungen für denselben Befund wären zwei
+        /// Wahrheiten — und der Anwender müsste zweimal lernen, was ihm gesagt
+        /// wird.</para>
+        /// </summary>
+        /// <param name="anlage">Bezeichner der PV-Anlage.</param>
+        /// <param name="satz">Der fertige Satz aus <see cref="Strangbefund.Satz"/> oder
+        /// <see cref="Geraetebefund.Satz"/>.</param>
+        public static string Laufhinweis(string anlage, string satz)
+        {
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVS_LAUF_VORSPANN,
+                                 anlage ?? "", satz ?? "");
         }
 
         private static string Grenze(double? wert)

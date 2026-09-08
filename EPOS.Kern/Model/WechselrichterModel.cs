@@ -62,6 +62,26 @@ namespace WindowsFormsApplication1
         /// <summary>Maximaler DC-Strom <b>je MPPT</b> [A]; NULL = keine Prüfung.</summary>
         public double? m_I_Dc_Max;
 
+        /// <summary>
+        /// Maximaler <b>Kurzschluss</b>strom <b>je MPPT</b> [A] (<b>W6‑B‑10</b>,
+        /// Anwenderentscheid vom 09.09.2026); NULL = keine Prüfung.
+        ///
+        /// <para><b>Der Unterschied zu <see cref="m_I_Dc_Max"/>.</b> Datenblätter
+        /// führen für einen MPP-Tracker zwei Ströme: den maximalen ARBEITSstrom, ab
+        /// dem das Gerät abregelt, und den maximalen KURZSCHLUSSstrom, ab dem es
+        /// Schaden nimmt (oft rund das 1,3-fache). P4 unterscheidet beide seit
+        /// <b>W6‑B‑10</b>: über diesem Wert ROT, nur über <c>I_Dc_Max</c> GELB. Ist er
+        /// NULL — der Regelfall, denn weder die CEC-Liste noch das OND-Format führen
+        /// ihn —, prüft P4 wie bisher gegen <c>I_Dc_Max</c> und färbt ROT.</para>
+        ///
+        /// <para><b>Handpflege.</b> Der Wert kommt aus keinem Import: Die
+        /// CEC-Wechselrichterliste führt nur <c>Idcmax</c>, das OND-Format nur
+        /// <c>IMaxDC</c> (Betriebsstrom) und <c>IMaxAC</c> — kein Feld beider Formate
+        /// trägt einen Kurzschlussstrom je Eingang. Er wird im Katalogdialog
+        /// eingetragen.</para>
+        /// </summary>
+        public double? m_I_Sc_Max;
+
         /// <summary>Zahl der MPP-Tracker; NULL = 1 (der konservative Fall, Konzept 5.1).</summary>
         public int? m_Anzahl_Mppt;
 
@@ -169,6 +189,7 @@ namespace WindowsFormsApplication1
             m_U_Dc_Max = m.m_U_Dc_Max;
             m_U_Start = m.m_U_Start;
             m_I_Dc_Max = m.m_I_Dc_Max;
+            m_I_Sc_Max = m.m_I_Sc_Max;
             m_Anzahl_Mppt = m.m_Anzahl_Mppt;
             m_Straenge_Je_Mppt = m.m_Straenge_Je_Mppt;
             m_Eta05 = m.m_Eta05;

@@ -184,8 +184,16 @@ namespace WindowsFormsApplication1
             List<AnlageStrangModel> alleStraenge = null;
             Dictionary<int, WechselrichterModel> alleGeraete = null;
             Dictionary<int, PhotovoltaikModel> alleModule = null;
+
+            // W6-B-13 (09.09.2026): die Auslegungstemperaturen des Projekts fuer die
+            // Strangpruefung der Laufhinweise. EINE Abfrage je Lauf, und nur auf dem
+            // Katalogweg - dieselbe Vorrangregel wie fuer die drei Ablagen daneben.
+            Auslegungstemperaturen auslegung = Auslegungstemperaturen.Vorgabe;
+
             if (IrgendeineAnlageMitKatalogweg(ctrl))
             {
+                auslegung = KonfigurationCtrl.AuslegungstemperaturenLesen(ID_Projekt);
+
                 alleStraenge = new AnlageStrangCtrl().LesenJeProjekt(ID_Projekt);
 
                 var wr = new WechselrichterCtrl();
@@ -279,6 +287,12 @@ namespace WindowsFormsApplication1
                     dcAc = DcAcDerAnlage(geraete);
 
                     KennzahlenStrangMelden(ctrl.items[n], geraete);
+
+                    // W6-B-13: die AUSLEGUNGSPRUEFUNG als Laufhinweis. Sie rechnet
+                    // nichts mit und aendert nichts - sie sagt vor dem Ergebnis, was
+                    // die Ampel des Dialogs sagen wuerde.
+                    StrangPruefungMelden(ctrl.items[n], alleStraenge, alleGeraete,
+                                         alleModule, anlagenModul.Modul, auslegung);
                 }
                 else if (!erweitert)
                 {
@@ -1287,6 +1301,107 @@ namespace WindowsFormsApplication1
         /// die Byte-Gleichheit: Der Referenzlauf schreibt das Protokoll mit, und eine
         /// zusaetzliche Zeile waere schon ein Unterschied.</para>
         /// </summary>
+        /// <summary>
+        /// <b>Die Auslegungspruefung als LAUFHINWEIS</b> — Anwenderentscheid
+        /// <b>W6‑B‑13</b> vom 09.09.2026 (Befund A12 des Pruefberichts vom 08.09.2026,
+        /// offener Punkt <b>O‑6</b>).
+        ///
+        /// <para><b>Der Befund, der dahintersteckt.</b> Konzept 4.2 und die Wikiseite
+        /// <c>Berechnung/Photovoltaik</c> versprachen die Pruefung „als Ampel im Dialog
+        /// UND als Meldung beim Simulationsstart". Die zweite Haelfte gab es nicht:
+        /// <c>StrangPlausibilitaet.Pruefe</c> hatte ausserhalb des Pruefstands genau
+        /// einen Aufrufer, die PV-Huelle. Ein Projekt konnte mit roter Auslegung
+        /// durchrechnen, ohne dass das Protokoll etwas sagte.</para>
+        ///
+        /// <para><b>Nicht blockierend, und keine Rechenwirkung.</b> Rote Befunde werden
+        /// zur <c>Warnung</c>, gelbe zum <c>Hinweis</c> — mehr nicht. Der Lauf rechnet
+        /// unveraendert weiter; „rot verhindert das Speichern nicht" gilt hier genauso
+        /// wie im Dialog (<c>StrangPlausibilitaet.Ampel</c>). Der Referenzlauf bleibt
+        /// byte-gleich.</para>
+        ///
+        /// <para><b>Dieselben Saetze wie die Ampel.</b> Der Kern formuliert sie einmal
+        /// (<c>StrangPlausibilitaet.Strangbefund.Satz</c> und
+        /// <c>Geraetebefund.Satz</c>); hier kommt nur der Vorspann davor
+        /// (<c>PVS_LAUF_VORSPANN</c>) — zwei Formulierungen fuer denselben Befund waeren
+        /// zwei Wahrheiten.</para>
+        ///
+        /// <para><b>Je Satz EINMAL</b> (<c>WarnungEinmal</c>/<c>HinweisEinmal</c> mit
+        /// Anlage und Rang im Schluessel): Eine Anlage mit acht gleichartigen Straengen
+        /// soll acht Zeilen erzeugen, aber ein zweiter Aufruf desselben Laufs keine
+        /// sechzehn.</para>
+        /// </summary>
+        private void StrangPruefungMelden(WErzeugerModel anlage,
+                                          List<AnlageStrangModel> alleStraenge,
+                                          Dictionary<int, WechselrichterModel> alleGeraete,
+                                          Dictionary<int, PhotovoltaikModel> alleModule,
+                                          PhotovoltaikModel anlagenModul,
+                                          Auslegungstemperaturen auslegung)
+        {
+            if (anlage == null || alleStraenge == null) return;
+
+            var eigene = new List<AnlageStrangModel>();
+            foreach (AnlageStrangModel s in alleStraenge)
+                if (s != null && s.ID_Anlage == anlage.ID) eigene.Add(s);
+
+            if (eigene.Count == 0) return;
+
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = eigene,
+                    Modul = anlagenModul,
+                    Module = alleModule,
+                    Geraete = alleGeraete,
+
+                    // P8 prueft gegen den GESPEICHERTEN Anlagenwert (W6-B-12); im Lauf
+                    // ist das PV_Leistung - dieselbe Zahl, die der Dialog fuehrt.
+                    AnzahlModuleAnlage = anlage.PV_Leistung,
+
+                    TKalt = auslegung?.Kalt,
+                    THeiss = auslegung?.Heiss
+                });
+
+            foreach (StrangPlausibilitaet.Strangbefund s in b.Straenge)
+                StrangbefundMelden(anlage.Bezeichner,
+                                   "strang-" + s.Rang.ToString(CultureInfo.InvariantCulture),
+                                   s.Farbe, s.Satz);
+
+            foreach (StrangPlausibilitaet.Geraetebefund g in b.Geraete)
+                StrangbefundMelden(anlage.Bezeichner,
+                                   "geraet-" + (g.ID_Wechselrichter ?? 0).ToString(CultureInfo.InvariantCulture) +
+                                   "-" + g.Geraetenummer.ToString(CultureInfo.InvariantCulture),
+                                   g.Farbe, g.Satz);
+        }
+
+        /// <summary>
+        /// <b>Eine Zeile der Auslegungspruefung in die Laufhinweise</b> (<b>W6‑B‑13</b>):
+        /// ROT wird <c>Warnung</c>, GELB wird <c>Hinweis</c>, GRUEN schweigt.
+        ///
+        /// <para><b>Warum genau diese Zuordnung.</b> Die zwei Stufen der Laufhinweise
+        /// bedeuten „gerechnet wurde, aber mit einer Ersatzannahme" (Warnung) und „der
+        /// Lauf ist vollwertig, eine Randbedingung ist aber erwaehnenswert" (Hinweis).
+        /// Ein roter Befund ist eine Auslegung, die so nicht zulaessig ist — P1, P2 und
+        /// P4 nennen Faelle, in denen ein Geraet Schaden nimmt oder abregelt; das ist
+        /// die Warnung. Gelb ist eine weiche Regel oder eine fehlende Angabe.</para>
+        ///
+        /// <para><b>Sichtbar fuer den Nachweis</b> (<c>internal</c>): Die Zuordnung ist
+        /// die eigentliche Aussage dieses Punktes und soll ohne Datenbank pruefbar
+        /// sein.</para>
+        /// </summary>
+        internal static void StrangbefundMelden(string anlage, string schluessel,
+                                                StrangPlausibilitaet.Ampel farbe, string satz)
+        {
+            if (farbe == StrangPlausibilitaet.Ampel.Gruen || string.IsNullOrEmpty(satz)) return;
+
+            string text = StrangPlausibilitaet.Laufhinweis(anlage, satz);
+            string k = "pv-strangpruefung-" + anlage + "-" + schluessel;
+
+            if (farbe == StrangPlausibilitaet.Ampel.Rot)
+                SimulationProtokoll.Aktuell.WarnungEinmal(k, text);
+            else
+                SimulationProtokoll.Aktuell.HinweisEinmal(k, text);
+        }
+
         private void KennzahlenStrangMelden(WErzeugerModel anlage,
                                             List<PvStrangModell.Geraetegruppe> geraete)
         {

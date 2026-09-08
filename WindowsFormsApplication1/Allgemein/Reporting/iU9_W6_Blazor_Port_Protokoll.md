@@ -1285,3 +1285,272 @@ Simulation ist berührt.
 7. **A‑W6‑B‑8.7** Herstellerfilter umstellen: Die bewertete Liste zeigt nur noch dessen Geräte,
    in ihrer eigenen Rangfolge; eine unsichtbar gewordene Katalogwahl fällt auf „(kein Gerät)"
    zurück und sperrt den Knopf.
+
+
+---
+
+## Anwenderentscheid 09.09.2026 — W6‑B‑9 bis W6‑B‑13: die fünf Empfehlungen der PV-Strangprüfung
+
+**Der Wortlaut.** Nach dem Prüfbericht `K:\pv2\pv_pruefbericht.md` (Abgleich der
+Kurzdokumentation, der Word-Fassung und des Programmcodes vom 08.09.2026) entschied der
+Anwender am 09.09.2026: **„setze Empfehlungen 1–5 um"** — die fünf Punkte des Auftrags, die den
+offenen Punkten **O‑3, O‑4, O‑6, O‑8 und O‑9** der Kurzdokumentation entsprechen. Dazu:
+**die Word-Fassung wird nicht mehr gepflegt.**
+
+Alle fünf betreffen die AMPEL, nicht den Rechenweg. **Kein Rechenergebnis ändert sich** — der
+Referenzlauf gegen `2026-09-07_M7_nach-Merge7` bleibt **355/355 byte-gleich** (unten
+nachgewiesen).
+
+**Ein Migrationsschritt für alles: Schritt 70** (Zielstand 69 → **70**), vier Spalten, kein
+DML, alle vier bleiben NULL — und NULL heißt bei allen vieren „wie bisher":
+
+| Spalte | Tabelle | Bedeutung | NULL heißt |
+|---|---|---|---|
+| `I_Sc_Max` | `Tab_Wechselrichter_STAMM`, `Tab_Wechselrichter` | max. Kurzschlussstrom je MPPT [A] | keine Prüfung; P4 färbt wie bisher |
+| `Ausleg_T_Kalt` | `Tab_Einstellungen` | Auslegungstemperatur kalt [°C] | −10 °C |
+| `Ausleg_T_Heiss` | `Tab_Einstellungen` | Auslegungstemperatur heiß [°C] | +70 °C |
+
+---
+
+### W6‑B‑9 — P1 rechnet ohne `beta_OC` weiter (Faktor 1,15)
+
+**Der Befund** (Prüfbericht V4, offener Punkt O‑4). Fehlte `beta_OC`, entfiel P1 **ganz**: Der
+Strang wurde nur gelb mit „Werte fehlen". P1 ist die einzige zerstörungsrelevante Prüfung, und
+der Modulbestand ist an genau dieser Stelle nachweislich vergiftet (Paket‑A‑Befund A1 — in den
+Referenzmodulen steht der Kurzschlussstrom in `alpha_SC`, `beta_OC` und `T_NOCT`). Die Ampel
+schwieg also im **Regelfall** über die einzige Gefahr, die sie kennt.
+
+**Die Änderung.** Fehlt `beta_OC`, rechnet P1 über den in der Auslegungspraxis für
+kristallines Silizium üblichen Rückfall
+
+```
+U_oc,kalt  =  Module_Reihe · U_oc,STC · 1,15        (FAKTOR_UOC_OHNE_KOEFFIZIENT)
+```
+
+und färbt bei Überschreitung von `U_Dc_Max` **rot**, wie sonst auch. Der Satz trägt den Zusatz
+„ohne beta_OC mit Faktor 1,15 gerechnet" (`PVS_P1_OHNE_BETA`), damit niemand die Zahl für eine
+Messung hält; `Strangbefund.UocOhneKoeffizient` sagt dasselbe als Zahl für den Prüfstand.
+Fehlt auch `U_oc`, bleibt es bei „Werte fehlen" und gelb — der Faktor braucht eine Spannung,
+auf die er wirken kann.
+
+`StrangAuslegung.Reihe` kennt denselben Rückfall: Eine Hilfe, die eine Grenze verschweigt, die
+die Ampel prüft, schickte den Anwender in genau das Rot, das sie vermeiden soll.
+
+**Dazu die 1,25 im Werkzeugtipp.** P4 bekommt **keinen** Sicherheitsfaktor (das wäre O‑1 und
+würde Bestandsprojekte umfärben). Stattdessen sagt der Werkzeugtipp der Ampel jetzt, wo die
+Grenze dieses Werkzeugs verläuft: „DC-Leitungen, Sicherungen und Schalter sind mit dem
+1,25-fachen Kurzschlussstrom zu bemessen; das prüft dieses Werkzeug nicht"
+(`PVS_HINWEIS_ISC_125`). Die Word-Fassung behauptete an dieser Stelle, der Faktor sei
+„impliziter Bestandteil der thermischen Korrektur" — tatsächlich sind es +2,3 % statt +25 %
+(Prüfbericht A2).
+
+**Der Faktor ist bewusst nicht einstellbar.** Er ist der Ersatz für einen fehlenden
+Katalogwert, nicht ein zweiter Auslegungsparameter; der richtige Weg bleibt, `beta_OC` zu
+pflegen, und der Satz sagt es bei jedem Befund.
+
+---
+
+### W6‑B‑10 — P4 zweistufig: Kurzschlussstrom je MPPT als eigenes Katalogfeld
+
+**Der Befund** (Prüfbericht V6, offener Punkt O‑9). P4 verglich den temperaturkorrigierten
+Strangstrom gegen `I_Dc_Max` und färbte **rot** — ohne dass irgendwo festgelegt wäre, ob der
+Katalog dort den **Arbeits**- oder den **Kurzschluss**strom je Tracker führt. Davon hängt ab,
+ob P4 zu streng oder zu lasch ist. Die Frage ließ sich nicht beantworten, weil beide Werte im
+Umlauf sind.
+
+**Die Änderung: die Frage auflösen, statt sie zu beantworten.** `I_Dc_Max` bleibt der
+Arbeitsstrom; der Kurzschlussstrom bekommt ein **eigenes, optionales Feld** `I_Sc_Max`
+(„max. Kurzschlussstrom je MPPT [A]"). P4 unterscheidet seither:
+
+| Fall | Farbe | Satz |
+|---|---|---|
+| Strom > `I_Sc_Max` | **rot** | „… über dem Kurzschlussstrom des Eingangs, das Gerät kann Schaden nehmen" |
+| Strom > `I_Dc_Max`, aber ≤ `I_Sc_Max` | **gelb** | „… Leistung wird abgeregelt" |
+| `I_Sc_Max` nicht gepflegt, Strom > `I_Dc_Max` | **rot** | der Satz von bisher |
+
+Die dritte Zeile ist die eigentliche Zusicherung: **Bestandsprojekte färben nicht um.** Solange
+das neue Feld NULL ist — der Regelfall —, trägt `I_Dc_Max` beide Bedeutungen und darf nicht
+stillschweigend entschärft werden.
+
+`StrangAuslegung.ParallelJeMppt` nimmt `I_Sc_Max` als Grenze, wenn es gepflegt ist, sonst
+`I_Dc_Max`; der P5-Deckel gilt zusätzlich.
+
+**Weder CEC noch OND führen den Wert.** Geprüft: Die CEC-Wechselrichterliste kennt nur
+`Idcmax`; das OND-Format (PVsyst) führt im Eingangsblock `VMppMin`, `VMppNom`, `VMPPMax`,
+`VAbsMax`, `VStart`, `IMaxDC`, `NbMPPT`, `NbInputs` und AC-seitig `IMaxAC` — **kein Feld beider
+Formate trägt einen Kurzschlussstrom je Eingang** (nachgesehen in
+`OndWechselrichterDienst.Zerlege`, `CecWechselrichterDienst` und beiden Musterdateien unter
+`Referenzlaeufe/Importproben/`). Das Feld bleibt nach jedem Import leer und wird im
+Katalogdialog von Hand gepflegt. Der Importer wurde deshalb **nicht** angefasst.
+
+---
+
+### W6‑B‑11 — die Auslegungstemperaturen als Projektparameter, mit Vorschlag aus den Klimadaten
+
+**Der Befund** (Prüfbericht 2.1 und V7, offener Punkt O‑3). `T_KALT` und `T_HEISS` waren zwei
+Konstanten für jedes Projekt. IEC 62548 verlangt aber die am **Standort** niedrigste zu
+erwartende Temperatur, keine feste Zahl; −10 °C sind für Norddeutschland großzügig und für das
+Alpenvorland knapp. An einem Standort mit −20 °C Auslegungstemperatur lag P1 auf der unsicheren
+Seite.
+
+**Die Änderung.** Beide sind Projektparameter (`Tab_Einstellungen.Ausleg_T_Kalt`,
+`…Ausleg_T_Heiss`) mit den bisherigen Werten als **Vorgabe**; NULL heißt Vorgabe, und eine
+Datenbank ohne gepflegte Werte verhält sich Zeichen für Zeichen wie vorher. Der Kern liest sie
+über `StrangPlausibilitaet.Gaben.TKalt`/`THeiss`, die Hülle belegt sie einmal je Dialoglauf und
+hält den Stand — die Maske schreibt ihn über einen Delegaten zurück, und die nächste
+Ampelprüfung rechnet sofort mit ihm.
+
+**In der Oberfläche** steht im Kopf des Abschnitts „Wechselrichter und Stränge" die Zeile
+*Auslegungstemperaturen: kalt [°C] · heiß [°C]* mit einem Werkzeugtipp, was die zwei Zahlen
+bewirken, und darunter eine Herleitungszeile, welche Werte gerade gelten und was leer bedeutet.
+
+**Der Knopf „Vorschlag aus Klimadaten übernehmen"** rechnet im Kern
+(`AuslegungstemperaturVorschlag`, neue Datei — die Klimareihe liest `SolardatenCtrl`, und der
+ist im Kern `internal`; die Hülle käme gar nicht heran):
+
+```
+kalt  =  Minimum der Außentemperatur der Jahresreihe (Tab_Solar, 8 760 Stundenwerte)
+heiß  =  T_amb,max + (T_NOCT − 20) · 1000/800
+```
+
+Das ist dieselbe Zelltemperaturformel wie im Rechenweg, nur bei Volleinstrahlung. Ein `T_NOCT`
+außerhalb von 20…60 °C gilt als nicht gepflegt und wird durch **45 °C** ersetzt — dieselbe
+Regel und derselbe Grund wie in `SimulationPV.NoctDesModuls`; ein Nachweis hält beide Zahlen
+gleich.
+
+**Übernommen wird nur per Knopf**, mit Herleitungszeile: Die Auslegungstemperatur ist eine
+Entscheidung des Planers, keine Ableitung. Das Jahresminimum eines Testreferenzjahres ist nicht
+dieselbe Größe wie die standortbezogen niedrigste zu erwartende Temperatur, und eine
+unbelüftete Dachfläche wird heißer als jede Formel sagt. **Ohne Delegat gibt es den Knopf
+nicht** — dieselbe Regel wie bei der Auslegungshilfe (W6‑B‑8).
+
+---
+
+### W6‑B‑12 — P8 prüft gegen den gespeicherten Anlagenwert
+
+**Der Befund** (Prüfbericht A11, offener Punkt O‑8). `StrangPlausibilitaet.Pruefe` hatte
+außerhalb des Prüfstands genau einen Aufrufer, und der übergab als `AnzahlModuleAnlage` die
+**abgeleitete Summe** über dieselben Zeilen, aus denen der Kern seine `Modulsumme` bildet —
+dieselbe Zahl, aus derselben Liste, nach derselben Formel. Der Vergleich war damit **immer**
+erfüllt und die Meldung `PVS_P8_GELB` über die Oberfläche unerreichbar. Beide Dokumente
+beschrieben P8 trotzdem als eine Meldung, die der Anwender sehen kann.
+
+**Die Änderung.** Die Hülle übergibt `zeile.AnzahlModule` — den **gespeicherten** Anlagenwert.
+Der Q9-Abgleich der Maske bleibt unangetastet (`BeiStrangaenderung` schreibt die Summe in den
+Anlagenwert zurück), P8 trifft damit genau den Fall, für den sie gedacht ist: einen
+**Altbestand**, dessen zwei Zahlen von Hand auseinandergelaufen sind. Nach dem nächsten
+Handgriff in der Maske ist die Meldung wieder still.
+
+Im Lauf (W6‑B‑13) ist die Bezugsgröße `Tab_Energieanlagen.PV_Leistung` — dieselbe Zahl, die
+der Dialog führt.
+
+---
+
+### W6‑B‑13 — die Prüfmeldung beim Simulationsstart
+
+**Der Befund** (Prüfbericht A12/V8, offener Punkt O‑6). Konzept 4.2 und die Wikiseite
+`Berechnung/Photovoltaik` versprachen die Prüfung „als Ampel im Dialog **und als Meldung beim
+Simulationsstart**". Die zweite Hälfte gab es nicht: Ein Projekt konnte mit roter Auslegung
+durchrechnen, ohne dass das Protokoll etwas sagte.
+
+**Die Änderung.** `SimulationPV` ruft für jede PV-Anlage mit Wechselrichterweg und Strangzeilen
+`StrangPlausibilitaet.Pruefe` und schreibt:
+
+| Farbe | Laufhinweis |
+|---|---|
+| **rot** | `Warnung` — die Auslegung ist so nicht zulässig |
+| **gelb** | `Hinweis` — weiche Regel oder fehlende Angabe |
+| grün | nichts |
+
+Der Text ist der **Satz der Ampel**, unverändert, mit dem Vorspann `PV-Anlage „…": `
+(`PVS_LAUF_VORSPANN`) davor — zwei Formulierungen für denselben Befund wären zwei Wahrheiten.
+Je Befund entsteht genau eine Zeile je Lauf (`WarnungEinmal`/`HinweisEinmal` mit Anlage und
+Rang im Schlüssel). **Nicht blockierend**: „rot verhindert das Speichern nicht" gilt hier
+genauso wie im Dialog.
+
+Die Bezugsgrößen liest der Kern über die Ablagen, die `SimulationPV` für die Strangrechnung
+ohnehin füllt (`AnlageStrangCtrl.LesenJeProjekt`, `WechselrichterCtrl.ReadAll`,
+`StrangmoduleLesen`) — **keine zusätzliche Abfrage in der Stundenschleife**, und die
+Auslegungstemperaturen genau einmal je Lauf. Es braucht **keine Hüllenfunktion**: Alles, was
+die Prüfung wissen muss, steht plattformfrei im Kern.
+
+---
+
+### Die geänderten Dateien
+
+| Datei | Rolle |
+|---|---|
+| `EPOS.Kern/Allgemein/Import/StrangPlausibilitaet.cs` | P1-Rückfall, zweistufiges P4, Temperaturen in `Gaben`, `Werkzeugtipp`, `Laufhinweis` |
+| `EPOS.Kern/Allgemein/Import/StrangAuslegung.cs` | derselbe Rückfall und dieselben Temperaturen rückwärts; `ParallelJeMppt` gegen `I_Sc_Max` |
+| `EPOS.Kern/Allgemein/Import/Auslegungstemperaturen.cs` | **neu** — der Datensatz `Auslegungstemperaturen` und der Klimadatenvorschlag |
+| `EPOS.Kern/Allgemein/Simulation/SimulationPV.cs` | `StrangPruefungMelden` und `StrangbefundMelden` (W6‑B‑13) |
+| `EPOS.Kern/Allgemein/Update/WechselrichterSchema.cs` | `SPALTE_I_SC_MAX`, beide CREATE, `Fachspalten` |
+| `EPOS.Kern/Allgemein/Update/SchemaKatalog.cs` | `Schritt70_WrKurzschlussstrom`, `Schritt70_Auslegungstemperaturen` |
+| `EPOS.Kern/Allgemein/Update/SchemaStand.cs` | `Zielversion` 69 → **70** |
+| `EPOS.Kern/Allgemein/Katalog/ModulKatalogProfil.cs` | Feld „max. Kurzschlussstrom je MPPT" in der Gruppe „Eingang" |
+| `EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs` | Eintrag `I_Sc_Max` in Tabellenreihenfolge |
+| `EPOS.Kern/Controller/KonfigurationCtrl.cs` | `AuslegungstemperaturenLesen`/`…Schreiben` (zielgenau, namensbasiert) |
+| `EPOS.Kern/Controller/WechselrichterStammCtrl.cs` | `I_Sc_Max` lesen und schreiben |
+| `EPOS.Kern/Model/WechselrichterModel.cs` | `m_I_Sc_Max` und `UebernimmVon` |
+| `EPOS.Kern/MyResource/Resource(.en-US).resx`, `Resource.Designer.cs` | 14 neue Schlüssel, de und en |
+| `EPOS.UI/Dialoge/Erzeuger/PvStrangDaten.cs` | `Temperaturvorschlag`, fünf Texte |
+| `EPOS.UI/Dialoge/Erzeuger/PvStraengeFelder.razor` | die Temperaturzeile, der Vorschlagsknopf |
+| `EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor` | sechs Parameter durchgereicht |
+| `EPOS.UI/wwwroot/epos-ui.css` | `.epos-strangtemperaturen` (kein Nesting) |
+| `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` | Schritt 70 |
+| `WindowsFormsApplication1/Views/Photovoltaik/PhotovoltaikHuelle.cs` | P8 gegen den Anlagenwert, Temperaturdelegaten, Werkzeugtipp |
+| `WindowsFormsApplication1/Views/Wechselrichter/WechselrichterAdminHuelle.cs` | `I_Sc_Max` in Anzeige und Schreibweg |
+| `Werkzeuge/Testdatenbankschema/Program.cs`, `EPOS.Kern.Tests/TestDatenbank.cs` | Schritt 70 nachziehen |
+
+### Der Nachweis
+
+| Was | Wie | Ergebnis |
+|---|---|---|
+| Sandbox-Bau `WP-Plan.sln` x64 Debug (MSBuild VS 18) | `K:\imp3\src` | **0 Fehler** |
+| `EPOS.Kern.Tests` | `dotnet test --no-build` | **2 105/2 105** (+32) |
+| `EPOS.UI.Tests` | `dotnet test --no-build` | **3 309/3 309** (+8) |
+| Migration | Referenzlauf-Arbeitskopie | **61 → 70**, Schritt 70 „OK" |
+| Referenzlauf | 14 Projekte gegen `2026-09-07_M7_nach-Merge7` | **355/355 byte-gleich** |
+
+Neue Kernfälle: `W6B9_*` (5 in `StrangPlausibilitaetTests`, 1 in `StrangAuslegungTests`),
+`W6B10_*` (4 + 1), `W6B11_*` (4 + 2, dazu `AuslegungstemperaturVorschlagTests` mit 5),
+`W6B12_*` (2), `W6B13_*` (3). Neue UI-Fälle: `W6B11_*` (5), `W6B12_*` (2).
+Angepasst: `Ein_fehlender_Modulwert_macht_gelb_und_nicht_pruefbar` (P1 entfällt nicht mehr),
+`Der_Zielstand_steht_auf_69` (jetzt „mindestens", Muster `StromspeicherFirmaTests`),
+`Katalog_und_Projektkopie_sind_spaltengleich` und `Der_Migrationsschritt_65_ist_idempotent`
+(34 → 35 Spalten), `Modulkatalogprofil_kennt_zwei_Auspraegungen_mit_ihren_Feldern` (25 → 26
+Felder, Gruppe „Eingang" 7 → 8), `Die_Anlagenueberlagerung_ist_in_beiden_Wegen_offen` (greift
+die Zahlenfelder über ihren `Feldname` statt über den Index — vor der Überlagerung stehen jetzt
+zwei weitere).
+
+### Abnahmepunkte am Gerät — A‑W6‑B‑9 bis A‑W6‑B‑13
+
+1. **A‑W6‑B‑9.1** PV-Dialog, Modul mit **leerem** `beta_OC`, 10 Module in Reihe an einem Gerät
+   mit `U_Dc_Max` 600 V: Die Strangzeile nennt „U_oc(−10 °C) 442 V ≤ 600 V · ohne beta_OC mit
+   Faktor 1,15 gerechnet" und ist **gelb** (wegen P2/P3, nicht wegen P1).
+2. **A‑W6‑B‑9.2** Dasselbe mit 15 Modulen: **rot**, „662 V > 600 V".
+3. **A‑W6‑B‑9.3** Mauszeiger über einer Ampelzeile: Der Werkzeugtipp nennt **beides** — die
+   Näherung von P2/P3 und die Bemessung mit 1,25 · I_sc außerhalb des Werkzeugs.
+4. **A‑W6‑B‑10.1** Administration → Wechselrichter → Bearbeiten: In der Gruppe „Eingang" steht
+   hinter „max. DC-Strom je MPPT" das neue Feld „max. Kurzschlussstrom je MPPT [A]"; leer
+   lassen speichert NULL.
+5. **A‑W6‑B‑10.2** Zwei Stränge parallel an einem Gerät mit `I_Dc_Max` 12 A **ohne**
+   `I_Sc_Max`: **rot** wie bisher. Mit `I_Sc_Max` 25 A: **gelb**, „Leistung wird abgeregelt".
+   Mit `I_Sc_Max` 15 A: **rot**, „über dem Kurzschlussstrom des Eingangs".
+6. **A‑W6‑B‑11.1** Im Abschnitt „Wechselrichter und Stränge" steht die Zeile
+   „Auslegungstemperaturen: kalt [°C] · heiß [°C]"; beide Felder leer, darunter „Es gelten
+   -10,0 °C kalt und 70,0 °C heiß (leer = Vorgabe -10,0 °C / 70,0 °C)".
+7. **A‑W6‑B‑11.2** „kalt" auf −20 setzen: Die Ampel rechnet **sofort** mit dem neuen Wert (die
+   P1-Zahl steigt); Dialog schließen, neu öffnen — der Wert steht noch da.
+8. **A‑W6‑B‑11.3** „Vorschlag aus Klimadaten übernehmen" drücken: Beide Felder füllen sich, und
+   die Zeile darunter nennt Jahresminimum, Jahresmaximum, T_NOCT und die errechnete
+   Zelltemperatur.
+9. **A‑W6‑B‑11.4** Englisch: „Design temperatures:", „cold [°C]", „hot [°C]", „Apply proposal
+   from climate data".
+10. **A‑W6‑B‑12.1** Ein Altprojekt, dessen „Anzahl Module" von der Strangsumme abweicht: Die
+    **erste** Strangzeile ist gelb und nennt beide Zahlen. Eine Zelle der Strangtabelle ändern
+    → die Meldung verschwindet (Q9-Abgleich).
+11. **A‑W6‑B‑13.1** Simulation eines Projekts mit roter Strangampel starten: In den Hinweisen
+    zum Lauf steht „PV-Anlage „…": Strang n: …" als **Warnung**; der Lauf rechnet durch.
+12. **A‑W6‑B‑13.2** Dasselbe mit gelber Ampel: derselbe Satz als **Hinweis**. Grüne Anlagen
+    erzeugen keine Zeile.

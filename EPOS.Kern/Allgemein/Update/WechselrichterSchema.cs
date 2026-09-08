@@ -80,6 +80,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SPALTE_I_DC_MAX = "I_Dc_Max";
 
+        /// <summary>
+        /// Maximaler <b>Kurzschluss</b>strom <b>je MPPT</b> [A] — Migrationsschritt 70
+        /// (<b>W6‑B‑10</b>, Anwenderentscheid vom 09.09.2026); NULL = keine Prüfung.
+        /// <para><b>Weder CEC noch OND führen ihn</b> (die CEC-Liste kennt nur
+        /// <c>Idcmax</c>, das OND-Format nur <c>IMaxDC</c> und <c>IMaxAC</c>) — die
+        /// Spalte wird von Hand gepflegt und bleibt nach jedem Import NULL. Der
+        /// Unterschied zu <see cref="SPALTE_I_DC_MAX"/> steht bei
+        /// <c>WechselrichterModel.m_I_Sc_Max</c>.</para>
+        /// </summary>
+        public const string SPALTE_I_SC_MAX = "I_Sc_Max";
+
         /// <summary>Zahl der MPP-Tracker; NULL = 1.</summary>
         public const string SPALTE_ANZAHL_MPPT = "Anzahl_Mppt";
 
@@ -155,8 +166,8 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>
-        /// <c>CREATE TABLE IF NOT EXISTS Tab_Wechselrichter_STAMM</c> — 34 Spalten
-        /// (Konzept 3.1).
+        /// <c>CREATE TABLE IF NOT EXISTS Tab_Wechselrichter_STAMM</c> — 35 Spalten
+        /// (Konzept 3.1; die 35. ist <c>I_Sc_Max</c> aus Schritt 70, W6‑B‑10).
         /// </summary>
         public const string SQL_CREATE_STAMM =
             "CREATE TABLE IF NOT EXISTS \"Tab_Wechselrichter_STAMM\" (\n" +
@@ -193,7 +204,13 @@ namespace WindowsFormsApplication1
             "    \"Sandia_C2\" REAL,\n" +
             "    \"Sandia_C3\" REAL,\n" +
             "    \"Herkunft\" TEXT,\n" +
-            "    \"ReadOnly\" INTEGER NOT NULL DEFAULT 0 CHECK (\"ReadOnly\" IN (0,1))\n" +
+            "    \"ReadOnly\" INTEGER NOT NULL DEFAULT 0 CHECK (\"ReadOnly\" IN (0,1)),\n" +
+            // Schritt 70 (W6-B-10) steht GANZ HINTEN, auch hinter ReadOnly: Eine
+            // nachmigrierte Tabelle bekommt die Spalte ueber ADD COLUMN ans Ende,
+            // und beide Wege sollen Spalte fuer Spalte dieselbe Tabelle ergeben -
+            // daran haengen die Reihenfolgenachweise (ParameterVerwendungTests,
+            // WechselrichterKatalogTests).
+            "    \"I_Sc_Max\" REAL\n" +
             ") STRICT";
 
         /// <summary>
@@ -236,7 +253,8 @@ namespace WindowsFormsApplication1
             "    \"Sandia_C1\" REAL,\n" +
             "    \"Sandia_C2\" REAL,\n" +
             "    \"Sandia_C3\" REAL,\n" +
-            "    \"Herkunft\" TEXT\n" +
+            "    \"Herkunft\" TEXT,\n" +
+            "    \"I_Sc_Max\" REAL\n" +
             ") STRICT";
 
         /// <summary>
@@ -275,7 +293,10 @@ namespace WindowsFormsApplication1
             SPALTE_P_STANDBY, SPALTE_P_NACHT, SPALTE_KOSTEN,
             SPALTE_SANDIA_PDCO, SPALTE_SANDIA_VDCO, SPALTE_SANDIA_PSO,
             SPALTE_SANDIA_C0, SPALTE_SANDIA_C1, SPALTE_SANDIA_C2, SPALTE_SANDIA_C3,
-            SPALTE_HERKUNFT
+            SPALTE_HERKUNFT,
+            // Schritt 70 (W6-B-10) - als LETZTE, weil ADD COLUMN im Bestand hinten
+            // anhaengt und diese Liste die SCHEMAREIHENFOLGE beider Wege nennt.
+            SPALTE_I_SC_MAX
         };
     }
 }

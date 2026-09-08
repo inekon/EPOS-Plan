@@ -94,6 +94,7 @@ namespace WindowsFormsApplication1
                 [ModulKatalogProfil.FeldUDcMax] = Zahl(m.m_U_Dc_Max),
                 [ModulKatalogProfil.FeldUStart] = Zahl(m.m_U_Start),
                 [ModulKatalogProfil.FeldIDcMax] = Zahl(m.m_I_Dc_Max),
+                [ModulKatalogProfil.FeldIScMax] = Zahl(m.m_I_Sc_Max),
                 [ModulKatalogProfil.FeldAnzahlMppt] = Ganz(m.m_Anzahl_Mppt),
                 [ModulKatalogProfil.FeldStraengeJeMppt] = Ganz(m.m_Straenge_Je_Mppt),
 
@@ -139,6 +140,7 @@ namespace WindowsFormsApplication1
                 m_U_Dc_Max = ZahlOderNull(felder, ModulKatalogProfil.FeldUDcMax),
                 m_U_Start = ZahlOderNull(felder, ModulKatalogProfil.FeldUStart),
                 m_I_Dc_Max = ZahlOderNull(felder, ModulKatalogProfil.FeldIDcMax),
+                m_I_Sc_Max = ZahlOderNull(felder, ModulKatalogProfil.FeldIScMax),
                 m_Anzahl_Mppt = GanzOderNull(felder, ModulKatalogProfil.FeldAnzahlMppt),
                 m_Straenge_Je_Mppt = GanzOderNull(felder, ModulKatalogProfil.FeldStraengeJeMppt),
 

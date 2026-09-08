@@ -6926,6 +6926,25 @@ body {
     color: var(--epos-text);
 }
 
+/* W6-B-11 (09.09.2026): die zwei AUSLEGUNGSTEMPERATUREN des Projekts. Sie stehen
+   im Kopf des Abschnitts, weil sie fuer alle Straenge gelten - eine Zeile aus
+   Beschriftung, zwei schmalen Zahlenfeldern und dem Vorschlagsknopf. KEIN
+   Nesting (Hausregel seit Befund W6-B-1: eine fehlende Klammer macht aus
+   Nachbarregeln verschachtelte, und der Browser meldet nichts). */
+.epos-strangtemperaturen {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+/* Die zwei Zahlenfelder bleiben schmal: Es sind zwei Gradzahlen, kein
+   Freitextfeld. */
+.epos-strangtemperaturen .epos-feld {
+    max-width: 9rem;
+}
+
 /* W6-O-4 (06.09.2026): der Herstellerfilter steht UEBER der Tabelle, nicht in
    ihr - eine zweite Filterzeile IN der Strangtabelle haette keinen Platz. Die
    Zeile bleibt schmal: Ein Auswahlfeld ueber die ganze Breite sieht aus wie ein

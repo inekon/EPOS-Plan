@@ -179,6 +179,20 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 68, trocken);
 
+            // ---- Schritt 70: die PV-Strangpruefung (W6-B-10 und W6-B-11). Vier
+            //      Spalten, kein DML: der Kurzschlussstrom je MPPT in Katalog und
+            //      Projektkopie des Wechselrichters und die zwei
+            //      Auslegungstemperaturen an Tab_Einstellungen. Die Quellen sind
+            //      dieselben, aus denen sich SchemaMigration.Schritt_70_
+            //      PvStrangpruefung bedient. Ergebnisneutral - NULL heisst bei allen
+            //      vieren "wie bisher".
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt70_WrKurzschlussstrom)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 70, trocken);
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt70_Auslegungstemperaturen)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 70, trocken);
+
             if (!trocken)
             {
                 long ohnePraefix = Zahl(StromspeicherFirmaNachtrag.Zaehlung());

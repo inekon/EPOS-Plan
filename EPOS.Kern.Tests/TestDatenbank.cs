@@ -127,6 +127,15 @@ namespace EPOS.Kern.Tests
                 foreach (System.Collections.Generic.KeyValuePair<string, string> a in WechselrichterSchema.Anweisungen)
                     DataRepository.ExecuteNonQuery(a.Value);
 
+                // Schritt 70 (W6-B-10 und W6-B-11, 09.09.2026): der Kurzschlussstrom je
+                // MPPT und die zwei Auslegungstemperaturen. Die zwei WR-Spalten stehen
+                // seit diesem Schritt AUCH im CREATE oben - eine bereits vorhandene
+                // Tabelle laesst CREATE TABLE IF NOT EXISTS aber unberuehrt, und die
+                // Quelldatei fuehrt sie. Deshalb hier wie in der Migration ueber
+                // ADD COLUMN, aus DERSELBEN Quelle.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt70_WrKurzschlussstrom) SpalteSicherstellen(s);
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt70_Auslegungstemperaturen) SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
