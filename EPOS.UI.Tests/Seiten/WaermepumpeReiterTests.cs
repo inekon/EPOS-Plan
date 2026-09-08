@@ -125,19 +125,24 @@ public class WaermepumpeReiterTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Anwenderrückmeldung 08.09.2026 (W11b‑B‑15).</b> Die zehn Zeilen standen
-    /// in EINER Liste, in der sich Wärmemengen, Stromverbräuche und
-    /// Auslegungsgrößen abwechselten. Drei Unterabschnitte trennen sie — als
-    /// <c>h3.epos-untergruppe</c> und NICHT als zweiter dunkler Balken.
+    /// <b>W11b‑B‑23 (09.09.2026).</b> Die zehn Zeilen standen bis W11b‑B‑15 in
+    /// EINER Liste, in der sich Wärmemengen, Stromverbräuche und
+    /// Auslegungsgrößen abwechselten; seither tragen Gruppen die Ordnung. Jetzt
+    /// sind es dunkle BALKEN statt <c>h3</c> — Wärme und Strom sind Hauptgruppen
+    /// und stehen NEBENEINANDER in der ersten Rasterzeile, die Auslegung darunter
+    /// (dieselbe Bauform wie im Bedarfs-, Übersichts-, Heizkessel- und
+    /// BHKW-Reiter). Die Zeilenfolge je Gruppe bleibt die von W11b‑B‑15.
     /// </summary>
     [Fact]
-    public void Die_zehn_Felder_stehen_in_drei_Unterabschnitten()
+    public void Die_zehn_Felder_stehen_in_drei_Gruppen_mit_Balken()
     {
         var seite = Zeichnen(Erg(puffer: false));
 
         Assert.Equal(new[] { "Wärme", "Strom", "Auslegung" },
-                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
-        Assert.Empty(seite.FindAll("h2.epos-gruppenkopf-titel"));
+                     seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
+        Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
+        Assert.Contains(seite.FindAll("div.epos-simerg-spalten"),
+                        z => z.QuerySelectorAll("dl.epos-simerg-werte").Length == 2);
 
         var listen = seite.FindAll("dl.epos-simerg-werte");
         Assert.Equal(3, listen.Count);

@@ -100,6 +100,57 @@ public class BedarfReiterTests : BunitContext
     }
 
     /// <summary>
+    /// <b>W11b‑B‑23 (09.09.2026).</b> Der Reiter war der einzige des Stapels ohne
+    /// betonte Abschlusszeile — seine <c>Wertzeile</c> kannte den Schalter gar
+    /// nicht. „Gesamter Wärmebedarf" und „Gesamter Strombedarf" sind die
+    /// SUMMENzeile ihrer Gruppe und stehen jetzt so da, wie die Restzeile in
+    /// jedem anderen Reiter steht.
+    ///
+    /// <para>Und sie tragen MWh/a wie die Zeile, aus der sie stammen: Beide
+    /// nannten dieselbe DTO-Größe, die eine in „MWh", die andere in „MWh/a".</para>
+    /// </summary>
+    [Fact]
+    public void Die_Summenzeile_schliesst_jede_Spalte_betont_ab()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Equal(new[] { "Gesamter Wärmebedarf:", "Gesamter Strombedarf:" },
+                     seite.FindAll("dt.epos-simerg-abschluss")
+                          .Select(z => z.TextContent.Trim()).ToArray());
+        Assert.Equal(4, seite.FindAll("dd.epos-simerg-abschluss").Count);
+
+        // Die uebrigen Zeilen bleiben ohne Klasse - kein leeres class="".
+        Assert.DoesNotContain("<dt class=\"\">", seite.Markup);
+        Assert.DoesNotContain("<dd class=\"epos-simerg-einheit\">MWh</dd>", seite.Markup);
+    }
+
+    /// <summary>
+    /// <b>W11b‑B‑23.</b> „max. Wärmelast", „Gesamter Wärmebedarf",
+    /// „max. Strombedarf" und „Gesamter Strombedarf" standen als einzige
+    /// Beschriftungen der Ergebnisreiter OHNE Doppelpunkt da. Sie tragen ihn
+    /// jetzt — die zwei Gruppenlisten sind damit in JEDER Zeile gleich gesetzt.
+    ///
+    /// <para>Die Kanalliste dazwischen bleibt ausgenommen: Ihre Beschriftungen
+    /// sind die NAMEN der Bedarfsarten, die der Lauf führt, keine
+    /// Feldbeschriftungen.</para>
+    /// </summary>
+    [Fact]
+    public void Jede_Beschriftung_der_zwei_Gruppen_endet_auf_einen_Doppelpunkt()
+    {
+        var seite = Zeichnen(Daten());
+        var listen = seite.FindAll("dl.epos-simerg-werte");
+
+        foreach (int nr in new[] { 0, 2 })          // [0] Wärme, [1] Kanäle, [2] Strom
+        {
+            Assert.All(listen[nr].QuerySelectorAll("dt"),
+                       z => Assert.EndsWith(":", z.TextContent.Trim()));
+        }
+
+        Assert.Equal(new[] { "Heizung", "Brauchwasser" },
+                     listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
     /// Ein Kanal, den der Lauf nicht fuehrt, hat weder Zeile noch Schalter
     /// (<c>_bedarfKanalDa</c> im Vorlaeufer).
     /// </summary>

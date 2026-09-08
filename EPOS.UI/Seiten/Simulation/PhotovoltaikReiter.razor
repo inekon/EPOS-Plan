@@ -59,40 +59,50 @@
 
     @if (Daten is null)
     {
-        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_SIMULATION</p>
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_PHOTOVOLTAIK</p>
     }
     else
     {
         <div class="epos-simerg-spalten">
 
-            @* W11b‑B‑20: drei Unterabschnitte statt einer gemischten Liste,
-               fachlich geordnet (Erzeugung → Bedarf und Deckung → Einstrahlung),
-               der Reststrombedarf betont — dieselbe Sprache wie im Waermepumpen-
-               und Kesselreiter (W11b‑B‑15). Es sind <h3 class="epos-untergruppe">
-               und KEINE dunklen Balken: Ein Balken im Balken waere eine
-               Hierarchie, die es fachlich nicht gibt. *@
-            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
-
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_ERZEUGUNG</h3>
+            @* ERSTE RASTERZEILE: die zwei Hauptgruppen nebeneinander
+               (W11b‑B‑23). Sieben Zeilen standen bis W11b‑B‑20 in EINER Liste,
+               in der sich Erzeugung, Bedarf und Einstrahlung abwechselten;
+               seither tragen Gruppen die fachliche Ordnung (Erzeugung → Bedarf
+               und Deckung → Einstrahlung), der Reststrombedarf betont. Jetzt
+               sind es dunkle Balken statt h3 - dieselbe Bauform wie in jedem
+               anderen Reiter des Stapels. *@
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_ERZEUGUNG" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_PV_GESAMT, Zahl(Daten.StromproduktionMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_GENUTZT, Zahl(Daten.GenutztMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
                 </dl>
+            </section>
 
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_BEDARF_DECKUNG</h3>
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_BEDARF_DECKUNG" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_PV_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_REST, Zahl(Daten.ReststrombedarfMwh), MWH,
                                betont: true)
                     @Wertzeile(Resource.SIMERG_LBL_PV_DECKUNG, Zahl(Daten.DeckungProzent), "%")
                 </dl>
+            </section>
 
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_EINSTRAHLUNG</h3>
+        </div>
+
+        @* ZWEITE RASTERZEILE: die Einstrahlung und darunter das Bild. Die
+           Liste steht ALLEIN in ihrer Zeile und traegt deshalb
+           .epos-simerg-kennzahlenzeile (W11b‑B‑20). *@
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_EINSTRAHLUNG" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxEinstrahlungWm2), "W/m²")
                 </dl>
-
             </section>
 
             @* Schalter und Diagramm ueber BEIDE Spalten (Befund W11b-B-2). *@

@@ -96,9 +96,9 @@ namespace WindowsFormsApplication1
                     case Bilder.WpStromverbrauch: return BildWpStrom();
                     case Bilder.WpLeistungTemperatur: return BildStreuwolke(a);
                     case Bilder.Speichertemperaturen: return BildTemperaturen();
-                    case Bilder.Heizkessel: return BildKessel(a.Sortiert);
+                    case Bilder.Heizkessel: return BildKessel(a);
                     case Bilder.Solarthermie: return BildSolar(a);
-                    case Bilder.Bhkw: return BildBhkw(a.Sortiert);
+                    case Bilder.Bhkw: return BildBhkw(a);
                     case Bilder.Photovoltaik: return BildPv(a);
                     case Bilder.SpeicherSoc: return BildSoc();
                     case Bilder.AutarkieMonate: return BildAutarkie(a.Zahl);
@@ -461,24 +461,32 @@ namespace WindowsFormsApplication1
 
         // ---- Kessel, Solarthermie, BHKW, Photovoltaik -------------------
 
-        private byte[] BildKessel(bool sortiert)
+        /// <summary>
+        /// Die drei Reihen des Kesselbildes. Seit dem Anwenderwunsch 09.09.2026
+        /// (W11b‑B‑21) ist jede abwählbar; <c>null</c> als Reihenliste heißt
+        /// weiter „alle“ (<see cref="Alle"/>), eine LEERE Liste heißt „keine“ —
+        /// der Renderer zeichnet dann seinen Leerhinweis.
+        /// </summary>
+        private byte[] BildKessel(Bildauftrag a)
         {
-            var stapel = new List<ChartRenderer.Reihe>
-            {
-                Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL,
-                      sim.simulation_spk.Kesselleistung_stuendlich, F_PRODUKTION,
-                      ChartRenderer.Stapelart.Saeule, sortiert ? 4f : 0f)
-            };
+            bool sortiert = a != null && a.Sortiert;
+            bool alle = Alle(a);
 
-            var linien = new List<ChartRenderer.Reihe>
-            {
-                Reihe(MyResource.Resource.CHART_SEGMENT_RESTWAERME,
-                      sim.simulation_spk.Restwaerme, F_REST),
-                // Der Bedarf ZULETZT und damit ganz oben - er ist die Bezugsgröße
-                // (Begründung im Blockkommentar :970-980). Hier der PROJEKTbedarf.
-                Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT,
-                      _waermebedarf.Waermebedarf, F_BEDARF)
-            };
+            var stapel = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "WAERMEPRODUKTION"))
+                stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL,
+                                 sim.simulation_spk.Kesselleistung_stuendlich, F_PRODUKTION,
+                                 ChartRenderer.Stapelart.Saeule, sortiert ? 4f : 0f));
+
+            var linien = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "RESTWAERME"))
+                linien.Add(Reihe(MyResource.Resource.CHART_SEGMENT_RESTWAERME,
+                                 sim.simulation_spk.Restwaerme, F_REST));
+            // Der Bedarf ZULETZT und damit ganz oben - er ist die Bezugsgröße
+            // (Begründung im Blockkommentar :970-980). Hier der PROJEKTbedarf.
+            if (Gewaehlt(a, alle, "WAERMEBEDARF"))
+                linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT,
+                                 _waermebedarf.Waermebedarf, F_BEDARF));
 
             return ChartRenderer.ErzeugerStapel(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
@@ -512,26 +520,34 @@ namespace WindowsFormsApplication1
                 ChartRenderer.Achse.Jahresstunden, false);
         }
 
-        private byte[] BildBhkw(bool sortiert)
+        /// <summary>
+        /// Die vier Reihen des BHKW-Bildes. Seit W11b‑B‑23 (09.09.2026) ist jede
+        /// abwählbar — dieselbe Regel wie überall: <c>null</c> heißt „alle“
+        /// (<see cref="Alle"/>), eine LEERE Liste heißt „keine“.
+        /// </summary>
+        private byte[] BildBhkw(Bildauftrag a)
         {
             SimulationBHKW b = sim.simulation_bhkw;
+            bool sortiert = a != null && a.Sortiert;
+            bool alle = Alle(a);
 
-            var stapel = new List<ChartRenderer.Reihe>
-            {
-                Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, b.waermeproduktion,
-                      F_PRODUKTION, ChartRenderer.Stapelart.Saeule, sortiert ? 4f : 0f)
-            };
+            var stapel = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "WAERMEPRODUKTION"))
+                stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, b.waermeproduktion,
+                                 F_PRODUKTION, ChartRenderer.Stapelart.Saeule, sortiert ? 4f : 0f));
 
             double[] ladung = Array.ConvertAll(b.Speicherladung_stuendlich, x => (double)x);
 
-            var linien = new List<ChartRenderer.Reihe>
-            {
-                Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_SPEICHERLADUNG, ladung, F_SPEICHERLADUNG),
-                Reihe(MyResource.Resource.CHART_SEGMENT_RESTWAERME, b.waermerestbedarf, F_REST),
-                // Der STUFENEINGANG zuletzt und damit oben - nicht der Projektbedarf
-                // (Begründung im Blockkommentar :2140-2147).
-                Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, b.waermebedarf, F_BEDARF)
-            };
+            var linien = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "SPEICHERLADUNG"))
+                linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_SPEICHERLADUNG, ladung,
+                                 F_SPEICHERLADUNG));
+            if (Gewaehlt(a, alle, "RESTWAERME"))
+                linien.Add(Reihe(MyResource.Resource.CHART_SEGMENT_RESTWAERME, b.waermerestbedarf, F_REST));
+            // Der STUFENEINGANG zuletzt und damit oben - nicht der Projektbedarf
+            // (Begründung im Blockkommentar :2140-2147).
+            if (Gewaehlt(a, alle, "WAERMEBEDARF"))
+                linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, b.waermebedarf, F_BEDARF));
 
             return ChartRenderer.ErzeugerStapel(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,

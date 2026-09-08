@@ -65,7 +65,7 @@
                                                               ? Prozent(Autarkie.DeckungStProzent)
                                                               : Resource.SIM_ANZEIGE_NICHT_BENOETIGT)"
                                                     Quelle="@string.Format(Resource.SIM_ANZEIGE_THERM_NUTZUNGSGRAD,
-                                                                           Zahl(Autarkie.NutzungsgradStProzent, "F1"))" />
+                                                                           Zahl(Autarkie.NutzungsgradStProzent, "N2"))" />
                                     <meter min="0" max="100" value="@Geklemmt(Autarkie.DeckungStProzent)"
                                            aria-label="@Resource.SIM_DASH_GRUPPE_ST"></meter>
                                 </div>
@@ -146,7 +146,14 @@
         return KapazitaetGeaendert.InvokeAsync(Autarkie.SpeicherKwh);
     }
 
-    private static string Prozent(double wert) => Zahl(wert, "F1") + " %";
+    /// <summary>
+    /// Eine Quote der Autarkiekacheln. „N2" statt „F1" seit W11b‑B‑23
+    /// (09.09.2026): Die Kacheln der Übersicht und JEDE Kennzahlenliste der
+    /// Ergebnisreiter setzen ihre Zahlen mit N2 - zwei Nachkommastellen und
+    /// Tausendertrennung. Die zwei Quoten dieses Blattes waren die letzten mit
+    /// einer eigenen Schreibweise.
+    /// </summary>
+    private static string Prozent(double wert) => Zahl(wert, "N2") + " %";
 
     private static string Zahl(double wert, string format)
         => wert.ToString(format, System.Globalization.CultureInfo.CurrentCulture);

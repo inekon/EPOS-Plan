@@ -3454,6 +3454,24 @@ body {
     width: 1%;
 }
 
+/* DIE ZAHLENSPALTEN DER ERGEBNISTABELLEN (W11b-B-23, 09.09.2026).
+
+   Die Modultabellen der Reiter (Heizkessel, Waermepumpe samt Pufferrubrik,
+   BHKW, Solarthermie, Photovoltaik samt Wechselrichtern) und das
+   Eigenanteilsraster der Uebersicht setzen .epos-simerg-zahl an ihre
+   Zahlenzellen - aber die einzige Regel dazu stand unter
+   ".epos-simerg-kennzahlen td.epos-simerg-zahl" und damit NUR fuer die
+   Kennzahlentabelle des Stromspeichers. In .epos-raster erbten die Zellen
+   deshalb text-align: left der Hausregel: Elf Tabellen behaupteten mit ihrer
+   Klasse eine Ausrichtung, die es nicht gab, und "1.234,50" stand unter
+   "9,00" linksbuendig. Dieselbe Sprache wie .epos-spalte-zahl des Hausrasters,
+   dazu die tabellarischen Ziffern der Kennzahlenlisten. */
+.epos-raster td.epos-simerg-zahl,
+.epos-raster th.epos-simerg-zahl {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
 .epos-simerg-kennzahlen tr.epos-stufe-ok { background: rgb(215, 245, 215); }
 .epos-simerg-kennzahlen tr.epos-stufe-knapp { background: rgb(255, 240, 190); }
 .epos-simerg-kennzahlen tr.epos-stufe-ueberschritten { background: rgb(255, 205, 205); }

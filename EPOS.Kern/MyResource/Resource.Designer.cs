@@ -33358,6 +33358,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf und Deckung ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_BEDARF_DECKUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_BEDARF_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
         /// </summary>
         public static string SIMERG_GRP_BETRIEB {
@@ -33367,20 +33376,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeugung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
         /// </summary>
-        public static string SIMERG_GRP_ERZEUGUNG {
+        public static string SIMERG_GRP_BETRIEBSART {
             get {
-                return ResourceManager.GetString("SIMERG_GRP_ERZEUGUNG", resourceCulture);
+                return ResourceManager.GetString("SIMERG_GRP_BETRIEBSART", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf und Deckung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffverbrauch ähnelt.
         /// </summary>
-        public static string SIMERG_GRP_BEDARF_DECKUNG {
+        public static string SIMERG_GRP_BRENNSTOFF {
             get {
-                return ResourceManager.GetString("SIMERG_GRP_BEDARF_DECKUNG", resourceCulture);
+                return ResourceManager.GetString("SIMERG_GRP_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffverbrauch der Spitzenkessel ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_BRENNSTOFF_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_BRENNSTOFF_SPK", resourceCulture);
             }
         }
         
@@ -33394,11 +33412,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeugung ähnelt.
         /// </summary>
-        public static string SIMERG_GRP_BETRIEBSART {
+        public static string SIMERG_GRP_ERZEUGUNG {
             get {
-                return ResourceManager.GetString("SIMERG_GRP_BETRIEBSART", resourceCulture);
+                return ResourceManager.GetString("SIMERG_GRP_ERZEUGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion der einzelnen Spitzenkessel ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_MODULE_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_MODULE_SPK", resourceCulture);
             }
         }
         
@@ -33572,7 +33599,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Strombedarf ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Strombedarf: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_GESAMT_STROMBEDARF {
             get {
@@ -33581,7 +33608,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Wärmebedarf ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Wärmebedarf: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_GESAMT_WAERMEBEDARF {
             get {
@@ -33617,7 +33644,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die max. Strombedarf ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Strombedarf: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_MAX_STROMBEDARF {
             get {
@@ -33626,7 +33653,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die max. Wärmelast ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Wärmelast: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_MAX_WAERMELAST {
             get {
@@ -36224,7 +36251,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Mittel Module ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Mittel Module: ähnelt.
         /// </summary>
         public static string SIM_BHKW_VBH_TH_MITTEL {
             get {
@@ -36233,7 +36260,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Summe Module ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh thermisch, Summe Module: ähnelt.
         /// </summary>
         public static string SIM_BHKW_VBH_TH_SUMME {
             get {
@@ -37559,6 +37586,16 @@ namespace WindowsFormsApplication1.MyResource {
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Simulationsdaten vorhanden!
+        ///Bitte zuerst die Simulation mit BHKW durchführen. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KEINE_DATEN_BHKW {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KEINE_DATEN_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Simulationsdaten vorhanden!
         ///Bitte zuerst den Energiebedarf berechnen. ähnelt.
         /// </summary>
         public static string SIM_MSG_KEINE_DATEN_ENERGIEBEDARF {
@@ -37579,11 +37616,31 @@ namespace WindowsFormsApplication1.MyResource {
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Simulationsdaten vorhanden!
+        ///Bitte zuerst die Simulation mit Photovoltaik durchführen. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KEINE_DATEN_PHOTOVOLTAIK {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KEINE_DATEN_PHOTOVOLTAIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Simulationsdaten vorhanden!
         ///Bitte zuerst die Simulation durchführen. ähnelt.
         /// </summary>
         public static string SIM_MSG_KEINE_DATEN_SIMULATION {
             get {
                 return ResourceManager.GetString("SIM_MSG_KEINE_DATEN_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Simulationsdaten vorhanden!
+        ///Bitte zuerst die Simulation mit Solarthermie durchführen. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KEINE_DATEN_SOLARTHERMIE {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KEINE_DATEN_SOLARTHERMIE", resourceCulture);
             }
         }
         
@@ -37603,6 +37660,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_MSG_KEIN_BRENNSTOFF {
             get {
                 return ResourceManager.GetString("SIM_MSG_KEIN_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Brennstoff für diese Heizkessel definiert. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KEIN_BRENNSTOFF_SPK {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KEIN_BRENNSTOFF_SPK", resourceCulture);
             }
         }
         

@@ -457,6 +457,31 @@ public sealed class StilblattTests
         Assert.Contains(".epos-strangtabelle td.epos-strangtabelle-zahl", css, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// <b>Die Zahlenspalten der Ergebnistabellen stehen rechts</b> (W11b‑B‑23,
+    /// 09.09.2026). Elf Tabellen der Detaillierten Simulation setzen
+    /// <c>.epos-simerg-zahl</c> an ihre Zahlenzellen — die einzige Regel dazu
+    /// stand aber unter <c>.epos-simerg-kennzahlen td.epos-simerg-zahl</c> und
+    /// galt damit NUR für die Kennzahlentabelle des Stromspeichers. In
+    /// <c>.epos-raster</c> erbten die Zellen <c>text-align: left</c> der
+    /// Hausregel: Die Klasse behauptete eine Ausrichtung, die es nicht gab.
+    ///
+    /// <para>Der Selektor nennt <c>td</c> UND die Tabellenklasse — eine blosse
+    /// Klasse (0,1,0) verlöre gegen die Hausregel <c>.epos-raster th,
+    /// .epos-raster td</c> (0,1,1). Denselben Weg geht W6‑B‑4.</para>
+    /// </summary>
+    [Fact]
+    public void W11bB23_Die_Zahlenspalten_der_Ergebnistabellen_stehen_rechts()
+    {
+        string block = Regelblock(".epos-raster td.epos-simerg-zahl");
+
+        Assert.Contains("text-align: right", block, StringComparison.Ordinal);
+        Assert.Contains("font-variant-numeric: tabular-nums", block, StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.Contains(".epos-raster th.epos-simerg-zahl", css, StringComparison.Ordinal);
+    }
+
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
     private static string Regelblock(string selektor)
     {

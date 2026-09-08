@@ -264,6 +264,25 @@ public class GangUndErgebnisReiterTests : BunitContext
         Assert.Contains(_auftraege, a => a.Bild == Bilder.AutarkieMonate);
     }
 
+    /// <summary>
+    /// <b>W11b‑B‑23 (09.09.2026).</b> Die zwei Quoten der Autarkiekacheln
+    /// standen als letzte Zahlen des Dialogs in „F1" („38,1 %"), während die
+    /// Kacheln der Übersicht und jede Kennzahlenliste N2 setzen. Der Balken
+    /// darunter behält seinen eigenen Wert: Er ist ein Attribut und keine
+    /// Anzeige (0…100, invariant).
+    /// </summary>
+    [Fact]
+    public void Die_Autarkiequoten_stehen_mit_zwei_Nachkommastellen()
+    {
+        var seite = ErgebnisZeichnen(Autarkie());
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Contains("38,10 %", seite.Markup);
+        Assert.Contains("12,40 %", seite.Markup);
+        Assert.Contains("62,00", seite.Markup);          // therm. Nutzungsgrad
+        Assert.Contains("value=\"38.1\"", seite.Markup);  // der Balken bleibt invariant
+    }
+
     /// <summary>Ohne Waermebedarf steht „nicht benoetigt" statt einer Quote.</summary>
     [Fact]
     public void Ohne_Waermebedarf_steht_nicht_benoetigt()

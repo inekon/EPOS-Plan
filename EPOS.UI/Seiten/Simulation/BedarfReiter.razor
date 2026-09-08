@@ -56,10 +56,17 @@
            Hierarchie, die es nicht gibt. *@
         <section class="epos-simerg-block">
             <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
+            @* DIE SUMMENZEILE SCHLIESST DIE GRUPPE BETONT AB (W11b‑B‑23) -
+               dieselbe Sprache, die jede andere Kennzahlenliste der
+               Ergebnisseite fuer ihre Rest- und Summenzeile spricht. Und sie
+               traegt MWh/a wie die Zeile darueber, aus der sie stammt: Beide
+               nennen Daten.WaermebedarfGesamtMwh, die eine bis heute in „MWh",
+               die andere in „MWh/a". *@
             <dl class="epos-simerg-werte">
                 @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF_NETZ, Daten.WaermebedarfGesamtMwh, MWH)
                 @Wertzeile(Resource.SIMERG_LBL_MAX_WAERMELAST, Daten.WaermelastMaxKw, "kW")
-                @Wertzeile(Resource.SIMERG_LBL_GESAMT_WAERMEBEDARF, Daten.WaermebedarfGesamtMwh, "MWh")
+                @Wertzeile(Resource.SIMERG_LBL_GESAMT_WAERMEBEDARF, Daten.WaermebedarfGesamtMwh, MWH,
+                           betont: true)
             </dl>
 
             @* PAKET E1: die drei Bedarfskanaele unter der Summe - nur die, die
@@ -97,7 +104,8 @@
             <dl class="epos-simerg-werte">
                 @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Daten.StrombedarfGesamtMwh, MWH)
                 @Wertzeile(Resource.SIMERG_LBL_MAX_STROMBEDARF, Daten.StrombedarfMaxKw, "kW")
-                @Wertzeile(Resource.SIMERG_LBL_GESAMT_STROMBEDARF, Daten.StrombedarfGesamtMwh, "MWh")
+                @Wertzeile(Resource.SIMERG_LBL_GESAMT_STROMBEDARF, Daten.StrombedarfGesamtMwh, MWH,
+                           betont: true)
             </dl>
 
         </section>
@@ -240,9 +248,22 @@
         Bild?.Invoke(new Bildauftrag(Bilder.BedarfStrom, _sortiert, -1, null,
                                      0.0, _stromBereich));
 
-    private RenderFragment Wertzeile(string text, double wert, string einheit) => @<text>
-        <dt>@text</dt>
-        <dd>@wert.ToString("N2", System.Globalization.CultureInfo.CurrentCulture)</dd>
-        <dd class="epos-simerg-einheit">@einheit</dd>
+    /// <summary>
+    /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
+    /// die ABSCHLUSSZEILE einer Gruppe - hier die Summenzeile (W11b‑B‑23, sonst
+    /// die Restzeile, W11b‑B‑15); ohne den Schalter bleibt das Markup
+    /// unveraendert.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, double wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@wert.ToString("N2", System.Globalization.CultureInfo.CurrentCulture)</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
+
+    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 }

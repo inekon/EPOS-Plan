@@ -203,6 +203,21 @@ public class UebersichtReiterTests : BunitContext
         Assert.Contains("Reststrombedarf", kacheln[1].TextContent);
     }
 
+    /// <summary>
+    /// <b>W11b‑B‑23 (09.09.2026).</b> Die NAMENSSPALTE des Eigenanteilsrasters
+    /// trug <c>class=""</c> — als einzige Zelle des ganzen Reiterstapels. Die
+    /// Hausregel dazu ist alt (sie steht an <c>Zeilenklasse</c> der betonten
+    /// Zeile): <c>null</c> lässt Blazor das Attribut ganz weg.
+    /// </summary>
+    [Fact]
+    public void Das_Eigenanteilsraster_traegt_kein_leeres_Klassenattribut()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.DoesNotContain("<td class=\"\">", seite.Markup);
+        Assert.NotEmpty(seite.FindAll("table.epos-raster td.epos-simerg-zahl"));
+    }
+
     /// <summary>Das Eigenanteilsraster: Kopfzeile und je Erzeuger eine Zeile.</summary>
     [Fact]
     public void Das_Eigenanteilsraster_zeigt_je_Erzeuger_eine_Zeile()

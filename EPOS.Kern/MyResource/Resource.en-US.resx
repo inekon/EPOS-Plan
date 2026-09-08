@@ -2450,10 +2450,10 @@ Switch-on and switch-off threshold in % of the usable capacity.</value>
     <value>Full-load hours, electric:</value>
   </data>
   <data name="SIM_BHKW_VBH_TH_MITTEL" xml:space="preserve">
-    <value>Thermal FLH, module average</value>
+    <value>Thermal FLH, module average:</value>
   </data>
   <data name="SIM_BHKW_VBH_TH_SUMME" xml:space="preserve">
-    <value>Thermal FLH, sum of modules</value>
+    <value>Thermal FLH, sum of modules:</value>
   </data>
   <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
     <value>Runtime-optimised - maximum output</value>
@@ -3743,6 +3743,21 @@ Boilers, CHP units and solar thermal generate the heat themselves.</value>
   <data name="SIM_MSG_KEINE_DATEN_HEIZKESSEL" xml:space="preserve">
     <value>No simulation data available!
 Please run the simulation with the boiler first.</value>
+  </data>
+  <data name="SIM_MSG_KEIN_BRENNSTOFF_SPK" xml:space="preserve">
+    <value>No fuel defined for these boilers.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_BHKW" xml:space="preserve">
+    <value>No simulation data available!
+Please run the simulation with the CHP unit first.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_SOLARTHERMIE" xml:space="preserve">
+    <value>No simulation data available!
+Please run the simulation with solar thermal first.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_PHOTOVOLTAIK" xml:space="preserve">
+    <value>No simulation data available!
+Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="SIM_TOOLTIP_CSV_HEIZKESSEL" xml:space="preserve">
     <value>Export boiler simulation as CSV
@@ -13526,16 +13541,16 @@ Please check all entries!</value>
     <value>Electricity production PV:</value>
   </data>
   <data name="SIMERG_LBL_MAX_WAERMELAST" xml:space="preserve">
-    <value>max. heat load</value>
+    <value>max. heat load:</value>
   </data>
   <data name="SIMERG_LBL_GESAMT_WAERMEBEDARF" xml:space="preserve">
-    <value>Total heat requirement</value>
+    <value>Total heat requirement:</value>
   </data>
   <data name="SIMERG_LBL_MAX_STROMBEDARF" xml:space="preserve">
-    <value>max. power requirement</value>
+    <value>max. power requirement:</value>
   </data>
   <data name="SIMERG_LBL_GESAMT_STROMBEDARF" xml:space="preserve">
-    <value>Total electricity requirement</value>
+    <value>Total electricity requirement:</value>
   </data>
   <data name="SIMERG_LBL_WAERMEBEDARFSDECKUNG" xml:space="preserve">
     <value>Heat requirement coverage:</value>
@@ -13659,6 +13674,15 @@ Please check all entries!</value>
   </data>
   <data name="SIMERG_GRP_EINSTRAHLUNG" xml:space="preserve">
     <value>Irradiance</value>
+  </data>
+  <data name="SIMERG_GRP_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel consumption</value>
+  </data>
+  <data name="SIMERG_GRP_BRENNSTOFF_SPK" xml:space="preserve">
+    <value>Fuel consumption of the top boilers</value>
+  </data>
+  <data name="SIMERG_GRP_MODULE_SPK" xml:space="preserve">
+    <value>Heat production of the individual top boilers</value>
   </data>
   <data name="SIMERG_OPT_WAERMEGEFUEHRT" xml:space="preserve">
     <value>Heat-led</value>

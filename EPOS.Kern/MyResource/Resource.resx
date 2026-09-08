@@ -2466,10 +2466,10 @@ Ein- und Abschaltschwelle in % der nutzbaren Kapazität.</value>
     <value>Vollbenutzungsstunden elektrisch:</value>
   </data>
   <data name="SIM_BHKW_VBH_TH_MITTEL" xml:space="preserve">
-    <value>Vbh thermisch, Mittel Module</value>
+    <value>Vbh thermisch, Mittel Module:</value>
   </data>
   <data name="SIM_BHKW_VBH_TH_SUMME" xml:space="preserve">
-    <value>Vbh thermisch, Summe Module</value>
+    <value>Vbh thermisch, Summe Module:</value>
   </data>
   <data name="SIM_BM_RB_LAUFZEIT" xml:space="preserve">
     <value>Laufzeitoptimiert - maximale Leistung</value>
@@ -3759,6 +3759,21 @@ Heizkessel, BHKW und Solarthermie erzeugen die Wärme selbst.</value>
   <data name="SIM_MSG_KEINE_DATEN_HEIZKESSEL" xml:space="preserve">
     <value>Keine Simulationsdaten vorhanden!
 Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
+  </data>
+  <data name="SIM_MSG_KEIN_BRENNSTOFF_SPK" xml:space="preserve">
+    <value>Kein Brennstoff für diese Heizkessel definiert.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_BHKW" xml:space="preserve">
+    <value>Keine Simulationsdaten vorhanden!
+Bitte zuerst die Simulation mit BHKW durchführen.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_SOLARTHERMIE" xml:space="preserve">
+    <value>Keine Simulationsdaten vorhanden!
+Bitte zuerst die Simulation mit Solarthermie durchführen.</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_PHOTOVOLTAIK" xml:space="preserve">
+    <value>Keine Simulationsdaten vorhanden!
+Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   </data>
   <data name="SIM_TOOLTIP_CSV_HEIZKESSEL" xml:space="preserve">
     <value>Heizkessel-Simulation als CSV exportieren
@@ -13533,16 +13548,16 @@ Alle Eingaben überprüfen!</value>
     <value>Stromproduktion PV:</value>
   </data>
   <data name="SIMERG_LBL_MAX_WAERMELAST" xml:space="preserve">
-    <value>max. Wärmelast</value>
+    <value>max. Wärmelast:</value>
   </data>
   <data name="SIMERG_LBL_GESAMT_WAERMEBEDARF" xml:space="preserve">
-    <value>Gesamter Wärmebedarf</value>
+    <value>Gesamter Wärmebedarf:</value>
   </data>
   <data name="SIMERG_LBL_MAX_STROMBEDARF" xml:space="preserve">
-    <value>max. Strombedarf</value>
+    <value>max. Strombedarf:</value>
   </data>
   <data name="SIMERG_LBL_GESAMT_STROMBEDARF" xml:space="preserve">
-    <value>Gesamter Strombedarf</value>
+    <value>Gesamter Strombedarf:</value>
   </data>
   <data name="SIMERG_LBL_WAERMEBEDARFSDECKUNG" xml:space="preserve">
     <value>Wärmebedarfsdeckung:</value>
@@ -13666,6 +13681,15 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="SIMERG_GRP_EINSTRAHLUNG" xml:space="preserve">
     <value>Einstrahlung</value>
+  </data>
+  <data name="SIMERG_GRP_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffverbrauch</value>
+  </data>
+  <data name="SIMERG_GRP_BRENNSTOFF_SPK" xml:space="preserve">
+    <value>Brennstoffverbrauch der Spitzenkessel</value>
+  </data>
+  <data name="SIMERG_GRP_MODULE_SPK" xml:space="preserve">
+    <value>Wärmeproduktion der einzelnen Spitzenkessel</value>
   </data>
   <data name="SIMERG_OPT_WAERMEGEFUEHRT" xml:space="preserve">
     <value>Wärmegeführt</value>

@@ -28,8 +28,11 @@
    Zeilen standen in der Reihenfolge der WinForms-Maske: Deckungsgrad zuerst,
    dann Bedarf, Rest, Produktion, Ueberschuss - der Rest VOR der Produktion,
    aus der er sich ergibt. Jetzt steht die fachliche Ordnung Bedarf → Erzeugung
-   → Ueberschuss → Rest → Deckung unter EINEM Unterabschnitt „Waerme“, und der
+   → Ueberschuss → Rest → Deckung unter EINER Gruppe „Waerme“, und der
    Rest ist betont. Keine Zahl faellt weg, keine Beschriftung aendert sich.
+   Der Gruppentitel ist seit W11b‑B‑23 ein dunkler Balken und kein h3: Waerme
+   ist eine HAUPTgruppe, hier wie in jedem anderen Reiter des Stapels - dieser
+   fuehrt nur keine zweite.
 
    … UND SIE LAEUFT UEBER DIE GANZE RASTERZEILE. Sie sass in EINER Spalte des
    auto-fit-Rasters (minmax(320px, 1fr)), obwohl neben ihr nichts steht: Bei
@@ -44,21 +47,21 @@
 
     @if (Daten is null)
     {
-        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_SIMULATION</p>
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_SOLARTHERMIE</p>
     }
     else
     {
         <div class="epos-simerg-spalten">
 
-            @* W11b‑B‑20: EIN Unterabschnitt „Waerme“, fachlich geordnet
+            @* W11b‑B‑20: EINE Gruppe „Waerme“, fachlich geordnet
                (Bedarf → Erzeugung → Ueberschuss → Rest → Deckung), der Rest
                betont — dieselbe Sprache wie im Waermepumpen- und Kesselreiter
-               (W11b‑B‑15). Es ist ein <h3 class="epos-untergruppe"> und KEIN
-               dunkler Balken: Ein Balken im Balken waere eine Hierarchie, die es
-               fachlich nicht gibt. *@
+               (W11b‑B‑15). Der Balken ist derselbe wie dort (W11b‑B‑23); die
+               Liste steht ALLEIN in ihrer Rasterzeile und bekommt sie deshalb
+               ganz. *@
             <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
 
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_WAERME</h3>
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_MODULE, Zahl(Daten.WaermeproduktionMwh), MWH)

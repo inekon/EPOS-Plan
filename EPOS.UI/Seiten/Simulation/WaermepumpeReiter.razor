@@ -46,30 +46,18 @@
     {
         <div class="epos-simerg-spalten">
 
-            @* NACH WAERME, STROM UND AUSLEGUNG GEGLIEDERT (Anwenderrueckmeldung
-               08.09.2026, W11b‑B‑15). Die zehn Zeilen standen in EINER Liste, in
-               der sich Waermemengen, Stromverbraeuche und Auslegungsgroessen
-               (Bivalenzpunkt, Vollbenutzungsstunden, Mindest-Spitzenkesselleistung,
-               Pufferkapazitaet) abwechselten. Drei Unterabschnitte trennen sie;
-               es ist ein <h3 class="epos-untergruppe"> und KEIN dunkler Balken —
-               ein Balken im Balken waere eine Hierarchie, die es fachlich nicht
-               gibt (dieselbe Regel wie in .epos-untergruppe). Keine Zahl faellt
-               weg, keine Beschriftung aendert sich.
+            @* ERSTE RASTERZEILE: die zwei Kategorien nebeneinander
+               (W11b‑B‑23, 09.09.2026). Die zehn Zeilen standen bis W11b‑B‑15
+               in EINER Liste, in der sich Waermemengen, Stromverbraeuche und
+               Auslegungsgroessen abwechselten; seither tragen Gruppen die
+               Ordnung. Jetzt sind es dunkle Balken statt h3, denn Waerme und
+               Strom sind HAUPTgruppen - dieselbe Bauform wie im Bedarfs-,
+               Uebersichts-, Heizkessel- und BHKW-Reiter. Keine Zahl faellt weg,
+               keine Beschriftung aendert sich. *@
 
-               UND SIE LAEUFT UEBER DIE GANZE RASTERZEILE (W11b‑B‑20,
-               09.09.2026). Sie sass in EINER Spalte des auto-fit-Rasters
-               (minmax(320px, 1fr)), obwohl neben ihr nichts steht - darunter
-               spannt schon das Diagramm ueber die volle Breite. Lange
-               Beschriftungen wie „durchschnittliche Vollbenutzungsstunden:“
-               liefen damit rechts aus dem Raster: .epos-simerg-werte
-               (width: max-content, max-width: 100%, overflow-x: auto) schnitt
-               die Einheitenspalte ab und schob die Liste in einen Rollbalken.
-               .epos-simerg-kennzahlenzeile gibt ihr die ganze Zeile; kompakt
-               (max-content) bleibt sie trotzdem. *@
+            <section class="epos-simerg-block">
 
-            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
-
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_WAERME</h3>
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG, Zahl(Daten.DeckungProzent), "%")
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
@@ -77,13 +65,28 @@
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
                 </dl>
 
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_STROM</h3>
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_STROM" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, Zahl(Daten.StromverbrauchMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, Zahl(Daten.HeizstabStromverbrauchMwh), MWH)
                 </dl>
+            </section>
 
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_AUSLEGUNG</h3>
+        </div>
+
+        @* ZWEITE RASTERZEILE: die Auslegung und darunter die Streuwolke. Die
+           Liste steht ALLEIN in ihrer Zeile und traegt deshalb weiter
+           .epos-simerg-kennzahlenzeile (W11b‑B‑20): In EINER Spalte des
+           auto-fit-Rasters (minmax(320px, 1fr)) schnitt
+           „durchschnittliche Vollbenutzungsstunden:“ die Einheitenspalte ab und
+           schob die Liste in einen Rollbalken. *@
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
                 <dl class="epos-simerg-werte">
                     @* „-" statt einer Zahl, wenn der Lauf keinen Bivalenzpunkt kennt
                        (woertlich :4374). *@

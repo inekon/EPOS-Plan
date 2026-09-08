@@ -18,7 +18,29 @@
    ausgeliehen wurden.
 
    BEFUND W11-B19 (tb_Koks zweimal mit demselben Wert gesetzt) entfaellt mit dem
-   DTO: Ein Feld gibt es einmal. *@
+   DTO: Ein Feld gibt es einmal.
+
+   WAEHLBARE REIHEN (Anwenderwunsch 09.09.2026, W11b‑B‑21). Die
+   Jahresganglinie zeichnete IMMER alle drei Reihen - Waermeproduktion
+   Heizkessel, Restwaerme und den Waermebedarf gesamt. Sie traegt jetzt ueber
+   sich zwei Schalterzeilen: OBEN „sortiert" (die Darstellungsart), DARUNTER je
+   Reihe ein Schalter (die Reihen), alle vorbelegt AN - dieselbe Trennung und
+   dieselbe Reihenfolge wie im Waermepumpen-, Solarthermie- und
+   Photovoltaikreiter (W11b‑B‑17/19). Die Beschriftung ist DIESELBE Ressource,
+   die auch in der Legende steht: Man hakt ab, was man dort liest. ALLE
+   ABGEWAEHLT heisst KEINE Reihe und nicht „alle" - die Huelle zeichnet dann den
+   Leerhinweis des Renderers.
+
+   KENNZAHLEN IN VIER GRUPPEN (Anwenderwunsch 09.09.2026, W11b‑B‑22). Bis
+   dahin standen „Waerme", „Strom" und „Auslegung" als h3-Unterabschnitte
+   UNTEREINANDER in EINER Spalte, und der Brennstoffblock lag als einzige
+   Gruppe mit dunklem Balken oben rechts daneben - drei Ueberschriftenarten in
+   einem Block, und die zwei Kategorien, die der Reiterstapel sonst ueberall
+   nebeneinander stellt, hintereinander. Jetzt sind es VIER gleichrangige
+   Hauptgruppen mit dunklem Balken in ZWEI Rasterzeilen: oben Waerme | Strom
+   (wie im Bedarfs- und im Uebersichtsreiter), darunter Auslegung |
+   Brennstoffverbrauch der Spitzenkessel. Keine Zahl faellt weg, keine
+   Reihenfolge innerhalb einer Gruppe aendert sich. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 
@@ -30,17 +52,14 @@
     }
     else
     {
+        @* ERSTE RASTERZEILE: die zwei Kategorien nebeneinander (W11b‑B‑22).
+           Es sind dunkle Balken und keine h3 - Waerme und Strom sind
+           HAUPTgruppen, genau wie im Bedarfs- und im Uebersichtsreiter, und sie
+           stehen in derselben Ordnung wie dort: Waerme links, Strom rechts. *@
         <div class="epos-simerg-spalten">
 
-            @* NACH WAERME, STROM UND AUSLEGUNG GEGLIEDERT (Anwenderrueckmeldung
-               08.09.2026, W11b‑B‑15). Neun Zeilen in EINER Liste mischten Waerme,
-               Strom und die zwei Leistungen der Auslegung; die Restwaerme stand
-               noch VOR der Produktion, aus der sie sich ergibt. Drei
-               Unterabschnitte, und der Rest schliesst seine Gruppe ab. *@
-
             <section class="epos-simerg-block">
-
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_WAERME</h3>
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
                 <dl class="epos-simerg-werte">
                     @* Ohne Projektbedarf steht hier „0" und nicht „NaN" - woertlich
                        aus :4530. *@
@@ -51,43 +70,71 @@
 
                     @* ETAPPE D4: Die Quellwaerme der Kaskade. Ohne Quellbezug steht dort
                        0,00 - die Zeile bleibt sichtbar, denn „der Kessel bezieht nichts
-                       aus einem Puffer" ist die Antwort auf genau diese Frage. *@
-                    @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh),
-                               Resource.SIM_KESSEL_QUELLWAERME_EINHEIT)
+                       aus einem Puffer" ist die Antwort auf genau diese Frage.
+
+                       Die Einheit ist MWh/a wie in jeder anderen Waermezeile dieser
+                       Liste (W11b‑B‑23); SIM_KESSEL_QUELLWAERME_EINHEIT („MWh") war
+                       die Einheit des WinForms-Feldes und stand als einzige Zeile
+                       der Ergebnisseite ohne Zeitbezug da. *@
+                    @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh), MWH)
 
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
                 </dl>
-
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_STROM</h3>
-                <dl class="epos-simerg-werte">
-                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH, betont: true)
-                </dl>
-
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_AUSLEGUNG</h3>
-                <dl class="epos-simerg-werte">
-                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_KESSEL, Zahl(Daten.MaxKesselleistungKw), "kW")
-                    @Wertzeile(Resource.SIMERG_LBL_MAX_GASBEZUG, Zahl(Daten.GasspitzeKw), "kW")
-                </dl>
-
             </section>
 
             <section class="epos-simerg-block">
-                <Gruppenkopf Titel="@Resource.SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK" />
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_STROM" />
                 <dl class="epos-simerg-werte">
-                    @foreach (Brennstoffzeile b in Brennstoffe)
-                    {
-                        if (!b.Sichtbar) { continue; }
-                        @Wertzeile(b.Bezeichnung, Zahl(b.Wert), MWH)
-                    }
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH, betont: true)
                 </dl>
             </section>
 
         </div>
 
+        @* ZWEITE RASTERZEILE: die zwei uebrigen Gruppen. Der Brennstoffblock
+           stand vorher OBEN RECHTS neben der Kennzahlenliste und damit auf der
+           Hoehe der Waerme, ueber die er nichts sagt. *@
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_KESSEL, Zahl(Daten.MaxKesselleistungKw), "kW")
+                    @Wertzeile(Resource.SIMERG_LBL_MAX_GASBEZUG, Zahl(Daten.GasspitzeKw), "kW")
+                </dl>
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_BRENNSTOFF_SPK" />
+                @* LEERHINWEIS STATT LEEREM BALKEN (W11b‑B‑23) - dieselbe Meldung
+                   in derselben Form wie im BHKW-Reiter. Sichtbar ist eine
+                   Brennstoffzeile, wenn ihr Jahreswert > 0 ist ODER ein Kessel des
+                   Projekts diesen Brennstoff fuehrt; bleibt keine uebrig, stand
+                   hier bisher ein Balken ohne Inhalt. *@
+                @if (SichtbareBrennstoffe == 0)
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.SIM_MSG_KEIN_BRENNSTOFF_SPK" />
+                }
+                else
+                {
+                    <dl class="epos-simerg-werte">
+                        @foreach (Brennstoffzeile b in Brennstoffe)
+                        {
+                            if (!b.Sichtbar) { continue; }
+                            @Wertzeile(b.Bezeichnung, Zahl(b.Wert), MWH)
+                        }
+                    </dl>
+                }
+            </section>
+
+        </div>
+
+        @* Die Kesseltabelle steht AUSSERHALB des Rasters und damit ueber die
+           volle Breite. *@
         @if (Daten.Module.Count > 0)
         {
-            <Gruppenkopf Titel="@Resource.SIMERG_LBL_WAERMEPRODUKTION_MODULE_SPK" />
+            <Gruppenkopf Titel="@Resource.SIMERG_GRP_MODULE_SPK" />
             <table class="epos-raster">
                 <thead>
                     <tr>
@@ -114,9 +161,22 @@
             </table>
         }
 
+        @* W11b‑B‑21: ZUERST die Darstellungsart, DANN die Reihen - dieselbe
+           Trennung und dieselbe Reihenfolge wie im Waermepumpenreiter
+           (W11b‑B‑17). Die drei Beschriftungen sind die der Legende, in der
+           Reihenfolge des Bildes. *@
         <div class="epos-simerg-schalter">
             <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
                       WertChanged="@(w => _sortiert = w)" />
+        </div>
+
+        <div class="epos-simerg-schalter">
+            <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL"
+                      Wert="@_produktion" WertChanged="@(w => _produktion = w)" />
+            <Schalter Bezeichnung="@Resource.CHART_SEGMENT_RESTWAERME"
+                      Wert="@_restwaerme" WertChanged="@(w => _restwaerme = w)" />
+            <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT"
+                      Wert="@_bedarf" WertChanged="@(w => _bedarf = w)" />
         </div>
 
         <ChartBild Png="@BildKessel" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
@@ -156,9 +216,44 @@
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;
 
+    /// <summary>Die eingeschalteten Reihen des Bildes (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Reihen();
+
     private bool _sortiert;
 
-    private byte[]? BildKessel => Bild?.Invoke(new Bildauftrag(Bilder.Heizkessel, _sortiert));
+    // W11b‑B‑21: je Reihe ein Zustand, ALLE vorbelegt an.
+    private bool _produktion = true;
+    private bool _restwaerme = true;
+    private bool _bedarf = true;
+
+    /// <summary>Wieviele Brennstoffzeilen bleiben nach der Praesenzregel uebrig?</summary>
+    private int SichtbareBrennstoffe
+    {
+        get
+        {
+            int n = 0;
+            foreach (Brennstoffzeile b in Brennstoffe) if (b.Sichtbar) n++;
+            return n;
+        }
+    }
+
+    /// <summary>
+    /// Die Serienschluessel des Bildes - sprachneutral, die Beschriftung setzt
+    /// die Huelle. Eine LEERE Liste heisst „keine Reihe": Der Auftrag traegt
+    /// immer eine Liste, deshalb kann die Huelle leer von „ohne Angabe"
+    /// (<c>null</c>) unterscheiden.
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string>();
+        if (_produktion) liste.Add("WAERMEPRODUKTION");
+        if (_restwaerme) liste.Add("RESTWAERME");
+        if (_bedarf) liste.Add("WAERMEBEDARF");
+        return liste;
+    }
+
+    private byte[]? BildKessel =>
+        Bild?.Invoke(new Bildauftrag(Bilder.Heizkessel, _sortiert, -1, Reihen()));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

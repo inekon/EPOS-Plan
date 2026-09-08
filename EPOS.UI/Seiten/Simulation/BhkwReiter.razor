@@ -21,7 +21,22 @@
    ETAPPE E2. Die beiden Bestandszeilen heissen richtig „Vbh thermisch, Summe
    Module" und „…, Mittel Module" - sie fuehrten nie Betriebsstunden. Darunter
    die elektrischen Vollbenutzungsstunden; ohne gepflegte elektrische
-   Nennleistung steht dort „—" und keine erfundene Zahl. *@
+   Nennleistung steht dort „—" und keine erfundene Zahl.
+
+   WAEHLBARE REIHEN (W11b‑B‑23, 09.09.2026). Die Jahresganglinie war das
+   letzte Bild der Ergebnisreiter, das IMMER alles zeichnete - Waermeproduktion,
+   Speicherladung, Restwaerme und Waermebedarf. Sie traegt jetzt dieselbe
+   Steuerung wie jedes andere: oben „sortiert" (die Darstellungsart), darunter
+   je Reihe ein Schalter (die Reihen), alle vorbelegt AN, beschriftet mit der
+   Ressource ihrer Legende. ALLE ABGEWAEHLT heisst KEINE Reihe und nicht
+   „alle" (W11b‑B‑17).
+
+   KENNZAHLEN IN VIER GRUPPEN (W11b‑B‑23). „Waerme", „Strom" und „Betrieb"
+   standen als h3-Unterabschnitte UNTEREINANDER in einer Spalte, der
+   Brennstoffblock als einzige Gruppe mit dunklem Balken daneben. Jetzt sind es
+   vier gleichrangige Hauptgruppen mit Balken in ZWEI Rasterzeilen: oben
+   Waerme | Strom, darunter Betrieb | Brennstoffverbrauch - dieselbe Bauform
+   wie im Heizkesselreiter (W11b‑B‑22). Keine Zahl faellt weg. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 
@@ -29,23 +44,22 @@
 
     @if (Daten is null)
     {
-        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_SIMULATION</p>
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_BHKW</p>
     }
     else
     {
+        @* ERSTE RASTERZEILE: die zwei Kategorien nebeneinander (W11b‑B‑23).
+           Fuenfzehn Zeilen standen bis W11b‑B‑15 in EINER Liste: drei
+           Stundenzeilen, dann Waerme und Strom im Wechsel, die Restzahlen in der
+           Mitte und die zwei Deckungsgrade ganz unten. Seither tragen Gruppen
+           die Ordnung; jetzt sind es dunkle Balken statt h3, denn Waerme und
+           Strom sind HAUPTgruppen - wie im Bedarfs-, Uebersichts- und
+           Heizkesselreiter. Jede Gruppe schliesst mit ihrem Rest. *@
         <div class="epos-simerg-spalten">
-
-            @* NACH WAERME, STROM UND BETRIEB GEGLIEDERT (Anwenderrueckmeldung
-               08.09.2026, W11b‑B‑15). Fuenfzehn Zeilen in EINER Liste: drei
-               Stundenzeilen, dann Waerme und Strom im Wechsel, die Restzahlen in
-               der Mitte und die zwei Deckungsgrade ganz unten. Jetzt tragen die
-               drei Unterabschnitte die Ordnung; jede Gruppe schliesst mit ihrem
-               Rest. Der Brennstoffblock rechts behaelt seinen dunklen Balken —
-               er ist eine eigene Gruppe, kein Unterabschnitt. *@
 
             <section class="epos-simerg-block">
 
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_WAERME</h3>
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION, Zahl(Daten.WaermeproduktionMwh), MWH)
@@ -65,7 +79,10 @@
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
                 </dl>
 
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_STROM</h3>
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_STROM" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION, Zahl(Daten.StromproduktionMwh), MWH)
@@ -73,8 +90,15 @@
                                StrombedarfVorhanden ? Zahl(Daten.StromdeckungProzent) : "0", "%")
                     @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH, betont: true)
                 </dl>
+            </section>
 
-                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_BETRIEB</h3>
+        </div>
+
+        @* ZWEITE RASTERZEILE: die zwei uebrigen Gruppen (W11b‑B‑23). *@
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_BETRIEB" />
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIM_BHKW_VBH_TH_SUMME,
                                Daten.BetriebsstundenThermisch.ToString("N0", Kultur), "h/a")
@@ -92,7 +116,7 @@
             </section>
 
             <section class="epos-simerg-block">
-                <Gruppenkopf Titel="@Resource.SIMERG_LBL_BRENNSTOFFVERBRAUCH" />
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_BRENNSTOFF" />
                 @if (SichtbareBrennstoffe == 0)
                 {
                     @* „Falls GAR kein Brennstoff aktiv war" - woertlich :7614. *@
@@ -142,9 +166,24 @@
 
         @if (Praesent)
         {
+            @* W11b‑B‑23: ZUERST die Darstellungsart, DANN die Reihen - dieselbe
+               Trennung und dieselbe Reihenfolge wie im Waermepumpen- und im
+               Heizkesselreiter. Die vier Beschriftungen sind die der Legende, in
+               der Reihenfolge des Bildes. *@
             <div class="epos-simerg-schalter">
                 <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
                           WertChanged="@(w => _sortiert = w)" />
+            </div>
+
+            <div class="epos-simerg-schalter">
+                <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION"
+                          Wert="@_produktion" WertChanged="@(w => _produktion = w)" />
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_SPEICHERLADUNG"
+                          Wert="@_speicherladung" WertChanged="@(w => _speicherladung = w)" />
+                <Schalter Bezeichnung="@Resource.CHART_SEGMENT_RESTWAERME"
+                          Wert="@_restwaerme" WertChanged="@(w => _restwaerme = w)" />
+                <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF"
+                          Wert="@_bedarf" WertChanged="@(w => _bedarf = w)" />
             </div>
 
             <ChartBild Png="@BildBhkw" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
@@ -183,7 +222,32 @@
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;
 
+    /// <summary>Die eingeschalteten Reihen des Bildes (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Reihen();
+
     private bool _sortiert;
+
+    // W11b‑B‑23: je Reihe ein Zustand, ALLE vorbelegt an.
+    private bool _produktion = true;
+    private bool _speicherladung = true;
+    private bool _restwaerme = true;
+    private bool _bedarf = true;
+
+    /// <summary>
+    /// Die Serienschluessel des Bildes - sprachneutral, die Beschriftung setzt
+    /// die Huelle. Eine LEERE Liste heisst „keine Reihe" und nicht „alle": Der
+    /// Auftrag traegt immer eine Liste, deshalb kann die Huelle leer von „ohne
+    /// Angabe" (<c>null</c>) unterscheiden.
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string>();
+        if (_produktion) liste.Add("WAERMEPRODUKTION");
+        if (_speicherladung) liste.Add("SPEICHERLADUNG");
+        if (_restwaerme) liste.Add("RESTWAERME");
+        if (_bedarf) liste.Add("WAERMEBEDARF");
+        return liste;
+    }
 
     private int SichtbareBrennstoffe
     {
@@ -195,7 +259,8 @@
         }
     }
 
-    private byte[]? BildBhkw => Bild?.Invoke(new Bildauftrag(Bilder.Bhkw, _sortiert));
+    private byte[]? BildBhkw =>
+        Bild?.Invoke(new Bildauftrag(Bilder.Bhkw, _sortiert, -1, Reihen()));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

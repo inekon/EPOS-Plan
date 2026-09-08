@@ -28,6 +28,11 @@ namespace EPOS.UI.Tests.Seiten;
 /// <c>Bildauftrag.Reihen</c>) und die GLIEDERUNG der zwei Kennzahlenlisten
 /// (<b>W11b‑B‑20</b>: Unterabschnitte, betonte Restzeile, Beschriftungen ohne
 /// doppelte Einheit).</para>
+/// <para>Mit <b>W11b‑B‑21/22</b> trägt auch das Kesselbild seine Reihenwahl und
+/// der Kesselreiter VIER Hauptgruppen mit dunklem Balken in ZWEI Rasterzeilen;
+/// <b>W11b‑B‑23</b> zieht dieselbe Bauform durch alle vier Reiter — Balken statt
+/// <c>h3</c> für jede Hauptgruppe, ein Leerhinweis, der die fehlende Komponente
+/// nennt, und die Reihenwahl auch am BHKW-Bild.</para>
 /// </summary>
 public class ErzeugerReiterTests : BunitContext
 {
@@ -103,11 +108,12 @@ public class ErzeugerReiterTests : BunitContext
     ];
 
     private IRenderedComponent<HeizkesselReiter> KesselZeichnen(
-        SimulationErgebnisCtrl.HeizkesselErgebnis? erg, bool bedarf = true, Action? csv = null)
+        SimulationErgebnisCtrl.HeizkesselErgebnis? erg, bool bedarf = true, Action? csv = null,
+        IReadOnlyList<Brennstoffzeile>? brennstoffe = null)
         => Render<HeizkesselReiter>(p =>
         {
             p.Add(x => x.Daten, erg);
-            p.Add(x => x.Brennstoffe, Kesselbrennstoffe());
+            p.Add(x => x.Brennstoffe, brennstoffe ?? Kesselbrennstoffe());
             p.Add(x => x.BedarfVorhanden, bedarf);
             p.Add(x => x.Bild, Bild);
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
@@ -142,19 +148,29 @@ public class ErzeugerReiterTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Anwenderrückmeldung 08.09.2026 (W11b‑B‑15).</b> Neun Zeilen in EINER
-    /// Liste mischten Wärme, Strom und die zwei Leistungen der Auslegung; die
-    /// Restwärme stand noch VOR der Produktion, aus der sie sich ergibt. Drei
-    /// Unterabschnitte, und der Rest schliesst seine Gruppe betont ab. Der
-    /// Brennstoffblock bleibt eine eigene Gruppe mit dunklem Balken.
+    /// <b>Anwenderwunsch 09.09.2026 (W11b‑B‑22).</b> „Wärme", „Strom" und
+    /// „Auslegung" standen als h3-Unterabschnitte UNTEREINANDER in EINER Spalte,
+    /// der Brennstoffblock als einzige Gruppe mit dunklem Balken daneben. Jetzt
+    /// sind es VIER gleichrangige Hauptgruppen mit Balken in ZWEI Rasterzeilen:
+    /// oben Wärme | Strom (wie im Bedarfs- und im Übersichtsreiter), darunter
+    /// Auslegung | Brennstoffverbrauch. Kein <c>h3</c> bleibt übrig; die
+    /// Zeilenfolge JEDER Gruppe ist die von W11b‑B‑15.
     /// </summary>
     [Fact]
-    public void Kessel_gliedert_seine_Felder_in_Waerme_Strom_und_Auslegung()
+    public void Kessel_gliedert_seine_Felder_in_vier_Gruppen_mit_Balken()
     {
         var seite = KesselZeichnen(Kessel());
 
-        Assert.Equal(new[] { "Wärme", "Strom", "Auslegung" },
-                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
+        // Der fünfte Balken steht über der Kesseltabelle - sein Titel trägt seit
+        // W11b‑B‑23 keinen Doppelpunkt mehr (SIMERG_GRP_MODULE_SPK).
+        Assert.Equal(new[] { "Wärme", "Strom", "Auslegung", "Brennstoffverbrauch der Spitzenkessel",
+                             "Wärmeproduktion der einzelnen Spitzenkessel" },
+                     seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
+        Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
+
+        // Zwei Rasterzeilen mit je zwei Listen - nicht vier Gruppen in einer.
+        Assert.Equal(2, seite.FindAll("div.epos-simerg-spalten")
+                             .Count(z => z.QuerySelectorAll("dl.epos-simerg-werte").Length == 2));
 
         var listen = seite.FindAll("dl.epos-simerg-werte");
         Assert.Equal(4, listen.Count);          // drei Gruppen + der Brennstoffblock
@@ -174,6 +190,95 @@ public class ErzeugerReiterTests : BunitContext
                      seite.FindAll("dt.epos-simerg-abschluss").Select(z => z.TextContent.Trim()).ToArray());
     }
 
+    /// <summary>
+    /// <b>W11b‑B‑23.</b> Die Quellwärme der Kaskade stand als EINZIGE Wärmezeile
+    /// der ganzen Ergebnisseite in „MWh" statt „MWh/a"
+    /// (<c>SIM_KESSEL_QUELLWAERME_EINHEIT</c>, die Einheit des WinForms-Feldes) —
+    /// dieselbe Größenart wie die Zeilen darüber, nur ohne Zeitbezug.
+    /// </summary>
+    [Fact]
+    public void Kessel_nennt_die_Quellwaerme_in_MWh_je_Jahr()
+    {
+        var seite = KesselZeichnen(Kessel());
+
+        Assert.DoesNotContain("<dd class=\"epos-simerg-einheit\">MWh</dd>", seite.Markup);
+        Assert.Contains("<dd class=\"epos-simerg-einheit\">MWh/a</dd>", seite.Markup);
+    }
+
+    /// <summary>
+    /// <b>W11b‑B‑23.</b> Bleibt nach der Präsenzregel KEINE Brennstoffzeile
+    /// übrig, stand hier ein dunkler Balken ohne Inhalt. Jetzt sagt derselbe
+    /// Leerhinweis wie im BHKW-Reiter, was fehlt.
+    /// </summary>
+    [Fact]
+    public void Kessel_meldet_einen_leeren_Brennstoffblock()
+    {
+        var seite = KesselZeichnen(Kessel(), brennstoffe: Array.Empty<Brennstoffzeile>());
+
+        Assert.Single(seite.FindAll("[role='alert']"));
+        Assert.Equal(3, seite.FindAll("dl.epos-simerg-werte").Count);   // ohne Brennstoffliste
+    }
+
+    // ---- W11b‑B‑21: die drei Reihen des Kesselbildes sind wählbar ----------
+
+    /// <summary>
+    /// Zwei Schalterzeilen: OBEN „sortiert" (die Darstellungsart), DARUNTER je
+    /// Reihe ein Schalter (die Reihen) — dieselbe Trennung wie im
+    /// Wärmepumpenreiter (W11b‑B‑17). Alle drei Reihen stehen beim Aufbau AN,
+    /// beschriftet mit der Ressource ihrer Legende, in der Reihenfolge des Bildes.
+    /// </summary>
+    [Fact]
+    public void Kessel_traegt_je_Reihe_einen_Schalter()
+    {
+        var seite = KesselZeichnen(Kessel());
+
+        Assert.Equal(new[] { "sortiert" }, Schalterzeile(seite, 0));
+        Assert.Equal(new[] { "Wärmeproduktion Heizkessel", "Restwärme", "Wärmebedarf gesamt" },
+                     Schalterzeile(seite, 1));
+        Assert.All(seite.FindAll("div.epos-simerg-schalter")[1]
+                        .QuerySelectorAll("input[type=checkbox]"),
+                   k => Assert.True(k.HasAttribute("checked")));
+
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "RESTWAERME", "WAERMEBEDARF" },
+                     seite.Instance.GewaehlteReihen.ToArray());
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "RESTWAERME", "WAERMEBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.Heizkessel).Reihen!.ToArray());
+    }
+
+    /// <summary>Die Abwahl gibt den Bildauftrag OHNE diesen Schlüssel weiter.</summary>
+    [Fact]
+    public void Kessel_nimmt_die_abgewaehlte_Reihe_aus_dem_Bildauftrag()
+    {
+        var seite = KesselZeichnen(Kessel());
+        _auftraege.Clear();
+
+        Kasten(seite, 1, 1).Change(false);              // Restwärme
+
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "WAERMEBEDARF" },
+                     seite.Instance.GewaehlteReihen.ToArray());
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "WAERMEBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.Heizkessel).Reihen!.ToArray());
+    }
+
+    /// <summary>
+    /// ALLE abgewählt heisst KEINE Reihe und nicht „alle": Der Auftrag trägt eine
+    /// LEERE Liste, aus der die Hülle den Leerhinweis des Renderers zeichnet
+    /// (dieselbe Regel wie im Wärmepumpenreiter, W11b‑B‑17).
+    /// </summary>
+    [Fact]
+    public void Kessel_ohne_gewaehlte_Reihe_gibt_eine_leere_Liste()
+    {
+        var seite = KesselZeichnen(Kessel());
+        _auftraege.Clear();
+
+        Kasten(seite, 0, 1).Change(false);
+        Kasten(seite, 1, 1).Change(false);
+        Kasten(seite, 2, 1).Change(false);
+
+        Assert.Empty(seite.Instance.GewaehlteReihen);
+        Assert.Empty(_auftraege.Last(a => a.Bild == Bilder.Heizkessel).Reihen!);
+    }
+
     /// <summary>Ohne Projektbedarf steht „0" und nicht „NaN" (woertlich :4530).</summary>
     [Fact]
     public void Kessel_zeigt_ohne_Bedarf_eine_Null()
@@ -182,16 +287,22 @@ public class ErzeugerReiterTests : BunitContext
         Assert.DoesNotContain("36,25", seite.Markup);
     }
 
+    /// <summary>
+    /// „sortiert" steht seit W11b‑B‑21 in seiner EIGENEN Zeile über den Reihen
+    /// und wechselt nur die Darstellungsart: Die drei Reihen bleiben dieselben.
+    /// </summary>
     [Fact]
     public void Kessel_wechselt_den_Bildauftrag_mit_dem_Sortiertschalter()
     {
         var seite = KesselZeichnen(Kessel());
         _auftraege.Clear();
 
-        seite.Find("input[type='checkbox']").Change(true);
+        Kasten(seite, 0, 0).Change(true);
 
         Assert.True(seite.Instance.Sortiert);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Heizkessel && a.Sortiert);
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "RESTWAERME", "WAERMEBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.Heizkessel).Reihen!.ToArray());
     }
 
     [Fact]
@@ -326,8 +437,11 @@ public class ErzeugerReiterTests : BunitContext
     {
         var seite = SolarZeichnen();
 
+        // W11b‑B‑23: der Gruppentitel ist ein dunkler Balken, kein h3 - Wärme ist
+        // eine HAUPTgruppe, hier wie in jedem anderen Reiter des Stapels.
         Assert.Equal(new[] { "Wärme" },
-                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
+                     seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
+        Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
         Assert.Equal(
             new[] { "Wärmebedarf:", "Gesamte Wärmeleistung der Module:", "Überschuß:",
                     "Restwärmebedarf:", "Wärmebedarfsdeckung:" },
@@ -426,8 +540,12 @@ public class ErzeugerReiterTests : BunitContext
     {
         var seite = BhkwZeichnen(Bhkw());
 
-        Assert.Equal(new[] { "Wärme", "Strom", "Betrieb" },
-                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
+        // W11b‑B‑23: vier Hauptgruppen mit Balken in ZWEI Rasterzeilen, kein h3.
+        Assert.Equal(new[] { "Wärme", "Strom", "Betrieb", "Brennstoffverbrauch" },
+                     seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
+        Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
+        Assert.Equal(2, seite.FindAll("div.epos-simerg-spalten")
+                             .Count(z => z.QuerySelectorAll("dl.epos-simerg-werte").Length == 2));
 
         var listen = seite.FindAll("dl.epos-simerg-werte");
         Assert.Equal(4, listen.Count);          // drei Gruppen + der Brennstoffblock
@@ -440,8 +558,10 @@ public class ErzeugerReiterTests : BunitContext
         Assert.Equal(
             new[] { "Strombedarf:", "Stromproduktion:", "Strombedarfsdeckung:", "Reststrombedarf:" },
             listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        // W11b‑B‑23: die zwei Vbh-Zeilen tragen jetzt denselben Doppelpunkt wie
+        // jede andere Beschriftung der Kennzahlenlisten.
         Assert.Equal(
-            new[] { "Vbh thermisch, Summe Module", "Vbh thermisch, Mittel Module",
+            new[] { "Vbh thermisch, Summe Module:", "Vbh thermisch, Mittel Module:",
                     "Vollbenutzungsstunden elektrisch:" },
             listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
 
@@ -469,6 +589,44 @@ public class ErzeugerReiterTests : BunitContext
         Assert.Contains("davon in den Speicher", seite.Markup);
         Assert.Contains("aus dem Speicher gedeckt", seite.Markup);
         Assert.Contains("14,32", seite.Markup);
+    }
+
+    // ---- W11b‑B‑23: die vier Reihen des BHKW-Bildes sind wählbar ----------
+
+    /// <summary>
+    /// Das BHKW-Bild war das letzte, das IMMER alles zeichnete. Es trägt jetzt
+    /// dieselben zwei Schalterzeilen wie Kessel und Wärmepumpe: oben „sortiert",
+    /// darunter je Reihe ein Schalter, alle AN, beschriftet mit der Ressource
+    /// ihrer Legende und in der Reihenfolge des Bildes.
+    /// </summary>
+    [Fact]
+    public void Bhkw_traegt_je_Reihe_einen_Schalter()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+
+        Assert.Equal(new[] { "sortiert" }, Schalterzeile(seite, 0));
+        Assert.Equal(new[] { "Wärmeproduktion", "Speicherladung", "Restwärme", "Wärmebedarf" },
+                     Schalterzeile(seite, 1));
+
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "SPEICHERLADUNG", "RESTWAERME", "WAERMEBEDARF" },
+                     seite.Instance.GewaehlteReihen.ToArray());
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "SPEICHERLADUNG", "RESTWAERME", "WAERMEBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.Bhkw).Reihen!.ToArray());
+    }
+
+    /// <summary>Die Abwahl gibt den Bildauftrag OHNE diesen Schlüssel weiter.</summary>
+    [Fact]
+    public void Bhkw_nimmt_die_abgewaehlte_Reihe_aus_dem_Bildauftrag()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+        _auftraege.Clear();
+
+        Kasten(seite, 1, 1).Change(false);              // Speicherladung
+
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "RESTWAERME", "WAERMEBEDARF" },
+                     seite.Instance.GewaehlteReihen.ToArray());
+        Assert.Equal(new[] { "WAERMEPRODUKTION", "RESTWAERME", "WAERMEBEDARF" },
+                     _auftraege.Last(a => a.Bild == Bilder.Bhkw).Reihen!.ToArray());
     }
 
     /// <summary>Ohne Praesenz: kein Diagramm, kein Umschalter, keine Speicherzeilen.</summary>
@@ -571,8 +729,13 @@ public class ErzeugerReiterTests : BunitContext
     {
         var seite = PvZeichnen();
 
+        // W11b‑B‑23: drei Hauptgruppen mit Balken, kein h3; die zwei Stromgruppen
+        // stehen NEBENEINANDER in der ersten Rasterzeile.
         Assert.Equal(new[] { "Erzeugung", "Bedarf und Deckung", "Einstrahlung" },
-                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
+                     seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
+        Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
+        Assert.Contains(seite.FindAll("div.epos-simerg-spalten"),
+                        z => z.QuerySelectorAll("dl.epos-simerg-werte").Length == 2);
 
         Assert.Equal(3, seite.FindAll("dl.epos-simerg-werte").Count);
         Assert.Equal(
@@ -713,5 +876,26 @@ public class ErzeugerReiterTests : BunitContext
     {
         var seite = PvZeichnen();
         Assert.Equal(5, seite.FindAll("table.epos-raster thead th").Count);
+    }
+
+    // =====================================================================
+    //  W11b‑B‑23 — der Leerhinweis nennt die fehlende Komponente
+    // =====================================================================
+
+    /// <summary>
+    /// Heizkessel und Wärmepumpe sagten seit je, WELCHE Komponente dem Lauf
+    /// fehlt; BHKW, Solarthermie und Photovoltaik teilten sich den allgemeinen
+    /// Satz „Bitte zuerst die Simulation durchführen." Jetzt nennt jeder Reiter
+    /// seine eigene — dieselbe Satzform, derselbe erste Satz.
+    /// </summary>
+    [Fact]
+    public void Die_Leerhinweise_nennen_die_fehlende_Komponente()
+    {
+        Assert.Contains("BHKW", Render<BhkwReiter>(p => p.Add(x => x.Bild, Bild))
+                                    .Find("p.epos-simerg-hinweis").TextContent);
+        Assert.Contains("Solarthermie", Render<SolarthermieReiter>(p => p.Add(x => x.Bild, Bild))
+                                            .Find("p.epos-simerg-hinweis").TextContent);
+        Assert.Contains("Photovoltaik", Render<PhotovoltaikReiter>(p => p.Add(x => x.Bild, Bild))
+                                            .Find("p.epos-simerg-hinweis").TextContent);
     }
 }

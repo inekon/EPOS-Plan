@@ -1302,3 +1302,228 @@ aus.
 Sandbox: Build **0 Fehler**, Kern **2075/2075**, UI **3316/3316** (vorher 3304; +12 UI, davon 6 aus
 W11b‑B‑19 und 6 aus W11b‑B‑20). Kein Rechenweg berührt — dieselben Zahlen aus demselben Lauf, nur anders
 geordnet, anders beschriftet und in wählbaren Reihen.
+
+## Anwenderwunsch 09.09.2026 — W11b‑B‑21: Reihen der Kessel-Jahresganglinie wählbar
+
+**Wortlaut:** „Reihenwahl der Wärmelast-Jahresganglinie des Heizkessels … mit Schalterzeile über
+dem Bild, vorbelegt alle an; ebenso für jedes weitere Bild des Reiters." (Dialog „Detaillierte
+Simulation", Reiter Heizkessel.) Derselbe Wunsch, den W11b‑B‑17 für die zwei Wärmepumpen-Bilder
+und W11b‑B‑19 für Solarthermie und Photovoltaik erfüllt hat.
+
+**Befund.** `BildKessel(bool sortiert)` zeichnete IMMER alle drei Reihen: die Säulen der
+Wärmeproduktion Heizkessel, die Linie Restwärme und darüber den Wärmebedarf gesamt. Der Reiter
+trug nur den Schalter „sortiert"; die Hülle bekam gar keinen Bildauftrag zu sehen (die Weiche
+reichte `a.Sortiert` weiter, nicht `a`). **Ein weiteres Bild hat der Reiter nicht** — es bleibt
+bei diesem einen.
+
+### Änderung
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| Auswahl | keine | eine **zweite** Schalterzeile unter „sortiert", je Reihe ein `Schalter`, **alle vorbelegt an** |
+| Reihenfolge der Zeilen | — | OBEN „sortiert" (die Darstellungsart), DARUNTER die Reihen — dieselbe Trennung wie im Wärmepumpenreiter (W11b‑B‑17) und im Bedarfsreiter (W11b‑B‑16) |
+| Beschriftung | — | **dieselbe Ressource wie die Legende**: `CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL`, `CHART_SEGMENT_RESTWAERME`, `CHART_LEGENDE_WAERMEBEDARF_GESAMT` |
+| Bildauftrag | `new Bildauftrag(Bilder.Heizkessel, _sortiert)` | dazu `Reihen` — sprachneutral `WAERMEPRODUKTION`/`RESTWAERME`/`WAERMEBEDARF` |
+| Hülle | `BildKessel(bool sortiert)`, Weiche `BildKessel(a.Sortiert)` | `BildKessel(Bildauftrag a)` mit `Alle(a)`/`Gewaehlt(a, alle, …)`; die Weiche reicht `a` |
+| Prüfhilfen | `Sortiert` | dazu `GewaehlteReihen` |
+
+**Leer heißt keine, nicht alle** — wörtlich die Regel aus W11b‑B‑17: `Reihen = null` heißt „ohne
+Angabe → alle", die **leere Liste** heißt „der Anwender hat alles abgewählt → keine Reihe". Der
+Renderer zeichnet daraus seinen Leerhinweis; `ErzeugerStapel` kommt mit leerem Stapel **und**
+leerer Linienliste zurecht (dieselbe Lage wie beim Solarbild, W11b‑B‑19). Achsen, Farben,
+Stapelart, die Strichstärke im sortierten Zweig (`4f`) und die Ordnung der Reihen bleiben
+unangetastet; der Zwischenspeicherschlüssel trennt die Auswahlstände schon
+(`Bildauftrag.Schluessel` führt die Reihenliste mit).
+
+### Nachweis
+
+**UI**, `ErzeugerReiterTests` — neu: `Kessel_traegt_je_Reihe_einen_Schalter` (Zeile 0 trägt genau
+„sortiert", Zeile 1 die drei Legendentexte in der Reihenfolge des Bildes, alle Kästchen an,
+Prüfhilfe und Bildauftrag tragen die drei Schlüssel),
+`Kessel_nimmt_die_abgewaehlte_Reihe_aus_dem_Bildauftrag`,
+`Kessel_ohne_gewaehlte_Reihe_gibt_eine_leere_Liste`. Angepasst:
+`Kessel_wechselt_den_Bildauftrag_mit_dem_Sortiertschalter` greift das Kästchen jetzt über seine
+Schalterzeile (`Kasten(seite, 0, 0)`) und prüft zusätzlich, daß die drei Reihen beim Umschalten
+dieselben bleiben.
+
+**Nicht durch Tests gedeckt:** die Reihenfilterung IN der Hülle — `SimulationErgebnisHuelle.Bilder.cs`
+liegt in `WindowsFormsApplication1`, und es gibt kein Testprojekt, das dort ein Bild zeichnet
+(dieselbe Lage wie bei W11b‑B‑17/19). Die Filterung folgt zeichengleich den Vorbildern
+`BildSolar`/`BildPv`; die Sichtabnahme am Programm steht aus.
+
+## Anwenderwunsch 09.09.2026 — W11b‑B‑22: Kennzahlen des Heizkessels wie im Bedarfsreiter
+
+**Wortlaut:** „Kennzahlen wie im Bedarfsreiter: zwei Spalten nebeneinander mit den dunklen Balken
+‚Wärme' und ‚Strom' (statt der `h3`-Unterabschnitte untereinander), darunter ‚Auslegung' und
+‚Brennstoffverbrauch der Spitzenkessel' als eigene Gruppen in einer zweiten Zeile (heute steht der
+Brennstoffblock oben rechts versetzt); die Kesseltabelle über die volle Breite."
+
+**Befund — drei Überschriftenarten in einem Block.** W11b‑B‑15 hatte die neun Zeilen in drei
+`h3.epos-untergruppe` gegliedert — aber alle drei UNTEREINANDER in EINER Rasterspalte, während
+der Brennstoffblock als einzige Gruppe mit dunklem Balken **daneben** stand. Damit lag der
+Brennstoffverbrauch optisch auf der Höhe der Wärme, über die er nichts sagt, und die zwei
+Kategorien, die der Reiterstapel sonst überall nebeneinander stellt (Übersicht, Bedarf, die zwei
+Ringe), standen hier hintereinander.
+
+### Änderung
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| Gruppenart | `h3.epos-untergruppe` für Wärme/Strom/Auslegung, `Gruppenkopf` nur für den Brennstoff | **vier gleichrangige Hauptgruppen**, jede mit `Gruppenkopf` |
+| Anordnung | eine Spalte mit drei Abschnitten, daneben der Brennstoffblock | **zwei Rasterzeilen** (`div.epos-simerg-spalten` je Zeile): oben `Wärme` \| `Strom`, unten `Auslegung` \| `Brennstoffverbrauch der Spitzenkessel` |
+| Kesseltabelle | außerhalb des Rasters, volle Breite | **unverändert** — sie stand schon so da; der Kommentar sagt es jetzt |
+| Balkentitel | `SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK` („… der Spitzenkessel**:**"), `SIMERG_LBL_WAERMEPRODUKTION_MODULE_SPK` („… Spitzenkessel**:**") | `SIMERG_GRP_BRENNSTOFF_SPK`, `SIMERG_GRP_MODULE_SPK` — **ohne Doppelpunkt**, wie jeder andere Gruppentitel |
+| Zeilenfolge je Gruppe | W11b‑B‑15 | **unverändert**, keine Zahl fällt weg |
+| Quellwärme, Einheit | `SIM_KESSEL_QUELLWAERME_EINHEIT` = „MWh" | `MWh/a` wie jede andere Wärmezeile (siehe W11b‑B‑23) |
+| Leerer Brennstoffblock | dunkler Balken, darunter nichts | `Warnbanner` mit `SIM_MSG_KEIN_BRENNSTOFF_SPK` — dieselbe Form wie im BHKW-Reiter |
+
+### Nachweis
+
+**UI**, `ErzeugerReiterTests`: `Kessel_gliedert_seine_Felder_in_Waerme_Strom_und_Auslegung` heißt
+jetzt `Kessel_gliedert_seine_Felder_in_vier_Gruppen_mit_Balken` und prüft die **fünf** Balkentexte
+(die vier Gruppen plus den Titel über der Kesseltabelle, alle ohne Doppelpunkt), daß **kein** `h3`
+übrig ist, daß **zwei** Rasterzeilen je zwei Listen führen, und unverändert die Zeilenfolge jeder
+Gruppe samt den zwei betonten Restzeilen. Neu: `Kessel_meldet_einen_leeren_Brennstoffblock` und
+`Kessel_nennt_die_Quellwaerme_in_MWh_je_Jahr`.
+
+## Anwenderwunsch 09.09.2026 — W11b‑B‑23: Konsistenz der Darstellung über alle Reiter
+
+**Wortlaut:** „Prüfe insgesamt die Inhalte der Tabs (Detaillierte Simulation) auf Konsistenz der
+Darstellung und optimiere."
+
+### 1. Bestandsaufnahme (Stand vor dieser Nacharbeit)
+
+| Reiter | Kennzahlen | Gruppenart | Betonte Zeile | Zahlen | Tabellen | Diagrammsteuerung | Leerhinweis | Export |
+|---|---|---|---|---|---|---|---|---|
+| **Parameter** | Feldkästen (`epos-simerg-felder`), keine Kennzahlenliste | `Gruppenkopf` (4) | — | Eingabefelder | — | — | — | — |
+| **Übersicht** | Wärme \| Strom nebeneinander | **Balken** | Rest je Gruppe | N2 | Eigenanteil (`epos-raster`), Namenszelle mit `class=""` | zwei Ringe, keine Schalter | `SIMERG_MSG_OHNE_BEDARF` je Ring | Sprungknopf |
+| **Bedarf** | Wärme \| Strom nebeneinander, „je Bedarfsart" als `h3` | **Balken** + `h3` | **keine** — `Wertzeile` kannte `betont` nicht | N2; „Gesamt…" in **MWh**, die Zeile darüber in MWh/a | — | 1× „sortiert" ganz oben, Reihen bei der Wärme, **Datenzoom** an beiden Bildern | — | CSV + 2× „Details…" |
+| **Wärmepumpe** | Wärme/Strom/Auslegung **untereinander** | `h3` | Rest | N2, Vbh N0 | Module, Puffer (`F1`) | „sortiert" + Reihen im Unterblatt, Reihen an der Streuwolke | `…_WAERMEPUMPE` | CSV |
+| **Heizkessel** | Wärme/Strom/Auslegung untereinander, Brennstoff **daneben** | `h3` **und** Balken | Rest, Reststrom | N2, Nutzungsgrad `F1`; Quellwärme in **MWh** | Module, Balken darüber (mit Doppelpunkt) | nur „sortiert", **keine Reihenwahl** | `…_HEIZKESSEL` | CSV |
+| **BHKW** | Wärme/Strom/Betrieb untereinander, Brennstoff daneben | `h3` **und** Balken | Rest, Reststrom | N2, Vbh N0; zwei Vbh-Beschriftungen **ohne Doppelpunkt** | Module | nur „sortiert", **keine Reihenwahl** | `…_SIMULATION` (allgemein) | — |
+| **Solarthermie** | eine Gruppe „Wärme" | `h3` | Rest | N2 | Kollektoren | Reihen, kein „sortiert" | `…_SIMULATION` (allgemein) | — |
+| **Photovoltaik** | Erzeugung/Bedarf+Deckung/Einstrahlung untereinander | `h3` | Rest | N2, Volllast N0, WR-Nutzungsgrad `F4` | WR, Module | Reihen (4), kein „sortiert" | `…_SIMULATION` (allgemein) | — |
+| **Stromspeicher** | Tabelle `epos-simerg-kennzahlen` mit Gruppen-/Untergruppenzeilen | Tabellenzeilen | Summe/Ergebnis (Kern) | aus dem Kern | Kennzahlentabelle | kein Schalter | Kopfzeile `epos-simerg-status` | CSV + Vergleich |
+| **Ergebnis** | Autarkiekacheln + `meter` | — | — | **F1** für die zwei Quoten, N0 für kg/kWh | — | ein Bild ohne Schalter | — | — |
+| **Wärmegang** | keine | — | — | — | — | Auswahlfeld + „sortiert" + Bedarfslinie, Mehrfachauswahl, **Datenzoom** | — | CSV |
+| **Stromgang** | keine | — | — | — | — | „sortiert" oben, Mehrfachauswahl, **Datenzoom** | — | CSV |
+
+Quer durch alle Tabellen: **`.epos-simerg-zahl` war in `.epos-raster` ohne Regel.** Die einzige
+Regel dazu stand unter `.epos-simerg-kennzahlen td.epos-simerg-zahl` und galt damit nur für die
+Kennzahlentabelle des Stromspeichers — elf Tabellen behaupteten mit ihrer Klasse eine
+Rechtsbündigkeit, die es nicht gab.
+
+### 2. Das Muster
+
+Es steht kurz und vollständig in **`Doku_Simulationsergebnis_Darstellung.md`** (Repowurzel) und
+gilt für jeden künftigen Reiter. Kern in sieben Sätzen:
+
+1. Reihenfolge im Reiter: Leerhinweis → Kennzahlen → Tabellen → Diagramme → Export.
+2. Jede fachliche Gruppe ist eine **Hauptgruppe mit dunklem Balken** (`Gruppenkopf`), Titel aus
+   `SIMERG_GRP_*` **ohne** Doppelpunkt. `h3.epos-untergruppe` nur INNERHALB einer Hauptgruppe.
+3. **Erste Rasterzeile `Wärme` | `Strom`**, alles Weitere in einer **zweiten** Rasterzeile
+   (eigenes `div.epos-simerg-spalten`). Steht eine Gruppe allein in ihrer Zeile, trägt ihre
+   `section` `epos-simerg-kennzahlenzeile`.
+4. Kennzahlenliste dreispaltig: Beschriftung (`SIMERG_LBL_*`, **mit** Doppelpunkt) · Zahl ·
+   Einheit — die Einheit **nur** in ihrer Spalte.
+5. Zahlen **N2**, Stunden und Zyklen **N0**, kein `F2`; die **Rest- bzw. Summenzeile** schließt
+   ihre Gruppe betont ab (`betont: true`), sonst **kein** Klassenattribut (`null`, nicht `""`).
+6. Je Bild dieselbe Steuerzeile: „sortiert" → Reihenwahl (Legendenressourcen, `Bildauftrag.Reihen`,
+   `null` = alle / leer = keine) → `ChartBild` (die Zoomleiste bringt der Baustein mit).
+7. Tabellen `epos-raster` über die volle Breite, Zahlenzellen `epos-simerg-zahl`; die
+   Kennzahlentabelle des Stromspeichers bleibt `epos-simerg-kennzahlen`.
+
+### 3. Abweichungen und was daraus wurde
+
+| Reiter | Abweichung | Änderung |
+|---|---|---|
+| **alle mit Tabelle** | `.epos-simerg-zahl` ohne Regel in `.epos-raster` — elf Tabellen linksbündig | **eine** neue Stilregel `.epos-raster td/th.epos-simerg-zahl { text-align: right; font-variant-numeric: tabular-nums }` |
+| **Heizkessel** | siehe W11b‑B‑21/22 | vier Balken in zwei Zeilen, Reihenwahl, Leerhinweis im Brennstoffblock, Quellwärme in MWh/a |
+| **BHKW** | Wärme/Strom/Betrieb als `h3` untereinander; einziges Bild ohne Reihenwahl; Brennstofftitel mit Doppelpunkt; zwei Vbh-Beschriftungen ohne Doppelpunkt; allgemeiner Leerhinweis | vier Balken in zwei Zeilen wie beim Kessel; **Reihenwahl mit vier Reihen** (`WAERMEPRODUKTION`, `SPEICHERLADUNG`, `RESTWAERME`, `WAERMEBEDARF`) unter „sortiert"; `SIMERG_GRP_BRENNSTOFF`; Doppelpunkte ergänzt; `SIM_MSG_KEINE_DATEN_BHKW` |
+| **Wärmepumpe** | Wärme/Strom/Auslegung als `h3` untereinander | Balken; `Wärme` \| `Strom` in Zeile 1, `Auslegung` (weiter mit `epos-simerg-kennzahlenzeile`) über der Streuwolke in Zeile 2 |
+| **Solarthermie** | Gruppe „Wärme" als `h3`; allgemeiner Leerhinweis | Balken; `SIM_MSG_KEINE_DATEN_SOLARTHERMIE` |
+| **Photovoltaik** | drei Gruppen als `h3` untereinander; allgemeiner Leerhinweis | Balken; `Erzeugung` \| `Bedarf und Deckung` in Zeile 1, `Einstrahlung` (mit `kennzahlenzeile`) über dem Bild in Zeile 2; `SIM_MSG_KEINE_DATEN_PHOTOVOLTAIK` |
+| **Bedarf** | keine betonte Zeile (die `Wertzeile` kannte den Schalter nicht); „Gesamter Wärme-/Strombedarf" in **MWh**, obwohl dieselbe DTO-Größe eine Zeile höher MWh/a trägt; vier Beschriftungen ohne Doppelpunkt | `betont` samt `Zeilenklasse`/`Einheitsklasse` wie in den übrigen Reitern; die zwei Summenzeilen **betont** und in MWh/a; Doppelpunkte ergänzt |
+| **Übersicht** | Namenszelle des Eigenanteilsrasters mit `class=""` | `null` statt `""` — dieselbe Regel wie an der betonten Zeile |
+| **Ergebnis** | die zwei Autarkiequoten in `F1`, während Übersichtskacheln und alle Listen N2 setzen | `N2`; der `meter`-Wert bleibt `F1`/invariant (Attribut, keine Anzeige) |
+| **Stromspeicher, Parameter, Wärmegang, Stromgang** | keine Abweichung vom Muster gefunden | unverändert |
+
+### 4. Ressourcen
+
+**Neu (de/en):** `SIMERG_GRP_BRENNSTOFF` (Brennstoffverbrauch / Fuel consumption) ·
+`SIMERG_GRP_BRENNSTOFF_SPK` (Brennstoffverbrauch der Spitzenkessel / Fuel consumption of the top
+boilers) · `SIMERG_GRP_MODULE_SPK` (Wärmeproduktion der einzelnen Spitzenkessel / Heat production
+of the individual top boilers) · `SIM_MSG_KEIN_BRENNSTOFF_SPK` · `SIM_MSG_KEINE_DATEN_BHKW` ·
+`SIM_MSG_KEINE_DATEN_SOLARTHERMIE` · `SIM_MSG_KEINE_DATEN_PHOTOVOLTAIK`.
+
+**Geändert (Doppelpunkt ergänzt, de + en):** `SIMERG_LBL_MAX_WAERMELAST`,
+`SIMERG_LBL_GESAMT_WAERMEBEDARF`, `SIMERG_LBL_MAX_STROMBEDARF`, `SIMERG_LBL_GESAMT_STROMBEDARF`,
+`SIM_BHKW_VBH_TH_SUMME`, `SIM_BHKW_VBH_TH_MITTEL`. `SIMERG_LBL_MAX_WAERMELAST` steht auch im
+Gebäudebedarfsdialog (`GebaeudeHuelle` → `GebaeudeBedarfDialog`) — dort tragen die
+Nachbarbeschriftungen („Wärmebedarf Heizung:", „Vollbenutzungsstunden:") den Doppelpunkt
+ebenfalls, die Änderung räumt also auch dort auf.
+
+**Unbenutzt geworden, bleiben im Katalog:** `SIMERG_LBL_BRENNSTOFFVERBRAUCH`,
+`SIMERG_LBL_BRENNSTOFFVERBRAUCH_SPK`, `SIMERG_LBL_WAERMEPRODUKTION_MODULE_SPK`,
+`SIM_KESSEL_QUELLWAERME_EINHEIT` — entfernt wird nichts, was ein anderer Strang aufgreifen könnte
+(dieselbe Handhabung wie in W11b‑B‑19).
+
+`Resource.Designer.cs` ist mit `python Werkzeuge/ResourceDesigner/designer_neu.py schreiben` neu
+erzeugt (5 294 Einträge, +7 neu, 6 geändert, zweiter Lauf ±0).
+
+### 5. Nachweis
+
+**UI**, neu — `ErzeugerReiterTests`: `Kessel_traegt_je_Reihe_einen_Schalter`,
+`Kessel_nimmt_die_abgewaehlte_Reihe_aus_dem_Bildauftrag`,
+`Kessel_ohne_gewaehlte_Reihe_gibt_eine_leere_Liste`, `Kessel_meldet_einen_leeren_Brennstoffblock`,
+`Kessel_nennt_die_Quellwaerme_in_MWh_je_Jahr`, `Bhkw_traegt_je_Reihe_einen_Schalter`,
+`Bhkw_nimmt_die_abgewaehlte_Reihe_aus_dem_Bildauftrag`,
+`Die_Leerhinweise_nennen_die_fehlende_Komponente`. `BedarfReiterTests`:
+`Die_Summenzeile_schliesst_jede_Spalte_betont_ab`,
+`Jede_Beschriftung_der_zwei_Gruppen_endet_auf_einen_Doppelpunkt` (die Kanalzeilen bleiben
+ausgenommen — ihre Beschriftungen sind Namen aus dem Lauf). `UebersichtReiterTests`:
+`Das_Eigenanteilsraster_traegt_kein_leeres_Klassenattribut`. `GangUndErgebnisReiterTests`:
+`Die_Autarkiequoten_stehen_mit_zwei_Nachkommastellen`. `StilblattTests`:
+`W11bB23_Die_Zahlenspalten_der_Ergebnistabellen_stehen_rechts` (bunit rechnet keine Stilblätter
+aus — der Fall liest die REGEL, wie die Wachen zu W6‑B‑1 und W6‑B‑4).
+
+**Umbenannt und angepasst:** `Kessel_gliedert_seine_Felder_in_Waerme_Strom_und_Auslegung` →
+`Kessel_gliedert_seine_Felder_in_vier_Gruppen_mit_Balken`,
+`Die_zehn_Felder_stehen_in_drei_Unterabschnitten` →
+`Die_zehn_Felder_stehen_in_drei_Gruppen_mit_Balken` (WaermepumpeReiterTests). **Angepasst:**
+`Bhkw_gliedert_seine_Felder_in_Waerme_Strom_und_Betrieb`,
+`Solarthermie_gliedert_ihre_Felder_und_betont_den_Rest`,
+`Photovoltaik_gliedert_seine_Felder_in_Erzeugung_Bedarf_und_Einstrahlung`,
+`Kessel_wechselt_den_Bildauftrag_mit_dem_Sortiertschalter`.
+
+### 6. Bewußt NICHT vereinheitlicht
+
+* **Der Datenzoom** („Bereich"-Knopf, aufgezogenes Rechteck) steht weiter nur an den drei
+  Ganglinien, deren Hülle ein `Achsenfenster` an den Renderer reicht (Bedarf, Wärmegang,
+  Stromgang). Die **Zoomleiste** selbst (`×1`, `1:1`) hat jedes Bild — sie kommt aus dem Baustein
+  `Diagramm`, und das ist die Hausregel seit A‑1. Die Streuwolke „Leistung über
+  Außentemperatur" hat gar keine Zeitachse; die übrigen Ganglinien könnten den Zoom bekommen
+  (`ErzeugerStapel` nimmt `fenster` bereits entgegen), das ist aber ein Eingriff in die
+  Bildbestellung der Hülle und keine Frage der Darstellung mehr. **Offener Punkt.**
+* **Zahlenformate in Tabellen** (`F1` für Jahresnutzungsgrad, Speicherkapazität, Vollzyklen und
+  Füllstand, `F4` für den Wechselrichter-Nutzungsgrad): Das sind Genauigkeiten des Vorbilds. `N2`
+  würde „91,70 %" schreiben, wo der Kessel 91,7 % liefert, und die vierte Stelle des
+  Wechselrichters ganz verlieren.
+* **Gruppenbalken über Tabellen**: nur die Kesseltabelle trägt einen
+  (`SIMERG_GRP_MODULE_SPK`). Die übrigen Modultabellen nennen sich in ihrer **ersten
+  Spaltenüberschrift** (`SIM_SPALTE_MODUL`, `SIM_ERZEUGERNAME_BHKW`, `SIM_SPALTE_SOLARKOLLEKTOR`,
+  `SIM_PHOTOVOLTAIK`, `SIMERG_TITEL_PV_WR`) — sechs neue Titel zu erfinden, nur damit überall ein
+  Balken steht, hätte Text ohne Aussage erzeugt. **Offener Punkt**, falls der Anwender die Balken
+  will.
+* **Die Knopfzeile des Stromspeichers** (CSV + „Vergleichen") steht in einem
+  `div.epos-simerg-schalter` unter dem SoC-Bild statt am Blockende. Der Name der Klasse paßt
+  nicht, die Anordnung aber schon: Die zwei Knöpfe gehören zum Bild darüber und wurden mit
+  W11b‑B‑14 gerade dorthin gestellt.
+* **Die Prozentzeichen der Ergebniskacheln** stehen im Wert („38,10 %"), nicht in einer
+  Einheitsspalte — eine `Kennzahlkachel` hat keine.
+
+### Zahlen
+
+Sandbox: Build **0 Fehler**, Kern **2137/2137**, UI **3337/3337** (vorher 3324; +13 UI, Kern
+unverändert). Kein Rechenweg berührt — dieselben Zahlen aus demselben Lauf, nur anders gruppiert,
+anders gesetzt und in wählbaren Reihen. Die Sichtabnahme am Programm steht aus.

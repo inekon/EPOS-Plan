@@ -181,9 +181,13 @@
                 @foreach (Rasterzeile z in Daten.Eigenanteil)
                 {
                     <tr>
+                        @* Die erste Spalte traegt den Namen, alle uebrigen Zahlen.
+                           <c>null</c> statt "" laesst Blazor das Attribut ganz weg
+                           (W11b‑B‑23) — dieselbe Regel wie bei der betonten Zeile;
+                           ein leeres class="" stand hier als einziges im Reiterstapel. *@
                         @for (int i = 0; i < z.Zellen.Count; i++)
                         {
-                            <td class="@(i == 0 ? "" : "epos-simerg-zahl")">@z.Zellen[i]</td>
+                            <td class="@(i == 0 ? null : "epos-simerg-zahl")">@z.Zellen[i]</td>
                         }
                     </tr>
                 }
