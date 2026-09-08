@@ -53,7 +53,11 @@ namespace WindowsFormsApplication1
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
                     ok = b;
-                    if (b) NachModell(daten, modell);
+                    if (b)
+                    {
+                        NachModell(daten, modell);
+                        ErzeugerTraegerHuelle.Zuordnen(projektId, false, modell.ID_Carrier);
+                    }
                     if (dlg != null) dlg.Schliessen(b);
                 })
             };
@@ -77,9 +81,16 @@ namespace WindowsFormsApplication1
             IWin32Window besitzer, WaermepumpeAnlageDaten daten,
             WErzeugerModel modell, int projektId)
         {
+            // ET-5: Vorgabe der Stromtraeger des Projekts, solange die Anlage keinen fuehrt.
+            if (daten.CarrierId <= 0) daten.CarrierId = ErzeugerTraegerHuelle.Standard(projektId);
+
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
+                ["Traegerkatalog"] = ErzeugerTraegerHuelle.Katalog(),
+                ["GruppeEnergietraeger"] = ErzeugerTraegerHuelle.GruppenTitel,
+                ["LabelTraegerGruppe"] = ErzeugerTraegerHuelle.LabelGruppe,
+                ["LabelTraegerArt"] = ErzeugerTraegerHuelle.LabelArt,
 
                 ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
                 ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(VorlaeufeZu),
@@ -357,6 +368,7 @@ namespace WindowsFormsApplication1
                 SperrzeitBis = m.Sperrzeit_bis,
                 Nutzungszeit = m.Nutzungszeit,
                 BivalenterBetrieb = m.Bivalenter_Betrieb,
+                CarrierId = m.ID_Carrier,
 
                 // W7-B-2 (Windows-Abnahme 06.09.2026): TOLERANT lesen. Der
                 // Vorlaeufer Wizard_WPItem hatte eine frei beschreibbare ComboBox
@@ -398,6 +410,10 @@ namespace WindowsFormsApplication1
             m.Ruecklauf = d.Ruecklauf ?? 0;
             m.Vorlauf = d.Vorlauf ?? 0;
             m.Bivalenter_Betrieb = d.BivalenterBetrieb;
+
+            // ET-5 (08.09.2026): der gewaehlte Energietraeger der Anlage; 0 laesst den
+            // bisherigen Wert stehen.
+            if (d.CarrierId > 0) m.ID_Carrier = d.CarrierId;
 
             // Leer laesst den bisherigen Wert stehen - das Feld ist je nach
             // Betriebsart gar nicht sichtbar.

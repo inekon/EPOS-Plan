@@ -131,6 +131,8 @@ namespace WindowsFormsApplication1
                     {
                         WErzeugerModel m = Modell(zuModell, modelle, projektId, daten);
                         WaermepumpeAnlageHuelle.NachModell(daten, m);
+                        // ET-5: der gewaehlte Traeger gehoert dem Projekt zugeordnet.
+                        ErzeugerTraegerHuelle.Zuordnen(projektId, wizard, m.ID_Carrier);
                         if (!modelle.Contains(m))
                         {
                             m.ID_Type = WizardItemClass.WP_TYP;
@@ -209,6 +211,8 @@ namespace WindowsFormsApplication1
                 ID_Projekt = projektId,
                 ID_WP = DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", bezeichner)
             };
+            // ET-5 (08.09.2026): Vorgabe der Stromtraeger des Projekts (Anwender: "default Strom").
+            modell.ID_Carrier = ErzeugerTraegerHuelle.Standard(projektId);
             WaermepumpeGeraeteCtrl.GeraetedatenFuellen(modell, modell.ID_WP);
 
             // W6-E-4 (06.09.2026): Die Waermepumpe hat keine Katalogtemperaturen - ihr

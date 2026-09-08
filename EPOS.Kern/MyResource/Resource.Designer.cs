@@ -15114,6 +15114,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
 
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger ähnelt.
+        /// </summary>
+        public static string ETW_GRP_TITEL {
+            get {
+                return ResourceManager.GetString("ETW_GRP_TITEL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art: ähnelt.
+        /// </summary>
+        public static string ETW_LBL_ART {
+            get {
+                return ResourceManager.GetString("ETW_LBL_ART", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger: ähnelt.
+        /// </summary>
+        public static string ETW_LBL_GRUPPE {
+            get {
+                return ResourceManager.GetString("ETW_LBL_GRUPPE", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht zugeordnet ähnelt.
         /// </summary>
         public static string KDLG_ET_NICHT_ZUGEORDNET {

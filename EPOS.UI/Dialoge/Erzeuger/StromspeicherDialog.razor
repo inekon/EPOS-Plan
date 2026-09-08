@@ -119,6 +119,16 @@
                 <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
                           Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
             }
+            @* ET-5 (Anwenderentscheid 08.09.2026): der Energietraeger der markierten
+               PROJEKTzeile in der Gliederung des Katalogs (Gruppe > Art); Vorgabe der
+               Stromtraeger des Projekts. Beim Katalogsatz gibt es nichts zu waehlen. *@
+            @if (_projektZeile is not null && Traegerkatalog.Count > 0)
+            {
+                <EnergietraegerWahl Eintraege="@Traegerkatalog"
+                                    LabelGruppe="@LabelTraegerGruppe" LabelArt="@LabelTraegerArt"
+                                    Auswahl="@(_projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
+                                    AuswahlChanged="BeiTraegerwechsel" />
+            }
                 </KindInhalt>
             </Formularraster>
         </KindInhalt>
@@ -175,6 +185,16 @@
 
     /// <summary>Entfernt die Zeile aus der geteilten Liste.</summary>
     [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary>ET‑5 (08.09.2026): der Trägerkatalog in der Gliederung Gruppe › Art; leer = kein Feld.</summary>
+    [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
+        = Array.Empty<EnergietraegerWahl.Eintrag>();
+
+    /// <summary>Die markierte Anlage bekommt einen anderen Energieträger (Zeile, Träger-Id).</summary>
+    [Parameter] public Action<ErzeugerZeile, int>? TraegerWechseln { get; set; }
+
+    [Parameter] public string LabelTraegerGruppe { get; set; } = "Energieträger:";
+    [Parameter] public string LabelTraegerArt { get; set; } = "Art:";
 
     /// <summary>
     /// Der Parametersatz der MODULVERWALTUNG. Sie erscheint seit iU9-W14a als
@@ -294,6 +314,15 @@
         foreach (Katalogfilterzeile z in _katalog)
             if (z.Bezeichner == bezeichner) return z;
         return null;
+    }
+
+    /// <summary>ET‑5: Trägerwechsel der markierten Anlage — an die Hülle, dann in die Zeile.</summary>
+    private void BeiTraegerwechsel(int? neu)
+    {
+        if (_projektZeile is null || !neu.HasValue) return;
+        if (neu.Value == _projektZeile.CarrierId) return;
+        TraegerWechseln?.Invoke(_projektZeile, neu.Value);
+        _projektZeile.CarrierId = neu.Value;
     }
 
     private void ProjektZeileWaehlen(ErzeugerZeile zeile)

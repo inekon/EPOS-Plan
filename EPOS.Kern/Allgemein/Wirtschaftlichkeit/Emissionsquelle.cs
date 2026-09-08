@@ -244,6 +244,17 @@ namespace WindowsFormsApplication1
         public static int StromTraeger(int idProjekt)
         {
             if (idProjekt <= 0) return 0;
+
+            // ET-5 (08.09.2026): dieselbe Wahl wie StromAufschlagCtrl.StromCarrierId - der an
+            // der Anlage gewaehlte, dem Projekt zugeordnete Stromtraeger. Ohne Anlagenwahl
+            // (aller Bestand vor ET-5) bleibt der Weg darunter unveraendert.
+            try
+            {
+                int gewaehlt = ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(idProjekt);
+                if (gewaehlt > 0) return gewaehlt;
+            }
+            catch { }
+
             try
             {
                 object o = DataRepository.ExecuteScalar(

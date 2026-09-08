@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Allgemein;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
@@ -442,5 +443,41 @@ public class StromspeicherDialogTests : BunitContext
         Assert.Single(Katalogzeilen(zweiterAufbau));
         Assert.Equal("1 von 2 Sätzen", zweiterAufbau.Find(".epos-katalog-treffer").TextContent);
         Assert.Single(zweiterAufbau.FindAll(".epos-katalog-ruecksetzer"));
+    }
+
+    // =================================================================================
+    // ET-5 (Anwenderentscheid 08.09.2026): der Energietraeger des Speichers, Gruppe > Art
+    // =================================================================================
+
+    [Fact]
+    public void Die_markierte_Anlage_zeigt_ihren_Energietraeger_und_meldet_den_Wechsel()
+    {
+        (ErzeugerZeile Zeile, int Neu)? gemeldet = null;
+        ErzeugerZeile zeile = Zeile(1, "Speicher 10", 41);
+        zeile.CarrierId = 60;
+        var cut = Render<StromspeicherDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { zeile })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.Detail, n => Detail(n))
+            .Add(x => x.Traegerkatalog, new[]
+            {
+                new EnergietraegerWahl.Eintrag(11, "Gas", "Erdgas E"),
+                new EnergietraegerWahl.Eintrag(60, "Strom", "Elektrische Energie"),
+                new EnergietraegerWahl.Eintrag(58, "Strom", "Elektrische Energie 2")
+            })
+            .Add(x => x.TraegerWechseln, (ErzeugerZeile z, int neu) => gemeldet = (z, neu)));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+
+        var selects = cut.Find(".epos-traegerwahl").QuerySelectorAll("select");
+        Assert.Equal(2, selects.Length);
+        Assert.Contains("Elektrische Energie 2", selects[1].InnerHtml);
+
+        selects[1].Change("58");
+
+        Assert.Equal(58, gemeldet?.Neu);
+        Assert.Equal(58, zeile.CarrierId);
     }
 }

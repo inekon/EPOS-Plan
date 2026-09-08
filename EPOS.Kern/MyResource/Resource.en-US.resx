@@ -9397,6 +9397,15 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_ET_ZUORDNUNG_FEHLGESCHLAGEN" xml:space="preserve">
     <value>The carrier could not be assigned to the project.</value>
   </data>
+  <data name="ETW_GRP_TITEL" xml:space="preserve">
+    <value>Energy carrier</value>
+  </data>
+  <data name="ETW_LBL_ART" xml:space="preserve">
+    <value>Type:</value>
+  </data>
+  <data name="ETW_LBL_GRUPPE" xml:space="preserve">
+    <value>Energy carrier:</value>
+  </data>
   <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
     <value>not assigned</value>
   </data>

@@ -72,10 +72,15 @@ namespace WindowsFormsApplication1
         {
             var zeilen = new List<ErzeugerZeile>();
             var zuModell = new Dictionary<int, WErzeugerModel>();
+            // ET-5 (08.09.2026): Die Zeile zeigt den Traeger der Anlage - gespeichert oder,
+            // solange keiner gespeichert ist, den Stromtraeger des Projekts (die Vorgabe).
+            int stromVorgabe = ErzeugerTraegerHuelle.Standard(projektId);
             foreach (WErzeugerModel m in modelle)
             {
                 if (m.ID_Type != idType) continue;
-                zeilen.Add(ZeileZu(m));
+                ErzeugerZeile zeile = ZeileZu(m);
+                if (zeile.CarrierId <= 0) zeile.CarrierId = stromVorgabe;
+                zeilen.Add(zeile);
                 zuModell[m.ID] = m;
             }
 
@@ -129,6 +134,20 @@ namespace WindowsFormsApplication1
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
+
+                // ET-5 (Anwenderentscheid 08.09.2026): Traegerwahl in der Katalog-Gliederung
+                // Gruppe > Art, gespeichert je Anlage; der gewaehlte Traeger wird dem Projekt
+                // zugeordnet (ausserhalb des Assistenten).
+                ["Traegerkatalog"] = ErzeugerTraegerHuelle.Katalog(),
+                ["LabelTraegerGruppe"] = ErzeugerTraegerHuelle.LabelGruppe,
+                ["LabelTraegerArt"] = ErzeugerTraegerHuelle.LabelArt,
+                ["TraegerWechseln"] = new Action<ErzeugerZeile, int>(
+                    (zeile, neu) =>
+                    {
+                        if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
+                        m.ID_Carrier = neu;
+                        ErzeugerTraegerHuelle.Zuordnen(projektId, wizard, neu);
+                    }),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
             };
@@ -165,7 +184,9 @@ namespace WindowsFormsApplication1
                 ID_Projekt = projektId,
                 ID_SP = satz.m_ID,
                 ID_Type = idType,
-                Bezeichner = satz.m_szBezeichner
+                Bezeichner = satz.m_szBezeichner,
+                // ET-5: Vorgabe der Stromtraeger des Projekts.
+                ID_Carrier = ErzeugerTraegerHuelle.Standard(projektId)
             };
 
             modelle.Add(model);
@@ -184,6 +205,7 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = m.ID,
                 Bezeichner = m.Bezeichner ?? "",
+                CarrierId = m.ID_Carrier,
                 GeraetId = m.ID_SP
             };
         }

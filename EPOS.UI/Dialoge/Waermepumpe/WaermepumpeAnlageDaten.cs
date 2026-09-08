@@ -69,6 +69,13 @@ public sealed class WaermepumpeAnlageDaten
     public bool BivalenterBetrieb { get; set; }
 
     /// <summary>
+    /// ET‑5 (08.09.2026): der Energieträger der Anlage (<c>Tab_Energieanlagen.ID_Carrier</c>),
+    /// in der Gliederung des Katalogs Gruppe › Art gewählt; 0 = noch keiner (die Hülle setzt den
+    /// Stromträger des Projekts als Vorgabe).
+    /// </summary>
+    public int CarrierId { get; set; }
+
+    /// <summary>
     /// Betriebsart — ein STEUERWERT aus <c>DbWerte.WP_BETRIEBSART_*</c>, kein
     /// Anzeigetext: Er steht so in <c>Tab_Energieanlagen.Betriebsart</c>.
     /// </summary>
@@ -129,6 +136,7 @@ public sealed class WaermepumpeAnlageDaten
         SperrzeitBis = SperrzeitBis,
         Nutzungszeit = Nutzungszeit,
         BivalenterBetrieb = BivalenterBetrieb,
+        CarrierId = CarrierId,
         Betriebsart = Betriebsart,
         Abschaltpunkt = Abschaltpunkt,
         Beschreibung = Beschreibung,

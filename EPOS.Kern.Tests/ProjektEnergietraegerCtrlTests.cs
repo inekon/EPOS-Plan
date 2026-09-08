@@ -86,5 +86,51 @@ namespace EPOS.Kern.Tests
             Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(projekt));
             Assert.Equal(0, ProjektEnergietraegerCtrl.StromTraegerSicherstellen(projekt));
         }
+
+        // =============================================================================
+        //  ET-5 (Anwenderentscheid 08.09.2026): der an der Anlage gewaehlte Traeger
+        // =============================================================================
+
+        private const int VARIANTE_STROM = 58;   // "Elektrische Energie 2" - ein zweiter ELECTRICITY-Traeger
+
+        [Fact]
+        public void Der_an_der_Waermepumpe_gewaehlte_Stromtraeger_gewinnt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int standard = ProjektEnergietraegerCtrl.StromTraegerSicherstellen(PROJEKT_OHNE_STROM);
+            Assert.True(standard > 0 && standard != VARIANTE_STROM);
+            Assert.True(new WizardCtrl().TraegerSatzAnlegen(PROJEKT_OHNE_STROM, VARIANTE_STROM));
+            // Ohne Anlagenwahl gilt die bisherige Regel: die kleinste Id der Zuordnungen.
+            Assert.Equal(Math.Min(standard, VARIANTE_STROM), StromAufschlagCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
+
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_Energieanlagen SET ID_Carrier = ? WHERE ID_Projekt = ? AND ID_WP > 0",
+                new DbParam("@c", VARIANTE_STROM), new DbParam("@p", PROJEKT_OHNE_STROM));
+
+            Assert.Equal(VARIANTE_STROM, ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_OHNE_STROM));
+            Assert.Equal(VARIANTE_STROM, StromAufschlagCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
+            Assert.Equal(VARIANTE_STROM, Emissionsquelle.StromTraeger(PROJEKT_OHNE_STROM));
+            Assert.Contains(ProjektEnergietraegerCtrl.Verwendete(PROJEKT_OHNE_STROM),
+                            v => v.CarrierId == VARIANTE_STROM
+                                 && v.BeitraegerText.Contains(DbWerte.ERZEUGER_WAERMEPUMPE));
+        }
+
+        [Fact]
+        public void Ein_nicht_zugeordneter_Anlagentraeger_zaehlt_nicht()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int standard = ProjektEnergietraegerCtrl.StromTraegerSicherstellen(PROJEKT_OHNE_STROM);
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_Energieanlagen SET ID_Carrier = ? WHERE ID_Projekt = ? AND ID_WP > 0",
+                new DbParam("@c", VARIANTE_STROM), new DbParam("@p", PROJEKT_OHNE_STROM));
+
+            // 58 ist dem Projekt NICHT zugeordnet - die Wahl greift erst mit der Zuordnung.
+            Assert.Equal(0, ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_OHNE_STROM));
+            Assert.Equal(standard, StromAufschlagCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
+        }
     }
 }

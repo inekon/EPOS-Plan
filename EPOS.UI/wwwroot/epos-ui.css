@@ -1811,6 +1811,13 @@ body {
     color: var(--epos-warn-text);
     font-style: italic;
 }
+/* ET-5 (08.09.2026): die Traegerwahl einer Anlage - Gruppe und Art nebeneinander. */
+.epos-traegerwahl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    align-items: flex-end;
+}
 
 /* Filtert die Suche alles weg, sagt die Liste das - eine leere Flaeche liest
    sich wie ein Fehler. */

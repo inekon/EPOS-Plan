@@ -149,6 +149,16 @@ namespace WindowsFormsApplication1
         {
             if (idProjekt <= 0) return 0;
 
+            // ET-5 (Anwenderentscheid 08.09.2026): Der an der ANLAGE gewaehlte Stromtraeger
+            // (Waermepumpe vor Heizstab vor Speicher vor Photovoltaik) gewinnt, wenn er dem
+            // Projekt zugeordnet ist - Preis, Aufschlaege und Emissionen lesen dieselbe Wahl.
+            try
+            {
+                int gewaehlt = ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(idProjekt);
+                if (gewaehlt > 0) return gewaehlt;
+            }
+            catch { }
+
             object v = DataRepository.ExecuteScalar(
                 "SELECT MIN(ec.id) FROM [" + TABLE + "] AS eps " +
                 "INNER JOIN energy_carrier AS ec ON eps.[ID_Energieträger] = ec.id " +

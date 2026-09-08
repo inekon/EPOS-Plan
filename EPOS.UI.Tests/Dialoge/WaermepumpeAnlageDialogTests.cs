@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Waermepumpe;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
@@ -87,9 +88,11 @@ public class WaermepumpeAnlageDialogTests : BunitContext
         Func<(double, double)>? kostensumme = null,
         Func<Task>? kostenOeffnen = null,
         Func<IReadOnlyDictionary<string, object>>? stammGaben = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        IReadOnlyList<EnergietraegerWahl.Eintrag>? traegerkatalog = null)
         => Render<WaermepumpeAnlageDialog>(p => p
             .Add(x => x.Daten, daten ?? Voll())
+            .Add(x => x.Traegerkatalog, traegerkatalog ?? Array.Empty<EnergietraegerWahl.Eintrag>())
             .Add(x => x.Stammliste, () => Stammliste)
             .Add(x => x.Vorlaeufe, _ => new[] { 35, 45, 55 })
             .Add(x => x.Bilder, _ => new KennlinienBilder(BildCop, BildLeistung))
@@ -952,5 +955,41 @@ public class WaermepumpeAnlageDialogTests : BunitContext
         Knopf(cut, "Kennlinien aus dem Katalog übernehmen").Click();
 
         Assert.Contains("keinen Katalogsatz gleichen Namens", cut.Markup);
+    }
+
+    // =================================================================================
+    // ET-5 (Anwenderentscheid 08.09.2026): der Energietraeger der Waermepumpe, Gruppe > Art
+    // =================================================================================
+
+    [Fact]
+    public void Die_Traegerwahl_zeigt_Gruppe_und_Art_und_schreibt_in_die_Daten()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        daten.CarrierId = 60;
+        var cut = Aufbauen(daten, traegerkatalog: new[]
+        {
+            new EnergietraegerWahl.Eintrag(11, "Gas", "Erdgas E"),
+            new EnergietraegerWahl.Eintrag(60, "Strom", "Elektrische Energie"),
+            new EnergietraegerWahl.Eintrag(58, "Strom", "Elektrische Energie 2")
+        });
+
+        var wahl = cut.Find(".epos-traegerwahl");
+        var selects = wahl.QuerySelectorAll("select");
+        Assert.Equal(2, selects.Length);
+        Assert.Contains("Elektrische Energie", selects[1].InnerHtml);
+        Assert.DoesNotContain("Erdgas E", selects[1].InnerHtml);
+
+        selects[1].Change("58");
+        Assert.Equal(58, daten.CarrierId);
+
+        selects[0].Change("0");     // Gruppe Gas -> erster Traeger der Gruppe
+        Assert.Equal(11, daten.CarrierId);
+    }
+
+    [Fact]
+    public void Ohne_Traegerkatalog_steht_keine_Traegerwahl()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindAll(".epos-traegerwahl"));
     }
 }

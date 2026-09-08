@@ -206,6 +206,22 @@
                                     }
                                 </KindInhalt>
                             </Formulargruppe>
+
+                            @* ET-5 (Anwenderentscheid 08.09.2026): der Energietraeger der
+                               Waermepumpe in der Gliederung des Katalogs (Gruppe > Art) -
+                               Vorgabe der Stromtraeger des Projekts; gespeichert je Anlage
+                               (Tab_Energieanlagen.ID_Carrier) wie bei Kessel und BHKW. *@
+                            @if (Traegerkatalog.Count > 0)
+                            {
+                                <Formulargruppe Titel="@GruppeEnergietraeger">
+                                    <KindInhalt>
+                                        <EnergietraegerWahl Eintraege="@Traegerkatalog"
+                                                            LabelGruppe="@LabelTraegerGruppe" LabelArt="@LabelTraegerArt"
+                                                            Auswahl="@(Daten.CarrierId > 0 ? Daten.CarrierId : null)"
+                                                            Aktiv="@(!NurLesen)" AuswahlChanged="TraegerSetzen" />
+                                    </KindInhalt>
+                                </Formulargruppe>
+                            }
                         </KindInhalt>
                     </Formularraster>
 
@@ -468,6 +484,14 @@
     /// <summary>Der Parametersatz des Stammdialogs für „Parameter Bearbeiten…".</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? StammGaben { get; set; }
 
+    /// <summary>ET‑5 (08.09.2026): der Trägerkatalog in der Gliederung Gruppe › Art; leer = kein Feld.</summary>
+    [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
+        = Array.Empty<EnergietraegerWahl.Eintrag>();
+
+    [Parameter] public string GruppeEnergietraeger { get; set; } = "Energieträger";
+    [Parameter] public string LabelTraegerGruppe { get; set; } = "Energieträger:";
+    [Parameter] public string LabelTraegerArt { get; set; } = "Art:";
+
     /// <summary>
     /// Nur ansehen, nicht ändern (iU9-W7.5). Der Weg „Ansicht" der Verwaltung zeigt
     /// damit die Zeile, ohne dass ein Klick sie ändern kann; der Vorläufer öffnete
@@ -661,6 +685,12 @@
 
     /// <summary>Steht der Stammdialog? Prüfhilfe für die Tests.</summary>
     public bool StammdialogOffen => _stammGaben is not null;
+
+    /// <summary>ET‑5: die Trägerwahl schreibt in die Daten; der OK-Weg trägt sie ins Modell (<c>NachModell</c>).</summary>
+    private void TraegerSetzen(int? id)
+    {
+        if (id.HasValue) Daten.CarrierId = id.Value;
+    }
 
     /// <summary>Die drei Betriebsarten — STEUERWERTE aus <c>DbWerte</c>, keine Anzeigetexte.</summary>
     private static readonly string[] BETRIEBSARTEN =

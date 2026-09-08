@@ -206,8 +206,15 @@ namespace WindowsFormsApplication1
 
                 if (elektrisch || heizstab)
                 {
-                    if (stromTraeger < 0) stromTraeger = StromTraeger(katalog, zugeordnet, projektID);
-                    Trage(gefunden, katalog, zugeordnet, stromTraeger,
+                    // ET-5 (Anwenderentscheid 08.09.2026): Der an der ANLAGE gewaehlte
+                    // Traeger (Gruppe > Art) gilt; sonst der Stromtraeger des Projekts.
+                    int traeger = idCarrier > 0 && Zeile(katalog, idCarrier) != null ? idCarrier : -1;
+                    if (traeger < 0)
+                    {
+                        if (stromTraeger < 0) stromTraeger = StromTraeger(katalog, zugeordnet, projektID);
+                        traeger = stromTraeger;
+                    }
+                    Trage(gefunden, katalog, zugeordnet, traeger,
                           heizstab && elektrisch ? gewerk + " + " + HEIZSTAB : gewerk, bezeichner);
                 }
 
@@ -289,6 +296,9 @@ namespace WindowsFormsApplication1
                 else continue;   // leere Anlagenzeile — nichts anzuzeigen
 
                 bool elektrisch = Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0 || Ganz(r, "ID_SP") > 0;
+                // ET-5 (08.09.2026): der an der Anlage gewaehlte Traeger der elektrischen Welt.
+                if (e.CarrierId <= 0 && elektrisch && idCarrier > 0 && Zeile(katalog, idCarrier) != null)
+                    e.CarrierId = idCarrier;
                 if (e.CarrierId <= 0 && (elektrisch || Ja(r, "Heizstab")))
                 {
                     if (stromTraeger < 0) stromTraeger = StromTraeger(katalog, zugeordnet, projektID);
@@ -396,6 +406,45 @@ namespace WindowsFormsApplication1
                 if (Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0 || Ganz(r, "ID_SP") > 0 || Ja(r, "Heizstab"))
                     return true;
             return false;
+        }
+
+        /// <summary>
+        /// ET‑5 (Anwenderentscheid 08.09.2026): der an einer ANLAGE gewählte Stromträger —
+        /// Verbraucher zuerst (Wärmepumpe, Heizstab, Stromspeicher), dann Photovoltaik — wenn er
+        /// ein dem Projekt zugeordneter ELECTRICITY-Träger ist. 0 = keine Anlage hat gewählt;
+        /// dann gilt die bisherige Regel (kleinste Id der Zuordnungen). Ohne gesetzte
+        /// <c>ID_Carrier</c> an elektrischen Anlagen (aller Bestand vor ET‑5) ändert sich
+        /// nichts — die Referenzläufe bleiben unberührt.
+        /// </summary>
+        internal static int StromTraegerDerAnlagen(int projektID)
+        {
+            DataTable anlagen = Anlagen(projektID);
+            if (anlagen == null) return 0;
+
+            int bester = 0, besterRang = int.MaxValue;
+            List<Traeger> katalog = null;
+            HashSet<int> zugeordnet = null;
+            foreach (DataRow r in anlagen.Rows)
+            {
+                int idCarrier = Ganz(r, SchemaKatalog.SPALTE_ID_CARRIER);
+                if (idCarrier <= 0) continue;
+                int rang = Ganz(r, "ID_WP") > 0 ? 0
+                         : Ja(r, "Heizstab") ? 1
+                         : Ganz(r, "ID_SP") > 0 ? 2
+                         : Ganz(r, "ID_PV") > 0 ? 3 : -1;
+                if (rang < 0 || rang >= besterRang) continue;
+
+                if (katalog == null) { katalog = Katalog(); zugeordnet = Zugeordnete(projektID); }
+                Traeger t = Zeile(katalog, idCarrier);
+                if (t == null || !zugeordnet.Contains(idCarrier)) continue;
+                if (!string.Equals(t.Preismodell, StromAufschlagCtrl.PRICING_MODEL_STROM,
+                                   StringComparison.OrdinalIgnoreCase)) continue;
+
+                bester = idCarrier;
+                besterRang = rang;
+                if (rang == 0) break;
+            }
+            return bester;
         }
 
         /// <summary>Innenfassung von <see cref="StandardStromTraeger"/> für die

@@ -125,6 +125,17 @@
                                   WertChanged="BeiNeigung" />
                     <Ganzzahlfeld Bezeichnung="@LabelAzimut" Wert="@_projektZeile.Azimut"
                                   WertChanged="BeiAzimut" />
+                    @* ET-5 (Anwenderentscheid 08.09.2026): der Energietraeger der Anlage in der
+                       Gliederung des Katalogs (Gruppe > Art), gespeichert je Anlage wie bei
+                       Kessel und BHKW; Vorgabe der Stromtraeger des Projekts. Ohne Katalog
+                       (Wizard ohne Huelle, Proben) steht kein Feld. *@
+                    @if (Traegerkatalog.Count > 0)
+                    {
+                        <EnergietraegerWahl Eintraege="@Traegerkatalog"
+                                            LabelGruppe="@LabelTraegerGruppe" LabelArt="@LabelTraegerArt"
+                                            Auswahl="@(_projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
+                                            AuswahlChanged="BeiTraegerwechsel" />
+                    }
                     @* ANZAHL MODULE - abgeleitet, sobald ein Strang besteht
                        (Entscheidungsfrage Q9 des Wechselrichterkonzepts, "eine Wahrheit"):
                        Sie ist dann die Summe aus Reihe x Parallel ueber alle Straenge,
@@ -315,6 +326,16 @@
 
     /// <summary>Übernimmt Neigung, Azimut und Anzahl Module ins Modell.</summary>
     [Parameter] public Action<ErzeugerZeile>? Uebernehmen { get; set; }
+
+    /// <summary>ET‑5 (08.09.2026): der Trägerkatalog in der Gliederung Gruppe › Art; leer = kein Feld.</summary>
+    [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
+        = Array.Empty<EnergietraegerWahl.Eintrag>();
+
+    /// <summary>Die markierte Anlage bekommt einen anderen Energieträger (Zeile, Träger-Id).</summary>
+    [Parameter] public Action<ErzeugerZeile, int>? TraegerWechseln { get; set; }
+
+    [Parameter] public string LabelTraegerGruppe { get; set; } = "Energieträger:";
+    [Parameter] public string LabelTraegerArt { get; set; } = "Art:";
 
     /// <summary>
     /// Die Gesamtleistung [kW], fertig formatiert: Summe aus Anzahl Module mal
@@ -687,6 +708,15 @@
         if (_projektZeile is null) return;
         _projektZeile.Neigung = wert;
         Uebernehmen?.Invoke(_projektZeile);
+    }
+
+    /// <summary>ET‑5: Trägerwechsel der markierten Anlage — an die Hülle, dann in die Zeile.</summary>
+    private void BeiTraegerwechsel(int? neu)
+    {
+        if (_projektZeile is null || !neu.HasValue) return;
+        if (neu.Value == _projektZeile.CarrierId) return;   // programmatische Vorwahl
+        TraegerWechseln?.Invoke(_projektZeile, neu.Value);
+        _projektZeile.CarrierId = neu.Value;
     }
 
     private void BeiAzimut(int? wert)

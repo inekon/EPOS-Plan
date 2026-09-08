@@ -190,3 +190,41 @@ die Wärmepumpe rechnet über denselben Stromträger. Damit sind zwei Lesarten m
 Empfehlung: (a) als nächste Etappe, die PV mit dem Stromträger „Elektrische Energie" belegt
 und im Emissionsausweis weiter als Verdrängung rechnet; (b) nur, wenn die Emissionen wirklich
 je Art gepflegt werden sollen.
+
+### 7.6 ET‑5 umgesetzt — Entscheid des Anwenders: „es handelt sich um diese Struktur, keine neue Struktur"
+
+Die gemeinte Zweistufigkeit ist die Gliederung des Katalogs, wie sie die Energieträgerverwaltung
+listet: **Energieträger = Gruppe** (`group_code`: Fernwärme, Gas, Holz, Strom …) › **Art =
+Träger** (`name`: Erdgas E, Biogas, Elektrische Energie …). Kein neues Datenmodell, keine
+Migration. Umgesetzt wie bei Kessel und BHKW — der Träger hängt an der Anlage:
+
+| Wo | Was |
+|---|---|
+| Baustein `EPOS.UI/Bausteine/EnergietraegerWahl.razor` | zwei Auswahlfelder „Energieträger:" (Gruppe) und „Art:" (Träger der Gruppe), ein Wert (die Träger-Id); ein Gruppenwechsel wählt den ersten Träger der Gruppe |
+| Dialoge Photovoltaik, Stromspeicher (Anlagenblock der markierten Projektzeile), Wärmepumpe (Detailansicht, Gruppe „Energieträger") | Parameter `Traegerkatalog`, `TraegerWechseln` bzw. `Daten.CarrierId`; ohne Katalog steht kein Feld |
+| Hüllen (`ErzeugerTraegerHuelle`, neu) | `Katalog()` aus `KostenSummenCtrl.GetAllCarriers(0)` nach Gruppe und Name; `Standard(projekt)` = Stromträger des Projekts (Vorgabe „default Strom" für neue Anlagen und für Bestandszeilen ohne Träger); `Zuordnen(projekt, wizard, träger)` = Zuordnungszeile im Projekt (`InsProjekt`, NULL-Werte → Katalogwerte gelten); im Assistenten trägt `Add_Projekt_Energietraeger` die `ID_Carrier` beim Speichern nach |
+| Speichern | `Tab_Energieanlagen.ID_Carrier` über den Anlagen-Schreibweg (`SQL_ANLAGE_INSERT` führt die Spalte) |
+| Kern `ProjektEnergietraegerCtrl` | `Verwendete`/`AnlagenMitTraeger` lesen den Träger der elektrischen Anlage, sonst wie bisher den Stromträger des Projekts; neu `StromTraegerDerAnlagen`: der an der Anlage gewählte, dem Projekt zugeordnete ELECTRICITY-Träger — Verbraucher zuerst (Wärmepumpe, Heizstab, Speicher), dann Photovoltaik |
+| Kern `StromAufschlagCtrl.StromCarrierId`, `Emissionsquelle.StromTraeger` | lesen zuerst `StromTraegerDerAnlagen` — Preis, Aufschläge und Emissionen folgen damit derselben Wahl; ohne Anlagenwahl (aller Bestand vor ET‑5) bleibt die bisherige Regel (kleinste Id der Zuordnungen) |
+
+**Was die Wahl bedeutet.** Die Emissionswerte hängen am Träger (Art), wie der Anwender es
+will: Wer der Wärmepumpe „Strom › Elektrische Energie 2" (etwa ein Ökostromtarif mit eigenem
+Faktor) gibt, bekommt Strompreis und Emissionsfaktor dieser Zeile. PV mit „0 Emissionen" ist
+ein Katalogträger der Gruppe Strom mit CO₂ 0 (Katalogkontext → „Variante" von „Elektrische
+Energie", Emissionen auf 0) — die Photovoltaik erzeugt, sie bezieht nichts; für die Gutschrift
+des verdrängten Netzstroms gilt weiter der Träger der Verbraucher (Rangfolge oben).
+
+**Nachweise.** `ProjektEnergietraegerCtrlTests` +2 (1026: die an der Wärmepumpe gewählte
+„Elektrische Energie 2" gewinnt in `StromCarrierId`, `Emissionsquelle.StromTraeger` und
+`Verwendete`; ein nicht zugeordneter Anlagenträger zählt nicht), `EnergietraegerWahlTests` (neu,
+4), `PhotovoltaikDialogTests` +2, `StromspeicherDialogTests` +1, `WaermepumpeAnlageDialogTests` +2.
+Sandbox-Bau 0 Fehler, `EPOS.Kern.Tests` **2 056/2 057 (+2; der eine Fehlschlag `LizenzWarnstufenTests.Kulanz_und_Nachpruefung…` ist das bekannte Kulturflackern unter Last — englischer statt deutscher Text —, isoliert 27/27 grün)**, `EPOS.UI.Tests` **3 269/3 269 (+9)**.
+Referenzlauf: aus der Sandbox gegen `P:\pa0\Quelle\Kenndaten.sqlite`, 14 Projekte, **355/355 MD5-gleich zur Basis `2026-09-07_M7_nach-Merge7`** — die Referenzdaten führen keine elektrische Anlage mit `ID_Carrier`, und der Lauf deckt zugleich Merge 8 und alle Commits vom 08.09.2026 ab.
+
+**Abnahmepunkte A‑ET‑5.** (1) Projekt 1026 → Wärmepumpe → Ändern: Gruppe „Energieträger" zeigt
+„Strom › Elektrische Energie"; Gruppe auf „Gas" stellen → Art springt auf den ersten Gasträger;
+OK speichert, die Energieträgerverwaltung führt den Träger als „verwendet von: Wärmepumpe".
+(2) Photovoltaik: markierte Anlage zeigt im Anlagenblock dieselbe Wahl; Wechsel auf
+„Elektrische Energie 2" → in Kosten und Wirtschaftlichkeit rechnet der Strombezug mit dessen
+Preis und Emissionsfaktor. (3) Stromspeicher: Detailblock der markierten Projektzeile zeigt die
+Wahl; beim Katalogsatz nicht. (4) Neue Anlage aus dem Katalog: Vorgabe Strom.
