@@ -22,7 +22,36 @@
    Zeilen, "Gesamte Stromerzeugung" und "davon direkt genutzt"; W11b-B-7 die
    Einheit der Einstrahlung ist W/m2, nicht kW; W11b-B-8 eine aus Nennleistung
    und Wirkungsgrad GESCHAETZTE Flaeche traegt ein "≈" und den Grund als
-   Tooltip. *@
+   Tooltip.
+
+   EINE SCHALTERZEILE FUER ALLE VIER REIHEN (Anwenderwunsch 09.09.2026,
+   W11b‑B‑19). Bis dahin standen dort ZWEI Schalter „Ueberschuss anzeigen" und
+   „Speicherfuellung anzeigen"; Strombedarf und Photovoltaik waren fest an und
+   nirgends abwaehlbar. Jetzt traegt die Zeile JEDE Reihe des Bildes, in der
+   Beschriftung ihrer LEGENDE - man hakt ab, was man dort liest. Die Vorbelegung
+   bleibt, wie sie war: die zwei Grundreihen an, die zwei Zusatzreihen aus
+   (woertlich :4676-4679). ALLE ABGEWAEHLT heisst KEINE Reihe und nicht „alle" -
+   die Huelle zeichnet dann den Leerhinweis des Renderers, genau wie im
+   Waermepumpenreiter (W11b‑B‑17). Die zweite Y-Achse der Speicherfuellung
+   bleibt unveraendert.
+
+   DIE KENNZAHLENLISTE (Anwenderwunsch 09.09.2026, W11b‑B‑20). Sieben Zeilen
+   in EINER Liste, in der sich Erzeugung, Bedarf und Einstrahlung abwechselten,
+   und JEDE Beschriftung trug ihre Einheit ZWEIMAL: einmal im Text
+   („Gesamte Stromerzeugung der Module [MWh/a]:") und einmal in der
+   Einheitenspalte daneben. Die Einheit steht jetzt nur noch in ihrer Spalte,
+   die Ressourcentexte sind entsprechend gekuerzt (de + en), und drei
+   Unterabschnitte tragen die Ordnung: „Erzeugung", „Bedarf und Deckung"
+   (mit dem Reststrombedarf als betonter Zeile) und „Einstrahlung". Keine Zahl
+   faellt weg.
+
+   … UND SIE LAEUFT UEBER DIE GANZE RASTERZEILE. Sie sass in EINER Spalte des
+   auto-fit-Rasters (minmax(320px, 1fr)), obwohl neben ihr nichts steht: Die
+   langen Beschriftungen liefen rechts aus dem Raster, .epos-simerg-werte
+   (width: max-content, max-width: 100%, overflow-x: auto) schnitt die
+   Einheitenspalte ab und schob die Liste in einen Rollbalken.
+   .epos-simerg-kennzahlenzeile gibt ihr die ganze Zeile; kompakt
+   (max-content) bleibt sie trotzdem. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 
@@ -36,25 +65,49 @@
     {
         <div class="epos-simerg-spalten">
 
-            <section class="epos-simerg-block">
+            @* W11b‑B‑20: drei Unterabschnitte statt einer gemischten Liste,
+               fachlich geordnet (Erzeugung → Bedarf und Deckung → Einstrahlung),
+               der Reststrombedarf betont — dieselbe Sprache wie im Waermepumpen-
+               und Kesselreiter (W11b‑B‑15). Es sind <h3 class="epos-untergruppe">
+               und KEINE dunklen Balken: Ein Balken im Balken waere eine
+               Hierarchie, die es fachlich nicht gibt. *@
+            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_ERZEUGUNG</h3>
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_PV_GESAMT, Zahl(Daten.StromproduktionMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_GENUTZT, Zahl(Daten.GenutztMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_PV_DECKUNG, Zahl(Daten.DeckungProzent), "%")
+                </dl>
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_BEDARF_DECKUNG</h3>
+                <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_PV_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_PV_REST, Zahl(Daten.ReststrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_REST, Zahl(Daten.ReststrombedarfMwh), MWH,
+                               betont: true)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_DECKUNG, Zahl(Daten.DeckungProzent), "%")
+                </dl>
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_EINSTRAHLUNG</h3>
+                <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxEinstrahlungWm2), "W/m²")
                 </dl>
+
             </section>
 
             @* Schalter und Diagramm ueber BEIDE Spalten (Befund W11b-B-2). *@
             <section class="epos-simerg-block epos-simerg-diagrammzeile">
-                @* Beide Haken stehen beim Aufbau AUS - woertlich :4676-4679. *@
+                @* W11b‑B‑19: EINE Zeile mit ALLEN vier Reihen, jede in der
+                   Beschriftung ihrer Legende. Die zwei Grundreihen stehen an, die
+                   zwei Zusatzreihen aus - woertlich :4676-4679. *@
                 <div class="epos-simerg-schalter">
-                    <Schalter Bezeichnung="@Resource.SIMERG_CHK_PV_UEBERSCHUSS" Wert="@_ueberschuss"
+                    <Schalter Bezeichnung="@Resource.CHART_ACHSE_STROMBEDARF" Wert="@_strombedarf"
+                              WertChanged="@(w => _strombedarf = w)" />
+                    <Schalter Bezeichnung="@Resource.SIM_PHOTOVOLTAIK" Wert="@_photovoltaik"
+                              WertChanged="@(w => _photovoltaik = w)" />
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_UEBERSCHUSS" Wert="@_ueberschuss"
                               WertChanged="@(w => _ueberschuss = w)" />
-                    <Schalter Bezeichnung="@Resource.SIMERG_CHK_SPEICHERFUELLUNG" Wert="@_speicher"
+                    <Schalter Bezeichnung="@Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND" Wert="@_speicher"
                               WertChanged="@(w => _speicher = w)" />
                 </div>
 
@@ -155,16 +208,25 @@
     /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
+    // W11b‑B‑19: je Reihe ein Zustand. Die Vorbelegung ist die alte: die zwei
+    // GRUNDREIHEN an, die zwei ZUSATZREIHEN aus (woertlich :4676-4679).
+    private bool _strombedarf = true;
+    private bool _photovoltaik = true;
     private bool _ueberschuss;
     private bool _speicher;
 
     /// <summary>
-    /// Die Serienschluessel des Bildes. Strombedarf und Photovoltaik sind
-    /// immer an; Ueberschuss und Speicherfuellstand kommen ueber die Haken dazu.
+    /// Die Serienschluessel des Bildes — sprachneutral, die Beschriftung setzt
+    /// die Huelle. Seit W11b‑B‑19 ist JEDE Reihe abwaehlbar; eine LEERE Liste
+    /// heisst „keine Reihe" und nicht „alle": Der Auftrag traegt immer eine
+    /// Liste, deshalb kann die Huelle leer von „ohne Angabe" (<c>null</c>)
+    /// unterscheiden.
     /// </summary>
     private IReadOnlyList<string> Reihen()
     {
-        var liste = new List<string> { "STROMBEDARF", "PHOTOVOLTAIK" };
+        var liste = new List<string>();
+        if (_strombedarf) liste.Add("STROMBEDARF");
+        if (_photovoltaik) liste.Add("PHOTOVOLTAIK");
         if (_ueberschuss) liste.Add("UEBERSCHUSS");
         if (_speicher) liste.Add("SPEICHERFUELLSTAND");
         return liste;
@@ -180,9 +242,22 @@
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
-    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
-        <dt>@text</dt>
-        <dd>@wert</dd>
-        <dd class="epos-simerg-einheit">@einheit</dd>
+    /// <summary>
+    /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
+    /// die ABSCHLUSSZEILE einer Gruppe — den Rest, der nach der Photovoltaik
+    /// uebrig bleibt (W11b‑B‑20); ohne den Schalter bleibt das Markup
+    /// unveraendert.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, string wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@wert</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
+
+    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 }

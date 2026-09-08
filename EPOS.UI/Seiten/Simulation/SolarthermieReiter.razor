@@ -3,7 +3,8 @@
    VORBILD. tabPage_Solarthermie mit fuenf Feldern, der programmatischen
    Kollektortabelle (listView_SimSolar, 6 Spalten) und chart8 (zwei Linien:
    Waermebedarf rot, Waermeproduktion blau). Kein Umschalter, kein Export, kein
-   Zoom - so war es, so bleibt es.
+   Zoom - so war es; die Schalterzeile ueber dem Bild kam mit W11b‑B‑19 dazu
+   (unten), Export und Zoom gibt es hier weiter nicht.
 
    BEFUND W11-B20 IST IN W11a BEHOBEN: Die Solarthermie-Felder standen INNERHALB
    von „if (sim.bSimulationSolarthermie)" ohne Gegenstueck ausserhalb - ein
@@ -13,7 +14,29 @@
    PAKET E1 / BEFUND V0-O1: Der NENNER des Deckungsgrades ist der PROJEKTbedarf
    (wie bei Waermepumpe, Kessel und BHKW und wie im Runner), der RESTBEDARF
    darunter bleibt auf dem Stufeneingang. Beides steht im DTO; die Anzeige
-   uebernimmt es unveraendert. *@
+   uebernimmt es unveraendert.
+
+   WAEHLBARE REIHEN (Anwenderwunsch 09.09.2026, W11b‑B‑19). Das Bild traegt
+   ueber sich eine Schalterzeile, je Reihe einen Schalter, beide vorbelegt AN -
+   das Bild sieht damit aus wie bisher, bis der Anwender etwas abwaehlt. Die
+   Beschriftung ist DIESELBE Ressource, die auch in der Legende des Bildes
+   steht: Man hakt ab, was man dort liest. ALLE ABGEWAEHLT heisst KEINE Reihe
+   und nicht „alle“ - die Huelle zeichnet dann den Leerhinweis des Renderers,
+   genau wie im Waermepumpenreiter (W11b‑B‑17).
+
+   DIE KENNZAHLENLISTE (Anwenderwunsch 09.09.2026, W11b‑B‑20). Die fuenf
+   Zeilen standen in der Reihenfolge der WinForms-Maske: Deckungsgrad zuerst,
+   dann Bedarf, Rest, Produktion, Ueberschuss - der Rest VOR der Produktion,
+   aus der er sich ergibt. Jetzt steht die fachliche Ordnung Bedarf → Erzeugung
+   → Ueberschuss → Rest → Deckung unter EINEM Unterabschnitt „Waerme“, und der
+   Rest ist betont. Keine Zahl faellt weg, keine Beschriftung aendert sich.
+
+   … UND SIE LAEUFT UEBER DIE GANZE RASTERZEILE. Sie sass in EINER Spalte des
+   auto-fit-Rasters (minmax(320px, 1fr)), obwohl neben ihr nichts steht: Bei
+   langen Beschriftungen schnitt .epos-simerg-werte (width: max-content,
+   max-width: 100%, overflow-x: auto) die Einheitenspalte ab und schob die
+   Liste in einen Rollbalken. .epos-simerg-kennzahlenzeile gibt ihr die ganze
+   Zeile; kompakt (max-content) bleibt sie trotzdem. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 
@@ -27,20 +50,39 @@
     {
         <div class="epos-simerg-spalten">
 
-            <section class="epos-simerg-block">
+            @* W11b‑B‑20: EIN Unterabschnitt „Waerme“, fachlich geordnet
+               (Bedarf → Erzeugung → Ueberschuss → Rest → Deckung), der Rest
+               betont — dieselbe Sprache wie im Waermepumpen- und Kesselreiter
+               (W11b‑B‑15). Es ist ein <h3 class="epos-untergruppe"> und KEIN
+               dunkler Balken: Ein Balken im Balken waere eine Hierarchie, die es
+               fachlich nicht gibt. *@
+            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_GRP_WAERME</h3>
                 <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_MODULE, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH,
+                               betont: true)
+
                     @* Ohne bekannten Bezug bleibt das Feld LEER - woertlich :4603. *@
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
                                Daten.DeckungBekannt ? Zahl(Daten.DeckungProzent) : "", "%")
-                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_GESAMTLEISTUNG_MODULE, Zahl(Daten.WaermeproduktionMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
                 </dl>
+
             </section>
 
             @* Das Diagramm steht ueber BEIDE Spalten (Befund W11b-B-2). *@
             <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                @* W11b‑B‑19: die zwei Linien des Bildes, jede abwaehlbar. *@
+                <div class="epos-simerg-schalter">
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF"
+                              Wert="@_bedarf" WertChanged="@(w => _bedarf = w)" />
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION"
+                              Wert="@_produktion" WertChanged="@(w => _produktion = w)" />
+                </div>
+
                 <ChartBild Png="@BildSolar" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
             </section>
 
@@ -89,10 +131,32 @@
     [Parameter]
     public WindowsFormsApplication1.SimulationErgebnisCtrl.SolarthermieErgebnis? Daten { get; set; }
 
-    /// <summary>Liefert das Bild.</summary>
+    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
     [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
 
-    private byte[]? BildSolar => Bild?.Invoke(new Bildauftrag(Bilder.Solarthermie));
+    /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Reihen();
+
+    // W11b‑B‑19: je Reihe ein Zustand, BEIDE vorbelegt an.
+    private bool _bedarf = true;
+    private bool _produktion = true;
+
+    /// <summary>
+    /// Die Serienschluessel des Bildes — sprachneutral, die Beschriftung setzt
+    /// die Huelle. Eine LEERE Liste heisst „keine Reihe": Der Auftrag traegt
+    /// immer eine Liste, deshalb kann die Huelle leer von „ohne Angabe"
+    /// (<c>null</c>) unterscheiden.
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string>();
+        if (_bedarf) liste.Add("WAERMEBEDARF");
+        if (_produktion) liste.Add("WAERMEPRODUKTION");
+        return liste;
+    }
+
+    private byte[]? BildSolar =>
+        Bild?.Invoke(new Bildauftrag(Bilder.Solarthermie, false, -1, Reihen()));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
@@ -101,9 +165,21 @@
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
-    private RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
-        <dt>@text</dt>
-        <dd>@wert</dd>
-        <dd class="epos-simerg-einheit">@einheit</dd>
+    /// <summary>
+    /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
+    /// die ABSCHLUSSZEILE der Gruppe — den Rest, der nach der Solarthermie uebrig
+    /// bleibt (W11b‑B‑20); ohne den Schalter bleibt das Markup unveraendert.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, string wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@wert</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
+
+    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 }

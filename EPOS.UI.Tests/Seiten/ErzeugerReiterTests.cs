@@ -23,6 +23,11 @@ namespace EPOS.UI.Tests.Seiten;
 /// <c>Diagramm</c> und bringt seine eigenen Knöpfe („1:1“, „Bereich“) mit.
 /// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
 /// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
+/// <para>Seit den Anwenderwünschen 09.09.2026 dazu die WAHL DER REIHEN
+/// (<b>W11b‑B‑19</b>: je Bild eine Schalterzeile, die Wahl im
+/// <c>Bildauftrag.Reihen</c>) und die GLIEDERUNG der zwei Kennzahlenlisten
+/// (<b>W11b‑B‑20</b>: Unterabschnitte, betonte Restzeile, Beschriftungen ohne
+/// doppelte Einheit).</para>
 /// </summary>
 public class ErzeugerReiterTests : BunitContext
 {
@@ -46,6 +51,25 @@ public class ErzeugerReiterTests : BunitContext
     }
 
     private byte[]? Bild(Bildauftrag a) { _auftraege.Add(a); return new byte[] { 1 }; }
+
+    /// <summary>Die Beschriftungen der Schalterzeile Nr. <paramref name="nr"/>.</summary>
+    private static string[] Schalterzeile<T>(IRenderedComponent<T> seite, int nr = 0)
+        where T : IComponent
+        => seite.FindAll("div.epos-simerg-schalter")[nr]
+                .QuerySelectorAll("label.epos-schalter")
+                .Select(l => l.TextContent.Trim()).ToArray();
+
+    /// <summary>Das Kästchen Nr. <paramref name="k"/> der Schalterzeile Nr. <paramref name="nr"/>.</summary>
+    private static AngleSharp.Dom.IElement Kasten<T>(IRenderedComponent<T> seite, int k, int nr = 0)
+        where T : IComponent
+        => seite.FindAll("div.epos-simerg-schalter")[nr]
+                .QuerySelectorAll("input[type=checkbox]")[k];
+
+    /// <summary>Die Beschriftungen einer Kennzahlenliste, in ihrer Reihenfolge.</summary>
+    private static string[] Zeilen<T>(IRenderedComponent<T> seite, int nr)
+        where T : IComponent
+        => seite.FindAll("dl.epos-simerg-werte")[nr]
+                .QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
 
     // =====================================================================
     // R6 — Heizkessel
@@ -208,12 +232,15 @@ public class ErzeugerReiterTests : BunitContext
         return e;
     }
 
+    private IRenderedComponent<SolarthermieReiter> SolarZeichnen(bool deckung = true)
+        => Render<SolarthermieReiter>(p => p
+            .Add(x => x.Daten, Solar(deckung))
+            .Add(x => x.Bild, Bild));
+
     [Fact]
     public void Solarthermie_zeigt_fuenf_Felder_und_die_Kollektortabelle()
     {
-        var seite = Render<SolarthermieReiter>(p => p
-            .Add(x => x.Daten, Solar())
-            .Add(x => x.Bild, Bild));
+        var seite = SolarZeichnen();
 
         Assert.Contains("8,40", seite.Markup);
         Assert.Contains("40,50", seite.Markup);
@@ -225,11 +252,100 @@ public class ErzeugerReiterTests : BunitContext
     [Fact]
     public void Solarthermie_laesst_die_Deckung_ohne_Bezug_leer()
     {
-        var seite = Render<SolarthermieReiter>(p => p
-            .Add(x => x.Daten, Solar(deckung: false))
-            .Add(x => x.Bild, Bild));
+        var seite = SolarZeichnen(deckung: false);
 
         Assert.DoesNotContain("8,40", seite.Markup);
+    }
+
+    // ---- W11b‑B‑19: die zwei Linien des Solarbildes sind wählbar ----------
+
+    /// <summary>
+    /// Je Reihe ein Schalter, die Beschriftung DIESELBE wie in der Legende des
+    /// Bildes. Beide stehen beim Aufbau AN: Das Bild sieht aus wie bisher, bis
+    /// der Anwender etwas abwählt.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_traegt_je_Reihe_einen_Schalter()
+    {
+        var seite = SolarZeichnen();
+
+        Assert.Equal(new[] { "Wärmebedarf", "Wärmeproduktion" }, Schalterzeile(seite));
+        Assert.All(seite.FindAll("div.epos-simerg-schalter")[0]
+                        .QuerySelectorAll("input[type=checkbox]"),
+                   k => Assert.True(k.HasAttribute("checked")));
+
+        Assert.Equal(new[] { "WAERMEBEDARF", "WAERMEPRODUKTION" },
+                     seite.Instance.GewaehlteReihen.ToArray());
+        Assert.Equal(new[] { "WAERMEBEDARF", "WAERMEPRODUKTION" },
+                     _auftraege.Last(a => a.Bild == Bilder.Solarthermie).Reihen!.ToArray());
+    }
+
+    /// <summary>Die Abwahl gibt den Bildauftrag OHNE diesen Schlüssel weiter.</summary>
+    [Fact]
+    public void Solarthermie_nimmt_die_abgewaehlte_Reihe_aus_dem_Bildauftrag()
+    {
+        var seite = SolarZeichnen();
+        _auftraege.Clear();
+
+        Kasten(seite, 0).Change(false);                 // Wärmebedarf
+
+        Assert.Equal(new[] { "WAERMEPRODUKTION" }, seite.Instance.GewaehlteReihen.ToArray());
+        Assert.Equal(new[] { "WAERMEPRODUKTION" },
+                     _auftraege.Last(a => a.Bild == Bilder.Solarthermie).Reihen!.ToArray());
+    }
+
+    /// <summary>
+    /// ALLE abgewählt heisst KEINE Reihe und nicht „alle“: Der Auftrag trägt eine
+    /// LEERE Liste, aus der die Hülle den Leerhinweis des Renderers zeichnet
+    /// (dieselbe Regel wie im Wärmepumpenreiter, W11b‑B‑17).
+    /// </summary>
+    [Fact]
+    public void Solarthermie_ohne_gewaehlte_Reihe_gibt_eine_leere_Liste()
+    {
+        var seite = SolarZeichnen();
+        _auftraege.Clear();
+
+        Kasten(seite, 0).Change(false);
+        Kasten(seite, 1).Change(false);
+
+        Assert.Empty(seite.Instance.GewaehlteReihen);
+        Assert.Empty(_auftraege.Last(a => a.Bild == Bilder.Solarthermie).Reihen!);
+    }
+
+    // ---- W11b‑B‑20: die Kennzahlenliste ------------------------------------
+
+    /// <summary>
+    /// <b>Anwenderwunsch 09.09.2026.</b> Die fünf Zeilen standen in der Reihenfolge
+    /// der WinForms-Maske — Deckungsgrad zuerst, der Rest VOR der Produktion, aus
+    /// der er sich ergibt. Jetzt trägt EIN Unterabschnitt „Wärme“ die fachliche
+    /// Ordnung Bedarf → Erzeugung → Überschuss → Rest → Deckung, und der Rest ist
+    /// betont. Keine Zahl fällt weg.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_gliedert_ihre_Felder_und_betont_den_Rest()
+    {
+        var seite = SolarZeichnen();
+
+        Assert.Equal(new[] { "Wärme" },
+                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
+        Assert.Equal(
+            new[] { "Wärmebedarf:", "Gesamte Wärmeleistung der Module:", "Überschuß:",
+                    "Restwärmebedarf:", "Wärmebedarfsdeckung:" },
+            Zeilen(seite, 0));
+        Assert.Equal(new[] { "Restwärmebedarf:" },
+                     seite.FindAll("dt.epos-simerg-abschluss").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// Die Liste steht ALLEIN in ihrer Rasterzeile — daneben steht kein zweiter
+    /// Block. Ohne <c>epos-simerg-kennzahlenzeile</c> sass sie in EINER Spalte des
+    /// auto-fit-Rasters, und lange Beschriftungen liefen rechts heraus.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_gibt_der_Kennzahlenliste_die_ganze_Rasterzeile()
+    {
+        var seite = SolarZeichnen();
+        Assert.Single(seite.FindAll("section.epos-simerg-kennzahlenzeile"));
     }
 
     /// <summary>
@@ -425,6 +541,59 @@ public class ErzeugerReiterTests : BunitContext
         Assert.DoesNotContain(">kW<", seite.Markup);
     }
 
+    // ---- W11b‑B‑20: die Kennzahlenliste ------------------------------------
+
+    /// <summary>
+    /// <b>Anwenderwunsch 09.09.2026.</b> Jede Beschriftung trug ihre Einheit
+    /// ZWEIMAL — im Text („… der Module [MWh/a]:“) und in der Einheitenspalte
+    /// daneben. Sie steht jetzt nur noch in ihrer Spalte; der Ressourcentext ist
+    /// gekürzt (de + en).
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_nennt_die_Einheit_nur_in_ihrer_Spalte()
+    {
+        var seite = PvZeichnen();
+
+        Assert.Equal("Gesamte Stromerzeugung der Module:", Resource.SIMERG_LBL_PV_GESAMT);
+        Assert.All(seite.FindAll("dl.epos-simerg-werte dt"),
+                   z => Assert.DoesNotContain("MWh", z.TextContent));
+        Assert.DoesNotContain("[W/m²]", seite.Markup);
+        Assert.Contains("<dd class=\"epos-simerg-einheit\">MWh/a</dd>", seite.Markup);
+    }
+
+    /// <summary>
+    /// Sieben Zeilen in EINER Liste, in der sich Erzeugung, Bedarf und
+    /// Einstrahlung abwechselten. Drei Unterabschnitte tragen die Ordnung; der
+    /// Reststrombedarf ist die betonte Zeile seiner Gruppe.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_gliedert_seine_Felder_in_Erzeugung_Bedarf_und_Einstrahlung()
+    {
+        var seite = PvZeichnen();
+
+        Assert.Equal(new[] { "Erzeugung", "Bedarf und Deckung", "Einstrahlung" },
+                     seite.FindAll("h3.epos-untergruppe").Select(k => k.TextContent.Trim()).ToArray());
+
+        Assert.Equal(3, seite.FindAll("dl.epos-simerg-werte").Count);
+        Assert.Equal(
+            new[] { "Gesamte Stromerzeugung der Module:", "davon direkt genutzt:", "Überschuß:" },
+            Zeilen(seite, 0));
+        Assert.Equal(new[] { "Strombedarf:", "Reststrombedarf:", "Strombedarfsdeckung:" },
+                     Zeilen(seite, 1));
+        Assert.Equal(new[] { "Maximale solare Einstrahlung:" }, Zeilen(seite, 2));
+
+        Assert.Equal(new[] { "Reststrombedarf:" },
+                     seite.FindAll("dt.epos-simerg-abschluss").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>Auch hier steht die Liste ALLEIN in ihrer Rasterzeile.</summary>
+    [Fact]
+    public void Photovoltaik_gibt_der_Kennzahlenliste_die_ganze_Rasterzeile()
+    {
+        var seite = PvZeichnen();
+        Assert.Single(seite.FindAll("section.epos-simerg-kennzahlenzeile"));
+    }
+
     [Fact]
     public void Photovoltaik_kennzeichnet_eine_geschaetzte_Flaeche()
     {
@@ -453,16 +622,42 @@ public class ErzeugerReiterTests : BunitContext
         Assert.DoesNotContain("NaN", seite.Markup);
     }
 
+    // ---- W11b‑B‑19: EINE Schalterzeile mit ALLEN vier Reihen ---------------
+
     /// <summary>
-    /// Beide Haken stehen beim Aufbau AUS; das Bild traegt dann nur Strombedarf
-    /// und Photovoltaik (woertlich :4676-4679).
+    /// <b>Anwenderwunsch 09.09.2026.</b> Bis dahin trug die Zeile ZWEI Schalter
+    /// („Überschuß anzeigen“, „Speicherfüllung anzeigen“), während Strombedarf und
+    /// Photovoltaik fest an und nirgends abwählbar waren. Jetzt trägt EINE Zeile
+    /// JEDE Reihe, in der Beschriftung ihrer LEGENDE — die zwei alten Schalter
+    /// gehen darin auf. Die Vorbelegung bleibt: Grundreihen an, Zusatzreihen aus
+    /// (wörtlich :4676-4679).
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_traegt_eine_Schalterzeile_mit_allen_vier_Reihen()
+    {
+        var seite = PvZeichnen();
+
+        Assert.Single(seite.FindAll("div.epos-simerg-schalter"));
+        Assert.Equal(new[] { "Strombedarf", "Photovoltaik", "Überschuss", "Speicherfüllstand" },
+                     Schalterzeile(seite));
+
+        Assert.True(Kasten(seite, 0).HasAttribute("checked"));
+        Assert.True(Kasten(seite, 1).HasAttribute("checked"));
+        Assert.False(Kasten(seite, 2).HasAttribute("checked"));
+        Assert.False(Kasten(seite, 3).HasAttribute("checked"));
+    }
+
+    /// <summary>
+    /// Beide Zusatzreihen stehen beim Aufbau AUS; das Bild traegt dann nur
+    /// Strombedarf und Photovoltaik (woertlich :4676-4679).
     /// </summary>
     [Fact]
     public void Photovoltaik_startet_mit_zwei_abgeschalteten_Reihen()
     {
         var seite = PvZeichnen();
 
-        Assert.Equal(2, seite.Instance.GewaehlteReihen.Count);
+        Assert.Equal(new[] { "STROMBEDARF", "PHOTOVOLTAIK" },
+                     seite.Instance.GewaehlteReihen.ToArray());
         Assert.DoesNotContain("SPEICHERFUELLSTAND", seite.Instance.GewaehlteReihen);
     }
 
@@ -471,12 +666,46 @@ public class ErzeugerReiterTests : BunitContext
     public void Photovoltaik_nimmt_den_Speicherfuellstand_ueber_seinen_Haken_dazu()
     {
         var seite = PvZeichnen();
-        seite.FindAll("input[type='checkbox']")[1].Change(true);
+        Kasten(seite, 3).Change(true);
 
         Assert.Contains("SPEICHERFUELLSTAND", seite.Instance.GewaehlteReihen);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Photovoltaik
                                          && a.Reihen is not null
                                          && a.Reihen.Contains("SPEICHERFUELLSTAND"));
+    }
+
+    /// <summary>
+    /// NEU an W11b‑B‑19: auch eine GRUNDREIHE ist abwählbar. Sie fällt aus dem
+    /// Bildauftrag; die Reihenfolge der übrigen bleibt.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_nimmt_die_abgewaehlte_Grundreihe_aus_dem_Bildauftrag()
+    {
+        var seite = PvZeichnen();
+        _auftraege.Clear();
+
+        Kasten(seite, 0).Change(false);                 // Strombedarf
+
+        Assert.Equal(new[] { "PHOTOVOLTAIK" }, seite.Instance.GewaehlteReihen.ToArray());
+        Assert.Equal(new[] { "PHOTOVOLTAIK" },
+                     _auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Reihen!.ToArray());
+    }
+
+    /// <summary>
+    /// ALLE abgewählt heisst KEINE Reihe und nicht „alle“ — der Auftrag trägt eine
+    /// LEERE Liste, aus der die Hülle den Leerhinweis des Renderers zeichnet.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_ohne_gewaehlte_Reihe_gibt_eine_leere_Liste()
+    {
+        var seite = PvZeichnen();
+        _auftraege.Clear();
+
+        Kasten(seite, 0).Change(false);
+        Kasten(seite, 1).Change(false);
+
+        Assert.Empty(seite.Instance.GewaehlteReihen);
+        Assert.Empty(_auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Reihen!);
     }
 
     [Fact]

@@ -97,7 +97,7 @@ namespace WindowsFormsApplication1
                     case Bilder.WpLeistungTemperatur: return BildStreuwolke(a);
                     case Bilder.Speichertemperaturen: return BildTemperaturen();
                     case Bilder.Heizkessel: return BildKessel(a.Sortiert);
-                    case Bilder.Solarthermie: return BildSolar();
+                    case Bilder.Solarthermie: return BildSolar(a);
                     case Bilder.Bhkw: return BildBhkw(a.Sortiert);
                     case Bilder.Photovoltaik: return BildPv(a);
                     case Bilder.SpeicherSoc: return BildSoc();
@@ -487,15 +487,23 @@ namespace WindowsFormsApplication1
                 sortiert);
         }
 
-        private byte[] BildSolar()
+        /// <summary>
+        /// Die zwei Linien der Solarthermie. Seit dem Anwenderwunsch 09.09.2026
+        /// (W11b‑B‑19) ist jede abwählbar; <c>null</c> als Reihenliste heißt weiter
+        /// „alle“ (<see cref="Alle"/>), eine LEERE Liste heißt „keine“ — der
+        /// Renderer zeichnet dann seinen Leerhinweis.
+        /// </summary>
+        private byte[] BildSolar(Bildauftrag a)
         {
-            var linien = new List<ChartRenderer.Reihe>
-            {
-                new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF,
-                                        sim.simulation_solarthermie.Waermebedarf, F_BEDARF),
-                new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
-                                        sim.simulation_solarthermie.Waermeproduktion, F_PRODUKTION)
-            };
+            bool alle = Alle(a);
+            var linien = new List<ChartRenderer.Reihe>();
+
+            if (Gewaehlt(a, alle, "WAERMEBEDARF"))
+                linien.Add(new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF,
+                                                   sim.simulation_solarthermie.Waermebedarf, F_BEDARF));
+            if (Gewaehlt(a, alle, "WAERMEPRODUKTION"))
+                linien.Add(new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
+                                                   sim.simulation_solarthermie.Waermeproduktion, F_PRODUKTION));
 
             return ChartRenderer.ErzeugerStapel(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
@@ -533,19 +541,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// B2 + B3 auf der PV-Seite: vier Reihen im Viertelstundenraster, davon zwei
-        /// über Haken zuschaltbar; der Speicherfüllstand geht in kWh auf die ZWEITE
-        /// Y-Achse.
+        /// B2 + B3 auf der PV-Seite: vier Reihen im Viertelstundenraster; der
+        /// Speicherfüllstand geht in kWh auf die ZWEITE Y-Achse.
+        ///
+        /// <para><b>W11b‑B‑19 (09.09.2026):</b> Bis dahin waren Strombedarf und
+        /// Photovoltaik FEST an — „keine Wahl“ (leere Liste) zeichnete sie
+        /// trotzdem. Jetzt gilt hier dieselbe Regel wie in jedem anderen Bild mit
+        /// wählbaren Reihen: <c>null</c> heißt „alle“ (<see cref="Alle"/>), eine
+        /// LEERE Liste heißt „keine“, und der Renderer zeichnet dann seinen
+        /// Leerhinweis. Die Reihenfolge der Reihen bleibt unverändert.</para>
         /// </summary>
         private byte[] BildPv(Bildauftrag a)
         {
-            IReadOnlyList<string> wahl = a.Reihen ?? new List<string>();
+            bool alle = Alle(a);
 
             var linien = new List<ChartRenderer.Reihe>();
-            if (wahl.Contains("UEBERSCHUSS"))
+            if (Gewaehlt(a, alle, "UEBERSCHUSS"))
                 linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_UEBERSCHUSS,
                                  sim.simulation_pv.Ueberschuss_viertelstunde, F_UEBERSCHUSS));
-            if (wahl.Count == 0 || wahl.Contains("STROMBEDARF"))
+            if (Gewaehlt(a, alle, "STROMBEDARF"))
                 linien.Add(Reihe(MyResource.Resource.CHART_ACHSE_STROMBEDARF,
                                  sim.simulation_pv.Strombedarf, F_BEDARF));
             // W11b-B-6: die ERZEUGUNG der Module (Stromproduktion_Theoretisch), nicht der
@@ -553,12 +567,12 @@ namespace WindowsFormsApplication1
             // die Tabelle darunter wies 13 MWh aus. Der Vorlaeufer (:4574) zeichnete
             // dieselbe genutzte Reihe; das war seine Schwaeche, nicht die des Ports.
             // Die Viertelstunden kommen aus derselben Umrechnung wie die Bestandsreihen.
-            if (wahl.Count == 0 || wahl.Contains("PHOTOVOLTAIK"))
+            if (Gewaehlt(a, alle, "PHOTOVOLTAIK"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
                                  sim.simulation_pv.Stundenwerte_zu_viertelstunden(
                                      sim.simulation_pv.Stromproduktion_Theoretisch), F_PV));
 
-            ChartRenderer.Reihe zweite = wahl.Contains("SPEICHERFUELLSTAND")
+            ChartRenderer.Reihe zweite = Gewaehlt(a, alle, "SPEICHERFUELLSTAND")
                 ? Reihe(MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND,
                         sim.Speicherfuellstand_viertelstuendlich, F_SPEICHER)
                 : null;

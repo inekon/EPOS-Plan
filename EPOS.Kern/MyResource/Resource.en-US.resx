@@ -13577,28 +13577,28 @@ Please check all entries!</value>
     <value>Surplus:</value>
   </data>
   <data name="SIMERG_LBL_PV_GESAMT" xml:space="preserve">
-    <value>Total electricity generation of the modules [MWh/a]:</value>
+    <value>Total electricity generation of the modules:</value>
   </data>
   <data name="SIMERG_LBL_PV_UEBERSCHUSS" xml:space="preserve">
-    <value>Surplus [MWh/a]:</value>
+    <value>Surplus:</value>
   </data>
   <data name="SIMERG_LBL_PV_DECKUNG" xml:space="preserve">
-    <value>Electricity requirement coverage [%]:</value>
+    <value>Electricity requirement coverage:</value>
   </data>
   <data name="SIMERG_LBL_PV_STROMBEDARF" xml:space="preserve">
-    <value>Power requirement MWh/a:</value>
+    <value>Power requirement:</value>
   </data>
   <data name="SIMERG_LBL_PV_REST" xml:space="preserve">
-    <value>Residual power requirement MWh/a:</value>
+    <value>Residual power requirement:</value>
   </data>
   <data name="SIMERG_LBL_PV_GENUTZT" xml:space="preserve">
-    <value>of which used directly [MWh/a]:</value>
+    <value>of which used directly:</value>
   </data>
   <data name="SIMERG_TIP_FLAECHE_GESCHAETZT" xml:space="preserve">
     <value>Area estimated from rated power and efficiency; the catalogue has no dimensions for this module.</value>
   </data>
   <data name="SIMERG_LBL_MAX_SOLARE_LEISTUNG" xml:space="preserve">
-    <value>Maximum solar irradiance [W/m²]:</value>
+    <value>Maximum solar irradiance:</value>
   </data>
   <data name="SIMERG_CHK_PV_UEBERSCHUSS" xml:space="preserve">
     <value>Show surplus</value>
@@ -13650,6 +13650,15 @@ Please check all entries!</value>
   </data>
   <data name="SIMERG_GRP_BETRIEB" xml:space="preserve">
     <value>Operation</value>
+  </data>
+  <data name="SIMERG_GRP_ERZEUGUNG" xml:space="preserve">
+    <value>Generation</value>
+  </data>
+  <data name="SIMERG_GRP_BEDARF_DECKUNG" xml:space="preserve">
+    <value>Demand and coverage</value>
+  </data>
+  <data name="SIMERG_GRP_EINSTRAHLUNG" xml:space="preserve">
+    <value>Irradiance</value>
   </data>
   <data name="SIMERG_OPT_WAERMEGEFUEHRT" xml:space="preserve">
     <value>Heat-led</value>

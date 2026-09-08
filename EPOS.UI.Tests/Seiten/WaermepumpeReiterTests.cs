@@ -166,6 +166,20 @@ public class WaermepumpeReiterTests : BunitContext
         Assert.Equal(2, seite.FindAll("dd.epos-simerg-abschluss").Count);
     }
 
+    /// <summary>
+    /// <b>W11b‑B‑20 (09.09.2026).</b> Die Kennzahlenliste steht ALLEIN in ihrer
+    /// Rasterzeile — neben ihr steht kein zweiter Block, darunter spannt schon das
+    /// Diagramm über die volle Breite. Ohne <c>epos-simerg-kennzahlenzeile</c> sass
+    /// sie in EINER Spalte des auto-fit-Rasters, und lange Beschriftungen wie
+    /// „durchschnittliche Vollbenutzungsstunden:“ liefen rechts heraus.
+    /// </summary>
+    [Fact]
+    public void Die_Kennzahlenliste_nimmt_die_ganze_Rasterzeile()
+    {
+        var seite = Zeichnen(Erg());
+        Assert.Single(seite.FindAll("section.epos-simerg-kennzahlenzeile"));
+    }
+
     /// <summary>„-" statt einer Zahl, wenn der Lauf keinen Bivalenzpunkt kennt.</summary>
     [Fact]
     public void Ohne_Bivalenzpunkt_steht_ein_Strich()

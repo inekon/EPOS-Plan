@@ -1156,3 +1156,149 @@ Sandbox: Build **0 Fehler**, Kern **2075/2075**, UI **3304/3304** (vorher Kern
 2073, UI 3304; +2 Kern aus W11b‑B‑18, UI unverändert — die Änderung liegt allein im Kern-Renderer).
 Kein Rechenweg berührt — nur die Zeichenlage zweier Stapelgruppen bei Stundenachsen mit vielen
 Stützstellen.
+
+## Anwenderwunsch 09.09.2026 — W11b‑B‑19: Reihen der Diagramme von Solarthermie und Photovoltaik wählbar
+
+**Wortlaut:** „Reihen der Diagramme wählbar." (Dialog „Detaillierte Simulation", Reiter Solarthermie und
+Photovoltaik.) Es ist derselbe Wunsch, den W11b‑B‑17 für die zwei Wärmepumpen-Diagramme erfüllt hat, nur für
+die zwei verbliebenen Erzeugerbilder.
+
+**Befund — zwei ungleiche Ausgangslagen.**
+
+* **Solarthermie** (`BildSolar()`, „Wärmelast Jahresganglinie"): zwei Linien, Wärmebedarf und
+  Wärmeproduktion, und **gar keine Auswahl**. Der Reiter trug bis dahin überhaupt keinen Schalter — der
+  Kopfkommentar sagte es wörtlich: „Kein Umschalter, kein Export, kein Zoom".
+* **Photovoltaik** (`BildPv(a)`, „Strombedarf, Photovoltaik Jahresganglinie"): vier Reihen, aber nur **zwei
+  Schalter** — „Überschuß anzeigen" und „Speicherfüllung anzeigen". Die zwei Grundreihen `STROMBEDARF` und
+  `PHOTOVOLTAIK` waren **fest an**: Die Hülle prüfte sie mit `wahl.Count == 0 || wahl.Contains(…)`, und die
+  Seite legte sie in `Reihen()` unbedingt in die Liste. Wer nur die Erzeugungskurve sehen wollte, konnte den
+  Strombedarf nicht wegnehmen.
+
+### Änderung
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| Solarthermie, Auswahl | keine | Schalterzeile **direkt über dem Bild**, je Reihe ein `Schalter`, **beide vorbelegt an** |
+| Solarthermie, Beschriftung | — | dieselbe Ressource wie die Legende: `CHART_LEGENDE_WAERMEBEDARF`, `CHART_LEGENDE_WAERMEPRODUKTION` |
+| Solarthermie, Bildauftrag | `new Bildauftrag(Bilder.Solarthermie)` (Reihen = `null`) | dazu `Reihen` — sprachneutral `WAERMEBEDARF`, `WAERMEPRODUKTION` |
+| Solarthermie, Hülle | `BildSolar()` | `BildSolar(Bildauftrag a)` mit `Alle(a)`/`Gewaehlt(a, alle, …)` |
+| Photovoltaik, Auswahl | zwei Schalter „… anzeigen" für die zwei Zusatzreihen | **EINE** Zeile mit **allen vier** Reihen; die zwei alten Schalter gehen darin auf |
+| Photovoltaik, Beschriftung | `SIMERG_CHK_PV_UEBERSCHUSS`, `SIMERG_CHK_SPEICHERFUELLUNG` | die Legendenressourcen des Bildes: `CHART_ACHSE_STROMBEDARF`, `SIM_PHOTOVOLTAIK`, `CHART_LEGENDE_UEBERSCHUSS`, `PSP_CHECKBOX_SPEICHERFUELLSTAND` |
+| Photovoltaik, Vorbelegung | Grundreihen fest an, Zusatzreihen aus | **unverändert**: Grundreihen an, Zusatzreihen aus (wörtlich :4676‑4679) — nur sind die Grundreihen jetzt abwählbar |
+| Photovoltaik, Hülle | `wahl.Count == 0 \|\| wahl.Contains("STROMBEDARF")` bzw. `…("PHOTOVOLTAIK")`, `wahl.Contains("SPEICHERFUELLSTAND")` | durchgehend `Gewaehlt(a, alle, …)` — der `Count == 0`-Rückfall entfällt |
+| Prüfhilfen | PV: `GewaehlteReihen` | dazu Solarthermie: `GewaehlteReihen` |
+| Zweite Y-Achse | Speicherfüllstand in kWh rechts | unverändert |
+
+**Leer heißt keine, nicht alle.** Beide Bilder folgen jetzt der Regel aus W11b‑B‑17: `Bildauftrag.Reihen`
+= **`null`** heißt „keine Angabe → alle Reihen" (so rufen die Bilder ohne Auswahl), eine **leere Liste** heißt
+„der Anwender hat alles abgewählt → keine Reihe". Der Renderer zeichnet daraus seinen Leerhinweis — kein
+Sonderfall, keine Ausnahme. Beim PV-Bild ist das die eigentliche Verhaltensänderung: Vorher gab die leere
+Liste die zwei Grundreihen zurück. Da die Seite immer eine Liste mitgibt (`Reihen()` liefert nie `null`) und
+kein anderer Aufrufer `Bilder.Photovoltaik` bestellt (geprüft mit `grep Bilder.Photovoltaik`), ist die
+`null`-Bedeutung „alle" hier nur die dokumentierte Vorgabe der Hülle. Achsen, Farben, Reihenfolge der Reihen,
+Halbtransparenz und die zweite Y-Achse bleiben unangetastet; der Zwischenspeicherschlüssel trennt die
+Auswahlstände schon (`Bildauftrag.Schluessel` führt die Reihenliste mit).
+
+**Zwei Ressourcenschlüssel werden damit unbenutzt:** `SIMERG_CHK_PV_UEBERSCHUSS` und
+`SIMERG_CHK_SPEICHERFUELLUNG`. Sie bleiben im Katalog stehen (de + en, unverändert) — entfernt wird nichts,
+was ein anderer Strang noch aufgreifen könnte.
+
+### Nachweis
+
+**UI**, `ErzeugerReiterTests` — neu für die Solarthermie: `Solarthermie_traegt_je_Reihe_einen_Schalter`
+(beide Beschriftungen wörtlich in der Reihenfolge des Bildes, beide Kästchen an, Prüfhilfe und Bildauftrag
+tragen `WAERMEBEDARF`/`WAERMEPRODUKTION`), `Solarthermie_nimmt_die_abgewaehlte_Reihe_aus_dem_Bildauftrag`,
+`Solarthermie_ohne_gewaehlte_Reihe_gibt_eine_leere_Liste`. Neu für die Photovoltaik:
+`Photovoltaik_traegt_eine_Schalterzeile_mit_allen_vier_Reihen` (EINE Zeile, vier Legendenbeschriftungen, die
+zwei Grundreihen an, die zwei Zusatzreihen aus),
+`Photovoltaik_nimmt_die_abgewaehlte_Grundreihe_aus_dem_Bildauftrag` (neu: auch `STROMBEDARF` ist abwählbar),
+`Photovoltaik_ohne_gewaehlte_Reihe_gibt_eine_leere_Liste`. Angepasst:
+`Photovoltaik_startet_mit_zwei_abgeschalteten_Reihen` prüft die Reihen jetzt namentlich statt nur ihre Anzahl,
+`Photovoltaik_nimmt_den_Speicherfuellstand_ueber_seinen_Haken_dazu` greift das vierte Kästchen der Zeile (es
+war das zweite).
+
+**Nicht durch Tests gedeckt:** die Reihenfilterung IN der Hülle — `SimulationErgebnisHuelle.Bilder.cs` liegt
+in `WindowsFormsApplication1`, und es gibt kein Testprojekt, das dort ein Bild zeichnet (dieselbe Lage wie bei
+W11b‑B‑17). Die Filterung folgt zeichengleich den Vorbildern `BildStreuwolke`/`BildWpProduktion`; die
+Sichtabnahme am Programm steht aus.
+
+## Anwenderwunsch 09.09.2026 — W11b‑B‑20: Kennzahlenlisten Solarthermie und Photovoltaik wie im Bedarfsreiter
+
+**Wortlaut:** „Kennzahlenlisten Solarthermie und Photovoltaik wie im Bedarfsreiter." Dazu zwei benannte
+Beobachtungen am PV-Reiter: die Beschriftungen tragen „die Einheit doppelt", und „die Liste läuft rechts aus
+dem Raster (Einheitsspalte abgeschnitten, Rollbalken)".
+
+**Befund 1 — die Einheit stand zweimal da.** Alle sieben PV-Beschriftungen führten ihre Einheit im Text mit,
+obwohl die Liste seit W11b‑B‑15 eine eigene, leise gesetzte Einheitenspalte hat: „Gesamte Stromerzeugung der
+Module **[MWh/a]**:" gefolgt von der Spalte „MWh/a". Zwei Schreibweisen waren im Umlauf — fünf Schlüssel mit
+eckigen Klammern, zwei ohne („Strombedarf **MWh/a**:", „Reststrombedarf **MWh/a**:").
+
+**Befund 2 — die Liste war rechts abgeschnitten.** Sie stand in einer Spalte des `auto-fit`-Rasters
+`.epos-simerg-spalten` (`minmax(320px, 1fr)`), **obwohl neben ihr nichts steht**: Der PV- wie der
+Solarthermie-Reiter führt genau einen Zahlenblock, und das Diagramm darunter spannt mit
+`.epos-simerg-diagrammzeile` ohnehin schon über die ganze Zeile. `.epos-simerg-werte` ist seit W11b‑B‑15
+`width: max-content` mit `max-width: 100%` und `overflow-x: auto` — der Deckel ist also die **Spalten**breite,
+und die langen PV-Beschriftungen sprengten sie: Die Einheitenspalte fiel aus dem Sichtfeld, darunter erschien
+ein Rollbalken.
+
+**Befund 3 — die Reihenfolge war die der WinForms-Maske.** Photovoltaik: sieben Zeilen in EINER Liste, in der
+sich Erzeugung, Bedarf und Einstrahlung abwechselten (Erzeugung, genutzt, Überschuß, Deckung, Strombedarf,
+Rest, Einstrahlung). Solarthermie: fünf Zeilen, Deckungsgrad zuerst und der Restwärmebedarf **vor** der
+Produktion, aus der er sich ergibt. Die Erzeugerreiter Wärmepumpe, Heizkessel und BHKW hatten mit W11b‑B‑15
+längst Unterabschnitte und eine betonte Restzeile.
+
+### Änderung
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| PV-Beschriftungen | Einheit im Text **und** in der Spalte | Einheit **nur** in der Spalte; sieben Ressourcentexte gekürzt (de + en), Werte und Einheitenspalte unverändert |
+| PV-Gliederung | eine Liste mit sieben Zeilen | drei `h3.epos-untergruppe`: **„Erzeugung"** (Gesamte Stromerzeugung, davon direkt genutzt, Überschuß), **„Bedarf und Deckung"** (Strombedarf, Reststrombedarf *betont*, Strombedarfsdeckung), **„Einstrahlung"** (Maximale solare Einstrahlung) |
+| Solarthermie-Gliederung | eine Liste mit fünf Zeilen, Maskenreihenfolge | ein `h3.epos-untergruppe` **„Wärme"**, fachlich geordnet: Bedarf → Erzeugung → Überschuß → Rest *betont* → Deckung |
+| Betonte Zeile | keine | `Wertzeile(…, betont: true)` wie im Wärmepumpen- und Kesselreiter (`dt`/`dd` mit `epos-simerg-abschluss`) — je Reiter genau eine |
+| Breite | Liste in EINER Rasterspalte | `section` trägt zusätzlich **`epos-simerg-kennzahlenzeile`** (`grid-column: 1 / -1`) — die Liste bekommt die ganze Zeile, bleibt aber `max-content` schmal |
+| Wärmepumpe | dasselbe Muster, dieselbe Falle | **ebenfalls** `epos-simerg-kennzahlenzeile`: Auch dort steht der Zahlenblock allein in seiner Zeile, und „durchschnittliche Vollbenutzungsstunden:" ist lang |
+| Heizkessel, BHKW, Übersicht, Bedarf | zwei Blöcke nebeneinander | **unverändert** — dort steht neben der Kennzahlenliste ein zweiter Block (Brennstoffe bzw. die zweite Kategorie); die zwei Spalten sind gewollt |
+
+**Warum die Deckung UNTER dem Rest steht.** Die betonte Zeile ist der Rest, und die Ordnung folgt dem
+Rechenweg: Bedarf, was die Anlage davon deckt, was übrig bleibt — und zuletzt derselbe Rest noch einmal als
+Prozentzahl. Das ist die Reihenfolge, die der Anwender vorgegeben hat (Bedarf → Erzeugung → Überschuss → Rest
+→ Deckung); sie weicht bewusst von Heizkessel und BHKW ab, wo die Deckung vor dem Rest steht.
+
+### Gekürzte Ressourcenschlüssel (de/en)
+
+| Schlüssel | vorher (de) | jetzt (de) | jetzt (en) |
+|---|---|---|---|
+| `SIMERG_LBL_PV_GESAMT` | Gesamte Stromerzeugung der Module [MWh/a]: | Gesamte Stromerzeugung der Module: | Total electricity generation of the modules: |
+| `SIMERG_LBL_PV_GENUTZT` | davon direkt genutzt [MWh/a]: | davon direkt genutzt: | of which used directly: |
+| `SIMERG_LBL_PV_UEBERSCHUSS` | Überschuß [MWh/a]: | Überschuß: | Surplus: |
+| `SIMERG_LBL_PV_DECKUNG` | Strombedarfsdeckung [%]: | Strombedarfsdeckung: | Electricity requirement coverage: |
+| `SIMERG_LBL_PV_STROMBEDARF` | Strombedarf MWh/a: | Strombedarf: | Power requirement: |
+| `SIMERG_LBL_PV_REST` | Reststrombedarf MWh/a: | Reststrombedarf: | Residual power requirement: |
+| `SIMERG_LBL_MAX_SOLARE_LEISTUNG` | Maximale solare Einstrahlung [W/m²]: | Maximale solare Einstrahlung: | Maximum solar irradiance: |
+
+### Neue Ressourcenschlüssel (de/en)
+
+`SIMERG_GRP_ERZEUGUNG` „Erzeugung"/„Generation" · `SIMERG_GRP_BEDARF_DECKUNG` „Bedarf und
+Deckung"/„Demand and coverage" · `SIMERG_GRP_EINSTRAHLUNG` „Einstrahlung"/„Irradiance". Die
+Solarthermie kommt mit dem vorhandenen `SIMERG_GRP_WAERME` aus.
+
+### Nachweis
+
+**UI**, `ErzeugerReiterTests` — neu: `Photovoltaik_nennt_die_Einheit_nur_in_ihrer_Spalte` (keine
+Beschriftung enthält „MWh", kein „[W/m²]" im Markup, die Einheitenspalte trägt weiter „MWh/a"),
+`Photovoltaik_gliedert_seine_Felder_in_Erzeugung_Bedarf_und_Einstrahlung` (drei Unterabschnitte, drei Listen,
+jede Zeile wörtlich in ihrer Reihenfolge, „Reststrombedarf:" als einzige betonte Zeile),
+`Solarthermie_gliedert_ihre_Felder_und_betont_den_Rest` (ein Unterabschnitt „Wärme", fünf Zeilen in der
+fachlichen Ordnung, „Restwärmebedarf:" betont), dazu je Reiter
+`…_gibt_der_Kennzahlenliste_die_ganze_Rasterzeile`. In `WaermepumpeReiterTests` neu:
+`Die_Kennzahlenliste_nimmt_die_ganze_Rasterzeile`.
+
+**Nicht durch Tests gedeckt:** die Breite selbst — bUnit rendert ohne Layout, `grid-column` wird nicht
+gerechnet. Geprüft ist, dass die Klasse an der richtigen `section` steht; die Sichtabnahme am Programm steht
+aus.
+
+### Zahlen
+
+Sandbox: Build **0 Fehler**, Kern **2075/2075**, UI **3316/3316** (vorher 3304; +12 UI, davon 6 aus
+W11b‑B‑19 und 6 aus W11b‑B‑20). Kein Rechenweg berührt — dieselben Zahlen aus demselben Lauf, nur anders
+geordnet, anders beschriftet und in wählbaren Reihen.

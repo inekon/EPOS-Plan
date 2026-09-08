@@ -13584,28 +13584,28 @@ Alle Eingaben überprüfen!</value>
     <value>Überschuß:</value>
   </data>
   <data name="SIMERG_LBL_PV_GESAMT" xml:space="preserve">
-    <value>Gesamte Stromerzeugung der Module [MWh/a]:</value>
+    <value>Gesamte Stromerzeugung der Module:</value>
   </data>
   <data name="SIMERG_LBL_PV_UEBERSCHUSS" xml:space="preserve">
-    <value>Überschuß [MWh/a]:</value>
+    <value>Überschuß:</value>
   </data>
   <data name="SIMERG_LBL_PV_DECKUNG" xml:space="preserve">
-    <value>Strombedarfsdeckung [%]:</value>
+    <value>Strombedarfsdeckung:</value>
   </data>
   <data name="SIMERG_LBL_PV_STROMBEDARF" xml:space="preserve">
-    <value>Strombedarf MWh/a:</value>
+    <value>Strombedarf:</value>
   </data>
   <data name="SIMERG_LBL_PV_REST" xml:space="preserve">
-    <value>Reststrombedarf MWh/a:</value>
+    <value>Reststrombedarf:</value>
   </data>
   <data name="SIMERG_LBL_PV_GENUTZT" xml:space="preserve">
-    <value>davon direkt genutzt [MWh/a]:</value>
+    <value>davon direkt genutzt:</value>
   </data>
   <data name="SIMERG_TIP_FLAECHE_GESCHAETZT" xml:space="preserve">
     <value>Fläche aus Nennleistung und Wirkungsgrad geschätzt, der Katalog führt für dieses Modul keine Maße.</value>
   </data>
   <data name="SIMERG_LBL_MAX_SOLARE_LEISTUNG" xml:space="preserve">
-    <value>Maximale solare Einstrahlung [W/m²]:</value>
+    <value>Maximale solare Einstrahlung:</value>
   </data>
   <data name="SIMERG_CHK_PV_UEBERSCHUSS" xml:space="preserve">
     <value>Überschuß anzeigen</value>
@@ -13657,6 +13657,15 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="SIMERG_GRP_BETRIEB" xml:space="preserve">
     <value>Betrieb</value>
+  </data>
+  <data name="SIMERG_GRP_ERZEUGUNG" xml:space="preserve">
+    <value>Erzeugung</value>
+  </data>
+  <data name="SIMERG_GRP_BEDARF_DECKUNG" xml:space="preserve">
+    <value>Bedarf und Deckung</value>
+  </data>
+  <data name="SIMERG_GRP_EINSTRAHLUNG" xml:space="preserve">
+    <value>Einstrahlung</value>
   </data>
   <data name="SIMERG_OPT_WAERMEGEFUEHRT" xml:space="preserve">
     <value>Wärmegeführt</value>

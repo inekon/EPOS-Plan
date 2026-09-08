@@ -3500,7 +3500,21 @@ body {
 /* Die Kennzahlenliste nimmt die GANZE Zeile des Spaltenrasters (W11b-B-14).
    Ohne das sass sie in EINER Spalte des auto-fit-Rasters und war auf dessen
    Mindestbreite von 320 Bildpunkten gequetscht, waehrend rechts daneben nichts
-   stand - das Diagramm darueber belegt ohnehin schon die ganze Zeile. */
+   stand - das Diagramm darueber belegt ohnehin schon die ganze Zeile.
+
+   SEIT W11b-B-20 (Anwenderwunsch 09.09.2026) tragen sie auch die drei
+   Ergebnisreiter, deren Kennzahlenliste ALLEIN in ihrer Rasterzeile steht:
+   Waermepumpe, Solarthermie und Photovoltaik. Dort schnitt eine lange
+   Beschriftung ("Gesamte Stromerzeugung der Module:", "durchschnittliche
+   Vollbenutzungsstunden:") die Einheitenspalte ab und schob die Liste in ihren
+   eigenen Rollbalken - .epos-simerg-werte ist width: max-content, gedeckelt auf
+   max-width: 100% der SPALTE. Mit der ganzen Zeile ist der Deckel weit genug;
+   kompakt (max-content) bleibt die Liste trotzdem, die Zeilenlinie laeuft also
+   weiter nur unter der Liste selbst.
+
+   NICHT betroffen sind Heizkessel, BHKW, Uebersicht und Bedarf: Dort steht
+   NEBEN der Kennzahlenliste ein zweiter Block (Brennstoffe bzw. die zweite
+   Kategorie), die zwei Spalten sind dort gewollt. */
 .epos-simerg-kennzahlenzeile {
     grid-column: 1 / -1;
     min-width: 0;
