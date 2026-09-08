@@ -84,6 +84,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("", datei.DateiSpeichern("Titel", "*.*", "vorschlag.csv"));
             Assert.Equal("", datei.OrdnerWaehlen("Titel", ""));
             Assert.False(datei.MitSystemOeffnen("beliebig.txt"));
+            // W13-B-3: die Mehrzahl-Fassung faellt auf die Einzelwahl zurueck - hier also leer.
+            Assert.Empty(datei.DateienOeffnen("Titel", "*.*", ""));
         }
 
         [Fact]

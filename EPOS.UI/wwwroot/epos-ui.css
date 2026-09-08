@@ -5679,6 +5679,25 @@ body {
     white-space: nowrap;
 }
 
+/* DER ALLE-SCHALTER DER MEHRFACHWAHL (Windows-Abnahme 08.09.2026, W13-B-5): ein
+   Kontrollkaestchen in der Suchzeile der Katalogliste - "alle sichtbaren waehlen" -
+   fuer die zwei Importmasken. Es steht nicht im Spaltenkopf: Der Kopf ist die
+   Sortierzeile, und ein Kaestchen dort saehe wie eine Sortierung aus. */
+.epos-wahl-alle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--epos-touchziel);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.epos-wahl-alle input {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+}
+
 /* TEXTKNOPF, kein Kasten: Er soll nicht wie ein Filter aussehen. 44 px hoch
    wie jedes Beruehrungsziel (iL4). */
 .epos-katalog-ruecksetzer {

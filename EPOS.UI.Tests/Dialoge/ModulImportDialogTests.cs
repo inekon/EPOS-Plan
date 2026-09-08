@@ -185,10 +185,12 @@ public class ModulImportDialogTests : BunitContext
         Func<object, int, Task<bool>>? ueberschreiben = null,
         Func<ImportQuelle, Task<string?>>? dateiWaehlen = null,
         Func<ImportQuelle, string, Task<ImportLeseErgebnis>>? dateiLaden = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Func<ImportQuelle, Task<IReadOnlyList<string>>>? dateienWaehlen = null)
     {
         var wege = new ModulImportWege
         {
+            DateienWaehlen = dateienWaehlen,
             Netz = (_, __, ___) => Task.FromResult(new ImportLeseErgebnis(
                 true, saetze ?? new List<object>(),
                 new CecFortschritt("CEC_MSG_GELADEN", "3"))),
@@ -1444,5 +1446,72 @@ public class ModulImportDialogTests : BunitContext
                         : new KatalogSatz { Id = 5, Name = "Ablytek 6MN6A270" } }
         };
         return new ImportVorpruefung(befund, pruefungen, new[] { "ablytek 6mn6a270" });
+    }
+
+    // =====================================================================
+    // Windows-Abnahme 08.09.2026: W13-B-3 (mehrere Dateien), W13-B-4 (OK),
+    // W13-B-5 (Alle-Schalter)
+    // =====================================================================
+
+    /// <summary>
+    /// Zwei .pan-Dateien auf einmal: beide Sätze stehen in der Liste, und die
+    /// Statusmeldung nennt die Zahl der Dateien.
+    /// </summary>
+    [Fact]
+    public void Mehrere_Dateien_kommen_zusammen_in_die_Liste()
+    {
+        var cut = Bauen(saetze: DreiModule(),
+                        dateienWaehlen: _ => Task.FromResult<IReadOnlyList<string>>(new[] { "a.pan", "b.pan" }),
+                        dateiLaden: (_, pfad) => Task.FromResult(new ImportLeseErgebnis(
+                            true,
+                            new List<object> { Cec(pfad, "Firma", "Mono", 400, 20, 10, 40, 2024) },
+                            new CecFortschritt("PAN_MSG_GELESEN", "1"))));
+
+        Knopf(cut, "PAN laden").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.Instance.SichtbareZeilen));
+        Assert.Contains("2 Dateien gelesen, 2 Sätze.", cut.Markup);
+    }
+
+    /// <summary>Eine schlechte Datei kostet nicht die andere: eine Zeile bleibt, die Meldung steht.</summary>
+    [Fact]
+    public void Eine_unlesbare_Datei_nimmt_die_lesbare_nicht_mit()
+    {
+        var cut = Bauen(saetze: DreiModule(),
+                        dateienWaehlen: _ => Task.FromResult<IReadOnlyList<string>>(new[] { "kaputt.pan", "gut.pan" }),
+                        dateiLaden: (_, pfad) => Task.FromResult(pfad == "gut.pan"
+                            ? new ImportLeseErgebnis(true,
+                                new List<object> { Cec("Gut", "Firma", "Mono", 400, 20, 10, 40, 2024) },
+                                new CecFortschritt("PAN_MSG_GELESEN", "1"))
+                            : new ImportLeseErgebnis(false, null,
+                                new CecFortschritt("PAN_MSG_LESEFEHLER", "kaputt"))));
+
+        Knopf(cut, "PAN laden").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(1, cut.Instance.SichtbareZeilen));
+        Assert.Contains("kaputt", cut.Markup);
+    }
+
+    /// <summary>Der Knopf, der das Fenster schließt, heißt OK - nicht Abbrechen (W13-B-4).</summary>
+    [Fact]
+    public void Der_Schliessknopf_heisst_OK()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        var knoepfe = cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button");
+        Assert.Equal("OK", knoepfe[1].TextContent.Trim());
+    }
+
+    /// <summary>Der Alle-Schalter waehlt alle sichtbaren Zeilen und nimmt sie wieder weg (W13-B-5).</summary>
+    [Fact]
+    public void Der_Alle_Schalter_waehlt_alle_sichtbaren_Zeilen()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
+
+        cut.Find(".epos-wahl-alle input").Change(true);
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.Instance.Gewaehlte.Count));
+
+        cut.Find(".epos-wahl-alle input").Change(false);
+        cut.WaitForAssertion(() => Assert.Empty(cut.Instance.Gewaehlte));
     }
 }

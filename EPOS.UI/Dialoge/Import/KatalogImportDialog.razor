@@ -121,6 +121,7 @@
                   Filterstand="@_filterstand" Texte="@Filtertexte"
                   Mehrfach="true" IstGewaehlt="@Gewaehlt"
                   Mehrfachwahl="BeiMehrfachwahl" Doppelklick="BeiDoppelklickZeile"
+                  Allewahl="BeiMehrfachalle"
                   Gefiltert="ListeAufbauen"
                   VirtualisierenAb="@VIRTUALISIEREN_AB" />
 
@@ -581,6 +582,14 @@
     /// in der GEFILTERTEN Liste — und genau darauf rechnet
     /// <see cref="Zeilenmarkierung"/>; die Regel selbst bleibt unveraendert.
     /// </summary>
+    /// <summary>„Alle" in der Suchzeile (W13‑B‑5): alle sichtbaren Zeilen markieren oder freigeben.</summary>
+    private void BeiMehrfachalle(Katalogliste.Mehrfachalle alle)
+    {
+        if (alle.Waehlen) _wahl.AlleWaehlen(_anzeige.Count); else _wahl.Leeren();
+        _detailSatz = _wahl.Anzahl > 0 && _anzeige.Count > 0 ? _anzeige[0].Quelle : -1;
+        _meldung = "";
+    }
+
     private void BeiMehrfachwahl(Katalogliste.Mehrfachklick klick)
     {
         Anklicken(klick.Index, new Zeilenwahl.Zeilenklick(klick.Strg, klick.Umschalt));

@@ -51,6 +51,26 @@
         bool AdresseOeffnen(string adresse) => false;
 
         // ==================================================================
+        //  MEHRERE DATEIEN AUF EINMAL (Windows-Abnahme 08.09.2026, W13-B-3)
+        // ==================================================================
+        //
+        // Der Modul- und der Wechselrichterimport lesen je Datei einen Satz
+        // (.pan, .ond) - wer zehn Geraete einlesen wollte, oeffnete den Waehler
+        // zehnmal. Die Mehrzahl-Fassungen liefern alle gewaehlten Pfade. Die
+        // Standardfassung faellt auf die Einzelwahl zurueck (ein Element oder
+        // leer), damit KeineDateiwahl, der iOS-Adapter und jeder Pruefstand
+        // weiter uebersetzen und sich wie bisher verhalten.
+        string[] DateienOeffnen(string titel, string filter, string startOrdner)
+        {
+            string eine = DateiOeffnen(titel, filter, startOrdner);
+            return string.IsNullOrEmpty(eine) ? System.Array.Empty<string>() : new[] { eine };
+        }
+
+        System.Threading.Tasks.Task<string[]> DateienOeffnenAsync(
+            string titel, string filter, string startOrdner)
+            => System.Threading.Tasks.Task.FromResult(DateienOeffnen(titel, filter, startOrdner));
+
+        // ==================================================================
         //  Die WARTBAREN Zwillinge (Befund W13-B-1, 05.09.2026)
         // ==================================================================
         //

@@ -61,6 +61,22 @@
                    @oninput="BeiSuche" />
         </label>
 
+        @* DER ALLE-SCHALTER DER MEHRFACHWAHL (W13-B-5, Windows-Abnahme 08.09.2026):
+           ein Kontrollkaestchen in der Suchzeile, das alle SICHTBAREN Zeilen waehlt
+           oder abwaehlt. Es steht nur da, wenn der Wirt es bedient (Allewahl) - die
+           Regel der Wahl bleibt beim Wirt, die Liste meldet nur "alle" und ihre
+           gefilterten Zeilen. Nicht im Spaltenkopf: Der Kopf ist die Sortierzeile. *@
+        @if (Mehrfach && Allewahl.HasDelegate && _gefiltert.Count > 0)
+        {
+            <label class="epos-wahl-alle"
+                   title="@(AlleSichtbarenGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)">
+                <input type="checkbox" checked="@AlleSichtbarenGewaehlt"
+                       aria-label="@(AlleSichtbarenGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)"
+                       @onchange="BeiAllewahl" />
+                <span>@Texte.AlleWaehlen</span>
+            </label>
+        }
+
         <span class="epos-leiste-fueller"></span>
 
         <span class="epos-katalog-treffer">@Trefferzeile</span>
@@ -324,6 +340,16 @@
     public sealed record Mehrfachklick(Katalogfilterzeile Zeile, int Index,
                                        bool Strg, bool Umschalt);
 
+    /// <summary>
+    /// „Alle" in der Mehrfachwahl (W13‑B‑5): <paramref name="Waehlen"/> = alle sichtbaren
+    /// Zeilen wählen, sonst abwählen; <paramref name="Zeilen"/> die gefilterte Liste in
+    /// Anzeigereihenfolge — dieselbe, auf der die <c>Zeilenmarkierung</c> des Wirts rechnet.
+    /// </summary>
+    public sealed record Mehrfachalle(bool Waehlen, IReadOnlyList<Katalogfilterzeile> Zeilen);
+
+    /// <summary>Der Alle-Schalter (W13‑B‑5) — ohne Delegat steht er nicht in der Suchzeile.</summary>
+    [Parameter] public EventCallback<Mehrfachalle> Allewahl { get; set; }
+
     /// <summary>Der Filter oder die Sortierung haben sich geändert (der Wirt merkt sich den Stand).</summary>
     [Parameter] public EventCallback Gefiltert { get; set; }
 
@@ -519,6 +545,13 @@
     /// Der Klick in der Mehrfachwahl geht UNVERÄNDERT an den Wirt — samt der Stelle
     /// in der gefilterten Liste, denn darauf rechnet seine <c>Zeilenmarkierung</c>.
     /// </summary>
+    /// <summary>Sind alle sichtbaren Zeilen gewählt? (Stellung des Alle-Schalters.)</summary>
+    private bool AlleSichtbarenGewaehlt
+        => _gefiltert.Count > 0 && IstGewaehlt is not null && _gefiltert.All(z => IstGewaehlt(z));
+
+    private Task BeiAllewahl()
+        => Allewahl.InvokeAsync(new Mehrfachalle(!AlleSichtbarenGewaehlt, _gefiltert));
+
     private Task BeiMehrfachwahl(Katalogfilterzeile zeile, Zeilenwahl.Zeilenklick klick)
     {
         int i = -1;

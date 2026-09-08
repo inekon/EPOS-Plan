@@ -116,6 +116,7 @@
                   Filterstand="@_filterstand" Texte="@Filtertexte"
                   Mehrfach="true" IstGewaehlt="@Gewaehltzeile"
                   Mehrfachwahl="BeiMehrfachwahl" Doppelklick="BeiDoppelklickZeile"
+                  Allewahl="BeiMehrfachalle"
                   Gefiltert="Filtern"
                   VirtualisierenAb="@VIRTUALISIEREN_AB" />
 
@@ -210,7 +211,9 @@
 
     [Parameter] public string ZuruecksetzenText { get; set; } = Resource.PVIMP_BTN_ZURUECKSETZEN;
     [Parameter] public string UebernehmenText { get; set; } = Resource.PVIMP_BTN_UEBERNEHMEN;
-    [Parameter] public string SchliessenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+    @* W13-B-4 (Windows-Abnahme 08.09.2026): Der Knopf SCHLIESST und verwirft nichts -
+       was uebernommen ist, ist im Katalog. "Abbrechen" versprach das Gegenteil. *@
+    [Parameter] public string SchliessenText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
     [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
     [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
@@ -220,6 +223,8 @@
     [Parameter] public string TextAktualisiert { get; set; } = Resource.PVIMP_MSG_AKTUALISIERT;
     [Parameter] public string TextSchreibfehler { get; set; } = Resource.PVIMP_MSG_SCHREIBFEHLER;
     [Parameter] public string TextBereitsEingelesen { get; set; } = Resource.IMP_KAT_MSG_BEREITS_EINGELESEN;
+    /// <summary>„{0} Dateien gelesen, {1} Sätze." — nach einer Mehrfachauswahl (W13‑B‑3).</summary>
+    [Parameter] public string MehrereDateienText { get; set; } = Resource.PVIMP_MSG_MEHRERE_DATEIEN;
 
     /// <summary>„{0} gewählt" — der Zusatz der Statuszeile (W6‑E‑5).</summary>
     [Parameter] public string GewaehltText { get; set; } = Resource.IMP_STATUS_GEWAEHLT;
@@ -365,7 +370,9 @@
     private IEnumerable<ImportQuelle> Erreichbar =>
         Profil.Quellen.Where(q => q.AusDemNetz
             ? Wege.Netz is not null
-            : Wege.DateiWaehlen is not null && Wege.DateiLaden is not null);
+            // W13-B-3: der Mehrfachwaehler genuegt - die Huelle liefert einen der beiden.
+            : (Wege.DateiWaehlen is not null || Wege.DateienWaehlen is not null)
+              && Wege.DateiLaden is not null);
 
     /// <summary>
     /// Der ZULETZT ANGEKLICKTE Satz, oder <c>null</c> — er füllt die Detailreiter
@@ -490,18 +497,50 @@
     /// <summary>Der Dateiweg: wählen, lesen, in die Liste nehmen.</summary>
     private async Task AusDerDatei(ImportQuelle quelle)
     {
-        if (Wege.DateiWaehlen is null || Wege.DateiLaden is null) return;
+        if (Wege.DateiLaden is null) return;
+        if (Wege.DateienWaehlen is null && Wege.DateiWaehlen is null) return;
 
-        string? pfad = await Wege.DateiWaehlen(quelle);
-        if (string.IsNullOrEmpty(pfad)) return;
+        // W13-B-3: MEHRERE Dateien auf einmal, wenn die Huelle es kann - sonst eine.
+        IReadOnlyList<string> pfade;
+        if (Wege.DateienWaehlen is not null)
+            pfade = await Wege.DateienWaehlen(quelle) ?? Array.Empty<string>();
+        else
+        {
+            string? pfad = await Wege.DateiWaehlen!(quelle);
+            pfade = string.IsNullOrEmpty(pfad) ? Array.Empty<string>() : new[] { pfad };
+        }
+        if (pfade.Count == 0) return;
 
         _laeuft = true;
         _meldung = "";
         await InvokeAsync(StateHasChanged);
-
         try
         {
-            Uebernehmen(await Wege.DateiLaden(quelle, pfad), quelle);
+            var saetze = new List<object>();
+            ImportLeseErgebnis? letztes = null;
+            int gelesen = 0;
+            foreach (string pfad in pfade)
+            {
+                if (string.IsNullOrEmpty(pfad)) continue;
+                ImportLeseErgebnis erg = await Wege.DateiLaden(quelle, pfad);
+                if (erg is null) continue;
+                if (!erg.Erfolgreich)
+                {
+                    // Die eine schlechte Datei kostet nicht die anderen: Meldung stehen
+                    // lassen und weiterlesen.
+                    Melden(Wege.Meldungstext?.Invoke(erg.Meldung) ?? "", WarnStufe.Fehler);
+                    continue;
+                }
+                saetze.AddRange(erg.Saetze);
+                letztes = erg;
+                gelesen++;
+            }
+            if (gelesen == 0 || letztes is null) return;
+
+            Uebernehmen(gelesen == 1 ? letztes
+                                     : new ImportLeseErgebnis(true, saetze, letztes.Meldung), quelle);
+            if (gelesen > 1)
+                Melden(string.Format(MehrereDateienText, gelesen, saetze.Count), WarnStufe.Hinweis);
         }
         finally
         {
@@ -601,6 +640,19 @@
     }
 
     /// <summary>Die Markierung der sichtbaren Zeilen aus der gemerkten Wahl aufbauen.</summary>
+    /// <summary>
+    /// „Alle" in der Suchzeile der Katalogliste (W13‑B‑5, Windows-Abnahme 08.09.2026):
+    /// alle SICHTBAREN Zeilen wählen oder abwählen. Die Regel der Wahl bleibt —
+    /// sie hängt an den Sätzen, nicht an den Anzeigezeilen (W6‑E‑5).
+    /// </summary>
+    private void BeiMehrfachalle(Katalogliste.Mehrfachalle alle)
+    {
+        if (alle.Waehlen) _wahl.AlleWaehlen(_anzeige.Count); else _wahl.Leeren();
+        if (alle.Waehlen && _anzeige.Count > 0 && _zuletzt is null) _zuletzt = _anzeige[0].Satz;
+        WahlSpeichern();
+        _meldung = "";
+    }
+
     private void MarkierungAusWahl()
     {
         _wahl.Leeren();

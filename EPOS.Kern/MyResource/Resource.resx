@@ -990,6 +990,12 @@
   <data name="KFLT_ZURUECKSETZEN" xml:space="preserve">
     <value>Filter zurücksetzen</value>
   </data>
+  <data name="KFLT_ALLE_ABWAEHLEN" xml:space="preserve">
+    <value>Alle sichtbaren abwählen</value>
+  </data>
+  <data name="KFLT_ALLE_WAEHLEN" xml:space="preserve">
+    <value>Alle sichtbaren wählen</value>
+  </data>
   <data name="KKOMP_BANNER_ZU" xml:space="preserve">
     <value>Hinweis ausblenden</value>
   </data>
@@ -1414,6 +1420,9 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
   </data>
   <data name="PVIMP_MSG_GESPEICHERT" xml:space="preserve">
     <value>Datensatz erfolgreich gespeichert.</value>
+  </data>
+  <data name="PVIMP_MSG_MEHRERE_DATEIEN" xml:space="preserve">
+    <value>{0} Dateien gelesen, {1} Sätze.</value>
   </data>
   <data name="PVIMP_MSG_KEINE_AUSWAHL" xml:space="preserve">
     <value>Bitte ein PV-Modul selektieren!</value>

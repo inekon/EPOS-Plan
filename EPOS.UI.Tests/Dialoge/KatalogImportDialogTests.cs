@@ -486,6 +486,20 @@ public class KatalogImportDialogTests : BunitContext
     /// Kontrollkästchen zeigt; wer zwei Zeilen anklickte, hatte am Ende eine.
     /// <c>Strg</c> tut dasselbe, <c>Umschalt</c> nimmt den Bereich ab dem Anker DAZU.
     /// </summary>
+    /// <summary>Der Alle-Schalter der Suchzeile markiert alle sichtbaren Zeilen (W13-B-5).</summary>
+    [Fact]
+    public void Der_Alle_Schalter_markiert_alle_sichtbaren_Zeilen()
+    {
+        var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
+        Einlesen(cut, 3);
+
+        cut.Find(".epos-wahl-alle input").Change(true);
+        Markiert(cut, 0, 1, 2);
+
+        cut.Find(".epos-wahl-alle input").Change(false);
+        Markiert(cut);
+    }
+
     [Fact]
     public void Mehrere_Zeilen_lassen_sich_markieren()
     {

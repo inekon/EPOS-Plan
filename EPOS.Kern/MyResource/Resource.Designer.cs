@@ -16446,6 +16446,24 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("KFLT_ZURUECKSETZEN", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle sichtbaren abwählen ähnelt.
+        /// </summary>
+        public static string KFLT_ALLE_ABWAEHLEN {
+            get {
+                return ResourceManager.GetString("KFLT_ALLE_ABWAEHLEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle sichtbaren wählen ähnelt.
+        /// </summary>
+        public static string KFLT_ALLE_WAEHLEN {
+            get {
+                return ResourceManager.GetString("KFLT_ALLE_WAEHLEN", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KI-Assistent vollständig deaktivieren (keine Übertragung an einen externen Dienst) ähnelt.
@@ -30282,6 +30300,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVIMP_MSG_GESPEICHERT {
             get {
                 return ResourceManager.GetString("PVIMP_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Dateien gelesen, {1} Sätze. ähnelt.
+        /// </summary>
+        public static string PVIMP_MSG_MEHRERE_DATEIEN {
+            get {
+                return ResourceManager.GetString("PVIMP_MSG_MEHRERE_DATEIEN", resourceCulture);
             }
         }
         

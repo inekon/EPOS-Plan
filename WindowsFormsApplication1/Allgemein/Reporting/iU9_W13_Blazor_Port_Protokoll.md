@@ -859,3 +859,36 @@ dass in der Filterleiste **kein** Raster steht.
 Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
 als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
 Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.
+
+---
+
+## Windows-Abnahme 08.09.2026 — Dateiwahl und Wahl der Importmasken (W13‑B‑2 bis B‑5)
+
+**Anlass** (Bildschirmfotos „Wechselrichter einlesen (CEC und OND)"): „1. der zuvor
+ausgewählte Pfad wird nicht gemerkt · 2. es sollte ein Upload mehrerer Dateien möglich
+sein, prüfe dies bei allen Dialogen mit Upload einzelner Dateien · 3. Button OK statt
+Abbruch · auch im Dialog Auswahl (Select-Button an jeder Zeile) sollten alle selektiert
+werden können."
+
+| Befund | Was war | Was ist |
+|---|---|---|
+| **W13‑B‑2** Pfad vergessen | `WindowsDateiDienst` setzte nur `RestoreDirectory = true` — der Prozess vergaß den Ordner, jeder Aufruf begann beim vorgeschlagenen Startordner (Herstellerdatenpfad) | Der Dienst merkt sich je Dateiart (erste Endung des Filters: `ond`, `pan`, `csv`, …) den Ordner der zuletzt gewählten Datei in `Dienste.Einstellungen` (`HKCU\Software\wp-plan`, `DateiOrdner.<endung>`); ein gemerkter, noch vorhandener Ordner gewinnt, sonst gilt der Vorschlag. Gilt für Öffnen **und** Speichern ohne Ordner im Vorschlag — also für alle Hüllen |
+| **W13‑B‑3** eine Datei je Aufruf | `IDateiDienst.DateiOeffnen` kannte nur eine Datei | `DateienOeffnen`/`…Async` (Standardfassung = Einzelwahl, die anderen Adapter bleiben unverändert); Windows mit `Multiselect`. `ModulImportWege.DateienWaehlen`, beide Hüllenwege (Module PAN/CEC‑Datei, Wechselrichter OND/CEC‑Datei); der Dialog liest die Dateien nacheinander, eine unlesbare kostet die anderen nicht, und meldet „{0} Dateien gelesen, {1} Sätze." (`PVIMP_MSG_MEHRERE_DATEIEN`) |
+| **W13‑B‑4** „Abbrechen" | Der Schließknopf trug `ALLG_BTN_ABBRECHEN`, obwohl er nichts verwirft — was übernommen war, stand im Katalog | `SchliessenText` = `ALLG_BTN_OK` („OK"); der „Abbrechen" des Fortschrittsbalkens (laufender Netzabruf) bleibt |
+| **W13‑B‑5** Wahl nur je Zeile | Die Mehrfachwahl (W6‑E‑5) kannte Klick, Strg und Umschalt-Bereich, aber kein „alle" | `Katalogliste`: Kontrollkästchen „Alle sichtbaren wählen" in der Suchzeile (nur mit Wirt-Delegat `Allewahl`, Stellung = alle sichtbaren gewählt); beide Importmasken bedienen es über `Zeilenmarkierung.AlleWaehlen` bzw. `Leeren`. Texte `KFLT_ALLE_WAEHLEN`/`KFLT_ALLE_ABWAEHLEN` |
+
+**Die Prüfung aller Einzeldatei-Aufrufer** (14 Fundstellen von `Dienste.Datei.DateiOeffnen(Async)`):
+
+| Aufrufer | Mehrfachauswahl | Entscheid |
+|---|---|---|
+| `ModulImportHuelle` — Module (PAN, CEC‑Datei) und Wechselrichter (OND, CEC‑Datei) | eine Datei = ein Satz bzw. eine Liste | **umgesetzt** (W13‑B‑3) |
+| `KatalogImportHuelle` — VDI‑3805 (Wärmepumpe, Kessel, Puffer, Kollektoren, Stromspeicher) | eine Datei = ein Herstellerkatalog; `KatalogImportAblauf.Lesen` leert `Saetze` je Aufruf | sinnvoll, **offen**: braucht das Sammeln über mehrere Abläufe in der Hülle |
+| `StromganglinieAdminHuelle`, `WaermebedarfAdminHuelle`, `SolarganglinieAdminHuelle` | eine Datei = eine Ganglinie mit eigener Vorprüfung, Namensvergabe und Konfliktfrage | sinnvoll, **offen**: je Datei der ganze Dialogweg (Schleife) |
+| `SpotpreisImportHuelle`, `QuellprofilHuelle`, `SimulationKonfigHuelle` (Erdreichprofil), `PeakShavingHuelle` (Lastgang) | genau eine Datei füllt genau ein Ziel | bleibt Einzelwahl |
+| `ProjektTransferHuelle` (.wpx), `LizenzVerwaltungHuelle` (.lic), `FileDlgClass` (.xls) | ein Paket, ein Schlüssel, eine Tabelle | bleibt Einzelwahl |
+
+**Nachweis.** `DiensteTests` (Rückfall der Mehrzahl-Fassung), `ModulImportDialogTests` (+4: zwei
+Dateien in einer Liste, unlesbare Datei kostet die andere nicht, Schließknopf heißt OK,
+Alle-Schalter), `KatalogImportDialogTests` (+1: Alle-Schalter markiert alle sichtbaren),
+`StilblattTests` über die zwei neuen Regeln. Der Windows-Dateidialog selbst (Ordnergedächtnis,
+`Multiselect`) ist Systemfenster und bleibt Sichtabnahme.

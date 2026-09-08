@@ -70,6 +70,12 @@ public sealed class Katalogfiltertexte
     /// <summary>Kopf der Wahlspalte (<c>KBROW_SPALTE_WAHL</c> bzw. der Wirt).</summary>
     public string SpalteWahl { get; set; } = "Wahl";
 
+    /// <summary>Der Alle-Schalter der Mehrfachwahl (W13‑B‑5) — <c>KFLT_ALLE_WAEHLEN</c>.</summary>
+    public string AlleWaehlen { get; set; } = Resource.KFLT_ALLE_WAEHLEN;
+
+    /// <summary>Dieselbe Stelle, wenn schon alle gewählt sind — <c>KFLT_ALLE_ABWAEHLEN</c>.</summary>
+    public string AlleAbwaehlen { get; set; } = Resource.KFLT_ALLE_ABWAEHLEN;
+
     // =====================================================================
     //  Der VERGLEICH (Frage Q3, Stufe S3.3)
     // =====================================================================

@@ -990,6 +990,12 @@
   <data name="KFLT_ZURUECKSETZEN" xml:space="preserve">
     <value>Reset filters</value>
   </data>
+  <data name="KFLT_ALLE_ABWAEHLEN" xml:space="preserve">
+    <value>Deselect all visible</value>
+  </data>
+  <data name="KFLT_ALLE_WAEHLEN" xml:space="preserve">
+    <value>Select all visible</value>
+  </data>
   <data name="KKOMP_BANNER_ZU" xml:space="preserve">
     <value>Hide note</value>
   </data>
@@ -1414,6 +1420,9 @@ with a small tank the figure becomes large without any additional ageing.</value
   </data>
   <data name="PVIMP_MSG_GESPEICHERT" xml:space="preserve">
     <value>Record saved successfully.</value>
+  </data>
+  <data name="PVIMP_MSG_MEHRERE_DATEIEN" xml:space="preserve">
+    <value>{0} files read, {1} records.</value>
   </data>
   <data name="PVIMP_MSG_KEINE_AUSWAHL" xml:space="preserve">
     <value>Please select a PV module!</value>

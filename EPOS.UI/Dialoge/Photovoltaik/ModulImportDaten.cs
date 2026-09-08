@@ -109,6 +109,13 @@ namespace EPOS.UI.Dialoge.Photovoltaik
         /// </summary>
         public Func<ImportQuelle, Task<string?>>? DateiWaehlen { get; init; }
 
+        /// <summary>
+        /// Der Dateiwähler für MEHRERE Dateien auf einmal (W13‑B‑3, Windows-Abnahme
+        /// 08.09.2026): eine .ond oder .pan je Gerät — zehn Geräte, EIN Aufruf. Fehlt der
+        /// Delegat, gilt <see cref="DateiWaehlen"/> wie bisher.
+        /// </summary>
+        public Func<ImportQuelle, Task<IReadOnlyList<string>>>? DateienWaehlen { get; init; }
+
         /// <summary>Liest die gewählte Datei einer Dateiquelle.</summary>
         public Func<ImportQuelle, string, Task<ImportLeseErgebnis>>? DateiLaden { get; init; }
 

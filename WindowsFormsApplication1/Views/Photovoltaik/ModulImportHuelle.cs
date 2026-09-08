@@ -113,6 +113,7 @@ namespace WindowsFormsApplication1
                 }, abbruch),
 
                 DateiWaehlen = q => Waehlen(q, MyResource.Resource.PVIMP_TITEL),
+                DateienWaehlen = q => WaehlenMehrere(q, MyResource.Resource.PVIMP_TITEL),
 
                 DateiLaden = (q, pfad) => Task.Run(() =>
                     q.Schluessel == ModulImportProfil.QuelleCecDatei
@@ -255,6 +256,7 @@ namespace WindowsFormsApplication1
                 }, abbruch),
 
                 DateiWaehlen = q => Waehlen(q, MyResource.Resource.WRK_IMP_TITEL),
+                DateienWaehlen = q => WaehlenMehrere(q, MyResource.Resource.WRK_IMP_TITEL),
 
                 DateiLaden = (q, pfad) => Task.Run(() =>
                 {
@@ -399,6 +401,23 @@ namespace WindowsFormsApplication1
                 : Path.Combine(basis, quelle.Unterordner);
 
             return Dienste.Datei.DateiOeffnenAsync(titel, quelle.Dateifilter, ordner);
+        }
+
+        /// <summary>
+        /// Mehrere Dateien auf einmal (W13-B-3, Windows-Abnahme 08.09.2026) - derselbe
+        /// Startordner wie <see cref="Waehlen"/>; den zuletzt benutzten Ordner merkt sich
+        /// der Dateidienst selbst (W13-B-2).
+        /// </summary>
+        private static async Task<IReadOnlyList<string>> WaehlenMehrere(ImportQuelle quelle, string titel)
+        {
+            string basis = EinstellungenCtrl.HerstellerdatenpfadOderVorgabe() ?? "";
+            string ordner = string.IsNullOrEmpty(quelle.Unterordner)
+                ? basis
+                : Path.Combine(basis, quelle.Unterordner);
+
+            string[] pfade = await Dienste.Datei.DateienOeffnenAsync(titel, quelle.Dateifilter, ordner)
+                                                .ConfigureAwait(true);
+            return pfade ?? new string[0];
         }
 
         /// <summary>
