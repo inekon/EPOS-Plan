@@ -155,6 +155,88 @@ namespace EPOS.Kern.Tests
             Assert.Equal((1240, 560), Mass(png));
         }
 
+        /// <summary>
+        /// Windows-Abnahme 09.09.2026, Anwenderbefund W11b-B-18: Bedarf (Flaeche) und
+        /// Produktion (Saeule) einer Jahresganglinie standen bisher NEBENEINANDER -
+        /// Bedarf in der linken, Produktion in der rechten Bildhaelfte, obwohl beide
+        /// Gruppen fuer JEDE Stunde gelten. Mit FLACHEN (konstanten) Reihen muss eine
+        /// richtig gezeichnete Ueberlagerung im linken UND im rechten Drittel der
+        /// Zeichenflaeche DIESELBE Farbe zeigen; die alte Nebeneinander-Darstellung
+        /// zeigt dort zwei verschiedene Farben (links Bedarf, rechts leer).
+        ///
+        /// <para>Geometrie (ErzeugerStapel, W=1240, keine zweite Achse): die
+        /// Zeichenflaeche liegt bei (100|110)-(1200|470). xLinks/xRechts liegen im
+        /// linken/rechten Drittel; yBedarf faellt in eine Hoehe, die NUR der Bedarf
+        /// erreicht (50 &lt; Hoehe &lt; 100), yBlend in die gemeinsame Hoehe (0 bis 50).</para>
+        /// </summary>
+        [Fact]
+        public void ErzeugerStapel_Jahresganglinie_ueberlagert_Bedarf_und_Produktion_ganzflaechig()
+        {
+            var stapel = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Bedarf", Reihe(100, 0), SKColors.Red,
+                                        ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Produktion", Reihe(50, 0), SKColors.Blue,
+                                        ChartRenderer.Stapelart.Saeule)
+            };
+
+            byte[] png = ChartRenderer.ErzeugerStapel("T", stapel, null, null, "kW",
+                                                      ChartRenderer.Achse.Jahresstunden, false);
+
+            const int xLinks = 265, xRechts = 1035, yBedarf = 200, yBlend = 380;
+
+            using (SKBitmap bild = SKBitmap.Decode(png))
+            {
+                SKColor bedarfLinks = bild.GetPixel(xLinks, yBedarf);
+                SKColor bedarfRechts = bild.GetPixel(xRechts, yBedarf);
+                SKColor blendLinks = bild.GetPixel(xLinks, yBlend);
+                SKColor blendRechts = bild.GetPixel(xRechts, yBlend);
+
+                // Beide Drittel zeigen dieselbe Bedarfsfarbe - nicht mehr links Bedarf,
+                // rechts leer (der gemeldete Befund).
+                Assert.Equal(bedarfLinks, bedarfRechts);
+                Assert.NotEqual(SKColors.White, bedarfLinks);
+
+                // Beide Drittel zeigen dieselbe halbtransparent gemischte Farbe.
+                Assert.Equal(blendLinks, blendRechts);
+                Assert.NotEqual(SKColors.White, blendLinks);
+
+                // Die Mischung unterscheidet sich sichtbar vom reinen Bedarf - die
+                // Produktion liegt tatsaechlich (halbtransparent) darueber.
+                Assert.NotEqual(bedarfLinks, blendLinks);
+            }
+        }
+
+        /// <summary>
+        /// Gegenfall: eine echte Kategorieachse mit wenigen Stuetzstellen (zwoelf
+        /// Monatssaeulen) behaelt die Nebeneinander-Darstellung - hier ist sie richtig,
+        /// weil jede Saeule fuer sich eine eigene Kategorie ist, keine Stundenachse.
+        /// </summary>
+        [Fact]
+        public void ErzeugerStapel_Monatsbild_bleibt_nebeneinander()
+        {
+            var stapel = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Bedarf", Enumerable.Repeat(100.0, 12).ToArray(),
+                                        SKColors.Red, ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Produktion", Enumerable.Repeat(50.0, 12).ToArray(),
+                                        SKColors.Blue, ChartRenderer.Stapelart.Saeule)
+            };
+
+            byte[] png = ChartRenderer.ErzeugerStapel("T", stapel, null, null, "kW",
+                                                      ChartRenderer.Achse.Monate, false);
+
+            const int xLinks = 265, xRechts = 1035, yBedarf = 200;
+
+            using (SKBitmap bild = SKBitmap.Decode(png))
+            {
+                // Links (Bedarfs-Haelfte) traegt Farbe, rechts (Produktions-Haelfte)
+                // bleibt in dieser Hoehe leer - die Gruppen stehen weiter nebeneinander.
+                Assert.NotEqual(SKColors.White, bild.GetPixel(xLinks, yBedarf));
+                Assert.Equal(SKColors.White, bild.GetPixel(xRechts, yBedarf));
+            }
+        }
+
         // ---------------------------------------------------------------- B4
 
         [Fact]

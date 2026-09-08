@@ -1731,8 +1731,18 @@ namespace WindowsFormsApplication1
         /// <para><b>Zwei Stapelgruppen.</b> <see cref="Reihe.Stapelgruppe"/> trennt sie
         /// wie <c>StackedGroupName</c> im Vorlaeufer: Auf der Waermepumpenseite steht der
         /// BEDARF als Flaeche und die PRODUKTION als Saeule im selben Bild. Beide Gruppen
-        /// starten bei null und werden nebeneinander gezeichnet, die Saeulen etwas
-        /// schmaler — so bleiben sie unterscheidbar.</para>
+        /// starten bei null.</para>
+        ///
+        /// <para><b>Windows-Abnahme 09.09.2026, Befund W11b-B-18 — NEBENEINANDER NUR BEI
+        /// WENIGEN STUETZSTELLEN.</b> Bis dahin standen beide Gruppen IMMER nebeneinander,
+        /// jede in ihrer Bildhaelfte — bei einer Kategorieachse mit wenigen Saeulen
+        /// gewollt, bei einer Jahresganglinie mit 8 760 Stundenwerten aber falsch: Der
+        /// Bedarf erschien links, die Produktion rechts, obwohl beide fuer JEDE Stunde
+        /// gelten (Anwenderbefund: Bild „Waermelast Jahresganglinie" der Waermepumpe).
+        /// Jetzt nur noch nebeneinander, wenn die Achse keine Stundenachse ist UND die
+        /// Reihen wenige Stuetzstellen haben; sonst liegen beide Gruppen UEBEREINANDER
+        /// ueber der vollen Breite, die Saeulengruppe halbtransparent, damit die Flaeche
+        /// darunter sichtbar bleibt (siehe <see cref="StapelZeichnen"/>).</para>
         /// </summary>
         /// <param name="titel">Ueberschrift.</param>
         /// <param name="stapel">Die gestapelten Reihen in Kaskadenreihenfolge.</param>
@@ -1797,8 +1807,11 @@ namespace WindowsFormsApplication1
                       : linienG.Count > 0 ? linienG[0].Werte.Length
                       : kontur.Werte.Length;
 
-                // Obergrenze: die hoechste Stapelsumme JE GRUPPE (die Gruppen stehen
-                // nebeneinander, nicht uebereinander), dazu Linien und Kontur.
+                // Obergrenze: die hoechste Stapelsumme JE GRUPPE — UNVERAENDERT durch
+                // W11b-B-18 (09.09.2026): Ob die Gruppen nebeneinander oder uebereinander
+                // liegen, ihre Werte werden NICHT aufeinandergerechnet (Bedarf und
+                // Produktion sind unabhaengige Groessen mit gemeinsamer Nulllinie).
+                // Dazu Linien und Kontur.
                 double max = 0;
                 if (!sortiert)
                 {
@@ -1839,10 +1852,25 @@ namespace WindowsFormsApplication1
                     bool zweiGruppen = stapelG.Any(r => r.Stapelgruppe == Stapelart.Flaeche) &&
                                        stapelG.Any(r => r.Stapelgruppe == Stapelart.Saeule);
 
+                    // Windows-Abnahme 09.09.2026, Befund W11b-B-18: „Nebeneinander" ist nur
+                    // bei einer echten Kategorieachse mit wenigen Stuetzstellen richtig
+                    // (z. B. zwoelf Monatssaeulen) — bei einer Stundenachse oder vielen
+                    // Stuetzstellen gilt jede Stuetzstelle fuer BEIDE Gruppen gleichzeitig,
+                    // und nebeneinander zerschnitt das Bild faelschlich in eine Bedarfs-
+                    // und eine Produktionshaelfte (Anwenderbefund: Jahresganglinie der
+                    // Waermepumpe, Bedarf und Produktion stimmen nicht ueberein).
+                    const int NEBENEINANDER_GRENZE = 60;
+                    bool nebeneinander = zweiGruppen && achse != Achse.Jahresstunden &&
+                                         n <= NEBENEINANDER_GRENZE;
+
                     StapelZeichnen(g, rc, stapelG, Stapelart.Flaeche, n, max,
-                                   zweiGruppen ? -0.22f : 0f, zweiGruppen ? 0.5f : 1f);
+                                   nebeneinander ? -0.22f : 0f, nebeneinander ? 0.5f : 1f);
+                    // Ueberlagert (nicht nebeneinander): die Saeulengruppe (Produktion)
+                    // HALBTRANSPARENT ueber der Flaeche (Bedarf), damit der Bedarf darunter
+                    // sichtbar bleibt.
                     StapelZeichnen(g, rc, stapelG, Stapelart.Saeule, n, max,
-                                   zweiGruppen ? 0.22f : 0f, zweiGruppen ? 0.5f : 1f);
+                                   nebeneinander ? 0.22f : 0f, nebeneinander ? 0.5f : 1f,
+                                   nebeneinander ? (byte)210 : (byte)150);
                     // Reihen ohne ausdrueckliche Gruppe bilden den gemeinsamen Stapel.
                     StapelZeichnen(g, rc, stapelG, Stapelart.Keine, n, max, 0f, 1f);
                 }
@@ -1897,11 +1925,15 @@ namespace WindowsFormsApplication1
         /// Zeichnet EINE Stapelgruppe als kumulierte Flaechen.
         /// <paramref name="versatz"/> und <paramref name="breite"/> in Anteilen der
         /// Zeichenflaeche verschieben und schmaelern die Gruppe, damit zwei Gruppen
-        /// nebeneinander stehen koennen.
+        /// nebeneinander stehen koennen. <paramref name="alpha"/> (Windows-Abnahme
+        /// 09.09.2026, Befund W11b-B-18): stehen zwei Gruppen stattdessen UEBEREINANDER
+        /// (volle Breite je Gruppe), zeichnet die OBERE Gruppe mit einem niedrigeren Wert
+        /// halbtransparent, damit die untere sichtbar bleibt; die Vorgabe 210 entspricht
+        /// der bisherigen, undurchsichtigeren Flaeche.
         /// </summary>
         private static void StapelZeichnen(SKCanvas g, SKRect rc, List<Reihe> stapel,
                                            Stapelart gruppe, int n, double max,
-                                           float versatz, float breite)
+                                           float versatz, float breite, byte alpha = 210)
         {
             var teil = stapel.Where(r => r.Stapelgruppe == gruppe).ToList();
             if (teil.Count == 0) return;
@@ -1917,7 +1949,7 @@ namespace WindowsFormsApplication1
                 var oben = new double[n];
                 for (int i = 0; i < n; i++)
                     oben[i] = unten[i] + (i < r.Werte.Length ? Math.Max(r.Werte[i], 0) : 0);
-                ZeichneFlaeche(g, ziel, unten, oben, max, r.Farbe);
+                ZeichneFlaeche(g, ziel, unten, oben, max, r.Farbe, alpha);
                 unten = oben;
             }
         }
@@ -3007,7 +3039,8 @@ namespace WindowsFormsApplication1
         }
 
         private static void ZeichneFlaeche(SKCanvas g, SKRect rc, double[] unten,
-                                           double[] oben, double max, SKColor farbe)
+                                           double[] oben, double max, SKColor farbe,
+                                           byte alpha = 210)
         {
             int n = oben.Length;
             int schritt = Math.Max(1, n / (int)rc.Width);
@@ -3017,7 +3050,7 @@ namespace WindowsFormsApplication1
             for (int i = ((n - 1) / schritt) * schritt; i >= 0; i -= schritt)
                 pfad.Add(Punkt(rc, i, n, unten[i], max));
             if (pfad.Count >= 3)
-                using (var br = Fuellung(farbe.WithAlpha(210)))
+                using (var br = Fuellung(farbe.WithAlpha(alpha)))
                     Vieleck(g, pfad.ToArray(), br);
         }
 

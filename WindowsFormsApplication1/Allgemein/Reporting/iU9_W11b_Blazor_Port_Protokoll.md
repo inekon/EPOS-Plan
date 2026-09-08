@@ -1098,3 +1098,61 @@ geprüft). Die Filterung folgt zeichengleich diesen vier Vorbildern; die Sichtab
 Sandbox: Build **0 Fehler**, Kern **2073/2073**, UI **3304/3304** (vorher 3301; +3 UI aus W11b‑B‑17,
 W11b‑B‑16 kommt ohne neuen Fall aus). Kein Rechenweg berührt — dieselben Reihen aus demselben Lauf, nur
 wählbar.
+
+## Anwenderbefund 09.09.2026 — W11b‑B‑18: Jahresganglinie mit Bedarf und Produktion
+
+**Wortlaut:** „Die Darstellung Heizwärmebedarf und Wärmeproduktion stimmt nicht, wenn beide
+gleichzeitig dargestellt werden.“ (Dialog „Detaillierte Simulation“, Reiter Wärmepumpe, Bild
+„Wärmelast Jahresganglinie“.)
+
+**Befund — zwei Stapelgruppen standen NEBENEINANDER statt übereinander.**
+`ChartRenderer.ErzeugerStapel` zeichnete zwei Stapelgruppen (`Stapelart.Flaeche` = Bedarf,
+`Stapelart.Saeule` = Produktion) IMMER nebeneinander: `StapelZeichnen(…, versatz −0,22/+0,22,
+breite 0,5)` schob jede Gruppe in eine Hälfte der Zeichenfläche. Für Kategorieachsen mit wenigen
+Werten (Gruppensäulen) ist das richtig; für eine Jahresganglinie mit 8 760 Stundenwerten ist es
+falsch, weil beide Gruppen für JEDE Stunde gelten: Der Bedarf erschien in der linken, die
+Produktion in der rechten Bildhälfte, statt für dieselbe Stunde übereinanderzuliegen. Betroffen ist
+`BildWpProduktion` (Bild „Wärmelast Jahresganglinie“ des Wärmepumpenreiters) — die EINZIGE Stelle
+im Bestand, die zwei Stapelgruppen zugleich führt (`SimulationErgebnisHuelle.Bilder.cs`,
+geprüft mit `grep Stapelart.Flaeche`). Heizkessel, BHKW und Stromgang (`BildKessel`, `BildBhkw`,
+`BildStromgang`) tragen je nur EINE Stapelgruppe (`Stapelart.Saeule`) und waren nicht betroffen —
+bei ihnen war `zweiGruppen` schon vorher `false`.
+
+### Änderung
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| Bedingung | nebeneinander IMMER bei zwei Gruppen (`zweiGruppen`) | nebeneinander NUR, wenn zusätzlich `achse != Achse.Jahresstunden` UND `n <= 60` (Kategorieachse, wenige Stützstellen) |
+| Stundenachse / viele Stützstellen | nebeneinander (falsch) | beide Gruppen über der VOLLEN Breite (versatz 0, breite 1) — sie liegen übereinander |
+| Zeichenreihenfolge | Fläche, dann Säule, je in ihrer Hälfte | unverändert: zuerst die Fläche (Bedarf), dann die Säule (Produktion) — bei Überlagerung jetzt übereinander |
+| Deckkraft der Säulengruppe | 210 (wie jede Stapelfläche) | 210 nebeneinander, **150** bei Überlagerung — die Fläche (Bedarf) bleibt darunter sichtbar |
+| `StapelZeichnen`/`ZeichneFlaeche` | keine Alpha-Überschreibung | neuer Parameter `alpha` (Vorgabe 210), von `ErzeugerStapel` gesetzt |
+| Obergrenze (`max`) | Höchste Stapelsumme je Gruppe | unverändert — Bedarf und Produktion bleiben unabhängige Größen mit gemeinsamer Nulllinie, ihre Werte werden nicht aufeinandergerechnet |
+| Dauerlinie (sortiert) | ohne Stapel, je Reihe eine Linie | unverändert |
+
+Die Grenze `n <= 60` liegt bewusst über typischen Monatsbildern (12 Stützstellen) und weit unter
+Jahresganglinien (8 760 bzw. 35 040 Werten je nach Raster) — sie trifft heute NUR die
+Kategoriedarstellung; kein Aufrufer im Bestand nutzt `Achse.Monate` mit zwei Stapelgruppen und mehr
+als 60 Werten.
+
+### Nachweis
+
+**Kern**, neu in `ErgebnisbilderTests.cs`:
+`ErzeugerStapel_Jahresganglinie_ueberlagert_Bedarf_und_Produktion_ganzflaechig` — zwei FLACHE
+(konstante) Reihen, Bedarf 100 als Fläche, Produktion 50 als Säule, `Achse.Jahresstunden`, 8 760
+Werte. Bei einer Höhe, die NUR der Bedarf erreicht, ist die Pixelfarbe im linken UND im rechten
+Drittel der Zeichenfläche GLEICH (vorher stand rechts nichts, weil die Fläche nur die linke Hälfte
+füllte); bei einer Höhe, die beide Gruppen erreichen, ist die (halbtransparent gemischte) Farbe
+ebenfalls links und rechts GLEICH, und sie unterscheidet sich sichtbar von der reinen Bedarfsfarbe
+(die Produktion liegt also tatsächlich, aber durchscheinend, darüber).
+`ErzeugerStapel_Monatsbild_bleibt_nebeneinander` — Gegenfall mit zwölf Monatswerten
+(`Achse.Monate`): links (Bedarfshälfte) trägt bei derselben Höhe Farbe, rechts (Produktionshälfte)
+bleibt leer — die Nebeneinander-Darstellung bleibt für echte Kategorieachsen mit wenigen
+Stützstellen erhalten.
+
+### Zahlen
+
+Sandbox: Build **0 Fehler**, Kern **2075/2075**, UI **3304/3304** (vorher Kern
+2073, UI 3304; +2 Kern aus W11b‑B‑18, UI unverändert — die Änderung liegt allein im Kern-Renderer).
+Kein Rechenweg berührt — nur die Zeichenlage zweier Stapelgruppen bei Stundenachsen mit vielen
+Stützstellen.
