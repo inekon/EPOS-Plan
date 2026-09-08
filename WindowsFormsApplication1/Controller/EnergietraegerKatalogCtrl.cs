@@ -271,6 +271,22 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
+            // ET-4 (Anwenderbefund 08.09.2026): Auch die elektrische Welt (Waermepumpe, PV,
+            // Stromspeicher, Heizstab) haelt ihren Traeger, obwohl sie keinen ID_Carrier
+            // fuehrt - bis hierher liess sich der Stromtraeger eines Waermepumpenprojekts
+            // widerspruchsfrei entfernen, und die Rechnung fiel still auf den
+            // Strommix-Rueckfall (435 g/kWh) zurueck.
+            try
+            {
+                foreach (ProjektEnergietraegerCtrl.Verwendung v in ProjektEnergietraegerCtrl.Verwendete(projektId))
+                {
+                    if (v.CarrierId != carrierId || v.Beitraeger.Count == 0) continue;
+                    grund = "verwendet von " + v.BeitraegerText + ".";
+                    return false;
+                }
+            }
+            catch { }
+
             DataRepository.ExecuteSQL(
                 "DELETE FROM energy_price WHERE id_projekt = ? AND carrier_id = ?",
                 new DbParam("@p", projektId),

@@ -103,3 +103,90 @@ Allgemein/Reporting/BK1_Traegerzuordnung_Protokoll.md   dieses Protokoll
 
 Harness (gitignored): `..\dev\bk1\`. Grundlagen-Erhebung: siehe Befundkarte im
 Sitzungs-Memory (Anzeige-Vollständigkeit 30/30, Lückenliste 21/29 Projekte).
+
+---
+
+## 7. Windows-Abnahme 08.09.2026 — Energieträgerverwaltung im Projektkontext (ET‑1 bis ET‑4)
+
+**Wortlaut des Anwenders (Bildschirmfotos Projekt 1026 und Katalogkontext):** „Die
+Energieträgerverwaltung funktioniert nicht. Auch sind der Wärmepumpe und PV keine Energieträger
+(Strom) zugeordnet. Es muss a. der Energieträger (übergeordnet) und b. die untergeordnete Art
+dargestellt und auch ausgewählt werden können (die Emissionswerte sollen am Energieträger hängen,
+PV ist zum Beispiel default 0 Emissionen). Alle Anlagen mit Energieträgern (Wärmepumpe, PV,
+Stromspeicher — default Strom) müssen einem Energieträger zugeordnet sein. Es sollte eine
+Übersicht über alle verwendeten Energieträger in der Auswahl Energieträger geben (analog
+Katalogkontext)."
+
+### 7.1 Befund
+
+| Nr. | Befund | Ursache |
+|---|---|---|
+| **ET‑1** | „Aus Katalog übernehmen…" meldete immer „Alle Katalogträger sind dem Projekt bereits zugeordnet" — im Projektkontext ließ sich kein Träger hinzufügen, also auch kein Strom | `EnergietraegerHuelle.GabenIntern` setzte den Razor-Parameter `Freie` nie; `EnergietraegerKatalogCtrl.NichtZugeordnete` hatte keinen Aufrufer. Die Dialogtests setzten `Freie` selbst — deshalb fiel es dort nicht auf |
+| **ET‑2** | Wärmepumpe, PV und Stromspeicher ohne Stromträger (1026) | Die Automatik (BK1 § 2) lief nur beim Speichern des Assistenten; Anlagen, die außerhalb hinzukamen, bekamen keine Zuordnung |
+| **ET‑3** | Die Liste zeigte nur `energy_project_settings`-Zeilen (Zuordnung), nicht die Verwendung; „Speichern" auf einem nicht zugeordneten Träger schrieb nichts und meldete trotzdem „gespeichert" | `KostenSummenCtrl.GetAllCarriers(projekt)`; `EnergietraegerHuelle.Speichern` :1001 |
+| **ET‑4** | Der Stromträger eines Wärmepumpenprojekts ließ sich widerspruchsfrei entfernen — danach fiel die Rechnung still auf 435 g/kWh zurück | `AusProjektEntfernen` prüfte nur `Tab_Energieanlagen.ID_Carrier`, den WP/PV/SP nicht führen |
+
+### 7.2 Umsetzung
+
+- **ET‑1** Hülle liefert `Freie` und `FreieLaden` (frisch bei jedem Öffnen der Übernahme, mit
+  Gruppe: „Strom › Elektrische Energie"); der Dialog liest über `FreieLaden`, `Freie` bleibt
+  für Aufrufer ohne Hülle.
+- **ET‑2** `ProjektEnergietraegerCtrl.StromTraegerSicherstellen(projekt)` (Kern): braucht das
+  Projekt Strom (`BrauchtStromTraeger`: WP/PV/SP/Heizstab in `Tab_Energieanlagen`) und ist kein
+  ELECTRICITY-Träger zugeordnet, wird der Auslieferungsträger (`StandardStromTraeger`, BK1) über
+  `WizardCtrl.TraegerSatzAnlegen` (jetzt `internal`) zugeordnet — dieselbe Mechanik wie im
+  Assistenten, keine Emissions-Stammkopie. Gerufen aus `WErzeugerCtrl.Insert/Update` (nach dem
+  Schreiben einer elektrischen Anlage), aus `EnergietraegerHuelle.ListeLaden` (Projektkontext)
+  und aus `KostenSeiteGaben.Laden` — die rote Fehlzeile der Kostenseite heilt sich damit selbst.
+- **ET‑3** Die Liste im Projektkontext führt zusätzlich die VERWENDETEN Träger
+  (`ProjektEnergietraegerCtrl.Verwendete`): je Eintrag der Kurztext „verwendet von: Wärmepumpe
+  „CS6800iAW", Photovoltaik „Jinkosolar"", ein verwendeter, nicht zugeordneter Träger steht
+  markiert („⚠ nicht zugeordnet", `.epos-traeger-eintrag--offen`) und lässt sich wählen;
+  **Speichern ordnet ihn zu** (`InsProjekt`, dann Werte) statt still nichts zu schreiben.
+  `EnergietraegerListe` trägt dafür `Kurztext` und `Zugeordnet`.
+- **ET‑4** `AusProjektEntfernen` lehnt einen verwendeten Träger ab: „verwendet von …".
+- Texte `KDLG_ET_VERWENDET_VON`, `KDLG_ET_NICHT_ZUGEORDNET`, `KDLG_ET_ZUORDNUNG_FEHLGESCHLAGEN`
+  (de/en, Designer).
+
+### 7.3 Nachweise
+
+| Was | Wo | Ergebnis |
+|---|---|---|
+| 1026 (WP, PV, Speicher, keine Stromzuordnung) bekommt genau eine Stromzeile (Träger 60), zweiter Aufruf legt keine zweite an; 1017 (Strom Variante 54) wird nicht überstimmt; ohne elektrische Welt geschieht nichts | `EPOS.Kern.Tests/ProjektEnergietraegerCtrlTests.cs` | **4** neue Fälle |
+| Übernahme holt die freien Träger über `FreieLaden`; verwendeter, nicht zugeordneter Träger steht markiert mit Kurztext und lässt sich wählen | `EPOS.UI.Tests/Dialoge/EnergietraegerDialogTests.cs` | **2** neue Fälle |
+| Sandbox-Bau, `EPOS.Kern.Tests`, `EPOS.UI.Tests` | `K:\imp\src` | 0 Fehler, **2 055/2 055 (+4)**, **3 260/3 260 (+2)** |
+| Referenzlauf | — | unberührt: keine Zeile eines Rechenwegs; die Zuordnung ist emissionsneutral (BK2, Katalogwahrheit) |
+
+### 7.4 Abnahmepunkte — A‑ET
+
+1. Projekt 1026 öffnen → Berichte & Kosten → Kosten → „Energieträgerverwaltung…": Die Liste
+   führt „Gas › Erdgas E" UND „Strom › Elektrische Energie"; der Werkzeugtipp des Stromträgers
+   nennt Wärmepumpe, Photovoltaik und Stromspeicher.
+2. „Aus Katalog übernehmen…" öffnet die Mehrfachauswahl mit den noch freien Katalogträgern
+   (Fernwärme, Biogas, …); nach der Übernahme steht der Träger in der Liste.
+3. „Entfernen" auf dem Stromträger wird abgelehnt: „Der Träger wird verwendet und bleibt
+   erhalten: verwendet von Wärmepumpe „…", …".
+4. Kostenseite: die Trägertabelle führt Strom mit Preis/Emissionen, keine rote Fehlzeile mehr.
+
+### 7.5 Offen — Entscheid des Anwenders (ET‑5): „Energieträger (übergeordnet) und Art (untergeordnet) wählbar"
+
+Das Datenmodell kennt heute **eine** Ebene: `energy_carrier` mit `group_code` (Text: Gas,
+Strom, Fernwärme, …) als Anzeigegliederung und `name` als Träger; „Variante" ist eine
+Vollkopie der Katalogzeile, keine Unterart; Emissionen hängen an der einzelnen Zeile (Kette
+Projekt → Katalog → Stamm → Carrier). Ein Träger „Photovoltaik/Solarstrom mit 0 g/kWh" existiert
+nicht — PV-Strom wird als verdrängter Netzstrom mit dem Faktor des Stromträgers gutgeschrieben,
+die Wärmepumpe rechnet über denselben Stromträger. Damit sind zwei Lesarten möglich:
+
+- **(a) Anzeige und Wahl je Anlage aus der vorhandenen Gliederung:** In den Dialogen
+  Wärmepumpe, Photovoltaik, Stromspeicher ein Feld „Energieträger: [Gruppe ▾] › [Träger ▾]"
+  (Gruppe = übergeordnet, Träger = Art), gespeichert als `Tab_Energieanlagen.ID_Carrier` wie
+  bei Kessel und BHKW; Vorgabe der Stromträger des Projekts. Folge: Die Rechenwege
+  (`KostenEmissionRechner`, `Emissionsquelle.StromTraeger`) müssten den Träger je Anlage lesen
+  statt den einen Stromträger des Projekts — sonst ist die Wahl nur Anzeige.
+- **(b) Ein echter zweistufiger Katalog** (Energieträger → Arten, Emissionen an der Art, neue
+  Saat „Solarstrom 0 g/kWh", Schemaschritt ≥ 70, Migration der Bestandsdaten) — ein eigenes
+  Konzept mit Auswirkung auf Referenzläufe.
+
+Empfehlung: (a) als nächste Etappe, die PV mit dem Stromträger „Elektrische Energie" belegt
+und im Emissionsausweis weiter als Verdrängung rechnet; (b) nur, wenn die Emissionen wirklich
+je Art gepflegt werden sollen.

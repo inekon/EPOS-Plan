@@ -82,7 +82,9 @@ namespace WindowsFormsApplication1
                     new DbParam("@id", ID) // Die ID am Ende bestimmt die WHERE-Klausel
                 };
 
-                return DataRepository.ExecuteSQL(sql, ps);
+                bool ok = DataRepository.ExecuteSQL(sql, ps);
+                if (ok) StromTraegerNachziehen();
+                return ok;
             }
             catch (Exception ex)
             {
@@ -109,13 +111,31 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                return DataRepository.ExecuteSQL(AnlagenSql.SQL_ANLAGE_INSERT,
-                                                 AnlagenSql.AnlagenParameter(ID_Projekt, this));
+                bool ok = DataRepository.ExecuteSQL(AnlagenSql.SQL_ANLAGE_INSERT,
+                                                    AnlagenSql.AnlagenParameter(ID_Projekt, this));
+                if (ok) StromTraegerNachziehen();
+                return ok;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// ET‑2 (Anwenderbefund 08.09.2026): Nach dem Schreiben einer Anlage der elektrischen
+        /// Welt (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) bekommt das Projekt seinen
+        /// Stromträger — bis hierher tat das nur der Assistent. Idempotent; ein Fehlschlag
+        /// bricht das Speichern der Anlage nicht ab.
+        /// </summary>
+        private void StromTraegerNachziehen()
+        {
+            if (ID_Projekt <= 0) return;
+            if (ID_WP > 0 || ID_PV > 0 || ID_SP > 0 || Heizstab)
+            {
+                try { ProjektEnergietraegerCtrl.StromTraegerSicherstellen(ID_Projekt); }
+                catch { }
             }
         }
 

@@ -718,4 +718,58 @@ public class EnergietraegerDialogTests : BunitContext
         // Das Suchfeld der Liste steht NICHT im Raster.
         Assert.Empty(cut.FindAll(".epos-traeger-liste .epos-formularraster"));
     }
+
+    // =====================================================================
+    // Energietraegerverwaltung im Projektkontext (Anwenderbefund 08.09.2026, ET-1/ET-3)
+    // =====================================================================
+
+    /// <summary>ET‑1: Die freien Träger kommen frisch über <c>FreieLaden</c>, auch wenn <c>Freie</c> leer ist.</summary>
+    [Fact]
+    public void Die_Kataloguebernahme_holt_die_freien_Traeger_frisch()
+    {
+        int gefragt = 0;
+        var cut = Zeige(katalog: false, mehr: p => p
+            .Add(x => x.FreieLaden, () => { gefragt++; return new[] { (31, "Fernwärme › Fernwärme"), (32, "Holz › Pellets") }; }));
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[0].Click();
+
+        Assert.Equal(1, gefragt);
+        Assert.Single(cut.FindAll(".epos-ueberlagerung"));
+        Assert.Equal(2, cut.FindAll(".epos-mehrfachauswahl-liste input[type=checkbox]").Count);
+        Assert.Contains("Fernwärme › Fernwärme", cut.Markup);
+    }
+
+    /// <summary>ET‑3: Ein verwendeter, nicht zugeordneter Träger steht markiert in der Liste, der Kurztext nennt die Verwender.</summary>
+    [Fact]
+    public void Ein_verwendeter_nicht_zugeordneter_Traeger_steht_markiert_in_der_Liste()
+    {
+        var liste = new EnergietraegerDialog.EnergietraegerListe[]
+        {
+            new(null, "Gas"),
+            new(11, "Erdgas E", "verwendet von: Heizkessel „Vitocrossal“"),
+            new(null, "Strom"),
+            new(60, "Elektrische Energie", "verwendet von: Wärmepumpe „CS6800iAW“, Photovoltaik „Jinkosolar“ — nicht zugeordnet", false)
+        };
+        _ansicht = new EnergietraegerAnsicht { Stand = Stand() };
+        var cut = Render<EnergietraegerDialog>(p =>
+        {
+            p.Add(x => x.Liste, liste);
+            p.Add(x => x.Katalogkontext, false);
+            p.Add(x => x.NichtZugeordnetText, "nicht zugeordnet");
+            p.Add(x => x.TraegerLaden, id => { _geladen = id; return _ansicht; });
+            p.Add(x => x.Nachrechnen, () => _ansicht);
+        });
+
+        var eintraege = cut.FindAll(".epos-traeger-eintrag");
+        Assert.Equal(2, eintraege.Count);
+        Assert.DoesNotContain("nicht zugeordnet", eintraege[0].TextContent);
+        Assert.Equal("verwendet von: Heizkessel „Vitocrossal“", eintraege[0].GetAttribute("title"));
+        Assert.Contains("Elektrische Energie ⚠ nicht zugeordnet", eintraege[1].TextContent);
+        Assert.Contains("epos-traeger-eintrag--offen", eintraege[1].ClassName);
+        Assert.Contains("Wärmepumpe", eintraege[1].GetAttribute("title"));
+
+        // Auch der unzugeordnete Traeger laesst sich waehlen - Speichern ordnet ihn zu.
+        eintraege[1].Click();
+        Assert.Equal(60, _geladen);
+    }
 }

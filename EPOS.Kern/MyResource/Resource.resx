@@ -9401,6 +9401,15 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_ET_UEBERNAHME_LEER" xml:space="preserve">
     <value>Alle Katalogträger sind dem Projekt bereits zugeordnet.</value>
   </data>
+  <data name="KDLG_ET_ZUORDNUNG_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Der Träger ließ sich dem Projekt nicht zuordnen.</value>
+  </data>
+  <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>nicht zugeordnet</value>
+  </data>
+  <data name="KDLG_ET_VERWENDET_VON" xml:space="preserve">
+    <value>verwendet von: {0}</value>
+  </data>
   <data name="KDLG_ET_UEBERNAHME_OK" xml:space="preserve">
     <value>Übernehmen</value>
   </data>

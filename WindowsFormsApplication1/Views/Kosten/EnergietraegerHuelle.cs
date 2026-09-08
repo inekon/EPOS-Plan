@@ -46,6 +46,14 @@ namespace WindowsFormsApplication1
         private List<EnergyCarrier> _traeger = new List<EnergyCarrier>();
         private EnergyCarrier _gewaehlt;
 
+        /// <summary>
+        /// ET‑3 (08.09.2026): je Träger seine VERWENDUNG im Projekt (wer ihn beiträgt, ob er
+        /// zugeordnet ist) — die Liste zeigt sie als Kurztext und markiert Unzugeordnete.
+        /// Leer im Katalogkontext.
+        /// </summary>
+        private readonly Dictionary<int, ProjektEnergietraegerCtrl.Verwendung> _verwendung =
+            new Dictionary<int, ProjektEnergietraegerCtrl.Verwendung>();
+
         // ---- Stand der offenen Trägerkarte ---------------------------------
 
         private EnergietraegerStand _stand;
@@ -172,6 +180,13 @@ namespace WindowsFormsApplication1
                 ["TraegerLoeschen"] = new Func<ValueTuple<bool, string>>(TraegerLoeschen),
                 ["InsProjekt"] = new Func<IReadOnlyList<int>, int>(InsProjekt),
                 ["AusProjekt"] = new Func<ValueTuple<bool, string>>(AusProjekt),
+                // ET-1 (Anwenderbefund 08.09.2026, "Die Energietraegerverwaltung funktioniert
+                // nicht"): Die freien Katalogtraeger kamen NIE an - "Aus Katalog uebernehmen..."
+                // meldete immer "alle bereits zugeordnet". FreieLaden liest sie bei jedem
+                // Oeffnen der Uebernahme frisch (nach einer Uebernahme ist die Menge kleiner).
+                ["Freie"] = Freie(),
+                ["FreieLaden"] = new Func<IReadOnlyList<ValueTuple<int, string>>>(Freie),
+                ["NichtZugeordnetText"] = T("KDLG_ET_NICHT_ZUGEORDNET", "nicht zugeordnet"),
 
                 ["KostenprofilGaben"] = new Func<IReadOnlyDictionary<string, object>>(KostenprofilGaben),
                 ["SpotpreisGaben"] = new Func<IReadOnlyDictionary<string, object>>(
@@ -250,7 +265,40 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void ListeLaden()
         {
+            _verwendung.Clear();
+
+            // ET-2 (08.09.2026): Die elektrische Welt bekommt ihren Stromtraeger, BEVOR die
+            // Liste gelesen wird - das Projekt des Anwenderbefunds (1026: Waermepumpe, PV,
+            // Speicher, kein Strom zugeordnet) zeigt danach "Strom > Elektrische Energie".
+            if (_projektId > 0)
+            {
+                try { ProjektEnergietraegerCtrl.StromTraegerSicherstellen(_projektId); }
+                catch { }
+            }
+
             _traeger = KostenSummenCtrl.GetAllCarriers(_projektId);
+
+            // ET-3: die VERWENDETEN Traeger des Projekts - ein verwendeter, aber nicht
+            // zugeordneter Traeger (etwa nach "Entfernen" eines Brennertraegers) steht
+            // markiert in der Liste, statt zu fehlen; Speichern ordnet ihn zu.
+            if (_projektId > 0)
+            {
+                try
+                {
+                    List<EnergyCarrier> katalog = null;
+                    foreach (ProjektEnergietraegerCtrl.Verwendung v in
+                             ProjektEnergietraegerCtrl.Verwendete(_projektId))
+                    {
+                        _verwendung[v.CarrierId] = v;
+                        if (v.Zugeordnet || _traeger.Exists(c => c.ID == v.CarrierId)) continue;
+                        if (katalog == null) katalog = KostenSummenCtrl.GetAllCarriers(0);
+                        EnergyCarrier frei = katalog.Find(c => c.ID == v.CarrierId);
+                        if (frei != null) _traeger.Add(frei);
+                    }
+                }
+                catch { _verwendung.Clear(); }
+            }
+
             _traeger.Sort((a, b) =>
             {
                 int g = string.Compare(a.GroupCode ?? "", b.GroupCode ?? "",
@@ -273,8 +321,41 @@ namespace WindowsFormsApplication1
                     gruppe = g;
                     liste.Add(new EnergietraegerDialog.EnergietraegerListe(null, g));
                 }
-                liste.Add(new EnergietraegerDialog.EnergietraegerListe(c.ID, c.Name));
+                liste.Add(new EnergietraegerDialog.EnergietraegerListe(
+                    c.ID, c.Name, ListenKurztext(c.ID), ListenZugeordnet(c.ID)));
             }
+            return liste;
+        }
+
+        /// <summary>ET‑3: „verwendet von: Wärmepumpe „CS6800iAW", Photovoltaik „Jinkosolar"" — leer, wenn unverwendet.</summary>
+        private string ListenKurztext(int id)
+        {
+            ProjektEnergietraegerCtrl.Verwendung v;
+            if (_projektId <= 0 || !_verwendung.TryGetValue(id, out v)) return "";
+            string text = string.Format(CultureInfo.CurrentCulture,
+                T("KDLG_ET_VERWENDET_VON", "verwendet von: {0}"), v.BeitraegerText);
+            return v.Zugeordnet ? text : text + " — " + T("KDLG_ET_NICHT_ZUGEORDNET", "nicht zugeordnet");
+        }
+
+        /// <summary>ET‑3: ist der Träger dem Projekt zugeordnet? (Im Katalogkontext immer.)</summary>
+        private bool ListenZugeordnet(int id)
+        {
+            ProjektEnergietraegerCtrl.Verwendung v;
+            return _projektId <= 0 || !_verwendung.TryGetValue(id, out v) || v.Zugeordnet;
+        }
+
+        /// <summary>ET‑1: die Katalogträger, die dem Projekt noch nicht zugeordnet sind, mit Gruppe.</summary>
+        private IReadOnlyList<ValueTuple<int, string>> Freie()
+        {
+            var liste = new List<ValueTuple<int, string>>();
+            if (_projektId <= 0) return liste;
+            try
+            {
+                foreach (EnergyCarrier c in EnergietraegerKatalogCtrl.NichtZugeordnete(_projektId))
+                    liste.Add(new ValueTuple<int, string>(c.ID,
+                        (string.IsNullOrEmpty(c.GroupCode) ? "" : c.GroupCode + " › ") + c.Name));
+            }
+            catch { }
             return liste;
         }
 
@@ -999,7 +1080,18 @@ namespace WindowsFormsApplication1
             }
 
             if (_projektId > 0 && !EnergietraegerPreisCtrl.ImProjekt(_projektId, _gewaehlt.ID))
-                return true;   // nicht zugeordnet: nichts schreiben (Bestandsverhalten)
+            {
+                // ET-3 (08.09.2026): Ein verwendeter, noch nicht zugeordneter Traeger wird beim
+                // Speichern ZUGEORDNET - bis hierher schrieb dieser Weg nichts und meldete
+                // trotzdem "gespeichert".
+                if (!EnergietraegerKatalogCtrl.InsProjekt(_projektId, _gewaehlt.ID))
+                {
+                    _speichernGrund = T("KDLG_ET_ZUORDNUNG_FEHLGESCHLAGEN",
+                                        "Der Träger ließ sich dem Projekt nicht zuordnen.");
+                    return false;
+                }
+                ListeLaden();
+            }
 
             try
             {

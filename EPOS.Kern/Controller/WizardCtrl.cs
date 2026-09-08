@@ -1997,7 +1997,9 @@ namespace WindowsFormsApplication1
         /// fehlende Katalogzeile und ein bereits zugeordneter Träger sind kein
         /// Fehler — dann gibt es schlicht nichts anzulegen.</para>
         /// </summary>
-        private bool TraegerSatzAnlegen(int projektID, int carrierId)
+        // internal seit ET-2 (08.09.2026): ProjektEnergietraegerCtrl.StromTraegerSicherstellen
+        // schreibt ueber DIESE Mechanik - eine zweite Fassung waere eine zweite Wahrheit.
+        internal bool TraegerSatzAnlegen(int projektID, int carrierId)
         {
             object oBrennstoff = DataRepository.ExecuteScalar(
                 "SELECT ID_Brennstoff FROM energy_carrier WHERE id = ?",

@@ -1806,6 +1806,11 @@ body {
 .epos-traeger-eintrag {
     padding-left: 20px;
 }
+/* ET-3 (08.09.2026): ein verwendeter, dem Projekt nicht zugeordneter Traeger. */
+.epos-traeger-eintrag--offen {
+    color: var(--epos-warn-text);
+    font-style: italic;
+}
 
 /* Filtert die Suche alles weg, sagt die Liste das - eine leere Flaeche liest
    sich wie ein Fehler. */

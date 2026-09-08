@@ -80,8 +80,12 @@
                     else
                     {
                         int id = eintrag.Traeger.Value;
-                        <Zeilenwahl Gewaehlt="@(_traegerId == id)" Beschriftung="@eintrag.Text"
-                                    Kurztext="@eintrag.Text" Zusatzklasse="epos-traeger-eintrag"
+                        @* ET-3 (08.09.2026): ein VERWENDETER, nicht zugeordneter Traeger steht
+                           markiert in der Liste; der Kurztext nennt, wer ihn beitraegt. *@
+                        <Zeilenwahl Gewaehlt="@(_traegerId == id)"
+                                    Beschriftung="@(eintrag.Zugeordnet ? eintrag.Text : eintrag.Text + " ⚠ " + NichtZugeordnetText)"
+                                    Kurztext="@(eintrag.Kurztext.Length > 0 ? eintrag.Kurztext : eintrag.Text)"
+                                    Zusatzklasse="@(eintrag.Zugeordnet ? "epos-traeger-eintrag" : "epos-traeger-eintrag epos-traeger-eintrag--offen")"
                                     Gewaehltwerden="() => BeiTraeger(id)" />
                     }
                 }
@@ -195,7 +199,7 @@
     <Ueberlagerung Offen="@_uebernahmeOffen" Titel="@UebernahmeTitel"
                    Geschlossen="() => _uebernahmeOffen = false">
         <KindInhalt>
-            <Mehrfachauswahl Bezeichnung="@UebernahmeFrage" Eintraege="@Freie"
+            <Mehrfachauswahl Bezeichnung="@UebernahmeFrage" Eintraege="@_freie"
                              Gewaehlt="@_uebernahmeWahl"
                              GewaehltChanged="@(w => _uebernahmeWahl = w)" />
             <div class="epos-leiste">
@@ -247,7 +251,12 @@
     /// <summary>Ein Eintrag der Trägerliste: Gruppenkopf oder Träger (Ä13).</summary>
     /// <param name="Traeger">Id des Trägers; <c>null</c> = Gruppenkopf.</param>
     /// <param name="Text">Angezeigter Text.</param>
-    public sealed record EnergietraegerListe(int? Traeger, string Text);
+    /// <summary>
+    /// Ein Listeneintrag: Gruppenkopf (<c>Traeger</c> = null) oder Träger. Seit ET‑3
+    /// (08.09.2026) mit Kurztext („verwendet von: …") und der Aussage, ob der Träger dem
+    /// Projekt zugeordnet ist — ein verwendeter, nicht zugeordneter steht markiert.
+    /// </summary>
+    public sealed record EnergietraegerListe(int? Traeger, string Text, string Kurztext = "", bool Zugeordnet = true);
 
     // =====================================================================
     // Vorbelegung und Datenseite
@@ -326,6 +335,16 @@
     /// <summary>Die noch nicht zugeordneten Katalogträger (Ä10).</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Freie { get; set; }
         = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// ET‑1 (08.09.2026): liest die freien Katalogträger FRISCH, wenn die Übernahme
+    /// geöffnet wird — nach einer Übernahme ist die Menge kleiner. Gesetzt gewinnt er
+    /// über <see cref="Freie"/>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<(int Id, string Text)>>? FreieLaden { get; set; }
+
+    /// <summary>Anhang am Namen eines verwendeten, nicht zugeordneten Trägers (ET‑3).</summary>
+    [Parameter] public string NichtZugeordnetText { get; set; } = "nicht zugeordnet";
 
     /// <summary>Übernimmt die gewählten Träger ins Projekt; Rückgabe = zuletzt übernommener.</summary>
     [Parameter] public Func<IReadOnlyList<int>, int>? InsProjekt { get; set; }
@@ -431,6 +450,7 @@
     private IReadOnlyDictionary<string, object>? _namensGaben;
     private bool _uebernahmeOffen;
     private IReadOnlyList<int> _uebernahmeWahl = Array.Empty<int>();
+    private IReadOnlyList<(int Id, string Text)> _freie = Array.Empty<(int, string)>();
 
     private Unterdialog _unterArt = Unterdialog.Keiner;
     private IReadOnlyDictionary<string, object>? _unterGaben;
@@ -652,7 +672,8 @@
 
     private void UebernahmeOeffnen()
     {
-        if (Freie.Count == 0)
+        _freie = FreieLaden is not null ? FreieLaden() : Freie;
+        if (_freie.Count == 0)
         {
             Melden(UebernahmeLeer, WarnStufe.Hinweis);
             return;

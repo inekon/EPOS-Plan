@@ -350,6 +350,54 @@ namespace WindowsFormsApplication1
             return StromTraeger(Katalog(), Zugeordnete(projektID), projektID);
         }
 
+        /// <summary>
+        /// STELLT SICHER, dass ein Projekt mit elektrischer Welt (Wärmepumpe, Photovoltaik,
+        /// Stromspeicher, Heizstab) seinen Stromträger zugeordnet hat — Anwenderbefund
+        /// 08.09.2026 (ET‑2, Projekt 1026: „Wärmepumpe und PV sind keinem Energieträger
+        /// zugeordnet"). Bis hierher lief die Automatik nur beim Speichern des Assistenten
+        /// (<see cref="WizardCtrl.Add_Projekt_Energietraeger"/>); wer eine Anlage außerhalb des
+        /// Assistenten hinzufügte, bekam keine Zuordnung. Jetzt rufen auch der
+        /// Anlagen-Schreibweg (<c>WErzeugerCtrl.Insert/Update</c>), die Energieträgerverwaltung
+        /// im Projektkontext und die Kostenseite hierher.
+        ///
+        /// <para>IDEMPOTENT und ENTSCHEIDUNGSTREU: Ein bereits zugeordneter Stromträger gewinnt
+        /// (Stufe 1 von <see cref="StandardStromTraeger"/>), sonst wird der
+        /// Auslieferungsträger des Katalogs über <see cref="WizardCtrl.TraegerSatzAnlegen"/>
+        /// zugeordnet — dieselbe Mechanik wie im Assistenten, dieselben Stammwerte, keine
+        /// Emissions-Stammkopie (BK1 § 5, Katalogwahrheit).</para>
+        /// </summary>
+        /// <returns>Die Id des zugeordneten Stromträgers; 0 = nicht nötig oder nicht möglich.</returns>
+        internal static int StromTraegerSicherstellen(int projektID)
+        {
+            if (projektID <= 0 || !BrauchtStromTraeger(projektID)) return 0;
+            try
+            {
+                int vorhanden = StromAufschlagCtrl.StromCarrierId(projektID);
+                if (vorhanden > 0) return vorhanden;
+            }
+            catch { }
+
+            int id = StandardStromTraeger(projektID);
+            if (id <= 0) return 0;
+            try { return new WizardCtrl().TraegerSatzAnlegen(projektID, id) ? id : 0; }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// Führt das Projekt eine Anlage der elektrischen Welt (Wärmepumpe, Photovoltaik,
+        /// Stromspeicher oder gesetzter Heizstab)? Dieselbe Bedingung wie in
+        /// <see cref="Verwendete"/> und <c>WizardCtrl.BrauchtStromTraeger</c>.
+        /// </summary>
+        internal static bool BrauchtStromTraeger(int projektID)
+        {
+            DataTable anlagen = Anlagen(projektID);
+            if (anlagen == null) return false;
+            foreach (DataRow r in anlagen.Rows)
+                if (Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0 || Ganz(r, "ID_SP") > 0 || Ja(r, "Heizstab"))
+                    return true;
+            return false;
+        }
+
         /// <summary>Innenfassung von <see cref="StandardStromTraeger"/> für die
         /// Aufrufer, die Katalog und Zuordnungsmenge ohnehin schon gelesen haben.</summary>
         private static int StromTraeger(List<Traeger> katalog, HashSet<int> zugeordnet, int projektID)

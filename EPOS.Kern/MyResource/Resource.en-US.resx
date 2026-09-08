@@ -9394,6 +9394,15 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_ET_UEBERNAHME_LEER" xml:space="preserve">
     <value>All catalog carriers are already assigned to the project.</value>
   </data>
+  <data name="KDLG_ET_ZUORDNUNG_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The carrier could not be assigned to the project.</value>
+  </data>
+  <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>not assigned</value>
+  </data>
+  <data name="KDLG_ET_VERWENDET_VON" xml:space="preserve">
+    <value>used by: {0}</value>
+  </data>
   <data name="KDLG_ET_UEBERNAHME_OK" xml:space="preserve">
     <value>Apply</value>
   </data>

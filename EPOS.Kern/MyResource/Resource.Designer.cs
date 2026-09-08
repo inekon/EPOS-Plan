@@ -15103,6 +15103,33 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("KDLG_ET_UEBERNAHME_LEER", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Träger ließ sich dem Projekt nicht zuordnen. ähnelt.
+        /// </summary>
+        public static string KDLG_ET_ZUORDNUNG_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_ZUORDNUNG_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht zugeordnet ähnelt.
+        /// </summary>
+        public static string KDLG_ET_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("KDLG_ET_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die verwendet von: {0} ähnelt.
+        /// </summary>
+        public static string KDLG_ET_VERWENDET_VON {
+            get {
+                return ResourceManager.GetString("KDLG_ET_VERWENDET_VON", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.

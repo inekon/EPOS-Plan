@@ -129,6 +129,12 @@ namespace WindowsFormsApplication1
             stand.Bedienbar = true;
             stand.Projektzeile = string.Format(MyResource.Resource.BK_KOSTEN_PROJEKT, _projektname);
 
+            // ET-2 (Anwenderbefund 08.09.2026): Die elektrische Welt bekommt ihren
+            // Stromtraeger, bevor die Traegertabelle gelesen wird - die rote Fehlzeile
+            // "Elektrische Energie - nicht zugeordnet" (BK1) heilt sich damit selbst.
+            try { ProjektEnergietraegerCtrl.StromTraegerSicherstellen(_idProjekt); }
+            catch { }
+
             CultureInfo kultur = BerichtTexte.Kultur;
 
             // Die drei Kategorien des Projekts - dieselbe Leselogik wie die
