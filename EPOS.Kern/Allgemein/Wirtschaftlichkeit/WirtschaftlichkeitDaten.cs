@@ -838,6 +838,20 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class KostenPositionNachweis
     {
+        /// <summary>ANWENDERBEFUND W5‑B‑7 (08.09.2026): <c>Tab_ProjektWerte.ID</c> —
+        /// der Schlüssel, unter dem der Dialog Kostenverwaltung und die Anlagentabelle
+        /// der Kostenseite ihre Zeile wiederfinden. 0 = unbekannt (Datenbank ohne
+        /// Schritt 19, dann ist die Liste ohnehin leer).</summary>
+        public int Id;
+
+        /// <summary>W5‑B‑7: <c>Tab_ProjektWerte.KomponentenID</c> — für die Summe je
+        /// Komponente.</summary>
+        public int Komponente;
+
+        /// <summary>W5‑B‑7: <c>Tab_ProjektWerte.ID_Anlage</c> (Ä 20); 0 = ohne
+        /// Anlagenzuordnung — für die Summe je Anlagenzeile.</summary>
+        public int Anlage;
+
         /// <summary>Bezeichnung aus <c>Tab_Kostenfaktor</c>.</summary>
         public string Bezeichnung = "";
 

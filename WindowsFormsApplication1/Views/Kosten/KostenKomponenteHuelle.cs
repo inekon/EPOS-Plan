@@ -502,15 +502,20 @@ namespace WindowsFormsApplication1
             BemessungKatalog.Info info = BemessungInfo(p.Bemessung);
             z.BemessungId = info != null ? (int?)BemessungIndex(info) : null;
             z.Einheit = info != null ? info.Einheit : "";
-            KopplungAnwenden(z, p, info);
+            KopplungAnwenden(z, p, info, pz);
             z.EmpfehlungKurztext = EmpfehlungText(p, z.Einheit);
             return z;
         }
 
         /// <summary>Betragsfeld nach Kopplungsregel (KL4/§ 5.4) — wortgleich aus
-        /// <c>ucVorlagenZeile.KopplungAnwenden</c>.</summary>
+        /// <c>ucVorlagenZeile.KopplungAnwenden</c>.
+        /// <para><b>ANWENDERBEFUND W5‑B‑7 (08.09.2026):</b> Im Projektmodus nennt der
+        /// Werkzeugtipp die BEZUGSGRÖSSE, mit der gerechnet wurde — „3 % von
+        /// 5.660,00 €". Sie kommt aus derselben Kaskade wie der Betrag
+        /// (<see cref="InvestKaskade"/>), nicht aus einer zweiten Rechnung.</para></summary>
         private void KopplungAnwenden(KostenPositionZeile z, KostenVorlagenPosition p,
-                                      BemessungKatalog.Info info)
+                                      BemessungKatalog.Info info,
+                                      KostenProjektPositionenCtrl.Zeile pz = null)
         {
             bool absolut = info != null && info.Absolut;
             if (absolut)
@@ -524,8 +529,7 @@ namespace WindowsFormsApplication1
             {
                 z.BetragText = p != null ? ZahlText(p.BetragNetto) : "";
                 z.Kette = false;
-                z.BetragKurztext = T("KDLG_TT_BETRAG_PROJEKT",
-                    "Aus Satz und Bezugsgröße des Projekts berechnet.");
+                z.BetragKurztext = BasisKurztext(p, info, pz);
             }
             else
             {
@@ -534,6 +538,39 @@ namespace WindowsFormsApplication1
                 z.BetragKurztext = T("KDLG_TT_BETRAG_ADMIN",
                     "Bezugsgröße erst im Projekt bekannt — der Betrag entsteht bei der Übernahme.");
             }
+        }
+
+        /// <summary>
+        /// W5‑B‑7: Der Werkzeugtipp des Betragsfelds im Projektmodus. Kennt die Zeile
+        /// ihre Bezugsgröße, steht sie darin („3 % von 5.660,00 €" bzw.
+        /// „1,50 €/kW × 30,00 kW"); sonst bleibt der Bestandssatz stehen.
+        /// <para>Die Einheit der Bezugsgröße fällt aus der Satzeinheit: „%" bemisst sich
+        /// an einem Geldbetrag, „€/kW" an kW. Einheitenzeichen werden nicht übersetzt
+        /// (dokumentierte Ausnahme, <c>BetriebskostenCtrl.SatzEinheit</c>).</para>
+        /// </summary>
+        private string BasisKurztext(KostenVorlagenPosition p, BemessungKatalog.Info info,
+                                     KostenProjektPositionenCtrl.Zeile pz)
+        {
+            string bestand = T("KDLG_TT_BETRAG_PROJEKT",
+                "Aus Satz und Bezugsgröße des Projekts berechnet.");
+            if (pz == null || !pz.Basis.HasValue || p == null || !p.Satz.HasValue || info == null)
+                return bestand;
+
+            string satz = ZahlText(p.Satz) + " " + info.Einheit;
+            bool prozent = string.Equals(info.Einheit, "%", StringComparison.Ordinal);
+            string basisEinheit = prozent
+                ? DbWerte.KOSTEN_EINHEIT_EURO
+                : (info.Einheit != null && info.Einheit.StartsWith("€/", StringComparison.Ordinal)
+                    ? info.Einheit.Substring(2) : "");
+            string basis = (pz.Basis.Value.ToString("#,##0.00", CultureInfo.CurrentCulture) +
+                            " " + basisEinheit).Trim();
+
+            return string.Format(prozent
+                    ? T("KDLG_TT_BETRAG_BASIS_PROZENT",
+                        "Aus Satz und Bezugsgröße des Projekts berechnet: {0} von {1}.")
+                    : T("KDLG_TT_BETRAG_BASIS_MENGE",
+                        "Aus Satz und Bezugsgröße des Projekts berechnet: {0} × {1}."),
+                satz, basis);
         }
 
         private static string EmpfehlungText(KostenVorlagenPosition p, string einheit)
@@ -635,10 +672,19 @@ namespace WindowsFormsApplication1
 
             // KL4/§ 5.4: absolut ⇒ Satz und Betrag sind EIN Wert; sonst bleibt der
             // Betrag im Stammkontext leer (Bezugsgröße erst im Projekt).
+            //
+            // W5‑B‑7: Im PROJEKTmodus ist die Bezugsgröße bekannt — der Betrag folgt
+            // dem geänderten Satz sofort, statt bis zum Speichern leer zu stehen (und
+            // damit auch aus dem Summenfuß zu fallen). Gerechnet wird mit demselben
+            // BetriebskostenCtrl.Betrag wie im Rechenkern, auf der Basis, die die
+            // Kaskade beim Laden ausgewiesen hat.
             if (info != null && info.Absolut) p.BetragNetto = p.Satz;
+            else if (ProjektModus && b.Projektzeile != null)
+                p.BetragNetto = BetriebskostenCtrl.Betrag(
+                    p.Bemessung, 0, b.Projektzeile.Basis, p.Satz, p.IstErloes);
             else p.BetragNetto = null;
 
-            KopplungAnwenden(z, p, info);
+            KopplungAnwenden(z, p, info, b.Projektzeile);
             z.EmpfehlungKurztext = EmpfehlungText(p, z.Einheit);
         }
 

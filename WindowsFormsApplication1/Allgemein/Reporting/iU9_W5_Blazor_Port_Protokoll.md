@@ -990,3 +990,108 @@ Pflichtschutz (`VerwaisteLoeschen`) — `Lies(…, 0)` liefert nur Zeilen ohne (
 der Schutz der lebenden Anlagen bleibt. Nachweis: `KostenProjektPositionenCtrlTests` (neu, 2:
 alle verwaisten Wärmepumpen-Positionen von 1026 gehen weg; eine Pflichtzeile einer lebenden
 Anlage bleibt geschützt). Sandbox: Kern **2062/2062**, UI **3278/3278**.
+
+---
+
+## Anwenderbefund 08.09.2026 — W5‑B‑7: Investitionskaskade in Dialog und Kostenseite
+
+**Wortlaut des Anwenders:** „% der Investitionskosten ist immer 0. Investitionskosten müssten
+berechnet werden aus allen nicht-%-Anteilen. — Wie werden die Kosten aus dem Dialog
+Kostenverwaltung (Photovoltaik) in die Kostenberechnung genommen? Sollten auf der Seite Kosten
+nicht die Kosten aus dem Kostendialog stehen?"
+
+### 1. Befund — DREI Lesewege für dieselben Zeilen
+
+Dieselben Investitionspositionen (`Tab_ProjektWerte`, `KategorieID = 1`) wurden an drei Stellen
+auf drei Arten gelesen. Für die Photovoltaik-Anlage des Anwenderprojekts kamen deshalb drei
+verschiedene Zahlen heraus:
+
+| Stelle | Rechenweg | PV-Anlage des Anwenders |
+|---|---|---|
+| Kapitalwertrechnung (`WirtschaftlichkeitCtrl.LiesInvestitionen`) | volle ETAPPE‑H4b‑Kaskade nach Konzept Kostendialoge § 5.3 | **6.961,80 €** (5.660 + 3 % + 10 % + 10 %) — richtig |
+| Dialog Kostenverwaltung (`KostenProjektPositionenCtrl.Lies`, Summenfuß `KostenKomponenteHuelle`) | je Zeile nur die **gespeicherte** `Menge` | 0,00 € in jeder Prozentzeile, Summenfuß **5.660,00 €** |
+| Seite „Berichte & Kosten", Spalte Investition je Anlage (`KostenSummenCtrl`) | rohes `SUM(EingegebenerWert)` | **1.500,00 €** (nur der feste Wechselrichterbetrag) |
+
+**Warum der Dialog 0 zeigte.** Für „% der Investition" wird in Kategorie 1 **nie** eine Menge
+gespeichert: `WirtschaftlichkeitCtrl.MengeAusweisen` schließt genau diese Kombination
+ausdrücklich aus (die Basis ist Kaskadenmaterie der Runde 3, keine Einzelzeilen-Größe).
+`BetriebskostenCtrl.Betrag` fällt ohne Menge nach Anwenderentscheid I‑2 auf den *erfassten* Wert
+zurück — und der ist bei einer Prozentzeile 0. Der Dialog rechnete also nicht falsch, er las nur
+etwas anderes als der Rechenkern.
+
+**Warum die Kostenseite noch weniger zeigte.** `LiesAnlagenSummen` / `LiesKomponentenSummen` /
+`AnlagenSumme` summierten die Spalte `EingegebenerWert` roh — also ohne Menge × Satz und ohne
+jede Prozentzeile. Betroffen war nicht nur die Anlagentabelle der Kostenseite, sondern auch die
+Kostenzeile der Wärmepumpenmaske („Invest … €"), die Photovoltaik-Vergütung und der
+Rückfallweg der Kostenseite.
+
+### 2. Änderung — EIN Rechenweg
+
+1. **`EPOS.Kern/Controller/InvestKaskade.cs` (neu).** Die H4b-Kaskade ist Wort für Wort aus
+   `LiesInvestitionen` **herausgelöst** (nicht nachgebaut): Runde 1 direkte Zeilen, Runde 2
+   „% der Erzeugerkosten", Runde 3 „% der Investition" mit eingefrorenen Basiszeilen
+   (Anwenderentscheid I‑3). Rückgabe ist die Zeilenliste je `Tab_ProjektWerte.ID` mit Betrag,
+   **Basis**, Zuschuss-Kennzeichen, Komponente, Anlage, Nutzungsdauer und Startjahr;
+   `NachId(...)` und `Summen(...)` sind die beiden Sichten für Dialog und Kostenseite.
+   Die Basis ist neu und reine Auskunft: `InvestBetrag` gibt die tatsächlich angesetzte
+   Bezugsgröße heraus, die Rechnung selbst ist unverändert.
+2. **`LiesInvestitionen`** ist nur noch Verbraucher — geblieben ist der K5-Zuschussabzug und die
+   Übersetzung in `KapitalwertRechner.InvestPosition`. Die geteilten Zeilenleser
+   (`Szenariowert`, `StartJahrDerZeile`, `IstZuschuss`, `KomponenteUndAnlage`, `IstProzentInvest`,
+   `D`/`B`/`Text`, die beiden Spaltenproben) sind dafür von `private` auf `internal` gestellt;
+   `InvestZeile`, `IstProzentErzeuger` und `InvestBetrag` sind mit der Kaskade umgezogen.
+3. **Dialog.** `KostenProjektPositionenCtrl.Lies` fragt für Kategorie 1 die Kaskade, für
+   Kategorie 2 die Nachweisliste `WirtschaftlichkeitCtrl.BetriebNachId`
+   (= `LiesBetriebskostenPositionen`, um `Id`/`Komponente`/`Anlage` erweitert). Die Zeile trägt
+   jetzt `Basis`; `Speichern` zieht Betrag und Basis nach dem Schreiben aus demselben Rechenweg
+   nach. Der Summenfuß enthält die Prozentzeilen damit von selbst.
+4. **Werkzeugtipp.** `KostenKomponenteHuelle.BasisKurztext` nennt im Projektmodus die
+   Bezugsgröße: „Aus Satz und Bezugsgröße des Projekts berechnet: 3 % von 5.660,00 €" bzw.
+   „… 1,50 €/kW × 30,00 kW" (zwei neue Ressourcenschlüssel `KDLG_TT_BETRAG_BASIS_PROZENT` /
+   `KDLG_TT_BETRAG_BASIS_MENGE`, de + en). `Nachziehen` rechnet den Betrag im Projektmodus bei
+   jeder Satzänderung sofort mit, statt ihn bis zum Speichern zu leeren.
+5. **Kostenseite.** `KostenSummenCtrl.LiesKomponentenSummen` / `LiesAnlagenSummen` /
+   `AnlagenSumme` liefern für Kategorie 1 die Kaskadenbeträge, für Kategorie 2 die Beträge des
+   Betriebskosten-Auflösers. Zuschusszeilen bleiben wie in `LiesInvestitionen` außen vor, ihre
+   GRUPPE aber bestehen — sonst verlöre eine Komponente mit reiner Zuschusszeile ihr
+   „hat Positionen" und stünde rot. Auf einer Datenbank ohne die Spalten aus Schritt 19 fällt
+   alles auf das alte SQL zurück.
+
+### 3. Nachweis
+
+Die Testdatenbank führt keine Photovoltaik-Kostenzeilen; das Beispiel des Anwenders steht
+deshalb an der Wärmepumpe des Projekts 1040 (Anlage 14728): eine direkte Zeile über
+**5.660,00 €** und drei Prozentzeilen mit **3 %, 10 %, 10 %**.
+
+| Zeile | vorher (Dialog / Kostenseite) | nachher |
+|---|---|---|
+| direkte Zeile | 5.660,00 € | 5.660,00 € |
+| 3 % der Investition | 0,00 € | **169,80 €** (Basis 5.660,00 €) |
+| 10 % der Investition | 0,00 € | **566,00 €** (Basis 5.660,00 €) |
+| 10 % der Investition | 0,00 € | **566,00 €** (Basis 5.660,00 €) |
+| Summenfuß des Dialogs | 5.660,00 € | **6.961,80 €** |
+| `AnlagenSumme` / Anlagenzeile der Kostenseite | 5.660,00 € | **6.961,80 €** |
+| Kachel „Investition" (`LiesInvestitionen`) | 6.961,80 € | 6.961,80 € (unverändert) |
+
+Die beiden 10‑%‑Zeilen bekommen denselben Betrag — %-Zeilen zählen einander nach I‑3 nie mit,
+das Ergebnis hängt nicht an der Lesereihenfolge (die Abfrage trägt kein `ORDER BY`).
+
+| Prüfung | Ort | Ergebnis |
+|---|---|---|
+| Kaskadenregeln (Basis × Satz, Rückfall Anlage → Komponente, I‑3, Zuschuss außen vor) | `InvestKaskadeTests` (neu) | **7** Fälle |
+| `LiesInvestitionen` vorher/nachher zahlengleich, 16 Projekte × 3 Szenarien | `InvestKaskadeTests.LiesInvestitionen_bleibt_zahlengleich` | **16** Fälle, Vergleichszahlen am 08.09.2026 an der unberührten `Kenndaten_Test.sqlite` gemessen |
+| Sandbox-Bau `WP-Plan.sln` x64 Debug | `K:\imp2\src` | **0 Fehler** |
+| `EPOS.Kern.Tests` / `EPOS.UI.Tests` | `dotnet test --no-build` | **2 096/2 096** / **3 301/3 301** |
+| Referenzlauf | `Referenzlaeufe/2026-09-07_M7_nach-Merge7` | **gibt keine Kosten- oder Wirtschaftlichkeitswerte aus** — 0 von 298 Kennzahlen der `aggregate.csv` tragen kost/invest/kapital/wirt/barwert/annuität/amortisation; er kann zu dieser Änderung nichts beweisen und ist von ihr auch nicht berührt (der Rechenweg der Kapitalwertrechnung ist unverändert) |
+
+### 4. Offene Punkte
+
+- **Kategorie 2, Basis „% der Investition".** `BetriebskostenCtrl.InvestSummeFuer` (H4a) summiert
+  weiterhin `SUM(EingegebenerWert)` — die Betriebszeile „x % der Investitionssumme" bemisst sich
+  also an der ROHEN Spaltensumme, nicht an der Kaskade. Das ist ein VIERTER Leseweg derselben
+  Zahlen und damit derselbe Befund auf der Betriebsseite. Er ist hier bewusst nicht angefasst:
+  Er würde die Kapitalwertrechnung selbst verändern (Betriebskosten p. a., Kapitalwert,
+  Sensitivität FX5‑a) und gehört deshalb vor eine Anwenderentscheidung.
+- **Sichtabnahme** des Werkzeugtipps und des Summenfußes im Projektmodus (Dialog
+  Kostenverwaltung, Reiter Investition und Betrieb).
+

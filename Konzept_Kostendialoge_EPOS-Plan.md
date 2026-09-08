@@ -697,3 +697,49 @@ bereits in KD4). Das Konzept ist umsetzungsreif; KD1 startet auf Zuruf.
 | 27 | Berichte & Kosten (Betriebskosten-Karte, Kosteneditor reduziert) |
 | 28–33 | Emissions-/PE-Faktoren GModG (bereits umgesetzt: Methodenwechsel-Protokoll, Schritt 23) + Quellen |
 | 34 | Worst/Best-Dialog, %-Eingabe, Investitions-Startzeitpunkt, VALERI-Verweis |
+
+---
+
+## Nachtrag 08.09.2026 (W5‑B‑7) — § 5.3/§ 5.4: EIN Rechenweg für die Investitionspositionen
+
+**Anlass (Anwenderbefund):** „% der Investitionskosten ist immer 0. … Sollten auf der Seite
+Kosten nicht die Kosten aus dem Kostendialog stehen?"
+
+**Was falsch war.** Die Kaskade des § 5.3 (Hauptposition → % der Erzeugerkosten → Summe →
+% der Investition, § 5.4) lebte nur in der Kapitalwertrechnung. Der Dialog Kostenverwaltung las
+je Zeile die **gespeicherte** `Menge`, und für „% der Investition" wird in Kategorie 1 keine
+gespeichert — die Basis ist Kaskadenmaterie, keine Einzelzeilen-Größe. Die Seite
+„Berichte & Kosten" summierte `EingegebenerWert` roh. Dieselbe Photovoltaik-Anlage zeigte
+damit 6.961,80 € (Wirtschaftlichkeit), 5.660,00 € (Dialog) und 1.500,00 € (Anlagentabelle).
+
+**Festlegung.** Die Kaskade des § 5.3 ist **die eine Wahrheit der Kategorie 1**. Sie steht seit
+dem 08.09.2026 in `EPOS.Kern/Controller/InvestKaskade.cs` und wird von allen drei Stellen
+gelesen:
+
+| Stelle | liest |
+|---|---|
+| Kapitalwertrechnung (`WirtschaftlichkeitCtrl.LiesInvestitionen`) | `InvestKaskade.Lies` — Rechenweg unverändert, nur noch Zuschussabzug und Übersetzung in `InvestPosition` eigen |
+| Dialog Kostenverwaltung (`KostenProjektPositionenCtrl.Lies`/`Speichern`) | `InvestKaskade.NachId` |
+| Seite „Berichte & Kosten", WP-Maske, PV-Vergütung (`KostenSummenCtrl`) | `InvestKaskade.Summen` |
+
+Die Kategorie 2 liest an denselben drei Stellen die Nachweisliste
+`WirtschaftlichkeitCtrl.LiesBetriebskostenPositionen` (E7) — dieselbe Zahl wie die Kachel
+„Betrieb" der Kostenseite.
+
+**Regeln, die dabei ausdrücklich gelten:**
+
+- Eine Prozentzeile trägt neben ihrem Betrag ihre **Basis**. Sie ist reine Auskunft (Werkzeugtipp
+  „3 % von 5.660,00 €") und wird **nicht** nach `Tab_ProjektWerte.Menge` zurückgeschrieben —
+  dort ist die Menge Ausweisgröße des Simulationslaufs (Konzept BHKW-Wirtschaftlichkeit § 4.5).
+- **Zuschusszeilen** (Kostenart `ZUSCHUSS`) gehen in keine Anzeigesumme ein — genauso wie in
+  `LiesInvestitionen`, sonst zeigte die Anlagentabelle eine andere Investition als die Kachel
+  darüber. Ihre Gruppe bleibt aber bestehen, damit eine Komponente mit reiner Zuschusszeile
+  weiter als „hat Positionen" gilt.
+- Auf einer Datenbank ohne die Spalten aus Schritt 19 fällt alles auf den Bestandsweg
+  (`SUM(EingegebenerWert)`) zurück.
+
+**Offen (vor eine Anwenderentscheidung gestellt):** Die Bezugsgröße der KATEGORIE‑2‑Bemessung
+„x % der Investitionssumme" kommt weiterhin aus `BetriebskostenCtrl.InvestSummeFuer`, also aus
+der rohen Spaltensumme statt aus der Kaskade. Eine Umstellung veränderte die Betriebskosten
+p. a. und damit Kapitalwert und Sensitivität (FX5‑a) — sie ist deshalb hier bewusst
+unterblieben.

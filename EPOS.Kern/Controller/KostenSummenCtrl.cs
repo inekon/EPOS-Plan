@@ -27,6 +27,21 @@ namespace WindowsFormsApplication1
     /// <see cref="KostenPositionCtrl"/>, mit dem diese Klasse sich die Schemavorsorge
     /// für <c>Tab_ProjektWerte.ID_Anlage</c> teilt.
     /// </para>
+    ///
+    /// <para>
+    /// <b>ANWENDERBEFUND W5‑B‑7 (08.09.2026): die Summen kommen aus dem RECHENWEG,
+    /// nicht mehr aus <c>SUM(EingegebenerWert)</c>.</b> Die drei Summenfunktionen
+    /// summierten die Spalte roh — ohne Menge × Satz und ohne jede Prozentzeile. Die
+    /// Anlagenzeile „Photovoltaik" der Kostenseite zeigte deshalb 1.500,00 € (nur der
+    /// feste Wechselrichterbetrag), während die Kachel darüber und die
+    /// Kapitalwertrechnung mit 6.961,80 € rechneten. Kategorie 1 fragt jetzt
+    /// <see cref="InvestKaskade"/>, Kategorie 2 die Nachweisliste
+    /// <c>WirtschaftlichkeitCtrl.LiesBetriebskostenPositionen</c> — dieselben Zahlen
+    /// wie die Kacheln. Zuschusszeilen bleiben wie in
+    /// <c>LiesInvestitionen</c> außen vor; ihre GRUPPE bleibt bestehen, damit eine
+    /// Komponente mit Positionen weiter als solche erkannt wird. Auf einer Datenbank
+    /// ohne die Spalten aus Schritt 19 fällt alles auf das alte SQL zurück.
+    /// </para>
     /// </summary>
     internal static class KostenSummenCtrl
     {
@@ -149,6 +164,30 @@ namespace WindowsFormsApplication1
         /// </remarks>
         internal static DataTable LiesKomponentenSummen(int projektID, int kategorieID)
         {
+            // W5‑B‑7: erst der Rechenweg, dann das alte SQL als Rückfall.
+            Dictionary<KeyValuePair<int, int>, double> summen =
+                Rechenwegsummen(projektID, kategorieID);
+            if (summen != null)
+            {
+                Dictionary<int, string> namen = KomponentenNamen();
+                var jeKomponente = new SortedDictionary<string, double>(StringComparer.Ordinal);
+                foreach (KeyValuePair<KeyValuePair<int, int>, double> e in summen)
+                {
+                    string name;
+                    if (!namen.TryGetValue(e.Key.Key, out name)) continue;   // wie der INNER JOIN
+                    double alt;
+                    jeKomponente.TryGetValue(name, out alt);
+                    jeKomponente[name] = alt + e.Value;
+                }
+
+                var t = new DataTable();
+                t.Columns.Add("Komponente", typeof(string));
+                t.Columns.Add("Summe", typeof(double));
+                foreach (KeyValuePair<string, double> e in jeKomponente)
+                    t.Rows.Add(e.Key, e.Value);
+                return t;
+            }
+
             string sql = @"SELECT k.Komponente, Sum(w.EingegebenerWert) AS Summe
                            FROM Tab_KostenKomponente AS k
                                 INNER JOIN Tab_ProjektWerte AS w ON k.ID = w.KomponentenID
@@ -169,6 +208,29 @@ namespace WindowsFormsApplication1
             bool spalteDa = false;
             try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
             if (!spalteDa) return null;
+
+            // W5‑B‑7: erst der Rechenweg, dann das alte SQL als Rückfall.
+            Dictionary<KeyValuePair<int, int>, double> summen =
+                Rechenwegsummen(projektID, kategorieID);
+            if (summen != null)
+            {
+                Dictionary<int, string> namen = KomponentenNamen();
+                var t = new DataTable();
+                t.Columns.Add("Komponente", typeof(string));
+                t.Columns.Add("ID_Anlage", typeof(int));
+                t.Columns.Add("Summe", typeof(double));
+                foreach (KeyValuePair<KeyValuePair<int, int>, double> e in summen)
+                {
+                    string name;
+                    if (!namen.TryGetValue(e.Key.Key, out name)) continue;   // wie der INNER JOIN
+                    // Anlage 0 = NULL in der Spalte: die „ohne Anlagenzuordnung"-Zeilen
+                    // der Kostenseite prüfen genau auf DBNull.
+                    t.Rows.Add(name,
+                               e.Key.Value > 0 ? (object)e.Key.Value : DBNull.Value,
+                               e.Value);
+                }
+                return t;
+            }
 
             string sql = @"SELECT k.Komponente, w.ID_Anlage, Sum(w.EingegebenerWert) AS Summe
                            FROM Tab_KostenKomponente AS k
@@ -198,6 +260,17 @@ namespace WindowsFormsApplication1
             try { spalteDa = KostenPositionCtrl.StelleSpaltenSicher(); } catch { }
             if (!spalteDa) return 0;
 
+            // W5‑B‑7: erst der Rechenweg, dann das alte SQL als Rückfall.
+            Dictionary<KeyValuePair<int, int>, double> summen =
+                Rechenwegsummen(projektId, kategorie);
+            if (summen != null)
+            {
+                double s = 0;
+                foreach (KeyValuePair<KeyValuePair<int, int>, double> e in summen)
+                    if (e.Key.Value == anlageId) s += e.Value;
+                return s;
+            }
+
             object o = DataRepository.ExecuteScalar(
                 "SELECT SUM(EingegebenerWert) FROM Tab_ProjektWerte " +
                 "WHERE ProjektID = ? AND KategorieID = ? AND ID_Anlage = ?",
@@ -205,6 +278,69 @@ namespace WindowsFormsApplication1
                 new DbParam("@k", kategorie),
                 new DbParam("@a", anlageId));
             return (o == null || o == DBNull.Value) ? 0 : Convert.ToDouble(o);
+        }
+
+        // =====================================================================
+        // W5‑B‑7 — der eine Rechenweg hinter den drei Summenfunktionen
+        // =====================================================================
+
+        /// <summary>
+        /// (Komponenten-Id, Anlagen-Id) → wirksamer Betrag [€ bzw. €/a] einer Kategorie;
+        /// <c>null</c> = der Rechenweg hat nichts anzubieten (Datenbank ohne die
+        /// Spalten aus Schritt 19, oder eine hier nicht geführte Kategorie) — dann
+        /// gilt der Bestandsweg über <c>SUM(EingegebenerWert)</c>.
+        /// <para>Anlagen-Id 0 = ohne (gültige) Anlagenzuordnung. Der Schlüssel entsteht
+        /// für jede Zeile, auch für eine Zuschusszeile mit Beitrag 0.</para>
+        /// </summary>
+        private static Dictionary<KeyValuePair<int, int>, double> Rechenwegsummen(
+            int projektID, int kategorieID)
+        {
+            try
+            {
+                if (kategorieID == DbWerte.KOSTEN_KATEGORIE_INVESTITION)
+                    return InvestKaskade.Summen(projektID, WirtschaftlichkeitSzenario.ERWARTET);
+
+                if (kategorieID == DbWerte.KOSTEN_KATEGORIE_BETRIEB)
+                {
+                    List<KostenPositionNachweis> zeilen =
+                        WirtschaftlichkeitCtrl.LiesBetriebskostenPositionen(
+                            projektID, WirtschaftlichkeitSzenario.ERWARTET);
+                    // Leer heißt entweder „keine Positionen" oder „keine Spalten aus
+                    // Schritt 19". Beide Male ist das alte SQL richtig: Es liefert
+                    // dann entweder ebenfalls nichts oder den Bestandsweg.
+                    if (zeilen == null || zeilen.Count == 0) return null;
+
+                    var summen = new Dictionary<KeyValuePair<int, int>, double>();
+                    foreach (KostenPositionNachweis n in zeilen)
+                    {
+                        var schluessel = new KeyValuePair<int, int>(n.Komponente, n.Anlage);
+                        double alt;
+                        summen.TryGetValue(schluessel, out alt);
+                        summen[schluessel] = alt + n.BetragJahr;
+                    }
+                    return summen;
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        /// <summary>W5‑B‑7: <c>Tab_KostenKomponente.ID</c> → Komponentenname — die
+        /// Auflösung, die im alten SQL der INNER JOIN besorgte.</summary>
+        private static Dictionary<int, string> KomponentenNamen()
+        {
+            var namen = new Dictionary<int, string>();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, Komponente FROM Tab_KostenKomponente");
+                if (dt == null) return namen;
+                foreach (DataRow r in dt.Rows)
+                    if (r["ID"] != DBNull.Value)
+                        namen[Convert.ToInt32(r["ID"])] = Convert.ToString(r["Komponente"]);
+            }
+            catch { }
+            return namen;
         }
     }
 }

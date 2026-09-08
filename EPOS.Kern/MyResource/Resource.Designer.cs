@@ -15692,6 +15692,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Satz und Bezugsgröße des Projekts berechnet: {0} × {1}. ähnelt.
+        /// </summary>
+        public static string KDLG_TT_BETRAG_BASIS_MENGE {
+            get {
+                return ResourceManager.GetString("KDLG_TT_BETRAG_BASIS_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus Satz und Bezugsgröße des Projekts berechnet: {0} von {1}. ähnelt.
+        /// </summary>
+        public static string KDLG_TT_BETRAG_BASIS_PROZENT {
+            get {
+                return ResourceManager.GetString("KDLG_TT_BETRAG_BASIS_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus Satz und Bezugsgröße des Projekts berechnet. ähnelt.
         /// </summary>
         public static string KDLG_TT_BETRAG_PROJEKT {

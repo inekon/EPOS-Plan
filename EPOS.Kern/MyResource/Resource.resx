@@ -9350,6 +9350,12 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_TITEL_PROJEKT" xml:space="preserve">
     <value>Kostenverwaltung {0} — {1}</value>
   </data>
+  <data name="KDLG_TT_BETRAG_BASIS_MENGE" xml:space="preserve">
+    <value>Aus Satz und Bezugsgröße des Projekts berechnet: {0} × {1}.</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_BASIS_PROZENT" xml:space="preserve">
+    <value>Aus Satz und Bezugsgröße des Projekts berechnet: {0} von {1}.</value>
+  </data>
   <data name="KDLG_TT_BETRAG_PROJEKT" xml:space="preserve">
     <value>Aus Satz und Bezugsgröße des Projekts berechnet.</value>
   </data>

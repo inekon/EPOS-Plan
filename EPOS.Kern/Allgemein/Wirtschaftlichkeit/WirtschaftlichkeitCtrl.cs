@@ -4947,172 +4947,33 @@ namespace WindowsFormsApplication1
             var liste = new List<KapitalwertRechner.InvestPosition>();
             zuschuss = 0;
 
-            bool mitKostenart = false;
-            try { mitKostenart = KostenPositionCtrl.StelleSpaltenSicher(); }
-            catch { }
-
-            try
+            // ANWENDERBEFUND W5-B-7 (08.09.2026): Die Kaskade selbst steht seither in
+            // InvestKaskade — Wort für Wort dieselbe, nur an einem Ort. Der Dialog
+            // Kostenverwaltung und die Anlagentabelle der Kostenseite lesen sie
+            // ebenfalls dort; vorher hatte jede der drei Stellen ihren eigenen Weg und
+            // damit ihre eigene Zahl. Hier bleibt genau das, was die Kapitalwertrechnung
+            // eigen ist: der K5-Zuschussabzug und die Übersetzung in InvestPosition.
+            foreach (InvestKaskade.Zeile z in InvestKaskade.Lies(idProjekt, szenario))
             {
-                string felder = "w.EingegebenerWert, w.BestCase, w.WorstCase, w.Nutzungsdauer, " +
-                                "w.BestCase_Nutzungsdauer, w.WorstCase_Nutzungsdauer, " +
-                                "w.KomponentenID, f.IsMainComponent";
-                if (mitKostenart)
-                    felder += ", w.[" + SchemaKatalog.SPALTE_PW_KOSTENART + "]" +
-                              ", w.[" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "]" +
-                              ", w.[" + SchemaKatalog.SPALTE_PW_MENGE + "]" +
-                              ", w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "]";
-                // ETAPPE KD6 (§ 11, FK10): das Startjahr je Position — die Spalte kommt
-                // mit Migrationsschritt 38. Sie wird nur ANGEFRAGT, wenn sie existiert:
-                // Ein SELECT auf eine fehlende Spalte würde die GANZE Abfrage kippen
-                // und die Investitionsliste still leeren (der catch unten schluckt).
-                if (StartjahrSpalteVorhanden())
-                    felder += ", w.[" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]";
-                if (AnlagenSpalteVorhanden())
-                    felder += ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "]";
+                if (z.Betrag == 0) continue;
 
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT " + felder +
-                    " FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
-                    "ON w.StammID = f.StammID " +
-                    "WHERE w.ProjektID = ? AND w.KategorieID = 1",
-                    new DbParam("@p", idProjekt));
-                if (dt == null) return liste;
-
-                // ETAPPE H4b: erst puffern, dann in DREI Runden ableiten — die
-                // §-5.3-Kaskade des Kostendialoge-Konzepts: Hauptposition →
-                // „% der Erzeugerkosten" → Summe → „% der Investition". Zeilen mit
-                // Bemessung BETRAG (der GESAMTE Bestand nach Schritt 19b) laufen in
-                // Runde 1 exakt den alten Weg; abgeleitete Arten rechnen
-                // Menge × Satz, die Menge notfalls frisch aus der Gerätewelt
-                // (TechnikPlanwertCtrl.BaugroesseSumme) — eine gepflegte Menge und
-                // gepflegte Szenariowerte behalten Vorrang (VALERI-Muster wie E3).
-                var puffer = new List<InvestZeile>();
-                foreach (DataRow r in dt.Rows)
+                if (z.Zuschuss)
                 {
-                    var z = new InvestZeile();
-                    z.Wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
-                    z.Erwartet = D(r, "EingegebenerWert") ?? 0;
-                    z.Dauer = Szenariowert(r, szenario, "Nutzungsdauer",
-                                           "BestCase_Nutzungsdauer", "WorstCase_Nutzungsdauer");
-                    z.Start = StartJahrDerZeile(r);
-                    z.Zuschuss = mitKostenart && IstZuschuss(r);
-                    z.Haupt = B(r, "IsMainComponent");
-                    KomponenteUndAnlage(r, out z.Komponente, out z.Anlage);
-                    if (mitKostenart)
-                    {
-                        z.Bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
-                        z.Satz = D(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS);
-                        z.Menge = D(r, SchemaKatalog.SPALTE_PW_MENGE);
-                    }
-                    puffer.Add(z);
+                    // Der Betrag wird positiv erfasst; ein versehentlich negativer
+                    // Wert würde die Investition ERHÖHEN. Das ist nie gemeint —
+                    // deshalb der Betrag, nicht das Vorzeichen.
+                    zuschuss += Math.Abs(z.Betrag);
+                    continue;
                 }
 
-                // Runde 1 — alles außer den beiden %-Kaskadenarten.
-                foreach (InvestZeile z in puffer)
+                liste.Add(new KapitalwertRechner.InvestPosition
                 {
-                    if (IstProzentErzeuger(z.Bem) || IstProzentInvest(z.Bem)) continue;
-                    z.Betrag = InvestBetrag(z, idProjekt, null);
-                    z.Abgeleitet = true;
-                }
-
-                // Runde 2 — „% der Erzeugerkosten": Basis ist der abgeleitete Betrag
-                // der Hauptposition(en) derselben Komponente.
-                foreach (InvestZeile z in puffer)
-                {
-                    if (!IstProzentErzeuger(z.Bem)) continue;
-                    double basis = 0; bool da = false;
-                    foreach (InvestZeile h in puffer)
-                        if (h.Abgeleitet && h.Haupt && !h.Zuschuss && h.Komponente == z.Komponente)
-                        { basis += h.Betrag; da = true; }
-                    z.Betrag = InvestBetrag(z, idProjekt, da && basis != 0 ? basis : (double?)null);
-                    z.Abgeleitet = true;
-                }
-
-                // Runde 3 — „% der Investition": Basis ist die Summe der in den Runden 1
-                // und 2 abgeleiteten Beträge (ohne Zuschüsse), stufig Anlage → Komponente
-                // → Projekt (dieselbe Semantik wie InvestSummeFuer der H4a).
-                //
-                // ANWENDERENTSCHEID I-3 (30.08.2026, Paket FX2) — ZWEI PHASEN.
-                // Die Basiszeilen werden VOR der Zuweisungsschleife eingefroren. Bis
-                // hierher setzte die Schleife jede fertige Zeile sofort auf
-                // Abgeleitet = true; eine ZWEITE „% der Investition"-Zeile rechnete
-                // deshalb die ERSTE in ihre Basis ein, und weil die Leseabfrage kein
-                // ORDER BY trägt, entschied die Datenbank über das Ergebnis (Befund I-3).
-                //
-                // Der Entscheid: Jede Investition ist eine eigene Position mit eigener
-                // Nutzungsdauer — das bleibt. %-Zeilen bemessen sich aber ausschließlich
-                // an den DIREKTEN Zeilen der Runden 1 und 2 und zählen einander nie mit.
-                // Damit ist das Ergebnis deterministisch und reihenfolgeunabhängig.
-                var basisZeilen = new List<InvestZeile>();
-                foreach (InvestZeile h in puffer)
-                    if (h.Abgeleitet && !h.Zuschuss) basisZeilen.Add(h);
-
-                foreach (InvestZeile z in puffer)
-                {
-                    if (z.Abgeleitet) continue;
-                    double sAnlage = 0, sKomponente = 0, sProjekt = 0;
-                    bool aDa = false, kDa = false;
-                    foreach (InvestZeile h in basisZeilen)
-                    {
-                        sProjekt += h.Betrag;
-                        if (z.Komponente > 0 && h.Komponente == z.Komponente)
-                        {
-                            sKomponente += h.Betrag; kDa = true;
-                            if (z.Anlage > 0 && h.Anlage == z.Anlage) { sAnlage += h.Betrag; aDa = true; }
-                        }
-                    }
-                    double basis = (aDa && sAnlage != 0) ? sAnlage
-                                 : (kDa && sKomponente != 0) ? sKomponente : sProjekt;
-                    z.Betrag = InvestBetrag(z, idProjekt, basis != 0 ? basis : (double?)null);
-                    z.Abgeleitet = true;
-                }
-
-                foreach (InvestZeile z in puffer)
-                {
-                    if (z.Betrag == 0) continue;
-
-                    if (z.Zuschuss)
-                    {
-                        // Der Betrag wird positiv erfasst; ein versehentlich negativer
-                        // Wert würde die Investition ERHÖHEN. Das ist nie gemeint —
-                        // deshalb der Betrag, nicht das Vorzeichen.
-                        zuschuss += Math.Abs(z.Betrag);
-                        continue;
-                    }
-
-                    liste.Add(new KapitalwertRechner.InvestPosition
-                    {
-                        Betrag = z.Betrag,
-                        Nutzungsdauer = z.Dauer,
-                        StartJahr = z.Start
-                    });
-                }
+                    Betrag = z.Betrag,
+                    Nutzungsdauer = z.Dauer,
+                    StartJahr = z.Start
+                });
             }
-            catch { }
             return liste;
-        }
-
-        /// <summary>ETAPPE H4b: eine gepufferte Kategorie-1-Zeile der Kaskade.</summary>
-        private sealed class InvestZeile
-        {
-            public double Wert;        // Szenariowert aus EingegebenerWert/Best/Worst
-            public double Erwartet;    // EingegebenerWert (VALERI-Vergleichsbasis)
-            public double Dauer;
-            public int Start;
-            public bool Zuschuss;
-            public bool Haupt;         // Tab_Kostenfaktor.IsMainComponent
-            public int Komponente;
-            public int Anlage;
-            public string Bem = "";
-            public double? Satz;
-            public double? Menge;
-            public double Betrag;      // wirksamer Betrag nach der Ableitung
-            public bool Abgeleitet;
-        }
-
-        private static bool IstProzentErzeuger(string bem)
-        {
-            return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN, StringComparison.Ordinal);
         }
 
         /// <summary>„x % der Investitionssumme" (H4b auf der Investseite, H4a auf der
@@ -5121,44 +4982,16 @@ namespace WindowsFormsApplication1
         /// 03.09.2026 auch, welche KATEGORIE-2-Zeile in den investgekoppelten Ausweis
         /// von <see cref="LiesBetriebskostenTopfe"/> geht — die Zeile, die der
         /// Sensitivitäts-Investitionsfaktor mitzieht.</para></summary>
-        private static bool IstProzentInvest(string bem)
+        internal static bool IstProzentInvest(string bem)
         {
             return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal);
-        }
-
-        /// <summary>
-        /// ETAPPE H4b: wirksamer Betrag einer Investitionszeile. BETRAG/leer = der
-        /// Bestandsweg (Szenariowert unverändert); abgeleitete Arten rechnen
-        /// Menge × Satz über <see cref="BetriebskostenCtrl.Betrag"/>. Gepflegte
-        /// Best-/Worst-Beträge schlagen die Ableitung (VALERI).
-        /// ETAPPE H2-1: Mengenreihenfolge FRISCH vor Konserve — erst
-        /// <paramref name="kaskadenBasis"/> (Runden 2/3), dann die Gerätewelt,
-        /// zuletzt die Menge-Spalte. Die ist nur Ausweisgröße („Stand des Laufs",
-        /// Konzept BHKW-Wirtschaftlichkeit § 4.5), sonst rechnete die Kaskade nach
-        /// einer Geräteänderung stillschweigend mit der alten Baugröße weiter.
-        /// </summary>
-        private static double InvestBetrag(InvestZeile z, int idProjekt, double? kaskadenBasis)
-        {
-            if (string.IsNullOrEmpty(z.Bem) ||
-                string.Equals(z.Bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
-                return z.Wert;
-
-            bool szenarioGepflegt = Math.Abs(z.Wert - z.Erwartet) > 1e-9;
-            if (szenarioGepflegt) return z.Wert;
-
-            double? menge = kaskadenBasis;
-            if (!menge.HasValue)
-                menge = TechnikPlanwertCtrl.BaugroesseSumme(idProjekt, z.Komponente, z.Bem, z.Anlage);
-            if (!menge.HasValue) menge = z.Menge;
-
-            return BetriebskostenCtrl.Betrag(z.Bem, z.Erwartet, menge, z.Satz, false);
         }
 
         /// <summary>Einmal je Prozess geprüft: existiert <c>Tab_ProjektWerte.StartJahr</c>
         /// (Migrationsschritt 38)? Auf älteren Datenbanken bleibt alles t0.</summary>
         private static bool? _startjahrSpalte;
 
-        private static bool StartjahrSpalteVorhanden()
+        internal static bool StartjahrSpalteVorhanden()
         {
             if (_startjahrSpalte.HasValue) return _startjahrSpalte.Value;
             _startjahrSpalte = SpalteVorhanden("Tab_ProjektWerte",
@@ -5171,7 +5004,7 @@ namespace WindowsFormsApplication1
         /// <see cref="StartjahrSpalteVorhanden"/>.</summary>
         private static bool? _anlagenSpalte;
 
-        private static bool AnlagenSpalteVorhanden()
+        internal static bool AnlagenSpalteVorhanden()
         {
             if (_anlagenSpalte.HasValue) return _anlagenSpalte.Value;
             _anlagenSpalte = SpalteVorhanden("Tab_ProjektWerte",
@@ -5199,7 +5032,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>KD6 (§ 11): <c>Tab_ProjektWerte.StartJahr</c> der Zeile —
         /// 0 = t0 (NULL, fehlende Spalte oder Werte &lt; 2).</summary>
-        private static int StartJahrDerZeile(DataRow r)
+        internal static int StartJahrDerZeile(DataRow r)
         {
             try
             {
@@ -5213,7 +5046,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>true, wenn die Zeile die Kostenart „Zuschuss" trägt (K5).</summary>
-        private static bool IstZuschuss(DataRow r)
+        internal static bool IstZuschuss(DataRow r)
         {
             try
             {
@@ -5588,7 +5421,7 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT w.EingegebenerWert, w.BestCase, w.WorstCase, w.Gruppe, " +
+                    "SELECT w.ID, w.EingegebenerWert, w.BestCase, w.WorstCase, w.Gruppe, " +
                     "f.Bezeichnung, w.[" + SchemaKatalog.SPALTE_PW_KOSTENART + "], " +
                     "w.[" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "], " +
                     "w.[" + SchemaKatalog.SPALTE_PW_IST_ERLOES + "], " +
@@ -5631,8 +5464,17 @@ namespace WindowsFormsApplication1
                         if (frisch.HasValue) menge = frisch;
                     }
 
+                    int komponente, idAnlage;
+                    KomponenteUndAnlage(r, out komponente, out idAnlage);
+
                     var n = new KostenPositionNachweis
                     {
+                        // W5‑B‑7: der Schlüssel und die Zuordnung — damit Dialog und
+                        // Kostenseite dieselbe Zeile derselben Rechnung wiederfinden.
+                        Id = r.Table.Columns.Contains("ID") && r["ID"] != DBNull.Value
+                             ? Convert.ToInt32(r["ID"]) : 0,
+                        Komponente = komponente,
+                        Anlage = idAnlage,
                         Bezeichnung = Text(r, "Bezeichnung"),
                         Gruppe = Text(r, "Gruppe"),
                         Kostenart = Text(r, SchemaKatalog.SPALTE_PW_KOSTENART),
@@ -5655,7 +5497,29 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        private static double Szenariowert(DataRow r, string szenario,
+        /// <summary>
+        /// ANWENDERBEFUND W5‑B‑7 (08.09.2026): dieselben Kategorie-2-Positionen wie
+        /// <see cref="LiesBetriebskostenPositionen"/>, geschlüsselt nach
+        /// <c>Tab_ProjektWerte.ID</c> — die Form, in der der Dialog Kostenverwaltung und
+        /// die Anlagentabelle der Kostenseite ihre Zeile nachschlagen.
+        ///
+        /// <para><b>Warum diese Liste und nicht die Summenschleife.</b> Die
+        /// Summenschleife (<see cref="LiesBetriebskostenTopfe"/>) ist der Rechenweg und
+        /// liefert TÖPFE, keine Zeilen; die Nachweisliste rechnet mit denselben Regeln
+        /// und ihre Summe muss deren Summe treffen (E7-Probe). Auf einer Datenbank ohne
+        /// Schritt 19 ist sie leer — der Aufrufer fällt dann auf den Bestandsweg
+        /// zurück.</para>
+        /// </summary>
+        internal static Dictionary<int, KostenPositionNachweis> BetriebNachId(
+            int idProjekt, string szenario)
+        {
+            var karte = new Dictionary<int, KostenPositionNachweis>();
+            foreach (KostenPositionNachweis n in LiesBetriebskostenPositionen(idProjekt, szenario))
+                if (n.Id > 0) karte[n.Id] = n;
+            return karte;
+        }
+
+        internal static double Szenariowert(DataRow r, string szenario,
                                            string spalteErwartet, string spalteBest, string spalteWorst)
         {
             double erwartet = D(r, spalteErwartet) ?? 0;
@@ -5734,7 +5598,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Komponente und Anlage der Positionszeile (0 = nicht gesetzt bzw.
         /// Spalte nicht mitgelesen) — gemeinsamer Helfer von H2 und H4a.</summary>
-        private static void KomponenteUndAnlage(DataRow r, out int komponente, out int idAnlage)
+        internal static void KomponenteUndAnlage(DataRow r, out int komponente, out int idAnlage)
         {
             komponente = 0;
             idAnlage = 0;
@@ -6240,20 +6104,20 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Hilfen
 
-        private static bool B(DataRow r, string spalte)
+        internal static bool B(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return false;
             try { return Convert.ToBoolean(r[spalte]); } catch { return false; }
         }
 
-        private static double? D(DataRow r, string spalte)
+        internal static double? D(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
             try { return Convert.ToDouble(r[spalte]); } catch { return null; }
         }
 
         /// <summary>Textspalte, tolerant gegen fehlende Spalte und NULL (Etappe E3).</summary>
-        private static string Text(DataRow r, string spalte)
+        internal static string Text(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return "";
             try { return Convert.ToString(r[spalte]).Trim(); } catch { return ""; }

@@ -34,6 +34,20 @@ namespace WindowsFormsApplication1
             public double BestNutzung;
             public double WorstNutzung;
             public int StartJahr;
+
+            /// <summary>ANWENDERBEFUND W5‑B‑7 (08.09.2026): die BEZUGSGRÖSSE, aus der
+            /// <c>Raster.BetragNetto</c> entstanden ist — bei „3 % der Investition" also
+            /// die 5.660,00 €. Reine Auskunft für den Werkzeugtipp des Dialogs; sie wird
+            /// NICHT nach <c>Tab_ProjektWerte.Menge</c> zurückgeschrieben (dort ist die
+            /// Menge Ausweisgröße des Laufs, und für „% der Investition" in Kategorie 1
+            /// schreibt <c>WirtschaftlichkeitCtrl.MengeAusweisen</c> bewusst nichts).</summary>
+            public double? Basis;
+
+            /// <summary>Projekt und Kategorie der Zeile — damit
+            /// <see cref="Speichern"/> den wirksamen Betrag über denselben Rechenweg
+            /// nachziehen kann wie <see cref="Lies(int,int,int,int)"/>.</summary>
+            public int ProjektId;
+            public int KategorieId;
         }
 
         // ------------------------------------------------------------- Lesen ---
@@ -95,9 +109,33 @@ namespace WindowsFormsApplication1
                 parameter.ToArray());
             if (dt == null) return liste;
 
+            // ANWENDERBEFUND W5‑B‑7 (08.09.2026) — DER EINE RECHENWEG.
+            // Bis hierher nahm der Dialog je Zeile nur die GESPEICHERTE Menge. Für
+            // „% der Investition" wird in Kategorie 1 nie eine gespeichert
+            // (WirtschaftlichkeitCtrl.MengeAusweisen schließt die Kombination
+            // ausdrücklich aus) — BetriebskostenCtrl.Betrag fiel deshalb auf den
+            // eingegebenen Wert 0 zurück, und die Prozentzeilen standen auf 0, während
+            // die Kapitalwertrechnung längst 6.961,80 € rechnete. Jetzt fragt der Dialog
+            // DIESELBE Kaskade (Kategorie 1) bzw. dieselbe Nachweisliste (Kategorie 2)
+            // wie der Rechenkern. Ist dort nichts zu holen (Datenbank ohne Schritt 19),
+            // bleibt der Bestandsweg darunter stehen.
+            Dictionary<int, InvestKaskade.Zeile> kaskade = null;
+            Dictionary<int, KostenPositionNachweis> betrieb = null;
+            try
+            {
+                if (kategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION)
+                    kaskade = InvestKaskade.NachId(projektId, WirtschaftlichkeitSzenario.ERWARTET);
+                else if (kategorieId == DbWerte.KOSTEN_KATEGORIE_BETRIEB)
+                    betrieb = WirtschaftlichkeitCtrl.BetriebNachId(
+                        projektId, WirtschaftlichkeitSzenario.ERWARTET);
+            }
+            catch { }
+
             foreach (DataRow r in dt.Rows)
             {
                 var z = new Zeile();
+                z.ProjektId = projektId;
+                z.KategorieId = kategorieId;
                 z.Raster.Id = Convert.ToInt32(r["ID"]);
                 z.Raster.StammId = r["StammID"] == DBNull.Value
                     ? (int?)null : Convert.ToInt32(r["StammID"]);
@@ -130,6 +168,21 @@ namespace WindowsFormsApplication1
                 try { betrag = BetriebskostenCtrl.Betrag(z.Eingegeben, zu); }
                 catch { betrag = z.Eingegeben; }
                 z.Raster.BetragNetto = betrag;
+
+                // W5‑B‑7: Wo der Rechenkern die Zeile kennt, gilt SEINE Zahl — samt
+                // der Bezugsgröße, mit der sie entstanden ist.
+                InvestKaskade.Zeile k;
+                KostenPositionNachweis n;
+                if (kaskade != null && kaskade.TryGetValue(z.Raster.Id, out k))
+                {
+                    z.Raster.BetragNetto = k.Betrag;
+                    z.Basis = k.Basis;
+                }
+                else if (betrieb != null && betrieb.TryGetValue(z.Raster.Id, out n))
+                {
+                    z.Raster.BetragNetto = n.BetragJahr;
+                    z.Basis = n.Menge;
+                }
 
                 liste.Add(z);
             }
@@ -193,7 +246,42 @@ namespace WindowsFormsApplication1
             try { betrag = BetriebskostenCtrl.Betrag(eingegeben, zu2); }
             catch { betrag = eingegeben; }
             z.Raster.BetragNetto = betrag;
+
+            // W5‑B‑7: Nach dem Schreiben gilt wieder der Rechenweg des Kerns — sonst
+            // stünde in der Zeile bis zum nächsten Laden der Wert, den der Dialog selbst
+            // ausgerechnet hat (bei „% der Investition" die 0). Der Dialog lädt nach
+            // „Speichern" ohnehin neu; diese Zeile macht das Objekt schon vorher ehrlich.
+            NachziehenAusRechenweg(z);
             return true;
+        }
+
+        /// <summary>
+        /// W5‑B‑7: Zieht Betrag und Bezugsgröße EINER Zeile aus dem Rechenweg des
+        /// Kerns nach (Kaskade bzw. Nachweisliste). Still — findet er die Zeile nicht
+        /// (Datenbank ohne Schritt 19, fremde Kategorie), bleibt der zuvor errechnete
+        /// Wert stehen.
+        /// </summary>
+        private static void NachziehenAusRechenweg(Zeile z)
+        {
+            if (z == null || z.ProjektId <= 0 || z.Raster.Id <= 0) return;
+            try
+            {
+                if (z.KategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION)
+                {
+                    InvestKaskade.Zeile k;
+                    if (InvestKaskade.NachId(z.ProjektId, WirtschaftlichkeitSzenario.ERWARTET)
+                            .TryGetValue(z.Raster.Id, out k))
+                    { z.Raster.BetragNetto = k.Betrag; z.Basis = k.Basis; }
+                }
+                else if (z.KategorieId == DbWerte.KOSTEN_KATEGORIE_BETRIEB)
+                {
+                    KostenPositionNachweis n;
+                    if (WirtschaftlichkeitCtrl.BetriebNachId(z.ProjektId, WirtschaftlichkeitSzenario.ERWARTET)
+                            .TryGetValue(z.Raster.Id, out n))
+                    { z.Raster.BetragNetto = n.BetragJahr; z.Basis = n.Menge; }
+                }
+            }
+            catch { }
         }
 
         /// <summary>Bestandssignatur — Position ohne Anlagenbezug.</summary>

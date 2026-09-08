@@ -9343,6 +9343,12 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_TITEL_PROJEKT" xml:space="preserve">
     <value>Cost management {0} — {1}</value>
   </data>
+  <data name="KDLG_TT_BETRAG_BASIS_MENGE" xml:space="preserve">
+    <value>Calculated from rate and the project's reference quantity: {0} × {1}.</value>
+  </data>
+  <data name="KDLG_TT_BETRAG_BASIS_PROZENT" xml:space="preserve">
+    <value>Calculated from rate and the project's reference quantity: {0} of {1}.</value>
+  </data>
   <data name="KDLG_TT_BETRAG_PROJEKT" xml:space="preserve">
     <value>Calculated from rate and the project's reference quantity.</value>
   </data>
