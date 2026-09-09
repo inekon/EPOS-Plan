@@ -84,8 +84,8 @@ Von oben nach unten, immer:
    vorbelegt wie das Vorbild (in der Regel alle an).
 3. `<ChartBild Png="…" Alt="…" />`. Der Baustein bringt die **Zoomleiste** (`×1`, `1:1`)
    selbst mit; ein `<img>` an `ChartBild` vorbei wäre ein Bild ohne Zoom.
-   Wo der Renderer einen Achsenbereich zeichnen kann, kommen `BereichGewaehlt` und
-   `Zurueckgesetzt` dazu — dann erscheint zusätzlich der Knopf „Bereich".
+   **Jede Jahresganglinie** trägt dazu `BereichGewaehlt` und `Zurueckgesetzt` — dann
+   erscheint zusätzlich der Knopf „Bereich" (Datenzoom, siehe § 5.1).
 4. Steht das Bild in einem Spaltenraster, trägt seine `section`
    `epos-simerg-diagrammzeile` (volle Zeile, gedeckelt auf 75 % bzw. das Familienmaß).
 
@@ -101,6 +101,42 @@ Die Hülle wertet das mit `Alle(a)` / `Gewaehlt(a, alle, "…")` aus
 (`WindowsFormsApplication1/Views/Simulation/SimulationErgebnisHuelle.Bilder.cs`) — kein
 `wahl.Count == 0`-Rückfall.
 
+### 5.1 Datenzoom — an JEDER Jahresganglinie (W11b‑B‑24)
+
+Ein aufgezogenes Rechteck lässt den **Kern das Bild mit diesem Zeitausschnitt neu
+zeichnen**; „1:1" holt das ganze Jahr zurück. Der Bildzoom des Bausteins (Rad, Kneifgeste,
+Doppelklick) bleibt daneben bestehen — er vergrößert nur Bildpunkte und ist für 8 760
+Stützstellen auf 1 100 Bildpunkten zu grob.
+
+Der Weg ist überall derselbe und in **drei** Schritten fertig:
+
+| Schicht | Was zu tun ist |
+|---|---|
+| Reiter | ein `Diagrammbereich?`-Feld **je Bild**, `BereichGewaehlt="@(b => _bereich = b)"` und `Zurueckgesetzt="@(() => _bereich = null)"` am `ChartBild`, der Bereich als **sechster** Wert im `Bildauftrag` |
+| Hülle | `Fenster(a, laenge)` → `ChartRenderer.FensterAusBild(…)`, weitergereicht an die Zeichenmethode; `laenge` = 8 760 Stunden bzw. 35 040 Viertelstunden |
+| Kern | die Zeichenmethode schneidet **zuerst** zu (`Zugeschnitten`) und beschriftet die x-Achse mit `XAchseFenster` |
+
+**Wer ihn bekommt** — jedes Bild mit **Zeitachse**: Bedarf (Wärme, Strom), Wärmegang,
+Stromgang, Wärmepumpe (Wärmelast, Stromverbrauch, Speichertemperaturen), Heizkessel,
+Solarthermie, BHKW, Photovoltaik, Ladezustand des Stromspeichers.
+
+**Wer ihn nicht bekommt** — jedes Bild **ohne** Zeitachse: die Streuwolke
+„Leistung über Außentemperatur" (x = Temperatur), die Monatssäulen der Autarkie, Kuchen
+und Ringe. Dort gibt es keinen Rückruf und deshalb auch keinen Knopf „Bereich".
+
+Zwei Regeln, die man leicht verliert:
+
+* **Der Ausschnitt gilt in beiden Zweigen.** Auch die Dauerlinie („sortiert") wird aus dem
+  zugeschnittenen Ausschnitt gebildet; der Umschalter verwirft den Bereich **nicht**.
+* **Jedes Bild führt seinen eigenen Ausschnitt** — auch die drei Bilder eines Reiters.
+  Der Zwischenspeicherschlüssel trennt sie schon (`Bildauftrag.Schluessel` führt den
+  Bereich mit).
+
+Der **senkrechte** Anteil (`Achsenfenster.YAnteil`) wirkt nur dort, wo die Null unten
+bleibt und die Skala eine Leistungsskala ist — also im `ErzeugerStapel` und im
+`Jahresverlauf`. `GanglinieNormiert` (0…100 % der Jahresspitze) und `Temperaturverlauf`
+(Achse ohne Nullpunkt) übergehen ihn.
+
 ## 6. Hinweise, Warnungen, Kacheln
 
 * Leiser Hinweis: `<p class="epos-simerg-hinweis">`. Warnung mit Rolle: `<Warnbanner Stufe="…">`.
@@ -111,8 +147,9 @@ Die Hülle wertet das mit `Alle(a)` / `Gewaehlt(a, alle, "…")` aus
 
 ## 7. Was ausdrücklich NICHT vereinheitlicht ist
 
-* **Datenzoom** („Bereich"): nur an den Ganglinien, deren Renderer einen Achsenausschnitt
-  zeichnen kann (Bedarf, Wärmegang, Stromgang). Die Zoomleiste selbst hat jedes Bild.
+* **Datenzoom** („Bereich"): an **jedem** Bild mit Zeitachse, aber an keinem ohne — die
+  Streuwolke, die Monatssäulen, Kuchen und Ringe bleiben beim Bildzoom (§ 5.1). Die
+  Zoomleiste selbst hat jedes Bild.
 * **Zahlenformate in Tabellen** (`F1` für Jahresnutzungsgrad, Vollzyklen, Füllstand; `F4`
   für den Wechselrichter-Nutzungsgrad): Das sind Genauigkeiten des Vorbilds, keine
   Schreibweisen.

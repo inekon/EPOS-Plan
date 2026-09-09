@@ -179,7 +179,13 @@
                       Wert="@_bedarf" WertChanged="@(w => _bedarf = w)" />
         </div>
 
-        <ChartBild Png="@BildKessel" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
+        @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
+           mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
+           zurück. Der Ausschnitt gilt in BEIDEN Zweigen — auch die Dauerlinie
+           lässt sich aufziehen, so wie im Bedarfsreiter seit dem 05.09.2026. *@
+        <ChartBild Png="@BildKessel" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                   BereichGewaehlt="@(b => _bereich = b)"
+                   Zurueckgesetzt="@(() => _bereich = null)" />
 
         @if (Csv.HasDelegate)
         {
@@ -219,7 +225,13 @@
     /// <summary>Die eingeschalteten Reihen des Bildes (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
+    /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
+    public Diagrammbereich? Bereich => _bereich;
+
     private bool _sortiert;
+
+    // W11b‑B‑24: der Zeitausschnitt des Datenzooms.
+    private Diagrammbereich? _bereich;
 
     // W11b‑B‑21: je Reihe ein Zustand, ALLE vorbelegt an.
     private bool _produktion = true;
@@ -253,7 +265,8 @@
     }
 
     private byte[]? BildKessel =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Heizkessel, _sortiert, -1, Reihen()));
+        Bild?.Invoke(new Bildauftrag(Bilder.Heizkessel, _sortiert, -1, Reihen(),
+                                     0.0, _bereich));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

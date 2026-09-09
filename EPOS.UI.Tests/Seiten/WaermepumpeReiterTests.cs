@@ -21,6 +21,9 @@ namespace EPOS.UI.Tests.Seiten;
 /// <para>Seit dem Anwenderwunsch 08.09.2026 (<b>W11b‑B‑17</b>) dazu die WAHL DER
 /// REIHEN: je Bild eine Schalterzeile, alle vorbelegt an, die Wahl im
 /// Bildauftrag.</para>
+/// <para>Und seit dem Anwenderentscheid 09.09.2026 (<b>W11b‑B‑24</b>) der
+/// DATENZOOM an jedem Bild mit Zeitachse — aber nicht an der Streuwolke, deren
+/// x-Achse die Außentemperatur ist.</para>
 /// </summary>
 public class WaermepumpeReiterTests : BunitContext
 {
@@ -366,5 +369,119 @@ public class WaermepumpeReiterTests : BunitContext
         Assert.Empty(seite.FindAll("table"));
         Assert.Empty(seite.FindAll("button[role='tab']"));
         Assert.Contains("Keine Simulationsdaten", seite.Markup);
+    }
+
+    // =====================================================================
+    //  W11b‑B‑24 — DER DATENZOOM AN JEDER JAHRESGANGLINIE
+    //  (Anwenderentscheid 09.09.2026)
+    // =====================================================================
+
+    /// <summary>Das Diagramm Nr. <paramref name="nr"/> in der Reihenfolge des Markups.</summary>
+    private static EPOS.UI.Bausteine.Diagramm Bildrahmen(
+        IRenderedComponent<WaermepumpeReiter> seite, int nr)
+        => seite.FindComponents<EPOS.UI.Bausteine.Diagramm>()[nr].Instance;
+
+    /// <summary>Der Knopf „1:1" des Diagramms Nr. <paramref name="nr"/>.</summary>
+    private static void EinsZuEins(IRenderedComponent<WaermepumpeReiter> seite, int nr)
+        => seite.FindComponents<EPOS.UI.Bausteine.Diagramm>()[nr]
+                .FindAll("button.epos-diagramm-knopf")
+                .First(k => k.TextContent.Trim() == "1:1").Click();
+
+    /// <summary>
+    /// Ein aufgezogenes Rechteck geht UNVERÄNDERT in den Bildauftrag — was an
+    /// dieser Stelle des Bildes steht, weiß nur der Renderer, der es gezeichnet
+    /// hat. Der Knopf „1:1" nimmt den Ausschnitt wieder zurück.
+    /// </summary>
+    [Fact]
+    public async Task Die_Jahresganglinie_traegt_den_aufgezogenen_Bereich()
+    {
+        var seite = Zeichnen(Erg());
+
+        // [0] die Streuwolke, [1] die Jahresganglinie des Unterblattes.
+        await seite.InvokeAsync(() => Bildrahmen(seite, 1).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+
+        Assert.Equal(0.25, seite.Instance.ProduktionBereich!.XVon);
+        Assert.Equal(0.5, _auftraege.Last(a => a.Bild == Bilder.WpProduktion).Bereich!.XBis);
+
+        EinsZuEins(seite, 1);
+
+        Assert.Null(seite.Instance.ProduktionBereich);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.WpProduktion).Bereich);
+    }
+
+    /// <summary>
+    /// Der Ausschnitt ÜBERLEBT den Umschalter „sortiert" — dieselbe Regel wie im
+    /// Bedarfsreiter seit dem 05.09.2026: Der Zoom gilt in BEIDEN Zweigen, weil der
+    /// Renderer die Dauerlinie aus dem zugeschnittenen Ausschnitt bildet.
+    /// </summary>
+    [Fact]
+    public async Task Der_Ausschnitt_gilt_auch_fuer_die_Dauerlinie()
+    {
+        var seite = Zeichnen(Erg());
+        await seite.InvokeAsync(() => Bildrahmen(seite, 1).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+        _auftraege.Clear();
+
+        Kasten(seite, SORTIERT, 0).Change(true);
+
+        Bildauftrag gang = _auftraege.Last(a => a.Bild == Bilder.WpProduktion);
+        Assert.True(gang.Sortiert);
+        Assert.Equal(0.25, gang.Bereich!.XVon);
+    }
+
+    /// <summary>
+    /// Das Strombild liegt auf dem ZWEITEN Unterblatt und führt seinen EIGENEN
+    /// Ausschnitt: Es zeigt eine andere Größe, und ein geteilter Ausschnitt hätte
+    /// den einen Zug am anderen Bild sichtbar gemacht.
+    /// </summary>
+    [Fact]
+    public async Task Das_Strombild_traegt_seinen_eigenen_Ausschnitt()
+    {
+        var seite = Zeichnen(Erg());
+        seite.FindAll("button[role='tab']")[1].Click();
+
+        await seite.InvokeAsync(() => Bildrahmen(seite, 1).BereichGemeldet(0.3, 0.6, 0.2, 0.9));
+
+        Assert.Equal(0.3, seite.Instance.StromBereich!.XVon);
+        Assert.Equal(0.6, _auftraege.Last(a => a.Bild == Bilder.WpStromverbrauch).Bereich!.XBis);
+        Assert.Null(seite.Instance.ProduktionBereich);
+    }
+
+    /// <summary>
+    /// Und dasselbe für die Speichertemperaturen auf dem dritten Unterblatt. Gerade
+    /// dieses Bild gewinnt doppelt: Der Ausschnitt spreizt auch die Temperaturachse,
+    /// die keinen Nullpunkt hat.
+    /// </summary>
+    [Fact]
+    public async Task Die_Speichertemperaturen_tragen_ihren_eigenen_Ausschnitt()
+    {
+        var seite = Zeichnen(Erg(), temperaturen: true);
+        seite.FindAll("button[role='tab']")[2].Click();
+
+        await seite.InvokeAsync(() => Bildrahmen(seite, 1).BereichGemeldet(0.4, 0.7, 0.2, 0.9));
+
+        Assert.Equal(0.4, seite.Instance.TemperaturBereich!.XVon);
+        Assert.Equal(0.7, _auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen).Bereich!.XBis);
+    }
+
+    /// <summary>
+    /// Die STREUWOLKE bekommt KEINEN Datenzoom: Ihre x-Achse ist die
+    /// Außentemperatur, kein Zeitstrahl — ein „Zeitausschnitt" wäre dort ohne Sinn.
+    /// Sichtbar ist das am fehlenden Umschalter „Bereich" (kein Rückruf, kein Knopf).
+    /// </summary>
+    [Fact]
+    public void Die_Streuwolke_bleibt_ohne_Datenzoom()
+    {
+        var seite = Zeichnen(Erg());
+
+        Assert.Equal(new[] { "1:1" },
+                     seite.FindComponents<EPOS.UI.Bausteine.Diagramm>()[0]
+                          .FindAll("button.epos-diagramm-knopf")
+                          .Select(k => k.TextContent.Trim()).ToArray());
+
+        // Die Jahresganglinie daneben hat beide Knoepfe.
+        Assert.Equal(new[] { "Bereich", "1:1" },
+                     seite.FindComponents<EPOS.UI.Bausteine.Diagramm>()[1]
+                          .FindAll("button.epos-diagramm-knopf")
+                          .Select(k => k.TextContent.Trim()).ToArray());
     }
 }

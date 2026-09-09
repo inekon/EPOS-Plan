@@ -86,7 +86,12 @@
                               Wert="@_produktion" WertChanged="@(w => _produktion = w)" />
                 </div>
 
-                <ChartBild Png="@BildSolar" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
+                @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
+                   mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
+                   zurück. *@
+                <ChartBild Png="@BildSolar" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                           BereichGewaehlt="@(b => _bereich = b)"
+                           Zurueckgesetzt="@(() => _bereich = null)" />
             </section>
 
         </div>
@@ -140,6 +145,12 @@
     /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
+    /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
+    public Diagrammbereich? Bereich => _bereich;
+
+    // W11b‑B‑24: der Zeitausschnitt des Datenzooms.
+    private Diagrammbereich? _bereich;
+
     // W11b‑B‑19: je Reihe ein Zustand, BEIDE vorbelegt an.
     private bool _bedarf = true;
     private bool _produktion = true;
@@ -159,7 +170,8 @@
     }
 
     private byte[]? BildSolar =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Solarthermie, false, -1, Reihen()));
+        Bild?.Invoke(new Bildauftrag(Bilder.Solarthermie, false, -1, Reihen(),
+                                     0.0, _bereich));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

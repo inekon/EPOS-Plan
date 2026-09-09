@@ -44,7 +44,12 @@
 
             @* Das Diagramm steht ueber BEIDE Spalten (Befund W11b-B-2). *@
             <section class="epos-simerg-block epos-simerg-diagrammzeile">
-                <ChartBild Png="@BildSoc" Alt="@Resource.SP_CHART_TITEL_SOC" />
+                @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
+                   mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
+                   zurück. *@
+                <ChartBild Png="@BildSoc" Alt="@Resource.SP_CHART_TITEL_SOC"
+                           BereichGewaehlt="@(b => _bereich = b)"
+                           Zurueckgesetzt="@(() => _bereich = null)" />
 
                 <div class="epos-simerg-schalter">
                     @if (Csv.HasDelegate)
@@ -155,9 +160,18 @@
     /// <summary>Der Variantenvergleich als Ueberlagerung; ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback Vergleich { get; set; }
 
+    /// <summary>Der aufgezogene Zeitausschnitt des SoC-Bildes; <c>null</c> = ganzes Jahr.</summary>
+    public Diagrammbereich? Bereich => _bereich;
+
     private int Spalten => Daten.MitVergleich ? 4 : 3;
 
-    private byte[]? BildSoc => Bild?.Invoke(new Bildauftrag(Bilder.SpeicherSoc));
+    // W11b‑B‑24: der Zeitausschnitt des Datenzooms. Ein Speicher lädt und entlädt im
+    // TAGESrhythmus - in der Vollansicht liegen rund 40 Viertelstunden auf einem
+    // Bildpunkt, und erst der Ausschnitt zeigt einen einzelnen Zyklus.
+    private Diagrammbereich? _bereich;
+
+    private byte[]? BildSoc =>
+        Bild?.Invoke(new Bildauftrag(Bilder.SpeicherSoc, false, -1, null, 0.0, _bereich));
 
     /// <summary>
     /// Die Zeilen EINER Gruppe, jede mit der Ueberschrift des Unterabschnitts, den

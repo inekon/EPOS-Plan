@@ -1498,13 +1498,14 @@ aus — der Fall liest die REGEL, wie die Wachen zu W6‑B‑1 und W6‑B‑4).
 
 ### 6. Bewußt NICHT vereinheitlicht
 
-* **Der Datenzoom** („Bereich"-Knopf, aufgezogenes Rechteck) steht weiter nur an den drei
+* **Der Datenzoom** („Bereich"-Knopf, aufgezogenes Rechteck) stand hier noch nur an den drei
   Ganglinien, deren Hülle ein `Achsenfenster` an den Renderer reicht (Bedarf, Wärmegang,
   Stromgang). Die **Zoomleiste** selbst (`×1`, `1:1`) hat jedes Bild — sie kommt aus dem Baustein
   `Diagramm`, und das ist die Hausregel seit A‑1. Die Streuwolke „Leistung über
   Außentemperatur" hat gar keine Zeitachse; die übrigen Ganglinien könnten den Zoom bekommen
   (`ErzeugerStapel` nimmt `fenster` bereits entgegen), das ist aber ein Eingriff in die
-  Bildbestellung der Hülle und keine Frage der Darstellung mehr. **Offener Punkt.**
+  Bildbestellung der Hülle und keine Frage der Darstellung mehr.
+  → **Erledigt mit W11b‑B‑24** (Anwenderentscheid desselben Tages, siehe unten).
 * **Zahlenformate in Tabellen** (`F1` für Jahresnutzungsgrad, Speicherkapazität, Vollzyklen und
   Füllstand, `F4` für den Wechselrichter-Nutzungsgrad): Das sind Genauigkeiten des Vorbilds. `N2`
   würde „91,70 %" schreiben, wo der Kessel 91,7 % liefert, und die vierte Stelle des
@@ -1527,3 +1528,108 @@ aus — der Fall liest die REGEL, wie die Wachen zu W6‑B‑1 und W6‑B‑4).
 Sandbox: Build **0 Fehler**, Kern **2137/2137**, UI **3337/3337** (vorher 3324; +13 UI, Kern
 unverändert). Kein Rechenweg berührt — dieselben Zahlen aus demselben Lauf, nur anders gruppiert,
 anders gesetzt und in wählbaren Reihen. Die Sichtabnahme am Programm steht aus.
+
+## Anwenderentscheid 09.09.2026 — W11b‑B‑24: Datenzoom per Rechteck für ALLE Jahresganglinien
+
+**Wortlaut:** „Datenzoom per Rechteck für ALLE Jahresganglinien der ‚Detaillierten
+Simulation‘." (Dialog „Detaillierte Simulation", alle Fachreiter.) Er löst den offenen Punkt
+ein, den W11b‑B‑23 am Ende seiner Konsistenzrunde stehen ließ.
+
+**Befund.** Der Datenzoom (Windows-Abnahme 05.09.2026, Befund A‑1) gab es an genau **drei**
+Bildern: Bedarf (Wärme, Strom), Wärmegang, Stromgang. An den **Fachreitern** blieb es beim
+BILDzoom des Bausteins `Diagramm` — Rad, Kneifgeste, Doppelklick —, und der vergrößert nur
+Bildpunkte: Bei 8 760 Stützstellen auf rund 1 100 Bildpunkten liegen acht Stunden auf einem
+Bildpunkt, und ein vergrößerter Bildpunkt zeigt keine Stunde mehr. Drei Gründe standen dem
+Zoom im Weg, je nach Bild ein anderer:
+
+1. **Der Reiter fragte nicht.** Kessel, BHKW, Solarthermie, Photovoltaik und Stromspeicher
+   belegten `BereichGewaehlt`/`Zurueckgesetzt` am `ChartBild` nicht — ohne Rückruf erscheint
+   der Knopf „Bereich" gar nicht erst.
+2. **Die Weiche warf den Auftrag weg.** `BildWpStrom()`, `BildTemperaturen()` und `BildSoc()`
+   waren parameterlos; die Hülle rief sie ohne den `Bildauftrag`, und damit war der Bereich
+   schon vor dem Renderer verloren.
+3. **Eine Zeichenmethode kannte den Ausschnitt gar nicht.** `ChartRenderer.Temperaturverlauf`
+   war das einzige Bild mit Stundenachse ohne `fenster`-Parameter. (`ErzeugerStapel`,
+   `GanglinieNormiert` und `Jahresverlauf` hatten ihn seit A‑1 bzw. W8‑E‑2.)
+
+### Änderung
+
+| Schicht | Was war | Was ist |
+|---|---|---|
+| **Kern** | `Temperaturverlauf(titel, reihen, minAuto)` | dazu `Achsenfenster fenster = null`: Zuschnitt **zuerst**, x-Achse über `XAchseFenster`, Spanne und Mindestspanne aus dem Ausschnitt. `YAnteil` bleibt ohne Wirkung — diese Achse hat keinen Nullpunkt |
+| **Hülle** | `BildWpStrom()`, `BildTemperaturen()`, `BildSoc()` parameterlos; sechs Bilder ohne `fenster` | alle drei nehmen den `Bildauftrag`; **acht** Bilder reichen `Fenster(a, laenge)` weiter |
+| **Reiter** | kein `Diagrammbereich`-Feld | je Bild eines, `BereichGewaehlt`/`Zurueckgesetzt` am `ChartBild`, der Bereich als sechster Wert im `Bildauftrag` |
+| **Prüfhilfen** | — | `Bereich` (Kessel, BHKW, Solar, PV, Stromspeicher), `ProduktionBereich`/`StromBereich`/`TemperaturBereich` (Wärmepumpe) |
+
+**Welches Bild bekommt den Zoom — und welches nicht.** Maßstab ist die **x-Achse**: Nur wo
+sie Zeit zählt, ist ein „Zeitausschnitt" überhaupt eine Aussage.
+
+| Bild | Reiter | Zeichner | Zoom | Grund |
+|---|---|---|---|---|
+| `BEDARF_WAERME` | Bedarf | `GanglinieNormiert` | **ja** (seit A‑1) | Stundenachse |
+| `BEDARF_STROM` | Bedarf | `GanglinieNormiert` | **ja** (seit A‑1) | Viertelstundenachse |
+| `WAERMEGANG` | Wärmegang | `ErzeugerStapel` | **ja** (seit A‑1) | Stundenachse |
+| `STROMGANG` | Stromgang | `ErzeugerStapel` | **ja** (seit A‑1) | Viertelstundenachse |
+| `WP_PRODUKTION` | Wärmepumpe | `ErzeugerStapel` | **ja** (neu) | Stundenachse |
+| `WP_STROMVERBRAUCH` | Wärmepumpe | `Jahresverlauf` | **ja** (neu) | Stundenachse |
+| `SPEICHERTEMPERATUREN` | Wärmepumpe | `Temperaturverlauf` | **ja** (neu) | Stundenachse; spreizt zusätzlich die Temperaturachse |
+| `HEIZKESSEL` | Heizkessel | `ErzeugerStapel` | **ja** (neu) | Stundenachse |
+| `SOLARTHERMIE` | Solarthermie | `ErzeugerStapel` | **ja** (neu) | Stundenachse |
+| `BHKW` | BHKW | `ErzeugerStapel` | **ja** (neu) | Stundenachse |
+| `PHOTOVOLTAIK` | Photovoltaik | `ErzeugerStapel` | **ja** (neu) | Viertelstundenachse (35 040 Stützstellen) |
+| `SPEICHER_SOC` | Stromspeicher | `Jahresverlauf` | **ja** (neu) | Viertelstundenachse; der Speicher arbeitet im Tagesrhythmus |
+| `WP_LEISTUNG_TEMPERATUR` | Wärmepumpe | `Streuwolke` | **nein** | x = Außentemperatur, keine Zeitachse |
+| `AUTARKIE_MONATE` | Ergebnis | `MonatsStapel` | **nein** | zwölf Monatssäulen, Kategorieachse |
+| `UEBERSICHT_KUCHEN` | Übersicht | `Kuchen` | **nein** | Kreis, keine Achse |
+| `RING_WAERME` / `RING_STROM` | Übersicht | `Ring` | **nein** | Kreis, keine Achse |
+
+**Der sortierte Zweig.** Der Ausschnitt gilt **in beiden Zweigen** — genau wie im Bedarfsreiter
+seit dem 05.09.2026: Der Renderer schneidet zuerst zu und bildet die Dauerlinie **aus dem
+Ausschnitt**. Der Umschalter „sortiert" verwirft den Bereich also **nicht**. (Der
+`GebaeudeBedarfDialog` hält es umgekehrt und verwirft ihn; dort wechselt der Schalter zwischen
+zwei Bildern mit **verschiedener** x-Bedeutung. Auf der Ergebnisseite ist das eine Frage der
+Darstellung derselben Reihe, deshalb bleibt der Ausschnitt stehen.)
+
+**Jedes Bild führt seinen eigenen Ausschnitt**, auch die drei Bilder des Wärmepumpenreiters:
+Sie stehen auf drei Unterblättern und zeigen verschiedene Größen. Der
+Zwischenspeicherschlüssel trennt die Ausschnitte schon (`Bildauftrag.Schluessel` führt den
+Bereich mit, auf vier Nachkommastellen gerundet).
+
+**Nichts am Bestand verändert:** Ohne Rechteck kommt überall `null` heraus, und jede
+Zeichenmethode zeichnet Bildpunkt für Bildpunkt dasselbe wie vorher — die 32 ChartProben und
+der Fall `Temperaturverlauf_ohne_Fenster_bleibt_wie_er_war` prüfen dieselbe Zusage von zwei
+Seiten.
+
+### Nachweis
+
+**Kern**, `ErgebnisbilderTests` — neu (4): `Temperaturverlauf_ohne_Fenster_bleibt_wie_er_war`
+(byte-gleich zum dreistelligen Aufruf des Bestands),
+`Temperaturverlauf_mit_Fenster_zeichnet_den_Ausschnitt` (anderes Bild, gleiches Maß 1 240 × 560),
+`Der_senkrechte_Anteil_bleibt_am_Temperaturbild_ohne_Wirkung`,
+`Temperaturverlauf_ohne_Reihen_vertraegt_ein_Fenster`.
+
+**UI**, `WaermepumpeReiterTests` — neu (5):
+`Die_Jahresganglinie_traegt_den_aufgezogenen_Bereich` (melden → Bildauftrag trägt den Bereich;
+„1:1" → `null`), `Der_Ausschnitt_gilt_auch_fuer_die_Dauerlinie`,
+`Das_Strombild_traegt_seinen_eigenen_Ausschnitt`,
+`Die_Speichertemperaturen_tragen_ihren_eigenen_Ausschnitt`,
+`Die_Streuwolke_bleibt_ohne_Datenzoom` (nur der Knopf „1:1", kein „Bereich").
+
+`ErzeugerReiterTests` — neu (6): `Kessel_traegt_den_aufgezogenen_Bereich`,
+`Kessel_behaelt_den_Ausschnitt_beim_Umschalten_auf_sortiert`,
+`Solarthermie_traegt_den_aufgezogenen_Bereich`, `Bhkw_traegt_den_aufgezogenen_Bereich`,
+`Photovoltaik_traegt_den_aufgezogenen_Bereich`, `Jedes_der_vier_Bilder_traegt_den_Bereichsknopf`.
+
+`StromspeicherReiterTests` — neu (2): `Das_SoC_Bild_traegt_den_aufgezogenen_Bereich`,
+`Das_SoC_Bild_traegt_den_Bereichsknopf`.
+
+**Nicht durch Tests gedeckt:** die Weitergabe des Fensters IN der Hülle —
+`SimulationErgebnisHuelle.Bilder.cs` liegt in `WindowsFormsApplication1`, und es gibt kein
+Testprojekt, das dort ein Bild zeichnet (dieselbe Lage wie bei W11b‑B‑17/19/21). Sie folgt
+zeichengleich den Vorbildern `BildBedarfWaerme`/`BildWaermegang`; die Sichtabnahme am Programm
+steht aus.
+
+### Zahlen
+
+Sandbox: Build **0 Fehler**, Kern **2141/2141** (vorher 2137; +4), UI **3350/3350** (vorher 3337;
++13). Kein Rechenweg berührt — derselbe Lauf, nur ein anderer Achsenbereich beim Zeichnen.

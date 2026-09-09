@@ -33,6 +33,10 @@ namespace EPOS.UI.Tests.Seiten;
 /// <b>W11b‑B‑23</b> zieht dieselbe Bauform durch alle vier Reiter — Balken statt
 /// <c>h3</c> für jede Hauptgruppe, ein Leerhinweis, der die fehlende Komponente
 /// nennt, und die Reihenwahl auch am BHKW-Bild.</para>
+/// <para><b>W11b‑B‑24</b> (Anwenderentscheid 09.09.2026) gibt jedem der vier
+/// Bilder den DATENZOOM: Ein aufgezogenes Rechteck geht als
+/// <c>Bildauftrag.Bereich</c> an den Kern, der Knopf „1:1" nimmt ihn
+/// zurück.</para>
 /// </summary>
 public class ErzeugerReiterTests : BunitContext
 {
@@ -898,4 +902,132 @@ public class ErzeugerReiterTests : BunitContext
         Assert.Contains("Photovoltaik", Render<PhotovoltaikReiter>(p => p.Add(x => x.Bild, Bild))
                                             .Find("p.epos-simerg-hinweis").TextContent);
     }
+
+    // =====================================================================
+    //  W11b‑B‑24 — DER DATENZOOM AN JEDER JAHRESGANGLINIE
+    //  (Anwenderentscheid 09.09.2026)
+    //
+    //  Bis dahin gab es ihn nur im Bedarfsreiter, im Wärme- und im Stromgang;
+    //  an den vier Erzeugerreitern blieb es beim BILDzoom, und der ist für
+    //  8 760 Stützstellen auf 1 100 Bildpunkten zu grob.
+    // =====================================================================
+
+    /// <summary>Das (einzige) Diagramm des Reiters.</summary>
+    private static EPOS.UI.Bausteine.Diagramm Bildrahmen<T>(IRenderedComponent<T> seite)
+        where T : class, IComponent
+        => seite.FindComponent<EPOS.UI.Bausteine.Diagramm>().Instance;
+
+    /// <summary>Der Knopf „1:1" des Diagramms.</summary>
+    private static void EinsZuEins<T>(IRenderedComponent<T> seite) where T : class, IComponent
+        => seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
+                .FindAll("button.epos-diagramm-knopf")
+                .First(k => k.TextContent.Trim() == "1:1").Click();
+
+    /// <summary>
+    /// Das aufgezogene Rechteck geht UNVERÄNDERT in den Bildauftrag — was an
+    /// dieser Stelle des Bildes steht, weiß nur der Renderer, der es gezeichnet
+    /// hat —, und „1:1" nimmt es wieder zurück.
+    /// </summary>
+    [Fact]
+    public async Task Kessel_traegt_den_aufgezogenen_Bereich()
+    {
+        var seite = KesselZeichnen(Kessel());
+
+        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+
+        Assert.Equal(0.25, seite.Instance.Bereich!.XVon);
+        Assert.Equal(0.5, _auftraege.Last(a => a.Bild == Bilder.Heizkessel).Bereich!.XBis);
+
+        EinsZuEins(seite);
+
+        Assert.Null(seite.Instance.Bereich);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Heizkessel).Bereich);
+    }
+
+    /// <summary>
+    /// Der Ausschnitt ÜBERLEBT den Umschalter „sortiert" — dieselbe Regel wie im
+    /// Bedarfsreiter seit dem 05.09.2026: Der Zoom gilt in BEIDEN Zweigen, weil der
+    /// Renderer die Dauerlinie aus dem zugeschnittenen Ausschnitt bildet.
+    /// </summary>
+    [Fact]
+    public async Task Kessel_behaelt_den_Ausschnitt_beim_Umschalten_auf_sortiert()
+    {
+        var seite = KesselZeichnen(Kessel());
+        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+        _auftraege.Clear();
+
+        Kasten(seite, 0, 0).Change(true);
+
+        Bildauftrag gang = _auftraege.Last(a => a.Bild == Bilder.Heizkessel);
+        Assert.True(gang.Sortiert);
+        Assert.Equal(0.25, gang.Bereich!.XVon);
+    }
+
+    [Fact]
+    public async Task Solarthermie_traegt_den_aufgezogenen_Bereich()
+    {
+        var seite = SolarZeichnen();
+
+        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.3, 0.6, 0.2, 0.9));
+
+        Assert.Equal(0.3, seite.Instance.Bereich!.XVon);
+        Assert.Equal(0.6, _auftraege.Last(a => a.Bild == Bilder.Solarthermie).Bereich!.XBis);
+
+        EinsZuEins(seite);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Solarthermie).Bereich);
+    }
+
+    [Fact]
+    public async Task Bhkw_traegt_den_aufgezogenen_Bereich()
+    {
+        var seite = BhkwZeichnen(Bhkw());
+
+        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.35, 0.65, 0.2, 0.9));
+
+        Assert.Equal(0.35, seite.Instance.Bereich!.XVon);
+        Assert.Equal(0.65, _auftraege.Last(a => a.Bild == Bilder.Bhkw).Bereich!.XBis);
+
+        EinsZuEins(seite);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Bhkw).Bereich);
+    }
+
+    /// <summary>
+    /// Das PV-Bild zählt VIERTELstunden; der Reiter merkt davon nichts — er meldet
+    /// Bildanteile, und erst die Hülle sagt dem Kern, wieviele Stützstellen dahinter
+    /// stehen (35 040 statt 8 760).
+    /// </summary>
+    [Fact]
+    public async Task Photovoltaik_traegt_den_aufgezogenen_Bereich()
+    {
+        var seite = PvZeichnen();
+
+        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.4, 0.7, 0.2, 0.9));
+
+        Assert.Equal(0.4, seite.Instance.Bereich!.XVon);
+        Assert.Equal(0.7, _auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Bereich!.XBis);
+
+        EinsZuEins(seite);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Bereich);
+    }
+
+    /// <summary>
+    /// Sichtbar wird der Datenzoom am Umschalter „Bereich" — kein Rückruf, kein
+    /// Knopf. Vor W11b‑B‑24 stand an diesen vier Bildern nur „1:1".
+    /// </summary>
+    [Fact]
+    public void Jedes_der_vier_Bilder_traegt_den_Bereichsknopf()
+    {
+        string[] soll = { "Bereich", "1:1" };
+
+        Assert.Equal(soll, Knoepfe(KesselZeichnen(Kessel())));
+        Assert.Equal(soll, Knoepfe(SolarZeichnen()));
+        Assert.Equal(soll, Knoepfe(BhkwZeichnen(Bhkw())));
+        Assert.Equal(soll, Knoepfe(PvZeichnen()));
+    }
+
+    /// <summary>Die Beschriftungen der Knoepfe am Diagrammrahmen, in ihrer Reihenfolge.</summary>
+    private static string[] Knoepfe<T>(IRenderedComponent<T> seite) where T : class, IComponent
+        => seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
+                .FindAll("button.epos-diagramm-knopf")
+                .Select(k => k.TextContent.Trim()).ToArray();
 }

@@ -2255,7 +2255,22 @@ namespace WindowsFormsApplication1
         /// <c>true</c> = die Achse beginnt beim kleinsten vorkommenden Wert (der Regelfall
         /// des Vorlaeufers). <c>false</c> = sie beginnt bei null.
         /// </param>
-        public static byte[] Temperaturverlauf(string titel, IReadOnlyList<Reihe> reihen, bool minAuto)
+        /// <param name="fenster">
+        /// DATENZOOM (Anwenderentscheid 09.09.2026, W11b-B-24): der Zeitausschnitt, den der
+        /// Anwender im Bild aufgezogen hat; <c>null</c> = das ganze Jahr und damit Bild fuer
+        /// Bild das des Bestands. Zugeschnitten wird ZUERST — Spanne, Mindestspanne und
+        /// Linien beziehen sich danach auf den Ausschnitt, genau wie es
+        /// <see cref="ErzeugerStapel"/> haelt, und die x-Achse wechselt auf die
+        /// WIRKLICHEN Jahresstunden (<see cref="XAchseFenster"/>).
+        ///
+        /// <para>Der SENKRECHTE Anteil (<see cref="Achsenfenster.YAnteil"/>) bleibt hier
+        /// ohne Wirkung: Diese Achse hat KEINEN Nullpunkt, den man stehen lassen koennte
+        /// (das ist ihr Wesenszug, siehe <paramref name="minAuto"/>), und sie spannt sich
+        /// ohnehin ueber Min und Max des ANGEZEIGTEN Ausschnitts — der Zuschnitt spreizt
+        /// die Temperaturen also von selbst.</para>
+        /// </param>
+        public static byte[] Temperaturverlauf(string titel, IReadOnlyList<Reihe> reihen, bool minAuto,
+                                               Achsenfenster fenster = null)
         {
             int W = 1240, H = 560;
             using (var flaeche = Start(W, H))
@@ -2264,7 +2279,12 @@ namespace WindowsFormsApplication1
                 Titel(g, titel ?? "", W);
                 var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
 
-                List<Reihe> gueltig = Brauchbare(reihen);
+                // Der Zuschnitt steht GANZ oben: Alles darunter rechnet mit dem Ausschnitt,
+                // ohne davon zu wissen. gesamt merkt sich die volle Laenge - die
+                // Achsenbeschriftung nennt Jahresstunden, nicht Fensterstunden.
+                List<Reihe> ganz = Brauchbare(reihen);
+                int gesamt = ganz.Count > 0 ? ganz[0].Werte.Length : 0;
+                List<Reihe> gueltig = fenster == null ? ganz : Brauchbare(Zugeschnitten(ganz, fenster));
                 if (gueltig.Count == 0)
                 {
                     Leerhinweis(g, rc);
@@ -2304,7 +2324,8 @@ namespace WindowsFormsApplication1
                     g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
                     g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
                 }
-                XAchse(g, rc, Achse.Jahresstunden, gueltig[0].Werte.Length);
+                if (fenster == null) XAchse(g, rc, Achse.Jahresstunden, gueltig[0].Werte.Length);
+                else XAchseFenster(g, rc, fenster, gesamt);
 
                 foreach (Reihe r in gueltig)
                 {

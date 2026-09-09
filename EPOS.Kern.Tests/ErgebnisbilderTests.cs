@@ -559,5 +559,87 @@ namespace EPOS.Kern.Tests
                 ChartRenderer.ErzeugerStapel("T", reihen, null, null, "kW",
                                              ChartRenderer.Achse.Jahresstunden, false, null, null, mit));
         }
+
+        // ------------------------------------------- Datenzoom am Temperaturbild
+        //
+        // Anwenderentscheid 09.09.2026, W11b-B-24: JEDE Jahresganglinie der
+        // Detaillierten Simulation bekommt den Datenzoom. Das Temperaturbild B7 war
+        // das einzige Bild mit Stundenachse, dessen Zeichenmethode noch KEINEN
+        // Zeitausschnitt kannte; sie hat ihn jetzt, nach demselben Muster wie
+        // ErzeugerStapel.
+
+        /// <summary>Zwei Speicherreihen mit einer Spanne, die weit ueber 5 K liegt.</summary>
+        private static List<ChartRenderer.Reihe> Temperaturreihen()
+        {
+            return new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("oben", Reihe(60, 20), SKColors.Red),
+                new ChartRenderer.Reihe("unten", Reihe(45, 20, 2000), SKColors.Blue,
+                                        ChartRenderer.Stapelart.Keine, true)
+            };
+        }
+
+        /// <summary>
+        /// Die Zusage des Zusatzparameters gilt auch hier: OHNE Fenster zeichnet das
+        /// Temperaturbild byte-genau dasselbe wie vor W11b-B-24 - der dreistellige
+        /// Aufruf des Bestands und der vierstellige mit <c>null</c> sind ein Bild.
+        /// </summary>
+        [Fact]
+        public void Temperaturverlauf_ohne_Fenster_bleibt_wie_er_war()
+        {
+            List<ChartRenderer.Reihe> reihen = Temperaturreihen();
+
+            Assert.Equal(ChartRenderer.Temperaturverlauf("T", reihen, true),
+                         ChartRenderer.Temperaturverlauf("T", reihen, true, null));
+        }
+
+        /// <summary>
+        /// Mit Fenster entsteht ein ANDERES Bild - und zwar in denselben Massen. Der
+        /// Ausschnitt zeichnet neu, er schneidet nicht das fertige Bild zu.
+        /// </summary>
+        [Fact]
+        public void Temperaturverlauf_mit_Fenster_zeichnet_den_Ausschnitt()
+        {
+            List<ChartRenderer.Reihe> reihen = Temperaturreihen();
+
+            byte[] ganz = ChartRenderer.Temperaturverlauf("T", reihen, true);
+            byte[] teil = ChartRenderer.Temperaturverlauf("T", reihen, true,
+                                                          new ChartRenderer.Achsenfenster(2000, 2500));
+
+            Assert.NotEqual(ganz, teil);
+            Assert.Equal((1240, 560), Mass(teil));
+        }
+
+        /// <summary>
+        /// Der SENKRECHTE Anteil bleibt hier ohne Wirkung. Diese Achse hat keinen
+        /// Nullpunkt, den man stehen lassen koennte - sie spannt sich ueber Min und
+        /// Max des ANGEZEIGTEN Ausschnitts und spreizt die Temperaturen dadurch von
+        /// selbst. Eine zweite Spreizung obendrauf waere eine Achse, deren Beschriftung
+        /// nicht mehr zu den Linien passt.
+        /// </summary>
+        [Fact]
+        public void Der_senkrechte_Anteil_bleibt_am_Temperaturbild_ohne_Wirkung()
+        {
+            List<ChartRenderer.Reihe> reihen = Temperaturreihen();
+
+            Assert.Equal(
+                ChartRenderer.Temperaturverlauf("T", reihen, true,
+                                                new ChartRenderer.Achsenfenster(2000, 2500)),
+                ChartRenderer.Temperaturverlauf("T", reihen, true,
+                                                new ChartRenderer.Achsenfenster(2000, 2500, 0.5)));
+        }
+
+        /// <summary>
+        /// Ein Fenster ueber eine Reihe, die es gar nicht gibt, bricht nicht ab: Ohne
+        /// brauchbare Reihe bleibt es beim Leerhinweis, mit oder ohne Ausschnitt.
+        /// </summary>
+        [Fact]
+        public void Temperaturverlauf_ohne_Reihen_vertraegt_ein_Fenster()
+        {
+            byte[] png = ChartRenderer.Temperaturverlauf("Leer", null, true,
+                                                         new ChartRenderer.Achsenfenster(2000, 2500));
+            Assert.NotNull(png);
+            Assert.Equal((1240, 560), Mass(png));
+        }
     }
 }

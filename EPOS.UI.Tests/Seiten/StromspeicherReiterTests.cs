@@ -338,4 +338,50 @@ public class StromspeicherReiterTests : BunitContext
         var abschnitt = seite.Find("section.epos-simerg-kennzahlenzeile");
         Assert.NotNull(abschnitt.QuerySelector("table.epos-simerg-kennzahlen"));
     }
+
+    // =====================================================================
+    //  W11b‑B‑24 — DER DATENZOOM AM SoC-BILD
+    //  (Anwenderentscheid 09.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Das aufgezogene Rechteck geht UNVERÄNDERT in den Bildauftrag, „1:1" nimmt es
+    /// zurück. Gerade dieses Bild braucht den Ausschnitt: Ein Speicher lädt und
+    /// entlädt im TAGESrhythmus, und in der Vollansicht liegen rund 40 Viertelstunden
+    /// auf einem Bildpunkt.
+    /// </summary>
+    [Fact]
+    public async Task Das_SoC_Bild_traegt_den_aufgezogenen_Bereich()
+    {
+        var seite = Zeichnen(Daten());
+        EPOS.UI.Bausteine.Diagramm rahmen =
+            seite.FindComponent<EPOS.UI.Bausteine.Diagramm>().Instance;
+
+        await seite.InvokeAsync(() => rahmen.BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+
+        Assert.Equal(0.25, seite.Instance.Bereich!.XVon);
+        Assert.Equal(0.5, _auftraege.Last(a => a.Bild == Bilder.SpeicherSoc).Bereich!.XBis);
+
+        seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
+             .FindAll("button.epos-diagramm-knopf")
+             .First(k => k.TextContent.Trim() == "1:1").Click();
+
+        Assert.Null(seite.Instance.Bereich);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.SpeicherSoc).Bereich);
+    }
+
+    /// <summary>
+    /// Sichtbar wird der Datenzoom am Umschalter „Bereich" — kein Rückruf, kein
+    /// Knopf. Vor W11b‑B‑24 stand an diesem Bild nur „1:1".
+    /// </summary>
+    [Fact]
+    public void Das_SoC_Bild_traegt_den_Bereichsknopf()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Equal(new[] { "Bereich", "1:1" },
+                     seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
+                          .FindAll("button.epos-diagramm-knopf")
+                          .Select(k => k.TextContent.Trim()).ToArray());
+    }
 }

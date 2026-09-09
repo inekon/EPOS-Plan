@@ -93,14 +93,14 @@ namespace WindowsFormsApplication1
                     case Bilder.RingWaerme: return BildRingWaerme();
                     case Bilder.RingStrom: return BildRingStrom();
                     case Bilder.WpProduktion: return BildWpProduktion(a);
-                    case Bilder.WpStromverbrauch: return BildWpStrom();
+                    case Bilder.WpStromverbrauch: return BildWpStrom(a);
                     case Bilder.WpLeistungTemperatur: return BildStreuwolke(a);
-                    case Bilder.Speichertemperaturen: return BildTemperaturen();
+                    case Bilder.Speichertemperaturen: return BildTemperaturen(a);
                     case Bilder.Heizkessel: return BildKessel(a);
                     case Bilder.Solarthermie: return BildSolar(a);
                     case Bilder.Bhkw: return BildBhkw(a);
                     case Bilder.Photovoltaik: return BildPv(a);
-                    case Bilder.SpeicherSoc: return BildSoc();
+                    case Bilder.SpeicherSoc: return BildSoc(a);
                     case Bilder.AutarkieMonate: return BildAutarkie(a.Zahl);
                     case Bilder.Waermegang: return BildWaermegang(a);
                     case Bilder.Stromgang: return BildStromgang(a);
@@ -136,6 +136,20 @@ namespace WindowsFormsApplication1
         private static double[] Kopie(double[] werte)
             => werte == null ? new double[0] : (double[])werte.Clone();
 
+        /// <summary>
+        /// Die Anzahl der Stützstellen, die ein Bild führt — die erste Reihe, die
+        /// überhaupt eine hat. Sie sagt dem Datenzoom (<see cref="Fenster"/>), ob er
+        /// Stunden oder Viertelstunden zählt. Ohne jede Reihe kommt 0 heraus, und
+        /// <c>ChartRenderer.FensterAusBild</c> liefert dazu kein Fenster.
+        /// </summary>
+        private static int Stuetzstellen(IEnumerable<ChartRenderer.Reihe> reihen)
+        {
+            if (reihen == null) return 0;
+            foreach (ChartRenderer.Reihe r in reihen)
+                if (r != null && r.Werte != null && r.Werte.Length > 0) return r.Werte.Length;
+            return 0;
+        }
+
         // breite ist eine STRICHSTAERKE in Bildpunkten - SkiaSharp rechnet in float,
         // deshalb bleibt der Parameter float (W8-O-5d, Grenze 2a).
         private static ChartRenderer.Reihe Reihe(string name, double[] werte, SKColor farbe,
@@ -153,6 +167,15 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Ohne Rechteck (und für jedes Bild, das keinen Bereich kennt) kommt
         /// <c>null</c> heraus, und alles bleibt, wie es war.</para>
+        ///
+        /// <para><b>Anwenderentscheid 09.09.2026, W11b‑B‑24 — JEDE Jahresganglinie.</b> Bis
+        /// dahin fragten nur drei Bilder danach (Bedarf, Wärmegang, Stromgang); an den
+        /// FACHREITERN blieb es beim Bildzoom, und der ist für 8 760 Stützstellen auf
+        /// 1 100 Bildpunkten zu grob. Jetzt reicht JEDES Bild mit Zeitachse sein Fenster
+        /// weiter — Wärmepumpe (Produktion, Stromverbrauch, Speichertemperaturen),
+        /// Heizkessel, Solarthermie, BHKW, Photovoltaik und der Ladezustand des
+        /// Stromspeichers. OHNE Zeitachse bleibt es beim Bildzoom: die Streuwolke
+        /// (x = Außentemperatur), die Monatssäulen der Autarkie, Kuchen und Ringe.</para>
         /// </summary>
         /// <param name="a">Der Bildauftrag der Seite.</param>
         /// <param name="laenge">Die Anzahl der Stützstellen der gezeigten Reihe —
@@ -385,17 +408,25 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 stapel, new List<ChartRenderer.Reihe>(), null,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
-                ChartRenderer.Achse.Jahresstunden, a != null && a.Sortiert);
+                ChartRenderer.Achse.Jahresstunden, a != null && a.Sortiert,
+                null, null, Fenster(a, Kanalsatz.STUNDEN_JAHR));
         }
 
-        private byte[] BildWpStrom()
+        /// <summary>
+        /// B3 auf der Wärmepumpenseite: der Stromverbrauch als EINE Linie über dem Jahr.
+        /// Seit W11b‑B‑24 (09.09.2026) trägt auch sie den Datenzoom —
+        /// <c>ChartRenderer.Jahresverlauf</c> kennt den Zeitausschnitt seit W8‑E‑2, hier
+        /// fehlte nur der Weg dorthin: Die Weiche rief das Bild ohne seinen Auftrag.
+        /// </summary>
+        private byte[] BildWpStrom(Bildauftrag a)
         {
             double[] gesamt = _strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich,
                                                      sim.simulation_wp.Heizstab_stuendlich);
 
             return ChartRenderer.Jahresverlauf(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE,
-                Kopie(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, F_BEDARF);
+                Kopie(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, F_BEDARF,
+                Fenster(a, gesamt == null ? 0 : gesamt.Length));
         }
 
         /// <summary>
@@ -447,8 +478,16 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.SIM_SPALTE_LEISTUNG, reihen);
         }
 
-        /// <summary>B7 — die Speichertemperaturen, Y-Achse ohne Nullpunkt.</summary>
-        private byte[] BildTemperaturen()
+        /// <summary>
+        /// B7 — die Speichertemperaturen, Y-Achse ohne Nullpunkt.
+        ///
+        /// <para><b>W11b‑B‑24 (09.09.2026):</b> auch hier der Datenzoom. Gerade dieses Bild
+        /// gewinnt dabei zweifach — der Ausschnitt zeigt nicht nur weniger Stunden,
+        /// sondern spreizt die Temperaturachse auf Min und Max DES AUSSCHNITTS; sie hat
+        /// keinen Nullpunkt, den ein senkrechter Anteil verschieben könnte (Begründung
+        /// an <c>ChartRenderer.Temperaturverlauf</c>).</para>
+        /// </summary>
+        private byte[] BildTemperaturen(Bildauftrag a)
         {
             var reihen = new List<ChartRenderer.Reihe>();
             foreach (Temperaturreihe r in Temperaturreihen())
@@ -456,7 +495,8 @@ namespace WindowsFormsApplication1
                                                    ChartRenderer.Stapelart.Keine, r.Gestrichelt));
 
             return ChartRenderer.Temperaturverlauf(
-                MyResource.Resource.CHART_TITEL_SPEICHERTEMPERATUR, reihen, true);
+                MyResource.Resource.CHART_TITEL_SPEICHERTEMPERATUR, reihen, true,
+                Fenster(a, Stuetzstellen(reihen)));
         }
 
         // ---- Kessel, Solarthermie, BHKW, Photovoltaik -------------------
@@ -492,7 +532,7 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 stapel, linien, null, MyResource.Resource.CHART_ACHSE_WAERMELAST,
                 sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                sortiert);
+                sortiert, null, null, Fenster(a, Kanalsatz.STUNDEN_JAHR));
         }
 
         /// <summary>
@@ -517,7 +557,8 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 new List<ChartRenderer.Reihe>(), linien, null,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
-                ChartRenderer.Achse.Jahresstunden, false);
+                ChartRenderer.Achse.Jahresstunden, false,
+                null, null, Fenster(a, Kanalsatz.STUNDEN_JAHR));
         }
 
         /// <summary>
@@ -553,7 +594,7 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 stapel, linien, null, MyResource.Resource.CHART_ACHSE_WAERMELAST,
                 sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                sortiert);
+                sortiert, null, null, Fenster(a, Kanalsatz.STUNDEN_JAHR));
         }
 
         /// <summary>
@@ -598,15 +639,24 @@ namespace WindowsFormsApplication1
                 new List<ChartRenderer.Reihe>(), linien, null,
                 MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 ChartRenderer.Achse.Monate, false,
-                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH);
+                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH,
+                Fenster(a, Kanalsatz.STUNDEN_JAHR * 4));
         }
 
-        private byte[] BildSoc()
+        /// <summary>
+        /// Der Ladezustand des Stromspeichers über dem Jahr, im Viertelstundenraster —
+        /// seit W11b‑B‑24 (09.09.2026) mit Datenzoom. Ein Speicher lädt und entlädt im
+        /// TAGESrhythmus; in der Vollansicht liegen rund 40 Viertelstunden auf einem
+        /// Bildpunkt, und erst der Ausschnitt zeigt einen einzelnen Zyklus.
+        /// </summary>
+        private byte[] BildSoc(Bildauftrag a)
         {
+            double[] soc = sim.Speicherfuellstand_viertelstuendlich;
+
             return ChartRenderer.Jahresverlauf(
-                MyResource.Resource.SP_CHART_TITEL_SOC,
-                Kopie(sim.Speicherfuellstand_viertelstuendlich),
-                MyResource.Resource.SP_CHART_ACHSE_SOC, F_SPEICHER);
+                MyResource.Resource.SP_CHART_TITEL_SOC, Kopie(soc),
+                MyResource.Resource.SP_CHART_ACHSE_SOC, F_SPEICHER,
+                Fenster(a, soc == null ? 0 : soc.Length));
         }
 
         // ---- B6: der Monatsstapel der Autarkie-Analyse -------------------

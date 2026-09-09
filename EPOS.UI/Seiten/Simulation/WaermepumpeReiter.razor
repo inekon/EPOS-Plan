@@ -231,15 +231,24 @@
                                       Wert="@_pgHeizstab" WertChanged="@(w => _pgHeizstab = w)" />
                         </div>
 
+                        @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den
+                           Kern DIESES Bild mit dem Zeitausschnitt neu zeichnen; „1:1"
+                           holt das ganze Jahr zurück. Jedes Bild führt seinen eigenen
+                           Ausschnitt — sie stehen auf drei Unterblättern und zeigen
+                           verschiedene Größen. *@
                         <ChartBild Png="@BildProduktion"
-                                   Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE" />
+                                   Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                                   BereichGewaehlt="@(b => _produktionBereich = b)"
+                                   Zurueckgesetzt="@(() => _produktionBereich = null)" />
                     </KindInhalt>
                 </Reiterblatt>
 
                 <Reiterblatt Schluessel="STROM" Titel="@Resource.SIMERG_TAB_WP_STROM">
                     <KindInhalt>
                         <ChartBild Png="@BildStrom"
-                                   Alt="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE" />
+                                   Alt="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
+                                   BereichGewaehlt="@(b => _stromBereich = b)"
+                                   Zurueckgesetzt="@(() => _stromBereich = null)" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -248,7 +257,9 @@
                     <Reiterblatt Schluessel="TEMPERATUREN" Titel="@Resource.SIM_TAB_SPEICHERTEMPERATUR">
                         <KindInhalt>
                             <ChartBild Png="@BildTemperaturen"
-                                       Alt="@Resource.CHART_TITEL_SPEICHERTEMPERATUR" />
+                                       Alt="@Resource.CHART_TITEL_SPEICHERTEMPERATUR"
+                                       BereichGewaehlt="@(b => _temperaturBereich = b)"
+                                       Zurueckgesetzt="@(() => _temperaturBereich = null)" />
                         </KindInhalt>
                     </Reiterblatt>
                 }
@@ -307,6 +318,15 @@
     /// <summary>Die gewaehlten Reihen der Jahresganglinie (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihenProduktion => ReihenProduktion();
 
+    /// <summary>Der aufgezogene Zeitausschnitt der Jahresganglinie; <c>null</c> = ganzes Jahr.</summary>
+    public Diagrammbereich? ProduktionBereich => _produktionBereich;
+
+    /// <summary>Derselbe Ausschnitt fuer das Strombild (Pruefhilfe).</summary>
+    public Diagrammbereich? StromBereich => _stromBereich;
+
+    /// <summary>Derselbe Ausschnitt fuer die Speichertemperaturen (Pruefhilfe).</summary>
+    public Diagrammbereich? TemperaturBereich => _temperaturBereich;
+
     private Reiter? _reiter;
     private string _blatt = "";
     private bool _sortiert;
@@ -319,6 +339,11 @@
     private bool _pgWarmwasser = true;
     private bool _pgProduktion = true;
     private bool _pgHeizstab = true;
+
+    // W11b‑B‑24: je Bild EIN Zeitausschnitt, <c>null</c> = die volle Ansicht.
+    private Diagrammbereich? _produktionBereich;
+    private Diagrammbereich? _stromBereich;
+    private Diagrammbereich? _temperaturBereich;
 
     private Task ModulGewaehlt() => ModulOeffnen.InvokeAsync();
 
@@ -352,9 +377,16 @@
         Bild?.Invoke(new Bildauftrag(Bilder.WpLeistungTemperatur, false, -1, ReihenStreuwolke()));
 
     private byte[]? BildProduktion =>
-        Bild?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert, -1, ReihenProduktion()));
-    private byte[]? BildStrom => Bild?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch));
-    private byte[]? BildTemperaturen => Bild?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen));
+        Bild?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert, -1, ReihenProduktion(),
+                                     0.0, _produktionBereich));
+
+    private byte[]? BildStrom =>
+        Bild?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch, false, -1, null,
+                                     0.0, _stromBereich));
+
+    private byte[]? BildTemperaturen =>
+        Bild?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen, false, -1, null,
+                                     0.0, _temperaturBereich));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
