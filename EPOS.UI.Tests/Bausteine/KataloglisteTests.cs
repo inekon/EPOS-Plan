@@ -6,6 +6,7 @@ using System.Threading;
 using Bunit;
 using EPOS.UI.Bausteine;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.QuickGrid;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -411,6 +412,166 @@ public class KataloglisteTests : BunitContext
     }
 
     // =====================================================================
+    //  6 654 Stromspeicher: die Liste blinkt (Befund W13-B-6, 09.09.2026)
+    // =====================================================================
+
+    /// <summary>Ein Katalog beliebiger Größe — die kW-Spalte trägt echte Zahlen.</summary>
+    private static List<Katalogfilterzeile> Grosser_Katalog(int anzahl) =>
+        Enumerable.Range(0, anzahl)
+                  .Select(i => Zeile(i + 1,
+                                     "Speicher " + i.ToString("D5", CultureInfo.InvariantCulture),
+                                     i % 2 == 0 ? "Sonnen" : "BYD",
+                                     "Erdgas E", 5.0 + i % 90, 0.9, false))
+                  .ToList();
+
+    /// <summary>
+    /// <b>Der Befund W13‑B‑6</b> (Windows-Abnahme 09.09.2026, „Stromspeicher
+    /// Einlesen" mit 6 654 Sätzen): „die Liste blinkt und ist nicht sichtbar" —
+    /// statt Zeilen standen Platzhalter mit „…" in jeder Zelle, während die
+    /// Trefferzeile richtig „6.654 von 6.654 Sätzen" meldete.
+    ///
+    /// <para><b>Die Ursache stand hier</b>, in einer einzigen Stelle des Markups:
+    /// <c>Zeilen="@_gefiltert.AsQueryable()"</c> — bei JEDEM Zeichenlauf ein frisches
+    /// <c>EnumerableQuery</c>. QuickGrid vergleicht seine Datenquelle nach REFERENZ
+    /// (<c>OnParametersSetAsync</c>: <c>dataSourceHasChanged =
+    /// _newItemsOrItemsProvider != _lastAssignedItemsOrProvider</c>), hielt jeden
+    /// Zeichenlauf für eine neue Menge, brach die laufende Ladung ab und stellte
+    /// hinter <c>await Task.Delay(100)</c> eine neue an. Kam der nächste Zeichenlauf
+    /// schneller, war auch sie hinfällig: <c>Virtualize</c> behielt sein leeres
+    /// <c>_loadedItems</c> und zeichnete nur Platzhalter.</para>
+    ///
+    /// <para>Geprüft wird deshalb GENAU das, worauf QuickGrid schaut: die Identität
+    /// der Datenquelle über mehrere Zeichenläufe — und mit ihr, dass die Tabelle
+    /// nicht dauernd lädt (die Klasse <c>loading</c> blendet den Körper auf
+    /// <c>opacity: .25</c> ab: das gemeldete Blinken).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Datenquelle_des_Rasters_bleibt_ueber_Zeichenlaeufe_dieselbe()
+    {
+        var viele = Grosser_Katalog(6654);
+
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, viele)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        Assert.True(cut.Instance.Virtualisiert);
+        cut.WaitForAssertion(() => Assert.DoesNotContain("loading", cut.Find("table").ClassName));
+
+        object? quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+        object gefiltert = cut.Instance.Angezeigt;
+
+        for (int i = 0; i < 10; i++)
+        {
+            cut.Render();
+            Assert.Same(quelle, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+            Assert.Same(gefiltert, cut.Instance.Angezeigt);
+            Assert.DoesNotContain("loading", cut.Find("table").ClassName);
+        }
+    }
+
+    /// <summary>
+    /// <b>Und die Gegenprobe:</b> Ändert sich der Filter WIRKLICH, bekommt QuickGrid
+    /// eine andere Datenquelle. Eine festgehaltene Menge, die nach einem Filterwechsel
+    /// stehen bliebe, wäre der Fehler W6‑B‑2 von der anderen Seite.
+    /// </summary>
+    [Fact]
+    public void Ein_Filterwechsel_gibt_dem_Raster_eine_neue_Datenquelle()
+    {
+        var viele = Grosser_Katalog(500);
+
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, viele)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        object? vorher = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+
+        Filter(cut, Katalogfilterprofil.SpHersteller, "Sonnen");
+        Gefiltert(cut, "250 von 500 Sätzen", 250);
+
+        Assert.NotSame(vorher, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+    }
+
+    /// <summary>
+    /// <b>Und die zweite Gegenprobe — die teuer erkaufte:</b> Mehrere Wirte ändern ihre
+    /// Zeilenliste AN ORT UND STELLE. Der Ganglinienverwalter löscht mit
+    /// <c>RemoveAll</c> aus derselben Liste, die er auch hereinreicht; ihre Referenz
+    /// bleibt dabei dieselbe.
+    ///
+    /// <para>Der erste Anlauf zu W13‑B‑6 hängte das Neurechnen an genau diese
+    /// Referenz (dazu an <c>Profil</c> und einen Zähler im Filterstand) und sparte
+    /// damit die Filterrechnung je Zeichenlauf. Er fiel über diesen Fall:
+    /// <c>SolarganglinieAdminDialogTests.Ja_loescht_und_meldet</c> und drei weitere
+    /// zeigten nach dem Löschen weiter drei Zeilen. Deshalb rechnet
+    /// <c>Neuberechnen</c> weiter bei jedem Zeichenlauf und hält statt dessen das
+    /// ERGEBNIS fest — was hier geprüft wird.</para>
+    /// </summary>
+    [Fact]
+    public void Eine_an_Ort_und_Stelle_geaenderte_Liste_wird_bemerkt()
+    {
+        var liste = Grosser_Katalog(500);
+
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, liste)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        object? vorher = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+        Assert.Equal(500, cut.Instance.Angezeigt.Count);
+
+        // DIESELBE Instanz, anderer Inhalt - wie beim Loeschen im Ganglinienverwalter.
+        liste.RemoveRange(0, 100);
+        cut.Render();
+
+        Assert.Equal(400, cut.Instance.Angezeigt.Count);
+        Assert.Equal("400 von 400 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Assert.NotSame(vorher, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+    }
+
+    /// <summary>
+    /// <b>„Der Filter funktioniert nicht"</b> — der zweite Teil des Befundes W13‑B‑6.
+    /// Der Anwender tippte in den Trichter der kW-Spalte, die Trefferzeile rechnete
+    /// richtig, und die Liste zeigte trotzdem nichts.
+    ///
+    /// <para>Der Fall aus W6‑B‑2 (20 749 → 15) deckt den Übergang auf den FLACHEN
+    /// Zweig ab; dieser hier bleibt beidseits der Schwelle VIRTUALISIERT — 500 → 250,
+    /// und genau dort lebte der Fehler. Geprüft wird, dass die gezeichneten Zeilen
+    /// wirklich die gefilterten sind.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Zahlenfilter_greift_auch_wenn_die_Liste_virtualisiert_bleibt()
+    {
+        var viele = Grosser_Katalog(500);
+        var stand = new Katalogfilterstand();
+
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, viele)
+            .Add(x => x.Filterstand, stand));
+
+        Assert.True(cut.Instance.Virtualisiert);
+
+        // 5,0 .. 94,0 kW; ">50" laesst 224 Saetze stehen - weiter ueber der Schwelle.
+        Filter(cut, Katalogfilterprofil.SpPtherm, ">50");
+        cut.WaitForAssertion(() =>
+            Assert.Equal("224 von 500 Sätzen", cut.Find(".epos-katalog-treffer").TextContent));
+
+        Assert.True(cut.Instance.Virtualisiert);
+        Assert.Equal(224, cut.Instance.Angezeigt.Count);
+        Assert.All(cut.Instance.Angezeigt,
+                   z => Assert.True(z.Zahl(Katalogfilterprofil.SpPtherm) > 50));
+
+        // Und im KOERPER stehen die gefilterten Zeilen, keine Platzhalter.
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Empty(cut.FindAll("td.grid-cell-placeholder"));
+            Assert.DoesNotContain("loading", cut.Find("table").ClassName);
+            Assert.NotEmpty(cut.FindAll("tbody tr"));
+        });
+    }
+
+    // =====================================================================
     //  Hilfen
     // =====================================================================
 
@@ -477,6 +638,21 @@ public class KataloglisteTests : BunitContext
         {
             Assert.Equal(trefferzeile, cut.Find(".epos-katalog-treffer").TextContent);
             Assert.Equal(zeilen, cut.FindAll("tbody tr").Count);
+        });
+
+    /// <summary>
+    /// Wie <see cref="Gezeichnet"/>, aber für eine Liste, die VIRTUALISIERT bleibt:
+    /// Dort stehen die gefilterten Zeilen nicht alle im Baum — QuickGrid hält nur den
+    /// sichtbaren Ausschnitt —, und <c>tbody tr</c> zu zählen hieße, die
+    /// Virtualisierung zu prüfen statt den Filter. Gewartet wird deshalb auf die
+    /// Trefferzeile und auf die gefilterte MENGE.
+    /// </summary>
+    private static void Gefiltert(IRenderedComponent<Katalogliste> cut, string trefferzeile,
+                                  int zeilen)
+        => cut.WaitForAssertion(() =>
+        {
+            Assert.Equal(trefferzeile, cut.Find(".epos-katalog-treffer").TextContent);
+            Assert.Equal(zeilen, cut.Instance.Angezeigt.Count);
         });
 
     /// <summary>

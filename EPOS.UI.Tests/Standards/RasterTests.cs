@@ -264,6 +264,130 @@ public class RasterTests : BunitContext
         Assert.Same(vorher, cut.FindComponent<QuickGrid<Zeile>>().Instance);
     }
 
+    // =====================================================================
+    // Eine virtualisierte Liste braucht eine STABILE Menge (Befund W13-B-6)
+    // =====================================================================
+
+    /// <summary>Zaehlt, wie oft ueber die Menge WIRKLICH gelaufen wird.</summary>
+    private sealed class Zaehlfolge : System.Collections.Generic.IEnumerable<Zeile>
+    {
+        private readonly System.Collections.Generic.List<Zeile> _quelle;
+        private int _durchlaeufe;
+
+        internal Zaehlfolge(int anzahl) =>
+            _quelle = Enumerable.Range(0, anzahl).Select(i => new Zeile(i, "Speicher " + i)).ToList();
+
+        internal int Durchlaeufe => System.Threading.Volatile.Read(ref _durchlaeufe);
+
+        public System.Collections.Generic.IEnumerator<Zeile> GetEnumerator()
+        {
+            System.Threading.Interlocked.Increment(ref _durchlaeufe);
+            return _quelle.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    /// <summary>
+    /// <b>Der Waechter zum Befund W13‑B‑6</b> (Windows-Abnahme 09.09.2026: „die Liste
+    /// blinkt und ist nicht sichtbar", 6 654 Stromspeicher).
+    ///
+    /// <para><b>Was QuickGrid tut.</b> Es vergleicht seine Datenquelle nach REFERENZ
+    /// (<c>OnParametersSetAsync</c>: <c>dataSourceHasChanged =
+    /// _newItemsOrItemsProvider != _lastAssignedItemsOrProvider</c>). Ein frisches
+    /// <c>AsQueryable()</c> über DERSELBEN Liste ist damit eine neue Menge; QuickGrid
+    /// bricht die laufende Ladung ab (<c>_pendingDataLoadCancellationTokenSource
+    /// ?.Cancel()</c>) und stellt hinter <c>await Task.Delay(100)</c> eine neue an.
+    /// Solange eine Ladung offen ist, trägt die Tabelle die Klasse <c>loading</c>, und
+    /// QuickGrids Stilblatt blendet damit den Körper auf <c>opacity: .25</c> ab — das
+    /// gemeldete BLINKEN.</para>
+    ///
+    /// <para><b>Gemessen</b> (zehn Zeichenläufe im Abstand von 20 ms, also innerhalb
+    /// der Entprellung): mit frischem <c>AsQueryable()</c> stand <c>loading</c> in
+    /// 10 von 10 Läufen, mit einer stabilen Instanz in 0 von 10.</para>
+    ///
+    /// <para>Der Fix sitzt im WIRT (<c>Katalogliste.razor</c>), nicht hier: Ein
+    /// Raster, das eine neue Menge stillschweigend für die alte hielte, wäre die
+    /// nächste Fehlerquelle. Dieser Fall hält beide Seiten fest — er ist zugleich der
+    /// Wächter gegen ein QuickGrid, das seinen Vergleich eines Tages ändert.</para>
+    /// </summary>
+    [Fact]
+    public void Eine_stabile_Zeilenmenge_laesst_die_virtualisierte_Liste_zur_Ruhe_kommen()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var quelle = Enumerable.Range(0, 6654).Select(i => new Zeile(i, "Speicher " + i)).ToList();
+
+        // (A) Ein frisches AsQueryable je Zeichenlauf - der gemeldete Stand.
+        var frisch = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, quelle.AsQueryable())
+            .Add(x => x.Virtualisiert, true)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+        frisch.WaitForAssertion(() => Assert.DoesNotContain("loading", frisch.Find("table").ClassName));
+
+        int laedt = 0;
+        for (int i = 0; i < 10; i++)
+        {
+            frisch.Render(p => p
+                .Add(x => x.Zeilen, quelle.AsQueryable())
+                .Add(x => x.Virtualisiert, true)
+                .Add(x => x.KindInhalt, Bezeichnerspalte()));
+            if (frisch.Find("table").ClassName.Contains("loading")) laedt++;
+        }
+        Assert.Equal(10, laedt);
+
+        // (B) EINE Instanz ueber alle Zeichenlaeufe - der Stand nach dem Fix.
+        var stabil = quelle.AsQueryable();
+        var ruhig = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, stabil)
+            .Add(x => x.Virtualisiert, true)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+        ruhig.WaitForAssertion(() => Assert.DoesNotContain("loading", ruhig.Find("table").ClassName));
+
+        for (int i = 0; i < 10; i++)
+        {
+            ruhig.Render(p => p
+                .Add(x => x.Zeilen, stabil)
+                .Add(x => x.Virtualisiert, true)
+                .Add(x => x.KindInhalt, Bezeichnerspalte()));
+            Assert.DoesNotContain("loading", ruhig.Find("table").ClassName);
+        }
+    }
+
+    /// <summary>
+    /// <b>Dieselbe Menge wird nur EINMAL gezählt</b> (Befund W13‑B‑6). Die Zeilenzahl
+    /// steht im <c>@key</c> und wurde deshalb bei jedem Zeichenlauf geholt — und ein
+    /// <c>AsQueryable()</c> über einer Liste ist keine <c>ICollection</c>, sein
+    /// <c>Count()</c> läuft WIRKLICH über alle 6 654 Zeilen. Gemessen: vorher zehn
+    /// volle Durchläufe für zehn Zeichenläufe, danach keiner.
+    /// </summary>
+    [Fact]
+    public void Dieselbe_Zeilenmenge_wird_nur_einmal_gezaehlt()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var folge = new Zaehlfolge(6654);
+        var stabil = folge.AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, stabil)
+            .Add(x => x.Virtualisiert, true)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+        cut.WaitForAssertion(() => Assert.DoesNotContain("loading", cut.Find("table").ClassName));
+
+        int nachDemAufbau = folge.Durchlaeufe;
+        Assert.True(nachDemAufbau > 0, "Ohne einen einzigen Durchlauf misst dieser Fall nichts.");
+
+        for (int i = 0; i < 10; i++)
+            cut.Render(p => p
+                .Add(x => x.Zeilen, stabil)
+                .Add(x => x.Virtualisiert, true)
+                .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Equal(nachDemAufbau, folge.Durchlaeufe);
+        Assert.Equal((true, 6654), cut.Instance.Rasterstand);
+    }
+
     private static RenderFragment Bezeichnerspalte() => bau =>
     {
         bau.OpenComponent<PropertyColumn<Zeile, string>>(0);
