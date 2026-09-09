@@ -42,6 +42,14 @@ Nach dem Lauf liegen zwei Artefakte bereit:
 - **`ios-app`** — das gebaute `EPOS.iOS.app`. Hineinsehen lohnt: Größe, mitgelieferte
   `Kenndaten.sqlite`, statisch gelinkte `e_sqlite3`.
 
+> **Regel seit dem 09.09.2026 (Anwender: „die iOS-Läufe sollten nur wenn unbedingt nötig gestartet
+> werden").** Die pauschale Freigabe vom 03.09.2026 („immer ja bis Abschluss aller Migrationsschritte"),
+> unter der die Läufe 1 bis 39 ausgelöst wurden, ist zurückgenommen. Ein Lauf wird seither nur
+> ausgelöst, wenn die Änderung die iOS-Hülle selbst trifft (`EPOS.iOS/`, `ios.yml`, eine von einem
+> iOS-Adapter implementierte `Dienste.*`-Schnittstelle, Prüfmodus, Seed-Kopie) oder der Anwender ihn
+> verlangt — nicht nach Kern-, Oberflächen-, Testdatenbank- oder Doku-Änderungen, die `kern.yml` auf
+> ubuntu schon prüft. Im Zweifel vorher nachfragen. Wortlaut der Regel in `CLAUDE.md`.
+
 ---
 
 ## Nachweise auf Linux — geführt
@@ -527,6 +535,13 @@ W11b‑B‑6 bis B‑10 — Erzeugung statt genutztem Anteil, W/m², Flächensch
 Vergleich sind Anzeige, kein Rechenweg. Die `kern.yml`-Läufe 227 bis 234 (`b2ee331`, `ba6f8d5`, `c53b39b`, `8a6ca2b`,
 je Push und Pull-Request) sind grün; das Gate auf Linux zählt seit S3 Kern 2 033 und UI 3 239 Fälle. Ausgelöst per
 `workflow_dispatch` unter der pauschalen Freigabe bis Migrationsende.
+
+**Lauf 40 `34405193506` (`ios.yml`, 09.09.2026, 21:08 UTC) auf `9999d51` — nach vier Minuten ABGEBROCHEN, kein
+Nachweis.** Ausgelöst nach dem Nachzug der Testdatenbank auf Schemastand 72 (#154, `91137e1`: 20 nullbare Spalten der
+Schritte 70–72 plus `ErsatzBarwert`, STRICT 117 und Dateigröße unverändert, Referenzlauf 12/12 byte-gleich gegen R6),
+dann vom Anwender mit der Regel „nur wenn unbedingt nötig" gestoppt: Die Kern-Läufe 255/256 auf ubuntu prüfen die
+Testdatenbank samt SQL-Dialektprüfer, ein Simulatorlauf fügt dem nichts hinzu. Der nächste Nachweislauf ist der 41ste,
+und er braucht einen Grund aus der Regel oben.
 
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 

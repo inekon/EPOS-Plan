@@ -91,9 +91,17 @@ steht in [`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md).
 nachfragen, um das Actions-Kontingent nicht unnötig zu erhöhen.** Der macOS-Läufer zählt
 zehnfach. Deshalb laufen `kern.yml` bei Push nur auf ubuntu und `ios.yml` gar nicht von
 selbst; beide bauen auf macOS nur über *Actions → Run workflow* (bei `kern.yml` mit dem
-Häkchen „macos"). **Bis zum Abschluss aller Migrationsschritte ist der Aufruf des iOS-Jobs
-pauschal freigegeben** (Anwender, 03.09.2026: „immer ja bis Abschluss aller
-Migrationsschritte"); danach wird jeder Aufruf vorher mit dem Anwender abgestimmt.
+Häkchen „macos"). Die pauschale Freigabe „immer ja bis Abschluss aller Migrationsschritte"
+(Anwender, 03.09.2026) galt bis zum 09.09.2026 und ist **zurückgenommen (Anwender,
+09.09.2026: „die iOS-Läufe sollten nur wenn unbedingt nötig gestartet werden")**. Seither
+wird `ios.yml` nur ausgelöst, wenn eine Änderung die iOS-Hülle SELBST trifft — `EPOS.iOS/`,
+`.github/workflows/ios.yml`, eine `Dienste.*`-Schnittstelle, die ein iOS-Adapter
+implementiert, der Prüfmodus oder die Seed-Kopie beim Erststart — oder wenn der Anwender ihn
+verlangt. Eine Änderung an Kern, Oberfläche, Testdatenbank oder Doku, die `kern.yml` auf
+ubuntu schon prüft, ist KEIN Grund; der Nachweis dafür ist der grüne Kern-Lauf. Der Nachzug
+der Testdatenbank auf Schemastand 72 (#154) war der erste Fall dieser Regel: Lauf 40 auf
+`9999d51` wurde nach vier Minuten abgebrochen und zählt nicht als Nachweis. Im Zweifel vor
+dem Auslösen nachfragen.
 
 **Werkzeuge, die vor der Arbeit an einer Maske oder am Rechenweg zu kennen sind:**
 
