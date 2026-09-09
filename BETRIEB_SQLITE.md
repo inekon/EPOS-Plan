@@ -471,6 +471,11 @@ damit weg** — es gibt keinen Rückweg von SQLite nach Access.
 nächste Start von EPOS-Plan (oder ein SQLite-Werkzeug) spielt es von selbst ein. Danach
 `PRAGMA integrity_check;` absetzen — steht dort `ok`, ist die Datei in Ordnung.
 
+**Vor jeder Wiederherstellung aus diesem Abschnitt prüfen, ob es den Ordner überhaupt
+noch gibt**: Die Deinstallation fragt seit Auftrag #161 (09.09.2026), ob
+`%ProgramData%\EPOS_PLAN` samt `DB-Backup` gelöscht werden soll (Vorgabe *Nein*, aber
+ein bestätigtes *Ja* nimmt Datenbank und Sicherungsordner unwiederbringlich mit).
+
 ---
 
 ## 9. Wo was steht
