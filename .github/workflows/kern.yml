@@ -70,6 +70,22 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release
 
+      # Auftrag #160: Auch das Werkzeug, das den AUSLIEFERUNGSSTAND der Datenbank
+      # erzeugt, hat eine eigene Projektmappe und steht nicht in WP-Plan.sln.
+      # Es haengt an zwei Dingen, die sich weiterbewegen: am SCHEMA (es leitet
+      # seine Tabellenliste daraus ab - ein neuer Schemaschritt mit Projektbezug
+      # muss von selbst erfasst werden) und am Projekttransfer
+      # (ProjektExportImportCtrl spielt die Beispiele ein). Faellt eines von
+      # beiden aus, liefe die naechste Freigabe mit einer halben Vorlage - und
+      # das faellt erst beim Kunden auf. Die Proben starten das Werkzeug als
+      # PROGRAMM gegen eine Kopie der Testdatenbank; ohne diese Datei
+      # ueberspringen sie still.
+      # NUR ubuntu: plattformfrei, ein zweiter Lauf auf macOS zeigte nichts Neues
+      # und kostet Minutenkontingent (Faktor 10).
+      - name: Auslieferungsvorlage-Tests
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test Werkzeuge/Auslieferungsvorlage/Auslieferungsvorlage.sln -c Release
+
       # 03.09.2026: SQL-Dialekt-Audit. Der Referenzlauf weiter unten deckt den
       # RECHENWEG ab - Dialog- und Pflegepfade nicht. Genau dort sassen zwei
       # Access-Altlasten, die erst Wochen nach dem Cutover beim Anwender

@@ -382,6 +382,14 @@ dev/
 # Setup-Beilagen, GitHub_Sync committet sonst Redist/Vorlage
 Setup/Ausgabe/
 Setup/Vorlage/*.accdb
+# Die Auslieferungsdatenbank und ihr Prueflauf (Werkzeuge/Auslieferungsvorlage, Auftrag #160).
+# Sie entstehen bei jeder Freigabe neu aus der produktiven Kenndaten.sqlite und gehoeren nie
+# ins Repository - Kataloge, Beispielprojekte und mehrere zehn Megabyte. Setup/Vorlage/LIESMICH.md
+# bleibt ausdruecklich versioniert.
+Setup/Vorlage/*.sqlite
+Setup/Vorlage/*.sqlite-wal
+Setup/Vorlage/*.sqlite-shm
+Setup/Vorlage/*.bericht.txt
 Setup/Voraussetzungen/*.exe
 # ACE-Redist in der Repo-Wurzel (Ablageort fuer build-setup.ps1) nie committen
 /AccessDatabaseEngine*.exe
