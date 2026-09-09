@@ -1657,3 +1657,65 @@ EPOS.Kern.Tests` ist leer).
 - **W5‑B‑12** (p_I, Freitextfeld) bringt zwei weitere Zeilen in denselben Nachweisblock; die
   Annahmenzeile des Szenarios wächst dann um p_I. Die Stellen sind dieselben
   (`SzenarioSatz.Nachweis`, `SchreibeSzenarioAnnahmen`, `WIRT_SZ_QUELLEN`).
+
+---
+
+## Anwenderentscheid 09.09.2026 — W5‑B‑12 Teil a: Preisindizierung der Ersatzbeschaffung (p_I) und nicht monetäre Wirkungen — Rechenkern und Schritt 72
+
+Zwei der elf VALERI-Lücken aus W5‑B‑10 sind entschieden: **G4** (Ersatzbeschaffungen
+werden preisindiziert, VDI 2067 Blatt 1) und **G6** (Freitextfeld „Nicht monetäre
+Wirkungen“). **G2** („Preisänderung je Kostenart“) wird ausdrücklich nur so weit
+umgesetzt, wie G4 reicht — als dritter Topf p_I neben p_B und p_E, nicht als Spalte je
+Zeile.
+
+**Teil a (dieser Eintrag)** legt den Rechenweg und die Ablage an. **Teil b** — Parametersatz,
+Dialog, Bericht — folgt; bis dahin steht p_I im Rechenkern auf 0 und **keine Zahl ändert sich**.
+
+### Was der Rechenkern jetzt tut
+
+`KapitalwertRechner.Rechne` nimmt am ENDE seiner Signatur einen optionalen
+`double preisstInvestProzent = 0` entgegen (jeder bestehende Aufrufer bleibt unverändert
+gültig — es gibt genau einen, `WirtschaftlichkeitCtrl.RechneBild`).
+
+* **Ersatzbeschaffung** im Jahr tj: `A(tj) = A₀ · (1 + p_I)^tj`. Der Exponent ist das
+  ABSOLUTE Jahr, nicht der Abstand zum Startjahr — Preisstand des Rechenkerns ist immer t = 0.
+* **Erstbeschaffung nominal**, auch die nach KD6 verschobene: Der eingegebene Betrag ist
+  der Betrag zum Zahlungszeitpunkt und kein auf heute zurückgerechneter Preisstand.
+* **Restwert** auf der Preisbasis der LETZTEN Beschaffung (Faktor 1 bei Erst-/verschobener
+  Beschaffung, sonst `(1 + p_I)^tj`), linear × rest/n und abgezinst wie bisher.
+* **p_I = 0 rechnet bitgleich.** Der Indexfaktor wird dann gar nicht erst gebildet —
+  dieselbe IEEE‑754-Vorsicht wie bei FX4‑c/FX5‑a.
+
+### Nachweise W5‑B‑12 Teil a
+
+| Prüfung | Ort | Ergebnis |
+|---|---|---|
+| p_I = 0 ist **bitgleich** zum Aufruf ohne den Parameter (KW, Restwert, Ersatzreihe, Barwert-/Nominalreihe, 21 Glieder) | `KapitalwertRechnerPreisindexTests.Ohne_Preisaenderungssatz_bleibt_das_Zahlungsbild_bitgleich` | grün, **exakt** (kein Toleranzfenster) |
+| bekannte Beträge ohne Satz: Ersatz 10.000 in t = 8/16, Restwert 5.000 | `…Ohne_Preisaenderungssatz_stehen_die_bekannten_Betraege` | grün |
+| p_I = 2 %, n = 8, T = 20: Ersatz **11.716,59 €** (1,02⁸) und **13.727,86 €** (1,02¹⁶), I₀ nominal | `…Die_Ersatzbeschaffungen_werden_auf_ihr_Zahlungsjahr_indiziert` | grün |
+| Restwert = 10.000 · 1,02¹⁶ · (8−4)/8 = **6.863,93 €**, abgezinst | `…Der_Restwert_steht_auf_der_Preisbasis_der_letzten_Beschaffung` | grün |
+| KD6: StartJahr 5, n = 10 → Zahlung in t = 5 **nominal**, Ersatz t = 15 = **13.458,68 €** (1,02¹⁵), Restwert **6.729,34 €** | `…Die_verschobene_Erstbeschaffung_bleibt_nominal` | grün |
+| KW sinkt mit p_I > 0, wo ersetzt wird | `…Mit_Ersatzbeschaffung_sinkt_der_Kapitalwert` | grün |
+| n ≥ T: kein Ersatz, Restwert 2.000, KW **exakt gleich** mit und ohne Satz | `…Ohne_Ersatzbeschaffung_aendert_der_Satz_nichts` | grün |
+| Migrationsschritt 72: vier Spalten, Zielstand 72 | `Migration72Tests.Der_Migrationsschritt_72_fuehrt_vier_Spalten` | grün |
+| Typen: 3 × `DOUBLE`→`REAL`, `MEMO`→`TEXT` ohne Längenprüfung | `…Die_Spaltentypen_sind_REAL_und_TEXT` | grün |
+| Sammel-Enumerator in Anlegereihenfolge (EINE Quelle) | `…Der_Sammel_Enumerator_fuehrt_beide_Bloecke_in_Anlegereihenfolge` | grün |
+| Spalten stehen in der Testdatenbank | `…Die_vier_Spalten_stehen_in_der_Testdatenbank` | grün |
+| Zahl, Fließtext und NULL gehen hin und zurück | `…Die_Spalten_nehmen_Zahl_Text_und_NULL` | grün |
+| Sandbox-Bau `WP-Plan.sln` x64 Debug | `K:\imp2\src` (= HEAD + 8 Dateien, Datei für Datei geprüft) | **0 Fehler** |
+| `EPOS.Kern.Tests` / `EPOS.UI.Tests` | `dotnet test --no-build` | **2 170/2 170** / **3 356/3 356** |
+
+**Ein Referenzlauf war nicht nötig:** Die Etappe fasst keinen Simulationswert an. An seine
+Stelle tritt die Bitgleichheitsprobe bei p_I = 0 — sie vergleicht ohne Toleranzfenster.
+
+### Offene Punkte
+
+- **Teil b** (Parametersatz, Dialog, Bericht): p_I in `SzenarioSatz`/`WirtschaftlichkeitParameter`,
+  Lade-/Speicherweg, `StelleTabellenSicher` um `Schritt72_ValeriErgaenzung` ergänzen,
+  Einspeisung in `RechneBild`, Freitextfeld im Dialog und Berichtsbaustein für G6.
+- **Wirkung nach Teil b:** Bestandsprojekte MIT Ersatzbeschaffung rechnen dann mit
+  p_I = p_B; ihre Kapitalwerte sinken leicht. Das ist gewollt — der bisherige Ausweis war
+  der zu günstige. Projekte ohne Ersatz bleiben zahlengleich.
+- **Sichtabnahme** steht aus (Teil b bringt erst die Oberfläche).
+- Die Doku-Aufzählung in `SchemaMigration.SCHRITTE_SQLITE` listet die Schritte nur bis 69
+  auf — 70, 71 und 72 fehlen dort; Nachzug bei Gelegenheit.

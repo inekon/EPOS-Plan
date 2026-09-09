@@ -366,3 +366,68 @@ Erwartungsfall bleibt bitgleich.** Best und Worst ändern sich für jedes Projek
 solchen Zeilen — Worst wird ungünstiger, Best günstiger. Genau das war der Zweck
 des Entscheids; die Zahlen des Belegs stehen im Protokoll
 (`iU9_W5_Blazor_Port_Protokoll.md`, Abschnitt W5‑B‑11).
+
+---
+
+## 10 Preisindizierung der Ersatzbeschaffung (p_I) — Etappe W5‑B‑12
+
+### 10.1 Rechenregel
+
+`KapitalwertRechner.Rechne` nimmt den **Preisänderungssatz der kapitalgebundenen
+Kosten** p_I [%/a] entgegen (Parameter `preisstInvestProzent`, am Ende der Signatur,
+Vorgabe 0). VDI 2067 Blatt 1 schreibt die kapitalgebundenen Kosten mit einem eigenen
+Faktor fort; bis hierher trug EPOS-Plan den heutigen Betrag unverändert in jedes
+Ersatzjahr (Vereinfachung W1, Lücke G4).
+
+| Größe | Regel |
+|---|---|
+| Erstbeschaffung in t₀ | **nominal** — der eingegebene Betrag |
+| verschobene Erstbeschaffung (KD6, StartJahr ≥ 2) | **nominal** — der Betrag gilt zum Zahlungszeitpunkt |
+| Ersatzbeschaffung im Jahr tj | `A(tj) = A₀ · (1 + p_I)^tj` — Exponent ist das ABSOLUTE Jahr |
+| Restwert zum Zeitpunkt T | Preisbasis der **letzten** Beschaffung × rest/n, abgezinst wie bisher |
+| p_I = 0 | Rechenweg **bitgleich** zu vor dieser Etappe (Indexfaktor wird nicht gebildet) |
+
+**Ein Satz für alle Positionen, nicht einer je Zeile.** Damit ist zugleich entschieden,
+wie weit Lücke **G2** reicht: genau bis zu diesem dritten Topf neben p_B und p_E.
+
+### 10.2 Nullsemantik
+
+| Feld | NULL heißt |
+|---|---|
+| `Preissteigerung_Investition` (Erwartet) | **wie p_B** (`Preissteigerung_Betrieb`) — nicht „0 %“ |
+| `Szen_Best_Preis_I` / `Szen_Worst_Preis_I` | Vorgabe = das **wirksame p_B** desselben Szenarios |
+| `Nicht_Monetaer` | nichts erfasst (Berichtszeile entfällt) |
+
+Eine 0 als Vorbelegung hätte behauptet, Investitionsgüter würden nie teurer — eine
+Aussage, die niemand getroffen hat. Der einzige gepflegte Satz im Haus, der eine
+allgemeine Kostensteigerung ausdrückt, ist p_B; deshalb der Rückfall dorthin.
+
+### 10.3 Ablage und Migrationsschritt 72
+
+Vier **nullbare** Spalten an `Tab_ProjektWirtschaftlichkeit`
+(`SchemaKatalog.Schritt72_ValeriErgaenzung`):
+
+```
+Preissteigerung_Investition   DOUBLE → REAL
+Szen_Best_Preis_I             DOUBLE → REAL
+Szen_Worst_Preis_I            DOUBLE → REAL
+Nicht_Monetaer                MEMO   → TEXT (ohne Längenprüfung, Freitext, G6)
+```
+
+* **Kein DML, kein DDL-DEFAULT** — dasselbe Muster wie Schritt 70 und 71.
+* **`MEMO` statt `TEXT(n)`:** Ein Fließtext, dessen Länge niemand vorhersagen kann; eine
+  Längenprüfung schnitte ihn ab. `StilleDb.SqliteSpaltenTyp` übersetzt MEMO nach TEXT
+  ohne CHECK — dieselbe Wahl wie bei `WQ_Wochenwerte`.
+* **Am Projekt, nicht an der Variante:** Nicht monetäre Wirkungen beschreiben die
+  Maßnahme als Ganzes.
+* **Die Rückfallebene `SchemaKatalog.Alle` führt die Spalten nicht** — wortgleiche
+  Begründung wie bei den Schritten 20, 21, 28 und 71: Kein Rechenkern der Simulation
+  liest sie, p_I erreicht den `KapitalwertRechner` als PARAMETER. Die tolerante Vorsorge
+  steht in `WirtschaftlichkeitCtrl.StelleTabellenSicher`.
+* **Ergebnisneutral als Schritt.** Er legt Spalten an. Erst wenn der Parametersatz sie
+  liest (Teil b), rechnen Bestandsprojekte mit Ersatzbeschaffung mit p_I = p_B; ihre
+  Kapitalwerte sinken dann leicht — gewollt, denn der bisherige Ausweis war der zu
+  günstige. Projekte ohne Ersatzbeschaffung bleiben zahlengleich. Der Referenzlauf ist
+  nicht berührt.
+* **Zielstand:** `SchemaStand.Zielversion = 72`. Systemimmanent weist
+  `ProjektExportImportCtrl` damit `.wpx`-Pakete auf Stand 71 ab.
