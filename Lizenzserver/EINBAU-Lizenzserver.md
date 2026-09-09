@@ -169,3 +169,37 @@ Vertragsdokumente hinterlegt, werden im Checkout verlinkt, mit SHA-256
 protokolliert und der Bestellbestätigung angehängt — der Kunde akzeptiert also
 ein Dokument mit einem anderen Preis als dem berechneten. Campus/Student und
 Einzel (3 Monate) sind mit den Fassungen vom 11.08.2026 in Ordnung.
+
+---
+
+# Nachtrag 09.09.2026 — Version 1.4.1: kein Schlüssel ohne veröffentlichte Lizenz
+
+**Befund (09.09.2026):** Zwei Lizenzschlüssel mit leerer Typkennung (`EPOS--05145-…`, `EPOS--05148-…`).
+Beide entstanden im wp-admin über „Neue Lizenz anlegen" → sofort „Neuen Schlüssel erzeugen", bevor die
+Lizenz mit „Veröffentlichen" gespeichert war. Ohne Speichern fehlt `_epos_typ`; `Epos_Schluessel::erzeugen`
+setzte eine leere Kennung ein, und `Epos_Schluessel::parsen` weist den Schlüssel bei der Aktivierung als
+Formatfehler ab („Der Lizenzschlüssel hat nicht das erwartete Format."). Die Lizenz 05148 blieb außerdem als
+„Automatischer Entwurf" unsichtbar in der Liste. Der Server lief zu diesem Zeitpunkt noch auf **1.3.0**
+(1.4.0 von Y: war nie eingespielt).
+
+**Änderungen 1.4.1** (Arbeitskopie `K:\pv2\lizenz\epos-lizenz`, abgelegt als
+`Y:\…\WordPress\EPOS-Plan\epos-lizenz-1.4.1\` und `epos-lizenz-1.4.1.zip`; Y:-Ordner `epos-lizenz` bleibt 1.4.0):
+
+| Datei | Änderung |
+|---|---|
+| `includes/class-epos-schluessel.php` | `erzeugen()` liefert bei fehlendem/unbekanntem Typ `WP_Error('typ')` statt eines leeren Rumpfs |
+| `includes/class-epos-lizenz-cpt.php` | `schluessel_neu()` verlangt `post_status = publish` und gültigen `_epos_typ`; Fehler von `erzeugen()` werden durchgereicht; das Tageslimit zählt erst nach erfolgreicher Erzeugung |
+| `admin/class-epos-admin.php` | Meta-Box „Lizenzschlüssel" zeigt auf Entwürfen bzw. ohne Typ nur den Hinweis „Noch kein Schlüssel möglich" statt des Knopfs |
+| `epos-lizenz.php` | Version 1.4.1 (Kopf und `EPOS_LIZENZ_VERSION`) |
+
+REST-Weg „Testversion" und WooCommerce-Weg sind unberührt: Beide legen die Lizenz veröffentlicht und mit
+Typ an (`Epos_Lizenz_Cpt::anlegen`).
+
+**Einspielen:** wp-admin → Plugins → Installieren → „Plugin hochladen" → `epos-lizenz-1.4.1.zip` →
+„Ersetze aktuelles durch hochgeladenes" (WordPress ≥ 5.5). Danach unter Plugins die Version 1.4.1 prüfen.
+Die Änderungen aus 1.4.0 (Aufbewahrung, `GET /epos/v1/vertrag`, Tarifpreise) kommen damit ebenfalls
+erstmals auf den Server — Abschnitt oben beachten (Optionen der Aufbewahrung, Zeitplan).
+
+**Sofortmaßnahmen am Bestand:** Lizenz 05145 (goetz02) mit Typ Firma gespeichert und neuer Schlüssel
+`EPOS-F-05145-…` erzeugt (09.09., 09:59); Entwurf 05148 ist fertigzustellen (Daten, Veröffentlichen, dann
+Schlüssel) oder zu verwerfen.
