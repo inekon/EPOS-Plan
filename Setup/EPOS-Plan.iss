@@ -229,8 +229,25 @@ english.AceFehlt=The Microsoft Access Database Engine (64-bit) could not be inst
 german.WebView2Fehlt=Die Microsoft Edge WebView2 Runtime konnte nicht installiert werden.%n%nOhne sie bleiben die neueren Dialoge von EPOS-Plan leer; alles Uebrige arbeitet weiter.%n%nHaeufigste Ursache ist eine fehlende Internetverbindung: Der mitgelieferte Installer laedt die Laufzeit nach. Sie laesst sich jederzeit nachtraeglich installieren — Bezugsquelle "Microsoft Edge WebView2" auf den Microsoft-Seiten. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
 english.WebView2Fehlt=The Microsoft Edge WebView2 Runtime could not be installed.%n%nWithout it the newer EPOS-Plan dialogs stay blank; everything else keeps working.%n%nThe most common cause is a missing internet connection: the bundled installer downloads the runtime. It can be installed later at any time — look for "Microsoft Edge WebView2" on the Microsoft pages. When in doubt, contact support.%n%nSetup will continue.
 
-german.DatenLoeschen=Sollen auch die Projektdatenbank und die Einstellungen des angemeldeten Windows-Kontos gelöscht werden?%n%n%1%n%nDiese Daten lassen sich danach nicht wiederherstellen. Daten anderer Windows-Konten bleiben in jedem Fall erhalten und sind dort von Hand zu entfernen.
-english.DatenLoeschen=Do you also want to delete the project database and settings of the signed-in Windows account?%n%n%1%n%nThis cannot be undone. Data belonging to other Windows accounts is always kept and must be removed there manually.
+; Seit Auftrag #161 (09.09.2026): Die Rückfrage zeigt den tatsächlichen, seit
+; dem SQLite-Cutover für ALLE Windows-Konten dieses Rechners gemeinsamen
+; Datenordner {commonappdata}\EPOS_PLAN (Datenbank samt Sicherungsordner
+; DB-Backup) — vorher richtete sie sich an {localappdata}\EPOS_PLAN, einen
+; Ordner, den nichts anlegt (Befund Auftrag #157). Der alte Satz "Daten
+; anderer Windows-Konten bleiben in jedem Fall erhalten" traf deshalb nie zu:
+; Ein gemeinsamer Ordner trifft beim Löschen zwangsläufig alle Konten. Die
+; Registrierungseinstellungen (HKEY_CURRENT_USER\Software\wp-plan) und die
+; zwei Datenverzeichnisse WP-Plan löscht der Code nach wie vor nicht — das
+; sagt der Text jetzt ausdrücklich, statt es fälschlich mitzuversprechen.
+german.DatenLoeschen=Soll auch die Datenbank samt Sicherungsordner unter%n%n    %1%n%ngelöscht werden?%n%nDieser Ordner gehört gemeinsam ALLEN Windows-Konten auf diesem Rechner — das Löschen trifft also nicht nur das angemeldete Konto, sondern auch die Projekte der anderen Konten. Ein Rückweg besteht danach nicht.%n%nErhalten bleiben in jedem Fall die beiden Datenverzeichnisse WP-Plan sowie die Registrierungseinstellungen des angemeldeten Kontos.
+english.DatenLoeschen=Do you also want to delete the database and its backup folder under%n%n    %1%n%nThis folder is shared by ALL Windows accounts on this computer — deleting it therefore also removes the projects of the other accounts, not just those of the signed-in one. This cannot be undone.%n%nThe two WP-Plan data directories and the registry settings of the signed-in account are kept in any case.
+
+; Neu seit Auftrag #161: DelTree scheiterte bislang still, wenn eine Datei im
+; Ordner noch geöffnet war (z. B. eine laufende EPOS-Plan-Instanz oder ein
+; Sicherungswerkzeug) — der Anwender glaubte dann an ein vollständiges
+; Löschen, das nicht stattgefunden hatte.
+german.DatenLoeschenFehlgeschlagen=Der Ordner%n%n    %1%n%nkonnte nicht vollständig gelöscht werden — vermutlich ist eine Datei darin noch geöffnet, etwa weil EPOS-Plan oder ein Sicherungswerkzeug noch läuft.%n%nSchließen Sie alle Programme, die auf diesen Ordner zugreifen, und entfernen Sie den Rest von Hand.
+english.DatenLoeschenFehlgeschlagen=The folder%n%n    %1%n%ncould not be deleted completely — most likely a file inside it is still open, for example because EPOS-Plan or a backup tool is still running.%n%nClose every program accessing this folder and remove the remainder by hand.
 
 german.TypVoll=Vollständige Installation
 english.TypVoll=Full installation
@@ -637,14 +654,38 @@ var
 begin
   if CurUninstallStep = usPostUninstall then
   begin
-    { Achtung: {localappdata} ist das Profil des Kontos, unter dem die
-      Deinstallation läuft. Wird sie mit fremden Administratorrechten
-      gestartet, bleiben die Daten des eigentlichen Anwenders liegen —
-      der Meldungstext benennt das. }
-    Ordner := ExpandConstant('{localappdata}\EPOS_PLAN');
+    { Bis zum 09.09.2026 stand hier die Konstante localappdata, aufgelöst zu
+      %LocalAppData%\EPOS_PLAN — dem Profil des Kontos, unter dem die
+      Deinstallation läuft. Herkunft:
+      Konzept_Setup_InnoSetup_EPOS-Plan.md, Abschnitt 6.2, schlug ursprünglich
+      EINE Datenbank je Windows-Konto im Benutzerprofil vor; die
+      SQLite-Umstellung hat das nie umgesetzt, DataRepository.GetDBPath kennt
+      kein Benutzerprofil (siehe Kommentar bei [Dirs] oben). Die Rückfrage
+      zielte damit auf einen Ordner, den nichts anlegt, und DirExists lieferte
+      praktisch immer False — sie erschien de facto nie (Befund Auftrag #157).
+      Richtiggestellt mit Auftrag #161 (09.09.2026): Die Datenbank samt dem
+      Sicherungsordner DB-Backup liegt unter %ProgramData%\EPOS_PLAN — dem
+      Ordner, den [Dirs] oben tatsächlich anlegt (dort als Konstante
+      commonappdata), gemeinsam für alle Windows-Konten dieses Rechners. Die
+      zwei Datenverzeichnisse WP-Plan und die Registrierungseinstellungen
+      (HKEY_CURRENT_USER\Software\wp-plan) löscht dieser Code bewusst nicht —
+      der bestehende Code hat sie noch nie gelöscht (er zielte ja nie auf die
+      Registry, sondern auf einen Ordner, der nie entstand), und der
+      Meldungstext sagt das jetzt auch so. Achtung beim Weiterschreiben dieses
+      Kommentars: eine der Ordnerkonstanten oben wörtlich in geschweiften
+      Klammern hineinzuschreiben würde ihn an deren schließender Klammer
+      vorzeitig beenden, denn geschweifte Klammern kommentieren hier nicht
+      verschachtelt (siehe die Warnung bei WebView2Vorhanden oben). }
+    Ordner := ExpandConstant('{commonappdata}\EPOS_PLAN');
     if DirExists(Ordner) then
       if MsgBox(FmtMessage(CustomMessage('DatenLoeschen'), [Ordner]),
                 mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
-        DelTree(Ordner, True, True, True);
+        { DelTree meldet per Rückgabewert, ob wirklich alles weg ist — bei
+          einer offenen Datei (laufendes EPOS-Plan, Sicherungswerkzeug) löscht
+          es, was es kann, und lässt den Rest stehen. Was früher stillschweigend
+          hingenommen wurde, meldet seit Auftrag #161 eine eigene Meldung. }
+        if not DelTree(Ordner, True, True, True) then
+          MsgBox(FmtMessage(CustomMessage('DatenLoeschenFehlgeschlagen'), [Ordner]),
+                 mbError, MB_OK);
   end;
 end;

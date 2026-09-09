@@ -30,6 +30,16 @@ Mitgeliefert: `EPOS-Plan.iss` (lauffähiges Setup-Skript) und `build-setup.ps1`
 > [`Konzept_Wechselrichter_EPOS-Plan.md`](../Konzept_Wechselrichter_EPOS-Plan.md),
 > Kapitel 12.
 
+> **Stand 09.09.2026 — Deinstallations-Rückfrage.** Anwenderentscheid
+> **#157‑E‑3** („Empfehlung"): Die Rückfrage `DatenLoeschen` zielte auf
+> `%LocalAppData%\EPOS_PLAN` — einen Ordner, den nichts anlegt (Befund
+> Auftrag #157) — und erschien deshalb praktisch nie. Auftrag #161 stellt sie
+> auf den tatsächlichen, seit dem SQLite-Cutover für alle Windows-Konten
+> gemeinsamen Datenordner `%ProgramData%\EPOS_PLAN` um (Datenbank samt
+> `DB-Backup`), Voreinstellung weiterhin *Nein*, und meldet einen
+> fehlgeschlagenen `DelTree` (offene Datei) statt still weiterzulaufen.
+> Abschnitte 2.4 und 6.3 sind entsprechend nachgezogen.
+
 ---
 
 ## 1. Ausgangslage
@@ -165,9 +175,16 @@ Datenverlust mit Ansage.
 ### 2.4 Deinstallation
 
 Programmdateien und Verknüpfungen verschwinden. Die Deinstallation fragt
-einmal, ob die Datenbank des angemeldeten Kontos mitgelöscht werden soll —
-Vorgabe *Nein*. Daten anderer Konten bleiben grundsätzlich liegen; das steht
-so auch im Meldungstext.
+einmal, ob der gemeinsame Datenordner `%ProgramData%\EPOS_PLAN` — Datenbank
+samt Sicherungsordner `DB-Backup` — mitgelöscht werden soll; Vorgabe *Nein*.
+Dieser Ordner gehört seit dem SQLite-Cutover allen Windows-Konten des
+Rechners gemeinsam, ein „Ja" trifft also auch deren Projekte, nicht nur die
+des angemeldeten Kontos — das steht so auch im Meldungstext (Auftrag #161,
+09.09.2026; zuvor richtete sich die Rückfrage fälschlich an
+`%LocalAppData%\EPOS_PLAN`, einen Ordner, den nichts anlegt, siehe Auftrag
+#157). Ausdrücklich **nicht** angefasst werden dabei die beiden
+Datenverzeichnisse `WP-Plan` und die Registrierungseinstellungen
+(`HKEY_CURRENT_USER\Software\wp-plan`) des angemeldeten Kontos.
 
 ---
 
@@ -451,10 +468,11 @@ Drei Punkte dazu:
 
 ### 6.3 Was das Setup mit der Datenbank nie tut
 
-Es überschreibt sie nicht, es migriert sie nicht, es löscht sie nicht (außer auf
-ausdrückliche Rückfrage bei der Deinstallation, und dann nur die des
-angemeldeten Kontos). Alles Weitere macht die Anwendung, die den Schema- und
-Lizenzzustand kennt.
+Es überschreibt sie nicht, es migriert sie nicht, es löscht sie nicht (außer
+auf ausdrückliche Rückfrage bei der Deinstallation — und dann den ganzen
+gemeinsamen Ordner `%ProgramData%\EPOS_PLAN`, nicht nur einen Anteil des
+angemeldeten Kontos; Auftrag #161, 09.09.2026, siehe Abschnitt 2.4). Alles
+Weitere macht die Anwendung, die den Schema- und Lizenzzustand kennt.
 
 ---
 
