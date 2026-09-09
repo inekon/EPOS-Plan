@@ -1951,6 +1951,19 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > fährt)** —, dazu #157‑E‑2 (Erzeugung der ausgelieferten Vorlage, mit oder ohne Beispielprojekte) und #157‑E‑3
 > (Deinstallations-Rückfrage zeigt auf `{localappdata}\EPOS_PLAN`, das nichts anlegt). Gate: Kern 2194 / UI 3362
 > grün, kein Rechenweg berührt.
+>
+> **#161 Deinstallations-Rückfrage (#157‑E‑3, Anwenderentscheid 09.09.2026 „Empfehlung", umgesetzt in `ae6d8c7`,
+> zusammengeführt in `e92589e`).** `CurUninstallStepChanged` fragte nach `{localappdata}\EPOS_PLAN` — einem Ordner, den
+> nichts anlegt (Vorschlag des Setup-Konzepts § 6.2, nie umgesetzt); die Rückfrage erschien de facto nie. Seither zielt
+> sie auf `{commonappdata}\EPOS_PLAN` (Datenbank samt `-wal`/`-shm` und `DB-Backup`), erscheint nur, wenn der Ordner
+> existiert, Voreinstellung „Nein" (`MB_DEFBUTTON2`); der Text de/en sagt, dass der Ordner ALLEN Windows-Konten des Rechners
+> gehört, dass es keinen Rückweg gibt und was NICHT gelöscht wird (die zwei `WP-Plan`-Datenverzeichnisse, die
+> Registrierungseinstellungen — die der alte Text als gelöscht versprach, ohne dass je Code dahinterstand). Ein
+> fehlgeschlagenes `DelTree` meldet sich jetzt (`DatenLoeschenFehlgeschlagen`, de/en) statt still zu bleiben. Nebenbefund
+> im Kommentar belegt: `{}`-Blockkommentare verschachteln in Pascal nicht — Ordnerkonstanten stehen dort ohne Klammern.
+> Doku: `Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md` 2.4/6.3, `BETRIEB_SQLITE.md` § 8. Nur Setup-Skript und Doku, kein
+> gebauter Code; der `ISCC`-Lauf auf Windows steht aus. Der Absatz „Deinstallation" in Wiki und Website wird mit W3 (#162)
+> nachgezogen.
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
