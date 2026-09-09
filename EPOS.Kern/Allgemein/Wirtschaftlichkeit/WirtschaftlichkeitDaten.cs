@@ -17,6 +17,195 @@ namespace WindowsFormsApplication1
     //    pflege — hier werden nur Einspeisevergütung und Preissteigerungen geführt.
     // ---------------------------------------------------------------------------
 
+    /// <summary>
+    /// ETAPPE W5‑B‑9 (Anwenderentscheid 09.09.2026): der <b>Szenario-Parametersatz</b>
+    /// eines Projekts — sechs Größen, mit denen Best und Worst von der
+    /// Erwartungsrechnung abweichen.
+    ///
+    /// <para><b>Warum es ihn gibt.</b> Bis dahin unterschieden sich die drei Szenarien
+    /// ausschließlich über die ZEILENwerte
+    /// (<c>Tab_ProjektWerte.BestCase</c>/<c>WorstCase</c>) — und die stehen im Bestand
+    /// bei nahezu jeder Position auf 0. <c>Szenariowert</c> fällt dann nach dem
+    /// VALERI-Muster auf den Erwartungswert zurück, und alle drei Szenarien rechnen
+    /// dieselbe Zahl. Der Anwenderbefund vom 08.09.2026 lautete deshalb: Die Szenarien
+    /// liefern identische Ergebnisse. Dieser Satz spannt die Bandbreite auf der
+    /// PROJEKTebene auf, wo VALERI (DIN EN 17463) sie erwartet.</para>
+    ///
+    /// <para><b>Jedes Feld ist nullbar, und <c>null</c> heißt VORGABE</b> — nicht 0.
+    /// Ein Feld, das der Anwender nie angefasst hat, zieht bei einer geänderten
+    /// Projektangabe automatisch mit (i wechselt von 3 auf 4 % → die Best-Vorgabe folgt
+    /// auf 3 %). Die Vorgaben stehen in <see cref="VORGABE_ZINS_PUNKTE"/> und den
+    /// Konstanten daneben.</para>
+    ///
+    /// <para><b>Vorzeichen einheitlich: <c>+</c> heißt mehr bzw. länger.</b> Eine
+    /// höhere Investition ist ungünstig, ein höherer Ertrag günstig, eine längere
+    /// Nutzungsdauer günstig — die Vorgaben tragen dem Rechnung, die Felder selbst
+    /// kennen keine Wertung.</para>
+    ///
+    /// <para><b>ERWARTET bekommt keinen Satz.</b> Es <i>ist</i> der Projektparametersatz;
+    /// eigene Felder wären eine zweite Wahrheit für dieselbe Zahl — und die Zusage
+    /// „Erwartet rechnet zahlengleich wie vor dieser Etappe“ hätte keinen Anker mehr.</para>
+    /// </summary>
+    public class SzenarioSatz
+    {
+        /// <summary>Vorgabe-Abstand des Kalkulationszinses [%-Punkte].</summary>
+        public const double VORGABE_ZINS_PUNKTE = 1.0;
+
+        /// <summary>Vorgabe-Abstand beider Preissteigerungen [%-Punkte].</summary>
+        public const double VORGABE_PREIS_PUNKTE = 1.0;
+
+        /// <summary>Vorgabe der Investitionsänderung [%].</summary>
+        public const double VORGABE_INVEST_PROZENT = 10.0;
+
+        /// <summary>Vorgabe der Ertragsänderung [%].</summary>
+        public const double VORGABE_ERTRAG_PROZENT = 10.0;
+
+        /// <summary>Vorgabe der Nutzungsdaueränderung [a].</summary>
+        public const double VORGABE_DAUER_JAHRE = 2.0;
+
+        /// <summary>Untergrenze der abgeleiteten Nutzungsdauer [a]. Alles darunter heißt
+        /// im <c>KapitalwertRechner</c> „keine Nutzungsdauer gepflegt“ (n = T, kein Ersatz,
+        /// kein Restwert) — diese Bedeutung darf eine Änderung nicht versehentlich
+        /// auslösen.</summary>
+        public const double DAUER_UNTERGRENZE = 1.0;
+
+        /// <summary>BEST oder WORST (<see cref="WirtschaftlichkeitSzenario"/>).</summary>
+        public string Szenario = WirtschaftlichkeitSzenario.BEST;
+
+        /// <summary>Kalkulationszins [%]; <c>null</c> = Vorgabe (i ∓ 1 %-Pkt).</summary>
+        public double? Zinssatz;
+
+        /// <summary>Preissteigerung Energie [%/a]; <c>null</c> = Vorgabe (p_E ∓ 1 %-Pkt).</summary>
+        public double? PreissteigerungEnergie;
+
+        /// <summary>Preissteigerung Betrieb [%/a]; <c>null</c> = Vorgabe (p_B ∓ 1 %-Pkt).</summary>
+        public double? PreissteigerungBetrieb;
+
+        /// <summary>Änderung der Investition [%], + = teurer; <c>null</c> = Vorgabe (∓ 10 %).
+        /// Sie greift NUR auf Positionen ohne gepflegten Szenariowert (Vorrangregel).</summary>
+        public double? InvestitionAenderung;
+
+        /// <summary>Änderung der Erträge [%], + = höher; <c>null</c> = Vorgabe (± 10 %).
+        /// Sie greift auf den Einspeiseerlös und die PV-Vergütungsreihe — nicht auf die
+        /// gesetzlichen Erlösreihen (KWKG, Energie-/Stromsteuer).</summary>
+        public double? ErtragAenderung;
+
+        /// <summary>Änderung der Nutzungsdauer [a], + = länger; <c>null</c> = Vorgabe (± 2 a).
+        /// Sie greift NUR auf Positionen ohne gepflegte Szenario-Nutzungsdauer.</summary>
+        public double? NutzungsdauerAenderung;
+
+        /// <summary>true, wenn kein einziges Feld gepflegt ist — dann gelten durchweg die
+        /// Vorgaben (Statuszeile der Seite und Herleitungszeile des Dialogs).</summary>
+        public bool NurVorgaben
+        {
+            get
+            {
+                return !Zinssatz.HasValue && !PreissteigerungEnergie.HasValue &&
+                       !PreissteigerungBetrieb.HasValue && !InvestitionAenderung.HasValue &&
+                       !ErtragAenderung.HasValue && !NutzungsdauerAenderung.HasValue;
+            }
+        }
+
+        /// <summary>Das Vorzeichen der Vorgaben: BEST = −1 (billiger, weniger Zins),
+        /// WORST = +1. Jede andere Zeichenkette wird wie WORST behandelt — den Satz
+        /// gibt es nur für diese zwei.</summary>
+        private double Richtung
+        {
+            get
+            {
+                return string.Equals(Szenario, WirtschaftlichkeitSzenario.BEST,
+                                     StringComparison.Ordinal) ? -1.0 : 1.0;
+            }
+        }
+
+        /// <summary>Wirksamer Kalkulationszins [%] — nie negativ.</summary>
+        public double ZinsWirksam(double projektZins)
+        {
+            double z = Zinssatz ?? (projektZins + Richtung * VORGABE_ZINS_PUNKTE);
+            return z < 0 ? 0 : z;
+        }
+
+        /// <summary>Wirksame Preissteigerung Energie [%/a].</summary>
+        public double PreisEnergieWirksam(double projektwert)
+        {
+            return PreissteigerungEnergie ?? (projektwert + Richtung * VORGABE_PREIS_PUNKTE);
+        }
+
+        /// <summary>Wirksame Preissteigerung Betrieb [%/a].</summary>
+        public double PreisBetriebWirksam(double projektwert)
+        {
+            return PreissteigerungBetrieb ?? (projektwert + Richtung * VORGABE_PREIS_PUNKTE);
+        }
+
+        /// <summary>Wirksame Investitionsänderung [%], + = teurer.</summary>
+        public double InvestWirksam
+        {
+            get { return InvestitionAenderung ?? (Richtung * VORGABE_INVEST_PROZENT); }
+        }
+
+        /// <summary>Wirksame Ertragsänderung [%], + = höher. Die Vorgabe zeigt GEGEN die
+        /// Richtung: Im Best-Fall bringt die Anlage MEHR ein.</summary>
+        public double ErtragWirksam
+        {
+            get { return ErtragAenderung ?? (-Richtung * VORGABE_ERTRAG_PROZENT); }
+        }
+
+        /// <summary>Wirksame Nutzungsdaueränderung [a], + = länger. Vorgabe wie beim
+        /// Ertrag gegen die Richtung: Im Best-Fall hält die Anlage länger.</summary>
+        public double DauerWirksam
+        {
+            get { return NutzungsdauerAenderung ?? (-Richtung * VORGABE_DAUER_JAHRE); }
+        }
+
+        /// <summary>Der Investitionsfaktor (1,0 = keine Änderung); nie negativ.</summary>
+        public double InvestFaktor
+        {
+            get { double f = 1.0 + InvestWirksam / 100.0; return f < 0 ? 0 : f; }
+        }
+
+        /// <summary>Der Ertragsfaktor (1,0 = keine Änderung); nie negativ.</summary>
+        public double ErtragFaktor
+        {
+            get { double f = 1.0 + ErtragWirksam / 100.0; return f < 0 ? 0 : f; }
+        }
+
+        /// <summary>Die Nutzungsdauer einer Position [a] nach dieser Etappe.
+        /// Zeilen ohne (sinnvoll) gepflegte Nutzungsdauer (n &lt; 1) bleiben unberührt —
+        /// dort heißt der Wert „wie der Betrachtungszeitraum“, und das ist keine Dauer,
+        /// die man verlängern könnte.</summary>
+        public double DauerFuer(double dauer)
+        {
+            if (dauer < DAUER_UNTERGRENZE) return dauer;
+            double d = dauer + DauerWirksam;
+            return d < DAUER_UNTERGRENZE ? DAUER_UNTERGRENZE : d;
+        }
+
+        /// <summary>Ein Satz aus lauter Vorgaben (alle Felder <c>null</c>).</summary>
+        public static SzenarioSatz Vorgabe(string szenario)
+        {
+            return new SzenarioSatz { Szenario = szenario ?? WirtschaftlichkeitSzenario.BEST };
+        }
+
+        /// <summary>Flache Kopie — der Dialog arbeitet auf einer, damit „Abbrechen“
+        /// wirklich abbricht.</summary>
+        public SzenarioSatz Kopie() { return (SzenarioSatz)MemberwiseClone(); }
+
+        /// <summary>Nachweiszeile des Satzes (Seite, Dialog, Bericht) — die WIRKSAMEN
+        /// Zahlen, nicht die gepflegten.</summary>
+        public string Nachweis(WirtschaftlichkeitParameter p, System.Globalization.CultureInfo kultur)
+        {
+            double zins = p != null ? p.Zinssatz : 0;
+            double pe = p != null ? p.PreissteigerungEnergie : 0;
+            double pb = p != null ? p.PreissteigerungBetrieb : 0;
+            return "i = " + ZinsWirksam(zins).ToString("N1", kultur) + " % · p_E = " +
+                   PreisEnergieWirksam(pe).ToString("N1", kultur) + " %/a · p_B = " +
+                   PreisBetriebWirksam(pb).ToString("N1", kultur) + " %/a · Investition " +
+                   InvestWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Erträge " +
+                   ErtragWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Nutzungsdauer " +
+                   DauerWirksam.ToString("+0.#;-0.#;0", kultur) + " a";
+        }
+    }
+
     /// <summary>Parametersatz eines Rechenlaufs (Tab_ProjektWirtschaftlichkeit,
     /// eine Zeile je STAMMprojekt — gilt für die ganze Vergleichsgruppe).</summary>
     public class WirtschaftlichkeitParameter
@@ -222,6 +411,55 @@ namespace WindowsFormsApplication1
         public bool KwkgPauschalmodus;
 
         public DateTime? GeaendertAm;
+
+        /// <summary>
+        /// ETAPPE W5‑B‑9: der Szenario-Parametersatz für BEST. Nie <c>null</c> — ein Satz
+        /// aus lauter Vorgaben ist der Regelfall (Migrationsschritt 71 legt die zwölf
+        /// Spalten NULL an, und NULL heißt Vorgabe).
+        /// </summary>
+        public SzenarioSatz SatzBest = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
+
+        /// <inheritdoc cref="SatzBest"/>
+        public SzenarioSatz SatzWorst = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
+
+        /// <summary>
+        /// Der Satz eines Szenarios — <c>null</c> für ERWARTET und für jede unbekannte
+        /// Zeichenkette. <b>Genau dieses <c>null</c> ist die Zusage</b>, dass der
+        /// Erwartungsfall den Rechenweg von vor W5‑B‑9 geht: Jeder Aufrufer prüft auf
+        /// <c>null</c> und fässt dann nichts an.
+        /// </summary>
+        public SzenarioSatz SatzFuer(string szenario)
+        {
+            if (string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal))
+                return SatzBest;
+            if (string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal))
+                return SatzWorst;
+            return null;
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑9: der Parametersatz, mit dem ein Szenario RECHNET.
+        ///
+        /// <para>Für ERWARTET ist es <c>this</c> — <b>dieselbe Referenz</b>, nicht eine
+        /// wertgleiche Kopie. Damit ist die Zahlengleichheit des Erwartungsfalls keine
+        /// Behauptung, sondern eine Eigenschaft des Codes.</para>
+        ///
+        /// <para>Für BEST und WORST eine flache Kopie mit ersetztem Zins und ersetzten
+        /// Preissteigerungen. <b>Alles übrige bleibt stehen</b> — Betrachtungszeitraum,
+        /// Einspeisevergütung, KWKG, Steuern, Bilanzierung sind Rechtsstände und Preise,
+        /// keine Szenariogrößen. Investitions-, Ertrags- und Nutzungsdaueränderung wirken
+        /// nicht hier, sondern in der EINGABE (Vorrangregel je Zeile).</para>
+        /// </summary>
+        public WirtschaftlichkeitParameter FuerSzenario(string szenario)
+        {
+            SzenarioSatz s = SatzFuer(szenario);
+            if (s == null) return this;
+            WirtschaftlichkeitParameter k = Kopie();
+            k.Zinssatz = s.ZinsWirksam(Zinssatz);
+            k.PreissteigerungEnergie = s.PreisEnergieWirksam(PreissteigerungEnergie);
+            k.PreissteigerungBetrieb = s.PreisBetriebWirksam(PreissteigerungBetrieb);
+            return k;
+        }
 
         /// <summary>Kurzdarstellung als Nachweiszeile (Reiter + Bericht).</summary>
         public string Nachweis(System.Globalization.CultureInfo kultur)
@@ -558,6 +796,21 @@ namespace WindowsFormsApplication1
         public double? BarwertAusgaben;        // Betrieb + Energie + Ersatzbeschaffungen [€]
         public double? BarwertEinnahmen;       // Einspeiseerlöse [€]
         public double RestwertBarwert;         // linearer Restwert, abgezinst [€]
+
+        /// <summary>
+        /// ETAPPE W5‑B‑10 (VALERI-Abgleich, 09.09.2026): Barwert der
+        /// ERSATZBESCHAFFUNGEN [€], positiv.
+        ///
+        /// <para>Gerechnet wurden sie seit W1 (eine Position mit Nutzungsdauer n &lt; T
+        /// wird in t = n, 2n, … erneut beschafft), ausgewiesen aber nie: Sie steckten
+        /// stumm in <see cref="BarwertAusgaben"/>. DIN EN 17463 verlangt sie als eigene
+        /// Position — zusammen mit dem Restwert sind sie die zwei Größen, an denen
+        /// hängt, ob ein Betrachtungszeitraum überhaupt zur Nutzungsdauer passt.</para>
+        ///
+        /// <para><b>Reiner Ausweis.</b> Der Kapitalwert ist unverändert; diese Zahl wird
+        /// aus dem fertigen Zahlungsbild abgeleitet und nirgends aufsummiert.</para>
+        /// </summary>
+        public double ErsatzBarwert;
 
         // Stufe W2 (Phase 7)
         public double CO2AbgabeJahr;           // BEHG-Abgabe im Jahr 1 [€/a] (0 = aus/kein Brennstoff)

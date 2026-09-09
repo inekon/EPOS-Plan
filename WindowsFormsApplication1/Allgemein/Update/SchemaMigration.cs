@@ -2639,6 +2639,46 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_70_PV_STRANGPRUEFUNG = 70;
 
+        /// <summary>
+        /// Schritt 71 — der <b>Szenario-Parametersatz</b> der Wirtschaftlichkeit
+        /// (<b>W5‑B‑9</b>, Anwenderentscheid vom 09.09.2026). Zwölf nullbare
+        /// <c>DOUBLE</c>-Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>, sechs je
+        /// Szenario: Kalkulationszins, Preissteigerung Energie, Preissteigerung Betrieb,
+        /// Investitionsänderung [%], Ertragsänderung [%] und Nutzungsdaueränderung [a].
+        /// DDL in <see cref="SchemaKatalog.Schritt71_SzenarioBest"/> und
+        /// <see cref="SchemaKatalog.Schritt71_SzenarioWorst"/>.
+        ///
+        /// <para><b>Wozu.</b> Die Seite „Wirtschaftlichkeit“ bot drei Szenarien an und
+        /// zeigte in allen dreien dieselben Zahlen (Anwenderbefund 08.09.2026): Sie
+        /// unterschieden sich ausschließlich über die ZEILENwerte
+        /// <c>Tab_ProjektWerte.BestCase</c>/<c>WorstCase</c>, und die stehen im Bestand
+        /// bei nahezu jeder Position auf 0. Der Parametersatz spannt die Bandbreite dort
+        /// auf, wo DIN EN 17463 (VALERI) sie erwartet — auf der Projektebene.</para>
+        ///
+        /// <para><b>KEIN DML.</b> Alle zwölf Spalten bleiben nach <c>ADD COLUMN</c> NULL,
+        /// und NULL heißt bei allen zwölfen „Vorgabe“ (Best: i − 1 %‑Pkt, Investition
+        /// − 10 %, … — die Regel steht in <c>SzenarioSatz</c>). Ein DEFAULT gälte nur für
+        /// künftige Zeilen und nähme der Nullsemantik ihre Aussage.</para>
+        ///
+        /// <para><b>Wirkung auf die Rechnung, ausdrücklich.</b> <b>ERWARTET bleibt
+        /// zahlengleich</b> — der Erwartungsfall bekommt keinen Satz und geht den
+        /// Rechenweg von vorher (<c>WirtschaftlichkeitParameter.FuerSzenario</c> gibt
+        /// für ihn <c>this</c> zurück, dieselbe Referenz). <b>BEST und WORST ändern sich</b>,
+        /// sobald der Schritt gelaufen ist: Sie rechnen dann mit den Vorgaben statt mit
+        /// dem Erwartungswert. Genau das ist der Zweck des Entscheids. Der
+        /// Referenzlauf ist nicht berührt — er rechnet Simulationen, keine
+        /// Wirtschaftlichkeit.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 71
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 70
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; ein DML, das ein zweites Mal etwas täte, gibt es
+        /// nicht.</para>
+        /// </summary>
+        public const int SCHRITT_71_SZENARIOPARAMETER = 71;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4695,6 +4735,23 @@ namespace WindowsFormsApplication1
                         "wird unveraendert - keine der vier Spalten geht in einen " +
                         "Rechenweg.",
                         Schritt_70_PvStrangpruefung),
+
+            // ANWENDERENTSCHEID W5-B-9 vom 09.09.2026 ("Wirtschaftlichkeit:
+            // Szenarioparameter und VALERI-Etappe umsetzen"). Begruendung,
+            // Nullsemantik und die Zusage "Erwartet bleibt zahlengleich" stehen bei der
+            // Schrittkonstanten; die DDL steht in
+            // SchemaKatalog.Schritt71_SzenarioBest und ...Worst - EINE Quelle fuer
+            // Migration, Testdatenbank und Nachweis.
+            new Schritt(SCHRITT_71_SZENARIOPARAMETER,
+                        "Den Szenario-Parametersatz der Wirtschaftlichkeit anlegen: " +
+                        "zwoelf nullbare Spalten an Tab_ProjektWirtschaftlichkeit " +
+                        "(Zins, Preissteigerungen, Investitions-, Ertrags- und " +
+                        "Nutzungsdaueraenderung je Best und Worst) (W5-B-9)",
+                        "Die drei Szenarien Erwartet/Best/Worst lieferten dann weiter " +
+                        "identische Ergebnisse, solange niemand je Kostenzeile einen " +
+                        "Best- oder Worst-Case-Betrag pflegt - und das ist im Bestand " +
+                        "bei nahezu jeder Position der Fall.",
+                        Schritt_71_Szenarioparameter),
         };
 
         /// <summary>
@@ -10858,6 +10915,50 @@ namespace WindowsFormsApplication1
                     "Auslegungstemperaturen. KEIN Rechenergebnis aendert sich - die " +
                     "Strangpruefung ist eine Ampel im Dialog und ein Laufhinweis, " +
                     "keine Rechnung.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 71 - der Szenario-Parametersatz der Wirtschaftlichkeit (W5-B-9)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 71 — Anlass, Nullsemantik und Wirkung stehen bei
+        /// <see cref="SCHRITT_71_SZENARIOPARAMETER"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene
+        /// Anweisung: <see cref="SchemaKatalog.Schritt71_SzenarioBest"/> und
+        /// <see cref="SchemaKatalog.Schritt71_SzenarioWorst"/> (zusammengefasst in
+        /// <c>SchemaKatalog.Schritt71_Szenarioparameter</c>). Aus derselben Quelle
+        /// bedienen sich <c>Werkzeuge/Testdatenbankschema</c>, die Testdatenbank der
+        /// Kern-Tests und der Nachweis.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/></b> — wortgleiche Begründung
+        /// wie bei Schritt 70: Der Schritt gehört dem SQLite-Zweig, und der Typ geht
+        /// über <see cref="StilleDb.SqliteSpaltenTyp"/> (<c>DOUBLE</c> wird dort zu
+        /// <c>REAL</c>).</para>
+        /// </summary>
+        private static bool Schritt_71_Szenarioparameter(Lauf l)
+        {
+            int spalten = 0;
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt71_Szenarioparameter)
+            {
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                spalten++;
+            }
+
+            l.Notiz("71: Die Wirtschaftlichkeit bekommt ihren Szenario-Parametersatz " +
+                    "(Entscheid W5-B-9) - " + spalten + " Spalten an " +
+                    SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ", sechs je Szenario " +
+                    "(Zins, Preissteigerung Energie, Preissteigerung Betrieb, " +
+                    "Investitionsaenderung, Ertragsaenderung, Nutzungsdaueraenderung). " +
+                    "Alle bleiben NULL, und NULL heisst Vorgabe: Best rechnet dann mit " +
+                    "einem Prozentpunkt weniger Zins, zehn Prozent weniger Investition, " +
+                    "zehn Prozent mehr Ertrag und zwei Jahren mehr Nutzungsdauer, Worst " +
+                    "spiegelbildlich. ERWARTET bleibt zahlengleich - es bekommt keinen " +
+                    "Satz. Ein gepflegter Best-/Worst-Wert je Kostenzeile behaelt " +
+                    "Vorrang vor dem pauschalen Ausschlag.");
             return true;
         }
 

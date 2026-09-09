@@ -230,6 +230,16 @@ namespace WindowsFormsApplication1
                 z.Add(Zahl("AUFSCHLAG", MyResource.Resource.WIRT_ZEILE_AUFSCHLAG,
                            e => (double?)e.AufschlagJahr));
 
+            // ETAPPE W5-B-10 (VALERI-Abgleich): Die Ersatzbeschaffungen wurden seit W1
+            // GERECHNET, aber nie AUSGEWIESEN - sie steckten stumm in den Barwerten der
+            // Ausgaben. DIN EN 17463 verlangt sie als eigene Position; zusammen mit dem
+            // Restwert darunter sind sie die zwei Groessen, an denen haengt, ob ein
+            // Betrachtungszeitraum ueberhaupt zur Nutzungsdauer passt. Die Zeile
+            // erscheint nur, wo es Ersatz gibt (n < T bei irgendeiner Position).
+            if (Irgendein(menge, e => e.ErsatzBarwert != 0))
+                z.Add(Zahl("ERSATZ", MyResource.Resource.WIRT_ZEILE_ERSATZ,
+                           e => (double?)e.ErsatzBarwert));
+
             z.Add(Zahl("RESTWERT", MyResource.Resource.WIRT_ZEILE_RESTWERT,
                        e => (double?)e.RestwertBarwert));
             z.Add(Zahl("NETTOBARWERT", MyResource.Resource.WIRT_ZEILE_NETTOBARWERT,

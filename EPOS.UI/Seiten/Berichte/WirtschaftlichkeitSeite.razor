@@ -80,6 +80,13 @@
                      AuswahlChanged="BeiSzenario" />
     </div>
 
+    @* W5-B-9: Erst der Satz DIESES Szenarios, dann der Projekt-Parameternachweis.
+       Eine leere Szenariozeile wird gar nicht erst gezeichnet - eine leere
+       Herleitungszeile ist kein Hinweis, sondern eine Luecke. *@
+    @if (!string.IsNullOrEmpty(_stand.Ansicht.Szenariozeile))
+    {
+        <Herleitungszeile Text="@_stand.Ansicht.Szenariozeile" />
+    }
     <Herleitungszeile Text="@_stand.Parameterzeile" />
 
     @* --------------------------------------------- Vergleichstabelle *@

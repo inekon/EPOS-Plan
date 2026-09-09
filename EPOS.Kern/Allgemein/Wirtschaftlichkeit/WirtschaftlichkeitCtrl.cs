@@ -119,6 +119,14 @@ namespace WindowsFormsApplication1
         public const string SPALTE_AUFSCHLAG_BETRAG = "AufschlagBetrag";
 
         /// <summary>
+        /// ETAPPE W5‑B‑10 (VALERI): Barwert der Ersatzbeschaffungen in
+        /// <see cref="TAB_ERGEBNIS"/> [€]. Über <c>SpalteSicher</c> — dieselbe
+        /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>: Ergebnisspalten führt
+        /// dieses Modul selbst, Eingabespalten der Migrationskatalog.
+        /// </summary>
+        public const string SPALTE_ERSATZ_BARWERT = "ErsatzBarwert";
+
+        /// <summary>
         /// ETAPPE E7: Aufschlüsselung des Einspeiseerlöses in PV-Überschuss und
         /// KWK-Einspeisung in <see cref="TAB_ERGEBNIS"/>. Über <c>SpalteSicher</c> —
         /// dieselbe Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>. Die Summe der
@@ -422,6 +430,21 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_VERMIEDEN_GESAMT, "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_AUFSCHLAG_BETRAG, "DOUBLE");
 
+                    // ETAPPE W5-B-10 (VALERI) - der Barwert der Ersatzbeschaffungen.
+                    // Additiv über denselben Weg; er ist Teilmenge von BarwertAusgaben
+                    // und wird nirgends aufsummiert.
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_ERSATZ_BARWERT, "DOUBLE");
+
+                    // ETAPPE W5-B-9 - die zwölf Spalten des Szenario-Parametersatzes.
+                    // Sie entstehen regulär über Migrationsschritt 71; das hier ist die
+                    // tolerante VORSORGE unmittelbar vor dem Zugriff, damit eine nie
+                    // migrierte Datenbank nicht an einer fehlenden Spalte scheitert -
+                    // dasselbe Muster wie bei den E4-, E5- und E6-Spalten. Eine
+                    // WERTE-Vorbelegung gibt es weder hier noch in Schritt 71: NULL
+                    // heißt „Vorgabe“, und die Leseseite macht daraus die Vorgabe.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt71_Szenarioparameter)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
                     // ETAPPE E7 — Zerlegung des Einspeiseerlöses. Additiv wie oben; die
                     // Summe der beiden Spalten ist der bereits vorhandene Gesamtbetrag.
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_EINSPEISUNG_PV, "DOUBLE");
@@ -610,6 +633,25 @@ namespace WindowsFormsApplication1
                     p.NachhaltigkeitsnachweisBiomasse =
                         !string.Equals(bnw, DbWerte.BIOMASSE_NACHWEIS_NEIN, StringComparison.Ordinal);
 
+                    // ETAPPE W5-B-9 - der Szenario-Parametersatz. NULL heißt VORGABE,
+                    // nicht 0: Ein nie gepflegtes Feld soll bei einer geänderten
+                    // Projektangabe MITZIEHEN, und das kann nur eine leere Spalte.
+                    // Deshalb hier bewusst kein "?? 0".
+                    p.SatzBest = LiesSatz(r, WirtschaftlichkeitSzenario.BEST,
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_ZINS,
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_E,
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_B,
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_INVEST,
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_ERTRAG,
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_DAUER);
+                    p.SatzWorst = LiesSatz(r, WirtschaftlichkeitSzenario.WORST,
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_ZINS,
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_E,
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_B,
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_INVEST,
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_ERTRAG,
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_DAUER);
+
                     if (r["GeaendertAm"] != DBNull.Value) p.GeaendertAm = Convert.ToDateTime(r["GeaendertAm"]);
                 }
             }
@@ -629,6 +671,36 @@ namespace WindowsFormsApplication1
 
             MeldeEinheitenBefunde(idStamm);
             return p;
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑9: einen Szenario-Parametersatz aus der Parameterzeile lesen.
+        /// <para>Jedes Feld bleibt <c>null</c>, wenn die Spalte fehlt oder NULL ist —
+        /// und <c>null</c> heißt VORGABE. Eine nie migrierte Datenbank verhält sich
+        /// dadurch wie eine frisch migrierte.</para>
+        /// </summary>
+        private static SzenarioSatz LiesSatz(DataRow r, string szenario, string sZins,
+                                             string sPreisE, string sPreisB, string sInvest,
+                                             string sErtrag, string sDauer)
+        {
+            return new SzenarioSatz
+            {
+                Szenario = szenario,
+                Zinssatz = D(r, sZins),
+                PreissteigerungEnergie = D(r, sPreisE),
+                PreissteigerungBetrieb = D(r, sPreisB),
+                InvestitionAenderung = D(r, sInvest),
+                ErtragAenderung = D(r, sErtrag),
+                NutzungsdauerAenderung = D(r, sDauer)
+            };
+        }
+
+        /// <summary>ETAPPE W5‑B‑9: ein nullbarer Szenariowert als Parameter — <c>null</c>
+        /// muss LEER in die Datenbank, sonst ginge die Aussage „Vorgabe“ verloren.</summary>
+        private static DbParam SzenParam(double? wert)
+        {
+            return new DbParam("@sz", DbParamTyp.Double)
+            { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
         }
 
         /// <summary>
@@ -804,6 +876,20 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "] = ?, " +
+                    // ETAPPE W5-B-9 - die zwölf Szenariospalten. Reihenfolge wie in
+                    // SchemaKatalog.Schritt71_Szenarioparameter.
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZINS + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_E + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_B + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_INVEST + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_ERTRAG + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_DAUER + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ZINS + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_E + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_B + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_INVEST + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ERTRAG + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_DAUER + "] = ?, " +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
                     new DbParam("@z", p.Zinssatz),
                     new DbParam("@t", p.Betrachtungszeitraum),
@@ -854,6 +940,20 @@ namespace WindowsFormsApplication1
                     new DbParam("@kant", DbParamTyp.Double)
                     { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
                     new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
+                    // ETAPPE W5-B-9: ein nicht gepflegtes Feld muss LEER in die
+                    // Datenbank - es ist die Aussage „Vorgabe“ und etwas anderes als 0.
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).Zinssatz),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).PreissteigerungEnergie),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).PreissteigerungBetrieb),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).InvestitionAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).ErtragAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).NutzungsdauerAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Zinssatz),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).PreissteigerungEnergie),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).PreissteigerungBetrieb),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).InvestitionAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).ErtragAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).NutzungsdauerAenderung),
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now },
                     new DbParam("@p", p.IdStamm));
                 if (rows > 0) return true;
@@ -882,8 +982,22 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "], " +
+                    // ETAPPE W5-B-9 - die zwölf Szenariospalten, Reihenfolge wie im UPDATE.
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZINS + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_E + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_B + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_INVEST + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_ERTRAG + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_DAUER + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ZINS + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_E + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_B + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_INVEST + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ERTRAG + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_DAUER + "], " +
                     "GeaendertAm) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
+                    "?,?,?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -932,9 +1046,32 @@ namespace WindowsFormsApplication1
                     new DbParam("@kant", DbParamTyp.Double)
                     { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
                     new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
+                    // ETAPPE W5-B-9 - Reihenfolge wie im UPDATE darüber; nicht gepflegt
+                    // heißt LEER, nicht 0.
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).Zinssatz),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).PreissteigerungEnergie),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).PreissteigerungBetrieb),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).InvestitionAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).ErtragAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).NutzungsdauerAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).Zinssatz),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).PreissteigerungEnergie),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).PreissteigerungBetrieb),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).InvestitionAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).ErtragAenderung),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).NutzungsdauerAenderung),
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             }
             catch { return false; }
+        }
+
+        /// <summary>ETAPPE W5‑B‑9: der Satz eines Szenarios, nie <c>null</c> — ein
+        /// Parametersatz ohne Szenariosatz (etwa aus einem Test) speichert dann lauter
+        /// Vorgaben, also lauter NULL.</summary>
+        private static SzenarioSatz Satz(WirtschaftlichkeitParameter p, string szenario)
+        {
+            SzenarioSatz s = p != null ? p.SatzFuer(szenario) : null;
+            return s ?? SzenarioSatz.Vorgabe(szenario);
         }
 
         /// <summary>
@@ -1240,16 +1377,24 @@ namespace WindowsFormsApplication1
 
             foreach (string szenario in WirtschaftlichkeitSzenario.Alle)
             {
+                // ETAPPE W5-B-9 (Anwenderentscheid 09.09.2026): der Parametersatz, mit
+                // dem DIESES Szenario rechnet. Fuer ERWARTET ist es p selbst - dieselbe
+                // Referenz, nicht eine wertgleiche Kopie; damit ist die
+                // Zahlengleichheit des Erwartungsfalls eine Eigenschaft des Codes und
+                // keine Behauptung. Fuer Best/Worst eine Kopie mit ersetztem Zins und
+                // ersetzten Preissteigerungen (Begruendung an FuerSzenario).
+                WirtschaftlichkeitParameter ps = p.FuerSzenario(szenario);
+
                 ProjektEingabe stammEingabe = null;
                 KapitalwertRechner.Zahlungsbild stammBild = null;
                 WirtschaftlichkeitErgebnis stammErg = null;
 
                 foreach (VariantenDaten v in daten.Varianten)
                 {
-                    ProjektEingabe eingabe = BaueEingabe(v, p, tarif, szenario);
+                    ProjektEingabe eingabe = BaueEingabe(v, ps, tarif, szenario);
                     if (eingabe.Matrix != null && !matrizen.ContainsKey(v.IdProjekt))
                         matrizen[v.IdProjekt] = eingabe.Matrix;
-                    WirtschaftlichkeitErgebnis erg = RechneProjekt(v, p, eingabe,
+                    WirtschaftlichkeitErgebnis erg = RechneProjekt(v, ps, eingabe,
                         szenario, out KapitalwertRechner.Zahlungsbild bild);
                     alle.Add(erg);
 
@@ -1260,15 +1405,19 @@ namespace WindowsFormsApplication1
                         erg.Kapitalwert.HasValue && stammErg != null && stammErg.Kapitalwert.HasValue)
                     {
                         erg.KapitalwertDiff = erg.Kapitalwert.Value - stammErg.Kapitalwert.Value;
+                        // W5-B-9: mit dem Zins DIESES Szenarios - sonst annuisierte die
+                        // Best-Zeile ihren Kapitalwert mit dem Erwartungszins.
                         erg.AnnuitaetKW = erg.KapitalwertDiff.Value *
-                            KapitalwertRechner.Annuitaet(p.Zinssatz / 100.0, p.Betrachtungszeitraum);
+                            KapitalwertRechner.Annuitaet(ps.Zinssatz / 100.0, ps.Betrachtungszeitraum);
                         erg.AmortisationJahre = KapitalwertRechner.AmortisationDifferenz(bild, stammBild);
                         erg.IRR = KapitalwertRechner.InternerZinsfuss(bild, stammBild);   // W2
 
                         // Sensitivitätsanalyse (W2): nur Szenario Erwartet.
                         if (szenario == WirtschaftlichkeitSzenario.ERWARTET &&
                             stammEingabe != null && eingabe.Energie.HasValue && stammEingabe.Energie.HasValue)
-                            sens.AddRange(BaueSensitivitaet(v.IdProjekt, eingabe, stammEingabe, p,
+                            // Der Sensitivitaetslauf haengt am Szenario ERWARTET - dort ist
+                            // ps dieselbe Referenz wie p.
+                            sens.AddRange(BaueSensitivitaet(v.IdProjekt, eingabe, stammEingabe, ps,
                                                             erg.KapitalwertDiff.Value));
                     }
                 }
@@ -1301,7 +1450,11 @@ namespace WindowsFormsApplication1
             };
             if (daten == null || daten.Varianten.Count == 0 || p == null) return verlauf;
 
-            WirtschaftlichkeitParameter ph = p.Kopie();
+            // ETAPPE W5-B-9: erst das Szenario, dann der Horizont. FuerSzenario gibt
+            // fuer ERWARTET p selbst zurueck - die Kopie danach ist also unverzichtbar,
+            // sonst schriebe der Verlauf den Betrachtungszeitraum in den gespeicherten
+            // Parametersatz.
+            WirtschaftlichkeitParameter ph = p.FuerSzenario(verlauf.Szenario).Kopie();
             ph.Betrachtungszeitraum = verlauf.Jahre;
 
             TarifParameter tarif = LadeTarif(daten.IdStamm);
@@ -1502,8 +1655,16 @@ namespace WindowsFormsApplication1
 
             // ETAPPE K5: Zuschusszeilen kommen aus derselben Abfrage, gehen aber nicht in
             // die Positionsliste — sie mindern I₀ einmalig (Konzept § 7.4).
+            // ETAPPE W5-B-9: der Szenario-Parametersatz. Fuer ERWARTET ist er null, und
+            // dann geht jeder Zweig darunter den Weg von vor dieser Etappe. p ist hier
+            // bereits der SZENARIOsatz (Berechne ruft FuerSzenario) - seine Zins- und
+            // Preisfelder tragen die wirksamen Werte; der Satz wird ausschliesslich
+            // fuer Investition, Nutzungsdauer und Ertraege gelesen, nie noch einmal
+            // fuer den Zins.
+            SzenarioSatz satz = p.SatzFuer(szenario);
+
             double zuschuss;
-            e.Investitionen = LiesInvestitionen(v.IdProjekt, szenario, out zuschuss);
+            e.Investitionen = LiesInvestitionen(v.IdProjekt, szenario, satz, out zuschuss);
             e.Zuschuss = zuschuss;
             // PAKET FX3 (R-2): zwei Töpfe statt einem — der Endenergie-Anteil wächst in
             // der Jahresreihe mit p_E (Begründung an BetriebsTopfe).
@@ -1704,7 +1865,56 @@ namespace WindowsFormsApplication1
             // ETAPPE E5: die Aufschläge auf den Strombezug — NACH den Steuerreihen,
             // damit der Abgleich mit der § 9b-Entlastung beide Größen kennt.
             RechneAufschlaege(v, p, e);
+
+            // ETAPPE W5-B-9: die Ertragsaenderung des Szenarios - GANZ ZUM SCHLUSS, wenn
+            // alle drei Erloespfade (Flat, Tarifmatrix, Rollenmodell) und der
+            // PV-Verguetungsdialog ihre Zahlen gesetzt haben.
+            SkaliereErtraege(e, satz);
             return e;
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑9 (Anwenderentscheid 09.09.2026): die Ertragsänderung des Szenarios
+        /// auf die ERLÖSE anwenden.
+        ///
+        /// <para><b>Was skaliert wird:</b> der konstante Einspeiseerlös (samt seiner
+        /// beiden Ausweise PV und KWK) und die jahresscharfe PV-Vergütungsreihe. Beides
+        /// hängt an der ERZEUGUNG der Anlage, und genau deren Unsicherheit meint eine
+        /// Ertragsbandbreite.</para>
+        ///
+        /// <para><b>Was NICHT skaliert wird:</b> die gesetzlichen Erlösreihen —
+        /// KWK-Zuschlag, Energiesteuer-Entlastung, Stromsteuer-Befreiung und
+        /// -Entlastung. Sie hängen an Sätzen, Kontingenten und Schwellen des
+        /// Gesetzeskatalogs, nicht an einer Ertragserwartung; ein pauschaler Zehnprozenter
+        /// darauf wäre keine Bandbreite, sondern eine falsche Zahl. Für das
+        /// Regulierungsrisiko gibt es die eigene Sensitivitätszeile „KWKG-Bonus
+        /// entfällt“. Ebenso wenig skaliert werden die ENERGIEKOSTEN — sie sind die
+        /// Ausgabenseite und haben mit p_E ihren eigenen Hebel.</para>
+        ///
+        /// <para><b>Ohne Satz (ERWARTET) und bei Faktor 1,0 wird nichts angefasst</b> —
+        /// derselbe IEEE-754-Grund wie bei den Sensitivitätsfaktoren in
+        /// <see cref="RechneBild"/>.</para>
+        /// </summary>
+        private static void SkaliereErtraege(ProjektEingabe e, SzenarioSatz satz)
+        {
+            if (e == null || satz == null) return;
+            double f = satz.ErtragFaktor;
+            if (f == 1.0) return;
+
+            e.Erloes *= f;
+            e.ErloesPv *= f;
+            e.ErloesKwk *= f;
+
+            for (int i = 0; i < e.ErloesReihen.Count; i++)
+            {
+                KapitalwertRechner.ErloesReihe r = e.ErloesReihen[i];
+                if (r == null || r.JeJahr == null ||
+                    !string.Equals(r.Name, KapitalwertRechner.ErloesReihe.PV_VERGUETUNG,
+                                   StringComparison.Ordinal)) continue;
+                var werte = new double[r.JeJahr.Length];
+                for (int t = 0; t < werte.Length; t++) werte[t] = r.JeJahr[t] * f;
+                e.ErloesReihen[i] = new KapitalwertRechner.ErloesReihe(r.Name, werte);
+            }
         }
 
         // =====================================================================
@@ -4895,6 +5105,10 @@ namespace WindowsFormsApplication1
             erg.BarwertAusgaben = bild.BarwertAusgaben;
             erg.BarwertEinnahmen = bild.BarwertEinnahmen;
             erg.RestwertBarwert = bild.RestwertBarwert;
+            // ETAPPE W5-B-10 (VALERI): der Barwert der Ersatzbeschaffungen als eigener
+            // Ausweis. Er steckt in BarwertAusgaben bereits drin und wird nirgends
+            // addiert - er wird nur aus dem fertigen Zahlungsbild abgelesen.
+            erg.ErsatzBarwert = ErsatzBarwert(bild, p.Zinssatz);
             erg.Kapitalwert = bild.Kapitalwert;
 
             // Wärmegestehungskosten: annuisierte Nettokosten ÷ Jahreswärmebedarf.
@@ -4904,6 +5118,24 @@ namespace WindowsFormsApplication1
                 erg.Gestehungskosten = (-bild.Kapitalwert * a) / (eingabe.WaermeMWh * 1000.0);
             }
             return erg;
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑10 (VALERI): Barwert der Ersatzbeschaffungen [€] aus dem fertigen
+        /// Zahlungsbild. Die Reihe ist nominal und beginnt bei Index 1; Index 0 trägt in
+        /// den Zahlungsreihen die Erstinvestition und gehört nicht zum Ersatz.
+        /// <para><b>Reine Ableitung</b> — sie ändert am Kapitalwert nichts und wird
+        /// nirgends aufsummiert.</para>
+        /// </summary>
+        private static double ErsatzBarwert(KapitalwertRechner.Zahlungsbild bild, double zinsProzent)
+        {
+            if (bild == null || bild.ErsatzJeJahr == null) return 0;
+            double i = zinsProzent / 100.0;
+            double summe = 0;
+            for (int t = 1; t < bild.ErsatzJeJahr.Length; t++)
+                if (bild.ErsatzJeJahr[t] != 0)
+                    summe += bild.ErsatzJeJahr[t] / Math.Pow(1 + i, t);
+            return summe;
         }
 
         /// <summary>Kategorie-1-Positionen (Investitionen) mit Szenariowerten.
@@ -4949,6 +5181,33 @@ namespace WindowsFormsApplication1
         internal static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(
             int idProjekt, string szenario, out double zuschuss)
         {
+            return LiesInvestitionen(idProjekt, szenario, null, out zuschuss);
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑9 (Anwenderentscheid 09.09.2026): dieselbe Leselogik, aber mit dem
+        /// <b>Szenario-Parametersatz</b>.
+        ///
+        /// <para><paramref name="satz"/> = <c>null</c> heißt „kein pauschaler Ausschlag“
+        /// und ist der Weg des Szenarios ERWARTET sowie jeder Anzeige, die erfasste
+        /// Zahlen zeigt (Kostenseite, Dialog Kostenverwaltung). Dann ist diese Fassung
+        /// Zeichen für Zeichen die von vor W5‑B‑9.</para>
+        ///
+        /// <para><b>Vorrangregel.</b> Der Ausschlag greift <b>je Zeile</b> und nur dort,
+        /// wo <see cref="InvestKaskade.Zeile.WertGepflegt"/> bzw.
+        /// <c>DauerGepflegt</c> <c>false</c> ist — ein gepflegter Best-/Worst-Wert
+        /// schlägt den pauschalen Satz (sonst Doppelzählung). Dass eine %-Zeile ihre
+        /// Basis bereits unskaliert bezogen hat, macht keinen Unterschied: Sie wird
+        /// selbst skaliert, und das ist wertgleich zum Skalieren ihrer Basis.</para>
+        ///
+        /// <para><b>Zuschusszeilen bleiben außen vor</b> — dieselbe Begründung wie in
+        /// der Sensitivität (<c>RechneBild</c>, K5): Eine bewilligte Förderzusage über
+        /// einen festen Betrag ändert sich nicht, weil die Anlage 10 % mehr kostet. Ihre
+        /// eigenen Best-/Worst-Spalten gelten weiterhin.</para>
+        /// </summary>
+        internal static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(
+            int idProjekt, string szenario, SzenarioSatz satz, out double zuschuss)
+        {
             var liste = new List<KapitalwertRechner.InvestPosition>();
             zuschuss = 0;
 
@@ -4971,10 +5230,22 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
+                // ETAPPE W5-B-9: der pauschale Szenarioausschlag - NUR auf Zeilen ohne
+                // gepflegten Szenariowert. Ohne Satz (ERWARTET, Anzeigen) wird der Zweig
+                // gar nicht betreten, und die zwei Zuweisungen sind wertgleich zum
+                // Bestand.
+                double betrag = z.Betrag;
+                double dauer = z.Dauer;
+                if (satz != null)
+                {
+                    if (!z.WertGepflegt) betrag *= satz.InvestFaktor;
+                    if (!z.DauerGepflegt) dauer = satz.DauerFuer(dauer);
+                }
+
                 liste.Add(new KapitalwertRechner.InvestPosition
                 {
-                    Betrag = z.Betrag,
-                    Nutzungsdauer = z.Dauer,
+                    Betrag = betrag,
+                    Nutzungsdauer = dauer,
                     StartJahr = z.Start
                 });
             }
@@ -5534,12 +5805,36 @@ namespace WindowsFormsApplication1
         internal static double Szenariowert(DataRow r, string szenario,
                                            string spalteErwartet, string spalteBest, string spalteWorst)
         {
+            bool gepflegtEgal;
+            return Szenariowert(r, szenario, spalteErwartet, spalteBest, spalteWorst,
+                                out gepflegtEgal);
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑9 (09.09.2026): derselbe Szenariowert, aber mit seiner HERKUNFT.
+        ///
+        /// <para><paramref name="gepflegt"/> ist <c>true</c>, wenn der Wert aus der
+        /// Best- bzw. Worst-Spalte kam — und <c>false</c>, wenn er nach dem VALERI-Muster
+        /// auf den Erwartungswert zurückgefallen ist (0/leer) oder wenn gar kein
+        /// Szenario abgefragt wurde (ERWARTET). Genau daran hängt die Vorrangregel des
+        /// Szenario-Parametersatzes: Der pauschale Ausschlag greift NUR auf
+        /// zurückgefallene Zeilen, sonst zählte er doppelt.</para>
+        ///
+        /// <para><b>Der Rechenweg selbst ist unverändert</b> — die Fassung ohne den
+        /// Ausgabeparameter ruft diese hier auf und wirft die Auskunft weg.</para>
+        /// </summary>
+        internal static double Szenariowert(DataRow r, string szenario,
+                                           string spalteErwartet, string spalteBest,
+                                           string spalteWorst, out bool gepflegt)
+        {
+            gepflegt = false;
             double erwartet = D(r, spalteErwartet) ?? 0;
             string spalte = szenario == WirtschaftlichkeitSzenario.BEST ? spalteBest
                           : szenario == WirtschaftlichkeitSzenario.WORST ? spalteWorst : null;
             if (spalte == null) return erwartet;
             double wert = D(r, spalte) ?? 0;
-            return wert != 0 ? wert : erwartet;   // 0/leer = kein Szenariowert gepflegt
+            gepflegt = wert != 0;                 // 0/leer = kein Szenariowert gepflegt
+            return gepflegt ? wert : erwartet;
         }
 
         /// <summary>ETAPPE H2: die beiden Endenergie-Bemessungen (Konzept § 4.5).
@@ -5849,10 +6144,17 @@ namespace WindowsFormsApplication1
                                 pl.Add(new DbParam("@stamm", e.IstStamm));
                                 pl.Add(new DbParam("@anz", e.Anzeige ?? ""));
                                 pl.Add(new DbParam("@zeit", DbParamTyp.Date) { Wert = e.Zeitstempel });
-                                pl.Add(new DbParam("@z", p.Zinssatz));
-                                pl.Add(new DbParam("@t", p.Betrachtungszeitraum));
-                                pl.Add(new DbParam("@pe", p.PreissteigerungEnergie));
-                                pl.Add(new DbParam("@pb", p.PreissteigerungBetrieb));
+                                // ETAPPE W5-B-9: der WIRKSAME Satz dieser Zeile. Bis dahin
+                                // stand in allen drei Szenariozeilen dreimal derselbe
+                                // Projektwert - seit es Szenarioparameter gibt, waere das
+                                // eine Annahme, mit der gar nicht gerechnet wurde.
+                                // FuerSzenario gibt fuer ERWARTET p selbst zurueck; dort
+                                // ist die Zeile Wert fuer Wert die von vorher.
+                                WirtschaftlichkeitParameter pz = p.FuerSzenario(e.Szenario);
+                                pl.Add(new DbParam("@z", pz.Zinssatz));
+                                pl.Add(new DbParam("@t", pz.Betrachtungszeitraum));
+                                pl.Add(new DbParam("@pe", pz.PreissteigerungEnergie));
+                                pl.Add(new DbParam("@pb", pz.PreissteigerungBetrieb));
                                 pl.Add(new DbParam("@ev", p.Einspeiseverguetung));
                                 pl.Add(new DbParam("@inv", R(e.Investition)));
                                 pl.Add(DbWert(e.BetriebskostenJahr));
@@ -5892,6 +6194,7 @@ namespace WindowsFormsApplication1
                                 pl.Add(DbWert(e.StromkostenTarif));
                                 pl.Add(new DbParam("@hw", (object)e.Hinweis ?? DBNull.Value));
                                 pl.Add(new DbParam("@fg", (object)e.Fehlgrund ?? DBNull.Value));
+                                pl.Add(new DbParam("@erb", R(e.ErsatzBarwert)));   // W5-B-10
                                 v.Ausfuehren("INSERT INTO " + TAB_ERGEBNIS + " (ID, ID_Projekt, ID_Ergebnis, Szenario, " +
                                 "IstStamm, Anzeige, Zeitstempel, " +
                                 "Zinssatz, Betrachtungszeitraum, Preissteigerung_Energie, Preissteigerung_Betrieb, " +
@@ -5909,8 +6212,9 @@ namespace WindowsFormsApplication1
                                 SPALTE_PV_MARKTPRAEMIE + ", " + SPALTE_PV_AUSFALL_KWH + ", " +
                                 SPALTE_PV_AUSFALL_EUR + ", " + SPALTE_PV_51A + ", " +
                                 SPALTE_PV_KAPPUNG_KWH + ", " + SPALTE_PV_VERMIEDEN + ", " +
-                                "StromkostenTarif, HinweisText, Fehlgrund) " +
-                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
+                                "StromkostenTarif, HinweisText, Fehlgrund, " +
+                                SPALTE_ERSATZ_BARWERT + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
                             }
                             naechsteId++;
                         }
@@ -6019,6 +6323,7 @@ namespace WindowsFormsApplication1
                             BarwertAusgaben = D(r, "BarwertAusgaben"),
                             BarwertEinnahmen = D(r, "BarwertEinnahmen"),
                             RestwertBarwert = D(r, "Restwert") ?? 0,
+                            ErsatzBarwert = D(r, SPALTE_ERSATZ_BARWERT) ?? 0,   // W5-B-10
                             Kapitalwert = D(r, "Kapitalwert"),
                             KapitalwertDiff = D(r, "KapitalwertDiff"),
                             AnnuitaetKW = D(r, "AnnuitaetKW"),

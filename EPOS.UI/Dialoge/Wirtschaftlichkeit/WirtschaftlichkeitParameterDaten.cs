@@ -29,6 +29,30 @@ public sealed class WirtschaftlichkeitParameterTexte
     public string PreisEnergie { get; } = T("WPAR_PREIS_E", "Preissteigerung Energie [%/a]:");
     public string PreisBetrieb { get; } = T("WPAR_PREIS_B", "Preissteigerung Betrieb [%/a]:");
 
+    // ---------------------------------------------------------- Szenarien
+    // ETAPPE W5-B-9 (Anwenderentscheid 09.09.2026): der Abschnitt "Szenarien" -
+    // drei Spalten Erwartet | Best | Worst ueber sechs Groessen. Die
+    // Erwartet-Spalte ist ANZEIGE: Sie wiederholt, was oben unter "Allgemein"
+    // gepflegt wird ("Kein Delegat ist kein Knopf").
+    public string GSzenarien { get; } = T("WPAR_G_SZENARIEN",
+        "Szenarien — Best und Worst gegen den Erwartungsfall");
+    public string SzGroesse { get; } = T("WPAR_SZ_SPALTE_GROESSE", "Größe");
+    public string SzErwartet { get; } = T("WPAR_SZ_SPALTE_ERWARTET", "Erwartet");
+    public string SzBest { get; } = T("WPAR_SZ_SPALTE_BEST", "Best");
+    public string SzWorst { get; } = T("WPAR_SZ_SPALTE_WORST", "Worst");
+    public string SzZins { get; } = T("WPAR_SZ_ZINS", "Kalkulationszins");
+    public string SzPreisE { get; } = T("WPAR_SZ_PREIS_E", "Preissteigerung Energie");
+    public string SzPreisB { get; } = T("WPAR_SZ_PREIS_B", "Preissteigerung Betrieb");
+    public string SzInvest { get; } = T("WPAR_SZ_INVEST", "Investition");
+    public string SzErtrag { get; } = T("WPAR_SZ_ERTRAG", "Erträge");
+    public string SzDauer { get; } = T("WPAR_SZ_DAUER", "Nutzungsdauer");
+    public string SzVorgaben { get; } = T("WPAR_SZ_VORGABEN", "Vorgaben");
+    public string SzHinweis { get; } = T("WPAR_SZ_HINWEIS", "");
+    public string SzHerkunftVorgabe { get; } = T("WPAR_SZ_HERKUNFT_VORGABE",
+        "{0}: Vorgaben — {1}");
+    public string SzHerkunftGepflegt { get; } = T("WPAR_SZ_HERKUNFT_GEPFLEGT",
+        "{0}: gepflegte Werte — {1}");
+
     // -------------------------------------------------------------- Strom
     public string GStrom { get; } = T("WPAR_G_STROM", "Strom — Einspeisung und Bezug");
     public string EinspeisungPv { get; } = T("WPAR_EINSP_PV", "Einspeisevergütung PV [€/kWh]:");

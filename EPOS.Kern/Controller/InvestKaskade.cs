@@ -68,6 +68,24 @@ namespace WindowsFormsApplication1
             /// <summary>Szenariowert aus <c>EingegebenerWert</c>/<c>BestCase</c>/<c>WorstCase</c>.</summary>
             public double Wert;
 
+            /// <summary>
+            /// ETAPPE W5‑B‑9 (09.09.2026): Kam <see cref="Wert"/> aus der Best- bzw.
+            /// Worst-Spalte, oder ist er auf den Erwartungswert zurückgefallen?
+            ///
+            /// <para><b>Wozu.</b> Der Szenario-Parametersatz trägt einen pauschalen
+            /// Investitionsausschlag. Er darf NUR dort greifen, wo keine Zeile gepflegt
+            /// ist — sonst zählte er doppelt: Wer 55.000 € als Worst-Case erfasst hat,
+            /// meint diese Zahl, nicht diese Zahl plus 10 %. Die Vorrangregel steht in
+            /// <c>Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md</c> § 2.2.</para>
+            ///
+            /// <para>Im Szenario ERWARTET ist das Feld immer <c>false</c> — dort gibt es
+            /// keine Szenariospalte und auch keinen Ausschlag.</para>
+            /// </summary>
+            internal bool WertGepflegt;
+
+            /// <inheritdoc cref="WertGepflegt"/>
+            internal bool DauerGepflegt;
+
             /// <summary><c>EingegebenerWert</c> (VALERI-Vergleichsbasis).</summary>
             public double Erwartet;
 
@@ -147,11 +165,13 @@ namespace WindowsFormsApplication1
                     z.Id = r.Table.Columns.Contains("ID") && r["ID"] != DBNull.Value
                         ? Convert.ToInt32(r["ID"]) : 0;
                     z.Wert = WirtschaftlichkeitCtrl.Szenariowert(
-                        r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
+                        r, szenario, "EingegebenerWert", "BestCase", "WorstCase",
+                        out z.WertGepflegt);
                     z.Erwartet = WirtschaftlichkeitCtrl.D(r, "EingegebenerWert") ?? 0;
                     z.Dauer = WirtschaftlichkeitCtrl.Szenariowert(
                         r, szenario, "Nutzungsdauer",
-                        "BestCase_Nutzungsdauer", "WorstCase_Nutzungsdauer");
+                        "BestCase_Nutzungsdauer", "WorstCase_Nutzungsdauer",
+                        out z.DauerGepflegt);
                     z.Start = WirtschaftlichkeitCtrl.StartJahrDerZeile(r);
                     z.Zuschuss = mitKostenart && WirtschaftlichkeitCtrl.IstZuschuss(r);
                     z.Haupt = WirtschaftlichkeitCtrl.B(r, "IsMainComponent");

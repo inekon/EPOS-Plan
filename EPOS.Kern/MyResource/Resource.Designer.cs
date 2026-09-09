@@ -45136,6 +45136,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario Erwartet: die Projektparameter unverändert. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_ERWARTET {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario: ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_KOPF {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit (Kapitalwertmethode DIN EN 17463) ähnelt.
         /// </summary>
         public static string WIRT_TITEL {
@@ -45231,6 +45249,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZEILE_ENERGIESTEUER {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffungen, Barwert [€] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_ERSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_ERSATZ", resourceCulture);
             }
         }
         
@@ -45714,6 +45741,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenarien — Best und Worst gegen den Erwartungsfall ähnelt.
+        /// </summary>
+        public static string WPAR_G_SZENARIEN {
+            get {
+                return ResourceManager.GetString("WPAR_G_SZENARIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Parameter gelten für Stamm und alle Varianten der Vergleichsgruppe; Erzeuger-Gruppen erscheinen nur, wenn der Erzeugertyp in der Gruppe vorkommt (ausgeblendete Werte bleiben erhalten). Energie- und Strompreise kommen aus der Kostenmaske. Aufschläge: Vorgabe AUS — eingeschaltet steigen die Energiekosten typischerweise um rund ein Drittel (Vorschlagswerte in Summe 11,746 ct/kWh). Gepflegt werden sie je Energieträger in der Kostenmaske; OB die Wirtschaftlichkeit sie ansetzt, wird im Energieträgerdialog (St [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WPAR_HINWEIS {
@@ -45818,6 +45854,132 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPAR_SPRUNG_HINWEIS {
             get {
                 return ResourceManager.GetString("WPAR_SPRUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_DAUER {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erträge ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_ERTRAG {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: gepflegte Werte — {1} ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_HERKUNFT_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_HERKUNFT_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Vorgaben — {1} ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_HERKUNFT_VORGABE {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_HERKUNFT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet rechnet unverändert mit den Projektparametern oben — die Spalte ist nur Anzeige. Best und Worst weichen davon ab: Zins und Preissteigerungen gelten absolut, Investition und Erträge als Änderung in Prozent, die Nutzungsdauer als Änderung in Jahren; + heißt jeweils mehr bzw. länger. Ein je Kostenzeile gepflegter Best-/Worst-Wert hat VORRANG — der pauschale Ausschlag greift nur dort, wo keiner steht. „Vorgaben“ stellt den Vorschlag wieder her (Zins und Preissteigerungen ∓ 1 Prozentpunkt, Investition ∓ [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_HINWEIS {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_INVEST {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Betrieb ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_PREIS_B {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_PREIS_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Energie ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_PREIS_E {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_PREIS_E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Best ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_SPALTE_BEST {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_SPALTE_BEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_SPALTE_ERWARTET {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_SPALTE_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_SPALTE_GROESSE {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_SPALTE_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worst ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_SPALTE_WORST {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_SPALTE_WORST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgaben ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_VORGABEN {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszins ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_ZINS {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_ZINS", resourceCulture);
             }
         }
         

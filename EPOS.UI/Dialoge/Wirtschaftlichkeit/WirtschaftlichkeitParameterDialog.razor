@@ -71,6 +71,141 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* -------------------------------------------------------- Szenarien *@
+    @* ETAPPE W5-B-9 (Anwenderentscheid 09.09.2026). Drei Spalten, sechs Zeilen.
+
+       WARUM EINE TABELLE UND KEIN FORMULARRASTER. Das Raster stellt Beschriftung
+       neben EIN Feld; hier gehoert eine Beschriftung zu DREI Werten, und der
+       Vergleich zwischen den Spalten ist der ganze Zweck der Anzeige. Es ist
+       deshalb dieselbe Bauform wie die Vergleichsmatrix der Seite: eine
+       gewoehnliche Tabelle mit den Hausklassen epos-raster/epos-matrix, hier
+       zusaetzlich epos-raster--bearbeitbar, weil Zellen Eingabefelder tragen.
+
+       DIE ERWARTET-SPALTE IST ANZEIGE. Sie wiederholt, was oben unter
+       "Allgemein" gepflegt wird - "Kein Delegat ist kein Knopf". Investition,
+       Ertraege und Nutzungsdauer stehen dort auf 0: Der Erwartungsfall weicht
+       vom Erwartungsfall nicht ab.
+
+       DIE FELDER ZEIGEN DEN WIRKSAMEN WERT, nicht den gepflegten. Ein leeres
+       Feld gaebe es sonst fuer jede Vorgabe, und niemand saehe, womit gerechnet
+       wird. Wer tippt, pflegt; "Vorgaben" setzt alle zwoelf Felder zurueck. Ob
+       ein Satz aus Vorgaben oder gepflegten Werten besteht, sagt die
+       Herleitungszeile darunter. *@
+    <Gruppenkopf Titel="@_t.GSzenarien" Symbol="⚖">
+        <KindInhalt>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-matrix epos-raster--bearbeitbar">
+                    <thead>
+                        <tr>
+                            <th scope="col">@_t.SzGroesse</th>
+                            <th scope="col">@_t.SzErwartet</th>
+                            <th scope="col">@_t.SzBest</th>
+                            <th scope="col">@_t.SzWorst</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzZins</th>
+                            <td class="epos-matrix-zelle">@Zahl(Parameter.Zinssatz, 2) %</td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="2"
+                                            Min="0" Max="15"
+                                            Wert="@Best.ZinsWirksam(Parameter.Zinssatz)"
+                                            WertChanged="@(w => Best.Zinssatz = w)" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="2"
+                                            Min="0" Max="15"
+                                            Wert="@Worst.ZinsWirksam(Parameter.Zinssatz)"
+                                            WertChanged="@(w => Worst.Zinssatz = w)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzPreisE</th>
+                            <td class="epos-matrix-zelle">@Zahl(Parameter.PreissteigerungEnergie, 2) %/a</td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%/a" Nachkommastellen="2"
+                                            Min="-10" Max="20"
+                                            Wert="@Best.PreisEnergieWirksam(Parameter.PreissteigerungEnergie)"
+                                            WertChanged="@(w => Best.PreissteigerungEnergie = w)" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%/a" Nachkommastellen="2"
+                                            Min="-10" Max="20"
+                                            Wert="@Worst.PreisEnergieWirksam(Parameter.PreissteigerungEnergie)"
+                                            WertChanged="@(w => Worst.PreissteigerungEnergie = w)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzPreisB</th>
+                            <td class="epos-matrix-zelle">@Zahl(Parameter.PreissteigerungBetrieb, 2) %/a</td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%/a" Nachkommastellen="2"
+                                            Min="-10" Max="20"
+                                            Wert="@Best.PreisBetriebWirksam(Parameter.PreissteigerungBetrieb)"
+                                            WertChanged="@(w => Best.PreissteigerungBetrieb = w)" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%/a" Nachkommastellen="2"
+                                            Min="-10" Max="20"
+                                            Wert="@Worst.PreisBetriebWirksam(Parameter.PreissteigerungBetrieb)"
+                                            WertChanged="@(w => Worst.PreissteigerungBetrieb = w)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzInvest</th>
+                            <td class="epos-matrix-zelle">0 %</td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="1"
+                                            Min="-90" Max="200" Wert="@Best.InvestWirksam"
+                                            WertChanged="@(w => Best.InvestitionAenderung = w)" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="1"
+                                            Min="-90" Max="200" Wert="@Worst.InvestWirksam"
+                                            WertChanged="@(w => Worst.InvestitionAenderung = w)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzErtrag</th>
+                            <td class="epos-matrix-zelle">0 %</td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="1"
+                                            Min="-100" Max="200" Wert="@Best.ErtragWirksam"
+                                            WertChanged="@(w => Best.ErtragAenderung = w)" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%" Nachkommastellen="1"
+                                            Min="-100" Max="200" Wert="@Worst.ErtragWirksam"
+                                            WertChanged="@(w => Worst.ErtragAenderung = w)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzDauer</th>
+                            <td class="epos-matrix-zelle">0 a</td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="a" Nachkommastellen="1"
+                                            Min="-30" Max="30" Wert="@Best.DauerWirksam"
+                                            WertChanged="@(w => Best.NutzungsdauerAenderung = w)" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="a" Nachkommastellen="1"
+                                            Min="-30" Max="30" Wert="@Worst.DauerWirksam"
+                                            WertChanged="@(w => Worst.NutzungsdauerAenderung = w)" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="button" class="epos-knopf" @onclick="VorgabenKlick">@_t.SzVorgaben</button>
+
+            <Herleitungszeile Text="@SzenarioZeileBest" />
+            <Herleitungszeile Text="@SzenarioZeileWorst" />
+            <Herleitungszeile Text="@_t.SzHinweis" />
+        </KindInhalt>
+    </Gruppenkopf>
+
     @* ------------------------------------------------------------ Strom *@
     <Gruppenkopf Titel="@_t.GStrom" Symbol="⚡">
         <KindInhalt>
@@ -291,6 +426,59 @@
     public string Co2Zeile => Parameter.CO2Preis > 0
         ? string.Format(Kultur, _t.Co2Konstant, Parameter.CO2Preis.ToString("N0", Kultur))
         : string.Format(Kultur, _t.Co2Pfad, Co2PrognoseAb.ToString(CultureInfo.InvariantCulture));
+
+    // =====================================================================
+    // ETAPPE W5-B-9 — Szenarien
+    // =====================================================================
+
+    /// <summary>Der Best-Satz des Parametersatzes; nie <c>null</c> (der Kern legt ihn
+    /// mit lauter Vorgaben an, und eine Testfassung ohne Sätze bekäme hier eine).</summary>
+    public SzenarioSatz Best
+    {
+        get
+        {
+            if (Parameter.SatzBest is null)
+                Parameter.SatzBest = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
+            return Parameter.SatzBest;
+        }
+    }
+
+    /// <inheritdoc cref="Best"/>
+    public SzenarioSatz Worst
+    {
+        get
+        {
+            if (Parameter.SatzWorst is null)
+                Parameter.SatzWorst = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
+            return Parameter.SatzWorst;
+        }
+    }
+
+    /// <summary>Die Erwartet-Spalte: der Projektwert, gleich formatiert wie die
+    /// Eingabefelder daneben.</summary>
+    private static string Zahl(double wert, int stellen) =>
+        wert.ToString("N" + stellen.ToString(CultureInfo.InvariantCulture), Kultur);
+
+    /// <summary>
+    /// „Vorgaben“ — alle zwölf Felder auf <c>null</c> zurück. Das ist NICHT dasselbe wie
+    /// „auf die heutigen Vorgabezahlen setzen“: Ein leeres Feld zieht bei einer
+    /// geänderten Projektangabe mit, eine eingetragene Zahl nicht.
+    /// </summary>
+    private void VorgabenKlick()
+    {
+        Parameter.SatzBest = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.BEST);
+        Parameter.SatzWorst = SzenarioSatz.Vorgabe(WirtschaftlichkeitSzenario.WORST);
+    }
+
+    /// <summary>Herleitungszeile des Best-Satzes: Herkunft und die WIRKSAMEN Zahlen.</summary>
+    public string SzenarioZeileBest => SzenarioZeile(_t.SzBest, Best);
+
+    /// <inheritdoc cref="SzenarioZeileBest"/>
+    public string SzenarioZeileWorst => SzenarioZeile(_t.SzWorst, Worst);
+
+    private string SzenarioZeile(string name, SzenarioSatz satz) =>
+        string.Format(Kultur, satz.NurVorgaben ? _t.SzHerkunftVorgabe : _t.SzHerkunftGepflegt,
+                      name, satz.Nachweis(Parameter, Kultur));
 
     /// <summary>Der Schlusshinweis — je nach Erzeugerlage um zwei Absätze länger.</summary>
     public string Hinweis

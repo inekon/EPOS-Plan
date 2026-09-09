@@ -1240,3 +1240,220 @@ der Änderung laufen unverändert grün, die 7 neuen kommen hinzu.
   EINZELNEN Zeile), nicht auf eine Summe. Das ist eine andere Größe mit eigener Herleitungszeile
   im Gerätedialog und keine `SUM(EingegebenerWert)` — eine Umstellung auf die Kaskade wäre eine
   eigene Fachentscheidung.
+---
+
+## Anwenderentscheid 09.09.2026 — W5‑B‑9: Szenarioparameter
+
+### 1. Befund
+
+Die Seite „Wirtschaftlichkeit“ bot die drei Szenarien **Erwartet / Best / Worst**
+(`WirtschaftlichkeitSzenario`) an und zeigte in allen dreien **dieselben Zahlen**.
+
+Zwei Ursachen:
+
+1. Sie unterschieden sich ausschließlich über die **Zeilenwerte**
+   `Tab_ProjektWerte.BestCase`/`WorstCase` (und `…_Nutzungsdauer`) — und die stehen im
+   Bestand bei nahezu jeder Position auf 0. `WirtschaftlichkeitCtrl.Szenariowert` fällt
+   dann nach dem VALERI-Muster („0/leer = kein Szenariowert gepflegt“) auf den
+   Erwartungswert zurück.
+2. Es gab **keine Szenarioparameter auf Projektebene** — Zins, Preissteigerungen,
+   Investitions- und Ertragsunsicherheit galten für alle drei Szenarien gleich. Genau
+   das ist aber die Ebene, auf der DIN EN 17463 (VALERI) die Bandbreite aufspannt.
+
+Der dritte Teil des Befunds — „Energiekosten nicht bestimmbar“ — ist keine Szenariofrage,
+sondern ein Datenmangel der Kostenmaske; die Fehlgrundzeile sagt das bereits
+(`„Energiekosten nicht bestimmbar — Arbeitspreise/Träger in der Kostenmaske prüfen“`).
+
+**Befund 1029** (`ID_Ergebnis 167` / `IstStamm 1` eines alten Laufs) ist nachgeprüft und
+liegt **nicht am Schreibweg**: `RechneProjekt` setzt `IdErgebnis = LiesErgebnisId(v.IdProjekt)`
+und `IstStamm = v.IstStamm` je Lauf frisch, `Persistiere` löscht vorher alle Zeilen des
+Projekts (`DELETE … WHERE ID_Projekt = ?`) und schreibt sie neu. Eine Neuberechnung heilt
+den Stand also vollständig, wie der Anwender beobachtet hat; übrig war ein Datenstand aus
+einer früheren Gruppenzuordnung. **Neu ist trotzdem etwas an dieser Stelle:** Bis zu dieser
+Etappe schrieb `Persistiere` in alle drei Szenariozeilen dreimal denselben Projektwert für
+`Zinssatz`, `Preissteigerung_Energie` und `Preissteigerung_Betrieb`. Mit Szenarioparametern
+wäre das eine Annahme, mit der gar nicht gerechnet wurde — seit W5‑B‑9 steht je Zeile der
+**wirksame** Satz.
+
+### 2. Der Parametersatz
+
+Sechs Größen je Szenario (`SzenarioSatz`), abgelegt an `Tab_ProjektWirtschaftlichkeit`:
+
+| Größe | Einheit | Wirkung | Vorgabe Best | Vorgabe Worst |
+|---|---|---|---|---|
+| Kalkulationszins | % | Diskontierung, Annuität, Gestehungskosten | i − 1 %‑Pkt (nie < 0) | i + 1 %‑Pkt |
+| Preissteigerung Energie | %/a | p_E: Energie, CO₂, Endenergie-Topf | p_E − 1 %‑Pkt | p_E + 1 %‑Pkt |
+| Preissteigerung Betrieb | %/a | p_B: Betriebs-Topf | p_B − 1 %‑Pkt | p_B + 1 %‑Pkt |
+| Investitionsänderung | % | Investitionspositionen **ohne** gepflegten Szenariowert | − 10 % | + 10 % |
+| Ertragsänderung | % | Einspeiseerlös und PV-Vergütungsreihe | + 10 % | − 10 % |
+| Nutzungsdaueränderung | a | Nutzungsdauer **ohne** gepflegten Szenariowert | + 2 a | − 2 a |
+
+**Vorzeichen einheitlich: `+` heißt mehr bzw. länger.**
+
+Drei Regeln tragen die Etappe:
+
+- **`null` heißt Vorgabe, nicht 0.** Ein Feld, das nie gepflegt wurde, zieht bei einer
+  geänderten Projektangabe mit (i wechselt von 3 auf 4 % → die Best-Vorgabe folgt auf 3 %).
+- **ERWARTET bekommt keinen Satz.** `WirtschaftlichkeitParameter.FuerSzenario` gibt für ihn
+  `this` zurück — **dieselbe Referenz**, nicht eine wertgleiche Kopie. Damit ist die
+  Zahlengleichheit des Erwartungsfalls eine Eigenschaft des Codes, keine Behauptung.
+- **Gepflegte Zeilenwerte haben Vorrang** vor dem pauschalen Ausschlag — sonst zählte er
+  doppelt. `InvestKaskade.Zeile` merkt sich seither in `WertGepflegt` und `DauerGepflegt`,
+  ob der Szenariowert aus der Best-/Worst-Spalte kam; `LiesInvestitionen` skaliert nur die
+  zurückgefallenen Zeilen. Zuschusszeilen (K5) und die gesetzlichen Erlösreihen (KWKG,
+  Energie-/Stromsteuer) bleiben grundsätzlich außen vor.
+
+Der **`KapitalwertRechner` ist unverändert**. Zins und Preissteigerungen wirken über den
+Szenario-Parametersatz, Investition, Ertrag und Nutzungsdauer in der Eingabe
+(`BaueEingabe` → `LiesInvestitionen`, `SkaliereErtraege`).
+
+### 3. Ablage — Migrationsschritt 71
+
+Zwölf **nullbare** `DOUBLE`-Spalten an `Tab_ProjektWirtschaftlichkeit`
+(`SchemaKatalog.Schritt71_SzenarioBest` und `…Worst`):
+
+```
+Szen_Best_Zins    Szen_Best_Preis_E    Szen_Best_Preis_B
+Szen_Best_Invest  Szen_Best_Ertrag     Szen_Best_Dauer
+Szen_Worst_Zins   Szen_Worst_Preis_E   Szen_Worst_Preis_B
+Szen_Worst_Invest Szen_Worst_Ertrag    Szen_Worst_Dauer
+```
+
+**Kein DML, kein DDL-DEFAULT** — dasselbe Muster wie Schritt 70. Der Schritt steht **nicht**
+in `SchemaKatalog.Alle`: Kein Rechenkern der Simulation liest eine der Spalten, und die
+tolerante Vorsorge steht unmittelbar vor dem Zugriff in
+`WirtschaftlichkeitCtrl.StelleTabellenSicher` — wortgleiche Begründung wie bei den
+übrigen `Tab_ProjektWirtschaftlichkeit`-Schritten (20, 21, 28). Zielstand **71**.
+
+**Wirkung, ausdrücklich:** Erwartet bleibt zahlengleich; **Best und Worst ändern sich**,
+sobald der Schritt gelaufen ist — sie rechnen dann mit den Vorgaben statt mit dem
+Erwartungswert. Genau das ist der Zweck des Entscheids. Der Referenzlauf ist nicht berührt
+(er rechnet Simulationen, keine Wirtschaftlichkeit).
+
+### 4. Dialog „Parameter…“ — Abschnitt „Szenarien“
+
+Drei Wertspalten × sechs Zeilen, als Tabelle (`epos-raster epos-matrix
+epos-raster--bearbeitbar`) statt als Formularraster: Eine Beschriftung gehört hier zu DREI
+Werten, und der Vergleich zwischen den Spalten ist der Zweck der Anzeige.
+
+- Die **Erwartet-Spalte ist Anzeige** — sie wiederholt, was oben unter „Allgemein“ gepflegt
+  wird („Kein Delegat ist kein Knopf“). Investition, Erträge und Nutzungsdauer stehen dort
+  auf 0.
+- Die **Felder zeigen den wirksamen Wert**, nicht den gepflegten — ein leeres Feld gäbe es
+  sonst für jede Vorgabe, und niemand sähe, womit gerechnet wird.
+- Der Knopf **„Vorgaben“** setzt alle zwölf Felder auf `null` zurück. Das ist NICHT dasselbe
+  wie „auf die heutigen Vorgabezahlen setzen“.
+- Zwei **Herleitungszeilen** nennen je Satz Herkunft („Vorgaben“ / „gepflegte Werte“) und die
+  wirksamen Zahlen.
+
+### 5. Seite „Wirtschaftlichkeit“
+
+Die Szenariowahl bleibt. Neu ist die **Statuszeile** unmittelbar darunter
+(`ErgebnisAnsicht.Szenariozeile`): Sie nennt für das gewählte Szenario den wirksamen Satz
+und seine Herkunft; für Erwartet den Satz „die Projektparameter unverändert“. Sie hängt an
+der **Ansicht**, nicht am Stand — der Szenariowechsel tauscht genau dieses Objekt aus, und die
+Zeile zieht von selbst mit. Eine leere Zeile wird gar nicht erst gezeichnet.
+
+---
+
+## Anwenderentscheid 09.09.2026 — W5‑B‑10: VALERI-Abgleich (DIN EN 17463)
+
+### 1. Was EPOS-Plan bereits abbildet
+
+| VALERI-Anforderung | In EPOS-Plan |
+|---|---|
+| Nettobarwert | `KapitalwertRechner.Rechne` — KW = −I₀ + Σ (E_t − A_t)/(1+i)^t + RW_T/(1+i)^T |
+| Zahlungsströme je Jahr | `Zahlungsbild.NominalReihe`/`BarwertReihe` plus die Einzelreihen (Betrieb, Endenergie-Anteil, Energie, CO₂, Ersatz, Einspeiseerlös, benannte Erlösreihen) seit E7; Mehrjahrestabelle im Bericht |
+| Betrachtungszeitraum T | Projektparameter 1…50 a; der Verlaufsdialog rechnet freie Horizonte |
+| Diskontierungszins | Projektparameter, seit W5‑B‑9 je Szenario |
+| Restwert am Ende von T | linear je Position, abgezinst |
+| Ersatzinvestition bei n < T | in t = n, 2n, … (`ErsatzJeJahr`) |
+| Preisentwicklung | p_E und p_B; CO₂-Preispfad und PV-Vergütung jahresscharf |
+| Förderungen | Investitionszuschuss (K5, I₀-mindernd), KWKG-Zuschlag und drei Steuergutschriften als jahresscharfe Erlösreihen |
+| Sensitivitäten | Zins, Energiepreissteigerung, Investition, Energiekosten, „KWKG-Bonus entfällt“ |
+| Bandbreite W/E/B | Zeilenwerte **und** Parametersatz (W5‑B‑9) |
+| Weitere Kennzahlen | Annuität, dynamische Amortisation, interner Zinsfuß, Wärmegestehungskosten |
+| Referenzfall | Stammprojekt; Varianten als **Differenz** — die VALERI-Sicht „Maßnahme gegen Weiterbetrieb“ |
+| Offenlegung der Annahmen | Parameternachweis, Herkunft der Steuersätze, Hinweiszeile bei jeder Vereinfachung |
+
+### 2. Umgesetzt (ohne neues Datenmodell)
+
+- **V1 — Ersatzbeschaffungen als eigener Ausweis.** Sie wurden seit W1 gerechnet, aber nie
+  ausgewiesen: Sie steckten stumm in `BarwertAusgaben`. Neu ist der abgeleitete Barwert
+  (`WirtschaftlichkeitErgebnis.ErsatzBarwert`, Spalte
+  `Tab_ErgebnisWirtschaftlichkeit.ErsatzBarwert` über `SpalteSicher`) und die Zeile
+  „Ersatzbeschaffungen, Barwert“ in `WirtschaftlichkeitZeilen.Kennzahlen` — also in Seite,
+  Word und Excel zugleich, unmittelbar **vor** dem Restwert. Sie erscheint nur, wo es Ersatz
+  gibt. **Reiner Ausweis:** Der Kapitalwert ist unverändert, die Zahl wird aus dem fertigen
+  Zahlungsbild abgelesen und nirgends aufsummiert.
+- **V2 — die Annahmen der Bandbreite stehen in der Nachweiszeile** (Dialog und Seite,
+  siehe W5‑B‑9 § 4 und § 5).
+- **V3 — je Ergebniszeile der wirksame Satz** statt dreimal des Erwartungswerts.
+
+### 3. Offen — Entscheidungsbedarf des Anwenders
+
+| Nr. | Lücke | Was VALERI verlangt | Aufwand |
+|---|---|---|---|
+| **G1** | **Endjahr je Position.** EPOS kennt seit KD6 ein Startjahr, aber kein Endjahr. | Start- **und** Endjahr je Faktor (`99` = ganze Betriebszeit). | Spalte + Rechenweg; Datenmodell |
+| **G2** | **Preisänderung je Kostenart.** Heute zwei Töpfe (p_B, p_E) plus CO₂-Pfad. | eine eigene Preisänderung je Faktor | Spalte je Zeile + Rechenkern |
+| **G3** | **Degradation je Faktor.** Nur die PV-Ertragsdegradation ist modelliert. | Degradation je Nutzen-/Lastenfaktor | Spalte je Zeile |
+| **G4** | **Preisindizierung der Ersatzbeschaffung.** Ersatz nominal unverändert (Vereinfachung W1). | VDI 2067/VALERI setzen Ersatz üblicherweise preisindiziert an | Rechenkern; **fachlicher Entscheid** |
+| **G5** | **Startjahr für die Energiekosten.** Die Simulation kennt keine Startjahre je Komponente (dokumentierte Vereinfachung FK10). | jeder Faktor ab seinem Betriebsjahr | Simulation; groß |
+| **G6** | **Nicht monetisierbare Wirkungen.** Kein Freitextfeld. | qualitative Beschreibung im Bewertungsbericht | Feld + Berichtsbaustein |
+| **G7** | **Betrachtungszeitraum aus der Nutzungsdauer.** T wird nicht gegen die längste Nutzungsdauer geprüft. | Begründung des Zeitraums | Prüfzeile; klein |
+| **G8** | **Berichtsausgabe der Bandbreite.** Word/Excel führen den Erwartungsfall. | alle drei Szenarien nebeneinander | Berichtsbaustein; **kein klarer Anker — offen gelassen** |
+| **G9** | **Entscheidungsempfehlung als Text** („Vorschlag zur Entscheidung“). | Empfehlung im Bericht | Textbaustein; klein |
+| **G10** | **Aufteilung Eigennutzung/Einspeisung.** EPOS leitet sie aus der Simulation ab — fachlich besser als VALERI, aber die Herleitung steht nicht im Bericht. | als Annahme ausweisen | Ausweis; klein |
+| **G11** | **Investitionsgekoppelte Betriebskosten im Szenario.** „x % der Investitionssumme“ folgt dem Szenario-Investitionsausschlag **nicht** (anders als in der Sensitivität, FX5‑a). | Konsequenz wäre, den Ausschlag auch dort mitzuziehen | klein; **fachlicher Entscheid** |
+
+**Bewusst nicht übernommen:** Die VALERI-Vorlage rechnet ihre Worst-/Best-Spalten über feste
+Formelfaktoren im Tabellenblatt (z. B. `=E44*1,3`). EPOS-Plan trennt statt dessen **gepflegter
+Zeilenwert** von **pauschalem Parametersatz** — dieselbe Wirkung, aber nachvollziehbar, wo die
+Zahl herkommt.
+
+---
+
+## Nachweise W5‑B‑9 und W5‑B‑10
+
+| Prüfung | Ort | Ergebnis |
+|---|---|---|
+| Vorgaben und Vorzeichen, Nullsemantik, Zinsklemme, Nutzungsdauerklemme, Nachweiszeile | `SzenarioParameterTests` (neu) | 6 Fälle |
+| `Szenariowert` meldet die Herkunft | `SzenarioParameterTests.Szenariowert_meldet_die_Herkunft` | grün |
+| Ohne Satz bleibt die Investitionsliste **bitgleich** | `…Ohne_Satz_bleibt_die_Investitionsliste_unveraendert` | grün |
+| Ausschlag auf nicht gepflegte Zeilen (× 1,1 / × 0,9 der Erwartungssumme) | `…Der_Ausschlag_greift_auf_nicht_gepflegte_Zeilen` | grün |
+| **Vorrangregel**: gepflegte 7.000 € bleiben 7.000 €, nicht 7.700 € | `…Ein_gepflegter_Zeilenwert_schlaegt_den_pauschalen_Ausschlag` | grün |
+| Zuschuss wird nicht skaliert (K5) | `…Der_Zuschuss_wird_vom_Ausschlag_nicht_skaliert` | grün |
+| Nutzungsdauer folgt Satz und Vorrangregel | `…Die_Nutzungsdauer_folgt_dem_Satz_und_der_Vorrangregel` | grün |
+| **KW_Best > KW_Erwartet > KW_Worst** über den echten Rechenkern | `…Best_Erwartet_und_Worst_liegen_auseinander` | grün |
+| **Erwartet bleibt zahlengleich** — auch mit von Hand gepflegten Best-/Worst-Sätzen | `…Erwartet_bleibt_zahlengleich` | grün (12 Dezimalstellen) |
+| Migrationsschritt 71: zwölf `DOUBLE`-Spalten, Zielstand 71 | `…Der_Migrationsschritt_71_fuehrt_zwoelf_Spalten` | grün |
+| Speichern/Laden: gepflegt bleibt Zahl, leer bleibt leer | `…Der_Satz_ueberlebt_Speichern_und_Laden` | grün |
+| Ersatzzeile erscheint nur mit Ersatz, steht vor dem Restwert | `…Die_Ersatzzeile_erscheint_nur_mit_Ersatzbeschaffungen` | grün |
+| Szenariotabelle: 3 Spalten × 6 Zeilen, je 2 Felder | `WirtschaftlichkeitParameterDialogTests.Die_Szenariotabelle_zeigt_drei_Spalten_und_sechs_Groessen` | grün |
+| Felder zeigen die wirksamen Vorgaben | `…Die_Szenariofelder_zeigen_die_wirksamen_Vorgaben` | grün |
+| „Vorgaben“ setzt auf `null` zurück, Herleitungszeile wechselt | `…Vorgaben_setzt_die_zwoelf_Felder_zurueck` | grün |
+| Herleitungszeilen nennen beide Sätze | `…Die_Herleitungszeilen_nennen_beide_Saetze` | grün |
+| Statuszeile über dem Parameternachweis; leer = keine Zeile | `WirtschaftlichkeitSeiteTests.Die_Szenariozeile_*` | 2 Fälle grün |
+| Schemawerkzeug `Testdatenbankschema` auf einer Kopie der Referenzdatenbank | 12 Spalten angelegt, Schemastand nachher **71** | grün |
+| Sandbox-Bau `WP-Plan.sln` x64 Debug | `K:\imp2\src` | **0 Fehler** |
+| `EPOS.Kern.Tests` / `EPOS.UI.Tests` | `dotnet test --no-build` | **2 154/2 154** / **3 343/3 343** |
+
+**Ein Referenzlauf war nicht nötig:** Diese Etappe fasst keinen Simulationswert an. An seine
+Stelle tritt die Regressionsprobe der Kapitalwerte
+(`Erwartet_bleibt_zahlengleich`, 12 Dezimalstellen) und der bitgleiche Vergleich der
+Investitionslisten.
+
+**Bestehende Erwartungswerte angepasst:** Der Szenarioblock steht im Parameterdialog zwischen
+„Allgemein“ und „Strom“ und bringt zwölf Zahlenfelder mit; sechs Fälle in
+`WirtschaftlichkeitParameterDialogTests` griffen Felder über ihren Index. Die Indizes stehen
+dort jetzt als Konstanten (`SZENARIO_FELDER`, `EINSPEISUNG_PV`, …), damit der nächste Umbau
+eine Zeile trifft statt sechs.
+
+### Offene Punkte
+
+- **Sichtabnahme** des Abschnitts „Szenarien“ im Parameterdialog (Spaltenbreiten der
+  Tabelle auf schmalen Fenstern) und der Statuszeile auf der Seite.
+- **Best/Worst ändern sich** gegenüber dem Stand vor dieser Etappe — das ist gewollt, sollte
+  dem Anwender aber bei der ersten Neuberechnung bewusst sein.
+- Die **elf VALERI-Lücken G1…G11** oben warten auf Entscheidungen; G4, G8 und G11 sind
+  fachliche Entscheide, die übrigen Aufwandsfragen.

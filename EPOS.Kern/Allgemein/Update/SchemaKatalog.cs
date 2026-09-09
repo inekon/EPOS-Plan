@@ -3689,6 +3689,106 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO"),
         };
 
+        // -------------------------------------------------------------------------
+        // Schritt 71 - der Szenario-Parametersatz (W5-B-9, Anwenderentscheid 09.09.2026)
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE W5‑B‑9: die sechs Spalten des <b>BEST</b>-Parametersatzes an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>.
+        ///
+        /// <para><b>Wozu.</b> Die drei Szenarien lieferten identische Ergebnisse, weil sie
+        /// sich ausschließlich über die ZEILENwerte
+        /// (<c>Tab_ProjektWerte.BestCase</c>/<c>WorstCase</c>) unterschieden — und die
+        /// stehen im Bestand bei nahezu jeder Position auf 0 (Anwenderbefund 08.09.2026).
+        /// Der Parametersatz spannt die Bandbreite auf der PROJEKTebene auf, wo VALERI
+        /// (DIN EN 17463) sie erwartet: Kalkulationszins, beide Preissteigerungen,
+        /// Investitions-, Ertrags- und Nutzungsdaueränderung.</para>
+        ///
+        /// <para><b>KEIN DML, und NULL heißt VORGABE</b> — dasselbe Muster wie bei
+        /// <see cref="Schritt70_Auslegungstemperaturen"/>. Ein DEFAULT gälte nur für
+        /// künftige Zeilen und nähme der Nullsemantik ihre Aussage: Ein Feld, das nie
+        /// gepflegt wurde, soll bei einer geänderten Projektangabe MITZIEHEN
+        /// (<c>SzenarioSatz</c>), und das kann nur eine leere Spalte.</para>
+        ///
+        /// <para><b>Kein Gegenstück für ERWARTET.</b> Der Erwartungsfall <i>ist</i> der
+        /// Projektparametersatz derselben Zeile; eigene Spalten wären eine zweite Wahrheit
+        /// für dieselbe Zahl.</para>
+        ///
+        /// <para><b>Kein <c>_STAMM</c>-Gegenstück</b> — wortgleiche Begründung wie bei
+        /// <see cref="Schritt28_KwkgTatbestand"/>: <c>Tab_ProjektWirtschaftlichkeit</c> ist
+        /// eine reine Projekttabelle ohne Katalogseite.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt71_SzenarioBest =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_ZINS,    "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_PREIS_E, "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_PREIS_B, "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_INVEST,  "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_ERTRAG,  "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_DAUER,   "DOUBLE"),
+        };
+
+        /// <summary>ETAPPE W5‑B‑9: dieselben sechs Spalten für <b>WORST</b>.
+        /// Begründung und Nullsemantik stehen bei
+        /// <see cref="Schritt71_SzenarioBest"/>.</summary>
+        public static readonly SchemaSpalte[] Schritt71_SzenarioWorst =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_ZINS,    "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_PREIS_E, "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_PREIS_B, "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_INVEST,  "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_ERTRAG,  "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_DAUER,   "DOUBLE"),
+        };
+
+        /// <summary>Beide Blöcke des Schritts 71 in Anlegereihenfolge — EINE Quelle für
+        /// Migration, Testdatenbankschema, Testdatenbank und Nachweis.</summary>
+        public static IEnumerable<SchemaSpalte> Schritt71_Szenarioparameter
+        {
+            get
+            {
+                foreach (SchemaSpalte s in Schritt71_SzenarioBest) yield return s;
+                foreach (SchemaSpalte s in Schritt71_SzenarioWorst) yield return s;
+            }
+        }
+
+        /// <summary>Kalkulationszins des BEST-Szenarios [%]; NULL = Vorgabe (i − 1 %-Pkt).</summary>
+        public const string SPALTE_PW_SZEN_BEST_ZINS = "Szen_Best_Zins";
+
+        /// <summary>Preissteigerung Energie des BEST-Szenarios [%/a]; NULL = Vorgabe.</summary>
+        public const string SPALTE_PW_SZEN_BEST_PREIS_E = "Szen_Best_Preis_E";
+
+        /// <summary>Preissteigerung Betrieb des BEST-Szenarios [%/a]; NULL = Vorgabe.</summary>
+        public const string SPALTE_PW_SZEN_BEST_PREIS_B = "Szen_Best_Preis_B";
+
+        /// <summary>Investitionsänderung des BEST-Szenarios [%], + = teurer; NULL = Vorgabe.</summary>
+        public const string SPALTE_PW_SZEN_BEST_INVEST = "Szen_Best_Invest";
+
+        /// <summary>Ertragsänderung des BEST-Szenarios [%], + = höher; NULL = Vorgabe.</summary>
+        public const string SPALTE_PW_SZEN_BEST_ERTRAG = "Szen_Best_Ertrag";
+
+        /// <summary>Nutzungsdaueränderung des BEST-Szenarios [a], + = länger; NULL = Vorgabe.</summary>
+        public const string SPALTE_PW_SZEN_BEST_DAUER = "Szen_Best_Dauer";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_ZINS"/>
+        public const string SPALTE_PW_SZEN_WORST_ZINS = "Szen_Worst_Zins";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_PREIS_E"/>
+        public const string SPALTE_PW_SZEN_WORST_PREIS_E = "Szen_Worst_Preis_E";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_PREIS_B"/>
+        public const string SPALTE_PW_SZEN_WORST_PREIS_B = "Szen_Worst_Preis_B";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_INVEST"/>
+        public const string SPALTE_PW_SZEN_WORST_INVEST = "Szen_Worst_Invest";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_ERTRAG"/>
+        public const string SPALTE_PW_SZEN_WORST_ERTRAG = "Szen_Worst_Ertrag";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_DAUER"/>
+        public const string SPALTE_PW_SZEN_WORST_DAUER = "Szen_Worst_Dauer";
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -3895,6 +3995,13 @@ namespace WindowsFormsApplication1
         ///
         /// <see cref="Schritt68_StromspeicherFirma"/> ist aus demselben Grund aufgeführt
         /// wie <see cref="Schritt11_Stromspeicher"/>: dem SCHREIBER.
+        ///
+        /// <see cref="Schritt71_Szenarioparameter"/> ist BEWUSST NICHT aufgeführt —
+        /// wortgleiche Begründung wie bei den übrigen
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>-Schritten (20, 21, 28): Kein Rechenkern
+        /// der Simulation liest eine der zwölf Spalten, und die tolerante Vorsorge steht
+        /// unmittelbar vor dem Zugriff in
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
         ///
         /// <see cref="Schritt70_WrKurzschlussstrom"/> und
         /// <see cref="Schritt70_Auslegungstemperaturen"/> sind BEWUSST NICHT aufgeführt.

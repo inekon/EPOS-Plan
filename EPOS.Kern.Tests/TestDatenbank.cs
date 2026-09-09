@@ -136,6 +136,12 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt70_WrKurzschlussstrom) SpalteSicherstellen(s);
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt70_Auslegungstemperaturen) SpalteSicherstellen(s);
 
+                // Schritt 71 (W5-B-9, 09.09.2026): der Szenario-Parametersatz der
+                // Wirtschaftlichkeit - zwoelf nullbare Spalten an
+                // Tab_ProjektWirtschaftlichkeit. Wie in der Migration ueber ADD COLUMN,
+                // aus DERSELBEN Quelle; kein DML, NULL heisst Vorgabe.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt71_Szenarioparameter) SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

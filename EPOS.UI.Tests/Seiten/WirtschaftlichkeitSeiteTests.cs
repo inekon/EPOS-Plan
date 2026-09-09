@@ -111,6 +111,41 @@ public class WirtschaftlichkeitSeiteTests : BunitContext
         Assert.Single(cut.FindAll(".epos-matrix"));
     }
 
+    /// <summary>
+    /// ETAPPE W5‑B‑9 (09.09.2026): Über dem Parameternachweis steht die Statuszeile des
+    /// GEWÄHLTEN Szenarios — mit welchem Satz es rechnet und ob der aus Vorgaben oder
+    /// gepflegten Werten besteht. Sie hängt an der Ansicht und wechselt deshalb mit der
+    /// Szenariowahl mit.
+    /// </summary>
+    [Fact]
+    public void Die_Szenariozeile_steht_ueber_dem_Parameternachweis()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht.Szenariozeile = "Szenario: Best: Vorgaben — i = 2,0 %";
+        var cut = Zeige(stand: stand);
+
+        var zeilen = cut.FindAll(".epos-herleitung-text").Select(e => e.TextContent).ToList();
+        Assert.Contains("Szenario: Best: Vorgaben — i = 2,0 %", zeilen);
+        Assert.True(zeilen.IndexOf("Szenario: Best: Vorgaben — i = 2,0 %") <
+                    zeilen.FindIndex(t => t.StartsWith("Parameter:")));
+    }
+
+    /// <summary>
+    /// Eine LEERE Szenariozeile wird gar nicht erst gezeichnet — eine leere
+    /// Herleitungszeile ist kein Hinweis, sondern eine Lücke. (Der Fall
+    /// „Karten, Liste, Szenario, Parameterzeile“ oben hängt daran: Er greift die
+    /// ERSTE Herleitungszeile.)
+    /// </summary>
+    [Fact]
+    public void Eine_leere_Szenariozeile_wird_nicht_gezeichnet()
+    {
+        var cut = Zeige();
+
+        Assert.Equal("", _stand.Ansicht.Szenariozeile);
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
+                              e => string.IsNullOrWhiteSpace(e.TextContent));
+    }
+
     [Fact]
     public void Die_Matrix_traegt_je_Version_eine_Spalte()
     {

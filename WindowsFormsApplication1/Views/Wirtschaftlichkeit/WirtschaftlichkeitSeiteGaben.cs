@@ -265,7 +265,11 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            var ansicht = new ErgebnisAnsicht { Kacheln = Kacheln(zeilen, kultur) };
+            var ansicht = new ErgebnisAnsicht
+            {
+                Kacheln = Kacheln(zeilen, kultur),
+                Szenariozeile = Szenariozeile(szenario, kultur)   // W5-B-9
+            };
             if (zeilen.Count == 0) return ansicht;
 
             var spalten = new List<string> { T("WIRT_SP_KENNZAHL", "Kennzahl") };
@@ -329,6 +333,42 @@ namespace WindowsFormsApplication1
 
             ansicht.Matrix = new ErgebnisMatrix { Spalten = spalten, Zeilen = matrixzeilen };
             return ansicht;
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑9 (Anwenderentscheid 09.09.2026): die Statuszeile des gewählten
+        /// Szenarios.
+        ///
+        /// <para>Für <b>Erwartet</b> ein Satz: Es rechnet unverändert mit den
+        /// Projektparametern — die stehen ohnehin in der Zeile darunter. Für Best und
+        /// Worst der WIRKSAME Parametersatz und seine Herkunft: „Vorgaben“, solange
+        /// niemand ein Feld gepflegt hat, sonst „gepflegte Werte“.</para>
+        ///
+        /// <para>Die Anzeigetexte kommen aus denselben Ressourcenschlüsseln wie im
+        /// Parameterdialog — Seite und Dialog sollen dieselbe Auskunft geben.</para>
+        /// </summary>
+        private string Szenariozeile(string szenario, CultureInfo kultur)
+        {
+            try
+            {
+                if (string.Equals(szenario, WirtschaftlichkeitSzenario.ERWARTET,
+                                  StringComparison.Ordinal))
+                    return T("WIRT_SZ_KOPF", "Szenario:") + " " +
+                           T("WIRT_SZ_ERWARTET",
+                             "Szenario Erwartet: die Projektparameter unverändert.");
+
+                WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+                SzenarioSatz satz = p.SatzFuer(szenario);
+                if (satz == null) return "";
+
+                string name = SzenarioAnzeige(Array.IndexOf(SZENARIEN, szenario));
+                string muster = satz.NurVorgaben
+                    ? T("WPAR_SZ_HERKUNFT_VORGABE", "{0}: Vorgaben — {1}")
+                    : T("WPAR_SZ_HERKUNFT_GEPFLEGT", "{0}: gepflegte Werte — {1}");
+                return T("WIRT_SZ_KOPF", "Szenario:") + " " +
+                       string.Format(kultur, muster, name, satz.Nachweis(p, kultur));
+            }
+            catch { return ""; }
         }
 
         private static MatrixZeile Zeile(string titel, List<WirtschaftlichkeitErgebnis> zeilen,

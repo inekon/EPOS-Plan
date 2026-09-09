@@ -193,6 +193,16 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 70, trocken);
 
+            // ---- Schritt 71: der Szenario-Parametersatz der Wirtschaftlichkeit
+            //      (W5-B-9). Zwoelf nullbare Spalten an Tab_ProjektWirtschaftlichkeit,
+            //      kein DML - NULL heisst bei allen zwoelfen "Vorgabe". Die Quelle ist
+            //      dieselbe, aus der sich SchemaMigration.Schritt_71_Szenarioparameter
+            //      bedient. Erwartet bleibt zahlengleich; Best und Worst rechnen ab
+            //      diesem Stand mit den Vorgaben.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt71_Szenarioparameter)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 71, trocken);
+
             if (!trocken)
             {
                 long ohnePraefix = Zahl(StromspeicherFirmaNachtrag.Zaehlung());

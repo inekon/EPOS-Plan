@@ -59,11 +59,13 @@ namespace WindowsFormsApplication1
         /// Entscheide Q1 bis Q3 vom 07.09.2026) auf 69; mit der PV-Strangprüfung
         /// (Schritt 70 — der Kurzschlussstrom je MPPT und die zwei
         /// Auslegungstemperaturen, Anwenderentscheide W6-B-10 und W6-B-11 vom
-        /// 09.09.2026) auf <b>70</b>. Der Freeze-Stand
+        /// 09.09.2026) auf 70 und mit dem Szenario-Parametersatz der Wirtschaftlichkeit
+        /// (Schritt 71 — zwölf nullbare Spalten an Tab_ProjektWirtschaftlichkeit,
+        /// Anwenderentscheid W5-B-9 vom 09.09.2026) auf <b>71</b>. Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 70;
+        public const int Zielversion = 71;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

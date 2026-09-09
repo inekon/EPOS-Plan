@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Allgemein;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
@@ -17,6 +18,10 @@ namespace EPOS.UI.Tests.Dialoge;
 ///
 /// <list type="bullet">
 /// <item>Allgemein (immer): Zins, T, Preissteigerung Energie und Betrieb (4)</item>
+/// <item>Szenarien (immer, ETAPPE W5‑B‑9 vom 09.09.2026): sechs Größen × Best und
+///       Worst = 12 Zahlenfelder, dazu der Knopf „Vorgaben“. Die Erwartet-Spalte ist
+///       Anzeige. Die Felder stehen im Feldbestand ZWISCHEN Allgemein und Strom —
+///       daher die verschobenen Indizes der Zahlenfelder unten.</item>
 /// <item>Strom (immer): Einspeisung PV, Einspeisung KWK, Aufschläge-Anzeige (3)</item>
 /// <item>BHKW (nur mit BHKW): Verweis + Sprungknopf</item>
 /// <item>Brennstoff (nur mit Brennstoff-Erzeuger): CO₂ + Katalogknopf + Park +
@@ -50,6 +55,16 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         Thread.CurrentThread.CurrentCulture = de;
         Thread.CurrentThread.CurrentUICulture = de;
     }
+
+    // ETAPPE W5-B-9 (09.09.2026): Der Szenarioblock steht ZWISCHEN Allgemein und
+    // Strom und bringt zwoelf Zahlenfelder mit. Die Indizes der uebrigen Felder
+    // haben sich dadurch verschoben - sie stehen hier als Konstanten, damit der
+    // naechste Umbau nur eine Zeile trifft statt sieben.
+    private const int SZENARIO_FELDER = 12;
+    private const int EINSPEISUNG_PV = 3 + SZENARIO_FELDER;
+    private const int EINSPEISUNG_KWK = EINSPEISUNG_PV + 1;
+    private const int CO2 = EINSPEISUNG_KWK + 1;
+    private const int FELDER_OHNE_ERZEUGER = 3 + SZENARIO_FELDER + 2;
 
     private static WirtschaftlichkeitParameter Satz() => new WirtschaftlichkeitParameter
     {
@@ -99,11 +114,13 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
     {
         var cut = Aufbauen(Satz());
 
-        Assert.Equal(new[] { "Allgemein", "Strom — Einspeisung und Bezug" },
+        Assert.Equal(new[] { "Allgemein",
+                             "Szenarien — Best und Worst gegen den Erwartungsfall",
+                             "Strom — Einspeisung und Bezug" },
                      cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToArray());
 
-        // Zins, PreisE, PreisB, Einspeisung PV, Einspeisung KWK
-        Assert.Equal(5, cut.FindAll("input[inputmode=decimal]").Count);
+        // Zins, PreisE, PreisB (3) + Szenarien 6×2 (12) + Einspeisung PV, KWK (2)
+        Assert.Equal(FELDER_OHNE_ERZEUGER, cut.FindAll("input[inputmode=decimal]").Count);
         Assert.Single(cut.FindAll("input[inputmode=numeric]"));   // T
         Assert.Single(cut.FindAll("input[type=checkbox]"));       // Aufschlaege (Anzeige)
         Assert.Empty(cut.FindAll("select"));
@@ -128,7 +145,7 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         Assert.Contains("BHKW — KWKG, Energie- und Stromsteuer", titel);
         Assert.Single(cut.FindAll("button.epos-sprung"));
         // Kein einziges Eingabefeld mehr aus den ausgezogenen Gruppen.
-        Assert.Equal(5, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal(FELDER_OHNE_ERZEUGER, cut.FindAll("input[inputmode=decimal]").Count);
     }
 
     [Fact]
@@ -139,7 +156,8 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         var titel = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
 
         Assert.Contains("Brennstoff — BEHG und Emissionsbilanz (BHKW/Kessel)", titel);
-        Assert.Equal(6, cut.FindAll("input[inputmode=decimal]").Count);   // + CO2
+        Assert.Equal(FELDER_OHNE_ERZEUGER + 1,
+                     cut.FindAll("input[inputmode=decimal]").Count);       // + CO2
         Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);   // + Bilanzjahr
         Assert.Equal(3, cut.FindAll("select").Count);                     // Park, Methode, Biomasse
         Assert.Equal(2, cut.FindAll("input[type=checkbox]").Count);       // + Nachweis
@@ -162,9 +180,106 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         var zahlen = cut.FindAll("input[inputmode=decimal]");
 
         Assert.Equal("3,50", zahlen[0].GetAttribute("value"));
-        Assert.Equal("0,0820", zahlen[3].GetAttribute("value"));
+        Assert.Equal("0,0820", zahlen[EINSPEISUNG_PV].GetAttribute("value"));
         Assert.Equal("20", cut.Find("input[inputmode=numeric]").GetAttribute("value"));
     }
+
+    // =====================================================================
+    // Szenarien (ETAPPE W5-B-9, Anwenderentscheid 09.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Tabelle trägt drei Wertspalten über sechs Zeilen. Die Erwartet-Spalte ist
+    /// ANZEIGE — sie wiederholt die Projektparameter und trägt kein Eingabefeld
+    /// („Kein Delegat ist kein Knopf“).
+    /// </summary>
+    [Fact]
+    public void Die_Szenariotabelle_zeigt_drei_Spalten_und_sechs_Groessen()
+    {
+        var cut = Aufbauen(Satz());
+        var tabelle = cut.FindAll("table.epos-matrix")[0];
+
+        Assert.Equal(new[] { "Größe", "Erwartet", "Best", "Worst" },
+                     tabelle.QuerySelectorAll("thead th").Select(e => e.TextContent).ToArray());
+
+        var zeilen = tabelle.QuerySelectorAll("tbody tr");
+        Assert.Equal(6, zeilen.Length);
+        Assert.Equal(new[] { "Kalkulationszins", "Preissteigerung Energie",
+                             "Preissteigerung Betrieb", "Investition", "Erträge",
+                             "Nutzungsdauer" },
+                     zeilen.Select(z => z.QuerySelector(".epos-matrix-titel")!.TextContent).ToArray());
+
+        // Je Zeile genau ZWEI Eingabefelder - Best und Worst.
+        foreach (var z in zeilen) Assert.Equal(2, z.QuerySelectorAll("input").Length);
+        Assert.Equal(SZENARIO_FELDER, tabelle.QuerySelectorAll("input").Length);
+    }
+
+    /// <summary>
+    /// Die Felder zeigen den WIRKSAMEN Wert, nicht den gepflegten: Ohne jede Pflege sind
+    /// das die Vorgaben (Zins ∓ 1 %-Punkt, Investition ∓ 10 %, Erträge ± 10 %,
+    /// Nutzungsdauer ± 2 a) — ein leeres Feld liesse den Anwender im Unklaren, womit
+    /// gerechnet wird. Die Erwartet-Spalte trägt den Projektwert.
+    /// </summary>
+    [Fact]
+    public void Die_Szenariofelder_zeigen_die_wirksamen_Vorgaben()
+    {
+        var cut = Aufbauen(Satz());               // i = 3,5 %, p_E = 2,5 %, p_B = 1,5 %
+        var zeilen = cut.FindAll("table.epos-matrix tbody tr");
+
+        Assert.Equal("3,50", Zelle(zeilen[0], 0).TextContent.Trim().Split(' ')[0]);
+        Assert.Equal("2,50", Feld(zeilen[0], 0).GetAttribute("value"));   // Best  = 3,5 - 1
+        Assert.Equal("4,50", Feld(zeilen[0], 1).GetAttribute("value"));   // Worst = 3,5 + 1
+        Assert.Equal("1,50", Feld(zeilen[1], 0).GetAttribute("value"));   // p_E Best
+        Assert.Equal("-10,0", Feld(zeilen[3], 0).GetAttribute("value"));  // Investition Best
+        Assert.Equal("10,0", Feld(zeilen[3], 1).GetAttribute("value"));   // Investition Worst
+        Assert.Equal("10,0", Feld(zeilen[4], 0).GetAttribute("value"));   // Erträge Best
+        Assert.Equal("2,0", Feld(zeilen[5], 0).GetAttribute("value"));    // Nutzungsdauer Best
+    }
+
+    /// <summary>
+    /// Wer tippt, pflegt — und die Herleitungszeile sagt es. „Vorgaben“ setzt alle zwölf
+    /// Felder wieder auf <c>null</c>; das ist NICHT dasselbe wie „auf die heutigen
+    /// Vorgabezahlen setzen“, denn ein leeres Feld zieht bei einer geänderten
+    /// Projektangabe mit.
+    /// </summary>
+    [Fact]
+    public void Vorgaben_setzt_die_zwoelf_Felder_zurueck()
+    {
+        WirtschaftlichkeitParameter satz = Satz();
+        var cut = Aufbauen(satz);
+
+        Assert.True(satz.SatzBest.NurVorgaben);
+        Assert.Contains("Best: Vorgaben", cut.Instance.SzenarioZeileBest);
+
+        Feld(cut.FindAll("table.epos-matrix tbody tr")[0], 0).Input("1,25");
+        Assert.Equal(1.25, satz.SatzBest.Zinssatz);
+        Assert.False(satz.SatzBest.NurVorgaben);
+        Assert.Contains("Best: gepflegte Werte", cut.Instance.SzenarioZeileBest);
+
+        cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Vorgaben").Click();
+
+        Assert.Null(satz.SatzBest.Zinssatz);
+        Assert.True(satz.SatzBest.NurVorgaben);
+        Assert.True(satz.SatzWorst.NurVorgaben);
+    }
+
+    /// <summary>Die Herleitungszeilen nennen beide Sätze mit ihren wirksamen Zahlen.</summary>
+    [Fact]
+    public void Die_Herleitungszeilen_nennen_beide_Saetze()
+    {
+        var cut = Aufbauen(Satz());
+
+        Assert.Contains("i = 2,5 %", cut.Instance.SzenarioZeileBest);
+        Assert.Contains("Investition -10 %", cut.Instance.SzenarioZeileBest);
+        Assert.Contains("i = 4,5 %", cut.Instance.SzenarioZeileWorst);
+        Assert.Contains("Nutzungsdauer -2 a", cut.Instance.SzenarioZeileWorst);
+    }
+
+    private static IElement Zelle(IElement zeile, int nummer) =>
+        zeile.QuerySelectorAll(".epos-matrix-zelle")[nummer];
+
+    private static IElement Feld(IElement zeile, int nummer) =>
+        zeile.QuerySelectorAll("input")[nummer];
 
     // =====================================================================
     // CO₂-Zeile (K6)
@@ -177,7 +292,7 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         var cut = Aufbauen(Satz(), brennstoff: true);
         Assert.Contains("2028", cut.Instance.Co2Zeile);
 
-        cut.FindAll("input[inputmode=decimal]")[5].Input("95");
+        cut.FindAll("input[inputmode=decimal]")[CO2].Input("95");
         Assert.Contains("95", cut.Instance.Co2Zeile);
     }
 
@@ -191,10 +306,10 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         WirtschaftlichkeitParameter satz = Satz();
         var cut = Aufbauen(satz);
 
-        cut.FindAll("input[inputmode=decimal]")[4].Input("0,1200");
+        cut.FindAll("input[inputmode=decimal]")[EINSPEISUNG_KWK].Input("0,1200");
         Assert.Equal(0.12, satz.EinspeiseverguetungKWK);
 
-        cut.FindAll("input[inputmode=decimal]")[4].Input("0");
+        cut.FindAll("input[inputmode=decimal]")[EINSPEISUNG_KWK].Input("0");
         Assert.Null(satz.EinspeiseverguetungKWK);
     }
 

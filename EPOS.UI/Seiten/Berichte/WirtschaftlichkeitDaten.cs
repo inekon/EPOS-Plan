@@ -61,6 +61,20 @@ public sealed class ErgebnisAnsicht
 
     /// <summary>Die Vergleichstabelle.</summary>
     public ErgebnisMatrix Matrix { get; set; } = new();
+
+    /// <summary>
+    /// ETAPPE W5‑B‑9 (Anwenderentscheid 09.09.2026): die Statuszeile des GEWÄHLTEN
+    /// Szenarios — mit welchem Parametersatz es rechnet und ob der aus Vorgaben oder
+    /// aus gepflegten Werten besteht.
+    ///
+    /// <para>Sie steht an der <b>Ansicht</b> und nicht am Stand, weil sie mit der
+    /// Szenariowahl wechselt: Der Wechsel tauscht genau dieses Objekt aus, und die
+    /// Zeile zieht damit von selbst mit.</para>
+    ///
+    /// <para>Leer = keine Zeile (Szenario Erwartet ohne besondere Angabe, oder die
+    /// Parameter waren nicht lesbar).</para>
+    /// </summary>
+    public string Szenariozeile { get; set; } = "";
 }
 
 /// <summary>

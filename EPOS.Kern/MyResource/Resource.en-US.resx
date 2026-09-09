@@ -6797,6 +6797,9 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_ZEILE_VBH_ELEKTRISCH" xml:space="preserve">
     <value>Full-load hours, electrical (CHP basis) [h/a]</value>
   </data>
+  <data name="WIRT_ZEILE_ERSATZ" xml:space="preserve">
+    <value>Replacement investments, present value [€]</value>
+  </data>
   <data name="WIRT_ZEILE_RESTWERT" xml:space="preserve">
     <value>Residual value, present value [€]</value>
   </data>
@@ -10910,6 +10913,51 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="WPAR_TITEL" xml:space="preserve">
     <value>Economic parameters</value>
   </data>
+  <data name="WPAR_G_SZENARIEN" xml:space="preserve">
+    <value>Scenarios — best and worst against the expected case</value>
+  </data>
+  <data name="WPAR_SZ_DAUER" xml:space="preserve">
+    <value>Service life</value>
+  </data>
+  <data name="WPAR_SZ_ERTRAG" xml:space="preserve">
+    <value>Revenues</value>
+  </data>
+  <data name="WPAR_SZ_HERKUNFT_GEPFLEGT" xml:space="preserve">
+    <value>{0}: maintained values — {1}</value>
+  </data>
+  <data name="WPAR_SZ_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>{0}: defaults — {1}</value>
+  </data>
+  <data name="WPAR_SZ_HINWEIS" xml:space="preserve">
+    <value>Expected uses the project parameters above unchanged — that column is display only. Best and worst deviate from it: discount rate and price escalations are absolute, investment and revenues are relative changes in percent, service life is a change in years; + always means more or longer. A best/worst value maintained on a cost line takes PRECEDENCE — the flat deviation only applies where none is maintained. „Defaults“ restores the proposal (rate and escalations ∓ 1 percentage point, investment ∓ 10 %, revenues ± 10 %, service life ± 2 years).</value>
+  </data>
+  <data name="WPAR_SZ_INVEST" xml:space="preserve">
+    <value>Investment</value>
+  </data>
+  <data name="WPAR_SZ_PREIS_B" xml:space="preserve">
+    <value>Price escalation operation</value>
+  </data>
+  <data name="WPAR_SZ_PREIS_E" xml:space="preserve">
+    <value>Price escalation energy</value>
+  </data>
+  <data name="WPAR_SZ_SPALTE_BEST" xml:space="preserve">
+    <value>Best</value>
+  </data>
+  <data name="WPAR_SZ_SPALTE_ERWARTET" xml:space="preserve">
+    <value>Expected</value>
+  </data>
+  <data name="WPAR_SZ_SPALTE_GROESSE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="WPAR_SZ_SPALTE_WORST" xml:space="preserve">
+    <value>Worst</value>
+  </data>
+  <data name="WPAR_SZ_VORGABEN" xml:space="preserve">
+    <value>Defaults</value>
+  </data>
+  <data name="WPAR_SZ_ZINS" xml:space="preserve">
+    <value>Discount rate</value>
+  </data>
   <data name="WPAR_ZINS" xml:space="preserve">
     <value>Discount rate i [%]:</value>
   </data>
@@ -11582,6 +11630,12 @@ Overwrite it anyway?</value>
   </data>
   <data name="PVW_MELD_GESPEICHERT" xml:space="preserve">
     <value>PV remuneration saved — please recalculate.</value>
+  </data>
+  <data name="WIRT_SZ_ERWARTET" xml:space="preserve">
+    <value>Expected scenario: the project parameters unchanged.</value>
+  </data>
+  <data name="WIRT_SZ_KOPF" xml:space="preserve">
+    <value>Scenario:</value>
   </data>
   <data name="WIRT_TITEL" xml:space="preserve">
     <value>Economics (net present value method, DIN EN 17463)</value>
