@@ -276,9 +276,13 @@ hier auf, nicht erst beim Anwender.
 
 ### 6.5 Die Messlatte selbst — `Referenzlaeufe/Kenndaten_Test.sqlite`
 
-**Stand 07.09.2026: Schemastand 69** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
+**Stand 09.09.2026: Schemastand 72** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
 66 Stränge, 67 BHKW-Leistungsgrenze, 68 `Firma` im Stromspeicherkatalog, 69 PV-Koeffizienten
-repariert), 70 012 928 Byte (66,8 MB). Nachzusehen ist er jederzeit:
+repariert, 70 PV-Strangprüfung — Kurzschlussstrom je MPPT, `Ausleg_T_Kalt`/`Ausleg_T_Heiss` an
+`Tab_Einstellungen` —, 71 zwölf nullbare Szenario-Spalten an `Tab_ProjektWirtschaftlichkeit`,
+72 p_I in drei Spalten und der Freitext „Nicht monetäre Wirkungen" an derselben Tabelle),
+70 012 928 Byte (66,8 MB, unverändert zu Schemastand 69 — die zwanzig neuen Spalten der Schritte
+70–72 stehen überall auf NULL und brauchen keine Seite). Nachzusehen ist er jederzeit:
 
 ```
 sqlite3 -readonly Referenzlaeufe/Kenndaten_Test.sqlite "SELECT SchemaVersion FROM Tab_Applikation;"
@@ -303,6 +307,23 @@ Das Werkzeug fährt **dieselben Quellen wie `SchemaMigration`** — den Spaltenk
 verdichtet mit `VACUUM`. Es ist **idempotent** (vorhandene Spalte = nichts zu tun), läuft auf
 Linux und kennt `--trocken` für den Blick vor dem Griff. Von Hand angelegte Spalten wären eine
 zweite Schreibweise derselben Spalte — genau das, was die Typübersetzung verhindern soll.
+
+> **Eine Spalte liegt AUSSERHALB dieses Wegs, mit Absicht: `Tab_ErgebnisWirtschaftlichkeit`.**
+> Diese Tabelle führt `WirtschaftlichkeitCtrl.StelleTabellenSicher()` seit jeher selbst nach
+> („doppelte Schema-Wahrheit", Begründung in `SchemaKatalog.cs` bei `Schritt28_KwkgTatbestand`
+> und bei `Schritt71_Szenarioparameter`/`Schritt72_ValeriErgaenzung`) — das Werkzeug oben rührt
+> sie nicht an. Beim Nachziehen auf Schemastand 72 (Auftrag #154, 09.09.2026) fehlte dort genau
+> eine Spalte, `ErsatzBarwert` (DOUBLE, Etappe W5‑B‑10), die der SQL-Dialektprüfer gegen
+> `WirtschaftlichkeitCtrl.cs:6318` meldete, ohne dass ein Schemaschritt 70–72 sie einführt. Sie
+> stand als einzige der rund fünfzig `SpalteSicher`-Spalten dieser Methode noch nicht in der
+> Testdatenbank. Nachgezogen wurde sie EINZELN per `ALTER TABLE … ADD COLUMN … REAL` (die
+> wortgleiche Ausgabe der Typübersetzung für `DOUBLE`) statt über den vollen Aufruf von
+> `StelleTabellenSicher()` — der hängt am Ende `GesetzKatalog.StelleKatalogSicher()` an, das bei
+> veralteter Generation neue Gesetzesparameter-Zeilen einfügen würde, ein Dateninhalt jenseits
+> einer reinen Schema-Nachführung. **Wer künftig einen neuen `SpalteSicher`-Aufruf in
+> `WirtschaftlichkeitCtrl.StelleTabellenSicher` einführt, prüft die Testdatenbank mit — der
+> SQL-Dialektprüfer allein zeigt es zwar an, das Schließen bleibt aber Handarbeit außerhalb des
+> Werkzeugs Testdatenbankschema.**
 
 > **Danach ist der Referenzlauf Pflicht, nicht Kür.** Eine Schemamigration darf keinen
 > Rechenwert verschieben; belegt wird das, indem

@@ -109,7 +109,10 @@ Migrationsschritte"); danach wird jeder Aufruf vorher mit dem Anwender abgestimm
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
 gegen `Referenzlaeufe/2026-09-07_R6_PvKoeffizienten` gehalten (**zwölf Projekte, 312 CSV,
 1 792 Skalare**, aus dem plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite` auf
-**Schemastand 69**; eingefroren am 07.09.2026 nach dem Befund **W6‑B‑5** mit den Entscheiden
+**Schemastand 72** (die Basis selbst ist am 07.09.2026 auf Schemastand 69 eingefroren; am
+09.09.2026 — Auftrag #154 — ist `Kenndaten_Test.sqlite` byte-gleich auf 72 nachgezogen, die
+Schritte 70–72 legen ausschließlich nullbare Spalten an, kein Rechenwert ändert sich) nach dem
+Befund **W6‑B‑5** mit den Entscheiden
 **Q1–Q3**: Schemaschritt 69 repariert die verdorbenen PV-Modulkoeffizienten aus der CEC-Liste.
 **Elf der zwölf Projekte sind byte-gleich zur Vorgängerbasis; nur 1007 weicht ab**, und dort
 nur die acht Dateien der PV-Kette — die Ursache ist genau eine Spalte: `T_NOCT` springt vom
