@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Proben zum Erststart OHNE Altbestand (Auftrag #157).
+
+    Frage: Was tut der Kern, wenn im Datenbankordner WEDER Kenndaten.sqlite NOCH
+    Kenndaten.accdb liegt - also bei einer Neuinstallation auf einem frischen
+    Rechner? Program.ErststartAnbieten() bricht dort ab (START_DB_FEHLT); diese
+    Probe belegt, WAS der Kern bis dahin tut und was geschaehe, wenn der Startpfad
+    weiterliefe.
+
+    Eigenstaendiges Konsolenprojekt mit EIGENER Projektmappe: Es haengt per
+    ProjectReference NUR an EPOS.Kern, gehoert aber bewusst NICHT in WP-Plan.sln -
+    die Proben sollen den Ausrollstand nicht beeinflussen (gleiche Regel wie
+    Proben/ZugriffsschichtProben und Proben/ChartProben).
+
+    net10.0 OHNE Windows-Bindung: Der Erststartweg des Kerns laesst sich damit auch
+    auf Linux und in der CI nachstellen. ErststartMigration selbst liegt in
+    WindowsFormsApplication1 (net10.0-windows) und ist von hier aus NICHT
+    erreichbar - ihre Dateipruefung Pruefe() ist deshalb in Program.cs nachgebildet
+    und dort mit Datei und Zeile belegt.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+
+    <RootNamespace>ErststartProben</RootNamespace>
+    <AssemblyName>ErststartProben</AssemblyName>
+
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+</Project>
