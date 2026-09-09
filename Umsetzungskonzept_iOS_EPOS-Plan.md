@@ -1964,6 +1964,48 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Doku: `Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md` 2.4/6.3, `BETRIEB_SQLITE.md` § 8. Nur Setup-Skript und Doku, kein
 > gebauter Code; der `ISCC`-Lauf auf Windows steht aus. Der Absatz „Deinstallation" in Wiki und Website wird mit W3 (#162)
 > nachgezogen.
+>
+> **#160 Auslieferungsvorlage als Werkzeug (#157‑E‑2, Anwenderentscheid 09.09.2026 „Empfehlung", umgesetzt in `f763f60`,
+> zusammengeführt in `1764653`).** `Werkzeuge/Auslieferungsvorlage` (eigene Projektmappe, nicht in `WP-Plan.sln`) erzeugt aus
+> einer produktiven `Kenndaten.sqlite` reproduzierbar die bereinigte Auslieferungsdatenbank: Arbeitskopie über
+> `Datenbanksicherung.KopieAnlegen` (Quelle bleibt byte-gleich), alle Projektdaten fallen — die **73 Tabellen mit
+> Projektbezug leitet das Werkzeug aus dem Schema der geöffneten Datei ab**, nicht aus einer gepflegten Liste (die
+> Handliste des Reduzierungsskripts kannte `Tab_Wechselrichter`/`Z_AnlageStrang` nicht) —, `Tab_Applikation` verliert
+> Projektname (dort stand ein Kundenname), Beschreibung, Icon, `ID_Projekt`; Beispielprojekte kommen als `.wpx`-Pakete
+> über `ProjektExportImportCtrl` (`--beispiele`, Beleg: Beispielkonzept § 6.2/E6), dann `VACUUM`, Prüflauf
+> (`integrity_check`, `foreign_key_check`, Schemastand, STRICT-Zahl, Datenschutzwächter: keine Zeile in einer Projekttabelle
+> außerhalb der Beispiele, keine Lizenz-/KI-Tabelle, keine Pfadangabe) und `<ziel>.bericht.txt`. Das Werkzeug schreibt im
+> Repository nur nach `Setup/Vorlage/` (Rückgabe 3 sonst; `.gitignore` deckt `*.sqlite` dort ab); Rückgabecodes 0/2/3/4/5
+> mit Grund auf stderr, bei ≠ 0 keine Zieldatei. Lauf gegen die Testdatenbank: 1 173 224 → 34 Projektzeilen, 66,8 → 23,7 MB,
+> Schemastand 72, 117 STRICT. 17 Proben (`Werkzeuge/Auslieferungsvorlage.Tests`, starten das Werkzeug als Programm), seit
+> diesem Stand als Schritt in `kern.yml` (nur ubuntu). Kern: zwei `InternalsVisibleTo`-Zeilen. **Befund #160‑F‑1, offen:**
+> Die Regel des Setup-Konzepts § 6.1 Schritt 3 („in `*_STAMM` bleibt nur `ReadOnly = TRUE`") würde 22 von 28 Katalogtabellen
+> leeren (419 722 → 101 Zeilen; `Tab_Kenndaten_STAMM` 1 960 Kennfelder, `Tab_Klimadaten_STAMM`, `Tab_Solar_STAMM` über die
+> Kaskade), weil `ReadOnly` im Code ein Schreibschutz der Oberfläche ist, keine Auslieferungsmarke — der Katalogwächter
+> bricht mit Code 4 ab, bis der Anwender entscheidet (`--kataloge alle` als ausdrücklicher Weg daran vorbei).
+> Setup-Verdrahtung (`build-setup.ps1`, `VorlageDb`) folgt mit W3 (#162).
+>
+> **#162 W3 — Erststart aus der Auslieferungsvorlage (#157‑E‑1, Anwenderentscheid 09.09.2026 „Empfehlung", umgesetzt in
+> `ba30d28`, zusammengeführt in `307bcba`).** Eine Neuinstallation startet wieder: `Program.DatenbankBereitstellen()` ruft den
+> neuen Kernbaustein `EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs`, der `{app}\Vorlage\Kenndaten.sqlite` in den
+> Datenordner kopiert und danach `PRAGMA integrity_check` UND `Tab_Applikation.SchemaVersion` prüft — nie überschreibend,
+> nie halb (eine misslungene Kopie wird entfernt), eine ältere Vorlage hebt `SchemaMigration.Ausfuehren` beim selben Start
+> an; fehlt die Vorlage, nennt `START_VORLAGE_FEHLT` den erwarteten Ort. Gefunden wird sie über die neue `IPfade`-Eigenschaft
+> `Auslieferungsvorlage` (Aufstieg von `AppContext.BaseDirectory` wie `Herstellerdaten`; `IosPfade` erbt — kein iOS-Adapter
+> nötig, die iOS-Schale behält ihren Seed-Weg aus dem Paket). **Der Access-Weg ist gefallen:** `ErststartMigration` (434 Z.),
+> `ErststartCtrl` (74), `ErststartHuelle` (145), `ErststartDialog.razor` (167) mit 13 bunit-Fällen, 15 Ressourcenschlüssel
+> je Sprache, die `EposSqliteMigrator.Kern`-Referenz der Anwendung, Fall 16 der `ZugriffsschichtProben`; im Setup 34 von 43
+> Access-Fundstellen (ACE-Redist, vier Pascal-Funktionen, drei Meldungen, die Übernahme-Seite samt
+> `InitializeWizard`/`ShouldSkipPage`), `VorlageDb` → `Vorlage\Kenndaten.sqlite` mit Abbruch, wenn sie fehlt.
+> `build-setup.ps1` erzeugt die Vorlage vor jedem ISCC-Lauf über `Werkzeuge/Auslieferungsvorlage` (#160; Quelle aus
+> `-Quelldatenbank` oder `EPOS_VORLAGE_QUELLE`, ohne Angabe Abbruch — kein Rückgriff auf die Arbeitsdatenbank). Bleiben als
+> Hauswerkzeug: `EposSqliteMigrator`, `SchemaMigration.HebeAltbestand`, `SchemaVersionAccess`, `DbParamOleDb`. Doku:
+> `BETRIEB_SQLITE.md` § 1 neu (§ 1.1 „Übernahme = Hauswerkzeug"), Wurzel-`CLAUDE.md`, drei Projekt-`CLAUDE.md`, Setup-Konzept
+> § 6 (6.1–6.4). `Proben/ErststartProben` 9 → 21 Prüfungen. Gate nach dem Merge: Kern 2225 / UI 3358 grün (−13 bunit-Fälle
+> des gefallenen Dialogs, +20 `ErstbereitstellungTests`), SQL-Dialektprüfer 0, beide Kern-Wächter leer, Referenzlauf
+> byte-gleich. **Offen:** `ISCC`-Lauf und `build-setup.ps1` auf Windows (hier weder Inno Setup noch PowerShell), der erste
+> gemeinsame Lauf mit #160, und der Kommentar in `EPOS.iOS/Datenbankbereitstellung.cs:15`, der noch
+> `ErststartMigration.Pruefe` nennt (iOS hier nicht baubar).
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
