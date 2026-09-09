@@ -148,6 +148,13 @@ Access-Zweig der Erststart-Migration — `SchemaMigration`, `GeraeteWaisen` und
 `SchemaVersionAccess` (die aus `ApplikationCtrl` ausgelagerten Schemamarker-Methoden).
 Wer hier eine neue Zugriffsstelle schreibt, nimmt `DbParam` — sonst nichts.
 
+**Sicherungskopien nur über `Allgemein/Datenbank/Datenbanksicherung.KopieAnlegen`**
+(Auftrag #158). Sie zieht die Kopie über eine geöffnete SQLite-Verbindung (`VACUUM INTO`,
+`BETRIEB_SQLITE.md` § 3.2) statt über `File.Copy` — unter WAL fehlen einer reinen Dateikopie
+der Hauptdatei die noch nicht eingecheckpointeten Änderungen aus der `-wal`. Beide Aufrufer
+(`KiSicherungspunkt`, `MenueCtrl.DatenbankKopieAnlegen`) nutzen sie; eine neue Sicherungsstelle
+schreibt kein zweites `File.Copy`, sondern ruft diesen Helfer.
+
 **Die Umgebung ausschließlich über `Dienste.*` — nie über `Program.*`.** Seit iU5 (03.09.2026)
 liegen neun Umgebungsdienste in `Allgemein/Dienste/`. Neuer Kerncode, der eine Meldung absetzt,
 einen Ablageort braucht, eine Einstellung liest, die Sprache kennen will oder eine Maske öffnen

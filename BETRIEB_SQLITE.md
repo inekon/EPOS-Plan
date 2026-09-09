@@ -113,6 +113,11 @@ sqlite3.exe "C:\ProgramData\EPOS_PLAN\Kenndaten.sqlite" "VACUUM INTO 'D:\Sicheru
 
 Das Ziel darf **nicht** schon existieren — SQLite überschreibt hier nichts.
 
+**Genau diesen Weg nutzt seit Auftrag #158 auch das Programm selbst** —
+`EPOS.Kern/Allgemein/Datenbank/Datenbanksicherung.KopieAnlegen`, gerufen vom Sicherungspunkt
+des Hilfe-Assistenten und von `MenueCtrl.DatenbankKopieAnlegen` (Projekte löschen,
+Projektimport); eine reine `File.Copy` der Hauptdatei kommt dort seither nicht mehr vor.
+
 ### 3.3 Ablage
 
 Das bisherige Verfahren mit dem Ordner `DB-Backup\` trägt unverändert. Was sich ändert:

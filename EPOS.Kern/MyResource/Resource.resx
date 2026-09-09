@@ -7689,9 +7689,6 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="KI_SICH_QUELLE_FEHLT" xml:space="preserve">
     <value>Die Projektdatenbank wurde nicht gefunden ({0}).</value>
   </data>
-  <data name="KI_SICH_GEOEFFNET" xml:space="preserve">
-    <value>Die Datenbank ist gerade geöffnet ({0}); die Sicherungskopie kann noch nicht geschriebene Änderungen nicht enthalten.</value>
-  </data>
   <data name="KI_SICH_FEHLGESCHLAGEN" xml:space="preserve">
     <value>Vor der ersten Änderung muss eine Sicherungskopie der Datenbank entstehen. Das ist nicht gelungen ({0}) — Schreibaktionen bleiben deshalb gesperrt.</value>
   </data>

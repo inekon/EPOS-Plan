@@ -278,9 +278,14 @@
         internal static string EinheitenBefunde => MyResource.Resource.KI_REG_EINHEITEN_BEFUNDE;
 
         // ------------------------------------------------- Sicherung und Schreibschutz
+        //
+        // KI_SICH_GEOEFFNET ist mit Auftrag #158 entfallen: Es gehoerte zur frueheren
+        // ".laccdb"-Pruefung (Access-Zeit) und meldete einen moeglichen Zwischenstand der
+        // Kopie. Seit Datenbanksicherung.KopieAnlegen (VACUUM INTO ueber eine geoeffnete
+        // SQLite-Verbindung) ist die Kopie immer vollstaendig und in sich konsistent - der
+        // Fall, den dieser Hinweis meldete, kann nicht mehr eintreten.
 
         internal static string SicherungQuelleFehlt => MyResource.Resource.KI_SICH_QUELLE_FEHLT;
-        internal static string SicherungGeoeffnet => MyResource.Resource.KI_SICH_GEOEFFNET;
         internal static string SicherungFehlgeschlagen => MyResource.Resource.KI_SICH_FEHLGESCHLAGEN;
 
         internal static string SchutzSatz => MyResource.Resource.KI_SCHUTZ_SATZ;

@@ -20918,15 +20918,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank ist gerade geöffnet ({0}); die Sicherungskopie kann noch nicht geschriebene Änderungen nicht enthalten. ähnelt.
-        /// </summary>
-        public static string KI_SICH_GEOEFFNET {
-            get {
-                return ResourceManager.GetString("KI_SICH_GEOEFFNET", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatenbank wurde nicht gefunden ({0}). ähnelt.
         /// </summary>
         public static string KI_SICH_QUELLE_FEHLT {

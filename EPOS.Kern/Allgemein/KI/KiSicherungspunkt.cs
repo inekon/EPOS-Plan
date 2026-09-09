@@ -22,14 +22,25 @@ namespace WindowsFormsApplication1
     /// Aenderung ohne Rueckweg ist genau das, was der Assistent nicht anrichten darf.
     /// </para>
     /// <para>
-    /// <b>Muster.</b> Vorbild ist <c>Referenzlauf\DbUmgebung.ArbeitskopieAnlegen</c>:
-    /// vorhandene <c>.laccdb</c> melden (die Datenbank ist geoeffnet, die Kopie kann einen
-    /// Zwischenstand zeigen), <c>File.Copy</c>, Schreibschutzattribut der Kopie loesen.
+    /// <b>Die Kopie zieht <see cref="Datenbanksicherung.KopieAnlegen"/></b> - EINE
+    /// Sicherungswahrheit im Kern (Auftrag #158), gemeinsam mit
+    /// <c>MenueCtrl.DatenbankKopieAnlegen</c>. Sie zieht die Kopie ueber eine geoeffnete
+    /// SQLite-Verbindung (<c>VACUUM INTO</c>, BETRIEB_SQLITE.md § 3.2) statt ueber eine
+    /// byteweise Dateikopie: Unter SQLite im WAL-Modus ist der aktuelle Datenstand die Summe aus
+    /// Hauptdatei und <c>-wal</c>, und nur eine Verbindung, die die Datei OEFFNET statt sie
+    /// byteweise zu kopieren, liest zuverlaessig durch die <c>-wal</c> hindurch - auch waehrend
+    /// die Anwendung sie geoeffnet haelt. Die fruehere <c>.laccdb</c>-Pruefung (Vorbild
+    /// <c>Referenzlauf\DbUmgebung.ArbeitskopieAnlegen</c> aus der Access-Zeit) ist damit
+    /// GEFALLEN: SQLite kennt keine solche Sperrdatei, der Hinweis konnte seit der
+    /// SQLite-Umstellung nie mehr erscheinen, und <c>VACUUM INTO</c> braucht ihn nicht mehr -
+    /// die Kopie ist so oder so vollstaendig und in sich konsistent. <see cref="Hinweis"/>
+    /// bleibt als leere Eigenschaft stehen: <c>KiAusfuehrer.SicherungHinweis</c> (Windows-
+    /// Oberflaeche, ausserhalb dieses Auftrags) greift weiter darauf zu.
     /// Ablage ist der Ordner <c>DB-Backup</c> NEBEN der Datenbank - derselbe Ort, an dem
     /// im Bestand die manuellen Staende liegen.
     /// </para>
     /// <para>
-    /// <b>Namensschema.</b> <c>Kenndaten_KI_JJJJ-MM-TT_hhmmss.accdb</c>. Bewusst ISO-nah
+    /// <b>Namensschema.</b> <c>Kenndaten_KI_JJJJ-MM-TT_hhmmss.sqlite</c>. Bewusst ISO-nah
     /// und damit sortierbar - die vorhandenen Handstaende in <c>DB-Backup\</c> tragen
     /// uneinheitliche Datumsformen (<c>-10.06.2026</c>, <c>_13.05.2026</c>, <c>-alt1</c>)
     /// und liessen sich weder ordnen noch kollisionsfrei fortschreiben. Der Bestandteil
@@ -59,8 +70,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Zusatzhinweis zum Sicherungspunkt (z. B. „Datenbank war geoeffnet"); leer,
-        /// wenn es nichts zu melden gibt.
+        /// Zusatzhinweis zum Sicherungspunkt; heute IMMER leer. <see cref="Datenbanksicherung"/>
+        /// zieht die Kopie ueber eine geoeffnete SQLite-Verbindung (<c>VACUUM INTO</c>) - sie
+        /// ist damit so oder so vollstaendig und in sich konsistent, es gibt keinen
+        /// Zwischenstand mehr zu melden. Die Eigenschaft bleibt fuer
+        /// <c>KiAusfuehrer.SicherungHinweis</c> (Windows-Oberflaeche) erhalten.
         /// </summary>
         internal static string Hinweis
         {
@@ -105,30 +119,18 @@ namespace WindowsFormsApplication1
                 try
                 {
                     string ordner = Path.Combine(Path.GetDirectoryName(quelle) ?? "", ORDNER);
-                    Directory.CreateDirectory(ordner);
 
-                    // Die Datenbank ist geoeffnet - lesendes Kopieren bleibt zulaessig,
-                    // die Kopie kann aber einen Zwischenstand zeigen. Das ist ein HINWEIS,
-                    // kein Abbruchgrund (Muster DbUmgebung.ArbeitskopieAnlegen).
-                    string sperrdatei = Path.ChangeExtension(quelle, ".laccdb");
-                    _hinweis = File.Exists(sperrdatei)
-                        ? string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.SicherungGeoeffnet,
-                                        Path.GetFileName(sperrdatei))
-                        : "";
+                    // KENNUNG ("_KI_") sitzt in der alten Zusammensetzung ZWISCHEN Stamm und
+                    // Zeitstempel; Datenbanksicherung.KopieAnlegen setzt sein eigenes "_" vor
+                    // den Zeitstempel, deshalb hier nur die fuehrende Haelfte ("_KI"). Ergebnis
+                    // unveraendert: "Kenndaten_KI_2026-09-09_153000.sqlite".
+                    string praefix = Path.GetFileNameWithoutExtension(quelle) + KENNUNG.TrimEnd('_');
+                    string ziel = Datenbanksicherung.KopieAnlegen(quelle, ordner, praefix);
 
-                    string name = Path.GetFileNameWithoutExtension(quelle) + KENNUNG +
-                                  DateTime.Now.ToString("yyyy-MM-dd_HHmmss", CultureInfo.InvariantCulture) +
-                                  Path.GetExtension(quelle);
-                    string ziel = Path.Combine(ordner, name);
-
-                    File.Copy(quelle, ziel, false);
-
-                    // Der Installer legt die Datenbank schreibgeschuetzt ab; das Attribut
-                    // wandert beim Kopieren mit. Eine schreibgeschuetzte Sicherung waere
-                    // zwar lesbar, liesse sich aber nicht zurueckspielen.
-                    var info = new FileInfo(ziel);
-                    if (info.IsReadOnly) info.IsReadOnly = false;
-
+                    // Keine ".laccdb"-Pruefung mehr (SQLite kennt sie nicht) und damit kein
+                    // Zwischenstands-Hinweis: VACUUM INTO liest ueber eine geoeffnete
+                    // Verbindung durch die "-wal" hindurch und liefert immer den vollstaendigen,
+                    // committeten Stand - _hinweis bleibt "" (siehe Hinweis oben).
                     _pfad = ziel;
                     _quelle = quelle;
                     pfad = ziel;
