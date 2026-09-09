@@ -892,3 +892,67 @@ Dateien in einer Liste, unlesbare Datei kostet die andere nicht, Schließknopf h
 Alle-Schalter), `KatalogImportDialogTests` (+1: Alle-Schalter markiert alle sichtbaren),
 `StilblattTests` über die zwei neuen Regeln. Der Windows-Dateidialog selbst (Ordnergedächtnis,
 `Multiselect`) ist Systemfenster und bleibt Sichtabnahme.
+
+---
+
+## Anwenderentscheid 09.09.2026 — W13‑E‑3: „Speichern DB" lässt den Importdialog offen
+
+**Der Wortlaut** (Anwender, 09.09.2026): Bei einer Liste von 6 654 Stromspeichern
+will der Anwender mehrere Übernahmen hintereinander machen, ohne den Dialog und
+die Quelle (Netzabruf!) jedes Mal neu zu laden.
+
+**Befund.** Nach jedem erfolgreichen Schreiben (`bilanz.EtwasGeschrieben`) rief
+`Schreibgang` `Geschlossen.InvokeAsync(true)`; die Hülle
+(`KatalogImportHuelle.Oeffnen`) schließt darauf sofort das Fenster
+(`dlg.Schliessen(b)`). Das galt für alle fünf Ausprägungen gleich — auch für
+den Stromspeicher (W13‑E‑2), dessen Quellen teuer sind (CEC-Netzabruf,
+bslib-Datei): Wer aus 6 654 Sätzen mehrere übernehmen wollte, musste den Dialog
+nach jedem einzelnen neu öffnen und die Quelle neu laden.
+
+**Umsetzung** (`EPOS.UI/Dialoge/Import/KatalogImportDialog.razor`):
+
+| Was | Wo |
+|---|---|
+| Neues Feld `_geschrieben`, gesetzt statt geschlossen | `Schreibgang` — `if (bilanz.EtwasGeschrieben) { _geschrieben = true; _wahl.Leeren(); _detailSatz = -1; }` statt `await Geschlossen.InvokeAsync(true)` |
+| Markierung wird geleert, Bezeichner bleiben stehen | dieselbe Stelle — `_wahl.Leeren()`, `_detailSatz = -1`; `_bezeichner` bleibt unangetastet |
+| Fußknopf „OK" meldet den Merker statt fest `false` | `BeiSchliessen() => Geschlossen.InvokeAsync(_geschrieben)` |
+| Esc meldet den Merker statt fest `false` | `BeiTaste` — derselbe Wechsel im letzten `return` |
+| Neue Prüfhilfe für Tests | `public bool Geschrieben => _geschrieben;` |
+| Kopfkommentar und Parameter-Doku von `Geschlossen` angepasst | neuer Absatz „SEIT W13-E-3 …", ABWEICHUNGEN-Absatz (B4b/B29) korrigiert |
+
+Der Doppelklick-Weg (`BeiDoppelklick` → `Schreibgang`) läuft über dieselbe
+Methode und verhält sich deshalb gleich — eine Komponente, ein Verhalten.
+
+**Nachweis.**
+
+| Nachweis | Ergebnis |
+|---|---|
+| Sandbox-Bau (Sandbox 3, `WP-Plan.sln`, x64 Debug) | 0 Fehler |
+| Kern-Tests (`EPOS.Kern.Tests`) | 2195/2195 |
+| UI-Tests (`EPOS.UI.Tests`) | 3366/3366 |
+
+Neue Testfälle (`EPOS.UI.Tests/Dialoge/KatalogImportDialogTests.cs`):
+`Nach_dem_Schreiben_bleibt_der_Dialog_offen_und_die_Markierung_ist_leer`,
+`Nach_dem_Schreiben_meldet_OK_true`, `Nach_dem_Schreiben_meldet_Esc_true`,
+`Zwei_Uebernahmen_nacheinander_schreiben_zweimal` (zweite Wahl, zweiter
+„Speichern DB"-Klick → `Ausfuehren` zweimal gerufen, Dialog bleibt beide Male
+offen).
+
+**Bestehende Erwartungswerte angepasst.**
+
+| Test | Vorher | Jetzt, weil |
+|---|---|---|
+| `Ein_konfliktfreier_Lauf_schreibt_und_meldet_einmal` | `Assert.True(ergebnis)` nach dem Schreiben | `Geschlossen` wird beim Schreiben nicht mehr gerufen (`Assert.Null(ergebnis)`); dazu `Geschrieben` und geleerte Markierung geprüft — der Dialog schließt nicht mehr von selbst |
+| `Zwei_einfache_Klicks_uebernehmen_zwei_Saetze` | endete nach der Zusicherung auf `ausgefuehrt`/`gesehen` | ergänzt um `Geschrieben` und geleerte Markierung — dieselbe Regel gilt für alle vier VDI-Ausprägungen (Theory) |
+| `Ein_Doppelklick_uebernimmt_genau_diese_Zeile` | `Markiert(cut, 0, 2)` am Ende | die Markierung wird nach dem Schreiben geleert, also `Markiert(cut)`; die Doku ergänzt, dass die übrige Markierung nur *zunächst* stehen bleibt |
+| `Ohne_Treffer_bleibt_der_Dialog_offen` | unverändert | ohne `EtwasGeschrieben` ändert sich nichts — der Dialog blieb schon vorher offen |
+| `Der_Fussknopf_OK_schliesst_ohne_Ergebnis`, `Esc_schliesst_den_Dialog` | unverändert | ohne vorheriges Schreiben bleibt `_geschrieben` `false`; beide Faelle nur um eine Kurzbeschreibung ergänzt, ihre Zusicherungen stehen |
+
+**Offene Punkte.**
+- Sichtabnahme am Programm (Windows): mehrere Übernahmen hintereinander,
+  insbesondere beim Stromspeicher mit CEC-Netzquelle, sowie Fußknopf/Esc nach
+  dem Schreiben.
+- Die A-ZEILE „die Wärmepumpe … schließt nach Erfolg (B4b, B29)" im
+  Kopfkommentar der Komponente und in Abschnitt 5 dieses Protokolls ist mit
+  diesem Entscheid überholt: Seit W13‑E‑3 schließt keine der fünf
+  Ausprägungen mehr von selbst nach dem Schreiben.

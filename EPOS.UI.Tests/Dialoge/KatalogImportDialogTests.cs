@@ -631,7 +631,9 @@ public class KatalogImportDialogTests : BunitContext
 
     /// <summary>
     /// Der konfliktfreie Weg: Vorprüfung, kein Dialog, Ausführung, EINE
-    /// Sammelmeldung — und der Dialog ist zu Ende, weil etwas geschrieben wurde.
+    /// Sammelmeldung — und ANWENDERENTSCHEID W13-E-3 (09.09.2026): der Dialog
+    /// bleibt offen, obwohl etwas geschrieben wurde; nur die Markierung wird
+    /// geleert.
     /// </summary>
     [Fact]
     public void Ein_konfliktfreier_Lauf_schreibt_und_meldet_einmal()
@@ -654,7 +656,43 @@ public class KatalogImportDialogTests : BunitContext
 
         Gemeldet(cut, "2 von 2 Einträgen geladen.");
         Assert.Equal(new[] { 0, 1 }, gesehen);
-        Assert.True(ergebnis);
+
+        // W13-E-3: Der Dialog bleibt offen - Geschlossen wird NICHT gerufen -,
+        // und die Markierung ist geleert.
+        Assert.Null(ergebnis);
+        Assert.True(cut.Instance.Geschrieben);
+        Markiert(cut);
+    }
+
+    /// <summary>
+    /// <b>ANWENDERENTSCHEID W13-E-3</b> (09.09.2026): Nach dem Schreiben bleibt
+    /// der Dialog offen — Erfolgsbanner und Liste stehen weiter, nur die
+    /// Markierung wird geleert, damit dieselben Sätze nicht versehentlich ein
+    /// zweites Mal geschrieben werden.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Schreiben_bleibt_der_Dialog_offen_und_die_Markierung_ist_leer()
+    {
+        var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen(),
+            vorpruefen: (_, __) => Task.FromResult(Vorpruefung(false)),
+            ausfuehren: (anzahl, _, __, ___, ____) => Task.FromResult(
+                new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl }));
+
+        Einlesen(cut, 3);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Markiert(cut, 0);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+
+        // Das Erfolgsbanner steht ...
+        Gemeldet(cut, "1 von 1 Einträgen geladen.");
+
+        // ... die Liste auch (kein Unmount, kein neues Einlesen noetig) ...
+        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+
+        // ... nur die Markierung ist geleert.
+        Markiert(cut);
+        Assert.True(cut.Instance.Geschrieben);
     }
 
     /// <summary>
@@ -742,15 +780,23 @@ public class KatalogImportDialogTests : BunitContext
 
         cut.WaitForAssertion(() => Assert.Equal(2, ausgefuehrt));
         Assert.Equal(new[] { 0, 2 }, gesehen);
+
+        // W13-E-3: Der Dialog bleibt offen, die Markierung ist geleert.
+        Assert.True(cut.Instance.Geschrieben);
+        Markiert(cut);
     }
 
     /// <summary>
     /// <b>Der Doppelklick</b> (W6‑E‑5): Er nimmt die Zeile in die Markierung und
-    /// übernimmt SIE sofort — die übrige Markierung bleibt stehen.
+    /// übernimmt SIE sofort — die übrige Markierung bleibt zunächst stehen.
     ///
     /// <para>Der Fall schickt die Ereignisfolge des Browsers: <c>click</c>,
     /// <c>click</c>, <c>dblclick</c>. Die zwei Klicks heben sich mit der Umschaltregel
     /// auf, deshalb muss der Wirt die Zeile ausdrücklich hinzufügen.</para>
+    ///
+    /// <para><b>ANWENDERENTSCHEID W13-E-3</b> (09.09.2026): Der Dialog bleibt nach
+    /// dem Schreiben offen, aber die Markierung wird geleert - dieselbe Regel
+    /// wie beim Fussknopf „Speichern DB".</para>
     /// </summary>
     [Fact]
     public void Ein_Doppelklick_uebernimmt_genau_diese_Zeile()
@@ -774,8 +820,54 @@ public class KatalogImportDialogTests : BunitContext
 
         // Geschrieben wurde NUR die doppelt geklickte Zeile ...
         cut.WaitForAssertion(() => Assert.Equal(new[] { 2 }, gesehen));
-        // ... und die uebrige Markierung steht noch, samt der neuen Zeile.
-        Markiert(cut, 0, 2);
+        // ... W13-E-3: nach dem Schreiben ist die Markierung geleert (der
+        // Dialog bleibt offen).
+        Assert.True(cut.Instance.Geschrieben);
+        Markiert(cut);
+    }
+
+    /// <summary>
+    /// <b>ANWENDERENTSCHEID W13-E-3</b> (09.09.2026): Der eigentliche Zweck der
+    /// Änderung — zwei Übernahmen HINTEREINANDER, ohne den Dialog
+    /// zwischendurch zu schliessen und neu zu öffnen (bei 6 654 Stromspeichern
+    /// der Unterschied zwischen einem und zwei Netzabrufen).
+    /// </summary>
+    [Fact]
+    public void Zwei_Uebernahmen_nacheinander_schreiben_zweimal()
+    {
+        int ausgefuehrt = 0;
+        bool? ergebnis = null;
+
+        var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen(),
+            vorpruefen: (_, __) => Task.FromResult(Vorpruefung(false)),
+            ausfuehren: (anzahl, _, __, ___, ____) =>
+            {
+                ausgefuehrt++;
+                return Task.FromResult(new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl });
+            },
+            geschlossen: EventCallback.Factory.Create<bool>(this, b => ergebnis = b));
+
+        Einlesen(cut, 3);
+
+        // Erste Uebernahme.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Markiert(cut, 0);
+        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        cut.WaitForAssertion(() => Assert.Equal(1, ausgefuehrt));
+        Markiert(cut);
+
+        // Der Dialog ist weiter offen - eine zweite Wahl ist moeglich, und
+        // Geschlossen wurde nicht gerufen.
+        Assert.Null(ergebnis);
+
+        // Zweite Wahl, zweite Uebernahme.
+        cut.FindAll("tbody .epos-anlagenwahl")[1].Click();
+        Markiert(cut, 1);
+        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(2, ausgefuehrt));
+        Markiert(cut);
+        Assert.Null(ergebnis);
     }
 
     /// <summary>
@@ -1072,6 +1164,7 @@ public class KatalogImportDialogTests : BunitContext
     // 6 — Tastatur
     // =====================================================================
 
+    /// <summary>Ohne dass in dieser Sitzung geschrieben wurde, meldet Esc <c>false</c>.</summary>
     [Fact]
     public void Esc_schliesst_den_Dialog()
     {
@@ -1084,6 +1177,33 @@ public class KatalogImportDialogTests : BunitContext
         cut.WaitForAssertion(() => Assert.False(ergebnis));
     }
 
+    /// <summary>
+    /// <b>ANWENDERENTSCHEID W13-E-3</b> (09.09.2026): Wurde in dieser Sitzung
+    /// schon geschrieben, meldet Esc beim wirklichen Schliessen <c>true</c> -
+    /// analog zum Fussknopf „OK".
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Schreiben_meldet_Esc_true()
+    {
+        bool? ergebnis = null;
+        var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen(),
+            vorpruefen: (_, __) => Task.FromResult(Vorpruefung(false)),
+            ausfuehren: (anzahl, _, __, ___, ____) => Task.FromResult(
+                new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl }),
+            geschlossen: EventCallback.Factory.Create<bool>(this, b => ergebnis = b));
+
+        Einlesen(cut, 3);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Geschrieben));
+        Assert.Null(ergebnis);
+
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        cut.WaitForAssertion(() => Assert.True(ergebnis));
+    }
+
+    /// <summary>Ohne dass in dieser Sitzung geschrieben wurde, meldet der Fussknopf „OK" <c>false</c>.</summary>
     [Fact]
     public void Der_Fussknopf_OK_schliesst_ohne_Ergebnis()
     {
@@ -1094,6 +1214,34 @@ public class KatalogImportDialogTests : BunitContext
         cut.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
 
         cut.WaitForAssertion(() => Assert.False(ergebnis));
+    }
+
+    /// <summary>
+    /// <b>ANWENDERENTSCHEID W13-E-3</b> (09.09.2026): Wurde in dieser Sitzung
+    /// schon geschrieben, meldet der Fussknopf „OK" beim wirklichen
+    /// Schliessen <c>true</c> - die Hülle muss ihren Aufruferkatalog nachladen.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Schreiben_meldet_OK_true()
+    {
+        bool? ergebnis = null;
+        var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen(),
+            vorpruefen: (_, __) => Task.FromResult(Vorpruefung(false)),
+            ausfuehren: (anzahl, _, __, ___, ____) => Task.FromResult(
+                new ImportBilanz { Markiert = anzahl, Gespeichert = anzahl }),
+            geschlossen: EventCallback.Factory.Create<bool>(this, b => ergebnis = b));
+
+        Einlesen(cut, 3);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Geschrieben));
+
+        // Der Dialog blieb bislang offen - Geschlossen wurde noch NICHT gerufen.
+        Assert.Null(ergebnis);
+
+        cut.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        cut.WaitForAssertion(() => Assert.True(ergebnis));
     }
 
     // =====================================================================

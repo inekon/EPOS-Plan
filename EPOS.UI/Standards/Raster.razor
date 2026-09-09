@@ -84,7 +84,38 @@
 
    NICHT gewaehlt wurde der Weg ueber ein @ref und RefreshDataAsync(): Der
    Aufruf landet in genau dem Zweig, der den Fehler traegt (dem entfernten
-   Virtualize-Kind), und ruehrt den flachen Zwischenspeicher nicht an. *@
+   Virtualize-Kind), und ruehrt den flachen Zwischenspeicher nicht an.
+
+   EINE VIRTUALISIERTE LISTE BRAUCHT EINE STABILE ZEILENMENGE (Befund W13-B-6,
+   Windows-Abnahme 09.09.2026: "die Liste blinkt und ist nicht sichtbar",
+   6 654 Stromspeicher). Der Absatz darueber sagt beilaeufig, die Wirte
+   reichten "bei jedem Render ein frisches AsQueryable() herein". Fuer den
+   FLACHEN Zweig ist das nur Arbeit; fuer den virtualisierten ist es der
+   Fehler:
+
+     * QuickGrid vergleicht seine Datenquelle nach REFERENZ
+       (OnParametersSetAsync: dataSourceHasChanged =
+       _newItemsOrItemsProvider != _lastAssignedItemsOrProvider). Eine frische
+       EnumerableQuery ueber DERSELBEN Liste ist damit eine neue Menge.
+     * Es bricht daraufhin die laufende Ladung ab
+       (RefreshDataCoreAsync: _pendingDataLoadCancellationTokenSource?.Cancel())
+       und stellt eine neue an - im virtualisierten Zweig hinter
+       await Task.Delay(100), QuickGrids Entprellung.
+     * Faellt der naechste Zeichenlauf in diese 100 ms, wird auch sie
+       abgebrochen. Virtualize behaelt sein leeres _loadedItems und zeichnet
+       Platzhalterzeilen; deren Inhalt setzt QuickGrids Stilblatt als
+       content: '\2026' - der "..."-Punkt in jeder Zelle. Solange geladen
+       wird, traegt die Tabelle ausserdem die Klasse loading, und
+       .quickgrid.loading > tbody blendet den Koerper auf opacity .25 ab:
+       das gemeldete BLINKEN.
+
+   Die Schranke steht deshalb im WIRT: Katalogliste.razor haelt ihre
+   gefilterte Menge und deren AsQueryable() so lange fest, wie sich Zeilen,
+   Profil und Filterstand nicht aendern. Hier wird nichts geglaettet - ein
+   Raster, das eine neue Menge stillschweigend fuer die alte haelt, waere die
+   naechste Fehlerquelle. Wer Virtualisiert setzt, reicht eine STABILE
+   Instanz herein; Raster zaehlt sie dafuer nur noch einmal (siehe
+   Zeilenzahl). *@
 
 @typeparam TZeile
 
@@ -136,20 +167,42 @@
     /// </summary>
     public (bool Virtualisiert, int Zeilenzahl) Rasterstand => (Virtualisiert, Zeilenzahl);
 
+    // Die zuletzt gezaehlte Menge und ihr Ergebnis (Befund W13-B-6).
+    private IQueryable<TZeile>? _gezaehlteMenge;
+    private int _zeilenzahl;
+
     /// <summary>
     /// Die Zahl der Zeilen — bewusst über <see cref="IEnumerable{T}"/> und damit
     /// über LINQ‑to‑Objects gezählt. <c>Zeilen.Count()</c> bände an
     /// <c>Queryable.Count</c>, das für jeden Aufruf einen Ausdrucksbaum
     /// übersetzt; die Wirte reichen ohnehin nur Listen herein.
+    ///
+    /// <para><b>Je Zeilenmenge wird EINMAL gezählt</b> (Befund <b>W13‑B‑6</b>,
+    /// 09.09.2026). Ein <c>AsQueryable()</c> über einer Liste ist keine
+    /// <c>ICollection</c>; <c>Count()</c> läuft dann WIRKLICH über alle Elemente.
+    /// Weil die Zahl im <c>@key</c> steht, geschah das bei jedem Zeichenlauf —
+    /// gemessen zehn volle Durchläufe über 6 654 Zeilen für zehn Zeichenläufe, ohne
+    /// dass sich etwas geändert hätte. Der Zwischenspeicher hängt an der REFERENZ der
+    /// Menge, genau wie QuickGrids eigener Vergleich seiner Datenquelle: eine neue
+    /// Menge ist eine neue Instanz.</para>
     /// </summary>
     private int Zeilenzahl
     {
         get
         {
-            if (Zeilen is null) return 0;
-            IEnumerable<TZeile> folge = Zeilen;
-            return folge is ICollection<TZeile> menge ? menge.Count : folge.Count();
+            if (!ReferenceEquals(Zeilen, _gezaehlteMenge))
+            {
+                _gezaehlteMenge = Zeilen;
+                _zeilenzahl = Zaehlen(Zeilen);
+            }
+            return _zeilenzahl;
         }
+    }
+
+    private static int Zaehlen(IEnumerable<TZeile>? folge)
+    {
+        if (folge is null) return 0;
+        return folge is ICollection<TZeile> menge ? menge.Count : folge.Count();
     }
 
     private string Klasse => Bearbeitbar ? "epos-raster epos-raster--bearbeitbar" : "epos-raster";
