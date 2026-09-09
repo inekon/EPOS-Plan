@@ -53,8 +53,10 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Der Katalogimport als EIN Kern-Ablauf</b> (iU9-W13.0b) — Lesen, Filtern,
-    /// Vorpruefen, Ausfuehren.
+    /// <b>Der Katalogimport als EIN Kern-Ablauf</b> (iU9-W13.0b) — Lesen, Vorpruefen,
+    /// Ausfuehren. Das Filtern der Anzeigeliste ist mit der Katalogfilter-Stufe S3.4
+    /// (Anwenderentscheid W14a‑E‑10‑O‑14, 09.09.2026) zu <see cref="Katalogfilter"/>
+    /// gewandert — dort steht die Filtermechanik seither allein.
     ///
     /// <para><b>Warum es ihn gibt.</b> Diese vier Schritte standen viermal wortgleich
     /// im Bestand: <c>btn_VDI3805_Click</c>, <c>FuelleListe</c>, der Vorpruefblock
@@ -239,34 +241,7 @@ namespace WindowsFormsApplication1
         }
 
         // ==================================================================
-        // 2 — Filtern
-        // ==================================================================
-
-        /// <summary>
-        /// Die Zuordnung Anzeigezeile → Satzindex unter dem Zahlen- und dem
-        /// Suchfilter — der Rumpf von <c>FuelleListe</c> ohne Steuerelemente.
-        ///
-        /// <para>Die Reihenfolge ist die von Heizkessel, Pufferspeicher und
-        /// Waermepumpe: erst der Zahlenfilter, dann der Suchtext. Solar prueft im
-        /// Bestand umgekehrt (Befund, § 7.2 „Zufall") — am Ergebnis aendert das
-        /// nichts, beide Bedingungen sind unabhaengig und beide muessen gelten.</para>
-        /// </summary>
-        public List<int> Anzeigeindex(double von, double bis, string suchtext)
-        {
-            var treffer = new List<int>();
-            for (int i = 0; i < _saetze.Count; i++)
-            {
-                double wert = _saetze[i].Filterwert;
-                if (wert < von) continue;
-                if (wert > bis) continue;
-                if (!VdiAuswahlFilter.Passt(suchtext, _saetze[i].Name, _saetze[i].Firma)) continue;
-                treffer.Add(i);
-            }
-            return treffer;
-        }
-
-        // ==================================================================
-        // 3 — Vorpruefen
+        // 2 — Vorpruefen
         // ==================================================================
 
         /// <summary>
@@ -327,7 +302,7 @@ namespace WindowsFormsApplication1
         }
 
         // ==================================================================
-        // 4 — Ausfuehren
+        // 3 — Ausfuehren
         // ==================================================================
 
         /// <summary>

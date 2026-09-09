@@ -469,39 +469,7 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
-        // 3 — Filtern
-        // ==================================================================
-
-        /// <summary>
-        /// Der Zahlenfilter und der Suchtext zusammen — der Rumpf von
-        /// <c>FuelleListe</c> ohne Steuerelemente.
-        /// </summary>
-        [Fact]
-        public void DerFilterVerbindetZahlenbereichUndSuchtext()
-        {
-            KatalogImportAblauf a = Ablauf(KatalogImportArt.Pufferspeicher);
-            a.Lesen(Probe("pufferspeicher_vaillant.vdi"));
-
-            // Vorbelegung des Designers: 0 bis 1000 Liter
-            List<int> alle = a.Anzeigeindex(0, 1000, "");
-            Assert.Equal(7, alle.Count);     // 1505 und 1917 fallen heraus
-
-            List<int> gross = a.Anzeigeindex(0, 100000, "");
-            Assert.Equal(9, gross.Count);
-
-            List<int> exclusiv = a.Anzeigeindex(0, 100000, "exclusiv");
-            Assert.Equal(6, exclusiv.Count);
-            Assert.All(exclusiv, i => Assert.Contains("exclusiv", a.Saetze[i].Name));
-
-            // Zwei Begriffe wirken als UND - hier ueber Name UND Firma.
-            List<int> beides = a.Anzeigeindex(0, 100000, "exclusiv vaillant");
-            Assert.Equal(6, beides.Count);
-
-            Assert.Empty(a.Anzeigeindex(0, 100000, "wolf"));
-        }
-
-        // ==================================================================
-        // 4 — Vorpruefen und Ausfuehren
+        // 3 — Vorpruefen und Ausfuehren
         // ==================================================================
 
         /// <summary>
@@ -823,7 +791,7 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
-        // 5 — Die Sammelmeldung aus der Bilanz
+        // 4 — Die Sammelmeldung aus der Bilanz
         // ==================================================================
 
         /// <summary>
