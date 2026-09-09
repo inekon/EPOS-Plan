@@ -2131,6 +2131,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Rubrikstartseite) mit dem Bot-Zugang überschrieben (Zusammenfassung „Stand 07.09.2026, Sprungmarken je Abschnitt"),
 > die 18 Bezüge und die Rubrikzeile waren schon da; Nachprobe über `action=parse`: Anker gerendert (`class="epos-anker"`,
 > `id="rechenweg"` vorhanden), 0 Parserfehler, `<math>` unverändert (Wärmepumpe 155, Photovoltaik 324).
+>
+> **#158 Sicherungspunkt SQLite-fest (Befund des Wiki-Agenten #155, 09.09.2026, umgesetzt in `ad42a78`, zusammengeführt in
+> `e772799`).** `KiSicherungspunkt` kopierte vor der ersten ändernden Aktion einer Sitzung nur die Hauptdatei — unter SQLite
+> im WAL-Modus fehlten der Kopie die Änderungen aus der `-wal`, und die Prüfung auf eine `.laccdb`-Sperrdatei konnte nie
+> mehr treffen. Seither gibt es EINE Sicherungswahrheit im Kern: `Datenbanksicherung.KopieAnlegen(quellpfad, zielordner,
+> praefix)` (`EPOS.Kern/Allgemein/Datenbank/`) zieht die Kopie über `VACUUM INTO` auf einer geöffneten Verbindung — der Weg,
+> den `BETRIEB_SQLITE.md` § 3.2 nennt und den die iOS-Schale (`Datenbankbereitstellung.SicherungAnlegen`) schon fuhr —, mit
+> `Schreibnaht.GRUND_SICHERUNG`, damit Sicherungen auch im Lesemodus erlaubt bleiben; Ergebnis ist eine in sich
+> geschlossene Datei ohne `-wal`/`-shm`. `KiSicherungspunkt` (Ordner `DB-Backup`, Zeitstempelmuster, Sperre bei Fehlschlag
+> unverändert) und `MenueCtrl.DatenbankKopieAnlegen` (Projekte löschen, Projektimport) nutzen den Helfer; `File.Copy`
+> ist in beiden Dateien weg (Wächter als Testfall). `KI_SICH_GEOEFFNET` samt Ressourcenschlüssel entfällt — ein Zwischenstand
+> der Kopie ist mit `VACUUM INTO` strukturell ausgeschlossen, ein `SQLITE_BUSY` läuft über den vorhandenen Fehlerpfad
+> `KI_SICH_FEHLGESCHLAGEN`; `KiSicherungspunkt.Hinweis` bleibt für `KiAusfuehrer` erhalten und liefert `""`. Nebenwirkung:
+> Der Zeitstempel der Projektverwaltungs-Kopie trägt seither Bindestriche (`Kenndaten_<zweck>_JJJJ-MM-TT_hhmmss.sqlite`).
+> Tests: `DatenbanksicherungTests` (6, u. a. Kopie enthält nur in der `-wal` stehende Änderungen, keine Begleitdateien,
+> unbeschreibbares Ziel sperrt) und `KiSicherungspunktTests` (3); Hausregel in `EPOS.Kern/CLAUDE.md`, Satz in
+> `BETRIEB_SQLITE.md` § 3.2. Gate: Kern 2205 / UI 3372 grün, SQL-Dialektprüfer 0, Referenzlauf byte-gleich (kein Rechenweg
+> berührt); rot allein durch die Warnungsschranke — die siebte eindeutige Warnung `CS8602` in
+> `EPOS.UI.Tests/Standards/RasterTests.cs:335` kam mit `97a7fec` (Opus-Sitzung, W13‑B‑6) und ist nicht Teil von #158;
+> sie ist in der Katalogliste-Linie zu beheben, damit die Schranke von sechs wieder trägt.
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >
