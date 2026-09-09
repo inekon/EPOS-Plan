@@ -7682,9 +7682,6 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="KI_SICH_QUELLE_FEHLT" xml:space="preserve">
     <value>The project database was not found ({0}).</value>
   </data>
-  <data name="KI_SICH_GEOEFFNET" xml:space="preserve">
-    <value>The database is currently open ({0}); the backup copy cannot contain changes that have not been written yet.</value>
-  </data>
   <data name="KI_SICH_FEHLGESCHLAGEN" xml:space="preserve">
     <value>A backup copy of the database must be created before the first change. That failed ({0}) — write actions therefore remain blocked.</value>
   </data>
